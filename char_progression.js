@@ -8597,7 +8597,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       });
     }
 
-    // D&D 3.5e RAW Core Skills Catalog (46 Official Skills)
+    // D&D 3.5e RAW Core Skills Catalog (52 Official Skills)
     const DND35_CORE_SKILLS = [
       { key: "appraise", name: "Appraise", stat: "int", acp: false, untrained: true },
       { key: "autohypnosis", name: "Autohypnosis", stat: "wis", acp: false, untrained: false },
@@ -8630,12 +8630,14 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       { key: "k_nobility", name: "Knowledge (Nobility & Royalty)", stat: "int", acp: false, untrained: false },
       { key: "k_religion", name: "Knowledge (Religion)", stat: "int", acp: false, untrained: false },
       { key: "k_planes", name: "Knowledge (The Planes)", stat: "int", acp: false, untrained: false },
+      { key: "k_psionics", name: "Knowledge (Psionics)", stat: "int", acp: false, untrained: false },
       { key: "listen", name: "Listen", stat: "wis", acp: false, untrained: true },
       { key: "martial_lore", name: "Martial Lore", stat: "int", acp: false, untrained: false },
       { key: "move_silently", name: "Move Silently", stat: "dex", acp: true, untrained: true },
       { key: "open_lock", name: "Open Lock", stat: "dex", acp: false, untrained: false },
       { key: "perform", name: "Perform", stat: "cha", acp: false, untrained: true },
       { key: "profession", name: "Profession", stat: "wis", acp: false, untrained: false },
+      { key: "psicraft", name: "Psicraft", stat: "int", acp: false, untrained: false },
       { key: "ride", name: "Ride", stat: "dex", acp: false, untrained: true },
       { key: "search", name: "Search", stat: "int", acp: false, untrained: true },
       { key: "sense_motive", name: "Sense Motive", stat: "wis", acp: false, untrained: true },
@@ -8644,8 +8646,10 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       { key: "spot", name: "Spot", stat: "wis", acp: false, untrained: true },
       { key: "survival", name: "Survival", stat: "wis", acp: false, untrained: true },
       { key: "swim", name: "Swim", stat: "str", acp: true, untrained: true },
+      { key: "truespeak", name: "Truespeak", stat: "int", acp: false, untrained: false },
       { key: "tumble", name: "Tumble", stat: "dex", acp: true, untrained: false },
       { key: "umd", name: "Use Magic Device", stat: "cha", acp: false, untrained: false },
+      { key: "use_psionic_device", name: "Use Psionic Device", stat: "cha", acp: false, untrained: false },
       { key: "use_rope", name: "Use Rope", stat: "dex", acp: false, untrained: true }
     ];
 

@@ -3807,6 +3807,63 @@ function runDeriveSheetTests() {
       sdSheet.defenses.ruleFlags.conToWillSave === true && sdSheet.defenses.ruleFlags.noAutoFailFortSaveOnNat1 === true &&
       !/steadfast determination/i.test(ruleEngineSrc)
     );
+
+    // 6. Sprint B.1: House-Rule Dead DOM Reads Removal
+    const charCombatSrc = fs.readFileSync(path.join(__dirname, '..', 'char_combat.js'), 'utf8');
+    const charHudSrc = fs.readFileSync(path.join(__dirname, '..', 'char_hud.js'), 'utf8');
+    check(
+      'Sprint B.1: char_combat.js and char_hud.js contain zero dead house-no-crit-confirm / house-maneuver-crit DOM reads and char_combat.js reads character.houseRules instead of settings-no-crit-confirm',
+      !/house-no-crit-confirm|house-maneuver-crit/.test(charCombatSrc) &&
+      !/house-no-crit-confirm|house-maneuver-crit/.test(charHudSrc) &&
+      !/getElementById\(['"]settings-no-crit-confirm['"]\)/.test(charCombatSrc) &&
+      /getCombatHouseRules\s*\(/.test(charCombatSrc)
+    );
+
+    // 7. Sprint B.2: Point Blank Shot Canonical V2 Modifiers & Zero attBonus Reads in char_combat.js
+    const pbsCompEntry = global.SrdCompendium.getById('feat-point-blank-shot');
+    const pbsBaseChar = JSON.parse(JSON.stringify(f01Raw));
+    pbsBaseChar.feats.push({ id: 'feat-point-blank-shot', name: 'Point Blank Shot', type: 'Feat', active: true });
+    const longbow = { name: 'Composite Longbow', grip: 'Ranged', category: 'Weapon', range: 110, dice: '1d8', critMin: 20, critMult: 3, dmgType: 'Piercing' };
+    const longsword = { name: 'Longsword', grip: '1-Hand', category: 'Weapon', dice: '1d8', critMin: 19, critMult: 2, dmgType: 'Slashing' };
+    pbsBaseChar.tactical = { ...(pbsBaseChar.tactical || {}), pointBlankShot: false };
+    const pbsOffRanged = RuleEngine.evaluateWeaponAttack(pbsBaseChar, longbow, { grip: 'Ranged' });
+    pbsBaseChar.tactical.pointBlankShot = true;
+    const pbsOnRanged = RuleEngine.evaluateWeaponAttack(pbsBaseChar, longbow, { grip: 'Ranged' });
+    const pbsOnMelee = RuleEngine.evaluateWeaponAttack(pbsBaseChar, longsword, { grip: '1-Hand' });
+    check(
+      'Sprint B.2: feat-point-blank-shot uses V2 modifiers with toggle condition (ranged +1/+1 active, +0/+0 inactive, +0/+0 melee) and char_combat.js has zero attBonus reads',
+      Boolean(pbsCompEntry && Array.isArray(pbsCompEntry.modifiers) && pbsCompEntry.modifiers.length === 2 &&
+        pbsCompEntry.modifiers.some(m => m.target === 'attack.ranged' && m.value === 1 && m.condition?.toggle === 'pointBlankShot') &&
+        pbsCompEntry.modifiers.some(m => m.target === 'damage.ranged' && m.value === 1 && m.condition?.toggle === 'pointBlankShot')) &&
+      pbsOnRanged.netAttackBonus === pbsOffRanged.netAttackBonus + 1 &&
+      pbsOnRanged.netFlatDamage === pbsOffRanged.netFlatDamage + 1 &&
+      pbsOnMelee.netAttackBonus === RuleEngine.evaluateWeaponAttack({ ...pbsBaseChar, tactical: { pointBlankShot: false } }, longsword, { grip: '1-Hand' }).netAttackBonus &&
+      !/\.\s*attBonus\b|\?\.\s*attBonus\b/.test(charCombatSrc),
+      `off=${pbsOffRanged.netAttackBonus}/${pbsOffRanged.netFlatDamage}, on=${pbsOnRanged.netAttackBonus}/${pbsOnRanged.netFlatDamage}`
+    );
+
+    // 8. Sprint B.3: 4 Missing Subsystem Core Skills + Specific Knowledge Skill Modifier Isolation
+    const charProgSrc = fs.readFileSync(path.join(__dirname, '..', 'char_progression.js'), 'utf8');
+    const has4SubsystemSkills = [
+      /key:\s*["']psicraft["'][^}]*name:\s*["']Psicraft["'][^}]*stat:\s*["']int["'][^}]*acp:\s*false[^}]*untrained:\s*false/,
+      /key:\s*["']k_psionics["'][^}]*name:\s*["']Knowledge \(Psionics\)["'][^}]*stat:\s*["']int["'][^}]*acp:\s*false[^}]*untrained:\s*false/,
+      /key:\s*["']use_psionic_device["'][^}]*name:\s*["']Use Psionic Device["'][^}]*stat:\s*["']cha["'][^}]*acp:\s*false[^}]*untrained:\s*false/,
+      /key:\s*["']truespeak["'][^}]*name:\s*["']Truespeak["'][^}]*stat:\s*["']int["'][^}]*acp:\s*false[^}]*untrained:\s*false/
+    ].every(rx => rx.test(charProgSrc));
+    const knowChar = JSON.parse(JSON.stringify(f01Raw));
+    knowChar.feats.push({
+      id: 'feat-test-autopsionics',
+      name: 'Psionic Scholar Test',
+      active: true,
+      modifiers: [{ target: 'skill.knowledge_psionics', value: 2, type: 'untyped' }]
+    });
+    const kPsionicsBonus = RuleEngine.evaluateSkillBonus(knowChar, 'k_psionics', 'Knowledge (Psionics)', 'int');
+    const kArcanaBonus = RuleEngine.evaluateSkillBonus(knowChar, 'k_arcana', 'Knowledge (Arcana)', 'int');
+    check(
+      'Sprint B.3: DND35_CORE_SKILLS includes Psicraft, Knowledge (Psionics), Use Psionic Device, and Truespeak (trained-only, acp: false), and skill.knowledge_psionics only buffs Knowledge (Psionics)',
+      has4SubsystemSkills && kPsionicsBonus.total === 2 && kArcanaBonus.total === 0,
+      `has4=${has4SubsystemSkills}, kPsionics=${kPsionicsBonus.total}, kArcana=${kArcanaBonus.total}`
+    );
   }
 
   CharStore.clearHistory();

@@ -4314,7 +4314,8 @@
         const activeRangedMods = [];
         const qualifiedRanged = typeof getQualifiedRangedModifiersList === 'function' ? getQualifiedRangedModifiersList() : [];
         qualifiedRanged.forEach(m => {
-          if (m && m.active) {
+          // Point Blank Shot is evaluated natively from V2 feat modifiers inside RuleEngine.evaluateWeaponAttack.
+          if (m && m.active && m.id !== 'pointBlankShot') {
             activeRangedMods.push({
               name: m.name,
               bonusAtk: m.bonusAtk || 0,
@@ -7051,6 +7052,46 @@
       renderOffenseModifiersGrid();
     }
 
+    function resolveV2CombatEntry(id, fallbackName) {
+      if (id && typeof SrdCompendium !== 'undefined' && typeof SrdCompendium.getById === 'function') {
+        const byId = SrdCompendium.getById(id);
+        if (byId) return byId;
+      }
+      if (typeof findMasterItem === 'function') {
+        return (id && findMasterItem(id)) || (fallbackName && findMasterItem(fallbackName)) || null;
+      }
+      return null;
+    }
+
+    function extractRangedV2Bonus(entry, fallbackAtk = 0, fallbackDmg = 0, fallbackType = 'untyped') {
+      const mods = Array.isArray(entry?.modifiers) ? entry.modifiers : [];
+      let atk = 0;
+      let dmg = 0;
+      let hasAtkMod = false;
+      let hasDmgMod = false;
+      let bonusType = '';
+      mods.forEach(mod => {
+        if (!mod || !mod.target) return;
+        const t = String(mod.target).toLowerCase();
+        const val = Number(mod.value ?? 0);
+        if (!Number.isFinite(val)) return;
+        if (t === 'attack' || t === 'attack.all' || t === 'attack.weapon' || t === 'attack.ranged' || t === 'rangedattack') {
+          atk += val;
+          hasAtkMod = true;
+          if (!bonusType && mod.type) bonusType = mod.type;
+        } else if (t === 'damage' || t === 'damage.all' || t === 'damage.weapon' || t === 'damage.ranged' || t === 'rangeddamage') {
+          dmg += val;
+          hasDmgMod = true;
+          if (!bonusType && mod.type) bonusType = mod.type;
+        }
+      });
+      return {
+        atk: hasAtkMod ? atk : fallbackAtk,
+        dmg: hasDmgMod ? dmg : fallbackDmg,
+        bonusType: bonusType || fallbackType
+      };
+    }
+
     function getQualifiedRangedModifiersList() {
       if (!character) return [];
       if (!character.tactical) character.tactical = {};
@@ -7101,17 +7142,19 @@
       const qualifiedRangedList = [];
 
       if (hasPBS) {
-        const dbPBS = typeof findMasterItem === 'function' ? findMasterItem('Point Blank Shot') : null;
-        const pbsAtk = Number(dbPBS?.attBonus ?? 1);
-        const pbsDmg = Number(dbPBS?.dmgBonus ?? 1);
+        const pbsEntry = featsList.find(f => f && typeof f === 'object' && (f.id === 'feat-point-blank-shot' || f.ruleFlags?.pointBlankShot || (f.name || '').toLowerCase().includes('point blank')));
+        const dbPBS = (Array.isArray(pbsEntry?.modifiers) && pbsEntry.modifiers.length > 0)
+          ? pbsEntry
+          : resolveV2CombatEntry('feat-point-blank-shot', 'Point Blank Shot');
+        const pbsV2 = extractRangedV2Bonus(dbPBS, 1, 1, 'untyped');
         qualifiedRangedList.push({
           id: 'pointBlankShot',
           name: 'Point Blank',
           source: 'Feat',
-          bonusStr: `+${pbsAtk} Atk / +${pbsDmg} Dmg`,
-          bonusAtk: pbsAtk,
-          bonusDmg: pbsDmg,
-          bonusType: dbPBS?.bonusType || 'untyped',
+          bonusStr: `+${pbsV2.atk} Atk / +${pbsV2.dmg} Dmg`,
+          bonusAtk: pbsV2.atk,
+          bonusDmg: pbsV2.dmg,
+          bonusType: pbsV2.bonusType,
           combatScope: 'ranged',
           active: !!t.pointBlankShot,
           activeClass: 'border-amber-500 bg-amber-950/40 text-amber-200 shadow-sm'
@@ -7163,20 +7206,20 @@
       }
 
       if (hasEnhanceArrow) {
-        const eaObj = specials.find(s => (s.name || '').toLowerCase().includes('enhance arrow'));
-        const dbEA = typeof findMasterItem === 'function' ? findMasterItem('Enhance Arrow +1 (Su)') : null;
-        const eaAtk = Number(eaObj?.attBonus ?? dbEA?.attBonus ?? 1);
-        const eaDmg = Number(eaObj?.dmgBonus ?? dbEA?.dmgBonus ?? 1);
-        const eaType = eaObj?.bonusType || dbEA?.bonusType || 'enhancement';
+        const eaObj = specials.find(s => s && typeof s === 'object' && (s.id === 'cab-enhance-arrow' || s.ruleFlags?.enhanceArrow || (s.name || '').toLowerCase().includes('enhance arrow')));
+        const dbEA = (Array.isArray(eaObj?.modifiers) && eaObj.modifiers.length > 0)
+          ? eaObj
+          : resolveV2CombatEntry('cab-enhance-arrow', 'Enhance Arrow');
+        const eaV2 = extractRangedV2Bonus(dbEA, 1, 1, eaObj?.bonusType || 'enhancement');
 
         qualifiedRangedList.push({
           id: 'enhanceArrow',
           name: 'Enhance Arrow',
           source: 'Ability',
-          bonusStr: `+${eaAtk} Atk / +${eaDmg} Dmg`,
-          bonusAtk: eaAtk,
-          bonusDmg: eaDmg,
-          bonusType: eaType,
+          bonusStr: `+${eaV2.atk} Atk / +${eaV2.dmg} Dmg`,
+          bonusAtk: eaV2.atk,
+          bonusDmg: eaV2.dmg,
+          bonusType: eaV2.bonusType,
           combatScope: 'ranged',
           active: !!t.enhanceArrow,
           activeClass: 'border-emerald-500 bg-emerald-950/40 text-emerald-200 shadow-sm'
@@ -7258,18 +7301,19 @@
           }
           if (qualifiedRangedList.some(q => q.name.toLowerCase().trim() === pNameLower)) return;
 
-          const dbEntry = typeof findMasterItem === 'function' ? findMasterItem(pin.name) : null;
+          const dbEntry = resolveV2CombatEntry(pin.baseItemId || pin.id, pin.name);
           const dbPartDice = (Array.isArray(dbEntry?.damageParts) && dbEntry.damageParts[0]?.dice) || '';
+          const pinV2 = extractRangedV2Bonus(dbEntry, Number(pin.bonusAtk ?? 0), Number(pin.bonusDmg ?? 0), dbEntry?.bonusType || pin.bonusType || 'untyped');
           qualifiedRangedList.push({
             id: `pin_${pin.name}`,
             pinRef: pin,
             name: pin.name,
             source: pin.sourceType || dbEntry?.type || 'Pin',
             bonusStr: pin.badge || dbEntry?.benefit || '+ Pin',
-            bonusAtk: Number(dbEntry?.attBonus ?? pin.bonusAtk ?? 0),
-            bonusDmg: Number(dbEntry?.dmgBonus ?? pin.bonusDmg ?? 0),
+            bonusAtk: pinV2.atk,
+            bonusDmg: pinV2.dmg,
             dice: dbPartDice || dbEntry?.dice || pin.dice || '',
-            bonusType: dbEntry?.bonusType || pin.bonusType || 'untyped',
+            bonusType: pinV2.bonusType,
             combatScope: 'ranged',
             active: Boolean(pin.active),
             activeClass: 'border-sky-500 bg-sky-950/40 text-sky-200 shadow-sm'
@@ -8012,6 +8056,14 @@
       }
     }
 
+    function getCombatHouseRules(char) {
+      const hr = char?.houseRules || {};
+      return {
+        noCritConfirm: hr.noCritConfirm ?? true,
+        maneuverCrit: hr.maneuverCrit ?? false
+      };
+    }
+
     function toggleModifier(idx) {
       if (!character.activeModifiers || !character.activeModifiers[idx]) return;
       let usedStore = false;
@@ -8057,8 +8109,7 @@
         consumeActionEconomy('standard', item.weapon?.name || item.label || 'Single Attack');
       }
 
-      const noCritConfirm = document.getElementById('house-no-crit-confirm') ? document.getElementById('house-no-crit-confirm').checked : (character.houseRules?.noCritConfirm ?? true);
-      const maneuverCrit = document.getElementById('house-maneuver-crit') ? document.getElementById('house-maneuver-crit').checked : (character.houseRules?.maneuverCrit ?? false);
+      const { noCritConfirm, maneuverCrit } = getCombatHouseRules(character);
 
       const evalResult = item.evalResult;
       const bonus = item.bonus;
@@ -8169,8 +8220,7 @@
         if (!canShoot) return;
       }
 
-      const noCritConfirm = document.getElementById('house-no-crit-confirm') ? document.getElementById('house-no-crit-confirm').checked : (character.houseRules?.noCritConfirm ?? true);
-      const maneuverCrit = document.getElementById('house-maneuver-crit') ? document.getElementById('house-maneuver-crit').checked : (character.houseRules?.maneuverCrit ?? false);
+      const { noCritConfirm, maneuverCrit } = getCombatHouseRules(character);
       const activeMods = (character.activeModifiers || []).filter(m => m.active);
 
       const diceToRoll3D = [];
@@ -12862,7 +12912,7 @@
       let confirmDetails = '';
 
       if (isThreat) {
-        const noConfirmRule = document.getElementById('settings-no-crit-confirm')?.checked || false;
+        const noConfirmRule = getCombatHouseRules(character).noCritConfirm;
         if (noConfirmRule) {
           isCritConfirmed = true;
           confirmDetails = ' (Auto-Crit)';

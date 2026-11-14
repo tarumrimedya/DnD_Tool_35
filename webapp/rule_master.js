@@ -2136,10 +2136,10 @@ const RuleMaster = {
           row.className = `cursor-pointer rounded px-2.5 py-1.5 text-slate-200 hover:bg-purple-900/50 hover:text-white flex items-center justify-between transition ${idx === activeIdx ? 'bg-purple-950/70 text-purple-200' : ''}`;
           const iconSpan = options.icon ? `<span class="mr-1.5 opacity-80">${options.icon}</span>` : '';
           row.innerHTML = `<span class="truncate">${iconSpan}${item}</span>`;
-          row.onmousedown = (e) => {
+          row.addEventListener('mousedown', (e) => {
             e.preventDefault();
             selectItem(item);
-          };
+          });
           dropdown.appendChild(row);
         });
       }
@@ -2490,7 +2490,7 @@ const RuleMaster = {
 
       tr.innerHTML = `
         <td class="py-2.5 px-2.5 text-center">
-          <input type="checkbox" ${isSelected ? 'checked' : ''} onchange="RuleMaster.toggleSelectEntry('${escapedKey}', this.checked)" class="w-3.5 h-3.5 rounded border-slate-600 bg-slate-900 text-amber-500 focus:ring-amber-500 cursor-pointer" title="Select entry for export or batch actions">
+          <input type="checkbox" ${isSelected ? 'checked' : ''} data-change-action="rm:toggle-select-entry" data-key="${RuleMaster.escapeHtml(selKey)}" class="w-3.5 h-3.5 rounded border-slate-600 bg-slate-900 text-amber-500 focus:ring-amber-500 cursor-pointer" title="Select entry for export or batch actions">
         </td>
         <td class="py-2.5 px-3">
           <div class="font-bold text-white flex items-center gap-1.5 flex-wrap">
@@ -2520,18 +2520,18 @@ const RuleMaster = {
         </td>
         <td class="py-2.5 px-3 text-center">
           <div class="flex items-center justify-center gap-1">
-            <button onclick="RuleMaster.openModalWithData(masterDb[${idx}], ${idx})" class="ui-btn-icon w-7 h-7 rounded-md bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs transition inline-flex items-center justify-center cursor-pointer" title="${isDeity ? 'Edit in Deity Editor' : (isDomain ? 'Edit in Domain Editor' : (isClass ? 'Edit in Class Template Studio' : 'Edit'))}">
+            <button data-action="rm:open-modal" data-idx="${idx}" class="ui-btn-icon w-7 h-7 rounded-md bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs transition inline-flex items-center justify-center cursor-pointer" title="${isDeity ? 'Edit in Deity Editor' : (isDomain ? 'Edit in Domain Editor' : (isClass ? 'Edit in Class Template Studio' : 'Edit'))}">
               ✏️
             </button>
             ${isDeity ? `
-              <button onclick="if(typeof selectDeityItem==='function'){selectDeityItem('${safeItemNameJs}'); if(typeof showDiceTopToast==='function') showDiceTopToast({title:'Deity Selected', breakdown:'${safeItemNameJs} set as character patron deity.', icon:'✨'});}" class="ui-btn-icon w-7 h-7 rounded-md bg-amber-950/80 hover:bg-amber-900 border border-amber-700/60 text-amber-300 text-xs transition inline-flex items-center justify-center cursor-pointer" title="Select as Character Deity">
+              <button data-action="rm:select-deity" data-deity-name="${RuleMaster.escapeHtml(item.name || '')}" class="ui-btn-icon w-7 h-7 rounded-md bg-amber-950/80 hover:bg-amber-900 border border-amber-700/60 text-amber-300 text-xs transition inline-flex items-center justify-center cursor-pointer" title="Select as Character Deity">
                 🙏
               </button>
             ` : ''}
-            <button onclick="RuleMaster.duplicateEntry(${idx})" class="ui-btn-icon w-7 h-7 rounded-md bg-slate-800 hover:bg-slate-700 text-amber-300 text-xs transition inline-flex items-center justify-center cursor-pointer" title="Duplicate">
+            <button data-action="rm:duplicate-entry" data-idx="${idx}" class="ui-btn-icon w-7 h-7 rounded-md bg-slate-800 hover:bg-slate-700 text-amber-300 text-xs transition inline-flex items-center justify-center cursor-pointer" title="Duplicate">
               📑
             </button>
-            <button onclick="RuleMaster.deleteEntry(${idx})" class="ui-btn-icon w-7 h-7 rounded-md bg-rose-950 hover:bg-rose-900 border border-rose-800 text-rose-300 text-xs transition inline-flex items-center justify-center cursor-pointer" title="Delete">
+            <button data-action="rm:delete-entry" data-idx="${idx}" class="ui-btn-icon w-7 h-7 rounded-md bg-rose-950 hover:bg-rose-900 border border-rose-800 text-rose-300 text-xs transition inline-flex items-center justify-center cursor-pointer" title="Delete">
               🗑️
             </button>
           </div>
@@ -4854,12 +4854,12 @@ Return valid JSON only matching:
           <span class="text-[11px] text-slate-400 block sm:inline sm:ml-2">${newEntriesCount === 0 ? 'Direct duplicate addition is disabled — use "Change & Add" to customize first' : '100% Canonical V2 JSON Schema Compliant'}</span>
         </div>
         ${newEntriesCount > 0 ? `
-          <button onclick="RuleMaster.addAllAiResultsToDb()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs px-3.5 py-1.5 rounded-lg shadow transition flex items-center gap-1.5 cursor-pointer">
+          <button data-action="rm:add-all-ai" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs px-3.5 py-1.5 rounded-lg shadow transition flex items-center gap-1.5 cursor-pointer">
             <span>📥</span>
             <span>${newEntriesCount < this.lastAiResults.length ? `Add New to DB (${newEntriesCount})` : 'Add All to DB'}</span>
           </button>
         ` : (this.lastAiResults.length === 1 ? `
-          <button onclick="RuleMaster.changeAndAddAiResult(0)" class="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-extrabold text-xs px-3.5 py-1.5 rounded-lg shadow transition flex items-center gap-1.5 cursor-pointer">
+          <button data-action="rm:change-add-ai" data-idx="0" class="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-extrabold text-xs px-3.5 py-1.5 rounded-lg shadow transition flex items-center gap-1.5 cursor-pointer">
             <span>✏️</span>
             <span>Change &amp; Add</span>
           </button>
@@ -4923,21 +4923,21 @@ Return valid JSON only matching:
                   <span>🔒</span>
                   <span>Already in DB</span>
                 </span>
-                <button onclick="RuleMaster.changeAndAddAiResult(${idx})" class="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg shadow transition flex items-center gap-1 cursor-pointer" title="Modify this entry in the Builder and add to Custom Master DB">
+                <button data-action="rm:change-add-ai" data-idx="${idx}" class="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg shadow transition flex items-center gap-1 cursor-pointer" title="Modify this entry in the Builder and add to Custom Master DB">
                   <span>✏️</span>
                   <span>Change &amp; Add</span>
                 </button>
               ` : `
-                <button onclick="RuleMaster.addAiResultToDb(${idx})" class="bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg shadow transition flex items-center gap-1 cursor-pointer">
+                <button data-action="rm:add-ai" data-idx="${idx}" class="bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg shadow transition flex items-center gap-1 cursor-pointer">
                   <span>📥</span>
                   <span>Add to DB</span>
                 </button>
               `}
-              <button onclick="RuleMaster.equipAiResultToCharacter(${idx})" class="bg-emerald-950 hover:bg-emerald-900 border border-emerald-700 text-emerald-300 text-xs px-2.5 py-1.5 rounded-lg transition font-bold cursor-pointer" title="Equip / Add to Character">
+              <button data-action="rm:equip-ai" data-idx="${idx}" class="bg-emerald-950 hover:bg-emerald-900 border border-emerald-700 text-emerald-300 text-xs px-2.5 py-1.5 rounded-lg transition font-bold cursor-pointer" title="Equip / Add to Character">
                 ⚡ Equip
               </button>
               ${!dbInfo.exists ? `
-                <button onclick="RuleMaster.editAiResultInModal(${idx})" class="bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs px-2.5 py-1.5 rounded-lg border border-slate-700 transition cursor-pointer" title="Edit">
+                <button data-action="rm:edit-ai" data-idx="${idx}" class="bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs px-2.5 py-1.5 rounded-lg border border-slate-700 transition cursor-pointer" title="Edit">
                   ✏️ Edit
                 </button>
               ` : ''}
@@ -5586,8 +5586,8 @@ Return valid JSON only matching:
               <div class="text-[10px] text-slate-400 mt-0.5">📚 ${RuleMaster.escapeHtml(item.source || 'PHB')} • Slot: <b>${item.slot || 'Main Hand'}</b></div>
             </div>
             <div class="flex items-center gap-1">
-              <button onclick="toggleUniversalPin({ name: '${RuleMaster.escapeJsString(item.name)}', type: 'Feat', action: 'Passive', desc: '${RuleMaster.escapeJsString(item.benefit || item.description || '')}', badge: '${RuleMaster.escapeJsString(item.type)}' })" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-amber-400 text-xs transition" title="Pin / Unpin to Combat Cockpit">📌</button>
-              <button onclick="RuleMaster.openModalWithData(masterDb[${idx}], ${idx})" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs transition" title="Edit">✏️</button>
+              <button data-action="rm:toggle-pin" data-idx="${idx}" data-pin-badge="${RuleMaster.escapeHtml(item.type)}" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-amber-400 text-xs transition" title="Pin / Unpin to Combat Cockpit">📌</button>
+              <button data-action="rm:open-modal" data-idx="${idx}" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs transition" title="Edit">✏️</button>
             </div>
           </div>
 
@@ -5609,10 +5609,10 @@ Return valid JSON only matching:
             <span class="text-amber-400 font-bold">${item.cost || 0} gp • ${item.weight || 0} lbs</span>
             <div class="flex gap-1.5">
               ${isWeapon ? `
-                <button onclick="RuleMaster.equipWeaponSlot('${RuleMaster.escapeJsString(item.name)}', 'Main Hand')" class="bg-rose-950 hover:bg-rose-900 border border-rose-700 text-rose-200 text-[10px] font-bold px-2 py-1 rounded transition">⚡ Main Hand</button>
-                <button onclick="RuleMaster.equipWeaponSlot('${RuleMaster.escapeJsString(item.name)}', 'Off-Hand')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] font-bold px-2 py-1 rounded transition">⚡ Off-Hand</button>
+                <button data-action="rm:equip-weapon-slot" data-weapon-name="${RuleMaster.escapeHtml(item.name)}" data-hand="Main Hand" class="bg-rose-950 hover:bg-rose-900 border border-rose-700 text-rose-200 text-[10px] font-bold px-2 py-1 rounded transition">⚡ Main Hand</button>
+                <button data-action="rm:equip-weapon-slot" data-weapon-name="${RuleMaster.escapeHtml(item.name)}" data-hand="Off-Hand" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] font-bold px-2 py-1 rounded transition">⚡ Off-Hand</button>
               ` : `
-                <button onclick="RuleMaster.equipToCharacter(${idx})" class="bg-sky-950 hover:bg-sky-900 border border-sky-700 text-sky-200 text-[10px] font-bold px-2 py-1 rounded transition">🛡️ Equip</button>
+                <button data-action="rm:equip-to-char" data-idx="${idx}" class="bg-sky-950 hover:bg-sky-900 border border-sky-700 text-sky-200 text-[10px] font-bold px-2 py-1 rounded transition">🛡️ Equip</button>
               `}
             </div>
           </div>
@@ -5673,8 +5673,8 @@ Return valid JSON only matching:
               </div>
             </div>
             <div class="flex items-center gap-1">
-              <button onclick="toggleUniversalPin({ name: '${RuleMaster.escapeJsString(item.name)}', type: 'Feat', action: 'Passive', desc: '${RuleMaster.escapeJsString(item.benefit || item.description || '')}', badge: '${RuleMaster.escapeJsString(item.type)}' })" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-amber-400 text-xs transition" title="Pin / Unpin to Combat Cockpit">📌</button>
-              <button onclick="RuleMaster.openModalWithData(masterDb[${idx}], ${idx})" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs transition" title="Edit">✏️</button>
+              <button data-action="rm:toggle-pin" data-idx="${idx}" data-pin-badge="${RuleMaster.escapeHtml(item.type)}" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-amber-400 text-xs transition" title="Pin / Unpin to Combat Cockpit">📌</button>
+              <button data-action="rm:open-modal" data-idx="${idx}" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs transition" title="Edit">✏️</button>
             </div>
           </div>
 
@@ -5688,11 +5688,11 @@ Return valid JSON only matching:
 
           <div class="flex items-center justify-end pt-2 border-t border-slate-800">
             ${isSpell ? `
-              <button onclick="RuleMaster.equipToCharacter(${idx})" class="bg-purple-900/60 hover:bg-purple-600 text-purple-200 text-xs font-bold px-3 py-1 rounded border border-purple-700 transition">✨ Add to Spells Known</button>
+              <button data-action="rm:equip-to-char" data-idx="${idx}" class="bg-purple-900/60 hover:bg-purple-600 text-purple-200 text-xs font-bold px-3 py-1 rounded border border-purple-700 transition">✨ Add to Spells Known</button>
             ` : (isManeuver ? `
-              <button onclick="RuleMaster.equipToCharacter(${idx})" class="bg-rose-950 hover:bg-rose-900 border border-rose-700 text-rose-200 text-xs font-bold px-3 py-1 rounded transition">⚔️ Ready Maneuver</button>
+              <button data-action="rm:equip-to-char" data-idx="${idx}" class="bg-rose-950 hover:bg-rose-900 border border-rose-700 text-rose-200 text-xs font-bold px-3 py-1 rounded transition">⚔️ Ready Maneuver</button>
             ` : `
-              <button onclick="RuleMaster.equipToCharacter(${idx})" class="bg-indigo-950 hover:bg-indigo-900 border border-indigo-700 text-indigo-200 text-xs font-bold px-3 py-1 rounded transition">🥋 Activate Stance</button>
+              <button data-action="rm:equip-to-char" data-idx="${idx}" class="bg-indigo-950 hover:bg-indigo-900 border border-indigo-700 text-indigo-200 text-xs font-bold px-3 py-1 rounded transition">🥋 Activate Stance</button>
             `)}
           </div>
         </div>
@@ -5742,8 +5742,8 @@ Return valid JSON only matching:
               <div class="text-[10px] text-slate-400 mt-0.5">📚 ${RuleMaster.escapeHtml(item.source || 'PHB')} • Category: <b>${item.role || 'General'}</b></div>
             </div>
             <div class="flex items-center gap-1">
-              <button onclick="toggleUniversalPin({ name: '${RuleMaster.escapeJsString(item.name)}', type: 'Feat', action: 'Passive', desc: '${RuleMaster.escapeJsString(item.benefit || item.description || '')}', badge: 'Feat' })" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-amber-400 text-xs transition" title="Pin / Unpin to Combat Cockpit">📌</button>
-              <button onclick="RuleMaster.openModalWithData(masterDb[${idx}], ${idx})" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs transition" title="Edit">✏️</button>
+              <button data-action="rm:toggle-pin" data-idx="${idx}" data-pin-badge="Feat" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-amber-400 text-xs transition" title="Pin / Unpin to Combat Cockpit">📌</button>
+              <button data-action="rm:open-modal" data-idx="${idx}" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs transition" title="Edit">✏️</button>
             </div>
           </div>
 
@@ -5763,7 +5763,7 @@ Return valid JSON only matching:
 
           <div class="flex items-center justify-between pt-2 border-t border-slate-800">
             <span class="text-[10px] text-slate-500">Scope: ${item.scope || 'General'}</span>
-            <button onclick="RuleMaster.equipToCharacter(${idx})" class="bg-amber-950 hover:bg-amber-900 border border-amber-700 text-amber-200 text-xs font-bold px-3 py-1 rounded transition">✨ Add Feat to Character</button>
+            <button data-action="rm:equip-to-char" data-idx="${idx}" class="bg-amber-950 hover:bg-amber-900 border border-amber-700 text-amber-200 text-xs font-bold px-3 py-1 rounded transition">✨ Add Feat to Character</button>
           </div>
         </div>
       `;
@@ -5816,8 +5816,8 @@ Return valid JSON only matching:
               <div class="text-[10px] text-slate-400 mt-0.5">📚 ${RuleMaster.escapeHtml(item.source || 'MIC')} • Bonus: <b>${primaryBonusType}</b></div>
             </div>
             <div class="flex items-center gap-1">
-              <button onclick="toggleUniversalPin({ name: '${RuleMaster.escapeJsString(item.name)}', type: 'Feat', action: 'Passive', desc: '${RuleMaster.escapeJsString(item.benefit || item.description || '')}', badge: '${RuleMaster.escapeJsString(primaryBonusType)}' })" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-amber-400 text-xs transition" title="Pin / Unpin to Combat Cockpit">📌</button>
-              <button onclick="RuleMaster.openModalWithData(masterDb[${idx}], ${idx})" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs transition" title="Edit">✏️</button>
+              <button data-action="rm:toggle-pin" data-idx="${idx}" data-pin-badge="${RuleMaster.escapeHtml(primaryBonusType)}" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-amber-400 text-xs transition" title="Pin / Unpin to Combat Cockpit">📌</button>
+              <button data-action="rm:open-modal" data-idx="${idx}" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs transition" title="Edit">✏️</button>
             </div>
           </div>
 
@@ -5831,7 +5831,7 @@ Return valid JSON only matching:
 
           <div class="flex items-center justify-between pt-2 border-t border-slate-800 text-[11px]">
             <span class="text-amber-400 font-bold">${item.cost || 0} gp • ${item.weight || 0} lbs</span>
-            <button onclick="RuleMaster.equipToCharacter(${idx})" class="bg-teal-950 hover:bg-teal-900 border border-teal-700 text-teal-200 text-xs font-bold px-3 py-1 rounded transition">
+            <button data-action="rm:equip-to-char" data-idx="${idx}" class="bg-teal-950 hover:bg-teal-900 border border-teal-700 text-teal-200 text-xs font-bold px-3 py-1 rounded transition">
               ${isPotion ? '🧪 Add Potion to Backpack' : '🎒 Equip / Add to Inventory'}
             </button>
           </div>
@@ -5871,11 +5871,11 @@ Return valid JSON only matching:
                 </div>
               </div>
               <div class="flex gap-1.5">
-                <button onclick="RuleMaster.addChildPower(${pIdx})" class="bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs px-2.5 py-1 rounded shadow transition flex items-center gap-1">
+                <button data-action="rm:add-child-power" data-idx="${pIdx}" class="bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs px-2.5 py-1 rounded shadow transition flex items-center gap-1">
                   <span>➕</span>
                   <span>Add Mode</span>
                 </button>
-                <button onclick="RuleMaster.openModalWithData(masterDb[${pIdx}], ${pIdx})" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs transition">✏️</button>
+                <button data-action="rm:open-modal" data-idx="${pIdx}" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs transition">✏️</button>
               </div>
             </div>
 
@@ -6266,12 +6266,12 @@ Return valid JSON only matching:
           </div>
         </div>
         ${newEntriesCount > 0 ? `
-          <button onclick="RuleMaster.addAllInlineResultsToDb()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs px-3 py-1.5 rounded-lg shadow transition flex items-center gap-1.5 cursor-pointer">
+          <button data-action="rm:add-all-inline" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs px-3 py-1.5 rounded-lg shadow transition flex items-center gap-1.5 cursor-pointer">
             <span>📥</span>
             <span>${newEntriesCount < entries.length ? `Add New to DB (${newEntriesCount})` : 'Add All to DB'}</span>
           </button>
         ` : (entries.length === 1 ? `
-          <button onclick="RuleMaster.changeAndAddInlineResult(0)" class="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-extrabold text-xs px-3 py-1.5 rounded-lg shadow transition flex items-center gap-1.5 cursor-pointer">
+          <button data-action="rm:change-add-inline" data-idx="0" class="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-extrabold text-xs px-3 py-1.5 rounded-lg shadow transition flex items-center gap-1.5 cursor-pointer">
             <span>✏️</span>
             <span>Change &amp; Add</span>
           </button>
@@ -6310,21 +6310,21 @@ Return valid JSON only matching:
                   <span>🔒</span>
                   <span>Already in DB</span>
                 </span>
-                <button onclick="RuleMaster.changeAndAddInlineResult(${idx})" class="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-bold text-xs px-2.5 py-1 rounded-lg shadow transition flex items-center gap-1 cursor-pointer" title="Modify this entry in the Builder and add to Custom Master DB">
+                <button data-action="rm:change-add-inline" data-idx="${idx}" class="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-bold text-xs px-2.5 py-1 rounded-lg shadow transition flex items-center gap-1 cursor-pointer" title="Modify this entry in the Builder and add to Custom Master DB">
                   <span>✏️</span>
                   <span>Change &amp; Add</span>
                 </button>
               ` : `
-                <button onclick="RuleMaster.addInlineResultToDb(${idx})" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs px-2.5 py-1 rounded-lg shadow transition flex items-center gap-1 cursor-pointer">
+                <button data-action="rm:add-inline" data-idx="${idx}" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs px-2.5 py-1 rounded-lg shadow transition flex items-center gap-1 cursor-pointer">
                   <span>📥</span>
                   <span>Add to DB</span>
                 </button>
               `}
-              <button onclick="RuleMaster.equipInlineResultToCharacter(${idx})" class="bg-purple-950 hover:bg-purple-900 border border-purple-700 text-purple-300 text-xs px-2 py-1 rounded-lg transition font-bold cursor-pointer" title="Equip to Character">
+              <button data-action="rm:equip-inline" data-idx="${idx}" class="bg-purple-950 hover:bg-purple-900 border border-purple-700 text-purple-300 text-xs px-2 py-1 rounded-lg transition font-bold cursor-pointer" title="Equip to Character">
                 ⚡ Equip
               </button>
               ${!dbInfo.exists ? `
-                <button onclick="RuleMaster.editInlineResultInModal(${idx})" class="bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs px-2 py-1 rounded-lg border border-slate-700 transition cursor-pointer" title="Inspect / Edit in Form">
+                <button data-action="rm:edit-inline" data-idx="${idx}" class="bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs px-2 py-1 rounded-lg border border-slate-700 transition cursor-pointer" title="Inspect / Edit in Form">
                   ✏️ Edit
                 </button>
               ` : ''}
@@ -7683,7 +7683,7 @@ Return valid JSON only matching:
         const bonusEq = e.enhIncrease ? `+${e.enhIncrease}` : (e.flatCost ? `${e.flatCost} gp` : '');
         return `
           <label class="flex items-center gap-1.5 p-1.5 rounded-lg bg-slate-900 border border-slate-800 hover:border-amber-500/50 cursor-pointer select-none">
-            <input type="checkbox" value="${e.id}" ${isChecked ? 'checked' : ''} onchange="RuleMaster.updateInlineForgePreview()" class="mdb-forge-enh-chk rounded text-amber-500 bg-slate-950 border-slate-700">
+            <input type="checkbox" value="${e.id}" ${isChecked ? 'checked' : ''} data-change-action="forge:update-preview" class="mdb-forge-enh-chk rounded text-amber-500 bg-slate-950 border-slate-700">
             <span class="text-[11px] font-semibold text-slate-200 truncate" title="${RuleMaster.escapeHtml(e.shortDescription || e.name)}">${RuleMaster.escapeHtml(e.name)}</span>
             <span class="text-[10px] font-mono text-amber-400 ml-auto shrink-0">${bonusEq}</span>
           </label>
@@ -7881,11 +7881,11 @@ Return valid JSON only matching:
       ` : ''}
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-slate-800">
-        <button type="button" onclick="RuleMaster.saveInlineForgeItem(false)" class="w-full h-10 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700 font-bold text-xs transition cursor-pointer flex items-center justify-center gap-1.5">
+        <button type="button" data-action="rm:save-inline-forge" data-also-equip="false" class="w-full h-10 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700 font-bold text-xs transition cursor-pointer flex items-center justify-center gap-1.5">
           <span>📥</span>
           <span>${this._editingForgeMasterDbIndex >= 0 ? 'Update in Custom DB' : 'Save to Custom DB'}</span>
         </button>
-        <button type="button" onclick="RuleMaster.saveInlineForgeItem(true)" class="w-full h-10 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black text-xs shadow transition cursor-pointer flex items-center justify-center gap-1.5">
+        <button type="button" data-action="rm:save-inline-forge" data-also-equip="true" class="w-full h-10 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black text-xs shadow transition cursor-pointer flex items-center justify-center gap-1.5">
           <span>⚒️</span>
           <span>${this._editingForgeMasterDbIndex >= 0 ? 'Update &amp; Equip to Character' : 'Save &amp; Equip to Character'}</span>
         </button>
@@ -7893,7 +7893,7 @@ Return valid JSON only matching:
       ${this._editingForgeMasterDbIndex >= 0 ? `
         <div class="flex items-center justify-between pt-1 text-[10px] text-amber-300">
           <span>✏️ Editing Master DB Entry #${this._editingForgeMasterDbIndex + 1} in The Forge</span>
-          <button type="button" onclick="const idx = RuleMaster._editingForgeMasterDbIndex; RuleMaster._editingForgeMasterDbIndex = -1; RuleMaster.openModalWithData(masterDb[idx], idx, { forceManualBuilder: true });" class="underline hover:text-white cursor-pointer font-bold">🛠️ Switch to Manual V2 Builder</button>
+          <button type="button" data-action="rm:forge-to-manual-builder" class="underline hover:text-white cursor-pointer font-bold">🛠️ Switch to Manual V2 Builder</button>
         </div>
       ` : ''}
     `;
@@ -8416,7 +8416,7 @@ Return valid JSON only matching:
                 <span class="badge bg-amber-900 text-amber-200 border border-amber-600 font-mono text-[10px] font-bold">+1 ${recommendedStat.toUpperCase()}</span>
               </div>
               <p class="text-[11px] text-amber-100/90 leading-relaxed">${statReason}</p>
-              <button type="button" onclick="applyCopilotStat('${RuleMaster.escapeJsString(recommendedStat)}')" class="w-full mt-1 py-1 rounded bg-amber-600/30 hover:bg-amber-600 text-amber-200 hover:text-white border border-amber-500/50 text-[10px] font-bold transition flex items-center justify-center gap-1 cursor-pointer">
+              <button type="button" data-action="rm:copilot-stat" data-stat="${RuleMaster.escapeHtml(recommendedStat)}" class="w-full mt-1 py-1 rounded bg-amber-600/30 hover:bg-amber-600 text-amber-200 hover:text-white border border-amber-500/50 text-[10px] font-bold transition flex items-center justify-center gap-1 cursor-pointer">
                 <span>⚡</span><span>Select This Ability (+1 ${recommendedStat.toUpperCase()})</span>
               </button>
             </div>
@@ -8434,7 +8434,7 @@ Return valid JSON only matching:
             </div>
             <p class="text-[11px] text-purple-100/90 leading-relaxed">${featBenefit}</p>
             <div class="text-[10px] text-purple-400 italic">Prerequisites: ${featPrereq}</div>
-            <button type="button" onclick="applyCopilotFeat('${RuleMaster.escapeJsString(recommendedFeat)}', '${RuleMaster.escapeJsString(featBenefit)}', '${RuleMaster.escapeJsString(featCategory)}')" class="w-full mt-1 py-1 rounded bg-purple-600/30 hover:bg-purple-600 text-purple-200 hover:text-white border border-purple-500/50 text-[10px] font-bold transition flex items-center justify-center gap-1 cursor-pointer">
+            <button type="button" data-action="rm:copilot-feat" data-feat="${RuleMaster.escapeHtml(recommendedFeat)}" data-benefit="${RuleMaster.escapeHtml(featBenefit)}" data-category="${RuleMaster.escapeHtml(featCategory)}" class="w-full mt-1 py-1 rounded bg-purple-600/30 hover:bg-purple-600 text-purple-200 hover:text-white border border-purple-500/50 text-[10px] font-bold transition flex items-center justify-center gap-1 cursor-pointer">
               <span>⚡</span><span>Fill Feat Slot</span>
             </button>
           </div>
@@ -8443,14 +8443,14 @@ Return valid JSON only matching:
         <div class="p-2 rounded-lg bg-indigo-950/30 border border-indigo-500/30 space-y-1">
           <div class="text-[11px] font-bold text-indigo-300 flex items-center justify-between">
             <span>⚔️ Tactical Synergy & Class Guide</span>
-            <button type="button" onclick="applyCopilotNotes('${RuleMaster.escapeJsString(notes)}')" class="text-[10px] text-indigo-300 hover:text-white underline cursor-pointer">Copy to Notes</button>
+            <button type="button" data-action="rm:copilot-notes" data-notes="${RuleMaster.escapeHtml(notes)}" class="text-[10px] text-indigo-300 hover:text-white underline cursor-pointer">Copy to Notes</button>
           </div>
           <p class="text-[11px] text-slate-300 leading-relaxed">${notes}</p>
         </div>
 
         <div class="flex items-center justify-between pt-1">
           <span class="text-[10px] text-slate-500 italic">💡 Add a Gemini API Key for deep tactical analysis across all 3.5e splatbooks.</span>
-          <button type="button" onclick="applyCopilotAll({ recommendedFeat: '${RuleMaster.escapeJsString(recommendedFeat)}', featBenefit: '${RuleMaster.escapeJsString(featBenefit)}', featCategory: '${RuleMaster.escapeJsString(featCategory)}', recommendedStat: '${RuleMaster.escapeJsString(recommendedStat || '')}', notes: '${RuleMaster.escapeJsString(notes)}' })" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-[11px] px-3 py-1 rounded-lg shadow flex items-center gap-1 transition cursor-pointer">
+          <button type="button" data-action="rm:copilot-all" data-feat="${RuleMaster.escapeHtml(recommendedFeat)}" data-benefit="${RuleMaster.escapeHtml(featBenefit)}" data-category="${RuleMaster.escapeHtml(featCategory)}" data-stat="${RuleMaster.escapeHtml(recommendedStat || '')}" data-notes="${RuleMaster.escapeHtml(notes)}" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-[11px] px-3 py-1 rounded-lg shadow flex items-center gap-1 transition cursor-pointer">
             <span>🚀</span><span>Apply All Recommendations</span>
           </button>
         </div>
@@ -8573,7 +8573,7 @@ ${customQuery ? `User Question: ${customQuery}` : 'Provide the optimal D&D 3.5e 
                   <div class="text-[10px] font-bold text-amber-400 uppercase">Recommended Ability:</div>
                   <div class="text-xs font-black text-white">+1 ${recStat.toUpperCase()}</div>
                 </div>
-                <button type="button" onclick="applyCopilotStat('${RuleMaster.escapeJsString(recStat)}')" class="px-2.5 py-1 rounded bg-amber-600 hover:bg-amber-500 text-white font-bold text-[10px] shadow transition cursor-pointer">
+                <button type="button" data-action="rm:copilot-stat" data-stat="${RuleMaster.escapeHtml(recStat)}" class="px-2.5 py-1 rounded bg-amber-600 hover:bg-amber-500 text-white font-bold text-[10px] shadow transition cursor-pointer">
                   Apply
                 </button>
               </div>
@@ -8583,9 +8583,9 @@ ${customQuery ? `User Question: ${customQuery}` : 'Provide the optimal D&D 3.5e 
               <div class="p-2 rounded-lg bg-purple-950/40 border border-purple-500/40 flex items-center justify-between">
                 <div class="truncate mr-2">
                   <div class="text-[10px] font-bold text-purple-300 uppercase">Recommended Feat:</div>
-                  <div class="text-xs font-black text-white truncate" title="${recFeat}">${recFeat}</div>
+                  <div class="text-xs font-black text-white truncate" title="${RuleMaster.escapeHtml(recFeat)}">${RuleMaster.escapeHtml(recFeat)}</div>
                 </div>
-                <button type="button" onclick="applyCopilotFeat('${RuleMaster.escapeJsString(recFeat)}', '${RuleMaster.escapeJsString(featBenefit)}', '${RuleMaster.escapeJsString(featCategory)}')" class="px-2.5 py-1 rounded bg-purple-600 hover:bg-purple-500 text-white font-bold text-[10px] shadow transition cursor-pointer shrink-0">
+                <button type="button" data-action="rm:copilot-feat" data-feat="${RuleMaster.escapeHtml(recFeat)}" data-benefit="${RuleMaster.escapeHtml(featBenefit)}" data-category="${RuleMaster.escapeHtml(featCategory)}" class="px-2.5 py-1 rounded bg-purple-600 hover:bg-purple-500 text-white font-bold text-[10px] shadow transition cursor-pointer shrink-0">
                   Fill Slot
                 </button>
               </div>
@@ -8597,10 +8597,10 @@ ${customQuery ? `User Question: ${customQuery}` : 'Provide the optimal D&D 3.5e 
           </div>
 
           <div class="flex items-center justify-between pt-2 border-t border-purple-900/50">
-            <button type="button" onclick="applyCopilotNotes('${RuleMaster.escapeJsString(notes)}')" class="text-[10px] text-indigo-300 hover:text-white underline cursor-pointer">
+            <button type="button" data-action="rm:copilot-notes" data-notes="${RuleMaster.escapeHtml(notes)}" class="text-[10px] text-indigo-300 hover:text-white underline cursor-pointer">
               📝 Add Recommendation Note
             </button>
-            <button type="button" onclick="applyCopilotAll({ recommendedFeat: '${RuleMaster.escapeJsString(recFeat)}', featBenefit: '${RuleMaster.escapeJsString(featBenefit)}', featCategory: '${RuleMaster.escapeJsString(featCategory)}', recommendedStat: '${RuleMaster.escapeJsString(recStat || '')}', notes: '${RuleMaster.escapeJsString(notes)}' })" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-[11px] px-3.5 py-1.5 rounded-lg shadow-lg flex items-center gap-1.5 transition cursor-pointer active:scale-95">
+            <button type="button" data-action="rm:copilot-all" data-feat="${RuleMaster.escapeHtml(recFeat)}" data-benefit="${RuleMaster.escapeHtml(featBenefit)}" data-category="${RuleMaster.escapeHtml(featCategory)}" data-stat="${RuleMaster.escapeHtml(recStat || '')}" data-notes="${RuleMaster.escapeHtml(notes)}" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-[11px] px-3.5 py-1.5 rounded-lg shadow-lg flex items-center gap-1.5 transition cursor-pointer active:scale-95">
               <span>⚡</span><span>Apply All Recommendations</span>
             </button>
           </div>
@@ -8667,7 +8667,7 @@ ${customQuery ? `User Question: ${customQuery}` : 'Provide the optimal D&D 3.5e 
               <p class="text-[11px] text-slate-400">Scanning ${items.length} custom record(s) in master_db...</p>
             </div>
           </div>
-          <button onclick="document.getElementById('rule-master-audit-modal').classList.add('hidden')" class="text-slate-400 hover:text-white text-sm font-bold px-2 py-1 rounded bg-slate-800 cursor-pointer">✕</button>
+          <button data-action="rm:close-audit-modal" class="text-slate-400 hover:text-white text-sm font-bold px-2 py-1 rounded bg-slate-800 cursor-pointer">✕</button>
         </div>
         <div id="rule-master-audit-content" class="max-h-96 overflow-y-auto space-y-2 pr-1 text-xs">
           <div class="text-center py-8 text-slate-400 animate-pulse flex items-center justify-center gap-2">
@@ -8979,5 +8979,112 @@ if (typeof window !== 'undefined' && window.Actions && typeof window.Actions.reg
   });
   window.Actions.register('mdb:close-editor-modal', () => {
     RuleMaster.closeMasterDbEditorModal();
+  });
+
+  // --- Dynamic Rule Master UI delegated actions (table, AI cards, Forge, Copilot, Audit) ---
+  window.Actions.register('rm:toggle-select-entry', (el, data) => {
+    RuleMaster.toggleSelectEntry(data.key, Boolean(el && el.checked));
+  });
+  window.Actions.register('rm:open-modal', (el, data) => {
+    const idx = Number(data.idx);
+    RuleMaster.openModalWithData(masterDb[idx], idx);
+  });
+  window.Actions.register('rm:select-deity', (el, data) => {
+    const deityName = data.deityName || '';
+    if (typeof selectDeityItem === 'function') {
+      selectDeityItem(deityName);
+      if (typeof showDiceTopToast === 'function') {
+        showDiceTopToast({ title: 'Deity Selected', breakdown: `${deityName} set as character patron deity.`, icon: '✨' });
+      }
+    }
+  });
+  window.Actions.register('rm:duplicate-entry', (el, data) => {
+    RuleMaster.duplicateEntry(Number(data.idx));
+  });
+  window.Actions.register('rm:delete-entry', (el, data) => {
+    RuleMaster.deleteEntry(Number(data.idx));
+  });
+  window.Actions.register('rm:add-all-ai', () => {
+    RuleMaster.addAllAiResultsToDb();
+  });
+  window.Actions.register('rm:change-add-ai', (el, data) => {
+    RuleMaster.changeAndAddAiResult(Number(data.idx));
+  });
+  window.Actions.register('rm:add-ai', (el, data) => {
+    RuleMaster.addAiResultToDb(Number(data.idx));
+  });
+  window.Actions.register('rm:equip-ai', (el, data) => {
+    RuleMaster.equipAiResultToCharacter(Number(data.idx));
+  });
+  window.Actions.register('rm:edit-ai', (el, data) => {
+    RuleMaster.editAiResultInModal(Number(data.idx));
+  });
+  window.Actions.register('rm:toggle-pin', (el, data) => {
+    const item = typeof masterDb !== 'undefined' ? masterDb[Number(data.idx)] : null;
+    if (item && typeof toggleUniversalPin === 'function') {
+      toggleUniversalPin({
+        name: item.name,
+        type: 'Feat',
+        action: 'Passive',
+        desc: item.benefit || item.description || '',
+        badge: data.pinBadge || item.type || 'Feat'
+      });
+    }
+  });
+  window.Actions.register('rm:equip-weapon-slot', (el, data) => {
+    RuleMaster.equipWeaponSlot(data.weaponName, data.hand);
+  });
+  window.Actions.register('rm:equip-to-char', (el, data) => {
+    RuleMaster.equipToCharacter(Number(data.idx));
+  });
+  window.Actions.register('rm:add-child-power', (el, data) => {
+    RuleMaster.addChildPower(Number(data.idx));
+  });
+  window.Actions.register('rm:add-all-inline', () => {
+    RuleMaster.addAllInlineResultsToDb();
+  });
+  window.Actions.register('rm:change-add-inline', (el, data) => {
+    RuleMaster.changeAndAddInlineResult(Number(data.idx));
+  });
+  window.Actions.register('rm:add-inline', (el, data) => {
+    RuleMaster.addInlineResultToDb(Number(data.idx));
+  });
+  window.Actions.register('rm:equip-inline', (el, data) => {
+    RuleMaster.equipInlineResultToCharacter(Number(data.idx));
+  });
+  window.Actions.register('rm:edit-inline', (el, data) => {
+    RuleMaster.editInlineResultInModal(Number(data.idx));
+  });
+  window.Actions.register('rm:save-inline-forge', (el, data) => {
+    RuleMaster.saveInlineForgeItem(data.alsoEquip === 'true');
+  });
+  window.Actions.register('rm:forge-to-manual-builder', () => {
+    const idx = RuleMaster._editingForgeMasterDbIndex;
+    RuleMaster._editingForgeMasterDbIndex = -1;
+    RuleMaster.openModalWithData(masterDb[idx], idx, { forceManualBuilder: true });
+  });
+  window.Actions.register('rm:copilot-stat', (el, data) => {
+    if (typeof window.applyCopilotStat === 'function') window.applyCopilotStat(data.stat);
+  });
+  window.Actions.register('rm:copilot-feat', (el, data) => {
+    if (typeof window.applyCopilotFeat === 'function') window.applyCopilotFeat(data.feat, data.benefit, data.category);
+  });
+  window.Actions.register('rm:copilot-notes', (el, data) => {
+    if (typeof window.applyCopilotNotes === 'function') window.applyCopilotNotes(data.notes);
+  });
+  window.Actions.register('rm:copilot-all', (el, data) => {
+    if (typeof window.applyCopilotAll === 'function') {
+      window.applyCopilotAll({
+        recommendedFeat: data.feat,
+        featBenefit: data.benefit,
+        featCategory: data.category,
+        recommendedStat: data.stat || '',
+        notes: data.notes
+      });
+    }
+  });
+  window.Actions.register('rm:close-audit-modal', () => {
+    const modal = document.getElementById('rule-master-audit-modal');
+    if (modal) modal.classList.add('hidden');
   });
 }

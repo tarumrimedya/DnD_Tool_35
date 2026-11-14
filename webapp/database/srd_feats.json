@@ -3646,7 +3646,26 @@
       "feat",
       "fighter"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "attack.ranged",
+        "value": 1,
+        "type": "untyped",
+        "source": "Point Blank Shot",
+        "condition": {
+          "toggle": "pointBlankShot"
+        }
+      },
+      {
+        "target": "damage.ranged",
+        "value": 1,
+        "type": "untyped",
+        "source": "Point Blank Shot",
+        "condition": {
+          "toggle": "pointBlankShot"
+        }
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {

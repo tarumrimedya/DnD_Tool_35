@@ -8508,7 +8508,17 @@
         const canonical = DND35_CLASS_ALIASES[lower] || Object.keys(classDefs).find(k => k.toLowerCase() === lower) || raw;
         const def = classDefs[canonical] || (typeof RuleEngine !== 'undefined' && RuleEngine.getClassDef ? RuleEngine.getClassDef(canonical) : null);
         if (def && Array.isArray(def.classSkills)) {
-          def.classSkills.forEach(sk => classSkills.add(sk));
+          const kbAliases = {
+            knowledge_architecture: 'k_arch',
+            knowledge_dungeoneering: 'k_dungeon',
+            knowledge_geography: 'k_geo',
+            knowledge_nobility: 'k_nobility'
+          };
+          def.classSkills.forEach(sk => {
+            classSkills.add(sk);
+            if (kbAliases[sk]) classSkills.add(kbAliases[sk]);
+            else if (typeof sk === 'string' && sk.startsWith('knowledge_')) classSkills.add('k_' + sk.slice(10));
+          });
         }
       });
 

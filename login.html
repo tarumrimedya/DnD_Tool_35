@@ -86,7 +86,7 @@
         <!-- Giriş Butonları -->
         <div class="space-y-2.5">
           <!-- Google ile Giriş Yap Butonu -->
-          <button id="btn-login-google" onclick="handleGoogleLogin()" class="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-50 to-white hover:from-white hover:to-amber-100 text-stone-950 font-black text-xs sm:text-sm transition duration-200 flex items-center justify-center gap-3 shadow-xl shadow-black/60 hover:shadow-amber-500/20 active:scale-[0.98] border border-amber-300/40 cursor-pointer">
+          <button id="btn-login-google" class="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-50 to-white hover:from-white hover:to-amber-100 text-stone-950 font-black text-xs sm:text-sm transition duration-200 flex items-center justify-center gap-3 shadow-xl shadow-black/60 hover:shadow-amber-500/20 active:scale-[0.98] border border-amber-300/40 cursor-pointer">
             <!-- Google SVG Logosu -->
             <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -105,7 +105,7 @@
           </div>
 
           <!-- Yerelde Çalıştır Butonu (Çevrimdışı / Misafir Modu) -->
-          <button id="btn-login-local" onclick="handleLocalLogin()" class="w-full py-3 px-4 rounded-xl bg-stone-900/90 hover:bg-stone-800/90 text-stone-200 hover:text-white font-bold text-xs sm:text-sm transition duration-200 flex items-center justify-center gap-2.5 shadow-lg shadow-black/40 border border-stone-700/80 hover:border-amber-500/50 active:scale-[0.98] cursor-pointer">
+          <button id="btn-login-local" class="w-full py-3 px-4 rounded-xl bg-stone-900/90 hover:bg-stone-800/90 text-stone-200 hover:text-white font-bold text-xs sm:text-sm transition duration-200 flex items-center justify-center gap-2.5 shadow-lg shadow-black/40 border border-stone-700/80 hover:border-amber-500/50 active:scale-[0.98] cursor-pointer">
             <span class="text-base">💻</span>
             <span>Run Locally (Offline Mode)</span>
           </button>
@@ -193,6 +193,10 @@
 
     // Sayfa Açıldığında: Eğer kullanıcı zaten giriş yapmışsa veya yerel moddaysa doğrudan yönlendir
     window.addEventListener('DOMContentLoaded', async () => {
+      const btnGoogle = document.getElementById('btn-login-google');
+      if (btnGoogle) btnGoogle.addEventListener('click', handleGoogleLogin);
+      const btnLocal = document.getElementById('btn-login-local');
+      if (btnLocal) btnLocal.addEventListener('click', handleLocalLogin);
       if (window.SupabaseAuth) {
         try {
           await SupabaseAuth.redirectIfLoggedIn('/hub');

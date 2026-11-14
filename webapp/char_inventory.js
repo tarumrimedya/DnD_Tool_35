@@ -1310,233 +1310,35 @@
 
     function executeLongRest(isFullHeal = true) {
       if (!character) return;
-      if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
-        CharStore.dispatch({
-          type: 'hud/longRest',
-          payload: { isFullHeal: Boolean(isFullHeal) },
-          meta: { label: isFullHeal ? 'Long Rest (Full Recovery)' : 'Long Rest (8h Natural Healing)' }
-        });
-        const out = (typeof CharStore.getLastOutcome === 'function' ? CharStore.getLastOutcome() : null) || {};
-        if (typeof renderActionEconomy === 'function') {
-          renderActionEconomy();
-        }
-        if (typeof renderHUD === 'function') {
-          try { renderHUD(); } catch (e) { console.warn('renderHUD immediate rest error:', e); }
-        }
-        try { updateRoundDisplays(); } catch (e) { console.warn('updateRoundDisplays error in rest:', e); }
-        try { saveStateToStorage(true); } catch (e) { console.warn('saveStateToStorage error in rest:', e); }
-        try { if (typeof renderManeuvers === 'function') renderManeuvers(); } catch (e) { console.warn('renderManeuvers error in rest:', e); }
-        try { if (typeof renderSpellSlots === 'function') renderSpellSlots(); } catch (e) { console.warn('renderSpellSlots error in rest:', e); }
-        try { renderAll(); } catch (e) { console.warn('renderAll error in rest:', e); }
-
-        const maxHp = Number(out.maxHp ?? character.hp?.max) || (Number(character.level || 1) * 10) || 10;
-        const curHp = Number(out.currentHp ?? character.hp?.current) || maxHp;
-        const hpGain = Number(out.hpGain) || 0;
-        const refreshedDailyItems = Number(out.refreshedDailyItems) || 0;
-        const refreshedDailyFeats = Number(out.refreshedDailyFeats) || 0;
-        const removedConditions = Number(out.removedConditions) || 0;
-        const hasRingOfSustenance = Boolean(out.hasRingOfSustenance);
-
-        const details = [];
-        details.push(isFullHeal ? `Full HP (${curHp}/${maxHp})` : `+${hpGain} HP Natural Healing (${curHp}/${maxHp})`);
-        const totalReadyLong = (character.tomeOfBattle?.readiedManeuvers || []).filter(m => !m.expended).length;
-        details.push(`All spells and ${totalReadyLong} maneuvers readied`);
-        if (refreshedDailyItems > 0 || refreshedDailyFeats > 0) details.push(`${refreshedDailyItems + refreshedDailyFeats} Daily Item/Feat charges refreshed`);
-        if (removedConditions > 0) details.push("Fatigue/Debuffs cleared");
-        if (hasRingOfSustenance) details.push("💍 2 Hours (Ring of Sustenance)");
-
-        showDiceTopToast({
-          icon: "☀️",
-          title: `Long Rest Complete (${isFullHeal ? "Full Heal" : "D&D 3.5e RAW"})`,
-          breakdown: details.join(" • "),
-          total: `${curHp}/${maxHp} HP`
-        }, { stack: false, autoDismiss: true, dismissMs: 5000 });
-        return;
+      syncInventoryStore();
+      CharStore.dispatch({
+        type: 'hud/longRest',
+        payload: { isFullHeal: Boolean(isFullHeal) },
+        meta: { label: isFullHeal ? 'Long Rest (Full Recovery)' : 'Long Rest (8h Natural Healing)' }
+      });
+      const out = (typeof CharStore.getLastOutcome === 'function' ? CharStore.getLastOutcome() : null) || {};
+      if (typeof renderActionEconomy === 'function') {
+        renderActionEconomy();
       }
-      character.encounterRound = 1;
-      if (!character.tactical) character.tactical = {};
-      character.tactical.round = 1;
-      if (typeof resetActionEconomy === 'function') resetActionEconomy();
-
-      const hasRingOfSustenance = !!(
-        character.bodySlots && (
-          (character.bodySlots.ring1 && (character.bodySlots.ring1.name || "").includes("Ring of Sustenance")) ||
-          (character.bodySlots.ring2 && (character.bodySlots.ring2.name || "").includes("Ring of Sustenance"))
-        )
-      );
-
-      // 1. HP & Nonlethal & Temp HP
-      const maxHp = Number(character.hp?.max) || (Number(character.level || 1) * 10) || 10;
-      if (!character.hp) {
-        character.hp = { current: maxHp, max: maxHp, temp: 0, nonlethal: 0 };
-      }
-      const charLvl = Number(character.level) || 1;
-      const currentHp = Number(character.hp.current) || 0;
-      let hpGain = 0;
-
-      if (isFullHeal) {
-        hpGain = maxHp - currentHp;
-        character.hp.current = maxHp;
-      } else {
-        // D&D 3.5e RAW: 1 HP per character level per 8 hours of rest
-        hpGain = Math.min(maxHp - currentHp, charLvl);
-        character.hp.current = Math.min(maxHp, currentHp + charLvl);
-      }
-      character.hp.temp = 0;
-      character.hp.nonlethal = 0;
-      character.hp._lastPlayerChangeTs = Math.max(Date.now(), (Number(character.hp?._lastDmUpdateTs) || 0) + 100);
-      character.lastModified = new Date().toISOString();
-
-      // 1. Immediately update HUD so HP on screen updates in 0ms synchronously
       if (typeof renderHUD === 'function') {
         try { renderHUD(); } catch (e) { console.warn('renderHUD immediate rest error:', e); }
       }
-
-      // 2. Spell Slots (Spontaneous Arcane, Prepared Wizard, Divine)
-      let refreshedSpells = 0;
-      if (character.spellcasting && Array.isArray(character.spellcasting.slots)) {
-        character.spellcasting.slots.forEach(s => {
-          if (s.used > 0) refreshedSpells += s.used;
-          s.used = 0;
-        });
-      }
-      if (character.spellcasting && Array.isArray(character.spellcasting.preparedSlots)) {
-        character.spellcasting.preparedSlots.forEach(s => {
-          if (s.used > 0) refreshedSpells += s.used;
-          s.used = 0;
-        });
-      }
-      if (character.spellcasting && Array.isArray(character.spellcasting.divineSlots)) {
-        character.spellcasting.divineSlots.forEach(s => {
-          if (s.used > 0) refreshedSpells += s.used;
-          s.used = 0;
-          s.domainUsed = 0;
-        });
-      }
-      if (character.spellcasting) {
-        character.spellcasting.turnUndeadUsed = 0;
-        character.spellcasting.domainPowerUses = {};
-      }
-
-      // 3. Tome of Battle Maneuvers: Kusanan & kullanilan manevralarin tekrar kusanilmasi / tazelenmesi
-      let refreshedManeuvers = 0;
-      let reReadiedCount = 0;
-      if (!character.tomeOfBattle) character.tomeOfBattle = {};
-      if (!Array.isArray(character.tomeOfBattle.readiedManeuvers)) character.tomeOfBattle.readiedManeuvers = [];
-      if (!Array.isArray(character.tomeOfBattle.maneuversKnown)) {
-        character.tomeOfBattle.maneuversKnown = character.tomeOfBattle.readiedManeuvers.map(m => ({ ...m }));
-      }
-
-      // A. Kusanan ve kullanilmis (expended) tum manevralar tekrar kusanilir / hazir hale getirilir
-      character.tomeOfBattle.readiedManeuvers.forEach(m => {
-        if (m.expended) {
-          m.expended = false;
-          refreshedManeuvers++;
-        }
-      });
-
-      // B. Bos kalan hazir yuvalar varsa, bilinen manevralar havuzundan (maneuversKnown) otomatik tekrar kusanilir
-      const initInfo = typeof getInitiatorInfo === 'function' ? getInitiatorInfo() : { maxReadied: 3 };
-      const maxReadied = initInfo.maxReadied || 3;
-      if (character.tomeOfBattle.readiedManeuvers.length < maxReadied && Array.isArray(character.tomeOfBattle.maneuversKnown)) {
-        const readiedNames = character.tomeOfBattle.readiedManeuvers.map(m => (m.name || '').toLowerCase().trim());
-        for (const known of character.tomeOfBattle.maneuversKnown) {
-          if (character.tomeOfBattle.readiedManeuvers.length >= maxReadied) break;
-          const kName = (known.name || '').toLowerCase().trim();
-          if (!readiedNames.includes(kName)) {
-            character.tomeOfBattle.readiedManeuvers.push({ ...known, expended: false });
-            readiedNames.push(kName);
-            reReadiedCount++;
-          }
-        }
-      }
-
-      // C. Aktif modifiyerlerde gecici acik kalan manevralar sifirlanir
-      if (Array.isArray(character.activeModifiers)) {
-        character.activeModifiers.forEach(mod => {
-          if (mod.source === 'Maneuver' && mod.active) {
-            mod.active = false;
-          }
-        });
-      }
-
-      // 4. Durations, Conditions & Debuffs
-      let removedConditions = 0;
-      if (Array.isArray(character.buffs)) {
-        character.buffs.forEach(b => {
-          if (!b.active) return;
-          const isFatigued = b.id === "debuff_fatigued" || (b.name || "").toLowerCase().includes("fatigued");
-          const isExhausted = b.id === "debuff_exhausted" || (b.name || "").toLowerCase().includes("exhausted");
-          const isSickened = b.id === "debuff_sickened" || (b.name || "").toLowerCase().includes("sickened");
-          const isShaken = b.id === "debuff_shaken" || (b.name || "").toLowerCase().includes("shaken");
-          if (isFatigued || isExhausted || isSickened || isShaken) {
-            b.active = false;
-            removedConditions++;
-            return;
-          }
-
-          const dur = (b.durationText || b.duration || "").toLowerCase();
-          const isPermanent = dur.includes("permanent") || b.permanent;
-          const is24h = dur.includes("24 hour") || dur.includes("24 hr");
-          if (!isPermanent && !is24h) {
-            b.active = false;
-            b._tempHpSynced = false;
-            if (b.initialDuration) {
-              b.duration = b.initialDuration;
-              b.durationText = b.initialDuration;
-            }
-            if (b.initialRounds !== undefined && b.initialRounds !== null) {
-              b.rounds = b.initialRounds;
-            }
-          }
-        });
-      }
-
-      // 5. Periodic HP effects reset
-      if (Array.isArray(character.periodicHpEffects)) {
-        character.periodicHpEffects = [];
-      }
-
-      // 6. Reset daily charges on magic items
-      let refreshedDailyItems = 0;
-      const resetCharges = (item) => {
-        if (item && item.dailyCharges && typeof item.dailyCharges.max === "number") {
-          item.dailyCharges.current = item.dailyCharges.max;
-          refreshedDailyItems++;
-        }
-      };
-      if (character.bodySlots) {
-        Object.values(character.bodySlots).forEach(resetCharges);
-      }
-      if (Array.isArray(character.gearPool)) {
-        character.gearPool.forEach(resetCharges);
-      }
-      if (Array.isArray(character.consumables)) {
-        character.consumables.forEach(resetCharges);
-      }
-
-      // 7. Reset daily feats / abilities (e.g. Draconic Shield 1/d, Draconic Core 1h/day)
-      let refreshedDailyFeats = 0;
-      const resetFeatCharges = (f) => {
-        if (!f) return;
-        if (f.used) { f.used = false; refreshedDailyFeats++; }
-        if (f.expended) { f.expended = false; refreshedDailyFeats++; }
-        if (f.dailyCharges && typeof f.dailyCharges.max === "number") {
-          f.dailyCharges.current = f.dailyCharges.max;
-          refreshedDailyFeats++;
-        }
-      };
-      if (Array.isArray(character.feats)) character.feats.forEach(resetFeatCharges);
-      if (Array.isArray(character.specialAbilities)) character.specialAbilities.forEach(resetFeatCharges);
-
       try { updateRoundDisplays(); } catch (e) { console.warn('updateRoundDisplays error in rest:', e); }
       try { saveStateToStorage(true); } catch (e) { console.warn('saveStateToStorage error in rest:', e); }
-      try { if (typeof renderManeuvers === "function") renderManeuvers(); } catch (e) { console.warn('renderManeuvers error in rest:', e); }
-      try { if (typeof renderSpellSlots === "function") renderSpellSlots(); } catch (e) { console.warn('renderSpellSlots error in rest:', e); }
+      try { if (typeof renderManeuvers === 'function') renderManeuvers(); } catch (e) { console.warn('renderManeuvers error in rest:', e); }
+      try { if (typeof renderSpellSlots === 'function') renderSpellSlots(); } catch (e) { console.warn('renderSpellSlots error in rest:', e); }
       try { renderAll(); } catch (e) { console.warn('renderAll error in rest:', e); }
 
+      const maxHp = Number(out.maxHp ?? character.hp?.max) || (Number(character.level || 1) * 10) || 10;
+      const curHp = Number(out.currentHp ?? character.hp?.current) || maxHp;
+      const hpGain = Number(out.hpGain) || 0;
+      const refreshedDailyItems = Number(out.refreshedDailyItems) || 0;
+      const refreshedDailyFeats = Number(out.refreshedDailyFeats) || 0;
+      const removedConditions = Number(out.removedConditions) || 0;
+      const hasRingOfSustenance = Boolean(out.hasRingOfSustenance);
+
       const details = [];
-      details.push(isFullHeal ? `Full HP (${character.hp.current}/${maxHp})` : `+${hpGain} HP Natural Healing (${character.hp.current}/${maxHp})`);
+      details.push(isFullHeal ? `Full HP (${curHp}/${maxHp})` : `+${hpGain} HP Natural Healing (${curHp}/${maxHp})`);
       const totalReadyLong = (character.tomeOfBattle?.readiedManeuvers || []).filter(m => !m.expended).length;
       details.push(`All spells and ${totalReadyLong} maneuvers readied`);
       if (refreshedDailyItems > 0 || refreshedDailyFeats > 0) details.push(`${refreshedDailyItems + refreshedDailyFeats} Daily Item/Feat charges refreshed`);
@@ -1547,7 +1349,7 @@
         icon: "☀️",
         title: `Long Rest Complete (${isFullHeal ? "Full Heal" : "D&D 3.5e RAW"})`,
         breakdown: details.join(" • "),
-        total: `${character.hp.current}/${maxHp} HP`
+        total: `${curHp}/${maxHp} HP`
       }, { stack: false, autoDismiss: true, dismissMs: 5000 });
     }
 
@@ -1587,275 +1389,30 @@
 
     function executeShortRest(minutes = 5) {
       if (!character) return;
-      if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
-        CharStore.dispatch({
-          type: 'hud/shortRest',
-          payload: { minutes: Number(minutes) || 5 },
-          meta: { label: `Short Rest (${minutes} min)` }
-        });
-        const out = (typeof CharStore.getLastOutcome === 'function' ? CharStore.getLastOutcome() : null) || {};
-        if (typeof renderActionEconomy === 'function') {
-          renderActionEconomy();
-        }
-        if (typeof renderHUD === 'function') {
-          try { renderHUD(); } catch (e) { console.warn('renderHUD immediate short rest error:', e); }
-        }
-        try { updateRoundDisplays(); } catch (e) { console.warn('updateRoundDisplays error in short rest:', e); }
-        try { saveStateToStorage(true); } catch (e) { console.warn('saveStateToStorage error in short rest:', e); }
-        try { if (typeof renderManeuvers === 'function') renderManeuvers(); } catch (e) { console.warn('renderManeuvers error in short rest:', e); }
-        try { renderAll(); } catch (e) { console.warn('renderAll error in short rest:', e); }
-
-        const refreshedManeuvers = Number(out.refreshedManeuvers) || 0;
-        const reReadiedCount = Number(out.reReadiedCount) || 0;
-        const nonlethalHealed = Number(out.nonlethalHealed) || 0;
-        const downgradedExhausted = Boolean(out.downgradedExhausted);
-        const expiredBuffs = Number(out.expiredBuffs) || 0;
-        const expiredBuffNames = Array.isArray(out.expiredBuffNames) ? out.expiredBuffNames : [];
-
-        const summaryParts = [];
-        const totalReadyShort = (character.tomeOfBattle?.readiedManeuvers || []).filter(m => !m.expended).length;
-        if (refreshedManeuvers > 0 || reReadiedCount > 0) {
-          summaryParts.push(`${refreshedManeuvers + reReadiedCount} maneuvers recovered / readied`);
-        } else {
-          summaryParts.push(`${totalReadyShort} maneuvers ready for combat`);
-        }
-        if (nonlethalHealed > 0) summaryParts.push(`Healed ${nonlethalHealed} Nonlethal HP`);
-        if (downgradedExhausted) summaryParts.push("Exhausted downgraded to Fatigued");
-        if (expiredBuffs > 0) {
-          const namesLabel = expiredBuffNames.length <= 3 ? ` (${expiredBuffNames.join(", ")})` : "";
-          summaryParts.push(`${expiredBuffs} buff(s) expired${namesLabel}`);
-        }
-        summaryParts.push("Encounter round reset");
-
-        showDiceTopToast({
-          icon: "☕",
-          title: `${minutes >= 60 ? "1-Hour Short Rest" : "5-Min Quick Recovery"} Complete`,
-          breakdown: summaryParts.join(" • "),
-          total: "Maneuvers Ready"
-        }, { stack: false, autoDismiss: true, dismissMs: 4500 });
-        return;
-      }
-
-      // 1. Tome of Battle Maneuvers: Kusanan & kullanilan manevralarin tekrar kusanilmasi / tazelenmesi
-      let refreshedManeuvers = 0;
-      let reReadiedCount = 0;
-      if (!character.tomeOfBattle) character.tomeOfBattle = {};
-      if (!Array.isArray(character.tomeOfBattle.readiedManeuvers)) character.tomeOfBattle.readiedManeuvers = [];
-      if (!Array.isArray(character.tomeOfBattle.maneuversKnown)) {
-        character.tomeOfBattle.maneuversKnown = character.tomeOfBattle.readiedManeuvers.map(m => ({ ...m }));
-      }
-
-      // A. Kusanan ve kullanilmis (expended) tum manevralar tekrar kusanilir / hazir hale getirilir
-      character.tomeOfBattle.readiedManeuvers.forEach(m => {
-        if (m.expended) {
-          m.expended = false;
-          refreshedManeuvers++;
-        }
+      syncInventoryStore();
+      CharStore.dispatch({
+        type: 'hud/shortRest',
+        payload: { minutes: Number(minutes) || 5 },
+        meta: { label: `Short Rest (${minutes} min)` }
       });
-
-      // B. Bos kalan hazir yuvalar varsa, bilinen manevralar havuzundan (maneuversKnown) otomatik tekrar kusanilir
-      const initInfo = typeof getInitiatorInfo === 'function' ? getInitiatorInfo() : { maxReadied: 3 };
-      const maxReadied = initInfo.maxReadied || 3;
-      if (character.tomeOfBattle.readiedManeuvers.length < maxReadied && Array.isArray(character.tomeOfBattle.maneuversKnown)) {
-        const readiedNames = character.tomeOfBattle.readiedManeuvers.map(m => (m.name || '').toLowerCase().trim());
-        for (const known of character.tomeOfBattle.maneuversKnown) {
-          if (character.tomeOfBattle.readiedManeuvers.length >= maxReadied) break;
-          const kName = (known.name || '').toLowerCase().trim();
-          if (!readiedNames.includes(kName)) {
-            character.tomeOfBattle.readiedManeuvers.push({ ...known, expended: false });
-            readiedNames.push(kName);
-            reReadiedCount++;
-          }
-        }
+      const out = (typeof CharStore.getLastOutcome === 'function' ? CharStore.getLastOutcome() : null) || {};
+      if (typeof renderActionEconomy === 'function') {
+        renderActionEconomy();
       }
-
-      // C. Aktif modifiyerlerde gecici acik kalan manevralar sifirlanir
-      if (Array.isArray(character.activeModifiers)) {
-        character.activeModifiers.forEach(mod => {
-          if (mod.source === 'Maneuver' && mod.active) {
-            mod.active = false;
-          }
-        });
-      }
-
-      // 2. Encounter round reset
-      character.encounterRound = 1;
-      if (character.tactical) character.tactical.round = 1;
-      if (typeof resetActionEconomy === 'function') resetActionEconomy();
-
-      // 3. Expire or decrement combat / round-based / minute-based buffs
-      let expiredBuffs = 0;
-      const expiredBuffNames = [];
-      const restRounds = Math.max(1, Number(minutes) || 5) * 10;
-      if (Array.isArray(character.buffs)) {
-        character.buffs.forEach(b => {
-          if (!b || !b.active) return;
-
-          // Skip persistent condition debuffs (handled in section 4 or Long Rest)
-          const bIdLower = String(b.id || "").toLowerCase();
-          const bNameLower = String(b.name || "").toLowerCase();
-          if (
-            bIdLower === "debuff_exhausted" || bIdLower === "debuff_fatigued" ||
-            bIdLower === "debuff_sickened" || bIdLower === "debuff_shaken" ||
-            bNameLower === "exhausted" || bNameLower === "fatigued"
-          ) {
-            return;
-          }
-
-          const durRaw = String(b.durationText || b.duration || "").trim();
-          const durLower = durRaw.toLowerCase();
-          const isPermanent = Boolean(b.permanent) || durLower.includes("permanent") || durLower.includes("condition");
-          const is24h = durLower.includes("24 hour") || durLower.includes("24 hr");
-          if (isPermanent || is24h) return;
-
-          if (!b.initialDuration && durRaw) b.initialDuration = durRaw;
-          if ((b.initialRounds === undefined || b.initialRounds === null) && b.rounds !== null && b.rounds !== undefined) {
-            b.initialRounds = Number(b.rounds);
-          }
-
-          const bCl = Math.max(1, Number(b.casterLevel || b.cl || character.level) || 1);
-          let shouldExpire = false;
-
-          // A. Explicit round counter (`b.rounds`)
-          if (b.rounds !== null && b.rounds !== undefined && Number(b.rounds) > 0) {
-            const remRds = Number(b.rounds) - restRounds;
-            if (remRds <= 0) {
-              shouldExpire = true;
-            } else {
-              b.rounds = remRds;
-              if (/\b(?:min|mins|minute|minutes)\b/i.test(durLower)) {
-                const remMins = Math.max(1, Math.ceil(remRds / 10));
-                b.duration = `${remMins} min`;
-                b.durationText = `${remMins} min`;
-              }
-            }
-          } else {
-            // B. Parse duration string (`duration` / `durationText`)
-            let parsedMins = null;
-            let parsedRounds = null;
-
-            if (/\b1\s*round\/level/i.test(durLower)) {
-              parsedRounds = bCl;
-            } else {
-              const rdMatch = durLower.match(/(\d+)\s*(?:rd|rds|round|rounds)\b/i);
-              if (rdMatch) parsedRounds = parseInt(rdMatch[1], 10);
-            }
-
-            if (parsedRounds !== null) {
-              if (parsedRounds <= restRounds) {
-                shouldExpire = true;
-              } else {
-                const remRds = parsedRounds - restRounds;
-                b.rounds = remRds;
-                b.duration = `${remRds} rounds`;
-                b.durationText = `${remRds} rounds`;
-              }
-            } else {
-              if (/10\s*min\.?\/level/i.test(durLower)) {
-                parsedMins = bCl * 10;
-              } else if (/\b1\s*min\.?\/level/i.test(durLower)) {
-                parsedMins = bCl;
-              } else if (/\b1\s*(?:hr|hour)\.?\/level/i.test(durLower)) {
-                parsedMins = bCl * 60;
-              } else {
-                const minMatch = durLower.match(/(\d+)\s*(?:min|mins|minute|minutes)\b/i);
-                if (minMatch) {
-                  parsedMins = parseInt(minMatch[1], 10);
-                } else {
-                  const hrMatch = durLower.match(/(\d+)\s*(?:hr|hrs|hour|hours)\b/i);
-                  if (hrMatch) parsedMins = parseInt(hrMatch[1], 10) * 60;
-                }
-              }
-
-              if (parsedMins !== null && parsedMins > 0) {
-                if (parsedMins <= minutes) {
-                  shouldExpire = true;
-                } else {
-                  const remMins = parsedMins - minutes;
-                  if (remMins >= 60 && remMins % 60 === 0 && /\b(?:hr|hrs|hour|hours)\b/i.test(durLower)) {
-                    const remHrs = remMins / 60;
-                    b.duration = `${remHrs} hr`;
-                    b.durationText = `${remHrs} hr`;
-                  } else {
-                    b.duration = `${remMins} min`;
-                    b.durationText = `${remMins} min`;
-                    if (remMins <= 15) b.rounds = remMins * 10;
-                  }
-                }
-              }
-            }
-          }
-
-          if (shouldExpire) {
-            b.active = false;
-            expiredBuffs++;
-            if (b.name) expiredBuffNames.push(b.name);
-            if (b.initialDuration) {
-              b.duration = b.initialDuration;
-              b.durationText = b.initialDuration;
-            }
-            if (b.initialRounds !== undefined && b.initialRounds !== null) {
-              b.rounds = b.initialRounds;
-            }
-            const tempHp = typeof getBuffGrantedTempHp === 'function' ? getBuffGrantedTempHp(b) : (Number(b.grantedTempHp) || 0);
-            if (tempHp > 0 && character.hp) {
-              character.hp.temp = Math.max(0, (Number(character.hp.temp) || 0) - tempHp);
-              b._tempHpSynced = false;
-              if (typeof markPlayerHpChanged === 'function') markPlayerHpChanged();
-            }
-          }
-        });
-      }
-
-      // 4. Nonlethal and Condition healing for 1 Hour rest (60 min)
-      let nonlethalHealed = 0;
-      let downgradedExhausted = false;
-      if (minutes >= 60) {
-        if (!character.hp) {
-          const maxH = (Number(character.level || 1) * 10) || 10;
-          character.hp = { current: maxH, max: maxH, temp: 0, nonlethal: 0 };
-        }
-        const charLvl = Number(character.level) || 1;
-        const currentNonlethal = Number(character.hp.nonlethal) || 0;
-        if (currentNonlethal > 0) {
-          nonlethalHealed = Math.min(currentNonlethal, charLvl);
-          character.hp.nonlethal = currentNonlethal - nonlethalHealed;
-          character.hp._lastPlayerChangeTs = Math.max(Date.now(), (Number(character.hp?._lastDmUpdateTs) || 0) + 100);
-          character.lastModified = new Date().toISOString();
-        }
-
-        // Exhausted -> Fatigued
-        if (Array.isArray(character.buffs)) {
-          const exhaustedBuff = character.buffs.find(b => b.active && (b.id === "debuff_exhausted" || (b.name || "").toLowerCase().includes("exhausted")));
-          if (exhaustedBuff) {
-            exhaustedBuff.active = false;
-            downgradedExhausted = true;
-            const fatiguedBuff = character.buffs.find(b => b.id === "debuff_fatigued" || (b.name || "").toLowerCase().includes("fatigued"));
-            if (fatiguedBuff) fatiguedBuff.active = true;
-          }
-        }
-      }
-
-      if (typeof RuleEngine !== 'undefined' && typeof RuleEngine.recalculateCharacter === 'function') {
-        try {
-          RuleEngine.recalculateCharacter(character, (typeof masterDb !== 'undefined' ? masterDb : []), {
-            combatExpertise: character.tactical?.combatExpertise || 0,
-            fightingDefensively: character.tactical?.fightingDefensively || false,
-            totalDefense: character.tactical?.totalDefense || false,
-            charge: character.tactical?.charge || false
-          });
-        } catch (e) { console.warn('RuleEngine.recalculateCharacter error in short rest:', e); }
-      }
-
       if (typeof renderHUD === 'function') {
         try { renderHUD(); } catch (e) { console.warn('renderHUD immediate short rest error:', e); }
       }
-
-      character.lastModified = new Date().toISOString();
       try { updateRoundDisplays(); } catch (e) { console.warn('updateRoundDisplays error in short rest:', e); }
       try { saveStateToStorage(true); } catch (e) { console.warn('saveStateToStorage error in short rest:', e); }
       try { if (typeof renderManeuvers === 'function') renderManeuvers(); } catch (e) { console.warn('renderManeuvers error in short rest:', e); }
       try { renderAll(); } catch (e) { console.warn('renderAll error in short rest:', e); }
+
+      const refreshedManeuvers = Number(out.refreshedManeuvers) || 0;
+      const reReadiedCount = Number(out.reReadiedCount) || 0;
+      const nonlethalHealed = Number(out.nonlethalHealed) || 0;
+      const downgradedExhausted = Boolean(out.downgradedExhausted);
+      const expiredBuffs = Number(out.expiredBuffs) || 0;
+      const expiredBuffNames = Array.isArray(out.expiredBuffNames) ? out.expiredBuffNames : [];
 
       const summaryParts = [];
       const totalReadyShort = (character.tomeOfBattle?.readiedManeuvers || []).filter(m => !m.expended).length;
@@ -5311,100 +4868,42 @@
 
     function equipItemToCompanion(itemId, slotKey) {
       if (!character || !character.companion) return;
-      if (window.CharStore && typeof window.CharStore.dispatch === 'function') {
-        syncInventoryStore();
-        window.CharStore.dispatch({
-          type: 'inventory/equipCompanionItem',
-          payload: { poolItemId: itemId, slotKey },
-          meta: { label: `Equip Companion Item (${slotKey})` }
-        });
-        const out = window.CharStore.getLastOutcome();
-        if (!out || out.status === 'not_found') {
-          showToast('Item not found in Gear Pool.', 'error', { wrap: true });
-          return;
-        }
-        closeCompanionEquipModal();
-        renderAll();
-        showDiceTopToast({
-          icon: '🐾',
-          title: 'Companion Item Equipped',
-          breakdown: `${out.itemName} equipped in ${slotKey}.`,
-          total: 'Equipped'
-        });
-        return;
-      }
-      if (!Array.isArray(character.gearPool)) character.gearPool = [];
-
-      const itemIdx = character.gearPool.findIndex(i => i && String(i.id) === String(itemId));
-      if (itemIdx === -1) {
+      syncInventoryStore();
+      window.CharStore.dispatch({
+        type: 'inventory/equipCompanionItem',
+        payload: { poolItemId: itemId, slotKey },
+        meta: { label: `Equip Companion Item (${slotKey})` }
+      });
+      const out = window.CharStore.getLastOutcome();
+      if (!out || out.status === 'not_found') {
         showToast('Item not found in Gear Pool.', 'error', { wrap: true });
         return;
       }
-
-      const item = character.gearPool[itemIdx];
-      if (!character.companion.gear) character.companion.gear = {};
-
-      // Return existing item in this slot to Gear Pool if any
-      const existing = character.companion.gear[slotKey];
-      if (existing && existing.name && existing.name !== '-') {
-        character.gearPool.push(existing);
-      }
-
-      // If quantity > 1, decrement; otherwise remove
-      if (item.qty && item.qty > 1) {
-        item.qty -= 1;
-        character.companion.gear[slotKey] = { ...item, qty: 1 };
-      } else {
-        character.companion.gear[slotKey] = item;
-        character.gearPool.splice(itemIdx, 1);
-      }
-
-      saveStateToStorage(true);
       closeCompanionEquipModal();
       renderAll();
-
       showDiceTopToast({
         icon: '🐾',
         title: 'Companion Item Equipped',
-        breakdown: `${item.name} equipped in ${slotKey}.`,
+        breakdown: `${out.itemName} equipped in ${slotKey}.`,
         total: 'Equipped'
       });
     }
 
     function unequipCompanionSlot(slotKey) {
       if (!character || !character.companion || !character.companion.gear) return;
-      if (window.CharStore && typeof window.CharStore.dispatch === 'function') {
-        syncInventoryStore();
-        window.CharStore.dispatch({
-          type: 'inventory/unequipCompanionSlot',
-          payload: { slotKey },
-          meta: { label: `Unequip Companion Slot (${slotKey})` }
-        });
-        const out = window.CharStore.getLastOutcome();
-        if (!out || out.status === 'empty_slot') return;
-        renderAll();
-        showDiceTopToast({
-          icon: '🐾',
-          title: 'Companion Item Unequipped',
-          breakdown: `${out.itemName} returned to Gear Pool.`,
-          total: 'Unequipped'
-        });
-        return;
-      }
-      const item = character.companion.gear[slotKey];
-      if (!item || !item.name || item.name === '-') return;
-
-      if (!Array.isArray(character.gearPool)) character.gearPool = [];
-      character.gearPool.push(item);
-      delete character.companion.gear[slotKey];
-
-      saveStateToStorage(true);
+      syncInventoryStore();
+      window.CharStore.dispatch({
+        type: 'inventory/unequipCompanionSlot',
+        payload: { slotKey },
+        meta: { label: `Unequip Companion Slot (${slotKey})` }
+      });
+      const out = window.CharStore.getLastOutcome();
+      if (!out || out.status === 'empty_slot') return;
       renderAll();
-
       showDiceTopToast({
         icon: '🐾',
         title: 'Companion Item Unequipped',
-        breakdown: `${item.name} returned to Gear Pool.`,
+        breakdown: `${out.itemName} returned to Gear Pool.`,
         total: 'Unequipped'
       });
     }
@@ -5436,17 +4935,12 @@
             return;
           }
         }
-        if (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.dispatch === 'function' && window.CharStore.getDoc()) {
-          window.CharStore.dispatch({
-            type: 'inventory/toggleSlotActive',
-            payload: { slotKey },
-            meta: { label: `Toggle Body Slot (${slotKey})` }
-          });
-          renderAll();
-          return;
-        }
-        character.bodySlots[slotKey].active = !character.bodySlots[slotKey].active;
-        saveStateToStorage();
+        syncInventoryStore();
+        window.CharStore.dispatch({
+          type: 'inventory/toggleSlotActive',
+          payload: { slotKey },
+          meta: { label: `Toggle Body Slot (${slotKey})` }
+        });
         renderAll();
       }
     }
@@ -5455,105 +4949,20 @@
       const slot = character.bodySlots?.[slotKey];
       if (!slot || slot.name === '-') return;
       const slotName = slot.name;
-      if (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.dispatch === 'function' && window.CharStore.getDoc()) {
-        window.CharStore.dispatch({
-          type: 'inventory/unequipSlot',
-          payload: { slotKey },
-          meta: { label: `Unequip ${slotName}` }
-        });
-        try { renderWeaponSetsUI(); } catch (e) { reportError('char_inventory:unequipSlot', e); }
-        try { recalculateOffense(); } catch (e) { reportError('char_inventory:unequipSlot', e); }
-        renderAll();
-        if (!silent && typeof showDiceTopToast === 'function') {
-          const slotDef = BODY_SLOT_DEFS.find(d => d.key === slotKey);
-          showDiceTopToast({
-            title: 'Item Unequipped',
-            breakdown: `"${slotName}" (${slotDef?.trName || slotKey}) unequipped and returned to backpack.`,
-            icon: '📦'
-          });
-        }
-        return;
-      }
-
-      if (!Array.isArray(character.gearPool)) character.gearPool = [];
-
-      // Find in pool and set isEquipped = false, or add to gearPool if not present
-      const cleanSlotName = (slot.name || '').toLowerCase().trim();
-      const cleanRefName = (slot.masterDbName || '').toLowerCase().trim();
-      const poolItem = character.gearPool.find(p => {
-        const pClean = (p.name || '').toLowerCase().trim();
-        return pClean === cleanSlotName || (cleanRefName && pClean === cleanRefName);
+      syncInventoryStore();
+      window.CharStore.dispatch({
+        type: 'inventory/unequipSlot',
+        payload: { slotKey },
+        meta: { label: `Unequip ${slotName}` }
       });
-      if (poolItem) {
-        poolItem.isEquipped = false;
-      } else {
-        const slotDef = BODY_SLOT_DEFS.find(d => d.key === slotKey);
-        const inferredCat = slot.category || (slotDef && slotDef.allowed && slotDef.allowed[0]) || 'Other';
-        character.gearPool.push({
-          id: Date.now() + Math.floor(Math.random() * 1000),
-          name: slot.name,
-          masterDbName: slot.masterDbName || slot.name,
-          category: inferredCat,
-          desc: slot.desc || '',
-          qty: 1,
-          weight: Number(slot.weight) || 0,
-          cost: Number(slot.cost) || 0,
-          isBelt: false,
-          isEquipped: false,
-          acBonus: slot.acBonus,
-          bonusType: slot.bonusType,
-          strBonus: slot.strBonus,
-          dexBonus: slot.dexBonus,
-          conBonus: slot.conBonus,
-          intBonus: slot.intBonus,
-          wisBonus: slot.wisBonus,
-          chaBonus: slot.chaBonus,
-          maxDex: slot.maxDex,
-          checkPenalty: slot.checkPenalty,
-          spellFailure: slot.spellFailure,
-          baseItemId: slot.baseItemId,
-          material: slot.material,
-          enhancementBonus: slot.enhancementBonus,
-          enhancements: Array.isArray(slot.enhancements) ? slot.enhancements.slice() : undefined,
-          dice: slot.dice,
-          critMin: slot.critMin,
-          critRange: slot.critRange,
-          critMult: slot.critMult,
-          handedness: slot.handedness,
-          dmgType: slot.dmgType,
-          damageParts: Array.isArray(slot.damageParts) ? JSON.parse(JSON.stringify(slot.damageParts)) : undefined,
-          modifiers: Array.isArray(slot.modifiers) ? JSON.parse(JSON.stringify(slot.modifiers)) : undefined,
-          ruleFlags: slot.ruleFlags ? JSON.parse(JSON.stringify(slot.ruleFlags)) : undefined,
-          tacticalBadges: Array.isArray(slot.tacticalBadges) ? JSON.parse(JSON.stringify(slot.tacticalBadges)) : undefined
-        });
-      }
-
-      character.bodySlots[slotKey] = { name: '-', active: false, weight: 0, cost: 0, desc: '' };
-
-      // Reverse sync: update tactical weapon sets when unequipped from inventory
-      ensureWeaponSetsData();
-      if (slotKey === 'mainHand') {
-        if (character.tactical?.weaponSets?.set1) {
-          character.tactical.weaponSets.set1.mainWeapon = 'None';
-        }
-        character.activeWeapon = 'None';
-      } else if (slotKey === 'offHand') {
-        if (character.tactical?.weaponSets?.set2) {
-          character.tactical.weaponSets.set2.mainWeapon = 'None';
-        }
-        character.activeOffHand = 'None';
-      }
       try { renderWeaponSetsUI(); } catch (e) { reportError('char_inventory:unequipSlot', e); }
       try { recalculateOffense(); } catch (e) { reportError('char_inventory:unequipSlot', e); }
-
-      saveStateToStorage(true);
       renderAll();
-
       if (!silent && typeof showDiceTopToast === 'function') {
         const slotDef = BODY_SLOT_DEFS.find(d => d.key === slotKey);
         showDiceTopToast({
           title: 'Item Unequipped',
-          breakdown: `"${slot.name}" (${slotDef?.trName || slotKey}) unequipped and returned to backpack.`,
+          breakdown: `"${slotName}" (${slotDef?.trName || slotKey}) unequipped and returned to backpack.`,
           icon: '📦'
         });
       }
@@ -6083,78 +5492,34 @@
     }
 
     function togglePoolBelt(itemId) {
-      if (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.dispatch === 'function' && window.CharStore.getDoc()) {
-        window.CharStore.dispatch({
-          type: 'inventory/togglePoolBelt',
-          payload: { itemId },
-          meta: { label: 'Toggle Belt Quick-Access' }
-        });
-        if (typeof syncAutomatedCombatPins === 'function') syncAutomatedCombatPins(character);
-        renderAll();
-        return;
-      }
-      const item = (character.gearPool || []).find(p => p && String(p.id) === String(itemId));
-      if (item) {
-        item.isBelt = !item.isBelt;
-        if (typeof syncAutomatedCombatPins === 'function') syncAutomatedCombatPins(character);
-        saveStateToStorage(true);
-        renderAll();
-      }
+      syncInventoryStore();
+      window.CharStore.dispatch({
+        type: 'inventory/togglePoolBelt',
+        payload: { itemId },
+        meta: { label: 'Toggle Belt Quick-Access' }
+      });
+      if (typeof syncAutomatedCombatPins === 'function') syncAutomatedCombatPins(character);
+      renderAll();
     }
 
     function adjustPoolQty(itemId, delta) {
-      if (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.dispatch === 'function' && window.CharStore.getDoc()) {
-        window.CharStore.dispatch({
-          type: 'inventory/adjustPoolQty',
-          payload: { itemId, delta },
-          meta: { label: `Adjust Item Qty (${delta > 0 ? '+' : ''}${delta})` }
-        });
-        renderAll();
-        return;
-      }
-      const item = (character.gearPool || []).find(p => p && String(p.id) === String(itemId));
-      if (item) {
-        const currentQty = (item.qty !== undefined && item.qty !== null) ? Number(item.qty) : 1;
-        item.qty = Math.max(0, currentQty + delta);
-        const cleanName = (item.name || '').toLowerCase().trim();
-        if ((item.category === 'Consumable' || item.isBelt) && !isWeaponWithoutMagicOrHealing(item)) {
-          if (!Array.isArray(character.consumables)) character.consumables = [];
-          const match = character.consumables.find(c => (c.name || '').toLowerCase().trim() === cleanName);
-          if (match) {
-            match.qty = item.qty;
-          } else {
-            character.consumables.push({
-              name: item.name,
-              qty: item.qty,
-              effect: item.desc || 'Consumable effect'
-            });
-          }
-        }
-        saveStateToStorage(true);
-        renderAll();
-      }
+      syncInventoryStore();
+      window.CharStore.dispatch({
+        type: 'inventory/adjustPoolQty',
+        payload: { itemId, delta },
+        meta: { label: `Adjust Item Qty (${delta > 0 ? '+' : ''}${delta})` }
+      });
+      renderAll();
     }
 
     async function deletePoolItem(itemId) {
       if ((await DnDUI.confirm('Are you sure you want to delete this item from your inventory pool?', { tone: 'danger' }))) {
-        if (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.dispatch === 'function' && window.CharStore.getDoc()) {
-          window.CharStore.dispatch({
-            type: 'inventory/deletePoolItem',
-            payload: { itemId },
-            meta: { label: 'Delete Inventory Item' }
-          });
-          renderAll();
-          return;
-        }
-        const item = (character.gearPool || []).find(p => p && String(p.id) === String(itemId));
-        if (item) {
-          const cleanName = (item.name || '').toLowerCase().trim();
-          if (Array.isArray(character.consumables)) {
-            character.consumables = character.consumables.filter(c => (c.name || '').toLowerCase().trim() !== cleanName);
-          }
-        }
-        character.gearPool = (character.gearPool || []).filter(p => !p || String(p.id) !== String(itemId));
-        saveStateToStorage(true);
+        syncInventoryStore();
+        window.CharStore.dispatch({
+          type: 'inventory/deletePoolItem',
+          payload: { itemId },
+          meta: { label: 'Delete Inventory Item' }
+        });
         renderAll();
       }
     }
@@ -6177,7 +5542,6 @@
         return;
       }
 
-      const hasStore = Boolean(typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.dispatch === 'function' && window.CharStore.getDoc());
       const hasOversized = RuleEngine.hasOversizedWeaponFeat(character);
       let targetSlotKey = targetSlotKeyOverride || null;
       let twoHandWarningMsg = null;
@@ -6196,7 +5560,6 @@
           const mhIsTwoHand = mh && mh.name && mh.name !== '-' && RuleEngine.isTwoHandedWeapon(mh) && !mhIsDouble;
           if (mhIsTwoHand && !hasOversized) {
             const prevMhName = mh.name;
-            if (!hasStore) unequipSlot('mainHand', true);
             twoHandWarningMsg = `Unequipped two-handed "${prevMhName}" to equip "${item.name}" in off-hand.`;
           }
           // If Main Hand is empty and the parent Double Weapon is in the pool unequipped, auto-equip parent in Main Hand
@@ -6224,7 +5587,6 @@
           const ohIsOffHead = oh && oh.name && oh.name !== '-' && RuleEngine.isOffHandWeaponHead && RuleEngine.isOffHandWeaponHead(oh);
           if (oh && oh.name && oh.name !== '-' && !hasOversized && !(isDouble && ohIsOffHead)) {
             const prevOhName = oh.name;
-            if (!hasStore) unequipSlot('offHand', true);
             twoHandWarningMsg = `Unequipped off-hand "${prevOhName}" because "${item.name}" is a two-handed weapon.`;
           }
         } else if (!targetSlotKey) {
@@ -6237,7 +5599,6 @@
             const mhIsTwoHand = RuleEngine.isTwoHandedWeapon(mh) && !mhIsDouble;
             if (mhIsTwoHand && !hasOversized) {
               const prevMhName = mh.name;
-              if (!hasStore) unequipSlot('mainHand', true);
               targetSlotKey = 'mainHand';
               twoHandWarningMsg = `Unequipped two-handed "${prevMhName}" and equipped "${item.name}" in main hand.`;
             } else {
@@ -6249,7 +5610,6 @@
           const mhIsTwoHand = mh && mh.name && mh.name !== '-' && RuleEngine.isTwoHandedWeapon(mh) && !mhIsDouble;
           if (mhIsTwoHand && !hasOversized) {
             const prevMhName = mh.name;
-            if (!hasStore) unequipSlot('mainHand', true);
             twoHandWarningMsg = `Unequipped two-handed "${prevMhName}" to equip "${item.name}" in off-hand.`;
           }
         }
@@ -6259,7 +5619,6 @@
 
         if (mhIsTwoHand && !hasOversized) {
           const prevMhName = mh.name;
-          if (!hasStore) unequipSlot('mainHand', true);
           twoHandWarningMsg = `Unequipped two-handed "${prevMhName}" and equipped shield "${item.name}".`;
         }
         targetSlotKey = targetSlotKeyOverride || 'offHand';
@@ -6310,230 +5669,23 @@
         }
       }
 
-      if (hasStore) {
-        window.CharStore.dispatch({
-          type: 'inventory/equipPoolItem',
-          payload: { itemId, forceSlotKey: targetSlotKey },
-          meta: { label: `Equip ${item.name || 'Item'}` }
-        });
-        const out = window.CharStore.getLastOutcome ? window.CharStore.getLastOutcome() : null;
-        if (out && out.twoHandWarningMsg && !twoHandWarningMsg) {
-          twoHandWarningMsg = out.twoHandWarningMsg;
-        }
-        try { renderWeaponSetsUI(); } catch (e) { reportError('char_inventory:equipPoolItem', e); }
-        try { recalculateOffense(); } catch (e) { reportError('char_inventory:equipPoolItem', e); }
-        renderAll();
-        const slotDef = BODY_SLOT_DEFS.find(d => d.key === targetSlotKey);
-        const slotLabel = slotDef?.trName || targetSlotKey;
-        let toastIcon = '⚔️';
-        let toastTitle = 'Weapon Equipped';
-        if (item.category === 'Shield') {
-          toastIcon = '🛡️';
-          toastTitle = 'Shield Equipped';
-        } else if (item.category === 'Armor') {
-          toastIcon = '🛡️';
-          toastTitle = 'Armor Equipped';
-        } else if (item.category !== 'Weapon') {
-          toastIcon = '✨';
-          toastTitle = 'Item Equipped';
-        }
-        const breakdownText = twoHandWarningMsg
-          ? twoHandWarningMsg
-          : `Equipped "${item.name}" (${slotLabel}). Defense and stats updated.`;
-        if (typeof showDiceTopToast === 'function') {
-          showDiceTopToast({
-            title: toastTitle,
-            breakdown: breakdownText,
-            icon: toastIcon
-          });
-        } else {
-          alert(breakdownText);
-        }
-        return;
-      }
-
-      // Unequip currently equipped item in that slot if any
-      const existing = character.bodySlots?.[targetSlotKey];
-      if (existing && existing.name && existing.name !== '-') {
-        unequipSlot(targetSlotKey, true);
-      }
-
-      // Equip new item with full properties
-      hydrateGearItemStats(item);
-      character.bodySlots[targetSlotKey] = {
-        baseItemId: item.baseItemId,
-        name: item.name,
-        masterDbName: item.masterDbName || item.name,
-        category: item.category,
-        active: true,
-        weight: item.weight || 0,
-        cost: item.cost || 0,
-        desc: item.desc || item.description || '',
-        benefit: item.benefit || '',
-        description: item.description || item.desc || '',
-        scope: item.scope || '',
-        targetSkill: item.targetSkill || '',
-        material: item.material,
-        enhancementBonus: item.enhancementBonus,
-        enhancements: Array.isArray(item.enhancements) ? item.enhancements.slice() : undefined,
-        dice: item.dice || (Array.isArray(item.damageParts) && item.damageParts[0] ? item.damageParts[0].dice : undefined),
-        critMin: item.critMin || item.critRange || item.weaponMeta?.critMin,
-        critRange: item.critRange || item.critMin || item.weaponMeta?.critMin,
-        critMult: item.critMult || item.weaponMeta?.critMult,
-        handedness: item.handedness || item.weaponMeta?.handedness,
-        dmgType: item.dmgType || (Array.isArray(item.damageParts) && item.damageParts[0] ? item.damageParts[0].type : undefined),
-        isLight: item.isLight || (typeof RuleEngine !== 'undefined' && RuleEngine.isLightWeapon && RuleEngine.isLightWeapon(item)),
-        parent: item.parent,
-        damageParts: Array.isArray(item.damageParts) ? JSON.parse(JSON.stringify(item.damageParts)) : undefined,
-        modifiers: Array.isArray(item.modifiers) ? JSON.parse(JSON.stringify(item.modifiers)) : undefined,
-        acBonus: item.acBonus,
-        bonusType: item.bonusType,
-        strBonus: item.strBonus,
-        dexBonus: item.dexBonus,
-        conBonus: item.conBonus,
-        intBonus: item.intBonus,
-        wisBonus: item.wisBonus,
-        chaBonus: item.chaBonus,
-        skillBonus: item.skillBonus,
-        skillBonuses: item.skillBonuses ? JSON.parse(JSON.stringify(item.skillBonuses)) : undefined,
-        fortBonus: item.fortBonus,
-        refBonus: item.refBonus,
-        willBonus: item.willBonus,
-        speedBonus: item.speedBonus,
-        clBonus: item.clBonus,
-        maxDex: item.maxDex,
-        checkPenalty: item.checkPenalty,
-        spellFailure: item.spellFailure,
-        ruleFlags: item.ruleFlags ? JSON.parse(JSON.stringify(item.ruleFlags)) : undefined,
-        tacticalBadges: Array.isArray(item.tacticalBadges) ? JSON.parse(JSON.stringify(item.tacticalBadges)) : undefined,
-        combatModifiers: item.combatModifiers ? JSON.parse(JSON.stringify(item.combatModifiers)) : undefined
-      };
-      item.isEquipped = true;
-
-      // Sync character.weapons and activeWeapon if equipping a weapon
-      if (item.category === 'Weapon') {
-        if (!Array.isArray(character.weapons)) character.weapons = [];
-        const isTwoHand = RuleEngine.isTwoHandedWeapon(item);
-        const existingWep = character.weapons.find(w => (w.name || '').toLowerCase() === item.name.toLowerCase());
-        const targetGrip = isTwoHand ? '2-Hand' : (targetSlotKey === 'offHand' ? 'Off-Hand' : '1-Hand');
-
-        if (existingWep) {
-          existingWep.grip = targetGrip;
-          hydrateGearItemStats(existingWep);
-          if (item.dice) existingWep.dice = item.dice;
-          if (item.critMin || item.critRange) existingWep.critMin = item.critMin || item.critRange;
-          if (item.critMult) existingWep.critMult = item.critMult;
-          if (item.dmgType) existingWep.dmgType = item.dmgType;
-          if (item.handedness) existingWep.handedness = item.handedness;
-          if (item.enhancementBonus !== undefined) existingWep.enhancementBonus = item.enhancementBonus;
-          if (item.isLight !== undefined) existingWep.isLight = item.isLight;
-          if (Array.isArray(item.damageParts) && item.damageParts.length > 0) existingWep.damageParts = JSON.parse(JSON.stringify(item.damageParts));
-          if (Array.isArray(item.modifiers) && item.modifiers.length > 0) existingWep.modifiers = JSON.parse(JSON.stringify(item.modifiers));
-        } else {
-          character.weapons.push({
-            baseItemId: item.baseItemId,
-            name: item.name,
-            grip: targetGrip,
-            handedness: item.handedness || item.weaponMeta?.handedness,
-            dice: item.dice || (Array.isArray(item.damageParts) && item.damageParts[0] ? item.damageParts[0].dice : (isTwoHand ? '2d6' : '1d6')),
-            critMin: item.critMin || item.critRange || item.weaponMeta?.critMin || (item.name.toLowerCase().includes('jovar') || item.name.toLowerCase().includes('rapier') ? 18 : 20),
-            critMult: item.critMult || item.weaponMeta?.critMult || 2,
-            enhancementBonus: item.enhancementBonus || 0,
-            dmgType: item.dmgType || (Array.isArray(item.damageParts) && item.damageParts[0] ? item.damageParts[0].type : 'Slashing'),
-            bonusType: item.bonusType || 'Enhancement',
-            isLight: item.isLight || (typeof RuleEngine !== 'undefined' && RuleEngine.isLightWeapon && RuleEngine.isLightWeapon(item)),
-            damageParts: Array.isArray(item.damageParts) ? JSON.parse(JSON.stringify(item.damageParts)) : undefined,
-            modifiers: Array.isArray(item.modifiers) ? JSON.parse(JSON.stringify(item.modifiers)) : undefined,
-            ruleFlags: item.ruleFlags ? JSON.parse(JSON.stringify(item.ruleFlags)) : undefined,
-            tags: isTwoHand ? ['two-handed'] : (targetSlotKey === 'offHand' ? ['off-hand'] : [])
-          });
-        }
-        if (targetSlotKey === 'mainHand') {
-          character.activeWeapon = item.name;
-        }
-      }
-
-      // Reverse sync: update tactical weapon sets when equipped from inventory/gearPool
-      ensureWeaponSetsData();
-      if (targetSlotKey === 'mainHand') {
-        const isDoubleWep = typeof RuleEngine !== 'undefined' && RuleEngine.isDoubleWeapon && RuleEngine.isDoubleWeapon(item);
-        const isTwoHandWep = typeof RuleEngine !== 'undefined' && RuleEngine.isTwoHandedWeapon && RuleEngine.isTwoHandedWeapon(item);
-        if (character.tactical?.weaponSets?.set1) {
-          character.tactical.weaponSets.set1.mainWeapon = item.name;
-          character.tactical.weaponSets.set1.grip = (isDoubleWep || isTwoHandWep) ? '2-Hand' : '1-Hand';
-        }
-        const gripSelectEl = document.getElementById('active-grip-select');
-        if (gripSelectEl) gripSelectEl.value = (isDoubleWep || isTwoHandWep) ? '2-Hand' : '1-Hand';
-        if (isDoubleWep && character.tactical?.weaponSets?.set2) {
-          character.tactical.weaponSets.set2.mainWeapon = item.name;
-          character.tactical.weaponSets.set2.grip = 'Off-Hand';
-          character.tactical.weaponSets.activeSets = [1];
-          character.tactical.weaponSets.activeSet = 1;
-          character.activeOffHand = 'None';
-        } else if (!isTwoHandWep && character.bodySlots?.offHand?.name && character.bodySlots.offHand.name !== '-') {
-          // If an off-hand item is already equipped when equipping a 1-hand main weapon, keep both active
-          if (character.tactical?.weaponSets) {
-            character.tactical.weaponSets.set2.mainWeapon = character.bodySlots.offHand.name;
-            character.tactical.weaponSets.set2.grip = 'Off-Hand';
-            character.tactical.weaponSets.activeSets = [1, 2];
-            character.tactical.weaponSets.activeSet = 'both';
-          }
-          character.activeOffHand = character.bodySlots.offHand.name;
-        }
-        character.activeWeapon = item.name;
-      } else if (targetSlotKey === 'offHand') {
-        if (character.tactical?.weaponSets?.set1) {
-          character.tactical.weaponSets.set1.grip = '1-Hand';
-        }
-        const gripSelectEl = document.getElementById('active-grip-select');
-        if (gripSelectEl) gripSelectEl.value = '1-Hand';
-        if (character.tactical?.weaponSets?.set2) {
-          character.tactical.weaponSets.set2.mainWeapon = item.name;
-          character.tactical.weaponSets.set2.grip = 'Off-Hand';
-        }
-        if (character.tactical?.weaponSets) {
-          if (!Array.isArray(character.tactical.weaponSets.activeSets)) {
-            character.tactical.weaponSets.activeSets = [1];
-          }
-          if (!character.tactical.weaponSets.activeSets.includes(1) && character.bodySlots?.mainHand?.name && character.bodySlots.mainHand.name !== '-') {
-            character.tactical.weaponSets.activeSets.unshift(1);
-          }
-          if (!character.tactical.weaponSets.activeSets.includes(2)) {
-            character.tactical.weaponSets.activeSets.push(2);
-          }
-          character.tactical.weaponSets.activeSet = (character.tactical.weaponSets.activeSets.includes(1) && character.tactical.weaponSets.activeSets.includes(2)) ? 'both' : 2;
-        }
-        character.activeOffHand = item.name;
-        if (item.category === 'Weapon') {
-          if (!Array.isArray(character.activeModifiers)) character.activeModifiers = [];
-          let twfMod = character.activeModifiers.find(m => m && m.name && (m.name.includes('TWF') || m.name.includes('Two-Weapon')));
-          if (!twfMod) {
-            twfMod = {
-              name: 'Two-Weapon Fighting (TWF)',
-              source: 'Combat',
-              bonusAtk: 0,
-              dice: '',
-              type: 'TWF',
-              active: true,
-              notes: 'Extra Off-Hand Attack (RAW TWF)'
-            };
-            character.activeModifiers.push(twfMod);
-          } else {
-            twfMod.active = true;
-          }
-        }
+      syncInventoryStore();
+      window.CharStore.dispatch({
+        type: 'inventory/equipPoolItem',
+        payload: { itemId, forceSlotKey: targetSlotKey },
+        meta: { label: `Equip ${item.name || 'Item'}` }
+      });
+      const out = window.CharStore.getLastOutcome ? window.CharStore.getLastOutcome() : null;
+      if (out && out.twoHandWarningMsg && !twoHandWarningMsg) {
+        twoHandWarningMsg = out.twoHandWarningMsg;
       }
       try { renderWeaponSetsUI(); } catch (e) { reportError('char_inventory:equipPoolItem', e); }
       try { recalculateOffense(); } catch (e) { reportError('char_inventory:equipPoolItem', e); }
-
-      saveStateToStorage(true);
       renderAll();
-
       const slotDef = BODY_SLOT_DEFS.find(d => d.key === targetSlotKey);
       const slotLabel = slotDef?.trName || targetSlotKey;
       let toastIcon = '⚔️';
       let toastTitle = 'Weapon Equipped';
-
       if (item.category === 'Shield') {
         toastIcon = '🛡️';
         toastTitle = 'Shield Equipped';
@@ -6544,19 +5696,15 @@
         toastIcon = '✨';
         toastTitle = 'Item Equipped';
       }
-
       const breakdownText = twoHandWarningMsg
         ? twoHandWarningMsg
         : `Equipped "${item.name}" (${slotLabel}). Defense and stats updated.`;
-
       if (typeof showDiceTopToast === 'function') {
         showDiceTopToast({
           title: toastTitle,
           breakdown: breakdownText,
           icon: toastIcon
         });
-      } else {
-        alert(breakdownText);
       }
     }
 
@@ -7697,92 +6845,8 @@
     // ====================================================
     function addV2ItemToCharacterGearPool(v2Item) {
       if (!v2Item || !character) return;
-      if (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.dispatch === 'function' && window.CharStore.getDoc()) {
-        window.CharStore.dispatch({ type: 'inventory/addPoolItem', payload: { item: v2Item } });
-        renderAll();
-        if (typeof showDiceTopToast === 'function') {
-          showDiceTopToast({
-            icon: '⚒️',
-            title: 'Item Added to Inventory',
-            breakdown: `"${v2Item.name}" added to your Inventory.`,
-            total: `${Number(v2Item.priceGp ?? v2Item.cost ?? 0).toLocaleString('tr-TR')} gp`
-          });
-        }
-        return;
-      }
-      if (!Array.isArray(character.gearPool)) character.gearPool = [];
-      const cat = typeof mapEntryToGearCategory === 'function' ? mapEntryToGearCategory(v2Item) : (v2Item.type || 'Other');
-      const isBeltItem = (v2Item.slot || '').toLowerCase().includes('belt') || cat === 'Consumable';
-      const primaryPart = Array.isArray(v2Item.damageParts) && v2Item.damageParts[0] ? v2Item.damageParts[0] : null;
-      const armorAcMod = Array.isArray(v2Item.modifiers) ? v2Item.modifiers.find(m => m && (m.target === 'ac.armor' || m.target === 'ac.shield')) : null;
-      const newEntry = {
-        id: v2Item.id || ('item_' + Date.now()),
-        baseItemId: v2Item.baseItemId || v2Item.id || null,
-        name: v2Item.name,
-        masterDbName: v2Item.name,
-        category: cat,
-        slot: v2Item.slot && v2Item.slot !== 'None' ? v2Item.slot : cat,
-        qty: 1,
-        weight: Number(v2Item.weightLb ?? v2Item.weight) || 0,
-        cost: Number(v2Item.priceGp ?? v2Item.cost) || 0,
-        desc: cleanPoolItemDescription(v2Item.benefit || v2Item.description || ''),
-        material: v2Item.material || null,
-        enhancementBonus: Number(v2Item.enhancementBonus) || 0,
-        enhancements: Array.isArray(v2Item.enhancements) ? v2Item.enhancements : [],
-        modifiers: Array.isArray(v2Item.modifiers) ? JSON.parse(JSON.stringify(v2Item.modifiers)) : [],
-        damageParts: Array.isArray(v2Item.damageParts) ? JSON.parse(JSON.stringify(v2Item.damageParts)) : [],
-        modes: Array.isArray(v2Item.modes) ? JSON.parse(JSON.stringify(v2Item.modes)) : [],
-        weaponMeta: v2Item.weaponMeta ? JSON.parse(JSON.stringify(v2Item.weaponMeta)) : null,
-        armorMeta: v2Item.armorMeta ? JSON.parse(JSON.stringify(v2Item.armorMeta)) : null,
-        ruleFlags: v2Item.ruleFlags ? JSON.parse(JSON.stringify(v2Item.ruleFlags)) : {},
-        tacticalBadges: Array.isArray(v2Item.tacticalBadges) ? JSON.parse(JSON.stringify(v2Item.tacticalBadges)) : [],
-        dice: (primaryPart && primaryPart.dice) || v2Item.dice,
-        dmgType: (primaryPart && primaryPart.type) || v2Item.dmgType,
-        critMin: Number(v2Item.critRange || v2Item.critMin || v2Item.weaponMeta?.critMin) || undefined,
-        critRange: Number(v2Item.critRange || v2Item.critMin || v2Item.weaponMeta?.critMin) || undefined,
-        critMult: Number(v2Item.critMult || v2Item.weaponMeta?.critMult) || undefined,
-        handedness: v2Item.handedness || v2Item.weaponMeta?.handedness,
-        acBonus: v2Item.acBonus !== undefined ? v2Item.acBonus : (armorAcMod ? Number(armorAcMod.value) : undefined),
-        maxDex: v2Item.maxDex !== undefined ? v2Item.maxDex : v2Item.armorMeta?.maxDex,
-        checkPenalty: v2Item.checkPenalty !== undefined ? v2Item.checkPenalty : v2Item.armorMeta?.acp,
-        spellFailure: v2Item.spellFailure !== undefined ? v2Item.spellFailure : v2Item.armorMeta?.asf,
-        isBelt: isBeltItem,
-        isEquipped: false
-      };
-      character.gearPool.push(newEntry);
-
-      if (cat === 'Weapon' || v2Item.type === 'Weapon') {
-        if (!Array.isArray(character.weapons)) character.weapons = [];
-        const hasWep = character.weapons.some(w => (w.name || '').toLowerCase() === (v2Item.name || '').toLowerCase());
-        if (!hasWep) {
-          const primaryPart = Array.isArray(v2Item.damageParts) && v2Item.damageParts[0] ? v2Item.damageParts[0] : null;
-          const secondaryParts = Array.isArray(v2Item.damageParts) && v2Item.damageParts.length > 1 ? v2Item.damageParts.slice(1) : [];
-          character.weapons.push({
-            id: newEntry.id,
-            baseItemId: newEntry.baseItemId,
-            name: v2Item.name,
-            grip: (v2Item.weaponMeta?.handedness || '').includes('Two') ? '2-Hand' : '1-Hand',
-            dice: (primaryPart && primaryPart.dice) || v2Item.dice || '1d8',
-            damageParts: newEntry.damageParts,
-            modifiers: newEntry.modifiers,
-            modes: newEntry.modes,
-            weaponMeta: newEntry.weaponMeta,
-            ruleFlags: newEntry.ruleFlags,
-            tacticalBadges: newEntry.tacticalBadges,
-            critMin: Number(v2Item.weaponMeta?.critMin || v2Item.critMin) || 20,
-            rawCritMin: Number(v2Item.weaponMeta?.critMin || v2Item.critMin) || 20,
-            critMult: Number(v2Item.weaponMeta?.critMult || v2Item.critMult) || 2,
-            enhancementBonus: Number(v2Item.enhancementBonus) || 0,
-            dmgType: (primaryPart && primaryPart.type) || v2Item.dmgType || 'Slashing',
-            bonusType: 'enhancement',
-            tags: v2Item.tags || [],
-            elementalMods: secondaryParts.map(sp => ({ name: sp.source || sp.type, dice: sp.dice, type: sp.type })),
-            keen: Boolean(v2Item.ruleFlags && v2Item.ruleFlags.keen)
-          });
-        }
-      }
-
-      saveStateToStorage(true);
+      syncInventoryStore();
+      window.CharStore.dispatch({ type: 'inventory/addPoolItem', payload: { item: v2Item } });
       renderAll();
       if (typeof showDiceTopToast === 'function') {
         showDiceTopToast({
@@ -7805,213 +6869,18 @@
 
     function applyForgedItemUpdate(originalItem, targetSlotKey, forgedV2Item) {
       if (!forgedV2Item || !character) return;
-      if (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.dispatch === 'function' && window.CharStore.getDoc()) {
-        const oldName = String(originalItem?.name || '').trim();
-        const newName = String(forgedV2Item.name || oldName || 'Forged Item').trim();
-        const newCost = Number(forgedV2Item.priceGp ?? forgedV2Item.cost) || 0;
-        window.CharStore.dispatch({
-          type: 'inventory/reforgeItem',
-          payload: {
-            targetContext: { originalItem, targetSlotKey },
-            itemData: forgedV2Item
-          }
-        });
-        renderAll();
-        if (typeof showDiceTopToast === 'function') {
-          showDiceTopToast({
-            icon: '⚒️',
-            title: 'Item Reforged',
-            breakdown: oldName && oldName !== newName
-              ? `"${oldName}" reforged into "${newName}".`
-              : `"${newName}" properties updated in Item Forge.`,
-            total: `${newCost.toLocaleString('en-US')} gp`
-          });
-        }
-        return;
-      }
-      if (!Array.isArray(character.gearPool)) character.gearPool = [];
-
+      syncInventoryStore();
       const oldName = String(originalItem?.name || '').trim();
-      const oldNameLower = oldName.toLowerCase();
       const newName = String(forgedV2Item.name || oldName || 'Forged Item').trim();
-      const cat = typeof mapEntryToGearCategory === 'function'
-        ? mapEntryToGearCategory(forgedV2Item)
-        : (forgedV2Item.type || originalItem?.category || 'Weapon');
-      const newWeight = Number(forgedV2Item.weightLb ?? forgedV2Item.weight) || 0;
       const newCost = Number(forgedV2Item.priceGp ?? forgedV2Item.cost) || 0;
-      const newDesc = cleanPoolItemDescription(forgedV2Item.benefit || forgedV2Item.description || originalItem?.desc || '');
-      const primaryPart = Array.isArray(forgedV2Item.damageParts) && forgedV2Item.damageParts[0] ? forgedV2Item.damageParts[0] : null;
-      const secondaryParts = Array.isArray(forgedV2Item.damageParts) && forgedV2Item.damageParts.length > 1 ? forgedV2Item.damageParts.slice(1) : [];
-
-      const clonedModifiers = Array.isArray(forgedV2Item.modifiers) ? JSON.parse(JSON.stringify(forgedV2Item.modifiers)) : [];
-      const clonedDamageParts = Array.isArray(forgedV2Item.damageParts) ? JSON.parse(JSON.stringify(forgedV2Item.damageParts)) : [];
-      const clonedModes = Array.isArray(forgedV2Item.modes) ? JSON.parse(JSON.stringify(forgedV2Item.modes)) : [];
-      const clonedWeaponMeta = forgedV2Item.weaponMeta ? JSON.parse(JSON.stringify(forgedV2Item.weaponMeta)) : null;
-      const clonedArmorMeta = forgedV2Item.armorMeta ? JSON.parse(JSON.stringify(forgedV2Item.armorMeta)) : null;
-      const clonedRuleFlags = forgedV2Item.ruleFlags ? JSON.parse(JSON.stringify(forgedV2Item.ruleFlags)) : {};
-      const clonedTacticalBadges = Array.isArray(forgedV2Item.tacticalBadges) ? JSON.parse(JSON.stringify(forgedV2Item.tacticalBadges)) : [];
-
-      const armorAcMod = clonedModifiers.find(m => m && (m.target === 'ac.armor' || m.target === 'ac.shield'));
-      const computedAcBonus = armorAcMod ? (Number(armorAcMod.value) || 0) : (forgedV2Item.acBonus ?? originalItem?.acBonus);
-
-      // 1. Update matching item in character.gearPool
-      const poolItem = character.gearPool.find(p => {
-        if (!p) return false;
-        if (originalItem?.id !== undefined && p.id === originalItem.id) return true;
-        return oldNameLower && String(p.name || '').toLowerCase().trim() === oldNameLower;
+      window.CharStore.dispatch({
+        type: 'inventory/reforgeItem',
+        payload: {
+          targetContext: { originalItem, targetSlotKey },
+          itemData: forgedV2Item
+        }
       });
-
-      if (poolItem) {
-        poolItem.baseItemId = forgedV2Item.baseItemId || forgedV2Item.id || poolItem.baseItemId || null;
-        poolItem.name = newName;
-        poolItem.masterDbName = newName;
-        poolItem.category = cat;
-        poolItem.slot = (forgedV2Item.slot && forgedV2Item.slot !== 'None') ? forgedV2Item.slot : (poolItem.slot || cat);
-        poolItem.weight = newWeight;
-        poolItem.cost = newCost;
-        poolItem.desc = newDesc;
-        poolItem.material = forgedV2Item.material || null;
-        poolItem.enhancementBonus = Number(forgedV2Item.enhancementBonus) || 0;
-        poolItem.enhancements = Array.isArray(forgedV2Item.enhancements) ? forgedV2Item.enhancements.slice() : [];
-        poolItem.modifiers = clonedModifiers;
-        poolItem.damageParts = clonedDamageParts;
-        poolItem.modes = clonedModes;
-        poolItem.weaponMeta = clonedWeaponMeta;
-        poolItem.armorMeta = clonedArmorMeta;
-        poolItem.ruleFlags = clonedRuleFlags;
-        poolItem.tacticalBadges = clonedTacticalBadges;
-        poolItem.dice = (primaryPart && primaryPart.dice) || forgedV2Item.dice || poolItem.dice;
-        poolItem.critMin = Number(forgedV2Item.weaponMeta?.critMin || forgedV2Item.critMin) || poolItem.critMin;
-        poolItem.critMult = Number(forgedV2Item.weaponMeta?.critMult || forgedV2Item.critMult) || poolItem.critMult;
-        poolItem.dmgType = (primaryPart && primaryPart.type) || forgedV2Item.dmgType || poolItem.dmgType;
-        if (computedAcBonus !== undefined) poolItem.acBonus = computedAcBonus;
-        if (clonedArmorMeta) {
-          poolItem.maxDex = clonedArmorMeta.maxDex;
-          poolItem.checkPenalty = clonedArmorMeta.acp;
-        }
-      }
-
-      // 2. Update equipped bodySlot(s) if equipped
-      if (character.bodySlots) {
-        const slotKeysToUpdate = [];
-        if (targetSlotKey && character.bodySlots[targetSlotKey] && character.bodySlots[targetSlotKey].name !== '-') {
-          slotKeysToUpdate.push(targetSlotKey);
-        } else if (oldNameLower) {
-          Object.keys(character.bodySlots).forEach(sk => {
-            const sd = character.bodySlots[sk];
-            if (sd && sd.name && String(sd.name).toLowerCase().trim() === oldNameLower) {
-              slotKeysToUpdate.push(sk);
-            }
-          });
-        }
-
-        slotKeysToUpdate.forEach(sk => {
-          const sd = character.bodySlots[sk];
-          if (!sd) return;
-          sd.baseItemId = forgedV2Item.baseItemId || forgedV2Item.id || sd.baseItemId || null;
-          sd.name = newName;
-          sd.masterDbName = newName;
-          sd.category = cat;
-          sd.weight = newWeight;
-          sd.cost = newCost;
-          sd.desc = newDesc;
-          sd.benefit = newDesc;
-          sd.description = newDesc;
-          sd.material = forgedV2Item.material || null;
-          sd.enhancementBonus = Number(forgedV2Item.enhancementBonus) || 0;
-          sd.enhancements = Array.isArray(forgedV2Item.enhancements) ? forgedV2Item.enhancements.slice() : [];
-          sd.modifiers = JSON.parse(JSON.stringify(clonedModifiers));
-          sd.damageParts = JSON.parse(JSON.stringify(clonedDamageParts));
-          sd.modes = JSON.parse(JSON.stringify(clonedModes));
-          sd.weaponMeta = clonedWeaponMeta ? JSON.parse(JSON.stringify(clonedWeaponMeta)) : null;
-          sd.armorMeta = clonedArmorMeta ? JSON.parse(JSON.stringify(clonedArmorMeta)) : null;
-          sd.ruleFlags = JSON.parse(JSON.stringify(clonedRuleFlags));
-          sd.tacticalBadges = JSON.parse(JSON.stringify(clonedTacticalBadges));
-          sd.dice = (primaryPart && primaryPart.dice) || forgedV2Item.dice || sd.dice;
-          sd.critMin = Number(forgedV2Item.weaponMeta?.critMin || forgedV2Item.critMin) || sd.critMin;
-          sd.critMult = Number(forgedV2Item.weaponMeta?.critMult || forgedV2Item.critMult) || sd.critMult;
-          sd.dmgType = (primaryPart && primaryPart.type) || forgedV2Item.dmgType || sd.dmgType;
-          if (computedAcBonus !== undefined) sd.acBonus = computedAcBonus;
-          if (clonedArmorMeta) {
-            sd.maxDex = clonedArmorMeta.maxDex;
-            sd.checkPenalty = clonedArmorMeta.acp;
-          }
-        });
-      }
-
-      // 3. Update character.weapons and tactical weapon sets if Weapon
-      if (cat === 'Weapon' || originalItem?.category === 'Weapon') {
-        if (!Array.isArray(character.weapons)) character.weapons = [];
-        const wepIdx = character.weapons.findIndex(w => {
-          if (!w) return false;
-          if (originalItem?.id !== undefined && w.id === originalItem.id) return true;
-          return oldNameLower && String(w.name || '').toLowerCase().trim() === oldNameLower;
-        });
-
-        const updatedWepObj = {
-          id: forgedV2Item.id || originalItem?.id || ('wep_' + Date.now()),
-          baseItemId: forgedV2Item.baseItemId || forgedV2Item.id || null,
-          name: newName,
-          grip: (clonedWeaponMeta?.handedness || '').includes('Two') ? '2-Hand' : (wepIdx >= 0 ? character.weapons[wepIdx].grip : '1-Hand'),
-          dice: (primaryPart && primaryPart.dice) || forgedV2Item.dice || '1d8',
-          damageParts: JSON.parse(JSON.stringify(clonedDamageParts)),
-          modifiers: JSON.parse(JSON.stringify(clonedModifiers)),
-          modes: JSON.parse(JSON.stringify(clonedModes)),
-          weaponMeta: clonedWeaponMeta ? JSON.parse(JSON.stringify(clonedWeaponMeta)) : null,
-          ruleFlags: JSON.parse(JSON.stringify(clonedRuleFlags)),
-          tacticalBadges: JSON.parse(JSON.stringify(clonedTacticalBadges)),
-          critMin: Number(clonedWeaponMeta?.critMin || forgedV2Item.critMin) || 20,
-          rawCritMin: Number(clonedWeaponMeta?.critMin || forgedV2Item.critMin) || 20,
-          critMult: Number(clonedWeaponMeta?.critMult || forgedV2Item.critMult) || 2,
-          enhancementBonus: Number(forgedV2Item.enhancementBonus) || 0,
-          dmgType: (primaryPart && primaryPart.type) || forgedV2Item.dmgType || 'Slashing',
-          bonusType: 'enhancement',
-          tags: forgedV2Item.tags || [],
-          elementalMods: secondaryParts.map(sp => ({ name: sp.source || sp.type, dice: sp.dice, type: sp.type })),
-          keen: Boolean(clonedRuleFlags && clonedRuleFlags.keen)
-        };
-
-        if (wepIdx >= 0) {
-          character.weapons[wepIdx] = Object.assign({}, character.weapons[wepIdx], updatedWepObj);
-        } else {
-          character.weapons.push(updatedWepObj);
-        }
-
-        if (oldNameLower && String(character.activeWeapon || '').toLowerCase().trim() === oldNameLower) {
-          character.activeWeapon = newName;
-        }
-        if (oldNameLower && String(character.activeOffHand || '').toLowerCase().trim() === oldNameLower) {
-          character.activeOffHand = newName;
-        }
-        if (character.tactical?.weaponSets) {
-          const s1 = character.tactical.weaponSets.set1;
-          const s2 = character.tactical.weaponSets.set2;
-          if (s1 && oldNameLower && String(s1.mainWeapon || '').toLowerCase().trim() === oldNameLower) {
-            s1.mainWeapon = newName;
-          }
-          if (s2 && oldNameLower && String(s2.mainWeapon || '').toLowerCase().trim() === oldNameLower) {
-            s2.mainWeapon = newName;
-          }
-        }
-      }
-
-      // 4. Register assembled custom item in masterDb if modified
-      if (typeof masterDb !== 'undefined' && Array.isArray(masterDb) && (forgedV2Item.enhancementBonus > 0 || forgedV2Item.material || (forgedV2Item.enhancements && forgedV2Item.enhancements.length > 0))) {
-        const existingIdx = masterDb.findIndex(m => m && String(m.name || '').toLowerCase().trim() === newName.toLowerCase());
-        if (existingIdx >= 0) {
-          masterDb[existingIdx] = Object.assign({}, masterDb[existingIdx], forgedV2Item);
-        } else {
-          masterDb.push(forgedV2Item);
-        }
-      }
-
-      if (typeof RuleEngine !== 'undefined' && typeof RuleEngine.recalculateCharacter === 'function') {
-        RuleEngine.recalculateCharacter(character, typeof masterDb !== 'undefined' ? masterDb : []);
-      }
-
-      saveStateToStorage(true);
       renderAll();
-
       if (typeof showDiceTopToast === 'function') {
         showDiceTopToast({
           icon: '⚒️',
@@ -8237,32 +7106,10 @@
     function spendSlotCharge(slotKey, amount = 1) {
       const item = character.bodySlots?.[slotKey];
       if (!item) return;
-      if (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.dispatch === 'function' && window.CharStore.getDoc()) {
-        window.CharStore.dispatch({ type: 'inventory/adjustSlotCharge', payload: { slotKey, delta: -Math.abs(Number(amount) || 1) } });
-        const out = window.CharStore.getLastOutcome ? window.CharStore.getLastOutcome() : null;
-        if (out && out.status === 'charges_exhausted') {
-          showDiceTopToast({
-            icon: '⏳',
-            title: item.name || 'Charged Item',
-            breakdown: 'All daily charges expended! Resets on a Long Rest (☀️).',
-            total: '0 Charges'
-          });
-          return;
-        }
-        renderAll();
-        const dcNow = character.bodySlots?.[slotKey]?.dailyCharges || out?.dailyCharges;
-        if (dcNow) {
-          showDiceTopToast({
-            icon: '⚡',
-            title: item.name || 'Charge Expended',
-            breakdown: `Expended ${amount} charge(s). Remaining: ${dcNow.current}/${dcNow.max} ${dcNow.unit || 'charges'}.`,
-            total: `${dcNow.current}/${dcNow.max}`
-          });
-        }
-        return;
-      }
-      const dc = ensureItemDailyCharges(item);
-      if (!dc || dc.current <= 0) {
+      syncInventoryStore();
+      window.CharStore.dispatch({ type: 'inventory/adjustSlotCharge', payload: { slotKey, delta: -Math.abs(Number(amount) || 1) } });
+      const out = window.CharStore.getLastOutcome ? window.CharStore.getLastOutcome() : null;
+      if (out && out.status === 'charges_exhausted') {
         showDiceTopToast({
           icon: '⏳',
           title: item.name || 'Charged Item',
@@ -8271,29 +7118,23 @@
         });
         return;
       }
-      dc.current = Math.max(0, dc.current - amount);
-      saveStateToStorage(true);
       renderAll();
-      showDiceTopToast({
-        icon: '⚡',
-        title: item.name || 'Charge Expended',
-        breakdown: `Expended ${amount} charge(s). Remaining: ${dc.current}/${dc.max} ${dc.unit || 'charges'}.`,
-        total: `${dc.current}/${dc.max}`
-      });
+      const dcNow = character.bodySlots?.[slotKey]?.dailyCharges || out?.dailyCharges;
+      if (dcNow) {
+        showDiceTopToast({
+          icon: '⚡',
+          title: item.name || 'Charge Expended',
+          breakdown: `Expended ${amount} charge(s). Remaining: ${dcNow.current}/${dcNow.max} ${dcNow.unit || 'charges'}.`,
+          total: `${dcNow.current}/${dcNow.max}`
+        });
+      }
     }
 
     function restoreSlotCharge(slotKey, amount = 1) {
       const item = character.bodySlots?.[slotKey];
       if (!item) return;
-      if (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.dispatch === 'function' && window.CharStore.getDoc()) {
-        window.CharStore.dispatch({ type: 'inventory/adjustSlotCharge', payload: { slotKey, delta: Math.abs(Number(amount) || 1) } });
-        renderAll();
-        return;
-      }
-      const dc = ensureItemDailyCharges(item);
-      if (!dc || dc.current >= dc.max) return;
-      dc.current = Math.min(dc.max, dc.current + amount);
-      saveStateToStorage(true);
+      syncInventoryStore();
+      window.CharStore.dispatch({ type: 'inventory/adjustSlotCharge', payload: { slotKey, delta: Math.abs(Number(amount) || 1) } });
       renderAll();
     }
 
@@ -8931,20 +7772,10 @@
           }
         };
         let outcome = null;
-        if (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.dispatch === 'function') {
-          if (!window.CharStore.getDoc() && typeof character !== 'undefined') {
-            window.CharStore._syncExternalCharacterRef(character);
-          }
-          window.CharStore.dispatch(actionObj);
-          if (typeof window.CharStore.getLastOutcome === 'function') {
-            outcome = window.CharStore.getLastOutcome();
-          }
-        } else if (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.applyConsumableUseReducer === 'function') {
-          window.CharStore.applyConsumableUseReducer(character, actionObj);
-          if (typeof window.CharStore.getLastOutcome === 'function') {
-            outcome = window.CharStore.getLastOutcome();
-          }
-          saveStateToStorage(true);
+        syncInventoryStore();
+        window.CharStore.dispatch(actionObj);
+        if (typeof window.CharStore.getLastOutcome === 'function') {
+          outcome = window.CharStore.getLastOutcome();
         }
         renderAll();
         if (outcome) {

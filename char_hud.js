@@ -1973,14 +1973,10 @@
       verifySettingsGeminiApiKey(false);
 
       // Update House Rules Checkboxes & Skill Consolidation UI
-      const noCrit = document.getElementById('house-no-crit-confirm');
-      const manCrit = document.getElementById('house-maneuver-crit');
       const setNoCrit = document.getElementById('settings-no-crit-confirm');
       const setManCrit = document.getElementById('settings-maneuver-crit');
       if (setNoCrit) setNoCrit.checked = character?.houseRules?.noCritConfirm ?? true;
       if (setManCrit) setManCrit.checked = character?.houseRules?.maneuverCrit ?? false;
-      if (noCrit) noCrit.checked = character?.houseRules?.noCritConfirm ?? true;
-      if (manCrit) manCrit.checked = character?.houseRules?.maneuverCrit ?? false;
 
       const setCritCap = document.getElementById('setting-crit-cap-min');
       if (setCritCap) setCritCap.value = String(character?.houseRules?.critCapMin ?? 15);

@@ -6486,29 +6486,49 @@ const RuleEngine = {
     const wfWsFeatIds = ['feat-weapon-focus', 'feat-greater-weapon-focus', 'feat-weapon-specialization', 'feat-greater-weapon-specialization'];
     const charAbilityAndFeatEntries = [
       ...(Array.isArray(character.specialAbilities) ? character.specialAbilities : []),
-      ...(Array.isArray(character.feats) ? character.feats.filter(f => {
-        if (!f || typeof f !== 'object' || f.active === false) return false;
+      ...(Array.isArray(character.feats) ? character.feats.map(f => {
+        if (!f) return null;
+        if (typeof f === 'string') return this.getMasterDbEntry(f, 'Feat') || null;
+        if (typeof f !== 'object' || f.active === false) return null;
+        return f;
+      }).filter(f => {
+        if (!f) return false;
         const fid = String(f.id || '').toLowerCase();
         if (wfWsFeatIds.some(prefix => fid === prefix || fid.startsWith(`${prefix}-`))) return false;
         return !/weapon focus|weapon specialization/i.test(String(f.name || ''));
       }) : [])
     ];
-    charAbilityAndFeatEntries.forEach(entry => {
-      if (!entry || typeof entry !== 'object' || entry.active === false || !Array.isArray(entry.modifiers)) return;
-      entry.modifiers.forEach(mod => {
-        if (!mod || !mod.target) return;
-        const t = String(mod.target).toLowerCase();
-        if (!isAtkTargetMatch(t)) return;
-        const isFinessableOrLightCond = mod.condition === 'finessable_or_light' || entry.id === 'sa-swashbuckler-insightful-strike' || entry.id === 'sa-insightful-strike' || /insightful strike/i.test(String(entry.name || '') + ' ' + String(mod.source || ''));
-        if (isFinessableOrLightCond && (isRangedWep || !isLightOrFinessableForAbility || !isLightOrNoArmor || isMediumOrHeavyLoad)) return;
-        if (mod.condition && !isFinessableOrLightCond) return;
-        const rawV = evalModExpr(mod, evalCtx);
-        const v = isFinessableOrLightCond ? Math.max(0, rawV) : rawV;
-        if (v !== 0) {
-          attackBonusItems.push({ type: (mod.type || 'untyped').toLowerCase(), val: v, source: mod.source || entry.name || 'Special Ability' });
-        }
+    const collectEntryWeaponModifiers = (isTargetMatch, outItems) => {
+      charAbilityAndFeatEntries.forEach(entry => {
+        if (!entry || typeof entry !== 'object' || entry.active === false) return;
+        const entryMods = (Array.isArray(entry.modifiers) && entry.modifiers.length > 0)
+          ? entry.modifiers
+          : (this.getMasterDbEntry(entry)?.modifiers || []);
+        if (!Array.isArray(entryMods) || entryMods.length === 0) return;
+        entryMods.forEach(mod => {
+          if (!mod || !mod.target) return;
+          const t = String(mod.target).toLowerCase();
+          if (!isTargetMatch(t)) return;
+          const isFinessableOrLightCond = mod.condition === 'finessable_or_light' || entry.id === 'sa-swashbuckler-insightful-strike' || entry.id === 'sa-insightful-strike' || /insightful strike/i.test(String(entry.name || '') + ' ' + String(mod.source || ''));
+          if (isFinessableOrLightCond && (isRangedWep || !isLightOrFinessableForAbility || !isLightOrNoArmor || isMediumOrHeavyLoad)) return;
+          const toggleKey = (mod.condition && typeof mod.condition === 'object' && mod.condition.toggle) ? String(mod.condition.toggle) : '';
+          if (toggleKey) {
+            const toggleActive = options[toggleKey] !== undefined
+              ? Boolean(options[toggleKey])
+              : Boolean(character.tactical?.[toggleKey] || character.activeToggles?.[toggleKey]);
+            if (!toggleActive) return;
+          } else if (mod.condition && !isFinessableOrLightCond) {
+            return;
+          }
+          const rawV = evalModExpr(mod, evalCtx);
+          const v = isFinessableOrLightCond ? Math.max(0, rawV) : rawV;
+          if (v !== 0) {
+            outItems.push({ type: (mod.type || 'untyped').toLowerCase(), val: v, source: mod.source || entry.name || 'Special Ability' });
+          }
+        });
       });
-    });
+    };
+    collectEntryWeaponModifiers(isAtkTargetMatch, attackBonusItems);
     // Flanking (PHB p.153) and Charge (PHB p.154) grant +2 on melee attack rolls only.
     if (flanking && !isRangedWep) {
       attackBonusItems.push({ type: 'untyped', val: 2, source: 'Flanking' });
@@ -6699,24 +6719,8 @@ const RuleEngine = {
       damageBonusItems.push({ type: 'untyped', val: 2, source: 'Greater Weapon Specialization' });
     }
 
-    // Character Special Abilities & Feats V2 Damage Modifiers (e.g. Swashbuckler Insightful Strike)
-    charAbilityAndFeatEntries.forEach(entry => {
-      if (!entry || typeof entry !== 'object' || entry.active === false || !Array.isArray(entry.modifiers)) return;
-      entry.modifiers.forEach(mod => {
-        if (!mod || !mod.target) return;
-        const t = String(mod.target).toLowerCase();
-        if (!isDmgTargetMatch(t)) return;
-        const isFinessableOrLightCond = mod.condition === 'finessable_or_light' || entry.id === 'sa-swashbuckler-insightful-strike' || entry.id === 'sa-insightful-strike' || /insightful strike/i.test(String(entry.name || '') + ' ' + String(mod.source || ''));
-        if (isFinessableOrLightCond && (isRangedWep || !isLightOrFinessableForAbility || !isLightOrNoArmor || isMediumOrHeavyLoad)) return;
-        if (mod.condition && !isFinessableOrLightCond) return;
-        const srcLabel = mod.source || entry.name || 'Special Ability';
-        const rawV = evalModExpr(mod, evalCtx);
-        const v = isFinessableOrLightCond ? Math.max(0, rawV) : rawV;
-        if (v !== 0) {
-          damageBonusItems.push({ type: (mod.type || 'untyped').toLowerCase(), val: v, source: srcLabel });
-        }
-      });
-    });
+    // Character Special Abilities & Feats V2 Damage Modifiers (e.g. Swashbuckler Insightful Strike, Point Blank Shot)
+    collectEntryWeaponModifiers(isDmgTargetMatch, damageBonusItems);
 
     // External custom modifiers for damage
     customModifiers.forEach(m => {
@@ -7180,7 +7184,7 @@ const RuleEngine = {
         let applies = false;
         if (subTarget === 'all' || subTarget === 'skills' || tNorm === 'allskills') {
           applies = true;
-        } else if (isKnowledge && (subTarget === 'knowledge' || tNorm === 'allknowledge' || tNorm.includes('knowledge'))) {
+        } else if (isKnowledge && (subTarget === 'knowledge' || tNorm === 'allknowledge' || tNorm === 'knowledgeall')) {
           applies = true;
         } else if (tNorm && aliases.some(a => a && (a === tNorm || a.includes(tNorm) || tNorm.includes(a)))) {
           applies = true;
@@ -7342,7 +7346,7 @@ const RuleEngine = {
 
         let applies = false;
         if (subTarget === 'all' || subTarget === 'skills' || tNorm === 'allskills') applies = true;
-        else if (isKnowledge && (subTarget === 'knowledge' || tNorm === 'allknowledge' || tNorm.includes('knowledge'))) applies = true;
+        else if (isKnowledge && (subTarget === 'knowledge' || tNorm === 'allknowledge' || tNorm === 'knowledgeall')) applies = true;
         else if (tNorm && skillAliases.some(a => a && (a === tNorm || a.includes(tNorm) || tNorm.includes(a)))) applies = true;
 
         if (applies) {
