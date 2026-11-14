@@ -64,11 +64,10 @@
   .fs-down { color: #fb7185 !important; }
   .fs-warn { color: #fbbf24; }
 
-  /* Sections (facet accordions) */
+  /* Sections (JSON inspector & drawers) */
   .fs-facet { margin-top: 12px; }
-  .fs-facet-head { display: flex; align-items: center; gap: 8px; padding: 9px 12px; cursor: pointer; user-select: none; border-bottom: 1px solid transparent; }
+  .fs-facet-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 9px 12px; cursor: pointer; user-select: none; border-bottom: 1px solid transparent; }
   .fs-facet.open .fs-facet-head { border-bottom-color: var(--border-subtle); }
-  .fs-facet-num { width: 22px; height: 22px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; background: var(--theme-badge-bg); color: var(--theme-badge-text); border: 1px solid var(--theme-border); }
   .fs-facet-title { font-weight: 700; color: var(--text-primary); font-size: 13px; }
   .fs-facet-meta { color: var(--text-dim); font-size: 11px; margin-left: auto; display: flex; gap: 6px; align-items: center; text-align: right; }
   .fs-facet-body { padding: 10px 12px 12px; display: none; }
@@ -76,7 +75,7 @@
   .fs-chev { transition: transform .18s; color: var(--text-dim); font-size: 11px; }
   .fs-facet.open .fs-chev { transform: rotate(90deg); }
   @keyframes fsReveal { from { opacity: 0; transform: translateY(-3px); } to { opacity: 1; transform: none; } }
-  .fs-attach { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 12px; padding: 10px 12px; border: 1px dashed var(--border-default); border-radius: 14px; }
+  .fs-import-box { padding: 10px 12px; border-bottom: 1px solid var(--border-subtle); background: rgba(15, 23, 42, .85); display: flex; flex-direction: column; gap: 8px; }
 
   /* Inline summary cards */
   .fs-card { border: 1px solid var(--border-subtle); background: rgba(2, 6, 23, .6); border-radius: 10px; margin-top: 6px; }
@@ -113,7 +112,6 @@
   .fs-and { display: flex; align-items: center; gap: 6px; margin: 4px 0; font-size: 10px; font-weight: 800; color: var(--accent-amber); letter-spacing: .1em; }
   .fs-and::before, .fs-and::after { content: ""; flex: 1; height: 1px; background: var(--border-subtle); }
   .fs-or { font-size: 10px; font-weight: 800; color: var(--accent-sky); padding: 0 4px; }
-  .fs-origin { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; margin-top: 8px; padding: 6px 10px; border-radius: 9px; background: #1f1406; border: 1px solid rgba(245,158,11,.4); font-size: 11.5px; }
   .fs-ref { padding: 7px 9px; border-radius: 9px; background: #1a0f33; border: 1px solid rgba(168,85,247,.35); margin-bottom: 8px; font-size: 12px; color: var(--text-primary); }
   .fs-dmg-panel { margin-top: 10px; padding: 9px 10px; border-radius: 10px; background: #1c0a12; border: 1px solid rgba(244,63,94,.4); }
   .fs-dmg-live { margin-top: 6px; font-size: 12px; font-weight: 700; color: #fecdd3; }
@@ -161,8 +159,7 @@
   .fs-toast.warn { border-color: rgba(245,158,11,.6); }
   .fs-toast.err { border-color: rgba(244,63,94,.6); }
   .fs-dice-svg { width: 14px; height: 14px; display: inline-block; vertical-align: -2px; }
-  .fs-seg { display: inline-flex; gap: 2px; padding: 2px; border-radius: 10px; background: #0b1224; border: 1px solid var(--border-default); }
-  .fs-nest { margin: 6px 0 2px 14px; padding-left: 10px; border-left: 3px solid rgba(20,184,166,.45); }
+  .fs-origin { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; margin-bottom: 6px; padding: 7px 12px; border-radius: 10px; background: #0f172a; border: 1px solid var(--border-default); border-left: 3px solid #64748b; font-size: 11.5px; color: var(--text-secondary); }
 
   /* ===== Scratch Lego view — calm Character-Sheet slate surfaces, inputs forward ===== */
   .lego-canvas { margin-top: 12px; padding: 14px; border-radius: 14px; background: rgba(8, 14, 30, .75); border: 1px solid var(--border-subtle); }
@@ -228,7 +225,6 @@
     .c-spine { width: 8px; }
     .c-inner { padding-left: 5px; }
     .lego-lbl { white-space: normal; }
-    .fs-facet-meta { display: none; }
     .fs-scroll-x { overflow-x: auto; }
     .fs-spot-dd { position: fixed; left: 10px !important; right: 10px !important; top: 12vh; min-width: 0; max-width: 440px; margin: 0 auto; max-height: 70vh; z-index: 95; }
     .fs-live { padding: 8px 10px; }
