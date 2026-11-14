@@ -2995,7 +2995,7 @@ function runDeriveSheetTests() {
   const pwChunk = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_powers.json'), 'utf8'));
   const pwSpells = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_spells.json'), 'utf8'));
   const pwIdx = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_index.json'), 'utf8'));
-  const pwRows = pwIdx.index.filter(r => r.t === 'Power');
+  const pwRows = pwIdx.index.filter(r => r.t === 'Power' && r.f === 'srd_powers.json');
   check(
     'SRD Import Powers: the 287 XPH powers (3.5 psionics SRD, no 3.0 Psionics Handbook leftovers) live only in the lazy srd_powers.json (not eager, not opt-in); srd_spells.json keeps spells only; index rows point at the new chunk',
     pwChunk.length === 287 && pwChunk.every(p => p.type === 'Power' && p.id && p.schemaVersion === 2 && p.verification === 'cross-checked') &&
@@ -3050,6 +3050,37 @@ function runDeriveSheetTests() {
     ssAdded.length === 1 && ssDb[0].name === 'Wreath of Flames' && ssDb[0]._snapshot.chunk === 'srd_spells_splat.json' &&
     /\{ t: 'Spell', names: spellListNames \}/.test(pwStoreSrc)
   );
+
+  // Subsystems V3 lazy chunks (ToM Vestiges/Mysteries/Utterances + MoI Soulmelds + CPsi/MoI Powers) and upgraded/added classes
+  {
+    const subChunks = [
+      ['srd_powers_splat.json', 127, 'Power'],
+      ['srd_vestiges_splat.json', 32, 'Vestige'],
+      ['srd_mysteries_splat.json', 69, 'Mystery'],
+      ['srd_utterances_splat.json', 65, 'Utterance'],
+      ['srd_soulmelds_splat.json', 94, 'Soulmeld']
+    ];
+    const subChunksOk = subChunks.every(([file, count, type]) => {
+      const arr = JSON.parse(fs.readFileSync(path.join(dbDir, file), 'utf8'));
+      const meta = ssIdx.chunks[file];
+      const rows = ssIdx.index.filter(r => r.f === file);
+      return arr.length === count &&
+        arr.every(r => r.schemaVersion === 3 && r.type === type && Array.isArray(r.effects) && r.effects.length > 0) &&
+        meta && meta.eagerLoad === false && !meta.optIn && meta.count === count &&
+        rows.length === count &&
+        Comp.getLazyChunkNames().includes(file) &&
+        Comp.getChunksForTypes([type]).includes(file);
+    });
+    const subClasses = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_classes_splat.json'), 'utf8'));
+    const hasCls = id => subClasses.some(c => c.id === id) && ssIdx.index.some(r => r.id === id && r.f === 'srd_classes_splat.json');
+    const noStub = id => !subClasses.some(c => c.id === id) && !ssIdx.index.some(r => r.id === id);
+    check(
+      'Subsystems V3 packs: 5 lazy splat chunks (127 Powers, 32 Vestiges, 69 Mysteries, 65 Utterances, 94 Soulmelds) indexed & typed; Shadowcaster, Truenamer & Erudite active with legacy stubs purged',
+      subChunksOk &&
+      hasCls('cls-shadowcaster') && hasCls('cls-truenamer') && hasCls('cls-erudite') &&
+      noStub('cls-shadowcaster-not-implemented') && noStub('cls-truenamer-not-implemented')
+    );
+  }
 
   // Pickers load records by type, not by file name: every chunk holding Spell / gear rows is found through the
   // index, so a new lazy chunk (srd_spells_splat.json, srd_equipment_splat.json) shows up without code changes.

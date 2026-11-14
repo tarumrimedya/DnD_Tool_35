@@ -244,8 +244,8 @@ function main() {
               }
               continue;
             }
-            const lvl = (rec.type === 'Spell' || rec.type === 'Power' || rec.type === 'Maneuver' || rec.type === 'Stance')
-              ? rec.level
+            const lvl = (rec.type === 'Spell' || rec.type === 'Power' || rec.type === 'Maneuver' || rec.type === 'Stance' || rec.type === 'Vestige' || rec.type === 'Soulmeld' || rec.type === 'Mystery' || rec.type === 'Utterance')
+              ? (rec.level ?? rec.spell?.vestigeLvl ?? rec.spell?.maneuverLvl)
               : (rec.type === 'Monster' ? rec.cr : rec.minLevel);
             const newRow = { id: rec.id, n: rec.name, t: rec.type, c: rec.category || '', s: rec.slot || 'None', f: chunkName };
             if (lvl !== undefined && lvl !== null) newRow.l = lvl;
