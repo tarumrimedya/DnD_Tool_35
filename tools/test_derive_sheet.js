@@ -548,29 +548,29 @@ function runDeriveSheetTests() {
   CharStore.clearHistory();
 
   // --------------------------------------------------------------------------
-  // Phase R2 QA Remediation: Bilingual Turkish Consumable Parsing & Reducer + No-Op Undo Guard
+  // Phase R2 QA Remediation: Consumable Parsing & Reducer + No-Op Undo Guard (English-only names)
   // --------------------------------------------------------------------------
-  const trHealPlan = RuleEngine.parseConsumablePlan('İyileştirme İksiri (Ciddi)', '');
-  const trFirePlan = RuleEngine.parseConsumablePlan('Ateş Topu Asası', '');
-  const trCursePlan = RuleEngine.parseConsumablePlan('Lanet Kaldırma İksiri', '');
+  const trHealPlan = RuleEngine.parseConsumablePlan('Potion of Cure Serious Wounds', '');
+  const trFirePlan = RuleEngine.parseConsumablePlan('Wand of Fireball', '');
+  const trCursePlan = RuleEngine.parseConsumablePlan('Potion of Remove Curse', '');
   check(
-    'RuleEngine.parseConsumablePlan Bilingual Reader Shield: parses Turkish Ciddi İyileştirme (3d8+5), Ateş Topu Asası (5d6), and Lanet Kaldırma (cursed)',
+    'RuleEngine.parseConsumablePlan: parses Cure Serious Wounds (3d8+5), Wand of Fireball (5d6), and Remove Curse (cursed)',
     trHealPlan.isHealing === true && trHealPlan.diceCount === 3 && trHealPlan.flatBonus === 5 &&
     trFirePlan.isDamage === true && trFirePlan.formula === '5d6' &&
     trCursePlan.isCure === true && trCursePlan.cureFlags.curse === true,
     JSON.stringify({ trHealPlan, trFirePlan, trCursePlan })
   );
 
-  // Dispatch Turkish consumables via CharStore & verify No-Op Undo Guard on exhausted / missing items
+  // Dispatch consumables via CharStore & verify No-Op Undo Guard on exhausted / missing items
   CharStore.clearHistory();
   const trChar = JSON.parse(JSON.stringify(f05Raw));
   trChar.hp.current = 1;
   trChar.activeDebuffs = ['cursed'];
   trChar.consumables = [
-    { name: 'İyileştirme İksiri (Ciddi)', qty: 1, effect: '' },
-    { name: 'Ateş Topu Asası', qty: 2, effect: '' },
-    { name: 'Lanet Kaldırma İksiri', qty: 1, effect: '' },
-    { name: 'Tükenmiş İksir', qty: 0, effect: 'Heals 1d8+1 HP' }
+    { name: 'Potion of Cure Serious Wounds', qty: 1, effect: '' },
+    { name: 'Wand of Fireball', qty: 2, effect: '' },
+    { name: 'Potion of Remove Curse', qty: 1, effect: '' },
+    { name: 'Depleted Potion', qty: 0, effect: 'Heals 1d8+1 HP' }
   ];
   CharStore.replaceDoc(trChar, { skipHistory: true });
 
@@ -591,10 +591,10 @@ function runDeriveSheetTests() {
     `canUndo=${CharStore.canUndo()}, counts=${JSON.stringify(CharStore.getHistoryCounts())}`
   );
 
-  // 2. Dispatch Turkish "İyileştirme İksiri (Ciddi)" with deterministic rolls [5, 6, 7] + 5 = +23 HP (1 -> 24)
+  // 2. Dispatch "Potion of Cure Serious Wounds" with deterministic rolls [5, 6, 7] + 5 = +23 HP (1 -> 24)
   CharStore.dispatch({
     type: 'consumable/use',
-    label: 'Use İyileştirme İksiri (Ciddi)',
+    label: 'Use Potion of Cure Serious Wounds',
     payload: {
       sourceType: 'consumable',
       idOrIdx: 0,
@@ -603,7 +603,7 @@ function runDeriveSheetTests() {
   });
   const trHealOutcome = CharStore.getLastOutcome();
   check(
-    'Bilingual Consumable Dispatch: "İyileştirme İksiri (Ciddi)" heals 3d8+5 (+23 HP -> 24 HP) & records outcome on CharStore.getLastOutcome()',
+    'Consumable Dispatch: "Potion of Cure Serious Wounds" heals 3d8+5 (+23 HP -> 24 HP) & records outcome on CharStore.getLastOutcome()',
     CharStore.getSheet().hp.current === 24 &&
     trHealOutcome && trHealOutcome.status === 'healed_dice' && trHealOutcome.healTotal === 23 &&
     CharStore.getDoc().consumables[0].qty === 0 &&
@@ -611,10 +611,10 @@ function runDeriveSheetTests() {
     JSON.stringify(trHealOutcome)
   );
 
-  // 3. Dispatch Turkish "Ateş Topu Asası" with deterministic rolls [3, 4, 5, 6, 2] = 20 Fire Damage
+  // 3. Dispatch "Wand of Fireball" with deterministic rolls [3, 4, 5, 6, 2] = 20 Fire Damage
   CharStore.dispatch({
     type: 'consumable/use',
-    label: 'Use Ateş Topu Asası',
+    label: 'Use Wand of Fireball',
     payload: {
       sourceType: 'consumable',
       idOrIdx: 1,
@@ -623,16 +623,16 @@ function runDeriveSheetTests() {
   });
   const trFireOutcome = CharStore.getLastOutcome();
   check(
-    'Bilingual Consumable Dispatch: "Ateş Topu Asası" rolls 5d6 (20 Fire Damage) & decrements qty 2 -> 1',
+    'Consumable Dispatch: "Wand of Fireball" rolls 5d6 (20 Fire Damage) & decrements qty 2 -> 1',
     trFireOutcome && trFireOutcome.status === 'damage_roll' && trFireOutcome.totalDamage === 20 &&
     CharStore.getDoc().consumables[1].qty === 1,
     JSON.stringify(trFireOutcome)
   );
 
-  // 4. Dispatch Turkish "Lanet Kaldırma İksiri" -> clears 'cursed' from activeDebuffs
+  // 4. Dispatch "Potion of Remove Curse" -> clears 'cursed' from activeDebuffs
   CharStore.dispatch({
     type: 'consumable/use',
-    label: 'Use Lanet Kaldırma İksiri',
+    label: 'Use Potion of Remove Curse',
     payload: {
       sourceType: 'consumable',
       idOrIdx: 2
@@ -640,7 +640,7 @@ function runDeriveSheetTests() {
   });
   const trCurseOutcome = CharStore.getLastOutcome();
   check(
-    'Bilingual Consumable Dispatch: "Lanet Kaldırma İksiri" clears cursed debuff',
+    'Consumable Dispatch: "Potion of Remove Curse" clears cursed debuff',
     trCurseOutcome && trCurseOutcome.status === 'cured_debuffs' &&
     !CharStore.getDoc().activeDebuffs.includes('cursed') &&
     CharStore.getDoc().consumables[2].qty === 0,

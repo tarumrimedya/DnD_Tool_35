@@ -23,9 +23,9 @@
       const cleanDesc = desc.replace(/negates\s+[^.]+/gi, '').replace(/immune\s+to\s+[^.]+/gi, '').replace(/resistance\s+to\s+[^.]+/gi, '');
 
       // 2. Offense Spell (Direct Damage / Damage Dice / Touch Attacks with damage)
-      const hasDamageDice = !!spell.dice || !!spell.damageDice || /\b\d+d\d+\b.*?(damage|hasar|fire|cold|acid|electricity|sonic|force)/i.test(cleanDesc) || /(deals?|vuran|hasar\s+veren)\s+\d+d\d+/i.test(cleanDesc);
+      const hasDamageDice = !!spell.dice || !!spell.damageDice || /\b\d+d\d+\b.*?(damage|fire|cold|acid|electricity|sonic|force)/i.test(cleanDesc) || /deals?\s+\d+d\d+/i.test(cleanDesc);
       const isDirectDamageSpell = /(magic missile|scorching ray|fireball|lightning bolt|acid arrow|disintegrate|cone of cold|polar ray|flame strike|finger of death|horrid wilting|sound burst|shatter|shocking grasp|chill touch|ray of frost|searing light|produce flame|flaming sphere|ice storm|chain lightning|meteor swarm|sunbeam|sunburst|prismatic spray|implosion)/i.test(name);
-      const isTouchAttackDmg = (attackType === 'ranged_touch' || attackType === 'melee_touch') && /(damage|hasar)/i.test(cleanDesc);
+      const isTouchAttackDmg = (attackType === 'ranged_touch' || attackType === 'melee_touch') && /damage/i.test(cleanDesc);
       const isHealing = /(cure|heal|vigor|restoration)/i.test(cleanDesc);
 
       const isDirectDamage = (hasDamageDice || isDirectDamageSpell || isTouchAttackDmg) && !isHealing;
@@ -7641,7 +7641,7 @@
       const hasITWF = feats.some(f => f.includes('improved two-weapon fighting'));
       const hasGTWF = feats.some(f => f.includes('greater two-weapon fighting'));
       const hasOversized = feats.some(f => f.includes('oversized two-weapon fighting'));
-      const hasAgileShieldFighter = Boolean(character.ruleFlags?.agileShieldFighter) || feats.some(f => f.includes('agile shield fighter') || f.includes('agile shiled fighter'));
+      const hasAgileShieldFighter = Boolean(character.ruleFlags?.agileShieldFighter) || feats.some(f => f.includes('agile shield fighter'));
 
       const isOffHandShieldBash = Boolean(
         offHandWep && (
@@ -12814,7 +12814,7 @@
       const bonusMatch = rawInput.match(/(?:bonus|atk|mod)\s*[:=]\s*([+-]?\s*\d+)/i);
       const bonusVal = bonusMatch ? parseInt(bonusMatch[1].replace(/\s+/g, '')) : 0;
 
-      const zarMatch = rawInput.match(/(?:zar|dice|dmg|hasar)\s*[:=]\s*([^;,\n]+)/i);
+      const zarMatch = rawInput.match(/(?:dice|dmg)\s*[:=]\s*([^;,\n]+)/i);
       let rawDamageStr = '';
       if (zarMatch) {
         rawDamageStr = zarMatch[1]

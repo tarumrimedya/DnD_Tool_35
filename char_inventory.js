@@ -1477,7 +1477,7 @@
 
           const dur = (b.durationText || b.duration || "").toLowerCase();
           const isPermanent = dur.includes("permanent") || b.permanent;
-          const is24h = dur.includes("24 saat") || dur.includes("24 hour") || dur.includes("24 hr");
+          const is24h = dur.includes("24 hour") || dur.includes("24 hr");
           if (!isPermanent && !is24h) {
             b.active = false;
             b._tempHpSynced = false;
@@ -1705,7 +1705,7 @@
           const durRaw = String(b.durationText || b.duration || "").trim();
           const durLower = durRaw.toLowerCase();
           const isPermanent = Boolean(b.permanent) || durLower.includes("permanent") || durLower.includes("condition");
-          const is24h = durLower.includes("24 saat") || durLower.includes("24 hour") || durLower.includes("24 hr");
+          const is24h = durLower.includes("24 hour") || durLower.includes("24 hr");
           if (isPermanent || is24h) return;
 
           if (!b.initialDuration && durRaw) b.initialDuration = durRaw;
@@ -1723,7 +1723,7 @@
               shouldExpire = true;
             } else {
               b.rounds = remRds;
-              if (/\b(?:min|mins|minute|minutes|dk|dakika)\b/i.test(durLower)) {
+              if (/\b(?:min|mins|minute|minutes)\b/i.test(durLower)) {
                 const remMins = Math.max(1, Math.ceil(remRds / 10));
                 b.duration = `${remMins} min`;
                 b.durationText = `${remMins} min`;
@@ -1737,7 +1737,7 @@
             if (/\b1\s*round\/level/i.test(durLower)) {
               parsedRounds = bCl;
             } else {
-              const rdMatch = durLower.match(/(\d+)\s*(?:rd|rds|round|rounds|tur)\b/i);
+              const rdMatch = durLower.match(/(\d+)\s*(?:rd|rds|round|rounds)\b/i);
               if (rdMatch) parsedRounds = parseInt(rdMatch[1], 10);
             }
 
@@ -1758,11 +1758,11 @@
               } else if (/\b1\s*(?:hr|hour)\.?\/level/i.test(durLower)) {
                 parsedMins = bCl * 60;
               } else {
-                const minMatch = durLower.match(/(\d+)\s*(?:min|mins|minute|minutes|dk|dakika)\b/i);
+                const minMatch = durLower.match(/(\d+)\s*(?:min|mins|minute|minutes)\b/i);
                 if (minMatch) {
                   parsedMins = parseInt(minMatch[1], 10);
                 } else {
-                  const hrMatch = durLower.match(/(\d+)\s*(?:hr|hrs|hour|hours|saat)\b/i);
+                  const hrMatch = durLower.match(/(\d+)\s*(?:hr|hrs|hour|hours)\b/i);
                   if (hrMatch) parsedMins = parseInt(hrMatch[1], 10) * 60;
                 }
               }
@@ -1772,7 +1772,7 @@
                   shouldExpire = true;
                 } else {
                   const remMins = parsedMins - minutes;
-                  if (remMins >= 60 && remMins % 60 === 0 && /\b(?:hr|hrs|hour|hours|saat)\b/i.test(durLower)) {
+                  if (remMins >= 60 && remMins % 60 === 0 && /\b(?:hr|hrs|hour|hours)\b/i.test(durLower)) {
                     const remHrs = remMins / 60;
                     b.duration = `${remHrs} hr`;
                     b.durationText = `${remHrs} hr`;

@@ -3428,7 +3428,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
             isAlreadyKnownFromClass = true;
             alreadyKnownReason = 'Your character is already proficient with all Martial Weapons through class.';
           }
-        } else if (featNameNorm.includes('simpleweaponproficiency') || featNameNorm.includes('basitsilah')) {
+        } else if (featNameNorm.includes('simpleweaponproficiency')) {
           if (prof.weapons.simple) {
             isAlreadyKnownFromClass = true;
             alreadyKnownReason = 'Your character is already proficient with all Simple Weapons through class.';
@@ -6720,10 +6720,10 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
           if (str.includes('+1 stat') || str.includes('stat:')) {
             if (str.includes('str') || str.includes('strength')) return 'str';
             if (str.includes('dex') || str.includes('dexterity')) return 'dex';
-            if (str.includes('con') || str.includes('constitution') || str.includes('dayan')) return 'con';
-            if (str.includes('int') || str.includes('intelligence') || str.includes('zeka')) return 'int';
-            if (str.includes('wis') || str.includes('wisdom') || str.includes('irade')) return 'wis';
-            if (str.includes('cha') || str.includes('charisma') || str.includes('karizma')) return 'cha';
+            if (str.includes('con') || str.includes('constitution')) return 'con';
+            if (str.includes('int') || str.includes('intelligence')) return 'int';
+            if (str.includes('wis') || str.includes('wisdom')) return 'wis';
+            if (str.includes('cha') || str.includes('charisma')) return 'cha';
           }
         }
       }

@@ -1257,7 +1257,7 @@
       if (rdMatch) {
         computedRounds = parseInt(rdMatch[1], 10);
       } else {
-        const mMatch = String(durText).match(/^(\d+)\s*(?:min|mins|minute|minutes|dk)/i);
+        const mMatch = String(durText).match(/^(\d+)\s*(?:min|mins|minute|minutes)/i);
         if (mMatch) {
           const mins = parseInt(mMatch[1], 10);
           if (mins > 0 && mins <= 15) computedRounds = mins * 10;

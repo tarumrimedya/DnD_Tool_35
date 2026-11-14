@@ -770,7 +770,7 @@
     if (typeof item.dailyCharges === 'number' && item.dailyCharges > 0) {
       item.dailyCharges = { current: item.dailyCharges, max: item.dailyCharges, unit: 'charges', recharge: 'long_rest' };
     } else if (!item.dailyCharges) {
-      const m = combinedDesc.match(/(\d+)\s*\/\s*(?:day|gun)|gunde\s*(\d+)/i);
+      const m = combinedDesc.match(/(\d+)\s*\/\s*day/i);
       if (m) {
         const max = parseInt(m[1] || m[2], 10);
         if (max > 0) item.dailyCharges = { current: max, max, unit: 'charges', recharge: 'long_rest' };
@@ -844,7 +844,7 @@
           doc.buffs.forEach(b => {
             if (!b || !b.active) return;
             const bName = fold(b.name);
-            if (bName.includes('sick') || bName.includes('nauseat') || bName.includes('blind') || bName.includes('deaf') || bName.includes('disease') || bName.includes('poison') || bName.includes('fatigue') || bName.includes('exhaust') || bName.includes('daze') || bName.includes('stun') || bName.includes('confus') || bName.includes('kor') || bName.includes('sagir') || bName.includes('zehir') || bName.includes('hastalik') || bName.includes('yorgun')) {
+            if (bName.includes('sick') || bName.includes('nauseat') || bName.includes('blind') || bName.includes('deaf') || bName.includes('disease') || bName.includes('poison') || bName.includes('fatigue') || bName.includes('exhaust') || bName.includes('daze') || bName.includes('stun') || bName.includes('confus')) {
               b.active = false;
               b.durationText = 'Cured (Heal)';
               healCured.push(b.name);
@@ -915,8 +915,8 @@
             const bNotes = fold(b.notes || b.summary || '');
             const requiresFullRestoration = bNotes.includes('restoration gerektirir') || bNotes.includes('requires restoration') || b.ruleFlags?.requiresRestoration === true;
             const isDrain = bName.includes('drain') || bName.includes('negative level') || bNotes.includes('negative level') || requiresFullRestoration;
-            const isExhaust = bName.includes('exhaust') || bName.includes('bitkin');
-            const isFatigue = bName.includes('fatigue') || bName.includes('yorgun');
+            const isExhaust = bName.includes('exhaust');
+            const isFatigue = bName.includes('fatigue');
 
             if (cf.lesserRestoration) {
               if (isDrain) return;
@@ -952,10 +952,10 @@
             const nextDebuffs = [];
             doc.activeDebuffs.forEach(d => {
               const dFold = fold(d);
-              if (dFold.includes('exhaust') || dFold.includes('bitkin')) {
+              if (dFold.includes('exhaust')) {
                 nextDebuffs.push('Fatigued');
                 if (!curedDebuffs.includes('Exhausted -> Fatigued')) curedDebuffs.push('Exhausted -> Fatigued');
-              } else if (dFold.includes('fatigue') || dFold.includes('yorgun')) {
+              } else if (dFold.includes('fatigue')) {
                 if (!curedDebuffs.includes('Fatigued')) curedDebuffs.push('Fatigued');
               } else {
                 nextDebuffs.push(d);
@@ -964,7 +964,7 @@
             doc.activeDebuffs = nextDebuffs;
           } else if (cf.fullRestoration) {
             const beforeLen = doc.activeDebuffs.length;
-            doc.activeDebuffs = doc.activeDebuffs.filter(d => !/drain|negative\s*level|exhaust|bitkin|fatigue|yorgun/i.test(fold(d)));
+            doc.activeDebuffs = doc.activeDebuffs.filter(d => !/drain|negative\s*level|exhaust|fatigue/i.test(fold(d)));
             if (doc.activeDebuffs.length < beforeLen && curedDebuffs.length === 0) curedDebuffs.push('Restored');
           }
         }
@@ -975,7 +975,7 @@
           doc.buffs.forEach(b => {
             if (!b || !b.active) return;
             const bName = fold(b.name);
-            if (bName.includes('curse') || bName.includes('lanet')) {
+            if (bName.includes('curse')) {
               b.active = false;
               b.durationText = 'Cured (Remove Curse)';
               curedDebuffs.push(b.name);
@@ -984,7 +984,7 @@
         }
         if (Array.isArray(doc.activeDebuffs)) {
           const beforeLen = doc.activeDebuffs.length;
-          doc.activeDebuffs = doc.activeDebuffs.filter(d => !/curse|lanet/i.test(fold(d)));
+          doc.activeDebuffs = doc.activeDebuffs.filter(d => !/curse/i.test(fold(d)));
           if (doc.activeDebuffs.length < beforeLen) curedDebuffs.push('Cursed');
         }
       }
@@ -994,7 +994,7 @@
           doc.buffs.forEach(b => {
             if (!b || !b.active) return;
             const bName = fold(b.name);
-            if (bName.includes('disease') || bName.includes('hastalik') || bName.includes('sickened') || bName.includes('nauseated')) {
+            if (bName.includes('disease') || bName.includes('sickened') || bName.includes('nauseated')) {
               b.active = false;
               b.durationText = 'Cured (Remove Disease)';
               curedDebuffs.push(b.name);
@@ -1003,7 +1003,7 @@
         }
         if (Array.isArray(doc.activeDebuffs)) {
           const beforeLen = doc.activeDebuffs.length;
-          doc.activeDebuffs = doc.activeDebuffs.filter(d => !/disease|hastalik|sicken|nauseat/i.test(fold(d)));
+          doc.activeDebuffs = doc.activeDebuffs.filter(d => !/disease|sicken|nauseat/i.test(fold(d)));
           if (doc.activeDebuffs.length < beforeLen) curedDebuffs.push('Diseased');
         }
       }
@@ -1013,7 +1013,7 @@
           doc.buffs.forEach(b => {
             if (!b || !b.active) return;
             const bName = fold(b.name);
-            if (bName.includes('blind') || bName.includes('deaf') || bName.includes('kor') || bName.includes('sagir')) {
+            if (bName.includes('blind') || bName.includes('deaf')) {
               b.active = false;
               b.durationText = 'Cured (Remove Blindness/Deafness)';
               curedDebuffs.push(b.name);
@@ -1022,7 +1022,7 @@
         }
         if (Array.isArray(doc.activeDebuffs)) {
           const beforeLen = doc.activeDebuffs.length;
-          doc.activeDebuffs = doc.activeDebuffs.filter(d => !/blind|deaf|kor|sagir/i.test(fold(d)));
+          doc.activeDebuffs = doc.activeDebuffs.filter(d => !/blind|deaf/i.test(fold(d)));
           if (doc.activeDebuffs.length < beforeLen) curedDebuffs.push('Blinded/Deafened');
         }
       }
@@ -1032,7 +1032,7 @@
           doc.buffs.forEach(b => {
             if (!b || !b.active) return;
             const bName = fold(b.name);
-            if (bName.includes('paraly') || bName.includes('felc') || bName.includes('slow')) {
+            if (bName.includes('paraly') || bName.includes('slow')) {
               b.active = false;
               b.durationText = 'Cured (Remove Paralysis)';
               curedDebuffs.push(b.name);
@@ -1041,7 +1041,7 @@
         }
         if (Array.isArray(doc.activeDebuffs)) {
           const beforeLen = doc.activeDebuffs.length;
-          doc.activeDebuffs = doc.activeDebuffs.filter(d => !/paraly|felc|slow/i.test(fold(d)));
+          doc.activeDebuffs = doc.activeDebuffs.filter(d => !/paraly|slow/i.test(fold(d)));
           if (doc.activeDebuffs.length < beforeLen) curedDebuffs.push('Paralyzed');
         }
       }
@@ -1051,7 +1051,7 @@
           doc.buffs.forEach(b => {
             if (!b || !b.active) return;
             const bName = fold(b.name);
-            if (bName.includes('poison') || bName.includes('zehir')) {
+            if (bName.includes('poison')) {
               b.active = false;
               b.durationText = 'Cured (Neutralize Poison)';
               curedDebuffs.push(b.name);
@@ -1060,7 +1060,7 @@
         }
         if (Array.isArray(doc.activeDebuffs)) {
           const beforeLen = doc.activeDebuffs.length;
-          doc.activeDebuffs = doc.activeDebuffs.filter(d => !/poison|zehir/i.test(fold(d)));
+          doc.activeDebuffs = doc.activeDebuffs.filter(d => !/poison/i.test(fold(d)));
           if (doc.activeDebuffs.length < beforeLen) curedDebuffs.push('Poisoned');
         }
       }
@@ -1090,7 +1090,7 @@
     const match = doc.buffs.find(b => {
       if (!b) return false;
       const bClean = fold(b.name);
-      const strippedItem = cleanName.replace(/^(potion|oil|elixir|iksir)\s+(of\s+)?/i, '').replace(/iksir[ii]?/i, '').replace(/'s/g, '').trim();
+      const strippedItem = cleanName.replace(/^(potion|oil|elixir)\s+(of\s+)?/i, '').replace(/'s/g, '').trim();
       return bClean && (cleanName.includes(bClean) || (strippedItem && bClean.includes(strippedItem)));
     });
     if (match) {
@@ -4067,7 +4067,7 @@
         const durRaw = String(b.durationText || b.duration || '').trim();
         const durLower = durRaw.toLowerCase();
         const isPermanent = Boolean(b.permanent) || durLower.includes('permanent') || durLower.includes('condition');
-        const is24h = durLower.includes('24 saat') || durLower.includes('24 hour') || durLower.includes('24 hr');
+        const is24h = durLower.includes('24 hour') || durLower.includes('24 hr');
         if (isPermanent || is24h) return;
 
         if (!b.initialDuration && durRaw) b.initialDuration = durRaw;
@@ -4086,7 +4086,7 @@
             shouldExpire = true;
           } else {
             b.rounds = remRds;
-            if (/\b(?:min|mins|minute|minutes|dk|dakika)\b/i.test(durLower)) {
+            if (/\b(?:min|mins|minute|minutes)\b/i.test(durLower)) {
               const remMins = Math.max(1, Math.ceil(remRds / 10));
               b.duration = remMins + ' min';
               b.durationText = remMins + ' min';
@@ -4101,7 +4101,7 @@
           if (/\b1\s*round\/level/i.test(durLower)) {
             parsedRounds = bCl;
           } else {
-            const rdMatch = durLower.match(/(\d+)\s*(?:rd|rds|round|rounds|tur)\b/i);
+            const rdMatch = durLower.match(/(\d+)\s*(?:rd|rds|round|rounds)\b/i);
             if (rdMatch) parsedRounds = parseInt(rdMatch[1], 10);
           }
 
@@ -4122,11 +4122,11 @@
             } else if (/\b1\s*(?:hr|hour)\.?\/level/i.test(durLower)) {
               parsedMins = bCl * 60;
             } else {
-              const minMatch = durLower.match(/(\d+)\s*(?:min|mins|minute|minutes|dk|dakika)\b/i);
+              const minMatch = durLower.match(/(\d+)\s*(?:min|mins|minute|minutes)\b/i);
               if (minMatch) {
                 parsedMins = parseInt(minMatch[1], 10);
               } else {
-                const hrMatch = durLower.match(/(\d+)\s*(?:hr|hrs|hour|hours|saat)\b/i);
+                const hrMatch = durLower.match(/(\d+)\s*(?:hr|hrs|hour|hours)\b/i);
                 if (hrMatch) parsedMins = parseInt(hrMatch[1], 10) * 60;
               }
             }
@@ -4136,7 +4136,7 @@
                 shouldExpire = true;
               } else {
                 const remMins = parsedMins - minutes;
-                if (remMins >= 60 && remMins % 60 === 0 && /\b(?:hr|hrs|hour|hours|saat)\b/i.test(durLower)) {
+                if (remMins >= 60 && remMins % 60 === 0 && /\b(?:hr|hrs|hour|hours)\b/i.test(durLower)) {
                   const remHrs = remMins / 60;
                   b.duration = remHrs + ' hr';
                   b.durationText = remHrs + ' hr';
@@ -4392,7 +4392,7 @@
         }
         const dur = String(b.durationText || b.duration || '').toLowerCase();
         const isPermanent = dur.includes('permanent') || Boolean(b.permanent);
-        const is24h = dur.includes('24 saat') || dur.includes('24 hour') || dur.includes('24 hr');
+        const is24h = dur.includes('24 hour') || dur.includes('24 hr');
         if (!isPermanent && !is24h) {
           b.active = false;
           b._tempHpSynced = false;

@@ -5905,7 +5905,7 @@ const RuleEngine = {
     const feats = [...(character.feats || []), ...(character.specialAbilities || []), ...progFeats]
       .map(f => (typeof f === 'string' ? f : f?.name || '').toLowerCase());
     const hasSteadfast = feats.some(f => f.includes('steadfast determination'));
-    const hasAgileShield = feats.some(f => f.includes('agile shield fighter') || f.includes('agile shiled fighter'));
+    const hasAgileShield = feats.some(f => f.includes('agile shield fighter'));
 
     const flags = {
       allowFlatFootedAoO: feats.some(f => f.includes('combat reflexes')),
@@ -7714,17 +7714,17 @@ const RuleEngine = {
     const nameFold = this.foldTr(rawName).trim();
     const descFold = this.foldTr(rawEffect).trim();
     const combined = `${nameFold} ${descFold}`.trim();
-    const isPotion = /^(potion|oil|elixir|iksir)\b/i.test(nameFold) || /\b(potion|iksir)\b/i.test(nameFold);
+    const isPotion = /^(potion|oil|elixir)\b/i.test(nameFold) || /\bpotion\b/i.test(nameFold);
     const buffLabel = isPotion ? 'Potion Effect' : 'Item Effect';
 
     const cureFlags = {
-      poison: /neutralize\s*poison|panzehir|zehir/i.test(nameFold) || /neutralize[s]?\s+poison|cures?\s+poison|removes?\s+poison|panzehir/i.test(descFold),
-      curse: /remove\s*curse|break\s*enchantment|lanet/i.test(nameFold) || /removes?\s+(?:all\s+)?curses?|breaks?\s+enchantment|lanet[a-z]*\s+(?:kaldir|boz|temizle)/i.test(descFold),
-      blindDeaf: /remove\s*blindness|remove\s*deafness|\bkor\b|korluk|\bsagir\b|sagirlik/i.test(nameFold) || /cures?\s+blindness|removes?\s+blindness|cures?\s+deafness|removes?\s+deafness/i.test(descFold),
-      paralysis: /remove\s*paralysis|felc/i.test(nameFold) || /removes?\s+paralysis|cures?\s+paralysis|felc[a-z]*\s+(?:kaldir|tedavi|gider)/i.test(descFold),
-      disease: /remove\s*disease|hastalik/i.test(nameFold) || /cures?\s+(?:all\s+)?diseases?|removes?\s+(?:all\s+)?diseases?|hastalik[a-z]*\s+(?:kaldir|tedavi|iyiles)/i.test(descFold),
-      lesserRestoration: /lesser\s+restoration|kucuk\s+restorasyon/i.test(combined),
-      fullRestoration: /\b(restoration|restorasyon)\b/i.test(combined) && !/lesser\s+restoration|kucuk\s+restorasyon/i.test(combined)
+      poison: /neutralize\s*poison/i.test(nameFold) || /neutralize[s]?\s+poison|cures?\s+poison|removes?\s+poison/i.test(descFold),
+      curse: /remove\s*curse|break\s*enchantment/i.test(nameFold) || /removes?\s+(?:all\s+)?curses?|breaks?\s+enchantment/i.test(descFold),
+      blindDeaf: /remove\s*blindness|remove\s*deafness/i.test(nameFold) || /cures?\s+blindness|removes?\s+blindness|cures?\s+deafness|removes?\s+deafness/i.test(descFold),
+      paralysis: /remove\s*paralysis/i.test(nameFold) || /removes?\s+paralysis|cures?\s+paralysis/i.test(descFold),
+      disease: /remove\s*disease/i.test(nameFold) || /cures?\s+(?:all\s+)?diseases?|removes?\s+(?:all\s+)?diseases?/i.test(descFold),
+      lesserRestoration: /lesser\s+restoration/i.test(combined),
+      fullRestoration: /\brestoration\b/i.test(combined) && !/lesser\s+restoration/i.test(combined)
     };
     const hasAnyCureFlag = Object.values(cureFlags).some(Boolean);
 
@@ -7791,7 +7791,7 @@ const RuleEngine = {
         missiles: 0,
         type: dmgType || 'generic',
         typeName: dp.type ? `${dp.type} Damage` : 'Damage',
-        icon: /fire|ates/.test(dmgType) ? '🔥' : (/cold|soguk/.test(dmgType) ? '❄️' : (/acid|asit/.test(dmgType) ? '🧪' : (/electric|yildirim/.test(dmgType) ? '⚡' : '💥'))),
+        icon: /fire/.test(dmgType) ? '🔥' : (/cold/.test(dmgType) ? '❄️' : (/acid/.test(dmgType) ? '🧪' : (/electric/.test(dmgType) ? '⚡' : '💥'))),
         saveDesc: null,
         cureFlags
       };
@@ -7830,10 +7830,10 @@ const RuleEngine = {
     }
 
     // 3. Healing Detection (English + ASCII-folded Turkish Reader Stems)
-    const isNotOffensiveWand = !/fireball|ates\s*topu|magic\s*missile|buyulu\s*fuze|lightning|yildirim|scorching|yakici\s*isin|acid|asit|alchemist/i.test(nameFold);
+    const isNotOffensiveWand = !/fireball|magic\s*missile|lightning|scorching|acid|alchemist/i.test(nameFold);
     const isHealMatch = (
-      /\b(cure|heal|healing)\b|iyilestir|iyiles|can\s*puani|can\s*iksir/i.test(nameFold) ||
-      (/\b(cure|heal|healing|heals)\b|iyilestir|iyiles|\bhp\b|can\s*puani/i.test(descFold) && isNotOffensiveWand && !/\bwand\b|asa/i.test(nameFold))
+      /\b(cure|heal|healing)\b/i.test(nameFold) ||
+      (/\b(cure|heal|healing|heals)\b|\bhp\b/i.test(descFold) && isNotOffensiveWand && !/\bwand\b/i.test(nameFold))
     );
     if (isHealMatch) {
       if (/\bminor\b|ufak/i.test(combined)) {
@@ -7945,7 +7945,7 @@ const RuleEngine = {
     }
 
     // 4. Offensive / Damage Detection (Wands, Alchemical Items & Spells)
-    if (nameFold.includes('fireball') || nameFold.includes('ates topu')) {
+    if (nameFold.includes('fireball')) {
       const clMatch = combined.match(/cl\s*(\d+)/i);
       const cl = clMatch ? Math.min(10, Math.max(5, parseInt(clMatch[1], 10))) : 5;
       const diceMatch = descFold.match(/(\d+)d6/i);
@@ -7979,7 +7979,7 @@ const RuleEngine = {
       };
     }
 
-    if (nameFold.includes('magic missile') || nameFold.includes('buyulu fuze')) {
+    if (nameFold.includes('magic missile')) {
       const clMatch = combined.match(/cl\s*(\d+)/i);
       const cl = clMatch ? (parseInt(clMatch[1], 10) || 1) : 1;
       let missiles = cl >= 9 ? 5 : (cl >= 7 ? 4 : (cl >= 5 ? 3 : (cl >= 3 ? 2 : 1)));
@@ -8014,7 +8014,7 @@ const RuleEngine = {
       };
     }
 
-    if (nameFold.includes('lightning') || nameFold.includes('yildirim')) {
+    if (nameFold.includes('lightning')) {
       const clMatch = combined.match(/cl\s*(\d+)/i);
       const cl = clMatch ? Math.min(10, Math.max(5, parseInt(clMatch[1], 10))) : 5;
       const formula = `${cl}d6`;
@@ -8046,7 +8046,7 @@ const RuleEngine = {
       };
     }
 
-    if (nameFold.includes('scorching ray') || nameFold.includes('yakici isin')) {
+    if (nameFold.includes('scorching ray')) {
       return {
         kind: 'damage',
         isHealing: false,
@@ -8075,7 +8075,7 @@ const RuleEngine = {
       };
     }
 
-    const isTempHpOrDurationDice = /temporary\s+hit\s+points|temp\s*hp|gecici\s*can|false\s+life|\baid\b/i.test(combined) && !/\b(damage|hasar)\b/i.test(combined);
+    const isTempHpOrDurationDice = /temporary\s+hit\s+points|temp\s*hp|false\s+life|\baid\b/i.test(combined) && !/\bdamage\b/i.test(combined);
     const genMatch = !isTempHpOrDurationDice
       ? (descFold.match(/(\d+)d(\d+)(?:\s*([+-]\s*\d+))?/i) || nameFold.match(/(\d+)d(\d+)(?:\s*([+-]\s*\d+))?/i))
       : null;
@@ -8086,11 +8086,11 @@ const RuleEngine = {
       let typeName = 'Damage';
       let icon = '💥';
       let type = 'generic';
-      if (/fire|ates/i.test(combined)) { type = 'fire'; typeName = 'Fire Damage'; icon = '🔥'; }
-      else if (/cold|soguk|buz/i.test(combined)) { type = 'cold'; typeName = 'Cold Damage'; icon = '❄️'; }
-      else if (/acid|asit/i.test(combined)) { type = 'acid'; typeName = 'Acid Damage'; icon = '🧪'; }
-      else if (/electric|elektrik|yildirim/i.test(combined)) { type = 'electricity'; typeName = 'Electricity Damage'; icon = '⚡'; }
-      else if (/force|guc/i.test(combined)) { type = 'force'; typeName = 'Force Damage'; icon = '✨'; }
+      if (/fire/i.test(combined)) { type = 'fire'; typeName = 'Fire Damage'; icon = '🔥'; }
+      else if (/cold/i.test(combined)) { type = 'cold'; typeName = 'Cold Damage'; icon = '❄️'; }
+      else if (/acid/i.test(combined)) { type = 'acid'; typeName = 'Acid Damage'; icon = '🧪'; }
+      else if (/electric/i.test(combined)) { type = 'electricity'; typeName = 'Electricity Damage'; icon = '⚡'; }
+      else if (/force/i.test(combined)) { type = 'force'; typeName = 'Force Damage'; icon = '✨'; }
       const formula = `${count}d${sides}${bonus !== 0 ? (bonus > 0 ? '+' : '') + bonus : ''}`;
       return {
         kind: 'damage',
@@ -8120,7 +8120,7 @@ const RuleEngine = {
       };
     }
 
-    if (/\b(acid|asit|alchemist)\b/i.test(nameFold)) {
+    if (/\b(acid|alchemist)\b/i.test(nameFold)) {
       return {
         kind: 'damage',
         isHealing: false,
@@ -8259,16 +8259,16 @@ const RuleEngine = {
       if (plan && plan.isDamage) {
         return 'wand_damage';
       }
-      if (/wand|asa|fireball|ates\s*topu|magic\s*missile|buyulu\s*fuze|lightning|yildirim|scorching|damage|cone\s*of\s*cold|ice\s*storm/i.test(nameFold)) {
+      if (/wand|fireball|magic\s*missile|lightning|scorching|damage|cone\s*of\s*cold|ice\s*storm/i.test(nameFold)) {
         return 'wand_damage';
       }
-      if (item.dailyCharges || /(?:\d+\s*\/\s*(?:day|gun)|gunde\s*\d+)/i.test(combined)) {
+      if (item.dailyCharges || /\d+\s*\/\s*day/i.test(combined)) {
         return 'daily_charge';
       }
       if (plan && plan.isCure) {
         return 'buff';
       }
-      if (/potion|iksir|elixir|buff|strength|grace|endurance|cunning|wisdom|splendor|invisibility|fly|hiz|haste|shield\s*of\s*faith|scroll\s*of\s*shield|potion\s*of\s*shield/i.test(nameFold)) {
+      if (/potion|elixir|buff|strength|grace|endurance|cunning|wisdom|splendor|invisibility|fly|haste|shield\s*of\s*faith|scroll\s*of\s*shield|potion\s*of\s*shield/i.test(nameFold)) {
         return 'buff';
       }
       return 'other';
@@ -8280,7 +8280,7 @@ const RuleEngine = {
       if (!p || isExcludedPhysicalOrAbility(p)) return;
       const dc = resolveDailyCharges(p);
       const nameFold = this.foldTr(p.name || '');
-      const isWand = String(p.category || '').toLowerCase() === 'wand' || /\b(wand|asa)\b/i.test(nameFold);
+      const isWand = String(p.category || '').toLowerCase() === 'wand' || /\bwand\b/i.test(nameFold);
       const isConsumableCat = String(p.category || '').toLowerCase() === 'consumable' || (p.isBelt && String(p.category || '').toLowerCase() !== 'weapon');
       if ((isConsumableCat || isWand || dc) && !p.isEquipped) {
         const key = String(p.name || '').toLowerCase().trim();
@@ -8342,7 +8342,7 @@ const RuleEngine = {
         const slotNameFold = this.foldTr(slotItem.name || '');
         const isWandOrUse = isPhysicalSlotGear
           ? hasExplicitCharges
-          : ((slotItem.desc && /(?:cure|fireball|missile|\d+d\d+)/i.test(slotItem.desc)) || /\b(wand|asa)\b/i.test(slotNameFold));
+          : ((slotItem.desc && /(?:cure|fireball|missile|\d+d\d+)/i.test(slotItem.desc)) || /\bwand\b/i.test(slotNameFold));
         if (hasDaily || isWandOrUse) {
           const key = String(slotItem.name || '').toLowerCase().trim();
           if (!displayMap.has(key)) {

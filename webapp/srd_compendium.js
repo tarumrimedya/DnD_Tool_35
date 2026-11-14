@@ -2479,45 +2479,13 @@
         }
       }
 
-      // Migrate `skillBonuses` dictionary and `skillBonus` + `targetSkill`
-      if (entry.skillBonuses && typeof entry.skillBonuses === 'object') {
-        Object.entries(entry.skillBonuses).forEach(([skName, skVal]) => {
-          const num = Number(skVal);
-          if (!Number.isNaN(num) && num !== 0) {
-            const skSlug = slugify(skName).replace(/-/g, '_');
-            modifiers.push({
-              target: `skill.${skSlug}`,
-              value: num,
-              formula: String(num),
-              type: defaultBonusType === 'untyped' ? 'competence' : defaultBonusType,
-              condition: null
-            });
-          }
-        });
-        delete entry.skillBonuses;
-      }
-      if (entry.skillBonus && entry.targetSkill) {
-        const num = Number(entry.skillBonus);
-        if (!Number.isNaN(num) && num !== 0) {
-          const skSlug = slugify(entry.targetSkill).replace(/-/g, '_');
-          modifiers.push({
-            target: `skill.${skSlug}`,
-            value: num,
-            formula: String(num),
-            type: defaultBonusType === 'untyped' ? 'competence' : defaultBonusType,
-            condition: null
-          });
-        }
-        delete entry.skillBonus;
-      }
-
       entry.modifiers = modifiers;
       delete entry.bonusType;
 
-      // 2. Migrate legacy `dice`, `damageDice`, `damage`, `extraDmg` into `damageParts`
+      // 2. Migrate legacy `dice` / `damage` into `damageParts`
       const damageParts = Array.isArray(entry.damageParts) ? entry.damageParts : [];
       if (damageParts.length === 0) {
-        const baseDice = entry.dice || entry.damageDice || (typeof entry.damage === 'string' ? entry.damage : null);
+        const baseDice = entry.dice || (typeof entry.damage === 'string' ? entry.damage : null);
         if (baseDice && /\d+d\d+/i.test(String(baseDice))) {
           damageParts.push({
             dice: String(baseDice).trim(),
@@ -2528,21 +2496,9 @@
             source: 'Base'
           });
         }
-        if (entry.extraDmg && entry.extraDmg !== baseDice && /\d+d\d+/i.test(String(entry.extraDmg))) {
-          damageParts.push({
-            dice: String(entry.extraDmg).trim(),
-            bonus: 0,
-            type: entry.extraDmgType || 'Untyped',
-            multiplyOnCrit: false,
-            onCritOnly: false,
-            source: 'Extra'
-          });
-        }
       }
       entry.damageParts = damageParts;
       delete entry.dice;
-      delete entry.damageDice;
-      delete entry.extraDmg;
 
       // 3. Migrate `critMin` -> `critRange`
       if (entry.critMin !== undefined && entry.critRange === undefined) {
@@ -2578,19 +2534,6 @@
         entry.ruleFlags.conToWillSave = true;
         entry.ruleFlags.noAutoFailFortSaveOnNat1 = true;
       }
-      if (cleanNameLower.includes('agile shield fighter') || cleanNameLower.includes('agile shiled fighter')) {
-        entry.name = 'Agile Shield Fighter';
-        entry.type = 'Feat';
-        entry.category = 'Fighter';
-        entry.isFighterBonusFeat = true;
-        entry.source = "Player's Handbook II, p. 74";
-        entry.prereq = 'Shield Proficiency, Improved Shield Bash, Shield Specialization';
-        entry.prerequisites = 'Shield Proficiency, Improved Shield Bash, Shield Specialization';
-        entry.benefit = 'When making a shield bash and armed strike attack as part of a full attack action, you take a -2 penalty on each attack. These penalties replace the normal ones you incur for fighting with two weapons.';
-        entry.description = 'You are skilled in combining your shield bash attack with an armed strike. When you use your shield in unison with a weapon, your training allows you to score telling blows with both.\n\nPrerequisites: Proficiency with shields, Improved Shield Bash, Shield Specialization.\n\nBenefit: When making a shield bash and armed strike attack as part of a full attack action, you take a -2 penalty on each attack. These penalties replace the normal ones you incur for fighting with two weapons.\n\nSpecial: A fighter can select Agile Shield Fighter as one of his fighter bonus feats.';
-        entry.special = 'A fighter can select Agile Shield Fighter as one of his fighter bonus feats.';
-        entry.ruleFlags.agileShieldFighter = true;
-      }
       delete entry.isChild;
       delete entry.parent;
 
@@ -2602,51 +2545,11 @@
     },
 
     /**
-     * Folds any legacy `isChild` / `"↳ ..."` entries in an array into their parent item's `modes`
-     * and upgrades all items in the array to Canonical V2.
+     * Upgrades all items in the array to Canonical V2 (sub-modes live in each entry's `modes`).
      */
     upgradeArrayToV2(arr) {
       if (!Array.isArray(arr)) return [];
-      const parents = [];
-      const children = [];
-
-      for (let i = 0; i < arr.length; i++) {
-        const it = arr[i];
-        if (!it) continue;
-        if (it.isChild || it.parent || (typeof it.name === 'string' && it.name.trim().startsWith('↳'))) {
-          children.push(it);
-        } else {
-          parents.push(SchemaMigrator.upgradeEntryToV2(it));
-        }
-      }
-
-      // Fold any custom children into parent's modes if not already present
-      for (let i = 0; i < children.length; i++) {
-        const ch = children[i];
-        const pName = normalizeNameKey(ch.parent || ch.name.replace(/^↳\s*/, '').split('(')[0]);
-        const parentObj = parents.find((p) => normalizeNameKey(p.name).includes(pName));
-        if (parentObj) {
-          parentObj.modes = Array.isArray(parentObj.modes) ? parentObj.modes : [];
-          const chLabel = String(ch.name || 'Alt Mode').replace(/^↳\s*/, '').trim();
-          const alreadyHas = parentObj.modes.some((m) => normalizeNameKey(m.label) === normalizeNameKey(chLabel));
-          if (!alreadyHas) {
-            const v2Ch = SchemaMigrator.upgradeEntryToV2(ch);
-            parentObj.modes.push({
-              id: slugify(chLabel, 'mode'),
-              label: chLabel,
-              handedness: v2Ch.ruleFlags && v2Ch.ruleFlags.doubleWeaponOffHand ? 'light' : '2h',
-              combatScope: v2Ch.combatScope || 'melee',
-              critRange: v2Ch.critRange || parentObj.critRange || 20,
-              critMult: v2Ch.critMult || parentObj.critMult || 2,
-              damageParts: v2Ch.damageParts,
-              modifiers: v2Ch.modifiers,
-              ruleFlags: v2Ch.ruleFlags
-            });
-          }
-        }
-      }
-
-      return parents;
+      return arr.filter(Boolean).map((it) => SchemaMigrator.upgradeEntryToV2(it));
     },
 
     getAbilityStemAndScore(entry) {
@@ -2829,19 +2732,8 @@
 
       SchemaMigrator.sanitizeCharacterAbilitiesAndPool(charData);
 
-      // Migrate legacy plain-text `notes` into structured `smartNotes` for `HubNotes` compatibility
       if (!Array.isArray(charData.smartNotes)) {
         charData.smartNotes = [];
-      }
-      if (typeof charData.notes === 'string' && charData.notes.trim() && charData.smartNotes.length === 0) {
-        charData.smartNotes.push({
-          id: 'note_migrated_v2',
-          title: 'Character Notes',
-          text: `${charData.notes.trim()} #general`,
-          tags: ['general'],
-          pinned: true,
-          ts: Date.now()
-        });
       }
 
       charData.schemaVersion = 2;
