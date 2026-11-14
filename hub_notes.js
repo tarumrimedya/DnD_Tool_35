@@ -878,7 +878,7 @@
     chipsEl.innerHTML = pinnedNotes.map(n => {
       const pinTitle = (n.title || '').trim() || (n.text || '').slice(0, 26);
       return `
-      <div onclick="HubNotes.openFullNotesModal('${n.id}')" class="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-amber-950/60 border border-amber-500/40 text-amber-200 text-[11px] font-medium hover:border-amber-400 transition cursor-pointer max-w-full truncate" title="${escapeHtml((n.title ? n.title + ': ' : '') + n.text)}">
+      <div data-action="notes:open-modal" data-note-id="${escapeHtml(n.id)}" class="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-amber-950/60 border border-amber-500/40 text-amber-200 text-[11px] font-medium hover:border-amber-400 transition cursor-pointer max-w-full truncate" title="${escapeHtml((n.title ? n.title + ': ' : '') + n.text)}">
         <span class="text-amber-400 text-xs shrink-0">📌</span>
         <span class="truncate">${escapeHtml(pinTitle)}</span>
       </div>
@@ -926,7 +926,7 @@
     const currentKey = `${activeTarget.type === 'character' ? 'char' : 'campaign'}:${activeTarget.id}`;
     let selectHtml = `
       <div class="relative inline-flex items-center max-w-full">
-        <select onchange="HubNotes.setTargetOverride(this.value)" title="Select Character / Campaign Logbook" class="w-full appearance-none bg-slate-900/90 hover:bg-indigo-950/80 text-white font-black text-[11px] uppercase tracking-wider rounded-md pl-1.5 pr-4 py-0.5 border border-indigo-500/40 hover:border-indigo-400 focus:outline-none focus:border-indigo-400 transition cursor-pointer truncate leading-tight shadow-sm" style="max-width: 148px;">
+        <select data-change-action="notes:set-target" title="Select Character / Campaign Logbook" class="w-full appearance-none bg-slate-900/90 hover:bg-indigo-950/80 text-white font-black text-[11px] uppercase tracking-wider rounded-md pl-1.5 pr-4 py-0.5 border border-indigo-500/40 hover:border-indigo-400 focus:outline-none focus:border-indigo-400 transition cursor-pointer truncate leading-tight shadow-sm" style="max-width: 148px;">
     `;
 
     const buildCharOption = (c) => {
@@ -1022,14 +1022,14 @@
       const textDisplay = note.text || '';
 
       html += `
-        <div onclick="HubNotes.openFullNotesModal('${note.id}')" class="p-2.5 rounded-xl border transition group cursor-pointer relative ${isPinned ? 'bg-amber-950/20 border-amber-500/40 shadow-sm' : 'bg-slate-900/80 hover:bg-slate-800/90 border-slate-800 hover:border-slate-700'}">
+        <div data-action="notes:open-modal" data-note-id="${escapeHtml(note.id)}" class="p-2.5 rounded-xl border transition group cursor-pointer relative ${isPinned ? 'bg-amber-950/20 border-amber-500/40 shadow-sm' : 'bg-slate-900/80 hover:bg-slate-800/90 border-slate-800 hover:border-slate-700'}">
           <div class="flex items-start justify-between gap-1.5">
             <!-- Pin & Checkbox Alanı -->
             <div class="flex items-center gap-1.5 shrink-0 mt-0.5">
-              <button type="button" onclick="HubNotes.togglePinNote('${note.id}', event)" class="p-1 rounded text-xs transition cursor-pointer ${isPinned ? 'text-amber-400 hover:text-amber-300' : 'text-slate-600 hover:text-slate-400'}" title="${isPinned ? 'Unpin Note' : 'Pin to Top'}">
+              <button type="button" data-action="notes:toggle-pin" data-note-id="${escapeHtml(note.id)}" class="p-1 rounded text-xs transition cursor-pointer ${isPinned ? 'text-amber-400 hover:text-amber-300' : 'text-slate-600 hover:text-slate-400'}" title="${isPinned ? 'Unpin Note' : 'Pin to Top'}">
                 📌
               </button>
-              <button type="button" onclick="HubNotes.toggleCompleteNote('${note.id}', event)" class="w-4 h-4 rounded border flex items-center justify-center text-[10px] font-bold transition cursor-pointer ${isCompleted ? 'bg-emerald-600 border-emerald-400 text-white' : 'border-slate-600 hover:border-slate-400 text-transparent'}" title="${isCompleted ? 'Marked as Completed' : 'Mark as Completed'}">
+              <button type="button" data-action="notes:toggle-complete" data-note-id="${escapeHtml(note.id)}" class="w-4 h-4 rounded border flex items-center justify-center text-[10px] font-bold transition cursor-pointer ${isCompleted ? 'bg-emerald-600 border-emerald-400 text-white' : 'border-slate-600 hover:border-slate-400 text-transparent'}" title="${isCompleted ? 'Marked as Completed' : 'Mark as Completed'}">
                 ✓
               </button>
             </div>
@@ -1044,7 +1044,7 @@
 
             <!-- Hızlı Aksiyonlar -->
             <div class="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition">
-              <button type="button" onclick="HubNotes.deleteNote('${note.id}', event)" class="p-1 text-slate-500 hover:text-rose-400 rounded text-[11px] transition cursor-pointer" title="Delete Note">
+              <button type="button" data-action="notes:delete-note" data-note-id="${escapeHtml(note.id)}" class="p-1 text-slate-500 hover:text-rose-400 rounded text-[11px] transition cursor-pointer" title="Delete Note">
                 ✕
               </button>
             </div>
@@ -1145,7 +1145,7 @@
 
     const currentKey = activeTarget ? `${activeTarget.type === 'character' ? 'char' : 'campaign'}:${activeTarget.id}` : '';
 
-    let selectHtml = `<select onchange="HubNotes.setTargetOverride(this.value)" class="bg-indigo-950/90 hover:bg-indigo-900/90 text-indigo-200 border border-indigo-700/80 rounded-lg px-2.5 py-1 text-xs font-bold focus:outline-none focus:border-indigo-400 cursor-pointer shadow-sm max-w-[280px] sm:max-w-[320px] truncate">`;
+    let selectHtml = `<select data-change-action="notes:set-target" class="bg-indigo-950/90 hover:bg-indigo-900/90 text-indigo-200 border border-indigo-700/80 rounded-lg px-2.5 py-1 text-xs font-bold focus:outline-none focus:border-indigo-400 cursor-pointer shadow-sm max-w-[280px] sm:max-w-[320px] truncate">`;
 
     if (chars.length > 0) {
       selectHtml += `<optgroup label="👤 Character Logbooks">`;
@@ -1200,6 +1200,13 @@
           hideAutocompletePopover();
         }
       }
+    });
+
+    _popoverEl.addEventListener('mousedown', (e) => {
+      const item = e.target?.closest?.('[data-notes-ac-idx]');
+      if (!item) return;
+      e.preventDefault();
+      selectAutocompleteTag(Number(item.dataset.notesAcIdx));
     });
   }
 
@@ -1359,7 +1366,7 @@
 
     let html = `
       <div class="px-2.5 py-1.5 bg-slate-950/90 text-[10px] font-bold text-slate-400 flex items-center justify-between border-b border-slate-800">
-        <span class="flex items-center gap-1"><span class="text-indigo-400 font-bold">#</span> <span>Etiket Tamamlama</span></span>
+        <span class="flex items-center gap-1"><span class="text-indigo-400 font-bold">#</span> <span>Tag Autocomplete</span></span>
         <span class="text-[10px] font-mono text-slate-500">↑↓ Select • Enter Insert</span>
       </div>
       <div class="max-h-52 overflow-y-auto custom-scrollbar p-1 space-y-0.5">
@@ -1371,7 +1378,7 @@
       const labelBadge = item.label ? `<span class="text-[10px] text-slate-400 truncate max-w-[90px]">${escapeHtml(String(item.label))}</span>` : '';
 
       html += `
-        <div onmousedown="HubNotes.selectAutocompleteTag(${idx}); event.preventDefault();" class="px-2 py-1.5 rounded-lg flex items-center justify-between gap-1.5 cursor-pointer transition ${isSelected ? 'bg-indigo-600 text-white font-bold shadow' : 'hover:bg-slate-800/80 text-slate-200'}">
+        <div data-notes-ac-idx="${idx}" class="px-2 py-1.5 rounded-lg flex items-center justify-between gap-1.5 cursor-pointer transition ${isSelected ? 'bg-indigo-600 text-white font-bold shadow' : 'hover:bg-slate-800/80 text-slate-200'}">
           <div class="flex items-center gap-1.5 min-w-0">
             <span class="text-xs shrink-0">${item.icon}</span>
             <span class="font-mono text-xs truncate">${escapeHtml(item.tag)}</span>
@@ -1514,7 +1521,7 @@
 
     let html = `
       <div class="flex flex-wrap gap-1 text-[10px] font-mono max-h-36 overflow-y-auto custom-scrollbar pr-0.5">
-        <button type="button" onclick="HubNotes.setTagFilter('all')" class="px-2 py-0.5 rounded-md transition cursor-pointer ${!isFiltered ? 'bg-indigo-600 text-white font-bold shadow' : 'bg-slate-800 hover:bg-slate-700 text-slate-300'}">
+        <button type="button" data-action="notes:set-tag-filter" data-tag="all" class="px-2 py-0.5 rounded-md transition cursor-pointer ${!isFiltered ? 'bg-indigo-600 text-white font-bold shadow' : 'bg-slate-800 hover:bg-slate-700 text-slate-300'}">
           #all (${target.notesList.length})
         </button>
     `;
@@ -1525,8 +1532,8 @@
         const active = isFiltered && _activeNoteFilterTag.toLowerCase() === tag;
         const colorClass = getTagColorClass(tag);
         html += `
-          <button type="button" onclick="HubNotes.setTagFilter('${tag}')" class="px-2 py-0.5 rounded-md border transition cursor-pointer flex items-center gap-1 ${active ? 'bg-indigo-600 border-indigo-400 text-white font-bold shadow' : colorClass}">
-            <span>${tag}</span>
+          <button type="button" data-action="notes:set-tag-filter" data-tag="${escapeHtml(tag)}" class="px-2 py-0.5 rounded-md border transition cursor-pointer flex items-center gap-1 ${active ? 'bg-indigo-600 border-indigo-400 text-white font-bold shadow' : colorClass}">
+            <span>${escapeHtml(tag)}</span>
             <span class="opacity-75 text-[10px]">(${count})</span>
           </button>
         `;
@@ -1540,9 +1547,9 @@
         <div class="p-2 rounded-xl bg-indigo-950/40 border border-indigo-500/40 text-[11px] space-y-1.5 animate-fadeIn">
           <div class="flex items-center justify-between gap-1 text-indigo-200">
             <span class="flex items-center gap-1 truncate font-semibold">
-              <span>Selected:</span> <strong class="text-white font-mono">${_activeNoteFilterTag}</strong>
+              <span>Selected:</span> <strong class="text-white font-mono">${escapeHtml(_activeNoteFilterTag)}</strong>
             </span>
-            <button type="button" onclick="HubNotes.setTagFilter('all')" class="text-indigo-400 hover:text-white text-xs px-1 font-bold cursor-pointer" title="Filtreyi Temizle">✕ Temizle</button>
+            <button type="button" data-action="notes:set-tag-filter" data-tag="all" class="text-indigo-400 hover:text-white text-xs px-1 font-bold cursor-pointer" title="Clear Filter">✕ Clear</button>
           </div>
       `;
 
@@ -1553,9 +1560,9 @@
         `;
         relatedTags.forEach(rt => {
           html += `
-            <button type="button" onclick="HubNotes.setTagFilter('${rt.tag}')" class="px-1.5 py-0.5 rounded bg-slate-900/90 hover:bg-indigo-900 border border-slate-700 hover:border-indigo-500 text-slate-300 hover:text-white transition cursor-pointer flex items-center gap-1">
+            <button type="button" data-action="notes:set-tag-filter" data-tag="${escapeHtml(rt.tag)}" class="px-1.5 py-0.5 rounded bg-slate-900/90 hover:bg-indigo-900 border border-slate-700 hover:border-indigo-500 text-slate-300 hover:text-white transition cursor-pointer flex items-center gap-1">
               <span>${rt.icon}</span>
-              <span>${rt.tag}</span>
+              <span>${escapeHtml(rt.tag)}</span>
               <span class="text-indigo-300 font-bold">(${rt.count})</span>
             </button>
           `;
@@ -1772,7 +1779,7 @@
       let stroke = '#6366f1';
       let textColor = '#c7d2fe';
 
-      if (n.id === '#gorev' || n.id === '#quest') { fill = '#082f49'; stroke = '#38bdf8'; textColor = '#bae6fd'; }
+      if (n.id === '#quest' || n.id === '#gorev') { fill = '#082f49'; stroke = '#38bdf8'; textColor = '#bae6fd'; }
       else if (n.id === '#npc') { fill = '#3b0764'; stroke = '#c084fc'; textColor = '#f3e8ff'; }
       else if (n.id === '#yer' || n.id === '#mekan') { fill = '#022c22'; stroke = '#34d399'; textColor = '#d1fae5'; }
       else if (n.id === '#loot' || n.id === '#esya') { fill = '#451a03'; stroke = '#fbbf24'; textColor = '#fef3c7'; }
@@ -1780,7 +1787,7 @@
       else if (n.id === '#ipucu' || n.id === '#sir') { fill = '#134e4a'; stroke = '#2dd4bf'; textColor = '#ccfbf1'; }
 
       svgHtml += `
-        <g class="cursor-pointer transition-all duration-200" onclick="HubNotes.selectMindmapNode('${n.id}')" opacity="${opacity}">
+        <g class="cursor-pointer transition-all duration-200" data-action="notes:select-mindmap-node" data-tag="${escapeHtml(n.id)}" opacity="${opacity}">
           <!-- Glow Circle when selected -->
           ${isSelected ? `<circle cx="${n.x.toFixed(1)}" cy="${n.y.toFixed(1)}" r="${(n.radius + 8).toFixed(1)}" fill="none" stroke="#a855f7" stroke-width="3" stroke-dasharray="4 2" class="animate-pulse" />` : ''}
           <circle cx="${n.x.toFixed(1)}" cy="${n.y.toFixed(1)}" r="${n.radius.toFixed(1)}" fill="${fill}" stroke="${stroke}" stroke-width="${isSelected ? '2.5' : '1.5'}" class="hover:stroke-white transition" />
@@ -1799,7 +1806,7 @@
     // Update Drawer
     if (selected && nodeMap.has(selected)) {
       const activeNode = nodeMap.get(selected);
-      if (selectedTitle) selectedTitle.textContent = `${activeNode.icon} ${activeNode.label} (${activeNode.count} Not)`;
+      if (selectedTitle) selectedTitle.textContent = `${activeNode.icon} ${activeNode.label} (${activeNode.count} Notes)`;
       if (selectedSub) selectedSub.textContent = `Notes and direct connections associated with this tag:`;
       if (aiBtn) aiBtn.classList.remove('hidden');
 
@@ -1815,9 +1822,9 @@
       if (connectedTagsEl) {
         if (connected.length > 0) {
           connectedTagsEl.innerHTML = connected.map(c => `
-            <button type="button" onclick="HubNotes.selectMindmapNode('${c.id}')" class="px-2 py-0.5 rounded-md bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-700/60 text-indigo-200 transition cursor-pointer flex items-center gap-1">
+            <button type="button" data-action="notes:select-mindmap-node" data-tag="${escapeHtml(c.id)}" class="px-2 py-0.5 rounded-md bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-700/60 text-indigo-200 transition cursor-pointer flex items-center gap-1">
               <span>${c.node?.icon || '🏷️'}</span>
-              <span>${c.id}</span>
+              <span>${escapeHtml(c.id)}</span>
               <span class="text-white font-bold">(${c.weight})</span>
             </button>
           `).join('');
@@ -1837,7 +1844,7 @@
           <div class="p-2.5 rounded-xl bg-slate-900/90 border border-slate-800 space-y-1.5 hover:border-indigo-500/50 transition">
             <div class="flex items-center justify-between text-[10px] text-slate-400 font-mono">
               <span>${formatTimeAgo(n.updatedAt || n.createdAt)}</span>
-              <button type="button" onclick="HubNotes.jumpToEditorWithNote('${n.id}')" class="px-2 py-0.5 rounded bg-indigo-600/30 hover:bg-indigo-600 border border-indigo-500/40 text-indigo-200 hover:text-white transition font-semibold cursor-pointer">
+              <button type="button" data-action="notes:jump-editor" data-note-id="${escapeHtml(n.id)}" class="px-2 py-0.5 rounded bg-indigo-600/30 hover:bg-indigo-600 border border-indigo-500/40 text-indigo-200 hover:text-white transition font-semibold cursor-pointer">
                 📝 Edit
               </button>
             </div>
@@ -2308,11 +2315,11 @@ RULES:
 
       if (!cardTitle) {
         const firstLine = (note.text || '').split('\n')[0].trim();
-        cardTitle = firstLine ? firstLine : (filtered.length > 1 ? `${targetDisplayName} • Not ${idx + 1}` : targetDisplayName);
+        cardTitle = firstLine ? firstLine : (filtered.length > 1 ? `${targetDisplayName} • Log ${idx + 1}` : targetDisplayName);
       }
 
       html += `
-        <div onclick="HubNotes.selectNoteInModal('${note.id}')" class="p-3 rounded-xl border transition cursor-pointer flex flex-col gap-1.5 ${isSelected ? 'bg-indigo-950/60 border-indigo-500 text-white shadow-md' : 'bg-slate-900/60 hover:bg-slate-800/80 border-slate-800 text-slate-300'}">
+        <div data-action="notes:select-modal-note" data-note-id="${escapeHtml(note.id)}" class="p-3 rounded-xl border transition cursor-pointer flex flex-col gap-1.5 ${isSelected ? 'bg-indigo-950/60 border-indigo-500 text-white shadow-md' : 'bg-slate-900/60 hover:bg-slate-800/80 border-slate-800 text-slate-300'}">
           <div class="flex items-center justify-between gap-1.5">
             <div class="flex items-center gap-1.5 min-w-0">
               ${isPinned ? '<span class="text-amber-400 text-xs shrink-0" title="Pinned to Top">📌</span>' : ''}
@@ -2320,7 +2327,7 @@ RULES:
             </div>
             <div class="flex items-center gap-1.5 shrink-0">
               <span class="text-[10px] text-slate-500 font-mono">${formatTimeAgo(note.updatedAt || note.createdAt)}</span>
-              <button type="button" onclick="HubNotes.deleteNote('${note.id}', event)" class="p-1 text-slate-500 hover:text-rose-400 rounded text-xs transition cursor-pointer" title="Delete Log">✕</button>
+              <button type="button" data-action="notes:delete-note" data-note-id="${escapeHtml(note.id)}" class="p-1 text-slate-500 hover:text-rose-400 rounded text-xs transition cursor-pointer" title="Delete Log">✕</button>
             </div>
           </div>
           <div class="text-[11px] text-slate-400 line-clamp-2 break-words">
@@ -2740,24 +2747,24 @@ RULES:
             </div>
             <div class="flex items-center gap-2 shrink-0">
               <span id="hub-modal-target-title" class="inline-flex items-center text-xs font-normal text-indigo-300 truncate"></span>
-              <button type="button" onclick="HubNotes.closeFullNotesModal()" class="lg:hidden text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-bold px-2.5 py-1.5 cursor-pointer shrink-0 transition">✕</button>
+              <button type="button" data-action="notes:close-modal" class="lg:hidden text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-bold px-2.5 py-1.5 cursor-pointer shrink-0 transition">✕</button>
             </div>
           </div>
 
           <div class="flex items-center gap-2 w-full lg:w-auto">
             <div class="grid grid-cols-3 gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs w-full lg:w-auto shrink-0">
-              <button type="button" id="hub-modal-tab-editor" onclick="HubNotes.switchModalView('editor')" class="w-full px-2.5 sm:px-3 py-1.5 rounded-lg font-bold transition flex items-center justify-center gap-1.5 bg-indigo-600 text-white shadow cursor-pointer text-xs truncate">
+              <button type="button" id="hub-modal-tab-editor" data-action="notes:switch-modal-view" data-view="editor" class="w-full px-2.5 sm:px-3 py-1.5 rounded-lg font-bold transition flex items-center justify-center gap-1.5 bg-indigo-600 text-white shadow cursor-pointer text-xs truncate">
                 <span>📝</span><span class="truncate">Quest Logs</span>
               </button>
-              <button type="button" id="hub-modal-tab-mindmap" onclick="HubNotes.switchModalView('mindmap')" class="w-full px-2.5 sm:px-3 py-1.5 rounded-lg font-bold transition flex items-center justify-center gap-1.5 text-slate-400 hover:text-white cursor-pointer text-xs truncate">
+              <button type="button" id="hub-modal-tab-mindmap" data-action="notes:switch-modal-view" data-view="mindmap" class="w-full px-2.5 sm:px-3 py-1.5 rounded-lg font-bold transition flex items-center justify-center gap-1.5 text-slate-400 hover:text-white cursor-pointer text-xs truncate">
                 <span>🕸️</span><span class="truncate">Tag Mindmap</span>
               </button>
-              <button type="button" id="hub-modal-tab-ai" onclick="HubNotes.switchModalView('ai')" class="w-full px-2.5 sm:px-3 py-1.5 rounded-lg font-bold transition flex items-center justify-center gap-1.5 text-slate-400 hover:text-white cursor-pointer text-xs truncate">
+              <button type="button" id="hub-modal-tab-ai" data-action="notes:switch-modal-view" data-view="ai" class="w-full px-2.5 sm:px-3 py-1.5 rounded-lg font-bold transition flex items-center justify-center gap-1.5 text-slate-400 hover:text-white cursor-pointer text-xs truncate">
                 <span>✨</span><span class="truncate">AI Chronicler</span>
               </button>
             </div>
 
-            <button type="button" onclick="HubNotes.closeFullNotesModal()" class="hidden lg:inline-flex text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-bold px-2.5 py-1.5 cursor-pointer shrink-0 transition">✕ Close</button>
+            <button type="button" data-action="notes:close-modal" class="hidden lg:inline-flex text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-bold px-2.5 py-1.5 cursor-pointer shrink-0 transition">✕ Close</button>
           </div>
         </div>
 
@@ -2766,9 +2773,9 @@ RULES:
           <div class="w-full sm:w-80 border-b sm:border-b-0 sm:border-r border-slate-700/80 flex flex-col bg-slate-900/40 shrink-0 p-3 space-y-2.5 overflow-hidden">
             <div class="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-1.5 focus-within:border-indigo-400 transition shrink-0">
               <span class="text-slate-500 text-xs">🔍</span>
-              <input type="text" oninput="HubNotes.handleSearchInput(this.value)" placeholder="Search logs..." class="w-full bg-transparent text-xs text-white placeholder-slate-500 focus:outline-none">
+              <input type="text" data-input-action="notes:search-input" placeholder="Search logs..." class="w-full bg-transparent text-xs text-white placeholder-slate-500 focus:outline-none">
             </div>
-            <button type="button" onclick="HubNotes.createNewModalNote()" class="w-full py-2 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow transition active:scale-95 cursor-pointer shrink-0">
+            <button type="button" data-action="notes:create-new" class="w-full py-2 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow transition active:scale-95 cursor-pointer shrink-0">
               <span>➕</span><span>Create New Log</span>
             </button>
             <div id="hub-modal-tags-bar" class="shrink-0 space-y-1.5"></div>
@@ -2779,16 +2786,16 @@ RULES:
             <div class="flex flex-col lg:flex-row lg:items-center justify-between border-b border-slate-800 pb-2.5 shrink-0 gap-2">
               <div class="text-[11px] text-slate-400 font-mono truncate" id="hub-modal-date-badge">Selected log details</div>
               <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full lg:w-auto">
-                <button type="button" onclick="HubNotes.openAiChroniclerWithActiveNote()" class="w-full px-2.5 py-1.5 rounded-lg text-xs font-bold transition bg-purple-950/60 hover:bg-purple-900/80 text-purple-300 border border-purple-800/60 flex items-center justify-center gap-1.5 cursor-pointer shadow-sm truncate">
+                <button type="button" data-action="notes:ai-summarize-active" class="w-full px-2.5 py-1.5 rounded-lg text-xs font-bold transition bg-purple-950/60 hover:bg-purple-900/80 text-purple-300 border border-purple-800/60 flex items-center justify-center gap-1.5 cursor-pointer shadow-sm truncate">
                   <span>✨</span><span class="truncate">AI Summarize</span>
                 </button>
-                <button type="button" id="hub-modal-save-btn" onclick="HubNotes.saveModalNote(true)" class="w-full px-3 py-1.5 rounded-lg text-xs font-bold transition bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-950/40 flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 truncate">
+                <button type="button" id="hub-modal-save-btn" data-action="notes:save-modal" class="w-full px-3 py-1.5 rounded-lg text-xs font-bold transition bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-950/40 flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 truncate">
                   <span>💾</span><span id="hub-modal-save-text" class="truncate">Save Log</span>
                 </button>
-                <button type="button" id="hub-modal-pin-btn" onclick="HubNotes.togglePinNote(null, event)" class="w-full px-3 py-1.5 rounded-lg text-xs font-bold transition bg-slate-800 text-slate-300 hover:text-white border border-slate-700 flex items-center justify-center gap-1 cursor-pointer truncate">
+                <button type="button" id="hub-modal-pin-btn" data-action="notes:toggle-pin" class="w-full px-3 py-1.5 rounded-lg text-xs font-bold transition bg-slate-800 text-slate-300 hover:text-white border border-slate-700 flex items-center justify-center gap-1 cursor-pointer truncate">
                   📌 Pin to Top
                 </button>
-                <button type="button" id="hub-modal-delete-btn" onclick="HubNotes.deleteNote(null, event)" class="w-full px-3 py-1.5 rounded-lg text-xs font-bold transition bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 border border-rose-800/60 flex items-center justify-center gap-1 cursor-pointer truncate">
+                <button type="button" id="hub-modal-delete-btn" data-action="notes:delete-note" class="w-full px-3 py-1.5 rounded-lg text-xs font-bold transition bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 border border-rose-800/60 flex items-center justify-center gap-1 cursor-pointer truncate">
                   🗑️ Delete
                 </button>
               </div>
@@ -2800,24 +2807,24 @@ RULES:
                 <span class="text-[10px] text-slate-500 italic sm:hidden">💡 Type '#' for tags</span>
               </div>
               <div class="grid grid-cols-5 gap-1.5 w-full sm:flex-1">
-                <button type="button" onclick="HubNotes.insertTagIntoEditor('#quest')" class="w-full py-1 px-1 rounded-md bg-sky-950/60 hover:bg-sky-900 text-sky-300 border border-sky-800/60 text-[10px] sm:text-xs font-bold transition flex items-center justify-center cursor-pointer truncate">+ #quest</button>
-                <button type="button" onclick="HubNotes.insertTagIntoEditor('#npc')" class="w-full py-1 px-1 rounded-md bg-purple-950/60 hover:bg-purple-900 text-purple-300 border border-purple-800/60 text-[10px] sm:text-xs font-bold transition flex items-center justify-center cursor-pointer truncate">+ #npc</button>
-                <button type="button" onclick="HubNotes.insertTagIntoEditor('#location')" class="w-full py-1 px-1 rounded-md bg-emerald-950/60 hover:bg-emerald-900 text-emerald-300 border border-emerald-800/60 text-[10px] sm:text-xs font-bold transition flex items-center justify-center cursor-pointer truncate">+ #location</button>
-                <button type="button" onclick="HubNotes.insertTagIntoEditor('#loot')" class="w-full py-1 px-1 rounded-md bg-yellow-950/60 hover:bg-yellow-900 text-yellow-300 border border-yellow-800/60 text-[10px] sm:text-xs font-bold transition flex items-center justify-center cursor-pointer truncate">+ #loot</button>
-                <button type="button" onclick="HubNotes.insertTagIntoEditor('- [ ] ')" class="w-full py-1 px-1 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-[10px] sm:text-xs font-bold transition flex items-center justify-center cursor-pointer truncate">+ To-Do</button>
+                <button type="button" data-action="notes:insert-editor-tag" data-insert="#quest" class="w-full py-1 px-1 rounded-md bg-sky-950/60 hover:bg-sky-900 text-sky-300 border border-sky-800/60 text-[10px] sm:text-xs font-bold transition flex items-center justify-center cursor-pointer truncate">+ #quest</button>
+                <button type="button" data-action="notes:insert-editor-tag" data-insert="#npc" class="w-full py-1 px-1 rounded-md bg-purple-950/60 hover:bg-purple-900 text-purple-300 border border-purple-800/60 text-[10px] sm:text-xs font-bold transition flex items-center justify-center cursor-pointer truncate">+ #npc</button>
+                <button type="button" data-action="notes:insert-editor-tag" data-insert="#location" class="w-full py-1 px-1 rounded-md bg-emerald-950/60 hover:bg-emerald-900 text-emerald-300 border border-emerald-800/60 text-[10px] sm:text-xs font-bold transition flex items-center justify-center cursor-pointer truncate">+ #location</button>
+                <button type="button" data-action="notes:insert-editor-tag" data-insert="#loot" class="w-full py-1 px-1 rounded-md bg-yellow-950/60 hover:bg-yellow-900 text-yellow-300 border border-yellow-800/60 text-[10px] sm:text-xs font-bold transition flex items-center justify-center cursor-pointer truncate">+ #loot</button>
+                <button type="button" data-action="notes:insert-editor-tag" data-insert="- [ ] " class="w-full py-1 px-1 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-[10px] sm:text-xs font-bold transition flex items-center justify-center cursor-pointer truncate">+ To-Do</button>
               </div>
             </div>
 
             <div class="w-full flex-1 min-h-[300px] bg-slate-950 border border-slate-800 rounded-2xl p-4 flex flex-col space-y-2.5 focus-within:border-indigo-500/80 transition shadow-inner">
               <input type="text" id="hub-modal-note-title" placeholder="Log Title (Optional)..."
                 class="w-full bg-transparent text-base sm:text-lg font-bold text-white placeholder-slate-600 focus:outline-none border-b border-slate-800/80 pb-2 font-sans tracking-wide"
-                oninput="HubNotes.handleEditorInput(event)"
-                onkeydown="HubNotes.handleTitleKeydown(event)"
-                onblur="HubNotes.saveModalNote(false)">
+                data-input-action="notes:editor-input"
+                data-keydown-action="notes:title-keydown"
+                data-notes-blur="save">
               <textarea id="hub-modal-note-editor"
-                oninput="HubNotes.handleEditorInput(event)"
-                onkeydown="HubNotes.handleEditorKeydown(event)"
-                onblur="HubNotes.saveModalNote(false)"
+                data-input-action="notes:editor-input"
+                data-keydown-action="notes:editor-keydown"
+                data-notes-blur="save"
                 placeholder="Write log details here...&#10;&#10;Tips:&#10;• Type '#' for smart tag autocomplete&#10;• Press Ctrl+S / Ctrl+Enter to save"
                 class="w-full flex-1 min-h-[220px] bg-transparent text-xs sm:text-sm text-slate-200 placeholder-slate-600 focus:outline-none font-sans leading-relaxed resize-none pt-1 custom-scrollbar"></textarea>
             </div>
@@ -2833,8 +2840,8 @@ RULES:
                 <span id="hub-mindmap-stats-badge" class="text-[10px] text-indigo-300 bg-indigo-950 px-2 py-0.5 rounded-md border border-indigo-800/60 font-mono">0 Nodes • 0 Links</span>
               </div>
               <div class="flex items-center gap-2">
-                <input type="text" id="hub-mindmap-search-input" oninput="HubNotes.handleMindmapSearch(this.value)" placeholder="Search nodes..." class="bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-400 w-36 sm:w-44 font-mono">
-                <button type="button" onclick="HubNotes.renderMindmap()" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-xs font-semibold cursor-pointer">🔄 Refresh</button>
+                <input type="text" id="hub-mindmap-search-input" data-input-action="notes:mindmap-search" placeholder="Search nodes..." class="bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-400 w-36 sm:w-44 font-mono">
+                <button type="button" data-action="notes:render-mindmap" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-xs font-semibold cursor-pointer">🔄 Refresh</button>
               </div>
             </div>
             <div id="hub-mindmap-canvas-container" class="flex-1 w-full h-full relative overflow-hidden flex items-center justify-center p-2">
@@ -2847,7 +2854,7 @@ RULES:
                 <h4 id="hub-mindmap-selected-title" class="text-xs font-bold text-white truncate">Select a Node</h4>
                 <p id="hub-mindmap-selected-sub" class="text-[10px] text-slate-400 truncate">Click a node in the graph to view its details.</p>
               </div>
-              <button type="button" id="hub-mindmap-ai-btn" onclick="HubNotes.openAiChroniclerWithMindmapTag()" class="hidden px-2 py-1 rounded-lg bg-purple-950/80 hover:bg-purple-900 text-purple-300 border border-purple-700/60 text-[10px] font-bold cursor-pointer shrink-0">✨ AI Synthesize</button>
+              <button type="button" id="hub-mindmap-ai-btn" data-action="notes:ai-mindmap-tag" class="hidden px-2 py-1 rounded-lg bg-purple-950/80 hover:bg-purple-900 text-purple-300 border border-purple-700/60 text-[10px] font-bold cursor-pointer shrink-0">✨ AI Synthesize</button>
             </div>
             <div id="hub-mindmap-connected-tags" class="flex flex-wrap gap-1 text-[10px] font-mono max-h-20 overflow-y-auto"></div>
             <div id="hub-mindmap-matching-notes" class="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar min-h-0"></div>
@@ -2898,7 +2905,7 @@ RULES:
                   </label>
                 </div>
               </div>
-              <button type="button" id="hub-ai-run-btn" onclick="HubNotes.runAiChronicler()" class="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-purple-950/60 transition active:scale-95 cursor-pointer">
+              <button type="button" id="hub-ai-run-btn" data-action="notes:ai-run" class="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-purple-950/60 transition active:scale-95 cursor-pointer">
                 <span>✨</span><span>Synthesize &amp; Generate</span>
               </button>
             </div>
@@ -2906,10 +2913,10 @@ RULES:
               <div class="flex items-center justify-between border-b border-slate-800 pb-2.5 shrink-0 flex-wrap gap-2">
                 <span id="hub-ai-status-badge" class="text-xs font-mono text-slate-400">Standby</span>
                 <div id="hub-ai-output-actions" class="hidden flex items-center gap-2">
-                  <button type="button" onclick="HubNotes.saveAiSynthesisAsNote()" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-emerald-600 hover:bg-emerald-500 text-white shadow-md flex items-center gap-1.5 cursor-pointer active:scale-95">
+                  <button type="button" data-action="notes:ai-save" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-emerald-600 hover:bg-emerald-500 text-white shadow-md flex items-center gap-1.5 cursor-pointer active:scale-95">
                     <span>📌</span><span>Save as Pinned Log</span>
                   </button>
-                  <button type="button" onclick="HubNotes.copyAiSynthesisToClipboard()" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 flex items-center gap-1.5 cursor-pointer">
+                  <button type="button" data-action="notes:ai-copy" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 flex items-center gap-1.5 cursor-pointer">
                     <span>📋</span><span>Copy</span>
                   </button>
                 </div>
@@ -2959,23 +2966,23 @@ RULES:
               </div>
             </div>
             <div class="flex items-center gap-1.5">
-              <button type="button" onclick="HubNotes.openFullNotesModal(null, 'mindmap')" class="ui-btn-sm h-7 px-2.5 rounded-lg bg-indigo-950 hover:bg-indigo-900 border border-indigo-700/60 text-indigo-300 hover:text-white transition inline-flex items-center gap-1 text-xs font-bold shadow cursor-pointer" title="Open Relational Tag Mindmap (SVG)">
+              <button type="button" data-action="notes:open-modal" data-tab="mindmap" class="ui-btn-sm h-7 px-2.5 rounded-lg bg-indigo-950 hover:bg-indigo-900 border border-indigo-700/60 text-indigo-300 hover:text-white transition inline-flex items-center gap-1 text-xs font-bold shadow cursor-pointer" title="Open Relational Tag Mindmap (SVG)">
                 <span>🕸️</span><span class="hidden sm:inline text-[10px]">Mindmap</span>
               </button>
-              <button type="button" onclick="HubNotes.openFullNotesModal(null, 'ai')" class="ui-btn-sm h-7 px-2.5 rounded-lg bg-purple-950 hover:bg-purple-900 border border-purple-700/60 text-purple-300 hover:text-white transition inline-flex items-center gap-1 text-xs font-bold shadow cursor-pointer" title="Open AI Campaign Chronicler">
+              <button type="button" data-action="notes:open-modal" data-tab="ai" class="ui-btn-sm h-7 px-2.5 rounded-lg bg-purple-950 hover:bg-purple-900 border border-purple-700/60 text-purple-300 hover:text-white transition inline-flex items-center gap-1 text-xs font-bold shadow cursor-pointer" title="Open AI Campaign Chronicler">
                 <span>✨</span><span class="hidden sm:inline text-[10px]">AI Chronicler</span>
               </button>
-              <button type="button" onclick="HubNotes.openFullNotesModal(null, 'editor')" class="ui-btn-sm h-7 px-2.5 rounded-lg bg-indigo-600/30 hover:bg-indigo-600/60 border border-indigo-500/50 text-indigo-200 hover:text-white transition inline-flex items-center gap-1 text-xs font-bold shadow cursor-pointer" title="Open Fullscreen Quest Logs">
+              <button type="button" data-action="notes:open-modal" data-tab="editor" class="ui-btn-sm h-7 px-2.5 rounded-lg bg-indigo-600/30 hover:bg-indigo-600/60 border border-indigo-500/50 text-indigo-200 hover:text-white transition inline-flex items-center gap-1 text-xs font-bold shadow cursor-pointer" title="Open Fullscreen Quest Logs">
                 <span>📝</span><span class="text-[10px]">Fullscreen</span>
               </button>
             </div>
           </div>
 
           <div class="h-8 flex items-center gap-1 bg-slate-900/90 p-0.5 rounded-lg border border-slate-800 shrink-0 text-xs">
-            <button type="button" id="hub-notes-tab-write" onclick="HubNotes.switchPanelTab('write')" class="flex-1 h-full px-2 rounded-md text-xs font-bold transition flex items-center justify-center gap-1 bg-indigo-600 text-white shadow cursor-pointer">
+            <button type="button" id="hub-notes-tab-write" data-action="notes:switch-panel-tab" data-panel-tab="write" class="flex-1 h-full px-2 rounded-md text-xs font-bold transition flex items-center justify-center gap-1 bg-indigo-600 text-white shadow cursor-pointer">
               <span>✏️</span><span>Quest Logs</span>
             </button>
-            <button type="button" id="hub-notes-tab-list" onclick="HubNotes.switchPanelTab('list')" class="flex-1 h-full px-2 rounded-md text-xs font-bold transition flex items-center justify-center gap-1 text-slate-400 hover:text-white cursor-pointer">
+            <button type="button" id="hub-notes-tab-list" data-action="notes:switch-panel-tab" data-panel-tab="list" class="flex-1 h-full px-2 rounded-md text-xs font-bold transition flex items-center justify-center gap-1 text-slate-400 hover:text-white cursor-pointer">
               <span>📋</span><span>Saved Logs (<span id="hub-notes-tab-count">0</span>)</span>
             </button>
           </div>
@@ -2989,24 +2996,24 @@ RULES:
             <div class="w-full bg-slate-900/90 border border-slate-700 rounded-xl p-3 flex flex-col space-y-2 focus-within:border-indigo-400 transition shadow-inner">
               <input type="text" id="hub-quick-note-title" placeholder="Log Title (Optional)..."
                 class="w-full bg-transparent text-sm font-bold text-white placeholder-slate-500 focus:outline-none border-b border-slate-700/60 pb-1.5 font-sans"
-                oninput="HubNotes.handleQuickInput(event)"
-                onkeydown="HubNotes.handleQuickTitleKeydown(event)">
+                data-input-action="notes:quick-input"
+                data-keydown-action="notes:quick-title-keydown">
               <textarea id="hub-quick-note-input" rows="4"
                 placeholder="Write your log here... (Supports #quest, #npc, #location, #loot tags and - [ ] task checkboxes)"
                 class="w-full bg-transparent text-xs text-white placeholder-slate-500 font-sans focus:outline-none resize-y leading-relaxed"
-                oninput="HubNotes.handleQuickInput(event)"
-                onkeydown="HubNotes.handleQuickKeydown(event)"></textarea>
+                data-input-action="notes:quick-input"
+                data-keydown-action="notes:quick-keydown"></textarea>
             </div>
 
             <div class="flex flex-col space-y-2 pt-0.5">
               <div class="grid grid-cols-5 gap-1.5 w-full text-[10px] font-mono">
-                <button type="button" onclick="HubNotes.insertTagIntoQuickInput('#quest')" class="ui-btn-xs w-full h-6 px-1 rounded-md bg-sky-950/60 hover:bg-sky-900 border border-sky-800/60 text-sky-300 font-bold transition flex items-center justify-center cursor-pointer truncate">+ #quest</button>
-                <button type="button" onclick="HubNotes.insertTagIntoQuickInput('#npc')" class="ui-btn-xs w-full h-6 px-1 rounded-md bg-purple-950/60 hover:bg-purple-900 border border-purple-800/60 text-purple-300 font-bold transition flex items-center justify-center cursor-pointer truncate">+ #npc</button>
-                <button type="button" onclick="HubNotes.insertTagIntoQuickInput('#location')" class="ui-btn-xs w-full h-6 px-1 rounded-md bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-800/60 text-emerald-300 font-bold transition flex items-center justify-center cursor-pointer truncate">+ #location</button>
-                <button type="button" onclick="HubNotes.insertTagIntoQuickInput('#loot')" class="ui-btn-xs w-full h-6 px-1 rounded-md bg-yellow-950/60 hover:bg-yellow-900 border border-yellow-800/60 text-yellow-300 font-bold transition flex items-center justify-center cursor-pointer truncate">+ #loot</button>
-                <button type="button" onclick="HubNotes.insertTagIntoQuickInput('- [ ] ')" class="ui-btn-xs w-full h-6 px-1 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold transition flex items-center justify-center cursor-pointer truncate">+ To-Do</button>
+                <button type="button" data-action="notes:insert-quick-tag" data-insert="#quest" class="ui-btn-xs w-full h-6 px-1 rounded-md bg-sky-950/60 hover:bg-sky-900 border border-sky-800/60 text-sky-300 font-bold transition flex items-center justify-center cursor-pointer truncate">+ #quest</button>
+                <button type="button" data-action="notes:insert-quick-tag" data-insert="#npc" class="ui-btn-xs w-full h-6 px-1 rounded-md bg-purple-950/60 hover:bg-purple-900 border border-purple-800/60 text-purple-300 font-bold transition flex items-center justify-center cursor-pointer truncate">+ #npc</button>
+                <button type="button" data-action="notes:insert-quick-tag" data-insert="#location" class="ui-btn-xs w-full h-6 px-1 rounded-md bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-800/60 text-emerald-300 font-bold transition flex items-center justify-center cursor-pointer truncate">+ #location</button>
+                <button type="button" data-action="notes:insert-quick-tag" data-insert="#loot" class="ui-btn-xs w-full h-6 px-1 rounded-md bg-yellow-950/60 hover:bg-yellow-900 border border-yellow-800/60 text-yellow-300 font-bold transition flex items-center justify-center cursor-pointer truncate">+ #loot</button>
+                <button type="button" data-action="notes:insert-quick-tag" data-insert="- [ ] " class="ui-btn-xs w-full h-6 px-1 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold transition flex items-center justify-center cursor-pointer truncate">+ To-Do</button>
               </div>
-              <button type="button" onclick="HubNotes.addQuickNote()" class="w-full h-8 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md transition active:scale-95 cursor-pointer">
+              <button type="button" data-action="notes:add-quick" class="w-full h-8 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md transition active:scale-95 cursor-pointer">
                 <span>➕</span><span>Save Log (Ctrl+Enter)</span>
               </button>
             </div>
@@ -3016,14 +3023,14 @@ RULES:
             <div class="flex flex-wrap items-center gap-2">
               <div class="flex-1 min-w-[180px] flex items-center gap-1.5 bg-slate-900/90 border border-slate-800 rounded-xl px-2.5 py-1.5 focus-within:border-indigo-400 transition">
                 <span class="text-slate-500 text-xs">🔍</span>
-                <input type="text" id="hub-inline-notes-search" oninput="HubNotes.handleSearchInput(this.value)" placeholder="Search logs or #tags..." class="w-full bg-transparent text-xs text-white placeholder-slate-500 focus:outline-none font-mono">
+                <input type="text" id="hub-inline-notes-search" data-input-action="notes:search-input" placeholder="Search logs or #tags..." class="w-full bg-transparent text-xs text-white placeholder-slate-500 focus:outline-none font-mono">
               </div>
               <div class="flex items-center gap-1 overflow-x-auto text-[10px] font-mono">
-                <button type="button" onclick="HubNotes.setTagFilter('all')" class="px-2 py-0.5 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 transition cursor-pointer">#all</button>
-                <button type="button" onclick="HubNotes.setTagFilter('#quest')" class="px-2 py-0.5 rounded-md bg-sky-950/60 hover:bg-sky-900 border border-sky-800/60 text-sky-300 transition cursor-pointer">#quest</button>
-                <button type="button" onclick="HubNotes.setTagFilter('#npc')" class="px-2 py-0.5 rounded-md bg-purple-950/60 hover:bg-purple-900 border border-purple-800/60 text-purple-300 transition cursor-pointer">#npc</button>
-                <button type="button" onclick="HubNotes.setTagFilter('#location')" class="px-2 py-0.5 rounded-md bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-800/60 text-emerald-300 transition cursor-pointer">#location</button>
-                <button type="button" onclick="HubNotes.setTagFilter('#loot')" class="px-2 py-0.5 rounded-md bg-yellow-950/60 hover:bg-yellow-900 border border-yellow-800/60 text-yellow-300 transition cursor-pointer">#loot</button>
+                <button type="button" data-action="notes:set-tag-filter" data-tag="all" class="px-2 py-0.5 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 transition cursor-pointer">#all</button>
+                <button type="button" data-action="notes:set-tag-filter" data-tag="#quest" class="px-2 py-0.5 rounded-md bg-sky-950/60 hover:bg-sky-900 border border-sky-800/60 text-sky-300 transition cursor-pointer">#quest</button>
+                <button type="button" data-action="notes:set-tag-filter" data-tag="#npc" class="px-2 py-0.5 rounded-md bg-purple-950/60 hover:bg-purple-900 border border-purple-800/60 text-purple-300 transition cursor-pointer">#npc</button>
+                <button type="button" data-action="notes:set-tag-filter" data-tag="#location" class="px-2 py-0.5 rounded-md bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-800/60 text-emerald-300 transition cursor-pointer">#location</button>
+                <button type="button" data-action="notes:set-tag-filter" data-tag="#loot" class="px-2 py-0.5 rounded-md bg-yellow-950/60 hover:bg-yellow-900 border border-yellow-800/60 text-yellow-300 transition cursor-pointer">#loot</button>
               </div>
             </div>
             <div id="hub-inline-notes-list" class="max-h-80 overflow-y-auto space-y-2 pr-1"></div>
@@ -3078,6 +3085,48 @@ RULES:
     saveAiSynthesisAsNote,
     copyAiSynthesisToClipboard
   };
+
+  document.addEventListener('blur', (e) => {
+    const el = e.target;
+    if (el && el.dataset && el.dataset.notesBlur === 'save') {
+      saveModalNote(false);
+    }
+  }, true);
+
+  if (window.Actions && typeof window.Actions.register === 'function') {
+    const actionsApi = window.Actions;
+    actionsApi.register('notes:open-modal', (el, data) => openFullNotesModal(data.noteId || null, data.tab || 'editor'));
+    actionsApi.register('notes:close-modal', () => closeFullNotesModal());
+    actionsApi.register('notes:switch-modal-view', (el, data) => switchModalView(data.view || 'editor'));
+    actionsApi.register('notes:switch-panel-tab', (el, data) => switchPanelTab(data.panelTab || 'write'));
+    actionsApi.register('notes:set-target', (el) => setTargetOverride(el.value));
+    actionsApi.register('notes:toggle-pin', (el, data, event) => togglePinNote(data.noteId || null, event));
+    actionsApi.register('notes:toggle-complete', (el, data, event) => toggleCompleteNote(data.noteId || null, event));
+    actionsApi.register('notes:delete-note', (el, data, event) => deleteNote(data.noteId || null, event));
+    actionsApi.register('notes:set-tag-filter', (el, data) => setTagFilter(data.tag || 'all'));
+    actionsApi.register('notes:select-mindmap-node', (el, data) => selectMindmapNode(data.tag));
+    actionsApi.register('notes:jump-editor', (el, data) => jumpToEditorWithNote(data.noteId));
+    actionsApi.register('notes:select-modal-note', (el, data) => selectNoteInModal(data.noteId));
+    actionsApi.register('notes:search-input', (el) => handleSearchInput(el.value));
+    actionsApi.register('notes:create-new', () => createNewModalNote());
+    actionsApi.register('notes:ai-summarize-active', () => openAiChroniclerWithActiveNote());
+    actionsApi.register('notes:save-modal', () => saveModalNote(true));
+    actionsApi.register('notes:insert-editor-tag', (el, data) => insertTagIntoEditor(data.insert || ''));
+    actionsApi.register('notes:editor-input', (el, data, event) => handleEditorInput(event));
+    actionsApi.register('notes:title-keydown', (el, data, event) => handleTitleKeydown(event));
+    actionsApi.register('notes:editor-keydown', (el, data, event) => handleEditorKeydown(event));
+    actionsApi.register('notes:mindmap-search', (el) => handleMindmapSearch(el.value));
+    actionsApi.register('notes:render-mindmap', () => renderMindmap());
+    actionsApi.register('notes:ai-mindmap-tag', () => openAiChroniclerWithMindmapTag());
+    actionsApi.register('notes:ai-run', () => runAiChronicler());
+    actionsApi.register('notes:ai-save', () => saveAiSynthesisAsNote());
+    actionsApi.register('notes:ai-copy', () => copyAiSynthesisToClipboard());
+    actionsApi.register('notes:quick-input', (el, data, event) => handleQuickInput(event));
+    actionsApi.register('notes:quick-title-keydown', (el, data, event) => handleQuickTitleKeydown(event));
+    actionsApi.register('notes:quick-keydown', (el, data, event) => handleQuickKeydown(event));
+    actionsApi.register('notes:insert-quick-tag', (el, data) => insertTagIntoQuickInput(data.insert || ''));
+    actionsApi.register('notes:add-quick', () => addQuickNote());
+  }
 
   window.addEventListener('storage', (e) => {
     if (e.key === 'dnd35_hub_db' || e.key === 'dnd35_character' || e.key === 'dnd35_character_v2') {
