@@ -37035,9 +37035,9 @@
     "schemaVersion": 2,
     "name": "Bonus Essentia",
     "type": "Feat",
-    "category": "Recitation",
+    "category": "General",
     "featTypes": [
-      "Recitation"
+      "General"
     ],
     "scope": "All",
     "slot": "None",
@@ -37049,7 +37049,7 @@
     "benefit": "You gain 1 point of essentia. If you are capable of shaping soulmelds, you instead gain 2 points of essentia.",
     "tags": [
       "feat",
-      "recitation"
+      "general"
     ],
     "modifiers": [],
     "damageParts": [],
@@ -37064,16 +37064,18 @@
       "sheet": "Feats",
       "row": 1660,
       "book": "Magic of Incarnum p.35"
-    }
+    },
+    "bookVerifiedCategory": "General",
+    "bookReference": "Magic of Incarnum Table 3-3 (pp. 34-41)"
   },
   {
     "id": "feat-double-chakra",
     "schemaVersion": 2,
     "name": "Double Chakra",
     "type": "Feat",
-    "category": "Recitation",
+    "category": "General",
     "featTypes": [
-      "Recitation"
+      "General"
     ],
     "scope": "All",
     "slot": "None",
@@ -37085,7 +37087,7 @@
     "benefit": "Choose a chakra to which you can bind soulmelds. You can shape (and bind) two soulmelds to that chakra simultaneously.",
     "tags": [
       "feat",
-      "recitation"
+      "general"
     ],
     "modifiers": [],
     "damageParts": [],
@@ -37100,16 +37102,18 @@
       "sheet": "Feats",
       "row": 1661,
       "crossCheck": "srd.dndtools.org Feat Index (srd/tools/toolsFeatIndex.html), 2026-11-10"
-    }
+    },
+    "bookVerifiedCategory": "General",
+    "bookReference": "Magic of Incarnum Table 3-3 (pp. 34-41)"
   },
   {
     "id": "feat-expanded-soulmeld-capacity",
     "schemaVersion": 2,
     "name": "Expanded Soulmeld Capacity",
     "type": "Feat",
-    "category": "Recitation",
+    "category": "General",
     "featTypes": [
-      "Recitation"
+      "General"
     ],
     "scope": "All",
     "slot": "None",
@@ -37121,7 +37125,7 @@
     "benefit": "When you shape soulmelds, choose one. The essentia capacity for that soulmeld is increased by one.",
     "tags": [
       "feat",
-      "recitation"
+      "general"
     ],
     "modifiers": [],
     "damageParts": [],
@@ -37136,16 +37140,18 @@
       "sheet": "Feats",
       "row": 1665,
       "crossCheck": "srd.dndtools.org Feat Index (srd/tools/toolsFeatIndex.html), 2026-11-10"
-    }
+    },
+    "bookVerifiedCategory": "General",
+    "bookReference": "Magic of Incarnum Table 3-3 (pp. 34-41)"
   },
   {
     "id": "feat-heart-of-incarnum",
     "schemaVersion": 2,
     "name": "Heart of Incarnum",
     "type": "Feat",
-    "category": "Recitation",
+    "category": "General",
     "featTypes": [
-      "Recitation"
+      "General"
     ],
     "scope": "All",
     "slot": "None",
@@ -37157,7 +37163,7 @@
     "benefit": "You gain hit points equal to your essentia pool.",
     "tags": [
       "feat",
-      "recitation"
+      "general"
     ],
     "modifiers": [],
     "damageParts": [],
@@ -37172,16 +37178,18 @@
       "sheet": "Feats",
       "row": 1668,
       "crossCheck": "srd.dndtools.org Feat Index (srd/tools/toolsFeatIndex.html), 2026-11-10"
-    }
+    },
+    "bookVerifiedCategory": "General",
+    "bookReference": "Magic of Incarnum Table 3-3 (pp. 34-41)"
   },
   {
     "id": "feat-improved-essentia-capacity",
     "schemaVersion": 2,
     "name": "Improved Essentia Capacity",
     "type": "Feat",
-    "category": "Recitation",
+    "category": "General",
     "featTypes": [
-      "Recitation"
+      "General"
     ],
     "scope": "All",
     "slot": "None",
@@ -37193,7 +37201,7 @@
     "benefit": "The essentia capacity of your incarnum feats increases by 1.",
     "tags": [
       "feat",
-      "recitation"
+      "general"
     ],
     "modifiers": [],
     "damageParts": [],
@@ -37208,16 +37216,18 @@
       "sheet": "Feats",
       "row": 1669,
       "crossCheck": "srd.dndtools.org Feat Index (srd/tools/toolsFeatIndex.html), 2026-11-10"
-    }
+    },
+    "bookVerifiedCategory": "General",
+    "bookReference": "Magic of Incarnum Table 3-3 (pp. 34-41)"
   },
   {
     "id": "feat-incarnum-fortified-body",
     "schemaVersion": 2,
     "name": "Incarnum-Fortified Body",
     "type": "Feat",
-    "category": "Recitation",
+    "category": "General",
     "featTypes": [
-      "Recitation"
+      "General"
     ],
     "scope": "All",
     "slot": "None",
@@ -37229,7 +37239,7 @@
     "benefit": "You gain 2 hit points for every incarnum feat you possess. You gain a +4 bonus on Fortitude saves to resist massive damage.",
     "tags": [
       "feat",
-      "recitation"
+      "general"
     ],
     "modifiers": [],
     "damageParts": [],
@@ -37244,16 +37254,18 @@
       "sheet": "Feats",
       "row": 1670,
       "crossCheck": "srd.dndtools.org Feat Index (srd/tools/toolsFeatIndex.html), 2026-11-10"
-    }
+    },
+    "bookVerifiedCategory": "General",
+    "bookReference": "Magic of Incarnum Table 3-3 (pp. 34-41)"
   },
   {
     "id": "feat-incarnum-resistance",
     "schemaVersion": 2,
     "name": "Incarnum Resistance",
     "type": "Feat",
-    "category": "Recitation",
+    "category": "General",
     "featTypes": [
-      "Recitation"
+      "General"
     ],
     "scope": "All",
     "slot": "None",
@@ -37265,7 +37277,7 @@
     "benefit": "You gain a +2 bonus on saves against effects generated by soulmelds.",
     "tags": [
       "feat",
-      "recitation"
+      "general"
     ],
     "modifiers": [],
     "damageParts": [],
@@ -37280,16 +37292,18 @@
       "sheet": "Feats",
       "row": 1671,
       "crossCheck": "srd.dndtools.org Feat Index (srd/tools/toolsFeatIndex.html), 2026-11-10"
-    }
+    },
+    "bookVerifiedCategory": "General",
+    "bookReference": "Magic of Incarnum Table 3-3 (pp. 34-41)"
   },
   {
     "id": "feat-necrocarnum-acolyte",
     "schemaVersion": 2,
     "name": "Necrocarnum Acolyte",
     "type": "Feat",
-    "category": "Recitation",
+    "category": "General",
     "featTypes": [
-      "Recitation"
+      "General"
     ],
     "scope": "All",
     "slot": "None",
@@ -37301,7 +37315,7 @@
     "benefit": "You can shape Necrocarnum soulmelds regardless of alignment. You gain a +1 profane bonus on the save DCs of your Necrocarnum soulmelds.",
     "tags": [
       "feat",
-      "recitation"
+      "general"
     ],
     "modifiers": [],
     "damageParts": [],
@@ -37316,16 +37330,18 @@
       "sheet": "Feats",
       "row": 1672,
       "crossCheck": "srd.dndtools.org Feat Index (srd/tools/toolsFeatIndex.html), 2026-11-10"
-    }
+    },
+    "bookVerifiedCategory": "General",
+    "bookReference": "Magic of Incarnum Table 3-3 (pp. 34-41)"
   },
   {
     "id": "feat-open-least-chakra-crown",
     "schemaVersion": 2,
     "name": "Open Least Chakra (Crown)",
     "type": "Feat",
-    "category": "Recitation",
+    "category": "General",
     "featTypes": [
-      "Recitation"
+      "General"
     ],
     "scope": "All",
     "slot": "None",
@@ -37337,7 +37353,7 @@
     "benefit": "You may bind a soulmeld or magic item to your Crown chakra. You gain a +1 insight bonus on Will saves.",
     "tags": [
       "feat",
-      "recitation"
+      "general"
     ],
     "modifiers": [],
     "damageParts": [],
@@ -37352,16 +37368,18 @@
       "sheet": "Feats",
       "row": 1673,
       "crossCheck": "srd.dndtools.org Feat Index (srd/tools/toolsFeatIndex.html), 2026-11-10"
-    }
+    },
+    "bookVerifiedCategory": "General",
+    "bookReference": "Magic of Incarnum Table 3-3 (pp. 34-41)"
   },
   {
     "id": "feat-open-least-chakra-hands",
     "schemaVersion": 2,
     "name": "Open Least Chakra (Hands)",
     "type": "Feat",
-    "category": "Recitation",
+    "category": "General",
     "featTypes": [
-      "Recitation"
+      "General"
     ],
     "scope": "All",
     "slot": "None",
@@ -37373,7 +37391,7 @@
     "benefit": "You may bind a soulmeld or magic item to your Hands chakra. You gain a +1 insight bonus to Climb and Swim checks.",
     "tags": [
       "feat",
-      "recitation"
+      "general"
     ],
     "modifiers": [],
     "damageParts": [],
@@ -37388,16 +37406,18 @@
       "sheet": "Feats",
       "row": 1674,
       "crossCheck": "srd.dndtools.org Feat Index (srd/tools/toolsFeatIndex.html), 2026-11-10"
-    }
+    },
+    "bookVerifiedCategory": "General",
+    "bookReference": "Magic of Incarnum Table 3-3 (pp. 34-41)"
   },
   {
     "id": "feat-open-least-chakra-feet",
     "schemaVersion": 2,
     "name": "Open Least Chakra (Feet)",
     "type": "Feat",
-    "category": "Recitation",
+    "category": "General",
     "featTypes": [
-      "Recitation"
+      "General"
     ],
     "scope": "All",
     "slot": "None",
@@ -37409,7 +37429,7 @@
     "benefit": "You may bind a soulmeld or magic item to your Feet chakra. You gain a +1 insight bonus to Balance and Move Silently checks.",
     "tags": [
       "feat",
-      "recitation"
+      "general"
     ],
     "modifiers": [],
     "damageParts": [],
@@ -37424,16 +37444,18 @@
       "sheet": "Feats",
       "row": 1675,
       "crossCheck": "srd.dndtools.org Feat Index (srd/tools/toolsFeatIndex.html), 2026-11-10"
-    }
+    },
+    "bookVerifiedCategory": "General",
+    "bookReference": "Magic of Incarnum Table 3-3 (pp. 34-41)"
   },
   {
     "id": "feat-open-lesser-chakra-arms",
     "schemaVersion": 2,
     "name": "Open Lesser Chakra (Arms)",
     "type": "Feat",
-    "category": "Recitation",
+    "category": "General",
     "featTypes": [
-      "Recitation"
+      "General"
     ],
     "scope": "All",
     "slot": "None",
@@ -37445,7 +37467,7 @@
     "benefit": "You may bind a soulmeld or magic item to your Arms chakra. You gain a +2 insight bonus on grapple checks.",
     "tags": [
       "feat",
-      "recitation"
+      "general"
     ],
     "modifiers": [],
     "damageParts": [],
@@ -37460,16 +37482,18 @@
       "sheet": "Feats",
       "row": 1676,
       "crossCheck": "srd.dndtools.org Feat Index (srd/tools/toolsFeatIndex.html), 2026-11-10"
-    }
+    },
+    "bookVerifiedCategory": "General",
+    "bookReference": "Magic of Incarnum Table 3-3 (pp. 34-41)"
   },
   {
     "id": "feat-open-lesser-chakra-brow",
     "schemaVersion": 2,
     "name": "Open Lesser Chakra (Brow)",
     "type": "Feat",
-    "category": "Recitation",
+    "category": "General",
     "featTypes": [
-      "Recitation"
+      "General"
     ],
     "scope": "All",
     "slot": "None",
@@ -37481,7 +37505,7 @@
     "benefit": "You may bind a soulmeld or magic item to your Brow chakra. You gain a +1 insight bonus on Search and Spot checks.",
     "tags": [
       "feat",
-      "recitation"
+      "general"
     ],
     "modifiers": [],
     "damageParts": [],
@@ -37496,16 +37520,18 @@
       "sheet": "Feats",
       "row": 1677,
       "crossCheck": "srd.dndtools.org Feat Index (srd/tools/toolsFeatIndex.html), 2026-11-10"
-    }
+    },
+    "bookVerifiedCategory": "General",
+    "bookReference": "Magic of Incarnum Table 3-3 (pp. 34-41)"
   },
   {
     "id": "feat-open-lesser-chakra-shoulders",
     "schemaVersion": 2,
     "name": "Open Lesser Chakra (Shoulders)",
     "type": "Feat",
-    "category": "Recitation",
+    "category": "General",
     "featTypes": [
-      "Recitation"
+      "General"
     ],
     "scope": "All",
     "slot": "None",
@@ -37517,7 +37543,7 @@
     "benefit": "You may bind a soulmeld or magic item to your Shoulders chakra. You gain a +1 insight bonus to Reflex saves.",
     "tags": [
       "feat",
-      "recitation"
+      "general"
     ],
     "modifiers": [],
     "damageParts": [],
@@ -37532,16 +37558,18 @@
       "sheet": "Feats",
       "row": 1678,
       "crossCheck": "srd.dndtools.org Feat Index (srd/tools/toolsFeatIndex.html), 2026-11-10"
-    }
+    },
+    "bookVerifiedCategory": "General",
+    "bookReference": "Magic of Incarnum Table 3-3 (pp. 34-41)"
   },
   {
     "id": "feat-open-greater-chakra-throat",
     "schemaVersion": 2,
     "name": "Open Greater Chakra (Throat)",
     "type": "Feat",
-    "category": "Recitation",
+    "category": "General",
     "featTypes": [
-      "Recitation"
+      "General"
     ],
     "scope": "All",
     "slot": "None",
@@ -37553,7 +37581,7 @@
     "benefit": "You may bind a soulmeld or magic item to your Throat chakra. You gain a +1 insight bonus on Bluff and Diplomacy checks.",
     "tags": [
       "feat",
-      "recitation"
+      "general"
     ],
     "modifiers": [],
     "damageParts": [],
@@ -37568,16 +37596,18 @@
       "sheet": "Feats",
       "row": 1679,
       "crossCheck": "srd.dndtools.org Feat Index (srd/tools/toolsFeatIndex.html), 2026-11-10"
-    }
+    },
+    "bookVerifiedCategory": "General",
+    "bookReference": "Magic of Incarnum Table 3-3 (pp. 34-41)"
   },
   {
     "id": "feat-open-greater-chakra-waist",
     "schemaVersion": 2,
     "name": "Open Greater Chakra (Waist)",
     "type": "Feat",
-    "category": "Recitation",
+    "category": "General",
     "featTypes": [
-      "Recitation"
+      "General"
     ],
     "scope": "All",
     "slot": "None",
@@ -37589,7 +37619,7 @@
     "benefit": "You may bind a soulmeld or magic item to your Waist chakra. You gain a +1 insight bonus to Fortitude saves.",
     "tags": [
       "feat",
-      "recitation"
+      "general"
     ],
     "modifiers": [],
     "damageParts": [],
@@ -37604,16 +37634,18 @@
       "sheet": "Feats",
       "row": 1680,
       "crossCheck": "srd.dndtools.org Feat Index (srd/tools/toolsFeatIndex.html), 2026-11-10"
-    }
+    },
+    "bookVerifiedCategory": "General",
+    "bookReference": "Magic of Incarnum Table 3-3 (pp. 34-41)"
   },
   {
     "id": "feat-shape-soulmeld",
     "schemaVersion": 2,
     "name": "Shape Soulmeld",
     "type": "Feat",
-    "category": "Recitation",
+    "category": "General",
     "featTypes": [
-      "Recitation"
+      "General"
     ],
     "scope": "All",
     "slot": "None",
@@ -37625,7 +37657,7 @@
     "benefit": "Choose a soulmeld from any class's list. You may shape that soulmeld using the normal meldshaping rules.",
     "tags": [
       "feat",
-      "recitation"
+      "general"
     ],
     "modifiers": [],
     "damageParts": [],
@@ -37640,16 +37672,18 @@
       "sheet": "Feats",
       "row": 1681,
       "crossCheck": "srd.dndtools.org Feat Index (srd/tools/toolsFeatIndex.html), 2026-11-10"
-    }
+    },
+    "bookVerifiedCategory": "General",
+    "bookReference": "Magic of Incarnum Table 3-3 (pp. 34-41)"
   },
   {
     "id": "feat-share-soulmeld",
     "schemaVersion": 2,
     "name": "Share Soulmeld",
     "type": "Feat",
-    "category": "Recitation",
+    "category": "General",
     "featTypes": [
-      "Recitation"
+      "General"
     ],
     "scope": "All",
     "slot": "None",
@@ -37661,7 +37695,7 @@
     "benefit": "At your option, you may grant your companion the benefits of any soulmeld you have shaped, so long as it is within 5ft of you.",
     "tags": [
       "feat",
-      "recitation"
+      "general"
     ],
     "modifiers": [],
     "damageParts": [],
@@ -37676,16 +37710,18 @@
       "sheet": "Feats",
       "row": 1685,
       "crossCheck": "srd.dndtools.org Feat Index (srd/tools/toolsFeatIndex.html), 2026-11-10"
-    }
+    },
+    "bookVerifiedCategory": "General",
+    "bookReference": "Magic of Incarnum Table 3-3 (pp. 34-41)"
   },
   {
     "id": "feat-split-chakra",
     "schemaVersion": 2,
     "name": "Split Chakra",
     "type": "Feat",
-    "category": "Recitation",
+    "category": "General",
     "featTypes": [
-      "Recitation"
+      "General"
     ],
     "scope": "All",
     "slot": "None",
@@ -37697,7 +37733,7 @@
     "benefit": "Choose a chakra. You may gain the benefit of a magic item occupying that location even when you have a soulmeld bound to the chakra. You may also bind a magic item to the chakra.",
     "tags": [
       "feat",
-      "recitation"
+      "general"
     ],
     "modifiers": [],
     "damageParts": [],
@@ -37712,16 +37748,18 @@
       "sheet": "Feats",
       "row": 1686,
       "crossCheck": "srd.dndtools.org Feat Index (srd/tools/toolsFeatIndex.html), 2026-11-10"
-    }
+    },
+    "bookVerifiedCategory": "General",
+    "bookReference": "Magic of Incarnum Table 3-3 (pp. 34-41)"
   },
   {
     "id": "feat-undead-meldshaper",
     "schemaVersion": 2,
     "name": "Undead Meldshaper",
     "type": "Feat",
-    "category": "Recitation",
+    "category": "Monstrous",
     "featTypes": [
-      "Recitation"
+      "Monstrous"
     ],
     "scope": "All",
     "slot": "None",
@@ -37733,7 +37771,7 @@
     "benefit": "Use your Wisdom score to determine how many soulmelds you may have shaped. If you would use your Constitution modifier to determine a soulmeld's save DC, use Wisdom instead.",
     "tags": [
       "feat",
-      "recitation"
+      "monstrous"
     ],
     "modifiers": [],
     "damageParts": [],
@@ -37748,16 +37786,18 @@
       "sheet": "Feats",
       "row": 1690,
       "crossCheck": "srd.dndtools.org Feat Index (srd/tools/toolsFeatIndex.html), 2026-11-10"
-    }
+    },
+    "bookVerifiedCategory": "Monstrous",
+    "bookReference": "Magic of Incarnum Table 3-3 (pp. 34-41)"
   },
   {
     "id": "feat-divine-soultouch",
     "schemaVersion": 2,
     "name": "Divine Soultouch",
     "type": "Feat",
-    "category": "Recitation",
+    "category": "Divine",
     "featTypes": [
-      "Recitation"
+      "Divine"
     ],
     "scope": "All",
     "slot": "None",
@@ -37769,7 +37809,7 @@
     "benefit": "You may spend a turn or rebuke undead attempt as a free action to add 1 point of essentia to your pool for one round. The essentia capacity of all receptacles increased by 1 for this round.",
     "tags": [
       "feat",
-      "recitation"
+      "divine"
     ],
     "modifiers": [],
     "damageParts": [],
@@ -37784,16 +37824,18 @@
       "sheet": "Feats",
       "row": 1692,
       "crossCheck": "srd.dndtools.org Feat Index (srd/tools/toolsFeatIndex.html), 2026-11-10"
-    }
+    },
+    "bookVerifiedCategory": "Divine",
+    "bookReference": "Magic of Incarnum Table 3-3 (pp. 34-41)"
   },
   {
     "id": "feat-azure-enmity",
     "schemaVersion": 2,
     "name": "Azure Enmity",
     "type": "Feat",
-    "category": "Recitation",
+    "category": "Incarnum",
     "featTypes": [
-      "Recitation"
+      "Incarnum"
     ],
     "scope": "All",
     "slot": "None",
@@ -37807,7 +37849,7 @@
     "benefit": "You may invest essentia to improve your Favoured Enemy ability. You gain 1 point of essentia.",
     "tags": [
       "feat",
-      "recitation"
+      "incarnum"
     ],
     "modifiers": [],
     "damageParts": [],
@@ -37822,16 +37864,19 @@
       "sheet": "Feats",
       "row": 1694,
       "crossCheck": "srd.dndtools.org Feat Index (srd/tools/toolsFeatIndex.html), 2026-11-10"
-    }
+    },
+    "bookVerifiedCategory": "Incarnum",
+    "bookReference": "Magic of Incarnum Table 3-3 (pp. 34-41)"
   },
   {
     "id": "feat-azure-talent",
     "schemaVersion": 2,
     "name": "Azure Talent",
     "type": "Feat",
-    "category": "Recitation",
+    "category": "Incarnum",
     "featTypes": [
-      "Recitation"
+      "Incarnum",
+      "Psionic"
     ],
     "scope": "All",
     "slot": "None",
@@ -37846,7 +37891,8 @@
     "benefit": "Gain 2 power points per point of invested essentia. You gain 1 point of essentia.",
     "tags": [
       "feat",
-      "recitation"
+      "incarnum",
+      "psionic"
     ],
     "modifiers": [],
     "damageParts": [],
@@ -37861,16 +37907,18 @@
       "sheet": "Feats",
       "row": 1695,
       "crossCheck": "srd.dndtools.org Feat Index (srd/tools/toolsFeatIndex.html), 2026-11-10"
-    }
+    },
+    "bookVerifiedCategory": "Incarnum",
+    "bookReference": "Magic of Incarnum Table 3-3 (pp. 34-41)"
   },
   {
     "id": "feat-azure-touch",
     "schemaVersion": 2,
     "name": "Azure Touch",
     "type": "Feat",
-    "category": "Recitation",
+    "category": "Incarnum",
     "featTypes": [
-      "Recitation"
+      "Incarnum"
     ],
     "scope": "All",
     "slot": "None",
@@ -37884,7 +37932,7 @@
     "benefit": "You may invest essentia to increase the amount of healing available to you. You gain 1 point of essentia.",
     "tags": [
       "feat",
-      "recitation"
+      "incarnum"
     ],
     "modifiers": [],
     "damageParts": [],
@@ -37899,16 +37947,18 @@
       "sheet": "Feats",
       "row": 1696,
       "crossCheck": "srd.dndtools.org Feat Index (srd/tools/toolsFeatIndex.html), 2026-11-10"
-    }
+    },
+    "bookVerifiedCategory": "Incarnum",
+    "bookReference": "Magic of Incarnum Table 3-3 (pp. 34-41)"
   },
   {
     "id": "feat-azure-toughness",
     "schemaVersion": 2,
     "name": "Azure Toughness",
     "type": "Feat",
-    "category": "Recitation",
+    "category": "Incarnum",
     "featTypes": [
-      "Recitation"
+      "Incarnum"
     ],
     "scope": "All",
     "slot": "None",
@@ -37922,7 +37972,7 @@
     "benefit": "You may invest essentia to gain 3 HP per point of invested essentia. You gain 1 point of essentia. This feat may be used in place of Toughness for the purposes of meeting prereqs.",
     "tags": [
       "feat",
-      "recitation"
+      "incarnum"
     ],
     "modifiers": [],
     "damageParts": [],
@@ -37937,16 +37987,18 @@
       "sheet": "Feats",
       "row": 1697,
       "crossCheck": "srd.dndtools.org Feat Index (srd/tools/toolsFeatIndex.html), 2026-11-10"
-    }
+    },
+    "bookVerifiedCategory": "Incarnum",
+    "bookReference": "Magic of Incarnum Table 3-3 (pp. 34-41)"
   },
   {
     "id": "feat-azure-turning",
     "schemaVersion": 2,
     "name": "Azure Turning",
     "type": "Feat",
-    "category": "Recitation",
+    "category": "Incarnum",
     "featTypes": [
-      "Recitation"
+      "Incarnum"
     ],
     "scope": "All",
     "slot": "None",
@@ -37960,7 +38012,7 @@
     "benefit": "Your turn attempts deal 1d8 points of damage per point of invested essentia. You gain 1 point of essentia.",
     "tags": [
       "feat",
-      "recitation"
+      "incarnum"
     ],
     "modifiers": [],
     "damageParts": [],
@@ -37975,16 +38027,18 @@
       "sheet": "Feats",
       "row": 1698,
       "crossCheck": "srd.dndtools.org Feat Index (srd/tools/toolsFeatIndex.html), 2026-11-10"
-    }
+    },
+    "bookVerifiedCategory": "Incarnum",
+    "bookReference": "Magic of Incarnum Table 3-3 (pp. 34-41)"
   },
   {
     "id": "feat-azure-wild-shape",
     "schemaVersion": 2,
     "name": "Azure Wild Shape",
     "type": "Feat",
-    "category": "Recitation",
+    "category": "Incarnum",
     "featTypes": [
-      "Recitation"
+      "Incarnum"
     ],
     "scope": "All",
     "slot": "None",
@@ -37998,7 +38052,7 @@
     "benefit": "You may invest essentia to increase the damage of your natural weapons while wildshaped. You gain 1 point of essentia.",
     "tags": [
       "feat",
-      "recitation"
+      "incarnum"
     ],
     "modifiers": [],
     "damageParts": [],
@@ -38013,16 +38067,18 @@
       "sheet": "Feats",
       "row": 1699,
       "crossCheck": "srd.dndtools.org Feat Index (srd/tools/toolsFeatIndex.html), 2026-11-10"
-    }
+    },
+    "bookVerifiedCategory": "Incarnum",
+    "bookReference": "Magic of Incarnum Table 3-3 (pp. 34-41)"
   },
   {
     "id": "feat-cerulean-fortitude",
     "schemaVersion": 2,
     "name": "Cerulean Fortitude",
     "type": "Feat",
-    "category": "Recitation",
+    "category": "Incarnum",
     "featTypes": [
-      "Recitation"
+      "Incarnum"
     ],
     "scope": "All",
     "slot": "None",
@@ -38036,7 +38092,7 @@
     "benefit": "You may invest essentia to improve your Fortitude save. You gain 1 point of essentia.",
     "tags": [
       "feat",
-      "recitation"
+      "incarnum"
     ],
     "modifiers": [],
     "damageParts": [],
@@ -38051,16 +38107,18 @@
       "sheet": "Feats",
       "row": 1700,
       "crossCheck": "srd.dndtools.org Feat Index (srd/tools/toolsFeatIndex.html), 2026-11-10"
-    }
+    },
+    "bookVerifiedCategory": "Incarnum",
+    "bookReference": "Magic of Incarnum Table 3-3 (pp. 34-41)"
   },
   {
     "id": "feat-cerulean-reflexes",
     "schemaVersion": 2,
     "name": "Cerulean Reflexes",
     "type": "Feat",
-    "category": "Recitation",
+    "category": "Incarnum",
     "featTypes": [
-      "Recitation"
+      "Incarnum"
     ],
     "scope": "All",
     "slot": "None",
@@ -38074,7 +38132,7 @@
     "benefit": "You may invest essentia to improve your Reflex save. You gain 1 point of essentia.",
     "tags": [
       "feat",
-      "recitation"
+      "incarnum"
     ],
     "modifiers": [],
     "damageParts": [],
@@ -38089,16 +38147,18 @@
       "sheet": "Feats",
       "row": 1701,
       "crossCheck": "srd.dndtools.org Feat Index (srd/tools/toolsFeatIndex.html), 2026-11-10"
-    }
+    },
+    "bookVerifiedCategory": "Incarnum",
+    "bookReference": "Magic of Incarnum Table 3-3 (pp. 34-41)"
   },
   {
     "id": "feat-cerulean-will",
     "schemaVersion": 2,
     "name": "Cerulean Will",
     "type": "Feat",
-    "category": "Recitation",
+    "category": "Incarnum",
     "featTypes": [
-      "Recitation"
+      "Incarnum"
     ],
     "scope": "All",
     "slot": "None",
@@ -38112,7 +38172,7 @@
     "benefit": "You may invest essentia to improve your Will save. You gain 1 point of essentia.",
     "tags": [
       "feat",
-      "recitation"
+      "incarnum"
     ],
     "modifiers": [],
     "damageParts": [],
@@ -38127,16 +38187,18 @@
       "sheet": "Feats",
       "row": 1702,
       "crossCheck": "srd.dndtools.org Feat Index (srd/tools/toolsFeatIndex.html), 2026-11-10"
-    }
+    },
+    "bookVerifiedCategory": "Incarnum",
+    "bookReference": "Magic of Incarnum Table 3-3 (pp. 34-41)"
   },
   {
     "id": "feat-cobalt-charge",
     "schemaVersion": 2,
     "name": "Cobalt Charge",
     "type": "Feat",
-    "category": "Recitation",
+    "category": "Incarnum",
     "featTypes": [
-      "Recitation"
+      "Incarnum"
     ],
     "scope": "All",
     "slot": "None",
@@ -38150,7 +38212,7 @@
     "benefit": "You may invest essentia to gain a bonus to attack and damage on charge attacks. You gain 1 point of essentia.",
     "tags": [
       "feat",
-      "recitation"
+      "incarnum"
     ],
     "modifiers": [],
     "damageParts": [],
@@ -38165,16 +38227,18 @@
       "sheet": "Feats",
       "row": 1703,
       "crossCheck": "srd.dndtools.org Feat Index (srd/tools/toolsFeatIndex.html), 2026-11-10"
-    }
+    },
+    "bookVerifiedCategory": "Incarnum",
+    "bookReference": "Magic of Incarnum Table 3-3 (pp. 34-41)"
   },
   {
     "id": "feat-cobalt-critical",
     "schemaVersion": 2,
     "name": "Cobalt Critical",
     "type": "Feat",
-    "category": "Recitation",
+    "category": "Incarnum",
     "featTypes": [
-      "Recitation"
+      "Incarnum"
     ],
     "scope": "All",
     "slot": "None",
@@ -38188,7 +38252,7 @@
     "benefit": "You may invest essentia to gain a bonus to melee critical confirmation rolls, and to melee critical damage rolls. You gain 1 point of essentia.",
     "tags": [
       "feat",
-      "recitation"
+      "incarnum"
     ],
     "modifiers": [],
     "damageParts": [],
@@ -38203,16 +38267,18 @@
       "sheet": "Feats",
       "row": 1704,
       "crossCheck": "srd.dndtools.org Feat Index (srd/tools/toolsFeatIndex.html), 2026-11-10"
-    }
+    },
+    "bookVerifiedCategory": "Incarnum",
+    "bookReference": "Magic of Incarnum Table 3-3 (pp. 34-41)"
   },
   {
     "id": "feat-cobalt-expertise",
     "schemaVersion": 2,
     "name": "Cobalt Expertise",
     "type": "Feat",
-    "category": "Recitation",
+    "category": "Incarnum",
     "featTypes": [
-      "Recitation"
+      "Incarnum"
     ],
     "scope": "All",
     "slot": "None",
@@ -38226,7 +38292,7 @@
     "benefit": "You may invest essentia to gain a bonus on all disarm, feint, and trip attacks, and to AC while using Combat Expertise. You gain 1 point of essentia.",
     "tags": [
       "feat",
-      "recitation"
+      "incarnum"
     ],
     "modifiers": [],
     "damageParts": [],
@@ -38241,16 +38307,18 @@
       "sheet": "Feats",
       "row": 1705,
       "crossCheck": "srd.dndtools.org Feat Index (srd/tools/toolsFeatIndex.html), 2026-11-10"
-    }
+    },
+    "bookVerifiedCategory": "Incarnum",
+    "bookReference": "Magic of Incarnum Table 3-3 (pp. 34-41)"
   },
   {
     "id": "feat-cobalt-power",
     "schemaVersion": 2,
     "name": "Cobalt Power",
     "type": "Feat",
-    "category": "Recitation",
+    "category": "Incarnum",
     "featTypes": [
-      "Recitation"
+      "Incarnum"
     ],
     "scope": "All",
     "slot": "None",
@@ -38264,7 +38332,7 @@
     "benefit": "You may invest essentia to gain a bonus on all bull rush, overrun, or sunder attacks, and to damage while using Power Attack. You gain 1 point of essentia.",
     "tags": [
       "feat",
-      "recitation"
+      "incarnum"
     ],
     "modifiers": [],
     "damageParts": [],
@@ -38279,16 +38347,18 @@
       "sheet": "Feats",
       "row": 1706,
       "crossCheck": "srd.dndtools.org Feat Index (srd/tools/toolsFeatIndex.html), 2026-11-10"
-    }
+    },
+    "bookVerifiedCategory": "Incarnum",
+    "bookReference": "Magic of Incarnum Table 3-3 (pp. 34-41)"
   },
   {
     "id": "feat-cobalt-precision",
     "schemaVersion": 2,
     "name": "Cobalt Precision",
     "type": "Feat",
-    "category": "Recitation",
+    "category": "Incarnum",
     "featTypes": [
-      "Recitation"
+      "Incarnum"
     ],
     "scope": "All",
     "slot": "None",
@@ -38302,7 +38372,7 @@
     "benefit": "You may invest essentia to gain a bonus to ranged critical confirmation rolls, and to ranged critical damage rolls. You gain 1 point of essentia.",
     "tags": [
       "feat",
-      "recitation"
+      "incarnum"
     ],
     "modifiers": [],
     "damageParts": [],
@@ -38317,16 +38387,18 @@
       "sheet": "Feats",
       "row": 1707,
       "crossCheck": "srd.dndtools.org Feat Index (srd/tools/toolsFeatIndex.html), 2026-11-10"
-    }
+    },
+    "bookVerifiedCategory": "Incarnum",
+    "bookReference": "Magic of Incarnum Table 3-3 (pp. 34-41)"
   },
   {
     "id": "feat-cobalt-rage",
     "schemaVersion": 2,
     "name": "Cobalt Rage",
     "type": "Feat",
-    "category": "Recitation",
+    "category": "Incarnum",
     "featTypes": [
-      "Recitation"
+      "Incarnum"
     ],
     "scope": "All",
     "slot": "None",
@@ -38340,7 +38412,7 @@
     "benefit": "You may invest essentia to give you a bonus on melee damage rolls and Will saves while raging. You gain 1 point of essentia.",
     "tags": [
       "feat",
-      "recitation"
+      "incarnum"
     ],
     "modifiers": [],
     "damageParts": [],
@@ -38355,16 +38427,18 @@
       "sheet": "Feats",
       "row": 1708,
       "crossCheck": "srd.dndtools.org Feat Index (srd/tools/toolsFeatIndex.html), 2026-11-10"
-    }
+    },
+    "bookVerifiedCategory": "Incarnum",
+    "bookReference": "Magic of Incarnum Table 3-3 (pp. 34-41)"
   },
   {
     "id": "feat-healing-soul",
     "schemaVersion": 2,
     "name": "Healing Soul",
     "type": "Feat",
-    "category": "Recitation",
+    "category": "Incarnum",
     "featTypes": [
-      "Recitation"
+      "Incarnum"
     ],
     "scope": "All",
     "slot": "None",
@@ -38378,7 +38452,7 @@
     "benefit": "You may invest essentia in order to gain the ability to heal your own wounds. You gain 1 point of essentia.",
     "tags": [
       "feat",
-      "recitation"
+      "incarnum"
     ],
     "modifiers": [],
     "damageParts": [],
@@ -38393,16 +38467,18 @@
       "sheet": "Feats",
       "row": 1709,
       "crossCheck": "srd.dndtools.org Feat Index (srd/tools/toolsFeatIndex.html), 2026-11-10"
-    }
+    },
+    "bookVerifiedCategory": "Incarnum",
+    "bookReference": "Magic of Incarnum Table 3-3 (pp. 34-41)"
   },
   {
     "id": "feat-incarnum-spellshaping",
     "schemaVersion": 2,
     "name": "Incarnum Spellshaping",
     "type": "Feat",
-    "category": "Recitation",
+    "category": "Incarnum",
     "featTypes": [
-      "Recitation"
+      "Incarnum"
     ],
     "scope": "All",
     "slot": "None",
@@ -38416,7 +38492,7 @@
     "benefit": "You can learn, prepare, and/or cast spells with the incarnum descriptor. You gain 1 point of essentia.",
     "tags": [
       "feat",
-      "recitation"
+      "incarnum"
     ],
     "modifiers": [],
     "damageParts": [],
@@ -38431,16 +38507,18 @@
       "sheet": "Feats",
       "row": 1710,
       "crossCheck": "srd.dndtools.org Feat Index (srd/tools/toolsFeatIndex.html), 2026-11-10"
-    }
+    },
+    "bookVerifiedCategory": "Incarnum",
+    "bookReference": "Magic of Incarnum Table 3-3 (pp. 34-41)"
   },
   {
     "id": "feat-indigo-strike",
     "schemaVersion": 2,
     "name": "Indigo Strike",
     "type": "Feat",
-    "category": "Recitation",
+    "category": "Incarnum",
     "featTypes": [
-      "Recitation"
+      "Incarnum"
     ],
     "scope": "All",
     "slot": "None",
@@ -38454,7 +38532,7 @@
     "benefit": "You may invest essentia to gain a bonus on damage rolls while using sneak attack, skirmish, or sudden strike. You gain 1 point of essentia.",
     "tags": [
       "feat",
-      "recitation"
+      "incarnum"
     ],
     "modifiers": [],
     "damageParts": [],
@@ -38469,16 +38547,19 @@
       "sheet": "Feats",
       "row": 1711,
       "crossCheck": "srd.dndtools.org Feat Index (srd/tools/toolsFeatIndex.html), 2026-11-10"
-    }
+    },
+    "bookVerifiedCategory": "Incarnum",
+    "bookReference": "Magic of Incarnum Table 3-3 (pp. 34-41)"
   },
   {
     "id": "feat-midnight-augmentation",
     "schemaVersion": 2,
     "name": "Midnight Augmentation",
     "type": "Feat",
-    "category": "Recitation",
+    "category": "Incarnum",
     "featTypes": [
-      "Recitation"
+      "Incarnum",
+      "Psionic"
     ],
     "scope": "All",
     "slot": "None",
@@ -38493,7 +38574,8 @@
     "benefit": "You may invest essentia to reduce the cost of augmenting a particular power when expending your psionic focus. You gain 1 point of essentia.",
     "tags": [
       "feat",
-      "recitation"
+      "incarnum",
+      "psionic"
     ],
     "modifiers": [],
     "damageParts": [],
@@ -38508,16 +38590,18 @@
       "sheet": "Feats",
       "row": 1712,
       "crossCheck": "srd.dndtools.org Feat Index (srd/tools/toolsFeatIndex.html), 2026-11-10"
-    }
+    },
+    "bookVerifiedCategory": "Incarnum",
+    "bookReference": "Magic of Incarnum Table 3-3 (pp. 34-41)"
   },
   {
     "id": "feat-midnight-dodge",
     "schemaVersion": 2,
     "name": "Midnight Dodge",
     "type": "Feat",
-    "category": "Recitation",
+    "category": "Incarnum",
     "featTypes": [
-      "Recitation"
+      "Incarnum"
     ],
     "scope": "All",
     "slot": "None",
@@ -38531,7 +38615,7 @@
     "benefit": "You may invest essentia to gain a dodge bonus to AC against a target of your choice. You gain 1 point of essentia.",
     "tags": [
       "feat",
-      "recitation"
+      "incarnum"
     ],
     "modifiers": [],
     "damageParts": [],
@@ -38546,16 +38630,18 @@
       "sheet": "Feats",
       "row": 1713,
       "crossCheck": "srd.dndtools.org Feat Index (srd/tools/toolsFeatIndex.html), 2026-11-10"
-    }
+    },
+    "bookVerifiedCategory": "Incarnum",
+    "bookReference": "Magic of Incarnum Table 3-3 (pp. 34-41)"
   },
   {
     "id": "feat-midnight-metamagic",
     "schemaVersion": 2,
     "name": "Midnight Metamagic",
     "type": "Feat",
-    "category": "Recitation",
+    "category": "Incarnum",
     "featTypes": [
-      "Recitation"
+      "Incarnum"
     ],
     "scope": "All",
     "slot": "None",
@@ -38569,7 +38655,7 @@
     "benefit": "You may invest essentia in order to use metamagic feats for free. You gain 1 point of essentia.",
     "tags": [
       "feat",
-      "recitation"
+      "incarnum"
     ],
     "modifiers": [],
     "damageParts": [],
@@ -38584,16 +38670,19 @@
       "sheet": "Feats",
       "row": 1714,
       "crossCheck": "srd.dndtools.org Feat Index (srd/tools/toolsFeatIndex.html), 2026-11-10"
-    }
+    },
+    "bookVerifiedCategory": "Incarnum",
+    "bookReference": "Magic of Incarnum Table 3-3 (pp. 34-41)"
   },
   {
     "id": "feat-psycarnum-blade",
     "schemaVersion": 2,
     "name": "Psycarnum Blade",
     "type": "Feat",
-    "category": "Recitation",
+    "category": "Incarnum",
     "featTypes": [
-      "Recitation"
+      "Incarnum",
+      "Psionic"
     ],
     "scope": "All",
     "slot": "None",
@@ -38608,7 +38697,8 @@
     "benefit": "You may invest essentia into your mind blade to make it do bonus damage when you expend your psionic focus. You gain 1 point of essentia.",
     "tags": [
       "feat",
-      "recitation"
+      "incarnum",
+      "psionic"
     ],
     "modifiers": [],
     "damageParts": [],
@@ -38623,16 +38713,18 @@
       "sheet": "Feats",
       "row": 1715,
       "crossCheck": "srd.dndtools.org Feat Index (srd/tools/toolsFeatIndex.html), 2026-11-10"
-    }
+    },
+    "bookVerifiedCategory": "Incarnum",
+    "bookReference": "Magic of Incarnum Table 3-3 (pp. 34-41)"
   },
   {
     "id": "feat-sapphire-fist",
     "schemaVersion": 2,
     "name": "Sapphire Fist",
     "type": "Feat",
-    "category": "Recitation",
+    "category": "Incarnum",
     "featTypes": [
-      "Recitation"
+      "Incarnum"
     ],
     "scope": "All",
     "slot": "None",
@@ -38646,7 +38738,7 @@
     "benefit": "You may invest essentia to improve the damage of your Stunning Fist attacks, and to increase the save DC. You gain 1 point of essentia.",
     "tags": [
       "feat",
-      "recitation"
+      "incarnum"
     ],
     "modifiers": [],
     "damageParts": [],
@@ -38661,16 +38753,18 @@
       "sheet": "Feats",
       "row": 1716,
       "crossCheck": "srd.dndtools.org Feat Index (srd/tools/toolsFeatIndex.html), 2026-11-10"
-    }
+    },
+    "bookVerifiedCategory": "Incarnum",
+    "bookReference": "Magic of Incarnum Table 3-3 (pp. 34-41)"
   },
   {
     "id": "feat-sapphire-smite",
     "schemaVersion": 2,
     "name": "Sapphire Smite",
     "type": "Feat",
-    "category": "Recitation",
+    "category": "Incarnum",
     "featTypes": [
-      "Recitation"
+      "Incarnum"
     ],
     "scope": "All",
     "slot": "None",
@@ -38684,7 +38778,7 @@
     "benefit": "You may invest essentia to gain additional uses of your Smite ability, and bonus damage when Smiting. You gain 1 point of essentia.",
     "tags": [
       "feat",
-      "recitation"
+      "incarnum"
     ],
     "modifiers": [],
     "damageParts": [],
@@ -38699,16 +38793,18 @@
       "sheet": "Feats",
       "row": 1717,
       "crossCheck": "srd.dndtools.org Feat Index (srd/tools/toolsFeatIndex.html), 2026-11-10"
-    }
+    },
+    "bookVerifiedCategory": "Incarnum",
+    "bookReference": "Magic of Incarnum Table 3-3 (pp. 34-41)"
   },
   {
     "id": "feat-sapphire-sprint",
     "schemaVersion": 2,
     "name": "Sapphire Sprint",
     "type": "Feat",
-    "category": "Recitation",
+    "category": "Incarnum",
     "featTypes": [
-      "Recitation"
+      "Incarnum"
     ],
     "scope": "All",
     "slot": "None",
@@ -38722,7 +38818,7 @@
     "benefit": "You may invest essentia to increase your Run speed, and gain other benefits related to running. You gain 1 point of essentia.",
     "tags": [
       "feat",
-      "recitation"
+      "incarnum"
     ],
     "modifiers": [],
     "damageParts": [],
@@ -38737,16 +38833,18 @@
       "sheet": "Feats",
       "row": 1718,
       "crossCheck": "srd.dndtools.org Feat Index (srd/tools/toolsFeatIndex.html), 2026-11-10"
-    }
+    },
+    "bookVerifiedCategory": "Incarnum",
+    "bookReference": "Magic of Incarnum Table 3-3 (pp. 34-41)"
   },
   {
     "id": "feat-soulsight",
     "schemaVersion": 2,
     "name": "Soulsight",
     "type": "Feat",
-    "category": "Recitation",
+    "category": "Incarnum",
     "featTypes": [
-      "Recitation"
+      "Incarnum"
     ],
     "scope": "All",
     "slot": "None",
@@ -38760,7 +38858,7 @@
     "benefit": "You may invest essentia to gain a limited form of blindsense. You gain 1 point of essentia.",
     "tags": [
       "feat",
-      "recitation"
+      "incarnum"
     ],
     "modifiers": [],
     "damageParts": [],
@@ -38775,16 +38873,18 @@
       "sheet": "Feats",
       "row": 1719,
       "crossCheck": "srd.dndtools.org Feat Index (srd/tools/toolsFeatIndex.html), 2026-11-10"
-    }
+    },
+    "bookVerifiedCategory": "Incarnum",
+    "bookReference": "Magic of Incarnum Table 3-3 (pp. 34-41)"
   },
   {
     "id": "feat-soultouched-spellcasting",
     "schemaVersion": 2,
     "name": "Soultouched Spellcasting",
     "type": "Feat",
-    "category": "Recitation",
+    "category": "Incarnum",
     "featTypes": [
-      "Recitation"
+      "Incarnum"
     ],
     "scope": "All",
     "slot": "None",
@@ -38798,7 +38898,7 @@
     "benefit": "You may invest essentia to improve your dispel checks and caster level checks to overcome spell resistance.",
     "tags": [
       "feat",
-      "recitation"
+      "incarnum"
     ],
     "modifiers": [],
     "damageParts": [],
@@ -38813,16 +38913,18 @@
       "sheet": "Feats",
       "row": 1720,
       "crossCheck": "srd.dndtools.org Feat Index (srd/tools/toolsFeatIndex.html), 2026-11-10"
-    }
+    },
+    "bookVerifiedCategory": "Incarnum",
+    "bookReference": "Magic of Incarnum Table 3-3 (pp. 34-41)"
   },
   {
     "id": "feat-psycarnum-crystal",
     "schemaVersion": 2,
     "name": "Psycarnum Crystal",
     "type": "Feat",
-    "category": "Recitation",
+    "category": "Psionic",
     "featTypes": [
-      "Recitation"
+      "Psionic"
     ],
     "scope": "All",
     "slot": "None",
@@ -38836,7 +38938,7 @@
     "benefit": "As long as your psicrystal is within reach, you gain one point of bonus essentia.",
     "tags": [
       "feat",
-      "recitation"
+      "psionic"
     ],
     "modifiers": [],
     "damageParts": [],
@@ -38851,16 +38953,18 @@
       "sheet": "Feats",
       "row": 1722,
       "crossCheck": "srd.dndtools.org Feat Index (srd/tools/toolsFeatIndex.html), 2026-11-10"
-    }
+    },
+    "bookVerifiedCategory": "Psionic",
+    "bookReference": "Magic of Incarnum Table 3-3 (pp. 34-41)"
   },
   {
     "id": "feat-psycarnum-infusion",
     "schemaVersion": 2,
     "name": "Psycarnum Infusion",
     "type": "Feat",
-    "category": "Recitation",
+    "category": "Psionic",
     "featTypes": [
-      "Recitation"
+      "Psionic"
     ],
     "scope": "All",
     "slot": "None",
@@ -38874,7 +38978,7 @@
     "benefit": "You may expend your psionic focus to treat one of your incarnum receptacles as if it were full for a turn.",
     "tags": [
       "feat",
-      "recitation"
+      "psionic"
     ],
     "modifiers": [],
     "damageParts": [],
@@ -38889,7 +38993,9 @@
       "sheet": "Feats",
       "row": 1723,
       "crossCheck": "srd.dndtools.org Feat Index (srd/tools/toolsFeatIndex.html), 2026-11-10"
-    }
+    },
+    "bookVerifiedCategory": "Psionic",
+    "bookReference": "Magic of Incarnum Table 3-3 (pp. 34-41)"
   },
   {
     "id": "feat-combat-tinkering",
@@ -64729,6 +64835,2975 @@
       "sheet": "Feats",
       "row": 3179,
       "crossCheck": "srd.dndtools.org Feat Index (srd/tools/toolsFeatIndex.html), 2026-11-10"
+    }
+  },
+  {
+    "id": "feat-ectopic-form",
+    "schemaVersion": 3,
+    "blueprint": "feat",
+    "name": "Ectopic Form",
+    "type": "Feat",
+    "category": "Psionic",
+    "featTypes": [
+      "Psionic"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Complete Psionic p.50",
+    "page": 50,
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [],
+    "prerequisites": "Know astral construct power",
+    "prereq": "Know astral construct power",
+    "benefit": "Sculpt astral constructs into specialized preconfigured forms instead of choosing standard menu options; each selection unlocks a different Ectopic Form.",
+    "shortDescription": "Sculpt astral constructs into specialized preconfigured forms instead of choosing standard menu options; each selection unlocks a different Ectopic Form.",
+    "description": "<p><strong>Prerequisites:</strong> Know astral construct power</p>\n<p><strong>Benefit:</strong> Sculpt astral constructs into specialized preconfigured forms instead of choosing standard menu options; each selection unlocks a different Ectopic Form.</p>\n<p><strong>Special:</strong> May be taken multiple times; each instance grants a different form (only one form applies to a given construct).</p>",
+    "tags": [
+      "feat",
+      "psionic",
+      "book-verified"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "levelBand": "heroic",
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "effects": [
+      {
+        "type": "effect",
+        "effectKind": "rule",
+        "text": "Unlocks one specialized Ectopic Form when manifesting astral construct; repeatable for distinct forms.",
+        "summary": "Unlocks one specialized Ectopic Form when manifesting astral construct; repeatable for distinct forms."
+      }
+    ],
+    "provenance": {
+      "origin": "book-verified-v3",
+      "book": "Complete Psionic p.50"
+    }
+  },
+  {
+    "id": "feat-ectopic-form-agile-loper",
+    "schemaVersion": 3,
+    "blueprint": "feat",
+    "name": "Ectopic Form (Agile Loper)",
+    "type": "Feat",
+    "category": "Psionic",
+    "featTypes": [
+      "Psionic"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Complete Psionic p.51",
+    "page": 51,
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [],
+    "prerequisites": "Know astral construct power",
+    "prereq": "Know astral construct power",
+    "benefit": "Astral constructs crafted in Agile Loper form gain a +4 bonus on initiative checks and +20 feet to their base land speed.",
+    "shortDescription": "Astral constructs crafted in Agile Loper form gain a +4 bonus on initiative checks and +20 feet to their base land speed.",
+    "description": "<p><strong>Prerequisites:</strong> Know astral construct power</p>\n<p><strong>Benefit:</strong> Astral constructs crafted in Agile Loper form gain a +4 bonus on initiative checks and +20 feet to their base land speed.</p>",
+    "tags": [
+      "feat",
+      "psionic",
+      "book-verified"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "levelBand": "heroic",
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "effects": [
+      {
+        "type": "effect",
+        "effectKind": "rule",
+        "text": "Astral constructs you manifest with this form gain +4 initiative and +20 ft. base speed.",
+        "summary": "Astral constructs you manifest with this form gain +4 initiative and +20 ft. base speed."
+      }
+    ],
+    "provenance": {
+      "origin": "book-verified-v3",
+      "book": "Complete Psionic p.51"
+    }
+  },
+  {
+    "id": "feat-ectopic-form-alabaster-aerial",
+    "schemaVersion": 3,
+    "blueprint": "feat",
+    "name": "Ectopic Form (Alabaster Aerial)",
+    "type": "Feat",
+    "category": "Psionic",
+    "featTypes": [
+      "Psionic"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Complete Psionic p.51",
+    "page": 51,
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [],
+    "prerequisites": "Know astral construct power",
+    "prereq": "Know astral construct power",
+    "benefit": "Astral constructs crafted in Alabaster Aerial form gain a fly speed with average maneuverability: 20 ft. (1st-3rd level construct), 30 ft. (4th-6th), or 40 ft. (7th+).",
+    "shortDescription": "Astral constructs crafted in Alabaster Aerial form gain a fly speed with average maneuverability: 20 ft. (1st-3rd level construct), 30 ft. (4th-6th), or 40 ft. (7th+).",
+    "description": "<p><strong>Prerequisites:</strong> Know astral construct power</p>\n<p><strong>Benefit:</strong> Astral constructs crafted in Alabaster Aerial form gain a fly speed with average maneuverability: 20 ft. (1st-3rd level construct), 30 ft. (4th-6th), or 40 ft. (7th+).</p>",
+    "tags": [
+      "feat",
+      "psionic",
+      "book-verified"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "levelBand": "heroic",
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "effects": [
+      {
+        "type": "effect",
+        "effectKind": "rule",
+        "text": "Astral constructs gain Fly 20 ft. (average), improving to 30 ft. at 4th level and 40 ft. at 7th level.",
+        "summary": "Astral constructs gain Fly 20 ft. (average), improving to 30 ft. at 4th level and 40 ft. at 7th level."
+      }
+    ],
+    "provenance": {
+      "origin": "book-verified-v3",
+      "book": "Complete Psionic p.51"
+    }
+  },
+  {
+    "id": "feat-ectopic-form-amber-tunneler",
+    "schemaVersion": 3,
+    "blueprint": "feat",
+    "name": "Ectopic Form (Amber Tunneler)",
+    "type": "Feat",
+    "category": "Psionic",
+    "featTypes": [
+      "Psionic"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Complete Psionic p.51",
+    "page": 51,
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [],
+    "prerequisites": "Know astral construct power",
+    "prereq": "Know astral construct power",
+    "benefit": "Astral constructs crafted in Amber Tunneler form gain a burrow speed equal to their base land speed.",
+    "shortDescription": "Astral constructs crafted in Amber Tunneler form gain a burrow speed equal to their base land speed.",
+    "description": "<p><strong>Prerequisites:</strong> Know astral construct power</p>\n<p><strong>Benefit:</strong> Astral constructs crafted in Amber Tunneler form gain a burrow speed equal to their base land speed.</p>",
+    "tags": [
+      "feat",
+      "psionic",
+      "book-verified"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "levelBand": "heroic",
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "effects": [
+      {
+        "type": "effect",
+        "effectKind": "rule",
+        "text": "Astral constructs gain a burrow speed equal to their base land speed.",
+        "summary": "Astral constructs gain a burrow speed equal to their base land speed."
+      }
+    ],
+    "provenance": {
+      "origin": "book-verified-v3",
+      "book": "Complete Psionic p.51"
+    }
+  },
+  {
+    "id": "feat-ectopic-form-anathemic-carapace",
+    "schemaVersion": 3,
+    "blueprint": "feat",
+    "name": "Ectopic Form (Anathemic Carapace)",
+    "type": "Feat",
+    "category": "Psionic",
+    "featTypes": [
+      "Psionic"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Complete Psionic p.51",
+    "page": 51,
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [],
+    "prerequisites": "Know astral construct power, Ectopic Form (any form)",
+    "prereq": "Know astral construct power, Ectopic Form (any form)",
+    "benefit": "Construct detonates when destroyed (or on command as a standard action in LoS), dealing 1d6 + 1d6/HD damage to adjacent creatures (Reflex half DC 10 + 1/2 construct HD); damage drops by 1d6 per round after creation.",
+    "shortDescription": "Construct detonates when destroyed (or on command as a standard action in LoS), dealing 1d6 + 1d6/HD damage to adjacent creatures (Reflex half DC 10 + 1/2 construct HD); damage drops by 1d6 per round after creation.",
+    "description": "<p><strong>Prerequisites:</strong> Know astral construct power, Ectopic Form (any form)</p>\n<p><strong>Benefit:</strong> Construct detonates when destroyed (or on command as a standard action in LoS), dealing 1d6 + 1d6/HD damage to adjacent creatures (Reflex half DC 10 + 1/2 construct HD); damage drops by 1d6 per round after creation.</p>",
+    "tags": [
+      "feat",
+      "psionic",
+      "book-verified"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "levelBand": "heroic",
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "effects": [
+      {
+        "type": "roll",
+        "kind": "damage",
+        "count": 1,
+        "die": 6,
+        "dmgType": "untyped",
+        "scaling": "flat",
+        "crit": "normal",
+        "summary": "Construct burst deals 1d6 + 1d6/HD (-1d6 per elapsed round) to adjacent foes; Reflex half (DC 10 + 1/2 HD).",
+        "save": "Reflex half"
+      }
+    ],
+    "provenance": {
+      "origin": "book-verified-v3",
+      "book": "Complete Psionic p.51"
+    }
+  },
+  {
+    "id": "feat-ectopic-form-astral-aquan",
+    "schemaVersion": 3,
+    "blueprint": "feat",
+    "name": "Ectopic Form (Astral Aquan)",
+    "type": "Feat",
+    "category": "Psionic",
+    "featTypes": [
+      "Psionic"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Complete Psionic p.52",
+    "page": 52,
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [],
+    "prerequisites": "Know astral construct power",
+    "prereq": "Know astral construct power",
+    "benefit": "Astral constructs crafted in Astral Aquan form gain a 60-foot swim speed.",
+    "shortDescription": "Astral constructs crafted in Astral Aquan form gain a 60-foot swim speed.",
+    "description": "<p><strong>Prerequisites:</strong> Know astral construct power</p>\n<p><strong>Benefit:</strong> Astral constructs crafted in Astral Aquan form gain a 60-foot swim speed.</p>",
+    "tags": [
+      "feat",
+      "psionic",
+      "book-verified"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "levelBand": "heroic",
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "effects": [
+      {
+        "type": "effect",
+        "effectKind": "rule",
+        "text": "Astral constructs gain a swim speed of 60 feet.",
+        "summary": "Astral constructs gain a swim speed of 60 feet."
+      }
+    ],
+    "provenance": {
+      "origin": "book-verified-v3",
+      "book": "Complete Psionic p.52"
+    }
+  },
+  {
+    "id": "feat-ectopic-form-ebony-stinger",
+    "schemaVersion": 3,
+    "blueprint": "feat",
+    "name": "Ectopic Form (Ebony Stinger)",
+    "type": "Feat",
+    "category": "Psionic",
+    "featTypes": [
+      "Psionic"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Complete Psionic p.52",
+    "page": 52,
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [],
+    "prerequisites": "Know astral construct power, Ectopic Form (any form)",
+    "prereq": "Know astral construct power, Ectopic Form (any form)",
+    "benefit": "Construct attacks deal piercing damage instead of bludgeoning and deliver a poison inflicting 1 point of Constitution damage (Fort negates DC 10 + 1/2 construct HD).",
+    "shortDescription": "Construct attacks deal piercing damage instead of bludgeoning and deliver a poison inflicting 1 point of Constitution damage (Fort negates DC 10 + 1/2 construct HD).",
+    "description": "<p><strong>Prerequisites:</strong> Know astral construct power, Ectopic Form (any form)</p>\n<p><strong>Benefit:</strong> Construct attacks deal piercing damage instead of bludgeoning and deliver a poison inflicting 1 point of Constitution damage (Fort negates DC 10 + 1/2 construct HD).</p>",
+    "tags": [
+      "feat",
+      "psionic",
+      "book-verified"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "levelBand": "heroic",
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "effects": [
+      {
+        "type": "effect",
+        "effectKind": "rule",
+        "text": "Construct attacks deal piercing damage and inflict 1 Con poison damage (Fort DC 10 + 1/2 HD).",
+        "summary": "Construct attacks deal piercing damage and inflict 1 Con poison damage (Fort DC 10 + 1/2 HD)."
+      }
+    ],
+    "provenance": {
+      "origin": "book-verified-v3",
+      "book": "Complete Psionic p.52"
+    }
+  },
+  {
+    "id": "feat-ectopic-form-emerald-gyre",
+    "schemaVersion": 3,
+    "blueprint": "feat",
+    "name": "Ectopic Form (Emerald Gyre)",
+    "type": "Feat",
+    "category": "Psionic",
+    "featTypes": [
+      "Psionic"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Complete Psionic p.52",
+    "page": 52,
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [],
+    "prerequisites": "Know astral construct power",
+    "prereq": "Know astral construct power",
+    "benefit": "Astral constructs crafted in Emerald Gyre form sprout a third back limb that grants the Improved Grab special ability (Menu B).",
+    "shortDescription": "Astral constructs crafted in Emerald Gyre form sprout a third back limb that grants the Improved Grab special ability (Menu B).",
+    "description": "<p><strong>Prerequisites:</strong> Know astral construct power</p>\n<p><strong>Benefit:</strong> Astral constructs crafted in Emerald Gyre form sprout a third back limb that grants the Improved Grab special ability (Menu B).</p>",
+    "tags": [
+      "feat",
+      "psionic",
+      "book-verified"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "levelBand": "heroic",
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "effects": [
+      {
+        "type": "effect",
+        "effectKind": "rule",
+        "text": "Astral constructs gain the Improved Grab (Menu B) special ability.",
+        "summary": "Astral constructs gain the Improved Grab (Menu B) special ability."
+      }
+    ],
+    "provenance": {
+      "origin": "book-verified-v3",
+      "book": "Complete Psionic p.52"
+    }
+  },
+  {
+    "id": "feat-ectopic-form-iridescent-serpent",
+    "schemaVersion": 3,
+    "blueprint": "feat",
+    "name": "Ectopic Form (Iridescent Serpent)",
+    "type": "Feat",
+    "category": "Psionic",
+    "featTypes": [
+      "Psionic"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Complete Psionic p.52",
+    "page": 52,
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [],
+    "prerequisites": "Know astral construct power",
+    "prereq": "Know astral construct power",
+    "benefit": "Select acid, cold, electricity, or fire upon manifesting; the construct gains resistance 10 to that chosen energy type.",
+    "shortDescription": "Select acid, cold, electricity, or fire upon manifesting; the construct gains resistance 10 to that chosen energy type.",
+    "description": "<p><strong>Prerequisites:</strong> Know astral construct power</p>\n<p><strong>Benefit:</strong> Select acid, cold, electricity, or fire upon manifesting; the construct gains resistance 10 to that chosen energy type.</p>",
+    "tags": [
+      "feat",
+      "psionic",
+      "book-verified"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "levelBand": "heroic",
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "effects": [
+      {
+        "type": "effect",
+        "effectKind": "rule",
+        "text": "Astral constructs gain Energy Resistance 10 to one chosen type (acid, cold, electricity, or fire).",
+        "summary": "Astral constructs gain Energy Resistance 10 to one chosen type (acid, cold, electricity, or fire)."
+      }
+    ],
+    "provenance": {
+      "origin": "book-verified-v3",
+      "book": "Complete Psionic p.52"
+    }
+  },
+  {
+    "id": "feat-maenad-deafening-scream",
+    "schemaVersion": 3,
+    "blueprint": "feat",
+    "name": "Maenad Deafening Scream",
+    "type": "Feat",
+    "category": "Psionic",
+    "featTypes": [
+      "Psionic",
+      "Racial"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Complete Psionic p.55",
+    "page": 55,
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [],
+    "prerequisites": "Maenad",
+    "prereq": "Maenad",
+    "benefit": "Your racial energy ray (sonic) psi-like ability deals +1 damage per die and deafens damaged targets for 2d6 rounds unless they pass a Fortitude save (DC 10 + 1/2 HD + Con modifier).",
+    "shortDescription": "Your racial energy ray (sonic) psi-like ability deals +1 damage per die and deafens damaged targets for 2d6 rounds unless they pass a Fortitude save (DC 10 + 1/2 HD + Con modifier).",
+    "description": "<p><strong>Prerequisites:</strong> Maenad</p>\n<p><strong>Benefit:</strong> Your racial energy ray (sonic) psi-like ability deals +1 damage per die and deafens damaged targets for 2d6 rounds unless they pass a Fortitude save (DC 10 + 1/2 HD + Con modifier).</p>\n<p><strong>Normal:</strong> Maenad energy ray (sonic) deals -1 damage per die and causes no deafness.</p>",
+    "tags": [
+      "feat",
+      "psionic",
+      "racial",
+      "book-verified"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "levelBand": "heroic",
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "effects": [
+      {
+        "type": "effect",
+        "effectKind": "rule",
+        "text": "Racial energy ray (sonic) gains +1 damage/die and deafens targets for 2d6 rounds on failed Fort save (DC 10 + 1/2 HD + Con mod).",
+        "summary": "Racial energy ray (sonic) gains +1 damage/die and deafens targets for 2d6 rounds on failed Fort save (DC 10 + 1/2 HD + Con mod)."
+      }
+    ],
+    "provenance": {
+      "origin": "book-verified-v3",
+      "book": "Complete Psionic p.55"
+    }
+  },
+  {
+    "id": "feat-empower-mystery",
+    "schemaVersion": 3,
+    "name": "Empower Mystery",
+    "type": "Feat",
+    "category": "Metashadow",
+    "featTypes": [
+      "Metashadow"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Tome of Magic p.136",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [
+      "Shadowcaster"
+    ],
+    "prerequisites": "Any metashadow feat",
+    "prereq": "Any metashadow feat",
+    "prereqs": [
+      {
+        "type": "special",
+        "text": "Any metashadow feat"
+      }
+    ],
+    "benefit": "Once per day, apply the effect of Empower Spell to any mystery you cast (all variable, numeric effects increase by one-half). Casting an empowered mystery is a full-round action.",
+    "shortDescription": "1/day empower a mystery (+50% variable numeric effects; full-round action).",
+    "description": "Once per day, apply the effect of Empower Spell to any mystery you cast (all variable, numeric effects increase by one-half). Casting an empowered mystery is a full-round action. Special: You can take this feat multiple times.",
+    "normal": "",
+    "special": "You can take this feat multiple times.",
+    "tags": [
+      "feat",
+      "shadow magic",
+      "metashadow"
+    ],
+    "effects": [
+      {
+        "id": "b_40",
+        "type": "resource",
+        "name": "Empower Mystery Uses",
+        "varKey": "empower_mystery",
+        "resMode": "spend",
+        "capMode": "flat",
+        "maxMode": "flat",
+        "dialCost": "free",
+        "costPool": "",
+        "scaling": "flat",
+        "max": 1,
+        "ability": "cha",
+        "reset": "perDay",
+        "cooldownText": ""
+      }
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "levelBand": "heroic",
+    "provenance": {
+      "origin": "book-verified-v3",
+      "book": "Tome of Magic p.136"
+    }
+  },
+  {
+    "id": "feat-enlarge-mystery",
+    "schemaVersion": 3,
+    "name": "Enlarge Mystery",
+    "type": "Feat",
+    "category": "Metashadow",
+    "featTypes": [
+      "Metashadow"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Tome of Magic p.136",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [
+      "Shadowcaster"
+    ],
+    "prerequisites": "None",
+    "prereq": "None",
+    "prereqs": [],
+    "benefit": "Once per day, alter a mystery with a range of close, medium, or long to increase its range by 100% (functions as Enlarge Spell).",
+    "shortDescription": "1/day double a close, medium, or long mystery's range.",
+    "description": "Once per day, alter a mystery with a range of close, medium, or long to increase its range by 100% (functions as Enlarge Spell). Special: You can take this feat multiple times.",
+    "normal": "",
+    "special": "You can take this feat multiple times.",
+    "tags": [
+      "feat",
+      "shadow magic",
+      "metashadow"
+    ],
+    "effects": [
+      {
+        "id": "b_41",
+        "type": "resource",
+        "name": "Enlarge Mystery Uses",
+        "varKey": "enlarge_mystery",
+        "resMode": "spend",
+        "capMode": "flat",
+        "maxMode": "flat",
+        "dialCost": "free",
+        "costPool": "",
+        "scaling": "flat",
+        "max": 1,
+        "ability": "cha",
+        "reset": "perDay",
+        "cooldownText": ""
+      }
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "levelBand": "heroic",
+    "provenance": {
+      "origin": "book-verified-v3",
+      "book": "Tome of Magic p.136"
+    }
+  },
+  {
+    "id": "feat-extend-mystery",
+    "schemaVersion": 3,
+    "name": "Extend Mystery",
+    "type": "Feat",
+    "category": "Metashadow",
+    "featTypes": [
+      "Metashadow"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Tome of Magic p.136",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [
+      "Shadowcaster"
+    ],
+    "prerequisites": "None",
+    "prereq": "None",
+    "prereqs": [],
+    "benefit": "Once per day, extend any mystery you cast so it lasts twice as long as normal. Casting an extended mystery is a full-round action.",
+    "shortDescription": "1/day double a mystery's duration (full-round action).",
+    "description": "Once per day, extend any mystery you cast so it lasts twice as long as normal. Casting an extended mystery is a full-round action. Special: You can take this feat multiple times.",
+    "normal": "",
+    "special": "You can take this feat multiple times.",
+    "tags": [
+      "feat",
+      "shadow magic",
+      "metashadow"
+    ],
+    "effects": [
+      {
+        "id": "b_42",
+        "type": "resource",
+        "name": "Extend Mystery Uses",
+        "varKey": "extend_mystery",
+        "resMode": "spend",
+        "capMode": "flat",
+        "maxMode": "flat",
+        "dialCost": "free",
+        "costPool": "",
+        "scaling": "flat",
+        "max": 1,
+        "ability": "cha",
+        "reset": "perDay",
+        "cooldownText": ""
+      }
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "levelBand": "heroic",
+    "provenance": {
+      "origin": "book-verified-v3",
+      "book": "Tome of Magic p.136"
+    }
+  },
+  {
+    "id": "feat-favored-mystery",
+    "schemaVersion": 3,
+    "name": "Favored Mystery",
+    "type": "Feat",
+    "category": "Shadow Magic",
+    "featTypes": [
+      "General",
+      "Shadow Magic"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Tome of Magic p.136",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [
+      "Shadowcaster"
+    ],
+    "prerequisites": "Ability to cast mysteries",
+    "prereq": "Ability to cast mysteries",
+    "prereqs": [
+      {
+        "type": "special",
+        "text": "Ability to cast mysteries"
+      }
+    ],
+    "benefit": "Choose a mystery you know. Cast it as a supernatural ability instead of spell-like, or spell-like instead of a spell. If already cast as supernatural (or later becomes supernatural), gain an extra daily use of that mystery.",
+    "shortDescription": "Elevate a mystery's casting category by one step (or gain +1 daily use if supernatural).",
+    "description": "Choose a mystery you know. Cast it as a supernatural ability instead of spell-like, or spell-like instead of a spell. If already cast as supernatural (or later becomes supernatural), gain an extra daily use of that mystery. Special: Can be taken multiple times (same mystery or a different one). Eligible as a Shadowcaster path-based bonus feat.",
+    "normal": "",
+    "special": "Can be taken multiple times (same mystery or a different one). Eligible as a Shadowcaster path-based bonus feat.",
+    "tags": [
+      "feat",
+      "shadow magic"
+    ],
+    "effects": [
+      {
+        "id": "b_43",
+        "type": "effect",
+        "effectKind": "rule",
+        "castMode": "linkedSpell",
+        "spellName": "",
+        "maxSpellLvl": 1,
+        "spellOptions": "",
+        "tiedDuration": false,
+        "targetPoolOrClass": "",
+        "maxLvlFormula": "",
+        "bufferVar": "",
+        "featOrPool": "",
+        "floatingDaily": false,
+        "castNature": "",
+        "text": "Favored Mystery: Chosen mystery advances one tier (Spell -> Sp -> Su, or +1/day if Su)."
+      }
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "levelBand": "heroic",
+    "provenance": {
+      "origin": "book-verified-v3",
+      "book": "Tome of Magic p.136"
+    }
+  },
+  {
+    "id": "feat-greater-path-focus",
+    "schemaVersion": 3,
+    "name": "Greater Path Focus",
+    "type": "Feat",
+    "category": "Shadow Magic",
+    "featTypes": [
+      "General",
+      "Shadow Magic"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Tome of Magic p.136",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [
+      "Shadowcaster"
+    ],
+    "prerequisites": "Path Focus",
+    "prereq": "Path Focus",
+    "prereqs": [
+      {
+        "type": "feat",
+        "feat": "Path Focus"
+      }
+    ],
+    "benefit": "Choose a path of shadow magic to which you have applied Path Focus. Gain +1 caster level and +1 save DC for all mysteries from that path (stacks with Path Focus).",
+    "shortDescription": "+1 CL and +1 save DC for mysteries of a focused path (stacks with Path Focus).",
+    "description": "Choose a path of shadow magic to which you have applied Path Focus. Gain +1 caster level and +1 save DC for all mysteries from that path (stacks with Path Focus). Special: Can be taken multiple times for different paths. Eligible as a Shadowcaster path-based bonus feat.",
+    "normal": "",
+    "special": "Can be taken multiple times for different paths. Eligible as a Shadowcaster path-based bonus feat.",
+    "tags": [
+      "feat",
+      "shadow magic"
+    ],
+    "effects": [
+      {
+        "id": "b_44",
+        "type": "effect",
+        "effectKind": "rule",
+        "castMode": "linkedSpell",
+        "spellName": "",
+        "maxSpellLvl": 1,
+        "spellOptions": "",
+        "tiedDuration": false,
+        "targetPoolOrClass": "",
+        "maxLvlFormula": "",
+        "bufferVar": "",
+        "featOrPool": "",
+        "floatingDaily": false,
+        "castNature": "",
+        "text": "+1 CL and +1 save DC on chosen shadow path (stacks with Path Focus)."
+      }
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "levelBand": "heroic",
+    "provenance": {
+      "origin": "book-verified-v3",
+      "book": "Tome of Magic p.136"
+    }
+  },
+  {
+    "id": "feat-line-of-shadow",
+    "schemaVersion": 3,
+    "name": "Line of Shadow",
+    "type": "Feat",
+    "category": "Metashadow",
+    "featTypes": [
+      "Metashadow"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Tome of Magic p.136",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [
+      "Shadowcaster"
+    ],
+    "prerequisites": "Any two metashadow feats",
+    "prereq": "Any two metashadow feats",
+    "prereqs": [
+      {
+        "type": "special",
+        "text": "Any two metashadow feats"
+      }
+    ],
+    "benefit": "Once per day, apply to a mystery (full-round action) to affect a target within range without current line of sight or line of effect, provided you had both within Int modifier rounds. Target gains a save bonus equal to rounds elapsed. Cannot apply to touch or ranged touch mysteries.",
+    "shortDescription": "1/day cast a non-touch mystery without current LoS/LoE (within Int mod rounds).",
+    "description": "Once per day, apply to a mystery (full-round action) to affect a target within range without current line of sight or line of effect, provided you had both within Int modifier rounds. Target gains a save bonus equal to rounds elapsed. Cannot apply to touch or ranged touch mysteries. Normal: Must have line of effect and line of sight to target a creature or object. Special: Up to four times (2nd requires 5 metashadow feats, 3rd requires 8, 4th requires 11).",
+    "normal": "Must have line of effect and line of sight to target a creature or object.",
+    "special": "Up to four times (2nd requires 5 metashadow feats, 3rd requires 8, 4th requires 11).",
+    "tags": [
+      "feat",
+      "shadow magic",
+      "metashadow"
+    ],
+    "effects": [
+      {
+        "id": "b_45",
+        "type": "resource",
+        "name": "Line of Shadow Uses",
+        "varKey": "line_of_shadow",
+        "resMode": "spend",
+        "capMode": "flat",
+        "maxMode": "flat",
+        "dialCost": "free",
+        "costPool": "",
+        "scaling": "flat",
+        "max": 1,
+        "ability": "cha",
+        "reset": "perDay",
+        "cooldownText": ""
+      }
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "levelBand": "heroic",
+    "provenance": {
+      "origin": "book-verified-v3",
+      "book": "Tome of Magic p.136"
+    }
+  },
+  {
+    "id": "feat-maximize-mystery",
+    "schemaVersion": 3,
+    "name": "Maximize Mystery",
+    "type": "Feat",
+    "category": "Metashadow",
+    "featTypes": [
+      "Metashadow"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Tome of Magic p.136",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [
+      "Shadowcaster"
+    ],
+    "prerequisites": "Any two metashadow feats",
+    "prereq": "Any two metashadow feats",
+    "prereqs": [
+      {
+        "type": "special",
+        "text": "Any two metashadow feats"
+      }
+    ],
+    "benefit": "Once per day, maximize all variable, numeric effects of a mystery (functions as Maximize Spell). Casting a maximized mystery is a full-round action.",
+    "shortDescription": "1/day maximize a mystery's variable numeric effects (full-round action).",
+    "description": "Once per day, maximize all variable, numeric effects of a mystery (functions as Maximize Spell). Casting a maximized mystery is a full-round action. Special: Up to four times (2nd requires 5 metashadow feats, 3rd requires 8, 4th requires 11).",
+    "normal": "",
+    "special": "Up to four times (2nd requires 5 metashadow feats, 3rd requires 8, 4th requires 11).",
+    "tags": [
+      "feat",
+      "shadow magic",
+      "metashadow"
+    ],
+    "effects": [
+      {
+        "id": "b_46",
+        "type": "resource",
+        "name": "Maximize Mystery Uses",
+        "varKey": "maximize_mystery",
+        "resMode": "spend",
+        "capMode": "flat",
+        "maxMode": "flat",
+        "dialCost": "free",
+        "costPool": "",
+        "scaling": "flat",
+        "max": 1,
+        "ability": "cha",
+        "reset": "perDay",
+        "cooldownText": ""
+      }
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "levelBand": "heroic",
+    "provenance": {
+      "origin": "book-verified-v3",
+      "book": "Tome of Magic p.136"
+    }
+  },
+  {
+    "id": "feat-nocturnal-caster",
+    "schemaVersion": 3,
+    "name": "Nocturnal Caster",
+    "type": "Feat",
+    "category": "Shadow Magic",
+    "featTypes": [
+      "General",
+      "Shadow Magic"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Tome of Magic p.137",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [
+      "Shadowcaster"
+    ],
+    "prerequisites": "Ability to cast mysteries or a spell with the darkness descriptor",
+    "prereq": "Ability to cast mysteries or a spell with the darkness descriptor",
+    "prereqs": [
+      {
+        "type": "special",
+        "text": "Ability to cast mysteries or a spell with the darkness descriptor"
+      }
+    ],
+    "benefit": "Choose one path of mysteries or school of magic to which you have access. At night, the save DC of all associated mysteries or spells increases by +1 (stacks with Path Focus / Spell Focus). Table 2-8 also notes +1 caster level at night.",
+    "shortDescription": "+1 save DC (and +1 CL per Table 2-8) at night for a chosen shadow path or spell school.",
+    "description": "Choose one path of mysteries or school of magic to which you have access. At night, the save DC of all associated mysteries or spells increases by +1 (stacks with Path Focus / Spell Focus). Table 2-8 also notes +1 caster level at night. Special: Can be taken multiple times for different paths/schools. Eligible as a Shadowcaster path-based bonus feat.",
+    "normal": "",
+    "special": "Can be taken multiple times for different paths/schools. Eligible as a Shadowcaster path-based bonus feat.",
+    "tags": [
+      "feat",
+      "shadow magic"
+    ],
+    "effects": [
+      {
+        "id": "b_47",
+        "type": "effect",
+        "effectKind": "rule",
+        "castMode": "linkedSpell",
+        "spellName": "",
+        "maxSpellLvl": 1,
+        "spellOptions": "",
+        "tiedDuration": false,
+        "targetPoolOrClass": "",
+        "maxLvlFormula": "",
+        "bufferVar": "",
+        "featOrPool": "",
+        "floatingDaily": false,
+        "castNature": "",
+        "text": "At night: +1 save DC on chosen mystery path or spell school (independent of ambient light)."
+      }
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "levelBand": "heroic",
+    "provenance": {
+      "origin": "book-verified-v3",
+      "book": "Tome of Magic p.137"
+    }
+  },
+  {
+    "id": "feat-path-focus",
+    "schemaVersion": 3,
+    "name": "Path Focus",
+    "type": "Feat",
+    "category": "Shadow Magic",
+    "featTypes": [
+      "General",
+      "Shadow Magic"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Tome of Magic p.137",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [
+      "Shadowcaster"
+    ],
+    "prerequisites": "None",
+    "prereq": "None",
+    "prereqs": [],
+    "benefit": "Choose a path of shadow magic. Gain +1 caster level and +1 save DC for all mysteries from that path.",
+    "shortDescription": "+1 CL and +1 save DC for mysteries of one chosen shadow path.",
+    "description": "Choose a path of shadow magic. Gain +1 caster level and +1 save DC for all mysteries from that path. Special: Can be taken multiple times for different paths. Eligible as a Shadowcaster path-based bonus feat.",
+    "normal": "",
+    "special": "Can be taken multiple times for different paths. Eligible as a Shadowcaster path-based bonus feat.",
+    "tags": [
+      "feat",
+      "shadow magic"
+    ],
+    "effects": [
+      {
+        "id": "b_48",
+        "type": "effect",
+        "effectKind": "rule",
+        "castMode": "linkedSpell",
+        "spellName": "",
+        "maxSpellLvl": 1,
+        "spellOptions": "",
+        "tiedDuration": false,
+        "targetPoolOrClass": "",
+        "maxLvlFormula": "",
+        "bufferVar": "",
+        "featOrPool": "",
+        "floatingDaily": false,
+        "castNature": "",
+        "text": "+1 CL and +1 save DC on chosen shadow path."
+      }
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "levelBand": "heroic",
+    "provenance": {
+      "origin": "book-verified-v3",
+      "book": "Tome of Magic p.137"
+    }
+  },
+  {
+    "id": "feat-quicken-mystery",
+    "schemaVersion": 3,
+    "name": "Quicken Mystery",
+    "type": "Feat",
+    "category": "Metashadow",
+    "featTypes": [
+      "Metashadow"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Tome of Magic p.137",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [
+      "Shadowcaster"
+    ],
+    "prerequisites": "Any three metashadow feats",
+    "prereq": "Any three metashadow feats",
+    "prereqs": [
+      {
+        "type": "special",
+        "text": "Any three metashadow feats"
+      }
+    ],
+    "benefit": "Once per day, cast a mystery as a swift action (functions in most respects as Quicken Spell).",
+    "shortDescription": "1/day cast a mystery as a swift action.",
+    "description": "Once per day, cast a mystery as a swift action (functions in most respects as Quicken Spell). Special: Up to three times (2nd requires 7 metashadow feats, 3rd requires 11).",
+    "normal": "",
+    "special": "Up to three times (2nd requires 7 metashadow feats, 3rd requires 11).",
+    "tags": [
+      "feat",
+      "shadow magic",
+      "metashadow"
+    ],
+    "effects": [
+      {
+        "id": "b_49",
+        "type": "resource",
+        "name": "Quicken Mystery Uses",
+        "varKey": "quicken_mystery",
+        "resMode": "spend",
+        "capMode": "flat",
+        "maxMode": "flat",
+        "dialCost": "free",
+        "costPool": "",
+        "scaling": "flat",
+        "max": 1,
+        "ability": "cha",
+        "reset": "perDay",
+        "cooldownText": ""
+      }
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "levelBand": "heroic",
+    "provenance": {
+      "origin": "book-verified-v3",
+      "book": "Tome of Magic p.137"
+    }
+  },
+  {
+    "id": "feat-reach-mystery",
+    "schemaVersion": 3,
+    "name": "Reach Mystery",
+    "type": "Feat",
+    "category": "Metashadow",
+    "featTypes": [
+      "Metashadow"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Tome of Magic p.137",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [
+      "Shadowcaster"
+    ],
+    "prerequisites": "Any metashadow feat",
+    "prereq": "Any metashadow feat",
+    "prereqs": [
+      {
+        "type": "special",
+        "text": "Any metashadow feat"
+      }
+    ],
+    "benefit": "Once per day, cast a touch-range mystery at any target within 30 feet as a ray (requires a ranged touch attack).",
+    "shortDescription": "1/day deliver a touch mystery as a 30-ft. ray.",
+    "description": "Once per day, cast a touch-range mystery at any target within 30 feet as a ray (requires a ranged touch attack). Special: You can take this feat multiple times.",
+    "normal": "",
+    "special": "You can take this feat multiple times.",
+    "tags": [
+      "feat",
+      "shadow magic",
+      "metashadow"
+    ],
+    "effects": [
+      {
+        "id": "b_50",
+        "type": "resource",
+        "name": "Reach Mystery Uses",
+        "varKey": "reach_mystery",
+        "resMode": "spend",
+        "capMode": "flat",
+        "maxMode": "flat",
+        "dialCost": "free",
+        "costPool": "",
+        "scaling": "flat",
+        "max": 1,
+        "ability": "cha",
+        "reset": "perDay",
+        "cooldownText": ""
+      }
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "levelBand": "heroic",
+    "provenance": {
+      "origin": "book-verified-v3",
+      "book": "Tome of Magic p.137"
+    }
+  },
+  {
+    "id": "feat-shadow-cast",
+    "schemaVersion": 3,
+    "name": "Shadow Cast",
+    "type": "Feat",
+    "category": "Shadow Magic",
+    "featTypes": [
+      "General",
+      "Shadow Magic"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Tome of Magic p.137",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [],
+    "prerequisites": "Concentration 5 ranks, shadowcaster level 1st",
+    "prereq": "Concentration 5 ranks, shadowcaster level 1st",
+    "prereqs": [
+      {
+        "type": "skill",
+        "skill": "concentration",
+        "ranks": 5
+      },
+      {
+        "type": "special",
+        "text": "Shadowcaster level 1st"
+      }
+    ],
+    "benefit": "Designate an adjacent square; if no opponent threatens that square, you do not provoke an attack of opportunity when casting a spell or using a spell-like ability.",
+    "shortDescription": "Avoid AoOs when casting spells or SLAs if an adjacent square is unthreatened.",
+    "description": "Designate an adjacent square; if no opponent threatens that square, you do not provoke an attack of opportunity when casting a spell or using a spell-like ability.",
+    "normal": "",
+    "special": "",
+    "tags": [
+      "feat",
+      "shadow magic"
+    ],
+    "effects": [
+      {
+        "id": "b_51",
+        "type": "effect",
+        "effectKind": "rule",
+        "castMode": "linkedSpell",
+        "spellName": "",
+        "maxSpellLvl": 1,
+        "spellOptions": "",
+        "tiedDuration": false,
+        "targetPoolOrClass": "",
+        "maxLvlFormula": "",
+        "bufferVar": "",
+        "featOrPool": "",
+        "floatingDaily": false,
+        "castNature": "",
+        "text": "Cast without provoking AoOs by projecting casting through an unthreatened adjacent square."
+      }
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "levelBand": "heroic",
+    "provenance": {
+      "origin": "book-verified-v3",
+      "book": "Tome of Magic p.137"
+    }
+  },
+  {
+    "id": "feat-shadow-familiar",
+    "schemaVersion": 3,
+    "name": "Shadow Familiar",
+    "type": "Feat",
+    "category": "Shadow Magic",
+    "featTypes": [
+      "General",
+      "Shadow Magic"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Tome of Magic p.138",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [],
+    "prerequisites": "Shadowcaster level 3rd",
+    "prereq": "Shadowcaster level 3rd",
+    "prereqs": [
+      {
+        "type": "special",
+        "text": "Shadowcaster level 3rd"
+      }
+    ],
+    "benefit": "Obtain a familiar as a sorcerer or wizard (24 hours, 100 gp materials), except it possesses the dark template (ToM p.161). Levels in all mystery-using and arcane spellcasting classes stack for familiar abilities.",
+    "shortDescription": "Gain a familiar with the dark template; mystery and arcane caster levels stack.",
+    "description": "Obtain a familiar as a sorcerer or wizard (24 hours, 100 gp materials), except it possesses the dark template (ToM p.161). Levels in all mystery-using and arcane spellcasting classes stack for familiar abilities. Special: Alternative familiars gained later (e.g., via Improved Familiar) also gain the dark template.",
+    "normal": "",
+    "special": "Alternative familiars gained later (e.g., via Improved Familiar) also gain the dark template.",
+    "tags": [
+      "feat",
+      "shadow magic"
+    ],
+    "effects": [
+      {
+        "id": "b_52",
+        "type": "effect",
+        "effectKind": "rule",
+        "castMode": "linkedSpell",
+        "spellName": "",
+        "maxSpellLvl": 1,
+        "spellOptions": "",
+        "tiedDuration": false,
+        "targetPoolOrClass": "",
+        "maxLvlFormula": "",
+        "bufferVar": "",
+        "featOrPool": "",
+        "floatingDaily": false,
+        "castNature": "",
+        "text": "Grants a familiar with the Dark Creature template; mystery and arcane caster levels stack."
+      }
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "levelBand": "heroic",
+    "provenance": {
+      "origin": "book-verified-v3",
+      "book": "Tome of Magic p.138"
+    }
+  },
+  {
+    "id": "feat-shadow-reflection",
+    "schemaVersion": 3,
+    "name": "Shadow Reflection",
+    "type": "Feat",
+    "category": "Shadow Magic",
+    "featTypes": [
+      "General",
+      "Shadow Magic"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Tome of Magic p.138",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [],
+    "prerequisites": "Shadowcaster level 3rd, ability to cast dancing shadows or clinging darkness",
+    "prereq": "Shadowcaster level 3rd, ability to cast dancing shadows or clinging darkness",
+    "prereqs": [
+      {
+        "type": "special",
+        "text": "Shadowcaster level 3rd"
+      },
+      {
+        "type": "special",
+        "text": "Ability to cast dancing shadows or clinging darkness"
+      }
+    ],
+    "benefit": "Any foe making an attack of opportunity against you has a 50% miss chance (ignored by opponents that do not rely on sight).",
+    "shortDescription": "Foes making attacks of opportunity against you suffer a 50% miss chance.",
+    "description": "Any foe making an attack of opportunity against you has a 50% miss chance (ignored by opponents that do not rely on sight). Special: Opponents that do not rely on sight ignore the miss chance.",
+    "normal": "",
+    "special": "Opponents that do not rely on sight ignore the miss chance.",
+    "tags": [
+      "feat",
+      "shadow magic"
+    ],
+    "effects": [
+      {
+        "id": "b_53",
+        "type": "effect",
+        "effectKind": "rule",
+        "castMode": "linkedSpell",
+        "spellName": "",
+        "maxSpellLvl": 1,
+        "spellOptions": "",
+        "tiedDuration": false,
+        "targetPoolOrClass": "",
+        "maxLvlFormula": "",
+        "bufferVar": "",
+        "featOrPool": "",
+        "floatingDaily": false,
+        "castNature": "",
+        "text": "50% miss chance against attacks of opportunity (sight-based)."
+      }
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "levelBand": "heroic",
+    "provenance": {
+      "origin": "book-verified-v3",
+      "book": "Tome of Magic p.138"
+    }
+  },
+  {
+    "id": "feat-shadow-vision",
+    "schemaVersion": 3,
+    "name": "Shadow Vision",
+    "type": "Feat",
+    "category": "Shadow Magic",
+    "featTypes": [
+      "General",
+      "Shadow Magic"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Tome of Magic p.138",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [
+      "Shadowcaster"
+    ],
+    "prerequisites": "Wis 15, ability to cast bend perspective or truth revealed",
+    "prereq": "Wis 15, ability to cast bend perspective or truth revealed",
+    "prereqs": [
+      {
+        "type": "ability",
+        "stat": "wis",
+        "min": 15
+      },
+      {
+        "type": "special",
+        "text": "Ability to cast bend perspective or truth revealed"
+      }
+    ],
+    "benefit": "While in shadowy illumination or darkness, take a move action to sense the number and direction of creatures within 20 feet also in shadowy illumination or darkness (does not pinpoint locations).",
+    "shortDescription": "Move action in shadow/darkness: detect count and direction of creatures within 20 ft. in shadow/darkness.",
+    "description": "While in shadowy illumination or darkness, take a move action to sense the number and direction of creatures within 20 feet also in shadowy illumination or darkness (does not pinpoint locations). Special: Eligible as a Shadowcaster path-based bonus feat.",
+    "normal": "",
+    "special": "Eligible as a Shadowcaster path-based bonus feat.",
+    "tags": [
+      "feat",
+      "shadow magic"
+    ],
+    "effects": [
+      {
+        "id": "b_54",
+        "type": "effect",
+        "effectKind": "rule",
+        "castMode": "linkedSpell",
+        "spellName": "",
+        "maxSpellLvl": 1,
+        "spellOptions": "",
+        "tiedDuration": false,
+        "targetPoolOrClass": "",
+        "maxLvlFormula": "",
+        "bufferVar": "",
+        "featOrPool": "",
+        "floatingDaily": false,
+        "castNature": "",
+        "text": "Move action in shadow/darkness: sense creature count and direction within 20 ft. in shadow/darkness."
+      }
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "levelBand": "heroic",
+    "provenance": {
+      "origin": "book-verified-v3",
+      "book": "Tome of Magic p.138"
+    }
+  },
+  {
+    "id": "feat-still-mystery",
+    "schemaVersion": 3,
+    "name": "Still Mystery",
+    "type": "Feat",
+    "category": "Metashadow",
+    "featTypes": [
+      "Metashadow"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Tome of Magic p.138",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [
+      "Shadowcaster"
+    ],
+    "prerequisites": "None",
+    "prereq": "None",
+    "prereqs": [],
+    "benefit": "Cast a mystery with no somatic components, preventing your shadow from making distinct gestures during casting. Useful only for mysteries cast as arcane spells.",
+    "shortDescription": "Cast mysteries without somatic components or shadow telltale gestures.",
+    "description": "Cast a mystery with no somatic components, preventing your shadow from making distinct gestures during casting. Useful only for mysteries cast as arcane spells.",
+    "normal": "",
+    "special": "",
+    "tags": [
+      "feat",
+      "shadow magic",
+      "metashadow"
+    ],
+    "effects": [
+      {
+        "id": "b_55",
+        "type": "effect",
+        "effectKind": "rule",
+        "castMode": "linkedSpell",
+        "spellName": "",
+        "maxSpellLvl": 1,
+        "spellOptions": "",
+        "tiedDuration": false,
+        "targetPoolOrClass": "",
+        "maxLvlFormula": "",
+        "bufferVar": "",
+        "featOrPool": "",
+        "floatingDaily": false,
+        "castNature": "",
+        "text": "Removes somatic components and shadow-gesture Spot tells from mysteries cast as arcane spells."
+      }
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "levelBand": "heroic",
+    "provenance": {
+      "origin": "book-verified-v3",
+      "book": "Tome of Magic p.138"
+    }
+  },
+  {
+    "id": "feat-unseen-arrow",
+    "schemaVersion": 3,
+    "name": "Unseen Arrow",
+    "type": "Feat",
+    "category": "Shadow Magic",
+    "featTypes": [
+      "General",
+      "Shadow Magic"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Tome of Magic p.138",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [],
+    "prerequisites": "Unseen weapon class feature",
+    "prereq": "Unseen weapon class feature",
+    "prereqs": [
+      {
+        "type": "special",
+        "text": "Unseen weapon class feature"
+      }
+    ],
+    "benefit": "Apply your Unseen Weapon class feature and all its abilities to thrown or missile weapons. Using Far Shadow with a ranged weapon adds 30 feet before the first range increment penalty.",
+    "shortDescription": "Apply Shadowblade Unseen Weapon abilities to ranged/thrown weapons (Far Shadow adds +30 ft. range).",
+    "description": "Apply your Unseen Weapon class feature and all its abilities to thrown or missile weapons. Using Far Shadow with a ranged weapon adds 30 feet before the first range increment penalty.",
+    "normal": "",
+    "special": "",
+    "tags": [
+      "feat",
+      "shadow magic",
+      "shadowblade"
+    ],
+    "effects": [
+      {
+        "id": "b_56",
+        "type": "effect",
+        "effectKind": "rule",
+        "castMode": "linkedSpell",
+        "spellName": "",
+        "maxSpellLvl": 1,
+        "spellOptions": "",
+        "tiedDuration": false,
+        "targetPoolOrClass": "",
+        "maxLvlFormula": "",
+        "bufferVar": "",
+        "featOrPool": "",
+        "floatingDaily": false,
+        "castNature": "",
+        "text": "Extends Shadowblade Unseen Weapon to thrown/missile weapons (+30 ft before first range penalty with Far Shadow)."
+      }
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "levelBand": "heroic",
+    "provenance": {
+      "origin": "book-verified-v3",
+      "book": "Tome of Magic p.138"
+    }
+  },
+  {
+    "id": "feat-empower-utterance",
+    "schemaVersion": 3,
+    "name": "Empower Utterance",
+    "type": "Feat",
+    "category": "Truename",
+    "featTypes": [
+      "General",
+      "Truename"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Tome of Magic p.228",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [],
+    "prerequisites": "Truespeak 9 ranks, ability to speak utterances",
+    "prereq": "Truespeak 9 ranks, ability to speak utterances",
+    "prereqs": [
+      {
+        "type": "skill",
+        "skill": "truespeak",
+        "ranks": 9
+      },
+      {
+        "type": "special",
+        "text": "Ability to speak utterances"
+      }
+    ],
+    "benefit": "Increase all variable, numeric effects of a successful utterance by one-half (+10 Truespeak DC). Does not affect saves, opposed rolls, or utterances without random variables.",
+    "shortDescription": "Increase variable numeric effects of an utterance by 50% (+10 Truespeak DC).",
+    "description": "Increase all variable, numeric effects of a successful utterance by one-half (+10 Truespeak DC). Does not affect saves, opposed rolls, or utterances without random variables.",
+    "normal": "",
+    "special": "",
+    "tags": [
+      "feat",
+      "truename magic"
+    ],
+    "effects": [
+      {
+        "id": "b_57",
+        "type": "effect",
+        "effectKind": "rule",
+        "castMode": "linkedSpell",
+        "spellName": "",
+        "maxSpellLvl": 1,
+        "spellOptions": "",
+        "tiedDuration": false,
+        "targetPoolOrClass": "",
+        "maxLvlFormula": "",
+        "bufferVar": "",
+        "featOrPool": "",
+        "floatingDaily": false,
+        "castNature": "",
+        "text": "Empower Utterance: +10 Truespeak DC for +50% variable numeric effects."
+      }
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "levelBand": "heroic",
+    "provenance": {
+      "origin": "book-verified-v3",
+      "book": "Tome of Magic p.228"
+    }
+  },
+  {
+    "id": "feat-enlarge-utterance",
+    "schemaVersion": 3,
+    "name": "Enlarge Utterance",
+    "type": "Feat",
+    "category": "Truename",
+    "featTypes": [
+      "General",
+      "Truename"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Tome of Magic p.229",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [],
+    "prerequisites": "Truespeak 6 ranks, ability to speak utterances",
+    "prereq": "Truespeak 6 ranks, ability to speak utterances",
+    "prereqs": [
+      {
+        "type": "skill",
+        "skill": "truespeak",
+        "ranks": 6
+      },
+      {
+        "type": "special",
+        "text": "Ability to speak utterances"
+      }
+    ],
+    "benefit": "Increase an utterance's range by 100% (typically from 60 ft. to 120 ft.; +5 Truespeak DC). No effect on touch utterances.",
+    "shortDescription": "Double an utterance's range (+5 Truespeak DC; excludes touch).",
+    "description": "Increase an utterance's range by 100% (typically from 60 ft. to 120 ft.; +5 Truespeak DC). No effect on touch utterances.",
+    "normal": "",
+    "special": "",
+    "tags": [
+      "feat",
+      "truename magic"
+    ],
+    "effects": [
+      {
+        "id": "b_58",
+        "type": "effect",
+        "effectKind": "rule",
+        "castMode": "linkedSpell",
+        "spellName": "",
+        "maxSpellLvl": 1,
+        "spellOptions": "",
+        "tiedDuration": false,
+        "targetPoolOrClass": "",
+        "maxLvlFormula": "",
+        "bufferVar": "",
+        "featOrPool": "",
+        "floatingDaily": false,
+        "castNature": "",
+        "text": "Enlarge Utterance: +5 Truespeak DC to double non-touch utterance range."
+      }
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "levelBand": "heroic",
+    "provenance": {
+      "origin": "book-verified-v3",
+      "book": "Tome of Magic p.229"
+    }
+  },
+  {
+    "id": "feat-extend-utterance",
+    "schemaVersion": 3,
+    "name": "Extend Utterance",
+    "type": "Feat",
+    "category": "Truename",
+    "featTypes": [
+      "General",
+      "Truename"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Tome of Magic p.229",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [],
+    "prerequisites": "Truespeak 6 ranks, ability to speak utterances",
+    "prereq": "Truespeak 6 ranks, ability to speak utterances",
+    "prereqs": [
+      {
+        "type": "skill",
+        "skill": "truespeak",
+        "ranks": 6
+      },
+      {
+        "type": "special",
+        "text": "Ability to speak utterances"
+      }
+    ],
+    "benefit": "Double an utterance's duration (+5 Truespeak DC). Does not affect instantaneous or concentration durations.",
+    "shortDescription": "Double an utterance's duration (+5 Truespeak DC).",
+    "description": "Double an utterance's duration (+5 Truespeak DC). Does not affect instantaneous or concentration durations.",
+    "normal": "",
+    "special": "",
+    "tags": [
+      "feat",
+      "truename magic"
+    ],
+    "effects": [
+      {
+        "id": "b_59",
+        "type": "effect",
+        "effectKind": "rule",
+        "castMode": "linkedSpell",
+        "spellName": "",
+        "maxSpellLvl": 1,
+        "spellOptions": "",
+        "tiedDuration": false,
+        "targetPoolOrClass": "",
+        "maxLvlFormula": "",
+        "bufferVar": "",
+        "featOrPool": "",
+        "floatingDaily": false,
+        "castNature": "",
+        "text": "Extend Utterance: +5 Truespeak DC to double duration."
+      }
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "levelBand": "heroic",
+    "provenance": {
+      "origin": "book-verified-v3",
+      "book": "Tome of Magic p.229"
+    }
+  },
+  {
+    "id": "feat-focused-lexicon",
+    "schemaVersion": 3,
+    "name": "Focused Lexicon",
+    "type": "Feat",
+    "category": "Truename",
+    "featTypes": [
+      "General",
+      "Truename"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Tome of Magic p.229",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [],
+    "prerequisites": "Truespeak 6 ranks, ability to speak utterances",
+    "prereq": "Truespeak 6 ranks, ability to speak utterances",
+    "prereqs": [
+      {
+        "type": "skill",
+        "skill": "truespeak",
+        "ranks": 6
+      },
+      {
+        "type": "special",
+        "text": "Ability to speak utterances"
+      }
+    ],
+    "benefit": "Choose one creature type (such as aberration or monstrous humanoid). Increase the saving throw DC of your utterances by +1 whenever used against creatures of the chosen type.",
+    "shortDescription": "+1 save DC on utterances against one chosen creature type.",
+    "description": "Choose one creature type (such as aberration or monstrous humanoid). Increase the saving throw DC of your utterances by +1 whenever used against creatures of the chosen type. Special: Can be taken multiple times for different creature types (effects do not stack).",
+    "normal": "",
+    "special": "Can be taken multiple times for different creature types (effects do not stack).",
+    "tags": [
+      "feat",
+      "truename magic"
+    ],
+    "effects": [
+      {
+        "id": "b_60",
+        "type": "effect",
+        "effectKind": "rule",
+        "castMode": "linkedSpell",
+        "spellName": "",
+        "maxSpellLvl": 1,
+        "spellOptions": "",
+        "tiedDuration": false,
+        "targetPoolOrClass": "",
+        "maxLvlFormula": "",
+        "bufferVar": "",
+        "featOrPool": "",
+        "floatingDaily": false,
+        "castNature": "",
+        "text": "+1 utterance save DC vs chosen creature type."
+      }
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "levelBand": "heroic",
+    "provenance": {
+      "origin": "book-verified-v3",
+      "book": "Tome of Magic p.229"
+    }
+  },
+  {
+    "id": "feat-minor-utterance-evolving-mind",
+    "schemaVersion": 3,
+    "name": "Minor Utterance of the Evolving Mind",
+    "type": "Feat",
+    "category": "Truename",
+    "featTypes": [
+      "General",
+      "Truename"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Tome of Magic p.229",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [],
+    "prerequisites": "Truespeak 6 ranks",
+    "prereq": "Truespeak 6 ranks",
+    "prereqs": [
+      {
+        "type": "skill",
+        "skill": "truespeak",
+        "ranks": 6
+      }
+    ],
+    "benefit": "Learn one 1st-level utterance from the Lexicon of the Evolving Mind (usable via Truespeak checks as normal).",
+    "shortDescription": "Learn one 1st-level Lexicon of the Evolving Mind utterance.",
+    "description": "Learn one 1st-level utterance from the Lexicon of the Evolving Mind (usable via Truespeak checks as normal). Special: You can take this feat more than once.",
+    "normal": "",
+    "special": "You can take this feat more than once.",
+    "tags": [
+      "feat",
+      "truename magic"
+    ],
+    "effects": [
+      {
+        "id": "b_61",
+        "type": "effect",
+        "effectKind": "rule",
+        "castMode": "linkedSpell",
+        "spellName": "",
+        "maxSpellLvl": 1,
+        "spellOptions": "",
+        "tiedDuration": false,
+        "targetPoolOrClass": "",
+        "maxLvlFormula": "",
+        "bufferVar": "",
+        "featOrPool": "",
+        "floatingDaily": false,
+        "castNature": "",
+        "text": "Grants 1 known 1st-level Evolving Mind utterance."
+      }
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "levelBand": "heroic",
+    "provenance": {
+      "origin": "book-verified-v3",
+      "book": "Tome of Magic p.229"
+    }
+  },
+  {
+    "id": "feat-obscure-personal-truename",
+    "schemaVersion": 3,
+    "name": "Obscure Personal Truename",
+    "type": "Feat",
+    "category": "Truename",
+    "featTypes": [
+      "General",
+      "Truename"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Tome of Magic p.229",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [],
+    "prerequisites": "None",
+    "prereq": "None",
+    "prereqs": [],
+    "benefit": "The Truespeak DC to speak your personal truename increases by +4 (stacks with the normal +2 personal truename DC increase), and the DC of checks to research your personal truename increases by +4. Your normal truename is unaffected.",
+    "shortDescription": "+4 Truespeak DC and +4 research DC against anyone attempting your personal truename.",
+    "description": "The Truespeak DC to speak your personal truename increases by +4 (stacks with the normal +2 personal truename DC increase), and the DC of checks to research your personal truename increases by +4. Your normal truename is unaffected.",
+    "normal": "",
+    "special": "",
+    "tags": [
+      "feat",
+      "truename magic"
+    ],
+    "effects": [
+      {
+        "id": "b_62",
+        "type": "effect",
+        "effectKind": "rule",
+        "castMode": "linkedSpell",
+        "spellName": "",
+        "maxSpellLvl": 1,
+        "spellOptions": "",
+        "tiedDuration": false,
+        "targetPoolOrClass": "",
+        "maxLvlFormula": "",
+        "bufferVar": "",
+        "featOrPool": "",
+        "floatingDaily": false,
+        "castNature": "",
+        "text": "+4 DC for others to speak or research your personal truename (stacks with +2 base modifier)."
+      }
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "levelBand": "heroic",
+    "provenance": {
+      "origin": "book-verified-v3",
+      "book": "Tome of Magic p.229"
+    }
+  },
+  {
+    "id": "feat-personal-truename-backlash",
+    "schemaVersion": 3,
+    "name": "Personal Truename Backlash",
+    "type": "Feat",
+    "category": "Truename",
+    "featTypes": [
+      "General",
+      "Truename"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Tome of Magic p.229",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [],
+    "prerequisites": "Obscure Personal Truename, 15 Hit Dice",
+    "prereq": "Obscure Personal Truename, 15 Hit Dice",
+    "prereqs": [
+      {
+        "type": "feat",
+        "feat": "Obscure Personal Truename"
+      },
+      {
+        "type": "special",
+        "text": "15 Hit Dice"
+      }
+    ],
+    "benefit": "Whenever a creature fails a Truespeak check to speak your personal truename by 5 or more, it immediately takes 1d6 points of damage per Hit Die you possess.",
+    "shortDescription": "Creatures failing to speak your personal truename by 5+ take 1d6 damage per your HD.",
+    "description": "Whenever a creature fails a Truespeak check to speak your personal truename by 5 or more, it immediately takes 1d6 points of damage per Hit Die you possess.",
+    "normal": "",
+    "special": "",
+    "tags": [
+      "feat",
+      "truename magic"
+    ],
+    "effects": [
+      {
+        "id": "b_63",
+        "type": "effect",
+        "effectKind": "rule",
+        "castMode": "linkedSpell",
+        "spellName": "",
+        "maxSpellLvl": 1,
+        "spellOptions": "",
+        "tiedDuration": false,
+        "targetPoolOrClass": "",
+        "maxLvlFormula": "",
+        "bufferVar": "",
+        "featOrPool": "",
+        "floatingDaily": false,
+        "castNature": "",
+        "text": "Failed Truespeak check by 5+ on your personal truename deals 1d6/your HD damage to speaker."
+      }
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "levelBand": "heroic",
+    "provenance": {
+      "origin": "book-verified-v3",
+      "book": "Tome of Magic p.229"
+    }
+  },
+  {
+    "id": "feat-quicken-utterance",
+    "schemaVersion": 3,
+    "name": "Quicken Utterance",
+    "type": "Feat",
+    "category": "Truename",
+    "featTypes": [
+      "General",
+      "Truename"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Tome of Magic p.231",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [],
+    "prerequisites": "Truespeak 12 ranks, ability to speak utterances",
+    "prereq": "Truespeak 12 ranks, ability to speak utterances",
+    "prereqs": [
+      {
+        "type": "skill",
+        "skill": "truespeak",
+        "ranks": 12
+      },
+      {
+        "type": "special",
+        "text": "Ability to speak utterances"
+      }
+    ],
+    "benefit": "Speak an utterance as a swift action (+20 Truespeak DC), allowing you to take another action (including another utterance) in the same round.",
+    "shortDescription": "Speak an utterance as a swift action (+20 Truespeak DC).",
+    "description": "Speak an utterance as a swift action (+20 Truespeak DC), allowing you to take another action (including another utterance) in the same round.",
+    "normal": "",
+    "special": "",
+    "tags": [
+      "feat",
+      "truename magic"
+    ],
+    "effects": [
+      {
+        "id": "b_64",
+        "type": "effect",
+        "effectKind": "rule",
+        "castMode": "linkedSpell",
+        "spellName": "",
+        "maxSpellLvl": 1,
+        "spellOptions": "",
+        "tiedDuration": false,
+        "targetPoolOrClass": "",
+        "maxLvlFormula": "",
+        "bufferVar": "",
+        "featOrPool": "",
+        "floatingDaily": false,
+        "castNature": "",
+        "text": "Quicken Utterance: +20 Truespeak DC to utter as a swift action."
+      }
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "levelBand": "heroic",
+    "provenance": {
+      "origin": "book-verified-v3",
+      "book": "Tome of Magic p.231"
+    }
+  },
+  {
+    "id": "feat-truename-rebuttal",
+    "schemaVersion": 3,
+    "name": "Truename Rebuttal",
+    "type": "Feat",
+    "category": "Truename",
+    "featTypes": [
+      "General",
+      "Truename"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Tome of Magic p.229",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [],
+    "prerequisites": "Ability to speak utterances",
+    "prereq": "Ability to speak utterances",
+    "prereqs": [
+      {
+        "type": "special",
+        "text": "Ability to speak utterances"
+      }
+    ],
+    "benefit": "Gain a +4 bonus on Truespeak checks made to counter or dispel the utterances of other truespeakers.",
+    "shortDescription": "+4 bonus on Truespeak checks to counter or dispel utterances.",
+    "description": "Gain a +4 bonus on Truespeak checks made to counter or dispel the utterances of other truespeakers.",
+    "normal": "",
+    "special": "",
+    "tags": [
+      "feat",
+      "truename magic"
+    ],
+    "effects": [
+      {
+        "id": "b_65",
+        "type": "stat",
+        "targets": [
+          "skill.truespeak"
+        ],
+        "mode": "flat",
+        "value": 4,
+        "btype": "Untyped",
+        "stat": "chaMod",
+        "mult": 1,
+        "cap": "none",
+        "capVal": 5,
+        "subOp": "replace",
+        "fromStat": "str",
+        "toStat": "cha",
+        "per": 1,
+        "min": 0,
+        "max": 0,
+        "condition": "Countering or dispelling utterances"
+      }
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "levelBand": "heroic",
+    "provenance": {
+      "origin": "book-verified-v3",
+      "book": "Tome of Magic p.229"
+    }
+  },
+  {
+    "id": "feat-truename-research",
+    "schemaVersion": 3,
+    "name": "Truename Research",
+    "type": "Feat",
+    "category": "Truename",
+    "featTypes": [
+      "General",
+      "Truename"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Tome of Magic p.229",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [
+      "Truenamer"
+    ],
+    "prerequisites": "Truespeak 9 ranks",
+    "prereq": "Truespeak 9 ranks",
+    "prereqs": [
+      {
+        "type": "skill",
+        "skill": "truespeak",
+        "ranks": 9
+      }
+    ],
+    "benefit": "Gain a +2 bonus on Knowledge checks made to discover a creature's personal truename, and halve the gold cost to research a personal truename.",
+    "shortDescription": "+2 Knowledge checks and half cost to research personal truenames.",
+    "description": "Gain a +2 bonus on Knowledge checks made to discover a creature's personal truename, and halve the gold cost to research a personal truename.",
+    "normal": "",
+    "special": "",
+    "tags": [
+      "feat",
+      "truename magic"
+    ],
+    "effects": [
+      {
+        "id": "b_66",
+        "type": "effect",
+        "effectKind": "rule",
+        "castMode": "linkedSpell",
+        "spellName": "",
+        "maxSpellLvl": 1,
+        "spellOptions": "",
+        "tiedDuration": false,
+        "targetPoolOrClass": "",
+        "maxLvlFormula": "",
+        "bufferVar": "",
+        "featOrPool": "",
+        "floatingDaily": false,
+        "castNature": "",
+        "text": "+2 Knowledge to discover personal truenames; 50% truename research cost."
+      }
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "levelBand": "heroic",
+    "provenance": {
+      "origin": "book-verified-v3",
+      "book": "Tome of Magic p.229"
+    }
+  },
+  {
+    "id": "feat-truename-training",
+    "schemaVersion": 3,
+    "name": "Truename Training",
+    "type": "Feat",
+    "category": "Truename",
+    "featTypes": [
+      "General",
+      "Truename"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Tome of Magic p.229",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [],
+    "prerequisites": "None",
+    "prereq": "None",
+    "prereqs": [],
+    "benefit": "Truespeak is always a class skill for you regardless of class, and any cross-class ranks already purchased in Truespeak are retroactively recalculated as class-skill ranks.",
+    "shortDescription": "Truespeak is always a class skill for all your classes.",
+    "description": "Truespeak is always a class skill for you regardless of class, and any cross-class ranks already purchased in Truespeak are retroactively recalculated as class-skill ranks. Normal: Truespeak is a class skill only for truenamers (and certain PrCs).",
+    "normal": "Truespeak is a class skill only for truenamers (and certain PrCs).",
+    "special": "",
+    "tags": [
+      "feat",
+      "truename magic"
+    ],
+    "effects": [
+      {
+        "id": "b_67",
+        "type": "effect",
+        "effectKind": "rule",
+        "castMode": "linkedSpell",
+        "spellName": "",
+        "maxSpellLvl": 1,
+        "spellOptions": "",
+        "tiedDuration": false,
+        "targetPoolOrClass": "",
+        "maxLvlFormula": "",
+        "bufferVar": "",
+        "featOrPool": "",
+        "floatingDaily": false,
+        "castNature": "",
+        "text": "Truespeak is always a class skill; existing cross-class ranks recalculate at 1:1."
+      }
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "levelBand": "heroic",
+    "provenance": {
+      "origin": "book-verified-v3",
+      "book": "Tome of Magic p.229"
+    }
+  },
+  {
+    "id": "feat-utterance-evolving-mind",
+    "schemaVersion": 3,
+    "name": "Utterance of the Evolving Mind",
+    "type": "Feat",
+    "category": "Truename",
+    "featTypes": [
+      "General",
+      "Truename"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Tome of Magic p.230",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [],
+    "prerequisites": "Truespeak 9 ranks, ability to speak two utterances",
+    "prereq": "Truespeak 9 ranks, ability to speak two utterances",
+    "prereqs": [
+      {
+        "type": "skill",
+        "skill": "truespeak",
+        "ranks": 9
+      },
+      {
+        "type": "special",
+        "text": "Ability to speak at least two utterances"
+      }
+    ],
+    "benefit": "Learn one 2nd-level utterance from the Lexicon of the Evolving Mind.",
+    "shortDescription": "Learn one 2nd-level Lexicon of the Evolving Mind utterance.",
+    "description": "Learn one 2nd-level utterance from the Lexicon of the Evolving Mind. Special: You can take this feat more than once.",
+    "normal": "",
+    "special": "You can take this feat more than once.",
+    "tags": [
+      "feat",
+      "truename magic"
+    ],
+    "effects": [
+      {
+        "id": "b_68",
+        "type": "effect",
+        "effectKind": "rule",
+        "castMode": "linkedSpell",
+        "spellName": "",
+        "maxSpellLvl": 1,
+        "spellOptions": "",
+        "tiedDuration": false,
+        "targetPoolOrClass": "",
+        "maxLvlFormula": "",
+        "bufferVar": "",
+        "featOrPool": "",
+        "floatingDaily": false,
+        "castNature": "",
+        "text": "Grants 1 known 2nd-level Evolving Mind utterance."
+      }
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "levelBand": "heroic",
+    "provenance": {
+      "origin": "book-verified-v3",
+      "book": "Tome of Magic p.230"
+    }
+  },
+  {
+    "id": "feat-utterance-crafted-tool",
+    "schemaVersion": 3,
+    "name": "Utterance of the Crafted Tool",
+    "type": "Feat",
+    "category": "Truename",
+    "featTypes": [
+      "General",
+      "Truename"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Tome of Magic p.230",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [],
+    "prerequisites": "Truespeak 12 ranks, Truename Training, ability to speak three utterances",
+    "prereq": "Truespeak 12 ranks, Truename Training, ability to speak three utterances",
+    "prereqs": [
+      {
+        "type": "skill",
+        "skill": "truespeak",
+        "ranks": 12
+      },
+      {
+        "type": "feat",
+        "feat": "Truename Training"
+      },
+      {
+        "type": "special",
+        "text": "Ability to speak at least three utterances"
+      }
+    ],
+    "benefit": "Learn one 1st-level utterance from the Lexicon of the Crafted Tool.",
+    "shortDescription": "Learn one 1st-level Lexicon of the Crafted Tool utterance.",
+    "description": "Learn one 1st-level utterance from the Lexicon of the Crafted Tool. Special: You can take this feat more than once.",
+    "normal": "",
+    "special": "You can take this feat more than once.",
+    "tags": [
+      "feat",
+      "truename magic"
+    ],
+    "effects": [
+      {
+        "id": "b_69",
+        "type": "effect",
+        "effectKind": "rule",
+        "castMode": "linkedSpell",
+        "spellName": "",
+        "maxSpellLvl": 1,
+        "spellOptions": "",
+        "tiedDuration": false,
+        "targetPoolOrClass": "",
+        "maxLvlFormula": "",
+        "bufferVar": "",
+        "featOrPool": "",
+        "floatingDaily": false,
+        "castNature": "",
+        "text": "Grants 1 known 1st-level Crafted Tool utterance."
+      }
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "levelBand": "heroic",
+    "provenance": {
+      "origin": "book-verified-v3",
+      "book": "Tome of Magic p.230"
+    }
+  },
+  {
+    "id": "feat-utterance-perfected-map",
+    "schemaVersion": 3,
+    "name": "Utterance of the Perfected Map",
+    "type": "Feat",
+    "category": "Truename",
+    "featTypes": [
+      "General",
+      "Truename"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Tome of Magic p.230",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [],
+    "prerequisites": "Truespeak 15 ranks, Truename Training, ability to speak four utterances",
+    "prereq": "Truespeak 15 ranks, Truename Training, ability to speak four utterances",
+    "prereqs": [
+      {
+        "type": "skill",
+        "skill": "truespeak",
+        "ranks": 15
+      },
+      {
+        "type": "feat",
+        "feat": "Truename Training"
+      },
+      {
+        "type": "special",
+        "text": "Ability to speak at least four utterances"
+      }
+    ],
+    "benefit": "Learn one 1st-level utterance from the Lexicon of the Perfected Map.",
+    "shortDescription": "Learn one 1st-level Lexicon of the Perfected Map utterance.",
+    "description": "Learn one 1st-level utterance from the Lexicon of the Perfected Map. Special: You can take this feat more than once.",
+    "normal": "",
+    "special": "You can take this feat more than once.",
+    "tags": [
+      "feat",
+      "truename magic"
+    ],
+    "effects": [
+      {
+        "id": "b_70",
+        "type": "effect",
+        "effectKind": "rule",
+        "castMode": "linkedSpell",
+        "spellName": "",
+        "maxSpellLvl": 1,
+        "spellOptions": "",
+        "tiedDuration": false,
+        "targetPoolOrClass": "",
+        "maxLvlFormula": "",
+        "bufferVar": "",
+        "featOrPool": "",
+        "floatingDaily": false,
+        "castNature": "",
+        "text": "Grants 1 known 1st-level Perfected Map utterance."
+      }
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "levelBand": "heroic",
+    "provenance": {
+      "origin": "book-verified-v3",
+      "book": "Tome of Magic p.230"
+    }
+  },
+  {
+    "id": "feat-utterance-focus",
+    "schemaVersion": 3,
+    "name": "Utterance Focus",
+    "type": "Feat",
+    "category": "Truename",
+    "featTypes": [
+      "General",
+      "Truename"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Tome of Magic p.230",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [],
+    "prerequisites": "Ability to speak utterances",
+    "prereq": "Ability to speak utterances",
+    "prereqs": [
+      {
+        "type": "special",
+        "text": "Ability to speak utterances"
+      }
+    ],
+    "benefit": "Add +1 to the saving throw DC for a specific utterance you know (applies to both normal and reversed versions).",
+    "shortDescription": "+1 save DC for one chosen utterance (both normal and reverse).",
+    "description": "Add +1 to the saving throw DC for a specific utterance you know (applies to both normal and reversed versions). Special: Can be taken multiple times for different utterances (effects do not stack).",
+    "normal": "",
+    "special": "Can be taken multiple times for different utterances (effects do not stack).",
+    "tags": [
+      "feat",
+      "truename magic"
+    ],
+    "effects": [
+      {
+        "id": "b_71",
+        "type": "effect",
+        "effectKind": "rule",
+        "castMode": "linkedSpell",
+        "spellName": "",
+        "maxSpellLvl": 1,
+        "spellOptions": "",
+        "tiedDuration": false,
+        "targetPoolOrClass": "",
+        "maxLvlFormula": "",
+        "bufferVar": "",
+        "featOrPool": "",
+        "floatingDaily": false,
+        "castNature": "",
+        "text": "+1 save DC for one chosen utterance."
+      }
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "levelBand": "heroic",
+    "provenance": {
+      "origin": "book-verified-v3",
+      "book": "Tome of Magic p.230"
+    }
+  },
+  {
+    "id": "feat-recitation-fortified-state",
+    "schemaVersion": 3,
+    "name": "Recitation of the Fortified State",
+    "type": "Feat",
+    "category": "Recitation",
+    "featTypes": [
+      "Recitation",
+      "Truename"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Tome of Magic p.231",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [
+      "Truenamer"
+    ],
+    "prerequisites": "Truespeak 9 ranks (Table 3-11 lists 6 ranks), ability to speak utterances, must know your own personal truename",
+    "prereq": "Truespeak 9 ranks (Table 3-11 lists 6 ranks), ability to speak utterances, must know your own personal truename",
+    "prereqs": [
+      {
+        "type": "skill",
+        "skill": "truespeak",
+        "ranks": 9
+      },
+      {
+        "type": "special",
+        "text": "Ability to speak utterances"
+      },
+      {
+        "type": "special",
+        "text": "Must know your own personal truename"
+      }
+    ],
+    "benefit": "Full-round action (provokes AoOs), Truespeak DC 15 + 2*HD + 2 (+4 personal truename bonus): gain a natural armor bonus equal to one-third your truenamer level until the start of your next turn; extend 1 round each time you take total defense (up to 1 minute).",
+    "shortDescription": "Full-round recitation: gain +1/3 truenamer level natural armor (extendable up to 1 min via total defense).",
+    "description": "Full-round action (provokes AoOs), Truespeak DC 15 + 2*HD + 2 (+4 personal truename bonus): gain a natural armor bonus equal to one-third your truenamer level until the start of your next turn; extend 1 round each time you take total defense (up to 1 minute).",
+    "normal": "",
+    "special": "",
+    "tags": [
+      "feat",
+      "truename magic",
+      "recitation"
+    ],
+    "effects": [
+      {
+        "id": "b_72",
+        "type": "effect",
+        "effectKind": "rule",
+        "castMode": "linkedSpell",
+        "spellName": "",
+        "maxSpellLvl": 1,
+        "spellOptions": "",
+        "tiedDuration": false,
+        "targetPoolOrClass": "",
+        "maxLvlFormula": "",
+        "bufferVar": "",
+        "featOrPool": "",
+        "floatingDaily": false,
+        "castNature": "",
+        "text": "Recitation (full-round, Truespeak DC 15+2*HD+2, +4 personal bonus): +floor(truenamerLvl/3) natural armor bonus."
+      }
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "levelBand": "heroic",
+    "provenance": {
+      "origin": "book-verified-v3",
+      "book": "Tome of Magic p.231"
+    }
+  },
+  {
+    "id": "feat-recitation-meditative-state",
+    "schemaVersion": 3,
+    "name": "Recitation of Meditative State",
+    "type": "Feat",
+    "category": "Recitation",
+    "featTypes": [
+      "Recitation",
+      "Truename"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Tome of Magic p.232",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [
+      "Truenamer"
+    ],
+    "prerequisites": "Truespeak 9 ranks (Table 3-11 lists 6 ranks), ability to speak utterances, must know your own personal truename",
+    "prereq": "Truespeak 9 ranks (Table 3-11 lists 6 ranks), ability to speak utterances, must know your own personal truename",
+    "prereqs": [
+      {
+        "type": "skill",
+        "skill": "truespeak",
+        "ranks": 9
+      },
+      {
+        "type": "special",
+        "text": "Ability to speak utterances"
+      },
+      {
+        "type": "special",
+        "text": "Must know your own personal truename"
+      }
+    ],
+    "benefit": "Full-round action (provokes AoOs), Truespeak DC 15 + 2*HD + 2 (+4 personal bonus): dispel any fear, rage, despair, or other emotion-based effects on you (works on shaken, not frightened/panicked since full-round is required).",
+    "shortDescription": "Full-round recitation: dispel fear (shaken), rage, despair, and other emotion effects on self.",
+    "description": "Full-round action (provokes AoOs), Truespeak DC 15 + 2*HD + 2 (+4 personal bonus): dispel any fear, rage, despair, or other emotion-based effects on you (works on shaken, not frightened/panicked since full-round is required).",
+    "normal": "",
+    "special": "",
+    "tags": [
+      "feat",
+      "truename magic",
+      "recitation"
+    ],
+    "effects": [
+      {
+        "id": "b_73",
+        "type": "effect",
+        "effectKind": "rule",
+        "castMode": "linkedSpell",
+        "spellName": "",
+        "maxSpellLvl": 1,
+        "spellOptions": "",
+        "tiedDuration": false,
+        "targetPoolOrClass": "",
+        "maxLvlFormula": "",
+        "bufferVar": "",
+        "featOrPool": "",
+        "floatingDaily": false,
+        "castNature": "",
+        "text": "Recitation: Dispels fear, rage, despair, and emotion effects on self (Table 3-11 title: Recitation of the Meditative State)."
+      }
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "levelBand": "heroic",
+    "provenance": {
+      "origin": "book-verified-v3",
+      "book": "Tome of Magic p.232"
+    }
+  },
+  {
+    "id": "feat-recitation-mindful-state",
+    "schemaVersion": 3,
+    "name": "Recitation of Mindful State",
+    "type": "Feat",
+    "category": "Recitation",
+    "featTypes": [
+      "Recitation",
+      "Truename"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Tome of Magic p.232",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [
+      "Truenamer"
+    ],
+    "prerequisites": "Truespeak 6 ranks, ability to speak utterances, must know your own personal truename",
+    "prereq": "Truespeak 6 ranks, ability to speak utterances, must know your own personal truename",
+    "prereqs": [
+      {
+        "type": "skill",
+        "skill": "truespeak",
+        "ranks": 6
+      },
+      {
+        "type": "special",
+        "text": "Ability to speak utterances"
+      },
+      {
+        "type": "special",
+        "text": "Must know your own personal truename"
+      }
+    ],
+    "benefit": "Full-round action (provokes AoOs), Truespeak DC 15 + 2*HD + 2 (+4 personal bonus): gain a competence bonus equal to one-third your truenamer level on your next Craft, Disable Device, Forgery, Open Lock, or Sleight of Hand check.",
+    "shortDescription": "Full-round recitation: +1/3 truenamer level competence bonus on next Craft, Disable Device, Forgery, Open Lock, or Sleight of Hand check.",
+    "description": "Full-round action (provokes AoOs), Truespeak DC 15 + 2*HD + 2 (+4 personal bonus): gain a competence bonus equal to one-third your truenamer level on your next Craft, Disable Device, Forgery, Open Lock, or Sleight of Hand check.",
+    "normal": "",
+    "special": "",
+    "tags": [
+      "feat",
+      "truename magic",
+      "recitation"
+    ],
+    "effects": [
+      {
+        "id": "b_74",
+        "type": "effect",
+        "effectKind": "rule",
+        "castMode": "linkedSpell",
+        "spellName": "",
+        "maxSpellLvl": 1,
+        "spellOptions": "",
+        "tiedDuration": false,
+        "targetPoolOrClass": "",
+        "maxLvlFormula": "",
+        "bufferVar": "",
+        "featOrPool": "",
+        "floatingDaily": false,
+        "castNature": "",
+        "text": "Recitation: +floor(truenamerLvl/3) competence bonus on next Craft/Disable Device/Forgery/Open Lock/Sleight of Hand check (Table 3-11 title: Recitation of the Mindful State)."
+      }
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "levelBand": "heroic",
+    "provenance": {
+      "origin": "book-verified-v3",
+      "book": "Tome of Magic p.232"
+    }
+  },
+  {
+    "id": "feat-recitation-sanguine-state",
+    "schemaVersion": 3,
+    "name": "Recitation of the Sanguine State",
+    "type": "Feat",
+    "category": "Recitation",
+    "featTypes": [
+      "Recitation",
+      "Truename"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Tome of Magic p.232",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [
+      "Truenamer"
+    ],
+    "prerequisites": "Truespeak 9 ranks (Table 3-11 lists 6 ranks), ability to speak utterances, must know your own personal truename",
+    "prereq": "Truespeak 9 ranks (Table 3-11 lists 6 ranks), ability to speak utterances, must know your own personal truename",
+    "prereqs": [
+      {
+        "type": "skill",
+        "skill": "truespeak",
+        "ranks": 9
+      },
+      {
+        "type": "special",
+        "text": "Ability to speak utterances"
+      },
+      {
+        "type": "special",
+        "text": "Must know your own personal truename"
+      }
+    ],
+    "benefit": "Full-round action (provokes AoOs), Truespeak DC 15 + 2*HD + 2 (+4 personal bonus): purge your body of all poisons as neutralize poison.",
+    "shortDescription": "Full-round recitation: purge all poisons from your body as neutralize poison.",
+    "description": "Full-round action (provokes AoOs), Truespeak DC 15 + 2*HD + 2 (+4 personal bonus): purge your body of all poisons as neutralize poison.",
+    "normal": "",
+    "special": "",
+    "tags": [
+      "feat",
+      "truename magic",
+      "recitation"
+    ],
+    "effects": [
+      {
+        "id": "b_75",
+        "type": "effect",
+        "effectKind": "rule",
+        "castMode": "linkedSpell",
+        "spellName": "",
+        "maxSpellLvl": 1,
+        "spellOptions": "",
+        "tiedDuration": false,
+        "targetPoolOrClass": "",
+        "maxLvlFormula": "",
+        "bufferVar": "",
+        "featOrPool": "",
+        "floatingDaily": false,
+        "castNature": "",
+        "text": "Recitation: Purges all poisons from self as neutralize poison."
+      }
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "levelBand": "heroic",
+    "provenance": {
+      "origin": "book-verified-v3",
+      "book": "Tome of Magic p.232"
+    }
+  },
+  {
+    "id": "feat-recitation-vital-state",
+    "schemaVersion": 3,
+    "name": "Recitation of Vital State",
+    "type": "Feat",
+    "category": "Recitation",
+    "featTypes": [
+      "Recitation",
+      "Truename"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Tome of Magic p.232",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [
+      "Truenamer"
+    ],
+    "prerequisites": "Truespeak 6 ranks, ability to speak utterances, must know your own personal truename",
+    "prereq": "Truespeak 6 ranks, ability to speak utterances, must know your own personal truename",
+    "prereqs": [
+      {
+        "type": "skill",
+        "skill": "truespeak",
+        "ranks": 6
+      },
+      {
+        "type": "special",
+        "text": "Ability to speak utterances"
+      },
+      {
+        "type": "special",
+        "text": "Must know your own personal truename"
+      }
+    ],
+    "benefit": "Full-round action (provokes AoOs), Truespeak DC 15 + 2*HD + 2 (+4 personal bonus): free your body of all ordinary and supernatural diseases (both active and incubating).",
+    "shortDescription": "Full-round recitation: cure all active and incubating diseases on self.",
+    "description": "Full-round action (provokes AoOs), Truespeak DC 15 + 2*HD + 2 (+4 personal bonus): free your body of all ordinary and supernatural diseases (both active and incubating).",
+    "normal": "",
+    "special": "",
+    "tags": [
+      "feat",
+      "truename magic",
+      "recitation"
+    ],
+    "effects": [
+      {
+        "id": "b_76",
+        "type": "effect",
+        "effectKind": "rule",
+        "castMode": "linkedSpell",
+        "spellName": "",
+        "maxSpellLvl": 1,
+        "spellOptions": "",
+        "tiedDuration": false,
+        "targetPoolOrClass": "",
+        "maxLvlFormula": "",
+        "bufferVar": "",
+        "featOrPool": "",
+        "floatingDaily": false,
+        "castNature": "",
+        "text": "Recitation: Removes all ordinary and supernatural active/incubating diseases (Table 3-11 title: Recitation of the Vital State)."
+      }
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "levelBand": "heroic",
+    "provenance": {
+      "origin": "book-verified-v3",
+      "book": "Tome of Magic p.232"
     }
   }
 ]

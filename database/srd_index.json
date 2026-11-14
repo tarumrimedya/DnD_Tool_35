@@ -1,9 +1,9 @@
 {
   "schemaVersion": 2,
   "version": "2.0.0",
-  "compendiumHash": "57c0722f4d0ea71f",
+  "compendiumHash": "1528472307d6331c",
   "generatedAt": "2026-11-04T15:37:19.474Z",
-  "totalEntries": 7537,
+  "totalEntries": 7987,
   "chunks": {
     "srd_equipment.json": {
       "count": 1131,
@@ -78,9 +78,9 @@
       "eagerLoad": false
     },
     "srd_feats_splat.json": {
-      "count": 1719,
-      "bytes": 1612274,
-      "hash": "5fea683dabcff678",
+      "count": 1766,
+      "bytes": 1852338,
+      "hash": "735efb0fc268537e",
       "eagerLoad": false
     },
     "srd_feats_epic.json": {
@@ -97,9 +97,9 @@
       "optIn": true
     },
     "srd_classes_splat.json": {
-      "count": 400,
-      "hash": "ec5f82cc05d7103a",
-      "bytes": 819548,
+      "count": 416,
+      "hash": "72ac8dc4379aa03a",
+      "bytes": 1129310,
       "eagerLoad": false
     },
     "srd_classes_legacy.json": {
@@ -119,6 +119,36 @@
       "count": 42,
       "hash": "72c4640c5ca23356",
       "bytes": 70904,
+      "eagerLoad": false
+    },
+    "srd_vestiges_splat.json": {
+      "count": 32,
+      "bytes": 226171,
+      "hash": "10d7563affa7beed",
+      "eagerLoad": false
+    },
+    "srd_mysteries_splat.json": {
+      "count": 69,
+      "bytes": 337217,
+      "hash": "e71d85c8e4dbd35e",
+      "eagerLoad": false
+    },
+    "srd_utterances_splat.json": {
+      "count": 65,
+      "bytes": 287161,
+      "hash": "c5baad400e489682",
+      "eagerLoad": false
+    },
+    "srd_soulmelds_splat.json": {
+      "count": 94,
+      "bytes": 383226,
+      "hash": "b0f7545bdd0e826e",
+      "eagerLoad": false
+    },
+    "srd_powers_splat.json": {
+      "count": 127,
+      "bytes": 352695,
+      "hash": "37b618cae6bdb066",
       "eagerLoad": false
     }
   },
@@ -49446,7 +49476,7 @@
       "id": "feat-bonus-essentia",
       "n": "Bonus Essentia",
       "t": "Feat",
-      "c": "Recitation",
+      "c": "General",
       "s": "None",
       "f": "srd_feats_splat.json"
     },
@@ -49454,7 +49484,7 @@
       "id": "feat-double-chakra",
       "n": "Double Chakra",
       "t": "Feat",
-      "c": "Recitation",
+      "c": "General",
       "s": "None",
       "f": "srd_feats_splat.json"
     },
@@ -49462,7 +49492,7 @@
       "id": "feat-expanded-soulmeld-capacity",
       "n": "Expanded Soulmeld Capacity",
       "t": "Feat",
-      "c": "Recitation",
+      "c": "General",
       "s": "None",
       "f": "srd_feats_splat.json"
     },
@@ -49470,7 +49500,7 @@
       "id": "feat-heart-of-incarnum",
       "n": "Heart of Incarnum",
       "t": "Feat",
-      "c": "Recitation",
+      "c": "General",
       "s": "None",
       "f": "srd_feats_splat.json"
     },
@@ -49478,7 +49508,7 @@
       "id": "feat-improved-essentia-capacity",
       "n": "Improved Essentia Capacity",
       "t": "Feat",
-      "c": "Recitation",
+      "c": "General",
       "s": "None",
       "f": "srd_feats_splat.json"
     },
@@ -49486,7 +49516,7 @@
       "id": "feat-incarnum-fortified-body",
       "n": "Incarnum-Fortified Body",
       "t": "Feat",
-      "c": "Recitation",
+      "c": "General",
       "s": "None",
       "f": "srd_feats_splat.json"
     },
@@ -49494,7 +49524,7 @@
       "id": "feat-incarnum-resistance",
       "n": "Incarnum Resistance",
       "t": "Feat",
-      "c": "Recitation",
+      "c": "General",
       "s": "None",
       "f": "srd_feats_splat.json"
     },
@@ -49502,7 +49532,7 @@
       "id": "feat-necrocarnum-acolyte",
       "n": "Necrocarnum Acolyte",
       "t": "Feat",
-      "c": "Recitation",
+      "c": "General",
       "s": "None",
       "f": "srd_feats_splat.json"
     },
@@ -49510,7 +49540,7 @@
       "id": "feat-open-least-chakra-crown",
       "n": "Open Least Chakra (Crown)",
       "t": "Feat",
-      "c": "Recitation",
+      "c": "General",
       "s": "None",
       "f": "srd_feats_splat.json"
     },
@@ -49518,7 +49548,7 @@
       "id": "feat-open-least-chakra-hands",
       "n": "Open Least Chakra (Hands)",
       "t": "Feat",
-      "c": "Recitation",
+      "c": "General",
       "s": "None",
       "f": "srd_feats_splat.json"
     },
@@ -49526,7 +49556,7 @@
       "id": "feat-open-least-chakra-feet",
       "n": "Open Least Chakra (Feet)",
       "t": "Feat",
-      "c": "Recitation",
+      "c": "General",
       "s": "None",
       "f": "srd_feats_splat.json"
     },
@@ -49534,7 +49564,7 @@
       "id": "feat-open-lesser-chakra-arms",
       "n": "Open Lesser Chakra (Arms)",
       "t": "Feat",
-      "c": "Recitation",
+      "c": "General",
       "s": "None",
       "f": "srd_feats_splat.json"
     },
@@ -49542,7 +49572,7 @@
       "id": "feat-open-lesser-chakra-brow",
       "n": "Open Lesser Chakra (Brow)",
       "t": "Feat",
-      "c": "Recitation",
+      "c": "General",
       "s": "None",
       "f": "srd_feats_splat.json"
     },
@@ -49550,7 +49580,7 @@
       "id": "feat-open-lesser-chakra-shoulders",
       "n": "Open Lesser Chakra (Shoulders)",
       "t": "Feat",
-      "c": "Recitation",
+      "c": "General",
       "s": "None",
       "f": "srd_feats_splat.json"
     },
@@ -49558,7 +49588,7 @@
       "id": "feat-open-greater-chakra-throat",
       "n": "Open Greater Chakra (Throat)",
       "t": "Feat",
-      "c": "Recitation",
+      "c": "General",
       "s": "None",
       "f": "srd_feats_splat.json"
     },
@@ -49566,7 +49596,7 @@
       "id": "feat-open-greater-chakra-waist",
       "n": "Open Greater Chakra (Waist)",
       "t": "Feat",
-      "c": "Recitation",
+      "c": "General",
       "s": "None",
       "f": "srd_feats_splat.json"
     },
@@ -49574,7 +49604,7 @@
       "id": "feat-shape-soulmeld",
       "n": "Shape Soulmeld",
       "t": "Feat",
-      "c": "Recitation",
+      "c": "General",
       "s": "None",
       "f": "srd_feats_splat.json"
     },
@@ -49582,7 +49612,7 @@
       "id": "feat-share-soulmeld",
       "n": "Share Soulmeld",
       "t": "Feat",
-      "c": "Recitation",
+      "c": "General",
       "s": "None",
       "f": "srd_feats_splat.json"
     },
@@ -49590,7 +49620,7 @@
       "id": "feat-split-chakra",
       "n": "Split Chakra",
       "t": "Feat",
-      "c": "Recitation",
+      "c": "General",
       "s": "None",
       "f": "srd_feats_splat.json"
     },
@@ -49598,7 +49628,7 @@
       "id": "feat-undead-meldshaper",
       "n": "Undead Meldshaper",
       "t": "Feat",
-      "c": "Recitation",
+      "c": "Monstrous",
       "s": "None",
       "f": "srd_feats_splat.json"
     },
@@ -49606,7 +49636,7 @@
       "id": "feat-divine-soultouch",
       "n": "Divine Soultouch",
       "t": "Feat",
-      "c": "Recitation",
+      "c": "Divine",
       "s": "None",
       "f": "srd_feats_splat.json"
     },
@@ -49614,7 +49644,7 @@
       "id": "feat-azure-enmity",
       "n": "Azure Enmity",
       "t": "Feat",
-      "c": "Recitation",
+      "c": "Incarnum",
       "s": "None",
       "f": "srd_feats_splat.json"
     },
@@ -49622,7 +49652,7 @@
       "id": "feat-azure-talent",
       "n": "Azure Talent",
       "t": "Feat",
-      "c": "Recitation",
+      "c": "Incarnum",
       "s": "None",
       "f": "srd_feats_splat.json"
     },
@@ -49630,7 +49660,7 @@
       "id": "feat-azure-touch",
       "n": "Azure Touch",
       "t": "Feat",
-      "c": "Recitation",
+      "c": "Incarnum",
       "s": "None",
       "f": "srd_feats_splat.json"
     },
@@ -49638,7 +49668,7 @@
       "id": "feat-azure-toughness",
       "n": "Azure Toughness",
       "t": "Feat",
-      "c": "Recitation",
+      "c": "Incarnum",
       "s": "None",
       "f": "srd_feats_splat.json"
     },
@@ -49646,7 +49676,7 @@
       "id": "feat-azure-turning",
       "n": "Azure Turning",
       "t": "Feat",
-      "c": "Recitation",
+      "c": "Incarnum",
       "s": "None",
       "f": "srd_feats_splat.json"
     },
@@ -49654,7 +49684,7 @@
       "id": "feat-azure-wild-shape",
       "n": "Azure Wild Shape",
       "t": "Feat",
-      "c": "Recitation",
+      "c": "Incarnum",
       "s": "None",
       "f": "srd_feats_splat.json"
     },
@@ -49662,7 +49692,7 @@
       "id": "feat-cerulean-fortitude",
       "n": "Cerulean Fortitude",
       "t": "Feat",
-      "c": "Recitation",
+      "c": "Incarnum",
       "s": "None",
       "f": "srd_feats_splat.json"
     },
@@ -49670,7 +49700,7 @@
       "id": "feat-cerulean-reflexes",
       "n": "Cerulean Reflexes",
       "t": "Feat",
-      "c": "Recitation",
+      "c": "Incarnum",
       "s": "None",
       "f": "srd_feats_splat.json"
     },
@@ -49678,7 +49708,7 @@
       "id": "feat-cerulean-will",
       "n": "Cerulean Will",
       "t": "Feat",
-      "c": "Recitation",
+      "c": "Incarnum",
       "s": "None",
       "f": "srd_feats_splat.json"
     },
@@ -49686,7 +49716,7 @@
       "id": "feat-cobalt-charge",
       "n": "Cobalt Charge",
       "t": "Feat",
-      "c": "Recitation",
+      "c": "Incarnum",
       "s": "None",
       "f": "srd_feats_splat.json"
     },
@@ -49694,7 +49724,7 @@
       "id": "feat-cobalt-critical",
       "n": "Cobalt Critical",
       "t": "Feat",
-      "c": "Recitation",
+      "c": "Incarnum",
       "s": "None",
       "f": "srd_feats_splat.json"
     },
@@ -49702,7 +49732,7 @@
       "id": "feat-cobalt-expertise",
       "n": "Cobalt Expertise",
       "t": "Feat",
-      "c": "Recitation",
+      "c": "Incarnum",
       "s": "None",
       "f": "srd_feats_splat.json"
     },
@@ -49710,7 +49740,7 @@
       "id": "feat-cobalt-power",
       "n": "Cobalt Power",
       "t": "Feat",
-      "c": "Recitation",
+      "c": "Incarnum",
       "s": "None",
       "f": "srd_feats_splat.json"
     },
@@ -49718,7 +49748,7 @@
       "id": "feat-cobalt-precision",
       "n": "Cobalt Precision",
       "t": "Feat",
-      "c": "Recitation",
+      "c": "Incarnum",
       "s": "None",
       "f": "srd_feats_splat.json"
     },
@@ -49726,7 +49756,7 @@
       "id": "feat-cobalt-rage",
       "n": "Cobalt Rage",
       "t": "Feat",
-      "c": "Recitation",
+      "c": "Incarnum",
       "s": "None",
       "f": "srd_feats_splat.json"
     },
@@ -49734,7 +49764,7 @@
       "id": "feat-healing-soul",
       "n": "Healing Soul",
       "t": "Feat",
-      "c": "Recitation",
+      "c": "Incarnum",
       "s": "None",
       "f": "srd_feats_splat.json"
     },
@@ -49742,7 +49772,7 @@
       "id": "feat-incarnum-spellshaping",
       "n": "Incarnum Spellshaping",
       "t": "Feat",
-      "c": "Recitation",
+      "c": "Incarnum",
       "s": "None",
       "f": "srd_feats_splat.json"
     },
@@ -49750,7 +49780,7 @@
       "id": "feat-indigo-strike",
       "n": "Indigo Strike",
       "t": "Feat",
-      "c": "Recitation",
+      "c": "Incarnum",
       "s": "None",
       "f": "srd_feats_splat.json"
     },
@@ -49758,7 +49788,7 @@
       "id": "feat-midnight-augmentation",
       "n": "Midnight Augmentation",
       "t": "Feat",
-      "c": "Recitation",
+      "c": "Incarnum",
       "s": "None",
       "f": "srd_feats_splat.json"
     },
@@ -49766,7 +49796,7 @@
       "id": "feat-midnight-dodge",
       "n": "Midnight Dodge",
       "t": "Feat",
-      "c": "Recitation",
+      "c": "Incarnum",
       "s": "None",
       "f": "srd_feats_splat.json"
     },
@@ -49774,7 +49804,7 @@
       "id": "feat-midnight-metamagic",
       "n": "Midnight Metamagic",
       "t": "Feat",
-      "c": "Recitation",
+      "c": "Incarnum",
       "s": "None",
       "f": "srd_feats_splat.json"
     },
@@ -49782,7 +49812,7 @@
       "id": "feat-psycarnum-blade",
       "n": "Psycarnum Blade",
       "t": "Feat",
-      "c": "Recitation",
+      "c": "Incarnum",
       "s": "None",
       "f": "srd_feats_splat.json"
     },
@@ -49790,7 +49820,7 @@
       "id": "feat-sapphire-fist",
       "n": "Sapphire Fist",
       "t": "Feat",
-      "c": "Recitation",
+      "c": "Incarnum",
       "s": "None",
       "f": "srd_feats_splat.json"
     },
@@ -49798,7 +49828,7 @@
       "id": "feat-sapphire-smite",
       "n": "Sapphire Smite",
       "t": "Feat",
-      "c": "Recitation",
+      "c": "Incarnum",
       "s": "None",
       "f": "srd_feats_splat.json"
     },
@@ -49806,7 +49836,7 @@
       "id": "feat-sapphire-sprint",
       "n": "Sapphire Sprint",
       "t": "Feat",
-      "c": "Recitation",
+      "c": "Incarnum",
       "s": "None",
       "f": "srd_feats_splat.json"
     },
@@ -49814,7 +49844,7 @@
       "id": "feat-soulsight",
       "n": "Soulsight",
       "t": "Feat",
-      "c": "Recitation",
+      "c": "Incarnum",
       "s": "None",
       "f": "srd_feats_splat.json"
     },
@@ -49822,7 +49852,7 @@
       "id": "feat-soultouched-spellcasting",
       "n": "Soultouched Spellcasting",
       "t": "Feat",
-      "c": "Recitation",
+      "c": "Incarnum",
       "s": "None",
       "f": "srd_feats_splat.json"
     },
@@ -49830,7 +49860,7 @@
       "id": "feat-psycarnum-crystal",
       "n": "Psycarnum Crystal",
       "t": "Feat",
-      "c": "Recitation",
+      "c": "Psionic",
       "s": "None",
       "f": "srd_feats_splat.json"
     },
@@ -49838,7 +49868,7 @@
       "id": "feat-psycarnum-infusion",
       "n": "Psycarnum Infusion",
       "t": "Feat",
-      "c": "Recitation",
+      "c": "Psionic",
       "s": "None",
       "f": "srd_feats_splat.json"
     },
@@ -59718,14 +59748,6 @@
       "f": "srd_classes_splat.json"
     },
     {
-      "id": "cls-shadowcaster-not-implemented",
-      "n": "Shadowcaster (NOT IMPLEMENTED)",
-      "t": "Class",
-      "c": "Base",
-      "s": "None",
-      "f": "srd_classes_splat.json"
-    },
-    {
       "id": "cls-shadowcraft-mage",
       "n": "Shadowcraft Mage",
       "t": "Class",
@@ -59946,14 +59968,6 @@
       "n": "Troubadour of Stars",
       "t": "Class",
       "c": "Prestige",
-      "s": "None",
-      "f": "srd_classes_splat.json"
-    },
-    {
-      "id": "cls-truenamer-not-implemented",
-      "n": "Truenamer (NOT IMPLEMENTED)",
-      "t": "Class",
-      "c": "Base",
       "s": "None",
       "f": "srd_classes_splat.json"
     },
@@ -62681,6 +62695,3915 @@
       "c": "Universal",
       "s": "None",
       "f": "srd_spells_splat.json",
+      "l": 7
+    },
+    {
+      "id": "race-azurin",
+      "n": "Azurin",
+      "t": "Race",
+      "c": "Incarnum Race",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "race-duskling",
+      "n": "Duskling",
+      "t": "Race",
+      "c": "Incarnum Race",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "race-rilkan",
+      "n": "Rilkan",
+      "t": "Race",
+      "c": "Incarnum Race",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "race-skarn",
+      "n": "Skarn",
+      "t": "Race",
+      "c": "Incarnum Race",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "race-synad",
+      "n": "Synad",
+      "t": "Race",
+      "c": "Psionic Race",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-shadowcaster",
+      "n": "Shadowcaster",
+      "t": "Class",
+      "c": "Base",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-truenamer",
+      "n": "Truenamer",
+      "t": "Class",
+      "c": "Base",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-child-of-night",
+      "n": "Child of Night",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-master-of-shadow",
+      "n": "Master of Shadow",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-noctumancer",
+      "n": "Noctumancer",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-shadowblade",
+      "n": "Shadowblade",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-shadowsmith",
+      "n": "Shadowsmith",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-acolyte-of-the-ego",
+      "n": "Acolyte of the Ego",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-bereft",
+      "n": "Bereft",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-brimstone-speaker",
+      "n": "Brimstone Speaker",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-disciple-of-the-word",
+      "n": "Disciple of the Word",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-fiendbinder",
+      "n": "Fiendbinder",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-erudite",
+      "n": "Erudite",
+      "t": "Class",
+      "c": "Base",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "feat-ectopic-form",
+      "n": "Ectopic Form",
+      "t": "Feat",
+      "c": "Psionic",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "feat-ectopic-form-agile-loper",
+      "n": "Ectopic Form (Agile Loper)",
+      "t": "Feat",
+      "c": "Psionic",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "feat-ectopic-form-alabaster-aerial",
+      "n": "Ectopic Form (Alabaster Aerial)",
+      "t": "Feat",
+      "c": "Psionic",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "feat-ectopic-form-amber-tunneler",
+      "n": "Ectopic Form (Amber Tunneler)",
+      "t": "Feat",
+      "c": "Psionic",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "feat-ectopic-form-anathemic-carapace",
+      "n": "Ectopic Form (Anathemic Carapace)",
+      "t": "Feat",
+      "c": "Psionic",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "feat-ectopic-form-astral-aquan",
+      "n": "Ectopic Form (Astral Aquan)",
+      "t": "Feat",
+      "c": "Psionic",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "feat-ectopic-form-ebony-stinger",
+      "n": "Ectopic Form (Ebony Stinger)",
+      "t": "Feat",
+      "c": "Psionic",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "feat-ectopic-form-emerald-gyre",
+      "n": "Ectopic Form (Emerald Gyre)",
+      "t": "Feat",
+      "c": "Psionic",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "feat-ectopic-form-iridescent-serpent",
+      "n": "Ectopic Form (Iridescent Serpent)",
+      "t": "Feat",
+      "c": "Psionic",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "feat-maenad-deafening-scream",
+      "n": "Maenad Deafening Scream",
+      "t": "Feat",
+      "c": "Psionic",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "feat-empower-mystery",
+      "n": "Empower Mystery",
+      "t": "Feat",
+      "c": "Metashadow",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "feat-enlarge-mystery",
+      "n": "Enlarge Mystery",
+      "t": "Feat",
+      "c": "Metashadow",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "feat-extend-mystery",
+      "n": "Extend Mystery",
+      "t": "Feat",
+      "c": "Metashadow",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "feat-favored-mystery",
+      "n": "Favored Mystery",
+      "t": "Feat",
+      "c": "Shadow Magic",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "feat-greater-path-focus",
+      "n": "Greater Path Focus",
+      "t": "Feat",
+      "c": "Shadow Magic",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "feat-line-of-shadow",
+      "n": "Line of Shadow",
+      "t": "Feat",
+      "c": "Metashadow",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "feat-maximize-mystery",
+      "n": "Maximize Mystery",
+      "t": "Feat",
+      "c": "Metashadow",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "feat-nocturnal-caster",
+      "n": "Nocturnal Caster",
+      "t": "Feat",
+      "c": "Shadow Magic",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "feat-path-focus",
+      "n": "Path Focus",
+      "t": "Feat",
+      "c": "Shadow Magic",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "feat-quicken-mystery",
+      "n": "Quicken Mystery",
+      "t": "Feat",
+      "c": "Metashadow",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "feat-reach-mystery",
+      "n": "Reach Mystery",
+      "t": "Feat",
+      "c": "Metashadow",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "feat-shadow-cast",
+      "n": "Shadow Cast",
+      "t": "Feat",
+      "c": "Shadow Magic",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "feat-shadow-familiar",
+      "n": "Shadow Familiar",
+      "t": "Feat",
+      "c": "Shadow Magic",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "feat-shadow-reflection",
+      "n": "Shadow Reflection",
+      "t": "Feat",
+      "c": "Shadow Magic",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "feat-shadow-vision",
+      "n": "Shadow Vision",
+      "t": "Feat",
+      "c": "Shadow Magic",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "feat-still-mystery",
+      "n": "Still Mystery",
+      "t": "Feat",
+      "c": "Metashadow",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "feat-unseen-arrow",
+      "n": "Unseen Arrow",
+      "t": "Feat",
+      "c": "Shadow Magic",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "feat-empower-utterance",
+      "n": "Empower Utterance",
+      "t": "Feat",
+      "c": "Truename",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "feat-enlarge-utterance",
+      "n": "Enlarge Utterance",
+      "t": "Feat",
+      "c": "Truename",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "feat-extend-utterance",
+      "n": "Extend Utterance",
+      "t": "Feat",
+      "c": "Truename",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "feat-focused-lexicon",
+      "n": "Focused Lexicon",
+      "t": "Feat",
+      "c": "Truename",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "feat-minor-utterance-evolving-mind",
+      "n": "Minor Utterance of the Evolving Mind",
+      "t": "Feat",
+      "c": "Truename",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "feat-obscure-personal-truename",
+      "n": "Obscure Personal Truename",
+      "t": "Feat",
+      "c": "Truename",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "feat-personal-truename-backlash",
+      "n": "Personal Truename Backlash",
+      "t": "Feat",
+      "c": "Truename",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "feat-quicken-utterance",
+      "n": "Quicken Utterance",
+      "t": "Feat",
+      "c": "Truename",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "feat-truename-rebuttal",
+      "n": "Truename Rebuttal",
+      "t": "Feat",
+      "c": "Truename",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "feat-truename-research",
+      "n": "Truename Research",
+      "t": "Feat",
+      "c": "Truename",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "feat-truename-training",
+      "n": "Truename Training",
+      "t": "Feat",
+      "c": "Truename",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "feat-utterance-evolving-mind",
+      "n": "Utterance of the Evolving Mind",
+      "t": "Feat",
+      "c": "Truename",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "feat-utterance-crafted-tool",
+      "n": "Utterance of the Crafted Tool",
+      "t": "Feat",
+      "c": "Truename",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "feat-utterance-perfected-map",
+      "n": "Utterance of the Perfected Map",
+      "t": "Feat",
+      "c": "Truename",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "feat-utterance-focus",
+      "n": "Utterance Focus",
+      "t": "Feat",
+      "c": "Truename",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "feat-recitation-fortified-state",
+      "n": "Recitation of the Fortified State",
+      "t": "Feat",
+      "c": "Recitation",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "feat-recitation-meditative-state",
+      "n": "Recitation of Meditative State",
+      "t": "Feat",
+      "c": "Recitation",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "feat-recitation-mindful-state",
+      "n": "Recitation of Mindful State",
+      "t": "Feat",
+      "c": "Recitation",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "feat-recitation-sanguine-state",
+      "n": "Recitation of the Sanguine State",
+      "t": "Feat",
+      "c": "Recitation",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "feat-recitation-vital-state",
+      "n": "Recitation of Vital State",
+      "t": "Feat",
+      "c": "Recitation",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "vst-amon",
+      "n": "Amon",
+      "t": "Vestige",
+      "c": "Vestige",
+      "s": "None",
+      "f": "srd_vestiges_splat.json",
+      "l": 1
+    },
+    {
+      "id": "vst-aym",
+      "n": "Aym",
+      "t": "Vestige",
+      "c": "Vestige",
+      "s": "None",
+      "f": "srd_vestiges_splat.json",
+      "l": 1
+    },
+    {
+      "id": "vst-leraje",
+      "n": "Leraje",
+      "t": "Vestige",
+      "c": "Vestige",
+      "s": "None",
+      "f": "srd_vestiges_splat.json",
+      "l": 1
+    },
+    {
+      "id": "vst-naberius",
+      "n": "Naberius",
+      "t": "Vestige",
+      "c": "Vestige",
+      "s": "None",
+      "f": "srd_vestiges_splat.json",
+      "l": 1
+    },
+    {
+      "id": "vst-ronove",
+      "n": "Ronove",
+      "t": "Vestige",
+      "c": "Vestige",
+      "s": "None",
+      "f": "srd_vestiges_splat.json",
+      "l": 1
+    },
+    {
+      "id": "vst-dahlver-nar",
+      "n": "Dahlver-Nar",
+      "t": "Vestige",
+      "c": "Vestige",
+      "s": "None",
+      "f": "srd_vestiges_splat.json",
+      "l": 2
+    },
+    {
+      "id": "vst-haagenti",
+      "n": "Haagenti",
+      "t": "Vestige",
+      "c": "Vestige",
+      "s": "None",
+      "f": "srd_vestiges_splat.json",
+      "l": 2
+    },
+    {
+      "id": "vst-malphas",
+      "n": "Malphas",
+      "t": "Vestige",
+      "c": "Vestige",
+      "s": "None",
+      "f": "srd_vestiges_splat.json",
+      "l": 2
+    },
+    {
+      "id": "vst-savnok",
+      "n": "Savnok",
+      "t": "Vestige",
+      "c": "Vestige",
+      "s": "None",
+      "f": "srd_vestiges_splat.json",
+      "l": 2
+    },
+    {
+      "id": "vst-andromalius",
+      "n": "Andromalius",
+      "t": "Vestige",
+      "c": "Vestige",
+      "s": "None",
+      "f": "srd_vestiges_splat.json",
+      "l": 3
+    },
+    {
+      "id": "vst-focalor",
+      "n": "Focalor",
+      "t": "Vestige",
+      "c": "Vestige",
+      "s": "None",
+      "f": "srd_vestiges_splat.json",
+      "l": 3
+    },
+    {
+      "id": "vst-karsus",
+      "n": "Karsus",
+      "t": "Vestige",
+      "c": "Vestige",
+      "s": "None",
+      "f": "srd_vestiges_splat.json",
+      "l": 3
+    },
+    {
+      "id": "vst-paimon",
+      "n": "Paimon",
+      "t": "Vestige",
+      "c": "Vestige",
+      "s": "None",
+      "f": "srd_vestiges_splat.json",
+      "l": 3
+    },
+    {
+      "id": "vst-agares",
+      "n": "Agares",
+      "t": "Vestige",
+      "c": "Vestige",
+      "s": "None",
+      "f": "srd_vestiges_splat.json",
+      "l": 4
+    },
+    {
+      "id": "vst-andras",
+      "n": "Andras",
+      "t": "Vestige",
+      "c": "Vestige",
+      "s": "None",
+      "f": "srd_vestiges_splat.json",
+      "l": 4
+    },
+    {
+      "id": "vst-buer",
+      "n": "Buer",
+      "t": "Vestige",
+      "c": "Vestige",
+      "s": "None",
+      "f": "srd_vestiges_splat.json",
+      "l": 4
+    },
+    {
+      "id": "vst-eurynome",
+      "n": "Eurynome",
+      "t": "Vestige",
+      "c": "Vestige",
+      "s": "None",
+      "f": "srd_vestiges_splat.json",
+      "l": 4
+    },
+    {
+      "id": "vst-tenebrous",
+      "n": "Tenebrous",
+      "t": "Vestige",
+      "c": "Vestige",
+      "s": "None",
+      "f": "srd_vestiges_splat.json",
+      "l": 4
+    },
+    {
+      "id": "vst-acererak",
+      "n": "Acererak",
+      "t": "Vestige",
+      "c": "Vestige",
+      "s": "None",
+      "f": "srd_vestiges_splat.json",
+      "l": 5
+    },
+    {
+      "id": "vst-balam",
+      "n": "Balam",
+      "t": "Vestige",
+      "c": "Vestige",
+      "s": "None",
+      "f": "srd_vestiges_splat.json",
+      "l": 5
+    },
+    {
+      "id": "vst-dantalion",
+      "n": "Dantalion",
+      "t": "Vestige",
+      "c": "Vestige",
+      "s": "None",
+      "f": "srd_vestiges_splat.json",
+      "l": 5
+    },
+    {
+      "id": "vst-geryon",
+      "n": "Geryon",
+      "t": "Vestige",
+      "c": "Vestige",
+      "s": "None",
+      "f": "srd_vestiges_splat.json",
+      "l": 5
+    },
+    {
+      "id": "vst-otiax",
+      "n": "Otiax",
+      "t": "Vestige",
+      "c": "Vestige",
+      "s": "None",
+      "f": "srd_vestiges_splat.json",
+      "l": 5
+    },
+    {
+      "id": "vst-chupoclops",
+      "n": "Chupoclops",
+      "t": "Vestige",
+      "c": "Vestige",
+      "s": "None",
+      "f": "srd_vestiges_splat.json",
+      "l": 6
+    },
+    {
+      "id": "vst-haures",
+      "n": "Haures",
+      "t": "Vestige",
+      "c": "Vestige",
+      "s": "None",
+      "f": "srd_vestiges_splat.json",
+      "l": 6
+    },
+    {
+      "id": "vst-ipos",
+      "n": "Ipos",
+      "t": "Vestige",
+      "c": "Vestige",
+      "s": "None",
+      "f": "srd_vestiges_splat.json",
+      "l": 6
+    },
+    {
+      "id": "vst-shax",
+      "n": "Shax",
+      "t": "Vestige",
+      "c": "Vestige",
+      "s": "None",
+      "f": "srd_vestiges_splat.json",
+      "l": 6
+    },
+    {
+      "id": "vst-zagan",
+      "n": "Zagan",
+      "t": "Vestige",
+      "c": "Vestige",
+      "s": "None",
+      "f": "srd_vestiges_splat.json",
+      "l": 6
+    },
+    {
+      "id": "vst-eligor",
+      "n": "Eligor",
+      "t": "Vestige",
+      "c": "Vestige",
+      "s": "None",
+      "f": "srd_vestiges_splat.json",
+      "l": 7
+    },
+    {
+      "id": "vst-marchosias",
+      "n": "Marchosias",
+      "t": "Vestige",
+      "c": "Vestige",
+      "s": "None",
+      "f": "srd_vestiges_splat.json",
+      "l": 7
+    },
+    {
+      "id": "vst-halphax",
+      "n": "Halphax",
+      "t": "Vestige",
+      "c": "Vestige",
+      "s": "None",
+      "f": "srd_vestiges_splat.json",
+      "l": 8
+    },
+    {
+      "id": "vst-orthos",
+      "n": "Orthos",
+      "t": "Vestige",
+      "c": "Vestige",
+      "s": "None",
+      "f": "srd_vestiges_splat.json",
+      "l": 8
+    },
+    {
+      "id": "mys-arrow-of-dusk",
+      "n": "Arrow of Dusk",
+      "t": "Mystery",
+      "c": "Fundamental",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 1
+    },
+    {
+      "id": "mys-black-candle",
+      "n": "Black Candle",
+      "t": "Mystery",
+      "c": "Fundamental",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 1
+    },
+    {
+      "id": "mys-caul-of-shadow",
+      "n": "Caul of Shadow",
+      "t": "Mystery",
+      "c": "Fundamental",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 1
+    },
+    {
+      "id": "mys-liquid-night",
+      "n": "Liquid Night",
+      "t": "Mystery",
+      "c": "Fundamental",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 1
+    },
+    {
+      "id": "mys-mystic-reflections",
+      "n": "Mystic Reflections",
+      "t": "Mystery",
+      "c": "Fundamental",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 0
+    },
+    {
+      "id": "mys-shadow-hood",
+      "n": "Shadow Hood",
+      "t": "Mystery",
+      "c": "Fundamental",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 0
+    },
+    {
+      "id": "mys-sight-obscured",
+      "n": "Sight Obscured",
+      "t": "Mystery",
+      "c": "Fundamental",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 0
+    },
+    {
+      "id": "mys-umbral-hand",
+      "n": "Umbral Hand",
+      "t": "Mystery",
+      "c": "Fundamental",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 1
+    },
+    {
+      "id": "mys-widened-eyes",
+      "n": "Widened Eyes",
+      "t": "Mystery",
+      "c": "Fundamental",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 1
+    },
+    {
+      "id": "mys-steel-shadows",
+      "n": "Steel Shadows",
+      "t": "Mystery",
+      "c": "Cloak of Shadows",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 1
+    },
+    {
+      "id": "mys-sight-eclipsed",
+      "n": "Sight Eclipsed",
+      "t": "Mystery",
+      "c": "Cloak of Shadows",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 2
+    },
+    {
+      "id": "mys-sharp-shadows",
+      "n": "Sharp Shadows",
+      "t": "Mystery",
+      "c": "Cloak of Shadows",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 3
+    },
+    {
+      "id": "mys-carpet-of-shadow",
+      "n": "Carpet of Shadow",
+      "t": "Mystery",
+      "c": "Dark Terrain",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 1
+    },
+    {
+      "id": "mys-black-fire",
+      "n": "Black Fire",
+      "t": "Mystery",
+      "c": "Dark Terrain",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 2
+    },
+    {
+      "id": "mys-clinging-darkness",
+      "n": "Clinging Darkness",
+      "t": "Mystery",
+      "c": "Dark Terrain",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 3
+    },
+    {
+      "id": "mys-voice-of-shadow",
+      "n": "Voice of Shadow",
+      "t": "Mystery",
+      "c": "Ebon Whispers",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 1
+    },
+    {
+      "id": "mys-congress-of-shadows",
+      "n": "Congress of Shadows",
+      "t": "Mystery",
+      "c": "Ebon Whispers",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 2
+    },
+    {
+      "id": "mys-flicker",
+      "n": "Flicker",
+      "t": "Mystery",
+      "c": "Ebon Whispers",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 3
+    },
+    {
+      "id": "mys-bend-perspective",
+      "n": "Bend Perspective",
+      "t": "Mystery",
+      "c": "Eyes of Darkness",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 1
+    },
+    {
+      "id": "mys-piercing-sight",
+      "n": "Piercing Sight",
+      "t": "Mystery",
+      "c": "Eyes of Darkness",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 2
+    },
+    {
+      "id": "mys-killing-shadows",
+      "n": "Killing Shadows",
+      "t": "Mystery",
+      "c": "Eyes of Darkness",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 3
+    },
+    {
+      "id": "mys-dusk-and-dawn",
+      "n": "Dusk and Dawn",
+      "t": "Mystery",
+      "c": "Shutters and Clouds",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 1
+    },
+    {
+      "id": "mys-shadow-skin",
+      "n": "Shadow Skin",
+      "t": "Mystery",
+      "c": "Shutters and Clouds",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 2
+    },
+    {
+      "id": "mys-dancing-shadows",
+      "n": "Dancing Shadows",
+      "t": "Mystery",
+      "c": "Shutters and Clouds",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 3
+    },
+    {
+      "id": "mys-life-fades",
+      "n": "Life Fades",
+      "t": "Mystery",
+      "c": "Touch of Twilight",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 1
+    },
+    {
+      "id": "mys-flesh-fails",
+      "n": "Flesh Fails",
+      "t": "Mystery",
+      "c": "Touch of Twilight",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 2
+    },
+    {
+      "id": "mys-umbral-touch",
+      "n": "Umbral Touch",
+      "t": "Mystery",
+      "c": "Touch of Twilight",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 3
+    },
+    {
+      "id": "mys-mesmerizing-shade",
+      "n": "Mesmerizing Shade",
+      "t": "Mystery",
+      "c": "Umbral Mind",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 1
+    },
+    {
+      "id": "mys-thoughts-of-shadow",
+      "n": "Thoughts of Shadow",
+      "t": "Mystery",
+      "c": "Umbral Mind",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 2
+    },
+    {
+      "id": "mys-afraid-of-the-dark",
+      "n": "Afraid of the Dark",
+      "t": "Mystery",
+      "c": "Umbral Mind",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 3
+    },
+    {
+      "id": "mys-warp-spell",
+      "n": "Warp Spell",
+      "t": "Mystery",
+      "c": "Black Magic",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 4
+    },
+    {
+      "id": "mys-echo-spell",
+      "n": "Echo Spell",
+      "t": "Mystery",
+      "c": "Black Magic",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 5
+    },
+    {
+      "id": "mys-flood-of-shadow",
+      "n": "Flood of Shadow",
+      "t": "Mystery",
+      "c": "Black Magic",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 6
+    },
+    {
+      "id": "mys-bolster",
+      "n": "Bolster",
+      "t": "Mystery",
+      "c": "Body and Soul",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 4
+    },
+    {
+      "id": "mys-languor",
+      "n": "Languor",
+      "t": "Mystery",
+      "c": "Body and Soul",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 5
+    },
+    {
+      "id": "mys-shadow-investiture",
+      "n": "Shadow Investiture",
+      "t": "Mystery",
+      "c": "Body and Soul",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 6
+    },
+    {
+      "id": "mys-shadow-evocation",
+      "n": "Shadow Evocation",
+      "t": "Mystery",
+      "c": "Dark Reflections",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 4
+    },
+    {
+      "id": "mys-feign-life",
+      "n": "Feign Life",
+      "t": "Mystery",
+      "c": "Dark Reflections",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 5
+    },
+    {
+      "id": "mys-shadow-evocation-greater",
+      "n": "Shadow Evocation, Greater",
+      "t": "Mystery",
+      "c": "Dark Reflections",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 6
+    },
+    {
+      "id": "mys-step-into-shadow",
+      "n": "Step into Shadow",
+      "t": "Mystery",
+      "c": "Ebon Roads",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 4
+    },
+    {
+      "id": "mys-pass-into-shadow",
+      "n": "Pass into Shadow",
+      "t": "Mystery",
+      "c": "Ebon Roads",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 5
+    },
+    {
+      "id": "mys-voyage-into-shadow",
+      "n": "Voyage into Shadow",
+      "t": "Mystery",
+      "c": "Ebon Roads",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 6
+    },
+    {
+      "id": "mys-aura-of-shade",
+      "n": "Aura of Shade",
+      "t": "Mystery",
+      "c": "Elemental Shadows",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 4
+    },
+    {
+      "id": "mys-dark-air-or-water",
+      "n": "Dark Air or Water",
+      "t": "Mystery",
+      "c": "Elemental Shadows",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 5
+    },
+    {
+      "id": "mys-shadow-storm",
+      "n": "Shadow Storm",
+      "t": "Mystery",
+      "c": "Elemental Shadows",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 6
+    },
+    {
+      "id": "mys-shadows-fade",
+      "n": "Shadows Fade",
+      "t": "Mystery",
+      "c": "Unbinding Shade",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 4
+    },
+    {
+      "id": "mys-unravel-dweomer",
+      "n": "Unravel Dweomer",
+      "t": "Mystery",
+      "c": "Unbinding Shade",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 5
+    },
+    {
+      "id": "mys-shadows-fade-greater",
+      "n": "Shadows Fade, Greater",
+      "t": "Mystery",
+      "c": "Unbinding Shade",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 6
+    },
+    {
+      "id": "mys-shadow-vision",
+      "n": "Shadow Vision",
+      "t": "Mystery",
+      "c": "Veil of Shadows",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 4
+    },
+    {
+      "id": "mys-curtain-of-shadows",
+      "n": "Curtain of Shadows",
+      "t": "Mystery",
+      "c": "Veil of Shadows",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 5
+    },
+    {
+      "id": "mys-unveil",
+      "n": "Unveil",
+      "t": "Mystery",
+      "c": "Veil of Shadows",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 6
+    },
+    {
+      "id": "mys-life-fades-greater",
+      "n": "Life Fades, Greater",
+      "t": "Mystery",
+      "c": "Breath of Twilight",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 7
+    },
+    {
+      "id": "mys-flesh-fails-greater",
+      "n": "Flesh Fails, Greater",
+      "t": "Mystery",
+      "c": "Breath of Twilight",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 8
+    },
+    {
+      "id": "mys-ephemeral-storm",
+      "n": "Ephemeral Storm",
+      "t": "Mystery",
+      "c": "Breath of Twilight",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 9
+    },
+    {
+      "id": "mys-ephemeral-image",
+      "n": "Ephemeral Image",
+      "t": "Mystery",
+      "c": "Dark Metamorphosis",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 7
+    },
+    {
+      "id": "mys-umbral-body",
+      "n": "Umbral Body",
+      "t": "Mystery",
+      "c": "Dark Metamorphosis",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 8
+    },
+    {
+      "id": "mys-shadow-time",
+      "n": "Shadow Time",
+      "t": "Mystery",
+      "c": "Dark Metamorphosis",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 9
+    },
+    {
+      "id": "mys-prison-of-night",
+      "n": "Prison of Night",
+      "t": "Mystery",
+      "c": "Ebon Walls",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 7
+    },
+    {
+      "id": "mys-tomb-of-night",
+      "n": "Tomb of Night",
+      "t": "Mystery",
+      "c": "Ebon Walls",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 8
+    },
+    {
+      "id": "mys-consume-essence",
+      "n": "Consume Essence",
+      "t": "Mystery",
+      "c": "Ebon Walls",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 9
+    },
+    {
+      "id": "mys-truth-revealed",
+      "n": "Truth Revealed",
+      "t": "Mystery",
+      "c": "Eyes of the Night Sky",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 7
+    },
+    {
+      "id": "mys-far-sight",
+      "n": "Far Sight",
+      "t": "Mystery",
+      "c": "Eyes of the Night Sky",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 8
+    },
+    {
+      "id": "mys-reflections-of-things-to-come",
+      "n": "Reflections of Things to Come",
+      "t": "Mystery",
+      "c": "Eyes of the Night Sky",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 9
+    },
+    {
+      "id": "mys-dark-soul",
+      "n": "Dark Soul",
+      "t": "Mystery",
+      "c": "Heart and Soul",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 7
+    },
+    {
+      "id": "mys-soul-puppet",
+      "n": "Soul Puppet",
+      "t": "Mystery",
+      "c": "Heart and Soul",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 8
+    },
+    {
+      "id": "mys-shadow-surge",
+      "n": "Shadow Surge",
+      "t": "Mystery",
+      "c": "Heart and Soul",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 9
+    },
+    {
+      "id": "mys-summon-umbral-servant",
+      "n": "Summon Umbral Servant",
+      "t": "Mystery",
+      "c": "Shadow Calling",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 7
+    },
+    {
+      "id": "mys-shadow-plague",
+      "n": "Shadow Plague",
+      "t": "Mystery",
+      "c": "Shadow Calling",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 8
+    },
+    {
+      "id": "mys-army-of-shadow",
+      "n": "Army of Shadow",
+      "t": "Mystery",
+      "c": "Shadow Calling",
+      "s": "None",
+      "f": "srd_mysteries_splat.json",
+      "l": 9
+    },
+    {
+      "id": "utt-defensive-edge",
+      "n": "Defensive Edge",
+      "t": "Utterance",
+      "c": "Evolving Mind",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 1
+    },
+    {
+      "id": "utt-inertia-surge",
+      "n": "Inertia Surge",
+      "t": "Utterance",
+      "c": "Evolving Mind",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 1
+    },
+    {
+      "id": "utt-knights-puissance",
+      "n": "Knight's Puissance",
+      "t": "Utterance",
+      "c": "Evolving Mind",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 1
+    },
+    {
+      "id": "utt-universal-aptitude",
+      "n": "Universal Aptitude",
+      "t": "Utterance",
+      "c": "Evolving Mind",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 1
+    },
+    {
+      "id": "utt-word-of-nurturing-minor",
+      "n": "Word of Nurturing, Minor",
+      "t": "Utterance",
+      "c": "Evolving Mind",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 1
+    },
+    {
+      "id": "utt-archers-eye",
+      "n": "Archer's Eye",
+      "t": "Utterance",
+      "c": "Evolving Mind",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 2
+    },
+    {
+      "id": "utt-hidden-truth",
+      "n": "Hidden Truth",
+      "t": "Utterance",
+      "c": "Evolving Mind",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 2
+    },
+    {
+      "id": "utt-perceive-the-unseen",
+      "n": "Perceive the Unseen",
+      "t": "Utterance",
+      "c": "Evolving Mind",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 2
+    },
+    {
+      "id": "utt-silent-caster",
+      "n": "Silent Caster",
+      "t": "Utterance",
+      "c": "Evolving Mind",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 2
+    },
+    {
+      "id": "utt-speed-of-the-zephyr",
+      "n": "Speed of the Zephyr",
+      "t": "Utterance",
+      "c": "Evolving Mind",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 2
+    },
+    {
+      "id": "utt-strike-of-might",
+      "n": "Strike of Might",
+      "t": "Utterance",
+      "c": "Evolving Mind",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 2
+    },
+    {
+      "id": "utt-temporal-twist",
+      "n": "Temporal Twist",
+      "t": "Utterance",
+      "c": "Evolving Mind",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 2
+    },
+    {
+      "id": "utt-word-of-nurturing-lesser",
+      "n": "Word of Nurturing, Lesser",
+      "t": "Utterance",
+      "c": "Evolving Mind",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 2
+    },
+    {
+      "id": "utt-accelerated-attack",
+      "n": "Accelerated Attack",
+      "t": "Utterance",
+      "c": "Evolving Mind",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 3
+    },
+    {
+      "id": "utt-energy-negation",
+      "n": "Energy Negation",
+      "t": "Utterance",
+      "c": "Evolving Mind",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 3
+    },
+    {
+      "id": "utt-incarnation-of-angels",
+      "n": "Incarnation of Angels",
+      "t": "Utterance",
+      "c": "Evolving Mind",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 3
+    },
+    {
+      "id": "utt-seek-the-sky",
+      "n": "Seek the Sky",
+      "t": "Utterance",
+      "c": "Evolving Mind",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 3
+    },
+    {
+      "id": "utt-speed-of-the-zephyr-greater",
+      "n": "Speed of the Zephyr, Greater",
+      "t": "Utterance",
+      "c": "Evolving Mind",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 3
+    },
+    {
+      "id": "utt-temporal-spiral",
+      "n": "Temporal Spiral",
+      "t": "Utterance",
+      "c": "Evolving Mind",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 3
+    },
+    {
+      "id": "utt-vision-sharpened",
+      "n": "Vision Sharpened",
+      "t": "Utterance",
+      "c": "Evolving Mind",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 3
+    },
+    {
+      "id": "utt-word-of-nurturing-moderate",
+      "n": "Word of Nurturing, Moderate",
+      "t": "Utterance",
+      "c": "Evolving Mind",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 3
+    },
+    {
+      "id": "utt-breath-of-cleansing",
+      "n": "Breath of Cleansing",
+      "t": "Utterance",
+      "c": "Evolving Mind",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 4
+    },
+    {
+      "id": "utt-caster-lens",
+      "n": "Caster Lens",
+      "t": "Utterance",
+      "c": "Evolving Mind",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 4
+    },
+    {
+      "id": "utt-confounding-resistance",
+      "n": "Confounding Resistance",
+      "t": "Utterance",
+      "c": "Evolving Mind",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 4
+    },
+    {
+      "id": "utt-magic-contraction",
+      "n": "Magic Contraction",
+      "t": "Utterance",
+      "c": "Evolving Mind",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 4
+    },
+    {
+      "id": "utt-morale-boost",
+      "n": "Morale Boost",
+      "t": "Utterance",
+      "c": "Evolving Mind",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 4
+    },
+    {
+      "id": "utt-spell-rebirth",
+      "n": "Spell Rebirth",
+      "t": "Utterance",
+      "c": "Evolving Mind",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 4
+    },
+    {
+      "id": "utt-word-of-bolstering",
+      "n": "Word of Bolstering",
+      "t": "Utterance",
+      "c": "Evolving Mind",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 4
+    },
+    {
+      "id": "utt-word-of-nurturing-potent",
+      "n": "Word of Nurturing, Potent",
+      "t": "Utterance",
+      "c": "Evolving Mind",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 4
+    },
+    {
+      "id": "utt-eldritch-attraction",
+      "n": "Eldritch Attraction",
+      "t": "Utterance",
+      "c": "Evolving Mind",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 5
+    },
+    {
+      "id": "utt-energy-negation-greater",
+      "n": "Energy Negation, Greater",
+      "t": "Utterance",
+      "c": "Evolving Mind",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 5
+    },
+    {
+      "id": "utt-essence-of-lifespark",
+      "n": "Essence of Lifespark",
+      "t": "Utterance",
+      "c": "Evolving Mind",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 5
+    },
+    {
+      "id": "utt-preternatural-clarity",
+      "n": "Preternatural Clarity",
+      "t": "Utterance",
+      "c": "Evolving Mind",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 5
+    },
+    {
+      "id": "utt-seek-the-sky-greater",
+      "n": "Seek the Sky, Greater",
+      "t": "Utterance",
+      "c": "Evolving Mind",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 5
+    },
+    {
+      "id": "utt-sensory-focus",
+      "n": "Sensory Focus",
+      "t": "Utterance",
+      "c": "Evolving Mind",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 5
+    },
+    {
+      "id": "utt-ward-of-peace",
+      "n": "Ward of Peace",
+      "t": "Utterance",
+      "c": "Evolving Mind",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 5
+    },
+    {
+      "id": "utt-word-of-nurturing-critical",
+      "n": "Word of Nurturing, Critical",
+      "t": "Utterance",
+      "c": "Evolving Mind",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 5
+    },
+    {
+      "id": "utt-breath-of-recovery",
+      "n": "Breath of Recovery",
+      "t": "Utterance",
+      "c": "Evolving Mind",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 6
+    },
+    {
+      "id": "utt-ether-reforged",
+      "n": "Ether Reforged",
+      "t": "Utterance",
+      "c": "Evolving Mind",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 6
+    },
+    {
+      "id": "utt-knights-puissance-greater",
+      "n": "Knight's Puissance, Greater",
+      "t": "Utterance",
+      "c": "Evolving Mind",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 6
+    },
+    {
+      "id": "utt-mystic-rampart",
+      "n": "Mystic Rampart",
+      "t": "Utterance",
+      "c": "Evolving Mind",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 6
+    },
+    {
+      "id": "utt-singular-mind",
+      "n": "Singular Mind",
+      "t": "Utterance",
+      "c": "Evolving Mind",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 6
+    },
+    {
+      "id": "utt-word-of-nurturing-greater",
+      "n": "Word of Nurturing, Greater",
+      "t": "Utterance",
+      "c": "Evolving Mind",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 6
+    },
+    {
+      "id": "utt-fortify-armor",
+      "n": "Fortify Armor",
+      "t": "Utterance",
+      "c": "Crafted Tool",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 1
+    },
+    {
+      "id": "utt-keen-weapon",
+      "n": "Keen Weapon",
+      "t": "Utterance",
+      "c": "Crafted Tool",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 1
+    },
+    {
+      "id": "utt-agitate-metal",
+      "n": "Agitate Metal",
+      "t": "Utterance",
+      "c": "Crafted Tool",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 2
+    },
+    {
+      "id": "utt-analyze-item",
+      "n": "Analyze Item",
+      "t": "Utterance",
+      "c": "Crafted Tool",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 2
+    },
+    {
+      "id": "utt-rebuild-item",
+      "n": "Rebuild Item",
+      "t": "Utterance",
+      "c": "Crafted Tool",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 3
+    },
+    {
+      "id": "utt-suppress-weapon",
+      "n": "Suppress Weapon",
+      "t": "Utterance",
+      "c": "Crafted Tool",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 3
+    },
+    {
+      "id": "utt-suppress-item",
+      "n": "Suppress Item",
+      "t": "Utterance",
+      "c": "Crafted Tool",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 4
+    },
+    {
+      "id": "utt-transmute-weapon",
+      "n": "Transmute Weapon",
+      "t": "Utterance",
+      "c": "Crafted Tool",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 4
+    },
+    {
+      "id": "utt-metamagic-catalyst",
+      "n": "Metamagic Catalyst",
+      "t": "Utterance",
+      "c": "Crafted Tool",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 5
+    },
+    {
+      "id": "utt-seize-item",
+      "n": "Seize Item",
+      "t": "Utterance",
+      "c": "Crafted Tool",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 5
+    },
+    {
+      "id": "utt-fog-from-the-void",
+      "n": "Fog from the Void",
+      "t": "Utterance",
+      "c": "Perfected Map",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 1
+    },
+    {
+      "id": "utt-shield-of-the-landscape",
+      "n": "Shield of the Landscape",
+      "t": "Utterance",
+      "c": "Perfected Map",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 1
+    },
+    {
+      "id": "utt-shockwave",
+      "n": "Shockwave",
+      "t": "Utterance",
+      "c": "Perfected Map",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 1
+    },
+    {
+      "id": "utt-energy-vortex",
+      "n": "Energy Vortex",
+      "t": "Utterance",
+      "c": "Perfected Map",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 2
+    },
+    {
+      "id": "utt-speak-rock-to-mud",
+      "n": "Speak Rock to Mud",
+      "t": "Utterance",
+      "c": "Perfected Map",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 2
+    },
+    {
+      "id": "utt-transform-the-landscape",
+      "n": "Transform the Landscape",
+      "t": "Utterance",
+      "c": "Perfected Map",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 2
+    },
+    {
+      "id": "utt-lore-of-the-world",
+      "n": "Lore of the World",
+      "t": "Utterance",
+      "c": "Perfected Map",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 3
+    },
+    {
+      "id": "utt-master-the-four-winds",
+      "n": "Master the Four Winds",
+      "t": "Utterance",
+      "c": "Perfected Map",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 3
+    },
+    {
+      "id": "utt-thwart-the-traveler",
+      "n": "Thwart the Traveler",
+      "t": "Utterance",
+      "c": "Perfected Map",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 3
+    },
+    {
+      "id": "utt-anger-the-sleeping-earth",
+      "n": "Anger the Sleeping Earth",
+      "t": "Utterance",
+      "c": "Perfected Map",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 4
+    },
+    {
+      "id": "utt-conjunctive-gate",
+      "n": "Conjunctive Gate",
+      "t": "Utterance",
+      "c": "Perfected Map",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 4
+    },
+    {
+      "id": "utt-deny-passage",
+      "n": "Deny Passage",
+      "t": "Utterance",
+      "c": "Perfected Map",
+      "s": "None",
+      "f": "srd_utterances_splat.json",
+      "l": 4
+    },
+    {
+      "id": "sm-acrobat-boots",
+      "n": "Acrobat Boots",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-adamant-pauldrons",
+      "n": "Adamant Pauldrons",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-airstep-sandals",
+      "n": "Airstep Sandals",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-ankheg-breastplate",
+      "n": "Ankheg Breastplate",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-apparition-ribbon",
+      "n": "Apparition Ribbon",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-arcane-focus",
+      "n": "Arcane Focus",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-armguards-of-disruption",
+      "n": "Armguards of Disruption",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-basilisk-mask",
+      "n": "Basilisk Mask",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-beast-tamer-circlet",
+      "n": "Beast Tamer Circlet",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-behir-gorget",
+      "n": "Behir Gorget",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-blink-shirt",
+      "n": "Blink Shirt",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-bloodtalons",
+      "n": "Bloodtalons",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-bloodwar-gauntlets",
+      "n": "Bloodwar Gauntlets",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-bluesteel-bracers",
+      "n": "Bluesteel Bracers",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-brass-mane",
+      "n": "Brass Mane",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-cerulean-sandals",
+      "n": "Cerulean Sandals",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-crystal-helm",
+      "n": "Crystal Helm",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-diadem-of-purelight",
+      "n": "Diadem of Purelight",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-disenchanter-mask",
+      "n": "Disenchanter Mask",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-displacer-mantle",
+      "n": "Displacer Mantle",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-dissolving-spittle",
+      "n": "Dissolving Spittle",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-dread-carapace",
+      "n": "Dread Carapace",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-enigma-helm",
+      "n": "Enigma Helm",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-fearsome-mask",
+      "n": "Fearsome Mask",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-fellmist-robe",
+      "n": "Fellmist Robe",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-flame-cincture",
+      "n": "Flame Cincture",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-frost-helm",
+      "n": "Frost Helm",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-girallon-arms",
+      "n": "Girallon Arms",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-gloves-of-the-poisoned-soul",
+      "n": "Gloves of the Poisoned Soul",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-gorgon-mask",
+      "n": "Gorgon Mask",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-great-raptor-mask",
+      "n": "Great Raptor Mask",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-heart-of-fire",
+      "n": "Heart of Fire",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-hunters-circlet",
+      "n": "Hunter's Circlet",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-illusion-veil",
+      "n": "Illusion Veil",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-impulse-boots",
+      "n": "Impulse Boots",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-incarnate-avatar",
+      "n": "Incarnate Avatar",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-incarnate-weapon",
+      "n": "Incarnate Weapon",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-keeneye-lenses",
+      "n": "Keeneye Lenses",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-kraken-mantle",
+      "n": "Kraken Mantle",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-krenshar-mask",
+      "n": "Krenshar Mask",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-kruthik-claws",
+      "n": "Kruthik Claws",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-lamia-belt",
+      "n": "Lamia Belt",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-lammasu-mantle",
+      "n": "Lammasu Mantle",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-landshark-boots",
+      "n": "Landshark Boots",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-lifebond-vestments",
+      "n": "Lifebond Vestments",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-lightning-gauntlets",
+      "n": "Lightning Gauntlets",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-lucky-dice",
+      "n": "Lucky Dice",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-mages-spectacles",
+      "n": "Mage's Spectacles",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-manticore-belt",
+      "n": "Manticore Belt",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-mantle-of-flame",
+      "n": "Mantle of Flame",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-mauling-gauntlets",
+      "n": "Mauling Gauntlets",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-necrocarnum-circlet",
+      "n": "Necrocarnum Circlet",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-necrocarnum-mantle",
+      "n": "Necrocarnum Mantle",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-necrocarnum-shroud",
+      "n": "Necrocarnum Shroud",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-necrocarnum-touch",
+      "n": "Necrocarnum Touch",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-necrocarnum-vestments",
+      "n": "Necrocarnum Vestments",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-necrocarnum-weapon",
+      "n": "Necrocarnum Weapon",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-pauldrons-of-health",
+      "n": "Pauldrons of Health",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-pegasus-cloak",
+      "n": "Pegasus Cloak",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-phase-cloak",
+      "n": "Phase Cloak",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-phoenix-belt",
+      "n": "Phoenix Belt",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-planar-chasuble",
+      "n": "Planar Chasuble",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-planar-ward",
+      "n": "Planar Ward",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-rageclaws",
+      "n": "Rageclaws",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-riding-bracers",
+      "n": "Riding Bracers",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-sailors-bracers",
+      "n": "Sailor's Bracers",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-shadow-mantle",
+      "n": "Shadow Mantle",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-shedu-crown",
+      "n": "Shedu Crown",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-sighting-gloves",
+      "n": "Sighting Gloves",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-silvertongue-mask",
+      "n": "Silvertongue Mask",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-soulspark-familiar",
+      "n": "Soulspark Familiar",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-soulspeaker-circlet",
+      "n": "Soulspeaker Circlet",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-spellward-shirt",
+      "n": "Spellward Shirt",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-sphinx-claws",
+      "n": "Sphinx Claws",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-strongheart-vest",
+      "n": "Strongheart Vest",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-theft-gloves",
+      "n": "Theft Gloves",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-therapeutic-mantle",
+      "n": "Therapeutic Mantle",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-threefold-mask-of-the-chimera",
+      "n": "Threefold Mask of the Chimera",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-thunderstep-boots",
+      "n": "Thunderstep Boots",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-totem-avatar",
+      "n": "Totem Avatar",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-truthseeker-goggles",
+      "n": "Truthseeker Goggles",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-unicorn-horn",
+      "n": "Unicorn Horn",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-urskan-greaves",
+      "n": "Urskan Greaves",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-vitality-belt",
+      "n": "Vitality Belt",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-wind-cloak",
+      "n": "Wind Cloak",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-winter-mask",
+      "n": "Winter Mask",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-worg-pelt",
+      "n": "Worg Pelt",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-wormtail-belt",
+      "n": "Wormtail Belt",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-yrthak-mask",
+      "n": "Yrthak Mask",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-claws-of-the-wyrm",
+      "n": "Claws of the Wyrm",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-dragon-mantle",
+      "n": "Dragon Mantle",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-dragon-tail",
+      "n": "Dragon Tail",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-dragonfire-mask",
+      "n": "Dragonfire Mask",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "sm-elder-spirit",
+      "n": "Elder Spirit",
+      "t": "Soulmeld",
+      "c": "Soulmeld",
+      "s": "None",
+      "f": "srd_soulmelds_splat.json"
+    },
+    {
+      "id": "pwr-adrenaline-boost",
+      "n": "Adrenaline Boost",
+      "t": "Power",
+      "c": "Psychometabolism",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 1
+    },
+    {
+      "id": "pwr-affinity-field-pain",
+      "n": "Affinity Field, Pain",
+      "t": "Power",
+      "c": "Psychometabolism",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 9
+    },
+    {
+      "id": "pwr-analyze-dweomer-psionic",
+      "n": "Analyze Dweomer, Psionic",
+      "t": "Power",
+      "c": "Clairsentience",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 6
+    },
+    {
+      "id": "pwr-animate-plants-psionic",
+      "n": "Animate Plants, Psionic",
+      "t": "Power",
+      "c": "Psychokinesis",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 7
+    },
+    {
+      "id": "pwr-anticipatory-strike",
+      "n": "Anticipatory Strike",
+      "t": "Power",
+      "c": "Psychoportation",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 5
+    },
+    {
+      "id": "pwr-blackstone-hammer",
+      "n": "Blackstone Hammer",
+      "t": "Power",
+      "c": "Psychometabolism",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 6
+    },
+    {
+      "id": "pwr-breathless",
+      "n": "Breathless",
+      "t": "Power",
+      "c": "Psychometabolism",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 3
+    },
+    {
+      "id": "pwr-burrowing-bonds",
+      "n": "Burrowing Bonds",
+      "t": "Power",
+      "c": "Metacreativity",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 4
+    },
+    {
+      "id": "pwr-call-armor",
+      "n": "Call Armor",
+      "t": "Power",
+      "c": "Psychoportation",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 1
+    },
+    {
+      "id": "pwr-celestial-conduit",
+      "n": "Celestial Conduit",
+      "t": "Power",
+      "c": "Psychokinesis",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 5
+    },
+    {
+      "id": "pwr-cerebral-phantasm",
+      "n": "Cerebral Phantasm",
+      "t": "Power",
+      "c": "Telepathy",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 3
+    },
+    {
+      "id": "pwr-chaos-fissure",
+      "n": "Chaos Fissure",
+      "t": "Power",
+      "c": "Telepathy",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 8
+    },
+    {
+      "id": "pwr-claws-of-darkness",
+      "n": "Claws of Darkness",
+      "t": "Power",
+      "c": "Psychometabolism",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 2
+    },
+    {
+      "id": "pwr-concussive-detonation",
+      "n": "Concussive Detonation",
+      "t": "Power",
+      "c": "Psychokinesis",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 6
+    },
+    {
+      "id": "pwr-cranial-deluge",
+      "n": "Cranial Deluge",
+      "t": "Power",
+      "c": "Psychometabolism",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 5
+    },
+    {
+      "id": "pwr-crystalstorm",
+      "n": "Crystalstorm",
+      "t": "Power",
+      "c": "Metacreativity",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 2
+    },
+    {
+      "id": "pwr-damp-power",
+      "n": "Damp Power",
+      "t": "Power",
+      "c": "Psychometabolism",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 2
+    },
+    {
+      "id": "pwr-dark-despair",
+      "n": "Dark Despair",
+      "t": "Power",
+      "c": "Psychometabolism",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 8
+    },
+    {
+      "id": "pwr-deaden-blow",
+      "n": "Deaden Blow",
+      "t": "Power",
+      "c": "Metacreativity",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 1
+    },
+    {
+      "id": "pwr-death-knell-psionic",
+      "n": "Death Knell, Psionic",
+      "t": "Power",
+      "c": "Psychometabolism",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 2
+    },
+    {
+      "id": "pwr-deflection-field",
+      "n": "Deflection Field",
+      "t": "Power",
+      "c": "Psychokinesis",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 1
+    },
+    {
+      "id": "pwr-detain-ectoplasm",
+      "n": "Detain Ectoplasm",
+      "t": "Power",
+      "c": "Metacreativity",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 5
+    },
+    {
+      "id": "pwr-dimension-hop",
+      "n": "Dimension Hop",
+      "t": "Power",
+      "c": "Psychoportation",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 1
+    },
+    {
+      "id": "pwr-dimension-twister",
+      "n": "Dimension Twister",
+      "t": "Power",
+      "c": "Psychoportation",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 3
+    },
+    {
+      "id": "pwr-dimensional-pocket",
+      "n": "Dimensional Pocket",
+      "t": "Power",
+      "c": "Psychoportation",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 1
+    },
+    {
+      "id": "pwr-discern-lies-psionic",
+      "n": "Discern Lies, Psionic",
+      "t": "Power",
+      "c": "Clairsentience",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 4
+    },
+    {
+      "id": "pwr-distracting-shout",
+      "n": "Distracting Shout",
+      "t": "Power",
+      "c": "Psychometabolism",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 2
+    },
+    {
+      "id": "pwr-earth-walk",
+      "n": "Earth Walk",
+      "t": "Power",
+      "c": "Psychometabolism",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 2
+    },
+    {
+      "id": "pwr-earthquake-psionic",
+      "n": "Earthquake, Psionic",
+      "t": "Power",
+      "c": "Psychokinesis",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 9
+    },
+    {
+      "id": "pwr-ectoplasmic-swarm",
+      "n": "Ectoplasmic Swarm",
+      "t": "Power",
+      "c": "Metacreativity",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 4
+    },
+    {
+      "id": "pwr-eidetic-lock",
+      "n": "Eidetic Lock",
+      "t": "Power",
+      "c": "Telepathy",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 1
+    },
+    {
+      "id": "pwr-elemental-steward",
+      "n": "Elemental Steward",
+      "t": "Power",
+      "c": "Psychoportation",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 1
+    },
+    {
+      "id": "pwr-empower-weapon",
+      "n": "Empower Weapon",
+      "t": "Power",
+      "c": "Psychometabolism",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 5
+    },
+    {
+      "id": "pwr-endure-elements-psionic",
+      "n": "Endure Elements, Psionic",
+      "t": "Power",
+      "c": "Psychometabolism",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 1
+    },
+    {
+      "id": "pwr-energy-arc",
+      "n": "Energy Arc",
+      "t": "Power",
+      "c": "Psychokinesis",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 1
+    },
+    {
+      "id": "pwr-energy-barrage",
+      "n": "Energy Barrage",
+      "t": "Power",
+      "c": "Psychokinesis",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 6
+    },
+    {
+      "id": "pwr-energy-claw",
+      "n": "Energy Claw",
+      "t": "Power",
+      "c": "Metacreativity",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 7
+    },
+    {
+      "id": "pwr-energy-emanation",
+      "n": "Energy Emanation",
+      "t": "Power",
+      "c": "Psychokinesis",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 2
+    },
+    {
+      "id": "pwr-energy-flash",
+      "n": "Energy Flash",
+      "t": "Power",
+      "c": "Psychokinesis",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 4
+    },
+    {
+      "id": "pwr-energy-lance",
+      "n": "Energy Lance",
+      "t": "Power",
+      "c": "Psychokinesis",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 3
+    },
+    {
+      "id": "pwr-energy-manipulation",
+      "n": "Energy Manipulation",
+      "t": "Power",
+      "c": "Psychokinesis",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 5
+    },
+    {
+      "id": "pwr-energy-nullification-field",
+      "n": "Energy Nullification Field",
+      "t": "Power",
+      "c": "Psychokinesis",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 5
+    },
+    {
+      "id": "pwr-ethereal-abduction",
+      "n": "Ethereal Abduction",
+      "t": "Power",
+      "c": "Psychoportation",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 6
+    },
+    {
+      "id": "pwr-ethereal-agent",
+      "n": "Ethereal Agent",
+      "t": "Power",
+      "c": "Clairsentience",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 5
+    },
+    {
+      "id": "pwr-ethereal-volley",
+      "n": "Ethereal Volley",
+      "t": "Power",
+      "c": "Psychokinesis",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 2
+    },
+    {
+      "id": "pwr-evade-attack",
+      "n": "Evade Attack",
+      "t": "Power",
+      "c": "Psychoportation",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 2
+    },
+    {
+      "id": "pwr-exhalation-of-the-bronze-dragon",
+      "n": "Exhalation of the Bronze Dragon",
+      "t": "Power",
+      "c": "Telepathy",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 3
+    },
+    {
+      "id": "pwr-extend-range",
+      "n": "Extend Range",
+      "t": "Power",
+      "c": "Psychokinesis",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 1
+    },
+    {
+      "id": "pwr-extend-reach",
+      "n": "Extend Reach",
+      "t": "Power",
+      "c": "Psychokinesis",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 2
+    },
+    {
+      "id": "pwr-eyes-of-the-basilisk",
+      "n": "Eyes of the Basilisk",
+      "t": "Power",
+      "c": "Psychometabolism",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 7
+    },
+    {
+      "id": "pwr-fiendish-conduit",
+      "n": "Fiendish Conduit",
+      "t": "Power",
+      "c": "Psychokinesis",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 5
+    },
+    {
+      "id": "pwr-from-the-brink",
+      "n": "From the Brink",
+      "t": "Power",
+      "c": "Psychometabolism",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 2
+    },
+    {
+      "id": "pwr-glyph-of-warding-psionic",
+      "n": "Glyph of Warding, Psionic",
+      "t": "Power",
+      "c": "Metacreativity",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 3
+    },
+    {
+      "id": "pwr-greater-glory",
+      "n": "Greater Glory",
+      "t": "Power",
+      "c": "Psychometabolism",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 8
+    },
+    {
+      "id": "pwr-heavy-earth",
+      "n": "Heavy Earth",
+      "t": "Power",
+      "c": "Psychometabolism",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 3
+    },
+    {
+      "id": "pwr-hungry-touch",
+      "n": "Hungry Touch",
+      "t": "Power",
+      "c": "Psychometabolism",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 1
+    },
+    {
+      "id": "pwr-incite-bravery",
+      "n": "Incite Bravery",
+      "t": "Power",
+      "c": "Telepathy",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 2
+    },
+    {
+      "id": "pwr-inconstant-location",
+      "n": "Inconstant Location",
+      "t": "Power",
+      "c": "Psychoportation",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 6
+    },
+    {
+      "id": "pwr-inspire-mount",
+      "n": "Inspire Mount",
+      "t": "Power",
+      "c": "Psychometabolism",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 1
+    },
+    {
+      "id": "pwr-intellect-bomb",
+      "n": "Intellect Bomb",
+      "t": "Power",
+      "c": "Psychokinesis",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 9
+    },
+    {
+      "id": "pwr-larval-flayers",
+      "n": "Larval Flayers",
+      "t": "Power",
+      "c": "Psychoportation",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 2
+    },
+    {
+      "id": "pwr-light-beam",
+      "n": "Light Beam",
+      "t": "Power",
+      "c": "Psychokinesis",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 4
+    },
+    {
+      "id": "pwr-light-burst",
+      "n": "Light Burst",
+      "t": "Power",
+      "c": "Psychokinesis",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 8
+    },
+    {
+      "id": "pwr-living-arrow",
+      "n": "Living Arrow",
+      "t": "Power",
+      "c": "Metacreativity",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 5
+    },
+    {
+      "id": "pwr-mend-wounds",
+      "n": "Mend Wounds",
+      "t": "Power",
+      "c": "Psychometabolism",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 6
+    },
+    {
+      "id": "pwr-mental-turmoil",
+      "n": "Mental Turmoil",
+      "t": "Power",
+      "c": "Telepathy",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 3
+    },
+    {
+      "id": "pwr-mighty-spring",
+      "n": "Mighty Spring",
+      "t": "Power",
+      "c": "Psychokinesis",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 1
+    },
+    {
+      "id": "pwr-mind-over-energy",
+      "n": "Mind over Energy",
+      "t": "Power",
+      "c": "Psychometabolism",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 6
+    },
+    {
+      "id": "pwr-mindfire",
+      "n": "Mindfire",
+      "t": "Power",
+      "c": "Psychometabolism",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 3
+    },
+    {
+      "id": "pwr-moment-of-insight",
+      "n": "Moment of Insight",
+      "t": "Power",
+      "c": "Clairsentience",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 2
+    },
+    {
+      "id": "pwr-perfect-archery",
+      "n": "Perfect Archery",
+      "t": "Power",
+      "c": "Clairsentience",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 2
+    },
+    {
+      "id": "pwr-perfect-riposte",
+      "n": "Perfect Riposte",
+      "t": "Power",
+      "c": "Clairsentience",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 5
+    },
+    {
+      "id": "pwr-planar-apotheosis",
+      "n": "Planar Apotheosis",
+      "t": "Power",
+      "c": "Psychometabolism",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 4
+    },
+    {
+      "id": "pwr-planar-champion",
+      "n": "Planar Champion",
+      "t": "Power",
+      "c": "Psychoportation",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 7
+    },
+    {
+      "id": "pwr-planar-embrace",
+      "n": "Planar Embrace",
+      "t": "Power",
+      "c": "Psychometabolism",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 6
+    },
+    {
+      "id": "pwr-power-claws",
+      "n": "Power Claws",
+      "t": "Power",
+      "c": "Psychokinesis",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 2
+    },
+    {
+      "id": "pwr-power-thief",
+      "n": "Power Thief",
+      "t": "Power",
+      "c": "Telepathy",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 7
+    },
+    {
+      "id": "pwr-power-weapon",
+      "n": "Power Weapon",
+      "t": "Power",
+      "c": "Psychokinesis",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 2
+    },
+    {
+      "id": "pwr-primal-fear",
+      "n": "Primal Fear",
+      "t": "Power",
+      "c": "Telepathy",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 1
+    },
+    {
+      "id": "pwr-protection-from-evil-psionic",
+      "n": "Protection from Evil, Psionic",
+      "t": "Power",
+      "c": "Telepathy",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 1
+    },
+    {
+      "id": "pwr-protection-from-good-psionic",
+      "n": "Protection from Good, Psionic",
+      "t": "Power",
+      "c": "Telepathy",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 1
+    },
+    {
+      "id": "pwr-protection-from-psionics",
+      "n": "Protection from Psionics",
+      "t": "Power",
+      "c": "Clairsentience",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 5
+    },
+    {
+      "id": "pwr-protection-from-spells-psionic",
+      "n": "Protection from Spells, Psionic",
+      "t": "Power",
+      "c": "Psychometabolism",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 8
+    },
+    {
+      "id": "pwr-psychic-containment",
+      "n": "Psychic Containment",
+      "t": "Power",
+      "c": "Telepathy",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 3
+    },
+    {
+      "id": "pwr-psychic-scimitar",
+      "n": "Psychic Scimitar",
+      "t": "Power",
+      "c": "Psychometabolism",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 2
+    },
+    {
+      "id": "pwr-psychokinetic-weapon",
+      "n": "Psychokinetic Weapon",
+      "t": "Power",
+      "c": "Psychokinesis",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 4
+    },
+    {
+      "id": "pwr-psychometry",
+      "n": "Psychometry",
+      "t": "Power",
+      "c": "Clairsentience",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 6
+    },
+    {
+      "id": "pwr-psychoportive-shelter",
+      "n": "Psychoportive Shelter",
+      "t": "Power",
+      "c": "Psychoportation",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 2
+    },
+    {
+      "id": "pwr-psychotic-break",
+      "n": "Psychotic Break",
+      "t": "Power",
+      "c": "Telepathy",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 5
+    },
+    {
+      "id": "pwr-rage-of-the-remorhaz",
+      "n": "Rage of the Remorhaz",
+      "t": "Power",
+      "c": "Psychometabolism",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 6
+    },
+    {
+      "id": "pwr-realized-potential",
+      "n": "Realized Potential",
+      "t": "Power",
+      "c": "Clairsentience",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 3
+    },
+    {
+      "id": "pwr-see-invisibility-psionic",
+      "n": "See Invisibility, Psionic",
+      "t": "Power",
+      "c": "Clairsentience",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 2
+    },
+    {
+      "id": "pwr-sensory-gloom",
+      "n": "Sensory Gloom",
+      "t": "Power",
+      "c": "Psychometabolism",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 1
+    },
+    {
+      "id": "pwr-serenity",
+      "n": "Serenity",
+      "t": "Power",
+      "c": "Telepathy",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 2
+    },
+    {
+      "id": "pwr-shadow-eft",
+      "n": "Shadow Eft",
+      "t": "Power",
+      "c": "Psychoportation",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 4
+    },
+    {
+      "id": "pwr-shadow-walk-psionic",
+      "n": "Shadow Walk, Psionic",
+      "t": "Power",
+      "c": "Psychoportation",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 5
+    },
+    {
+      "id": "pwr-slow-breathing",
+      "n": "Slow Breathing",
+      "t": "Power",
+      "c": "Psychometabolism",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 1
+    },
+    {
+      "id": "pwr-speak-with-dead-psionic",
+      "n": "Speak with Dead, Psionic",
+      "t": "Power",
+      "c": "Clairsentience",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 3
+    },
+    {
+      "id": "pwr-spirit-of-war",
+      "n": "Spirit of War",
+      "t": "Power",
+      "c": "Telepathy",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 8
+    },
+    {
+      "id": "pwr-stomp-greater",
+      "n": "Stomp, Greater",
+      "t": "Power",
+      "c": "Psychokinesis",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 5
+    },
+    {
+      "id": "pwr-stone-mind",
+      "n": "Stone Mind",
+      "t": "Power",
+      "c": "Psychometabolism",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 1
+    },
+    {
+      "id": "pwr-stygian-bane",
+      "n": "Stygian Bane",
+      "t": "Power",
+      "c": "Psychometabolism",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 3
+    },
+    {
+      "id": "pwr-stygian-bolt",
+      "n": "Stygian Bolt",
+      "t": "Power",
+      "c": "Psychometabolism",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 6
+    },
+    {
+      "id": "pwr-stygian-conflagration",
+      "n": "Stygian Conflagration",
+      "t": "Power",
+      "c": "Psychometabolism",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 9
+    },
+    {
+      "id": "pwr-stygian-discernment",
+      "n": "Stygian Discernment",
+      "t": "Power",
+      "c": "Clairsentience",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 1
+    },
+    {
+      "id": "pwr-stygian-disruption",
+      "n": "Stygian Disruption",
+      "t": "Power",
+      "c": "Psychometabolism",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 4
+    },
+    {
+      "id": "pwr-stygian-dominion",
+      "n": "Stygian Dominion",
+      "t": "Power",
+      "c": "Psychometabolism",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 5
+    },
+    {
+      "id": "pwr-stygian-erasure",
+      "n": "Stygian Erasure",
+      "t": "Power",
+      "c": "Psychometabolism",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 2
+    },
+    {
+      "id": "pwr-stygian-ray",
+      "n": "Stygian Ray",
+      "t": "Power",
+      "c": "Psychometabolism",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 2
+    },
+    {
+      "id": "pwr-stygian-touch",
+      "n": "Stygian Touch",
+      "t": "Power",
+      "c": "Psychometabolism",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 6
+    },
+    {
+      "id": "pwr-stygian-veil",
+      "n": "Stygian Veil",
+      "t": "Power",
+      "c": "Psychometabolism",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 8
+    },
+    {
+      "id": "pwr-stygian-ward",
+      "n": "Stygian Ward",
+      "t": "Power",
+      "c": "Psychometabolism",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 4
+    },
+    {
+      "id": "pwr-stygian-weapon",
+      "n": "Stygian Weapon",
+      "t": "Power",
+      "c": "Psychometabolism",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 2
+    },
+    {
+      "id": "pwr-suggestion-implanted",
+      "n": "Suggestion, Implanted",
+      "t": "Power",
+      "c": "Telepathy",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 4
+    },
+    {
+      "id": "pwr-suppress-schism",
+      "n": "Suppress Schism",
+      "t": "Power",
+      "c": "Psychokinesis",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 5
+    },
+    {
+      "id": "pwr-synchronicity",
+      "n": "Synchronicity",
+      "t": "Power",
+      "c": "Clairsentience",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 1
+    },
+    {
+      "id": "pwr-telekinetic-boomerang",
+      "n": "Telekinetic Boomerang",
+      "t": "Power",
+      "c": "Psychokinesis",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 3
+    },
+    {
+      "id": "pwr-telekinetic-buffer",
+      "n": "Telekinetic Buffer",
+      "t": "Power",
+      "c": "Psychokinesis",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 5
+    },
+    {
+      "id": "pwr-temporal-reiteration",
+      "n": "Temporal Reiteration",
+      "t": "Power",
+      "c": "Psychoportation",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 5
+    },
+    {
+      "id": "pwr-touch-of-health",
+      "n": "Touch of Health",
+      "t": "Power",
+      "c": "Psychometabolism",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 1
+    },
+    {
+      "id": "pwr-urban-strider",
+      "n": "Urban Strider",
+      "t": "Power",
+      "c": "Psychometabolism",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 1
+    },
+    {
+      "id": "pwr-urge-extermination",
+      "n": "Urge Extermination",
+      "t": "Power",
+      "c": "Telepathy",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 9
+    },
+    {
+      "id": "pwr-zone-of-alertness",
+      "n": "Zone of Alertness",
+      "t": "Power",
+      "c": "Telepathy",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 2
+    },
+    {
+      "id": "pwr-zone-of-truth-psionic",
+      "n": "Zone of Truth, Psionic",
+      "t": "Power",
+      "c": "Telepathy",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 2
+    },
+    {
+      "id": "pwr-incarnum-fusion",
+      "n": "Incarnum Fusion",
+      "t": "Power",
+      "c": "Metacreativity",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 3
+    },
+    {
+      "id": "pwr-open-chakra-psionic",
+      "n": "Open Chakra, Psionic",
+      "t": "Power",
+      "c": "Psychometabolism",
+      "s": "None",
+      "f": "srd_powers_splat.json",
+      "l": 4
+    },
+    {
+      "id": "pwr-soul-crystal",
+      "n": "Soul Crystal",
+      "t": "Power",
+      "c": "Metacreativity",
+      "s": "None",
+      "f": "srd_powers_splat.json",
       "l": 7
     }
   ]
