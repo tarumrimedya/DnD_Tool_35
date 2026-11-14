@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>D&D 3.5e Character & Campaign Command Center (Hub)</title>
   <link rel="stylesheet" href="tailwind_compiled.css?v=101216d709">
-  <script src="srd_compendium.js?v=0c86626c75"></script>
-  <script src="rule_engine.js?v=fa270802d2"></script>
+  <script src="srd_compendium.js?v=05b06bc772"></script>
+  <script src="rule_engine.js?v=ea8904c82a"></script>
   <script src="ui_components.js?v=e5d325aec7"></script>
   <script src="rule_master.js?v=e7651522bf"></script>
   <script src="ui_shared.js?v=8df0c1e633"></script>
@@ -15,12 +15,12 @@
   <script src="supabase_auth.js?v=47247ea179"></script>
   <!-- Prefetch Character Sheet & Domain Modules during Hub Idle Time -->
   <link rel="prefetch" href="index.html">
-  <link rel="prefetch" href="char_modals.js?v=da08863636">
-  <link rel="prefetch" href="char_hud.js?v=7c93abde4d">
+  <link rel="prefetch" href="char_modals.js?v=e2be0978a2">
+  <link rel="prefetch" href="char_hud.js?v=9ca60dea7d">
   <link rel="prefetch" href="char_combat.js?v=252e917761">
   <link rel="prefetch" href="char_spells.js?v=28af8c2915">
-  <link rel="prefetch" href="char_progression.js?v=3aec2e6f02">
-  <link rel="prefetch" href="char_inventory.js?v=f44c43daab">
+  <link rel="prefetch" href="char_progression.js?v=a030a2870e">
+  <link rel="prefetch" href="char_inventory.js?v=8eda2b41f0">
   <!-- Three.js & 3D Dice Roller Engine -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -2587,7 +2587,7 @@
       const classes = summary.classes || '';
       const name = summary.name || 'New Character';
 
-      return {
+      const cleanChar = {
         schemaVersion: 2,
         id: charId,
         _hubId: charId,
@@ -2691,6 +2691,10 @@
         settings: Object.assign({}, getGlobalDefaultSettings().settings, summary.settings || {}),
         houseRules: Object.assign({}, getGlobalDefaultSettings().houseRules, summary.houseRules || {})
       };
+      if (window.SrdCompendium && typeof window.SrdCompendium.syncCharacterBootSnapshots === 'function') {
+        try { window.SrdCompendium.syncCharacterBootSnapshots(cleanChar); } catch (_) {}
+      }
+      return cleanChar;
     }
 
     // Hub Üzerinden Anlık Zar Atışı (Saves, Spot, Listen, İnisiyatif)
@@ -3001,6 +3005,10 @@
       } else {
         c.fullData.id = charId;
         c.fullData._hubId = charId;
+      }
+
+      if (window.SrdCompendium && typeof window.SrdCompendium.syncCharacterBootSnapshots === 'function') {
+        try { window.SrdCompendium.syncCharacterBootSnapshots(c.fullData); } catch (_) {}
       }
 
       // Aktif karakter ID'sini kaydet
@@ -3937,6 +3945,10 @@ CRITICAL RULES:
           pinDrawerLimit: 5
         }
       };
+
+      if (window.SrdCompendium && typeof window.SrdCompendium.syncCharacterBootSnapshots === 'function') {
+        try { window.SrdCompendium.syncCharacterBootSnapshots(fullData); } catch (_) {}
+      }
 
       return {
         id: charId,
@@ -5151,7 +5163,7 @@ CRITICAL RULES:
     async function hydrateV2BestiaryFromCompendium() {
       try {
         if (window.SrdCompendium && typeof window.SrdCompendium.init === 'function') {
-          await window.SrdCompendium.init();
+          await window.SrdCompendium.init({ yieldBetweenChunks: true });
         }
         let v2Monsters = [];
         if (window.SrdCompendium && typeof window.SrdCompendium.loadMonsters === 'function') {

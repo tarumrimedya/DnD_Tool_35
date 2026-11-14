@@ -3895,6 +3895,143 @@ function runDeriveSheetTests() {
       has4SubsystemSkills && kPsionicsBonus.total === 2 && kArcanaBonus.total === 0,
       `has4=${has4SubsystemSkills}, kPsionics=${kPsionicsBonus.total}, kArcana=${kArcanaBonus.total}`
     );
+
+    // ------------------------------------------------------------------------
+    // ADR-045 Golden Suite: Compact Mechanical Snapshots & 0-Chunk Derive Parity
+    // ------------------------------------------------------------------------
+    const vm = require('vm');
+    const fixtureFiles045 = fs.readdirSync(path.join(__dirname, 'fixtures')).filter(f => f.endsWith('.json')).sort();
+    const snapFixtures045 = fixtureFiles045.map(fn => {
+      const raw = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', fn), 'utf8'));
+      const fullSheet = RuleEngine.deriveSheet(raw, { customDb: raw.customDb || [] });
+      const snapped = JSON.parse(JSON.stringify(raw));
+      SrdCompendium.syncCharacterBootSnapshots(snapped);
+      return { fn, raw, fullSheet, snapped };
+    });
+
+    // 1. Compact Snapshot Footprint & Prose Stripping
+    const maxSnapBytes = Math.max(...snapFixtures045.map(x => Buffer.byteLength(JSON.stringify(x.snapped.customDb), 'utf8')));
+    const allSnapsCompact = snapFixtures045.every(x =>
+      Array.isArray(x.snapped.customDb) &&
+      x.snapped.customDb.length > 0 &&
+      x.snapped.customDb.filter(e => e && e._snapshot).every(e =>
+        e._snapshot.origin === 'srd-snapshot' &&
+        e._snapshot.compact === true &&
+        (!e.description || String(e.description).length <= 240)
+      )
+    );
+    check(
+      'ADR-045.1: Compact character snapshots strip long rulebook HTML descriptions (>240 chars), preserve shortDescription/mechanics, and stay under 32 KB even on L17 multiclass builds',
+      allSnapsCompact && maxSnapBytes > 500 && maxSnapBytes < 32768,
+      `allCompact=${allSnapsCompact}, maxSnapBytes=${maxSnapBytes}`
+    );
+
+    // 2. Pure Zero-Chunk Browser VM Parity across all 5 canonical fixtures
+    const zeroChunkSandbox = {
+      console,
+      Math,
+      Date,
+      JSON,
+      Object,
+      Array,
+      String,
+      Number,
+      Boolean,
+      RegExp,
+      Set,
+      Map,
+      Error,
+      TypeError,
+      parseInt,
+      parseFloat,
+      isNaN,
+      isFinite,
+      setTimeout,
+      clearTimeout
+    };
+    zeroChunkSandbox.window = zeroChunkSandbox;
+    zeroChunkSandbox.global = zeroChunkSandbox;
+    zeroChunkSandbox.globalThis = zeroChunkSandbox;
+    vm.createContext(zeroChunkSandbox);
+    ['srd_compendium.js', 'rule_engine.js'].forEach(rel => {
+      const code = fs.readFileSync(path.join(__dirname, '..', rel), 'utf8');
+      vm.runInContext(code, zeroChunkSandbox, { filename: rel });
+    });
+    const zcComp = zeroChunkSandbox.SrdCompendium;
+    const zcEngine = zeroChunkSandbox.RuleEngine;
+    const parityDiffs045 = [];
+    snapFixtures045.forEach(({ fn, fullSheet, snapped }) => {
+      const zSheet = zcEngine.deriveSheet(snapped, { customDb: snapped.customDb });
+      const pairs = [
+        ['hp.max', fullSheet.hp.max, zSheet.hp.max],
+        ['ac.total', fullSheet.ac.total, zSheet.ac.total],
+        ['ac.touch', fullSheet.ac.touch, zSheet.ac.touch],
+        ['ac.flat', fullSheet.ac.flat, zSheet.ac.flat],
+        ['saves.fort', fullSheet.saves.fort, zSheet.saves.fort],
+        ['saves.ref', fullSheet.saves.ref, zSheet.saves.ref],
+        ['saves.will', fullSheet.saves.will, zSheet.saves.will],
+        ['combat.bab', fullSheet.combat.bab, zSheet.combat.bab],
+        ['combat.initiative', fullSheet.combat.initiative, zSheet.combat.initiative],
+        ['weapons', JSON.stringify((fullSheet.combat.weapons || []).map(w => [w.name, w.netAttackBonus, w.netFlatDamage, w.critRangeText])), JSON.stringify((zSheet.combat.weapons || []).map(w => [w.name, w.netAttackBonus, w.netFlatDamage, w.critRangeText]))],
+        ['skillsBonusMap', JSON.stringify(fullSheet.skillsBonusMap || {}), JSON.stringify(zSheet.skillsBonusMap || {})]
+      ];
+      pairs.forEach(([k, a, b]) => {
+        if (a !== b) parityDiffs045.push(`${fn}:${k} (${a} vs ${b})`);
+      });
+    });
+    check(
+      'ADR-045.2: Zero-chunk deriveSheet (0 SRD entries in SrdCompendium memory) matches full-compendium deriveSheet 100% across all 5 canonical fixtures (HP, AC, Saves, BAB, Initiative, Weapons, skillsBonusMap)',
+      zcComp.getLoadedEntryCount() === 0 && parityDiffs045.length === 0,
+      `loadedEntries=${zcComp.getLoadedEntryCount()}, diffs=${parityDiffs045.join('; ') || 'none'}`
+    );
+
+    // 3. Single-Pass skillsBonusMap Parity & Compact Snapshot Homebrew / User-Edit Protection
+    const f02SkillSample = snapFixtures045[1];
+    const directSkillMatch = (f02SkillSample.snapped.skills || []).every(sk => {
+      const sKey = sk.key || String(sk.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+      const direct = RuleEngine.evaluateSkillBonus(f02SkillSample.fullSheet._workingSnapshot, sKey, sk.name, sk.stat || sk.ability);
+      const cached = f02SkillSample.fullSheet.skillsBonusMap && (f02SkillSample.fullSheet.skillsBonusMap[sKey] || f02SkillSample.fullSheet.skillsBonusMap[sk.name]);
+      return Boolean(cached && cached.total === direct.total && JSON.stringify(cached.breakdown) === JSON.stringify(direct.breakdown));
+    });
+    const recTestDb = [
+      { id: 'hb-custom-ring', name: 'Homebrew Ring of Stars', type: 'Ring', modifiers: [{ target: 'ac.deflection', value: 4, type: 'deflection' }] },
+      SrdCompendium.compactSnapshotLoadedEntry('feat-power-attack'),
+      SrdCompendium.compactSnapshotLoadedEntry('feat-dodge')
+    ].filter(Boolean);
+    // Simulate upstream SRD hash drift on unmodified Power Attack vs user-edited Dodge
+    recTestDb[1]._snapshot.chunkHash = 'stale_chunk_hash';
+    recTestDb[1]._snapshot.srcHash = 'stale_src_hash';
+    recTestDb[1].shortDescription = 'Old stale summary';
+    // Re-sync srcHash to match simulated old unedited body so reconcile recognizes it as unmodified by user
+    recTestDb[1]._snapshot.srcHash = SrdCompendium.contentHash(recTestDb[1]);
+    recTestDb[2]._snapshot.chunkHash = 'stale_chunk_hash';
+    recTestDb[2]._snapshot.srcHash = 'older_srd_hash_before_errata';
+    recTestDb[2].modifiers = [{ target: 'ac.dodge', value: 3, type: 'dodge' }]; // User customized Dodge to +3!
+    const recRes045 = SrdCompendium.reconcileSnapshotsSync(recTestDb);
+    check(
+      'ADR-045.3: sheet.skillsBonusMap matches evaluateSkillBonus 100% and reconcileSnapshotsSync auto-updates unmodified compact snapshots while preserving homebrew and user-edited entries',
+      directSkillMatch &&
+      recRes045.autoUpdated.includes('feat-power-attack') &&
+      recRes045.updateAvailable.includes('feat-dodge') &&
+      recTestDb[0].modifiers[0].value === 4 &&
+      recTestDb[1].shortDescription !== 'Old stale summary' &&
+      recTestDb[1]._snapshot.compact === true &&
+      recTestDb[2].modifiers[0].value === 3,
+      `directSkillMatch=${directSkillMatch}, auto=${recRes045.autoUpdated.join(',')}, avail=${recRes045.updateAvailable.join(',')}`
+    );
+
+    // 4. Deferred Modal Mount & Zero Post-Load Idle Warmup / Scroll Hijack Gate
+    const hudSrc045 = fs.readFileSync(path.join(__dirname, '..', 'char_hud.js'), 'utf8');
+    const modalsTail045 = fs.readFileSync(path.join(__dirname, '..', 'char_modals.js'), 'utf8').split('\n').slice(7).join('\n');
+    check(
+      'ADR-045.4: char_modals.js defers 351 KB HTML mount until getElementById demand or post-load idle, and char_hud.js removes scheduleIdleTabWarmup and multi-timer scroll hijacking',
+      !/DOMContentLoaded/.test(modalsTail045) &&
+      !/^ {0,2}window\.ensureModalsMounted\(\);/m.test(modalsTail045) &&
+      /window\.addEventListener\(['"]load['"]/.test(modalsTail045) &&
+      /function\s+updateProfileModalAvatar\(\)\s*\{\s*if\s*\(!window\._modalsMounted\)\s*return;/.test(hudSrc045) &&
+      !/scheduleIdleTabWarmup/.test(hudSrc045) &&
+      !/\[40,\s*100,\s*200,\s*400,\s*700\]/.test(hudSrc045)
+    );
   }
 
   CharStore.clearHistory();

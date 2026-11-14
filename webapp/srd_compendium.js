@@ -45,6 +45,7 @@
   const _chunkPromises = new Map(); // in-flight chunk load promises
   let _indexData = null;            // srd_index.json payload
   let _companionsData = null;       // srd_companions.json payload
+  let _indexPromise = null;
   let _initPromise = null;
   let _ready = false;
   let _basePath = 'database';
@@ -363,6 +364,60 @@
     return copy;
   }
 
+  // Compact mechanical projection for character-embedded boot snapshots (`~300-450 bytes` per entry):
+  // strips long HTML rulebook prose (>240 chars) after ensuring a concise plain-text `shortDescription`,
+  // preserving 100% of V2/V3 mechanical fields while keeping localStorage and Supabase JSONB small.
+  function compactSnapshotBody(src) {
+    const copy = safeClone(src);
+    if (!copy || typeof copy !== 'object') return copy;
+    Object.keys(copy).forEach((k) => { if (k.charAt(0) === '_') delete copy[k]; });
+    delete copy.foundryId;
+    delete copy.costToCreate;
+    if (typeof copy.fullDescription === 'string' && copy.fullDescription.length > 240) {
+      delete copy.fullDescription;
+    }
+    if (typeof copy.description === 'string' && copy.description.length > 240) {
+      if (!copy.shortDescription && !copy.benefit) {
+        const plain = copy.description
+          .replace(/<[^>]+>/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim();
+        if (plain) {
+          copy.shortDescription = plain.length > 200 ? (plain.slice(0, 197) + '...') : plain;
+        }
+      }
+      delete copy.description;
+    }
+    return copy;
+  }
+
+  function buildCompactSnapshot(src) {
+    const copy = compactSnapshotBody(src);
+    const idxHit = indexRowById(src.id);
+    const chunkName = idxHit && idxHit.f ? idxHit.f : null;
+    const chunkMeta = chunkName && _indexData && _indexData.chunks ? _indexData.chunks[chunkName] : null;
+    const bodyHash = contentHash(copy);
+    copy._snapshot = {
+      origin: SNAPSHOT_ORIGIN,
+      compact: true,
+      srcId: src.id,
+      chunk: chunkName,
+      chunkHash: chunkMeta && chunkMeta.hash ? chunkMeta.hash : null,
+      srcHash: bodyHash,
+      takenAt: new Date().toISOString(),
+      status: 'current'
+    };
+    return copy;
+  }
+
+  function isUserCustomizedDbEntry(entry) {
+    if (!entry || typeof entry !== 'object') return false;
+    if (!isSnapshot(entry)) return true;
+    const mode = entry.origin && entry.origin.mode;
+    if (mode === 'override' || mode === 'variant' || mode === 'homebrew') return true;
+    return contentHash(entry) !== entry._snapshot.srcHash;
+  }
+
   let _nodeSyncInitialized = false;
   function ensureNodeSyncLoaded() {
     if (_nodeSyncInitialized || _byId.size > 0) return;
@@ -410,16 +465,16 @@
   // ==========================================================================
   const SrdCompendium = {
     /**
-     * Initializes the Modular V2 Compendium.
-     * Preloads `srd_index.json` + the 4 core calculation chunks into O(1) memory maps.
+     * Lightweight index-only initialization (~3ms from IDB cache; zero 6.9 MB chunk downloads).
+     * Enables findIndexEntry, ensureTypesLoaded, and chunkHash snapshot revalidation without loading chunks.
      */
-    async init(options = {}) {
-      if (_initPromise) return _initPromise;
+    async initIndex(options = {}) {
+      if (_indexData) return true;
+      if (_indexPromise) return _indexPromise;
       if (options.basePath) _basePath = options.basePath.replace(/\/+$/, '');
 
-      _initPromise = (async () => {
+      _indexPromise = (async () => {
         try {
-          // 1. IndexedDB-First (Stale-While-Revalidate): Resolve in ~10ms without blocking on network
           const cachedIdx = await idbGet('srd_index.json');
           if (cachedIdx && cachedIdx.data) {
             _indexData = cachedIdx.data;
@@ -435,30 +490,11 @@
 
           if (!_indexData) {
             console.warn('[SrdCompendium] srd_index.json unavailable.');
+            _indexPromise = null;
             return false;
           }
 
-          // Lazy chunk names are derived from the index, so they are resolved after it loads.
-          const optIn = getOptInChunkNames();
-          const chunksToLoad = options.preloadAll
-            ? [...EAGER_CHUNKS, ...getLazyChunkNames().filter((n) => !optIn.includes(n))]
-            : EAGER_CHUNKS;
-
-          // 2. Load eager chunks in parallel from IndexedDB cache (falling back to network only if missing)
-          await Promise.all(chunksToLoad.map((fname) => SrdCompendium.ensureChunkLoaded(fname)));
-          _ready = true;
-
-          if (typeof global.dispatchEvent === 'function') {
-            global.dispatchEvent(new CustomEvent('srdCompendiumReady', {
-              detail: {
-                totalIndexed: _indexData.totalEntries,
-                loadedEntries: _byId.size,
-                compendiumHash: _indexData.compendiumHash
-              }
-            }));
-          }
-
-          // 3. Non-blocking background hash revalidation when booted from IndexedDB cache
+          // Non-blocking background index hash revalidation when booted from IndexedDB cache
           if (cachedIdx && cachedIdx.data) {
             setTimeout(async () => {
               try {
@@ -466,10 +502,14 @@
                 if (!bgRes.ok) return;
                 const remoteIdx = await bgRes.json();
                 if (remoteIdx && remoteIdx.compendiumHash && remoteIdx.compendiumHash !== _indexData.compendiumHash) {
+                  const prevLoaded = Array.from(_loadedChunks);
                   _indexData = remoteIdx;
                   await idbSet('srd_index.json', remoteIdx.compendiumHash, remoteIdx);
                   _loadedChunks.clear();
-                  await Promise.all(chunksToLoad.map((fname) => SrdCompendium.ensureChunkLoaded(fname)));
+                  for (let i = 0; i < prevLoaded.length; i++) {
+                    await SrdCompendium.ensureChunkLoaded(prevLoaded[i]);
+                    await new Promise((r) => setTimeout(r, 0));
+                  }
                   if (typeof global.dispatchEvent === 'function') {
                     global.dispatchEvent(new CustomEvent('srdCompendiumReady', {
                       detail: {
@@ -482,12 +522,66 @@
                   }
                 }
               } catch (_) {}
-            }, 1200);
+            }, 1400);
+          }
+
+          return true;
+        } catch (err) {
+          console.error('[SrdCompendium] Index initialization error:', err);
+          _indexPromise = null;
+          return false;
+        }
+      })();
+
+      return _indexPromise;
+    },
+
+    /**
+     * Initializes the Modular V2 Compendium.
+     * Preloads `srd_index.json` + core calculation chunks into O(1) memory maps.
+     * Pass `{ yieldBetweenChunks: true }` in background boot paths to keep main-thread TBT = 0ms.
+     */
+    async init(options = {}) {
+      if (_initPromise) return _initPromise;
+      if (options.basePath) _basePath = options.basePath.replace(/\/+$/, '');
+
+      _initPromise = (async () => {
+        try {
+          const idxOk = await SrdCompendium.initIndex(options);
+          if (!idxOk || !_indexData) {
+            _initPromise = null;
+            return false;
+          }
+
+          const optIn = getOptInChunkNames();
+          const chunksToLoad = options.preloadAll
+            ? [...EAGER_CHUNKS, ...getLazyChunkNames().filter((n) => !optIn.includes(n))]
+            : EAGER_CHUNKS;
+
+          if (options.yieldBetweenChunks) {
+            for (let i = 0; i < chunksToLoad.length; i++) {
+              await SrdCompendium.ensureChunkLoaded(chunksToLoad[i]);
+              await new Promise((r) => setTimeout(r, 0));
+            }
+          } else {
+            await Promise.all(chunksToLoad.map((fname) => SrdCompendium.ensureChunkLoaded(fname)));
+          }
+          _ready = true;
+
+          if (typeof global.dispatchEvent === 'function') {
+            global.dispatchEvent(new CustomEvent('srdCompendiumReady', {
+              detail: {
+                totalIndexed: _indexData.totalEntries,
+                loadedEntries: _byId.size,
+                compendiumHash: _indexData.compendiumHash
+              }
+            }));
           }
 
           return true;
         } catch (err) {
           console.error('[SrdCompendium] Initialization error:', err);
+          _initPromise = null;
           return false;
         }
       })();
@@ -496,11 +590,19 @@
     },
 
     get _ready() {
-      return _ready;
+      return Boolean(_ready || _indexData);
     },
 
     isReady() {
+      return Boolean(_ready || _indexData);
+    },
+
+    isFullyLoaded() {
       return _ready;
+    },
+
+    isIndexReady() {
+      return Boolean(_indexData);
     },
 
     getIndexData() {
@@ -558,10 +660,18 @@
       if (!id) return null;
       ensureNodeSyncLoaded();
       const key = String(id).trim();
+      const masterDb = SrdCompendium.getMasterDb();
+
+      // 1. User-authored / homebrew / user-customized entries in character.customDb always win
+      for (let i = 0; i < masterDb.length; i++) {
+        const m = masterDb[i];
+        if (m && m.id === key && isUserCustomizedDbEntry(m)) return m;
+      }
+
+      // 2. Full SRD entry in memory (includes complete rulebook prose when chunk is loaded)
       if (_byId.has(key)) return _byId.get(key);
 
-      // Check dynamic master_db if available
-      const masterDb = SrdCompendium.getMasterDb();
+      // 3. Unmodified embedded `srd-snapshot` in character.customDb (0ms instant boot resolution)
       for (let i = 0; i < masterDb.length; i++) {
         if (masterDb[i] && masterDb[i].id === key) return masterDb[i];
       }
@@ -575,46 +685,83 @@
       if (!name) return null;
       ensureNodeSyncLoaded();
       const raw = String(name).trim();
-      if (_byId.has(raw)) return _byId.get(raw);
 
       let nKey = normalizeNameKey(raw);
       if (nKey.includes('bastard sword')) nKey = 'bastard sword';
       else if (nKey.includes('dwarven waraxe')) nKey = 'dwarven waraxe';
-
-      if (typeFilter) {
-        const tKey = `${String(typeFilter).toLowerCase()}:${nKey}`;
-        if (_byTypeAndName.has(tKey)) return _byTypeAndName.get(tKey);
-      }
-      if (_byName.has(nKey)) return _byName.get(nKey);
-
-      // Check dynamic master_db
+      const tLow = typeFilter ? String(typeFilter).toLowerCase() : null;
+      const isStrictType = Boolean(tLow && (tLow === 'race' || tLow === 'domain' || tLow === 'template' || tLow === 'class'));
       const masterDb = SrdCompendium.getMasterDb();
+
+      const matchesDbEntry = (m, enforceType) => {
+        if (!m) return false;
+        if (m.id === raw) return true;
+        if (enforceType && tLow && String(m.type || '').toLowerCase() !== tLow) return false;
+        if (m.name && normalizeNameKey(m.name) === nKey) return true;
+        if (Array.isArray(m.aliases) && m.aliases.some((al) => normalizeNameKey(al) === nKey)) return true;
+        if (m.name) {
+          const mn = normalizeNameKey(m.name);
+          if (mn.includes(', ')) {
+            const [p1, p2] = mn.split(', ');
+            if (p1 && p2 && `${p2} ${p1}` === nKey) return true;
+          }
+        }
+        return false;
+      };
+
+      // 1. User-authored / homebrew / user-customized entries in character.customDb always win
       for (let i = 0; i < masterDb.length; i++) {
         const m = masterDb[i];
-        if (!m || !m.name) continue;
-        if (normalizeNameKey(m.name) === nKey) {
-          if (!typeFilter || String(m.type || '').toLowerCase() === String(typeFilter).toLowerCase()) {
-            return m;
-          }
+        if (isUserCustomizedDbEntry(m) && matchesDbEntry(m, true)) return m;
+      }
+      if (tLow && !isStrictType) {
+        for (let i = 0; i < masterDb.length; i++) {
+          const m = masterDb[i];
+          if (isUserCustomizedDbEntry(m) && matchesDbEntry(m, false)) return m;
+        }
+      }
+
+      // 2. Full SRD entry in memory
+      if (_byId.has(raw)) return _byId.get(raw);
+      if (tLow) {
+        const tKey = `${tLow}:${nKey}`;
+        if (_byTypeAndName.has(tKey)) return _byTypeAndName.get(tKey);
+      }
+      if (!isStrictType && _byName.has(nKey)) return _byName.get(nKey);
+
+      // 3. Unmodified embedded `srd-snapshot` in character.customDb (0ms instant boot resolution)
+      for (let i = 0; i < masterDb.length; i++) {
+        const m = masterDb[i];
+        if (matchesDbEntry(m, true)) return m;
+      }
+      if (tLow && !isStrictType) {
+        for (let i = 0; i < masterDb.length; i++) {
+          const m = masterDb[i];
+          if (matchesDbEntry(m, false)) return m;
         }
       }
       return null;
     },
 
     /**
-     * Async lookup that automatically lazy-loads `srd_spells.json` or `srd_monsters.json` if needed.
+     * Async lookup that loads only the single chunk owning `idOrName` via `srd_index.json` when needed.
      */
     async fetchEntry(idOrName, typeFilter = null) {
       if (isNodeSyncEnv()) ensureNodeSyncLoaded();
-      else await SrdCompendium.init();
+      else await SrdCompendium.initIndex();
       let found = SrdCompendium.getById(idOrName) || SrdCompendium.getByName(idOrName, typeFilter);
-      if (found) return found;
+      if (found && !(found._snapshot && found._snapshot.compact && found._snapshot.chunk && !_loadedChunks.has(found._snapshot.chunk))) {
+        return found;
+      }
 
-      // Search index to see which lazy chunk owns this entry
+      // Search index to see which chunk owns this entry
       if (_indexData && Array.isArray(_indexData.index)) {
         const nKey = normalizeNameKey(idOrName);
-        const idxHit = _indexData.index.find(
-          (x) => x.id === idOrName || normalizeNameKey(x.n) === nKey
+        const tLow = typeFilter ? String(typeFilter).toLowerCase() : null;
+        const idxHit = indexRowById(String(idOrName || '').trim()) || _indexData.index.find(
+          (x) => x && (x.id === idOrName || (normalizeNameKey(x.n) === nKey && (!tLow || String(x.t || '').toLowerCase() === tLow)))
+        ) || _indexData.index.find(
+          (x) => x && normalizeNameKey(x.n) === nKey
         );
         if (idxHit && idxHit.f && !_loadedChunks.has(idxHit.f)) {
           await SrdCompendium.ensureChunkLoaded(idxHit.f);
@@ -659,7 +806,10 @@
      * redraws only when it gets new records: `ensureTypesLoaded(['Spell']).then(f => f.length && redraw())`.
      */
     async ensureTypesLoaded(types, includeOptIn = false) {
-      if (!_indexData && isNodeSyncEnv()) ensureNodeSyncLoaded();
+      if (!_indexData) {
+        if (isNodeSyncEnv()) ensureNodeSyncLoaded();
+        else await SrdCompendium.initIndex();
+      }
       const missing = getChunksForTypes(types, includeOptIn).filter((f) => !_loadedChunks.has(f));
       if (missing.length === 0) return [];
       await Promise.all(missing.map((f) => SrdCompendium.ensureChunkLoaded(f)));
@@ -713,6 +863,13 @@
         if (!it) continue;
         if (it.id === raw) return it;
         if (normalizeNameKey(it.n) === nKey && (!tLow || String(it.t || '').toLowerCase() === tLow)) return it;
+      }
+      if (tLow === 'template') {
+        const baseT = normalizeNameKey(raw.replace(/\s*\(template\)\s*$/i, ''));
+        for (let i = 0; i < idx.length; i++) {
+          const it = idx[i];
+          if (it && String(it.t || '').toLowerCase() === 'template' && normalizeNameKey(it.n).startsWith(baseT + ' (')) return it;
+        }
       }
       return null;
     },
@@ -785,7 +942,10 @@
      * - source no longer in the SRD -> kept, flagged 'orphaned'
      */
     async reconcileSnapshots(customDb) {
-      if (Array.isArray(customDb)) {
+      if (Array.isArray(customDb) && customDb.length > 0) {
+        if (!_indexData) {
+          try { await SrdCompendium.initIndex(); } catch (_) {}
+        }
         const needed = new Set();
         const chunks = (_indexData && _indexData.chunks) || {};
         customDb.forEach((e) => {
@@ -818,11 +978,11 @@
           status = 'orphaned';
           result.orphaned.push(e.id);
         } else {
-          const latest = contentHash(src);
+          const latest = meta.compact ? contentHash(compactSnapshotBody(src)) : contentHash(src);
           if (latest === meta.srcHash) {
             status = 'current';
           } else if (contentHash(e) === meta.srcHash) {
-            customDb[i] = buildSnapshot(src);
+            customDb[i] = meta.compact ? buildCompactSnapshot(src) : buildSnapshot(src);
             result.autoUpdated.push(e.id);
             result.changed = true;
             continue;
@@ -864,10 +1024,361 @@
       if (!Array.isArray(customDb)) return false;
       const i = customDb.findIndex((e) => e && e.id === id);
       if (i < 0 || !isSnapshot(customDb[i])) return false;
-      const src = _byId.get(customDb[i]._snapshot.srcId || id);
+      const meta = customDb[i]._snapshot;
+      const src = _byId.get(meta.srcId || id);
       if (!src) return false;
-      customDb[i] = buildSnapshot(src);
+      customDb[i] = meta.compact ? buildCompactSnapshot(src) : buildSnapshot(src);
       return true;
+    },
+
+    /** Builds a compact mechanical snapshot from an already-loaded SRD entry. */
+    compactSnapshotLoadedEntry(idOrName, typeFilter = null) {
+      const raw = String(idOrName || '').trim();
+      if (!raw) return null;
+      const src = _byId.get(raw) || (() => {
+        const nKey = normalizeNameKey(raw);
+        if (typeFilter) {
+          const hit = _byTypeAndName.get(`${String(typeFilter).toLowerCase()}:${nKey}`);
+          if (hit) return hit;
+        }
+        return _byName.get(nKey) || null;
+      })();
+      return src ? buildCompactSnapshot(src) : null;
+    },
+
+    /**
+     * Harvests all SRD references a character sheet relies on for 0ms local deriveSheet:
+     * Race, Classes, Templates, Domains, Feats/Traits/Skill Tricks, Equipment (baseItemId/material/enhancements/crystals),
+     * Spells, Powers, Buffs, Conditions, Maneuvers/Stances, and Subsystem entries.
+     */
+    collectCharacterBootRefs(charDoc) {
+      const refs = [];
+      if (!charDoc || typeof charDoc !== 'object') return refs;
+      const seen = new Set();
+      const pushRef = (query, typeFilter = null, critical = false) => {
+        const clean = String(query || '').replace(/^[^A-Za-z0-9(+]+(\[.*?\])?\s*/, '').trim();
+        if (!clean || clean === '-' || clean.toLowerCase() === 'none' || clean.toLowerCase() === 'other') return;
+        const k = `${typeFilter || '*'}:${normalizeNameKey(clean)}`;
+        if (seen.has(k)) return;
+        seen.add(k);
+        refs.push({ query: clean, type: typeFilter || null, critical: Boolean(critical) });
+      };
+
+      // 1. Race
+      if (charDoc.race) pushRef(charDoc.race, 'Race', true);
+
+      // 2. Classes
+      if (Array.isArray(charDoc.levelProgression)) {
+        charDoc.levelProgression.forEach((row) => {
+          if (!row) return;
+          if (row.className) {
+            pushRef(row.className, 'Class', true);
+            const baseCls = String(row.className).replace(/\s*\([^)]+\)\s*/g, '').trim();
+            if (baseCls && baseCls !== row.className) pushRef(baseCls, 'Class', true);
+          }
+          if (Array.isArray(row.feats)) {
+            row.feats.forEach((f) => {
+              const s = String(typeof f === 'string' ? f : (f && (f.name || f.featName) || ''));
+              const rType = s.includes('[Trait]') ? 'Trait' : (s.includes('[Skill Trick]') ? 'Skill Trick' : 'Feat');
+              pushRef(s, rType, true);
+              const baseS = s.replace(/^[^A-Za-z0-9(+]+(\[.*?\])?\s*/, '').replace(/\s*\([^)]+\)\s*$/, '').trim();
+              if (baseS && baseS !== s) pushRef(baseS, rType, true);
+            });
+          }
+          if (Array.isArray(row.specialAbilities)) {
+            row.specialAbilities.forEach((a) => {
+              const rawA = String(typeof a === 'string' ? a : (a && a.name || ''));
+              const dm = rawA.match(/Domain:\s*([^\n,;()]+)/i);
+              if (dm && dm[1]) pushRef(dm[1].trim(), 'Domain', true);
+              else if (rawA) pushRef(rawA, null, false);
+            });
+          }
+        });
+      }
+      if (typeof charDoc.classes === 'string' && charDoc.classes.trim()) {
+        charDoc.classes.split('/').forEach((part) => {
+          const n = part.replace(/\s+\d+\s*$/, '').trim();
+          if (n) pushRef(n, 'Class', true);
+        });
+      }
+      if (charDoc.classLevels && typeof charDoc.classLevels === 'object') {
+        Object.keys(charDoc.classLevels).forEach((cn) => {
+          if (cn && Number(charDoc.classLevels[cn]) > 0) pushRef(cn, 'Class', true);
+        });
+      }
+
+      // 3. Templates
+      const tmplList = Array.isArray(charDoc.templates) ? charDoc.templates : (charDoc.template ? [charDoc.template] : []);
+      tmplList.forEach((t) => {
+        const q = typeof t === 'object' ? (t && (t.id || t.name)) : t;
+        if (q) pushRef(q, 'Template', true);
+      });
+
+      // 4. Cleric Domains
+      if (Array.isArray(charDoc.spellcasting && charDoc.spellcasting.domains)) {
+        charDoc.spellcasting.domains.forEach((d) => {
+          const cleanD = String(d || '').replace(/^[⚜️\s]*Domain:\s*/i, '').trim();
+          if (cleanD) pushRef(cleanD, 'Domain', true);
+        });
+      }
+
+      // 5. Feats & Special Abilities
+      if (Array.isArray(charDoc.feats)) {
+        charDoc.feats.forEach((f) => {
+          if (!f) return;
+          if (typeof f === 'object' && f.id) pushRef(f.id, f.type || null, true);
+          const nm = typeof f === 'string' ? f : (f.name || f.featName || '');
+          const rType = (typeof f === 'object' && (f.type === 'Trait' || f.type === 'Skill Trick'))
+            ? f.type
+            : (String(nm).includes('[Trait]') ? 'Trait' : (String(nm).includes('[Skill Trick]') ? 'Skill Trick' : 'Feat'));
+          if (nm) {
+            pushRef(nm, rType, true);
+            const baseNm = String(nm).replace(/^[^A-Za-z0-9(+]+(\[.*?\])?\s*/, '').replace(/\s*\([^)]+\)\s*$/, '').trim();
+            if (baseNm && baseNm !== nm) pushRef(baseNm, rType, true);
+          }
+        });
+      }
+      if (Array.isArray(charDoc.specialAbilities)) {
+        charDoc.specialAbilities.forEach((sa) => {
+          if (!sa) return;
+          if (typeof sa === 'object' && sa.id) pushRef(sa.id, null, true);
+          const nm = typeof sa === 'string' ? sa : (sa.name || '');
+          if (nm) pushRef(nm, null, false);
+        });
+      }
+
+      // 6. Equipment (Weapons, Body Slots, Gear Pool, Consumables + Lego components)
+      const harvestItem = (it, isEquipped) => {
+        if (!it || typeof it !== 'object') return;
+        const baseRef = it.baseItemId || it.id || '';
+        if (baseRef && !String(baseRef).startsWith('pool_') && !String(baseRef).startsWith('custom_')) {
+          pushRef(baseRef, null, isEquipped);
+        }
+        const nm = it.masterDbName || it.name || '';
+        if (nm && nm !== '-') {
+          pushRef(nm, null, isEquipped);
+          if (/boots of speed/i.test(nm)) pushRef('spl-haste', 'Spell', false);
+        }
+        if (it.material) {
+          const mat = typeof it.material === 'object' ? (it.material.id || it.material.name) : it.material;
+          if (mat) pushRef(mat, null, isEquipped);
+        }
+        if (Array.isArray(it.enhancements)) {
+          it.enhancements.forEach((enh) => {
+            const eq = typeof enh === 'object' ? (enh && (enh.id || enh.name)) : enh;
+            if (eq) pushRef(eq, null, isEquipped);
+          });
+        }
+        if (it.crystal) {
+          const cr = typeof it.crystal === 'object' ? (it.crystal.id || it.crystal.name) : it.crystal;
+          if (cr) pushRef(cr, null, isEquipped);
+        }
+      };
+
+      if (Array.isArray(charDoc.weapons)) charDoc.weapons.forEach((w) => harvestItem(w, true));
+      if (charDoc.bodySlots && typeof charDoc.bodySlots === 'object') {
+        Object.values(charDoc.bodySlots).forEach((s) => harvestItem(s, true));
+      }
+      if (Array.isArray(charDoc.gearPool)) charDoc.gearPool.forEach((p) => harvestItem(p, Boolean(p && p.isEquipped)));
+      if (Array.isArray(charDoc.consumables)) charDoc.consumables.forEach((c) => harvestItem(c, false));
+
+      // 7. Spells, Powers, Buffs, Conditions, Maneuvers & Subsystems
+      const sc = charDoc.spellcasting || {};
+      [charDoc.spells, sc.knownSpells, sc.preparedSpells, sc.divineSpells].forEach((list) => {
+        if (!Array.isArray(list)) return;
+        list.forEach((sp) => {
+          if (!sp) return;
+          if (typeof sp === 'object' && sp.id) pushRef(sp.id, sp.type || null, false);
+          const nm = typeof sp === 'string' ? sp : (sp.name || '');
+          if (nm) pushRef(nm, null, false);
+        });
+      });
+      if (Array.isArray(charDoc.buffs)) {
+        charDoc.buffs.forEach((b) => {
+          if (!b) return;
+          const isAct = b.active !== false;
+          if (typeof b === 'object' && b.id) pushRef(b.id, null, isAct);
+          const nm = typeof b === 'string' ? b : (b.name || '');
+          if (nm) pushRef(nm, null, isAct);
+        });
+      }
+      const tob = charDoc.tomeOfBattle || {};
+      [tob.maneuversKnown, tob.readiedManeuvers, tob.stancesKnown].forEach((list) => {
+        if (!Array.isArray(list)) return;
+        list.forEach((m) => {
+          const nm = typeof m === 'string' ? m : (m && m.name || '');
+          if (nm) pushRef(nm, null, Boolean(tob.activeStance && nm === tob.activeStance));
+        });
+      });
+      if (tob.activeStance) pushRef(tob.activeStance, null, true);
+
+      ['soulmelds', 'vestiges', 'mysteries', 'utterances'].forEach((subKey) => {
+        if (Array.isArray(charDoc[subKey])) {
+          charDoc[subKey].forEach((s) => {
+            const nm = typeof s === 'string' ? s : (s && (s.id || s.name) || '');
+            if (nm) pushRef(nm, null, true);
+          });
+        }
+      });
+
+      return refs;
+    },
+
+    /**
+     * Fast synchronous check (<0.5ms): returns true if any critical structural reference
+     * (Race, Class, Template, Domain, Feat, Equipped Gear, Active Buff/Stance) is not yet in
+     * `charDoc.customDb` or `_byId`. When false, `deriveSheet` is 100% accurate with 0 chunks loaded.
+     */
+    hasUnresolvedBootRefs(charDoc) {
+      if (!charDoc || typeof charDoc !== 'object') return true;
+      const db = Array.isArray(charDoc.customDb) ? charDoc.customDb : [];
+      if (db.length === 0 && _byId.size === 0) return true;
+
+      const refs = SrdCompendium.collectCharacterBootRefs(charDoc);
+      const hasInDbOrMem = (ref) => {
+        const raw = ref.query;
+        const nKey = normalizeNameKey(raw);
+        const tLow = ref.type ? String(ref.type).toLowerCase() : null;
+        const strictT = Boolean(tLow && (tLow === 'race' || tLow === 'domain' || tLow === 'template' || tLow === 'class'));
+        if (_byId.has(raw)) return true;
+        if (tLow && _byTypeAndName.has(`${tLow}:${nKey}`)) return true;
+        if (!strictT && _byName.has(nKey)) return true;
+        for (let i = 0; i < db.length; i++) {
+          const m = db[i];
+          if (!m) continue;
+          if (m.id === raw) return true;
+          if (strictT && String(m.type || '').toLowerCase() !== tLow) continue;
+          if (m.name && normalizeNameKey(m.name) === nKey) return true;
+          if (tLow === 'template' && m.name && normalizeNameKey(m.name).startsWith(nKey + ' (')) return true;
+          if (Array.isArray(m.aliases) && m.aliases.some((a) => normalizeNameKey(a) === nKey)) return true;
+        }
+        // If index is loaded and the ref doesn't exist anywhere in SRD (e.g. custom weapon name or class feature),
+        // it is not an unresolved SRD ref.
+        if (_indexData && !(SrdCompendium.findIndexEntry(raw, ref.type) || (!strictT && SrdCompendium.findIndexEntry(raw, null)))) return true;
+        return false;
+      };
+
+      for (let i = 0; i < refs.length; i++) {
+        if (refs[i].critical && !hasInDbOrMem(refs[i])) return true;
+      }
+      return false;
+    },
+
+    /**
+     * Synchronously stamps compact mechanical `srd-snapshot`s into `charDoc.customDb` for every
+     * character reference whose chunk is currently loaded in `_byId`. Never overwrites existing customDb entries.
+     */
+    syncCharacterBootSnapshots(charDoc) {
+      const added = [];
+      if (!charDoc || typeof charDoc !== 'object' || _byId.size === 0) return added;
+      if (!Array.isArray(charDoc.customDb)) charDoc.customDb = [];
+      const customDb = charDoc.customDb;
+      const haveIds = new Set(customDb.map((e) => e && e.id).filter(Boolean));
+      const refs = SrdCompendium.collectCharacterBootRefs(charDoc);
+
+      for (let i = 0; i < refs.length; i++) {
+        const r = refs[i];
+        const raw = r.query;
+        const nKey = normalizeNameKey(raw);
+        const tLow = r.type ? String(r.type).toLowerCase() : null;
+        const strictT = Boolean(tLow && (tLow === 'race' || tLow === 'domain' || tLow === 'template' || tLow === 'class'));
+        let src = _byId.get(raw) || null;
+        if (!src && tLow) src = _byTypeAndName.get(`${tLow}:${nKey}`) || null;
+        if (!src && !strictT) src = _byName.get(nKey) || null;
+        if (!src && r.type === 'Domain') {
+          const dHit = SrdCompendium.getDomain(raw);
+          src = (dHit && dHit.id && _byId.get(dHit.id)) || _byId.get(`dom-${nKey.replace(/[^a-z0-9]+/g, '-')}`) || null;
+        }
+        if (!src && r.type === 'Template') {
+          const tHit = SrdCompendium.getTemplate(raw);
+          const cleanT = nKey.replace(/\s*\(template\)\s*$/i, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+          src = (tHit && tHit.id && _byId.get(tHit.id)) || _byId.get(`tmpl-${cleanT}`) || null;
+        }
+        if (!src && r.type === 'Class') {
+          const cHit = SrdCompendium.getClass(raw);
+          src = (cHit && cHit.id && _byId.get(cHit.id)) || _byId.get(`cls-${nKey.replace(/[^a-z0-9]+/g, '-')}`) || null;
+        }
+        if (!src || !src.id || haveIds.has(src.id)) continue;
+        // Skip opt-in legacy chunks unless character opted in
+        const idxRow = indexRowById(src.id);
+        if (idxRow && idxRow.f && getOptInChunkNames().includes(idxRow.f)) {
+          if (!(charDoc.settings && charDoc.settings.includeLegacyFeats)) continue;
+        }
+        customDb.push(buildCompactSnapshot(src));
+        haveIds.add(src.id);
+        added.push(src.id);
+      }
+      return added;
+    },
+
+    /**
+     * Non-blocking Stale-While-Revalidate character boot reconciliation:
+     * 1. Loads only `srd_index.json` (~3ms from IDB).
+     * 2. For any referenced SRD entry missing from `charDoc.customDb`, loads ONLY its owning chunk and writes a compact snapshot.
+     * 3. Reconciles existing `srd-snapshot`s via `chunkHash` (`0 KB` fetched when unchanged; homebrew/edited entries never overwritten).
+     */
+    async reconcileCharacterBootData(charDoc) {
+      const summary = { added: [], autoUpdated: [], updateAvailable: [], orphaned: [], changed: false };
+      if (!charDoc || typeof charDoc !== 'object') return summary;
+      if (!Array.isArray(charDoc.customDb)) charDoc.customDb = [];
+
+      const idxOk = await SrdCompendium.initIndex();
+      if (!idxOk || !_indexData) return summary;
+
+      const customDb = charDoc.customDb;
+      const haveIds = new Set(customDb.map((e) => e && e.id).filter(Boolean));
+      const refs = SrdCompendium.collectCharacterBootRefs(charDoc);
+      const optInChunks = getOptInChunkNames();
+      const allowOptIn = Boolean(charDoc.settings && charDoc.settings.includeLegacyFeats);
+
+      const neededChunks = new Set();
+      const pendingHits = [];
+      for (let i = 0; i < refs.length; i++) {
+        const r = refs[i];
+        // Check if already satisfied in customDb
+        const nKey = normalizeNameKey(r.query);
+        const tLow = r.type ? String(r.type).toLowerCase() : null;
+        const strictT = Boolean(tLow && (tLow === 'race' || tLow === 'domain' || tLow === 'template' || tLow === 'class'));
+        const alreadyInDb = customDb.some((m) => m && (
+          m.id === r.query ||
+          ((!strictT || String(m.type || '').toLowerCase() === tLow) && (
+            (m.name && normalizeNameKey(m.name) === nKey) ||
+            (tLow === 'template' && m.name && normalizeNameKey(m.name).startsWith(nKey + ' (')) ||
+            (Array.isArray(m.aliases) && m.aliases.some((a) => normalizeNameKey(a) === nKey))
+          ))
+        ));
+        if (alreadyInDb) continue;
+
+        const hit = SrdCompendium.findIndexEntry(r.query, r.type) || (!strictT ? SrdCompendium.findIndexEntry(r.query, null) : null);
+        if (!hit || !hit.id || haveIds.has(hit.id)) continue;
+        if (hit.f && optInChunks.includes(hit.f) && !allowOptIn) continue;
+        pendingHits.push(hit);
+        if (hit.f && !_loadedChunks.has(hit.f)) neededChunks.add(hit.f);
+      }
+
+      for (const fname of neededChunks) {
+        try {
+          await SrdCompendium.ensureChunkLoaded(fname);
+          await new Promise((r) => setTimeout(r, 0));
+        } catch (_) {}
+      }
+
+      for (let i = 0; i < pendingHits.length; i++) {
+        const hit = pendingHits[i];
+        if (haveIds.has(hit.id)) continue;
+        const src = _byId.get(hit.id);
+        if (!src) continue;
+        customDb.push(buildCompactSnapshot(src));
+        haveIds.add(src.id);
+        summary.added.push(src.id);
+      }
+
+      const rec = await SrdCompendium.reconcileSnapshots(customDb);
+      summary.autoUpdated = rec.autoUpdated || [];
+      summary.updateAvailable = rec.updateAvailable || [];
+      summary.orphaned = rec.orphaned || [];
+      summary.changed = Boolean(summary.added.length > 0 || rec.changed);
+      return summary;
     },
 
     /**
@@ -901,6 +1412,9 @@
      * Returns the active character's customDb (`window.masterDb` per ADR-011).
      */
     getMasterDb() {
+      if (global.RuleEngine && Array.isArray(global.RuleEngine._activeCustomDb) && global.RuleEngine._activeCustomDb.length > 0) {
+        return global.RuleEngine._activeCustomDb;
+      }
       return Array.isArray(global.masterDb) ? global.masterDb : [];
     },
 
@@ -1197,14 +1711,36 @@
       }
     },
 
+    _mergeMasterDbByType(baseList, targetType) {
+      const out = Array.isArray(baseList) ? baseList.slice() : [];
+      const masterDb = SrdCompendium.getMasterDb();
+      if (!masterDb.length) return out;
+      const tLow = String(targetType || '').toLowerCase();
+      const byIdIdx = new Map();
+      for (let i = 0; i < out.length; i++) {
+        if (out[i] && out[i].id) byIdIdx.set(out[i].id, i);
+      }
+      for (let i = 0; i < masterDb.length; i++) {
+        const m = masterDb[i];
+        if (!m || String(m.type || '').toLowerCase() !== tLow) continue;
+        if (m.id && byIdIdx.has(m.id)) {
+          if (isUserCustomizedDbEntry(m)) out[byIdIdx.get(m.id)] = m;
+        } else {
+          if (m.id) byIdIdx.set(m.id, out.length);
+          out.push(m);
+        }
+      }
+      return out;
+    },
+
     getMaterials() {
       this._ensureNodeEquipmentLoaded();
-      return this.getAllLoaded('Material');
+      return this._mergeMasterDbByType(this.getAllLoaded('Material'), 'Material');
     },
 
     getEnhancements(targetType = null) {
       this._ensureNodeEquipmentLoaded();
-      const list = this.getAllLoaded('Enhancement');
+      const list = this._mergeMasterDbByType(this.getAllLoaded('Enhancement'), 'Enhancement');
       if (!targetType) return list;
       if (targetType === 'Shield' || targetType === 'Armor') {
         return list.filter((e) => {
@@ -1221,7 +1757,7 @@
 
     getCrystals(targetType = null) {
       this._ensureNodeEquipmentLoaded();
-      const list = this.getAllLoaded('AugmentationCrystal');
+      const list = this._mergeMasterDbByType(this.getAllLoaded('AugmentationCrystal'), 'AugmentationCrystal');
       if (!targetType) return list;
       const t = targetType.toLowerCase();
       return list.filter((c) => {
@@ -1306,7 +1842,9 @@
         const isDom = String(entry.type || '').toLowerCase() === 'domain' || String(entry.category || '').toLowerCase().includes('domain') || String(entry.id || '').startsWith('dom-');
         if (!isDom) return;
         const key = String(entry.name).toLowerCase().trim();
-        byKey.set(key, entry);
+        if (!byKey.has(key) || isUserCustomizedDbEntry(entry)) {
+          byKey.set(key, entry);
+        }
       };
 
       // 1. Merge Custom Domains cached in localStorage
@@ -1329,8 +1867,9 @@
           window.masterDb.forEach(mergeDomainOverride);
         }
       }
-      if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
-        masterDb.forEach(mergeDomainOverride);
+      const activeMasterDb = SrdCompendium.getMasterDb();
+      if (Array.isArray(activeMasterDb) && activeMasterDb.length > 0) {
+        activeMasterDb.forEach(mergeDomainOverride);
       }
 
       return Array.from(byKey.values());
@@ -1365,16 +1904,27 @@
           }
         } catch (_) {}
       }
-      if (typeof window !== 'undefined' && Array.isArray(window.masterDb)) {
-        const seenIds = new Set(list.map(t => t && t.id));
-        const seenNames = new Set(list.map(t => normalizeNameKey(t && t.name)));
-        for (const entry of window.masterDb) {
+      const activeMasterDb = SrdCompendium.getMasterDb();
+      if (Array.isArray(activeMasterDb) && activeMasterDb.length > 0) {
+        const seenIds = new Map();
+        const seenNames = new Map();
+        list.forEach((t, idx) => {
+          if (!t) return;
+          if (t.id) seenIds.set(t.id, idx);
+          const nk = normalizeNameKey(t.name);
+          if (nk) seenNames.set(nk, idx);
+        });
+        for (const entry of activeMasterDb) {
           if (entry && (entry.type === 'Template' || String(entry.category || '').toLowerCase().includes('template'))) {
             const nKey = normalizeNameKey(entry.name);
-            if (!seenIds.has(entry.id) && !seenNames.has(nKey)) {
+            const hitIdx = (entry.id && seenIds.has(entry.id)) ? seenIds.get(entry.id) : (nKey && seenNames.has(nKey) ? seenNames.get(nKey) : -1);
+            if (hitIdx >= 0) {
+              if (isUserCustomizedDbEntry(entry)) list[hitIdx] = entry;
+            } else {
+              const newIdx = list.length;
               list.push(entry);
-              if (entry.id) seenIds.add(entry.id);
-              if (nKey) seenNames.add(nKey);
+              if (entry.id) seenIds.set(entry.id, newIdx);
+              if (nKey) seenNames.set(nKey, newIdx);
             }
           }
         }
@@ -1416,7 +1966,7 @@
           }
         } catch (_) {}
       }
-      return list;
+      return this._mergeMasterDbByType(list, 'Class');
     },
 
     getClass(idOrName) {
@@ -2748,14 +3298,12 @@
   global.ItemAssembler = ItemAssembler;
   global.SchemaMigrator = SchemaMigrator;
 
-  // Early start: on a page whose <script> tag carries data-srd-autoinit (the character sheet), begin
-  // loading the SRD as soon as this file runs, so the fetch overlaps the remaining deferred scripts.
-  // init() is idempotent: later init() calls (the sheet boot, pickers) receive this same promise.
-  // Pages without the attribute (the Hub) keep calling init() themselves, as before.
+  // Early index warm-up: on a page whose <script> tag carries data-srd-autoinit (the character sheet),
+  // preload ONLY lightweight `srd_index.json` (~3ms from IDB; zero 6.9 MB chunk storm before first paint).
   try {
     const selfTag = typeof document !== 'undefined' ? document.currentScript : null;
     if (selfTag && selfTag.hasAttribute('data-srd-autoinit') && !isNodeSyncEnv()) {
-      SrdCompendium.init();
+      SrdCompendium.initIndex();
     }
   } catch (_) {}
 

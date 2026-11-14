@@ -252,18 +252,20 @@
         return;
       }
 
-      // 1. Start IndexedDB-First SRD Compendium (~10ms) and Auth check in parallel
-      const srdInitPromise = (window.SrdCompendium && typeof window.SrdCompendium.init === 'function')
-        ? window.SrdCompendium.init().catch(e => console.warn('SrdCompendium init warning:', e))
-        : Promise.resolve();
+      // 1. Kick off lightweight SRD Index (~3ms IDB) & Auth in background — NEVER block Frame 1 on 6.9 MB SRD chunks!
+      const hadLocalSavedChar = (() => {
+        try { return Boolean(localStorage.getItem('dnd35_character') || localStorage.getItem('dnd35_hub_db')); } catch (_) { return false; }
+      })();
+
+      const srdIndexPromise = (window.SrdCompendium && typeof window.SrdCompendium.initIndex === 'function')
+        ? window.SrdCompendium.initIndex().catch(e => { console.warn('SrdCompendium initIndex warning:', e); return false; })
+        : Promise.resolve(false);
 
       const authPromise = (window.SupabaseAuth && typeof window.SupabaseAuth.requireAuth === 'function')
         ? window.SupabaseAuth.requireAuth().catch(e => { console.warn('Auth check warning:', e); return null; })
         : Promise.resolve(true);
 
-      await srdInitPromise;
-
-      // 2. Load local character data immediately (0ms network wait; cloud revalidation runs in background)
+      // 2. Load local character data immediately (0ms network wait; self-contained customDb snapshots resolve synchronously)
       try {
         await loadInitialData();
       } catch (err) {
@@ -274,49 +276,102 @@
       }
 
       ensureCustomRacesLoaded();
-      // Auto-ensure default race traits (e.g. Human Bonus Feat & Skilled) if specialAbilities is empty
-      try {
-        if (character && character.race && Array.isArray(character.specialAbilities) && character.specialAbilities.length === 0) {
-          const catalog = window.BUNDLED_SRD_CORE_CATALOG || [];
-          const raceObj = (window.SrdCompendium && typeof window.SrdCompendium.getByName === 'function' ? window.SrdCompendium.getByName(character.race, 'Race') : null)
-            || catalog.find(i => i && i.type === 'Race' && i.name.toLowerCase() === character.race.toLowerCase());
-          if (raceObj && Array.isArray(raceObj.traits)) {
-            raceObj.traits.forEach(t => {
-              character.specialAbilities.push({
-                name: `${t.name} (${raceObj.name})`,
-                source: `${raceObj.name} Race`,
-                benefit: t.desc || '',
-                action: 'Passive',
-                duration: 'Continuous',
-                active: true
+      const syncDefaultRaceTraitsIfEmpty = () => {
+        try {
+          if (character && character.race && Array.isArray(character.specialAbilities) && character.specialAbilities.length === 0) {
+            const catalog = window.BUNDLED_SRD_CORE_CATALOG || [];
+            const raceObj = (window.SrdCompendium && typeof window.SrdCompendium.getByName === 'function' ? window.SrdCompendium.getByName(character.race, 'Race') : null)
+              || catalog.find(i => i && i.type === 'Race' && i.name.toLowerCase() === character.race.toLowerCase());
+            if (raceObj && Array.isArray(raceObj.traits) && raceObj.traits.length > 0) {
+              raceObj.traits.forEach(t => {
+                character.specialAbilities.push({
+                  name: `${t.name} (${raceObj.name})`,
+                  source: `${raceObj.name} Race`,
+                  benefit: t.desc || '',
+                  action: 'Passive',
+                  duration: 'Continuous',
+                  active: true
+                });
               });
-            });
-            if (!character.size && raceObj.size) character.size = raceObj.size;
-            if (!character.baseSpeed && raceObj.baseSpeed) character.baseSpeed = raceObj.baseSpeed;
+              if (!character.size && raceObj.size) character.size = raceObj.size;
+              if (!character.baseSpeed && raceObj.baseSpeed) character.baseSpeed = raceObj.baseSpeed;
+              return true;
+            }
           }
+        } catch (e) {
+          console.warn('Auto race sync warning:', e);
         }
-      } catch (e) {
-        console.warn('Auto race sync warning:', e);
-      }
+        return false;
+      };
+      syncDefaultRaceTraitsIfEmpty();
+
       try {
         initSkillFilters();
       } catch (err) {
         console.error('initSkillFilters failed:', err);
       }
 
-      // 3. Single-Pass Render: Restore active tab first so only HUD + visible tab render on Frame 1
+      // 3. Single-Pass Instant Render (<10ms First Paint: HUD + Active Tab only, zero Loading screen)
       try {
         renderAll();
       } catch (e) {
         console.error('Initial renderAll error:', e);
       }
       try { restoreActiveTabAndScroll(); } catch (e) { reportError('char_hud:liveBc.onmessage', e); }
-      // Boot contract: the first derive ran with the SRD compendium loaded (race / template modifiers feed
-      // Hit Points). Anything that loads or derives a character outside this sequence (test harness,
-      // automation) must wait for this marker, or it derives HP from incomplete inputs.
-      document.documentElement.dataset.sheetBoot = 'ready';
 
-      // 4. Verify Auth & Non-Blocking Background Services
+      // 4. Post-Paint Stale-While-Revalidate SRD Reconciliation (yields 1 frame so initial paint commits cleanly)
+      await new Promise(resolve => {
+        if (typeof window.requestAnimationFrame === 'function') {
+          window.requestAnimationFrame(() => setTimeout(resolve, 0));
+        } else {
+          setTimeout(resolve, 0);
+        }
+      });
+
+      await srdIndexPromise;
+      const comp = window.SrdCompendium;
+      const isWarmSnapshottedChar = Boolean(
+        hadLocalSavedChar &&
+        character &&
+        comp &&
+        typeof comp.hasUnresolvedBootRefs === 'function' &&
+        !comp.hasUnresolvedBootRefs(character)
+      );
+
+      if (isWarmSnapshottedChar) {
+        // Warm character already holds all compact mechanical snapshots -> 0 KB chunk download!
+        document.documentElement.dataset.sheetBoot = 'ready';
+        if (typeof comp.reconcileCharacterBootData === 'function') {
+          comp.reconcileCharacterBootData(character).then((rec) => {
+            if (rec && rec.changed) {
+              if (window.CharStore && typeof window.CharStore.recompute === 'function') window.CharStore.recompute();
+              renderAll();
+              saveStateToStorage(false);
+            }
+          }).catch(e => console.warn('Background snapshot reconciliation warning:', e));
+        }
+      } else {
+        // Cold session (e.g. empty localStorage / UI smoke harness) or legacy unsnapshotted character:
+        // hydrate yielding between chunks so main thread & scrolling stay 60fps, then stamp compact snapshots.
+        if (comp && typeof comp.init === 'function') {
+          try { await comp.init({ yieldBetweenChunks: true }); } catch (e) { console.warn('SrdCompendium init warning:', e); }
+        }
+        const raceSynced = syncDefaultRaceTraitsIfEmpty();
+        const snappedIds = (comp && typeof comp.syncCharacterBootSnapshots === 'function' && character)
+          ? comp.syncCharacterBootSnapshots(character)
+          : [];
+        const rec = (comp && typeof comp.reconcileCharacterBootData === 'function' && character)
+          ? await comp.reconcileCharacterBootData(character).catch(() => null)
+          : null;
+        if (raceSynced || snappedIds.length > 0 || (rec && rec.changed)) {
+          if (window.CharStore && typeof window.CharStore.recompute === 'function') window.CharStore.recompute();
+          renderAll();
+          if (hadLocalSavedChar) saveStateToStorage(false);
+        }
+        document.documentElement.dataset.sheetBoot = 'ready';
+      }
+
+      // 5. Verify Auth & Non-Blocking Background Services
       if (window.SupabaseAuth) {
         const authUser = await authPromise;
         if (!authUser) return;
@@ -1084,6 +1139,9 @@
         _storageSaveTimer = null;
       }
       if (!character) return;
+      if (window.SrdCompendium && typeof window.SrdCompendium.syncCharacterBootSnapshots === 'function') {
+        try { window.SrdCompendium.syncCharacterBootSnapshots(character); } catch (_) {}
+      }
       try {
         localStorage.setItem('dnd35_character', JSON.stringify(character));
       } catch (e) {
@@ -2427,75 +2485,7 @@
     window.addEventListener('pagehide', persistScrollPosition);
 
     const ALL_SHEET_TABS = ['tab-combat', 'tab-spells', 'tab-core', 'tab-skills', 'tab-defense', 'tab-inventory', 'tab-database', 'tab-sync', 'tab-dice'];
-    const IDLE_WARMUP_TABS = ['tab-combat', 'tab-spells', 'tab-defense', 'tab-inventory', 'tab-core', 'tab-dice'];
     const _dirtyTabs = new Set(ALL_SHEET_TABS);
-    let _warmupDelayTimer = null;
-    let _warmupIdleHandle = null;
-    let _warmupIdleUsesRic = false;
-    let _warmupRafId = null;
-    let _deferredSwitchRafId = null;
-    let _deferredSwitchTimerId = null;
-
-    function cancelIdleTabWarmup() {
-      if (_warmupDelayTimer !== null) {
-        clearTimeout(_warmupDelayTimer);
-        _warmupDelayTimer = null;
-      }
-      if (_warmupIdleHandle !== null) {
-        if (_warmupIdleUsesRic && typeof window.cancelIdleCallback === 'function') {
-          window.cancelIdleCallback(_warmupIdleHandle);
-        } else {
-          clearTimeout(_warmupIdleHandle);
-        }
-        _warmupIdleHandle = null;
-      }
-      if (_warmupRafId !== null && typeof window.cancelAnimationFrame === 'function') {
-        window.cancelAnimationFrame(_warmupRafId);
-        _warmupRafId = null;
-      }
-    }
-
-    function scheduleIdleTabWarmup() {
-      cancelIdleTabWarmup();
-      if (!character) return;
-      const hasWork = IDLE_WARMUP_TABS.some(t => _dirtyTabs.has(t));
-      if (!hasWork) return;
-
-      const stepNextTab = () => {
-        _warmupIdleHandle = null;
-        if (!character) return;
-        const nextTab = IDLE_WARMUP_TABS.find(t => _dirtyTabs.has(t));
-        if (!nextTab) return;
-        renderTabIfNeeded(nextTab, false);
-        if (!IDLE_WARMUP_TABS.some(t => _dirtyTabs.has(t))) return;
-        const queueIdle = () => {
-          _warmupRafId = null;
-          if (typeof window.requestIdleCallback === 'function') {
-            _warmupIdleUsesRic = true;
-            _warmupIdleHandle = window.requestIdleCallback(stepNextTab, { timeout: 220 });
-          } else {
-            _warmupIdleUsesRic = false;
-            _warmupIdleHandle = setTimeout(stepNextTab, 24);
-          }
-        };
-        if (typeof window.requestAnimationFrame === 'function') {
-          _warmupRafId = window.requestAnimationFrame(queueIdle);
-        } else {
-          queueIdle();
-        }
-      };
-
-      _warmupDelayTimer = setTimeout(() => {
-        _warmupDelayTimer = null;
-        if (typeof window.requestIdleCallback === 'function') {
-          _warmupIdleUsesRic = true;
-          _warmupIdleHandle = window.requestIdleCallback(stepNextTab, { timeout: 220 });
-        } else {
-          _warmupIdleUsesRic = false;
-          _warmupIdleHandle = setTimeout(stepNextTab, 24);
-        }
-      }, 90);
-    }
 
     function renderTabIfNeeded(tabId, force = false) {
       if (!tabId) tabId = 'tab-combat';
@@ -2586,7 +2576,6 @@
           if (activeTab === 'tab-defense') renderTabIfNeeded('tab-defense', true);
           else {
             _dirtyTabs.add('tab-defense');
-            scheduleIdleTabWarmup();
           }
         }
       );
@@ -2600,16 +2589,7 @@
       window.scrollTo({ top: Math.max(tabTop, savedY), left: 0, behavior: 'instant' });
     }
 
-    function switchTab(tabId, isRestoration = false, opts = null) {
-      if (_deferredSwitchRafId !== null && typeof window.cancelAnimationFrame === 'function') {
-        window.cancelAnimationFrame(_deferredSwitchRafId);
-        _deferredSwitchRafId = null;
-      }
-      if (_deferredSwitchTimerId !== null) {
-        clearTimeout(_deferredSwitchTimerId);
-        _deferredSwitchTimerId = null;
-      }
-
+    function switchTab(tabId, isRestoration = false) {
       let prevTab = null;
       try {
         prevTab = localStorage.getItem('dnd35_active_tab') || 'tab-combat';
@@ -2651,20 +2631,8 @@
         activeMobileBtn.setAttribute('aria-selected', 'true');
       }
 
-      // Paint active tab shell first on interactive clicks if tab wasn't warmed yet; instant 0ms no-op when already warm
-      if (opts && opts.deferDirtyRender && _dirtyTabs.has(tabId) && typeof window.requestAnimationFrame === 'function') {
-        _deferredSwitchRafId = window.requestAnimationFrame(() => {
-          _deferredSwitchRafId = null;
-          _deferredSwitchTimerId = setTimeout(() => {
-            _deferredSwitchTimerId = null;
-            renderTabIfNeeded(tabId, false);
-            if (!isRestoration && prevTab !== tabId) scrollMobileTabIntoView(tabId);
-          }, 0);
-        });
-      } else {
-        renderTabIfNeeded(tabId, false);
-        if (!isRestoration && prevTab !== tabId) scrollMobileTabIntoView(tabId);
-      }
+      renderTabIfNeeded(tabId, false);
+      if (!isRestoration && prevTab !== tabId) scrollMobileTabIntoView(tabId);
     }
 
     function restoreActiveTabAndScroll() {
@@ -2679,20 +2647,13 @@
 
         if (!isNaN(targetY) && targetY > 0) {
           _isRestoringScroll = true;
-          const applyScroll = () => {
-            if (!_isRestoringScroll) return;
-            window.scrollTo({ top: targetY, left: 0, behavior: 'instant' });
-          };
-
-          applyScroll();
-          requestAnimationFrame(applyScroll);
-
-          const delays = [40, 100, 200, 400, 700];
-          _restoreScrollTimers = delays.map(d => setTimeout(applyScroll, d));
-
-          setTimeout(() => {
-            _isRestoringScroll = false;
-          }, 800);
+          window.scrollTo({ top: targetY, left: 0, behavior: 'instant' });
+          requestAnimationFrame(() => {
+            if (_isRestoringScroll) {
+              window.scrollTo({ top: targetY, left: 0, behavior: 'instant' });
+              _isRestoringScroll = false;
+            }
+          });
         }
       } catch (e) {
         console.error('restoreActiveTabAndScroll error:', e);
@@ -2798,7 +2759,6 @@
           if (savedTab && ALL_SHEET_TABS.includes(savedTab)) activeTab = savedTab;
         } catch (e) { reportError('char_hud:renderAll', e); }
         renderTabIfNeeded(activeTab, true);
-        scheduleIdleTabWarmup();
       }
     }
 
@@ -3434,14 +3394,15 @@
     function applyPortraitSettings() {
       initPortraitSettings();
       const hasPortrait = Boolean(character && character.portrait);
-      const miniImg = document.getElementById('portrait-mini-img');
-      const miniFallback = document.getElementById('portrait-mini-fallback');
-      const fallbackIcon = document.getElementById('portrait-fallback-icon');
-      const statusBadge = document.getElementById('portrait-status-badge');
-      const removeBtn = document.getElementById('profile-portrait-remove-btn');
-      const fitSel = document.getElementById('portrait-fit-select');
-      const coordsBadge = document.getElementById('portrait-pos-coords');
-      const gridGuide = document.getElementById('portrait-grid-guide');
+      const _m = (id) => (window._modalsMounted ? document.getElementById(id) : null);
+      const miniImg = _m('portrait-mini-img');
+      const miniFallback = _m('portrait-mini-fallback');
+      const fallbackIcon = _m('portrait-fallback-icon');
+      const statusBadge = _m('portrait-status-badge');
+      const removeBtn = _m('profile-portrait-remove-btn');
+      const fitSel = _m('portrait-fit-select');
+      const coordsBadge = _m('portrait-pos-coords');
+      const gridGuide = _m('portrait-grid-guide');
 
       const parsedPos = parsePositionPercentages(character?.portraitPosition || '50% 20%');
       const position = `${parsedPos.x}% ${parsedPos.y}%`;
@@ -3452,8 +3413,8 @@
       }
       if (fitSel) fitSel.value = fit;
 
-      const race = document.getElementById('profile-edit-race')?.value || character?.race || 'Human';
-      const gender = document.getElementById('profile-edit-gender')?.value || character?.gender || 'Male';
+      const race = _m('profile-edit-race')?.value || character?.race || 'Human';
+      const gender = _m('profile-edit-gender')?.value || character?.gender || 'Male';
       const classes = character?.classes || '';
       const emoji = getDynamicCharacterEmoji(race, gender, classes);
 
@@ -3658,17 +3619,18 @@
       const imgEl = document.getElementById('app-wallpaper-img');
       const overlayEl = document.getElementById('app-wallpaper-overlay');
 
-      const miniImg = document.getElementById('wallpaper-mini-img');
-      const miniOverlay = document.getElementById('wallpaper-mini-overlay');
-      const statusBadge = document.getElementById('wallpaper-status-badge');
-      const clearBtn = document.getElementById('wallpaper-clear-btn');
-      const fitSel = document.getElementById('wallpaper-fit-select');
-      const themeSel = document.getElementById('wallpaper-theme-select');
-      const opSlider = document.getElementById('wallpaper-opacity-slider');
-      const opVal = document.getElementById('wallpaper-opacity-val');
-      const blurSlider = document.getElementById('wallpaper-blur-slider');
-      const blurVal = document.getElementById('wallpaper-blur-val');
-      const coordsBadge = document.getElementById('wallpaper-pos-coords');
+      const _m = (id) => (window._modalsMounted ? document.getElementById(id) : null);
+      const miniImg = _m('wallpaper-mini-img');
+      const miniOverlay = _m('wallpaper-mini-overlay');
+      const statusBadge = _m('wallpaper-status-badge');
+      const clearBtn = _m('wallpaper-clear-btn');
+      const fitSel = _m('wallpaper-fit-select');
+      const themeSel = _m('wallpaper-theme-select');
+      const opSlider = _m('wallpaper-opacity-slider');
+      const opVal = _m('wallpaper-opacity-val');
+      const blurSlider = _m('wallpaper-blur-slider');
+      const blurVal = _m('wallpaper-blur-val');
+      const coordsBadge = _m('wallpaper-pos-coords');
 
       if (!wp || !wp.image) {
         document.body.classList.remove('has-wallpaper');
@@ -3836,6 +3798,7 @@
     }
 
     function updateProfileModalAvatar() {
+      if (!window._modalsMounted) return;
       const avatarBox = document.getElementById('profile-modal-avatar-box');
       const removeBtn = document.getElementById('profile-portrait-remove-btn');
 
@@ -7137,9 +7100,9 @@
       }
       renderDomainSpotlightResults('');
 
-      // Ensure SrdCompendium is initialized if opened before eager chunks finished loading
-      if (window.SrdCompendium && typeof window.SrdCompendium.init === 'function' && (!window.SrdCompendium.isReady || !window.SrdCompendium.isReady())) {
-        window.SrdCompendium.init().then(() => {
+      // Ensure SrdCompendium chunks are loaded if opened on a 0 KB snapshot boot
+      if (window.SrdCompendium && typeof window.SrdCompendium.init === 'function' && (!window.SrdCompendium.isFullyLoaded || !window.SrdCompendium.isFullyLoaded())) {
+        window.SrdCompendium.init({ yieldBetweenChunks: true }).then(() => {
           if (_activeDomainSpotlightCtx.mode === 'feat') {
             _activeDomainSpotlightCtx.items = getAllFeatsFromCompendiumAndCustom();
           } else if (_activeDomainSpotlightCtx.mode === 'sla') {
@@ -8252,7 +8215,7 @@
 
     function openStatDistributionModal(initialMode = null) {
       if (!character) return;
-      
+      const modal = document.getElementById('stat-distribution-modal');
       populateProfileInputs();
 
       // Taban statları karakterin mevcut gerçek taban değerlerinden oku
@@ -8268,11 +8231,20 @@
       // Taban statlar nesnesini de senkronize tut
       character.baseAbilities = { ...statDistState.workingAbilities };
 
-      const modal = document.getElementById('stat-distribution-modal');
       if (modal) modal.classList.remove('hidden');
 
       const target = initialMode || (statDistState.mainTab ? statDistState.mainTab : 'identity');
       setStatDistMode(target);
+      if (window.SrdCompendium && typeof window.SrdCompendium.ensureTypesLoaded === 'function') {
+        window.SrdCompendium.ensureTypesLoaded(['Race', 'Template', 'Domain']).then((arrived) => {
+          if (arrived && arrived.length > 0) {
+            try {
+              renderRaceSpotlightItems(document.getElementById('race-spotlight-search')?.value || '');
+              renderTemplateSpotlightItems();
+            } catch (_) {}
+          }
+        }).catch(() => {});
+      }
     }
 
     function closeStatDistributionModal() {
@@ -9841,7 +9813,7 @@ function renderManualStatsPanel() {
     // ====================================================
     if (window.Actions && typeof window.Actions.register === 'function') {
       window.Actions.register('hud:switch-tab', (el, data, event) => {
-        if (data && data.tab) switchTab(data.tab, false, { deferDirtyRender: true });
+        if (data && data.tab) switchTab(data.tab, false);
       });
       window.Actions.register('hud:open-profile-edit', (el, data, event) => {
         openProfileEditModal((data && (data.profileTab || data.section)) || undefined);

@@ -32,10 +32,18 @@
     return el;
   };
 
-  // Mount immediately if #deferred-modals-root is already parsed above this script
-  window.ensureModalsMounted();
-
-  window.addEventListener('DOMContentLoaded', function() {
-    if (!window._modalsMounted) window.ensureModalsMounted();
-  });
+  // ADR-045: Keep #deferred-modals-root unparsed during initial paint for 0ms TBT.
+  // Any document.getElementById(modalId) mounts synchronously on demand via the proxy above;
+  // otherwise mount quietly during post-load idle time.
+  window.addEventListener('load', function() {
+    setTimeout(function() {
+      if (!window._modalsMounted) {
+        if (typeof window.requestIdleCallback === 'function') {
+          window.requestIdleCallback(function() { window.ensureModalsMounted(); }, { timeout: 3000 });
+        } else {
+          window.ensureModalsMounted();
+        }
+      }
+    }, 2200);
+  }, { once: true });
 })();

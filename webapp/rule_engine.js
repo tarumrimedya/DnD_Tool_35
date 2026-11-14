@@ -1909,12 +1909,23 @@ const RuleEngine = {
     }
 
     const clean = rawName.toLowerCase();
-    if (!clean) return null;
+    if (!clean && !refId) return null;
+    const effType = typeFilter ? String(typeFilter).toLowerCase() : null;
+    const strictType = Boolean(effType && (effType === 'race' || effType === 'domain' || effType === 'template' || effType === 'class'));
     const db = (Array.isArray(this._activeCustomDb) && this._activeCustomDb.length > 0 ? this._activeCustomDb : null)
       || (typeof window !== 'undefined' && window.masterDb)
       || (typeof masterDb !== 'undefined' ? masterDb : []);
     let found = Array.isArray(db) && db.length > 0
-      ? db.find(m => m && ((refId && m.id === refId) || (m.name && m.name.toLowerCase().trim() === clean) || (m.masterDbName && m.masterDbName.toLowerCase().trim() === clean)))
+      ? db.find(m => {
+          if (!m) return false;
+          if (refId && m.id === refId) return true;
+          if (strictType && String(m.type || '').toLowerCase() !== effType) return false;
+          if (!clean) return false;
+          if (m.name && m.name.toLowerCase().trim() === clean) return true;
+          if (m.masterDbName && m.masterDbName.toLowerCase().trim() === clean) return true;
+          if (Array.isArray(m.aliases) && m.aliases.some(a => String(a || '').toLowerCase().trim() === clean)) return true;
+          return false;
+        })
       : null;
     if (!found && !(typeof window !== 'undefined' && window.SrdCompendium && window.SrdCompendium._ready) && typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
       found = window.BUNDLED_SRD_CORE_CATALOG.find(m => m && ((refId && m.id === refId) || (m.name && m.name.toLowerCase().trim() === clean) || (m.masterDbName && m.masterDbName.toLowerCase().trim() === clean))) || null;
@@ -2353,8 +2364,8 @@ const RuleEngine = {
       });
     }
 
-    // In Level-up Wizard mode, if lvlup-class-select exists in DOM, add it too
-    if (typeof document !== 'undefined') {
+    // In Level-up Wizard mode, if lvlup-class-select exists in mounted DOM, add it too
+    if (typeof document !== 'undefined' && (typeof window === 'undefined' || window._modalsMounted !== false)) {
       const lvlSel = document.getElementById('lvlup-class-select');
       if (lvlSel && lvlSel.value && (targetLevelIdx === null || targetLevelIdx === undefined)) {
         classNames.add(lvlSel.value.toLowerCase().trim());
@@ -3820,9 +3831,9 @@ const RuleEngine = {
     const candidateModifiers = [];
     domainNames.forEach(domName => {
       const domLower = domName.toLowerCase();
-      const srdDom = (comp && typeof comp.getDomain === 'function')
+      const srdDom = ((comp && typeof comp.getDomain === 'function')
         ? comp.getDomain(domName)
-        : null;
+        : null) || this.getMasterDbEntry(domName, 'Domain');
       const mods = (srdDom && Array.isArray(srdDom.modifiers) && srdDom.modifiers.length > 0)
         ? srdDom.modifiers
         : (BUILTIN_DOMAIN_CL_MODS[domLower] || []);
@@ -7144,14 +7155,182 @@ const RuleEngine = {
    * while different bonus types (Competence, Insight, Luck, Morale, Circumstance, Untyped, Racial) stack.
    * Zero heuristic description regexes.
    */
-  evaluateSkillBonus(character, skillKey, skillName, statName) {
+  _extractPreEvaluatedSkillMods(modifiers, defaultType, ctx) {
+    if (!Array.isArray(modifiers) || modifiers.length === 0) return [];
+    const out = [];
+    for (let i = 0; i < modifiers.length; i++) {
+      const mod = modifiers[i];
+      if (!mod || !mod.target) continue;
+      const rawTarget = String(mod.target).trim().toLowerCase();
+      if (!rawTarget.startsWith('skill.') && !rawTarget.startsWith('skills.') && rawTarget !== 'skills') continue;
+      const subTarget = rawTarget.replace(/^skills?\./, '').trim();
+      const tNorm = subTarget.replace(/[^a-z0-9]/g, '');
+      const hasFormula = mod.formula !== undefined && mod.formula !== null && String(mod.formula).trim() !== '';
+      const rawExpr = hasFormula ? mod.formula : mod.value;
+      const val = Number(this.evaluateFormula(rawExpr, ctx)) || Number(mod.value) || 0;
+      if (val === 0) continue;
+      const mType = mod.type || (defaultType === 'competence_item' ? 'competence' : (val < 0 ? 'penalty' : defaultType));
+      out.push({ subTarget, tNorm, val, mType });
+    }
+    return out;
+  },
+
+  _harvestSkillBonusSources(character) {
+    if (!character) return null;
+    const charLvl = Number(character.level) || 1;
+    const evalCtx = { cl: charLvl, level: charLvl, bab: Number(character.bab) || 0 };
+    const itemEvalCtx = { cl: charLvl, level: charLvl };
+
+    // 1. Active Buffs
+    const buffSources = [];
+    if (Array.isArray(character.buffs)) {
+      for (let i = 0; i < character.buffs.length; i++) {
+        const rawBuff = character.buffs[i];
+        if (!rawBuff || !rawBuff.active) continue;
+        const buff = this.ensureV2Entry(rawBuff);
+        const bCtx = { ...evalCtx, cl: Number(buff.casterLevel || charLvl) || charLvl };
+        const mods = this._extractPreEvaluatedSkillMods(buff.modifiers, 'untyped', bCtx);
+        const negLvls = Number(buff.negativeLevels) || 0;
+        if (mods.length > 0 || negLvls) {
+          buffSources.push({ title: buff.name || 'Buff', mods, negativeLevels: negLvls });
+        }
+      }
+    }
+
+    // Helper for equipped / slotless item chain (item -> matching gearPool -> Master DB / Compendium)
+    const buildItemChain = (rawItem) => {
+      if (!rawItem) return null;
+      const item = this.ensureV2Entry(rawItem);
+      const t1 = item.name || 'Equipped Item';
+      const m1 = this._extractPreEvaluatedSkillMods(item.modifiers, 'competence_item', itemEvalCtx);
+      let t2 = t1;
+      let m2 = [];
+      if (Array.isArray(character.gearPool)) {
+        const iLow = String(item.name || '').toLowerCase().trim();
+        const pItem = character.gearPool.find(p => p && ((item.id && p.id === item.id) || (p.name && p.name.toLowerCase().trim() === iLow)));
+        if (pItem) {
+          t2 = item.name || pItem.name;
+          m2 = this._extractPreEvaluatedSkillMods(this.ensureV2Entry(pItem).modifiers, 'competence_item', itemEvalCtx);
+        }
+      }
+      let t3 = t1;
+      let m3 = [];
+      const dbEntry = this.getMasterDbEntry(item);
+      if (dbEntry) {
+        t3 = item.name || dbEntry.name;
+        m3 = this._extractPreEvaluatedSkillMods(dbEntry.modifiers, 'competence_item', itemEvalCtx);
+      }
+      if (m1.length === 0 && m2.length === 0 && m3.length === 0) return null;
+      return { t1, m1, t2, m2, t3, m3 };
+    };
+
+    // 2. Body Slots & 3. Gear Pool
+    const itemChains = [];
+    const activeSlotIds = new Set();
+    const activeSlotNames = new Set();
+    if (character.bodySlots && typeof character.bodySlots === 'object') {
+      const slots = Object.values(character.bodySlots);
+      for (let i = 0; i < slots.length; i++) {
+        const s = slots[i];
+        if (!s || s.active === false) continue;
+        if (s.id) activeSlotIds.add(s.id);
+        if (s.name) activeSlotNames.add(s.name);
+        if (!s.name || s.name === '-') continue;
+        const chain = buildItemChain(s);
+        if (chain) itemChains.push(chain);
+      }
+    }
+    if (Array.isArray(character.gearPool)) {
+      for (let i = 0; i < character.gearPool.length; i++) {
+        const item = character.gearPool[i];
+        if (!item || !item.name) continue;
+        if ((item.id && activeSlotIds.has(item.id)) || activeSlotNames.has(item.name)) continue;
+        const slotLow = String(item.slot || '').toLowerCase();
+        const catLow = String(item.category || '').toLowerCase();
+        const isSlotless = slotLow.includes('slotless') || catLow === 'other' || catLow === 'wondrous item';
+        if (item.isEquipped || isSlotless) {
+          const chain = buildItemChain(item);
+          if (chain) itemChains.push(chain);
+        }
+      }
+    }
+
+    // 4. Feats & Special Abilities (+ active levelProgression)
+    const progFeats = Array.isArray(character.levelProgression)
+      ? character.levelProgression
+          .filter(p => p && p.active !== false)
+          .flatMap(p => [...(p.feats || []), ...(p.specialAbilities || [])])
+      : [];
+    const featsList = [...(character.feats || []), ...(character.specialAbilities || []), ...progFeats];
+    const seenFeatNames = new Set();
+    const featSources = [];
+    const rawAbilityNamesWithMods = [];
+    for (let i = 0; i < featsList.length; i++) {
+      const rawFeat = featsList[i];
+      if (!rawFeat) continue;
+      if (typeof rawFeat === 'object' && Array.isArray(rawFeat.modifiers) && rawFeat.modifiers.length > 0 && rawFeat.name) {
+        rawAbilityNamesWithMods.push(String(rawFeat.name).toLowerCase());
+      }
+      const featObj = typeof rawFeat === 'string' ? { name: rawFeat, category: 'Feat' } : this.ensureV2Entry(rawFeat);
+      const rawFName = (featObj.name || '').trim();
+      if (!rawFName) continue;
+      const fName = rawFName.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️\s]+(\[.*?\])?\s*/, '').trim();
+      if (!fName) continue;
+      const fKey = fName.toLowerCase();
+      if (seenFeatNames.has(fKey)) continue;
+      seenFeatNames.add(fKey);
+
+      const hasInlineMods = Array.isArray(featObj.modifiers) && featObj.modifiers.length > 0;
+      const dbFeat = hasInlineMods ? null : (this.getMasterDbEntry(featObj) || this.getMasterDbEntry(fName));
+      const rawMods = hasInlineMods ? featObj.modifiers : (dbFeat && Array.isArray(dbFeat.modifiers) ? dbFeat.modifiers : []);
+      const mods = this._extractPreEvaluatedSkillMods(rawMods, 'untyped', evalCtx);
+      const isCollector = fKey.includes('collector of stories');
+      if (mods.length > 0 || isCollector) {
+        featSources.push({ title: fName, mods, isCollector });
+      }
+    }
+
+    // 5. Racial, Template & Cleric Domain Skill Modifiers
+    const extraSources = [];
+    if (character.race) {
+      const raceObj = this.getMasterDbEntry(character.race, 'Race');
+      if (raceObj && Array.isArray(raceObj.modifiers)) {
+        const rMods = this._extractPreEvaluatedSkillMods(raceObj.modifiers, 'racial', evalCtx);
+        if (rMods.length > 0) extraSources.push({ title: `${raceObj.name || character.race} (Race)`, mods: rMods });
+      }
+    }
+    const activeTemplates = this.getCharacterActiveTemplateEntries(character);
+    for (let i = 0; i < activeTemplates.length; i++) {
+      const tmpl = activeTemplates[i];
+      if (tmpl && Array.isArray(tmpl.modifiers)) {
+        const tMods = this._extractPreEvaluatedSkillMods(tmpl.modifiers, 'racial', evalCtx);
+        if (tMods.length > 0) extraSources.push({ title: `${tmpl.name} (Template)`, mods: tMods });
+      }
+    }
+    const activeDomains = this.getCharacterActiveDomainEntries(character);
+    for (let i = 0; i < activeDomains.length; i++) {
+      const dom = activeDomains[i];
+      if (!dom || !Array.isArray(dom.modifiers) || dom.modifiers.length === 0) continue;
+      const domLow = String(dom.name || '').toLowerCase();
+      const alreadyApplied = rawAbilityNamesWithMods.some(fn => fn.includes(domLow));
+      if (!alreadyApplied) {
+        const dMods = this._extractPreEvaluatedSkillMods(dom.modifiers, 'untyped', evalCtx);
+        if (dMods.length > 0) extraSources.push({ title: `${dom.name} Domain`, mods: dMods });
+      }
+    }
+
+    return { buffSources, itemChains, featSources, extraSources };
+  },
+
+  evaluateSkillBonus(character, skillKey, skillName, statName, preHarvested = null) {
     if (!character) return { total: 0, breakdown: [] };
     const sName = (skillName || '').toLowerCase().trim();
     const sKey = (skillKey || '').toLowerCase().trim();
     const isKnowledge = sName.startsWith('knowledge') || sKey.startsWith('knowledge') || sName.includes('bilgi');
     const aliases = this.getSkillAliases(sKey, sName, character);
-    const charLvl = Number(character.level) || 1;
-    const evalCtx = { cl: charLvl, level: charLvl, bab: Number(character.bab) || 0 };
+    const baseKeyNorm = sKey.replace(/[^a-z0-9]/g, '');
+    const harvested = preHarvested || this._harvestSkillBonusSources(character);
+    if (!harvested) return { total: 0, breakdown: [] };
 
     const buckets = {};
     const addBonus = (sourceName, val, bType = 'untyped') => {
@@ -7162,25 +7341,11 @@ const RuleEngine = {
       buckets[type].push({ name: sourceName, val: v });
     };
 
-    // Helper to check if a V2 modifier target matches this skill
-    const matchSkillModifiers = (modifiers, sourceTitle, defaultType = 'competence', ctx = evalCtx) => {
-      if (!Array.isArray(modifiers)) return false;
+    const applyPreEvaluatedMods = (mods, sourceTitle) => {
+      if (!mods || mods.length === 0) return false;
       let matched = false;
-      const baseKeyNorm = sKey.replace(/[^a-z0-9]/g, '');
-
-      modifiers.forEach(mod => {
-        if (!mod || !mod.target) return;
-        const rawTarget = String(mod.target).trim().toLowerCase();
-        if (!rawTarget.startsWith('skill.') && !rawTarget.startsWith('skills.') && rawTarget !== 'skills') return;
-
-        const subTarget = rawTarget.replace(/^skills?\./, '').trim();
-        const tNorm = subTarget.replace(/[^a-z0-9]/g, '');
-        const hasFormula = mod.formula !== undefined && mod.formula !== null && String(mod.formula).trim() !== '';
-        const rawExpr = hasFormula ? mod.formula : mod.value;
-        const val = Number(this.evaluateFormula(rawExpr, ctx)) || Number(mod.value) || 0;
-        if (val === 0) return;
-        const mType = mod.type || (val < 0 ? 'penalty' : defaultType);
-
+      for (let i = 0; i < mods.length; i++) {
+        const { subTarget, tNorm, val, mType } = mods[i];
         let applies = false;
         if (subTarget === 'all' || subTarget === 'skills' || tNorm === 'allskills') {
           applies = true;
@@ -7189,7 +7354,6 @@ const RuleEngine = {
         } else if (tNorm && aliases.some(a => a && (a === tNorm || a.includes(tNorm) || tNorm.includes(a)))) {
           applies = true;
         }
-
         if (applies) {
           const label = (tNorm && tNorm !== 'all' && tNorm !== baseKeyNorm)
             ? `${sourceTitle} (${subTarget.replace(/_/g, ' ')})`
@@ -7197,105 +7361,41 @@ const RuleEngine = {
           addBonus(label, val, mType);
           matched = true;
         }
-      });
-
+      }
       return matched;
     };
 
-    // 1. Negative Level Skill Penalties (if any active buff has negativeLevels without explicit skill.all modifier)
-    if (Array.isArray(character.buffs)) {
-      character.buffs.forEach(rawBuff => {
-        if (!rawBuff || !rawBuff.active) return;
-        const buff = this.ensureV2Entry(rawBuff);
-        const bCtx = { ...evalCtx, cl: Number(buff.casterLevel || charLvl) || charLvl };
-        const hasSkillAllMod = matchSkillModifiers(buff.modifiers, buff.name || 'Buff', 'untyped', bCtx);
-        if (buff.negativeLevels && !hasSkillAllMod) {
-          addBonus(`${buff.name} (-${buff.negativeLevels} Lvl)`, -Number(buff.negativeLevels), 'penalty');
-        }
-      });
+    // 1. Buffs + Negative Levels
+    for (let i = 0; i < harvested.buffSources.length; i++) {
+      const b = harvested.buffSources[i];
+      const hasSkillMod = applyPreEvaluatedMods(b.mods, b.title);
+      if (b.negativeLevels && !hasSkillMod) {
+        addBonus(`${b.title} (-${b.negativeLevels} Lvl)`, -b.negativeLevels, 'penalty');
+      }
     }
 
-    // 2. Body Slot Equipped Items (character.bodySlots)
-    if (character.bodySlots && typeof character.bodySlots === 'object') {
-      Object.entries(character.bodySlots).forEach(([slotKey, item]) => {
-        if (!item || item.active === false || !item.name || item.name === '-') return;
-        this._checkItemSkillBonus(item, sKey, sName, isKnowledge, addBonus, character, aliases);
-      });
+    // 2 & 3. Body Slots + Gear Pool
+    for (let i = 0; i < harvested.itemChains.length; i++) {
+      const c = harvested.itemChains[i];
+      let handled = applyPreEvaluatedMods(c.m1, c.t1);
+      if (!handled) handled = applyPreEvaluatedMods(c.m2, c.t2);
+      if (!handled) applyPreEvaluatedMods(c.m3, c.t3);
     }
 
-    // 3. Gear Pool Items (Equipped or Slotless Wondrous Items)
-    if (Array.isArray(character.gearPool)) {
-      character.gearPool.forEach(item => {
-        if (!item || !item.name) return;
-        const inBodySlot = character.bodySlots && Object.values(character.bodySlots).some(s => s && s.active !== false && (s.id === item.id || s.name === item.name));
-        if (inBodySlot) return;
-        const isSlotless = (item.slot || '').toLowerCase().includes('slotless') || (item.category || '').toLowerCase() === 'other' || (item.category || '').toLowerCase() === 'wondrous item';
-        if (item.isEquipped || isSlotless) {
-          this._checkItemSkillBonus(item, sKey, sName, isKnowledge, addBonus, character, aliases);
-        }
-      });
-    }
-
-    // 4. Feats & Special Abilities (Canonical V2 modifiers + Compendium lookup + Active Level Progression Boons/Feats)
-    const progFeats = Array.isArray(character.levelProgression)
-      ? character.levelProgression
-          .filter(p => p && p.active !== false)
-          .flatMap(p => [...(p.feats || []), ...(p.specialAbilities || [])])
-      : [];
-    const featsList = [...(character.feats || []), ...(character.specialAbilities || []), ...progFeats];
-    const seenFeatNames = new Set();
-    featsList.forEach(rawFeat => {
-      if (!rawFeat) return;
-      const featObj = typeof rawFeat === 'string' ? { name: rawFeat, category: 'Feat' } : this.ensureV2Entry(rawFeat);
-      const rawFName = (featObj.name || '').trim();
-      if (!rawFName) return;
-      const fName = rawFName.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️\s]+(\[.*?\])?\s*/, '').trim();
-      if (!fName) return;
-      const fKey = fName.toLowerCase();
-      if (seenFeatNames.has(fKey)) return;
-      seenFeatNames.add(fKey);
-
-      const dbFeat = this.getMasterDbEntry(featObj) || this.getMasterDbEntry(fName);
-      const mods = (Array.isArray(featObj.modifiers) && featObj.modifiers.length > 0)
-        ? featObj.modifiers
-        : (dbFeat && Array.isArray(dbFeat.modifiers) ? dbFeat.modifiers : []);
-
-      matchSkillModifiers(mods, fName, 'untyped', evalCtx);
-
-      if (fName.toLowerCase().includes('collector of stories') && isKnowledge) {
+    // 4. Feats & Special Abilities
+    for (let i = 0; i < harvested.featSources.length; i++) {
+      const f = harvested.featSources[i];
+      applyPreEvaluatedMods(f.mods, f.title);
+      if (f.isCollector && isKnowledge) {
         addBonus('Collector of Stories (Monster Lore)', 5, 'competence');
       }
-    });
-
-    // 5. Racial Skill Modifiers from Compendium Race entry
-    if (character.race) {
-      const raceObj = this.getMasterDbEntry(character.race, 'Race');
-      if (raceObj && Array.isArray(raceObj.modifiers)) {
-        matchSkillModifiers(raceObj.modifiers, `${raceObj.name || character.race} (Race)`, 'racial', evalCtx);
-      }
     }
 
-    // 5.2. Character Template Skill Modifiers from Canonical V2 Template entries (e.g. Lich/Vampire/Ghost +8 Hide/Listen/Spot/Search/Sense Motive/Move Silently)
-    const activeTemplates = this.getCharacterActiveTemplateEntries(character);
-    activeTemplates.forEach(tmpl => {
-      if (tmpl && Array.isArray(tmpl.modifiers)) {
-        matchSkillModifiers(tmpl.modifiers, `${tmpl.name} (Template)`, 'racial', evalCtx);
-      }
-    });
-
-    // 5.5. Cleric Domain Skill Modifiers from Canonical V2 Domain entries (e.g. Artifice +4 Craft, Community +2 Diplomacy, Mind +2 Bluff/Diplomacy/Sense Motive)
-    const activeDomains = this.getCharacterActiveDomainEntries(character);
-    activeDomains.forEach(dom => {
-      if (!dom || !Array.isArray(dom.modifiers) || dom.modifiers.length === 0) return;
-      const alreadyAppliedViaAbility = featsList.some(f => {
-        const fn = String(typeof f === 'string' ? f : (f?.name || '')).toLowerCase();
-        const fMods = typeof f === 'object' && Array.isArray(f?.modifiers) ? f.modifiers : [];
-        return fn.includes(dom.name.toLowerCase()) && fMods.length > 0;
-      });
-      if (!alreadyAppliedViaAbility) {
-        matchSkillModifiers(dom.modifiers, `${dom.name} Domain`, 'untyped', evalCtx);
-      }
-    });
+    // 5. Race, Templates, Domains
+    for (let i = 0; i < harvested.extraSources.length; i++) {
+      const ex = harvested.extraSources[i];
+      applyPreEvaluatedMods(ex.mods, ex.title);
+    }
 
     // 6. Resolve Stacking Rules (D&D 3.5e RAW)
     let total = 0;
@@ -7318,6 +7418,35 @@ const RuleEngine = {
     });
 
     return { total, breakdown };
+  },
+
+  deriveSkillsBonusMap(character) {
+    const map = {};
+    if (!character || typeof character !== 'object') return map;
+    const harvested = this._harvestSkillBonusSources(character);
+    if (!harvested) return map;
+    if (Array.isArray(character.skills)) {
+      for (let i = 0; i < character.skills.length; i++) {
+        const sk = character.skills[i];
+        if (!sk) continue;
+        const sKey = sk.key || String(sk.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+        if (!sKey) continue;
+        const res = this.evaluateSkillBonus(character, sKey, sk.name, sk.stat || sk.ability, harvested);
+        map[sKey] = res;
+        if (!sk.key && sk.name) map[sk.name] = res;
+      }
+    }
+    const conGroups = (typeof window !== 'undefined' && typeof window.getConsolidatedSkillGroups === 'function')
+      ? window.getConsolidatedSkillGroups()
+      : (typeof getConsolidatedSkillGroups === 'function' ? getConsolidatedSkillGroups() : null);
+    if (Array.isArray(conGroups)) {
+      for (let i = 0; i < conGroups.length; i++) {
+        const cg = conGroups[i];
+        if (!cg || !cg.key || map[cg.key]) continue;
+        map[cg.key] = this.evaluateSkillBonus(character, cg.key, cg.name, cg.stat, harvested);
+      }
+    }
+    return map;
   },
 
   _checkItemSkillBonus(rawItem, sKey, sName, isKnowledge, addBonus, character = null, aliases = null) {
@@ -7405,9 +7534,12 @@ const RuleEngine = {
         ? (snapDb.find(m => m && m._snapshot && m.type === 'Class' && String(m.name || '').toLowerCase().trim() === lowerKey) || null)
         : null;
     }
-    if (!srdClass && comp && typeof comp.getClass === 'function' && /\([^)]+\)/.test(className)) {
+    if (!srdClass && /\([^)]+\)/.test(className)) {
       const baseClassName = String(className).replace(/\s*\([^)]+\)\s*/g, '').trim();
-      if (baseClassName) srdClass = comp.getClass(baseClassName);
+      if (baseClassName) {
+        if (comp && typeof comp.getClass === 'function') srdClass = comp.getClass(baseClassName);
+        if (!srdClass) srdClass = this.getMasterDbEntry(baseClassName, 'Class');
+      }
     }
     let localDef = (this.DND35_CLASS_DEFS && (this.DND35_CLASS_DEFS[className] || this.DND35_CLASS_DEFS[lowerKey])) || null;
     if (!localDef && !srdClass && typeof window !== 'undefined' && typeof window.getAvailableClassDefs === 'function') {
@@ -10380,6 +10512,7 @@ const RuleEngine = {
     const progressionView = this.deriveProgressionView(working, workingDb);
     const specialAttacks = this.deriveSpecialAttacks(working, working.legoEvaluation, workingDb);
     const activeBuffsStrip = this.deriveActiveBuffsStrip(working);
+    const skillsBonusMap = this.deriveSkillsBonusMap(working);
     const spent = working.tactical?.spentActions || working.actionEconomy?.spentActions || {};
     const ae = working.actionEconomy || {};
     const isActionAvailable = (val, spentFlag) => {
@@ -10499,6 +10632,7 @@ const RuleEngine = {
         maneuversView: spellsView.maneuversView
       },
       progression: progressionView,
+      skillsBonusMap,
       session: workingSession,
       warnings: working.activeConditionWarnings || [],
       _workingSnapshot: working

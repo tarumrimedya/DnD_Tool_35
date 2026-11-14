@@ -122,24 +122,36 @@
       return Boolean(typeof character !== 'undefined' && character && character.settings && character.settings.includeLegacyFeats);
     }
 
+    let _featChunkLoadPending = false;
+
     function ensureFeatSplatChunks() {
       const comp = (typeof window !== 'undefined') ? window.SrdCompendium : null;
-      if (!comp || !comp._ready || typeof comp.ensureChunkLoaded !== 'function' || typeof comp.isChunkLoaded !== 'function') return;
+      if (_featChunkLoadPending || !comp || typeof comp.ensureChunkLoaded !== 'function' || typeof comp.isChunkLoaded !== 'function') return;
+      if (typeof comp.isIndexReady === 'function' && !comp.isIndexReady() && typeof comp.initIndex === 'function') {
+        _featChunkLoadPending = true;
+        comp.initIndex().then(() => {
+          _featChunkLoadPending = false;
+          ensureFeatSplatChunks();
+        }).catch(() => { _featChunkLoadPending = false; });
+        return;
+      }
       const lazy = typeof comp.getLazyChunkNames === 'function' ? comp.getLazyChunkNames() : [];
       const charLevel = (typeof character !== 'undefined' && character)
         ? (Number(character.level) || (Array.isArray(character.levelProgression) ? character.levelProgression.length : 0))
         : 0;
-      const wanted = ['srd_feats_splat.json'];
+      const wanted = ['srd_feats.json', 'srd_feats_splat.json'];
       if (charLevel >= 21) wanted.push('srd_feats_epic.json');
       if (includeLegacyFeats()) wanted.push('srd_feats_legacy.json');
-      const missing = wanted.filter(n => lazy.includes(n) && !comp.isChunkLoaded(n));
+      const missing = wanted.filter(n => !comp.isChunkLoaded(n) && (n === 'srd_feats.json' || lazy.includes(n)));
       if (missing.length === 0) return;
+      _featChunkLoadPending = true;
       Promise.all(missing.map(n => comp.ensureChunkLoaded(n))).then(() => {
+        _featChunkLoadPending = false;
         _featChunkCatalogVer++;
         if (typeof _featListRefresher === 'function') {
           try { _featListRefresher(); } catch (e) { reportError('char_progression:ensureFeatSplatChunks', e); }
         }
-      }).catch(() => {});
+      }).catch(() => { _featChunkLoadPending = false; });
     }
 
     // UA traits / Complete Scoundrel skill tricks from the lazy splat chunk, mapped like catalog feats.
@@ -179,11 +191,16 @@
 
     function ensureClassSplatChunks() {
       const comp = (typeof window !== 'undefined') ? window.SrdCompendium : null;
-      if (_classChunkLoadPending || !comp || !comp._ready || typeof comp.ensureChunkLoaded !== 'function' || typeof comp.isChunkLoaded !== 'function') return;
+      if (_classChunkLoadPending || !comp || typeof comp.ensureChunkLoaded !== 'function' || typeof comp.isChunkLoaded !== 'function') return;
+      if (typeof comp.isIndexReady === 'function' && !comp.isIndexReady() && typeof comp.initIndex === 'function') {
+        _classChunkLoadPending = true;
+        comp.initIndex().then(() => { _classChunkLoadPending = false; ensureClassSplatChunks(); }).catch(() => { _classChunkLoadPending = false; });
+        return;
+      }
       const lazy = typeof comp.getLazyChunkNames === 'function' ? comp.getLazyChunkNames() : [];
-      const wanted = ['srd_classes_splat.json'];
+      const wanted = ['srd_classes_races.json', 'srd_classes_splat.json'];
       if (includeLegacyFeats()) wanted.push('srd_classes_legacy.json');
-      const missing = wanted.filter(n => lazy.includes(n) && !comp.isChunkLoaded(n));
+      const missing = wanted.filter(n => !comp.isChunkLoaded(n) && (n === 'srd_classes_races.json' || lazy.includes(n)));
       if (missing.length === 0) return;
       _classChunkLoadPending = true;
       Promise.all(missing.map(n => comp.ensureChunkLoaded(n))).then(() => {
@@ -221,8 +238,9 @@
     function getCombinedFeatCatalog(includeInvocations = false) {
       ensureFeatSplatChunks();
       const srdReady = Boolean(typeof window !== 'undefined' && window.SrdCompendium && window.SrdCompendium._ready);
+      const loadedCnt = (srdReady && typeof window.SrdCompendium.getLoadedEntryCount === 'function') ? window.SrdCompendium.getLoadedEntryCount() : 0;
       const dbLen = (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) ? masterDb.length : 0;
-      const cacheKey = `${srdReady ? 1 : 0}_${(typeof window !== 'undefined' && window._srdCatalogVersion) || 0}_${dbLen}_${(typeof window !== 'undefined' && window._featCatalogCacheVer) || 0}_${includeLegacyFeats() ? 1 : 0}_${_featChunkCatalogVer}`;
+      const cacheKey = `${srdReady ? 1 : 0}_${loadedCnt}_${(typeof window !== 'undefined' && window._srdCatalogVersion) || 0}_${dbLen}_${(typeof window !== 'undefined' && window._featCatalogCacheVer) || 0}_${includeLegacyFeats() ? 1 : 0}_${_featChunkCatalogVer}`;
       if (_cachedFeatCatalogKey === cacheKey) {
         if (includeInvocations && _cachedFeatCatalogWithInv) return _cachedFeatCatalogWithInv;
         if (!includeInvocations && _cachedFeatCatalogNoInv) return _cachedFeatCatalogNoInv;
@@ -282,8 +300,8 @@
           });
         });
       }
-      // 2. Fallback from BUNDLED_SRD_CORE_CATALOG only if SrdCompendium is not ready
-      if (!(typeof window !== 'undefined' && window.SrdCompendium && window.SrdCompendium._ready) && typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
+      // 2. Fallback from BUNDLED_SRD_CORE_CATALOG while core feat chunk is not yet loaded
+      if (!(typeof window !== 'undefined' && window.SrdCompendium && typeof window.SrdCompendium.isChunkLoaded === 'function' && window.SrdCompendium.isChunkLoaded('srd_feats.json')) && typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
         window.BUNDLED_SRD_CORE_CATALOG.filter(i => i && (i.type === 'Feat' || i.type === 'Flaw')).forEach(f => {
           const k = (f.name || '').toLowerCase().trim();
           if (k && !skipPlaceholders.has(k) && f.category !== 'Warlock Invocation' && !invocationByName.has(k)) {

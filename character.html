@@ -3884,14 +3884,14 @@
 
   <!-- Deferred Modals Root (Mounted on Demand / Idle via char_modals.js) -->
   <div id="deferred-modals-root"></div>
-  <script defer src="char_modals.js?v=da08863636"></script>
+  <script defer src="char_modals.js?v=e2be0978a2"></script>
 
   <!-- SCRIPT LOGIC (deferred: runs in document order after parsing, before DOMContentLoaded) -->
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script defer src="supabase_auth.js?v=47247ea179"></script>
   <!-- data-srd-autoinit: srd_compendium.js starts SrdCompendium.init() as soon as it runs. -->
-  <script defer src="srd_compendium.js?v=0c86626c75" data-srd-autoinit></script>
-  <script defer src="rule_engine.js?v=fa270802d2"></script>
+  <script defer src="srd_compendium.js?v=05b06bc772" data-srd-autoinit></script>
+  <script defer src="rule_engine.js?v=ea8904c82a"></script>
   <script defer src="char_store.js?v=e0746634df"></script>
   <!-- ui_components.js stays blocking on purpose: it has no dependencies, and while the document is
        still loading it binds the data-action router on DOMContentLoaded, after the outside-click
@@ -3903,11 +3903,11 @@
   <script defer src="hub_notes.js?v=a275652b58"></script>
   <script defer src="dice3d.js?v=aa07002406"></script>
 
-  <script defer src="char_hud.js?v=7c93abde4d"></script>
+  <script defer src="char_hud.js?v=9ca60dea7d"></script>
   <script defer src="char_combat.js?v=252e917761"></script>
   <script defer src="char_spells.js?v=28af8c2915"></script>
-  <script defer src="char_progression.js?v=3aec2e6f02"></script>
-  <script defer src="char_inventory.js?v=f44c43daab"></script>
+  <script defer src="char_progression.js?v=a030a2870e"></script>
+  <script defer src="char_inventory.js?v=8eda2b41f0"></script>
   <!-- Floating Tooltip for Combat Spells Hover (Tap or click to dismiss) -->
   <div id="combat-spell-hover-tooltip" data-action="combat:hide-spell-tooltip" class="hidden fixed z-[200] pointer-events-auto bg-slate-950/95 border border-purple-500/80 rounded-xl p-3 shadow-2xl w-[340px] max-w-[92vw] text-xs space-y-2 backdrop-blur-md transition-opacity duration-150 text-slate-200 cursor-pointer select-none">
     

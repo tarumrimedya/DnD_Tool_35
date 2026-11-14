@@ -311,14 +311,27 @@
       }
 
       const rowsFrag = document.createDocumentFragment();
+      const sheet = (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.getSheet === 'function')
+        ? window.CharStore.getSheet()
+        : null;
+      const precomputedSkillMap = sheet && sheet.skillsBonusMap ? sheet.skillsBonusMap : null;
+      let localSkillCtx = null;
       displayItems.forEach(item => {
         const statMod = RuleEngine.getAbilityMod(character.abilities?.[item.stat] || 10);
         const acpVal = item.acp ? Math.min(0, Number(character.acBreakdown?.acp) || 0) : 0;
 
-        // Scope & Stacking Aware Item/Buff Bonus Calculation
-        const evalSkillObj = (typeof RuleEngine !== 'undefined' && RuleEngine.evaluateSkillBonus)
-          ? RuleEngine.evaluateSkillBonus(character, item.key, item.name, item.stat)
-          : { total: Number(character.buffSkillBonus) || 0, breakdown: [] };
+        // Scope & Stacking Aware Item/Buff Bonus Calculation (Single-Pass Pre-Derived via sheet.skillsBonusMap)
+        const evalSkillObj = (precomputedSkillMap && precomputedSkillMap[item.key])
+          ? precomputedSkillMap[item.key]
+          : ((typeof RuleEngine !== 'undefined' && RuleEngine.evaluateSkillBonus)
+              ? RuleEngine.evaluateSkillBonus(
+                  character,
+                  item.key,
+                  item.name,
+                  item.stat,
+                  localSkillCtx || (localSkillCtx = (RuleEngine._harvestSkillBonusSources ? RuleEngine._harvestSkillBonusSources(character) : null))
+                )
+              : { total: Number(character.buffSkillBonus) || 0, breakdown: [] });
         const buffSkillMod = evalSkillObj.total;
         const buffTooltip = evalSkillObj.breakdown.length > 0 
           ? evalSkillObj.breakdown.join(' • ') 
@@ -439,14 +452,20 @@
         ? character.tactical.charge
         : false;
 
-      const acCalc = RuleEngine.evaluateAC(character, {
-        combatExpertise: ceVal,
-        fightingDefensively: fdVal,
-        totalDefense: tdVal,
-        charge: chargeVal
-      });
-
-      const bd = character.acBreakdown || {};
+      const sheet = (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.getSheet === 'function')
+        ? window.CharStore.getSheet()
+        : null;
+      const bd = (sheet && sheet.ac && sheet.ac.total !== undefined)
+        ? sheet.ac
+        : ((character.acBreakdown && character.acBreakdown.total !== undefined)
+            ? character.acBreakdown
+            : RuleEngine.evaluateAC(character, {
+                combatExpertise: ceVal,
+                fightingDefensively: fdVal,
+                totalDefense: tdVal,
+                charge: chargeVal
+              }));
+      const acCalc = bd;
       const totalBadge = document.getElementById('defense-ac-total-badge');
       if (totalBadge) totalBadge.textContent = `Total: ${bd.total ?? acCalc.total} • Touch: ${bd.touch ?? acCalc.touch} • Flat: ${bd.flat ?? acCalc.flat}`;
 
@@ -528,7 +547,11 @@
         ${conditionalAcHtml}
       `;
 
-      const saves = RuleEngine.evaluateSaves(character);
+      const saves = (sheet && sheet.saves && sheet.saves.fort !== undefined)
+        ? sheet.saves
+        : ((character.evaluatedSaves && character.evaluatedSaves.fort !== undefined)
+            ? character.evaluatedSaves
+            : RuleEngine.evaluateSaves(character));
       const warbladeLvl = 1;
       const battleClarityInt = Math.min(warbladeLvl, Math.max(0, intMod));
 
@@ -5926,7 +5949,7 @@
       const mLen = Array.isArray(masterDb) ? masterDb.length : 0;
       const bLen = (typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) ? window.BUNDLED_SRD_CORE_CATALOG.length : 0;
       const srdReady = Boolean(typeof window !== 'undefined' && window.SrdCompendium && typeof window.SrdCompendium.isReady === 'function' && window.SrdCompendium.isReady());
-      if (srdReady && typeof window.SrdCompendium.ensureTypesLoaded === 'function') {
+      if (typeof window !== 'undefined' && window.SrdCompendium && typeof window.SrdCompendium.ensureTypesLoaded === 'function') {
         window.SrdCompendium.ensureTypesLoaded(GEAR_PICKER_TYPES).then((arrived) => {
           if (arrived.length) refreshPoolPickerIfOpen();
         }).catch(() => {});
