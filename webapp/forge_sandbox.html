@@ -52,13 +52,17 @@
   .fs-pill .fs-x { cursor: pointer; opacity: .7; margin-left: 2px; }
   .fs-pill .fs-x:hover { opacity: 1; color: #fff; }
 
-  /* Sticky object preview (object's own card only) */
-  .fs-live { position: sticky; top: 0; z-index: 30; padding: 10px 14px; border-radius: 14px; background: rgba(8, 14, 30, 0.97); border: 1px solid var(--theme-border); box-shadow: 0 10px 30px rgba(0,0,0,.5); backdrop-filter: blur(8px); }
+  /* Sticky object preview (object's own card only — auto-collapses on scroll, user-expandable) */
+  .fs-live { position: sticky; top: 0; z-index: 30; padding: 10px 14px; border-radius: 14px; background: rgba(8, 14, 30, 0.97); border: 1px solid var(--theme-border); box-shadow: 0 10px 30px rgba(0,0,0,.5); backdrop-filter: blur(8px); transition: padding .15s ease; }
+  .fs-live.collapsed { padding: 7px 12px; }
+  .fs-live-more { margin-top: 6px; animation: fsReveal .16s ease-out; }
+  .fs-live.collapsed .fs-live-more { display: none; }
   .fs-live-line { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 12px; min-height: 22px; }
   .fs-live-line + .fs-live-line { margin-top: 6px; }
   .fs-live-icon { font-size: 16px; }
   .fs-live-name { font-size: 16px; font-weight: 800; color: var(--text-primary); }
   .fs-live-card { color: var(--text-secondary); font-size: 12px; line-height: 1.5; display: block; }
+  .fs-live-toggle { display: inline-flex; flex-shrink: 0; margin-left: auto; }
   .fs-sep { color: var(--text-dim); }
   .fs-grow-gap { flex: 1 1 auto; }
   .fs-up { color: #34d399 !important; }
@@ -157,7 +161,7 @@
   .fs-scroll-x { overflow: visible; }
 
   .fs-json { margin: 0; padding: 10px; max-height: 420px; overflow: auto; font-size: 11px; line-height: 1.45; color: #a5f3fc; background: var(--bg-surface); border-radius: 10px; border: 1px solid var(--border-subtle); white-space: pre; }
-  .fs-toast-wrap { position: fixed; right: 14px; bottom: 14px; z-index: 80; display: flex; flex-direction: column; gap: 6px; }
+  .fs-toast-wrap { position: fixed; right: 14px; bottom: 14px; z-index: 80; display: flex; flex-direction: column; gap: 6px; pointer-events: none; }
   .fs-toast { padding: 8px 12px; border-radius: 10px; font-size: 12px; font-weight: 600; background: #0f172a; border: 1px solid var(--border-default); color: var(--text-primary); box-shadow: 0 10px 30px rgba(0,0,0,.5); animation: fsReveal .2s ease-out; max-width: 360px; }
   .fs-toast.ok { border-color: rgba(16,185,129,.6); }
   .fs-toast.warn { border-color: rgba(245,158,11,.6); }
@@ -198,11 +202,14 @@
   .lego-cols-1 { grid-template-columns: minmax(0, 1fr); }
   .lego-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .lego-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .lego-field { display: flex; flex-wrap: wrap; align-items: center; row-gap: 6px; column-gap: 8px; min-width: 0; padding: 6px 10px; border-radius: 9px; background: rgba(11,18,36,.48); border: 1px solid rgba(148,163,184,.14); box-sizing: border-box; }
-  .lego-field-lbl { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: #94a3b8; white-space: nowrap; margin-right: 2px; }
-  .lego-field-body { display: flex; flex-wrap: wrap; align-items: center; row-gap: 6px; column-gap: 8px; flex: 1 1 auto; min-width: 0; }
+  .lego-field { display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 5px; min-width: 0; padding: 7px 10px 8px; border-radius: 9px; background: rgba(11,18,36,.48); border: 1px solid rgba(148,163,184,.14); box-sizing: border-box; }
+  .lego-field-lbl { font-size: 10px; line-height: 1.2; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .lego-field-body { display: flex; flex-wrap: wrap; align-items: center; row-gap: 6px; column-gap: 8px; width: 100%; min-width: 0; }
   .lego-span-2 { grid-column: span 2; }
   .lego-span-full { grid-column: 1 / -1; }
+  .lego-lvl-stack { display: flex; flex-direction: column; gap: 6px; width: 100%; min-width: 0; }
+  .lego-lvl-top { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; width: 100%; min-width: 0; }
+  .lego-lvl-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; width: 100%; padding-top: 5px; border-top: 1px dashed rgba(148,163,184,.14); }
   .lego-sub { display: flex; flex-wrap: wrap; gap: 8px; width: 100%; box-sizing: border-box; padding: 8px; border-radius: 8px; background: rgba(0,0,0,.25); }
   .lego-del { margin-left: auto; background: transparent; border: none; color: #64748b; cursor: pointer; font-size: 13px; }
   .lego-del:hover { color: #fb7185; }
@@ -220,17 +227,18 @@
   .lego-hat .fs-align { grid-template-columns: repeat(3, 54px); }
   .fs-spot-del { margin-left: auto; padding: 0 6px; border-radius: 6px; color: #94a3b8; cursor: pointer; font-weight: 800; flex-shrink: 0; }
   .fs-spot-del:hover { color: #fb7185; background: rgba(251,113,133,.12); }
-  .fs-live-toggle { display: none; }
 
   /* ===== Responsive ergonomics (tested at 375px) ===== */
   .fs-in, .fs-sel, .fs-spot, .lego-hat > *, .lego-block > *, .c-top > *, .lego-palette > *, .lego-row > *, .lego-sub > *, .lego-field > *, .lego-field-body > * { max-width: 100%; box-sizing: border-box; }
   .lego-field-body > .fs-in:not([type="number"]), .lego-field-body > .fs-spot { flex: 1 1 110px; min-width: 0; }
+  .lego-field-body > .fs-sel:only-child { flex: 1 1 110px; }
   .fs-pill { overflow-wrap: anywhere; }
   .fs-facet-head { min-width: 0; }
   .fs-facet-title { min-width: 0; }
   .fs-facet-meta { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   @media (max-width: 980px) {
     .lego-cols-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .c-inner .lego-cols-2, .c-inner .lego-cols-3 { grid-template-columns: minmax(0, 1fr); }
     .lego-span-2 { grid-column: 1 / -1; }
   }
   @media (max-width: 640px) {
@@ -251,9 +259,6 @@
     .fs-scroll-x { overflow-x: auto; }
     .fs-spot-dd { position: fixed; left: 10px !important; right: 10px !important; top: 12vh; min-width: 0; max-width: 440px; margin: 0 auto; max-height: 70vh; z-index: 95; }
     .fs-live { padding: 8px 10px; }
-    .fs-live-toggle { display: inline-flex; margin-left: auto; }
-    .fs-live-more { display: none; }
-    .fs-live-more.open { display: block; animation: fsReveal .18s ease-out; }
     .fs-live-name { font-size: 14px; }
   }
 </style>

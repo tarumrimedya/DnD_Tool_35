@@ -1426,7 +1426,7 @@
     house: { critCap: 0 },
     spot: null,
     ui: {
-      liveOpenMobile: false, progHideEmpty: false, facetOpen: {}, cardOpen: {}, jsonOpen: false, importOpen: false, importText: '', tplSaveOpen: false, newTplName: '', houseOpen: false,
+      liveOpenMobile: false, liveAutoCollapsed: false, liveUserOverride: null, progHideEmpty: false, facetOpen: {}, cardOpen: {}, jsonOpen: false, importOpen: false, importText: '', tplSaveOpen: false, newTplName: '', houseOpen: false,
       customSkillOpen: false, customSkill: { name: '', ability: 'cha', trainedOnly: true, acp: false }
     }
   };
@@ -2961,6 +2961,12 @@
       '<span class="fs-grow-gap"></span>' + save + skillPop + importBtn + btn('new-entry', '✨ Blank', 'fs-xs') + status + '</div>' +
       '<div class="fs-topbar-row fs-topbar-spot-row"><div class="fs-top-spot">' + spotHtml('load', 'top') + '</div></div>';
   }
+  function isLiveOpen() {
+    if (S.ui.liveUserOverride === 'open') return true;
+    if (S.ui.liveUserOverride === 'closed') return false;
+    if (typeof window !== 'undefined' && window.innerWidth <= 640) return !!S.ui.liveOpenMobile;
+    return !S.ui.liveAutoCollapsed;
+  }
   function renderLiveHeader() {
     const en = S.entry, bp = BP_BY_ID[en.blueprint] || BLUEPRINTS[0], has = (k) => en.facets.indexOf(k) >= 0;
     const FEAT_KIND_NAMES = { feat: 'Feat', acf: 'Alternate Class Feature (ACF)', substitution: 'Racial Substitution Level', boon: 'Boon / Trait' };
@@ -2983,15 +2989,20 @@
     let l1 = '<span class="fs-live-icon">' + bp.icon + '</span><span class="fs-live-name">' + esc(entryName(en)) + '</span><span class="fs-pill indigo">' + esc(sub) + '</span>' +
       '<span class="fs-pill ' + (en.origin.mode === 'new' ? 'dim' : en.origin.mode === 'override' ? 'amber' : 'sky') + '">' + esc(ORIGIN_LABEL[en.origin.mode]) + (en.origin.srdName && en.origin.mode !== 'new' ? ': ' + esc(en.origin.srdName) : '') + '</span>' +
       en.tags.map((t) => '<span class="fs-pill purple">' + esc(t) + '</span>').join('');
-    if (has('chassis')) { const v = chassisView(en.chassis, en); l1 += '<span class="fs-grow-gap"></span><span class="fs-pill ' + (v.effective > 10 ? 'rose' : 'emerald') + '">' + sgn(v.effective) + ' / +10</span><span class="fs-pill amber">💰 ' + gp(v.gpTotal) + '</span>'; }
-    else if (isItemBp(en.blueprint) && num(en.item.price)) l1 += '<span class="fs-grow-gap"></span><span class="fs-pill amber">💰 ' + gp(en.item.price) + '</span>';
+    let hasGrow = false;
+    if (has('chassis')) { const v = chassisView(en.chassis, en); l1 += '<span class="fs-grow-gap"></span><span class="fs-pill ' + (v.effective > 10 ? 'rose' : 'emerald') + '">' + sgn(v.effective) + ' / +10</span><span class="fs-pill amber">💰 ' + gp(v.gpTotal) + '</span>'; hasGrow = true; }
+    else if (isItemBp(en.blueprint) && num(en.item.price)) { l1 += '<span class="fs-grow-gap"></span><span class="fs-pill amber">💰 ' + gp(en.item.price) + '</span>'; hasGrow = true; }
     const segs = rawHeaderLine(en);
     const l2 = segs.length ? segs.map(esc).join(' <span class="fs-sep">•</span> ') : '<span class="fs-hint">Configure the sections below — the clean RAW stat line renders here.</span>';
     const pills = summaryPills(en);
     const l3 = pills.length ? pills.map((p) => '<span class="fs-pill ' + p[0] + '">' + esc(p[1]) + '</span>').join('') : '<span class="fs-hint">Snap Lego Core V3 blocks below to compose resources, triggers, carriers, stats, rolls, attacks, defenses, and effects.</span>';
     const warns = has('chassis') ? chassisView(en.chassis, en).warnings : [];
-    l1 += '<button type="button" class="fs-btn fs-xs fs-live-toggle" data-action="toggle-live">' + (S.ui.liveOpenMobile ? '▴ Hide' : '▾ Preview') + '</button>';
-    $('#fs-live').innerHTML = '<div class="fs-live-line">' + l1 + '</div><div class="fs-live-more' + (S.ui.liveOpenMobile ? ' open' : '') + '"><div class="fs-live-line fs-live-card">' + l2 + '</div><div class="fs-live-line">' + l3 + '</div>' + (warns.length ? '<div class="fs-live-line" style="font-size:11px">' + warns.slice(0, 2).map((w) => '<span class="fs-down">⛔ ' + esc(w) + '</span>').join(' ') + '</div>' : '') + '</div>';
+    const open = isLiveOpen();
+    if (!hasGrow) l1 += '<span class="fs-grow-gap"></span>';
+    l1 += '<button type="button" class="fs-btn fs-xs fs-live-toggle" data-action="toggle-live">' + (open ? '▴ Collapse' : '▾ Details' + (pills.length ? ' (' + pills.length + ')' : '')) + '</button>';
+    const liveEl = $('#fs-live');
+    liveEl.className = 'fs-live' + (open ? '' : ' collapsed');
+    liveEl.innerHTML = '<div class="fs-live-line">' + l1 + '</div><div class="fs-live-more"><div class="fs-live-line fs-live-card">' + l2 + '</div><div class="fs-live-line">' + l3 + '</div>' + (warns.length ? '<div class="fs-live-line" style="font-size:11px">' + warns.slice(0, 2).map((w) => '<span class="fs-down">⛔ ' + esc(w) + '</span>').join(' ') + '</div>' : '') + '</div>';
   }
 
   // --------------------------------------------------------------------------
@@ -3013,7 +3024,7 @@
     else if (u.mode === 'spellSlot') param = sel(p + '.slotLevel', u.slotLevel, range(0, 9).map((n) => [n, 'Slot Level ' + n]), { narrow: true, num: true });
     else if (u.mode === 'resourcePool') param = '<input class="fs-in" style="width:130px" data-bind="' + p + '.pool" list="fs-pool-list" value="' + esc(u.pool) + '">' + inp(p + '.poolCost', u.poolCost, { num: true, min: 1, style: 'width:60px' }) + '<span class="fs-hint">use(s)</span>';
     else if (u.mode === 'cooldown') param = inp(p + '.cooldown', u.cooldown, { ph: '1d4+1', style: 'width:80px' }) + '<span class="fs-hint">rounds</span>';
-    return '<span class="fs-row" style="gap:6px">' + sel(p + '.mode', u.mode, USE_MODES, { narrow: true }) + param + '</span>';
+    return sel(p + '.mode', u.mode, USE_MODES, { narrow: true }) + param;
   }
 
   function altEditor(ri, ai, a) {
@@ -3042,32 +3053,32 @@
 
   function statControlsHtml(p, m) {
     const mode = modMode(m);
-    const tgtHtml = targetChips(m.targets || ['atk.all'], p + '.targets');
+    const tgtRow = F('Target', targetChips(m.targets || ['atk.all'], p + '.targets'), 'lego-span-full');
     const modeSel = sel(p + '.mode', mode, [['flat', 'Flat (+/-)'], ['stat', '+ @Stat / @Resource'], ['replaceStat', '🔄 Replace Stat'], ['perCL', 'Scale by Level']], { narrow: true });
     if (mode === 'replaceStat') {
-      const fBody = modeSel + sel(p + '.subOp', m.subOp || 'replace', [['replace', 'Replace'], ['max', 'Higher Of']], { narrow: true }) +
-        sel(p + '.fromStat', m.fromStat || 'wis', ABIL_KEYS.map((k) => [k, k.toUpperCase()]), { narrow: true }) +
-        L('→') + sel(p + '.toStat', m.toStat || 'con', ABIL_KEYS.map((k) => [k, k.toUpperCase()]), { narrow: true });
-      return G(3, F('Target', tgtHtml) + F('Substitution', fBody) + F('Condition', inp(p + '.condition', m.condition || '', { ph: 'Light / Rapier…' })));
+      const swapBody = sel(p + '.fromStat', m.fromStat || 'wis', ABIL_KEYS.map((k) => [k, k.toUpperCase()]), { narrow: true }) +
+        L('→') + sel(p + '.toStat', m.toStat || 'con', ABIL_KEYS.map((k) => [k, k.toUpperCase()]), { narrow: true }) +
+        inp(p + '.condition', m.condition || '', { ph: 'Light / Rapier…' });
+      return G(2, tgtRow + F('Substitution Mode', modeSel + sel(p + '.subOp', m.subOp || 'replace', [['replace', 'Replace'], ['max', 'Higher Of']], { narrow: true })) + F('Ability Swap & Condition', swapBody));
     }
-    let fBody = modeSel;
     if (mode === 'stat') {
-      fBody += inp(p + '.value', m.value == null ? 0 : m.value, { num: true, ph: '+Base', style: 'width:50px' }) +
+      const fBody = modeSel + inp(p + '.value', m.value == null ? 0 : m.value, { num: true, ph: '+Base', style: 'width:50px' }) +
         L('+') + sel(p + '.mult', m.mult == null ? 1 : m.mult, [[1, '×1'], [2, '×2'], [3, '×3'], [0.5, '×½'], [-1, '×-1']], { narrow: true, num: true }) +
         sel(p + '.stat', m.stat || 'chaMod', statFormulaOpts(S.entry), { narrow: true }) +
         sel(p + '.cap', m.cap || 'none', [['none', 'No Cap'], ['classLevel', 'Cap @Class Lvl'], ['flat', 'Cap Max N']], { narrow: true }) +
         (m.cap === 'flat' ? inp(p + '.capVal', m.capVal == null ? 5 : m.capVal, { num: true, style: 'width:48px' }) : '');
-    } else if (mode === 'perCL') {
-      fBody += L('+') + inp(p + '.value', m.value == null ? 1 : m.value, { num: true, style: 'width:48px' }) +
+      return G(2, tgtRow + F('Formula', fBody, 'lego-span-full') + F('Bonus Type', sel(p + '.btype', m.btype || 'Untyped', bonusTypeOpts().map((x) => [x[0], x[0]]), { narrow: true })) + F('Condition', inp(p + '.condition', m.condition || '', { ph: 'condition (vs Fear)' })));
+    }
+    if (mode === 'perCL') {
+      const fBody = modeSel + L('+') + inp(p + '.value', m.value == null ? 1 : m.value, { num: true, style: 'width:48px' }) +
         L('every') + sel(p + '.per', m.per || 3, range(1, 10).map((n) => [n, n + ' CL/Lvl']), { narrow: true, num: true }) +
         L('min') + inp(p + '.min', m.min == null ? 0 : m.min, { num: true, style: 'width:46px' }) +
         L('max') + inp(p + '.max', m.max == null ? 5 : m.max, { num: true, style: 'width:46px' });
-    } else {
-      fBody += inp(p + '.value', m.value, { num: true, style: 'width:54px' });
+      return G(2, tgtRow + F('Formula', fBody, 'lego-span-full') + F('Bonus Type', sel(p + '.btype', m.btype || 'Untyped', bonusTypeOpts().map((x) => [x[0], x[0]]), { narrow: true })) + F('Condition', inp(p + '.condition', m.condition || '', { ph: 'condition (vs Fear)' })));
     }
     const scopeBody = sel(p + '.btype', m.btype || 'Untyped', bonusTypeOpts().map((x) => [x[0], x[0]]), { narrow: true }) +
       inp(p + '.condition', m.condition || '', { ph: 'condition (vs Fear)' });
-    return G(3, F('Target', tgtHtml) + F('Formula', fBody) + F('Bonus Type & Scope', scopeBody));
+    return G(2, tgtRow + F('Formula', modeSel + inp(p + '.value', m.value, { num: true, style: 'width:56px' })) + F('Bonus Type & Scope', scopeBody));
   }
 
   function whenBranchControls(flow, br, bp) {
@@ -3082,15 +3093,15 @@
         ['oath', '⚖️ Oath / Taboo Unbroken']
       ], { narrow: true });
       if (ck === 'oath') {
-        return G(3,
+        return G(2,
           F('Condition Kind', kindSel) +
-          F('Oath / Taboo', inp(bp + '.oathRule', br.oathRule || '', { list: 'fs-oath-list', ph: 'Oath / Taboo condition…' })) +
           F('On Break', sel(bp + '.onBreak', br.onBreak || 'suppress', [
             ['suppress', 'Suppressed While Violated'],
             ['loss24h', 'Lost for 24 Hours'],
             ['atonement', 'Lost Until Atonement'],
             ['irrevocable', 'Irrevocably Lost']
-          ], { narrow: true }))
+          ], { narrow: true })) +
+          F('Oath / Taboo', inp(bp + '.oathRule', br.oathRule || '', { list: 'fs-oath-list', ph: 'Oath / Taboo condition…' }), 'lego-span-full')
         );
       }
       return G(2, F('Condition Kind', kindSel) + F('Active State / Tier', inp(bp + '.condText', br.condText || '', { ph: 'Bloodrage / Totem Chakra / CL ≤ 11' })));
@@ -3118,12 +3129,13 @@
       ['cooldown', 'Cooldown Rounds'],
       ['perDay', 'N / Day']
     ], { narrow: true }) +
-    (ck === 'pool' ? inp(bp + '.costFormula', br.costFormula || '1', { ph: '1 / Spell Level', style: 'width:90px' }) + '<input class="fs-in" style="width:115px" data-bind="' + bp + '.poolName" list="fs-pool-list" value="' + esc(br.poolName || 'Arcane Pool') + '">' : '') +
+    (ck === 'pool' ? inp(bp + '.costFormula', br.costFormula || '1', { ph: '1 / Spell Level', style: 'width:76px' }) + '<input class="fs-in" style="width:110px" data-bind="' + bp + '.poolName" list="fs-pool-list" value="' + esc(br.poolName || 'Arcane Pool') + '">' : '') +
     (ck === 'forgoSA' ? inp(bp + '.costVal', br.costVal || 1, { num: true, min: 1, style: 'width:46px' }) + L('d6 SA') : '') +
     (ck === 'skillCheck' ? inp(bp + '.checkFormula', br.checkFormula || '', { ph: 'Truespeak DC 15 + 2×CR + 2×@uses_today' }) : '') +
     (ck === 'cooldown' ? inp(bp + '.cooldownText', br.cooldownText || '5 rounds', { ph: '5 rounds / 1d4', style: 'width:90px' }) : '') +
     (ck === 'perDay' ? inp(bp + '.costVal', br.costVal || 1, { num: true, min: 1, style: 'width:46px' }) + L('/day') : '');
-    return G(2, F('Trigger', trigBody) + F('Cost', costBody));
+    const wideCost = ck === 'pool' || ck === 'skillCheck';
+    return G(wideCost ? 1 : 2, F('Trigger', trigBody) + F('Cost', costBody));
   }
 
   function blockControls(b, p) {
@@ -3133,28 +3145,28 @@
         const showScaling = ['spend', 'buffer'].indexOf(rm) >= 0;
         const showAbil = showScaling && ['plusMod', 'halfLvlPlusMod', 'twoPerLvlPlusMod'].indexOf(b.scaling) >= 0;
         const idCol = inp(p + '.name', b.name, { ph: 'Resource / Dial name' }) + L('@') + inp(p + '.varKey', b.varKey, { ph: 'var_key', style: 'width:105px' });
-        const modeCol = sel(p + '.resMode', rm, [
+        const modeSel = sel(p + '.resMode', rm, [
           ['spend', 'Spendable Pool'],
           ['invest', 'Investable (Essentia)'],
           ['dial', 'Tactical Dial (0..Max)'],
           ['focus', 'Binary Focus (0/1)'],
           ['buffer', 'Absorb / Steal Buffer']
-        ], { narrow: true }) +
-        (rm === 'invest' ? L('Cap') + sel(p + '.capMode', b.capMode || 'chakra', [['chakra', 'Chakra Capacity'], ['flat', 'Flat Max'], ['level', '@Level']], { narrow: true }) : '') +
-        (rm === 'dial' ? L('0..') + sel(p + '.maxMode', b.maxMode || 'spellLvl', [['flat', 'Flat N'], ['bab', '@BAB'], ['level', '@Level'], ['spellLvl', 'Spell Slot (1–9)'], ['pool', 'Pool Remaining']], { narrow: true }) +
-          (b.maxMode === 'flat' ? inp(p + '.max', b.max, { num: true, style: 'width:48px' }) : '') : '') +
-        (showScaling ? L('Max') + inp(p + '.max', b.max, { num: true, min: 0, style: 'width:50px' }) +
+        ], { narrow: true });
+        let capCol = L('0 / 1 Binary State');
+        if (rm === 'invest') capCol = L('Cap') + sel(p + '.capMode', b.capMode || 'chakra', [['chakra', 'Chakra Capacity'], ['flat', 'Flat Max'], ['level', '@Level']], { narrow: true });
+        else if (rm === 'dial') capCol = L('0..') + sel(p + '.maxMode', b.maxMode || 'spellLvl', [['flat', 'Flat N'], ['bab', '@BAB'], ['level', '@Level'], ['spellLvl', 'Spell Slot (1–9)'], ['pool', 'Pool Remaining']], { narrow: true }) + (b.maxMode === 'flat' ? inp(p + '.max', b.max, { num: true, style: 'width:48px' }) : '');
+        else if (showScaling) capCol = L('Max') + inp(p + '.max', b.max, { num: true, min: 0, style: 'width:50px' }) +
           sel(p + '.scaling', b.scaling || 'flat', [
             ['flat', 'Flat'], ['level', '@Level'], ['halfLevel', '½ @Level'],
             ['plusMod', 'Base + @Mod'], ['halfLvlPlusMod', 'Base + ½ @Level + @Mod'], ['twoPerLvlPlusMod', 'Base + 2/Lvl + @Mod']
-          ], { narrow: true }) + (showAbil ? sel(p + '.ability', b.ability || 'int', ABIL_KEYS.map((k) => [k, k.toUpperCase()]), { narrow: true }) : '') : '');
-        const resetCol = (rm === 'dial'
-          ? L('Cost') + sel(p + '.dialCost', b.dialCost || 'free', [['free', 'Free Tradeoff'], ['spellSlot', 'Burn Spell Slot'], ['pool', 'Spend Pool']], { narrow: true }) +
-            (b.dialCost === 'pool' ? '<input class="fs-in" style="width:115px" data-bind="' + p + '.costPool" list="fs-pool-list" value="' + esc(b.costPool || '') + '">' : '')
-          : '') +
-          sel(p + '.reset', b.reset || 'perDay', [['atWill', 'At-Will / Round'], ['cooldown', 'Cooldown Rounds'], ['perEncounter', 'Per Encounter'], ['perDay', 'Per Day']], { narrow: true }) +
+          ], { narrow: true }) + (showAbil ? sel(p + '.ability', b.ability || 'int', ABIL_KEYS.map((k) => [k, k.toUpperCase()]), { narrow: true }) : '');
+        const resetCol = sel(p + '.reset', b.reset || 'perDay', [['atWill', 'At-Will / Round'], ['cooldown', 'Cooldown Rounds'], ['perEncounter', 'Per Encounter'], ['perDay', 'Per Day']], { narrow: true }) +
           (b.reset === 'cooldown' ? inp(p + '.cooldownText', b.cooldownText || '5 rounds', { ph: '5 rounds', style: 'width:80px' }) : '');
-        return G(3, F('Name & @Key', idCol) + F('Mode & Capacity', modeCol) + F('Cost & Reset', resetCol));
+        const dialCostRow = rm === 'dial'
+          ? F('Dial Cost', sel(p + '.dialCost', b.dialCost || 'free', [['free', 'Free Tradeoff'], ['spellSlot', 'Burn Spell Slot'], ['pool', 'Spend Pool']], { narrow: true }) +
+              (b.dialCost === 'pool' ? '<input class="fs-in" style="width:180px" data-bind="' + p + '.costPool" list="fs-pool-list" value="' + esc(b.costPool || '') + '">' : ''), 'lego-span-full')
+          : '';
+        return G(2, F('Name & @Key', idCol) + F('Resource Mode', modeSel) + F('Capacity / Max', capCol) + F('Reset', resetCol) + dialCostRow);
       }
       case 'when': {
         return sel(p + '.flow', b.flow || 'while', [
@@ -3181,14 +3193,19 @@
             ['fullAttackEach', 'Full-Attack Channel (Hits Every Struck Foe)'],
             ['spellStoring', 'Spell Storing Weapon (≤ Lvl N)']
           ], { narrow: true });
-          const critCol = st === 'spellStoring'
-            ? L('Max Lvl') + sel(p + '.maxSpellLvl', b.maxSpellLvl || 3, range(1, 9), { narrow: true, num: true })
-            : sel(p + '.critRule', b.critRule || 'weaponRangeX2', [
-                ['weaponRangeX2', 'Weapon Crit Range, Spell ×2'],
-                ['spell20x2', 'Spell Normal Crit (20/×2)'],
-                ['fullWeaponCrit', 'Full Weapon Crit Range & Mult']
-              ], { narrow: true }) + chk(p + '.holdCharge', !!b.holdCharge, 'Hold Charge');
-          return G(3, F('Carrier Mode', modeSel) + F('Channel Style', styleSel) + F('Crit & Charge', critCol));
+          if (st === 'spellStoring') {
+            return G(2, F('Carrier Mode', modeSel) + F('Channel Style', styleSel) + F('Max Stored Spell Level', sel(p + '.maxSpellLvl', b.maxSpellLvl || 3, range(1, 9), { narrow: true, num: true }), 'lego-span-full'));
+          }
+          return G(2,
+            F('Carrier Mode', modeSel) +
+            F('Channel Style', styleSel) +
+            F('Critical Rule', sel(p + '.critRule', b.critRule || 'weaponRangeX2', [
+              ['weaponRangeX2', 'Weapon Crit Range, Spell ×2'],
+              ['spell20x2', 'Spell Normal Crit (20/×2)'],
+              ['fullWeaponCrit', 'Full Weapon Crit Range & Mult']
+            ], { narrow: true })) +
+            F('Touch Charge', chk(p + '.holdCharge', !!b.holdCharge, 'Hold Charge on Miss'))
+          );
         }
         if (cm === 'rangedChannel') {
           return G(2, F('Carrier Mode', modeSel) + F('Delivery Rule', L('Imbue Arrow / Deliver Area or Touch Spell via Ranged Hit')));
@@ -3198,16 +3215,22 @@
         }
         const costCol = sel(p + '.costMode', b.costMode || 'slot', META_COST_MODES, { narrow: true }) +
           (b.costMode === 'slot' ? sel(p + '.slotAdj', b.slotAdj, range(0, 6).map((n) => [n, '+' + n + ' Slot']), { narrow: true, num: true }) : '') +
-          (b.costMode === 'rod' ? inp(p + '.uses', b.uses, { num: true, style: 'width:48px' }) + L('/day • Max') + sel(p + '.maxSpellLvl', b.maxSpellLvl, [[3, 'Lvl 3 (Lesser)'], [6, 'Lvl 6 (Normal)'], [9, 'Lvl 9 (Greater)']], { narrow: true, num: true }) : '') +
+          (b.costMode === 'rod' ? inp(p + '.uses', b.uses, { num: true, style: 'width:46px' }) + L('/day') + sel(p + '.maxSpellLvl', b.maxSpellLvl, [[3, 'Lvl 3 (Lesser)'], [6, 'Lvl 6 (Normal)'], [9, 'Lvl 9 (Greater)']], { narrow: true, num: true }) : '') +
           (b.costMode === 'sudden' ? inp(p + '.uses', b.uses, { num: true, style: 'width:48px' }) + L('/day') : '') +
-          (b.costMode === 'pool' ? inp(p + '.poolCost', b.poolCost, { num: true, style: 'width:48px' }) + '<input class="fs-in" style="width:120px" data-bind="' + p + '.pool" list="fs-pool-list" value="' + esc(b.pool) + '">' : '') +
+          (b.costMode === 'pool' ? inp(p + '.poolCost', b.poolCost, { num: true, style: 'width:46px' }) + '<input class="fs-in" style="width:110px" data-bind="' + p + '.pool" list="fs-pool-list" value="' + esc(b.pool) + '">' : '') +
           (b.costMode === 'essenceShape' ? L('Eff. Lvl') + sel(p + '.maxSpellLvl', b.maxSpellLvl || 1, range(1, 9), { narrow: true, num: true }) : '');
         const xformCol = sel(p + '.transform', b.transform || 'empower', META_TRANSFORMS, { narrow: true }) +
           (b.transform === 'heighten' ? L('DC +') + inp(p + '.dcBonus', b.dcBonus, { num: true, style: 'width:48px' }) : '') +
-          ((b.transform === 'energySub' || b.transform === 'pierceRes') ? sel(p + '.energy', b.energy, ['Fire', 'Cold', 'Acid', 'Electricity', 'Sonic', 'Any'], { narrow: true }) : '') +
-          (b.transform === 'rider' ? inp(p + '.rider', b.rider, { ph: '+1 Negative Level (Fell Drain)' }) : '') +
+          ((b.transform === 'energySub' || b.transform === 'pierceRes') ? sel(p + '.energy', b.energy, ['Fire', 'Cold', 'Acid', 'Electricity', 'Sonic', 'Any'], { narrow: true }) : '');
+        const scopeCol = (b.transform === 'rider' ? inp(p + '.rider', b.rider, { ph: '+1 Negative Level (Fell Drain)' }) : '') +
           inp(p + '.appliesTo', b.appliesTo, { ph: 'scope ([Fire] / ray / all)' });
-        return G(3, F('Carrier Mode', modeSel) + F('Metamagic Cost', costCol) + F('Transform & Scope', xformCol));
+        const wideMetaCost = b.costMode === 'rod' || b.costMode === 'pool';
+        return G(2,
+          F('Carrier Mode', modeSel) +
+          F('Transform', xformCol) +
+          F('Metamagic Cost', costCol, wideMetaCost ? 'lego-span-full' : '') +
+          F('Applies To Scope', scopeCol, wideMetaCost ? 'lego-span-full' : '')
+        );
       }
       case 'stat': return statControlsHtml(p, b);
       case 'roll': {
@@ -3228,10 +3251,22 @@
               sel(p + '.varMode', b.varMode || 'dice', [['dice', '+@X Dice'], ['flat', '+N×@X Flat']], { narrow: true }) +
               (b.varMode === 'flat' ? inp(p + '.amount', b.amount == null ? 1 : b.amount, { num: true, style: 'width:46px' }) : '')
             : '');
-        const critCol = sel(p + '.crit', b.crit || 'normal', [['normal', 'Normal Crit'], ['multiply', '×Crit'], ['onCritOnly', 'On Crit Only']], { narrow: true }) +
-          inp(p + '.save', b.save || '', { ph: 'save (Reflex half)' }) +
-          inp(p + '.condition', b.condition || '', { ph: 'condition (vs Undead)' });
-        return G(3, F('Base Roll', baseCol) + F('Scaling', scaleCol) + F('Crit, Save & Condition', critCol));
+        const critSel = sel(p + '.crit', b.crit || 'normal', [['normal', 'Normal Crit'], ['multiply', '×Crit'], ['onCritOnly', 'On Crit Only']], { narrow: true });
+        if (sc === 'flat') {
+          return G(2,
+            F('Base Roll', baseCol) +
+            F('Scaling & Critical', scaleCol + critSel) +
+            F('Save Note', inp(p + '.save', b.save || '', { ph: 'save (Reflex half)' })) +
+            F('Condition', inp(p + '.condition', b.condition || '', { ph: 'condition (vs Undead)' }))
+          );
+        }
+        return G(2,
+          F('Base Roll', baseCol) +
+          F('Critical', critSel) +
+          F('Scaling', scaleCol, 'lego-span-full') +
+          F('Save Note', inp(p + '.save', b.save || '', { ph: 'save (Reflex half)' })) +
+          F('Condition', inp(p + '.condition', b.condition || '', { ph: 'condition (vs Undead)' }))
+        );
       }
       case 'attack': {
         const am = b.attackMode || 'natural';
@@ -3244,51 +3279,56 @@
         ], { narrow: true });
         if (am === 'unarmedDie') {
           const up = b.unarmedProgression || 'monk';
-          const scaleBody = sel(p + '.unarmedProgression', up, [
-            ['monk', 'Monk 1d6→2d10 Table (Size-Scaled)'],
-            ['fixed', 'Set Base Unarmed Die (Size-Scaled)']
-          ], { narrow: true }) +
-          (up === 'fixed'
-            ? inp(p + '.dice', b.dice || '1d6', { list: 'fs-dice-list', style: 'width:64px' })
-            : L('Eff. Lvl Δ') + inp(p + '.effLvlBonus', b.effLvlBonus == null ? 0 : b.effLvlBonus, { num: true, style: 'width:52px' }));
-          return G(3, F('Attack Mode', modeSel) + F('Die Progression', scaleBody) + F('Notes', inp(p + '.rider', b.rider || '', { ph: 'note (manufactured & natural)' })));
+          return G(2,
+            F('Attack Mode', modeSel) +
+            F('Die Progression', sel(p + '.unarmedProgression', up, [
+              ['monk', 'Monk 1d6→2d10 Table (Size-Scaled)'],
+              ['fixed', 'Set Base Unarmed Die (Size-Scaled)']
+            ], { narrow: true })) +
+            F(up === 'fixed' ? 'Base Unarmed Die' : 'Effective Monk Level Δ', up === 'fixed' ? inp(p + '.dice', b.dice || '1d6', { list: 'fs-dice-list', style: 'width:76px' }) : inp(p + '.effLvlBonus', b.effLvlBonus == null ? 0 : b.effLvlBonus, { num: true, style: 'width:76px' })) +
+            F('Notes', inp(p + '.rider', b.rider || '', { ph: 'note (manufactured & natural)' }))
+          );
         }
         if (am === 'strikeBypass') {
-          return G(3,
+          return G(2,
             F('Attack Mode', modeSel) +
-            F('Applies To & Enh', sel(p + '.appliesToWeapon', b.appliesToWeapon || 'unarmed', [
+            F('Applies To', sel(p + '.appliesToWeapon', b.appliesToWeapon || 'unarmed', [
               ['unarmed', 'Unarmed Strike'],
               ['wieldedSimple', 'Any Wielded Simple Weapon'],
               ['allMelee', 'All Melee / Natural Attacks']
-            ], { narrow: true }) + L('Enh') + sel(p + '.enhEquivalent', num(b.enhEquivalent, 0), range(0, 5).map((n) => [n, n === 0 ? '+0 (DR Bypass Only)' : '+' + n + ' Enh']), { narrow: true, num: true })) +
+            ], { narrow: true })) +
+            F('Enhancement Equivalent', sel(p + '.enhEquivalent', num(b.enhEquivalent, 0), range(0, 5).map((n) => [n, n === 0 ? '+0 (DR Bypass Only)' : '+' + n + ' Enh']), { narrow: true, num: true })) +
             F('DR Bypass', inp(p + '.drBypassList', b.drBypassList || '', { ph: 'magic, lawful, adamantine' }))
           );
         }
         if (am === 'natural') {
-          return G(3,
-            F('Attack Mode', modeSel + sel(p + '.natKind', b.natKind || 'primary', [
+          return G(2,
+            F('Attack Mode', modeSel) +
+            F('Priority', sel(p + '.natKind', b.natKind || 'primary', [
               ['primary', 'Primary (Full BAB, 1× Str)'],
               ['secondary', 'Secondary (-5 Atk, ½ Str)'],
               ['primary2h', 'Single Primary (1.5× Str)']
             ], { narrow: true })) +
-            F('Count & Weapon', inp(p + '.count', b.count, { num: true, min: 1, max: 12, style: 'width:46px' }) + L('×') + inp(p + '.weaponName', b.weaponName, { list: 'fs-natwpn-list', ph: 'Claw / Bite' })) +
-            F('Damage & Rider', inp(p + '.dice', b.dice, { list: 'fs-dice-list', style: 'width:62px' }) + sel(p + '.dmgType', b.dmgType, ['B/P/S', 'B & S', 'B, P & S', 'Slashing', 'Piercing', 'Bludgeoning', 'B & P'], { narrow: true }) + inp(p + '.rider', b.rider, { ph: 'Rend / +1d6 Fire' }))
+            F('Count & Natural Weapon', inp(p + '.count', b.count, { num: true, min: 1, max: 12, style: 'width:50px' }) + L('×') + inp(p + '.weaponName', b.weaponName, { list: 'fs-natwpn-list', ph: 'Claw / Bite' })) +
+            F('Base Damage', inp(p + '.dice', b.dice, { list: 'fs-dice-list', style: 'width:68px' }) + sel(p + '.dmgType', b.dmgType, ['B/P/S', 'B & S', 'B, P & S', 'Slashing', 'Piercing', 'Bludgeoning', 'B & P'], { narrow: true })) +
+            F('Rider / Special', inp(p + '.rider', b.rider, { ph: 'Rend / +1d6 Fire' }), 'lego-span-full')
           );
         }
         if (am === 'extra') {
-          return G(3,
+          return G(2,
             F('Attack Mode', modeSel) +
-            F('Extra Attacks', sel(p + '.extraKind', b.extraKind || 'extraFull', [
+            F('Extra Attack Kind', sel(p + '.extraKind', b.extraKind || 'extraFull', [
               ['extraFull', 'Full BAB (Haste / Speed)'],
               ['flurry', 'With Penalty (Flurry / Rapid)']
-            ], { narrow: true }) + inp(p + '.count', b.count, { num: true, min: 1, max: 6, style: 'width:46px' }) + L('×') + (b.extraKind === 'flurry' ? L('All Atk Δ') + inp(p + '.penalty', b.penalty, { num: true, style: 'width:50px' }) : '')) +
+            ], { narrow: true })) +
+            F('Count' + (b.extraKind === 'flurry' ? ' & Attack Penalty' : ''), inp(p + '.count', b.count, { num: true, min: 1, max: 6, style: 'width:50px' }) + L('×') + (b.extraKind === 'flurry' ? L('All Atk Δ') + inp(p + '.penalty', b.penalty, { num: true, style: 'width:54px' }) : '')) +
             F('Notes', inp(p + '.rider', b.rider, { ph: 'notes…' }))
           );
         }
-        return G(3,
-          F('Attack Mode', modeSel + inp(p + '.duration', b.duration || '1 min', { ph: '1 min', style: 'width:72px' })) +
+        return G(2,
+          F('Attack Mode & Duration', modeSel + inp(p + '.duration', b.duration || '1 min', { ph: '1 min', style: 'width:76px' })) +
           F('Enhancement Budget', sel(p + '.budgetScaling', b.budgetScaling || 'per4Lvl', [['per4Lvl', '+1 at L1, +1/4 Lvls (max +N)'], ['flat', 'Flat Budget +N']], { narrow: true }) + L('Max +') + sel(p + '.maxBudget', b.maxBudget || 5, range(1, 10), { narrow: true, num: true })) +
-          F('Allowed Properties', inp(p + '.allowedEnchs', b.allowedEnchs || '', { ph: 'Flaming, Frost, Shock, Keen, Speed' }))
+          F('Allowed Properties', inp(p + '.allowedEnchs', b.allowedEnchs || '', { ph: 'Flaming, Frost, Shock, Keen, Speed' }), 'lego-span-full')
         );
       }
       case 'defense': {
@@ -3311,7 +3351,7 @@
           return G(2, F('Defense Kind', modeSel) + F('Miss Chance', inp(p + '.value', b.value || 20, { num: true, min: 5, max: 100, style: 'width:56px' }) + L('% Miss Chance')));
         }
         if (['DR', 'Energy Resistance'].indexOf(dm) >= 0) {
-          return G(3, F('Defense Kind', modeSel) + F('Amount', inp(p + '.value', b.value, { num: true, style: 'width:64px' })) + F('Bypass / Energy Type', inp(p + '.what', b.what, { list: 'fs-defense-list', ph: 'evil or good / Fire' })));
+          return G(3, F('Defense Kind', modeSel) + F('Amount', inp(p + '.value', b.value, { num: true, style: 'width:68px' })) + F('Bypass / Energy Type', inp(p + '.what', b.what, { list: 'fs-defense-list', ph: 'evil or good / Fire' })));
         }
         return G(2, F('Defense Kind', modeSel) + F('Trait / Scope', inp(p + '.what', b.what, { list: 'fs-defense-list', ph: 'Fear / Darkvision 60 ft. / Pounce' })));
       }
@@ -3323,15 +3363,19 @@
           ['stealStore', '⚡ Steal / Drain into @Buffer'],
           ['grantFeat', '🎯 Grant Bonus / Floating Feat'],
           ['castEvolution', '✨ Upgrade Cast Nature (Spell → Sp → Su)'],
-          ['rule', '📜 Explicit RAW Rule Text']
+          ['rule', '📜 Rule Text']
         ], { narrow: true });
         if (ek === 'castSpell') {
           const cm = b.castMode || 'linkedSpell';
-          const targetCol = (cm === 'linkedSpell' ? inp(p + '.spellName', b.spellName || '', { list: 'fs-spell-names', ph: 'Command / Haste' }) : '') +
+          const spellInput = (cm === 'linkedSpell' ? inp(p + '.spellName', b.spellName || '', { list: 'fs-spell-names', ph: 'Command / Haste' }) : '') +
             (cm === 'ownSlotUpTo' ? L('Max Lvl') + sel(p + '.maxSpellLvl', b.maxSpellLvl || 2, range(1, 9), { narrow: true, num: true }) : '') +
-            (cm === 'freeBuffList' ? inp(p + '.spellOptions', b.spellOptions || '', { ph: 'Blur, Resist Energy, Haste…' }) : '') +
-            chk(p + '.tiedDuration', !!b.tiedDuration, 'Tied Duration');
-          return G(3, F('Effect Kind', modeSel) + F('Cast Mode', sel(p + '.castMode', cm, [['linkedSpell', 'Specific Spell / SLA'], ['ownSlotUpTo', 'Self Spell (Own Slot ≤ Lvl N)'], ['freeBuffList', 'Pick 1 Free Buff from List']], { narrow: true })) + F('Spell & Duration', targetCol));
+            (cm === 'freeBuffList' ? inp(p + '.spellOptions', b.spellOptions || '', { ph: 'Blur, Resist Energy, Haste…' }) : '');
+          return G(2,
+            F('Effect Kind', modeSel) +
+            F('Cast Mode', sel(p + '.castMode', cm, [['linkedSpell', 'Specific Spell / SLA'], ['ownSlotUpTo', 'Self Spell (Own Slot ≤ Lvl N)'], ['freeBuffList', 'Pick 1 Free Buff from List']], { narrow: true })) +
+            F('Spell / Buff Options', spellInput) +
+            F('Duration Link', chk(p + '.tiedDuration', !!b.tiedDuration, 'Tied Duration'))
+          );
         }
         if (ek === 'recoverSlot') {
           return G(3, F('Effect Kind', modeSel) + F('Max Level', sel(p + '.maxSpellLvl', b.maxSpellLvl || 6, range(1, 9), { narrow: true, num: true })) + F('Class / Pool', inp(p + '.targetPoolOrClass', b.targetPoolOrClass || 'Magus', { list: 'fs-spellcls-list' })));
@@ -3345,7 +3389,7 @@
         if (ek === 'castEvolution') {
           return G(2, F('Effect Kind', modeSel) + F('Upgraded Nature', sel(p + '.castNature', b.castNature || 'Arcane Spell', ['Arcane Spell', 'Spell-Like (Sp)', 'Supernatural (Su, No SR/AoO)'], { narrow: true })));
         }
-        return G(2, F('Effect Kind', modeSel) + F('RAW Rule Text', inp(p + '.text', b.text || '', { ph: 'Explicit RAW rule effect text…' })));
+        return G(2, F('Effect Kind', modeSel) + F('Rule Text', inp(p + '.text', b.text || '', { ph: 'Rule effect text…' })));
       }
       default: return '';
     }
@@ -3389,11 +3433,9 @@
     }).join('');
   }
 
+  function srcField(en, span) { return F('Source', inp('source', en.source, { ph: 'Source (PHB, MIC, Homebrew)' }), span); }
   function tagSockets(en) {
-    return G(2,
-      F('Tags', en.tags.map((t, i) => '<span class="fs-pill purple">' + esc(t) + '<span class="fs-x" data-action="remove-tag" data-i="' + i + '">×</span></span>').join('') + spotHtml('tag', 'identity', { ph: '🔍 + #Tag' })) +
-      F('Source', inp('source', en.source, { ph: 'Source (PHB, MIC, Homebrew)' }))
-    );
+    return G(1, F('Tags', en.tags.map((t, i) => '<span class="fs-pill purple">' + esc(t) + '<span class="fs-x" data-action="remove-tag" data-i="' + i + '">×</span></span>').join('') + spotHtml('tag', 'identity', { ph: '🔍 + #Tag' })));
   }
   const hasFacet = (en, k) => en.facets.indexOf(k) >= 0;
   function ensureFacet(k) { if (S.entry.facets.indexOf(k) < 0) S.entry.facets.push(k); }
@@ -3403,6 +3445,16 @@
     const rows = en.prereqs.map((r, ri) => cBlock('c-sub', '<span class="lego-lbl">' + (ri ? 'AND' : 'Require') + '</span>' + delBtn('remove-prereq', { ri: ri }),
       r.alts.map((a, ai) => stack('b-slate', altEditor(ri, ai, a))).join('') + '<button type="button" class="fs-btn fs-xs fs-dashed" data-action="add-or" data-ri="' + ri + '">+Or</button>')).join('');
     return cBlock('c-amber', L('🏛️ ' + title) + '<span class="fs-hint" style="color:#fde68a">' + esc(prereqText(en.prereqs) || 'none — open to all') + '</span>' + (canDetach ? delBtn('detach-prereqs', {}) : ''), rows + '<button type="button" class="fs-btn fs-xs fs-dashed" data-action="add-prereq">+ Add Prerequisite (AND)</button>');
+  }
+
+  function patternGeneratorStack(p, maxLv, unitLbl) {
+    return stack('b-blue',
+      H(L('🔁 Repeating Feature Generator'), btn('gen-pattern', '⚡ Apply to Levels', 'fs-xs fs-primary')) +
+      G(2,
+        F('Cadence', '<span class="fs-hint">Every</span>' + sel('progression.pattern.every', p.pattern.every, range(1, 10), { narrow: true, num: true }) + '<span class="fs-hint">from ' + unitLbl + '</span>' + sel('progression.pattern.start', Math.min(p.pattern.start, maxLv), range(1, maxLv), { narrow: true, num: true })) +
+        F('Scaling Token', inp('progression.pattern.scale', p.pattern.scale, { ph: '+1d6 / +1' })) +
+        F('Feature Name', inp('progression.pattern.name', p.pattern.name, { ph: 'Sneak Attack / Bonus Feat' }), 'lego-span-full')
+      ));
   }
 
   function progressionCBlock(en) {
@@ -3424,9 +3476,15 @@
         ? '<b class="lego-lvl">Lvl ' + Lv + '</b><span class="lego-desc">BAB ' + sgn(classBAB(p.bab, Lv)) + ' • F ' + sgn(p.good.fort ? goodSave(Lv) : poorSave(Lv)) + ' / R ' + sgn(p.good.ref ? goodSave(Lv) : poorSave(Lv)) + ' / W ' + sgn(p.good.will ? goodSave(Lv) : poorSave(Lv)) + '</span>'
         : '<b class="lego-lvl">' + (p.mode === 'hd' ? 'HD ' : 'Lvl ') + Lv + '</b>';
       const suffix = showClassCols ? chk('progression.levels.' + i + '.spell', l.spell, '✓ +1 Spellcasting') : '';
-      return stack('b-slate', prefix + chips + spotHtml('feature', i, { style: 'width:165px', ph: '🔍 + Feature / SLA / Feat' }) + btn('add-feature-inline', '✨ + Inline', 'fs-xs fs-dashed', { l: i }) + suffix + editors);
+      const topRow = '<div class="lego-lvl-top">' + prefix + chips + '</div>';
+      const actRow = '<div class="lego-lvl-actions">' +
+        spotHtml('feature', i, { style: 'width:210px', ph: '🔍 + Feature / SLA / Feat' }) +
+        btn('add-feature-inline', '✨ + Inline', 'fs-xs fs-dashed', { l: i }) +
+        suffix +
+        '</div>';
+      return stack('b-slate', '<div class="lego-lvl-stack">' + topRow + actRow + editors + '</div>');
     }).join('');
-    const patBar = !isCls ? stack('b-blue', L('🔁 Every') + sel('progression.pattern.every', p.pattern.every, range(1, 10), { narrow: true, num: true }) + L((p.mode === 'hd' ? 'HD' : 'levels') + ' from ' + (p.mode === 'hd' ? 'HD' : 'Lvl')) + sel('progression.pattern.start', Math.min(p.pattern.start, maxLv), range(1, maxLv), { narrow: true, num: true }) + L('grant') + inp('progression.pattern.name', p.pattern.name, { style: 'width:140px' }) + L('scaling') + inp('progression.pattern.scale', p.pattern.scale, { style: 'width:70px' }) + btn('gen-pattern', '⚡ Apply', 'fs-xs fs-primary')) : '';
+    const patBar = !isCls ? patternGeneratorStack(p, maxLv, p.mode === 'hd' ? 'HD' : 'Lvl') : '';
     const head = isCls
       ? L('📊 Level Progression (1–' + maxLv + ')')
       : L('📊 Level / HD Table (1–' + maxLv + ')') + sel('progression.mode', p.mode, PROGRESSION_MODES, { narrow: true }) + L('Max') + sel('progression.maxLevel', maxLv, [5, 10, 12, 15, 20].map((n) => [n, String(n)]), { narrow: true, num: true }) + btn('toggle-prog-empty', S.ui.progHideEmpty ? '👁️ Show All Rows' : '🗜️ Hide Empty Rows', 'fs-xs') + delBtn('detach-progression', {});
@@ -3438,11 +3496,24 @@
     const head = L('⚡ Sub-Power:') + (pw.kind === 'inline' ? inp(p + '.name', pw.name, { style: 'width:160px' }) : '<span class="fs-pill purple">🔮 ' + esc(pw.ref ? pw.ref.name : pw.name) + '</span>') + usageEditor(p + '.use', pw.use) + sel(p + '.action', pw.action, ACTIONS, { narrow: true }) + L('CL') + inp(p + '.cl', pw.cl, { num: true, style: 'width:50px' }) +
       btn('move-power', '↑', 'fs-xs fs-ghost', { i: i, d: -1 }) + delBtn('remove-power', { i: i });
     let kids = '';
-    if (pw.kind === 'attached') kids += stack('b-purple', L('🔮 Cast Spell:') + '<span class="fs-pill purple">' + esc(pw.ref ? pw.ref.name + ' (' + (pw.ref.levelText || 'Lvl ' + pw.ref.level) + ')' : pw.name) + '</span>' + sel(p + '.grantMode', pw.grantMode, [['cast', 'Cast from Item / SLA'], ['known', 'Add to Spells Known'], ['slot', 'Expend Own Slot (Runestaff)']], { narrow: true }));
-    if (pw.attackOn) kids += stack('b-red', L('🎯 Attack & Save:') + sel(p + '.attack', pw.attack, Object.keys(ATTACK_LABEL).map((k) => [k, ATTACK_LABEL[k]]), { narrow: true }) + inp(p + '.range', pw.range, { list: 'fs-range-list', ph: 'Range', style: 'width:110px' }) +
-      sel(p + '.save.type', pw.save.type, ['None', 'Fortitude', 'Reflex', 'Will'], { narrow: true }) + (pw.save.type !== 'None' ? sel(p + '.save.effect', pw.save.effect, ['Negates', 'Half', 'Partial', 'Negates (harmless)'], { narrow: true }) + L('DC') + inp(p + '.dc', pw.dc, { num: true, style: 'width:50px' }) : '') + delBtn('toggle-flag', { p: p + '.attackOn' }));
+    if (pw.kind === 'attached') {
+      kids += stack('b-purple',
+        H(L('🔮 Cast Spell')) +
+        G(2,
+          F('Attached Spell', '<span class="fs-pill purple">' + esc(pw.ref ? pw.ref.name + ' (' + (pw.ref.levelText || 'Lvl ' + pw.ref.level) + ')' : pw.name) + '</span>') +
+          F('Grant Mode', sel(p + '.grantMode', pw.grantMode, [['cast', 'Cast from Item / SLA'], ['known', 'Add to Spells Known'], ['slot', 'Expend Own Slot (Runestaff)']], { narrow: true }))
+        ));
+    }
+    if (pw.attackOn) {
+      kids += stack('b-red',
+        H(L('🎯 Attack & Save'), delBtn('toggle-flag', { p: p + '.attackOn' })) +
+        G(2,
+          F('Attack & Range', sel(p + '.attack', pw.attack, Object.keys(ATTACK_LABEL).map((k) => [k, ATTACK_LABEL[k]]), { narrow: true }) + inp(p + '.range', pw.range, { list: 'fs-range-list', ph: 'Range' })) +
+          F('Save & DC', sel(p + '.save.type', pw.save.type, ['None', 'Fortitude', 'Reflex', 'Will'], { narrow: true }) + (pw.save.type !== 'None' ? sel(p + '.save.effect', pw.save.effect, ['Negates', 'Half', 'Partial', 'Negates (harmless)'], { narrow: true }) + L('DC') + inp(p + '.dc', pw.dc, { num: true, style: 'width:50px' }) : ''))
+        ));
+    }
     kids += scratchBlocks(pw.effects || [], p + '.effects');
-    if (pw.text) kids += stack('b-slate', L('📜 Sub-Power Note:') + inp(p + '.text', pw.text, { ph: 'What happens…', style: 'flex:1;min-width:200px' }));
+    if (pw.text) kids += stack('b-slate', H(L('📜 Sub-Power Note')) + G(1, F('Rule Text', inp(p + '.text', pw.text, { ph: 'What happens…' }))));
     const extraBtns = (pw.attackOn ? '' : '<button type="button" class="lego-add b-red" data-action="toggle-flag" data-p="' + p + '.attackOn">+ 🎯 Attack & Save</button>');
     kids += blockPalette(p + '.effects', false, true, extraBtns);
     return cBlock('c-amber', head, kids);
@@ -3486,8 +3557,8 @@
       G(2,
         F('Item Name', inp('name', en.name, { ph: v.name })) +
         F('Base Chassis', spotHtml('base', 'chassis', { ph: '🔍 ' + baseName(v.base) })) +
-        F('Material', sel('chassis.material', ch.material, allMaterials().map((m) => [m.id, m.name]), { narrow: true })) +
-        F('Enhancement', sel('chassis.enhancement', ch.enhancement, range(0, 5).map((n) => [n, sgn(n)]), { narrow: true, num: true }))
+        F('Material & Enhancement', sel('chassis.material', ch.material, allMaterials().map((m) => [m.id, m.name]), { narrow: true }) + sel('chassis.enhancement', ch.enhancement, range(0, 5).map((n) => [n, sgn(n)]), { narrow: true, num: true })) +
+        srcField(en)
       ) + tagSockets(en));
     if (isW) {
       const w = ch.weapon;
@@ -3515,51 +3586,56 @@
     const kinds = ['Wondrous Item', 'Ring', 'Rod', 'Staff', 'Wand', 'Potion / Oil', 'Scroll', 'Artifact / Relic'];
     const h = hat('h-amber',
       H(L('💎 Wondrous / Magic Item')) +
-      G(3,
+      G(2,
         F('Item Name', inp('name', en.name, { ph: 'Item name' })) +
         F('Kind & Body Slot', sel('item.subtype', en.item.subtype, kinds, { narrow: true }) + sel('item.slot', en.item.slot, BODY_SLOTS, { narrow: true })) +
-        F('Price & Caster Level', inp('item.price', en.item.price, { num: true, style: 'width:92px' }) + '<span class="fs-hint">gp • CL</span>' + inp('item.cl', en.item.cl, { num: true, style: 'width:54px' }))
+        F('Price & Caster Level', inp('item.price', en.item.price, { num: true, style: 'width:92px' }) + '<span class="fs-hint">gp • CL</span>' + inp('item.cl', en.item.cl, { num: true, style: 'width:54px' })) +
+        srcField(en)
       ) + tagSockets(en));
     return h + universalExtraStacks(en) + universalSnapPalette(en);
   }
 
   function scratchSpell(en) {
     const sp = en.spell, sys = sp.system || 'spell', d = en.delivery, l = en.lifecycle;
-    let sysCells = '';
-    if (sys === 'maneuver') {
-      sysCells = F('Type & Discipline', sel('spell.maneuverType', sp.maneuverType, MANEUVER_TYPES, { narrow: true }) + sel('spell.discipline', sp.discipline, TOB_DISCIPLINES, { narrow: true })) +
-        F('Level & Prereqs', '<span class="fs-hint">Lvl</span>' + sel('spell.maneuverLvl', sp.maneuverLvl, range(1, 9), { narrow: true, num: true }) + '<span class="fs-hint">Prereq</span>' + sel('spell.prereqManeuvers', sp.prereqManeuvers, range(0, 5), { narrow: true, num: true }));
-    } else if (sys === 'invocation') {
-      sysCells = F('Kind & Grade', sel('spell.invKind', sp.invKind || 'Invocation', INV_KINDS, { narrow: true }) + sel('spell.invGrade', sp.invGrade, INV_GRADES, { narrow: true })) +
-        F('Effective Lvl & School', sel('spell.maneuverLvl', sp.maneuverLvl, range(1, 9), { narrow: true, num: true }) + sel('spell.school', sp.school, SCHOOLS, { narrow: true }));
-    } else if (sys === 'psionic') {
-      sysCells = F('Discipline & Level', sel('spell.discipline', sp.discipline, PSIONIC_DISCIPLINES, { narrow: true }) + sel('spell.maneuverLvl', sp.maneuverLvl, range(1, 9), { narrow: true, num: true })) +
-        F('Power Points', inp('spell.ppCost', sp.ppCost, { num: true, min: 1, style: 'width:58px' }) + chk('spell.augmentable', sp.augmentable, 'Augmentable'));
-    } else if (sys === 'soulmeld') {
-      sysCells = F('Meldshaper List', sel('spell.meldshaperList', sp.meldshaperList || 'Totemist', MELDSHAPER_LISTS, { narrow: true })) +
-        F('Chakra Slots', inp('spell.chakraSlots', sp.chakraSlots || 'Arms / Totem', { ph: 'Arms / Totem' }));
-    } else if (sys === 'vestige') {
-      sysCells = F('Vestige Lvl & DC', '<span class="fs-hint">Lvl</span>' + sel('spell.vestigeLvl', sp.vestigeLvl || 1, range(1, 8), { narrow: true, num: true }) + '<span class="fs-hint">DC</span>' + inp('spell.bindingDc', sp.bindingDc || 15, { num: true, style: 'width:56px' })) +
-        F('Sign & Influence', inp('spell.vestigeSign', sp.vestigeSign || '', { ph: 'Sign & Influence note' }));
-    } else if (sys === 'utterance') {
-      sysCells = F('Lexicon', sel('spell.lexicon', sp.lexicon || 'Evolving Mind', TRUENAME_LEXICONS, { narrow: true })) +
-        F('Utterance Level', sel('spell.maneuverLvl', sp.maneuverLvl || 1, range(1, 6), { narrow: true, num: true }));
-    } else if (sys === 'mystery') {
-      sysCells = F('Mystery Tier & Lvl', sel('spell.mysteryTier', sp.mysteryTier || 'Apprentice', MYSTERY_TIERS, { narrow: true }) + sel('spell.maneuverLvl', sp.maneuverLvl || 1, range(1, 9), { narrow: true, num: true })) +
-        F('Path', inp('spell.mysteryPath', sp.mysteryPath || '', { ph: 'Shutters and Clouds' }));
-    } else {
-      sysCells = F('School', sel('spell.school', sp.school, SCHOOLS, { narrow: true })) +
-        F('Class & Level', sp.classes.map((c, i) => '<span class="fs-pill indigo" style="padding:2px 4px"><input class="fs-in" style="width:70px" data-bind="spell.classes.' + i + '.cls" list="fs-spellcls-list" value="' + esc(c.cls) + '">' + sel('spell.classes.' + i + '.lvl', c.lvl, range(0, 9), { num: true, style: 'width:52px' }) + '<span class="fs-x" data-action="remove-spellcls" data-i="' + i + '">×</span></span>').join('') + '<button type="button" class="fs-btn fs-xs fs-dashed" data-action="add-spellcls">+</button>');
-    }
     const hatTitle = { maneuver: '⚔️ Maneuver', invocation: '✨ Invocation', psionic: '⚡ Psionic', soulmeld: '💎 Soulmeld', vestige: '🏛️ Vestige', utterance: '📜 Utterance', mystery: '🔮 Mystery' }[sys] || '🔮 Spell';
-    const descField = F('Descriptors', sp.descriptors.map((x, i) => '<span class="fs-pill rose">[' + esc(x) + ']<span class="fs-x" data-action="remove-descriptor" data-i="' + i + '">×</span></span>').join('') + spotHtml('descriptor', 'spell', { ph: '🔍 + Fire, Fear…' }));
-    const compRow = sys === 'spell'
-      ? G(2, descField + F('Components', ['V', 'S', 'M', 'F', 'DF', 'XP'].map((k) => '<button type="button" class="lego-pill' + (sp.comps[k] ? ' on' : '') + '" data-action="toggle-comp" data-k="' + k + '">' + k + '</button>').join('')))
-      : G(1, descField);
-    let h = hat('h-violet',
-      H(L(hatTitle) + sel('spell.system', sys, SPELL_SYSTEMS, { narrow: true })) +
-      G(3, F('Name', inp('name', en.name, { ph: 'Name' })) + sysCells) +
-      compRow + tagSockets(en));
+    const descRow = G(1, F('Descriptors', sp.descriptors.map((x, i) => '<span class="fs-pill rose">[' + esc(x) + ']<span class="fs-x" data-action="remove-descriptor" data-i="' + i + '">×</span></span>').join('') + spotHtml('descriptor', 'spell', { ph: '🔍 + Fire, Fear…' })));
+    let idGrid = '';
+    if (sys === 'spell') {
+      const comps = ['V', 'S', 'M', 'F', 'DF', 'XP'].map((k) => '<button type="button" class="lego-pill' + (sp.comps[k] ? ' on' : '') + '" data-action="toggle-comp" data-k="' + k + '">' + k + '</button>').join('');
+      const clsChips = sp.classes.map((c, i) => '<span class="fs-pill indigo" style="padding:2px 4px"><input class="fs-in" style="width:70px" data-bind="spell.classes.' + i + '.cls" list="fs-spellcls-list" value="' + esc(c.cls) + '">' + sel('spell.classes.' + i + '.lvl', c.lvl, range(0, 9), { num: true, style: 'width:52px' }) + '<span class="fs-x" data-action="remove-spellcls" data-i="' + i + '">×</span></span>').join('') + '<button type="button" class="fs-btn fs-xs fs-dashed" data-action="add-spellcls">+</button>';
+      idGrid = G(2,
+        F('Name', inp('name', en.name, { ph: 'Name' })) +
+        srcField(en) +
+        F('School', sel('spell.school', sp.school, SCHOOLS, { narrow: true })) +
+        F('Components', comps)
+      ) + G(1, F('Class & Level', clsChips));
+    } else {
+      let sysCells = '';
+      if (sys === 'maneuver') {
+        sysCells = F('Type & Discipline', sel('spell.maneuverType', sp.maneuverType, MANEUVER_TYPES, { narrow: true }) + sel('spell.discipline', sp.discipline, TOB_DISCIPLINES, { narrow: true })) +
+          F('Level & Prereqs', '<span class="fs-hint">Lvl</span>' + sel('spell.maneuverLvl', sp.maneuverLvl, range(1, 9), { narrow: true, num: true }) + '<span class="fs-hint">Prereq</span>' + sel('spell.prereqManeuvers', sp.prereqManeuvers, range(0, 5), { narrow: true, num: true }));
+      } else if (sys === 'invocation') {
+        sysCells = F('Kind & Grade', sel('spell.invKind', sp.invKind || 'Invocation', INV_KINDS, { narrow: true }) + sel('spell.invGrade', sp.invGrade, INV_GRADES, { narrow: true })) +
+          F('Effective Lvl & School', sel('spell.maneuverLvl', sp.maneuverLvl, range(1, 9), { narrow: true, num: true }) + sel('spell.school', sp.school, SCHOOLS, { narrow: true }));
+      } else if (sys === 'psionic') {
+        sysCells = F('Discipline & Level', sel('spell.discipline', sp.discipline, PSIONIC_DISCIPLINES, { narrow: true }) + sel('spell.maneuverLvl', sp.maneuverLvl, range(1, 9), { narrow: true, num: true })) +
+          F('Power Points', inp('spell.ppCost', sp.ppCost, { num: true, min: 1, style: 'width:58px' }) + chk('spell.augmentable', sp.augmentable, 'Augmentable'));
+      } else if (sys === 'soulmeld') {
+        sysCells = F('Meldshaper List', sel('spell.meldshaperList', sp.meldshaperList || 'Totemist', MELDSHAPER_LISTS, { narrow: true })) +
+          F('Chakra Slots', inp('spell.chakraSlots', sp.chakraSlots || 'Arms / Totem', { ph: 'Arms / Totem' }));
+      } else if (sys === 'vestige') {
+        sysCells = F('Vestige Lvl & DC', '<span class="fs-hint">Lvl</span>' + sel('spell.vestigeLvl', sp.vestigeLvl || 1, range(1, 8), { narrow: true, num: true }) + '<span class="fs-hint">DC</span>' + inp('spell.bindingDc', sp.bindingDc || 15, { num: true, style: 'width:56px' })) +
+          F('Sign & Influence', inp('spell.vestigeSign', sp.vestigeSign || '', { ph: 'Sign & Influence note' }));
+      } else if (sys === 'utterance') {
+        sysCells = F('Lexicon', sel('spell.lexicon', sp.lexicon || 'Evolving Mind', TRUENAME_LEXICONS, { narrow: true })) +
+          F('Utterance Level', sel('spell.maneuverLvl', sp.maneuverLvl || 1, range(1, 6), { narrow: true, num: true }));
+      } else {
+        sysCells = F('Mystery Tier & Lvl', sel('spell.mysteryTier', sp.mysteryTier || 'Apprentice', MYSTERY_TIERS, { narrow: true }) + sel('spell.maneuverLvl', sp.maneuverLvl || 1, range(1, 9), { narrow: true, num: true })) +
+          F('Path', inp('spell.mysteryPath', sp.mysteryPath || '', { ph: 'Shutters and Clouds' }));
+      }
+      idGrid = G(2, F('Name', inp('name', en.name, { ph: 'Name' })) + srcField(en) + sysCells);
+    }
+    let h = hat('h-violet', H(L(hatTitle) + sel('spell.system', sys, SPELL_SYSTEMS, { narrow: true })) + idGrid + descRow + tagSockets(en));
     const hasRes = ['maneuver', 'soulmeld', 'vestige'].indexOf(sys) < 0;
     const resLbl = sys === 'psionic' ? 'PR' : 'SR';
     h += stack('b-teal',
@@ -3567,10 +3643,12 @@
       G(3,
         F('Action', sel('delivery.action', d.action, ACTIONS, { narrow: true })) +
         F('Range', inp('delivery.range', d.range, { list: 'fs-range-list' })) +
-        F('Target / Area', inp('delivery.area', d.area, { list: 'fs-area-list' })) +
+        F('Target / Area', inp('delivery.area', d.area, { list: 'fs-area-list' }))
+      ) +
+      G(2,
         F('Duration', sel('lifecycle.duration', l.duration, DURATIONS, { narrow: true }) + (['rounds', 'roundsPerLevel', 'minPerLevel', 'hourPerLevel'].indexOf(l.duration) >= 0 ? inp('lifecycle.durValue', l.durValue, { num: true, style: 'width:52px' }) : '') + (l.duration === 'text' ? inp('lifecycle.durText', l.durText, { style: 'width:110px' }) : '') + chk('lifecycle.dismissible', l.dismissible, '(D)')) +
         F('Save' + (hasRes ? ' & ' + resLbl : ''), sel('delivery.save.type', d.save.type, [['None', 'None'], 'Fortitude', 'Reflex', 'Will'], { narrow: true }) + (d.save.type !== 'None' ? sel('delivery.save.effect', d.save.effect, ['Negates', 'Half', 'Partial', 'Negates (harmless)', 'Disbelief'], { narrow: true }) : '') + (hasRes ? '<span class="fs-hint">' + resLbl + '</span>' + sel('delivery.sr', d.sr, ['Yes', 'No', 'Yes (harmless)', 'Yes (object)', 'See text'], { narrow: true }) : '')) +
-        F('Usage', usageEditor('lifecycle.use', l.use))
+        F('Usage', usageEditor('lifecycle.use', l.use), 'lego-span-full')
       ));
     if (d.attackOn) h += stack('b-red', H(L('🎯 Attack Roll'), delBtn('toggle-flag', { p: 'delivery.attackOn' })) + G(1, F('Attack Delivery', sel('delivery.attack', d.attack, Object.keys(ATTACK_LABEL).map((k) => [k, ATTACK_LABEL[k]]), { narrow: true }))));
     return h + universalExtraStacks(en) + universalSnapPalette(en);
@@ -3580,10 +3658,11 @@
     const fk = en.featKind || 'feat';
     let h = hat('h-emerald',
       H(L('📜 Feat / Feature')) +
-      G(3,
+      G(2,
         F('Category', sel('featKind', fk, [['feat', 'Feat'], ['acf', 'Alternate Class Feature (ACF)'], ['substitution', 'Racial Substitution Level'], ['boon', 'Boon / Trait']], { narrow: true })) +
         F('Name', inp('name', en.name, { ph: 'Name' })) +
-        F('Repeatable', sel('repeat.mode', en.repeat.mode, [['once', '1x Only'], ['upto', 'Up to N times'], ['per', 'Per Weapon / School']], { narrow: true }) + (en.repeat.mode === 'upto' ? sel('repeat.n', en.repeat.n, range(2, 20), { narrow: true, num: true }) : ''))
+        F('Repeatable', sel('repeat.mode', en.repeat.mode, [['once', '1x Only'], ['upto', 'Up to N times'], ['per', 'Per Weapon / School']], { narrow: true }) + (en.repeat.mode === 'upto' ? sel('repeat.n', en.repeat.n, range(2, 20), { narrow: true, num: true }) : '')) +
+        srcField(en)
       ) + tagSockets(en));
     if (fk === 'acf' || fk === 'substitution') {
       h += stack('b-teal',
@@ -3602,8 +3681,9 @@
     const l = en.lifecycle;
     return hat('h-rose',
       H(L('✨ Buff / Condition')) +
-      G(3,
+      G(2,
         F('Kind & Name', sel('buffKind', en.buffKind, ['Buff', 'Condition', 'Curse'], { narrow: true }) + inp('name', en.name, { ph: 'Name' })) +
+        srcField(en) +
         F('Duration', sel('lifecycle.duration', l.duration, DURATIONS, { narrow: true }) + (['rounds', 'roundsPerLevel', 'minPerLevel', 'hourPerLevel'].indexOf(l.duration) >= 0 ? inp('lifecycle.durValue', l.durValue, { num: true, style: 'width:52px' }) : '')) +
         F('Stacking', chk('lifecycle.stackable', l.stackable, 'Stackable ×N') + (l.stackable ? sel('lifecycle.maxStacks', l.maxStacks, range(1, 20), { narrow: true, num: true }) : ''))
       ) + tagSockets(en)) +
@@ -3615,19 +3695,14 @@
     const p = en.progression;
     let h = hat('h-emerald',
       H(L('💎 Class Chassis') + sel('progression.mode', p.mode, PROGRESSION_MODES, { narrow: true })) +
-      G(3,
+      G(2,
         F('Class Name', inp('name', en.name, { ph: 'Class name' })) +
+        srcField(en) +
         F('Hit Die & Skill Pts', sel('progression.hitDie', p.hitDie, [4, 6, 8, 10, 12].map((n) => [n, 'd' + n]), { narrow: true, num: true }) + sel('progression.skillPts', p.skillPts, [2, 4, 6, 8].map((n) => [n, n + ' + Int']), { narrow: true, num: true })) +
         F('BAB & Good Saves', sel('progression.bab', p.bab, [['full', 'Full 1/1'], ['3/4', 'Med 3/4'], ['1/2', 'Poor 1/2']], { narrow: true }) + ['fort', 'ref', 'will'].map((s) => '<button type="button" class="lego-pill' + (p.good[s] ? ' on' : '') + '" data-action="toggle-flag" data-p="progression.good.' + s + '">' + { fort: 'Fort', ref: 'Ref', will: 'Will' }[s] + '</button>').join(''))
       ) + tagSockets(en));
     if (hasFacet(en, 'prereqs')) h += prereqCBlock(en, 'Entry Prerequisites');
-    h += stack('b-blue',
-      H(L('🔁 Repeating Feature Generator'), btn('gen-pattern', '⚡ Apply to Levels', 'fs-xs fs-primary')) +
-      G(3,
-        F('Cadence', '<span class="fs-hint">Every</span>' + sel('progression.pattern.every', p.pattern.every, range(1, 10), { narrow: true, num: true }) + '<span class="fs-hint">from Lvl</span>' + sel('progression.pattern.start', Math.min(p.pattern.start, p.maxLevel), range(1, p.maxLevel), { narrow: true, num: true })) +
-        F('Feature Name', inp('progression.pattern.name', p.pattern.name)) +
-        F('Scaling Token', inp('progression.pattern.scale', p.pattern.scale, { style: 'width:90px' }))
-      ));
+    h += patternGeneratorStack(p, p.maxLevel, 'Lvl');
     if (hasFacet(en, 'progression')) h += progressionCBlock(en);
     h += stack('b-green',
       H(L('📜 Class Skills'), btn('toggle-custom-skill', '+ 🎯 Custom Skill', 'fs-xs fs-dashed') + Object.keys(SKILL_PACKAGES).map((k) => btn('skill-pkg', '+ ' + k, 'fs-xs', { k: k })).join('')) +
@@ -3638,10 +3713,11 @@
     const c = p.caster || { mode: 'none', clFormula: 'full', clCustom: '', tradition: 'Arcane', ability: 'int', spellList: '', ignoreAsf: 'none', ignoreShieldAsf: false, castInRage: false };
     h += stack('b-purple',
       H(L('🔮 Spellcasting / Subsystem') + sel('progression.caster.mode', c.mode, CASTER_MODES, { narrow: true })) +
-      (c.mode !== 'none' ? G(3,
+      (c.mode !== 'none' ? G(2,
         F('Tradition & Key Ability', sel('progression.caster.tradition', c.tradition || 'Arcane', ['Arcane', 'Divine', 'Psionic', 'Incarnum', 'Pact', 'Truename', 'Shadow', 'Martial'], { narrow: true }) + sel('progression.caster.ability', c.ability || 'int', ABIL_KEYS.map((k) => [k, k.toUpperCase()]), { narrow: true })) +
-        F('Caster Level & List', sel('progression.caster.clFormula', c.clFormula || 'full', CL_FORMULAS, { narrow: true }) + (c.clFormula === 'custom' ? inp('progression.caster.clCustom', c.clCustom || '', { ph: '@classLevel + 2', style: 'width:115px' }) : '') + '<input class="fs-in" data-bind="progression.caster.spellList" list="fs-spellcls-list" placeholder="Cleric / Magus" value="' + esc(c.spellList) + '">') +
-        F('Armored & Rage Casting', sel('progression.caster.ignoreAsf', c.ignoreAsf || 'none', [['none', 'Normal ASF'], ['light', 'Light Armor'], ['medium', 'Up to Medium'], ['heavy', 'Up to Heavy']], { narrow: true }) + chk('progression.caster.ignoreShieldAsf', !!c.ignoreShieldAsf, '+ Shields') + chk('progression.caster.castInRage', !!c.castInRage, '🩸 Cast in Rage'))
+        F('Spell / Power List', '<input class="fs-in" data-bind="progression.caster.spellList" list="fs-spellcls-list" placeholder="Cleric / Magus" value="' + esc(c.spellList) + '">') +
+        F('Caster Level', sel('progression.caster.clFormula', c.clFormula || 'full', CL_FORMULAS, { narrow: true }) + (c.clFormula === 'custom' ? inp('progression.caster.clCustom', c.clCustom || '', { ph: '@classLevel + 2', style: 'width:115px' }) : ''), c.clFormula === 'custom' ? 'lego-span-full' : '') +
+        F('Armored & Rage Casting', sel('progression.caster.ignoreAsf', c.ignoreAsf || 'none', [['none', 'Normal ASF'], ['light', 'Light Armor'], ['medium', 'Up to Medium'], ['heavy', 'Up to Heavy']], { narrow: true }) + chk('progression.caster.ignoreShieldAsf', !!c.ignoreShieldAsf, '+ Shields') + chk('progression.caster.castInRage', !!c.castInRage, '🩸 Cast in Rage'), c.clFormula === 'custom' ? 'lego-span-full' : '')
       ) : ''));
     return h + universalExtraStacks(en, { skipPrereqs: true, skipProgression: true }) + universalSnapPalette(en);
   }
@@ -3650,33 +3726,34 @@
     const im = en.itemMod;
     let h = hat('h-amber',
       H(L('✨ Item Modifier'), btn('save-item-mod', '📌 Register in Item Catalog', 'fs-xs fs-emerald')) +
-      G(3,
+      G(2,
         F('Modifier Kind', sel('itemMod.kind', im.kind, [['enchantment', 'Enchantment'], ['crystal', 'Augment Crystal'], ['material', 'Special Material']], { narrow: true })) +
+        F('Applies To', sel('itemMod.on', im.on, [['weapon', 'Weapon'], ['armor', 'Armor'], ['shield', 'Shield'], ['armor+shield', 'Armor + Shield']], { narrow: true })) +
         F('Modifier Name', inp('name', en.name, { ph: 'Modifier name (e.g. Magebane)' })) +
-        F('Applies To', sel('itemMod.on', im.on, [['weapon', 'Weapon'], ['armor', 'Armor'], ['shield', 'Shield'], ['armor+shield', 'Armor + Shield']], { narrow: true }))
+        srcField(en)
       ) + tagSockets(en));
     if (im.kind === 'enchantment') {
       h += stack('b-green',
         H(L('💎 Cost & Badge')) +
-        G(3,
+        G(2,
           F('Pricing Mode', sel('itemMod.costMode', im.costMode, [['plus', '+1..+5 Bonus'], ['gp', 'Flat +GP']], { narrow: true }) + (im.costMode === 'plus' ? sel('itemMod.plus', im.plus, range(1, 5).map((n) => [n, '+' + n + ' Bonus']), { narrow: true, num: true }) : inp('itemMod.gp', im.gp, { num: true, min: 0, style: 'width:88px' }) + '<span class="fs-hint">gp</span>')) +
           F('Crit Flag', chk('itemMod.keen', im.keen, 'Keen (Crit ×2)')) +
-          F('Tactical Badge', inp('itemMod.badge', im.badge, { ph: '+2 Enh vs Arcane Casters' }))
+          F('Tactical Badge', inp('itemMod.badge', im.badge, { ph: '+2 Enh vs Arcane Casters' }), 'lego-span-full')
         ));
     } else if (im.kind === 'crystal') {
       h += stack('b-purple',
         H(L('💎 Augment Crystal Tiers')) +
-        G(3, CRYSTAL_TIERS.map((t, i) => F(cap1(t) + ' Tier',
-          inp('itemMod.crystalCosts.' + i, im.crystalCosts[i] == null ? '' : im.crystalCosts[i], { num: true, min: 0, ph: 'GP', style: 'width:76px' }) +
+        G(1, CRYSTAL_TIERS.map((t, i) => F(cap1(t) + ' Tier',
+          inp('itemMod.crystalCosts.' + i, im.crystalCosts[i] == null ? '' : im.crystalCosts[i], { num: true, min: 0, ph: 'GP', style: 'width:84px' }) +
           inp('itemMod.crystalTiers.' + i, im.crystalTiers[i] || '', { ph: cap1(t) + ' effect…' }))).join('')));
     } else if (im.kind === 'material') {
       const m = im.mat;
       h += stack('b-blue',
         H(L('🛡️ Material Rules')) +
-        G(3,
+        G(2,
           F('Max Dex / ACP / ASF Δ', '<span class="fs-hint">Dex</span>' + inp('itemMod.mat.maxDexDelta', m.maxDexDelta, { num: true, style: 'width:52px' }) + '<span class="fs-hint">ACP</span>' + inp('itemMod.mat.acpDelta', m.acpDelta, { num: true, style: 'width:52px' }) + '<span class="fs-hint">ASF%</span>' + inp('itemMod.mat.asfDelta', m.asfDelta, { num: true, style: 'width:52px' })) +
           F('Crit & DR Bypass', sel('itemMod.mat.critMultOverride', m.critMultOverride, [[0, 'Keep (0)'], [2, '×2'], [3, '×3'], [4, '×4']], { narrow: true, num: true }) + inp('itemMod.mat.drBypass', m.drBypass, { ph: 'adamantine' })) +
-          F('Weapon & L/M/H +GP', inp('itemMod.mat.weaponGp', m.weaponGp, { num: true, min: 0, ph: 'Wpn', style: 'width:68px' }) + inp('itemMod.mat.lightGp', m.lightGp, { num: true, min: 0, ph: 'Light', style: 'width:68px' }) + inp('itemMod.mat.medGp', m.medGp, { num: true, min: 0, ph: 'Med', style: 'width:68px' }) + inp('itemMod.mat.heavyGp', m.heavyGp, { num: true, min: 0, ph: 'Heavy', style: 'width:68px' }))
+          F('Weapon & Armor (Light / Med / Heavy) +GP', '<span class="fs-hint">Wpn</span>' + inp('itemMod.mat.weaponGp', m.weaponGp, { num: true, min: 0, ph: 'Wpn', style: 'width:76px' }) + '<span class="fs-hint">L</span>' + inp('itemMod.mat.lightGp', m.lightGp, { num: true, min: 0, ph: 'Light', style: 'width:76px' }) + '<span class="fs-hint">M</span>' + inp('itemMod.mat.medGp', m.medGp, { num: true, min: 0, ph: 'Med', style: 'width:76px' }) + '<span class="fs-hint">H</span>' + inp('itemMod.mat.heavyGp', m.heavyGp, { num: true, min: 0, ph: 'Heavy', style: 'width:76px' }), 'lego-span-full')
         ));
     }
     return h + universalExtraStacks(en) + universalSnapPalette(en);
@@ -3686,13 +3763,14 @@
     const r = en.race;
     const h = hat('h-emerald',
       H(L('🧬 Race / Creature Template') + sel('race.kind', r.kind, [['race', 'Base Race'], ['template', 'Creature Template']], { narrow: true }) + (r.kind === 'template' ? sel('race.timing', r.timing, ['Inherited', 'Acquired'], { narrow: true }) : '')) +
-      G(3,
+      G(2,
         F('Name', inp('name', en.name, { ph: 'Race / Template name' })) +
+        srcField(en) +
         F('Size & Creature Type', sel('race.size', r.size, CREATURE_SIZES, { narrow: true }) + sel('race.creatureType', r.creatureType, CREATURE_TYPES, { narrow: true })) +
-        F('Subtype', inp('race.subtype', r.subtype, { ph: 'Gnome, Augmented' })) +
+        F('Subtype & Favored Class', inp('race.subtype', r.subtype, { ph: 'Gnome, Augmented' }) + inp('race.favoredClass', r.favoredClass, { ph: 'Favored (Any)', style: 'width:110px' })) +
         F('Land & Fly Speed', inp('race.speed', r.speed, { num: true, min: 0, style: 'width:54px' }) + '<span class="fs-hint">ft. • Fly</span>' + inp('race.flySpeed', r.flySpeed, { num: true, min: 0, style: 'width:54px' }) + sel('race.flyMan', r.flyMan, FLY_MANEUVERABILITIES, { narrow: true })) +
-        F('LA, RHD & Favored Class', '<span class="fs-hint">LA</span>' + sel('race.la', r.la, range(0, 8).map((n) => [n, '+' + n]), { narrow: true, num: true }) + '<span class="fs-hint">RHD</span>' + sel('race.rhdCount', r.rhdCount, range(0, 20), { narrow: true, num: true }) + sel('race.rhdDie', r.rhdDie, [6, 8, 10, 12].map((n) => [n, 'd' + n]), { narrow: true, num: true }) + inp('race.favoredClass', r.favoredClass, { ph: 'Favored (Any)', style: 'width:90px' })) +
-        F('Bonus Traits', chk('race.bonusFeat1', r.bonusFeat1, '1st-Lvl Bonus Feat') + chk('race.bonusSkillPts', r.bonusSkillPts, 'Human Skill Points (+4/+1)'))
+        F('LA & Racial Hit Dice', '<span class="fs-hint">LA</span>' + sel('race.la', r.la, range(0, 8).map((n) => [n, '+' + n]), { narrow: true, num: true }) + '<span class="fs-hint">RHD</span>' + sel('race.rhdCount', r.rhdCount, range(0, 20), { narrow: true, num: true }) + sel('race.rhdDie', r.rhdDie, [6, 8, 10, 12].map((n) => [n, 'd' + n]), { narrow: true, num: true })) +
+        F('Bonus Traits', chk('race.bonusFeat1', r.bonusFeat1, '1st-Lvl Bonus Feat') + chk('race.bonusSkillPts', r.bonusSkillPts, 'Human Skill Points (+4/+1)'), 'lego-span-full')
       ) + tagSockets(en));
     return h + universalExtraStacks(en) + universalSnapPalette(en);
   }
@@ -3705,6 +3783,7 @@
       G(2,
         F('Deity Name', inp('name', en.name, { ph: 'Deity name' })) +
         F('Favored Weapon', spotHtml('favwpn', 'deity', { ph: '🔍 ' + (g.favoredWeapon || 'Select Base Weapon') })) +
+        srcField(en, 'lego-span-full') +
         F('Alignment Matrix', alignGrid(g) + '<span class="lego-desc">Legal Cleric alignments (1 step): ' + ALIGNS.filter((a) => clericLegal(g.deityAlign, a)).join(', ') + '</span>', 'lego-span-full')
       ) + tagSockets(en));
     const doms = g.domains.map((d, i) => stack('b-purple', L('✨ Domain:') + (d.kind === 'inline' ? inp('grants.domains.' + i + '.name', d.name, { style: 'width:140px' }) + inp('grants.domains.' + i + '.grantedPower', d.grantedPower, { ph: 'Granted power…', style: 'flex:1;min-width:190px' }) : '<span class="fs-pill purple">' + esc(d.name) + '</span><span class="lego-desc">' + esc(short(d.grantedPower, 90)) + '</span>') + delBtn('remove-domain', { i: i }))).join('');
@@ -3723,14 +3802,14 @@
     const g = en.grants;
     let h = hat('h-sky',
       H(L('✨ Cleric Domain')) +
-      G(1, F('Domain Name', inp('name', en.name, { ph: 'Domain name' }))) +
+      G(2, F('Domain Name', inp('name', en.name, { ph: 'Domain name' })) + srcField(en)) +
       tagSockets(en));
     h += stack('b-blue',
       H(L('⚡ Granted Power')) +
-      G(3,
+      G(2,
         F('Power Name', inp('grants.grantedPowerName', g.grantedPowerName, { ph: 'Power name (e.g. Greater Turning)' })) +
         F('Usage', usageEditor('grants.gpUse', g.gpUse)) +
-        F('Rule Summary', inp('grants.grantedPower', g.grantedPower, { ph: 'Rule summary…' }))
+        F('Rule Summary', inp('grants.grantedPower', g.grantedPower, { ph: 'Rule summary…' }), 'lego-span-full')
       ));
     h += cBlock('c-teal', L('🔮 Domain Spell Ladder (1st–9th)'), g.ladder.map((s, i) => stack('b-slate', '<b class="lego-lvl">Lvl ' + (i + 1) + '</b>' + (s ? '<span class="fs-pill purple">🔮 ' + esc(s) + '<span class="fs-x" data-action="clear-ladder" data-i="' + i + '">×</span></span>' : '') + spotHtml('ladder', i, { style: 'width:220px', ph: '🔍 Pick Spell (Lvl ' + (i + 1) + ')' }))).join(''));
     return h + universalExtraStacks(en) + universalSnapPalette(en);
@@ -3744,7 +3823,7 @@
       : '';
     const fn = { weapon: scratchWeaponArmor, armor: scratchWeaponArmor, wondrous: scratchWondrous, spell: scratchSpell, feat: scratchFeat, buff: scratchBuff, class: scratchClass, deity: scratchDeity, domain: scratchDomain, item_mod: scratchItemMod, race: scratchRace }[en.blueprint] || scratchWondrous;
     return datalists() + '<div class="lego-canvas"><div class="lego-stack">' + originBar + fn(en) + '</div>' +
-      '<div class="fs-row" style="margin-top:12px"><span class="fs-label-mini">Rules Text</span><input class="fs-in" data-bind="text" value="' + esc(en.text) + '" placeholder="Official / custom rules text…" style="flex:1;min-width:200px"></div></div>';
+      '<div class="fs-row" style="margin-top:12px"><span class="fs-label-mini">Rule Text</span><input class="fs-in" data-bind="text" value="' + esc(en.text) + '" placeholder="Official / custom rule text…" style="flex:1;min-width:200px"></div></div>';
   }
 
   function renderFacets() { $('#fs-facets').innerHTML = renderScratch(); }
@@ -3770,6 +3849,7 @@
   function renderAll() { S.spot = null; renderTopbar(); renderLiveHeader(); renderFacets(); renderJson(); }
   function toast(msg, kind) {
     const wrap = $('#fs-toasts'); if (!wrap) return;
+    while (wrap.children.length >= 2) wrap.firstElementChild.remove();
     const el = document.createElement('div');
     el.className = 'fs-toast ' + (kind || 'ok'); el.textContent = msg;
     wrap.appendChild(el);
@@ -3781,6 +3861,8 @@
   // --------------------------------------------------------------------------
   function loadEntry(en, presetId) {
     S.entry = en; S.activePreset = presetId || ''; S.ui.cardOpen = {}; S.ui.facetOpen = {}; S.spot = null;
+    S.ui.liveUserOverride = null;
+    S.ui.liveAutoCollapsed = typeof window !== 'undefined' && (window.scrollY || window.pageYOffset || 0) > 96;
   }
   function setEntry(path, v) { setPath(S.entry, path, v); onSet(path, v); }
   function onSet(path, v) {
@@ -3879,7 +3961,7 @@
     },
     'load-preset': (el) => { const p = PRESETS.find((x) => x.id === el.dataset.id); if (!p) return; loadEntry(p.build(), p.id); toast('Preset loaded: ' + p.label); renderAll(); },
     'new-entry': () => { loadEntry(scaffold(blankEntry(S.entry.blueprint))); renderAll(); },
-    'toggle-live': () => { S.ui.liveOpenMobile = !S.ui.liveOpenMobile; renderLiveHeader(); },
+    'toggle-live': () => { const next = !isLiveOpen(); S.ui.liveUserOverride = next ? 'open' : 'closed'; S.ui.liveOpenMobile = next; renderLiveHeader(); },
     'add-block': (el) => {
       const list = getPath(S.entry, el.dataset.p);
       if (!Array.isArray(list)) return;
@@ -4037,6 +4119,17 @@
       const fn = ACT[el.dataset.enter];
       if (fn) fn(el, ev);
     });
+    window.addEventListener('scroll', () => {
+      const y = window.scrollY || window.pageYOffset || 0;
+      if (y > 96 && !S.ui.liveAutoCollapsed) {
+        S.ui.liveAutoCollapsed = true;
+        if (S.ui.liveUserOverride === null) renderLiveHeader();
+      } else if (y <= 8 && S.ui.liveAutoCollapsed) {
+        S.ui.liveAutoCollapsed = false;
+        S.ui.liveUserOverride = null;
+        renderLiveHeader();
+      }
+    }, { passive: true });
     loadEntry(PRESETS[0].build(), PRESETS[0].id);
     renderAll();
     bootCompendium();
