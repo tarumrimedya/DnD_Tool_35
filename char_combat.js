@@ -12630,6 +12630,12 @@
       };
 
       if (window.Dice3D && typeof Dice3D.roll === 'function' && [4, 6, 8, 10, 12, 20, 100].includes(sides)) {
+        showDiceTopToast({
+          icon: getDiceIconSvg(String(sides), 'w-6 h-6 text-amber-400') || '⚡',
+          title: `Custom 1d${sides}`,
+          breakdown: `Rolling dice... [1d${sides}]`,
+          total: '...'
+        }, { toastId: 'dice-roll-active-toast', autoDismiss: false });
         try {
           Dice3D.roll([{ type: 'd' + sides, value: r }], onDone);
         } catch (e) {
@@ -13246,16 +13252,23 @@
     }
 
     function rollInitiative3D() {
-      if (typeof resetActionEconomy === 'function') resetActionEconomy();
-      const init = getCharacterInitiative();
+      const sp = character?.tactical?.spentActions;
+      const needsActionReset = Boolean(sp && (sp.standard || sp.move || sp.swift || sp.immediate || sp.swiftLockedNextTurn));
+      const sheet = (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.getSheet === 'function')
+        ? window.CharStore.getSheet()
+        : null;
+      const init = (sheet && sheet.combat && typeof sheet.combat.initiativeTotal === 'number')
+        ? { total: sheet.combat.initiativeTotal }
+        : getCharacterInitiative();
       const mod = init.total;
       const d20 = Math.floor(Math.random() * 20) + 1;
       const total = d20 + mod;
+      const formulaStr = `1d20 ${mod >= 0 ? '+' : '-'}${Math.abs(mod)}`;
 
       const showResult = () => {
         addDiceHistoryEntry({
           title: '⚡ Initiative Check',
-          formula: `1d20 ${mod >= 0 ? '+' : '-'}${Math.abs(mod)}`,
+          formula: formulaStr,
           breakdown: `1d20 [${d20}] ${mod >= 0 ? '+' : '-'} ${Math.abs(mod)}`,
           total: total,
           isCrit: d20 === 20
@@ -13263,6 +13276,12 @@
       };
 
       if (window.Dice3D && typeof Dice3D.roll === 'function') {
+        showDiceTopToast({
+          icon: getD20IconSvg('w-6 h-6 text-amber-400'),
+          title: '⚡ Initiative Check',
+          breakdown: `Rolling dice... [${formulaStr}]`,
+          total: '...'
+        }, { toastId: 'dice-roll-active-toast', autoDismiss: false });
         try {
           Dice3D.roll([{ type: 'd20', value: d20 }], showResult);
         } catch (err) {
@@ -13270,6 +13289,9 @@
         }
       } else {
         showResult();
+      }
+      if (needsActionReset && typeof resetActionEconomy === 'function') {
+        setTimeout(() => { try { resetActionEconomy(); } catch (_) {} }, 0);
       }
     }
 
@@ -13280,10 +13302,18 @@
     window.rollCompanionTactical = rollCompanionTactical;
 
     function rollSave3D(saveName) {
-      const saves = RuleEngine.evaluateSaves(character);
+      const sheet = (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.getSheet === 'function')
+        ? window.CharStore.getSheet()
+        : null;
+      const saves = (sheet && sheet.saves && sheet.saves.fort !== undefined)
+        ? sheet.saves
+        : ((character && character.evaluatedSaves && character.evaluatedSaves.fort !== undefined)
+            ? character.evaluatedSaves
+            : RuleEngine.evaluateSaves(character));
       const mod = saveName === 'Fortitude' ? saves.fort : (saveName === 'Reflex' ? saves.ref : saves.will);
       const d20 = Math.floor(Math.random() * 20) + 1;
       const total = d20 + mod;
+      const formulaStr = `1d20 ${mod >= 0 ? '+' : '-'}${Math.abs(mod)}`;
       const hasSteadfast = Boolean(saves.hasSteadfastDetermination || character?.ruleFlags?.conToWillSave || character?.ruleFlags?.noAutoFailFortSaveOnNat1);
       const steadfastFortNat1Note = (saveName === 'Fortitude' && d20 === 1 && hasSteadfast)
         ? ' • Steadfast Determination: Nat 1 is NOT an auto-fail!'
@@ -13295,7 +13325,7 @@
       const showResult = () => {
         addDiceHistoryEntry({
           title: `⚡ ${saveName} Saving Throw`,
-          formula: `1d20 ${mod >= 0 ? '+' : '-'}${Math.abs(mod)}`,
+          formula: formulaStr,
           breakdown: `1d20 [${d20}] ${mod >= 0 ? '+' : '-'} ${Math.abs(mod)}${steadfastWillNote}${steadfastFortNat1Note}`,
           total: total,
           isCrit: d20 === 20
@@ -13303,6 +13333,12 @@
       };
 
       if (window.Dice3D && typeof Dice3D.roll === 'function') {
+        showDiceTopToast({
+          icon: getD20IconSvg('w-6 h-6 text-amber-400'),
+          title: `⚡ ${saveName} Saving Throw`,
+          breakdown: `Rolling dice... [${formulaStr}]`,
+          total: '...'
+        }, { toastId: 'dice-roll-active-toast', autoDismiss: false });
         try {
           Dice3D.roll([{ type: 'd20', value: d20 }], showResult);
         } catch (err) {
@@ -13316,12 +13352,13 @@
     function rollSkill3D(skillName, totalMod, subtitle = '') {
       const d20 = Math.floor(Math.random() * 20) + 1;
       const total = d20 + totalMod;
+      const formulaStr = `1d20 ${totalMod >= 0 ? '+' : '-'}${Math.abs(totalMod)}`;
 
       const showResult = () => {
         addDiceHistoryEntry({
           icon: getD20IconSvg('w-5 h-5 text-amber-400'),
           title: `${skillName} Skill Check`,
-          formula: `1d20 ${totalMod >= 0 ? '+' : '-'}${Math.abs(totalMod)}`,
+          formula: formulaStr,
           breakdown: `1d20 [${d20}] ${totalMod >= 0 ? '+' : '-'} ${Math.abs(totalMod)}${subtitle ? ` (${subtitle})` : ''}`,
           total: total,
           isCrit: d20 === 20
@@ -13329,6 +13366,12 @@
       };
 
       if (window.Dice3D && typeof Dice3D.roll === 'function') {
+        showDiceTopToast({
+          icon: getD20IconSvg('w-6 h-6 text-amber-400'),
+          title: `${skillName} Skill Check`,
+          breakdown: `Rolling dice... [${formulaStr}]`,
+          total: '...'
+        }, { toastId: 'dice-roll-active-toast', autoDismiss: false });
         try {
           Dice3D.roll([{ type: 'd20', value: d20 }], showResult);
         } catch (err) {
