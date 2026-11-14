@@ -604,7 +604,7 @@
         grants: Array.isArray(entry.grants) ? JSON.parse(JSON.stringify(entry.grants)) : [],
         choices: Array.isArray(entry.choices) ? JSON.parse(JSON.stringify(entry.choices)) : [],
         damageParts: Array.isArray(entry.damageParts) ? JSON.parse(JSON.stringify(entry.damageParts)) : [],
-        ruleFlags: entry.ruleFlags ? JSON.parse(JSON.stringify(entry.ruleFlags)) : (clean.includes('steadfast determination') ? { conToWillSave: true, noAutoFailFortSaveOnNat1: true } : (clean.includes('agile shield fighter') ? { agileShieldFighter: true } : {})),
+        ruleFlags: entry.ruleFlags ? JSON.parse(JSON.stringify(entry.ruleFlags)) : (clean.includes('agile shield fighter') ? { agileShieldFighter: true } : {}),
         tacticalBadges: Array.isArray(entry.tacticalBadges) ? JSON.parse(JSON.stringify(entry.tacticalBadges)) : []
       };
 

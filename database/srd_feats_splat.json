@@ -5818,7 +5818,7 @@
     "bonusFeatFor": [],
     "prerequisites": "Endurance",
     "prereq": "Endurance",
-    "benefit": "Use Con modifier instead of Wisdom for Will saves.",
+    "benefit": "Use Con modifier instead of Wisdom for Will saves; do not automatically fail Fortitude saves on a natural 1.",
     "tags": [
       "feat",
       "general"
@@ -5826,7 +5826,10 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {},
+    "ruleFlags": {
+      "conToWillSave": true,
+      "noAutoFailFortSaveOnNat1": true
+    },
     "levelBand": "heroic",
     "edition": "3.5",
     "contentLevel": "summary",

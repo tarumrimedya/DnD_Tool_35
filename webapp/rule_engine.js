@@ -1931,6 +1931,13 @@ const RuleEngine = {
     if (!found && Array.isArray(this.SPLATBOOK_BUFF_SPELLS)) {
       found = this.SPLATBOOK_BUFF_SPELLS.find(m => m && ((refId && m.id === refId) || (m.name && m.name.toLowerCase().trim() === clean))) || null;
     }
+    if (!found && comp && typeof comp.findIndexEntry === 'function' && typeof comp.ensureChunkLoaded === 'function') {
+      const idxHit = (refId && comp.findIndexEntry(refId)) || (rawName && comp.findIndexEntry(rawName, typeFilter || (isObj ? itemOrName.type : null)));
+      if (idxHit && idxHit.f === 'srd_feats_splat.json') {
+        comp.ensureChunkLoaded(idxHit.f);
+        found = (refId && comp.getById(refId)) || (rawName && comp.getByName(rawName, typeFilter || (isObj ? itemOrName.type : null))) || null;
+      }
+    }
     return found ? this.ensureV2Entry(found) : null;
   },
 
@@ -5165,8 +5172,7 @@ const RuleEngine = {
       applyV2Modifiers(modsToApply, rawName, 'feat', featSelfCtx);
 
       const rf = { ...(dbEntry?.ruleFlags || {}), ...(featObj.ruleFlags || {}) };
-      const featTextLower = `${cleanName} ${featObj.benefit || featObj.description || dbEntry?.benefit || dbEntry?.description || ''}`.toLowerCase();
-      if (rf.conToWillSave || cleanName.includes('steadfast determination') || (featTextLower.includes('constitution modifier') && featTextLower.includes('will save') && featTextLower.includes('instead of') && featTextLower.includes('wisdom'))) {
+      if (rf.conToWillSave) {
         hasSteadfastDetermination = true;
       }
       if ((rf.hpPerLevel || cleanName.includes('draconic toughness')) && !featMods.some(m => m && ['hp', 'hp.max'].includes(String(m.target || '').toLowerCase()))) {
@@ -5549,9 +5555,11 @@ const RuleEngine = {
 
     // Dex to AC capped by Max Dex & Condition Flags (Helpless / Paralyzed / Blinded / Stunned / Grappled)
     const fullDexMod = conditionEffectiveDexZero ? -5 : this.getAbilityMod(character.abilities.dex || 10);
-    // Load Max Dex (PHB Table 9-2: medium load +3, heavy load +1, light load no limit): the lower of the armor and load caps applies.
+    // Load Max Dex & Check Penalty (PHB Table 9-2: medium load Max Dex +3 / ACP -3, heavy load Max Dex +1 / ACP -6; Footnote 1: use the worse figure from armor or load, not both).
     const encumbrance = this.computeEncumbrance(character);
     const loadMaxDex = (encumbrance.loadStatus.maxDex === null || encumbrance.loadStatus.maxDex === undefined) ? null : Number(encumbrance.loadStatus.maxDex);
+    const loadCheckPenalty = Number(encumbrance.loadStatus.checkPenalty) || 0;
+    const effectiveAcp = Math.min(totalAcp, loadCheckPenalty);
     const effectiveMaxDex = loadMaxDex === null ? minMaxDex : (minMaxDex === null ? loadMaxDex : Math.min(minMaxDex, loadMaxDex));
     let effectiveDex = effectiveMaxDex !== null ? Math.min(fullDexMod, effectiveMaxDex) : fullDexMod;
     if (conditionLoseDexToAC) {
@@ -5631,7 +5639,9 @@ const RuleEngine = {
       armorMaxDex: minMaxDex,
       loadMaxDex,
       load: encumbrance.loadStatus.status,
-      acp: totalAcp,
+      acp: effectiveAcp,
+      armorAcp: totalAcp,
+      loadCheckPenalty,
       penalty: totalPenalty,
       total: totalAC,
       touch: touchAC,
@@ -5704,7 +5714,7 @@ const RuleEngine = {
     const netBonusRef = this.resolveBonusStacking(saveBonusBuckets.ref) + battleClarityBonus;
     const netBonusWill = this.resolveBonusStacking(saveBonusBuckets.will);
 
-    if (charFeatNames.some(f => f.includes('steadfast determination'))) {
+    if (character.ruleFlags?.conToWillSave) {
       hasSteadfastDetermination = true;
     }
 
@@ -5902,9 +5912,10 @@ const RuleEngine = {
     const progFeats = Array.isArray(character.levelProgression)
       ? character.levelProgression.filter(r => r && r.active !== false).flatMap(r => [...(r.feats || []), ...(r.specialAbilities || [])])
       : [];
-    const feats = [...(character.feats || []), ...(character.specialAbilities || []), ...progFeats]
+    const activeFeatAndAbilityPool = [...(character.feats || []), ...(character.specialAbilities || []), ...progFeats]
+      .filter(f => f && (typeof f !== 'object' || f.active !== false));
+    const feats = activeFeatAndAbilityPool
       .map(f => (typeof f === 'string' ? f : f?.name || '').toLowerCase());
-    const hasSteadfast = feats.some(f => f.includes('steadfast determination'));
     const hasAgileShield = feats.some(f => f.includes('agile shield fighter'));
 
     const flags = {
@@ -5919,9 +5930,9 @@ const RuleEngine = {
       hasSpiritedCharge: feats.some(f => f.includes('spirited charge')),
       hasRideByAttack: feats.some(f => f.includes('ride-by attack') || f.includes('ride by attack')),
       hasMountedCombat: feats.some(f => f.includes('mounted combat')),
-      hasSteadfastDetermination: hasSteadfast,
-      conToWillSave: hasSteadfast,
-      noAutoFailFortSaveOnNat1: hasSteadfast,
+      hasSteadfastDetermination: false,
+      conToWillSave: false,
+      noAutoFailFortSaveOnNat1: false,
       agileShieldFighter: hasAgileShield,
       loseDexToAC: false,
       effectiveDexZero: false,
@@ -5949,12 +5960,25 @@ const RuleEngine = {
       });
     };
 
-    // Merge declarative ruleFlags from character feats & Compendium entries
-    (character.feats || []).forEach(f => {
+    if (character.ruleFlags && typeof character.ruleFlags === 'object') {
+      mergeFlags(character.ruleFlags);
+    }
+
+    // Merge declarative ruleFlags from character feats, abilities, progression & Compendium entries
+    activeFeatAndAbilityPool.forEach(f => {
       if (typeof f === 'object' && f && f.ruleFlags) mergeFlags(f.ruleFlags);
-      const dbFeat = this.getMasterDbEntry(f, 'Feat');
+      const rawRef = typeof f === 'string'
+        ? f.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').trim()
+        : f;
+      const dbFeat = this.getMasterDbEntry(rawRef, 'Feat');
       if (dbFeat && dbFeat.ruleFlags) mergeFlags(dbFeat.ruleFlags);
     });
+
+    if (flags.conToWillSave || flags.noAutoFailFortSaveOnNat1 || flags.hasSteadfastDetermination) {
+      flags.hasSteadfastDetermination = true;
+      flags.conToWillSave = Boolean(flags.conToWillSave || flags.hasSteadfastDetermination);
+      flags.noAutoFailFortSaveOnNat1 = Boolean(flags.noAutoFailFortSaveOnNat1 || flags.hasSteadfastDetermination);
+    }
 
     // Merge declarative ruleFlags from active buffs & conditions
     (character.buffs || []).forEach(b => {
@@ -6195,15 +6219,98 @@ const RuleEngine = {
     const chargeData = this.evaluateChargeDamage(weapon, character, options);
     const ruleFlags = this.evaluateRuleFlags(character);
 
-    // Feat detections (match via baseItemId or stripped weapon name)
-    const baseWepName = (weapon.baseItemId || weapon.name || '').toLowerCase().replace(/^wep_/, '').replace(/_/g, ' ').replace(/\+\d+/g, '').replace(/\(.*?\)/g, '').trim();
-    const feats = (character.feats || []).map(f => (typeof f === 'string' ? f : f.name || '').toLowerCase());
+    // Feat detections (match via canonical baseItemId, SRD weapon record, or normalized weapon name)
+    const baseWepName = (weapon.baseItemId || weapon.name || '').toLowerCase().replace(/^(?:srd[-_])?(?:wpn|wep)[-_]/i, '').replace(/[-_]+/g, ' ').replace(/\+\d+/g, '').replace(/\(.*?\)/g, '').trim();
+    const expandWeaponIdentityKeys = (rawStr, stripDecorators = false) => {
+      const out = new Set();
+      let s = String(rawStr || '').toLowerCase().trim();
+      if (!s) return out;
+      s = s
+        .replace(/^(?:srd[-_])?(?:wpn|wep)[-_](?:mic[-_])?/i, '')
+        .replace(/\+\d+/g, ' ')
+        .replace(/\(.*?\)/g, ' ');
+      if (stripDecorators) {
+        s = s.replace(/\b(?:masterwork|mwk|mithral|adamantine|cold\s+iron|alchemical\s+silver|darkwood|keen|flaming\s+burst|icy\s+burst|shocking\s+burst|flaming|frost|shock|corrosive|holy|unholy|anarchic|axiomatic|vorpal|ghost\s+touch|defending|merciful|vicious|wounding|speed|brilliant\s+energy|dancing|returning|seeking|distance|thundering)\b/g, ' ');
+      }
+      if (s.includes(',')) {
+        const parts = s.split(',').map(p => p.replace(/[^a-z0-9]+/g, ' ').trim()).filter(Boolean);
+        if (parts.length === 2) {
+          const direct = `${parts[0]} ${parts[1]}`.replace(/\s+/g, ' ').trim();
+          const inv = `${parts[1]} ${parts[0]}`.replace(/\s+/g, ' ').trim();
+          out.add(direct);
+          out.add(inv);
+          out.add(direct.replace(/\s+/g, ''));
+          out.add(inv.replace(/\s+/g, ''));
+        }
+      }
+      const cleanWords = s.replace(/[^a-z0-9]+/g, ' ').trim().split(/\s+/).filter(Boolean);
+      if (cleanWords.length > 0) {
+        const joined = cleanWords.join(' ');
+        out.add(joined);
+        out.add(cleanWords.join(''));
+        if (cleanWords.length === 2) {
+          const inv = `${cleanWords[1]} ${cleanWords[0]}`;
+          out.add(inv);
+          out.add(`${cleanWords[1]}${cleanWords[0]}`);
+        }
+      }
+      return out;
+    };
+
+    const weaponIdentityKeys = new Set();
+    const addWepKeys = (val, stripDec = false) => {
+      expandWeaponIdentityKeys(val, stripDec).forEach(k => weaponIdentityKeys.add(k));
+    };
+    if (weapon.baseItemId) addWepKeys(weapon.baseItemId, false);
+    if (dbWeapon?.id) addWepKeys(dbWeapon.id, false);
+    if (dbWeapon?.name) addWepKeys(dbWeapon.name, false);
+    if (weapon.id && /^(?:srd[-_])?(?:wpn|wep)[-_]/i.test(String(weapon.id))) addWepKeys(weapon.id, false);
+    if (weapon.name) addWepKeys(weapon.name, true);
+
+    const activeFeatEntries = (character.feats || []).filter(f => f && (typeof f !== 'object' || f.active !== false));
+    const feats = activeFeatEntries.map(f => (typeof f === 'string' ? f : f.name || '').toLowerCase());
+    const matchesWeaponSpecificFeat = (featBaseName, excludePrefix = null) => {
+      const baseLower = featBaseName.toLowerCase();
+      const idSlugPrefix = `feat-${baseLower.replace(/\s+/g, '-')}`;
+      return activeFeatEntries.some(f => {
+        const rawName = (typeof f === 'string' ? f : f.name || '').toLowerCase();
+        const fId = (typeof f === 'object' && f.id ? String(f.id) : '').toLowerCase();
+        if (excludePrefix && (rawName.includes(excludePrefix) || fId.includes(excludePrefix.replace(/\s+/g, '-')))) return false;
+        const isFeatMatch = rawName.includes(baseLower) || fId === idSlugPrefix || fId.startsWith(`${idSlugPrefix}-`);
+        if (!isFeatMatch) return false;
+        const rawChoices = [];
+        if (typeof f === 'object') {
+          [f.targetWeaponId, f.weaponId, f.targetWeapon, f.selectedWeapon, f.choice, f.subChoice, f.target].forEach(c => {
+            if (c && typeof c === 'string') rawChoices.push(c);
+          });
+          if (fId.startsWith(`${idSlugPrefix}-`)) {
+            rawChoices.push(fId.slice(idSlugPrefix.length + 1));
+          }
+        }
+        const parenMatch = rawName.match(/\(([^)]+)\)/);
+        if (parenMatch && parenMatch[1]) {
+          rawChoices.push(parenMatch[1]);
+        } else {
+          const afterBase = rawName.split(baseLower)[1] || '';
+          const trimmedAfter = afterBase.replace(/^[\s:\-]+/, '').trim();
+          if (trimmedAfter) rawChoices.push(trimmedAfter);
+        }
+        if (rawChoices.some(c => String(c).toLowerCase().trim() === 'all')) return true;
+        return rawChoices.some(choiceStr => {
+          const choiceKeys = expandWeaponIdentityKeys(choiceStr, false);
+          for (const ck of choiceKeys) {
+            if (ck && weaponIdentityKeys.has(ck)) return true;
+          }
+          return false;
+        });
+      });
+    };
     const hasWeaponFinesse = feats.some(f => f.includes('weapon finesse'));
     const hasShadowBlade = feats.some(f => f.includes('shadow blade'));
-    const hasWeaponFocus = feats.some(f => f.includes('weapon focus') && !f.includes('greater weapon focus') && ((baseWepName && f.includes(baseWepName)) || f.includes((weapon.name || '').toLowerCase()) || f.includes('all')));
-    const hasGreaterWeaponFocus = feats.some(f => f.includes('greater weapon focus') && ((baseWepName && f.includes(baseWepName)) || f.includes((weapon.name || '').toLowerCase()) || f.includes('all')));
-    const hasWeaponSpec = feats.some(f => f.includes('weapon specialization') && !f.includes('greater weapon specialization') && ((baseWepName && f.includes(baseWepName)) || f.includes((weapon.name || '').toLowerCase()) || f.includes('all')));
-    const hasGreaterWeaponSpec = feats.some(f => f.includes('greater weapon specialization') && ((baseWepName && f.includes(baseWepName)) || f.includes((weapon.name || '').toLowerCase()) || f.includes('all')));
+    const hasWeaponFocus = matchesWeaponSpecificFeat('weapon focus', 'greater weapon focus');
+    const hasGreaterWeaponFocus = matchesWeaponSpecificFeat('greater weapon focus');
+    const hasWeaponSpec = matchesWeaponSpecificFeat('weapon specialization', 'greater weapon specialization');
+    const hasGreaterWeaponSpec = matchesWeaponSpecificFeat('greater weapon specialization');
 
     const isRangedWep = grip === 'Ranged' || weapon.isRanged || (Array.isArray(weapon.tags) && weapon.tags.includes('ranged')) || (weapon.weaponStats && weapon.weaponStats.category === 'Ranged');
 
@@ -6370,12 +6477,21 @@ const RuleEngine = {
     const isLightOrFinessableForAbility = this.isLightWeapon(weapon) || this.isFinessable(weapon);
     const effArmorCatForAbility = character.effectiveArmorCategory || character.acBreakdown?.armorCategory || 'None';
     const isLightOrNoArmor = effArmorCatForAbility !== 'Medium' && effArmorCatForAbility !== 'Heavy';
-    const loadCat = String(character.encumbrance || character.loadCategory || character.carryingLoad || '').toLowerCase();
-    const isMediumOrHeavyLoad = loadCat === 'medium' || loadCat === 'heavy' || loadCat === 'overloaded' || Boolean(character.ruleFlags?.mediumOrHeavyLoad);
+    const explicitLoadCat = String(character.encumbrance || character.loadCategory || character.carryingLoad || '').toLowerCase();
+    const computedLoadStatus = String(this.computeEncumbrance(character)?.loadStatus?.status || character.acBreakdown?.load || '').toLowerCase();
+    const isMediumOrHeavyLoad =
+      explicitLoadCat.includes('medium') || explicitLoadCat.includes('heavy') || explicitLoadCat.includes('overloaded') ||
+      computedLoadStatus.includes('medium') || computedLoadStatus.includes('heavy') || computedLoadStatus.includes('overloaded') ||
+      Boolean(character.ruleFlags?.mediumOrHeavyLoad);
     const wfWsFeatIds = ['feat-weapon-focus', 'feat-greater-weapon-focus', 'feat-weapon-specialization', 'feat-greater-weapon-specialization'];
     const charAbilityAndFeatEntries = [
       ...(Array.isArray(character.specialAbilities) ? character.specialAbilities : []),
-      ...(Array.isArray(character.feats) ? character.feats.filter(f => f && typeof f === 'object' && f.active !== false && !wfWsFeatIds.includes(String(f.id || '').toLowerCase()) && !/weapon focus|weapon specialization/i.test(String(f.name || ''))) : [])
+      ...(Array.isArray(character.feats) ? character.feats.filter(f => {
+        if (!f || typeof f !== 'object' || f.active === false) return false;
+        const fid = String(f.id || '').toLowerCase();
+        if (wfWsFeatIds.some(prefix => fid === prefix || fid.startsWith(`${prefix}-`))) return false;
+        return !/weapon focus|weapon specialization/i.test(String(f.name || ''));
+      }) : [])
     ];
     charAbilityAndFeatEntries.forEach(entry => {
       if (!entry || typeof entry !== 'object' || entry.active === false || !Array.isArray(entry.modifiers)) return;
@@ -6400,7 +6516,7 @@ const RuleEngine = {
     if (charge && !isRangedWep) {
       attackBonusItems.push({ type: 'untyped', val: 2, source: 'Charge' });
     }
-    if (higherGround) {
+    if (higherGround && !isRangedWep) {
       attackBonusItems.push({ type: 'untyped', val: 1, source: 'Higher Ground' });
     }
 
@@ -8434,7 +8550,7 @@ const RuleEngine = {
       'power attack', 'sneak attack', 'punishing stance', 'mountain hammer', 'steel wind',
       'flurry of blows', 'two-weapon fighting', 'improved two-weapon fighting', 'greater two-weapon fighting',
       'agile shield fighter', 'weapon specialization', 'greater weapon specialization', 'point blank shot',
-      'rapid shot', 'manyshot', 'deadly aim', 'combat expertise', 'steadfast determination'
+      'rapid shot', 'manyshot', 'deadly aim', 'combat expertise'
     ]);
 
     const dbList = Array.isArray(customDb) && customDb.length > 0
@@ -10417,7 +10533,7 @@ const RuleEngine = {
     'fightingDefensively', 'totalDefense', 'shieldBlockActive',
     'powerAttackActive', 'combatExpertiseActive',
     'rapidShot', 'manyshot', 'pointBlankShot', 'deadlyAim',
-    'rangedHigherGround', 'targetInMelee', 'coverPenalty', 'defensiveCastingActive',
+    'targetInMelee', 'coverPenalty', 'defensiveCastingActive',
     'rangePenalty', 'enhanceArrow', 'trueStrike', 'sneakAttack', 'bootsHaste', 'witchlightSpeed'
   ]),
 

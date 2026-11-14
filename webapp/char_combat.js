@@ -4355,7 +4355,6 @@
           try {
             const evalRes = RuleEngine.evaluateWeaponAttack(character, wep, {
               grip: isOffHand ? 'Off-Hand' : 'Ranged',
-              higherGround: !!t.rangedHigherGround,
               customModifiers: activeRangedMods,
               manyshot: !!t.manyshot
             });
@@ -6843,18 +6842,11 @@
         return name.toLowerCase().includes('enhance arrow');
       });
 
-      const hg = !!t.rangedHigherGround;
       const tinM = !!t.targetInMelee;
       const cvr = !!t.coverPenalty;
 
       // Base Situational Cards: Rules every ranged combatant can use (Glow Card Toggle)
       const baseCardsHtml = [
-        `
-        <div data-action="combat:ranged-mod-toggle" data-mod-key="rangedHigherGround" class="relative ${hg ? 'border border-amber-500 bg-amber-950/60 text-white shadow-md shadow-amber-950/50 ring-1 ring-amber-500/40' : 'border border-slate-800 bg-slate-900 text-slate-400 hover:border-amber-500/60'} rounded-lg p-2 cursor-pointer transition flex flex-col justify-center items-center text-center select-none min-h-[64px]">
-          <div class="text-[11px] font-bold ${hg ? 'text-white font-black' : 'text-amber-400'} leading-tight">Higher Gr.</div>
-          <div class="text-[10px] ${hg ? 'text-amber-200 font-bold' : 'text-slate-400'} mt-1">+1 Ranged</div>
-        </div>
-        `,
         `
         <div data-action="combat:ranged-mod-toggle" data-mod-key="targetInMelee" class="relative ${tinM ? 'border border-rose-500 bg-rose-950/60 text-white shadow-md shadow-rose-950/50 ring-1 ring-rose-500/40' : 'border border-slate-800 bg-slate-900 text-slate-400 hover:border-rose-500/60'} rounded-lg p-2 cursor-pointer transition flex flex-col justify-center items-center text-center select-none min-h-[64px]">
           <div class="text-[11px] font-bold ${tinM ? 'text-white font-black' : 'text-rose-400'} leading-tight">Firing into Melee</div>
@@ -7438,7 +7430,6 @@
         }
 
         let netRangedMod = 0;
-        if (t.rangedHigherGround) netRangedMod += 1;
         if (t.targetInMelee && !hasPrecise) netRangedMod -= 4;
         if (t.coverPenalty) netRangedMod -= 4;
 

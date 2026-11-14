@@ -613,7 +613,7 @@
       if (charFeats.some(f => f.includes('save magic') || f.includes('draconic save'))) {
         bonusNotes.push(`<div class="py-0.5 text-slate-300">✨ Draconic Aura: +1 bonus on saving throws against spells.</div>`);
       }
-      if (useConForWill || charFeats.some(f => f.includes('steadfast determination'))) {
+      if (useConForWill) {
         bonusNotes.push(`<div class="py-0.5 text-slate-300">✨ Steadfast Determination: Uses CON modifier instead of WIS on Will saves; Natural 1 on Fortitude saves is not an automatic failure.</div>`);
       }
 

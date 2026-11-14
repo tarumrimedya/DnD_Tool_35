@@ -1497,7 +1497,7 @@
     'fightingDefensively', 'totalDefense', 'shieldBlockActive',
     'powerAttackActive', 'combatExpertiseActive',
     'rapidShot', 'manyshot', 'pointBlankShot', 'deadlyAim',
-    'rangedHigherGround', 'targetInMelee', 'coverPenalty', 'defensiveCastingActive',
+    'targetInMelee', 'coverPenalty', 'defensiveCastingActive',
     'rangePenalty', 'enhanceArrow', 'trueStrike', 'sneakAttack', 'bootsHaste', 'witchlightSpeed'
   ];
 

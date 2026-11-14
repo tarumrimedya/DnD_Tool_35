@@ -852,13 +852,13 @@ function runDeriveSheetTests() {
     CharStore.getDoc().tactical.__proto_pollute_or_arbitrary_key__ === undefined
   );
 
-  // Verify ALL canonical tactical modifier keys (melee, defense, and all 6 qualified ranged modifier keys) are accepted by combat/toggleTacticalMod
+  // Verify ALL canonical tactical modifier keys (melee, defense, and all qualified ranged modifier keys) are accepted by combat/toggleTacticalMod
   const expectedTacticalKeys = [
     'flanking', 'charge', 'higherGround',
     'fightingDefensively', 'totalDefense', 'shieldBlock', 'shieldBlockActive',
     'powerAttackActive', 'combatExpertiseActive',
     'rapidShot', 'manyshot', 'pointBlankShot', 'deadlyAim',
-    'rangedHigherGround', 'targetInMelee', 'coverPenalty', 'defensiveCastingActive',
+    'targetInMelee', 'coverPenalty', 'defensiveCastingActive',
     'rangePenalty', 'enhanceArrow', 'trueStrike', 'sneakAttack', 'bootsHaste', 'witchlightSpeed'
   ];
   const allTacticalKeysAccepted = expectedTacticalKeys.every(k => {
@@ -872,8 +872,8 @@ function runDeriveSheetTests() {
     return out && out.status === 'tactical_toggled' && CharStore.getDoc().tactical[resolved] === true;
   });
   check(
-    'Phase R3 QA: combat/toggleTacticalMod accepts all 23 melee, defense, and ranged tactical modifier keys (including rangePenalty, enhanceArrow, trueStrike, sneakAttack, bootsHaste, witchlightSpeed)',
-    allTacticalKeysAccepted && Array.isArray(RuleEngine.TACTICAL_MOD_KEYS) && RuleEngine.TACTICAL_MOD_KEYS.length === 22
+    'Phase R3 QA: combat/toggleTacticalMod accepts all 22 melee, defense, and ranged tactical modifier keys (including rangePenalty, enhanceArrow, trueStrike, sneakAttack, bootsHaste, witchlightSpeed)',
+    allTacticalKeysAccepted && Array.isArray(RuleEngine.TACTICAL_MOD_KEYS) && RuleEngine.TACTICAL_MOD_KEYS.length === 21
   );
 
   // Verify BAB 0 Combat Expertise Cap === 0
@@ -3720,6 +3720,92 @@ function runDeriveSheetTests() {
       firstMace.netAttackBonus === 12 && secondMace.netAttackBonus === 12 &&
       firstMace.attackBonusItems.some(i => i.source === 'Divine Favor' && i.val === 3 && i.applied) &&
       firstMace.damageBonusItems.some(i => i.source === 'Divine Favor' && i.val === 3 && i.applied)
+    );
+
+    // ------------------------------------------------------------------------
+    // Sprint A Golden Suite (RAW Engine Fixes 1-5)
+    // ------------------------------------------------------------------------
+
+    // 1. Weapon Focus / Weapon Specialization / Greater Variants ID & Choice Matching
+    const wfChar = JSON.parse(JSON.stringify(f01Raw));
+    wfChar.feats = [
+      { id: 'feat-weapon-focus', name: 'Weapon Focus (Longsword)', active: true },
+      { id: 'feat-greater-weapon-focus', name: 'Greater Weapon Focus (Longsword)', active: true },
+      { id: 'feat-weapon-specialization', name: 'Weapon Specialization (Longsword)', active: true },
+      { id: 'feat-greater-weapon-specialization', name: 'Greater Weapon Specialization (Longsword)', active: true },
+      { id: 'feat-weapon-focus', name: 'Weapon Focus (Mace, Heavy)', active: true },
+      { id: 'feat-weapon-specialization', name: 'Weapon Specialization', targetWeaponId: 'wpn-mace-heavy', active: true },
+      { id: 'feat-weapon-focus-shortsword', name: 'Weapon Focus (Short Sword)', active: false }
+    ];
+    RuleEngine.recalculateCharacter(wfChar, []);
+    const wpnLongsword = { id: 'forged-ls', baseItemId: 'wpn-longsword', name: 'Masterwork Longsword', isMasterwork: true, handedness: 'One-Handed', grip: '1-Hand', dice: '1d8' };
+    const wpnHeavyMace = { id: 'forged-hm', baseItemId: 'wpn-mace-heavy', name: '+1 Heavy Mace', enhancementBonus: 1, handedness: 'One-Handed', grip: '1-Hand', dice: '1d8' };
+    const wpnShortSword = { id: 'forged-ss', baseItemId: 'wpn-shortsword', name: 'Masterwork Short Sword', isMasterwork: true, handedness: 'Light', grip: '1-Hand', dice: '1d6' };
+    const wpnLightMace = { id: 'forged-lm', baseItemId: 'wpn-mace-light', name: 'Light Mace', handedness: 'Light', grip: '1-Hand', dice: '1d6' };
+    const evalLs = RuleEngine.evaluateWeaponAttack(wfChar, wpnLongsword, { grip: '1-Hand' });
+    const evalHm = RuleEngine.evaluateWeaponAttack(wfChar, wpnHeavyMace, { grip: '1-Hand' });
+    const evalSs = RuleEngine.evaluateWeaponAttack(wfChar, wpnShortSword, { grip: '1-Hand' });
+    const evalLm = RuleEngine.evaluateWeaponAttack(wfChar, wpnLightMace, { grip: '1-Hand' });
+    check(
+      'Sprint A.1: Weapon Focus / Greater Weapon Focus (+2 atk) and Weapon Specialization / Greater Weapon Specialization (+4 dmg) match canonical baseItemId wpn-longsword and comma-inverted wpn-mace-heavy ("Mace, Heavy" <-> "Heavy Mace"), while excluding non-matching weapons (wpn-shortsword, wpn-mace-light) and inactive feats',
+      evalLs.netAttackBonus === 8 && evalLs.netFlatDamage === 8 &&
+      evalHm.netAttackBonus === 7 && evalHm.netFlatDamage === 7 &&
+      evalSs.netAttackBonus === 6 && evalSs.netFlatDamage === 4 &&
+      evalLm.netAttackBonus === 5 && evalLm.netFlatDamage === 4,
+      `ls=${evalLs.netAttackBonus}/${evalLs.netFlatDamage}, hm=${evalHm.netAttackBonus}/${evalHm.netFlatDamage}, ss=${evalSs.netAttackBonus}/${evalSs.netFlatDamage}, lm=${evalLm.netAttackBonus}/${evalLm.netFlatDamage}`
+    );
+
+    // 2. Higher Ground +1 is Melee Only (PHB Table 8-5, p.151)
+    const hgFighter = deriveFixture('01_fighter_lvl1.json');
+    const meleeNoHg = RuleEngine.evaluateWeaponAttack(hgFighter, hgFighter.weapons[0], { grip: '1-Hand', higherGround: false });
+    const meleeWithHg = RuleEngine.evaluateWeaponAttack(hgFighter, hgFighter.weapons[0], { grip: '1-Hand', higherGround: true });
+    const rangedBow = { id: 'wpn-longbow', baseItemId: 'wpn-longbow', name: 'Longbow', isRanged: true, grip: 'Ranged', dice: '1d8' };
+    const rangedNoHg = RuleEngine.evaluateWeaponAttack(hgFighter, rangedBow, { grip: 'Ranged', higherGround: false });
+    const rangedWithHg = RuleEngine.evaluateWeaponAttack(hgFighter, rangedBow, { grip: 'Ranged', higherGround: true });
+    check(
+      'Sprint A.2: Higher Ground grants +1 on melee weapon attacks and +0 on ranged weapon attacks (PHB Table 8-5); rangedHigherGround is removed from TACTICAL_MOD_KEYS',
+      meleeWithHg.netAttackBonus === meleeNoHg.netAttackBonus + 1 &&
+      rangedWithHg.netAttackBonus === rangedNoHg.netAttackBonus &&
+      !RuleEngine.TACTICAL_MOD_KEYS.includes('rangedHigherGround')
+    );
+
+    // 3. Medium / Heavy Load Check Penalty (-3 / -6) Applied to ACP Skills (PHB Table 9-2 & Footnote 1)
+    const loadTestChar = JSON.parse(JSON.stringify(f03Raw)); // STR 12 (Light <= 43, Medium <= 86, Heavy <= 130), +1 Mithral Chain Shirt (ACP 0), current wt 12.5
+    loadTestChar.gearPool = [{ id: 'gear-anvil-med', name: 'Trade Bars', weight: 50, qty: 1 }]; // totalWeight = 62.5 (Medium Load, checkPenalty -3)
+    const sheetMedLoad = RuleEngine.deriveSheet(loadTestChar, []);
+    const medLoadAtk = RuleEngine.evaluateWeaponAttack(sheetMedLoad._workingSnapshot, sheetMedLoad._workingSnapshot.weapons[0], { grip: '1-Hand' });
+    loadTestChar.gearPool = [{ id: 'gear-anvil-hvy', name: 'Heavy Trade Bars', weight: 90, qty: 1 }]; // totalWeight = 102.5 (Heavy Load, checkPenalty -6)
+    const sheetHvyLoad = RuleEngine.deriveSheet(loadTestChar, []);
+    const clericMedLoad = RuleEngine.deriveSheet(f02Raw, []); // Full Plate +1 (-5) + Heavy Shield +1 (-1) = armorAcp -6, Medium Load checkPenalty -3 -> worse is -6
+    check(
+      'Sprint A.3: Medium Load (-3) and Heavy Load (-6) check penalty applies to acBreakdown.acp taking the worse of armor vs load (PHB Table 9-2 Footnote 1), without penalizing weapon attack rolls',
+      sheetMedLoad.ac.acp === -3 && sheetMedLoad.ac.armorAcp === 0 && sheetMedLoad.ac.loadCheckPenalty === -3 &&
+      sheetHvyLoad.ac.acp === -6 && sheetHvyLoad.ac.armorAcp === 0 && sheetHvyLoad.ac.loadCheckPenalty === -6 &&
+      clericMedLoad.ac.acp === -6 && clericMedLoad.ac.armorAcp === -6 && clericMedLoad.ac.loadCheckPenalty === -3 &&
+      medLoadAtk.netAttackBonus === 20,
+      `medAcp=${sheetMedLoad.ac.acp}, hvyAcp=${sheetHvyLoad.ac.acp}, clericAcp=${clericMedLoad.ac.acp}, medAtk=${medLoadAtk.netAttackBonus}`
+    );
+
+    // 4. Swashbuckler Insightful Strike Encumbrance Check via computeEncumbrance
+    check(
+      'Sprint A.4: Swashbuckler Insightful Strike (+3 INT damage) automatically turns off when carried gear weight puts the character into Medium or Heavy Load via computeEncumbrance',
+      f03.weapons[0].netFlatDamage === 6 &&
+      sheetMedLoad.combat.weapons[0].evaluated.netFlatDamage === 3 &&
+      sheetHvyLoad.combat.weapons[0].evaluated.netFlatDamage === 3
+    );
+
+    // 5. Steadfast Determination Canonical V2 ruleFlags & Zero Name-Patching
+    const sdCompEntry = global.SrdCompendium.getById('feat-steadfast-determination');
+    const sdChar = JSON.parse(JSON.stringify(f01Raw)); // CON 14 (+2), WIS 12 (+1), Base Will 0
+    sdChar.feats.push({ id: 'feat-steadfast-determination', name: 'Steadfast Determination', type: 'Feat', active: true });
+    const sdSheet = RuleEngine.deriveSheet(sdChar, []);
+    const ruleEngineSrc = fs.readFileSync(path.join(__dirname, '..', 'rule_engine.js'), 'utf8');
+    check(
+      'Sprint A.5: Steadfast Determination carries V2 ruleFlags { conToWillSave: true, noAutoFailFortSaveOnNat1: true } in srd_feats_splat.json, applies CON (+2) instead of WIS (+1) to Will saves via ruleFlags, and rule_engine.js has zero hardcoded "steadfast determination" strings',
+      Boolean(sdCompEntry && sdCompEntry.ruleFlags && sdCompEntry.ruleFlags.conToWillSave === true && sdCompEntry.ruleFlags.noAutoFailFortSaveOnNat1 === true) &&
+      sdSheet.saves.will === 2 && sdSheet.saves.willAbility === 'CON' &&
+      sdSheet.defenses.ruleFlags.conToWillSave === true && sdSheet.defenses.ruleFlags.noAutoFailFortSaveOnNat1 === true &&
+      !/steadfast determination/i.test(ruleEngineSrc)
     );
   }
 
