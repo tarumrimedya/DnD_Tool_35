@@ -128,52 +128,6 @@ function getFormulaDiceIconSvg(formula, cls = "w-4 h-4 inline-block align-middle
 window.getFormulaDiceIconSvg = getFormulaDiceIconSvg;
 
 // ====================================================
-// 2. Çekmece (Drawer) Açma / Kapama Kontrolü
-// ====================================================
-function toggleHubDiceDrawer(forceState) {
-  const drawer = document.getElementById('hub-dice-drawer');
-  const backdrop = document.getElementById('hub-dice-backdrop');
-  if (!drawer || !backdrop) return;
-
-  const isCurrentlyOpen = !drawer.classList.contains('translate-x-full');
-  const shouldOpen = (typeof forceState === 'boolean') ? forceState : !isCurrentlyOpen;
-
-  if (shouldOpen) {
-    backdrop.classList.remove('hidden');
-    requestAnimationFrame(() => {
-      backdrop.classList.remove('opacity-0');
-      backdrop.classList.add('opacity-100');
-      drawer.classList.remove('translate-x-full');
-      drawer.classList.add('translate-x-0');
-    });
-    // Verileri güncelle
-    initDiceColor();
-    updateDicePoolDisplay();
-    renderDiceHistory();
-    renderCustomTemplates();
-  } else {
-    backdrop.classList.remove('opacity-100');
-    backdrop.classList.add('opacity-0');
-    drawer.classList.remove('translate-x-0');
-    drawer.classList.add('translate-x-full');
-    setTimeout(() => {
-      backdrop.classList.add('hidden');
-    }, 300);
-  }
-}
-window.toggleHubDiceDrawer = toggleHubDiceDrawer;
-
-// ESC Tuşu ile çekmeceyi kapat
-window.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') {
-    const drawer = document.getElementById('hub-dice-drawer');
-    if (drawer && !drawer.classList.contains('translate-x-full')) {
-      toggleHubDiceDrawer(false);
-    }
-  }
-});
-
-// ====================================================
 // 3. Zar Havuzu ve Serbest Zar Masası
 // ====================================================
 function handleDieClick(sides) {
@@ -1066,9 +1020,31 @@ window.addEventListener('DOMContentLoaded', () => {
   if (typeof updateDicePoolDisplay === 'function') updateDicePoolDisplay();
   if (typeof renderDiceHistory === 'function') renderDiceHistory();
   if (typeof renderCustomTemplates === 'function') renderCustomTemplates();
+  const poolModEl = document.getElementById('dice-pool-mod');
+  if (poolModEl && !poolModEl.dataset.wheelWired) {
+    poolModEl.dataset.wheelWired = '1';
+    poolModEl.addEventListener('wheel', handlePoolModWheel, { passive: false });
+  }
   // The old collapsible 'Formula, Last Roll & History' drawer is gone; drop its stored open/closed flag.
   try { localStorage.removeItem('hub_dice_adv_open'); } catch (e) {}
 });
+
+if (window.Actions && typeof window.Actions.register === 'function') {
+  const actionsApi = window.Actions;
+  actionsApi.register('dice:die-click', (el, data) => handleDieClick(Number(data.sides)));
+  actionsApi.register('dice:adjust-mod', (el, data, event) => adjustDicePoolMod(Number(data.delta), event));
+  actionsApi.register('dice:mod-input', () => updateDicePoolDisplay());
+  actionsApi.register('dice:roll-pool', () => rollDicePool());
+  actionsApi.register('dice:toggle-color-popover', (el, data, event) => toggleDiceColorPopover(event));
+  actionsApi.register('dice:reset-pool', () => resetDicePool());
+  actionsApi.register('dice:select-color', (el, data) => selectDiceColor(data.color, data.colorName));
+  actionsApi.register('dice:custom-color', (el) => selectDiceColor(el.value, 'Custom Color'));
+  actionsApi.register('dice:formula-keydown', (el, data, event) => {
+    if (event && event.key === 'Enter') rollCustomFormula();
+  });
+  actionsApi.register('dice:roll-formula', () => rollCustomFormula());
+  actionsApi.register('dice:clear-history', () => clearDiceHistory());
+}
 
 // Delegated clicks for rendered template chips and history rows (data-hub-dice="..."): the formula travels in an
 // escaped data attribute, so quotes or apostrophes in a saved formula cannot break an inline handler.

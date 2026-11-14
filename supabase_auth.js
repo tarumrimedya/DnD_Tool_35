@@ -217,7 +217,6 @@ const SupabaseAuth = {
       container.className = 'w-full';
 
       const targetNav = document.getElementById('user-profile-slot') ||
-                        document.getElementById('nav-user-actions') || 
                         document.querySelector('header .flex.items-center.gap-2') ||
                         document.getElementById('sync-status-pill')?.parentElement;
       if (targetNav) {
@@ -253,7 +252,7 @@ const SupabaseAuth = {
           ${avatarHtml}
           <span class="text-xs font-semibold ${badgeColor} max-w-[105px] truncate" title="${titleAttr}">${displayName}</span>
         </div>
-        <button onclick="SupabaseAuth.signOut()" class="px-2 py-0.5 rounded-lg bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-200 border border-slate-700 hover:border-rose-700 text-[10px] font-bold transition flex items-center gap-1 cursor-pointer shrink-0" title="${isLocal ? 'Exit Local Mode & Return to Login' : 'Sign Out'}">
+        <button type="button" data-action="auth:sign-out" class="px-2 py-0.5 rounded-lg bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-200 border border-slate-700 hover:border-rose-700 text-[10px] font-bold transition flex items-center gap-1 cursor-pointer shrink-0" title="${isLocal ? 'Exit Local Mode & Return to Login' : 'Sign Out'}">
           <span>🚪</span>
           <span>Sign Out</span>
         </button>
@@ -352,13 +351,13 @@ const SupabaseAuth = {
     const modal = document.createElement('div');
     modal.id = 'cloud-sync-management-modal';
     modal.className = 'fixed inset-0 z-[100000] flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm';
-    modal.onclick = (e) => {
+    modal.addEventListener('click', (e) => {
       if (e.target === modal) modal.remove();
-    };
+    });
 
     if (isLocal) {
       modal.innerHTML = `
-        <div class="bg-[#131d33] border border-amber-500/50 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden p-5 sm:p-6 text-slate-100 flex flex-col gap-4 transform transition-all" onclick="event.stopPropagation()">
+        <div class="bg-[#131d33] border border-amber-500/50 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden p-5 sm:p-6 text-slate-100 flex flex-col gap-4 transform transition-all">
           <div class="flex items-start justify-between gap-3 border-b border-slate-700/80 pb-3">
             <div class="flex items-center gap-2.5">
               <span class="text-2xl">🟡</span>
@@ -367,7 +366,7 @@ const SupabaseAuth = {
                 <p class="text-[11px] text-amber-300/90 font-medium">Your data is stored locally in this browser only</p>
               </div>
             </div>
-            <button type="button" class="text-slate-400 hover:text-white p-1 text-sm rounded-lg transition cursor-pointer" onclick="document.getElementById('cloud-sync-management-modal')?.remove()">✕</button>
+            <button type="button" class="text-slate-400 hover:text-white p-1 text-sm rounded-lg transition cursor-pointer" data-action="auth:close-sync-modal">✕</button>
           </div>
 
           <p class="text-xs text-slate-300 leading-relaxed">
@@ -379,7 +378,7 @@ const SupabaseAuth = {
               <span>🔑</span>
               <span>Sign in with Google</span>
             </button>
-            <button type="button" class="w-full py-2 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs border border-slate-700 transition cursor-pointer" onclick="document.getElementById('cloud-sync-management-modal')?.remove()">
+            <button type="button" class="w-full py-2 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs border border-slate-700 transition cursor-pointer" data-action="auth:close-sync-modal">
               ✕ Cancel (Continue in Local Mode)
             </button>
           </div>
@@ -398,7 +397,7 @@ const SupabaseAuth = {
     // Bulut Modu Aktif
     const isCharSheet = typeof window.forceCloudSyncPull === 'function';
     modal.innerHTML = `
-      <div class="bg-[#131d33] border border-emerald-500/50 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden p-5 sm:p-6 text-slate-100 flex flex-col gap-4 transform transition-all" onclick="event.stopPropagation()">
+      <div class="bg-[#131d33] border border-emerald-500/50 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden p-5 sm:p-6 text-slate-100 flex flex-col gap-4 transform transition-all">
         <!-- Başlık -->
         <div class="flex items-start justify-between gap-3 border-b border-slate-700/80 pb-3">
           <div class="flex items-center gap-2.5">
@@ -408,7 +407,7 @@ const SupabaseAuth = {
               <p class="text-[11px] text-emerald-300/90 font-medium">Supabase Multi-Device Synchronization Active</p>
             </div>
           </div>
-          <button type="button" class="text-slate-400 hover:text-white p-1 text-sm rounded-lg transition cursor-pointer" onclick="document.getElementById('cloud-sync-management-modal')?.remove()">✕</button>
+          <button type="button" class="text-slate-400 hover:text-white p-1 text-sm rounded-lg transition cursor-pointer" data-action="auth:close-sync-modal">✕</button>
         </div>
 
         <p class="text-xs text-slate-300 leading-relaxed">
@@ -449,7 +448,7 @@ ${this._lastSyncErrorHtml()}
           </button>
 
           <!-- Buton 3: Vazgeç (Kapat) -->
-          <button type="button" class="w-full mt-1 py-2 px-4 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 font-semibold text-xs border border-slate-700 transition cursor-pointer flex items-center justify-center gap-1.5" onclick="document.getElementById('cloud-sync-management-modal')?.remove()">
+          <button type="button" class="w-full mt-1 py-2 px-4 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 font-semibold text-xs border border-slate-700 transition cursor-pointer flex items-center justify-center gap-1.5" data-action="auth:close-sync-modal">
             <span>✕</span>
             <span>Cancel (Make No Changes)</span>
           </button>
@@ -1439,3 +1438,22 @@ ${this._lastSyncErrorHtml()}
 };
 
 window.SupabaseAuth = SupabaseAuth;
+
+(function registerAuthActions() {
+  const handleSignOut = () => SupabaseAuth.signOut();
+  const handleCloseSyncModal = () => document.getElementById('cloud-sync-management-modal')?.remove();
+
+  if (window.Actions && typeof window.Actions.register === 'function') {
+    const actionsApi = window.Actions;
+    actionsApi.register('auth:sign-out', handleSignOut);
+    actionsApi.register('auth:close-sync-modal', handleCloseSyncModal);
+  } else {
+    document.addEventListener('click', (e) => {
+      const btn = e.target?.closest?.('[data-action]');
+      if (!btn || btn.disabled) return;
+      const act = btn.dataset.action;
+      if (act === 'auth:sign-out') handleSignOut();
+      else if (act === 'auth:close-sync-modal') handleCloseSyncModal();
+    });
+  }
+})();

@@ -256,9 +256,13 @@
         ? ` <span class="opacity-80 font-mono text-[10px]">[${mode.damageParts.map(p => p.dice || (p.bonus > 0 ? '+' + p.bonus : p.bonus)).filter(Boolean).join('+')}]</span>`
         : '';
 
-      const clickAttr = onSelectJsTemplate
-        ? `onclick="${onSelectJsTemplate.replace(/__MODE_ID__/g, RuleMaster.escapeJsString(mode.id))}"`
-        : '';
+      let clickAttr = '';
+      if (onSelectJsTemplate) {
+        const callMatch = String(onSelectJsTemplate).match(/^\s*([a-zA-Z0-9_$.]+)\s*\(\s*['"]__MODE_ID__['"]\s*\)\s*;?\s*$/);
+        if (callMatch) {
+          clickAttr = `data-action="ui:select-mode" data-mode-fn="${escapeHtml(callMatch[1])}" data-mode-id="${escapeHtml(mode.id)}"`;
+        }
+      }
 
       const cls = isSelected
         ? 'bg-amber-500/25 text-amber-200 border-amber-400 shadow-sm ring-1 ring-amber-400/30'
@@ -531,9 +535,9 @@
     const wrapper = document.createElement('div');
     wrapper.id = 'dnd-ui-compendium-drawer';
     wrapper.className = 'hidden fixed inset-0 z-[120] bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 overflow-y-auto';
-    wrapper.onclick = function (e) {
+    wrapper.addEventListener('click', function (e) {
       if (e.target === wrapper) closeCompendiumDrawer();
-    };
+    });
     wrapper.innerHTML = `
       <!-- Centered Modal Card (Matches Level-Up Wizard Modal Style) -->
       <div class="bg-dndCard border border-amber-500/80 rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col text-slate-100">
@@ -547,21 +551,21 @@
             </div>
           </div>
           <div class="flex items-center gap-2 shrink-0">
-            <button type="button" onclick="DnDUI.closeCompendiumDrawer()" class="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer">✕ Close</button>
+            <button type="button" data-action="ui:close-compendium" class="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer">✕ Close</button>
           </div>
         </div>
 
         <!-- Unified 2-Tab Bar (Calmed surface so Spotlight Command Bar below is the primary focal point) -->
         <div id="dnd-ui-compendium-tabs-bar" class="px-4 py-2 bg-slate-950 border-b border-slate-800 grid grid-cols-2 gap-2 shrink-0 text-xs">
-          <button type="button" id="dnd-ui-tab-btn-srd" data-comp-tab="srd" onclick="DnDUI.switchCompendiumTab('srd')" class="hidden w-full py-2 px-3 rounded-lg font-bold transition cursor-pointer flex items-center justify-center gap-1.5 bg-slate-800/95 text-amber-300 border border-amber-500/50 shadow-sm">
+          <button type="button" id="dnd-ui-tab-btn-srd" data-comp-tab="srd" data-action="ui:switch-comp-tab" class="hidden w-full py-2 px-3 rounded-lg font-bold transition cursor-pointer flex items-center justify-center gap-1.5 bg-slate-800/95 text-amber-300 border border-amber-500/50 shadow-sm">
             <span>🔍</span>
             <span class="truncate">Spotlight Search</span>
           </button>
-          <button type="button" id="dnd-ui-tab-btn-custom" data-comp-tab="custom" onclick="DnDUI.switchCompendiumTab('custom')" class="w-full py-2 px-3 rounded-lg font-bold transition cursor-pointer flex items-center justify-center gap-1.5 bg-slate-800/95 text-amber-300 border border-amber-500/50 shadow-sm">
+          <button type="button" id="dnd-ui-tab-btn-custom" data-comp-tab="custom" data-action="ui:switch-comp-tab" class="w-full py-2 px-3 rounded-lg font-bold transition cursor-pointer flex items-center justify-center gap-1.5 bg-slate-800/95 text-amber-300 border border-amber-500/50 shadow-sm">
             <span>🔍</span>
             <span class="truncate">Spotlight Search</span>
           </button>
-          <button type="button" data-comp-tab="forge" onclick="DnDUI.switchCompendiumTab('forge')" class="w-full py-2 px-3 rounded-lg font-bold transition cursor-pointer flex items-center justify-center gap-1.5 text-slate-400 hover:text-white bg-slate-900/50 border border-slate-800">
+          <button type="button" data-comp-tab="forge" data-action="ui:switch-comp-tab" class="w-full py-2 px-3 rounded-lg font-bold transition cursor-pointer flex items-center justify-center gap-1.5 text-slate-400 hover:text-white bg-slate-900/50 border border-slate-800">
             <span>⚒️</span>
             <span class="truncate">Item Forge</span>
           </button>
@@ -575,20 +579,20 @@
               <div class="w-8 h-8 rounded-lg bg-amber-500 text-slate-950 font-black flex items-center justify-center text-sm shrink-0 shadow">
                 🔍
               </div>
-              <input type="text" id="dnd-ui-compendium-input" oninput="DnDUI.onCompendiumSearchInput(this.value)" onkeydown="DnDUI.onCompendiumInputKeydown(event)" placeholder="Search 3,522 SRD entries (e.g. Longsword, Full Plate, Ring, Cloak)..." class="flex-1 h-8 bg-transparent pr-2 text-xs sm:text-sm text-white placeholder-slate-200 focus:outline-none font-semibold">
-              <button type="button" onclick="DnDUI.onCompendiumSearchInput(document.getElementById('dnd-ui-compendium-input')?.value || '')" class="h-8 px-3 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs flex items-center gap-1.5 shrink-0 shadow transition cursor-pointer">
+              <input type="text" id="dnd-ui-compendium-input" data-input-action="ui:comp-search-input" data-keydown-action="ui:comp-search-keydown" placeholder="Search 3,522 SRD entries (e.g. Longsword, Full Plate, Ring, Cloak)..." class="flex-1 h-8 bg-transparent pr-2 text-xs sm:text-sm text-white placeholder-slate-200 focus:outline-none font-semibold">
+              <button type="button" data-action="ui:comp-search-btn" class="h-8 px-3 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs flex items-center gap-1.5 shrink-0 shadow transition cursor-pointer">
                 <span>🔍</span>
                 <span>Search</span>
               </button>
             </div>
             <div id="dnd-ui-compendium-token-bar" class="hidden flex flex-wrap items-center gap-1.5 pt-0.5 text-[10px] font-mono"></div>
             <div id="dnd-ui-compendium-srd-subfilters" class="flex flex-wrap items-center gap-1.5 text-[11px]">
-              <button type="button" data-srd-sub="all_gear" onclick="DnDUI.setSrdSubFilter('all_gear')" class="px-2.5 py-1 rounded-lg font-bold whitespace-nowrap transition cursor-pointer bg-indigo-600/30 text-indigo-200 border border-indigo-500/50">📦 All Gear</button>
-              <button type="button" data-srd-sub="Armor" onclick="DnDUI.setSrdSubFilter('Armor')" class="px-2.5 py-1 rounded-lg font-semibold whitespace-nowrap transition cursor-pointer bg-slate-900 text-slate-400 hover:text-white border border-slate-800">🛡️ Armor &amp; Shields</button>
-              <button type="button" data-srd-sub="Weapon" onclick="DnDUI.setSrdSubFilter('Weapon')" class="px-2.5 py-1 rounded-lg font-semibold whitespace-nowrap transition cursor-pointer bg-slate-900 text-slate-400 hover:text-white border border-slate-800">⚔️ Weapons</button>
-              <button type="button" data-srd-sub="Consumable" onclick="DnDUI.setSrdSubFilter('Consumable')" class="px-2.5 py-1 rounded-lg font-semibold whitespace-nowrap transition cursor-pointer bg-slate-900 text-slate-400 hover:text-white border border-slate-800">🧪 Consumables</button>
-              <button type="button" data-srd-sub="Crystal" onclick="DnDUI.setSrdSubFilter('Crystal')" class="px-2.5 py-1 rounded-lg font-semibold whitespace-nowrap transition cursor-pointer bg-slate-900 text-slate-400 hover:text-white border border-slate-800">💎 Crystals</button>
-              <button type="button" data-srd-sub="Item" onclick="DnDUI.setSrdSubFilter('Item')" class="px-2.5 py-1 rounded-lg font-semibold whitespace-nowrap transition cursor-pointer bg-slate-900 text-slate-400 hover:text-white border border-slate-800">💍 Magic &amp; Wondrous</button>
+              <button type="button" data-srd-sub="all_gear" data-action="ui:srd-subfilter" class="px-2.5 py-1 rounded-lg font-bold whitespace-nowrap transition cursor-pointer bg-indigo-600/30 text-indigo-200 border border-indigo-500/50">📦 All Gear</button>
+              <button type="button" data-srd-sub="Armor" data-action="ui:srd-subfilter" class="px-2.5 py-1 rounded-lg font-semibold whitespace-nowrap transition cursor-pointer bg-slate-900 text-slate-400 hover:text-white border border-slate-800">🛡️ Armor &amp; Shields</button>
+              <button type="button" data-srd-sub="Weapon" data-action="ui:srd-subfilter" class="px-2.5 py-1 rounded-lg font-semibold whitespace-nowrap transition cursor-pointer bg-slate-900 text-slate-400 hover:text-white border border-slate-800">⚔️ Weapons</button>
+              <button type="button" data-srd-sub="Consumable" data-action="ui:srd-subfilter" class="px-2.5 py-1 rounded-lg font-semibold whitespace-nowrap transition cursor-pointer bg-slate-900 text-slate-400 hover:text-white border border-slate-800">🧪 Consumables</button>
+              <button type="button" data-srd-sub="Crystal" data-action="ui:srd-subfilter" class="px-2.5 py-1 rounded-lg font-semibold whitespace-nowrap transition cursor-pointer bg-slate-900 text-slate-400 hover:text-white border border-slate-800">💎 Crystals</button>
+              <button type="button" data-srd-sub="Item" data-action="ui:srd-subfilter" class="px-2.5 py-1 rounded-lg font-semibold whitespace-nowrap transition cursor-pointer bg-slate-900 text-slate-400 hover:text-white border border-slate-800">💍 Magic &amp; Wondrous</button>
             </div>
           </div>
 
@@ -616,27 +620,27 @@
             <div class="space-y-1">
               <label class="block text-[11px] font-bold text-indigo-300">⚡ Quick Natural Language Assembly (Optional):</label>
               <div class="flex items-center gap-2">
-                <input type="text" id="dnd-forge-nl-input" oninput="DnDUI.onForgeNaturalLanguageInput(this.value)" placeholder="e.g. +1 Mithral Breastplate with Crystal of Adaptation, +2 Keen Mithral Scimitar with Fire Assault Crystal..." class="flex-1 bg-slate-950 border border-indigo-500/50 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-amber-400">
+                <input type="text" id="dnd-forge-nl-input" data-input-action="ui:forge-nl-input" placeholder="e.g. +1 Mithral Breastplate with Crystal of Adaptation, +2 Keen Mithral Scimitar with Fire Assault Crystal..." class="flex-1 bg-slate-950 border border-indigo-500/50 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-amber-400">
               </div>
             </div>
 
             <!-- Category Filter for Base Items (Armor & Shields Prioritized) -->
             <div class="flex items-center gap-1.5 pt-1 flex-wrap">
               <span class="text-[10px] text-slate-400 font-semibold uppercase">Category Filter:</span>
-              <button type="button" data-dnd-forge-filter="all" onclick="DnDUI.setForgeBaseTypeFilter('all')" class="px-2.5 py-0.5 rounded-lg text-[10px] font-bold transition bg-amber-500/20 text-amber-300 border border-amber-500/40 cursor-pointer">📦 All Base Items</button>
-              <button type="button" data-dnd-forge-filter="Armor" onclick="DnDUI.setForgeBaseTypeFilter('Armor')" class="px-2.5 py-0.5 rounded-lg text-[10px] font-semibold transition bg-slate-900 text-slate-400 hover:text-white border border-slate-800 cursor-pointer">🛡️ Armor &amp; Shields</button>
-              <button type="button" data-dnd-forge-filter="Weapon" onclick="DnDUI.setForgeBaseTypeFilter('Weapon')" class="px-2.5 py-0.5 rounded-lg text-[10px] font-semibold transition bg-slate-900 text-slate-400 hover:text-white border border-slate-800 cursor-pointer">⚔️ Weapons</button>
+              <button type="button" data-dnd-forge-filter="all" data-action="ui:forge-base-filter" class="px-2.5 py-0.5 rounded-lg text-[10px] font-bold transition bg-amber-500/20 text-amber-300 border border-amber-500/40 cursor-pointer">📦 All Base Items</button>
+              <button type="button" data-dnd-forge-filter="Armor" data-action="ui:forge-base-filter" class="px-2.5 py-0.5 rounded-lg text-[10px] font-semibold transition bg-slate-900 text-slate-400 hover:text-white border border-slate-800 cursor-pointer">🛡️ Armor &amp; Shields</button>
+              <button type="button" data-dnd-forge-filter="Weapon" data-action="ui:forge-base-filter" class="px-2.5 py-0.5 rounded-lg text-[10px] font-semibold transition bg-slate-900 text-slate-400 hover:text-white border border-slate-800 cursor-pointer">⚔️ Weapons</button>
             </div>
 
             <!-- Structured Pickers -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2">
               <div>
                 <label class="block text-slate-400 mb-1 font-semibold">1. Base Item (Armor / Shield / Weapon)</label>
-                <select id="dnd-forge-base-select" onchange="DnDUI.onForgeControlChange()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-2 text-white focus:outline-none focus:border-amber-400"></select>
+                <select id="dnd-forge-base-select" data-change-action="ui:forge-control-change" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-2 text-white focus:outline-none focus:border-amber-400"></select>
               </div>
               <div>
                 <label class="block text-slate-400 mb-1 font-semibold">2. Special Material</label>
-                <select id="dnd-forge-material-select" onchange="DnDUI.onForgeControlChange()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-2 text-white focus:outline-none focus:border-amber-400">
+                <select id="dnd-forge-material-select" data-change-action="ui:forge-control-change" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-2 text-white focus:outline-none focus:border-amber-400">
                   <option value="">Standard (Steel / Leather / Wood)</option>
                   <option value="mat-mithral">Mithral (Light / -ACP / +Max DEX)</option>
                   <option value="mat-adamantine">Adamantine (Bypass Hardness 20 / Armor DR)</option>
@@ -648,7 +652,7 @@
               </div>
               <div>
                 <label class="block text-slate-400 mb-1 font-semibold">3. Enhancement Bonus</label>
-                <select id="dnd-forge-enh-bonus" onchange="DnDUI.onForgeControlChange()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-2 text-amber-300 font-bold font-mono focus:outline-none focus:border-amber-400">
+                <select id="dnd-forge-enh-bonus" data-change-action="ui:forge-control-change" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-2 text-amber-300 font-bold font-mono focus:outline-none focus:border-amber-400">
                   <option value="0">Masterwork / Normal (+0)</option>
                   <option value="1" selected>+1 Enhancement</option>
                   <option value="2">+2 Enhancement</option>
@@ -659,7 +663,7 @@
               </div>
               <div>
                 <label class="block text-slate-400 mb-1 font-semibold">4. Augmentation Crystal (MIC)</label>
-                <select id="dnd-forge-crystal-select" onchange="DnDUI.onForgeControlChange()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-2 text-white focus:outline-none focus:border-amber-400">
+                <select id="dnd-forge-crystal-select" data-change-action="ui:forge-control-change" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-2 text-white focus:outline-none focus:border-amber-400">
                   <option value="">No Augmentation Crystal Attached</option>
                 </select>
               </div>
@@ -671,7 +675,7 @@
                 <label id="dnd-forge-abilities-title" class="block text-slate-400 font-semibold">5. Magic Special Abilities:</label>
                 <span id="dnd-forge-budget-badge" class="px-2 py-0.5 rounded-lg text-[10px] font-mono font-bold bg-amber-950/80 text-amber-300 border border-amber-500/40">Budget: +0 / +1 Used (+1 Left)</span>
               </div>
-              <input type="text" id="dnd-forge-enh-search" oninput="DnDUI.onForgeEnhSearchInput(this.value)" placeholder="🔍 Quick filter abilities (e.g. Keen, Flaming, Ghost, Fortification)..." class="w-full h-8 text-[11px] bg-slate-950 border border-slate-700 rounded-lg px-2.5 text-white mb-1 focus:outline-none focus:border-amber-400">
+              <input type="text" id="dnd-forge-enh-search" data-input-action="ui:forge-enh-search" placeholder="🔍 Quick filter abilities (e.g. Keen, Flaming, Ghost, Fortification)..." class="w-full h-8 text-[11px] bg-slate-950 border border-slate-700 rounded-lg px-2.5 text-white mb-1 focus:outline-none focus:border-amber-400">
               <div id="dnd-forge-enhancements-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1.5 max-h-48 overflow-y-auto p-1 custom-scroll">
                 <!-- Populated dynamically -->
               </div>
@@ -845,7 +849,7 @@
 
       return `
         <label class="${labelCls}" title="${escapeHtml(titleAttr)}">
-          <input type="checkbox" value="${e.id}" ${isChecked ? 'checked' : ''} ${isLocked ? 'disabled' : ''} onchange="DnDUI.onForgeControlChange()" class="dnd-forge-enh-chk rounded text-amber-500 bg-slate-900 border-slate-700">
+          <input type="checkbox" value="${e.id}" ${isChecked ? 'checked' : ''} ${isLocked ? 'disabled' : ''} data-change-action="ui:forge-control-change" class="dnd-forge-enh-chk rounded text-amber-500 bg-slate-900 border-slate-700">
           <span class="text-[11px] font-semibold ${isChecked ? 'text-amber-200' : 'text-slate-200'} truncate">${escapeHtml(e.label || e.name)}</span>
           <span class="text-[10px] font-mono ${isLocked ? 'text-slate-500' : 'text-amber-400'} ml-auto">${isLocked ? '🔒' + e.bonusEq : e.bonusEq}</span>
         </label>
@@ -1157,7 +1161,7 @@
       </div>
 
       <div class="pt-3 border-t border-slate-800 flex items-center justify-end gap-2">
-        <button type="button" onclick="DnDUI.equipAssembledForgeItem()" class="${actionBtnClass}">
+        <button type="button" data-action="ui:equip-forge-item" class="${actionBtnClass}">
           <span>${actionBtnIcon}</span>
           <span>${actionBtnLabel}</span>
         </button>
@@ -1557,13 +1561,12 @@
 
     if (_drawerState.results.length === 0) {
       const safeQ = escapeHtml(query || '');
-      const safeQJs = RuleMaster.escapeJsString(query || '');
       const hasCustomTab = Boolean(document.getElementById('add-pool-custom-tab-content')) && _drawerState.activeTab !== 'Monster';
       listEl.innerHTML = `
         <div class="p-6 text-center space-y-3">
           <div class="text-slate-400 text-xs italic">No matching SRD V2 entries found${safeQ ? ` for "${safeQ}"` : ''}.</div>
           ${hasCustomTab ? `
-            <button type="button" onclick="DnDUI.jumpToCustomAiTabWithQuery('${safeQJs}')" class="px-3 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs shadow transition cursor-pointer inline-flex items-center gap-1.5">
+            <button type="button" data-action="ui:jump-custom-ai" data-query="${safeQ}" class="px-3 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs shadow transition cursor-pointer inline-flex items-center gap-1.5">
               <span>🔍</span>
               <span>Search in Spotlight / Rule Master AI ➔</span>
             </button>
@@ -1597,7 +1600,7 @@
         }
       }
       return `
-      <div data-comp-row-idx="${idx}" onclick="DnDUI.selectCompendiumEntry(${idx})" class="p-2.5 hover:bg-slate-900/90 cursor-pointer transition flex items-center justify-between gap-2 ${idx === 0 ? 'bg-indigo-950/50' : ''}">
+      <div data-comp-row-idx="${idx}" data-action="ui:select-comp-entry" class="p-2.5 hover:bg-slate-900/90 cursor-pointer transition flex items-center justify-between gap-2 ${idx === 0 ? 'bg-indigo-950/50' : ''}">
         <div class="min-w-0 flex-1">
           <div class="text-xs font-bold text-white flex items-center gap-1.5 flex-wrap">
             <span class="truncate">${escapeHtml(r.name)}</span>
@@ -1672,7 +1675,7 @@
           <span class="px-2 py-0.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-700/60 text-[10px] font-mono">${escapeHtml(full.size ? `${full.size} ` : '')}${escapeHtml(full.category || full.type || 'SRD')}</span>
           <h4 class="text-base font-black text-amber-300 mt-1 truncate">${escapeHtml(full.name)}</h4>
         </div>
-        <button type="button" onclick="DnDUI.equipSelectedCompendiumEntry()" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow transition cursor-pointer shrink-0 flex items-center gap-1.5">
+        <button type="button" data-action="ui:equip-comp-entry" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow transition cursor-pointer shrink-0 flex items-center gap-1.5">
           <span>➕</span>
           <span>${actionBtnLabel}</span>
         </button>
@@ -1756,7 +1759,7 @@
       if (typeof document === 'undefined') return;
 
       // 1. Close SRD Compendium & Forge Drawer if open
-      const drawer = document.getElementById('dndui-compendium-drawer');
+      const drawer = document.getElementById('dnd-ui-compendium-drawer');
       if (drawer && !drawer.classList.contains('hidden')) {
         e.preventDefault();
         closeCompendiumDrawer();
@@ -1787,7 +1790,7 @@
 
       if (topModal) {
         e.preventDefault();
-        const closeBtn = topModal.querySelector('button[onclick^="close"], button[onclick*="CloseModal"], button[onclick*="dismiss"]');
+        const closeBtn = topModal.querySelector('button[onclick^="close"], button[onclick*="CloseModal"], button[onclick*="dismiss"], button[data-action*="close"], button[data-action*="Close"], [data-modal-close]');
         if (closeBtn && typeof closeBtn.click === 'function') {
           closeBtn.click();
         } else {
@@ -2009,5 +2012,39 @@
     updateForgePreview,
     equipAssembledForgeItem
   };
+
+  if (global.Actions && typeof global.Actions.register === 'function') {
+    const actionsApi = global.Actions;
+    actionsApi.register('ui:select-mode', (el, data) => {
+      const fnPath = data.modeFn;
+      const modeId = data.modeId;
+      if (!fnPath || !modeId) return;
+      const parts = fnPath.split('.');
+      let ctx = global;
+      let fn = global;
+      for (let i = 0; i < parts.length; i++) {
+        ctx = fn;
+        fn = fn ? fn[parts[i]] : null;
+      }
+      if (typeof fn === 'function') fn.call(ctx, modeId);
+    });
+    actionsApi.register('ui:close-compendium', () => closeCompendiumDrawer());
+    actionsApi.register('ui:switch-comp-tab', (el, data) => switchCompendiumTab(data.compTab || 'srd'));
+    actionsApi.register('ui:comp-search-input', (el) => onCompendiumSearchInput(el.value));
+    actionsApi.register('ui:comp-search-keydown', (el, data, event) => onCompendiumInputKeydown(event));
+    actionsApi.register('ui:comp-search-btn', () => {
+      const input = document.getElementById('dnd-ui-compendium-input');
+      onCompendiumSearchInput(input ? input.value : '');
+    });
+    actionsApi.register('ui:srd-subfilter', (el, data) => setSrdSubFilter(data.srdSub || 'all_gear'));
+    actionsApi.register('ui:forge-nl-input', (el) => onForgeNaturalLanguageInput(el.value));
+    actionsApi.register('ui:forge-base-filter', (el, data) => setForgeBaseTypeFilter(data.dndForgeFilter || 'all'));
+    actionsApi.register('ui:forge-control-change', () => onForgeControlChange());
+    actionsApi.register('ui:forge-enh-search', (el) => onForgeEnhSearchInput(el.value));
+    actionsApi.register('ui:equip-forge-item', () => equipAssembledForgeItem());
+    actionsApi.register('ui:jump-custom-ai', (el, data) => jumpToCustomAiTabWithQuery(data.query || ''));
+    actionsApi.register('ui:select-comp-entry', (el, data) => selectCompendiumEntry(Number(data.compRowIdx)));
+    actionsApi.register('ui:equip-comp-entry', () => equipSelectedCompendiumEntry());
+  }
 
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -488,14 +488,14 @@ function main() {
     'char_store.js':      { inlineEvents: 0,   windowAssigns: 1 },
     'ui_components.js':   { inlineEvents: 0,   windowAssigns: 2 },
     'rule_master.js':     { inlineEvents: 0,   windowAssigns: 1 },
-    'ui_shared.js':       { inlineEvents: 29,  windowAssigns: 0 },
-    'hub.html':           { inlineEvents: 202, windowAssigns: 11 },
+    'ui_shared.js':       { inlineEvents: 0,   windowAssigns: 0 },
+    'hub.html':           { inlineEvents: 0,   windowAssigns: 11 },
     'login.html':         { inlineEvents: 0,   windowAssigns: 0 },
-    'supabase_auth.js':   { inlineEvents: 8,   windowAssigns: 1 },
+    'supabase_auth.js':   { inlineEvents: 0,   windowAssigns: 1 },
     'srd_compendium.js':  { inlineEvents: 0,   windowAssigns: 0 },
     'campaign_db.js':     { inlineEvents: 0,   windowAssigns: 0 },
-    'hub_dice.js':        { inlineEvents: 0,   windowAssigns: 35 },
-    'hub_notes.js':       { inlineEvents: 66,  windowAssigns: 1 },
+    'hub_dice.js':        { inlineEvents: 0,   windowAssigns: 34 },
+    'hub_notes.js':       { inlineEvents: 0,   windowAssigns: 1 },
     'hub_ai.js':          { inlineEvents: 0,   windowAssigns: 0 },
     'dice3d.js':          { inlineEvents: 0,   windowAssigns: 1 }
   };
@@ -533,9 +533,9 @@ function main() {
     }
   }
 
-  // 6c. Delegated Action Registration Completeness Gate (index.html + char_*.js + rule_master.js)
-  const ACTION_PRODUCER_FILES = ['index.html', 'char_hud.js', 'char_combat.js', 'char_spells.js', 'char_progression.js', 'char_inventory.js', 'rule_master.js'];
-  const ACTION_REGISTRY_FILES = ['ui_components.js', 'char_hud.js', 'char_combat.js', 'char_spells.js', 'char_progression.js', 'char_inventory.js', 'char_store.js', 'rule_master.js'];
+  // 6c. Delegated Action Registration Completeness Gate (index.html + hub.html + modules)
+  const ACTION_PRODUCER_FILES = ['index.html', 'char_hud.js', 'char_combat.js', 'char_spells.js', 'char_progression.js', 'char_inventory.js', 'rule_master.js', 'hub.html', 'hub_notes.js', 'ui_shared.js', 'supabase_auth.js'];
+  const ACTION_REGISTRY_FILES = ['ui_components.js', 'char_hud.js', 'char_combat.js', 'char_spells.js', 'char_progression.js', 'char_inventory.js', 'char_store.js', 'rule_master.js', 'hub.html', 'hub_dice.js', 'hub_notes.js', 'ui_shared.js', 'supabase_auth.js'];
   const registeredActions = new Set();
   for (const rel of ACTION_REGISTRY_FILES) {
     const full = path.join(ROOT, rel);
