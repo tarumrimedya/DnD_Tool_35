@@ -52,6 +52,8 @@ const CORE_FILES = [
   'char_inventory.js',
   'hub.html',
   'login.html',
+  'forge_sandbox.html',
+  'forge_sandbox.js',
   'rule_engine.js',
   'char_store.js',
   'ui_components.js',
@@ -483,7 +485,9 @@ function main() {
     'hub_dice.js':        { inlineEvents: 0,   windowAssigns: 34 },
     'hub_notes.js':       { inlineEvents: 0,   windowAssigns: 1 },
     'hub_ai.js':          { inlineEvents: 0,   windowAssigns: 0 },
-    'dice3d.js':          { inlineEvents: 0,   windowAssigns: 1 }
+    'dice3d.js':          { inlineEvents: 0,   windowAssigns: 1 },
+    'forge_sandbox.html': { inlineEvents: 0,   windowAssigns: 0 },
+    'forge_sandbox.js':   { inlineEvents: 0,   windowAssigns: 1 }
   };
   const DEFAULT_NEW_FILE_CAP = { inlineEvents: 0, windowAssigns: 2 };
   const inlineEventRatchetRegex = /\bon(click|dblclick|change|input|keydown|keyup|keypress|submit|focus|blur|mousedown|mouseup|mouseover|mouseout|mouseenter|mouseleave|pointerdown|pointerup|touchstart|touchend|dragstart|dragover|dragleave|drop|wheel|scroll|contextmenu)\s*=/gi;
