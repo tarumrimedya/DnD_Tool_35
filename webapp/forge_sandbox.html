@@ -14,11 +14,12 @@
   body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; margin: 0; }
   .z-30 { z-index: 30; }
 
-  /* Compact 1-row top bar */
+  /* Compact 2-row top bar */
   .fs-topbar { position: relative; z-index: 40; background: rgba(5, 8, 17, 0.94); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border-subtle); padding: 8px 12px; }
   .fs-topbar-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; max-width: 1200px; margin: 0 auto; }
+  .fs-topbar-spot-row { margin-top: 6px; }
   .fs-title { color: var(--text-primary); font-weight: 800; font-size: 14px; letter-spacing: .02em; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
-  .fs-top-spot { flex: 1 1 320px; min-width: 240px; }
+  .fs-top-spot { flex: 1 1 100%; width: 100%; min-width: 0; }
   .fs-rel { position: relative; display: inline-flex; }
   .fs-pop { position: absolute; top: calc(100% + 6px); right: 0; z-index: 60; width: 320px; padding: 12px; border-radius: 12px; background: #0b1224; border: 1px solid var(--border-default); box-shadow: 0 16px 40px rgba(0,0,0,.6); }
 
@@ -130,13 +131,16 @@
   .fs-spot-layers { display: flex; flex-wrap: wrap; gap: 4px; padding: 4px 4px 6px; border-bottom: 1px solid var(--border-subtle); margin-bottom: 4px; }
   .fs-spot-layer { font-size: 10.5px; font-weight: 700; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border-default); color: var(--text-muted); cursor: pointer; }
   .fs-spot-layer.on { background: #312e81; border-color: #818cf8; color: #e0e7ff; }
-  .fs-spot-dd { display: none; position: absolute; left: 0; right: 0; top: calc(100% + 4px); z-index: 70; max-height: 340px; overflow-y: auto; border-radius: 12px; background: rgba(11, 18, 36, 0.98); border: 1px solid var(--border-default); box-shadow: 0 18px 44px rgba(0,0,0,.65); backdrop-filter: blur(10px); padding: 4px; min-width: 280px; }
+  .fs-spot-dd { display: none; position: absolute; left: 0; right: 0; top: calc(100% + 4px); z-index: 70; max-height: 400px; overflow-y: auto; border-radius: 12px; background: rgba(11, 18, 36, 0.98); border: 1px solid var(--border-default); box-shadow: 0 18px 44px rgba(0,0,0,.65); backdrop-filter: blur(10px); padding: 4px; min-width: 280px; }
   .fs-spot-dd.open { display: block; }
   .fs-spot-group { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: var(--text-dim); font-weight: 800; padding: 6px 8px 3px; }
-  .fs-spot-item { padding: 5px 8px; border-radius: 8px; cursor: pointer; }
+  .fs-spot-item { padding: 6px 9px; border-radius: 8px; cursor: pointer; }
+  .fs-spot-item + .fs-spot-item { margin-top: 1px; }
   .fs-spot-item:hover, .fs-spot-item.active { background: #1e1b4b; }
-  .fs-spot-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 12px; color: var(--text-primary); }
-  .fs-spot-desc { font-size: 10.5px; color: var(--text-muted); margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .fs-spot-row { display: flex; align-items: center; justify-content: flex-start; gap: 6px; font-size: 12px; line-height: 18px; min-height: 18px; color: var(--text-primary); min-width: 0; }
+  .fs-spot-name { font-weight: 700; flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .fs-spot-row .fs-pill { flex: 0 0 auto; max-width: 55%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block; vertical-align: middle; }
+  .fs-spot-desc { font-size: 11px; line-height: 15px; min-height: 30px; max-height: 30px; color: var(--text-muted); margin-top: 2px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; white-space: normal; }
   .fs-spot-empty { padding: 10px; font-size: 11px; color: var(--text-dim); }
 
   /* Alignment matrix */
@@ -203,7 +207,7 @@
   .lego-block .fs-check, .lego-hat .fs-check, .c-top .fs-check { background: #0b1224; border-color: rgba(148,163,184,.3); color: #cbd5e1; }
   .lego-hat .fs-align button { height: 32px; }
   .lego-hat .fs-align { grid-template-columns: repeat(3, 54px); }
-  .fs-spot-del { margin-left: 6px; padding: 0 6px; border-radius: 6px; color: #94a3b8; cursor: pointer; font-weight: 800; }
+  .fs-spot-del { margin-left: auto; padding: 0 6px; border-radius: 6px; color: #94a3b8; cursor: pointer; font-weight: 800; flex-shrink: 0; }
   .fs-spot-del:hover { color: #fb7185; background: rgba(251,113,133,.12); }
   .fs-live-toggle { display: none; }
 

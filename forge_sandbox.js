@@ -2672,8 +2672,22 @@
     return scored.slice(0, limit || 30).map((x) => x[1]);
   }
   const SI = (group, id, label, badge, desc, data) => ({ group: group, id: id, label: label, badge: badge || '', desc: desc || '', data: data });
-  const short = (s, n) => { const t = stripHtml(s); return t.length > (n || 110) ? t.slice(0, n || 110) + '…' : t; };
+  const short = (s, n) => { const t = stripHtml(s); return t.length > (n || 260) ? t.slice(0, n || 260) + '…' : t; };
   const allTags = () => STANDARD_TAGS.flatMap((g) => g[1]).concat(S.livingTags.filter((t) => !STD_TAG_SET.has(t)));
+  function presetSpotMeta(p) {
+    if (p._spotMeta) return p._spotMeta;
+    const en = p.build();
+    const name = entryName(en);
+    const mParen = p.label.match(/\(([^()]+)\)\s*$/);
+    const mColon = !mParen && p.label.indexOf(':') >= 0 ? p.label.slice(p.label.indexOf(':') + 1).trim() : '';
+    const sub = mParen ? mParen[1].trim() : mColon;
+    const hdr = rawHeaderLine(en).join(' • ');
+    const txt = stripHtml(en.text || '');
+    const parts = [];
+    [sub, hdr, txt].forEach((seg) => { if (seg && !parts.some((x) => x.toLowerCase().indexOf(seg.toLowerCase()) >= 0)) parts.push(seg); });
+    p._spotMeta = { title: p.icon + ' ' + name, desc: short(parts.join(' — '), 280) };
+    return p._spotMeta;
+  }
 
   const SPOT = {
     load: {
@@ -2681,19 +2695,28 @@
       layers: ['All', 'Presets', 'SRD', 'MIC', 'Saved'],
       search(q, ctx, layer) {
         layer = layer || 'All';
-        if (layer === 'Saved') return rank(S.templates, q, (t) => t.name, null, 30).map((t) => SI('📌 Saved Templates', t.id, t.name, (BP_BY_ID[t.base] || {}).name || 'Template', t.facets.length + ' sections', { tpl: t.id }));
-        const pre = layer === 'All' || layer === 'Presets' ? rank(PRESETS, q, (p) => p.label, null, layer === 'Presets' ? 50 : 40).map((p) => SI('⭐ Curated Presets', p.id, p.icon + ' ' + p.label, 'Preset', '', { preset: p.id })) : [];
+        if (layer === 'Saved') return rank(S.templates, q, (t) => t.name, (t) => (t.facets || []).join(' '), 30).map((t) => SI('📌 Saved Templates', t.id, t.name, (BP_BY_ID[t.base] || {}).name || 'Template', 'Saved custom layout (' + t.facets.length + ' sections: ' + t.facets.join(', ') + '). Click to start a new entry from this template.', { tpl: t.id }));
+        const pre = layer === 'All' || layer === 'Presets' ? rank(PRESETS, q, (p) => p.label, (p) => presetSpotMeta(p).desc, layer === 'Presets' ? 50 : 40).map((p) => { const m = presetSpotMeta(p); return SI('⭐ Curated Presets', p.id, m.title, 'Preset', m.desc, { preset: p.id }); }) : [];
         if (layer === 'Presets' || (!String(q || '').trim() && layer === 'All')) return pre;
-        const out = pre.slice();
+        const sNorm = String(q || '').trim().toLowerCase();
+        const scoreName = (nm) => { const n = String(nm || '').toLowerCase(); return !sNorm ? 50 : n === sNorm ? 100 : n.indexOf(sNorm) === 0 ? 80 : n.indexOf(' ' + sNorm) >= 0 ? 60 : n.indexOf(sNorm) >= 0 ? 45 : 15; };
+        const srdBuckets = [];
         const isMic = (x) => /Magic Item Compendium|MIC/i.test(String(x.src || x.source || ''));
-        const add = (group, list, badgeFn, descFn, type, lim) => rank(list.filter((x) => layer === 'All' || (layer === 'MIC' ? isMic(x) : !isMic(x))), q, (x) => x.name, descFn, lim || 6).forEach((x) => out.push(SI(group, x.id, x.name, badgeFn(x), short(descFn(x)), { srd: x, type: type })));
-        add('⚔️ Weapons', CAT.weapons, (x) => gp(x.cost), (x) => x.desc || x.dice + ' ' + x.dmgType, 'Weapon');
-        add('🛡️ Armor & Shields', CAT.armors, (x) => gp(x.cost), (x) => x.desc || '+' + x.armorBonus + ' ' + x.type, 'Armor');
-        add('💎 Magic Items (SRD / MIC)', CAT.magicItems, (x) => gp(x.cost), (x) => x.shortDescription || '', 'MagicItem', 8);
-        add('🔮 Spells', CAT.spells, (x) => x.levelText || 'Spell', (x) => x.desc, 'Spell', 8);
-        add('📜 Feats', CAT.feats, (x) => (x.custom ? 'Custom' : x.src || 'Feat'), (x) => x.desc || x.prereq, 'Feat', 6);
-        add('💎 Classes', CAT.classes, (x) => x.category || 'Class', (x) => x.shortDescription || '', 'Class', 4);
-        add('✨ Domains', CAT.domains, () => 'Domain', (x) => x.grantedPower, 'Domain', 4);
+        const add = (group, list, badgeFn, descFn, type, lim) => {
+          const hits = rank(list.filter((x) => layer === 'All' || (layer === 'MIC' ? isMic(x) : !isMic(x))), q, (x) => x.name, descFn, lim || 6);
+          if (!hits.length) return;
+          srdBuckets.push({ best: scoreName(hits[0].name), items: hits.map((x) => SI(group, x.id, x.name, badgeFn(x), short(descFn(x), 280), { srd: x, type: type })) });
+        };
+        add('⚔️ Weapons', CAT.weapons, (x) => gp(x.cost), (x) => [x.category + ' ' + x.handed + (x.ranged ? ' Ranged (' + x.range + ' ft.)' : ' Melee'), x.dice + ' ' + x.dmgType + ' (' + (x.critRange < 20 ? x.critRange + '–20/' : '') + '×' + x.critMult + ')', stripHtml(x.desc || (x.raw && x.raw.description) || ''), x.src].filter(Boolean).join(' • '), 'Weapon');
+        add('🛡️ Armor & Shields', CAT.armors, (x) => gp(x.cost), (x) => [x.type === 'Shield' ? 'Shield' : x.type + ' Armor', '+' + x.armorBonus + ' AC', 'Max Dex ' + (x.maxDex >= 99 ? '—' : '+' + x.maxDex), 'ACP ' + x.acp, 'ASF ' + x.asf + '%', stripHtml(x.desc || (x.raw && x.raw.description) || ''), x.src].filter(Boolean).join(' • '), 'Armor');
+        add('💎 Magic Items (SRD / MIC)', CAT.magicItems, (x) => num(x.cost) > 0 ? gp(x.cost) : (x.slot || x.category || 'Magic Item'), (x) => [x.slot || x.category || 'Magic Item', x.casterLevel ? 'CL ' + x.casterLevel : '', stripHtml(x.shortDescription || x.description || ''), x.source || 'SRD'].filter(Boolean).join(' • '), 'MagicItem', 8);
+        add('🔮 Spells', CAT.spells, (x) => x.levelText || 'Spell', (x) => [x.school, x.action ? x.action + ' Action' : '', x.range, x.save && x.save !== 'None' ? 'Save: ' + x.save : '', stripHtml(x.desc || (x.raw && x.raw.description) || ''), x.src].filter(Boolean).join(' • '), 'Spell', 8);
+        add('📜 Feats', CAT.feats, (x) => (x.custom ? 'Custom' : x.src || 'Feat'), (x) => [x.prereq ? 'Prerequisites: ' + x.prereq : '', stripHtml(x.desc || (x.raw && (x.raw.benefit || x.raw.description)) || ''), x.src].filter(Boolean).join(' • '), 'Feat', 6);
+        add('💎 Classes', CAT.classes, (x) => x.category || 'Class', (x) => [x.hitDie ? 'd' + x.hitDie + ' HD' : '', x.babProgression ? 'BAB ' + x.babProgression : '', stripHtml(x.shortDescription || x.description || ''), x.source || 'SRD'].filter(Boolean).join(' • '), 'Class', 4);
+        add('✨ Domains', CAT.domains, () => 'Domain', (x) => ['Granted Power: ' + stripHtml(x.grantedPower || ''), x.spells && x.spells.length ? 'Spells: ' + x.spells.join(', ') : '', x.src].filter(Boolean).join(' • '), 'Domain', 4);
+        if (sNorm) srdBuckets.sort((a, b) => b.best - a.best);
+        const out = pre.slice();
+        srdBuckets.forEach((b) => b.items.forEach((it) => out.push(it)));
         return out;
       },
       pick(it) {
@@ -2760,8 +2783,8 @@
       search(q, ctx, layer) {
         const s = String(q || '').trim(), out = [], L = layer || 'All';
         const norm = s ? (s[0] === '#' ? s : '#' + s).replace(/\s+/g, '') : '';
-        STANDARD_TAGS.filter((g) => L === 'All' || L === g[0]).forEach((g) => g[1].filter((t) => S.entry.tags.indexOf(t) < 0 && (!s || t.toLowerCase().indexOf(norm.toLowerCase()) >= 0)).forEach((t) => out.push(SI(g[0], t, t, 'Standard', '', { tag: t }))));
-        S.livingTags.filter((t) => (L === 'All' || L === 'Custom') && S.entry.tags.indexOf(t) < 0 && (!s || t.toLowerCase().indexOf(norm.toLowerCase()) >= 0)).forEach((t) => out.push(SI('Custom Pools', t, t, 'Custom', '', { tag: t })));
+        STANDARD_TAGS.filter((g) => L === 'All' || L === g[0]).forEach((g) => g[1].filter((t) => S.entry.tags.indexOf(t) < 0 && (!s || t.toLowerCase().indexOf(norm.toLowerCase()) >= 0)).forEach((t) => out.push(SI(g[0], t, t, 'Standard', g[0] + ' taxonomy tag — selectable in Prerequisites, Bonus Feat Grants, and Synergy C-Blocks.', { tag: t }))));
+        S.livingTags.filter((t) => (L === 'All' || L === 'Custom') && S.entry.tags.indexOf(t) < 0 && (!s || t.toLowerCase().indexOf(norm.toLowerCase()) >= 0)).forEach((t) => out.push(SI('Custom Pools', t, t, 'Custom', 'Custom campaign tag pool — reusable across Prerequisites and Bonus Feat Grants.', { tag: t })));
         if (norm && norm.length > 1 && !allTags().some((t) => t.toLowerCase() === norm.toLowerCase())) out.push(SI('Create', 'new', '+ Create Custom Pool ' + norm, 'New', 'Reusable living tag pool, selectable in Prerequisites & Bonus Feat Grants', { tag: norm, create: true }));
         return out;
       },
@@ -2769,7 +2792,7 @@
     },
     descriptor: {
       ph: '🔍 Add descriptor: [Fire], [Mind-Affecting], [Fear]…',
-      search(q) { return rank(DESCRIPTORS.filter((d) => S.entry.spell.descriptors.indexOf(d) < 0).map((d) => ({ name: d })), q, (d) => d.name, null, 25).map((d) => SI('Descriptors', d.name, '[' + d.name + ']', '', '', { d: d.name })); },
+      search(q) { return rank(DESCRIPTORS.filter((d) => S.entry.spell.descriptors.indexOf(d) < 0).map((d) => ({ name: d })), q, (d) => d.name, null, 25).map((d) => SI('Descriptors', d.name, '[' + d.name + ']', 'Descriptor', 'D&D 3.5e [' + d.name + '] descriptor — interacts with resistances, immunities, and descriptor-specific rules.', { d: d.name })); },
       pick(it) { S.entry.spell.descriptors.push(it.data.d); renderAll(); }
     },
     power: {
@@ -2826,12 +2849,12 @@
     },
     skill: {
       ph: '🔍 + Add Skill',
-      search(q) { return rank(allSkills().filter((s) => S.entry.progression.classSkills.indexOf(s.name) < 0), q, (s) => s.name, null, 36).map((s) => SI(s.custom ? 'Custom Skills' : '3.5e Skills', s.name, s.name, s.ability.toUpperCase() + (s.custom ? ' • Custom' : ''), '', { name: s.name })); },
+      search(q) { return rank(allSkills().filter((s) => S.entry.progression.classSkills.indexOf(s.name) < 0), q, (s) => s.name, null, 36).map((s) => SI(s.custom ? 'Custom Skills' : '3.5e Skills', s.name, s.name, s.ability.toUpperCase() + (s.custom ? ' • Custom' : ''), (s.custom ? 'Custom campaign skill' : 'Core D&D 3.5e class skill') + ' keyed to ' + s.ability.toUpperCase() + (s.trainedOnly ? ' • Trained Only' : '') + (s.acp ? ' • Armor Check Penalty' : '') + '.', { name: s.name })); },
       pick(it) { S.entry.progression.classSkills.push(it.data.name); renderAll(); }
     },
     favwpn: {
       ph: '🔍 Select Base Weapon',
-      search(q) { return rank(CAT.weapons, q, (w) => w.name, null, 30).map((w) => SI(w.category + ' Weapons', w.id, baseName(w), w.dice, w.handed, { name: baseName(w) })); },
+      search(q) { return rank(CAT.weapons, q, (w) => w.name, (w) => w.desc, 30).map((w) => SI(w.category + ' Weapons', w.id, baseName(w), w.dice, w.category + ' ' + w.handed + (w.ranged ? ' Ranged' : ' Melee') + ' • ' + w.dmgType + ' (' + (w.critRange < 20 ? w.critRange + '–20/' : '') + '×' + w.critMult + ') • ' + gp(w.cost) + ' • ' + w.src, { name: baseName(w) })); },
       pick(it) { S.entry.grants.favoredWeapon = it.data.name; renderAll(); }
     }
   };
@@ -2857,10 +2880,23 @@
     dd.innerHTML = pills + (items.length ? items.map((it, i) => {
       const head = it.group !== last ? '<div class="fs-spot-group">' + esc(it.group) + '</div>' : '';
       last = it.group;
-      return head + '<div class="fs-spot-item' + (i === S.spot.idx ? ' active' : '') + '" data-spot-pick="' + i + '"><div class="fs-spot-row"><b>' + esc(it.label) + '</b><span>' + (it.badge ? '<span class="fs-pill dim">' + esc(it.badge) + '</span>' : '') + (it.data && it.data.tpl ? '<span class="fs-spot-del" data-spot-del="' + esc(it.data.tpl) + '" title="Delete saved template">✕</span>' : '') + '</span></div>' + (it.desc ? '<div class="fs-spot-desc">' + esc(it.desc) + '</div>' : '') + '</div>';
+      return head + '<div class="fs-spot-item' + (i === S.spot.idx ? ' active' : '') + '" data-spot-pick="' + i + '"><div class="fs-spot-row"><b class="fs-spot-name">' + esc(it.label) + '</b>' + (it.badge ? '<span class="fs-pill dim">' + esc(it.badge) + '</span>' : '') + (it.data && it.data.tpl ? '<span class="fs-spot-del" data-spot-del="' + esc(it.data.tpl) + '" title="Delete saved template">✕</span>' : '') + '</div><div class="fs-spot-desc">' + esc(it.desc || '—') + '</div></div>';
     }).join('') : '<div class="fs-spot-empty">No matches' + (CAT.srdLoaded ? '' : ' in the offline seed catalog (serve over http:// to search the full SRD)') + '.</div>');
     dd.classList.add('open');
-    if (window.innerWidth > 640) { dd.style.left = ''; dd.style.right = ''; const rc = dd.getBoundingClientRect(); if (rc.right > window.innerWidth - 8) { dd.style.left = 'auto'; dd.style.right = '0'; } }
+    if (window.innerWidth <= 640) {
+      const inpEl = dd.parentElement && dd.parentElement.querySelector('[data-spot-input]');
+      if (inpEl) {
+        const ir = inpEl.getBoundingClientRect();
+        const topPx = Math.max(8, Math.min(Math.round(ir.bottom + 4), Math.round(window.innerHeight * 0.52)));
+        dd.style.top = topPx + 'px';
+        dd.style.maxHeight = Math.max(180, window.innerHeight - topPx - 12) + 'px';
+      }
+    } else {
+      dd.style.top = ''; dd.style.maxHeight = '';
+      dd.style.left = ''; dd.style.right = '';
+      const rc = dd.getBoundingClientRect();
+      if (rc.right > window.innerWidth - 8) { dd.style.left = 'auto'; dd.style.right = '0'; }
+    }
     const act = dd.querySelector('.fs-spot-item.active'); if (act && act.scrollIntoView) act.scrollIntoView({ block: 'nearest' });
   }
   function spotPick(i) {
@@ -2922,7 +2958,8 @@
     const importBtn = btn('toggle-import-json', '📥 Import JSON', 'fs-xs' + (S.ui.importOpen ? ' fs-on' : ''));
     const status = CAT.srdLoaded ? '<span class="fs-pill emerald" title="SrdCompendium + master_db.json">📚 SRD ' + CAT.srdCount.toLocaleString('en-US') + (CAT.customCount ? ' + ' + CAT.customCount + ' custom' : '') + '</span>' : '<span class="fs-pill dim" title="Serve over http:// to load srd_compendium.js data">📚 Offline seed</span>';
     $('#fs-topbar').innerHTML = '<div class="fs-topbar-row"><div class="fs-title">' + DICE_SVG + ' Living Facet Studio</div>' + catSel +
-      '<div class="fs-top-spot">' + spotHtml('load', 'top') + '</div>' + save + skillPop + importBtn + btn('new-entry', '✨ Blank', 'fs-xs') + status + '</div>';
+      '<span class="fs-grow-gap"></span>' + save + skillPop + importBtn + btn('new-entry', '✨ Blank', 'fs-xs') + status + '</div>' +
+      '<div class="fs-topbar-row fs-topbar-spot-row"><div class="fs-top-spot">' + spotHtml('load', 'top') + '</div></div>';
   }
   function renderLiveHeader() {
     const en = S.entry, bp = BP_BY_ID[en.blueprint] || BLUEPRINTS[0], has = (k) => en.facets.indexOf(k) >= 0;
