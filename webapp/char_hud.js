@@ -861,7 +861,7 @@
       // Fetch character_data.json ONLY when character is missing or legacy Kazmil is missing core fields
       try {
         let defaultChar = window.BUNDLED_CHARACTER_DATA || null;
-        const mightBeKazmil = character && !character.isNpc && (character.name === "Kazmil'in Çırağı" || (!character._hubId && !queryId));
+        const mightBeKazmil = character && !character.isNpc && (!character._hubId && !queryId);
         const kazmilNeedsPatch = mightBeKazmil && (
           !character.bodySlots || Object.keys(character.bodySlots).length === 0 ||
           !character.gearPool || character.gearPool.length === 0 ||
@@ -890,7 +890,7 @@
           }
         } else {
           let updated = false;
-          const isKazmil = !character.isNpc && ((defaultChar && character.name === defaultChar.name) || character.name === "Kazmil'in Çırağı" || (!character._hubId && !queryId));
+          const isKazmil = !character.isNpc && ((defaultChar && character.name === defaultChar.name) || (!character._hubId && !queryId));
 
           if (isKazmil && defaultChar) {
             if (!character.bodySlots || Object.keys(character.bodySlots).length === 0) {
@@ -2684,111 +2684,6 @@
       if (!Array.isArray(sc.divineSpells)) sc.divineSpells = [];
     }
 
-    function normalizeLegacyTurkishCharacterData(charObj) {
-      if (!charObj || typeof charObj !== 'object') return;
-      if (/^erkek$/i.test(String(charObj.gender || '').trim())) charObj.gender = 'Male';
-      else if (/^kad[ıi]n$/i.test(String(charObj.gender || '').trim())) charObj.gender = 'Female';
-
-      if (/^medium\s*\(orta\)$/i.test(String(charObj.size || '').trim())) charObj.size = 'Medium';
-      else if (/^small\s*\(k[üu][çc][üu]k\)$/i.test(String(charObj.size || '').trim())) charObj.size = 'Small';
-      else if (/^large\s*\(b[üu]y[üu]k\)$/i.test(String(charObj.size || '').trim())) charObj.size = 'Large';
-
-      if (charObj.activeWeapon === 'Yumruk (Unarmed)') charObj.activeWeapon = 'Unarmed Strike';
-      else if (charObj.activeWeapon === 'Yok') charObj.activeWeapon = 'None';
-      if (charObj.activeOffHand === 'Yumruk (Unarmed)') charObj.activeOffHand = 'Unarmed Strike';
-      else if (charObj.activeOffHand === 'Yok') charObj.activeOffHand = 'None';
-
-      const normWeaponSet = (ws) => {
-        if (!ws || typeof ws !== 'object') return;
-        if (ws.set1) {
-          if (ws.set1.name === 'Ana El' || ws.set1.name === 'Menzilli Silah') ws.set1.name = 'Main Hand';
-          if (ws.set1.mainWeapon === 'Yumruk (Unarmed)') ws.set1.mainWeapon = 'Unarmed Strike';
-          else if (ws.set1.mainWeapon === 'Yok') ws.set1.mainWeapon = 'None';
-          if (ws.set1.grip === 'Tek El') ws.set1.grip = '1-Hand';
-          else if (ws.set1.grip === 'Çift El') ws.set1.grip = '2-Hand';
-          else if (ws.set1.grip === 'İkinci El' || ws.set1.grip === 'Ikinci El') ws.set1.grip = 'Off-Hand';
-        }
-        if (ws.set2) {
-          if (ws.set2.name === 'İkinci El' || ws.set2.name === 'Ikinci El' || ws.set2.name === 'Ana El') ws.set2.name = 'Off-Hand';
-          if (ws.set2.mainWeapon === 'Yumruk (Unarmed)') ws.set2.mainWeapon = 'Unarmed Strike';
-          else if (ws.set2.mainWeapon === 'Yok') ws.set2.mainWeapon = 'None';
-          if (ws.set2.grip === 'Tek El') ws.set2.grip = '1-Hand';
-          else if (ws.set2.grip === 'Çift El') ws.set2.grip = '2-Hand';
-          else if (ws.set2.grip === 'İkinci El' || ws.set2.grip === 'Ikinci El') ws.set2.grip = 'Off-Hand';
-        }
-      };
-      if (charObj.tactical) {
-        normWeaponSet(charObj.tactical.weaponSets);
-        normWeaponSet(charObj.tactical.meleeWeaponSets);
-        normWeaponSet(charObj.tactical.rangedWeaponSets);
-      }
-
-      if (Array.isArray(charObj.weapons)) {
-        charObj.weapons.forEach(w => {
-          if (!w || typeof w !== 'object') return;
-          if (w.name === 'Yumruk (Unarmed)') w.name = 'Unarmed Strike';
-          if (w.slot === 'Ana El') w.slot = 'Main Hand';
-          else if (w.slot === 'İkinci El' || w.slot === 'Ikinci El') w.slot = 'Off-Hand';
-          else if (w.slot === 'Çift El') w.slot = 'Two-Handed';
-          else if (w.slot === 'Menzilli') w.slot = 'Ranged';
-          if (w.grip === 'Tek El') w.grip = '1-Hand';
-          else if (w.grip === 'Çift El') w.grip = '2-Hand';
-          else if (w.grip === 'İkinci El' || w.grip === 'Ikinci El') w.grip = 'Off-Hand';
-          const fixDmgType = (dt) => {
-            if (!dt || typeof dt !== 'string') return dt;
-            return dt
-              .replace(/Ezici\s*\(Öldürücü Olmayan\)/gi, 'Bludgeoning (Nonlethal)')
-              .replace(/Delici\s*\(Finesse\)/gi, 'Piercing (Finesse)')
-              .replace(/\bDelici\b/gi, 'Piercing')
-              .replace(/\bKesici\b/gi, 'Slashing')
-              .replace(/\bEzici\b/gi, 'Bludgeoning');
-          };
-          if (w.type) w.type = fixDmgType(w.type);
-          if (w.dmgType) w.dmgType = fixDmgType(w.dmgType);
-        });
-      }
-
-      const normBuffList = (list) => {
-        if (!Array.isArray(list)) return;
-        list.forEach(b => {
-          if (!b || typeof b !== 'object') return;
-          if (typeof b.name === 'string') {
-            b.name = b.name.replace(/\s*\((?:Acele|Kutsama|Dua|Yorgun)\)\s*$/i, '').trim();
-          }
-          if (b.source === 'Condition (Durum)') b.source = 'Condition';
-          if (typeof b.durationText === 'string') {
-            b.durationText = b.durationText
-              .replace(/1 saat \/ CL \(5 Saat\)/gi, '1 hr / CL (5 Hours)')
-              .replace(/1 dk \/ CL \(5 Dk\)/gi, '1 min / CL (5 Min)')
-              .replace(/1 dk \/ CL/gi, '1 min / CL')
-              .replace(/10 dk \/ CL/gi, '10 min / CL')
-              .replace(/1 dk \(10 Tur\)/gi, '1 min (10 Rounds)')
-              .replace(/1 tur \/ CL \(6 Tur\)/gi, '1 rd / CL (6 Rounds)')
-              .replace(/1 tur \/ CL/gi, '1 rd / CL')
-              .replace(/(\d+)\s*Tur\b/gi, '$1 Rounds')
-              .replace(/8 Saat Dinlenme/gi, '8 Hours Rest')
-              .replace(/^Sürekli$/i, 'Continuous')
-              .replace(/^Kalıcı$/i, 'Permanent');
-          }
-        });
-      };
-      normBuffList(charObj.buffs);
-      normBuffList(charObj.debuffs);
-
-      if (Array.isArray(charObj.pinnedActions)) {
-        charObj.pinnedActions.forEach(p => {
-          if (!p || typeof p !== 'object' || typeof p.action !== 'string') return;
-          if (/^standart$/i.test(p.action)) p.action = 'Standard';
-          else if (/^h[ıi]zl[ıi](\s*\(swift\))?$/i.test(p.action)) p.action = 'Swift';
-          else if (/^tam\s*tur$/i.test(p.action)) p.action = 'Full-Round';
-          else if (/^hareket$/i.test(p.action)) p.action = 'Move';
-          else if (/^serbest$/i.test(p.action)) p.action = 'Free';
-          else if (/^anl[ıi]k$/i.test(p.action)) p.action = 'Immediate';
-          else if (/^pasif$/i.test(p.action)) p.action = 'Passive';
-        });
-      }
-    }
-
     function renderAll(options = {}) {
       if (!character) {
         if (window.BUNDLED_CHARACTER_DATA) {
@@ -2806,7 +2701,6 @@
         character.skills = Object.values(character.skills || {});
         if (typeof ensureAllSkills === 'function') ensureAllSkills(character);
       }
-      normalizeLegacyTurkishCharacterData(character);
       normalizeCharacterSpellcasting(character);
 
       // Recalculate RAW D&D 3.5e character state, equipment bonuses, and active buffs
@@ -3221,24 +3115,23 @@
       const g = (gender || '').toLowerCase().trim();
       const c = (classes || '').toLowerCase().trim();
 
-      const isFemale = g.includes('kad') || g.includes('kız') || g.includes('kiz') || g.includes('fem') || g.includes('woman') || g === 'f';
-      const isMale = !isFemale;
+      const isFemale = g.includes('fem') || g.includes('woman') || g === 'f';
 
       const isElf = r.includes('elf');
-      const isDwarf = r.includes('dwarf') || r.includes('cüce') || r.includes('cuce');
-      const isOrc = r.includes('orc') || r.includes('ork');
-      const isHalfling = r.includes('halfling') || r.includes('buçuk') || r.includes('bucuk') || r.includes('gnome') || r.includes('gnom');
-      const isDragon = r.includes('dragon') || r.includes('ejder') || r.includes('kobold');
+      const isDwarf = r.includes('dwarf');
+      const isOrc = r.includes('orc');
+      const isHalfling = r.includes('halfling') || r.includes('gnome');
+      const isDragon = r.includes('dragon') || r.includes('kobold');
       const isTiefling = r.includes('tiefling') || r.includes('fiend') || r.includes('demon');
-      const isAasimar = r.includes('aasimar') || r.includes('celestial') || r.includes('angel') || r.includes('melek');
+      const isAasimar = r.includes('aasimar') || r.includes('celestial') || r.includes('angel');
 
-      const isArcane = c.includes('sorcerer') || c.includes('wizard') || c.includes('mage') || c.includes('büyü') || c.includes('buyu') || c.includes('warmage') || c.includes('warlock');
-      const isMartial = c.includes('warblade') || c.includes('fighter') || c.includes('barbarian') || c.includes('crusader') || c.includes('swordsage') || c.includes('knight') || c.includes('savaş');
-      const isDivine = c.includes('cleric') || c.includes('paladin') || c.includes('druid') || c.includes('rahip') || c.includes('favored');
-      const isRogue = c.includes('rogue') || c.includes('scout') || c.includes('ninja') || c.includes('assassin') || c.includes('hırsız') || c.includes('hirsiz') || c.includes('thief');
-      const isRanger = c.includes('ranger') || c.includes('avcı') || c.includes('avci');
-      const isBard = c.includes('bard') || c.includes('ozan');
-      const isMonk = c.includes('monk') || c.includes('keşiş') || c.includes('kesis');
+      const isArcane = c.includes('sorcerer') || c.includes('wizard') || c.includes('mage') || c.includes('warmage') || c.includes('warlock');
+      const isMartial = c.includes('warblade') || c.includes('fighter') || c.includes('barbarian') || c.includes('crusader') || c.includes('swordsage') || c.includes('knight');
+      const isDivine = c.includes('cleric') || c.includes('paladin') || c.includes('druid') || c.includes('favored');
+      const isRogue = c.includes('rogue') || c.includes('scout') || c.includes('ninja') || c.includes('assassin') || c.includes('thief');
+      const isRanger = c.includes('ranger');
+      const isBard = c.includes('bard');
+      const isMonk = c.includes('monk');
 
       // Specific race overrides
       if (isDragon) return '🐲';
@@ -3920,9 +3813,7 @@
       if (!character) return;
 
       const race = character.race || "Human";
-      const rawGender = character.gender || "Male";
-      const gender = /^erkek$/i.test(String(rawGender).trim()) ? "Male" : (/^kad[ıi]n$/i.test(String(rawGender).trim()) ? "Female" : rawGender);
-      if (character.gender && character.gender !== gender) character.gender = gender;
+      const gender = character.gender || "Male";
       const classes = character.classes || "";
       const emoji = getDynamicCharacterEmoji(race, gender, classes);
 
@@ -4068,7 +3959,7 @@
       if (deityEl) deityEl.textContent = character.deity || "-";
 
       const sizeEl = document.getElementById('core-profile-size');
-      const cleanSize = String(character.size || "Medium").replace(/\s*\(Orta\)\s*/i, '').trim() || "Medium";
+      const cleanSize = String(character.size || "Medium").trim() || "Medium";
       if (character.size && character.size !== cleanSize) character.size = cleanSize;
       if (sizeEl) sizeEl.textContent = cleanSize;
 
@@ -4093,11 +3984,11 @@
       updateAlignmentDropdownTrigger(character.alignment || '');
       setVal('profile-edit-deity', character.deity || '');
       updateDeitySpotlightTrigger(character.deity || '');
-      const cleanSize = String(character.size || 'Medium').replace(/\s*\(Orta\)\s*/i, '').trim() || 'Medium';
+      const cleanSize = String(character.size || 'Medium').trim() || 'Medium';
       setVal('profile-edit-size', cleanSize);
       updateSizeDropdownTrigger(cleanSize);
       const rawGender = String(character.gender || '').trim();
-      const cleanGender = /^(female|kad[ıi]n|f)$/i.test(rawGender) ? 'Female' : 'Male';
+      const cleanGender = /^(female|f)$/i.test(rawGender) ? 'Female' : 'Male';
       setVal('profile-edit-gender', cleanGender);
       updateGenderDropdownTrigger(cleanGender);
       setVal('profile-edit-age', character.age || '');
@@ -4227,7 +4118,7 @@
       }
       if (!q) {
         const raceInput = document.getElementById('profile-edit-race');
-        if (raceInput && raceInput.value.trim() && !raceInput.value.toLowerCase().includes('diğer') && !raceInput.value.toLowerCase().includes('other')) {
+        if (raceInput && raceInput.value.trim() && !raceInput.value.toLowerCase().includes('other')) {
           q = raceInput.value.trim();
         }
       }
@@ -4549,10 +4440,10 @@
         `;
       }
 
-      if (!q || 'diğer'.includes(q) || 'ai'.includes(q) || 'rule master'.includes(q)) {
+      if (!q || 'other'.includes(q) || 'ai'.includes(q) || 'rule master'.includes(q)) {
         html += `
           <div class="pt-1 border-t border-purple-900/40 mt-1">
-            <button type="button" data-action="hud:select-race" data-race-name="Diğer" class="w-full text-left px-2.5 py-2 rounded-lg bg-gradient-to-r from-purple-950/70 to-indigo-950/70 hover:from-purple-900/80 hover:to-indigo-900/80 border border-purple-500/40 hover:border-purple-400 text-purple-200 flex items-center justify-between transition cursor-pointer group active:scale-[0.99]">
+            <button type="button" data-action="hud:select-race" data-race-name="Other" class="w-full text-left px-2.5 py-2 rounded-lg bg-gradient-to-r from-purple-950/70 to-indigo-950/70 hover:from-purple-900/80 hover:to-indigo-900/80 border border-purple-500/40 hover:border-purple-400 text-purple-200 flex items-center justify-between transition cursor-pointer group active:scale-[0.99]">
               <div class="flex items-center gap-2">
                 <span class="text-base shrink-0">🔮</span>
                 <div>
@@ -4592,7 +4483,7 @@
       if (found) {
         if (labelEl) labelEl.textContent = found.label || found.name;
         if (iconEl) iconEl.textContent = found.icon || '🧬';
-      } else if (raceName && (raceName.toLowerCase().includes('diğer') || raceName.toLowerCase().includes('other'))) {
+      } else if (raceName && raceName.toLowerCase().includes('other')) {
         if (labelEl) labelEl.textContent = '🔮 Other (Rule Master AI)';
         if (iconEl) iconEl.textContent = '🔮';
       } else {
@@ -5162,7 +5053,7 @@
       if (!listEl) return;
 
       const rawVal = document.getElementById('profile-edit-gender')?.value || character?.gender || 'Male';
-      const currentVal = /^(female|kad[ıi]n|f)$/i.test(String(rawVal).trim()) ? 'female' : 'male';
+      const currentVal = /^(female|f)$/i.test(String(rawVal).trim()) ? 'female' : 'male';
 
       let html = '';
       DND35_GENDER_DEFINITIONS.forEach(g => {
@@ -5195,7 +5086,7 @@
     }
 
     function updateGenderDropdownTrigger(genderId) {
-      const clean = /^(female|kad[ıi]n|f)$/i.test(String(genderId || '').trim()) ? 'Female' : 'Male';
+      const clean = /^(female|f)$/i.test(String(genderId || '').trim()) ? 'Female' : 'Male';
       const labelEl = document.getElementById('gender-trigger-label');
       const iconEl = document.getElementById('gender-trigger-icon');
       const hiddenInput = document.getElementById('profile-edit-gender');
@@ -5349,34 +5240,34 @@
     // =========================================================================
     const DND35_DEITY_DEFINITIONS = [
       // 1. İyilik & Işık Panteonu (Good & Honor)
-      { name: 'Pelor', title: 'The Shining One (Sun & Healing)', category: 'Pantheon of Good & Light', icon: '☀️', alignment: 'Neutral Good', weapon: 'Heavy Mace', domains: ['Good', 'Healing', 'Strength', 'Sun'], tags: ['gunes', 'sifa', 'healer', 'paladin', 'cleric'] },
-      { name: 'Heironeous', title: 'The Invincible (Chivalry & Valor)', category: 'Pantheon of Good & Light', icon: '⚡', alignment: 'Lawful Good', weapon: 'Longsword', domains: ['Glory', 'Good', 'Law', 'War'], tags: ['adalet', 'savas', 'paladin', 'onur', 'knight'] },
-      { name: 'Kord', title: 'The Brawler (Strength, Athletics & Courage)', category: 'Pantheon of Good & Light', icon: '🥊', alignment: 'Chaotic Good', weapon: 'Greatsword', domains: ['Chaos', 'Good', 'Luck', 'Strength'], tags: ['guc', 'barbarian', 'fighter', 'cesaret', 'firtina'] },
-      { name: 'Corellon Larethian', title: 'First of the Seldarine (Elves, Magic & Arts)', category: 'Pantheon of Good & Light', icon: '🏹', alignment: 'Chaotic Good', weapon: 'Longsword', domains: ['Chaos', 'Good', 'Protection', 'War'], tags: ['elf', 'okcu', 'buyu', 'sanat', 'seldarine'] },
-      { name: 'Moradin', title: 'The Soul Forger (Dwarves & Smithing)', category: 'Pantheon of Good & Light', icon: '🔨', alignment: 'Lawful Good', weapon: 'Warhammer', domains: ['Earth', 'Good', 'Law', 'Protection'], tags: ['cuce', 'demirci', 'zanaat', 'koruma', 'dwarf'] },
-      { name: 'Ehlonna', title: 'Of the Forests (Woodlands & Nature)', category: 'Pantheon of Good & Light', icon: '🦄', alignment: 'Neutral Good', weapon: 'Longbow', domains: ['Animal', 'Good', 'Plant', 'Sun'], tags: ['ranger', 'druid', 'orman', 'hayvan', 'ok'] },
-      { name: 'Yondalla', title: 'The Blessed One (Halflings, Fertility & Protection)', category: 'Pantheon of Good & Light', icon: '🌾', alignment: 'Lawful Good', weapon: 'Short Sword', domains: ['Community', 'Good', 'Law', 'Protection'], tags: ['halfling', 'bucukluk', 'bereket', 'yuva'] },
-      { name: 'Bahamut', title: 'The Platinum Dragon (Good Dragons & Justice)', category: 'Pantheon of Good & Light', icon: '🐲', alignment: 'Lawful Good', weapon: 'Heavy Pick', domains: ['Air', 'Cold', 'Dragon', 'Good', 'Luck', 'Protection'], tags: ['dragon', 'ejderha', 'platin', 'paladin'] },
+      { name: 'Pelor', title: 'The Shining One (Sun & Healing)', category: 'Pantheon of Good & Light', icon: '☀️', alignment: 'Neutral Good', weapon: 'Heavy Mace', domains: ['Good', 'Healing', 'Strength', 'Sun'], tags: ['healer', 'paladin', 'cleric'] },
+      { name: 'Heironeous', title: 'The Invincible (Chivalry & Valor)', category: 'Pantheon of Good & Light', icon: '⚡', alignment: 'Lawful Good', weapon: 'Longsword', domains: ['Glory', 'Good', 'Law', 'War'], tags: ['paladin', 'knight'] },
+      { name: 'Kord', title: 'The Brawler (Strength, Athletics & Courage)', category: 'Pantheon of Good & Light', icon: '🥊', alignment: 'Chaotic Good', weapon: 'Greatsword', domains: ['Chaos', 'Good', 'Luck', 'Strength'], tags: ['barbarian', 'fighter'] },
+      { name: 'Corellon Larethian', title: 'First of the Seldarine (Elves, Magic & Arts)', category: 'Pantheon of Good & Light', icon: '🏹', alignment: 'Chaotic Good', weapon: 'Longsword', domains: ['Chaos', 'Good', 'Protection', 'War'], tags: ['elf', 'seldarine'] },
+      { name: 'Moradin', title: 'The Soul Forger (Dwarves & Smithing)', category: 'Pantheon of Good & Light', icon: '🔨', alignment: 'Lawful Good', weapon: 'Warhammer', domains: ['Earth', 'Good', 'Law', 'Protection'], tags: ['dwarf'] },
+      { name: 'Ehlonna', title: 'Of the Forests (Woodlands & Nature)', category: 'Pantheon of Good & Light', icon: '🦄', alignment: 'Neutral Good', weapon: 'Longbow', domains: ['Animal', 'Good', 'Plant', 'Sun'], tags: ['ranger', 'druid'] },
+      { name: 'Yondalla', title: 'The Blessed One (Halflings, Fertility & Protection)', category: 'Pantheon of Good & Light', icon: '🌾', alignment: 'Lawful Good', weapon: 'Short Sword', domains: ['Community', 'Good', 'Law', 'Protection'], tags: ['halfling'] },
+      { name: 'Bahamut', title: 'The Platinum Dragon (Good Dragons & Justice)', category: 'Pantheon of Good & Light', icon: '🐲', alignment: 'Lawful Good', weapon: 'Heavy Pick', domains: ['Air', 'Cold', 'Dragon', 'Good', 'Luck', 'Protection'], tags: ['dragon', 'paladin'] },
 
       // 2. Doğa, Bilgi & Denge (Neutral & Balance)
-      { name: 'Boccob', title: 'The Uncaring (Magic & Arcane Knowledge)', category: 'Nature, Lore & Balance', icon: '📖', alignment: 'True Neutral', weapon: 'Quarterstaff', domains: ['Knowledge', 'Magic', 'Trickery'], tags: ['wizard', 'arcane', 'bilgi', 'buyu', 'tarafsiz'] },
-      { name: 'Fharlanghn', title: 'Dweller on the Horizon (Roads, Travel & Distance)', category: 'Nature, Lore & Balance', icon: '🥾', alignment: 'True Neutral', weapon: 'Quarterstaff', domains: ['Celerity', 'Luck', 'Protection', 'Travel'], tags: ['yolcu', 'seyahat', 'hiz', 'bard', 'kesif'] },
-      { name: 'Obad-Hai', title: 'The Shalm (Wild Nature & Seasons)', category: 'Nature, Lore & Balance', icon: '🍂', alignment: 'True Neutral', weapon: 'Quarterstaff', domains: ['Air', 'Animal', 'Earth', 'Fire', 'Plant', 'Water'], tags: ['druid', 'doga', 'element', 'vahsi', 'orman'] },
-      { name: 'St. Cuthbert', title: 'Of the Cudgel (Retribution, Discipline & Common Sense)', category: 'Nature, Lore & Balance', icon: '🪓', alignment: 'Lawful Neutral', weapon: 'Heavy Mace', domains: ['Destruction', 'Law', 'Protection', 'Strength'], tags: ['hukum', 'ceza', 'disiplin', 'yasa', 'cleric'] },
-      { name: 'Wee Jas', title: 'The Witch Goddess (Death, Magic & Law)', category: 'Nature, Lore & Balance', icon: '🕯️', alignment: 'Lawful Neutral', weapon: 'Dagger', domains: ['Death', 'Domination', 'Law', 'Magic'], tags: ['olum', 'buyu', 'necromancy', 'yasa', 'witch'] },
-      { name: 'Olidammara', title: 'The Laughing Rogue (Music, Revelry & Rogues)', category: 'Nature, Lore & Balance', icon: '🎭', alignment: 'Chaotic Neutral', weapon: 'Rapier', domains: ['Chaos', 'Luck', 'Trickery'], tags: ['rogue', 'bard', 'sans', 'hirsiz', 'eglence', 'sarki'] },
-      { name: 'Garl Glittergold', title: 'The Joker (Gnomes, Humor & Gemcutting)', category: 'Nature, Lore & Balance', icon: '💎', alignment: 'Chaotic Good', weapon: 'Battleaxe', domains: ['Chaos', 'Good', 'Protection', 'Trickery'], tags: ['gnome', 'gnom', 'mucevher', 'mizah', 'illuzyon'] },
+      { name: 'Boccob', title: 'The Uncaring (Magic & Arcane Knowledge)', category: 'Nature, Lore & Balance', icon: '📖', alignment: 'True Neutral', weapon: 'Quarterstaff', domains: ['Knowledge', 'Magic', 'Trickery'], tags: ['wizard', 'arcane'] },
+      { name: 'Fharlanghn', title: 'Dweller on the Horizon (Roads, Travel & Distance)', category: 'Nature, Lore & Balance', icon: '🥾', alignment: 'True Neutral', weapon: 'Quarterstaff', domains: ['Celerity', 'Luck', 'Protection', 'Travel'], tags: ['bard'] },
+      { name: 'Obad-Hai', title: 'The Shalm (Wild Nature & Seasons)', category: 'Nature, Lore & Balance', icon: '🍂', alignment: 'True Neutral', weapon: 'Quarterstaff', domains: ['Air', 'Animal', 'Earth', 'Fire', 'Plant', 'Water'], tags: ['druid', 'element'] },
+      { name: 'St. Cuthbert', title: 'Of the Cudgel (Retribution, Discipline & Common Sense)', category: 'Nature, Lore & Balance', icon: '🪓', alignment: 'Lawful Neutral', weapon: 'Heavy Mace', domains: ['Destruction', 'Law', 'Protection', 'Strength'], tags: ['cleric'] },
+      { name: 'Wee Jas', title: 'The Witch Goddess (Death, Magic & Law)', category: 'Nature, Lore & Balance', icon: '🕯️', alignment: 'Lawful Neutral', weapon: 'Dagger', domains: ['Death', 'Domination', 'Law', 'Magic'], tags: ['necromancy', 'witch'] },
+      { name: 'Olidammara', title: 'The Laughing Rogue (Music, Revelry & Rogues)', category: 'Nature, Lore & Balance', icon: '🎭', alignment: 'Chaotic Neutral', weapon: 'Rapier', domains: ['Chaos', 'Luck', 'Trickery'], tags: ['rogue', 'bard'] },
+      { name: 'Garl Glittergold', title: 'The Joker (Gnomes, Humor & Gemcutting)', category: 'Nature, Lore & Balance', icon: '💎', alignment: 'Chaotic Good', weapon: 'Battleaxe', domains: ['Chaos', 'Good', 'Protection', 'Trickery'], tags: ['gnome'] },
 
       // 3. Karanlık, Savaş & Yıkım (Evil & Tyranny)
-      { name: 'Hextor', title: 'Champion of Evil (Tyranny, War & Discord)', category: 'Darkness, War & Destruction', icon: '⛓️', alignment: 'Lawful Evil', weapon: 'Heavy Flail', domains: ['Destruction', 'Domination', 'Evil', 'Law', 'War'], tags: ['tiran', 'savas', 'zulum', 'kotuluk', 'ordu'] },
-      { name: 'Nerull', title: 'The Reaper (Darkness, Murder & the Underworld)', category: 'Darkness, War & Destruction', icon: '💀', alignment: 'Neutral Evil', weapon: 'Scythe', domains: ['Death', 'Evil', 'Trickery'], tags: ['olum', 'reaper', 'tirpan', 'iskelet', 'karanlik'] },
-      { name: 'Vecna', title: 'The Maimed Lord (Destructive Secrets & Undeath)', category: 'Darkness, War & Destruction', icon: '👁️‍🗨️', alignment: 'Neutral Evil', weapon: 'Dagger', domains: ['Evil', 'Knowledge', 'Madness'], tags: ['sir', 'lich', 'buyucu', 'hand of vecna', 'eye of vecna'] },
-      { name: 'Erythnul', title: 'The Many (Slaughter, Panic & Savagery)', category: 'Darkness, War & Destruction', icon: '🩸', alignment: 'Chaotic Evil', weapon: 'Morningstar', domains: ['Chaos', 'Evil', 'War'], tags: ['katliam', 'vahset', 'kan', 'panik', 'savas'] },
-      { name: 'Gruumsh', title: 'One-Eye (Orcs, Conquest & Survival)', category: 'Darkness, War & Destruction', icon: '👁️', alignment: 'Chaotic Evil', weapon: 'Spear', domains: ['Chaos', 'Evil', 'Strength', 'War'], tags: ['ork', 'orc', 'tek goz', 'mizrak', 'fetih'] },
-      { name: 'Tiamat', title: 'The Chromatic Dragon (Evil Dragons & Greed)', category: 'Darkness, War & Destruction', icon: '🐉', alignment: 'Lawful Evil', weapon: 'Heavy Pick', domains: ['Destruction', 'Dragon', 'Evil', 'Law', 'Trickery'], tags: ['dragon', 'ejderha', 'renkli', 'hirs', 'bes basli'] },
+      { name: 'Hextor', title: 'Champion of Evil (Tyranny, War & Discord)', category: 'Darkness, War & Destruction', icon: '⛓️', alignment: 'Lawful Evil', weapon: 'Heavy Flail', domains: ['Destruction', 'Domination', 'Evil', 'Law', 'War'], tags: [] },
+      { name: 'Nerull', title: 'The Reaper (Darkness, Murder & the Underworld)', category: 'Darkness, War & Destruction', icon: '💀', alignment: 'Neutral Evil', weapon: 'Scythe', domains: ['Death', 'Evil', 'Trickery'], tags: ['reaper'] },
+      { name: 'Vecna', title: 'The Maimed Lord (Destructive Secrets & Undeath)', category: 'Darkness, War & Destruction', icon: '👁️‍🗨️', alignment: 'Neutral Evil', weapon: 'Dagger', domains: ['Evil', 'Knowledge', 'Madness'], tags: ['lich', 'hand of vecna', 'eye of vecna'] },
+      { name: 'Erythnul', title: 'The Many (Slaughter, Panic & Savagery)', category: 'Darkness, War & Destruction', icon: '🩸', alignment: 'Chaotic Evil', weapon: 'Morningstar', domains: ['Chaos', 'Evil', 'War'], tags: [] },
+      { name: 'Gruumsh', title: 'One-Eye (Orcs, Conquest & Survival)', category: 'Darkness, War & Destruction', icon: '👁️', alignment: 'Chaotic Evil', weapon: 'Spear', domains: ['Chaos', 'Evil', 'Strength', 'War'], tags: ['orc'] },
+      { name: 'Tiamat', title: 'The Chromatic Dragon (Evil Dragons & Greed)', category: 'Darkness, War & Destruction', icon: '🐉', alignment: 'Lawful Evil', weapon: 'Heavy Pick', domains: ['Destruction', 'Dragon', 'Evil', 'Law', 'Trickery'], tags: ['dragon'] },
 
       // 4. Panteon Dışı & Felsefe
-      { name: 'None / Philosophical Faith', title: 'Animism, Cosmic Forces, or Agnostic', category: 'Non-Theistic & Philosophy', icon: '🌀', alignment: 'Any', weapon: '-', domains: ['Universal'], tags: ['yok', 'none', 'felsefe', 'animizm', 'ateist'] }
+      { name: 'None / Philosophical Faith', title: 'Animism, Cosmic Forces, or Agnostic', category: 'Non-Theistic & Philosophy', icon: '🌀', alignment: 'Any', weapon: '-', domains: ['Universal'], tags: ['none'] }
     ];
 
     let _deitySpotlightOpen = false;
@@ -5571,12 +5462,12 @@
       if (codeMap[low]) return { ...codeMap[low], isAny: false };
 
       let lc = 0;
-      if (low.includes('lawful') || low.includes('kurallı') || low.includes('düzenli')) lc = -1;
-      else if (low.includes('chaotic') || low.includes('kaotik')) lc = 1;
+      if (low.includes('lawful')) lc = -1;
+      else if (low.includes('chaotic')) lc = 1;
 
       let ge = 0;
-      if (low.includes('good') || low.includes('iyi')) ge = 1;
-      else if (low.includes('evil') || low.includes('kötü')) ge = -1;
+      if (low.includes('good')) ge = 1;
+      else if (low.includes('evil')) ge = -1;
 
       const labelMatrix = {
         '-1,1': 'Lawful Good', '0,1': 'Neutral Good', '1,1': 'Chaotic Good',
@@ -5811,7 +5702,7 @@
         `;
       }
 
-      if (!q || 'diğer'.includes(q) || 'other'.includes(q) || 'ai'.includes(q) || 'custom'.includes(q) || 'rule master'.includes(q)) {
+      if (!q || 'other'.includes(q) || 'ai'.includes(q) || 'custom'.includes(q) || 'rule master'.includes(q)) {
         html += `
           <div class="pt-1 border-t border-purple-900/40 mt-1 space-y-1">
             <button type="button" data-action="hud:open-custom-deity-editor" data-close-dropdown="1" class="w-full text-left px-2.5 py-2 rounded-lg bg-gradient-to-r from-amber-950/60 hover:from-amber-900/70 border border-amber-500/50 hover:border-amber-400 text-amber-200 flex items-center justify-between transition cursor-pointer group active:scale-[0.99]">
@@ -5842,7 +5733,7 @@
     }
 
     function selectDeityItem(deityName) {
-      if (deityName === 'Diğer' || deityName === 'Other' || deityName === 'custom_deity_create' || deityName === 'Custom Deity') {
+      if (deityName === 'Other' || deityName === 'custom_deity_create' || deityName === 'Custom Deity') {
         openCustomDeityEditorModal();
         return;
       }
@@ -5866,7 +5757,7 @@
       if (found) {
         if (labelEl) labelEl.textContent = `${found.name} (${found.title || found.name})`;
         if (iconEl) iconEl.textContent = found.icon || '☀️';
-      } else if (deityName && (deityName.toLowerCase().includes('diğer') || deityName.toLowerCase().includes('other'))) {
+      } else if (deityName && deityName.toLowerCase().includes('other')) {
         if (labelEl) labelEl.textContent = '🔮 Other (Rule Master AI)';
         if (iconEl) iconEl.textContent = '🔮';
       } else if (deityName) {
@@ -7643,8 +7534,8 @@
         return;
       }
 
-      // Check if user selected "diğer" / "other"
-      if (q === 'diğer' || q === 'other' || q.includes('diğer') || q.includes('other')) {
+      // Check if user selected "other"
+      if (q.includes('other')) {
         renderRaceAiSearchCard(card);
         return;
       }
@@ -8964,7 +8855,7 @@ function renderManualStatsPanel() {
       if (newName) character.name = newName;
 
       const newRace = getVal('profile-edit-race');
-      if (newRace && !newRace.toLowerCase().includes('diğer')) {
+      if (newRace && !newRace.toLowerCase().includes('other')) {
         const oldRace = character.race;
         character.race = newRace;
 

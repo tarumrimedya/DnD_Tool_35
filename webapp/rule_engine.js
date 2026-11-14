@@ -1938,8 +1938,8 @@ const RuleEngine = {
   isOffHandWeaponHead(weapon) {
     if (!weapon) return false;
     const name = (typeof weapon === 'string' ? weapon : (weapon.name || '')).toLowerCase().trim();
-    if (!name || name === 'yok' || name === '-' || name === 'none' || name === 'boş') return false;
-    if (name.includes('off-hand') || name.includes('offhand') || name.includes('ikinci el')) return true;
+    if (!name || name === '-' || name === 'none') return false;
+    if (name.includes('off-hand') || name.includes('offhand')) return true;
     if (typeof weapon === 'object') {
       if (weapon.isOffHandHead || weapon.ruleFlags?.doubleWeaponOffHand) return true;
       const slot = String(weapon.slot || '').toLowerCase().trim();
@@ -1954,7 +1954,7 @@ const RuleEngine = {
   isDoubleWeapon(weapon) {
     if (!weapon || this.isOffHandWeaponHead(weapon)) return false;
     const name = (typeof weapon === 'string' ? weapon : (weapon.name || '')).toLowerCase().trim();
-    if (!name || name === 'yok' || name === '-' || name === 'none' || name === 'boş') return false;
+    if (!name || name === '-' || name === 'none') return false;
     if (typeof weapon === 'object') {
       if (weapon.isDoubleWeapon || weapon.ruleFlags?.doubleWeapon) return true;
       if (Array.isArray(weapon.tags) && weapon.tags.some(t => String(t).toLowerCase().includes('double'))) return true;
@@ -2025,7 +2025,7 @@ const RuleEngine = {
     if (!weapon) return false;
     if (this.isOffHandWeaponHead(weapon)) return true;
     const name = (typeof weapon === 'string' ? weapon : (weapon.name || '')).toLowerCase().trim();
-    if (!name || name === 'yok' || name === '-' || name === 'none' || name === 'boş') return false;
+    if (!name || name === '-' || name === 'none') return false;
 
     if (typeof weapon === 'object') {
       if (weapon.isLight || weapon.grip === 'Light' || weapon.category === 'Light' || (Array.isArray(weapon.tags) && weapon.tags.some(t => String(t).toLowerCase() === 'light'))) {
@@ -2043,7 +2043,7 @@ const RuleEngine = {
     const standardLightWeapons = [
       'dagger', 'punching dagger', 'gauntlet', 'spiked gauntlet', 'light mace', 'sickle',
       'club', 'short sword', 'kukri', 'handaxe', 'light hammer', 'sap', 'light pick',
-      'kama', 'nunchaku', 'sai', 'siangham', 'unarmed strike', 'silahsız'
+      'kama', 'nunchaku', 'sai', 'siangham', 'unarmed strike'
     ];
     return standardLightWeapons.some(lw => name.includes(lw));
   },
@@ -2052,7 +2052,7 @@ const RuleEngine = {
   isExoticWeapon(weapon) {
     if (!weapon) return false;
     const name = (typeof weapon === 'string' ? weapon : (weapon.name || '')).toLowerCase().trim();
-    if (!name || name === 'yok' || name === '-' || name === 'none' || name === 'boş') return false;
+    if (!name || name === '-' || name === 'none') return false;
 
     if (typeof weapon === 'object') {
       const wProf = weapon.proficiency || weapon.weaponMeta?.proficiency || weapon.category;
@@ -2108,7 +2108,7 @@ const RuleEngine = {
   isShadowHandWeapon(weapon) {
     if (!weapon) return false;
     const name = (typeof weapon === 'string' ? weapon : (weapon.name || '')).toLowerCase().trim();
-    if (!name || name === 'yok' || name === '-' || name === 'none' || name === 'boş') return false;
+    if (!name || name === '-' || name === 'none') return false;
 
     if (typeof weapon === 'object') {
       const discipline = (weapon.discipline || '').toLowerCase();
@@ -2132,7 +2132,7 @@ const RuleEngine = {
     if (!weapon) return false;
     if (this.isOffHandWeaponHead(weapon)) return false;
     const name = (typeof weapon === 'string' ? weapon : (weapon.name || '')).toLowerCase().trim();
-    if (!name || name === 'yok' || name === '-' || name === 'none' || name === 'boş') return false;
+    if (!name || name === '-' || name === 'none') return false;
 
     if (this.isLightWeapon(weapon)) return false;
 
@@ -2173,8 +2173,7 @@ const RuleEngine = {
       'heavy flail', 'guisarme', 'glaive', 'ranseur', 'spiked chain',
       'orc double axe', 'gnome hooked hammer', 'two-bladed sword', 'dire flail',
       'longspear', 'quarterstaff', 'longbow', 'composite longbow',
-      'shortbow', 'composite shortbow', 'heavy crossbow', 'light crossbow',
-      'yay', 'arbalet', 'kundak', 'büyük kılıç', 'büyük balta', 'tırpan', 'asa'
+      'shortbow', 'composite shortbow', 'heavy crossbow', 'light crossbow'
     ];
 
     if (twoHandedWeapons.some(w => name.includes(w))) {
@@ -2182,7 +2181,7 @@ const RuleEngine = {
     }
 
     // Spear is two-handed in 3.5e; shortspear is one-handed
-    if ((name.includes('spear') && !name.includes('shortspear')) || (name.includes('mızrak') && !name.includes('kısa mızrak'))) {
+    if (name.includes('spear') && !name.includes('shortspear')) {
       return true;
     }
 
@@ -2193,8 +2192,8 @@ const RuleEngine = {
     if (typeof weapon === 'object') {
       if (weapon.isTwoHanded || weapon.twoHanded || weapon.category === 'Two-Handed') return true;
     }
-    if (tags.some(t => t.includes('two-hand') || t.includes('2-hand') || t.includes('two handed') || t.includes('çift el') || t.includes('iki el'))) return true;
-    if (slot.includes('two-hand') || slot.includes('2-hand') || slot.includes('two handed') || slot.includes('çift el') || slot.includes('iki el')) return true;
+    if (tags.some(t => t.includes('two-hand') || t.includes('2-hand') || t.includes('two handed'))) return true;
+    if (slot.includes('two-hand') || slot.includes('2-hand') || slot.includes('two handed')) return true;
     if (desc.includes('2-handed') || desc.includes('two-handed') || desc.includes('requires 2 hands') || desc.includes('massive 2-handed')) return true;
 
     if (db) {
@@ -2209,7 +2208,7 @@ const RuleEngine = {
   isMartialWeapon(weapon) {
     if (!weapon) return false;
     const name = (typeof weapon === 'string' ? weapon : (weapon.name || '')).toLowerCase().trim();
-    if (!name || name === 'yok' || name === '-' || name === 'none' || name === 'boş') return false;
+    if (!name || name === '-' || name === 'none') return false;
 
     if (this.isExoticWeapon(weapon)) return false;
 
@@ -2233,8 +2232,7 @@ const RuleEngine = {
       'throwing axe', 'handaxe', 'light hammer', 'light pick', 'sap', 'short sword', 'spiked armor', 'armor spikes',
       'battleaxe', 'flail', 'heavy pick', 'longsword', 'rapier', 'scimitar', 'trident', 'warhammer',
       'falchion', 'glaive', 'greataxe', 'greatclub', 'greatsword', 'guisarme', 'halberd', 'heavy flail',
-      'lance', 'ranseur', 'scythe', 'shortbow', 'composite shortbow', 'longbow', 'composite longbow',
-      'büyük kılıç', 'büyük balta', 'savaş baltası', 'uzun kılıç', 'uzun yay', 'kısa yay'
+      'lance', 'ranseur', 'scythe', 'shortbow', 'composite shortbow', 'longbow', 'composite longbow'
     ];
     return standardMartialWeapons.some(mw => baseWepName.includes(mw) || name.includes(mw));
   },
@@ -2243,7 +2241,7 @@ const RuleEngine = {
   isSimpleWeapon(weapon) {
     if (!weapon) return false;
     const name = (typeof weapon === 'string' ? weapon : (weapon.name || '')).toLowerCase().trim();
-    if (!name || name === 'yok' || name === '-' || name === 'none' || name === 'boş') return false;
+    if (!name || name === '-' || name === 'none') return false;
 
     if (this.isExoticWeapon(weapon) || this.isMartialWeapon(weapon)) return false;
 
@@ -2264,10 +2262,9 @@ const RuleEngine = {
 
     const baseWepName = name.replace(/\+\d+/g, '').replace(/\(.*?\)/g, '').trim();
     const standardSimpleWeapons = [
-      'gauntlet', 'spiked gauntlet', 'unarmed strike', 'silahsız', 'dagger', 'punching dagger', 'light mace', 'sickle',
+      'gauntlet', 'spiked gauntlet', 'unarmed strike', 'dagger', 'punching dagger', 'light mace', 'sickle',
       'club', 'heavy mace', 'morningstar', 'shortspear', 'longspear', 'quarterstaff', 'spear',
-      'crossbow', 'heavy crossbow', 'light crossbow', 'dart', 'javelin', 'sling',
-      'hançer', 'asa', 'hafif arbalet', 'ağır arbalet', 'sapan', 'mızrak'
+      'crossbow', 'heavy crossbow', 'light crossbow', 'dart', 'javelin', 'sling'
     ];
     return standardSimpleWeapons.some(sw => baseWepName.includes(sw) || name.includes(sw));
   },
@@ -2276,11 +2273,11 @@ const RuleEngine = {
   isShieldItem(item) {
     if (!item) return false;
     const name = (typeof item === 'string' ? item : (item.name || '')).toLowerCase().trim();
-    if (!name || name === '-' || name === 'none' || name === 'yok' || name === 'boş') return false;
+    if (!name || name === '-' || name === 'none') return false;
     if (typeof item === 'object') {
       if (item.category === 'Shield' || item.type === 'Shield' || (item.slot && item.slot.toLowerCase().includes('shield'))) return true;
     }
-    return Object.keys(this.SRD_SHIELDS).some(k => name.includes(k)) || name.includes('shield') || name.includes('kalkan') || name.includes('buckler');
+    return Object.keys(this.SRD_SHIELDS).some(k => name.includes(k)) || name.includes('shield') || name.includes('buckler');
   },
 
   // Two-Weapon Defense wield test (PHB p.102): a double weapon in the main hand, or a manufactured weapon in each hand.
@@ -2292,7 +2289,7 @@ const RuleEngine = {
       if (!it || typeof it !== 'object' || it.active === false || !it.name || it.name === '-') return false;
       if (this.isShieldItem(it)) return false;
       const name = String(it.name).toLowerCase();
-      if (name.includes('unarmed strike') || name.includes('silahsız')) return false;
+      if (name.includes('unarmed strike')) return false;
       if (it.isNaturalWeapon || it.ruleFlags?.naturalWeapon || String(it.category || '').toLowerCase() === 'natural') return false;
       return this.isDoubleWeapon(it) || this.isOffHandWeaponHead(it) || this.isSimpleWeapon(it) || this.isMartialWeapon(it) || this.isExoticWeapon(it);
     };
@@ -2435,41 +2432,41 @@ const RuleEngine = {
       if (!featStr) return;
       const clean = featStr.toLowerCase().replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').trim();
 
-      if (clean.includes('armor proficiency (light)') || clean.includes('hafif zırh ustalığı')) {
+      if (clean.includes('armor proficiency (light)')) {
         res.armors.light = true;
       }
-      if (clean.includes('armor proficiency (medium)') || clean.includes('orta zırh ustalığı')) {
+      if (clean.includes('armor proficiency (medium)')) {
         res.armors.medium = true;
       }
-      if (clean.includes('armor proficiency (heavy)') || clean.includes('ağır zırh ustalığı')) {
+      if (clean.includes('armor proficiency (heavy)')) {
         res.armors.heavy = true;
       }
-      if (clean.includes('tower shield proficiency') || clean.includes('kule kalkanı ustalığı')) {
+      if (clean.includes('tower shield proficiency')) {
         res.shields.tower = true;
       }
-      if (clean.includes('shield proficiency') || clean.includes('kalkan ustalığı')) {
+      if (clean.includes('shield proficiency')) {
         res.shields.shield = true;
       }
-      if (clean.includes('simple weapon proficiency') || clean.includes('basit silah ustalığı')) {
+      if (clean.includes('simple weapon proficiency')) {
         res.weapons.simple = true;
       }
-      if (clean.includes('martial weapon proficiency') || clean.includes('askeri silah ustalığı')) {
-        const match = clean.match(/(?:martial weapon proficiency|askeri silah ustalığı)\s*\((.*?)\)/i);
+      if (clean.includes('martial weapon proficiency')) {
+        const match = clean.match(/martial weapon proficiency\s*\((.*?)\)/i);
         if (match && match[1]) {
           res.weapons.specific.add(match[1].trim().toLowerCase());
-        } else if (clean.includes('all') || clean.includes('tümü')) {
+        } else if (clean.includes('all')) {
           res.weapons.martial = true;
         } else {
           res.weapons.martial = true;
         }
       }
-      if (clean.includes('exotic weapon proficiency') || clean.includes('egzotik silah ustalığı')) {
-        const match = clean.match(/(?:exotic weapon proficiency|egzotik silah ustalığı)\s*\((.*?)\)/i);
+      if (clean.includes('exotic weapon proficiency')) {
+        const match = clean.match(/exotic weapon proficiency\s*\((.*?)\)/i);
         if (match && match[1]) {
           res.weapons.specific.add(match[1].trim().toLowerCase());
         }
       }
-      if (clean.includes('weapon aptitude') || clean.includes('silah yatkınlığı')) {
+      if (clean.includes('weapon aptitude')) {
         if (learnedFeats.some(f => f.toLowerCase().includes('exotic weapon proficiency'))) {
           res.weapons.exoticAll = true;
         }
@@ -2483,7 +2480,7 @@ const RuleEngine = {
   isProficientWithWeapon(character, weapon, targetLevelIdx = null) {
     if (!weapon) return true;
     const name = (typeof weapon === 'string' ? weapon : (weapon.name || '')).toLowerCase().trim();
-    if (!name || name === 'yok' || name === '-' || name === 'none' || name === 'boş') return true;
+    if (!name || name === '-' || name === 'none') return true;
 
     const baseWepName = name.replace(/\+\d+/g, '').replace(/\(.*?\)/g, '').trim();
     const prof = this.getCharacterProficiencies(character, targetLevelIdx);
@@ -2501,7 +2498,7 @@ const RuleEngine = {
       // Bastard sword / Dwarven waraxe RAW exception (PHB p. 121): Martial when wielded Two-Handed
       const isHandAndAHalf = baseWepName.includes('bastard sword') || baseWepName.includes('dwarven waraxe');
       const gripStr = (typeof weapon === 'object' ? String(weapon.grip || '') : '').toLowerCase();
-      if (isHandAndAHalf && (gripStr.includes('2-hand') || gripStr.includes('two-hand') || gripStr.includes('çift el'))) {
+      if (isHandAndAHalf && (gripStr.includes('2-hand') || gripStr.includes('two-hand'))) {
         if (prof.weapons.martial) return true;
       }
       return false;
@@ -2530,7 +2527,7 @@ const RuleEngine = {
   isProficientWithArmor(character, armor, targetLevelIdx = null) {
     if (!armor) return true;
     const name = (typeof armor === 'string' ? armor : (armor.name || '')).toLowerCase().trim();
-    if (!name || name === '-' || name === 'none' || name === 'yok' || name === 'boş') return true;
+    if (!name || name === '-' || name === 'none') return true;
 
     const mods = this.parseItemModifiers(armor, (typeof masterDb !== 'undefined' ? masterDb : []));
     const dbArmor = (typeof armor === 'object' && !armor.armorMeta && !armor.armorCategory) ? this.getMasterDbEntry(armor) : null;
@@ -2570,7 +2567,7 @@ const RuleEngine = {
   isProficientWithShield(character, shield, targetLevelIdx = null) {
     if (!shield) return true;
     const name = (typeof shield === 'string' ? shield : (shield.name || '')).toLowerCase().trim();
-    if (!name || name === '-' || name === 'none' || name === 'yok' || name === 'boş') return true;
+    if (!name || name === '-' || name === 'none') return true;
 
     const prof = this.getCharacterProficiencies(character, targetLevelIdx);
     if (this.isTowerShield(shield)) {
@@ -2591,8 +2588,7 @@ const RuleEngine = {
       f.includes('oversized weapon fighting') || 
       f.includes('oversized weapon') || 
       f.includes('powerful build') ||
-      f.includes('jotunbrud') ||
-      f.includes('tek elle çift el')
+      f.includes('jotunbrud')
     );
   },
 
@@ -3206,7 +3202,7 @@ const RuleEngine = {
     }
 
     // 2. "+N every/per Y levels" or "1/Ylvl" or "1/Y level" (e.g. "1 per 3 levels", "1 every 2 levels", "1/3lvl")
-    const fractionOnly = str.match(/(?:(?:\+?(\d+)\s*(?:every|her|per)\s*(\d+)\s*(?:lvl|level|seviye))|1\/(\d+)\s*(?:lvl|level)?)/i);
+    const fractionOnly = str.match(/(?:(?:\+?(\d+)\s*(?:every|per)\s*(\d+)\s*(?:lvl|level))|1\/(\d+)\s*(?:lvl|level)?)/i);
     if (fractionOnly) {
       const step = parseInt(fractionOnly[1], 10) || 1;
       const divisor = parseInt(fractionOnly[2] || fractionOnly[3], 10) || 1;
@@ -3256,7 +3252,7 @@ const RuleEngine = {
     const dmgType = spell.dmgType || (cleanName.includes('fire') ? 'Fire' : (cleanName.includes('frost') || cleanName.includes('cold') ? 'Cold' : (cleanName.includes('acid') ? 'Acid' : (cleanName.includes('shock') || cleanName.includes('lightning') ? 'Electricity' : (cleanName.includes('magic missile') ? 'Force' : 'Spell Damage')))));
 
     // 1. MAGIC MISSILE (PHB p.251): 1 missile at CL 1, +1 missile per 2 levels beyond 1st, max 5 missiles at CL 9+ (1d4+1 per missile)
-    if (cleanName.includes('magic missile') || cleanName.includes('büyü füzesi')) {
+    if (cleanName.includes('magic missile')) {
       const missiles = Math.min(5, Math.max(1, Math.floor((cl + 1) / 2)));
       const diceCount = missiles;
       const dieSides = 4;
@@ -3279,7 +3275,7 @@ const RuleEngine = {
     }
 
     // 2. SCORCHING RAY (PHB p.274): 1 ray (4d6 fire), +1 ray per 4 levels above 3rd (2 rays at 7th, 3 rays at 11th, max 3 rays)
-    if (cleanName.includes('scorching ray') || cleanName.includes('yakıcı ışın')) {
+    if (cleanName.includes('scorching ray')) {
       const rays = Math.min(3, Math.max(1, 1 + Math.floor(Math.max(0, cl - 3) / 4)));
       const diceCount = rays * 4;
       const dieSides = 6;
@@ -3432,9 +3428,9 @@ const RuleEngine = {
 
     // 9. SEARING LIGHT (PHB p.275):
     // Living: 1d8 / 2 CL (max 5d8), Undead: 1d6 / CL (max 10d6) or 1d8 / CL (max 10d8) if light vulnerable, Construct: 1d6 / 2 CL (max 5d6)
-    if (cleanName.includes('searing light') || cleanName.includes('kavurucu ışık')) {
+    if (cleanName.includes('searing light')) {
       let diceCount = 1, dieSides = 8, capDesc = '';
-      if (cleanName.includes('ışığa hassas') || cleanName.includes('vulnerable')) {
+      if (cleanName.includes('vulnerable')) {
         diceCount = Math.min(10, Math.max(1, cl));
         dieSides = 8;
         capDesc = `${diceCount}d8 (Light-Vulnerable Undead)`;
@@ -3442,7 +3438,7 @@ const RuleEngine = {
         diceCount = Math.min(10, Math.max(1, cl));
         dieSides = 6;
         capDesc = `${diceCount}d6 (Undead)`;
-      } else if (cleanName.includes('construct') || cleanName.includes('cansız')) {
+      } else if (cleanName.includes('construct')) {
         diceCount = Math.min(5, Math.max(1, Math.floor(cl / 2)));
         dieSides = 6;
         capDesc = `${diceCount}d6 (Construct / Inanimate)`;
@@ -3543,7 +3539,7 @@ const RuleEngine = {
     }
 
     // 11. RAY OF ENFEEBLEMENT (PHB p.269): 1d6 + 1 per 2 levels (max +5)
-    if (cleanName.includes('ray of enfeeblement') || cleanName.includes('güçsüzleştirme')) {
+    if (cleanName.includes('ray of enfeeblement')) {
       const bonus = Math.min(5, Math.floor(cl / 2));
       const diceFormula = bonus > 0 ? `1d6+${bonus}` : `1d6`;
       return {
@@ -3992,7 +3988,7 @@ const RuleEngine = {
     let dreadNecroLvl = 0;
     progList.forEach(p => {
       const cn = String(p.className || p.class || '').toLowerCase().trim();
-      if (cn.includes('cleric') || cn.includes('rahip')) clericLvl++;
+      if (cn.includes('cleric')) clericLvl++;
       else if (cn.includes('paladin')) paladinLvl++;
       else if (cn.includes('dread necromancer')) dreadNecroLvl++;
     });
@@ -4001,7 +3997,7 @@ const RuleEngine = {
     }
     if (clericLvl === 0 && paladinLvl === 0 && dreadNecroLvl === 0) {
       const cStr = String(character.classes || character.class || '').toLowerCase();
-      if (cStr.includes('cleric') || cStr.includes('rahip')) clericLvl = Number(character.level) || 1;
+      if (cStr.includes('cleric')) clericLvl = Number(character.level) || 1;
       else if (cStr.includes('paladin')) paladinLvl = Number(character.level) || 1;
     }
 
@@ -5229,7 +5225,7 @@ const RuleEngine = {
       }
 
       // Dynamic scaling natural armor boons (e.g. "Nat AC 2+1/4lvl") if not already in V2 modifiers
-      if (featMods.length === 0 && (cleanName.includes('nat ac') || cleanName.includes('natural armor') || cleanName.includes('doğal zırh'))) {
+      if (featMods.length === 0 && (cleanName.includes('nat ac') || cleanName.includes('natural armor'))) {
         const desc = String(featObj.benefit || featObj.desc || featObj.description || dbEntry?.benefit || dbEntry?.description || '').toLowerCase();
         let natVal = this.evaluateScalingBonus(cleanName, charLvl) || this.evaluateScalingBonus(desc, charLvl);
         if (natVal > 0) {
@@ -6005,7 +6001,7 @@ const RuleEngine = {
 
     const wepName = (weapon?.name || '').toLowerCase();
     const wepTags = Array.isArray(weapon?.tags) ? weapon.tags.map(t => String(t).toLowerCase()) : [];
-    const isLance = wepName.includes('lance') || wepName.includes('kargı') || wepTags.includes('lance');
+    const isLance = wepName.includes('lance') || wepTags.includes('lance');
 
     const feats = (character?.feats || []).map(f => (typeof f === 'string' ? f : f.name || '').toLowerCase());
     const hasSpiritedCharge = feats.some(f => f.includes('spirited charge'));
@@ -6973,13 +6969,13 @@ const RuleEngine = {
 
   // Canonical Consolidated Skill Mappings (Bridge between RAW 3.5e skills and Consolidated groups)
   DEFAULT_SKILL_MAPPING: {
-    "stealth": ["hide", "move_silently", "move silently", "movesilently", "sessiz hareket", "gizlenme"],
-    "perception": ["spot", "listen", "search", "fark etme", "dinleme", "arama"],
-    "athletics": ["climb", "jump", "swim", "tırmanma", "zıplama", "yüzme"],
-    "acrobatics": ["tumble", "balance", "escape_artist", "escape artist", "takla", "denge", "kurtulma"],
-    "thievery": ["disable_device", "disable device", "open_lock", "open lock", "sleight_of_hand", "sleight of hand", "kilit açma", "tuzak bozma"],
-    "diplomacy": ["diplomacy", "gather_information", "gather information", "sense_motive", "sense motive", "diplomasi", "bilgi toplama", "sezgi"],
-    "linguistics": ["decipher_script", "decipher script", "forgery", "speak_language", "speak language", "yazı çözme", "sahtecilik"]
+    "stealth": ["hide", "move_silently", "move silently", "movesilently"],
+    "perception": ["spot", "listen", "search"],
+    "athletics": ["climb", "jump", "swim"],
+    "acrobatics": ["tumble", "balance", "escape_artist", "escape artist"],
+    "thievery": ["disable_device", "disable device", "open_lock", "open lock", "sleight_of_hand", "sleight of hand"],
+    "diplomacy": ["diplomacy", "gather_information", "gather information", "sense_motive", "sense motive"],
+    "linguistics": ["decipher_script", "decipher script", "forgery", "speak_language", "speak language"]
   },
 
   getSkillAliases(sKey, sName, character) {
@@ -6994,7 +6990,7 @@ const RuleEngine = {
       let mapping = null;
       const masterList = (typeof window !== 'undefined' && window.masterDb) || [];
       if (Array.isArray(masterList)) {
-        const ruleObj = masterList.find(m => m && (m.name || '').toLowerCase().includes('skilleri birleştir') || (m.name || '').toLowerCase().includes('skill consolidation'));
+        const ruleObj = masterList.find(m => m && (m.name || '').toLowerCase().includes('skill consolidation'));
         if (ruleObj && ruleObj.skillMapping && typeof ruleObj.skillMapping === 'object') {
           mapping = ruleObj.skillMapping;
         }
@@ -8716,13 +8712,13 @@ const RuleEngine = {
       return { current: 3, max: 3, unit: 'charges', recharge: 'long_rest' };
     }
     const combined = `${item.name || ''} ${item.desc || ''} ${item.effect || ''} ${item.benefit || ''}`;
-    const match = combined.match(/(?:(\d+)\s*(?:charges?|rounds?|uses?|times?|kullanım|şarj|tur|defa)?\s*(?:\/|\s*per\s*|\s*x\s*|\s*a\s*)\s*(?:day|gün|günde|günlük))|(?:(?:günde|günlük)\s*(\d+)\s*(?:şarj|kullanım|tur|round|defa)?)/i);
+    const match = combined.match(/(\d+)\s*(?:charges?|rounds?|uses?|times?)?\s*(?:\/|\s*per\s*|\s*x\s*|\s*a\s*)\s*day/i);
     if (match) {
-      const maxVal = parseInt(match[1] || match[2], 10) || 1;
+      const maxVal = parseInt(match[1], 10) || 1;
       let unit = 'charges';
       const matchedStr = match[0].toLowerCase();
-      if (matchedStr.includes('round') || matchedStr.includes('tur')) unit = 'rounds';
-      else if (matchedStr.includes('use') || matchedStr.includes('kullanım') || matchedStr.includes('defa')) unit = 'uses';
+      if (matchedStr.includes('round')) unit = 'rounds';
+      else if (matchedStr.includes('use')) unit = 'uses';
       return { current: maxVal, max: maxVal, unit, recharge: 'long_rest' };
     }
     return null;
@@ -8981,8 +8977,8 @@ const RuleEngine = {
     const classifyClass = (className) => {
       const c = String(className || '').toLowerCase().trim();
       if (!c) return null;
-      if (['wizard', 'artificer', 'archivist', 'wu jen', "sha'ir", 'büyücü', 'archmage', 'loremaster', 'incantatrix', 'red wizard', 'pale master', 'eldritch knight', 'arcane trickster', 'abjurant champion'].some(k => c.includes(k))) return 'prepared';
-      if (['cleric', 'creric', 'druid', 'paladin', 'ranger', 'spirit shaman', 'shugenja', 'healer', 'adept', 'rahip', 'priest', 'hierophant', 'contemplative', 'radiant servant', 'hospitaler', 'warpriest', 'divine oracle', 'church inquisitor'].some(k => c.includes(k))) return 'divine';
+      if (['wizard', 'artificer', 'archivist', 'wu jen', "sha'ir", 'archmage', 'loremaster', 'incantatrix', 'red wizard', 'pale master', 'eldritch knight', 'arcane trickster', 'abjurant champion'].some(k => c.includes(k))) return 'prepared';
+      if (['cleric', 'creric', 'druid', 'paladin', 'ranger', 'spirit shaman', 'shugenja', 'healer', 'adept', 'priest', 'hierophant', 'contemplative', 'radiant servant', 'hospitaler', 'warpriest', 'divine oracle', 'church inquisitor'].some(k => c.includes(k))) return 'divine';
       if (['sorcerer', 'bard', 'favored soul', 'warlock', 'warmage', 'duskblade', 'beguiler', 'dread necromancer', 'dragonfire adept', 'spellthief'].some(k => c.includes(k))) return 'spontaneous';
       if (['warblade', 'swordsage', 'crusader', 'bloodclaw master', 'deepstone sentinel', 'eternal blade', 'jade phoenix mage', 'master of nine', 'ruby knight vindicator', 'shadow sun ninja'].some(k => c.includes(k))) return 'martial';
       return null;
@@ -9222,7 +9218,7 @@ const RuleEngine = {
       if (rNames.length === 0 && typeof w.class === 'string' && w.class) {
         rNames.push(w.class.toLowerCase().trim());
       }
-      if (rNames.some(c => ['cleric', 'creric', 'rahip', 'priest', 'radiant servant', 'contemplative', 'church inquisitor', 'divine oracle', 'warpriest'].some(k => c.includes(k)))) {
+      if (rNames.some(c => ['cleric', 'creric', 'priest', 'radiant servant', 'contemplative', 'church inquisitor', 'divine oracle', 'warpriest'].some(k => c.includes(k)))) {
         return true;
       }
       return chosenDomains.length > 0;

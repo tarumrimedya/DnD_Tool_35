@@ -4066,7 +4066,7 @@
 
         const durRaw = String(b.durationText || b.duration || '').trim();
         const durLower = durRaw.toLowerCase();
-        const isPermanent = Boolean(b.permanent) || durLower.includes('kalıcı') || durLower.includes('permanent') || durLower.includes('condition');
+        const isPermanent = Boolean(b.permanent) || durLower.includes('permanent') || durLower.includes('condition');
         const is24h = durLower.includes('24 saat') || durLower.includes('24 hour') || durLower.includes('24 hr');
         if (isPermanent || is24h) return;
 
@@ -4391,7 +4391,7 @@
           return;
         }
         const dur = String(b.durationText || b.duration || '').toLowerCase();
-        const isPermanent = dur.includes('kalıcı') || dur.includes('permanent') || Boolean(b.permanent);
+        const isPermanent = dur.includes('permanent') || Boolean(b.permanent);
         const is24h = dur.includes('24 saat') || dur.includes('24 hour') || dur.includes('24 hr');
         if (!isPermanent && !is24h) {
           b.active = false;

@@ -330,7 +330,7 @@
         const safeSubtitle = UI.escapeAttr(item.subtitle || '');
 
         const statLabels = { str: 'STR', dex: 'DEX', con: 'CON', int: 'INT', wis: 'WIS', cha: 'CHA' };
-        const statDisplay = statLabels[(item.stat || '').toLowerCase()] || String(item.stat || '').toUpperCase().replace('İ', 'I');
+        const statDisplay = statLabels[(item.stat || '').toLowerCase()] || String(item.stat || '').toUpperCase();
 
         const tr = document.createElement('tr');
         tr.className = `hover:bg-slate-900/60 transition ${item.isConsolidated ? 'bg-emerald-950/15' : ''}`;
@@ -1476,7 +1476,7 @@
           }
 
           const dur = (b.durationText || b.duration || "").toLowerCase();
-          const isPermanent = dur.includes("kalıcı") || dur.includes("permanent") || b.permanent;
+          const isPermanent = dur.includes("permanent") || b.permanent;
           const is24h = dur.includes("24 saat") || dur.includes("24 hour") || dur.includes("24 hr");
           if (!isPermanent && !is24h) {
             b.active = false;
@@ -1704,7 +1704,7 @@
 
           const durRaw = String(b.durationText || b.duration || "").trim();
           const durLower = durRaw.toLowerCase();
-          const isPermanent = Boolean(b.permanent) || durLower.includes("kalıcı") || durLower.includes("permanent") || durLower.includes("condition");
+          const isPermanent = Boolean(b.permanent) || durLower.includes("permanent") || durLower.includes("condition");
           const is24h = durLower.includes("24 saat") || durLower.includes("24 hour") || durLower.includes("24 hr");
           if (isPermanent || is24h) return;
 
@@ -3051,11 +3051,11 @@
         const rawSrc = (match.source || '').toLowerCase();
         if (rawSrc.includes('condition') || rawSrc.includes('durum')) {
           srcEl.value = 'Condition';
-        } else if (rawSrc.includes('undead') || rawSrc.includes('monster') || rawSrc.includes('yaratık')) {
+        } else if (rawSrc.includes('undead') || rawSrc.includes('monster')) {
           srcEl.value = 'Undead / Monster';
-        } else if (rawSrc.includes('potion') || rawSrc.includes('iksir')) {
+        } else if (rawSrc.includes('potion')) {
           srcEl.value = 'Potion';
-        } else if (rawSrc.includes('item') || rawSrc.includes('eşya')) {
+        } else if (rawSrc.includes('item')) {
           srcEl.value = 'Item / Equipment';
         } else if (rawSrc.includes('stance') || rawSrc.includes('maneuver')) {
           srcEl.value = 'Stance / Maneuver';
@@ -3104,7 +3104,7 @@
 
       // Check if query is a debuff or negative level
       const qLower = q.toLowerCase();
-      const isDrainQuery = qLower.includes('drain') || qLower.includes('negative level') || qLower.includes('negatif seviye') || qLower.includes('lvl drain');
+      const isDrainQuery = qLower.includes('drain') || qLower.includes('negative level') || qLower.includes('lvl drain');
       const isDebuffQuery = isDrainQuery || qLower.includes('sick') || qLower.includes('shaken') || qLower.includes('fatigue') || qLower.includes('slow') || qLower.includes('entangle') || qLower.includes('debuff') || qLower.includes('curse');
 
       if (isDebuffQuery && currentBuffModalMode !== 'debuff') {
@@ -4626,7 +4626,7 @@
                         ? RuleEngine.normalizeItemDailyCharges(slotData)
                         : slotData.dailyCharges;
                       if (!dailyC) return '';
-                      const isRound = (dailyC.unit === 'rounds' || dailyC.unit === 'tur' || dailyC.unit === 'turn');
+                      const isRound = (dailyC.unit === 'rounds' || dailyC.unit === 'turn');
                       const activeBuff = isRound && (typeof isItemBuffActive === 'function') && isItemBuffActive(slotData);
                       return `
                         <div class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-950/90 text-amber-300 border border-amber-500/50 shadow-sm" title="Daily Remaining: ${dailyC.current}/${dailyC.max} ${UI.escapeAttr(dailyC.unit || 'charges')}">
@@ -8154,7 +8154,7 @@
       }
 
       // Asalar, iksirler, parşömenler asla silah sayılmaz
-      if (/wand|scroll|potion|asa\b|iksir|parşömen/i.test(name)) return false;
+      if (/wand|scroll|potion/i.test(name)) return false;
 
       // Exclude physical Armor and Shield items unless they explicitly have dailyCharges, charges > 0, or an active mode
       const isArmorOrShield = (
@@ -8163,7 +8163,7 @@
         typeLower === 'armor' ||
         typeLower === 'shield' ||
         effSlotKey === 'armor' ||
-        (effSlotKey === 'offHand' && /shield|kalkan|buckler/i.test(name + ' ' + catLower))
+        (effSlotKey === 'offHand' && /shield|buckler/i.test(name + ' ' + catLower))
       );
       if (isArmorOrShield) {
         const hasExplicitChargesOrActiveMode = (
@@ -8178,14 +8178,13 @@
       const isWeaponCat = (cat === 'Weapon' || catLower === 'weapon' || typeLower === 'weapon');
       const isWeaponSlot = (effSlotKey === 'mainHand' || effSlotKey === 'offHand');
       const knownWeapons = [
-        'dagger', 'rapier', 'hançer', 'longsword', 'shortsword', 'greatsword', 'scimitar',
+        'dagger', 'rapier', 'longsword', 'shortsword', 'greatsword', 'scimitar',
         'falchion', 'handaxe', 'battleaxe', 'greataxe', 'halberd', 'spear', 'longspear',
         'mace', 'heavy mace', 'light mace', 'morningstar', 'warhammer', 'club', 'quarterstaff',
         'flail', 'heavy flail', 'shortbow', 'longbow', 'composite shortbow', 'composite longbow',
         'light crossbow', 'heavy crossbow', 'hand crossbow', 'sling', 'dart', 'javelin',
         'shuriken', 'kama', 'nunchaku', 'siangham', 'sai', 'kukri', 'spiked chain', 'bastard sword',
-        'dwarven waraxe', 'gnome hooked hammer', 'orc double axe', 'dire flail', 'two-bladed sword',
-        'kılıç', 'yay', 'arbalet', 'balta', 'gürz', 'mızrak', 'sapan'
+        'dwarven waraxe', 'gnome hooked hammer', 'orc double axe', 'dire flail', 'two-bladed sword'
       ];
       const isKnownWeapon = knownWeapons.some(w => name === w || name.startsWith(w + ' ') || name.startsWith(w + '+'));
 
@@ -8201,12 +8200,12 @@
       }
 
       // B) İyileştirme özelliği
-      const hasHealing = /cure|heal|iyileş|can iksir|healing/i.test(combined);
+      const hasHealing = /cure|heal|healing/i.test(combined);
 
       // C) Büyüsel saldırı veya hasar etkisi (örn: Fireball, Magic Missile, Lightning, 1d6 ateş hasarı vb.)
       const hasSpellAttack = /(?:fireball|magic missile|lightning|scorching|cone of cold|ice storm|flame strike|vampiric touch|shocking grasp|inflict)/i.test(combined) ||
-                             /(?:büyüsel saldırı|spell attack|spell-like|sla\b|günde\s*\d+\s*(?:defa|kez|kullanım)|(?:\d+)\s*\/\s*(?:day|gün))/i.test(combined) ||
-                             /(?:hasar|damage).*(?:ateş|fire|soğuk|cold|asit|acid|elektrik|electric|force)/i.test(desc);
+                             /(?:spell attack|spell-like|sla\b|(?:\d+)\s*\/\s*day)/i.test(combined) ||
+                             /damage.*(?:fire|cold|acid|electric|force)/i.test(desc);
 
       if (hasHealing || hasSpellAttack) {
         return false; // Büyüsel saldırı veya iyileştirme özelliği var, tutulsun
@@ -8242,13 +8241,13 @@
         return item.dailyCharges;
       }
       const combined = `${item.name || ''} ${item.desc || ''} ${item.effect || ''} ${item.benefit || ''}`;
-      const match = combined.match(/(?:(\d+)\s*(?:charges?|rounds?|uses?|times?|kullanım|şarj|tur|defa)?\s*(?:\/|\s*per\s*|\s*x\s*|\s*a\s*)\s*(?:day|gün|günde|günlük))|(?:(?:günde|günlük)\s*(\d+)\s*(?:şarj|kullanım|tur|round|defa)?)/i);
+      const match = combined.match(/(\d+)\s*(?:charges?|rounds?|uses?|times?)?\s*(?:\/|\s*per\s*|\s*x\s*|\s*a\s*)\s*day/i);
       if (match) {
-        const maxVal = parseInt(match[1] || match[2]) || 1;
+        const maxVal = parseInt(match[1]) || 1;
         let unit = 'charges';
         const matchedStr = match[0].toLowerCase();
-        if (matchedStr.includes('round') || matchedStr.includes('tur')) unit = 'rounds';
-        else if (matchedStr.includes('use') || matchedStr.includes('kullanım') || matchedStr.includes('defa')) unit = 'uses';
+        if (matchedStr.includes('round')) unit = 'rounds';
+        else if (matchedStr.includes('use')) unit = 'uses';
         item.dailyCharges = { current: maxVal, max: maxVal, unit: unit, recharge: 'long_rest' };
         return item.dailyCharges;
       }
@@ -8534,7 +8533,7 @@
         ];
       }
 
-      const isRoundUnit = item.dailyCharges && (item.dailyCharges.unit === 'rounds' || item.dailyCharges.unit === 'tur' || item.dailyCharges.unit === 'turn');
+      const isRoundUnit = item.dailyCharges && (item.dailyCharges.unit === 'rounds' || item.dailyCharges.unit === 'turn');
       if (isRoundUnit) {
         return [
           { label: 'Activate (Spend 1 Round)', action: 'cast', cost: 1, type: 'cast' },
@@ -8904,12 +8903,12 @@
         : { kind: 'other', isHealing: false, isDamage: false, isCure: false, diceCount: 0, diceSides: 0, cureFlags: {} };
 
       const combinedText = `${item.name || ''} ${item.desc || ''} ${item.effect || ''}`;
-      const dailyMatch = combinedText.match(/(\d+)\s*\/\s*(?:day|gün)|günde\s*(\d+)/i);
+      const dailyMatch = combinedText.match(/(\d+)\s*\/\s*day/i);
       const maxDaily = (item.dailyCharges && typeof item.dailyCharges === 'object' && Number(item.dailyCharges.max) > 0)
         ? Number(item.dailyCharges.max)
         : (typeof item.dailyCharges === 'number' && item.dailyCharges > 0
           ? item.dailyCharges
-          : (dailyMatch ? parseInt(dailyMatch[1] || dailyMatch[2], 10) : 0));
+          : (dailyMatch ? parseInt(dailyMatch[1], 10) : 0));
       const isDaily = maxDaily > 0;
       const currentDaily = (item.dailyCharges && typeof item.dailyCharges === 'object' && item.dailyCharges.current !== undefined)
         ? Number(item.dailyCharges.current)

@@ -3416,8 +3416,8 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
             isAlreadyKnownFromClass = true;
             alreadyKnownReason = 'Your character already has Shield Proficiency through class or existing feats.';
           }
-        } else if (featNameNorm.includes('martialweaponproficiency') || featNameNorm.includes('askerisilah')) {
-          const match = featName.match(/(?:martial weapon proficiency|askeri silah ustalığı)\s*\((.*?)\)/i);
+        } else if (featNameNorm.includes('martialweaponproficiency')) {
+          const match = featName.match(/martial weapon proficiency\s*\((.*?)\)/i);
           if (match && match[1]) {
             const wep = match[1].toLowerCase().trim();
             if (prof.weapons.martial || prof.weapons.specific.has(wep)) {
@@ -3434,7 +3434,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
             alreadyKnownReason = 'Your character is already proficient with all Simple Weapons through class.';
           }
         } else if (featNameNorm.includes('exoticweaponproficiency')) {
-          const match = featName.match(/(?:exotic weapon proficiency|egzotik silah ustalığı)\s*\((.*?)\)/i);
+          const match = featName.match(/exotic weapon proficiency\s*\((.*?)\)/i);
           if (match && match[1]) {
             const wep = match[1].toLowerCase().trim();
             if (prof.weapons.exoticAll || prof.weapons.specific.has(wep)) {
@@ -3958,8 +3958,8 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           }
 
           // D.6) True Spellcasting Capability Check (ONLY for explicit casting clauses, NEVER matching feat names like "Spell Focus")
-          if (/ability to cast|cast\s+.*spells|büyü\s*yapabilme|arcane\s*spell|divine\s*spell|spellcasting\s*class/i.test(partLow)) {
-            const spellLvlMatch = partLow.match(/(\d+)(?:st|nd|rd|th|\.)\s*(?:-?level|seviye)/i);
+          if (/ability to cast|cast\s+.*spells|arcane\s*spell|divine\s*spell|spellcasting\s*class/i.test(partLow)) {
+            const spellLvlMatch = partLow.match(/(\d+)(?:st|nd|rd|th|\.)\s*-?level/i);
             if (spellLvlMatch) {
               const reqSpellLvl = parseInt(spellLvlMatch[1], 10);
               const reqMinCl = Math.max(1, (reqSpellLvl * 2) - 1);
@@ -4012,7 +4012,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           }
 
           // E.1) Armor & Shield Proficiency Prerequisite Check
-          if (partLow.includes('armor proficiency') || partLow.includes('shield proficiency') || partLow.includes('zırh ustalığı') || partLow.includes('kalkan ustalığı')) {
+          if (partLow.includes('armor proficiency') || partLow.includes('shield proficiency')) {
             const pNorm = partLow.replace(/[^a-z0-9]/g, '');
             if (pNorm.includes('heavy')) {
               met = Boolean(prof.armors.heavy);
@@ -4036,7 +4036,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           }
 
           // E.2) Weapon Proficiency Prerequisite Check
-          if (partLow.includes('proficiency') || partLow.includes('ustalığı') || partLow.includes('weapon prof')) {
+          if (partLow.includes('proficiency') || partLow.includes('weapon prof')) {
             const pNorm = partLow.replace(/[^a-z0-9]/g, '');
             if (pNorm.includes('martial')) {
               met = Boolean(prof.weapons.martial || (prof.weapons.specific && prof.weapons.specific.size > 0));
@@ -5376,7 +5376,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
         if (feats.length > 0) {
           featsHtml = feats.map(f => {
             const lower = f.name.toLowerCase();
-            const isSpell = lower.includes('spell') || lower.includes('büyü');
+            const isSpell = lower.includes('spell');
             const isFeat = lower.includes('feat');
             const badgeBg = isSpell 
               ? 'bg-purple-950/80 border-purple-500/50 text-purple-200' 
@@ -6718,8 +6718,8 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         for (const f of lvl.feats) {
           const str = String(f).toLowerCase();
           if (str.includes('+1 stat') || str.includes('stat:')) {
-            if (str.includes('str') || str.includes('strength') || str.includes('güç')) return 'str';
-            if (str.includes('dex') || str.includes('dexterity') || str.includes('çevik')) return 'dex';
+            if (str.includes('str') || str.includes('strength')) return 'str';
+            if (str.includes('dex') || str.includes('dexterity')) return 'dex';
             if (str.includes('con') || str.includes('constitution') || str.includes('dayan')) return 'con';
             if (str.includes('int') || str.includes('intelligence') || str.includes('zeka')) return 'int';
             if (str.includes('wis') || str.includes('wisdom') || str.includes('irade')) return 'wis';
@@ -8246,7 +8246,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         const pendingClassBonusButtons = [];
 
         // Cleric 1st Level: 2 Domain Selections (PHB p. 32)
-        const isClericLvl1 = ['cleric', 'rahip'].includes(String(lvl.className || '').toLowerCase().trim()) && classLevelSoFar === 1;
+        const isClericLvl1 = ['cleric'].includes(String(lvl.className || '').toLowerCase().trim()) && classLevelSoFar === 1;
         if (isClericLvl1) {
           const chosenDomains = (typeof getCharacterClericDomains === 'function')
             ? getCharacterClericDomains(character)
@@ -8805,11 +8805,9 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       } catch (e) { reportError('char_progression:initSkillFilters', e); }
     }
 
-    function stripTurkishSkillParen(rawName) {
+    function normalizeSkillName(rawName) {
       if (!rawName || typeof rawName !== 'string') return '';
       let s = rawName.trim();
-      // Remove trailing parenthetical Turkish translations e.g. "(Değer Biçme)", "(Otohipnoz)", "(Simya)", "(Tarih)", "(Tuzak & Mekanizma)"
-      s = s.replace(/\s*\((?:[^)]*[çğıöşüÇĞİÖŞÜ][^)]*|Otohipnoz|Blöf|Simya|Diplomasi|Tuzak\s*&\s*Mekanizma|Sahtecilik|Bilgi\s*Toplama|Tarih|Zindan|Performans|Meslek|Binicilik|Niyet\s*Sezme|Hayatta\s*Kalma|Soy\s*&\s*Hanedan)\)\s*$/i, '').trim();
       // Convert legacy colon subskill format "Knowledge: Arcana" or "Craft: Alchemy" -> "Knowledge (Arcana)" / "Craft (Alchemy)"
       const colonMatch = s.match(/^(Knowledge|Craft|Profession|Perform)\s*:\s*(.+)$/i);
       if (colonMatch) {
@@ -8821,7 +8819,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       }
       return s;
     }
-    window.stripTurkishSkillParen = stripTurkishSkillParen;
+    window.normalizeSkillName = normalizeSkillName;
 
     function ensureAllSkills(char) {
       if (!char) return;
@@ -8831,10 +8829,10 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         ? getCharacterClassSkillsSet(char)
         : new Set();
 
-      // Normalize all existing skill names first (strip Turkish parenthetical additions)
+      // Normalize all existing skill names first
       char.skills.forEach(s => {
         if (s && s.name) {
-          s.name = stripTurkishSkillParen(s.name);
+          s.name = normalizeSkillName(s.name);
         }
       });
 
@@ -8852,7 +8850,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
             matchedIndices.push(idx);
             return;
           }
-          const sName = stripTurkishSkillParen(s.name || '').toLowerCase().trim();
+          const sName = normalizeSkillName(s.name || '').toLowerCase().trim();
           if (sName && (sName === cName || sName === cRaw)) {
             matchedIndices.push(idx);
           }
@@ -8914,7 +8912,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       // Preserve any custom non-core skills (with Turkish parentheticals stripped)
       char.skills.forEach((s, idx) => {
         if (!s || consumedIndices.has(idx)) return;
-        s.name = stripTurkishSkillParen(s.name || s.key || 'Custom Skill');
+        s.name = normalizeSkillName(s.name || s.key || 'Custom Skill');
         canonicalSkills.push(s);
       });
 
@@ -9869,7 +9867,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         let clericSeen = 0;
         character.levelProgression.forEach(row => {
           if (!row) return;
-          if (['cleric', 'rahip'].includes(String(row.className || '').toLowerCase().trim())) {
+          if (['cleric'].includes(String(row.className || '').toLowerCase().trim())) {
             clericSeen++;
             if (clericSeen === 1) {
               if (!Array.isArray(row.specialAbilities)) row.specialAbilities = [];

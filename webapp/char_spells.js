@@ -189,8 +189,8 @@
     function classifyClassToMagicDiscipline(className) {
       const c = String(className || '').toLowerCase().trim();
       if (!c) return null;
-      if (['wizard', 'artificer', 'archivist', 'wu jen', "sha'ir", 'büyücü', 'archmage', 'loremaster', 'incantatrix', 'red wizard', 'pale master', 'eldritch knight', 'arcane trickster', 'abjurant champion'].some(k => c.includes(k))) return 'prepared';
-      if (['cleric', 'creric', 'druid', 'paladin', 'ranger', 'spirit shaman', 'shugenja', 'healer', 'adept', 'rahip', 'priest', 'hierophant', 'contemplative', 'radiant servant', 'hospitaler', 'warpriest', 'divine oracle', 'church inquisitor'].some(k => c.includes(k))) return 'divine';
+      if (['wizard', 'artificer', 'archivist', 'wu jen', "sha'ir", 'archmage', 'loremaster', 'incantatrix', 'red wizard', 'pale master', 'eldritch knight', 'arcane trickster', 'abjurant champion'].some(k => c.includes(k))) return 'prepared';
+      if (['cleric', 'creric', 'druid', 'paladin', 'ranger', 'spirit shaman', 'shugenja', 'healer', 'adept', 'priest', 'hierophant', 'contemplative', 'radiant servant', 'hospitaler', 'warpriest', 'divine oracle', 'church inquisitor'].some(k => c.includes(k))) return 'divine';
       if (['sorcerer', 'bard', 'favored soul', 'warlock', 'warmage', 'duskblade', 'beguiler', 'dread necromancer', 'dragonfire adept', 'spellthief'].some(k => c.includes(k))) return 'spontaneous';
       if (['warblade', 'swordsage', 'crusader', 'bloodclaw master', 'deepstone sentinel', 'eternal blade', 'jade phoenix mage', 'master of nine', 'ruby knight vindicator', 'shadow sun ninja'].some(k => c.includes(k))) return 'martial';
       return null;
@@ -533,7 +533,7 @@
       if (rawNames.length === 0 && typeof char.class === 'string' && char.class) {
         rawNames.push(char.class.toLowerCase().trim());
       }
-      if (rawNames.some(c => ['cleric', 'creric', 'rahip', 'priest', 'radiant servant', 'contemplative', 'church inquisitor', 'divine oracle', 'warpriest'].some(k => c.includes(k)))) {
+      if (rawNames.some(c => ['cleric', 'creric', 'priest', 'radiant servant', 'contemplative', 'church inquisitor', 'divine oracle', 'warpriest'].some(k => c.includes(k)))) {
         return true;
       }
       if (Array.isArray(char.spellcasting?.domains) && char.spellcasting.domains.filter(Boolean).length > 0) {
@@ -3772,9 +3772,6 @@
         if (raw) {
           const arrowParts = raw.replace(/^[\u21B3\u2794\u2192>\s]+/, '').split(/[\u2794\u2192â”]/);
           const candidate = arrowParts[0]
-            .replace(/\s*\(\d+\.\s*Seviye.*?\)\s*$/i, '')
-            .replace(/\s+Hasar[\u0131ı]$/i, '')
-            .replace(/\s*\(Manevra Kullan[\u0131ı]ld[\u0131ı]\)\s*$/i, '')
             .trim();
           return candidate;
         }
@@ -3782,9 +3779,6 @@
       const str = sanitizeMojibakeString(String(itemOrTitle)).replace(/^[\u21B3\u2794\u2192>\s]+/, '');
       const parts = str.split(/[\u2794\u2192â”]/);
       return parts[0]
-        .replace(/\s*\(\d+\.\s*Seviye.*?\)\s*$/i, '')
-        .replace(/\s+Hasar[\u0131ı]$/i, '')
-        .replace(/\s*\(Manevra Kullan[\u0131ı]ld[\u0131ı]\)\s*$/i, '')
         .trim();
     }
 
@@ -3841,11 +3835,8 @@
       const rawName = (typeof itemOrTitle === 'string' ? itemOrTitle : (itemOrTitle.name || itemOrTitle.title || '')).toLowerCase().trim();
       const rawDesc = (typeof itemOrTitle === 'object' ? (itemOrTitle.benefit || itemOrTitle.notes || itemOrTitle.description || '') : '').toLowerCase().trim();
 
-      // Explicit Undead overrides on Child rows
-      if (rawName.includes('undead hasar') || (rawName.includes('undead') && rawDesc.includes('hasar verir'))) {
-        return 'damage';
-      }
-      if (rawName.includes('undead iyileş') || (rawName.includes('inflict') && rawName.includes('undead'))) {
+      // Explicit Undead override: Inflict spells heal undead
+      if (rawName.includes('inflict') && rawName.includes('undead')) {
         return 'heal';
       }
 
@@ -3880,8 +3871,7 @@
         rawName.includes('strike of righteous vitality') ||
         rawName.includes('martial spirit') ||
         rawDesc.includes('cures ') ||
-        rawDesc.includes('heals ') ||
-        rawDesc.includes('iyileştir')
+        rawDesc.includes('heals ')
       ) {
         return 'heal';
       }
@@ -6232,10 +6222,10 @@
       }
 
       if (targetPool === 'divine') {
-        const hasCleric = rawNames.some(c => ['cleric', 'creric', 'rahip', 'priest', 'favored soul', 'radiant servant', 'hierophant', 'contemplative', 'church inquisitor', 'warpriest', 'divine oracle'].some(k => c.includes(k)));
+        const hasCleric = rawNames.some(c => ['cleric', 'creric', 'priest', 'favored soul', 'radiant servant', 'hierophant', 'contemplative', 'church inquisitor', 'warpriest', 'divine oracle'].some(k => c.includes(k)));
         const hasDruid = rawNames.some(c => ['druid', 'spirit shaman'].some(k => c.includes(k)));
-        const hasPaladin = rawNames.some(c => ['paladin', 'şövalye', 'hospitaler', 'blackguard'].some(k => c.includes(k)));
-        const hasRanger = rawNames.some(c => ['ranger', 'korucu'].some(k => c.includes(k)));
+        const hasPaladin = rawNames.some(c => ['paladin', 'hospitaler', 'blackguard'].some(k => c.includes(k)));
+        const hasRanger = rawNames.some(c => ['ranger'].some(k => c.includes(k)));
         const matched = [
           hasCleric ? 'cleric' : null,
           hasDruid ? 'druid' : null,
@@ -6251,7 +6241,7 @@
       }
 
       if (targetPool === 'spontaneous') {
-        const hasBard = rawNames.some(c => ['bard', 'ozan'].some(k => c.includes(k)));
+        const hasBard = rawNames.some(c => ['bard'].some(k => c.includes(k)));
         const hasSorc = rawNames.some(c => ['sorcerer', 'warmage', 'duskblade', 'beguiler', 'dread necromancer', 'spellthief'].some(k => c.includes(k)));
         if (hasBard && !hasSorc) return 'bard';
         return 'sor_wiz';
@@ -7363,7 +7353,6 @@
       if (cat === 'consumable' || cat === 'scroll' || cat === 'potion' || cat === 'wand') return true;
       if (slot === 'consumable') return true;
       if (name.startsWith('scroll of') || name.startsWith('potion of') || name.startsWith('wand of') || name.startsWith('elixir of') || name.startsWith('oil of')) return true;
-      if (name.includes('parşömen') || name.includes('iksir') || name.includes('asa ') || name.includes('yağı ')) return true;
       return false;
     }
 
@@ -8462,18 +8451,18 @@
 
     // D&D 3.5e Localized Class Name Aliases
     const DND35_CLASS_ALIASES = {
-      "savaşçı": "Fighter", "fighter": "Fighter",
-      "barbar": "Barbarian", "barbarian": "Barbarian",
-      "hırsız": "Rogue", "rogue": "Rogue",
-      "büyücü": "Wizard", "wizard": "Wizard",
-      "sorcerer": "Sorcerer", "doğal büyücü": "Sorcerer",
-      "rahip": "Cleric", "cleric": "Cleric",
-      "paladin": "Paladin", "şövalye": "Paladin",
-      "korucu": "Ranger", "ranger": "Ranger",
-      "keşiş": "Monk", "monk": "Monk",
-      "ozan": "Bard", "bard": "Bard",
+      "fighter": "Fighter",
+      "barbarian": "Barbarian",
+      "rogue": "Rogue",
+      "wizard": "Wizard",
+      "sorcerer": "Sorcerer",
+      "cleric": "Cleric",
+      "paladin": "Paladin",
+      "ranger": "Ranger",
+      "monk": "Monk",
+      "bard": "Bard",
       "druid": "Druid",
-      "warblade": "Warblade", "savaş dehası": "Warblade",
+      "warblade": "Warblade",
       "crusader": "Crusader",
       "swordsage": "Swordsage",
       "duskblade": "Duskblade",

@@ -5374,18 +5374,18 @@ Return valid JSON only matching:
       let slotKey = null;
       if (rawSlot === 'none' || rawSlot === 'slotless') {
         slotKey = null;
-      } else if (slotLower.includes('armor') || slotLower.includes('zırh')) slotKey = 'armor';
-      else if (slotLower.includes('shield') || slotLower.includes('kalkan')) slotKey = 'offHand';
-      else if (slotLower.includes('belt') || slotLower.includes('kemer') || slotLower.includes('waist')) slotKey = 'belt';
-      else if (slotLower.includes('head') || slotLower.includes('baş')) slotKey = 'head';
-      else if (slotLower.includes('eyes') || slotLower.includes('göz') || slotLower.includes('face')) slotKey = 'eyes';
-      else if (slotLower.includes('neck') || slotLower.includes('boyun') || slotLower.includes('throat')) slotKey = 'neck';
-      else if (slotLower.includes('shoulders') || slotLower.includes('omuz')) slotKey = 'shoulders';
-      else if (slotLower.includes('torso') || slotLower.includes('gövde') || slotLower.includes('body')) slotKey = 'torso';
-      else if (slotLower.includes('bracers') || slotLower.includes('bileklik') || slotLower.includes('arms')) slotKey = 'bracers';
-      else if (slotLower.includes('gloves') || slotLower.includes('eldiven') || slotLower.includes('hands')) slotKey = 'gloves';
-      else if (slotLower.includes('boots') || slotLower.includes('ayak') || slotLower.includes('feet')) slotKey = 'boots';
-      else if (slotLower.includes('ring') || slotLower.includes('yüzük')) {
+      } else if (slotLower.includes('armor')) slotKey = 'armor';
+      else if (slotLower.includes('shield')) slotKey = 'offHand';
+      else if (slotLower.includes('belt') || slotLower.includes('waist')) slotKey = 'belt';
+      else if (slotLower.includes('head')) slotKey = 'head';
+      else if (slotLower.includes('eyes') || slotLower.includes('face')) slotKey = 'eyes';
+      else if (slotLower.includes('neck') || slotLower.includes('throat')) slotKey = 'neck';
+      else if (slotLower.includes('shoulders')) slotKey = 'shoulders';
+      else if (slotLower.includes('torso') || slotLower.includes('body')) slotKey = 'torso';
+      else if (slotLower.includes('bracers') || slotLower.includes('arms')) slotKey = 'bracers';
+      else if (slotLower.includes('gloves') || slotLower.includes('hands')) slotKey = 'gloves';
+      else if (slotLower.includes('boots') || slotLower.includes('feet')) slotKey = 'boots';
+      else if (slotLower.includes('ring')) {
         slotKey = (!character.bodySlots?.ring1 || character.bodySlots.ring1.name === '-') ? 'ring1' : 'ring2';
       }
 
