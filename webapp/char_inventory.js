@@ -310,6 +310,7 @@
         return;
       }
 
+      const rowsFrag = document.createDocumentFragment();
       displayItems.forEach(item => {
         const statMod = RuleEngine.getAbilityMod(character.abilities?.[item.stat] || 10);
         const acpVal = item.acp ? Math.min(0, Number(character.acBreakdown?.acp) || 0) : 0;
@@ -405,8 +406,9 @@
             ${buffSkillMod !== 0 ? (buffSkillMod > 0 ? '+' + buffSkillMod : buffSkillMod) : '-'}
           </td>
         `;
-        tbody.appendChild(tr);
+        rowsFrag.appendChild(tr);
       });
+      tbody.appendChild(rowsFrag);
     }
 
     // Defense Detailed RAW Breakdown (Madde 9 & 10)

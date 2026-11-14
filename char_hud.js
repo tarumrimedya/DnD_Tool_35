@@ -2427,7 +2427,75 @@
     window.addEventListener('pagehide', persistScrollPosition);
 
     const ALL_SHEET_TABS = ['tab-combat', 'tab-spells', 'tab-core', 'tab-skills', 'tab-defense', 'tab-inventory', 'tab-database', 'tab-sync', 'tab-dice'];
+    const IDLE_WARMUP_TABS = ['tab-combat', 'tab-spells', 'tab-defense', 'tab-inventory', 'tab-core', 'tab-dice'];
     const _dirtyTabs = new Set(ALL_SHEET_TABS);
+    let _warmupDelayTimer = null;
+    let _warmupIdleHandle = null;
+    let _warmupIdleUsesRic = false;
+    let _warmupRafId = null;
+    let _deferredSwitchRafId = null;
+    let _deferredSwitchTimerId = null;
+
+    function cancelIdleTabWarmup() {
+      if (_warmupDelayTimer !== null) {
+        clearTimeout(_warmupDelayTimer);
+        _warmupDelayTimer = null;
+      }
+      if (_warmupIdleHandle !== null) {
+        if (_warmupIdleUsesRic && typeof window.cancelIdleCallback === 'function') {
+          window.cancelIdleCallback(_warmupIdleHandle);
+        } else {
+          clearTimeout(_warmupIdleHandle);
+        }
+        _warmupIdleHandle = null;
+      }
+      if (_warmupRafId !== null && typeof window.cancelAnimationFrame === 'function') {
+        window.cancelAnimationFrame(_warmupRafId);
+        _warmupRafId = null;
+      }
+    }
+
+    function scheduleIdleTabWarmup() {
+      cancelIdleTabWarmup();
+      if (!character) return;
+      const hasWork = IDLE_WARMUP_TABS.some(t => _dirtyTabs.has(t));
+      if (!hasWork) return;
+
+      const stepNextTab = () => {
+        _warmupIdleHandle = null;
+        if (!character) return;
+        const nextTab = IDLE_WARMUP_TABS.find(t => _dirtyTabs.has(t));
+        if (!nextTab) return;
+        renderTabIfNeeded(nextTab, false);
+        if (!IDLE_WARMUP_TABS.some(t => _dirtyTabs.has(t))) return;
+        const queueIdle = () => {
+          _warmupRafId = null;
+          if (typeof window.requestIdleCallback === 'function') {
+            _warmupIdleUsesRic = true;
+            _warmupIdleHandle = window.requestIdleCallback(stepNextTab, { timeout: 220 });
+          } else {
+            _warmupIdleUsesRic = false;
+            _warmupIdleHandle = setTimeout(stepNextTab, 24);
+          }
+        };
+        if (typeof window.requestAnimationFrame === 'function') {
+          _warmupRafId = window.requestAnimationFrame(queueIdle);
+        } else {
+          queueIdle();
+        }
+      };
+
+      _warmupDelayTimer = setTimeout(() => {
+        _warmupDelayTimer = null;
+        if (typeof window.requestIdleCallback === 'function') {
+          _warmupIdleUsesRic = true;
+          _warmupIdleHandle = window.requestIdleCallback(stepNextTab, { timeout: 220 });
+        } else {
+          _warmupIdleUsesRic = false;
+          _warmupIdleHandle = setTimeout(stepNextTab, 24);
+        }
+      }, 90);
+    }
 
     function renderTabIfNeeded(tabId, force = false) {
       if (!tabId) tabId = 'tab-combat';
@@ -2516,7 +2584,10 @@
           let activeTab = 'tab-combat';
           try { activeTab = localStorage.getItem('dnd35_active_tab') || 'tab-combat'; } catch (e) { reportError('char_hud:defenseRegion', e); }
           if (activeTab === 'tab-defense') renderTabIfNeeded('tab-defense', true);
-          else _dirtyTabs.add('tab-defense');
+          else {
+            _dirtyTabs.add('tab-defense');
+            scheduleIdleTabWarmup();
+          }
         }
       );
     }
@@ -2529,7 +2600,16 @@
       window.scrollTo({ top: Math.max(tabTop, savedY), left: 0, behavior: 'instant' });
     }
 
-    function switchTab(tabId, isRestoration = false) {
+    function switchTab(tabId, isRestoration = false, opts = null) {
+      if (_deferredSwitchRafId !== null && typeof window.cancelAnimationFrame === 'function') {
+        window.cancelAnimationFrame(_deferredSwitchRafId);
+        _deferredSwitchRafId = null;
+      }
+      if (_deferredSwitchTimerId !== null) {
+        clearTimeout(_deferredSwitchTimerId);
+        _deferredSwitchTimerId = null;
+      }
+
       let prevTab = null;
       try {
         prevTab = localStorage.getItem('dnd35_active_tab') || 'tab-combat';
@@ -2571,10 +2651,20 @@
         activeMobileBtn.setAttribute('aria-selected', 'true');
       }
 
-      // Render target tab immediately if marked dirty
-      renderTabIfNeeded(tabId, false);
-
-      if (!isRestoration && prevTab !== tabId) scrollMobileTabIntoView(tabId);
+      // Paint active tab shell first on interactive clicks if tab wasn't warmed yet; instant 0ms no-op when already warm
+      if (opts && opts.deferDirtyRender && _dirtyTabs.has(tabId) && typeof window.requestAnimationFrame === 'function') {
+        _deferredSwitchRafId = window.requestAnimationFrame(() => {
+          _deferredSwitchRafId = null;
+          _deferredSwitchTimerId = setTimeout(() => {
+            _deferredSwitchTimerId = null;
+            renderTabIfNeeded(tabId, false);
+            if (!isRestoration && prevTab !== tabId) scrollMobileTabIntoView(tabId);
+          }, 0);
+        });
+      } else {
+        renderTabIfNeeded(tabId, false);
+        if (!isRestoration && prevTab !== tabId) scrollMobileTabIntoView(tabId);
+      }
     }
 
     function restoreActiveTabAndScroll() {
@@ -2708,6 +2798,7 @@
           if (savedTab && ALL_SHEET_TABS.includes(savedTab)) activeTab = savedTab;
         } catch (e) { reportError('char_hud:renderAll', e); }
         renderTabIfNeeded(activeTab, true);
+        scheduleIdleTabWarmup();
       }
     }
 
@@ -9750,7 +9841,7 @@ function renderManualStatsPanel() {
     // ====================================================
     if (window.Actions && typeof window.Actions.register === 'function') {
       window.Actions.register('hud:switch-tab', (el, data, event) => {
-        if (data && data.tab) switchTab(data.tab);
+        if (data && data.tab) switchTab(data.tab, false, { deferDirtyRender: true });
       });
       window.Actions.register('hud:open-profile-edit', (el, data, event) => {
         openProfileEditModal((data && (data.profileTab || data.section)) || undefined);
