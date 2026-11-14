@@ -32,9 +32,9 @@
 ## 4. HUB & Character Sheet Isolation
 - Before applying any `hub.html` change that could affect `index.html`, `char_*.js`, `rule_engine.js`, `character_data.json`, `supabase_auth.js`, or `campaign_db.js`, **warn the user of cross-impacts and get approval**. `hub.html` `fullData` and `index.html` must strictly share the Canonical V2 data contract.
 
-## 5. Official D&D 3.5e RAW English Standard & Bilingual Reader Shield
+## 5. Official D&D 3.5e RAW English Standard & English-Only Readers
 - **100% English Output:** All UI labels, modals, toasts, breakdowns, and AI prompts must use official D&D 3.5e RAW English terminology (*Base Attack Bonus*, *Fortitude/Reflex/Will*, *Touch/Flat-Footed AC*, *Armor Check Penalty*, *Arcane Spell Failure*, *Full Attack*, *Two-Weapon Fighting*, *Caster Level*, *Prerequisites Not Met*).
-- **Bilingual Reader Predicates:** Preserve bilingual fallbacks in reader/filter conditions (`includes('Off-Hand') || includes('İkinci El')`, `#quest || #gorev`) so legacy saved characters never break.
+- **English-Only Readers:** The app is English-only. Do not add bilingual (Turkish/English) fallbacks in reader or filter conditions. Old saved characters are not migrated during the test phase; recreate them instead.
 
 ## 6. Dice Symbol & Icon Rule (STRICT: NO U+1F3B2 EMOJI)
 - **NEVER** use the standard 6-sided die emoji (`U+1F3B2` / `\uD83C\uDFB2`) anywhere in code, UI, logs, or docs. Use polyhedral SVG helpers (`getDiceIconSvg`, `getFormulaDiceIconSvg`) or thematic icons (`⚔️`, `🔮`, `✨`, `⚡`, `🩸`, `💚`, `🛡️`).

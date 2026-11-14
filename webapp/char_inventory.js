@@ -5966,26 +5966,6 @@
         if (Array.isArray(item.modifiers) && item.modifiers.length > 0 && window.DnDUI && typeof window.DnDUI.renderModifiersBadges === 'function') {
           const modHtml = window.DnDUI.renderModifiersBadges(item.modifiers, { compact });
           if (modHtml) coreParts.push(modHtml);
-        } else {
-          // Legacy flat bonus fallback
-          const legacyPairs = [
-            ['AC', item.acBonus],
-            ['STR', item.strBonus],
-            ['DEX', item.dexBonus],
-            ['CON', item.conBonus],
-            ['INT', item.intBonus],
-            ['WIS', item.wisBonus],
-            ['CHA', item.chaBonus],
-            ['Fort', item.fortBonus],
-            ['Ref', item.refBonus],
-            ['Will', item.willBonus]
-          ];
-          legacyPairs.forEach(([lbl, val]) => {
-            const n = Number(val) || 0;
-            if (n !== 0) {
-              coreParts.push(`<span class="inline-flex items-center gap-1 rounded-md border font-mono font-bold ${sizeCls} bg-emerald-950/70 text-emerald-300 border-emerald-700/60"><span>${n > 0 ? '+' + n : n} ${lbl}</span></span>`);
-            }
-          });
         }
         if (window.DnDUI && typeof window.DnDUI.renderTacticalBadges === 'function') {
           const tacHtml = window.DnDUI.renderTacticalBadges(item, { compact });

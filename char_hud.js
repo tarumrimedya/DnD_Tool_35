@@ -1002,24 +1002,6 @@
           character.customDb = [];
         }
         try {
-          const legacyRaw = localStorage.getItem('dnd35_master_db');
-          if (legacyRaw) {
-            const legacyParsed = JSON.parse(legacyRaw);
-            if (Array.isArray(legacyParsed) && legacyParsed.length > 0) {
-              const existingKeys = new Set(character.customDb.map(m => m && (m.id || (m.name || '').toLowerCase().trim())).filter(Boolean));
-              legacyParsed.forEach(item => {
-                if (!item || typeof item !== 'object' || !item.name) return;
-                const k = item.id || item.name.toLowerCase().trim();
-                if (!existingKeys.has(k)) {
-                  existingKeys.add(k);
-                  character.customDb.push(item);
-                }
-              });
-            }
-          }
-          localStorage.removeItem('dnd35_master_db');
-        } catch (e) { reportError('char_hud:loadInitialData', e); }
-        try {
           let rawList = character.customDb.filter(m => m && typeof m === 'object' && m.name);
           rawList = rawList.map(item => {
             if (item.name) item.name = sanitizeMojibakeString(item.name);
