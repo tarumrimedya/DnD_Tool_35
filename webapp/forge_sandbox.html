@@ -191,7 +191,7 @@
   .lego-desc { font-size: 11.5px; font-weight: 500; color: #cbd5e1; min-width: 0; overflow-wrap: anywhere; }
   .lego-lvl { min-width: 46px; color: #e2e8f0; }
   .lego-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; width: 100%; }
-  .lego-sub { display: flex; flex-wrap: wrap; gap: 6px; width: 100%; padding: 6px; border-radius: 8px; background: rgba(0,0,0,.25); }
+  .lego-sub { display: flex; flex-wrap: wrap; gap: 6px; width: 100%; box-sizing: border-box; padding: 6px; border-radius: 8px; background: rgba(0,0,0,.25); }
   .lego-del { margin-left: auto; background: transparent; border: none; color: #64748b; cursor: pointer; font-size: 13px; }
   .lego-del:hover { color: #fb7185; }
   .lego-palette { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 14px; padding-top: 10px; border-top: 1px dashed var(--border-default); }
@@ -211,7 +211,7 @@
   .fs-live-toggle { display: none; }
 
   /* ===== Responsive ergonomics (tested at 375px) ===== */
-  .fs-in, .fs-sel, .fs-spot, .lego-hat > *, .lego-block > *, .c-top > * { max-width: 100%; }
+  .fs-in, .fs-sel, .fs-spot, .lego-hat > *, .lego-block > *, .c-top > *, .lego-palette > * { max-width: 100%; }
   .fs-pill { overflow-wrap: anywhere; }
   .fs-facet-head { min-width: 0; }
   .fs-facet-title { min-width: 0; }

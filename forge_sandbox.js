@@ -199,7 +199,9 @@
     ['Shield', 'Sor/Wiz 1', 'Abjuration', 1, 'Standard', 'Personal', 'None', 'Invisible disc gives +4 to AC, blocks magic missiles.'],
     ['Blur', 'Sor/Wiz 2, Brd 2', 'Illusion', 2, 'Standard', 'Touch', 'Will negates (harmless)', 'Attacks miss subject 20% of the time.'],
     ['Bestow Curse', 'Clr 3, Sor/Wiz 4', 'Necromancy', 3, 'Standard', 'Touch', 'Will negates', '-6 to an ability score; -4 on attack rolls, saves, and checks; or 50% chance of losing each action.'],
-    ['Righteous Might', 'Clr 5, Strength 5', 'Transmutation', 5, 'Standard', 'Personal', 'None', 'Your size increases, and you gain combat bonuses.']
+    ['Righteous Might', 'Clr 5, Strength 5', 'Transmutation', 5, 'Standard', 'Personal', 'None', 'Your size increases, and you gain combat bonuses.'],
+    ['Protection from Evil', 'Clr 1, Pal 1, Sor/Wiz 1, Good 1', 'Abjuration', 1, 'Standard', 'Touch', 'Will negates (harmless)', '+2 deflection to AC and +2 resistance on saves vs evil creatures; blocks bodily contact and mental control.'],
+    ['Holy Word', 'Clr 7, Good 7', 'Evocation', 7, 'Standard', '40 ft.', 'None', 'Kills, paralyzes, blinds, or deafens nongood subjects based on Hit Dice.']
   ].map((s) => ({ id: 'seed-spl-' + slug(s[0]), name: s[0], levelText: s[1], school: s[2], level: s[3], action: s[4], range: s[5], save: s[6], desc: s[7], src: 'PHB (seed)' }));
 
   const DOMAINS = [
@@ -296,6 +298,7 @@
       prereqs: [],
       chassis: blankChassis(bp.id === 'armor' ? 'armor' : 'weapon'),
       modifiers: [], substitutions: [],
+      locksOpen: false,
       locks: { loseDex: false, flatFooted: false, cannotAct: false, blinded: false, entangled: false, negLevel: false, extraAttack: false },
       powers: [], effects: [], buffKind: 'Buff',
       delivery: { action: 'Standard', range: 'Close (25 ft. + 5 ft./2 levels)', area: '', target: '', attack: 'none', attackOn: false, save: { type: 'None', effect: 'Half', dcMode: 'spell', stat: 'int', flat: 15 }, sr: 'Yes', damage: blankDamage(false), extras: [] },
@@ -461,10 +464,12 @@
   const META_TX_LABEL = {}; META_TRANSFORMS.forEach((x) => { META_TX_LABEL[x[0]] = x[1]; });
   const BLOCK_TYPES = {
     bonus: { icon: '📊', label: 'Bonus', color: 'b-blue' }, damage: { icon: '💥', label: 'Damage / Heal / Temp HP', color: 'b-red' }, defense: { icon: '🛡️', label: 'Immunity / DR / Resist / Sense', color: 'b-green' },
-    size: { icon: '📏', label: 'Size Change', color: 'b-purple' }, metamagic: { icon: '✨', label: 'Metamagic', color: 'b-purple', metaOnly: true },
-    pool: { icon: '🔋', label: 'Resource Pool', color: 'b-teal', poolOnly: true }, rule: { icon: '📜', label: 'Rule Effect', color: 'b-slate' },
-    tier: { icon: '🔶', label: 'CL Tier C-Block', color: 'c-teal', container: 'branches' }, synergy: { icon: '🔶', label: 'Synergy C-Block', color: 'c-teal', container: 'kids' }, table: { icon: '🎯', label: 'Roll Table C-Block', color: 'c-amber', container: 'rows' }
+    size: { icon: '📏', label: 'Size Change', color: 'b-purple' }, metamagic: { icon: '✨', label: 'Metamagic', color: 'b-purple' },
+    pool: { icon: '🔋', label: 'Resource Pool', color: 'b-teal' }, rule: { icon: '📜', label: 'Rule Effect', color: 'b-slate' },
+    tier: { icon: '🔶', label: 'CL / HD Tier', color: 'c-teal', container: 'branches' }, synergy: { icon: '🔶', label: 'Synergy C-Block', color: 'c-teal', container: 'kids' }, table: { icon: '🎯', label: 'Roll Table C-Block', color: 'c-amber', container: 'rows' }
   };
+  const BLOCK_ORDER = ['bonus', 'damage', 'defense', 'tier', 'synergy', 'table', 'pool', 'metamagic', 'size', 'rule'];
+  const PROGRESSION_MODES = [['base', 'Base Class (1–20)'], ['prestige', 'Prestige Class (1–10)'], ['hd', 'HD / Character Level Scaling (1–20)'], ['legacy', 'Legacy Item Rituals (1–20)']];
   function BLK(type, o) {
     const base = { id: uid('b'), type: type };
     const d = {
@@ -515,7 +520,7 @@
         return (b.poolName || 'Resource Pool') + ': ' + num(b.max, 1) + sc + ' ' + rs;
       }
       case 'rule': return b.text || 'Rule effect (empty)';
-      case 'tier': return 'CL Tier: ' + b.branches.map((br) => br.cond + ' → ' + (br.kids.map(blockText).join(' + ') || '—')).join(' | ');
+      case 'tier': return 'CL / HD Tier: ' + b.branches.map((br) => br.cond + ' → ' + (br.kids.map(blockText).join(' + ') || '—')).join(' | ');
       case 'synergy': return b.cond + ' → ' + (b.kids.map(blockText).join(' + ') || '—');
       case 'table': return 'Roll ' + b.die + ': ' + b.rows.map((r) => '[' + r.roll + '] ' + (r.kids.map(blockText).join(' + ') || '—')).join(' ');
       default: return b.type;
@@ -603,6 +608,39 @@
       e.effects = [BLK('defense', { mode: 'Immunity', what: 'Fire' }), BLK('defense', { mode: 'Immunity', what: 'Sleep' }), BLK('defense', { mode: 'Immunity', what: 'Paralysis' }), BLK('defense', { mode: 'Sense', what: 'Darkvision 60 ft.' }), BLK('defense', { mode: 'Sense', what: 'Low-Light Vision' })];
       e.powers = [blankPower('inline', { name: 'Breath Weapon (Fire)', action: 'Standard', use: Object.assign(blankUse('perDay'), { n: 1 }), cl: 1, range: 'Personal', area: '30-ft. Cone', attackOn: false, save: { type: 'Reflex', effect: 'Half' }, dc: 15, damage: { on: true, count: 6, die: 'd8', type: 'Fire', scaling: 'flat', per: 1, start: 1, max: 10 }, text: 'Once per day, exhale a 30-ft. cone of fire dealing 6d8 fire damage (Reflex DC 10 + 1/2 HD + Con mod half).' })];
       return e; } },
+    { id: 'half_celestial', icon: '🧬', label: 'Half-Celestial Template (LA +4, Fly 60 ft., Ability Mods + HD 1–20 SLA Ladder)', build() {
+      const e = blankEntry('race');
+      Object.assign(e, { name: 'Half-Celestial', source: 'MM p.144', tags: ['#Template', '#Good', '#Celestial'], facets: ['identity', 'modifiers', 'effects', 'powers', 'progression'],
+        text: 'Inherited template. Type changes to Outsider (Good, Augmented); gains wings (Fly 60 ft. good), darkvision 60 ft., disease immunity, energy resistances, spell resistance (10 + HD, max 35), HD-scaling DR/magic, Smite Evil 1/day, and HD 1–20 spell-like abilities.' });
+      Object.assign(e.race, { kind: 'template', timing: 'Inherited', size: 'Medium', creatureType: 'Outsider', subtype: 'Good, Augmented', speed: 30, flySpeed: 60, flyMan: 'Good', la: 4, favoredClass: 'Any' });
+      e.modifiers = [M('str', 4, 'Racial'), M('dex', 2, 'Racial'), M('con', 4, 'Racial'), M('int', 2, 'Racial'), M('wis', 4, 'Racial'), M('cha', 4, 'Racial'), M('save.fort', 4, 'Racial', 'vs Poison')];
+      e.effects = [
+        BLK('defense', { mode: 'Immunity', what: 'Disease' }),
+        BLK('defense', { mode: 'Sense', what: 'Darkvision 60 ft.' }),
+        BLK('defense', { mode: 'Energy Resistance', what: 'Acid', value: 10 }),
+        BLK('defense', { mode: 'Energy Resistance', what: 'Cold', value: 10 }),
+        BLK('defense', { mode: 'Energy Resistance', what: 'Electricity', value: 10 }),
+        BLK('rule', { text: 'Spell Resistance 10 + HD (maximum 35)' }),
+        BLK('tier', { branches: [{ id: uid('br'), cond: 'HD 1–11', kids: [BLK('defense', { mode: 'DR', value: 5, what: 'magic' })] }, { id: uid('br'), cond: 'HD ≥ 12', kids: [BLK('defense', { mode: 'DR', value: 10, what: 'magic' })] }] })
+      ];
+      e.powers = [
+        blankPower('inline', { name: 'Daylight (Sp)', action: 'Standard', use: blankUse('atwill'), cl: 1, range: 'Touch', duration: '10 min./level', text: 'Use daylight at will as a spell-like ability (CL = HD).' }),
+        blankPower('inline', { name: 'Smite Evil (Su)', action: 'Free', use: Object.assign(blankUse('perDay'), { n: 1 }), range: 'Melee', text: 'Once per day, make a normal melee attack to deal extra damage equal to HD (max +20) against an evil foe.' })
+      ];
+      const p = e.progression;
+      Object.assign(p, { mode: 'hd', maxLevel: 20 });
+      const sla = (name, txt) => FEATURE(name, { kind: 'inline', abilityType: 'Sp', text: txt || 'Spell-like ability (CL = HD).' });
+      p.levels[0].features = [sla('Protection from Evil (3/day, Sp)'), sla('Bless (1/day, Sp)')];
+      p.levels[2].features = [sla('Aid (1/day, Sp)'), sla('Detect Evil (1/day, Sp)')];
+      p.levels[4].features = [sla('Cure Serious Wounds (1/day, Sp)'), sla('Neutralize Poison (1/day, Sp)')];
+      p.levels[6].features = [sla('Holy Smite (1/day, Sp)'), sla('Remove Disease (1/day, Sp)')];
+      p.levels[8].features = [sla('Dispel Evil (1/day, Sp)')];
+      p.levels[10].features = [sla('Holy Word (1/day, Sp)')];
+      p.levels[12].features = [sla('Holy Aura (3/day, Sp)'), sla('Hallow (1/day, Sp)')];
+      p.levels[14].features = [sla('Mass Charm Monster (1/day, Sp)')];
+      p.levels[16].features = [sla('Summon Monster IX (Celestials Only, 1/day, Sp)')];
+      p.levels[18].features = [sla('Resurrection (1/day, Sp)')];
+      return e; } },
     { id: 'iron_heart_surge', icon: '⚔️', label: 'Iron Heart Surge (ToB: Iron Heart 3, Standard Action, Per Encounter)', build() {
       const e = blankEntry('spell');
       Object.assign(e, { name: 'Iron Heart Surge', source: 'Tome of Battle p.68', tags: ['#Tactical'], text: 'End one spell, effect, or other condition currently affecting you, and gain a +2 morale bonus on attack rolls until the end of your next turn.' });
@@ -637,7 +675,7 @@
     customSkills: Array.isArray(persisted.customSkills) ? persisted.customSkills : [],
     house: { critCap: 0 }, // engine-ready; Stage 2 feeds house rules from the Character Sheet
     spot: null,
-    ui: { viewMode: 'scratch', liveOpenMobile: false, facetOpen: {}, cardOpen: {}, jsonOpen: false, attachOpen: false, tplSaveOpen: false, newTplName: '', houseOpen: false, customTypeOpen: false, customType: { name: '', stacks: false, lostFF: false },
+    ui: { viewMode: 'scratch', liveOpenMobile: false, progHideEmpty: false, facetOpen: {}, cardOpen: {}, jsonOpen: false, attachOpen: false, tplSaveOpen: false, newTplName: '', houseOpen: false, customTypeOpen: false, customType: { name: '', stacks: false, lostFF: false },
       customSkillOpen: false, customSkill: { name: '', ability: 'cha', trainedOnly: true, acp: false },
       dmgDraft: { count: 1, die: 'd6', type: 'Fire', crit: 'normal', cond: '' }, extraDraft: 'rays' }
   };
@@ -977,8 +1015,13 @@
     }
     if (has('progression')) {
       const p = en.progression;
-      const spellLv = p.levels.slice(0, p.maxLevel).filter((l) => l.spell).length;
-      seg.push('d' + p.hitDie + ' HD • ' + (p.bab === 'full' ? 'Full' : p.bab) + ' BAB • Good ' + (['fort', 'ref', 'will'].filter((s) => p.good[s]).map((s) => ({ fort: 'Fortitude', ref: 'Reflex', will: 'Will' }[s])).join('/') || 'none') + ' • ' + p.skillPts + ' + Int skill points • ' + p.maxLevel + ' levels' + (spellLv ? ' • +1 Spellcasting ×' + spellLv : ''));
+      if (p.mode === 'hd' || p.mode === 'legacy') {
+        const mc = p.levels.slice(0, p.maxLevel).reduce((acc, l) => acc + l.features.length, 0);
+        seg.push((p.mode === 'hd' ? 'HD Scaling' : 'Legacy Rituals') + ' (1–' + p.maxLevel + ' • ' + mc + ' milestone feature' + (mc === 1 ? '' : 's') + ')');
+      } else {
+        const spellLv = p.levels.slice(0, p.maxLevel).filter((l) => l.spell).length;
+        seg.push('d' + p.hitDie + ' HD • ' + (p.bab === 'full' ? 'Full' : p.bab) + ' BAB • Good ' + (['fort', 'ref', 'will'].filter((s) => p.good[s]).map((s) => ({ fort: 'Fortitude', ref: 'Reflex', will: 'Will' }[s])).join('/') || 'none') + ' • ' + p.skillPts + ' + Int skill points • ' + p.maxLevel + ' levels' + (spellLv ? ' • +1 Spellcasting ×' + spellLv : ''));
+      }
     }
     if (has('grants')) {
       const g = en.grants;
@@ -1119,7 +1162,7 @@
     if (b.rows) o.rows = b.rows.map((r) => ({ roll: r.roll, effects: r.kids.map(exportBlock) }));
     return o;
   }
-  function exportFeature(f) { const o = { kind: f.kind, name: f.name }; if (f.refId) o.refId = f.refId; if (f.kind === 'inline') { o.abilityType = f.abilityType; if (f.text) o.text = f.text; } return o; }
+  function exportFeature(f) { const o = { kind: f.kind, name: f.name }; if (f.refId) o.refId = f.refId; if (f.kind === 'inline') { o.abilityType = f.abilityType; if (f.text) o.text = f.text; } else if (f.abilityType === 'Sp') { o.abilityType = 'Sp'; } return o; }
   function exportEntry(en) {
     const F = en.facets, has = (k) => F.indexOf(k) >= 0;
     const out = { schemaVersion: 2.5, id: en.origin.mode === 'override' && en.origin.srdId ? en.origin.srdId : en.id, blueprint: en.blueprint, name: entryName(en), source: en.source, tags: en.tags.slice(), facets: F.slice() };
@@ -1213,8 +1256,15 @@
     }
     if (has('progression')) {
       const p = en.progression;
-      out.progression = { mode: p.mode, maxLevel: p.maxLevel, hitDie: 'd' + p.hitDie, bab: p.bab, goodSaves: ['fort', 'ref', 'will'].filter((s) => p.good[s]), skillPointsPerLevel: num(p.skillPts), classSkills: (p.classSkills || []).slice(),
-        levels: p.levels.slice(0, p.maxLevel).map((l, i) => ({ level: i + 1, bab: classBAB(p.bab, i + 1), fort: p.good.fort ? goodSave(i + 1) : poorSave(i + 1), ref: p.good.ref ? goodSave(i + 1) : poorSave(i + 1), will: p.good.will ? goodSave(i + 1) : poorSave(i + 1), features: l.features.map(exportFeature), spellcasting: l.spell ? '+1 level of existing spellcasting class' : null })) };
+      if (p.mode === 'hd' || p.mode === 'legacy') {
+        const milestones = p.levels.slice(0, p.maxLevel)
+          .map((l, i) => ({ level: i + 1, features: l.features.map(exportFeature) }))
+          .filter((r) => r.features.length > 0);
+        out.progression = { mode: p.mode, maxLevel: p.maxLevel, milestones: milestones };
+      } else {
+        out.progression = { mode: p.mode, maxLevel: p.maxLevel, hitDie: 'd' + p.hitDie, bab: p.bab, goodSaves: ['fort', 'ref', 'will'].filter((s) => p.good[s]), skillPointsPerLevel: num(p.skillPts), classSkills: (p.classSkills || []).slice(),
+          levels: p.levels.slice(0, p.maxLevel).map((l, i) => ({ level: i + 1, bab: classBAB(p.bab, i + 1), fort: p.good.fort ? goodSave(i + 1) : poorSave(i + 1), ref: p.good.ref ? goodSave(i + 1) : poorSave(i + 1), will: p.good.will ? goodSave(i + 1) : poorSave(i + 1), features: l.features.map(exportFeature), spellcasting: l.spell ? '+1 level of existing spellcasting class' : null })) };
+      }
     }
     if (has('grants')) {
       const g = en.grants, o = {};
@@ -1596,14 +1646,18 @@
         const lvl = s ? num(s.level, 1) : 0;
         const pw = blankPower('attached', { name: ref.name, ref: ref, action: s && ACTIONS.indexOf(s.action) >= 0 ? s.action : 'Standard', cl: Math.max(1, lvl * 2 - 1), use: Object.assign(blankUse('perDay'), { n: 1 }) });
         if (s && s.save) pw.save = parseSave(s.save);
+        ensureFacet('powers');
         S.entry.powers.push(pw); S.ui.cardOpen['pw:' + pw.id] = true; toast('Attached ' + ref.name); renderAll();
       }
     },
     feature: {
-      ph: '🔍 Attach class feature / feat…',
-      search(q) {
-        const out = rank(CAT.classFeatures, q, (c) => c.name, (c) => c.desc, 15).map((c) => SI('Class Features', c.id, c.name, c.abilityType || 'Ex', short(c.desc), { name: c.name, refId: c.id, type: c.abilityType, desc: c.desc }));
-        rank(CAT.feats, q, (f) => f.name, (f) => f.desc, 8).forEach((f) => out.push(SI('Feats (granted)', f.id, f.name, 'Feat', short(f.desc), { name: f.name, refId: f.id, type: 'Ex', desc: f.desc })));
+      ph: '🔍 + Feature / SLA / Feat…',
+      layers: ['All', 'Features', 'Spells (SLA)', 'Feats'],
+      search(q, ctx, layer) {
+        const L = layer || 'All', out = [];
+        if (L === 'All' || L === 'Features') rank(CAT.classFeatures, q, (c) => c.name, (c) => c.desc, 12).forEach((c) => out.push(SI('Class Features', c.id, c.name, c.abilityType || 'Ex', short(c.desc), { name: c.name, refId: c.id, type: c.abilityType || 'Ex', desc: c.desc })));
+        if (L === 'All' || L === 'Spells (SLA)') rank(CAT.spells, q, (s) => s.name, (s) => s.desc, 12).forEach((s) => out.push(SI('Spells (as Sp SLA)', s.id, s.name, 'Sp • ' + (s.levelText || 'Lvl ' + s.level), short(s.school + ' • ' + s.desc), { name: s.name + ' (1/day, Sp)', refId: s.id, type: 'Sp', desc: s.desc })));
+        if (L === 'All' || L === 'Feats') rank(CAT.feats, q, (f) => f.name, (f) => f.desc, 8).forEach((f) => out.push(SI('Feats (granted)', f.id, f.name, 'Feat', short(f.desc), { name: f.name, refId: f.id, type: 'Ex', desc: f.desc })));
         return out;
       },
       pick(it, ctx) { S.entry.progression.levels[num(ctx)].features.push(FEATURE(it.data.name, { refId: it.data.refId, abilityType: it.data.type || 'Ex', text: short(it.data.desc, 200) })); renderAll(); }
@@ -1723,7 +1777,7 @@
       else if (sys === 'psionic') sub = 'Psionic Power • ' + sp.discipline + ' ' + num(sp.maneuverLvl, 1);
       else sub = 'Spell' + (sp.classes.length ? ' • ' + spellLevelText(sp) : '');
     }
-    if (en.blueprint === 'class') sub = en.progression.mode === 'prestige' ? 'Prestige Class' : en.progression.mode === 'base' ? 'Base Class' : 'Legacy Progression';
+    if (en.blueprint === 'class') sub = en.progression.mode === 'prestige' ? 'Prestige Class' : en.progression.mode === 'base' ? 'Base Class' : en.progression.mode === 'hd' ? 'HD Scaling' : 'Legacy Progression';
     if (en.blueprint === 'item_mod') sub = (en.itemMod.kind === 'crystal' ? 'Augment Crystal' : en.itemMod.kind === 'material' ? 'Special Material' : 'Enchantment') + ' (' + en.itemMod.on + ')';
     if (en.blueprint === 'race') sub = (en.race.kind === 'template' ? en.race.timing + ' Template' : 'Base Race') + ' • ' + en.race.size + ' ' + en.race.creatureType;
     let l1 = '<span class="fs-live-icon">' + bp.icon + '</span><span class="fs-live-name">' + esc(entryName(en)) + '</span><span class="fs-pill indigo">' + esc(sub) + '</span>' +
@@ -2011,26 +2065,43 @@
 
   function facetProgression(en) {
     const p = en.progression;
-    const rows = p.levels.slice(0, p.maxLevel).map((l, i) => {
-      const L = i + 1;
+    const showClassCols = en.blueprint === 'class' || p.mode === 'base' || p.mode === 'prestige';
+    const maxLv = Math.max(1, Math.min(20, num(p.maxLevel, 20)));
+    const hideEmpty = !showClassCols && S.ui.progHideEmpty;
+    let levelIndices = range(0, maxLv - 1);
+    if (hideEmpty) {
+      const nonEmpty = levelIndices.filter((i) => p.levels[i].features.length > 0);
+      levelIndices = nonEmpty.length ? nonEmpty : [0];
+    }
+    const rows = levelIndices.map((i) => {
+      const l = p.levels[i], L = i + 1;
       const chips = l.features.map((f, fi) => '<span class="fs-pill ' + (f.kind === 'inline' ? 'amber' : f.kind === 'pattern' ? 'sky' : 'indigo') + '" data-action="toggle-card" data-key="ft:' + f.id + '" style="cursor:pointer" title="' + esc(f.text || '') + '">' + (f.kind === 'inline' ? '✨ ' : '') + live('feat-sum', i + ':' + fi) + '<span class="fs-x" data-action="remove-feature" data-l="' + i + '" data-f="' + fi + '">×</span></span>').join('');
-      const editors = l.features.map((f, fi) => (S.ui.cardOpen['ft:' + f.id] ? '<tr class="fs-sub-row"><td></td><td colspan="6"><div class="fs-card open" style="padding:8px"><div class="fs-grid3">' + field('Feature Name', inp('progression.levels.' + i + '.features.' + fi + '.name', f.name)) +
+      const editors = l.features.map((f, fi) => (S.ui.cardOpen['ft:' + f.id] ? '<tr class="fs-sub-row"><td></td><td colspan="' + (showClassCols ? 6 : 1) + '"><div class="fs-card open" style="padding:8px"><div class="fs-grid3">' + field('Feature Name', inp('progression.levels.' + i + '.features.' + fi + '.name', f.name)) +
         field('Ability Type', sel('progression.levels.' + i + '.features.' + fi + '.abilityType', f.abilityType || 'Ex', [['Ex', 'Extraordinary (Ex)'], ['Su', 'Supernatural (Su)'], ['Sp', 'Spell-Like (Sp)'], ['—', 'Natural / Other']])) +
         field('Origin', '<span class="fs-pill ' + (f.kind === 'inline' ? 'amber' : 'indigo') + '" style="height:var(--input-sm-h)">' + (f.kind === 'inline' ? 'Created inline' : f.kind === 'pattern' ? 'Pattern Generator' : 'SRD / Custom ref') + '</span>') + '</div>' +
         '<textarea class="fs-in" style="margin-top:6px" data-bind="progression.levels.' + i + '.features.' + fi + '.text" placeholder="Feature rules text…">' + esc(f.text || '') + '</textarea></div></td></tr>' : '')).join('');
+      const featCell = '<td><div class="fs-row" style="gap:3px">' + chips + spotHtml('feature', i, { style: 'width:165px', ph: '🔍 + Feature / SLA / Feat' }) + btn('add-feature-inline', '✨ + Inline', 'fs-xs fs-dashed', { l: i }) + '</div></td>';
+      if (!showClassCols) return '<tr><td><b>' + (p.mode === 'hd' ? 'HD ' : 'Lvl ') + L + '</b></td>' + featCell + '</tr>' + editors;
       return '<tr><td><b>' + L + '</b></td><td>' + sgn(classBAB(p.bab, L)) + '</td><td>' + sgn(p.good.fort ? goodSave(L) : poorSave(L)) + '</td><td>' + sgn(p.good.ref ? goodSave(L) : poorSave(L)) + '</td><td>' + sgn(p.good.will ? goodSave(L) : poorSave(L)) + '</td>' +
-        '<td><div class="fs-row" style="gap:3px">' + chips + spotHtml('feature', i, { style: 'width:170px', ph: '🔍 + feature / feat' }) + btn('add-feature-inline', '+ Inline', 'fs-xs fs-dashed', { l: i }) + '</div></td>' +
-        '<td><label class="fs-check' + (l.spell ? ' on' : '') + '" style="padding:1px 6px"><input type="checkbox" data-bind="progression.levels.' + i + '.spell" data-t="bool"' + (l.spell ? ' checked' : '') + '>+1</label></td></tr>' + editors;
+        featCell + '<td><label class="fs-check' + (l.spell ? ' on' : '') + '" style="padding:1px 6px"><input type="checkbox" data-bind="progression.levels.' + i + '.spell" data-t="bool"' + (l.spell ? ' checked' : '') + '>+1</label></td></tr>' + editors;
     }).join('');
-    return '<div class="fs-grid4">' + field('Matrix', sel('progression.mode', p.mode, [['base', 'Base Class (1–20)'], ['prestige', 'Prestige Class (1–10)'], ['legacy', 'Legacy Item (1–20)']])) +
-      field('Hit Die', sel('progression.hitDie', p.hitDie, [4, 6, 8, 10, 12].map((n) => [n, 'd' + n]), { num: true })) + field('Base Attack Bonus', sel('progression.bab', p.bab, [['full', 'Full (Fighter)'], ['3/4', '3/4 (Cleric)'], ['1/2', '1/2 (Wizard)']])) +
-      field('Skill Points / Level', sel('progression.skillPts', p.skillPts, [2, 4, 6, 8].map((n) => [n, n + ' + Int']), { num: true })) + '</div>' +
-      '<div class="fs-row" style="margin-top:8px"><span class="fs-hint">Good Saves:</span>' + chk('progression.good.fort', p.good.fort, 'Fortitude') + chk('progression.good.ref', p.good.ref, 'Reflex') + chk('progression.good.will', p.good.will, 'Will') + '</div>' +
+    let top = '';
+    if (showClassCols) {
+      top = '<div class="fs-grid4">' + field('Matrix', sel('progression.mode', p.mode, PROGRESSION_MODES)) +
+        field('Hit Die', sel('progression.hitDie', p.hitDie, [4, 6, 8, 10, 12].map((n) => [n, 'd' + n]), { num: true })) + field('Base Attack Bonus', sel('progression.bab', p.bab, [['full', 'Full (Fighter)'], ['3/4', '3/4 (Cleric)'], ['1/2', '1/2 (Wizard)']])) +
+        field('Skill Points / Level', sel('progression.skillPts', p.skillPts, [2, 4, 6, 8].map((n) => [n, n + ' + Int']), { num: true })) + '</div>' +
+        '<div class="fs-row" style="margin-top:8px"><span class="fs-hint">Good Saves:</span>' + chk('progression.good.fort', p.good.fort, 'Fortitude') + chk('progression.good.ref', p.good.ref, 'Reflex') + chk('progression.good.will', p.good.will, 'Will') + '</div>';
+    } else {
+      top = '<div class="fs-row" style="align-items:flex-end">' + field('Matrix', sel('progression.mode', p.mode, PROGRESSION_MODES, { narrow: true })) +
+        field('Max ' + (p.mode === 'hd' ? 'HD' : 'Level'), sel('progression.maxLevel', maxLv, [5, 10, 12, 15, 20].map((n) => [n, String(n)]), { narrow: true, num: true })) +
+        btn('toggle-prog-empty', S.ui.progHideEmpty ? '👁️ Show All Rows' : '🗜️ Hide Empty Rows', 'fs-xs') + '</div>';
+    }
+    return top +
       '<div class="fs-section-label">🔁 Repeating Pattern Generator</div><div class="fs-row">' + inp('progression.pattern.name', p.pattern.name, { ph: 'Feature name', style: 'width:150px' }) +
-      '<span class="fs-hint">start</span>' + sel('progression.pattern.start', p.pattern.start, range(1, p.maxLevel), { narrow: true, num: true }) + '<span class="fs-hint">every</span>' + sel('progression.pattern.every', p.pattern.every, range(1, 10), { narrow: true, num: true }) +
-      '<span class="fs-hint">scaling</span>' + inp('progression.pattern.scale', p.pattern.scale, { ph: '+1d6 or +1', style: 'width:80px' }) + btn('gen-pattern', '⚡ Generate Rows', 'fs-xs fs-primary') + '</div>' +
-      '<div class="fs-section-label">🧩 Class Skills</div><div class="fs-row">' + p.classSkills.map((s, i) => '<span class="fs-pill emerald">' + esc(s) + '<span class="fs-x" data-action="remove-skill" data-i="' + i + '">×</span></span>').join('') + spotHtml('skill', 'classic', { style: 'width:180px' }) + Object.keys(SKILL_PACKAGES).map((k) => btn('skill-pkg', '+ ' + k, 'fs-xs', { k: k })).join('') + '</div>' +
-      '<div class="fs-scroll-x" style="margin-top:8px"><table class="fs-table"><thead><tr><th>Lvl</th><th>BAB</th><th>Fort</th><th>Ref</th><th>Will</th><th>Features (click to edit)</th><th title="+1 Level of Existing Spellcasting Class">+1 Spellcasting</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+      '<span class="fs-hint">start</span>' + sel('progression.pattern.start', Math.min(p.pattern.start, maxLv), range(1, maxLv), { narrow: true, num: true }) + '<span class="fs-hint">every</span>' + sel('progression.pattern.every', p.pattern.every, range(1, 10), { narrow: true, num: true }) +
+      '<span class="fs-hint">scaling</span>' + inp('progression.pattern.scale', p.pattern.scale, { ph: '+1d6 or +1', style: 'width:80px' }) + btn('gen-pattern', '⚡ Apply', 'fs-xs fs-primary') + '</div>' +
+      (showClassCols ? '<div class="fs-section-label">🧩 Class Skills</div><div class="fs-row">' + p.classSkills.map((s, i) => '<span class="fs-pill emerald">' + esc(s) + '<span class="fs-x" data-action="remove-skill" data-i="' + i + '">×</span></span>').join('') + spotHtml('skill', 'classic', { style: 'width:180px' }) + Object.keys(SKILL_PACKAGES).map((k) => btn('skill-pkg', '+ ' + k, 'fs-xs', { k: k })).join('') + '</div>' : '') +
+      '<div class="fs-scroll-x" style="margin-top:8px"><table class="fs-table"><thead><tr>' + (showClassCols ? '<th>Lvl</th><th>BAB</th><th>Fort</th><th>Ref</th><th>Will</th><th>Features (click to edit)</th><th title="+1 Level of Existing Spellcasting Class">+1 Spellcasting</th>' : '<th>' + (p.mode === 'hd' ? 'HD' : 'Lvl') + '</th><th>Features / SLAs (click to edit)</th>') + '</tr></thead><tbody>' + rows + '</tbody></table></div>';
   }
 
   function ladderEditor(prefix, ladder, readonly) {
@@ -2081,7 +2152,14 @@
       case 'delivery': return en.delivery.action + (damageText(en.delivery.damage) ? ' • ' + damageText(en.delivery.damage) : '');
       case 'lifecycle': return useText(en.lifecycle.use) + ' • ' + durationText(en.lifecycle);
       case 'defenses': return (en.defenses.dr.length + en.defenses.energy.length + (en.defenses.srOn ? 1 : 0)) + ' entries';
-      case 'progression': return en.progression.maxLevel + ' levels';
+      case 'progression': {
+        const p = en.progression;
+        if (p.mode === 'hd' || p.mode === 'legacy') {
+          const mc = p.levels.slice(0, p.maxLevel).reduce((a, l) => a + l.features.length, 0);
+          return (p.mode === 'hd' ? 'HD 1–' : 'Lvl 1–') + p.maxLevel + ' (' + mc + ' trait' + (mc === 1 ? '' : 's') + ')';
+        }
+        return p.maxLevel + ' levels';
+      }
       case 'grants': return en.grants.domains.length + ' domains';
       default: return '';
     }
@@ -2152,13 +2230,8 @@
       default: return '';
     }
   }
-  function canUseBlock(t) {
-    if (BLOCK_TYPES[t].metaOnly) return ['feat', 'wondrous', 'class', 'item_mod'].indexOf(S.entry.blueprint) >= 0;
-    if (BLOCK_TYPES[t].poolOnly) return ['class', 'feat', 'race', 'wondrous'].indexOf(S.entry.blueprint) >= 0;
-    return true;
-  }
   function blockPalette(listPath, containers, compact) {
-    const types = Object.keys(BLOCK_TYPES).filter((t) => (containers || !BLOCK_TYPES[t].container) && (!compact ? canUseBlock(t) : !BLOCK_TYPES[t].metaOnly));
+    const types = BLOCK_ORDER.filter((t) => (containers || !BLOCK_TYPES[t].container));
     return '<div class="lego-palette' + (compact ? ' compact' : '') + '">' + (compact ? '' : '<span class="lego-lbl">+ Snap Block:</span>') + types.map((t) => '<button type="button" class="lego-add ' + BLOCK_TYPES[t].color + '" data-action="add-block" data-p="' + listPath + '" data-t="' + t + '">+ ' + BLOCK_TYPES[t].icon + ' ' + esc(BLOCK_TYPES[t].label) + '</button>').join('') + '</div>';
   }
   const delBtn = (action, data) => '<button type="button" class="lego-del" data-action="' + action + '"' + Object.keys(data).map((k) => ' data-' + k + '="' + esc(data[k]) + '"').join('') + ' title="Remove">✕</button>';
@@ -2202,10 +2275,78 @@
     return en.modifiers.map((m, i) => stack('b-blue', L('📊 Bonus:') + selGroups('modifiers.' + i + '.target', m.target, allTargetGroups()) + inp('modifiers.' + i + '.value', m.value, { num: true, style: 'width:56px' }) +
       sel('modifiers.' + i + '.type', m.type, bonusTypeOpts().map((o) => [o[0], o[0]]), { narrow: true }) + inp('modifiers.' + i + '.condition', m.condition, { ph: 'condition', style: 'width:120px' }) + delBtn('remove-mod', { p: 'modifiers', i: i }))).join('');
   }
+  const hasFacet = (en, k) => en.facets.indexOf(k) >= 0;
+  function ensureFacet(k) { if (S.entry.facets.indexOf(k) < 0) S.entry.facets.push(k); }
+  function locksActive(en) { return !!(en.locksOpen || en.blueprint === 'buff' || Object.keys(en.locks || {}).some((k) => en.locks[k])); }
+  function locksStack(en) {
+    return stack('b-slate', L('🩸 State Locks:') + Object.keys(LOCK_LABEL).map((k) => chk('locks.' + k, en.locks[k], esc(LOCK_LABEL[k].split(' (')[0]))).join('') + (en.blueprint !== 'buff' ? delBtn('detach-locks', {}) : ''));
+  }
   function prereqCBlock(en, title) {
+    const canDetach = en.blueprint !== 'feat' && en.blueprint !== 'class';
     const rows = en.prereqs.map((r, ri) => cBlock('c-sub', '<span class="lego-lbl">' + (ri ? 'AND' : 'Require') + '</span>' + delBtn('remove-prereq', { ri: ri }),
       r.alts.map((a, ai) => stack('b-slate', altEditor(ri, ai, a))).join('') + '<button type="button" class="fs-btn fs-xs fs-dashed" data-action="add-or" data-ri="' + ri + '">+Or</button>')).join('');
-    return cBlock('c-amber', L('🦖 ' + title) + '<span class="fs-hint" style="color:#fde68a">' + esc(prereqText(en.prereqs) || 'none — open to all') + '</span>', rows + '<button type="button" class="fs-btn fs-xs fs-dashed" data-action="add-prereq">+ Add Prerequisite (AND)</button>');
+    return cBlock('c-amber', L('🦖 ' + title) + '<span class="fs-hint" style="color:#fde68a">' + esc(prereqText(en.prereqs) || 'none — open to all') + '</span>' + (canDetach ? delBtn('detach-prereqs', {}) : ''), rows + '<button type="button" class="fs-btn fs-xs fs-dashed" data-action="add-prereq">+ Add Prerequisite (AND)</button>');
+  }
+  function progressionCBlock(en) {
+    const p = en.progression;
+    const isCls = en.blueprint === 'class';
+    const showClassCols = isCls || p.mode === 'base' || p.mode === 'prestige';
+    const maxLv = Math.max(1, Math.min(20, num(p.maxLevel, 20)));
+    const hideEmpty = !isCls && S.ui.progHideEmpty;
+    let levelIndices = range(0, maxLv - 1);
+    if (hideEmpty) {
+      const nonEmpty = levelIndices.filter((i) => p.levels[i].features.length > 0 || (showClassCols && p.levels[i].spell));
+      levelIndices = nonEmpty.length ? nonEmpty : [0];
+    }
+    const rows = levelIndices.map((i) => {
+      const l = p.levels[i], Lv = i + 1;
+      const chips = l.features.map((f, fi) => '<span class="fs-pill ' + (f.kind === 'inline' ? 'amber' : f.kind === 'pattern' ? 'sky' : 'indigo') + '" data-action="toggle-card" data-key="ft:' + f.id + '" style="cursor:pointer">' + (f.kind === 'inline' ? '✨ ' : '') + live('feat-sum', i + ':' + fi) + '<span class="fs-x" data-action="remove-feature" data-l="' + i + '" data-f="' + fi + '">×</span></span>').join('');
+      const editors = l.features.map((f, fi) => (S.ui.cardOpen['ft:' + f.id] ? '<div class="lego-sub">' + inp('progression.levels.' + i + '.features.' + fi + '.name', f.name, { style: 'width:170px' }) + sel('progression.levels.' + i + '.features.' + fi + '.abilityType', f.abilityType || 'Ex', ['Ex', 'Su', 'Sp', '—'], { narrow: true }) + inp('progression.levels.' + i + '.features.' + fi + '.text', f.text || '', { ph: 'Feature rules text…', style: 'flex:1;min-width:150px' }) + '</div>' : '')).join('');
+      const prefix = showClassCols
+        ? '<b class="lego-lvl">Lvl ' + Lv + '</b><span class="lego-desc">BAB ' + sgn(classBAB(p.bab, Lv)) + ' • F ' + sgn(p.good.fort ? goodSave(Lv) : poorSave(Lv)) + ' / R ' + sgn(p.good.ref ? goodSave(Lv) : poorSave(Lv)) + ' / W ' + sgn(p.good.will ? goodSave(Lv) : poorSave(Lv)) + '</span>'
+        : '<b class="lego-lvl">' + (p.mode === 'hd' ? 'HD ' : 'Lvl ') + Lv + '</b>';
+      const suffix = showClassCols ? chk('progression.levels.' + i + '.spell', l.spell, '✓ +1 Spellcasting') : '';
+      return stack('b-slate', prefix + chips + spotHtml('feature', i, { style: 'width:165px', ph: '🔍 + Feature / SLA / Feat' }) + btn('add-feature-inline', '✨ + Inline', 'fs-xs fs-dashed', { l: i }) + suffix + editors);
+    }).join('');
+    const patBar = !isCls ? stack('b-blue', L('🔁 Every') + sel('progression.pattern.every', p.pattern.every, range(1, 10), { narrow: true, num: true }) + L((p.mode === 'hd' ? 'HD' : 'levels') + ' from ' + (p.mode === 'hd' ? 'HD' : 'Lvl')) + sel('progression.pattern.start', Math.min(p.pattern.start, maxLv), range(1, maxLv), { narrow: true, num: true }) + L('grant') + inp('progression.pattern.name', p.pattern.name, { style: 'width:140px' }) + L('scaling') + inp('progression.pattern.scale', p.pattern.scale, { style: 'width:70px' }) + btn('gen-pattern', '⚡ Apply', 'fs-xs fs-primary')) : '';
+    const head = isCls
+      ? L('🦖 Level Progression (1–' + maxLv + ')')
+      : L('🦖 Level / HD Progression (1–' + maxLv + ')') + sel('progression.mode', p.mode, PROGRESSION_MODES, { narrow: true }) + L('Max') + sel('progression.maxLevel', maxLv, [5, 10, 12, 15, 20].map((n) => [n, String(n)]), { narrow: true, num: true }) + btn('toggle-prog-empty', S.ui.progHideEmpty ? '👁️ Show All Rows' : '🗜️ Hide Empty Rows', 'fs-xs') + delBtn('detach-progression', {});
+    return cBlock('c-teal', head, patBar + rows);
+  }
+  function universalExtraStacks(en, o) {
+    o = o || {};
+    let h = '';
+    if (!o.skipPrereqs && hasFacet(en, 'prereqs')) h += prereqCBlock(en, 'Prerequisites');
+    h += modStacks(en);
+    if (locksActive(en)) h += locksStack(en);
+    h += scratchBlocks(en.effects, 'effects');
+    h += en.powers.map(powerCBlock).join('');
+    if (!o.skipProgression && hasFacet(en, 'progression')) h += progressionCBlock(en);
+    return h;
+  }
+  function universalSnapPalette(en) {
+    const d = en.delivery;
+    const spellToggles = en.blueprint === 'spell'
+      ? (d.damage.on ? '' : '<button type="button" class="lego-add b-red" data-action="toggle-flag" data-p="delivery.damage.on">+ 💥 Scaling Spell Damage</button>') +
+        (d.attackOn ? '' : '<button type="button" class="lego-add b-red" data-action="toggle-flag" data-p="delivery.attackOn">+ 🎯 Attack Roll</button>')
+      : '';
+    return '<div class="lego-palette"><span class="lego-lbl">+ Snap Block:</span>' + spellToggles +
+      '<button type="button" class="lego-add b-blue" data-action="add-mod" data-p="modifiers">+ 📊 Bonus</button>' +
+      '<button type="button" class="lego-add b-red" data-action="add-block" data-p="effects" data-t="damage">+ 💥 Damage / Temp HP</button>' +
+      '<button type="button" class="lego-add b-green" data-action="add-block" data-p="effects" data-t="defense">+ 🛡️ Defense / Sense</button>' +
+      '<button type="button" class="lego-add c-amber" data-action="add-power-inline">+ ⚡ Sub-Power / SLA</button>' +
+      spotHtml('power', 'powers', { style: 'width:220px', ph: '🔍 + Attach Spell / SLA' }) +
+      (hasFacet(en, 'progression') ? '' : '<button type="button" class="lego-add c-teal" data-action="attach-progression">+ 🦖 Level / HD Progression</button>') +
+      '<button type="button" class="lego-add c-teal" data-action="add-block" data-p="effects" data-t="tier">+ 🔶 CL / HD Tier</button>' +
+      '<button type="button" class="lego-add c-teal" data-action="add-block" data-p="effects" data-t="synergy">+ 🔶 Synergy</button>' +
+      '<button type="button" class="lego-add c-amber" data-action="add-block" data-p="effects" data-t="table">+ 🎯 Roll Table</button>' +
+      '<button type="button" class="lego-add b-teal" data-action="add-block" data-p="effects" data-t="pool">+ 🔋 Resource Pool</button>' +
+      '<button type="button" class="lego-add b-purple" data-action="add-block" data-p="effects" data-t="metamagic">+ ✨ Metamagic</button>' +
+      '<button type="button" class="lego-add b-purple" data-action="add-block" data-p="effects" data-t="size">+ 📏 Size Change</button>' +
+      (hasFacet(en, 'prereqs') ? '' : '<button type="button" class="lego-add c-amber" data-action="attach-prereqs">+ 🏛️ Prerequisites</button>') +
+      (locksActive(en) ? '' : '<button type="button" class="lego-add b-slate" data-action="attach-locks">+ 🩸 State Locks</button>') +
+      '<button type="button" class="lego-add b-slate" data-action="add-block" data-p="effects" data-t="rule">+ 📜 Rule Effect</button></div>';
   }
   function enchCBlock(en) {
     const ch = en.chassis, v = chassisView(ch), cr = v.crystal;
@@ -2250,17 +2391,13 @@
     h += enchCBlock(en);
     if (isW) h += (ch.damageParts || []).map((p, i) => stack('b-red', L('🩸 Extra Damage:') + inp('chassis.damageParts.' + i + '.count', p.count, { num: true, style: 'width:50px' }) + sel('chassis.damageParts.' + i + '.die', p.die, [['d4', 'd4'], ['d6', 'd6'], ['d8', 'd8'], ['d10', 'd10'], ['d12', 'd12'], ['flat', 'Flat']], { narrow: true }) +
       sel('chassis.damageParts.' + i + '.type', p.type, DAMAGE_TYPES, { narrow: true }) + sel('chassis.damageParts.' + i + '.crit', p.crit, [['normal', 'Normal'], ['multiply', '×Crit'], ['onCritOnly', 'On Crit Only']], { narrow: true }) + inp('chassis.damageParts.' + i + '.cond', p.cond || '', { ph: 'vs Undead', style: 'width:120px' }) + delBtn('remove-dmg', { i: i }))).join('');
-    return h + modStacks(en) + effectsArea(en, false);
+    return h + universalExtraStacks(en) + universalSnapPalette(en);
   }
   function scratchWondrous(en) {
     const kinds = ['Wondrous Item', 'Ring', 'Rod', 'Staff', 'Wand', 'Potion / Oil', 'Scroll', 'Artifact / Relic'];
     let h = hat('h-amber', L('💎 Item') + inp('name', en.name, { ph: 'Item name', style: 'width:220px' }) + L('Kind') + sel('item.subtype', en.item.subtype, kinds, { narrow: true }) + L('Slot') + sel('item.slot', en.item.slot, BODY_SLOTS, { narrow: true }) +
       L('Price') + inp('item.price', en.item.price, { num: true, style: 'width:90px' }) + L('gp • CL') + inp('item.cl', en.item.cl, { num: true, style: 'width:50px' }) + '<div class="lego-row">' + tagSockets(en) + '</div>');
-    h += modStacks(en) + scratchBlocks(en.effects, 'effects') + en.powers.map(powerCBlock).join('');
-    h += '<div class="lego-palette"><span class="lego-lbl">+ Snap Block:</span><button type="button" class="lego-add b-blue" data-action="add-mod" data-p="modifiers">+ 📊 Bonus</button><button type="button" class="lego-add c-amber" data-action="add-power-inline">+ ⚡ Activated Sub-Power (C-Block)</button>' +
-      Object.keys(BLOCK_TYPES).filter((t) => t !== 'bonus' && !BLOCK_TYPES[t].container).map((t) => '<button type="button" class="lego-add ' + BLOCK_TYPES[t].color + '" data-action="add-block" data-p="effects" data-t="' + t + '">+ ' + BLOCK_TYPES[t].icon + ' ' + esc(BLOCK_TYPES[t].label) + '</button>').join('') +
-      '<div style="width:280px">' + spotHtml('power', 'powers', { ph: '🔍 + Attach Existing Spell (Sub-Power)' }) + '</div></div>';
-    return h;
+    return h + universalExtraStacks(en) + universalSnapPalette(en);
   }
   function scratchSpell(en) {
     const sp = en.spell, sys = sp.system || 'spell', d = en.delivery, l = en.lifecycle;
@@ -2297,45 +2434,31 @@
       sel('delivery.damage.scaling', d.damage.scaling, [['flat', 'Flat'], ['perCL', 'Per X CL']], { narrow: true }) + (d.damage.scaling === 'perCL' ? L('every') + sel('delivery.damage.per', d.damage.per, range(1, 10).map((n) => [n, n + ' CL']), { narrow: true, num: true }) + L('from') + sel('delivery.damage.start', d.damage.start, range(1, 20).map((n) => [n, 'CL ' + n]), { narrow: true, num: true }) + L('max') + sel('delivery.damage.max', d.damage.max, range(1, 30), { narrow: true, num: true }) : '') +
       '<span class="lego-desc">' + live('dmg-main') + '</span>' + delBtn('toggle-flag', { p: 'delivery.damage.on' }));
     if (d.attackOn) h += stack('b-red', L('🎯 Attack Roll:') + sel('delivery.attack', d.attack, Object.keys(ATTACK_LABEL).map((k) => [k, ATTACK_LABEL[k]]), { narrow: true }) + delBtn('toggle-flag', { p: 'delivery.attackOn' }));
-    h += scratchBlocks(en.effects, 'effects');
-    h += '<div class="lego-palette"><span class="lego-lbl">+ Snap Effect Block:</span>' + (d.damage.on ? '' : '<button type="button" class="lego-add b-red" data-action="toggle-flag" data-p="delivery.damage.on">+ 💥 Scaling Spell Damage</button>') + (d.attackOn ? '' : '<button type="button" class="lego-add b-red" data-action="toggle-flag" data-p="delivery.attackOn">+ 🎯 Attack Roll</button>') +
-      Object.keys(BLOCK_TYPES).filter(canUseBlock).map((t) => '<button type="button" class="lego-add ' + BLOCK_TYPES[t].color + '" data-action="add-block" data-p="effects" data-t="' + t + '">+ ' + BLOCK_TYPES[t].icon + ' ' + esc(BLOCK_TYPES[t].label) + '</button>').join('') + '</div>';
-    return h;
+    return h + universalExtraStacks(en) + universalSnapPalette(en);
   }
   function scratchFeat(en) {
     return hat('h-emerald', L('📜 Feat') + inp('name', en.name, { ph: 'Feat name', style: 'width:220px' }) + L('Repeatable') + sel('repeat.mode', en.repeat.mode, [['once', '1x Only'], ['upto', 'Up to N times'], ['per', 'Per Weapon / School']], { narrow: true }) + (en.repeat.mode === 'upto' ? sel('repeat.n', en.repeat.n, range(2, 20), { narrow: true, num: true }) : '') + '<div class="lego-row">' + tagSockets(en) + '</div>') +
-      prereqCBlock(en, 'Prerequisites') + modStacks(en) + scratchBlocks(en.effects, 'effects') + en.powers.map(powerCBlock).join('') +
-      '<div class="lego-palette"><span class="lego-lbl">+ Snap Block:</span><button type="button" class="lego-add b-blue" data-action="add-mod" data-p="modifiers">+ 📊 Benefit Bonus</button><button type="button" class="lego-add c-amber" data-action="add-power-inline">+ ⚡ Granted Power (C-Block)</button>' +
-      Object.keys(BLOCK_TYPES).filter((t) => t !== 'bonus' && canUseBlock(t)).map((t) => '<button type="button" class="lego-add ' + BLOCK_TYPES[t].color + '" data-action="add-block" data-p="effects" data-t="' + t + '">+ ' + BLOCK_TYPES[t].icon + ' ' + esc(BLOCK_TYPES[t].label) + '</button>').join('') + '<div style="width:260px">' + spotHtml('power', 'powers', { ph: '🔍 + Granted Spell' }) + '</div></div>';
+      (hasFacet(en, 'prereqs') ? prereqCBlock(en, 'Prerequisites') : '') + universalExtraStacks(en, { skipPrereqs: true }) + universalSnapPalette(en);
   }
   function scratchBuff(en) {
     const l = en.lifecycle;
     return hat('h-rose', L('✨') + sel('buffKind', en.buffKind, ['Buff', 'Condition', 'Curse'], { narrow: true }) + inp('name', en.name, { ph: 'Name', style: 'width:210px' }) + L('Duration') + sel('lifecycle.duration', l.duration, DURATIONS, { narrow: true }) +
       (['rounds', 'roundsPerLevel', 'minPerLevel', 'hourPerLevel'].indexOf(l.duration) >= 0 ? inp('lifecycle.durValue', l.durValue, { num: true, style: 'width:46px' }) : '') + chk('lifecycle.stackable', l.stackable, 'Stackable ×N') + (l.stackable ? sel('lifecycle.maxStacks', l.maxStacks, range(1, 20), { narrow: true, num: true }) : '') + '<div class="lego-row">' + tagSockets(en) + '</div>') +
-      modStacks(en) + stack('b-slate', L('🩸 State Locks:') + Object.keys(LOCK_LABEL).map((k) => chk('locks.' + k, en.locks[k], esc(LOCK_LABEL[k].split(' (')[0]))).join('')) + scratchBlocks(en.effects, 'effects') +
-      '<div class="lego-palette"><span class="lego-lbl">+ Snap Block:</span><button type="button" class="lego-add b-blue" data-action="add-mod" data-p="modifiers">+ 📊 Bonus / Penalty</button>' + Object.keys(BLOCK_TYPES).filter((t) => t !== 'bonus' && canUseBlock(t)).map((t) => '<button type="button" class="lego-add ' + BLOCK_TYPES[t].color + '" data-action="add-block" data-p="effects" data-t="' + t + '">+ ' + BLOCK_TYPES[t].icon + ' ' + esc(BLOCK_TYPES[t].label) + '</button>').join('') + '</div>';
+      universalExtraStacks(en) + universalSnapPalette(en);
   }
   const SKILL_PACKAGES = { Martial: ['Climb', 'Intimidate', 'Jump', 'Ride', 'Swim'], Arcane: ['Concentration', 'Craft', 'Decipher Script', 'Knowledge', 'Spellcraft'], Divine: ['Concentration', 'Diplomacy', 'Heal', 'Knowledge', 'Spellcraft'], Skirmisher: ['Balance', 'Hide', 'Listen', 'Move Silently', 'Spot', 'Tumble'] };
   function scratchClass(en) {
     const p = en.progression;
-    let h = hat('h-emerald', L('💎') + sel('progression.mode', p.mode, [['base', 'Base Class (1–20)'], ['prestige', 'Prestige Class (1–10)']], { narrow: true }) + inp('name', en.name, { ph: 'Class name', style: 'width:180px' }) + L('HD') + sel('progression.hitDie', p.hitDie, [4, 6, 8, 10, 12].map((n) => [n, 'd' + n]), { narrow: true, num: true }) +
+    let h = hat('h-emerald', L('💎') + sel('progression.mode', p.mode, PROGRESSION_MODES, { narrow: true }) + inp('name', en.name, { ph: 'Class name', style: 'width:180px' }) + L('HD') + sel('progression.hitDie', p.hitDie, [4, 6, 8, 10, 12].map((n) => [n, 'd' + n]), { narrow: true, num: true }) +
       L('BAB') + sel('progression.bab', p.bab, [['full', 'Full 1/1'], ['3/4', 'Med 3/4'], ['1/2', 'Poor 1/2']], { narrow: true }) + L('Good Saves') + ['fort', 'ref', 'will'].map((s) => '<button type="button" class="lego-pill' + (p.good[s] ? ' on' : '') + '" data-action="toggle-flag" data-p="progression.good.' + s + '">' + { fort: 'Fort', ref: 'Ref', will: 'Will' }[s] + '</button>').join('') +
       L('Skill Pts') + sel('progression.skillPts', p.skillPts, [2, 4, 6, 8].map((n) => [n, n + ' + Int']), { narrow: true, num: true }) + '<div class="lego-row">' + tagSockets(en) + '</div>');
-    h += prereqCBlock(en, 'Entry Prerequisites');
-    h += stack('b-blue', L('🔁 Every') + sel('progression.pattern.every', p.pattern.every, range(1, 10), { narrow: true, num: true }) + L('levels from Lvl') + sel('progression.pattern.start', p.pattern.start, range(1, p.maxLevel), { narrow: true, num: true }) + L('grant') + inp('progression.pattern.name', p.pattern.name, { style: 'width:140px' }) + L('scaling') + inp('progression.pattern.scale', p.pattern.scale, { style: 'width:70px' }) + btn('gen-pattern', '⚡ Apply to Levels', 'fs-xs fs-primary'));
-    const rows = p.levels.slice(0, p.maxLevel).map((l, i) => {
-      const Lv = i + 1;
-      const chips = l.features.map((f, fi) => '<span class="fs-pill ' + (f.kind === 'inline' ? 'amber' : f.kind === 'pattern' ? 'sky' : 'indigo') + '" data-action="toggle-card" data-key="ft:' + f.id + '" style="cursor:pointer">' + (f.kind === 'inline' ? '✨ ' : '') + live('feat-sum', i + ':' + fi) + '<span class="fs-x" data-action="remove-feature" data-l="' + i + '" data-f="' + fi + '">×</span></span>').join('');
-      const editors = l.features.map((f, fi) => (S.ui.cardOpen['ft:' + f.id] ? '<div class="lego-sub">' + inp('progression.levels.' + i + '.features.' + fi + '.name', f.name, { style: 'width:170px' }) + sel('progression.levels.' + i + '.features.' + fi + '.abilityType', f.abilityType || 'Ex', ['Ex', 'Su', 'Sp', '—'], { narrow: true }) + inp('progression.levels.' + i + '.features.' + fi + '.text', f.text || '', { ph: 'Feature rules text…', style: 'flex:1;min-width:200px' }) + '</div>' : '')).join('');
-      return stack('b-slate', '<b class="lego-lvl">Lvl ' + Lv + '</b><span class="lego-desc">BAB ' + sgn(classBAB(p.bab, Lv)) + ' • F ' + sgn(p.good.fort ? goodSave(Lv) : poorSave(Lv)) + ' / R ' + sgn(p.good.ref ? goodSave(Lv) : poorSave(Lv)) + ' / W ' + sgn(p.good.will ? goodSave(Lv) : poorSave(Lv)) + '</span>' + chips +
-        spotHtml('feature', i, { style: 'width:160px', ph: '🔍 + Feature / Feat' }) + btn('add-feature-inline', '✨ + Inline', 'fs-xs fs-dashed', { l: i }) + chk('progression.levels.' + i + '.spell', l.spell, '✓ +1 Spellcasting') + editors);
-    }).join('');
-    h += cBlock('c-teal', L('🦖 Level Progression (1–' + p.maxLevel + ')'), rows);
+    if (hasFacet(en, 'prereqs')) h += prereqCBlock(en, 'Entry Prerequisites');
+    h += stack('b-blue', L('🔁 Every') + sel('progression.pattern.every', p.pattern.every, range(1, 10), { narrow: true, num: true }) + L('levels from Lvl') + sel('progression.pattern.start', Math.min(p.pattern.start, p.maxLevel), range(1, p.maxLevel), { narrow: true, num: true }) + L('grant') + inp('progression.pattern.name', p.pattern.name, { style: 'width:140px' }) + L('scaling') + inp('progression.pattern.scale', p.pattern.scale, { style: 'width:70px' }) + btn('gen-pattern', '⚡ Apply to Levels', 'fs-xs fs-primary'));
+    if (hasFacet(en, 'progression')) h += progressionCBlock(en);
     h += stack('b-green', L('🧩 Class Skills:') + p.classSkills.map((s, i) => '<span class="fs-pill emerald">' + esc(s) + '<span class="fs-x" data-action="remove-skill" data-i="' + i + '">×</span></span>').join('') + spotHtml('skill', 'class', { style: 'width:170px', ph: '🔍 + Add Skill' }) +
       btn('toggle-custom-skill', '+ 🎯 Custom Skill', 'fs-xs fs-dashed') + Object.keys(SKILL_PACKAGES).map((k) => btn('skill-pkg', '+ ' + k, 'fs-xs', { k: k })).join(''));
     h += stack('b-purple', L('🎯 Bonus Feat Grants:') + en.grants.featGrants.map((x, i) => '<span class="fs-pill indigo">' + sel('grants.featGrants.' + i + '.level', x.level, range(1, 20).map((n) => [n, 'L' + n]), { num: true, style: 'width:56px' }) + ' ×' + x.count + ' from ' + sel('grants.featGrants.' + i + '.pool', x.pool, allTags(), { style: 'width:130px' }) + '<span class="fs-x" data-action="remove-grant" data-i="' + i + '">×</span></span>').join('') + btn('add-grant', '+ Grant', 'fs-xs fs-dashed'));
-    h += effectsArea(en, false);
-    return h;
+    return h + universalExtraStacks(en, { skipPrereqs: true, skipProgression: true }) + universalSnapPalette(en);
   }
   function scratchItemMod(en) {
     const im = en.itemMod, dd = S.ui.dmgDraft;
@@ -2374,10 +2497,7 @@
         sel('dmgDraft.crit', dd.crit, [['normal', 'Normal'], ['multiply', '×Crit'], ['onCritOnly', 'On Crit Only']], { scope: 'ui', narrow: true }) +
         inp('dmgDraft.cond', dd.cond, { scope: 'ui', ph: 'vs Arcane Casters', style: 'width:130px', enter: 'add-dmg' }) + btn('add-dmg', '+ Add Damage', 'fs-xs fs-primary'));
     }
-    h += modStacks(en) + scratchBlocks(en.effects, 'effects') + en.powers.map(powerCBlock).join('');
-    h += '<div class="lego-palette"><span class="lego-lbl">+ Snap Block:</span><button type="button" class="lego-add b-blue" data-action="add-mod" data-p="modifiers">+ 📊 Bonus</button><button type="button" class="lego-add c-amber" data-action="add-power-inline">+ ⚡ Sub-Power (C-Block)</button>' +
-      Object.keys(BLOCK_TYPES).filter((t) => t !== 'bonus' && canUseBlock(t)).map((t) => '<button type="button" class="lego-add ' + BLOCK_TYPES[t].color + '" data-action="add-block" data-p="effects" data-t="' + t + '">+ ' + BLOCK_TYPES[t].icon + ' ' + esc(BLOCK_TYPES[t].label) + '</button>').join('') + '</div>';
-    return h;
+    return h + universalExtraStacks(en) + universalSnapPalette(en);
   }
   function scratchRace(en) {
     const r = en.race;
@@ -2394,11 +2514,7 @@
       L('Favored') + inp('race.favoredClass', r.favoredClass, { ph: 'Any', style: 'width:90px' }) +
       chk('race.bonusFeat1', r.bonusFeat1, '1st-Lvl Bonus Feat') + chk('race.bonusSkillPts', r.bonusSkillPts, 'Human Skill Points (+4/+1)') +
       '<div class="lego-row">' + tagSockets(en) + '</div>');
-    h += modStacks(en) + scratchBlocks(en.effects, 'effects') + en.powers.map(powerCBlock).join('');
-    h += '<div class="lego-palette"><span class="lego-lbl">+ Snap Block:</span><button type="button" class="lego-add b-blue" data-action="add-mod" data-p="modifiers">+ 📊 Racial Ability / Skill Bonus</button><button type="button" class="lego-add c-amber" data-action="add-power-inline">+ ⚡ Racial Power / Breath / SLA (C-Block)</button>' +
-      Object.keys(BLOCK_TYPES).filter((t) => t !== 'bonus' && canUseBlock(t)).map((t) => '<button type="button" class="lego-add ' + BLOCK_TYPES[t].color + '" data-action="add-block" data-p="effects" data-t="' + t + '">+ ' + BLOCK_TYPES[t].icon + ' ' + esc(BLOCK_TYPES[t].label) + '</button>').join('') +
-      '<div style="width:240px">' + spotHtml('power', 'powers', { ph: '🔍 + Racial SLA (Spell)' }) + '</div></div>';
-    return h;
+    return h + universalExtraStacks(en) + universalSnapPalette(en);
   }
   function alignGrid(g) { return '<div class="fs-align">' + ALIGNS.map((a) => '<button type="button" data-action="set-deity-align" data-a="' + a + '" class="' + (a === g.deityAlign ? 'deity' : clericLegal(g.deityAlign, a) ? 'legal' : '') + '" title="' + ALIGN_NAMES[a] + '">' + a + '</button>').join('') + '</div>'; }
   function scratchDeity(en) {
@@ -2409,15 +2525,14 @@
     let empty = ''; for (let k = 0; k < Math.max(1, 2 - g.domains.length); k++) empty += stack('b-purple', L('✨ Domain:') + spotHtml('domain', 'slot' + k, { style: 'width:260px', ph: '🔍 Pick SRD / Custom Domain' }));
     h += cBlock('c-amber', L('🦖 Granted Domains'), doms + empty + btn('add-domain-inline', '✨ + Inline New Domain', 'fs-xs fs-dashed'));
     h += stack('b-slate', L('🧩 Portfolio & Dogma:') + L('Portfolio') + inp('grants.portfolio', g.portfolio, { ph: 'Sun, light, strength, healing', style: 'width:220px' }) + L('Worshippers / Dogma') + inp('grants.dogma', g.dogma, { ph: 'Those who wish to see evil vanquished…', style: 'flex:1;min-width:220px' }));
-    return h;
+    return h + universalExtraStacks(en) + universalSnapPalette(en);
   }
   function scratchDomain(en) {
     const g = en.grants;
     let h = hat('h-sky', L('✨ Domain') + inp('name', en.name, { ph: 'Domain name', style: 'width:220px' }) + '<div class="lego-row">' + tagSockets(en) + '</div>');
     h += stack('b-blue', L('🧩 Granted Power:') + inp('grants.grantedPowerName', g.grantedPowerName, { ph: 'Power name (e.g. Greater Turning)', style: 'width:200px' }) + L('Usage') + usageEditor('grants.gpUse', g.gpUse) + inp('grants.grantedPower', g.grantedPower, { ph: 'Rule summary…', style: 'flex:1;min-width:240px' }));
-    h += scratchBlocks(en.effects, 'effects') + '<div class="lego-palette compact"><button type="button" class="lego-add b-blue" data-action="add-block" data-p="effects" data-t="bonus">+ 📊 Bonus (granted power)</button></div>';
     h += cBlock('c-teal', L('🦖 Domain Spell Ladder (1st–9th)'), g.ladder.map((s, i) => stack('b-slate', '<b class="lego-lvl">Lvl ' + (i + 1) + '</b>' + (s ? '<span class="fs-pill purple">🔮 ' + esc(s) + '<span class="fs-x" data-action="clear-ladder" data-i="' + i + '">×</span></span>' : '') + spotHtml('ladder', i, { style: 'width:240px', ph: '🔍 Pick Spell (Lvl ' + (i + 1) + ')' }))).join(''));
-    return h;
+    return h + universalExtraStacks(en) + universalSnapPalette(en);
   }
   function renderScratch() {
     const en = S.entry;
@@ -2490,6 +2605,9 @@
       if (isItemBp(en.blueprint)) { en.item.subtype = v === 'weapon' ? 'Weapon' : 'Armor'; en.item.slot = v === 'weapon' ? 'Held' : 'Body / Robe'; }
     } else if (path === 'progression.mode') {
       en.progression.maxLevel = v === 'prestige' ? 10 : 20;
+      if (en.progression.pattern.start > en.progression.maxLevel) en.progression.pattern.start = 1;
+    } else if (path === 'progression.maxLevel') {
+      if (en.progression.pattern.start > num(v, 20)) en.progression.pattern.start = 1;
     } else if (/^prereqs\.\d+\.alts\.\d+\.kind$/.test(path)) {
       const alt = getPath(en, path.replace(/\.kind$/, ''));
       alt.min = { ability: 13, bab: 1, skill: 4, level: 1 }[v] || alt.min;
@@ -2539,11 +2657,26 @@
     const t = S.templates.find((x) => x.id === id);
     if (t) { const en = clone(t.entry); en.id = uid('custom'); en.templateId = t.id; loadEntry(en); toast('Template loaded: ' + t.name); renderAll(); }
   }
+  function progHasFeatures(p) { return (p.levels || []).some((l) => l.features && l.features.length > 0); }
+  function attachProgression(en) {
+    ensureFacet('progression');
+    if (en.blueprint !== 'class' && !progHasFeatures(en.progression)) {
+      en.progression.mode = isItemBp(en.blueprint) ? 'legacy' : 'hd';
+      en.progression.maxLevel = 20;
+    }
+  }
   const ACT = {
     'toggle-card': (el) => { const k = el.dataset.key; S.ui.cardOpen[k] = !S.ui.cardOpen[k]; renderFacets(); },
     'toggle-facet': (el, ev) => { if (ev && ev.target && ev.target.closest && ev.target.closest('[data-action="detach-facet"]')) return; const k = el.dataset.k; S.ui.facetOpen[k] = S.ui.facetOpen[k] === false; renderFacets(); },
     'detach-facet': (el) => { S.entry.facets = S.entry.facets.filter((f) => f !== el.dataset.k); toast('Detached: ' + FACET_BY_KEY[el.dataset.k].title, 'warn'); renderAll(); },
-    'attach-facet': (el) => { const k = el.dataset.k; if (S.entry.facets.indexOf(k) < 0) S.entry.facets.push(k); S.ui.facetOpen[k] = true; toast('Attached: ' + FACET_BY_KEY[k].title); renderAll(); },
+    'attach-facet': (el) => { const k = el.dataset.k; if (k === 'progression') attachProgression(S.entry); else ensureFacet(k); S.ui.facetOpen[k] = true; toast('Attached: ' + FACET_BY_KEY[k].title); renderAll(); },
+    'attach-progression': () => { attachProgression(S.entry); toast('Attached: Level / HD Progression'); renderAll(); },
+    'detach-progression': () => { if (S.entry.blueprint === 'class') return; S.entry.facets = S.entry.facets.filter((f) => f !== 'progression'); toast('Detached: Level / HD Progression', 'warn'); renderAll(); },
+    'toggle-prog-empty': () => { S.ui.progHideEmpty = !S.ui.progHideEmpty; renderFacets(); },
+    'attach-prereqs': () => { ensureFacet('prereqs'); toast('Attached: Prerequisites'); renderAll(); },
+    'detach-prereqs': () => { if (S.entry.blueprint === 'feat' || S.entry.blueprint === 'class') return; S.entry.facets = S.entry.facets.filter((f) => f !== 'prereqs'); toast('Detached: Prerequisites', 'warn'); renderAll(); },
+    'attach-locks': () => { S.entry.locksOpen = true; ensureFacet('modifiers'); toast('Attached: State Locks'); renderAll(); },
+    'detach-locks': () => { if (S.entry.blueprint === 'buff') return; S.entry.locksOpen = false; Object.keys(S.entry.locks).forEach((k) => { S.entry.locks[k] = false; }); toast('Detached: State Locks', 'warn'); renderAll(); },
     'toggle-attach': () => { S.ui.attachOpen = !S.ui.attachOpen; renderFacets(); },
     'toggle-json': (el, ev) => { if (ev && ev.target && ev.target.closest && ev.target.closest('[data-action="copy-json"]')) return; S.ui.jsonOpen = !S.ui.jsonOpen; renderJson(); },
     'copy-json': () => {
@@ -2555,7 +2688,7 @@
     'new-entry': () => { loadEntry(scaffold(blankEntry(S.entry.blueprint))); renderAll(); },
     'toggle-live': () => { S.ui.liveOpenMobile = !S.ui.liveOpenMobile; renderLiveHeader(); },
     'set-view': (el) => { S.ui.viewMode = el.dataset.v; S.ui.cardOpen = {}; renderAll(); toast(el.dataset.v === 'scratch' ? '🧩 Scratch Lego view — same live entry' : '📋 Classic Facets view — same live entry'); },
-    'add-block': (el) => { const list = getPath(S.entry, el.dataset.p); const b = BLK(el.dataset.t, el.dataset.t === 'metamagic' && S.entry.blueprint === 'wondrous' ? { costMode: 'rod', transform: 'quicken' } : null); list.push(b); if (el.dataset.p === 'effects' && S.entry.facets.indexOf('effects') < 0) S.entry.facets.push('effects'); if (el.dataset.t === 'metamagic' && S.entry.blueprint === 'feat' && S.entry.tags.indexOf('#Metamagic') < 0) S.entry.tags.push('#Metamagic'); S.ui.cardOpen['blk:' + b.id] = true; renderAll(); },
+    'add-block': (el) => { const list = getPath(S.entry, el.dataset.p); const b = BLK(el.dataset.t, el.dataset.t === 'metamagic' && S.entry.blueprint === 'wondrous' ? { costMode: 'rod', transform: 'quicken' } : null); list.push(b); if ((el.dataset.p || '').indexOf('effects') === 0) ensureFacet('effects'); if (el.dataset.t === 'metamagic' && S.entry.blueprint === 'feat' && S.entry.tags.indexOf('#Metamagic') < 0) S.entry.tags.push('#Metamagic'); S.ui.cardOpen['blk:' + b.id] = true; renderAll(); },
     'remove-block': (el) => { getPath(S.entry, el.dataset.p).splice(num(el.dataset.i), 1); renderAll(); },
     'add-branch': (el) => { getPath(S.entry, el.dataset.p).push({ id: uid('br'), cond: 'CL ≥ 15', kids: [] }); renderAll(); },
     'remove-branch': (el) => { getPath(S.entry, el.dataset.p).splice(num(el.dataset.i), 1); renderAll(); },
@@ -2581,7 +2714,7 @@
     'remove-spellcls': (el) => { S.entry.spell.classes.splice(num(el.dataset.i), 1); renderAll(); },
     'remove-descriptor': (el) => { S.entry.spell.descriptors.splice(num(el.dataset.i), 1); renderAll(); },
     'toggle-comp': (el) => { const c = S.entry.spell.comps; c[el.dataset.k] = !c[el.dataset.k]; renderAll(); },
-    'add-prereq': () => { const r = { id: uid('p'), alts: [ALT({})] }; S.entry.prereqs.push(r); S.ui.cardOpen['pr:' + r.id] = true; renderAll(); },
+    'add-prereq': () => { ensureFacet('prereqs'); const r = { id: uid('p'), alts: [ALT({})] }; S.entry.prereqs.push(r); S.ui.cardOpen['pr:' + r.id] = true; renderAll(); },
     'add-or': (el) => { const r = S.entry.prereqs[num(el.dataset.ri)]; r.alts.push(ALT({ kind: 'skill', skill: 'skill.tumble', min: 5 })); S.ui.cardOpen['pr:' + r.id] = true; renderAll(); },
     'remove-alt': (el) => { const ri = num(el.dataset.ri), r = S.entry.prereqs[ri]; r.alts.splice(num(el.dataset.ai), 1); if (!r.alts.length) S.entry.prereqs.splice(ri, 1); renderAll(); },
     'remove-prereq': (el) => { S.entry.prereqs.splice(num(el.dataset.ri), 1); renderAll(); },
@@ -2590,7 +2723,7 @@
     'remove-crystal': () => { S.entry.chassis.crystal = { id: '', tier: 'least' }; renderAll(); },
     'add-dmg': () => { const d = S.ui.dmgDraft; S.entry.chassis.damageParts.push({ id: uid('d'), count: num(d.count, 1), die: d.die, type: d.type, crit: d.crit, cond: String(d.cond || '').trim() }); d.cond = ''; renderAll(); },
     'remove-dmg': (el) => { S.entry.chassis.damageParts.splice(num(el.dataset.i), 1); renderAll(); },
-    'add-mod': (el) => { const list = getPath(S.entry, el.dataset.p || 'modifiers'); const m = M('atk.all', 1, 'Untyped'); list.push(m); S.ui.cardOpen[(el.dataset.p === 'modifiers' || !el.dataset.p ? 'm:' : 'pm:' + (getPath(S.entry, el.dataset.p.replace(/\.modifiers$/, '')) || {}).id + ':') + m.id] = true; renderAll(); },
+    'add-mod': (el) => { const p = el.dataset.p || 'modifiers'; if (p === 'modifiers') ensureFacet('modifiers'); const list = getPath(S.entry, p); const m = M('atk.all', 1, 'Untyped'); list.push(m); S.ui.cardOpen[(p === 'modifiers' ? 'm:' : 'pm:' + (getPath(S.entry, p.replace(/\.modifiers$/, '')) || {}).id + ':') + m.id] = true; renderAll(); },
     'remove-mod': (el) => { getPath(S.entry, el.dataset.p || 'modifiers').splice(num(el.dataset.i), 1); renderAll(); },
     'toggle-custom-type': () => { S.ui.customTypeOpen = !S.ui.customTypeOpen; renderFacets(); },
     'save-custom-type': () => {
@@ -2634,7 +2767,7 @@
     },
     'add-sub': () => { const s = { id: uid('s'), save: 'will', from: 'wis', to: 'cha', op: 'replace' }; S.entry.substitutions.push(s); S.ui.cardOpen['s:' + s.id] = true; renderAll(); },
     'remove-sub': (el) => { S.entry.substitutions.splice(num(el.dataset.i), 1); renderAll(); },
-    'add-power-inline': () => { const pw = blankPower('inline', { name: 'New Power ' + (S.entry.powers.length + 1) }); S.entry.powers.push(pw); S.ui.cardOpen['pw:' + pw.id] = true; renderAll(); },
+    'add-power-inline': () => { ensureFacet('powers'); const pw = blankPower('inline', { name: 'New Power ' + (S.entry.powers.length + 1) }); S.entry.powers.push(pw); S.ui.cardOpen['pw:' + pw.id] = true; renderAll(); },
     'remove-power': (el) => { S.entry.powers.splice(num(el.dataset.i), 1); renderAll(); },
     'move-power': (el) => { const a = S.entry.powers, i = num(el.dataset.i), j = i + num(el.dataset.d); if (j < 0 || j >= a.length) return; const t = a[i]; a[i] = a[j]; a[j] = t; renderAll(); },
     'add-extra': () => { const k = S.ui.extraDraft || 'other'; const x = { id: uid('x'), kind: k, text: EXTRA_KINDS[k] }; S.entry.delivery.extras.push(x); S.ui.cardOpen['x:' + x.id] = true; renderAll(); },
@@ -2644,7 +2777,7 @@
     'add-en': () => { const x = { id: uid('en'), type: 'Fire', mode: 'Resistance', value: 10 }; S.entry.defenses.energy.push(x); S.ui.cardOpen['en:' + x.id] = true; renderAll(); },
     'remove-en': (el) => { S.entry.defenses.energy.splice(num(el.dataset.i), 1); renderAll(); },
     'gen-pattern': () => { const p = S.entry.progression; if (!String(p.pattern.name || '').trim()) { toast('Name the repeating feature first', 'warn'); return; } applyPattern(p, p.pattern); toast('Generated "' + p.pattern.name + '" rows'); renderAll(); },
-    'add-feature-inline': (el) => { const f = FEATURE('New Class Feature', { kind: 'inline', abilityType: 'Ex' }); S.entry.progression.levels[num(el.dataset.l)].features.push(f); S.ui.cardOpen['ft:' + f.id] = true; renderAll(); },
+    'add-feature-inline': (el) => { const mode = S.entry.progression.mode; const lbl = mode === 'hd' ? 'New Trait / SLA' : mode === 'legacy' ? 'New Legacy Ability' : 'New Class Feature'; const f = FEATURE(lbl, { kind: 'inline', abilityType: 'Ex' }); S.entry.progression.levels[num(el.dataset.l)].features.push(f); S.ui.cardOpen['ft:' + f.id] = true; renderAll(); },
     'remove-feature': (el) => { S.entry.progression.levels[num(el.dataset.l)].features.splice(num(el.dataset.f), 1); renderAll(); },
     'set-deity-align': (el) => { S.entry.grants.deityAlign = el.dataset.a; renderAll(); },
     'add-domain-inline': () => { const d = { id: uid('dm'), kind: 'inline', name: 'New Domain', grantedPower: '', ladder: ['', '', '', '', '', '', '', '', ''] }; S.entry.grants.domains.push(d); S.ui.cardOpen['dm:' + d.id] = true; renderAll(); },
