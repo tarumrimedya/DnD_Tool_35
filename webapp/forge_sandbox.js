@@ -291,7 +291,7 @@
       delivery: { action: 'Standard', range: 'Close (25 ft. + 5 ft./2 levels)', area: '', target: '', attack: 'none', attackOn: false, save: { type: 'None', effect: 'Half', dcMode: 'spell', stat: 'int', flat: 15 }, sr: 'Yes', damage: blankDamage(false), extras: [] },
       lifecycle: { use: blankUse('atwill'), duration: 'instant', durValue: 1, durText: '', dismissible: false, stackable: false, maxStacks: 5, ongoingOn: false, ongoing: { kind: 'dot', dice: '1d6', type: 'Fire', value: 2 } },
       defenses: { dr: [], energy: [], srOn: false, sr: { mode: 'flat', value: 15 }, concealment: 0, reactionOn: false, reaction: '' },
-      progression: { mode: 'prestige', maxLevel: 10, hitDie: 8, bab: '3/4', good: { fort: false, ref: false, will: false }, skillPts: 2, classSkills: [], levels: blankLevels(), pattern: { name: 'Sneak Attack', start: 1, every: 2, scale: '+1d6' }, caster: { mode: 'none', tradition: 'Arcane', ability: 'int', spellList: 'Sor/Wiz' } },
+      progression: { mode: 'prestige', maxLevel: 10, hitDie: 8, bab: '3/4', good: { fort: false, ref: false, will: false }, skillPts: 2, classSkills: [], levels: blankLevels(), pattern: { name: 'Sneak Attack', start: 1, every: 2, scale: '+1d6' }, caster: { mode: 'none', tradition: 'Arcane', ability: 'int', spellList: 'Sor/Wiz', ignoreAsf: 'none', ignoreShieldAsf: false, castInRage: false } },
       grants: { deityAlign: 'NG', favoredWeapon: 'Mace, Heavy', portfolio: '', dogma: '', grantedPowerName: '', gpUse: blankUse('passive'), grantedPower: '', grantedUses: '1/day', ladder: ['', '', '', '', '', '', '', '', ''], featGrants: [], domains: [], deities: [] }
     };
   }
@@ -460,11 +460,12 @@
     natattack: { icon: '🦷', label: 'Natural / Extra Attack', color: 'b-red' },
     defense: { icon: '🛡️', label: 'Immunity / DR / Resist / Sense', color: 'b-green' },
     dial: { icon: '🎚️', label: 'Tactical Dial (X)', color: 'b-teal' },
+    coupling: { icon: '⚡🔮', label: 'Combat Coupling / Trigger', color: 'b-purple' },
     size: { icon: '📏', label: 'Size Change', color: 'b-purple' }, metamagic: { icon: '✨', label: 'Metamagic', color: 'b-purple' },
     pool: { icon: '🔋', label: 'Resource Pool', color: 'b-teal' }, rule: { icon: '📜', label: 'Rule Effect', color: 'b-slate' },
     tier: { icon: '🔶', label: 'CL / HD Tier', color: 'c-teal', container: 'branches' }, synergy: { icon: '🔶', label: 'Synergy C-Block', color: 'c-teal', container: 'kids' }, table: { icon: '🎯', label: 'Roll Table C-Block', color: 'c-amber', container: 'rows' }
   };
-  const BLOCK_ORDER = ['bonus', 'damage', 'natattack', 'defense', 'dial', 'tier', 'synergy', 'table', 'pool', 'metamagic', 'size', 'rule'];
+  const BLOCK_ORDER = ['bonus', 'damage', 'natattack', 'defense', 'dial', 'coupling', 'tier', 'synergy', 'table', 'pool', 'metamagic', 'size', 'rule'];
   const PROGRESSION_MODES = [['base', 'Base Class (1–20)'], ['prestige', 'Prestige Class (1–10)'], ['hd', 'HD / Character Level Scaling (1–20)'], ['legacy', 'Legacy Item Rituals (1–20)']];
   function BLK(type, o) {
     const base = { id: uid('b'), type: type };
@@ -474,6 +475,7 @@
       natattack: { attackKind: 'primary', count: 2, weaponName: 'Claw', dice: '1d4', dmgType: 'B/P/S', penalty: -2, rider: '' },
       defense: { mode: 'Immunity', what: 'Fear', value: 0 },
       dial: { dialName: 'Arcane Strike', min: 0, maxMode: 'spellLvl', max: 9, cost: 'spellSlot', pool: 'Turn Undead', atkPerX: 1, atkTarget: 'atk.melee', btype: 'Untyped', dmgMode: 'dicePerX', dmgMult: 2, dmgDie: 'd4', dmgType: 'Untyped' },
+      coupling: { couplingMode: 'spellstrike', channelKind: 'spellstrike', critRule: 'weaponRangeX2', atkPenalty: 0, offHandFree: false, holdCharge: true, parentState: 'Bloodrage', trigger: 'onEnter', castSource: 'ownSlot', maxSpellLvl: 2, spellOptions: 'Blur, Protection from Arrows, Resist Energy, Haste', tiedDuration: true, pool: 'Arcane Pool', poolCost: 1, action: 'Swift', duration: '1 min', maxBudget: 5, budgetScaling: 'per4Lvl', allowedEnchs: 'Flaming, Frost, Shock, Keen, Speed', recallCostMode: 'poolEqLvl', uses: 1 },
       size: { steps: 1 },
       metamagic: { costMode: 'slot', slotAdj: 1, uses: 3, maxSpellLvl: 3, pool: 'Turn Undead', poolCost: 2, transform: 'empower', dcBonus: 1, energy: 'Fire', rider: '', appliesTo: '' },
       pool: { poolName: 'Inspiration', max: 3, scaling: 'flat', ability: 'int', reset: 'perEncounter' },
@@ -539,12 +541,40 @@
         const dmgLbl = b.dmgMode === 'flatPerX' ? ', +' + num(b.dmgMult, 1) + '×X dmg' : b.dmgMode === 'dicePerX' ? ', +X' + (b.dmgDie || 'd4') + ' ' + (b.dmgType || 'Untyped') : '';
         return (b.dialName || 'Tactical Dial') + ' (X=0..' + maxLbl + ', ' + costLbl + '): ' + sgn(num(b.atkPerX, 0)) + '×X ' + targetLabel(b.atkTarget || 'atk.melee') + dmgLbl;
       }
+      case 'coupling': {
+        const m = b.couplingMode || 'spellstrike';
+        if (m === 'spellstrike') {
+          const critLbl = b.critRule === 'fullWeaponCrit' ? 'Full Weapon Crit' : b.critRule === 'spell20x2' ? 'Spell 20/×2' : 'Weapon Crit Range, ×2';
+          const hold = b.holdCharge ? ', Hold Charge' : '';
+          if (b.channelKind === 'spellCombat') return 'Spell Combat: Full Attack + Cast 1 Spell (' + sgn(num(b.atkPenalty, 0)) + ' All Atk' + (b.offHandFree ? ', Off-Hand Free' : '') + ')';
+          if (b.channelKind === 'duskbladeSingle') return 'Arcane Channel (Standard: 1 Melee Atk + Touch Spell, ' + critLbl + hold + ')';
+          if (b.channelKind === 'duskbladeFull') return 'Full-Attack Channel (Touch Spell Hits Every Struck Foe, ' + critLbl + hold + ')';
+          if (b.channelKind === 'imbueArrow') return 'Imbue Arrow: Center Area Spell on Ranged Hit';
+          if (b.channelKind === 'spellStoring') return 'Spell Storing: Store Spell ≤ Lvl ' + num(b.maxSpellLvl, 2) + ', Free on Hit';
+          return 'Spellstrike: Touch Spell via Free Melee Weapon Atk (' + critLbl + hold + ')';
+        }
+        if (m === 'stateCast') {
+          const when = b.trigger === 'whileActive' ? 'While ' + (b.parentState || 'State') + ' Active' : 'On Enter ' + (b.parentState || 'State');
+          const what = b.castSource === 'freeList' ? 'Pick 1 Free Buff (' + (b.spellOptions || '—') + ')' : 'Cast Self Spell (Own Slot ≤ Lvl ' + num(b.maxSpellLvl, 2) + ')';
+          return when + ' → ' + what + (b.tiedDuration ? ' • Tied to State Duration' : '');
+        }
+        if (m === 'weaponImbue') {
+          const cost = num(b.poolCost, 1) + ' ' + (b.pool || 'Arcane Pool');
+          const bud = b.budgetScaling === 'flat' ? '+' + num(b.maxBudget, 5) : '+1 at L1, +1/4 Lvls (max +' + num(b.maxBudget, 5) + ')';
+          return 'Weapon Imbue (' + cost + ', ' + (b.action || 'Swift') + ', ' + (b.duration || '1 min') + '): ' + bud + (b.allowedEnchs ? ' [' + b.allowedEnchs + ']' : '');
+        }
+        const rCost = b.recallCostMode === 'perDay' ? num(b.uses, 1) + '/day' : b.recallCostMode === 'poolHalfLvl' ? '½ Spell Lvl (min 1) ' + (b.pool || 'Arcane Pool') : 'Spell Lvl ' + (b.pool || 'Arcane Pool');
+        return 'Spell Recall (' + rCost + ', ' + (b.action || 'Swift') + ', Max Lvl ' + num(b.maxSpellLvl, 6) + ')';
+      }
       case 'defense': return b.mode + ': ' + (['DR', 'Energy Resistance', 'Spell Resistance'].indexOf(b.mode) >= 0 ? num(b.value) + (b.mode === 'DR' ? '/' : ' ') : '') + (b.mode === 'Spell Resistance' ? '' : b.what);
       case 'size': return 'Size: ' + (SIZE_STEPS[String(b.steps)] || (sgn(num(b.steps)) + ' categories'));
       case 'metamagic': return 'Metamagic (' + metamagicCostText(b) + ') → ' + metamagicTxText(b) + (b.appliesTo ? ' [' + b.appliesTo + ']' : '');
       case 'pool': {
-        const sc = { flat: '', plusLevel: ' + Level', plusHalfLevel: ' + 1/2 Level', plusAbilityMod: ' + ' + String(b.ability || 'int').toUpperCase() + ' Mod' }[b.scaling] || '';
+        const ab = String(b.ability || 'int').toUpperCase() + ' Mod';
         const rs = b.reset === 'perDay' ? '/day' : '/encounter';
+        if (b.scaling === 'halfLvlPlusMod') return (b.poolName || 'Resource Pool') + ': ' + (num(b.max, 0) ? num(b.max, 0) + ' + ' : '') + '½ Level + ' + ab + ' ' + rs;
+        if (b.scaling === 'twoPerLvlPlusMod') return (b.poolName || 'Resource Pool') + ': ' + num(b.max, 0) + ' + 2/Lvl + ' + ab + ' ' + rs;
+        const sc = { flat: '', plusLevel: ' + Level', plusHalfLevel: ' + 1/2 Level', plusAbilityMod: ' + ' + ab }[b.scaling] || '';
         return (b.poolName || 'Resource Pool') + ': ' + num(b.max, 1) + sc + ' ' + rs;
       }
       case 'rule': return b.text || 'Rule effect (empty)';
@@ -706,6 +736,101 @@
       const e = blankEntry('feat');
       Object.assign(e, { name: 'Spirit Lion Totem', featKind: 'acf', acf: { targetClass: 'Barbarian', level: 1, replaces: 'Fast Movement', race: '' }, source: 'Complete Champion p.46', tags: ['#Tactical'], facets: ['identity', 'modifiers', 'effects'], text: 'You lose the barbarian fast movement ability and gain the pounce extraordinary ability (full attack at the end of a charge).' });
       e.effects = [BLK('rule', { text: 'Pounce (Ex): You can make a full attack at the end of a charge.' })];
+      return e; } },
+    { id: 'bloodrager', icon: '🩸', label: 'Bloodrager Class 1–20: Bloodrage Pool, Cast in Rage, Auto-Cast Greater/Arcane Bloodrage & Claws', build() {
+      const e = blankEntry('class');
+      Object.assign(e, {
+        name: 'Bloodrager', source: 'ACG / Hybrid 3.5e', tags: ['#HybridClass', '#Arcane', '#Rage'],
+        facets: ['identity', 'prereqs', 'progression', 'grants', 'effects', 'powers'],
+        text: 'Arcane rage hybrid class combining full BAB, d10 HD, Bloodrage with bloodline claws, Cast in Rage, and spontaneous 1st–4th arcane bloodcasting.'
+      });
+      const p = e.progression;
+      Object.assign(p, {
+        mode: 'base', maxLevel: 20, hitDie: 10, bab: 'full', skillPts: 4,
+        good: { fort: true, ref: false, will: false },
+        classSkills: ['Climb', 'Craft', 'Handle Animal', 'Intimidate', 'Jump', 'Knowledge', 'Listen', 'Ride', 'Spellcraft', 'Spot', 'Survival', 'Swim'],
+        caster: { mode: 'halfSpont', tradition: 'Arcane', ability: 'cha', spellList: 'Bloodrager', ignoreAsf: 'light', ignoreShieldAsf: false, castInRage: true }
+      });
+      p.levels.forEach((l, i) => { l.spell = i >= 3; });
+      const feat = (name, type, txt) => FEATURE(name, { kind: 'inline', abilityType: type || 'Ex', text: txt || '' });
+      p.levels[0].features = [
+        feat('Bloodrage', 'Su', 'Enter a bloodrage as a free action (+4 morale Str/Con, +2 morale Will, -2 AC).'),
+        feat('Bloodline Claws', 'Su', 'Grow two primary 1d6 claws while bloodraging (magical at 4th level).'),
+        feat('Fast Movement +10 ft.', 'Ex', '+10 ft. enhancement bonus to land speed in light, medium, or no armor.')
+      ];
+      p.levels[1].features = [feat('Uncanny Dodge', 'Ex', 'Retain Dexterity bonus to AC even if flat-footed or struck by an invisible attacker.')];
+      p.levels[3].features = [
+        feat('Bloodcasting', 'Ex', 'Cast Bloodrager spells while bloodraging without Concentration penalty from rage.'),
+        feat('Arcane Bloodrage', 'Su', 'While bloodraging, gain a linked free buff from your arcane bloodline.'),
+        feat('Eschew Materials', 'Ex', 'Bonus feat: cast spells without material components costing 1 gp or less.')
+      ];
+      p.levels[4].features = [feat('Improved Uncanny Dodge', 'Ex', 'Cannot be flanked except by a rogue 4+ levels higher.')];
+      p.levels[6].features = [feat('DR 1/— (+1/3 Lvls)', 'Su', 'Damage reduction 1/— at 7th level, increasing by +1 every 3 levels thereafter.')];
+      p.levels[7].features = [feat('True Arcane Bloodrage (Displacement/Haste)', 'Su', 'Upgrade Arcane Bloodrage free buff list with Displacement and Haste.')];
+      p.levels[10].features = [feat('Greater Bloodrage (+6/+6/+3 & Free Self-Spell ≤ Lvl 2 on Enter)', 'Su', 'Bloodrage bonuses increase to +6/+6/+3 and auto-cast a self-only bloodrager spell (≤ 2nd level) on entry.')];
+      p.levels[13].features = [feat('Indomitable Will', 'Ex', '+4 morale bonus on Will saves against enchantment spells while bloodraging.')];
+      p.levels[16].features = [feat('Tireless Bloodrage', 'Ex', 'No longer fatigued when ending a bloodrage.')];
+      p.levels[19].features = [feat('Mighty Bloodrage (+8/+8/+4 & Self-Spell ≤ Lvl 4)', 'Su', 'Bloodrage bonuses increase to +8/+8/+4 and auto-cast up to 4th-level self spell on entry.')];
+      e.grants.featGrants = [6, 9, 12, 15, 18].map((lv) => ({ id: uid('g'), count: 1, pool: '#General', level: lv }));
+      e.powers = [
+        blankPower('inline', {
+          name: 'Bloodrage', action: 'Free', cl: 0,
+          use: Object.assign(blankUse('resourcePool'), { pool: 'Bloodrage Rounds', poolCost: 1 }),
+          duration: 'While Bloodraging',
+          modifiers: [M('str', 4, 'Morale'), M('con', 4, 'Morale'), M('save.will', 2, 'Morale'), M('ac.total', -2, 'Penalty')],
+          text: '+4 morale Str, +4 morale Con, +2 morale Will, -2 AC while bloodraging; Cast in Rage enabled.'
+        })
+      ];
+      e.effects = [
+        BLK('pool', { poolName: 'Bloodrage Rounds', max: 2, scaling: 'twoPerLvlPlusMod', ability: 'con', reset: 'perDay' }),
+        BLK('natattack', { attackKind: 'primary', count: 2, weaponName: 'Claw', dice: '1d6', dmgType: 'Slashing', rider: 'Magical at Lvl 4 while Bloodraging' }),
+        BLK('coupling', { couplingMode: 'stateCast', trigger: 'onEnter', parentState: 'Bloodrage', castSource: 'ownSlot', maxSpellLvl: 2, tiedDuration: true }),
+        BLK('coupling', { couplingMode: 'stateCast', trigger: 'whileActive', parentState: 'Bloodrage', castSource: 'freeList', spellOptions: 'Blur, Protection from Arrows, Resist Energy, Displacement, Haste', tiedDuration: true })
+      ];
+      return e; } },
+    { id: 'magus', icon: '⚔️🔮', label: 'Magus Class 1–20: 6th-Lvl INT Prepared, Spell Combat, Spellstrike 18–20/×2, Arcane Pool Imbue & Spell Recall', build() {
+      const e = blankEntry('class');
+      Object.assign(e, {
+        name: 'Magus', source: 'UM / Hybrid 3.5e', tags: ['#HybridClass', '#Arcane', '#Gish'],
+        facets: ['identity', 'prereqs', 'progression', 'grants', 'effects'],
+        text: 'Arcane sword-and-spell hybrid combining Spell Combat, Spellstrike through weapon critical threat range, Arcane Pool weapon imbuing, and Spell Recall.'
+      });
+      const p = e.progression;
+      Object.assign(p, {
+        mode: 'base', maxLevel: 20, hitDie: 8, bab: '3/4', skillPts: 2,
+        good: { fort: true, ref: false, will: true },
+        classSkills: ['Climb', 'Concentration', 'Craft', 'Intimidate', 'Knowledge', 'Profession', 'Ride', 'Spellcraft', 'Swim'],
+        caster: { mode: 'sixthPrep', tradition: 'Arcane', ability: 'int', spellList: 'Magus', ignoreAsf: 'heavy', ignoreShieldAsf: false, castInRage: false }
+      });
+      p.levels.forEach((l) => { l.spell = true; });
+      const feat = (name, type, txt) => FEATURE(name, { kind: 'inline', abilityType: type || 'Ex', text: txt || '' });
+      p.levels[0].features = [
+        feat('Arcane Pool', 'Su', 'Pool of points equal to ½ magus level + INT modifier (min 1) to enhance weapons and recall spells.'),
+        feat('Spell Combat', 'Ex', 'Make a full attack and cast a magus spell in the same round at a -2 penalty to all attacks (requires free off-hand).'),
+        feat('Cantrips', 'Sp', 'Prepare and cast 0-level magus spells at will.'),
+        feat('Light Armor Casting', 'Ex', 'Ignore arcane spell failure while wearing light armor.')
+      ];
+      p.levels[1].features = [feat('Spellstrike', 'Su', 'Deliver a touch spell through a free melee weapon attack using the weapon’s threat range (spell ×2 on crit).')];
+      p.levels[2].features = [feat('Magus Arcana', 'Su', 'Learn a specialized magus arcana at 3rd level and every 3 levels thereafter.')];
+      p.levels[3].features = [feat('Spell Recall', 'Su', 'Spend Arcane Pool points equal to a spell’s level as a swift action to recall a cast spell.')];
+      p.levels[4].features = [feat('Arcane Pool Properties', 'Su', 'Add weapon special properties (Flaming, Frost, Shock, Keen, Speed, etc.) via Arcane Pool.')];
+      p.levels[6].features = [feat('Knowledge Pool', 'Su', 'Spend 1 Arcane Pool point to prepare a magus spell not in your spellbook for 1 day.'), feat('Medium Armor Casting', 'Ex', 'Ignore arcane spell failure while wearing medium armor.')];
+      p.levels[7].features = [feat('Improved Spell Combat', 'Ex', '+2 circumstance bonus on Concentration checks when casting defensively during Spell Combat.')];
+      p.levels[9].features = [feat('Fighter Training', 'Ex', 'Counts half magus level (full at 10th+ variants) as Fighter level for feat prerequisites.')];
+      p.levels[10].features = [feat('Improved Spell Recall', 'Su', 'Recall spells by spending ½ spell level (min 1) Arcane Pool points, or prepare any spellbook spell.')];
+      p.levels[12].features = [feat('Heavy Armor Casting', 'Ex', 'Ignore arcane spell failure while wearing heavy armor.')];
+      p.levels[13].features = [feat('Greater Spell Combat', 'Ex', '+4 circumstance bonus on Concentration checks during Spell Combat.')];
+      p.levels[15].features = [feat('Counterstrike', 'Ex', 'Make an attack of opportunity when an adjacent foe casts defensively.')];
+      p.levels[18].features = [feat('Greater Spell Access', 'Ex', 'Add 14 wizard spells across levels 0–6 to your spellbook.')];
+      p.levels[19].features = [feat('True Magus', 'Su', 'No attack penalty for Spell Combat, plus free Metamagic/DC boost.')];
+      e.grants.featGrants = [5, 11, 17].map((lv) => ({ id: uid('g'), count: 1, pool: '#FighterBonus', level: lv }));
+      e.effects = [
+        BLK('pool', { poolName: 'Arcane Pool', max: 0, scaling: 'halfLvlPlusMod', ability: 'int', reset: 'perDay' }),
+        BLK('coupling', { couplingMode: 'spellstrike', channelKind: 'spellstrike', critRule: 'weaponRangeX2', holdCharge: true }),
+        BLK('coupling', { couplingMode: 'spellstrike', channelKind: 'spellCombat', atkPenalty: -2, offHandFree: true }),
+        BLK('coupling', { couplingMode: 'weaponImbue', pool: 'Arcane Pool', poolCost: 1, action: 'Swift', duration: '1 min', budgetScaling: 'per4Lvl', maxBudget: 5, allowedEnchs: 'Dancing, Flaming, Flaming Burst, Frost, Icy Burst, Keen, Shock, Shocking Burst, Speed, Vorpal' }),
+        BLK('coupling', { couplingMode: 'spellRecall', recallCostMode: 'poolEqLvl', pool: 'Arcane Pool', action: 'Swift', maxSpellLvl: 6 })
+      ];
       return e; } }
   );
 
@@ -1079,7 +1204,11 @@
       } else {
         const spellLv = p.levels.slice(0, p.maxLevel).filter((l) => l.spell).length;
         seg.push('d' + p.hitDie + ' HD • ' + (p.bab === 'full' ? 'Full' : p.bab) + ' BAB • Good ' + (['fort', 'ref', 'will'].filter((s) => p.good[s]).map((s) => ({ fort: 'Fortitude', ref: 'Reflex', will: 'Will' }[s])).join('/') || 'none') + ' • ' + p.skillPts + ' + Int skill points • ' + p.maxLevel + ' levels' + (spellLv ? ' • +1 Spellcasting ×' + spellLv : ''));
-        if (p.caster && p.caster.mode && p.caster.mode !== 'none') seg.push(p.caster.tradition + ' Caster (' + p.caster.mode + ', ' + String(p.caster.ability || 'int').toUpperCase() + ')');
+        if (p.caster && p.caster.mode && p.caster.mode !== 'none') {
+          const asfLbl = p.caster.ignoreAsf && p.caster.ignoreAsf !== 'none' ? ', Ignore ' + cap1(p.caster.ignoreAsf) + ' ASF' + (p.caster.ignoreShieldAsf ? ' + Shields' : '') : (p.caster.ignoreShieldAsf ? ', Ignore Shield ASF' : '');
+          const rageLbl = p.caster.castInRage ? ', Cast in Rage' : '';
+          seg.push(p.caster.tradition + ' Caster (' + p.caster.mode + ', ' + String(p.caster.ability || 'int').toUpperCase() + asfLbl + rageLbl + ')');
+        }
       }
     }
     if (has('grants')) {
@@ -1168,7 +1297,7 @@
     if (has('prereqs') && en.prereqs.length) pills.push(['indigo', '🏛️ Prerequisites: ' + prereqText(en.prereqs)]);
     if (has('effects')) en.effects.forEach((b) => {
       if (b.type === 'bonus' && modMode(b) === 'replaceStat') pills.push(['sky', '🔄 ' + blockText(b)]);
-      else pills.push([{ bonus: 'indigo', damage: 'rose', natattack: 'rose', defense: 'emerald', dial: 'sky', size: 'purple', metamagic: 'purple', pool: 'emerald', rule: 'dim', tier: 'sky', synergy: 'sky', table: 'amber' }[b.type] || 'dim', BLOCK_TYPES[b.type].icon + ' ' + blockText(b)]);
+      else pills.push([{ bonus: 'indigo', damage: 'rose', natattack: 'rose', defense: 'emerald', dial: 'sky', coupling: 'purple', size: 'purple', metamagic: 'purple', pool: 'emerald', rule: 'dim', tier: 'sky', synergy: 'sky', table: 'amber' }[b.type] || 'dim', BLOCK_TYPES[b.type].icon + ' ' + blockText(b)]);
     });
     if (has('powers')) en.powers.forEach((pw) => pills.push([pw.kind === 'attached' ? 'purple' : 'amber', powerSummary(pw)]));
     if (has('grants')) {
@@ -1373,6 +1502,55 @@
               : null
         }
       }));
+      const couplings = en.effects.filter((b) => b.type === 'coupling');
+      if (couplings.length) out.combatCouplings = couplings.map((b) => {
+        const m = b.couplingMode || 'spellstrike';
+        if (m === 'spellstrike') {
+          const o = { couplingMode: 'spellstrike', channelKind: b.channelKind || 'spellstrike' };
+          if (['spellstrike', 'duskbladeSingle', 'duskbladeFull'].indexOf(o.channelKind) >= 0) {
+            o.critRule = b.critRule || 'weaponRangeX2';
+            o.holdCharge = !!b.holdCharge;
+          } else if (o.channelKind === 'spellCombat') {
+            o.atkPenalty = num(b.atkPenalty, 0);
+            o.offHandFree = !!b.offHandFree;
+          } else if (o.channelKind === 'spellStoring') {
+            o.maxSpellLvl = num(b.maxSpellLvl, 2);
+          }
+          return o;
+        }
+        if (m === 'stateCast') {
+          const o = {
+            couplingMode: 'stateCast',
+            trigger: b.trigger || 'onEnter',
+            parentState: b.parentState || '',
+            castSource: b.castSource || 'ownSlot',
+            tiedDuration: !!b.tiedDuration
+          };
+          if (o.castSource === 'ownSlot') o.maxSpellLvl = num(b.maxSpellLvl, 2);
+          else o.spellOptions = b.spellOptions || '';
+          return o;
+        }
+        if (m === 'weaponImbue') {
+          return {
+            couplingMode: 'weaponImbue',
+            pool: b.pool || 'Arcane Pool',
+            poolCost: num(b.poolCost, 1),
+            action: b.action || 'Swift',
+            duration: b.duration || '1 min',
+            budgetScaling: b.budgetScaling || 'per4Lvl',
+            maxBudget: num(b.maxBudget, 5),
+            allowedEnchs: b.allowedEnchs || ''
+          };
+        }
+        return {
+          couplingMode: 'spellRecall',
+          recallCostMode: b.recallCostMode || 'poolEqLvl',
+          pool: b.recallCostMode === 'perDay' ? null : (b.pool || 'Arcane Pool'),
+          uses: b.recallCostMode === 'perDay' ? num(b.uses, 1) : null,
+          action: b.action || 'Swift',
+          maxSpellLvl: num(b.maxSpellLvl, 6)
+        };
+      });
       const mms = en.effects.filter((b) => b.type === 'metamagic');
       if (mms.length) out.metamagic = mms.map((b) => ({
         costMode: b.costMode,
@@ -1387,7 +1565,7 @@
         appliesTo: b.appliesTo || null
       }));
       const pools = en.effects.filter((b) => b.type === 'pool');
-      if (pools.length) out.resourcePools = pools.map((b) => ({ name: b.poolName, max: num(b.max, 0), scaling: b.scaling, ability: b.scaling === 'plusAbilityMod' ? b.ability : null, reset: b.reset }));
+      if (pools.length) out.resourcePools = pools.map((b) => ({ name: b.poolName, max: num(b.max, 0), scaling: b.scaling, ability: ['plusAbilityMod', 'halfLvlPlusMod', 'twoPerLvlPlusMod'].indexOf(b.scaling) >= 0 ? b.ability : null, reset: b.reset }));
     }
     if (allSubs.length) out.substitutions = allSubs;
     if (en.blueprint === 'buff') out.buffKind = en.buffKind;
@@ -1423,7 +1601,15 @@
           levels: p.levels.slice(0, p.maxLevel).map((l, i) => ({ level: i + 1, bab: classBAB(p.bab, i + 1), fort: p.good.fort ? goodSave(i + 1) : poorSave(i + 1), ref: p.good.ref ? goodSave(i + 1) : poorSave(i + 1), will: p.good.will ? goodSave(i + 1) : poorSave(i + 1), features: l.features.map(exportFeature), spellcasting: l.spell ? '+1 level of existing spellcasting class' : null })) };
       }
       if (p.caster && p.caster.mode && p.caster.mode !== 'none') {
-        out.progression.spellcastingChassis = { mode: p.caster.mode, tradition: p.caster.tradition || 'Arcane', keyAbility: p.caster.ability || 'int', spellList: p.caster.spellList || 'Sor/Wiz' };
+        out.progression.spellcastingChassis = {
+          mode: p.caster.mode,
+          tradition: p.caster.tradition || 'Arcane',
+          keyAbility: p.caster.ability || 'int',
+          spellList: p.caster.spellList || 'Sor/Wiz',
+          ignoreAsf: p.caster.ignoreAsf || 'none',
+          ignoreShieldAsf: !!p.caster.ignoreShieldAsf,
+          castInRage: !!p.caster.castInRage
+        };
       }
     }
     if (has('grants')) {
@@ -1812,11 +1998,27 @@
     const effects = [];
     const seenNat = new Set();
     const seenDial = new Set();
+    const seenPool = new Set();
+    const seenCoupling = new Set();
+    const couplingKey = (c) => {
+      const m = c.couplingMode || 'spellstrike';
+      return [
+        m,
+        m === 'spellstrike' ? (c.channelKind || 'spellstrike') : '',
+        m === 'stateCast' ? (c.trigger || 'onEnter') : '',
+        m === 'stateCast' ? (c.parentState || '') : '',
+        m === 'stateCast' ? (c.castSource || 'ownSlot') : '',
+        (m === 'weaponImbue' || (m === 'spellRecall' && c.recallCostMode !== 'perDay')) ? (c.pool || 'Arcane Pool') : '',
+        m === 'spellRecall' ? (c.recallCostMode || 'poolEqLvl') : ''
+      ].join('|');
+    };
     arr(obj.effects).forEach((ef) => {
       const b = parseBlockObj(ef);
       if (!b) return;
       if (b.type === 'natattack') seenNat.add((b.weaponName || '') + '|' + (b.attackKind || '') + '|' + num(b.count, 1));
       else if (b.type === 'dial') seenDial.add(b.dialName || '');
+      else if (b.type === 'pool') seenPool.add(b.poolName || '');
+      else if (b.type === 'coupling') seenCoupling.add(couplingKey(b));
       effects.push(b);
     });
     arr(obj.naturalAndExtraAttacks).forEach((na) => {
@@ -1843,6 +2045,19 @@
         dmgMult: num(dm.mult != null ? dm.mult : dl.dmgMult, 2), dmgDie: dm.die || dl.dmgDie || 'd4',
         dmgType: cap1(dm.type || dl.dmgType || 'Untyped')
       }));
+    });
+    arr(obj.combatCouplings).forEach((cc) => {
+      if (!cc || typeof cc !== 'object') return;
+      if (seenCoupling.has(couplingKey(cc))) return;
+      const cleanCc = {};
+      Object.keys(cc).forEach((k) => { if (cc[k] !== null && cc[k] !== undefined) cleanCc[k] = cc[k]; });
+      effects.push(BLK('coupling', cleanCc));
+    });
+    arr(obj.resourcePools).forEach((pl) => {
+      if (!pl || typeof pl !== 'object') return;
+      const pName = pl.name || pl.poolName || 'Resource Pool';
+      if (seenPool.has(pName)) return;
+      effects.push(BLK('pool', { poolName: pName, max: num(pl.max, 0), scaling: pl.scaling || 'flat', ability: pl.ability || 'int', reset: pl.reset || 'perDay' }));
     });
     en.effects = effects;
     if (obj.progression && typeof obj.progression === 'object') {
@@ -1871,7 +2086,7 @@
         hitDie: pr.hitDie ? num(String(pr.hitDie).replace(/^d/i, ''), 8) : en.progression.hitDie, bab: pr.bab || en.progression.bab,
         good: goodSaves, skillPts: pr.skillPointsPerLevel !== undefined ? num(pr.skillPointsPerLevel, 2) : (pr.skillPts !== undefined ? num(pr.skillPts, 2) : en.progression.skillPts),
         classSkills: arr(pr.classSkills).slice(), levels: levels,
-        caster: sc ? Object.assign({}, en.progression.caster, { mode: sc.mode || 'none', tradition: sc.tradition || 'Arcane', ability: sc.keyAbility || sc.ability || 'int', spellList: sc.spellList || 'Sor/Wiz' }) : en.progression.caster
+        caster: sc ? Object.assign({}, en.progression.caster, { mode: sc.mode || 'none', tradition: sc.tradition || 'Arcane', ability: sc.keyAbility || sc.ability || 'int', spellList: sc.spellList || 'Sor/Wiz', ignoreAsf: sc.ignoreAsf || 'none', ignoreShieldAsf: !!sc.ignoreShieldAsf, castInRage: !!sc.castInRage }) : en.progression.caster
       });
     }
     return en;
@@ -2120,7 +2335,7 @@
     return '<div class="fs-card' + (open ? ' open' : '') + '"><div class="fs-card-sum" data-action="toggle-card" data-key="' + esc(key) + '"><span class="fs-chev" style="transform:rotate(' + (open ? 90 : 0) + 'deg)">▶</span><span class="fs-grow">' + summaryHtml + '</span>' + (extraHead || '') + '</div><div class="fs-card-edit">' + editHtml + '</div></div>';
   }
   const NAT_WPN_LIST = ['Claw', 'Bite', 'Slam', 'Gore', 'Tail Slap', 'Tentacle', 'Wing', 'Talon', 'Sting', 'Hoof'];
-  const BASE_CLASS_LIST = ['Barbarian', 'Bard', 'Cleric', 'Druid', 'Fighter', 'Monk', 'Paladin', 'Ranger', 'Rogue', 'Sorcerer', 'Wizard', 'Warblade', 'Crusader', 'Swordsage', 'Duskblade', 'Beguiler', 'Swashbuckler', 'Hexblade', 'Binder', 'Incarnate', 'Totemist', 'Psion', 'Psychic Warrior'];
+  const BASE_CLASS_LIST = ['Barbarian', 'Bard', 'Cleric', 'Druid', 'Fighter', 'Monk', 'Paladin', 'Ranger', 'Rogue', 'Sorcerer', 'Wizard', 'Warblade', 'Crusader', 'Swordsage', 'Duskblade', 'Beguiler', 'Swashbuckler', 'Hexblade', 'Binder', 'Incarnate', 'Totemist', 'Psion', 'Psychic Warrior', 'Bloodrager', 'Magus'];
   const datalists = () => '<datalist id="fs-dice-list">' + opts(DIE_LIST.filter((d) => d !== 'flat'), '') + '</datalist><datalist id="fs-range-list">' + opts(RANGES, '') + '</datalist><datalist id="fs-area-list">' + opts(AREAS, '') + '</datalist>' +
     '<datalist id="fs-defense-list">' + opts(DEF_LIST, '') + '</datalist><datalist id="fs-deity-list">' + opts(CAT.deities.map((d) => d.name), '') + '</datalist><datalist id="fs-weapon-names">' + opts(CAT.weapons.map((w) => baseName(w)), '') + '</datalist><datalist id="fs-spell-names">' + opts(CAT.spells.slice(0, 800).map((s) => s.name), '') + '</datalist>' +
     '<datalist id="fs-pool-list">' + opts(allPools(), '') + '</datalist><datalist id="fs-natwpn-list">' + opts(NAT_WPN_LIST, '') + '</datalist>' +
@@ -2519,6 +2734,37 @@
         sel(p + '.dmgMode', b.dmgMode, [['none', 'No Extra Dmg'], ['flatPerX', '+N×X Flat Dmg'], ['dicePerX', '+XdN Dice Dmg']], { narrow: true }) +
         (b.dmgMode === 'flatPerX' ? inp(p + '.dmgMult', b.dmgMult, { num: true, style: 'width:46px' }) + L('×X') : '') +
         (b.dmgMode === 'dicePerX' ? L('+X') + sel(p + '.dmgDie', b.dmgDie, ['d4', 'd6', 'd8', 'd10'], { narrow: true }) + sel(p + '.dmgType', b.dmgType, ['Untyped'].concat(DAMAGE_TYPES.slice(0, 10)), { narrow: true }) : '');
+      case 'coupling': {
+        const cm = b.couplingMode || 'spellstrike';
+        const modeSel = sel(p + '.couplingMode', cm, [['spellstrike', '⚔️🔮 Spellstrike / Weapon Channel'], ['stateCast', '🩸🔮 On-State Auto-Cast / Linked Buff'], ['weaponImbue', '🗡️✨ Dynamic Weapon Imbue'], ['spellRecall', '🔄 Slot / Spell Recall']], { narrow: true });
+        if (cm === 'spellstrike') {
+          const ck = b.channelKind || 'spellstrike';
+          return modeSel + sel(p + '.channelKind', ck, [['spellstrike', 'Spellstrike (Touch Spell via Free Melee Weapon Atk)'], ['spellCombat', 'Spell Combat (Full Atk + Cast 1 Spell)'], ['duskbladeSingle', 'Arcane Channel (Standard: 1 Melee Atk + Touch Spell)'], ['duskbladeFull', 'Full-Attack Channel (Touch Spell Hits Every Struck Foe)'], ['imbueArrow', 'Imbue Arrow (Center Area Spell on Ranged Hit)'], ['spellStoring', 'Spell Storing (Store Spell ≤ Lvl N, Free on Hit)']], { narrow: true }) +
+            ((ck === 'spellstrike' || ck === 'duskbladeSingle' || ck === 'duskbladeFull') ? sel(p + '.critRule', b.critRule, [['weaponRangeX2', 'Weapon Crit Range, Spell ×2 Mult (Spellstrike RAW)'], ['spell20x2', 'Spell Normal Crit (20/×2)'], ['fullWeaponCrit', 'Full Weapon Crit Range & Mult']], { narrow: true }) + chk(p + '.holdCharge', !!b.holdCharge, 'Hold Charge on Miss') : '') +
+            (ck === 'spellCombat' ? L('All Atk Δ') + inp(p + '.atkPenalty', b.atkPenalty, { num: true, style: 'width:50px' }) + chk(p + '.offHandFree', !!b.offHandFree, 'Off-Hand Free') : '') +
+            (ck === 'spellStoring' ? L('Max Lvl') + sel(p + '.maxSpellLvl', b.maxSpellLvl, range(1, 9), { narrow: true, num: true }) : '');
+        }
+        if (cm === 'stateCast') {
+          return modeSel + L('When') + sel(p + '.trigger', b.trigger, [['onEnter', 'On Enter State (Free)'], ['whileActive', 'While State Active']], { narrow: true }) +
+            inp(p + '.parentState', b.parentState, { ph: 'Bloodrage / Stance', style: 'width:120px' }) +
+            sel(p + '.castSource', b.castSource, [['ownSlot', 'Cast Self Spell (Own Slot ≤ Lvl N)'], ['freeList', 'Pick 1 Free Buff from List']], { narrow: true }) +
+            (b.castSource === 'ownSlot' ? L('Max Lvl') + sel(p + '.maxSpellLvl', b.maxSpellLvl, range(1, 9), { narrow: true, num: true }) : inp(p + '.spellOptions', b.spellOptions, { ph: 'Blur, Protection from Arrows, Haste…', style: 'width:210px' })) +
+            chk(p + '.tiedDuration', !!b.tiedDuration, '🔗 Tied to State Duration');
+        }
+        if (cm === 'weaponImbue') {
+          return modeSel + L('Spend') + inp(p + '.poolCost', b.poolCost, { num: true, min: 1, style: 'width:46px' }) +
+            '<input class="fs-in" style="width:115px" data-bind="' + p + '.pool" list="fs-pool-list" value="' + esc(b.pool) + '">' +
+            sel(p + '.action', b.action, ['Swift', 'Standard', 'Move', 'Free'], { narrow: true }) +
+            inp(p + '.duration', b.duration, { ph: '1 min', style: 'width:76px' }) +
+            sel(p + '.budgetScaling', b.budgetScaling, [['per4Lvl', '+1 at L1, +1/4 Lvls (max +N)'], ['flat', 'Flat Budget +N']], { narrow: true }) +
+            L('Max +') + sel(p + '.maxBudget', b.maxBudget, range(1, 10), { narrow: true, num: true }) +
+            inp(p + '.allowedEnchs', b.allowedEnchs, { ph: 'Allowed properties (Flaming, Keen, Speed…)', style: 'width:190px' });
+        }
+        return modeSel + sel(p + '.recallCostMode', b.recallCostMode, [['poolEqLvl', 'Pool Cost = Spell Lvl'], ['poolHalfLvl', 'Pool Cost = ½ Spell Lvl (min 1)'], ['perDay', 'Uses / Day']], { narrow: true }) +
+          (b.recallCostMode === 'perDay' ? inp(p + '.uses', b.uses, { num: true, min: 1, style: 'width:48px' }) + L('/day') : '<input class="fs-in" style="width:115px" data-bind="' + p + '.pool" list="fs-pool-list" value="' + esc(b.pool) + '">') +
+          sel(p + '.action', b.action, ['Swift', 'Standard', 'Full-Round'], { narrow: true }) +
+          L('Max Spell Lvl') + sel(p + '.maxSpellLvl', b.maxSpellLvl, range(1, 9), { narrow: true, num: true });
+      }
       case 'damage': return sel(p + '.kind', b.kind, ['Damage', 'Healing', 'Temp HP'], { narrow: true }) + inp(p + '.dice', b.dice, { list: 'fs-dice-list', ph: '1d8 / 20', style: 'width:76px' }) +
         (b.kind === 'Damage' ? sel(p + '.dmgType', b.dmgType, DAMAGE_TYPES.slice(0, 16), { narrow: true }) : '') + chk(p + '.perOn', b.perOn, '+ per CL') +
         (b.perOn ? inp(p + '.amount', b.amount, { num: true, style: 'width:50px' }) + '<span class="lego-lbl">per</span>' + sel(p + '.per', b.per, range(1, 10).map((n) => [n, n + ' CL']), { narrow: true, num: true }) + '<span class="lego-lbl">max +</span>' + inp(p + '.max', b.max, { num: true, style: 'width:50px' }) : '') +
@@ -2538,8 +2784,8 @@
         inp(p + '.appliesTo', b.appliesTo, { ph: 'scope ([Fire] / ray / all)', style: 'width:145px' });
       case 'pool': return inp(p + '.poolName', b.poolName, { ph: 'Pool name (e.g. Inspiration)', style: 'width:150px' }) +
         '<span class="lego-lbl">Max</span>' + inp(p + '.max', b.max, { num: true, min: 0, style: 'width:52px' }) +
-        sel(p + '.scaling', b.scaling, [['flat', 'Flat'], ['plusLevel', '+ Level'], ['plusHalfLevel', '+ Half Level'], ['plusAbilityMod', '+ Ability Mod']], { narrow: true }) +
-        (b.scaling === 'plusAbilityMod' ? sel(p + '.ability', b.ability, ABIL_KEYS.map((k) => [k, k.toUpperCase()]), { narrow: true }) : '') +
+        sel(p + '.scaling', b.scaling, [['flat', 'Flat'], ['plusLevel', '+ Level'], ['plusHalfLevel', '+ Half Level'], ['plusAbilityMod', '+ Ability Mod'], ['halfLvlPlusMod', '½ Level + Ability Mod'], ['twoPerLvlPlusMod', 'Base + 2/Lvl + Ability Mod']], { narrow: true }) +
+        (['plusAbilityMod', 'halfLvlPlusMod', 'twoPerLvlPlusMod'].indexOf(b.scaling) >= 0 ? sel(p + '.ability', b.ability, ABIL_KEYS.map((k) => [k, k.toUpperCase()]), { narrow: true }) : '') +
         sel(p + '.reset', b.reset, [['perEncounter', 'Per Encounter'], ['perDay', 'Per Day']], { narrow: true });
       case 'rule': return inp(p + '.text', b.text, { ph: 'Rule effect text…', style: 'flex:1;min-width:220px' });
       case 'synergy': return inp(p + '.cond', b.cond, { ph: 'If 2+ active #Primal effects', style: 'width:230px' });
@@ -2645,6 +2891,7 @@
       '<button type="button" class="lego-add c-amber" data-action="add-power-inline">+ ⚡ Sub-Power / SLA</button>' +
       spotHtml('power', 'powers', { style: 'width:220px', ph: '🔍 + Attach Spell / SLA' }) +
       '<button type="button" class="lego-add b-teal" data-action="add-block" data-p="effects" data-t="dial">+ 🎚️ Tactical Dial (X)</button>' +
+      '<button type="button" class="lego-add b-purple" data-action="add-block" data-p="effects" data-t="coupling">+ ⚡🔮 Combat Coupling / Trigger</button>' +
       (hasFacet(en, 'progression') ? '' : '<button type="button" class="lego-add c-teal" data-action="attach-progression">+ 🦖 Level / HD Progression</button>') +
       '<button type="button" class="lego-add c-teal" data-action="add-block" data-p="effects" data-t="tier">+ 🔶 CL / HD Tier</button>' +
       '<button type="button" class="lego-add c-teal" data-action="add-block" data-p="effects" data-t="synergy">+ 🔶 Synergy</button>' +
@@ -2774,9 +3021,12 @@
     h += stack('b-green', L('🧩 Class Skills:') + p.classSkills.map((s, i) => '<span class="fs-pill emerald">' + esc(s) + '<span class="fs-x" data-action="remove-skill" data-i="' + i + '">×</span></span>').join('') + spotHtml('skill', 'class', { style: 'width:170px', ph: '🔍 + Add Skill' }) +
       btn('toggle-custom-skill', '+ 🎯 Custom Skill', 'fs-xs fs-dashed') + Object.keys(SKILL_PACKAGES).map((k) => btn('skill-pkg', '+ ' + k, 'fs-xs', { k: k })).join(''));
     h += stack('b-purple', L('🎯 Bonus Feat Grants:') + en.grants.featGrants.map((x, i) => '<span class="fs-pill indigo">' + sel('grants.featGrants.' + i + '.level', x.level, range(1, 20).map((n) => [n, 'L' + n]), { num: true, style: 'width:56px' }) + ' ×' + x.count + ' from ' + sel('grants.featGrants.' + i + '.pool', x.pool, allTags(), { style: 'width:130px' }) + '<span class="fs-x" data-action="remove-grant" data-i="' + i + '">×</span></span>').join('') + btn('add-grant', '+ Grant', 'fs-xs fs-dashed'));
-    const c = p.caster || { mode: 'none', tradition: 'Arcane', ability: 'int', spellList: '' };
-    h += stack('b-purple', L('🔮 Spellcasting:') + sel('progression.caster.mode', c.mode, [['none', 'Non-Caster'], ['fullPrep', 'Full Prepared (1st–9th, e.g. Cleric/Wizard)'], ['fullSpont', 'Full Spontaneous (1st–9th, e.g. Sorcerer)'], ['sixthSpont', '6-Lvl Spontaneous (0–6th, e.g. Bard)'], ['duskblade', '5-Lvl Spontaneous (0–5th, e.g. Duskblade)'], ['halfPrep', 'Half Prepared (1st–4th, e.g. Paladin/Ranger)'], ['tradition', 'Warlock / ToB / Binder Tradition']], { narrow: true }) +
-      (c.mode !== 'none' ? sel('progression.caster.tradition', c.tradition || 'Arcane', ['Arcane', 'Divine', 'Psionic', 'Martial', 'Pact'], { narrow: true }) + L('Ability') + sel('progression.caster.ability', c.ability || 'int', ABIL_KEYS.map((k) => [k, k.toUpperCase()]), { narrow: true }) + L('Spell List') + '<input class="fs-in" style="width:130px" data-bind="progression.caster.spellList" list="fs-spellcls-list" placeholder="Cleric / Duskblade" value="' + esc(c.spellList) + '">' : ''));
+    const c = p.caster || { mode: 'none', tradition: 'Arcane', ability: 'int', spellList: '', ignoreAsf: 'none', ignoreShieldAsf: false, castInRage: false };
+    h += stack('b-purple', L('🔮 Spellcasting:') + sel('progression.caster.mode', c.mode, [['none', 'Non-Caster'], ['fullPrep', 'Full Prepared (1st–9th, e.g. Cleric/Wizard)'], ['fullSpont', 'Full Spontaneous (1st–9th, e.g. Sorcerer)'], ['sixthPrep', '6-Lvl Prepared (0–6th, e.g. Magus)'], ['sixthSpont', '6-Lvl Spontaneous (0–6th, e.g. Bard)'], ['duskblade', '5-Lvl Spontaneous (0–5th, e.g. Duskblade)'], ['halfPrep', 'Half Prepared (1st–4th, e.g. Paladin/Ranger)'], ['halfSpont', 'Half Spontaneous (1st–4th, e.g. Bloodrager)'], ['tradition', 'Warlock / ToB / Binder Tradition']], { narrow: true }) +
+      (c.mode !== 'none' ? sel('progression.caster.tradition', c.tradition || 'Arcane', ['Arcane', 'Divine', 'Psionic', 'Martial', 'Pact'], { narrow: true }) + L('Ability') + sel('progression.caster.ability', c.ability || 'int', ABIL_KEYS.map((k) => [k, k.toUpperCase()]), { narrow: true }) + L('Spell List') + '<input class="fs-in" style="width:130px" data-bind="progression.caster.spellList" list="fs-spellcls-list" placeholder="Cleric / Duskblade" value="' + esc(c.spellList) + '">' +
+        L('Ignore ASF') + sel('progression.caster.ignoreAsf', c.ignoreAsf || 'none', [['none', 'Normal ASF'], ['light', 'Light Armor'], ['medium', 'Up to Medium'], ['heavy', 'Up to Heavy']], { narrow: true }) +
+        chk('progression.caster.ignoreShieldAsf', !!c.ignoreShieldAsf, '+ Shields') +
+        chk('progression.caster.castInRage', !!c.castInRage, '🩸 Cast in Rage') : ''));
     return h + universalExtraStacks(en, { skipPrereqs: true, skipProgression: true }) + universalSnapPalette(en);
   }
   function scratchItemMod(en) {
