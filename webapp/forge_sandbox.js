@@ -1,6 +1,6 @@
 /* ============================================================================
  * LIVING FACET STUDIO — Rule Forge 3.0 Sandbox (Lego Core V3)
- * Zero-Patchwork 5 Orthogonal Scratch Primitives & 37 Benchmark Presets.
+ * Zero-Patchwork 5 Orthogonal Scratch Primitives & 40 Benchmark Presets.
  * Self-contained: offline seed catalog over file://, real SrdCompendium +
  * master_db.json over http://. No blocking browser dialogs and no inline
  * handlers — all routing via delegated data-action / data-spot attributes.
@@ -39,7 +39,12 @@
   const skillKey = (name) => 'skill.' + slug(name);
   const SKILL_BY_KEY = {}; SKILLS.forEach((s) => { SKILL_BY_KEY[skillKey(s[0])] = { name: s[0], ability: s[1] }; });
   const TARGET_GROUPS = [
-    ['Abilities', ABILITIES.map((a) => [a[0], a[1]])],
+    ['Abilities', ABILITIES.map((a) => [a[0], a[1]]).concat([
+      ['choice.ability.1', 'Chosen Ability #1 (Distinct)'],
+      ['choice.ability.2', 'Chosen Ability #2 (Distinct)'],
+      ['choice.ability.3', 'Chosen Ability #3 (Distinct)'],
+      ['choice.ability.4', 'Chosen Ability #4 (Distinct)']
+    ])],
     ['Armor Class', [['ac.total', 'AC (All)'], ['ac.touch', 'Touch AC only'], ['ac.flatFooted', 'Flat-Footed AC only'], ['ac.armor', 'Armor Bonus'], ['ac.shield', 'Shield Bonus'], ['ac.natural', 'Natural Armor'], ['ac.deflection', 'Deflection'], ['ac.dodge', 'Dodge']]],
     ['Saving Throws', [['save.all', 'All Saving Throws'], ['save.fort', 'Fortitude'], ['save.ref', 'Reflex'], ['save.will', 'Will']]],
     ['Combat', [['atk.all', 'Attack Rolls (All)'], ['atk.melee', 'Melee Attack'], ['atk.ranged', 'Ranged Attack'], ['dmg.all', 'Damage (All)'], ['dmg.melee', 'Melee Damage'], ['initiative', 'Initiative'], ['speed.land', 'Land Speed (ft.)'], ['casterLevel', 'Caster Level'], ['hp.temp', 'Temporary Hit Points'], ['grapple', 'Grapple']]],
@@ -396,6 +401,7 @@
     return Object.assign({
       id: uid('br'),
       condKind: 'state', condText: 'Bloodrage',
+      oathRule: 'Zero Magic Items & Wealth Cap', onBreak: 'irrevocable',
       trigger: 'activate', action: 'Swift', targetText: '',
       costKind: 'none', costVal: 1, costFormula: '1', poolName: 'Arcane Pool', checkFormula: 'Truespeak DC 15 + 2×CR + 2×@uses_today', cooldownText: '5 rounds',
       kids: []
@@ -441,7 +447,9 @@
       attack: {
         attackMode: 'natural', natKind: 'primary', count: 2, weaponName: 'Claw', dice: '1d4', dmgType: 'B/P/S',
         extraKind: 'extraFull', penalty: -2, rider: '',
-        duration: '1 min', budgetScaling: 'per4Lvl', maxBudget: 5, allowedEnchs: 'Flaming, Frost, Shock, Keen, Speed'
+        duration: '1 min', budgetScaling: 'per4Lvl', maxBudget: 5, allowedEnchs: 'Flaming, Frost, Shock, Keen, Speed',
+        unarmedProgression: 'monk', effLvlBonus: 0,
+        appliesToWeapon: 'unarmed', enhEquivalent: 0, drBypassList: 'magic'
       },
       defense: {
         mode: 'Immunity', what: 'Fear', value: 10, srMode: 'flat', steps: 1, flag: 'negLevel'
@@ -532,6 +540,10 @@
   }
   function whenBranchHeadText(flow, br) {
     if (flow === 'while') {
+      if (br.condKind === 'oath') {
+        const brk = { suppress: 'Suppress', loss24h: '24h Loss', atonement: 'Needs Atonement', irrevocable: 'Irrevocable' }[br.onBreak || 'suppress'] || 'Suppress';
+        return 'Oath (' + (br.oathRule || 'Unbroken') + ' — Break: ' + brk + ')';
+      }
       const kindLbl = { state: 'While State', bound: 'While Bound', levelTier: 'Tier', synergy: 'Synergy', situational: 'When' }[br.condKind || 'state'] || 'While';
       return kindLbl + ': ' + (br.condText || 'Active');
     }
@@ -542,6 +554,7 @@
       critHit: 'On Critical Hit',
       sneakHit: 'On Sneak Attack Hit',
       takeDamage: 'On Taking Damage',
+      meleeStruck: 'When Struck in Melee',
       castSpell: 'When Casting ' + (br.targetText || 'Spell')
     }[br.trigger || 'activate'] || 'When';
     let costLbl = '';
@@ -611,6 +624,17 @@
       case 'roll': return rollBlockText(b);
       case 'attack': {
         const am = b.attackMode || 'natural';
+        if (am === 'unarmedDie') {
+          const rdr = b.rider ? ' • ' + b.rider : '';
+          if (b.unarmedProgression === 'fixed') return 'Unarmed Base Die: ' + (b.dice || '1d6') + ' (Size-Scaled)' + rdr;
+          const elb = num(b.effLvlBonus, 0);
+          return 'Unarmed Base Die: Monk Scaling 1d6→2d10 (Size-Scaled' + (elb ? ', ' + sgn(elb) + ' Eff. Lvl' : '') + ')' + rdr;
+        }
+        if (am === 'strikeBypass') {
+          const wLbl = { unarmed: 'Unarmed', wieldedSimple: 'Simple Weapons', allMelee: 'All Melee' }[b.appliesToWeapon || 'unarmed'] || 'Unarmed';
+          const enh = num(b.enhEquivalent, 0);
+          return 'Passive Strike (' + wLbl + '):' + (enh > 0 ? ' +' + enh + ' Enh &' : '') + ' Bypasses DR/' + (b.drBypassList || 'magic');
+        }
         if (am === 'weaponImbue') {
           const bud = b.budgetScaling === 'flat' ? '+' + num(b.maxBudget, 5) : '+1 at L1, +1/4 Lvls (max +' + num(b.maxBudget, 5) + ')';
           return 'Weapon Imbue (' + (b.duration || '1 min') + '): ' + bud + (b.allowedEnchs ? ' [' + b.allowedEnchs + ']' : '');
@@ -653,7 +677,7 @@
   }
 
   // --------------------------------------------------------------------------
-  // 4b. 37 Curated Benchmark Presets (Pure Lego Core V3)
+  // 4b. 40 Curated Benchmark Presets (Pure Lego Core V3)
   // --------------------------------------------------------------------------
   function spellBase(name, src, classes, school, desc, comps, env) {
     const e = blankEntry('spell');
@@ -1228,6 +1252,156 @@
           ] })
         ] })
       ];
+      return e; } },
+    { id: 'monk_ki', icon: '⚡', label: 'Monk Class 1–20 (Unarmed Scaling 1d6→2d10, Flurry Evolution, Unarmored WIS AC & Ki Pool)', build() {
+      const e = blankEntry('class');
+      Object.assign(e, {
+        name: 'Monk', source: 'PHB p.39 / Ki Hybrid', tags: ['#CoreClass', '#Martial', '#Ki'],
+        text: 'Ascetic martial artist channeling Ki through scaling unarmed strikes (1d6→2d10), Flurry of Blows, Evasion, Still Mind, and Unarmored AC.'
+      });
+      const p = e.progression;
+      Object.assign(p, {
+        mode: 'base', maxLevel: 20, hitDie: 8, bab: '3/4', skillPts: 4,
+        good: { fort: true, ref: true, will: true },
+        classSkills: ['Balance', 'Climb', 'Concentration', 'Craft', 'Diplomacy', 'Escape Artist', 'Hide', 'Jump', 'Knowledge', 'Listen', 'Move Silently', 'Perform', 'Profession', 'Sense Motive', 'Spot', 'Swim', 'Tumble']
+      });
+      const feat = (name, type, txt) => FEATURE(name, { kind: 'inline', abilityType: type || 'Ex', text: txt || '' });
+      p.levels[0].features = [
+        feat('Bonus Feat (Improved Unarmed Strike)', 'Ex', 'Unarmed strikes count as both manufactured and natural weapons and deal scaling lethal or nonlethal damage.'),
+        feat('Flurry of Blows (-2)', 'Ex', 'Make one extra attack at highest BAB during a full attack (-2 penalty to all attacks).'),
+        feat('AC Bonus (+WIS)', 'Ex', 'Add Wisdom modifier to AC and Touch AC when unarmored, unshielded, and carrying a light load.')
+      ];
+      p.levels[1].features = [feat('Evasion', 'Ex', 'Take no damage on a successful Reflex saving throw against effects allowing half damage.')];
+      p.levels[2].features = [feat('Fast Movement (+10 ft.)', 'Ex', '+10 ft. enhancement bonus to land speed while unarmored and unencumbered.'), feat('Still Mind', 'Ex', '+2 bonus on saving throws against enchantment spells and effects.')];
+      p.levels[3].features = [feat('Ki Strike (Magic)', 'Su', 'Unarmed strikes are treated as magic weapons for overcoming damage reduction.'), feat('Slow Fall 20 ft.', 'Ex', 'Reduce effective falling distance by 20 ft. when within arm’s reach of a wall.')];
+      p.levels[4].features = [feat('Purity of Body', 'Ex', 'Immunity to all diseases except supernatural and magical diseases.'), feat('Flurry Penalty Reduced (-1)', 'Ex', 'Flurry of Blows penalty improves to -1.')];
+      p.levels[5].features = [feat('Slow Fall 30 ft.', 'Ex', 'Slow Fall distance increases to 30 ft.')];
+      p.levels[6].features = [feat('Wholeness of Body', 'Su', 'Heal a number of hit points equal to twice your monk level each day.')];
+      p.levels[7].features = [feat('Slow Fall 40 ft.', 'Ex', 'Slow Fall distance increases to 40 ft.')];
+      p.levels[8].features = [feat('Improved Evasion', 'Ex', 'Take only half damage on a failed Reflex save and no damage on a success.'), feat('Flurry Penalty Eliminated (+0)', 'Ex', 'Make Flurry of Blows attacks with no attack penalty.')];
+      p.levels[9].features = [feat('Ki Strike (Lawful)', 'Su', 'Unarmed strikes bypass DR/lawful in addition to DR/magic.')];
+      p.levels[10].features = [feat('Greater Flurry (+2 Attacks)', 'Ex', 'Gain a second extra attack at highest BAB when using Flurry of Blows.'), feat('Diamond Body', 'Su', 'Immunity to poisons of all kinds.')];
+      p.levels[11].features = [feat('Abundant Step', 'Su', 'Slip magically between spaces once per day as dimension door.')];
+      p.levels[12].features = [feat('Diamond Soul (SR 10 + Monk Lvl)', 'Ex', 'Gain spell resistance equal to current monk level + 10.')];
+      p.levels[14].features = [feat('Quivering Palm', 'Su', 'Set fatal vibrations inside a target once per week (Fortitude negates).')];
+      p.levels[15].features = [feat('Ki Strike (Adamantine)', 'Su', 'Unarmed strikes bypass DR/adamantine and hardness less than 20.')];
+      p.levels[16].features = [feat('Timeless Body', 'Ex', 'No longer takes ability score penalties for aging.'), feat('Tongue of the Sun and Moon', 'Ex', 'Speak with any living creature.')];
+      p.levels[18].features = [feat('Empty Body', 'Su', 'Become ethereal for up to 1 round per monk level per day.')];
+      p.levels[19].features = [feat('Perfect Self (DR 10/magic)', 'Su', 'Treated as an outsider rather than humanoid and gain DR 10/magic.')];
+      e.grants.featGrants = [1, 2, 6].map((lv) => ({ id: uid('g'), count: 1, pool: '#FighterBonus', level: lv }));
+      e.effects = [
+        BLK('resource', { name: 'Ki Pool', varKey: 'ki_pool', resMode: 'spend', scaling: 'halfLvlPlusMod', max: 0, ability: 'wis', reset: 'perDay' }),
+        BLK('attack', { attackMode: 'unarmedDie', unarmedProgression: 'monk', effLvlBonus: 0, rider: 'Counts as both manufactured & natural weapon' }),
+        BLK('when', { flow: 'while', branches: [
+          blankBranch({ condKind: 'oath', oathRule: 'Unarmored, No Shield & Light Load', onBreak: 'suppress', kids: [
+            BLK('stat', { targets: ['ac.total', 'ac.touch', 'ac.flatFooted'], mode: 'stat', stat: 'wisMod', mult: 1, value: 0, btype: 'Untyped' }),
+            BLK('stat', { targets: ['ac.total', 'ac.touch', 'ac.flatFooted'], mode: 'perCL', value: 1, per: 5, min: 0, max: 4, btype: 'Untyped' }),
+            BLK('stat', { targets: ['speed.land'], mode: 'perCL', value: 10, per: 3, min: 0, max: 60, btype: 'Enhancement' })
+          ] })
+        ] }),
+        BLK('when', { flow: 'while', branches: [
+          blankBranch({ condKind: 'levelTier', condText: 'Monk Lvl 1–4', kids: [
+            BLK('attack', { attackMode: 'extra', extraKind: 'flurry', count: 1, penalty: -2, rider: 'Special Monk Weapons' })
+          ] }),
+          blankBranch({ condKind: 'levelTier', condText: 'Monk Lvl 5–8', kids: [
+            BLK('attack', { attackMode: 'extra', extraKind: 'flurry', count: 1, penalty: -1, rider: 'Special Monk Weapons' }),
+            BLK('attack', { attackMode: 'strikeBypass', appliesToWeapon: 'unarmed', enhEquivalent: 0, drBypassList: 'magic' })
+          ] }),
+          blankBranch({ condKind: 'levelTier', condText: 'Monk Lvl 9–10', kids: [
+            BLK('attack', { attackMode: 'extra', extraKind: 'flurry', count: 1, penalty: 0, rider: 'Special Monk Weapons' }),
+            BLK('attack', { attackMode: 'strikeBypass', appliesToWeapon: 'unarmed', enhEquivalent: 0, drBypassList: 'magic, lawful' })
+          ] }),
+          blankBranch({ condKind: 'levelTier', condText: 'Monk Lvl 11+', kids: [
+            BLK('attack', { attackMode: 'extra', extraKind: 'flurry', count: 2, penalty: 0, rider: 'Greater Flurry' }),
+            BLK('attack', { attackMode: 'strikeBypass', appliesToWeapon: 'unarmed', enhEquivalent: 0, drBypassList: 'magic, lawful, adamantine' })
+          ] })
+        ] }),
+        BLK('when', { flow: 'when', branches: [
+          blankBranch({ trigger: 'activate', action: 'Swift', costKind: 'pool', costFormula: '1', poolName: 'Ki Pool', kids: [
+            BLK('attack', { attackMode: 'extra', extraKind: 'extraFull', count: 1, rider: '1 round (or +20 ft. Speed / +4 Dodge AC)' })
+          ] })
+        ] })
+      ];
+      return e; } },
+    { id: 'vow_of_poverty', icon: '✨', label: 'Vow of Poverty (Exalted Feat: Irrevocable Oath, HD 1–20 Scaling, +8/+6/+4/+2 Chosen Abilities & 11 Exalted Feats)', build() {
+      const e = blankEntry('feat');
+      Object.assign(e, {
+        name: 'Vow of Poverty', featKind: 'feat', source: 'Book of Exalted Deeds p.29–31', tags: ['#Exalted'],
+        facets: ['identity', 'prereqs', 'effects', 'progression'],
+        text: 'Renounce all material wealth and magic items permanently to gain exalted AC, chosen ability enhancements (+8/+6/+4/+2), DR 10/evil, energy resistance, exalted strike, and 11 bonus exalted feats.'
+      });
+      e.prereqs = [
+        { id: uid('p'), alts: [ALT({ kind: 'alignment', align: 'Any Good' })] },
+        { id: uid('p'), alts: [ALT({ kind: 'feat', feat: 'Sacred Vow' })] }
+      ];
+      const p = e.progression;
+      Object.assign(p, { mode: 'hd', maxLevel: 20 });
+      const ms = (name, type, txt) => FEATURE(name, { kind: 'inline', abilityType: type || 'Ex', text: txt || '' });
+      p.levels[0].features = [ms('Bonus Exalted Feat', 'Ex', 'Gain 1 bonus exalted feat at 1st level.'), ms('AC Bonus +4 (Exalted)', 'Ex', '+4 exalted bonus to Armor Class.')];
+      p.levels[1].features = [ms('Bonus Exalted Feat', 'Ex', 'Gain a bonus exalted feat.')];
+      p.levels[2].features = [ms('AC Bonus +5 (Exalted)', 'Ex', 'Exalted AC bonus improves to +5.'), ms('Endure Elements', 'Ex', 'Immune to harmful effects of hot and cold environments.')];
+      p.levels[3].features = [ms('Bonus Exalted Feat', 'Ex', 'Gain a bonus exalted feat.'), ms('Exalted Strike +1 (Magic)', 'Su', 'Wielded simple weapons and natural/unarmed attacks gain +1 enhancement and bypass DR/magic.')];
+      p.levels[4].features = [ms('DR 5/magic', 'Su', 'Gain damage reduction 5/magic.'), ms('Sustenance', 'Ex', 'No longer need to eat or drink.')];
+      p.levels[5].features = [ms('Bonus Exalted Feat', 'Ex', 'Gain a bonus exalted feat.'), ms('AC Bonus +6 (Exalted)', 'Ex', 'Exalted AC bonus improves to +6.'), ms('Deflection +1', 'Su', '+1 deflection bonus to AC.')];
+      p.levels[6].features = [ms('Ability Score Enhancement +2', 'Ex', '+2 enhancement bonus to one chosen ability score.'), ms('Resistance +1', 'Ex', '+1 resistance bonus on all saving throws.'), ms('Mind Shielding', 'Ex', 'Immune to detect thoughts, discern lies, and alignment detection.')];
+      p.levels[7].features = [ms('Bonus Exalted Feat', 'Ex', 'Gain a bonus exalted feat.'), ms('Natural Armor +1', 'Ex', '+1 natural armor bonus to AC.')];
+      p.levels[8].features = [ms('AC Bonus +7 (Exalted)', 'Ex', 'Exalted AC bonus improves to +7.')];
+      p.levels[9].features = [ms('Bonus Exalted Feat', 'Ex', 'Gain a bonus exalted feat.'), ms('Exalted Strike +2 (Good)', 'Su', '+2 enhancement bonus and attacks count as good-aligned.'), ms('DR 5/evil', 'Su', 'Damage reduction improves to 5/evil.')];
+      p.levels[10].features = [ms('Ability Score Enhancement +4/+2', 'Ex', 'Primary chosen ability rises to +4; second chosen ability gains +2.')];
+      p.levels[11].features = [ms('Bonus Exalted Feat', 'Ex', 'Gain a bonus exalted feat.'), ms('AC Bonus +8 (Exalted)', 'Ex', 'Exalted AC bonus improves to +8.'), ms('Deflection +2', 'Su', 'Deflection bonus to AC rises to +2.'), ms('Greater Sustenance', 'Ex', 'No longer need to breathe.')];
+      p.levels[12].features = [ms('Energy Resistance 5 (All 5)', 'Ex', 'Resistance 5 to acid, cold, electricity, fire, and sonic.'), ms('Resistance +2', 'Ex', 'Resistance bonus on all saves rises to +2.')];
+      p.levels[13].features = [ms('Bonus Exalted Feat', 'Ex', 'Gain a bonus exalted feat.'), ms('Freedom of Movement', 'Ex', 'Continuous freedom of movement.'), ms('Exalted Strike +3', 'Su', '+3 enhancement bonus on attacks and damage.')];
+      p.levels[14].features = [ms('Ability Score Enhancement +6/+4/+2', 'Ex', 'Chosen abilities rise to +6/+4/+2.'), ms('AC Bonus +9 (Exalted)', 'Ex', 'Exalted AC bonus improves to +9.'), ms('DR 10/evil', 'Su', 'Damage reduction improves to 10/evil.')];
+      p.levels[15].features = [ms('Bonus Exalted Feat', 'Ex', 'Gain a bonus exalted feat.'), ms('Natural Armor +2', 'Ex', 'Natural armor bonus rises to +2.')];
+      p.levels[16].features = [ms('Regeneration', 'Ex', 'Heal 1 HP per hour per character level and resist nonlethal damage.'), ms('Resistance +3', 'Ex', 'Resistance bonus on all saves rises to +3.'), ms('Exalted Strike +4', 'Su', '+4 enhancement bonus on attacks and damage.')];
+      p.levels[17].features = [ms('Bonus Exalted Feat', 'Ex', 'Gain a bonus exalted feat.'), ms('AC Bonus +10 (Exalted)', 'Ex', 'Exalted AC bonus improves to +10.'), ms('Deflection +3', 'Su', 'Deflection bonus to AC rises to +3.'), ms('True Seeing', 'Su', 'Continuous true seeing.')];
+      p.levels[18].features = [ms('Ability Score Enhancement +8/+6/+4/+2', 'Ex', 'Four distinct chosen abilities reach +8, +6, +4, and +2 enhancement bonuses.'), ms('DR 10/evil', 'Su', 'Maintain DR 10/evil.')];
+      p.levels[19].features = [ms('Bonus Exalted Feat', 'Ex', 'Gain 11th bonus exalted feat.'), ms('Exalted Strike +5 (Magic, Good)', 'Su', '+5 enhancement bonus and bypasses DR/magic and good.'), ms('Energy Resistance 15 (All 5)', 'Ex', 'Energy resistance rises to 15 against all five energy types.')];
+      e.effects = [
+        BLK('when', { flow: 'while', branches: [
+          blankBranch({ condKind: 'oath', oathRule: 'Zero Magic Items & Simple Non-MW Gear Only', onBreak: 'irrevocable', kids: [
+            BLK('stat', { targets: ['ac.total'], mode: 'perCL', value: 1, per: 3, min: 4, max: 10, btype: 'Exalted' }),
+            BLK('stat', { targets: ['ac.deflection'], mode: 'perCL', value: 1, per: 6, min: 0, max: 3, btype: 'Deflection' }),
+            BLK('stat', { targets: ['ac.natural'], mode: 'perCL', value: 1, per: 8, min: 0, max: 2, btype: 'Natural Armor' }),
+            BLK('stat', { targets: ['save.all'], mode: 'perCL', value: 1, per: 6, min: 0, max: 3, btype: 'Resistance' }),
+            BLK('stat', { targets: ['choice.ability.1'], mode: 'flat', value: 8, btype: 'Enhancement', condition: 'Progressive L7/L11/L15/L19' }),
+            BLK('stat', { targets: ['choice.ability.2'], mode: 'flat', value: 6, btype: 'Enhancement', condition: 'Progressive L7/L11/L15/L19' }),
+            BLK('stat', { targets: ['choice.ability.3'], mode: 'flat', value: 4, btype: 'Enhancement', condition: 'Progressive L7/L11/L15/L19' }),
+            BLK('stat', { targets: ['choice.ability.4'], mode: 'flat', value: 2, btype: 'Enhancement', condition: 'Progressive L7/L11/L15/L19' }),
+            BLK('attack', { attackMode: 'strikeBypass', appliesToWeapon: 'wieldedSimple', enhEquivalent: 5, drBypassList: 'magic, good' }),
+            BLK('defense', { mode: 'DR', value: 10, what: 'evil' }),
+            BLK('defense', { mode: 'Energy Resistance', value: 15, what: 'Acid, Cold, Electricity, Fire, Sonic' }),
+            BLK('effect', { effectKind: 'grantFeat', featOrPool: '#Exalted', floatingDaily: false })
+          ] })
+        ] })
+      ];
+      return e; } },
+    { id: 'vow_of_peace', icon: '🛡️', label: 'Vow of Peace (Exalted Feat: Calming Aura, +2 Exalted/Deflection/Nat AC & Manufactured Weapons Shatter on Hit)', build() {
+      const e = blankEntry('feat');
+      Object.assign(e, {
+        name: 'Vow of Peace', featKind: 'feat', source: 'Book of Exalted Deeds p.48', tags: ['#Exalted'],
+        text: 'Project a continuous 20-ft. calming aura, gain +2 exalted, +2 deflection, and +2 natural armor bonuses to AC, and shatter manufactured weapons that strike you.'
+      });
+      e.prereqs = [
+        { id: uid('p'), alts: [ALT({ kind: 'alignment', align: 'Any Good' })] },
+        { id: uid('p'), alts: [ALT({ kind: 'feat', feat: 'Sacred Vow' })] },
+        { id: uid('p'), alts: [ALT({ kind: 'feat', feat: 'Vow of Nonviolence' })] }
+      ];
+      e.effects = [
+        BLK('when', { flow: 'while', branches: [
+          blankBranch({ condKind: 'oath', oathRule: 'Never Harm Living Creature / Nonlethal Only', onBreak: 'atonement', kids: [
+            BLK('stat', { targets: ['ac.total'], mode: 'flat', value: 2, btype: 'Exalted' }),
+            BLK('stat', { targets: ['ac.deflection'], mode: 'flat', value: 2, btype: 'Deflection' }),
+            BLK('stat', { targets: ['ac.natural'], mode: 'flat', value: 2, btype: 'Natural Armor' }),
+            BLK('effect', { effectKind: 'rule', text: 'Continuous 20-ft. Calming Aura (Calm Emotions, Will DC 10 + ½ HD + CHA negates).' })
+          ] })
+        ] }),
+        BLK('when', { flow: 'when', branches: [
+          blankBranch({ trigger: 'meleeStruck', costKind: 'none', kids: [
+            BLK('effect', { effectKind: 'rule', text: 'Striking manufactured weapon must succeed on Fortitude DC 10 + ½ HD + CON or shatter harmlessly without dealing damage.' })
+          ] })
+        ] })
+      ];
       return e; } }
   ];
 
@@ -1286,7 +1460,7 @@
     return ((en && en.effects) || []).filter((b) => b && b.type === 'resource');
   }
   function allPools() {
-    const base = ['Arcane Pool', 'Turn Undead', 'Rebuke Undead', 'Ki', 'Bardic Music', 'Wild Shape', 'Psionic Power Points', 'Essentia', 'Bloodrage Rounds'];
+    const base = ['Arcane Pool', 'Turn Undead', 'Rebuke Undead', 'Ki Pool', 'Ki', 'Bardic Music', 'Wild Shape', 'Psionic Power Points', 'Essentia', 'Bloodrage Rounds'];
     const seen = new Set(base);
     const out = base.slice();
     const add = (n) => { const s = String(n || '').trim(); if (s && !seen.has(s)) { seen.add(s); out.push(s); } };
@@ -2473,11 +2647,12 @@
   const live = (kind, args) => '<span data-live="' + kind + '" data-args="' + esc(args == null ? '' : args) + '">' + (LIVE[kind] ? LIVE[kind](String(args == null ? '' : args)) : '') + '</span>';
 
   const NAT_WPN_LIST = ['Claw', 'Bite', 'Slam', 'Gore', 'Tail Slap', 'Tentacle', 'Wing', 'Talon', 'Sting', 'Hoof'];
+  const OATH_RULES = ['Unarmored, No Shield & Light Load', 'No Metal Armor or Shields', 'Zero Magic Items & Wealth Cap (VoP)', 'Nonlethal / Never Harm Living Foe (VoPeace)', 'Paladin Code of Conduct'];
   const BASE_CLASS_LIST = ['Barbarian', 'Bard', 'Cleric', 'Druid', 'Fighter', 'Monk', 'Paladin', 'Ranger', 'Rogue', 'Sorcerer', 'Wizard', 'Warblade', 'Crusader', 'Swordsage', 'Duskblade', 'Beguiler', 'Swashbuckler', 'Hexblade', 'Binder', 'Incarnate', 'Totemist', 'Psion', 'Psychic Warrior', 'Bloodrager', 'Magus', 'Ur-Priest', 'Spellthief', 'Truenamer', 'Shadowcaster'];
   const DEF_LIST = ['Fear', 'Poison', 'Sleep', 'Paralysis', 'Disease', 'Mind-Affecting', 'Death Effects', 'Low-Light Vision', 'Darkvision 60 ft.', 'Blindsense 30 ft.', 'Tremorsense 30 ft.', 'Uncanny Dodge', 'Pounce (Full Attack on Charge)', 'evil or good', 'magic', 'Fire', 'Cold', 'Acid', 'Electricity', 'Sonic'];
   const datalists = () => '<datalist id="fs-dice-list">' + opts(DIE_LIST.filter((d) => d !== 'flat'), '') + '</datalist><datalist id="fs-range-list">' + opts(RANGES, '') + '</datalist><datalist id="fs-area-list">' + opts(AREAS, '') + '</datalist>' +
     '<datalist id="fs-defense-list">' + opts(DEF_LIST, '') + '</datalist><datalist id="fs-deity-list">' + opts(CAT.deities.map((d) => d.name), '') + '</datalist><datalist id="fs-weapon-names">' + opts(CAT.weapons.map((w) => baseName(w)), '') + '</datalist><datalist id="fs-spell-names">' + opts(CAT.spells.slice(0, 800).map((s) => s.name), '') + '</datalist>' +
-    '<datalist id="fs-pool-list">' + opts(allPools(), '') + '</datalist><datalist id="fs-natwpn-list">' + opts(NAT_WPN_LIST, '') + '</datalist>' +
+    '<datalist id="fs-pool-list">' + opts(allPools(), '') + '</datalist><datalist id="fs-natwpn-list">' + opts(NAT_WPN_LIST, '') + '</datalist><datalist id="fs-oath-list">' + opts(OATH_RULES, '') + '</datalist>' +
     '<datalist id="fs-spellcls-list">' + opts(Array.from(new Set(SPELL_CLASSES.concat(BASE_CLASS_LIST))), '') + '</datalist>';
 
   // --------------------------------------------------------------------------
@@ -2860,14 +3035,24 @@
 
   function whenBranchControls(flow, br, bp) {
     if (flow === 'while') {
-      return sel(bp + '.condKind', br.condKind || 'state', [
+      const ck = br.condKind || 'state';
+      return sel(bp + '.condKind', ck, [
         ['state', 'While State Active'],
         ['bound', 'While Bound to Chakra / Pact'],
         ['levelTier', 'CL / Class / HD Tier'],
         ['synergy', 'Active #Tag / Synergy'],
-        ['situational', 'Equipment / Combat State']
+        ['situational', 'Equipment / Combat State'],
+        ['oath', '⚖️ Oath / Taboo Unbroken']
       ], { narrow: true }) +
-      inp(bp + '.condText', br.condText || '', { ph: 'Bloodrage / Totem Chakra / CL ≤ 11', style: 'width:165px' });
+      (ck === 'oath'
+        ? inp(bp + '.oathRule', br.oathRule || '', { list: 'fs-oath-list', ph: 'Oath / Taboo condition…', style: 'width:210px' }) +
+          L('Break') + sel(bp + '.onBreak', br.onBreak || 'suppress', [
+            ['suppress', 'Suppressed While Violated'],
+            ['loss24h', 'Lost for 24 Hours'],
+            ['atonement', 'Lost Until Atonement'],
+            ['irrevocable', 'Irrevocably Lost']
+          ], { narrow: true })
+        : inp(bp + '.condText', br.condText || '', { ph: 'Bloodrage / Totem Chakra / CL ≤ 11', style: 'width:165px' }));
     }
     const trig = br.trigger || 'activate';
     const ck = br.costKind || 'none';
@@ -2878,6 +3063,7 @@
       ['critHit', 'On Critical Hit'],
       ['sneakHit', 'On Sneak Attack Hit'],
       ['takeDamage', 'On Taking Damage'],
+      ['meleeStruck', 'When Struck in Melee'],
       ['castSpell', 'When Casting Spell']
     ], { narrow: true }) +
     (trig === 'activate' ? sel(bp + '.action', br.action || 'Swift', ['Standard', 'Swift', 'Move', 'Immediate', 'Free', 'Full-Round'], { narrow: true }) : '') +
@@ -3009,8 +3195,32 @@
         const modeSel = sel(p + '.attackMode', am, [
           ['natural', '🦷 Natural Attack'],
           ['extra', '⚡ Extra Attack (Haste / Flurry)'],
-          ['weaponImbue', '🗡️✨ Temporary Weapon Imbue']
+          ['weaponImbue', '⚔️✨ Temporary Weapon Imbue'],
+          ['unarmedDie', '💥 Unarmed Base Die Scaling'],
+          ['strikeBypass', '✨ Passive Strike / DR Bypass']
         ], { narrow: true });
+        if (am === 'unarmedDie') {
+          const up = b.unarmedProgression || 'monk';
+          return modeSel +
+            sel(p + '.unarmedProgression', up, [
+              ['monk', 'Monk 1d6→2d10 Table (Size-Scaled)'],
+              ['fixed', 'Set Base Unarmed Die (Size-Scaled)']
+            ], { narrow: true }) +
+            (up === 'fixed'
+              ? inp(p + '.dice', b.dice || '1d6', { list: 'fs-dice-list', style: 'width:64px' })
+              : L('Eff. Lvl Δ') + inp(p + '.effLvlBonus', b.effLvlBonus == null ? 0 : b.effLvlBonus, { num: true, style: 'width:52px' })) +
+            inp(p + '.rider', b.rider || '', { ph: 'note (manufactured & natural)', style: 'width:190px' });
+        }
+        if (am === 'strikeBypass') {
+          return modeSel +
+            sel(p + '.appliesToWeapon', b.appliesToWeapon || 'unarmed', [
+              ['unarmed', 'Unarmed Strike'],
+              ['wieldedSimple', 'Any Wielded Simple Weapon'],
+              ['allMelee', 'All Melee / Natural Attacks']
+            ], { narrow: true }) +
+            L('Enh') + sel(p + '.enhEquivalent', num(b.enhEquivalent, 0), range(0, 5).map((n) => [n, n === 0 ? '+0 (DR Bypass Only)' : '+' + n + ' Enh']), { narrow: true, num: true }) +
+            L('DR/') + inp(p + '.drBypassList', b.drBypassList || '', { ph: 'magic, lawful, adamantine', style: 'width:170px' });
+        }
         if (am === 'natural') {
           return modeSel +
             sel(p + '.natKind', b.natKind || 'primary', [
