@@ -878,6 +878,10 @@ async function main() {
       const page = await openPage(context, '/hub.html');
       await waitHubReady(page);
       const before = await page.evaluate(() => loadFormulaTemplates().length);
+      const drawerToggle = page.locator('#hub-formula-drawer-toggle');
+      assert(await drawerToggle.getAttribute('aria-expanded') === 'false', 'formula drawer should start collapsed');
+      await drawerToggle.click();
+      assert(await drawerToggle.getAttribute('aria-expanded') === 'true', 'formula drawer did not expand');
       const save = page.locator('#dice-save-template-btn');
       await page.waitForFunction(() => { const b = document.getElementById('dice-save-template-btn'); return b && b.getBoundingClientRect().width > 0 && b.getAttribute('aria-label') === 'Save current formula as a new template'; }, null, { timeout: 10000 });
       await page.fill('#dice-custom-formula-input', '');

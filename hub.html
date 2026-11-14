@@ -27,7 +27,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&display=swap" rel="stylesheet">
   <!-- Three.js (3D dice) is loaded on demand by dice3d.js on the first 3D roll. -->
   <script src="dice3d.js?v=aa07002406"></script>
-  <script src="hub_dice.js?v=67fad4bab0"></script>
+  <script src="hub_dice.js?v=2eb42a28f9"></script>
   <script src="hub_notes.js?v=a275652b58"></script>
   <style>
     body {
@@ -622,16 +622,18 @@
           </div>
         </div>
 
-        <!-- 2. CUSTOM FORMULA & TARGETED ROLL -->
-        <div class="bg-[#131d33] border border-slate-700/80 rounded-2xl p-3 sm:p-3.5 shadow-xl space-y-3">
-          <div class="flex items-center border-b border-slate-700/80 pb-2.5">
-            <span class="text-indigo-400 font-extrabold text-sm flex items-center gap-1.5">
+        <!-- 2. CUSTOM FORMULA & TARGETED ROLL (Collapsible Drawer) -->
+        <div id="hub-formula-drawer-card" class="bg-[#131d33] border border-slate-700/80 rounded-2xl p-3 sm:p-3.5 shadow-xl">
+          <button type="button" id="hub-formula-drawer-toggle" data-action="dice:toggle-formula-drawer" aria-expanded="false" aria-controls="hub-formula-drawer-body" class="w-full flex items-center justify-between gap-2 text-left cursor-pointer select-none group">
+            <span class="text-indigo-400 font-extrabold text-sm flex items-center gap-1.5 min-w-0">
               <span>📝</span>
               <span>CUSTOM FORMULA &amp; TARGETED ROLL</span>
             </span>
-          </div>
+            <span id="hub-formula-drawer-icon" class="text-xs text-slate-400 group-hover:text-white font-mono shrink-0 transition-transform duration-200">▼</span>
+          </button>
 
-          <!-- Input & At Butonu -->
+          <div id="hub-formula-drawer-body" class="hidden pt-3 border-t border-slate-700/80 space-y-3" style="margin-top:10px;">
+            <!-- Input & At Butonu -->
           <div class="flex items-stretch gap-2">
             <input type="text" id="dice-custom-formula-input"
                    placeholder="e.g., Target:21 Bonus:4 Dice:1d6+3 19-20x2 or 8d6"
@@ -668,6 +670,7 @@
               <span>Rolls d20+4 against AC/DC 21; on a 19-20 threat, rolls critical confirmation and multiplies damage by x2.</span>
             </div>
             <div class="text-[10px] text-slate-400">You can also enter freeform dice expressions like <code>8d6</code>, <code>3d6+5</code>, or <code>2d6+4 18-20x2</code>.</div>
+            </div>
           </div>
         </div>
 

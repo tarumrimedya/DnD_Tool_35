@@ -1025,12 +1025,35 @@ window.addEventListener('DOMContentLoaded', () => {
     poolModEl.dataset.wheelWired = '1';
     poolModEl.addEventListener('wheel', handlePoolModWheel, { passive: false });
   }
-  // The old collapsible 'Formula, Last Roll & History' drawer is gone; drop its stored open/closed flag.
-  try { localStorage.removeItem('hub_dice_adv_open'); } catch (e) {}
+  // Restore persisted open/closed state for the collapsible Custom Formula & Targeted Roll drawer (default: closed).
+  try {
+    localStorage.removeItem('hub_dice_adv_open');
+    setHubFormulaDrawerOpen(localStorage.getItem('hub_dice_formula_open') === '1', false);
+  } catch (e) {}
 });
+
+function setHubFormulaDrawerOpen(isOpen, persist = true) {
+  const body = document.getElementById('hub-formula-drawer-body');
+  const toggle = document.getElementById('hub-formula-drawer-toggle');
+  const icon = document.getElementById('hub-formula-drawer-icon');
+  if (!body) return;
+  body.classList.toggle('hidden', !isOpen);
+  if (toggle) toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  if (icon) icon.style.transform = isOpen ? 'rotate(180deg)' : 'rotate(0deg)';
+  if (persist) {
+    try { localStorage.setItem('hub_dice_formula_open', isOpen ? '1' : '0'); } catch (e) {}
+  }
+}
+
+function toggleHubFormulaDrawer() {
+  const body = document.getElementById('hub-formula-drawer-body');
+  if (!body) return;
+  setHubFormulaDrawerOpen(body.classList.contains('hidden'), true);
+}
 
 if (window.Actions && typeof window.Actions.register === 'function') {
   const actionsApi = window.Actions;
+  actionsApi.register('dice:toggle-formula-drawer', () => toggleHubFormulaDrawer());
   actionsApi.register('dice:die-click', (el, data) => handleDieClick(Number(data.sides)));
   actionsApi.register('dice:adjust-mod', (el, data, event) => adjustDicePoolMod(Number(data.delta), event));
   actionsApi.register('dice:mod-input', () => updateDicePoolDisplay());
