@@ -1426,7 +1426,7 @@
     house: { critCap: 0 },
     spot: null,
     ui: {
-      liveOpenMobile: false, liveAutoCollapsed: false, liveUserOverride: null, progHideEmpty: false, facetOpen: {}, cardOpen: {}, jsonOpen: false, importOpen: false, importText: '', tplSaveOpen: false, newTplName: '', houseOpen: false,
+      liveOpenMobile: false, liveWasScrolled: false, liveUserOverride: null, progHideEmpty: false, facetOpen: {}, cardOpen: {}, jsonOpen: false, importOpen: false, importText: '', tplSaveOpen: false, newTplName: '', houseOpen: false,
       customSkillOpen: false, customSkill: { name: '', ability: 'cha', trainedOnly: true, acp: false }
     }
   };
@@ -2961,11 +2961,46 @@
       '<span class="fs-grow-gap"></span>' + save + skillPop + importBtn + btn('new-entry', '✨ Blank', 'fs-xs') + status + '</div>' +
       '<div class="fs-topbar-row fs-topbar-spot-row"><div class="fs-top-spot">' + spotHtml('load', 'top') + '</div></div>';
   }
-  function isLiveOpen() {
-    if (S.ui.liveUserOverride === 'open') return true;
-    if (S.ui.liveUserOverride === 'closed') return false;
-    if (typeof window !== 'undefined' && window.innerWidth <= 640) return !!S.ui.liveOpenMobile;
-    return !S.ui.liveAutoCollapsed;
+  const liveMetrics = { y0: 96, moreH: 0, pillsCount: 0 };
+  function measureLiveMetrics() {
+    const topEl = $('#fs-topbar'), mainEl = document.querySelector('.fs-main'), moreInner = document.querySelector('#fs-live .fs-live-more-inner');
+    if (topEl && mainEl) liveMetrics.y0 = topEl.offsetHeight + (parseFloat(getComputedStyle(mainEl).paddingTop) || 0);
+    if (moreInner) liveMetrics.moreH = moreInner.offsetHeight;
+  }
+  function syncLiveScroll(animate) {
+    const liveEl = $('#fs-live'), spacerEl = $('#fs-live-spacer');
+    if (!liveEl) return;
+    const moreEl = liveEl.querySelector('.fs-live-more');
+    const btnEl = liveEl.querySelector('[data-action="toggle-live"]');
+    if (!moreEl) return;
+    const y = typeof window !== 'undefined' ? (window.scrollY || window.pageYOffset || 0) : 0;
+    const mobile = typeof window !== 'undefined' && window.innerWidth <= 640;
+    const y0 = liveMetrics.y0, moreH = liveMetrics.moreH;
+    if (y > y0 + 6) S.ui.liveWasScrolled = true;
+    else if (y <= 8 && S.ui.liveWasScrolled) {
+      S.ui.liveWasScrolled = false;
+      S.ui.liveUserOverride = null;
+    }
+    let shrink = 0;
+    if (S.ui.liveUserOverride === 'open') shrink = 0;
+    else if (S.ui.liveUserOverride === 'closed') shrink = moreH;
+    else if (mobile) shrink = S.ui.liveOpenMobile ? 0 : moreH;
+    else shrink = Math.max(0, Math.min(moreH, y - y0));
+
+    const spacerH = Math.min(shrink, Math.max(0, y - y0));
+    liveEl.classList.toggle('manual-anim', !!animate);
+    const visH = Math.max(0, moreH - shrink);
+    moreEl.style.height = visH + 'px';
+    moreEl.style.opacity = moreH > 0 ? String(Math.max(0, Math.min(1, 1 - shrink / Math.max(1, moreH * 0.85)))) : '1';
+    moreEl.style.pointerEvents = visH < 8 ? 'none' : '';
+    if (spacerEl) spacerEl.style.height = spacerH + 'px';
+
+    const collapsed = moreH > 0 && shrink >= moreH - 1;
+    liveEl.classList.toggle('collapsed', collapsed);
+    if (btnEl) {
+      const nextTxt = collapsed ? ('▾ Details' + (liveMetrics.pillsCount ? ' (' + liveMetrics.pillsCount + ')' : '')) : '▴ Collapse';
+      if (btnEl.textContent !== nextTxt) btnEl.textContent = nextTxt;
+    }
   }
   function renderLiveHeader() {
     const en = S.entry, bp = BP_BY_ID[en.blueprint] || BLUEPRINTS[0], has = (k) => en.facets.indexOf(k) >= 0;
@@ -2997,12 +3032,13 @@
     const pills = summaryPills(en);
     const l3 = pills.length ? pills.map((p) => '<span class="fs-pill ' + p[0] + '">' + esc(p[1]) + '</span>').join('') : '<span class="fs-hint">Snap Lego Core V3 blocks below to compose resources, triggers, carriers, stats, rolls, attacks, defenses, and effects.</span>';
     const warns = has('chassis') ? chassisView(en.chassis, en).warnings : [];
-    const open = isLiveOpen();
+    liveMetrics.pillsCount = pills.length;
     if (!hasGrow) l1 += '<span class="fs-grow-gap"></span>';
-    l1 += '<button type="button" class="fs-btn fs-xs fs-live-toggle" data-action="toggle-live">' + (open ? '▴ Collapse' : '▾ Details' + (pills.length ? ' (' + pills.length + ')' : '')) + '</button>';
+    l1 += '<button type="button" class="fs-btn fs-xs fs-live-toggle" data-action="toggle-live">▴ Collapse</button>';
     const liveEl = $('#fs-live');
-    liveEl.className = 'fs-live' + (open ? '' : ' collapsed');
-    liveEl.innerHTML = '<div class="fs-live-line">' + l1 + '</div><div class="fs-live-more"><div class="fs-live-line fs-live-card">' + l2 + '</div><div class="fs-live-line">' + l3 + '</div>' + (warns.length ? '<div class="fs-live-line" style="font-size:11px">' + warns.slice(0, 2).map((w) => '<span class="fs-down">⛔ ' + esc(w) + '</span>').join(' ') + '</div>' : '') + '</div>';
+    liveEl.innerHTML = '<div class="fs-live-line">' + l1 + '</div><div class="fs-live-more"><div class="fs-live-more-inner"><div class="fs-live-line fs-live-card">' + l2 + '</div><div class="fs-live-line">' + l3 + '</div>' + (warns.length ? '<div class="fs-live-line" style="font-size:11px">' + warns.slice(0, 2).map((w) => '<span class="fs-down">⛔ ' + esc(w) + '</span>').join(' ') + '</div>' : '') + '</div></div>';
+    measureLiveMetrics();
+    syncLiveScroll(false);
   }
 
   // --------------------------------------------------------------------------
@@ -3862,7 +3898,7 @@
   function loadEntry(en, presetId) {
     S.entry = en; S.activePreset = presetId || ''; S.ui.cardOpen = {}; S.ui.facetOpen = {}; S.spot = null;
     S.ui.liveUserOverride = null;
-    S.ui.liveAutoCollapsed = typeof window !== 'undefined' && (window.scrollY || window.pageYOffset || 0) > 96;
+    S.ui.liveWasScrolled = false;
   }
   function setEntry(path, v) { setPath(S.entry, path, v); onSet(path, v); }
   function onSet(path, v) {
@@ -3961,7 +3997,13 @@
     },
     'load-preset': (el) => { const p = PRESETS.find((x) => x.id === el.dataset.id); if (!p) return; loadEntry(p.build(), p.id); toast('Preset loaded: ' + p.label); renderAll(); },
     'new-entry': () => { loadEntry(scaffold(blankEntry(S.entry.blueprint))); renderAll(); },
-    'toggle-live': () => { const next = !isLiveOpen(); S.ui.liveUserOverride = next ? 'open' : 'closed'; S.ui.liveOpenMobile = next; renderLiveHeader(); },
+    'toggle-live': () => {
+      const liveEl = $('#fs-live');
+      const next = !!(liveEl && liveEl.classList.contains('collapsed'));
+      S.ui.liveUserOverride = next ? 'open' : 'closed';
+      S.ui.liveOpenMobile = next;
+      syncLiveScroll(true);
+    },
     'add-block': (el) => {
       const list = getPath(S.entry, el.dataset.p);
       if (!Array.isArray(list)) return;
@@ -4119,17 +4161,8 @@
       const fn = ACT[el.dataset.enter];
       if (fn) fn(el, ev);
     });
-    window.addEventListener('scroll', () => {
-      const y = window.scrollY || window.pageYOffset || 0;
-      if (y > 96 && !S.ui.liveAutoCollapsed) {
-        S.ui.liveAutoCollapsed = true;
-        if (S.ui.liveUserOverride === null) renderLiveHeader();
-      } else if (y <= 8 && S.ui.liveAutoCollapsed) {
-        S.ui.liveAutoCollapsed = false;
-        S.ui.liveUserOverride = null;
-        renderLiveHeader();
-      }
-    }, { passive: true });
+    window.addEventListener('scroll', () => { syncLiveScroll(false); }, { passive: true });
+    window.addEventListener('resize', () => { measureLiveMetrics(); syncLiveScroll(false); }, { passive: true });
     loadEntry(PRESETS[0].build(), PRESETS[0].id);
     renderAll();
     bootCompendium();

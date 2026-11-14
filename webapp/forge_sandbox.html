@@ -52,11 +52,12 @@
   .fs-pill .fs-x { cursor: pointer; opacity: .7; margin-left: 2px; }
   .fs-pill .fs-x:hover { opacity: 1; color: #fff; }
 
-  /* Sticky object preview (object's own card only — auto-collapses on scroll, user-expandable) */
-  .fs-live { position: sticky; top: 0; z-index: 30; padding: 10px 14px; border-radius: 14px; background: rgba(8, 14, 30, 0.97); border: 1px solid var(--theme-border); box-shadow: 0 10px 30px rgba(0,0,0,.5); backdrop-filter: blur(8px); transition: padding .15s ease; }
-  .fs-live.collapsed { padding: 7px 12px; }
-  .fs-live-more { margin-top: 6px; animation: fsReveal .16s ease-out; }
-  .fs-live.collapsed .fs-live-more { display: none; }
+  /* Sticky object preview (object's own card only — progressively collapses on scroll with zero layout shift) */
+  .fs-live { position: sticky; top: 0; z-index: 30; padding: 9px 14px; border-radius: 14px; background: rgba(8, 14, 30, 0.97); border: 1px solid var(--theme-border); box-shadow: 0 10px 30px rgba(0,0,0,.5); backdrop-filter: blur(8px); overflow-anchor: none; }
+  .fs-live-spacer { height: 0; overflow-anchor: none; pointer-events: none; }
+  .fs-live-more { overflow: hidden; will-change: height, opacity; }
+  .fs-live.manual-anim .fs-live-more { transition: height .18s ease, opacity .16s ease; }
+  .fs-live-more-inner { padding-top: 6px; }
   .fs-live-line { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 12px; min-height: 22px; }
   .fs-live-line + .fs-live-line { margin-top: 6px; }
   .fs-live-icon { font-size: 16px; }
@@ -109,7 +110,7 @@
   .fs-in:focus, .fs-sel:focus { outline: none; border-color: var(--accent-indigo); box-shadow: 0 0 0 2px rgba(99,102,241,.3); }
   .fs-in.fs-narrow, .fs-sel.fs-narrow { width: auto; min-width: 58px; }
   textarea.fs-in { height: auto; min-height: 54px; padding: 6px 7px; resize: vertical; font-family: inherit; }
-  .fs-check { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; color: var(--text-secondary); cursor: pointer; padding: 3px 8px; border-radius: 7px; border: 1px solid var(--border-subtle); background: var(--bg-surface); }
+  .fs-check { display: inline-flex; align-items: center; gap: 5px; height: var(--input-sm-h); box-sizing: border-box; font-size: 11.5px; color: var(--text-secondary); cursor: pointer; padding: 0 8px; border-radius: 7px; border: 1px solid var(--border-subtle); background: var(--bg-surface); }
   .fs-check input { accent-color: var(--accent-indigo); }
   .fs-check.on { border-color: var(--theme-border); color: var(--text-primary); }
   .fs-section-label { font-size: 10.5px; text-transform: uppercase; letter-spacing: .08em; color: var(--text-dim); font-weight: 800; margin: 12px 0 5px; display: flex; align-items: center; gap: 6px; }
@@ -204,7 +205,7 @@
   .lego-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .lego-field { display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 5px; min-width: 0; padding: 7px 10px 8px; border-radius: 9px; background: rgba(11,18,36,.48); border: 1px solid rgba(148,163,184,.14); box-sizing: border-box; }
   .lego-field-lbl { font-size: 10px; line-height: 1.2; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .lego-field-body { display: flex; flex-wrap: wrap; align-items: center; row-gap: 6px; column-gap: 8px; width: 100%; min-width: 0; }
+  .lego-field-body { display: flex; flex-wrap: wrap; align-items: center; min-height: var(--input-sm-h); row-gap: 6px; column-gap: 8px; width: 100%; min-width: 0; }
   .lego-span-2 { grid-column: span 2; }
   .lego-span-full { grid-column: 1 / -1; }
   .lego-lvl-stack { display: flex; flex-direction: column; gap: 6px; width: 100%; min-width: 0; }
@@ -268,6 +269,7 @@
     <header class="fs-topbar" id="fs-topbar"></header>
     <main class="fs-main">
       <div class="fs-live" id="fs-live"></div>
+      <div class="fs-live-spacer" id="fs-live-spacer"></div>
       <div id="fs-facets"></div>
       <div class="fs-glass fs-facet" id="fs-json-wrap"></div>
     </main>
