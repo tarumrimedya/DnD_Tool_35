@@ -21,15 +21,17 @@ const CANONICAL_V3_BLOCK_TYPES = new Set([
 const CANONICAL_V3_TARGETS = new Set([
   'str', 'dex', 'con', 'int', 'wis', 'cha',
   'choice.ability.1', 'choice.ability.2', 'choice.ability.3', 'choice.ability.4',
-  'ac.total', 'ac.touch', 'ac.flatFooted', 'ac.armor', 'ac.shield', 'ac.natural', 'ac.deflection', 'ac.dodge', 'ac.size', 'ac.luck', 'ac.insight', 'ac.sacred', 'ac.profane',
+  'choice.skill.1',
+  'ac.total', 'ac.touch', 'ac.flatFooted', 'ac.armor', 'ac.shield', 'ac.natural', 'ac.deflection', 'ac.dodge', 'ac.size', 'ac.luck', 'ac.insight', 'ac.sacred', 'ac.profane', 'ac.cover',
   'save.all', 'save.fort', 'save.ref', 'save.will',
-  'atk.all', 'atk.melee', 'atk.ranged', 'atk.weapon', 'atk.touch', 'atk.grapple',
-  'dmg.all', 'dmg.melee', 'dmg.ranged', 'dmg.weapon', 'dmg.sneakAttack',
+  'atk.all', 'atk.melee', 'atk.ranged', 'atk.weapon', 'atk.touch', 'atk.grapple', 'atk.natural', 'atk.critConfirm',
+  'dmg.all', 'dmg.melee', 'dmg.ranged', 'dmg.weapon', 'dmg.sneakAttack', 'dmg.natural', 'dmg.unarmed',
   'initiative', 'grapple',
+  'cmd.stability', 'cmd.bullRush', 'cmd.trip', 'cmd.overrun',
   'speed.land', 'speed.fly', 'speed.swim', 'speed.climb', 'speed.burrow', 'speed.all',
-  'hp.temp', 'hp.max', 'hp.perLevel',
-  'casterLevel', 'spell.dc', 'spell.effectiveLevel', 'sr.penetration',
-  'sr', 'dr', 'fortification', 'turnLevel', 'carryingCapacity',
+  'hp.temp', 'hp.max', 'hp.perLevel', 'fastHealing',
+  'casterLevel', 'spell.dc', 'spell.effectiveLevel', 'spell.damage', 'sr.penetration',
+  'sr', 'dr', 'fortification', 'turnLevel', 'turning.check', 'turning.damageDice', 'wildEmpathy', 'carryingCapacity',
   'resource.pp', 'resource.essentia',
   'skill.all'
 ]);
@@ -92,7 +94,7 @@ function canonicalizeTarget(rawTarget) {
       return { ok: true, canonical: 'skill.' + sub, aliased: true };
     }
     if (/^(craft|perform|profession|knowledge)-/.test(sub)) {
-      return { ok: true, canonical: 'skill.' + sub, aliased: true, parameterizedSkill: true };
+      return { ok: true, canonical: 'skill.' + sub, aliased: trimmed !== ('skill.' + sub), parameterizedSkill: true };
     }
   }
   if (/^spellSlot\.level\d+$/.test(trimmed)) {

@@ -13,14 +13,14 @@
     },
     "srd_feats.json": {
       "count": 468,
-      "bytes": 803679,
-      "hash": "555b3f17776adeb3",
+      "bytes": 820539,
+      "hash": "721c6b4388320f3d",
       "eagerLoad": true
     },
     "srd_classes_races.json": {
       "count": 281,
-      "bytes": 680009,
-      "hash": "0c9d20bf7c19410c",
+      "bytes": 883517,
+      "hash": "592e806c8affe2e0",
       "eagerLoad": true
     },
     "srd_combat_rules.json": {
@@ -55,8 +55,8 @@
     },
     "srd_domains.json": {
       "count": 37,
-      "bytes": 75842,
-      "hash": "19c974cf6646172d",
+      "bytes": 77651,
+      "hash": "4c9c833e290e9639",
       "eagerLoad": true
     },
     "srd_companions.json": {
@@ -98,8 +98,8 @@
     },
     "srd_classes_splat.json": {
       "count": 416,
-      "hash": "72ac8dc4379aa03a",
-      "bytes": 1129310,
+      "hash": "be3f627e774c7f59",
+      "bytes": 746934,
       "eagerLoad": false
     },
     "srd_classes_legacy.json": {
@@ -123,32 +123,32 @@
     },
     "srd_vestiges_splat.json": {
       "count": 32,
-      "bytes": 226171,
-      "hash": "10d7563affa7beed",
+      "bytes": 135906,
+      "hash": "202ac764fbd67fc4",
       "eagerLoad": false
     },
     "srd_mysteries_splat.json": {
       "count": 69,
-      "bytes": 337217,
-      "hash": "e71d85c8e4dbd35e",
+      "bytes": 199619,
+      "hash": "b386373da06a6b0e",
       "eagerLoad": false
     },
     "srd_utterances_splat.json": {
       "count": 65,
-      "bytes": 287161,
-      "hash": "c5baad400e489682",
+      "bytes": 175360,
+      "hash": "f49aff2803f8e100",
       "eagerLoad": false
     },
     "srd_soulmelds_splat.json": {
       "count": 94,
-      "bytes": 383226,
-      "hash": "b0f7545bdd0e826e",
+      "bytes": 275477,
+      "hash": "c921dc6858754596",
       "eagerLoad": false
     },
     "srd_powers_splat.json": {
       "count": 127,
-      "bytes": 352695,
-      "hash": "37b618cae6bdb066",
+      "bytes": 274349,
+      "hash": "5edcc8ff5f9aabc3",
       "eagerLoad": false
     }
   },

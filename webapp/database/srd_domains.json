@@ -2906,7 +2906,7 @@
         "condition": null
       },
       {
-        "target": "skill.senseMotive",
+        "target": "skill.sense_motive",
         "value": 2,
         "type": "Competence",
         "condition": null

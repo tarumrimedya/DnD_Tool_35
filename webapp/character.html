@@ -85,6 +85,13 @@
       .lvl-prog-desktop-only { display: block !important; }
       .lvl-prog-mobile-only { display: none !important; }
     }
+    @media (min-width: 640px) and (max-width: 1023px) {
+      #hero-right-controls { flex: 1 1 0%; width: auto; min-width: 0; }
+    }
+    @media (min-width: 768px) and (max-width: 1023px) {
+      #hero-header-bar { flex-direction: column; align-items: stretch; }
+      #hero-actions-group { width: 100%; padding-top: 0.5rem; border-top: 1px solid rgba(30, 41, 59, 0.8); }
+    }
   </style>
 </head>
 <body data-sheet-mode="both" class="min-h-screen flex flex-col pb-20 md:pb-6 relative">
@@ -117,7 +124,7 @@
       <div class="flex-1 min-w-0 space-y-2 flex flex-col justify-between">
         
         <!-- Üst Satır: Karakter Bilgi Barı, Level Up & Ayarlar / Bulut Senkron -->
-        <div class="bg-dndCard border border-dndBorder rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-3 shadow-lg relative z-10 backdrop-blur-md">
+        <div id="hero-header-bar" class="bg-dndCard border border-dndBorder rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-3 shadow-lg relative z-10 backdrop-blur-md">
           <!-- Sol / Üst Bölüm: Karakter Başlığı & Stat Özetleri (Mobilde Ferah Çok Satırlı Yapı) -->
           <div class="flex items-start gap-2.5 sm:gap-3 min-w-0 flex-1">
             <div class="w-8 h-8 rounded-lg bg-red-600/20 border border-red-500/80 flex items-center justify-center text-sm shrink-0 shadow-inner mt-0.5">⚔️</div>
@@ -170,7 +177,7 @@
           </div>
 
           <!-- Sağ Bölüm: Smart Notes & Mindmap (Sol Kutu) + Hub, Ayarlar & Bulut Senkron (Sağ Blok) -->
-          <div class="flex flex-col sm:flex-row items-stretch gap-2 pt-2 md:pt-0 border-t border-slate-800/80 md:border-0 w-full md:w-auto shrink-0">
+          <div id="hero-actions-group" class="flex flex-col sm:flex-row items-stretch gap-2 pt-2 md:pt-0 border-t border-slate-800/80 md:border-0 w-full md:w-auto shrink-0">
             <!-- Sağ Bloğun Solu: Quest Logs & Mindmap -->
             <button type="button" data-action="hud:open-quest-notebook" class="w-full sm:w-28 md:w-32 px-3 py-2 rounded-xl bg-amber-600/15 hover:bg-amber-600/30 text-amber-300 hover:text-amber-200 border border-amber-500/40 hover:border-amber-400/70 font-sans font-bold text-xs shadow flex sm:flex-col items-center justify-center gap-1.5 transition transform active:scale-95 cursor-pointer shrink-0 text-center" title="Open Quest Logs &amp; Campaign Logbook (Quest Logs, Mindmap &amp; AI Chronicler)">
               <span class="text-base sm:text-xl leading-none">📝</span>
@@ -178,7 +185,7 @@
             </button>
 
             <!-- Sağ Kontrol Bloğu: Kullanıcı, Hub/Ayarlar & Bulut Senkron -->
-            <div class="flex flex-col items-stretch sm:items-end justify-between gap-1.5 w-full md:w-56 shrink-0">
+            <div id="hero-right-controls" class="flex flex-col items-stretch sm:items-end justify-between gap-1.5 w-full md:w-56 shrink-0">
               <!-- Kullanıcı Profil Rozeti -->
               <div id="user-profile-slot" class="w-full"></div>
               <!-- 1. Sıra: Hub & Ayarlar Butonları -->

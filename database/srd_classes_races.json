@@ -10011,7 +10011,7 @@
     ],
     "modifiers": [
       {
-        "target": "cl.divine",
+        "target": "casterLevel.divine",
         "value": 1,
         "formula": "1",
         "type": "untyped",
@@ -11370,7 +11370,7 @@
     ],
     "modifiers": [
       {
-        "target": "cl.arcane",
+        "target": "casterLevel.arcane",
         "value": 1,
         "formula": "1",
         "type": "untyped",

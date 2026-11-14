@@ -9099,7 +9099,7 @@
     ],
     "modifiers": [
       {
-        "target": "skill",
+        "target": "choice.skill.1",
         "value": 10,
         "formula": "10",
         "type": "untyped",
@@ -9836,7 +9836,7 @@
     ],
     "modifiers": [
       {
-        "target": "skill",
+        "target": "choice.skill.1",
         "value": 3,
         "formula": "3",
         "type": "untyped",

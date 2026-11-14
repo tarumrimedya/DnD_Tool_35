@@ -69,21 +69,7 @@ const CORE_FILES = [
   'master_db.json'
 ];
 
-const DB_FILES = [
-  'srd_index.json',
-  'srd_equipment.json',
-  'srd_feats.json',
-  'srd_classes_races.json',
-  'srd_combat_rules.json',
-  'srd_spells.json',
-  'srd_maneuvers.json',
-  'srd_monsters.json',
-  'mic_compendium.json',
-  'srd_domains.json',
-  'srd_companions.json',
-  'srd_templates.json',
-  'lego_patterns.json'
-];
+const DB_FILES = fs.readdirSync(path.join(ROOT, 'database')).filter(f => f.endsWith('.json')).sort();
 
 function sha256(filePath) {
   return crypto.createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
