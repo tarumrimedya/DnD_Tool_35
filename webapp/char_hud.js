@@ -252,14 +252,10 @@
         return;
       }
 
-      // 1. Kick off lightweight SRD Index (~3ms IDB) & Auth in background — NEVER block Frame 1 on 6.9 MB SRD chunks!
+      // 1. Check local character presence — defer 1.43 MB srd_index.json on warm snapshotted characters!
       const hadLocalSavedChar = (() => {
         try { return Boolean(localStorage.getItem('dnd35_character') || localStorage.getItem('dnd35_hub_db')); } catch (_) { return false; }
       })();
-
-      const srdIndexPromise = (window.SrdCompendium && typeof window.SrdCompendium.initIndex === 'function')
-        ? window.SrdCompendium.initIndex().catch(e => { console.warn('SrdCompendium initIndex warning:', e); return false; })
-        : Promise.resolve(false);
 
       const authPromise = (window.SupabaseAuth && typeof window.SupabaseAuth.requireAuth === 'function')
         ? window.SupabaseAuth.requireAuth().catch(e => { console.warn('Auth check warning:', e); return null; })
@@ -311,24 +307,6 @@
         console.error('initSkillFilters failed:', err);
       }
 
-      // 3. Single-Pass Instant Render (<10ms First Paint: HUD + Active Tab only, zero Loading screen)
-      try {
-        renderAll();
-      } catch (e) {
-        console.error('Initial renderAll error:', e);
-      }
-      try { restoreActiveTabAndScroll(); } catch (e) { reportError('char_hud:liveBc.onmessage', e); }
-
-      // 4. Post-Paint Stale-While-Revalidate SRD Reconciliation (yields 1 frame so initial paint commits cleanly)
-      await new Promise(resolve => {
-        if (typeof window.requestAnimationFrame === 'function') {
-          window.requestAnimationFrame(() => setTimeout(resolve, 0));
-        } else {
-          setTimeout(resolve, 0);
-        }
-      });
-
-      await srdIndexPromise;
       const comp = window.SrdCompendium;
       const isWarmSnapshottedChar = Boolean(
         hadLocalSavedChar &&
@@ -339,35 +317,46 @@
       );
 
       if (isWarmSnapshottedChar) {
-        // Warm character already holds all compact mechanical snapshots -> 0 KB chunk download!
+        // 3A. Warm snapshotted character: 0 KB SRD chunk + 0 KB blocking index parse -> instant ready cockpit!
+        try { renderAll(); } catch (e) { console.error('Initial renderAll error:', e); }
+        try { restoreActiveTabAndScroll(); } catch (e) { reportError('char_hud:restoreActiveTabAndScroll', e); }
         document.documentElement.dataset.sheetBoot = 'ready';
-        if (typeof comp.reconcileCharacterBootData === 'function') {
-          comp.reconcileCharacterBootData(character).then((rec) => {
+
+        // Quiet idle check for rare upstream SRD hash updates (0 KB download when hashes match)
+        const runQuietReconcile = () => {
+          if (!comp || typeof comp.initIndex !== 'function' || typeof comp.reconcileCharacterBootData !== 'function') return;
+          comp.initIndex().then(() => comp.reconcileCharacterBootData(character)).then((rec) => {
             if (rec && rec.changed) {
               if (window.CharStore && typeof window.CharStore.recompute === 'function') window.CharStore.recompute();
-              renderAll();
+              renderAll({ skipRecompute: true });
               saveStateToStorage(false);
             }
           }).catch(e => console.warn('Background snapshot reconciliation warning:', e));
+        };
+        if (typeof window.requestIdleCallback === 'function') {
+          window.requestIdleCallback(runQuietReconcile, { timeout: 6000 });
+        } else {
+          setTimeout(runQuietReconcile, 4000);
         }
       } else {
-        // Cold session (e.g. empty localStorage / UI smoke harness) or legacy unsnapshotted character:
-        // hydrate yielding between chunks so main thread & scrolling stay 60fps, then stamp compact snapshots.
+        // 3B. Honest Single-Step Cold / Migration Boot: complete SRD hydration & snapshot stamping BEFORE ready
+        // so zero background chunk timers ever collide with user tab switches or combat clicks!
         if (comp && typeof comp.init === 'function') {
-          try { await comp.init({ yieldBetweenChunks: true }); } catch (e) { console.warn('SrdCompendium init warning:', e); }
+          try { await comp.init({ yieldBetweenChunks: false }); } catch (e) { console.warn('SrdCompendium init warning:', e); }
         }
-        const raceSynced = syncDefaultRaceTraitsIfEmpty();
-        const snappedIds = (comp && typeof comp.syncCharacterBootSnapshots === 'function' && character)
-          ? comp.syncCharacterBootSnapshots(character)
-          : [];
-        const rec = (comp && typeof comp.reconcileCharacterBootData === 'function' && character)
-          ? await comp.reconcileCharacterBootData(character).catch(() => null)
-          : null;
-        if (raceSynced || snappedIds.length > 0 || (rec && rec.changed)) {
-          if (window.CharStore && typeof window.CharStore.recompute === 'function') window.CharStore.recompute();
-          renderAll();
-          if (hadLocalSavedChar) saveStateToStorage(false);
+        syncDefaultRaceTraitsIfEmpty();
+        if (comp && typeof comp.syncCharacterBootSnapshots === 'function' && character) {
+          comp.syncCharacterBootSnapshots(character);
         }
+        if (comp && typeof comp.reconcileCharacterBootData === 'function' && character) {
+          await comp.reconcileCharacterBootData(character).catch(() => null);
+        }
+        if (window.CharStore && typeof window.CharStore.recompute === 'function') {
+          window.CharStore.recompute();
+        }
+        try { renderAll({ skipRecompute: true }); } catch (e) { console.error('Initial renderAll error:', e); }
+        try { restoreActiveTabAndScroll(); } catch (e) { reportError('char_hud:restoreActiveTabAndScroll', e); }
+        if (hadLocalSavedChar) saveStateToStorage(false);
         document.documentElement.dataset.sheetBoot = 'ready';
       }
 
@@ -2201,147 +2190,57 @@
     }
 
     function toggleActionEconomy(type) {
-      if (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.dispatch === 'function') {
-        if (!window.CharStore.getDoc() && typeof character !== 'undefined') {
-          window.CharStore._syncExternalCharacterRef(character);
-        }
-        window.CharStore.dispatch({
-          type: 'combat/toggleAction',
-          label: `Toggle Action (${type})`,
-          payload: { type },
-          meta: { label: `Toggle Action (${type})`, cloudSync: false }
-        });
-      } else {
-        if (!character.tactical) character.tactical = {};
-        if (!character.tactical.spentActions) character.tactical.spentActions = {};
-        character.tactical.spentActions[type] = !character.tactical.spentActions[type];
-        saveStateToStorage(false);
+      if (!window.CharStore.getDoc() && typeof character !== 'undefined') {
+        window.CharStore._syncExternalCharacterRef(character);
       }
+      window.CharStore.dispatch({
+        type: 'combat/toggleAction',
+        label: `Toggle Action (${type})`,
+        payload: { type },
+        meta: { label: `Toggle Action (${type})`, cloudSync: false }
+      });
       updateActionEconomyUI();
     }
 
     function resetActionEconomy() {
       if (!character) return;
-      if (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.dispatch === 'function') {
-        if (!window.CharStore.getDoc() && typeof character !== 'undefined') {
-          window.CharStore._syncExternalCharacterRef(character);
-        }
-        window.CharStore.dispatch({
-          type: 'combat/resetActions',
-          label: 'Reset Action Economy',
-          payload: {},
-          meta: { label: 'Reset Action Economy', cloudSync: false }
-        });
-      } else {
-        if (!character.tactical) character.tactical = {};
-        const lockSwift = Boolean(character.tactical.spentActions && character.tactical.spentActions.swiftLockedNextTurn);
-        character.tactical.spentActions = {
-          standard: false,
-          move: false,
-          swift: lockSwift,
-          immediate: false,
-          swiftLockedNextTurn: false
-        };
+      if (!window.CharStore.getDoc() && typeof character !== 'undefined') {
+        window.CharStore._syncExternalCharacterRef(character);
       }
+      window.CharStore.dispatch({
+        type: 'combat/resetActions',
+        label: 'Reset Action Economy',
+        payload: {},
+        meta: { label: 'Reset Action Economy', cloudSync: false }
+      });
       updateActionEconomyUI();
     }
     window.resetActionEconomy = resetActionEconomy;
 
     function consumeActionEconomy(actionTypeOrString, sourceLabel = '') {
       if (!character) return false;
-      if (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.dispatch === 'function') {
-        if (!window.CharStore.getDoc() && typeof character !== 'undefined') {
-          window.CharStore._syncExternalCharacterRef(character);
-        }
-        const actLbl = `Consume Action${sourceLabel ? ': ' + sourceLabel : ''}`;
-        window.CharStore.dispatch({
-          type: 'combat/consumeAction',
-          label: actLbl,
-          payload: { actionType: actionTypeOrString, sourceLabel },
-          meta: { label: actLbl, cloudSync: false }
-        });
-        const out = typeof window.CharStore.getLastOutcome === 'function' ? window.CharStore.getLastOutcome() : null;
-        updateActionEconomyUI();
-        if (out && out.alreadySpent && typeof showDiceTopToast === 'function') {
-          const roundNum = out.round || Number(character.encounterRound || character.tactical?.round) || 1;
-          showDiceTopToast({
-            icon: '⚠️',
-            title: 'Extra Action Used',
-            breakdown: `${out.spentLabel || 'Action'} was already spent in Round ${roundNum}${sourceLabel ? ' • ' + sourceLabel : ''}.`,
-            total: 'Extra Action'
-          }, { stack: true, toastId: 'action-economy-overuse-toast' });
-        }
-        return out ? Boolean(out.consumed) : true;
+      if (!window.CharStore.getDoc() && typeof character !== 'undefined') {
+        window.CharStore._syncExternalCharacterRef(character);
       }
-
-      if (!character.tactical) character.tactical = {};
-      if (!character.tactical.spentActions) character.tactical.spentActions = {};
-
-      const spent = character.tactical.spentActions;
-      const raw = String(
-        (actionTypeOrString && typeof actionTypeOrString === 'object')
-          ? (actionTypeOrString.castingTime || actionTypeOrString.action || actionTypeOrString.initiationAction || 'standard')
-          : (actionTypeOrString || 'standard')
-      ).trim().toLowerCase();
-
-      if (/free/i.test(raw)) return false;
-
-      let kind = 'standard';
-      if (/full[-\s]*round|1\s*round|^full$/i.test(raw)) kind = 'full';
-      else if (/swift/i.test(raw)) kind = 'swift';
-      else if (/immediate|reaction/i.test(raw)) kind = 'immediate';
-      else if (/move/i.test(raw)) kind = 'move';
-
-      let alreadySpent = false;
-      let spentLabel = 'Standard Action';
-
-      if (kind === 'full') {
-        alreadySpent = Boolean(spent.standard || spent.move);
-        if (spent.standard && spent.move) {
-          spentLabel = 'Full-Round Action (Standard + Move)';
-        } else if (spent.standard) {
-          spentLabel = 'Standard Action (required for Full-Round Action)';
-        } else if (spent.move) {
-          spentLabel = 'Move Action (required for Full-Round Action)';
-        } else {
-          spentLabel = 'Full-Round Action';
-        }
-        spent.standard = true;
-        spent.move = true;
-      } else if (kind === 'move' && spent.move && !spent.standard) {
-        spent.standard = true;
-        alreadySpent = false;
-        spentLabel = 'Move Action (converted from Standard Action)';
-      } else if (kind === 'immediate') {
-        alreadySpent = Boolean(spent.immediate);
-        spent.immediate = true;
-        if (!spent.swift) {
-          spent.swift = true;
-        } else {
-          spent.swiftLockedNextTurn = true;
-        }
-        spentLabel = 'Immediate Action';
-      } else {
-        alreadySpent = Boolean(spent[kind]);
-        const cap = kind.charAt(0).toUpperCase() + kind.slice(1);
-        spentLabel = `${cap} Action`;
-        spent[kind] = true;
-      }
-
+      const actLbl = `Consume Action${sourceLabel ? ': ' + sourceLabel : ''}`;
+      window.CharStore.dispatch({
+        type: 'combat/consumeAction',
+        label: actLbl,
+        payload: { actionType: actionTypeOrString, sourceLabel },
+        meta: { label: actLbl, cloudSync: false }
+      });
+      const out = typeof window.CharStore.getLastOutcome === 'function' ? window.CharStore.getLastOutcome() : null;
       updateActionEconomyUI();
-      saveStateToStorage(false);
-
-      if (alreadySpent && typeof showDiceTopToast === 'function') {
-        const roundNum = Number(character.encounterRound || character.tactical?.round) || 1;
+      if (out && out.alreadySpent && typeof showDiceTopToast === 'function') {
+        const roundNum = out.round || Number(character.encounterRound || character.tactical?.round) || 1;
         showDiceTopToast({
           icon: '⚠️',
           title: 'Extra Action Used',
-          breakdown: `${spentLabel} was already spent in Round ${roundNum}${sourceLabel ? ' • ' + sourceLabel : ''}.`,
+          breakdown: `${out.spentLabel || 'Action'} was already spent in Round ${roundNum}${sourceLabel ? ' • ' + sourceLabel : ''}.`,
           total: 'Extra Action'
         }, { stack: true, toastId: 'action-economy-overuse-toast' });
       }
-
-      return !alreadySpent;
+      return out ? Boolean(out.consumed) : true;
     }
     window.consumeActionEconomy = consumeActionEconomy;
 
@@ -2482,9 +2381,13 @@
     }, { passive: true });
 
     window.addEventListener('beforeunload', persistScrollPosition);
-    window.addEventListener('pagehide', persistScrollPosition);
+    const _tabScrollMap = new Map();
+    window.addEventListener('pagehide', () => {
+      persistScrollPosition();
+      try { if (character) saveStateToStorage(false); } catch (_) {}
+    });
 
-    const ALL_SHEET_TABS = ['tab-combat', 'tab-spells', 'tab-core', 'tab-skills', 'tab-defense', 'tab-inventory', 'tab-database', 'tab-sync', 'tab-dice'];
+    const ALL_SHEET_TABS = ['tab-combat', 'tab-spells', 'tab-core', 'tab-skills', 'tab-defense', 'tab-inventory', 'tab-database', 'tab-dice'];
     const _dirtyTabs = new Set(ALL_SHEET_TABS);
 
     function renderTabIfNeeded(tabId, force = false) {
@@ -2503,6 +2406,7 @@
           try { renderCombatCockpit(); } catch (e) { console.error('renderCombatCockpit error:', e); }
           break;
         case 'tab-spells':
+          // Render ONLY the active magic discipline via autoSelectMagicDisciplineTab -> switchMagicDisciplineTab
           try {
             if (typeof getMagicDisciplineClassLevels === 'function' && typeof autoSelectMagicDisciplineTab === 'function') {
               const progLevels = getMagicDisciplineClassLevels(character);
@@ -2517,9 +2421,6 @@
               }
             }
           } catch (e) { console.error('autoSelectMagicDisciplineTab error:', e); }
-          try { renderSpellSlots(); } catch (e) { console.error('renderSpellSlots error:', e); }
-          try { renderManeuvers(); } catch (e) { console.error('renderManeuvers error:', e); }
-          try { renderKnownSpells(); } catch (e) { console.error('renderKnownSpells error:', e); }
           try { if (typeof renderGrantedAtWillSpells === 'function') renderGrantedAtWillSpells(); } catch (e) { console.error('renderGrantedAtWillSpells error:', e); }
           break;
         case 'tab-core':
@@ -2585,8 +2486,8 @@
       const target = document.getElementById(tabId);
       if (!target || !window.matchMedia('(max-width: 767px)').matches) return;
       const tabTop = Math.max(0, Math.round(target.getBoundingClientRect().top + window.scrollY - 8));
-      const savedY = parseInt(localStorage.getItem('dnd35_scroll_' + tabId), 10) || 0;
-      window.scrollTo({ top: Math.max(tabTop, savedY), left: 0, behavior: 'instant' });
+      const memY = _tabScrollMap.has(tabId) ? _tabScrollMap.get(tabId) : (parseInt(localStorage.getItem('dnd35_scroll_' + tabId), 10) || 0);
+      window.scrollTo({ top: Math.max(tabTop, memY), left: 0, behavior: 'instant' });
     }
 
     function switchTab(tabId, isRestoration = false) {
@@ -2595,6 +2496,7 @@
         prevTab = localStorage.getItem('dnd35_active_tab') || 'tab-combat';
         if (!isRestoration && prevTab && prevTab !== tabId) {
           const curY = window.scrollY || document.documentElement.scrollTop || 0;
+          _tabScrollMap.set(prevTab, curY);
           localStorage.setItem('dnd35_scroll_' + prevTab, curY);
           localStorage.setItem('dnd35_last_scroll_y', curY);
         }
@@ -2742,8 +2644,8 @@
         }
       }
 
-      // 1. Core Hero HUD & Abilities (Always rendered immediately so top bar and stats stay live)
-      try { renderHUD(); } catch (e) { console.error('renderHUD error:', e); }
+      // 1. Core Hero HUD & Abilities (Always rendered immediately so top bar and stats stay live; skip redundant recompute!)
+      try { renderHUD({ skipRecompute: true }); } catch (e) { console.error('renderHUD error:', e); }
       try { renderAbilities(); } catch (e) { console.error('renderAbilities error:', e); }
       try { renderCharacterProfile(); } catch (e) { console.error('renderCharacterProfile error:', e); }
 
@@ -2794,7 +2696,7 @@
       }
     }
 
-    function renderHUD() {
+    function renderHUD(options = {}) {
       const nameEl = document.getElementById('char-name-display');
       if (nameEl) nameEl.textContent = character.name;
       const classEl = document.getElementById('char-classes-display');
@@ -2956,29 +2858,51 @@
         renderPeriodicHpEffects();
       }
 
-      // AC Live Evaluation
+      // AC Live Evaluation (fast-path reads fresh acBreakdown after CharStore.recompute without re-running recalculateCharacter)
       let acCalc = null;
       try {
-        const ceVal = character.tactical?.combatExpertise !== undefined 
-          ? character.tactical.combatExpertise 
-          : (parseInt(document.getElementById('combat-expertise-val')?.textContent) || 0);
-        const fdVal = character.tactical?.fightingDefensively !== undefined
-          ? character.tactical.fightingDefensively
-          : false;
-        const tdVal = character.tactical?.totalDefense !== undefined
-          ? character.tactical.totalDefense
-          : false;
-        const chargeVal = character.tactical?.charge !== undefined
-          ? character.tactical.charge
-          : false;
+        if (options && options.skipRecompute && character.acBreakdown) {
+          const bd = character.acBreakdown;
+          acCalc = {
+            total: bd.total ?? 10,
+            touch: bd.touch ?? 10,
+            flat: bd.flat ?? 10,
+            dodgeBonus: bd.dodge ?? 0,
+            effectiveDex: bd.effectiveDex ?? 0,
+            breakdown: {
+              armor: bd.armor || 0,
+              shield: bd.shield || 0,
+              dex: bd.effectiveDex ?? 0,
+              natural: bd.natural || 0,
+              deflection: bd.deflection || 0,
+              dodge: bd.dodge || 0,
+              size: bd.size || 0,
+              misc: bd.misc || 0,
+              penalty: bd.penalty ? -Math.abs(bd.penalty) : 0
+            }
+          };
+        } else {
+          const ceVal = character.tactical?.combatExpertise !== undefined 
+            ? character.tactical.combatExpertise 
+            : (parseInt(document.getElementById('combat-expertise-val')?.textContent) || 0);
+          const fdVal = character.tactical?.fightingDefensively !== undefined
+            ? character.tactical.fightingDefensively
+            : false;
+          const tdVal = character.tactical?.totalDefense !== undefined
+            ? character.tactical.totalDefense
+            : false;
+          const chargeVal = character.tactical?.charge !== undefined
+            ? character.tactical.charge
+            : false;
 
-        if (typeof RuleEngine !== 'undefined' && RuleEngine.evaluateAC) {
-          acCalc = RuleEngine.evaluateAC(character, {
-            combatExpertise: ceVal,
-            fightingDefensively: fdVal,
-            totalDefense: tdVal,
-            charge: chargeVal
-          });
+          if (typeof RuleEngine !== 'undefined' && RuleEngine.evaluateAC) {
+            acCalc = RuleEngine.evaluateAC(character, {
+              combatExpertise: ceVal,
+              fightingDefensively: fdVal,
+              totalDefense: tdVal,
+              charge: chargeVal
+            });
+          }
         }
       } catch (e) {
         console.error('AC evaluation error in renderHUD:', e);
@@ -3041,10 +2965,12 @@
         }
       }
 
-      // Saves Live Evaluation
+      // Saves Live Evaluation (fast-path reads fresh evaluatedSaves after CharStore.recompute)
       let saves = null;
       try {
-        if (typeof RuleEngine !== 'undefined' && RuleEngine.evaluateSaves) {
+        if (options && options.skipRecompute && character.evaluatedSaves) {
+          saves = character.evaluatedSaves;
+        } else if (typeof RuleEngine !== 'undefined' && RuleEngine.evaluateSaves) {
           saves = RuleEngine.evaluateSaves(character);
         }
       } catch (e) {
@@ -4878,6 +4804,7 @@
     }
 
     document.addEventListener('click', (e) => {
+      if (!window._modalsMounted) return;
       const container = document.getElementById('race-custom-dropdown-container');
       const raceDropdown = document.getElementById('race-spotlight-dropdown');
       if (_raceSpotlightOpen && container && !container.contains(e.target) && (!raceDropdown || !raceDropdown.contains(e.target))) {
@@ -9086,40 +9013,25 @@ function renderManualStatsPanel() {
       const evaluated = evaluateHpAmount(rawExpr);
       if (mode !== 'clearTemp' && evaluated.total <= 0) return evaluated;
 
-      if (window.CharStore && typeof window.CharStore.dispatch === 'function') {
-        window.CharStore.dispatch({
-          type: 'hud/adjustHp',
-          payload: {
-            mode: mode,
-            amount: evaluated.total,
-            additive: mode === 'temp',
-            source: source || (mode === 'damage' ? 'Damage' : (mode === 'heal' ? 'Healing' : 'HP Adjustment'))
-          },
-          meta: { label: `${mode === 'damage' ? 'Take Damage' : (mode === 'heal' ? 'Heal HP' : 'Adjust HP')} (${evaluated.total})` }
-        });
-      } else {
-        if (mode === 'damage') {
-          let dmgLeft = evaluated.total;
-          const curTemp = Math.max(0, Number(character.hp.temp) || 0);
-          if (curTemp > 0) {
-            const absorbed = Math.min(curTemp, dmgLeft);
-            character.hp.temp = curTemp - absorbed;
-            dmgLeft -= absorbed;
-          }
-          if (dmgLeft > 0) {
-            character.hp.current = Math.max(-10, (Number(character.hp.current) || 0) - dmgLeft);
-          }
-        } else if (mode === 'heal') {
-          character.hp.current = Math.min(Number(character.hp.max) || 0, (Number(character.hp.current) || 0) + evaluated.total);
-        } else if (mode === 'temp') {
-          character.hp.temp = (Math.max(0, Number(character.hp.temp) || 0)) + evaluated.total;
-        } else if (mode === 'clearTemp') {
-          character.hp.temp = 0;
-        }
-        character.hp._lastPlayerChangeTs = Date.now();
+      const prevTemp = Math.max(0, Number(character.hp.temp) || 0);
+      if (!window.CharStore.getDoc() && typeof character !== 'undefined') {
+        window.CharStore._syncExternalCharacterRef(character);
       }
-      saveStateToStorage(true);
-      renderAll();
+      window.CharStore.dispatch({
+        type: 'hud/adjustHp',
+        payload: {
+          mode: mode,
+          amount: evaluated.total,
+          additive: mode === 'temp',
+          source: source || (mode === 'damage' ? 'Damage' : (mode === 'heal' ? 'Healing' : 'HP Adjustment'))
+        },
+        meta: { label: `${mode === 'damage' ? 'Take Damage' : (mode === 'heal' ? 'Heal HP' : 'Adjust HP')} (${evaluated.total})` }
+      });
+      const nextTemp = Math.max(0, Number(character.hp.temp) || 0);
+      evaluated.absorbedTemp = mode === 'damage' ? Math.max(0, prevTemp - nextTemp) : 0;
+
+      // Surgical <1ms HUD patch: HP changes never alter weapons, skills, spells, or inventory — do NOT re-dirty all tabs!
+      try { renderHUD({ skipRecompute: true }); } catch (e) { console.error('renderHUD error:', e); }
       return evaluated;
     }
 
@@ -9127,28 +9039,27 @@ function renderManualStatsPanel() {
       if (!character || !character.hp) return;
       const evaluated = applyHpModalAdjustment('damage', null, 'Damage');
       if (!evaluated || evaluated.total <= 0) return;
-      if (evaluated.isDice) {
-        showDiceTopToast({
-          icon: '💥',
-          title: 'Damage Roll',
-          breakdown: `${evaluated.rollDesc} • Remaining HP: ${character.hp.current}/${character.hp.max}${character.hp.temp > 0 ? ` (+${character.hp.temp} Temp)` : ''}`,
-          total: `-${evaluated.total} HP`
-        });
-      }
+      const tempAbsorbedNote = evaluated.absorbedTemp > 0 ? ` (${evaluated.absorbedTemp} absorbed by Temp HP)` : '';
+      const prefix = evaluated.isDice ? `${evaluated.rollDesc} • ` : '';
+      showDiceTopToast({
+        icon: '💥',
+        title: evaluated.isDice ? 'Damage Roll' : 'Damage Taken',
+        breakdown: `${prefix}Remaining HP: ${character.hp.current}/${character.hp.max}${character.hp.temp > 0 ? ` (+${character.hp.temp} Temp)` : ''}${tempAbsorbedNote}`,
+        total: `-${evaluated.total} HP`
+      });
     }
 
     function applyHeal() {
       if (!character || !character.hp) return;
       const evaluated = applyHpModalAdjustment('heal', null, 'Healing');
       if (!evaluated || evaluated.total <= 0) return;
-      if (evaluated.isDice) {
-        showDiceTopToast({
-          icon: '💖',
-          title: 'Healing Roll',
-          breakdown: `${evaluated.rollDesc} • Current HP: ${character.hp.current}/${character.hp.max}`,
-          total: `+${evaluated.total} HP`
-        });
-      }
+      const prefix = evaluated.isDice ? `${evaluated.rollDesc} • ` : '';
+      showDiceTopToast({
+        icon: '💖',
+        title: evaluated.isDice ? 'Healing Roll' : 'HP Restored',
+        breakdown: `${prefix}Current HP: ${character.hp.current}/${character.hp.max}${character.hp.temp > 0 ? ` (+${character.hp.temp} Temp)` : ''}`,
+        total: `+${evaluated.total} HP`
+      });
     }
 
     function clearTempHp() {

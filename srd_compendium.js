@@ -294,17 +294,39 @@
     return Array.from(out);
   }
 
-  // id -> index row, rebuilt whenever a different index payload is loaded
+  // O(1) index maps (id -> row, type:name -> row, name -> row), rebuilt once per index payload
   let _indexRowsById = null;
+  let _indexRowsByName = null;
+  let _indexRowsByTypeAndName = null;
+  let _indexTemplateRows = null;
   let _indexRowsSource = null;
-  function indexRowById(id) {
+  function ensureIndexMaps() {
     const rows = _indexData && Array.isArray(_indexData.index) ? _indexData.index : null;
-    if (!rows) return null;
+    if (!rows) return false;
     if (_indexRowsSource !== rows) {
       _indexRowsById = new Map();
-      for (let i = 0; i < rows.length; i++) if (rows[i] && rows[i].id) _indexRowsById.set(rows[i].id, rows[i]);
+      _indexRowsByName = new Map();
+      _indexRowsByTypeAndName = new Map();
+      _indexTemplateRows = [];
+      for (let i = 0; i < rows.length; i++) {
+        const it = rows[i];
+        if (!it) continue;
+        if (it.id) _indexRowsById.set(it.id, it);
+        const nKey = normalizeNameKey(it.n);
+        const tLow = String(it.t || '').toLowerCase();
+        if (nKey) {
+          if (!_indexRowsByName.has(nKey)) _indexRowsByName.set(nKey, it);
+          const tk = `${tLow}:${nKey}`;
+          if (!_indexRowsByTypeAndName.has(tk)) _indexRowsByTypeAndName.set(tk, it);
+        }
+        if (tLow === 'template') _indexTemplateRows.push({ row: it, nKey });
+      }
       _indexRowsSource = rows;
     }
+    return true;
+  }
+  function indexRowById(id) {
+    if (!ensureIndexMaps()) return null;
     return _indexRowsById.get(id) || null;
   }
 
@@ -410,12 +432,19 @@
     return copy;
   }
 
+  let _customizedEntryCache = new WeakMap();
+
   function isUserCustomizedDbEntry(entry) {
     if (!entry || typeof entry !== 'object') return false;
     if (!isSnapshot(entry)) return true;
     const mode = entry.origin && entry.origin.mode;
     if (mode === 'override' || mode === 'variant' || mode === 'homebrew') return true;
-    return contentHash(entry) !== entry._snapshot.srcHash;
+    const srcHash = entry._snapshot && entry._snapshot.srcHash;
+    const cached = _customizedEntryCache.get(entry);
+    if (cached && cached.srcHash === srcHash) return cached.customized;
+    const customized = contentHash(entry) !== srcHash;
+    _customizedEntryCache.set(entry, { srcHash, customized });
+    return customized;
   }
 
   let _nodeSyncInitialized = false;
@@ -712,12 +741,12 @@
       // 1. User-authored / homebrew / user-customized entries in character.customDb always win
       for (let i = 0; i < masterDb.length; i++) {
         const m = masterDb[i];
-        if (isUserCustomizedDbEntry(m) && matchesDbEntry(m, true)) return m;
+        if (matchesDbEntry(m, true) && isUserCustomizedDbEntry(m)) return m;
       }
       if (tLow && !isStrictType) {
         for (let i = 0; i < masterDb.length; i++) {
           const m = masterDb[i];
-          if (isUserCustomizedDbEntry(m) && matchesDbEntry(m, false)) return m;
+          if (matchesDbEntry(m, false) && isUserCustomizedDbEntry(m)) return m;
         }
       }
 
@@ -754,15 +783,9 @@
         return found;
       }
 
-      // Search index to see which chunk owns this entry
-      if (_indexData && Array.isArray(_indexData.index)) {
-        const nKey = normalizeNameKey(idOrName);
-        const tLow = typeFilter ? String(typeFilter).toLowerCase() : null;
-        const idxHit = indexRowById(String(idOrName || '').trim()) || _indexData.index.find(
-          (x) => x && (x.id === idOrName || (normalizeNameKey(x.n) === nKey && (!tLow || String(x.t || '').toLowerCase() === tLow)))
-        ) || _indexData.index.find(
-          (x) => x && normalizeNameKey(x.n) === nKey
-        );
+      // Search index in O(1) to see which chunk owns this entry
+      if (ensureIndexMaps()) {
+        const idxHit = SrdCompendium.findIndexEntry(idOrName, typeFilter) || SrdCompendium.findIndexEntry(idOrName, null);
         if (idxHit && idxHit.f && !_loadedChunks.has(idxHit.f)) {
           await SrdCompendium.ensureChunkLoaded(idxHit.f);
           found = SrdCompendium.getById(idxHit.id) || SrdCompendium.getByName(idOrName, typeFilter);
@@ -847,31 +870,30 @@
       return _loadedChunks.has(fileName);
     },
 
-    /** Index row (`{id, n, t, c, f, ...}`) for an id or name, optionally type-filtered. */
+    /** Index row (`{id, n, t, c, f, ...}`) for an id or name, optionally type-filtered (O(1) Map lookup). */
     findIndexEntry(idOrName, typeFilter = null) {
       if (!idOrName) return null;
       if (!_indexData && isNodeSyncEnv()) ensureNodeSyncLoaded();
-      const idx = _indexData && Array.isArray(_indexData.index) ? _indexData.index : null;
-      if (!idx) return null;
+      if (!ensureIndexMaps()) return null;
       const raw = String(idOrName).trim();
-      const byId = indexRowById(raw);
+      const byId = _indexRowsById.get(raw);
       if (byId) return byId;
       const nKey = normalizeNameKey(raw);
+      if (!nKey) return null;
       const tLow = typeFilter ? String(typeFilter).toLowerCase() : null;
-      for (let i = 0; i < idx.length; i++) {
-        const it = idx[i];
-        if (!it) continue;
-        if (it.id === raw) return it;
-        if (normalizeNameKey(it.n) === nKey && (!tLow || String(it.t || '').toLowerCase() === tLow)) return it;
-      }
-      if (tLow === 'template') {
-        const baseT = normalizeNameKey(raw.replace(/\s*\(template\)\s*$/i, ''));
-        for (let i = 0; i < idx.length; i++) {
-          const it = idx[i];
-          if (it && String(it.t || '').toLowerCase() === 'template' && normalizeNameKey(it.n).startsWith(baseT + ' (')) return it;
+      if (tLow) {
+        const typedHit = _indexRowsByTypeAndName.get(`${tLow}:${nKey}`);
+        if (typedHit) return typedHit;
+        if (tLow === 'template' && _indexTemplateRows) {
+          const baseT = normalizeNameKey(raw.replace(/\s*\(template\)\s*$/i, ''));
+          for (let i = 0; i < _indexTemplateRows.length; i++) {
+            const tr = _indexTemplateRows[i];
+            if (tr.nKey.startsWith(baseT + ' (')) return tr.row;
+          }
         }
+        return null;
       }
-      return null;
+      return _indexRowsByName.get(nKey) || null;
     },
 
     /** True when the entry lives in a lazy (tier 2) chunk. */
@@ -883,6 +905,12 @@
     /** Stable content hash of an entry, ignoring snapshot metadata. */
     contentHash(entry) {
       return contentHash(entry);
+    },
+
+    /** Clears cached `isUserCustomizedDbEntry` result when an entry is edited in-place. */
+    invalidateEntryCache(entry) {
+      if (entry && typeof entry === 'object') _customizedEntryCache.delete(entry);
+      else _customizedEntryCache = new WeakMap();
     },
 
     /**

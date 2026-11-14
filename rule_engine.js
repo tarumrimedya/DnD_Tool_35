@@ -10436,13 +10436,56 @@ const RuleEngine = {
     };
   },
 
+  _fastClonePlain(val) {
+    if (val === null || typeof val !== 'object') return val;
+    if (Array.isArray(val)) {
+      const len = val.length;
+      const arr = new Array(len);
+      for (let i = 0; i < len; i++) arr[i] = this._fastClonePlain(val[i]);
+      return arr;
+    }
+    const out = {};
+    const keys = Object.keys(val);
+    for (let i = 0; i < keys.length; i++) {
+      const k = keys[i];
+      out[k] = this._fastClonePlain(val[k]);
+    }
+    return out;
+  },
+
+  _cloneCharForDerive(inputChar) {
+    if (!inputChar || typeof inputChar !== 'object') return {};
+    const shareByRef = {
+      portrait: true, wallpaper: true, avatar: true, image: true,
+      customDb: true, smartNotes: true, journal: true, diceHistory: true, bio: true
+    };
+    const transientSkip = {
+      legoEvaluation: true, evaluatedDefenses: true, evaluatedResources: true,
+      evaluatedModes: true, grantedCapabilities: true, abilitySources: true,
+      initiativeBreakdown: true, activeConditionWarnings: true, twoHandedConflict: true,
+      _workingSnapshot: true
+    };
+    const out = {};
+    const keys = Object.keys(inputChar);
+    for (let i = 0; i < keys.length; i++) {
+      const k = keys[i];
+      if (transientSkip[k]) continue;
+      if (shareByRef[k]) {
+        out[k] = inputChar[k];
+      } else {
+        out[k] = this._fastClonePlain(inputChar[k]);
+      }
+    }
+    return out;
+  },
+
   /**
-   * Pure, zero-mutation sheet derivation pipeline (Phase R1 Strangler Fig).
+   * Pure, zero-mutation sheet derivation pipeline (Phase R1 Strangler Fig + Sprint B.5 Zero-Clone).
    * Accepts `(inputChar, customDb, tacticalOptions)` or `(inputChar, { masterDb, session, tactical })`.
    * Returns a self-contained `SheetView` without mutating `inputChar` or `customDb`.
    */
   deriveSheet(inputChar, customDbOrOptions = [], tacticalOptions = {}) {
-    const working = JSON.parse(JSON.stringify(inputChar || {}));
+    const working = this._cloneCharForDerive(inputChar);
     const fallbackDb = Array.isArray(working.customDb) ? working.customDb : [];
     let rawDb = [];
     let rawSession = null;
@@ -10465,8 +10508,9 @@ const RuleEngine = {
     } else {
       rawDb = fallbackDb;
     }
-    const workingDb = JSON.parse(JSON.stringify(rawDb));
-    const workingSession = rawSession ? JSON.parse(JSON.stringify(rawSession)) : null;
+    // Preserve masterDb entry object identities so SrdCompendium WeakMap hash cache hits in O(1)
+    const workingDb = Array.isArray(rawDb) ? rawDb : [];
+    const workingSession = rawSession ? this._fastClonePlain(rawSession) : null;
     if (
       workingSession &&
       workingSession.actionEconomy &&
@@ -10648,10 +10692,14 @@ const RuleEngine = {
     if (!targetChar || !sheetView || !sheetView._workingSnapshot) return targetChar;
     const prevPlayerTs = targetChar.hp?._lastPlayerChangeTs;
     const prevDmTs = targetChar.hp?._lastDmUpdateTs;
-    const clonedSnap = JSON.parse(JSON.stringify(sheetView._workingSnapshot));
-    Object.keys(clonedSnap).forEach(k => {
-      targetChar[k] = clonedSnap[k];
-    });
+    const snap = sheetView._workingSnapshot;
+    const preserveRefs = { customDb: true, portrait: true, wallpaper: true, smartNotes: true, journal: true, diceHistory: true };
+    const snapKeys = Object.keys(snap);
+    for (let i = 0; i < snapKeys.length; i++) {
+      const k = snapKeys[i];
+      if (preserveRefs[k] && targetChar[k] !== undefined) continue;
+      targetChar[k] = this._fastClonePlain(snap[k]);
+    }
     if (targetChar.hp && typeof targetChar.hp === 'object') {
       if (targetChar.hp._lastDmUpdateTs === undefined && prevDmTs !== undefined) {
         targetChar.hp._lastDmUpdateTs = prevDmTs;
@@ -10681,15 +10729,10 @@ const RuleEngine = {
    */
   stripDerivedFields(charDoc) {
     if (!charDoc || typeof charDoc !== 'object') return charDoc;
-    const clean = JSON.parse(JSON.stringify(charDoc));
-    const transientKeys = [
-      'legoEvaluation', 'evaluatedDefenses', 'evaluatedResources', 'evaluatedModes',
-      'grantedCapabilities', 'abilitySources', 'initiativeBreakdown',
-      'activeConditionWarnings', 'twoHandedConflict', '_workingSnapshot'
-    ];
-    transientKeys.forEach(k => {
-      delete clean[k];
-    });
+    const clean = this._cloneCharForDerive(charDoc);
+    if (Array.isArray(charDoc.customDb)) {
+      clean.customDb = charDoc.customDb.slice();
+    }
     return clean;
   }
 };

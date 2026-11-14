@@ -4566,10 +4566,6 @@
         : abilities.find(a => a.key === abilityKey || a.name.toLowerCase() === String(abilityKey || '').toLowerCase());
       if (!ab) return;
 
-      const hasStore = Boolean(typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.dispatch === 'function');
-      if (!hasStore && typeof _pushTerminalUndoSnapshot === 'function') {
-        _pushTerminalUndoSnapshot(`Special Attack: ${ab.name}`);
-      }
       window._lastCombatActivationUndo = {
         abilityKey: ab.key,
         spentActions: JSON.parse(JSON.stringify(character.tactical?.spentActions || {})),
@@ -4625,48 +4621,30 @@
 
       // Dispatch atomic 'combat/specialAttackRoll' via CharStore
       const actType = ab.actionType || ab.action || 'standard';
-      if (hasStore) {
-        if (!window.CharStore.getDoc() && typeof character !== 'undefined') {
-          window.CharStore._syncExternalCharacterRef(character);
-        }
-        window.CharStore.dispatch({
-          type: 'combat/specialAttackRoll',
-          label: `Special Attack: ${ab.name}`,
-          payload: {
-            abilityKey: ab.key,
-            name: ab.name,
-            cooldownRounds: waitRounds,
-            actionType: actType,
-            resourceId: ab.resourceId || null
-          },
-          meta: { label: `Special Attack: ${ab.name}`, cloudSync: false }
-        });
-        const out = typeof window.CharStore.getLastOutcome === 'function' ? window.CharStore.getLastOutcome() : null;
-        if (typeof updateActionEconomyUI === 'function') updateActionEconomyUI();
-        if (out && out.actionOutcome && out.actionOutcome.alreadySpent && typeof showDiceTopToast === 'function') {
-          showDiceTopToast({
-            icon: '⚠️',
-            title: 'Extra Action Used',
-            breakdown: `${out.actionOutcome.spentLabel || 'Action'} was already spent in Round ${out.actionOutcome.round || 1} • ${ab.name}.`,
-            total: 'Extra Action'
-          }, { stack: true, toastId: 'action-economy-overuse-toast' });
-        }
-      } else {
-        if (typeof consumeActionEconomy === 'function') {
-          consumeActionEconomy(actType, ab.name);
-        }
-        if (waitRounds > 0) {
-          const curRound = Number(character.tactical?.round) || 1;
-          if (!character.tactical) character.tactical = {};
-          if (!character.tactical.abilityCooldowns) character.tactical.abilityCooldowns = {};
-          character.tactical.abilityCooldowns[ab.key] = {
-            name: ab.name,
-            waitRounds,
-            readyRound: curRound + waitRounds,
-            rolledAtRound: curRound
-          };
-          saveStateToStorage(false);
-        }
+      if (!window.CharStore.getDoc() && typeof character !== 'undefined') {
+        window.CharStore._syncExternalCharacterRef(character);
+      }
+      window.CharStore.dispatch({
+        type: 'combat/specialAttackRoll',
+        label: `Special Attack: ${ab.name}`,
+        payload: {
+          abilityKey: ab.key,
+          name: ab.name,
+          cooldownRounds: waitRounds,
+          actionType: actType,
+          resourceId: ab.resourceId || null
+        },
+        meta: { label: `Special Attack: ${ab.name}`, cloudSync: false }
+      });
+      const out = typeof window.CharStore.getLastOutcome === 'function' ? window.CharStore.getLastOutcome() : null;
+      if (typeof updateActionEconomyUI === 'function') updateActionEconomyUI();
+      if (out && out.actionOutcome && out.actionOutcome.alreadySpent && typeof showDiceTopToast === 'function') {
+        showDiceTopToast({
+          icon: '⚠️',
+          title: 'Extra Action Used',
+          breakdown: `${out.actionOutcome.spentLabel || 'Action'} was already spent in Round ${out.actionOutcome.round || 1} • ${ab.name}.`,
+          total: 'Extra Action'
+        }, { stack: true, toastId: 'action-economy-overuse-toast' });
       }
       renderWeaponSetsUI();
 
@@ -4744,42 +4722,24 @@
         : abilities.find(a => a.key === abilityKey || a.name.toLowerCase() === String(abilityKey || '').toLowerCase());
       if (!ab || !ab.rechargeDice || typeof parseAndRollDiceFormula !== 'function') return;
 
-      const hasStore = Boolean(typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.dispatch === 'function');
-      if (!hasStore && typeof _pushTerminalUndoSnapshot === 'function') {
-        _pushTerminalUndoSnapshot(`Roll Recharge: ${ab.name}`);
-      }
       const parsed = parseAndRollDiceFormula(ab.rechargeDice);
       if (!parsed) return;
       const waitRounds = Math.max(1, parsed.grandTotal);
 
-      if (hasStore) {
-        if (!window.CharStore.getDoc() && typeof character !== 'undefined') {
-          window.CharStore._syncExternalCharacterRef(character);
-        }
-        window.CharStore.dispatch({
-          type: 'combat/specialAttackRecharge',
-          label: `Roll Recharge: ${ab.name}`,
-          payload: {
-            abilityKey: ab.key,
-            name: ab.name,
-            cooldownRounds: waitRounds,
-            resourceId: ab.resourceId || null
-          },
-          meta: { label: `Roll Recharge: ${ab.name}`, cloudSync: false }
-        });
-      } else {
-        const curRound = Number(character.tactical?.round) || 1;
-        const readyRound = curRound + waitRounds;
-        if (!character.tactical) character.tactical = {};
-        if (!character.tactical.abilityCooldowns) character.tactical.abilityCooldowns = {};
-        character.tactical.abilityCooldowns[ab.key] = {
-          name: ab.name,
-          waitRounds,
-          readyRound,
-          rolledAtRound: curRound
-        };
-        saveStateToStorage(false);
+      if (!window.CharStore.getDoc() && typeof character !== 'undefined') {
+        window.CharStore._syncExternalCharacterRef(character);
       }
+      window.CharStore.dispatch({
+        type: 'combat/specialAttackRecharge',
+        label: `Roll Recharge: ${ab.name}`,
+        payload: {
+          abilityKey: ab.key,
+          name: ab.name,
+          cooldownRounds: waitRounds,
+          resourceId: ab.resourceId || null
+        },
+        meta: { label: `Roll Recharge: ${ab.name}`, cloudSync: false }
+      });
       renderWeaponSetsUI();
 
       if (typeof window.rollAbilityTacticalDice === 'function') {
@@ -4790,24 +4750,15 @@
 
     function resetSpecialAttackCooldown(abilityKey) {
       if (!character) return;
-      const hasStore = Boolean(typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.dispatch === 'function');
-      if (!hasStore && typeof _pushTerminalUndoSnapshot === 'function') {
-        _pushTerminalUndoSnapshot(`Reset Cooldown: ${abilityKey}`);
+      if (!window.CharStore.getDoc() && typeof character !== 'undefined') {
+        window.CharStore._syncExternalCharacterRef(character);
       }
-      if (hasStore) {
-        if (!window.CharStore.getDoc() && typeof character !== 'undefined') {
-          window.CharStore._syncExternalCharacterRef(character);
-        }
-        window.CharStore.dispatch({
-          type: 'combat/specialAttackReady',
-          label: `Reset Cooldown: ${abilityKey}`,
-          payload: { abilityKey },
-          meta: { label: `Reset Cooldown: ${abilityKey}`, cloudSync: false }
-        });
-      } else if (character.tactical && character.tactical.abilityCooldowns) {
-        delete character.tactical.abilityCooldowns[abilityKey];
-        saveStateToStorage(false);
-      }
+      window.CharStore.dispatch({
+        type: 'combat/specialAttackReady',
+        label: `Reset Cooldown: ${abilityKey}`,
+        payload: { abilityKey },
+        meta: { label: `Reset Cooldown: ${abilityKey}`, cloudSync: false }
+      });
       renderWeaponSetsUI();
     }
     window.resetSpecialAttackCooldown = resetSpecialAttackCooldown;
@@ -4826,42 +4777,22 @@
           const raw = await DnDUI.prompt(`${inp.label || inp.id}:`, String(defVal), { inputType: 'number' });
           if (raw === null) return; // User cancelled prompt -> abort before snapshot or spending action
           const numVal = Number(raw);
-          inputValues[inp.id] = Number.isFinite(numVal) ? numVal : defVal;
+          inputValues[inp.id] = Number(Number.isFinite(numVal) ? numVal : defVal);
         }
       }
 
-      const hasStore = Boolean(typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.dispatch === 'function');
-      if (!hasStore && typeof _pushTerminalUndoSnapshot === 'function') {
-        _pushTerminalUndoSnapshot(`Reaction: ${entryId} (${modeId})`);
-      }
       const actType = (mode && mode.actionType) ? mode.actionType : 'immediate';
-      let res = null;
-      if (hasStore) {
-        if (!window.CharStore.getDoc() && typeof character !== 'undefined') {
-          window.CharStore._syncExternalCharacterRef(character);
-        }
-        window.CharStore.dispatch({
-          type: 'combat/triggerReactiveMode',
-          label: `Reaction: ${entryId} (${modeId})`,
-          payload: { entryId, modeId, inputValues, actionType: actType }
-        });
-        const out = typeof window.CharStore.getLastOutcome === 'function' ? window.CharStore.getLastOutcome() : null;
-        res = out && out.result ? out.result : null;
-        if (typeof updateActionEconomyUI === 'function') updateActionEconomyUI();
-      } else {
-        res = RuleEngine.triggerLegoMode(character, entryId, modeId, inputValues);
-        if (!res) return;
-        if (typeof consumeActionEconomy === 'function') {
-          consumeActionEconomy(actType, `${entryId} (${modeId})`);
-        }
-        if (res.tempHpGained > 0 && character.hp) {
-          character.hp.temp = Math.max(Number(character.hp.temp) || 0, res.tempHpGained);
-        }
-        if (res.healedHp > 0 && character.hp) {
-          character.hp.current = Math.min(Number(character.hp.max) || 999, (Number(character.hp.current) || 0) + res.healedHp);
-        }
-        if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
+      if (!window.CharStore.getDoc() && typeof character !== 'undefined') {
+        window.CharStore._syncExternalCharacterRef(character);
       }
+      window.CharStore.dispatch({
+        type: 'combat/triggerReactiveMode',
+        label: `Reaction: ${entryId} (${modeId})`,
+        payload: { entryId, modeId, inputValues, actionType: actType }
+      });
+      const out = typeof window.CharStore.getLastOutcome === 'function' ? window.CharStore.getLastOutcome() : null;
+      const res = out && out.result ? out.result : null;
+      if (typeof updateActionEconomyUI === 'function') updateActionEconomyUI();
       if (!res) return;
       if (typeof renderAll === 'function') renderAll();
       if (typeof showDiceTopToast === 'function') {
@@ -6962,26 +6893,67 @@
       renderRangedModifiersGrid();
     }
 
+    // Surgical <1.5ms Cockpit Tactical Patch: updates ONLY AC, Attack Chain, Modifier Grids & HUD without
+    // rebuilding unrelated Spell/Consumable/Companion/Pin drawers or marking other tabs dirty.
+    function patchCockpitDOM(options = {}) {
+      if (!character) return;
+      try { if (typeof renderHUD === 'function') renderHUD({ skipRecompute: true }); } catch (e) { console.error('renderHUD error:', e); }
+
+      const bd = character.acBreakdown || {};
+      const acNormal = document.getElementById('cockpit-ac-normal');
+      const acTouch = document.getElementById('cockpit-ac-touch');
+      const acFlat = document.getElementById('cockpit-ac-flat');
+      if (acNormal) acNormal.textContent = bd.total || 21;
+      if (acTouch) acTouch.textContent = bd.touch || 16;
+      if (acFlat) acFlat.textContent = bd.flat || 18;
+
+      const defSummary = document.getElementById('combat-defense-collapsed-summary');
+      if (defSummary && acNormal && acTouch && acFlat) {
+        defSummary.textContent = `AC: ${acNormal.textContent} | Touch: ${acTouch.textContent} | Flat: ${acFlat.textContent}`;
+      }
+
+      const ceValEl = document.getElementById('combat-expertise-val');
+      if (ceValEl) ceValEl.textContent = character.tactical?.combatExpertise || 0;
+      const paInput = document.getElementById('power-attack-val');
+      if (paInput && document.activeElement !== paInput) {
+        paInput.value = Number(character.tactical?.powerAttack) || 0;
+      }
+
+      const aooBadge = document.getElementById('aoo-bonus-badge');
+      if (aooBadge && typeof RuleEngine !== 'undefined') {
+        const wep = (character.weapons || []).find(w => w.name === character.activeWeapon) || character.weapons?.[0];
+        if (wep) {
+          const evalResult = RuleEngine.evaluateWeaponAttack(character, wep, { grip: '1-Hand' });
+          const firstAtk = evalResult.iteratives?.[0] || 0;
+          aooBadge.textContent = (firstAtk >= 0 ? '+' : '') + firstAtk;
+        }
+      }
+
+      if (window.DnDUI && typeof window.DnDUI.renderConditionWarningBanner === 'function') {
+        window.DnDUI.renderConditionWarningBanner(character, 'combat-condition-warning-banner');
+      }
+      if (options.defense !== false) {
+        try { renderDefenseModifiersGrid(); } catch (e) { console.error('renderDefenseModifiersGrid error:', e); }
+      }
+      if (options.offense !== false) {
+        try { renderOffenseModifiersGrid(); } catch (e) { console.error('renderOffenseModifiersGrid error:', e); }
+        try { recalculateOffense(); } catch (e) { console.error('recalculateOffense error:', e); }
+      }
+      if (options.ranged) {
+        try { renderRangedModifiersGrid(); } catch (e) { console.error('renderRangedModifiersGrid error:', e); }
+      }
+    }
+    window.patchCockpitDOM = patchCockpitDOM;
+
     function toggleFixedMeleeModifier(key) {
       if (!character) return;
-      let usedStore = false;
-      if (typeof CharStore !== 'undefined' && CharStore.dispatch) {
-        CharStore.dispatch({
-          type: 'combat/toggleTacticalMod',
-          payload: { key },
-          label: `Toggle Tactical Modifier: ${key}`,
-          meta: { label: `Toggle Tactical Modifier: ${key}`, cloudSync: false }
-        });
-        usedStore = true;
-      } else {
-        if (!character.tactical) character.tactical = {};
-        character.tactical[key] = !character.tactical[key];
-      }
-      recalculateOffense();
-      renderOffenseModifiersGrid();
-      renderHUD();
-      if (typeof renderCombatCockpit === 'function') renderCombatCockpit();
-      if (!usedStore) saveStateToStorage(false);
+      CharStore.dispatch({
+        type: 'combat/toggleTacticalMod',
+        payload: { key },
+        label: `Toggle Tactical Modifier: ${key}`,
+        meta: { label: `Toggle Tactical Modifier: ${key}`, cloudSync: false }
+      });
+      patchCockpitDOM();
     }
 
     function toggleDefensiveCastingModifier() {
@@ -8066,22 +8038,14 @@
 
     function toggleModifier(idx) {
       if (!character.activeModifiers || !character.activeModifiers[idx]) return;
-      let usedStore = false;
-      if (typeof CharStore !== 'undefined' && CharStore.dispatch) {
-        const modLbl = `Toggle Modifier: ${character.activeModifiers[idx].name || idx}`;
-        CharStore.dispatch({
-          type: 'combat/toggleTacticalMod',
-          payload: { globalIdx: idx },
-          label: modLbl,
-          meta: { label: modLbl, cloudSync: false }
-        });
-        usedStore = true;
-      } else {
-        character.activeModifiers[idx].active = !character.activeModifiers[idx].active;
-      }
-      recalculateOffense();
-      renderOffenseModifiersGrid();
-      if (!usedStore) saveStateToStorage(false);
+      const modLbl = `Toggle Modifier: ${character.activeModifiers[idx].name || idx}`;
+      CharStore.dispatch({
+        type: 'combat/toggleTacticalMod',
+        payload: { globalIdx: idx },
+        label: modLbl,
+        meta: { label: modLbl, cloudSync: false }
+      });
+      patchCockpitDOM({ defense: false });
     }
 
     // Single Iterative Attack Roll (Handles Main Hand, Off-Hand, and Flurry individually)
@@ -9022,15 +8986,8 @@
         if (wasActive && grantedTempHp > 0 && typeof markPlayerHpChanged === 'function') {
           markPlayerHpChanged();
         }
-        renderAll();
-        return;
+        renderAll({ skipRecompute: true });
       }
-      buff.active = !buff.active;
-      if (typeof RuleEngine !== 'undefined' && RuleEngine.recalculateCharacter) {
-        RuleEngine.recalculateCharacter(character, typeof masterDb !== 'undefined' ? masterDb : []);
-      }
-      saveStateToStorage(true);
-      renderAll();
     }
     window.toggleCombatBuffActive = toggleCombatBuffActive;
 
@@ -9050,22 +9007,8 @@
         if (wasActive && grantedTempHp > 0 && typeof markPlayerHpChanged === 'function') {
           markPlayerHpChanged();
         }
-        renderAll();
-        return;
+        renderAll({ skipRecompute: true });
       }
-      if (buff && buff.active !== false && character.hp && typeof getBuffGrantedTempHp === 'function') {
-        const tempHp = getBuffGrantedTempHp(buff);
-        if (tempHp > 0) {
-          character.hp.temp = Math.max(0, (Number(character.hp.temp) || 0) - tempHp);
-          if (typeof markPlayerHpChanged === 'function') markPlayerHpChanged();
-        }
-      }
-      character.buffs.splice(idx, 1);
-      if (typeof RuleEngine !== 'undefined' && RuleEngine.recalculateCharacter) {
-        RuleEngine.recalculateCharacter(character, typeof masterDb !== 'undefined' ? masterDb : []);
-      }
-      saveStateToStorage(true);
-      renderAll();
     }
     window.removeCombatBuff = removeCombatBuff;
 
@@ -9869,74 +9812,33 @@
 
     // --- TACTICAL DEFENSE CONTROLS ---
     function adjustCombatExpertise(delta) {
-      if (typeof CharStore !== 'undefined' && CharStore.dispatch) {
-        CharStore.dispatch({
-          type: 'combat/adjustCombatExpertise',
-          payload: { delta },
-          label: 'Adjust Combat Expertise',
-          meta: { label: 'Adjust Combat Expertise', cloudSync: false }
-        });
-        renderAll();
-        return;
-      }
-      if (!character.tactical) character.tactical = {};
-      const maxCap = Math.min(5, Math.max(0, Number(character.bab) || 0));
-      const cur = character.tactical.combatExpertise || 0;
-      character.tactical.combatExpertise = Math.max(0, Math.min(maxCap, cur + delta));
-      if (character.tactical.combatExpertise > 0) character.tactical.totalDefense = false;
-      saveStateToStorage(false);
-      renderAll();
+      CharStore.dispatch({
+        type: 'combat/adjustCombatExpertise',
+        payload: { delta },
+        label: 'Adjust Combat Expertise',
+        meta: { label: 'Adjust Combat Expertise', cloudSync: false }
+      });
+      patchCockpitDOM();
     }
 
     function onToggleFightingDefensively() {
-      if (typeof CharStore !== 'undefined' && CharStore.dispatch) {
-        CharStore.dispatch({
-          type: 'combat/toggleTacticalMod',
-          payload: { key: 'fightingDefensively' },
-          label: 'Toggle Fighting Defensively',
-          meta: { label: 'Toggle Fighting Defensively', cloudSync: false }
-        });
-      } else {
-        if (!character.tactical) character.tactical = {};
-        character.tactical.fightingDefensively = !character.tactical.fightingDefensively;
-        if (character.tactical.fightingDefensively) {
-          character.tactical.totalDefense = false;
-        }
-        saveStateToStorage(false);
-      }
-      renderDefenseModifiersGrid();
-      if (typeof recalculateDefense === 'function') recalculateDefense();
-      if (typeof recalculateOffense === 'function') recalculateOffense();
-      renderHUD();
-      if (typeof renderCombatCockpit === 'function') renderCombatCockpit();
+      CharStore.dispatch({
+        type: 'combat/toggleTacticalMod',
+        payload: { key: 'fightingDefensively' },
+        label: 'Toggle Fighting Defensively',
+        meta: { label: 'Toggle Fighting Defensively', cloudSync: false }
+      });
+      patchCockpitDOM();
     }
 
     function onToggleTotalDefense() {
-      if (typeof CharStore !== 'undefined' && CharStore.dispatch) {
-        CharStore.dispatch({
-          type: 'combat/toggleTacticalMod',
-          payload: { key: 'totalDefense' },
-          label: 'Toggle Total Defense',
-          meta: { label: 'Toggle Total Defense', cloudSync: false }
-        });
-      } else {
-        if (!character.tactical) character.tactical = {};
-        character.tactical.totalDefense = !character.tactical.totalDefense;
-        if (character.tactical.totalDefense) {
-          character.tactical.fightingDefensively = false;
-          character.tactical.combatExpertise = 0;
-          character.tactical.powerAttack = 0;
-        }
-        saveStateToStorage(false);
-      }
-      // Total Defense clears Power Attack in the document; the Power Attack input is the offense view's source, so mirror it.
-      const paInput = document.getElementById('power-attack-val');
-      if (paInput && character.tactical?.totalDefense) paInput.value = Number(character.tactical.powerAttack) || 0;
-      renderDefenseModifiersGrid();
-      if (typeof recalculateDefense === 'function') recalculateDefense();
-      if (typeof recalculateOffense === 'function') recalculateOffense();
-      renderHUD();
-      if (typeof renderCombatCockpit === 'function') renderCombatCockpit();
+      CharStore.dispatch({
+        type: 'combat/toggleTacticalMod',
+        payload: { key: 'totalDefense' },
+        label: 'Toggle Total Defense',
+        meta: { label: 'Toggle Total Defense', cloudSync: false }
+      });
+      patchCockpitDOM();
     }
 
     function adjustPowerAttack(delta) {
@@ -9947,47 +9849,30 @@
       const nextVal = Math.max(0, Math.min(bab, cur + delta));
       input.value = nextVal;
       const wasTotalDefense = Boolean(character.tactical?.totalDefense);
-      if (typeof CharStore !== 'undefined' && CharStore.dispatch) {
-        CharStore.dispatch({
-          type: 'combat/adjustPowerAttack',
-          payload: { value: nextVal },
-          label: 'Adjust Power Attack',
-          meta: { label: 'Adjust Power Attack', cloudSync: false }
-        });
-      } else if (character.tactical) {
-        character.tactical.powerAttack = nextVal;
-        if (nextVal > 0) character.tactical.totalDefense = false;
-      }
-      // Raising Power Attack ends Total Defense (PHB p.142: no attacks); refresh the defense views when it did.
+      CharStore.dispatch({
+        type: 'combat/adjustPowerAttack',
+        payload: { value: nextVal },
+        label: 'Adjust Power Attack',
+        meta: { label: 'Adjust Power Attack', cloudSync: false }
+      });
       if (wasTotalDefense && !character.tactical?.totalDefense) {
-        renderDefenseModifiersGrid();
-        if (typeof recalculateDefense === 'function') recalculateDefense();
-        renderHUD();
-        if (typeof renderCombatCockpit === 'function') renderCombatCockpit();
+        patchCockpitDOM();
+      } else {
+        patchCockpitDOM({ defense: false });
       }
-      recalculateOffense();
     }
 
     // --- REACTIVE MANEUVERS & COUNTERS ---
     function triggerShieldBlockReaction() {
       if (!character.tactical) character.tactical = {};
-      let nextState = !character.tactical.shieldBlockActive;
-      if (typeof CharStore !== 'undefined' && CharStore.dispatch) {
-        CharStore.dispatch({
-          type: 'combat/toggleTacticalMod',
-          payload: { key: 'shieldBlockActive' },
-          label: 'Toggle Shield Block',
-          meta: { label: 'Toggle Shield Block', cloudSync: false }
-        });
-        nextState = Boolean(character.tactical?.shieldBlockActive);
-      } else {
-        character.tactical.shieldBlockActive = nextState;
-        saveStateToStorage(false);
-      }
-      renderDefenseModifiersGrid();
-      if (typeof recalculateDefense === 'function') recalculateDefense();
-      renderHUD();
-      if (typeof renderCombatCockpit === 'function') renderCombatCockpit();
+      CharStore.dispatch({
+        type: 'combat/toggleTacticalMod',
+        payload: { key: 'shieldBlockActive' },
+        label: 'Toggle Shield Block',
+        meta: { label: 'Toggle Shield Block', cloudSync: false }
+      });
+      const nextState = Boolean(character.tactical?.shieldBlockActive);
+      patchCockpitDOM();
       if (nextState) {
         if (typeof consumeActionEconomy === 'function') {
           consumeActionEconomy('immediate', 'Shield Block');
@@ -12053,10 +11938,13 @@
         container.id = 'dice-top-toast-container';
         container.setAttribute('role', 'status');
         container.setAttribute('aria-live', 'polite');
-        container.className = 'fixed top-4 left-1/2 -translate-x-1/2 z-[10000] flex flex-col items-center gap-2 pointer-events-none transition-all duration-300 max-w-[94vw] sm:max-w-md w-max';
+        container.className = 'fixed top-4 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 pointer-events-none transition-all duration-300 sm:max-w-md w-max';
+        container.style.zIndex = '10000';
+        container.style.maxWidth = '94vw';
         document.body.appendChild(container);
       } else {
         container.classList.add('gap-2');
+        container.style.zIndex = '10000';
       }
 
       const shouldStack = options.stack === true || entry.stack === true;
@@ -12091,7 +11979,8 @@
       const toastId = options.toastId || entry.toastId || (replaceId || 'dice-top-toast');
       toast.id = toastId;
       toast._createdAt = Date.now();
-      toast.className = `dice-toast-item pointer-events-auto transform -translate-y-8 opacity-0 transition-all duration-300 ease-out bg-slate-900/95 rounded-2xl px-4 py-3 sm:px-5 sm:py-3.5 backdrop-blur-md flex items-center gap-3 sm:gap-4 text-white max-w-[94vw] sm:max-w-md w-full select-none ${hasActions ? 'cursor-default' : 'cursor-pointer'} shadow-xl`;
+      toast.className = `dice-toast-item pointer-events-auto transform -translate-y-8 opacity-0 transition-all duration-300 ease-out bg-slate-900/95 rounded-2xl px-4 py-3 sm:px-5 sm:py-3.5 backdrop-blur-md flex items-center gap-3 sm:gap-4 text-white sm:max-w-md w-full select-none ${hasActions ? 'cursor-default' : 'cursor-pointer'} shadow-xl`;
+      toast.style.maxWidth = '94vw';
       toast.style.border = `2px solid ${palette.border}`;
       toast.style.boxShadow = palette.glow;
       if (!hasActions) {
@@ -13434,37 +13323,10 @@
     function _pushTerminalUndoSnapshot(actionLabel) {
       if (typeof character === 'undefined' || !character) return;
       try {
-        const snapEntry = {
-          label: actionLabel || 'Command',
-          ts: Date.now(),
-          charSnapshot: JSON.parse(JSON.stringify({
-            level: character.level,
-            hp: character.hp,
-            abilities: character.abilities || {},
-            baseAbilities: character.baseAbilities || {},
-            stats: character.stats || {},
-            feats: character.feats || [],
-            specialAbilities: character.specialAbilities || [],
-            levelProgression: character.levelProgression || [],
-            bodySlots: character.bodySlots || {},
-            inventory: character.inventory || [],
-            gearPool: character.gearPool || [],
-            weapons: character.weapons || [],
-            spells: character.spells || [],
-            spellcasting: character.spellcasting || {},
-            actionEconomy: character.actionEconomy || null,
-            tactical: character.tactical || {},
-            specialAttackCooldowns: JSON.parse(JSON.stringify(character.specialAttackCooldowns || character.tactical?.abilityCooldowns || {})),
-            encounterRound: character.encounterRound || 1,
-            legoEntries: character.legoEntries || [],
-            activeLegoBuffs: character.activeLegoBuffs || [],
-            activeBuffIds: character.activeBuffIds || [],
-            buffs: character.buffs || []
-          }))
-        };
-        _spotlightTerminalUndoStack.push(snapEntry);
-        if (_spotlightTerminalUndoStack.length > 20) _spotlightTerminalUndoStack.shift();
-        window._spotlightTerminalUndoStack = _spotlightTerminalUndoStack;
+        if (window.CharStore && typeof window.CharStore.recordHistory === 'function') {
+          if (!window.CharStore.getDoc()) window.CharStore._syncExternalCharacterRef(character);
+          window.CharStore.recordHistory(actionLabel || 'Command');
+        }
         if (character && '_terminalUndoStack' in character) delete character._terminalUndoStack;
         const undoBtn = document.getElementById('btn-spotlight-terminal-undo');
         if (undoBtn) undoBtn.classList.remove('hidden');
@@ -13474,29 +13336,10 @@
     function undoLastTerminalAction() {
       if (typeof character === 'undefined' || !character) return;
       if (character && '_terminalUndoStack' in character) delete character._terminalUndoStack;
-      if (!_spotlightTerminalUndoStack.length) {
-        if (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.canUndo === 'function' && window.CharStore.canUndo()) {
-          window.CharStore.undo();
-          if (typeof renderAll === 'function') renderAll();
-        }
-        return;
-      }
-      const snap = _spotlightTerminalUndoStack.pop();
-      window._spotlightTerminalUndoStack = _spotlightTerminalUndoStack;
-      if (!snap || !snap.charSnapshot) return;
-      Object.assign(character, snap.charSnapshot);
-      if (character && '_terminalUndoStack' in character) delete character._terminalUndoStack;
-      const undoBtn = document.getElementById('btn-spotlight-terminal-undo');
-      if (undoBtn && _spotlightTerminalUndoStack.length === 0) undoBtn.classList.add('hidden');
-      if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
-      if (typeof renderAll === 'function') renderAll();
-      if (typeof showDiceTopToast === 'function') {
-        showDiceTopToast({
-          icon: '↩',
-          title: 'Terminal Action Undone',
-          breakdown: `Reverted: ${snap.label}`,
-          total: 'UNDO'
-        });
+      if (window.CharStore && typeof window.CharStore.canUndo === 'function' && window.CharStore.canUndo()) {
+        window.CharStore.undo();
+        const undoBtn = document.getElementById('btn-spotlight-terminal-undo');
+        if (undoBtn && !window.CharStore.canUndo()) undoBtn.classList.add('hidden');
       }
       const input = document.getElementById('spotlight-terminal-input');
       if (input) onSpotlightTerminalInput(input.value || '');

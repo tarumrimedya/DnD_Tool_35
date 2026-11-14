@@ -339,29 +339,90 @@
       return sheetView;
     },
 
+    _fastCloneHistoryVal(val) {
+      if (val === null || typeof val !== 'object') return val;
+      if (Array.isArray(val)) {
+        const out = new Array(val.length);
+        for (let i = 0; i < val.length; i++) out[i] = this._fastCloneHistoryVal(val[i]);
+        return out;
+      }
+      const out = {};
+      const keys = Object.keys(val);
+      for (let i = 0; i < keys.length; i++) {
+        const k = keys[i];
+        out[k] = this._fastCloneHistoryVal(val[k]);
+      }
+      return out;
+    },
+
+    _deepEqualFast(a, b) {
+      if (a === b) return true;
+      if (a === null || b === null || typeof a !== 'object' || typeof b !== 'object') return false;
+      const isArrA = Array.isArray(a);
+      if (isArrA !== Array.isArray(b)) return false;
+      if (isArrA) {
+        if (a.length !== b.length) return false;
+        for (let i = 0; i < a.length; i++) {
+          if (!this._deepEqualFast(a[i], b[i])) return false;
+        }
+        return true;
+      }
+      const keysA = Object.keys(a);
+      const keysB = Object.keys(b);
+      if (keysA.length !== keysB.length) return false;
+      for (let i = 0; i < keysA.length; i++) {
+        const k = keysA[i];
+        if (!Object.prototype.hasOwnProperty.call(b, k)) return false;
+        if (!this._deepEqualFast(a[k], b[k])) return false;
+      }
+      return true;
+    },
+
+    _createHistoryEntry(label, doc, session) {
+      const engine = resolveRuleEngine();
+      const docSnap = (engine && typeof engine.stripDerivedFields === 'function')
+        ? engine.stripDerivedFields(doc)
+        : this._fastCloneHistoryVal(doc);
+      const sessionSnap = this._fastCloneHistoryVal(session || createDefaultSession());
+      let cachedDocJson = null;
+      let cachedSessionJson = null;
+      return {
+        label: String(label || 'Sheet Edit'),
+        _docSnap: docSnap,
+        _sessionSnap: sessionSnap,
+        get docJson() {
+          if (cachedDocJson === null) cachedDocJson = JSON.stringify(docSnap);
+          return cachedDocJson;
+        },
+        get sessionJson() {
+          if (cachedSessionJson === null) cachedSessionJson = JSON.stringify(sessionSnap);
+          return cachedSessionJson;
+        },
+        timestamp: Date.now()
+      };
+    },
+
+    _isSameHistoryState(entryA, entryB) {
+      if (!entryA || !entryB) return false;
+      if (entryA._docSnap && entryB._docSnap) {
+        return this._deepEqualFast(entryA._docSnap, entryB._docSnap) &&
+          this._deepEqualFast(entryA._sessionSnap, entryB._sessionSnap);
+      }
+      return entryA.docJson === entryB.docJson && entryA.sessionJson === entryB.sessionJson;
+    },
+
     /**
-     * Records a snapshot of `{ doc, session }` onto the 20-step Undo stack.
+     * Records a snapshot of `{ doc, session }` onto the 20-step Undo stack (zero-stringify structural sharing).
      */
     recordHistory(label = 'Sheet Edit') {
       if (_isRestoringHistory || !_state.doc) return false;
-      const engine = resolveRuleEngine();
-      const cleanDoc = (engine && typeof engine.stripDerivedFields === 'function')
-        ? engine.stripDerivedFields(_state.doc)
-        : _state.doc;
-      const docJson = JSON.stringify(cleanDoc);
-      const sessionJson = JSON.stringify(_state.session || createDefaultSession());
-
+      const entry = this._createHistoryEntry(label, _state.doc, _state.session);
       const top = _undoStack[_undoStack.length - 1];
-      if (top && top.docJson === docJson && top.sessionJson === sessionJson) {
+      if (top && this._isSameHistoryState(top, entry)) {
         return false;
       }
 
-      _undoStack.push({
-        label: String(label || 'Sheet Edit'),
-        docJson,
-        sessionJson,
-        timestamp: Date.now()
-      });
+      _undoStack.push(entry);
       if (_undoStack.length > MAX_HISTORY_STEPS) {
         _undoStack.shift();
       }
@@ -391,16 +452,11 @@
 
     undo() {
       if (_undoStack.length === 0 || !_state.doc) return null;
-      const engine = resolveRuleEngine();
-      const currentClean = (engine && typeof engine.stripDerivedFields === 'function')
-        ? engine.stripDerivedFields(_state.doc)
-        : _state.doc;
-      _redoStack.push({
-        label: _undoStack[_undoStack.length - 1].label,
-        docJson: JSON.stringify(currentClean),
-        sessionJson: JSON.stringify(_state.session || createDefaultSession()),
-        timestamp: Date.now()
-      });
+      _redoStack.push(this._createHistoryEntry(
+        _undoStack[_undoStack.length - 1].label,
+        _state.doc,
+        _state.session
+      ));
       if (_redoStack.length > MAX_HISTORY_STEPS) {
         _redoStack.shift();
       }
@@ -412,16 +468,11 @@
 
     redo() {
       if (_redoStack.length === 0 || !_state.doc) return null;
-      const engine = resolveRuleEngine();
-      const currentClean = (engine && typeof engine.stripDerivedFields === 'function')
-        ? engine.stripDerivedFields(_state.doc)
-        : _state.doc;
-      _undoStack.push({
-        label: _redoStack[_redoStack.length - 1].label,
-        docJson: JSON.stringify(currentClean),
-        sessionJson: JSON.stringify(_state.session || createDefaultSession()),
-        timestamp: Date.now()
-      });
+      _undoStack.push(this._createHistoryEntry(
+        _redoStack[_redoStack.length - 1].label,
+        _state.doc,
+        _state.session
+      ));
       if (_undoStack.length > MAX_HISTORY_STEPS) {
         _undoStack.shift();
       }
@@ -435,8 +486,15 @@
       if (!snap) return;
       _isRestoringHistory = true;
       try {
-        const restoredDoc = JSON.parse(snap.docJson);
-        const restoredSession = JSON.parse(snap.sessionJson);
+        const engine = resolveRuleEngine();
+        const restoredDoc = snap._docSnap
+          ? ((engine && typeof engine.stripDerivedFields === 'function')
+            ? engine.stripDerivedFields(snap._docSnap)
+            : this._fastCloneHistoryVal(snap._docSnap))
+          : JSON.parse(snap.docJson);
+        const restoredSession = snap._sessionSnap
+          ? this._fastCloneHistoryVal(snap._sessionSnap)
+          : JSON.parse(snap.sessionJson);
         if (restoredDoc && !Array.isArray(restoredDoc.customDb)) {
           restoredDoc.customDb = [];
         }
@@ -587,12 +645,9 @@
         sessionChanged = true;
       } else if (_customReducers.has(type)) {
         if (!_state.doc) return null;
-        const engine = resolveRuleEngine();
-        const preClean = (engine && typeof engine.stripDerivedFields === 'function')
-          ? engine.stripDerivedFields(_state.doc)
-          : _state.doc;
-        const preDocJson = JSON.stringify(preClean);
-        const preSessionJson = JSON.stringify(_state.session || createDefaultSession());
+        const preEntry = (!meta.skipHistory && !_isRestoringHistory)
+          ? this._createHistoryEntry(meta.label || action.label || type, _state.doc, _state.session)
+          : null;
         _lastOutcome = null;
         const reducerFn = _customReducers.get(type);
         const nextDoc = reducerFn(_state.doc, action, _state);
@@ -623,15 +678,10 @@
           )
         );
         if (!isAborted) {
-          if (!meta.skipHistory && !_isRestoringHistory) {
+          if (preEntry && !meta.skipHistory && !_isRestoringHistory) {
             const top = _undoStack[_undoStack.length - 1];
-            if (!top || top.docJson !== preDocJson || top.sessionJson !== preSessionJson) {
-              _undoStack.push({
-                label: String(meta.label || action.label || type),
-                docJson: preDocJson,
-                sessionJson: preSessionJson,
-                timestamp: Date.now()
-              });
+            if (!top || !this._isSameHistoryState(top, preEntry)) {
+              _undoStack.push(preEntry);
               if (_undoStack.length > MAX_HISTORY_STEPS) {
                 _undoStack.shift();
               }
@@ -4476,6 +4526,44 @@
     });
     return doc;
   });
+
+  // Sprint B.5 -> Sprint C Isolated Living Facet Studio Capsule Bridge (0-DOM Overhead)
+  CharStore.registerReducer('customDb/upsertV3', function (doc, action) {
+    const entry = action && action.payload && action.payload.entry;
+    if (!entry || typeof entry !== 'object' || !entry.id || !entry.name) {
+      CharStore._setOutcome({ status: 'invalid_payload' });
+      return doc;
+    }
+    if (!Array.isArray(doc.customDb)) doc.customDb = [];
+    const copy = CharStore._fastCloneHistoryVal(entry);
+    copy.schemaVersion = copy.schemaVersion || 3;
+    const idx = doc.customDb.findIndex(function (e) { return e && e.id === copy.id; });
+    if (idx >= 0) {
+      if (typeof root !== 'undefined' && root.SrdCompendium && typeof root.SrdCompendium.invalidateEntryCache === 'function') {
+        root.SrdCompendium.invalidateEntryCache(doc.customDb[idx]);
+      }
+      doc.customDb[idx] = copy;
+    } else {
+      doc.customDb.unshift(copy);
+    }
+    CharStore._setOutcome({ status: 'ok', id: copy.id, updated: idx >= 0 });
+    return doc;
+  });
+
+  const StudioBridge = {
+    upsertEntry(v3Entry, meta) {
+      return CharStore.dispatch({
+        type: 'customDb/upsertV3',
+        payload: { entry: v3Entry },
+        meta: Object.assign({ label: 'Save Studio Entry: ' + ((v3Entry && v3Entry.name) || 'V3 Entry') }, meta || {})
+      });
+    },
+    getCustomDb() {
+      const doc = CharStore.getDoc();
+      return (doc && Array.isArray(doc.customDb)) ? doc.customDb : [];
+    }
+  };
+  CharStore.StudioBridge = StudioBridge;
 
   // Global Ctrl+Z / Ctrl+Y / Ctrl+Shift+Z Keyboard Listener (Browser Only)
   if (typeof window !== 'undefined' && window.addEventListener && typeof document !== 'undefined') {

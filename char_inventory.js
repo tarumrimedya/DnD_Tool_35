@@ -1485,6 +1485,7 @@
     if (typeof document !== 'undefined' && !window._buffSpotlightOutsideClickBound) {
       window._buffSpotlightOutsideClickBound = true;
       document.addEventListener('mousedown', (ev) => {
+        if (!window._modalsMounted) return;
         const box = document.getElementById('buff-rule-master-box');
         const dd = document.getElementById('buff-spotlight-dropdown');
         if (dd && !dd.classList.contains('hidden') && box && !box.contains(ev.target)) {

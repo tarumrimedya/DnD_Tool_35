@@ -402,7 +402,22 @@
         }
       }
 
-      // Re-render subviews if needed
+      // Unmount dynamic card lists of inactive disciplines so only the 1 active discipline lives in DOM
+      const unmountIdsByDiscipline = {
+        spontaneous: ['known-spells-tbody', 'spell-slots-container'],
+        prepared: ['discipline-prepared-content'],
+        divine: ['discipline-divine-content'],
+        martial: ['maneuvers-container', 'maneuvers-library-tbody']
+      };
+      Object.keys(unmountIdsByDiscipline).forEach(key => {
+        if (key === discipline) return;
+        unmountIdsByDiscipline[key].forEach(elId => {
+          const el = document.getElementById(elId);
+          if (el && el.innerHTML) el.innerHTML = '';
+        });
+      });
+
+      // Render ONLY the active discipline subview
       if (discipline === 'spontaneous') {
         renderSpellSlots();
         renderKnownSpells();

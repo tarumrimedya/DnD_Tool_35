@@ -3393,53 +3393,6 @@
     </div>
 
     <!-- ==================================================== -->
-    <!-- TAB 7: 🔄 SYNC & VERSION MANAGEMENT -->
-    <!-- ==================================================== -->
-    <div id="tab-sync" role="tabpanel" class="tab-content hidden space-y-4">
-      <div class="bg-dndCard border border-dndBorder rounded-xl p-4 shadow-lg space-y-4">
-        <h2 class="text-sm font-bold text-indigo-400 border-b border-dndBorder pb-2">⚡ CLOUD SYNC & DATABASE CENTER</h2>
-
-        <!-- Local JSON Backup / Restore -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <div class="bg-slate-900 border border-slate-700 rounded-xl p-3.5 space-y-2">
-            <div class="text-xs font-bold text-white flex items-center gap-1.5">
-              <span>💾</span>
-              <span>LOCAL FILE BACKUP (EXPORT .JSON)</span>
-            </div>
-            <p class="text-[11px] text-slate-400">Download your character and Master DB compendium to your computer for offline backup.</p>
-            <div class="flex flex-wrap gap-2 pt-2">
-              <button data-action="inventory:export-full-bundle-json" class="w-full bg-indigo-600/30 hover:bg-indigo-600 text-indigo-200 hover:text-white text-xs font-bold py-2 rounded-lg border border-indigo-500/40 transition">📦 Export Full Bundle (Character + Master DB)</button>
-              <button data-action="inventory:export-character-json" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold py-2 rounded-lg border border-slate-700 transition">💾 Character Only</button>
-              <button data-action="inventory:export-master-db-json" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold py-2 rounded-lg border border-slate-700 transition">📚 Master DB Only</button>
-            </div>
-          </div>
-
-          <div class="bg-slate-900 border border-slate-700 rounded-xl p-3.5 space-y-2">
-            <div class="text-xs font-bold text-white flex items-center gap-1.5">
-              <span>📂</span>
-              <span>IMPORT FROM JSON FILE</span>
-            </div>
-            <p class="text-[11px] text-slate-400">Select a previously exported Full Bundle, Character, or Master DB (.json) file.</p>
-            <input type="file" id="json-file-input" accept=".json" data-change-action="inventory:import-character-json-file" class="hidden">
-            <button data-action="inventory:open-file-picker" data-input-id="json-file-input" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold py-2 rounded-lg border border-slate-700 transition">Choose File (.json)</button>
-          </div>
-        </div>
-
-        <!-- User Requested Reset Button -->
-        <div class="bg-rose-950/30 border border-rose-600/40 rounded-xl p-3.5 flex items-center justify-between">
-          <div>
-            <h4 class="text-xs font-bold text-rose-400">⚠️ Reset Character Data / Start Blank Character</h4>
-            <p class="text-[11px] text-slate-400">Resets the current character and starts a fresh level 1 sheet.</p>
-          </div>
-          <button data-action="inventory:reset-to-clean-character" class="bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg transition">
-            🗑️ Reset & Clear
-          </button>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- ==================================================== -->
     <!-- TAB 7: d20 ZAR ATMA MASASI & ZAR GEÇMİŞİ -->
     <!-- ==================================================== -->
     <div id="tab-dice" role="tabpanel" class="tab-content hidden space-y-4">
@@ -3884,15 +3837,15 @@
 
   <!-- Deferred Modals Root (Mounted on Demand / Idle via char_modals.js) -->
   <div id="deferred-modals-root"></div>
-  <script defer src="char_modals.js?v=e2be0978a2"></script>
+  <script defer src="char_modals.js?v=36586098a5"></script>
 
   <!-- SCRIPT LOGIC (deferred: runs in document order after parsing, before DOMContentLoaded) -->
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script defer src="supabase_auth.js?v=47247ea179"></script>
   <!-- data-srd-autoinit: srd_compendium.js starts SrdCompendium.init() as soon as it runs. -->
-  <script defer src="srd_compendium.js?v=05b06bc772" data-srd-autoinit></script>
-  <script defer src="rule_engine.js?v=ea8904c82a"></script>
-  <script defer src="char_store.js?v=e0746634df"></script>
+  <script defer src="srd_compendium.js?v=bc3a94bb3b" data-srd-autoinit></script>
+  <script defer src="rule_engine.js?v=e29387526b"></script>
+  <script defer src="char_store.js?v=1d876bc3e0"></script>
   <!-- ui_components.js stays blocking on purpose: it has no dependencies, and while the document is
        still loading it binds the data-action router on DOMContentLoaded, after the outside-click
        listeners the deferred scripts register. Deferring it would bind the router first. -->
@@ -3903,11 +3856,11 @@
   <script defer src="hub_notes.js?v=a275652b58"></script>
   <script defer src="dice3d.js?v=aa07002406"></script>
 
-  <script defer src="char_hud.js?v=9ca60dea7d"></script>
-  <script defer src="char_combat.js?v=c9fed2e851"></script>
-  <script defer src="char_spells.js?v=28af8c2915"></script>
+  <script defer src="char_hud.js?v=aad3370486"></script>
+  <script defer src="char_combat.js?v=1b136fcb34"></script>
+  <script defer src="char_spells.js?v=4e6c1ee6ab"></script>
   <script defer src="char_progression.js?v=a030a2870e"></script>
-  <script defer src="char_inventory.js?v=8eda2b41f0"></script>
+  <script defer src="char_inventory.js?v=8a07ef2629"></script>
   <!-- Floating Tooltip for Combat Spells Hover (Tap or click to dismiss) -->
   <div id="combat-spell-hover-tooltip" data-action="combat:hide-spell-tooltip" class="hidden fixed z-[200] pointer-events-auto bg-slate-950/95 border border-purple-500/80 rounded-xl p-3 shadow-2xl w-[340px] max-w-[92vw] text-xs space-y-2 backdrop-blur-md transition-opacity duration-150 text-slate-200 cursor-pointer select-none">
     

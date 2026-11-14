@@ -480,7 +480,7 @@ function main() {
   const RATCHET_LIMITS = {
     'index.html':         { inlineEvents: 0,   windowAssigns: 0 },
     'char_hud.js':        { inlineEvents: 0,   windowAssigns: 48 },
-    'char_combat.js':     { inlineEvents: 0,   windowAssigns: 81 },
+    'char_combat.js':     { inlineEvents: 0,   windowAssigns: 80 },
     'char_spells.js':     { inlineEvents: 0,   windowAssigns: 67 },
     'char_progression.js':{ inlineEvents: 0,   windowAssigns: 45 },
     'char_inventory.js':  { inlineEvents: 0,   windowAssigns: 41 },
