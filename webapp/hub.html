@@ -6,8 +6,8 @@
   <title>D&D 3.5e Character & Campaign Command Center (Hub)</title>
   <link rel="stylesheet" href="tailwind_compiled.css?v=101216d709">
   <script src="srd_compendium.js?v=bc3a94bb3b"></script>
-  <script src="rule_engine.js?v=e29387526b"></script>
-  <script src="ui_components.js?v=e5d325aec7"></script>
+  <script src="rule_engine.js?v=e4e016d96c"></script>
+  <script src="ui_components.js?v=11a1cde4a7"></script>
   <script src="rule_master.js?v=e7651522bf"></script>
   <script src="ui_shared.js?v=8df0c1e633"></script>
   <script src="campaign_db.js?v=c7d72607cc"></script>
@@ -17,10 +17,10 @@
   <link rel="prefetch" href="index.html">
   <link rel="prefetch" href="char_modals.js?v=36586098a5">
   <link rel="prefetch" href="char_hud.js?v=aad3370486">
-  <link rel="prefetch" href="char_combat.js?v=1b136fcb34">
-  <link rel="prefetch" href="char_spells.js?v=4e6c1ee6ab">
-  <link rel="prefetch" href="char_progression.js?v=a030a2870e">
-  <link rel="prefetch" href="char_inventory.js?v=8a07ef2629">
+  <link rel="prefetch" href="char_combat.js?v=02ed37030e">
+  <link rel="prefetch" href="char_spells.js?v=319d26eb9e">
+  <link rel="prefetch" href="char_progression.js?v=ab2e2bd465">
+  <link rel="prefetch" href="char_inventory.js?v=9fb88aec71">
   <!-- Three.js & 3D Dice Roller Engine -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -5718,6 +5718,7 @@ CRITICAL RULES:
                 <span>DM Rule Pack Manager & Character Eligibility Filter</span>
               </div>
               <div class="flex items-center gap-1.5 flex-wrap">
+                <button type="button" data-action="hub:open-rule-crafter" class="px-2 py-1 rounded bg-indigo-950/80 hover:bg-indigo-900 text-amber-200 border border-amber-500/50 text-[10px] font-bold cursor-pointer">⚒️ Rule Crafter</button>
                 <button type="button" data-action="hub:trigger-json-import" class="px-2 py-1 rounded bg-amber-950/80 hover:bg-amber-900 text-amber-200 border border-amber-700/60 text-[10px] font-bold cursor-pointer">📂 Import Rule Pack (.json)</button>
                 <select id="hub-pack-char-select" data-change-action="hub:render-dm-packs" class="bg-slate-900 border border-slate-700 rounded px-2 py-1 text-[10px] font-bold text-slate-200"></select>
                 <select id="hub-pack-elig-filter" data-change-action="hub:render-dm-packs" class="bg-slate-900 border border-amber-700/50 rounded px-2 py-1 text-[10px] font-bold text-amber-200">
@@ -6932,7 +6933,7 @@ CRITICAL RULES:
         const packStr = (typeof e.pack === 'object' && e.pack !== null) ? String(e.pack.id || e.pack.name || '') : String(e.pack || '');
         const packBadge = packStr ? `<span class="px-1.5 py-0.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-800/60 text-[9px] font-mono">📦 ${escHtml(packStr)}</span>` : '';
         return `<div class="flex items-center justify-between gap-2 bg-slate-900/80 border border-slate-800 rounded px-2 py-1 text-[10px]">
-          <div class="font-bold text-slate-200 truncate">${escHtml(e.name || e.id)}</div>
+          <div data-action="hub:edit-pack-entry" data-entry-id="${escHtml(String(e.id || ''))}" data-entry-name="${escHtml(String(e.name || ''))}" class="font-bold text-slate-200 truncate cursor-pointer hover:underline hover:text-amber-300" title="Edit in Rule Crafter">${escHtml(e.name || e.id)}</div>
           <div class="flex items-center gap-1 shrink-0">${packBadge}${badge}</div>
         </div>`;
       }).join('');
@@ -7263,6 +7264,70 @@ CRITICAL RULES:
       actionsApi.register('hub:export-campaign-bundle', () => exportCampaignBundle());
       actionsApi.register('hub:trigger-json-import', () => document.getElementById('settings-json-file-input')?.click());
       actionsApi.register('hub:render-dm-packs', () => renderHubDmPackManager());
+      const openHubRuleCrafter = (entryObj) => {
+        const openFn = (window.DnDUI && window.DnDUI.openRuleCrafter) || (window.UI && window.UI.openRuleCrafter);
+        if (typeof openFn !== 'function') return;
+        openFn({
+          entry: entryObj || null,
+          originalId: entryObj && entryObj.id ? entryObj.id : null,
+          allowCharacterScope: false,
+          context: { allowCharacterScope: false },
+          onSave: (msg) => {
+            const v3 = msg && msg.entry;
+            if (!v3 || !v3.name) return;
+            try {
+              const raw = localStorage.getItem('dnd35_custom_db');
+              const parsed = raw ? JSON.parse(raw) : [];
+              const list = Array.isArray(parsed) ? parsed : [];
+              const tid = v3.id || ('crafted_' + Date.now());
+              v3.id = tid;
+              const idx = list.findIndex(x => x && x.id === tid);
+              if (idx >= 0) list[idx] = v3;
+              else list.unshift(v3);
+              localStorage.setItem('dnd35_custom_db', JSON.stringify(list));
+            } catch (err) {
+              console.warn('Hub Rule Crafter localStorage save error:', err);
+            }
+            if (Array.isArray(window._hubLoadedPackEntries)) {
+              const exIdx = window._hubLoadedPackEntries.findIndex(x => x && (x.id === v3.id || (msg.originalId && x.id === msg.originalId)));
+              if (exIdx >= 0) window._hubLoadedPackEntries[exIdx] = v3;
+              else window._hubLoadedPackEntries.unshift(v3);
+            }
+            if (typeof mergeEntriesIntoHubCharacters === 'function') {
+              mergeEntriesIntoHubCharacters([v3]);
+            }
+            if (typeof renderHubDmPackManager === 'function') {
+              renderHubDmPackManager();
+            }
+            if (typeof showToast === 'function') {
+              showToast('⚒️ Saved to Campaign Rule Crafter Library');
+            }
+          }
+        });
+      };
+      actionsApi.register('hub:open-rule-crafter', () => openHubRuleCrafter(null));
+      actionsApi.register('hub:edit-pack-entry', (el, data) => {
+        const targetId = String((data && data.entryId) || '').trim();
+        const targetName = String((data && data.entryName) || '').trim().toLowerCase();
+        const pool = [];
+        const rootCamp = typeof getHubActiveRootCampaign === 'function' ? getHubActiveRootCampaign() : null;
+        (rootCamp && Array.isArray(rootCamp.packs) ? rootCamp.packs : []).forEach(p => {
+          if (p && Array.isArray(p.entries)) pool.push(...p.entries);
+        });
+        const charSel = document.getElementById('hub-pack-char-select');
+        const chars = typeof getCampaignScopedCharacters === 'function' ? getCampaignScopedCharacters() : [];
+        const activeChar = chars.find(c => c.id === (charSel && charSel.value)) || chars[0] || null;
+        const charData = activeChar ? (activeChar.fullData || activeChar) : null;
+        if (charData && Array.isArray(charData.customDb)) pool.push(...charData.customDb);
+        if (Array.isArray(window._hubLoadedPackEntries)) pool.push(...window._hubLoadedPackEntries);
+        try {
+          const libRaw = localStorage.getItem('dnd35_custom_db');
+          const lib = libRaw ? JSON.parse(libRaw) : [];
+          if (Array.isArray(lib)) pool.push(...lib);
+        } catch (_) {}
+        const found = pool.find(e => e && ((targetId && e.id === targetId) || (targetName && String(e.name || '').trim().toLowerCase() === targetName))) || null;
+        openHubRuleCrafter(found);
+      });
       actionsApi.register('hub:import-json-upload', (el, data, event) => handleJsonFileUpload(event));
       actionsApi.register('hub:open-skill-consolidation', () => openSkillConsolidationModal());
       actionsApi.register('hub:set-skill-consolidation', (el, data) => setHouseRuleSkillConsolidation(data.consolidated === 'true'));

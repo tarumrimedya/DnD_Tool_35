@@ -92,6 +92,84 @@
       #hero-header-bar { flex-direction: column; align-items: stretch; }
       #hero-actions-group { width: 100%; padding-top: 0.5rem; border-top: 1px solid rgba(30, 41, 59, 0.8); }
     }
+    /* 9-Discipline Smart Top Bar, Discovery Drawer & Subsystem Panels */
+    .discipline-discovery-grid {
+      display: grid;
+      grid-template-columns: repeat(1, minmax(0, 1fr));
+      gap: 0.375rem;
+      width: 100%;
+    }
+    @media (min-width: 640px) {
+      .discipline-discovery-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+    @media (min-width: 1024px) {
+      .discipline-discovery-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+    .discipline-focused-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.375rem;
+      width: 100%;
+      min-width: 0;
+    }
+    .discipline-focused-btn {
+      flex: 1 1 100%;
+      min-width: 0;
+      max-width: 100%;
+    }
+    @media (min-width: 640px) {
+      .discipline-focused-btn {
+        flex: 1 1 180px;
+      }
+    }
+    .discipline-tab-card {
+      min-width: 0;
+      max-width: 100%;
+      overflow: hidden;
+    }
+    .subsys-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(1, minmax(0, 1fr));
+      gap: 0.75rem;
+      width: 100%;
+    }
+    @media (min-width: 768px) {
+      .subsys-cards-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+    .disc-tab-spontaneous { background: rgba(59, 7, 100, 0.35); border-color: rgba(126, 34, 206, 0.5); color: #d8b4fe; }
+    .disc-tab-spontaneous:hover { background: rgba(88, 28, 135, 0.5); color: #ffffff; }
+    .disc-tab-spontaneous.disc-tab-active { background: linear-gradient(90deg, #6b21a8, #4338ca); border-color: #a855f7; color: #ffffff; box-shadow: 0 2px 10px rgba(107, 33, 168, 0.4); }
+    .disc-tab-prepared { background: rgba(8, 47, 73, 0.35); border-color: rgba(3, 105, 161, 0.5); color: #7dd3fc; }
+    .disc-tab-prepared:hover { background: rgba(7, 89, 133, 0.5); color: #ffffff; }
+    .disc-tab-prepared.disc-tab-active { background: linear-gradient(90deg, #075985, #1d4ed8); border-color: #38bdf8; color: #ffffff; box-shadow: 0 2px 10px rgba(7, 89, 133, 0.4); }
+    .disc-tab-divine { background: rgba(69, 26, 3, 0.35); border-color: rgba(180, 83, 9, 0.5); color: #fcd34d; }
+    .disc-tab-divine:hover { background: rgba(146, 64, 14, 0.5); color: #ffffff; }
+    .disc-tab-divine.disc-tab-active { background: linear-gradient(90deg, #92400e, #a16207); border-color: #fbbf24; color: #ffffff; box-shadow: 0 2px 10px rgba(146, 64, 14, 0.4); }
+    .disc-tab-martial { background: rgba(76, 5, 25, 0.35); border-color: rgba(190, 18, 60, 0.5); color: #fda4af; }
+    .disc-tab-martial:hover { background: rgba(136, 19, 55, 0.5); color: #ffffff; }
+    .disc-tab-martial.disc-tab-active { background: linear-gradient(90deg, #9f1239, #b45309); border-color: #fb7185; color: #ffffff; box-shadow: 0 2px 10px rgba(159, 18, 57, 0.4); }
+    .disc-tab-psionics { background: rgba(8, 51, 68, 0.35); border-color: rgba(14, 116, 144, 0.5); color: #67e8f9; }
+    .disc-tab-psionics:hover { background: rgba(21, 94, 117, 0.5); color: #ffffff; }
+    .disc-tab-psionics.disc-tab-active { background: linear-gradient(90deg, #155e75, #0f766e); border-color: #22d3ee; color: #ffffff; box-shadow: 0 2px 10px rgba(21, 94, 117, 0.4); }
+    .disc-tab-incarnum { background: rgba(2, 44, 34, 0.35); border-color: rgba(4, 120, 87, 0.5); color: #6ee7b7; }
+    .disc-tab-incarnum:hover { background: rgba(6, 95, 70, 0.5); color: #ffffff; }
+    .disc-tab-incarnum.disc-tab-active { background: linear-gradient(90deg, #065f46, #0f766e); border-color: #34d399; color: #ffffff; box-shadow: 0 2px 10px rgba(6, 95, 70, 0.4); }
+    .disc-tab-pact { background: rgba(59, 7, 100, 0.35); border-color: rgba(147, 51, 234, 0.45); color: #e9d5ff; }
+    .disc-tab-pact:hover { background: rgba(88, 28, 135, 0.5); color: #ffffff; }
+    .disc-tab-pact.disc-tab-active { background: linear-gradient(90deg, #581c87, #9f1239); border-color: #c084fc; color: #ffffff; box-shadow: 0 2px 10px rgba(88, 28, 135, 0.4); }
+    .disc-tab-shadow { background: rgba(30, 27, 75, 0.4); border-color: rgba(99, 102, 241, 0.45); color: #c7d2fe; }
+    .disc-tab-shadow:hover { background: rgba(49, 46, 129, 0.55); color: #ffffff; }
+    .disc-tab-shadow.disc-tab-active { background: linear-gradient(90deg, #1e293b, #3730a3); border-color: #818cf8; color: #ffffff; box-shadow: 0 2px 10px rgba(55, 48, 163, 0.4); }
+    .disc-tab-truenaming { background: rgba(19, 78, 74, 0.35); border-color: rgba(13, 148, 136, 0.5); color: #5eead4; }
+    .disc-tab-truenaming:hover { background: rgba(17, 94, 89, 0.5); color: #ffffff; }
+    .disc-tab-truenaming.disc-tab-active { background: linear-gradient(90deg, #115e59, #065f46); border-color: #2dd4bf; color: #ffffff; box-shadow: 0 2px 10px rgba(17, 94, 89, 0.4); }
   </style>
 </head>
 <body data-sheet-mode="both" class="min-h-screen flex flex-col pb-20 md:pb-6 relative">
@@ -1172,49 +1250,26 @@
       <div class="bg-dndCard border border-dndBorder rounded-xl p-4 shadow-lg space-y-4">
         
         <!-- ==================================================== -->
-        <!-- TOP NAVIGATION: 4 MAGIC & MARTIAL ARCHETYPE TABS -->
-        <!-- (1. Doğal/Anlık | 2. Kitaplı | 3. İlahi Dua | 4. Savaş Manevraları) -->
+        <!-- TOP NAVIGATION: 9-DISCIPLINE SMART BAR & DISCOVERY DRAWER -->
         <!-- ==================================================== -->
-        <div class="flex flex-col lg:flex-row lg:items-center gap-2.5 border-b border-slate-800 pb-3">
-          <!-- 4 Discipline Tabs: 5-rows on mobile (grid-cols-1), 2-rows on tablet (sm:grid-cols-4), 1-row on desktop (lg:flex lg:flex-1) -->
-          <div class="grid grid-cols-1 sm:grid-cols-4 lg:flex lg:flex-1 lg:items-center gap-1.5 p-1 bg-slate-950 border border-slate-800 rounded-xl w-full" id="magic-discipline-tabs">
-            
-            <!-- Tab 1: Doğal / Anlık -->
-            <button id="magic-tab-btn-spontaneous" data-action="spells:switch-discipline" data-tab="spontaneous" class="h-9 w-full lg:flex-1 px-3 rounded-lg text-xs font-bold transition flex items-center justify-between gap-1.5 cursor-pointer whitespace-nowrap bg-gradient-to-r from-purple-800 to-indigo-700 text-white shadow-md border border-purple-500/60 ring-1 ring-purple-400/30">
-              <span class="flex items-center gap-1.5 min-w-0">
-                <span class="text-sm">🔮</span>
-                <span class="truncate">1. Spontaneous</span>
-              </span>
-              <span id="tab-spontaneous-badge" class="bg-purple-950/80 text-purple-200 text-[10px] px-1.5 py-0.5 rounded-full font-mono font-bold border border-purple-600/60 shrink-0">0 / 0</span>
-            </button>
-
-            <!-- Tab 2: Kitaplı Hazırlık -->
-            <button id="magic-tab-btn-prepared" data-action="spells:switch-discipline" data-tab="prepared" class="h-9 w-full lg:flex-1 px-3 rounded-lg text-xs font-bold transition flex items-center justify-between gap-1.5 cursor-pointer whitespace-nowrap bg-sky-950/30 hover:bg-sky-900/40 text-sky-300 hover:text-sky-100 border border-sky-900/50 shadow-sm">
-              <span class="flex items-center gap-1.5 min-w-0">
-                <span class="text-sm">📖</span>
-                <span class="truncate">2. Prepared (Vancian)</span>
-              </span>
-              <span id="tab-prepared-badge" class="bg-sky-950/60 text-sky-300/80 text-[10px] px-1.5 py-0.5 rounded-full font-mono border border-sky-800/50 shrink-0">No Class</span>
-            </button>
-
-            <!-- Tab 3: İlahi Dua -->
-            <button id="magic-tab-btn-divine" data-action="spells:switch-discipline" data-tab="divine" class="h-9 w-full lg:flex-1 px-3 rounded-lg text-xs font-bold transition flex items-center justify-between gap-1.5 cursor-pointer whitespace-nowrap bg-amber-950/30 hover:bg-amber-900/40 text-amber-300 hover:text-amber-100 border border-amber-900/50 shadow-sm">
-              <span class="flex items-center gap-1.5 min-w-0">
-                <span class="text-sm">✨</span>
-                <span class="truncate">3. Divine Prayer</span>
-              </span>
-              <span id="tab-divine-badge" class="bg-amber-950/60 text-amber-300/80 text-[10px] px-1.5 py-0.5 rounded-full font-mono border border-amber-800/50 shrink-0">No Class</span>
-            </button>
-
-            <!-- Tab 4: Savaş Manevraları -->
-            <button id="magic-tab-btn-martial" data-action="spells:switch-discipline" data-tab="martial" class="h-9 w-full lg:flex-1 px-3 rounded-lg text-xs font-bold transition flex items-center justify-between gap-1.5 cursor-pointer whitespace-nowrap bg-rose-950/30 hover:bg-rose-900/40 text-rose-300 hover:text-rose-100 border border-rose-900/50 shadow-sm">
-              <span class="flex items-center gap-1.5 min-w-0">
-                <span class="text-sm">⚔️</span>
-                <span class="truncate">4. Martial Maneuvers</span>
-              </span>
-              <span id="tab-martial-badge" class="bg-rose-950/80 text-rose-200 text-[10px] px-1.5 py-0.5 rounded-full font-mono font-bold border border-rose-600/60 shrink-0">0 / 0</span>
-            </button>
-
+        <div id="magic-discipline-topbar" class="border-b border-slate-800 pb-3 space-y-2">
+          <div class="flex flex-col sm:flex-row sm:items-center gap-2 p-1.5 bg-slate-950 border border-slate-800 rounded-xl w-full">
+            <div id="magic-discipline-tabs" class="discipline-discovery-grid flex-1 min-w-0">
+              <!-- Dynamically rendered by renderDisciplineTopBar() -->
+            </div>
+            <div id="magic-discipline-drawer-toggle-wrap" class="hidden shrink-0">
+              <button type="button" id="btn-toggle-discipline-drawer" data-action="spells:toggle-discipline-drawer" aria-expanded="false" class="h-9 w-full sm:w-auto px-3 rounded-lg text-xs font-bold bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition inline-flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap">
+                <span id="discipline-drawer-toggle-label">Other Disciplines (5)</span>
+                <span id="discipline-drawer-toggle-chevron" class="text-[10px]">▾</span>
+              </button>
+            </div>
+          </div>
+          <div id="magic-discipline-drawer" class="hidden bg-slate-950/90 border border-slate-800 rounded-xl p-2 space-y-2">
+            <div class="flex items-center justify-between gap-2 px-1">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">All Other Magic &amp; Subsystem Disciplines</span>
+              <span class="text-[10px] text-slate-500">Click to inspect or preview cockpit</span>
+            </div>
+            <div id="magic-discipline-drawer-grid" class="discipline-discovery-grid"></div>
           </div>
         </div>
 
@@ -1501,6 +1556,16 @@
           </div>
 
         </div>
+
+        <!-- ==================================================== -->
+        <!-- DISCIPLINES 5-9: SUBSYSTEM COCKPIT CONTAINERS        -->
+        <!-- (Strict Single Active Discipline DOM Rule)           -->
+        <!-- ==================================================== -->
+        <div id="magic-panel-psionics" class="hidden space-y-4"></div>
+        <div id="magic-panel-incarnum" class="hidden space-y-4"></div>
+        <div id="magic-panel-pact" class="hidden space-y-4"></div>
+        <div id="magic-panel-shadow" class="hidden space-y-4"></div>
+        <div id="magic-panel-truenaming" class="hidden space-y-4"></div>
 
       </div>
     </div>
@@ -2224,7 +2289,7 @@
                 <option value="Consumable">Consumable</option>
                 <option value="Other">Other</option>
               </select>
-              <button type="button" data-action="inventory:open-compendium-drawer" class="h-8 bg-amber-600 hover:bg-amber-500 active:scale-95 text-white font-bold text-xs px-3.5 rounded-lg transition shadow inline-flex items-center justify-center gap-1.5 cursor-pointer shrink-0" title="Add Item: Spotlight Search (SRD 3.5e, Custom DB & Rule Master AI) • V2 Item Forge (Lego)">
+              <button type="button" data-action="inventory:open-compendium-drawer" class="h-8 bg-amber-600 hover:bg-amber-500 active:scale-95 text-white font-bold text-xs px-3.5 rounded-lg transition shadow inline-flex items-center justify-center gap-1.5 cursor-pointer shrink-0" title="Add Item: Spotlight Search (SRD 3.5e, Custom DB & Rule Master AI) • V3 Rule Crafter">
                 <span>➕</span>
                 <span>Add Item</span>
               </button>
@@ -2794,11 +2859,11 @@
                 </div>
               </div>
 
-              <!-- Row 4.5: V2.5 Universal Rule Forge (Lego Primitive Studio & Live Dry-Run) -->
+              <!-- Row 4.5: V3 Rule Crafter Studio (Rule Blocks & Live Dry-Run) -->
               <div id="im-v25-lego-forge-box" class="bg-slate-950/90 border border-indigo-500/40 rounded-xl p-2.5 space-y-2">
                 <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-1.5">
                   <div class="flex items-center gap-1.5">
-                    <span class="text-xs font-extrabold text-indigo-300 uppercase tracking-wider">🧩 V2.5 Universal Rule Forge (6-Primitive Lego Studio)</span>
+                    <span class="text-xs font-extrabold text-indigo-300 uppercase tracking-wider">⚒️ V3 Rule Crafter Studio (6-Rule Block Engine)</span>
                     <span class="px-1.5 py-0.5 rounded bg-indigo-950/80 border border-indigo-700/60 text-[10px] font-mono text-indigo-200">Zero-Token</span>
                   </div>
                   <div class="flex items-center gap-1.5">
@@ -2831,9 +2896,9 @@
                 <!-- R8.1 Dynamic Inline Primitive Builder Card (Zero window.prompt) -->
                 <div id="im-v25-inline-primitive-card" class="hidden bg-slate-900/95 border border-indigo-500/50 rounded-lg p-2.5 space-y-2 text-[11px]"></div>
 
-                <!-- Active V2.5 Primitives Pills -->
+                <!-- Active Rule Blocks Pills -->
                 <div id="im-v25-primitives-pills" class="flex flex-wrap items-center gap-1 text-[10px] text-slate-400">
-                  <span class="italic text-slate-500">No V2.5 Lego primitives attached yet. Choose an archetype above or click a primitive button.</span>
+                  <span class="italic text-slate-500">No Rule Blocks attached yet. Choose an archetype above or click a block button.</span>
                 </div>
 
                 <!-- Step 3: Live Dry-Run & Page Object Interaction Map Preview -->
@@ -3851,12 +3916,12 @@
   <script defer src="supabase_auth.js?v=47247ea179"></script>
   <!-- data-srd-autoinit: srd_compendium.js starts SrdCompendium.init() as soon as it runs. -->
   <script defer src="srd_compendium.js?v=bc3a94bb3b" data-srd-autoinit></script>
-  <script defer src="rule_engine.js?v=e29387526b"></script>
-  <script defer src="char_store.js?v=1d876bc3e0"></script>
+  <script defer src="rule_engine.js?v=e4e016d96c"></script>
+  <script defer src="char_store.js?v=7f942f9252"></script>
   <!-- ui_components.js stays blocking on purpose: it has no dependencies, and while the document is
        still loading it binds the data-action router on DOMContentLoaded, after the outside-click
        listeners the deferred scripts register. Deferring it would bind the router first. -->
-  <script src="ui_components.js?v=e5d325aec7"></script>
+  <script src="ui_components.js?v=11a1cde4a7"></script>
   <script defer src="rule_master.js?v=e7651522bf"></script>
   <script defer src="ui_shared.js?v=8df0c1e633"></script>
   <script defer src="campaign_db.js?v=c7d72607cc"></script>
@@ -3864,10 +3929,10 @@
   <script defer src="dice3d.js?v=aa07002406"></script>
 
   <script defer src="char_hud.js?v=aad3370486"></script>
-  <script defer src="char_combat.js?v=1b136fcb34"></script>
-  <script defer src="char_spells.js?v=4e6c1ee6ab"></script>
-  <script defer src="char_progression.js?v=a030a2870e"></script>
-  <script defer src="char_inventory.js?v=8a07ef2629"></script>
+  <script defer src="char_combat.js?v=02ed37030e"></script>
+  <script defer src="char_spells.js?v=319d26eb9e"></script>
+  <script defer src="char_progression.js?v=ab2e2bd465"></script>
+  <script defer src="char_inventory.js?v=9fb88aec71"></script>
   <!-- Floating Tooltip for Combat Spells Hover (Tap or click to dismiss) -->
   <div id="combat-spell-hover-tooltip" data-action="combat:hide-spell-tooltip" class="hidden fixed z-[200] pointer-events-auto bg-slate-950/95 border border-purple-500/80 rounded-xl p-3 shadow-2xl w-[340px] max-w-[92vw] text-xs space-y-2 backdrop-blur-md transition-opacity duration-150 text-slate-200 cursor-pointer select-none">
     
@@ -4033,7 +4098,7 @@
           <span><strong class="text-emerald-300">Enter</strong> Execute</span>
           <span><strong class="text-amber-300">Ctrl+Z</strong> Undo</span>
         </div>
-        <span class="text-slate-500">V2.5 Lego Engine • Desktop IDE Terminal</span>
+        <span class="text-slate-500">V3 Rule Crafter Engine • Desktop IDE Terminal</span>
       </div>
     </div>
   </div>
