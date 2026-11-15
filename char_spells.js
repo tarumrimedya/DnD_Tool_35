@@ -11290,7 +11290,7 @@
       const Actions = window.Actions || (window.UI && window.UI.Actions);
       if (!Actions || typeof Actions.register !== 'function') return;
 
-      Actions.register('spells:toggle-discipline-drawer', () => {
+      Actions.register('spells:toggle-discipline-drawer', (el, data, event) => {
         _disciplineDrawerOpen = !_disciplineDrawerOpen;
         renderDisciplineTopBar(character);
       });
@@ -11531,7 +11531,7 @@
           showDiceTopToast({ icon: '🌑', title: m.name, breakdown: `Mystery cast (${m.usesLeft}/${maxU} remaining)`, total: '-1 Use' });
         }
       });
-      Actions.register('spells:subsys-restore-mysteries', () => {
+      Actions.register('spells:subsys-restore-mysteries', (el, data, event) => {
         const bucket = ensureSubsystemBucket('shadow');
         if (!bucket) return;
         bucket.mysteries.forEach(m => {
@@ -11572,7 +11572,7 @@
           });
         }
       });
-      Actions.register('spells:subsys-reset-truenaming', () => {
+      Actions.register('spells:subsys-reset-truenaming', (el, data, event) => {
         const bucket = ensureSubsystemBucket('truenaming');
         if (!bucket) return;
         bucket.utterances.forEach(u => { u.castsToday = 0; });
