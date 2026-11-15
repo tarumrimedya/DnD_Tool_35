@@ -1,14 +1,107 @@
 /**
- * Joyful-Fermi D&D 3.5e — 4-Discipline Spellcasting, Tome of Battle Maneuvers, Pre-Cast Variants & Spell Picker
+ * Joyful-Fermi D&D 3.5e — 9-Discipline Spellcasting, Tome of Battle, 5 Subsystems & Rule Crafter Hooks
  */
     // ====================================================
-    // 4-DISCIPLINE TREE ARCHITECTURE & SPELLS COCKPIT
-    // 1. Doğal / Anlık | 2. Kitaplı | 3. İlahi Dua | 4. Savaş Manevraları
+    // 9-DISCIPLINE TREE ARCHITECTURE & SPELLS COCKPIT
+    // 1. Spontaneous | 2. Prepared | 3. Divine | 4. Martial
+    // 5. Psionics | 6. Incarnum | 7. Pact Magic | 8. Shadow Magic | 9. Truenaming
     // ====================================================
     window._currentMagicDiscipline = window._currentMagicDiscipline || 'spontaneous';
     window._currentSpellsSubtab = window._currentSpellsSubtab || 'spells';
     window._spellCurrentFilterLevel = window._spellCurrentFilterLevel || 'all';
     window._currentSpellPickerType = window._currentSpellPickerType || 'Spell';
+
+    let _disciplineDrawerOpen = false;
+    let _subsysPickerState = null;
+
+    const MAGIC_DISCIPLINES_META = [
+      { key: 'spontaneous', icon: '🔮', label: 'Spontaneous', activeClass: 'disc-tab-spontaneous disc-tab-active', idleClass: 'disc-tab-spontaneous', badgeActive: 'bg-purple-950 text-purple-200 border-purple-700', badgeIdle: 'bg-slate-900 text-slate-400 border-slate-700' },
+      { key: 'prepared', icon: '📖', label: 'Prepared', activeClass: 'disc-tab-prepared disc-tab-active', idleClass: 'disc-tab-prepared', badgeActive: 'bg-sky-950 text-sky-200 border-sky-700', badgeIdle: 'bg-slate-900 text-slate-400 border-slate-700' },
+      { key: 'divine', icon: '✨', label: 'Divine Prayer', activeClass: 'disc-tab-divine disc-tab-active', idleClass: 'disc-tab-divine', badgeActive: 'bg-amber-950 text-amber-200 border-amber-700', badgeIdle: 'bg-slate-900 text-slate-400 border-slate-700' },
+      { key: 'martial', icon: '⚔️', label: 'Martial Maneuvers', activeClass: 'disc-tab-martial disc-tab-active', idleClass: 'disc-tab-martial', badgeActive: 'bg-rose-950 text-rose-200 border-rose-700', badgeIdle: 'bg-slate-900 text-slate-400 border-slate-700' },
+      { key: 'psionics', icon: '🧠', label: 'Psionics', activeClass: 'disc-tab-psionics disc-tab-active', idleClass: 'disc-tab-psionics', badgeActive: 'bg-cyan-950 text-cyan-200 border-cyan-700', badgeIdle: 'bg-slate-900 text-slate-400 border-slate-700' },
+      { key: 'incarnum', icon: '💠', label: 'Soulmelds', activeClass: 'disc-tab-incarnum disc-tab-active', idleClass: 'disc-tab-incarnum', badgeActive: 'bg-emerald-950 text-emerald-200 border-emerald-700', badgeIdle: 'bg-slate-900 text-slate-400 border-slate-700' },
+      { key: 'pact', icon: '🕯️', label: 'Pact Magic', activeClass: 'disc-tab-pact disc-tab-active', idleClass: 'disc-tab-pact', badgeActive: 'bg-purple-950 text-purple-200 border-purple-700', badgeIdle: 'bg-slate-900 text-slate-400 border-slate-700' },
+      { key: 'shadow', icon: '🌑', label: 'Shadow Mysteries', activeClass: 'disc-tab-shadow disc-tab-active', idleClass: 'disc-tab-shadow', badgeActive: 'bg-indigo-950 text-indigo-200 border-indigo-700', badgeIdle: 'bg-slate-900 text-slate-400 border-slate-700' },
+      { key: 'truenaming', icon: '📜', label: 'Truenaming', activeClass: 'disc-tab-truenaming disc-tab-active', idleClass: 'disc-tab-truenaming', badgeActive: 'bg-teal-950 text-teal-200 border-teal-700', badgeIdle: 'bg-slate-900 text-slate-400 border-slate-700' }
+    ];
+
+    const SUBSYSTEM_CLASS_MAP = {
+      psionics: ['psion', 'psychic warrior', 'wilder', 'soulknife', 'lurk', 'ardent', 'divine mind', 'erudite', 'cerebremancer', 'elocater', 'metamind', 'psion uncarnate', 'psionic fist', 'pyrokineticist', 'slayer', 'thrallherd', 'war mind', 'anarchic initiate', 'ebon saint', 'flayerspawn psychic', 'illumine soul', 'soulbow', 'storm disciple', 'zerth cenobite'],
+      incarnum: ['incarnate', 'soulborn', 'totemist', 'ironsoul forgemaster', 'necrocarnate', 'sapphire hierarch', 'soulcaster', 'totem rager', 'umbral disciple', 'witchborn binder', 'spinemeld warrior', 'incandescent champion', 'indigo trickster'],
+      pact: ['binder', 'anima mage', 'knight of the sacred seal', 'tenebrous apostate', 'scion of dantrag', 'witch slayer'],
+      shadow: ['shadowcaster', 'noctumancer', 'shadowblade', 'child of night', 'master of shadow'],
+      truenaming: ['truenamer', 'bereft', 'brimstone speaker', 'fiendbinder', 'acolyte of the ego', 'disciple of the word']
+    };
+
+    const SUBSYSTEM_FEAT_MAP = {
+      psionics: ['wild talent', 'hidden talent', 'psionic talent'],
+      incarnum: ['shape soulmeld', 'open least chakra', 'open lesser chakra', 'open greater chakra', 'bonus essentia'],
+      pact: ['bind vestige', 'improved bind vestige', 'practiced binder'],
+      shadow: ['shadow cast', 'nocturnal caster', 'favored mystery'],
+      truenaming: ['minor utterance of the evolving mind', 'utterance of the evolving mind', 'truespeak training']
+    };
+
+    function getCharacterSheetSnapshot() {
+      const store = syncSpellsStore();
+      if (store && typeof store.getSheet === 'function') {
+        const sheet = store.getSheet();
+        if (sheet) return sheet;
+      }
+      if (typeof RuleEngine !== 'undefined' && typeof RuleEngine.deriveSheet === 'function' && typeof character !== 'undefined' && character) {
+        return RuleEngine.deriveSheet(character, { masterDb: (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) ? masterDb : [] });
+      }
+      return null;
+    }
+
+    function collectCharacterClassAndFeatNames(char = character) {
+      const classNames = [];
+      const featNames = [];
+      if (!char) return { classNames, featNames };
+      const pushClass = (val) => {
+        const s = String(val || '').toLowerCase().trim();
+        if (s) classNames.push(s);
+      };
+      const pushFeat = (f) => {
+        const s = String(typeof f === 'string' ? f : (f?.name || '')).toLowerCase().trim();
+        if (s) featNames.push(s);
+      };
+      if (Array.isArray(char.levelProgression)) {
+        char.levelProgression.filter(p => p && p.active !== false).forEach(p => {
+          pushClass(p.className || p.class || p.name);
+          if (Array.isArray(p.feats)) p.feats.forEach(pushFeat);
+        });
+      }
+      if (Array.isArray(char.classes)) {
+        char.classes.forEach(c => pushClass(typeof c === 'string' ? c : (c?.name || c?.className || c?.class)));
+      } else if (typeof char.classes === 'string' && char.classes.trim()) {
+        char.classes.split(/[\/,]/).forEach(pushClass);
+      }
+      if (typeof char.class === 'string' && char.class.trim()) pushClass(char.class);
+      if (Array.isArray(char.classProgression)) {
+        char.classProgression.forEach(cp => pushClass(cp?.className || cp?.name || cp?.class));
+      }
+      if (Array.isArray(char.feats)) char.feats.forEach(pushFeat);
+      return { classNames, featNames };
+    }
+
+    function computeLocalTotalLevel(char = character) {
+      if (!char) return 0;
+      if (Array.isArray(char.levelProgression) && char.levelProgression.length > 0) {
+        const activeRows = char.levelProgression.filter(p => p && p.active !== false && String(p.className || p.class || p.name || '').trim() !== '');
+        if (activeRows.length > 0) return activeRows.length;
+      }
+      if (Array.isArray(char.classes) && char.classes.length > 0) {
+        const sum = char.classes.reduce((acc, c) => acc + (typeof c === 'object' ? (Number(c?.level) || 1) : 1), 0);
+        if (sum > 0) return sum;
+      }
+      if (typeof char.classes === 'string' && char.classes.trim() && !/no class/i.test(char.classes)) {
+        const nums = [...char.classes.matchAll(/(\d+)/g)].map(m => Number(m[1]) || 0);
+        if (nums.length > 0) return nums.reduce((a, b) => a + b, 0);
+        return 1;
+      }
+      return Math.max(0, Number(char.level) || 0);
+    }
 
     function syncSpellsStore() {
       const store = typeof window !== 'undefined' ? window.CharStore : null;
@@ -254,6 +347,45 @@
       return levels;
     }
 
+    function computeSubsystemContext(char = character) {
+      const sheet = getCharacterSheetSnapshot();
+      const totalLevel = (sheet && sheet.subsystems && typeof sheet.subsystems.totalLevel === 'number')
+        ? sheet.subsystems.totalLevel
+        : computeLocalTotalLevel(char);
+      const owned = new Set(Array.isArray(sheet?.subsystems?.activeDisciplines) ? sheet.subsystems.activeDisciplines : []);
+      const coreStatus = checkCharacterMagicClasses();
+      if (coreStatus.hasSpontaneous) owned.add('spontaneous');
+      if (coreStatus.hasPrepared) owned.add('prepared');
+      if (coreStatus.hasDivine) owned.add('divine');
+      if (coreStatus.hasMartial) owned.add('martial');
+
+      const { classNames, featNames } = collectCharacterClassAndFeatNames(char);
+      const boons = Array.isArray(char?.dmBoons) ? char.dmBoons.map(b => String(b?.discipline || b?.system || b?.name || '').toLowerCase()) : [];
+      const raceLower = String(char?.race || '').toLowerCase();
+
+      ['psionics', 'incarnum', 'pact', 'shadow', 'truenaming'].forEach(key => {
+        const clsHits = SUBSYSTEM_CLASS_MAP[key] || [];
+        const featHits = SUBSYSTEM_FEAT_MAP[key] || [];
+        if (classNames.some(c => clsHits.some(k => c.includes(k)))) owned.add(key);
+        if (featNames.some(f => featHits.some(k => f.includes(k)))) owned.add(key);
+        if (boons.some(b => b.includes(key))) owned.add(key);
+      });
+      if (raceLower.includes('azurin') || raceLower.includes('duskling') || raceLower.includes('rilkan') || raceLower.includes('skarn')) {
+        owned.add('incarnum');
+      }
+      if (raceLower.includes('synad') || raceLower.includes('elans') || raceLower === 'elan' || raceLower.includes('maenad') || raceLower.includes('xeph') || raceLower.includes('dromite') || raceLower.includes('kalashtar')) {
+        owned.add('psionics');
+      }
+      if ((Array.isArray(char?.psionics?.powers) && char.psionics.powers.length > 0) || (Array.isArray(char?.powers) && char.powers.length > 0) || (Number(char?.psionics?.maxPP) || 0) > 0) owned.add('psionics');
+      if ((Array.isArray(char?.incarnum?.soulmelds) && char.incarnum.soulmelds.length > 0) || (Array.isArray(char?.soulmelds) && char.soulmelds.length > 0)) owned.add('incarnum');
+      if ((Array.isArray(char?.pactMagic?.vestiges) && char.pactMagic.vestiges.length > 0) || (Array.isArray(char?.vestiges) && char.vestiges.length > 0)) owned.add('pact');
+      if ((Array.isArray(char?.shadowMagic?.mysteries) && char.shadowMagic.mysteries.length > 0) || (Array.isArray(char?.mysteries) && char.mysteries.length > 0)) owned.add('shadow');
+      if ((Array.isArray(char?.truenaming?.utterances) && char.truenaming.utterances.length > 0) || (Array.isArray(char?.utterances) && char.utterances.length > 0)) owned.add('truenaming');
+
+      const activeDisciplines = MAGIC_DISCIPLINES_META.map(m => m.key).filter(k => owned.has(k));
+      return { totalLevel, activeDisciplines, sheet };
+    }
+
     function resolvePreferredMagicDiscipline(char = character) {
       if (!char) return 'spontaneous';
 
@@ -297,7 +429,13 @@
         return 'martial';
       }
 
-      // 4. Fallback to any unlocked slots / flags
+      // 4. Owned subsystem disciplines (Psionics / Incarnum / Pact / Shadow / Truenaming)
+      const { activeDisciplines } = computeSubsystemContext(char);
+      if (activeDisciplines.length > 0) {
+        return activeDisciplines[0];
+      }
+
+      // 5. Fallback to any unlocked slots / flags
       const classesStatus = checkCharacterMagicClasses();
       if (classesStatus.hasDivine && !classesStatus.hasSpontaneous && !classesStatus.hasPrepared) return 'divine';
       if (classesStatus.hasPrepared && !classesStatus.hasSpontaneous) return 'prepared';
@@ -313,7 +451,11 @@
       const manualChoice = (!forceResolve)
         ? (window._userManualMagicDiscipline || char?._preferredMagicDiscipline || null)
         : null;
-      const preferred = manualChoice || resolvePreferredMagicDiscipline(char);
+      const ctx = computeSubsystemContext(char);
+      let preferred = manualChoice || resolvePreferredMagicDiscipline(char);
+      if (!manualChoice && ctx.totalLevel >= 1 && ctx.activeDisciplines.length > 0 && !ctx.activeDisciplines.includes(preferred)) {
+        preferred = ctx.activeDisciplines[0];
+      }
       if (['spontaneous', 'prepared', 'divine'].includes(preferred)) {
         window.currentCompactSlotsSource = preferred;
       }
@@ -336,7 +478,160 @@
       if (typeof renderDivineDisciplineView === 'function') renderDivineDisciplineView(classesStatus.hasDivine);
     }
 
+    function getDisciplineBadgeInfo(discKey, sheet, activeDisciplines) {
+      const isOwned = activeDisciplines.includes(discKey);
+      const sv = sheet?.spells || getSpellsView();
+      if (discKey === 'spontaneous') {
+        const slots = Array.isArray(sv?.slotsByLevelView?.spontaneousArray) ? sv.slotsByLevelView.spontaneousArray : (character?.spellcasting?.slots || []);
+        const daily = slots.reduce((sum, s) => sum + (Number(s.daily) || 0), 0);
+        const used = slots.reduce((sum, s) => sum + (Number(s.used) || 0), 0);
+        const rem = Math.max(0, daily - used);
+        return (isOwned || daily > 0) ? { text: `${rem} / ${daily}`, isOwned: true } : { text: 'No Class', isOwned: false };
+      }
+      if (discKey === 'prepared') {
+        const slots = Array.isArray(sv?.slotsByLevelView?.preparedArray) ? sv.slotsByLevelView.preparedArray : (character?.spellcasting?.preparedSlots || []);
+        const daily = slots.reduce((sum, s) => sum + (Number(s.daily) || 0), 0);
+        const used = slots.reduce((sum, s) => sum + (Number(s.used) || 0), 0);
+        const rem = Math.max(0, daily - used);
+        return (isOwned || daily > 0) ? { text: `${rem} / ${daily}`, isOwned: true } : { text: 'No Class', isOwned: false };
+      }
+      if (discKey === 'divine') {
+        const slots = Array.isArray(sv?.slotsByLevelView?.divineArray) ? sv.slotsByLevelView.divineArray : (character?.spellcasting?.divineSlots || []);
+        const daily = slots.reduce((sum, s) => sum + (Number(s.daily) || 0), 0);
+        const used = slots.reduce((sum, s) => sum + (Number(s.used) || 0), 0);
+        const rem = Math.max(0, daily - used);
+        return (isOwned || daily > 0) ? { text: `${rem} / ${daily}`, isOwned: true } : { text: 'No Class', isOwned: false };
+      }
+      if (discKey === 'martial') {
+        const initInfo = getInitiatorInfo();
+        const readied = character?.tomeOfBattle?.readiedManeuvers || [];
+        const readyCount = readied.filter(m => !m.expended).length;
+        const totalReadied = initInfo.maxReadied || 0;
+        return (isOwned && initInfo.il > 0) ? { text: `${readyCount} / ${totalReadied}`, isOwned: true } : { text: 'No Class', isOwned: false };
+      }
+      const sub = getSubsystemSnapshot(discKey, character, sheet);
+      if (discKey === 'psionics') {
+        return (isOwned || sub.powers.length > 0 || sub.maxPP > 0)
+          ? { text: `${sub.currentPP} / ${sub.maxPP} PP`, isOwned: true }
+          : { text: 'No Class', isOwned: false };
+      }
+      if (discKey === 'incarnum') {
+        return (isOwned || sub.soulmelds.length > 0 || sub.essentiaPool > 0)
+          ? { text: `${sub.availableEssentia}/${sub.essentiaPool} Ess`, isOwned: true }
+          : { text: 'No Class', isOwned: false };
+      }
+      if (discKey === 'pact') {
+        return (isOwned || sub.vestiges.length > 0 || sub.effectiveBinderLevel > 0)
+          ? { text: `${sub.vestiges.length}/${sub.maxVestiges || 1} Vest`, isOwned: true }
+          : { text: 'No Class', isOwned: false };
+      }
+      if (discKey === 'shadow') {
+        return (isOwned || sub.mysteries.length > 0 || sub.casterLevel > 0)
+          ? { text: `${sub.mysteries.length} Myst`, isOwned: true }
+          : { text: 'No Class', isOwned: false };
+      }
+      if (discKey === 'truenaming') {
+        return (isOwned || sub.utterances.length > 0 || sub.truenamerLevel > 0)
+          ? { text: `${sub.truespeakBonus >= 0 ? '+' : ''}${sub.truespeakBonus} TS`, isOwned: true }
+          : { text: 'No Class', isOwned: false };
+      }
+      return { text: 'No Class', isOwned: false };
+    }
+
+    function buildDisciplineButtonHtml(meta, activeDisc, badgeInfo, extraClass = '') {
+      const isActive = meta.key === activeDisc;
+      const toneClass = isActive ? meta.activeClass : meta.idleClass;
+      const badgeClass = isActive || badgeInfo.isOwned ? meta.badgeActive : meta.badgeIdle;
+      const badgeIdAttr = ['spontaneous', 'prepared', 'divine', 'martial'].includes(meta.key)
+        ? ` id="tab-${meta.key}-badge"`
+        : ` id="tab-${meta.key}-badge"`;
+      const esc = (typeof UI !== 'undefined' && UI.escapeHtml) ? UI.escapeHtml : (s) => String(s ?? '');
+      return `
+        <button type="button" id="magic-tab-btn-${meta.key}" data-action="spells:switch-discipline" data-tab="${meta.key}" class="discipline-tab-card ${extraClass} h-9 px-3 rounded-lg text-xs font-bold transition flex items-center justify-between gap-1.5 cursor-pointer whitespace-nowrap border ${toneClass}">
+          <span class="flex items-center gap-1.5 min-w-0">
+            <span class="text-sm shrink-0">${meta.icon}</span>
+            <span class="truncate">${esc(meta.label)}</span>
+          </span>
+          <span${badgeIdAttr} class="text-[10px] px-1.5 py-0.5 rounded-full font-mono font-bold border shrink-0 ${badgeClass}">${esc(badgeInfo.text)}</span>
+        </button>
+      `;
+    }
+
+    function renderDisciplineTopBar(char = character) {
+      const tabsEl = document.getElementById('magic-discipline-tabs');
+      const toggleWrap = document.getElementById('magic-discipline-drawer-toggle-wrap');
+      const toggleBtn = document.getElementById('btn-toggle-discipline-drawer');
+      const toggleLabel = document.getElementById('discipline-drawer-toggle-label');
+      const toggleChevron = document.getElementById('discipline-drawer-toggle-chevron');
+      const drawerEl = document.getElementById('magic-discipline-drawer');
+      const drawerGrid = document.getElementById('magic-discipline-drawer-grid');
+      if (!tabsEl) return;
+
+      const activeDisc = window._currentMagicDiscipline || 'spontaneous';
+      const { totalLevel, activeDisciplines, sheet } = computeSubsystemContext(char);
+      const isDiscoveryMode = (totalLevel === 0);
+
+      if (isDiscoveryMode) {
+        tabsEl.className = 'discipline-discovery-grid flex-1 min-w-0';
+        tabsEl.innerHTML = MAGIC_DISCIPLINES_META.map(meta => {
+          const badge = getDisciplineBadgeInfo(meta.key, sheet, activeDisciplines);
+          return buildDisciplineButtonHtml(meta, activeDisc, badge);
+        }).join('');
+        if (toggleWrap) toggleWrap.classList.add('hidden');
+        if (drawerEl) drawerEl.classList.add('hidden');
+        if (drawerGrid) drawerGrid.innerHTML = '';
+        return;
+      }
+
+      const ownedMeta = MAGIC_DISCIPLINES_META.filter(m => activeDisciplines.includes(m.key));
+      const otherMeta = MAGIC_DISCIPLINES_META.filter(m => !activeDisciplines.includes(m.key));
+
+      if (ownedMeta.length === 0) {
+        tabsEl.className = 'discipline-focused-row flex-1 min-w-0';
+        const activeMeta = MAGIC_DISCIPLINES_META.find(m => m.key === activeDisc);
+        tabsEl.innerHTML = `
+          <div class="h-9 px-3 rounded-lg bg-slate-900/90 border border-slate-800 text-xs text-slate-300 flex items-center justify-between gap-2 min-w-0 flex-1">
+            <span class="truncate">No Active Casting / Subsystem Classes</span>
+            ${activeMeta ? `<span class="badge bg-indigo-950 text-indigo-300 border border-indigo-700/70 text-[10px] shrink-0">${activeMeta.icon} Preview: ${UI.escapeHtml(activeMeta.label)}</span>` : ''}
+          </div>
+        `;
+      } else {
+        tabsEl.className = 'discipline-focused-row flex-1 min-w-0';
+        tabsEl.innerHTML = ownedMeta.map(meta => {
+          const badge = getDisciplineBadgeInfo(meta.key, sheet, activeDisciplines);
+          return buildDisciplineButtonHtml(meta, activeDisc, badge, 'discipline-focused-btn');
+        }).join('');
+      }
+
+      if (otherMeta.length > 0 && toggleWrap && toggleBtn && drawerEl && drawerGrid) {
+        toggleWrap.classList.remove('hidden');
+        if (toggleLabel) {
+          toggleLabel.textContent = ownedMeta.length === 0
+            ? `Explore All 9 Disciplines (${otherMeta.length})`
+            : `Other Disciplines (${otherMeta.length})`;
+        }
+        toggleBtn.setAttribute('aria-expanded', _disciplineDrawerOpen ? 'true' : 'false');
+        if (toggleChevron) toggleChevron.textContent = _disciplineDrawerOpen ? '▴' : '▾';
+        if (_disciplineDrawerOpen) {
+          drawerEl.classList.remove('hidden');
+          drawerGrid.innerHTML = otherMeta.map(meta => {
+            const badge = getDisciplineBadgeInfo(meta.key, sheet, activeDisciplines);
+            return buildDisciplineButtonHtml(meta, activeDisc, badge);
+          }).join('');
+        } else {
+          drawerEl.classList.add('hidden');
+          drawerGrid.innerHTML = '';
+        }
+      } else {
+        if (toggleWrap) toggleWrap.classList.add('hidden');
+        if (drawerEl) drawerEl.classList.add('hidden');
+        if (drawerGrid) drawerGrid.innerHTML = '';
+      }
+    }
+
     function switchMagicDisciplineTab(discipline) {
+      const validKeys = MAGIC_DISCIPLINES_META.map(m => m.key);
+      if (!validKeys.includes(discipline)) discipline = 'spontaneous';
       window._currentMagicDiscipline = discipline;
       if (!window._isAutoSelectingMagicTab) {
         window._userManualMagicDiscipline = discipline;
@@ -351,14 +646,12 @@
         spontaneous: document.getElementById('discipline-view-spontaneous'),
         prepared: document.getElementById('discipline-view-prepared'),
         divine: document.getElementById('discipline-view-divine'),
-        martial: document.getElementById('discipline-view-martial')
-      };
-
-      const buttons = {
-        spontaneous: document.getElementById('magic-tab-btn-spontaneous'),
-        prepared: document.getElementById('magic-tab-btn-prepared'),
-        divine: document.getElementById('magic-tab-btn-divine'),
-        martial: document.getElementById('magic-tab-btn-martial')
+        martial: document.getElementById('discipline-view-martial'),
+        psionics: document.getElementById('magic-panel-psionics'),
+        incarnum: document.getElementById('magic-panel-incarnum'),
+        pact: document.getElementById('magic-panel-pact'),
+        shadow: document.getElementById('magic-panel-shadow'),
+        truenaming: document.getElementById('magic-panel-truenaming')
       };
 
       // Show active view, hide others
@@ -369,45 +662,19 @@
         }
       });
 
-      // Update button styles
-      if (buttons.spontaneous) {
-        if (discipline === 'spontaneous') {
-          buttons.spontaneous.className = 'ui-btn-md w-full lg:flex-1 h-9 px-3 rounded-lg text-xs font-bold transition flex items-center justify-between gap-1.5 cursor-pointer whitespace-nowrap bg-gradient-to-r from-purple-800 to-indigo-700 text-white shadow-md border border-purple-500/60 ring-1 ring-purple-400/30';
-        } else {
-          buttons.spontaneous.className = 'ui-btn-md w-full lg:flex-1 h-9 px-3 rounded-lg text-xs font-bold transition flex items-center justify-between gap-1.5 cursor-pointer whitespace-nowrap bg-purple-950/30 hover:bg-purple-900/40 text-purple-300 hover:text-purple-100 border border-purple-900/50 shadow-sm';
-        }
-      }
-
-      if (buttons.prepared) {
-        if (discipline === 'prepared') {
-          buttons.prepared.className = 'ui-btn-md w-full lg:flex-1 h-9 px-3 rounded-lg text-xs font-bold transition flex items-center justify-between gap-1.5 cursor-pointer whitespace-nowrap bg-gradient-to-r from-sky-800 to-blue-700 text-white shadow-md border border-sky-500/60 ring-1 ring-sky-400/30';
-        } else {
-          buttons.prepared.className = 'ui-btn-md w-full lg:flex-1 h-9 px-3 rounded-lg text-xs font-bold transition flex items-center justify-between gap-1.5 cursor-pointer whitespace-nowrap bg-sky-950/30 hover:bg-sky-900/40 text-sky-300 hover:text-sky-100 border border-sky-900/50 shadow-sm';
-        }
-      }
-
-      if (buttons.divine) {
-        if (discipline === 'divine') {
-          buttons.divine.className = 'ui-btn-md w-full lg:flex-1 h-9 px-3 rounded-lg text-xs font-bold transition flex items-center justify-between gap-1.5 cursor-pointer whitespace-nowrap bg-gradient-to-r from-amber-800 to-yellow-700 text-white shadow-md border border-amber-500/60 ring-1 ring-amber-400/30';
-        } else {
-          buttons.divine.className = 'ui-btn-md w-full lg:flex-1 h-9 px-3 rounded-lg text-xs font-bold transition flex items-center justify-between gap-1.5 cursor-pointer whitespace-nowrap bg-amber-950/30 hover:bg-amber-900/40 text-amber-300 hover:text-amber-100 border border-amber-900/50 shadow-sm';
-        }
-      }
-
-      if (buttons.martial) {
-        if (discipline === 'martial') {
-          buttons.martial.className = 'ui-btn-md w-full lg:flex-1 h-9 px-3 rounded-lg text-xs font-bold transition flex items-center justify-between gap-1.5 cursor-pointer whitespace-nowrap bg-gradient-to-r from-rose-800 to-amber-700 text-white shadow-md border border-rose-500/60 ring-1 ring-rose-400/30';
-        } else {
-          buttons.martial.className = 'ui-btn-md w-full lg:flex-1 h-9 px-3 rounded-lg text-xs font-bold transition flex items-center justify-between gap-1.5 cursor-pointer whitespace-nowrap bg-rose-950/30 hover:bg-rose-900/40 text-rose-300 hover:text-rose-100 border border-rose-900/50 shadow-sm';
-        }
-      }
+      renderDisciplineTopBar(character);
 
       // Unmount dynamic card lists of inactive disciplines so only the 1 active discipline lives in DOM
       const unmountIdsByDiscipline = {
         spontaneous: ['known-spells-tbody', 'spell-slots-container'],
         prepared: ['discipline-prepared-content'],
         divine: ['discipline-divine-content'],
-        martial: ['maneuvers-container', 'maneuvers-library-tbody']
+        martial: ['maneuvers-container', 'maneuvers-library-tbody'],
+        psionics: ['magic-panel-psionics'],
+        incarnum: ['magic-panel-incarnum'],
+        pact: ['magic-panel-pact'],
+        shadow: ['magic-panel-shadow'],
+        truenaming: ['magic-panel-truenaming']
       };
       Object.keys(unmountIdsByDiscipline).forEach(key => {
         if (key === discipline) return;
@@ -427,6 +694,8 @@
         renderDivineDisciplineView(classesStatus.hasDivine);
       } else if (discipline === 'martial') {
         renderManeuvers();
+      } else if (typeof renderSubsystemPanel === 'function') {
+        renderSubsystemPanel(discipline);
       }
     }
 
@@ -976,7 +1245,7 @@
               <div class="flex items-center gap-2 whitespace-nowrap">
                 ${getUniversalPinButtonHtml({ name: s.name, type: 'Spell', action: s.action || 'Standard Action', desc: s.benefit || '', badge: dmgExpr || '', damageDice: dmgExpr || '' })}
                 <span>📖</span>
-                <span class="${hasActiveSlot ? 'text-white' : 'text-slate-400'}">${UI.escapeHtml(s.name)}</span>
+                <button type="button" data-action="entity:inspect" data-entity-kind="spell" data-entity-id="${UI.escapeAttr(s.id || s.baseEntryId || '')}" data-entity-name="${UI.escapeAttr(s.name || '')}" data-entity-index="${originalIdx}" data-discipline="prepared" class="text-left font-bold cursor-pointer hover:underline ${hasActiveSlot ? 'text-white hover:text-sky-200' : 'text-slate-400 hover:text-slate-200'}" title="Inspect / Edit in Rule Crafter">${UI.escapeHtml(s.name)}</button>
                 ${!hasActiveSlot ? `<span class="text-[10px] font-mono px-1.5 rounded bg-rose-950/90 text-rose-300 border border-rose-800/80 font-bold shrink-0">0 Slot</span>` : ''}
               </div>
             </td>
@@ -2058,7 +2327,7 @@
               <div class="flex items-center gap-2 whitespace-nowrap flex-wrap">
                 ${getUniversalPinButtonHtml({ name: s.name, type: 'Spell', action: s.action || 'Standard Action', desc: s.benefit || '', badge: dmgExpr || '', damageDice: dmgExpr || '' })}
                 <span>${isDom ? '⚜️' : '✨'}</span>
-                <span class="${hasActiveSlot ? 'text-white' : 'text-slate-400'}">${UI.escapeHtml(s.name)}</span>
+                <button type="button" data-action="entity:inspect" data-entity-kind="spell" data-entity-id="${UI.escapeAttr(s.id || s.baseEntryId || '')}" data-entity-name="${UI.escapeAttr(s.name || '')}" data-entity-index="${originalIdx}" data-discipline="divine" class="text-left font-bold cursor-pointer hover:underline ${hasActiveSlot ? 'text-white hover:text-amber-200' : 'text-slate-400 hover:text-slate-200'}" title="Inspect / Edit in Rule Crafter">${UI.escapeHtml(s.name)}</button>
                 ${domainBadgeHtml}
                 ${clBoostBadgeHtml}
                 ${!hasActiveSlot ? `<span class="text-[10px] font-mono px-1.5 rounded bg-rose-950/90 text-rose-300 border border-rose-800/80 font-bold shrink-0">0 Slot</span>` : ''}
@@ -3474,9 +3743,14 @@
         }
       }
 
-      try { renderPreparedDisciplineView(classesStatus.hasPrepared || pSlots.some(s => (Number(s.daily) || 0) > 0)); } catch (e) { console.error('renderPreparedDisciplineView error:', e); }
-      try { renderDivineDisciplineView(classesStatus.hasDivine || dSlots.some(s => (Number(s.daily) || 0) > 0)); } catch (e) { console.error('renderDivineDisciplineView error:', e); }
+      const curActiveDisc = window._currentMagicDiscipline || 'spontaneous';
+      if (curActiveDisc === 'prepared') {
+        try { renderPreparedDisciplineView(classesStatus.hasPrepared || pSlots.some(s => (Number(s.daily) || 0) > 0)); } catch (e) { console.error('renderPreparedDisciplineView error:', e); }
+      } else if (curActiveDisc === 'divine') {
+        try { renderDivineDisciplineView(classesStatus.hasDivine || dSlots.some(s => (Number(s.daily) || 0) > 0)); } catch (e) { console.error('renderDivineDisciplineView error:', e); }
+      }
       try { renderCasterBoonUI(); } catch (e) { console.error('renderCasterBoonUI error:', e); }
+      try { renderDisciplineTopBar(character); } catch (e) { console.error('renderDisciplineTopBar error:', e); }
 
       const titleEl = document.getElementById('spells-cockpit-class-title');
       if (titleEl) titleEl.textContent = 'Spontaneous Spells & Invocations';
@@ -4547,7 +4821,7 @@
                     ${m.expended ? '🔄 Expended' : '⚡ Ready'}
                   </span>
                 </div>
-                <h4 class="text-xs font-black ${m.expended ? 'line-through text-slate-400' : 'text-white'}">${UI.escapeHtml(m.name)}</h4>
+                <button type="button" data-action="entity:inspect" data-entity-kind="maneuver" data-entity-id="${UI.escapeAttr(m.id || m.baseEntryId || '')}" data-entity-name="${UI.escapeAttr(m.name || '')}" data-entity-index="${slotIdx}" data-discipline="martial" class="text-left text-xs font-black cursor-pointer hover:underline ${m.expended ? 'line-through text-slate-400 hover:text-slate-200' : 'text-white hover:text-rose-200'}" title="Inspect / Edit in Rule Crafter">${UI.escapeHtml(m.name)}</button>
                 <div class="text-[10px] text-amber-300 font-semibold">${m.action || 'Standard Action'}</div>
                 <p class="text-[11px] text-slate-300 line-clamp-2">${UI.escapeHtml(m.notes || m.benefit || '-')}</p>
               </div>
@@ -4647,7 +4921,7 @@
             <td class="py-2.5 px-3 font-bold text-white align-middle">
               <div class="flex items-center gap-2 whitespace-nowrap">
                 <span>⚔️</span>
-                <span class="${isOverLevel ? 'text-slate-400' : 'text-white'}">${UI.escapeHtml(m.name)}</span>
+                <button type="button" data-action="entity:inspect" data-entity-kind="maneuver" data-entity-id="${UI.escapeAttr(m.id || m.baseEntryId || '')}" data-entity-name="${UI.escapeAttr(m.name || '')}" data-discipline="martial" class="text-left font-bold cursor-pointer hover:underline ${isOverLevel ? 'text-slate-400 hover:text-slate-200' : 'text-white hover:text-rose-200'}" title="Inspect / Edit in Rule Crafter">${UI.escapeHtml(m.name)}</button>
                 ${isOverLevel ? `<span class="text-[10px] font-mono px-1.5 rounded bg-rose-950/90 text-rose-300 border border-rose-800/80 font-bold shrink-0">IL Too Low (Max: ${initInfo.maxManeuverLvl})</span>` : ''}
               </div>
             </td>
@@ -4721,7 +4995,7 @@
             <td class="py-2.5 px-3 font-bold text-teal-300 align-middle">
               <div class="flex items-center gap-2 whitespace-nowrap">
                 <span>🥋</span>
-                <span>${UI.escapeHtml(st.name)}</span>
+                <button type="button" data-action="entity:inspect" data-entity-kind="maneuver" data-entity-id="${UI.escapeAttr(st.id || st.baseEntryId || '')}" data-entity-name="${UI.escapeAttr(st.name || '')}" data-discipline="martial" class="text-left font-bold text-teal-300 hover:text-white cursor-pointer hover:underline" title="Inspect / Edit in Rule Crafter">${UI.escapeHtml(st.name)}</button>
               </div>
             </td>
             <td class="py-2.5 px-3 text-slate-300">
@@ -5356,7 +5630,7 @@
             ${recs.map(r => `
               <div class="px-4 py-2.5 text-xs">
                 <div class="flex flex-wrap items-center gap-2">
-                  <span class="font-bold text-white">🔮 ${esc(r.name)}</span>
+                  <button type="button" data-action="entity:inspect" data-entity-kind="spell" data-entity-id="${UI.escapeAttr(r.id || '')}" data-entity-name="${UI.escapeAttr(r.name || '')}" data-discipline="spontaneous" class="text-left font-bold text-white hover:text-purple-200 cursor-pointer hover:underline" title="Inspect / Edit in Rule Crafter">🔮 ${esc(r.name)}</button>
                   ${r.level !== '' && !r.isChoice ? `<span class="badge bg-slate-900 text-slate-300 border border-slate-700 text-[10px] font-mono">Lvl ${esc(r.level)}</span>` : ''}
                   ${r.school ? `<span class="badge bg-purple-950/60 text-purple-300 border border-purple-800/80 text-[10px] font-semibold">${esc(r.school)}</span>` : ''}
                   <span class="badge bg-amber-950/90 text-amber-300 border border-amber-600/80 text-[10px] font-bold">At Will</span>
@@ -5542,7 +5816,7 @@
             <div class="flex items-center gap-2 whitespace-nowrap">
               ${getUniversalPinButtonHtml({ name: s.name, type: 'Spell', action: s.action || 'Standard', desc: s.benefit || '', badge: dmgExpr || '', damageDice: dmgExpr || '' })}
               <span>🔮</span>
-              <span class="${hasActiveSlot ? 'text-white' : 'text-slate-400'}">${UI.escapeHtml(s.name)}</span>
+              <button type="button" data-action="entity:inspect" data-entity-kind="spell" data-entity-id="${UI.escapeAttr(s.id || s.baseEntryId || '')}" data-entity-name="${UI.escapeAttr(s.name || '')}" data-entity-index="${originalIdx}" data-discipline="spontaneous" class="text-left font-bold cursor-pointer hover:underline ${hasActiveSlot ? 'text-white hover:text-purple-200' : 'text-slate-400 hover:text-slate-200'}" title="Inspect / Edit in Rule Crafter">${UI.escapeHtml(s.name)}</button>
               ${!hasActiveSlot ? `<span class="text-[10px] font-mono px-1.5 rounded bg-rose-950/90 text-rose-300 border border-rose-800/80 font-bold shrink-0">0 Slot</span>` : ''}
             </div>
           </td>
@@ -10259,15 +10533,73 @@
         if (btnRemoveText) btnRemoveText.textContent = 'Remove from Character';
       }
 
+      // Resolve canonical ID & check character.customEntries Copy-on-Write override
+      const resolvedFeatId = fFromDb?.id || fFromComp?.id || fFromBundled?.id
+        || (fFromChar && typeof fFromChar === 'object' ? fFromChar.id : null)
+        || (aFromChar && typeof aFromChar === 'object' ? aFromChar.id : null)
+        || ('feat-' + cleanName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''));
+      const customEntries = character?.customEntries && typeof character.customEntries === 'object' ? character.customEntries : null;
+      let overrideKey = (resolvedFeatId && customEntries && customEntries[resolvedFeatId]) ? resolvedFeatId : null;
+      if (!overrideKey && customEntries) {
+        const matchKey = Object.keys(customEntries).find(k => String(customEntries[k]?.name || '').toLowerCase().trim() === cleanName.toLowerCase());
+        if (matchKey) overrideKey = matchKey;
+      }
+      const isFeatOverridden = Boolean(overrideKey);
+      if (isFeatOverridden) {
+        const ov = customEntries[overrideKey];
+        if (ov.benefit || ov.description || ov.shortDescription) {
+          benefit = ov.benefit || ov.description || ov.shortDescription;
+          const benefitEl = document.getElementById('feat-modal-benefit');
+          if (benefitEl) benefitEl.textContent = benefit;
+        }
+        if (ov.source) {
+          source = ov.source;
+          const sourceEl = document.getElementById('feat-modal-source');
+          if (sourceEl) sourceEl.textContent = source;
+        }
+      }
+
       // Configure Pin button state for this viewed feat
       window.currentViewedFeatItem = {
+        id: overrideKey || resolvedFeatId,
         name: title,
         type: category || 'Feat',
         action: 'Standard',
         desc: benefit,
-        badge: category || 'Feat'
+        badge: category || 'Feat',
+        levelIndex: currentFeatSourceLevelIndex,
+        sourceCategory: currentFeatSourceType
       };
       updateFeatModalPinButton();
+
+      // Inject Rule Crafter footer actions into #feat-detail-modal footer
+      const removeFeatBtn = document.getElementById('btn-remove-feat-from-char');
+      const featFooterEl = removeFeatBtn ? removeFeatBtn.parentElement : null;
+      if (featFooterEl) {
+        featFooterEl.classList.add('flex-wrap', 'gap-2');
+        let crafterWrap = document.getElementById('feat-crafter-footer-actions');
+        if (!crafterWrap) {
+          crafterWrap = document.createElement('div');
+          crafterWrap.id = 'feat-crafter-footer-actions';
+          crafterWrap.className = 'flex flex-wrap items-center gap-1.5';
+          crafterWrap.innerHTML = `
+            <button id="btn-crafter-edit-feat" type="button" data-action="crafter:edit-viewed-feat" class="h-8 px-2.5 rounded-lg bg-indigo-950 hover:bg-indigo-600 text-indigo-200 hover:text-white border border-indigo-500/70 text-xs font-bold transition inline-flex items-center gap-1 cursor-pointer">
+              <span>⚒️</span>
+              <span>Edit in Rule Crafter</span>
+            </button>
+            <button id="btn-crafter-reset-feat" type="button" data-action="crafter:reset-viewed-feat" class="hidden h-8 px-2.5 rounded-lg bg-amber-950 hover:bg-amber-800 text-amber-200 hover:text-white border border-amber-600/70 text-xs font-bold transition inline-flex items-center gap-1 cursor-pointer">
+              <span>↺</span>
+              <span>Reset to Official SRD</span>
+            </button>
+          `;
+          featFooterEl.insertBefore(crafterWrap, featFooterEl.lastElementChild || null);
+        }
+        const resetCrafterBtn = document.getElementById('btn-crafter-reset-feat');
+        if (resetCrafterBtn) {
+          if (isFeatOverridden) resetCrafterBtn.classList.remove('hidden');
+          else resetCrafterBtn.classList.add('hidden');
+        }
+      }
 
       // Setup dynamic target configuration (Weapon Focus, Spell Focus, Skill Focus)
       setupFeatTargetSelector(title);
@@ -10362,12 +10694,890 @@
     }
 
     // =========================================================================
+    // 5 SUBSYSTEM COCKPITS (Psionics, Incarnum, Pact Magic, Shadow, Truenaming)
+    // =========================================================================
+    const SUBSYSTEM_PICKER_META = {
+      psionics: { srdType: 'Power', title: 'Psionic Powers Compendium', btnLabel: '+ Add Power', icon: '🧠', badgeClass: 'bg-cyan-950 text-cyan-300 border-cyan-700', borderClass: 'border-cyan-500/60' },
+      incarnum: { srdType: 'Soulmeld', title: 'Incarnum Soulmelds Compendium', btnLabel: '+ Shape Soulmeld', icon: '💠', badgeClass: 'bg-emerald-950 text-emerald-300 border-emerald-700', borderClass: 'border-emerald-500/60' },
+      pact: { srdType: 'Vestige', title: 'Tome of Magic Vestiges Compendium', btnLabel: '+ Bind Vestige', icon: '🕯️', badgeClass: 'bg-purple-950 text-purple-300 border-purple-700', borderClass: 'border-purple-500/60' },
+      shadow: { srdType: 'Mystery', title: 'Shadow Magic Mysteries Compendium', btnLabel: '+ Learn Mystery', icon: '🌑', badgeClass: 'bg-indigo-950 text-indigo-300 border-indigo-700', borderClass: 'border-indigo-500/60' },
+      truenaming: { srdType: 'Utterance', title: 'Truenaming Utterances Compendium', btnLabel: '+ Learn Utterance', icon: '📜', badgeClass: 'bg-teal-950 text-teal-300 border-teal-700', borderClass: 'border-teal-500/60' }
+    };
+
+    const CHAKRA_BIND_SLOTS = ['None', 'Crown', 'Feet', 'Hands', 'Arms', 'Brow', 'Shoulders', 'Throat', 'Waist', 'Heart', 'Soul', 'Totem'];
+
+    function countClassLevelsMatching(char, keywords) {
+      if (!char || !Array.isArray(keywords) || keywords.length === 0) return 0;
+      let count = 0;
+      if (Array.isArray(char.levelProgression) && char.levelProgression.length > 0) {
+        char.levelProgression.filter(p => p && p.active !== false).forEach(p => {
+          const cn = String(p.className || p.class || p.name || '').toLowerCase();
+          if (keywords.some(k => cn.includes(k))) count += 1;
+        });
+      }
+      if (count === 0 && Array.isArray(char.classes)) {
+        char.classes.forEach(c => {
+          const cn = String(typeof c === 'string' ? c : (c?.name || c?.className || '')).toLowerCase();
+          if (keywords.some(k => cn.includes(k))) count += (typeof c === 'object' ? (Number(c.level) || 1) : 1);
+        });
+      }
+      return count;
+    }
+
+    function getSkillTotalByName(char, targetName) {
+      const target = String(targetName || '').toLowerCase();
+      const skills = Array.isArray(char?.skills) ? char.skills : [];
+      const row = skills.find(s => String(s?.name || '').toLowerCase() === target);
+      if (!row) return 0;
+      if (typeof row.total === 'number') return row.total;
+      const ranks = Number(row.ranks) || 0;
+      const misc = Number(row.misc) || 0;
+      const statKey = String(row.stat || 'int').toLowerCase();
+      const score = Number(char?.abilities?.[statKey]) || 10;
+      const mod = Math.floor((score - 10) / 2);
+      return ranks + mod + misc;
+    }
+
+    function getSubsystemSnapshot(discipline, char = character, sheet = null) {
+      const s = sheet || getCharacterSheetSnapshot();
+      const fromEngine = s?.subsystems?.[discipline];
+      const totalLevel = (s?.subsystems && typeof s.subsystems.totalLevel === 'number')
+        ? s.subsystems.totalLevel
+        : computeLocalTotalLevel(char);
+      const { featNames } = collectCharacterClassAndFeatNames(char);
+
+      if (discipline === 'psionics') {
+        const rawPsi = char?.psionics || {};
+        const powers = Array.isArray(rawPsi.powers) ? rawPsi.powers : (Array.isArray(char?.powers) ? char.powers : []);
+        const mlClassLvls = countClassLevelsMatching(char, SUBSYSTEM_CLASS_MAP.psionics);
+        const hasTalentFeat = featNames.some(f => f.includes('wild talent') || f.includes('hidden talent') || f.includes('psionic talent'));
+        const ml = fromEngine?.manifesterLevel ?? (mlClassLvls > 0 ? mlClassLvls : (hasTalentFeat ? 1 : 0));
+        const ppTable = [0, 2, 6, 11, 17, 25, 35, 46, 58, 72, 88, 106, 126, 147, 170, 195, 221, 250, 280, 311, 343];
+        const basePP = fromEngine?.basePP ?? (mlClassLvls > 0 ? (ppTable[Math.min(20, mlClassLvls)] || 0) : (hasTalentFeat ? 2 : 0));
+        const intMod = Math.floor(((Number(char?.abilities?.int) || 10) - 10) / 2);
+        const bonusPP = fromEngine?.bonusPP ?? (ml >= 1 && intMod > 0 ? Math.floor((intMod * ml) / 2) : 0);
+        const maxPP = fromEngine?.maxPP ?? Math.max(Number(rawPsi.maxPP) || 0, basePP + bonusPP);
+        const currentPP = rawPsi.currentPP !== undefined ? Math.max(0, Math.min(maxPP || 999, Number(rawPsi.currentPP) || 0)) : (fromEngine?.currentPP ?? maxPP);
+        return { manifesterLevel: ml, basePP, bonusPP, maxPP, currentPP, powers };
+      }
+
+      if (discipline === 'incarnum') {
+        const rawInc = char?.incarnum || {};
+        const soulmelds = Array.isArray(rawInc.soulmelds) ? rawInc.soulmelds : (Array.isArray(char?.soulmelds) ? char.soulmelds : []);
+        const meldLvls = countClassLevelsMatching(char, SUBSYSTEM_CLASS_MAP.incarnum);
+        const meldshaperLevel = fromEngine?.meldshaperLevel ?? meldLvls;
+        const essentiaCapacity = fromEngine?.essentiaCapacity ?? (totalLevel >= 18 ? 4 : totalLevel >= 12 ? 3 : totalLevel >= 6 ? 2 : 1);
+        const bonusEssentiaCount = featNames.filter(f => f.includes('bonus essentia')).length;
+        const isAzurin = String(char?.race || '').toLowerCase().includes('azurin');
+        const fallbackPool = meldLvls + (isAzurin ? 1 : 0) + (bonusEssentiaCount * (meldLvls > 0 ? 2 : 1));
+        const essentiaPool = fromEngine?.essentiaPool ?? Math.max(Number(rawInc.essentiaPool) || 0, fallbackPool);
+        const investedEssentia = fromEngine?.investedEssentia ?? soulmelds.reduce((sum, sm) => sum + (Number(sm?.investedEssentia) || 0), 0);
+        const availableEssentia = fromEngine?.availableEssentia ?? Math.max(0, essentiaPool - investedEssentia);
+        const maxSoulmelds = fromEngine?.maxSoulmelds ?? (meldLvls > 0 ? Math.min(9, 2 + Math.floor(meldLvls / 3)) : (featNames.filter(f => f.includes('shape soulmeld')).length));
+        const openChakraCount = featNames.filter(f => f.includes('open least chakra') || f.includes('open lesser chakra') || f.includes('open greater chakra')).length;
+        const maxChakraBinds = fromEngine?.maxChakraBinds ?? ((meldLvls >= 2 ? 1 + Math.floor((meldLvls - 2) / 4) : 0) + openChakraCount);
+        return { meldshaperLevel, essentiaPool, essentiaCapacity, investedEssentia, availableEssentia, maxSoulmelds, maxChakraBinds, soulmelds };
+      }
+
+      if (discipline === 'pact') {
+        const rawPact = char?.pactMagic || {};
+        const vestiges = Array.isArray(rawPact.vestiges) ? rawPact.vestiges : (Array.isArray(char?.vestiges) ? char.vestiges : []);
+        const binderLvls = countClassLevelsMatching(char, SUBSYSTEM_CLASS_MAP.pact);
+        const hasBindFeat = featNames.some(f => f.includes('bind vestige'));
+        const ebl = fromEngine?.effectiveBinderLevel ?? (binderLvls > 0 ? binderLvls : (hasBindFeat ? Math.max(1, Math.floor(totalLevel / 2)) : 0));
+        const maxVestiges = fromEngine?.maxVestiges ?? (ebl >= 20 ? 4 : ebl >= 14 ? 3 : ebl >= 8 ? 2 : ((ebl >= 1 || hasBindFeat) ? 1 : 0));
+        const maxVestigeLevel = fromEngine?.maxVestigeLevel ?? (ebl >= 17 ? 8 : ebl >= 15 ? 7 : ebl >= 12 ? 6 : ebl >= 10 ? 5 : ebl >= 7 ? 4 : ebl >= 5 ? 3 : ebl >= 3 ? 2 : (ebl >= 1 ? 1 : 0));
+        return { binderLevel: binderLvls, effectiveBinderLevel: ebl, maxVestiges, maxVestigeLevel, vestiges };
+      }
+
+      if (discipline === 'shadow') {
+        const rawShadow = char?.shadowMagic || {};
+        const mysteries = Array.isArray(rawShadow.mysteries) ? rawShadow.mysteries : (Array.isArray(char?.mysteries) ? char.mysteries : []);
+        const casterLevel = fromEngine?.casterLevel ?? countClassLevelsMatching(char, SUBSYSTEM_CLASS_MAP.shadow);
+        return { casterLevel, mysteries };
+      }
+
+      if (discipline === 'truenaming') {
+        const rawTn = char?.truenaming || {};
+        const utterances = Array.isArray(rawTn.utterances) ? rawTn.utterances : (Array.isArray(char?.utterances) ? char.utterances : []);
+        const truenamerLevel = fromEngine?.truenamerLevel ?? countClassLevelsMatching(char, SUBSYSTEM_CLASS_MAP.truenaming);
+        const truespeakBonus = fromEngine?.truespeakBonus ?? getSkillTotalByName(char, 'Truespeak');
+        return { truenamerLevel, truespeakBonus, utterances };
+      }
+
+      return {};
+    }
+
+    function getSubsystemEntriesFromCompendium(srdType) {
+      const byKey = new Map();
+      const pushRec = (rec) => {
+        if (!rec || !rec.name) return;
+        const typeStr = String(rec.type || '').toLowerCase();
+        if (typeStr !== srdType.toLowerCase()) return;
+        const key = String(rec.id || rec.name).toLowerCase();
+        if (!byKey.has(key)) byKey.set(key, rec);
+      };
+      if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
+        masterDb.forEach(pushRec);
+      }
+      if (typeof window !== 'undefined' && window.SrdCompendium && typeof window.SrdCompendium.getByType === 'function') {
+        window.SrdCompendium.getByType(srdType).forEach(pushRec);
+      }
+      return Array.from(byKey.values());
+    }
+
+    function renderSubsysPickerDrawerHtml(discipline) {
+      if (!_subsysPickerState || _subsysPickerState.discipline !== discipline) return '';
+      const meta = SUBSYSTEM_PICKER_META[discipline];
+      if (!meta) return '';
+
+      if (typeof window !== 'undefined' && window.SrdCompendium && typeof window.SrdCompendium.ensureTypesLoaded === 'function') {
+        window.SrdCompendium.ensureTypesLoaded([meta.srdType]).then((arrived) => {
+          if (arrived && arrived.length > 0 && window._currentMagicDiscipline === discipline && _subsysPickerState?.discipline === discipline) {
+            renderSubsystemPanel(discipline);
+          }
+        }).catch(() => {});
+      }
+
+      const query = String(_subsysPickerState.query || '').toLowerCase().trim();
+      const levelFilter = String(_subsysPickerState.levelFilter || 'all');
+      const allEntries = getSubsystemEntriesFromCompendium(meta.srdType);
+      const filtered = allEntries.filter(item => {
+        const lvlVal = item.level ?? item.spell?.level ?? item.spell?.vestigeLvl ?? item.spell?.maneuverLvl ?? '';
+        if (levelFilter !== 'all' && String(lvlVal) !== levelFilter) return false;
+        if (!query) return true;
+        const hay = `${item.name || ''} ${item.shortDescription || ''} ${item.description || ''} ${item.spell?.discipline || ''} ${item.spell?.mysteryTier || ''} ${item.spell?.lexicon || ''} ${item.spell?.chakraSlots || ''}`.toLowerCase();
+        return hay.includes(query);
+      }).sort((a, b) => {
+        const la = Number(a.level ?? a.spell?.level ?? a.spell?.vestigeLvl ?? a.spell?.maneuverLvl ?? 0);
+        const lb = Number(b.level ?? b.spell?.level ?? b.spell?.vestigeLvl ?? b.spell?.maneuverLvl ?? 0);
+        if (la !== lb) return la - lb;
+        return String(a.name || '').localeCompare(String(b.name || ''));
+      });
+      const shown = filtered.slice(0, 40);
+
+      const rowsHtml = shown.length > 0 ? shown.map(item => {
+        const lvl = item.level ?? item.spell?.level ?? item.spell?.vestigeLvl ?? item.spell?.maneuverLvl;
+        const subTag = item.spell?.discipline || item.spell?.chakraSlots || item.spell?.mysteryTier || item.spell?.lexicon || '';
+        const summary = item.shortDescription || item.benefit || '';
+        return `
+          <div class="p-2.5 rounded-lg bg-slate-900/90 border border-slate-800 flex items-center justify-between gap-2">
+            <div class="min-w-0 flex-1 space-y-0.5">
+              <div class="flex flex-wrap items-center gap-1.5">
+                <span class="font-bold text-xs text-white truncate">${UI.escapeHtml(item.name)}</span>
+                ${lvl !== undefined && lvl !== null && lvl !== '' ? `<span class="badge ${meta.badgeClass} text-[10px] font-mono">Lvl ${Number(lvl)}</span>` : ''}
+                ${subTag ? `<span class="badge bg-slate-800 text-slate-300 border border-slate-700 text-[10px]">${UI.escapeHtml(subTag)}</span>` : ''}
+              </div>
+              <p class="text-[11px] text-slate-400 truncate">${UI.escapeHtml(summary || 'SRD 3.5e entry')}</p>
+            </div>
+            <button type="button" data-action="spells:subsys-picker-add" data-discipline="${discipline}" data-entry-id="${UI.escapeAttr(item.id || '')}" data-entry-name="${UI.escapeAttr(item.name || '')}" class="ui-btn-xs h-7 px-2.5 rounded-lg bg-emerald-950 hover:bg-emerald-800 text-emerald-200 border border-emerald-600/70 shrink-0">+ Add</button>
+          </div>
+        `;
+      }).join('') : `
+        <div class="p-4 text-center text-xs text-slate-400">
+          ${allEntries.length === 0 ? `Loading ${UI.escapeHtml(meta.srdType)} compendium...` : `No matching ${UI.escapeHtml(meta.srdType)} found.`}
+        </div>
+      `;
+
+      return `
+        <div class="bg-slate-950 border ${meta.borderClass} rounded-xl p-3 space-y-2.5 shadow-lg">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-2">
+            <div class="flex items-center gap-2 min-w-0">
+              <span>${meta.icon}</span>
+              <span class="text-xs font-extrabold text-white truncate">${UI.escapeHtml(meta.title)}</span>
+              <span class="badge bg-slate-900 text-slate-400 border border-slate-700 text-[10px] font-mono">${filtered.length}</span>
+            </div>
+            <button type="button" data-action="spells:subsys-close-picker" data-discipline="${discipline}" class="ui-btn-xs h-6 px-2 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700">✕ Close</button>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <input type="text" id="subsys-picker-search-${discipline}" value="${UI.escapeAttr(_subsysPickerState.query || '')}" data-input-action="spells:subsys-picker-search" data-discipline="${discipline}" placeholder="Search ${UI.escapeAttr(meta.srdType.toLowerCase())} name or effect..." class="ui-input-sm h-8 flex-1 min-w-[180px] bg-slate-900 text-white placeholder-slate-500 text-xs rounded-lg border border-slate-700 px-3 focus:outline-none">
+            <select id="subsys-picker-level-${discipline}" data-change-action="spells:subsys-picker-level" data-discipline="${discipline}" class="ui-input-sm h-8 bg-slate-900 text-slate-200 text-xs rounded-lg border border-slate-700 px-2.5 cursor-pointer">
+              <option value="all" ${levelFilter === 'all' ? 'selected' : ''}>All Levels</option>
+              ${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(l => `<option value="${l}" ${levelFilter === String(l) ? 'selected' : ''}>Level ${l}</option>`).join('')}
+            </select>
+          </div>
+          <div class="space-y-1.5 max-h-72 overflow-y-auto pr-1">
+            ${rowsHtml}
+          </div>
+        </div>
+      `;
+    }
+
+    function ensureSubsystemBucket(discipline) {
+      if (!character || typeof character !== 'object') return null;
+      if (discipline === 'psionics') {
+        if (!character.psionics || typeof character.psionics !== 'object') character.psionics = {};
+        if (!Array.isArray(character.psionics.powers)) {
+          character.psionics.powers = Array.isArray(character.powers) ? [...character.powers] : [];
+        }
+        return character.psionics;
+      }
+      if (discipline === 'incarnum') {
+        if (!character.incarnum || typeof character.incarnum !== 'object') character.incarnum = {};
+        if (!Array.isArray(character.incarnum.soulmelds)) {
+          character.incarnum.soulmelds = Array.isArray(character.soulmelds) ? [...character.soulmelds] : [];
+        }
+        return character.incarnum;
+      }
+      if (discipline === 'pact') {
+        if (!character.pactMagic || typeof character.pactMagic !== 'object') character.pactMagic = {};
+        if (!Array.isArray(character.pactMagic.vestiges)) {
+          character.pactMagic.vestiges = Array.isArray(character.vestiges) ? [...character.vestiges] : [];
+        }
+        return character.pactMagic;
+      }
+      if (discipline === 'shadow') {
+        if (!character.shadowMagic || typeof character.shadowMagic !== 'object') character.shadowMagic = {};
+        if (!Array.isArray(character.shadowMagic.mysteries)) {
+          character.shadowMagic.mysteries = Array.isArray(character.mysteries) ? [...character.mysteries] : [];
+        }
+        return character.shadowMagic;
+      }
+      if (discipline === 'truenaming') {
+        if (!character.truenaming || typeof character.truenaming !== 'object') character.truenaming = {};
+        if (!Array.isArray(character.truenaming.utterances)) {
+          character.truenaming.utterances = Array.isArray(character.utterances) ? [...character.utterances] : [];
+        }
+        return character.truenaming;
+      }
+      return null;
+    }
+
+    function patchSubsystemCockpitDOM(discipline) {
+      if (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.recompute === 'function') {
+        if (typeof window.CharStore._syncExternalCharacterRef === 'function') {
+          window.CharStore._syncExternalCharacterRef(character);
+        }
+        window.CharStore.recompute();
+      }
+      if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
+      renderSubsystemPanel(discipline);
+      renderDisciplineTopBar(character);
+      if (typeof renderHUD === 'function') renderHUD({ skipRecompute: true });
+      if (typeof renderAbilities === 'function') renderAbilities();
+    }
+
+    function renderSubsystemPanel(discipline) {
+      const panelEl = document.getElementById(`magic-panel-${discipline}`);
+      if (!panelEl) return;
+
+      const sheet = getCharacterSheetSnapshot();
+      const snap = getSubsystemSnapshot(discipline, character, sheet);
+      const pickerHtml = renderSubsysPickerDrawerHtml(discipline);
+
+      if (discipline === 'psionics') {
+        const ml = snap.manifesterLevel || 0;
+        const maxPP = snap.maxPP || 0;
+        const curPP = snap.currentPP || 0;
+        const pct = maxPP > 0 ? Math.max(0, Math.min(100, Math.round((curPP / maxPP) * 100))) : 0;
+        const cardsHtml = snap.powers.length > 0 ? snap.powers.map((p, idx) => {
+          const baseCost = Math.max(1, Number(p.ppCost ?? p.spell?.ppCost ?? ((Number(p.level) || 1) * 2 - 1)) || 1);
+          const maxAugment = Math.max(0, ml - baseCost);
+          const augPP = Math.max(0, Math.min(maxAugment, Number(p.augmentPP) || 0));
+          const totalCost = baseCost + augPP;
+          const descText = p.shortDescription || p.benefit || p.description || 'Psionic power.';
+          const pDisc = p.discipline || p.spell?.discipline || 'Psionics';
+          return `
+            <div class="discipline-tab-card bg-slate-900/90 border border-cyan-500/40 rounded-xl p-3 flex flex-col justify-between gap-2.5 shadow-sm">
+              <div class="space-y-1.5 min-w-0">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="badge bg-cyan-950 text-cyan-300 border border-cyan-700 text-[10px] font-mono">Lvl ${Number(p.level) || 1} • ${UI.escapeHtml(pDisc)}</span>
+                  <span class="badge bg-slate-950 text-cyan-200 border border-slate-700 text-[10px] font-mono">${totalCost} PP</span>
+                </div>
+                <button type="button" data-action="entity:inspect" data-entity-kind="power" data-entity-id="${UI.escapeAttr(p.id || p.baseEntryId || '')}" data-entity-name="${UI.escapeAttr(p.name || '')}" data-entity-index="${idx}" data-discipline="psionics" class="text-left text-xs font-extrabold text-white hover:text-white cursor-pointer hover:underline block truncate max-w-full" title="Inspect / Edit in Rule Crafter">${UI.escapeHtml(p.name || 'Unnamed Power')}</button>
+                <p class="text-[11px] text-slate-300 line-clamp-2">${UI.escapeHtml(descText)}</p>
+              </div>
+              <div class="pt-2 border-t border-slate-800 flex flex-wrap items-center justify-between gap-2">
+                <div class="flex items-center gap-1">
+                  <span class="text-[10px] text-slate-400 font-bold">Augment:</span>
+                  <button type="button" data-action="spells:subsys-power-augment" data-idx="${idx}" data-delta="-1" class="ui-btn-icon-sm bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700">-</button>
+                  <span class="text-[11px] font-mono font-bold text-cyan-300 px-1.5">+${augPP} PP</span>
+                  <button type="button" data-action="spells:subsys-power-augment" data-idx="${idx}" data-delta="1" class="ui-btn-icon-sm bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700">+</button>
+                </div>
+                <button type="button" data-action="spells:subsys-manifest-power" data-idx="${idx}" class="ui-btn-sm h-7 px-3 rounded-lg bg-cyan-800 hover:bg-cyan-700 text-white border border-cyan-500/60 text-xs font-bold">🧠 Manifest (${totalCost} PP)</button>
+              </div>
+            </div>
+          `;
+        }).join('') : `
+          <div class="col-span-full py-8 text-center text-slate-400 text-xs bg-slate-950/50 rounded-xl border border-dashed border-slate-800 space-y-2">
+            <div class="text-2xl">🧠</div>
+            <p>No psionic powers known yet. Click <strong>+ Add Power</strong> above to query the Psionics Compendium.</p>
+          </div>
+        `;
+
+        panelEl.innerHTML = `
+          <div class="bg-slate-900 border border-cyan-500/50 rounded-xl p-3 flex flex-wrap items-center justify-between gap-3 shadow-md" style="background: linear-gradient(90deg, rgba(8,51,68,0.65), rgba(15,23,42,0.95), rgba(19,78,74,0.45));">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <div class="w-9 h-9 rounded-lg bg-cyan-950 border border-cyan-500/60 flex items-center justify-center text-lg shrink-0">🧠</div>
+              <div class="min-w-0">
+                <div class="flex flex-wrap items-center gap-2">
+                  <h3 class="font-extrabold text-white text-sm md:text-base">Psionics &amp; Power Points</h3>
+                  <span class="badge bg-cyan-950 text-cyan-300 border border-cyan-700 text-[10px] font-mono">ML ${ml}</span>
+                  <span class="badge bg-slate-900 text-cyan-200 border border-slate-700 text-[10px] font-mono">${curPP} / ${maxPP} PP</span>
+                </div>
+                <p class="text-[11px] text-cyan-300">Base PP: ${snap.basePP} • Bonus PP: +${snap.bonusPP} • Augment cap: ${ml} PP</p>
+              </div>
+            </div>
+            <div class="flex flex-wrap items-center gap-1.5">
+              <button type="button" data-action="spells:subsys-pp-delta" data-delta="-1" class="ui-btn-sm h-8 px-2.5 bg-slate-900 hover:bg-slate-800 text-cyan-200 border border-slate-700">-1 PP</button>
+              <button type="button" data-action="spells:subsys-pp-delta" data-delta="1" class="ui-btn-sm h-8 px-2.5 bg-slate-900 hover:bg-slate-800 text-cyan-200 border border-slate-700">+1 PP</button>
+              <button type="button" data-action="spells:subsys-pp-delta" data-delta="restore" class="ui-btn-sm h-8 px-2.5 bg-cyan-950 hover:bg-cyan-600 text-cyan-200 border border-cyan-500/60">✨ Rest PP</button>
+              <button type="button" data-action="spells:subsys-open-picker" data-discipline="psionics" class="ui-btn-sm h-8 px-3 bg-cyan-700 hover:bg-cyan-600 text-white border border-cyan-400/60">+ Add Power</button>
+            </div>
+          </div>
+          <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-2.5 space-y-1.5">
+            <div class="flex items-center justify-between text-[11px]">
+              <span class="text-cyan-300 font-bold">Power Point Reserve</span>
+              <span class="font-mono font-bold text-white">${curPP} / ${maxPP} PP (${pct}%)</span>
+            </div>
+            <div class="w-full h-2.5 bg-slate-900 rounded-full overflow-hidden border border-slate-800">
+              <div class="h-full transition-all" style="width: ${pct}%; background: linear-gradient(90deg, #0891b2, #2dd4bf);"></div>
+            </div>
+          </div>
+          ${pickerHtml}
+          <div class="subsys-cards-grid">${cardsHtml}</div>
+        `;
+        return;
+      }
+
+      if (discipline === 'incarnum') {
+        const cardsHtml = snap.soulmelds.length > 0 ? snap.soulmelds.map((sm, idx) => {
+          const invested = Number(sm.investedEssentia) || 0;
+          const boundChakra = sm.boundChakra || 'None';
+          const slotsText = sm.chakraSlots || sm.spell?.chakraSlots || 'All';
+          const descText = sm.shortDescription || sm.benefit || sm.description || 'Incarnum soulmeld.';
+          return `
+            <div class="discipline-tab-card bg-slate-900/90 border border-emerald-500/40 rounded-xl p-3 flex flex-col justify-between gap-2.5 shadow-sm">
+              <div class="space-y-1.5 min-w-0">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="badge bg-emerald-950 text-emerald-300 border border-emerald-700 text-[10px]">Chakras: ${UI.escapeHtml(slotsText)}</span>
+                  <span class="badge bg-slate-950 text-sky-300 border border-slate-700 text-[10px] font-mono">Essentia: ${invested} / ${snap.essentiaCapacity}</span>
+                </div>
+                <button type="button" data-action="entity:inspect" data-entity-kind="soulmeld" data-entity-id="${UI.escapeAttr(sm.id || sm.baseEntryId || '')}" data-entity-name="${UI.escapeAttr(sm.name || '')}" data-entity-index="${idx}" data-discipline="incarnum" class="text-left text-xs font-extrabold text-white hover:text-emerald-200 cursor-pointer hover:underline block truncate max-w-full" title="Inspect / Edit in Rule Crafter">${UI.escapeHtml(sm.name || 'Unnamed Soulmeld')}</button>
+                <p class="text-[11px] text-slate-300 line-clamp-2">${UI.escapeHtml(descText)}</p>
+              </div>
+              <div class="pt-2 border-t border-slate-800 flex flex-wrap items-center justify-between gap-2">
+                <div class="flex items-center gap-1">
+                  <span class="text-[10px] text-slate-400 font-bold">Invest:</span>
+                  <button type="button" data-action="spells:subsys-essentia-delta" data-idx="${idx}" data-delta="-1" class="ui-btn-icon-sm bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700">-</button>
+                  <span class="text-xs font-mono font-bold text-emerald-300 px-1.5">${invested}</span>
+                  <button type="button" data-action="spells:subsys-essentia-delta" data-idx="${idx}" data-delta="1" class="ui-btn-icon-sm bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700">+</button>
+                </div>
+                <label class="flex items-center gap-1.5 text-[10px] text-slate-400">
+                  <span class="font-bold">Bind:</span>
+                  <select data-change-action="spells:subsys-chakra-bind" data-idx="${idx}" class="ui-input-sm h-7 bg-slate-950 border border-slate-700 rounded-md px-2 text-xs text-sky-300 font-bold cursor-pointer">
+                    ${CHAKRA_BIND_SLOTS.map(slot => `<option value="${slot}" ${boundChakra === slot ? 'selected' : ''}>${slot}</option>`).join('')}
+                  </select>
+                </label>
+              </div>
+            </div>
+          `;
+        }).join('') : `
+          <div class="col-span-full py-8 text-center text-slate-400 text-xs bg-slate-950/50 rounded-xl border border-dashed border-slate-800 space-y-2">
+            <div class="text-2xl">💠</div>
+            <p>No soulmelds shaped yet. Click <strong>+ Shape Soulmeld</strong> above to browse Magic of Incarnum.</p>
+          </div>
+        `;
+
+        panelEl.innerHTML = `
+          <div class="bg-slate-900 border border-emerald-500/50 rounded-xl p-3 flex flex-wrap items-center justify-between gap-3 shadow-md" style="background: linear-gradient(90deg, rgba(2,44,34,0.65), rgba(15,23,42,0.95), rgba(19,78,74,0.45));">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <div class="w-9 h-9 rounded-lg bg-emerald-950 border border-emerald-500/60 flex items-center justify-center text-lg shrink-0">💠</div>
+              <div class="min-w-0">
+                <div class="flex flex-wrap items-center gap-2">
+                  <h3 class="font-extrabold text-white text-sm md:text-base">Incarnum &amp; Soulmelds</h3>
+                  <span class="badge bg-emerald-950 text-emerald-300 border border-emerald-700 text-[10px] font-mono">Available: ${snap.availableEssentia} / ${snap.essentiaPool} Essentia</span>
+                  <span class="badge bg-sky-950 text-sky-300 border border-sky-700 text-[10px] font-mono">Max Capacity: ${snap.essentiaCapacity}</span>
+                </div>
+                <p class="text-[11px] text-emerald-300">Meldshaper Level: ${snap.meldshaperLevel} • Shaped: ${snap.soulmelds.length}/${snap.maxSoulmelds} • Chakra Binds: ${snap.soulmelds.filter(s => s.boundChakra && s.boundChakra !== 'None').length}/${snap.maxChakraBinds}</p>
+              </div>
+            </div>
+            <button type="button" data-action="spells:subsys-open-picker" data-discipline="incarnum" class="ui-btn-sm h-8 px-3 bg-emerald-700 hover:bg-emerald-600 text-white border border-emerald-400/60">+ Shape Soulmeld</button>
+          </div>
+          ${pickerHtml}
+          <div class="subsys-cards-grid">${cardsHtml}</div>
+        `;
+        return;
+      }
+
+      if (discipline === 'pact') {
+        const cardsHtml = snap.vestiges.length > 0 ? snap.vestiges.map((v, idx) => {
+          const vLvl = Number(v.vestigeLevel ?? v.spell?.vestigeLvl ?? 1) || 1;
+          const dc = Number(v.bindingDc ?? v.spell?.bindingDc ?? 15) || 15;
+          const isPoor = v.pactQuality === 'poor';
+          const showSign = Boolean(v.showSign || isPoor);
+          const cd = Math.max(0, Number(v.cooldownRounds) || 0);
+          const signText = v.vestigeSign || v.spell?.vestigeSign || 'Manifests vestige physical sign.';
+          const infText = v.vestigeInfluence || v.spell?.vestigeInfluence || 'Requires obedience to vestige influence.';
+          const descText = v.shortDescription || v.benefit || v.description || 'Bound vestige.';
+          return `
+            <div class="discipline-tab-card bg-slate-900/90 border border-purple-500/40 rounded-xl p-3 flex flex-col justify-between gap-2.5 shadow-sm">
+              <div class="space-y-1.5 min-w-0">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="badge bg-purple-950 text-purple-300 border border-purple-700 text-[10px] font-mono">Vestige Lvl ${vLvl} • DC ${dc}</span>
+                  <span class="badge ${isPoor ? 'bg-amber-950 text-amber-300 border-amber-700' : 'bg-emerald-950 text-emerald-300 border-emerald-700'} text-[10px]">${isPoor ? 'Poor Pact (Sign + Influence)' : (showSign ? 'Good Pact (Show Sign)' : 'Good Pact')}</span>
+                </div>
+                <button type="button" data-action="entity:inspect" data-entity-kind="vestige" data-entity-id="${UI.escapeAttr(v.id || v.baseEntryId || '')}" data-entity-name="${UI.escapeAttr(v.name || '')}" data-entity-index="${idx}" data-discipline="pact" class="text-left text-xs font-extrabold text-white hover:text-purple-200 cursor-pointer hover:underline block truncate max-w-full" title="Inspect / Edit in Rule Crafter">${UI.escapeHtml(v.name || 'Unnamed Vestige')}</button>
+                <p class="text-[11px] text-slate-300 line-clamp-2">${UI.escapeHtml(descText)}</p>
+                ${showSign ? `<div class="text-[10px] bg-slate-950/90 border border-slate-800 rounded-lg p-2 text-amber-200/90 space-y-0.5"><div><strong>Sign:</strong> ${UI.escapeHtml(signText)}</div>${isPoor ? `<div><strong>Influence:</strong> ${UI.escapeHtml(infText)}</div>` : ''}</div>` : ''}
+              </div>
+              <div class="pt-2 border-t border-slate-800 flex flex-wrap items-center justify-between gap-1.5">
+                <button type="button" data-action="spells:subsys-binding-check" data-idx="${idx}" class="ui-btn-xs h-7 px-2.5 bg-purple-800 hover:bg-purple-700 text-white border border-purple-500/60">🕯️ Binding Check (1d20)</button>
+                <button type="button" data-action="spells:subsys-toggle-pact" data-idx="${idx}" class="ui-btn-xs h-7 px-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700">${isPoor ? 'Switch Good Pact' : 'Poor Pact / Sign'}</button>
+                <div class="flex items-center gap-1">
+                  <button type="button" data-action="spells:subsys-vestige-cooldown" data-idx="${idx}" data-op="${cd > 0 ? 'tick' : 'trigger'}" class="ui-btn-xs h-7 px-2 ${cd > 0 ? 'bg-rose-950 text-rose-200 border-rose-700' : 'bg-slate-800 text-slate-200 border-slate-700'} border">${cd > 0 ? `⏳ ${cd} Rd (-1)` : '⚡ 5-Rd Cooldown'}</button>
+                  ${cd > 0 ? `<button type="button" data-action="spells:subsys-vestige-cooldown" data-idx="${idx}" data-op="reset" class="ui-btn-icon-sm bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-slate-700" title="Reset Cooldown">↺</button>` : ''}
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('') : `
+          <div class="col-span-full py-8 text-center text-slate-400 text-xs bg-slate-950/50 rounded-xl border border-dashed border-slate-800 space-y-2">
+            <div class="text-2xl">🕯️</div>
+            <p>No vestiges bound today. Click <strong>+ Bind Vestige</strong> above to select from Tome of Magic.</p>
+          </div>
+        `;
+
+        panelEl.innerHTML = `
+          <div class="bg-gradient-to-r from-purple-950/70 via-slate-900 to-rose-950/40 border border-purple-600/40 rounded-xl p-3 flex flex-wrap items-center justify-between gap-3 shadow-md">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <div class="w-9 h-9 rounded-lg bg-purple-900/70 border border-purple-500/60 flex items-center justify-center text-lg shrink-0">🕯️</div>
+              <div class="min-w-0">
+                <div class="flex flex-wrap items-center gap-2">
+                  <h3 class="font-extrabold text-white text-sm md:text-base">Pact Magic &amp; Bound Vestiges</h3>
+                  <span class="badge bg-purple-950 text-purple-300 border border-purple-700 text-[10px] font-mono">EBL ${snap.effectiveBinderLevel}</span>
+                  <span class="badge bg-slate-900 text-purple-200 border border-slate-700 text-[10px] font-mono">Vestiges: ${snap.vestiges.length} / ${snap.maxVestiges}</span>
+                </div>
+                <p class="text-[11px] text-purple-300">Max Vestige Level: ${snap.maxVestigeLevel} • 5-round cooldown tracking &amp; binding checks</p>
+              </div>
+            </div>
+            <button type="button" data-action="spells:subsys-open-picker" data-discipline="pact" class="ui-btn-sm h-8 px-3 bg-purple-700 hover:bg-purple-600 text-white border border-purple-400/60">+ Bind Vestige</button>
+          </div>
+          ${pickerHtml}
+          <div class="subsys-cards-grid">${cardsHtml}</div>
+        `;
+        return;
+      }
+
+      if (discipline === 'shadow') {
+        const tierOrder = ['Fundamental', 'Apprentice', 'Initiate', 'Master'];
+        const sortedMysteries = snap.mysteries.map((m, idx) => ({ m, idx })).sort((a, b) => {
+          const ta = tierOrder.indexOf(a.m.tier || a.m.mysteryTier || a.m.spell?.mysteryTier || 'Apprentice');
+          const tb = tierOrder.indexOf(b.m.tier || b.m.mysteryTier || b.m.spell?.mysteryTier || 'Apprentice');
+          return (ta === -1 ? 99 : ta) - (tb === -1 ? 99 : tb);
+        });
+        const cardsHtml = sortedMysteries.length > 0 ? sortedMysteries.map(({ m, idx }) => {
+          const tier = m.tier || m.mysteryTier || m.spell?.mysteryTier || 'Apprentice';
+          const dailyMax = Math.max(1, Number(m.dailyMax) || (tier === 'Fundamental' ? 3 : 1));
+          const usesLeft = m.usesLeft !== undefined ? Math.max(0, Math.min(dailyMax, Number(m.usesLeft) || 0)) : dailyMax;
+          const mLvl = Number(m.level ?? m.spell?.maneuverLvl ?? 1) || 1;
+          const descText = m.shortDescription || m.benefit || m.description || 'Shadow mystery.';
+          return `
+            <div class="discipline-tab-card bg-slate-900/90 border border-indigo-500/40 rounded-xl p-3 flex flex-col justify-between gap-2.5 shadow-sm">
+              <div class="space-y-1.5 min-w-0">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="badge bg-indigo-950 text-indigo-300 border border-indigo-700 text-[10px]">${UI.escapeHtml(tier)} • Lvl ${mLvl}</span>
+                  <span class="badge ${usesLeft > 0 ? 'bg-slate-950 text-indigo-200 border-slate-700' : 'bg-rose-950 text-rose-300 border-rose-800'} text-[10px] font-mono">${usesLeft} / ${dailyMax} Uses</span>
+                </div>
+                <button type="button" data-action="entity:inspect" data-entity-kind="mystery" data-entity-id="${UI.escapeAttr(m.id || m.baseEntryId || '')}" data-entity-name="${UI.escapeAttr(m.name || '')}" data-entity-index="${idx}" data-discipline="shadow" class="text-left text-xs font-extrabold text-white hover:text-indigo-200 cursor-pointer hover:underline block truncate max-w-full" title="Inspect / Edit in Rule Crafter">${UI.escapeHtml(m.name || 'Unnamed Mystery')}</button>
+                <p class="text-[11px] text-slate-300 line-clamp-2">${UI.escapeHtml(descText)}</p>
+              </div>
+              <div class="pt-2 border-t border-slate-800 flex flex-wrap items-center justify-between gap-2">
+                <div class="flex items-center gap-1">
+                  <button type="button" data-action="spells:subsys-mystery-uses-delta" data-idx="${idx}" data-delta="-1" class="ui-btn-icon-sm bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700">-</button>
+                  <span class="text-[11px] font-mono font-bold text-indigo-300 px-1">${usesLeft}/${dailyMax}</span>
+                  <button type="button" data-action="spells:subsys-mystery-uses-delta" data-idx="${idx}" data-delta="1" class="ui-btn-icon-sm bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700">+</button>
+                </div>
+                <button type="button" data-action="spells:subsys-cast-mystery" data-idx="${idx}" ${usesLeft <= 0 ? 'disabled' : ''} class="ui-btn-sm h-7 px-3 rounded-lg ${usesLeft > 0 ? 'bg-indigo-600 hover:bg-indigo-500 text-white border-indigo-500/60' : 'bg-slate-900 text-slate-500 border-slate-800 cursor-not-allowed'} border text-xs font-bold">🌑 Cast Mystery</button>
+              </div>
+            </div>
+          `;
+        }).join('') : `
+          <div class="col-span-full py-8 text-center text-slate-400 text-xs bg-slate-950/50 rounded-xl border border-dashed border-slate-800 space-y-2">
+            <div class="text-2xl">🌑</div>
+            <p>No shadow mysteries learned yet. Click <strong>+ Learn Mystery</strong> above to browse Tome of Magic.</p>
+          </div>
+        `;
+
+        panelEl.innerHTML = `
+          <div class="bg-slate-900 border border-indigo-500/40 rounded-xl p-3 flex flex-wrap items-center justify-between gap-3 shadow-md" style="background: linear-gradient(90deg, rgba(15,23,42,0.95), rgba(30,27,75,0.65), rgba(15,23,42,0.95));">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <div class="w-9 h-9 rounded-lg bg-indigo-950 border border-indigo-500/60 flex items-center justify-center text-lg shrink-0">🌑</div>
+              <div class="min-w-0">
+                <div class="flex flex-wrap items-center gap-2">
+                  <h3 class="font-extrabold text-white text-sm md:text-base">Shadow Magic &amp; Mysteries</h3>
+                  <span class="badge bg-indigo-950 text-indigo-300 border border-indigo-700 text-[10px] font-mono">CL ${snap.casterLevel}</span>
+                  <span class="badge bg-slate-900 text-indigo-200 border border-slate-700 text-[10px] font-mono">${snap.mysteries.length} Known</span>
+                </div>
+                <p class="text-[11px] text-indigo-300">Apprentice (Spell) • Initiate (SLA) • Master (Supernatural)</p>
+              </div>
+            </div>
+            <div class="flex flex-wrap items-center gap-1.5">
+              <button type="button" data-action="spells:subsys-restore-mysteries" class="ui-btn-sm h-8 px-2.5 bg-slate-900 hover:bg-slate-800 text-indigo-200 border border-slate-700">✨ Restore Uses</button>
+              <button type="button" data-action="spells:subsys-open-picker" data-discipline="shadow" class="ui-btn-sm h-8 px-3 bg-indigo-600 hover:bg-indigo-500 text-white border border-indigo-400/60">+ Learn Mystery</button>
+            </div>
+          </div>
+          ${pickerHtml}
+          <div class="subsys-cards-grid">${cardsHtml}</div>
+        `;
+        return;
+      }
+
+      if (discipline === 'truenaming') {
+        const tsBonus = snap.truespeakBonus || 0;
+        const cardsHtml = snap.utterances.length > 0 ? snap.utterances.map((u, idx) => {
+          const targetCR = Math.max(1, Number(u.targetCR) || 1);
+          const castsToday = Math.max(0, Number(u.castsToday) || 0);
+          const lawDc = 15 + (2 * targetCR) + (2 * castsToday);
+          const lexicon = u.lexicon || u.spell?.lexicon || 'Evolving Mind';
+          const uLvl = Number(u.level ?? u.spell?.maneuverLvl ?? 1) || 1;
+          const descText = u.shortDescription || u.benefit || u.description || 'Truename utterance.';
+          return `
+            <div class="discipline-tab-card bg-slate-900/90 border border-teal-500/40 rounded-xl p-3 flex flex-col justify-between gap-2.5 shadow-sm">
+              <div class="space-y-1.5 min-w-0">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="badge bg-teal-950 text-teal-300 border border-teal-700 text-[10px]">${UI.escapeHtml(lexicon)} • Lvl ${uLvl}</span>
+                  <span class="badge bg-slate-950 text-amber-300 border border-amber-700/70 text-[10px] font-mono">Law DC ${lawDc} (+${castsToday * 2})</span>
+                </div>
+                <button type="button" data-action="entity:inspect" data-entity-kind="utterance" data-entity-id="${UI.escapeAttr(u.id || u.baseEntryId || '')}" data-entity-name="${UI.escapeAttr(u.name || '')}" data-entity-index="${idx}" data-discipline="truenaming" class="text-left text-xs font-extrabold text-white hover:text-white cursor-pointer hover:underline block truncate max-w-full" title="Inspect / Edit in Rule Crafter">${UI.escapeHtml(u.name || 'Unnamed Utterance')}</button>
+                <p class="text-[11px] text-slate-300 line-clamp-2">${UI.escapeHtml(descText)}</p>
+              </div>
+              <div class="pt-2 border-t border-slate-800 flex flex-wrap items-center justify-between gap-2">
+                <label class="flex items-center gap-1.5 text-[10px] text-slate-400">
+                  <span class="font-bold">Target CR:</span>
+                  <input type="number" min="1" max="40" value="${targetCR}" data-change-action="spells:subsys-truespeak-cr" data-idx="${idx}" class="ui-input-sm h-7 w-14 bg-slate-950 border border-slate-700 rounded-md px-2 text-xs text-white font-mono text-center">
+                </label>
+                <button type="button" data-action="spells:subsys-speak-utterance" data-idx="${idx}" class="ui-btn-sm h-7 px-3 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white border border-emerald-500/60 text-xs font-bold">📜 Speak Utterance (DC ${lawDc})</button>
+              </div>
+            </div>
+          `;
+        }).join('') : `
+          <div class="col-span-full py-8 text-center text-slate-400 text-xs bg-slate-950/50 rounded-xl border border-dashed border-slate-800 space-y-2">
+            <div class="text-2xl">📜</div>
+            <p>No utterances learned yet. Click <strong>+ Learn Utterance</strong> above to browse Tome of Magic.</p>
+          </div>
+        `;
+
+        panelEl.innerHTML = `
+          <div class="bg-slate-900 border border-teal-500/60 rounded-xl p-3 flex flex-wrap items-center justify-between gap-3 shadow-md" style="background: linear-gradient(90deg, rgba(19,78,74,0.65), rgba(15,23,42,0.95), rgba(2,44,34,0.45));">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <div class="w-9 h-9 rounded-lg bg-teal-950 border border-teal-500/60 flex items-center justify-center text-lg shrink-0">📜</div>
+              <div class="min-w-0">
+                <div class="flex flex-wrap items-center gap-2">
+                  <h3 class="font-extrabold text-white text-sm md:text-base">Truenaming &amp; Law of Resistance</h3>
+                  <span class="badge bg-teal-950 text-teal-300 border border-teal-700 text-[10px] font-mono">Truespeak ${tsBonus >= 0 ? '+' : ''}${tsBonus}</span>
+                  <span class="badge bg-slate-900 text-teal-200 border border-slate-700 text-[10px] font-mono">Lvl ${snap.truenamerLevel}</span>
+                </div>
+                <p class="text-[11px] text-teal-300">Law of Resistance DC = 15 + 2×CR + 2×Successes Today</p>
+              </div>
+            </div>
+            <div class="flex flex-wrap items-center gap-1.5">
+              <button type="button" data-action="spells:subsys-reset-truenaming" class="ui-btn-sm h-8 px-2.5 bg-slate-900 hover:bg-slate-800 text-amber-300 border border-slate-700">↺ Reset Daily DCs</button>
+              <button type="button" data-action="spells:subsys-open-picker" data-discipline="truenaming" class="ui-btn-sm h-8 px-3 bg-emerald-700 hover:bg-emerald-600 text-white border border-emerald-500/60">+ Learn Utterance</button>
+            </div>
+          </div>
+          ${pickerHtml}
+          <div class="subsys-cards-grid">${cardsHtml}</div>
+        `;
+      }
+    }
+
+    // =========================================================================
     // PHASE R5: Delegated Event Handlers (`spells:*`)
     // Parameter order strictly `(el, data, event)` per `UI.Actions` contract
     // =========================================================================
     (function registerSpellsDelegatedActions() {
       const Actions = window.Actions || (window.UI && window.UI.Actions);
       if (!Actions || typeof Actions.register !== 'function') return;
+
+      Actions.register('spells:toggle-discipline-drawer', (el, data, event) => {
+        _disciplineDrawerOpen = !_disciplineDrawerOpen;
+        renderDisciplineTopBar(character);
+      });
+      Actions.register('spells:subsys-open-picker', (el, data) => {
+        const disc = data.discipline || window._currentMagicDiscipline;
+        if (!SUBSYSTEM_PICKER_META[disc]) return;
+        _subsysPickerState = (_subsysPickerState && _subsysPickerState.discipline === disc)
+          ? null
+          : { discipline: disc, query: '', levelFilter: 'all' };
+        renderSubsystemPanel(disc);
+      });
+      Actions.register('spells:subsys-close-picker', (el, data) => {
+        const disc = data.discipline || window._currentMagicDiscipline;
+        _subsysPickerState = null;
+        renderSubsystemPanel(disc);
+      });
+      Actions.register('spells:subsys-picker-search', (el, data) => {
+        const disc = data.discipline || _subsysPickerState?.discipline;
+        if (!disc) return;
+        if (!_subsysPickerState) _subsysPickerState = { discipline: disc, query: '', levelFilter: 'all' };
+        _subsysPickerState.query = el ? el.value : '';
+        renderSubsystemPanel(disc);
+        const inp = document.getElementById(`subsys-picker-search-${disc}`);
+        if (inp) {
+          inp.focus();
+          const len = inp.value.length;
+          if (typeof inp.setSelectionRange === 'function') inp.setSelectionRange(len, len);
+        }
+      });
+      Actions.register('spells:subsys-picker-level', (el, data) => {
+        const disc = data.discipline || _subsysPickerState?.discipline;
+        if (!disc) return;
+        if (!_subsysPickerState) _subsysPickerState = { discipline: disc, query: '', levelFilter: 'all' };
+        _subsysPickerState.levelFilter = el ? el.value : 'all';
+        renderSubsystemPanel(disc);
+      });
+      Actions.register('spells:subsys-picker-add', (el, data) => {
+        const disc = data.discipline;
+        const meta = SUBSYSTEM_PICKER_META[disc];
+        const bucket = ensureSubsystemBucket(disc);
+        if (!meta || !bucket) return;
+        const all = getSubsystemEntriesFromCompendium(meta.srdType);
+        const found = all.find(it => (data.entryId && it.id === data.entryId) || (data.entryName && String(it.name || '').toLowerCase() === String(data.entryName).toLowerCase()));
+        if (!found) return;
+        if (disc === 'psionics') {
+          bucket.powers.push({
+            id: found.id || '',
+            name: found.name,
+            level: Number(found.level ?? found.spell?.level ?? 1) || 1,
+            discipline: found.spell?.discipline || 'Psionics',
+            ppCost: Number(found.spell?.ppCost ?? ((Number(found.level || 1) * 2) - 1)) || 1,
+            augmentPP: 0,
+            shortDescription: found.shortDescription || '',
+            benefit: found.shortDescription || found.description || ''
+          });
+        } else if (disc === 'incarnum') {
+          bucket.soulmelds.push({
+            id: found.id || '',
+            name: found.name,
+            investedEssentia: 0,
+            boundChakra: 'None',
+            chakraSlots: found.spell?.chakraSlots || 'All',
+            shortDescription: found.shortDescription || '',
+            benefit: found.shortDescription || found.description || ''
+          });
+        } else if (disc === 'pact') {
+          bucket.vestiges.push({
+            id: found.id || '',
+            name: found.name,
+            vestigeLevel: Number(found.spell?.vestigeLvl ?? found.level ?? 1) || 1,
+            bindingDc: Number(found.spell?.bindingDc ?? 15) || 15,
+            pactQuality: 'good',
+            showSign: false,
+            cooldownRounds: 0,
+            vestigeSign: found.spell?.vestigeSign || '',
+            vestigeInfluence: found.spell?.vestigeInfluence || '',
+            shortDescription: found.shortDescription || '',
+            benefit: found.shortDescription || found.description || ''
+          });
+        } else if (disc === 'shadow') {
+          const tier = found.spell?.mysteryTier || 'Apprentice';
+          const dailyMax = tier === 'Fundamental' ? 3 : 1;
+          bucket.mysteries.push({
+            id: found.id || '',
+            name: found.name,
+            tier,
+            level: Number(found.spell?.maneuverLvl ?? found.level ?? 1) || 1,
+            dailyMax,
+            usesLeft: dailyMax,
+            shortDescription: found.shortDescription || '',
+            benefit: found.shortDescription || found.description || ''
+          });
+        } else if (disc === 'truenaming') {
+          bucket.utterances.push({
+            id: found.id || '',
+            name: found.name,
+            lexicon: found.spell?.lexicon || 'Evolving Mind',
+            level: Number(found.spell?.maneuverLvl ?? found.level ?? 1) || 1,
+            targetCR: 1,
+            castsToday: 0,
+            shortDescription: found.shortDescription || '',
+            benefit: found.shortDescription || found.description || ''
+          });
+        }
+        patchSubsystemCockpitDOM(disc);
+        if (typeof showDiceTopToast === 'function') {
+          showDiceTopToast({ icon: meta.icon, title: found.name, breakdown: `Added to ${meta.title}`, total: 'Added' });
+        }
+      });
+      Actions.register('spells:subsys-pp-delta', (el, data) => {
+        const bucket = ensureSubsystemBucket('psionics');
+        if (!bucket) return;
+        const snap = getSubsystemSnapshot('psionics', character);
+        if (data.delta === 'restore') {
+          bucket.currentPP = snap.maxPP;
+        } else {
+          const d = Number(data.delta) || 0;
+          bucket.currentPP = Math.max(0, Math.min(snap.maxPP || 999, snap.currentPP + d));
+        }
+        patchSubsystemCockpitDOM('psionics');
+      });
+      Actions.register('spells:subsys-power-augment', (el, data) => {
+        const bucket = ensureSubsystemBucket('psionics');
+        const idx = Number(data.idx);
+        if (!bucket || !bucket.powers[idx]) return;
+        const snap = getSubsystemSnapshot('psionics', character);
+        const p = bucket.powers[idx];
+        const baseCost = Math.max(1, Number(p.ppCost ?? ((Number(p.level) || 1) * 2 - 1)) || 1);
+        const maxAug = Math.max(0, (snap.manifesterLevel || 0) - baseCost);
+        const nextAug = Math.max(0, Math.min(maxAug, (Number(p.augmentPP) || 0) + (Number(data.delta) || 0)));
+        p.augmentPP = nextAug;
+        patchSubsystemCockpitDOM('psionics');
+      });
+      Actions.register('spells:subsys-manifest-power', (el, data) => {
+        const bucket = ensureSubsystemBucket('psionics');
+        const idx = Number(data.idx);
+        if (!bucket || !bucket.powers[idx]) return;
+        const snap = getSubsystemSnapshot('psionics', character);
+        const p = bucket.powers[idx];
+        const baseCost = Math.max(1, Number(p.ppCost ?? ((Number(p.level) || 1) * 2 - 1)) || 1);
+        const augPP = Math.max(0, Math.min(Math.max(0, (snap.manifesterLevel || 0) - baseCost), Number(p.augmentPP) || 0));
+        const totalCost = baseCost + augPP;
+        if (snap.currentPP < totalCost) {
+          if (typeof showDiceTopToast === 'function') {
+            showDiceTopToast({ icon: '⚠️', title: p.name, breakdown: `Insufficient Power Points (Need ${totalCost} PP, Have ${snap.currentPP} PP)`, total: '0 PP' });
+          }
+          return;
+        }
+        bucket.currentPP = Math.max(0, snap.currentPP - totalCost);
+        patchSubsystemCockpitDOM('psionics');
+        if (typeof showDiceTopToast === 'function') {
+          showDiceTopToast({ icon: '🧠', title: p.name, breakdown: `Manifested (${baseCost} Base + ${augPP} Augment)`, total: `-${totalCost} PP` });
+        }
+      });
+      Actions.register('spells:subsys-essentia-delta', (el, data) => {
+        const bucket = ensureSubsystemBucket('incarnum');
+        const idx = Number(data.idx);
+        if (!bucket || !bucket.soulmelds[idx]) return;
+        const snap = getSubsystemSnapshot('incarnum', character);
+        const sm = bucket.soulmelds[idx];
+        const cur = Number(sm.investedEssentia) || 0;
+        const delta = Number(data.delta) || 0;
+        const cap = Math.min(snap.essentiaCapacity || 1, cur + (snap.availableEssentia || 0));
+        sm.investedEssentia = Math.max(0, Math.min(cap, cur + delta));
+        patchSubsystemCockpitDOM('incarnum');
+      });
+      Actions.register('spells:subsys-chakra-bind', (el, data) => {
+        const bucket = ensureSubsystemBucket('incarnum');
+        const idx = Number(data.idx);
+        if (!bucket || !bucket.soulmelds[idx] || !el) return;
+        bucket.soulmelds[idx].boundChakra = el.value || 'None';
+        patchSubsystemCockpitDOM('incarnum');
+      });
+      Actions.register('spells:subsys-binding-check', (el, data) => {
+        const bucket = ensureSubsystemBucket('pact');
+        const idx = Number(data.idx);
+        if (!bucket || !bucket.vestiges[idx]) return;
+        const snap = getSubsystemSnapshot('pact', character);
+        const v = bucket.vestiges[idx];
+        const chaMod = Math.floor(((Number(character?.abilities?.cha) || 10) - 10) / 2);
+        const d20 = Math.floor(Math.random() * 20) + 1;
+        const mod = (snap.effectiveBinderLevel || 0) + chaMod;
+        const total = d20 + mod;
+        const dc = Number(v.bindingDc) || 15;
+        const success = total >= dc;
+        v.pactQuality = success ? 'good' : 'poor';
+        v.showSign = !success;
+        patchSubsystemCockpitDOM('pact');
+        if (typeof showDiceTopToast === 'function') {
+          showDiceTopToast({
+            icon: '🕯️',
+            title: `${v.name} Binding Check`,
+            breakdown: `1d20 (${d20}) + EBL/CHA (${mod >= 0 ? '+' + mod : mod}) vs DC ${dc} • ${success ? 'Good Pact' : 'Poor Pact (Show Sign)'}`,
+            total: String(total)
+          });
+        }
+      });
+      Actions.register('spells:subsys-toggle-pact', (el, data) => {
+        const bucket = ensureSubsystemBucket('pact');
+        const idx = Number(data.idx);
+        if (!bucket || !bucket.vestiges[idx]) return;
+        const v = bucket.vestiges[idx];
+        v.pactQuality = v.pactQuality === 'poor' ? 'good' : 'poor';
+        v.showSign = v.pactQuality === 'poor';
+        patchSubsystemCockpitDOM('pact');
+      });
+      Actions.register('spells:subsys-vestige-cooldown', (el, data) => {
+        const bucket = ensureSubsystemBucket('pact');
+        const idx = Number(data.idx);
+        if (!bucket || !bucket.vestiges[idx]) return;
+        const v = bucket.vestiges[idx];
+        if (data.op === 'reset') v.cooldownRounds = 0;
+        else if (data.op === 'trigger') v.cooldownRounds = 5;
+        else v.cooldownRounds = Math.max(0, (Number(v.cooldownRounds) || 0) - 1);
+        patchSubsystemCockpitDOM('pact');
+      });
+      Actions.register('spells:subsys-mystery-uses-delta', (el, data) => {
+        const bucket = ensureSubsystemBucket('shadow');
+        const idx = Number(data.idx);
+        if (!bucket || !bucket.mysteries[idx]) return;
+        const m = bucket.mysteries[idx];
+        const maxU = Math.max(1, Number(m.dailyMax) || 1);
+        const curU = m.usesLeft !== undefined ? Number(m.usesLeft) : maxU;
+        m.usesLeft = Math.max(0, Math.min(maxU, curU + (Number(data.delta) || 0)));
+        patchSubsystemCockpitDOM('shadow');
+      });
+      Actions.register('spells:subsys-cast-mystery', (el, data) => {
+        const bucket = ensureSubsystemBucket('shadow');
+        const idx = Number(data.idx);
+        if (!bucket || !bucket.mysteries[idx]) return;
+        const m = bucket.mysteries[idx];
+        const maxU = Math.max(1, Number(m.dailyMax) || 1);
+        const curU = m.usesLeft !== undefined ? Number(m.usesLeft) : maxU;
+        if (curU <= 0) return;
+        m.usesLeft = curU - 1;
+        patchSubsystemCockpitDOM('shadow');
+        if (typeof showDiceTopToast === 'function') {
+          showDiceTopToast({ icon: '🌑', title: m.name, breakdown: `Mystery cast (${m.usesLeft}/${maxU} remaining)`, total: '-1 Use' });
+        }
+      });
+      Actions.register('spells:subsys-restore-mysteries', (el, data, event) => {
+        const bucket = ensureSubsystemBucket('shadow');
+        if (!bucket) return;
+        bucket.mysteries.forEach(m => {
+          m.usesLeft = Math.max(1, Number(m.dailyMax) || 1);
+        });
+        patchSubsystemCockpitDOM('shadow');
+      });
+      Actions.register('spells:subsys-truespeak-cr', (el, data) => {
+        const bucket = ensureSubsystemBucket('truenaming');
+        const idx = Number(data.idx);
+        if (!bucket || !bucket.utterances[idx] || !el) return;
+        bucket.utterances[idx].targetCR = Math.max(1, Math.min(40, Number(el.value) || 1));
+        patchSubsystemCockpitDOM('truenaming');
+      });
+      Actions.register('spells:subsys-speak-utterance', (el, data) => {
+        const bucket = ensureSubsystemBucket('truenaming');
+        const idx = Number(data.idx);
+        if (!bucket || !bucket.utterances[idx]) return;
+        const snap = getSubsystemSnapshot('truenaming', character);
+        const u = bucket.utterances[idx];
+        const targetCR = Math.max(1, Number(u.targetCR) || 1);
+        const castsToday = Math.max(0, Number(u.castsToday) || 0);
+        const dc = 15 + (2 * targetCR) + (2 * castsToday);
+        const d20 = Math.floor(Math.random() * 20) + 1;
+        const bonus = snap.truespeakBonus || 0;
+        const total = d20 + bonus;
+        const success = total >= dc;
+        if (success) {
+          u.castsToday = castsToday + 1;
+        }
+        patchSubsystemCockpitDOM('truenaming');
+        if (typeof showDiceTopToast === 'function') {
+          showDiceTopToast({
+            icon: '📜',
+            title: `${u.name} (Truespeak)`,
+            breakdown: `1d20 (${d20}) ${bonus >= 0 ? '+' : ''}${bonus} vs Law DC ${dc} • ${success ? `SUCCESS (Next DC ${dc + 2})` : 'FAILED (DC unchanged)'}`,
+            total: String(total)
+          });
+        }
+      });
+      Actions.register('spells:subsys-reset-truenaming', (el, data, event) => {
+        const bucket = ensureSubsystemBucket('truenaming');
+        if (!bucket) return;
+        bucket.utterances.forEach(u => { u.castsToday = 0; });
+        patchSubsystemCockpitDOM('truenaming');
+      });
 
       Actions.register('spells:prepared-filter-level', (el, data, event) => {
         const lvl = data.level === 'all' ? 'all' : Number(data.level);
