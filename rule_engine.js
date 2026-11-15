@@ -200,7 +200,7 @@ const RuleEngine = {
     return Math.floor(((Number(score) || 10) - 10) / 2);
   },
 
-  // Normalize human shorthand formula tokens (e.g. "10+lvl+Con", "10 + 1/2 lvl + Cha") into Canonical V2 @tokens
+  // Normalize human shorthand formula tokens (e.g. "10+lvl+Con", "10 + 1/2 lvl + Cha", V3 @CL/@ML/@IL/@HD/@ECL/@STR..@CHA/@essentia/@augmentPP) into Canonical @tokens
   normalizeFormulaTokens(formulaStr) {
     if (formulaStr === null || formulaStr === undefined) return '';
     let s = String(formulaStr).trim();
@@ -210,9 +210,32 @@ const RuleEngine = {
       .replace(/\b1\s*\/\s*2\s*(?:@?level|@?lvl|@?hd)\b/gi, 'floor(@level / 2)')
       .replace(/\bhalf\s+(?:@?level|@?lvl|@?hd)\b/gi, 'floor(@level / 2)')
       .replace(/(?:@?level|@?lvl|@?hd)\s*\/\s*2\b/gi, 'floor(@level / 2)')
+      .replace(/@(?:lvl|level|hd)\b/gi, '@level')
+      .replace(/@cl\b/gi, '@cl')
+      .replace(/@ml\b/gi, '@ml')
+      .replace(/@il\b/gi, '@il')
+      .replace(/@ebl\b/gi, '@ebl')
+      .replace(/@ecl\b/gi, '@ecl')
+      .replace(/@bab\b/gi, '@bab')
+      .replace(/@(?:essentia|invested)\b/gi, '@essentia')
+      .replace(/@(?:augmentpp|augment_pp)\b/gi, '@augmentPP')
+      .replace(/@(?:uses_today|caststoday|casts_today)\b/gi, '@castsToday')
+      .replace(/@(?:targetcr|target_cr|cr)\b/gi, '@targetCR')
+      .replace(/@(?:classlevel|class_level)\b/gi, '@classLevel')
+      .replace(/@str(?:mod)?\b/gi, '@strMod')
+      .replace(/@dex(?:mod)?\b/gi, '@dexMod')
+      .replace(/@con(?:mod)?\b/gi, '@conMod')
+      .replace(/@int(?:mod)?\b/gi, '@intMod')
+      .replace(/@wis(?:mod)?\b/gi, '@wisMod')
+      .replace(/@cha(?:mod)?\b/gi, '@chaMod')
       .replace(/(?<![a-zA-Z@.])(?:lvl|level|hd)\b/gi, '@level')
       .replace(/(?<![a-zA-Z@.])(?:cl|caster\s*level)\b/gi, '@cl')
+      .replace(/(?<![a-zA-Z@.])(?:ml|manifester\s*level)\b/gi, '@ml')
+      .replace(/(?<![a-zA-Z@.])(?:il|initiator\s*level)\b/gi, '@il')
+      .replace(/(?<![a-zA-Z@.])(?:ebl|binder\s*level)\b/gi, '@ebl')
+      .replace(/(?<![a-zA-Z@.])ecl\b/gi, '@ecl')
       .replace(/(?<![a-zA-Z@.])bab\b/gi, '@bab')
+      .replace(/(?<![a-zA-Z@.])essentia\b/gi, '@essentia')
       .replace(/(?<![a-zA-Z@])str(?:\s*mod)?\b/gi, '@strMod')
       .replace(/(?<![a-zA-Z@])dex(?:\s*mod)?\b/gi, '@dexMod')
       .replace(/(?<![a-zA-Z@])con(?:\s*mod)?\b/gi, '@conMod')
@@ -228,12 +251,16 @@ const RuleEngine = {
 
   // Build live formula evaluation context from a character object
   buildFormulaContext(character, extra = {}) {
-    const ch = character || (typeof window !== 'undefined' ? window.character : null) || {};
+    const ch = character || this._activeCharacter || (typeof window !== 'undefined' ? window.character : null) || {};
     const activeProg = Array.isArray(ch.levelProgression)
       ? ch.levelProgression.filter(r => r && r.active !== false)
       : [];
     const level = activeProg.length > 0 ? activeProg.length : (Math.max(1, Number(ch.level) || 1));
     const cl = Math.max(1, Number(ch.spellcasting?.cl ?? ch.casterLevel) || level);
+    const ml = Math.max(1, Number(ch.psionics?.manifesterLevel ?? ch.psionics?.ml ?? ch.manifesterLevel) || cl);
+    const il = Math.max(1, Number(ch.initiatorLevel ?? ch.martial?.initiatorLevel) || level);
+    const ebl = Math.max(1, Number(ch.pactMagic?.effectiveBinderLevel ?? ch.pact?.effectiveBinderLevel ?? ch.pactMagic?.binderLevel) || level);
+    const ecl = Math.max(level, Number(ch.ecl) || (level + (Number(ch.levelAdjustment) || 0)));
     const bab = Number(ch.bab) || 0;
 
     const classLevels = Object.assign({}, ch.classLevels || {});
@@ -265,11 +292,32 @@ const RuleEngine = {
       return 0;
     };
 
+    const selfObj = extra.self || { stacks: 1, invested: Number(extra.essentia ?? extra.invested ?? 0) || 0 };
+    const essentia = Number(extra.essentia ?? selfObj.invested ?? 0) || 0;
+    const augmentPP = Number(extra.augmentPP ?? 0) || 0;
+    const castsToday = Number(extra.castsToday ?? extra.usesToday ?? 0) || 0;
+    const targetCR = Number(extra.targetCR ?? ch.truenaming?.targetCR ?? level) || 1;
+    const classLevel = Number(extra.classLevel ?? level) || 1;
+
     return Object.assign({
+      character: ch,
       level,
+      hd: level,
+      ecl,
       cl,
       casterLevel: cl,
+      ml,
+      manifesterLevel: ml,
+      il,
+      initiatorLevel: il,
+      ebl,
+      effectiveBinderLevel: ebl,
+      classLevel,
       bab,
+      essentia,
+      augmentPP,
+      castsToday,
+      targetCR,
       strMod: getMod('str'),
       dexMod: getMod('dex'),
       conMod: getMod('con'),
@@ -279,8 +327,11 @@ const RuleEngine = {
       classLevels,
       skills: ch.skills || {},
       state: ch.legoState || ch.state || {},
+      tactical: ch.tactical || {},
+      activeModes: ch.activeModes || {},
+      customEntries: ch.customEntries || {},
       inputs: extra.inputs || {},
-      self: extra.self || { stacks: 1, invested: 0 },
+      self: selfObj,
       spells: ch.spells || ch.spellcasting || {}
     }, extra);
   },
@@ -483,7 +534,7 @@ const RuleEngine = {
     }
   },
 
-  // Canonical V2/V2.5 Formula Evaluator (Zero-eval, supports @level, @cl, @bab, @strMod..@chaMod, @input.*, @self.*, @state.*, @skill.*, @classes.*, @spells.maxUnspentLevel)
+  // Canonical V2/V2.5/V3 Formula Evaluator (Zero-eval, supports @level, @cl, @ml, @il, @ebl, @ecl, @bab, @essentia, @augmentPP, @castsToday, @targetCR, @strMod..@chaMod, @input.*, @self.*, @state.*, @skill.*, @classes.*, @spells.maxUnspentLevel)
   evaluateFormula(formula, context = {}) {
     if (formula === null || formula === undefined || formula === '') return 0;
     if (typeof formula === 'number') return formula;
@@ -493,16 +544,37 @@ const RuleEngine = {
 
     const cl = Number(context.cl ?? context.casterLevel ?? context.level ?? 1) || 1;
     const level = Number(context.level ?? cl) || 1;
+    const ml = Number(context.ml ?? context.manifesterLevel ?? cl) || 1;
+    const il = Number(context.il ?? context.initiatorLevel ?? level) || 1;
+    const ebl = Number(context.ebl ?? context.effectiveBinderLevel ?? level) || 1;
+    const ecl = Number(context.ecl ?? level) || 1;
+    const classLevel = Number(context.classLevel ?? level) || 1;
     const bab = Number(context.bab ?? 0) || 0;
     const enh = Number(context.enhancement ?? context.enhancementBonus ?? 0) || 0;
     const critMult = Number(context.critMult ?? 1) || 1;
+    const essentia = Number(context.essentia ?? context.self?.invested ?? 0) || 0;
+    const augmentPP = Number(context.augmentPP ?? 0) || 0;
+    const castsToday = Number(context.castsToday ?? context.usesToday ?? 0) || 0;
+    const targetCR = Number(context.targetCR ?? level ?? 1) || 1;
 
     let expr = raw
       .replace(/@item\.level\b/gi, String(cl))
       .replace(/@cl\b/gi, String(cl))
       .replace(/@casterLevel\b/gi, String(cl))
+      .replace(/@ml\b/gi, String(ml))
+      .replace(/@manifesterLevel\b/gi, String(ml))
+      .replace(/@il\b/gi, String(il))
+      .replace(/@initiatorLevel\b/gi, String(il))
+      .replace(/@ebl\b/gi, String(ebl))
+      .replace(/@effectiveBinderLevel\b/gi, String(ebl))
+      .replace(/@ecl\b/gi, String(ecl))
+      .replace(/@classLevel\b/gi, String(classLevel))
       .replace(/@level\b/gi, String(level))
       .replace(/@bab\b/gi, String(bab))
+      .replace(/@essentia\b/gi, String(essentia))
+      .replace(/@augmentPP\b/gi, String(augmentPP))
+      .replace(/@castsToday\b/gi, String(castsToday))
+      .replace(/@targetCR\b/gi, String(targetCR))
       .replace(/@enhancement\b/gi, String(enh))
       .replace(/@critMult\b/gi, String(critMult))
       .replace(/@strMod\b/gi, String(Number(context.strMod) || 0))
@@ -585,13 +657,1183 @@ const RuleEngine = {
     return this.safeEvaluateMathExpr(expr);
   },
 
-  // Ensure an object is upgraded to Canonical V2/V2.5 via SchemaMigrator & normalizeLegoEntry
-  ensureV2Entry(entry) {
+  // Copy-on-Write Per-Character Custom Entry Override Lookup (`char.customEntries[id]`)
+  resolveCustomEntryOverride(itemOrName, character = null) {
+    if (!itemOrName) return null;
+    const customMap = (character && character.customEntries && typeof character.customEntries === 'object' ? character.customEntries : null)
+      || (this._activeCustomEntries && typeof this._activeCustomEntries === 'object' ? this._activeCustomEntries : null)
+      || (this._activeCharacter && this._activeCharacter.customEntries && typeof this._activeCharacter.customEntries === 'object' ? this._activeCharacter.customEntries : null)
+      || (typeof window !== 'undefined' && window.character && window.character.customEntries && typeof window.character.customEntries === 'object' ? window.character.customEntries : null);
+    if (!customMap) return null;
+    const mapKeys = Object.keys(customMap);
+    if (mapKeys.length === 0) return null;
+
+    const isObj = typeof itemOrName === 'object';
+    const candidateIds = [];
+    if (isObj) {
+      ['id', 'baseEntryId', 'baseItemId', 'srdId'].forEach(k => {
+        if (itemOrName[k]) candidateIds.push(String(itemOrName[k]).trim());
+      });
+      if (itemOrName.origin && itemOrName.origin.srdId) {
+        candidateIds.push(String(itemOrName.origin.srdId).trim());
+      }
+    } else {
+      candidateIds.push(String(itemOrName).trim());
+    }
+
+    for (let i = 0; i < candidateIds.length; i++) {
+      const cid = candidateIds[i];
+      if (!cid) continue;
+      if (customMap[cid] && typeof customMap[cid] === 'object') return customMap[cid];
+      const cidLow = cid.toLowerCase();
+      const matchedKey = mapKeys.find(k => k.toLowerCase() === cidLow);
+      if (matchedKey && customMap[matchedKey] && typeof customMap[matchedKey] === 'object') {
+        return customMap[matchedKey];
+      }
+    }
+
+    const rawName = String(isObj ? (itemOrName.masterDbName || itemOrName.name || '') : itemOrName)
+      .replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️\s]+(\[.*?\])?\s*/, '')
+      .trim()
+      .toLowerCase();
+    if (!rawName) return null;
+
+    for (let i = 0; i < mapKeys.length; i++) {
+      const entry = customMap[mapKeys[i]];
+      if (!entry || typeof entry !== 'object') continue;
+      const eId = String(entry.id || entry.baseEntryId || entry.baseItemId || '').trim().toLowerCase();
+      if (eId && candidateIds.some(c => c.toLowerCase() === eId)) return entry;
+      const eName = String(entry.name || entry.masterDbName || '').trim().toLowerCase();
+      if (eName && eName === rawName) return entry;
+    }
+    return null;
+  },
+
+  // Canonical V3 Target Mapper (normalizes V3 block target keys into RuleEngine canonical targets)
+  canonicalizeV3Target(rawTarget) {
+    const t = String(rawTarget || '').trim();
+    if (!t) return 'ac.all';
+    const low = t.toLowerCase();
+    const map = {
+      'ac': 'ac.all',
+      'ac.all': 'ac.all',
+      'ac.total': 'ac.all',
+      'ac.touch': 'ac.touch',
+      'ac.flatfooted': 'ac.flatFooted',
+      'ac.flat_footed': 'ac.flatFooted',
+      'ac.flat': 'ac.flatFooted',
+      'ac.armor': 'ac.armor',
+      'ac.shield': 'ac.shield',
+      'ac.natural': 'ac.natural',
+      'ac.deflection': 'ac.deflection',
+      'ac.dodge': 'ac.dodge',
+      'atk': 'atk.all',
+      'atk.all': 'atk.all',
+      'attack': 'atk.all',
+      'attack.all': 'atk.all',
+      'atk.melee': 'atk.melee',
+      'attack.melee': 'atk.melee',
+      'meleeattack': 'atk.melee',
+      'atk.ranged': 'atk.ranged',
+      'attack.ranged': 'atk.ranged',
+      'rangedattack': 'atk.ranged',
+      'atk.grapple': 'atk.grapple',
+      'attack.grapple': 'atk.grapple',
+      'grapple': 'atk.grapple',
+      'cmb': 'atk.grapple',
+      'atk.critconfirm': 'atk.critConfirm',
+      'attack.critconfirm': 'atk.critConfirm',
+      'critconfirm': 'atk.critConfirm',
+      'atk.touch': 'atk.touch',
+      'atk.weapon': 'atk.weapon',
+      'atk.natural': 'atk.natural',
+      'atk.unarmed': 'atk.unarmed',
+      'dmg': 'dmg.all',
+      'dmg.all': 'dmg.all',
+      'damage': 'dmg.all',
+      'damage.all': 'dmg.all',
+      'dmg.melee': 'dmg.melee',
+      'damage.melee': 'dmg.melee',
+      'meleedamage': 'dmg.melee',
+      'dmg.ranged': 'dmg.ranged',
+      'damage.ranged': 'dmg.ranged',
+      'rangeddamage': 'dmg.ranged',
+      'dmg.natural': 'dmg.natural',
+      'damage.natural': 'dmg.natural',
+      'dmg.unarmed': 'dmg.unarmed',
+      'damage.unarmed': 'dmg.unarmed',
+      'dmg.weapon': 'dmg.weapon',
+      'save.all': 'save.all',
+      'saves.all': 'save.all',
+      'saves': 'save.all',
+      'all_saves': 'save.all',
+      'save.fort': 'save.fort',
+      'saves.fort': 'save.fort',
+      'fort': 'save.fort',
+      'save.ref': 'save.ref',
+      'saves.ref': 'save.ref',
+      'ref': 'save.ref',
+      'save.will': 'save.will',
+      'saves.will': 'save.will',
+      'will': 'save.will',
+      'str': 'ability.str',
+      'ability.str': 'ability.str',
+      'dex': 'ability.dex',
+      'ability.dex': 'ability.dex',
+      'con': 'ability.con',
+      'ability.con': 'ability.con',
+      'int': 'ability.int',
+      'ability.int': 'ability.int',
+      'wis': 'ability.wis',
+      'ability.wis': 'ability.wis',
+      'cha': 'ability.cha',
+      'ability.cha': 'ability.cha',
+      'init': 'init',
+      'initiative': 'init',
+      'speed': 'speed.land',
+      'speed.all': 'speed.all',
+      'speed.land': 'speed.land',
+      'speed.fly': 'speed.fly',
+      'speed.swim': 'speed.swim',
+      'speed.climb': 'speed.climb',
+      'speed.burrow': 'speed.burrow',
+      'hp': 'hp',
+      'hp.max': 'hp.max',
+      'hp.temp': 'hp.temp',
+      'temp_hp': 'hp.temp',
+      'hp.perlvl': 'hp.perLvl',
+      'hp.perlevel': 'hp.perLvl',
+      'fasthealing': 'fastHealing',
+      'fast_healing': 'fastHealing',
+      'hp.fasthealing': 'fastHealing',
+      'dr': 'dr',
+      'sr': 'sr',
+      'spellresistance': 'sr',
+      'cl': 'cl',
+      'ml': 'ml',
+      'il': 'il',
+      'ebl': 'ebl',
+      'pact.ebl': 'ebl',
+      'essentia.pool': 'essentia.pool',
+      'essentia.capacity': 'essentia.capacity',
+      'dc.all': 'dc.all',
+      'skill.all': 'skill.all',
+      'skills.all': 'skill.all'
+    };
+    if (map[low]) return map[low];
+    if (low.startsWith('resist.') || low.startsWith('resistance.')) {
+      return `resist.${low.split('.')[1]}`;
+    }
+    if (low.startsWith('skill.') || low.startsWith('skills.')) {
+      const skName = t.replace(/^skills?\./i, '').trim();
+      return `skill.${skName}`;
+    }
+    return t;
+  },
+
+  // Normalize D&D 3.5e Bonus Type to Official Capitalization
+  normalizeV3BonusType(rawType) {
+    const low = String(rawType || 'Untyped').trim().toLowerCase();
+    const typeMap = {
+      'untyped': 'Untyped',
+      'enhancement': 'Enhancement',
+      'armor': 'Armor',
+      'shield': 'Shield',
+      'natural': 'Natural Armor',
+      'natural armor': 'Natural Armor',
+      'natural_armor': 'Natural Armor',
+      'natural_armor_ench': 'Natural_Armor_Ench',
+      'natural_enhancement': 'Natural_Armor_Ench',
+      'deflection': 'Deflection',
+      'dodge': 'Dodge',
+      'sacred': 'Sacred',
+      'profane': 'Profane',
+      'insight': 'Insight',
+      'luck': 'Luck',
+      'morale': 'Morale',
+      'competence': 'Competence',
+      'resistance': 'Resistance',
+      'circumstance': 'Circumstance',
+      'racial': 'Racial',
+      'size': 'Size',
+      'alchemical': 'Alchemical',
+      'inherent': 'Inherent',
+      'synergy': 'Synergy',
+      'penalty': 'Penalty',
+      'template': 'Template'
+    };
+    return typeMap[low] || (rawType ? String(rawType).trim() : 'Untyped');
+  },
+
+  // Convert passive non-math ruleFlags into official D&D 3.5e English tacticalBadges
+  formatRuleFlagBadges(ruleFlags, entry = null) {
+    const badges = [];
+    if (!ruleFlags || typeof ruleFlags !== 'object') return badges;
+    const addBadge = (b) => {
+      if (b && !badges.includes(b)) badges.push(b);
+    };
+    if (ruleFlags.bypassDR) {
+      const bVal = Array.isArray(ruleFlags.bypassDR) ? ruleFlags.bypassDR.join('/') : String(ruleFlags.bypassDR);
+      addBadge(`Bypasses DR/${bVal}`);
+    }
+    if (ruleFlags.requiresHand) {
+      addBadge(typeof ruleFlags.requiresHand === 'string' ? `Requires ${ruleFlags.requiresHand} Hand` : 'Requires Free Hand');
+    }
+    if (ruleFlags.fortDc) {
+      addBadge(`Fortitude DC ${ruleFlags.fortDc}`);
+    }
+    if (ruleFlags.reach) {
+      addBadge(typeof ruleFlags.reach === 'number' ? `Reach ${ruleFlags.reach} ft.` : 'Reach Weapon');
+    }
+    if (ruleFlags.isSkillTrick) {
+      addBadge('Skill Trick (1/Encounter)');
+    }
+    if (ruleFlags.relic) {
+      addBadge('Relic Power');
+    }
+    if (ruleFlags.touchAttack) {
+      addBadge('Touch Attack');
+    }
+    if (ruleFlags.rangeIncrement) {
+      addBadge(`Range Increment ${ruleFlags.rangeIncrement} ft.`);
+    }
+    if (ruleFlags.darkvisionFt) {
+      addBadge(`Darkvision ${ruleFlags.darkvisionFt} ft.`);
+    }
+    if (ruleFlags.lightRadiusBrightFt) {
+      addBadge(`Bright Light ${ruleFlags.lightRadiusBrightFt} ft.`);
+    }
+    if (ruleFlags.splashDamage) {
+      addBadge(`Splash Damage (${ruleFlags.splashDamage})`);
+    }
+    if (ruleFlags.quickDraw) {
+      addBadge('Quick Draw');
+    }
+    if (ruleFlags.requiresChoice) {
+      addBadge(typeof ruleFlags.requiresChoice === 'string' ? `Choice: ${ruleFlags.requiresChoice}` : 'Requires Selection');
+    }
+    if (ruleFlags.weaponHardnessBonus) {
+      addBadge(`+${ruleFlags.weaponHardnessBonus} Weapon Hardness`);
+    }
+    if (ruleFlags.lifeStealPerHit) {
+      addBadge(`Life Steal +${ruleFlags.lifeStealPerHit} HP/Hit`);
+    }
+    if (ruleFlags.disarmResistBonus) {
+      addBadge(`+${ruleFlags.disarmResistBonus} vs. Disarm`);
+    }
+    if (ruleFlags.lingeringFireDamage) {
+      addBadge(`Lingering Fire (${ruleFlags.lingeringFireDamage})`);
+    }
+    if (ruleFlags.immuneMentalControl) {
+      addBadge('Immune to Mental Control');
+    }
+    if (ruleFlags.blockSummonedNaturalTouch) {
+      addBadge('Wards vs. Summoned Natural Attacks');
+    }
+    if (ruleFlags.metamagicLevelMod !== undefined && ruleFlags.metamagicLevelMod !== null) {
+      const mm = Number(ruleFlags.metamagicLevelMod) || 0;
+      addBadge(`Metamagic (${mm >= 0 ? '+' : ''}${mm} Slot Level)`);
+    }
+    if (ruleFlags.exoticArmor) {
+      addBadge('Exotic Armor');
+    }
+    if (ruleFlags.grantsBonusFeat) {
+      addBadge('Grants Bonus Feat');
+    }
+    if (ruleFlags.isFlaw) {
+      addBadge('Character Flaw');
+    }
+    if (ruleFlags.creatureTypeOverride) {
+      addBadge(`Type: ${ruleFlags.creatureTypeOverride}`);
+    }
+    if (ruleFlags.chargesPerDay) {
+      addBadge(`${ruleFlags.chargesPerDay} Charges/Day`);
+    }
+    if (ruleFlags.poisonMethod || ruleFlags.initialEffect || ruleFlags.secondaryEffect) {
+      const method = ruleFlags.poisonMethod ? `${ruleFlags.poisonMethod}` : 'Poison';
+      const initEff = ruleFlags.initialEffect || 'None';
+      const secEff = ruleFlags.secondaryEffect || 'None';
+      addBadge(`${method}: ${initEff} / ${secEff}`);
+    }
+    if (entry && Array.isArray(entry.tacticalBadges)) {
+      entry.tacticalBadges.forEach(tb => addBadge(tb));
+    }
+    return badges;
+  },
+
+  // Evaluate V3 `when` / `while` branch condition against character combat state, HP thresholds, buffs, activeModes, or chakra binds
+  evaluateV3BranchCondition(rawCond, branchType, evalCtx = {}, character = null, entry = null) {
+    if (!rawCond) return true;
+    const ch = character || evalCtx.character || this._activeCharacter || {};
+    if (typeof rawCond === 'object') {
+      return this.evaluatePredicate(rawCond, ch, evalCtx);
+    }
+    const cond = String(rawCond).trim();
+    if (!cond) return true;
+    const low = cond.toLowerCase();
+
+    // 1. Incarnum Chakra Bind check (e.g. "boundChakra === 'hands'", "Chakra Bind (Hands)")
+    const boundChakra = String(evalCtx.boundChakra ?? entry?.boundChakra ?? entry?.chakraBind ?? '').trim().toLowerCase();
+    const chakraMatch = low.match(/boundchakra\s*===?\s*['"]?([a-z]+)['"]?/i) || low.match(/chakra\s+bind\s*\(\s*([a-z]+)\s*\)/i);
+    if (chakraMatch) {
+      return boundChakra === chakraMatch[1].toLowerCase();
+    }
+
+    // 2. Shadow Magic / Mystery Tier check (e.g. "levelTier === 'Apprentice'")
+    const tierMatch = low.match(/leveltier\s*===?\s*['"]?([a-z]+)['"]?/i);
+    if (tierMatch) {
+      const actualTier = String(evalCtx.levelTier ?? entry?.tier ?? entry?.levelTier ?? 'Apprentice').trim().toLowerCase();
+      return actualTier === tierMatch[1].toLowerCase();
+    }
+
+    // 3. Combat Toggles (`charging`, `fightingDefensively`, `totalDefense`, `powerAttack`, `combatExpertise`, `flanking`, `higherGround`, etc.)
+    const tac = Object.assign({}, ch.tactical || {}, evalCtx.tactical || {});
+    const toggleAliases = {
+      'charging': Boolean(tac.charge || tac.charging || evalCtx.charge || evalCtx.charging),
+      'charge': Boolean(tac.charge || tac.charging || evalCtx.charge || evalCtx.charging),
+      'on a charge': Boolean(tac.charge || tac.charging || evalCtx.charge || evalCtx.charging),
+      'while charging': Boolean(tac.charge || tac.charging || evalCtx.charge || evalCtx.charging),
+      'fightingdefensively': Boolean(tac.fightingDefensively || evalCtx.fightingDefensively),
+      'fighting defensively': Boolean(tac.fightingDefensively || evalCtx.fightingDefensively),
+      'totaldefense': Boolean(tac.totalDefense || evalCtx.totalDefense),
+      'total defense': Boolean(tac.totalDefense || evalCtx.totalDefense),
+      'powerattack': Boolean((Number(tac.powerAttack) > 0) || tac.powerAttackActive || (Number(evalCtx.powerAttack) > 0)),
+      'power attack': Boolean((Number(tac.powerAttack) > 0) || tac.powerAttackActive || (Number(evalCtx.powerAttack) > 0)),
+      'combatexpertise': Boolean((Number(tac.combatExpertise) > 0) || tac.combatExpertiseActive || (Number(evalCtx.combatExpertise) > 0)),
+      'combat expertise': Boolean((Number(tac.combatExpertise) > 0) || tac.combatExpertiseActive || (Number(evalCtx.combatExpertise) > 0)),
+      'flanking': Boolean(tac.flanking || evalCtx.flanking),
+      'while flanking': Boolean(tac.flanking || evalCtx.flanking),
+      'higherground': Boolean(tac.higherGround || evalCtx.higherGround),
+      'higher ground': Boolean(tac.higherGround || evalCtx.higherGround),
+      'pointblankshot': Boolean(tac.pointBlankShot || evalCtx.pointBlankShot),
+      'point blank shot': Boolean(tac.pointBlankShot || evalCtx.pointBlankShot),
+      'rapidshot': Boolean(tac.rapidShot || evalCtx.rapidShot),
+      'manyshot': Boolean(tac.manyshot || evalCtx.manyshot),
+      'sneakattack': Boolean(tac.sneakAttack || evalCtx.sneakAttack)
+    };
+    if ( Object.prototype.hasOwnProperty.call(toggleAliases, low) ) {
+      return toggleAliases[low];
+    }
+
+    // 4. HP Thresholds (`hp <= 50%`, `hp < 50%`, `bloodied`, `full hp`)
+    const curHp = Number(ch.hp?.current ?? ch.hp?.max ?? 10);
+    const maxHp = Math.max(1, Number(ch.hp?.max ?? 10));
+    if (low === 'bloodied' || low === 'hp <= 50%' || low === 'hp <= 0.5' || low === 'below half hp') {
+      return curHp <= Math.floor(maxHp / 2);
+    }
+    if (low === 'hp < 50%') {
+      return curHp < Math.floor(maxHp / 2);
+    }
+    if (low === 'full hp' || low === 'hp == 100%' || low === 'hp >= max') {
+      return curHp >= maxHp;
+    }
+    const hpPctMatch = low.match(/^hp\s*(<=|<|>=|>|==|=)\s*(\d+)\s*%$/);
+    if (hpPctMatch) {
+      const op = hpPctMatch[1];
+      const pct = Number(hpPctMatch[2]) / 100;
+      const ratio = curHp / maxHp;
+      if (op === '<=') return ratio <= pct;
+      if (op === '<') return ratio < pct;
+      if (op === '>=') return ratio >= pct;
+      if (op === '>') return ratio > pct;
+      return Math.abs(ratio - pct) < 0.001;
+    }
+
+    // 5. Active Buff / Stance / Mode check (`buff:haste`, `hasBuff:Prayer`, `mode:2-Hand`, `stance:Island of Blades`)
+    if (low.startsWith('buff:') || low.startsWith('hasbuff:')) {
+      const bTarget = low.replace(/^(?:has)?buff:/, '').trim();
+      return (Array.isArray(ch.buffs) ? ch.buffs : []).some(b => b && b.active && (
+        String(b.id || '').toLowerCase() === bTarget ||
+        String(b.name || '').toLowerCase().includes(bTarget)
+      ));
+    }
+    if (low.startsWith('stance:')) {
+      const sTarget = low.slice(7).trim();
+      return String(ch.activeStance || '').toLowerCase().includes(sTarget);
+    }
+    if (low.startsWith('mode:')) {
+      const mTarget = low.slice(5).trim();
+      const activeModes = ch.activeModes || evalCtx.activeModes || {};
+      const entryId = entry?.id || entry?.baseItemId;
+      if (entryId && activeModes[entryId] !== undefined) {
+        const sel = activeModes[entryId];
+        if (String(sel).toLowerCase() === mTarget) return true;
+        const modeObj = Array.isArray(entry?.modes) ? entry.modes[Number(sel)] : null;
+        if (modeObj && (String(modeObj.name || modeObj.label || modeObj.id || '').toLowerCase() === mTarget)) return true;
+        return false;
+      }
+      return Object.values(activeModes).some(v => String(v).toLowerCase() === mTarget);
+    }
+
+    // 6. Formula comparison expression (e.g. "@essentia >= 2", "@cl >= 5", "@ml >= 3")
+    const cmpMatch = cond.match(/^(@[a-zA-Z0-9_.]+|\d+)\s*(>=|<=|===|==|!=|>|<)\s*(@[a-zA-Z0-9_.]+|\d+)$/);
+    if (cmpMatch) {
+      const lhs = Number(this.evaluateFormula(cmpMatch[1], evalCtx)) || 0;
+      const op = cmpMatch[2];
+      const rhs = Number(this.evaluateFormula(cmpMatch[3], evalCtx)) || 0;
+      if (op === '>=') return lhs >= rhs;
+      if (op === '<=') return lhs <= rhs;
+      if (op === '>') return lhs > rhs;
+      if (op === '<') return lhs < rhs;
+      if (op === '!=') return lhs !== rhs;
+      return lhs === rhs;
+    }
+
+    // 7. Situational combat/save notes (`vs. Evil`, `vs. Fear`, `against traps`) vs descriptive corpus notes
+    if (/^(?:vs\.?\b|against\b|to\s+oppose\b|on\s+saves?\s+against\b)/i.test(cond)) {
+      return 'situational';
+    }
+    return true;
+  },
+
+  /**
+   * Canonical V3 Rule Crafter Block Interpreter (`RuleEngine.evaluateV3Entry(entry, ctx)`).
+   * Evaluates V3 `blocks[]` / `effects[]` (`stat`, `roll`, `attack`, `defense`, `effect`, `resource`, `when`, `while`, `table`, `carrier`),
+   * active `modes[]` (`char.activeModes?.[entry.id]`), Incarnum `chakraBinds[boundChakra]`, Psionic `augment`,
+   * V3 `chassis` / `weapon` / `armor` / `race` / `progression`, and passive `ruleFlags` -> English `tacticalBadges`.
+   */
+  evaluateV3Entry(entry, ctx = {}) {
     if (!entry || typeof entry !== 'object') return entry;
-    if (entry.schemaVersion === 2 && Array.isArray(entry.modifiers) && Array.isArray(entry.defenses)) return entry;
-    let upgraded = entry;
-    if (typeof window !== 'undefined' && window.SchemaMigrator && typeof window.SchemaMigrator.upgradeEntryToV2 === 'function') {
-      upgraded = window.SchemaMigrator.upgradeEntryToV2(entry);
+    const ch = (ctx && (ctx.abilities || ctx.levelProgression || ctx.bodySlots || ctx.classes) && !ctx.character)
+      ? ctx
+      : (ctx?.character || this._activeCharacter || (typeof window !== 'undefined' ? window.character : null) || {});
+    const evalCtx = (ctx && typeof ctx.strMod === 'number' && typeof ctx.level === 'number')
+      ? Object.assign({ character: ch }, ctx)
+      : this.buildFormulaContext(ch, (ctx && ctx !== ch) ? ctx : {});
+
+    // Check Copy-on-Write Character Override (`char.customEntries[id]`) first
+    let baseEntry = entry;
+    if (!entry._customOverrideApplied) {
+      const customOv = this.resolveCustomEntryOverride(entry, ch);
+      if (customOv && customOv !== entry) {
+        baseEntry = Object.assign({}, entry, customOv, {
+          _customOverrideApplied: true,
+          active: entry.active !== undefined ? entry.active : customOv.active,
+          equipped: entry.equipped !== undefined ? entry.equipped : customOv.equipped,
+          isEquipped: entry.isEquipped !== undefined ? entry.isEquipped : customOv.isEquipped,
+          slot: entry.slot || customOv.slot,
+          grip: entry.grip || customOv.grip,
+          essentia: entry.essentia !== undefined ? entry.essentia : (entry.invested !== undefined ? entry.invested : customOv.essentia),
+          invested: entry.invested !== undefined ? entry.invested : (entry.essentia !== undefined ? entry.essentia : customOv.invested),
+          boundChakra: entry.boundChakra || entry.chakraBind || customOv.boundChakra,
+          augmentPP: entry.augmentPP !== undefined ? entry.augmentPP : customOv.augmentPP,
+          castsToday: entry.castsToday !== undefined ? entry.castsToday : customOv.castsToday,
+          targetCR: entry.targetCR !== undefined ? entry.targetCR : customOv.targetCR
+        });
+      }
+    }
+
+    const out = Object.assign({}, baseEntry);
+    const entryEssentia = Number(evalCtx.essentia ?? out.essentia ?? out.invested ?? evalCtx.self?.invested ?? 0) || 0;
+    const entryCl = Number(evalCtx.cl ?? out.casterLevel ?? out.cl ?? evalCtx.level ?? 1) || 1;
+    const entryMl = Number(evalCtx.ml ?? out.manifesterLevel ?? out.ml ?? entryCl) || 1;
+    const entryIl = Number(evalCtx.il ?? out.initiatorLevel ?? out.il ?? evalCtx.level ?? 1) || 1;
+    const entryEbl = Number(evalCtx.ebl ?? out.effectiveBinderLevel ?? out.ebl ?? evalCtx.level ?? 1) || 1;
+    const boundChakra = evalCtx.boundChakra ?? out.boundChakra ?? out.chakraBind ?? null;
+
+    // Psionics Augment Cap (XPH RAW: baseCost + augmentPP <= ML)
+    const rawAugmentPP = Math.max(0, Number(evalCtx.augmentPP ?? out.augmentPP ?? 0) || 0);
+    const powerLvl = Number(out.level ?? 1) || 1;
+    const basePowerCost = Number(out.baseCost ?? out.powerPoints ?? (powerLvl * 2 - 1)) || 1;
+    const hasMlCap = Boolean(out.type === 'Power' || out.category === 'Power' || out.augment || evalCtx.enforceAugmentCap);
+    const maxAllowedAugment = hasMlCap ? Math.max(0, entryMl - basePowerCost) : rawAugmentPP;
+    const effectiveAugmentPP = hasMlCap ? Math.min(rawAugmentPP, maxAllowedAugment) : rawAugmentPP;
+
+    const localCtx = Object.assign({}, evalCtx, {
+      cl: entryCl,
+      casterLevel: entryCl,
+      ml: entryMl,
+      manifesterLevel: entryMl,
+      il: entryIl,
+      initiatorLevel: entryIl,
+      ebl: entryEbl,
+      effectiveBinderLevel: entryEbl,
+      essentia: entryEssentia,
+      augmentPP: effectiveAugmentPP,
+      boundChakra,
+      self: Object.assign({}, evalCtx.self || {}, {
+        stacks: Number(out.stacks ?? evalCtx.self?.stacks ?? 1) || 1,
+        invested: entryEssentia
+      })
+    });
+
+    const modifiers = Array.isArray(out.modifiers) ? out.modifiers.map(m => Object.assign({}, m)) : [];
+    const damageParts = Array.isArray(out.damageParts) ? out.damageParts.map(d => Object.assign({}, d)) : [];
+    const defenses = Array.isArray(out.defenses) ? out.defenses.map(d => Object.assign({}, d)) : [];
+    const resources = Array.isArray(out.resources) ? out.resources.map(r => Object.assign({}, r)) : [];
+    const grants = Array.isArray(out.grants) ? out.grants.map(g => Object.assign({}, g)) : [];
+    const ruleFlags = Object.assign({}, out.ruleFlags || {});
+    const tacticalBadges = this.formatRuleFlagBadges(ruleFlags, out);
+    const addBadge = (b) => {
+      if (b && !tacticalBadges.includes(b)) tacticalBadges.push(b);
+    };
+
+    // Map V3 Weapon / Armor / Race / Chassis sub-objects onto standard fields
+    if (out.weapon && typeof out.weapon === 'object') {
+      const w = out.weapon;
+      if (w.damageDice && !out.dice) out.dice = w.damageDice;
+      if (w.dmgType && !out.dmgType) out.dmgType = w.dmgType;
+      if (w.critRange && !out.critRange) out.critRange = w.critRange;
+      if (w.critMult && !out.critMult) out.critMult = w.critMult;
+      if (w.handedness && !out.handedness) out.handedness = w.handedness;
+      if (w.proficiency && !out.proficiency) out.proficiency = w.proficiency;
+      if (w.rangeIncrement && !out.range) out.range = w.rangeIncrement;
+      if (w.enhancementBonus && !out.enhancementBonus) out.enhancementBonus = Number(w.enhancementBonus) || 0;
+      if (w.damageDice && damageParts.length === 0) {
+        damageParts.push({
+          dice: String(w.damageDice),
+          bonus: 0,
+          type: w.dmgType || 'Slashing',
+          multiplyOnCrit: true,
+          onCritOnly: false,
+          source: out.name || 'Base Weapon'
+        });
+      }
+    }
+    if (out.armor && typeof out.armor === 'object') {
+      const a = out.armor;
+      const aType = String(a.armorType || out.category || '').toLowerCase();
+      const isShield = aType === 'shield' || aType.includes('buckler') || String(out.type || '').toLowerCase() === 'shield';
+      const baseBonus = Number(a.acBonus || 0) + (Number(a.enhancementBonus) || 0);
+      if (baseBonus > 0) {
+        const targetKey = isShield ? 'ac.shield' : 'ac.armor';
+        const bonusType = isShield ? 'Shield' : 'Armor';
+        if (!modifiers.some(m => m && m.target === targetKey)) {
+          modifiers.push({ target: targetKey, value: baseBonus, type: bonusType, condition: null, source: out.name || 'Armor' });
+        }
+      }
+      if (a.maxDex !== undefined && a.maxDex !== null && out.maxDex === undefined) out.maxDex = Number(a.maxDex);
+      if (a.acp !== undefined && a.acp !== null && out.checkPenalty === undefined) out.checkPenalty = Number(a.acp);
+      if (a.asf !== undefined && a.asf !== null && out.spellFailure === undefined) out.spellFailure = Number(a.asf);
+      if (a.armorType && !out.armorCategory) out.armorCategory = a.armorType;
+    }
+    if (out.race && typeof out.race === 'object') {
+      if (out.race.size && !out.size) out.size = out.race.size;
+      if (out.race.baseSpeed && !out.baseSpeed) out.baseSpeed = Number(out.race.baseSpeed) || 30;
+      if (out.race.levelAdjustment !== undefined && out.levelAdjustment === undefined) {
+        out.levelAdjustment = Number(out.race.levelAdjustment) || 0;
+      }
+    }
+    if (out.chassis && typeof out.chassis === 'object') {
+      if (out.chassis.hitDie && !out.hitDie) out.hitDie = out.chassis.hitDie;
+      if (out.chassis.bab && !out.babProgression) out.babProgression = out.chassis.bab;
+      if (out.chassis.skillPoints && !out.skillPointsPerLevel) out.skillPointsPerLevel = out.chassis.skillPoints;
+      if (!out.savingThrows && (out.chassis.fort || out.chassis.ref || out.chassis.will)) {
+        out.savingThrows = {
+          fort: out.chassis.fort === 'good' || out.chassis.fort === 'high' ? 'high' : 'low',
+          ref: out.chassis.ref === 'good' || out.chassis.ref === 'high' ? 'high' : 'low',
+          will: out.chassis.will === 'good' || out.chassis.will === 'high' ? 'high' : 'low'
+        };
+      }
+    }
+
+    const pushModifier = (modObj) => {
+      if (!modObj || !modObj.target) return;
+      const isDup = modifiers.some(m =>
+        m &&
+        m.target === modObj.target &&
+        m.type === modObj.type &&
+        m.value === modObj.value &&
+        (m.formula || null) === (modObj.formula || null) &&
+        (m.condition || null) === (modObj.condition || null) &&
+        (m.sourceLabel || null) === (modObj.sourceLabel || null)
+      );
+      if (!isDup) modifiers.push(modObj);
+    };
+
+    const buildStatFormulaAndValue = (b, branchCtx) => {
+      const terms = [];
+      const rawVal = b.val !== undefined ? b.val : b.value;
+      const mode = String(b.mode || '').toLowerCase();
+      const statAbility = String(b.stat || '').toLowerCase().trim();
+
+      if ((mode === 'stat' || statAbility) && ['str', 'dex', 'con', 'int', 'wis', 'cha'].includes(statAbility)) {
+        const mult = Number(b.mult ?? b.multiplier ?? 1);
+        const modToken = `@${statAbility}Mod`;
+        terms.push(mult !== 1 ? `floor(${modToken} * ${mult})` : modToken);
+        const flatAdd = Number(rawVal);
+        if (!Number.isNaN(flatAdd) && flatAdd !== 0) {
+          terms.push(String(flatAdd));
+        }
+      } else if ((mode === 'stat' || statAbility) && ['essentia', 'cl', 'ml', 'il', 'ebl', 'level', 'hd', 'bab', 'augmentpp'].includes(statAbility)) {
+        const mult = Number(b.mult ?? b.multiplier ?? 1);
+        const token = statAbility === 'augmentpp' ? '@augmentPP' : `@${statAbility}`;
+        terms.push(mult !== 1 ? `floor(${token} * ${mult})` : token);
+        const flatAdd = Number(rawVal);
+        if (!Number.isNaN(flatAdd) && flatAdd !== 0) {
+          terms.push(String(flatAdd));
+        }
+      } else if (b.formula !== undefined && b.formula !== null && String(b.formula).trim() !== '') {
+        terms.push(String(b.formula).trim());
+      } else if (typeof rawVal === 'string' && isNaN(Number(rawVal))) {
+        terms.push(rawVal.trim());
+      } else {
+        const baseNum = Number(rawVal ?? 0) || 0;
+        if (baseNum !== 0 || (!b.perLvl && !b.perLevel && !b.perCL && !b.perML && !b.perIL && !b.perEssentia && !b.halfLvl)) {
+          terms.push(String(baseNum));
+        }
+      }
+
+      const perLvl = Number(b.perLvl ?? b.perLevel ?? 0) || 0;
+      if (perLvl > 0) {
+        terms.push(perLvl === 1 ? '@level' : `floor(@level / ${perLvl})`);
+      }
+      const perCL = Number(b.perCL ?? 0) || 0;
+      if (perCL > 0) {
+        terms.push(perCL === 1 ? '@cl' : `floor(@cl / ${perCL})`);
+      }
+      const perML = Number(b.perML ?? 0) || 0;
+      if (perML > 0) {
+        terms.push(perML === 1 ? '@ml' : `floor(@ml / ${perML})`);
+      }
+      const perIL = Number(b.perIL ?? 0) || 0;
+      if (perIL > 0) {
+        terms.push(perIL === 1 ? '@il' : `floor(@il / ${perIL})`);
+      }
+      const perEssentia = Number(b.perEssentia ?? 0) || 0;
+      if (perEssentia !== 0) {
+        terms.push(perEssentia === 1 ? '@essentia' : `(@essentia * ${perEssentia})`);
+      }
+      if (b.halfLvl) {
+        terms.push('floor(@level / 2)');
+      }
+
+      const rawExpr = terms.length > 0 ? terms.join(' + ') : '0';
+      const capRaw = b.cap !== undefined && b.cap !== null && b.cap !== '' ? b.cap : (b.max !== undefined && b.max !== null && b.max !== '' ? b.max : null);
+      let evaluated = Number(this.evaluateFormula(rawExpr, branchCtx)) || 0;
+      let formulaStr = rawExpr;
+      if (capRaw !== null) {
+        const capNum = Number(this.evaluateFormula(capRaw, branchCtx));
+        if (Number.isFinite(capNum)) {
+          evaluated = Math.min(evaluated, capNum);
+          formulaStr = `min(${capRaw}, ${rawExpr})`;
+        }
+      }
+      const isDynamic = /@|floor|ceil|min|max/i.test(formulaStr);
+      return {
+        value: Math.trunc(evaluated),
+        formula: isDynamic ? formulaStr : null,
+        cap: capRaw
+      };
+    };
+
+    const walkBlocks = (blockList, branchMeta = {}) => {
+      if (!Array.isArray(blockList)) return;
+      const curCtx = branchMeta.ctx || localCtx;
+      const situationalCond = branchMeta.situationalCond || null;
+      const sourceLabel = branchMeta.sourceLabel || null;
+
+      blockList.forEach(b => {
+        if (!b || typeof b !== 'object') return;
+        const bType = String(b.type || 'stat').toLowerCase().trim();
+
+        // 1. Conditional Branch (`when` / `while`)
+        if (bType === 'when' || bType === 'while') {
+          const condRes = this.evaluateV3BranchCondition(b.condition || b.when || b.while, bType, curCtx, ch, out);
+          if (condRes === false) {
+            if (Array.isArray(b.else) && b.else.length > 0) {
+              walkBlocks(b.else, branchMeta);
+            }
+            return;
+          }
+          const nextSituational = condRes === 'situational' ? String(b.condition || '') : situationalCond;
+          const nextLabel = (condRes === true && b.condition && typeof b.condition === 'string') ? b.condition : sourceLabel;
+          const children = Array.isArray(b.then) ? b.then : (Array.isArray(b.blocks) ? b.blocks : (Array.isArray(b.children) ? b.children : []));
+          walkBlocks(children, { ctx: curCtx, situationalCond: nextSituational, sourceLabel: nextLabel });
+          return;
+        }
+
+        // 2. Lookup Table (`table` by level/HD/CL/ML/EBL/essentia)
+        if (bType === 'table' && Array.isArray(b.rows)) {
+          const keyName = String(b.key || b.lookupKey || 'level').toLowerCase().trim().replace(/^@/, '');
+          const keyVal = keyName === 'cl' || keyName === 'casterlevel' ? curCtx.cl
+            : (keyName === 'ml' || keyName === 'manifesterlevel' ? curCtx.ml
+              : (keyName === 'il' || keyName === 'initiatorlevel' ? curCtx.il
+                : (keyName === 'ebl' || keyName === 'binderlevel' ? curCtx.ebl
+                  : (keyName === 'essentia' || keyName === 'invested' ? curCtx.essentia
+                    : (keyName === 'augmentpp' ? curCtx.augmentPP
+                      : (keyName === 'classlevel' ? curCtx.classLevel : curCtx.level))))));
+          let matchedRow = null;
+          for (let i = 0; i < b.rows.length; i++) {
+            const row = b.rows[i];
+            if (!row || typeof row !== 'object') continue;
+            let rMin = row.min !== undefined ? Number(row.min) : null;
+            let rMax = row.max !== undefined ? Number(row.max) : null;
+            const rangeRef = row.lvl ?? row.level ?? row.range;
+            if (rMin === null && rangeRef !== undefined) {
+              const rStr = String(rangeRef).trim();
+              const dashMatch = rStr.match(/^(\d+)\s*-\s*(\d+)$/);
+              const plusMatch = rStr.match(/^(\d+)\s*\+$/);
+              if (dashMatch) {
+                rMin = Number(dashMatch[1]);
+                rMax = Number(dashMatch[2]);
+              } else if (plusMatch) {
+                rMin = Number(plusMatch[1]);
+                rMax = 99;
+              } else {
+                rMin = Number(rStr) || 1;
+                rMax = row.exact ? rMin : 99;
+              }
+            }
+            if (rMin === null) rMin = 1;
+            if (rMax === null) rMax = 99;
+            if (keyVal >= rMin && keyVal <= rMax) {
+              matchedRow = row;
+            }
+          }
+          if (matchedRow) {
+            const rowBlocks = matchedRow.blocks || matchedRow.then || matchedRow.effects;
+            if (Array.isArray(rowBlocks) && rowBlocks.length > 0) {
+              walkBlocks(rowBlocks, branchMeta);
+            } else if (matchedRow.val !== undefined || matchedRow.value !== undefined) {
+              const synthTargets = Array.isArray(matchedRow.targets) ? matchedRow.targets : (Array.isArray(b.targets) ? b.targets : [matchedRow.target || b.target || 'ac.all']);
+              walkBlocks([{
+                type: 'stat',
+                targets: synthTargets,
+                val: matchedRow.val ?? matchedRow.value,
+                bonusType: matchedRow.bonusType || matchedRow.btype || b.bonusType || b.btype || 'Untyped'
+              }], branchMeta);
+            }
+          }
+          return;
+        }
+
+        // 3. Carrier Rider Block (`carrier`)
+        if (bType === 'carrier') {
+          const rider = b.riderEffect || b.effect || b.condition || 'Rider Effect';
+          const saveType = b.saveType || b.save || '';
+          const dcVal = b.dc ? (Number(this.evaluateFormula(b.dc, curCtx)) || b.dc) : '';
+          const badgeStr = saveType
+            ? `On Hit: ${rider} (${saveType}${dcVal ? ` DC ${dcVal}` : ''}${b.negates === false ? ' partial' : ' negates'})`
+            : `On Hit: ${rider}`;
+          addBadge(badgeStr);
+          const childBlocks = b.blocks || b.then || b.effects;
+          if (Array.isArray(childBlocks) && childBlocks.length > 0) {
+            walkBlocks(childBlocks, branchMeta);
+          }
+          return;
+        }
+
+        // 4. Stat Block (`stat`)
+        if (bType === 'stat') {
+          let InlineCondResult = true;
+          if (b.condition) {
+            InlineCondResult = this.evaluateV3BranchCondition(b.condition, 'when', curCtx, ch, out);
+            if (InlineCondResult === false) return;
+          }
+          const rawTargets = Array.isArray(b.targets) && b.targets.length > 0
+            ? b.targets
+            : (b.target ? [b.target] : ['ac.all']);
+          const bonusType = this.normalizeV3BonusType(b.bonusType || b.btype || 'Untyped');
+          const { value, formula, cap } = buildStatFormulaAndValue(b, curCtx);
+          const effSituational = InlineCondResult === 'situational' ? String(b.condition) : situationalCond;
+          const effNote = (InlineCondResult === true && b.condition && typeof b.condition === 'string') ? b.condition : sourceLabel;
+
+          rawTargets.forEach(rawT => {
+            const canonT = this.canonicalizeV3Target(rawT);
+            if (canonT === 'dr') {
+              const bypass = b.bypass || b.drType || '-';
+              defenses.push({ kind: 'dr', target: 'physical', value, formula, bypass });
+              pushModifier({
+                op: 'add',
+                target: 'dr',
+                value,
+                formula,
+                cap,
+                type: bonusType,
+                bypass,
+                condition: effSituational,
+                sourceLabel: effNote,
+                source: out.name || out.id || 'V3 Entry'
+              });
+              return;
+            }
+            if (canonT === 'sr') {
+              defenses.push({ kind: 'sr', target: 'magic', value, formula });
+              pushModifier({
+                op: 'add',
+                target: 'sr',
+                value,
+                formula,
+                cap,
+                type: bonusType,
+                condition: effSituational,
+                sourceLabel: effNote,
+                source: out.name || out.id || 'V3 Entry'
+              });
+              return;
+            }
+            if (canonT.startsWith('resist.')) {
+              const elem = canonT.slice(7);
+              defenses.push({ kind: 'resistance', target: elem, value, formula });
+              pushModifier({
+                op: 'add',
+                target: canonT,
+                value,
+                formula,
+                cap,
+                type: bonusType,
+                condition: effSituational,
+                sourceLabel: effNote,
+                source: out.name || out.id || 'V3 Entry'
+              });
+              return;
+            }
+            if (canonT === 'fastHealing') {
+              defenses.push({ kind: 'fast_healing', target: 'hp', value, formula });
+              pushModifier({
+                op: 'add',
+                target: 'fastHealing',
+                value,
+                formula,
+                cap,
+                type: bonusType,
+                condition: effSituational,
+                sourceLabel: effNote,
+                source: out.name || out.id || 'V3 Entry'
+              });
+              return;
+            }
+            if (canonT === 'hp.perLvl') {
+              const totalHpVal = value * (Number(curCtx.level) || 1);
+              const hpFormula = formula ? `(${formula}) * @level` : `${value} * @level`;
+              pushModifier({
+                op: 'add',
+                target: 'hp.perLvl',
+                value: totalHpVal,
+                formula: hpFormula,
+                type: bonusType,
+                condition: effSituational,
+                sourceLabel: effNote,
+                source: out.name || out.id || 'V3 Entry'
+              });
+              return;
+            }
+            pushModifier({
+              op: b.op || 'add',
+              target: canonT,
+              value,
+              formula,
+              cap,
+              type: bonusType,
+              condition: effSituational,
+              sourceLabel: effNote,
+              source: out.name || out.id || 'V3 Entry'
+            });
+          });
+          return;
+        }
+
+        // 5. Roll / Attack Damage Block (`roll` / `attack`)
+        if (bType === 'roll' || bType === 'attack') {
+          const diceStr = b.dice
+            ? String(b.dice).trim()
+            : ((b.n || b.d) ? `${b.n || 1}d${b.d || 6}` : '1d6');
+          const flatBonus = b.bonus !== undefined
+            ? Number(this.evaluateFormula(b.bonus, curCtx)) || 0
+            : (Number(b.flat || 0) || 0);
+          const dmgType = b.dmgType || b.damageType || 'Untyped';
+          damageParts.push({
+            dice: diceStr,
+            bonus: flatBonus,
+            type: dmgType,
+            multiplyOnCrit: Boolean(b.multiplyOnCrit),
+            onCritOnly: Boolean(b.onCritOnly),
+            touchAttack: Boolean(b.touch || b.isTouch),
+            saveType: b.saveType || b.save || null,
+            dcFormula: b.dc || b.dcFormula || null,
+            source: out.name || out.id || 'V3 Entry'
+          });
+          if (b.touch || b.isTouch) addBadge('Touch Attack');
+          return;
+        }
+
+        // 6. Defense Block (`defense`)
+        if (bType === 'defense') {
+          if (b.dr !== undefined || b.sr !== undefined || b.resist !== undefined || b.fastHealing !== undefined) {
+            if (b.dr !== undefined && b.dr !== null) {
+              const drStr = String(b.dr).trim();
+              const slashIdx = drStr.indexOf('/');
+              const rawAmt = slashIdx >= 0 ? drStr.slice(0, slashIdx).trim() : drStr;
+              const bypass = slashIdx >= 0 ? (drStr.slice(slashIdx + 1).trim() || '-') : (b.bypass || b.drType || '-');
+              const drVal = Math.floor(Number(this.evaluateFormula(rawAmt, curCtx)) || Number(rawAmt) || 0);
+              const drFormula = /@|floor|ceil|min|max/i.test(rawAmt) ? rawAmt : null;
+              defenses.push({ kind: 'dr', target: 'physical', value: drVal, formula: drFormula, bypass });
+              pushModifier({ op: 'add', target: 'dr', value: drVal, formula: drFormula, type: 'Untyped', bypass, source: out.name || 'Defense' });
+            }
+            if (b.sr !== undefined && b.sr !== null) {
+              const srExpr = String(b.sr).trim();
+              const srVal = Math.floor(Number(this.evaluateFormula(srExpr, curCtx)) || Number(srExpr) || 0);
+              const srFormula = /@|floor|ceil|min|max/i.test(srExpr) ? srExpr : null;
+              defenses.push({ kind: 'sr', target: 'magic', value: srVal, formula: srFormula });
+              pushModifier({ op: 'add', target: 'sr', value: srVal, formula: srFormula, type: 'Untyped', source: out.name || 'Defense' });
+            }
+            if (b.resist && typeof b.resist === 'object') {
+              Object.entries(b.resist).forEach(([elemKey, elemRaw]) => {
+                const elem = String(elemKey).toLowerCase().trim();
+                const rExpr = String(elemRaw).trim();
+                const rVal = Math.floor(Number(this.evaluateFormula(rExpr, curCtx)) || Number(rExpr) || 0);
+                const rFormula = /@|floor|ceil|min|max/i.test(rExpr) ? rExpr : null;
+                defenses.push({ kind: 'resistance', target: elem, value: rVal, formula: rFormula });
+                pushModifier({ op: 'add', target: `resist.${elem}`, value: rVal, formula: rFormula, type: 'Untyped', source: out.name || 'Defense' });
+              });
+            }
+            if (b.fastHealing !== undefined && b.fastHealing !== null) {
+              const fhExpr = String(b.fastHealing).trim();
+              const fhVal = Math.floor(Number(this.evaluateFormula(fhExpr, curCtx)) || Number(fhExpr) || 0);
+              const fhFormula = /@|floor|ceil|min|max/i.test(fhExpr) ? fhExpr : null;
+              defenses.push({ kind: 'fast_healing', target: 'hp', value: fhVal, formula: fhFormula });
+              pushModifier({ op: 'add', target: 'fastHealing', value: fhVal, formula: fhFormula, type: 'Untyped', source: out.name || 'Defense' });
+            }
+            return;
+          }
+          const dKind = String(b.defType || b.kind || 'dr').toLowerCase().trim();
+          const dFormula = b.formula || null;
+          const dVal = dFormula
+            ? Math.floor(Number(this.evaluateFormula(dFormula, curCtx)) || 0)
+            : (Number(b.val ?? b.value ?? 0) || 0);
+          if (dKind === 'dr') {
+            const bypass = b.bypass || b.drType || '-';
+            defenses.push({ kind: 'dr', target: 'physical', value: dVal, formula: dFormula, bypass });
+            pushModifier({ op: 'add', target: 'dr', value: dVal, formula: dFormula, type: 'Untyped', bypass, source: out.name || 'Defense' });
+          } else if (dKind === 'sr') {
+            defenses.push({ kind: 'sr', target: 'magic', value: dVal, formula: dFormula });
+            pushModifier({ op: 'add', target: 'sr', value: dVal, formula: dFormula, type: 'Untyped', source: out.name || 'Defense' });
+          } else if (dKind === 'resist' || dKind === 'resistance') {
+            const elem = String(b.element || b.target || 'fire').toLowerCase();
+            defenses.push({ kind: 'resistance', target: elem, value: dVal, formula: dFormula });
+            pushModifier({ op: 'add', target: `resist.${elem}`, value: dVal, formula: dFormula, type: 'Untyped', source: out.name || 'Defense' });
+          } else if (dKind === 'immune' || dKind === 'immunity') {
+            const immTarget = String(b.immuneTo || b.element || b.target || 'effect').toLowerCase();
+            defenses.push({ kind: 'immunity', target: immTarget, value: 1 });
+            addBadge(`Immune: ${b.immuneTo || b.element || b.target || 'Effect'}`);
+          } else if (dKind === 'vulnerable' || dKind === 'vulnerability') {
+            const vulTarget = String(b.element || b.target || 'fire').toLowerCase();
+            defenses.push({ kind: 'vulnerability', target: vulTarget, value: 1 });
+          } else if (dKind === 'fasthealing' || dKind === 'fast_healing') {
+            defenses.push({ kind: 'fast_healing', target: 'hp', value: dVal, formula: dFormula });
+            pushModifier({ op: 'add', target: 'fastHealing', value: dVal, formula: dFormula, type: 'Untyped', source: out.name || 'Defense' });
+          } else if (dKind === 'regen' || dKind === 'regeneration') {
+            defenses.push({ kind: 'regen', target: 'hp', value: dVal, formula: dFormula, bypass: b.bypass || '-' });
+          } else if (dKind === 'fortification') {
+            defenses.push({ kind: 'fortification', target: 'crit', value: dVal || 25 });
+            addBadge(`Fortification ${dVal || 25}%`);
+          } else if (dKind === 'concealment') {
+            addBadge(`Concealment ${dVal || 20}%`);
+          }
+          return;
+        }
+
+        // 7. Effect Block (`effect`: sense, movement, condition, summon, grant, or text/carrier)
+        if (bType === 'effect') {
+          if (b.text) addBadge(String(b.text).trim());
+          if (b.carrier && typeof b.carrier === 'object') {
+            const c = b.carrier;
+            const cSave = c.saveType || c.save || '';
+            const cDc = c.dc ? (Number(this.evaluateFormula(c.dc, curCtx)) || c.dc) : '';
+            const cEff = c.effect || c.riderEffect || c.condition || 'Rider Effect';
+            addBadge(`Carrier: ${cSave ? `${cSave}${cDc ? ` DC ${cDc}` : ''} — ` : ''}${cEff}`);
+          }
+          if (!b.effType && !b.kind && (b.text || b.carrier)) return;
+          const effKind = String(b.effType || b.kind || 'sense').toLowerCase().trim();
+          const effVal = Number(b.val ?? b.value ?? b.range ?? 0) || 0;
+          if (effKind === 'sense') {
+            const senseName = b.sense || b.target || 'Darkvision';
+            grants.push({ grantType: 'sense', targetId: senseName, value: effVal || 60 });
+            addBadge(`${senseName}${effVal ? ` ${effVal} ft.` : ''}`);
+          } else if (effKind === 'movement') {
+            const moveMode = String(b.moveMode || b.mode || b.target || 'fly').toLowerCase();
+            const speedTarget = `speed.${moveMode}`;
+            grants.push({ grantType: 'movement', targetId: moveMode, value: effVal || 30 });
+            if (effVal > 0) {
+              pushModifier({
+                op: 'add',
+                target: speedTarget,
+                value: effVal,
+                type: 'Untyped',
+                source: out.name || 'Movement'
+              });
+            }
+            if (b.maneuverability) addBadge(`Fly ${effVal || 30} ft. (${b.maneuverability})`);
+          } else if (effKind === 'condition') {
+            const condName = b.condition || b.target || '';
+            if (condName) addBadge(`Condition: ${condName}`);
+          } else if (effKind === 'grant' || effKind === 'proficiency' || effKind === 'feat') {
+            grants.push({
+              grantType: effKind === 'proficiency' ? 'proficiency' : 'entity',
+              targetId: b.targetId || b.grant || b.feat || b.proficiency || b.value
+            });
+          } else if (effKind === 'summon') {
+            addBadge(`Summon: ${b.creature || b.target || 'Companion'}`);
+          }
+          return;
+        }
+
+        // 8. Resource Block (`resource`)
+        if (bType === 'resource') {
+          const maxFormula = b.maxFormula !== undefined ? b.maxFormula : (b.max ?? b.val ?? b.value ?? 1);
+          const evaluatedMax = Math.max(0, Math.floor(Number(this.evaluateFormula(maxFormula, curCtx)) || 0));
+          resources.push({
+            id: b.id || `${out.id || 'v3'}_res_${resources.length + 1}`,
+            name: b.name || b.label || out.name || 'Resource',
+            kind: b.kind || 'consume',
+            maxFormula,
+            max: evaluatedMax,
+            unit: b.unit || 'uses',
+            recharge: b.recharge || { period: b.per || 'day', dice: b.rechargeDice || null }
+          });
+        }
+      });
+    };
+
+    // Walk top-level V3 `blocks` or `effects`
+    const topBlocks = Array.isArray(out.blocks) && out.blocks.length > 0
+      ? out.blocks
+      : (Array.isArray(out.effects) ? out.effects : []);
+    if (topBlocks.length > 0) {
+      walkBlocks(topBlocks, { ctx: localCtx });
+    }
+
+    // Structural Bridge 1: Evaluate `modes[]` via `char.activeModes?.[entry.id]`
+    if (Array.isArray(out.modes) && out.modes.length > 0) {
+      const modeMap = (ctx && ctx.activeModes) || ch.activeModes || {};
+      const entryId = out.id || out.baseEntryId || out.baseItemId;
+      const rawSelector = ctx?.activeModeIdx !== undefined
+        ? ctx.activeModeIdx
+        : (ctx?.activeMode !== undefined
+          ? ctx.activeMode
+          : (entryId && modeMap[entryId] !== undefined
+            ? modeMap[entryId]
+            : (out.activeModeIdx !== undefined ? out.activeModeIdx : out.activeModeId)));
+
+      let activeMode = null;
+      let activeModeIdx = null;
+      if (rawSelector !== undefined && rawSelector !== null && rawSelector !== '') {
+        const asIdx = Number(rawSelector);
+        if (Number.isInteger(asIdx) && asIdx >= 0 && asIdx < out.modes.length) {
+          activeMode = out.modes[asIdx];
+          activeModeIdx = asIdx;
+        } else {
+          const selStr = String(rawSelector).trim().toLowerCase();
+          const foundIdx = out.modes.findIndex(m => m && (
+            String(m.id || '').toLowerCase() === selStr ||
+            String(m.name || '').toLowerCase() === selStr ||
+            String(m.label || '').toLowerCase() === selStr
+          ));
+          if (foundIdx !== -1) {
+            activeMode = out.modes[foundIdx];
+            activeModeIdx = foundIdx;
+          }
+        }
+      }
+
+      if (activeMode) {
+        out.activeMode = activeMode;
+        out.activeModeIdx = activeModeIdx;
+        out.activeModeId = activeMode.id || activeMode.name || activeMode.label || String(activeModeIdx);
+        const modeBlocks = Array.isArray(activeMode.blocks) && activeMode.blocks.length > 0
+          ? activeMode.blocks
+          : (Array.isArray(activeMode.effects) ? activeMode.effects : []);
+        if (modeBlocks.length > 0) {
+          walkBlocks(modeBlocks, { ctx: localCtx, sourceLabel: activeMode.name || activeMode.label || 'Active Mode' });
+        }
+        if (Array.isArray(activeMode.modifiers)) {
+          activeMode.modifiers.forEach(m => pushModifier(Object.assign({ op: 'add', type: 'Untyped', condition: null }, m)));
+        }
+        if (Array.isArray(activeMode.damageParts)) {
+          activeMode.damageParts.forEach(dp => damageParts.push(Object.assign({}, dp)));
+        }
+      }
+    }
+
+    // Structural Bridge 2: Incarnum `chakraBinds[boundChakra]` evaluation
+    if (boundChakra && out.chakraBinds && typeof out.chakraBinds === 'object') {
+      const bindKey = Object.keys(out.chakraBinds).find(k => k.toLowerCase() === String(boundChakra).trim().toLowerCase());
+      const bindEntry = bindKey ? out.chakraBinds[bindKey] : null;
+      if (bindEntry) {
+        if (Array.isArray(bindEntry)) {
+          walkBlocks(bindEntry, { ctx: localCtx, sourceLabel: `Chakra Bind (${bindKey})` });
+        } else if (typeof bindEntry === 'object') {
+          const bindBlocks = Array.isArray(bindEntry.blocks) ? bindEntry.blocks : (Array.isArray(bindEntry.effects) ? bindEntry.effects : []);
+          if (bindBlocks.length > 0) {
+            walkBlocks(bindBlocks, { ctx: localCtx, sourceLabel: `Chakra Bind (${bindKey})` });
+          }
+          if (Array.isArray(bindEntry.modifiers)) {
+            bindEntry.modifiers.forEach(m => pushModifier(Object.assign({ op: 'add', type: 'Untyped', condition: null }, m)));
+          }
+          const sumTxt = bindEntry.summary || bindEntry.description || bindEntry.benefit;
+          if (sumTxt) {
+            out.activeBindSummary = String(sumTxt);
+            addBadge(`Chakra Bind (${bindKey}): ${sumTxt}`);
+          }
+        } else if (typeof bindEntry === 'string') {
+          out.activeBindSummary = bindEntry;
+          addBadge(`Chakra Bind (${bindKey}): ${bindEntry}`);
+        }
+      }
+    }
+
+    // Structural Bridge 3: Psionics `augment` scaling blocks (capped at ML)
+    if (effectiveAugmentPP > 0 && out.augment && typeof out.augment === 'object') {
+      const costPerStep = Math.max(1, Number(out.augment.costPerStep || out.augment.ppPerStep || 1));
+      const augmentSteps = Math.floor(effectiveAugmentPP / costPerStep);
+      if (augmentSteps > 0 && Array.isArray(out.augment.blocks)) {
+        const augCtx = Object.assign({}, localCtx, {
+          augmentPP: effectiveAugmentPP,
+          augmentSteps
+        });
+        walkBlocks(out.augment.blocks, { ctx: augCtx, sourceLabel: `Augmented (+${effectiveAugmentPP} PP)` });
+      }
+    }
+
+    out.modifiers = modifiers;
+    out.damageParts = damageParts;
+    out.defenses = defenses;
+    out.resources = resources;
+    out.grants = grants;
+    out.ruleFlags = ruleFlags;
+    out.tacticalBadges = tacticalBadges;
+    out._v3Evaluated = true;
+    return out;
+  },
+
+  // Ensure an object is upgraded to Canonical V2/V2.5/V3 via resolveCustomEntryOverride, evaluateV3Entry, SchemaMigrator & normalizeLegoEntry
+  ensureV2Entry(entry, ctx = null) {
+    if (!entry || typeof entry !== 'object') return entry;
+    let working = entry;
+    if (!working._customOverrideApplied) {
+      const customOv = this.resolveCustomEntryOverride(working);
+      if (customOv && customOv !== working) {
+        working = Object.assign({}, working, customOv, {
+          _customOverrideApplied: true,
+          active: working.active !== undefined ? working.active : customOv.active,
+          equipped: working.equipped !== undefined ? working.equipped : customOv.equipped,
+          isEquipped: working.isEquipped !== undefined ? working.isEquipped : customOv.isEquipped,
+          slot: working.slot || customOv.slot,
+          grip: working.grip || customOv.grip
+        });
+      }
+    }
+    const isV3 = working.schemaVersion === 3
+      || (Array.isArray(working.blocks) && working.blocks.length > 0)
+      || (Array.isArray(working.effects) && working.effects.length > 0)
+      || Boolean(working.weapon || working.armor || working.chassis || working.race)
+      || (Array.isArray(working.modes) && working.modes.some(m => m && (Array.isArray(m.blocks) || Array.isArray(m.effects))))
+      || Boolean(working.boundChakra && working.chakraBinds);
+    if (isV3) {
+      working = this.evaluateV3Entry(working, ctx || {});
+    } else if (working.ruleFlags && (!Array.isArray(working.tacticalBadges) || working.tacticalBadges.length === 0)) {
+      const rfBadges = this.formatRuleFlagBadges(working.ruleFlags, working);
+      if (rfBadges.length > 0) {
+        working = Object.assign({}, working, { tacticalBadges: rfBadges });
+      }
+    }
+    if (!isV3 && working.schemaVersion === 2 && Array.isArray(working.modifiers) && Array.isArray(working.defenses)) {
+      return working;
+    }
+    let upgraded = working;
+    if (!isV3 && typeof window !== 'undefined' && window.SchemaMigrator && typeof window.SchemaMigrator.upgradeEntryToV2 === 'function') {
+      upgraded = window.SchemaMigrator.upgradeEntryToV2(working);
     }
     return this.normalizeLegoEntry(upgraded);
   },
@@ -617,11 +1859,21 @@ const RuleEngine = {
     return this.WEAPON_DIE_STEPS[nextIdx];
   },
 
-  // Upgrade any V2 entry into full V2.5 Composable Lego Entry (migrates legacy ruleFlags defenses & recharge into structured blocks)
+  // Upgrade any V2/V3 entry into full V2.5 Composable Lego Entry (migrates legacy ruleFlags defenses & recharge into structured blocks)
   normalizeLegoEntry(entry) {
     if (!entry || typeof entry !== 'object') return entry;
-    const out = Object.assign({}, entry);
-    out.schemaVersion = 2;
+    let src = entry;
+    if (
+      !src._v3Evaluated &&
+      (src.schemaVersion === 3 ||
+        (Array.isArray(src.blocks) && src.blocks.length > 0) ||
+        (Array.isArray(src.effects) && src.effects.length > 0) ||
+        Boolean(src.weapon || src.armor || src.chassis || src.race))
+    ) {
+      src = this.evaluateV3Entry(src);
+    }
+    const out = Object.assign({}, src);
+    if (out.schemaVersion !== 3) out.schemaVersion = 2;
     out.modifiers = Array.isArray(out.modifiers) ? out.modifiers.map(m => Object.assign({ op: 'add', type: 'Untyped', condition: null }, m)) : [];
     out.damageParts = Array.isArray(out.damageParts) ? out.damageParts : [];
     out.modes = Array.isArray(out.modes) ? out.modes : [];
@@ -629,6 +1881,9 @@ const RuleEngine = {
     out.resources = Array.isArray(out.resources) ? out.resources.slice() : [];
     out.grants = Array.isArray(out.grants) ? out.grants.slice() : [];
     out.choices = Array.isArray(out.choices) ? out.choices.slice() : [];
+    if (!Array.isArray(out.tacticalBadges)) {
+      out.tacticalBadges = this.formatRuleFlagBadges(out.ruleFlags, out);
+    }
 
     // Migrate legacy ruleFlags defense keys into structured defenses[] if not already present
     const rf = out.ruleFlags || {};
@@ -898,11 +2153,27 @@ const RuleEngine = {
           : null;
         if (dbMatch && typeof dbMatch === 'object') {
           const merged = Object.assign({}, dbMatch, raw);
-          ['modifiers', 'defenses', 'resources', 'modes', 'grants', 'choices', 'damageParts'].forEach(k => {
-            if ((!Array.isArray(raw[k]) || raw[k].length === 0) && Array.isArray(dbMatch[k]) && dbMatch[k].length > 0) {
-              merged[k] = dbMatch[k];
+          const hasDynamicV3State = Boolean(
+            raw.essentia !== undefined ||
+            raw.invested !== undefined ||
+            raw.boundChakra ||
+            raw.chakraBind ||
+            raw.augmentPP !== undefined ||
+            (Array.isArray(raw.blocks) && raw.blocks.length > 0) ||
+            (Array.isArray(raw.effects) && raw.effects.length > 0)
+          );
+          if (hasDynamicV3State) {
+            merged._v3Evaluated = false;
+            if (!Array.isArray(raw.modifiers) || raw.modifiers.length === 0) {
+              merged.modifiers = [];
             }
-          });
+          } else {
+            ['modifiers', 'defenses', 'resources', 'modes', 'grants', 'choices', 'damageParts'].forEach(k => {
+              if ((!Array.isArray(raw[k]) || raw[k].length === 0) && Array.isArray(dbMatch[k]) && dbMatch[k].length > 0) {
+                merged[k] = dbMatch[k];
+              }
+            });
+          }
           if (!raw.id && dbMatch.id) merged.id = dbMatch.id;
           if (!raw.requires && dbMatch.requires) merged.requires = dbMatch.requires;
           if (!raw.overrides && dbMatch.overrides) merged.overrides = dbMatch.overrides;
@@ -970,6 +2241,30 @@ const RuleEngine = {
       if (b && typeof b === 'object' && Boolean(b.active)) addEntry(b, 'Buff', 'buffs');
     });
 
+    // Collect active 5-subsystem entries (shaped Soulmelds, bound Vestiges, active Powers/Mysteries/Utterances)
+    const soulmeldList = Array.isArray(ch.incarnum?.soulmelds) ? ch.incarnum.soulmelds : (Array.isArray(ch.soulmelds) ? ch.soulmelds : []);
+    soulmeldList.forEach(sm => {
+      if (!sm || (typeof sm === 'object' && (sm.active === false || sm.shaped === false))) return;
+      addEntry(sm, 'Soulmeld', 'soulmelds');
+    });
+    const vestigeList = Array.isArray(ch.pactMagic?.vestiges) ? ch.pactMagic.vestiges : (Array.isArray(ch.pact?.vestiges) ? ch.pact.vestiges : (Array.isArray(ch.vestiges) ? ch.vestiges : []));
+    vestigeList.forEach(v => {
+      if (!v || (typeof v === 'object' && (v.active === false || v.bound === false))) return;
+      addEntry(v, 'Vestige', 'vestiges');
+    });
+    const powerList = Array.isArray(ch.psionics?.powers) ? ch.psionics.powers : (Array.isArray(ch.powers) ? ch.powers : []);
+    powerList.forEach(p => {
+      if (p && typeof p === 'object' && p.active === true) addEntry(p, 'Power', 'powers');
+    });
+    const mysteryList = Array.isArray(ch.shadowMagic?.mysteries) ? ch.shadowMagic.mysteries : (Array.isArray(ch.shadow?.mysteries) ? ch.shadow.mysteries : (Array.isArray(ch.mysteries) ? ch.mysteries : []));
+    mysteryList.forEach(m => {
+      if (m && typeof m === 'object' && m.active === true) addEntry(m, 'Mystery', 'mysteries');
+    });
+    const utteranceList = Array.isArray(ch.truenaming?.utterances) ? ch.truenaming.utterances : (Array.isArray(ch.utterances) ? ch.utterances : []);
+    utteranceList.forEach(u => {
+      if (u && typeof u === 'object' && u.active === true) addEntry(u, 'Utterance', 'utterances');
+    });
+
     return collected;
   },
 
@@ -977,6 +2272,8 @@ const RuleEngine = {
   // Stages: 1. Grants/Synergies -> 2. Selector Modifiers -> 3. Stat/Sub-Component Modifiers -> 4. Defenses -> 5. Resources -> 6. Modes
   evaluateLegoCharacter(character, candidatePool = [], options = {}) {
     const ch = character || {};
+    this._activeCharacter = ch;
+    this._activeCustomEntries = (ch.customEntries && typeof ch.customEntries === 'object') ? ch.customEntries : null;
     const allInitial = this.collectLegoEntries(ch);
 
     // Resolve House-Rule Overrides (Priority: Character-local > DM Pack > SRD; supports chained overrides Pack B -> Pack A -> SRD)
@@ -1070,13 +2367,19 @@ const RuleEngine = {
     const workingEntries = activeEntries.map(e => JSON.parse(JSON.stringify(e)));
 
     const getStacks = (e) => (e && e.stacks !== undefined && e.stacks !== null && e.stacks !== '' && !Number.isNaN(Number(e.stacks))) ? Number(e.stacks) : 1;
-    const getInvested = (e) => (e && e.invested !== undefined && e.invested !== null && e.invested !== '' && !Number.isNaN(Number(e.invested))) ? Number(e.invested) : 0;
+    const getInvested = (e) => {
+      if (!e) return 0;
+      const rawInv = e.essentia !== undefined ? e.essentia : e.invested;
+      return (rawInv !== undefined && rawInv !== null && rawInv !== '' && !Number.isNaN(Number(rawInv))) ? Number(rawInv) : 0;
+    };
 
     // Collect all active modifiers (from top-level and passive modes)
     const allModifiers = [];
     workingEntries.forEach(e => {
+      const invVal = getInvested(e);
       const selfCtx = Object.assign({}, ctx, {
-        self: { stacks: getStacks(e), invested: getInvested(e) }
+        essentia: invVal,
+        self: { stacks: getStacks(e), invested: invVal }
       });
       (e.modifiers || []).forEach(m => {
         if (this.evaluatePredicate(m.when || m.condition, ch, selfCtx)) {
@@ -1354,11 +2657,13 @@ const RuleEngine = {
     const natArmorBonus = sumBucket('ac.natural');
     const deflectBonus = sumBucket('ac.deflection');
     const dodgeBonus = sumBucket('ac.dodge');
-    const miscAcBonus = sumBucket('ac');
+    const miscAcBonus = sumBucket('ac') + sumBucket('ac.all');
+    const touchOnlyBonus = sumBucket('ac.touch');
+    const flatFootedOnlyBonus = sumBucket('ac.flatFooted');
 
     let normalAc = 10 + acAbiMod + armorBonus + shieldBonus + natArmorBonus + deflectBonus + dodgeBonus + miscAcBonus;
-    let touchAc = 10 + acAbiMod + deflectBonus + dodgeBonus + miscAcBonus;
-    let flatFootedAc = 10 + Math.min(0, acAbiMod) + armorBonus + shieldBonus + natArmorBonus + deflectBonus + miscAcBonus;
+    let touchAc = 10 + acAbiMod + deflectBonus + dodgeBonus + miscAcBonus + touchOnlyBonus;
+    let flatFootedAc = 10 + Math.min(0, acAbiMod) + armorBonus + shieldBonus + natArmorBonus + deflectBonus + miscAcBonus + flatFootedOnlyBonus;
 
     const acReplaces = [...(replacements['ac.base'] || []), ...(replacements['ac.total'] || [])];
     acReplaces.forEach(rep => {
@@ -1888,30 +3193,38 @@ const RuleEngine = {
       : n, 0);
   },
 
-  // Declarative Compendium & Master DB lookup helper (O(1) ID/BaseItemId priority per Rule #10.4)
+  // Declarative Compendium & Master DB lookup helper (O(1) ID/BaseItemId priority + Copy-on-Write char.customEntries priority)
   getMasterDbEntry(itemOrName, typeFilter = null) {
     if (!itemOrName) return null;
     const isObj = typeof itemOrName === 'object';
-    const refId = isObj ? (itemOrName.baseItemId || itemOrName.id || null) : null;
+    const refId = isObj ? (itemOrName.baseEntryId || itemOrName.baseItemId || itemOrName.id || null) : null;
     const rawName = String(isObj ? (itemOrName.masterDbName || itemOrName.name || '') : itemOrName).trim();
+    const effType = typeFilter ? String(typeFilter).toLowerCase() : null;
+    const strictType = Boolean(effType && (effType === 'race' || effType === 'domain' || effType === 'template' || effType === 'class'));
+
+    // 0. Check Copy-on-Write per-character customEntries FIRST
+    const customOv = this.resolveCustomEntryOverride(itemOrName);
+    if (customOv) {
+      if (!strictType || !customOv.type || String(customOv.type).toLowerCase() === effType) {
+        return this.ensureV2Entry(customOv);
+      }
+    }
 
     const comp = (typeof window !== 'undefined' && window.SrdCompendium)
       || (typeof SrdCompendium !== 'undefined' ? SrdCompendium : null);
     if (comp) {
       if (refId) {
         const byId = comp.getById(refId);
-        if (byId) return byId;
+        if (byId) return this.ensureV2Entry(byId);
       }
       if (rawName) {
         const byName = comp.getByName(rawName, typeFilter || (isObj ? itemOrName.type : null));
-        if (byName) return byName;
+        if (byName) return this.ensureV2Entry(byName);
       }
     }
 
     const clean = rawName.toLowerCase();
     if (!clean && !refId) return null;
-    const effType = typeFilter ? String(typeFilter).toLowerCase() : null;
-    const strictType = Boolean(effType && (effType === 'race' || effType === 'domain' || effType === 'template' || effType === 'class'));
     const db = (Array.isArray(this._activeCustomDb) && this._activeCustomDb.length > 0 ? this._activeCustomDb : null)
       || (typeof window !== 'undefined' && window.masterDb)
       || (typeof masterDb !== 'undefined' ? masterDb : []);
@@ -1944,7 +3257,16 @@ const RuleEngine = {
     }
     if (!found && comp && typeof comp.findIndexEntry === 'function' && typeof comp.ensureChunkLoaded === 'function') {
       const idxHit = (refId && comp.findIndexEntry(refId)) || (rawName && comp.findIndexEntry(rawName, typeFilter || (isObj ? itemOrName.type : null)));
-      if (idxHit && idxHit.f === 'srd_feats_splat.json') {
+      const lazySplatFiles = [
+        'srd_feats_splat.json',
+        'srd_powers_splat.json',
+        'srd_soulmelds_splat.json',
+        'srd_vestiges_splat.json',
+        'srd_mysteries_splat.json',
+        'srd_utterances_splat.json',
+        'srd_classes_splat.json'
+      ];
+      if (idxHit && lazySplatFiles.includes(idxHit.f)) {
         comp.ensureChunkLoaded(idxHit.f);
         found = (refId && comp.getById(refId)) || (rawName && comp.getByName(rawName, typeFilter || (isObj ? itemOrName.type : null))) || null;
       }
@@ -4526,10 +5848,12 @@ const RuleEngine = {
     };
   },
 
-  // Central Recalculation Engine for Character State (Abilities, AC, Saves, Speed, Buffs) - Canonical V2
+  // Central Recalculation Engine for Character State (Abilities, AC, Saves, Speed, Buffs) - Canonical V2/V3
   recalculateCharacter(character, masterDb = [], tacticalOptions = {}) {
     if (!character) return;
     const options = tacticalOptions || {};
+    this._activeCharacter = character;
+    this._activeCustomEntries = (character.customEntries && typeof character.customEntries === 'object') ? character.customEntries : null;
 
     // 0. Gatekeeper: Ensure Character Data is Canonical V2
     if (character.schemaVersion !== 2 && typeof window !== 'undefined' && window.SchemaMigrator) {
@@ -4643,6 +5967,8 @@ const RuleEngine = {
     const deflectionBonuses = [];
     const dodgeBonuses = [];
     const miscAcBonuses = [];
+    const touchOnlyAcBonuses = [];
+    const flatFootedOnlyAcBonuses = [];
     const sizeAcAdjustments = [];
     const acPenaltySources = [];
     const saveBonusBuckets = {
@@ -4659,6 +5985,8 @@ const RuleEngine = {
       cha: []
     };
     const initBonusBuckets = [];
+    const grappleBonusBuckets = [];
+    const tempHpBuckets = [];
 
     let hasSteadfastDetermination = false;
     let hasShieldWard = false;
@@ -4672,6 +6000,7 @@ const RuleEngine = {
     let swimSpeed = 0;
     let climbSpeed = 0;
     let flySpeed = 0;
+    let burrowSpeed = 0;
     let bonusPowerPoints = 0;
     let grappleModBonus = 0;
     const bonusSpellSlotsByLevel = {};
@@ -4689,7 +6018,7 @@ const RuleEngine = {
     let activeHeartCount = 0;
     const activeConditionWarnings = [];
 
-    // Universal Canonical V2 Modifiers Processor
+    // Universal Canonical V2/V3 Modifiers Processor
     const applyV2Modifiers = (modifiers, sourceName, sourceCategory = 'item', customCtx = null) => {
       if (!Array.isArray(modifiers)) return;
       const ctx = customCtx || evalContext;
@@ -4779,6 +6108,14 @@ const RuleEngine = {
             });
             return;
           }
+          if (acSub === 'touch') {
+            touchOnlyAcBonuses.push({ val, source: sourceName, type: mType });
+            return;
+          }
+          if (acSub === 'flatfooted' || acSub === 'flat_footed' || acSub === 'flat') {
+            flatFootedOnlyAcBonuses.push({ val, source: sourceName, type: mType });
+            return;
+          }
           if (mTypeLower === 'size' || acSub === 'size') {
             // PHB Table 8-1: a size change (Enlarge / Reduce Person, Expansion) moves the size modifier, which applies to normal, touch and flat-footed AC.
             sizeAcAdjustments.push({ val, source: sourceName, type: 'Size' });
@@ -4789,7 +6126,7 @@ const RuleEngine = {
             shieldBonuses.push({ val, source: sourceName, type: 'Shield' });
           } else if (acSub === 'deflection' || mTypeLower === 'deflection') {
             deflectionBonuses.push({ val, source: sourceName, type: 'Deflection' });
-          } else if (acSub === 'natural' || mTypeLower === 'natural' || mTypeLower === 'natural_armor_ench' || mTypeLower === 'natural_enhancement') {
+          } else if (acSub === 'natural' || mTypeLower.includes('natural')) {
             const natType = sourceCategory === 'template'
               ? 'template'
               : ((mTypeLower.includes('ench') || sourceName.toLowerCase().includes('barkskin') || sourceName.toLowerCase().includes('amulet of natural armor'))
@@ -4833,7 +6170,7 @@ const RuleEngine = {
           return;
         }
 
-        // Speed (`speed.swim`, `speed.climb`, `speed.fly` vs Land Speed `speed`, `speed.land`, `speed.all`)
+        // Speed (`speed.swim`, `speed.climb`, `speed.fly`, `speed.burrow` vs Land Speed `speed`, `speed.land`, `speed.all`)
         if (target === 'speed.swim') {
           if (val > swimSpeed) swimSpeed = val;
           return;
@@ -4844,6 +6181,10 @@ const RuleEngine = {
         }
         if (target === 'speed.fly') {
           if (val > flySpeed) flySpeed = val;
+          return;
+        }
+        if (target === 'speed.burrow') {
+          if (val > burrowSpeed) burrowSpeed = val;
           return;
         }
         if (target === 'speed' || target.startsWith('speed.')) {
@@ -4872,8 +6213,9 @@ const RuleEngine = {
           return;
         }
 
-        // Combat Maneuver / Grapple (`cmb`, `grapple`, `opposed.grapple`)
-        if (target === 'cmb' || target === 'grapple' || target === 'opposed.grapple') {
+        // Combat Maneuver / Grapple (`cmb`, `grapple`, `atk.grapple`, `attack.grapple`, `opposed.grapple`)
+        if (target === 'cmb' || target === 'grapple' || target === 'atk.grapple' || target === 'attack.grapple' || target === 'opposed.grapple') {
+          grappleBonusBuckets.push({ val, type: mType, source: sourceName });
           if (val > grappleModBonus) grappleModBonus = val;
           return;
         }
@@ -4887,6 +6229,54 @@ const RuleEngine = {
         // Global Skill Modifiers
         if (target === 'skill.all' || target === 'skills.all' || target === 'skills') {
           buffSkillBonus += val;
+          return;
+        }
+
+        // Temporary HP (`hp.temp`, `temp_hp`)
+        if (target === 'hp.temp' || target === 'temp_hp') {
+          if (val > 0) tempHpBuckets.push({ val, type: mType, source: sourceName });
+          return;
+        }
+
+        // HP per Level (`hp.perLvl`, `hp.perLevel`)
+        if (target === 'hp.perlvl' || target === 'hp.perlevel') {
+          const isPreScaled = hasFormula && /@(?:level|lvl|hd)\b/i.test(String(mod.formula));
+          const hpAdd = isPreScaled ? val : (val * charLvl);
+          if (hpAdd < 0) debuffHpPenalty += Math.abs(hpAdd);
+          else draconicToughnessHp += hpAdd;
+          return;
+        }
+
+        // Defenses (`dr`, `sr`, `fastHealing`, `resist.<elem>`)
+        if (target === 'fasthealing' || target === 'fast_healing' || target === 'hp.fasthealing') {
+          if (character.evaluatedDefenses) {
+            character.evaluatedDefenses.fastHealing = Math.max(Number(character.evaluatedDefenses.fastHealing) || 0, val);
+          }
+          return;
+        }
+        if (target === 'sr' || target === 'spellresistance') {
+          if (character.evaluatedDefenses) {
+            character.evaluatedDefenses.sr = Math.max(Number(character.evaluatedDefenses.sr) || 0, val);
+          }
+          return;
+        }
+        if (target === 'dr' || target.startsWith('dr.')) {
+          if (character.evaluatedDefenses && Array.isArray(character.evaluatedDefenses.dr)) {
+            const bypass = mod.bypass || (target.startsWith('dr.') ? target.slice(3) : '-');
+            if (!character.evaluatedDefenses.dr.some(d => d && d.source === sourceName && d.value === val)) {
+              character.evaluatedDefenses.dr.push({ value: val, bypass, source: sourceName });
+            }
+          }
+          return;
+        }
+        if (target.startsWith('resist.') || target.startsWith('resistance.')) {
+          if (character.evaluatedDefenses) {
+            if (!character.evaluatedDefenses.resistances) character.evaluatedDefenses.resistances = {};
+            const elem = target.split('.')[1];
+            if (elem) {
+              character.evaluatedDefenses.resistances[elem] = Math.max(Number(character.evaluatedDefenses.resistances[elem]) || 0, val);
+            }
+          }
           return;
         }
 
@@ -5261,9 +6651,10 @@ const RuleEngine = {
         if (s.name) processedLegoSourceNames.add(String(s.name).toLowerCase().trim());
       }
     });
+    const validExtraLegoSources = new Set(['legoEntries', 'classFeatures', 'soulmelds', 'vestiges', 'powers', 'mysteries', 'utterances']);
     (legoEval.entries || []).forEach(le => {
       if (!le) return;
-      if (le._legoSource !== 'legoEntries' && le._legoSource !== 'classFeatures' && le._autoUnlocked !== true) {
+      if (!validExtraLegoSources.has(le._legoSource) && le._autoUnlocked !== true) {
         return;
       }
       const leId = String(le.id || '').toLowerCase();
@@ -5278,8 +6669,9 @@ const RuleEngine = {
       }
       if (leName) processedLegoSourceNames.add(leName);
       const leStacks = (le.stacks !== undefined && le.stacks !== null && le.stacks !== '' && !Number.isNaN(Number(le.stacks))) ? Number(le.stacks) : 1;
-      const leInvested = (le.invested !== undefined && le.invested !== null && le.invested !== '' && !Number.isNaN(Number(le.invested))) ? Number(le.invested) : 0;
-      const leCtx = { ...evalContext, self: { stacks: leStacks, invested: leInvested } };
+      const rawInv = le.essentia !== undefined ? le.essentia : le.invested;
+      const leInvested = (rawInv !== undefined && rawInv !== null && rawInv !== '' && !Number.isNaN(Number(rawInv))) ? Number(rawInv) : 0;
+      const leCtx = { ...evalContext, essentia: leInvested, self: { stacks: leStacks, invested: leInvested } };
       if (Array.isArray(le.modifiers) && le.modifiers.length > 0) {
         applyV2Modifiers(le.modifiers, le.name || le.id || 'Lego Entry', 'feat', leCtx);
       }
@@ -5458,9 +6850,30 @@ const RuleEngine = {
     });
 
     // BL2: Re-evaluate V2.5 Lego pipeline with post-Step-4 final abilities so abilityMod substitutions (Force of Personality, Canny Defense, etc.) use item/buff-modified ability scores
+    const prevEvalDefenses = character.evaluatedDefenses || {};
     legoEval = this.evaluateLegoCharacter(character, candidatePool, { precomputedAbilities: character.abilities });
     character.legoEvaluation = legoEval;
     character.evaluatedDefenses = legoEval.defenses;
+    if (prevEvalDefenses && character.evaluatedDefenses) {
+      if (Number(prevEvalDefenses.sr) > Number(character.evaluatedDefenses.sr || 0)) {
+        character.evaluatedDefenses.sr = Number(prevEvalDefenses.sr);
+      }
+      if (Number(prevEvalDefenses.fastHealing) > Number(character.evaluatedDefenses.fastHealing || 0)) {
+        character.evaluatedDefenses.fastHealing = Number(prevEvalDefenses.fastHealing);
+      }
+      if (Array.isArray(prevEvalDefenses.dr)) {
+        prevEvalDefenses.dr.forEach(d => {
+          if (d && !character.evaluatedDefenses.dr.some(ed => ed && ed.source === d.source && ed.value === d.value)) {
+            character.evaluatedDefenses.dr.push(d);
+          }
+        });
+      }
+      if (prevEvalDefenses.resistances && typeof prevEvalDefenses.resistances === 'object') {
+        Object.entries(prevEvalDefenses.resistances).forEach(([rk, rv]) => {
+          character.evaluatedDefenses.resistances[rk] = Math.max(Number(character.evaluatedDefenses.resistances[rk]) || 0, Number(rv) || 0);
+        });
+      }
+    }
     character.evaluatedResources = legoEval.resources;
     character.evaluatedModes = legoEval.modes;
     character.grantedCapabilities = legoEval.grantedCapabilities;
@@ -5477,6 +6890,12 @@ const RuleEngine = {
     const flawHpPenalty = hasFrail ? totalHD : 0;
 
     if (character.hp) {
+      if (tempHpBuckets.length > 0) {
+        const stackedTempHp = this.resolveBonusStacking(tempHpBuckets);
+        if (stackedTempHp > (Number(character.hp.temp) || 0)) {
+          character.hp.temp = stackedTempHp;
+        }
+      }
       const effectiveConMod = this.getAbilityMod(character.abilities?.con || 10);
       const newConBonusHp = effectiveConMod * totalHD;
 
@@ -5607,13 +7026,16 @@ const RuleEngine = {
       legoAcAbilityDelta = Math.max(0, legoEval.ac.abilityMod - fullDexMod);
     }
 
+    const effectiveTouchOnlyAc = this.resolveBonusStacking(touchOnlyAcBonuses);
+    const effectiveFlatFootedOnlyAc = this.resolveBonusStacking(flatFootedOnlyAcBonuses);
+
     let totalAC = baseAC + effectiveArmor + effectiveShield + effectiveNatural + effectiveDeflection + sizeBonus + effectiveDex + legoAcAbilityDelta + effectiveDodge + effectiveMiscAc;
-    let touchAC = baseAC + (hasShieldWard ? effectiveShield : 0) + effectiveDeflection + sizeBonus + effectiveDex + legoAcAbilityDelta + effectiveDodge + effectiveMiscAc;
+    let touchAC = baseAC + (hasShieldWard ? effectiveShield : 0) + effectiveDeflection + sizeBonus + effectiveDex + legoAcAbilityDelta + effectiveDodge + effectiveMiscAc + effectiveTouchOnlyAc;
 
     // Flat-footed AC (RAW: retain negative Dex penalty even when flat-footed; retain Dex & Dodge if Uncanny Dodge unless immobilized/helpless)
     const flatDex = hasUncannyDodge ? (effectiveDex + legoAcAbilityDelta) : Math.min(0, fullDexMod);
     const flatDodge = hasUncannyDodge ? effectiveDodge : 0;
-    let flatAC = baseAC + effectiveArmor + effectiveShield + effectiveNatural + effectiveDeflection + sizeBonus + flatDex + flatDodge + effectiveMiscAc;
+    let flatAC = baseAC + effectiveArmor + effectiveShield + effectiveNatural + effectiveDeflection + sizeBonus + flatDex + flatDodge + effectiveMiscAc + effectiveFlatFootedOnlyAc;
 
     // BL1: Reconcile V2.5 `ac.base` / `ac.total` replacements BEFORE subtracting totalPenalty, respecting `rep.affects`
     if (legoEval.ac && Array.isArray(legoEval.ac.replacements) && legoEval.ac.replacements.length > 0) {
@@ -5787,6 +7209,7 @@ const RuleEngine = {
     character.swimSpeed = swimSpeed;
     character.climbSpeed = climbSpeed;
     character.flySpeed = flySpeed;
+    character.burrowSpeed = burrowSpeed;
     character.bonusPowerPoints = bonusPowerPoints;
     character.bonusSpellSlotsByLevel = bonusSpellSlotsByLevel;
     character.conditionalSaveBonuses = conditionalSaveBonuses;
@@ -5797,6 +7220,8 @@ const RuleEngine = {
 
     // 8. Resolve Rule Flags & Action Economy
     character.ruleFlags = this.evaluateRuleFlags(character);
+    const stackedGrappleMod = this.resolveBonusStacking(grappleBonusBuckets);
+    if (stackedGrappleMod > grappleModBonus) grappleModBonus = stackedGrappleMod;
     if (grappleModBonus > (character.ruleFlags?.opposedCheckBonus?.grapple || 0)) {
       if (!character.ruleFlags.opposedCheckBonus) character.ruleFlags.opposedCheckBonus = {};
       character.ruleFlags.opposedCheckBonus.grapple = grappleModBonus;
@@ -6154,6 +7579,10 @@ const RuleEngine = {
   // Evaluate Weapon Attack Modifiers, Embedded Modes & Canonical V2 DamageParts
   evaluateWeaponAttack(character, rawWeapon, options = {}) {
     if (!character || !rawWeapon) return {};
+    this._activeCharacter = character;
+    this._activeCustomEntries = (character.customEntries && typeof character.customEntries === 'object')
+      ? character.customEntries
+      : null;
 
     // 0. Ensure Weapon is Canonical V2 & Resolve Active Embedded Mode
     const v2Weapon = this.ensureV2Entry(rawWeapon);
@@ -6162,10 +7591,37 @@ const RuleEngine = {
       ? v2Weapon.modes
       : (dbWeapon && Array.isArray(dbWeapon.modes) ? dbWeapon.modes : []);
 
-    const activeModeId = options.modeId !== undefined ? options.modeId : v2Weapon.activeModeId;
-    const activeMode = (activeModeId && modes.length > 0)
-      ? (modes.find(m => m && (m.id === activeModeId || m.name === activeModeId)) || null)
-      : null;
+    const weaponIdKey = v2Weapon.id || v2Weapon.baseItemId || v2Weapon.name;
+    const charActiveModeKey = (character.activeModes && weaponIdKey && character.activeModes[weaponIdKey] !== undefined)
+      ? character.activeModes[weaponIdKey]
+      : undefined;
+    const activeModeId = options.modeId !== undefined
+      ? options.modeId
+      : (charActiveModeKey !== undefined ? charActiveModeKey : v2Weapon.activeModeId);
+    let activeMode = null;
+    if (activeModeId !== undefined && activeModeId !== null && modes.length > 0) {
+      if (typeof activeModeId === 'number' && modes[activeModeId]) {
+        activeMode = modes[activeModeId];
+      } else if (/^\d+$/.test(String(activeModeId)) && modes[Number(activeModeId)]) {
+        activeMode = modes[Number(activeModeId)];
+      } else {
+        activeMode = modes.find(m => m && (m.id === activeModeId || m.name === activeModeId)) || null;
+      }
+    }
+
+    const alreadyEvaluatedSameMode = Boolean(v2Weapon.activeMode && activeMode && (v2Weapon.activeMode === activeMode || (v2Weapon.activeMode.id && v2Weapon.activeMode.id === activeMode.id)));
+    let activeModeV3 = null;
+    if (activeMode && !alreadyEvaluatedSameMode && (Array.isArray(activeMode.blocks) || Array.isArray(activeMode.effects))) {
+      activeModeV3 = this.evaluateV3Entry({ ...activeMode, schemaVersion: 3 }, { character, level: Number(character.level) || 1 });
+    }
+
+    const basePrimaryParts = (dbWeapon && Array.isArray(dbWeapon.damageParts) && dbWeapon.damageParts.length > 0)
+      ? dbWeapon.damageParts
+      : [{ dice: v2Weapon.dice || dbWeapon?.dice || '1d8', bonus: 0, type: v2Weapon.dmgType || v2Weapon.type || dbWeapon?.dmgType || 'Slashing', multiplyOnCrit: true, onCritOnly: false, source: 'Base Weapon' }];
+    const hasBasePrimaryInV2 = Array.isArray(v2Weapon.damageParts) && v2Weapon.damageParts.some(p => p && (p.source === 'Base Weapon' || p.multiplyOnCrit === true));
+    const mergedV2DamageParts = (Array.isArray(v2Weapon.damageParts) && v2Weapon.damageParts.length > 0)
+      ? (hasBasePrimaryInV2 ? v2Weapon.damageParts : [...basePrimaryParts, ...v2Weapon.damageParts])
+      : basePrimaryParts;
 
     // Effective weapon merges active mode overrides onto parent V2 weapon
     const weapon = activeMode ? {
@@ -6175,10 +7631,20 @@ const RuleEngine = {
       range: activeMode.range !== undefined ? activeMode.range : v2Weapon.range,
       damageParts: (Array.isArray(activeMode.damageParts) && activeMode.damageParts.length > 0)
         ? activeMode.damageParts
-        : v2Weapon.damageParts,
-      modifiers: [
-        ...(Array.isArray(v2Weapon.modifiers) ? v2Weapon.modifiers : []),
-        ...(Array.isArray(activeMode.modifiers) ? activeMode.modifiers : [])
+        : (activeModeV3 && Array.isArray(activeModeV3.damageParts) && activeModeV3.damageParts.length > 0
+            ? [...mergedV2DamageParts, ...activeModeV3.damageParts]
+            : mergedV2DamageParts),
+      modifiers: alreadyEvaluatedSameMode
+        ? (Array.isArray(v2Weapon.modifiers) ? v2Weapon.modifiers : [])
+        : [
+            ...(Array.isArray(v2Weapon.modifiers) ? v2Weapon.modifiers : []),
+            ...(Array.isArray(activeMode.modifiers) ? activeMode.modifiers : []),
+            ...(activeModeV3 && Array.isArray(activeModeV3.modifiers) ? activeModeV3.modifiers : [])
+          ],
+      tacticalBadges: [
+        ...(Array.isArray(v2Weapon.tacticalBadges) ? v2Weapon.tacticalBadges : []),
+        ...(Array.isArray(activeMode.tacticalBadges) ? activeMode.tacticalBadges : []),
+        ...(activeModeV3 && Array.isArray(activeModeV3.tacticalBadges) ? activeModeV3.tacticalBadges : [])
       ]
     } : v2Weapon;
 
@@ -6432,15 +7898,25 @@ const RuleEngine = {
       attackBonusItems.push({ type: 'untyped', val: -penalty, source: `Manyshot (${effectiveManyshotArrows} Ok / -${penalty} Atk)` });
     }
 
+    const isUnarmedWep = /unarmed|flurry/i.test(String(weapon.name || '') + ' ' + String(weapon.baseItemId || ''));
+    const isNaturalWep = Boolean(weapon.isNatural || /claw|bite|gore|slam|tentacle|tail|wing|talon|sting|natural/i.test(String(weapon.category || '') + ' ' + String(weapon.type || '')));
+    const critConfirmItems = [];
     const isAtkTargetMatch = (t) => (
-      t === 'attack' || t === 'attack.all' || t === 'attack.weapon' ||
-      ((t === 'meleeattack' || t === 'attack.melee') && !isRangedWep) ||
-      ((t === 'rangedattack' || t === 'attack.ranged') && isRangedWep)
+      t === 'attack' || t === 'attack.all' || t === 'attack.weapon' || t === 'atk' || t === 'atk.all' || t === 'atk.weapon' ||
+      ((t === 'meleeattack' || t === 'attack.melee' || t === 'atk.melee') && !isRangedWep) ||
+      ((t === 'rangedattack' || t === 'attack.ranged' || t === 'atk.ranged') && isRangedWep) ||
+      ((t === 'attack.natural' || t === 'atk.natural') && (isNaturalWep || isUnarmedWep)) ||
+      ((t === 'attack.unarmed' || t === 'atk.unarmed') && isUnarmedWep)
+    );
+    const isCritConfirmTargetMatch = (t) => (
+      t === 'attack.critconfirm' || t === 'atk.critconfirm' || t === 'critconfirm'
     );
     const isDmgTargetMatch = (t) => (
-      t === 'damage' || t === 'damage.all' || t === 'damage.weapon' ||
-      ((t === 'meleedamage' || t === 'damage.melee') && !isRangedWep) ||
-      ((t === 'rangeddamage' || t === 'damage.ranged') && isRangedWep)
+      t === 'damage' || t === 'damage.all' || t === 'damage.weapon' || t === 'dmg' || t === 'dmg.all' || t === 'dmg.weapon' ||
+      ((t === 'meleedamage' || t === 'damage.melee' || t === 'dmg.melee') && !isRangedWep) ||
+      ((t === 'rangeddamage' || t === 'damage.ranged' || t === 'dmg.ranged') && isRangedWep) ||
+      ((t === 'damage.natural' || t === 'dmg.natural') && (isNaturalWep || isUnarmedWep)) ||
+      ((t === 'damage.unarmed' || t === 'dmg.unarmed') && isUnarmedWep)
     );
     const evalModExpr = (mObj, ctxObj) => {
       const hasFormula = mObj.formula !== undefined && mObj.formula !== null && String(mObj.formula).trim() !== '';
@@ -6469,6 +7945,11 @@ const RuleEngine = {
           attackBonusItems.push({ type: (m.type || 'enhancement').toLowerCase(), val, source: m.source || 'Weapon Enhancement' });
           hasExplicitWepAtkMod = true;
         }
+      } else if (isCritConfirmTargetMatch(t)) {
+        const val = evalModExpr(m, evalCtx);
+        if (val !== 0) {
+          critConfirmItems.push({ type: (m.type || 'untyped').toLowerCase(), val, source: m.source || 'Weapon' });
+        }
       }
     });
     if (!hasExplicitWepAtkMod && Number(weapon.enhancementBonus) > 0) {
@@ -6484,7 +7965,7 @@ const RuleEngine = {
       attackBonusItems.push({ type: 'untyped', val: 1, source: 'Greater Weapon Focus' });
     }
 
-    // Character Special Abilities & Feats V2 Attack Modifiers
+    // Character Special Abilities, Feats & Active Subsystems V2/V3 Attack/Damage Modifiers
     const isLightOrFinessableForAbility = this.isLightWeapon(weapon) || this.isFinessable(weapon);
     const effArmorCatForAbility = character.effectiveArmorCategory || character.acBreakdown?.armorCategory || 'None';
     const isLightOrNoArmor = effArmorCatForAbility !== 'Medium' && effArmorCatForAbility !== 'Heavy';
@@ -6495,19 +7976,47 @@ const RuleEngine = {
       computedLoadStatus.includes('medium') || computedLoadStatus.includes('heavy') || computedLoadStatus.includes('overloaded') ||
       Boolean(character.ruleFlags?.mediumOrHeavyLoad);
     const wfWsFeatIds = ['feat-weapon-focus', 'feat-greater-weapon-focus', 'feat-weapon-specialization', 'feat-greater-weapon-specialization'];
+    const rawSoulmeldsForWep = Array.isArray(character.incarnum?.soulmelds) ? character.incarnum.soulmelds : (Array.isArray(character.soulmelds) ? character.soulmelds : []);
+    const rawVestigesForWep = Array.isArray(character.pactMagic?.vestiges) ? character.pactMagic.vestiges : (Array.isArray(character.vestiges) ? character.vestiges : []);
+    const rawPowersForWep = Array.isArray(character.psionics?.powers) ? character.psionics.powers : (Array.isArray(character.powers) ? character.powers : []);
+    const rawMysteriesForWep = Array.isArray(character.shadowMagic?.mysteries) ? character.shadowMagic.mysteries : (Array.isArray(character.mysteries) ? character.mysteries : []);
+    const rawUtterancesForWep = Array.isArray(character.truenaming?.utterances) ? character.truenaming.utterances : (Array.isArray(character.utterances) ? character.utterances : []);
+    const resolveSubsystemEntryForWep = (rawSub, category, defaultActive = false) => {
+      if (!rawSub) return null;
+      const obj = typeof rawSub === 'string' ? { id: rawSub, name: rawSub, active: defaultActive } : rawSub;
+      if (obj.active === false || obj.shaped === false || obj.bound === false) return null;
+      if (!defaultActive && !obj.active && !obj.isActive) return null;
+      const dbSub = this.getMasterDbEntry(obj.id || obj.baseEntryId || obj.name, category);
+      const merged = dbSub ? {
+        ...dbSub,
+        ...obj,
+        blocks: Array.isArray(obj.blocks) && obj.blocks.length > 0 ? obj.blocks : dbSub.blocks,
+        chakraBinds: obj.chakraBinds || dbSub.chakraBinds,
+        schemaVersion: obj.schemaVersion || dbSub.schemaVersion
+      } : obj;
+      return this.ensureV2Entry(merged);
+    };
+    const activeSubsystemWepEntries = [
+      ...rawSoulmeldsForWep.map(s => resolveSubsystemEntryForWep(s, 'Soulmeld', true)).filter(Boolean),
+      ...rawVestigesForWep.map(v => resolveSubsystemEntryForWep(v, 'Vestige', true)).filter(Boolean),
+      ...rawPowersForWep.map(p => resolveSubsystemEntryForWep(p, 'Power', false)).filter(Boolean),
+      ...rawMysteriesForWep.map(m => resolveSubsystemEntryForWep(m, 'Mystery', false)).filter(Boolean),
+      ...rawUtterancesForWep.map(u => resolveSubsystemEntryForWep(u, 'Utterance', false)).filter(Boolean)
+    ];
     const charAbilityAndFeatEntries = [
-      ...(Array.isArray(character.specialAbilities) ? character.specialAbilities : []),
+      ...(Array.isArray(character.specialAbilities) ? character.specialAbilities.map(sa => this.ensureV2Entry(sa)) : []),
       ...(Array.isArray(character.feats) ? character.feats.map(f => {
         if (!f) return null;
         if (typeof f === 'string') return this.getMasterDbEntry(f, 'Feat') || null;
         if (typeof f !== 'object' || f.active === false) return null;
-        return f;
+        return this.ensureV2Entry(f);
       }).filter(f => {
         if (!f) return false;
         const fid = String(f.id || '').toLowerCase();
         if (wfWsFeatIds.some(prefix => fid === prefix || fid.startsWith(`${prefix}-`))) return false;
         return !/weapon focus|weapon specialization/i.test(String(f.name || ''));
-      }) : [])
+      }) : []),
+      ...activeSubsystemWepEntries
     ];
     const collectEntryWeaponModifiers = (isTargetMatch, outItems) => {
       charAbilityAndFeatEntries.forEach(entry => {
@@ -6516,6 +8025,11 @@ const RuleEngine = {
           ? entry.modifiers
           : (this.getMasterDbEntry(entry)?.modifiers || []);
         if (!Array.isArray(entryMods) || entryMods.length === 0) return;
+        const entryEvalCtx = {
+          ...evalCtx,
+          essentia: Number(entry.essentia ?? entry.investedEssentia ?? 0) || 0,
+          augmentPP: Number(entry.augmentPP || 0) || 0
+        };
         entryMods.forEach(mod => {
           if (!mod || !mod.target) return;
           const t = String(mod.target).toLowerCase();
@@ -6531,7 +8045,7 @@ const RuleEngine = {
           } else if (mod.condition && !isFinessableOrLightCond) {
             return;
           }
-          const rawV = evalModExpr(mod, evalCtx);
+          const rawV = evalModExpr(mod, entryEvalCtx);
           const v = isFinessableOrLightCond ? Math.max(0, rawV) : rawV;
           if (v !== 0) {
             outItems.push({ type: (mod.type || 'untyped').toLowerCase(), val: v, source: mod.source || entry.name || 'Special Ability' });
@@ -6540,6 +8054,7 @@ const RuleEngine = {
       });
     };
     collectEntryWeaponModifiers(isAtkTargetMatch, attackBonusItems);
+    collectEntryWeaponModifiers(isCritConfirmTargetMatch, critConfirmItems);
     // Flanking (PHB p.153) and Charge (PHB p.154) grant +2 on melee attack rolls only.
     if (flanking && !isRangedWep) {
       attackBonusItems.push({ type: 'untyped', val: 2, source: 'Flanking' });
@@ -6863,7 +8378,7 @@ const RuleEngine = {
 
     const combinedRawParts = [...rawParts];
 
-    // Append damageParts from active buffs (e.g. Sneak Attack, Hunter's Mercy, Arcane Wrath)
+    // Append damageParts from active buffs & subsystems (e.g. Sneak Attack, Hunter's Mercy, Arcane Wrath, Soulmelds)
     if (Array.isArray(character.buffs)) {
       character.buffs.forEach(rawBuff => {
         if (!rawBuff || !rawBuff.active) return;
@@ -6880,6 +8395,18 @@ const RuleEngine = {
         }
       });
     }
+    activeSubsystemWepEntries.forEach(subEntry => {
+      if (subEntry && Array.isArray(subEntry.damageParts) && subEntry.damageParts.length > 0) {
+        subEntry.damageParts.forEach(sp => {
+          if (sp && sp.dice) {
+            combinedRawParts.push({
+              ...sp,
+              source: sp.source || subEntry.name
+            });
+          }
+        });
+      }
+    });
 
     const evaluatedDamageParts = combinedRawParts.map((part, idx) => {
       const isPrimary = idx === 0;
@@ -6930,8 +8457,20 @@ const RuleEngine = {
     });
     const critDiceFormula = critTerms.join(' + ');
 
+    const wepRuleFlagBadges = this.formatRuleFlagBadges(
+      Object.assign({}, dbWeapon?.ruleFlags || {}, weapon.ruleFlags || {}),
+      weapon
+    );
+    const combinedTacticalBadges = Array.from(new Set([
+      ...(Array.isArray(weapon.tacticalBadges) ? weapon.tacticalBadges : []),
+      ...(Array.isArray(dbWeapon?.tacticalBadges) ? dbWeapon.tacticalBadges : []),
+      ...wepRuleFlagBadges
+    ]));
+    const critConfirmBonus = this.resolveBonusStacking(critConfirmItems);
+
     return {
       netAttackBonus,
+      critConfirmBonus,
       iteratives,
       attackStatName,
       attackStatMod,
@@ -6951,7 +8490,7 @@ const RuleEngine = {
       modes,
       activeMode,
       activeModeId: activeMode ? activeMode.id : null,
-      tacticalBadges: Array.isArray(weapon.tacticalBadges) ? weapon.tacticalBadges : [],
+      tacticalBadges: combinedTacticalBadges,
       critMin: critData.critMin,
       critMult: critData.critMult,
       critThreatRangeCount: critData.threatRangeCount,
@@ -7177,6 +8716,10 @@ const RuleEngine = {
 
   _harvestSkillBonusSources(character) {
     if (!character) return null;
+    this._activeCharacter = character;
+    this._activeCustomEntries = (character.customEntries && typeof character.customEntries === 'object')
+      ? character.customEntries
+      : null;
     const charLvl = Number(character.level) || 1;
     const evalCtx = { cl: charLvl, level: charLvl, bab: Number(character.bab) || 0 };
     const itemEvalCtx = { cl: charLvl, level: charLvl };
@@ -7318,6 +8861,44 @@ const RuleEngine = {
         if (dMods.length > 0) extraSources.push({ title: `${dom.name} Domain`, mods: dMods });
       }
     }
+
+    // 6. Active Subsystem Skill Modifiers (Soulmelds, Vestiges, Powers, Mysteries, Utterances)
+    const rawSoulmeldsSkill = Array.isArray(character.incarnum?.soulmelds) ? character.incarnum.soulmelds : (Array.isArray(character.soulmelds) ? character.soulmelds : []);
+    const rawVestigesSkill = Array.isArray(character.pactMagic?.vestiges) ? character.pactMagic.vestiges : (Array.isArray(character.vestiges) ? character.vestiges : []);
+    const rawPowersSkill = Array.isArray(character.psionics?.powers) ? character.psionics.powers : (Array.isArray(character.powers) ? character.powers : []);
+    const rawMysteriesSkill = Array.isArray(character.shadowMagic?.mysteries) ? character.shadowMagic.mysteries : (Array.isArray(character.mysteries) ? character.mysteries : []);
+    const rawUtterancesSkill = Array.isArray(character.truenaming?.utterances) ? character.truenaming.utterances : (Array.isArray(character.utterances) ? character.utterances : []);
+    const harvestSubSkill = (rawEntry, category, defaultActive = false) => {
+      if (!rawEntry) return;
+      const obj = typeof rawEntry === 'string' ? { id: rawEntry, name: rawEntry, active: defaultActive } : rawEntry;
+      if (obj.active === false || obj.shaped === false || obj.bound === false) return;
+      if (!defaultActive && !obj.active && !obj.isActive) return;
+      const dbSub = this.getMasterDbEntry(obj.id || obj.baseEntryId || obj.name, category);
+      const merged = dbSub ? {
+        ...dbSub,
+        ...obj,
+        blocks: Array.isArray(obj.blocks) && obj.blocks.length > 0 ? obj.blocks : dbSub.blocks,
+        chakraBinds: obj.chakraBinds || dbSub.chakraBinds,
+        schemaVersion: obj.schemaVersion || dbSub.schemaVersion
+      } : obj;
+      const v2Sub = this.ensureV2Entry(merged);
+      if (v2Sub && Array.isArray(v2Sub.modifiers) && v2Sub.modifiers.length > 0) {
+        const subCtx = {
+          ...evalCtx,
+          essentia: Number(obj.essentia ?? obj.investedEssentia ?? 0) || 0,
+          augmentPP: Number(obj.augmentPP || 0) || 0
+        };
+        const sMods = this._extractPreEvaluatedSkillMods(v2Sub.modifiers, 'insight', subCtx);
+        if (sMods.length > 0) {
+          extraSources.push({ title: v2Sub.name || category, mods: sMods });
+        }
+      }
+    };
+    rawSoulmeldsSkill.forEach(s => harvestSubSkill(s, 'Soulmeld', true));
+    rawVestigesSkill.forEach(v => harvestSubSkill(v, 'Vestige', true));
+    rawPowersSkill.forEach(p => harvestSubSkill(p, 'Power', false));
+    rawMysteriesSkill.forEach(m => harvestSubSkill(m, 'Mystery', false));
+    rawUtterancesSkill.forEach(u => harvestSubSkill(u, 'Utterance', false));
 
     return { buffSources, itemChains, featSources, extraSources };
   },
@@ -7515,7 +9096,8 @@ const RuleEngine = {
   getClassDef(className) {
     if (!className) return null;
     const lowerKey = String(className).toLowerCase().trim();
-    if (this.DND35_CLASS_DEFS) {
+    const customClassOverride = this.resolveCustomEntryOverride(className);
+    if (this.DND35_CLASS_DEFS && !customClassOverride) {
       const cached = this.DND35_CLASS_DEFS[className] || this.DND35_CLASS_DEFS[lowerKey];
       if (cached && cached._v2Hydrated) {
         return cached;
@@ -7523,9 +9105,9 @@ const RuleEngine = {
     }
     const comp = (typeof window !== 'undefined' && window.SrdCompendium)
       || (typeof SrdCompendium !== 'undefined' ? SrdCompendium : null);
-    let srdClass = (comp && typeof comp.getClass === 'function')
+    let srdClass = customClassOverride || ((comp && typeof comp.getClass === 'function')
       ? comp.getClass(className)
-      : null;
+      : null);
     // A class from a lazy (tier-2) chunk that is not loaded resolves from its srd-snapshot in the character's customDb.
     if (!srdClass) {
       const snapDb = (Array.isArray(this._activeCustomDb) && this._activeCustomDb.length > 0 ? this._activeCustomDb : null)
@@ -7584,11 +9166,11 @@ const RuleEngine = {
       merged.isPrestige = Boolean(srdClass.isPrestige || srdClass.category === 'Prestige');
       merged.type = merged.isPrestige ? 'Prestige Class' : 'Base Class';
     }
-    if (this.DND35_CLASS_DEFS && srdClass.name) {
+    if (this.DND35_CLASS_DEFS && !customClassOverride && srdClass.name) {
       this.DND35_CLASS_DEFS[srdClass.name] = merged;
       this.DND35_CLASS_DEFS[String(srdClass.name).toLowerCase().trim()] = merged;
     }
-    if (this.DND35_CLASS_DEFS) {
+    if (this.DND35_CLASS_DEFS && !customClassOverride) {
       this.DND35_CLASS_DEFS[className] = merged;
       this.DND35_CLASS_DEFS[lowerKey] = merged;
     }
@@ -10436,6 +12018,562 @@ const RuleEngine = {
     };
   },
 
+  /**
+   * Canonical V3 5-Subsystem & Active Discipline Derivation (`sheet.subsystems`):
+   * Computes `totalLevel`, `activeDisciplines`, `psionics`, `incarnum`, `pact`, `shadow`, and `truenaming`
+   * with full XPH, MoI, and ToM RAW math and zero unsolicited lazy chunk loading.
+   */
+  deriveSubsystemsView(w, workingDb = []) {
+    if (!w) {
+      return {
+        totalLevel: 0,
+        activeDisciplines: [],
+        psionics: { manifesterLevel: 0, basePP: 0, bonusPP: 0, maxPP: 0, currentPP: 0, powers: [] },
+        incarnum: { meldshaperLevel: 0, essentiaPool: 0, essentiaCapacity: 1, investedEssentia: 0, availableEssentia: 0, maxSoulmelds: 0, maxChakraBinds: 0, soulmelds: [] },
+        pact: { binderLevel: 0, effectiveBinderLevel: 0, maxVestiges: 0, maxVestigeLevel: 0, vestiges: [] },
+        shadow: { casterLevel: 0, mysteries: [] },
+        truenaming: { truenamerLevel: 0, truespeakBonus: 0, utterances: [] }
+      };
+    }
+
+    const progRows = Array.isArray(w.levelProgression)
+      ? w.levelProgression.filter(p => p && p.active !== false)
+      : [];
+    const parsedClassEntries = [];
+    if (Array.isArray(w.classProgression) && w.classProgression.length > 0) {
+      w.classProgression.forEach(cp => {
+        if (cp && (cp.className || cp.name || cp.class)) {
+          parsedClassEntries.push({ className: String(cp.className || cp.name || cp.class).trim(), level: Number(cp.level) || 1 });
+        }
+      });
+    } else if (w.classLevels && typeof w.classLevels === 'object' && !Array.isArray(w.classLevels)) {
+      Object.entries(w.classLevels).forEach(([cName, cLvl]) => {
+        if ((Number(cLvl) || 0) > 0) parsedClassEntries.push({ className: String(cName).trim(), level: Number(cLvl) || 1 });
+      });
+    } else if (Array.isArray(w.classes) && w.classes.length > 0) {
+      w.classes.forEach(c => {
+        const name = typeof c === 'string' ? c : (c?.name || c?.className || c?.class || '');
+        const lvl = (c && typeof c === 'object') ? (Number(c.level) || 1) : (Number(w.level) || 1);
+        if (name) parsedClassEntries.push({ className: String(name).trim(), level: lvl });
+      });
+    } else if (typeof w.classes === 'string' && w.classes.trim()) {
+      const parts = w.classes.split(/[\/,]/).map(s => s.trim()).filter(Boolean);
+      parts.forEach(part => {
+        const numMatch = part.match(/(\d+)/);
+        const lvl = numMatch ? (parseInt(numMatch[1], 10) || 1) : (parts.length === 1 ? (Number(w.level) || 1) : 1);
+        const cName = part.replace(/\d+/g, '').replace(/\b(?:lvl|level)\b/gi, '').trim();
+        if (cName) parsedClassEntries.push({ className: cName, level: lvl });
+      });
+    } else if (typeof w.class === 'string' && w.class.trim()) {
+      parsedClassEntries.push({ className: w.class.trim(), level: Number(w.level) || 1 });
+    }
+    const parsedClassLevelsSum = parsedClassEntries.reduce((acc, c) => acc + (Number(c.level) || 0), 0);
+    const hasExplicitZeroLevel = w.level === 0 && progRows.length === 0 && parsedClassLevelsSum === 0;
+    const totalLevel = hasExplicitZeroLevel
+      ? 0
+      : (progRows.length > 0 ? progRows.length : (parsedClassLevelsSum > 0 ? parsedClassLevelsSum : (Number(w.level) || 0)));
+
+    const classLevelsByKey = {};
+    if (progRows.length > 0) {
+      progRows.forEach(r => {
+        const ck = String(r.class || r.className || '').toLowerCase().trim();
+        if (ck) classLevelsByKey[ck] = (classLevelsByKey[ck] || 0) + 1;
+      });
+    } else if (parsedClassEntries.length > 0) {
+      parsedClassEntries.forEach(c => {
+        const ck = String(c.className || '').toLowerCase().trim();
+        if (ck) classLevelsByKey[ck] = (classLevelsByKey[ck] || 0) + (Number(c.level) || 0);
+      });
+    }
+
+    const getClassLvl = (regex) => {
+      let sum = 0;
+      Object.entries(classLevelsByKey).forEach(([k, lvl]) => {
+        if (regex.test(k)) sum += lvl;
+      });
+      return sum;
+    };
+
+    const allFeatNames = [
+      ...(Array.isArray(w.feats) ? w.feats : []),
+      ...(Array.isArray(w.specialAbilities) ? w.specialAbilities : []),
+      ...progRows.flatMap(r => [...(Array.isArray(r.feats) ? r.feats : []), ...(Array.isArray(r.specialAbilities) ? r.specialAbilities : [])])
+    ].map(f => String(typeof f === 'string' ? f : (f?.name || f?.id || '')).toLowerCase().trim()).filter(Boolean);
+    const hasFeatMatch = (regex) => allFeatNames.some(fn => regex.test(fn));
+
+    const raceStr = String(w.race || '').toLowerCase().trim();
+    const abi = w.abilities || { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 };
+    const mods = {
+      str: this.getAbilityMod(abi.str || 10),
+      dex: this.getAbilityMod(abi.dex || 10),
+      con: this.getAbilityMod(abi.con || 10),
+      int: this.getAbilityMod(abi.int || 10),
+      wis: this.getAbilityMod(abi.wis || 10),
+      cha: this.getAbilityMod(abi.cha || 10)
+    };
+
+    // Raw subsystem arrays on character
+    const rawPowers = Array.isArray(w.psionics?.powers)
+      ? w.psionics.powers
+      : (Array.isArray(w.powers) ? w.powers : []);
+    const rawSoulmelds = Array.isArray(w.incarnum?.soulmelds)
+      ? w.incarnum.soulmelds
+      : (Array.isArray(w.soulmelds) ? w.soulmelds : []);
+    const rawVestiges = Array.isArray(w.pactMagic?.vestiges)
+      ? w.pactMagic.vestiges
+      : (Array.isArray(w.vestiges) ? w.vestiges : []);
+    const rawMysteries = Array.isArray(w.shadowMagic?.mysteries)
+      ? w.shadowMagic.mysteries
+      : (Array.isArray(w.mysteries) ? w.mysteries : []);
+    const rawUtterances = Array.isArray(w.truenaming?.utterances)
+      ? w.truenaming.utterances
+      : (Array.isArray(w.utterances) ? w.utterances : []);
+    const rawManeuvers = Array.isArray(w.spellcasting?.maneuvers)
+      ? w.spellcasting.maneuvers
+      : (Array.isArray(w.maneuvers) ? w.maneuvers : []);
+    const rawSpells = Array.isArray(w.spellcasting?.spells)
+      ? w.spellcasting.spells
+      : (Array.isArray(w.spells) ? w.spells : []);
+
+    // 1. PSIONICS (XPH RAW)
+    const psionLvl = getClassLvl(/\bpsion\b/);
+    const wilderLvl = getClassLvl(/\bwilder\b/);
+    const psyWarriorLvl = getClassLvl(/\bpsychic\s*warrior\b/);
+    const soulknifeLvl = getClassLvl(/\bsoulknife\b/);
+    const ardentLvl = getClassLvl(/\bardent\b/);
+    const lurkLvl = getClassLvl(/\blurk\b/);
+    const divineMindLvl = getClassLvl(/\bdivine\s*mind\b/);
+    const eruditeLvl = getClassLvl(/\berudite\b/);
+    const totalPsionicClassLvl = psionLvl + wilderLvl + psyWarriorLvl + ardentLvl + lurkLvl + divineMindLvl + eruditeLvl;
+
+    const PSION_BASE_PP = [0, 2, 6, 11, 17, 25, 35, 46, 58, 72, 88, 106, 126, 147, 170, 195, 221, 250, 280, 311, 343];
+    const PSYWAR_BASE_PP = [0, 0, 1, 3, 5, 7, 11, 15, 19, 23, 27, 35, 43, 51, 59, 67, 79, 91, 103, 115, 127];
+    let calcBasePP = 0;
+    if (psionLvl + wilderLvl + ardentLvl + eruditeLvl > 0) {
+      const fullMl = Math.min(20, psionLvl + wilderLvl + ardentLvl + eruditeLvl);
+      calcBasePP += PSION_BASE_PP[fullMl] || 0;
+    }
+    if (psyWarriorLvl + lurkLvl + divineMindLvl > 0) {
+      const halfMl = Math.min(20, psyWarriorLvl + lurkLvl + divineMindLvl);
+      calcBasePP += PSYWAR_BASE_PP[halfMl] || 0;
+    }
+    if (hasFeatMatch(/\bwild\s*talent\b/)) calcBasePP += 2;
+    if (hasFeatMatch(/\bhidden\s*talent\b/)) calcBasePP += 2;
+    if (/kalashtar/i.test(raceStr)) calcBasePP += Math.max(1, totalLevel);
+    else if (/elans?\b|maenad|xeph|duergar|githyanki|githzerai|synad/i.test(raceStr)) calcBasePP += 2;
+
+    const explicitML = Number(w.psionics?.manifesterLevel ?? w.manifesterLevel ?? 0);
+    const hasHiddenTalent = hasFeatMatch(/\bhidden\s*talent\b/);
+    const manifesterLevel = explicitML > 0
+      ? explicitML
+      : (totalPsionicClassLvl > 0
+          ? totalPsionicClassLvl
+          : ((rawPowers.length > 0 || hasHiddenTalent) ? Math.max(1, totalLevel || 1) : 0));
+
+    let psionicKeyStat = String(w.psionics?.keyAbility || w.psionics?.ability || '').toLowerCase().trim();
+    if (!psionicKeyStat) {
+      if (wilderLvl > 0 || (hasHiddenTalent && totalPsionicClassLvl === 0)) psionicKeyStat = 'cha';
+      else if (psyWarriorLvl > 0 || ardentLvl > 0 || divineMindLvl > 0) psionicKeyStat = 'wis';
+      else psionicKeyStat = 'int';
+    }
+    const keyAbilityMod = mods[psionicKeyStat] !== undefined ? mods[psionicKeyStat] : mods.int;
+
+    const basePP = w.psionics?.basePP !== undefined
+      ? Number(w.psionics.basePP)
+      : calcBasePP;
+    // XPH RAW Table 2-1: Bonus Power Points = floor(keyAbilityMod * ML / 2) when ML >= 1 and keyAbilityMod > 0
+    const rawBonusPP = (manifesterLevel >= 1 && keyAbilityMod > 0)
+      ? Math.floor((keyAbilityMod * manifesterLevel) / 2)
+      : 0;
+    const extraBonusPP = Number(w.bonusPowerPoints || w.psionics?.extraPP || 0);
+    const bonusPP = w.psionics?.bonusPP !== undefined
+      ? Number(w.psionics.bonusPP)
+      : (rawBonusPP + extraBonusPP);
+    const maxPP = w.psionics?.maxPP !== undefined
+      ? Number(w.psionics.maxPP)
+      : (basePP + bonusPP);
+    const currentPP = w.psionics?.currentPP !== undefined
+      ? Math.min(maxPP, Math.max(0, Number(w.psionics.currentPP)))
+      : maxPP;
+
+    const evaluatedPowers = rawPowers.map(rawP => {
+      const pObj = typeof rawP === 'string' ? { id: rawP, name: rawP } : { ...rawP };
+      const dbP = this.getMasterDbEntry(pObj.id || pObj.baseEntryId || pObj.name, 'Power');
+      const mergedP = dbP ? { ...dbP, ...pObj, blocks: Array.isArray(pObj.blocks) && pObj.blocks.length > 0 ? pObj.blocks : dbP.blocks } : pObj;
+      const powerLvl = Number(mergedP.level ?? mergedP.powerLevel ?? 1) || 1;
+      const defaultBaseCost = powerLvl <= 1 ? 1 : (powerLvl * 2 - 1);
+      const baseCost = Number(mergedP.baseCost ?? mergedP.powerPoints ?? mergedP.ppCost ?? defaultBaseCost) || defaultBaseCost;
+      const requestedAugmentPP = Math.max(0, Number(mergedP.augmentPP ?? mergedP.augmentedPP ?? 0) || 0);
+      const maxAugmentByML = Math.max(0, manifesterLevel - baseCost);
+      const effectiveAugmentPP = Math.min(requestedAugmentPP, maxAugmentByML);
+      const totalPPCost = baseCost + effectiveAugmentPP;
+      const isOverMLCap = (baseCost + requestedAugmentPP) > manifesterLevel && manifesterLevel > 0;
+      const v3Eval = this.evaluateV3Entry(
+        { ...mergedP, schemaVersion: 3 },
+        { character: w, level: totalLevel || 1, ml: manifesterLevel, cl: manifesterLevel, augmentPP: effectiveAugmentPP }
+      );
+      return {
+        ...mergedP,
+        id: mergedP.id || mergedP.name,
+        name: mergedP.name || mergedP.id,
+        level: powerLvl,
+        baseCost,
+        augmentPP: effectiveAugmentPP,
+        requestedAugmentPP,
+        maxAugmentPP: maxAugmentByML,
+        totalPPCost,
+        isOverMLCap,
+        modifiers: v3Eval.modifiers,
+        damageParts: v3Eval.damageParts,
+        tacticalBadges: v3Eval.tacticalBadges
+      };
+    });
+
+    // 2. INCARNUM (MoI RAW)
+    const incarnateLvl = getClassLvl(/\bincarnate\b/);
+    const totemistLvl = getClassLvl(/\btotemist\b/);
+    const soulbornLvl = getClassLvl(/\bsoulborn\b/);
+    const totalMeldshaperClassLvl = incarnateLvl + totemistLvl + (soulbornLvl >= 4 ? Math.floor(soulbornLvl / 2) : 0);
+    const explicitMeldLvl = Number(w.incarnum?.meldshaperLevel ?? w.meldshaperLevel ?? 0);
+    const meldshaperLevel = explicitMeldLvl > 0
+      ? explicitMeldLvl
+      : (totalMeldshaperClassLvl > 0
+          ? totalMeldshaperClassLvl
+          : (rawSoulmelds.length > 0 ? Math.max(1, totalLevel || 1) : 0));
+
+    // MoI RAW Table 2-1 Essentia Capacity by character level: 1-5 -> 1, 6-11 -> 2, 12-17 -> 3, 18+ -> 4
+    const charLvlForCap = Math.max(1, totalLevel || 1);
+    let baseEssentiaCap = 1;
+    if (charLvlForCap >= 18) baseEssentiaCap = 4;
+    else if (charLvlForCap >= 12) baseEssentiaCap = 3;
+    else if (charLvlForCap >= 6) baseEssentiaCap = 2;
+
+    const expandedCapBonus = hasFeatMatch(/\bexpanded\s*soulmeld\s*capacity\b/) ? 1 : 0;
+    const incarnateCapBonus = incarnateLvl >= 15 ? 2 : (incarnateLvl >= 3 ? 1 : 0);
+    const explicitCapBonus = Number(w.incarnum?.capacityBonus ?? 0) || 0;
+    const essentiaCapacity = w.incarnum?.essentiaCapacity !== undefined
+      ? Number(w.incarnum.essentiaCapacity)
+      : (baseEssentiaCap + expandedCapBonus + incarnateCapBonus + explicitCapBonus);
+
+    let calcEssentiaPool = 0;
+    if (incarnateLvl > 0) calcEssentiaPool += incarnateLvl;
+    if (totemistLvl > 0) calcEssentiaPool += totemistLvl;
+    if (soulbornLvl >= 2) calcEssentiaPool += Math.floor(soulbornLvl / 2);
+    if (/azurin|duskling|rilkan|skarn/i.test(raceStr)) calcEssentiaPool += 1;
+    if (hasFeatMatch(/\bbonus\s*essentia\b/)) calcEssentiaPool += 2;
+    allFeatNames.forEach(fn => {
+      if (/\b(?:azure|cerulean|cobalt|midnight|soultouched|psycarnum|healing\s*soul|indigo)\b/.test(fn) && !/bonus\s*essentia/.test(fn)) {
+        calcEssentiaPool += 1;
+      }
+    });
+
+    const essentiaPool = w.incarnum?.essentiaPool !== undefined
+      ? Number(w.incarnum.essentiaPool)
+      : calcEssentiaPool;
+
+    let totalInvestedEssentia = 0;
+    const evaluatedSoulmelds = rawSoulmelds.map(rawSm => {
+      const smObj = typeof rawSm === 'string' ? { id: rawSm, name: rawSm, essentia: 0 } : { ...rawSm };
+      const dbSm = this.getMasterDbEntry(smObj.id || smObj.baseEntryId || smObj.name, 'Soulmeld');
+      const mergedSm = dbSm ? {
+        ...dbSm,
+        ...smObj,
+        blocks: Array.isArray(smObj.blocks) && smObj.blocks.length > 0 ? smObj.blocks : dbSm.blocks,
+        chakraBinds: smObj.chakraBinds || dbSm.chakraBinds
+      } : smObj;
+      const smCapBonus = Number(mergedSm.capacityBonus || 0) || 0;
+      const maxCap = essentiaCapacity + smCapBonus;
+      const rawInvested = Math.max(0, Number(mergedSm.essentia ?? mergedSm.investedEssentia ?? 0) || 0);
+      const invested = Math.min(rawInvested, maxCap);
+      if (mergedSm.shaped !== false && mergedSm.active !== false) {
+        totalInvestedEssentia += invested;
+      }
+      const boundChakra = mergedSm.boundChakra || mergedSm.chakraBind || null;
+      const v3Eval = this.evaluateV3Entry(
+        { ...mergedSm, essentia: invested, boundChakra, schemaVersion: 3 },
+        { character: w, level: totalLevel || 1, cl: meldshaperLevel || totalLevel || 1, essentia: invested, boundChakra }
+      );
+      return {
+        ...mergedSm,
+        id: mergedSm.id || mergedSm.name,
+        name: mergedSm.name || mergedSm.id,
+        essentia: invested,
+        maxCapacity: maxCap,
+        boundChakra,
+        modifiers: v3Eval.modifiers,
+        damageParts: v3Eval.damageParts,
+        tacticalBadges: v3Eval.tacticalBadges
+      };
+    });
+
+    const investedEssentia = w.incarnum?.investedEssentia !== undefined
+      ? Number(w.incarnum.investedEssentia)
+      : totalInvestedEssentia;
+    const availableEssentia = Math.max(0, essentiaPool - investedEssentia);
+    const conScore = Number(abi.con || 10);
+    const maxSoulmeldsByCon = Math.max(0, conScore - 10);
+    const calcMaxSoulmelds = (incarnateLvl + totemistLvl + soulbornLvl) > 0
+      ? Math.min(maxSoulmeldsByCon, Math.max(2, Math.floor((incarnateLvl + totemistLvl) / 3) + 2))
+      : (hasFeatMatch(/\bshape\s*soulmeld\b/) ? 1 : rawSoulmelds.length);
+    const maxSoulmelds = w.incarnum?.maxSoulmelds !== undefined
+      ? Number(w.incarnum.maxSoulmelds)
+      : calcMaxSoulmelds;
+    const maxChakraBinds = w.incarnum?.maxChakraBinds !== undefined
+      ? Number(w.incarnum.maxChakraBinds)
+      : ((incarnateLvl + totemistLvl) >= 2 ? Math.max(1, Math.floor((incarnateLvl + totemistLvl + 2) / 4)) : (hasFeatMatch(/\bopen\s+(?:least|lesser|greater)\s+chakra\b/) ? 1 : 0));
+
+    // 3. PACT MAGIC (ToM RAW)
+    const binderClassLvl = getClassLvl(/\bbinder\b/);
+    const explicitBinderLvl = Number(w.pactMagic?.binderLevel ?? w.binderLevel ?? 0);
+    const binderLevel = explicitBinderLvl > 0
+      ? explicitBinderLvl
+      : (binderClassLvl > 0 ? binderClassLvl : (rawVestiges.length > 0 ? Math.max(1, totalLevel || 1) : 0));
+    const hasImpBindVestige = hasFeatMatch(/\bimproved\s*bind\s*vestige\b/);
+    const hasExpelVestige = hasFeatMatch(/\bexpel\s*vestige\b/);
+    const explicitEBL = Number(w.pactMagic?.effectiveBinderLevel ?? w.effectiveBinderLevel ?? 0);
+    const effectiveBinderLevel = explicitEBL > 0
+      ? explicitEBL
+      : (binderLevel + (hasImpBindVestige ? 2 : 0));
+
+    // ToM Table 1-1: Max Vestiges by Binder Level (1-7:1, 8-13:2, 14-19:3, 20+:4)
+    let calcMaxVestiges = 0;
+    if (binderLevel >= 20) calcMaxVestiges = 4;
+    else if (binderLevel >= 14) calcMaxVestiges = 3;
+    else if (binderLevel >= 8) calcMaxVestiges = 2;
+    else if (binderLevel >= 1 || hasFeatMatch(/\bbind\s*vestige\b/) || rawVestiges.length > 0) calcMaxVestiges = 1;
+
+    // ToM Table 1-1: Max Vestige Level by Effective Binder Level (1-2:1, 3-4:2, 5-6:3, 7-9:4, 10-11:5, 12-14:6, 15-16:7, 17+:8)
+    let calcMaxVestigeLevel = 0;
+    if (effectiveBinderLevel >= 17) calcMaxVestigeLevel = 8;
+    else if (effectiveBinderLevel >= 15) calcMaxVestigeLevel = 7;
+    else if (effectiveBinderLevel >= 12) calcMaxVestigeLevel = 6;
+    else if (effectiveBinderLevel >= 10) calcMaxVestigeLevel = 5;
+    else if (effectiveBinderLevel >= 7) calcMaxVestigeLevel = 4;
+    else if (effectiveBinderLevel >= 5) calcMaxVestigeLevel = 3;
+    else if (effectiveBinderLevel >= 3) calcMaxVestigeLevel = 2;
+    else if (effectiveBinderLevel >= 1) calcMaxVestigeLevel = 1;
+
+    const maxVestiges = w.pactMagic?.maxVestiges !== undefined ? Number(w.pactMagic.maxVestiges) : calcMaxVestiges;
+    const maxVestigeLevel = w.pactMagic?.maxVestigeLevel !== undefined ? Number(w.pactMagic.maxVestigeLevel) : calcMaxVestigeLevel;
+
+    const evaluatedVestiges = rawVestiges.map(rawV => {
+      const vObj = typeof rawV === 'string' ? { id: rawV, name: rawV } : { ...rawV };
+      const dbV = this.getMasterDbEntry(vObj.id || vObj.baseEntryId || vObj.name, 'Vestige');
+      const mergedV = dbV ? {
+        ...dbV,
+        ...vObj,
+        blocks: Array.isArray(vObj.blocks) && vObj.blocks.length > 0 ? vObj.blocks : dbV.blocks
+      } : vObj;
+      const v3Eval = this.evaluateV3Entry(
+        { ...mergedV, schemaVersion: 3 },
+        { character: w, level: totalLevel || 1, ebl: effectiveBinderLevel || 1, cl: effectiveBinderLevel || totalLevel || 1 }
+      );
+      return {
+        ...mergedV,
+        id: mergedV.id || mergedV.name,
+        name: mergedV.name || mergedV.id,
+        level: Number(mergedV.level ?? mergedV.vestigeLevel ?? 1) || 1,
+        bindingDC: Number(mergedV.bindingDC ?? mergedV.dc ?? 15) || 15,
+        modifiers: v3Eval.modifiers,
+        damageParts: v3Eval.damageParts,
+        tacticalBadges: v3Eval.tacticalBadges
+      };
+    });
+
+    // 4. SHADOW MAGIC (ToM RAW)
+    const shadowcasterLvl = getClassLvl(/\bshadowcaster\b/);
+    const explicitShadowCL = Number(w.shadowMagic?.casterLevel ?? w.shadowCasterLevel ?? 0);
+    const shadowCasterLevel = explicitShadowCL > 0
+      ? explicitShadowCL
+      : (shadowcasterLvl > 0 ? shadowcasterLvl : (rawMysteries.length > 0 ? Math.max(1, totalLevel || 1) : 0));
+
+    const evaluatedMysteries = rawMysteries.map(rawM => {
+      const mObj = typeof rawM === 'string' ? { id: rawM, name: rawM } : { ...rawM };
+      const dbM = this.getMasterDbEntry(mObj.id || mObj.baseEntryId || mObj.name, 'Mystery');
+      const mergedM = dbM ? {
+        ...dbM,
+        ...mObj,
+        blocks: Array.isArray(mObj.blocks) && mObj.blocks.length > 0 ? mObj.blocks : dbM.blocks
+      } : mObj;
+      const mysLvl = Number(mergedM.level ?? mergedM.mysteryLevel ?? 1) || 1;
+      const tier = mergedM.tier || (mysLvl <= 3 ? 'Apprentice' : (mysLvl <= 6 ? 'Initiate' : 'Master'));
+      // ToM Shadowcaster progression: Apprentice (1-3) -> Spell (CL 1-6), Sp (CL 7-12, 2/day), Su (CL 13+, 3/day)
+      let castType = 'Spell';
+      let usesPerDay = 1;
+      if (tier === 'Apprentice') {
+        if (shadowCasterLevel >= 13) { castType = 'Su'; usesPerDay = 3; }
+        else if (shadowCasterLevel >= 7) { castType = 'Sp'; usesPerDay = 2; }
+        else { castType = 'Spell'; usesPerDay = 1; }
+      } else if (tier === 'Initiate') {
+        if (shadowCasterLevel >= 13) { castType = 'Sp'; usesPerDay = 2; }
+        else { castType = 'Spell'; usesPerDay = 1; }
+      } else {
+        castType = 'Spell';
+        usesPerDay = 1;
+      }
+      const v3Eval = this.evaluateV3Entry(
+        { ...mergedM, schemaVersion: 3 },
+        { character: w, level: totalLevel || 1, cl: shadowCasterLevel || 1 }
+      );
+      return {
+        ...mergedM,
+        id: mergedM.id || mergedM.name,
+        name: mergedM.name || mergedM.id,
+        level: mysLvl,
+        tier,
+        castType,
+        usesPerDay: Number(mergedM.usesPerDay || usesPerDay) || usesPerDay,
+        modifiers: v3Eval.modifiers,
+        damageParts: v3Eval.damageParts,
+        tacticalBadges: v3Eval.tacticalBadges
+      };
+    });
+
+    // 5. TRUENAMING (ToM RAW - Law of Resistance)
+    const truenamerClassLvl = getClassLvl(/\btruenamer\b/);
+    const explicitTruenamerLvl = Number(w.truenaming?.truenamerLevel ?? w.truenamerLevel ?? 0);
+    const truenamerLevel = explicitTruenamerLvl > 0
+      ? explicitTruenamerLvl
+      : (truenamerClassLvl > 0 ? truenamerClassLvl : (rawUtterances.length > 0 ? Math.max(1, totalLevel || 1) : 0));
+
+    let truespeakBonus = Number(w.truenaming?.truespeakBonus ?? 0);
+    if (!truespeakBonus && w.skills && typeof w.skills === 'object') {
+      const tsSkill = w.skills.truespeak || w.skills.Truespeak;
+      if (tsSkill) {
+        const ranks = Number(tsSkill.ranks || 0);
+        const misc = Number(tsSkill.misc || 0);
+        truespeakBonus = ranks + mods.int + misc;
+      }
+    }
+
+    const evaluatedUtterances = rawUtterances.map(rawU => {
+      const uObj = typeof rawU === 'string' ? { id: rawU, name: rawU } : { ...rawU };
+      const dbU = this.getMasterDbEntry(uObj.id || uObj.baseEntryId || uObj.name, 'Utterance');
+      const mergedU = dbU ? {
+        ...dbU,
+        ...uObj,
+        blocks: Array.isArray(uObj.blocks) && uObj.blocks.length > 0 ? uObj.blocks : dbU.blocks
+      } : uObj;
+      const targetCR = Math.max(1, Number(mergedU.targetCR ?? w.truenaming?.targetCR ?? totalLevel ?? 1) || 1);
+      const castsToday = Math.max(0, Number(mergedU.castsToday ?? mergedU.usesToday ?? 0) || 0);
+      // ToM p.195 Law of Resistance: Truespeak DC = 15 + (2 * CR) + (2 * castsToday)
+      const lawOfResistanceDC = 15 + (2 * targetCR) + (2 * castsToday);
+      const v3Eval = this.evaluateV3Entry(
+        { ...mergedU, schemaVersion: 3 },
+        { character: w, level: totalLevel || 1, cl: truenamerLevel || 1, targetCR, castsToday }
+      );
+      return {
+        ...mergedU,
+        id: mergedU.id || mergedU.name,
+        name: mergedU.name || mergedU.id,
+        level: Number(mergedU.level ?? mergedU.utteranceLevel ?? 1) || 1,
+        targetCR,
+        castsToday,
+        dc: lawOfResistanceDC,
+        lawOfResistanceDC,
+        modifiers: v3Eval.modifiers,
+        damageParts: v3Eval.damageParts,
+        tacticalBadges: v3Eval.tacticalBadges
+      };
+    });
+
+    // 6. ACTIVE DISCIPLINES DETECTION
+    // Canonical order: ['spontaneous','prepared','divine','martial','psionics','incarnum','pact','shadow','truenaming']
+    const discSet = new Set();
+    const castTypeLow = String(w.spellcasting?.castType || w.spellcasting?.type || '').toLowerCase();
+    const hasSpontaneousClass = getClassLvl(/\b(?:sorcerer|bard|warmage|dread\s*necromancer|beguiler|duskblade|favored\s*soul|spirit\s*shaman|dragon\s*shaman|spellthief|hexblade)\b/) > 0;
+    const hasPreparedArcaneClass = getClassLvl(/\b(?:wizard|wu\s*jen|archivist|artificer|mage)\b/) > 0;
+    const hasDivineClass = getClassLvl(/\b(?:cleric|druid|paladin|ranger|favored\s*soul|spirit\s*shaman|archivist|shugenja|healer|adept|blackguard)\b/) > 0;
+    const hasMartialClass = getClassLvl(/\b(?:warblade|swordsage|crusader|bloodclaw\s*master|bloodstorm\s*blade|deepstone\s*sentinel|eternal\s*blade|jade\s*phoenix\s*mage|master\s*of\s*nine|ruby\s*knight\s*vindicator|shadow\s*sun\s*ninja)\b/) > 0;
+
+    if (hasSpontaneousClass || castTypeLow.includes('spontaneous') || rawSpells.some(s => s && /spontaneous/i.test(String(s.castType || s.prepMode || '')))) {
+      discSet.add('spontaneous');
+    }
+    if (hasPreparedArcaneClass || castTypeLow.includes('prepared') || (rawSpells.length > 0 && !hasSpontaneousClass && !hasDivineClass)) {
+      discSet.add('prepared');
+    }
+    if (hasDivineClass || castTypeLow.includes('divine') || (Array.isArray(w.domains) && w.domains.length > 0) || rawSpells.some(s => s && /divine|cleric|druid|paladin|ranger/i.test(String(s.tradition || s.sourceClass || s.type || '')))) {
+      discSet.add('divine');
+    }
+    if (hasMartialClass || rawManeuvers.length > 0 || hasFeatMatch(/\bmartial\s*(?:study|stance)\b/)) {
+      discSet.add('martial');
+    }
+    if (totalPsionicClassLvl > 0 || soulknifeLvl > 0 || rawPowers.length > 0 || maxPP > 0 || hasFeatMatch(/\b(?:wild|hidden)\s*talent\b/)) {
+      discSet.add('psionics');
+    }
+    if (totalMeldshaperClassLvl > 0 || rawSoulmelds.length > 0 || essentiaPool > 0 || hasFeatMatch(/\b(?:shape\s*soulmeld|open\s*(?:least|lesser|greater)\s*chakra|bonus\s*essentia)\b/)) {
+      discSet.add('incarnum');
+    }
+    if (binderClassLvl > 0 || rawVestiges.length > 0 || hasFeatMatch(/\b(?:bind\s*vestige|improved\s*bind\s*vestige)\b/)) {
+      discSet.add('pact');
+    }
+    if (shadowcasterLvl > 0 || rawMysteries.length > 0 || hasFeatMatch(/\b(?:shadow\s*cast|path\s*focus|favored\s*mystery)\b/)) {
+      discSet.add('shadow');
+    }
+    if (truenamerClassLvl > 0 || rawUtterances.length > 0 || hasFeatMatch(/\b(?:minor\s*utterance|utterance\s*focus)\b/)) {
+      discSet.add('truenaming');
+    }
+
+    // Check dmBoons / specialAbilities for granted spells/powers/maneuvers
+    const boonsAndAbilities = [
+      ...(Array.isArray(w.dmBoons) ? w.dmBoons : []),
+      ...(Array.isArray(w.specialAbilities) ? w.specialAbilities : [])
+    ];
+    boonsAndAbilities.forEach(b => {
+      if (!b || typeof b !== 'object' || b.active === false) return;
+      const bCat = String(b.category || b.type || b.discipline || '').toLowerCase();
+      if (bCat.includes('psionic') || b.grantedPower) discSet.add('psionics');
+      if (bCat.includes('incarnum') || bCat.includes('soulmeld')) discSet.add('incarnum');
+      if (bCat.includes('vestige') || bCat.includes('pact')) discSet.add('pact');
+      if (bCat.includes('shadow') || bCat.includes('mystery')) discSet.add('shadow');
+      if (bCat.includes('truename') || bCat.includes('utterance')) discSet.add('truenaming');
+      if (bCat.includes('martial') || bCat.includes('maneuver')) discSet.add('martial');
+      if (b.grantedSpell || bCat.includes('spell-like')) discSet.add('spontaneous');
+    });
+
+    const canonicalOrder = ['spontaneous', 'prepared', 'divine', 'martial', 'psionics', 'incarnum', 'pact', 'shadow', 'truenaming'];
+    const activeDisciplines = canonicalOrder.filter(d => discSet.has(d));
+
+    return {
+      totalLevel,
+      activeDisciplines,
+      psionics: {
+        manifesterLevel,
+        basePP,
+        bonusPP,
+        maxPP,
+        currentPP,
+        powers: evaluatedPowers
+      },
+      incarnum: {
+        meldshaperLevel,
+        essentiaPool,
+        essentiaCapacity,
+        investedEssentia,
+        availableEssentia,
+        maxSoulmelds,
+        maxChakraBinds,
+        soulmelds: evaluatedSoulmelds
+      },
+      pact: {
+        binderLevel,
+        effectiveBinderLevel,
+        maxVestiges,
+        maxVestigeLevel,
+        vestiges: evaluatedVestiges
+      },
+      shadow: {
+        casterLevel: shadowCasterLevel,
+        mysteries: evaluatedMysteries
+      },
+      truenaming: {
+        truenamerLevel,
+        truespeakBonus,
+        utterances: evaluatedUtterances
+      }
+    };
+  },
+
   _fastClonePlain(val) {
     if (val === null || typeof val !== 'object') return val;
     if (Array.isArray(val)) {
@@ -10554,6 +12692,7 @@ const RuleEngine = {
     const inventoryView = this.deriveInventoryView(working);
     const spellsView = this.deriveSpellsView(working, workingDb);
     const progressionView = this.deriveProgressionView(working, workingDb);
+    const subsystemsView = this.deriveSubsystemsView(working, workingDb);
     const specialAttacks = this.deriveSpecialAttacks(working, working.legoEvaluation, workingDb);
     const activeBuffsStrip = this.deriveActiveBuffsStrip(working);
     const skillsBonusMap = this.deriveSkillsBonusMap(working);
@@ -10638,7 +12777,8 @@ const RuleEngine = {
           land: working.effectiveSpeed || working.baseSpeed || 30,
           swim: working.swimSpeed || 0,
           climb: working.climbSpeed || 0,
-          fly: working.flySpeed || 0
+          fly: working.flySpeed || 0,
+          burrow: working.burrowSpeed || 0
         },
         weapons: evaluatedWeapons,
         modes: working.evaluatedModes || [],
@@ -10675,6 +12815,7 @@ const RuleEngine = {
         spellsByLevelView: spellsView.spellsByLevelView,
         maneuversView: spellsView.maneuversView
       },
+      subsystems: subsystemsView,
       progression: progressionView,
       skillsBonusMap,
       session: workingSession,
