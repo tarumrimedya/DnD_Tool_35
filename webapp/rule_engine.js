@@ -263,25 +263,52 @@ const RuleEngine = {
     const ecl = Math.max(level, Number(ch.ecl) || (level + (Number(ch.levelAdjustment) || 0)));
     const bab = Number(ch.bab) || 0;
 
-    const classLevels = Object.assign({}, ch.classLevels || {});
+    const classLevels = {};
+    if (ch.classLevels && typeof ch.classLevels === 'object') {
+      Object.entries(ch.classLevels).forEach(([k, v]) => {
+        const lk = String(k).toLowerCase().trim();
+        classLevels[lk] = Number(v) || 0;
+        classLevels[lk.replace(/[\s-]+/g, '_')] = Number(v) || 0;
+      });
+    }
     if (activeProg.length > 0) {
       activeProg.forEach(r => {
-        const cKey = String(r.className || r.class || '').toLowerCase().trim().replace(/\s+/g, '_');
-        if (cKey) classLevels[cKey] = (classLevels[cKey] || 0) + 1;
+        const rawC = String(r.className || r.class || '').toLowerCase().trim();
+        const cKey = rawC.replace(/[\s-]+/g, '_');
+        if (cKey) {
+          classLevels[cKey] = (classLevels[cKey] || 0) + 1;
+          const hyphKey = rawC.replace(/\s+/g, '-');
+          if (hyphKey !== cKey) classLevels[hyphKey] = classLevels[cKey];
+        }
       });
     } else if (Array.isArray(ch.classes)) {
       ch.classes.forEach(c => {
-        const cKey = String(c.name || c.className || '').toLowerCase().trim().replace(/\s+/g, '_');
-        if (cKey) classLevels[cKey] = Number(c.level) || 1;
+        const rawC = String(c.name || c.className || '').toLowerCase().trim();
+        const cKey = rawC.replace(/[\s-]+/g, '_');
+        if (cKey) {
+          classLevels[cKey] = Number(c.level) || 1;
+          const hyphKey = rawC.replace(/\s+/g, '-');
+          if (hyphKey !== cKey) classLevels[hyphKey] = classLevels[cKey];
+        }
       });
     }
 
+    const nonabSet = new Set(
+      []
+        .concat(Array.isArray(ch.nonabilities) ? ch.nonabilities : [])
+        .concat(Array.isArray(ch.monster?.nonabilities) ? ch.monster.nonabilities : [])
+        .map(k => String(k || '').toLowerCase().trim())
+    );
+
     const getMod = (key) => {
+      if (nonabSet.has(key)) return 0;
       if (ch.evaluatedAbilities && ch.evaluatedAbilities[key] && typeof ch.evaluatedAbilities[key].mod === 'number') {
         return ch.evaluatedAbilities[key].mod;
       }
       const rawAbi = ch.abilities && ch.abilities[key];
+      if (rawAbi === null) return 0;
       if (rawAbi && typeof rawAbi === 'object') {
+        if (rawAbi.nonability) return 0;
         if (typeof rawAbi.mod === 'number') return rawAbi.mod;
         const tot = Number(rawAbi.total ?? rawAbi.score ?? rawAbi.base ?? 10);
         const tmp = Number(rawAbi.temp) || 0;
@@ -298,6 +325,14 @@ const RuleEngine = {
     const castsToday = Number(extra.castsToday ?? extra.usesToday ?? 0) || 0;
     const targetCR = Number(extra.targetCR ?? ch.truenaming?.targetCR ?? level) || 1;
     const classLevel = Number(extra.classLevel ?? level) || 1;
+    const soulmeldsCount = Number(
+      extra.soulmeldsCount
+      ?? (Array.isArray(ch.incarnum?.soulmelds) ? ch.incarnum.soulmelds.filter(s => s && s.shaped !== false).length : undefined)
+      ?? (Array.isArray(ch.soulmelds) ? ch.soulmelds.length : undefined)
+      ?? ch.soulmeldsCount
+      ?? 0
+    ) || 0;
+    const baseSlots = Number(extra.baseSlots ?? 0) || 0;
 
     return Object.assign({
       character: ch,
@@ -318,6 +353,8 @@ const RuleEngine = {
       augmentPP,
       castsToday,
       targetCR,
+      soulmeldsCount,
+      baseSlots,
       strMod: getMod('str'),
       dexMod: getMod('dex'),
       conMod: getMod('con'),
@@ -569,9 +606,12 @@ const RuleEngine = {
       .replace(/@effectiveBinderLevel\b/gi, String(ebl))
       .replace(/@ecl\b/gi, String(ecl))
       .replace(/@classLevel\b/gi, String(classLevel))
+      .replace(/@hd\b/gi, String(Number(context.hd ?? level) || level))
       .replace(/@level\b/gi, String(level))
       .replace(/@bab\b/gi, String(bab))
       .replace(/@essentia\b/gi, String(essentia))
+      .replace(/@soulmeldsCount\b/gi, String(Number(context.soulmeldsCount ?? 0) || 0))
+      .replace(/@baseSlots\b/gi, String(Number(context.baseSlots ?? 0) || 0))
       .replace(/@augmentPP\b/gi, String(augmentPP))
       .replace(/@castsToday\b/gi, String(castsToday))
       .replace(/@targetCR\b/gi, String(targetCR))
@@ -583,10 +623,13 @@ const RuleEngine = {
       .replace(/@intMod\b/gi, String(Number(context.intMod) || 0))
       .replace(/@wisMod\b/gi, String(Number(context.wisMod) || 0))
       .replace(/@chaMod\b/gi, String(Number(context.chaMod) || 0))
-      .replace(/@ability\.(str|dex|con|int|wis|cha)\.mod\b/gi, (_, a) => String(Number(context[`${a.toLowerCase()}Mod`]) || 0))
-      .replace(/@(?:classes|class)\.([a-z0-9_]+)\.level\b/gi, (_, cName) => {
+      .replace(/@(?:ability|abilities)\.(str|dex|con|int|wis|cha)\.mod\b/gi, (_, a) => String(Number(context[`${a.toLowerCase()}Mod`]) || 0))
+      .replace(/@(?:classes|class)\.([a-z0-9_-]+)\.level\b/gi, (_, cName) => {
         const key = cName.toLowerCase();
-        const cLvl = (context.classLevels && typeof context.classLevels[key] === 'number') ? context.classLevels[key] : 0;
+        const altKey = key.replace(/-/g, '_');
+        const cLvl = (context.classLevels && typeof context.classLevels[key] === 'number')
+          ? context.classLevels[key]
+          : ((context.classLevels && typeof context.classLevels[altKey] === 'number') ? context.classLevels[altKey] : 0);
         return String(cLvl);
       })
       .replace(/@input\.([a-z0-9_]+)\b/gi, (_, k) => {
@@ -972,11 +1015,19 @@ const RuleEngine = {
     if (!cond) return true;
     const low = cond.toLowerCase();
 
-    // 1. Incarnum Chakra Bind check (e.g. "boundChakra === 'hands'", "Chakra Bind (Hands)")
+    // 1. Incarnum Chakra Bind check (e.g. "boundChakra === 'hands'", "Chakra Bind (Hands)", "Hands Chakra")
     const boundChakra = String(evalCtx.boundChakra ?? entry?.boundChakra ?? entry?.chakraBind ?? '').trim().toLowerCase();
-    const chakraMatch = low.match(/boundchakra\s*===?\s*['"]?([a-z]+)['"]?/i) || low.match(/chakra\s+bind\s*\(\s*([a-z]+)\s*\)/i);
+    const chakraMatch = low.match(/boundchakra\s*===?\s*['"]?([a-z]+)['"]?/i)
+      || low.match(/chakra\s+bind\s*\(\s*([a-z]+)\s*\)/i)
+      || low.match(/^(crown|feet|hands|arms|brow|shoulders|throat|waist|heart|soul|totem)\s+chakra$/i);
     if (chakraMatch) {
       return boundChakra === chakraMatch[1].toLowerCase();
+    }
+
+    // 1b. Explicit `toggle:<key>` string prefix from Rule Crafter
+    if (low.startsWith('toggle:')) {
+      const tKey = cond.slice(7).trim();
+      return this.evaluatePredicate({ toggle: tKey }, ch, evalCtx);
     }
 
     // 2. Shadow Magic / Mystery Tier check (e.g. "levelTier === 'Apprentice'")
@@ -1079,11 +1130,23 @@ const RuleEngine = {
       return lhs === rhs;
     }
 
+    // 6b. Natural-language level gates in V3 splat branches (e.g. "Class level 6+", "Shadowcaster Lvl 7–12", "Shadowcaster Lvl 14+")
+    const lvlRangeMatch = cond.match(/\b(?:class\s+level|lvl|level)\s+(\d+)\s*[–-]\s*(\d+)\b/i);
+    if (lvlRangeMatch) {
+      const lv = Number(evalCtx.classLevel || evalCtx.level || ch.level || 1);
+      return lv >= Number(lvlRangeMatch[1]) && lv <= Number(lvlRangeMatch[2]);
+    }
+    const lvlPlusMatch = cond.match(/^(?:[a-z]+\s+)?(?:class\s+level|lvl|level)\s+(\d+)\+/i);
+    if (lvlPlusMatch) {
+      const lv = Number(evalCtx.classLevel || evalCtx.level || ch.level || 1);
+      return lv >= Number(lvlPlusMatch[1]);
+    }
+
     // 7. Situational combat/save notes (`vs. Evil`, `vs. Fear`, `against traps`) vs descriptive corpus notes
     if (/^(?:vs\.?\b|against\b|to\s+oppose\b|on\s+saves?\s+against\b)/i.test(cond)) {
       return 'situational';
     }
-    return true;
+    return 'qualifier';
   },
 
   /**
@@ -1157,26 +1220,45 @@ const RuleEngine = {
       })
     });
 
-    const modifiers = Array.isArray(out.modifiers) ? out.modifiers.map(m => Object.assign({}, m)) : [];
-    const damageParts = Array.isArray(out.damageParts) ? out.damageParts.map(d => Object.assign({}, d)) : [];
-    const defenses = Array.isArray(out.defenses) ? out.defenses.map(d => Object.assign({}, d)) : [];
-    const resources = Array.isArray(out.resources) ? out.resources.map(r => Object.assign({}, r)) : [];
-    const grants = Array.isArray(out.grants) ? out.grants.map(g => Object.assign({}, g)) : [];
+    const getSeedArr = (prop, seedProp) => {
+      if (baseEntry._v3Evaluated) {
+        return Array.isArray(baseEntry[seedProp]) ? baseEntry[seedProp].map(x => Object.assign({}, x)) : [];
+      }
+      if (Object.prototype.propertyIsEnumerable.call(out, prop) && Array.isArray(out[prop])) {
+        return out[prop].map(x => Object.assign({}, x));
+      }
+      return [];
+    };
+
+    const seedModifiers = getSeedArr('modifiers', '_seedModifiers');
+    const seedDamageParts = getSeedArr('damageParts', '_seedDamageParts');
+    const seedDefenses = getSeedArr('defenses', '_seedDefenses');
+    const seedResources = getSeedArr('resources', '_seedResources');
+    const seedGrants = getSeedArr('grants', '_seedGrants');
+
+    const modifiers = seedModifiers.map(m => Object.assign({}, m));
+    const damageParts = seedDamageParts.map(d => Object.assign({}, d));
+    const defenses = seedDefenses.map(d => Object.assign({}, d));
+    const resources = seedResources.map(r => Object.assign({}, r));
+    const grants = seedGrants.map(g => Object.assign({}, g));
     const ruleFlags = Object.assign({}, out.ruleFlags || {});
     const tacticalBadges = this.formatRuleFlagBadges(ruleFlags, out);
     const addBadge = (b) => {
       if (b && !tacticalBadges.includes(b)) tacticalBadges.push(b);
     };
 
-    // Map V3 Weapon / Armor / Race / Chassis sub-objects onto standard fields
+    // Map V3 Weapon / Armor / Race / Chassis / Monster sub-objects onto standard fields
     if (out.weapon && typeof out.weapon === 'object') {
       const w = out.weapon;
       if (w.damageDice && !out.dice) out.dice = w.damageDice;
       if (w.dmgType && !out.dmgType) out.dmgType = w.dmgType;
-      if (w.critRange && !out.critRange) out.critRange = w.critRange;
-      if (w.critMult && !out.critMult) out.critMult = w.critMult;
+      const wCritRange = w.baseCritRange ?? w.critRange;
+      const wCritMult = w.critMultiplier ?? w.critMult;
+      const wProf = w.category ?? w.proficiency;
+      if (wCritRange && !out.critRange) out.critRange = wCritRange;
+      if (wCritMult && !out.critMult) out.critMult = wCritMult;
       if (w.handedness && !out.handedness) out.handedness = w.handedness;
-      if (w.proficiency && !out.proficiency) out.proficiency = w.proficiency;
+      if (wProf && !out.proficiency) out.proficiency = wProf;
       if (w.rangeIncrement && !out.range) out.range = w.rangeIncrement;
       if (w.enhancementBonus && !out.enhancementBonus) out.enhancementBonus = Number(w.enhancementBonus) || 0;
       if (w.damageDice && damageParts.length === 0) {
@@ -1194,7 +1276,8 @@ const RuleEngine = {
       const a = out.armor;
       const aType = String(a.armorType || out.category || '').toLowerCase();
       const isShield = aType === 'shield' || aType.includes('buckler') || String(out.type || '').toLowerCase() === 'shield';
-      const baseBonus = Number(a.acBonus || 0) + (Number(a.enhancementBonus) || 0);
+      const rawArmorBonus = a.armorBonus ?? a.acBonus ?? 0;
+      const baseBonus = Number(rawArmorBonus || 0) + (Number(a.enhancementBonus) || 0);
       if (baseBonus > 0) {
         const targetKey = isShield ? 'ac.shield' : 'ac.armor';
         const bonusType = isShield ? 'Shield' : 'Armor';
@@ -1203,8 +1286,11 @@ const RuleEngine = {
         }
       }
       if (a.maxDex !== undefined && a.maxDex !== null && out.maxDex === undefined) out.maxDex = Number(a.maxDex);
-      if (a.acp !== undefined && a.acp !== null && out.checkPenalty === undefined) out.checkPenalty = Number(a.acp);
-      if (a.asf !== undefined && a.asf !== null && out.spellFailure === undefined) out.spellFailure = Number(a.asf);
+      const rawAcp = a.armorCheckPenalty ?? a.acp;
+      const rawAsf = a.arcaneSpellFailure ?? a.asf;
+      if (rawAcp !== undefined && rawAcp !== null && out.checkPenalty === undefined) out.checkPenalty = Number(rawAcp);
+      if (rawAsf !== undefined && rawAsf !== null && out.spellFailure === undefined) out.spellFailure = Number(rawAsf);
+      if (a.speed !== undefined && a.speed !== null && out.speed30 === undefined) out.speed30 = Number(a.speed);
       if (a.armorType && !out.armorCategory) out.armorCategory = a.armorType;
     }
     if (out.race && typeof out.race === 'object') {
@@ -1212,6 +1298,21 @@ const RuleEngine = {
       if (out.race.baseSpeed && !out.baseSpeed) out.baseSpeed = Number(out.race.baseSpeed) || 30;
       if (out.race.levelAdjustment !== undefined && out.levelAdjustment === undefined) {
         out.levelAdjustment = Number(out.race.levelAdjustment) || 0;
+      }
+    }
+    if (out.monster && typeof out.monster === 'object') {
+      const m = out.monster;
+      if (m.size && !out.size) out.size = m.size;
+      if (m.speeds && m.speeds.land !== undefined && !out.baseSpeed) out.baseSpeed = Number(m.speeds.land) || 0;
+      if (m.levelAdjustment !== undefined && m.levelAdjustment !== null && out.levelAdjustment === undefined) {
+        out.levelAdjustment = Number(m.levelAdjustment) || 0;
+      }
+      if (Array.isArray(m.nonabilities) && !Array.isArray(out.nonabilities)) {
+        out.nonabilities = m.nonabilities.slice();
+      }
+      const natAc = Number(m.ac?.naturalArmor || 0) || 0;
+      if (natAc > 0 && !modifiers.some(x => x && x.target === 'ac.natural')) {
+        modifiers.push({ target: 'ac.natural', value: natAc, type: 'Natural Armor', condition: null, source: out.name || 'Natural Armor' });
       }
     }
     if (out.chassis && typeof out.chassis === 'object') {
@@ -1356,8 +1457,30 @@ const RuleEngine = {
         if (!b || typeof b !== 'object') return;
         const bType = String(b.type || 'stat').toLowerCase().trim();
 
-        // 1. Conditional Branch (`when` / `while`)
+        // 1. Conditional Branch (`when` / `while`, including Rule Crafter `branches[]`)
         if (bType === 'when' || bType === 'while') {
+          if (Array.isArray(b.branches) && b.branches.length > 0) {
+            let matchedAny = false;
+            b.branches.forEach(br => {
+              if (!br || typeof br !== 'object' || matchedAny) return;
+              const brKind = String(br.condKind || 'toggle').toLowerCase().trim();
+              const brCond = br.condText !== undefined ? br.condText : br.condition;
+              const brChildren = Array.isArray(br.effects) ? br.effects : (Array.isArray(br.blocks) ? br.blocks : (Array.isArray(br.then) ? br.then : []));
+              if (brKind === 'else') {
+                matchedAny = true;
+                walkBlocks(brChildren, branchMeta);
+                return;
+              }
+              const brRes = this.evaluateV3BranchCondition(brCond, bType, curCtx, ch, out);
+              if (brRes !== false) {
+                matchedAny = true;
+                const nextSituational = (brRes === 'situational' || brKind === 'note') ? String(brCond || '') : situationalCond;
+                const nextLabel = ((brRes === true || brRes === 'qualifier') && brCond && typeof brCond === 'string' && brKind !== 'note') ? brCond : sourceLabel;
+                walkBlocks(brChildren, { ctx: curCtx, situationalCond: nextSituational, sourceLabel: nextLabel });
+              }
+            });
+            return;
+          }
           const condRes = this.evaluateV3BranchCondition(b.condition || b.when || b.while, bType, curCtx, ch, out);
           if (condRes === false) {
             if (Array.isArray(b.else) && b.else.length > 0) {
@@ -1366,7 +1489,7 @@ const RuleEngine = {
             return;
           }
           const nextSituational = condRes === 'situational' ? String(b.condition || '') : situationalCond;
-          const nextLabel = (condRes === true && b.condition && typeof b.condition === 'string') ? b.condition : sourceLabel;
+          const nextLabel = ((condRes === true || condRes === 'qualifier') && b.condition && typeof b.condition === 'string') ? b.condition : sourceLabel;
           const children = Array.isArray(b.then) ? b.then : (Array.isArray(b.blocks) ? b.blocks : (Array.isArray(b.children) ? b.children : []));
           walkBlocks(children, { ctx: curCtx, situationalCond: nextSituational, sourceLabel: nextLabel });
           return;
@@ -1446,7 +1569,8 @@ const RuleEngine = {
         // 4. Stat Block (`stat`)
         if (bType === 'stat') {
           let InlineCondResult = true;
-          if (b.condition) {
+          const isObjectPredicate = Boolean(b.condition && typeof b.condition === 'object');
+          if (b.condition && !isObjectPredicate) {
             InlineCondResult = this.evaluateV3BranchCondition(b.condition, 'when', curCtx, ch, out);
             if (InlineCondResult === false) return;
           }
@@ -1455,8 +1579,10 @@ const RuleEngine = {
             : (b.target ? [b.target] : ['ac.all']);
           const bonusType = this.normalizeV3BonusType(b.bonusType || b.btype || 'Untyped');
           const { value, formula, cap } = buildStatFormulaAndValue(b, curCtx);
-          const effSituational = InlineCondResult === 'situational' ? String(b.condition) : situationalCond;
-          const effNote = (InlineCondResult === true && b.condition && typeof b.condition === 'string') ? b.condition : sourceLabel;
+          const effSituational = isObjectPredicate
+            ? Object.assign({}, b.condition)
+            : ((InlineCondResult === 'situational' || InlineCondResult === 'qualifier') ? String(b.condition) : situationalCond);
+          const effNote = (!isObjectPredicate && InlineCondResult === true && b.condition && typeof b.condition === 'string') ? b.condition : sourceLabel;
 
           rawTargets.forEach(rawT => {
             const canonT = this.canonicalizeV3Target(rawT);
@@ -1566,6 +1692,10 @@ const RuleEngine = {
           }
           const rollKind = String(b.kind || 'Damage').trim();
           if (rollKind === 'Temp HP') {
+            if (b.tempHpFormula !== undefined && b.tempHpFormula !== null && String(b.tempHpFormula).trim() !== '') {
+              out.tempHpFormula = String(b.tempHpFormula).trim();
+              return;
+            }
             const cnt = Number(b.count ?? 0) || 0;
             const die = String(b.die || 'flat');
             const dicePart = die === 'flat' ? (cnt > 0 ? String(cnt) : '') : `${cnt || 1}${die.replace(/^\d+/, '')}`;
@@ -1586,13 +1716,14 @@ const RuleEngine = {
             pushModifier({ op: 'add', target: 'fastHealing', value: fhVal, type: 'Untyped', source: out.name || 'Fast Healing' });
             return;
           }
+          const hasExplicitFormulaDice = Boolean(b.dice && /@/.test(String(b.dice)) && !(ctx && ctx.evaluateDynamicDice === true));
           let diceStr = b.dice
             ? String(b.dice).trim()
             : (b.die === 'flat' ? null : ((b.count || b.die) ? `${b.count || 1}${String(b.die || 'd6').replace(/^\d+/, '')}` : ((b.n || b.d) ? `${b.n || 1}d${b.d || 6}` : '1d6')));
           let flatBonus = b.bonus !== undefined
             ? Number(this.evaluateFormula(b.bonus, curCtx)) || 0
             : (b.die === 'flat' ? (Number(b.count) || 0) : (Number(b.flat || 0) || 0));
-          if (b.scaling === 'perCL') {
+          if (b.scaling === 'perCL' && !hasExplicitFormulaDice) {
             const start = Number(b.start ?? 1) || 1;
             const per = Math.max(1, Number(b.per ?? 1) || 1);
             const maxSteps = Math.max(1, Number(b.max ?? 10) || 10);
@@ -1608,7 +1739,7 @@ const RuleEngine = {
             }
           }
           const dmgType = rollKind === 'Healing' ? 'Positive' : (b.dmgType || b.damageType || 'Untyped');
-          damageParts.push({
+          const dpObj = {
             dice: diceStr,
             bonus: flatBonus,
             type: dmgType,
@@ -1617,8 +1748,11 @@ const RuleEngine = {
             touchAttack: Boolean(b.touch || b.isTouch),
             saveType: b.saveType || b.save || null,
             dcFormula: b.dc || b.dcFormula || null,
-            source: out.name || out.id || 'V3 Entry'
-          });
+            source: b.source || out.name || out.id || 'V3 Entry'
+          };
+          if (b.critScaleByMult) dpObj.critScaleByMult = true;
+          if (b.condition || situationalCond) dpObj.condition = b.condition || situationalCond;
+          damageParts.push(dpObj);
           if (b.touch || b.isTouch) addBadge('Touch Attack');
           return;
         }
@@ -1760,7 +1894,7 @@ const RuleEngine = {
           return;
         }
 
-        // 7. Effect Block (`effect`: sense, movement, condition, summon, grant, or text/carrier)
+        // 7. Effect Block (`effect`: sense, movement, condition, summon, grant, bonusSlot, or text/carrier)
         if (bType === 'effect') {
           if (b.text) addBadge(String(b.text).trim());
           if (b.carrier && typeof b.carrier === 'object') {
@@ -1770,9 +1904,24 @@ const RuleEngine = {
             const cEff = c.effect || c.riderEffect || c.condition || 'Rider Effect';
             addBadge(`Carrier: ${cSave ? `${cSave}${cDc ? ` DC ${cDc}` : ''} — ` : ''}${cEff}`);
           }
-          if (!b.effType && !b.kind && (b.text || b.carrier)) return;
-          const effKind = String(b.effType || b.kind || 'sense').toLowerCase().trim();
+          const rawEffKind = b.effectKind || b.effType || b.kind;
+          if (!rawEffKind && (b.text || b.carrier)) return;
+          const effKind = String(rawEffKind || 'sense').toLowerCase().trim();
           const effVal = Number(b.val ?? b.value ?? b.range ?? 0) || 0;
+          if (effKind === 'bonusslot' || effKind === 'bonus_slot') {
+            const slotLvl = Number(b.slotLevel ?? 1) || 1;
+            const isDoubler = b.count === 'double';
+            const slotAdd = isDoubler ? (Number(curCtx.baseSlots) || 0) : (Number(b.count) || 1);
+            pushModifier({
+              op: 'add',
+              target: `spellSlot.level${slotLvl}`,
+              value: slotAdd,
+              formula: isDoubler ? '@baseSlots' : null,
+              type: 'Untyped',
+              source: out.name || 'Bonus Spell Slot'
+            });
+            return;
+          }
           if (effKind === 'sense') {
             const senseName = b.sense || b.target || 'Darkvision';
             grants.push({ grantType: 'sense', targetId: senseName, value: effVal || 60 });
@@ -1822,11 +1971,11 @@ const RuleEngine = {
       });
     };
 
-    // Walk top-level V3 `blocks` or `effects`
+    // Walk top-level V3 `blocks` or `effects` (skip if already materialized by ItemAssembler `_assembled`)
     const topBlocks = Array.isArray(out.blocks) && out.blocks.length > 0
       ? out.blocks
       : (Array.isArray(out.effects) ? out.effects : []);
-    if (topBlocks.length > 0) {
+    if (topBlocks.length > 0 && !out._assembled) {
       walkBlocks(topBlocks, { ctx: localCtx });
     }
 
@@ -1929,7 +2078,14 @@ const RuleEngine = {
     out.grants = grants;
     out.ruleFlags = ruleFlags;
     out.tacticalBadges = tacticalBadges;
-    out._v3Evaluated = true;
+    Object.defineProperties(out, {
+      _v3Evaluated: { value: true, enumerable: false, configurable: true, writable: true },
+      _seedModifiers: { value: seedModifiers, enumerable: false, configurable: true, writable: true },
+      _seedDamageParts: { value: seedDamageParts, enumerable: false, configurable: true, writable: true },
+      _seedDefenses: { value: seedDefenses, enumerable: false, configurable: true, writable: true },
+      _seedResources: { value: seedResources, enumerable: false, configurable: true, writable: true },
+      _seedGrants: { value: seedGrants, enumerable: false, configurable: true, writable: true }
+    });
     return out;
   },
 
@@ -1953,7 +2109,7 @@ const RuleEngine = {
     const isV3 = working.schemaVersion === 3
       || (Array.isArray(working.blocks) && working.blocks.length > 0)
       || (Array.isArray(working.effects) && working.effects.length > 0)
-      || Boolean(working.weapon || working.armor || working.chassis || working.race)
+      || Boolean(working.weapon || working.armor || working.chassis || working.race || working.monster)
       || (Array.isArray(working.modes) && working.modes.some(m => m && (Array.isArray(m.blocks) || Array.isArray(m.effects))))
       || Boolean(working.boundChakra && working.chakraBinds);
     if (isV3) {
@@ -2004,11 +2160,21 @@ const RuleEngine = {
       (src.schemaVersion === 3 ||
         (Array.isArray(src.blocks) && src.blocks.length > 0) ||
         (Array.isArray(src.effects) && src.effects.length > 0) ||
-        Boolean(src.weapon || src.armor || src.chassis || src.race))
+        Boolean(src.weapon || src.armor || src.chassis || src.race || src.monster))
     ) {
       src = this.evaluateV3Entry(src);
     }
     const out = Object.assign({}, src);
+    if (src._v3Evaluated) {
+      Object.defineProperties(out, {
+        _v3Evaluated: { value: true, enumerable: false, configurable: true, writable: true },
+        _seedModifiers: { value: src._seedModifiers || [], enumerable: false, configurable: true, writable: true },
+        _seedDamageParts: { value: src._seedDamageParts || [], enumerable: false, configurable: true, writable: true },
+        _seedDefenses: { value: src._seedDefenses || [], enumerable: false, configurable: true, writable: true },
+        _seedResources: { value: src._seedResources || [], enumerable: false, configurable: true, writable: true },
+        _seedGrants: { value: src._seedGrants || [], enumerable: false, configurable: true, writable: true }
+      });
+    }
     if (out.schemaVersion !== 3) out.schemaVersion = 2;
     out.modifiers = Array.isArray(out.modifiers) ? out.modifiers.map(m => Object.assign({ op: 'add', type: 'Untyped', condition: null }, m)) : [];
     out.damageParts = Array.isArray(out.damageParts) ? out.damageParts : [];
@@ -5331,8 +5497,29 @@ const RuleEngine = {
       if (val === 0) return;
 
       let matches = false;
+      const condLower = typeof mod.condition === 'string' ? mod.condition.trim().toLowerCase() : '';
       if (target === 'casterlevel' || target === 'casterlevel.all') {
-        matches = true;
+        if (!condLower) {
+          matches = true;
+        } else if (/\bchaos\b|\bchaotic\b/.test(condLower)) {
+          matches = descriptorSet.has('chaotic') || descriptorSet.has('chaos');
+        } else if (/\blaw\b|\blawful\b/.test(condLower)) {
+          matches = descriptorSet.has('lawful') || descriptorSet.has('law');
+        } else if (/\bgood\b/.test(condLower)) {
+          matches = descriptorSet.has('good');
+        } else if (/\bevil\b/.test(condLower)) {
+          matches = descriptorSet.has('evil');
+        } else if (/\bhealing\b/.test(condLower)) {
+          matches = effectiveSubschool.includes('healing') || descriptorSet.has('healing');
+        } else if (/\bcreation\b/.test(condLower)) {
+          matches = effectiveSubschool.includes('creation') || descriptorSet.has('creation');
+        } else if (/\bdivination\b|\babjuration\b|\bconjuration\b|\benchantment\b|\bevocation\b|\billusion\b|\bnecromancy\b|\btransmutation\b/.test(condLower)) {
+          const schMatch = condLower.match(/\b(divination|abjuration|conjuration|enchantment|evocation|illusion|necromancy|transmutation)\b/);
+          matches = Boolean(schMatch && schoolStr.includes(schMatch[1]));
+        } else {
+          const wordTokens = condLower.replace(/\bspells?\b/g, '').trim().split(/[\s,()/]+/).filter(Boolean);
+          matches = wordTokens.length > 0 && wordTokens.some(tok => descriptorSet.has(tok) || effectiveSubschool.includes(tok) || schoolStr.includes(tok));
+        }
       } else if (target === 'casterlevel.chaotic' || target === 'casterlevel.chaos') {
         matches = descriptorSet.has('chaotic') || descriptorSet.has('chaos');
       } else if (target === 'casterlevel.lawful' || target === 'casterlevel.law') {
@@ -5448,7 +5635,7 @@ const RuleEngine = {
       const key = String(tmpl.id || tmpl.name || query).toLowerCase();
       if (seenIds.has(key)) return;
       seenIds.add(key);
-      resolved.push(tmpl);
+      resolved.push(this.ensureV2Entry(tmpl, { character }));
     });
 
     return resolved;
@@ -13014,9 +13201,13 @@ const RuleEngine = {
   }
 };
 
-// Export for module systems or attach to window
+// Export for module systems and attach to window/globalThis
+if (typeof window !== 'undefined') {
+  window.RuleEngine = RuleEngine;
+}
+if (typeof globalThis !== 'undefined') {
+  globalThis.RuleEngine = RuleEngine;
+}
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = RuleEngine;
-} else if (typeof window !== 'undefined') {
-  window.RuleEngine = RuleEngine;
 }

@@ -5086,7 +5086,7 @@
         const k = String(kind || 'feat').toLowerCase().trim();
         return {
           schemaVersion: 3,
-          blueprint: k === 'weapon' ? 'weapon' : (k === 'armor' || k === 'shield' ? 'armor' : (k === 'spell' || k === 'maneuver' ? 'spell' : (k === 'class' ? 'class' : (k === 'race' || k === 'template' ? 'race' : 'feat')))),
+          blueprint: k === 'weapon' ? 'weapon' : (k === 'armor' || k === 'shield' ? 'armor' : (k === 'spell' || k === 'maneuver' ? 'spell' : (k === 'class' ? 'class' : (k === 'race' || k === 'template' ? 'race' : (k === 'monster' || k === 'companion' ? 'monster' : 'feat'))))),
           id: 'crafted_' + Date.now(),
           name: 'New Crafted Rule',
           source: 'Homebrew',
@@ -5096,8 +5096,17 @@
       }
       if (entry.schemaVersion === 3) {
         const cloned = CharStore._fastCloneHistoryVal(entry);
+        delete cloned.modifiers;
         if (!cloned.baseEntryId && (entry.baseItemId || entry.id)) {
           cloned.baseEntryId = entry.baseEntryId || entry.baseItemId || entry.id;
+        }
+        if (!cloned.origin && entry.id && !entry._crafterOverride) {
+          cloned.origin = {
+            mode: 'override',
+            srdId: entry.id,
+            srdName: entry.name || '',
+            srdType: entry.type || kind || ''
+          };
         }
         return cloned;
       }
@@ -5113,6 +5122,7 @@
       );
       let blueprint = 'feat';
       if (isSpellLike) blueprint = 'spell';
+      else if (k.includes('monster') || k.includes('companion') || entryTypeLow === 'monster' || entry.monster) blueprint = 'monster';
       else if (k.includes('weapon') || entryTypeLow === 'weapon' || entry.weapon || (entry.damage && entry.crit)) blueprint = 'weapon';
       else if (k.includes('armor') || k.includes('shield') || entryTypeLow === 'armor' || entryTypeLow === 'shield' || entry.armorBonus !== undefined) blueprint = 'armor';
       else if (k.includes('item') || k.includes('wondrous') || k.includes('ring') || k.includes('rod') || k.includes('staff') || k.includes('wand') || entryTypeLow === 'magicitem' || entryTypeLow === 'consumable' || hasRealSlot || entry.gpValue !== undefined || entry.cost !== undefined) blueprint = 'wondrous';

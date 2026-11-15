@@ -2731,11 +2731,11 @@ function runDeriveSheetTests() {
     new Set(p2AllIds).size === p2AllIds.length
   );
   const p2Valid = p2Gear.concat(p2Opts).every(e =>
-    e.schemaVersion === 2 && / p\.\s?\d/.test(e.source || '') && e.contentLevel === 'summary' &&
-    ['verified', 'cross-checked'].includes(e.verification) && e.provenance && Array.isArray(e.modifiers) &&
-    (e.type !== 'Weapon' || (Array.isArray(e.modes) && e.modes.length > 0 && e.modes.every(m => /^\d+d\d+$/.test(m.damageParts[0].dice)))) &&
-    (!['Armor', 'Shield'].includes(e.type) || (e.modifiers[0] && e.modifiers[0].target === (e.type === 'Shield' ? 'ac.shield' : 'ac.armor'))));
-  check('SRD Import P2: every new record is Canonical V2 with a book page, contentLevel, verification and provenance; weapon modes and armor AC modifiers are well-formed', p2Valid);
+    e.schemaVersion === 3 && / p\.\s?\d/.test(e.source || '') && e.contentLevel === 'summary' &&
+    ['verified', 'cross-checked'].includes(e.verification) && e.provenance && Array.isArray(e.effects) && !('modifiers' in e) &&
+    (e.type !== 'Weapon' || (e.weapon && Array.isArray(e.modes) && e.modes.length > 0 && e.modes.every(m => /^\d+d\d+$/.test(m.damageParts[0].dice)))) &&
+    (!['Armor', 'Shield'].includes(e.type) || (e.armor && typeof e.armor.armorBonus === 'number')));
+  check('SRD Import P2: every new record is Canonical V3 with a book page, contentLevel, verification and provenance; weapon modes and armor chassis are well-formed', p2Valid);
   const lynx = p2By('wpn-lynxpaw');
   const lynxOff = (lynx.modes || []).find(m => m.id === 'offhand-head') || {};
   const mtn = p2By('arm-mountain-plate');
@@ -2745,17 +2745,17 @@ function runDeriveSheetTests() {
     p2By('wpn-drow-scorpion-chain').weight === 12 && p2By('wpn-drow-scorpion-chain').ruleFlags.reach === true &&
     lynx.damage === '1d6' && lynx.critRange === 18 && lynxOff.damageParts[0].dice === '1d4' && lynxOff.damageParts[0].type === 'Slashing' && lynxOff.critMult === 3 &&
     p2By('wpn-foot-spike').damage === '1d4' && p2By('wpn-foot-spike').critMult === 3 &&
-    mtn.modifiers[0].value === 10 && mtn.maxDex === 0 && mtn.checkPenalty === -9 && mtn.spellFailure === 60 && mtn.weight === 225 && mtn.speed30 === '15 ft.' &&
-    p2By('arm-chitin-armor-stormwrack').modifiers[0].value === 4 && p2By('arm-chitin-armor-races-of-eberron').modifiers[0].value === 2
+    mtn.armor.armorBonus === 10 && mtn.maxDex === 0 && mtn.checkPenalty === -9 && mtn.spellFailure === 60 && mtn.weight === 225 && mtn.speed30 === '15 ft.' &&
+    p2By('arm-chitin-armor-stormwrack').armor.armorBonus === 4 && p2By('arm-chitin-armor-races-of-eberron').armor.armorBonus === 2
   );
-  const p2Mod = (id, target) => ((p2By(id).modifiers || []).find(m => m.target === target && !m.condition) || {}).value;
+  const p2Mod = (id, target) => ((RuleEngine.evaluateV3Entry(JSON.parse(JSON.stringify(p2By(id)))).modifiers || []).find(m => m.target === target && !m.condition) || {}).value;
   check(
     'SRD Import P2: UA trait modifiers (Aggressive +2 init / -1 AC, Detached, Quick, Slow) and Weak Will -3 Will (UA p.92)',
-    p2Mod('trait-aggressive', 'init') === 2 && p2Mod('trait-aggressive', 'ac') === -1 &&
+    p2Mod('trait-aggressive', 'init') === 2 && p2Mod('trait-aggressive', 'ac.all') === -1 &&
     p2Mod('trait-detached', 'save.will') === 1 && p2Mod('trait-detached', 'save.ref') === -1 &&
     p2Mod('trait-quick', 'speed.land') === 10 && p2By('trait-quick').ruleFlags.frailHpPenalty === true &&
     p2By('trait-slow').ruleFlags.hpPerLevel === true && p2By('trait-slow').ruleFlags.halfBaseLandSpeed === true &&
-    ((p1Feats.find(f => f.id === 'flaw-weak-will') || {}).modifiers || [])[0].value === -3
+    ((p1Feats.find(f => f.id === 'flaw-weak-will') || {}).effects || [{}])[0].value === -3
   );
   const boulder = p2Mans.find(e => e.id === 'tob-maneuver-boulder-roll') || {};
   check(
@@ -2923,7 +2923,7 @@ function runDeriveSheetTests() {
     const c = p4By(id);
     return c.hd === hd && c.hitDie === `d${hd}` && c.bab === bab && `${c.fort[0]}${c.ref[0]}${c.will[0]}` === saves &&
       c.skillPointsPerLevel === skills && c.skills === skills && c.maxLevel === maxLevel && c.isPrestige === prc &&
-      c.type === 'Class' && c.contentLevel === 'stub' && c.schemaVersion === 2;
+      c.type === 'Class' && c.contentLevel === 'stub' && c.schemaVersion === 3;
   };
   check(
     'SRD Import P4: chassis values (Alienist CAr p.21 d4 1/2 BAB good Will 2 sp; Samurai CW p.8 d10 full BAB good Fort 2 sp 20 levels) and the 5 book-settled classes',
@@ -2957,7 +2957,7 @@ function runDeriveSheetTests() {
   const p4Prog = RuleEngine.calculateProgression(p4Char.levelProgression, { system: 'standard' });
   check(
     'SRD Import P4: a lazy class on the character resolves from its customDb snapshot without the chunk (Alienist d4, 1/2 BAB, good Will, prestige)',
-    !Comp.isChunkLoaded('srd_classes_splat.json') && !Comp.getClass('Alienist') &&
+    !Comp.isChunkLoaded('srd_classes_splat.json') && Comp.getClass('Alienist') === p4Snap && !Comp.getClass('Yathrinshee') &&
     p4Def.hd === 4 && p4Def.bab === 0.5 && p4Def.will === 'good' && p4Def.fort === 'poor' && p4Def.maxLevel === 10 &&
     p4Def.isPrestige === true && p4Def.type === 'Prestige Class' && p4Prog.classCounts && p4Prog.classCounts.Alienist === 2
   );
@@ -2998,7 +2998,7 @@ function runDeriveSheetTests() {
   const pwRows = pwIdx.index.filter(r => r.t === 'Power' && r.f === 'srd_powers.json');
   check(
     'SRD Import Powers: the 287 XPH powers (3.5 psionics SRD, no 3.0 Psionics Handbook leftovers) live only in the lazy srd_powers.json (not eager, not opt-in); srd_spells.json keeps spells only; index rows point at the new chunk',
-    pwChunk.length === 287 && pwChunk.every(p => p.type === 'Power' && p.id && p.schemaVersion === 2 && p.verification === 'cross-checked') &&
+    pwChunk.length === 287 && pwChunk.every(p => p.type === 'Power' && p.id && p.schemaVersion === 3 && p.verification === 'cross-checked') &&
     !pwSpells.some(s => s.type === 'Power') && pwSpells.length > 600 &&
     pwIdx.chunks['srd_powers.json'].eagerLoad === false && !pwIdx.chunks['srd_powers.json'].optIn &&
     pwRows.length === 287 && pwRows.every(r => r.f === 'srd_powers.json') &&
@@ -3046,7 +3046,9 @@ function runDeriveSheetTests() {
     ssIdx.index.filter(r => r.f === 'srd_spells_splat.json').length === 42 &&
     !ssEager.some(s => /^spl-primal-(hunter|instinct|senses|speed)$/.test(s.id)) &&
     JSON.stringify(ssPrimalSpeed.learnedAt.class) === JSON.stringify({ Druid: 6, Ranger: 4, Sorcerer: 6 }) &&
-    ssPrimalSpeed.modifiers.some(m => m.target === 'save.ref' && m.type === 'resistance' && m.value === 5) &&
+    ssPrimalSpeed.schemaVersion === 3 &&
+    Array.isArray(ssPrimalSpeed.effects) &&
+    ssPrimalSpeed.effects.some(e => e.type === 'stat' && Array.isArray(e.targets) && e.targets.includes('save.ref') && /^resistance$/i.test(e.btype) && e.value === 5) &&
     ssAdded.length === 1 && ssDb[0].name === 'Wreath of Flames' && ssDb[0]._snapshot.chunk === 'srd_spells_splat.json' &&
     /\{ t: 'Spell', names: spellListNames \}/.test(pwStoreSrc)
   );
@@ -3862,10 +3864,10 @@ function runDeriveSheetTests() {
     const pbsOnRanged = RuleEngine.evaluateWeaponAttack(pbsBaseChar, longbow, { grip: 'Ranged' });
     const pbsOnMelee = RuleEngine.evaluateWeaponAttack(pbsBaseChar, longsword, { grip: '1-Hand' });
     check(
-      'Sprint B.2: feat-point-blank-shot uses V2 modifiers with toggle condition (ranged +1/+1 active, +0/+0 inactive, +0/+0 melee) and char_combat.js has zero attBonus reads',
-      Boolean(pbsCompEntry && Array.isArray(pbsCompEntry.modifiers) && pbsCompEntry.modifiers.length === 2 &&
-        pbsCompEntry.modifiers.some(m => m.target === 'attack.ranged' && m.value === 1 && m.condition?.toggle === 'pointBlankShot') &&
-        pbsCompEntry.modifiers.some(m => m.target === 'damage.ranged' && m.value === 1 && m.condition?.toggle === 'pointBlankShot')) &&
+      'Sprint B.2/C.5: feat-point-blank-shot uses V3 effects + runtime modifiers with toggle condition (ranged +1/+1 active, +0/+0 inactive, +0/+0 melee) and char_combat.js has zero attBonus reads',
+      Boolean(pbsCompEntry && pbsCompEntry.schemaVersion === 3 && Array.isArray(pbsCompEntry.modifiers) && pbsCompEntry.modifiers.length === 2 &&
+        pbsCompEntry.modifiers.some(m => (m.target === 'atk.ranged' || m.target === 'attack.ranged') && m.value === 1 && m.condition?.toggle === 'pointBlankShot') &&
+        pbsCompEntry.modifiers.some(m => (m.target === 'dmg.ranged' || m.target === 'damage.ranged') && m.value === 1 && m.condition?.toggle === 'pointBlankShot')) &&
       pbsOnRanged.netAttackBonus === pbsOffRanged.netAttackBonus + 1 &&
       pbsOnRanged.netFlatDamage === pbsOffRanged.netFlatDamage + 1 &&
       pbsOnMelee.netAttackBonus === RuleEngine.evaluateWeaponAttack({ ...pbsBaseChar, tactical: { pointBlankShot: false } }, longsword, { grip: '1-Hand' }).netAttackBonus &&
@@ -4305,6 +4307,39 @@ function runDeriveSheetTests() {
       trueSub.utterances[0].lawOfResistanceDC === 33 &&
       multiSubSheet.defenses.fastHealing >= 1,
       `pact=${JSON.stringify(pactSub)}, shadow=${JSON.stringify(shadowSub)}, true=${JSON.stringify(trueSub)}`
+    );
+  }
+
+  // Sprint C.5: Pure V3 Database, Bestiary & Companion Parity Assertions
+  {
+    const monChunk = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_monsters.json'), 'utf8'));
+    const redDragon = monChunk.find(m => m.id === 'mst-red-dragon-adult' || m.name === 'Red Dragon, Adult');
+    const skeleton = monChunk.find(m => m.name === 'Human Warrior Skeleton' || (m.nonabilities && m.nonabilities.includes('con')));
+    const ironGolem = monChunk.find(m => m.name === 'Golem, Iron' || m.name === 'Iron Golem');
+    check(
+      'Sprint C.5: Bestiary 649 monsters are 100% Canonical V3 (schemaVersion: 3, monster chassis, naturalArmor, nonabilities, DR/SR/Immunity effects, real feats)',
+      monChunk.length === 649 &&
+      monChunk.every(m => m.schemaVersion === 3 && m.blueprint === 'monster' && m.monster && !Object.prototype.hasOwnProperty.call(m, 'modifiers')) &&
+      Boolean(redDragon && redDragon.monster.ac.naturalArmor >= 20 && Array.isArray(redDragon.effects) && redDragon.effects.some(e => e.type === 'defense' && e.mode === 'Immunity' && /fire/i.test(e.what))) &&
+      Boolean(skeleton && skeleton.nonabilities.includes('con') && skeleton.abilities.con === null) &&
+      Boolean(ironGolem && ironGolem.nonabilities.includes('con') && ironGolem.effects.some(e => e.type === 'defense' && e.mode === 'DR' && e.value === 15 && /adamantine/i.test(e.what)))
+    );
+
+    Comp.ensureChunkLoaded('srd_spells.json');
+    const ghSrd = Comp.getByName('Greater Heroism', 'Spell');
+    const druid10 = {
+      name: 'V3 Druid 10',
+      level: 10,
+      levelProgression: Array.from({ length: 10 }, (_, i) => ({ level: i + 1, className: 'Druid', active: true })),
+      abilities: { str: 10, dex: 12, con: 14, int: 10, wis: 18, cha: 10 }
+    };
+    const wolfComp = Comp.calculateCompanionStats(druid10, { type: 'animal_companion', baseMonsterId: 'mst-wolf' });
+    check(
+      'Sprint C.5: SrdCompendium V3 runtime getters (Greater Heroism lazy modifiers + description) & calculateCompanionStats Wolf Druid 10',
+      Boolean(ghSrd && ghSrd.schemaVersion === 3 && !Object.prototype.propertyIsEnumerable.call(ghSrd, 'modifiers') &&
+        Array.isArray(ghSrd.modifiers) && ghSrd.modifiers.length >= 3 &&
+        ghSrd.tempHpFormula === 'min(20, @cl)' && typeof ghSrd.description === 'string' && ghSrd.description.length > 40) &&
+      Boolean(wolfComp && wolfComp.totalHd === 8 && wolfComp.ac.total === 22 && wolfComp.ac.naturalArmor === 8 && wolfComp.abilities.str === 16)
     );
   }
 

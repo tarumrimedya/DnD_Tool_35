@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>D&D 3.5e Character & Campaign Command Center (Hub)</title>
   <link rel="stylesheet" href="tailwind_compiled.css?v=101216d709">
-  <script src="srd_compendium.js?v=bc3a94bb3b"></script>
-  <script src="rule_engine.js?v=9278dca208"></script>
+  <script src="srd_compendium.js?v=dbbe199f07"></script>
+  <script src="rule_engine.js?v=5571b4e789"></script>
   <script src="ui_components.js?v=d389ad5585"></script>
   <script src="rule_master.js?v=e7651522bf"></script>
   <script src="ui_shared.js?v=8df0c1e633"></script>
@@ -3259,8 +3259,10 @@ STRICT D&D 3.5E RAW ONLY (ZERO TOLERANCE FOR FORUMS / HOMEBREW / 5E / PATHFINDER
 4. STRICT NON-EXISTENCE / NO-HALLUCINATION POLICY:
    - If "${query}" is not an official D&D 3.5e RAW monster or NPC, DO NOT fabricate or adapt it.
 You must look up or construct the exact official D&D 3.5e RAW statblock for the requested monster.
-Return ONLY a single valid JSON object adhering strictly to the following structure with no markdown backticks or commentary:
+Return ONLY a single valid JSON object adhering strictly to the following Canonical V3 Monster structure with no markdown backticks or commentary:
 {
+  "schemaVersion": 3,
+  "blueprint": "monster",
   "id": "lowercase_underscore_id",
   "name": "Exact Official Name",
   "cr": "Challenge Rating string, e.g. '1/3', '5', '12'",
@@ -3272,18 +3274,15 @@ Return ONLY a single valid JSON object adhering strictly to the following struct
   "hitDiceStr": "e.g. Outsider 10",
   "hp": 95,
   "initiative": 2,
-  "speed": "30 ft. (6 squares), fly 50 ft. (average)",
+  "speed": { "land": 30, "fly": 50, "flyManeuverability": "Average", "swim": 0, "climb": 0, "burrow": 0 },
   "baseSpeed": 30,
-  "armorBonus": 0,
-  "shieldBonus": 0,
-  "naturalArmor": 11,
-  "deflection": 0,
-  "ac": 22,
-  "touchAc": 11,
-  "flatFootedAc": 20,
+  "ac": { "total": 22, "touch": 11, "flatFooted": 20, "naturalArmor": 11, "armor": 0, "shield": 0, "deflection": 0 },
   "bab": 10,
   "grapple": 18,
+  "space": "10 ft.",
+  "reach": "10 ft.",
   "abilities": { "str": 21, "dex": 14, "con": 20, "int": 12, "wis": 14, "cha": 16 },
+  "nonabilities": [],
   "saves": { "fort": 12, "ref": 9, "will": 9 },
   "attacks": [
     { "name": "Claw", "type": "Natural", "bonus": 14, "damage": "1d8+5", "crit": "20/x2", "damageType": "Slashing", "range": "-" }
@@ -3298,10 +3297,14 @@ Return ONLY a single valid JSON object adhering strictly to the following struct
     { "name": "Damage Reduction 10/Good", "type": "Su", "benefit": "Takes 10 less damage unless weapon is good." },
     { "name": "Spell Resistance 25", "type": "Ex", "benefit": "Spell Resistance 25." }
   ],
+  "effects": [
+    { "type": "defense", "mode": "DR", "value": 10, "what": "good" },
+    { "type": "defense", "mode": "Spell Resistance", "srMode": "flat", "value": 25 }
+  ],
   "spells": [
     { "name": "Fireball", "level": 3, "school": "Evocation", "castingTime": "1 standard action", "range": "Long", "duration": "Instantaneous", "savingThrow": "Reflex half", "spellResistance": "Yes", "benefit": "1d6 fire damage per level." }
   ],
-  "description": "Short flavor and description.",
+  "text": "Short flavor and official combat rules text.",
   "tags": ["demon", "tanari", "tanarri", "outsider"]
 }
 
@@ -3447,12 +3450,12 @@ CRITICAL RULES:
 
           <!-- Yetenek Değerleri (STR, DEX, CON, INT, WIS, CHA) -->
           <div class="grid grid-cols-6 gap-1 text-center font-mono text-[10px] bg-slate-950/40 p-1.5 rounded-lg border border-slate-800/80">
-            <div><span class="text-slate-500 block text-[8px] uppercase">STR</span><strong class="text-slate-200">${m.abilities.str}</strong></div>
-            <div><span class="text-slate-500 block text-[8px] uppercase">DEX</span><strong class="text-slate-200">${m.abilities.dex}</strong></div>
-            <div><span class="text-slate-500 block text-[8px] uppercase">CON</span><strong class="text-slate-200">${m.abilities.con}</strong></div>
-            <div><span class="text-slate-500 block text-[8px] uppercase">INT</span><strong class="text-slate-200">${m.abilities.int}</strong></div>
-            <div><span class="text-slate-500 block text-[8px] uppercase">WIS</span><strong class="text-slate-200">${m.abilities.wis}</strong></div>
-            <div><span class="text-slate-500 block text-[8px] uppercase">CHA</span><strong class="text-slate-200">${m.abilities.cha}</strong></div>
+            <div><span class="text-slate-500 block text-[8px] uppercase">STR</span><strong class="text-slate-200">${(m.nonabilities || []).includes('str') || m.abilities.str === null ? '—' : m.abilities.str}</strong></div>
+            <div><span class="text-slate-500 block text-[8px] uppercase">DEX</span><strong class="text-slate-200">${(m.nonabilities || []).includes('dex') || m.abilities.dex === null ? '—' : m.abilities.dex}</strong></div>
+            <div><span class="text-slate-500 block text-[8px] uppercase">CON</span><strong class="text-slate-200">${(m.nonabilities || []).includes('con') || m.abilities.con === null ? '—' : m.abilities.con}</strong></div>
+            <div><span class="text-slate-500 block text-[8px] uppercase">INT</span><strong class="text-slate-200">${(m.nonabilities || []).includes('int') || m.abilities.int === null ? '—' : m.abilities.int}</strong></div>
+            <div><span class="text-slate-500 block text-[8px] uppercase">WIS</span><strong class="text-slate-200">${(m.nonabilities || []).includes('wis') || m.abilities.wis === null ? '—' : m.abilities.wis}</strong></div>
+            <div><span class="text-slate-500 block text-[8px] uppercase">CHA</span><strong class="text-slate-200">${(m.nonabilities || []).includes('cha') || m.abilities.cha === null ? '—' : m.abilities.cha}</strong></div>
           </div>
 
           <!-- Kurtarma Zarları & BAB -->
@@ -3499,36 +3502,68 @@ CRITICAL RULES:
 
     function normalizeMonsterData(m) {
       if (!m) return m;
-      m.schemaVersion = 2;
+      const mc = (m.monster && typeof m.monster === 'object') ? m.monster : {};
+      m.schemaVersion = 3;
+      m.blueprint = m.blueprint || 'monster';
       if (!m.id) m.id = 'monster_' + Date.now();
-      if (!m.abilities) m.abilities = { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 };
-      if (!m.saves) m.saves = { fort: 0, ref: 0, will: 0 };
-      if (!Array.isArray(m.attacks)) m.attacks = [];
-      if (!Array.isArray(m.skills)) m.skills = [];
-      if (!Array.isArray(m.tags)) m.tags = [];
+      if (mc.size && !m.size) m.size = mc.size;
+      if (!m.size) m.size = 'Medium';
+      if (mc.cr !== undefined && m.cr === undefined) m.cr = mc.cr;
+      if (mc.hitDice && !m.hitDice) m.hitDice = mc.hitDice;
+      if (mc.hp !== undefined && m.hp === undefined) m.hp = mc.hp;
+      if (mc.space && !m.space) m.space = mc.space;
+      if (mc.reach && !m.reach) m.reach = mc.reach;
 
-      // Normalize V2 srd_monsters.json structure (where ac & speed can be objects and attacks have damageParts[])
-      if (m.ac && typeof m.ac === 'object') {
-        const acObj = m.ac;
-        m.touchAc = Number(acObj.touch ?? m.touchAc ?? 10);
-        m.flatFootedAc = Number(acObj.flatFooted ?? m.flatFootedAc ?? 10);
-        m.ac = Number(acObj.total ?? 10);
+      const rawAb = mc.abilities || m.abilities || { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 };
+      const nonList = Array.isArray(mc.nonabilities) ? mc.nonabilities.slice() : (Array.isArray(m.nonabilities) ? m.nonabilities.slice() : []);
+      m.abilities = {};
+      ['str', 'dex', 'con', 'int', 'wis', 'cha'].forEach(k => {
+        if (rawAb[k] === null || rawAb[k] === '—' || rawAb[k] === '-' || nonList.includes(k)) {
+          if (!nonList.includes(k)) nonList.push(k);
+          m.abilities[k] = null;
+        } else {
+          m.abilities[k] = Number(rawAb[k] ?? 10);
+        }
+      });
+      m.nonabilities = nonList;
+
+      if (!m.saves) m.saves = mc.saves ? { ...mc.saves } : { fort: 0, ref: 0, will: 0 };
+      if (!Array.isArray(m.attacks) || !m.attacks.length) m.attacks = Array.isArray(mc.attacks) ? mc.attacks.slice() : (m.attacks || []);
+      if (!Array.isArray(m.skills) || !m.skills.length) m.skills = Array.isArray(mc.skills) ? mc.skills.slice() : (m.skills || []);
+      if (!Array.isArray(m.feats) || !m.feats.length) m.feats = Array.isArray(mc.feats) ? mc.feats.slice() : (m.feats || []);
+      if (!Array.isArray(m.specialAbilities) || !m.specialAbilities.length) m.specialAbilities = Array.isArray(mc.specialAbilities) ? mc.specialAbilities.slice() : (m.specialAbilities || []);
+      if (!Array.isArray(m.tags)) m.tags = [];
+      if (m.text && !m.description) m.description = m.text;
+      if (m.description && !m.text) m.text = m.description;
+
+      // Normalize Canonical V3 monster.ac / monster.speeds chassis
+      const acSource = (mc.ac && typeof mc.ac === 'object') ? mc.ac : ((m.ac && typeof m.ac === 'object') ? m.ac : null);
+      if (acSource) {
+        m.touchAc = Number(acSource.touch ?? m.touchAc ?? 10);
+        m.flatFootedAc = Number(acSource.flatFooted ?? m.flatFootedAc ?? 10);
+        m.naturalArmor = Number(acSource.naturalArmor ?? m.naturalArmor ?? 0);
+        m.armorBonus = Number(acSource.armor ?? m.armorBonus ?? 0);
+        m.shieldBonus = Number(acSource.shield ?? m.shieldBonus ?? 0);
+        m.deflection = Number(acSource.deflection ?? m.deflection ?? 0);
+        m.ac = Number(acSource.total ?? 10);
       }
-      if (m.speed && typeof m.speed === 'object') {
-        const spdObj = m.speed;
-        m.baseSpeed = Number(spdObj.land || spdObj.fly || spdObj.swim || m.baseSpeed || 30);
-        const parts = [`${spdObj.land || 30} ft.`];
-        if (spdObj.fly) parts.push(`fly ${spdObj.fly} ft.`);
-        if (spdObj.swim) parts.push(`swim ${spdObj.swim} ft.`);
-        if (spdObj.climb) parts.push(`climb ${spdObj.climb} ft.`);
-        if (spdObj.burrow) parts.push(`burrow ${spdObj.burrow} ft.`);
+      const spdSource = (mc.speeds && typeof mc.speeds === 'object') ? mc.speeds : ((m.speed && typeof m.speed === 'object') ? m.speed : null);
+      if (spdSource) {
+        m.baseSpeed = Number(spdSource.land || spdSource.fly || spdSource.swim || m.baseSpeed || 30);
+        const parts = [`${spdSource.land ?? 30} ft.`];
+        if (spdSource.fly) parts.push(`fly ${spdSource.fly} ft.${spdSource.flyManeuverability ? ' (' + spdSource.flyManeuverability.toLowerCase() + ')' : ''}`);
+        if (spdSource.swim) parts.push(`swim ${spdSource.swim} ft.`);
+        if (spdSource.climb) parts.push(`climb ${spdSource.climb} ft.`);
+        if (spdSource.burrow) parts.push(`burrow ${spdSource.burrow} ft.`);
         m.speed = parts.join(', ');
       }
-      if (m.init !== undefined && m.initiative === undefined) {
-        m.initiative = Number(m.init) || 0;
+      if ((mc.init !== undefined || m.init !== undefined) && m.initiative === undefined) {
+        m.initiative = Number(mc.init ?? m.init) || 0;
       }
-      if (m.category && (!m.type || m.type === 'Monster')) {
-        m.type = String(m.category).replace(/\*$/, '').trim();
+      if (!m.type || m.type === 'Monster') {
+        const baseType = String(mc.creatureType || m.category || 'Monster').replace(/\*$/, '').trim();
+        const subs = Array.isArray(mc.subtypes) && mc.subtypes.length ? ` (${mc.subtypes.join(', ')})` : '';
+        m.type = baseType + subs;
       }
       if (m.crNumeric === undefined) {
         const crStr = String(m.cr ?? '1').trim();
@@ -3541,13 +3576,15 @@ CRITICAL RULES:
       }
       const hdMatch = String(m.hitDice || '1d8').match(/(\d+)d(\d+)/i);
       const hdCount = hdMatch ? (parseInt(hdMatch[1], 10) || 1) : Math.max(1, Math.round(m.crNumeric || 1));
+      if (mc.bab !== undefined && !m.bab) m.bab = Number(mc.bab) || 0;
       if (!m.bab) {
         const tLow = (m.type || '').toLowerCase();
         const babMult = (tLow.includes('dragon') || tLow.includes('outsider') || tLow.includes('magical beast') || tLow.includes('monstrous humanoid')) ? 1.0
           : (tLow.includes('undead') || tLow.includes('fey')) ? 0.5 : 0.75;
         m.bab = Math.max(1, Math.floor(hdCount * babMult));
       }
-      const strMod = Math.floor(((Number(m.abilities.str) || 10) - 10) / 2);
+      const strMod = (m.nonabilities.includes('str') || m.abilities.str === null) ? 0 : Math.floor(((Number(m.abilities.str) || 10) - 10) / 2);
+      if (mc.grapple !== undefined && m.grapple === undefined) m.grapple = Number(mc.grapple) || 0;
       if (m.grapple === undefined) {
         const sizeGrapMap = { Fine: -16, Diminutive: -12, Tiny: -8, Small: -4, Medium: 0, Large: 4, Huge: 8, Gargantuan: 12, Colossal: 16 };
         m.grapple = (Number(m.bab) || 0) + strMod + (sizeGrapMap[m.size] || 0);
@@ -3623,8 +3660,46 @@ CRITICAL RULES:
         };
       }).filter(sa => sa.name && sa.name !== 'Special Ability');
 
-      // Spells normalization: ensure array of individual spell objects
+      // Surface V3 defense blocks (DR, SR, Immunities, Resistances) as readable Special Abilities if not already listed
+      if (Array.isArray(m.effects)) {
+        const seenSa = new Set(m.specialAbilities.map(sa => String(sa.name || '').toLowerCase()));
+        m.effects.forEach(ef => {
+          if (!ef || ef.type !== 'defense') return;
+          let label = '';
+          if (ef.mode === 'DR') label = `Damage Reduction ${ef.value || 5}/${ef.what || 'magic'}`;
+          else if (ef.mode === 'Spell Resistance') label = `Spell Resistance ${ef.value || 15}`;
+          else if (ef.mode === 'Immunity' && ef.what) label = `Immunity to ${ef.what}`;
+          else if (ef.mode === 'Resistance' && ef.what) label = `Resistance to ${ef.what} ${ef.value || 10}`;
+          else if (ef.mode === 'Vulnerability' && ef.what) label = `Vulnerability to ${ef.what}`;
+          else if (ef.mode === 'Sense / Movement' && ef.what) label = ef.what;
+          if (label && !seenSa.has(label.toLowerCase())) {
+            seenSa.add(label.toLowerCase());
+            m.specialAbilities.push({ name: label, type: 'Ex', category: 'Special Ability', benefit: label, description: label, source: 'Racial' });
+          }
+        });
+      }
+
+      // Spells & V3 Powers (SLAs) normalization
       if (!Array.isArray(m.spells)) m.spells = [];
+      if (Array.isArray(m.powers) && m.powers.length && m.spells.length === 0) {
+        m.powers.forEach(pw => {
+          if (!pw || !pw.name) return;
+          const useTxt = pw.usage && pw.usage.mode === 'atwill' ? 'At will' : (pw.usage && pw.usage.uses ? `${pw.usage.uses}/day` : 'Spell-Like Ability');
+          m.spells.push({
+            name: pw.name,
+            level: Number(pw.level) || 1,
+            school: 'Universal',
+            castingTime: '1 standard action',
+            range: pw.range || 'Medium (100 ft. + 10 ft./level)',
+            duration: pw.duration || 'Instantaneous',
+            savingThrow: pw.save && pw.save.type ? `${pw.save.type} ${pw.save.effect || ''}`.trim() : 'None',
+            spellResistance: 'Yes',
+            benefit: pw.text || `${useTxt}${pw.casterLevel ? ' (CL ' + pw.casterLevel + ')' : ''}`,
+            description: pw.text || `${useTxt}${pw.casterLevel ? ' (CL ' + pw.casterLevel + ')' : ''}`,
+            source: 'Spell-Like Ability'
+          });
+        });
+      }
       m.spells = m.spells.map(s => {
         if (typeof s === 'string') {
           return {
@@ -3675,22 +3750,24 @@ CRITICAL RULES:
           }
         };
 
-        // 1. Sync Weapons (Canonical V2 schemaVersion: 2, damageParts, weaponMeta)
+        // 1. Sync Weapons (Canonical V3 schemaVersion: 3)
         (monster.attacks || []).forEach(atk => {
           const cMin = atk.crit ? (parseInt(atk.crit.split('/')[0].split('-')[0]) || 20) : 20;
           const cMult = atk.crit && atk.crit.includes('x3') ? 3 : (atk.crit && atk.crit.includes('x4') ? 4 : 2);
           addOrUpdate({
-            schemaVersion: 2,
+            schemaVersion: 3,
+            blueprint: 'weapon',
             id: 'wpn_' + String(atk.name || 'attack').toLowerCase().replace(/[^a-z0-9]+/g, '_'),
             name: atk.name,
             type: 'Weapon',
-            slot: atk.type === 'Ranged' ? 'Both Hands' : 'Main Hand',
+            item: { subtype: 'Weapon', slot: atk.type === 'Ranged' ? 'Both Hands' : 'Main Hand', consumable: false, price: 0, casterLevel: 0 },
+            weapon: { category: atk.type || 'Natural', handedness: 'One-Handed', baseCritRange: cMin, keen: false, effectiveCritRange: cMin, critMultiplier: cMult, rangeIncrement: atk.range && atk.range !== '-' ? parseInt(atk.range, 10) || null : null },
             category: atk.type || 'Natural',
             dice: atk.damage || '1d6',
             damageParts: Array.isArray(atk.damageParts) && atk.damageParts.length > 0
               ? atk.damageParts
               : [{ dice: atk.damage || '1d6', bonus: 0, type: atk.damageType || 'Physical', multiplyOnCrit: true, onCritOnly: false, source: atk.name }],
-            modifiers: [],
+            effects: [],
             modes: [],
             weaponMeta: { critMin: cMin, critMult: cMult, rangeIncrement: atk.range || '-' },
             critMin: cMin,
@@ -3704,39 +3781,48 @@ CRITICAL RULES:
           });
         });
 
-        // 2. Sync Feats
+        // 2. Sync Feats (Canonical V3)
         (monster.feats || []).forEach(f => {
           addOrUpdate({
+            schemaVersion: 3,
+            blueprint: 'feat',
+            id: 'feat_' + String(f.name || 'feat').toLowerCase().replace(/[^a-z0-9]+/g, '_'),
             name: f.name,
             type: 'Feat',
-            slot: 'None',
             category: f.category || 'Feat',
-            benefit: f.benefit || f.description || 'D&D 3.5e RAW Feat',
+            text: f.benefit || f.description || 'D&D 3.5e RAW Feat',
+            effects: [],
             source: f.source || 'Monster Manual'
           });
         });
 
-        // 3. Sync Special Abilities
+        // 3. Sync Special Abilities (Canonical V3)
         (monster.specialAbilities || []).forEach(sa => {
           addOrUpdate({
+            schemaVersion: 3,
+            blueprint: 'feat',
+            featKind: 'special',
+            id: 'sa_' + String(sa.name || 'trait').toLowerCase().replace(/[^a-z0-9]+/g, '_'),
             name: sa.name,
             type: 'Special Ability',
-            slot: 'None',
             category: sa.category || 'Special Ability',
-            benefit: sa.benefit || sa.description || '',
+            text: sa.benefit || sa.description || '',
+            effects: [],
             source: sa.source || 'Monster Manual'
           });
         });
 
-        // 4. Sync Spells
+        // 4. Sync Spells (Canonical V3)
         (monster.spells || []).forEach(s => {
           addOrUpdate({
+            schemaVersion: 3,
+            blueprint: 'spell',
+            id: 'spl_' + String(s.name || 'spell').toLowerCase().replace(/[^a-z0-9]+/g, '_'),
             name: s.name,
             type: 'Spell',
-            slot: 'None',
-            spellLevel: Number(s.level) || 1,
-            school: s.school || 'Universal',
-            benefit: s.benefit || s.description || '',
+            spell: { system: 'spell', school: s.school || 'Universal', classLevels: [{ class: 'Sor/Wiz', level: Number(s.level) || 1 }], descriptors: [], components: ['V', 'S'] },
+            text: s.benefit || s.description || '',
+            effects: [],
             source: s.source || 'Spell-Like Ability'
           });
         });
@@ -3829,8 +3915,15 @@ CRITICAL RULES:
         ? `${monster.attacks[0].bonus >= 0 ? '+' : ''}${monster.attacks[0].bonus} (${monster.attacks[0].damage})`
         : '-';
 
+      const sheetAbilities = { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 };
+      ['str', 'dex', 'con', 'int', 'wis', 'cha'].forEach(k => {
+        sheetAbilities[k] = (monster.nonabilities || []).includes(k) || monster.abilities[k] === null
+          ? 10
+          : (Number(monster.abilities[k]) || 10);
+      });
+
       const fullData = {
-        schemaVersion: 2,
+        schemaVersion: 3,
         id: charId,
         _hubId: charId,
         isNpc: true,
@@ -3842,8 +3935,9 @@ CRITICAL RULES:
         baseSpeed: monster.baseSpeed || 30,
         hitDie: monster.hitDice || '',
         alignment: '',
-        abilities: { ...monster.abilities },
-        baseAbilities: { ...monster.abilities },
+        nonabilities: (monster.nonabilities || []).slice(),
+        abilities: { ...sheetAbilities },
+        baseAbilities: { ...sheetAbilities },
         hp: {
           current: monster.hp,
           max: monster.hp,

@@ -159,6 +159,53 @@
   }
   const _catalogIds = new Set();
 
+  function attachV3RuntimeGetters(rec) {
+    if (!rec || typeof rec !== 'object' || rec.schemaVersion !== 3) return rec;
+    const evalSelf = () => {
+      if (global.RuleEngine && typeof global.RuleEngine.evaluateV3Entry === 'function') {
+        return global.RuleEngine.evaluateV3Entry(rec);
+      }
+      return null;
+    };
+    const defineLazy = (prop, computeFn) => {
+      if (Object.prototype.propertyIsEnumerable.call(rec, prop)) return;
+      Object.defineProperty(rec, prop, {
+        enumerable: false,
+        configurable: true,
+        get: computeFn,
+        set(val) {
+          Object.defineProperty(rec, prop, { value: val, enumerable: true, configurable: true, writable: true });
+        }
+      });
+    };
+    defineLazy('modifiers', () => {
+      const ev = evalSelf();
+      return ev && Array.isArray(ev.modifiers) ? ev.modifiers : [];
+    });
+    defineLazy('damageParts', () => {
+      const ev = evalSelf();
+      return ev && Array.isArray(ev.damageParts) ? ev.damageParts : [];
+    });
+    defineLazy('defenses', () => {
+      const ev = evalSelf();
+      return ev && Array.isArray(ev.defenses) ? ev.defenses : [];
+    });
+    defineLazy('description', () => {
+      if (rec._snapshot && rec._snapshot.compact && !rec.text) {
+        const s = rec.shortDescription || rec.benefit || '';
+        return s.length > 240 ? (s.slice(0, 237) + '...') : s;
+      }
+      return rec.text || rec.shortDescription || rec.benefit || '';
+    });
+    if (Array.isArray(rec.effects) && rec.effects.some((e) => e && e.type === 'roll' && e.kind === 'Temp HP')) {
+      defineLazy('tempHpFormula', () => {
+        const ev = evalSelf();
+        return ev && ev.tempHpFormula ? ev.tempHpFormula : '';
+      });
+    }
+    return rec;
+  }
+
   function registerEntries(records) {
     if (records && typeof records === 'object' && !Array.isArray(records)) {
       if (Array.isArray(records.entries)) {
@@ -178,6 +225,7 @@
       const rec = records[i];
       if (!rec || !rec.id) continue;
       if (rec.isChild || rec.parent || String(rec.name || '').trim().startsWith('↳') || String(rec.id || '').includes('-sub-')) continue;
+      attachV3RuntimeGetters(rec);
       const isNew = !_catalogIds.has(rec.id);
       _byId.set(rec.id, rec);
       if (isNew) {
@@ -383,11 +431,11 @@
       takenAt: new Date().toISOString(),
       status: 'current'
     };
-    return copy;
+    return attachV3RuntimeGetters(copy);
   }
 
   // Compact mechanical projection for character-embedded boot snapshots (`~300-450 bytes` per entry):
-  // strips long HTML rulebook prose (>240 chars) after ensuring a concise plain-text `shortDescription`,
+  // strips long HTML/V3 rulebook prose (>240 chars) after ensuring a concise plain-text `shortDescription`,
   // preserving 100% of V2/V3 mechanical fields while keeping localStorage and Supabase JSONB small.
   function compactSnapshotBody(src) {
     const copy = safeClone(src);
@@ -397,6 +445,18 @@
     delete copy.costToCreate;
     if (typeof copy.fullDescription === 'string' && copy.fullDescription.length > 240) {
       delete copy.fullDescription;
+    }
+    if (typeof copy.text === 'string' && copy.text.length > 240) {
+      if (!copy.shortDescription && !copy.benefit) {
+        const plain = copy.text
+          .replace(/<[^>]+>/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim();
+        if (plain) {
+          copy.shortDescription = plain.length > 200 ? (plain.slice(0, 197) + '...') : plain;
+        }
+      }
+      delete copy.text;
     }
     if (typeof copy.description === 'string' && copy.description.length > 240) {
       if (!copy.shortDescription && !copy.benefit) {
@@ -409,6 +469,9 @@
         }
       }
       delete copy.description;
+    }
+    if (typeof copy.shortDescription === 'string' && copy.shortDescription.length > 240) {
+      copy.shortDescription = copy.shortDescription.slice(0, 237) + '...';
     }
     return copy;
   }
@@ -429,7 +492,7 @@
       takenAt: new Date().toISOString(),
       status: 'current'
     };
-    return copy;
+    return attachV3RuntimeGetters(copy);
   }
 
   let _customizedEntryCache = new WeakMap();
@@ -1707,10 +1770,10 @@
       return sliced.map((hit) => {
         const full = _byId.get(hit.id);
         if (full) return full;
-        if (hit.sourceObj && hit.sourceObj.schemaVersion === 2) return hit.sourceObj;
+        if (hit.sourceObj && (hit.sourceObj.schemaVersion === 3 || hit.sourceObj.schemaVersion === 2)) return hit.sourceObj;
         return {
           id: hit.id,
-          schemaVersion: 2,
+          schemaVersion: 3,
           name: hit.name,
           type: hit.type,
           category: hit.category,
@@ -2143,12 +2206,14 @@
         }
       }
 
-      // 3. Ability Scores
-      const baseStr = baseMonster.abilities?.str ?? 10;
-      const baseDex = baseMonster.abilities?.dex ?? 10;
-      const baseCon = baseMonster.abilities?.con ?? 10;
-      const baseWis = baseMonster.abilities?.wis ?? 10;
-      const baseCha = baseMonster.abilities?.cha ?? 10;
+      // 3. Ability Scores (supports pure V3 `monster` chassis + legacy fallback)
+      const mChassis = (baseMonster && baseMonster.monster) ? baseMonster.monster : baseMonster;
+      const mAbil = (mChassis && mChassis.abilities) ? mChassis.abilities : (baseMonster.abilities || {});
+      const baseStr = mAbil.str ?? 10;
+      const baseDex = mAbil.dex ?? 10;
+      const baseCon = mAbil.con ?? 10;
+      const baseWis = mAbil.wis ?? 10;
+      const baseCha = mAbil.cha ?? 10;
 
       const totalStr = baseStr + strDexAdj;
       const totalDex = baseDex + (type === 'special_mount' ? 0 : strDexAdj);
@@ -2165,7 +2230,7 @@
       const chaMod = Math.floor((totalCha - 10) / 2);
 
       // 4. Hit Dice & Hit Points
-      const baseHdNum = parseInt(String(baseMonster.hitDice || '1').match(/\d+/)?.[0] || '1', 10);
+      const baseHdNum = Number(mChassis?.hitDice?.count) || parseInt(String(mChassis?.hitDice?.formula || baseMonster.hitDice || '1').match(/\d+/)?.[0] || '1', 10);
       const totalHd = (type === 'familiar') ? (char?.level || 1) : (baseHdNum + bonusHd);
 
       let maxHp = 0;
@@ -2181,7 +2246,7 @@
       const bab = (type === 'familiar') ? (char?.bab || 0) : Math.floor(totalHd * 0.75);
 
       // 6. Natural Armor, Gear & AC
-      const baseTotalAC = baseMonster.ac?.total || 14;
+      const baseTotalAC = Number(mChassis?.ac?.total ?? baseMonster.ac?.total) || 14;
       const baseDexMod = Math.floor((baseDex - 10) / 2);
       const baseNatArmor = Math.max(0, baseTotalAC - 10 - baseDexMod);
       const totalNatArmor = Math.max(0, baseNatArmor + natArmorAdj);
@@ -2228,14 +2293,15 @@
       }
 
       // 8. Natural Attacks & Rotations
-      const monsterFeats = Array.isArray(baseMonster.feats) ? baseMonster.feats : [];
+      const monsterFeats = Array.isArray(baseMonster.feats) ? baseMonster.feats : (Array.isArray(mChassis?.feats) ? mChassis.feats : []);
       const hasWeaponFocus = monsterFeats.some(f => /weapon\s*focus/i.test(f));
-      const attacks = (baseMonster.attacks || []).map(atk => {
+      const rawAttacks = Array.isArray(baseMonster.attacks) ? baseMonster.attacks : (Array.isArray(mChassis?.attacks) ? mChassis.attacks : []);
+      const attacks = rawAttacks.map(atk => {
         const isMelee = (atk.actionType === 'mwak' || atk.attackType === 'natural' || !atk.actionType);
         const abilityMod = isMelee ? strMod : dexMod;
         const totalBonus = bab + abilityMod + attackEnhancement + (hasWeaponFocus ? 1 : 0);
-        const baseDice = atk.damageParts?.[0]?.dice || '1d6';
-        const totalDmgBonus = (atk.damageParts?.[0]?.bonus || 0) + strMod + damageEnhancement;
+        const baseDice = atk.damageParts?.[0]?.dice || atk.damageDice || '1d6';
+        const totalDmgBonus = (atk.damageParts?.[0]?.bonus ?? atk.damageBonus ?? 0) + strMod + damageEnhancement;
         return {
           name: atk.name,
           attackBonus: totalBonus,
@@ -2247,12 +2313,13 @@
         };
       });
 
+      const baseSpeeds = mChassis?.speeds || baseMonster.speed || {};
       return {
         type,
         customName,
         baseName: baseMonster.name,
         baseMonsterId: companionConfig.baseMonsterId,
-        size: baseMonster.size || 'Medium',
+        size: mChassis?.size || baseMonster.size || 'Medium',
         effectiveLevel,
         totalHd,
         hp: { current: currentHp, max: maxHp },
@@ -2261,7 +2328,7 @@
         abilityMods: { str: strMod, dex: dexMod, con: conMod, int: intMod, wis: wisMod, cha: chaMod },
         saves: { fort: fortSave, ref: refSave, will: willSave },
         bab,
-        speed: { land: (baseMonster.speed?.land || 30) + speedBonus, fly: baseMonster.speed?.fly || 0 },
+        speed: { land: (baseSpeeds.land ?? 30) + speedBonus, fly: baseSpeeds.fly || 0 },
         attacks,
         bonusTricks,
         specialAbilities,
@@ -2355,9 +2422,15 @@
         throw new Error(`[ItemAssembler] Base item not found: ${spec.baseItemId || spec.baseItemName}`);
       }
 
-      const item = safeClone(baseRef);
-      item.schemaVersion = 2;
+      const evalV3 = (o) => (global.RuleEngine && typeof global.RuleEngine.evaluateV3Entry === 'function' && o && o.schemaVersion === 3)
+        ? global.RuleEngine.evaluateV3Entry(o)
+        : o;
+
+      const item = safeClone(evalV3(baseRef));
+      item.schemaVersion = 3;
+      item._assembled = true;
       item.baseItemId = baseRef.id;
+      item.effects = Array.isArray(item.effects) ? item.effects : [];
       item.modifiers = Array.isArray(item.modifiers) ? item.modifiers : [];
       item.damageParts = Array.isArray(item.damageParts) ? item.damageParts : [];
       item.modes = Array.isArray(item.modes) ? item.modes : [];
@@ -2394,7 +2467,7 @@
                BUILT_IN_ENHANCEMENT_FALLBACKS[eRef] ||
                SrdCompendium.getByName(eRef, 'Enhancement') ||
                SrdCompendium.getById(slugify(eRef, 'enh')));
-          if (enhObj) resolvedEnhs.push(safeClone(enhObj));
+          if (enhObj) resolvedEnhs.push(safeClone(evalV3(enhObj)));
         }
       }
       item.enhancements = resolvedEnhs.map((e) => e.id);
@@ -2538,8 +2611,12 @@
 
       for (let i = 0; i < resolvedEnhs.length; i++) {
         const enh = resolvedEnhs[i];
-        totalEnhIncrease += Number(enh.enhIncrease) || 0;
-        flatEnhGold += Number(enh.flatCost) || 0;
+        totalEnhIncrease += Number(enh.enhIncrease ?? enh.itemModifier?.enhancementBonusCost) || 0;
+        flatEnhGold += Number(enh.flatCost ?? enh.itemModifier?.flatGoldCost) || 0;
+
+        if (Array.isArray(enh.effects) && enh.effects.length > 0) {
+          item.effects.push(...safeClone(enh.effects));
+        }
 
         // Merge modifiers
         if (Array.isArray(enh.modifiers) && enh.modifiers.length > 0) {
@@ -2617,12 +2694,15 @@
              SrdCompendium.getByName(cRef, 'AugmentationCrystal') ||
              SrdCompendium.getById(slugify(cRef, 'crys')));
         if (crysObj) {
-          resolvedCrystal = safeClone(crysObj);
+          resolvedCrystal = safeClone(evalV3(crysObj));
+          if (Array.isArray(resolvedCrystal.effects) && resolvedCrystal.effects.length > 0) {
+            item.effects.push(...safeClone(resolvedCrystal.effects));
+          }
           item.crystal = {
             id: resolvedCrystal.id,
             name: resolvedCrystal.name,
             slot: resolvedCrystal.slot,
-            cost: Number(resolvedCrystal.cost) || 0,
+            cost: Number(resolvedCrystal.cost ?? resolvedCrystal.itemModifier?.flatGoldCost) || 0,
             shortDescription: resolvedCrystal.shortDescription || resolvedCrystal.name
           };
 
@@ -2709,6 +2789,16 @@
         if (matName) nameParts.push(matName);
         nameParts.push(baseRef.name);
         item.name = nameParts.join(' ');
+      }
+
+      if (isWeapon && item.weapon && typeof item.weapon === 'object') {
+        item.weapon.enhancementBonus = enhBonus;
+        if (item.critRange) item.weapon.baseCritRange = item.critRange;
+      } else if ((isArmor || isShield) && item.armor && typeof item.armor === 'object') {
+        item.armor.enhancementBonus = enhBonus;
+        if (item.maxDex !== undefined) item.armor.maxDex = item.maxDex;
+        if (item.checkPenalty !== undefined) item.armor.armorCheckPenalty = item.checkPenalty;
+        if (item.spellFailure !== undefined) item.armor.arcaneSpellFailure = item.spellFailure;
       }
 
       item.id = spec.id || slugify(item.name, isWeapon ? 'wpn-inst' : (isShield ? 'shd-inst' : 'arm-inst'));
@@ -2996,6 +3086,9 @@
      */
     upgradeEntryToV2(rawEntry) {
       if (!rawEntry || typeof rawEntry !== 'object') return rawEntry;
+      if (rawEntry.schemaVersion === 3) {
+        return attachV3RuntimeGetters(rawEntry);
+      }
       if (rawEntry.schemaVersion === 2 && Array.isArray(rawEntry.modifiers) && Array.isArray(rawEntry.damageParts)) {
         return rawEntry;
       }

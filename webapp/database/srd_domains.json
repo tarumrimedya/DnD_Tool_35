@@ -1,22 +1,74 @@
 [
   {
+    "schemaVersion": 3,
     "id": "dom-air",
-    "foundryId": "rsrd_dom_air",
-    "schemaVersion": 2,
+    "blueprint": "domain",
     "name": "Air",
     "type": "Domain",
     "category": "Cleric Domain",
-    "slot": "None",
     "source": "SRD 3.5e / Player's Handbook",
-    "description": "Turn or destroy earth creatures as a good cleric turns undead. Rebuke, command, or bolster air creatures as an evil cleric rebukes undead. Use these abilities a total number of times per day equal to 3 + your Charisma modifier. This granted power is a supernatural ability",
-    "shortDescription": "Turn or destroy earth creatures as a good cleric turns undead. Rebuke, command, or bolster air creatures as an evil cleric rebukes undead. Use these abilities a total number of times per day equal ...",
+    "grants": {
+      "grantedPower": {
+        "name": "Air Domain Power",
+        "text": "Turn or destroy earth creatures as a good cleric turns undead. Rebuke, command, or bolster air creatures as an evil cleric rebukes undead. Use these abilities a total number of times per day equal to 3 + your Charisma modifier. This granted power is a supernatural ability",
+        "usage": {
+          "mode": "passive"
+        }
+      },
+      "spellLadder": [
+        {
+          "level": 1,
+          "spell": "Obscuring Mist",
+          "refId": "spl-obscuring-mist"
+        },
+        {
+          "level": 2,
+          "spell": "Wind Wall",
+          "refId": "spl-wind-wall"
+        },
+        {
+          "level": 3,
+          "spell": "Gaseous Form",
+          "refId": "spl-gaseous-form"
+        },
+        {
+          "level": 4,
+          "spell": "Air Walk",
+          "refId": "spl-air-walk"
+        },
+        {
+          "level": 5,
+          "spell": "Control Winds",
+          "refId": "spl-control-winds"
+        },
+        {
+          "level": 6,
+          "spell": "Chain Lightning",
+          "refId": "spl-chain-lightning"
+        },
+        {
+          "level": 7,
+          "spell": "Control Weather",
+          "refId": "spl-control-weather"
+        },
+        {
+          "level": 8,
+          "spell": "Whirlwind",
+          "refId": "spl-whirlwind"
+        },
+        {
+          "level": 9,
+          "spell": "Elemental Swarm",
+          "refId": "spl-elemental-swarm"
+        }
+      ]
+    },
     "grantedPower": {
       "description": "Turn or destroy earth creatures as a good cleric turns undead. Rebuke, command, or bolster air creatures as an evil cleric rebukes undead. Use these abilities a total number of times per day equal to 3 + your Charisma modifier. This granted power is a supernatural ability",
       "classSkills": [],
       "grantedFeats": [],
       "spellLikeAbilities": []
     },
-    "requiredAlignment": [],
     "spells": [
       {
         "level": 1,
@@ -64,30 +116,84 @@
         "name": "Elemental Swarm"
       }
     ],
+    "requiredAlignment": [],
+    "effects": [],
+    "ruleFlags": {
+      "turnEarth": true,
+      "rebukeAir": true
+    },
+    "shortDescription": "Turn or destroy earth creatures as a good cleric turns undead. Rebuke, command, or bolster air creatures as an evil cleric rebukes undead. Use these abilities a total number of times per day equal ...",
+    "text": "Turn or destroy earth creatures as a good cleric turns undead. Rebuke, command, or bolster air creatures as an evil cleric rebukes undead. Use these abilities a total number of times per day equal to 3 + your Charisma modifier. This granted power is a supernatural ability",
     "tags": [
       "domain",
       "cleric",
       "air"
-    ],
-    "modifiers": [],
-    "damageParts": [],
-    "modes": [],
-    "ruleFlags": {
-      "turnEarth": true,
-      "rebukeAir": true
-    }
+    ]
   },
   {
+    "schemaVersion": 3,
     "id": "dom-animal",
-    "foundryId": "rsrd_dom_animal",
-    "schemaVersion": 2,
+    "blueprint": "domain",
     "name": "Animal",
     "type": "Domain",
     "category": "Cleric Domain",
-    "slot": "None",
     "source": "SRD 3.5e / Player's Handbook",
-    "description": "You can use speak with animals once per day as a spell-like ability.",
-    "shortDescription": "You can use speak with animals once per day as a spell-like ability.",
+    "grants": {
+      "grantedPower": {
+        "name": "Animal Domain Power",
+        "text": "You can use speak with animals once per day as a spell-like ability.",
+        "usage": {
+          "mode": "passive"
+        }
+      },
+      "spellLadder": [
+        {
+          "level": 1,
+          "spell": "Calm Animals",
+          "refId": "spl-calm-animals"
+        },
+        {
+          "level": 2,
+          "spell": "Hold Animal",
+          "refId": "spl-hold-animal"
+        },
+        {
+          "level": 3,
+          "spell": "Dominate Animal",
+          "refId": "spl-dominate-animal"
+        },
+        {
+          "level": 4,
+          "spell": "Summon Nature's Ally IV",
+          "refId": "spl-summon-natures-ally-iv"
+        },
+        {
+          "level": 5,
+          "spell": "Commune with Nature",
+          "refId": "spl-commune-with-nature"
+        },
+        {
+          "level": 6,
+          "spell": "Antilife Shell",
+          "refId": "spl-antilife-shell"
+        },
+        {
+          "level": 7,
+          "spell": "Animal Shapes",
+          "refId": "spl-animal-shapes"
+        },
+        {
+          "level": 8,
+          "spell": "Summon Nature's Ally VIII",
+          "refId": "spl-summon-natures-ally-viii"
+        },
+        {
+          "level": 9,
+          "spell": "Shapechange",
+          "refId": "spl-shapechange"
+        }
+      ]
+    },
     "grantedPower": {
       "description": "You can use speak with animals once per day as a spell-like ability.",
       "classSkills": [
@@ -102,7 +208,6 @@
         }
       ]
     },
-    "requiredAlignment": [],
     "spells": [
       {
         "level": 1,
@@ -150,38 +255,86 @@
         "name": "Shapechange"
       }
     ],
+    "requiredAlignment": [],
+    "effects": [],
+    "shortDescription": "You can use speak with animals once per day as a spell-like ability.",
+    "text": "You can use speak with animals once per day as a spell-like ability.",
     "tags": [
       "domain",
       "cleric",
       "animal"
-    ],
-    "modifiers": [],
-    "damageParts": [],
-    "modes": [],
-    "ruleFlags": {}
+    ]
   },
   {
+    "schemaVersion": 3,
     "id": "dom-chaos",
-    "foundryId": "rsrd_dom_chaos",
-    "schemaVersion": 2,
+    "blueprint": "domain",
     "name": "Chaos",
     "type": "Domain",
     "category": "Cleric Domain",
-    "slot": "None",
     "source": "SRD 3.5e / Player's Handbook",
-    "description": "You cast chaos spells at +1 caster level.",
-    "shortDescription": "You cast chaos spells at +1 caster level.",
+    "grants": {
+      "grantedPower": {
+        "name": "Chaos Domain Power",
+        "text": "You cast chaos spells at +1 caster level.",
+        "usage": {
+          "mode": "passive"
+        }
+      },
+      "spellLadder": [
+        {
+          "level": 1,
+          "spell": "Protection from Law",
+          "refId": "spl-protection-from-law"
+        },
+        {
+          "level": 2,
+          "spell": "Shatter",
+          "refId": "spl-shatter"
+        },
+        {
+          "level": 3,
+          "spell": "Magic Circle against Law",
+          "refId": "spl-magic-circle-against-law"
+        },
+        {
+          "level": 4,
+          "spell": "Chaos Hammer",
+          "refId": "spl-chaos-hammer"
+        },
+        {
+          "level": 5,
+          "spell": "Dispel Law",
+          "refId": "spl-dispel-law"
+        },
+        {
+          "level": 6,
+          "spell": "Animate Objects",
+          "refId": "spl-animate-objects"
+        },
+        {
+          "level": 7,
+          "spell": "Word of Chaos",
+          "refId": "spl-word-of-chaos"
+        },
+        {
+          "level": 8,
+          "spell": "Cloak of Chaos",
+          "refId": "spl-cloak-of-chaos"
+        },
+        {
+          "level": 9,
+          "spell": "Summon Monster IX",
+          "refId": "spl-summon-monster-ix"
+        }
+      ]
+    },
     "grantedPower": {
       "description": "You cast chaos spells at +1 caster level.",
       "classSkills": [],
       "grantedFeats": [],
       "spellLikeAbilities": []
     },
-    "requiredAlignment": [
-      "CG",
-      "CN",
-      "CE"
-    ],
     "spells": [
       {
         "level": 1,
@@ -229,41 +382,101 @@
         "name": "Summon Monster IX"
       }
     ],
+    "requiredAlignment": [
+      "CG",
+      "CN",
+      "CE"
+    ],
+    "effects": [
+      {
+        "type": "stat",
+        "targets": [
+          "casterLevel"
+        ],
+        "mode": "flat",
+        "value": 1,
+        "btype": "Domain",
+        "condition": "Chaos spells"
+      }
+    ],
+    "shortDescription": "You cast chaos spells at +1 caster level.",
+    "text": "You cast chaos spells at +1 caster level.",
     "tags": [
       "domain",
       "cleric",
       "chaos"
-    ],
-    "modifiers": [
-      {
-        "target": "casterLevel.chaotic",
-        "value": 1,
-        "type": "Domain",
-        "condition": "Chaos spells"
-      }
-    ],
-    "damageParts": [],
-    "modes": [],
-    "ruleFlags": {}
+    ]
   },
   {
+    "schemaVersion": 3,
     "id": "dom-death",
-    "foundryId": "rsrd_dom_death",
-    "schemaVersion": 2,
+    "blueprint": "domain",
     "name": "Death",
     "type": "Domain",
     "category": "Cleric Domain",
-    "slot": "None",
     "source": "SRD 3.5e / Player's Handbook",
-    "description": "You may use a death touch once per day. Your death touch is a supernatural ability that produces a death effect. You must succeed on a melee touch attack against a living creature (using the rules for touch spells). When you touch, roll 1d6 per cleric level you possess. If the total at least equals the creature's current hit points, it dies (no save)..",
-    "shortDescription": "You may use a death touch once per day. Your death touch is a supernatural ability that produces a death effect. You must succeed on a melee touch attack against a living creature (using the rules ...",
+    "grants": {
+      "grantedPower": {
+        "name": "Death Domain Power",
+        "text": "You may use a death touch once per day. Your death touch is a supernatural ability that produces a death effect. You must succeed on a melee touch attack against a living creature (using the rules for touch spells). When you touch, roll 1d6 per cleric level you possess. If the total at least equals the creature's current hit points, it dies (no save)..",
+        "usage": {
+          "mode": "passive"
+        }
+      },
+      "spellLadder": [
+        {
+          "level": 1,
+          "spell": "Cause Fear",
+          "refId": "spl-cause-fear"
+        },
+        {
+          "level": 2,
+          "spell": "Death Knell",
+          "refId": "spl-death-knell"
+        },
+        {
+          "level": 3,
+          "spell": "Animate Dead",
+          "refId": "spl-animate-dead"
+        },
+        {
+          "level": 4,
+          "spell": "Death Ward",
+          "refId": "spl-death-ward"
+        },
+        {
+          "level": 5,
+          "spell": "Slay Living",
+          "refId": "spl-slay-living"
+        },
+        {
+          "level": 6,
+          "spell": "Create Undead",
+          "refId": "spl-create-undead"
+        },
+        {
+          "level": 7,
+          "spell": "Destruction",
+          "refId": "spl-destruction"
+        },
+        {
+          "level": 8,
+          "spell": "Create Greater Undead",
+          "refId": "spl-create-greater-undead"
+        },
+        {
+          "level": 9,
+          "spell": "Wail of the Banshee",
+          "refId": "spl-wail-of-the-banshee"
+        }
+      ]
+    },
     "grantedPower": {
       "description": "You may use a death touch once per day. Your death touch is a supernatural ability that produces a death effect. You must succeed on a melee touch attack against a living creature (using the rules for touch spells). When you touch, roll 1d6 per cleric level you possess. If the total at least equals the creature's current hit points, it dies (no save)..",
       "classSkills": [],
       "grantedFeats": [],
       "spellLikeAbilities": []
     },
-    "requiredAlignment": [],
     "spells": [
       {
         "level": 1,
@@ -311,36 +524,89 @@
         "name": "Wail of the Banshee"
       }
     ],
+    "requiredAlignment": [],
+    "effects": [],
+    "ruleFlags": {
+      "deathTouch": "1/day"
+    },
+    "shortDescription": "You may use a death touch once per day. Your death touch is a supernatural ability that produces a death effect. You must succeed on a melee touch attack against a living creature (using the rules ...",
+    "text": "You may use a death touch once per day. Your death touch is a supernatural ability that produces a death effect. You must succeed on a melee touch attack against a living creature (using the rules for touch spells). When you touch, roll 1d6 per cleric level you possess. If the total at least equals the creature's current hit points, it dies (no save)..",
     "tags": [
       "domain",
       "cleric",
       "death"
-    ],
-    "modifiers": [],
-    "damageParts": [],
-    "modes": [],
-    "ruleFlags": {
-      "deathTouch": "1/day"
-    }
+    ]
   },
   {
+    "schemaVersion": 3,
     "id": "dom-destruction",
-    "foundryId": "rsrd_dom_destruction",
-    "schemaVersion": 2,
+    "blueprint": "domain",
     "name": "Destruction",
     "type": "Domain",
     "category": "Cleric Domain",
-    "slot": "None",
     "source": "SRD 3.5e / Player's Handbook",
-    "description": "You gain the smite power, the supernatural ability to make a single melee attack with a +4 bonus on attack rolls and a bonus on damage rolls equal to your cleric level (if you hit). You must declare the smite before making the attack. This ability is usable once per day.",
-    "shortDescription": "You gain the smite power, the supernatural ability to make a single melee attack with a +4 bonus on attack rolls and a bonus on damage rolls equal to your cleric level (if you hit). You must declar...",
+    "grants": {
+      "grantedPower": {
+        "name": "Destruction Domain Power",
+        "text": "You gain the smite power, the supernatural ability to make a single melee attack with a +4 bonus on attack rolls and a bonus on damage rolls equal to your cleric level (if you hit). You must declare the smite before making the attack. This ability is usable once per day.",
+        "usage": {
+          "mode": "passive"
+        }
+      },
+      "spellLadder": [
+        {
+          "level": 1,
+          "spell": "Inflict Light Wounds",
+          "refId": "spl-inflict-light-wounds"
+        },
+        {
+          "level": 2,
+          "spell": "Shatter",
+          "refId": "spl-shatter"
+        },
+        {
+          "level": 3,
+          "spell": "Contagion",
+          "refId": "spl-contagion"
+        },
+        {
+          "level": 4,
+          "spell": "Inflict Critical Wounds",
+          "refId": "spl-inflict-critical-wounds"
+        },
+        {
+          "level": 5,
+          "spell": "Inflict Light Wounds, Mass",
+          "refId": "spl-inflict-light-wounds-mass"
+        },
+        {
+          "level": 6,
+          "spell": "Harm",
+          "refId": "spl-harm"
+        },
+        {
+          "level": 7,
+          "spell": "Disintegrate",
+          "refId": "spl-disintegrate"
+        },
+        {
+          "level": 8,
+          "spell": "Earthquake",
+          "refId": "spl-earthquake"
+        },
+        {
+          "level": 9,
+          "spell": "Implosion",
+          "refId": "spl-implosion"
+        }
+      ]
+    },
     "grantedPower": {
       "description": "You gain the smite power, the supernatural ability to make a single melee attack with a +4 bonus on attack rolls and a bonus on damage rolls equal to your cleric level (if you hit). You must declare the smite before making the attack. This ability is usable once per day.",
       "classSkills": [],
       "grantedFeats": [],
       "spellLikeAbilities": []
     },
-    "requiredAlignment": [],
     "spells": [
       {
         "level": 1,
@@ -388,36 +654,89 @@
         "name": "Implosion"
       }
     ],
+    "requiredAlignment": [],
+    "effects": [],
+    "ruleFlags": {
+      "smiteAttack": "1/day"
+    },
+    "shortDescription": "You gain the smite power, the supernatural ability to make a single melee attack with a +4 bonus on attack rolls and a bonus on damage rolls equal to your cleric level (if you hit). You must declar...",
+    "text": "You gain the smite power, the supernatural ability to make a single melee attack with a +4 bonus on attack rolls and a bonus on damage rolls equal to your cleric level (if you hit). You must declare the smite before making the attack. This ability is usable once per day.",
     "tags": [
       "domain",
       "cleric",
       "destruction"
-    ],
-    "modifiers": [],
-    "damageParts": [],
-    "modes": [],
-    "ruleFlags": {
-      "smiteAttack": "1/day"
-    }
+    ]
   },
   {
+    "schemaVersion": 3,
     "id": "dom-earth",
-    "foundryId": "rsrd_dom_earth",
-    "schemaVersion": 2,
+    "blueprint": "domain",
     "name": "Earth",
     "type": "Domain",
     "category": "Cleric Domain",
-    "slot": "None",
     "source": "SRD 3.5e / Player's Handbook",
-    "description": "Turn or destroy air creatures as a good cleric turns undead. Rebuke, command, or bolster earth creatures as an evil cleric rebukes undead. Use these abilities a total number of times per day equal to 3 + your Charisma modifier. This granted power is a supernatural ability.",
-    "shortDescription": "Turn or destroy air creatures as a good cleric turns undead. Rebuke, command, or bolster earth creatures as an evil cleric rebukes undead. Use these abilities a total number of times per day equal ...",
+    "grants": {
+      "grantedPower": {
+        "name": "Earth Domain Power",
+        "text": "Turn or destroy air creatures as a good cleric turns undead. Rebuke, command, or bolster earth creatures as an evil cleric rebukes undead. Use these abilities a total number of times per day equal to 3 + your Charisma modifier. This granted power is a supernatural ability.",
+        "usage": {
+          "mode": "passive"
+        }
+      },
+      "spellLadder": [
+        {
+          "level": 1,
+          "spell": "Magic Stone",
+          "refId": "spl-magic-stone"
+        },
+        {
+          "level": 2,
+          "spell": "Soften Earth and Stone",
+          "refId": "spl-soften-earth-and-stone"
+        },
+        {
+          "level": 3,
+          "spell": "Stone Shape",
+          "refId": "spl-stone-shape"
+        },
+        {
+          "level": 4,
+          "spell": "Spike Stones",
+          "refId": "spl-spike-stones"
+        },
+        {
+          "level": 5,
+          "spell": "Wall of Stone",
+          "refId": "spl-wall-of-stone"
+        },
+        {
+          "level": 6,
+          "spell": "Stoneskin",
+          "refId": "spl-stoneskin"
+        },
+        {
+          "level": 7,
+          "spell": "Earthquake",
+          "refId": "spl-earthquake"
+        },
+        {
+          "level": 8,
+          "spell": "Iron Body",
+          "refId": "spl-iron-body"
+        },
+        {
+          "level": 9,
+          "spell": "Elemental Swarm",
+          "refId": "spl-elemental-swarm"
+        }
+      ]
+    },
     "grantedPower": {
       "description": "Turn or destroy air creatures as a good cleric turns undead. Rebuke, command, or bolster earth creatures as an evil cleric rebukes undead. Use these abilities a total number of times per day equal to 3 + your Charisma modifier. This granted power is a supernatural ability.",
       "classSkills": [],
       "grantedFeats": [],
       "spellLikeAbilities": []
     },
-    "requiredAlignment": [],
     "spells": [
       {
         "level": 1,
@@ -465,41 +784,90 @@
         "name": "Elemental Swarm"
       }
     ],
+    "requiredAlignment": [],
+    "effects": [],
+    "ruleFlags": {
+      "turnAir": true,
+      "rebukeEarth": true
+    },
+    "shortDescription": "Turn or destroy air creatures as a good cleric turns undead. Rebuke, command, or bolster earth creatures as an evil cleric rebukes undead. Use these abilities a total number of times per day equal ...",
+    "text": "Turn or destroy air creatures as a good cleric turns undead. Rebuke, command, or bolster earth creatures as an evil cleric rebukes undead. Use these abilities a total number of times per day equal to 3 + your Charisma modifier. This granted power is a supernatural ability.",
     "tags": [
       "domain",
       "cleric",
       "earth"
-    ],
-    "modifiers": [],
-    "damageParts": [],
-    "modes": [],
-    "ruleFlags": {
-      "turnAir": true,
-      "rebukeEarth": true
-    }
+    ]
   },
   {
+    "schemaVersion": 3,
     "id": "dom-evil",
-    "foundryId": "rsrd_dom_evil",
-    "schemaVersion": 2,
+    "blueprint": "domain",
     "name": "Evil",
     "type": "Domain",
     "category": "Cleric Domain",
-    "slot": "None",
     "source": "SRD 3.5e / Player's Handbook",
-    "description": "You cast evil spells at +1 caster level.",
-    "shortDescription": "You cast evil spells at +1 caster level.",
+    "grants": {
+      "grantedPower": {
+        "name": "Evil Domain Power",
+        "text": "You cast evil spells at +1 caster level.",
+        "usage": {
+          "mode": "passive"
+        }
+      },
+      "spellLadder": [
+        {
+          "level": 1,
+          "spell": "Protection from Good",
+          "refId": "spl-protection-from-good"
+        },
+        {
+          "level": 2,
+          "spell": "Desecrate",
+          "refId": "spl-desecrate"
+        },
+        {
+          "level": 3,
+          "spell": "Magic Circle against Good",
+          "refId": "spl-magic-circle-against-good"
+        },
+        {
+          "level": 4,
+          "spell": "Unholy Blight",
+          "refId": "spl-unholy-blight"
+        },
+        {
+          "level": 5,
+          "spell": "Dispel Good",
+          "refId": "spl-dispel-good"
+        },
+        {
+          "level": 6,
+          "spell": "Create Undead",
+          "refId": "spl-create-undead"
+        },
+        {
+          "level": 7,
+          "spell": "Blasphemy",
+          "refId": "spl-blasphemy"
+        },
+        {
+          "level": 8,
+          "spell": "Unholy Aura",
+          "refId": "spl-unholy-aura"
+        },
+        {
+          "level": 9,
+          "spell": "Summon Monster IX",
+          "refId": "spl-summon-monster-ix"
+        }
+      ]
+    },
     "grantedPower": {
       "description": "You cast evil spells at +1 caster level.",
       "classSkills": [],
       "grantedFeats": [],
       "spellLikeAbilities": []
     },
-    "requiredAlignment": [
-      "LE",
-      "NE",
-      "CE"
-    ],
     "spells": [
       {
         "level": 1,
@@ -547,41 +915,101 @@
         "name": "Summon Monster IX"
       }
     ],
+    "requiredAlignment": [
+      "LE",
+      "NE",
+      "CE"
+    ],
+    "effects": [
+      {
+        "type": "stat",
+        "targets": [
+          "casterLevel"
+        ],
+        "mode": "flat",
+        "value": 1,
+        "btype": "Domain",
+        "condition": "Evil spells"
+      }
+    ],
+    "shortDescription": "You cast evil spells at +1 caster level.",
+    "text": "You cast evil spells at +1 caster level.",
     "tags": [
       "domain",
       "cleric",
       "evil"
-    ],
-    "modifiers": [
-      {
-        "target": "casterLevel.evil",
-        "value": 1,
-        "type": "Domain",
-        "condition": "Evil spells"
-      }
-    ],
-    "damageParts": [],
-    "modes": [],
-    "ruleFlags": {}
+    ]
   },
   {
+    "schemaVersion": 3,
     "id": "dom-fire",
-    "foundryId": "rsrd_dom_fire",
-    "schemaVersion": 2,
+    "blueprint": "domain",
     "name": "Fire",
     "type": "Domain",
     "category": "Cleric Domain",
-    "slot": "None",
     "source": "SRD 3.5e / Player's Handbook",
-    "description": "Turn or destroy water creatures as a good cleric turns undead. Rebuke, command, or bolster fire creatures as an evil cleric rebukes undead. Use these abilities a total number of times per day equal to 3 + your Charisma modifier. This granted power is a supernatural ability.",
-    "shortDescription": "Turn or destroy water creatures as a good cleric turns undead. Rebuke, command, or bolster fire creatures as an evil cleric rebukes undead. Use these abilities a total number of times per day equal...",
+    "grants": {
+      "grantedPower": {
+        "name": "Fire Domain Power",
+        "text": "Turn or destroy water creatures as a good cleric turns undead. Rebuke, command, or bolster fire creatures as an evil cleric rebukes undead. Use these abilities a total number of times per day equal to 3 + your Charisma modifier. This granted power is a supernatural ability.",
+        "usage": {
+          "mode": "passive"
+        }
+      },
+      "spellLadder": [
+        {
+          "level": 1,
+          "spell": "Burning Hands",
+          "refId": "spl-burning-hands"
+        },
+        {
+          "level": 2,
+          "spell": "Produce Flame",
+          "refId": "spl-produce-flame"
+        },
+        {
+          "level": 3,
+          "spell": "Resist Energy",
+          "refId": "spl-resist-energy"
+        },
+        {
+          "level": 4,
+          "spell": "Wall of Fire",
+          "refId": "spl-wall-of-fire"
+        },
+        {
+          "level": 5,
+          "spell": "Fire Shield",
+          "refId": "spl-fire-shield"
+        },
+        {
+          "level": 6,
+          "spell": "Fire Seeds",
+          "refId": "spl-fire-seeds"
+        },
+        {
+          "level": 7,
+          "spell": "Fire Storm",
+          "refId": "spl-fire-storm"
+        },
+        {
+          "level": 8,
+          "spell": "Incendiary Cloud",
+          "refId": "spl-incendiary-cloud"
+        },
+        {
+          "level": 9,
+          "spell": "Elemental Swarm",
+          "refId": "spl-elemental-swarm"
+        }
+      ]
+    },
     "grantedPower": {
       "description": "Turn or destroy water creatures as a good cleric turns undead. Rebuke, command, or bolster fire creatures as an evil cleric rebukes undead. Use these abilities a total number of times per day equal to 3 + your Charisma modifier. This granted power is a supernatural ability.",
       "classSkills": [],
       "grantedFeats": [],
       "spellLikeAbilities": []
     },
-    "requiredAlignment": [],
     "spells": [
       {
         "level": 1,
@@ -629,41 +1057,90 @@
         "name": "Elemental Swarm"
       }
     ],
+    "requiredAlignment": [],
+    "effects": [],
+    "ruleFlags": {
+      "turnWater": true,
+      "rebukeFire": true
+    },
+    "shortDescription": "Turn or destroy water creatures as a good cleric turns undead. Rebuke, command, or bolster fire creatures as an evil cleric rebukes undead. Use these abilities a total number of times per day equal...",
+    "text": "Turn or destroy water creatures as a good cleric turns undead. Rebuke, command, or bolster fire creatures as an evil cleric rebukes undead. Use these abilities a total number of times per day equal to 3 + your Charisma modifier. This granted power is a supernatural ability.",
     "tags": [
       "domain",
       "cleric",
       "fire"
-    ],
-    "modifiers": [],
-    "damageParts": [],
-    "modes": [],
-    "ruleFlags": {
-      "turnWater": true,
-      "rebukeFire": true
-    }
+    ]
   },
   {
+    "schemaVersion": 3,
     "id": "dom-good",
-    "foundryId": "rsrd_dom_good",
-    "schemaVersion": 2,
+    "blueprint": "domain",
     "name": "Good",
     "type": "Domain",
     "category": "Cleric Domain",
-    "slot": "None",
     "source": "SRD 3.5e / Player's Handbook",
-    "description": "You cast good spells at +1 caster level.",
-    "shortDescription": "You cast good spells at +1 caster level.",
+    "grants": {
+      "grantedPower": {
+        "name": "Good Domain Power",
+        "text": "You cast good spells at +1 caster level.",
+        "usage": {
+          "mode": "passive"
+        }
+      },
+      "spellLadder": [
+        {
+          "level": 1,
+          "spell": "Protection from Evil",
+          "refId": "spl-protection-from-evil"
+        },
+        {
+          "level": 2,
+          "spell": "Aid",
+          "refId": "spl-aid"
+        },
+        {
+          "level": 3,
+          "spell": "Magic Circle against Evil",
+          "refId": "spl-magic-circle-against-evil"
+        },
+        {
+          "level": 4,
+          "spell": "Holy Smite",
+          "refId": "spl-holy-smite"
+        },
+        {
+          "level": 5,
+          "spell": "Dispel Evil",
+          "refId": "spl-dispel-evil"
+        },
+        {
+          "level": 6,
+          "spell": "Blade Barrier",
+          "refId": "spl-blade-barrier"
+        },
+        {
+          "level": 7,
+          "spell": "Holy Word",
+          "refId": "spl-holy-word"
+        },
+        {
+          "level": 8,
+          "spell": "Holy Aura",
+          "refId": "spl-holy-aura"
+        },
+        {
+          "level": 9,
+          "spell": "Summon Monster IX",
+          "refId": "spl-summon-monster-ix"
+        }
+      ]
+    },
     "grantedPower": {
       "description": "You cast good spells at +1 caster level.",
       "classSkills": [],
       "grantedFeats": [],
       "spellLikeAbilities": []
     },
-    "requiredAlignment": [
-      "LG",
-      "NG",
-      "CG"
-    ],
     "spells": [
       {
         "level": 1,
@@ -711,41 +1188,101 @@
         "name": "Summon Monster IX"
       }
     ],
+    "requiredAlignment": [
+      "LG",
+      "NG",
+      "CG"
+    ],
+    "effects": [
+      {
+        "type": "stat",
+        "targets": [
+          "casterLevel"
+        ],
+        "mode": "flat",
+        "value": 1,
+        "btype": "Domain",
+        "condition": "Good spells"
+      }
+    ],
+    "shortDescription": "You cast good spells at +1 caster level.",
+    "text": "You cast good spells at +1 caster level.",
     "tags": [
       "domain",
       "cleric",
       "good"
-    ],
-    "modifiers": [
-      {
-        "target": "casterLevel.good",
-        "value": 1,
-        "type": "Domain",
-        "condition": "Good spells"
-      }
-    ],
-    "damageParts": [],
-    "modes": [],
-    "ruleFlags": {}
+    ]
   },
   {
+    "schemaVersion": 3,
     "id": "dom-healing",
-    "foundryId": "rsrd_dom_healing",
-    "schemaVersion": 2,
+    "blueprint": "domain",
     "name": "Healing",
     "type": "Domain",
     "category": "Cleric Domain",
-    "slot": "None",
     "source": "SRD 3.5e / Player's Handbook",
-    "description": "You cast healing spells at +1 caster level.",
-    "shortDescription": "You cast healing spells at +1 caster level.",
+    "grants": {
+      "grantedPower": {
+        "name": "Healing Domain Power",
+        "text": "You cast healing spells at +1 caster level.",
+        "usage": {
+          "mode": "passive"
+        }
+      },
+      "spellLadder": [
+        {
+          "level": 1,
+          "spell": "Cure Light Wounds",
+          "refId": "spl-cure-light-wounds"
+        },
+        {
+          "level": 2,
+          "spell": "Cure Moderate Wounds",
+          "refId": "spl-cure-moderate-wounds"
+        },
+        {
+          "level": 3,
+          "spell": "Cure Serious Wounds",
+          "refId": "spl-cure-serious-wounds"
+        },
+        {
+          "level": 4,
+          "spell": "Cure Critical Wounds",
+          "refId": "spl-cure-critical-wounds"
+        },
+        {
+          "level": 5,
+          "spell": "Cure Light Wounds, Mass",
+          "refId": "spl-cure-light-wounds-mass"
+        },
+        {
+          "level": 6,
+          "spell": "Heal",
+          "refId": "spl-heal"
+        },
+        {
+          "level": 7,
+          "spell": "Regenerate",
+          "refId": "spl-regenerate"
+        },
+        {
+          "level": 8,
+          "spell": "Cure Critical Wounds, Mass",
+          "refId": "spl-cure-critical-wounds-mass"
+        },
+        {
+          "level": 9,
+          "spell": "Heal, Mass",
+          "refId": "spl-heal-mass"
+        }
+      ]
+    },
     "grantedPower": {
       "description": "You cast healing spells at +1 caster level.",
       "classSkills": [],
       "grantedFeats": [],
       "spellLikeAbilities": []
     },
-    "requiredAlignment": [],
     "spells": [
       {
         "level": 1,
@@ -793,34 +1330,91 @@
         "name": "Heal, Mass"
       }
     ],
+    "requiredAlignment": [],
+    "effects": [
+      {
+        "type": "stat",
+        "targets": [
+          "casterLevel"
+        ],
+        "mode": "flat",
+        "value": 1,
+        "btype": "Domain",
+        "condition": "Conjuration (Healing) spells"
+      }
+    ],
+    "shortDescription": "You cast healing spells at +1 caster level.",
+    "text": "You cast healing spells at +1 caster level.",
     "tags": [
       "domain",
       "cleric",
       "healing"
-    ],
-    "modifiers": [
-      {
-        "target": "casterLevel.healing",
-        "value": 1,
-        "type": "Domain",
-        "condition": "Conjuration (Healing) spells"
-      }
-    ],
-    "damageParts": [],
-    "modes": [],
-    "ruleFlags": {}
+    ]
   },
   {
+    "schemaVersion": 3,
     "id": "dom-knowledge",
-    "foundryId": "rsrd_dom_knowledge",
-    "schemaVersion": 2,
+    "blueprint": "domain",
     "name": "Knowledge",
     "type": "Domain",
     "category": "Cleric Domain",
-    "slot": "None",
     "source": "SRD 3.5e / Player's Handbook",
-    "description": "All knowledge skills are class skills.  You cast divinations at +1 caster level.",
-    "shortDescription": "All knowledge skills are class skills.  You cast divinations at +1 caster level.",
+    "grants": {
+      "grantedPower": {
+        "name": "Knowledge Domain Power",
+        "text": "All knowledge skills are class skills.  You cast divinations at +1 caster level.",
+        "usage": {
+          "mode": "passive"
+        }
+      },
+      "spellLadder": [
+        {
+          "level": 1,
+          "spell": "Detect Secret Doors",
+          "refId": "spl-detect-secret-doors"
+        },
+        {
+          "level": 2,
+          "spell": "Detect Thoughts",
+          "refId": "spl-detect-thoughts"
+        },
+        {
+          "level": 3,
+          "spell": "Clairaudience/Clairvoyance",
+          "refId": "spl-clairaudience-clairvoyance"
+        },
+        {
+          "level": 4,
+          "spell": "Divination",
+          "refId": "spl-divination"
+        },
+        {
+          "level": 5,
+          "spell": "True Seeing",
+          "refId": "spl-true-seeing"
+        },
+        {
+          "level": 6,
+          "spell": "Find the Path",
+          "refId": "spl-find-the-path"
+        },
+        {
+          "level": 7,
+          "spell": "Legend Lore",
+          "refId": "spl-legend-lore"
+        },
+        {
+          "level": 8,
+          "spell": "Discern Location",
+          "refId": "spl-discern-location"
+        },
+        {
+          "level": 9,
+          "spell": "Foresight",
+          "refId": "spl-foresight"
+        }
+      ]
+    },
     "grantedPower": {
       "description": "All knowledge skills are class skills.  You cast divinations at +1 caster level.",
       "classSkills": [
@@ -829,7 +1423,6 @@
       "grantedFeats": [],
       "spellLikeAbilities": []
     },
-    "requiredAlignment": [],
     "spells": [
       {
         "level": 1,
@@ -877,45 +1470,97 @@
         "name": "Foresight"
       }
     ],
+    "requiredAlignment": [],
+    "effects": [
+      {
+        "type": "stat",
+        "targets": [
+          "casterLevel"
+        ],
+        "mode": "flat",
+        "value": 1,
+        "btype": "Domain",
+        "condition": "Divination spells"
+      }
+    ],
+    "shortDescription": "All knowledge skills are class skills. You cast divinations at +1 caster level.",
+    "text": "All knowledge skills are class skills. You cast divinations at +1 caster level.",
     "tags": [
       "domain",
       "cleric",
       "knowledge"
-    ],
-    "modifiers": [
-      {
-        "target": "casterLevel.divination",
-        "value": 1,
-        "type": "Domain",
-        "condition": "Divination spells"
-      }
-    ],
-    "damageParts": [],
-    "modes": [],
-    "ruleFlags": {}
+    ]
   },
   {
+    "schemaVersion": 3,
     "id": "dom-law",
-    "foundryId": "rsrd_dom_law",
-    "schemaVersion": 2,
+    "blueprint": "domain",
     "name": "Law",
     "type": "Domain",
     "category": "Cleric Domain",
-    "slot": "None",
     "source": "SRD 3.5e / Player's Handbook",
-    "description": "You cast law spells at +1 caster level.",
-    "shortDescription": "You cast law spells at +1 caster level.",
+    "grants": {
+      "grantedPower": {
+        "name": "Law Domain Power",
+        "text": "You cast law spells at +1 caster level.",
+        "usage": {
+          "mode": "passive"
+        }
+      },
+      "spellLadder": [
+        {
+          "level": 1,
+          "spell": "Protection from Chaos",
+          "refId": "spl-protection-from-chaos"
+        },
+        {
+          "level": 2,
+          "spell": "Calm Emotions",
+          "refId": "spl-calm-emotions"
+        },
+        {
+          "level": 3,
+          "spell": "Magic Circle against Chaos",
+          "refId": "spl-magic-circle-against-chaos"
+        },
+        {
+          "level": 4,
+          "spell": "Order’s Wrath",
+          "refId": "spl-orders-wrath"
+        },
+        {
+          "level": 5,
+          "spell": "Dispel Chaos",
+          "refId": "spl-dispel-chaos"
+        },
+        {
+          "level": 6,
+          "spell": "Hold Monster",
+          "refId": "spl-hold-monster"
+        },
+        {
+          "level": 7,
+          "spell": "Dictum",
+          "refId": "spl-dictum"
+        },
+        {
+          "level": 8,
+          "spell": "Shield of Law",
+          "refId": "spl-shield-of-law"
+        },
+        {
+          "level": 9,
+          "spell": "Summon Monster IX",
+          "refId": "spl-summon-monster-ix"
+        }
+      ]
+    },
     "grantedPower": {
       "description": "You cast law spells at +1 caster level.",
       "classSkills": [],
       "grantedFeats": [],
       "spellLikeAbilities": []
     },
-    "requiredAlignment": [
-      "LG",
-      "LN",
-      "LE"
-    ],
     "spells": [
       {
         "level": 1,
@@ -963,41 +1608,101 @@
         "name": "Summon Monster IX"
       }
     ],
+    "requiredAlignment": [
+      "LG",
+      "LN",
+      "LE"
+    ],
+    "effects": [
+      {
+        "type": "stat",
+        "targets": [
+          "casterLevel"
+        ],
+        "mode": "flat",
+        "value": 1,
+        "btype": "Domain",
+        "condition": "Law spells"
+      }
+    ],
+    "shortDescription": "You cast law spells at +1 caster level.",
+    "text": "You cast law spells at +1 caster level.",
     "tags": [
       "domain",
       "cleric",
       "law"
-    ],
-    "modifiers": [
-      {
-        "target": "casterLevel.lawful",
-        "value": 1,
-        "type": "Domain",
-        "condition": "Law spells"
-      }
-    ],
-    "damageParts": [],
-    "modes": [],
-    "ruleFlags": {}
+    ]
   },
   {
+    "schemaVersion": 3,
     "id": "dom-luck",
-    "foundryId": "rsrd_dom_luck",
-    "schemaVersion": 2,
+    "blueprint": "domain",
     "name": "Luck",
     "type": "Domain",
     "category": "Cleric Domain",
-    "slot": "None",
     "source": "SRD 3.5e / Player's Handbook",
-    "description": "You gain the power of good fortune, which is usable once per day. This extraordinary ability allows you to reroll one roll that you have just made before the DM declares whether the roll results in success or failure. You must take the result of the reroll, even if it's worse than the original roll.",
-    "shortDescription": "You gain the power of good fortune, which is usable once per day. This extraordinary ability allows you to reroll one roll that you have just made before the DM declares whether the roll results in...",
+    "grants": {
+      "grantedPower": {
+        "name": "Luck Domain Power",
+        "text": "You gain the power of good fortune, which is usable once per day. This extraordinary ability allows you to reroll one roll that you have just made before the DM declares whether the roll results in success or failure. You must take the result of the reroll, even if it's worse than the original roll.",
+        "usage": {
+          "mode": "passive"
+        }
+      },
+      "spellLadder": [
+        {
+          "level": 1,
+          "spell": "Entropic Shield",
+          "refId": "spl-entropic-shield"
+        },
+        {
+          "level": 2,
+          "spell": "Aid",
+          "refId": "spl-aid"
+        },
+        {
+          "level": 3,
+          "spell": "Protection from Energy",
+          "refId": "spl-protection-from-energy"
+        },
+        {
+          "level": 4,
+          "spell": "Freedom of Movement",
+          "refId": "spl-freedom-of-movement"
+        },
+        {
+          "level": 5,
+          "spell": "Break Enchantment",
+          "refId": "spl-break-enchantment"
+        },
+        {
+          "level": 6,
+          "spell": "Mislead",
+          "refId": "spl-mislead"
+        },
+        {
+          "level": 7,
+          "spell": "Spell Turning",
+          "refId": "spl-spell-turning"
+        },
+        {
+          "level": 8,
+          "spell": "Moment of Prescience",
+          "refId": "spl-moment-of-prescience"
+        },
+        {
+          "level": 9,
+          "spell": "Miracle",
+          "refId": "spl-miracle"
+        }
+      ]
+    },
     "grantedPower": {
       "description": "You gain the power of good fortune, which is usable once per day. This extraordinary ability allows you to reroll one roll that you have just made before the DM declares whether the roll results in success or failure. You must take the result of the reroll, even if it's worse than the original roll.",
       "classSkills": [],
       "grantedFeats": [],
       "spellLikeAbilities": []
     },
-    "requiredAlignment": [],
     "spells": [
       {
         "level": 1,
@@ -1045,36 +1750,89 @@
         "name": "Miracle"
       }
     ],
+    "requiredAlignment": [],
+    "effects": [],
+    "ruleFlags": {
+      "goodFortuneReroll": "1/day"
+    },
+    "shortDescription": "You gain the power of good fortune, which is usable once per day. This extraordinary ability allows you to reroll one roll that you have just made before the DM declares whether the roll results in...",
+    "text": "You gain the power of good fortune, which is usable once per day. This extraordinary ability allows you to reroll one roll that you have just made before the DM declares whether the roll results in success or failure. You must take the result of the reroll, even if it's worse than the original roll.",
     "tags": [
       "domain",
       "cleric",
       "luck"
-    ],
-    "modifiers": [],
-    "damageParts": [],
-    "modes": [],
-    "ruleFlags": {
-      "goodFortuneReroll": "1/day"
-    }
+    ]
   },
   {
+    "schemaVersion": 3,
     "id": "dom-magic",
-    "foundryId": "rsrd_dom_magic",
-    "schemaVersion": 2,
+    "blueprint": "domain",
     "name": "Magic",
     "type": "Domain",
     "category": "Cleric Domain",
-    "slot": "None",
     "source": "SRD 3.5e / Player's Handbook",
-    "description": "Use scrolls, wands, and other devices with spell completion or spell trigger activation as a wizard of one-half your cleric level (at least 1st level). For the purpose of using a scroll or other magic device, if you are also a wizard, actual wizard levels and these effective wizard levels stack.",
-    "shortDescription": "Use scrolls, wands, and other devices with spell completion or spell trigger activation as a wizard of one-half your cleric level (at least 1st level). For the purpose of using a scroll or other ma...",
+    "grants": {
+      "grantedPower": {
+        "name": "Magic Domain Power",
+        "text": "Use scrolls, wands, and other devices with spell completion or spell trigger activation as a wizard of one-half your cleric level (at least 1st level). For the purpose of using a scroll or other magic device, if you are also a wizard, actual wizard levels and these effective wizard levels stack.",
+        "usage": {
+          "mode": "passive"
+        }
+      },
+      "spellLadder": [
+        {
+          "level": 1,
+          "spell": "Magic Aura",
+          "refId": "spl-magic-aura"
+        },
+        {
+          "level": 2,
+          "spell": "Identify",
+          "refId": "spl-identify"
+        },
+        {
+          "level": 3,
+          "spell": "Dispel Magic",
+          "refId": "spl-dispel-magic"
+        },
+        {
+          "level": 4,
+          "spell": "Imbue with Spell Ability",
+          "refId": "spl-imbue-with-spell-ability"
+        },
+        {
+          "level": 5,
+          "spell": "Spell Resistance",
+          "refId": "spl-spell-resistance"
+        },
+        {
+          "level": 6,
+          "spell": "Antimagic Field",
+          "refId": "spl-antimagic-field"
+        },
+        {
+          "level": 7,
+          "spell": "Spell Turning",
+          "refId": "spl-spell-turning"
+        },
+        {
+          "level": 8,
+          "spell": "Protection from Spells",
+          "refId": "spl-protection-from-spells"
+        },
+        {
+          "level": 9,
+          "spell": "Mage's Disjunction",
+          "refId": "spl-mages-disjunction"
+        }
+      ]
+    },
     "grantedPower": {
       "description": "Use scrolls, wands, and other devices with spell completion or spell trigger activation as a wizard of one-half your cleric level (at least 1st level). For the purpose of using a scroll or other magic device, if you are also a wizard, actual wizard levels and these effective wizard levels stack.",
       "classSkills": [],
       "grantedFeats": [],
       "spellLikeAbilities": []
     },
-    "requiredAlignment": [],
     "spells": [
       {
         "level": 1,
@@ -1122,29 +1880,83 @@
         "name": "Mage's Disjunction"
       }
     ],
+    "requiredAlignment": [],
+    "effects": [],
+    "ruleFlags": {
+      "useWizardSpellDevices": true
+    },
+    "shortDescription": "Use scrolls, wands, and other devices with spell completion or spell trigger activation as a wizard of one-half your cleric level (at least 1st level). For the purpose of using a scroll or other ma...",
+    "text": "Use scrolls, wands, and other devices with spell completion or spell trigger activation as a wizard of one-half your cleric level (at least 1st level). For the purpose of using a scroll or other magic device, if you are also a wizard, actual wizard levels and these effective wizard levels stack.",
     "tags": [
       "domain",
       "cleric",
       "magic"
-    ],
-    "modifiers": [],
-    "damageParts": [],
-    "modes": [],
-    "ruleFlags": {
-      "useWizardSpellDevices": true
-    }
+    ]
   },
   {
+    "schemaVersion": 3,
     "id": "dom-plant",
-    "foundryId": "rsrd_dom_plant",
-    "schemaVersion": 2,
+    "blueprint": "domain",
     "name": "Plant",
     "type": "Domain",
     "category": "Cleric Domain",
-    "slot": "None",
     "source": "SRD 3.5e / Player's Handbook",
-    "description": "Rebuke or command plant creatures as an evil cleric rebukes or commands undead. Use this ability a total number of times per day equal to 3 + your Charisma modifier. This granted power is a supernatural ability.",
-    "shortDescription": "Rebuke or command plant creatures as an evil cleric rebukes or commands undead. Use this ability a total number of times per day equal to 3 + your Charisma modifier. This granted power is a superna...",
+    "grants": {
+      "grantedPower": {
+        "name": "Plant Domain Power",
+        "text": "Rebuke or command plant creatures as an evil cleric rebukes or commands undead. Use this ability a total number of times per day equal to 3 + your Charisma modifier. This granted power is a supernatural ability.",
+        "usage": {
+          "mode": "passive"
+        }
+      },
+      "spellLadder": [
+        {
+          "level": 1,
+          "spell": "Entangle",
+          "refId": "spl-entangle"
+        },
+        {
+          "level": 2,
+          "spell": "Barkskin",
+          "refId": "spl-barkskin"
+        },
+        {
+          "level": 3,
+          "spell": "Plant Growth",
+          "refId": "spl-plant-growth"
+        },
+        {
+          "level": 4,
+          "spell": "Command Plants",
+          "refId": "spl-command-plants"
+        },
+        {
+          "level": 5,
+          "spell": "Wall of Thorns",
+          "refId": "spl-wall-of-thorns"
+        },
+        {
+          "level": 6,
+          "spell": "Repel Wood",
+          "refId": "spl-repel-wood"
+        },
+        {
+          "level": 7,
+          "spell": "Animate Plants",
+          "refId": "spl-animate-plants"
+        },
+        {
+          "level": 8,
+          "spell": "Control Plants",
+          "refId": "spl-control-plants"
+        },
+        {
+          "level": 9,
+          "spell": "Shambler",
+          "refId": "spl-shambler"
+        }
+      ]
+    },
     "grantedPower": {
       "description": "Rebuke or command plant creatures as an evil cleric rebukes or commands undead. Use this ability a total number of times per day equal to 3 + your Charisma modifier. This granted power is a supernatural ability.",
       "classSkills": [
@@ -1153,7 +1965,6 @@
       "grantedFeats": [],
       "spellLikeAbilities": []
     },
-    "requiredAlignment": [],
     "spells": [
       {
         "level": 1,
@@ -1201,36 +2012,89 @@
         "name": "Shambler"
       }
     ],
+    "requiredAlignment": [],
+    "effects": [],
+    "ruleFlags": {
+      "rebukePlant": true
+    },
+    "shortDescription": "Rebuke or command plant creatures as an evil cleric rebukes or commands undead. Use this ability a total number of times per day equal to 3 + your Charisma modifier. This granted power is a superna...",
+    "text": "Rebuke or command plant creatures as an evil cleric rebukes or commands undead. Use this ability a total number of times per day equal to 3 + your Charisma modifier. This granted power is a supernatural ability.",
     "tags": [
       "domain",
       "cleric",
       "plant"
-    ],
-    "modifiers": [],
-    "damageParts": [],
-    "modes": [],
-    "ruleFlags": {
-      "rebukePlant": true
-    }
+    ]
   },
   {
+    "schemaVersion": 3,
     "id": "dom-protection",
-    "foundryId": "rsrd_dom_protection",
-    "schemaVersion": 2,
+    "blueprint": "domain",
     "name": "Protection",
     "type": "Domain",
     "category": "Cleric Domain",
-    "slot": "None",
     "source": "SRD 3.5e / Player's Handbook",
-    "description": "You can generate a protective ward as a supernatural ability. Grant someone you touch a resistance bonus equal to your cleric level on his or her next saving throw. Activating this power is a standard action. The protective ward is an abjuration effect with a duration of 1 hour that is usable once per day.",
-    "shortDescription": "You can generate a protective ward as a supernatural ability. Grant someone you touch a resistance bonus equal to your cleric level on his or her next saving throw. Activating this power is a stand...",
+    "grants": {
+      "grantedPower": {
+        "name": "Protection Domain Power",
+        "text": "You can generate a protective ward as a supernatural ability. Grant someone you touch a resistance bonus equal to your cleric level on his or her next saving throw. Activating this power is a standard action. The protective ward is an abjuration effect with a duration of 1 hour that is usable once per day.",
+        "usage": {
+          "mode": "passive"
+        }
+      },
+      "spellLadder": [
+        {
+          "level": 1,
+          "spell": "Sanctuary",
+          "refId": "spl-sanctuary"
+        },
+        {
+          "level": 2,
+          "spell": "Shield Other",
+          "refId": "spl-shield-other"
+        },
+        {
+          "level": 3,
+          "spell": "Protection from Energy",
+          "refId": "spl-protection-from-energy"
+        },
+        {
+          "level": 4,
+          "spell": "Spell Immunity",
+          "refId": "spl-spell-immunity"
+        },
+        {
+          "level": 5,
+          "spell": "Spell Resistance",
+          "refId": "spl-spell-resistance"
+        },
+        {
+          "level": 6,
+          "spell": "Antimagic Field",
+          "refId": "spl-antimagic-field"
+        },
+        {
+          "level": 7,
+          "spell": "Repulsion",
+          "refId": "spl-repulsion"
+        },
+        {
+          "level": 8,
+          "spell": "Mind Blank",
+          "refId": "spl-mind-blank"
+        },
+        {
+          "level": 9,
+          "spell": "Prismatic Sphere",
+          "refId": "spl-prismatic-sphere"
+        }
+      ]
+    },
     "grantedPower": {
       "description": "You can generate a protective ward as a supernatural ability. Grant someone you touch a resistance bonus equal to your cleric level on his or her next saving throw. Activating this power is a standard action. The protective ward is an abjuration effect with a duration of 1 hour that is usable once per day.",
       "classSkills": [],
       "grantedFeats": [],
       "spellLikeAbilities": []
     },
-    "requiredAlignment": [],
     "spells": [
       {
         "level": 1,
@@ -1278,36 +2142,89 @@
         "name": "Prismatic Sphere"
       }
     ],
+    "requiredAlignment": [],
+    "effects": [],
+    "ruleFlags": {
+      "protectiveWard": "1/day"
+    },
+    "shortDescription": "You can generate a protective ward as a supernatural ability. Grant someone you touch a resistance bonus equal to your cleric level on his or her next saving throw. Activating this power is a stand...",
+    "text": "You can generate a protective ward as a supernatural ability. Grant someone you touch a resistance bonus equal to your cleric level on his or her next saving throw. Activating this power is a standard action. The protective ward is an abjuration effect with a duration of 1 hour that is usable once per day.",
     "tags": [
       "domain",
       "cleric",
       "protection"
-    ],
-    "modifiers": [],
-    "damageParts": [],
-    "modes": [],
-    "ruleFlags": {
-      "protectiveWard": "1/day"
-    }
+    ]
   },
   {
+    "schemaVersion": 3,
     "id": "dom-strength",
-    "foundryId": "rsrd_dom_strength",
-    "schemaVersion": 2,
+    "blueprint": "domain",
     "name": "Strength",
     "type": "Domain",
     "category": "Cleric Domain",
-    "slot": "None",
     "source": "SRD 3.5e / Player's Handbook",
-    "description": "You can perform a feat of strength as a supernatural ability. You gain an enhancement bonus to Strength equal to your cleric level. Activating the power is a free action, the power lasts 1 round, and it is usable once per day.",
-    "shortDescription": "You can perform a feat of strength as a supernatural ability. You gain an enhancement bonus to Strength equal to your cleric level. Activating the power is a free action, the power lasts 1 round, a...",
+    "grants": {
+      "grantedPower": {
+        "name": "Strength Domain Power",
+        "text": "You can perform a feat of strength as a supernatural ability. You gain an enhancement bonus to Strength equal to your cleric level. Activating the power is a free action, the power lasts 1 round, and it is usable once per day.",
+        "usage": {
+          "mode": "passive"
+        }
+      },
+      "spellLadder": [
+        {
+          "level": 1,
+          "spell": "Enlarge Person",
+          "refId": "spl-enlarge-person"
+        },
+        {
+          "level": 2,
+          "spell": "Bull's Strength",
+          "refId": "spl-bulls-strength"
+        },
+        {
+          "level": 3,
+          "spell": "Magic Vestment",
+          "refId": "spl-magic-vestment"
+        },
+        {
+          "level": 4,
+          "spell": "Spell Immunity",
+          "refId": "spl-spell-immunity"
+        },
+        {
+          "level": 5,
+          "spell": "Righteous Might",
+          "refId": "spl-righteous-might"
+        },
+        {
+          "level": 6,
+          "spell": "Stoneskin",
+          "refId": "spl-stoneskin"
+        },
+        {
+          "level": 7,
+          "spell": "Grasping Hand",
+          "refId": "spl-grasping-hand"
+        },
+        {
+          "level": 8,
+          "spell": "Clenched Fist",
+          "refId": "spl-clenched-fist"
+        },
+        {
+          "level": 9,
+          "spell": "Crushing Hand",
+          "refId": "spl-crushing-hand"
+        }
+      ]
+    },
     "grantedPower": {
       "description": "You can perform a feat of strength as a supernatural ability. You gain an enhancement bonus to Strength equal to your cleric level. Activating the power is a free action, the power lasts 1 round, and it is usable once per day.",
       "classSkills": [],
       "grantedFeats": [],
       "spellLikeAbilities": []
     },
-    "requiredAlignment": [],
     "spells": [
       {
         "level": 1,
@@ -1355,36 +2272,89 @@
         "name": "Crushing Hand"
       }
     ],
+    "requiredAlignment": [],
+    "effects": [],
+    "ruleFlags": {
+      "featOfStrength": "1/day"
+    },
+    "shortDescription": "You can perform a feat of strength as a supernatural ability. You gain an enhancement bonus to Strength equal to your cleric level. Activating the power is a free action, the power lasts 1 round, a...",
+    "text": "You can perform a feat of strength as a supernatural ability. You gain an enhancement bonus to Strength equal to your cleric level. Activating the power is a free action, the power lasts 1 round, and it is usable once per day.",
     "tags": [
       "domain",
       "cleric",
       "strength"
-    ],
-    "modifiers": [],
-    "damageParts": [],
-    "modes": [],
-    "ruleFlags": {
-      "featOfStrength": "1/day"
-    }
+    ]
   },
   {
+    "schemaVersion": 3,
     "id": "dom-sun",
-    "foundryId": "rsrd_dom_sun",
-    "schemaVersion": 2,
+    "blueprint": "domain",
     "name": "Sun",
     "type": "Domain",
     "category": "Cleric Domain",
-    "slot": "None",
     "source": "SRD 3.5e / Player's Handbook",
-    "description": "Once per day, you can perform a greater turning against undead in place of a regular turning. The greater turning is like a normal turning except that the undead creatures that would be turned are destroyed instead.",
-    "shortDescription": "Once per day, you can perform a greater turning against undead in place of a regular turning. The greater turning is like a normal turning except that the undead creatures that would be turned are ...",
+    "grants": {
+      "grantedPower": {
+        "name": "Sun Domain Power",
+        "text": "Once per day, you can perform a greater turning against undead in place of a regular turning. The greater turning is like a normal turning except that the undead creatures that would be turned are destroyed instead.",
+        "usage": {
+          "mode": "passive"
+        }
+      },
+      "spellLadder": [
+        {
+          "level": 1,
+          "spell": "Endure Elements",
+          "refId": "spl-endure-elements"
+        },
+        {
+          "level": 2,
+          "spell": "Heat Metal",
+          "refId": "spl-heat-metal"
+        },
+        {
+          "level": 3,
+          "spell": "Searing Light",
+          "refId": "spl-searing-light"
+        },
+        {
+          "level": 4,
+          "spell": "Fire Shield",
+          "refId": "spl-fire-shield"
+        },
+        {
+          "level": 5,
+          "spell": "Flame Strike",
+          "refId": "spl-flame-strike"
+        },
+        {
+          "level": 6,
+          "spell": "Fire Seeds",
+          "refId": "spl-fire-seeds"
+        },
+        {
+          "level": 7,
+          "spell": "Sunbeam",
+          "refId": "spl-sunbeam"
+        },
+        {
+          "level": 8,
+          "spell": "Sunburst",
+          "refId": "spl-sunburst"
+        },
+        {
+          "level": 9,
+          "spell": "Prismatic Sphere",
+          "refId": "spl-prismatic-sphere"
+        }
+      ]
+    },
     "grantedPower": {
       "description": "Once per day, you can perform a greater turning against undead in place of a regular turning. The greater turning is like a normal turning except that the undead creatures that would be turned are destroyed instead.",
       "classSkills": [],
       "grantedFeats": [],
       "spellLikeAbilities": []
     },
-    "requiredAlignment": [],
     "spells": [
       {
         "level": 1,
@@ -1432,29 +2402,83 @@
         "name": "Prismatic Sphere"
       }
     ],
+    "requiredAlignment": [],
+    "effects": [],
+    "ruleFlags": {
+      "greaterTurning": "1/day"
+    },
+    "shortDescription": "Once per day, you can perform a greater turning against undead in place of a regular turning. The greater turning is like a normal turning except that the undead creatures that would be turned are ...",
+    "text": "Once per day, you can perform a greater turning against undead in place of a regular turning. The greater turning is like a normal turning except that the undead creatures that would be turned are destroyed instead.",
     "tags": [
       "domain",
       "cleric",
       "sun"
-    ],
-    "modifiers": [],
-    "damageParts": [],
-    "modes": [],
-    "ruleFlags": {
-      "greaterTurning": "1/day"
-    }
+    ]
   },
   {
+    "schemaVersion": 3,
     "id": "dom-travel",
-    "foundryId": "rsrd_dom_travel",
-    "schemaVersion": 2,
+    "blueprint": "domain",
     "name": "Travel",
     "type": "Domain",
     "category": "Cleric Domain",
-    "slot": "None",
     "source": "SRD 3.5e / Player's Handbook",
-    "description": "For a total time per day of 1 round per cleric level you possess, you can act normally regardless of magical effects that impede movement as if you were affected by the spell freedom of movement. This effect occurs automatically as soon as it applies, lasts until it runs out or is no longer needed, and can operate multiple times per day (up to the total daily limit of rounds).This granted power is a supernatural ability.",
-    "shortDescription": "For a total time per day of 1 round per cleric level you possess, you can act normally regardless of magical effects that impede movement as if you were affected by the spell freedom of movement. T...",
+    "grants": {
+      "grantedPower": {
+        "name": "Travel Domain Power",
+        "text": "For a total time per day of 1 round per cleric level you possess, you can act normally regardless of magical effects that impede movement as if you were affected by the spell freedom of movement. This effect occurs automatically as soon as it applies, lasts until it runs out or is no longer needed, and can operate multiple times per day (up to the total daily limit of rounds).This granted power is a supernatural ability.",
+        "usage": {
+          "mode": "passive"
+        }
+      },
+      "spellLadder": [
+        {
+          "level": 1,
+          "spell": "Longstrider",
+          "refId": "spl-longstrider"
+        },
+        {
+          "level": 2,
+          "spell": "Locate Object",
+          "refId": "spl-locate-object"
+        },
+        {
+          "level": 3,
+          "spell": "Fly",
+          "refId": "spl-fly"
+        },
+        {
+          "level": 4,
+          "spell": "Dimension Door",
+          "refId": "spl-dimension-door"
+        },
+        {
+          "level": 5,
+          "spell": "Teleport",
+          "refId": "spl-teleport"
+        },
+        {
+          "level": 6,
+          "spell": "Find the Path",
+          "refId": "spl-find-the-path"
+        },
+        {
+          "level": 7,
+          "spell": "Teleport, Greater",
+          "refId": "spl-teleport-greater"
+        },
+        {
+          "level": 8,
+          "spell": "Phase Door",
+          "refId": "spl-phase-door"
+        },
+        {
+          "level": 9,
+          "spell": "Astral Projection",
+          "refId": "spl-astral-projection"
+        }
+      ]
+    },
     "grantedPower": {
       "description": "For a total time per day of 1 round per cleric level you possess, you can act normally regardless of magical effects that impede movement as if you were affected by the spell freedom of movement. This effect occurs automatically as soon as it applies, lasts until it runs out or is no longer needed, and can operate multiple times per day (up to the total daily limit of rounds).This granted power is a supernatural ability.",
       "classSkills": [
@@ -1463,7 +2487,6 @@
       "grantedFeats": [],
       "spellLikeAbilities": []
     },
-    "requiredAlignment": [],
     "spells": [
       {
         "level": 1,
@@ -1511,29 +2534,83 @@
         "name": "Astral Projection"
       }
     ],
+    "requiredAlignment": [],
+    "effects": [],
+    "ruleFlags": {
+      "freedomOfMovementRoundsPerDay": "clericLevel"
+    },
+    "shortDescription": "For a total time per day of 1 round per cleric level you possess, you can act normally regardless of magical effects that impede movement as if you were affected by the spell freedom of movement. T...",
+    "text": "For a total time per day of 1 round per cleric level you possess, you can act normally regardless of magical effects that impede movement as if you were affected by the spell freedom of movement. This effect occurs automatically as soon as it applies, lasts until it runs out or is no longer needed, and can operate multiple times per day (up to the total daily limit of rounds).This granted power is a supernatural ability.",
     "tags": [
       "domain",
       "cleric",
       "travel"
-    ],
-    "modifiers": [],
-    "damageParts": [],
-    "modes": [],
-    "ruleFlags": {
-      "freedomOfMovementRoundsPerDay": "clericLevel"
-    }
+    ]
   },
   {
+    "schemaVersion": 3,
     "id": "dom-trickery",
-    "foundryId": "rsrd_dom_trickery",
-    "schemaVersion": 2,
+    "blueprint": "domain",
     "name": "Trickery",
     "type": "Domain",
     "category": "Cleric Domain",
-    "slot": "None",
     "source": "SRD 3.5e / Player's Handbook",
-    "description": "Bluff, Disguise and Hide are class skills.",
-    "shortDescription": "Bluff, Disguise and Hide are class skills.",
+    "grants": {
+      "grantedPower": {
+        "name": "Trickery Domain Power",
+        "text": "Bluff, Disguise and Hide are class skills.",
+        "usage": {
+          "mode": "passive"
+        }
+      },
+      "spellLadder": [
+        {
+          "level": 1,
+          "spell": "Disguise Self",
+          "refId": "spl-disguise-self"
+        },
+        {
+          "level": 2,
+          "spell": "Invisibility",
+          "refId": "spl-invisibility"
+        },
+        {
+          "level": 3,
+          "spell": "Nondetection",
+          "refId": "spl-nondetection"
+        },
+        {
+          "level": 4,
+          "spell": "Confusion",
+          "refId": "spl-confusion"
+        },
+        {
+          "level": 5,
+          "spell": "False Vision",
+          "refId": "spl-false-vision"
+        },
+        {
+          "level": 6,
+          "spell": "Mislead",
+          "refId": "spl-mislead"
+        },
+        {
+          "level": 7,
+          "spell": "Screen",
+          "refId": "spl-screen"
+        },
+        {
+          "level": 8,
+          "spell": "Polymorph Any Object",
+          "refId": "spl-polymorph-any-object"
+        },
+        {
+          "level": 9,
+          "spell": "Time Stop",
+          "refId": "spl-time-stop"
+        }
+      ]
+    },
     "grantedPower": {
       "description": "Bluff, Disguise and Hide are class skills.",
       "classSkills": [
@@ -1544,7 +2621,6 @@
       "grantedFeats": [],
       "spellLikeAbilities": []
     },
-    "requiredAlignment": [],
     "spells": [
       {
         "level": 1,
@@ -1592,27 +2668,80 @@
         "name": "Time Stop"
       }
     ],
+    "requiredAlignment": [],
+    "effects": [],
+    "shortDescription": "Bluff, Disguise and Hide are class skills.",
+    "text": "Bluff, Disguise and Hide are class skills.",
     "tags": [
       "domain",
       "cleric",
       "trickery"
-    ],
-    "modifiers": [],
-    "damageParts": [],
-    "modes": [],
-    "ruleFlags": {}
+    ]
   },
   {
+    "schemaVersion": 3,
     "id": "dom-war",
-    "foundryId": "rsrd_dom_war",
-    "schemaVersion": 2,
+    "blueprint": "domain",
     "name": "War",
     "type": "Domain",
     "category": "Cleric Domain",
-    "slot": "None",
     "source": "SRD 3.5e / Player's Handbook",
-    "description": "Free Martial Weapon Proficiency with deity's favored weapon (if necessary) and Weapon Focus with the deity's favored weapon.",
-    "shortDescription": "Free Martial Weapon Proficiency with deity's favored weapon (if necessary) and Weapon Focus with the deity's favored weapon.",
+    "grants": {
+      "grantedPower": {
+        "name": "War Domain Power",
+        "text": "Free Martial Weapon Proficiency with deity's favored weapon (if necessary) and Weapon Focus with the deity's favored weapon.",
+        "usage": {
+          "mode": "passive"
+        }
+      },
+      "spellLadder": [
+        {
+          "level": 1,
+          "spell": "Magic Weapon",
+          "refId": "spl-magic-weapon"
+        },
+        {
+          "level": 2,
+          "spell": "Spiritual Weapon",
+          "refId": "spl-spiritual-weapon"
+        },
+        {
+          "level": 3,
+          "spell": "Magic Vestment",
+          "refId": "spl-magic-vestment"
+        },
+        {
+          "level": 4,
+          "spell": "Divine Power",
+          "refId": "spl-divine-power"
+        },
+        {
+          "level": 5,
+          "spell": "Flame Strike",
+          "refId": "spl-flame-strike"
+        },
+        {
+          "level": 6,
+          "spell": "Blade Barrier",
+          "refId": "spl-blade-barrier"
+        },
+        {
+          "level": 7,
+          "spell": "Power Word Blind",
+          "refId": "spl-power-word-blind"
+        },
+        {
+          "level": 8,
+          "spell": "Power Word Stun",
+          "refId": "spl-power-word-stun"
+        },
+        {
+          "level": 9,
+          "spell": "Power Word Kill",
+          "refId": "spl-power-word-kill"
+        }
+      ]
+    },
     "grantedPower": {
       "description": "Free Martial Weapon Proficiency with deity's favored weapon (if necessary) and Weapon Focus with the deity's favored weapon.",
       "classSkills": [],
@@ -1622,7 +2751,6 @@
       ],
       "spellLikeAbilities": []
     },
-    "requiredAlignment": [],
     "spells": [
       {
         "level": 1,
@@ -1670,36 +2798,89 @@
         "name": "Power Word Kill"
       }
     ],
+    "requiredAlignment": [],
+    "effects": [],
+    "ruleFlags": {
+      "warDeityFavoredWeapon": true
+    },
+    "shortDescription": "Free Martial Weapon Proficiency with deity's favored weapon (if necessary) and Weapon Focus with the deity's favored weapon.",
+    "text": "Free Martial Weapon Proficiency with deity's favored weapon (if necessary) and Weapon Focus with the deity's favored weapon.",
     "tags": [
       "domain",
       "cleric",
       "war"
-    ],
-    "modifiers": [],
-    "damageParts": [],
-    "modes": [],
-    "ruleFlags": {
-      "warDeityFavoredWeapon": true
-    }
+    ]
   },
   {
+    "schemaVersion": 3,
     "id": "dom-water",
-    "foundryId": "rsrd_dom_water",
-    "schemaVersion": 2,
+    "blueprint": "domain",
     "name": "Water",
     "type": "Domain",
     "category": "Cleric Domain",
-    "slot": "None",
     "source": "SRD 3.5e / Player's Handbook",
-    "description": "Turn or destroy fire creatures as a good cleric turns undead. Rebuke, command, or bolster water creatures as an evil cleric rebukes undead. Use these abilities a total number of times per day equal to 3 + your Charisma modifier. This granted power is a supernatural ability.",
-    "shortDescription": "Turn or destroy fire creatures as a good cleric turns undead. Rebuke, command, or bolster water creatures as an evil cleric rebukes undead. Use these abilities a total number of times per day equal...",
+    "grants": {
+      "grantedPower": {
+        "name": "Water Domain Power",
+        "text": "Turn or destroy fire creatures as a good cleric turns undead. Rebuke, command, or bolster water creatures as an evil cleric rebukes undead. Use these abilities a total number of times per day equal to 3 + your Charisma modifier. This granted power is a supernatural ability.",
+        "usage": {
+          "mode": "passive"
+        }
+      },
+      "spellLadder": [
+        {
+          "level": 1,
+          "spell": "Obscuring Mist",
+          "refId": "spl-obscuring-mist"
+        },
+        {
+          "level": 2,
+          "spell": "Fog Cloud",
+          "refId": "spl-fog-cloud"
+        },
+        {
+          "level": 3,
+          "spell": "Water Breathing",
+          "refId": "spl-water-breathing"
+        },
+        {
+          "level": 4,
+          "spell": "Control Water",
+          "refId": "spl-control-water"
+        },
+        {
+          "level": 5,
+          "spell": "Ice Storm",
+          "refId": "spl-ice-storm"
+        },
+        {
+          "level": 6,
+          "spell": "Cone of Cold",
+          "refId": "spl-cone-of-cold"
+        },
+        {
+          "level": 7,
+          "spell": "Acid Fog",
+          "refId": "spl-acid-fog"
+        },
+        {
+          "level": 8,
+          "spell": "Horrid Wilting",
+          "refId": "spl-horrid-wilting"
+        },
+        {
+          "level": 9,
+          "spell": "Elemental Swarm",
+          "refId": "spl-elemental-swarm"
+        }
+      ]
+    },
     "grantedPower": {
       "description": "Turn or destroy fire creatures as a good cleric turns undead. Rebuke, command, or bolster water creatures as an evil cleric rebukes undead. Use these abilities a total number of times per day equal to 3 + your Charisma modifier. This granted power is a supernatural ability.",
       "classSkills": [],
       "grantedFeats": [],
       "spellLikeAbilities": []
     },
-    "requiredAlignment": [],
     "spells": [
       {
         "level": 1,
@@ -1747,37 +2928,90 @@
         "name": "Elemental Swarm"
       }
     ],
+    "requiredAlignment": [],
+    "effects": [],
+    "ruleFlags": {
+      "turnFire": true,
+      "rebukeWater": true
+    },
+    "shortDescription": "Turn or destroy fire creatures as a good cleric turns undead. Rebuke, command, or bolster water creatures as an evil cleric rebukes undead. Use these abilities a total number of times per day equal...",
+    "text": "Turn or destroy fire creatures as a good cleric turns undead. Rebuke, command, or bolster water creatures as an evil cleric rebukes undead. Use these abilities a total number of times per day equal to 3 + your Charisma modifier. This granted power is a supernatural ability.",
     "tags": [
       "domain",
       "cleric",
       "water"
-    ],
-    "modifiers": [],
-    "damageParts": [],
-    "modes": [],
-    "ruleFlags": {
-      "turnFire": true,
-      "rebukeWater": true
-    }
+    ]
   },
   {
+    "schemaVersion": 3,
     "id": "dom-artifice",
-    "foundryId": "rsrd_dom_artifice",
-    "schemaVersion": 2,
+    "blueprint": "domain",
     "name": "Artifice",
     "type": "Domain",
     "category": "Cleric Domain",
-    "slot": "None",
     "source": "SRD 3.5e / Complete Divine",
-    "description": "Cast Conjuration (creation) spells at +1 casterlevel.",
-    "shortDescription": "Cast Conjuration (creation) spells at +1 casterlevel.",
+    "grants": {
+      "grantedPower": {
+        "name": "Artifice Domain Power",
+        "text": "Cast Conjuration (creation) spells at +1 casterlevel.",
+        "usage": {
+          "mode": "passive"
+        }
+      },
+      "spellLadder": [
+        {
+          "level": 1,
+          "spell": "Animate Rope",
+          "refId": "spl-animate-rope"
+        },
+        {
+          "level": 2,
+          "spell": "Wood Shape",
+          "refId": "spl-wood-shape"
+        },
+        {
+          "level": 3,
+          "spell": "Stone Shape",
+          "refId": "spl-stone-shape"
+        },
+        {
+          "level": 4,
+          "spell": "Minor Creation",
+          "refId": "spl-minor-creation"
+        },
+        {
+          "level": 5,
+          "spell": "Fabricate",
+          "refId": "spl-fabricate"
+        },
+        {
+          "level": 6,
+          "spell": "Major Creation",
+          "refId": "spl-major-creation"
+        },
+        {
+          "level": 7,
+          "spell": "Hardening",
+          "refId": "spl-hardening"
+        },
+        {
+          "level": 8,
+          "spell": "True Creation",
+          "refId": "spl-true-creation"
+        },
+        {
+          "level": 9,
+          "spell": "Prismatic Sphere",
+          "refId": "spl-prismatic-sphere"
+        }
+      ]
+    },
     "grantedPower": {
       "description": "Cast Conjuration (creation) spells at +1 casterlevel.",
       "classSkills": [],
       "grantedFeats": [],
       "spellLikeAbilities": []
     },
-    "requiredAlignment": [],
     "spells": [
       {
         "level": 1,
@@ -1825,47 +3059,106 @@
         "name": "Prismatic Sphere"
       }
     ],
+    "requiredAlignment": [],
+    "effects": [
+      {
+        "type": "stat",
+        "targets": [
+          "skill.craft"
+        ],
+        "mode": "flat",
+        "value": 4,
+        "btype": "Domain"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "casterLevel"
+        ],
+        "mode": "flat",
+        "value": 1,
+        "btype": "Domain",
+        "condition": "Conjuration (Creation) spells"
+      }
+    ],
+    "shortDescription": "Cast Conjuration (creation) spells at +1 casterlevel.",
+    "text": "Cast Conjuration (creation) spells at +1 casterlevel.",
     "tags": [
       "domain",
       "cleric",
       "artifice"
-    ],
-    "modifiers": [
-      {
-        "target": "skill.craft",
-        "value": 4,
-        "type": "Domain",
-        "condition": null
-      },
-      {
-        "target": "casterLevel.creation",
-        "value": 1,
-        "type": "Domain",
-        "condition": "Conjuration (Creation) spells"
-      }
-    ],
-    "damageParts": [],
-    "modes": [],
-    "ruleFlags": {}
+    ]
   },
   {
+    "schemaVersion": 3,
     "id": "dom-charm",
-    "foundryId": "rsrd_dom_charm",
-    "schemaVersion": 2,
+    "blueprint": "domain",
     "name": "Charm",
     "type": "Domain",
     "category": "Cleric Domain",
-    "slot": "None",
     "source": "SRD 3.5e / Complete Divine",
-    "description": "Boost Cha by +4 1/day. Activating is a free action. Cha increase lasts 1 minute.",
-    "shortDescription": "Boost Cha by +4 1/day. Activating is a free action. Cha increase lasts 1 minute.",
+    "grants": {
+      "grantedPower": {
+        "name": "Charm Domain Power",
+        "text": "Boost Cha by +4 1/day. Activating is a free action. Cha increase lasts 1 minute.",
+        "usage": {
+          "mode": "passive"
+        }
+      },
+      "spellLadder": [
+        {
+          "level": 1,
+          "spell": "Charm Person",
+          "refId": "spl-charm-person"
+        },
+        {
+          "level": 2,
+          "spell": "Calm Emotions",
+          "refId": "spl-calm-emotions"
+        },
+        {
+          "level": 3,
+          "spell": "Suggestion",
+          "refId": "spl-suggestion"
+        },
+        {
+          "level": 4,
+          "spell": "Heroism",
+          "refId": "spl-heroism"
+        },
+        {
+          "level": 5,
+          "spell": "Charm Monster",
+          "refId": "spl-charm-monster"
+        },
+        {
+          "level": 6,
+          "spell": "Geas/Quest",
+          "refId": "spl-geas-quest"
+        },
+        {
+          "level": 7,
+          "spell": "Insanity",
+          "refId": "spl-insanity"
+        },
+        {
+          "level": 8,
+          "spell": "Demand",
+          "refId": "spl-demand"
+        },
+        {
+          "level": 9,
+          "spell": "Dominate Monster",
+          "refId": "spl-dominate-monster"
+        }
+      ]
+    },
     "grantedPower": {
       "description": "Boost Cha by +4 1/day. Activating is a free action. Cha increase lasts 1 minute.",
       "classSkills": [],
       "grantedFeats": [],
       "spellLikeAbilities": []
     },
-    "requiredAlignment": [],
     "spells": [
       {
         "level": 1,
@@ -1913,29 +3206,83 @@
         "name": "Dominate Monster"
       }
     ],
+    "requiredAlignment": [],
+    "effects": [],
+    "ruleFlags": {
+      "boostChaBy4OncePerDay": true
+    },
+    "shortDescription": "Boost Cha by +4 1/day. Activating is a free action. Cha increase lasts 1 minute.",
+    "text": "Boost Cha by +4 1/day. Activating is a free action. Cha increase lasts 1 minute.",
     "tags": [
       "domain",
       "cleric",
       "charm"
-    ],
-    "modifiers": [],
-    "damageParts": [],
-    "modes": [],
-    "ruleFlags": {
-      "boostChaBy4OncePerDay": true
-    }
+    ]
   },
   {
+    "schemaVersion": 3,
     "id": "dom-community",
-    "foundryId": "rsrd_dom_community",
-    "schemaVersion": 2,
+    "blueprint": "domain",
     "name": "Community",
     "type": "Domain",
     "category": "Cleric Domain",
-    "slot": "None",
     "source": "SRD 3.5e / Complete Divine",
-    "description": "Use calm emotions as a spell-like ability once per day. Gain a +2 competence bonus on Diplomacy checks.",
-    "shortDescription": "Use calm emotions as a spell-like ability once per day. Gain a +2 competence bonus on Diplomacy checks.",
+    "grants": {
+      "grantedPower": {
+        "name": "Community Domain Power",
+        "text": "Use calm emotions as a spell-like ability once per day. Gain a +2 competence bonus on Diplomacy checks.",
+        "usage": {
+          "mode": "passive"
+        }
+      },
+      "spellLadder": [
+        {
+          "level": 1,
+          "spell": "Bless",
+          "refId": "spl-bless"
+        },
+        {
+          "level": 2,
+          "spell": "Shield Other",
+          "refId": "spl-shield-other"
+        },
+        {
+          "level": 3,
+          "spell": "Prayer",
+          "refId": "spl-prayer"
+        },
+        {
+          "level": 4,
+          "spell": "Status",
+          "refId": "spl-status"
+        },
+        {
+          "level": 5,
+          "spell": "Telepathic Bond",
+          "refId": "spl-telepathic-bond"
+        },
+        {
+          "level": 6,
+          "spell": "Heroes' Feast",
+          "refId": "spl-heroes-feast"
+        },
+        {
+          "level": 7,
+          "spell": "Refuge",
+          "refId": "spl-refuge"
+        },
+        {
+          "level": 8,
+          "spell": "Heal, Mass",
+          "refId": "spl-heal-mass"
+        },
+        {
+          "level": 9,
+          "spell": "Miracle",
+          "refId": "spl-miracle"
+        }
+      ]
+    },
     "grantedPower": {
       "description": "Use calm emotions as a spell-like ability once per day. Gain a +2 competence bonus on Diplomacy checks.",
       "classSkills": [],
@@ -1948,7 +3295,6 @@
         }
       ]
     },
-    "requiredAlignment": [],
     "spells": [
       {
         "level": 1,
@@ -1996,41 +3342,96 @@
         "name": "Miracle"
       }
     ],
+    "requiredAlignment": [],
+    "effects": [
+      {
+        "type": "stat",
+        "targets": [
+          "skill.diplomacy"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Competence"
+      }
+    ],
+    "shortDescription": "Use calm emotions as a spell-like ability once per day. Gain a +2 competence bonus on Diplomacy checks.",
+    "text": "Use calm emotions as a spell-like ability once per day. Gain a +2 competence bonus on Diplomacy checks.",
     "tags": [
       "domain",
       "cleric",
       "community"
-    ],
-    "modifiers": [
-      {
-        "target": "skill.diplomacy",
-        "value": 2,
-        "type": "Competence",
-        "condition": null
-      }
-    ],
-    "damageParts": [],
-    "modes": [],
-    "ruleFlags": {}
+    ]
   },
   {
+    "schemaVersion": 3,
     "id": "dom-creation",
-    "foundryId": "rsrd_dom_creation",
-    "schemaVersion": 2,
+    "blueprint": "domain",
     "name": "Creation",
     "type": "Domain",
     "category": "Cleric Domain",
-    "slot": "None",
     "source": "SRD 3.5e / Complete Divine",
-    "description": "Cast Conjuration (creation) spells at +2 caster levels.",
-    "shortDescription": "Cast Conjuration (creation) spells at +2 caster levels.",
+    "grants": {
+      "grantedPower": {
+        "name": "Creation Domain Power",
+        "text": "Cast Conjuration (creation) spells at +2 caster levels.",
+        "usage": {
+          "mode": "passive"
+        }
+      },
+      "spellLadder": [
+        {
+          "level": 1,
+          "spell": "Create Water",
+          "refId": "spl-create-water"
+        },
+        {
+          "level": 2,
+          "spell": "Minor Image",
+          "refId": "spl-minor-image"
+        },
+        {
+          "level": 3,
+          "spell": "Create Food and Water",
+          "refId": "spl-create-food-and-water"
+        },
+        {
+          "level": 4,
+          "spell": "Minor Creation",
+          "refId": "spl-minor-creation"
+        },
+        {
+          "level": 5,
+          "spell": "Major Creation",
+          "refId": "spl-major-creation"
+        },
+        {
+          "level": 6,
+          "spell": "Heroes' Feast",
+          "refId": "spl-heroes-feast"
+        },
+        {
+          "level": 7,
+          "spell": "Permanent Image",
+          "refId": "spl-permanent-image"
+        },
+        {
+          "level": 8,
+          "spell": "True Creation",
+          "refId": "spl-true-creation"
+        },
+        {
+          "level": 9,
+          "spell": "Genesis",
+          "refId": "spl-genesis"
+        }
+      ]
+    },
     "grantedPower": {
       "description": "Cast Conjuration (creation) spells at +2 caster levels.",
       "classSkills": [],
       "grantedFeats": [],
       "spellLikeAbilities": []
     },
-    "requiredAlignment": [],
     "spells": [
       {
         "level": 1,
@@ -2078,34 +3479,91 @@
         "name": "Genesis"
       }
     ],
+    "requiredAlignment": [],
+    "effects": [
+      {
+        "type": "stat",
+        "targets": [
+          "casterLevel"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Domain",
+        "condition": "Conjuration (Creation) spells"
+      }
+    ],
+    "shortDescription": "Cast Conjuration (creation) spells at +2 caster levels.",
+    "text": "Cast Conjuration (creation) spells at +2 caster levels.",
     "tags": [
       "domain",
       "cleric",
       "creation"
-    ],
-    "modifiers": [
-      {
-        "target": "casterLevel.creation",
-        "value": 2,
-        "type": "Domain",
-        "condition": "Conjuration (Creation) spells"
-      }
-    ],
-    "damageParts": [],
-    "modes": [],
-    "ruleFlags": {}
+    ]
   },
   {
+    "schemaVersion": 3,
     "id": "dom-darkness",
-    "foundryId": "rsrd_dom_darkness",
-    "schemaVersion": 2,
+    "blueprint": "domain",
     "name": "Darkness",
     "type": "Domain",
     "category": "Cleric Domain",
-    "slot": "None",
     "source": "SRD 3.5e / Complete Divine",
-    "description": "Free Blind-Fight feat.",
-    "shortDescription": "Free Blind-Fight feat.",
+    "grants": {
+      "grantedPower": {
+        "name": "Darkness Domain Power",
+        "text": "Free Blind-Fight feat.",
+        "usage": {
+          "mode": "passive"
+        }
+      },
+      "spellLadder": [
+        {
+          "level": 1,
+          "spell": "Obscuring Mist",
+          "refId": "spl-obscuring-mist"
+        },
+        {
+          "level": 2,
+          "spell": "Blindness/Deafness",
+          "refId": "spl-blindness-deafness"
+        },
+        {
+          "level": 3,
+          "spell": "Blacklight",
+          "refId": "spl-blacklight"
+        },
+        {
+          "level": 4,
+          "spell": "Armor Of Darkness",
+          "refId": "spl-armor-of-darkness"
+        },
+        {
+          "level": 5,
+          "spell": "Summon Monster V",
+          "refId": "spl-summon-monster-v"
+        },
+        {
+          "level": 6,
+          "spell": "Prying Eyes",
+          "refId": "spl-prying-eyes"
+        },
+        {
+          "level": 7,
+          "spell": "Nightmare",
+          "refId": "spl-nightmare"
+        },
+        {
+          "level": 8,
+          "spell": "Power Word Blind",
+          "refId": "spl-power-word-blind"
+        },
+        {
+          "level": 9,
+          "spell": "Power Word Kill",
+          "refId": "spl-power-word-kill"
+        }
+      ]
+    },
     "grantedPower": {
       "description": "Free Blind-Fight feat.",
       "classSkills": [],
@@ -2114,7 +3572,6 @@
       ],
       "spellLikeAbilities": []
     },
-    "requiredAlignment": [],
     "spells": [
       {
         "level": 1,
@@ -2162,41 +3619,86 @@
         "name": "Power Word Kill"
       }
     ],
+    "requiredAlignment": [],
+    "effects": [],
+    "shortDescription": "Free Blind-Fight feat.",
+    "text": "Free Blind-Fight feat.",
     "tags": [
       "domain",
       "cleric",
       "darkness"
-    ],
-    "modifiers": [],
-    "damageParts": [],
-    "modes": [],
-    "ruleFlags": {}
+    ]
   },
   {
+    "schemaVersion": 3,
     "id": "dom-glory",
-    "foundryId": "rsrd_dom_glory",
-    "schemaVersion": 2,
+    "blueprint": "domain",
     "name": "Glory",
     "type": "Domain",
     "category": "Cleric Domain",
-    "slot": "None",
     "source": "SRD 3.5e / Complete Divine",
-    "description": "Turn undead with a +2 bonus on the turning check and +1d6 to the turning damage roll.",
-    "shortDescription": "Turn undead with a +2 bonus on the turning check and +1d6 to the turning damage roll.",
+    "grants": {
+      "grantedPower": {
+        "name": "Glory Domain Power",
+        "text": "Turn undead with a +2 bonus on the turning check and +1d6 to the turning damage roll.",
+        "usage": {
+          "mode": "passive"
+        }
+      },
+      "spellLadder": [
+        {
+          "level": 1,
+          "spell": "Disrupt Undead",
+          "refId": "spl-disrupt-undead"
+        },
+        {
+          "level": 2,
+          "spell": "Bless Weapon",
+          "refId": "spl-bless-weapon"
+        },
+        {
+          "level": 3,
+          "spell": "Searing Light",
+          "refId": "spl-searing-light"
+        },
+        {
+          "level": 4,
+          "spell": "Holy Smite",
+          "refId": "spl-holy-smite"
+        },
+        {
+          "level": 5,
+          "spell": "Holy Sword",
+          "refId": "spl-holy-sword"
+        },
+        {
+          "level": 6,
+          "spell": "Bolt Of Glory",
+          "refId": "spl-bolt-of-glory"
+        },
+        {
+          "level": 7,
+          "spell": "Sunbeam",
+          "refId": "spl-sunbeam"
+        },
+        {
+          "level": 8,
+          "spell": "Crown Of Glory",
+          "refId": "spl-crown-of-glory"
+        },
+        {
+          "level": 9,
+          "spell": "Gate",
+          "refId": "spl-gate"
+        }
+      ]
+    },
     "grantedPower": {
       "description": "Turn undead with a +2 bonus on the turning check and +1d6 to the turning damage roll.",
       "classSkills": [],
       "grantedFeats": [],
       "spellLikeAbilities": []
     },
-    "requiredAlignment": [
-      "LG",
-      "LN",
-      "NG",
-      "TN",
-      "CG",
-      "CN"
-    ],
     "spells": [
       {
         "level": 1,
@@ -2244,47 +3746,114 @@
         "name": "Gate"
       }
     ],
+    "requiredAlignment": [
+      "LG",
+      "LN",
+      "NG",
+      "TN",
+      "CG",
+      "CN"
+    ],
+    "effects": [
+      {
+        "type": "stat",
+        "targets": [
+          "turning.check"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Domain",
+        "condition": "Turn undead checks"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "turning.damageDice"
+        ],
+        "mode": "flat",
+        "value": 1,
+        "btype": "Domain",
+        "condition": "Turn undead damage (+1d6)"
+      }
+    ],
+    "shortDescription": "Turn undead with a +2 bonus on the turning check and +1d6 to the turning damage roll.",
+    "text": "Turn undead with a +2 bonus on the turning check and +1d6 to the turning damage roll.",
     "tags": [
       "domain",
       "cleric",
       "glory"
-    ],
-    "modifiers": [
-      {
-        "target": "turning.check",
-        "value": 2,
-        "type": "Domain",
-        "condition": "Turn undead checks"
-      },
-      {
-        "target": "turning.damageDice",
-        "value": 1,
-        "type": "Domain",
-        "condition": "Turn undead damage (+1d6)"
-      }
-    ],
-    "damageParts": [],
-    "modes": [],
-    "ruleFlags": {}
+    ]
   },
   {
+    "schemaVersion": 3,
     "id": "dom-liberation",
-    "foundryId": "rsrd_dom_liberation",
-    "schemaVersion": 2,
+    "blueprint": "domain",
     "name": "Liberation",
     "type": "Domain",
     "category": "Cleric Domain",
-    "slot": "None",
     "source": "SRD 3.5e / Complete Divine",
-    "description": "+2 morale bonus on all saving throws against enchantment spells or effects.",
-    "shortDescription": "+2 morale bonus on all saving throws against enchantment spells or effects.",
+    "grants": {
+      "grantedPower": {
+        "name": "Liberation Domain Power",
+        "text": "+2 morale bonus on all saving throws against enchantment spells or effects.",
+        "usage": {
+          "mode": "passive"
+        }
+      },
+      "spellLadder": [
+        {
+          "level": 1,
+          "spell": "Remove Fear",
+          "refId": "spl-remove-fear"
+        },
+        {
+          "level": 2,
+          "spell": "Remove Paralysis",
+          "refId": "spl-remove-paralysis"
+        },
+        {
+          "level": 3,
+          "spell": "Remove Curse",
+          "refId": "spl-remove-curse"
+        },
+        {
+          "level": 4,
+          "spell": "Freedom of Movement",
+          "refId": "spl-freedom-of-movement"
+        },
+        {
+          "level": 5,
+          "spell": "Break Enchantment",
+          "refId": "spl-break-enchantment"
+        },
+        {
+          "level": 6,
+          "spell": "Dispel Magic, Greater",
+          "refId": "spl-dispel-magic-greater"
+        },
+        {
+          "level": 7,
+          "spell": "Refuge",
+          "refId": "spl-refuge"
+        },
+        {
+          "level": 8,
+          "spell": "Mind Blank",
+          "refId": "spl-mind-blank"
+        },
+        {
+          "level": 9,
+          "spell": "Freedom",
+          "refId": "spl-freedom"
+        }
+      ]
+    },
     "grantedPower": {
       "description": "+2 morale bonus on all saving throws against enchantment spells or effects.",
       "classSkills": [],
       "grantedFeats": [],
       "spellLikeAbilities": []
     },
-    "requiredAlignment": [],
     "spells": [
       {
         "level": 1,
@@ -2332,41 +3901,97 @@
         "name": "Freedom"
       }
     ],
+    "requiredAlignment": [],
+    "effects": [
+      {
+        "type": "stat",
+        "targets": [
+          "save.all"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Morale",
+        "condition": "vs enchantment spells or effects"
+      }
+    ],
+    "shortDescription": "+2 morale bonus on all saving throws against enchantment spells or effects.",
+    "text": "+2 morale bonus on all saving throws against enchantment spells or effects.",
     "tags": [
       "domain",
       "cleric",
       "liberation"
-    ],
-    "modifiers": [
-      {
-        "target": "save.all",
-        "value": 2,
-        "type": "Morale",
-        "condition": "vs enchantment spells or effects"
-      }
-    ],
-    "damageParts": [],
-    "modes": [],
-    "ruleFlags": {}
+    ]
   },
   {
+    "schemaVersion": 3,
     "id": "dom-madness",
-    "foundryId": "rsrd_dom_madness",
-    "schemaVersion": 2,
+    "blueprint": "domain",
     "name": "Madness",
     "type": "Domain",
     "category": "Cleric Domain",
-    "slot": "None",
     "source": "SRD 3.5e / Complete Divine",
-    "description": "You gain an Insanity score equal to half your class level. For spellcasting (determining bonus spells and DCs), you use your Wisdom score plus your Insanity score in place of Wisdom alone.",
-    "shortDescription": "You gain an Insanity score equal to half your class level. For spellcasting (determining bonus spells and DCs), you use your Wisdom score plus your Insanity score in place of Wisdom alone.",
+    "grants": {
+      "grantedPower": {
+        "name": "Madness Domain Power",
+        "text": "You gain an Insanity score equal to half your class level. For spellcasting (determining bonus spells and DCs), you use your Wisdom score plus your Insanity score in place of Wisdom alone.",
+        "usage": {
+          "mode": "passive"
+        }
+      },
+      "spellLadder": [
+        {
+          "level": 1,
+          "spell": "Confusion, Lesser",
+          "refId": "spl-confusion-lesser"
+        },
+        {
+          "level": 2,
+          "spell": "Touch Of Madness",
+          "refId": "spl-touch-of-madness"
+        },
+        {
+          "level": 3,
+          "spell": "Rage",
+          "refId": "spl-rage"
+        },
+        {
+          "level": 4,
+          "spell": "Confusion",
+          "refId": "spl-confusion"
+        },
+        {
+          "level": 5,
+          "spell": "Bolts of Bedevilment",
+          "refId": "spl-bolts-of-bedevilment"
+        },
+        {
+          "level": 6,
+          "spell": "Phantasmal Killer",
+          "refId": "spl-phantasmal-killer"
+        },
+        {
+          "level": 7,
+          "spell": "Insanity",
+          "refId": "spl-insanity"
+        },
+        {
+          "level": 8,
+          "spell": "Maddening Scream",
+          "refId": "spl-maddening-scream"
+        },
+        {
+          "level": 9,
+          "spell": "Weird",
+          "refId": "spl-weird"
+        }
+      ]
+    },
     "grantedPower": {
       "description": "You gain an Insanity score equal to half your class level. For spellcasting (determining bonus spells and DCs), you use your Wisdom score plus your Insanity score in place of Wisdom alone.",
       "classSkills": [],
       "grantedFeats": [],
       "spellLikeAbilities": []
     },
-    "requiredAlignment": [],
     "spells": [
       {
         "level": 1,
@@ -2414,29 +4039,83 @@
         "name": "Weird"
       }
     ],
+    "requiredAlignment": [],
+    "effects": [],
+    "ruleFlags": {
+      "insanityBonus": "clericLevel / 2"
+    },
+    "shortDescription": "You gain an Insanity score equal to half your class level. For spellcasting (determining bonus spells and DCs), you use your Wisdom score plus your Insanity score in place of Wisdom alone.",
+    "text": "You gain an Insanity score equal to half your class level. For spellcasting (determining bonus spells and DCs), you use your Wisdom score plus your Insanity score in place of Wisdom alone.",
     "tags": [
       "domain",
       "cleric",
       "madness"
-    ],
-    "modifiers": [],
-    "damageParts": [],
-    "modes": [],
-    "ruleFlags": {
-      "insanityBonus": "clericLevel / 2"
-    }
+    ]
   },
   {
+    "schemaVersion": 3,
     "id": "dom-nobility",
-    "foundryId": "rsrd_dom_nobility",
-    "schemaVersion": 2,
+    "blueprint": "domain",
     "name": "Nobility",
     "type": "Domain",
     "category": "Cleric Domain",
-    "slot": "None",
     "source": "SRD 3.5e / Complete Divine",
-    "description": "You have the spell-like ability to inspire allies, giving them a +2 morale bonus on saving throws, attack rolls, ability checks, skill checks, and weapon damage rolls. Allies must be able to hear the character speak for 1 round. Using this ability is a standard action. It lasts a number of rounds equal to the character's Charisma bonus and can be used once per day.",
-    "shortDescription": "You have the spell-like ability to inspire allies, giving them a +2 morale bonus on saving throws, attack rolls, ability checks, skill checks, and weapon damage rolls. Allies must be able to hear t...",
+    "grants": {
+      "grantedPower": {
+        "name": "Nobility Domain Power",
+        "text": "You have the spell-like ability to inspire allies, giving them a +2 morale bonus on saving throws, attack rolls, ability checks, skill checks, and weapon damage rolls. Allies must be able to hear the character speak for 1 round. Using this ability is a standard action. It lasts a number of rounds equal to the character's Charisma bonus and can be used once per day.",
+        "usage": {
+          "mode": "passive"
+        }
+      },
+      "spellLadder": [
+        {
+          "level": 1,
+          "spell": "Divine Favor",
+          "refId": "spl-divine-favor"
+        },
+        {
+          "level": 2,
+          "spell": "Enthrall",
+          "refId": "spl-enthrall"
+        },
+        {
+          "level": 3,
+          "spell": "Magic Vestment",
+          "refId": "spl-magic-vestment"
+        },
+        {
+          "level": 4,
+          "spell": "Discern Lies",
+          "refId": "spl-discern-lies"
+        },
+        {
+          "level": 5,
+          "spell": "Command, Greater",
+          "refId": "spl-command-greater"
+        },
+        {
+          "level": 6,
+          "spell": "Geas/Quest",
+          "refId": "spl-geas-quest"
+        },
+        {
+          "level": 7,
+          "spell": "Repulsion",
+          "refId": "spl-repulsion"
+        },
+        {
+          "level": 8,
+          "spell": "Demand",
+          "refId": "spl-demand"
+        },
+        {
+          "level": 9,
+          "spell": "Storm of Vengeance",
+          "refId": "spl-storm-of-vengeance"
+        }
+      ]
+    },
     "grantedPower": {
       "description": "You have the spell-like ability to inspire allies, giving them a +2 morale bonus on saving throws, attack rolls, ability checks, skill checks, and weapon damage rolls. Allies must be able to hear the character speak for 1 round. Using this ability is a standard action. It lasts a number of rounds equal to the character's Charisma bonus and can be used once per day.",
       "classSkills": [],
@@ -2449,7 +4128,6 @@
         }
       ]
     },
-    "requiredAlignment": [],
     "spells": [
       {
         "level": 1,
@@ -2497,41 +4175,86 @@
         "name": "Storm of Vengeance"
       }
     ],
+    "requiredAlignment": [],
+    "effects": [],
+    "shortDescription": "You have the spell-like ability to inspire allies, giving them a +2 morale bonus on saving throws, attack rolls, ability checks, skill checks, and weapon damage rolls. Allies must be able to hear t...",
+    "text": "You have the spell-like ability to inspire allies, giving them a +2 morale bonus on saving throws, attack rolls, ability checks, skill checks, and weapon damage rolls. Allies must be able to hear the character speak for 1 round. Using this ability is a standard action. It lasts a number of rounds equal to the character's Charisma bonus and can be used once per day.",
     "tags": [
       "domain",
       "cleric",
       "nobility"
-    ],
-    "modifiers": [],
-    "damageParts": [],
-    "modes": [],
-    "ruleFlags": {}
+    ]
   },
   {
+    "schemaVersion": 3,
     "id": "dom-repose",
-    "foundryId": "rsrd_dom_repose",
-    "schemaVersion": 2,
+    "blueprint": "domain",
     "name": "Repose",
     "type": "Domain",
     "category": "Cleric Domain",
-    "slot": "None",
     "source": "SRD 3.5e / Complete Divine",
-    "description": "You may use a death touch once per day.",
-    "shortDescription": "You may use a death touch once per day.",
+    "grants": {
+      "grantedPower": {
+        "name": "Repose Domain Power",
+        "text": "You may use a death touch once per day.",
+        "usage": {
+          "mode": "passive"
+        }
+      },
+      "spellLadder": [
+        {
+          "level": 1,
+          "spell": "Deathwatch",
+          "refId": "spl-deathwatch"
+        },
+        {
+          "level": 2,
+          "spell": "Gentle Repose",
+          "refId": "spl-gentle-repose"
+        },
+        {
+          "level": 3,
+          "spell": "Speak with Dead",
+          "refId": "spl-speak-with-dead"
+        },
+        {
+          "level": 4,
+          "spell": "Death Ward",
+          "refId": "spl-death-ward"
+        },
+        {
+          "level": 5,
+          "spell": "Slay Living",
+          "refId": "spl-slay-living"
+        },
+        {
+          "level": 6,
+          "spell": "Undeath to Death",
+          "refId": "spl-undeath-to-death"
+        },
+        {
+          "level": 7,
+          "spell": "Destruction",
+          "refId": "spl-destruction"
+        },
+        {
+          "level": 8,
+          "spell": "Surelife",
+          "refId": "spl-surelife"
+        },
+        {
+          "level": 9,
+          "spell": "Wail of the Banshee",
+          "refId": "spl-wail-of-the-banshee"
+        }
+      ]
+    },
     "grantedPower": {
       "description": "You may use a death touch once per day.",
       "classSkills": [],
       "grantedFeats": [],
       "spellLikeAbilities": []
     },
-    "requiredAlignment": [
-      "LG",
-      "LN",
-      "NG",
-      "TN",
-      "CG",
-      "CN"
-    ],
     "spells": [
       {
         "level": 1,
@@ -2579,29 +4302,90 @@
         "name": "Wail of the Banshee"
       }
     ],
+    "requiredAlignment": [
+      "LG",
+      "LN",
+      "NG",
+      "TN",
+      "CG",
+      "CN"
+    ],
+    "effects": [],
+    "ruleFlags": {
+      "deathTouch": "1/day"
+    },
+    "shortDescription": "You may use a death touch once per day.",
+    "text": "You may use a death touch once per day.",
     "tags": [
       "domain",
       "cleric",
       "repose"
-    ],
-    "modifiers": [],
-    "damageParts": [],
-    "modes": [],
-    "ruleFlags": {
-      "deathTouch": "1/day"
-    }
+    ]
   },
   {
+    "schemaVersion": 3,
     "id": "dom-rune",
-    "foundryId": "rsrd_dom_rune",
-    "schemaVersion": 2,
+    "blueprint": "domain",
     "name": "Rune",
     "type": "Domain",
     "category": "Cleric Domain",
-    "slot": "None",
     "source": "SRD 3.5e / Complete Divine",
-    "description": "Free Scribe Scroll feat.",
-    "shortDescription": "Free Scribe Scroll feat.",
+    "grants": {
+      "grantedPower": {
+        "name": "Rune Domain Power",
+        "text": "Free Scribe Scroll feat.",
+        "usage": {
+          "mode": "passive"
+        }
+      },
+      "spellLadder": [
+        {
+          "level": 1,
+          "spell": "Erase",
+          "refId": "spl-erase"
+        },
+        {
+          "level": 2,
+          "spell": "Secret Page",
+          "refId": "spl-secret-page"
+        },
+        {
+          "level": 3,
+          "spell": "Glyph of Warding",
+          "refId": "spl-glyph-of-warding"
+        },
+        {
+          "level": 4,
+          "spell": "Explosive Runes",
+          "refId": "spl-explosive-runes"
+        },
+        {
+          "level": 5,
+          "spell": "Planar Binding, Lesser",
+          "refId": "spl-planar-binding-lesser"
+        },
+        {
+          "level": 6,
+          "spell": "Glyph of Warding, Greater",
+          "refId": "spl-glyph-of-warding-greater"
+        },
+        {
+          "level": 7,
+          "spell": "Instant Summons",
+          "refId": "spl-instant-summons"
+        },
+        {
+          "level": 8,
+          "spell": "Symbol of Death",
+          "refId": "spl-symbol-of-death"
+        },
+        {
+          "level": 9,
+          "spell": "Teleportation Circle",
+          "refId": "spl-teleportation-circle"
+        }
+      ]
+    },
     "grantedPower": {
       "description": "Free Scribe Scroll feat.",
       "classSkills": [],
@@ -2610,7 +4394,6 @@
       ],
       "spellLikeAbilities": []
     },
-    "requiredAlignment": [],
     "spells": [
       {
         "level": 1,
@@ -2658,34 +4441,86 @@
         "name": "Teleportation Circle"
       }
     ],
+    "requiredAlignment": [],
+    "effects": [],
+    "shortDescription": "Free Scribe Scroll feat.",
+    "text": "Free Scribe Scroll feat.",
     "tags": [
       "domain",
       "cleric",
       "rune"
-    ],
-    "modifiers": [],
-    "damageParts": [],
-    "modes": [],
-    "ruleFlags": {}
+    ]
   },
   {
+    "schemaVersion": 3,
     "id": "dom-scalykind",
-    "foundryId": "rsrd_dom_scalykind",
-    "schemaVersion": 2,
+    "blueprint": "domain",
     "name": "Scalykind",
     "type": "Domain",
     "category": "Cleric Domain",
-    "slot": "None",
     "source": "SRD 3.5e / Complete Divine",
-    "description": "Rebuke or command animals (reptilian creatures and snakes only) as an evil cleric rebukes or commands undead.",
-    "shortDescription": "Rebuke or command animals (reptilian creatures and snakes only) as an evil cleric rebukes or commands undead.",
+    "grants": {
+      "grantedPower": {
+        "name": "Scalykind Domain Power",
+        "text": "Rebuke or command animals (reptilian creatures and snakes only) as an evil cleric rebukes or commands undead.",
+        "usage": {
+          "mode": "passive"
+        }
+      },
+      "spellLadder": [
+        {
+          "level": 1,
+          "spell": "Magic Fang",
+          "refId": "spl-magic-fang"
+        },
+        {
+          "level": 2,
+          "spell": "Animal Trance",
+          "refId": "spl-animal-trance"
+        },
+        {
+          "level": 3,
+          "spell": "Magic Fang, Greater",
+          "refId": "spl-magic-fang-greater"
+        },
+        {
+          "level": 4,
+          "spell": "Poison",
+          "refId": "spl-poison"
+        },
+        {
+          "level": 5,
+          "spell": "Animal Growth",
+          "refId": "spl-animal-growth"
+        },
+        {
+          "level": 6,
+          "spell": "Eyebite",
+          "refId": "spl-eyebite"
+        },
+        {
+          "level": 7,
+          "spell": "Creeping Doom",
+          "refId": "spl-creeping-doom"
+        },
+        {
+          "level": 8,
+          "spell": "Animal Shapes",
+          "refId": "spl-animal-shapes"
+        },
+        {
+          "level": 9,
+          "spell": "Shapechange",
+          "refId": "spl-shapechange"
+        }
+      ]
+    },
     "grantedPower": {
       "description": "Rebuke or command animals (reptilian creatures and snakes only) as an evil cleric rebukes or commands undead.",
       "classSkills": [],
       "grantedFeats": [],
       "spellLikeAbilities": []
     },
-    "requiredAlignment": [],
     "spells": [
       {
         "level": 1,
@@ -2733,29 +4568,83 @@
         "name": "Shapechange"
       }
     ],
+    "requiredAlignment": [],
+    "effects": [],
+    "ruleFlags": {
+      "rebukeScalykind": true
+    },
+    "shortDescription": "Rebuke or command animals (reptilian creatures and snakes only) as an evil cleric rebukes or commands undead.",
+    "text": "Rebuke or command animals (reptilian creatures and snakes only) as an evil cleric rebukes or commands undead.",
     "tags": [
       "domain",
       "cleric",
       "scalykind"
-    ],
-    "modifiers": [],
-    "damageParts": [],
-    "modes": [],
-    "ruleFlags": {
-      "rebukeScalykind": true
-    }
+    ]
   },
   {
+    "schemaVersion": 3,
     "id": "dom-weather",
-    "foundryId": "rsrd_dom_weather",
-    "schemaVersion": 2,
+    "blueprint": "domain",
     "name": "Weather",
     "type": "Domain",
     "category": "Cleric Domain",
-    "slot": "None",
     "source": "SRD 3.5e / Complete Divine",
-    "description": "Survival is a class skill.",
-    "shortDescription": "Survival is a class skill.",
+    "grants": {
+      "grantedPower": {
+        "name": "Weather Domain Power",
+        "text": "Survival is a class skill.",
+        "usage": {
+          "mode": "passive"
+        }
+      },
+      "spellLadder": [
+        {
+          "level": 1,
+          "spell": "Obscuring Mist",
+          "refId": "spl-obscuring-mist"
+        },
+        {
+          "level": 2,
+          "spell": "Fog Cloud",
+          "refId": "spl-fog-cloud"
+        },
+        {
+          "level": 3,
+          "spell": "Call Lightning",
+          "refId": "spl-call-lightning"
+        },
+        {
+          "level": 4,
+          "spell": "Sleet Storm",
+          "refId": "spl-sleet-storm"
+        },
+        {
+          "level": 5,
+          "spell": "Ice Storm",
+          "refId": "spl-ice-storm"
+        },
+        {
+          "level": 6,
+          "spell": "Control Winds",
+          "refId": "spl-control-winds"
+        },
+        {
+          "level": 7,
+          "spell": "Control Weather",
+          "refId": "spl-control-weather"
+        },
+        {
+          "level": 8,
+          "spell": "Whirlwind",
+          "refId": "spl-whirlwind"
+        },
+        {
+          "level": 9,
+          "spell": "Storm of Vengeance",
+          "refId": "spl-storm-of-vengeance"
+        }
+      ]
+    },
     "grantedPower": {
       "description": "Survival is a class skill.",
       "classSkills": [
@@ -2764,7 +4653,6 @@
       "grantedFeats": [],
       "spellLikeAbilities": []
     },
-    "requiredAlignment": [],
     "spells": [
       {
         "level": 1,
@@ -2812,34 +4700,86 @@
         "name": "Storm of Vengeance"
       }
     ],
+    "requiredAlignment": [],
+    "effects": [],
+    "shortDescription": "Survival is a class skill.",
+    "text": "Survival is a class skill.",
     "tags": [
       "domain",
       "cleric",
       "weather"
-    ],
-    "modifiers": [],
-    "damageParts": [],
-    "modes": [],
-    "ruleFlags": {}
+    ]
   },
   {
+    "schemaVersion": 3,
     "id": "dom-mind",
-    "foundryId": "rsrd_dom_mind",
-    "schemaVersion": 2,
+    "blueprint": "domain",
     "name": "Mind",
     "type": "Domain",
     "category": "Cleric Domain",
-    "slot": "None",
     "source": "SRD 3.5e / Expanded Psionics Handbook",
-    "description": "+2 Bonus on Bluff, Diplomacy and Sense Motive Checks as well as +2 saves vs. enchantment spells and effects.",
-    "shortDescription": "+2 Bonus on Bluff, Diplomacy and Sense Motive Checks as well as +2 saves vs. enchantment spells and effects.",
+    "grants": {
+      "grantedPower": {
+        "name": "Mind Domain Power",
+        "text": "+2 Bonus on Bluff, Diplomacy and Sense Motive Checks as well as +2 saves vs. enchantment spells and effects.",
+        "usage": {
+          "mode": "passive"
+        }
+      },
+      "spellLadder": [
+        {
+          "level": 1,
+          "spell": "Comprehend Languages",
+          "refId": "spl-comprehend-languages"
+        },
+        {
+          "level": 2,
+          "spell": "Detect Thoughts",
+          "refId": "spl-detect-thoughts"
+        },
+        {
+          "level": 3,
+          "spell": "Telepathic Bond, Lesser",
+          "refId": "spl-telepathic-bond-lesser"
+        },
+        {
+          "level": 4,
+          "spell": "Discern Lies",
+          "refId": "spl-discern-lies"
+        },
+        {
+          "level": 5,
+          "spell": "Telepathic Bond",
+          "refId": "spl-telepathic-bond"
+        },
+        {
+          "level": 6,
+          "spell": "Probe Thoughts",
+          "refId": "spl-probe-thoughts"
+        },
+        {
+          "level": 7,
+          "spell": "Brain Spider",
+          "refId": "spl-brain-spider"
+        },
+        {
+          "level": 8,
+          "spell": "Mind Blank",
+          "refId": "spl-mind-blank"
+        },
+        {
+          "level": 9,
+          "spell": "Weird",
+          "refId": "spl-weird"
+        }
+      ]
+    },
     "grantedPower": {
       "description": "+2 Bonus on Bluff, Diplomacy and Sense Motive Checks as well as +2 saves vs. enchantment spells and effects.",
       "classSkills": [],
       "grantedFeats": [],
       "spellLikeAbilities": []
     },
-    "requiredAlignment": [],
     "spells": [
       {
         "level": 1,
@@ -2887,52 +4827,102 @@
         "name": "Weird"
       }
     ],
+    "requiredAlignment": [],
+    "effects": [
+      {
+        "type": "stat",
+        "targets": [
+          "skill.bluff",
+          "skill.diplomacy",
+          "skill.sense-motive"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Competence"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "save.will"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Competence",
+        "condition": "vs enchantment spells and effects"
+      }
+    ],
+    "shortDescription": "+2 Bonus on Bluff, Diplomacy and Sense Motive Checks as well as +2 saves vs. enchantment spells and effects.",
+    "text": "+2 Bonus on Bluff, Diplomacy and Sense Motive Checks as well as +2 saves vs. enchantment spells and effects.",
     "tags": [
       "domain",
       "cleric",
       "mind"
-    ],
-    "modifiers": [
-      {
-        "target": "skill.bluff",
-        "value": 2,
-        "type": "Competence",
-        "condition": null
-      },
-      {
-        "target": "skill.diplomacy",
-        "value": 2,
-        "type": "Competence",
-        "condition": null
-      },
-      {
-        "target": "skill.sense_motive",
-        "value": 2,
-        "type": "Competence",
-        "condition": null
-      },
-      {
-        "target": "save.will",
-        "value": 2,
-        "type": "Competence",
-        "condition": "vs enchantment spells and effects"
-      }
-    ],
-    "damageParts": [],
-    "modes": [],
-    "ruleFlags": {}
+    ]
   },
   {
+    "schemaVersion": 3,
     "id": "dom-dragon",
-    "foundryId": "rsrd_dom_dragon",
-    "schemaVersion": 2,
+    "blueprint": "domain",
     "name": "Dragon",
     "type": "Domain",
     "category": "Cleric Domain",
-    "slot": "None",
     "source": "Spell Compendium / Draconomicon",
-    "description": "Add Bluff and Intimidate to your list of cleric class skills.",
-    "shortDescription": "Add Bluff and Intimidate to your list of cleric class skills.",
+    "grants": {
+      "grantedPower": {
+        "name": "Dragon Domain Power",
+        "text": "Add Bluff and Intimidate to your list of cleric class skills.",
+        "usage": {
+          "mode": "passive"
+        }
+      },
+      "spellLadder": [
+        {
+          "level": 1,
+          "spell": "Magic Fang",
+          "refId": "spl-magic-fang"
+        },
+        {
+          "level": 2,
+          "spell": "Resist Energy",
+          "refId": "spl-resist-energy"
+        },
+        {
+          "level": 3,
+          "spell": "Greater Magic Fang",
+          "refId": "spl-greater-magic-fang"
+        },
+        {
+          "level": 4,
+          "spell": "Voice of the Dragon",
+          "refId": "spl-voice-of-the-dragon"
+        },
+        {
+          "level": 5,
+          "spell": "Righteous Might",
+          "refId": "spl-righteous-might"
+        },
+        {
+          "level": 6,
+          "spell": "Stoneskin",
+          "refId": "spl-stoneskin"
+        },
+        {
+          "level": 7,
+          "spell": "Dragon Ally",
+          "refId": "spl-dragon-ally"
+        },
+        {
+          "level": 8,
+          "spell": "Mass Suggestion",
+          "refId": "spl-mass-suggestion"
+        },
+        {
+          "level": 9,
+          "spell": "Dominate Monster",
+          "refId": "spl-dominate-monster"
+        }
+      ]
+    },
     "grantedPower": {
       "description": "Add Bluff and Intimidate to your list of cleric class skills.",
       "classSkills": [
@@ -2942,7 +4932,6 @@
       "grantedFeats": [],
       "spellLikeAbilities": []
     },
-    "requiredAlignment": [],
     "spells": [
       {
         "level": 1,
@@ -2990,14 +4979,14 @@
         "name": "Dominate Monster"
       }
     ],
+    "requiredAlignment": [],
+    "effects": [],
+    "shortDescription": "Add Bluff and Intimidate to your list of cleric class skills.",
+    "text": "Add Bluff and Intimidate to your list of cleric class skills.",
     "tags": [
       "domain",
       "cleric",
       "dragon"
-    ],
-    "modifiers": [],
-    "damageParts": [],
-    "modes": [],
-    "ruleFlags": {}
+    ]
   }
 ]

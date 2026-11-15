@@ -118,6 +118,11 @@ function runCorpusAudit() {
     totalEntries: 0,
     v2Entries: 0,
     v3Entries: 0,
+    monsterEntries: 0,
+    validMonsterChassis: 0,
+    diskTopLevelModifiersCount: 0,
+    nonItemSlotNoneCount: 0,
+    foundryGarbageFormulasCount: 0,
     autoCompatibleEntries: 0,
     aliasedModifiersResolved: 0,
     dynamicFormulasBridged: 0,
@@ -139,6 +144,7 @@ function runCorpusAudit() {
   };
 
   const ruleFlagCounts = {};
+  const ITEM_BLUEPRINTS = new Set(['item', 'weapon', 'armor', 'itemMod']);
 
   for (const chunkName of Object.keys(idx.chunks || {})) {
     const fp = path.join(DB_DIR, chunkName);
@@ -150,6 +156,19 @@ function runCorpusAudit() {
       report.totalEntries++;
       let hasUnmapped = false;
 
+      if (Object.prototype.hasOwnProperty.call(e, 'modifiers')) {
+        report.diskTopLevelModifiersCount++;
+      }
+      if (e.slot === 'None' && !ITEM_BLUEPRINTS.has(e.blueprint) && !['Item', 'Wondrous Item', 'Ring', 'Rod', 'Staff', 'Wand', 'Potion', 'Scroll', 'Weapon', 'Armor', 'Shield', 'Consumable'].includes(e.type)) {
+        report.nonItemSlotNoneCount++;
+      }
+      if (e.blueprint === 'monster' || e.type === 'Monster') {
+        report.monsterEntries++;
+        if (e.monster && e.monster.hitDice && e.monster.ac && e.monster.speeds && e.monster.abilities && Array.isArray(e.effects)) {
+          report.validMonsterChassis++;
+        }
+      }
+
       if (e.schemaVersion === 3) {
         report.v3Entries++;
         let needsDialectFix = false;
@@ -159,6 +178,9 @@ function runCorpusAudit() {
             if (!CANONICAL_V3_BLOCK_TYPES.has(ef.type)) {
               report.unmappedV3BlockTypes[ef.type || 'MISSING'] = (report.unmappedV3BlockTypes[ef.type || 'MISSING'] || 0) + 1;
               hasUnmapped = true;
+            }
+            if (ef.formula && /\$\{this\.|@attributes\./.test(String(ef.formula))) {
+              report.foundryGarbageFormulasCount++;
             }
             if (ef.type === 'stat') {
               if (ef.mode === 'perVar') {
@@ -182,6 +204,13 @@ function runCorpusAudit() {
           }
         };
         walk(e.effects);
+        if (e.chakraBinds && typeof e.chakraBinds === 'object') {
+          Object.values(e.chakraBinds).forEach((cb) => {
+            if (Array.isArray(cb)) walk(cb);
+            else if (cb && Array.isArray(cb.effects)) walk(cb.effects);
+            else if (cb && Array.isArray(cb.blocks)) walk(cb.blocks);
+          });
+        }
         if (needsDialectFix) report.splatV3DialectFixesNeeded++;
       } else {
         report.v2Entries++;
@@ -232,15 +261,32 @@ function runCorpusAudit() {
 if (require.main === module) {
   const rep = runCorpusAudit();
   const unmappedTargetList = Object.entries(rep.unmappedTargets).sort((a, b) => b[1] - a[1]);
-  console.log(`✅ V3 Corpus Compatibility Audit completed in ${rep.elapsedMs}ms (${rep.totalEntries} entries, 0 LLM tokens):`);
-  console.log(`   • Schema split           : ${rep.v2Entries} V2 + ${rep.v3Entries} V3`);
-  console.log(`   • Auto-compatible / mapped: ${rep.autoCompatibleEntries}/${rep.totalEntries} (${((rep.autoCompatibleEntries / rep.totalEntries) * 100).toFixed(2)}%)`);
-  console.log(`   • Aliased V2 targets     : ${rep.aliasedModifiersResolved} mapped cleanly via TARGET_ALIAS_MAP`);
-  console.log(`   • Dynamic V2 formulas    : ${rep.dynamicFormulasBridged} bridged cleanly`);
-  console.log(`   • Splat V3 dialect fixes : ${rep.splatV3DialectFixesNeeded} entries (${rep.splatV3PerVarCount} perVar stat blocks)`);
-  console.log(`   • Structured subsystems  : modes=${rep.structuredSubsystems.v2ModesEntries}, xphAugment=${rep.structuredSubsystems.xphAugmentPowers}, chakraBinds=${rep.structuredSubsystems.soulmeldChakraBinds}`);
-  console.log(`   • ruleFlags keys         : ${rep.ruleFlagsSummary.engineSupportedKeys.length} active in engine, ${rep.ruleFlagsSummary.engineIgnoredKeys.length} passive/unmapped`);
-  console.log(`   • Remaining unmapped tgts: ${unmappedTargetList.length}`, unmappedTargetList.slice(0, 15));
+  const unmappedBlockList = Object.entries(rep.unmappedV3BlockTypes).sort((a, b) => b[1] - a[1]);
+  console.log(`✅ Pure V3 Corpus & Bestiary Gate completed in ${rep.elapsedMs}ms (${rep.totalEntries} entries, 0 LLM tokens):`);
+  console.log(`   • Schema split           : ${rep.v3Entries}/${rep.totalEntries} V3 (${((rep.v3Entries / rep.totalEntries) * 100).toFixed(2)}%), ${rep.v2Entries} V2`);
+  console.log(`   • Bestiary V3 monsters   : ${rep.validMonsterChassis}/${rep.monsterEntries} valid V3 monster chassis`);
+  console.log(`   • Disk modifiers[] arrays: ${rep.diskTopLevelModifiersCount}`);
+  console.log(`   • Non-item slot="None"   : ${rep.nonItemSlotNoneCount}`);
+  console.log(`   • Foundry leftover exprs : ${rep.foundryGarbageFormulasCount}`);
+  console.log(`   • Splat dialect drift    : ${rep.splatV3DialectFixesNeeded} (${rep.splatV3PerVarCount} perVar)`);
+  console.log(`   • Unmapped targets/blocks: ${unmappedTargetList.length} targets, ${unmappedBlockList.length} block types`);
+  if (unmappedTargetList.length > 0) console.error('   ❌ Unmapped targets:', unmappedTargetList.slice(0, 20));
+  if (unmappedBlockList.length > 0) console.error('   ❌ Unmapped block types:', unmappedBlockList);
+
+  const failed =
+    rep.v2Entries > 0 ||
+    rep.v3Entries !== rep.totalEntries ||
+    rep.validMonsterChassis !== rep.monsterEntries ||
+    rep.monsterEntries < 649 ||
+    rep.diskTopLevelModifiersCount > 0 ||
+    rep.nonItemSlotNoneCount > 0 ||
+    rep.foundryGarbageFormulasCount > 0 ||
+    unmappedTargetList.length > 0 ||
+    unmappedBlockList.length > 0;
+  if (failed) {
+    console.error('❌ FAIL: Pure V3 Corpus Gate failed.');
+    process.exit(1);
+  }
 }
 
 module.exports = { runCorpusAudit, canonicalizeTarget, TARGET_ALIAS_MAP, CANONICAL_V3_TARGETS };

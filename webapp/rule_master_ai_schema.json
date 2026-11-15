@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "RuleMasterAiResponseSchemaV2",
-  "description": "Canonical V2 JSON response schema (schemaVersion: 2) for D&D 3.5e Rule Master AI (Gemini) queries. All responses must be returned inside the 'entries' array. Legacy flat bonus columns (strBonus, acBonus, etc.) or separate child rows are forbidden; all mechanical effects must be defined inside 'modifiers', 'damageParts', and 'modes'.",
+  "title": "RuleMasterAiResponseSchemaV3",
+  "description": "Canonical V3 JSON response schema (schemaVersion: 3) for D&D 3.5e Rule Master AI & Rule Crafter queries. All responses must be returned inside the 'entries' array using Canonical V3 'effects', blueprint sub-objects ('weapon', 'armor', 'chassis', 'race', 'monster', 'itemModifier'), and 'powers'.",
   "type": "object",
   "required": ["entries"],
   "properties": {
@@ -408,13 +408,39 @@
     },
     "RuleMasterEntryV2": {
       "type": "object",
-      "required": ["schemaVersion", "id", "name", "type", "source", "benefit", "description", "modifiers", "damageParts", "modes"],
+      "required": ["schemaVersion", "id", "name", "type"],
       "properties": {
         "schemaVersion": {
           "type": "integer",
-          "enum": [2],
-          "default": 2,
-          "description": "Canonical V2 schema version (always 2)."
+          "enum": [3, 2],
+          "default": 3,
+          "description": "Canonical V3 schema version (default 3)."
+        },
+        "blueprint": {
+          "type": "string",
+          "enum": ["feat", "spell", "item", "weapon", "armor", "itemMod", "class", "race", "monster"],
+          "description": "Rule Crafter blueprint family."
+        },
+        "effects": {
+          "type": "array",
+          "default": [],
+          "description": "Canonical V3 Rule Blocks ('stat', 'roll', 'attack', 'defense', 'effect', 'resource', 'when', 'table', 'carrier').",
+          "items": { "type": "object" }
+        },
+        "powers": {
+          "type": "array",
+          "default": [],
+          "description": "Granted spells, spell-like abilities, or inline activated powers.",
+          "items": { "type": "object" }
+        },
+        "text": {
+          "type": "string",
+          "description": "Clean plain-text D&D 3.5e RAW rulebook description."
+        },
+        "monster": {
+          "type": ["object", "null"],
+          "default": null,
+          "description": "Structured V3 Bestiary / Companion chassis (size, creatureType, subtypes, alignment, cr, levelAdjustment, hitDice, speeds, ac, bab, grapple, space, reach, abilities, nonabilities, saves, skills)."
         },
         "id": {
           "type": "string",
@@ -447,9 +473,17 @@
             "Wand",
             "Consumable",
             "Augment Crystal",
+            "AugmentationCrystal",
+            "Enhancement",
+            "Material",
             "Maneuver",
             "Stance",
+            "Soulmeld",
+            "Vestige",
+            "Mystery",
+            "Utterance",
             "Race",
+            "Monster",
             "Deity",
             "Domain",
             "Template",

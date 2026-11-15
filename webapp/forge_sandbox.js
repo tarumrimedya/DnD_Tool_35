@@ -264,11 +264,11 @@
     ['Low-Light Vision', 'Ex', 'See twice as far as a human in dim light.'], ['Darkvision', 'Ex', 'See in darkness out to 60 ft.'], ['Damage Reduction', 'Ex', 'Ignore a portion of damage from each attack.']
   ].map((c) => ({ id: 'seed-cab-' + slug(c[0]), name: c[0], abilityType: c[1], desc: c[2], src: 'SRD (seed)' }));
 
-  const CAT = { weapons: WEAPONS, armors: ARMORS, enchants: ENCHANTMENTS, crystals: CRYSTALS, feats: FEATS, spells: SPELLS, domains: DOMAINS, deities: DEITIES, classFeatures: CLASS_FEATURES, special: [], magicItems: [], classes: [], srdLoaded: false, srdCount: 0, customCount: 0 };
+  const CAT = { weapons: WEAPONS, armors: ARMORS, enchants: ENCHANTMENTS, crystals: CRYSTALS, feats: FEATS, spells: SPELLS, domains: DOMAINS, deities: DEITIES, classFeatures: CLASS_FEATURES, special: [], magicItems: [], classes: [], monsters: [], srdLoaded: false, srdCount: 0, customCount: 0 };
   const byId = (list, id) => list.find((x) => x.id === id);
 
   // --------------------------------------------------------------------------
-  // 2. Categories (11 blueprints)
+  // 2. Categories (12 blueprints)
   // --------------------------------------------------------------------------
   const BLUEPRINTS = [
     { id: 'weapon', name: 'Weapon', icon: '⚔️', facets: ['identity', 'chassis', 'effects'], item: true },
@@ -281,9 +281,12 @@
     { id: 'deity', name: 'Deity', icon: '🏛️', facets: ['identity', 'grants'] },
     { id: 'domain', name: 'Domain', icon: '✨', facets: ['identity', 'grants'] },
     { id: 'item_mod', name: 'Enchantment / Crystal / Material', icon: '✨', facets: ['identity', 'effects', 'powers'] },
-    { id: 'race', name: 'Race / Creature Template', icon: '🧬', facets: ['identity', 'effects', 'powers'] }
+    { id: 'race', name: 'Race / Creature Template', icon: '🧬', facets: ['identity', 'effects', 'powers'] },
+    { id: 'monster', name: 'Monster / Companion', icon: '👹', facets: ['identity', 'monster', 'effects', 'powers'] }
   ];
   const BP_BY_ID = {}; BLUEPRINTS.forEach((b) => { BP_BY_ID[b.id] = b; });
+  BP_BY_ID.itemMod = BP_BY_ID.item_mod;
+  BP_BY_ID.item = BP_BY_ID.wondrous;
   const isItemBp = (bp) => !!(BP_BY_ID[bp] && BP_BY_ID[bp].item);
   const isConsumable = (en) => /Potion|Scroll|Wand/.test(en.item.subtype) || en.lifecycle.use.mode === 'charges' || en.powers.some((p) => p.use.mode === 'charges');
 
@@ -324,6 +327,17 @@
       },
       itemMod: { kind: 'enchantment', on: 'weapon', costMode: 'plus', plus: 1, gp: 2000, keen: false, badge: '', crystalCosts: [500, 1500, 5000], crystalTiers: ['', '', ''], mat: { acpDelta: 0, maxDexDelta: 0, asfDelta: 0, critMultOverride: 0, drBypass: '', weaponGp: 3000, lightGp: 1000, medGp: 4000, heavyGp: 9000 } },
       race: { kind: 'race', timing: 'Inherited', size: 'Medium', creatureType: 'Humanoid', subtype: '', speed: 30, flySpeed: 0, flyMan: 'Average', la: 0, rhdCount: 0, rhdDie: 8, favoredClass: 'Any', bonusFeat1: false, bonusSkillPts: false },
+      monster: {
+        size: 'Medium', creatureType: 'Magical Beast', subtypes: '', alignment: 'Neutral', environment: 'Any',
+        cr: '1', la: 0, hdCount: 2, hdDie: 8, hdBonus: 2, hitDice: '2d8+2', hp: 11, init: 2,
+        speeds: { land: 30, fly: 0, flyMan: 'Average', swim: 0, climb: 0, burrow: 0 },
+        ac: { total: 14, touch: 12, flatFooted: 12, naturalArmor: 2, armor: 0, shield: 0, deflection: 0 },
+        bab: 2, grapple: 3, space: '5 ft.', reach: '5 ft.',
+        abilities: { str: 13, dex: 15, con: 12, int: 2, wis: 12, cha: 6 },
+        nonabilities: [],
+        saves: { fort: 4, ref: 5, will: 1 },
+        attacks: [], skills: [], feats: [], specialAbilities: []
+      },
       prereqs: [],
       chassis: blankChassis(bp.id === 'armor' ? 'armor' : 'weapon'),
       powers: [], effects: [], buffKind: 'Buff',
@@ -439,7 +453,7 @@
         targets: ['atk.all'], mode: 'flat', value: 1, btype: 'Morale',
         stat: 'chaMod', mult: 1, cap: 'none', capVal: 5,
         subOp: 'replace', fromStat: 'wis', toStat: 'con',
-        per: 3, min: 0, max: 5, condition: ''
+        per: 3, min: 0, max: 5, formula: '', condition: ''
       },
       roll: {
         kind: 'Damage', count: 1, die: 'd6', dmgType: 'Fire',
@@ -629,8 +643,11 @@
         if (mode === 'replaceStat') return replaceStatSummary(b, t);
         const v = mode === 'perCL'
           ? '+' + num(b.value, 1) + ' per ' + num(b.per, 1) + ' CL (min +' + num(b.min, 0) + ', max +' + num(b.max, 5) + ')'
-          : mode === 'stat' ? statFormulaText(b) : sgn(num(b.value));
-        return v + ' ' + (b.btype || 'Untyped') + ' → ' + t + (b.condition ? ' (' + b.condition + ')' : '');
+          : mode === 'stat' ? statFormulaText(b)
+          : mode === 'formula' ? (b.formula || sgn(num(b.value)))
+          : sgn(num(b.value));
+        const condTxt = b.condition && typeof b.condition === 'object' ? (b.condition.toggle ? 'toggle:' + b.condition.toggle : JSON.stringify(b.condition)) : b.condition;
+        return v + ' ' + (b.btype || 'Untyped') + ' → ' + t + (condTxt ? ' (' + condTxt + ')' : '');
       }
       case 'roll': return rollBlockText(b);
       case 'attack': {
@@ -1968,6 +1985,16 @@
       if (r.bonusFeat1) seg.push('1st-Lvl Bonus Feat');
       if (r.bonusSkillPts) seg.push('+4/+1 Skill Points');
     }
+    if (en.blueprint === 'monster') {
+      const m = en.monster;
+      const nonSet = new Set(m.nonabilities || []);
+      const hdStr = num(m.hdCount, 1) + 'd' + num(m.hdDie, 8) + (num(m.hdBonus) ? sgn(num(m.hdBonus)) : '');
+      seg.push('CR ' + (m.cr || '1') + ' • ' + m.size + ' ' + m.creatureType + (m.subtypes ? ' (' + m.subtypes + ')' : ''));
+      seg.push('HD ' + hdStr + ' (' + num(m.hp, 1) + ' HP)');
+      seg.push('AC ' + num(m.ac.total, 10) + ' (Touch ' + num(m.ac.touch, 10) + ', Flat-Footed ' + num(m.ac.flatFooted, 10) + ', Nat +' + num(m.ac.naturalArmor, 0) + ')');
+      seg.push('Speed ' + num(m.speeds.land, 30) + ' ft.' + (num(m.speeds.fly) > 0 ? ', Fly ' + num(m.speeds.fly) + ' ft. (' + (m.speeds.flyMan || 'Average') + ')' : ''));
+      seg.push(['str', 'dex', 'con', 'int', 'wis', 'cha'].map((k) => k.toUpperCase() + ' ' + (nonSet.has(k) ? '—' : num(m.abilities[k], 10))).join(' '));
+    }
     return seg.filter(Boolean);
   }
 
@@ -1989,6 +2016,15 @@
     if (en.blueprint === 'race') {
       if (en.race.bonusFeat1) pills.push(['indigo', '✨ 1st-Lvl Bonus Feat']);
       if (en.race.bonusSkillPts) pills.push(['indigo', '🎯 +4/+1 Skill Points']);
+    }
+    if (en.blueprint === 'monster') {
+      const m = en.monster;
+      pills.push(['amber', '🛡️ Saves Fort ' + sgn(num(m.saves.fort)) + ' / Ref ' + sgn(num(m.saves.ref)) + ' / Will ' + sgn(num(m.saves.will))]);
+      pills.push(['sky', '⚔️ BAB ' + sgn(num(m.bab)) + ' • Grapple ' + sgn(num(m.grapple))]);
+      if ((m.nonabilities || []).length) pills.push(['dim', '∅ Nonabilities: ' + m.nonabilities.map((k) => k.toUpperCase()).join(', ')]);
+      (m.attacks || []).slice(0, 4).forEach((a) => pills.push(['rose', '⚔️ ' + a.name + ' ' + sgn(num(a.bonus)) + ' (' + (a.damage || '1d6') + ')']));
+      if ((m.feats || []).length) pills.push(['indigo', '📜 ' + m.feats.length + ' Feats']);
+      if ((m.specialAbilities || []).length) pills.push(['purple', '✨ ' + m.specialAbilities.length + ' Special Abilities']);
     }
     if (has('prereqs') && en.prereqs.length) pills.push(['indigo', '🏛️ Prerequisites: ' + prereqText(en.prereqs)]);
     (en.effects || []).forEach((b) => {
@@ -2057,6 +2093,23 @@
       o.mode = mode;
       if (mode === 'stat') { o.formula = exportModFormula(b); o.cap = exportModCap(b); }
       else if (mode === 'perCL') { o.formula = exportPerCLFormula(b); }
+      else if (mode === 'formula') { o.formula = String(b.formula || '').trim(); }
+      if (typeof o.condition === 'string' && /^toggle:([A-Za-z0-9_.-]+)$/.test(o.condition.trim())) {
+        o.condition = { toggle: RegExp.$1 };
+      }
+    }
+    if (b.type === 'roll' && b.kind === 'Temp HP') {
+      const cnt = num(b.count, 1), die = String(b.die || 'd6');
+      const baseExpr = die === 'flat' ? (cnt > 0 ? String(cnt) : '') : (/^\d+d\d+$/.test(die) ? die : (cnt > 0 ? cnt + die : ''));
+      if (b.scaling === 'perCL') {
+        const per = Math.max(1, num(b.per, 1)), amt = num(b.amount, 1), mx = Math.max(1, num(b.max, 10));
+        const clPart = per === 1
+          ? (amt === 1 ? 'min(' + mx + ', @cl)' : 'min(' + mx + ', @cl * ' + amt + ')')
+          : 'min(' + mx + ', floor(@cl / ' + per + ') * ' + amt + ')';
+        o.tempHpFormula = baseExpr ? (baseExpr + ' + ' + clPart) : clPart;
+      } else if (baseExpr) {
+        o.tempHpFormula = baseExpr;
+      }
     }
     o.summary = blockText(b);
     if (b.type === 'when' && Array.isArray(b.branches)) {
@@ -2137,6 +2190,48 @@
     if (en.blueprint === 'race') {
       const r = en.race;
       out.race = { kind: r.kind, timing: r.kind === 'template' ? r.timing : null, size: r.size, creatureType: r.creatureType, subtype: r.subtype || null, speed: num(r.speed, 30), flySpeed: num(r.flySpeed, 0), flyManeuverability: num(r.flySpeed, 0) > 0 ? r.flyMan : null, levelAdjustment: num(r.la, 0), racialHitDice: num(r.rhdCount, 0) > 0 ? { count: num(r.rhdCount), die: 'd' + num(r.rhdDie, 8) } : null, favoredClass: r.favoredClass || null, bonusFeatAt1st: !!r.bonusFeat1, humanBonusSkillPoints: !!r.bonusSkillPts };
+    }
+    if (en.blueprint === 'monster') {
+      const m = en.monster;
+      const nonSet = new Set(m.nonabilities || []);
+      const hdStr = num(m.hdCount, 1) + 'd' + num(m.hdDie, 8) + (num(m.hdBonus) ? sgn(num(m.hdBonus)) : '');
+      const abilOut = {};
+      ['str', 'dex', 'con', 'int', 'wis', 'cha'].forEach((k) => { abilOut[k] = nonSet.has(k) ? null : num(m.abilities[k], 10); });
+      const acOut = { total: num(m.ac.total, 10), touch: num(m.ac.touch, 10), flatFooted: num(m.ac.flatFooted, 10), naturalArmor: num(m.ac.naturalArmor, 0), armor: num(m.ac.armor, 0), shield: num(m.ac.shield, 0), deflection: num(m.ac.deflection, 0) };
+      const spdOut = { land: num(m.speeds.land, 30), fly: num(m.speeds.fly, 0), flyManeuverability: num(m.speeds.fly, 0) > 0 ? (m.speeds.flyMan || 'Average') : null, swim: num(m.speeds.swim, 0), climb: num(m.speeds.climb, 0), burrow: num(m.speeds.burrow, 0) };
+      const savOut = { fort: num(m.saves.fort, 0), ref: num(m.saves.ref, 0), will: num(m.saves.will, 0) };
+      out.type = 'Monster';
+      out.cr = String(m.cr || '1');
+      out.size = m.size;
+      out.category = m.creatureType;
+      out.hitDice = hdStr;
+      out.hp = num(m.hp, 1);
+      out.init = num(m.init, 0);
+      out.bab = num(m.bab, 0);
+      out.grapple = num(m.grapple, 0);
+      out.space = m.space || '5 ft.';
+      out.reach = m.reach || '5 ft.';
+      out.ac = clone(acOut);
+      out.speed = clone(spdOut);
+      out.abilities = clone(abilOut);
+      out.nonabilities = (m.nonabilities || []).slice();
+      out.saves = clone(savOut);
+      out.attacks = clone(m.attacks || []);
+      out.skills = clone(m.skills || []);
+      out.feats = clone(m.feats || []);
+      out.specialAbilities = clone(m.specialAbilities || []);
+      out.monster = {
+        size: m.size, creatureType: m.creatureType,
+        subtypes: m.subtypes ? String(m.subtypes).split(',').map((s) => s.trim()).filter(Boolean) : [],
+        alignment: m.alignment || 'Neutral', environment: m.environment || 'Any',
+        cr: String(m.cr || '1'), levelAdjustment: m.la == null ? null : num(m.la, 0),
+        hitDice: hdStr, hdCount: num(m.hdCount, 1), hdDie: num(m.hdDie, 8), hdBonus: num(m.hdBonus, 0),
+        hp: num(m.hp, 1), init: num(m.init, 0),
+        speeds: clone(spdOut), ac: clone(acOut),
+        bab: out.bab, grapple: out.grapple, space: out.space, reach: out.reach,
+        abilities: clone(abilOut), nonabilities: out.nonabilities.slice(), saves: clone(savOut),
+        attacks: clone(out.attacks), skills: clone(out.skills), feats: clone(out.feats), specialAbilities: clone(out.specialAbilities)
+      };
     }
     if (has('prereqs')) out.prerequisites = { all: en.prereqs.map((r) => ({ anyOf: r.alts.map(cleanAlt) })), text: prereqText(en.prereqs) };
     if (has('chassis')) {
@@ -2235,6 +2330,9 @@
       if (normalized.btype || normalized.bonusType) {
         normalized.btype = bonusTypeName(normalized.btype || normalized.bonusType);
       }
+      if (normalized.condition && typeof normalized.condition === 'object') {
+        normalized.condition = normalized.condition.toggle ? ('toggle:' + normalized.condition.toggle) : JSON.stringify(normalized.condition);
+      }
       if (normalized.mode === 'formula') {
         const fStr = String(normalized.formula == null ? '' : normalized.formula).trim();
         if (fStr !== '' && !isNaN(Number(fStr))) {
@@ -2243,7 +2341,10 @@
         } else {
           const parsedScale = parseStatFormulaSrd(fStr, normalized.value);
           if (parsedScale) Object.assign(normalized, parsedScale);
-          else normalized.mode = 'flat';
+          else {
+            normalized.mode = 'formula';
+            normalized.formula = fStr;
+          }
         }
       }
     }
@@ -2268,14 +2369,18 @@
     return b;
   }
 
+  const DUR_V3_ALIAS = { rdLvl: 'roundsPerLevel', minLvl: 'minPerLevel', '10minLvl': 'tenMinPerLevel', hrLvl: 'hourPerLevel', perm: 'permanent' };
+  const SAVE_V3_ALIAS = { Fort: 'Fortitude', Ref: 'Reflex' };
+
   function fromCanonicalV3(raw) {
     const arr = (x) => (Array.isArray(x) ? x : []);
     const obj = typeof raw === 'string' ? JSON.parse(raw) : raw;
     if (!obj || typeof obj !== 'object' || Array.isArray(obj)) {
       throw new Error('Expected a Canonical V3 JSON object.');
     }
-    const bpId = obj.blueprint && BP_BY_ID[obj.blueprint] ? obj.blueprint
-      : obj.kind && BP_BY_ID[obj.kind] ? obj.kind
+    const bpId = obj.blueprint && BP_BY_ID[obj.blueprint] ? BP_BY_ID[obj.blueprint].id
+      : obj.kind && BP_BY_ID[obj.kind] ? BP_BY_ID[obj.kind].id
+      : (obj.monster || obj.type === 'Monster') ? 'monster'
       : obj.spell ? 'spell'
       : obj.armor ? 'armor'
       : obj.baseItemId || obj.weapon ? 'weapon'
@@ -2367,6 +2472,67 @@
         bonusSkillPts: !!(r.humanBonusSkillPoints != null ? r.humanBonusSkillPoints : r.bonusSkillPts)
       });
     }
+    if (obj.monster || obj.type === 'Monster' || bpId === 'monster') {
+      const m = (obj.monster && typeof obj.monster === 'object') ? obj.monster : obj;
+      const hdM = String(m.hitDice || obj.hitDice || '2d8+2').match(/(\d+)d(\d+)\s*(?:([+-]\s*\d+))?/i);
+      const nonArr = Array.isArray(m.nonabilities) ? m.nonabilities.slice() : (Array.isArray(obj.nonabilities) ? obj.nonabilities.slice() : []);
+      const rawAb = m.abilities || obj.abilities || {};
+      const abilClean = { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 };
+      ['str', 'dex', 'con', 'int', 'wis', 'cha'].forEach((k) => {
+        if (rawAb[k] === null || rawAb[k] === '—' || rawAb[k] === '-') {
+          if (nonArr.indexOf(k) < 0) nonArr.push(k);
+          abilClean[k] = 10;
+        } else if (rawAb[k] !== undefined) {
+          abilClean[k] = num(rawAb[k], 10);
+        }
+      });
+      const spObj = (m.speeds && typeof m.speeds === 'object') ? m.speeds : ((obj.speed && typeof obj.speed === 'object') ? obj.speed : {});
+      const acObj = (m.ac && typeof m.ac === 'object') ? m.ac : ((obj.ac && typeof obj.ac === 'object') ? obj.ac : { total: num(obj.ac, 14) });
+      const savObj = m.saves || obj.saves || {};
+      Object.assign(en.monster, {
+        size: m.size || obj.size || 'Medium',
+        creatureType: m.creatureType || obj.category || 'Magical Beast',
+        subtypes: Array.isArray(m.subtypes) ? m.subtypes.join(', ') : (m.subtypes || ''),
+        alignment: m.alignment || obj.alignment || 'Neutral',
+        environment: m.environment || obj.environment || 'Any',
+        cr: String(m.cr != null ? m.cr : (obj.cr != null ? obj.cr : '1')),
+        la: num(m.levelAdjustment != null ? m.levelAdjustment : m.la, 0),
+        hdCount: m.hdCount != null ? num(m.hdCount, 1) : (hdM ? num(hdM[1], 1) : 2),
+        hdDie: m.hdDie != null ? num(m.hdDie, 8) : (hdM ? num(hdM[2], 8) : 8),
+        hdBonus: m.hdBonus != null ? num(m.hdBonus, 0) : (hdM && hdM[3] ? num(hdM[3].replace(/\s+/g, ''), 0) : 0),
+        hitDice: m.hitDice || obj.hitDice || '2d8+2',
+        hp: num(m.hp != null ? m.hp : obj.hp, 11),
+        init: num(m.init != null ? m.init : (obj.init != null ? obj.init : obj.initiative), 0),
+        speeds: {
+          land: num(spObj.land, 30),
+          fly: num(spObj.fly, 0),
+          flyMan: spObj.flyManeuverability || spObj.flyMan || 'Average',
+          swim: num(spObj.swim, 0),
+          climb: num(spObj.climb, 0),
+          burrow: num(spObj.burrow, 0)
+        },
+        ac: {
+          total: num(acObj.total, 14),
+          touch: num(acObj.touch, 12),
+          flatFooted: num(acObj.flatFooted, 12),
+          naturalArmor: num(acObj.naturalArmor, 0),
+          armor: num(acObj.armor, 0),
+          shield: num(acObj.shield, 0),
+          deflection: num(acObj.deflection, 0)
+        },
+        bab: num(m.bab != null ? m.bab : obj.bab, 1),
+        grapple: num(m.grapple != null ? m.grapple : obj.grapple, 1),
+        space: m.space || obj.space || '5 ft.',
+        reach: m.reach || obj.reach || '5 ft.',
+        abilities: abilClean,
+        nonabilities: nonArr,
+        saves: { fort: num(savObj.fort, 0), ref: num(savObj.ref, 0), will: num(savObj.will, 0) },
+        attacks: clone(arr(m.attacks || obj.attacks)),
+        skills: clone(arr(m.skills || obj.skills)),
+        feats: clone(arr(m.feats || obj.feats)),
+        specialAbilities: clone(arr(m.specialAbilities || obj.specialAbilities))
+      });
+    }
     if (obj.buffKind) en.buffKind = obj.buffKind;
     if (obj.delivery && typeof obj.delivery === 'object') {
       const d = obj.delivery;
@@ -2376,7 +2542,8 @@
         sr: d.spellResistance || d.sr || en.delivery.sr
       });
       if (d.save) {
-        en.delivery.save.type = d.save.type || 'None';
+        const rawSv = d.save.type || 'None';
+        en.delivery.save.type = SAVE_V3_ALIAS[rawSv] || rawSv;
         en.delivery.save.effect = d.save.effect || 'Negates';
         const dcStr = String(d.save.dc || '');
         const statM = dcStr.match(/\+\s*(STR|DEX|CON|INT|WIS|CHA)/i);
@@ -2388,11 +2555,12 @@
     }
     if (obj.lifecycle && typeof obj.lifecycle === 'object') {
       const l = obj.lifecycle;
+      const durCode = DUR_V3_ALIAS[l.duration] || l.duration || en.lifecycle.duration;
       const durM = String(l.durationText || '').match(/^(\d+)/);
       Object.assign(en.lifecycle, {
-        duration: l.duration || en.lifecycle.duration,
+        duration: durCode,
         durValue: durM ? num(durM[1], 1) : en.lifecycle.durValue,
-        durText: l.duration === 'text' ? (l.durationText || '') : en.lifecycle.durText,
+        durText: durCode === 'text' ? (l.durationText || '') : en.lifecycle.durText,
         dismissible: !!l.dismissible,
         stackable: num(l.maxStacks) > 0,
         maxStacks: num(l.maxStacks, en.lifecycle.maxStacks)
@@ -2446,12 +2614,37 @@
         const alts = Array.isArray(g) ? g : (g && Array.isArray(g.anyOf) ? g.anyOf : [g]);
         return { id: uid('p'), alts: alts.map(parseAlt) };
       });
+    } else if (obj.prereqStruct && typeof obj.prereqStruct === 'object') {
+      const ps = obj.prereqStruct;
+      const rows = [];
+      if (ps.abilities && typeof ps.abilities === 'object') {
+        Object.entries(ps.abilities).forEach(([ab, val]) => rows.push({ id: uid('p'), alts: [ALT({ kind: 'ability', ability: ab.toLowerCase(), min: num(val, 13) })] }));
+      }
+      if (ps.bab) rows.push({ id: uid('p'), alts: [ALT({ kind: 'bab', min: num(ps.bab, 1) })] });
+      if (ps.skills && typeof ps.skills === 'object') {
+        Object.entries(ps.skills).forEach(([sk, val]) => rows.push({ id: uid('p'), alts: [ALT({ kind: 'skill', skill: sk.startsWith('skill.') ? sk : `skill.${sk}`, min: num(val, 4) })] }));
+      }
+      if (Array.isArray(ps.feats)) {
+        ps.feats.forEach((fn) => rows.push({ id: uid('p'), alts: [ALT({ kind: 'feat', feat: String(fn) })] }));
+      }
+      if (ps.casterLevel) rows.push({ id: uid('p'), alts: [ALT({ kind: 'level', levelKind: 'casterLevel', min: num(ps.casterLevel, 1) })] });
+      if (ps.charLevel) rows.push({ id: uid('p'), alts: [ALT({ kind: 'level', levelKind: 'charLevel', min: num(ps.charLevel, 1) })] });
+      if (rows.length > 0) en.prereqs = rows;
+    } else if (typeof obj.prerequisites === 'string' && obj.prerequisites.trim() && obj.prerequisites.trim().toLowerCase() !== 'none') {
+      en.prereqs = obj.prerequisites.split(',').map((s) => s.trim()).filter(Boolean).map((s) => ({ id: uid('p'), alts: [ALT({ kind: 'custom', text: s })] }));
     }
     en.effects = arr(obj.effects).map(parseBlockV3).filter(Boolean);
     if (obj.baseItemId || obj.weapon || obj.armor || (obj.chassis && typeof obj.chassis === 'object')) {
       const ch = obj.chassis || obj;
       const kind = ch.kind || (obj.armor ? 'armor' : 'weapon');
-      const baseId = ch.baseId || ch.baseItemId || en.chassis.baseId;
+      let baseId = ch.baseId || ch.baseItemId || obj.id || en.chassis.baseId;
+      if (kind === 'weapon' && !byId(CAT.weapons, baseId)) {
+        const matchW = CAT.weapons.find((y) => normName(baseName(y)) === normName(obj.name || ''));
+        if (matchW) baseId = matchW.id;
+      } else if (kind === 'armor' && !byId(CAT.armors, baseId)) {
+        const matchA = CAT.armors.find((y) => normName(y.name) === normName(obj.name || ''));
+        if (matchA) baseId = matchA.id;
+      }
       en.chassis = blankChassis(kind, baseId);
       en.chassis.material = ch.material || 'standard';
       en.chassis.enhancement = ch.enhancement != null ? num(ch.enhancement, 0) : num(ch.enhancementBonus, 0);
@@ -2461,7 +2654,7 @@
       const w = obj.weapon || ch.weapon;
       if (w && typeof w === 'object') {
         const dps = arr(obj.damageParts || w.damageParts);
-        const rawPart = dps.find((d) => d && (d.raw || d.source === 'Base'));
+        const rawPart = dps.find((d) => d && (d.raw || d.source === 'Base')) || dps[0];
         en.chassis.weapon = Object.assign(en.chassis.weapon, {
           category: w.category || en.chassis.weapon.category,
           handed: w.handedness || w.handed || en.chassis.weapon.handed,
@@ -2561,6 +2754,7 @@
     S.ui.importOpen = false;
     S.ui.importText = '';
     loadEntry(en, '');
+    renderAll();
     toast('Loaded "' + entryName(en) + '" into Rule Crafter.', 'emerald');
     return en;
   }
@@ -2735,33 +2929,44 @@
     C.getByType('Weapon').forEach((w) => {
       if (seenW.has(normName(w.name))) return;
       const dp = (w.damageParts || [])[0] || {};
-      CAT.weapons.push({ id: w.id, name: w.name, cost: num(w.cost), dice: dp.dice || '1d6', critRange: num(w.critRange, 20), critMult: num(w.critMult, 2), category: /exotic/i.test(w.category) ? 'Exotic' : /martial/i.test(w.category) ? 'Martial' : 'Simple', handed: HANDED[w.handedness] || 'One-Handed', dmgType: cap1(String(dp.type || 'Slashing').split(/[\s/]/)[0]), weight: num(w.weight, 1), range: num(w.rangeIncrement), wooden: /wood|staff|club|bow/i.test(w.name), ranged: w.handedness === 'ranged', src: w.source || 'SRD', desc: w.shortDescription || '' });
+      const wObj = w.weapon || {};
+      const handRaw = wObj.handedness || w.handedness;
+      const wCost = (w.item && w.item.price != null) ? w.item.price : w.cost;
+      CAT.weapons.push({ id: w.id, name: w.name, cost: num(wCost), dice: dp.dice || '1d6', critRange: num(wObj.baseCritRange != null ? wObj.baseCritRange : w.critRange, 20), critMult: num(wObj.critMultiplier != null ? wObj.critMultiplier : w.critMult, 2), category: /exotic/i.test(wObj.category || w.category) ? 'Exotic' : /martial/i.test(wObj.category || w.category) ? 'Martial' : 'Simple', handed: HANDED[handRaw] || handRaw || 'One-Handed', dmgType: cap1(String(dp.type || 'Slashing').split(/[\s/]/)[0]), weight: num(w.weight, 1), range: num(wObj.rangeIncrement != null ? wObj.rangeIncrement : w.rangeIncrement), wooden: /wood|staff|club|bow/i.test(w.name), ranged: /ranged/i.test(handRaw || ''), src: w.source || 'SRD', desc: w.shortDescription || '', raw: w });
       n++;
     });
     C.getByType('Armor').concat(C.getByType('Shield')).forEach((a) => {
       if (seenA.has(normName(a.name))) return;
-      const isS = a.type === 'Shield', ab = (a.modifiers || []).find((m) => /^ac\.(armor|shield)$/.test(m.target));
-      CAT.armors.push({ id: a.id, name: a.name, cost: num(a.cost), armorBonus: ab ? num(ab.value) : 0, maxDex: a.maxDex == null ? 99 : num(a.maxDex), acp: num(a.checkPenalty), asf: num(a.spellFailure), type: isS ? 'Shield' : (a.category || 'Light'), speed: parseInt(a.speed30, 10) || 30, kind: isS ? 'shield' : 'armor', weight: num(a.weight), wooden: /wood/i.test(a.name), src: a.source || 'SRD', desc: a.shortDescription || '' });
+      const aObj = a.armor || {};
+      const isS = a.type === 'Shield' || aObj.armorType === 'Shield', ab = (a.modifiers || []).find((m) => /^ac\.(armor|shield)$/.test(m.target));
+      const aBonus = aObj.armorBonus != null ? num(aObj.armorBonus) : (ab ? num(ab.value) : 0);
+      const aMaxDex = aObj.maxDex !== undefined ? (aObj.maxDex == null ? 99 : num(aObj.maxDex)) : (a.maxDex == null ? 99 : num(a.maxDex));
+      const aAcp = aObj.armorCheckPenalty != null ? num(aObj.armorCheckPenalty) : num(a.checkPenalty);
+      const aAsf = aObj.arcaneSpellFailure != null ? num(aObj.arcaneSpellFailure) : num(a.spellFailure);
+      const aCost = (a.item && a.item.price != null) ? a.item.price : a.cost;
+      CAT.armors.push({ id: a.id, name: a.name, cost: num(aCost), armorBonus: aBonus, maxDex: aMaxDex, acp: aAcp, asf: aAsf, type: isS ? 'Shield' : (aObj.armorType || a.category || 'Light'), speed: parseInt(aObj.speed || a.speed30, 10) || 30, kind: isS ? 'shield' : 'armor', weight: num(a.weight), wooden: /wood/i.test(a.name), src: a.source || 'SRD', desc: a.shortDescription || '', raw: a });
       n++;
     });
     const seenE = new Set(CAT.enchants.map((e) => normName(e.name)));
     (C.getEnhancements ? C.getEnhancements() : C.getByType('Enhancement')).forEach((e) => {
       if (seenE.has(normName(e.name)) || /Misc/.test(e.category || '')) return;
-      const applies = String(e.appliesTo || '').toLowerCase();
-      const on = /Weapon/.test(e.category) ? 'weapon' : e.targetType === 'Shield' || applies === 'shield' ? 'shield' : applies === 'armor' ? 'armor' : 'armor+shield';
-      const parts = partsFromSrd(e.damageParts);
+      const im = e.itemModifier || {};
+      const applies = String(im.appliesTo || e.appliesTo || '').toLowerCase();
+      const on = /Weapon/.test(e.category) || applies === 'weapon' ? 'weapon' : e.targetType === 'Shield' || applies === 'shield' ? 'shield' : applies === 'armor' ? 'armor' : 'armor+shield';
+      const parts = partsFromSrd(im.damageParts || e.damageParts);
       const mods = (e.modifiers || []).filter((m) => m && m.target && Number.isFinite(Number(m.value)) && Number(m.value) !== 0).map((m) => ({ target: m.target, value: num(m.value), type: bonusTypeName(m.type) }));
-      CAT.enchants.push({ id: e.id, name: e.name, on: on, plus: num(e.enhIncrease), gp: num(e.flatCost), effect: { parts: parts.length ? parts : undefined, keen: !!(e.ruleFlags && e.ruleFlags.keen), mods: mods }, desc: e.shortDescription || stripHtml(e.description).slice(0, 160), src: e.source || 'SRD' });
+      CAT.enchants.push({ id: e.id, name: e.name, on: on, plus: num(im.enhancementIncrease != null ? im.enhancementIncrease : e.enhIncrease), gp: num(im.flatGp != null ? im.flatGp : e.flatCost), effect: { parts: parts.length ? parts : undefined, keen: !!(im.keen || (e.ruleFlags && e.ruleFlags.keen)), mods: mods }, desc: e.shortDescription || stripHtml(e.text || e.description).slice(0, 160), src: e.source || 'SRD' });
       seenE.add(normName(e.name)); n++;
     });
     const groups = {};
     (C.getCrystals ? C.getCrystals() : C.getByType('AugmentationCrystal')).forEach((c) => {
       const m = String(c.name).match(/^(.*?),\s*(Least|Lesser|Greater)$/i);
       const baseN = m ? m[1] : c.name, tier = m ? m[2].toLowerCase() : 'least';
-      const g = groups[baseN] = groups[baseN] || { id: 'crys-' + slug(baseN), name: baseN, on: /Weapon/.test(c.slot) ? 'weapon' : /Shield/.test(c.slot) ? 'shield' : 'armor+shield', cost: [null, null, null], tiers: ['', '', ''], parts: [null, null, null], src: c.source || 'MIC' };
+      const cSlot = (c.item && c.item.slot) || (c.itemModifier && c.itemModifier.appliesTo) || c.slot || '';
+      const g = groups[baseN] = groups[baseN] || { id: 'crys-' + slug(baseN), name: baseN, on: /Weapon/i.test(cSlot) ? 'weapon' : /Shield/i.test(cSlot) ? 'shield' : 'armor+shield', cost: [null, null, null], tiers: ['', '', ''], parts: [null, null, null], src: c.source || 'MIC' };
       const ti = CRYSTAL_TIERS.indexOf(tier);
-      g.cost[ti] = num(c.cost); g.tiers[ti] = c.shortDescription || stripHtml(c.description).slice(0, 140);
-      const dp = partsFromSrd(c.damageParts)[0];
+      g.cost[ti] = num((c.item && c.item.price != null) ? c.item.price : c.cost); g.tiers[ti] = c.shortDescription || stripHtml(c.text || c.description).slice(0, 140);
+      const dp = partsFromSrd((c.itemModifier && c.itemModifier.damageParts) || c.damageParts)[0];
       if (dp) { g.parts[ti] = [dp.count, dp.die]; g.ptype = dp.type; g.cond = dp.cond; }
     });
     Object.keys(groups).forEach((k) => {
@@ -2773,7 +2978,13 @@
     });
     const seenS = new Set(CAT.spells.map((s) => normName(s.name)));
     (C.getAllSpells ? C.getAllSpells() : C.getByType('Spell')).forEach((s) => {
-      const row = { id: s.id, name: s.name, levelText: levelTextFromLearned(s.learnedAt), level: num(s.level, 1), school: s.category || s.school || 'Universal', action: cap1(String(s.castingTime || 'standard').split(' ')[0]), range: s.range || '', save: s.save || '', desc: s.shortDescription || '', src: s.source || 'SRD', raw: s };
+      const sp = s.spell || {}, dl = s.delivery || {};
+      const lvlTxt = Array.isArray(sp.classLevels) && sp.classLevels.length
+        ? sp.classLevels.map((cl) => (CLASS_ABBR[cl.class] || cl.class) + ' ' + cl.level).join(', ')
+        : levelTextFromLearned(s.learnedAt);
+      const firstLvl = Array.isArray(sp.classLevels) && sp.classLevels[0] ? num(sp.classLevels[0].level, 1) : num(s.level, 1);
+      const svTxt = (dl.save && dl.save.type && dl.save.type !== 'None') ? (dl.save.type + ' ' + (dl.save.effect || '')).trim() : (s.save || '');
+      const row = { id: s.id, name: s.name, levelText: lvlTxt, level: firstLvl, school: sp.school || s.category || s.school || 'Universal', action: cap1(String(dl.action || s.castingTime || 'standard').split(' ')[0]), range: dl.range || s.range || '', save: svTxt, desc: s.shortDescription || '', src: s.source || 'SRD', raw: s };
       const i = CAT.spells.findIndex((x) => normName(x.name) === normName(s.name));
       if (i >= 0) CAT.spells[i] = Object.assign(row, { id: CAT.spells[i].id, levelText: row.levelText || CAT.spells[i].levelText }); else if (!seenS.has(normName(s.name))) CAT.spells.push(row);
       n++;
@@ -2781,14 +2992,21 @@
     const seenF = new Set(CAT.feats.map((f) => normName(f.name)));
     (C.getAllFeats ? C.getAllFeats() : C.getByType('Feat')).forEach((f) => {
       if (seenF.has(normName(f.name))) return;
-      const tags = []; if (f.isFighterBonusFeat) tags.push('#FighterBonus'); if (f.category === 'Metamagic') tags.push('#Metamagic'); if (f.category === 'Item Creation') tags.push('#ItemCreation');
-      CAT.feats.push({ id: f.id, name: f.name, tags: tags, prereq: f.prereq || f.prerequisites || '', desc: f.shortDescription || '', src: f.source || 'SRD', raw: f });
+      const tags = Array.isArray(f.tags) ? f.tags.slice() : [];
+      if (f.isFighterBonusFeat && tags.indexOf('#FighterBonus') < 0) tags.push('#FighterBonus');
+      if (f.category === 'Metamagic' && tags.indexOf('#Metamagic') < 0) tags.push('#Metamagic');
+      if (f.category === 'Item Creation' && tags.indexOf('#ItemCreation') < 0) tags.push('#ItemCreation');
+      const prTxt = (f.prerequisites && f.prerequisites.text) || (typeof f.prerequisites === 'string' ? f.prerequisites : '') || f.prereq || '';
+      CAT.feats.push({ id: f.id, name: f.name, tags: tags, prereq: prTxt, desc: f.shortDescription || '', src: f.source || 'SRD', raw: f });
       n++;
     });
     C.getByType('SpecialAbility').forEach((x) => { CAT.special.push({ id: x.id, name: x.name, desc: x.shortDescription || '', src: x.source || 'SRD', cat: x.category || 'Special Ability' }); n++; });
     C.getByType('ClassAbility').forEach((x) => { if (!CAT.classFeatures.some((c) => normName(c.name) === normName(x.name))) { CAT.classFeatures.push({ id: x.id, name: x.name, abilityType: cap1(x.abilityType || 'ex').replace(/^(Ex|Su|Sp).*/i, (m) => m.slice(0, 2)), desc: x.shortDescription || '', src: x.source || 'SRD' }); n++; } });
     (C.getAllDomains ? C.getAllDomains() : C.getByType('Domain')).forEach((d) => {
-      const row = { id: d.id, name: d.name, grantedPower: (d.grantedPower && d.grantedPower.description) || d.shortDescription || '', spells: (d.spells || []).sort((a, b) => a.level - b.level).map((s) => s.name), src: d.source || 'SRD' };
+      const gr = d.grants || {};
+      const gpTxt = (gr.grantedPower && gr.grantedPower.text) || (d.grantedPower && d.grantedPower.description) || d.shortDescription || '';
+      const spList = Array.isArray(gr.spellLadder) ? gr.spellLadder.slice().sort((a, b) => a.level - b.level).map((s) => s.spell).filter(Boolean) : (d.spells || []).sort((a, b) => a.level - b.level).map((s) => s.name);
+      const row = { id: d.id, name: d.name, grantedPower: gpTxt, spells: spList, src: d.source || 'SRD', raw: d };
       const i = CAT.domains.findIndex((x) => normName(x.name) === normName(d.name));
       if (i >= 0) CAT.domains[i] = row; else CAT.domains.push(row);
       n++;
@@ -2851,7 +3069,30 @@
     if (!x || typeof x !== 'object') return null;
     const kh = String(kindHint || '').toLowerCase();
     const rawT = x.type || (x.learnedAt ? 'Spell' : '');
-    const t = rawT || (kh === 'spell' ? 'Spell' : kh === 'maneuver' ? 'Maneuver' : (kh === 'psionic' || kh === 'psionics') ? 'Power' : kh === 'incarnum' ? 'Soulmeld' : kh === 'pactmagic' ? 'Vestige' : kh === 'shadowmagic' ? 'Mystery' : kh === 'truenaming' ? 'Utterance' : kh === 'feat' ? 'Feat' : kh === 'boon' ? 'Feat' : kh === 'class' ? 'Class' : kh === 'race' ? 'Race' : '');
+    const t = rawT || (kh === 'spell' ? 'Spell' : kh === 'maneuver' ? 'Maneuver' : (kh === 'psionic' || kh === 'psionics') ? 'Power' : kh === 'incarnum' ? 'Soulmeld' : kh === 'pactmagic' ? 'Vestige' : kh === 'shadowmagic' ? 'Mystery' : kh === 'truenaming' ? 'Utterance' : kh === 'feat' ? 'Feat' : kh === 'boon' ? 'Feat' : kh === 'class' ? 'Class' : kh === 'race' ? 'Race' : kh === 'monster' ? 'Monster' : '');
+    if (x.schemaVersion === 3 && (x.blueprint || x.monster || x.spell || x.weapon || x.armor || x.itemModifier || x.progression || x.race || x.grants || Array.isArray(x.effects))) {
+      if (t === 'Weapon' || x.blueprint === 'weapon') {
+        let w = byId(CAT.weapons, x.id || x.baseItemId) || CAT.weapons.find((y) => normName(baseName(y)) === normName(x.name));
+        if (!w && x.name) {
+          const dp = (x.damageParts || [])[0] || {};
+          const wObj = x.weapon || {};
+          const handRaw = wObj.handedness || x.handedness;
+          w = { id: x.id || ('wpn-' + slug(x.name)), name: x.name, cost: num((x.item && x.item.price != null) ? x.item.price : x.cost), dice: dp.dice || x.damage || '1d6', critRange: num(wObj.baseCritRange != null ? wObj.baseCritRange : x.critRange, 20), critMult: num(wObj.critMultiplier != null ? wObj.critMultiplier : x.critMult, 2), category: /exotic/i.test(wObj.category || x.category) ? 'Exotic' : /martial/i.test(wObj.category || x.category) ? 'Martial' : 'Simple', handed: HANDED[handRaw] || handRaw || 'One-Handed', dmgType: cap1(String(dp.type || x.dmgType || 'Slashing').split(/[\s/]/)[0]), weight: num(x.weight, 1), range: num(wObj.rangeIncrement != null ? wObj.rangeIncrement : (x.rangeIncrement || x.range)), wooden: /wood|staff|club|bow/i.test(x.name), ranged: /ranged/i.test(handRaw || ''), src: x.source || 'SRD', desc: x.shortDescription || '', raw: x };
+          CAT.weapons.push(w);
+        }
+      } else if (t === 'Armor' || t === 'Shield' || x.blueprint === 'armor') {
+        let a = byId(CAT.armors, x.id || x.baseItemId) || CAT.armors.find((y) => normName(y.name) === normName(x.name));
+        if (!a && x.name) {
+          const aObj = x.armor || {};
+          const isS = t === 'Shield' || aObj.armorType === 'Shield';
+          a = { id: x.id || ('arm-' + slug(x.name)), name: x.name, cost: num((x.item && x.item.price != null) ? x.item.price : x.cost), armorBonus: num(aObj.armorBonus != null ? aObj.armorBonus : x.armorBonus, 0), maxDex: aObj.maxDex !== undefined ? (aObj.maxDex == null ? 99 : num(aObj.maxDex)) : (x.maxDex == null ? 99 : num(x.maxDex)), acp: num(aObj.armorCheckPenalty != null ? aObj.armorCheckPenalty : (x.checkPenalty != null ? x.checkPenalty : x.acp)), asf: num(aObj.arcaneSpellFailure != null ? aObj.arcaneSpellFailure : (x.spellFailure != null ? x.spellFailure : x.asf)), type: isS ? 'Shield' : (aObj.armorType || x.category || 'Light'), speed: parseInt(aObj.speed || x.speed30, 10) || 30, kind: isS ? 'shield' : 'armor', weight: num(x.weight), wooden: /wood/i.test(x.name), src: x.source || 'SRD', desc: x.shortDescription || '', raw: x };
+          CAT.armors.push(a);
+        }
+      }
+      const v3En = fromCanonicalV3(x);
+      setOrigin(v3En, x, t || x.type || v3En.blueprint);
+      return v3En;
+    }
     let e;
     if (t === 'Weapon') {
       e = blankEntry('weapon');
@@ -3093,6 +3334,7 @@
         add('📜 Feats', CAT.feats, (x) => (x.custom ? 'Custom' : x.src || 'Feat'), (x) => [x.prereq ? 'Prerequisites: ' + x.prereq : '', stripHtml(x.desc || (x.raw && (x.raw.benefit || x.raw.description)) || ''), x.src].filter(Boolean).join(' • '), 'Feat', 6);
         add('💎 Classes', CAT.classes, (x) => x.category || 'Class', (x) => [x.hitDie ? 'd' + x.hitDie + ' HD' : '', x.babProgression ? 'BAB ' + x.babProgression : '', stripHtml(x.shortDescription || x.description || ''), x.source || 'SRD'].filter(Boolean).join(' • '), 'Class', 4);
         add('✨ Domains', CAT.domains, () => 'Domain', (x) => ['Granted Power: ' + stripHtml(x.grantedPower || ''), x.spells && x.spells.length ? 'Spells: ' + x.spells.join(', ') : '', x.src].filter(Boolean).join(' • '), 'Domain', 4);
+        add('👹 Monsters & Bestiary', CAT.monsters || [], (x) => 'CR ' + (x.cr || '1'), (x) => [(x.size || 'Medium') + ' ' + (x.category || (x.monster && x.monster.creatureType) || 'Monster'), x.hitDice ? 'HD ' + x.hitDice : '', x.hp ? 'HP ' + x.hp : '', stripHtml(x.shortDescription || x.text || ''), x.source || 'SRD'].filter(Boolean).join(' • '), 'Monster', 6);
         if (sNorm) srdBuckets.sort((a, b) => b.best - a.best);
         const out = pre.slice();
         srdBuckets.forEach((b) => b.items.forEach((it) => out.push(it)));
@@ -3412,12 +3654,14 @@
     if (en.blueprint === 'class') sub = en.progression.mode === 'prestige' ? 'Prestige Class' : en.progression.mode === 'base' ? 'Base Class' : en.progression.mode === 'hd' ? 'HD Scaling' : 'Legacy Progression';
     if (en.blueprint === 'item_mod') sub = (en.itemMod.kind === 'crystal' ? 'Augment Crystal' : en.itemMod.kind === 'material' ? 'Special Material' : 'Enchantment') + ' (' + en.itemMod.on + ')';
     if (en.blueprint === 'race') sub = (en.race.kind === 'template' ? en.race.timing + ' Template' : 'Base Race') + ' • ' + en.race.size + ' ' + en.race.creatureType;
+    if (en.blueprint === 'monster') sub = en.monster.size + ' ' + en.monster.creatureType + (en.monster.subtypes ? ' (' + en.monster.subtypes + ')' : '');
     let l1 = '<span class="fs-live-icon">' + bp.icon + '</span><span class="fs-live-name">' + esc(entryName(en)) + '</span><span class="fs-pill indigo">' + esc(sub) + '</span>' +
       '<span class="fs-pill ' + (en.origin.mode === 'new' ? 'dim' : en.origin.mode === 'override' ? 'amber' : 'sky') + '">' + esc(ORIGIN_LABEL[en.origin.mode]) + (en.origin.srdName && en.origin.mode !== 'new' ? ': ' + esc(en.origin.srdName) : '') + '</span>' +
       en.tags.map((t) => '<span class="fs-pill purple">' + esc(t) + '</span>').join('');
     let hasGrow = false;
     if (has('chassis')) { const v = chassisView(en.chassis, en); l1 += '<span class="fs-grow-gap"></span><span class="fs-pill ' + (v.effective > 10 ? 'rose' : 'emerald') + '">' + sgn(v.effective) + ' / +10</span><span class="fs-pill amber">💰 ' + gp(v.gpTotal) + '</span>'; hasGrow = true; }
     else if (isItemBp(en.blueprint) && num(en.item.price)) { l1 += '<span class="fs-grow-gap"></span><span class="fs-pill amber">💰 ' + gp(en.item.price) + '</span>'; hasGrow = true; }
+    else if (en.blueprint === 'monster') { l1 += '<span class="fs-grow-gap"></span><span class="fs-pill amber">⚔️ CR ' + esc(en.monster.cr || '1') + '</span><span class="fs-pill emerald">💚 ' + num(en.monster.hp, 1) + ' HP</span>'; hasGrow = true; }
     const segs = rawHeaderLine(en);
     const l2 = segs.length ? segs.map(esc).join(' <span class="fs-sep">•</span> ') : '<span class="fs-hint">Configure the sections below — the clean RAW stat line renders here.</span>';
     const pills = summaryPills(en);
@@ -3507,8 +3751,17 @@
   function statControlsHtml(p, m) {
     const mode = modMode(m);
     const tgtRow = F('Target', targetChips(m.targets || ['atk.all'], p + '.targets'), 'lego-span-full');
-    const modeF = F('Modifier Mode', sel(p + '.mode', mode, [['flat', 'Flat (+/-)'], ['stat', '+ @Stat / @Resource'], ['replaceStat', '🔄 Replace Stat'], ['perCL', 'Scale by Level']], { narrow: true }));
+    const modeF = F('Modifier Mode', sel(p + '.mode', mode, [['flat', 'Flat (+/-)'], ['stat', '+ @Stat / @Resource'], ['replaceStat', '🔄 Replace Stat'], ['perCL', 'Scale by Level'], ['formula', '∑ Custom Formula']], { narrow: true }));
     const btypeF = F('Bonus Type', sel(p + '.btype', m.btype || 'Untyped', bonusTypeOpts().map((x) => [x[0], x[0]]), { narrow: true }));
+    if (mode === 'formula') {
+      return G(4,
+        tgtRow +
+        modeF +
+        F('Formula Expression', inp(p + '.formula', m.formula || '', { ph: '2 + min(3, floor(@cl / 6))' }), 'lego-span-2') +
+        btypeF +
+        F('Condition', inp(p + '.condition', m.condition || '', { ph: 'condition (vs Fear)' }), 'lego-span-full')
+      );
+    }
     if (mode === 'replaceStat') {
       return G(3,
         tgtRow +
@@ -4431,6 +4684,80 @@
     return h + universalExtraStacks(en) + universalSnapPalette(en);
   }
 
+  function scratchMonster(en) {
+    const m = en.monster;
+    const nonSet = new Set(m.nonabilities || []);
+    let h = hat('h-rose',
+      H(L('👹 Monster / Companion Statblock')) +
+      G(4,
+        F('Name', inp('name', en.name, { ph: 'Adult Red Dragon / Wolf Companion' }), 'lego-span-2') +
+        F('Challenge Rating (CR)', inp('monster.cr', m.cr, { ph: '1/2, 1, 15' })) +
+        srcField(en) +
+        F('Size', sel('monster.size', m.size, CREATURE_SIZES, { narrow: true })) +
+        F('Creature Type', sel('monster.creatureType', m.creatureType, CREATURE_TYPES, { narrow: true })) +
+        F('Subtypes', inp('monster.subtypes', m.subtypes, { ph: 'Fire, Extraplanar' })) +
+        F('Alignment', inp('monster.alignment', m.alignment, { ph: 'Always Chaotic Evil' })) +
+        F('Hit Dice Count', inp('monster.hdCount', m.hdCount, { num: true, min: 1 })) +
+        F('HD Die Size', sel('monster.hdDie', m.hdDie, [4, 6, 8, 10, 12].map((n) => [n, 'd' + n]), { narrow: true, num: true })) +
+        F('HD Flat Bonus', inp('monster.hdBonus', m.hdBonus, { num: true })) +
+        F('Average HP', inp('monster.hp', m.hp, { num: true, min: 1 })) +
+        F('Initiative', inp('monster.init', m.init, { num: true })) +
+        F('Base Attack Bonus', inp('monster.bab', m.bab, { num: true })) +
+        F('Grapple Modifier', inp('monster.grapple', m.grapple, { num: true })) +
+        F('Level Adjustment', inp('monster.la', m.la == null ? 0 : m.la, { num: true })) +
+        F('Space', inp('monster.space', m.space, { ph: '5 ft.' })) +
+        F('Reach', inp('monster.reach', m.reach, { ph: '5 ft.' })) +
+        F('Environment', inp('monster.environment', m.environment, { ph: 'Warm mountains' }), 'lego-span-2')
+      ) + tagSockets(en));
+    h += stack('b-blue',
+      H(L('🛡️ Armor Class, Movement & Saving Throws')) +
+      G(4,
+        F('Total AC', inp('monster.ac.total', m.ac.total, { num: true })) +
+        F('Touch AC', inp('monster.ac.touch', m.ac.touch, { num: true })) +
+        F('Flat-Footed AC', inp('monster.ac.flatFooted', m.ac.flatFooted, { num: true })) +
+        F('Natural Armor (+)', inp('monster.ac.naturalArmor', m.ac.naturalArmor, { num: true })) +
+        F('Land Speed (ft.)', inp('monster.speeds.land', m.speeds.land, { num: true, min: 0 })) +
+        F('Fly Speed (ft.)', inp('monster.speeds.fly', m.speeds.fly, { num: true, min: 0 })) +
+        F('Fly Maneuverability', sel('monster.speeds.flyMan', m.speeds.flyMan || 'Average', FLY_MANEUVERABILITIES, { narrow: true })) +
+        F('Swim / Climb / Burrow', '<div class="fs-row">' + inp('monster.speeds.swim', m.speeds.swim, { num: true, ph: 'Swim' }) + inp('monster.speeds.climb', m.speeds.climb, { num: true, ph: 'Climb' }) + inp('monster.speeds.burrow', m.speeds.burrow, { num: true, ph: 'Burrow' }) + '</div>') +
+        F('Fortitude Save', inp('monster.saves.fort', m.saves.fort, { num: true })) +
+        F('Reflex Save', inp('monster.saves.ref', m.saves.ref, { num: true })) +
+        F('Will Save', inp('monster.saves.will', m.saves.will, { num: true }))
+      ));
+    h += stack('b-amber',
+      H(L('💪 Ability Scores & Nonabilities (—)')) +
+      G(3, ['str', 'dex', 'con', 'int', 'wis', 'cha'].map((k) => {
+        const isNon = nonSet.has(k);
+        const toggleBtn = '<button type="button" class="fs-btn fs-xs ' + (isNon ? 'fs-on' : 'fs-ghost') + '" data-action="toggle-nonability" data-k="' + k + '">' + (isNon ? '∅ Nonability (—)' : 'Active') + '</button>';
+        return F(k.toUpperCase() + ' Score', '<div class="fs-row">' + (isNon ? '<span class="fs-pill dim">— (Nonability)</span>' : inp('monster.abilities.' + k, m.abilities[k], { num: true, min: 1 })) + toggleBtn + '</div>');
+      }).join('')));
+    const atkCards = (m.attacks || []).map((a, i) => stack('b-red',
+      H(L('⚔️ Attack #' + (i + 1) + ': ' + esc(a.name || 'Strike')), delBtn('remove-mon-atk', { i: i })) +
+      G(4,
+        F('Attack Name', inp('monster.attacks.' + i + '.name', a.name || 'Claw', { ph: 'Bite / 2 Claws' })) +
+        F('Attack Bonus (+)', inp('monster.attacks.' + i + '.bonus', a.bonus != null ? a.bonus : 0, { num: true })) +
+        F('Damage Expression', inp('monster.attacks.' + i + '.damage', a.damage || '1d6+1', { ph: '2d6+8' })) +
+        F('Crit / Type', inp('monster.attacks.' + i + '.crit', a.crit || '20/x2', { ph: '19-20/x2' }))
+      )
+    )).join('');
+    h += cBlock('c-amber', H(L('⚔️ Natural & Manufactured Attacks (' + (m.attacks || []).length + ')')), atkCards + btn('add-mon-atk', '⚔️ + Add Attack Line', 'fs-xs fs-dashed'));
+    const featPills = (m.feats || []).map((f) => '<span class="fs-pill indigo">📜 ' + esc(typeof f === 'string' ? f : f.name) + '</span>').join('');
+    const saCards = (m.specialAbilities || []).map((sa, i) => stack('b-purple',
+      H(L('✨ ' + esc(sa.name || 'Special Ability') + ' (' + esc(sa.type || 'Ex') + ')'), delBtn('remove-mon-sa', { i: i })) +
+      G(3,
+        F('Trait Name', inp('monster.specialAbilities.' + i + '.name', sa.name || '', { ph: 'Frightful Presence' })) +
+        F('Ability Type', sel('monster.specialAbilities.' + i + '.type', sa.type || 'Ex', ['Ex', 'Su', 'Sp'], { narrow: true })) +
+        F('Rule Summary', inp('monster.specialAbilities.' + i + '.description', sa.description || sa.benefit || '', { ph: 'Trait mechanics…' }), 'lego-span-full')
+      )
+    )).join('');
+    h += cBlock('c-teal',
+      H(L('✨ Racial Feats (' + (m.feats || []).length + ') & Special Qualities (' + (m.specialAbilities || []).length + ')')),
+      (featPills ? '<div class="fs-row" style="margin-bottom:8px;flex-wrap:wrap">' + featPills + '</div>' : '') +
+      saCards + btn('add-mon-sa', '✨ + Add Special Quality (Ex/Su/Sp)', 'fs-xs fs-dashed')
+    );
+    return h + universalExtraStacks(en) + universalSnapPalette(en);
+  }
+
   function renderScratch() {
     const en = S.entry;
     const originBar = (en.origin.mode !== 'new' || en.origin.srdId)
@@ -4439,7 +4766,7 @@
           G(1, F('Origin Mode', sel('origin.mode', en.origin.mode, [['override', 'Override Official ID'], ['variant', 'Clone as Variant (new ID)'], ['new', 'Detach as New Entry']], { narrow: true })))
         )
       : '';
-    const fn = { weapon: scratchWeaponArmor, armor: scratchWeaponArmor, wondrous: scratchWondrous, spell: scratchSpell, feat: scratchFeat, buff: scratchBuff, class: scratchClass, deity: scratchDeity, domain: scratchDomain, item_mod: scratchItemMod, race: scratchRace }[en.blueprint] || scratchWondrous;
+    const fn = { weapon: scratchWeaponArmor, armor: scratchWeaponArmor, wondrous: scratchWondrous, spell: scratchSpell, feat: scratchFeat, buff: scratchBuff, class: scratchClass, deity: scratchDeity, domain: scratchDomain, item_mod: scratchItemMod, race: scratchRace, monster: scratchMonster }[en.blueprint] || scratchWondrous;
     const ruleFooter = stack('b-slate', G(1, F('Rule Text', inp('text', en.text, { ph: 'Official / custom rule text…' }))));
     return datalists() + '<div class="lego-canvas"><div class="lego-stack">' + originBar + fn(en) + ruleFooter + '</div></div>';
   }
@@ -4695,7 +5022,23 @@
     'add-deity-inline': () => { const d = { id: uid('dt'), kind: 'inline', name: 'New Deity', align: 'N', favoredWeapon: 'Quarterstaff' }; S.entry.grants.deities.push(d); S.ui.cardOpen['dt:' + d.id] = true; renderAll(); },
     'remove-deity': (el) => { S.entry.grants.deities.splice(num(el.dataset.i), 1); renderAll(); },
     'add-grant': () => { const g = { id: uid('g'), count: 1, pool: allTags()[0], level: 1 }; S.entry.grants.featGrants.push(g); S.ui.cardOpen['g:' + g.id] = true; renderAll(); },
-    'remove-grant': (el) => { S.entry.grants.featGrants.splice(num(el.dataset.i), 1); renderAll(); }
+    'remove-grant': (el) => { S.entry.grants.featGrants.splice(num(el.dataset.i), 1); renderAll(); },
+    'toggle-nonability': (el) => {
+      const k = el.dataset.k, arr = S.entry.monster.nonabilities || (S.entry.monster.nonabilities = []);
+      const idx = arr.indexOf(k);
+      if (idx >= 0) arr.splice(idx, 1); else arr.push(k);
+      renderAll();
+    },
+    'add-mon-atk': () => {
+      S.entry.monster.attacks.push({ name: 'Claw', type: 'Natural', bonus: num(S.entry.monster.bab, 1), damage: '1d6+1', damageType: 'Slashing', crit: '20/x2', range: '-' });
+      renderAll();
+    },
+    'remove-mon-atk': (el) => { S.entry.monster.attacks.splice(num(el.dataset.i), 1); renderAll(); },
+    'add-mon-sa': () => {
+      S.entry.monster.specialAbilities.push({ name: 'Special Quality', type: 'Ex', description: '' });
+      renderAll();
+    },
+    'remove-mon-sa': (el) => { S.entry.monster.specialAbilities.splice(num(el.dataset.i), 1); renderAll(); }
   };
 
   // --------------------------------------------------------------------------
@@ -4827,8 +5170,12 @@
     C.init({ basePath: 'database' }).then((ok) => {
       if (!ok) return;
       try { mergeSrd(C); } catch (e) { console.warn('[ForgeSandbox] SRD merge skipped:', e && e.message); }
-      return fetch('./master_db.json').then((r) => (r.ok ? r.json() : [])).then((list) => { mergeMasterDb(Array.isArray(list) ? list : (list && list.entries) || []); }).catch(() => {});
-    }).then(() => { if (CAT.srdLoaded) { toast('📚 SRD + MIC loaded: ' + CAT.srdCount.toLocaleString('en-US') + ' entries' + (CAT.customCount ? ' (+' + CAT.customCount + ' custom)' : '')); renderAll(); } })
+      const pMon = typeof C.loadMonsters === 'function'
+        ? C.loadMonsters().then((mons) => { if (Array.isArray(mons)) { CAT.monsters = mons; CAT.srdCount += mons.length; } }).catch(() => {})
+        : Promise.resolve();
+      const pMaster = fetch('./master_db.json').then((r) => (r.ok ? r.json() : [])).then((list) => { mergeMasterDb(Array.isArray(list) ? list : (list && list.entries) || []); }).catch(() => {});
+      return Promise.all([pMon, pMaster]);
+    }).then(() => { if (CAT.srdLoaded) { toast('📚 SRD + Bestiary loaded: ' + CAT.srdCount.toLocaleString('en-US') + ' entries' + (CAT.customCount ? ' (+' + CAT.customCount + ' custom)' : '')); renderAll(); } })
       .catch((e) => console.warn('[ForgeSandbox] SrdCompendium unavailable:', e && e.message));
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
