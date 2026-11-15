@@ -1,68 +1,68 @@
 {
   "schemaVersion": 3,
   "version": "3.0.0",
-  "compendiumHash": "49a97387fb7971dc",
+  "compendiumHash": "9822ec2b6249a317",
   "generatedAt": "2026-11-15T11:09:17.716Z",
-  "totalEntries": 8007,
+  "totalEntries": 7949,
   "chunks": {
     "srd_equipment.json": {
       "count": 1131,
-      "bytes": 1754140,
-      "hash": "e5361e6198d4460a",
+      "bytes": 1854393,
+      "hash": "14362375b3805a07",
       "eagerLoad": true
     },
     "srd_feats.json": {
       "count": 468,
-      "bytes": 723455,
-      "hash": "8dbab645eac78085",
+      "bytes": 856135,
+      "hash": "50ff47b290f48e56",
       "eagerLoad": true
     },
     "srd_classes_races.json": {
       "count": 300,
-      "bytes": 928747,
-      "hash": "f5e08ca32da54866",
+      "bytes": 975799,
+      "hash": "3042113a4e35a81c",
       "eagerLoad": true
     },
     "srd_combat_rules.json": {
-      "count": 96,
-      "bytes": 108185,
-      "hash": "b072906991e9c7f8",
+      "count": 38,
+      "bytes": 54917,
+      "hash": "02d921474e07fb08",
       "eagerLoad": true
     },
     "srd_spells.json": {
       "count": 695,
-      "bytes": 1932139,
-      "hash": "d6a836a14b19b450",
+      "bytes": 1940413,
+      "hash": "b35108fd66e9a9aa",
       "eagerLoad": true
     },
     "srd_monsters.json": {
       "count": 649,
-      "bytes": 3824665,
-      "hash": "1021a1e3dd4078fa",
+      "bytes": 5289035,
+      "hash": "b93e9a9cfe0ac879",
       "eagerLoad": false
     },
     "srd_maneuvers.json": {
       "count": 209,
-      "bytes": 341609,
-      "hash": "a864274eb5bf496a",
+      "bytes": 379099,
+      "hash": "cc1bf0c9f8f503c1",
       "eagerLoad": true
     },
     "mic_compendium.json": {
       "count": 953,
-      "bytes": 1702798,
-      "hash": "b9a594f5a07425a1",
+      "bytes": 1892193,
+      "hash": "133e82b97129a3cc",
       "eagerLoad": true
     },
     "srd_domains.json": {
       "count": 37,
-      "bytes": 137122,
-      "hash": "03bd6f74bbd6f338",
+      "bytes": 141678,
+      "hash": "0e3bfd9811bed8f2",
       "eagerLoad": true
     },
     "srd_companions.json": {
       "count": 1,
-      "bytes": 12604,
-      "hash": "2fb6224541d5b9e9",
+      "bytes": 13196,
+      "hash": "7b64f20bd504b924",
       "eagerLoad": true
     },
     "srd_templates.json": {
@@ -73,26 +73,26 @@
     },
     "srd_equipment_splat.json": {
       "count": 76,
-      "bytes": 173046,
-      "hash": "d4ff681dcfc5e8a5",
+      "bytes": 163292,
+      "hash": "9824f594920ef3d4",
       "eagerLoad": false
     },
     "srd_feats_splat.json": {
       "count": 1767,
-      "bytes": 1848765,
-      "hash": "23129883383653d8",
+      "bytes": 2327077,
+      "hash": "58472c29af31cae1",
       "eagerLoad": false
     },
     "srd_feats_epic.json": {
       "count": 23,
-      "hash": "3036cb66be1556f4",
-      "bytes": 25003,
+      "hash": "1733d9e00b77e9e5",
+      "bytes": 34606,
       "eagerLoad": false
     },
     "srd_feats_legacy.json": {
       "count": 357,
-      "hash": "8a6c487d361c28c9",
-      "bytes": 364797,
+      "hash": "099e8d6573cdd472",
+      "bytes": 476120,
       "eagerLoad": false,
       "optIn": true
     },
@@ -111,14 +111,14 @@
     },
     "srd_powers.json": {
       "count": 287,
-      "hash": "17e3d1690c0d8dcb",
-      "bytes": 746231,
+      "hash": "892bb54bd5d6a262",
+      "bytes": 767081,
       "eagerLoad": false
     },
     "srd_spells_splat.json": {
       "count": 42,
-      "hash": "9814b54ae17d1700",
-      "bytes": 106187,
+      "hash": "474d59f9be2d288b",
+      "bytes": 106780,
       "eagerLoad": false
     },
     "srd_vestiges_splat.json": {
@@ -15646,470 +15646,6 @@
       "n": "Grappling",
       "t": "Condition",
       "c": "Combat Condition",
-      "s": "None",
-      "f": "srd_combat_rules.json"
-    },
-    {
-      "id": "buf-owls-wisdom",
-      "n": "Owl's Wisdom",
-      "t": "Buff",
-      "c": "Spell / Combat Buff",
-      "s": "None",
-      "f": "srd_combat_rules.json"
-    },
-    {
-      "id": "buf-foxs-cunning",
-      "n": "Fox's Cunning",
-      "t": "Buff",
-      "c": "Spell / Combat Buff",
-      "s": "None",
-      "f": "srd_combat_rules.json"
-    },
-    {
-      "id": "buf-divine-favor",
-      "n": "Divine Favor",
-      "t": "Buff",
-      "c": "Spell / Combat Buff",
-      "s": "None",
-      "f": "srd_combat_rules.json"
-    },
-    {
-      "id": "buf-virtue",
-      "n": "Virtue",
-      "t": "Buff",
-      "c": "Spell / Combat Buff",
-      "s": "None",
-      "f": "srd_combat_rules.json"
-    },
-    {
-      "id": "buf-surging-euhporia",
-      "n": "Surging Euphoria",
-      "t": "Buff",
-      "c": "Spell / Combat Buff",
-      "s": "None",
-      "f": "srd_combat_rules.json"
-    },
-    {
-      "id": "buf-defensive-stance-winded",
-      "n": "Defensive Stance Winded",
-      "t": "Buff",
-      "c": "Spell / Combat Buff",
-      "s": "None",
-      "f": "srd_combat_rules.json"
-    },
-    {
-      "id": "buf-bulls-strength",
-      "n": "Bull's Strength",
-      "t": "Buff",
-      "c": "Spell / Combat Buff",
-      "s": "None",
-      "f": "srd_combat_rules.json"
-    },
-    {
-      "id": "buf-bane",
-      "n": "Bane",
-      "t": "Buff",
-      "c": "Spell / Combat Buff",
-      "s": "None",
-      "f": "srd_combat_rules.json"
-    },
-    {
-      "id": "buf-guidance-skill-bonus",
-      "n": "Guidance - Skill Bonus",
-      "t": "Buff",
-      "c": "Spell / Combat Buff",
-      "s": "None",
-      "f": "srd_combat_rules.json"
-    },
-    {
-      "id": "buf-enraged",
-      "n": "Enraged",
-      "t": "Buff",
-      "c": "Spell / Combat Buff",
-      "s": "None",
-      "f": "srd_combat_rules.json"
-    },
-    {
-      "id": "buf-inertial-armor",
-      "n": "Inertial Armor",
-      "t": "Buff",
-      "c": "Spell / Combat Buff",
-      "s": "None",
-      "f": "srd_combat_rules.json"
-    },
-    {
-      "id": "buf-mage-armor",
-      "n": "Mage Armor",
-      "t": "Buff",
-      "c": "Spell / Combat Buff",
-      "s": "None",
-      "f": "srd_combat_rules.json"
-    },
-    {
-      "id": "buf-eagles-splendor",
-      "n": "Eagle's Splendor",
-      "t": "Buff",
-      "c": "Spell / Combat Buff",
-      "s": "None",
-      "f": "srd_combat_rules.json"
-    },
-    {
-      "id": "buf-prayer-negative",
-      "n": "Prayer (Negative)",
-      "t": "Buff",
-      "c": "Spell / Combat Buff",
-      "s": "None",
-      "f": "srd_combat_rules.json"
-    },
-    {
-      "id": "buf-slow",
-      "n": "Slow",
-      "t": "Buff",
-      "c": "Spell / Combat Buff",
-      "s": "None",
-      "f": "srd_combat_rules.json"
-    },
-    {
-      "id": "buf-inspire-heroics",
-      "n": "Inspire Heroics",
-      "t": "Buff",
-      "c": "Spell / Combat Buff",
-      "s": "None",
-      "f": "srd_combat_rules.json"
-    },
-    {
-      "id": "buf-bless",
-      "n": "Bless",
-      "t": "Buff",
-      "c": "Spell / Combat Buff",
-      "s": "None",
-      "f": "srd_combat_rules.json"
-    },
-    {
-      "id": "buf-guidance-save-bonus",
-      "n": "Guidance - Save Bonus",
-      "t": "Buff",
-      "c": "Spell / Combat Buff",
-      "s": "None",
-      "f": "srd_combat_rules.json"
-    },
-    {
-      "id": "buf-outburst",
-      "n": "Outburst",
-      "t": "Buff",
-      "c": "Spell / Combat Buff",
-      "s": "None",
-      "f": "srd_combat_rules.json"
-    },
-    {
-      "id": "buf-shield-of-faith",
-      "n": "Shield of Faith",
-      "t": "Buff",
-      "c": "Spell / Combat Buff",
-      "s": "None",
-      "f": "srd_combat_rules.json"
-    },
-    {
-      "id": "buf-guidance-attack-bonus",
-      "n": "Guidance - Attack Bonus",
-      "t": "Buff",
-      "c": "Spell / Combat Buff",
-      "s": "None",
-      "f": "srd_combat_rules.json"
-    },
-    {
-      "id": "buf-augmented-summon",
-      "n": "Augmented Summon",
-      "t": "Buff",
-      "c": "Spell / Combat Buff",
-      "s": "None",
-      "f": "srd_combat_rules.json"
-    },
-    {
-      "id": "buf-cats-grace",
-      "n": "Cat's Grace",
-      "t": "Buff",
-      "c": "Spell / Combat Buff",
-      "s": "None",
-      "f": "srd_combat_rules.json"
-    },
-    {
-      "id": "buf-defensive-stance",
-      "n": "Defensive Stance",
-      "t": "Buff",
-      "c": "Spell / Combat Buff",
-      "s": "None",
-      "f": "srd_combat_rules.json"
-    },
-    {
-      "id": "buf-barkskin",
-      "n": "Barkskin",
-      "t": "Buff",
-      "c": "Spell / Combat Buff",
-      "s": "None",
-      "f": "srd_combat_rules.json"
-    },
-    {
-      "id": "buf-prayer-positive",
-      "n": "Prayer (Positive)",
-      "t": "Buff",
-      "c": "Spell / Combat Buff",
-      "s": "None",
-      "f": "srd_combat_rules.json"
-    },
-    {
-      "id": "buf-bears-endurance",
-      "n": "Bear's Endurance",
-      "t": "Buff",
-      "c": "Spell / Combat Buff",
-      "s": "None",
-      "f": "srd_combat_rules.json"
-    },
-    {
-      "id": "buf-resistance",
-      "n": "Resistance",
-      "t": "Buff",
-      "c": "Spell / Combat Buff",
-      "s": "None",
-      "f": "srd_combat_rules.json"
-    },
-    {
-      "id": "buf-inspire-greatness",
-      "n": "Inspire Greatness",
-      "t": "Buff",
-      "c": "Spell / Combat Buff",
-      "s": "None",
-      "f": "srd_combat_rules.json"
-    },
-    {
-      "id": "buf-haste",
-      "n": "Haste",
-      "t": "Buff",
-      "c": "Spell / Combat Buff",
-      "s": "None",
-      "f": "srd_combat_rules.json"
-    },
-    {
-      "id": "buf-shield",
-      "n": "Shield",
-      "t": "Buff",
-      "c": "Spell / Combat Buff",
-      "s": "None",
-      "f": "srd_combat_rules.json"
-    },
-    {
-      "id": "buf-lullaby",
-      "n": "Lullaby",
-      "t": "Buff",
-      "c": "Spell / Combat Buff",
-      "s": "None",
-      "f": "srd_combat_rules.json"
-    },
-    {
-      "id": "buf-aid",
-      "n": "Aid",
-      "t": "Buff",
-      "c": "Spell / Combat Buff",
-      "s": "None",
-      "f": "srd_combat_rules.json"
-    },
-    {
-      "id": "buf-inspire-courage",
-      "n": "Inspire Courage",
-      "t": "Buff",
-      "c": "Spell / Combat Buff",
-      "s": "None",
-      "f": "srd_combat_rules.json"
-    },
-    {
-      "id": "buf-burst",
-      "n": "Burst",
-      "t": "Buff",
-      "c": "Spell / Combat Buff",
-      "s": "None",
-      "f": "srd_combat_rules.json"
-    },
-    {
-      "id": "buf-heroism",
-      "n": "Heroism",
-      "t": "Buff",
-      "c": "Spell / Combat Buff",
-      "s": "None",
-      "f": "srd_combat_rules.json"
-    },
-    {
-      "id": "buf-fatigue",
-      "n": "Fatigue",
-      "t": "Buff",
-      "c": "Spell / Combat Buff",
-      "s": "None",
-      "f": "srd_combat_rules.json"
-    },
-    {
-      "id": "dt-non-lethal",
-      "n": "Non-lethal",
-      "t": "DamageType",
-      "c": "type",
-      "s": "None",
-      "f": "srd_combat_rules.json"
-    },
-    {
-      "id": "dt-fire",
-      "n": "Fire",
-      "t": "DamageType",
-      "c": "energy",
-      "s": "None",
-      "f": "srd_combat_rules.json"
-    },
-    {
-      "id": "dt-bludgeoning",
-      "n": "Bludgeoning",
-      "t": "DamageType",
-      "c": "type",
-      "s": "None",
-      "f": "srd_combat_rules.json"
-    },
-    {
-      "id": "dt-negative-energy",
-      "n": "Negative Energy",
-      "t": "DamageType",
-      "c": "energy",
-      "s": "None",
-      "f": "srd_combat_rules.json"
-    },
-    {
-      "id": "dt-piercing",
-      "n": "Piercing",
-      "t": "DamageType",
-      "c": "type",
-      "s": "None",
-      "f": "srd_combat_rules.json"
-    },
-    {
-      "id": "dt-electricity",
-      "n": "Electricity",
-      "t": "DamageType",
-      "c": "energy",
-      "s": "None",
-      "f": "srd_combat_rules.json"
-    },
-    {
-      "id": "dt-untyped",
-      "n": "Untyped",
-      "t": "DamageType",
-      "c": "type",
-      "s": "None",
-      "f": "srd_combat_rules.json"
-    },
-    {
-      "id": "dt-slashing",
-      "n": "Slashing",
-      "t": "DamageType",
-      "c": "type",
-      "s": "None",
-      "f": "srd_combat_rules.json"
-    },
-    {
-      "id": "dt-force",
-      "n": "Force",
-      "t": "DamageType",
-      "c": "energy",
-      "s": "None",
-      "f": "srd_combat_rules.json"
-    },
-    {
-      "id": "dt-positive-energy",
-      "n": "Positive Energy",
-      "t": "DamageType",
-      "c": "energy",
-      "s": "None",
-      "f": "srd_combat_rules.json"
-    },
-    {
-      "id": "dt-repair",
-      "n": "Repair",
-      "t": "DamageType",
-      "c": "energy",
-      "s": "None",
-      "f": "srd_combat_rules.json"
-    },
-    {
-      "id": "dt-piercing-or-bludgeoning",
-      "n": "Piercing or Bludgeoning",
-      "t": "DamageType",
-      "c": "type",
-      "s": "None",
-      "f": "srd_combat_rules.json"
-    },
-    {
-      "id": "dt-slashing-or-bludgeoning",
-      "n": "Slashing or Bludgeoning",
-      "t": "DamageType",
-      "c": "type",
-      "s": "None",
-      "f": "srd_combat_rules.json"
-    },
-    {
-      "id": "dt-healing",
-      "n": "Healing",
-      "t": "DamageType",
-      "c": "energy",
-      "s": "None",
-      "f": "srd_combat_rules.json"
-    },
-    {
-      "id": "dt-precision",
-      "n": "Precision",
-      "t": "DamageType",
-      "c": "type",
-      "s": "None",
-      "f": "srd_combat_rules.json"
-    },
-    {
-      "id": "dt-piercing-bludgeoning-and-slashing",
-      "n": "Piercing, Bludgeoning and Slashing",
-      "t": "DamageType",
-      "c": "type",
-      "s": "None",
-      "f": "srd_combat_rules.json"
-    },
-    {
-      "id": "dt-cold",
-      "n": "Cold",
-      "t": "DamageType",
-      "c": "energy",
-      "s": "None",
-      "f": "srd_combat_rules.json"
-    },
-    {
-      "id": "dt-acid",
-      "n": "Acid",
-      "t": "DamageType",
-      "c": "energy",
-      "s": "None",
-      "f": "srd_combat_rules.json"
-    },
-    {
-      "id": "dt-sonic",
-      "n": "Sonic",
-      "t": "DamageType",
-      "c": "energy",
-      "s": "None",
-      "f": "srd_combat_rules.json"
-    },
-    {
-      "id": "dt-divine",
-      "n": "Divine",
-      "t": "DamageType",
-      "c": "energy",
-      "s": "None",
-      "f": "srd_combat_rules.json"
-    },
-    {
-      "id": "dt-piercing-or-slashing",
-      "n": "Piercing or Slashing",
-      "t": "DamageType",
-      "c": "type",
       "s": "None",
       "f": "srd_combat_rules.json"
     },

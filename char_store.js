@@ -974,9 +974,9 @@
                 b.name = 'Fatigued';
                 b.durationText = 'Reduced from Exhausted (Lesser Restoration)';
                 b.summary = '-2 penalty to Strength and Dexterity; cannot run or charge.';
-                b.modifiers = [
-                  { target: 'ability.str', value: -2, type: 'Condition' },
-                  { target: 'ability.dex', value: -2, type: 'Condition' }
+                b.schemaVersion = 3;
+                b.effects = [
+                  { type: 'stat', targets: ['ability.str', 'ability.dex'], mode: 'flat', value: -2, btype: 'Penalty' }
                 ];
                 if (b.ruleFlags && typeof b.ruleFlags === 'object') {
                   delete b.ruleFlags.exhausted;
@@ -1149,15 +1149,15 @@
       activatedBuff = match.name;
       activatedRounds = match.rounds;
       activatedSummary = match.summary || match.notes || '';
-    } else if (compendiumEntry && ((Array.isArray(compendiumEntry.modifiers) && compendiumEntry.modifiers.length > 0) || (compendiumEntry.ruleFlags && Object.keys(compendiumEntry.ruleFlags).length > 0))) {
+    } else if (compendiumEntry && ((Array.isArray(compendiumEntry.effects) && compendiumEntry.effects.length > 0) || (compendiumEntry.ruleFlags && Object.keys(compendiumEntry.ruleFlags).length > 0))) {
       const buffTitle = String(compendiumEntry.name || name).replace(/^(Potion|Oil|Elixir)\s+of\s+/i, '').trim();
-      const v2Mods = Array.isArray(compendiumEntry.modifiers) ? JSON.parse(JSON.stringify(compendiumEntry.modifiers)) : [];
-      const v2Flags = compendiumEntry.ruleFlags ? JSON.parse(JSON.stringify(compendiumEntry.ruleFlags)) : {};
+      const v3Effects = Array.isArray(compendiumEntry.effects) ? JSON.parse(JSON.stringify(compendiumEntry.effects)) : [];
+      const v3Flags = compendiumEntry.ruleFlags ? JSON.parse(JSON.stringify(compendiumEntry.ruleFlags)) : {};
       const durMin = Math.round(defaultRounds / 10);
       const durText = defaultRounds >= 600 ? `${Math.round(defaultRounds / 600)} hr.` : (defaultRounds >= 10 ? `${durMin} min. (${defaultRounds} rounds)` : `${defaultRounds} rounds`);
       const newBuff = {
         id: 'buff_pot_' + (payload.nowTs || Date.now()),
-        schemaVersion: 2,
+        schemaVersion: 3,
         name: buffTitle,
         source: (plan && plan.isPotion) ? 'Potion' : 'Magic Item',
         category: 'Buff',
@@ -1168,8 +1168,8 @@
         casterLevel: Number(compendiumEntry.casterLevel) || 3,
         summary: compendiumEntry.shortDescription || buffTitle,
         notes: `Activated via ${name}`,
-        modifiers: v2Mods,
-        ruleFlags: v2Flags
+        effects: v3Effects,
+        ruleFlags: v3Flags
       };
       doc.buffs.push(newBuff);
       activatedBuff = newBuff.name;
@@ -1567,11 +1567,11 @@
     const payload = (action && action.payload) || {};
     if (payload.globalIdx !== undefined && payload.globalIdx !== null) {
       const idx = Number(payload.globalIdx);
-      if (Array.isArray(doc.activeModifiers) && doc.activeModifiers[idx]) {
+      if (Array.isArray(doc.tacticalRiders) && doc.tacticalRiders[idx]) {
         const nextAct = payload.value !== undefined
           ? Boolean(payload.value)
-          : !Boolean(doc.activeModifiers[idx].active);
-        doc.activeModifiers[idx].active = nextAct;
+          : !Boolean(doc.tacticalRiders[idx].active);
+        doc.tacticalRiders[idx].active = nextAct;
       }
       setStoreOutcome(stateObj, { status: 'modifier_toggled', globalIdx: idx });
       return doc;
@@ -1742,21 +1742,22 @@
         material: slot.material,
         enhancementBonus: slot.enhancementBonus,
         enhancements: Array.isArray(slot.enhancements) ? slot.enhancements.slice() : undefined,
-        dice: slot.dice,
-        critMin: slot.critMin,
-        critRange: slot.critRange,
-        critMult: slot.critMult,
-        handedness: slot.handedness,
-        dmgType: slot.dmgType,
+        schemaVersion: 3,
+        weapon: slot.weapon ? JSON.parse(JSON.stringify(slot.weapon)) : undefined,
+        armor: slot.armor ? JSON.parse(JSON.stringify(slot.armor)) : undefined,
+        effects: Array.isArray(slot.effects) ? JSON.parse(JSON.stringify(slot.effects)) : undefined,
+        dice: slot.weapon?.damageDice || slot.dice,
+        critMin: slot.weapon?.baseCritRange || slot.critMin,
+        critRange: slot.weapon?.baseCritRange || slot.critRange,
+        critMult: slot.weapon?.critMultiplier || slot.critMult,
+        handedness: slot.weapon?.handedness || slot.handedness,
+        dmgType: slot.weapon?.dmgType || slot.weapon?.damageType || slot.dmgType,
         isLight: slot.isLight,
-        acBonus: slot.acBonus,
         bonusType: slot.bonusType,
-        maxDex: slot.maxDex,
-        checkPenalty: slot.checkPenalty,
-        spellFailure: slot.spellFailure,
+        maxDex: slot.armor?.maxDex ?? slot.maxDex,
+        checkPenalty: slot.armor?.armorCheckPenalty ?? slot.checkPenalty,
+        spellFailure: slot.armor?.arcaneSpellFailure ?? slot.spellFailure,
         dailyCharges: slot.dailyCharges ? JSON.parse(JSON.stringify(slot.dailyCharges)) : undefined,
-        damageParts: Array.isArray(slot.damageParts) ? JSON.parse(JSON.stringify(slot.damageParts)) : undefined,
-        modifiers: Array.isArray(slot.modifiers) ? JSON.parse(JSON.stringify(slot.modifiers)) : undefined,
         ruleFlags: slot.ruleFlags ? JSON.parse(JSON.stringify(slot.ruleFlags)) : undefined,
         tacticalBadges: Array.isArray(slot.tacticalBadges) ? JSON.parse(JSON.stringify(slot.tacticalBadges)) : undefined,
         isBelt: false,
@@ -1955,21 +1956,22 @@
       description: item.description || item.desc || '',
       scope: item.scope || '',
       targetSkill: item.targetSkill || '',
+      schemaVersion: 3,
       material: item.material,
       enhancementBonus: item.enhancementBonus,
       enhancements: Array.isArray(item.enhancements) ? item.enhancements.slice() : undefined,
-      dice: item.dice || (Array.isArray(item.damageParts) && item.damageParts[0] ? item.damageParts[0].dice : undefined),
-      critMin: item.critMin || item.critRange || item.weaponMeta?.critMin,
-      critRange: item.critRange || item.critMin || item.weaponMeta?.critMin,
-      critMult: item.critMult || item.weaponMeta?.critMult,
-      handedness: item.handedness || item.weaponMeta?.handedness,
-      dmgType: item.dmgType || (Array.isArray(item.damageParts) && item.damageParts[0] ? item.damageParts[0].type : undefined),
+      weapon: item.weapon ? JSON.parse(JSON.stringify(item.weapon)) : undefined,
+      armor: item.armor ? JSON.parse(JSON.stringify(item.armor)) : undefined,
+      effects: Array.isArray(item.effects) ? JSON.parse(JSON.stringify(item.effects)) : undefined,
+      dice: item.weapon?.damageDice || item.dice,
+      critMin: item.weapon?.baseCritRange || item.critMin || item.critRange || item.weaponMeta?.critMin,
+      critRange: item.weapon?.baseCritRange || item.critRange || item.critMin || item.weaponMeta?.critMin,
+      critMult: item.weapon?.critMultiplier || item.critMult || item.weaponMeta?.critMult,
+      handedness: item.weapon?.handedness || item.handedness || item.weaponMeta?.handedness,
+      dmgType: item.weapon?.dmgType || item.weapon?.damageType || item.dmgType,
       isLight: item.isLight || Boolean(engine && typeof engine.isLightWeapon === 'function' && engine.isLightWeapon(item)),
       parent: item.parent,
       dailyCharges: normDc ? JSON.parse(JSON.stringify(normDc)) : undefined,
-      damageParts: Array.isArray(item.damageParts) ? JSON.parse(JSON.stringify(item.damageParts)) : undefined,
-      modifiers: Array.isArray(item.modifiers) ? JSON.parse(JSON.stringify(item.modifiers)) : undefined,
-      acBonus: item.acBonus,
       bonusType: item.bonusType,
       strBonus: item.strBonus,
       dexBonus: item.dexBonus,
@@ -1984,9 +1986,9 @@
       willBonus: item.willBonus,
       speedBonus: item.speedBonus,
       clBonus: item.clBonus,
-      maxDex: item.maxDex,
-      checkPenalty: item.checkPenalty,
-      spellFailure: item.spellFailure,
+      maxDex: item.armor?.maxDex ?? item.maxDex,
+      checkPenalty: item.armor?.armorCheckPenalty ?? item.checkPenalty,
+      spellFailure: item.armor?.arcaneSpellFailure ?? item.spellFailure,
       ruleFlags: item.ruleFlags ? JSON.parse(JSON.stringify(item.ruleFlags)) : undefined,
       tacticalBadges: Array.isArray(item.tacticalBadges) ? JSON.parse(JSON.stringify(item.tacticalBadges)) : undefined,
       combatModifiers: item.combatModifiers ? JSON.parse(JSON.stringify(item.combatModifiers)) : undefined
@@ -1994,34 +1996,38 @@
     item.isEquipped = true;
 
     if (item.category === 'Weapon') {
+      const wepDice = item.weapon?.damageDice || item.dice;
+      const wepDmgType = item.weapon?.dmgType || item.weapon?.damageType || item.dmgType;
       const existingWep = doc.weapons.find(w => w && String(w.name || '').toLowerCase() === String(item.name || '').toLowerCase());
       const targetGrip = isTwoHand ? '2-Hand' : (targetSlotKey === 'offHand' ? 'Off-Hand' : '1-Hand');
       if (existingWep) {
+        existingWep.schemaVersion = 3;
         existingWep.grip = targetGrip;
-        if (item.dice) existingWep.dice = item.dice;
-        if (item.critMin || item.critRange) existingWep.critMin = item.critMin || item.critRange;
-        if (item.critMult) existingWep.critMult = item.critMult;
-        if (item.dmgType) existingWep.dmgType = item.dmgType;
-        if (item.handedness) existingWep.handedness = item.handedness;
+        if (item.weapon) existingWep.weapon = JSON.parse(JSON.stringify(item.weapon));
+        if (Array.isArray(item.effects)) existingWep.effects = JSON.parse(JSON.stringify(item.effects));
+        if (wepDice) existingWep.dice = wepDice;
+        if (item.weapon?.baseCritRange || item.critMin || item.critRange) existingWep.critMin = item.weapon?.baseCritRange || item.critMin || item.critRange;
+        if (item.weapon?.critMultiplier || item.critMult) existingWep.critMult = item.weapon?.critMultiplier || item.critMult;
+        if (wepDmgType) existingWep.dmgType = wepDmgType;
+        if (item.weapon?.handedness || item.handedness) existingWep.handedness = item.weapon?.handedness || item.handedness;
         if (item.enhancementBonus !== undefined) existingWep.enhancementBonus = item.enhancementBonus;
         if (item.isLight !== undefined) existingWep.isLight = item.isLight;
-        if (Array.isArray(item.damageParts) && item.damageParts.length > 0) existingWep.damageParts = JSON.parse(JSON.stringify(item.damageParts));
-        if (Array.isArray(item.modifiers) && item.modifiers.length > 0) existingWep.modifiers = JSON.parse(JSON.stringify(item.modifiers));
       } else {
         doc.weapons.push({
+          schemaVersion: 3,
           baseItemId: item.baseItemId,
           name: item.name,
           grip: targetGrip,
-          handedness: item.handedness || item.weaponMeta?.handedness,
-          dice: item.dice || (Array.isArray(item.damageParts) && item.damageParts[0] ? item.damageParts[0].dice : (isTwoHand ? '2d6' : '1d6')),
-          critMin: item.critMin || item.critRange || item.weaponMeta?.critMin || 20,
-          critMult: item.critMult || item.weaponMeta?.critMult || 2,
+          handedness: item.weapon?.handedness || item.handedness || item.weaponMeta?.handedness,
+          weapon: item.weapon ? JSON.parse(JSON.stringify(item.weapon)) : undefined,
+          effects: Array.isArray(item.effects) ? JSON.parse(JSON.stringify(item.effects)) : undefined,
+          dice: wepDice || (isTwoHand ? '2d6' : '1d6'),
+          critMin: item.weapon?.baseCritRange || item.critMin || item.critRange || item.weaponMeta?.critMin || 20,
+          critMult: item.weapon?.critMultiplier || item.critMult || item.weaponMeta?.critMult || 2,
           enhancementBonus: item.enhancementBonus || 0,
-          dmgType: item.dmgType || (Array.isArray(item.damageParts) && item.damageParts[0] ? item.damageParts[0].type : 'Slashing'),
+          dmgType: wepDmgType || 'Slashing',
           bonusType: item.bonusType || 'Enhancement',
           isLight: item.isLight || Boolean(engine && typeof engine.isLightWeapon === 'function' && engine.isLightWeapon(item)),
-          damageParts: Array.isArray(item.damageParts) ? JSON.parse(JSON.stringify(item.damageParts)) : undefined,
-          modifiers: Array.isArray(item.modifiers) ? JSON.parse(JSON.stringify(item.modifiers)) : undefined,
           ruleFlags: item.ruleFlags ? JSON.parse(JSON.stringify(item.ruleFlags)) : undefined,
           tags: isTwoHand ? ['two-handed'] : (targetSlotKey === 'offHand' ? ['off-hand'] : [])
         });
@@ -2075,17 +2081,19 @@
       }
       doc.activeOffHand = item.name;
       if (item.category === 'Weapon') {
-        if (!Array.isArray(doc.activeModifiers)) doc.activeModifiers = [];
-        let twfMod = doc.activeModifiers.find(m => m && m.name && (m.name.includes('TWF') || m.name.includes('Two-Weapon')));
+        if (!Array.isArray(doc.tacticalRiders)) doc.tacticalRiders = [];
+        let twfMod = doc.tacticalRiders.find(m => m && m.name && (m.name.includes('TWF') || m.name.includes('Two-Weapon')));
         if (!twfMod) {
-          doc.activeModifiers.push({
+          doc.tacticalRiders.push({
+            id: 'rider-twf',
+            schemaVersion: 3,
             name: 'Two-Weapon Fighting (TWF)',
             source: 'Combat',
-            bonusAtk: 0,
-            dice: '',
-            type: 'TWF',
+            combatScope: 'melee',
+            riderType: 'TWF',
             active: true,
-            notes: 'Extra Off-Hand Attack (RAW TWF)'
+            notes: 'Extra Off-Hand Attack (RAW TWF)',
+            effects: []
           });
         } else {
           twfMod.active = true;
@@ -2187,97 +2195,99 @@
   CharStore.registerReducer('inventory/addPoolItem', (doc, action, stateObj) => {
     ensureInventoryDocStructures(doc);
     const payload = (action && action.payload) || {};
-    const v2Item = payload.item || payload;
-    if (!v2Item || !v2Item.name) {
+    const srcItem = payload.item || payload;
+    if (!srcItem || !srcItem.name) {
       setStoreOutcome(stateObj, { status: 'invalid_payload' });
       return doc;
     }
     const engine = resolveRuleEngine();
-    const cat = v2Item.category && v2Item.category !== 'Other'
-      ? v2Item.category
-      : (engine && typeof engine.inferInventoryItemCategory === 'function' ? engine.inferInventoryItemCategory(v2Item) : (v2Item.type || 'Other'));
-    const isBeltItem = Boolean(v2Item.isBelt || v2Item.inBelt || String(v2Item.slot || '').toLowerCase().includes('belt') || cat === 'Consumable');
-    const primaryPart = Array.isArray(v2Item.damageParts) && v2Item.damageParts[0] ? v2Item.damageParts[0] : null;
-    const armorAcMod = Array.isArray(v2Item.modifiers) ? v2Item.modifiers.find(m => m && (m.target === 'ac.armor' || m.target === 'ac.shield')) : null;
-    const qtyVal = (v2Item.qty !== undefined && v2Item.qty !== null) ? Math.max(0, Number(v2Item.qty)) : 1;
+    const cat = srcItem.category && srcItem.category !== 'Other'
+      ? srcItem.category
+      : (engine && typeof engine.inferInventoryItemCategory === 'function' ? engine.inferInventoryItemCategory(srcItem) : (srcItem.type || 'Other'));
+    const isBeltItem = Boolean(srcItem.isBelt || srcItem.inBelt || String(srcItem.slot || '').toLowerCase().includes('belt') || cat === 'Consumable');
+    const rollEffects = Array.isArray(srcItem.effects) ? srcItem.effects.filter(e => e && e.type === 'roll' && (!e.kind || e.kind === 'Damage')) : [];
+    const primaryRoll = rollEffects[0] || null;
+    const wepObj = (srcItem.weapon && typeof srcItem.weapon === 'object') ? srcItem.weapon : null;
+    const armObj = (srcItem.armor && typeof srcItem.armor === 'object') ? srcItem.armor : null;
+    const qtyVal = (srcItem.qty !== undefined && srcItem.qty !== null) ? Math.max(0, Number(srcItem.qty)) : 1;
     const newEntry = {
-      id: v2Item.id || ('item_' + Date.now() + '_' + Math.floor(Math.random() * 1000)),
-      baseItemId: v2Item.baseItemId || v2Item.id || null,
-      name: v2Item.name,
-      masterDbName: v2Item.masterDbName || v2Item.name,
+      id: srcItem.id || ('item_' + Date.now() + '_' + Math.floor(Math.random() * 1000)),
+      baseItemId: srcItem.baseItemId || srcItem.id || null,
+      customEntryId: srcItem.customEntryId || null,
+      schemaVersion: 3,
+      name: srcItem.name,
+      masterDbName: srcItem.masterDbName || srcItem.name,
       category: cat,
-      slot: v2Item.slot && v2Item.slot !== 'None' ? v2Item.slot : cat,
+      slot: srcItem.slot && srcItem.slot !== 'None' ? srcItem.slot : cat,
       qty: qtyVal,
-      weight: Number(v2Item.weightLb ?? v2Item.weight) || 0,
-      cost: Number(v2Item.priceGp ?? v2Item.cost) || 0,
-      desc: v2Item.desc || v2Item.benefit || v2Item.description || '',
-      material: v2Item.material || null,
-      enhancementBonus: Number(v2Item.enhancementBonus) || 0,
-      enhancements: Array.isArray(v2Item.enhancements) ? v2Item.enhancements.slice() : [],
-      modifiers: Array.isArray(v2Item.modifiers) ? JSON.parse(JSON.stringify(v2Item.modifiers)) : [],
-      damageParts: Array.isArray(v2Item.damageParts) ? JSON.parse(JSON.stringify(v2Item.damageParts)) : [],
-      modes: Array.isArray(v2Item.modes) ? JSON.parse(JSON.stringify(v2Item.modes)) : [],
-      weaponMeta: v2Item.weaponMeta ? JSON.parse(JSON.stringify(v2Item.weaponMeta)) : null,
-      armorMeta: v2Item.armorMeta ? JSON.parse(JSON.stringify(v2Item.armorMeta)) : null,
-      ruleFlags: v2Item.ruleFlags ? JSON.parse(JSON.stringify(v2Item.ruleFlags)) : {},
-      tacticalBadges: Array.isArray(v2Item.tacticalBadges) ? JSON.parse(JSON.stringify(v2Item.tacticalBadges)) : [],
-      dice: (primaryPart && primaryPart.dice) || v2Item.dice,
-      dmgType: (primaryPart && primaryPart.type) || v2Item.dmgType,
-      critMin: Number(v2Item.critRange || v2Item.critMin || v2Item.weaponMeta?.critMin) || undefined,
-      critRange: Number(v2Item.critRange || v2Item.critMin || v2Item.weaponMeta?.critMin) || undefined,
-      critMult: Number(v2Item.critMult || v2Item.weaponMeta?.critMult) || undefined,
-      handedness: v2Item.handedness || v2Item.weaponMeta?.handedness,
-      acBonus: v2Item.acBonus !== undefined ? v2Item.acBonus : (armorAcMod ? Number(armorAcMod.value) : undefined),
-      maxDex: v2Item.maxDex !== undefined ? v2Item.maxDex : v2Item.armorMeta?.maxDex,
-      checkPenalty: v2Item.checkPenalty !== undefined ? v2Item.checkPenalty : v2Item.armorMeta?.acp,
-      spellFailure: v2Item.spellFailure !== undefined ? v2Item.spellFailure : v2Item.armorMeta?.asf,
+      weight: Number(srcItem.weightLb ?? srcItem.weight) || 0,
+      cost: Number(srcItem.priceGp ?? srcItem.cost) || 0,
+      desc: srcItem.desc || srcItem.benefit || srcItem.description || srcItem.text || '',
+      material: srcItem.material || null,
+      enhancementBonus: Number(srcItem.enhancementBonus) || 0,
+      enhancements: Array.isArray(srcItem.enhancements) ? srcItem.enhancements.slice() : [],
+      effects: Array.isArray(srcItem.effects) ? JSON.parse(JSON.stringify(srcItem.effects)) : [],
+      weapon: wepObj ? JSON.parse(JSON.stringify(wepObj)) : undefined,
+      armor: armObj ? JSON.parse(JSON.stringify(armObj)) : undefined,
+      modes: Array.isArray(srcItem.modes) ? JSON.parse(JSON.stringify(srcItem.modes)) : [],
+      weaponMeta: srcItem.weaponMeta ? JSON.parse(JSON.stringify(srcItem.weaponMeta)) : null,
+      armorMeta: srcItem.armorMeta ? JSON.parse(JSON.stringify(srcItem.armorMeta)) : null,
+      ruleFlags: srcItem.ruleFlags ? JSON.parse(JSON.stringify(srcItem.ruleFlags)) : {},
+      tacticalBadges: Array.isArray(srcItem.tacticalBadges) ? JSON.parse(JSON.stringify(srcItem.tacticalBadges)) : [],
+      dice: (wepObj && wepObj.damageDice) || (primaryRoll && primaryRoll.dice) || srcItem.dice,
+      dmgType: (wepObj && (wepObj.dmgType || wepObj.damageType)) || (primaryRoll && primaryRoll.dmgType) || srcItem.dmgType,
+      critMin: Number((wepObj && wepObj.baseCritRange) || srcItem.critRange || srcItem.critMin || srcItem.weaponMeta?.critMin) || undefined,
+      critRange: Number((wepObj && wepObj.baseCritRange) || srcItem.critRange || srcItem.critMin || srcItem.weaponMeta?.critMin) || undefined,
+      critMult: Number((wepObj && wepObj.critMultiplier) || srcItem.critMult || srcItem.weaponMeta?.critMult) || undefined,
+      handedness: (wepObj && wepObj.handedness) || srcItem.handedness || srcItem.weaponMeta?.handedness,
+      maxDex: (armObj && armObj.maxDex !== undefined) ? armObj.maxDex : (srcItem.maxDex !== undefined ? srcItem.maxDex : srcItem.armorMeta?.maxDex),
+      checkPenalty: (armObj && armObj.armorCheckPenalty !== undefined) ? armObj.armorCheckPenalty : (srcItem.checkPenalty !== undefined ? srcItem.checkPenalty : srcItem.armorMeta?.acp),
+      spellFailure: (armObj && armObj.arcaneSpellFailure !== undefined) ? armObj.arcaneSpellFailure : (srcItem.spellFailure !== undefined ? srcItem.spellFailure : srcItem.armorMeta?.asf),
       isBelt: isBeltItem,
       isEquipped: false
     };
     doc.gearPool.push(newEntry);
 
-    if (cat === 'Weapon' || v2Item.type === 'Weapon') {
-      const hasWep = doc.weapons.some(w => w && String(w.name || '').toLowerCase() === String(v2Item.name || '').toLowerCase());
+    if (cat === 'Weapon' || srcItem.type === 'Weapon') {
+      const hasWep = doc.weapons.some(w => w && String(w.name || '').toLowerCase() === String(srcItem.name || '').toLowerCase());
       if (!hasWep) {
-        const secondaryParts = Array.isArray(v2Item.damageParts) && v2Item.damageParts.length > 1 ? v2Item.damageParts.slice(1) : [];
         const isTwoHand = Boolean(
-          String(v2Item.weaponMeta?.handedness || v2Item.handedness || '').toLowerCase().includes('two') ||
-          (engine && typeof engine.isTwoHandedWeapon === 'function' && engine.isTwoHandedWeapon(v2Item))
+          String(newEntry.handedness || '').toLowerCase().includes('two') ||
+          (engine && typeof engine.isTwoHandedWeapon === 'function' && engine.isTwoHandedWeapon(srcItem))
         );
         doc.weapons.push({
           id: newEntry.id,
           baseItemId: newEntry.baseItemId,
-          name: v2Item.name,
+          schemaVersion: 3,
+          name: srcItem.name,
           grip: isTwoHand ? '2-Hand' : '1-Hand',
           handedness: newEntry.handedness,
-          dice: (primaryPart && primaryPart.dice) || v2Item.dice || '1d8',
-          damageParts: newEntry.damageParts.length > 0
-            ? JSON.parse(JSON.stringify(newEntry.damageParts))
-            : [{ dice: v2Item.dice || '1d8', bonus: 0, type: v2Item.dmgType || 'Slashing', multiplyOnCrit: true }],
-          modifiers: JSON.parse(JSON.stringify(newEntry.modifiers)),
+          dice: newEntry.dice || '1d8',
+          weapon: newEntry.weapon ? JSON.parse(JSON.stringify(newEntry.weapon)) : undefined,
+          effects: JSON.parse(JSON.stringify(newEntry.effects)),
           modes: JSON.parse(JSON.stringify(newEntry.modes)),
           weaponMeta: newEntry.weaponMeta ? JSON.parse(JSON.stringify(newEntry.weaponMeta)) : null,
           ruleFlags: JSON.parse(JSON.stringify(newEntry.ruleFlags)),
           tacticalBadges: JSON.parse(JSON.stringify(newEntry.tacticalBadges)),
-          critMin: Number(v2Item.weaponMeta?.critMin || v2Item.critMin) || 20,
-          rawCritMin: Number(v2Item.weaponMeta?.critMin || v2Item.critMin) || 20,
-          critMult: Number(v2Item.weaponMeta?.critMult || v2Item.critMult) || 2,
-          enhancementBonus: Number(v2Item.enhancementBonus) || 0,
-          dmgType: (primaryPart && primaryPart.type) || v2Item.dmgType || 'Slashing',
+          critMin: Number(newEntry.critMin) || 20,
+          rawCritMin: Number(newEntry.critMin) || 20,
+          critMult: Number(newEntry.critMult) || 2,
+          enhancementBonus: Number(srcItem.enhancementBonus) || 0,
+          dmgType: newEntry.dmgType || 'Slashing',
           bonusType: 'enhancement',
-          tags: v2Item.tags || [],
-          elementalMods: secondaryParts.map(sp => ({ name: sp.source || sp.type, dice: sp.dice, type: sp.type })),
-          keen: Boolean(v2Item.ruleFlags && v2Item.ruleFlags.keen)
+          tags: srcItem.tags || [],
+          elementalMods: rollEffects.filter((sp, idx) => idx > 0 || (wepObj && wepObj.damageDice && sp.dice !== wepObj.damageDice)).map(sp => ({ name: sp.source || sp.dmgType, dice: sp.dice, type: sp.dmgType })),
+          keen: Boolean(srcItem.ruleFlags && srcItem.ruleFlags.keen)
         });
       }
     }
 
     if (cat === 'Consumable' || (isBeltItem && cat !== 'Weapon')) {
-      const cleanName = String(v2Item.name || '').toLowerCase().trim();
+      const cleanName = String(srcItem.name || '').toLowerCase().trim();
       const hasCons = doc.consumables.some(c => c && String(c.name || '').toLowerCase().trim() === cleanName);
       if (!hasCons) {
         doc.consumables.push({
-          name: v2Item.name,
+          name: srcItem.name,
           qty: qtyVal,
           effect: newEntry.desc || 'Consumable effect'
         });
@@ -2285,7 +2295,7 @@
     }
 
     let attachedChildCount = 0;
-    const itemModes = Array.isArray(v2Item.modes) ? v2Item.modes : [];
+    const itemModes = Array.isArray(srcItem.modes) ? srcItem.modes : [];
     if (itemModes.length > 0) {
       itemModes.forEach(mode => {
         if (!mode || mode.handedness || mode.id === 'primary-head' || mode.id === 'offhand-head' || mode.id === '2h-single' || mode.ruleFlags?.doubleWeapon || mode.ruleFlags?.doubleWeaponOffHand) {
@@ -2293,14 +2303,14 @@
         }
         const modeClean = String(mode.name || mode.label || '').replace(/^↳\s*/, '').trim();
         if (!modeClean) return;
-        const modePart = Array.isArray(mode.damageParts) && mode.damageParts[0] ? mode.damageParts[0] : null;
-        const modeDice = (modePart && modePart.dice) || mode.dice || '';
+        const modeRoll = Array.isArray(mode.effects) ? mode.effects.find(e => e && e.type === 'roll') : null;
+        const modeDice = (modeRoll && modeRoll.dice) || mode.dice || '';
         if (String(mode.action || '').toLowerCase().includes('action') || (mode.duration && mode.duration !== 'Continuous')) {
           if (!Array.isArray(doc.specialAbilities)) doc.specialAbilities = [];
           if (!doc.specialAbilities.some(a => a && String(a.name || '').toLowerCase() === modeClean.toLowerCase())) {
             doc.specialAbilities.push({
               name: modeClean,
-              source: v2Item.name,
+              source: srcItem.name,
               action: mode.action || 'Standard Action',
               duration: mode.duration || 'Special',
               benefit: mode.benefit || mode.description || '',
@@ -2311,16 +2321,20 @@
           }
         }
         if (modeDice) {
-          if (!Array.isArray(doc.activeModifiers)) doc.activeModifiers = [];
-          if (!doc.activeModifiers.some(m => m && String(m.name || '').toLowerCase() === modeClean.toLowerCase())) {
-            doc.activeModifiers.push({
+          if (!Array.isArray(doc.tacticalRiders)) doc.tacticalRiders = [];
+          if (!doc.tacticalRiders.some(m => m && String(m.name || '').toLowerCase() === modeClean.toLowerCase())) {
+            doc.tacticalRiders.push({
+              id: 'rider-' + modeClean.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
+              schemaVersion: 3,
               name: modeClean,
-              source: v2Item.name,
-              bonusAtk: 0,
-              dice: modeDice,
-              type: (modePart && modePart.type) || 'Energy',
+              source: srcItem.name,
+              combatScope: 'melee',
+              riderType: 'Rider',
               active: true,
-              notes: mode.benefit || mode.description || ''
+              notes: mode.benefit || mode.description || '',
+              effects: [
+                { type: 'roll', kind: 'Damage', dice: modeDice, dmgType: (modeRoll && modeRoll.dmgType) || 'Energy' }
+              ]
             });
             attachedChildCount++;
           }
@@ -2343,34 +2357,32 @@
     const targetContext = payload.targetContext || {};
     const originalItem = targetContext.originalItem || payload.originalItem || {};
     const targetSlotKey = targetContext.targetSlotKey || payload.targetSlotKey || null;
-    const forgedV2Item = payload.itemData || payload.forgedV2Item;
-    if (!forgedV2Item) {
+    const forgedItem = payload.itemData || payload.forgedV2Item;
+    if (!forgedItem) {
       setStoreOutcome(stateObj, { status: 'invalid_payload' });
       return doc;
     }
     const engine = resolveRuleEngine();
     const oldName = String(originalItem?.name || '').trim();
     const oldNameLower = oldName.toLowerCase();
-    const newName = String(forgedV2Item.name || oldName || 'Forged Item').trim();
-    const cat = forgedV2Item.category && forgedV2Item.category !== 'Other'
-      ? forgedV2Item.category
-      : (engine && typeof engine.inferInventoryItemCategory === 'function' ? engine.inferInventoryItemCategory(forgedV2Item) : (forgedV2Item.type || originalItem?.category || 'Weapon'));
-    const newWeight = Number(forgedV2Item.weightLb ?? forgedV2Item.weight) || 0;
-    const newCost = Number(forgedV2Item.priceGp ?? forgedV2Item.cost) || 0;
-    const newDesc = forgedV2Item.benefit || forgedV2Item.description || originalItem?.desc || '';
-    const primaryPart = Array.isArray(forgedV2Item.damageParts) && forgedV2Item.damageParts[0] ? forgedV2Item.damageParts[0] : null;
-    const secondaryParts = Array.isArray(forgedV2Item.damageParts) && forgedV2Item.damageParts.length > 1 ? forgedV2Item.damageParts.slice(1) : [];
+    const newName = String(forgedItem.name || oldName || 'Forged Item').trim();
+    const cat = forgedItem.category && forgedItem.category !== 'Other'
+      ? forgedItem.category
+      : (engine && typeof engine.inferInventoryItemCategory === 'function' ? engine.inferInventoryItemCategory(forgedItem) : (forgedItem.type || originalItem?.category || 'Weapon'));
+    const newWeight = Number(forgedItem.weightLb ?? forgedItem.weight) || 0;
+    const newCost = Number(forgedItem.priceGp ?? forgedItem.cost) || 0;
+    const newDesc = forgedItem.benefit || forgedItem.description || originalItem?.desc || '';
 
-    const clonedModifiers = Array.isArray(forgedV2Item.modifiers) ? JSON.parse(JSON.stringify(forgedV2Item.modifiers)) : [];
-    const clonedDamageParts = Array.isArray(forgedV2Item.damageParts) ? JSON.parse(JSON.stringify(forgedV2Item.damageParts)) : [];
-    const clonedModes = Array.isArray(forgedV2Item.modes) ? JSON.parse(JSON.stringify(forgedV2Item.modes)) : [];
-    const clonedWeaponMeta = forgedV2Item.weaponMeta ? JSON.parse(JSON.stringify(forgedV2Item.weaponMeta)) : null;
-    const clonedArmorMeta = forgedV2Item.armorMeta ? JSON.parse(JSON.stringify(forgedV2Item.armorMeta)) : null;
-    const clonedRuleFlags = forgedV2Item.ruleFlags ? JSON.parse(JSON.stringify(forgedV2Item.ruleFlags)) : {};
-    const clonedTacticalBadges = Array.isArray(forgedV2Item.tacticalBadges) ? JSON.parse(JSON.stringify(forgedV2Item.tacticalBadges)) : [];
-
-    const armorAcMod = clonedModifiers.find(m => m && (m.target === 'ac.armor' || m.target === 'ac.shield'));
-    const computedAcBonus = armorAcMod ? (Number(armorAcMod.value) || 0) : (forgedV2Item.acBonus ?? originalItem?.acBonus);
+    const clonedEffects = Array.isArray(forgedItem.effects) ? JSON.parse(JSON.stringify(forgedItem.effects)) : [];
+    const rollEffects = clonedEffects.filter(e => e && e.type === 'roll' && (!e.kind || e.kind === 'Damage'));
+    const primaryRoll = rollEffects[0] || null;
+    const clonedWeapon = forgedItem.weapon ? JSON.parse(JSON.stringify(forgedItem.weapon)) : null;
+    const clonedArmor = forgedItem.armor ? JSON.parse(JSON.stringify(forgedItem.armor)) : null;
+    const clonedModes = Array.isArray(forgedItem.modes) ? JSON.parse(JSON.stringify(forgedItem.modes)) : [];
+    const clonedWeaponMeta = forgedItem.weaponMeta ? JSON.parse(JSON.stringify(forgedItem.weaponMeta)) : null;
+    const clonedArmorMeta = forgedItem.armorMeta ? JSON.parse(JSON.stringify(forgedItem.armorMeta)) : null;
+    const clonedRuleFlags = forgedItem.ruleFlags ? JSON.parse(JSON.stringify(forgedItem.ruleFlags)) : {};
+    const clonedTacticalBadges = Array.isArray(forgedItem.tacticalBadges) ? JSON.parse(JSON.stringify(forgedItem.tacticalBadges)) : [];
 
     const poolItem = doc.gearPool.find(p => {
       if (!p) return false;
@@ -2378,30 +2390,36 @@
       return oldNameLower && String(p.name || '').toLowerCase().trim() === oldNameLower;
     });
     if (poolItem) {
-      poolItem.baseItemId = forgedV2Item.baseItemId || forgedV2Item.id || poolItem.baseItemId || null;
+      poolItem.baseItemId = forgedItem.baseItemId || forgedItem.id || poolItem.baseItemId || null;
+      if (forgedItem.customEntryId) poolItem.customEntryId = forgedItem.customEntryId;
+      poolItem.schemaVersion = 3;
       poolItem.name = newName;
       poolItem.masterDbName = newName;
       poolItem.category = cat;
-      poolItem.slot = (forgedV2Item.slot && forgedV2Item.slot !== 'None') ? forgedV2Item.slot : (poolItem.slot || cat);
+      poolItem.slot = (forgedItem.slot && forgedItem.slot !== 'None') ? forgedItem.slot : (poolItem.slot || cat);
       poolItem.weight = newWeight;
       poolItem.cost = newCost;
       poolItem.desc = newDesc;
-      poolItem.material = forgedV2Item.material || null;
-      poolItem.enhancementBonus = Number(forgedV2Item.enhancementBonus) || 0;
-      poolItem.enhancements = Array.isArray(forgedV2Item.enhancements) ? forgedV2Item.enhancements.slice() : [];
-      poolItem.modifiers = clonedModifiers;
-      poolItem.damageParts = clonedDamageParts;
+      poolItem.material = forgedItem.material || null;
+      poolItem.enhancementBonus = Number(forgedItem.enhancementBonus) || 0;
+      poolItem.enhancements = Array.isArray(forgedItem.enhancements) ? forgedItem.enhancements.slice() : [];
+      poolItem.effects = JSON.parse(JSON.stringify(clonedEffects));
+      poolItem.weapon = clonedWeapon ? JSON.parse(JSON.stringify(clonedWeapon)) : undefined;
+      poolItem.armor = clonedArmor ? JSON.parse(JSON.stringify(clonedArmor)) : undefined;
       poolItem.modes = clonedModes;
       poolItem.weaponMeta = clonedWeaponMeta;
       poolItem.armorMeta = clonedArmorMeta;
       poolItem.ruleFlags = clonedRuleFlags;
       poolItem.tacticalBadges = clonedTacticalBadges;
-      poolItem.dice = (primaryPart && primaryPart.dice) || forgedV2Item.dice || poolItem.dice;
-      poolItem.critMin = Number(forgedV2Item.weaponMeta?.critMin || forgedV2Item.critMin) || poolItem.critMin;
-      poolItem.critMult = Number(forgedV2Item.weaponMeta?.critMult || forgedV2Item.critMult) || poolItem.critMult;
-      poolItem.dmgType = (primaryPart && primaryPart.type) || forgedV2Item.dmgType || poolItem.dmgType;
-      if (computedAcBonus !== undefined) poolItem.acBonus = computedAcBonus;
-      if (clonedArmorMeta) {
+      poolItem.dice = (clonedWeapon && clonedWeapon.damageDice) || (primaryRoll && primaryRoll.dice) || forgedItem.dice || poolItem.dice;
+      poolItem.critMin = Number((clonedWeapon && clonedWeapon.baseCritRange) || forgedItem.weaponMeta?.critMin || forgedItem.critMin) || poolItem.critMin;
+      poolItem.critMult = Number((clonedWeapon && clonedWeapon.critMultiplier) || forgedItem.weaponMeta?.critMult || forgedItem.critMult) || poolItem.critMult;
+      poolItem.dmgType = (clonedWeapon && (clonedWeapon.dmgType || clonedWeapon.damageType)) || (primaryRoll && primaryRoll.dmgType) || forgedItem.dmgType || poolItem.dmgType;
+      if (clonedArmor) {
+        if (clonedArmor.maxDex !== undefined) poolItem.maxDex = clonedArmor.maxDex;
+        if (clonedArmor.armorCheckPenalty !== undefined) poolItem.checkPenalty = clonedArmor.armorCheckPenalty;
+        if (clonedArmor.arcaneSpellFailure !== undefined) poolItem.spellFailure = clonedArmor.arcaneSpellFailure;
+      } else if (clonedArmorMeta) {
         poolItem.maxDex = clonedArmorMeta.maxDex;
         poolItem.checkPenalty = clonedArmorMeta.acp;
       }
@@ -2421,7 +2439,9 @@
     slotKeysToUpdate.forEach(sk => {
       const sd = doc.bodySlots[sk];
       if (!sd) return;
-      sd.baseItemId = forgedV2Item.baseItemId || forgedV2Item.id || sd.baseItemId || null;
+      sd.baseItemId = forgedItem.baseItemId || forgedItem.id || sd.baseItemId || null;
+      if (forgedItem.customEntryId) sd.customEntryId = forgedItem.customEntryId;
+      sd.schemaVersion = 3;
       sd.name = newName;
       sd.masterDbName = newName;
       sd.category = cat;
@@ -2430,22 +2450,26 @@
       sd.desc = newDesc;
       sd.benefit = newDesc;
       sd.description = newDesc;
-      sd.material = forgedV2Item.material || null;
-      sd.enhancementBonus = Number(forgedV2Item.enhancementBonus) || 0;
-      sd.enhancements = Array.isArray(forgedV2Item.enhancements) ? forgedV2Item.enhancements.slice() : [];
-      sd.modifiers = JSON.parse(JSON.stringify(clonedModifiers));
-      sd.damageParts = JSON.parse(JSON.stringify(clonedDamageParts));
+      sd.material = forgedItem.material || null;
+      sd.enhancementBonus = Number(forgedItem.enhancementBonus) || 0;
+      sd.enhancements = Array.isArray(forgedItem.enhancements) ? forgedItem.enhancements.slice() : [];
+      sd.effects = JSON.parse(JSON.stringify(clonedEffects));
+      sd.weapon = clonedWeapon ? JSON.parse(JSON.stringify(clonedWeapon)) : undefined;
+      sd.armor = clonedArmor ? JSON.parse(JSON.stringify(clonedArmor)) : undefined;
       sd.modes = JSON.parse(JSON.stringify(clonedModes));
       sd.weaponMeta = clonedWeaponMeta ? JSON.parse(JSON.stringify(clonedWeaponMeta)) : null;
       sd.armorMeta = clonedArmorMeta ? JSON.parse(JSON.stringify(clonedArmorMeta)) : null;
       sd.ruleFlags = JSON.parse(JSON.stringify(clonedRuleFlags));
       sd.tacticalBadges = JSON.parse(JSON.stringify(clonedTacticalBadges));
-      sd.dice = (primaryPart && primaryPart.dice) || forgedV2Item.dice || sd.dice;
-      sd.critMin = Number(forgedV2Item.weaponMeta?.critMin || forgedV2Item.critMin) || sd.critMin;
-      sd.critMult = Number(forgedV2Item.weaponMeta?.critMult || forgedV2Item.critMult) || sd.critMult;
-      sd.dmgType = (primaryPart && primaryPart.type) || forgedV2Item.dmgType || sd.dmgType;
-      if (computedAcBonus !== undefined) sd.acBonus = computedAcBonus;
-      if (clonedArmorMeta) {
+      sd.dice = (clonedWeapon && clonedWeapon.damageDice) || (primaryRoll && primaryRoll.dice) || forgedItem.dice || sd.dice;
+      sd.critMin = Number((clonedWeapon && clonedWeapon.baseCritRange) || forgedItem.weaponMeta?.critMin || forgedItem.critMin) || sd.critMin;
+      sd.critMult = Number((clonedWeapon && clonedWeapon.critMultiplier) || forgedItem.weaponMeta?.critMult || forgedItem.critMult) || sd.critMult;
+      sd.dmgType = (clonedWeapon && (clonedWeapon.dmgType || clonedWeapon.damageType)) || (primaryRoll && primaryRoll.dmgType) || forgedItem.dmgType || sd.dmgType;
+      if (clonedArmor) {
+        if (clonedArmor.maxDex !== undefined) sd.maxDex = clonedArmor.maxDex;
+        if (clonedArmor.armorCheckPenalty !== undefined) sd.checkPenalty = clonedArmor.armorCheckPenalty;
+        if (clonedArmor.arcaneSpellFailure !== undefined) sd.spellFailure = clonedArmor.arcaneSpellFailure;
+      } else if (clonedArmorMeta) {
         sd.maxDex = clonedArmorMeta.maxDex;
         sd.checkPenalty = clonedArmorMeta.acp;
       }
@@ -2457,26 +2481,30 @@
         if (originalItem?.id !== undefined && String(w.id) === String(originalItem.id)) return true;
         return oldNameLower && String(w.name || '').toLowerCase().trim() === oldNameLower;
       });
+      const wepDice = (clonedWeapon && clonedWeapon.damageDice) || (primaryRoll && primaryRoll.dice) || forgedItem.dice || '1d8';
+      const wepDmgType = (clonedWeapon && (clonedWeapon.dmgType || clonedWeapon.damageType)) || (primaryRoll && primaryRoll.dmgType) || forgedItem.dmgType || 'Slashing';
       const updatedWepObj = {
-        id: forgedV2Item.id || originalItem?.id || ('wep_' + Date.now()),
-        baseItemId: forgedV2Item.baseItemId || forgedV2Item.id || null,
+        id: forgedItem.id || originalItem?.id || ('wep_' + Date.now()),
+        baseItemId: forgedItem.baseItemId || forgedItem.id || null,
+        customEntryId: forgedItem.customEntryId || originalItem?.customEntryId || null,
+        schemaVersion: 3,
         name: newName,
-        grip: String(clonedWeaponMeta?.handedness || '').includes('Two') ? '2-Hand' : (wepIdx >= 0 ? doc.weapons[wepIdx].grip : '1-Hand'),
-        dice: (primaryPart && primaryPart.dice) || forgedV2Item.dice || '1d8',
-        damageParts: JSON.parse(JSON.stringify(clonedDamageParts)),
-        modifiers: JSON.parse(JSON.stringify(clonedModifiers)),
+        grip: String((clonedWeapon && clonedWeapon.handedness) || clonedWeaponMeta?.handedness || '').includes('Two') ? '2-Hand' : (wepIdx >= 0 ? doc.weapons[wepIdx].grip : '1-Hand'),
+        dice: wepDice,
+        weapon: clonedWeapon ? JSON.parse(JSON.stringify(clonedWeapon)) : undefined,
+        effects: JSON.parse(JSON.stringify(clonedEffects)),
         modes: JSON.parse(JSON.stringify(clonedModes)),
         weaponMeta: clonedWeaponMeta ? JSON.parse(JSON.stringify(clonedWeaponMeta)) : null,
         ruleFlags: JSON.parse(JSON.stringify(clonedRuleFlags)),
         tacticalBadges: JSON.parse(JSON.stringify(clonedTacticalBadges)),
-        critMin: Number(clonedWeaponMeta?.critMin || forgedV2Item.critMin) || 20,
-        rawCritMin: Number(clonedWeaponMeta?.critMin || forgedV2Item.critMin) || 20,
-        critMult: Number(clonedWeaponMeta?.critMult || forgedV2Item.critMult) || 2,
-        enhancementBonus: Number(forgedV2Item.enhancementBonus) || 0,
-        dmgType: (primaryPart && primaryPart.type) || forgedV2Item.dmgType || 'Slashing',
+        critMin: Number((clonedWeapon && clonedWeapon.baseCritRange) || clonedWeaponMeta?.critMin || forgedItem.critMin) || 20,
+        rawCritMin: Number((clonedWeapon && clonedWeapon.baseCritRange) || clonedWeaponMeta?.critMin || forgedItem.critMin) || 20,
+        critMult: Number((clonedWeapon && clonedWeapon.critMultiplier) || clonedWeaponMeta?.critMult || forgedItem.critMult) || 2,
+        enhancementBonus: Number(forgedItem.enhancementBonus) || 0,
+        dmgType: wepDmgType,
         bonusType: 'enhancement',
-        tags: forgedV2Item.tags || [],
-        elementalMods: secondaryParts.map(sp => ({ name: sp.source || sp.type, dice: sp.dice, type: sp.type })),
+        tags: forgedItem.tags || [],
+        elementalMods: rollEffects.filter((sp, idx) => idx > 0 || (clonedWeapon && clonedWeapon.damageDice && sp.dice !== clonedWeapon.damageDice)).map(sp => ({ name: sp.source || sp.dmgType, dice: sp.dice, type: sp.dmgType })),
         keen: Boolean(clonedRuleFlags && clonedRuleFlags.keen)
       };
       if (wepIdx >= 0) {
@@ -4078,8 +4106,8 @@
         }
       }
     }
-    if (Array.isArray(doc.activeModifiers)) {
-      doc.activeModifiers.forEach(function (mod) {
+    if (Array.isArray(doc.tacticalRiders)) {
+      doc.tacticalRiders.forEach(function (mod) {
         if (mod && mod.source === 'Maneuver' && mod.active) {
           mod.active = false;
         }
@@ -4254,13 +4282,13 @@
             fatiguedBuff.active = true;
           } else {
             exhaustedBuff.id = 'debuff_fatigued';
+            exhaustedBuff.schemaVersion = 3;
             exhaustedBuff.name = 'Fatigued (-2 STR/DEX)';
             exhaustedBuff.strBonus = -2;
             exhaustedBuff.dexBonus = -2;
             exhaustedBuff.speedBonus = 0;
-            exhaustedBuff.modifiers = [
-              { target: 'ability.str', value: -2, type: 'untyped' },
-              { target: 'ability.dex', value: -2, type: 'untyped' }
+            exhaustedBuff.effects = [
+              { type: 'stat', targets: ['ability.str', 'ability.dex'], mode: 'flat', value: -2, btype: 'Penalty' }
             ];
             exhaustedBuff.ruleFlags = { fatigued: true };
             exhaustedBuff.active = true;
@@ -4417,8 +4445,8 @@
         }
       }
     }
-    if (Array.isArray(doc.activeModifiers)) {
-      doc.activeModifiers.forEach(function (mod) {
+    if (Array.isArray(doc.tacticalRiders)) {
+      doc.tacticalRiders.forEach(function (mod) {
         if (mod && mod.source === 'Maneuver' && mod.active) {
           mod.active = false;
         }
@@ -4640,6 +4668,15 @@
     const strippedAbilityName = cleanName
       ? cleanName.replace(/\s*\((?:ex|su|sp|na)\)\s*$/i, '').replace(/\s*\+\d+(?:d\d+)?.*$/i, '').trim()
       : '';
+    const parenChoiceMatch = strippedAbilityName
+      ? strippedAbilityName.match(/^(.+?)\s*\(([^)]+)\)\s*$/)
+      : null;
+    const canStripChoiceParen = Boolean(
+      parenChoiceMatch &&
+      String(typeHint || '').toLowerCase() !== 'class' &&
+      !/\b(variant|adventurer|thug|cloistered|acf|urban|martial|wildshape|template)\b/i.test(parenChoiceMatch[2])
+    );
+    const strippedChoiceBaseName = canStripChoiceParen ? parenChoiceMatch[1].trim() : '';
     const cabSlug = strippedAbilityName
       ? ('cab-' + _slugifyCrafterId(strippedAbilityName).replace(/_/g, '-'))
       : '';
@@ -4662,6 +4699,14 @@
           const byStrippedAny = comp.getByName(strippedAbilityName);
           if (byStrippedAny) return byStrippedAny;
         }
+        if (strippedChoiceBaseName && strippedChoiceBaseName !== cleanName) {
+          const byChoiceHint = typeHint ? comp.getByName(strippedChoiceBaseName, typeHint) : null;
+          if (byChoiceHint) return byChoiceHint;
+          const byChoiceCab = comp.getByName(strippedChoiceBaseName, 'ClassAbility');
+          if (byChoiceCab) return byChoiceCab;
+          const byChoiceAny = comp.getByName(strippedChoiceBaseName);
+          if (byChoiceAny) return byChoiceAny;
+        }
         const anyName = comp.getByName(cleanName);
         if (anyName) return anyName;
       }
@@ -4679,10 +4724,12 @@
       const idxHit = (id && comp.findIndexEntry(id))
         || (cabSlug && comp.findIndexEntry(cabSlug))
         || (cleanName && typeHint && comp.findIndexEntry(cleanName, typeHint))
+        || (strippedChoiceBaseName && typeHint && comp.findIndexEntry(strippedChoiceBaseName, typeHint))
         || (cleanName && comp.findIndexEntry(cleanName, 'ClassAbility'))
         || (strippedAbilityName && comp.findIndexEntry(strippedAbilityName, 'ClassAbility'))
         || (cleanName && comp.findIndexEntry(cleanName))
-        || (strippedAbilityName && comp.findIndexEntry(strippedAbilityName));
+        || (strippedAbilityName && comp.findIndexEntry(strippedAbilityName))
+        || (strippedChoiceBaseName && comp.findIndexEntry(strippedChoiceBaseName));
       if (idxHit && idxHit.f) {
         comp.ensureChunkLoaded(idxHit.f);
         const lazyHit = tryDirectLookup();
@@ -4877,6 +4924,9 @@
         if ('benefit' in obj) obj.benefit = v3Copy.text;
       }
       if (v3Copy.weapon && typeof v3Copy.weapon === 'object') {
+        obj.weapon = CharStore._fastCloneHistoryVal(v3Copy.weapon);
+        if (v3Copy.weapon.damageDice) obj.dice = v3Copy.weapon.damageDice;
+        if (v3Copy.weapon.dmgType || v3Copy.weapon.damageType) obj.dmgType = v3Copy.weapon.dmgType || v3Copy.weapon.damageType;
         if (v3Copy.weapon.rangeIncrement !== undefined && v3Copy.weapon.rangeIncrement !== null) {
           obj.range = String(v3Copy.weapon.rangeIncrement) + ' ft.';
         }
@@ -4884,10 +4934,11 @@
           obj.crit = (v3Copy.weapon.effectiveCritRange < 20 ? (v3Copy.weapon.effectiveCritRange + '-20') : '20') + '/x' + v3Copy.weapon.critMultiplier;
         }
       }
-      if (Array.isArray(v3Copy.damageParts) && v3Copy.damageParts.length) {
-        obj.damageParts = CharStore._fastCloneHistoryVal(v3Copy.damageParts);
+      if (Array.isArray(v3Copy.effects)) {
+        obj.effects = CharStore._fastCloneHistoryVal(v3Copy.effects);
       }
       if (v3Copy.armor && typeof v3Copy.armor === 'object') {
+        obj.armor = CharStore._fastCloneHistoryVal(v3Copy.armor);
         if (v3Copy.armor.armorBonus !== undefined) obj.armorBonus = v3Copy.armor.armorBonus;
         if (v3Copy.armor.maxDex !== undefined) obj.maxDex = v3Copy.armor.maxDex;
         if (v3Copy.armor.armorCheckPenalty !== undefined) obj.acp = v3Copy.armor.armorCheckPenalty;
@@ -5070,9 +5121,12 @@
       tryList(doc.templates, 'templates');
 
       if (typeof charItem === 'string') {
+        const cleanItemStr = _stripBoonPrefix(charItem);
+        const pm = cleanItemStr.replace(/\s*\((?:ex|su|sp|na)\)\s*$/i, '').match(/^(.+?)\s*\(([^)]+)\)\s*$/);
         charItem = {
-          id: resolvedId || ((kind || 'entry') + '_' + _slugifyCrafterId(charItem)),
-          name: _stripBoonPrefix(charItem),
+          id: resolvedId || null,
+          name: cleanItemStr,
+          choice: pm && pm[2] ? pm[2].trim() : undefined,
           type: _srdTypeForKind(kind) || 'Feature'
         };
       }
@@ -5268,7 +5322,6 @@
       }
       if (entry.schemaVersion === 3) {
         const cloned = CharStore._fastCloneHistoryVal(entry);
-        delete cloned.modifiers;
         if (!cloned.baseEntryId && (entry.baseItemId || entry.id)) {
           cloned.baseEntryId = entry.baseEntryId || entry.baseItemId || entry.id;
         }
@@ -5296,32 +5349,16 @@
       if (isSpellLike) blueprint = 'spell';
       else if (k.includes('monster') || k.includes('companion') || entryTypeLow === 'monster' || entry.monster) blueprint = 'monster';
       else if (k.includes('weapon') || entryTypeLow === 'weapon' || entry.weapon || (entry.damage && entry.crit)) blueprint = 'weapon';
-      else if (k.includes('armor') || k.includes('shield') || entryTypeLow === 'armor' || entryTypeLow === 'shield' || entry.armorBonus !== undefined) blueprint = 'armor';
+      else if (k.includes('armor') || k.includes('shield') || entryTypeLow === 'armor' || entryTypeLow === 'shield' || (entry.armor && entry.armor.armorBonus !== undefined) || entry.armorBonus !== undefined) blueprint = 'armor';
       else if (k.includes('item') || k.includes('wondrous') || k.includes('ring') || k.includes('rod') || k.includes('staff') || k.includes('wand') || entryTypeLow === 'magicitem' || entryTypeLow === 'consumable' || hasRealSlot || entry.gpValue !== undefined || entry.cost !== undefined) blueprint = 'wondrous';
       else if (k.includes('race') || k.includes('template') || entryTypeLow === 'race' || entryTypeLow === 'template') blueprint = 'race';
       else if (k.includes('class') || entryTypeLow === 'class') blueprint = 'class';
       else if (k.includes('buff')) blueprint = 'buff';
 
       const effects = [];
-      if (Array.isArray(entry.modifiers)) {
-        const statGroups = {};
-        entry.modifiers.forEach(function (m) {
-          const blk = _convertV2ModToV3Block(m);
-          if (!blk) return;
-          const gKey = [blk.mode, blk.value, blk.btype, blk.stat || '', blk.per || '', blk.min || '', blk.max || '', blk.condition || ''].join('|');
-          if (statGroups[gKey]) {
-            const tgt = blk.targets[0];
-            if (statGroups[gKey].targets.indexOf(tgt) < 0) statGroups[gKey].targets.push(tgt);
-          } else {
-            statGroups[gKey] = blk;
-            effects.push(blk);
-          }
-        });
-      }
-      if (Array.isArray(entry.damageParts) && blueprint !== 'weapon') {
-        entry.damageParts.forEach(function (p) {
-          const blk = _convertDmgPartToV3Block(p);
-          if (blk) effects.push(blk);
+      if (Array.isArray(entry.effects)) {
+        entry.effects.forEach(function (ef) {
+          if (ef) effects.push(CharStore._fastCloneHistoryVal(ef));
         });
       }
       _convertRuleFlagsToV3Blocks(entry.ruleFlags).forEach(function (fb) { effects.push(fb); });
@@ -5361,20 +5398,19 @@
           out.weapon = {
             category: entry.category || (entry.weapon && entry.weapon.category) || 'Martial',
             handedness: entry.handedness || (entry.weapon && entry.weapon.handedness) || 'One-Handed',
+            damageDice: (entry.weapon && entry.weapon.damageDice) || entry.dice || '1d8',
+            dmgType: (entry.weapon && (entry.weapon.dmgType || entry.weapon.damageType)) || entry.dmgType || 'Slashing',
             baseCritRange: (entry.weapon && entry.weapon.baseCritRange) || entry.critRange || 20,
             critMultiplier: (entry.weapon && entry.weapon.critMultiplier) || entry.critMult || 2,
             rangeIncrement: entry.range ? (parseInt(String(entry.range), 10) || null) : ((entry.weapon && entry.weapon.rangeIncrement) || entry.rangeIncrement || null)
           };
-          if (Array.isArray(entry.damageParts)) {
-            out.damageParts = CharStore._fastCloneHistoryVal(entry.damageParts);
-          }
         } else if (blueprint === 'armor') {
           out.armor = {
-            armorType: entry.armorType || entry.category || 'Light',
-            armorBonus: Number(entry.armorBonus) || 0,
-            maxDex: entry.maxDex !== undefined ? entry.maxDex : null,
-            armorCheckPenalty: Number(entry.acp !== undefined ? entry.acp : (entry.checkPenalty !== undefined ? entry.checkPenalty : entry.armorCheckPenalty)) || 0,
-            arcaneSpellFailure: Number(entry.asf !== undefined ? entry.asf : (entry.spellFailure !== undefined ? entry.spellFailure : entry.arcaneSpellFailure)) || 0
+            armorType: (entry.armor && entry.armor.armorType) || entry.armorType || entry.category || 'Light',
+            armorBonus: Number((entry.armor && entry.armor.armorBonus) ?? entry.armorBonus) || 0,
+            maxDex: (entry.armor && entry.armor.maxDex !== undefined) ? entry.armor.maxDex : (entry.maxDex !== undefined ? entry.maxDex : null),
+            armorCheckPenalty: Number((entry.armor && entry.armor.armorCheckPenalty !== undefined) ? entry.armor.armorCheckPenalty : (entry.acp !== undefined ? entry.acp : (entry.checkPenalty !== undefined ? entry.checkPenalty : entry.armorCheckPenalty))) || 0,
+            arcaneSpellFailure: Number((entry.armor && entry.armor.arcaneSpellFailure !== undefined) ? entry.armor.arcaneSpellFailure : (entry.asf !== undefined ? entry.asf : (entry.spellFailure !== undefined ? entry.spellFailure : entry.arcaneSpellFailure))) || 0
           };
         } else {
           out.item = {

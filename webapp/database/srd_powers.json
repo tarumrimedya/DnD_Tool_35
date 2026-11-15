@@ -52,7 +52,15 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": 9,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-pw-ab",
+        "type": "defense",
+        "mode": "Immunity",
+        "what": "Hostile Environmental Effects",
+        "value": 0
+      }
+    ],
     "shortDescription": "Your body automatically adapts to hostile environments.",
     "text": "Your body automatically adapts to hostile environments. You can adapt to underwater, extremely hot, extremely cold, or airless environments, allowing you to survive as if you were a creature native to that environment. You can breathe and move (though penalties to movement and attacks, if any for a particular environment, remain), and you take no damage simply from being in that environment. You need not specify what environment you are adapting to when you manifest this power; simply activate it, and your body will instantly adapt to any hostile environment as needed throughout the duration.\nYou can somewhat adapt to extreme environmental features such as acid, lava, fire, and electricity. Any environmental feature that normally directly deals 1 or more dice of damage per round deals you only half the usual amount of damage.",
     "tags": [
@@ -260,7 +268,18 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": 3,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-pw-aa",
+        "type": "stat",
+        "targets": [
+          "choice.ability.1"
+        ],
+        "mode": "flat",
+        "value": 4,
+        "btype": "Enhancement"
+      }
+    ],
     "shortDescription": "Gain +4 enhancement to one ability.",
     "text": "You forge a psychometabolic affinity with an idealized animal form, thereby boosting one of your ability scores (choose either Strength, Dexterity, Constitution, Intelligence, Wisdom, or Charisma). The power grants a +4 enhancement bonus to the ability score you choose, adding the usual benefits provided by a high ability bonus. Because you are emulating the idealized form of an animal, you also take on minor aspects of the animal you choose. If you choose to increase the ability you use to manifest powers, you do not gain the benefit of an increased ability score long enough to gain any bonus power points for a high ability score, but the save DCs of your powers increase for the duration of this power.\nAugment: For every 5 additional power points you spend, this power grants a +4 enhancement bonus to another ability.",
     "tags": [
@@ -274,7 +293,22 @@
     "provenance": {
       "origin": "foundry-d35e-compendium",
       "crossCheck": "srd.dndtools.org srd/magic/psionics/powers/powersAllCore.html (3.5 psionics SRD = Expanded Psionics Handbook), 2026-11-10"
-    }
+    },
+    "choices": [
+      {
+        "id": "ch-ability",
+        "key": "ability",
+        "label": "Ability Score",
+        "options": [
+          "STR",
+          "DEX",
+          "CON",
+          "INT",
+          "WIS",
+          "CHA"
+        ]
+      }
+    ]
   },
   {
     "schemaVersion": 3,
@@ -1054,7 +1088,19 @@
     "save": "Fortitude half",
     "sr": true,
     "powerPointsCost": 9,
-    "effects": [],
+    "effects": [
+      {
+        "id": "pwr-baleful-teleport-dmg",
+        "type": "roll",
+        "kind": "Damage",
+        "count": 9,
+        "die": "d6",
+        "flat": 0,
+        "dmgType": "Untyped",
+        "scaling": "flat",
+        "crit": "normal"
+      }
+    ],
     "shortDescription": "Destructive teleport deals 9d6 damage.",
     "text": "You psychoportively disperse minuscule portions of the subject, dealing 9d6 points of damage. Targets can be protected from the effects of baleful teleport by dimensional anchor.\nAugment: For every additional power point you spend, this power’s damage increases by 1d6 points. For each extra 2d6 points of damage, this power’s save DC increases by 1 and your manifester level increases by 1 for the purpose of overcoming power resistance.",
     "tags": [
@@ -1335,7 +1381,15 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": 1,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-pw-bio",
+        "type": "defense",
+        "mode": "Damage Reduction",
+        "what": "-",
+        "value": 2
+      }
+    ],
     "shortDescription": "Gain DR 2/-.",
     "text": "You can toughen your body against wounds, lessening their impact. During the duration of this power, you gain damage reduction 2/-.\nAugment: For every 3 additional power points you spend, your damage reduction increases by 1.",
     "tags": [
@@ -1402,7 +1456,18 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": 1,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-pw-botw",
+        "type": "attack",
+        "attackMode": "natural",
+        "natKind": "primary",
+        "count": 1,
+        "weaponName": "Bite",
+        "dice": "1d8",
+        "dmgType": "B/P/S"
+      }
+    ],
     "shortDescription": "Gain bite attack for 1d8 damage.",
     "text": "Your posture becomes stooped forward, and you grow a muzzle complete with fangs. You gain one bite attack each round, instead of or in addition to any other attacks you have, that deals 1d8 points of damage (assuming you are a Medium creature) when it hits.\nYour bite attack is a natural weapon, so you are considered armed when attacking with it, and it can be affected by powers, spells, and effects that enhance or improve natural weapons. You can choose to deal nonlethal damage with your bite, taking the standard -4 penalty on your attack roll. If you bite as your only attack, you use your highest base attack bonus on the attack roll, and you can apply your full Strength bonus to damage. If you bite in addition to making other attacks, the bite is a secondary attack.\nIf you are not a Medium creature, your bite attack’s base damage varies as follows: Fine 1d2, Diminutive 1d3, Tiny 1d4, Small 1d6, Large 2d6, Huge 2d8, Gargantuan 4d6, Colossal 6d6.\nBased on your psychic warrior level, your bite increases in ferocity as noted here: at 5th level your bite deals an extra 1d8 points of damage, at 10th level an extra 2d8, at 15th level an extra 3d8, and at 20th level an extra 4d8 points.",
     "tags": [
@@ -1472,7 +1537,19 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": 3,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-pw-ba",
+        "type": "roll",
+        "kind": "Healing",
+        "count": 1,
+        "die": "d12",
+        "flat": 0,
+        "dmgType": "Positive",
+        "scaling": "flat",
+        "crit": "normal"
+      }
+    ],
     "shortDescription": "Heal 1d12 damage.",
     "text": "You take control of your body’s healing process, curing yourself of 1d12 points of damage. As usual, when regular damage is healed, an equal amount of nonlethal damage is also healed.\nAugment: For every 2 additional power points you spend, this power heals an additional 1d12 points of damage.",
     "tags": [
@@ -1610,7 +1687,19 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": 3,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-pw-bp",
+        "type": "roll",
+        "kind": "Healing",
+        "count": 2,
+        "die": "flat",
+        "flat": 0,
+        "dmgType": "Ability Damage Restored",
+        "scaling": "flat",
+        "crit": "normal"
+      }
+    ],
     "shortDescription": "Restore 2 points of ability damage.",
     "text": "You restore up to 2 points of damage to a single ability score. You cannot use body purification to heal ability drain.\nAugment: For every additional power point you spend, this power heals 1 additional point of damage to the same ability score.",
     "tags": [
@@ -1895,7 +1984,18 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": 1,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-pw-brst",
+        "type": "stat",
+        "targets": [
+          "speed.land"
+        ],
+        "mode": "flat",
+        "value": 10,
+        "btype": "Enhancement"
+      }
+    ],
     "shortDescription": "Gain +10ft. to speed this round.",
     "text": "This power increases your land speed by 10 feet. (This adjustment counts as an enhancement bonus to speed.)\nYou can manifest this power with an instant thought, quickly enough to gain the benefit of the power on your turn before you move. Manifesting this power is a swift action, like manifesting a quickened power, and it counts toward the normal limit of one quickened power per round. You cannot manifest this power when it isn’t your turn.",
     "tags": [
@@ -1966,7 +2066,18 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": 1,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-pw-ctm",
+        "type": "stat",
+        "targets": [
+          "skill.knowledge"
+        ],
+        "mode": "flat",
+        "value": 4,
+        "btype": "Competence"
+      }
+    ],
     "shortDescription": "Gain additional Knowledge check with +4 competence bonus.",
     "text": "By meditating on a subject, you can recall natural memories and knowledge otherwise inaccessible to you.\nOn a failed Knowledge check, you can manifest this power to gain a new check with a +4 competence bonus. If successful, you instantly recall what was previously buried in your subconscious.",
     "tags": [
@@ -2245,7 +2356,18 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": 1,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-pw-cham",
+        "type": "stat",
+        "targets": [
+          "skill.hide"
+        ],
+        "mode": "flat",
+        "value": 10,
+        "btype": "Enhancement"
+      }
+    ],
     "shortDescription": "Gain +10 enhancement bonus on Hide checks.",
     "text": "Your skin and equipment take on the color and texture of nearby objects, including floors and walls. You receive a +10 enhancement bonus on Hide checks.",
     "tags": [
@@ -2523,7 +2645,19 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": 7,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-pw-coe",
+        "type": "roll",
+        "kind": "Damage",
+        "count": 1,
+        "die": "d6",
+        "flat": 0,
+        "dmgType": "@Choice",
+        "scaling": "flat",
+        "crit": "normal"
+      }
+    ],
     "shortDescription": "Your claws deal additional energy damage.",
     "text": "If you have a claw attack (either from an actual natural weapon or from an effect such as claws of the beast), you can use this power to energize that weapon. The claw attack deals an extra 1d6 points of cold, electricity, or fire damage (as chosen by you at the time of manifestation) on a successful hit. On a critical hit, it deals an extra 1d10 points of energy damage. If the claw’s critical multiplier is x3, add 2d10 points of energy damage instead; if the multiplier is x4, add 3d10 points of energy damage.\nThis power can be manifested on a claw attack that already deals energy damage, but if the claw already deals the same type of damage as the power, the effects stack. If this power is manifested on a claw attack already benefiting from the effect of the power, the newer manifestation supersedes the older manifestation, even if both manifestations are of different energy types.\nThis power’s subtype is the same as the type of energy infused in the natural weapon.",
     "tags": [
@@ -2536,7 +2670,21 @@
     "provenance": {
       "origin": "foundry-d35e-compendium",
       "crossCheck": "srd.dndtools.org srd/magic/psionics/powers/powersAllCore.html (3.5 psionics SRD = Expanded Psionics Handbook), 2026-11-10"
-    }
+    },
+    "choices": [
+      {
+        "id": "ch-energy",
+        "key": "energy",
+        "label": "Energy Type",
+        "options": [
+          "Acid",
+          "Cold",
+          "Electricity",
+          "Fire",
+          "Sonic"
+        ]
+      }
+    ]
   },
   {
     "schemaVersion": 3,
@@ -2589,7 +2737,18 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": 1,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-pw-cotb",
+        "type": "attack",
+        "attackMode": "natural",
+        "natKind": "primary",
+        "count": 2,
+        "weaponName": "Claw",
+        "dice": "1d4",
+        "dmgType": "B/S"
+      }
+    ],
     "shortDescription": "Your hands become deadly claws.",
     "text": "You call forth the aggressive nature of the beast inherent in yourself, psionically transforming your hands into deadly claws. You gain two natural attacks with your claws, each dealing 1d4 points of damage (1d6 if you are Large, or 1d3 if you are Small) plus your Strength bonus.\nYour claws are natural weapons, so you are considered armed when attacking with them, and they can be affected by powers, spells, and effects that enhance or improve natural. You can choose to deal nonlethal damage with your claws, taking the standard -4 penalty on your attack roll.\nYour claws work just like the natural weapons of many monsters. You can make an attack with one claw or a full attack with two claws at your normal attack bonus, replacing your normal attack routine. You take no penalties for two-weapon fighting, and neither attack is a secondary attack. If your base attack bonus is +6 or higher, you do not gain any additional attacks-you simply have two claw attacks at your normal attack bonus.\nYou can manifest this power with an instant thought, quickly enough to gain the benefit of the power on your turn before you attack. Manifesting this power is a swift action, like manifesting a quickened power, and it counts toward the normal limit of one quickened power per round. You cannot manifest this power when it isn’t your turn.\nYou can call or dismiss the claws as a swift action during the duration of the power. If you attack with a manufactured weapon or another natural attack, you can’t make any claw attacks in that round. You can still hold and manipulate items with your claws or cast spells just as well as you could with your hands.\nAugment: If you spend additional power points, you can create larger, sharper, and more deadly claws, as shown on the table below.",
     "tags": [
@@ -3057,7 +3216,15 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": 3,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-pw-cam",
+        "type": "defense",
+        "mode": "State",
+        "what": "Concealment (20% Miss Chance)",
+        "value": 20
+      }
+    ],
     "shortDescription": "Quasi-real membrane grants you concealment.",
     "text": "Using concealing amorpha, you weave a quasi-real membrane around yourself. You remain visible within the translucent, amorphous enclosure. This distortion grants you concealment (opponents have a 20% miss chance), thanks to the rippling membrane encasing your form. You can pick up or drop objects, easily reaching through the film. Anything you hold is enveloped by the amorpha. Likewise, you can engage in melee, make ranged attacks, and manifest powers without hindrance.",
     "tags": [
@@ -3125,7 +3292,15 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": 5,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-pw-gcam",
+        "type": "defense",
+        "mode": "State",
+        "what": "Total Concealment (50% Miss Chance)",
+        "value": 50
+      }
+    ],
     "shortDescription": "Quasi-real membrane grants you total concealment.",
     "text": "As concealing amorpha, except the quasi-real membrane so distorts your image and actual position that you gain total concealment (opponents have a 50% miss chance), but for a shorter period of time.",
     "tags": [
@@ -3196,7 +3371,19 @@
     "save": "None",
     "sr": true,
     "powerPointsCost": 3,
-    "effects": [],
+    "effects": [
+      {
+        "id": "pwr-concussion-blast-dmg",
+        "type": "roll",
+        "kind": "Damage",
+        "count": 1,
+        "die": "d6",
+        "flat": 0,
+        "dmgType": "Force",
+        "scaling": "flat",
+        "crit": "normal"
+      }
+    ],
     "shortDescription": "Deal 1d6 force damage to target.",
     "text": "A subject you select is pummeled with telekinetic force for 1d6 points of force damage. You can choose to have the power deal an equal amount of nonlethal damage instead. Concussion blast always affects a subject within range that you can see, even if the subject is in melee or has cover or concealment (you cannot use this power against creatures with total cover or total concealment).\nNonmagical, unattended objects (including doors, walls, locks, and so on) may also be damaged by this power.\nAugment: You can augment this power in one or both of the following ways.\n1. For every 2 additional power points you spend, this power’s damage increases by 1d6 points.\n2. For every 2 additional power points you spend, this power can affect an additional target. Any additional target cannot be more than 15 feet from another target of the power.",
     "tags": [
@@ -4266,7 +4453,33 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": 5,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-pw-ds",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-pw-ds-br",
+            "condKind": "situational",
+            "condText": "vs. Traps",
+            "effects": [
+              {
+                "id": "ef-pw-ds-r",
+                "type": "stat",
+                "targets": [
+                  "save.ref",
+                  "ac.insight"
+                ],
+                "mode": "flat",
+                "value": 4,
+                "btype": "Insight"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "Gain +4 bonus against traps.",
     "text": "You can sense the presence of danger before your senses would normally allow it. Your intuitive sense alerts you to danger from traps, giving you a +4 insight bonus on Reflex saves to avoid traps and a +4 insight bonus to Armor Class against attacks by traps.\nAugment: If you spend 3 additional power points, this power also gives you the uncanny dodge ability; if you spend 6 additional power points, this power gives you the improved uncanny dodge ability as well.",
     "tags": [
@@ -4338,7 +4551,15 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": 3,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-pw-dv",
+        "type": "defense",
+        "mode": "Sense",
+        "what": "Darkvision 60 ft.",
+        "value": 60
+      }
+    ],
     "shortDescription": "See 60 ft. in total darkness.",
     "text": "As the darkvision spell, except as noted here.",
     "tags": [
@@ -5923,7 +6144,19 @@
     "save": "None",
     "sr": true,
     "powerPointsCost": 1,
-    "effects": [],
+    "effects": [
+      {
+        "id": "pwr-dissipating-touch-dmg",
+        "type": "roll",
+        "kind": "Damage",
+        "count": 1,
+        "die": "d6",
+        "flat": 0,
+        "dmgType": "Untyped",
+        "scaling": "flat",
+        "crit": "normal"
+      }
+    ],
     "shortDescription": "Touch deals 1d6 damage.",
     "text": "Your mere touch can disperse the surface material of a foe or object, sending a tiny portion of it far away. This effect is disruptive; thus, your successful melee touch attack deals 1d6 points of damage.\nAugment: For every additional power point you spend, this power’s damage increases by 1d6 points.",
     "tags": [
@@ -5992,7 +6225,19 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": 3,
-    "effects": [],
+    "effects": [
+      {
+        "id": "pwr-dissolving-touch-dmg",
+        "type": "roll",
+        "kind": "Damage",
+        "count": 4,
+        "die": "d6",
+        "flat": 0,
+        "dmgType": "Acid",
+        "scaling": "flat",
+        "crit": "normal"
+      }
+    ],
     "shortDescription": "Your touch deals 4d6 acid damage.",
     "text": "Your touch, claw, or bite is corrosive, and sizzling moisture visibly oozes from your natural weapon or hand. You deal 4d6 points of acid damage to any creature or object you touch with your successful melee touch attack. Acid you secrete denatures 1 round after use, losing all efficacy and ability to deal damage. You are immune to your own acid.\nAugment: For every 2 additional power points you spend, this power’s damage increases by 1d6 points.",
     "tags": [
@@ -6061,7 +6306,19 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": 3,
-    "effects": [],
+    "effects": [
+      {
+        "id": "pwr-dissolving-weapon-dmg",
+        "type": "roll",
+        "kind": "Damage",
+        "count": 4,
+        "die": "d6",
+        "flat": 0,
+        "dmgType": "Acid",
+        "scaling": "flat",
+        "crit": "normal"
+      }
+    ],
     "shortDescription": "Your weapon deals 4d6 acid damage.",
     "text": "As dissolving touch, except your weapon is charged with acid until you make a successful attack.",
     "tags": [
@@ -6137,7 +6394,21 @@
     "save": "Will negates",
     "sr": true,
     "powerPointsCost": 1,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-pw-dist",
+        "type": "stat",
+        "targets": [
+          "skill.listen",
+          "skill.search",
+          "skill.sense-motive",
+          "skill.spot"
+        ],
+        "mode": "flat",
+        "value": -4,
+        "btype": "Penalty"
+      }
+    ],
     "shortDescription": "Subject gets -4 on Listen, Search, Sense Motive, and Spot checks.",
     "text": "You cause your subject’s mind to wander, distracting her. Subjects under the effect of distract make all Listen, Spot, Search, and Sense Motive checks at a -4 penalty.",
     "tags": [
@@ -6918,7 +7189,19 @@
     "save": "Will half; see text",
     "sr": true,
     "powerPointsCost": 3,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-pw-ew",
+        "type": "roll",
+        "kind": "Ability Damage",
+        "count": 1,
+        "die": "d4",
+        "flat": 0,
+        "dmgType": "CHA Damage",
+        "scaling": "flat",
+        "crit": "normal"
+      }
+    ],
     "shortDescription": "Deal 1d4 Cha damage and daze for 1 round.",
     "text": "Your rapid mental lashings assault the ego of your enemy, debilitating its confidence. The target takes 1d4 points of Charisma damage, or half that amount (minimum 1 point) on a successful save. A target that fails its save is also dazed for 1 round.\nAugment: For every 4 additional power points you spend, this power’s Charisma damage increases by 1d4 points and its save DC increases by 2.",
     "tags": [
@@ -6986,7 +7269,26 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": 1,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-pw-es-v",
+        "type": "defense",
+        "mode": "Sense",
+        "what": "Low-Light Vision",
+        "value": 0
+      },
+      {
+        "id": "ef-pw-es-s",
+        "type": "stat",
+        "targets": [
+          "skill.search",
+          "skill.spot"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Untyped"
+      }
+    ],
     "shortDescription": "Gain low-light vision, +2 bonus on Search and Spot checks, and notice secret doors.",
     "text": "You gain low-light vision (as an elf ) for the duration of the power, as well as a +2 bonus on Search and Spot checks.\nIn addition, you gain the ability to notice secret or concealed doors by merely passing within 5 feet of one, getting to make a Search check as if you were actively looking for it.\nIf elfsight is used in conjunction with my light, the cone of light extends out to 40 feet instead of 20 feet.",
     "tags": [
@@ -7342,7 +7644,18 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": 1,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-pw-em",
+        "type": "stat",
+        "targets": [
+          "save.will"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Untyped"
+      }
+    ],
     "shortDescription": "Gain +2 on Will saves until your next action.",
     "text": "You empty your mind of all transitory and distracting thoughts, improving your self-control. You gain a +2 bonus on all Will saves until your next action.\nYou can manifest this power instantly, quickly enough to gain its benefit in an emergency. Manifesting this power is an immediate action, like manifesting a quickened power, and it counts toward the normal limit of one quickened power per round. You can use this power even when it is not your turn.\nAugment: For every 2 additional power points you spend, the bonus on your Will saves increases by 1.",
     "tags": [
@@ -7413,7 +7726,15 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": 7,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-pw-ea",
+        "type": "defense",
+        "mode": "Energy Resistance",
+        "what": "Acid, Cold, Electricity, Fire, Sonic",
+        "value": 10
+      }
+    ],
     "shortDescription": "Your body converts energy to harmless light.",
     "text": "Your body assimilates some of the effect of an energy attack and converts it to harmless light. You gain resistance 10 against any attack that deals acid, cold, electricity, fire, or sonic damage.\nWhen you absorb damage, you can choose to radiate visible light that illuminates a 60-foot radius for a number of rounds equal to the points of damage you successfully resisted, or merely dissipate the energy without giving off a visual display.\nThe energy resistance provided by this power increases to 20 points at 9th manifester level and to a maximum of 30 points at 13th level. The power protects your equipment as well.\nThe resistance provided by this power does not stack with other forms of energy resistance.\nThis power’s subtype is the same as the type of damage it protects against.\nAugment: If you spend 4 additional power points, you can manifest this power as an immediate action.",
     "tags": [
@@ -7484,7 +7805,15 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": 3,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-pw-eas",
+        "type": "defense",
+        "mode": "Energy Resistance",
+        "what": "@Choice",
+        "value": 10
+      }
+    ],
     "shortDescription": "Gain resistance 10 to one energy type.",
     "text": "As energy adaptation, except you must choose one type of energy to which you gain resistance when this power is manifested.\nThis power’s subtype is the same as the type of damage it protects against.\nAugment: If you spend 4 additional power points, you can manifest this power as an immediate action.",
     "tags": [
@@ -7498,7 +7827,21 @@
       "origin": "foundry-d35e-compendium",
       "crossCheck": "srd.dndtools.org srd/magic/psionics/powers/powersAllCore.html (3.5 psionics SRD = Expanded Psionics Handbook), 2026-11-10",
       "inheritedFrom": "Energy Adaptation"
-    }
+    },
+    "choices": [
+      {
+        "id": "ch-energy",
+        "key": "energy",
+        "label": "Energy Type",
+        "options": [
+          "Acid",
+          "Cold",
+          "Electricity",
+          "Fire",
+          "Sonic"
+        ]
+      }
+    ]
   },
   {
     "schemaVersion": 3,
@@ -7559,7 +7902,19 @@
     "save": "Reflex half or Fortitude half; see text",
     "sr": true,
     "powerPointsCost": 7,
-    "effects": [],
+    "effects": [
+      {
+        "id": "pwr-energy-ball-dmg",
+        "type": "roll",
+        "kind": "Damage",
+        "count": 7,
+        "die": "d6",
+        "flat": 0,
+        "dmgType": "@Choice",
+        "scaling": "flat",
+        "crit": "normal"
+      }
+    ],
     "shortDescription": "Deal 7d6 energy damage in 20-ft. radius.",
     "text": "Upon manifesting this power, you choose cold, electricity, fire, or sonic. You create an explosion of energy of the chosen type that deals 7d6 points of damage to every creature or object within the area. The explosion creates almost no pressure.\nCold: A ball of this energy type deals +1 point of damage per die. The saving throw to reduce damage from a cold ball is a Fortitude save instead of a Reflex save.\nElectricity: Manifesting a ball of this energy type provides a +2 bonus to the save DC and a +2 bonus on manifester level checks for the purpose of overcoming power resistance.\nFire: A ball of this energy type deals +1 point of damage per die.\nSonic: A ball of this energy type deals -1 point of damage per die and ignores an object’s hardness.\nThis power’s subtype is the same as the type of energy you manifest.\nAugment: For every additional power point you spend, this power’s damage increases by one die (d6). For each extra two dice of damage, this power’s save DC increases by 1.",
     "tags": [
@@ -7572,7 +7927,21 @@
     "provenance": {
       "origin": "foundry-d35e-compendium",
       "crossCheck": "srd.dndtools.org srd/magic/psionics/powers/powersAllCore.html (3.5 psionics SRD = Expanded Psionics Handbook), 2026-11-10"
-    }
+    },
+    "choices": [
+      {
+        "id": "ch-energy",
+        "key": "energy",
+        "label": "Energy Type",
+        "options": [
+          "Acid",
+          "Cold",
+          "Electricity",
+          "Fire",
+          "Sonic"
+        ]
+      }
+    ]
   },
   {
     "schemaVersion": 3,
@@ -7634,7 +8003,19 @@
     "save": "Reflex half or Fortitude half; see text",
     "sr": true,
     "powerPointsCost": 5,
-    "effects": [],
+    "effects": [
+      {
+        "id": "pwr-energy-bolt-dmg",
+        "type": "roll",
+        "kind": "Damage",
+        "count": 5,
+        "die": "d6",
+        "flat": 0,
+        "dmgType": "@Choice",
+        "scaling": "flat",
+        "crit": "normal"
+      }
+    ],
     "shortDescription": "Deal 5d6 energy damage in 120-ft. line.",
     "text": "Upon manifesting this power, you choose cold, electricity, fire, or sonic. You release a powerful stroke of energy of the chosen type that deals 5d6 points of damage to every creature or object within the area. The beam begins at your fingertips.\nCold: A bolt of this energy type deals +1 point of damage per die. The saving throw to reduce damage from a cold bolt is a Fortitude save instead of a Reflex save.\nElectricity: Manifesting a bolt of this energy type provides a +2 bonus to the save DC and a +2 bonus on manifester level checks for the purpose of overcoming power resistance.\nFire: A bolt of this energy type deals +1 point of damage per die.\nSonic: A bolt of this energy type deals -1 point of damage per die and ignores an object’s hardness.\nThis power’s subtype is the same as the type of energy you manifest.\nAugment: For every additional power point you spend, this power’s damage increases by one die (d6). For each extra two dice of damage, this power’s save DC increases by 1.",
     "tags": [
@@ -7647,7 +8028,21 @@
     "provenance": {
       "origin": "foundry-d35e-compendium",
       "crossCheck": "srd.dndtools.org srd/magic/psionics/powers/powersAllCore.html (3.5 psionics SRD = Expanded Psionics Handbook), 2026-11-10"
-    }
+    },
+    "choices": [
+      {
+        "id": "ch-energy",
+        "key": "energy",
+        "label": "Energy Type",
+        "options": [
+          "Acid",
+          "Cold",
+          "Electricity",
+          "Fire",
+          "Sonic"
+        ]
+      }
+    ]
   },
   {
     "schemaVersion": 3,
@@ -7709,7 +8104,19 @@
     "save": "Reflex half or Fortitude half; see text",
     "sr": true,
     "powerPointsCost": 5,
-    "effects": [],
+    "effects": [
+      {
+        "id": "pwr-energy-burst-dmg",
+        "type": "roll",
+        "kind": "Damage",
+        "count": 5,
+        "die": "d6",
+        "flat": 0,
+        "dmgType": "@Choice",
+        "scaling": "flat",
+        "crit": "normal"
+      }
+    ],
     "shortDescription": "Deal 5d6 energy damage in 40-ft. burst.",
     "text": "Upon manifesting this power, you choose cold, electricity, fire, or sonic. You create an explosion of unstable ectoplasmic energy of the chosen type that deals 5d6 points of damage to every creature or object within the area. The explosion creates almost no pressure. Since this power extends outward from you, you are not affected by the damage.\nCold: A burst of this energy type deals +1 point of damage per die. The saving throw to reduce damage from a cold burst is a Fortitude save instead of a Reflex save.\nElectricity: Manifesting a burst of this energy type provides a +2 bonus to the save DC and a +2 bonus on manifester level checks for the purpose of overcoming power resistance.\nFire: A burst of this energy type deals +1 point of damage per die.\nSonic: A burst of this energy type deals -1 point of damage per die and ignores an object’s hardness.\nThis power’s subtype is the same as the type of energy you manifest.\nAugment: For every additional power point you spend, this power’s damage increases by one die (d6). For each extra two dice of damage, this power’s save DC increases by 1.",
     "tags": [
@@ -7722,7 +8129,21 @@
     "provenance": {
       "origin": "foundry-d35e-compendium",
       "crossCheck": "srd.dndtools.org srd/magic/psionics/powers/powersAllCore.html (3.5 psionics SRD = Expanded Psionics Handbook), 2026-11-10"
-    }
+    },
+    "choices": [
+      {
+        "id": "ch-energy",
+        "key": "energy",
+        "label": "Energy Type",
+        "options": [
+          "Acid",
+          "Cold",
+          "Electricity",
+          "Fire",
+          "Sonic"
+        ]
+      }
+    ]
   },
   {
     "schemaVersion": 3,
@@ -7783,7 +8204,19 @@
     "save": "Reflex half or Fortitude half; see text",
     "sr": true,
     "powerPointsCost": 5,
-    "effects": [],
+    "effects": [
+      {
+        "id": "pwr-energy-cone-dmg",
+        "type": "roll",
+        "kind": "Damage",
+        "count": 5,
+        "die": "d6",
+        "flat": 0,
+        "dmgType": "@Choice",
+        "scaling": "flat",
+        "crit": "normal"
+      }
+    ],
     "shortDescription": "Deal 5d6 energy damage in 60-ft. cone.",
     "text": "Upon manifesting this power, you choose cold, electricity, fire, or sonic. You create a cone of energy of the chosen type, extending outward from your hand, that deals 5d6 points of damage to every creature or object within the area.\nCold: A cone of this energy type deals +1 point of damage per die. The saving throw to reduce damage from a cold cone is a Fortitude save instead of a Reflex save.\nElectricity: Manifesting a cone of this energy type provides a +2 bonus to the save DC and a +2 bonus on manifester level checks for the purpose of overcoming power resistance.\nFire: A cone of this energy type deals +1 point of damage per die.\nSonic: A cone of this energy type deals -1 point of damage per die and ignores an object’s hardness.\nThis power’s subtype is the same as the type of energy you manifest.\nAugment: For every additional power point you spend, this power’s damage increases by one die (d6). For each extra two dice of damage, this power’s save DC increases by 1.",
     "tags": [
@@ -7796,7 +8229,21 @@
     "provenance": {
       "origin": "foundry-d35e-compendium",
       "crossCheck": "srd.dndtools.org srd/magic/psionics/powers/powersAllCore.html (3.5 psionics SRD = Expanded Psionics Handbook), 2026-11-10"
-    }
+    },
+    "choices": [
+      {
+        "id": "ch-energy",
+        "key": "energy",
+        "label": "Energy Type",
+        "options": [
+          "Acid",
+          "Cold",
+          "Electricity",
+          "Fire",
+          "Sonic"
+        ]
+      }
+    ]
   },
   {
     "schemaVersion": 3,
@@ -7927,7 +8374,19 @@
     "save": "Reflex half or Fortitude half; see text",
     "sr": true,
     "powerPointsCost": 9,
-    "effects": [],
+    "effects": [
+      {
+        "id": "pwr-energy-current-dmg",
+        "type": "roll",
+        "kind": "Damage",
+        "count": 9,
+        "die": "d6",
+        "flat": 0,
+        "dmgType": "Untyped",
+        "scaling": "flat",
+        "crit": "normal"
+      }
+    ],
     "shortDescription": "Deal 9d6 damage to one foe and half to another foe as long as you concentrate.",
     "text": "Upon manifesting this power, you choose cold, electricity, fire, or sonic. Your body’s psionically fueled bioenergetic currents produce an arc of energy of the chosen type that targets a creature you designate as the primary foe for 9d6 points of damage in every round when the power remains in effect. Energy also arcs off the primary foe to strike one additional foe that is initially within 15 feet of the primary foe, or that subsequently moves within 15 feet of the primary foe while the duration lasts. Secondary foes take half the damage that the primary foe takes in every round while the duration lasts.\nShould either the primary or secondary foe fall to less than 0 hit points (or should a target completely evade the effect with a special ability or power), the energy current ’s arc randomly retargets another primary and/or secondary foe while the duration lasts. Targeted foes can move normally, possibly moving out of range of the effect, but each round they are targeted and remain in range they must make a saving throw to avoid taking full damage in that round.\nConcentrating to maintain energy current is a full-round action. If you take damage while maintaining energy current, you must make a successful Concentration check (DC 10 + damage dealt) to avoid losing your concentration on the power.\nCold: A current of this energy type deals +1 point of damage per die. The saving throw to reduce damage from a cold current is a Fortitude save instead of a Reflex save.\nElectricity: Manifesting a current of this energy type provides a +2 bonus to the save DC and a +2 bonus on manifester level checks for the purpose of overcoming power resistance.\nFire: A current of this energy type deals +1 point of damage per die.\nSonic: A current of this energy type deals -1 point of damage per die and ignores an object’s hardness.\nThis power’s subtype is the same as the type of energy you manifest.\nAugment: You can augment this power in one or both of the following ways.\n1. For every additional power point you spend, this power’s damage increases by one die (d6). For each extra two dice of damage, this power’s save DC increases by 1.\n2. For every 4 additional power points you spend, this power can affect an additional secondary target. Any additional secondary target cannot be more than 15 feet from another target of the power.",
     "tags": [
@@ -8001,7 +8460,19 @@
     "save": "Reflex half or Fortitude half; see text",
     "sr": true,
     "powerPointsCost": 3,
-    "effects": [],
+    "effects": [
+      {
+        "id": "pwr-energy-missile-dmg",
+        "type": "roll",
+        "kind": "Damage",
+        "count": 3,
+        "die": "d6",
+        "flat": 0,
+        "dmgType": "@Choice",
+        "scaling": "flat",
+        "crit": "normal"
+      }
+    ],
     "shortDescription": "Deal 3d6 energy damage to up to five subjects.",
     "text": "Upon manifesting this power, you choose cold, electricity, fire, or sonic. You release a powerful missile of energy of the chosen type at your foe. The missile deals 3d6 points of damage to each creature or object you target, to the maximum of five targets. You cannot hit the same target multiple times with the same manifestation of this power.\nCold: A missile of this energy type deals +1 point of damage per die. The saving throw to reduce damage from a cold missile is a Fortitude save instead of a Reflex save.\nElectricity: Manifesting a missile of this energy type provides a +2 bonus to the save DC and a +2 bonus on manifester level checks for the purpose of overcoming power resistance.\nFire: A missile of this energy type deals +1 point of damage per die.\nSonic: A missile of this energy type deals -1 point of damage per die and ignores an object’s hardness.\nThis power’s subtype is the same as the type of energy you manifest.\nAugment: For every additional power point you spend, this power’s damage increases by one die (d6) and its save DC increases by 1.",
     "tags": [
@@ -8014,7 +8485,21 @@
     "provenance": {
       "origin": "foundry-d35e-compendium",
       "crossCheck": "srd.dndtools.org srd/magic/psionics/powers/powersAllCore.html (3.5 psionics SRD = Expanded Psionics Handbook), 2026-11-10"
-    }
+    },
+    "choices": [
+      {
+        "id": "ch-energy",
+        "key": "energy",
+        "label": "Energy Type",
+        "options": [
+          "Acid",
+          "Cold",
+          "Electricity",
+          "Fire",
+          "Sonic"
+        ]
+      }
+    ]
   },
   {
     "schemaVersion": 3,
@@ -8076,7 +8561,19 @@
     "save": "Reflex half or Fortitude half; see text",
     "sr": true,
     "powerPointsCost": 3,
-    "effects": [],
+    "effects": [
+      {
+        "id": "pwr-energy-push-dmg",
+        "type": "roll",
+        "kind": "Damage",
+        "count": 2,
+        "die": "d6",
+        "flat": 0,
+        "dmgType": "Untyped",
+        "scaling": "flat",
+        "crit": "normal"
+      }
+    ],
     "shortDescription": "Deal 2d6 damage and knock subject back.",
     "text": "Upon manifesting this power, you choose cold, electricity, fire, or sonic. You project a solid blast of energy of the chosen type at a target, dealing it 2d6 points of damage. In addition, if a subject of up to one size category larger than you fails a Strength check (DC equal to the save DC of this power), the driving force of the energy blast pushes it back 5 feet plus another 5 feet for every 5 points of damage it takes. If a wall or other solid object prevents the subject from being pushed back, the subject instead slams into the object and takes an extra 2d6 points of damage from the impact (no save). The movement caused by energy push does not provoke attacks of opportunity.\nCold: A blast of this energy type deals +1 point of damage per die (damage from impact remains at 2d6 points). The saving throw to reduce damage from a cold push is a Fortitude save instead of a Reflex save.\nElectricity: Manifesting a blast of this energy type provides a +2 bonus to the save DC and a +2 bonus on manifester level checks for the purpose of overcoming power resistance.\nFire: A blast of this energy type deals +1 point of damage per die (damage from impact remains at 2d6 points).\nSonic: A blast of this energy type deals -1 point of damage per die (damage from impact remains at 2d6 points) and ignores an object’s hardness.\nThis power’s subtype is the same as the type of energy you manifest.\nAugment: For every 2 additional power points you spend, this power’s damage increases by one die (d6) and its save DC increases by 1. The damage increase applies to both the initial blast and any damage from impact with an object.",
     "tags": [
@@ -8296,7 +8793,19 @@
     "save": "Reflex half or Fortitude half; see text",
     "sr": true,
     "powerPointsCost": 3,
-    "effects": [],
+    "effects": [
+      {
+        "id": "pwr-energy-stun-dmg",
+        "type": "roll",
+        "kind": "Damage",
+        "count": 1,
+        "die": "d6",
+        "flat": 0,
+        "dmgType": "Untyped",
+        "scaling": "flat",
+        "crit": "normal"
+      }
+    ],
     "shortDescription": "Deal 1d6 damage and stun target if it fails both saves.",
     "text": "Upon manifesting this power, you choose cold, electricity, fire, or sonic. You release a powerful stroke of the chosen energy type that encircles all creatures in the area, dealing 1d6 points of damage to each of them. In addition, any creature that fails its save for half damage must succeed on a Will save or be stunned for 1 round.\nCold: A stroke of this energy type deals +1 point of damage per die. The saving throw to reduce damage from a cold stun is a Fortitude save instead of a Reflex save.\nElectricity: Manifesting a stroke of this energy type provides a +2 bonus to the save DC and a +2 bonus on manifester level checks for the purpose of overcoming power resistance.\nFire: A stroke of this energy type deals +1 point of damage per die.\nSonic: A stroke of this energy type deals -1 point of damage per die and ignores an object’s hardness.\nThis power’s subtype is the same as the type of energy you manifest.\nAugment: For every additional power point you spend, this power’s damage increases by one die (d6) and its save DC increases by 1.",
     "tags": [
@@ -8446,7 +8955,19 @@
     "save": "Reflex half or Fortitude half; see text",
     "sr": true,
     "powerPointsCost": 13,
-    "effects": [],
+    "effects": [
+      {
+        "id": "pwr-energy-wave-dmg",
+        "type": "roll",
+        "kind": "Damage",
+        "count": 13,
+        "die": "d4",
+        "flat": 0,
+        "dmgType": "@Choice",
+        "scaling": "flat",
+        "crit": "normal"
+      }
+    ],
     "shortDescription": "Deal 13d4 damage of your chosen energy type in 120-ft. cone.",
     "text": "Upon manifesting this power, you choose cold, electricity, fire, or sonic. You create a flood of energy of the chosen type out of unstable ectoplasm that deals 13d6 points of damage to each creature and object in the area. This power originates at your hand and extends outward in a cone.\nCold: A wave of this energy type deals +1 point of damage per die. The saving throw to reduce damage from a cold wave is a Fortitude save instead of a Reflex save.\nElectricity: Manifesting a wave of this energy type provides a +2 bonus to the save DC and a +2 bonus on manifester level checks for the purpose of overcoming power resistance.\nFire: A wave of this energy type deals +1 point of damage per die.\nSonic: A wave of this energy type deals -1 point of damage per die and ignores an object’s hardness.\nThis power’s subtype is the same as the type of energy you manifest.\nAugment: For every additional power point you spend, this power’s damage increases by one die (d6). For each extra two dice of damage, this power’s save DC increases by 1.",
     "tags": [
@@ -8459,7 +8980,21 @@
     "provenance": {
       "origin": "foundry-d35e-compendium",
       "crossCheck": "srd.dndtools.org srd/magic/psionics/powers/powersAllCore.html (3.5 psionics SRD = Expanded Psionics Handbook), 2026-11-10"
-    }
+    },
+    "choices": [
+      {
+        "id": "ch-energy",
+        "key": "energy",
+        "label": "Energy Type",
+        "options": [
+          "Acid",
+          "Cold",
+          "Electricity",
+          "Fire",
+          "Sonic"
+        ]
+      }
+    ]
   },
   {
     "schemaVersion": 3,
@@ -8864,7 +9399,16 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": 5,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-pw-eb",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "evasion",
+        "label": "Take No Damage From Burst on Successful Reflex Save",
+        "text": "Take No Damage From Burst on Successful Reflex Save"
+      }
+    ],
     "shortDescription": "You take no damage from a burst on a successful Reflex save.",
     "text": "You throw off a faux ectoplasmic shell, allowing you to slide out of range of a damaging effect. When you manifest this power in conjunction with making a successful Reflex save against an attack that normally deals half damage on a successful save, you instead take no damage.\nYou can manifest this power with an instant thought, quickly enough to save yourself if you unexpectedly come within range of a dangerous effect. Manifesting this power is an immediate action. You can even manifest this power when it isn’t your turn.\nAugment: If you spend 4 additional power points, you take only half damage on a failed Reflex save.",
     "tags": [
@@ -8934,7 +9478,19 @@
     "save": "None",
     "sr": true,
     "powerPointsCost": 5,
-    "effects": [],
+    "effects": [
+      {
+        "id": "pwr-exhalation-of-the-black-dragon-dmg",
+        "type": "roll",
+        "kind": "Damage",
+        "count": 3,
+        "die": "d6",
+        "flat": 0,
+        "dmgType": "Untyped",
+        "scaling": "flat",
+        "crit": "normal"
+      }
+    ],
     "shortDescription": "Your acid breath deals 3d6 damage to a close target.",
     "text": "You spit forth vitriolic acid, originating from your mouth, at your target. If you succeed on a ranged touch attack, the target takes 3d6 points of acid damage.\nAugment: For every 2 additional power points you spend, this power’s damage increases by 1d6 points.",
     "tags": [
@@ -9805,7 +10361,18 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": 7,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-pw-fly",
+        "type": "stat",
+        "targets": [
+          "speed.fly"
+        ],
+        "mode": "flat",
+        "value": 60,
+        "btype": "Untyped"
+      }
+    ],
     "shortDescription": "You fly at a speed of 60 ft.",
     "text": "As the fly spell, except as noted here.",
     "tags": [
@@ -10026,7 +10593,16 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": 7,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-pw-fom",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "freedomOfMovement",
+        "label": "Move and Attack Normally Despite Grappling/Impeding Effects",
+        "text": "Move and Attack Normally Despite Grappling/Impeding Effects"
+      }
+    ],
     "shortDescription": "You cannot be held or otherwise rendered immobile.",
     "text": "As the freedom of movement spell, except as noted here.",
     "tags": [
@@ -10438,7 +11014,18 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": 1,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-pw-goi",
+        "type": "stat",
+        "targets": [
+          "grapple"
+        ],
+        "mode": "flat",
+        "value": 4,
+        "btype": "Enhancement"
+      }
+    ],
     "shortDescription": "Your iron grip gives +4 bonus on grapple checks.",
     "text": "You can improve your chances in a grapple as an immediate action, gaining a +4 enhancement bonus on your grapple checks.\nYou can manifest this power with an instant thought, quickly enough to gain the benefit of the power in the current round. Manifesting this power is an immediate action. You can manifest this power when it isn’t your turn (if you are grappled).\nAugment: For every 4 additional power points you spend, the enhancement bonus on your grapple checks increases by 2.",
     "tags": [
@@ -10647,7 +11234,16 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": 3,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-pw-hst",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "gainExtraMoveAction",
+        "label": "Gain an Immediate Extra Move Action This Round",
+        "text": "Gain an Immediate Extra Move Action This Round"
+      }
+    ],
     "shortDescription": "Instantly gain a move action.",
     "text": "You gain an additional move action in the current round. Taking a full round’s worth of attacks and then using this power to move away from your foe does provoke attacks of opportunity.\nYou can manifest this power with an instant thought, quickly enough to gain the benefit of the power before you move. Manifesting the power is a swift action, like manifesting a quickened power, and it counts toward the normal limit of one quickened power per round. You cannot manifest this power when it isn’t your turn.",
     "tags": [
@@ -10927,7 +11523,25 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": 7,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-pw-immv",
+        "type": "defense",
+        "mode": "Damage Reduction",
+        "what": "-",
+        "value": 15
+      },
+      {
+        "id": "ef-pw-immv-c",
+        "type": "stat",
+        "targets": [
+          "cmd.stability"
+        ],
+        "mode": "flat",
+        "value": 20,
+        "btype": "Untyped"
+      }
+    ],
     "shortDescription": "You are almost impossible to move and gain DR 15/-.",
     "text": "You are almost impossible to move. Your weight does not vary; instead, you mentally attach yourself to the underlying fabric of the plane. Thus, you could conceivably anchor yourself in midair. Any creature attempting to physically move you must succeed on an opposed Strength check, and you gain a +20 bonus on the check. You can’t voluntarily move to a new location unless you stop concentrating, which ends the power.\nYou cannot apply your Dexterity bonus to Armor Class; however, your anchored body gains damage reduction 15/-.\nYou cannot make physical attacks or perform any other large-scale movements (you can make smallscale movements, such as breathing, turning your head, moving your eyes, talking, and so on). Powers with the teleportation descriptor, or any telekinetic effect, manifested on you automatically fail.\nAugment: If you spend 8 additional power points, you can manifest this power as an immediate action.",
     "tags": [
@@ -11143,7 +11757,15 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": 7,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-pw-ib",
+        "type": "defense",
+        "mode": "Damage Reduction",
+        "what": "-",
+        "value": 5
+      }
+    ],
     "shortDescription": "Gain DR 5/-.",
     "text": "You create a skin-tight psychokinetic barrier around yourself that resists blows, cuts, stabs, and slashes, as well as providing some protection against falling. You gain damage reduction 5/-. Inertial barrier also absorbs half the damage you take from any fall.",
     "tags": [
@@ -11219,7 +11841,19 @@
     "save": "Will partial; see text",
     "sr": true,
     "powerPointsCost": 3,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-pw-ipain",
+        "type": "stat",
+        "targets": [
+          "atk.all",
+          "skill.all"
+        ],
+        "mode": "flat",
+        "value": -4,
+        "btype": "Penalty"
+      }
+    ],
     "shortDescription": "Telepathic stab gives your foe -4 on attack rolls, or -2 if he makes the save.",
     "text": "You telepathically stab the mind of your foe, causing horrible agony. The subject suffers wracking pain that imposes a -4 penalty on attack rolls, skill checks, and ability checks. If the target makes its save, it takes only a -2 penalty.\nAugment: For every 2 additional power points you spend, this power’s save DC increases by 1, and the power can affect an additional target. Any additional target cannot be more than 15 feet from another target of the power.",
     "tags": [
@@ -11433,7 +12067,35 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": 15,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-pw-ibody",
+        "type": "defense",
+        "mode": "Damage Reduction",
+        "what": "adamantine",
+        "value": 15
+      },
+      {
+        "id": "ef-pw-ib-s",
+        "type": "stat",
+        "targets": [
+          "str"
+        ],
+        "mode": "flat",
+        "value": 6,
+        "btype": "Enhancement"
+      },
+      {
+        "id": "ef-pw-ib-d",
+        "type": "stat",
+        "targets": [
+          "dex"
+        ],
+        "mode": "flat",
+        "value": -6,
+        "btype": "Penalty"
+      }
+    ],
     "shortDescription": "Your body becomes living iron.",
     "text": "As the iron body spell, except as noted here.",
     "tags": [
@@ -11507,7 +12169,16 @@
     "sr": true,
     "buffTargetMode": "weapon",
     "powerPointsCost": 5,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-pw-ke",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "keen",
+        "label": "Doubles Normal Weapon Threat Range",
+        "text": "Doubles Normal Weapon Threat Range"
+      }
+    ],
     "ruleFlags": {
       "keen": true
     },
@@ -12066,7 +12737,18 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": 5,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-pw-mb",
+        "type": "stat",
+        "targets": [
+          "ac.deflection"
+        ],
+        "mode": "flat",
+        "value": 4,
+        "btype": "Deflection"
+      }
+    ],
     "shortDescription": "Gain +4 deflection bonus to AC until your next action.",
     "text": "You project a field of improbability around yourself, creating a fleeting protective shell. You gain a +4 deflection bonus to Armor Class.\nYou can manifest this power instantly, quickly enough to gain its benefits in an emergency. Manifesting the power is an immediate action. You can use this power even when it’s not your turn; however, you must manifest it prior to an opponent’s attack roll in order to gain this power’s benefit against that attack.\nAugment: You can augment this power in one or both of the following ways.\n1. If you spend 4 additional power points, the deflection bonus to Armor Class increases by 1.\n2. For every additional power point you spend, this power’s duration increases by 1 round.",
     "tags": [
@@ -12479,7 +13161,19 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": 1,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-pw-mclaw",
+        "type": "stat",
+        "targets": [
+          "atk.natural",
+          "dmg.natural"
+        ],
+        "mode": "flat",
+        "value": 1,
+        "btype": "Enhancement"
+      }
+    ],
     "shortDescription": "Your natural weapon gains +1 bonus.",
     "text": "If you have a claw attack (either from an actual natural weapon or from an effect such as claws of the beast) or a bite attack (which could be a natural bite attack or one you gain by means of the power bite of the wolf), you can use this power to provide one of your natural weapons a +1 enhancement bonus on attack rolls and damage rolls.\nAugment: If you spend 4 additional power points, this power’s duration increases to 1 hour per level.\nIn addition, for every 4 additional power points you spend, this power improves the natural weapon’s enhancement bonus on attack rolls and damage rolls by 1.",
     "tags": [
@@ -12705,7 +13399,15 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": 11,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-pw-mbp",
+        "type": "defense",
+        "mode": "Immunity",
+        "what": "Mind-Affecting & Scrying",
+        "value": 0
+      }
+    ],
     "shortDescription": "You are immune to scrying and mental effects.",
     "text": "As psionic mind blank (see below), except as noted here.",
     "tags": [
@@ -12783,7 +13485,15 @@
     "save": "Will negates (harmless)",
     "sr": true,
     "powerPointsCost": 15,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-pw-mbps",
+        "type": "defense",
+        "mode": "Immunity",
+        "what": "Mind-Affecting & Scrying",
+        "value": 0
+      }
+    ],
     "shortDescription": "Subject immune to mental/emotional effects, scrying, and remote viewing.",
     "text": "The subject is protected from all devices, powers, and spells that detect, influence, or read emotions or thoughts. This power protects against powers with the mind-affecting or scrying descriptors. Psionic mind blank even foils bend reality, limited wish, miracle, reality revision, and wish when they are used in such a way as to affect the subject’s mind or to gain information about it (however, metafaculty can pierce the protective quality of psionic mind blank).\nIn the case of remote viewing or scrying that scans an area the creature is in, the effect works but the creature simply isn’t detected. Remote viewing (scrying) attempts that are targeted specifically at the subject do not work at all.",
     "tags": [
@@ -13156,7 +13866,19 @@
     "save": "Will negates",
     "sr": true,
     "powerPointsCost": 1,
-    "effects": [],
+    "effects": [
+      {
+        "id": "pwr-mind-thrust-dmg",
+        "type": "roll",
+        "kind": "Damage",
+        "count": 1,
+        "die": "d10",
+        "flat": 0,
+        "dmgType": "Untyped",
+        "scaling": "flat",
+        "crit": "normal"
+      }
+    ],
     "shortDescription": "Deal 1d10 damage.",
     "text": "You instantly deliver a massive assault on the thought pathways of any one creature, dealing 1d10 points of damage to it.\nAugment: For every additional power point you spend, this power’s damage increases by 1d10 points. For each extra 2d10 points of damage, this power’s save DC increases by 1.",
     "tags": [
@@ -14010,7 +14732,35 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": 9,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-pw-oak",
+        "type": "defense",
+        "mode": "Damage Reduction",
+        "what": "slashing",
+        "value": 5
+      },
+      {
+        "id": "ef-pw-oak-s",
+        "type": "stat",
+        "targets": [
+          "str"
+        ],
+        "mode": "flat",
+        "value": 4,
+        "btype": "Untyped"
+      },
+      {
+        "id": "ef-pw-oak-d",
+        "type": "stat",
+        "targets": [
+          "dex"
+        ],
+        "mode": "flat",
+        "value": -2,
+        "btype": "Penalty"
+      }
+    ],
     "shortDescription": "Your body becomes as hard as oak.",
     "text": "This power transforms your body into living oak, which grants you several advantages.\nYou gain damage reduction 10/ slashing and a +5 bonus to natural armor that overlaps (does not stack with) any natural armor bonus you may already have. You are immune to ability damage, blindness, deafness, disease, drowning, poison, stunning, and all powers, spells, or attacks that affect your physiology or respiration, because you have no physiology or respiration while this power is in effect.\nYou take only half damage from cold effects of all kinds. However, you become susceptible to all special attacks that affect wood, and you gain vulnerability to fire.\nYou gain a +4 enhancement bonus to Strength, but you take a -2 penalty to Dexterity (to a minimum Dexterity score of 1), and your speed is reduced to half normal. You can speak but cannot drink (and thus can’t use potions) or play wind instruments. You have an armor check penalty of -4 and an arcane spell failure chance of 25%.\nYour unarmed attacks deal damage equal to a club sized for you (1d4 for Small characters, 1d6 for Medium characters), and you are considered armed when making unarmed attacks. When you make a full attack against an object or structure using your unarmed strike, you deal double damage.\nAugment: For every additional power point you spend, this power’s duration increases by 1 minute.",
     "tags": [
@@ -14145,7 +14895,18 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": 11,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-pw-ofly",
+        "type": "stat",
+        "targets": [
+          "speed.fly"
+        ],
+        "mode": "flat",
+        "value": 40,
+        "btype": "Untyped"
+      }
+    ],
     "shortDescription": "You fly at a speed of 40 ft. and can hustle over long distances.",
     "text": "As the overland flight spell, except as noted here.",
     "tags": [
@@ -14212,7 +14973,19 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": 3,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-pw-pstr",
+        "type": "roll",
+        "kind": "Damage",
+        "count": 1,
+        "die": "d6",
+        "flat": 0,
+        "dmgType": "Nonlethal",
+        "scaling": "flat",
+        "crit": "normal"
+      }
+    ],
     "shortDescription": "Your natural weapons deal an extra 1d6 nonlethal damage.",
     "text": "Your natural weapons cause additional pain. Each successful attack you make with a natural weapon deals an extra 1d6 points of nonlethal damage to the target.\nAugment: If you spend 6 additional power points, you can manifest this power as a swift action.",
     "tags": [
@@ -14577,7 +15350,15 @@
     "save": "Will negates (harmless)",
     "sr": true,
     "powerPointsCost": 9,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-pw-pr",
+        "type": "defense",
+        "mode": "Spell Resistance",
+        "what": "12 + @cl",
+        "value": 12
+      }
+    ],
     "shortDescription": "Grant PR equal to 12 + level.",
     "text": "The creature gains power resistance equal to 12 + your manifester level.",
     "tags": [
@@ -14644,7 +15425,19 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": 1,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-pw-pc",
+        "type": "stat",
+        "targets": [
+          "atk.all"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Insight",
+        "condition": "Single Roll Chosen Before Result"
+      }
+    ],
     "shortDescription": "Gain +2 insight bonus to one roll.",
     "text": "Precognition allows your mind to glimpse fragments of potential future events - what you see will probably happen if no one takes action to change it. However, your vision is incomplete, and it makes no real sense until the actual events you glimpsed begin to unfold. That’s when everything begins to come together, and you can act, if you act swiftly, on the information you previously received when you manifested this power.\nIn practice, manifesting this power grants you a “precognitive edge.” Normally, you can have only a single precognitive edge at one time. You must use your edge within a period of no more than 10 minutes per level, at which time your preknowledge fades and you lose your edge.\nYou can use your precognitive edge in a variety of ways. Essentially, the edge translates into a +2 insight bonus that you can apply at any time to either an attack roll, a damage roll, a saving throw, or a skill check. You can elect to apply the bonus to the roll after you determine that your unmodified roll is lower than desired.",
     "tags": [
@@ -14792,7 +15585,19 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": 11,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-pw-gpc",
+        "type": "stat",
+        "targets": [
+          "atk.all"
+        ],
+        "mode": "flat",
+        "value": 4,
+        "btype": "Insight",
+        "condition": "Single Roll Chosen Before Result"
+      }
+    ],
     "shortDescription": "Gain +4 insight bonus to one roll.",
     "text": "As precognition, except as noted here.\nYou gain a +4 insight bonus instead of a +2 bonus.",
     "tags": [
@@ -14941,7 +15746,18 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": 1,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-pw-po",
+        "type": "stat",
+        "targets": [
+          "dmg.all"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Insight"
+      }
+    ],
     "shortDescription": "Gain +2 insight bonus on your damage rolls.",
     "text": "Your awareness extends a fraction of a second into the future, allowing you to better aim blows against your opponent. You gain a +2 insight bonus on your damage rolls.\nAugment: You can augment this power in one or both of the following ways.\n1. For every 3 additional power points you spend, the insight bonus gained on your damage rolls increases by 1.\n2. If you spend 6 additional power points, you can manifest this power as a swift action.",
     "tags": [
@@ -15143,7 +15959,16 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": 3,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-pw-prw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "extraAoOImmediate",
+        "label": "Make One Additional Attack of Opportunity This Round",
+        "text": "Make One Additional Attack of Opportunity This Round"
+      }
+    ],
     "shortDescription": "Instantly gain another attack of opportunity.",
     "text": "If an enemy provokes an attack of opportunity from you, you can make the attack even if you’ve already taken your allotted number of attacks of opportunity this round (usually one).\nYou can manifest this power instantly, quickly enough to gain an extra attack of opportunity in the same round. Manifesting this power is an immediate action.",
     "tags": [
@@ -15285,7 +16110,16 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": 3,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-pw-plc",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "pounce",
+        "label": "Make Full Attack in Same Round You Charge",
+        "text": "Make Full Attack in Same Round You Charge"
+      }
+    ],
     "shortDescription": "You can make full attack in same round you charge.",
     "text": "You gain the powerful charging ability of a lion. When you charge, you can make a full attack in the same round.\nYou can manifest this power with an instant thought, quickly enough to gain the benefit of the power as you charge. Manifesting the power is a swift action, like manifesting a quickened power, and it counts toward the normal limit of one quickened power per round. You cannot manifest this power when it isn’t your turn.\nAugment: For every additional power point you spend, each of your attacks after a charge in the current round gains a circumstance bonus on damage equal to the number of additional points spent.",
     "tags": [
@@ -15425,7 +16259,22 @@
     "save": "Will negates (harmless)",
     "sr": true,
     "powerPointsCost": 3,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-pw-prd",
+        "type": "roll",
+        "kind": "Healing",
+        "count": 3,
+        "die": "d8",
+        "flat": 0,
+        "dmgType": "Construct Repair",
+        "scaling": "perCL",
+        "crit": "normal",
+        "amount": 1,
+        "per": 1,
+        "max": 20
+      }
+    ],
     "shortDescription": "Repairs construct of 3d8 hit points +1 hp/level.",
     "text": "When laying your hands upon a construct that has at least 1 hit point remaining, you reknit its structure to repair damage it has taken. The power repairs 3d8 points of damage +1 point per manifester level. Constructs that are immune to psionics or magic cannot be repaired in this fashion.\nAugment: For every 2 additional power points you spend, this power repairs an additional 1d8 points of damage.",
     "tags": [
@@ -15561,7 +16410,15 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": 3,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-pw-sc",
+        "type": "defense",
+        "mode": "Sense",
+        "what": "Scent 30 ft.",
+        "value": 30
+      }
+    ],
     "shortDescription": "Gain the scent ability.",
     "text": "You gain an enhanced sense of smell, equivalent to the scent ability of some monsters. This ability allows you to detect approaching enemies, sniff out hidden foes, and track by sense of smell. With the scent ability, you can identify familiar odors just as humanoids do familiar sights.\nYou can detect opponents within 30 feet by sense of smell. If the opponent is upwind, the range increases to 60 feet; if downwind, it drops to 15 feet. Strong scents, such as smoke or rotting garbage, can be detected at twice the ranges noted above. Overpowering scents, such as skunk musk or troglodyte stench, can be detected at triple normal range.\nWhen you detect a scent, the exact location of the source is not revealed-only its presence somewhere within range. You can take a move action to note the direction of the scent. Whenever you come within 5 feet of the source, you pinpoint the source’s location.\nIf you have the Track feat, you can follow tracks by smell, making a Wisdom (or Survival) check to find or follow a track. The typical DC for a fresh trail is 10 (no matter what kind of surface holds the scent). This DC increases or decreases depending on how strong the quarry’s odor is, the number of creatures, and the age of the trail. For each hour that the trail is cold, the DC increases by 2. The ability otherwise follows the rules for the Track feat. If you are tracking with psionic scent, you ignore the effects of surface conditions and poor visibility.",
     "tags": [
@@ -16207,7 +17064,19 @@
     "save": "Will half",
     "sr": true,
     "powerPointsCost": 3,
-    "effects": [],
+    "effects": [
+      {
+        "id": "pwr-recall-agony-dmg",
+        "type": "roll",
+        "kind": "Damage",
+        "count": 2,
+        "die": "d6",
+        "flat": 0,
+        "dmgType": "Untyped",
+        "scaling": "flat",
+        "crit": "normal"
+      }
+    ],
     "shortDescription": "Foe takes 2d6 damage.",
     "text": "The fabric of time parts to your will, revealing wounds your foe has received in the past (or has yet to receive). That foe takes 2d6 points of damage as the past (or future) impinges briefly on the present.\nAugment: For every additional power point you spend, this power’s damage increases by 1d6 points. For each extra 2d6 points of damage, this power’s save DC increases by 1.",
     "tags": [
@@ -16283,7 +17152,19 @@
     "save": "Will partial; see text",
     "sr": true,
     "powerPointsCost": 15,
-    "effects": [],
+    "effects": [
+      {
+        "id": "pwr-recall-death-dmg",
+        "type": "roll",
+        "kind": "Damage",
+        "count": 5,
+        "die": "d6",
+        "flat": 0,
+        "dmgType": "Untyped",
+        "scaling": "flat",
+        "crit": "normal"
+      }
+    ],
     "shortDescription": "Subject dies or takes 5d6 damage.",
     "text": "As recall agony, except the wounds revealed by folding the fourth dimension are potentially fatal. If the target fails its Will save. it dies. If the save succeeds, the target instead takes 5d6 points of damage.",
     "tags": [
@@ -16426,7 +17307,19 @@
     "save": "Will half; see text",
     "sr": false,
     "powerPointsCost": 11,
-    "effects": [],
+    "effects": [
+      {
+        "id": "pwr-remote-view-trap-dmg",
+        "type": "roll",
+        "kind": "Damage",
+        "count": 8,
+        "die": "d6",
+        "flat": 0,
+        "dmgType": "Electricity",
+        "scaling": "flat",
+        "crit": "normal"
+      }
+    ],
     "shortDescription": "Deal 8d6 points electricity damage to those who seek to view you at a distance.",
     "text": "When others use clairvoyant sense, remote viewing, or other means of scrying you from afar, your prepared trap gives them a nasty surprise. If the scryer fails its saving throw, you are undetected. Moreover, the would-be observer takes 8d6 points of electricity damage. If the scryer makes its saving throw, it takes only 4d6 points of electricity damage and is able to observe you normally. Either way, you are aware of the attempt to view you, but not of the viewer or the viewer’s location. It is possible that you might recognize the quasireal viewpoint of someone using the remote viewing power if you could pierce its invisibility (which is true for remote viewing whether or not you use this power).",
     "tags": [
@@ -17275,7 +18168,16 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": 3,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-pw-shp",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "shareHalfDamageWithWillingTarget",
+        "label": "Split Incoming HP Damage 50/50 With Willing Linked Subject",
+        "text": "Split Incoming HP Damage 50/50 With Willing Linked Subject"
+      }
+    ],
     "shortDescription": "Willing subject takes some of your damage.",
     "text": "This power creates a psychometabolic connection between you and a willing subject so that some of your wounds are transferred to the subject. You take half damage from all attacks that deal hit point damage to you, and the subject takes the remainder. The amount of damage not taken by you is taken by the subject. If your hit points are reduced by a lowered Constitution score, that reduction is not shared with the subject because it is not a form of hit point damage. When this power ends, subsequent damage is no longer divided between the subject and you, but damage already shared is not reassigned.\nIf you and the subject move farther away from each other than close range, the power ends.\nYou can manifest this power on two willing subjects, one of which you designate to share its damage with the other.",
     "tags": [
@@ -17626,7 +18528,26 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": 7,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-pw-sp-i",
+        "type": "defense",
+        "mode": "Immunity",
+        "what": "Figments & Glamers",
+        "value": 0
+      },
+      {
+        "id": "ef-pw-sp-s",
+        "type": "stat",
+        "targets": [
+          "skill.search",
+          "skill.spot"
+        ],
+        "mode": "flat",
+        "value": 6,
+        "btype": "Enhancement"
+      }
+    ],
     "shortDescription": "Gain immunity to illusory effects, +6 bonus on Spot and Search checks.",
     "text": "Your vision cannot be distracted or misled, granting you immunity to all figments and glamers (such as invisibility). Moreover, your Spot and Search checks receive a +6 enhancement bonus for the duration of this power. This power also grants you another saving throw against someone using false sensory input on you, but you must realize that that power has been used in order to know enough to manifest steadfast perception.",
     "tags": [
@@ -17698,7 +18619,19 @@
     "save": "Reflex negates",
     "sr": false,
     "powerPointsCost": 1,
-    "effects": [],
+    "effects": [
+      {
+        "id": "pwr-stomp-dmg",
+        "type": "roll",
+        "kind": "Damage",
+        "count": 1,
+        "die": "d4",
+        "flat": 0,
+        "dmgType": "Nonlethal",
+        "scaling": "flat",
+        "crit": "normal"
+      }
+    ],
     "shortDescription": "Subjects fall prone and take 1d4 nonlethal damage.",
     "text": "Your foot stomp precipitates a psychokinetic shock wave that travels along the ground, toppling creatures and loose objects. The shock wave affects only creatures standing on the ground within the power’s area. Creatures that fail their saves are thrown to the ground, become prone, and take 1d4 points of nonlethal damage.\nAugment: For every additional power point you spend, this power’s nonlethal damage increases by 1d4 points.",
     "tags": [
@@ -18990,7 +19923,15 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": 3,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-pw-ts",
+        "type": "defense",
+        "mode": "Spell Resistance",
+        "what": "PR 13 vs. Mind-Affecting",
+        "value": 13
+      }
+    ],
     "shortDescription": "Gain PR 13 against mind-affecting powers.",
     "text": "You fortify your mind against intrusions, gaining power resistance 13 against all mind-affecting powers.\nYou can manifest this power instantly, quickly enough to gain its benefits in an emergency. Manifesting the power is an immediate action. You can use this power even when it’s not your turn.\nAugment: For every additional power point you spend, this power’s duration increases by 1 round, and the power resistance it provides increases by 1 point.",
     "tags": [
@@ -19412,7 +20353,19 @@
     "save": "Reflex half; see text",
     "sr": false,
     "powerPointsCost": 17,
-    "effects": [],
+    "effects": [
+      {
+        "id": "pwr-tornado-blast-dmg",
+        "type": "roll",
+        "kind": "Damage",
+        "count": 17,
+        "die": "d6",
+        "flat": 0,
+        "dmgType": "Untyped",
+        "scaling": "flat",
+        "crit": "normal"
+      }
+    ],
     "shortDescription": "Vortex of air subjects your foes to 17d6 damage and moves them.",
     "text": "You induce the formation of a slender vortex of fiercely swirling air. When you manifest it, a vortex of air visibly and audibly snakes out from your outstretched hand.\nIf you want to aim the vortex at a specific creature, you can make a ranged touch attack to strike the creature. If you succeed, direct contact with the vortex deals 8d6 points of damage to the creature (no save).\nRegardless of whether your ranged touch attack hits (and even if you forgo the attack), all creatures in the area (including the one possibly damaged by direct contact) are picked up and violently dashed about, dealing 17d6 points of damage to each one. Creatures that make a successful Reflex save take half damage.\nAfter being dashed about, each creature that was affected finds itself situated in a new space 1d4 x 10 feet away from its original space in a random direction. Walls and other barriers can restrict this relocation; in such a case, the creature ends up adjacent to the barrier.\nAugment: For every additional power point you spend, this power’s area damage (not the damage from direct contact dealt to a specific creature) increases by 1d6 points (to a maximum of 24d6 points). For each extra 2d6 points of damage, this power’s save DC increases by 1.",
     "tags": [
@@ -19551,7 +20504,15 @@
     "save": "None (harmless)",
     "sr": true,
     "powerPointsCost": 9,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-pw-toiw",
+        "type": "defense",
+        "mode": "Spell Resistance",
+        "what": "PR 19 vs. Mind-Affecting (10-ft. Radius)",
+        "value": 19
+      }
+    ],
     "shortDescription": "Grant PR 19 against mind-affecting powers to all creatures within 10 ft. until your next turn.",
     "text": "You generate a bastion of thought so strong that it offers protection to you and everyone around you, improving the self-control of all. You and all creatures in the power’s area gain power resistance 19 against all mind-affecting powers.\nYou can manifest this power instantly, quickly enough to gain its benefits in an emergency. Manifesting the power is an immediate action. You can use this power even when it is not your turn.\nAugment: For every additional power point you spend, this power’s duration increases by 1 round and the power resistance it provides increases by 1 point.",
     "tags": [
@@ -19754,7 +20715,15 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": 15,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-pw-tm",
+        "type": "defense",
+        "mode": "Regeneration",
+        "what": "Regeneration 10",
+        "value": 10
+      }
+    ],
     "shortDescription": "You regenerate 10 hit points/round.",
     "text": "You are difficult to kill while this power persists. You automatically heal damage at the rate of 10 hit points per round.\nThis power is not effective against damage from starvation, thirst, or suffocation. Also, attack forms that don’t deal hit point damage (for example, most poisons) ignore true metabolism. You can also use this power to regrow lost portions of your body and to reattach severed limbs or body parts, if you do nothing but concentrate on regrowing the lost body part or reattaching the severed limb for the duration of the power. You do not gain the benefits described earlier when you manifest true metabolism for this purpose. You must have a Constitution score to gain any of this power’s benefits.",
     "tags": [
@@ -20115,7 +21084,19 @@
     "save": "Will half",
     "sr": true,
     "powerPointsCost": 13,
-    "effects": [],
+    "effects": [
+      {
+        "id": "pwr-ultrablast-dmg",
+        "type": "roll",
+        "kind": "Damage",
+        "count": 13,
+        "die": "d6",
+        "flat": 0,
+        "dmgType": "Untyped",
+        "scaling": "flat",
+        "crit": "normal"
+      }
+    ],
     "shortDescription": "Deal 13d6 damage in 15-ft. radius.",
     "text": "You “grumble” psychically (which both psionic and nonpsionic creatures can detect), then release a horrid shriek from your subconscious that disrupts the brains of all enemies in the power’s area, dealing 13d6 points of damage to each enemy.\nAugment: For every additional power point you spend, this power’s damage increases by 1d6 points.",
     "tags": [
@@ -20473,7 +21454,19 @@
     "save": "Fortitude negates (object, harmless)",
     "sr": false,
     "powerPointsCost": 7,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-pw-woe",
+        "type": "roll",
+        "kind": "Damage",
+        "count": 1,
+        "die": "d6",
+        "flat": 0,
+        "dmgType": "@Choice",
+        "scaling": "flat",
+        "crit": "normal"
+      }
+    ],
     "shortDescription": "Weapon deals additional energy damage.",
     "text": "As claw of energy, except this power can be manifested on a touched weapon. This power’s subtype is the same as the type of energy infused in the touched weapon.",
     "tags": [
@@ -20487,6 +21480,20 @@
       "origin": "foundry-d35e-compendium",
       "crossCheck": "srd.dndtools.org srd/magic/psionics/powers/powersAllCore.html (3.5 psionics SRD = Expanded Psionics Handbook), 2026-11-10",
       "inheritedFrom": "Claw of Energy"
-    }
+    },
+    "choices": [
+      {
+        "id": "ch-energy",
+        "key": "energy",
+        "label": "Energy Type",
+        "options": [
+          "Acid",
+          "Cold",
+          "Electricity",
+          "Fire",
+          "Sonic"
+        ]
+      }
+    ]
   }
 ]

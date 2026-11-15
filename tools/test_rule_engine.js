@@ -158,15 +158,24 @@ function runRuleEngineTests() {
     }
   });
 
-  // 5. Canonical Bundled Character (`character_data.json`) Smoke Verification
-  test('Canonical character_data.json recalculates cleanly without error', () => {
-    const charPath = path.join(__dirname, '..', 'character_data.json');
-    if (fs.existsSync(charPath)) {
-      const charData = JSON.parse(fs.readFileSync(charPath, 'utf8'));
-      RuleEngine.recalculateCharacter(charData, []);
-      assert.ok(charData.acBreakdown && typeof charData.acBreakdown.total === 'number', 'AC total must be numeric');
-      assert.ok(charData.evaluatedSaves && typeof charData.evaluatedSaves.fort === 'number', 'Fort save must be numeric');
-    }
+  // 5. Canonical Pure V3 Character Shell Smoke Verification
+  test('Canonical V3 character shell recalculates cleanly without error', () => {
+    const charData = {
+      schemaVersion: 3,
+      name: 'Test V3 Paladin',
+      level: 5,
+      bab: 5,
+      abilities: { str: 16, dex: 12, con: 14, int: 10, wis: 12, cha: 16 },
+      baseSaves: { fort: 4, ref: 1, will: 1 },
+      feats: [{ id: 'feat-power-attack', name: 'Power Attack', type: 'Feat', active: true }],
+      buffs: [],
+      bodySlots: {},
+      customEntries: {},
+      customDb: []
+    };
+    RuleEngine.recalculateCharacter(charData, []);
+    assert.ok(charData.acBreakdown && typeof charData.acBreakdown.total === 'number', 'AC total must be numeric');
+    assert.ok(charData.evaluatedSaves && typeof charData.evaluatedSaves.fort === 'number', 'Fort save must be numeric');
   });
 
   // 6. Double Weapon & Off-Hand Attack Math (PHB p.113: Off-Hand gets 0.5x STR and 0x Power Attack)

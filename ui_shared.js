@@ -102,7 +102,20 @@
    * @param {Array} damageParts - Array of { dice, bonus, type, multiplyOnCrit, onCritOnly, source }
    * @param {Object} options - { compact: boolean, showSource: boolean }
    */
-  function renderDamagePartsBadges(damageParts, options = {}) {
+  function _projectEntryForBadges(entryOrArr, prop) {
+    if (Array.isArray(entryOrArr)) return entryOrArr;
+    if (entryOrArr && typeof entryOrArr === 'object') {
+      if (Array.isArray(entryOrArr[prop])) return entryOrArr[prop];
+      if (global.RuleEngine && typeof global.RuleEngine.evaluateV3Entry === 'function') {
+        const ev = global.RuleEngine.evaluateV3Entry(entryOrArr);
+        if (ev && Array.isArray(ev[prop])) return ev[prop];
+      }
+    }
+    return [];
+  }
+
+  function renderDamagePartsBadges(damagePartsOrEntry, options = {}) {
+    const damageParts = _projectEntryForBadges(damagePartsOrEntry, 'damageParts');
     if (!Array.isArray(damageParts) || damageParts.length === 0) return '';
     const compact = Boolean(options.compact);
     const showSource = Boolean(options.showSource);
@@ -131,7 +144,8 @@
    * Renders V2 `modifiers` array as compact typed bonus badges.
    * @param {Array} modifiers - Array of { target, value, formula, type, condition }
    */
-  function renderModifiersBadges(modifiers, options = {}) {
+  function renderModifiersBadges(modifiersOrEntry, options = {}) {
+    const modifiers = _projectEntryForBadges(modifiersOrEntry, 'modifiers');
     if (!Array.isArray(modifiers) || modifiers.length === 0) return '';
     const compact = Boolean(options.compact);
     const sizeCls = compact ? 'px-1.5 py-0.5 text-[10px]' : 'px-2 py-0.5 text-[11px]';
@@ -252,8 +266,15 @@
       const isSelected = mode.id === currentId;
       const label = mode.label || mode.name || mode.id;
       const costHpBadge = mode.costHp ? ` <span class="text-rose-300 font-mono">(-${mode.costHp}🩸)</span>` : '';
-      const dmgPreview = Array.isArray(mode.damageParts) && mode.damageParts.length > 0
-        ? ` <span class="opacity-80 font-mono text-[10px]">[${mode.damageParts.map(p => p.dice || (p.bonus > 0 ? '+' + p.bonus : p.bonus)).filter(Boolean).join('+')}]</span>`
+      const modeParts = _projectEntryForBadges(mode, 'damageParts');
+      const modeDiceList = [];
+      if (mode.weapon?.damageDice || mode.damageDice) modeDiceList.push(mode.weapon?.damageDice || mode.damageDice);
+      modeParts.forEach(p => {
+        const tok = p.dice || (p.bonus > 0 ? '+' + p.bonus : p.bonus);
+        if (tok && !modeDiceList.includes(tok)) modeDiceList.push(tok);
+      });
+      const dmgPreview = modeDiceList.length > 0
+        ? ` <span class="opacity-80 font-mono text-[10px]">[${modeDiceList.join('+')}]</span>`
         : '';
 
       let clickAttr = '';
@@ -428,13 +449,13 @@
       positionDropdown();
       dropdown.innerHTML = activeResults.map((item, idx) => {
         const isSel = idx === selectedIdx;
-        const catLabel = item._isAssembledLego ? '⚒️ Lego Montaj' : (item.subCategory || item.category || 'SRD');
+        const catLabel = item._isAssembledLego ? '⚒️ Assembled Gear' : (item.subCategory || item.category || 'SRD');
         const fullEntry = (!item._isAssembledLego && global.SrdCompendium && typeof global.SrdCompendium.getById === 'function')
           ? (global.SrdCompendium.getById(item.id) || item)
           : item;
 
-        const dmgHtml = renderDamagePartsBadges(fullEntry.damageParts, { compact: true });
-        const modHtml = renderModifiersBadges(fullEntry.modifiers, { compact: true });
+        const dmgHtml = renderDamagePartsBadges(fullEntry, { compact: true });
+        const modHtml = renderModifiersBadges(fullEntry, { compact: true });
 
         return `
           <div data-idx="${idx}" class="p-2.5 cursor-pointer transition flex flex-col gap-1 ${isSel ? 'bg-indigo-950/90 text-white' : 'hover:bg-slate-900 text-slate-200'}">
@@ -547,7 +568,7 @@
             <div id="dnd-ui-compendium-icon" class="w-8 h-8 rounded-lg bg-amber-950 border border-amber-500/60 flex items-center justify-center text-lg shrink-0">🎒</div>
             <div class="min-w-0">
               <h3 id="dnd-ui-compendium-title" class="text-sm md:text-base font-extrabold text-white flex items-center gap-2 truncate">Add Item to Inventory</h3>
-              <p id="dnd-ui-compendium-subtitle" class="text-[10px] text-slate-400 truncate">Spotlight Search (SRD 3.5e, Custom DB &amp; AI) • V2 Item Forge</p>
+              <p id="dnd-ui-compendium-subtitle" class="text-[10px] text-slate-400 truncate">Spotlight Search (SRD 3.5e, Custom DB &amp; AI) • Rule Crafter</p>
             </div>
           </div>
           <div class="flex items-center gap-2 shrink-0">
@@ -555,8 +576,8 @@
           </div>
         </div>
 
-        <!-- Unified 2-Tab Bar (Calmed surface so Spotlight Command Bar below is the primary focal point) -->
-        <div id="dnd-ui-compendium-tabs-bar" class="px-4 py-2 bg-slate-950 border-b border-slate-800 grid grid-cols-2 gap-2 shrink-0 text-xs">
+        <!-- Unified Tab Bar (Hidden: Item Forge retired in favor of Rule Crafter) -->
+        <div id="dnd-ui-compendium-tabs-bar" class="hidden px-4 py-2 bg-slate-950 border-b border-slate-800 grid grid-cols-1 gap-2 shrink-0 text-xs">
           <button type="button" id="dnd-ui-tab-btn-srd" data-comp-tab="srd" data-action="ui:switch-comp-tab" class="hidden w-full py-2 px-3 rounded-lg font-bold transition cursor-pointer flex items-center justify-center gap-1.5 bg-slate-800/95 text-amber-300 border border-amber-500/50 shadow-sm">
             <span>🔍</span>
             <span class="truncate">Spotlight Search</span>
@@ -564,10 +585,6 @@
           <button type="button" id="dnd-ui-tab-btn-custom" data-comp-tab="custom" data-action="ui:switch-comp-tab" class="w-full py-2 px-3 rounded-lg font-bold transition cursor-pointer flex items-center justify-center gap-1.5 bg-slate-800/95 text-amber-300 border border-amber-500/50 shadow-sm">
             <span>🔍</span>
             <span class="truncate">Spotlight Search</span>
-          </button>
-          <button type="button" data-comp-tab="forge" data-action="ui:switch-comp-tab" class="w-full py-2 px-3 rounded-lg font-bold transition cursor-pointer flex items-center justify-center gap-1.5 text-slate-400 hover:text-white bg-slate-900/50 border border-slate-800">
-            <span>⚒️</span>
-            <span class="truncate">Item Forge</span>
           </button>
         </div>
 
@@ -994,11 +1011,14 @@
       } catch (e) { reportError('ui_shared:populateForgeFromItem', e); }
     }
 
-    // Infer enhancement bonus from the item's typed enhancement modifier if still missing
+    // Infer enhancement bonus from V3 weapon/armor chassis or V3 enhancement stat block if still missing
     if (isNaN(resolvedEnhBonus)) {
-      if (Array.isArray(item.modifiers)) {
-        const enhMod = item.modifiers.find(m => m && String(m.type || '').toLowerCase() === 'enhancement' && Number(m.value) > 0);
-        if (enhMod) resolvedEnhBonus = Number(enhMod.value) || 0;
+      const chassisEnh = Number(item.weapon?.enhancementBonus ?? item.armor?.enhancementBonus);
+      if (!isNaN(chassisEnh) && chassisEnh > 0) {
+        resolvedEnhBonus = chassisEnh;
+      } else if (Array.isArray(item.effects)) {
+        const enhEff = item.effects.find(e => e && e.type === 'stat' && String(e.btype || e.bonusType || '').toLowerCase() === 'enhancement' && Number(e.value) > 0);
+        if (enhEff) resolvedEnhBonus = Number(enhEff.value) || 0;
       }
       if (isNaN(resolvedEnhBonus)) {
         resolvedEnhBonus = 0;
@@ -1121,8 +1141,8 @@
       return;
     }
 
-    const dmgBadges = renderDamagePartsBadges(item.damageParts);
-    const modBadges = renderModifiersBadges(item.modifiers);
+    const dmgBadges = renderDamagePartsBadges(item);
+    const modBadges = renderModifiersBadges(item);
     const tacBadges = renderTacticalBadges(item);
     const modesHtml = renderModesPills(item, item.activeModeId, '');
     const isEditMode = Boolean(_drawerState.forgeEditMode);
@@ -1136,7 +1156,7 @@
       <div class="flex flex-wrap items-start justify-between gap-3 border-b border-slate-800 pb-3">
         <div>
           <div class="flex items-center gap-2">
-            <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] font-mono font-bold">V2 ASSEMBLED ITEM</span>
+            <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] font-mono font-bold">V3 ASSEMBLED ITEM</span>
             <span class="text-[11px] font-mono text-slate-400">ID: ${escapeHtml(item.id)}</span>
           </div>
           <h4 class="text-base font-black text-white mt-1">${escapeHtml(item.name)}</h4>
@@ -1154,8 +1174,8 @@
       </div>
 
       <div class="space-y-2">
-        ${dmgBadges ? `<div><span class="text-[10px] text-slate-400 uppercase font-bold block mb-1">Damage Parts (damageParts):</span><div class="flex flex-wrap gap-1.5">${dmgBadges}</div></div>` : ''}
-        ${modBadges ? `<div><span class="text-[10px] text-slate-400 uppercase font-bold block mb-1">Active Bonuses (modifiers):</span><div class="flex flex-wrap gap-1.5">${modBadges}</div></div>` : ''}
+        ${dmgBadges ? `<div><span class="text-[10px] text-slate-400 uppercase font-bold block mb-1">Damage Rolls:</span><div class="flex flex-wrap gap-1.5">${dmgBadges}</div></div>` : ''}
+        ${modBadges ? `<div><span class="text-[10px] text-slate-400 uppercase font-bold block mb-1">Active Effects:</span><div class="flex flex-wrap gap-1.5">${modBadges}</div></div>` : ''}
         ${tacBadges ? `<div><span class="text-[10px] text-slate-400 uppercase font-bold block mb-1">Tactical Flags &amp; Badges:</span><div class="flex flex-wrap gap-1.5">${tacBadges}</div></div>` : ''}
         ${modesHtml ? `<div><span class="text-[10px] text-slate-400 uppercase font-bold block mb-1">Embedded Modes (modes):</span>${modesHtml}</div>` : ''}
       </div>
@@ -1217,8 +1237,6 @@
     let initialTab = hasCustomMounted ? 'custom' : 'srd';
     if (isBestiaryMode) {
       initialTab = 'Monster';
-    } else if (rawTab === 'forge' || options.forgeItem) {
-      initialTab = 'forge';
     } else if (hasCustomMounted) {
       initialTab = 'custom';
     } else {
@@ -1234,26 +1252,18 @@
     const subEl = document.getElementById('dnd-ui-compendium-subtitle');
     const input = document.getElementById('dnd-ui-compendium-input');
 
+    if (tabsBar) tabsBar.classList.add('hidden');
     if (isBestiaryMode) {
-      if (tabsBar) tabsBar.classList.add('hidden');
       if (subFiltersBar) subFiltersBar.classList.add('hidden');
       if (iconEl) iconEl.textContent = '👹';
       if (titleEl) titleEl.textContent = 'D&D 3.5e Bestiary';
       if (subEl) subEl.textContent = 'Search & import official SRD 3.5e monsters into your campaign';
       if (input) input.placeholder = 'Search Bestiary monsters (e.g. Aboleth, Dragon, Goblin, Balor)...';
-    } else if (_drawerState.forgeEditMode && options.forgeItem) {
-      if (tabsBar) tabsBar.classList.remove('hidden');
-      if (subFiltersBar) subFiltersBar.classList.remove('hidden');
-      if (iconEl) iconEl.textContent = '⚒️';
-      if (titleEl) titleEl.textContent = `Item Forge — Customize ${options.forgeItem.name || 'Item'}`;
-      if (subEl) subEl.textContent = 'Modify base weapon/armor, special materials, enhancement bonus & magical properties';
-      if (input) input.placeholder = 'Search 3,522 SRD entries (e.g. Longsword, Full Plate, Ring, Cloak)...';
     } else {
-      if (tabsBar) tabsBar.classList.remove('hidden');
       if (subFiltersBar) subFiltersBar.classList.remove('hidden');
       if (iconEl) iconEl.textContent = '🎒';
       if (titleEl) titleEl.textContent = 'Add Item to Inventory';
-      if (subEl) subEl.textContent = 'Spotlight Search (SRD 3.5e, Custom DB & AI) • V2 Item Forge';
+      if (subEl) subEl.textContent = 'Spotlight Search (SRD 3.5e, Custom DB & AI) • Rule Crafter';
       if (input) input.placeholder = 'Search 3,522 SRD entries (e.g. Longsword, Full Plate, Ring, Cloak)...';
     }
 
@@ -1564,7 +1574,7 @@
       const hasCustomTab = Boolean(document.getElementById('add-pool-custom-tab-content')) && _drawerState.activeTab !== 'Monster';
       listEl.innerHTML = `
         <div class="p-6 text-center space-y-3">
-          <div class="text-slate-400 text-xs italic">No matching SRD V2 entries found${safeQ ? ` for "${safeQ}"` : ''}.</div>
+          <div class="text-slate-400 text-xs italic">No matching SRD entries found${safeQ ? ` for "${safeQ}"` : ''}.</div>
           ${hasCustomTab ? `
             <button type="button" data-action="ui:jump-custom-ai" data-query="${safeQ}" class="px-3 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs shadow transition cursor-pointer inline-flex items-center gap-1.5">
               <span>🔍</span>
@@ -1642,8 +1652,8 @@
 
     const isMonster = full.type === 'Monster' || String(full.id || '').startsWith('mst-');
     const actionBtnLabel = isMonster ? 'Add to Campaign' : 'Add to Inventory';
-    const dmgHtml = renderDamagePartsBadges(full.damageParts);
-    const modHtml = renderModifiersBadges(full.modifiers);
+    const dmgHtml = renderDamagePartsBadges(full);
+    const modHtml = renderModifiersBadges(full);
     const tacHtml = renderTacticalBadges(full);
     const modesHtml = renderModesPills(full, full.activeModeId, '');
     const cleanDesc = cleanSrdDescriptionText(full.description || full.benefit || full.shortDescription);
@@ -1685,8 +1695,8 @@
 
       ${(dmgHtml || modHtml || tacHtml) ? `
         <div class="space-y-2 bg-slate-900/70 border border-slate-800 rounded-xl p-3">
-          ${dmgHtml ? `<div><span class="text-[10px] text-slate-400 uppercase font-bold block mb-1">Damage Parts:</span><div class="flex flex-wrap gap-1">${dmgHtml}</div></div>` : ''}
-          ${modHtml ? `<div><span class="text-[10px] text-slate-400 uppercase font-bold block mb-1">Active Modifiers (modifiers):</span><div class="flex flex-wrap gap-1">${modHtml}</div></div>` : ''}
+          ${dmgHtml ? `<div><span class="text-[10px] text-slate-400 uppercase font-bold block mb-1">Damage Rolls:</span><div class="flex flex-wrap gap-1">${dmgHtml}</div></div>` : ''}
+          ${modHtml ? `<div><span class="text-[10px] text-slate-400 uppercase font-bold block mb-1">Active Effects:</span><div class="flex flex-wrap gap-1">${modHtml}</div></div>` : ''}
           ${tacHtml ? `<div><span class="text-[10px] text-slate-400 uppercase font-bold block mb-1">Tactical Flags:</span><div class="flex flex-wrap gap-1">${tacHtml}</div></div>` : ''}
           ${modesHtml ? `<div><span class="text-[10px] text-slate-400 uppercase font-bold block mb-1">Embedded Modes:</span>${modesHtml}</div>` : ''}
         </div>

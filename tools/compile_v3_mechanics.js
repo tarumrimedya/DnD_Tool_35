@@ -22,6 +22,16 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const {
+  NAMED_WHEN_CONDS,
+  compileManeuversAndStances,
+  compileEquipmentAndMic,
+  compileClassAbilitiesAndRacialTraits,
+  compileFeatList,
+  compilePowers,
+  compileRemainingMechanicalSpells,
+  normalizeEntryV3Dialect
+} = require('./compile_v3_corpus_complete');
 
 const ROOT = path.resolve(__dirname, '..');
 const DB_DIR = path.join(ROOT, 'database');
@@ -1067,6 +1077,7 @@ function linkClassFeatureIds(classList, cabLookup) {
 // C. Feats, Domains & Spells V3 Mechanics
 // ----------------------------------------------------------------------------
 function whenBlock(id, condKind, condText, innerEffects) {
+  const isNamed = NAMED_WHEN_CONDS.has(condText);
   return {
     id,
     type: 'when',
@@ -1074,8 +1085,8 @@ function whenBlock(id, condKind, condText, innerEffects) {
     branches: [
       {
         id: `${id}-br`,
-        condKind,
-        condText,
+        condKind: isNamed ? condText : condKind,
+        condText: isNamed ? '' : condText,
         effects: innerEffects
       }
     ]
@@ -1564,28 +1575,28 @@ function compileFeatPatches(featsCore, featsSplat) {
       ]
     },
     'feat-empower-spell': {
-      effects: [noteBlock('ef-mm-empower', 'Metamagic (+2 Slot Level): +50% variable numeric spell effects')]
+      effects: [{ id: 'ef-mm-empower', type: 'carrier', carrierMode: 'metamagic', slotDelta: 2, metaTransform: 'empower', costMode: 'slot', label: 'Empower Spell (+2 Slot Level: +50% Variable Numeric Spell Effects)' }]
     },
     'feat-maximize-spell': {
-      effects: [noteBlock('ef-mm-max', 'Metamagic (+3 Slot Level): Maximize variable numeric spell effects')]
+      effects: [{ id: 'ef-mm-max', type: 'carrier', carrierMode: 'metamagic', slotDelta: 3, metaTransform: 'maximize', costMode: 'slot', label: 'Maximize Spell (+3 Slot Level: Maximize Variable Numeric Spell Effects)' }]
     },
     'feat-quicken-spell': {
-      effects: [noteBlock('ef-mm-quick', 'Metamagic (+4 Slot Level): Cast as a Swift action')]
+      effects: [{ id: 'ef-mm-quick', type: 'carrier', carrierMode: 'metamagic', slotDelta: 4, metaTransform: 'quicken', costMode: 'slot', label: 'Quicken Spell (+4 Slot Level: Cast as a Swift Action)' }]
     },
     'feat-extend-spell': {
-      effects: [noteBlock('ef-mm-extend', 'Metamagic (+1 Slot Level): Double spell duration')]
+      effects: [{ id: 'ef-mm-extend', type: 'carrier', carrierMode: 'metamagic', slotDelta: 1, metaTransform: 'extend', costMode: 'slot', label: 'Extend Spell (+1 Slot Level: Double Spell Duration)' }]
     },
     'feat-silent-spell': {
-      effects: [noteBlock('ef-mm-silent', 'Metamagic (+1 Slot Level): Cast without verbal components')]
+      effects: [{ id: 'ef-mm-silent', type: 'carrier', carrierMode: 'metamagic', slotDelta: 1, metaTransform: 'silent', costMode: 'slot', label: 'Silent Spell (+1 Slot Level: Cast Without Verbal Components)' }]
     },
     'feat-still-spell': {
-      effects: [noteBlock('ef-mm-still', 'Metamagic (+1 Slot Level): Cast without somatic components')]
+      effects: [{ id: 'ef-mm-still', type: 'carrier', carrierMode: 'metamagic', slotDelta: 1, metaTransform: 'still', costMode: 'slot', label: 'Still Spell (+1 Slot Level: Cast Without Somatic Components)' }]
     },
     'feat-heighten-spell': {
-      effects: [noteBlock('ef-mm-heighten', 'Metamagic (Variable Slot Level): Increase effective spell level & save DC')]
+      effects: [{ id: 'ef-mm-heighten', type: 'carrier', carrierMode: 'metamagic', slotDelta: 1, metaTransform: 'heighten', costMode: 'slot', label: 'Heighten Spell (Variable Slot Level: Increase Effective Spell Level & Save DC)' }]
     },
     'feat-widen-spell': {
-      effects: [noteBlock('ef-mm-widen', 'Metamagic (+3 Slot Level): Double burst, emanation, line, or spread area')]
+      effects: [{ id: 'ef-mm-widen', type: 'carrier', carrierMode: 'metamagic', slotDelta: 3, metaTransform: 'widen', costMode: 'slot', label: 'Widen Spell (+3 Slot Level: Double Burst, Emanation, Line, or Spread Area)' }]
     },
     'feat-practiced-spellcaster': {
       effects: [noteBlock('ef-prac-cast', 'Practiced Spellcaster: +4 Caster Level (capped at Character Level / HD)')]
@@ -2106,11 +2117,12 @@ function rebuildSrdIndex(updatedChunkMeta) {
 
     if (chunkFile === 'srd_companions.json') {
       newChunksMeta[chunkFile] = Object.assign({}, oldMeta, { count: 1, bytes: buf.length, hash });
-    } else if (Array.isArray(parsed)) {
-      const count = parsed.length;
+    } else {
+      const list = Array.isArray(parsed) ? parsed : (Array.isArray(parsed && parsed.entries) ? parsed.entries : []);
+      const count = list.length;
       totalEntries += count;
       newChunksMeta[chunkFile] = Object.assign({}, oldMeta, updatedChunkMeta[chunkFile] || {}, { count, bytes: buf.length, hash });
-      for (const e of parsed) {
+      for (const e of list) {
         newIndexRows.push(buildIndexRow(e, chunkFile));
       }
     }
@@ -2132,6 +2144,97 @@ function rebuildSrdIndex(updatedChunkMeta) {
   return { totalEntries, compendiumHash };
 }
 
+function compileEquipmentPotions(eqData) {
+  const POTION_PATCHES = {
+    'pot-cure-minor-wounds': [
+      { type: 'roll', kind: 'Healing', count: 1, die: 'flat', flat: 0, scaling: 'flat' }
+    ],
+    'pot-cure-light-wounds': [
+      { type: 'roll', kind: 'Healing', count: 1, die: 'd8', flat: 1, scaling: 'flat' }
+    ],
+    'pot-cure-moderate-wounds': [
+      { type: 'roll', kind: 'Healing', count: 2, die: 'd8', flat: 3, scaling: 'flat' }
+    ],
+    'pot-cure-serious-wounds': [
+      { type: 'roll', kind: 'Healing', count: 3, die: 'd8', flat: 5, scaling: 'flat' }
+    ],
+    'pot-cure-critical-wounds': [
+      { type: 'roll', kind: 'Healing', count: 4, die: 'd8', flat: 7, scaling: 'flat' }
+    ],
+    'pot-heal': [
+      { type: 'roll', kind: 'Healing', count: 110, die: 'flat', flat: 0, scaling: 'flat' },
+      { type: 'effect', effectKind: 'rule', text: 'Ends ability damage, blinded, confused, dazed, dazzled, deafened, diseased, exhausted, fatigued, feebleminded, insanity, nauseated, sickened, stunned, and poisoned.' }
+    ],
+    'pot-heal-greater': [
+      { type: 'roll', kind: 'Healing', count: 150, die: 'flat', flat: 0, scaling: 'flat' },
+      { type: 'effect', effectKind: 'rule', text: 'Ends ability damage, blinded, confused, dazed, dazzled, deafened, diseased, exhausted, fatigued, feebleminded, insanity, nauseated, sickened, stunned, and poisoned.' }
+    ],
+    'pot-lesser-restoration': [
+      { type: 'effect', effectKind: 'rule', text: 'Cures 1d4 points of temporary ability damage to one ability score and eliminates fatigue (or reduces exhaustion to fatigue).' }
+    ],
+    'pot-remove-paralysis': [
+      { type: 'effect', effectKind: 'rule', text: 'Frees drinker from temporary paralysis, hold, or slow effects.' }
+    ],
+    'pot-remove-blindness-deafness': [
+      { type: 'effect', effectKind: 'rule', text: 'Cures blindness or deafness (normal or magical).' }
+    ],
+    'pot-remove-curse': [
+      { type: 'effect', effectKind: 'rule', text: 'Instantaneously removes all curses on the drinker.' }
+    ],
+    'pot-remove-disease': [
+      { type: 'effect', effectKind: 'rule', text: 'Cures all diseases affecting the drinker.' }
+    ],
+    'pot-neutralize-poison': [
+      { type: 'defense', mode: 'Immunity', what: 'Poison' },
+      { type: 'effect', effectKind: 'rule', text: 'Detoxifies venom in drinker and grants temporary immunity to poison for 50 minutes (CL 5th).' }
+    ],
+    'pot-delay-poison': [
+      { type: 'defense', mode: 'Immunity', what: 'Poison' }
+    ],
+    'pot-resist-energy-10': [
+      { type: 'defense', mode: 'Resistance', what: 'Chosen Energy', value: 10 }
+    ],
+    'pot-resist-energy-20': [
+      { type: 'defense', mode: 'Resistance', what: 'Chosen Energy', value: 20 }
+    ],
+    'pot-resist-energy-30': [
+      { type: 'defense', mode: 'Resistance', what: 'Chosen Energy', value: 30 }
+    ],
+    'pot-protection-from-energy': [
+      { type: 'effect', effectKind: 'rule', text: 'Absorbs up to 60 points of damage from the specified energy type (50 minutes, CL 5th).' }
+    ],
+    'pot-endure-elements': [
+      { type: 'effect', effectKind: 'rule', text: 'Protects against hot and cold environments (-50°F to 140°F) for 24 hours.' }
+    ],
+    'pot-sanctuary': [
+      { type: 'effect', effectKind: 'rule', text: 'Opponents must succeed on a Will save (DC 11) to directly attack the warded drinker (1 round, CL 1st).' }
+    ],
+    'oil-magic-weapon': [
+      { type: 'stat', targets: ['atk.weapon', 'dmg.weapon'], mode: 'flat', value: 1, btype: 'Enhancement' }
+    ],
+    'oil-greater-magic-weapon-plus-2': [
+      { type: 'stat', targets: ['atk.weapon', 'dmg.weapon'], mode: 'flat', value: 2, btype: 'Enhancement' }
+    ],
+    'oil-greater-magic-weapon-plus-3': [
+      { type: 'stat', targets: ['atk.weapon', 'dmg.weapon'], mode: 'flat', value: 3, btype: 'Enhancement' }
+    ],
+    'oil-keen-edge': [
+      { type: 'effect', effectKind: 'ruleSwitch', flag: 'keen', text: 'Doubles critical threat range of piercing or slashing weapon (50 minutes, CL 5th).' }
+    ],
+    'oil-bless-weapon': [
+      { type: 'effect', effectKind: 'ruleSwitch', flag: 'autoConfirmCritVsEvil', text: 'Weapon becomes good-aligned and automatically confirms critical threats against evil foes (2 minutes, CL 2nd).' }
+    ]
+  };
+  let patched = 0;
+  for (const e of eqData) {
+    if (!e || !e.id || !POTION_PATCHES[e.id]) continue;
+    e.schemaVersion = 3;
+    e.effects = POTION_PATCHES[e.id];
+    patched++;
+  }
+  return patched;
+}
+
 function main() {
   const t0 = Date.now();
   const cr = readChunk('srd_classes_races.json');
@@ -2140,6 +2243,7 @@ function main() {
   const fsChunk = readChunk('srd_feats_splat.json');
   const dom = readChunk('srd_domains.json');
   const spl = readChunk('srd_spells.json');
+  const eq = readChunk('srd_equipment.json');
 
   // A. Variant Classes
   const variantRes = compileVariantClasses(cr.data);
@@ -2165,20 +2269,91 @@ function main() {
   const linkedCore = linkClassFeatureIds(cr.data, cabLookup);
   const linkedSplat = linkClassFeatureIds(cs.data, cabLookup);
 
-  // C. Feats, Domains, Spells
+  // C. Feats, Domains, Spells, Equipment Potions
   const featsPatched = compileFeatPatches(fc.data, fsChunk.data);
   const domainsPatched = compileDomainPatches(dom.data);
   const spellsPatched = compileSpellPatches(spl.data);
+  const potionsPatched = compileEquipmentPotions(eq.data);
 
-  // Write modified chunks
-  const metaUpdates = {
-    'srd_classes_races.json': writeChunk(cr.fp, cr.data, cr.wasMinified),
-    'srd_classes_splat.json': writeChunk(cs.fp, cs.data, cs.wasMinified),
-    'srd_feats.json': writeChunk(fc.fp, fc.data, fc.wasMinified),
-    'srd_feats_splat.json': writeChunk(fsChunk.fp, fsChunk.data, fsChunk.wasMinified),
-    'srd_domains.json': writeChunk(dom.fp, dom.data, dom.wasMinified),
-    'srd_spells.json': writeChunk(spl.fp, spl.data, spl.wasMinified)
-  };
+  // E. Complete Corpus V3 Conversion (Grup A + B + C across all open chunks + global dialect normalization)
+  const feEpic = readChunk('srd_feats_epic.json');
+  const feLegacy = readChunk('srd_feats_legacy.json');
+  const cndChunk = readChunk('srd_combat_rules.json');
+  const manChunk = readChunk('srd_maneuvers.json');
+  const pwrChunk = readChunk('srd_powers.json');
+  const splSplat = readChunk('srd_spells_splat.json');
+  const micChunk = readChunk('mic_compendium.json');
+  const micEntries = Array.isArray(micChunk.data) ? micChunk.data : (micChunk.data.entries || []);
+
+  const extraFeatsCore = compileFeatList(fc.data);
+  const extraFeatsSplat = compileFeatList(fsChunk.data);
+  const extraFeatsEpic = compileFeatList(feEpic.data);
+  const extraFeatsLegacy = compileFeatList(feLegacy.data);
+  const extraCabRab = compileClassAbilitiesAndRacialTraits(cr.data);
+  const extraConditions = compileFeatList(cndChunk.data) + (() => {
+    let n = 0;
+    const { EXPLICIT_PATCHES } = require('./compile_v3_corpus_complete');
+    for (const c of cndChunk.data) {
+      if (c && EXPLICIT_PATCHES[c.id] && (!Array.isArray(c.effects) || c.effects.length === 0)) {
+        c.effects = JSON.parse(JSON.stringify(EXPLICIT_PATCHES[c.id].effects));
+        n++;
+      }
+    }
+    return n;
+  })();
+  const extraDom = (() => {
+    const { EXPLICIT_PATCHES } = require('./compile_v3_corpus_complete');
+    let n = 0;
+    for (const d of dom.data) {
+      if (d && EXPLICIT_PATCHES[d.id] && (!Array.isArray(d.effects) || d.effects.length === 0)) {
+        d.effects = JSON.parse(JSON.stringify(EXPLICIT_PATCHES[d.id].effects));
+        n++;
+      }
+    }
+    return n;
+  })();
+  const extraManeuvers = compileManeuversAndStances(manChunk.data);
+  const extraEqMic = compileEquipmentAndMic(eq.data, micEntries);
+  const extraPowers = compilePowers(pwrChunk.data);
+  const extraSpells = compileRemainingMechanicalSpells(spl.data, splSplat.data);
+
+  // Normalize V3 dialect across ALL 24 chunks in srd_index.json
+  const idxRaw = JSON.parse(fs.readFileSync(path.join(DB_DIR, 'srd_index.json'), 'utf8'));
+  const loadedMap = new Map([
+    ['srd_classes_races.json', cr],
+    ['srd_classes_splat.json', cs],
+    ['srd_feats.json', fc],
+    ['srd_feats_splat.json', fsChunk],
+    ['srd_feats_epic.json', feEpic],
+    ['srd_feats_legacy.json', feLegacy],
+    ['srd_domains.json', dom],
+    ['srd_combat_rules.json', cndChunk],
+    ['srd_maneuvers.json', manChunk],
+    ['srd_powers.json', pwrChunk],
+    ['srd_spells.json', spl],
+    ['srd_spells_splat.json', splSplat],
+    ['srd_equipment.json', eq],
+    ['mic_compendium.json', micChunk]
+  ]);
+  let dialectFixes = 0;
+  const metaUpdates = {};
+  for (const chunkName of Object.keys(idxRaw.chunks || {})) {
+    const chObj = loadedMap.get(chunkName) || readChunk(chunkName);
+    const entries = Array.isArray(chObj.data) ? chObj.data : (chObj.data.entries || []);
+    let chDirty = loadedMap.has(chunkName);
+    for (const e of entries) {
+      const df = normalizeEntryV3Dialect(e);
+      if (df > 0) {
+        dialectFixes += df;
+        chDirty = true;
+      }
+    }
+    if (chDirty) {
+      const wr = writeChunk(chObj.fp, chObj.data, chObj.wasMinified);
+      wr.count = entries.length;
+      metaUpdates[chunkName] = wr;
+    }
+  }
 
   // D. Rebuild srd_index.json
   const idxRes = rebuildSrdIndex(metaUpdates);
@@ -2192,8 +2367,22 @@ function main() {
     existingClassAbilitiesEnriched: cabExistingEnriched,
     classFeatureLinksAdded: { core: linkedCore, splat: linkedSplat },
     featsPatched,
-    domainsPatched,
-    spellsPatched,
+    domainsPatched: domainsPatched + extraDom,
+    spellsPatched: spellsPatched + extraSpells,
+    potionsPatched,
+    corpusComplete: {
+      extraFeatsCore,
+      extraFeatsSplat,
+      extraFeatsEpic,
+      extraFeatsLegacy,
+      extraCabRab,
+      extraConditions,
+      extraManeuvers,
+      extraEqMic,
+      extraPowers,
+      extraSpells,
+      dialectFixes
+    },
     totalEntries: idxRes.totalEntries,
     compendiumHash: idxRes.compendiumHash
   };

@@ -626,10 +626,11 @@ function createBaseChar(overrides = {}) {
     grants: [{ grantType: 'sense', targetId: 'darkvision', value: 60 }],
     choices: [{ id: 'ch_1', options: ['acid', 'cold'] }]
   };
-  const upgraded = SchemaMigrator.upgradeEntryToV2(rawV25);
-  assertEq('SchemaMigrator V2.5 Preservation (m10): preserves defenses, resources, grants, choices, requires, overrides, pack',
-    [upgraded.pack, upgraded.overrides, Array.isArray(upgraded.defenses) && upgraded.defenses.length, Array.isArray(upgraded.resources) && upgraded.resources.length, Array.isArray(upgraded.grants) && upgraded.grants.length, Array.isArray(upgraded.choices) && upgraded.choices.length, Boolean(upgraded.requires)],
-    ['pack_test', 'srd:toughness', 1, 1, 1, 1, true]);
+  const upgraded = SchemaMigrator.migrateEntryToV3(rawV25);
+  const evUpgraded = RuleEngine.evaluateV3Entry(upgraded);
+  assertEq('SchemaMigrator Pure V3 Boundary (m10): migrates defenses, resources, grants into V3 effects[] and preserves choices, requires, overrides, pack',
+    [upgraded.schemaVersion, upgraded.pack, upgraded.overrides, evUpgraded.defenses.length, evUpgraded.resources.length, evUpgraded.grants.length, Array.isArray(upgraded.choices) && upgraded.choices.length, Boolean(upgraded.requires), 'modifiers' in upgraded],
+    [3, 'pack_test', 'srd:toughness', 1, 1, 1, 1, true, false]);
 }
 
 // Phase P2 Live Sheet Engine Unification & Parity Gate Test (recalculateCharacter vs evaluateLegoCharacter)

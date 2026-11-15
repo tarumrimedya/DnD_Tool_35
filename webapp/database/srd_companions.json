@@ -441,131 +441,155 @@
   "familiarAllowedAnimals": [
     {
       "id": "mst-bat",
+      "schemaVersion": 3,
       "name": "Bat",
       "masterBonusText": "+3 bonus on Listen checks",
-      "modifiers": [
+      "effects": [
         {
+          "type": "stat",
           "target": "skill.listen",
           "value": 3,
-          "type": "Circumstance",
-          "condition": null
+          "bonusType": "Circumstance"
         }
       ]
     },
     {
       "id": "mst-cat",
+      "schemaVersion": 3,
       "name": "Cat",
       "masterBonusText": "+3 bonus on Move Silently checks",
-      "modifiers": [
+      "effects": [
         {
-          "target": "skill.move_silently",
+          "type": "stat",
+          "target": "skill.move-silently",
           "value": 3,
-          "type": "Circumstance",
-          "condition": null
+          "bonusType": "Circumstance"
         }
       ]
     },
     {
       "id": "mst-hawk",
+      "schemaVersion": 3,
       "name": "Hawk",
       "masterBonusText": "+3 bonus on Spot checks in bright light",
-      "modifiers": [
+      "effects": [
         {
-          "target": "skill.spot",
-          "value": 3,
-          "type": "Circumstance",
-          "condition": "in bright light"
+          "type": "when",
+          "condKind": "custom",
+          "condText": "in bright light",
+          "children": [
+            {
+              "type": "stat",
+              "target": "skill.spot",
+              "value": 3,
+              "bonusType": "Circumstance"
+            }
+          ]
         }
       ]
     },
     {
       "id": "mst-lizard",
+      "schemaVersion": 3,
       "name": "Lizard",
       "masterBonusText": "+3 bonus on Climb checks",
-      "modifiers": [
+      "effects": [
         {
+          "type": "stat",
           "target": "skill.climb",
           "value": 3,
-          "type": "Circumstance",
-          "condition": null
+          "bonusType": "Circumstance"
         }
       ]
     },
     {
       "id": "mst-owl",
+      "schemaVersion": 3,
       "name": "Owl",
       "masterBonusText": "+3 bonus on Spot checks in shadows",
-      "modifiers": [
+      "effects": [
         {
-          "target": "skill.spot",
-          "value": 3,
-          "type": "Circumstance",
-          "condition": "in shadows"
+          "type": "when",
+          "condKind": "custom",
+          "condText": "in shadows",
+          "children": [
+            {
+              "type": "stat",
+              "target": "skill.spot",
+              "value": 3,
+              "bonusType": "Circumstance"
+            }
+          ]
         }
       ]
     },
     {
       "id": "mst-rat",
+      "schemaVersion": 3,
       "name": "Rat",
       "masterBonusText": "+2 bonus on Fortitude saves",
-      "modifiers": [
+      "effects": [
         {
+          "type": "stat",
           "target": "save.fort",
           "value": 2,
-          "type": "Circumstance",
-          "condition": null
+          "bonusType": "Circumstance"
         }
       ]
     },
     {
       "id": "mst-raven",
+      "schemaVersion": 3,
       "name": "Raven",
       "masterBonusText": "+3 bonus on Appraise checks; speaks one language of master’s choice",
-      "modifiers": [
+      "effects": [
         {
+          "type": "stat",
           "target": "skill.appraise",
           "value": 3,
-          "type": "Circumstance",
-          "condition": null
+          "bonusType": "Circumstance"
         }
       ]
     },
     {
       "id": "mst-snake-tiny-viper",
+      "schemaVersion": 3,
       "name": "Snake, Tiny Viper",
       "masterBonusText": "+3 bonus on Bluff checks",
-      "modifiers": [
+      "effects": [
         {
+          "type": "stat",
           "target": "skill.bluff",
           "value": 3,
-          "type": "Circumstance",
-          "condition": null
+          "bonusType": "Circumstance"
         }
       ]
     },
     {
       "id": "mst-toad",
+      "schemaVersion": 3,
       "name": "Toad",
       "masterBonusText": "+3 bonus on master’s maximum Hit Points",
-      "modifiers": [
+      "effects": [
         {
+          "type": "stat",
           "target": "hp.max",
           "value": 3,
-          "type": "Untyped",
-          "condition": null
+          "bonusType": "Untyped"
         }
       ]
     },
     {
       "id": "mst-weasel",
+      "schemaVersion": 3,
       "name": "Weasel",
       "masterBonusText": "+2 bonus on Reflex saves",
-      "modifiers": [
+      "effects": [
         {
+          "type": "stat",
           "target": "save.ref",
           "value": 2,
-          "type": "Circumstance",
-          "condition": null
+          "bonusType": "Circumstance"
         }
       ]
     }

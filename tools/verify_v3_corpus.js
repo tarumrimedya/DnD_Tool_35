@@ -21,7 +21,7 @@ const CANONICAL_V3_BLOCK_TYPES = new Set([
 const CANONICAL_V3_TARGETS = new Set([
   'str', 'dex', 'con', 'int', 'wis', 'cha',
   'choice.ability.1', 'choice.ability.2', 'choice.ability.3', 'choice.ability.4',
-  'choice.skill.1',
+  'choice.skill.1', 'choice.save.1', 'choice.school.1',
   'ac.total', 'ac.touch', 'ac.flatFooted', 'ac.armor', 'ac.shield', 'ac.shieldBonus', 'ac.natural', 'ac.deflection', 'ac.dodge', 'ac.size', 'ac.luck', 'ac.insight', 'ac.sacred', 'ac.profane', 'ac.cover',
   'save.all', 'save.fort', 'save.ref', 'save.will',
   'atk.all', 'atk.melee', 'atk.ranged', 'atk.weapon', 'atk.touch', 'atk.grapple', 'atk.natural', 'atk.critConfirm',
@@ -121,6 +121,7 @@ function runCorpusAudit() {
     monsterEntries: 0,
     validMonsterChassis: 0,
     diskTopLevelModifiersCount: 0,
+    diskDamagePartsCount: 0,
     nonItemSlotNoneCount: 0,
     foundryGarbageFormulasCount: 0,
     autoCompatibleEntries: 0,
@@ -158,6 +159,9 @@ function runCorpusAudit() {
 
       if (Object.prototype.hasOwnProperty.call(e, 'modifiers')) {
         report.diskTopLevelModifiersCount++;
+      }
+      if (Object.prototype.hasOwnProperty.call(e, 'damageParts') || JSON.stringify(e).includes('"damageParts"')) {
+        report.diskDamagePartsCount++;
       }
       if (e.slot === 'None' && !ITEM_BLUEPRINTS.has(e.blueprint) && !['Item', 'Wondrous Item', 'Ring', 'Rod', 'Staff', 'Wand', 'Potion', 'Scroll', 'Weapon', 'Armor', 'Shield', 'Consumable'].includes(e.type)) {
         report.nonItemSlotNoneCount++;
@@ -276,6 +280,7 @@ if (require.main === module) {
   console.log(`   • Schema split           : ${rep.v3Entries}/${rep.totalEntries} V3 (${((rep.v3Entries / rep.totalEntries) * 100).toFixed(2)}%), ${rep.v2Entries} V2`);
   console.log(`   • Bestiary V3 monsters   : ${rep.validMonsterChassis}/${rep.monsterEntries} valid V3 monster chassis`);
   console.log(`   • Disk modifiers[] arrays: ${rep.diskTopLevelModifiersCount}`);
+  console.log(`   • Disk damageParts[] keys: ${rep.diskDamagePartsCount}`);
   console.log(`   • Non-item slot="None"   : ${rep.nonItemSlotNoneCount}`);
   console.log(`   • Foundry leftover exprs : ${rep.foundryGarbageFormulasCount}`);
   console.log(`   • Splat dialect drift    : ${rep.splatV3DialectFixesNeeded} (${rep.splatV3PerVarCount} perVar)`);
@@ -289,6 +294,7 @@ if (require.main === module) {
     rep.validMonsterChassis !== rep.monsterEntries ||
     rep.monsterEntries < 649 ||
     rep.diskTopLevelModifiersCount > 0 ||
+    rep.diskDamagePartsCount > 0 ||
     rep.nonItemSlotNoneCount > 0 ||
     rep.foundryGarbageFormulasCount > 0 ||
     unmappedTargetList.length > 0 ||

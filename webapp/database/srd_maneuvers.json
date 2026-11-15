@@ -44,7 +44,16 @@
     "range": "30 ft.",
     "duration": "1 minute",
     "save": "Fortitude negates",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-blistering-flourish-rd",
+        "type": "carrier",
+        "carrierMode": "weaponRider",
+        "riderEffect": "Dazzle creatures within 20-ft. burst for 1 minute (Fort negates, DC 11 + Wis mod).",
+        "saveType": "Fortitude",
+        "dc": "11 + Wis mod"
+      }
+    ],
     "shortDescription": "Dazzle creatures within 20-ft. burst for 1 minute (Fort negates, DC 11 + Wis mod).",
     "text": "Dazzle creatures within 20-ft. burst for 1 minute (Fort negates, DC 11 + Wis mod).",
     "tags": [
@@ -159,7 +168,16 @@
     "range": "30 ft.",
     "duration": "End of turn",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-distracting-ember-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "distracting-ember",
+        "label": "Distracting Ember",
+        "text": "Small fire elemental appears adjacent to an enemy until the end of your turn, granting flanking to you and allies."
+      }
+    ],
     "shortDescription": "Small fire elemental appears adjacent to an enemy until the end of your turn, granting flanking to you and allies.",
     "text": "Small fire elemental appears adjacent to an enemy until the end of your turn, granting flanking to you and allies.",
     "tags": [
@@ -211,7 +229,15 @@
     "range": "Personal",
     "duration": "Stance",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-st-fb",
+        "type": "defense",
+        "mode": "Energy Resistance",
+        "what": "Fire (Scales with Tumble Ranks: 5/10/20/Immunity)",
+        "value": 5
+      }
+    ],
     "shortDescription": "Gain fire resistance based on your Tumble ranks (4-8: 5, 9-13: 10, 14-18: 20, 19+: fire immunity).",
     "text": "Gain fire resistance based on your Tumble ranks (4-8: 5, 9-13: 10, 14-18: 20, 19+: fire immunity).",
     "tags": [
@@ -330,7 +356,16 @@
     "range": "Personal",
     "duration": "End of turn",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-burning-brand-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "burning-brand",
+        "label": "Burning Brand",
+        "text": "For the rest of your turn, your melee reach increases by 5 ft. and your weapon deals fire damage instead of normal physical damage."
+      }
+    ],
     "shortDescription": "For the rest of your turn, your melee reach increases by 5 ft. and your weapon deals fire damage instead of normal physical damage.",
     "text": "For the rest of your turn, your melee reach increases by 5 ft. and your weapon deals fire damage instead of normal physical damage.",
     "tags": [
@@ -706,7 +741,19 @@
     "range": "Personal",
     "duration": "Stance",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-st-hc",
+        "type": "roll",
+        "kind": "Damage",
+        "count": 5,
+        "die": "flat",
+        "flat": 0,
+        "dmgType": "Fire",
+        "scaling": "flat",
+        "crit": "normal"
+      }
+    ],
     "shortDescription": "Attacker striking you in melee takes 5 fire damage.",
     "text": "Attacker striking you in melee takes 5 fire damage.",
     "tags": [
@@ -1082,7 +1129,16 @@
     "range": "Personal",
     "duration": "Instantaneous",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-leaping-flame-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "leaping-flame",
+        "label": "Leaping Flame",
+        "text": "After being attacked in melee or at range, teleport adjacent to the attacker (up to 100 ft.)."
+      }
+    ],
     "shortDescription": "After being attacked in melee or at range, teleport adjacent to the attacker (up to 100 ft.).",
     "text": "After being attacked in melee or at range, teleport adjacent to the attacker (up to 100 ft.).",
     "tags": [
@@ -1197,7 +1253,16 @@
     "range": "Personal",
     "duration": "Instantaneous",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-desert-tempest-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "desert-tempest",
+        "label": "Desert Tempest",
+        "text": "Move up to your speed; make one melee attack against each enemy you move past (max 1 attack per foe)."
+      }
+    ],
     "shortDescription": "Move up to your speed; make one melee attack against each enemy you move past (max 1 attack per foe).",
     "text": "Move up to your speed; make one melee attack against each enemy you move past (max 1 attack per foe).",
     "tags": [
@@ -1720,7 +1785,22 @@
     "range": "Melee Attack",
     "duration": "Instantaneous",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-crusader-s-strike-hl",
+        "type": "roll",
+        "kind": "Healing",
+        "count": 1,
+        "die": "d6",
+        "flat": 0,
+        "dmgType": "Positive",
+        "scaling": "perCL",
+        "crit": "normal",
+        "amount": 1,
+        "per": 1,
+        "max": 5
+      }
+    ],
     "shortDescription": "Single melee attack; on a hit against an alignment-opposed foe, you or an ally within 10 ft. heals 1d6 + 1/initiator level (max +5) HP.",
     "text": "Single melee attack; on a hit against an alignment-opposed foe, you or an ally within 10 ft. heals 1d6 + 1/initiator level (max +5) HP.",
     "tags": [
@@ -1772,7 +1852,16 @@
     "range": "Personal",
     "duration": "Stance",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-st-igg",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "threatenedFoesPenaltyVsAllies",
+        "label": "Threatened Enemies Take -4 Attack Penalty Against Your Allies",
+        "text": "Threatened Enemies Take -4 Attack Penalty Against Your Allies"
+      }
+    ],
     "shortDescription": "Any enemy you threaten takes a -4 penalty on attack rolls against your allies.",
     "text": "Any enemy you threaten takes a -4 penalty on attack rolls against your allies.",
     "tags": [
@@ -1824,7 +1913,19 @@
     "range": "Personal",
     "duration": "Stance",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-st-ms",
+        "type": "roll",
+        "kind": "Healing",
+        "count": 2,
+        "die": "flat",
+        "flat": 0,
+        "dmgType": "Positive",
+        "scaling": "flat",
+        "crit": "normal"
+      }
+    ],
     "shortDescription": "Each time you hit an opponent in melee, you or an ally within 30 ft. heals 2 HP.",
     "text": "Each time you hit an opponent in melee, you or an ally within 30 ft. heals 2 HP.",
     "tags": [
@@ -1876,7 +1977,16 @@
     "range": "Melee Attack",
     "duration": "Instantaneous",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-vanguard-strike-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "vanguard-strike",
+        "label": "Vanguard Strike",
+        "text": "Single melee attack; on a hit, allies gain a +4 bonus on melee and ranged attacks against the target for 1 round."
+      }
+    ],
     "shortDescription": "Single melee attack; on a hit, allies gain a +4 bonus on melee and ranged attacks against the target for 1 round.",
     "text": "Single melee attack; on a hit, allies gain a +4 bonus on melee and ranged attacks against the target for 1 round.",
     "tags": [
@@ -1991,7 +2101,16 @@
     "range": "Personal",
     "duration": "Instantaneous",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-shield-block-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "shield-block",
+        "label": "Shield Block",
+        "text": "Grant an adjacent ally a shield bonus to AC equal to your shield's AC bonus + 4 against one attack."
+      }
+    ],
     "shortDescription": "Grant an adjacent ally a shield bonus to AC equal to your shield's AC bonus + 4 against one attack.",
     "text": "Grant an adjacent ally a shield bonus to AC equal to your shield's AC bonus + 4 against one attack.",
     "tags": [
@@ -2043,7 +2162,16 @@
     "range": "Personal",
     "duration": "1 round",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-defensive-rebuke-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "defensive-rebuke",
+        "label": "Defensive Rebuke",
+        "text": "Each enemy you strike this turn must attack you on its next turn or provoke an attack of opportunity from you if it attacks an ally."
+      }
+    ],
     "shortDescription": "Each enemy you strike this turn must attack you on its next turn or provoke an attack of opportunity from you if it attacks an ally.",
     "text": "Each enemy you strike this turn must attack you on its next turn or provoke an attack of opportunity from you if it attacks an ally.",
     "tags": [
@@ -2095,7 +2223,22 @@
     "range": "Melee Attack",
     "duration": "Instantaneous",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-revitalizing-strike-hl",
+        "type": "roll",
+        "kind": "Healing",
+        "count": 3,
+        "die": "d6",
+        "flat": 0,
+        "dmgType": "Positive",
+        "scaling": "perCL",
+        "crit": "normal",
+        "amount": 1,
+        "per": 1,
+        "max": 10
+      }
+    ],
     "shortDescription": "Single melee attack; on a hit against an alignment-opposed foe, you or an ally within 10 ft. heals 3d6 + 1/initiator level (max +10) HP.",
     "text": "Single melee attack; on a hit against an alignment-opposed foe, you or an ally within 10 ft. heals 3d6 + 1/initiator level (max +10) HP.",
     "tags": [
@@ -2147,7 +2290,16 @@
     "range": "Personal",
     "duration": "Stance",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-st-tob",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "anyMovementProvokesAoO",
+        "label": "All Movement by Threatened Foes (Including 5-ft. Steps) Provokes AoO",
+        "text": "All Movement by Threatened Foes (Including 5-ft. Steps) Provokes AoO"
+      }
+    ],
     "shortDescription": "Any movement a threatened foe makes (including 5-ft. steps and withdraw actions) provokes an attack of opportunity from you.",
     "text": "Any movement a threatened foe makes (including 5-ft. steps and withdraw actions) provokes an attack of opportunity from you.",
     "tags": [
@@ -2330,7 +2482,16 @@
     "range": "Melee Attack",
     "duration": "1 minute",
     "save": "Will negates",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-daunting-strike-rd",
+        "type": "carrier",
+        "carrierMode": "weaponRider",
+        "riderEffect": "Single melee attack; on a hit, target must make a Will save (DC 15 + Cha mod) or become shaken for 1 minute.",
+        "saveType": "Will",
+        "dc": "15 + Cha mod"
+      }
+    ],
     "shortDescription": "Single melee attack; on a hit, target must make a Will save (DC 15 + Cha mod) or become shaken for 1 minute.",
     "text": "Single melee attack; on a hit, target must make a Will save (DC 15 + Cha mod) or become shaken for 1 minute.",
     "tags": [
@@ -2652,7 +2813,16 @@
     "range": "Personal",
     "duration": "Stance",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-st-aoc",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "explodingMeleeDamageDice",
+        "label": "Reroll and Add Maximum-Value Melee Damage Dice",
+        "text": "Reroll and Add Maximum-Value Melee Damage Dice"
+      }
+    ],
     "shortDescription": "When rolling melee damage, reroll and add any die that shows its maximum value (exploding dice).",
     "text": "When rolling melee damage, reroll and add any die that shows its maximum value (exploding dice).",
     "tags": [
@@ -2704,7 +2874,16 @@
     "range": "Personal",
     "duration": "Stance",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-st-aopo",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "treatD20As11OncePerRound",
+        "label": "1/Round Treat One d20 Roll as 11 Before Rolling",
+        "text": "1/Round Treat One d20 Roll as 11 Before Rolling"
+      }
+    ],
     "shortDescription": "Once per round before rolling a d20, you can treat the roll as an 11.",
     "text": "Once per round before rolling a d20, you can treat the roll as an 11.",
     "tags": [
@@ -2756,7 +2935,19 @@
     "range": "Personal",
     "duration": "Stance",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-st-aot",
+        "type": "roll",
+        "kind": "Healing",
+        "count": 4,
+        "die": "flat",
+        "flat": 0,
+        "dmgType": "Positive",
+        "scaling": "flat",
+        "crit": "normal"
+      }
+    ],
     "shortDescription": "You and allies within 10 ft. heal 4 HP each time one of you hits an evil creature in melee.",
     "text": "You and allies within 10 ft. heal 4 HP each time one of you hits an evil creature in melee.",
     "tags": [
@@ -2808,7 +2999,19 @@
     "range": "Personal",
     "duration": "Stance",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-st-aoty",
+        "type": "roll",
+        "kind": "Healing",
+        "count": 2,
+        "die": "flat",
+        "flat": 0,
+        "dmgType": "Negative",
+        "scaling": "flat",
+        "crit": "normal"
+      }
+    ],
     "shortDescription": "Drain 2 HP from each willing/helpless ally within 10 ft. at end of turn; heal 1 HP per ally drained.",
     "text": "Drain 2 HP from each willing/helpless ally within 10 ft. at end of turn; heal 1 HP per ally drained.",
     "tags": [
@@ -2860,7 +3063,22 @@
     "range": "Melee Attack",
     "duration": "Instantaneous",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-rallying-strike-hl",
+        "type": "roll",
+        "kind": "Healing",
+        "count": 3,
+        "die": "d6",
+        "flat": 0,
+        "dmgType": "Positive",
+        "scaling": "perCL",
+        "crit": "normal",
+        "amount": 1,
+        "per": 1,
+        "max": 15
+      }
+    ],
     "shortDescription": "Single melee attack; on a hit, you and all allies within 30 ft. heal 3d6 + 1/initiator level (max +15) HP.",
     "text": "Single melee attack; on a hit, you and all allies within 30 ft. heal 3d6 + 1/initiator level (max +15) HP.",
     "tags": [
@@ -3105,7 +3323,16 @@
     "range": "Personal",
     "duration": "Stance",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-st-if",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "fortSaveStayAt1Hp",
+        "label": "Fortitude Save (DC = -HP) to Remain at 1 HP Against Lethal HP Damage",
+        "text": "Fortitude Save (DC = -HP) to Remain at 1 HP Against Lethal HP Damage"
+      }
+    ],
     "shortDescription": "You cannot be killed or incapacitated by HP damage while you remain above -10 HP; make a Fortitude save (DC = -HP total) to stay at 1 HP (max 3 saves before stance ends).",
     "text": "You cannot be killed or incapacitated by HP damage while you remain above -10 HP; make a Fortitude save (DC = -HP total) to stay at 1 HP (max 3 saves before stance ends).",
     "tags": [
@@ -3157,7 +3384,16 @@
     "range": "Melee Attack",
     "duration": "Instantaneous",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-strike-of-righteous-vitality-hlsp",
+        "type": "effect",
+        "effectKind": "linkedSpell",
+        "castMode": "linkedSpell",
+        "spellName": "Heal",
+        "text": "Single melee hit triggers Heal spell on self or ally within 10 ft."
+      }
+    ],
     "shortDescription": "Single melee attack; on a hit against an alignment-opposed foe, you or an ally within 10 ft. gains the benefit of a Heal spell (10 HP/initiator level, max 150 HP, cures conditions).",
     "text": "Single melee attack; on a hit against an alignment-opposed foe, you or an ally within 10 ft. gains the benefit of a Heal spell (10 HP/initiator level, max 150 HP, cures conditions).",
     "tags": [
@@ -3209,7 +3445,16 @@
     "range": "Personal",
     "duration": "Instantaneous",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-moment-of-perfect-mind-csv",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "concentrationReplacesWill",
+        "label": "Replace Will Save with Concentration Check",
+        "text": "Replace Will Save with Concentration Check"
+      }
+    ],
     "shortDescription": "Use a Concentration check in place of a Will saving throw (a natural 1 on the skill check is not an automatic failure).",
     "text": "Use a Concentration check in place of a Will saving throw (a natural 1 on the skill check is not an automatic failure).",
     "tags": [
@@ -3386,7 +3631,16 @@
     "range": "Personal",
     "duration": "Instantaneous",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-action-before-thought-csv",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "concentrationReplacesReflex",
+        "label": "Replace Reflex Save with Concentration Check",
+        "text": "Replace Reflex Save with Concentration Check"
+      }
+    ],
     "shortDescription": "Use a Concentration check in place of a Reflex saving throw.",
     "text": "Use a Concentration check in place of a Reflex saving throw.",
     "tags": [
@@ -3438,7 +3692,16 @@
     "range": "Melee Attack",
     "duration": "Instantaneous",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-emerald-razor-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "emerald-razor",
+        "label": "Emerald Razor",
+        "text": "Make a single melee attack as a touch attack."
+      }
+    ],
     "shortDescription": "Make a single melee attack as a touch attack.",
     "text": "Make a single melee attack as a touch attack.",
     "tags": [
@@ -3490,7 +3753,16 @@
     "range": "Melee Attack",
     "duration": "Instantaneous",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-insightful-strike-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "insightful-strike",
+        "label": "Insightful Strike",
+        "text": "Single melee attack; instead of normal weapon/Str damage, deal damage equal to your Concentration check result."
+      }
+    ],
     "shortDescription": "Single melee attack; instead of normal weapon/Str damage, deal damage equal to your Concentration check result.",
     "text": "Single melee attack; instead of normal weapon/Str damage, deal damage equal to your Concentration check result.",
     "tags": [
@@ -3542,7 +3814,16 @@
     "range": "Personal",
     "duration": "Instantaneous",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-mind-over-body-csv",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "concentrationReplacesFortitude",
+        "label": "Replace Fortitude Save with Concentration Check",
+        "text": "Replace Fortitude Save with Concentration Check"
+      }
+    ],
     "shortDescription": "Use a Concentration check in place of a Fortitude saving throw.",
     "text": "Use a Concentration check in place of a Fortitude saving throw.",
     "tags": [
@@ -3594,7 +3875,32 @@
     "range": "Personal",
     "duration": "Stance",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-st-pobd",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-st-pobd-br",
+            "condKind": "state",
+            "condText": "Each Melee Miss Against You This Round",
+            "effects": [
+              {
+                "id": "ef-st-pobd-ac",
+                "type": "stat",
+                "targets": [
+                  "ac.dodge"
+                ],
+                "mode": "flat",
+                "value": 2,
+                "btype": "Dodge"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "Gain a cumulative +2 dodge bonus to AC until the start of your next turn each time an opponent misses you in melee.",
     "text": "Gain a cumulative +2 dodge bonus to AC until the start of your next turn each time an opponent misses you in melee.",
     "tags": [
@@ -3713,7 +4019,27 @@
     "range": "Melee Attack",
     "duration": "Instantaneous",
     "save": "Will negates",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-mind-strike-abd",
+        "type": "roll",
+        "kind": "Ability Damage",
+        "count": 1,
+        "die": "d4",
+        "flat": 0,
+        "dmgType": "WIS Damage",
+        "scaling": "flat",
+        "crit": "normal"
+      },
+      {
+        "id": "tob-maneuver-mind-strike-rd",
+        "type": "carrier",
+        "carrierMode": "weaponRider",
+        "riderEffect": "Single melee attack deals normal damage plus 1d4 Wisdom damage (Will negates Wis damage, DC 14 + Str mod).",
+        "saveType": "Will",
+        "dc": "14 + Str mod"
+      }
+    ],
     "shortDescription": "Single melee attack deals normal damage plus 1d4 Wisdom damage (Will negates Wis damage, DC 14 + Str mod).",
     "text": "Single melee attack deals normal damage plus 1d4 Wisdom damage (Will negates Wis damage, DC 14 + Str mod).",
     "tags": [
@@ -3765,7 +4091,16 @@
     "range": "Melee Attack",
     "duration": "Instantaneous",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-ruby-nightmare-blade-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "ruby-nightmare-blade",
+        "label": "Ruby Nightmare Blade",
+        "text": "Make a Concentration check (DC = target's AC); if successful, your melee attack deals double damage (-2 attack if check fails)."
+      }
+    ],
     "shortDescription": "Make a Concentration check (DC = target's AC); if successful, your melee attack deals double damage (-2 attack if check fails).",
     "text": "Make a Concentration check (DC = target's AC); if successful, your melee attack deals double damage (-2 attack if check fails).",
     "tags": [
@@ -3822,7 +4157,16 @@
     "range": "Melee Attack",
     "duration": "1 round",
     "save": "Will negates",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-disrupting-blow-rd",
+        "type": "carrier",
+        "carrierMode": "weaponRider",
+        "riderEffect": "Single melee attack; on a hit, target must make a Will save (DC 15 + Str mod) or be unable to take any actions for 1 round.",
+        "saveType": "Will",
+        "dc": "15 + Str mod"
+      }
+    ],
     "shortDescription": "Single melee attack; on a hit, target must make a Will save (DC 15 + Str mod) or be unable to take any actions for 1 round.",
     "text": "Single melee attack; on a hit, target must make a Will save (DC 15 + Str mod) or be unable to take any actions for 1 round.",
     "tags": [
@@ -3936,7 +4280,16 @@
     "range": "Personal",
     "duration": "Instantaneous",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-rapid-counter-xatk",
+        "type": "attack",
+        "attackMode": "extraAttack",
+        "extraKind": "extraFull",
+        "penalty": 0,
+        "rider": "Rapid Counter"
+      }
+    ],
     "shortDescription": "When an opponent provokes an attack of opportunity from you, make an extra AoO as an immediate action (does not count against your AoOs per round).",
     "text": "When an opponent provokes an attack of opportunity from you, make an extra AoO as an immediate action (does not count against your AoOs per round).",
     "tags": [
@@ -3988,7 +4341,16 @@
     "range": "Melee Attack",
     "duration": "Instantaneous",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-greater-insightful-strike-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "greater-insightful-strike",
+        "label": "Greater Insightful Strike",
+        "text": "Single melee attack; instead of normal weapon/Str damage, deal damage equal to twice your Concentration check result."
+      }
+    ],
     "shortDescription": "Single melee attack; instead of normal weapon/Str damage, deal damage equal to twice your Concentration check result.",
     "text": "Single melee attack; instead of normal weapon/Str damage, deal damage equal to twice your Concentration check result.",
     "tags": [
@@ -4040,7 +4402,16 @@
     "range": "Melee Attack",
     "duration": "End of turn",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-moment-of-alacrity-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "moment-of-alacrity",
+        "label": "Moment of Alacrity",
+        "text": "Your initiative count increases by 20 starting at the end of your current turn for the rest of the encounter."
+      }
+    ],
     "shortDescription": "Your initiative count increases by 20 starting at the end of your current turn for the rest of the encounter.",
     "text": "Your initiative count increases by 20 starting at the end of your current turn for the rest of the encounter.",
     "tags": [
@@ -4092,7 +4463,16 @@
     "range": "Melee Attack",
     "duration": "Instantaneous",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-avalanche-of-blades-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "avalanche-of-blades",
+        "label": "Avalanche of Blades",
+        "text": "Make a melee attack; each time you hit, you can immediately make another attack against the same foe at a cumulative -4 penalty until you miss."
+      }
+    ],
     "shortDescription": "Make a melee attack; each time you hit, you can immediately make another attack against the same foe at a cumulative -4 penalty until you miss.",
     "text": "Make a melee attack; each time you hit, you can immediately make another attack against the same foe at a cumulative -4 penalty until you miss.",
     "tags": [
@@ -4144,7 +4524,16 @@
     "range": "Personal",
     "duration": "End of turn",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-quicksilver-motion-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "quicksilver-motion",
+        "label": "Quicksilver Motion",
+        "text": "Take a move action as a swift action."
+      }
+    ],
     "shortDescription": "Take a move action as a swift action.",
     "text": "Take a move action as a swift action.",
     "tags": [
@@ -4196,7 +4585,18 @@
     "range": "Personal",
     "duration": "Instantaneous",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-dd-sv",
+        "type": "stat",
+        "targets": [
+          "save.all"
+        ],
+        "mode": "formula",
+        "formula": "@level",
+        "btype": "Untyped"
+      }
+    ],
     "shortDescription": "Gain a bonus on a saving throw equal to your initiator level.",
     "text": "Gain a bonus on a saving throw equal to your initiator level.",
     "tags": [
@@ -4248,7 +4648,16 @@
     "range": "Melee Attack",
     "duration": "Instantaneous",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-diamond-nightmare-blade-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "diamond-nightmare-blade",
+        "label": "Diamond Nightmare Blade",
+        "text": "Make a Concentration check (DC = target's AC); if successful, your melee attack deals quadruple (4x) damage (-2 attack if check fails)."
+      }
+    ],
     "shortDescription": "Make a Concentration check (DC = target's AC); if successful, your melee attack deals quadruple (4x) damage (-2 attack if check fails).",
     "text": "Make a Concentration check (DC = target's AC); if successful, your melee attack deals quadruple (4x) damage (-2 attack if check fails).",
     "tags": [
@@ -4300,7 +4709,16 @@
     "range": "Personal",
     "duration": "Stance",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-st-soa",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "freeCounterPerRound",
+        "label": "Use One Counter per Round Without Spending Immediate Action",
+        "text": "Use One Counter per Round Without Spending Immediate Action"
+      }
+    ],
     "shortDescription": "You can use one Counter maneuver per round without using an immediate action.",
     "text": "You can use one Counter maneuver per round without using an immediate action.",
     "tags": [
@@ -4352,7 +4770,16 @@
     "range": "Personal",
     "duration": "Instantaneous",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-time-stands-still-xatk",
+        "type": "attack",
+        "attackMode": "extraAttack",
+        "extraKind": "extraFull",
+        "penalty": 0,
+        "rider": "Time Stands Still"
+      }
+    ],
     "shortDescription": "Take two full attack actions in a single full-round action.",
     "text": "Take two full attack actions in a single full-round action.",
     "tags": [
@@ -4476,7 +4903,16 @@
     "range": "Melee Attack",
     "duration": "1 round; see text",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-steel-wind-xatk",
+        "type": "attack",
+        "attackMode": "extraAttack",
+        "extraKind": "extraFull",
+        "penalty": 0,
+        "rider": "Steel Wind"
+      }
+    ],
     "shortDescription": "Make two melee attacks, each against a different opponent you threaten, at your highest base attack bonus.",
     "text": "Make two melee attacks, each against a different opponent you threaten, at your highest base attack bonus.",
     "tags": [
@@ -4590,7 +5026,16 @@
     "range": "Melee Attack",
     "duration": "Instantaneous",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-disarming-strike-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "disarming-strike",
+        "label": "Disarming Strike",
+        "text": "Single melee attack; on a hit, deal normal damage and make a free disarm attempt without provoking an AoO (or risk being disarmed)."
+      }
+    ],
     "shortDescription": "Single melee attack; on a hit, deal normal damage and make a free disarm attempt without provoking an AoO (or risk being disarmed).",
     "text": "Single melee attack; on a hit, deal normal damage and make a free disarm attempt without provoking an AoO (or risk being disarmed).",
     "tags": [
@@ -4642,7 +5087,16 @@
     "range": "Personal",
     "duration": "Instantaneous",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-wall-of-blades-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "wall-of-blades",
+        "label": "Wall of Blades",
+        "text": "Replace your AC with the result of a melee attack roll against a single melee or ranged attack (including touch attacks)."
+      }
+    ],
     "shortDescription": "Replace your AC with the result of a melee attack roll against a single melee or ranged attack (including touch attacks).",
     "text": "Replace your AC with the result of a melee attack roll against a single melee or ranged attack (including touch attacks).",
     "tags": [
@@ -4773,7 +5227,16 @@
     "range": "Melee Attack",
     "duration": "1 minute",
     "save": "Will half",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-exorcism-of-steel-rd",
+        "type": "carrier",
+        "carrierMode": "weaponRider",
+        "riderEffect": "Single melee attack; on a hit, target's weapon deals -4 damage for 1 minute (Will partial: -2 damage, DC 13 + Str mod).",
+        "saveType": "Will",
+        "dc": "13 + Str mod"
+      }
+    ],
     "shortDescription": "Single melee attack; on a hit, target's weapon deals -4 damage for 1 minute (Will partial: -2 damage, DC 13 + Str mod).",
     "text": "Single melee attack; on a hit, target's weapon deals -4 damage for 1 minute (Will partial: -2 damage, DC 13 + Str mod).",
     "tags": [
@@ -5011,7 +5474,16 @@
     "range": "Personal",
     "duration": "Stance",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-st-dbf",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "reachPlus5OnTurn",
+        "label": "+5 ft. Melee Reach During Your Turn",
+        "text": "+5 ft. Melee Reach During Your Turn"
+      }
+    ],
     "shortDescription": "Your melee reach increases by 5 ft. during your turn.",
     "text": "Your melee reach increases by 5 ft. during your turn.",
     "tags": [
@@ -5068,7 +5540,16 @@
     "range": "Melee Attack",
     "duration": "1 round",
     "save": "Fortitude partial",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-dazing-strike-rd",
+        "type": "carrier",
+        "carrierMode": "weaponRider",
+        "riderEffect": "Single melee attack; on a hit, target must make a Fortitude save (DC 15 + Str mod) or be dazed for 1 round.",
+        "saveType": "Fortitude",
+        "dc": "15 + Str mod"
+      }
+    ],
     "shortDescription": "Single melee attack; on a hit, target must make a Fortitude save (DC 15 + Str mod) or be dazed for 1 round.",
     "text": "Single melee attack; on a hit, target must make a Fortitude save (DC 15 + Str mod) or be dazed for 1 round.",
     "tags": [
@@ -5120,7 +5601,16 @@
     "range": "Personal",
     "duration": "Instantaneous",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-iron-heart-focus-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "iron-heart-focus",
+        "label": "Iron Heart Focus",
+        "text": "Reroll any one saving throw you just rolled."
+      }
+    ],
     "shortDescription": "Reroll any one saving throw you just rolled.",
     "text": "Reroll any one saving throw you just rolled.",
     "tags": [
@@ -5172,7 +5662,20 @@
     "range": "Personal",
     "duration": "End of turn",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-iron-heart-endurance-ihe",
+        "type": "roll",
+        "kind": "Healing",
+        "count": 1,
+        "die": "flat",
+        "flat": 0,
+        "dmgType": "Positive",
+        "scaling": "formula",
+        "crit": "normal",
+        "dice": "@level * 2"
+      }
+    ],
     "shortDescription": "When at half HP or less, heal HP equal to twice your character level.",
     "text": "When at half HP or less, heal HP equal to twice your character level.",
     "tags": [
@@ -5224,7 +5727,16 @@
     "range": "Personal",
     "duration": "Instantaneous",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-manticore-parry-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "manticore-parry",
+        "label": "Manticore Parry",
+        "text": "Deflect a melee attack against you or an adjacent ally (oppose attack roll with your attack roll) and redirect it to another creature within reach."
+      }
+    ],
     "shortDescription": "Deflect a melee attack against you or an adjacent ally (oppose attack roll with your attack roll) and redirect it to another creature within reach.",
     "text": "Deflect a melee attack against you or an adjacent ally (oppose attack roll with your attack roll) and redirect it to another creature within reach.",
     "tags": [
@@ -5339,7 +5851,16 @@
     "range": "Personal",
     "duration": "End of turn",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-scything-blade-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "scything-blade",
+        "label": "Scything Blade",
+        "text": "After hitting an opponent with a melee attack, immediately make one free melee attack against a different threatened opponent at your highest BAB."
+      }
+    ],
     "shortDescription": "After hitting an opponent with a melee attack, immediately make one free melee attack against a different threatened opponent at your highest BAB.",
     "text": "After hitting an opponent with a melee attack, immediately make one free melee attack against a different threatened opponent at your highest BAB.",
     "tags": [
@@ -5521,7 +6042,15 @@
     "range": "Personal",
     "duration": "Stance",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-st-sbp",
+        "type": "defense",
+        "mode": "Damage Reduction",
+        "what": "-",
+        "value": 5
+      }
+    ],
     "shortDescription": "Gain DR 5/- against all attacks.",
     "text": "Gain DR 5/- against all attacks.",
     "tags": [
@@ -5637,7 +6166,16 @@
     "range": "Melee Attack",
     "duration": "Instantaneous",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-counter-charge-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "counter-charge",
+        "label": "Counter Charge",
+        "text": "When charged, make an opposed Str or Dex check (+4 if smaller than charger); if you win, charger misses and is moved 2 squares away."
+      }
+    ],
     "shortDescription": "When charged, make an opposed Str or Dex check (+4 if smaller than charger); if you win, charger misses and is moved 2 squares away.",
     "text": "When charged, make an opposed Str or Dex check (+4 if smaller than charger); if you win, charger misses and is moved 2 squares away.",
     "tags": [
@@ -5689,7 +6227,16 @@
     "range": "Touch",
     "duration": "Instantaneous",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-mighty-throw-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "mighty-throw",
+        "label": "Mighty Throw",
+        "text": "Melee touch attack + trip check (using Str or Dex, +4 bonus, no AoO); throw tripped foe up to 10 ft. and lands prone."
+      }
+    ],
     "shortDescription": "Melee touch attack + trip check (using Str or Dex, +4 bonus, no AoO); throw tripped foe up to 10 ft. and lands prone.",
     "text": "Melee touch attack + trip check (using Str or Dex, +4 bonus, no AoO); throw tripped foe up to 10 ft. and lands prone.",
     "tags": [
@@ -5803,7 +6350,16 @@
     "range": "Personal",
     "duration": "Instantaneous",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-baffling-defense-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "baffling-defense",
+        "label": "Baffling Defense",
+        "text": "Replace your AC against one attack with the result of your Sense Motive check."
+      }
+    ],
     "shortDescription": "Replace your AC against one attack with the result of your Sense Motive check.",
     "text": "Replace your AC against one attack with the result of your Sense Motive check.",
     "tags": [
@@ -5860,7 +6416,16 @@
     "range": "Melee Attack",
     "duration": "Instantaneous",
     "save": "Reflex partial",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-clever-positioning-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "clever-positioning",
+        "label": "Clever Positioning",
+        "text": "Single melee attack; on a hit, swap positions with the target (must have valid space)."
+      }
+    ],
     "shortDescription": "Single melee attack; on a hit, swap positions with the target (must have valid space).",
     "text": "Single melee attack; on a hit, swap positions with the target (must have valid space).",
     "tags": [
@@ -5975,7 +6540,16 @@
     "range": "Personal",
     "duration": "Instantaneous",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-feigned-opening-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "feigned-opening",
+        "label": "Feigned Opening",
+        "text": "Provoke a free AoO from an opponent; whether it hits or misses, you and allies threatening that foe can each make an immediate AoO against it."
+      }
+    ],
     "shortDescription": "Provoke a free AoO from an opponent; whether it hits or misses, you and allies threatening that foe can each make an immediate AoO against it.",
     "text": "Provoke a free AoO from an opponent; whether it hits or misses, you and allies threatening that foe can each make an immediate AoO against it.",
     "tags": [
@@ -6234,7 +6808,16 @@
     "range": "Personal",
     "duration": "Instantaneous",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-mirrored-pursuit-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "mirrored-pursuit",
+        "label": "Mirrored Pursuit",
+        "text": "When an adjacent foe moves away, move up to your speed to end adjacent to that foe without provoking AoOs."
+      }
+    ],
     "shortDescription": "When an adjacent foe moves away, move up to your speed to end adjacent to that foe without provoking AoOs.",
     "text": "When an adjacent foe moves away, move up to your speed to end adjacent to that foe without provoking AoOs.",
     "tags": [
@@ -6286,7 +6869,16 @@
     "range": "Personal",
     "duration": "Stance",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-st-shd",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "fiveFootStepOnFoeMiss",
+        "label": "Immediate 5-ft. Step (Consumes AoO) When Missed in Melee",
+        "text": "Immediate 5-ft. Step (Consumes AoO) When Missed in Melee"
+      }
+    ],
     "shortDescription": "Make an immediate 5-ft. step (consumes an AoO for the round) each time an opponent misses you in melee.",
     "text": "Make an immediate 5-ft. step (consumes an AoO for the round) each time an opponent misses you in melee.",
     "tags": [
@@ -6401,7 +6993,16 @@
     "range": "Personal",
     "duration": "Instantaneous",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-stalking-shadow-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "stalking-shadow",
+        "label": "Stalking Shadow",
+        "text": "When an adjacent foe takes a 5-ft. step away from you, immediately move into the square it just vacated and make an AoO against it."
+      }
+    ],
     "shortDescription": "When an adjacent foe takes a 5-ft. step away from you, immediately move into the square it just vacated and make an AoO against it.",
     "text": "When an adjacent foe takes a 5-ft. step away from you, immediately move into the square it just vacated and make an AoO against it.",
     "tags": [
@@ -6521,7 +7122,16 @@
     "range": "Personal",
     "duration": "Instantaneous",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-scorpion-parry-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "scorpion-parry",
+        "label": "Scorpion Parry",
+        "text": "Opposed attack roll to deflect a melee attack and redirect it into another adjacent opponent at a -2 penalty."
+      }
+    ],
     "shortDescription": "Opposed attack roll to deflect a melee attack and redirect it into another adjacent opponent at a -2 penalty.",
     "text": "Opposed attack roll to deflect a melee attack and redirect it into another adjacent opponent at a -2 penalty.",
     "tags": [
@@ -6699,7 +7309,16 @@
     "range": "Personal",
     "duration": "Stance",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-st-gd",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "redirectConcealmentMisses",
+        "label": "Attacks Missing Due to Concealment Strike Adjacent Creature",
+        "text": "Attacks Missing Due to Concealment Strike Adjacent Creature"
+      }
+    ],
     "shortDescription": "While you have concealment, attacks that miss you due to concealment strike another creature adjacent to the attacker.",
     "text": "While you have concealment, attacks that miss you due to concealment strike another creature adjacent to the attacker.",
     "tags": [
@@ -6814,7 +7433,29 @@
     "range": "Personal",
     "duration": "Stance",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-st-cos",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-st-cos-br",
+            "condKind": "state",
+            "condText": "Moved 10+ ft. This Turn",
+            "effects": [
+              {
+                "id": "ef-st-cos-c",
+                "type": "defense",
+                "mode": "State",
+                "what": "Concealment (20% Miss Chance)",
+                "value": 20
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "If you move at least 10 ft. during your turn, gain concealment (20% miss chance) against all attacks until the start of your next turn.",
     "text": "If you move at least 10 ft. during your turn, gain concealment (20% miss chance) against all attacks until the start of your next turn.",
     "tags": [
@@ -6934,7 +7575,16 @@
     "range": "Personal",
     "duration": "Stance",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-st-iob",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "adjacentAllyAlwaysFlanks",
+        "label": "You and Any Ally Adjacent to Same Foe Always Flank That Foe",
+        "text": "You and Any Ally Adjacent to Same Foe Always Flank That Foe"
+      }
+    ],
     "shortDescription": "You and any ally both adjacent to the same enemy are considered to be flanking that enemy regardless of exact position.",
     "text": "You and any ally both adjacent to the same enemy are considered to be flanking that enemy regardless of exact position.",
     "tags": [
@@ -7049,7 +7699,16 @@
     "range": "Personal",
     "duration": "End of turn",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-cloak-of-deception-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "cloak-of-deception",
+        "label": "Cloak of Deception",
+        "text": "Turn invisible (as Greater Invisibility) until the end of your turn."
+      }
+    ],
     "shortDescription": "Turn invisible (as Greater Invisibility) until the end of your turn.",
     "text": "Turn invisible (as Greater Invisibility) until the end of your turn.",
     "tags": [
@@ -7106,7 +7765,27 @@
     "range": "Melee Attack",
     "duration": "Instantaneous",
     "save": "Fortitude negates",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-drain-vitality-abd",
+        "type": "roll",
+        "kind": "Ability Damage",
+        "count": 2,
+        "die": "flat",
+        "flat": 0,
+        "dmgType": "CON Damage",
+        "scaling": "flat",
+        "crit": "normal"
+      },
+      {
+        "id": "tob-maneuver-drain-vitality-rd",
+        "type": "carrier",
+        "carrierMode": "weaponRider",
+        "riderEffect": "Single melee attack deals normal damage plus 2 Constitution damage (Fort negates Con damage, DC 12 + Wis mod).",
+        "saveType": "Fortitude",
+        "dc": "12 + Wis mod"
+      }
+    ],
     "shortDescription": "Single melee attack deals normal damage plus 2 Constitution damage (Fort negates Con damage, DC 12 + Wis mod).",
     "text": "Single melee attack deals normal damage plus 2 Constitution damage (Fort negates Con damage, DC 12 + Wis mod).",
     "tags": [
@@ -7158,7 +7837,16 @@
     "range": "50 ft.",
     "duration": "Instantaneous",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-shadow-jaunt-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "shadow-jaunt",
+        "label": "Shadow Jaunt",
+        "text": "Teleport up to 50 ft. to an unoccupied square within line of sight and line of effect."
+      }
+    ],
     "shortDescription": "Teleport up to 50 ft. to an unoccupied square within line of sight and line of effect.",
     "text": "Teleport up to 50 ft. to an unoccupied square within line of sight and line of effect.",
     "tags": [
@@ -7273,7 +7961,18 @@
     "range": "Personal",
     "duration": "Stance",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-st-dots",
+        "type": "stat",
+        "targets": [
+          "speed.climb"
+        ],
+        "mode": "flat",
+        "value": 20,
+        "btype": "Enhancement"
+      }
+    ],
     "shortDescription": "Gain continuous Spider Climb (20-ft. climb speed, need not keep hands free).",
     "text": "Gain continuous Spider Climb (20-ft. climb speed, need not keep hands free).",
     "tags": [
@@ -7398,7 +8097,27 @@
     "range": "Melee Attack",
     "duration": "Instantaneous",
     "save": "Fortitude half",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-strength-draining-strike-abd",
+        "type": "roll",
+        "kind": "Ability Damage",
+        "count": 4,
+        "die": "flat",
+        "flat": 0,
+        "dmgType": "STR Damage",
+        "scaling": "flat",
+        "crit": "normal"
+      },
+      {
+        "id": "tob-maneuver-strength-draining-strike-rd",
+        "type": "carrier",
+        "carrierMode": "weaponRider",
+        "riderEffect": "Single melee attack deals normal damage plus 4 Strength damage (Fort halves to 2 Str damage, DC 13 + Wis mod).",
+        "saveType": "Fortitude",
+        "dc": "13 + Wis mod"
+      }
+    ],
     "shortDescription": "Single melee attack deals normal damage plus 4 Strength damage (Fort halves to 2 Str damage, DC 13 + Wis mod).",
     "text": "Single melee attack deals normal damage plus 4 Strength damage (Fort halves to 2 Str damage, DC 13 + Wis mod).",
     "tags": [
@@ -7455,7 +8174,16 @@
     "range": "Touch",
     "duration": "1d3 rounds",
     "save": "Fortitude negates",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-hand-of-death-rd",
+        "type": "carrier",
+        "carrierMode": "weaponRider",
+        "riderEffect": "Melee touch attack against a flat-footed opponent paralyzes the target for 1d6 rounds (Fort negates, DC 14 + Wis mod).",
+        "saveType": "Fortitude",
+        "dc": "14 + Wis mod"
+      }
+    ],
     "shortDescription": "Melee touch attack against a flat-footed opponent paralyzes the target for 1d6 rounds (Fort negates, DC 14 + Wis mod).",
     "text": "Melee touch attack against a flat-footed opponent paralyzes the target for 1d6 rounds (Fort negates, DC 14 + Wis mod).",
     "tags": [
@@ -7580,7 +8308,27 @@
     "range": "Melee Attack",
     "duration": "Instantaneous",
     "save": "Fortitude partial",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-bloodletting-strike-abd",
+        "type": "roll",
+        "kind": "Ability Damage",
+        "count": 4,
+        "die": "flat",
+        "flat": 0,
+        "dmgType": "CON Damage",
+        "scaling": "flat",
+        "crit": "normal"
+      },
+      {
+        "id": "tob-maneuver-bloodletting-strike-rd",
+        "type": "carrier",
+        "carrierMode": "weaponRider",
+        "riderEffect": "Single melee attack deals normal damage plus 4 Constitution damage (Fort halves to 2 Con damage, DC 15 + Wis mod).",
+        "saveType": "Fortitude",
+        "dc": "15 + Wis mod"
+      }
+    ],
     "shortDescription": "Single melee attack deals normal damage plus 4 Constitution damage (Fort halves to 2 Con damage, DC 15 + Wis mod).",
     "text": "Single melee attack deals normal damage plus 4 Constitution damage (Fort halves to 2 Con damage, DC 15 + Wis mod).",
     "tags": [
@@ -7632,7 +8380,16 @@
     "range": "50 ft.",
     "duration": "Instantaneous",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-shadow-stride-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "shadow-stride",
+        "label": "Shadow Stride",
+        "text": "Teleport up to 50 ft. as a move action."
+      }
+    ],
     "shortDescription": "Teleport up to 50 ft. as a move action.",
     "text": "Teleport up to 50 ft. as a move action.",
     "tags": [
@@ -7684,7 +8441,40 @@
     "range": "Personal",
     "duration": "Stance",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-st-sodm",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-st-sodm-br",
+            "condKind": "vsAoOFromMovement",
+            "condText": "",
+            "effects": [
+              {
+                "id": "ef-st-sodm-ac",
+                "type": "stat",
+                "targets": [
+                  "ac.dodge"
+                ],
+                "mode": "flat",
+                "value": 2,
+                "btype": "Dodge"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ef-st-sodm-w",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "walkOnLiquidIgnoreTerrain",
+        "label": "Walk on Liquids / 5 ft. Above Ground; Ignore Difficult Terrain",
+        "text": "Walk on Liquids / 5 ft. Above Ground; Ignore Difficult Terrain"
+      }
+    ],
     "shortDescription": "Walk on liquids or up to 5 ft. above any horizontal surface; ignore terrain penalties and gain +2 AC vs. AoOs.",
     "text": "Walk on liquids or up to 5 ft. above any horizontal surface; ignore terrain penalties and gain +2 AC vs. AoOs.",
     "tags": [
@@ -7736,7 +8526,16 @@
     "range": "Melee Attack",
     "duration": "Instantaneous",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-ghost-blade-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "ghost-blade",
+        "label": "Ghost Blade",
+        "text": "Make a single melee attack; target is automatically flat-footed against this attack."
+      }
+    ],
     "shortDescription": "Make a single melee attack; target is automatically flat-footed against this attack.",
     "text": "Make a single melee attack; target is automatically flat-footed against this attack.",
     "tags": [
@@ -7856,7 +8655,16 @@
     "range": "Melee Attack",
     "duration": "Instantaneous",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-stalker-in-the-night-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "stalker-in-the-night",
+        "label": "Stalker in the Night",
+        "text": "Move up to your speed while Hidden and make a single melee attack during movement without breaking stealth (-0 Hide penalty for attacking)."
+      }
+    ],
     "shortDescription": "Move up to your speed while Hidden and make a single melee attack during movement without breaking stealth (-0 Hide penalty for attacking).",
     "text": "Move up to your speed while Hidden and make a single melee attack during movement without breaking stealth (-0 Hide penalty for attacking).",
     "tags": [
@@ -7981,7 +8789,16 @@
     "range": "50 ft.",
     "duration": "See text",
     "save": "Fortitude partial",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-shadow-blink-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "shadow-blink",
+        "label": "Shadow Blink",
+        "text": "Teleport up to 50 ft. as a swift action."
+      }
+    ],
     "shortDescription": "Teleport up to 50 ft. as a swift action.",
     "text": "Teleport up to 50 ft. as a swift action.",
     "tags": [
@@ -8033,7 +8850,16 @@
     "range": "Personal",
     "duration": "Stance",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-st-bots",
+        "type": "effect",
+        "effectKind": "linkedSpell",
+        "castMode": "linkedSpell",
+        "spellName": "Air Walk",
+        "text": "Continuous Air Walk while one hand remains free."
+      }
+    ],
     "shortDescription": "Gain continuous Air Walk while keeping at least one hand free.",
     "text": "Gain continuous Air Walk while keeping at least one hand free.",
     "tags": [
@@ -8090,7 +8916,27 @@
     "range": "Melee Attack",
     "duration": "Instantaneous",
     "save": "Fortitude negates",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-enervating-shadow-strike-nl",
+        "type": "roll",
+        "kind": "Damage",
+        "count": 1,
+        "die": "d4",
+        "flat": 0,
+        "dmgType": "Negative Levels",
+        "scaling": "flat",
+        "crit": "normal"
+      },
+      {
+        "id": "tob-maneuver-enervating-shadow-strike-rd",
+        "type": "carrier",
+        "carrierMode": "weaponRider",
+        "riderEffect": "Single melee attack inflicts 1d4 negative levels (Fort negates, DC 18 + Wis mod) in addition to normal damage.",
+        "saveType": "Fortitude",
+        "dc": "18 + Wis mod"
+      }
+    ],
     "shortDescription": "Single melee attack inflicts 1d4 negative levels (Fort negates, DC 18 + Wis mod) in addition to normal damage.",
     "text": "Single melee attack inflicts 1d4 negative levels (Fort negates, DC 18 + Wis mod) in addition to normal damage.",
     "tags": [
@@ -8142,7 +8988,16 @@
     "range": "Personal",
     "duration": "See text",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-one-with-shadow-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "one-with-shadow",
+        "label": "One With Shadow",
+        "text": "Become incorporeal until the start of your next turn (50% miss chance vs. magic weapons, immune to nonmagical attacks)."
+      }
+    ],
     "shortDescription": "Become incorporeal until the start of your next turn (50% miss chance vs. magic weapons, immune to nonmagical attacks).",
     "text": "Become incorporeal until the start of your next turn (50% miss chance vs. magic weapons, immune to nonmagical attacks).",
     "tags": [
@@ -8325,7 +9180,15 @@
     "range": "Personal",
     "duration": "1 round",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-stone-bones-dr",
+        "type": "defense",
+        "mode": "Damage Reduction",
+        "what": "adamantine",
+        "value": 5
+      }
+    ],
     "shortDescription": "Single melee attack; on a hit, gain DR 5/adamantine for 1 round.",
     "text": "Single melee attack; on a hit, gain DR 5/adamantine for 1 round.",
     "tags": [
@@ -8701,7 +9564,25 @@
     "range": "Personal",
     "duration": "Stance",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-st-rotm-dr",
+        "type": "defense",
+        "mode": "Damage Reduction",
+        "what": "-",
+        "value": 2
+      },
+      {
+        "id": "ef-st-rotm-cmd",
+        "type": "stat",
+        "targets": [
+          "cmd.bullRushTripDisarmOverrun"
+        ],
+        "mode": "flat",
+        "value": 10,
+        "btype": "Untyped"
+      }
+    ],
     "shortDescription": "Gain DR 2/-, +10 on checks vs. bull rush/overrun/trip/grapple, and foes take -10 on Tumble checks past you (ends if you move > 5 ft.).",
     "text": "Gain DR 2/-, +10 on checks vs. bull rush/overrun/trip/grapple, and foes take -10 on Tumble checks past you (ends if you move > 5 ft.).",
     "tags": [
@@ -8816,7 +9697,19 @@
     "range": "Melee Attack",
     "duration": "Instantaneous",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-bonesplitting-strike-abd",
+        "type": "roll",
+        "kind": "Ability Damage",
+        "count": 2,
+        "die": "flat",
+        "flat": 0,
+        "dmgType": "CON Damage",
+        "scaling": "flat",
+        "crit": "normal"
+      }
+    ],
     "shortDescription": "Single melee attack deals normal damage plus 2 Constitution damage.",
     "text": "Single melee attack deals normal damage plus 2 Constitution damage.",
     "tags": [
@@ -8999,7 +9892,16 @@
     "range": "Personal",
     "duration": "Stance",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-st-gs",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "weaponDamageSizeUpOne",
+        "label": "Melee Weapons Deal Damage as One Size Category Larger (Max Large)",
+        "text": "Melee Weapons Deal Damage as One Size Category Larger (Max Large)"
+      }
+    ],
     "shortDescription": "Your melee weapons deal damage as if you were one size category larger (max Large; ends if you move > 5 ft.).",
     "text": "Your melee weapons deal damage as if you were one size category larger (max Large; ends if you move > 5 ft.).",
     "tags": [
@@ -9182,7 +10084,15 @@
     "range": "Personal",
     "duration": "1 round",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-iron-bones-dr",
+        "type": "defense",
+        "mode": "Damage Reduction",
+        "what": "adamantine",
+        "value": 10
+      }
+    ],
     "shortDescription": "Single melee attack; on a hit, gain DR 10/adamantine for 1 round.",
     "text": "Single melee attack; on a hit, gain DR 10/adamantine for 1 round.",
     "tags": [
@@ -9433,7 +10343,15 @@
     "range": "Personal",
     "duration": "1 round",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-adamantine-bones-dr",
+        "type": "defense",
+        "mode": "Damage Reduction",
+        "what": "adamantine",
+        "value": 20
+      }
+    ],
     "shortDescription": "Single melee attack; on a hit, gain DR 20/adamantine for 1 round.",
     "text": "Single melee attack; on a hit, gain DR 20/adamantine for 1 round.",
     "tags": [
@@ -9490,7 +10408,16 @@
     "range": "20 ft. burst",
     "duration": "Instantaneous",
     "save": "Reflex negates",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-earthstrike-quake-rd",
+        "type": "carrier",
+        "carrierMode": "weaponRider",
+        "riderEffect": "Strike the ground to knock all creatures within a 20-ft. burst prone (Reflex negates, DC 18 + Str mod) and force spellcasters to make Concentration checks.",
+        "saveType": "Reflex",
+        "dc": "18 + Str mod"
+      }
+    ],
     "shortDescription": "Strike the ground to knock all creatures within a 20-ft. burst prone (Reflex negates, DC 18 + Str mod) and force spellcasters to make Concentration checks.",
     "text": "Strike the ground to knock all creatures within a 20-ft. burst prone (Reflex negates, DC 18 + Str mod) and force spellcasters to make Concentration checks.",
     "tags": [
@@ -9542,7 +10469,15 @@
     "range": "Personal",
     "duration": "Stance",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-st-sos",
+        "type": "defense",
+        "mode": "Immunity",
+        "what": "Critical Hits",
+        "value": 0
+      }
+    ],
     "shortDescription": "Gain immunity to critical hits while touching the ground (ends if you move > 5 ft.).",
     "text": "Gain immunity to critical hits while touching the ground (ends if you move > 5 ft.).",
     "tags": [
@@ -9732,7 +10667,33 @@
     "range": "Personal",
     "duration": "Stance",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-st-bitw",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-st-bitw-br",
+            "condKind": "state",
+            "condText": "Per Critical Hit Scored (Cumulative)",
+            "effects": [
+              {
+                "id": "ef-st-bitw-b",
+                "type": "stat",
+                "targets": [
+                  "atk.all",
+                  "dmg.all"
+                ],
+                "mode": "flat",
+                "value": 1,
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "Gain a cumulative +1 bonus on attack rolls and damage rolls for each critical hit you score (resets after 1 minute without a critical hit).",
     "text": "Gain a cumulative +1 bonus on attack rolls and damage rolls for each critical hit you score (resets after 1 minute without a critical hit).",
     "tags": [
@@ -9784,7 +10745,15 @@
     "range": "Personal",
     "duration": "Stance",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-st-hs",
+        "type": "defense",
+        "mode": "Sense",
+        "what": "Scent 30 ft.",
+        "value": 30
+      }
+    ],
     "shortDescription": "Gain the scent ability (detect creatures within 30 ft., pinpoint within 5 ft., track by scent).",
     "text": "Gain the scent ability (detect creatures within 30 ft., pinpoint within 5 ft., track by scent).",
     "tags": [
@@ -9836,7 +10805,16 @@
     "range": "Personal",
     "duration": "Instantaneous",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-sudden-leap-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "sudden-leap",
+        "label": "Sudden Leap",
+        "text": "Make a Jump check and move the distance determined by your check result as a swift action."
+      }
+    ],
     "shortDescription": "Make a Jump check and move the distance determined by your check result as a swift action.",
     "text": "Make a Jump check and move the distance determined by your check result as a swift action.",
     "tags": [
@@ -10099,7 +11077,16 @@
     "range": "Melee Attack",
     "duration": "1 round or more; see text",
     "save": "Fortitude negates",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-flesh-ripper-rd",
+        "type": "carrier",
+        "carrierMode": "weaponRider",
+        "riderEffect": "Single melee attack; on a hit, target takes -4 on attack rolls and -4 to AC for 1 round (1 minute on a critical hit; Fort negates, DC 13 + Str mod).",
+        "saveType": "Fortitude",
+        "dc": "13 + Str mod"
+      }
+    ],
     "shortDescription": "Single melee attack; on a hit, target takes -4 on attack rolls and -4 to AC for 1 round (1 minute on a critical hit; Fort negates, DC 13 + Str mod).",
     "text": "Single melee attack; on a hit, target takes -4 on attack rolls and -4 to AC for 1 round (1 minute on a critical hit; Fort negates, DC 13 + Str mod).",
     "tags": [
@@ -10151,7 +11138,26 @@
     "range": "Personal",
     "duration": "Stance",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-st-lds",
+        "type": "stat",
+        "targets": [
+          "skill.jump"
+        ],
+        "mode": "flat",
+        "value": 10,
+        "btype": "Enhancement"
+      },
+      {
+        "id": "ef-st-lds-r",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "alwaysRunningJump",
+        "label": "All Jumps Treated as Running Jumps",
+        "text": "All Jumps Treated as Running Jumps"
+      }
+    ],
     "shortDescription": "Gain a +10-ft. enhancement bonus on Jump checks (adds +10 ft. to jump distance) and all jumps are considered running jumps.",
     "text": "Gain a +10-ft. enhancement bonus on Jump checks (adds +10 ft. to jump distance) and all jumps are considered running jumps.",
     "tags": [
@@ -10275,7 +11281,40 @@
     "range": "Personal",
     "duration": "Stance",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-st-ws",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-st-ws-br",
+            "condKind": "situational",
+            "condText": "While Grappling (vs. Larger Foe)",
+            "effects": [
+              {
+                "id": "ef-st-ws-d",
+                "type": "stat",
+                "targets": [
+                  "dmg.melee"
+                ],
+                "mode": "flat",
+                "value": 4,
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ef-st-ws-g",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "noGrappleWeaponPenalty",
+        "label": "Use 1-Handed Weapon in Grapple Without -4 Penalty",
+        "text": "Use 1-Handed Weapon in Grapple Without -4 Penalty"
+      }
+    ],
     "shortDescription": "Use any one-handed melee weapon while grappling without the -4 penalty; gain +4 on damage rolls if foe is larger than you.",
     "text": "Use any one-handed melee weapon while grappling without the -4 penalty; gain +4 on damage rolls if foe is larger than you.",
     "tags": [
@@ -10395,7 +11434,16 @@
     "range": "30 ft.",
     "duration": "1 minute",
     "save": "Will partial",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-fountain-of-blood-rd",
+        "type": "carrier",
+        "carrierMode": "weaponRider",
+        "riderEffect": "After dropping a foe in melee, all enemies within 30 ft. must make a Will save (DC 14 + Str mod) or be shaken for 1 minute.",
+        "saveType": "Will",
+        "dc": "14 + Str mod"
+      }
+    ],
     "shortDescription": "After dropping a foe in melee, all enemies within 30 ft. must make a Will save (DC 14 + Str mod) or be shaken for 1 minute.",
     "text": "After dropping a foe in melee, all enemies within 30 ft. must make a Will save (DC 14 + Str mod) or be shaken for 1 minute.",
     "tags": [
@@ -10447,7 +11495,16 @@
     "range": "Personal",
     "duration": "End of turn",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-dancing-mongoose-xatk",
+        "type": "attack",
+        "attackMode": "extraAttack",
+        "extraKind": "extraFull",
+        "penalty": 0,
+        "rider": "Dancing Mongoose"
+      }
+    ],
     "shortDescription": "Make one extra attack with each weapon you wield (max two extra attacks) at your highest attack bonus.",
     "text": "Make one extra attack with each weapon you wield (max two extra attacks) at your highest attack bonus.",
     "tags": [
@@ -10499,7 +11556,16 @@
     "range": "Personal",
     "duration": "Instantaneous",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-pouncing-charge-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "pouncing-charge",
+        "label": "Pouncing Charge",
+        "text": "Make a full attack at the end of a charge."
+      }
+    ],
     "shortDescription": "Make a full attack at the end of a charge.",
     "text": "Make a full attack at the end of a charge.",
     "tags": [
@@ -10632,7 +11698,16 @@
     "range": "Personal",
     "duration": "Stance",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-st-wpt",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "free5ftStepPerMeleeHit",
+        "label": "Free 5-ft. Step After Each Successful Melee Attack",
+        "text": "Free 5-ft. Step After Each Successful Melee Attack"
+      }
+    ],
     "shortDescription": "Make a free 5-ft. step after each successful melee attack you make (must stay adjacent to the struck foe or move adjacent to another foe).",
     "text": "Make a free 5-ft. step after each successful melee attack you make (must stay adjacent to the struck foe or move adjacent to another foe).",
     "tags": [
@@ -10752,7 +11827,16 @@
     "range": "Personal",
     "duration": "Stance",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-st-potw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "freeAoOOnNearbyDrop",
+        "label": "Free AoO Against Adjacent Foes When Creature Within 10 ft. Drops Below 0 HP",
+        "text": "Free AoO Against Adjacent Foes When Creature Within 10 ft. Drops Below 0 HP"
+      }
+    ],
     "shortDescription": "Make a free attack of opportunity against every adjacent opponent whenever any creature within 10 ft. drops below 0 HP.",
     "text": "Make a free attack of opportunity against every adjacent opponent whenever any creature within 10 ft. drops below 0 HP.",
     "tags": [
@@ -10935,7 +12019,16 @@
     "range": "Personal",
     "duration": "End of turn",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-raging-mongoose-xatk",
+        "type": "attack",
+        "attackMode": "extraAttack",
+        "extraKind": "extraFull",
+        "penalty": 0,
+        "rider": "Raging Mongoose"
+      }
+    ],
     "shortDescription": "Make two extra attacks with each weapon you wield (max four extra attacks) at your highest attack bonus.",
     "text": "Make two extra attacks with each weapon you wield (max four extra attacks) at your highest attack bonus.",
     "tags": [
@@ -11189,7 +12282,16 @@
     "range": "Melee Attack",
     "duration": "1 round",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-douse-the-flames-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "douse-the-flames",
+        "label": "Douse the Flames",
+        "text": "Single melee attack; on a hit, target cannot make attacks of opportunity for 1 round."
+      }
+    ],
     "shortDescription": "Single melee attack; on a hit, target cannot make attacks of opportunity for 1 round.",
     "text": "Single melee attack; on a hit, target cannot make attacks of opportunity for 1 round.",
     "tags": [
@@ -11241,7 +12343,16 @@
     "range": "Melee Attack",
     "duration": "1 round",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-leading-the-attack-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "leading-the-attack",
+        "label": "Leading the Attack",
+        "text": "Single melee attack; on a hit, all allies gain a +4 morale bonus on attack rolls against that target for 1 round."
+      }
+    ],
     "shortDescription": "Single melee attack; on a hit, all allies gain a +4 morale bonus on attack rolls against that target for 1 round.",
     "text": "Single melee attack; on a hit, all allies gain a +4 morale bonus on attack rolls against that target for 1 round.",
     "tags": [
@@ -11293,7 +12404,32 @@
     "range": "60 ft.",
     "duration": "Stance",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-st-ltc",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-st-ltc-br",
+            "condKind": "charging",
+            "condText": "",
+            "effects": [
+              {
+                "id": "ef-st-ltc-d",
+                "type": "stat",
+                "targets": [
+                  "dmg.melee"
+                ],
+                "mode": "formula",
+                "formula": "@level",
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "You and allies within 60 ft. gain a bonus on damage rolls on a charge equal to your initiator level.",
     "text": "You and allies within 60 ft. gain a bonus on damage rolls on a charge equal to your initiator level.",
     "tags": [
@@ -11532,7 +12668,32 @@
     "range": "Personal",
     "duration": "Stance",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-st-totw",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-st-totw-br",
+            "condKind": "flanking",
+            "condText": "",
+            "effects": [
+              {
+                "id": "ef-st-totw-d",
+                "type": "stat",
+                "targets": [
+                  "dmg.melee"
+                ],
+                "mode": "formula",
+                "formula": "floor(@level / 2)",
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "You and allies deal extra melee damage against flanked opponents equal to 1/2 your initiator level.",
     "text": "You and allies deal extra melee damage against flanked opponents equal to 1/2 your initiator level.",
     "tags": [
@@ -11584,7 +12745,16 @@
     "range": "10 ft.",
     "duration": "End of turn",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-white-raven-tactics-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "white-raven-tactics",
+        "label": "White Raven Tactics",
+        "text": "One ally within 10 ft. has their initiative count changed to your initiative count - 1, allowing them to act again immediately after your turn."
+      }
+    ],
     "shortDescription": "One ally within 10 ft. has their initiative count changed to your initiative count - 1, allowing them to act again immediately after your turn.",
     "text": "One ally within 10 ft. has their initiative count changed to your initiative count - 1, allowing them to act again immediately after your turn.",
     "tags": [
@@ -11636,7 +12806,16 @@
     "range": "Personal",
     "duration": "3 rounds",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-covering-strike-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "covering-strike",
+        "label": "Covering Strike",
+        "text": "Each opponent you hit in melee this turn cannot make attacks of opportunity for 3 rounds."
+      }
+    ],
     "shortDescription": "Each opponent you hit in melee this turn cannot make attacks of opportunity for 3 rounds.",
     "text": "Each opponent you hit in melee this turn cannot make attacks of opportunity for 3 rounds.",
     "tags": [
@@ -11751,7 +12930,16 @@
     "range": "Melee Attack",
     "duration": "Instantaneous",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-flanking-maneuver-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "flanking-maneuver",
+        "label": "Flanking Maneuver",
+        "text": "Single melee attack against a flanked opponent; on a hit, every ally flanking that opponent can immediately make one free melee attack against it."
+      }
+    ],
     "shortDescription": "Single melee attack against a flanked opponent; on a hit, every ally flanking that opponent can immediately make one free melee attack against it.",
     "text": "Single melee attack against a flanked opponent; on a hit, every ally flanking that opponent can immediately make one free melee attack against it.",
     "tags": [
@@ -11803,7 +12991,16 @@
     "range": "Personal",
     "duration": "Stance",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-st-pta",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "doubleFiveFootStep",
+        "label": "Take a Second Immediate 5-ft. Step Whenever Taking a 5-ft. Step",
+        "text": "Take a Second Immediate 5-ft. Step Whenever Taking a 5-ft. Step"
+      }
+    ],
     "shortDescription": "Whenever you take a 5-ft. step, you can immediately take a second 5-ft. step (ignores difficult terrain).",
     "text": "Whenever you take a 5-ft. step, you can immediately take a second 5-ft. step (ignores difficult terrain).",
     "tags": [
@@ -11855,7 +13052,16 @@
     "range": "Personal",
     "duration": "Instantaneous",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-order-forged-from-chaos-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "order-forged-from-chaos",
+        "label": "Order Forged From Chaos",
+        "text": "All allies within 30 ft. can immediately move up to their land speed without provoking AoOs."
+      }
+    ],
     "shortDescription": "All allies within 30 ft. can immediately move up to their land speed without provoking AoOs.",
     "text": "All allies within 30 ft. can immediately move up to their land speed without provoking AoOs.",
     "tags": [
@@ -11969,7 +13175,16 @@
     "range": "60 ft.",
     "duration": "End of turn",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "tob-maneuver-clarion-call-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "clarion-call",
+        "label": "Clarion Call",
+        "text": "After you reduce an opponent to 0 or fewer HP, all allies within 60 ft. can immediately make one melee attack OR take one move action."
+      }
+    ],
     "shortDescription": "After you reduce an opponent to 0 or fewer HP, all allies within 60 ft. can immediately make one melee attack OR take one move action.",
     "text": "After you reduce an opponent to 0 or fewer HP, all allies within 60 ft. can immediately make one melee attack OR take one move action.",
     "tags": [
@@ -12021,7 +13236,16 @@
     "range": "60 ft.",
     "duration": "Stance",
     "save": "None",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-st-swt",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "alliesPlus5AtkVsAdjacent",
+        "label": "Allies Gain +5 Melee Attack Against Foes Adjacent to You",
+        "text": "Allies Gain +5 Melee Attack Against Foes Adjacent to You"
+      }
+    ],
     "shortDescription": "Allies gain a +5 bonus on melee attack rolls against any opponent that is adjacent to you.",
     "text": "Allies gain a +5 bonus on melee attack rolls against any opponent that is adjacent to you.",
     "tags": [

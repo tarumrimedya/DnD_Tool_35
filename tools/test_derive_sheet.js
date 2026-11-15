@@ -203,7 +203,7 @@ function runDeriveSheetTests() {
   const f04 = computeBaselineMetrics(f04Raw);
   check('04_wizard_archmage_lvl15: INT 30 (24 Base + 6 Headband) & CON 16 (+3 Mod)', f04.abilities.int === 30 && f04.abilities.con === 16, `got ${JSON.stringify(f04.abilities)}`);
   check('04_wizard_archmage_lvl15: Normal AC 19 (10 + 5 Bracers + 3 Dex + 1 Haste Dodge), Touch AC 14, & Flat-Footed AC 15 (loses +3 Dex & +1 Haste Dodge)', f04.ac.total === 19 && f04.ac.touch === 14 && f04.ac.flatFooted === 15, `got ${JSON.stringify(f04.ac)}`);
-  check('04_wizard_archmage_lvl15: Saves Fort +15 / Ref +16 / Will +20 (Cloak +4 Resistance + Greater Heroism +4 Morale + Haste +1 Dodge Ref) & Greater Heroism tempHpFormula', f04.saves.fort === 15 && f04.saves.ref === 16 && f04.saves.will === 20 && f04Raw.buffs.some(b => b.id === 'spl-greater-heroism' && b.tempHpFormula === 'min(20, @cl)'), `got ${JSON.stringify(f04.saves)}`);
+  check('04_wizard_archmage_lvl15: Saves Fort +15 / Ref +16 / Will +20 (Cloak +4 Resistance + Greater Heroism +4 Morale + Haste +1 Dodge Ref) & Greater Heroism V3 Temp HP roll block', f04.saves.fort === 15 && f04.saves.ref === 16 && f04.saves.will === 20 && f04Raw.buffs.some(b => b.id === 'spl-greater-heroism' && Array.isArray(b.effects) && b.effects.some(e => e.type === 'roll' && e.kind === 'Temp HP' && e.tempHpFormula === 'min(20, @cl)')), `got ${JSON.stringify(f04.saves)}`);
 
   // --------------------------------------------------------------------------
   // Fixture 05: Level 17 Half-Dragon Warblade with V2.5 DM Boons & Sanitization
@@ -513,7 +513,7 @@ function runDeriveSheetTests() {
   CharStore.clearHistory();
   const charA = JSON.parse(JSON.stringify(f01Raw));
   charA.customDb = [
-    { id: 'hb_valerius_blade', name: 'Valerius Family Greatsword', category: 'Weapon', schemaVersion: 2 }
+    { id: 'hb_valerius_blade', name: 'Valerius Family Greatsword', category: 'Weapon', schemaVersion: 3, effects: [] }
   ];
   CharStore.replaceDoc(charA, { skipHistory: true });
   check(
@@ -526,7 +526,7 @@ function runDeriveSheetTests() {
   // Switch to Character B (with its own distinct customDb)
   const charB = JSON.parse(JSON.stringify(f05Raw));
   charB.customDb = [
-    { id: 'hb_kaelen_draconic_boon', name: 'Draconic Path Boon', category: 'DM Boon', schemaVersion: 2 }
+    { id: 'hb_kaelen_draconic_boon', name: 'Draconic Path Boon', category: 'DM Boon', schemaVersion: 3, effects: [] }
   ];
   CharStore.replaceDoc(charB, { label: 'Switch to Kaelen' });
   check(
@@ -1005,7 +1005,7 @@ function runDeriveSheetTests() {
     const s = RuleEngine.deriveSheet(d, [], {});
     return { tri: [s.ac.total, s.ac.touch, s.ac.flat], ac: s.ac };
   };
-  const addAcBuff = (d, name, modifiers) => d.buffs.push({ schemaVersion: 2, name, active: true, modifiers });
+  const addAcBuff = (d, name, modifiers) => d.buffs.push({ schemaVersion: 3, name, active: true, effects: modifiers.map(m => ({ type: 'stat', targets: [m.target], mode: 'flat', value: m.value, btype: m.type || 'Untyped', ...(m.condition ? { condition: m.condition } : {}) })) });
   const acBase = acAudit().tri;
   const triDelta = (t, dt, dTouch, dFlat) => t[0] === acBase[0] + dt && t[1] === acBase[1] + dTouch && t[2] === acBase[2] + dFlat;
   const stunnedAc = acAudit(d => d.buffs.push(srdCondition('cnd-stunned'))).tri;
@@ -1061,7 +1061,7 @@ function runDeriveSheetTests() {
   check('AC size: Enlarge Person -1 size modifier reaches AC and the size column', triDelta(enlargeAc.tri, -1, -1, -1) && enlargeAc.ac.size === -1 && enlargeAc.ac.penalty === 0, JSON.stringify(enlargeAc.tri));
   const itemCondAc = acAudit(d => {
     d.bodySlots = d.bodySlots || {};
-    d.bodySlots.neck = { name: 'Amulet of Warding', active: true, modifiers: [{ target: 'ac.deflection', value: 2, type: 'deflection', condition: 'vs. Evil' }] };
+    d.bodySlots.neck = { schemaVersion: 3, name: 'Amulet of Warding', active: true, effects: [{ type: 'when', branches: [{ condKind: 'note', condText: 'vs. Evil', effects: [{ type: 'stat', targets: ['ac.deflection'], mode: 'flat', value: 2, btype: 'Deflection' }] }] }] };
   });
   check(
     'AC items: a conditional item deflection bonus (vs. Evil) is situational, not added to base AC',
@@ -1070,12 +1070,12 @@ function runDeriveSheetTests() {
   );
   const itemPenAc = acAudit(d => {
     d.bodySlots = d.bodySlots || {};
-    d.bodySlots.wrists = { name: 'Bracers of Defenselessness', active: true, modifiers: [{ target: 'ac.armor', value: -5, type: 'penalty' }] };
+    d.bodySlots.wrists = { schemaVersion: 3, name: 'Bracers of Defenselessness', active: true, effects: [{ type: 'stat', targets: ['ac.armor'], mode: 'flat', value: -5, btype: 'Penalty' }] };
   }).tri;
   check('AC items: a negative item AC modifier is applied as a penalty', triDelta(itemPenAc, -5, -5, -5), JSON.stringify(itemPenAc));
   const itemLuckAc = acAudit(d => {
     d.bodySlots = d.bodySlots || {};
-    d.bodySlots.neck = { name: 'Luckstone Pendant', active: true, modifiers: [{ target: 'ac.luck', value: 1, type: 'luck' }] };
+    d.bodySlots.neck = { schemaVersion: 3, name: 'Luckstone Pendant', active: true, effects: [{ type: 'stat', targets: ['ac.luck'], mode: 'flat', value: 1, btype: 'Luck' }] };
   }).tri;
   check('AC items: an item luck bonus to AC is applied to normal, touch and flat-footed AC', triDelta(itemLuckAc, 1, 1, 1), JSON.stringify(itemLuckAc));
   const vulnAc = acAudit(d => { d.feats = (d.feats || []).concat([{ name: 'Vulnerable', category: 'Flaw' }]); }).tri;
@@ -1087,9 +1087,10 @@ function runDeriveSheetTests() {
   meleeOnlyWs.tactical = Object.assign({}, meleeOnlyWs.tactical || {}, { combatExpertise: 0, charge: false, flanking: false });
   const meleeOnlyMace = meleeOnlyWs.weapons[0];
   const meleeOnlyBow = {
-    id: 'wpn-longbow', baseItemId: 'wpn-longbow', name: 'Longbow', category: 'Martial', grip: 'Ranged',
+    id: 'wpn-longbow', baseItemId: 'wpn-longbow', schemaVersion: 3, type: 'Weapon', name: 'Longbow', category: 'Martial', grip: 'Ranged',
     tags: ['martial', 'piercing', 'ranged', 'twoHanded'],
-    damageParts: [{ dice: '1d8', bonus: 0, type: 'Piercing', multiplyOnCrit: true, onCritOnly: false, source: 'Base' }]
+    weapon: { category: 'Martial', handedness: 'twoHanded', damageDice: '1d8', dmgType: 'Piercing', baseCritRange: 20, critMultiplier: 3 },
+    effects: []
   };
   const firstAtk = (wep, opts) => RuleEngine.evaluateWeaponAttack(meleeOnlyWs, wep, opts).iteratives[0];
   const maceBase = firstAtk(meleeOnlyMace, {});
@@ -1296,13 +1297,14 @@ function runDeriveSheetTests() {
   };
   r4Doc.gearPool.push({
     id: 'pool_test_cloak_res_2',
+    schemaVersion: 3,
     name: 'Cloak of Resistance +2',
     category: 'Shoulders',
     slot: 'shoulders',
     weight: 1,
     qty: 1,
     cost: 4000,
-    modifiers: [{ target: 'saves.all', value: 2, type: 'Resistance' }]
+    effects: [{ type: 'stat', targets: ['saves.all'], mode: 'flat', value: 2, btype: 'Resistance' }]
   });
   CharStore.replaceDoc(r4Doc, { skipHistory: true });
   const r4Sheet0 = CharStore.getSheet();
@@ -2540,29 +2542,28 @@ function runDeriveSheetTests() {
   const multiDmgChar = JSON.parse(JSON.stringify(f01Raw));
   const stormbladeEntry = {
     id: 'custom_stormblade_r8',
-    schemaVersion: 2,
+    schemaVersion: 3,
     name: 'Stormfire Greatsword +1',
     type: 'Weapon',
     slot: 'Two-Handed',
     active: true,
-    modifiers: [
-      { target: 'attack.melee', value: 1, type: 'Enhancement', condition: null },
-      { target: 'damage.melee', value: 1, type: 'Enhancement', condition: null }
-    ],
-    damageParts: [
-      { dice: '2d6', bonus: 1, type: 'Slashing', multiplyOnCrit: true, onCritOnly: false, source: 'Base Weapon' },
-      { dice: '1d6', bonus: 0, type: 'Fire', multiplyOnCrit: false, onCritOnly: false, source: 'Extra Damage' },
-      { dice: '1d6', bonus: 0, type: 'Electricity', multiplyOnCrit: false, onCritOnly: false, source: 'Extra Damage' },
-      { dice: '1d10', bonus: 0, type: 'Fire', multiplyOnCrit: false, onCritOnly: true, source: 'On Critical Hit' }
-    ],
-    weaponStats: {
+    weapon: {
       category: 'Martial',
       handedness: 'Two-Handed',
-      baseDamage: '2d6',
-      critMin: 19,
-      critMult: 2,
-      damageTypes: ['Slashing']
-    }
+      damageDice: '2d6',
+      dmgType: 'Slashing',
+      baseCritRange: 19,
+      critMultiplier: 2,
+      enhancementBonus: 1,
+      masterwork: true
+    },
+    effects: [
+      { type: 'stat', targets: ['attack.melee'], mode: 'flat', value: 1, btype: 'Enhancement' },
+      { type: 'stat', targets: ['damage.melee'], mode: 'flat', value: 1, btype: 'Enhancement' },
+      { type: 'roll', kind: 'Damage', dice: '1d6', bonus: 0, dmgType: 'Fire', multiplyOnCrit: false, critOnly: false, source: 'Extra Damage' },
+      { type: 'roll', kind: 'Damage', dice: '1d6', bonus: 0, dmgType: 'Electricity', multiplyOnCrit: false, critOnly: false, source: 'Extra Damage' },
+      { type: 'roll', kind: 'Damage', dice: '1d10', bonus: 0, dmgType: 'Fire', multiplyOnCrit: false, critOnly: true, source: 'On Critical Hit' }
+    ]
   };
   CharStore.dispatch({
     type: 'progression/addFeat',
@@ -2570,21 +2571,23 @@ function runDeriveSheetTests() {
     meta: { label: 'Upsert Stormfire Greatsword +1' }
   });
   const savedStormblade = (CharStore.getDoc().customDb || []).find(e => e && e.id === 'custom_stormblade_r8');
+  const evStormblade = savedStormblade ? RuleEngine.evaluateV3Entry(savedStormblade) : null;
   check(
-    'Phase R8.2: Custom Weapon with multi-damageParts[] (Base + Fire + Electricity + Crit Burst) preserves all 4 structured damageParts in customDb',
+    'Phase R8.2: Custom V3 Weapon (weapon chassis + Fire + Electricity + Crit Burst roll effects[]) evaluates all 4 damage components cleanly',
     Boolean(savedStormblade) &&
-    Array.isArray(savedStormblade.damageParts) &&
-    savedStormblade.damageParts.length === 4 &&
-    savedStormblade.damageParts[1].type === 'Fire' &&
-    savedStormblade.damageParts[2].type === 'Electricity' &&
-    savedStormblade.damageParts[3].onCritOnly === true
+    savedStormblade.schemaVersion === 3 &&
+    Boolean(evStormblade) &&
+    evStormblade.damageParts.length === 4 &&
+    evStormblade.damageParts[1].type === 'Fire' &&
+    evStormblade.damageParts[2].type === 'Electricity' &&
+    evStormblade.damageParts[3].onCritOnly === true
   );
 
   // R8.6: Stackable Custom Feat (maxRanks: 3, stackable: true) taken twice in levelProgression
   const stackFeatChar = JSON.parse(JSON.stringify(f01Raw));
   const customToughnessPlus = {
     id: 'custom_draconic_vigor_r8',
-    schemaVersion: 2,
+    schemaVersion: 3,
     name: 'Draconic Vigor (Custom)',
     type: 'Feat',
     category: 'Fighter Bonus',
@@ -2593,8 +2596,8 @@ function runDeriveSheetTests() {
     maxRanks: 3,
     stackable: true,
     targetRepeatable: false,
-    modifiers: [
-      { target: 'hp', value: 5, type: 'Untyped', condition: null }
+    effects: [
+      { type: 'stat', targets: ['hp'], mode: 'flat', value: 5, btype: 'Untyped' }
     ]
   };
   const baseHpBeforeVigor = RuleEngine.deriveSheet(stackFeatChar, [customToughnessPlus]).hp.max;
@@ -2733,7 +2736,7 @@ function runDeriveSheetTests() {
   const p2Valid = p2Gear.concat(p2Opts).every(e =>
     e.schemaVersion === 3 && / p\.\s?\d/.test(e.source || '') && e.contentLevel === 'summary' &&
     ['verified', 'cross-checked'].includes(e.verification) && e.provenance && Array.isArray(e.effects) && !('modifiers' in e) &&
-    (e.type !== 'Weapon' || (e.weapon && Array.isArray(e.modes) && e.modes.length > 0 && e.modes.every(m => /^\d+d\d+$/.test(m.damageParts[0].dice)))) &&
+    (e.type !== 'Weapon' || (e.weapon && Array.isArray(e.modes) && e.modes.length > 0 && !('damageParts' in e) && e.modes.every(m => !('damageParts' in m) && /^\d+d\d+$/.test(m.weapon?.damageDice || m.damageDice || '')))) &&
     (!['Armor', 'Shield'].includes(e.type) || (e.armor && typeof e.armor.armorBonus === 'number')));
   check('SRD Import P2: every new record is Canonical V3 with a book page, contentLevel, verification and provenance; weapon modes and armor chassis are well-formed', p2Valid);
   const lynx = p2By('wpn-lynxpaw');
@@ -2743,7 +2746,7 @@ function runDeriveSheetTests() {
     'SRD Import P2: book-settled weapon stats (Sugliin Frost T4-1, Drow Scorpion Chain RoE, Lynxpaw RotW T7-1, Foot Spike) and armor table values (RoS T7-2)',
     p2By('wpn-sugliin').damage === '2d8' && p2By('wpn-sugliin').critMult === 2 && p2By('wpn-sugliin').weight === 20 &&
     p2By('wpn-drow-scorpion-chain').weight === 12 && p2By('wpn-drow-scorpion-chain').ruleFlags.reach === true &&
-    lynx.damage === '1d6' && lynx.critRange === 18 && lynxOff.damageParts[0].dice === '1d4' && lynxOff.damageParts[0].type === 'Slashing' && lynxOff.critMult === 3 &&
+    lynx.damage === '1d6' && lynx.critRange === 18 && (lynxOff.weapon?.damageDice || lynxOff.damageDice) === '1d4' && (lynxOff.weapon?.dmgType || lynxOff.dmgType) === 'Slashing' && lynxOff.critMult === 3 &&
     p2By('wpn-foot-spike').damage === '1d4' && p2By('wpn-foot-spike').critMult === 3 &&
     mtn.armor.armorBonus === 10 && mtn.maxDex === 0 && mtn.checkPenalty === -9 && mtn.spellFailure === 60 && mtn.weight === 225 && mtn.speed30 === '15 ft.' &&
     p2By('arm-chitin-armor-stormwrack').armor.armorBonus === 4 && p2By('arm-chitin-armor-races-of-eberron').armor.armorBonus === 2
@@ -3016,7 +3019,8 @@ function runDeriveSheetTests() {
   check(
     'SRD Import Powers: an active psionic buff (Force Screen, +4 shield) resolves from the customDb snapshot without the powers chunk',
     !Comp.isChunkLoaded('srd_powers.json') && pwSpec && pwSpec.isBuffSpell === true &&
-    (pwSpec.modifiers || []).some(m => m && m.target === 'ac.shield' && Number(m.value) === 4)
+    pwSpec.schemaVersion === 3 && !('modifiers' in pwSpec) &&
+    (pwSpec.effects || []).some(e => e && e.type === 'stat' && Array.isArray(e.targets) && e.targets.includes('ac.shield') && Number(e.value) === 4)
   );
   Comp.ensureChunkLoaded('srd_powers.json'); // Node: synchronous
   const pwDb = [];
@@ -3441,7 +3445,7 @@ function runDeriveSheetTests() {
     const firstBind = loadSrc.indexOf('bindMasterDbToLoadedCharacter();');
     const defaultSave = loadSrc.indexOf('saveStateToStorage(false, true);');
     const hydrateSave = loadSrc.indexOf('if (updated) saveStateToStorage(false);');
-    const migrate = loadSrc.indexOf('upgradeCharacterToV2(character);');
+    const migrate = loadSrc.indexOf('upgradeCharacterToV3(character);');
     check(
       'Sheet load: masterDb is bound to the loaded character\'s customDb before the default-character save and the hydration save, and again after the V2 upgrade replaces the character, so opening a Hub-created or migrated character keeps its DB',
       Array.isArray(box.bound) && box.bound.length === 1 && box.bound[0].id === 'keep_me' &&
@@ -3691,7 +3695,7 @@ function runDeriveSheetTests() {
     // Masterwork +1 and a +3 enhancement buff on the weapon do not stack: only the higher enhancement is applied.
     const fighter = deriveFixture('01_fighter_lvl1.json');
     const mwBase = RuleEngine.evaluateWeaponAttack(fighter, fighter.weapons[0], {});
-    fighter.buffs = [{ id: 'test-enh-buff', name: 'Test Weapon Enhancement Buff', active: true, modifiers: [{ target: 'attack.weapon', value: 3, type: 'Enhancement' }] }];
+    fighter.buffs = [{ id: 'test-enh-buff', schemaVersion: 3, name: 'Test Weapon Enhancement Buff', active: true, effects: [{ type: 'stat', targets: ['attack.weapon'], mode: 'flat', value: 3, btype: 'Enhancement' }] }];
     const mwBuffed = RuleEngine.evaluateWeaponAttack(fighter, fighter.weapons[0], {});
     const enhApplied = mwBuffed.attackBonusItems.filter(i => String(i.type).toLowerCase() === 'enhancement' && i.applied);
     check(
@@ -3705,12 +3709,13 @@ function runDeriveSheetTests() {
     // (not in `condition`, which marks a conditional bonus), so the attack breakdown reads "Masterwork" / "Weapon Enhancement".
     const mwAssembled = global.ItemAssembler.assemble({ baseItemId: 'wpn-longsword', masterwork: true });
     const enhAssembled = global.ItemAssembler.assemble({ baseItemId: 'wpn-longsword', enhancementBonus: 2 });
-    const mwMod = mwAssembled.modifiers.find(m => m.target === 'attack.weapon');
-    const enhMod = enhAssembled.modifiers.find(m => m.target === 'attack.weapon');
+    const mwEff = mwAssembled.effects.find(e => e.type === 'stat' && Array.isArray(e.targets) && e.targets.includes('attack.weapon'));
+    const enhEff = enhAssembled.effects.find(e => e.type === 'stat' && Array.isArray(e.targets) && e.targets.includes('attack.weapon'));
     const mwEval = RuleEngine.evaluateWeaponAttack(deriveFixture('01_fighter_lvl1.json'), { ...mwAssembled, name: 'Masterwork Longsword' }, {});
     check(
-      'ItemAssembler: masterwork / enhancement attack modifiers are labelled by source with no condition; the breakdown shows "Masterwork"',
-      mwMod && mwMod.source === 'Masterwork' && mwMod.condition === null && enhMod && enhMod.source === 'Weapon Enhancement' && enhMod.condition === null &&
+      'ItemAssembler: masterwork / enhancement attack effects are Pure V3 stat blocks labelled by source with no condition; the breakdown shows "Masterwork"',
+      !('modifiers' in mwAssembled) && !('damageParts' in mwAssembled) &&
+      mwEff && mwEff.source === 'Masterwork' && !mwEff.condition && enhEff && enhEff.source === 'Weapon Enhancement' && !enhEff.condition &&
       mwEval.attackBonusItems.some(i => i.source === 'Masterwork' && i.val === 1 && i.applied !== false) &&
       sumApplied(mwEval.attackBonusItems) === mwEval.netAttackBonus
     );
@@ -3723,15 +3728,14 @@ function runDeriveSheetTests() {
       const w = JSON.parse(JSON.stringify(c.weapons[idx]));
       const enh = Number(w.enhancementBonus) || 0;
       // Shape after hydration: the assembler's attack.weapon enhancement modifier (damage lives in damageParts).
-      w.modifiers = [{ target: 'attack.weapon', value: enh, formula: String(enh), type: 'enhancement', condition: null, source: 'Weapon Enhancement' }];
       w._statsHydrated = true;
-      const upgraded = SchemaMigrator.upgradeEntryToV2(w);
+      const upgraded = SchemaMigrator.migrateEntryToV3(w);
       const plain = RuleEngine.evaluateWeaponAttack(c, c.weapons[idx], {});
       const r = RuleEngine.evaluateWeaponAttack(c, upgraded, {});
-      const extra = upgraded.modifiers.filter(m => /^(attack|damage)/.test(String(m.target)) && String(m.type).toLowerCase() !== 'enhancement');
+      const extra = (upgraded.effects || []).filter(e => e.type === 'stat' && (e.targets || []).some(t => /^(attack|damage)/.test(String(t))) && String(e.btype || '').toLowerCase() !== 'enhancement');
       return { ok: r.netAttackBonus === expected && r.netFlatDamage === plain.netFlatDamage && extra.length === 0 && sumApplied(r.attackBonusItems) === r.netAttackBonus, desc: `${w.name} ${r.netAttackBonus}/${expected} dmg ${r.netFlatDamage}/${plain.netFlatDamage} extra ${extra.length}` };
     });
-    const flatColumnWeapon = SchemaMigrator.upgradeEntryToV2({ name: 'Flat Column Club', dice: '1d6', critMult: 2, attBonus: 1, dmgBonus: 1 });
+    const flatColumnWeapon = SchemaMigrator.migrateEntryToV3({ name: 'Flat Column Club', dice: '1d6', critMult: 2, attBonus: 1, dmgBonus: 1 });
     const offHead = RuleEngine.getDoubleWeaponOffHandHeadStats({ name: 'Two-Bladed Sword', enhancementBonus: 2 });
     const flatWriterRe = /\.(?:attBonus|dmgBonus)\s*=(?!=)|\b(?:attBonus|dmgBonus)\s*:\s*(?:Number\(|item\.|slot\.|v2Item\.|enriched\.|offHandItem\.|offHeadCandidate\.|forgedV2Item\.|spell\.|enh\b)/;
     const flatWriters = ['char_inventory.js', 'char_store.js', 'char_combat.js', 'rule_engine.js'].flatMap(f =>
@@ -3740,7 +3744,7 @@ function runDeriveSheetTests() {
       'Weapon bonus single source: no flat attBonus / dmgBonus writer in the sheet modules, SchemaMigrator adds no attack / damage modifier for those columns, the double-weapon off-hand head carries enhancementBonus, fixture weapons keep their totals' +
         mirrorRows.filter(x => !x.ok).map(x => ' — ' + x.desc).join('') + flatWriters.map(x => ' — writer ' + x.at).join(''),
       mirrorRows.every(x => x.ok) && flatWriters.length === 0 &&
-      !flatColumnWeapon.modifiers.some(m => /^(attack|damage)/.test(String(m.target))) &&
+      !(flatColumnWeapon.effects || []).some(e => e.type === 'stat' && (e.targets || []).some(t => /^(attack|damage)/.test(String(t)))) &&
       offHead.enhancementBonus === 2 && offHead.attBonus === undefined && offHead.dmgBonus === undefined
     );
 
@@ -3863,11 +3867,13 @@ function runDeriveSheetTests() {
     pbsBaseChar.tactical.pointBlankShot = true;
     const pbsOnRanged = RuleEngine.evaluateWeaponAttack(pbsBaseChar, longbow, { grip: 'Ranged' });
     const pbsOnMelee = RuleEngine.evaluateWeaponAttack(pbsBaseChar, longsword, { grip: '1-Hand' });
+    const pbsEvEntry = pbsCompEntry ? RuleEngine.evaluateV3Entry(JSON.parse(JSON.stringify(pbsCompEntry)), { character: pbsBaseChar }) : null;
     check(
-      'Sprint B.2/C.5: feat-point-blank-shot uses V3 effects + runtime modifiers with toggle condition (ranged +1/+1 active, +0/+0 inactive, +0/+0 melee) and char_combat.js has zero attBonus reads',
-      Boolean(pbsCompEntry && pbsCompEntry.schemaVersion === 3 && Array.isArray(pbsCompEntry.modifiers) && pbsCompEntry.modifiers.length === 2 &&
-        pbsCompEntry.modifiers.some(m => (m.target === 'atk.ranged' || m.target === 'attack.ranged') && m.value === 1 && m.condition?.toggle === 'pointBlankShot') &&
-        pbsCompEntry.modifiers.some(m => (m.target === 'dmg.ranged' || m.target === 'damage.ranged') && m.value === 1 && m.condition?.toggle === 'pointBlankShot')) &&
+      'Sprint B.2/C.5: feat-point-blank-shot uses pure V3 effects (zero Compendium V2 getters) + RuleEngine V3 evaluation with toggle condition (ranged +1/+1 active, +0/+0 inactive, +0/+0 melee) and char_combat.js has zero attBonus reads',
+      Boolean(pbsCompEntry && pbsCompEntry.schemaVersion === 3 && !('modifiers' in pbsCompEntry) && Array.isArray(pbsCompEntry.effects) && pbsCompEntry.effects.length > 0 &&
+        pbsEvEntry && Array.isArray(pbsEvEntry.modifiers) && pbsEvEntry.modifiers.length === 2 &&
+        pbsEvEntry.modifiers.some(m => (m.target === 'atk.ranged' || m.target === 'attack.ranged') && m.value === 1 && m.condition?.toggle === 'pointBlankShot') &&
+        pbsEvEntry.modifiers.some(m => (m.target === 'dmg.ranged' || m.target === 'damage.ranged') && m.value === 1 && m.condition?.toggle === 'pointBlankShot')) &&
       pbsOnRanged.netAttackBonus === pbsOffRanged.netAttackBonus + 1 &&
       pbsOnRanged.netFlatDamage === pbsOffRanged.netFlatDamage + 1 &&
       pbsOnMelee.netAttackBonus === RuleEngine.evaluateWeaponAttack({ ...pbsBaseChar, tactical: { pointBlankShot: false } }, longsword, { grip: '1-Hand' }).netAttackBonus &&
@@ -3886,9 +3892,10 @@ function runDeriveSheetTests() {
     const knowChar = JSON.parse(JSON.stringify(f01Raw));
     knowChar.feats.push({
       id: 'feat-test-autopsionics',
+      schemaVersion: 3,
       name: 'Psionic Scholar Test',
       active: true,
-      modifiers: [{ target: 'skill.knowledge_psionics', value: 2, type: 'untyped' }]
+      effects: [{ type: 'stat', targets: ['skill.knowledge_psionics'], mode: 'flat', value: 2, btype: 'Untyped' }]
     });
     const kPsionicsBonus = RuleEngine.evaluateSkillBonus(knowChar, 'k_psionics', 'Knowledge (Psionics)', 'int');
     const kArcanaBonus = RuleEngine.evaluateSkillBonus(knowChar, 'k_arcana', 'Knowledge (Arcana)', 'int');
@@ -3996,7 +4003,7 @@ function runDeriveSheetTests() {
       return Boolean(cached && cached.total === direct.total && JSON.stringify(cached.breakdown) === JSON.stringify(direct.breakdown));
     });
     const recTestDb = [
-      { id: 'hb-custom-ring', name: 'Homebrew Ring of Stars', type: 'Ring', modifiers: [{ target: 'ac.deflection', value: 4, type: 'deflection' }] },
+      { id: 'hb-custom-ring', schemaVersion: 3, name: 'Homebrew Ring of Stars', type: 'Ring', effects: [{ type: 'stat', targets: ['ac.deflection'], mode: 'flat', value: 4, btype: 'Deflection' }] },
       SrdCompendium.compactSnapshotLoadedEntry('feat-power-attack'),
       SrdCompendium.compactSnapshotLoadedEntry('feat-dodge')
     ].filter(Boolean);
@@ -4008,17 +4015,17 @@ function runDeriveSheetTests() {
     recTestDb[1]._snapshot.srcHash = SrdCompendium.contentHash(recTestDb[1]);
     recTestDb[2]._snapshot.chunkHash = 'stale_chunk_hash';
     recTestDb[2]._snapshot.srcHash = 'older_srd_hash_before_errata';
-    recTestDb[2].modifiers = [{ target: 'ac.dodge', value: 3, type: 'dodge' }]; // User customized Dodge to +3!
+    recTestDb[2].effects = [{ type: 'stat', targets: ['ac.dodge'], mode: 'flat', value: 3, btype: 'Dodge' }]; // User customized Dodge to +3!
     const recRes045 = SrdCompendium.reconcileSnapshotsSync(recTestDb);
     check(
       'ADR-045.3: sheet.skillsBonusMap matches evaluateSkillBonus 100% and reconcileSnapshotsSync auto-updates unmodified compact snapshots while preserving homebrew and user-edited entries',
       directSkillMatch &&
       recRes045.autoUpdated.includes('feat-power-attack') &&
       recRes045.updateAvailable.includes('feat-dodge') &&
-      recTestDb[0].modifiers[0].value === 4 &&
+      recTestDb[0].effects[0].value === 4 &&
       recTestDb[1].shortDescription !== 'Old stale summary' &&
       recTestDb[1]._snapshot.compact === true &&
-      recTestDb[2].modifiers[0].value === 3,
+      recTestDb[2].effects[0].value === 3,
       `directSkillMatch=${directSkillMatch}, auto=${recRes045.autoUpdated.join(',')}, avail=${recRes045.updateAvailable.join(',')}`
     );
 
@@ -4335,10 +4342,10 @@ function runDeriveSheetTests() {
     };
     const wolfComp = Comp.calculateCompanionStats(druid10, { type: 'animal_companion', baseMonsterId: 'mst-wolf' });
     check(
-      'Sprint C.5: SrdCompendium V3 runtime getters (Greater Heroism lazy modifiers + description) & calculateCompanionStats Wolf Druid 10',
-      Boolean(ghSrd && ghSrd.schemaVersion === 3 && !Object.prototype.propertyIsEnumerable.call(ghSrd, 'modifiers') &&
-        Array.isArray(ghSrd.modifiers) && ghSrd.modifiers.length >= 3 &&
-        ghSrd.tempHpFormula === 'min(20, @cl)' && typeof ghSrd.description === 'string' && ghSrd.description.length > 40) &&
+      'Sprint C.5/C.6: SrdCompendium Pure V3 entries (Greater Heroism effects + description, zero V2 getters) & calculateCompanionStats Wolf Druid 10',
+      Boolean(ghSrd && ghSrd.schemaVersion === 3 && !('modifiers' in ghSrd) && !('tempHpFormula' in ghSrd) &&
+        Array.isArray(ghSrd.effects) && ghSrd.effects.some(e => e.type === 'roll' && e.kind === 'Temp HP' && e.tempHpFormula === 'min(20, @cl)') &&
+        typeof ghSrd.description === 'string' && ghSrd.description.length > 40) &&
       Boolean(wolfComp && wolfComp.totalHd === 8 && wolfComp.ac.total === 22 && wolfComp.ac.naturalArmor === 8 && wolfComp.abilities.str === 16)
     );
   }
@@ -4505,6 +4512,224 @@ function runDeriveSheetTests() {
         ssCustomPlus2.ac.total === 15
       ),
       `withShield=${JSON.stringify(ssWithShield.ac)}, noShield=${JSON.stringify(ssNoShield.ac)}, withWard=${JSON.stringify(ssWithWard.ac)}, custom2=${JSON.stringify(ssCustomPlus2.ac)}`
+    );
+
+    // Sprint C.6 Finding 1 (C6-F1): V3 Potion of Cure Light Wounds in Compendium + parseConsumablePlan + customEntries override
+    const potClw = Comp.getById('pot-cure-light-wounds');
+    const potHeal = Comp.getById('pot-heal');
+    const clwPlan = RuleEngine.parseConsumablePlan({ id: 'pot-cure-light-wounds', name: 'Potion of Cure Light Wounds' }, '');
+    const customPotChar = {
+      customEntries: {
+        'pot-cure-light-wounds': {
+          schemaVersion: 3,
+          id: 'pot-cure-light-wounds',
+          blueprint: 'wondrous',
+          name: 'Potion of Cure Light Wounds',
+          effects: [{ type: 'roll', kind: 'Healing', count: 2, die: 'd8', flat: 5, scaling: 'flat' }]
+        }
+      }
+    };
+    const clwCustomPlan = RuleEngine.parseConsumablePlan({ id: 'pot-cure-light-wounds', name: 'Potion of Cure Light Wounds' }, '', customPotChar);
+    check(
+      'Sprint C.6 (C6-F1): Potion of Cure Light Wounds & Potion of Heal carry Canonical V3 Healing roll blocks and resolve dynamically in parseConsumablePlan (including char.customEntries override)',
+      Boolean(
+        potClw && Array.isArray(potClw.effects) && potClw.effects.length === 1 &&
+        potClw.effects[0].type === 'roll' && potClw.effects[0].kind === 'Healing' &&
+        potClw.effects[0].count === 1 && potClw.effects[0].die === 'd8' && potClw.effects[0].flat === 1 &&
+        potHeal && Array.isArray(potHeal.effects) && potHeal.effects[0] && potHeal.effects[0].count === 110 &&
+        clwPlan.isHealing === true && clwPlan.formula === '1d8+1' && clwPlan.diceCount === 1 && clwPlan.diceSides === 8 && clwPlan.flatBonus === 1 &&
+        clwCustomPlan.isHealing === true && clwCustomPlan.formula === '2d8+5' && clwCustomPlan.diceCount === 2 && clwCustomPlan.flatBonus === 5
+      ),
+      `potClw=${JSON.stringify(potClw && potClw.effects)}, clwPlan=${JSON.stringify(clwPlan)}, clwCustomPlan=${JSON.stringify(clwCustomPlan)}`
+    );
+
+    // Sprint C.6 Finding 5 (C6-F5): Consolidated Skills single highest positive bonus across the entire consolidated group
+    const conSkillChar = {
+      name: 'Consolidated Skill Tester',
+      race: 'Elf',
+      level: 5,
+      settings: { mergeSkills: true },
+      abilities: { str: 10, dex: 16, con: 12, int: 12, wis: 14, cha: 10 },
+      feats: ['Stealthy', 'Alertness'],
+      bodySlots: {
+        shoulders: {
+          id: 'wond-cloak-of-elvenkind',
+          name: 'Cloak of Elvenkind',
+          schemaVersion: 3,
+          effects: [{ type: 'stat', targets: ['skill.hide'], mode: 'flat', value: 5, btype: 'Competence' }]
+        },
+        ring1: {
+          id: 'custom-conc-ring',
+          name: 'Ring of Focus',
+          schemaVersion: 3,
+          effects: [
+            { type: 'stat', targets: ['skill.concentration'], mode: 'flat', value: 5, btype: 'Competence' },
+            { type: 'stat', targets: ['skill.concentration'], mode: 'flat', value: 2, btype: 'Insight' }
+          ]
+        }
+      },
+      buffs: [
+        { name: 'Energy Drain', active: true, negativeLevels: 1 }
+      ],
+      skills: [
+        { key: 'hide', name: 'Hide', stat: 'dex', ranks: 5, isClass: true },
+        { key: 'move_silently', name: 'Move Silently', stat: 'dex', ranks: 5, isClass: true },
+        { key: 'spot', name: 'Spot', stat: 'wis', ranks: 4, isClass: true },
+        { key: 'listen', name: 'Listen', stat: 'wis', ranks: 4, isClass: true },
+        { key: 'search', name: 'Search', stat: 'int', ranks: 2, isClass: false },
+        { key: 'concentration', name: 'Concentration', stat: 'con', ranks: 5, isClass: true }
+      ]
+    };
+    const stealthConsolidated = RuleEngine.evaluateSkillBonus(conSkillChar, 'stealth', 'Stealth', 'dex');
+    const perceptionConsolidated = RuleEngine.evaluateSkillBonus(conSkillChar, 'perception', 'Perception', 'wis');
+    const concStandard = RuleEngine.evaluateSkillBonus(conSkillChar, 'concentration', 'Concentration', 'con');
+    const unmergedChar = Object.assign({}, conSkillChar, { settings: { mergeSkills: false } });
+    const hideUnmerged = RuleEngine.evaluateSkillBonus(unmergedChar, 'hide', 'Hide', 'dex');
+    check(
+      'Sprint C.6 (C6-F5): Consolidated Skills take only the single highest positive bonus across the entire group (+ penalties), while non-consolidated skills and mergeSkills:false keep standard D&D 3.5e stacking',
+      Boolean(
+        stealthConsolidated.total === 4 &&       // +5 Cloak of Elvenkind (beats +2 Stealthy Hide/MS) - 1 Negative Level = +4
+        perceptionConsolidated.total === 1 &&    // +2 single highest (from Elf +2 Spot/Listen/Search & Alertness +2 Spot/Listen) - 1 Negative Level = +1
+        concStandard.total === 6 &&              // Non-consolidated: +5 Competence + +2 Insight - 1 Negative Level = +6
+        hideUnmerged.total === 6                 // Unmerged RAW Hide: +5 Competence + +2 Stealthy Untyped - 1 Negative Level = +6
+      ),
+      `stealth=${JSON.stringify(stealthConsolidated)}, perception=${JSON.stringify(perceptionConsolidated)}, conc=${JSON.stringify(concStandard)}, hideUnmerged=${JSON.stringify(hideUnmerged)}`
+    );
+
+    // Sprint C.6 Finding 4 (C6-F4a): Parenthetical @Choice StudioBridge lookup + canonical When condKind (Shield Specialization, Weapon Focus, Skill Focus, Spell Focus)
+    const choiceHostChar = {
+      name: 'Choice Bridge Tester',
+      level: 4,
+      feats: [
+        'Shield Specialization (Heavy Steel Shield)',
+        'Weapon Focus (Longsword)',
+        'Skill Focus (Concentration)',
+        'Spell Focus (Evocation)'
+      ]
+    };
+    CharStore._syncExternalCharacterRef(choiceHostChar);
+    const shSpecRes = CharStore.StudioBridge.resolveEntity({ kind: 'feat', name: 'Shield Specialization (Heavy Steel Shield)' });
+    const wfRes = CharStore.StudioBridge.resolveEntity({ kind: 'feat', name: 'Weapon Focus (Longsword)' });
+    const sfRes = CharStore.StudioBridge.resolveEntity({ kind: 'feat', name: 'Skill Focus (Concentration)' });
+    const spfRes = CharStore.StudioBridge.resolveEntity({ kind: 'feat', name: 'Spell Focus (Evocation)' });
+    check(
+      'Sprint C.6 (C6-F4a): StudioBridge resolves parenthetical @Choice feats to canonical SRD V3 entries with choices[] and exact named When condKind (Shield Specialization, Weapon Focus, Skill Focus, Spell Focus)',
+      Boolean(
+        shSpecRes?.entry?.id === 'feat-shield-specialization' &&
+        shSpecRes?.entry?.choice === 'Heavy Steel Shield' &&
+        Array.isArray(shSpecRes.entry.choices) && shSpecRes.entry.choices.length === 1 &&
+        shSpecRes.entry.effects?.[0]?.type === 'when' &&
+        shSpecRes.entry.effects?.[0]?.branches?.[0]?.condKind === 'wieldingChosenShield' &&
+        shSpecRes.entry.effects?.[0]?.branches?.[0]?.condText === '' &&
+        shSpecRes.entry.effects?.[0]?.branches?.[0]?.effects?.[0]?.targets?.[0] === 'ac.shieldBonus' &&
+        wfRes?.entry?.id === 'feat-weapon-focus' && wfRes?.entry?.choice === 'Longsword' &&
+        wfRes.entry.effects?.[0]?.branches?.[0]?.condKind === 'wieldingChosenWeapon' &&
+        sfRes?.entry?.id === 'feat-skill-focus' && sfRes?.entry?.choice === 'Concentration' &&
+        sfRes.entry.effects?.[0]?.targets?.[0] === 'choice.skill.1' &&
+        spfRes?.entry?.id === 'feat-spell-focus' && spfRes?.entry?.choice === 'Evocation' &&
+        spfRes.entry.effects?.[0]?.branches?.[0]?.condKind === 'castingChosenSchool'
+      ),
+      `shSpec=${JSON.stringify(shSpecRes)}, wf=${JSON.stringify(wfRes)}, sf=${JSON.stringify(sfRes)}, spf=${JSON.stringify(spfRes)}`
+    );
+
+    // Sprint C.6 Finding 4 (C6-F4b): Weapon Focus & Weapon Specialization V3 @Choice evaluation + customEntries override without shadow double-counting
+    const wfFighter = {
+      name: 'Weapon Spec Fighter',
+      level: 4,
+      bab: 4,
+      abilities: { str: 14, dex: 12, con: 14, int: 10, wis: 10, cha: 10 }, // STR +2
+      feats: ['Weapon Focus (Longsword)', 'Weapon Specialization (Longsword)'],
+      weapons: [
+        { id: 'wpn-longsword', name: 'Longsword', category: 'Melee', damage: '1d8', crit: '19-20/x2', type: 'Slashing', handedness: 'One-Handed', equipped: true },
+        { id: 'wpn-shortsword', name: 'Shortsword', category: 'Melee', damage: '1d6', crit: '19-20/x2', type: 'Piercing', handedness: 'Light', equipped: true }
+      ],
+      customEntries: {}
+    };
+    const wfSheetBase = RuleEngine.deriveSheet(wfFighter);
+    const lsBase = wfSheetBase.combat.weapons.find((w) => w.name === 'Longsword');
+    const ssBase = wfSheetBase.combat.weapons.find((w) => w.name === 'Shortsword');
+    const wfFighterCustom = JSON.parse(JSON.stringify(wfFighter));
+    wfFighterCustom.customEntries['feat-weapon-focus'] = Object.assign({}, JSON.parse(JSON.stringify(Comp.getById('feat-weapon-focus'))), {
+      effects: [{
+        id: 'ef-wf-custom',
+        type: 'when',
+        flow: 'while',
+        branches: [{ id: 'ef-wf-br', condKind: 'wieldingChosenWeapon', condText: '', effects: [{ id: 'ef-wf-a', type: 'stat', targets: ['atk.weapon'], mode: 'flat', value: 3, btype: 'Untyped' }] }]
+      }]
+    });
+    const wfSheetCustom = RuleEngine.deriveSheet(wfFighterCustom);
+    const lsCustom = wfSheetCustom.combat.weapons.find((w) => w.name === 'Longsword');
+    check(
+      'Sprint C.6 (C6-F4b): Weapon Focus & Weapon Specialization evaluate via V3 wieldingChosenWeapon (+1 atk / +2 dmg on Longsword, +0 on Shortsword) and customEntries override (+3) applies without shadow double-counting',
+      Boolean(
+        lsBase?.evaluated && ssBase?.evaluated && lsCustom?.evaluated &&
+        lsBase.evaluated.netAttackBonus === 7 &&     // BAB 4 + STR 2 + WF 1
+        lsBase.evaluated.netFlatDamage === 4 &&      // STR 2 + WS 2
+        ssBase.evaluated.netAttackBonus === 6 &&     // BAB 4 + STR 2 + 0
+        ssBase.evaluated.netFlatDamage === 2 &&      // STR 2 + 0
+        lsCustom.evaluated.netAttackBonus === 9      // BAB 4 + STR 2 + Custom WF 3 (zero shadow +1!)
+      ),
+      `lsBase=${JSON.stringify(lsBase)}, ssBase=${JSON.stringify(ssBase)}, lsCustom=${JSON.stringify(lsCustom)}`
+    );
+
+    // Sprint C.6 Finding 4 (C6-F4c): Skill Focus @Choice (`choice.skill.1`) + Spell Focus @Choice (`castingChosenSchool`) + Frail Flaw (`hp.perLevel`) + V3 Charged Items
+    const splatFeatsRaw = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'database', 'srd_feats_splat.json'), 'utf8'));
+    const collectorEntry = splatFeatsRaw.find((x) => x.id === 'strk-collector-of-stories');
+    const v3Wizard = {
+      name: 'Evoker Savant',
+      race: 'Human',
+      class: 'Wizard',
+      level: 5,
+      bab: 2,
+      casterLevel: 5,
+      spellcastingAbility: 'int',
+      abilities: { str: 10, dex: 12, con: 14, int: 18, wis: 10, cha: 10 }, // CON +2, INT +4
+      hp: { baseMax: 20, conBonusHp: 10, max: 30, current: 30 },
+      levelProgression: Array.from({ length: 5 }, (_, i) => ({ level: i + 1, className: 'Wizard', hitDie: 4, hpRoll: 4, active: true })),
+      feats: ['Skill Focus (Concentration)', 'Spell Focus (Evocation)', 'Greater Spell Focus (Evocation)'],
+      flaws: ['Frail'],
+      specialAbilities: [{ id: 'strk-collector-of-stories', name: 'Collector of Stories' }],
+      customDb: collectorEntry ? [collectorEntry] : [],
+      skills: [
+        { key: 'concentration', name: 'Concentration', stat: 'con', ranks: 8, isClass: true },
+        { key: 'knowledge_arcana', name: 'Knowledge (arcana)', stat: 'int', ranks: 8, isClass: true },
+        { key: 'spot', name: 'Spot', stat: 'wis', ranks: 0, isClass: false }
+      ],
+      spellcasting: {
+        preparedSpells: [
+          { id: 'spl-fireball', name: 'Fireball', level: 3, school: 'Evocation', save: 'Reflex half', prepared: 1 },
+          { id: 'spl-haste', name: 'Haste', level: 3, school: 'Transmutation', save: 'Fortitude negates (harmless)', prepared: 1 }
+        ]
+      }
+    };
+    const wizSheet = RuleEngine.deriveSheet(v3Wizard, v3Wizard.customDb);
+    RuleEngine._activeCustomDb = v3Wizard.customDb;
+    const concBonus = RuleEngine.evaluateSkillBonus(v3Wizard, 'concentration', 'Concentration', 'con');
+    const arcanaBonus = RuleEngine.evaluateSkillBonus(v3Wizard, 'knowledge_arcana', 'Knowledge (arcana)', 'int');
+    const spotBonus = RuleEngine.evaluateSkillBonus(v3Wizard, 'spot', 'Spot', 'wis');
+    RuleEngine._activeCustomDb = null;
+    const prepEnriched = wizSheet.spells.spellsByLevelView.preparedSpells || [];
+    const fireballEnriched = prepEnriched.find((s) => s.name === 'Fireball');
+    const hasteEnriched = prepEnriched.find((s) => s.name === 'Haste');
+
+    const micRaw = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'database', 'mic_compendium.json'), 'utf8'));
+    const hbEntry = JSON.parse(JSON.stringify(micRaw.find((x) => x.id === 'mi-mic-healing-belt')));
+    const bosEntry = JSON.parse(JSON.stringify(Comp.getById('mi-boots-of-speed')));
+    const hbDc = RuleEngine.normalizeItemDailyCharges(hbEntry);
+    const bosDc = RuleEngine.normalizeItemDailyCharges(bosEntry);
+    check(
+      'Sprint C.6 (C6-F4c): V3 @Choice Skill Focus (+3 Concentration, +0 Spot), V3 Collector of Stories (+5 Competence Knowledge), V3 Spell Focus/Greater Spell Focus (+2 Evocation DC only), V3 Frail (-1 HP/lvl), and V3 resource charges (Healing Belt 3, Boots of Speed 10)',
+      Boolean(
+        concBonus && concBonus.total === 3 &&
+        spotBonus && spotBonus.total === 0 &&
+        arcanaBonus && arcanaBonus.total === 5 &&
+        fireballEnriched && fireballEnriched.saveDc === 19 && // 10 + 3 lvl + 4 INT + 1 SF + 1 GSF
+        hasteEnriched && hasteEnriched.saveDc === 17 &&       // 10 + 3 lvl + 4 INT + 0
+        wizSheet.hp.max === 25 &&                             // 20 base + 10 CON - 5 Frail = 25
+        hbDc && hbDc.max === 3 &&
+        bosDc && bosDc.max === 10 && bosDc.unit === 'rounds'
+      ),
+      `conc=${JSON.stringify(concBonus)}, spot=${JSON.stringify(spotBonus)}, arcana=${JSON.stringify(arcanaBonus)}, fbDc=${fireballEnriched?.saveDc}, hasteDc=${hasteEnriched?.saveDc}, maxHp=${wizSheet.hp.max}, hb=${JSON.stringify(hbDc)}, bos=${JSON.stringify(bosDc)}`
     );
   }
 

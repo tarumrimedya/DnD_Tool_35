@@ -5,22 +5,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>D&D 3.5e Character & Campaign Command Center (Hub)</title>
   <link rel="stylesheet" href="tailwind_compiled.css?v=101216d709">
-  <script src="srd_compendium.js?v=dbbe199f07"></script>
-  <script src="rule_engine.js?v=db56220b59"></script>
+  <script src="srd_compendium.js?v=9dffa68ff8"></script>
+  <script src="rulesets/dnd35.js?v=2b802996bd"></script>
+  <script src="rule_engine.js?v=0ae4e5f946"></script>
   <script src="ui_components.js?v=d389ad5585"></script>
-  <script src="rule_master.js?v=e7651522bf"></script>
-  <script src="ui_shared.js?v=8df0c1e633"></script>
-  <script src="campaign_db.js?v=c7d72607cc"></script>
+  <script src="rule_master.js?v=aeeb5cc500"></script>
+  <script src="ui_shared.js?v=433ffc786a"></script>
+  <script src="campaign_db.js?v=1e45440d78"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase_auth.js?v=47247ea179"></script>
   <!-- Prefetch Character Sheet & Domain Modules during Hub Idle Time -->
   <link rel="prefetch" href="index.html">
   <link rel="prefetch" href="char_modals.js?v=36586098a5">
-  <link rel="prefetch" href="char_hud.js?v=88e7dff5bc">
-  <link rel="prefetch" href="char_combat.js?v=4adfee3154">
-  <link rel="prefetch" href="char_spells.js?v=b275738faf">
-  <link rel="prefetch" href="char_progression.js?v=5f4c9fd1fa">
-  <link rel="prefetch" href="char_inventory.js?v=9fb88aec71">
+  <link rel="prefetch" href="char_hud.js?v=21563f3529">
+  <link rel="prefetch" href="char_combat.js?v=a78ee85dfc">
+  <link rel="prefetch" href="char_spells.js?v=c6f7f64ef7">
+  <link rel="prefetch" href="char_progression.js?v=b21d071848">
+  <link rel="prefetch" href="char_inventory.js?v=186055a64d">
   <!-- Three.js & 3D Dice Roller Engine -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1206,7 +1207,7 @@
       const dexMod = Math.floor(((Number(data.abilities?.dex || 10)) - 10) / 2);
       const wisMod = Math.floor(((Number(data.abilities?.wis || 10)) - 10) / 2);
       const intMod = Math.floor(((Number(data.abilities?.int || 10)) - 10) / 2);
-      const resist = Number(data.saveBonuses?.resistance || 0);
+      const resist = Number(data.savesBreakdown?.resist || 0);
 
       // Battle Clarity (Warblade 1)
       let battleClarity = 0;
@@ -1330,16 +1331,19 @@
       const bab = Number(data.bab) || 0;
       const str = Number(data.abilities?.str || 10);
       const strMod = Math.floor((str - 10) / 2);
-      const mods = Array.isArray(wep.modifiers) ? wep.modifiers : [];
+      const efs = Array.isArray(wep.effects) ? wep.effects : [];
       const enhBonus = Number(wep.enhancementBonus) || 0;
       const mwkBonus = (!enhBonus && wep.masterwork) ? 1 : 0;
-      const extraAtt = mods.filter(m => m && m.target === 'attack').reduce((s, m) => s + (Number(m.value) || 0), 0);
-      const extraDmg = mods.filter(m => m && m.target === 'damage').reduce((s, m) => s + (Number(m.value) || 0), 0);
+      const sumStatEffects = (target) => efs
+        .filter(e => e && e.type === 'stat' && (e.target === target || (Array.isArray(e.targets) && e.targets.includes(target))))
+        .reduce((s, e) => s + (Number(e.value) || 0), 0);
+      const extraAtt = sumStatEffects('atk.all') + sumStatEffects('atk.melee') + sumStatEffects('attack');
+      const extraDmg = sumStatEffects('dmg.all') + sumStatEffects('dmg.melee') + sumStatEffects('damage');
       const attBonus = bab + strMod + enhBonus + mwkBonus + extraAtt;
       const attStr = (attBonus >= 0 ? '+' + attBonus : String(attBonus));
-      const basePart = Array.isArray(wep.damageParts) && wep.damageParts[0] ? wep.damageParts[0] : null;
-      const dice = (basePart && basePart.dice) || wep.dice || '1d8';
-      const partBonus = (basePart && Number(basePart.bonus)) || 0;
+      const baseRoll = efs.find(e => e && e.type === 'roll' && (!e.kind || String(e.kind).toLowerCase() === 'damage')) || null;
+      const dice = (baseRoll && (baseRoll.dice || (baseRoll.count && baseRoll.die ? `${baseRoll.count}${baseRoll.die}` : ''))) || wep.weapon?.damageDice || wep.dice || '1d8';
+      const partBonus = (baseRoll && Number(baseRoll.bonus)) || 0;
       const dmgBonus = strMod + enhBonus + extraDmg + partBonus;
       const dmgStr = dmgBonus !== 0 ? `${dice}${dmgBonus > 0 ? '+' + dmgBonus : dmgBonus}` : dice;
       return {
@@ -1352,8 +1356,8 @@
 
     function syncCharacterSummaryStats(c) {
       if (!c) return c;
-      if (c.fullData && window.SchemaMigrator && typeof window.SchemaMigrator.upgradeCharacterToV2 === 'function' && c.fullData.schemaVersion !== 2) {
-        c.fullData = window.SchemaMigrator.upgradeCharacterToV2(c.fullData);
+      if (c.fullData && window.SchemaMigrator && typeof window.SchemaMigrator.upgradeCharacterToV3 === 'function' && c.fullData.schemaVersion !== 3) {
+        c.fullData = window.SchemaMigrator.upgradeCharacterToV3(c.fullData);
       }
       const data = c.fullData || c;
 
@@ -2588,7 +2592,7 @@
       const name = summary.name || 'New Character';
 
       const cleanChar = {
-        schemaVersion: 2,
+        schemaVersion: 3,
         id: charId,
         _hubId: charId,
         name: name,
@@ -2622,7 +2626,6 @@
           flatFooted: Math.max(10, acVal - 2)
         },
         baseSaves: { fort: Number(summary.fortSave) || 0, ref: Number(summary.refSave) || 0, will: Number(summary.willSave) || 0 },
-        saveBonuses: { resistance: 0 },
         saves: {
           fort: { total: Number(summary.fortSave) || 0 },
           ref: { total: Number(summary.refSave) || 0 },
@@ -3590,28 +3593,32 @@ CRITICAL RULES:
         m.grapple = (Number(m.bab) || 0) + strMod + (sizeGrapMap[m.size] || 0);
       }
 
-      // Ensure every attack has both V2 damageParts[] and display fields (bonus, damage, damageType)
+      // Ensure every attack has canonical V3 roll effects[] and display fields (bonus, damage, damageType)
       m.attacks = m.attacks.map(atk => {
         if (!atk || typeof atk !== 'object') return null;
-        const primaryPart = (Array.isArray(atk.damageParts) && atk.damageParts[0]) ? atk.damageParts[0] : null;
-        let rawDice = (primaryPart && primaryPart.dice) ? String(primaryPart.dice) : (atk.damage || '1d6');
+        const primaryRoll = (Array.isArray(atk.effects) ? atk.effects.find(e => e && e.type === 'roll' && (!e.kind || String(e.kind).toLowerCase() === 'damage')) : null);
+        let rawDice = (primaryRoll && (primaryRoll.dice || (primaryRoll.count && primaryRoll.die ? `${primaryRoll.count}${primaryRoll.die}` : '')))
+          ? String(primaryRoll.dice || `${primaryRoll.count}${primaryRoll.die}`)
+          : (atk.damage || '1d6');
         if (rawDice.includes('${') || rawDice === '0') rawDice = '1d8';
         const flatMod = strMod !== 0 && !rawDice.includes('+') && !rawDice.includes('-')
           ? (strMod > 0 ? `+${strMod}` : `${strMod}`)
           : '';
         const dmgDisplay = atk.damage || `${rawDice}${flatMod}`;
         const atkBonus = (atk.bonus !== undefined) ? Number(atk.bonus) : ((Number(atk.attackBonus) || 0) || ((Number(m.bab) || 0) + strMod));
-        const dmgType = atk.damageType || (primaryPart && primaryPart.type && primaryPart.type !== 'Untyped' ? primaryPart.type : 'Physical');
-        const damageParts = Array.isArray(atk.damageParts) && atk.damageParts.length > 0
-          ? atk.damageParts.map((p, idx) => ({
+        const dmgType = atk.damageType || (primaryRoll && (primaryRoll.dmgType || primaryRoll.damageType) && (primaryRoll.dmgType || primaryRoll.damageType) !== 'Untyped' ? (primaryRoll.dmgType || primaryRoll.damageType) : 'Physical');
+        const rollEffects = Array.isArray(atk.effects) && atk.effects.some(e => e && e.type === 'roll')
+          ? atk.effects.map((p, idx) => p && p.type === 'roll' ? ({
+              ...p,
+              kind: p.kind || 'Damage',
               dice: (p.dice && !String(p.dice).includes('${') && p.dice !== '0') ? p.dice : rawDice,
               bonus: idx === 0 ? (Number(p.bonus) || strMod) : (Number(p.bonus) || 0),
-              type: p.type && p.type !== 'Untyped' ? p.type : dmgType,
+              dmgType: (p.dmgType || p.damageType) && (p.dmgType || p.damageType) !== 'Untyped' ? (p.dmgType || p.damageType) : dmgType,
               multiplyOnCrit: p.multiplyOnCrit !== false,
               onCritOnly: Boolean(p.onCritOnly),
               source: p.source || atk.name || 'Natural'
-            }))
-          : [{ dice: rawDice, bonus: strMod, type: dmgType, multiplyOnCrit: true, onCritOnly: false, source: atk.name || 'Natural' }];
+            }) : p)
+          : [{ type: 'roll', kind: 'Damage', dice: rawDice, bonus: strMod, dmgType, multiplyOnCrit: true, onCritOnly: false, source: atk.name || 'Natural' }];
         return {
           ...atk,
           name: atk.name || 'Strike',
@@ -3621,7 +3628,7 @@ CRITICAL RULES:
           damageType: dmgType,
           crit: atk.crit || '20/x2',
           range: atk.range || '-',
-          damageParts
+          effects: rollEffects
         };
       }).filter(Boolean);
 
@@ -3761,13 +3768,12 @@ CRITICAL RULES:
             name: atk.name,
             type: 'Weapon',
             item: { subtype: 'Weapon', slot: atk.type === 'Ranged' ? 'Both Hands' : 'Main Hand', consumable: false, price: 0, casterLevel: 0 },
-            weapon: { category: atk.type || 'Natural', handedness: 'One-Handed', baseCritRange: cMin, keen: false, effectiveCritRange: cMin, critMultiplier: cMult, rangeIncrement: atk.range && atk.range !== '-' ? parseInt(atk.range, 10) || null : null },
+            weapon: { category: atk.type || 'Natural', handedness: 'One-Handed', damageDice: atk.damage || '1d6', damageType: atk.damageType || 'Physical', baseCritRange: cMin, keen: false, effectiveCritRange: cMin, critMultiplier: cMult, rangeIncrement: atk.range && atk.range !== '-' ? parseInt(atk.range, 10) || null : null },
             category: atk.type || 'Natural',
             dice: atk.damage || '1d6',
-            damageParts: Array.isArray(atk.damageParts) && atk.damageParts.length > 0
-              ? atk.damageParts
-              : [{ dice: atk.damage || '1d6', bonus: 0, type: atk.damageType || 'Physical', multiplyOnCrit: true, onCritOnly: false, source: atk.name }],
-            effects: [],
+            effects: Array.isArray(atk.effects) && atk.effects.length > 0
+              ? JSON.parse(JSON.stringify(atk.effects))
+              : [{ type: 'roll', kind: 'Damage', dice: atk.damage || '1d6', bonus: 0, dmgType: atk.damageType || 'Physical', multiplyOnCrit: true, onCritOnly: false, source: atk.name }],
             modes: [],
             weaponMeta: { critMin: cMin, critMult: cMult, rangeIncrement: atk.range || '-' },
             critMin: cMin,
@@ -3844,14 +3850,16 @@ CRITICAL RULES:
         const cMin = atk.crit ? (parseInt(atk.crit.split('/')[0].split('-')[0]) || 20) : 20;
         const cMult = atk.crit && atk.crit.includes('x3') ? 3 : (atk.crit && atk.crit.includes('x4') ? 4 : 2);
         return {
+          schemaVersion: 3,
+          blueprint: 'weapon',
           id: 'wpn_' + idx,
           name: atk.name,
           grip: atk.type === 'Melee' ? '1-Hand' : (atk.type === 'Ranged' ? '2-Hand' : '1-Hand'),
           dice: atk.damage || '1d6',
-          damageParts: Array.isArray(atk.damageParts) && atk.damageParts.length > 0
-            ? JSON.parse(JSON.stringify(atk.damageParts))
-            : [{ dice: atk.damage || '1d6', bonus: 0, type: atk.damageType || 'Physical', multiplyOnCrit: true, onCritOnly: false, source: atk.name }],
-          modifiers: [],
+          weapon: { category: atk.type || 'Natural', handedness: atk.type === 'Ranged' ? 'Two-Handed' : 'One-Handed', damageDice: atk.damage || '1d6', damageType: atk.damageType || 'Physical', baseCritRange: cMin, effectiveCritRange: cMin, critMultiplier: cMult },
+          effects: Array.isArray(atk.effects) && atk.effects.length > 0
+            ? JSON.parse(JSON.stringify(atk.effects))
+            : [{ type: 'roll', kind: 'Damage', dice: atk.damage || '1d6', bonus: 0, dmgType: atk.damageType || 'Physical', multiplyOnCrit: true, onCritOnly: false, source: atk.name }],
           modes: [],
           weaponMeta: { critMin: cMin, critMult: cMult, rangeIncrement: atk.range || '-' },
           critMin: cMin,
@@ -3963,7 +3971,6 @@ CRITICAL RULES:
           ref: Number(monster.saves.ref) || 0,
           will: Number(monster.saves.will) || 0
         },
-        saveBonuses: { resistance: 0 },
         saves: {
           fort: { total: Number(monster.saves.fort) || 0 },
           ref: { total: Number(monster.saves.ref) || 0 },
@@ -7085,7 +7092,7 @@ CRITICAL RULES:
             renderHub();
             notify(`Character "${parsed.name}" imported successfully!`, 'success');
           } else if (Array.isArray(parsed)) {
-            if (parsed.length > 0 && (parsed[0].benefit !== undefined || parsed[0].modifiers !== undefined || parsed[0].category !== undefined)) {
+            if (parsed.length > 0 && (parsed[0].benefit !== undefined || parsed[0].effects !== undefined || parsed[0].category !== undefined)) {
               const libRes = mergeEntriesIntoHubCharacters(parsed);
               renderHub();
               renderHubDmPackManager();

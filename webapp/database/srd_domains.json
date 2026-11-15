@@ -567,7 +567,7 @@
       {
         "id": "ef-dom-death-res",
         "type": "resource",
-        "name": "Death Touch",
+        "name": "Death Touch (Death)",
         "varKey": "domain_death_touch",
         "resMode": "spend",
         "maxFormula": "1",
@@ -575,12 +575,17 @@
         "unit": "uses",
         "recharge": {
           "period": "day"
-        }
+        },
+        "actionType": "Standard Action (Melee Touch)",
+        "durationText": "Instantaneous"
       },
       {
-        "id": "ef-dom-death-n",
-        "type": "effect",
-        "text": "Death Touch 1/day (Su): Melee touch, roll 1d6/Cleric level; kills living creature if >= current HP"
+        "id": "ef-dom-death-roll",
+        "type": "roll",
+        "kind": "Special",
+        "dice": "(@cl)d6",
+        "dmgType": "Death",
+        "text": "Melee touch, roll 1d6/Cleric level; if total >= target current HP, it dies (no save)"
       }
     ],
     "ruleFlags": {
@@ -716,7 +721,7 @@
       {
         "id": "ef-dom-dest-res",
         "type": "resource",
-        "name": "Smite (Destruction)",
+        "name": "Destruction Smite",
         "varKey": "domain_destruction_smite",
         "resMode": "spend",
         "maxFormula": "1",
@@ -724,12 +729,43 @@
         "unit": "uses",
         "recharge": {
           "period": "day"
-        }
+        },
+        "actionType": "Free Action (Declare)",
+        "durationText": "1 round (single melee attack)"
       },
       {
-        "id": "ef-dom-dest-n",
-        "type": "effect",
-        "text": "Smite 1/day (Su): Single melee attack with +4 attack and +Cleric level damage"
+        "id": "ef-dom-dest-w",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-dom-dest-w-br",
+            "condKind": "state",
+            "condText": "Destruction Smite Active (Single Melee Attack)",
+            "effects": [
+              {
+                "id": "ef-dom-dest-atk",
+                "type": "stat",
+                "targets": [
+                  "attack.all"
+                ],
+                "mode": "flat",
+                "value": 4,
+                "btype": "Untyped"
+              },
+              {
+                "id": "ef-dom-dest-dmg",
+                "type": "stat",
+                "targets": [
+                  "damage.weapon"
+                ],
+                "mode": "formula",
+                "formula": "@cl",
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
       }
     ],
     "ruleFlags": {
@@ -1869,7 +1905,7 @@
       {
         "id": "ef-dom-luck-res",
         "type": "resource",
-        "name": "Good Fortune",
+        "name": "Good Fortune (Reroll)",
         "varKey": "domain_luck_reroll",
         "resMode": "spend",
         "maxFormula": "1",
@@ -1877,12 +1913,15 @@
         "unit": "uses",
         "recharge": {
           "period": "day"
-        }
+        },
+        "actionType": "Immediate / Free",
+        "durationText": "Instantaneous"
       },
       {
         "id": "ef-dom-luck-n",
         "type": "effect",
-        "text": "Good Fortune 1/day (Ex): Reroll one roll before result is declared"
+        "effectKind": "reroll",
+        "text": "Reroll one roll just made before DM declares success or failure"
       }
     ],
     "ruleFlags": {
@@ -2301,7 +2340,47 @@
       }
     ],
     "requiredAlignment": [],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-dom-prot-res",
+        "type": "resource",
+        "name": "Protective Ward",
+        "varKey": "protective_ward",
+        "resMode": "spend",
+        "maxFormula": "1",
+        "reset": "perDay",
+        "unit": "uses",
+        "recharge": {
+          "period": "day"
+        },
+        "actionType": "Standard Action",
+        "durationText": "1 hour (next save)"
+      },
+      {
+        "id": "ef-dom-prot-w",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-dom-prot-w-br",
+            "condKind": "state",
+            "condText": "Protective Ward Active (Next Saving Throw, up to 1 Hour)",
+            "effects": [
+              {
+                "id": "ef-dom-prot-sv",
+                "type": "stat",
+                "targets": [
+                  "save.all"
+                ],
+                "mode": "formula",
+                "formula": "@cl",
+                "btype": "Resistance"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "ruleFlags": {
       "protectiveWard": "1/day"
     },
@@ -2443,12 +2522,33 @@
         "unit": "uses",
         "recharge": {
           "period": "day"
-        }
+        },
+        "actionType": "Free Action",
+        "durationText": "1 round"
       },
       {
-        "id": "ef-dom-str-n",
-        "type": "effect",
-        "text": "Feat of Strength 1/day (Su): +Cleric level Enhancement bonus to Strength for 1 round"
+        "id": "ef-dom-str-w",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-dom-str-w-br",
+            "condKind": "state",
+            "condText": "Feat of Strength Active (1 round)",
+            "effects": [
+              {
+                "id": "ef-dom-str-stat",
+                "type": "stat",
+                "targets": [
+                  "ability.str"
+                ],
+                "mode": "formula",
+                "formula": "@cl",
+                "btype": "Enhancement"
+              }
+            ]
+          }
+        ]
       }
     ],
     "ruleFlags": {
@@ -2585,19 +2685,22 @@
         "id": "ef-dom-sun-res",
         "type": "resource",
         "name": "Greater Turning",
-        "varKey": "domain_sun_greater",
+        "varKey": "domain_sun_greater_turning",
         "resMode": "spend",
         "maxFormula": "1",
         "reset": "perDay",
         "unit": "uses",
         "recharge": {
           "period": "day"
-        }
+        },
+        "actionType": "Standard Action",
+        "durationText": "Instantaneous"
       },
       {
         "id": "ef-dom-sun-n",
         "type": "effect",
-        "text": "Greater Turning 1/day: Undead that would be turned are destroyed instead"
+        "effectKind": "greater_turning",
+        "text": "Undead creatures that would be turned are destroyed instead (1/day)"
       }
     ],
     "ruleFlags": {
@@ -2735,7 +2838,7 @@
       {
         "id": "ef-dom-trav-res",
         "type": "resource",
-        "name": "Freedom of Movement (Domain)",
+        "name": "Freedom of Movement (Travel)",
         "varKey": "domain_travel_rounds",
         "resMode": "spend",
         "maxFormula": "@cl",
@@ -2743,12 +2846,30 @@
         "unit": "rounds",
         "recharge": {
           "period": "day"
-        }
+        },
+        "actionType": "Automatic / Free",
+        "durationText": "1 round"
       },
       {
-        "id": "ef-dom-trav-n",
-        "type": "effect",
-        "text": "Freedom of Movement 1 round/Cleric level per day (Su); Survival is a class skill"
+        "id": "ef-dom-trav-w",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-dom-trav-w-br",
+            "condKind": "state",
+            "condText": "Freedom of Movement Active",
+            "effects": [
+              {
+                "id": "ef-dom-trav-fom",
+                "type": "effect",
+                "effectKind": "flag",
+                "flag": "freedomOfMovement",
+                "text": "Freedom of Movement"
+              }
+            ]
+          }
+        ]
       }
     ],
     "ruleFlags": {
@@ -3467,12 +3588,33 @@
         "unit": "uses",
         "recharge": {
           "period": "day"
-        }
+        },
+        "actionType": "Free Action",
+        "durationText": "1 min"
       },
       {
-        "id": "ef-dom-charm-n",
-        "type": "effect",
-        "text": "Charm Boost 1/day (free action): +4 Charisma for 1 minute"
+        "id": "ef-dom-charm-w",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-dom-charm-w-br",
+            "condKind": "state",
+            "condText": "Charm Boost Active (1 minute)",
+            "effects": [
+              {
+                "id": "ef-dom-charm-stat",
+                "type": "stat",
+                "targets": [
+                  "ability.cha"
+                ],
+                "mode": "flat",
+                "value": 4,
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
       }
     ],
     "ruleFlags": {
@@ -4469,12 +4611,36 @@
         "unit": "uses",
         "recharge": {
           "period": "day"
-        }
+        },
+        "actionType": "Standard Action",
+        "durationText": "CHA mod rounds"
       },
       {
-        "id": "ef-dom-nob-n",
-        "type": "effect",
-        "text": "Inspire Allies 1/day (SLA, CHA mod rounds): +2 Morale bonus on saves, attacks, ability/skill checks, and weapon damage"
+        "id": "ef-dom-nob-w",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-dom-nob-w-br",
+            "condKind": "state",
+            "condText": "Inspire Allies Active (CHA mod rounds)",
+            "effects": [
+              {
+                "id": "ef-dom-nob-stat",
+                "type": "stat",
+                "targets": [
+                  "save.all",
+                  "attack.all",
+                  "damage.weapon",
+                  "skill.all"
+                ],
+                "mode": "flat",
+                "value": 2,
+                "btype": "Morale"
+              }
+            ]
+          }
+        ]
       }
     ],
     "shortDescription": "You have the spell-like ability to inspire allies, giving them a +2 morale bonus on saving throws, attack rolls, ability checks, skill checks, and weapon damage rolls. Allies must be able to hear t...",
@@ -4622,12 +4788,17 @@
         "unit": "uses",
         "recharge": {
           "period": "day"
-        }
+        },
+        "actionType": "Standard Action (Melee Touch)",
+        "durationText": "Instantaneous"
       },
       {
-        "id": "ef-dom-rep-n",
-        "type": "effect",
-        "text": "Death Touch 1/day (Su): Melee touch, roll 1d6/Cleric level vs current HP"
+        "id": "ef-dom-rep-roll",
+        "type": "roll",
+        "kind": "Special",
+        "dice": "(@cl)d6",
+        "dmgType": "Death",
+        "text": "Melee touch, roll 1d6/Cleric level; if total >= target current HP, it dies (no save)"
       }
     ],
     "ruleFlags": {

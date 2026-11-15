@@ -1,0 +1,274 @@
+/**
+ * ============================================================================
+ * D&D 3.5e Official RAW Ruleset Plugin (`rulesets/dnd35.js`)
+ * ============================================================================
+ * Pluggable System Physics & Canonical Taxonomies for the system-agnostic
+ * V3 Rule Block Engine (`RuleEngine`) and V3 Studio (`Rule Crafter`).
+ *
+ * Isolates all D&D 3.5e system constants and laws:
+ *   - 6 Core Abilities & 40 Canonical Skills (36 PHB + 4 Subsystem)
+ *   - 25 Bonus Types & Official RAW Stacking Laws
+ *   - 21 Damage & Energy Types (replacing legacy `dt-*` DB cards)
+ *   - 9 Creature Sizes, AC/Attack, Grapple & Hide Size Modifiers
+ *   - Skill Rank Caps/Costs, Iterative BAB, Save Progressions & Grapple Math
+ *   - Base Armor/Shield & Core Class Proficiency Reference Tables
+ * ============================================================================
+ */
+(function (root) {
+  'use strict';
+
+  const ABILITIES = [
+    ['str', 'Strength'],
+    ['dex', 'Dexterity'],
+    ['con', 'Constitution'],
+    ['int', 'Intelligence'],
+    ['wis', 'Wisdom'],
+    ['cha', 'Charisma']
+  ];
+
+  const SKILLS = [
+    ['Appraise', 'int'],
+    ['Autohypnosis', 'wis'],
+    ['Balance', 'dex'],
+    ['Bluff', 'cha'],
+    ['Climb', 'str'],
+    ['Concentration', 'con'],
+    ['Craft', 'int'],
+    ['Decipher Script', 'int'],
+    ['Diplomacy', 'cha'],
+    ['Disable Device', 'int'],
+    ['Disguise', 'cha'],
+    ['Escape Artist', 'dex'],
+    ['Forgery', 'int'],
+    ['Gather Information', 'cha'],
+    ['Handle Animal', 'cha'],
+    ['Heal', 'wis'],
+    ['Hide', 'dex'],
+    ['Intimidate', 'cha'],
+    ['Jump', 'str'],
+    ['Knowledge', 'int'],
+    ['Knowledge (Psionics)', 'int'],
+    ['Listen', 'wis'],
+    ['Move Silently', 'dex'],
+    ['Open Lock', 'dex'],
+    ['Perform', 'cha'],
+    ['Profession', 'wis'],
+    ['Psicraft', 'int'],
+    ['Ride', 'dex'],
+    ['Search', 'int'],
+    ['Sense Motive', 'wis'],
+    ['Sleight of Hand', 'dex'],
+    ['Speak Language', 'int'],
+    ['Spellcraft', 'int'],
+    ['Spot', 'wis'],
+    ['Survival', 'wis'],
+    ['Swim', 'str'],
+    ['Truespeak', 'int'],
+    ['Tumble', 'dex'],
+    ['Use Magic Device', 'cha'],
+    ['Use Psionic Device', 'cha'],
+    ['Use Rope', 'dex']
+  ];
+
+  const BONUS_TYPES = [
+    { id: 'Untyped', stacks: true },
+    { id: 'Dodge', stacks: true, lostFF: true },
+    { id: 'Circumstance', stacks: true },
+    { id: 'Penalty', stacks: true },
+    { id: 'Racial', stacks: true },
+    { id: 'Synergy', stacks: true },
+    { id: 'Enhancement' },
+    { id: 'Luck' },
+    { id: 'Morale' },
+    { id: 'Sacred' },
+    { id: 'Profane' },
+    { id: 'Insight' },
+    { id: 'Competence' },
+    { id: 'Resistance' },
+    { id: 'Deflection' },
+    { id: 'Alchemical' },
+    { id: 'Inherent', cap: 5 },
+    { id: 'Armor' },
+    { id: 'Armor Enhancement' },
+    { id: 'Shield' },
+    { id: 'Shield Enhancement' },
+    { id: 'Natural Armor' },
+    { id: 'Natural Armor Enhancement' },
+    { id: 'Size' },
+    { id: 'Exalted' },
+    { id: 'Perfection' }
+  ];
+
+  // Canonical 21 D&D 3.5e Damage & Energy Types (migrated from legacy `dt-*` DB entries)
+  const DAMAGE_TYPE_DEFS = [
+    { id: 'slashing', name: 'Slashing', category: 'physical' },
+    { id: 'piercing', name: 'Piercing', category: 'physical' },
+    { id: 'bludgeoning', name: 'Bludgeoning', category: 'physical' },
+    { id: 'piercing-or-slashing', name: 'Piercing or Slashing', category: 'compound' },
+    { id: 'piercing-or-bludgeoning', name: 'Piercing or Bludgeoning', category: 'compound' },
+    { id: 'slashing-or-bludgeoning', name: 'Slashing or Bludgeoning', category: 'compound' },
+    { id: 'piercing-bludgeoning-and-slashing', name: 'Piercing, Bludgeoning and Slashing', category: 'compound' },
+    { id: 'fire', name: 'Fire', category: 'energy' },
+    { id: 'cold', name: 'Cold', category: 'energy' },
+    { id: 'acid', name: 'Acid', category: 'energy' },
+    { id: 'electricity', name: 'Electricity', category: 'energy' },
+    { id: 'sonic', name: 'Sonic', category: 'energy' },
+    { id: 'force', name: 'Force', category: 'energy' },
+    { id: 'holy', name: 'Holy', category: 'aligned' },
+    { id: 'unholy', name: 'Unholy', category: 'aligned' },
+    { id: 'positive', name: 'Positive', category: 'energy', aliases: ['Positive Energy'] },
+    { id: 'negative', name: 'Negative', category: 'energy', aliases: ['Negative Energy'] },
+    { id: 'divine', name: 'Divine', category: 'special' },
+    { id: 'precision', name: 'Precision', category: 'special' },
+    { id: 'vile', name: 'Vile', category: 'aligned' },
+    { id: 'nonlethal', name: 'Nonlethal', category: 'special', aliases: ['Non-lethal'] },
+    { id: 'untyped', name: 'Untyped', category: 'special' },
+    { id: 'healing', name: 'Healing', category: 'healing' },
+    { id: 'repair', name: 'Repair', category: 'healing' }
+  ];
+
+  const DAMAGE_TYPES = [
+    'Slashing', 'Piercing', 'Bludgeoning',
+    'Fire', 'Cold', 'Acid', 'Electricity', 'Sonic', 'Force',
+    'Holy', 'Unholy', 'Positive', 'Negative', 'Divine',
+    'Precision', 'Vile', 'Nonlethal', 'Untyped', 'Healing', 'Repair'
+  ];
+
+  const ENERGY_TYPES = ['Fire', 'Cold', 'Acid', 'Electricity', 'Sonic', 'Force'];
+
+  const CREATURE_SIZES = ['Fine', 'Diminutive', 'Tiny', 'Small', 'Medium', 'Large', 'Huge', 'Gargantuan', 'Colossal'];
+
+  const SIZE_AC_ATTACK_MODS = {
+    Fine: 8, Diminutive: 4, Tiny: 2, Small: 1, Medium: 0, Large: -1, Huge: -2, Gargantuan: -4, Colossal: -8
+  };
+
+  const SIZE_GRAPPLE_MODS = {
+    Fine: -16, Diminutive: -12, Tiny: -8, Small: -4, Medium: 0, Large: 4, Huge: 8, Gargantuan: 12, Colossal: 16
+  };
+
+  const SIZE_HIDE_MODS = {
+    Fine: 16, Diminutive: 12, Tiny: 8, Small: 4, Medium: 0, Large: -4, Huge: -8, Gargantuan: -12, Colossal: -16
+  };
+
+  const SRD_ARMORS = {
+    'padded': { armor: 1, maxDex: 8, acp: 0, type: 'Light' },
+    'leather': { armor: 2, maxDex: 6, acp: 0, type: 'Light' },
+    'leather armor': { armor: 2, maxDex: 6, acp: 0, type: 'Light' },
+    'studded leather': { armor: 3, maxDex: 5, acp: -1, type: 'Light' },
+    'studded leather armor': { armor: 3, maxDex: 5, acp: -1, type: 'Light' },
+    'chain shirt': { armor: 4, maxDex: 4, acp: -2, type: 'Light' },
+    'hide': { armor: 3, maxDex: 4, acp: -3, type: 'Medium' },
+    'hide armor': { armor: 3, maxDex: 4, acp: -3, type: 'Medium' },
+    'scale mail': { armor: 4, maxDex: 3, acp: -4, type: 'Medium' },
+    'chainmail': { armor: 5, maxDex: 2, acp: -5, type: 'Medium' },
+    'breastplate': { armor: 5, maxDex: 3, acp: -4, type: 'Medium' },
+    'splint mail': { armor: 6, maxDex: 0, acp: -7, type: 'Heavy' },
+    'banded mail': { armor: 6, maxDex: 1, acp: -6, type: 'Heavy' },
+    'half-plate': { armor: 7, maxDex: 0, acp: -7, type: 'Heavy' },
+    'full plate': { armor: 8, maxDex: 1, acp: -6, type: 'Heavy' }
+  };
+
+  const SRD_SHIELDS = {
+    'buckler': { shield: 1, maxDex: null, acp: -1 },
+    'light wooden shield': { shield: 1, maxDex: null, acp: -1 },
+    'light steel shield': { shield: 1, maxDex: null, acp: -1 },
+    'light shield': { shield: 1, maxDex: null, acp: -1 },
+    'heavy wooden shield': { shield: 2, maxDex: null, acp: -2 },
+    'heavy steel shield': { shield: 2, maxDex: null, acp: -2 },
+    'heavy shield': { shield: 2, maxDex: null, acp: -2 },
+    'tower shield': { shield: 4, maxDex: 2, acp: -10 }
+  };
+
+  const CLASS_PROFICIENCIES = {
+    'fighter': { weapons: { simple: true, martial: true, specific: [] }, armors: { light: true, medium: true, heavy: true }, shields: { shield: true, tower: true } },
+    'barbarian': { weapons: { simple: true, martial: true, specific: [] }, armors: { light: true, medium: true, heavy: false }, shields: { shield: true, tower: false } },
+    'paladin': { weapons: { simple: true, martial: true, specific: [] }, armors: { light: true, medium: true, heavy: true }, shields: { shield: true, tower: false } },
+    'ranger': { weapons: { simple: true, martial: true, specific: [] }, armors: { light: true, medium: false, heavy: false }, shields: { shield: true, tower: false } },
+    'cleric': { weapons: { simple: true, martial: false, specific: [] }, armors: { light: true, medium: true, heavy: true }, shields: { shield: true, tower: false } },
+    'druid': { weapons: { simple: false, martial: false, specific: ['club', 'dagger', 'dart', 'quarterstaff', 'scimitar', 'sickle', 'shortspear', 'sling', 'spear'] }, armors: { light: true, medium: true, heavy: false }, shields: { shield: true, tower: false } },
+    'rogue': { weapons: { simple: true, martial: false, specific: ['hand crossbow', 'rapier', 'sap', 'shortbow', 'short sword'] }, armors: { light: true, medium: false, heavy: false }, shields: { shield: false, tower: false } },
+    'rogue (adventurer variant)': { weapons: { simple: true, martial: false, specific: ['hand crossbow', 'rapier', 'sap', 'shortbow', 'short sword'] }, armors: { light: true, medium: false, heavy: false }, shields: { shield: false, tower: false } },
+    'bloodstorm blade': { weapons: { simple: true, martial: true, specific: [] }, armors: { light: true, medium: true, heavy: false }, shields: { shield: true, tower: false } },
+    'bard': { weapons: { simple: true, martial: false, specific: ['longsword', 'rapier', 'sap', 'short sword', 'shortbow', 'whip'] }, armors: { light: true, medium: false, heavy: false }, shields: { shield: true, tower: false } },
+    'monk': { weapons: { simple: false, martial: false, specific: ['club', 'crossbow', 'light crossbow', 'heavy crossbow', 'dagger', 'handaxe', 'javelin', 'kama', 'nunchaku', 'quarterstaff', 'sai', 'shuriken', 'siangham', 'sling', 'unarmed strike'] }, armors: { light: false, medium: false, heavy: false }, shields: { shield: false, tower: false } },
+    'sorcerer': { weapons: { simple: true, martial: false, specific: [] }, armors: { light: false, medium: false, heavy: false }, shields: { shield: false, tower: false } },
+    'wizard': { weapons: { simple: false, martial: false, specific: ['club', 'dagger', 'heavy crossbow', 'light crossbow', 'quarterstaff'] }, armors: { light: false, medium: false, heavy: false }, shields: { shield: false, tower: false } },
+    'warlock': { weapons: { simple: true, martial: false, specific: [] }, armors: { light: true, medium: false, heavy: false }, shields: { shield: false, tower: false } },
+    'crusader': { weapons: { simple: true, martial: true, specific: [] }, armors: { light: true, medium: true, heavy: true }, shields: { shield: true, tower: false } },
+    'swordsage': { weapons: { simple: true, martial: false, specific: ['light crossbow', 'heavy crossbow', 'shortbow', 'composite shortbow'] }, armors: { light: true, medium: false, heavy: false }, shields: { shield: false, tower: false } },
+    'warblade': { weapons: { simple: true, martial: true, specific: [] }, armors: { light: true, medium: true, heavy: false }, shields: { shield: true, tower: false } },
+    'duskblade': { weapons: { simple: true, martial: true, specific: [] }, armors: { light: true, medium: true, heavy: false }, shields: { shield: true, tower: false } },
+    'knight': { weapons: { simple: true, martial: true, specific: [] }, armors: { light: true, medium: true, heavy: true }, shields: { shield: true, tower: true } },
+    'warmage': { weapons: { simple: true, martial: false, specific: ['light repeating crossbow'] }, armors: { light: true, medium: false, heavy: false }, shields: { shield: true, tower: false } },
+    'beguiler': { weapons: { simple: true, martial: false, specific: ['hand crossbow', 'rapier', 'shortbow', 'short sword'] }, armors: { light: true, medium: false, heavy: false }, shields: { shield: false, tower: false } },
+    'scout': { weapons: { simple: true, martial: false, specific: ['hand crossbow', 'sap', 'shortbow', 'short sword'] }, armors: { light: true, medium: false, heavy: false }, shields: { shield: false, tower: false } },
+    'swashbuckler': { weapons: { simple: true, martial: true, specific: [] }, armors: { light: true, medium: false, heavy: false }, shields: { shield: false, tower: false } },
+    'hexblade': { weapons: { simple: true, martial: true, specific: [] }, armors: { light: true, medium: false, heavy: false }, shields: { shield: false, tower: false } },
+    'favored soul': { weapons: { simple: true, martial: false, specific: [] }, armors: { light: true, medium: true, heavy: false }, shields: { shield: true, tower: false } },
+    'spellthief': { weapons: { simple: true, martial: false, specific: ['hand crossbow', 'rapier', 'shortbow', 'short sword'] }, armors: { light: true, medium: false, heavy: false }, shields: { shield: false, tower: false } },
+    'psion': { weapons: { simple: false, martial: false, specific: ['club', 'dagger', 'heavy crossbow', 'light crossbow', 'quarterstaff', 'shortspear'] }, armors: { light: false, medium: false, heavy: false }, shields: { shield: false, tower: false } },
+    'psychic warrior': { weapons: { simple: true, martial: true, specific: [] }, armors: { light: true, medium: true, heavy: true }, shields: { shield: true, tower: false } },
+    'soulknife': { weapons: { simple: true, martial: false, specific: ['mind blade'] }, armors: { light: true, medium: false, heavy: false }, shields: { shield: false, tower: false } },
+    'wilder': { weapons: { simple: true, martial: false, specific: [] }, armors: { light: true, medium: false, heavy: false }, shields: { shield: false, tower: false } }
+  };
+
+  const DnD35Ruleset = {
+    id: 'dnd35',
+    name: 'D&D 3.5e Official RAW',
+    abilities: ABILITIES,
+    skills: SKILLS,
+    bonusTypes: BONUS_TYPES,
+    stackingBonusTypes: ['dodge', 'circumstance', 'racial', 'untyped', 'synergy'],
+    consolidatedSkillBonusMode: 'single_highest',
+    actionEconomy: 'standard_move_swift',
+    damageTypeDefs: DAMAGE_TYPE_DEFS,
+    damageTypes: DAMAGE_TYPES,
+    energyTypes: ENERGY_TYPES,
+    creatureSizes: CREATURE_SIZES,
+    sizeAcAttackModifiers: SIZE_AC_ATTACK_MODS,
+    sizeGrappleModifiers: SIZE_GRAPPLE_MODS,
+    sizeHideModifiers: SIZE_HIDE_MODS,
+    srdArmors: SRD_ARMORS,
+    srdShields: SRD_SHIELDS,
+    classProficiencies: CLASS_PROFICIENCIES,
+
+    calcAbilityMod(score) {
+      return Math.floor(((Number(score) || 10) - 10) / 2);
+    },
+    calcMaxSkillRanks(level, isClassSkill) {
+      const maxCls = Math.max(1, Number(level) || 1) + 3;
+      return isClassSkill ? maxCls : maxCls / 2;
+    },
+    calcSkillPointCost(isClassSkill) {
+      return isClassSkill ? 1 : 2;
+    },
+    calcIterativeBab(bab) {
+      const b = Math.max(0, Math.floor(Number(bab) || 0));
+      const out = [b];
+      let cur = b - 5;
+      while (cur >= 1 && out.length < 4) {
+        out.push(cur);
+        cur -= 5;
+      }
+      return out;
+    },
+    calcGrapple(bab, strMod, sizeMod, misc) {
+      return (Number(bab) || 0) + (Number(strMod) || 0) + (Number(sizeMod) || 0) + (Number(misc) || 0);
+    },
+    calcBaseSave(level, progression) {
+      const lvl = Math.max(0, Math.floor(Number(level) || 0));
+      if (lvl === 0) return 0;
+      return progression === 'good' ? (2 + Math.floor(lvl / 2)) : Math.floor(lvl / 3);
+    }
+  };
+
+  if (root) {
+    root.DnD35Ruleset = DnD35Ruleset;
+    if (root.RuleEngine && root.RuleEngine.rulesets) {
+      root.RuleEngine.rulesets.dnd35 = DnD35Ruleset;
+    }
+  }
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = DnD35Ruleset;
+  }
+})(typeof window !== 'undefined' ? window : (typeof globalThis !== 'undefined' ? globalThis : this));

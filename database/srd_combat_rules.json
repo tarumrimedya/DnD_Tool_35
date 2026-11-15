@@ -56,7 +56,16 @@
       "durationText": "condition",
       "dismissible": true
     },
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-cnd-nau",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "singleMoveActionOnly",
+        "label": "Unable to Attack or Cast Spells; Single Move Action per Turn Only",
+        "text": "Unable to Attack or Cast Spells; Single Move Action per Turn Only"
+      }
+    ],
     "ruleFlags": {
       "actionRestriction": "Nauseated: Unable to attack, cast spells, or concentrate. Only a single Move Action per turn."
     },
@@ -175,7 +184,16 @@
       "durationText": "condition",
       "dismissible": true
     },
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-cnd-stag",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "singleMoveOrStandardOnly",
+        "label": "Single Move Action or Standard Action per Round Only",
+        "text": "Single Move Action or Standard Action per Round Only"
+      }
+    ],
     "ruleFlags": {
       "actionRestriction": "Staggered: May take only a single Move Action or Standard Action each round (not both)."
     },
@@ -204,7 +222,22 @@
       "durationText": "condition",
       "dismissible": true
     },
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-cnd-inc-imm",
+        "type": "defense",
+        "mode": "Immunity",
+        "what": "Nonmagical Attack Forms",
+        "value": 0
+      },
+      {
+        "id": "ef-cnd-inc-miss",
+        "type": "defense",
+        "mode": "State",
+        "what": "50% Incorporeal Miss Chance vs. Corporeal Magic Sources",
+        "value": 50
+      }
+    ],
     "shortDescription": "Having no physical body. Incorporeal creatures are immune to all nonmagical attack forms. They can be harmed only by other incorporeal creatures, +1 or better magic weapons, spells, spell-like effects, or supernatural e…",
     "text": "Having no physical body. Incorporeal creatures are immune to all nonmagical attack forms. They can be harmed only by other incorporeal creatures, +1 or better magic weapons, spells, spell-like effects, or supernatural effects.",
     "tags": [
@@ -230,7 +263,16 @@
       "durationText": "condition",
       "dismissible": true
     },
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-cnd-par-dex",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "effectiveDexZero",
+        "label": "Helpless & Frozen (Effective STR 0, DEX 0; Loses Dex to AC)",
+        "text": "Helpless & Frozen (Effective STR 0, DEX 0; Loses Dex to AC)"
+      }
+    ],
     "ruleFlags": {
       "loseDexToAC": true,
       "effectiveDexZero": true,
@@ -261,7 +303,16 @@
       "durationText": "condition",
       "dismissible": true
     },
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-cnd-kd",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "proneFromWind",
+        "label": "Knocked Prone (or Blown Down 1d6x10 ft. if Flying)",
+        "text": "Knocked Prone (or Blown Down 1d6x10 ft. if Flying)"
+      }
+    ],
     "shortDescription": "Depending on their size, creatures can be knocked down by winds of high velocity. Creatures on the ground are knocked prone by the force of the wind. Flying creatures are instead blown back 1d6 × 10 feet.",
     "text": "Depending on their size, creatures can be knocked down by winds of high velocity. Creatures on the ground are knocked prone by the force of the wind. Flying creatures are instead blown back 1d6 × 10 feet.",
     "tags": [
@@ -624,7 +675,14 @@
       "durationText": "condition",
       "dismissible": true
     },
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-cnd-conf",
+        "type": "effect",
+        "effectKind": "rule",
+        "text": "Roll d% each round: 01-10 attack caster, 11-20 act normally, 21-50 babble incoherently, 51-70 flee from caster, 71-100 attack nearest creature."
+      }
+    ],
     "shortDescription": "A confused character’s actions are determined by rolling d% at the beginning of his turn: 01-10 attack caster with melee or ranged weapons (or close with caster if attacking is not possible) 11-20 act normally 21-50 do…",
     "text": "A confused character's actions are determined by rolling d% at the beginning of his turn:\n\n01-10 |\nattack caster with melee or ranged weapons (or close with caster if attacking is not possible) |\n\n11-20 |\nact normally |\n\n21-50 |\ndo nothing but babble incoherently |\n\n51-70 |\nflee away from caster at top possible speed |\n\n71-100 |\nattack nearest creature (for this purpose, a familiar counts as part of the subject's self) |\n\nA confused character who can't carry out the indicated action does nothing but babble incoherently. Attackers are not at any special advantage when attacking a confused character. Any confused character who is attacked automatically attacks its attackers on its next turn, as long as it is still confused when its turn comes. A confused character does not make attacks of opportunity against any creature that it is not already devoted to attacking (either because of its most recent action or because it has just been attacked).",
     "tags": [
@@ -650,7 +708,24 @@
       "durationText": "condition",
       "dismissible": true
     },
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-cnd-ff-dex",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "loseDexToAC",
+        "label": "Loses Dexterity Bonus to AC",
+        "text": "Loses Dexterity Bonus to AC"
+      },
+      {
+        "id": "ef-cnd-ff-aoo",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "cannotMakeAoO",
+        "label": "Cannot Make Attacks of Opportunity",
+        "text": "Cannot Make Attacks of Opportunity"
+      }
+    ],
     "ruleFlags": {
       "loseDexToAC": true,
       "actionRestriction": "Loses Dexterity bonus to AC and cannot make Attacks of Opportunity."
@@ -808,7 +883,16 @@
       "durationText": "condition",
       "dismissible": true
     },
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-cnd-unc-dex",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "effectiveDexZero",
+        "label": "Helpless & Unconscious (Effective DEX 0; Loses Dex to AC)",
+        "text": "Helpless & Unconscious (Effective DEX 0; Loses Dex to AC)"
+      }
+    ],
     "ruleFlags": {
       "loseDexToAC": true,
       "effectiveDexZero": true
@@ -838,7 +922,30 @@
       "durationText": "condition",
       "dismissible": true
     },
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-cnd-ed-atk",
+        "type": "stat",
+        "targets": [
+          "atk.all",
+          "save.all",
+          "skill.all"
+        ],
+        "mode": "flat",
+        "value": -1,
+        "btype": "Penalty"
+      },
+      {
+        "id": "ef-cnd-ed-hp",
+        "type": "stat",
+        "targets": [
+          "hp.max"
+        ],
+        "mode": "flat",
+        "value": -5,
+        "btype": "Penalty"
+      }
+    ],
     "shortDescription": "The character gains one or more negative levels, which might permanently drain the character’s levels. If the subject has at least as many negative levels as Hit Dice, he dies. Each negative level gives a creature the f…",
     "text": "The character gains one or more negative levels, which might permanently drain the character's levels. If the subject has at least as many negative levels as Hit Dice, he dies. Each negative level gives a creature the following penalties: -1 penalty on attack rolls, saving throws, skill checks, ability checks; loss of 5 hit points; and -1 to effective level (for determining the power, duration, DC, and other details of spells or special abilities). In addition, a spellcaster loses one spell or spell slot from the highest spell level castable.",
     "tags": [
@@ -996,7 +1103,25 @@
       "durationText": "condition",
       "dismissible": true
     },
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-cnd-trn-ac",
+        "type": "stat",
+        "targets": [
+          "ac.total"
+        ],
+        "mode": "flat",
+        "value": -2,
+        "btype": "Penalty",
+        "condition": "Cowering if Cornered (+2 Attack Bonus to Foes)"
+      },
+      {
+        "id": "ef-cnd-trn-r",
+        "type": "effect",
+        "effectKind": "rule",
+        "text": "Flees for 10 rounds (1 minute); cowers if unable to flee."
+      }
+    ],
     "shortDescription": "Affected by a turn undead attempt. Turned undead flee for 10 rounds (1 minute) by the best and fastest means available to them. If they cannot flee, they cower.",
     "text": "Affected by a turn undead attempt. Turned undead flee for 10 rounds (1 minute) by the best and fastest means available to them. If they cannot flee, they cower.",
     "tags": [
@@ -1114,7 +1239,15 @@
       "durationText": "condition",
       "dismissible": true
     },
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-cnd-pet-dr",
+        "type": "defense",
+        "mode": "Hardness",
+        "what": "Stone Body (Hardness 8, Unconscious)",
+        "value": 8
+      }
+    ],
     "shortDescription": "A petrified character has been turned to stone and is considered unconscious. If a petrified character cracks or breaks, but the broken pieces are joined with the body as he returns to flesh, he is unharmed. If the char…",
     "text": "A petrified character has been turned to stone and is considered unconscious. If a petrified character cracks or breaks, but the broken pieces are joined with the body as he returns to flesh, he is unharmed. If the character's petrified body is incomplete when it returns to flesh, the body is likewise incomplete and there is some amount of permanent hit point loss and/or debilitation.",
     "tags": [
@@ -1180,7 +1313,16 @@
       "durationText": "condition",
       "dismissible": true
     },
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-cnd-daz",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "noActionsAllowed",
+        "label": "Can Take No Actions (No AC Penalty)",
+        "text": "Can Take No Actions (No AC Penalty)"
+      }
+    ],
     "ruleFlags": {
       "actionRestriction": "Unable to act normally: can take no actions, but retains full AC."
     },
@@ -1249,7 +1391,16 @@
       "durationText": "condition",
       "dismissible": true
     },
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-cnd-dis-spd",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "halfSpeed",
+        "label": "Move at Half Speed; Single Move or Standard Action (Standard Action Costs 1 HP)",
+        "text": "Move at Half Speed; Single Move or Standard Action (Standard Action Costs 1 HP)"
+      }
+    ],
     "ruleFlags": {
       "halfSpeed": true,
       "actionRestriction": "At 0 HP: only a single Move or Standard action per round (Standard action deals 1 HP damage unless self-healing)."
@@ -1300,2154 +1451,6 @@
     "tags": [
       "condition",
       "grappling"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "buf-owls-wisdom",
-    "blueprint": "buff",
-    "name": "Owl's Wisdom",
-    "type": "Buff",
-    "category": "Spell / Combat Buff",
-    "source": "SRD 3.5e",
-    "buffKind": "Buff",
-    "durationCategory": "short",
-    "defaultCasterLevel": 1,
-    "lifecycle": {
-      "usage": {
-        "mode": "atwill"
-      },
-      "duration": "perm",
-      "durationText": "short",
-      "dismissible": true
-    },
-    "effects": [
-      {
-        "type": "stat",
-        "targets": [
-          "wis"
-        ],
-        "mode": "flat",
-        "value": 4,
-        "btype": "Enhancement"
-      }
-    ],
-    "shortDescription": "The subject has a +4 enhancement bonus to Wisdom.",
-    "text": "The subject has a +4 enhancement bonus to Wisdom.",
-    "tags": [
-      "buff",
-      "owls-wisdom"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "buf-foxs-cunning",
-    "blueprint": "buff",
-    "name": "Fox's Cunning",
-    "type": "Buff",
-    "category": "Spell / Combat Buff",
-    "source": "SRD 3.5e",
-    "buffKind": "Buff",
-    "durationCategory": "short",
-    "defaultCasterLevel": 1,
-    "lifecycle": {
-      "usage": {
-        "mode": "atwill"
-      },
-      "duration": "perm",
-      "durationText": "short",
-      "dismissible": true
-    },
-    "effects": [
-      {
-        "type": "stat",
-        "targets": [
-          "int"
-        ],
-        "mode": "flat",
-        "value": 4,
-        "btype": "Enhancement"
-      }
-    ],
-    "shortDescription": "The subject has a +4 enhancement bonus to Intelligence.",
-    "text": "The subject has a +4 enhancement bonus to Intelligence.",
-    "tags": [
-      "buff",
-      "foxs-cunning"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "buf-divine-favor",
-    "blueprint": "buff",
-    "name": "Divine Favor",
-    "type": "Buff",
-    "category": "Spell / Combat Buff",
-    "source": "SRD 3.5e",
-    "buffKind": "Buff",
-    "durationCategory": "short",
-    "defaultCasterLevel": 1,
-    "lifecycle": {
-      "usage": {
-        "mode": "atwill"
-      },
-      "duration": "perm",
-      "durationText": "short",
-      "dismissible": true
-    },
-    "effects": [
-      {
-        "type": "stat",
-        "targets": [
-          "atk.all",
-          "dmg.weapon"
-        ],
-        "mode": "formula",
-        "value": 0,
-        "formula": "min(3, max(1, floor(@cl / 3)))",
-        "btype": "Luck"
-      }
-    ],
-    "shortDescription": "You have a luck bonus to attack rolls and weapon damage rolls. Usage : Set the buff's level equal to the caster level Divine Favor.",
-    "text": "You have a luck bonus to attack rolls and weapon damage rolls.\n\nUsage: Set the buff's level equal to the caster level Divine Favor.",
-    "tags": [
-      "buff",
-      "divine-favor"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "buf-virtue",
-    "blueprint": "buff",
-    "name": "Virtue",
-    "type": "Buff",
-    "category": "Spell / Combat Buff",
-    "source": "SRD 3.5e",
-    "buffKind": "Buff",
-    "durationCategory": "short",
-    "defaultCasterLevel": 1,
-    "lifecycle": {
-      "usage": {
-        "mode": "atwill"
-      },
-      "duration": "perm",
-      "durationText": "short",
-      "dismissible": true
-    },
-    "effects": [
-      {
-        "type": "stat",
-        "targets": [
-          "hp.temp"
-        ],
-        "mode": "flat",
-        "value": 1,
-        "btype": "Untyped"
-      },
-      {
-        "type": "roll",
-        "kind": "Temp HP",
-        "count": 1,
-        "die": "flat",
-        "scaling": "flat",
-        "tempHpFormula": "1"
-      }
-    ],
-    "shortDescription": "The subject of Virtue gains 1 temporary hit point.",
-    "text": "The subject of Virtue gains 1 temporary hit point.",
-    "tags": [
-      "buff",
-      "virtue"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "buf-surging-euhporia",
-    "blueprint": "buff",
-    "name": "Surging Euphoria",
-    "type": "Buff",
-    "category": "Spell / Combat Buff",
-    "source": "SRD 3.5e",
-    "buffKind": "Buff",
-    "durationCategory": "short",
-    "defaultCasterLevel": 1,
-    "lifecycle": {
-      "usage": {
-        "mode": "atwill"
-      },
-      "duration": "perm",
-      "durationText": "short",
-      "dismissible": true
-    },
-    "effects": [
-      {
-        "type": "stat",
-        "targets": [
-          "atk.all",
-          "dmg.all",
-          "save.all"
-        ],
-        "mode": "formula",
-        "value": 1,
-        "formula": "1 + ((@cl >= 12) ? 1 : 0) + ((@cl >= 20) ? 1 : 0)",
-        "btype": "Morale"
-      }
-    ],
-    "shortDescription": "Wilder Surging Euphoria: +1 morale bonus on attack rolls, damage rolls, and saving throws (+2 at 12th level, +3 at 20th level).",
-    "text": "Wilder Surging Euphoria: +1 morale bonus on attack rolls, damage rolls, and saving throws (+2 at 12th level, +3 at 20th level).",
-    "tags": [
-      "buff",
-      "surging-euhporia"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "buf-defensive-stance-winded",
-    "blueprint": "buff",
-    "name": "Defensive Stance Winded",
-    "type": "Buff",
-    "category": "Spell / Combat Buff",
-    "source": "SRD 3.5e",
-    "buffKind": "Buff",
-    "durationCategory": "short",
-    "defaultCasterLevel": 1,
-    "lifecycle": {
-      "usage": {
-        "mode": "atwill"
-      },
-      "duration": "perm",
-      "durationText": "short",
-      "dismissible": true
-    },
-    "effects": [
-      {
-        "type": "stat",
-        "targets": [
-          "str"
-        ],
-        "mode": "flat",
-        "value": -2,
-        "btype": "Penalty"
-      }
-    ],
-    "shortDescription": "Active buff: Defensive Stance Winded",
-    "text": "Active buff: Defensive Stance Winded",
-    "tags": [
-      "buff",
-      "defensive-stance-winded"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "buf-bulls-strength",
-    "blueprint": "buff",
-    "name": "Bull's Strength",
-    "type": "Buff",
-    "category": "Spell / Combat Buff",
-    "source": "SRD 3.5e",
-    "buffKind": "Buff",
-    "durationCategory": "short",
-    "defaultCasterLevel": 1,
-    "lifecycle": {
-      "usage": {
-        "mode": "atwill"
-      },
-      "duration": "perm",
-      "durationText": "short",
-      "dismissible": true
-    },
-    "effects": [
-      {
-        "type": "stat",
-        "targets": [
-          "str"
-        ],
-        "mode": "flat",
-        "value": 4,
-        "btype": "Enhancement"
-      }
-    ],
-    "shortDescription": "The subject has a +4 enhancement bonus to Strength.",
-    "text": "The subject has a +4 enhancement bonus to Strength.",
-    "tags": [
-      "buff",
-      "bulls-strength"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "buf-bane",
-    "blueprint": "buff",
-    "name": "Bane",
-    "type": "Buff",
-    "category": "Spell / Combat Buff",
-    "source": "SRD 3.5e",
-    "buffKind": "Buff",
-    "durationCategory": "short",
-    "defaultCasterLevel": 1,
-    "lifecycle": {
-      "usage": {
-        "mode": "atwill"
-      },
-      "duration": "perm",
-      "durationText": "short",
-      "dismissible": true
-    },
-    "effects": [
-      {
-        "type": "stat",
-        "targets": [
-          "atk.all"
-        ],
-        "mode": "flat",
-        "value": -1,
-        "btype": "Penalty"
-      },
-      {
-        "type": "stat",
-        "targets": [
-          "save.all"
-        ],
-        "mode": "flat",
-        "value": -1,
-        "btype": "Penalty",
-        "condition": "vs Fear"
-      }
-    ],
-    "shortDescription": "You take a -1 penalty on attack rolls and saving throws vs fear effects.",
-    "text": "You take a -1 penalty on attack rolls and saving throws vs fear effects.",
-    "tags": [
-      "buff",
-      "bane"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "buf-guidance-skill-bonus",
-    "blueprint": "buff",
-    "name": "Guidance - Skill Bonus",
-    "type": "Buff",
-    "category": "Spell / Combat Buff",
-    "source": "SRD 3.5e",
-    "buffKind": "Buff",
-    "durationCategory": "short",
-    "defaultCasterLevel": 1,
-    "lifecycle": {
-      "usage": {
-        "mode": "atwill"
-      },
-      "duration": "perm",
-      "durationText": "short",
-      "dismissible": true
-    },
-    "effects": [
-      {
-        "type": "stat",
-        "targets": [
-          "skill.all"
-        ],
-        "mode": "flat",
-        "value": 1,
-        "btype": "Competence"
-      }
-    ],
-    "shortDescription": "The target of Guidance gets a +1 competence bonus on a single skill check. It must choose to use the bonus before making the roll to which it applies.",
-    "text": "The target of Guidance gets a +1 competence bonus on a single skill check. It must choose to use the bonus before making the roll to which it applies.",
-    "tags": [
-      "buff",
-      "guidance-skill-bonus"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "buf-enraged",
-    "blueprint": "buff",
-    "name": "Enraged",
-    "type": "Buff",
-    "category": "Spell / Combat Buff",
-    "source": "SRD 3.5e",
-    "buffKind": "Buff",
-    "durationCategory": "short",
-    "defaultCasterLevel": 1,
-    "lifecycle": {
-      "usage": {
-        "mode": "atwill"
-      },
-      "duration": "perm",
-      "durationText": "short",
-      "dismissible": true
-    },
-    "effects": [
-      {
-        "type": "stat",
-        "targets": [
-          "ac.total"
-        ],
-        "mode": "flat",
-        "value": -2,
-        "btype": "Untyped"
-      },
-      {
-        "type": "stat",
-        "targets": [
-          "str",
-          "con"
-        ],
-        "mode": "formula",
-        "value": 0,
-        "formula": "2+@cl*2",
-        "btype": "Untyped"
-      },
-      {
-        "type": "stat",
-        "targets": [
-          "save.will"
-        ],
-        "mode": "formula",
-        "value": 0,
-        "formula": "1+@cl",
-        "btype": "Untyped"
-      }
-    ],
-    "shortDescription": "A barbarian can fly into a rage a certain number of times per day. In a rage, a barbarian temporarily gains a +4 bonus to Strength, a +4 bonus to Constitution, and a +2 morale bonus on Will saves, but he takes a -2 pena…",
-    "text": "A barbarian can fly into a rage a certain number of times per day. In a rage, a barbarian temporarily gains a +4 bonus to Strength, a +4 bonus to Constitution, and a +2 morale bonus on Will saves, but he takes a -2 penalty to Armor Class. The increase in Constitution increases the barbarian's hit points by 2 points per level, but these hit points go away at the end of the rage when his Constitution score drops back to normal. (These extra hit points are not lost first the way temporary hit points are.) While raging, a barbarian cannot use any Charisma-, Dexterity-, or Intelligence-based skills (except for Balance, Escape Artist, Intimidate, and Ride), the Concentration skill, or any abilities that require patience or concentration, nor can he cast spells or activate magic items that require a command word, a spell trigger (such as a wand), or spell completion (such as a scroll) to function. He can use any feat he has except Combat Expertise, item creation feats, and metamagic feats. A fit of rage lasts for a number of rounds equal to 3 + the character's (newly improved) Constitution modifier.\n\nUsage: Set the buff's level to the 1 for Standard Rage, 2 for Greater Rage and 3 for Mghty Rage",
-    "tags": [
-      "buff",
-      "enraged"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "buf-inertial-armor",
-    "blueprint": "buff",
-    "name": "Inertial Armor",
-    "type": "Buff",
-    "category": "Spell / Combat Buff",
-    "source": "SRD 3.5e",
-    "buffKind": "Buff",
-    "durationCategory": "hour",
-    "defaultCasterLevel": 1,
-    "lifecycle": {
-      "usage": {
-        "mode": "atwill"
-      },
-      "duration": "perm",
-      "durationText": "hour",
-      "dismissible": true
-    },
-    "effects": [
-      {
-        "type": "stat",
-        "targets": [
-          "ac.armor"
-        ],
-        "mode": "flat",
-        "value": 4,
-        "btype": "Armor"
-      }
-    ],
-    "shortDescription": "Your mind generates a tangible field of force that provides a +4 armor bonus to Armor Class. Unlike mundane armor, inertial armor entails no armor check penalty or speed reduction. Because inertial armor is composed of…",
-    "text": "Your mind generates a tangible field of force that provides a +4 armor bonus to Armor Class. Unlike mundane armor, inertial armor entails no armor check penalty or speed reduction. Because inertial armor is composed of psychokinetic force, incorporeal creatures can't bypass it the way they do normal armor.\n\nYour inertial armor can be invisible or can appear as a colored glow, at your option.\n\nThe armor bonus provided by inertial armor does not stack with the armor bonus provided by regular armor.",
-    "tags": [
-      "buff",
-      "inertial-armor"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "buf-mage-armor",
-    "blueprint": "buff",
-    "name": "Mage Armor",
-    "type": "Buff",
-    "category": "Spell / Combat Buff",
-    "source": "SRD 3.5e",
-    "buffKind": "Buff",
-    "durationCategory": "hour",
-    "defaultCasterLevel": 1,
-    "lifecycle": {
-      "usage": {
-        "mode": "atwill"
-      },
-      "duration": "perm",
-      "durationText": "hour",
-      "dismissible": true
-    },
-    "effects": [
-      {
-        "type": "stat",
-        "targets": [
-          "ac.armor"
-        ],
-        "mode": "flat",
-        "value": 4,
-        "btype": "Armor"
-      }
-    ],
-    "shortDescription": "An invisible but tangible field of force surrounds you, providing a +4 armor bonus to AC. Since mage armor is made of force, incorporeal creatures can’t bypass it the way they do normal armor.",
-    "text": "An invisible but tangible field of force surrounds you, providing a +4 armor bonus to AC.\n\nSince mage armor is made of force, incorporeal creatures can't bypass it the way they do normal armor.",
-    "tags": [
-      "buff",
-      "mage-armor"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "buf-eagles-splendor",
-    "blueprint": "buff",
-    "name": "Eagle's Splendor",
-    "type": "Buff",
-    "category": "Spell / Combat Buff",
-    "source": "SRD 3.5e",
-    "buffKind": "Buff",
-    "durationCategory": "short",
-    "defaultCasterLevel": 1,
-    "lifecycle": {
-      "usage": {
-        "mode": "atwill"
-      },
-      "duration": "perm",
-      "durationText": "short",
-      "dismissible": true
-    },
-    "effects": [
-      {
-        "type": "stat",
-        "targets": [
-          "cha"
-        ],
-        "mode": "flat",
-        "value": 4,
-        "btype": "Enhancement"
-      }
-    ],
-    "shortDescription": "The subject has a +4 enhancement bonus to Charisma.",
-    "text": "The subject has a +4 enhancement bonus to Charisma.",
-    "tags": [
-      "buff",
-      "eagles-splendor"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "buf-prayer-negative",
-    "blueprint": "buff",
-    "name": "Prayer (Negative)",
-    "type": "Buff",
-    "category": "Spell / Combat Buff",
-    "source": "SRD 3.5e",
-    "buffKind": "Buff",
-    "durationCategory": "short",
-    "defaultCasterLevel": 1,
-    "lifecycle": {
-      "usage": {
-        "mode": "atwill"
-      },
-      "duration": "perm",
-      "durationText": "short",
-      "dismissible": true
-    },
-    "effects": [
-      {
-        "type": "stat",
-        "targets": [
-          "atk.all",
-          "dmg.weapon",
-          "save.all",
-          "skill.all"
-        ],
-        "mode": "flat",
-        "value": -1,
-        "btype": "Untyped"
-      }
-    ],
-    "shortDescription": "You take a -1 penalty on attack rolls, weapon damage rolls, saves, and skill checks.",
-    "text": "You take a -1 penalty on attack rolls, weapon damage rolls, saves, and skill checks.",
-    "tags": [
-      "buff",
-      "prayer-negative"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "buf-slow",
-    "blueprint": "buff",
-    "name": "Slow",
-    "type": "Buff",
-    "category": "Spell / Combat Buff",
-    "source": "SRD 3.5e",
-    "buffKind": "Buff",
-    "durationCategory": "short",
-    "defaultCasterLevel": 1,
-    "lifecycle": {
-      "usage": {
-        "mode": "atwill"
-      },
-      "duration": "perm",
-      "durationText": "short",
-      "dismissible": true
-    },
-    "effects": [
-      {
-        "type": "stat",
-        "targets": [
-          "ac.total",
-          "atk.all",
-          "save.ref"
-        ],
-        "mode": "flat",
-        "value": -1,
-        "btype": "Untyped"
-      }
-    ],
-    "shortDescription": "You are staggered, and you have a -1 penalty to attack rolls, AC and Reflex saves. In addition, you move at half speed (round down to the next 5-foot increment).",
-    "text": "You are staggered, and you have a -1 penalty to attack rolls, AC and Reflex saves.\n\nIn addition, you move at half speed (round down to the next 5-foot increment).",
-    "tags": [
-      "buff",
-      "slow"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "buf-inspire-heroics",
-    "blueprint": "buff",
-    "name": "Inspire Heroics",
-    "type": "Buff",
-    "category": "Spell / Combat Buff",
-    "source": "SRD 3.5e",
-    "buffKind": "Buff",
-    "durationCategory": "short",
-    "defaultCasterLevel": 1,
-    "lifecycle": {
-      "usage": {
-        "mode": "atwill"
-      },
-      "duration": "perm",
-      "durationText": "short",
-      "dismissible": true
-    },
-    "effects": [
-      {
-        "type": "stat",
-        "targets": [
-          "ac.total"
-        ],
-        "mode": "flat",
-        "value": 4,
-        "btype": "Dodge"
-      },
-      {
-        "type": "stat",
-        "targets": [
-          "save.all"
-        ],
-        "mode": "flat",
-        "value": 4,
-        "btype": "Morale"
-      }
-    ],
-    "shortDescription": "A bard of 15th level or higher with 18 or more ranks in a Perform skill can use music or poetics to inspire tremendous heroism in himself or a single willing ally within 30 feet. For every three bard levels the characte…",
-    "text": "A bard of 15th level or higher with 18 or more ranks in a Perform skill can use music or poetics to inspire tremendous heroism in himself or a single willing ally within 30 feet. For every three bard levels the character attains beyond 15th, he can inspire heroics in one additional creature. To inspire heroics, a bard must sing and an ally must hear the bard sing for a full round. A creature so inspired gains a +4 morale bonus on saving throws and a +4 dodge bonus to AC. The effect lasts for as long as the ally hears the bard sing and for up to 5 rounds thereafter. Inspire heroics is a mind-affecting ability.",
-    "tags": [
-      "buff",
-      "inspire-heroics"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "buf-bless",
-    "blueprint": "buff",
-    "name": "Bless",
-    "type": "Buff",
-    "category": "Spell / Combat Buff",
-    "source": "SRD 3.5e",
-    "buffKind": "Buff",
-    "durationCategory": "short",
-    "defaultCasterLevel": 1,
-    "lifecycle": {
-      "usage": {
-        "mode": "atwill"
-      },
-      "duration": "perm",
-      "durationText": "short",
-      "dismissible": true
-    },
-    "effects": [
-      {
-        "type": "stat",
-        "targets": [
-          "atk.all"
-        ],
-        "mode": "flat",
-        "value": 1,
-        "btype": "Morale"
-      },
-      {
-        "type": "stat",
-        "targets": [
-          "save.all"
-        ],
-        "mode": "flat",
-        "value": 1,
-        "btype": "Morale",
-        "condition": "vs Fear"
-      }
-    ],
-    "shortDescription": "You have a +1 morale bonus to attack rolls and saves against fear effects.",
-    "text": "You have a +1 morale bonus to attack rolls and saves against fear effects.",
-    "tags": [
-      "buff",
-      "bless"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "buf-guidance-save-bonus",
-    "blueprint": "buff",
-    "name": "Guidance - Save Bonus",
-    "type": "Buff",
-    "category": "Spell / Combat Buff",
-    "source": "SRD 3.5e",
-    "buffKind": "Buff",
-    "durationCategory": "short",
-    "defaultCasterLevel": 1,
-    "lifecycle": {
-      "usage": {
-        "mode": "atwill"
-      },
-      "duration": "perm",
-      "durationText": "short",
-      "dismissible": true
-    },
-    "effects": [
-      {
-        "type": "stat",
-        "targets": [
-          "save.all"
-        ],
-        "mode": "flat",
-        "value": 1,
-        "btype": "Competence"
-      }
-    ],
-    "shortDescription": "The target of Guidance gets a +1 competence bonus on a single saving throw. It must choose to use the bonus before making the roll to which it applies.",
-    "text": "The target of Guidance gets a +1 competence bonus on a single saving throw. It must choose to use the bonus before making the roll to which it applies.",
-    "tags": [
-      "buff",
-      "guidance-save-bonus"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "buf-outburst",
-    "blueprint": "buff",
-    "name": "Outburst",
-    "type": "Buff",
-    "category": "Spell / Combat Buff",
-    "source": "SRD 3.5e",
-    "buffKind": "Buff",
-    "durationCategory": "short",
-    "defaultCasterLevel": 1,
-    "lifecycle": {
-      "usage": {
-        "mode": "atwill"
-      },
-      "duration": "perm",
-      "durationText": "short",
-      "dismissible": true
-    },
-    "effects": [
-      {
-        "type": "stat",
-        "targets": [
-          "str"
-        ],
-        "mode": "flat",
-        "value": 2,
-        "btype": "Untyped"
-      },
-      {
-        "type": "stat",
-        "targets": [
-          "wis",
-          "int"
-        ],
-        "mode": "flat",
-        "value": -2,
-        "btype": "Untyped"
-      }
-    ],
-    "shortDescription": "Once per day, for up to 4 rounds, a maenad can subjugate her mentality to gain a boost of raw physical power. When she does so, she takes a –2 penalty to Intelligence and Wisdom but gains a +2 bonus to Strength.",
-    "text": "Once per day, for up to 4 rounds, a maenad can subjugate her mentality to gain a boost of raw physical power. When she does so, she takes a –2 penalty to Intelligence and Wisdom but gains a +2 bonus to Strength.",
-    "tags": [
-      "buff",
-      "outburst"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "buf-shield-of-faith",
-    "blueprint": "buff",
-    "name": "Shield of Faith",
-    "type": "Buff",
-    "category": "Spell / Combat Buff",
-    "source": "SRD 3.5e",
-    "buffKind": "Buff",
-    "durationCategory": "short",
-    "defaultCasterLevel": 1,
-    "lifecycle": {
-      "usage": {
-        "mode": "atwill"
-      },
-      "duration": "perm",
-      "durationText": "short",
-      "dismissible": true
-    },
-    "effects": [
-      {
-        "type": "stat",
-        "targets": [
-          "ac.total"
-        ],
-        "mode": "formula",
-        "value": 0,
-        "formula": "2 + min(3, floor(@cl / 6))",
-        "btype": "Deflection"
-      }
-    ],
-    "shortDescription": "You have a deflection bonus to AC. Usage : Set this buff's level equal to the caster level of Shield of Faith.",
-    "text": "You have a deflection bonus to AC.\n\nUsage: Set this buff's level equal to the caster level of Shield of Faith.",
-    "tags": [
-      "buff",
-      "shield-of-faith"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "buf-guidance-attack-bonus",
-    "blueprint": "buff",
-    "name": "Guidance - Attack Bonus",
-    "type": "Buff",
-    "category": "Spell / Combat Buff",
-    "source": "SRD 3.5e",
-    "buffKind": "Buff",
-    "durationCategory": "short",
-    "defaultCasterLevel": 1,
-    "lifecycle": {
-      "usage": {
-        "mode": "atwill"
-      },
-      "duration": "perm",
-      "durationText": "short",
-      "dismissible": true
-    },
-    "effects": [
-      {
-        "type": "stat",
-        "targets": [
-          "atk.all"
-        ],
-        "mode": "flat",
-        "value": 1,
-        "btype": "Competence"
-      }
-    ],
-    "shortDescription": "The target of Guidance gets a +1 competence bonus on a single attack roll. It must choose to use the bonus before making the roll to which it applies.",
-    "text": "The target of Guidance gets a +1 competence bonus on a single attack roll. It must choose to use the bonus before making the roll to which it applies.",
-    "tags": [
-      "buff",
-      "guidance-attack-bonus"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "buf-augmented-summon",
-    "blueprint": "buff",
-    "name": "Augmented Summon",
-    "type": "Buff",
-    "category": "Spell / Combat Buff",
-    "source": "SRD 3.5e",
-    "buffKind": "Buff",
-    "durationCategory": "short",
-    "defaultCasterLevel": 1,
-    "lifecycle": {
-      "usage": {
-        "mode": "atwill"
-      },
-      "duration": "perm",
-      "durationText": "short",
-      "dismissible": true
-    },
-    "effects": [
-      {
-        "type": "stat",
-        "targets": [
-          "con",
-          "str"
-        ],
-        "mode": "flat",
-        "value": 4,
-        "btype": "Enhancement"
-      }
-    ],
-    "shortDescription": "Summoned creature gains a +4 enhancement bonus to Strength and Constitution for the duration of the spell that summoned it.",
-    "text": "Summoned creature gains a +4 enhancement bonus to Strength and Constitution for the duration of the spell that summoned it.",
-    "tags": [
-      "buff",
-      "augmented-summon"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "buf-cats-grace",
-    "blueprint": "buff",
-    "name": "Cat's Grace",
-    "type": "Buff",
-    "category": "Spell / Combat Buff",
-    "source": "SRD 3.5e",
-    "buffKind": "Buff",
-    "durationCategory": "short",
-    "defaultCasterLevel": 1,
-    "lifecycle": {
-      "usage": {
-        "mode": "atwill"
-      },
-      "duration": "perm",
-      "durationText": "short",
-      "dismissible": true
-    },
-    "effects": [
-      {
-        "type": "stat",
-        "targets": [
-          "dex"
-        ],
-        "mode": "flat",
-        "value": 4,
-        "btype": "Enhancement"
-      }
-    ],
-    "shortDescription": "The subject has a +4 enhancement bonus to Dexterity.",
-    "text": "The subject has a +4 enhancement bonus to Dexterity.",
-    "tags": [
-      "buff",
-      "cats-grace"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "buf-defensive-stance",
-    "blueprint": "buff",
-    "name": "Defensive Stance",
-    "type": "Buff",
-    "category": "Spell / Combat Buff",
-    "source": "SRD 3.5e",
-    "buffKind": "Buff",
-    "durationCategory": "short",
-    "defaultCasterLevel": 1,
-    "lifecycle": {
-      "usage": {
-        "mode": "atwill"
-      },
-      "duration": "perm",
-      "durationText": "short",
-      "dismissible": true
-    },
-    "effects": [
-      {
-        "type": "stat",
-        "targets": [
-          "str"
-        ],
-        "mode": "flat",
-        "value": 2,
-        "btype": "Untyped"
-      },
-      {
-        "type": "stat",
-        "targets": [
-          "con"
-        ],
-        "mode": "flat",
-        "value": 4,
-        "btype": "Untyped"
-      },
-      {
-        "type": "stat",
-        "targets": [
-          "save.all"
-        ],
-        "mode": "flat",
-        "value": 2,
-        "btype": "Resistance"
-      },
-      {
-        "type": "stat",
-        "targets": [
-          "ac.dodge"
-        ],
-        "mode": "flat",
-        "value": 4,
-        "btype": "Dodge"
-      }
-    ],
-    "shortDescription": "He gains +2 to Strength, +4 to Constitution, a +2 resistance bonus on all saves, and a +4 dodge bonus to AC. The increase in Constitution increases the defender’s hit points by 2 points per level, but these hit points g…",
-    "text": "He gains +2 to Strength, +4 to Constitution, a +2 resistance bonus on all saves, and a +4 dodge bonus to AC. The increase in Constitution increases the defender’s hit points by 2 points per level, but these hit points go away at the end of the defensive stance when the Constitution score drops back 4 points. These extra hit points are not lost first the way temporary hit points are. While in a defensive stance, a defender cannot use skills or abilities that would require him to shift his position. A defensive stance lasts for a number of rounds equal to 3 + the character’s (newly improved) Constitution modifier. A defender may end his defensive stance voluntarily prior to this limit. At the end of the defensive stance, the defender is winded and takes a -2 penalty to Strength for the duration of that encounter.",
-    "tags": [
-      "buff",
-      "defensive-stance"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "buf-barkskin",
-    "blueprint": "buff",
-    "name": "Barkskin",
-    "type": "Buff",
-    "category": "Spell / Combat Buff",
-    "source": "SRD 3.5e",
-    "buffKind": "Buff",
-    "durationCategory": "short",
-    "defaultCasterLevel": 3,
-    "lifecycle": {
-      "usage": {
-        "mode": "atwill"
-      },
-      "duration": "perm",
-      "durationText": "short",
-      "dismissible": true
-    },
-    "effects": [
-      {
-        "type": "stat",
-        "targets": [
-          "ac.natural"
-        ],
-        "mode": "formula",
-        "value": 0,
-        "formula": "2 + min(3, max(0, floor((@cl - 3) / 3)))",
-        "btype": "Natural Enhancement"
-      }
-    ],
-    "shortDescription": "Your skin is toughened, granting you an enhancement bonus to your natural armor as per the barkskin spell. Usage : Set the buff's level to the caster level of Barkskin.",
-    "text": "Your skin is toughened, granting you an enhancement bonus to your natural armor as per the barkskin spell.\n\nUsage: Set the buff's level to the caster level of Barkskin.",
-    "tags": [
-      "buff",
-      "barkskin"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "buf-prayer-positive",
-    "blueprint": "buff",
-    "name": "Prayer (Positive)",
-    "type": "Buff",
-    "category": "Spell / Combat Buff",
-    "source": "SRD 3.5e",
-    "buffKind": "Buff",
-    "durationCategory": "short",
-    "defaultCasterLevel": 1,
-    "lifecycle": {
-      "usage": {
-        "mode": "atwill"
-      },
-      "duration": "perm",
-      "durationText": "short",
-      "dismissible": true
-    },
-    "effects": [
-      {
-        "type": "stat",
-        "targets": [
-          "atk.all",
-          "dmg.weapon",
-          "save.all",
-          "skill.all"
-        ],
-        "mode": "flat",
-        "value": 1,
-        "btype": "Luck"
-      }
-    ],
-    "shortDescription": "You have a +1 luck bonus on attack rolls, weapon damage rolls, saves and skill checks.",
-    "text": "You have a +1 luck bonus on attack rolls, weapon damage rolls, saves and skill checks.",
-    "tags": [
-      "buff",
-      "prayer-positive"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "buf-bears-endurance",
-    "blueprint": "buff",
-    "name": "Bear's Endurance",
-    "type": "Buff",
-    "category": "Spell / Combat Buff",
-    "source": "SRD 3.5e",
-    "buffKind": "Buff",
-    "durationCategory": "short",
-    "defaultCasterLevel": 1,
-    "lifecycle": {
-      "usage": {
-        "mode": "atwill"
-      },
-      "duration": "perm",
-      "durationText": "short",
-      "dismissible": true
-    },
-    "effects": [
-      {
-        "type": "stat",
-        "targets": [
-          "con"
-        ],
-        "mode": "flat",
-        "value": 4,
-        "btype": "Enhancement"
-      }
-    ],
-    "shortDescription": "The subject has a +4 enhancement bonus to Constitution.",
-    "text": "The subject has a +4 enhancement bonus to Constitution.",
-    "tags": [
-      "buff",
-      "bears-endurance"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "buf-resistance",
-    "blueprint": "buff",
-    "name": "Resistance",
-    "type": "Buff",
-    "category": "Spell / Combat Buff",
-    "source": "SRD 3.5e",
-    "buffKind": "Buff",
-    "durationCategory": "short",
-    "defaultCasterLevel": 1,
-    "lifecycle": {
-      "usage": {
-        "mode": "atwill"
-      },
-      "duration": "perm",
-      "durationText": "short",
-      "dismissible": true
-    },
-    "effects": [
-      {
-        "type": "stat",
-        "targets": [
-          "save.all"
-        ],
-        "mode": "flat",
-        "value": 1,
-        "btype": "Resistance"
-      }
-    ],
-    "shortDescription": "The subject of Resistance gains +1 resistance bonus on saves.",
-    "text": "The subject of Resistance gains +1 resistance bonus on saves.",
-    "tags": [
-      "buff",
-      "resistance"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "buf-inspire-greatness",
-    "blueprint": "buff",
-    "name": "Inspire Greatness",
-    "type": "Buff",
-    "category": "Spell / Combat Buff",
-    "source": "SRD 3.5e",
-    "buffKind": "Buff",
-    "durationCategory": "short",
-    "defaultCasterLevel": 1,
-    "lifecycle": {
-      "usage": {
-        "mode": "atwill"
-      },
-      "duration": "perm",
-      "durationText": "short",
-      "dismissible": true
-    },
-    "effects": [
-      {
-        "type": "stat",
-        "targets": [
-          "atk.all"
-        ],
-        "mode": "flat",
-        "value": 2,
-        "btype": "Competence"
-      },
-      {
-        "type": "stat",
-        "targets": [
-          "save.fort"
-        ],
-        "mode": "flat",
-        "value": 1,
-        "btype": "Competence"
-      }
-    ],
-    "ruleFlags": {
-      "bonusHitDice": "2d10"
-    },
-    "shortDescription": "A bard of 9th level or higher with 12 or more ranks in a Perform skill can use music or poetics to inspire greatness in himself or a single willing ally within 30 feet, granting him or her extra fighting capability. For…",
-    "text": "A bard of 9th level or higher with 12 or more ranks in a Perform skill can use music or poetics to inspire greatness in himself or a single willing ally within 30 feet, granting him or her extra fighting capability. For every three levels a bard attains beyond 9th, he can target one additional ally with a single use of this ability (two at 12th level, three at 15th, four at 18th). To inspire greatness, a bard must sing and an ally must hear him sing. The effect lasts for as long as the ally hears the bard sing and for 5 rounds thereafter. A creature inspired with greatness gains 2 bonus Hit Dice (d10s), the commensurate number of temporary hit points (apply the target’s Constitution modifier, if any, to these bonus Hit Dice), a +2 competence bonus on attack rolls, and a +1 competence bonus on Fortitude saves. The bonus Hit Dice count as regular Hit Dice for determining the effect of spells that are Hit Dice dependant. Inspire greatness is a mind-affecting ability.",
-    "tags": [
-      "buff",
-      "inspire-greatness"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "buf-haste",
-    "blueprint": "buff",
-    "name": "Haste",
-    "type": "Buff",
-    "category": "Spell / Combat Buff",
-    "source": "SRD 3.5e",
-    "buffKind": "Buff",
-    "durationCategory": "short",
-    "defaultCasterLevel": 1,
-    "lifecycle": {
-      "usage": {
-        "mode": "atwill"
-      },
-      "duration": "perm",
-      "durationText": "short",
-      "dismissible": true
-    },
-    "effects": [
-      {
-        "type": "stat",
-        "targets": [
-          "atk.all"
-        ],
-        "mode": "flat",
-        "value": 1,
-        "btype": "Untyped"
-      },
-      {
-        "type": "stat",
-        "targets": [
-          "ac.dodge",
-          "save.ref"
-        ],
-        "mode": "flat",
-        "value": 1,
-        "btype": "Dodge"
-      },
-      {
-        "type": "stat",
-        "targets": [
-          "speed.all"
-        ],
-        "mode": "flat",
-        "value": 30,
-        "btype": "Enhancement"
-      },
-      {
-        "type": "attack",
-        "attackMode": "extra",
-        "extraKind": "extraFull",
-        "count": 1,
-        "penalty": 0
-      }
-    ],
-    "ruleFlags": {
-      "hasted": true,
-      "extraAttackFullAttack": true
-    },
-    "shortDescription": "When making a full attack action, you may make one extra attack with one natural or manufactured weapon at your highest base attack bonus. This effect is not cumulative with similar effects, such as that provided by a s…",
-    "text": "When making a full attack action, you may make one extra attack with one natural or manufactured weapon at your highest base attack bonus. This effect is not cumulative with similar effects, such as that provided by a speed weapon.\n\nYou also gain a +1 bonus on attack rolls, dodge AC and Reflex saves.\n\nAll your modes of movement (including land, fly, burrow, climb and swim) increase by 30ft, to a maximum of twice your normal speed using that form of movement. This increase counts as an enhancement bonus, and it affects the creature's jumping distance as normal for increased speed",
-    "tags": [
-      "buff",
-      "haste"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "buf-shield",
-    "blueprint": "buff",
-    "name": "Shield",
-    "type": "Buff",
-    "category": "Spell / Combat Buff",
-    "source": "SRD 3.5e",
-    "buffKind": "Buff",
-    "durationCategory": "short",
-    "defaultCasterLevel": 1,
-    "lifecycle": {
-      "usage": {
-        "mode": "atwill"
-      },
-      "duration": "perm",
-      "durationText": "short",
-      "dismissible": true
-    },
-    "effects": [
-      {
-        "type": "stat",
-        "targets": [
-          "ac.shield"
-        ],
-        "mode": "flat",
-        "value": 4,
-        "btype": "Shield"
-      }
-    ],
-    "shortDescription": "An invisible shield of force hovers in front of you, with the following effects: +4 Shield Bonus to AC Negates Magic Missile attacks direct at you These bonuses apply to incorporeal touch attacks.",
-    "text": "An invisible shield of force hovers in front of you, with the following effects:\n\n• +4 Shield Bonus to AC\n\n• Negates Magic Missile attacks direct at you\n\nThese bonuses apply to incorporeal touch attacks.",
-    "tags": [
-      "buff",
-      "shield"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "buf-lullaby",
-    "blueprint": "buff",
-    "name": "Lullaby",
-    "type": "Buff",
-    "category": "Spell / Combat Buff",
-    "source": "SRD 3.5e",
-    "buffKind": "Buff",
-    "durationCategory": "short",
-    "defaultCasterLevel": 1,
-    "lifecycle": {
-      "usage": {
-        "mode": "atwill"
-      },
-      "duration": "perm",
-      "durationText": "short",
-      "dismissible": true
-    },
-    "effects": [
-      {
-        "type": "stat",
-        "targets": [
-          "skill.listen",
-          "skill.spot"
-        ],
-        "mode": "flat",
-        "value": -5,
-        "btype": "Penalty"
-      }
-    ],
-    "shortDescription": "–5 penalty on Listen and Spot checks and a –2 penalty on Will saves against sleep effects while the Lullaby is in effect. Note: Duration is Concentration + 1 so the buff must be deleted by the GM.",
-    "text": "–5 penalty on Listen and Spot checks and a –2 penalty on Will saves against sleep effects while the Lullaby is in effect.\n\nNote: Duration is Concentration + 1 so the buff must be deleted by the GM.",
-    "tags": [
-      "buff",
-      "lullaby"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "buf-aid",
-    "blueprint": "buff",
-    "name": "Aid",
-    "type": "Buff",
-    "category": "Spell / Combat Buff",
-    "source": "SRD 3.5e",
-    "buffKind": "Buff",
-    "durationCategory": "short",
-    "defaultCasterLevel": 1,
-    "lifecycle": {
-      "usage": {
-        "mode": "atwill"
-      },
-      "duration": "perm",
-      "durationText": "short",
-      "dismissible": true
-    },
-    "effects": [
-      {
-        "type": "stat",
-        "targets": [
-          "atk.all"
-        ],
-        "mode": "flat",
-        "value": 1,
-        "btype": "Morale"
-      },
-      {
-        "type": "stat",
-        "targets": [
-          "save.all"
-        ],
-        "mode": "flat",
-        "value": 1,
-        "btype": "Morale",
-        "condition": "vs Fear"
-      },
-      {
-        "type": "roll",
-        "kind": "Temp HP",
-        "count": 1,
-        "die": "d8",
-        "scaling": "perCL",
-        "amount": 1,
-        "per": 1,
-        "max": 10,
-        "tempHpFormula": "1d8 + min(10, @cl)"
-      }
-    ],
-    "shortDescription": "You gain a +1 morale bonus on attack rolls and saves against fear effects, plus 1d8 + caster level (max +10) temporary HP.",
-    "text": "You have a +1 morale bonus to attack rolls and saves against fear effects.",
-    "tags": [
-      "buff",
-      "aid"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "buf-inspire-courage",
-    "blueprint": "buff",
-    "name": "Inspire Courage",
-    "type": "Buff",
-    "category": "Spell / Combat Buff",
-    "source": "SRD 3.5e",
-    "buffKind": "Buff",
-    "durationCategory": "short",
-    "defaultCasterLevel": 1,
-    "lifecycle": {
-      "usage": {
-        "mode": "atwill"
-      },
-      "duration": "perm",
-      "durationText": "short",
-      "dismissible": true
-    },
-    "effects": [
-      {
-        "type": "stat",
-        "targets": [
-          "atk.all",
-          "dmg.weapon"
-        ],
-        "mode": "formula",
-        "value": 0,
-        "formula": "1 + max(0, ceil((@cl - 7) / 6))",
-        "btype": "Morale"
-      },
-      {
-        "type": "stat",
-        "targets": [
-          "save.all"
-        ],
-        "mode": "formula",
-        "value": 0,
-        "formula": "1 + max(0, ceil((@cl - 7) / 6))",
-        "btype": "Morale",
-        "condition": "vs Charm & Fear"
-      }
-    ],
-    "shortDescription": "Someone is inspiring you with courage. You gain a morale bonus on saves vs charm and fear effects, and a competence bonus on attack rolls and weapon damage rolls. Usage : Set the buff's level to the bard level of the pe…",
-    "text": "Someone is inspiring you with courage. You gain a morale bonus on saves vs charm and fear effects, and a competence bonus on attack rolls and weapon damage rolls.\n\nUsage: Set the buff's level to the bard level of the person using Inspire Courage.",
-    "tags": [
-      "buff",
-      "inspire-courage"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "buf-burst",
-    "blueprint": "buff",
-    "name": "Burst",
-    "type": "Buff",
-    "category": "Spell / Combat Buff",
-    "source": "SRD 3.5e",
-    "buffKind": "Buff",
-    "durationCategory": "short",
-    "defaultCasterLevel": 1,
-    "lifecycle": {
-      "usage": {
-        "mode": "atwill"
-      },
-      "duration": "perm",
-      "durationText": "short",
-      "dismissible": true
-    },
-    "effects": [
-      {
-        "type": "stat",
-        "targets": [
-          "speed.all"
-        ],
-        "mode": "flat",
-        "value": 10,
-        "btype": "Enhancement"
-      }
-    ],
-    "shortDescription": "Increases your land speed by 10 feet for 1 round (enhancement bonus).",
-    "text": "This power increases your land speed by 10 feet for 1 round. This increase is an enhancement bonus.",
-    "tags": [
-      "buff",
-      "burst"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "buf-heroism",
-    "blueprint": "buff",
-    "name": "Heroism",
-    "type": "Buff",
-    "category": "Spell / Combat Buff",
-    "source": "SRD 3.5e",
-    "buffKind": "Buff",
-    "durationCategory": "short",
-    "defaultCasterLevel": 1,
-    "lifecycle": {
-      "usage": {
-        "mode": "atwill"
-      },
-      "duration": "perm",
-      "durationText": "short",
-      "dismissible": true
-    },
-    "effects": [
-      {
-        "type": "stat",
-        "targets": [
-          "atk.all",
-          "save.all",
-          "skill.all"
-        ],
-        "mode": "flat",
-        "value": 2,
-        "btype": "Morale"
-      }
-    ],
-    "shortDescription": "You gain a +2 morale bonus on attack rolls, saves, and skill checks.",
-    "text": "You gain a +2 morale bonus on attack rolls, saves, and skill checks.",
-    "tags": [
-      "buff",
-      "heroism"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "buf-fatigue",
-    "blueprint": "buff",
-    "name": "Fatigue",
-    "type": "Buff",
-    "category": "Spell / Combat Buff",
-    "source": "SRD 3.5e",
-    "buffKind": "Buff",
-    "durationCategory": "short",
-    "defaultCasterLevel": 1,
-    "lifecycle": {
-      "usage": {
-        "mode": "atwill"
-      },
-      "duration": "perm",
-      "durationText": "short",
-      "dismissible": true
-    },
-    "effects": [
-      {
-        "type": "stat",
-        "targets": [
-          "str",
-          "dex"
-        ],
-        "mode": "flat",
-        "value": -2,
-        "btype": "Circumstance"
-      }
-    ],
-    "shortDescription": "A fatigued character can neither run nor charge and takes a -2 penalty to Strength and Dexterity. Doing anything that would normally cause fatigue causes the fatigued character to become exhausted. After 8 hours of comp…",
-    "text": "A fatigued character can neither run nor charge and takes a -2 penalty to Strength and Dexterity. Doing anything that would normally cause fatigue causes the fatigued character to become exhausted. After 8 hours of complete rest, fatigued characters are no longer fatigued.",
-    "tags": [
-      "buff",
-      "fatigue"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "dt-non-lethal",
-    "blueprint": "buff",
-    "name": "Non-lethal",
-    "type": "DamageType",
-    "category": "type",
-    "source": "SRD 3.5e",
-    "buffKind": "Rule",
-    "isBludgeoning": true,
-    "isPiercing": false,
-    "isSlashing": false,
-    "lifecycle": {
-      "usage": {
-        "mode": "atwill"
-      },
-      "duration": "perm",
-      "durationText": "Active while toggled",
-      "dismissible": true
-    },
-    "effects": [],
-    "shortDescription": "This damage type always results in non-lethal damage applied to a creature.",
-    "text": "This damage type always results in non-lethal damage applied to a creature.",
-    "tags": [
-      "damage-type",
-      "non-lethal"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "dt-fire",
-    "blueprint": "buff",
-    "name": "Fire",
-    "type": "DamageType",
-    "category": "energy",
-    "source": "SRD 3.5e",
-    "buffKind": "Rule",
-    "isBludgeoning": false,
-    "isPiercing": false,
-    "isSlashing": false,
-    "lifecycle": {
-      "usage": {
-        "mode": "atwill"
-      },
-      "duration": "perm",
-      "durationText": "Active while toggled",
-      "dismissible": true
-    },
-    "effects": [],
-    "shortDescription": "Fire",
-    "text": "Fire",
-    "tags": [
-      "damage-type",
-      "fire"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "dt-bludgeoning",
-    "blueprint": "buff",
-    "name": "Bludgeoning",
-    "type": "DamageType",
-    "category": "type",
-    "source": "SRD 3.5e",
-    "buffKind": "Rule",
-    "isBludgeoning": true,
-    "isPiercing": false,
-    "isSlashing": false,
-    "lifecycle": {
-      "usage": {
-        "mode": "atwill"
-      },
-      "duration": "perm",
-      "durationText": "Active while toggled",
-      "dismissible": true
-    },
-    "effects": [],
-    "shortDescription": "Bludgeoning",
-    "text": "Bludgeoning",
-    "tags": [
-      "damage-type",
-      "bludgeoning"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "dt-negative-energy",
-    "blueprint": "buff",
-    "name": "Negative Energy",
-    "type": "DamageType",
-    "category": "energy",
-    "source": "SRD 3.5e",
-    "buffKind": "Rule",
-    "isBludgeoning": false,
-    "isPiercing": false,
-    "isSlashing": false,
-    "lifecycle": {
-      "usage": {
-        "mode": "atwill"
-      },
-      "duration": "perm",
-      "durationText": "Active while toggled",
-      "dismissible": true
-    },
-    "effects": [],
-    "shortDescription": "Negative Energy",
-    "text": "Negative Energy",
-    "tags": [
-      "damage-type",
-      "negative-energy"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "dt-piercing",
-    "blueprint": "buff",
-    "name": "Piercing",
-    "type": "DamageType",
-    "category": "type",
-    "source": "SRD 3.5e",
-    "buffKind": "Rule",
-    "isBludgeoning": false,
-    "isPiercing": true,
-    "isSlashing": false,
-    "lifecycle": {
-      "usage": {
-        "mode": "atwill"
-      },
-      "duration": "perm",
-      "durationText": "Active while toggled",
-      "dismissible": true
-    },
-    "effects": [],
-    "shortDescription": "Piercing",
-    "text": "Piercing",
-    "tags": [
-      "damage-type",
-      "piercing"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "dt-electricity",
-    "blueprint": "buff",
-    "name": "Electricity",
-    "type": "DamageType",
-    "category": "energy",
-    "source": "SRD 3.5e",
-    "buffKind": "Rule",
-    "isBludgeoning": false,
-    "isPiercing": false,
-    "isSlashing": false,
-    "lifecycle": {
-      "usage": {
-        "mode": "atwill"
-      },
-      "duration": "perm",
-      "durationText": "Active while toggled",
-      "dismissible": true
-    },
-    "effects": [],
-    "shortDescription": "Electricity",
-    "text": "Electricity",
-    "tags": [
-      "damage-type",
-      "electricity"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "dt-untyped",
-    "blueprint": "buff",
-    "name": "Untyped",
-    "type": "DamageType",
-    "category": "type",
-    "source": "SRD 3.5e",
-    "buffKind": "Rule",
-    "isBludgeoning": false,
-    "isPiercing": false,
-    "isSlashing": false,
-    "lifecycle": {
-      "usage": {
-        "mode": "atwill"
-      },
-      "duration": "perm",
-      "durationText": "Active while toggled",
-      "dismissible": true
-    },
-    "effects": [],
-    "shortDescription": "Untyped",
-    "text": "Untyped",
-    "tags": [
-      "damage-type",
-      "untyped"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "dt-slashing",
-    "blueprint": "buff",
-    "name": "Slashing",
-    "type": "DamageType",
-    "category": "type",
-    "source": "SRD 3.5e",
-    "buffKind": "Rule",
-    "isBludgeoning": false,
-    "isPiercing": false,
-    "isSlashing": true,
-    "lifecycle": {
-      "usage": {
-        "mode": "atwill"
-      },
-      "duration": "perm",
-      "durationText": "Active while toggled",
-      "dismissible": true
-    },
-    "effects": [],
-    "shortDescription": "Slashing",
-    "text": "Slashing",
-    "tags": [
-      "damage-type",
-      "slashing"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "dt-force",
-    "blueprint": "buff",
-    "name": "Force",
-    "type": "DamageType",
-    "category": "energy",
-    "source": "SRD 3.5e",
-    "buffKind": "Rule",
-    "isBludgeoning": false,
-    "isPiercing": false,
-    "isSlashing": false,
-    "lifecycle": {
-      "usage": {
-        "mode": "atwill"
-      },
-      "duration": "perm",
-      "durationText": "Active while toggled",
-      "dismissible": true
-    },
-    "effects": [],
-    "shortDescription": "Force",
-    "text": "Force",
-    "tags": [
-      "damage-type",
-      "force"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "dt-positive-energy",
-    "blueprint": "buff",
-    "name": "Positive Energy",
-    "type": "DamageType",
-    "category": "energy",
-    "source": "SRD 3.5e",
-    "buffKind": "Rule",
-    "isBludgeoning": false,
-    "isPiercing": false,
-    "isSlashing": false,
-    "lifecycle": {
-      "usage": {
-        "mode": "atwill"
-      },
-      "duration": "perm",
-      "durationText": "Active while toggled",
-      "dismissible": true
-    },
-    "effects": [],
-    "shortDescription": "Positive Energy",
-    "text": "Positive Energy",
-    "tags": [
-      "damage-type",
-      "positive-energy"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "dt-repair",
-    "blueprint": "buff",
-    "name": "Repair",
-    "type": "DamageType",
-    "category": "energy",
-    "source": "SRD 3.5e",
-    "buffKind": "Rule",
-    "isBludgeoning": false,
-    "isPiercing": false,
-    "isSlashing": false,
-    "lifecycle": {
-      "usage": {
-        "mode": "atwill"
-      },
-      "duration": "perm",
-      "durationText": "Active while toggled",
-      "dismissible": true
-    },
-    "effects": [],
-    "shortDescription": "This damage type heals constructs while doing nothing to other creatures.",
-    "text": "This damage type heals constructs while doing nothing to other creatures.",
-    "tags": [
-      "damage-type",
-      "repair"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "dt-piercing-or-bludgeoning",
-    "blueprint": "buff",
-    "name": "Piercing or Bludgeoning",
-    "type": "DamageType",
-    "category": "type",
-    "source": "SRD 3.5e",
-    "buffKind": "Rule",
-    "isBludgeoning": true,
-    "isPiercing": true,
-    "isSlashing": false,
-    "lifecycle": {
-      "usage": {
-        "mode": "atwill"
-      },
-      "duration": "perm",
-      "durationText": "Active while toggled",
-      "dismissible": true
-    },
-    "effects": [],
-    "shortDescription": "Piercing or Bludgeoning",
-    "text": "Piercing or Bludgeoning",
-    "tags": [
-      "damage-type",
-      "piercing-or-bludgeoning"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "dt-slashing-or-bludgeoning",
-    "blueprint": "buff",
-    "name": "Slashing or Bludgeoning",
-    "type": "DamageType",
-    "category": "type",
-    "source": "SRD 3.5e",
-    "buffKind": "Rule",
-    "isBludgeoning": true,
-    "isPiercing": false,
-    "isSlashing": true,
-    "lifecycle": {
-      "usage": {
-        "mode": "atwill"
-      },
-      "duration": "perm",
-      "durationText": "Active while toggled",
-      "dismissible": true
-    },
-    "effects": [],
-    "shortDescription": "Slashing or Bludgeoning",
-    "text": "Slashing or Bludgeoning",
-    "tags": [
-      "damage-type",
-      "slashing-or-bludgeoning"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "dt-healing",
-    "blueprint": "buff",
-    "name": "Healing",
-    "type": "DamageType",
-    "category": "energy",
-    "source": "SRD 3.5e",
-    "buffKind": "Rule",
-    "isBludgeoning": false,
-    "isPiercing": false,
-    "isSlashing": false,
-    "lifecycle": {
-      "usage": {
-        "mode": "atwill"
-      },
-      "duration": "perm",
-      "durationText": "Active while toggled",
-      "dismissible": true
-    },
-    "effects": [],
-    "shortDescription": "This damage type will allways apply healing.",
-    "text": "This damage type will allways apply healing.",
-    "tags": [
-      "damage-type",
-      "healing"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "dt-precision",
-    "blueprint": "buff",
-    "name": "Precision",
-    "type": "DamageType",
-    "category": "type",
-    "source": "SRD 3.5e",
-    "buffKind": "Rule",
-    "isBludgeoning": false,
-    "isPiercing": false,
-    "isSlashing": false,
-    "lifecycle": {
-      "usage": {
-        "mode": "atwill"
-      },
-      "duration": "perm",
-      "durationText": "Active while toggled",
-      "dismissible": true
-    },
-    "effects": [],
-    "shortDescription": "Precision",
-    "text": "Precision",
-    "tags": [
-      "damage-type",
-      "precision"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "dt-piercing-bludgeoning-and-slashing",
-    "blueprint": "buff",
-    "name": "Piercing, Bludgeoning and Slashing",
-    "type": "DamageType",
-    "category": "type",
-    "source": "SRD 3.5e",
-    "buffKind": "Rule",
-    "isBludgeoning": true,
-    "isPiercing": true,
-    "isSlashing": true,
-    "lifecycle": {
-      "usage": {
-        "mode": "atwill"
-      },
-      "duration": "perm",
-      "durationText": "Active while toggled",
-      "dismissible": true
-    },
-    "effects": [],
-    "shortDescription": "Piercing, Bludgeoning and Slashing",
-    "text": "Piercing, Bludgeoning and Slashing",
-    "tags": [
-      "damage-type",
-      "piercing-bludgeoning-and-slashing"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "dt-cold",
-    "blueprint": "buff",
-    "name": "Cold",
-    "type": "DamageType",
-    "category": "energy",
-    "source": "SRD 3.5e",
-    "buffKind": "Rule",
-    "isBludgeoning": false,
-    "isPiercing": false,
-    "isSlashing": false,
-    "lifecycle": {
-      "usage": {
-        "mode": "atwill"
-      },
-      "duration": "perm",
-      "durationText": "Active while toggled",
-      "dismissible": true
-    },
-    "effects": [],
-    "shortDescription": "Cold",
-    "text": "Cold",
-    "tags": [
-      "damage-type",
-      "cold"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "dt-acid",
-    "blueprint": "buff",
-    "name": "Acid",
-    "type": "DamageType",
-    "category": "energy",
-    "source": "SRD 3.5e",
-    "buffKind": "Rule",
-    "isBludgeoning": false,
-    "isPiercing": false,
-    "isSlashing": false,
-    "lifecycle": {
-      "usage": {
-        "mode": "atwill"
-      },
-      "duration": "perm",
-      "durationText": "Active while toggled",
-      "dismissible": true
-    },
-    "effects": [],
-    "shortDescription": "Acid",
-    "text": "Acid",
-    "tags": [
-      "damage-type",
-      "acid"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "dt-sonic",
-    "blueprint": "buff",
-    "name": "Sonic",
-    "type": "DamageType",
-    "category": "energy",
-    "source": "SRD 3.5e",
-    "buffKind": "Rule",
-    "isBludgeoning": false,
-    "isPiercing": false,
-    "isSlashing": false,
-    "lifecycle": {
-      "usage": {
-        "mode": "atwill"
-      },
-      "duration": "perm",
-      "durationText": "Active while toggled",
-      "dismissible": true
-    },
-    "effects": [],
-    "shortDescription": "Sonic",
-    "text": "Sonic",
-    "tags": [
-      "damage-type",
-      "sonic"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "dt-divine",
-    "blueprint": "buff",
-    "name": "Divine",
-    "type": "DamageType",
-    "category": "energy",
-    "source": "SRD 3.5e",
-    "buffKind": "Rule",
-    "isBludgeoning": false,
-    "isPiercing": false,
-    "isSlashing": false,
-    "lifecycle": {
-      "usage": {
-        "mode": "atwill"
-      },
-      "duration": "perm",
-      "durationText": "Active while toggled",
-      "dismissible": true
-    },
-    "effects": [],
-    "shortDescription": "Divine",
-    "text": "Divine",
-    "tags": [
-      "damage-type",
-      "divine"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "dt-piercing-or-slashing",
-    "blueprint": "buff",
-    "name": "Piercing or Slashing",
-    "type": "DamageType",
-    "category": "type",
-    "source": "SRD 3.5e",
-    "buffKind": "Rule",
-    "isBludgeoning": false,
-    "isPiercing": true,
-    "isSlashing": true,
-    "lifecycle": {
-      "usage": {
-        "mode": "atwill"
-      },
-      "duration": "perm",
-      "durationText": "Active while toggled",
-      "dismissible": true
-    },
-    "effects": [],
-    "shortDescription": "Piercing or Slashing",
-    "text": "Piercing or Slashing",
-    "tags": [
-      "damage-type",
-      "piercing-or-slashing"
     ]
   }
 ]

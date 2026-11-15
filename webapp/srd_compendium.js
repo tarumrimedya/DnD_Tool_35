@@ -6,7 +6,7 @@
  * Exports:
  *   1. window.SrdCompendium  — O(1) In-Memory Map + Versioned IndexedDB Lazy Loader + Unified Search
  *   2. window.ItemAssembler  — Modular Lego Item Factory (Base + Material + Enh + Abilities)
- *   3. window.SchemaMigrator — Deterministic V1 -> V2 Gatekeeper (Zero-Patchwork Migration)
+ *   3. window.SchemaMigrator — Deterministic External Boundary -> Canonical V3 Gatekeeper
  * ============================================================================
  */
 (function (global) {
@@ -152,55 +152,26 @@
   }
 
   // ==========================================================================
-  // IN-MEMORY INDEX REGISTRATION
+  // IN-MEMORY INDEX REGISTRATION (Pure Canonical V3 — Single Source of Truth)
   // ==========================================================================
-  if (!Array.isArray(global.BUNDLED_SRD_CORE_CATALOG)) {
-    global.BUNDLED_SRD_CORE_CATALOG = [];
-  }
   const _catalogIds = new Set();
 
   function attachV3RuntimeGetters(rec) {
     if (!rec || typeof rec !== 'object' || rec.schemaVersion !== 3) return rec;
-    const evalSelf = () => {
-      if (global.RuleEngine && typeof global.RuleEngine.evaluateV3Entry === 'function') {
-        return global.RuleEngine.evaluateV3Entry(rec);
-      }
-      return null;
-    };
-    const defineLazy = (prop, computeFn) => {
-      if (Object.prototype.propertyIsEnumerable.call(rec, prop)) return;
-      Object.defineProperty(rec, prop, {
+    if (!Object.prototype.propertyIsEnumerable.call(rec, 'description')) {
+      Object.defineProperty(rec, 'description', {
         enumerable: false,
         configurable: true,
-        get: computeFn,
+        get() {
+          if (rec._snapshot && rec._snapshot.compact && !rec.text) {
+            const s = rec.shortDescription || rec.benefit || '';
+            return s.length > 240 ? (s.slice(0, 237) + '...') : s;
+          }
+          return rec.text || rec.shortDescription || rec.benefit || '';
+        },
         set(val) {
-          Object.defineProperty(rec, prop, { value: val, enumerable: true, configurable: true, writable: true });
+          Object.defineProperty(rec, 'description', { value: val, enumerable: true, configurable: true, writable: true });
         }
-      });
-    };
-    defineLazy('modifiers', () => {
-      const ev = evalSelf();
-      return ev && Array.isArray(ev.modifiers) ? ev.modifiers : [];
-    });
-    defineLazy('damageParts', () => {
-      const ev = evalSelf();
-      return ev && Array.isArray(ev.damageParts) ? ev.damageParts : [];
-    });
-    defineLazy('defenses', () => {
-      const ev = evalSelf();
-      return ev && Array.isArray(ev.defenses) ? ev.defenses : [];
-    });
-    defineLazy('description', () => {
-      if (rec._snapshot && rec._snapshot.compact && !rec.text) {
-        const s = rec.shortDescription || rec.benefit || '';
-        return s.length > 240 ? (s.slice(0, 237) + '...') : s;
-      }
-      return rec.text || rec.shortDescription || rec.benefit || '';
-    });
-    if (Array.isArray(rec.effects) && rec.effects.some((e) => e && e.type === 'roll' && e.kind === 'Temp HP')) {
-      defineLazy('tempHpFormula', () => {
-        const ev = evalSelf();
-        return ev && ev.tempHpFormula ? ev.tempHpFormula : '';
       });
     }
     return rec;
@@ -218,9 +189,6 @@
       }
     }
     if (!Array.isArray(records)) return;
-    if (!Array.isArray(global.BUNDLED_SRD_CORE_CATALOG)) {
-      global.BUNDLED_SRD_CORE_CATALOG = [];
-    }
     for (let i = 0; i < records.length; i++) {
       const rec = records[i];
       if (!rec || !rec.id) continue;
@@ -230,7 +198,6 @@
       _byId.set(rec.id, rec);
       if (isNew) {
         _catalogIds.add(rec.id);
-        global.BUNDLED_SRD_CORE_CATALOG.push(rec);
         const typeBucketKey = String(rec.type || '').toLowerCase();
         if (typeBucketKey) {
           let bucket = _byType.get(typeBucketKey);
@@ -918,7 +885,14 @@
         const nm = String(names[i] || '').trim();
         if (!nm) continue;
         const nKey = normalizeNameKey(nm);
-        const rec = (typeFilter && _byTypeAndName.get(`${String(typeFilter).toLowerCase()}:${nKey}`)) || _byName.get(nKey);
+        let rec = (typeFilter && _byTypeAndName.get(`${String(typeFilter).toLowerCase()}:${nKey}`)) || _byName.get(nKey);
+        if (!rec && String(typeFilter || '').toLowerCase() !== 'class') {
+          const pm = nm.replace(/\s*\((?:ex|su|sp|na)\)\s*$/i, '').match(/^(.+?)\s*\(([^)]+)\)\s*$/);
+          if (pm && pm[1] && !/\b(variant|adventurer|thug|cloistered|acf|urban|martial|wildshape|template)\b/i.test(pm[2])) {
+            const baseKey = normalizeNameKey(pm[1].trim());
+            rec = (typeFilter && _byTypeAndName.get(`${String(typeFilter).toLowerCase()}:${baseKey}`)) || _byName.get(baseKey);
+          }
+        }
         if (!rec || !rec.id || have.has(rec.id) || _byId.get(rec.id) !== rec) continue;
         const row = indexRowById(rec.id);
         if (!row || !row.f || !lazy.includes(row.f)) continue;
@@ -1714,7 +1688,7 @@
       if (includeMasterDb) {
         const masterDb = SrdCompendium.getMasterDb();
         for (let i = 0; i < masterDb.length; i++) {
-          const m = SchemaMigrator.upgradeEntryToV2(masterDb[i]);
+          const m = SchemaMigrator.migrateEntryToV3(masterDb[i]);
           if (!m || m.type === 'HouseRule') continue;
           scoreCandidate(
             m.id,
@@ -2259,8 +2233,9 @@
       let speedBonus = 0;
 
       if (gear.armor) {
-        armorACBonus += (gear.armor.acBonus || gear.armor.armorBonus || 0) + (gear.armor.enhancementBonus || 0);
-        armorCheckPenalty += (gear.armor.armorCheckPenalty || 0);
+        const ga = gear.armor.armor || gear.armor;
+        armorACBonus += (Number(ga.armorBonus || gear.armor.armorBonus) || 0) + (Number(ga.enhancementBonus ?? gear.armor.enhancementBonus) || 0);
+        armorCheckPenalty += Number(ga.armorCheckPenalty ?? gear.armor.armorCheckPenalty ?? 0) || 0;
       }
       if (gear.neck && gear.neck.enhancementBonus) {
         attackEnhancement += gear.neck.enhancementBonus;
@@ -2300,8 +2275,8 @@
         const isMelee = (atk.actionType === 'mwak' || atk.attackType === 'natural' || !atk.actionType);
         const abilityMod = isMelee ? strMod : dexMod;
         const totalBonus = bab + abilityMod + attackEnhancement + (hasWeaponFocus ? 1 : 0);
-        const baseDice = atk.damageParts?.[0]?.dice || atk.damageDice || '1d6';
-        const totalDmgBonus = (atk.damageParts?.[0]?.bonus ?? atk.damageBonus ?? 0) + strMod + damageEnhancement;
+        const baseDice = atk.weapon?.damageDice || atk.damageDice || '1d6';
+        const totalDmgBonus = (atk.weapon?.damageBonus ?? atk.damageBonus ?? 0) + strMod + damageEnhancement;
         return {
           name: atk.name,
           attackBonus: totalBonus,
@@ -2351,52 +2326,71 @@
 
   const BUILT_IN_ENHANCEMENT_FALLBACKS = {
     'enh-corrosive': {
+      schemaVersion: 3,
       id: 'enh-corrosive',
       name: 'Corrosive',
       type: 'Enhancement',
       targetType: 'Weapon',
       enhIncrease: 1,
       flatCost: 0,
-      damageParts: [{ dice: '1d6', bonus: 0, type: 'Acid', multiplyOnCrit: false, onCritOnly: false, source: 'Corrosive' }],
+      effects: [
+        { id: 'ef-enh-corrosive', type: 'roll', kind: 'Damage', count: 1, die: 'd6', flat: 0, dmgType: 'Acid', scaling: 'flat', crit: 'normal', source: 'Corrosive' }
+      ],
       shortDescription: 'Deals +1d6 acid damage on a successful hit.'
     },
     'enh-ghost-touch': {
+      schemaVersion: 3,
       id: 'enh-ghost-touch',
       name: 'Ghost Touch',
       type: 'Enhancement',
       targetType: 'Weapon',
       enhIncrease: 1,
       flatCost: 0,
+      effects: [
+        { id: 'ef-enh-gt', type: 'effect', effectKind: 'ruleSwitch', flag: 'ghostTouch', label: 'Deals Normal Damage to Incorporeal Creatures', text: 'Deals Normal Damage to Incorporeal Creatures' }
+      ],
       ruleFlags: { ghostTouch: true },
       shortDescription: 'Deals normal damage to incorporeal creatures.'
     },
     'enh-fortification-light': {
+      schemaVersion: 3,
       id: 'enh-fortification-light',
       name: 'Light Fortification',
       type: 'Enhancement',
       targetType: 'Armor',
       enhIncrease: 1,
       flatCost: 0,
+      effects: [
+        { id: 'ef-enh-fort-l', type: 'defense', mode: 'Fortification', what: 'Critical Hits & Sneak Attack', value: 25 }
+      ],
       ruleFlags: { fortification: 25 },
       shortDescription: '25% chance to negate Critical Hits and Sneak Attack bonus damage.'
     },
     'enh-fortification-moderate': {
+      schemaVersion: 3,
       id: 'enh-fortification-moderate',
       name: 'Moderate Fortification',
       type: 'Enhancement',
       targetType: 'Armor',
       enhIncrease: 3,
       flatCost: 0,
+      effects: [
+        { id: 'ef-enh-fort-m', type: 'defense', mode: 'Fortification', what: 'Critical Hits & Sneak Attack', value: 75 }
+      ],
       ruleFlags: { fortification: 75 },
       shortDescription: '75% chance to negate Critical Hits and Sneak Attack bonus damage.'
     },
     'enh-fortification-heavy': {
+      schemaVersion: 3,
       id: 'enh-fortification-heavy',
       name: 'Heavy Fortification',
       type: 'Enhancement',
       targetType: 'Armor',
       enhIncrease: 5,
       flatCost: 0,
+      effects: [
+        { id: 'ef-enh-fort-h', type: 'defense', mode: 'Fortification', what: 'Critical Hits & Sneak Attack', value: 100 }
+      ],
       ruleFlags: { fortification: 100 },
       shortDescription: '100% immunity to Critical Hits and Sneak Attack bonus damage.'
     }
@@ -2422,24 +2416,44 @@
         throw new Error(`[ItemAssembler] Base item not found: ${spec.baseItemId || spec.baseItemName}`);
       }
 
-      const evalV3 = (o) => (global.RuleEngine && typeof global.RuleEngine.evaluateV3Entry === 'function' && o && o.schemaVersion === 3)
-        ? global.RuleEngine.evaluateV3Entry(o)
-        : o;
-
-      const item = safeClone(evalV3(baseRef));
+      const item = safeClone(baseRef);
       item.schemaVersion = 3;
       item._assembled = true;
       item.baseItemId = baseRef.id;
-      item.effects = Array.isArray(item.effects) ? item.effects : [];
-      item.modifiers = Array.isArray(item.modifiers) ? item.modifiers : [];
-      item.damageParts = Array.isArray(item.damageParts) ? item.damageParts : [];
-      item.modes = Array.isArray(item.modes) ? item.modes : [];
-      item.ruleFlags = item.ruleFlags && typeof item.ruleFlags === 'object' ? item.ruleFlags : {};
+      delete item.modifiers;
+      delete item.damageParts;
+      delete item.acBonus;
+      item.effects = Array.isArray(item.effects) ? safeClone(item.effects) : [];
+      item.modes = Array.isArray(item.modes) ? safeClone(item.modes) : [];
+      item.ruleFlags = item.ruleFlags && typeof item.ruleFlags === 'object' ? safeClone(item.ruleFlags) : {};
       item.tacticalBadges = [];
 
       const isWeapon = item.type === 'Weapon';
       const isArmor = item.type === 'Armor';
       const isShield = item.type === 'Shield';
+
+      if (isWeapon) {
+        item.weapon = Object.assign({
+          category: item.category || 'Simple',
+          handedness: item.handedness || '1h',
+          damageDice: item.damage || item.dice || '1d6',
+          dmgType: item.dmgType || 'Physical',
+          baseCritRange: Number(item.critRange) || 20,
+          keen: Boolean(item.ruleFlags.keen),
+          effectiveCritRange: Number(item.critRange) || 20,
+          critMultiplier: Number(item.critMult) || 2,
+          rangeIncrement: item.rangeIncrement || null
+        }, item.weapon || {});
+      } else if (isArmor || isShield) {
+        item.armor = Object.assign({
+          armorType: isShield ? 'Shield' : (item.category || 'Light'),
+          armorBonus: Number(item.armorBonus ?? item.shieldBonus ?? item.armor?.armorBonus) || 0,
+          enhancementBonus: 0,
+          maxDex: item.maxDex !== undefined ? item.maxDex : null,
+          armorCheckPenalty: Number(item.checkPenalty ?? item.acp ?? 0) || 0,
+          arcaneSpellFailure: Number(item.spellFailure ?? 0) || 0
+        }, item.armor || {});
+      }
 
       // 1. Resolve Special Material
       let matEntry = null;
@@ -2467,7 +2481,7 @@
                BUILT_IN_ENHANCEMENT_FALLBACKS[eRef] ||
                SrdCompendium.getByName(eRef, 'Enhancement') ||
                SrdCompendium.getById(slugify(eRef, 'enh')));
-          if (enhObj) resolvedEnhs.push(safeClone(evalV3(enhObj)));
+          if (enhObj) resolvedEnhs.push(safeClone(enhObj));
         }
       }
       item.enhancements = resolvedEnhs.map((e) => e.id);
@@ -2489,16 +2503,19 @@
         if (aMod.weightMult) {
           item.weight = Math.round(Number(item.weight || 0) * aMod.weightMult * 10) / 10;
         }
-        if (aMod.maxDexBonusIncrease && item.maxDex !== null && item.maxDex !== undefined) {
-          item.maxDex = Number(item.maxDex) + Number(aMod.maxDexBonusIncrease);
+        if (aMod.maxDexBonusIncrease && item.armor.maxDex !== null && item.armor.maxDex !== undefined) {
+          item.armor.maxDex = Number(item.armor.maxDex) + Number(aMod.maxDexBonusIncrease);
+          item.maxDex = item.armor.maxDex;
         }
-        if (aMod.asfReduction && item.spellFailure) {
-          item.spellFailure = Math.max(0, Number(item.spellFailure) - Number(aMod.asfReduction));
+        if (aMod.asfReduction && item.armor.arcaneSpellFailure) {
+          item.armor.arcaneSpellFailure = Math.max(0, Number(item.armor.arcaneSpellFailure) - Number(aMod.asfReduction));
+          item.spellFailure = item.armor.arcaneSpellFailure;
         }
         let acpReduce = Number(aMod.acpReduction || 0);
-        if (!acpReduce && isMasterwork) acpReduce = 1; // Standard Masterwork armor/shield reduces ACP by 1
-        if (acpReduce && item.checkPenalty < 0) {
-          item.checkPenalty = Math.min(0, Number(item.checkPenalty) + acpReduce);
+        if (!acpReduce && isMasterwork) acpReduce = 1;
+        if (acpReduce && item.armor.armorCheckPenalty < 0) {
+          item.armor.armorCheckPenalty = Math.min(0, Number(item.armor.armorCheckPenalty) + acpReduce);
+          item.checkPenalty = item.armor.armorCheckPenalty;
         }
         if (aMod.speedCategoryStepDown && isArmor) {
           if (item.category === 'Heavy') {
@@ -2515,12 +2532,12 @@
           const drVal = aMod.drByCategory[item.category] || '1/-';
           item.ruleFlags.dr = drVal;
           const drNum = parseInt(drVal, 10) || 1;
-          item.modifiers.push({
-            target: 'dr',
+          item.effects.push({
+            type: 'defense',
+            kind: 'dr',
             value: drNum,
-            formula: String(drNum),
-            type: 'untyped',
-            condition: `Adamantine ${item.category} Armor (${drVal})`
+            bypass: '-',
+            text: `Adamantine ${item.category} Armor (DR ${drVal})`
           });
           item.tacticalBadges.push({
             id: 'adamantine-dr',
@@ -2529,6 +2546,8 @@
           });
         }
       } else if (isWeapon) {
+        item.weapon.masterwork = isMasterwork;
+        item.weapon.enhancementBonus = enhBonus;
         const wMod = matFlags.weaponMod || {};
         if (wMod.weightMult) {
           item.weight = Math.round(Number(item.weight || 0) * wMod.weightMult * 10) / 10;
@@ -2541,68 +2560,51 @@
             summary: 'Adamantine weapon bypasses hardness less than 20 when sundering or smashing objects.'
           });
         }
-        if (wMod.damagePenalty && item.damageParts.length > 0) {
-          item.damageParts[0].bonus = (Number(item.damageParts[0].bonus) || 0) + Number(wMod.damagePenalty);
-          item.modes.forEach((m) => {
-            if (Array.isArray(m.damageParts) && m.damageParts.length > 0) {
-              m.damageParts[0].bonus = (Number(m.damageParts[0].bonus) || 0) + Number(wMod.damagePenalty);
-            }
+        if (wMod.damagePenalty) {
+          item.effects.push({
+            type: 'stat',
+            targets: ['damage.weapon'],
+            mode: 'flat',
+            value: Number(wMod.damagePenalty),
+            btype: 'Penalty',
+            source: matName || 'Material'
           });
         }
       }
 
-      // 4. Apply Enhancement Bonus (+1 to +10) & Masterwork Attack Bonus
+      // 4. Apply Enhancement Bonus (+1 to +10) & Masterwork Attack Bonus via pure V3 blocks / chassis
       if (isWeapon) {
         if (enhBonus > 0) {
           bypassDRSet.add('magic');
           if (enhBonus >= 6) bypassDRSet.add('epic');
-          item.modifiers.push({
-            target: 'attack.weapon',
+          item.effects.push({
+            type: 'stat',
+            targets: ['attack.weapon'],
+            mode: 'flat',
             value: enhBonus,
-            formula: String(enhBonus),
-            type: 'enhancement',
-            condition: null,
+            btype: 'Enhancement',
             source: 'Weapon Enhancement'
           });
-          if (item.damageParts.length > 0) {
-            item.damageParts[0].bonus = (Number(item.damageParts[0].bonus) || 0) + enhBonus;
-          }
-          item.modes.forEach((m) => {
-            if (Array.isArray(m.damageParts) && m.damageParts.length > 0) {
-              m.damageParts[0].bonus = (Number(m.damageParts[0].bonus) || 0) + enhBonus;
-            }
+          item.effects.push({
+            type: 'stat',
+            targets: ['damage.weapon'],
+            mode: 'flat',
+            value: enhBonus,
+            btype: 'Enhancement',
+            source: 'Weapon Enhancement'
           });
         } else if (isMasterwork) {
-          // Masterwork weapon grants +1 enhancement bonus on attack rolls only
-          item.modifiers.push({
-            target: 'attack.weapon',
+          item.effects.push({
+            type: 'stat',
+            targets: ['attack.weapon'],
+            mode: 'flat',
             value: 1,
-            formula: '1',
-            type: 'enhancement',
-            condition: null,
+            btype: 'Enhancement',
             source: 'Masterwork'
           });
         }
       } else if (isArmor || isShield) {
-        if (enhBonus > 0) {
-          const acTarget = isShield ? 'ac.shield' : 'ac.armor';
-          const acMod = item.modifiers.find((m) => m.target === acTarget || String(m.target).startsWith('ac.'));
-          const baseAc = acMod ? (Number(acMod.value) || 0) : (Number(item.acBonus) || Number(item.armorStats?.baseAc) || 0);
-          const totalAc = baseAc + enhBonus;
-          item.acBonus = totalAc;
-          if (acMod) {
-            acMod.value = totalAc;
-            acMod.formula = String(totalAc);
-          } else {
-            item.modifiers.push({
-              target: acTarget,
-              value: totalAc,
-              formula: String(totalAc),
-              type: isShield ? 'shield' : 'armor',
-              condition: null
-            });
-          }
-        }
+        item.armor.enhancementBonus = enhBonus;
       }
 
       // 5. Apply Weapon / Armor Special Enhancements (Keen, Flaming, Speed, Fortification, etc.)
@@ -2615,34 +2617,32 @@
         flatEnhGold += Number(enh.flatCost ?? enh.itemModifier?.flatGoldCost) || 0;
 
         if (Array.isArray(enh.effects) && enh.effects.length > 0) {
-          item.effects.push(...safeClone(enh.effects));
-        }
-
-        // Merge modifiers
-        if (Array.isArray(enh.modifiers) && enh.modifiers.length > 0) {
-          item.modifiers.push(...safeClone(enh.modifiers));
-        }
-
-        // Merge extra damageParts (Flaming, Frost, Shock, Holy, Burst, etc.)
-        if (isWeapon && Array.isArray(enh.damageParts) && enh.damageParts.length > 0) {
-          item.damageParts.push(...safeClone(enh.damageParts));
-          item.modes.forEach((m) => {
-            if (Array.isArray(m.damageParts)) {
-              m.damageParts.push(...safeClone(enh.damageParts));
+          const clonedEffects = safeClone(enh.effects);
+          item.effects.push(...clonedEffects);
+          if (isWeapon && item.modes.length > 0) {
+            const rollBlocks = clonedEffects.filter((ef) => ef && (ef.type === 'roll' || ef.type === 'attack'));
+            if (rollBlocks.length > 0) {
+              item.modes.forEach((m) => {
+                m.effects = Array.isArray(m.effects) ? m.effects : [];
+                m.effects.push(...safeClone(rollBlocks));
+              });
             }
-          });
+          }
         }
 
-        // Check special flags (Keen, Speed, Thrown, Defending, Fortification)
         const ef = enh.ruleFlags || {};
-        if (ef.keen) {
+        const hasRollEffect = Array.isArray(enh.effects) && enh.effects.some((x) => x && (x.type === 'roll' || x.type === 'attack'));
+        if (ef.keen && isWeapon) {
           item.ruleFlags.keen = true;
-          const baseCrit = Number(item.critRange) || 20;
+          item.weapon.keen = true;
+          const baseCrit = Number(item.weapon.baseCritRange || item.critRange) || 20;
           const newCrit = DOUBLE_CRIT_MAP[baseCrit] || Math.max(15, 21 - (21 - baseCrit) * 2);
           item.critRange = newCrit;
+          item.weapon.effectiveCritRange = newCrit;
           item.modes.forEach((m) => {
             const mc = Number(m.critRange) || baseCrit;
             m.critRange = DOUBLE_CRIT_MAP[mc] || newCrit;
+            if (m.weapon) m.weapon.effectiveCritRange = m.critRange;
           });
         }
         if (ef.speed) {
@@ -2669,7 +2669,7 @@
             summary: `${ef.fortification}% chance to negate Critical Hits and Sneak Attack bonus damage.`
           });
         }
-        if (!ef.keen && !ef.speed && !ef.defending && !ef.fortification && (!enh.damageParts || enh.damageParts.length === 0)) {
+        if (!ef.keen && !ef.speed && !ef.defending && !ef.fortification && !hasRollEffect) {
           item.tacticalBadges.push({
             id: enh.id,
             label: `✨ ${enh.name}`,
@@ -2694,9 +2694,19 @@
              SrdCompendium.getByName(cRef, 'AugmentationCrystal') ||
              SrdCompendium.getById(slugify(cRef, 'crys')));
         if (crysObj) {
-          resolvedCrystal = safeClone(evalV3(crysObj));
+          resolvedCrystal = safeClone(crysObj);
           if (Array.isArray(resolvedCrystal.effects) && resolvedCrystal.effects.length > 0) {
-            item.effects.push(...safeClone(resolvedCrystal.effects));
+            const crysEffects = safeClone(resolvedCrystal.effects);
+            item.effects.push(...crysEffects);
+            if (isWeapon && item.modes.length > 0) {
+              const rollBlocks = crysEffects.filter((ef) => ef && (ef.type === 'roll' || ef.type === 'attack'));
+              if (rollBlocks.length > 0) {
+                item.modes.forEach((m) => {
+                  m.effects = Array.isArray(m.effects) ? m.effects : [];
+                  m.effects.push(...safeClone(rollBlocks));
+                });
+              }
+            }
           }
           item.crystal = {
             id: resolvedCrystal.id,
@@ -2705,28 +2715,9 @@
             cost: Number(resolvedCrystal.cost ?? resolvedCrystal.itemModifier?.flatGoldCost) || 0,
             shortDescription: resolvedCrystal.shortDescription || resolvedCrystal.name
           };
-
-          // Merge crystal modifiers if any
-          if (Array.isArray(resolvedCrystal.modifiers) && resolvedCrystal.modifiers.length > 0) {
-            item.modifiers.push(...safeClone(resolvedCrystal.modifiers));
-          }
-
-          // Merge crystal ruleFlags if any (e.g. Iron Ward Diamond DR, Truedeath Ghost Touch)
           if (resolvedCrystal.ruleFlags && typeof resolvedCrystal.ruleFlags === 'object') {
             Object.assign(item.ruleFlags, safeClone(resolvedCrystal.ruleFlags));
           }
-
-          // Merge crystal damageParts if any (e.g. Energy Assault +1d6)
-          if (isWeapon && Array.isArray(resolvedCrystal.damageParts) && resolvedCrystal.damageParts.length > 0) {
-            item.damageParts.push(...safeClone(resolvedCrystal.damageParts));
-            item.modes.forEach((m) => {
-              if (Array.isArray(m.damageParts)) {
-                m.damageParts.push(...safeClone(resolvedCrystal.damageParts));
-              }
-            });
-          }
-
-          // Merge crystal tactical badge
           item.tacticalBadges.push({
             id: resolvedCrystal.id,
             label: `💎 ${resolvedCrystal.name}`,
@@ -2735,9 +2726,23 @@
         }
       }
 
-      // 6. Custom Modifiers & Notes
-      if (Array.isArray(spec.customModifiers) && spec.customModifiers.length > 0) {
-        item.modifiers.push(...safeClone(spec.customModifiers));
+      // 6. Custom Effects & Notes
+      if (Array.isArray(spec.customEffects) && spec.customEffects.length > 0) {
+        item.effects.push(...safeClone(spec.customEffects));
+      } else if (Array.isArray(spec.customModifiers) && spec.customModifiers.length > 0) {
+        spec.customModifiers.forEach((cm) => {
+          if (cm && cm.target) {
+            item.effects.push({
+              type: 'stat',
+              targets: [cm.target],
+              mode: cm.formula ? 'formula' : 'flat',
+              value: cm.formula ? undefined : (Number(cm.value) || 0),
+              formula: cm.formula || undefined,
+              btype: cm.type || 'Untyped',
+              condition: cm.condition || undefined
+            });
+          }
+        });
       }
       if (spec.customNotes) {
         item.notes = String(spec.customNotes);
@@ -3063,7 +3068,7 @@
   };
 
   // ==========================================================================
-  // 3. window.SchemaMigrator (DETERMINISTIC V1 -> V2 GATEKEEPER)
+  // 3. window.SchemaMigrator (EXTERNAL / AI BOUNDARY -> PURE V3 GATEKEEPER)
   // ==========================================================================
   const LEGACY_BONUS_MAP = [
     { key: 'strBonus', target: 'ability.str' },
@@ -3082,21 +3087,18 @@
 
   const SchemaMigrator = {
     /**
-     * Deterministically upgrades any V1 item/feat/spell/buff object into Canonical V2 (`schemaVersion: 2`).
+     * Deterministically converts any external/AI/legacy payload into Pure Canonical V3 (`schemaVersion: 3`).
      */
-    upgradeEntryToV2(rawEntry) {
+    migrateEntryToV3(rawEntry) {
       if (!rawEntry || typeof rawEntry !== 'object') return rawEntry;
-      if (rawEntry.schemaVersion === 3) {
+      if (rawEntry.schemaVersion === 3 && !Array.isArray(rawEntry.modifiers) && !Array.isArray(rawEntry.damageParts) && rawEntry.acBonus === undefined) {
+        if (!Array.isArray(rawEntry.effects)) rawEntry.effects = [];
         return attachV3RuntimeGetters(rawEntry);
-      }
-      if (rawEntry.schemaVersion === 2 && Array.isArray(rawEntry.modifiers) && Array.isArray(rawEntry.damageParts)) {
-        return rawEntry;
       }
 
       const entry = safeClone(rawEntry);
-      entry.schemaVersion = 2;
+      entry.schemaVersion = 3;
 
-      // Match canonical SRD entry if possible for ID & base metadata
       const srdMatch = SrdCompendium.getById(entry.id) || SrdCompendium.getByName(entry.name, entry.type);
       if (!entry.id) {
         entry.id = srdMatch ? srdMatch.id : slugify(entry.name || 'item', String(entry.type || 'custom').toLowerCase().slice(0, 3));
@@ -3105,101 +3107,232 @@
         entry.baseItemId = srdMatch.id;
       }
 
-      const defaultBonusType = String(entry.bonusType || 'untyped').toLowerCase();
-      const modifiers = Array.isArray(entry.modifiers) ? entry.modifiers : [];
+      const effects = Array.isArray(entry.effects) ? safeClone(entry.effects) : [];
+      const defaultBonusType = String(entry.bonusType || 'Untyped');
+      const isWeapon = entry.type === 'Weapon' || Boolean(entry.weapon || entry.weaponStats || (srdMatch && srdMatch.type === 'Weapon') || ((entry.dice || entry.damage) && !['Spell', 'Power', 'Maneuver', 'Special Ability', 'DM Boon'].includes(entry.type)));
+      const isArmor = entry.type === 'Armor' || Boolean(entry.armor && entry.type !== 'Shield');
+      const isShield = entry.type === 'Shield';
 
-      // 1. Migrate legacy flat bonus fields into universal `modifiers`
-      //    (weapon attack / damage bonuses live only in `enhancementBonus` + typed `modifiers`; there is no flat column)
+      // 1. Migrate legacy flat bonus fields into V3 `stat` blocks (never map flat attBonus / dmgBonus)
       for (let i = 0; i < LEGACY_BONUS_MAP.length; i++) {
         const { key, target } = LEGACY_BONUS_MAP[i];
         const val = Number(entry[key]);
         if (!Number.isNaN(val) && val !== 0) {
-          const exists = modifiers.some((m) => m.target === target && Number(m.value) === val);
-          if (!exists) {
-            modifiers.push({
-              target,
-              value: val,
-              formula: String(val),
-              type: defaultBonusType,
-              condition: null
-            });
-          }
+          effects.push({ type: 'stat', targets: [target], mode: 'flat', value: val, btype: defaultBonusType });
         }
         delete entry[key];
       }
+      delete entry.attBonus;
+      delete entry.dmgBonus;
+      delete entry.atkBonus;
 
-      // Migrate `acBonus`
-      const acVal = Number(entry.acBonus);
-      if (!Number.isNaN(acVal) && acVal !== 0) {
-        const isArmor = entry.type === 'Armor';
-        const isShield = entry.type === 'Shield';
-        const acTarget = isArmor ? 'ac.armor' : (isShield ? 'ac.shield' : (defaultBonusType === 'natural' ? 'ac.natural' : (defaultBonusType === 'deflection' ? 'ac.deflection' : 'ac.total')));
-        const acType = isArmor ? 'armor' : (isShield ? 'shield' : defaultBonusType);
-        const exists = modifiers.some((m) => m.target === acTarget && Number(m.value) === acVal);
-        if (!exists) {
-          modifiers.push({
-            target: acTarget,
-            value: acVal,
-            formula: String(acVal),
-            type: acType,
-            condition: null
-          });
-        }
-        if (!isArmor && !isShield) {
-          delete entry.acBonus;
-        }
+      // 2. Migrate legacy `modifiers[]` into V3 `stat` blocks
+      if (Array.isArray(entry.modifiers)) {
+        entry.modifiers.forEach((m) => {
+          if (!m || !m.target) return;
+          if ((isArmor && m.target === 'ac.armor') || (isShield && m.target === 'ac.shield')) return;
+          const blk = {
+            type: 'stat',
+            op: m.op || undefined,
+            targets: [m.target],
+            btype: m.type || 'Untyped'
+          };
+          if (m.selector) blk.selector = safeClone(m.selector);
+          if (m.when) blk.when = safeClone(m.when);
+          if (m.appliesTo) blk.appliesTo = safeClone(m.appliesTo);
+          if (m.affects) blk.affects = safeClone(m.affects);
+          if (m.cap !== undefined) blk.cap = m.cap;
+          if (m.formula !== undefined && m.formula !== null && String(m.formula).trim() !== '' && String(m.formula).trim() !== String(m.value)) {
+            blk.mode = 'formula';
+            blk.formula = String(m.formula).trim();
+          } else {
+            blk.mode = 'flat';
+            blk.value = Number(m.value) || 0;
+          }
+          if (m.condition) blk.condition = m.condition;
+          if (m.source) blk.source = m.source;
+          effects.push(blk);
+        });
+        delete entry.modifiers;
       }
 
-      entry.modifiers = modifiers;
+      // 3. Migrate `acBonus` & V3 `armor` / `weapon` chassis
+      const acVal = Number(entry.acBonus);
+      if (isArmor || isShield) {
+        const enh = Number(entry.enhancementBonus ?? entry.armor?.enhancementBonus) || 0;
+        const rawBaseAc = entry.armor?.armorBonus ?? entry.armorBonus ?? entry.shieldBonus ?? entry.armorStats?.baseAc ?? (!Number.isNaN(acVal) && acVal > 0 ? Math.max(0, acVal - enh) : 0);
+        entry.armor = Object.assign({
+          armorType: isShield ? 'Shield' : (entry.category || 'Light'),
+          armorBonus: Number(rawBaseAc) || 0,
+          enhancementBonus: enh,
+          maxDex: entry.maxDex ?? entry.armorStats?.maxDex ?? null,
+          armorCheckPenalty: Number(entry.checkPenalty ?? entry.acp ?? entry.armorStats?.acp ?? 0) || 0,
+          arcaneSpellFailure: Number(entry.spellFailure ?? entry.armorStats?.asf ?? 0) || 0
+        }, entry.armor || {});
+      } else if (!Number.isNaN(acVal) && acVal !== 0) {
+        const acTarget = defaultBonusType.toLowerCase() === 'natural' ? 'ac.natural' : (defaultBonusType.toLowerCase() === 'deflection' ? 'ac.deflection' : 'ac.total');
+        effects.push({ type: 'stat', targets: [acTarget], mode: 'flat', value: acVal, btype: defaultBonusType });
+      }
+      delete entry.acBonus;
       delete entry.bonusType;
 
-      // 2. Migrate legacy `dice` / `damage` into `damageParts`
-      const damageParts = Array.isArray(entry.damageParts) ? entry.damageParts : [];
-      if (damageParts.length === 0) {
-        const baseDice = entry.dice || (typeof entry.damage === 'string' ? entry.damage : null);
-        if (baseDice && /\d+d\d+/i.test(String(baseDice))) {
-          damageParts.push({
-            dice: String(baseDice).trim(),
-            bonus: Number(entry.enhancementBonus) || 0,
-            type: entry.dmgType || 'Physical',
-            multiplyOnCrit: entry.type === 'Weapon',
-            onCritOnly: false,
-            source: 'Base'
-          });
-        }
-      }
-      entry.damageParts = damageParts;
-      delete entry.dice;
-
-      // 3. Migrate `critMin` -> `critRange`
       if (entry.critMin !== undefined && entry.critRange === undefined) {
         entry.critRange = Number(entry.critMin) || 20;
         delete entry.critMin;
       }
 
-      // 4. Populate `modes` from canonical SRD match if missing on a Weapon
+      const rawDp = Array.isArray(entry.damageParts) ? entry.damageParts : [];
+      if (isWeapon) {
+        const dp0 = rawDp[0] || {};
+        const baseDice = entry.weapon?.damageDice || dp0.dice || entry.dice || entry.weaponStats?.baseDamage || (typeof entry.damage === 'string' ? entry.damage : '1d6');
+        const enh = Number(entry.enhancementBonus ?? entry.weapon?.enhancementBonus) || 0;
+        entry.weapon = Object.assign({
+          category: entry.category || entry.weaponStats?.category || 'Simple',
+          handedness: entry.handedness || entry.weaponStats?.handedness || 'One-Handed',
+          damageDice: String(baseDice).trim(),
+          dmgType: dp0.type || entry.dmgType || (Array.isArray(entry.weaponStats?.damageTypes) ? entry.weaponStats.damageTypes[0] : 'Physical'),
+          baseCritRange: Number(entry.critRange ?? entry.weaponStats?.critMin) || 20,
+          critMultiplier: Number(entry.critMult ?? entry.weaponStats?.critMult) || 2,
+          enhancementBonus: enh,
+          masterwork: Boolean(entry.masterwork || entry.isMasterwork || enh > 0)
+        }, entry.weapon || {});
+        for (let i = 1; i < rawDp.length; i++) {
+          const r = rawDp[i];
+          if (!r || (!r.dice && !r.bonus)) continue;
+          effects.push({
+            type: 'roll',
+            kind: 'Damage',
+            dice: r.dice || undefined,
+            bonus: Number(r.bonus) || 0,
+            dmgType: r.type || 'Physical',
+            multiplyOnCrit: Boolean(r.multiplyOnCrit),
+            critOnly: Boolean(r.onCritOnly),
+            source: r.source || entry.name
+          });
+        }
+      } else {
+        if (rawDp.length > 0) {
+          rawDp.forEach((r) => {
+            if (!r || (!r.dice && !r.bonus)) return;
+            effects.push({
+              type: 'roll',
+              kind: 'Damage',
+              dice: r.dice || undefined,
+              bonus: Number(r.bonus) || 0,
+              dmgType: r.type || 'Untyped',
+              multiplyOnCrit: Boolean(r.multiplyOnCrit),
+              critOnly: Boolean(r.onCritOnly),
+              source: r.source || entry.name
+            });
+          });
+        } else {
+          const baseDice = entry.dice || (typeof entry.damage === 'string' ? entry.damage : null);
+          if (baseDice && /\d+d\d+/i.test(String(baseDice))) {
+            effects.push({
+              type: 'roll',
+              kind: 'Damage',
+              dice: String(baseDice).trim(),
+              bonus: 0,
+              dmgType: entry.dmgType || 'Physical'
+            });
+          }
+        }
+      }
+      delete entry.damageParts;
+      delete entry.dice;
+
+      if (entry.tempHpFormula) {
+        effects.push({ type: 'roll', kind: 'Temp HP', tempHpFormula: String(entry.tempHpFormula) });
+        delete entry.tempHpFormula;
+      }
+
+      if (Array.isArray(entry.defenses) && entry.defenses.length > 0) {
+        entry.defenses.forEach((d) => {
+          if (!d) return;
+          effects.push({
+            type: 'defense',
+            kind: d.kind || 'resistance',
+            target: d.target || undefined,
+            value: d.value !== undefined ? d.value : undefined,
+            ratio: d.ratio !== undefined ? d.ratio : undefined,
+            formula: d.formula || undefined,
+            bypass: d.bypass || undefined,
+            ...(d.when ? { when: safeClone(d.when) } : {})
+          });
+        });
+        delete entry.defenses;
+      }
+      if (Array.isArray(entry.resources) && entry.resources.length > 0) {
+        entry.resources.forEach((r) => {
+          if (!r) return;
+          effects.push({
+            id: r.id || undefined,
+            type: 'resource',
+            name: r.name || entry.name,
+            resMode: r.kind || 'consume',
+            maxFormula: r.maxFormula !== undefined ? String(r.maxFormula) : '1',
+            recharge: r.recharge || { period: 'day' }
+          });
+        });
+        delete entry.resources;
+      }
+      if (Array.isArray(entry.grants) && entry.grants.length > 0) {
+        entry.grants.forEach((g) => {
+          if (!g) return;
+          effects.push({
+            type: 'effect',
+            effectKind: 'grant',
+            grantType: g.grantType || 'entity',
+            targetId: g.targetId,
+            value: g.value,
+            ...(g.filter ? { filter: safeClone(g.filter) } : {}),
+            ...(g.params ? { params: safeClone(g.params) } : {})
+          });
+        });
+        delete entry.grants;
+      }
+
       if (!Array.isArray(entry.modes) || entry.modes.length === 0) {
         if (srdMatch && Array.isArray(srdMatch.modes) && srdMatch.modes.length > 0) {
           entry.modes = safeClone(srdMatch.modes);
         } else {
           entry.modes = [];
         }
+      } else {
+        entry.modes = entry.modes.map((m) => {
+          if (!m || typeof m !== 'object') return m;
+          const mc = safeClone(m);
+          if (Array.isArray(mc.damageParts)) {
+            mc.effects = Array.isArray(mc.effects) ? mc.effects : [];
+            mc.damageParts.forEach((dp) => {
+              mc.effects.push({
+                type: 'roll',
+                kind: 'Damage',
+                dice: dp.dice,
+                bonus: Number(dp.bonus) || 0,
+                dmgType: dp.type || 'Physical',
+                multiplyOnCrit: Boolean(dp.multiplyOnCrit),
+                critOnly: Boolean(dp.onCritOnly)
+              });
+            });
+            delete mc.damageParts;
+          }
+          if (Array.isArray(mc.modifiers)) {
+            mc.effects = Array.isArray(mc.effects) ? mc.effects : [];
+            mc.modifiers.forEach((mm) => {
+              if (mm && mm.target) {
+                mc.effects.push({ type: 'stat', targets: [mm.target], mode: mm.formula ? 'formula' : 'flat', value: mm.value, formula: mm.formula, btype: mm.type || 'Untyped' });
+              }
+            });
+            delete mc.modifiers;
+          }
+          return mc;
+        });
       }
 
+      entry.effects = effects;
       entry.ruleFlags = entry.ruleFlags && typeof entry.ruleFlags === 'object' ? entry.ruleFlags : {};
-      if (!Array.isArray(entry.defenses)) entry.defenses = [];
-      if (!Array.isArray(entry.resources)) entry.resources = [];
-      if (!Array.isArray(entry.grants)) entry.grants = [];
       if (!Array.isArray(entry.choices)) entry.choices = [];
-      if (rawEntry.requires !== undefined && entry.requires === undefined) entry.requires = safeClone(rawEntry.requires);
-      if (rawEntry.overrides !== undefined && entry.overrides === undefined) entry.overrides = rawEntry.overrides;
-      if (rawEntry.pack !== undefined && entry.pack === undefined) entry.pack = rawEntry.pack;
-      if (rawEntry.stacks !== undefined && entry.stacks === undefined) entry.stacks = rawEntry.stacks;
-      if (rawEntry.invested !== undefined && entry.invested === undefined) entry.invested = rawEntry.invested;
-      if (rawEntry.autoUnlock !== undefined && entry.autoUnlock === undefined) entry.autoUnlock = rawEntry.autoUnlock;
-      if (rawEntry.isSynergy !== undefined && entry.isSynergy === undefined) entry.isSynergy = rawEntry.isSynergy;
-      if (rawEntry.isSynergyGrant !== undefined && entry.isSynergyGrant === undefined) entry.isSynergyGrant = rawEntry.isSynergyGrant;
-      if (rawEntry.sourceCategory !== undefined && entry.sourceCategory === undefined) entry.sourceCategory = rawEntry.sourceCategory;
       const cleanNameLower = String(entry.name || '').toLowerCase().trim();
       if (cleanNameLower.includes('steadfast determination')) {
         entry.ruleFlags.conToWillSave = true;
@@ -3208,19 +3341,23 @@
       delete entry.isChild;
       delete entry.parent;
 
-      return entry;
+      return attachV3RuntimeGetters(entry);
     },
 
-    migrateMasterDbEntryToV2(raw) {
-      return SchemaMigrator.upgradeEntryToV2(raw);
-    },
-
-    /**
-     * Upgrades all items in the array to Canonical V2 (sub-modes live in each entry's `modes`).
-     */
-    upgradeArrayToV2(arr) {
+    migrateArrayToV3(arr) {
       if (!Array.isArray(arr)) return [];
-      return arr.filter(Boolean).map((it) => SchemaMigrator.upgradeEntryToV2(it));
+      return arr.filter(Boolean).map((it) => SchemaMigrator.migrateEntryToV3(it));
+    },
+
+    // External / AI boundary aliases (ensure legacy callers receive Pure Canonical V3)
+    upgradeEntryToV2(rawEntry) {
+      return SchemaMigrator.migrateEntryToV3(rawEntry);
+    },
+    migrateMasterDbEntryToV2(raw) {
+      return SchemaMigrator.migrateEntryToV3(raw);
+    },
+    upgradeArrayToV2(arr) {
+      return SchemaMigrator.migrateArrayToV3(arr);
     },
 
     getAbilityStemAndScore(entry) {
@@ -3239,10 +3376,16 @@
         .trim();
       const idStr = String(entry.id || '').toLowerCase().trim();
       const isMalformedSlug = /_(?:damage|deals|dealing)(?:_|$)/i.test(idStr);
-      const hasTypedDamage = (Array.isArray(entry.damageParts) && entry.damageParts.some(dp => dp && dp.type && !/^(untyped|physical)$/i.test(String(dp.type).trim()))) ||
-        (Array.isArray(entry.modes) && entry.modes.some(m => Array.isArray(m.damageParts) && m.damageParts.some(dp => dp && dp.type && !/^(untyped|physical)$/i.test(String(dp.type).trim()))));
-      const hasSaveOrDc = Boolean(entry.dcFormula || entry.save || (Array.isArray(entry.modes) && entry.modes.some(m => m && m.save)));
-      const hasRecharge = Boolean(entry.recharge || entry.rechargeDice || (Array.isArray(entry.resources) && entry.resources.length > 0));
+      const isTypedStr = (t) => Boolean(t && !/^(untyped|physical)$/i.test(String(t).trim()));
+      const hasV3TypedRoll = (Array.isArray(entry.effects) && entry.effects.some((ef) => ef && (ef.type === 'roll' || ef.type === 'attack') && isTypedStr(ef.dmgType || ef.damageType))) ||
+        (Array.isArray(entry.modes) && entry.modes.some((m) => Array.isArray(m?.effects) && m.effects.some((ef) => ef && (ef.type === 'roll' || ef.type === 'attack') && isTypedStr(ef.dmgType || ef.damageType))));
+      const hasLegacyTypedDp = (Array.isArray(entry.damageParts) && entry.damageParts.some((dp) => dp && isTypedStr(dp.type))) ||
+        (Array.isArray(entry.modes) && entry.modes.some((m) => Array.isArray(m?.damageParts) && m.damageParts.some((dp) => dp && isTypedStr(dp.type))));
+      const hasTypedDamage = hasV3TypedRoll || hasLegacyTypedDp;
+      const hasSaveOrDc = Boolean(entry.dcFormula || entry.save || (Array.isArray(entry.modes) && entry.modes.some((m) => m && m.save)));
+      const hasRecharge = Boolean(entry.recharge || entry.rechargeDice ||
+        (Array.isArray(entry.effects) && entry.effects.some((ef) => ef && ef.type === 'resource')) ||
+        (Array.isArray(entry.resources) && entry.resources.length > 0));
       const score = (hasTypedDamage ? 2 : 0) + (hasSaveOrDc ? 2 : 0) + (hasRecharge ? 1 : 0) + (entry.range ? 1 : 0) - (isMalformedSlug ? 3 : 0);
       return { stem, score, isMalformedSlug, hasTypedDamage, hasSaveOrDc };
     },
@@ -3272,7 +3415,7 @@
       const pushUniqueEntry = (targetArr, item) => {
         const idStr = String(item.id || '').trim();
         const nmLower = String(item.name || '').toLowerCase().trim();
-        const exists = targetArr.some(existing => {
+        const exists = targetArr.some((existing) => {
           if (!existing) return false;
           if (typeof existing === 'string') return existing.toLowerCase().trim() === nmLower;
           return (idStr && String(existing.id || '').trim() === idStr) ||
@@ -3296,11 +3439,10 @@
           const hasPhysicalSlot = PHYSICAL_SLOTS.has(slotLower);
           const isScrollOrWand = PHYSICAL_GEAR_RX.test(nameStr) || PHYSICAL_GEAR_RX.test(catLower) || PHYSICAL_GEAR_RX.test(typeLower);
           const hasPhysicalEconomy = Number(item.cost) > 0 || Number(item.gpValue) > 0 || Number(item.priceGp) > 0 ||
-            Number(item.weight) > 0 || Number(item.weightLb) > 0 || Boolean(item.weaponStats || item.armorStats || item.baseItemId);
+            Number(item.weight) > 0 || Number(item.weightLb) > 0 || Boolean(item.weapon || item.armor || item.weaponStats || item.armorStats || item.baseItemId);
           const isStrictNonPhysicalCat = STRICT_NON_PHYSICAL_CATS.has(catLower) || STRICT_NON_PHYSICAL_CATS.has(typeLower);
           const isMalformedAbilitySlug = /_(?:damage|deals|dealing)(?:_|$)/i.test(idLower);
 
-          // Physical Item Guard (B1): keep physical items in gearPool unless explicitly typed as non-gear ability/feat/boon
           if ((hasPhysicalSlot || isScrollOrWand || hasPhysicalEconomy) && !isStrictNonPhysicalCat && !isMalformedAbilitySlug) {
             cleanPool.push(item);
             continue;
@@ -3311,7 +3453,6 @@
             : (EXPLICIT_NON_GEAR_CATS.has(typeLower) ? typeLower : '');
 
           if (item.autoUnlock === true || item.isSynergy === true || effectiveCat === 'synergy') {
-            // Synergies auto-unlock dynamically via RuleEngine.evaluateLegoCharacter; ensure preserved in customDb before removing from gearPool
             if (!Array.isArray(charData.customDb)) charData.customDb = [];
             pushUniqueEntry(charData.customDb, item);
             continue;
@@ -3342,7 +3483,6 @@
         charData.gearPool = cleanPool;
       }
 
-      // Generic Stem & Completeness Deduplication (B2 & M1)
       if (Array.isArray(charData.specialAbilities) && charData.specialAbilities.length > 0) {
         const stemMaxScore = new Map();
         for (let i = 0; i < charData.specialAbilities.length; i++) {
@@ -3354,9 +3494,10 @@
           if (info.score > prev) stemMaxScore.set(info.stem, info.score);
         }
 
-        charData.specialAbilities = charData.specialAbilities.filter(a => {
+        charData.specialAbilities = charData.specialAbilities.filter((a) => {
           if (!a || typeof a !== 'object') return true;
           if (Array.isArray(a.overrides) && a.overrides.length > 0) return true;
+          if (Array.isArray(a.effects) && a.effects.some((ef) => ef && ef.type === 'stat')) return true;
           if (Array.isArray(a.modifiers) && a.modifiers.length > 0) return true;
           const info = SchemaMigrator.getAbilityStemAndScore(a);
           if (!info.stem) return true;
@@ -3370,7 +3511,7 @@
         });
 
         if (Array.isArray(charData.customDb)) {
-          charData.customDb = charData.customDb.filter(entry => {
+          charData.customDb = charData.customDb.filter((entry) => {
             if (!entry || typeof entry !== 'object') return true;
             const info = SchemaMigrator.getAbilityStemAndScore(entry);
             if (info.isMalformedSlug && info.stem && (stemMaxScore.get(info.stem) || 0) >= 2) {
@@ -3384,30 +3525,30 @@
       return charData;
     },
 
-    /**
-     * Upgrades an entire character sheet object (`characterData`) to Canonical V2 (`schemaVersion: 2`)
-     * on load, including inventory, feats, spells, buffs, and `smartNotes`.
-     */
-    upgradeCharacterToV2(charData) {
+    upgradeCharacterToV3(charData) {
       if (!charData || typeof charData !== 'object') return charData;
-
       SchemaMigrator.sanitizeCharacterAbilitiesAndPool(charData);
 
-      const listKeys = ['inventory', 'gear', 'weapons', 'armors', 'feats', 'specialAbilities', 'spells', 'buffs'];
+      const listKeys = ['inventory', 'gear', 'gearPool', 'weapons', 'armors', 'feats', 'specialAbilities', 'spells', 'buffs'];
       for (let i = 0; i < listKeys.length; i++) {
         const k = listKeys[i];
         if (Array.isArray(charData[k])) {
-          charData[k] = SchemaMigrator.upgradeArrayToV2(charData[k]);
+          charData[k] = charData[k].map((it) => (typeof it === 'object' && it !== null) ? SchemaMigrator.migrateEntryToV3(it) : it);
         }
+      }
+      if (charData.bodySlots && typeof charData.bodySlots === 'object') {
+        Object.keys(charData.bodySlots).forEach((sk) => {
+          if (charData.bodySlots[sk] && typeof charData.bodySlots[sk] === 'object') {
+            charData.bodySlots[sk] = SchemaMigrator.migrateEntryToV3(charData.bodySlots[sk]);
+          }
+        });
       }
 
       SchemaMigrator.sanitizeCharacterAbilitiesAndPool(charData);
-
-      if (!Array.isArray(charData.smartNotes)) {
-        charData.smartNotes = [];
-      }
-
-      charData.schemaVersion = 2;
+      if (!Array.isArray(charData.smartNotes)) charData.smartNotes = [];
+      delete charData.saveBonuses;
+      delete charData.activeModifiers;
+      charData.schemaVersion = 3;
       return charData;
     }
   };

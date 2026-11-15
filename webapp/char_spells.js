@@ -774,7 +774,7 @@
               grantedPower: d.grantedPower?.description || d.description || '',
               classSkills: d.grantedPower?.classSkills || d.classSkills || [],
               grantedFeats: d.grantedPower?.grantedFeats || [],
-              modifiers: d.modifiers || [],
+              effects: d.effects || [],
               ruleFlags: d.ruleFlags || {},
               spells: d.spells || []
             };
@@ -1495,8 +1495,9 @@
           return String(scaling.diceFormula).trim();
         }
       }
-      const v2Part = Array.isArray(s.damageParts) && s.damageParts[0] ? s.damageParts[0].dice : null;
-      const direct = v2Part || s.damageDice || s.dice || findDiceExpression(s.benefit || s.notes || s.description);
+      const rollBlk = (s.effects || []).find(e => e && e.type === 'roll' && (!e.kind || e.kind === 'Damage'));
+      const v3Dice = rollBlk?.dice || (rollBlk?.count && rollBlk?.die ? `${rollBlk.count}${rollBlk.die}` : null);
+      const direct = v3Dice || s.damageDice || s.dice || findDiceExpression(s.benefit || s.notes || s.description);
       if (direct) {
         const rawStr = String(direct).trim();
         if ((rawStr.includes('@') || /\b(min|max|floor|ceil)\s*\(/i.test(rawStr)) && typeof RuleEngine !== 'undefined' && typeof RuleEngine.evaluateFormula === 'function') {
@@ -1551,7 +1552,7 @@
       const buffObj = {
         id: buffId,
         baseSpellId: buffSpec.id || spellItem.id || null,
-        schemaVersion: 2,
+        schemaVersion: 3,
         name: buffName,
         active: true,
         source: 'Spell',
@@ -1563,7 +1564,7 @@
         initialDuration: durText,
         rounds: computedRounds,
         initialRounds: computedRounds,
-        modifiers: Array.isArray(buffSpec.modifiers) ? JSON.parse(JSON.stringify(buffSpec.modifiers)) : [],
+        effects: Array.isArray(buffSpec.effects) ? JSON.parse(JSON.stringify(buffSpec.effects)) : [],
         ruleFlags: buffSpec.ruleFlags ? JSON.parse(JSON.stringify(buffSpec.ruleFlags)) : {},
         summary: buffSpec.summaryText,
         description: `${buffSpec.summaryText} (${durText})`
@@ -1581,7 +1582,7 @@
         buffObj.targetWeapon = targetWeaponName;
         if (buffSpec.sizeModifier?.targetType === 'weapon') {
           const wepObj = (character.weapons || []).find(w => w && w.name === targetWeaponName);
-          const oldDice = (Array.isArray(wepObj?.damageParts) && wepObj.damageParts[0]?.dice) || wepObj?.dice || '1d8';
+          const oldDice = wepObj?.weapon?.damageDice || wepObj?.dice || '1d8';
           const steps = buffSpec.sizeModifier.scaling?.type === 'per_caster_level'
             ? Math.min(buffSpec.sizeModifier.scaling.maxSteps || 5, Math.floor(effCl / (buffSpec.sizeModifier.scaling.clDivisor || 4)))
             : (buffSpec.sizeModifier.scaling?.steps || 1);
@@ -1744,7 +1745,7 @@
             if (isRanged) return false;
           }
           if (Array.isArray(filter?.allowedDmgTypes) && filter.allowedDmgTypes.length > 0) {
-            const pType = (Array.isArray(w.damageParts) && w.damageParts[0]?.type) || w.dmgType || '';
+            const pType = w.weapon?.damageType || w.weapon?.dmgType || w.dmgType || '';
             const dt = String(pType).toLowerCase();
             const tags = (w.tags || []).map(t => String(t).toLowerCase());
             const matchesType = filter.allowedDmgTypes.some(type => {
@@ -1759,7 +1760,7 @@
         const actions = eligibleWeapons.map(wep => {
           let btnLabel = `⚔️ ${wep.name}`;
           if (buffSpec.sizeModifier?.targetType === 'weapon' && RuleEngine.stepDamageDice) {
-            const oldDice = (Array.isArray(wep.damageParts) && wep.damageParts[0]?.dice) || wep.dice || '1d8';
+            const oldDice = wep.weapon?.damageDice || wep.dice || '1d8';
             const steps = buffSpec.sizeModifier.scaling?.type === 'per_caster_level'
               ? Math.min(buffSpec.sizeModifier.scaling.maxSteps || 5, Math.floor(effCl / (buffSpec.sizeModifier.scaling.clDivisor || 4)))
               : (buffSpec.sizeModifier.scaling?.steps || 1);
@@ -2971,7 +2972,7 @@
       if (pw.kind === 'buff') {
         const buffObj = {
           id: pw.id,
-          schemaVersion: 2,
+          schemaVersion: 3,
           name: `${pw.name} (${pw.domain} Domain)`,
           active: true,
           source: 'Domain',
@@ -2980,7 +2981,7 @@
           duration: pw.durationText,
           durationText: pw.durationText,
           initialDuration: pw.durationText,
-          modifiers: Array.isArray(pw.modifiers) ? JSON.parse(JSON.stringify(pw.modifiers)) : [],
+          effects: Array.isArray(pw.effects) ? JSON.parse(JSON.stringify(pw.effects)) : [],
           ruleFlags: pw.ruleFlags ? JSON.parse(JSON.stringify(pw.ruleFlags)) : {},
           summary: pw.summary,
           description: `${pw.summary} (${pw.durationText})`
@@ -4804,7 +4805,10 @@
           const div = document.createElement('div');
 
           if (m) {
-            const dmgExpr = (Array.isArray(m.damageParts) && m.damageParts[0]?.dice) || m.damageDice || findDiceExpression(m.notes || m.benefit);
+            const dmgExpr = (() => {
+              const blk = (m.effects || []).find(e => e && e.type === 'roll' && (!e.kind || e.kind === 'Damage'));
+              return blk?.dice || (blk?.count && blk?.die ? `${blk.count}${blk.die}` : null) || m.damageDice || findDiceExpression(m.notes || m.benefit);
+            })();
             div.className = `p-3.5 rounded-xl border flex flex-col justify-between transition-all shadow-md ${
               m.expended 
                 ? 'bg-slate-950/70 border-slate-800 opacity-60' 
@@ -4903,7 +4907,10 @@
 
         const renderManeuverLibRow = (m) => {
           const isReadied = readiedNames.includes((m.name || '').toLowerCase().trim());
-          const dmgExpr = (Array.isArray(m.damageParts) && m.damageParts[0]?.dice) || m.damageDice || findDiceExpression(m.notes || m.benefit);
+          const dmgExpr = (() => {
+            const blk = (m.effects || []).find(e => e && e.type === 'roll' && (!e.kind || e.kind === 'Damage'));
+            return blk?.dice || (blk?.count && blk?.die ? `${blk.count}${blk.die}` : null) || m.damageDice || findDiceExpression(m.notes || m.benefit);
+          })();
           const mLvl = Number(m.level) || 1;
           const isOverLevel = mLvl > initInfo.maxManeuverLvl;
           const theme = getSpellLevelTheme(mLvl);
@@ -4987,7 +4994,10 @@
 
         const renderStanceLibRow = (st) => {
           const isActive = (character.activeStance || '').toLowerCase().trim() === (st.name || '').toLowerCase().trim();
-          const dmgExpr = (Array.isArray(st.damageParts) && st.damageParts[0]?.dice) || st.damageDice || findDiceExpression(st.benefit);
+          const dmgExpr = (() => {
+            const blk = (st.effects || []).find(e => e && e.type === 'roll' && (!e.kind || e.kind === 'Damage'));
+            return blk?.dice || (blk?.count && blk?.die ? `${blk.count}${blk.die}` : null) || st.damageDice || findDiceExpression(st.benefit);
+          })();
           const tr = document.createElement('tr');
           tr.className = 'hover:bg-slate-900/60 transition bg-slate-950/30';
           tr.innerHTML = `
@@ -5175,7 +5185,10 @@
         `;
       } else {
         bodyHtml = unreadied.map(m => {
-          const dmgExpr = (Array.isArray(m.damageParts) && m.damageParts[0]?.dice) || m.damageDice || findDiceExpression(m.notes || m.benefit);
+          const dmgExpr = (() => {
+            const blk = (m.effects || []).find(e => e && e.type === 'roll' && (!e.kind || e.kind === 'Damage'));
+            return blk?.dice || (blk?.count && blk?.die ? `${blk.count}${blk.die}` : null) || m.damageDice || findDiceExpression(m.notes || m.benefit);
+          })();
           const mLvl = Number(m.level) || 1;
           return `
             <div class="p-3 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-800 hover:border-rose-500/60 transition flex items-center justify-between gap-3">
@@ -5244,7 +5257,10 @@
       const wasExpended = Boolean(m.expended);
       const mName = m.name;
       const mDiscipline = m.discipline;
-      const dmgExpr = (Array.isArray(m.damageParts) && m.damageParts[0]?.dice) || m.damageDice || findDiceExpression(m.notes || m.benefit);
+      const dmgExpr = (() => {
+        const blk = (m.effects || []).find(e => e && e.type === 'roll' && (!e.kind || e.kind === 'Damage'));
+        return blk?.dice || (blk?.count && blk?.die ? `${blk.count}${blk.die}` : null) || m.damageDice || findDiceExpression(m.notes || m.benefit);
+      })();
       if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
         CharStore.dispatch({
           type: 'spells/expendOrRecoverManeuver',
@@ -6378,8 +6394,6 @@
       }
       if (window.SrdCompendium && typeof window.SrdCompendium.getAllLoaded === 'function') {
         addList(window.SrdCompendium.getAllLoaded(['Spell', 'Maneuver', 'Stance']));
-      } else if (Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
-        addList(window.BUNDLED_SRD_CORE_CATALOG.filter(x => x && ['spell', 'maneuver', 'stance'].includes(String(x.type || '').toLowerCase())));
       }
       return combined;
     }
@@ -7116,12 +7130,17 @@
           }
         }
 
-        const v2SpellPart = Array.isArray(item.damageParts) && item.damageParts[0] ? item.damageParts[0].dice : '';
+        const v3SourceItem = (item.schemaVersion !== 3 && window.SchemaMigrator && typeof window.SchemaMigrator.migrateEntryToV3 === 'function')
+          ? window.SchemaMigrator.migrateEntryToV3(item)
+          : item;
+        const spellEffects = Array.isArray(v3SourceItem.effects) ? JSON.parse(JSON.stringify(v3SourceItem.effects)) : [];
+        const spellRollEf = spellEffects.find(e => e && e.type === 'roll' && (!e.kind || String(e.kind).toLowerCase() === 'damage'));
+        const v3SpellDice = spellRollEf ? (spellRollEf.dice || ((spellRollEf.count || 1) + (spellRollEf.die || 'd6'))) : '';
         const cleanBenefit = item.benefit || item.shortDescription || stripSpellHtml(item.description || item.desc) || '';
         const schoolName = item.school || (item.category && item.category.toLowerCase() !== 'spell' ? item.category : 'Universal');
         const rangeText = formatSrdSpellRange(item);
         const actionText = formatSrdSpellAction(item);
-        const autoDice = v2SpellPart || item.damageDice || item.dice || findDiceExpression(cleanBenefit) || '';
+        const autoDice = v3SpellDice || item.damageDice || item.dice || findDiceExpression(cleanBenefit) || '';
 
         const isDomainAdded = targetPool === 'divine' && Boolean(window._spellPickerIsDomainSlot || activeFilterSource === 'char_domains' || activeFilterSource === 'domain');
         let matchedDomainName = '';
@@ -7133,7 +7152,8 @@
 
         const newSpellEntry = {
           id: item.id || ('spl_' + String(item.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '_')),
-          schemaVersion: 2,
+          schemaVersion: 3,
+          blueprint: 'spell',
           name: item.name,
           level: resolvedLvl,
           school: schoolName,
@@ -7146,8 +7166,7 @@
           duration: item.duration || '',
           action: actionText,
           damageDice: autoDice,
-          damageParts: Array.isArray(item.damageParts) ? JSON.parse(JSON.stringify(item.damageParts)) : [],
-          modifiers: Array.isArray(item.modifiers) ? JSON.parse(JSON.stringify(item.modifiers)) : [],
+          effects: spellEffects,
           ruleFlags: item.ruleFlags ? JSON.parse(JSON.stringify(item.ruleFlags)) : {}
         };
         if (item.sizeModifier) {
@@ -7256,10 +7275,16 @@
           return;
         }
 
-        const v2ManeuverDice = (Array.isArray(item.damageParts) && item.damageParts[0]?.dice) || item.damageDice || undefined;
+        const v3ManeuverSrc = (item.schemaVersion !== 3 && window.SchemaMigrator && typeof window.SchemaMigrator.migrateEntryToV3 === 'function')
+          ? window.SchemaMigrator.migrateEntryToV3(item)
+          : item;
+        const maneuverEffects = Array.isArray(v3ManeuverSrc.effects) ? JSON.parse(JSON.stringify(v3ManeuverSrc.effects)) : [];
+        const maneuverRollEf = maneuverEffects.find(e => e && e.type === 'roll' && (!e.kind || String(e.kind).toLowerCase() === 'damage'));
+        const v3ManeuverDice = (maneuverRollEf && (maneuverRollEf.dice || ((maneuverRollEf.count || 1) + (maneuverRollEf.die || 'd6')))) || item.damageDice || undefined;
         const newManeuver = {
           id: item.id || ('tob_maneuver_' + String(item.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '_')),
-          schemaVersion: 2,
+          schemaVersion: 3,
+          blueprint: 'spell',
           name: item.name,
           level: mLvl,
           discipline: item.discipline || item.school || 'Iron Heart',
@@ -7269,9 +7294,8 @@
           source: item.source || 'ToB',
           range: item.range || 'Melee Attack',
           save: item.save || 'None',
-          damageDice: v2ManeuverDice,
-          damageParts: Array.isArray(item.damageParts) ? JSON.parse(JSON.stringify(item.damageParts)) : [],
-          modifiers: Array.isArray(item.modifiers) ? JSON.parse(JSON.stringify(item.modifiers)) : [],
+          damageDice: v3ManeuverDice,
+          effects: maneuverEffects,
           ruleFlags: Array.isArray(item.ruleFlags) ? [...item.ruleFlags] : [],
           tacticalBadges: Array.isArray(item.tacticalBadges) ? [...item.tacticalBadges] : [],
           notes: item.benefit || item.shortDescription || stripSpellHtml(item.description || item.desc) || '',
@@ -7369,18 +7393,23 @@
           return;
         }
 
-        const v2StanceDice = (Array.isArray(item.damageParts) && item.damageParts[0]?.dice) || item.damageDice || undefined;
+        const v3StanceSrc = (item.schemaVersion !== 3 && window.SchemaMigrator && typeof window.SchemaMigrator.migrateEntryToV3 === 'function')
+          ? window.SchemaMigrator.migrateEntryToV3(item)
+          : item;
+        const stanceEffects = Array.isArray(v3StanceSrc.effects) ? JSON.parse(JSON.stringify(v3StanceSrc.effects)) : [];
+        const stanceRollEf = stanceEffects.find(e => e && e.type === 'roll' && (!e.kind || String(e.kind).toLowerCase() === 'damage'));
+        const v3StanceDice = (stanceRollEf && (stanceRollEf.dice || ((stanceRollEf.count || 1) + (stanceRollEf.die || 'd6')))) || item.damageDice || undefined;
         const newStance = {
           id: item.id || ('tob_stance_' + String(item.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '_')),
-          schemaVersion: 2,
+          schemaVersion: 3,
+          blueprint: 'spell',
           name: item.name,
           level: item.level !== undefined ? Number(item.level) : 1,
           discipline: item.discipline || item.school || 'Iron Heart',
           prereq: item.prereq || 'None',
           source: item.source || 'ToB',
-          damageDice: v2StanceDice,
-          damageParts: Array.isArray(item.damageParts) ? JSON.parse(JSON.stringify(item.damageParts)) : [],
-          modifiers: Array.isArray(item.modifiers) ? JSON.parse(JSON.stringify(item.modifiers)) : [],
+          damageDice: v3StanceDice,
+          effects: stanceEffects,
           ruleFlags: Array.isArray(item.ruleFlags) ? [...item.ruleFlags] : [],
           tacticalBadges: Array.isArray(item.tacticalBadges) ? [...item.tacticalBadges] : [],
           benefit: item.benefit || item.shortDescription || stripSpellHtml(item.description || item.desc) || ''
@@ -7541,7 +7570,9 @@
 
     function findBaseItemInSrdCore(rawName) {
       if (!rawName || typeof rawName !== 'string') return null;
-      const catalog = window.BUNDLED_SRD_CORE_CATALOG || [];
+      const catalog = (window.SrdCompendium && typeof window.SrdCompendium.getAllLoaded === 'function')
+        ? window.SrdCompendium.getAllLoaded()
+        : [];
       if (!Array.isArray(catalog) || catalog.length === 0) return null;
 
       const curVer = window._srdCatalogVersion || catalog.length;
@@ -7621,7 +7652,7 @@
       if (cat === 'weapon' || cat === 'armor' || cat === 'shield') return false;
       if (slot === 'main hand' || slot === 'off hand' || slot === 'two-handed' || slot === 'both hands' || slot === 'armor' || slot === 'shield' || slot === 'off-hand/shield') return false;
 
-      // KESİN KURAL 2: BUNDLED_SRD_CORE_CATALOG içinde Weapon, Armor veya Shield ise tüketilebilir olamaz!
+      // Rule 2: Weapon, Armor, or Shield entries in SrdCompendium cannot be consumable
       const baseMatch = typeof findBaseItemInSrdCore === 'function' ? findBaseItemInSrdCore(item.name) : null;
       if (baseMatch && ['weapon', 'armor', 'shield'].includes((baseMatch.type || '').toLowerCase())) {
         return false;
@@ -7648,7 +7679,7 @@
     function getValidSlotForItem(item) {
       if (!item || isConsumableOrSlotless(item)) return null;
 
-      // 0. BUNDLED_SRD_CORE_CATALOG ile temel eşya yuvasını belirle
+      // 0. Resolve base item slot via SrdCompendium
       const baseMatch = typeof findBaseItemInSrdCore === 'function' ? findBaseItemInSrdCore(item.name) : null;
       if (baseMatch) {
         const bType = (baseMatch.type || '').toLowerCase();
@@ -7815,19 +7846,13 @@
 
     function getAllWarlockInvocations() {
       const map = new Map();
-      if (typeof window !== 'undefined' && window.SrdCompendium && window.SrdCompendium._ready) {
-        window.SrdCompendium.getAllLoaded().filter(i => i && i.category === 'Warlock Invocation').forEach(inv => {
+      if (typeof window !== 'undefined' && window.SrdCompendium && typeof window.SrdCompendium.getAllLoaded === 'function') {
+        window.SrdCompendium.getAllLoaded().filter(i => i && (i.category === 'Warlock Invocation' || (i.type === 'Special Ability' && i.category === 'Warlock Invocation'))).forEach(inv => {
           map.set((inv.name || '').toLowerCase(), {
             ...inv,
             prereq: inv.prerequisites || inv.prereq || (`Warlock Level ${inv.minLevel || 1}`),
             benefit: inv.shortDescription || inv.benefit || inv.description || ''
           });
-        });
-      }
-      if (typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
-        window.BUNDLED_SRD_CORE_CATALOG.filter(i => i && (i.category === 'Warlock Invocation' || (i.type === 'Special Ability' && i.category === 'Warlock Invocation'))).forEach(inv => {
-          const k = (inv.name || '').toLowerCase();
-          if (k && !map.has(k)) map.set(k, inv);
         });
       }
       if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
@@ -8588,17 +8613,17 @@
         if (char.feats.length !== beforeLen) changed = true;
       }
 
-      // Also clean up orphaned Sneak Attack from activeModifiers & combatPins if character no longer has Sneak Attack
+      // Also clean up orphaned Sneak Attack from tacticalRiders & combatPins if character no longer has Sneak Attack
       if (!hasActiveSneakClass && !activeRowEntryNames.has('sneak attack')) {
         const stillHasSa = [...(char.specialAbilities || []), ...(char.feats || [])].some(x => {
           const n = stripTag(typeof x === 'string' ? x : (x?.name || '')).toLowerCase();
           return n.includes('sneak attack');
         });
         if (!stillHasSa) {
-          if (Array.isArray(char.activeModifiers)) {
-            const prevModLen = char.activeModifiers.length;
-            char.activeModifiers = char.activeModifiers.filter(m => !m || !String(m.name || '').toLowerCase().includes('sneak attack'));
-            if (char.activeModifiers.length !== prevModLen) changed = true;
+          if (Array.isArray(char.tacticalRiders)) {
+            const prevModLen = char.tacticalRiders.length;
+            char.tacticalRiders = char.tacticalRiders.filter(m => !m || !String(m.name || '').toLowerCase().includes('sneak attack'));
+            if (char.tacticalRiders.length !== prevModLen) changed = true;
           }
           if (char.combatPins && typeof char.combatPins === 'object') {
             Object.keys(char.combatPins).forEach(drawerKey => {
@@ -9590,7 +9615,8 @@
       if (Array.isArray(masterDb)) {
         const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
         const dbPayload = {
-          schemaVersion: 2,
+          schemaVersion: 3,
+          blueprint: 'class',
           id: `cls_${slug}`,
           name,
           type: 'Class',
@@ -9611,8 +9637,7 @@
           benefit: featureSummaryText,
           description: featureSummaryText,
           desc: featureSummaryText,
-          modifiers: [],
-          damageParts: []
+          effects: []
         };
         const targetDbIdx = (_editingClassMasterDbIndex >= 0 && masterDb[_editingClassMasterDbIndex])
           ? _editingClassMasterDbIndex
@@ -9847,12 +9872,12 @@
     }
     window.resolveBaseWeaponName = resolveBaseWeaponName;
 
-    // D&D 3.5e Standard SRD Weapons Dynamic Helper (Sourced from window.BUNDLED_SRD_CORE_CATALOG & masterDb per Rule #5)
+    // D&D 3.5e Standard SRD Weapons Dynamic Helper (Sourced from window.SrdCompendium & masterDb)
     function getSrdWeaponNames() {
       const set = new Set();
       const weapons = (window.SrdCompendium && typeof window.SrdCompendium.getByType === 'function')
         ? window.SrdCompendium.getByType('Weapon')
-        : (Array.isArray(window.BUNDLED_SRD_CORE_CATALOG) ? window.BUNDLED_SRD_CORE_CATALOG.filter(i => i && i.type === 'Weapon') : []);
+        : [];
       weapons.forEach(w => {
         if (w && isBaseMundaneWeaponEntry(w)) {
           const clean = String(w.name || '').replace(/^[↳\s*•\-]+/, '').replace(/\[.*?\]/g, '').replace(/\(.*?\)/g, '').trim();
@@ -10402,10 +10427,6 @@
             || stripExSuSp(e.name) === stripExSuSp(cleanName)
           ))
         : null;
-      const fFromBundled = (typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG))
-        ? window.BUNDLED_SRD_CORE_CATALOG.find(i => i && i.type === 'Feat' && (i.name.toLowerCase() === featName.toLowerCase() || i.name.toLowerCase() === cleanName.toLowerCase() || i.name.toLowerCase() === baseFeatName.toLowerCase()))
-        : null;
-
       const title = cleanName || featName;
       let source = 'D&D 3.5e Core Rules';
       let category = (sourceCategory === 'ability') ? 'Special Ability' : 'Feat / Ability';
@@ -10422,11 +10443,6 @@
         category = fFromComp.category || category;
         benefit = fFromComp.shortDescription || fFromComp.benefit || fFromComp.description || benefit;
         if (fFromComp.prerequisites && fFromComp.prerequisites !== '-') notes = `Prerequisite: ${fFromComp.prerequisites}`;
-      } else if (fFromBundled) {
-        source = fFromBundled.source || source;
-        category = fFromBundled.category || category;
-        benefit = fFromBundled.benefit || benefit;
-        if (fFromBundled.prereq && fFromBundled.prereq !== '-') notes = `Prerequisite: ${fFromBundled.prereq}`;
       }
       if (studioEntry) {
         source = studioEntry.source || source;
@@ -10487,23 +10503,32 @@
       const benefitEl = document.getElementById('feat-modal-benefit');
       if (benefitEl) benefitEl.textContent = benefit;
 
-      // Merge V2/V3 tactical ability fields (damageParts, save, dcFormula, range, recharge, rechargeDice, effects)
-      let mergedV2 = Object.assign(
+      // Merge V3 tactical ability fields (effects, save, dcFormula, range, recharge, rechargeDice)
+      let mergedEntry = Object.assign(
         {},
         (typeof cabFromComp === 'object' && cabFromComp) ? cabFromComp : {},
         (typeof fFromComp === 'object' && fFromComp) ? fFromComp : {},
-        (typeof fFromBundled === 'object' && fFromBundled) ? fFromBundled : {},
         (typeof studioEntry === 'object' && studioEntry) ? studioEntry : {},
         (typeof customEntry === 'object' && customEntry) ? customEntry : {},
         (typeof fFromChar === 'object' && fFromChar) ? fFromChar : {},
         (typeof aFromChar === 'object' && aFromChar) ? aFromChar : {},
         (typeof fFromDb === 'object' && fFromDb) ? fFromDb : {}
       );
-      if (!mergedV2.dcFormula && !mergedV2.recharge && (!Array.isArray(mergedV2.damageParts) || mergedV2.damageParts.length === 0)) {
+      if (mergedEntry.schemaVersion !== 3 && typeof window !== 'undefined' && window.SchemaMigrator && typeof window.SchemaMigrator.migrateEntryToV3 === 'function') {
+        mergedEntry = window.SchemaMigrator.migrateEntryToV3(mergedEntry);
+      }
+      const getMergedRollEffects = (ent) => (Array.isArray(ent?.effects) ? ent.effects : []).filter(e => e && e.type === 'roll' && (!e.kind || String(e.kind).toLowerCase() === 'damage'));
+      if (!mergedEntry.dcFormula && !mergedEntry.recharge && getMergedRollEffects(mergedEntry).length === 0) {
         if (typeof window !== 'undefined' && window.RuleMaster && typeof window.RuleMaster.parseStructuredAbilityStatBlock === 'function') {
           const parsedOnFly = window.RuleMaster.parseStructuredAbilityStatBlock(title, benefit, category);
           if (parsedOnFly) {
-            mergedV2 = Object.assign({}, parsedOnFly, mergedV2);
+            const migratedParsed = (typeof window.SchemaMigrator?.migrateEntryToV3 === 'function')
+              ? window.SchemaMigrator.migrateEntryToV3(parsedOnFly)
+              : parsedOnFly;
+            mergedEntry = Object.assign({}, migratedParsed, mergedEntry);
+            if (!Array.isArray(mergedEntry.effects) || mergedEntry.effects.length === 0) {
+              mergedEntry.effects = Array.isArray(migratedParsed.effects) ? migratedParsed.effects : [];
+            }
           }
         }
       }
@@ -10517,11 +10542,12 @@
       }
 
       if (tacticalEl) {
-        const hasDmg = Array.isArray(mergedV2.damageParts) && mergedV2.damageParts.length > 0;
-        const hasSave = Boolean(mergedV2.save || mergedV2.dcFormula);
-        const hasRange = Boolean(mergedV2.range);
-        const hasRecharge = Boolean(mergedV2.recharge || mergedV2.rechargeDice);
-        const hasV3Effects = Array.isArray(mergedV2.effects) && mergedV2.effects.length > 0;
+        const rollEffects = getMergedRollEffects(mergedEntry);
+        const hasDmg = rollEffects.length > 0;
+        const hasSave = Boolean(mergedEntry.save || mergedEntry.dcFormula);
+        const hasRange = Boolean(mergedEntry.range);
+        const hasRecharge = Boolean(mergedEntry.recharge || mergedEntry.rechargeDice);
+        const hasV3Effects = Array.isArray(mergedEntry.effects) && mergedEntry.effects.length > 0;
 
         if (hasDmg || hasSave || hasRange || hasRecharge || hasV3Effects) {
           const escHtml = (typeof UI !== 'undefined' && typeof UI.escapeHtml === 'function') ? UI.escapeHtml : safeEscapeHtml;
@@ -10619,7 +10645,7 @@
               if (!leaf) return [];
               return [{ icon: /shield|ac|defense/i.test(leaf) ? '🛡️' : '✨', text: leaf }];
             };
-            mergedV2.effects.forEach(ef => {
+            mergedEntry.effects.forEach(ef => {
               formatV3Block(ef).forEach(pill => {
                 badgesHtml.push(`<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-950/80 text-emerald-200 border border-emerald-700/60">${pill.icon} ${escHtml(pill.text)}</span>`);
               });
@@ -10627,9 +10653,9 @@
           }
           if (hasSave) {
             const dcEval = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.evaluateAbilitySaveDc === 'function')
-              ? RuleEngine.evaluateAbilitySaveDc(Object.assign({}, mergedV2, { benefit }), typeof character !== 'undefined' ? character : null)
+              ? RuleEngine.evaluateAbilitySaveDc(Object.assign({}, mergedEntry, { benefit }), typeof character !== 'undefined' ? character : null)
               : null;
-            const saveLabel = mergedV2.save || 'Saving Throw';
+            const saveLabel = mergedEntry.save || 'Saving Throw';
             if (dcEval) {
               badgesHtml.push(`<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-950/80 text-amber-200 border border-amber-700/60">🛡️ Save: ${safeEscapeHtml(saveLabel)} — <strong class="text-amber-300 font-mono">DC ${dcEval.dc}</strong> <span class="text-[10px] text-amber-400/80 font-mono">[${safeEscapeHtml(dcEval.breakdown)}]</span></span>`);
             } else {
@@ -10637,25 +10663,26 @@
             }
           }
           if (hasRange) {
-            badgesHtml.push(`<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-sky-950/80 text-sky-200 border border-sky-700/60">📏 Range: ${safeEscapeHtml(mergedV2.range)}</span>`);
+            badgesHtml.push(`<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-sky-950/80 text-sky-200 border border-sky-700/60">📏 Range: ${safeEscapeHtml(mergedEntry.range)}</span>`);
           }
           if (hasRecharge) {
-            badgesHtml.push(`<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-purple-950/80 text-purple-200 border border-purple-700/60">⏳ Recharge: ${safeEscapeHtml(mergedV2.recharge || (mergedV2.rechargeDice + ' rounds'))}</span>`);
+            badgesHtml.push(`<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-purple-950/80 text-purple-200 border border-purple-700/60">⏳ Recharge: ${safeEscapeHtml(mergedEntry.recharge || (mergedEntry.rechargeDice + ' rounds'))}</span>`);
           }
 
           const buttonsHtml = [];
           const safeAction = String(
             (fFromDb && (fFromDb.action || fFromDb.actionType)) ||
-            mergedV2.action ||
-            mergedV2.actionType ||
+            mergedEntry.action ||
+            mergedEntry.actionType ||
             'standard'
           );
           if (hasDmg) {
-            mergedV2.damageParts.forEach(dp => {
-              if (!dp || !dp.dice) return;
+            rollEffects.forEach(dp => {
+              const dpDice = dp && (dp.dice || (dp.count && dp.die ? `${dp.count}${dp.die}` : (dp.die ? `1${dp.die}` : '')));
+              if (!dpDice) return;
               const bonusNum = Number(dp.bonus || 0);
-              const formula = `${dp.dice}${bonusNum ? (bonusNum > 0 ? '+' + bonusNum : bonusNum) : ''}`;
-              const dmgType = dp.type || 'Damage';
+              const formula = `${dpDice}${bonusNum ? (bonusNum > 0 ? '+' + bonusNum : bonusNum) : ''}`;
+              const dmgType = dp.dmgType || dp.damageType || dp.typeLabel || 'Damage';
               const safeFormula = escape(formula);
               const safeLabel = escape(`${title} (${dmgType} Damage)`);
               buttonsHtml.push(`
@@ -10666,13 +10693,13 @@
               `);
             });
           }
-          if (mergedV2.rechargeDice) {
-            const safeRFormula = escape(String(mergedV2.rechargeDice));
+          if (mergedEntry.rechargeDice) {
+            const safeRFormula = escape(String(mergedEntry.rechargeDice));
             const safeRLabel = escape(`${title} — Recharge Cooldown`);
             buttonsHtml.push(`
               <button type="button" data-action="spells:roll-ability-tactical-dice" data-formula="${safeRFormula}" data-label="${safeRLabel}" data-mode="recharge" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-950/90 border border-indigo-600/70 shadow transition active:scale-95 cursor-pointer">
                 <span>⏳</span>
-                <span>Roll Recharge (${safeEscapeHtml(mergedV2.rechargeDice)} rounds)</span>
+                <span>Roll Recharge (${safeEscapeHtml(mergedEntry.rechargeDice)} rounds)</span>
               </button>
             `);
           }
@@ -10713,7 +10740,7 @@
       }
 
       // Resolve canonical ID & check character.customEntries Copy-on-Write override
-      const resolvedFeatId = fFromDb?.id || fFromComp?.id || fFromBundled?.id
+      const resolvedFeatId = fFromDb?.id || fFromComp?.id || cabFromComp?.id
         || (fFromChar && typeof fFromChar === 'object' ? fFromChar.id : null)
         || (aFromChar && typeof aFromChar === 'object' ? aFromChar.id : null)
         || ('feat-' + cleanName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''));

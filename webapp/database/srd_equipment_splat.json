@@ -29,16 +29,6 @@
       "critMultiplier": 2,
       "rangeIncrement": null
     },
-    "damageParts": [
-      {
-        "dice": "1d6",
-        "bonus": 0,
-        "type": "Slashing",
-        "multiplyOnCrit": true,
-        "onCritOnly": false,
-        "source": "Base"
-      }
-    ],
     "handedness": "light",
     "critRange": 19,
     "critMult": 2,
@@ -53,20 +43,19 @@
         "strMult": 1,
         "critRange": 19,
         "critMult": 2,
-        "damageParts": [
-          {
-            "dice": "1d6",
-            "bonus": 0,
-            "type": "Slashing",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "isLight": true,
           "finessable": true,
           "disarm": true
+        },
+        "damageDice": "1d6",
+        "dmgType": "Slashing",
+        "weapon": {
+          "damageDice": "1d6",
+          "dmgType": "Slashing",
+          "baseCritRange": 19,
+          "critMultiplier": 2,
+          "handedness": "light"
         }
       }
     ],
@@ -130,16 +119,6 @@
       "critMultiplier": 3,
       "rangeIncrement": null
     },
-    "damageParts": [
-      {
-        "dice": "1d10",
-        "bonus": 0,
-        "type": "Bludgeoning",
-        "multiplyOnCrit": true,
-        "onCritOnly": false,
-        "source": "Base"
-      }
-    ],
     "handedness": "1h",
     "critRange": 20,
     "critMult": 3,
@@ -154,17 +133,16 @@
         "strMult": 1,
         "critRange": 20,
         "critMult": 3,
-        "damageParts": [
-          {
-            "dice": "1d10",
-            "bonus": 0,
-            "type": "Bludgeoning",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
-        "ruleFlags": {}
+        "ruleFlags": {},
+        "damageDice": "1d10",
+        "dmgType": "Bludgeoning",
+        "weapon": {
+          "damageDice": "1d10",
+          "dmgType": "Bludgeoning",
+          "baseCritRange": 20,
+          "critMultiplier": 3,
+          "handedness": "1h"
+        }
       },
       {
         "id": "2h-martial",
@@ -175,18 +153,17 @@
         "strMult": 1.5,
         "critRange": 20,
         "critMult": 3,
-        "damageParts": [
-          {
-            "dice": "1d10",
-            "bonus": 0,
-            "type": "Bludgeoning",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "twoHanded": true
+        },
+        "damageDice": "1d10",
+        "dmgType": "Bludgeoning",
+        "weapon": {
+          "damageDice": "1d10",
+          "dmgType": "Bludgeoning",
+          "baseCritRange": 20,
+          "critMultiplier": 3,
+          "handedness": "2h"
         }
       }
     ],
@@ -244,16 +221,6 @@
       "critMultiplier": 4,
       "rangeIncrement": null
     },
-    "damageParts": [
-      {
-        "dice": "1d8",
-        "bonus": 0,
-        "type": "Piercing",
-        "multiplyOnCrit": true,
-        "onCritOnly": false,
-        "source": "Base"
-      }
-    ],
     "handedness": "1h",
     "critRange": 20,
     "critMult": 4,
@@ -268,17 +235,16 @@
         "strMult": 1,
         "critRange": 20,
         "critMult": 4,
-        "damageParts": [
-          {
-            "dice": "1d8",
-            "bonus": 0,
-            "type": "Piercing",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
-        "ruleFlags": {}
+        "ruleFlags": {},
+        "damageDice": "1d8",
+        "dmgType": "Piercing",
+        "weapon": {
+          "damageDice": "1d8",
+          "dmgType": "Piercing",
+          "baseCritRange": 20,
+          "critMultiplier": 4,
+          "handedness": "1h"
+        }
       },
       {
         "id": "2h-martial",
@@ -289,18 +255,17 @@
         "strMult": 1.5,
         "critRange": 20,
         "critMult": 4,
-        "damageParts": [
-          {
-            "dice": "1d8",
-            "bonus": 0,
-            "type": "Piercing",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "twoHanded": true
+        },
+        "damageDice": "1d8",
+        "dmgType": "Piercing",
+        "weapon": {
+          "damageDice": "1d8",
+          "dmgType": "Piercing",
+          "baseCritRange": 20,
+          "critMultiplier": 4,
+          "handedness": "2h"
         }
       }
     ],
@@ -358,16 +323,6 @@
       "critMultiplier": 2,
       "rangeIncrement": null
     },
-    "damageParts": [
-      {
-        "dice": "1d8",
-        "bonus": 0,
-        "type": "Slashing",
-        "multiplyOnCrit": true,
-        "onCritOnly": false,
-        "source": "Base"
-      }
-    ],
     "handedness": "1h",
     "critRange": 18,
     "critMult": 2,
@@ -382,17 +337,16 @@
         "strMult": 1,
         "critRange": 18,
         "critMult": 2,
-        "damageParts": [
-          {
-            "dice": "1d8",
-            "bonus": 0,
-            "type": "Slashing",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
-        "ruleFlags": {}
+        "ruleFlags": {},
+        "damageDice": "1d8",
+        "dmgType": "Slashing",
+        "weapon": {
+          "damageDice": "1d8",
+          "dmgType": "Slashing",
+          "baseCritRange": 18,
+          "critMultiplier": 2,
+          "handedness": "1h"
+        }
       },
       {
         "id": "2h-martial",
@@ -403,18 +357,17 @@
         "strMult": 1.5,
         "critRange": 18,
         "critMult": 2,
-        "damageParts": [
-          {
-            "dice": "1d8",
-            "bonus": 0,
-            "type": "Slashing",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "twoHanded": true
+        },
+        "damageDice": "1d8",
+        "dmgType": "Slashing",
+        "weapon": {
+          "damageDice": "1d8",
+          "dmgType": "Slashing",
+          "baseCritRange": 18,
+          "critMultiplier": 2,
+          "handedness": "2h"
         }
       }
     ],
@@ -469,16 +422,6 @@
       "critMultiplier": 2,
       "rangeIncrement": null
     },
-    "damageParts": [
-      {
-        "dice": "1d12",
-        "bonus": 0,
-        "type": "Bludgeoning",
-        "multiplyOnCrit": true,
-        "onCritOnly": false,
-        "source": "Base"
-      }
-    ],
     "handedness": "1h",
     "critRange": 20,
     "critMult": 2,
@@ -493,17 +436,16 @@
         "strMult": 1,
         "critRange": 20,
         "critMult": 2,
-        "damageParts": [
-          {
-            "dice": "1d12",
-            "bonus": 0,
-            "type": "Bludgeoning",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
-        "ruleFlags": {}
+        "ruleFlags": {},
+        "damageDice": "1d12",
+        "dmgType": "Bludgeoning",
+        "weapon": {
+          "damageDice": "1d12",
+          "dmgType": "Bludgeoning",
+          "baseCritRange": 20,
+          "critMultiplier": 2,
+          "handedness": "1h"
+        }
       },
       {
         "id": "2h-martial",
@@ -514,18 +456,17 @@
         "strMult": 1.5,
         "critRange": 20,
         "critMult": 2,
-        "damageParts": [
-          {
-            "dice": "1d12",
-            "bonus": 0,
-            "type": "Bludgeoning",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "twoHanded": true
+        },
+        "damageDice": "1d12",
+        "dmgType": "Bludgeoning",
+        "weapon": {
+          "damageDice": "1d12",
+          "dmgType": "Bludgeoning",
+          "baseCritRange": 20,
+          "critMultiplier": 2,
+          "handedness": "2h"
         }
       }
     ],
@@ -583,16 +524,6 @@
       "critMultiplier": 2,
       "rangeIncrement": null
     },
-    "damageParts": [
-      {
-        "dice": "1d4",
-        "bonus": 0,
-        "type": "Piercing",
-        "multiplyOnCrit": true,
-        "onCritOnly": false,
-        "source": "Base"
-      }
-    ],
     "handedness": "light",
     "critRange": 19,
     "critMult": 2,
@@ -607,19 +538,18 @@
         "strMult": 1,
         "critRange": 19,
         "critMult": 2,
-        "damageParts": [
-          {
-            "dice": "1d4",
-            "bonus": 0,
-            "type": "Piercing",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "isLight": true,
           "finessable": true
+        },
+        "damageDice": "1d4",
+        "dmgType": "Piercing",
+        "weapon": {
+          "damageDice": "1d4",
+          "dmgType": "Piercing",
+          "baseCritRange": 19,
+          "critMultiplier": 2,
+          "handedness": "light"
         }
       }
     ],
@@ -684,16 +614,6 @@
       "critMultiplier": 2,
       "rangeIncrement": 20
     },
-    "damageParts": [
-      {
-        "dice": "1d6",
-        "bonus": 0,
-        "type": "Bludgeoning",
-        "multiplyOnCrit": true,
-        "onCritOnly": false,
-        "source": "Base"
-      }
-    ],
     "handedness": "light",
     "critRange": 20,
     "critMult": 2,
@@ -709,20 +629,19 @@
         "strMult": 1,
         "critRange": 20,
         "critMult": 2,
-        "damageParts": [
-          {
-            "dice": "1d6",
-            "bonus": 0,
-            "type": "Bludgeoning",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "isLight": true,
           "finessable": true,
           "thrown": true
+        },
+        "damageDice": "1d6",
+        "dmgType": "Bludgeoning",
+        "weapon": {
+          "damageDice": "1d6",
+          "dmgType": "Bludgeoning",
+          "baseCritRange": 20,
+          "critMultiplier": 2,
+          "handedness": "light"
         }
       },
       {
@@ -735,20 +654,19 @@
         "rangeIncrement": 20,
         "critRange": 20,
         "critMult": 2,
-        "damageParts": [
-          {
-            "dice": "1d6",
-            "bonus": 0,
-            "type": "Bludgeoning",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "isLight": true,
           "finessable": true,
           "thrown": true
+        },
+        "damageDice": "1d6",
+        "dmgType": "Bludgeoning",
+        "weapon": {
+          "damageDice": "1d6",
+          "dmgType": "Bludgeoning",
+          "baseCritRange": 20,
+          "critMultiplier": 2,
+          "handedness": "light"
         }
       }
     ],
@@ -815,16 +733,6 @@
       "critMultiplier": 2,
       "rangeIncrement": null
     },
-    "damageParts": [
-      {
-        "dice": "1d6",
-        "bonus": 0,
-        "type": "Piercing",
-        "multiplyOnCrit": true,
-        "onCritOnly": false,
-        "source": "Base"
-      }
-    ],
     "handedness": "light",
     "critRange": 18,
     "critMult": 2,
@@ -839,19 +747,18 @@
         "strMult": 1,
         "critRange": 18,
         "critMult": 2,
-        "damageParts": [
-          {
-            "dice": "1d6",
-            "bonus": 0,
-            "type": "Piercing",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "isLight": true,
           "finessable": true
+        },
+        "damageDice": "1d6",
+        "dmgType": "Piercing",
+        "weapon": {
+          "damageDice": "1d6",
+          "dmgType": "Piercing",
+          "baseCritRange": 18,
+          "critMultiplier": 2,
+          "handedness": "light"
         }
       }
     ],
@@ -916,16 +823,6 @@
       "critMultiplier": 2,
       "rangeIncrement": 10
     },
-    "damageParts": [
-      {
-        "dice": "1d6",
-        "bonus": 0,
-        "type": "Piercing",
-        "multiplyOnCrit": true,
-        "onCritOnly": false,
-        "source": "Base"
-      }
-    ],
     "handedness": "light",
     "critRange": 19,
     "critMult": 2,
@@ -941,20 +838,19 @@
         "strMult": 1,
         "critRange": 19,
         "critMult": 2,
-        "damageParts": [
-          {
-            "dice": "1d6",
-            "bonus": 0,
-            "type": "Piercing",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "isLight": true,
           "finessable": true,
           "thrown": true
+        },
+        "damageDice": "1d6",
+        "dmgType": "Piercing",
+        "weapon": {
+          "damageDice": "1d6",
+          "dmgType": "Piercing",
+          "baseCritRange": 19,
+          "critMultiplier": 2,
+          "handedness": "light"
         }
       },
       {
@@ -967,20 +863,19 @@
         "rangeIncrement": 10,
         "critRange": 19,
         "critMult": 2,
-        "damageParts": [
-          {
-            "dice": "1d6",
-            "bonus": 0,
-            "type": "Piercing",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "isLight": true,
           "finessable": true,
           "thrown": true
+        },
+        "damageDice": "1d6",
+        "dmgType": "Piercing",
+        "weapon": {
+          "damageDice": "1d6",
+          "dmgType": "Piercing",
+          "baseCritRange": 19,
+          "critMultiplier": 2,
+          "handedness": "light"
         }
       }
     ],
@@ -1047,16 +942,6 @@
       "critMultiplier": 2,
       "rangeIncrement": null
     },
-    "damageParts": [
-      {
-        "dice": "1d4",
-        "bonus": 0,
-        "type": "Slashing",
-        "multiplyOnCrit": true,
-        "onCritOnly": false,
-        "source": "Base"
-      }
-    ],
     "handedness": "light",
     "critRange": 19,
     "critMult": 2,
@@ -1071,19 +956,18 @@
         "strMult": 1,
         "critRange": 19,
         "critMult": 2,
-        "damageParts": [
-          {
-            "dice": "1d4",
-            "bonus": 0,
-            "type": "Slashing",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "isLight": true,
           "finessable": true
+        },
+        "damageDice": "1d4",
+        "dmgType": "Slashing",
+        "weapon": {
+          "damageDice": "1d4",
+          "dmgType": "Slashing",
+          "baseCritRange": 19,
+          "critMultiplier": 2,
+          "handedness": "light"
         }
       }
     ],
@@ -1145,16 +1029,6 @@
       "critMultiplier": 2,
       "rangeIncrement": null
     },
-    "damageParts": [
-      {
-        "dice": "2d4",
-        "bonus": 0,
-        "type": "Bludgeoning",
-        "multiplyOnCrit": true,
-        "onCritOnly": false,
-        "source": "Base"
-      }
-    ],
     "handedness": "1h",
     "critRange": 19,
     "critMult": 2,
@@ -1169,18 +1043,17 @@
         "strMult": 1,
         "critRange": 19,
         "critMult": 2,
-        "damageParts": [
-          {
-            "dice": "2d4",
-            "bonus": 0,
-            "type": "Bludgeoning",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "disarm": true
+        },
+        "damageDice": "2d4",
+        "dmgType": "Bludgeoning",
+        "weapon": {
+          "damageDice": "2d4",
+          "dmgType": "Bludgeoning",
+          "baseCritRange": 19,
+          "critMultiplier": 2,
+          "handedness": "1h"
         }
       },
       {
@@ -1192,19 +1065,18 @@
         "strMult": 1.5,
         "critRange": 19,
         "critMult": 2,
-        "damageParts": [
-          {
-            "dice": "2d4",
-            "bonus": 0,
-            "type": "Bludgeoning",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "disarm": true,
           "twoHanded": true
+        },
+        "damageDice": "2d4",
+        "dmgType": "Bludgeoning",
+        "weapon": {
+          "damageDice": "2d4",
+          "dmgType": "Bludgeoning",
+          "baseCritRange": 19,
+          "critMultiplier": 2,
+          "handedness": "2h"
         }
       }
     ],
@@ -1263,16 +1135,6 @@
       "critMultiplier": 4,
       "rangeIncrement": null
     },
-    "damageParts": [
-      {
-        "dice": "1d6",
-        "bonus": 0,
-        "type": "Piercing/Slashing",
-        "multiplyOnCrit": true,
-        "onCritOnly": false,
-        "source": "Base"
-      }
-    ],
     "handedness": "1h",
     "critRange": 20,
     "critMult": 4,
@@ -1287,17 +1149,16 @@
         "strMult": 1,
         "critRange": 20,
         "critMult": 4,
-        "damageParts": [
-          {
-            "dice": "1d6",
-            "bonus": 0,
-            "type": "Piercing/Slashing",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
-        "ruleFlags": {}
+        "ruleFlags": {},
+        "damageDice": "1d6",
+        "dmgType": "Piercing/Slashing",
+        "weapon": {
+          "damageDice": "1d6",
+          "dmgType": "Piercing/Slashing",
+          "baseCritRange": 20,
+          "critMultiplier": 4,
+          "handedness": "1h"
+        }
       },
       {
         "id": "melee-2h",
@@ -1308,18 +1169,17 @@
         "strMult": 1.5,
         "critRange": 20,
         "critMult": 4,
-        "damageParts": [
-          {
-            "dice": "1d6",
-            "bonus": 0,
-            "type": "Piercing/Slashing",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "twoHanded": true
+        },
+        "damageDice": "1d6",
+        "dmgType": "Piercing/Slashing",
+        "weapon": {
+          "damageDice": "1d6",
+          "dmgType": "Piercing/Slashing",
+          "baseCritRange": 20,
+          "critMultiplier": 4,
+          "handedness": "2h"
         }
       }
     ],
@@ -1374,16 +1234,6 @@
       "critMultiplier": 2,
       "rangeIncrement": null
     },
-    "damageParts": [
-      {
-        "dice": "1d6",
-        "bonus": 0,
-        "type": "Slashing",
-        "multiplyOnCrit": true,
-        "onCritOnly": false,
-        "source": "Base"
-      }
-    ],
     "handedness": "1h",
     "critRange": 19,
     "critMult": 2,
@@ -1398,17 +1248,16 @@
         "strMult": 1,
         "critRange": 19,
         "critMult": 2,
-        "damageParts": [
-          {
-            "dice": "1d6",
-            "bonus": 0,
-            "type": "Slashing",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
-        "ruleFlags": {}
+        "ruleFlags": {},
+        "damageDice": "1d6",
+        "dmgType": "Slashing",
+        "weapon": {
+          "damageDice": "1d6",
+          "dmgType": "Slashing",
+          "baseCritRange": 19,
+          "critMultiplier": 2,
+          "handedness": "1h"
+        }
       },
       {
         "id": "melee-2h",
@@ -1419,18 +1268,17 @@
         "strMult": 1.5,
         "critRange": 19,
         "critMult": 2,
-        "damageParts": [
-          {
-            "dice": "1d6",
-            "bonus": 0,
-            "type": "Slashing",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "twoHanded": true
+        },
+        "damageDice": "1d6",
+        "dmgType": "Slashing",
+        "weapon": {
+          "damageDice": "1d6",
+          "dmgType": "Slashing",
+          "baseCritRange": 19,
+          "critMultiplier": 2,
+          "handedness": "2h"
         }
       }
     ],
@@ -1488,16 +1336,6 @@
       "critMultiplier": 2,
       "rangeIncrement": null
     },
-    "damageParts": [
-      {
-        "dice": "1d6",
-        "bonus": 0,
-        "type": "Piercing",
-        "multiplyOnCrit": true,
-        "onCritOnly": false,
-        "source": "Base"
-      }
-    ],
     "handedness": "1h",
     "critRange": 18,
     "critMult": 2,
@@ -1512,19 +1350,18 @@
         "strMult": 1,
         "critRange": 18,
         "critMult": 2,
-        "damageParts": [
-          {
-            "dice": "1d6",
-            "bonus": 0,
-            "type": "Piercing",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "disarm": true,
           "finessable": true
+        },
+        "damageDice": "1d6",
+        "dmgType": "Piercing",
+        "weapon": {
+          "damageDice": "1d6",
+          "dmgType": "Piercing",
+          "baseCritRange": 18,
+          "critMultiplier": 2,
+          "handedness": "1h"
         }
       },
       {
@@ -1536,20 +1373,19 @@
         "strMult": 1.5,
         "critRange": 18,
         "critMult": 2,
-        "damageParts": [
-          {
-            "dice": "1d6",
-            "bonus": 0,
-            "type": "Piercing",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "disarm": true,
           "finessable": true,
           "twoHanded": true
+        },
+        "damageDice": "1d6",
+        "dmgType": "Piercing",
+        "weapon": {
+          "damageDice": "1d6",
+          "dmgType": "Piercing",
+          "baseCritRange": 18,
+          "critMultiplier": 2,
+          "handedness": "2h"
         }
       }
     ],
@@ -1611,16 +1447,6 @@
       "critMultiplier": 2,
       "rangeIncrement": null
     },
-    "damageParts": [
-      {
-        "dice": "1d8",
-        "bonus": 0,
-        "type": "Slashing",
-        "multiplyOnCrit": true,
-        "onCritOnly": false,
-        "source": "Base"
-      }
-    ],
     "handedness": "1h",
     "critRange": 19,
     "critMult": 2,
@@ -1635,18 +1461,17 @@
         "strMult": 1,
         "critRange": 19,
         "critMult": 2,
-        "damageParts": [
-          {
-            "dice": "1d8",
-            "bonus": 0,
-            "type": "Slashing",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "finessable": true
+        },
+        "damageDice": "1d8",
+        "dmgType": "Slashing",
+        "weapon": {
+          "damageDice": "1d8",
+          "dmgType": "Slashing",
+          "baseCritRange": 19,
+          "critMultiplier": 2,
+          "handedness": "1h"
         }
       },
       {
@@ -1658,19 +1483,18 @@
         "strMult": 1.5,
         "critRange": 19,
         "critMult": 2,
-        "damageParts": [
-          {
-            "dice": "1d8",
-            "bonus": 0,
-            "type": "Slashing",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "finessable": true,
           "twoHanded": true
+        },
+        "damageDice": "1d8",
+        "dmgType": "Slashing",
+        "weapon": {
+          "damageDice": "1d8",
+          "dmgType": "Slashing",
+          "baseCritRange": 19,
+          "critMultiplier": 2,
+          "handedness": "2h"
         }
       }
     ],
@@ -1730,16 +1554,6 @@
       "critMultiplier": 2,
       "rangeIncrement": null
     },
-    "damageParts": [
-      {
-        "dice": "1d8",
-        "bonus": 0,
-        "type": "Slashing",
-        "multiplyOnCrit": true,
-        "onCritOnly": false,
-        "source": "Base"
-      }
-    ],
     "handedness": "1h",
     "critRange": 20,
     "critMult": 2,
@@ -1754,18 +1568,17 @@
         "strMult": 1,
         "critRange": 20,
         "critMult": 2,
-        "damageParts": [
-          {
-            "dice": "1d8",
-            "bonus": 0,
-            "type": "Slashing",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "disarm": true
+        },
+        "damageDice": "1d8",
+        "dmgType": "Slashing",
+        "weapon": {
+          "damageDice": "1d8",
+          "dmgType": "Slashing",
+          "baseCritRange": 20,
+          "critMultiplier": 2,
+          "handedness": "1h"
         }
       },
       {
@@ -1777,19 +1590,18 @@
         "strMult": 1.5,
         "critRange": 20,
         "critMult": 2,
-        "damageParts": [
-          {
-            "dice": "1d8",
-            "bonus": 0,
-            "type": "Slashing",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "disarm": true,
           "twoHanded": true
+        },
+        "damageDice": "1d8",
+        "dmgType": "Slashing",
+        "weapon": {
+          "damageDice": "1d8",
+          "dmgType": "Slashing",
+          "baseCritRange": 20,
+          "critMultiplier": 2,
+          "handedness": "2h"
         }
       }
     ],
@@ -1851,16 +1663,6 @@
       "critMultiplier": 2,
       "rangeIncrement": null
     },
-    "damageParts": [
-      {
-        "dice": "1d6",
-        "bonus": 0,
-        "type": "Slashing",
-        "multiplyOnCrit": true,
-        "onCritOnly": false,
-        "source": "Base"
-      }
-    ],
     "handedness": "1h",
     "critRange": 19,
     "critMult": 2,
@@ -1875,18 +1677,17 @@
         "strMult": 1,
         "critRange": 19,
         "critMult": 2,
-        "damageParts": [
-          {
-            "dice": "1d6",
-            "bonus": 0,
-            "type": "Slashing",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "disarm": true
+        },
+        "damageDice": "1d6",
+        "dmgType": "Slashing",
+        "weapon": {
+          "damageDice": "1d6",
+          "dmgType": "Slashing",
+          "baseCritRange": 19,
+          "critMultiplier": 2,
+          "handedness": "1h"
         }
       },
       {
@@ -1898,19 +1699,18 @@
         "strMult": 1.5,
         "critRange": 19,
         "critMult": 2,
-        "damageParts": [
-          {
-            "dice": "1d6",
-            "bonus": 0,
-            "type": "Slashing",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "disarm": true,
           "twoHanded": true
+        },
+        "damageDice": "1d6",
+        "dmgType": "Slashing",
+        "weapon": {
+          "damageDice": "1d6",
+          "dmgType": "Slashing",
+          "baseCritRange": 19,
+          "critMultiplier": 2,
+          "handedness": "2h"
         }
       }
     ],
@@ -1972,16 +1772,6 @@
       "critMultiplier": 2,
       "rangeIncrement": null
     },
-    "damageParts": [
-      {
-        "dice": "1d8",
-        "bonus": 0,
-        "type": "Piercing",
-        "multiplyOnCrit": true,
-        "onCritOnly": false,
-        "source": "Base"
-      }
-    ],
     "handedness": "1h",
     "critRange": 18,
     "critMult": 2,
@@ -1996,18 +1786,17 @@
         "strMult": 1,
         "critRange": 18,
         "critMult": 2,
-        "damageParts": [
-          {
-            "dice": "1d8",
-            "bonus": 0,
-            "type": "Piercing",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "finessable": true
+        },
+        "damageDice": "1d8",
+        "dmgType": "Piercing",
+        "weapon": {
+          "damageDice": "1d8",
+          "dmgType": "Piercing",
+          "baseCritRange": 18,
+          "critMultiplier": 2,
+          "handedness": "1h"
         }
       },
       {
@@ -2019,19 +1808,18 @@
         "strMult": 1.5,
         "critRange": 18,
         "critMult": 2,
-        "damageParts": [
-          {
-            "dice": "1d8",
-            "bonus": 0,
-            "type": "Piercing",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "finessable": true,
           "twoHanded": true
+        },
+        "damageDice": "1d8",
+        "dmgType": "Piercing",
+        "weapon": {
+          "damageDice": "1d8",
+          "dmgType": "Piercing",
+          "baseCritRange": 18,
+          "critMultiplier": 2,
+          "handedness": "2h"
         }
       }
     ],
@@ -2091,16 +1879,6 @@
       "critMultiplier": 4,
       "rangeIncrement": null
     },
-    "damageParts": [
-      {
-        "dice": "1d8",
-        "bonus": 0,
-        "type": "Bludgeoning & Piercing",
-        "multiplyOnCrit": true,
-        "onCritOnly": false,
-        "source": "Base"
-      }
-    ],
     "handedness": "1h",
     "critRange": 20,
     "critMult": 4,
@@ -2115,19 +1893,18 @@
         "strMult": 1,
         "critRange": 20,
         "critMult": 4,
-        "damageParts": [
-          {
-            "dice": "1d8",
-            "bonus": 0,
-            "type": "Bludgeoning & Piercing",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "trip": true,
           "disarm": true
+        },
+        "damageDice": "1d8",
+        "dmgType": "Bludgeoning & Piercing",
+        "weapon": {
+          "damageDice": "1d8",
+          "dmgType": "Bludgeoning & Piercing",
+          "baseCritRange": 20,
+          "critMultiplier": 4,
+          "handedness": "1h"
         }
       },
       {
@@ -2139,20 +1916,19 @@
         "strMult": 1.5,
         "critRange": 20,
         "critMult": 4,
-        "damageParts": [
-          {
-            "dice": "1d8",
-            "bonus": 0,
-            "type": "Bludgeoning & Piercing",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "trip": true,
           "disarm": true,
           "twoHanded": true
+        },
+        "damageDice": "1d8",
+        "dmgType": "Bludgeoning & Piercing",
+        "weapon": {
+          "damageDice": "1d8",
+          "dmgType": "Bludgeoning & Piercing",
+          "baseCritRange": 20,
+          "critMultiplier": 4,
+          "handedness": "2h"
         }
       }
     ],
@@ -2216,16 +1992,6 @@
       "critMultiplier": 3,
       "rangeIncrement": null
     },
-    "damageParts": [
-      {
-        "dice": "1d6",
-        "bonus": 0,
-        "type": "Slashing/Piercing",
-        "multiplyOnCrit": true,
-        "onCritOnly": false,
-        "source": "Base"
-      }
-    ],
     "handedness": "1h",
     "critRange": 20,
     "critMult": 3,
@@ -2240,19 +2006,18 @@
         "strMult": 1,
         "critRange": 20,
         "critMult": 3,
-        "damageParts": [
-          {
-            "dice": "1d6",
-            "bonus": 0,
-            "type": "Slashing/Piercing",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "reach": true,
           "finessable": true
+        },
+        "damageDice": "1d6",
+        "dmgType": "Slashing/Piercing",
+        "weapon": {
+          "damageDice": "1d6",
+          "dmgType": "Slashing/Piercing",
+          "baseCritRange": 20,
+          "critMultiplier": 3,
+          "handedness": "1h"
         }
       },
       {
@@ -2264,20 +2029,19 @@
         "strMult": 1.5,
         "critRange": 20,
         "critMult": 3,
-        "damageParts": [
-          {
-            "dice": "1d6",
-            "bonus": 0,
-            "type": "Slashing/Piercing",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "reach": true,
           "finessable": true,
           "twoHanded": true
+        },
+        "damageDice": "1d6",
+        "dmgType": "Slashing/Piercing",
+        "weapon": {
+          "damageDice": "1d6",
+          "dmgType": "Slashing/Piercing",
+          "baseCritRange": 20,
+          "critMultiplier": 3,
+          "handedness": "2h"
         }
       }
     ],
@@ -2342,16 +2106,6 @@
       "critMultiplier": 2,
       "rangeIncrement": null
     },
-    "damageParts": [
-      {
-        "dice": "1d10",
-        "bonus": 0,
-        "type": "Piercing/Slashing",
-        "multiplyOnCrit": true,
-        "onCritOnly": false,
-        "source": "Base"
-      }
-    ],
     "handedness": "2h",
     "critRange": 18,
     "critMult": 2,
@@ -2366,19 +2120,18 @@
         "strMult": 1.5,
         "critRange": 18,
         "critMult": 2,
-        "damageParts": [
-          {
-            "dice": "1d10",
-            "bonus": 0,
-            "type": "Piercing/Slashing",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "twoHanded": true,
           "finessable": true
+        },
+        "damageDice": "1d10",
+        "dmgType": "Piercing/Slashing",
+        "weapon": {
+          "damageDice": "1d10",
+          "dmgType": "Piercing/Slashing",
+          "baseCritRange": 18,
+          "critMultiplier": 2,
+          "handedness": "2h"
         }
       }
     ],
@@ -2443,16 +2196,6 @@
       "critMultiplier": 4,
       "rangeIncrement": null
     },
-    "damageParts": [
-      {
-        "dice": "1d12",
-        "bonus": 0,
-        "type": "Bludgeoning",
-        "multiplyOnCrit": true,
-        "onCritOnly": false,
-        "source": "Base"
-      }
-    ],
     "handedness": "2h",
     "critRange": 20,
     "critMult": 4,
@@ -2467,18 +2210,17 @@
         "strMult": 1.5,
         "critRange": 20,
         "critMult": 4,
-        "damageParts": [
-          {
-            "dice": "1d12",
-            "bonus": 0,
-            "type": "Bludgeoning",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "twoHanded": true
+        },
+        "damageDice": "1d12",
+        "dmgType": "Bludgeoning",
+        "weapon": {
+          "damageDice": "1d12",
+          "dmgType": "Bludgeoning",
+          "baseCritRange": 20,
+          "critMultiplier": 4,
+          "handedness": "2h"
         }
       }
     ],
@@ -2537,16 +2279,6 @@
       "critMultiplier": 3,
       "rangeIncrement": 10
     },
-    "damageParts": [
-      {
-        "dice": "2d6",
-        "bonus": 0,
-        "type": "Piercing",
-        "multiplyOnCrit": true,
-        "onCritOnly": false,
-        "source": "Base"
-      }
-    ],
     "handedness": "2h",
     "critRange": 20,
     "critMult": 3,
@@ -2562,20 +2294,19 @@
         "strMult": 1.5,
         "critRange": 20,
         "critMult": 3,
-        "damageParts": [
-          {
-            "dice": "2d6",
-            "bonus": 0,
-            "type": "Piercing",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "twoHanded": true,
           "reach": true,
           "thrown": true
+        },
+        "damageDice": "2d6",
+        "dmgType": "Piercing",
+        "weapon": {
+          "damageDice": "2d6",
+          "dmgType": "Piercing",
+          "baseCritRange": 20,
+          "critMultiplier": 3,
+          "handedness": "2h"
         }
       },
       {
@@ -2588,20 +2319,19 @@
         "rangeIncrement": 10,
         "critRange": 20,
         "critMult": 3,
-        "damageParts": [
-          {
-            "dice": "2d6",
-            "bonus": 0,
-            "type": "Piercing",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "twoHanded": true,
           "reach": true,
           "thrown": true
+        },
+        "damageDice": "2d6",
+        "dmgType": "Piercing",
+        "weapon": {
+          "damageDice": "2d6",
+          "dmgType": "Piercing",
+          "baseCritRange": 20,
+          "critMultiplier": 3,
+          "handedness": "2h"
         }
       }
     ],
@@ -2667,16 +2397,6 @@
       "critMultiplier": 3,
       "rangeIncrement": null
     },
-    "damageParts": [
-      {
-        "dice": "1d8",
-        "bonus": 0,
-        "type": "Bludgeoning",
-        "multiplyOnCrit": true,
-        "onCritOnly": false,
-        "source": "Base"
-      }
-    ],
     "handedness": "2h",
     "critRange": 20,
     "critMult": 3,
@@ -2691,19 +2411,18 @@
         "strMult": 1,
         "critRange": 20,
         "critMult": 3,
-        "damageParts": [
-          {
-            "dice": "1d8",
-            "bonus": 0,
-            "type": "Bludgeoning",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "twoHanded": true,
           "doubleWeapon": true
+        },
+        "damageDice": "1d8",
+        "dmgType": "Bludgeoning",
+        "weapon": {
+          "damageDice": "1d8",
+          "dmgType": "Bludgeoning",
+          "baseCritRange": 20,
+          "critMultiplier": 3,
+          "handedness": "1h"
         }
       },
       {
@@ -2715,19 +2434,18 @@
         "strMult": 0.5,
         "critRange": 20,
         "critMult": 3,
-        "damageParts": [
-          {
-            "dice": "1d8",
-            "bonus": 0,
-            "type": "Bludgeoning",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Off-Hand Head"
-          }
-        ],
         "ruleFlags": {
           "isLight": true,
           "doubleWeaponOffHand": true
+        },
+        "damageDice": "1d8",
+        "dmgType": "Bludgeoning",
+        "weapon": {
+          "damageDice": "1d8",
+          "dmgType": "Bludgeoning",
+          "baseCritRange": 20,
+          "critMultiplier": 3,
+          "handedness": "light"
         }
       },
       {
@@ -2739,19 +2457,18 @@
         "strMult": 1.5,
         "critRange": 20,
         "critMult": 3,
-        "damageParts": [
-          {
-            "dice": "1d8",
-            "bonus": 0,
-            "type": "Bludgeoning",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "twoHanded": true,
           "doubleWeapon": true
+        },
+        "damageDice": "1d8",
+        "dmgType": "Bludgeoning",
+        "weapon": {
+          "damageDice": "1d8",
+          "dmgType": "Bludgeoning",
+          "baseCritRange": 20,
+          "critMultiplier": 3,
+          "handedness": "2h"
         }
       }
     ],
@@ -2812,16 +2529,6 @@
       "critMultiplier": 2,
       "rangeIncrement": null
     },
-    "damageParts": [
-      {
-        "dice": "1d8",
-        "bonus": 0,
-        "type": "Slashing",
-        "multiplyOnCrit": true,
-        "onCritOnly": false,
-        "source": "Base"
-      }
-    ],
     "handedness": "2h",
     "critRange": 20,
     "critMult": 2,
@@ -2836,19 +2543,18 @@
         "strMult": 1,
         "critRange": 20,
         "critMult": 2,
-        "damageParts": [
-          {
-            "dice": "1d8",
-            "bonus": 0,
-            "type": "Slashing",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "twoHanded": true,
           "doubleWeapon": true
+        },
+        "damageDice": "1d8",
+        "dmgType": "Slashing",
+        "weapon": {
+          "damageDice": "1d8",
+          "dmgType": "Slashing",
+          "baseCritRange": 20,
+          "critMultiplier": 2,
+          "handedness": "1h"
         }
       },
       {
@@ -2860,19 +2566,18 @@
         "strMult": 0.5,
         "critRange": 20,
         "critMult": 2,
-        "damageParts": [
-          {
-            "dice": "1d8",
-            "bonus": 0,
-            "type": "Slashing",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Off-Hand Head"
-          }
-        ],
         "ruleFlags": {
           "isLight": true,
           "doubleWeaponOffHand": true
+        },
+        "damageDice": "1d8",
+        "dmgType": "Slashing",
+        "weapon": {
+          "damageDice": "1d8",
+          "dmgType": "Slashing",
+          "baseCritRange": 20,
+          "critMultiplier": 2,
+          "handedness": "light"
         }
       },
       {
@@ -2884,19 +2589,18 @@
         "strMult": 1.5,
         "critRange": 20,
         "critMult": 2,
-        "damageParts": [
-          {
-            "dice": "1d8",
-            "bonus": 0,
-            "type": "Slashing",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "twoHanded": true,
           "doubleWeapon": true
+        },
+        "damageDice": "1d8",
+        "dmgType": "Slashing",
+        "weapon": {
+          "damageDice": "1d8",
+          "dmgType": "Slashing",
+          "baseCritRange": 20,
+          "critMultiplier": 2,
+          "handedness": "2h"
         }
       }
     ],
@@ -2957,16 +2661,6 @@
       "critMultiplier": 3,
       "rangeIncrement": null
     },
-    "damageParts": [
-      {
-        "dice": "1d12",
-        "bonus": 0,
-        "type": "Slashing",
-        "multiplyOnCrit": true,
-        "onCritOnly": false,
-        "source": "Base"
-      }
-    ],
     "handedness": "2h",
     "critRange": 20,
     "critMult": 3,
@@ -2981,19 +2675,18 @@
         "strMult": 1.5,
         "critRange": 20,
         "critMult": 3,
-        "damageParts": [
-          {
-            "dice": "1d12",
-            "bonus": 0,
-            "type": "Slashing",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "twoHanded": true,
           "reach": true
+        },
+        "damageDice": "1d12",
+        "dmgType": "Slashing",
+        "weapon": {
+          "damageDice": "1d12",
+          "dmgType": "Slashing",
+          "baseCritRange": 20,
+          "critMultiplier": 3,
+          "handedness": "2h"
         }
       }
     ],
@@ -3054,16 +2747,6 @@
       "critMultiplier": 2,
       "rangeIncrement": null
     },
-    "damageParts": [
-      {
-        "dice": "1d6",
-        "bonus": 0,
-        "type": "Bludgeoning",
-        "multiplyOnCrit": true,
-        "onCritOnly": false,
-        "source": "Base"
-      }
-    ],
     "handedness": "2h",
     "critRange": 20,
     "critMult": 2,
@@ -3078,19 +2761,18 @@
         "strMult": 1,
         "critRange": 20,
         "critMult": 2,
-        "damageParts": [
-          {
-            "dice": "1d6",
-            "bonus": 0,
-            "type": "Bludgeoning",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "twoHanded": true,
           "doubleWeapon": true
+        },
+        "damageDice": "1d6",
+        "dmgType": "Bludgeoning",
+        "weapon": {
+          "damageDice": "1d6",
+          "dmgType": "Bludgeoning",
+          "baseCritRange": 20,
+          "critMultiplier": 2,
+          "handedness": "1h"
         }
       },
       {
@@ -3102,19 +2784,18 @@
         "strMult": 0.5,
         "critRange": 20,
         "critMult": 2,
-        "damageParts": [
-          {
-            "dice": "1d6",
-            "bonus": 0,
-            "type": "Bludgeoning",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Off-Hand Head"
-          }
-        ],
         "ruleFlags": {
           "isLight": true,
           "doubleWeaponOffHand": true
+        },
+        "damageDice": "1d6",
+        "dmgType": "Bludgeoning",
+        "weapon": {
+          "damageDice": "1d6",
+          "dmgType": "Bludgeoning",
+          "baseCritRange": 20,
+          "critMultiplier": 2,
+          "handedness": "light"
         }
       },
       {
@@ -3126,19 +2807,18 @@
         "strMult": 1.5,
         "critRange": 20,
         "critMult": 2,
-        "damageParts": [
-          {
-            "dice": "1d6",
-            "bonus": 0,
-            "type": "Bludgeoning",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "twoHanded": true,
           "doubleWeapon": true
+        },
+        "damageDice": "1d6",
+        "dmgType": "Bludgeoning",
+        "weapon": {
+          "damageDice": "1d6",
+          "dmgType": "Bludgeoning",
+          "baseCritRange": 20,
+          "critMultiplier": 2,
+          "handedness": "2h"
         }
       }
     ],
@@ -3199,16 +2879,6 @@
       "critMultiplier": 2,
       "rangeIncrement": null
     },
-    "damageParts": [
-      {
-        "dice": "1d4",
-        "bonus": 0,
-        "type": "Bludgeoning",
-        "multiplyOnCrit": true,
-        "onCritOnly": false,
-        "source": "Base"
-      }
-    ],
     "handedness": "2h",
     "critRange": 20,
     "critMult": 2,
@@ -3223,21 +2893,20 @@
         "strMult": 1.5,
         "critRange": 20,
         "critMult": 2,
-        "damageParts": [
-          {
-            "dice": "1d4",
-            "bonus": 0,
-            "type": "Bludgeoning",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "twoHanded": true,
           "reach": true,
           "nonlethal": true,
           "grapple": true
+        },
+        "damageDice": "1d4",
+        "dmgType": "Bludgeoning",
+        "weapon": {
+          "damageDice": "1d4",
+          "dmgType": "Bludgeoning",
+          "baseCritRange": 20,
+          "critMultiplier": 2,
+          "handedness": "2h"
         }
       }
     ],
@@ -3304,16 +2973,6 @@
       "critMultiplier": 3,
       "rangeIncrement": null
     },
-    "damageParts": [
-      {
-        "dice": "2d6",
-        "bonus": 0,
-        "type": "Piercing/Slashing",
-        "multiplyOnCrit": true,
-        "onCritOnly": false,
-        "source": "Base"
-      }
-    ],
     "handedness": "2h",
     "critRange": 20,
     "critMult": 3,
@@ -3328,20 +2987,19 @@
         "strMult": 1.5,
         "critRange": 20,
         "critMult": 3,
-        "damageParts": [
-          {
-            "dice": "2d6",
-            "bonus": 0,
-            "type": "Piercing/Slashing",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "twoHanded": true,
           "reach": true,
           "brace": true
+        },
+        "damageDice": "2d6",
+        "dmgType": "Piercing/Slashing",
+        "weapon": {
+          "damageDice": "2d6",
+          "dmgType": "Piercing/Slashing",
+          "baseCritRange": 20,
+          "critMultiplier": 3,
+          "handedness": "2h"
         }
       }
     ],
@@ -3404,16 +3062,6 @@
       "critMultiplier": 3,
       "rangeIncrement": null
     },
-    "damageParts": [
-      {
-        "dice": "1d8",
-        "bonus": 0,
-        "type": "Piercing",
-        "multiplyOnCrit": true,
-        "onCritOnly": false,
-        "source": "Base"
-      }
-    ],
     "handedness": "2h",
     "critRange": 20,
     "critMult": 3,
@@ -3428,19 +3076,18 @@
         "strMult": 1.5,
         "critRange": 20,
         "critMult": 3,
-        "damageParts": [
-          {
-            "dice": "1d8",
-            "bonus": 0,
-            "type": "Piercing",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "twoHanded": true,
           "trip": true
+        },
+        "damageDice": "1d8",
+        "dmgType": "Piercing",
+        "weapon": {
+          "damageDice": "1d8",
+          "dmgType": "Piercing",
+          "baseCritRange": 20,
+          "critMultiplier": 3,
+          "handedness": "2h"
         }
       }
     ],
@@ -3504,16 +3151,6 @@
       "critMultiplier": 2,
       "rangeIncrement": null
     },
-    "damageParts": [
-      {
-        "dice": "1d10",
-        "bonus": 0,
-        "type": "Slashing",
-        "multiplyOnCrit": true,
-        "onCritOnly": false,
-        "source": "Base"
-      }
-    ],
     "handedness": "2h",
     "critRange": 19,
     "critMult": 2,
@@ -3528,20 +3165,19 @@
         "strMult": 1.5,
         "critRange": 19,
         "critMult": 2,
-        "damageParts": [
-          {
-            "dice": "1d10",
-            "bonus": 0,
-            "type": "Slashing",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "twoHanded": true,
           "reach": true,
           "trip": true
+        },
+        "damageDice": "1d10",
+        "dmgType": "Slashing",
+        "weapon": {
+          "damageDice": "1d10",
+          "dmgType": "Slashing",
+          "baseCritRange": 19,
+          "critMultiplier": 2,
+          "handedness": "2h"
         }
       }
     ],
@@ -3607,16 +3243,6 @@
       "critMultiplier": 2,
       "rangeIncrement": null
     },
-    "damageParts": [
-      {
-        "dice": "1d10",
-        "bonus": 0,
-        "type": "Slashing",
-        "multiplyOnCrit": true,
-        "onCritOnly": false,
-        "source": "Base"
-      }
-    ],
     "handedness": "2h",
     "critRange": 18,
     "critMult": 2,
@@ -3631,18 +3257,17 @@
         "strMult": 1.5,
         "critRange": 18,
         "critMult": 2,
-        "damageParts": [
-          {
-            "dice": "1d10",
-            "bonus": 0,
-            "type": "Slashing",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "twoHanded": true
+        },
+        "damageDice": "1d10",
+        "dmgType": "Slashing",
+        "weapon": {
+          "damageDice": "1d10",
+          "dmgType": "Slashing",
+          "baseCritRange": 18,
+          "critMultiplier": 2,
+          "handedness": "2h"
         }
       }
     ],
@@ -3704,16 +3329,6 @@
       "critMultiplier": 3,
       "rangeIncrement": null
     },
-    "damageParts": [
-      {
-        "dice": "2d6",
-        "bonus": 0,
-        "type": "Piercing/Slashing",
-        "multiplyOnCrit": true,
-        "onCritOnly": false,
-        "source": "Base"
-      }
-    ],
     "handedness": "2h",
     "critRange": 20,
     "critMult": 3,
@@ -3728,21 +3343,20 @@
         "strMult": 1.5,
         "critRange": 20,
         "critMult": 3,
-        "damageParts": [
-          {
-            "dice": "2d6",
-            "bonus": 0,
-            "type": "Piercing/Slashing",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "twoHanded": true,
           "reach": true,
           "trip": true,
           "brace": true
+        },
+        "damageDice": "2d6",
+        "dmgType": "Piercing/Slashing",
+        "weapon": {
+          "damageDice": "2d6",
+          "dmgType": "Piercing/Slashing",
+          "baseCritRange": 20,
+          "critMultiplier": 3,
+          "handedness": "2h"
         }
       }
     ],
@@ -3810,16 +3424,6 @@
       "critMultiplier": 3,
       "rangeIncrement": 60
     },
-    "damageParts": [
-      {
-        "dice": "1d8",
-        "bonus": 0,
-        "type": "Piercing",
-        "multiplyOnCrit": true,
-        "onCritOnly": false,
-        "source": "Base"
-      }
-    ],
     "handedness": "ranged",
     "critRange": 20,
     "critMult": 3,
@@ -3836,18 +3440,17 @@
         "rangeIncrement": 60,
         "critRange": 20,
         "critMult": 3,
-        "damageParts": [
-          {
-            "dice": "1d8",
-            "bonus": 0,
-            "type": "Piercing",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "twoHanded": true
+        },
+        "damageDice": "1d8",
+        "dmgType": "Piercing",
+        "weapon": {
+          "damageDice": "1d8",
+          "dmgType": "Piercing",
+          "baseCritRange": 20,
+          "critMultiplier": 3,
+          "handedness": "ranged"
         }
       }
     ],
@@ -3909,16 +3512,6 @@
       "critMultiplier": 2,
       "rangeIncrement": 10
     },
-    "damageParts": [
-      {
-        "dice": "1d3",
-        "bonus": 0,
-        "type": "Piercing",
-        "multiplyOnCrit": true,
-        "onCritOnly": false,
-        "source": "Base"
-      }
-    ],
     "handedness": "ranged",
     "critRange": 20,
     "critMult": 2,
@@ -3935,18 +3528,17 @@
         "rangeIncrement": 10,
         "critRange": 20,
         "critMult": 2,
-        "damageParts": [
-          {
-            "dice": "1d3",
-            "bonus": 0,
-            "type": "Piercing",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "twoHanded": true
+        },
+        "damageDice": "1d3",
+        "dmgType": "Piercing",
+        "weapon": {
+          "damageDice": "1d3",
+          "dmgType": "Piercing",
+          "baseCritRange": 20,
+          "critMultiplier": 2,
+          "handedness": "ranged"
         }
       }
     ],
@@ -4005,16 +3597,6 @@
       "critMultiplier": 3,
       "rangeIncrement": 120
     },
-    "damageParts": [
-      {
-        "dice": "1d10",
-        "bonus": 0,
-        "type": "Piercing",
-        "multiplyOnCrit": true,
-        "onCritOnly": false,
-        "source": "Base"
-      }
-    ],
     "handedness": "ranged",
     "critRange": 20,
     "critMult": 3,
@@ -4031,18 +3613,17 @@
         "rangeIncrement": 120,
         "critRange": 20,
         "critMult": 3,
-        "damageParts": [
-          {
-            "dice": "1d10",
-            "bonus": 0,
-            "type": "Piercing",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "twoHanded": true
+        },
+        "damageDice": "1d10",
+        "dmgType": "Piercing",
+        "weapon": {
+          "damageDice": "1d10",
+          "dmgType": "Piercing",
+          "baseCritRange": 20,
+          "critMultiplier": 3,
+          "handedness": "ranged"
         }
       }
     ],
@@ -4101,16 +3682,6 @@
       "critMultiplier": 2,
       "rangeIncrement": 20
     },
-    "damageParts": [
-      {
-        "dice": "1d4",
-        "bonus": 0,
-        "type": "Bludgeoning",
-        "multiplyOnCrit": true,
-        "onCritOnly": false,
-        "source": "Base"
-      }
-    ],
     "handedness": "ranged",
     "critRange": 20,
     "critMult": 2,
@@ -4127,19 +3698,18 @@
         "rangeIncrement": 20,
         "critRange": 20,
         "critMult": 2,
-        "damageParts": [
-          {
-            "dice": "1d4",
-            "bonus": 0,
-            "type": "Bludgeoning",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "nonlethal": true,
           "thrown": true
+        },
+        "damageDice": "1d4",
+        "dmgType": "Bludgeoning",
+        "weapon": {
+          "damageDice": "1d4",
+          "dmgType": "Bludgeoning",
+          "baseCritRange": 20,
+          "critMultiplier": 2,
+          "handedness": "ranged"
         }
       }
     ],
@@ -4203,16 +3773,6 @@
       "critMultiplier": 2,
       "rangeIncrement": 40
     },
-    "damageParts": [
-      {
-        "dice": "1d8",
-        "bonus": 0,
-        "type": "Piercing",
-        "multiplyOnCrit": true,
-        "onCritOnly": false,
-        "source": "Base"
-      }
-    ],
     "handedness": "ranged",
     "critRange": 19,
     "critMult": 2,
@@ -4229,18 +3789,17 @@
         "rangeIncrement": 40,
         "critRange": 19,
         "critMult": 2,
-        "damageParts": [
-          {
-            "dice": "1d8",
-            "bonus": 0,
-            "type": "Piercing",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "twoHanded": true
+        },
+        "damageDice": "1d8",
+        "dmgType": "Piercing",
+        "weapon": {
+          "damageDice": "1d8",
+          "dmgType": "Piercing",
+          "baseCritRange": 19,
+          "critMultiplier": 2,
+          "handedness": "ranged"
         }
       }
     ],
@@ -4302,16 +3861,6 @@
       "critMultiplier": 2,
       "rangeIncrement": 120
     },
-    "damageParts": [
-      {
-        "dice": "2d8",
-        "bonus": 0,
-        "type": "Piercing",
-        "multiplyOnCrit": true,
-        "onCritOnly": false,
-        "source": "Base"
-      }
-    ],
     "handedness": "ranged",
     "critRange": 18,
     "critMult": 2,
@@ -4328,18 +3877,17 @@
         "rangeIncrement": 120,
         "critRange": 18,
         "critMult": 2,
-        "damageParts": [
-          {
-            "dice": "2d8",
-            "bonus": 0,
-            "type": "Piercing",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "twoHanded": true
+        },
+        "damageDice": "2d8",
+        "dmgType": "Piercing",
+        "weapon": {
+          "damageDice": "2d8",
+          "dmgType": "Piercing",
+          "baseCritRange": 18,
+          "critMultiplier": 2,
+          "handedness": "ranged"
         }
       }
     ],
@@ -4398,16 +3946,6 @@
       "critMultiplier": 2,
       "rangeIncrement": 10
     },
-    "damageParts": [
-      {
-        "dice": "1d4",
-        "bonus": 0,
-        "type": "Bludgeoning",
-        "multiplyOnCrit": true,
-        "onCritOnly": false,
-        "source": "Base"
-      }
-    ],
     "handedness": "ranged",
     "critRange": 18,
     "critMult": 2,
@@ -4424,18 +3962,17 @@
         "rangeIncrement": 10,
         "critRange": 18,
         "critMult": 2,
-        "damageParts": [
-          {
-            "dice": "1d4",
-            "bonus": 0,
-            "type": "Bludgeoning",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "thrown": true
+        },
+        "damageDice": "1d4",
+        "dmgType": "Bludgeoning",
+        "weapon": {
+          "damageDice": "1d4",
+          "dmgType": "Bludgeoning",
+          "baseCritRange": 18,
+          "critMultiplier": 2,
+          "handedness": "ranged"
         }
       }
     ],
@@ -4494,16 +4031,6 @@
       "critMultiplier": 3,
       "rangeIncrement": 120
     },
-    "damageParts": [
-      {
-        "dice": "1d10",
-        "bonus": 0,
-        "type": "Piercing",
-        "multiplyOnCrit": true,
-        "onCritOnly": false,
-        "source": "Base"
-      }
-    ],
     "handedness": "ranged",
     "critRange": 20,
     "critMult": 3,
@@ -4520,18 +4047,17 @@
         "rangeIncrement": 120,
         "critRange": 20,
         "critMult": 3,
-        "damageParts": [
-          {
-            "dice": "1d10",
-            "bonus": 0,
-            "type": "Piercing",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "twoHanded": true
+        },
+        "damageDice": "1d10",
+        "dmgType": "Piercing",
+        "weapon": {
+          "damageDice": "1d10",
+          "dmgType": "Piercing",
+          "baseCritRange": 20,
+          "critMultiplier": 3,
+          "handedness": "ranged"
         }
       }
     ],
@@ -4590,16 +4116,6 @@
       "critMultiplier": 2,
       "rangeIncrement": 30
     },
-    "damageParts": [
-      {
-        "dice": "1d10",
-        "bonus": 0,
-        "type": "Piercing",
-        "multiplyOnCrit": true,
-        "onCritOnly": false,
-        "source": "Base"
-      }
-    ],
     "handedness": "ranged",
     "critRange": 20,
     "critMult": 2,
@@ -4616,18 +4132,17 @@
         "rangeIncrement": 30,
         "critRange": 20,
         "critMult": 2,
-        "damageParts": [
-          {
-            "dice": "1d10",
-            "bonus": 0,
-            "type": "Piercing",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "thrown": true
+        },
+        "damageDice": "1d10",
+        "dmgType": "Piercing",
+        "weapon": {
+          "damageDice": "1d10",
+          "dmgType": "Piercing",
+          "baseCritRange": 20,
+          "critMultiplier": 2,
+          "handedness": "ranged"
         }
       }
     ],
@@ -4686,16 +4201,6 @@
       "critMultiplier": 3,
       "rangeIncrement": 30
     },
-    "damageParts": [
-      {
-        "dice": "1d12",
-        "bonus": 0,
-        "type": "Piercing",
-        "multiplyOnCrit": true,
-        "onCritOnly": false,
-        "source": "Base"
-      }
-    ],
     "handedness": "ranged",
     "critRange": 20,
     "critMult": 3,
@@ -4712,18 +4217,17 @@
         "rangeIncrement": 30,
         "critRange": 20,
         "critMult": 3,
-        "damageParts": [
-          {
-            "dice": "1d12",
-            "bonus": 0,
-            "type": "Piercing",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "twoHanded": true
+        },
+        "damageDice": "1d12",
+        "dmgType": "Piercing",
+        "weapon": {
+          "damageDice": "1d12",
+          "dmgType": "Piercing",
+          "baseCritRange": 20,
+          "critMultiplier": 3,
+          "handedness": "ranged"
         }
       }
     ],
@@ -4782,16 +4286,6 @@
       "critMultiplier": 3,
       "rangeIncrement": 10
     },
-    "damageParts": [
-      {
-        "dice": "1d3",
-        "bonus": 0,
-        "type": "Slashing",
-        "multiplyOnCrit": true,
-        "onCritOnly": false,
-        "source": "Base"
-      }
-    ],
     "handedness": "ranged",
     "critRange": 20,
     "critMult": 3,
@@ -4808,18 +4302,17 @@
         "rangeIncrement": 10,
         "critRange": 20,
         "critMult": 3,
-        "damageParts": [
-          {
-            "dice": "1d3",
-            "bonus": 0,
-            "type": "Slashing",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "thrown": true
+        },
+        "damageDice": "1d3",
+        "dmgType": "Slashing",
+        "weapon": {
+          "damageDice": "1d3",
+          "dmgType": "Slashing",
+          "baseCritRange": 20,
+          "critMultiplier": 3,
+          "handedness": "ranged"
         }
       }
     ],
@@ -4878,16 +4371,6 @@
       "critMultiplier": 2,
       "rangeIncrement": 15
     },
-    "damageParts": [
-      {
-        "dice": "1d6",
-        "bonus": 0,
-        "type": "Bludgeoning",
-        "multiplyOnCrit": true,
-        "onCritOnly": false,
-        "source": "Base"
-      }
-    ],
     "handedness": "ranged",
     "critRange": 20,
     "critMult": 2,
@@ -4904,18 +4387,17 @@
         "rangeIncrement": 15,
         "critRange": 20,
         "critMult": 2,
-        "damageParts": [
-          {
-            "dice": "1d6",
-            "bonus": 0,
-            "type": "Bludgeoning",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "thrown": true
+        },
+        "damageDice": "1d6",
+        "dmgType": "Bludgeoning",
+        "weapon": {
+          "damageDice": "1d6",
+          "dmgType": "Bludgeoning",
+          "baseCritRange": 20,
+          "critMultiplier": 2,
+          "handedness": "ranged"
         }
       }
     ],
@@ -4974,16 +4456,6 @@
       "critMultiplier": 4,
       "rangeIncrement": 50
     },
-    "damageParts": [
-      {
-        "dice": "1d8",
-        "bonus": 0,
-        "type": "Bludgeoning",
-        "multiplyOnCrit": true,
-        "onCritOnly": false,
-        "source": "Base"
-      }
-    ],
     "handedness": "ranged",
     "critRange": 20,
     "critMult": 4,
@@ -5000,17 +4472,16 @@
         "rangeIncrement": 50,
         "critRange": 20,
         "critMult": 4,
-        "damageParts": [
-          {
-            "dice": "1d8",
-            "bonus": 0,
-            "type": "Bludgeoning",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
-        "ruleFlags": {}
+        "ruleFlags": {},
+        "damageDice": "1d8",
+        "dmgType": "Bludgeoning",
+        "weapon": {
+          "damageDice": "1d8",
+          "dmgType": "Bludgeoning",
+          "baseCritRange": 20,
+          "critMultiplier": 4,
+          "handedness": "ranged"
+        }
       }
     ],
     "shortDescription": "Exotic ranged weapon (1d8 bludgeoning, ×4, 50 ft. range increment).",
@@ -5064,16 +4535,6 @@
       "critMultiplier": 2,
       "rangeIncrement": null
     },
-    "damageParts": [
-      {
-        "dice": "2d8",
-        "bonus": 0,
-        "type": "Piercing & Slashing",
-        "multiplyOnCrit": true,
-        "onCritOnly": false,
-        "source": "Base"
-      }
-    ],
     "handedness": "2h",
     "critRange": 20,
     "critMult": 2,
@@ -5088,18 +4549,17 @@
         "strMult": 1.5,
         "critRange": 20,
         "critMult": 2,
-        "damageParts": [
-          {
-            "dice": "2d8",
-            "bonus": 0,
-            "type": "Piercing & Slashing",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "twoHanded": true
+        },
+        "damageDice": "2d8",
+        "dmgType": "Piercing & Slashing",
+        "weapon": {
+          "damageDice": "2d8",
+          "dmgType": "Piercing & Slashing",
+          "baseCritRange": 20,
+          "critMultiplier": 2,
+          "handedness": "2h"
         }
       }
     ],
@@ -5159,16 +4619,6 @@
       "critMultiplier": 2,
       "rangeIncrement": 10
     },
-    "damageParts": [
-      {
-        "dice": "1d6",
-        "bonus": 0,
-        "type": "Slashing",
-        "multiplyOnCrit": true,
-        "onCritOnly": false,
-        "source": "Base"
-      }
-    ],
     "handedness": "ranged",
     "critRange": 18,
     "critMult": 2,
@@ -5185,18 +4635,17 @@
         "rangeIncrement": 10,
         "critRange": 18,
         "critMult": 2,
-        "damageParts": [
-          {
-            "dice": "1d6",
-            "bonus": 0,
-            "type": "Slashing",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "thrown": true
+        },
+        "damageDice": "1d6",
+        "dmgType": "Slashing",
+        "weapon": {
+          "damageDice": "1d6",
+          "dmgType": "Slashing",
+          "baseCritRange": 18,
+          "critMultiplier": 2,
+          "handedness": "ranged"
         }
       }
     ],
@@ -5259,16 +4708,6 @@
       "critMultiplier": 2,
       "rangeIncrement": null
     },
-    "damageParts": [
-      {
-        "dice": "1d6",
-        "bonus": 0,
-        "type": "Slashing",
-        "multiplyOnCrit": true,
-        "onCritOnly": false,
-        "source": "Base"
-      }
-    ],
     "handedness": "2h",
     "critRange": 19,
     "critMult": 2,
@@ -5283,19 +4722,18 @@
         "strMult": 1.5,
         "critRange": 19,
         "critMult": 2,
-        "damageParts": [
-          {
-            "dice": "1d6",
-            "bonus": 0,
-            "type": "Slashing",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "twoHanded": true,
           "reach": true
+        },
+        "damageDice": "1d6",
+        "dmgType": "Slashing",
+        "weapon": {
+          "damageDice": "1d6",
+          "dmgType": "Slashing",
+          "baseCritRange": 19,
+          "critMultiplier": 2,
+          "handedness": "2h"
         }
       }
     ],
@@ -5357,16 +4795,6 @@
       "critMultiplier": 3,
       "rangeIncrement": null
     },
-    "damageParts": [
-      {
-        "dice": "1d4",
-        "bonus": 0,
-        "type": "Piercing",
-        "multiplyOnCrit": true,
-        "onCritOnly": false,
-        "source": "Base"
-      }
-    ],
     "handedness": "light",
     "critRange": 20,
     "critMult": 3,
@@ -5381,19 +4809,18 @@
         "strMult": 1,
         "critRange": 20,
         "critMult": 3,
-        "damageParts": [
-          {
-            "dice": "1d4",
-            "bonus": 0,
-            "type": "Piercing",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "isLight": true,
           "finessable": true
+        },
+        "damageDice": "1d4",
+        "dmgType": "Piercing",
+        "weapon": {
+          "damageDice": "1d4",
+          "dmgType": "Piercing",
+          "baseCritRange": 20,
+          "critMultiplier": 3,
+          "handedness": "light"
         }
       }
     ],
@@ -5456,16 +4883,6 @@
       "critMultiplier": 2,
       "rangeIncrement": null
     },
-    "damageParts": [
-      {
-        "dice": "1d6",
-        "bonus": 0,
-        "type": "Piercing",
-        "multiplyOnCrit": true,
-        "onCritOnly": false,
-        "source": "Base"
-      }
-    ],
     "handedness": "2h",
     "critRange": 18,
     "critMult": 2,
@@ -5480,19 +4897,18 @@
         "strMult": 1,
         "critRange": 18,
         "critMult": 2,
-        "damageParts": [
-          {
-            "dice": "1d6",
-            "bonus": 0,
-            "type": "Piercing",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "twoHanded": true,
           "doubleWeapon": true
+        },
+        "damageDice": "1d6",
+        "dmgType": "Piercing",
+        "weapon": {
+          "damageDice": "1d6",
+          "dmgType": "Piercing",
+          "baseCritRange": 18,
+          "critMultiplier": 2,
+          "handedness": "1h"
         }
       },
       {
@@ -5504,19 +4920,18 @@
         "strMult": 0.5,
         "critRange": 20,
         "critMult": 3,
-        "damageParts": [
-          {
-            "dice": "1d4",
-            "bonus": 0,
-            "type": "Slashing",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Off-Hand Head"
-          }
-        ],
         "ruleFlags": {
           "isLight": true,
           "doubleWeaponOffHand": true
+        },
+        "damageDice": "1d4",
+        "dmgType": "Slashing",
+        "weapon": {
+          "damageDice": "1d4",
+          "dmgType": "Slashing",
+          "baseCritRange": 20,
+          "critMultiplier": 3,
+          "handedness": "light"
         }
       },
       {
@@ -5528,19 +4943,18 @@
         "strMult": 1.5,
         "critRange": 18,
         "critMult": 2,
-        "damageParts": [
-          {
-            "dice": "1d6",
-            "bonus": 0,
-            "type": "Piercing",
-            "multiplyOnCrit": true,
-            "onCritOnly": false,
-            "source": "Base"
-          }
-        ],
         "ruleFlags": {
           "twoHanded": true,
           "doubleWeapon": true
+        },
+        "damageDice": "1d6",
+        "dmgType": "Piercing",
+        "weapon": {
+          "damageDice": "1d6",
+          "dmgType": "Piercing",
+          "baseCritRange": 18,
+          "critMultiplier": 2,
+          "handedness": "2h"
         }
       }
     ],

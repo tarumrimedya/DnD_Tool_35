@@ -300,9 +300,9 @@
           });
         });
       }
-      // 2. Fallback from BUNDLED_SRD_CORE_CATALOG while core feat chunk is not yet loaded
-      if (!(typeof window !== 'undefined' && window.SrdCompendium && typeof window.SrdCompendium.isChunkLoaded === 'function' && window.SrdCompendium.isChunkLoaded('srd_feats.json')) && typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
-        window.BUNDLED_SRD_CORE_CATALOG.filter(i => i && (i.type === 'Feat' || i.type === 'Flaw')).forEach(f => {
+      // 2. Fallback from SrdCompendium.getAllLoaded() while core feat chunk is not yet loaded
+      if (!(typeof window !== 'undefined' && window.SrdCompendium && typeof window.SrdCompendium.isChunkLoaded === 'function' && window.SrdCompendium.isChunkLoaded('srd_feats.json')) && typeof window !== 'undefined' && window.SrdCompendium && typeof window.SrdCompendium.getAllLoaded === 'function') {
+        window.SrdCompendium.getAllLoaded().filter(i => i && (i.type === 'Feat' || i.type === 'Flaw')).forEach(f => {
           const k = (f.name || '').toLowerCase().trim();
           if (k && !skipPlaceholders.has(k) && f.category !== 'Warlock Invocation' && !invocationByName.has(k)) {
             const existing = map.get(k);
@@ -605,7 +605,7 @@
       const clean = entry.name.toLowerCase().trim();
       const v2Extras = {
         ...(entry.id ? { id: entry.id } : {}),
-        schemaVersion: 2,
+        schemaVersion: 3,
         ...(entry.action ? { action: entry.action } : {}),
         ...(entry.actionType ? { actionType: entry.actionType } : {}),
         ...(entry.range ? { range: entry.range } : {}),
@@ -615,13 +615,12 @@
         ...(entry.rechargeDice ? { rechargeDice: entry.rechargeDice } : {}),
         ...(entry.pack ? { pack: JSON.parse(JSON.stringify(entry.pack)) } : {}),
         ...(entry.requires ? { requires: JSON.parse(JSON.stringify(entry.requires)) } : {}),
-        modifiers: Array.isArray(entry.modifiers) ? JSON.parse(JSON.stringify(entry.modifiers)) : [],
+        effects: Array.isArray(entry.effects) ? JSON.parse(JSON.stringify(entry.effects)) : [],
         defenses: Array.isArray(entry.defenses) ? JSON.parse(JSON.stringify(entry.defenses)) : [],
         resources: Array.isArray(entry.resources) ? JSON.parse(JSON.stringify(entry.resources)) : [],
         modes: Array.isArray(entry.modes) ? JSON.parse(JSON.stringify(entry.modes)) : [],
         grants: Array.isArray(entry.grants) ? JSON.parse(JSON.stringify(entry.grants)) : [],
         choices: Array.isArray(entry.choices) ? JSON.parse(JSON.stringify(entry.choices)) : [],
-        damageParts: Array.isArray(entry.damageParts) ? JSON.parse(JSON.stringify(entry.damageParts)) : [],
         ruleFlags: entry.ruleFlags ? JSON.parse(JSON.stringify(entry.ruleFlags)) : (clean.includes('agile shield fighter') ? { agileShieldFighter: true } : {}),
         tacticalBadges: Array.isArray(entry.tacticalBadges) ? JSON.parse(JSON.stringify(entry.tacticalBadges)) : []
       };
@@ -815,8 +814,8 @@
         const list = window.SrdCompendium.getByType('Weapon') || [];
         found = list.find(w => w && String(w.name || '').toLowerCase().trim() === lower);
       }
-      if (!found && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
-        found = window.BUNDLED_SRD_CORE_CATALOG.find(w => w && w.type === 'Weapon' && String(w.name || '').toLowerCase().trim() === lower);
+      if (!found && window.SrdCompendium && typeof window.SrdCompendium.getAllLoaded === 'function') {
+        found = window.SrdCompendium.getAllLoaded().find(w => w && w.type === 'Weapon' && String(w.name || '').toLowerCase().trim() === lower);
       }
       if (!found && typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
         found = masterDb.find(w => w && (w.type === 'Weapon' || w.category === 'Weapon') && String(w.name || '').toLowerCase().trim() === lower);
@@ -824,7 +823,7 @@
       if (!found) return '';
       const parts = [];
       if (found.category) parts.push(found.category);
-      const dmg = found.damage || (found.damageParts && found.damageParts[0] && found.damageParts[0].dice);
+      const dmg = found.weapon?.damageDice || found.damage || found.dice;
       if (dmg) parts.push(dmg);
       const critR = found.critRange && found.critRange < 20 ? `${found.critRange}-20` : '20';
       const critM = found.critMult ? `x${found.critMult}` : 'x2';
@@ -2262,15 +2261,10 @@
         : null;
       const v2SourceObj = structuredParsed || aiCached || catalogMatch || synthesizedBoon || null;
 
-      const resolvedModifiers = (catalogMatch && Array.isArray(catalogMatch.modifiers) && catalogMatch.modifiers.length > 0)
-        ? JSON.parse(JSON.stringify(catalogMatch.modifiers))
-        : (v2SourceObj && Array.isArray(v2SourceObj.modifiers) && v2SourceObj.modifiers.length > 0
-            ? JSON.parse(JSON.stringify(v2SourceObj.modifiers))
-            : []);
-      const resolvedDamageParts = (catalogMatch && Array.isArray(catalogMatch.damageParts) && catalogMatch.damageParts.length > 0)
-        ? JSON.parse(JSON.stringify(catalogMatch.damageParts))
-        : (v2SourceObj && Array.isArray(v2SourceObj.damageParts) && v2SourceObj.damageParts.length > 0
-            ? JSON.parse(JSON.stringify(v2SourceObj.damageParts))
+      const resolvedEffects = (catalogMatch && Array.isArray(catalogMatch.effects) && catalogMatch.effects.length > 0)
+        ? JSON.parse(JSON.stringify(catalogMatch.effects))
+        : (v2SourceObj && Array.isArray(v2SourceObj.effects) && v2SourceObj.effects.length > 0
+            ? JSON.parse(JSON.stringify(v2SourceObj.effects))
             : []);
       const resolvedTacticalBadges = (catalogMatch && Array.isArray(catalogMatch.tacticalBadges) && catalogMatch.tacticalBadges.length > 0)
         ? JSON.parse(JSON.stringify(catalogMatch.tacticalBadges))
@@ -2279,7 +2273,7 @@
             : []);
       const resolvedExtras = {
         ...(v2SourceObj?.id ? { id: v2SourceObj.id } : {}),
-        schemaVersion: 2,
+        schemaVersion: 3,
         ...(v2SourceObj?.action ? { action: v2SourceObj.action } : {}),
         ...(v2SourceObj?.actionType ? { actionType: v2SourceObj.actionType } : {}),
         ...(v2SourceObj?.range ? { range: v2SourceObj.range } : {}),
@@ -2296,8 +2290,7 @@
         ...(Array.isArray(v2SourceObj?.grants) && v2SourceObj.grants.length > 0 ? { grants: JSON.parse(JSON.stringify(v2SourceObj.grants)) } : {}),
         ...(Array.isArray(v2SourceObj?.choices) && v2SourceObj.choices.length > 0 ? { choices: JSON.parse(JSON.stringify(v2SourceObj.choices)) } : {}),
         ...(catalogMatch?.slotDiff !== undefined ? { slotDiff: catalogMatch.slotDiff } : {}),
-        modifiers: resolvedModifiers,
-        damageParts: resolvedDamageParts,
+        effects: resolvedEffects,
         tacticalBadges: resolvedTacticalBadges
       };
 
@@ -2351,8 +2344,8 @@
           customDbUpdateOnly = true;
           customDbEntry = {
             ...masterDb[existingDbIdx],
-            ...(resolvedModifiers.length > 0 && (!Array.isArray(masterDb[existingDbIdx].modifiers) || masterDb[existingDbIdx].modifiers.length === 0) ? { modifiers: resolvedModifiers } : {}),
-            ...(resolvedDamageParts.length > 0 ? { damageParts: resolvedDamageParts } : {}),
+            schemaVersion: 3,
+            ...(resolvedEffects.length > 0 && (!Array.isArray(masterDb[existingDbIdx].effects) || masterDb[existingDbIdx].effects.length === 0) ? { effects: resolvedEffects } : {}),
             ...(resolvedExtras.save ? { save: resolvedExtras.save } : {}),
             ...(resolvedExtras.dcFormula ? { dcFormula: resolvedExtras.dcFormula } : {}),
             ...(resolvedExtras.range ? { range: resolvedExtras.range } : {}),
@@ -2545,11 +2538,11 @@
             : `${scaleNumer >= 0 ? '+' + scaleNumer : scaleNumer} per ${scaleDenom > 1 ? scaleDenom + ' character levels' : 'character level'}`)
         : signStr;
 
-      const buildModifierObj = (targetKey, modType = 'untyped') => {
-        const mod = { target: targetKey, value: val, type: modType, condition: null };
-        if (formulaStr) mod.formula = formulaStr;
-        return mod;
-      };
+      const buildEffectObj = (targetKey, btype = 'Untyped') => (
+        formulaStr
+          ? { type: 'stat', targets: [targetKey], mode: 'formula', formula: formulaStr, btype }
+          : { type: 'stat', targets: [targetKey], mode: 'flat', value: val, btype }
+      );
 
       const skillList = [
         { slug: 'appraise', label: 'Appraise', rx: /\bappraise\b/i },
@@ -2589,7 +2582,8 @@
       for (const sk of skillList) {
         if (sk.rx.test(combined)) {
           return {
-            schemaVersion: 2,
+            schemaVersion: 3,
+            blueprint: 'feat',
             id: `boon_skill_${sk.slug}_${Math.abs(val)}${hasScaling ? '_scale_' + scaleDenom : ''}`,
             name: `DM Boon: ${sk.label} (${signStr})`,
             type: 'Feat',
@@ -2598,8 +2592,7 @@
             source: 'DM Boon / Campaign Grant',
             benefit: b || `Grants ${benefitDesc} on ${sk.label} skill checks (DM Boon).`,
             description: b || `Grants ${benefitDesc} on ${sk.label} skill checks (DM Boon).`,
-            modifiers: [buildModifierObj(`skill.${sk.slug}`, 'untyped')],
-            damageParts: []
+            effects: [buildEffectObj(`skill.${sk.slug}`, 'Untyped')]
           };
         }
       }
@@ -2628,7 +2621,8 @@
       for (const st of statMap) {
         if (st.rx.test(combined) && !/=/.test(q)) {
           return {
-            schemaVersion: 2,
+            schemaVersion: 3,
+            blueprint: 'feat',
             id: `boon_${st.target.replace(/\./g, '_')}_${Math.abs(val)}${hasScaling ? '_scale_' + scaleDenom : ''}`,
             name: `DM Boon: ${st.label} (${signStr})`,
             type: 'Feat',
@@ -2637,8 +2631,7 @@
             source: 'DM Boon / Campaign Grant',
             benefit: b || `Grants ${benefitDesc} to ${st.label} (DM Boon).`,
             description: b || `Grants ${benefitDesc} to ${st.label} (DM Boon).`,
-            modifiers: [buildModifierObj(st.target, 'untyped')],
-            damageParts: []
+            effects: [buildEffectObj(st.target, 'Untyped')]
           };
         }
       }
@@ -2774,9 +2767,12 @@
             refreshedStatusEl.className = 'mt-1.5 text-[11px] p-2 rounded-lg bg-emerald-950/80 border border-emerald-600/60 text-emerald-200 block';
             refreshedStatusEl.innerHTML = `<span>✨</span> Parsed Canonical V2 Ability (0ms): <b>${UI.escapeHtml(instantBoon.name)}</b> <span class="font-mono text-amber-300">[${UI.escapeHtml(pills.join(' • ') || instantBoon.benefit)}]</span>`;
           } else {
-            const modSummary = (instantBoon.modifiers || []).map(m => m.formula ? `${m.target} = ${m.formula}` : `${m.target} ${m.value >= 0 ? '+' : ''}${m.value}`).join(', ');
+            const modSummary = (instantBoon.effects || []).filter(e => e && e.type === 'stat').map(e => {
+              const tgt = Array.isArray(e.targets) ? e.targets.join(', ') : (e.target || '');
+              return e.formula ? `${tgt} = ${e.formula}` : `${tgt} ${e.value >= 0 ? '+' : ''}${e.value}`;
+            }).join(', ');
             refreshedStatusEl.className = 'mt-1.5 text-[11px] p-2 rounded-lg bg-emerald-950/80 border border-emerald-600/60 text-emerald-200 block';
-            refreshedStatusEl.innerHTML = `<span>🌟</span> Standardized &amp; Synthesized Canonical V2 DM Boon: <b>${UI.escapeHtml(instantBoon.name)}</b> <span class="font-mono text-amber-300">[${modSummary}]</span>`;
+            refreshedStatusEl.innerHTML = `<span>🌟</span> Standardized &amp; Synthesized Canonical V3 DM Boon: <b>${UI.escapeHtml(instantBoon.name)}</b> <span class="font-mono text-amber-300">[${UI.escapeHtml(modSummary)}]</span>`;
           }
         }
         return;
@@ -2868,16 +2864,18 @@
             if (!masterDb.some(m => (m.name || '').toLowerCase().trim() === clean)) {
               masterDb.push(v2Entry && typeof v2Entry === 'object' && !Array.isArray(v2Entry) ? {
                 ...v2Entry,
-                schemaVersion: 2,
+                schemaVersion: 3,
                 name: featName,
                 type: featType,
                 slot: v2Entry.slot || 'None',
                 prereq: featPrereq,
                 source: featSource,
                 benefit: featBenefit,
-                description: v2Entry.description || featBenefit
+                description: v2Entry.description || featBenefit,
+                effects: Array.isArray(v2Entry.effects) ? JSON.parse(JSON.stringify(v2Entry.effects)) : []
               } : {
-                schemaVersion: 2,
+                schemaVersion: 3,
+                blueprint: 'feat',
                 id: 'feat_' + clean.replace(/[^a-z0-9]+/g, '_'),
                 name: featName,
                 type: featType,
@@ -2886,8 +2884,7 @@
                 source: featSource,
                 benefit: featBenefit,
                 description: featBenefit,
-                modifiers: [],
-                damageParts: [],
+                effects: [],
                 modes: []
               });
               saveStateToStorage();
@@ -3110,7 +3107,8 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
                   if (!inDb) {
                     const summaryText = parsed.featuresSummary || `${cName} (${newClassDef.source})`;
                     masterDb.push({
-                      schemaVersion: 2,
+                      schemaVersion: 3,
+                      blueprint: 'class',
                       id: 'cls_' + cName.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, ''),
                       name: cName,
                       type: 'Class',
@@ -3126,8 +3124,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
                       benefit: summaryText,
                       description: summaryText,
                       desc: summaryText,
-                      modifiers: [],
-                      damageParts: [],
+                      effects: [],
                       modes: []
                     });
                   }
@@ -4680,7 +4677,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
             found = synthSlotMatch;
             featName = synthSlotMatch.name;
             if (Array.isArray(masterDb) && !masterDb.some(m => (m.name || '').toLowerCase().trim() === featName.toLowerCase().trim())) {
-              masterDb.push({ ...synthSlotMatch, schemaVersion: 2 });
+              masterDb.push({ ...synthSlotMatch, schemaVersion: 3 });
             }
           }
         }
@@ -4809,16 +4806,18 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
             if (!masterDb.some(m => (m.name || '').toLowerCase().trim() === clean)) {
               masterDb.push(v2Entry && typeof v2Entry === 'object' && !Array.isArray(v2Entry) ? {
                 ...v2Entry,
-                schemaVersion: 2,
+                schemaVersion: 3,
                 name: featName,
                 type: featType,
                 slot: v2Entry.slot || 'None',
                 prereq: featPrereq,
                 source: featSource,
                 benefit: featBenefit,
-                description: v2Entry.description || featBenefit
+                description: v2Entry.description || featBenefit,
+                effects: Array.isArray(v2Entry.effects) ? JSON.parse(JSON.stringify(v2Entry.effects)) : []
               } : {
-                schemaVersion: 2,
+                schemaVersion: 3,
+                blueprint: 'feat',
                 id: 'feat_' + clean.replace(/[^a-z0-9]+/g, '_'),
                 name: featName,
                 type: featType,
@@ -4827,8 +4826,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
                 source: featSource,
                 benefit: featBenefit,
                 description: featBenefit,
-                modifiers: [],
-                damageParts: [],
+                effects: [],
                 modes: []
               });
               saveStateToStorage();
@@ -9887,8 +9885,8 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
           const s = window.SrdCompendium.getByName(cleanFull, 'Feat') || window.SrdCompendium.getByName(baseName, 'Feat');
           if (s) return s;
         }
-        if (Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
-          const b = window.BUNDLED_SRD_CORE_CATALOG.find(i => i && i.type === 'Feat' && (String(i.name || '').toLowerCase() === fullLow || String(i.name || '').toLowerCase() === baseLow));
+        if (window.SrdCompendium && typeof window.SrdCompendium.getAllLoaded === 'function') {
+          const b = window.SrdCompendium.getAllLoaded().find(i => i && i.type === 'Feat' && (String(i.name || '').toLowerCase() === fullLow || String(i.name || '').toLowerCase() === baseLow));
           if (b) return b;
         }
         return null;
@@ -9906,6 +9904,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         if (domainGrantedFeatSpecs.some(x => x.name.toLowerCase() === finalName.toLowerCase())) return;
         const featDef = resolveFeatDef(finalName);
         domainGrantedFeatSpecs.push({
+          schemaVersion: 3,
           id: featDef?.id || ('feat-' + finalName.toLowerCase().replace(/[^a-z0-9]+/g, '-')),
           name: finalName,
           type: 'Feat',
@@ -9914,7 +9913,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
           benefit: featDef?.shortDescription || featDef?.benefit || featDef?.description || `Granted bonus feat from ${domName} Domain.`,
           prereq: featDef?.prerequisites || featDef?.prereq || '-',
           prerequisites: featDef?.prerequisites || featDef?.prereq || '-',
-          modifiers: Array.isArray(featDef?.modifiers) ? JSON.parse(JSON.stringify(featDef.modifiers)) : [],
+          effects: Array.isArray(featDef?.effects) ? JSON.parse(JSON.stringify(featDef.effects)) : [],
           ruleFlags: featDef?.ruleFlags ? JSON.parse(JSON.stringify(featDef.ruleFlags)) : {},
           slotDiff: featDef?.slotDiff ?? featDef?.levelAdjustment,
           active: true,
@@ -10000,18 +9999,19 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
           ? `Free Martial Weapon Proficiency (${favWeapon}) and Weapon Focus (${favWeapon}).`
           : (meta?.grantedPower?.description || (typeof meta?.grantedPower === 'string' ? meta.grantedPower : '') || meta?.description || `${d} Domain Granted Power`);
         character.specialAbilities.push({
+          schemaVersion: 3,
           name: `⚜️ ${d} Domain (Granted Power)`,
           source: 'Cleric Domain',
           category: 'Special Ability',
           benefit: benefitText,
-          modifiers: Array.isArray(meta?.modifiers) ? JSON.parse(JSON.stringify(meta.modifiers)) : [],
+          effects: Array.isArray(meta?.effects) ? JSON.parse(JSON.stringify(meta.effects)) : [],
           ruleFlags: meta?.ruleFlags ? JSON.parse(JSON.stringify(meta.ruleFlags)) : {},
           isDomainBonus: true,
           domainSource: d,
           active: true
         });
 
-        // Also sync any explicit Domain Active SLA / Power into character.specialAbilities with full V2 relationships
+        // Also sync any explicit Domain Active SLA / Power into character.specialAbilities with full V3 relationships
         const slas = meta?.grantedPower?.spellLikeAbilities || meta?.spellLikeAbilities || [];
         if (Array.isArray(slas)) {
           slas.forEach(sla => {
@@ -10027,14 +10027,14 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
             }
             const slaDesc = sla?.desc || slaDef?.shortDescription || slaDef?.benefit || slaDef?.description || benefitText;
             character.specialAbilities.push({
+              schemaVersion: 3,
               name: `⚜️ ${slaName} (${d} Domain SLA)`,
               source: `${d} Domain`,
               category: 'Spell-Like Ability',
               action: slaDef?.action || 'Standard Action',
               uses: slaUses,
               benefit: `[${slaUses}] ${slaDesc}`,
-              modifiers: Array.isArray(slaDef?.modifiers) ? JSON.parse(JSON.stringify(slaDef.modifiers)) : [],
-              damageParts: Array.isArray(slaDef?.damageParts) ? JSON.parse(JSON.stringify(slaDef.damageParts)) : [],
+              effects: Array.isArray(slaDef?.effects) ? JSON.parse(JSON.stringify(slaDef.effects)) : [],
               ruleFlags: slaDef?.ruleFlags ? JSON.parse(JSON.stringify(slaDef.ruleFlags)) : {},
               isDomainBonus: true,
               domainSource: d,

@@ -8,30 +8,34 @@
 if (typeof SrdCompendium === 'undefined' && typeof require === 'function') {
   try { require('./srd_compendium.js'); } catch (_) {}
 }
+const _loadedDnd35Ruleset = (typeof window !== 'undefined' && window.DnD35Ruleset)
+  ? window.DnD35Ruleset
+  : ((typeof globalThis !== 'undefined' && globalThis.DnD35Ruleset)
+    ? globalThis.DnD35Ruleset
+    : (typeof require === 'function' ? (() => { try { return require('./rulesets/dnd35.js'); } catch (_) { return null; } })() : null));
 
 const RuleEngine = {
-  // Pluggable Ruleset Registry (D&D 3.5e Official RAW default)
+  // Pluggable Ruleset Registry (loaded from `rulesets/*.js`, D&D 3.5e Official RAW default)
   rulesets: {
-    dnd35: {
+    dnd35: _loadedDnd35Ruleset || {
       id: 'dnd35',
       name: 'D&D 3.5e Official RAW',
       stackingBonusTypes: ['dodge', 'circumstance', 'racial', 'untyped', 'synergy'],
+      consolidatedSkillBonusMode: 'single_highest',
       actionEconomy: 'standard_move_swift',
+      srdArmors: {},
+      srdShields: {},
+      classProficiencies: {},
       calcMaxSkillRanks(level, isClassSkill) {
         const maxCls = Math.max(1, Number(level) || 1) + 3;
         return isClassSkill ? maxCls : maxCls / 2;
       },
-      calcSkillPointCost(isClassSkill) {
-        return isClassSkill ? 1 : 2;
-      },
+      calcSkillPointCost(isClassSkill) { return isClassSkill ? 1 : 2; },
       calcIterativeBab(bab) {
         const b = Math.max(0, Math.floor(Number(bab) || 0));
         const out = [b];
         let cur = b - 5;
-        while (cur >= 1 && out.length < 4) {
-          out.push(cur);
-          cur -= 5;
-        }
+        while (cur >= 1 && out.length < 4) { out.push(cur); cur -= 5; }
         return out;
       },
       calcGrapple(bab, strMod, sizeMod, misc) {
@@ -43,191 +47,6 @@ const RuleEngine = {
   getActiveRuleset(character) {
     const ch = character || this._activeCharacter || (typeof window !== 'undefined' ? window.character : null);
     return this.rulesets[(ch && ch.ruleset) || 'dnd35'] || this.rulesets.dnd35;
-  },
-
-  // Built-in SRD Armor reference catalog
-  SRD_ARMORS: {
-    'padded': { armor: 1, maxDex: 8, acp: 0, type: 'Light' },
-    'leather': { armor: 2, maxDex: 6, acp: 0, type: 'Light' },
-    'leather armor': { armor: 2, maxDex: 6, acp: 0, type: 'Light' },
-    'studded leather': { armor: 3, maxDex: 5, acp: -1, type: 'Light' },
-    'studded leather armor': { armor: 3, maxDex: 5, acp: -1, type: 'Light' },
-    'chain shirt': { armor: 4, maxDex: 4, acp: -2, type: 'Light' },
-    'hide': { armor: 3, maxDex: 4, acp: -3, type: 'Medium' },
-    'hide armor': { armor: 3, maxDex: 4, acp: -3, type: 'Medium' },
-    'scale mail': { armor: 4, maxDex: 3, acp: -4, type: 'Medium' },
-    'chainmail': { armor: 5, maxDex: 2, acp: -5, type: 'Medium' },
-    'breastplate': { armor: 5, maxDex: 3, acp: -4, type: 'Medium' },
-    'splint mail': { armor: 6, maxDex: 0, acp: -7, type: 'Heavy' },
-    'banded mail': { armor: 6, maxDex: 1, acp: -6, type: 'Heavy' },
-    'half-plate': { armor: 7, maxDex: 0, acp: -7, type: 'Heavy' },
-    'full plate': { armor: 8, maxDex: 1, acp: -6, type: 'Heavy' }
-  },
-
-  // Built-in SRD Shield reference catalog
-  SRD_SHIELDS: {
-    'buckler': { shield: 1, maxDex: null, acp: -1 },
-    'light wooden shield': { shield: 1, maxDex: null, acp: -1 },
-    'light steel shield': { shield: 1, maxDex: null, acp: -1 },
-    'light shield': { shield: 1, maxDex: null, acp: -1 },
-    'heavy wooden shield': { shield: 2, maxDex: null, acp: -2 },
-    'heavy steel shield': { shield: 2, maxDex: null, acp: -2 },
-    'heavy shield': { shield: 2, maxDex: null, acp: -2 },
-    'tower shield': { shield: 4, maxDex: 2, acp: -10 }
-  },
-
-  // Canonical D&D 3.5e RAW Class Proficiencies (PHB Chapter 3, Complete & Tome of Battle)
-  CLASS_PROFICIENCIES: {
-    'fighter': {
-      weapons: { simple: true, martial: true, specific: [] },
-      armors: { light: true, medium: true, heavy: true },
-      shields: { shield: true, tower: true }
-    },
-    'barbarian': {
-      weapons: { simple: true, martial: true, specific: [] },
-      armors: { light: true, medium: true, heavy: false },
-      shields: { shield: true, tower: false }
-    },
-    'paladin': {
-      weapons: { simple: true, martial: true, specific: [] },
-      armors: { light: true, medium: true, heavy: true },
-      shields: { shield: true, tower: false }
-    },
-    'ranger': {
-      weapons: { simple: true, martial: true, specific: [] },
-      armors: { light: true, medium: false, heavy: false },
-      shields: { shield: true, tower: false }
-    },
-    'cleric': {
-      weapons: { simple: true, martial: false, specific: [] },
-      armors: { light: true, medium: true, heavy: true },
-      shields: { shield: true, tower: false }
-    },
-    'druid': {
-      weapons: { simple: false, martial: false, specific: ['club', 'dagger', 'dart', 'quarterstaff', 'scimitar', 'sickle', 'shortspear', 'sling', 'spear'] },
-      armors: { light: true, medium: true, heavy: false },
-      shields: { shield: true, tower: false }
-    },
-    'rogue': {
-      weapons: { simple: true, martial: false, specific: ['hand crossbow', 'rapier', 'sap', 'shortbow', 'short sword'] },
-      armors: { light: true, medium: false, heavy: false },
-      shields: { shield: false, tower: false }
-    },
-    'rogue (adventurer variant)': {
-      weapons: { simple: true, martial: false, specific: ['hand crossbow', 'rapier', 'sap', 'shortbow', 'short sword'] },
-      armors: { light: true, medium: false, heavy: false },
-      shields: { shield: false, tower: false }
-    },
-    'bloodstorm blade': {
-      weapons: { simple: true, martial: true, specific: [] },
-      armors: { light: true, medium: true, heavy: false },
-      shields: { shield: true, tower: false }
-    },
-    'bard': {
-      weapons: { simple: true, martial: false, specific: ['longsword', 'rapier', 'sap', 'short sword', 'shortbow', 'whip'] },
-      armors: { light: true, medium: false, heavy: false },
-      shields: { shield: true, tower: false }
-    },
-    'monk': {
-      weapons: { simple: false, martial: false, specific: ['club', 'crossbow', 'light crossbow', 'heavy crossbow', 'dagger', 'handaxe', 'javelin', 'kama', 'nunchaku', 'quarterstaff', 'sai', 'shuriken', 'siangham', 'sling', 'unarmed strike'] },
-      armors: { light: false, medium: false, heavy: false },
-      shields: { shield: false, tower: false }
-    },
-    'sorcerer': {
-      weapons: { simple: true, martial: false, specific: [] },
-      armors: { light: false, medium: false, heavy: false },
-      shields: { shield: false, tower: false }
-    },
-    'wizard': {
-      weapons: { simple: false, martial: false, specific: ['club', 'dagger', 'heavy crossbow', 'light crossbow', 'quarterstaff'] },
-      armors: { light: false, medium: false, heavy: false },
-      shields: { shield: false, tower: false }
-    },
-    'warlock': {
-      weapons: { simple: true, martial: false, specific: [] },
-      armors: { light: true, medium: false, heavy: false },
-      shields: { shield: false, tower: false }
-    },
-    'crusader': {
-      weapons: { simple: true, martial: true, specific: [] },
-      armors: { light: true, medium: true, heavy: true },
-      shields: { shield: true, tower: false }
-    },
-    'swordsage': {
-      weapons: { simple: true, martial: false, specific: ['light crossbow', 'heavy crossbow', 'shortbow', 'composite shortbow'] },
-      armors: { light: true, medium: false, heavy: false },
-      shields: { shield: false, tower: false }
-    },
-    'warblade': {
-      weapons: { simple: true, martial: true, specific: [] },
-      armors: { light: true, medium: true, heavy: false },
-      shields: { shield: true, tower: false }
-    },
-    'duskblade': {
-      weapons: { simple: true, martial: true, specific: [] },
-      armors: { light: true, medium: true, heavy: false },
-      shields: { shield: true, tower: false }
-    },
-    'knight': {
-      weapons: { simple: true, martial: true, specific: [] },
-      armors: { light: true, medium: true, heavy: true },
-      shields: { shield: true, tower: true }
-    },
-    'warmage': {
-      weapons: { simple: true, martial: false, specific: ['light repeating crossbow'] },
-      armors: { light: true, medium: false, heavy: false },
-      shields: { shield: true, tower: false }
-    },
-    'beguiler': {
-      weapons: { simple: true, martial: false, specific: ['hand crossbow', 'rapier', 'shortbow', 'short sword'] },
-      armors: { light: true, medium: false, heavy: false },
-      shields: { shield: false, tower: false }
-    },
-    'scout': {
-      weapons: { simple: true, martial: false, specific: ['hand crossbow', 'sap', 'shortbow', 'short sword'] },
-      armors: { light: true, medium: false, heavy: false },
-      shields: { shield: false, tower: false }
-    },
-    'swashbuckler': {
-      weapons: { simple: true, martial: true, specific: [] },
-      armors: { light: true, medium: false, heavy: false },
-      shields: { shield: false, tower: false }
-    },
-    'hexblade': {
-      weapons: { simple: true, martial: true, specific: [] },
-      armors: { light: true, medium: false, heavy: false },
-      shields: { shield: false, tower: false }
-    },
-    'favored soul': {
-      weapons: { simple: true, martial: false, specific: [] },
-      armors: { light: true, medium: true, heavy: false },
-      shields: { shield: true, tower: false }
-    },
-    'spellthief': {
-      weapons: { simple: true, martial: false, specific: ['hand crossbow', 'rapier', 'shortbow', 'short sword'] },
-      armors: { light: true, medium: false, heavy: false },
-      shields: { shield: false, tower: false }
-    },
-    'psion': {
-      weapons: { simple: false, martial: false, specific: ['club', 'dagger', 'heavy crossbow', 'light crossbow', 'quarterstaff', 'shortspear'] },
-      armors: { light: false, medium: false, heavy: false },
-      shields: { shield: false, tower: false }
-    },
-    'psychic warrior': {
-      weapons: { simple: true, martial: true, specific: [] },
-      armors: { light: true, medium: true, heavy: true },
-      shields: { shield: true, tower: false }
-    },
-    'soulknife': {
-      weapons: { simple: true, martial: false, specific: ['mind blade'] },
-      armors: { light: true, medium: false, heavy: false },
-      shields: { shield: true, tower: false }
-    },
-    'wilder': {
-      weapons: { simple: true, martial: false, specific: [] },
-      armors: { light: true, medium: false, heavy: false },
-      shields: { shield: true, tower: false }
-    }
   },
 
   // Calculate D&D 3.5e Ability Modifier: floor((score - 10) / 2)
@@ -978,6 +797,13 @@ const RuleEngine = {
       'ability.wis': 'ability.wis',
       'cha': 'ability.cha',
       'ability.cha': 'ability.cha',
+      'choice.skill.1': 'choice.skill.1',
+      'choice.save.1': 'choice.save.1',
+      'choice.school.1': 'choice.school.1',
+      'choice.ability.1': 'choice.ability.1',
+      'choice.ability.2': 'choice.ability.2',
+      'choice.ability.3': 'choice.ability.3',
+      'choice.ability.4': 'choice.ability.4',
       'init': 'init',
       'initiative': 'init',
       'speed': 'speed.land',
@@ -1156,6 +982,39 @@ const RuleEngine = {
     return badges;
   },
 
+  // Extract resolved `@Choice` value from an entity instance (explicit choice props, `choices[]` selection, or parenthetical/colon suffix)
+  extractEntryChoice(entry) {
+    if (!entry) return '';
+    if (typeof entry === 'string') {
+      const pm = entry.match(/\(([^)]+)\)\s*$/);
+      if (pm && pm[1] && !/^(?:ex|su|sp|na|3\.0e)$/i.test(pm[1].trim())) return pm[1].trim();
+      return '';
+    }
+    const direct = entry.chosenOption ?? entry.choiceValue ?? entry.selectedOption
+      ?? entry.choice ?? entry.subChoice ?? entry.targetWeapon ?? entry.selectedWeapon
+      ?? entry.targetWeaponId ?? entry.weaponId ?? entry.targetShield
+      ?? entry.chosenSchool ?? entry.chosenEnergy ?? '';
+    if (direct && String(direct).trim()) return String(direct).trim();
+    if (Array.isArray(entry.choices)) {
+      for (const ch of entry.choices) {
+        const cv = ch && (ch.selected ?? ch.value ?? ch.chosen ?? ch.choiceValue);
+        if (cv && String(cv).trim()) return String(cv).trim();
+      }
+    }
+    const rawName = String(entry.name || '').trim();
+    if (rawName) {
+      const pm = rawName.match(/\(([^)]+)\)\s*$/);
+      if (pm && pm[1] && !/^(?:ex|su|sp|na|3\.0e)$/i.test(pm[1].trim())) {
+        return pm[1].trim();
+      }
+      const colonMatch = rawName.match(/^(?:greater\s+|epic\s+)?(?:weapon\s+focus|weapon\s+specialization|skill\s+focus|spell\s+focus|armor\s+specialization|shield\s+specialization|energy\s+resistance)\s*[:\-]\s*(.+)$/i);
+      if (colonMatch && colonMatch[1]) {
+        return colonMatch[1].trim();
+      }
+    }
+    return '';
+  },
+
   // Evaluate V3 `when` / `while` branch condition against character combat state, HP thresholds, buffs, activeModes, or chakra binds
   evaluateV3BranchCondition(rawCond, branchType, evalCtx = {}, character = null, entry = null) {
     if (!rawCond) return true;
@@ -1279,19 +1138,20 @@ const RuleEngine = {
     }
     if (low === 'wieldingchosenweapon' || low === 'wielding chosen weapon') {
       if (evalCtx && evalCtx.weapon && typeof evalCtx.weapon === 'object') {
-        let chosenWep = String(
-          entry?.chosenOption ?? entry?.choiceValue ?? entry?.selectedWeapon ?? entry?.targetWeapon ?? entry?.choice ?? entry?.subChoice ?? ''
-        ).trim().toLowerCase();
-        if (!chosenWep && entry?.name) {
-          const parenMatch = String(entry.name).match(/\(([^)]+)\)/);
-          if (parenMatch && parenMatch[1] && !/^(?:ex|su|sp|na)$/i.test(parenMatch[1].trim())) {
-            chosenWep = parenMatch[1].trim().toLowerCase();
-          }
-        }
+        const chosenWep = this.extractEntryChoice(entry).toLowerCase();
         if (!chosenWep || chosenWep === 'any' || chosenWep === 'all') return true;
         const wName = String(evalCtx.weapon.name || '').toLowerCase();
         const wBase = String(evalCtx.weapon.baseItemId || evalCtx.weapon.id || '').toLowerCase().replace(/^(?:srd[-_])?(?:wpn|wep)[-_]/g, '').replace(/[-_]+/g, ' ');
         return `${wName} ${wBase}`.includes(chosenWep);
+      }
+      return 'qualifier';
+    }
+    if (low === 'castingchosenschool' || low === 'casting chosen school') {
+      if (evalCtx && evalCtx.spell && typeof evalCtx.spell === 'object') {
+        const chosenSchool = this.extractEntryChoice(entry).toLowerCase();
+        if (!chosenSchool || chosenSchool === 'any' || chosenSchool === 'all') return true;
+        const spSchool = String(evalCtx.spell.school || evalCtx.spell.spell?.school || '').toLowerCase();
+        return Boolean(spSchool && (spSchool.includes(chosenSchool) || chosenSchool.includes(spSchool)));
       }
       return 'qualifier';
     }
@@ -1407,8 +1267,10 @@ const RuleEngine = {
     if (!entry._customOverrideApplied) {
       const customOv = this.resolveCustomEntryOverride(entry, ch);
       if (customOv && customOv !== entry) {
+        const instChoice = this.extractEntryChoice(entry) || this.extractEntryChoice(customOv);
         baseEntry = Object.assign({}, entry, customOv, {
           _customOverrideApplied: true,
+          ...(instChoice ? { choice: instChoice } : {}),
           active: entry.active !== undefined ? entry.active : customOv.active,
           equipped: entry.equipped !== undefined ? entry.equipped : customOv.equipped,
           isEquipped: entry.isEquipped !== undefined ? entry.isEquipped : customOv.isEquipped,
@@ -1499,6 +1361,7 @@ const RuleEngine = {
       if (wProf && !out.proficiency) out.proficiency = wProf;
       if (w.rangeIncrement && !out.range) out.range = w.rangeIncrement;
       if (w.enhancementBonus && !out.enhancementBonus) out.enhancementBonus = Number(w.enhancementBonus) || 0;
+      if (w.masterwork && out.isMasterwork === undefined) out.isMasterwork = true;
       if (w.damageDice && damageParts.length === 0) {
         damageParts.push({
           dice: String(w.damageDice),
@@ -1529,7 +1392,7 @@ const RuleEngine = {
       if (rawAcp !== undefined && rawAcp !== null && out.checkPenalty === undefined) out.checkPenalty = Number(rawAcp);
       if (rawAsf !== undefined && rawAsf !== null && out.spellFailure === undefined) out.spellFailure = Number(rawAsf);
       if (a.speed !== undefined && a.speed !== null && out.speed30 === undefined) out.speed30 = Number(a.speed);
-      if (a.armorType && !out.armorCategory) out.armorCategory = a.armorType;
+      if (a.armorType && !out.armorCategory && !['Light', 'Medium', 'Heavy'].includes(out.category)) out.armorCategory = a.armorType;
     }
     if (out.race && typeof out.race === 'object') {
       if (out.race.size && !out.size) out.size = out.race.size;
@@ -1696,9 +1559,16 @@ const RuleEngine = {
         const cLow = cStr.toLowerCase();
         if (cLow === 'vsaoofrommovement') return 'vs. AoO from Movement';
         if (cLow === 'wieldingchosenweapon') return 'wieldingChosenWeapon';
+        if (cLow === 'castingchosenschool') return 'castingChosenSchool';
         if (condRes === 'situational' || isNote) return cStr;
         return fallbackCond;
       };
+
+      const NAMED_WHEN_CONDS = new Set([
+        'notflatfooted', 'wieldingchosenshield', 'wieldingchosenweapon',
+        'wieldingtwoweapons', 'vsaoofrommovement', 'castingchosenschool',
+        'notheavyarmororheavyload', 'lightornoarmorandlightload'
+      ]);
 
       blockList.forEach(b => {
         if (!b || typeof b !== 'object') return;
@@ -1711,8 +1581,10 @@ const RuleEngine = {
             let matchedAny = false;
             b.branches.forEach(br => {
               if (!br || typeof br !== 'object' || matchedAny) return;
-              const brKind = String(br.condKind || 'toggle').toLowerCase().trim();
-              const brCond = br.condText !== undefined ? br.condText : br.condition;
+              const brKindRaw = String(br.condKind || 'toggle').trim();
+              const brKind = brKindRaw.toLowerCase();
+              const rawBrText = br.condText !== undefined ? String(br.condText).trim() : (br.condition !== undefined ? String(br.condition).trim() : '');
+              const brCond = NAMED_WHEN_CONDS.has(brKind) ? brKindRaw : rawBrText;
               const brChildren = Array.isArray(br.effects) ? br.effects : (Array.isArray(br.blocks) ? br.blocks : (Array.isArray(br.then) ? br.then : (Array.isArray(br.children) ? br.children : [])));
               if (brKind === 'else') {
                 matchedAny = true;
@@ -1729,17 +1601,18 @@ const RuleEngine = {
             });
             return;
           }
-          const condExpr = b.condition || b.when || b.while;
+          const flatIsNote = String(b.condKind || '').toLowerCase() === 'note';
+          const condExpr = b.condition || b.when || b.while || (b.condText !== undefined ? String(b.condText).trim() : undefined);
           const condRes = this.evaluateV3BranchCondition(condExpr, bType, curCtx, ch, out);
-          if (condRes === false) {
+          if (condRes === false && !flatIsNote) {
             if (Array.isArray(b.else) && b.else.length > 0) {
               walkBlocks(b.else, branchMeta);
             }
             return;
           }
-          const nextSituational = resolveBranchSituational(condExpr, condRes, situationalCond, false);
-          const nextLabel = ((condRes === true || condRes === 'qualifier') && condExpr && typeof condExpr === 'string') ? condExpr : sourceLabel;
-          const children = Array.isArray(b.then) ? b.then : (Array.isArray(b.blocks) ? b.blocks : (Array.isArray(b.children) ? b.children : []));
+          const nextSituational = resolveBranchSituational(condExpr, condRes, situationalCond, flatIsNote);
+          const nextLabel = ((condRes === true || condRes === 'qualifier') && condExpr && typeof condExpr === 'string' && !flatIsNote) ? condExpr : sourceLabel;
+          const children = Array.isArray(b.then) ? b.then : (Array.isArray(b.blocks) ? b.blocks : (Array.isArray(b.effects) ? b.effects : (Array.isArray(b.children) ? b.children : [])));
           walkBlocks(children, { ctx: curCtx, situationalCond: nextSituational, sourceLabel: nextLabel });
           return;
         }
@@ -1799,15 +1672,49 @@ const RuleEngine = {
           return;
         }
 
-        // 3. Carrier Rider Block (`carrier`)
+        // 3. Carrier / Metamagic / Cast Mod Block (`carrier`)
         if (bType === 'carrier') {
-          const rider = b.riderEffect || b.effect || b.condition || 'Rider Effect';
-          const saveType = b.saveType || b.save || '';
-          const dcVal = b.dc ? (Number(this.evaluateFormula(b.dc, curCtx)) || b.dc) : '';
-          const badgeStr = saveType
-            ? `On Hit: ${rider} (${saveType}${dcVal ? ` DC ${dcVal}` : ''}${b.negates === false ? ' partial' : ' negates'})`
-            : `On Hit: ${rider}`;
-          addBadge(badgeStr);
+          if (b.carrierMode === 'metamagic') {
+            const txNames = {
+              empower: 'Empower (x1.5 Variable)', maximize: 'Maximize Dice', quicken: 'Quicken (Swift Action)',
+              extend: 'Extend (x2 Duration)', persistent: 'Persistent (24h)', enlarge: 'Enlarge (x2 Range)',
+              widen: 'Widen (x2 Area)', twin: 'Twin Spell', splitRay: 'Split Ray (+1 Ray)', chain: 'Chain Secondary Targets',
+              heighten: 'Heighten (+Save DC / Level)', energySub: `Energy Substitution (${b.energy || 'Chosen'})`,
+              pierceRes: 'Pierce Energy Resistance', silent: 'Silent (No Verbal)', still: 'Still (No Somatic)'
+            };
+            const txLbl = b.riderText || txNames[b.transform] || out.name || 'Metamagic';
+            if (b.costMode === 'rod' || b.costMode === 'sudden') {
+              const usesVal = Math.max(1, Number(b.uses ?? 3) || 3);
+              const maxSpLvl = b.maxSpellLvl ? `, up to ${b.maxSpellLvl}th-lvl` : '';
+              addBadge(`${b.costMode === 'rod' ? 'Metamagic Rod' : 'Sudden Metamagic'}: ${txLbl} (${usesVal}/day${maxSpLvl})`);
+              resources.push({
+                id: b.id || `${out.id || 'v3'}_rod_${resources.length + 1}`,
+                name: out.name || txLbl,
+                kind: 'consume',
+                maxFormula: usesVal,
+                max: usesVal,
+                unit: b.costMode === 'rod' ? 'charges' : 'uses',
+                recharge: { period: 'day', dice: null }
+              });
+            } else if (b.costMode === 'passive') {
+              addBadge(`Metamagic: ${txLbl} (+0 Slot)`);
+            } else {
+              const adj = Number(b.slotAdj ?? 1);
+              addBadge(`Metamagic: ${txLbl} (${adj >= 0 ? '+' : ''}${adj} Slot)`);
+            }
+          } else if (b.carrierMode === 'meleeChannel') {
+            addBadge('Channel Touch Spell Through Melee Attack');
+          } else if (b.carrierMode === 'fullAttackCast') {
+            addBadge(`Spell Combat (${Number(b.atkPenalty ?? -2)} Attack)`);
+          } else {
+            const rider = b.riderEffect || b.effect || b.condition || b.riderText || 'Rider Effect';
+            const saveType = b.saveType || b.save || '';
+            const dcVal = b.dc ? (Number(this.evaluateFormula(b.dc, curCtx)) || b.dc) : '';
+            const badgeStr = saveType
+              ? `On Hit: ${rider} (${saveType}${dcVal ? ` DC ${dcVal}` : ''}${b.negates === false ? ' partial' : ' negates'})`
+              : `On Hit: ${rider}`;
+            addBadge(badgeStr);
+          }
           const childBlocks = b.blocks || b.then || b.effects;
           if (Array.isArray(childBlocks) && childBlocks.length > 0) {
             walkBlocks(childBlocks, branchMeta);
@@ -1837,6 +1744,24 @@ const RuleEngine = {
 
           rawTargets.forEach(rawT => {
             let canonT = this.canonicalizeV3Target(rawT);
+            if (canonT.startsWith('choice.')) {
+              const chosenRaw = this.extractEntryChoice(out);
+              if (chosenRaw) {
+                const cLow = chosenRaw.toLowerCase().trim();
+                if (canonT === 'choice.skill.1') {
+                  const skSlug = cLow.replace(/^skill\./, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+                  if (skSlug) canonT = `skill.${skSlug}`;
+                } else if (canonT.startsWith('choice.ability.')) {
+                  const abMap = { str: 'str', strength: 'str', dex: 'dex', dexterity: 'dex', con: 'con', constitution: 'con', int: 'int', intelligence: 'int', wis: 'wis', wisdom: 'wis', cha: 'cha', charisma: 'cha' };
+                  const abKey = abMap[cLow];
+                  if (abKey) canonT = `ability.${abKey}`;
+                } else if (canonT === 'choice.save.1') {
+                  if (cLow.startsWith('fort')) canonT = 'save.fort';
+                  else if (cLow.startsWith('ref')) canonT = 'save.ref';
+                  else if (cLow.startsWith('will')) canonT = 'save.will';
+                }
+              }
+            }
             if ((canonT === 'ac.all' || canonT === 'ac.shield') && (b.stacksWithShield || out.id === 'feat-shield-specialization')) {
               canonT = 'ac.shieldBonus';
             }
@@ -1928,7 +1853,11 @@ const RuleEngine = {
               stacksWithShield: Boolean(b.stacksWithShield),
               condition: effSituational,
               sourceLabel: effNote,
-              source: out.name || out.id || 'V3 Entry'
+              source: b.source || out.name || out.id || 'V3 Entry',
+              ...(b.selector ? { selector: b.selector } : {}),
+              ...(b.when ? { when: b.when } : {}),
+              ...(b.appliesTo ? { appliesTo: b.appliesTo } : {}),
+              ...(b.affects ? { affects: b.affects } : {})
             });
           });
           return;
@@ -1978,6 +1907,18 @@ const RuleEngine = {
           let flatBonus = b.bonus !== undefined
             ? Number(this.evaluateFormula(b.bonus, curCtx)) || 0
             : (b.die === 'flat' ? (Number(b.count) || 0) : (Number(b.flat || 0) || 0));
+          if (diceStr && !hasExplicitFormulaDice) {
+            const inlineDiceM = diceStr.match(/^(\d+d\d+)\s*([+-]\s*\d+)$/i);
+            if (inlineDiceM) {
+              diceStr = inlineDiceM[1];
+              if (b.bonus === undefined && !b.flat) {
+                flatBonus += parseInt(inlineDiceM[2].replace(/\s+/g, ''), 10) || 0;
+              }
+            } else if (/^\d+$/.test(diceStr) && b.bonus === undefined && !b.flat) {
+              flatBonus = parseInt(diceStr, 10) || 0;
+              diceStr = null;
+            }
+          }
           if (b.scaling === 'perCL' && !hasExplicitFormulaDice) {
             const start = Number(b.start ?? 1) || 1;
             const per = Math.max(1, Number(b.per ?? 1) || 1);
@@ -1999,7 +1940,7 @@ const RuleEngine = {
             bonus: flatBonus,
             type: dmgType,
             multiplyOnCrit: Boolean(b.multiplyOnCrit || b.crit === 'multiply'),
-            onCritOnly: Boolean(b.onCritOnly || b.crit === 'onCritOnly'),
+            onCritOnly: Boolean(b.onCritOnly || b.critOnly || b.crit === 'onCritOnly'),
             touchAttack: Boolean(b.touch || b.isTouch),
             saveType: b.saveType || b.save || null,
             dcFormula: b.dc || b.dcFormula || null,
@@ -2040,7 +1981,11 @@ const RuleEngine = {
             }
             if (dm === 'Energy Resistance') {
               const resV = Number(b.value ?? 10) || 0;
-              const elem = (what || 'fire').toLowerCase();
+              let elem = (what || 'fire').toLowerCase();
+              if (elem === '@choice' || elem === 'chosen' || elem === 'chosen energy') {
+                const chElem = this.extractEntryChoice(out).toLowerCase();
+                elem = ['fire', 'cold', 'acid', 'electricity', 'sonic'].find(x => chElem.includes(x)) || 'chosen';
+              }
               defenses.push({ kind: 'resistance', target: elem, value: resV, formula: null });
               pushModifier({ op: 'add', target: `resist.${elem}`, value: resV, type: 'Untyped', source: out.name || 'Defense' });
               return;
@@ -2117,10 +2062,11 @@ const RuleEngine = {
           const dVal = dFormula
             ? Math.floor(Number(this.evaluateFormula(dFormula, curCtx)) || 0)
             : (Number(b.val ?? b.value ?? 0) || 0);
+          const defWhen = b.when ? { when: b.when } : {};
           if (dKind === 'dr') {
             const bypass = b.bypass || b.drType || '-';
-            defenses.push({ kind: 'dr', target: 'physical', value: dVal, formula: dFormula, bypass });
-            pushModifier({ op: 'add', target: 'dr', value: dVal, formula: dFormula, type: 'Untyped', bypass, source: out.name || 'Defense' });
+            defenses.push({ kind: 'dr', target: 'physical', value: dVal, formula: dFormula, bypass, ...defWhen });
+            pushModifier({ op: 'add', target: 'dr', value: dVal, formula: dFormula, type: 'Untyped', bypass, source: out.name || 'Defense', ...defWhen });
           } else if (dKind === 'sr') {
             defenses.push({ kind: 'sr', target: 'magic', value: dVal, formula: dFormula });
             pushModifier({ op: 'add', target: 'sr', value: dVal, formula: dFormula, type: 'Untyped', source: out.name || 'Defense' });
@@ -2143,6 +2089,9 @@ const RuleEngine = {
           } else if (dKind === 'fortification') {
             defenses.push({ kind: 'fortification', target: 'crit', value: dVal || 25 });
             addBadge(`Fortification ${dVal || 25}%`);
+          } else if (dKind === 'absorption' || dKind === 'absorb') {
+            const absTarget = String(b.element || b.target || 'acid').toLowerCase();
+            defenses.push({ kind: 'absorption', target: absTarget, value: dVal, ratio: b.ratio !== undefined ? Number(b.ratio) : 0.5, ...defWhen });
           } else if (dKind === 'concealment') {
             addBadge(`Concealment ${dVal || 20}%`);
           }
@@ -2213,8 +2162,11 @@ const RuleEngine = {
             if (condName) addBadge(`Condition: ${condName}`);
           } else if (effKind === 'grant' || effKind === 'proficiency' || effKind === 'feat') {
             grants.push({
-              grantType: effKind === 'proficiency' ? 'proficiency' : 'entity',
-              targetId: b.targetId || b.grant || b.feat || b.proficiency || b.value
+              grantType: b.grantType || (effKind === 'proficiency' ? 'proficiency' : 'entity'),
+              targetId: b.targetId || b.grant || b.feat || b.proficiency || b.value,
+              ...(b.value !== undefined ? { value: b.value } : {}),
+              ...(b.filter ? { filter: b.filter } : {}),
+              ...(b.params ? { params: b.params } : {})
             });
           } else if (effKind === 'summon') {
             addBadge(`Summon: ${b.creature || b.target || 'Companion'}`);
@@ -2224,16 +2176,32 @@ const RuleEngine = {
 
         // 8. Resource Block (`resource`)
         if (bType === 'resource') {
-          const maxFormula = b.maxFormula !== undefined ? b.maxFormula : (b.max ?? b.val ?? b.value ?? 1);
+          let maxFormula = b.maxFormula;
+          if (maxFormula === undefined || maxFormula === null || maxFormula === '') {
+            const baseMax = Number(b.max ?? b.val ?? b.value ?? 1) || 0;
+            const abKey = String(b.ability || 'cha').toLowerCase().trim();
+            const abTok = ['str', 'dex', 'con', 'int', 'wis', 'cha'].includes(abKey) ? `@${abKey}Mod` : '@chaMod';
+            if (b.scaling === 'level') maxFormula = '@level';
+            else if (b.scaling === 'halfLevel') maxFormula = 'floor(@level / 2)';
+            else if (b.scaling === 'plusMod') maxFormula = baseMax ? `${baseMax} + ${abTok}` : abTok;
+            else if (b.scaling === 'halfLvlPlusMod') maxFormula = `${baseMax ? baseMax + ' + ' : ''}floor(@level / 2) + ${abTok}`;
+            else if (b.scaling === 'twoPerLvlPlusMod') maxFormula = `${baseMax} + (@level * 2) + ${abTok}`;
+            else maxFormula = baseMax || 1;
+          }
           const evaluatedMax = Math.max(0, Math.floor(Number(this.evaluateFormula(maxFormula, curCtx)) || 0));
+          const resetRaw = String(b.per || b.reset || 'day').toLowerCase();
+          const period = resetRaw === 'perday' || resetRaw === 'day' ? 'day'
+            : (resetRaw === 'perencounter' || resetRaw === 'encounter' ? 'encounter'
+              : (resetRaw === 'atwill' || resetRaw === 'at_will' ? 'at_will'
+                : (resetRaw === 'cooldown' || resetRaw === 'rounds' ? 'rounds' : 'day')));
           resources.push({
             id: b.id || `${out.id || 'v3'}_res_${resources.length + 1}`,
             name: b.name || b.label || out.name || 'Resource',
-            kind: b.kind || 'consume',
+            kind: b.resMode === 'invest' ? 'allocate' : (b.kind || 'consume'),
             maxFormula,
             max: evaluatedMax,
-            unit: b.unit || 'uses',
-            recharge: b.recharge || { period: b.per || 'day', dice: b.rechargeDice || null }
+            unit: b.unit || (/charge/i.test(String(b.name || '')) ? 'charges' : (/round/i.test(String(b.name || '')) ? 'rounds' : 'uses')),
+            recharge: b.recharge || { period, dice: b.rechargeDice || b.cooldownText || null }
           });
         }
       });
@@ -2243,7 +2211,7 @@ const RuleEngine = {
     const topBlocks = Array.isArray(out.blocks) && out.blocks.length > 0
       ? out.blocks
       : (Array.isArray(out.effects) ? out.effects : []);
-    if (topBlocks.length > 0 && !out._assembled) {
+    if (topBlocks.length > 0 && !(out._assembled && seedModifiers.length > 0)) {
       walkBlocks(topBlocks, { ctx: localCtx });
     }
 
@@ -2364,8 +2332,10 @@ const RuleEngine = {
     if (!working._customOverrideApplied) {
       const customOv = this.resolveCustomEntryOverride(working);
       if (customOv && customOv !== working) {
+        const instChoice = this.extractEntryChoice(working) || this.extractEntryChoice(customOv);
         working = Object.assign({}, working, customOv, {
           _customOverrideApplied: true,
+          ...(instChoice ? { choice: instChoice } : {}),
           active: working.active !== undefined ? working.active : customOv.active,
           equipped: working.equipped !== undefined ? working.equipped : customOv.equipped,
           isEquipped: working.isEquipped !== undefined ? working.isEquipped : customOv.isEquipped,
@@ -2388,14 +2358,16 @@ const RuleEngine = {
         working = Object.assign({}, working, { tacticalBadges: rfBadges });
       }
     }
-    if (!isV3 && working.schemaVersion === 2 && Array.isArray(working.modifiers) && Array.isArray(working.defenses)) {
-      return working;
+    if (!isV3) {
+      const migrator = (typeof window !== 'undefined' && window.SchemaMigrator)
+        || (typeof SchemaMigrator !== 'undefined' ? SchemaMigrator : null);
+      if (migrator && typeof migrator.migrateEntryToV3 === 'function') {
+        const migrated = migrator.migrateEntryToV3(working);
+        return this.evaluateV3Entry(migrated, ctx || {});
+      }
+      return this.normalizeLegoEntry(working);
     }
-    let upgraded = working;
-    if (!isV3 && typeof window !== 'undefined' && window.SchemaMigrator && typeof window.SchemaMigrator.upgradeEntryToV2 === 'function') {
-      upgraded = window.SchemaMigrator.upgradeEntryToV2(working);
-    }
-    return this.normalizeLegoEntry(upgraded);
+    return working;
   },
 
   // D&D 3.5e DMG p.28 Weapon Size / Die Step Progression Table
@@ -3932,9 +3904,7 @@ const RuleEngine = {
           return false;
         })
       : null;
-    if (!found && !(typeof window !== 'undefined' && window.SrdCompendium && window.SrdCompendium._ready) && typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
-      found = window.BUNDLED_SRD_CORE_CATALOG.find(m => m && ((refId && m.id === refId) || (m.name && m.name.toLowerCase().trim() === clean) || (m.masterDbName && m.masterDbName.toLowerCase().trim() === clean))) || null;
-    }
+
     if (!found && typeof window !== 'undefined' && window.RuleMaster && window.RuleMaster.canonicalDictionary) {
       let dictKey = clean;
       if (typeof window.RuleMaster.canonicalDictionary[dictKey] === 'string') {
@@ -4013,12 +3983,11 @@ const RuleEngine = {
     const nameLower = rawName.toLowerCase();
     const modes = Array.isArray(baseObj.modes) && baseObj.modes.length > 0 ? baseObj.modes : (Array.isArray(db.modes) ? db.modes : []);
     const offMode = modes.find(m => m && (m.id === 'offhand-head' || (m.ruleFlags && m.ruleFlags.doubleWeaponOffHand)));
-    const modePart = offMode && Array.isArray(offMode.damageParts) && offMode.damageParts[0] ? offMode.damageParts[0] : null;
 
-    let offDice = (modePart && modePart.dice) || baseObj.dice || db.dice || '1d8';
-    let offDmgType = (modePart && modePart.type) || baseObj.dmgType || db.dmgType || 'Bludgeoning';
-    let offCritMin = Number((offMode && offMode.critRange) || baseObj.critMin || db.critMin || db.critRange) || 20;
-    let offCritMult = Number((offMode && offMode.critMult) || baseObj.critMult || db.critMult) || 2;
+    let offDice = offMode?.weapon?.damageDice || offMode?.damageDice || baseObj.weapon?.damageDice || baseObj.dice || db.weapon?.damageDice || db.dice || '1d8';
+    let offDmgType = offMode?.weapon?.dmgType || offMode?.dmgType || baseObj.weapon?.dmgType || baseObj.dmgType || db.weapon?.dmgType || db.dmgType || 'Bludgeoning';
+    let offCritMin = Number(offMode?.weapon?.baseCritRange || offMode?.critRange || baseObj.weapon?.baseCritRange || baseObj.critMin || baseObj.critRange || db.weapon?.baseCritRange || db.critMin || db.critRange) || 20;
+    let offCritMult = Number(offMode?.weapon?.critMultiplier || offMode?.critMult || baseObj.weapon?.critMultiplier || baseObj.critMult || db.weapon?.critMultiplier || db.critMult) || 2;
 
     if (nameLower.includes('gnome hooked hammer')) {
       offDice = '1d6'; offDmgType = 'Piercing'; offCritMin = 20; offCritMult = 4;
@@ -4034,19 +4003,36 @@ const RuleEngine = {
       offDice = '1d6'; offDmgType = 'Bludgeoning'; offCritMin = 20; offCritMult = 2;
     }
 
-    const enh = Number(baseObj.enhancementBonus || db.enhancementBonus) || 0;
+    const enh = Number(baseObj.enhancementBonus ?? baseObj.weapon?.enhancementBonus ?? db.enhancementBonus ?? db.weapon?.enhancementBonus) || 0;
+    const offEffects = Array.isArray(offMode?.effects) ? JSON.parse(JSON.stringify(offMode.effects)) : [];
+    if (enh > 0) {
+      offEffects.push({ type: 'stat', targets: ['attack.weapon'], mode: 'flat', value: enh, btype: 'Enhancement', source: 'Weapon Enhancement' });
+      offEffects.push({ type: 'stat', targets: ['damage.weapon'], mode: 'flat', value: enh, btype: 'Enhancement', source: 'Weapon Enhancement' });
+    }
     return {
+      schemaVersion: 3,
+      type: 'Weapon',
       name: `${rawName} (Off-Hand)`,
       parent: rawName,
       grip: 'Off-Hand',
       dice: offDice,
+      critRange: offCritMin,
       critMin: offCritMin,
       critMult: offCritMult,
       enhancementBonus: enh,
       dmgType: offDmgType,
       isLight: true,
       isDoubleOffHandVirtual: true,
-      damageParts: [{ dice: offDice, bonus: 0, type: offDmgType, multiplyOnCrit: true }],
+      weapon: {
+        category: baseObj.weapon?.category || db.weapon?.category || 'Exotic',
+        handedness: 'light',
+        damageDice: offDice,
+        dmgType: offDmgType,
+        baseCritRange: offCritMin,
+        critMultiplier: offCritMult,
+        enhancementBonus: enh
+      },
+      effects: offEffects,
       ruleFlags: { isLight: true, doubleWeaponOffHand: true },
       tags: ['off-hand', 'double', 'light']
     };
@@ -4307,9 +4293,10 @@ const RuleEngine = {
     const name = (typeof item === 'string' ? item : (item.name || '')).toLowerCase().trim();
     if (!name || name === '-' || name === 'none') return false;
     if (typeof item === 'object') {
-      if (item.category === 'Shield' || item.type === 'Shield' || (item.slot && item.slot.toLowerCase().includes('shield'))) return true;
+      if (item.shield || item.armor?.kind === 'shield' || item.category === 'Shield' || item.type === 'Shield' || (item.slot && item.slot.toLowerCase().includes('shield'))) return true;
     }
-    return Object.keys(this.SRD_SHIELDS).some(k => name.includes(k)) || name.includes('shield') || name.includes('buckler');
+    const srdShields = (this.getActiveRuleset() && this.getActiveRuleset().srdShields) || {};
+    return Object.keys(srdShields).some(k => name.includes(k)) || name.includes('shield') || name.includes('buckler');
   },
 
   // Two-Weapon Defense wield test (PHB p.102): a double weapon in the main hand, or a manufactured weapon in each hand.
@@ -4400,9 +4387,10 @@ const RuleEngine = {
       classNames.add('fighter');
     }
 
-    // Apply class proficiencies (Union across all multiclasses per RAW)
+    // Apply class proficiencies (Union across all multiclasses per RAW, reading active ruleset plugin)
+    const rsProfs = (this.getActiveRuleset(character) && this.getActiveRuleset(character).classProficiencies) || {};
     classNames.forEach(cName => {
-      const profData = this.CLASS_PROFICIENCIES[cName] || this.CLASS_PROFICIENCIES[cName.split(' ')[0]];
+      const profData = rsProfs[cName] || rsProfs[cName.split(' ')[0]];
       if (profData) {
         if (profData.weapons.simple) res.weapons.simple = true;
         if (profData.weapons.martial) res.weapons.martial = true;
@@ -4577,7 +4565,8 @@ const RuleEngine = {
     let cat = rawCatCandidates.find(c => c && validWeightCats.includes(String(c).toLowerCase().trim())) || null;
 
     if (!cat) {
-      for (const [key, val] of Object.entries(this.SRD_ARMORS)) {
+      const srdArmors = (this.getActiveRuleset(character) && this.getActiveRuleset(character).srdArmors) || {};
+      for (const [key, val] of Object.entries(srdArmors)) {
         if (name.includes(key)) {
           cat = val.type;
           break;
@@ -4726,10 +4715,18 @@ const RuleEngine = {
       conditionalAc: [],
       maxDex: item.maxDex !== undefined && item.maxDex !== null && item.maxDex !== ''
         ? Number(item.maxDex)
-        : (dbEntry?.maxDex !== undefined && dbEntry?.maxDex !== null && dbEntry?.maxDex !== '' ? Number(dbEntry.maxDex) : null),
+        : (item.armor?.maxDex !== undefined && item.armor?.maxDex !== null && item.armor?.maxDex !== ''
+          ? Number(item.armor.maxDex)
+          : (dbEntry?.maxDex !== undefined && dbEntry?.maxDex !== null && dbEntry?.maxDex !== ''
+            ? Number(dbEntry.maxDex)
+            : (dbEntry?.armor?.maxDex !== undefined && dbEntry?.armor?.maxDex !== null && dbEntry?.armor?.maxDex !== '' ? Number(dbEntry.armor.maxDex) : null))),
       acp: item.checkPenalty !== undefined && item.checkPenalty !== null && item.checkPenalty !== ''
         ? Number(item.checkPenalty)
-        : (dbEntry?.checkPenalty !== undefined && dbEntry?.checkPenalty !== null && dbEntry?.checkPenalty !== '' ? Number(dbEntry.checkPenalty) : 0),
+        : (item.armor?.armorCheckPenalty !== undefined && item.armor?.armorCheckPenalty !== null && item.armor?.armorCheckPenalty !== ''
+          ? Number(item.armor.armorCheckPenalty)
+          : (dbEntry?.checkPenalty !== undefined && dbEntry?.checkPenalty !== null && dbEntry?.checkPenalty !== ''
+            ? Number(dbEntry.checkPenalty)
+            : (dbEntry?.armor?.armorCheckPenalty !== undefined && dbEntry?.armor?.armorCheckPenalty !== null && dbEntry?.armor?.armorCheckPenalty !== '' ? Number(dbEntry.armor.armorCheckPenalty) : 0))),
       resistance: 0,
       str: 0,
       dex: 0,
@@ -4762,7 +4759,8 @@ const RuleEngine = {
     for (let i = 0; i < rawMods.length; i++) {
       const m = rawMods[i];
       if (!m || !m.target) continue;
-      const val = this.evaluateFormula(m.formula !== undefined ? m.formula : m.value, evalCtx);
+      const hasFormula = m.formula !== undefined && m.formula !== null && String(m.formula).trim() !== '';
+      const val = this.evaluateFormula(hasFormula ? m.formula : m.value, evalCtx);
       if (!val) continue;
       const bType = String(m.type || 'untyped').toLowerCase();
       const target = String(m.target).trim();
@@ -4840,9 +4838,9 @@ const RuleEngine = {
       else if (target === 'sr') res.sr = Math.max(res.sr, val);
     }
 
-    // If Armor or Shield has V2 `armorStats.baseAc` and no `ac.armor`/`ac.shield` modifier was present yet
-    const baseArmorAc = Number(item.armorStats?.baseAc ?? dbEntry?.armorStats?.baseAc ?? 0) || 0;
-    const enhBonus = Number(item.enhancementBonus ?? dbEntry?.enhancementBonus ?? 0) || 0;
+    // If Armor or Shield has V3 `armor.armorBonus` or `armorStats.baseAc` and no `ac.armor`/`ac.shield` modifier was present yet
+    const baseArmorAc = Number(item.armor?.armorBonus ?? item.armorBonus ?? item.shieldBonus ?? item.armorStats?.baseAc ?? dbEntry?.armor?.armorBonus ?? dbEntry?.armorBonus ?? dbEntry?.shieldBonus ?? dbEntry?.armorStats?.baseAc ?? 0) || 0;
+    const enhBonus = Number(item.enhancementBonus ?? item.armor?.enhancementBonus ?? dbEntry?.enhancementBonus ?? dbEntry?.armor?.enhancementBonus ?? 0) || 0;
     const totalArmorAc = baseArmorAc > 0 ? (baseArmorAc + enhBonus) : 0;
     if (totalArmorAc > 0) {
       if (isShield && res.shield === 0) {
@@ -4864,367 +4862,63 @@ const RuleEngine = {
     return res;
   },
 
-  // Standard D&D 3.5e Canonical V2 default buffs catalog
-  getDefaultBuffs() {
-    return [
-      {
-        id: "buf-mage-armor",
-        schemaVersion: 2,
-        name: "Mage Armor",
-        type: "Buff",
-        source: "Spell",
-        category: "AC",
-        durationCategory: "hour",
-        active: false,
-        rounds: 50,
-        durationText: "1 hr / CL (5 Hours)",
-        notes: "+4 Armor bonus to AC (does not stack with worn armor; highest applies)",
-        modifiers: [{ target: "ac.armor", value: 4, formula: "4", type: "armor", condition: null }],
-        damageParts: [],
-        modes: [],
-        ruleFlags: {}
-      },
-      {
-        id: "buf-shield",
-        schemaVersion: 2,
-        name: "Shield (Spell)",
-        type: "Buff",
-        source: "Spell",
-        category: "AC",
-        durationCategory: "short",
-        active: false,
-        rounds: 10,
-        durationText: "1 min / CL (5 Min)",
-        notes: "+4 Shield bonus to AC; negates Magic Missile attacks",
-        modifiers: [{ target: "ac.shield", value: 4, formula: "4", type: "shield", condition: null }],
-        damageParts: [],
-        modes: [],
-        ruleFlags: { immuneMagicMissile: true }
-      },
-      {
-        id: "buf-bulls-strength",
-        schemaVersion: 2,
-        name: "Bull's Strength",
-        type: "Buff",
-        source: "Spell / Potion",
-        category: "Stat",
-        durationCategory: "short",
-        active: false,
-        rounds: 10,
-        durationText: "1 min / CL (5 Min)",
-        notes: "+4 Enhancement bonus to STR (does not stack with Belt of Giant Strength)",
-        modifiers: [{ target: "ability.str", value: 4, formula: "4", type: "enhancement", condition: null }],
-        damageParts: [],
-        modes: [],
-        ruleFlags: {}
-      },
-      {
-        id: "buf-cats-grace",
-        schemaVersion: 2,
-        name: "Cat's Grace",
-        type: "Buff",
-        source: "Spell / Potion",
-        category: "Stat",
-        durationCategory: "short",
-        active: false,
-        rounds: 10,
-        durationText: "1 min / CL (5 Min)",
-        notes: "+4 Enhancement bonus to DEX (does not stack with Gloves of Dexterity)",
-        modifiers: [{ target: "ability.dex", value: 4, formula: "4", type: "enhancement", condition: null }],
-        damageParts: [],
-        modes: [],
-        ruleFlags: {}
-      },
-      {
-        id: "buf-bears-endurance",
-        schemaVersion: 2,
-        name: "Bear's Endurance",
-        type: "Buff",
-        source: "Spell / Potion",
-        category: "Stat",
-        durationCategory: "short",
-        active: false,
-        rounds: 10,
-        durationText: "1 min / CL",
-        notes: "+4 Enhancement bonus to CON (+2 HP/level, +2 Fortitude save)",
-        modifiers: [{ target: "ability.con", value: 4, formula: "4", type: "enhancement", condition: null }],
-        damageParts: [],
-        modes: [],
-        ruleFlags: {}
-      },
-      {
-        id: "buf-haste",
-        schemaVersion: 2,
-        name: "Haste",
-        type: "Buff",
-        source: "Spell",
-        category: "Combat",
-        durationCategory: "short",
-        active: false,
-        rounds: 6,
-        durationText: "1 rd / CL (6 Rounds)",
-        notes: "+1 Attack, +1 Dodge AC, +1 Reflex, +30 ft Speed, +1 extra attack on Full Attack",
-        modifiers: [
-          { target: "attack.all", value: 1, formula: "1", type: "untyped", condition: null },
-          { target: "ac.dodge", value: 1, formula: "1", type: "dodge", condition: null },
-          { target: "save.ref", value: 1, formula: "1", type: "dodge", condition: null },
-          { target: "speed.all", value: 30, formula: "30", type: "enhancement", condition: null }
-        ],
-        damageParts: [],
-        modes: [],
-        ruleFlags: { hasted: true, extraAttackFullAttack: true }
-      },
-      {
-        id: "buf-bless",
-        schemaVersion: 2,
-        name: "Bless",
-        type: "Buff",
-        source: "Spell",
-        category: "Morale",
-        durationCategory: "short",
-        active: false,
-        rounds: 10,
-        durationText: "1 min / CL",
-        notes: "+1 Morale bonus on attack rolls and saving throws against fear",
-        modifiers: [{ target: "attack.all", value: 1, formula: "1", type: "morale", condition: null }],
-        damageParts: [],
-        modes: [],
-        ruleFlags: {}
-      },
-      {
-        id: "buf-prayer-positive",
-        schemaVersion: 2,
-        name: "Prayer",
-        type: "Buff",
-        source: "Spell",
-        category: "Luck",
-        durationCategory: "short",
-        active: false,
-        rounds: 6,
-        durationText: "1 rd / CL",
-        notes: "+1 Luck bonus on attack rolls, weapon damage, saves, and skill checks",
-        modifiers: [
-          { target: "attack.all", value: 1, formula: "1", type: "luck", condition: null },
-          { target: "damage.weapon", value: 1, formula: "1", type: "luck", condition: null },
-          { target: "save.all", value: 1, formula: "1", type: "luck", condition: null },
-          { target: "skill.all", value: 1, formula: "1", type: "luck", condition: null }
-        ],
-        damageParts: [],
-        modes: [],
-        ruleFlags: {}
-      },
-      {
-        id: "buf-barkskin",
-        schemaVersion: 2,
-        name: "Barkskin",
-        type: "Buff",
-        source: "Spell",
-        category: "AC",
-        durationCategory: "short",
-        active: false,
-        rounds: 50,
-        durationText: "10 min / CL",
-        notes: "+2 to +5 Enhancement bonus to Natural Armor (+1 per 3 CL above 3rd, max +5 at CL 12)",
-        modifiers: [{ target: "ac.natural", value: 0, formula: "2 + min(3, max(0, floor((@cl - 3) / 3)))", type: "natural_enhancement", condition: null }],
-        damageParts: [],
-        modes: [],
-        ruleFlags: {}
-      },
-      {
-        id: "buf-shield-of-faith",
-        schemaVersion: 2,
-        name: "Shield of Faith",
-        type: "Buff",
-        source: "Spell",
-        category: "AC",
-        durationCategory: "short",
-        active: false,
-        rounds: 10,
-        durationText: "1 min / CL",
-        notes: "+2 to +5 Deflection bonus to AC (+1 per 6 CL, max +5 at CL 18)",
-        modifiers: [{ target: "ac.deflection", value: 0, formula: "2 + min(3, floor(@cl / 6))", type: "deflection", condition: null }],
-        damageParts: [],
-        modes: [],
-        ruleFlags: {}
-      },
-      {
-        id: "buf-divine-favor",
-        schemaVersion: 2,
-        name: "Divine Favor",
-        type: "Buff",
-        source: "Spell",
-        category: "Combat",
-        durationCategory: "short",
-        active: false,
-        rounds: 10,
-        durationText: "1 min (10 Rounds)",
-        notes: "+1 to +3 Luck bonus on attack and weapon damage rolls (+1 per 3 CL, min +1, max +3)",
-        modifiers: [
-          { target: "attack.all", value: 0, formula: "min(3, max(1, floor(@cl / 3)))", type: "luck", condition: null },
-          { target: "damage.weapon", value: 0, formula: "min(3, max(1, floor(@cl / 3)))", type: "luck", condition: null }
-        ],
-        damageParts: [],
-        modes: [],
-        ruleFlags: {}
-      },
-      {
-        id: "buf-punishing-stance",
-        schemaVersion: 2,
-        name: "Punishing Stance",
-        type: "Buff",
-        source: "Stance",
-        category: "Stance",
-        durationCategory: "permanent",
-        active: true,
-        rounds: null,
-        durationText: "Continuous",
-        dmgDice: "1d6",
-        notes: "+1d6 melee weapon damage, -2 penalty to AC",
-        modifiers: [{ target: "ac.total", value: -2, formula: "-2", type: "penalty", condition: null }],
-        damageParts: [{ dice: "1d6", bonus: 0, type: "Physical", multiplyOnCrit: false, onCritOnly: false, source: "Punishing Stance" }],
-        modes: [],
-        ruleFlags: {}
-      }
-    ];
+  // Pure Canonical V3 default buffs & conditions resolvers (sourced from SrdCompendium)
+  _buildDefaultBuffFromCompendium(spec) {
+    const srd = this.getMasterDbEntry(spec.srdId || spec.name, spec.lookupType || 'Spell');
+    const effects = (srd && Array.isArray(srd.effects) && srd.effects.length > 0)
+      ? JSON.parse(JSON.stringify(srd.effects))
+      : JSON.parse(JSON.stringify(spec.fallbackEffects || []));
+    const rf = Object.assign({}, (srd && srd.ruleFlags) || {}, spec.ruleFlags || {});
+    const out = {
+      id: spec.id,
+      schemaVersion: 3,
+      name: spec.name,
+      type: spec.type || 'Buff',
+      source: spec.source || 'Spell',
+      category: spec.category || 'Combat',
+      durationCategory: spec.durationCategory || 'short',
+      active: Boolean(spec.active),
+      rounds: spec.rounds !== undefined ? spec.rounds : 10,
+      durationText: spec.durationText || (srd && srd.duration) || '1 min / CL',
+      notes: spec.notes || (srd && (srd.shortDescription || srd.text)) || '',
+      effects,
+      modes: [],
+      ruleFlags: rf
+    };
+    if (spec.isDebuff) out.isDebuff = true;
+    if (spec.negativeLevels) out.negativeLevels = spec.negativeLevels;
+    if (spec.dmgDice) out.dmgDice = spec.dmgDice;
+    return out;
   },
 
-  // Standard D&D 3.5e RAW Canonical V2 default debuffs & conditions catalog
-  getDefaultDebuffs() {
-    return [
-      {
-        id: "cnd-energy-drained",
-        schemaVersion: 2,
-        name: "Energy Drain (-4 Lvl)",
-        type: "Condition",
-        source: "Spell / Undead",
-        category: "Debuff",
-        durationCategory: "condition",
-        isDebuff: true,
-        active: false,
-        rounds: null,
-        durationText: "Permanent (Requires Restoration)",
-        negativeLevels: 4,
-        notes: "D&D 3.5e RAW: 4 Negative Levels! -4 Attack, -4 Saving Throws, -4 Skill/Ability Checks, -20 Max/Current HP, -4 Effective Caster Level.",
-        modifiers: [
-          { target: "attack.all", value: -4, formula: "-4", type: "penalty", condition: null },
-          { target: "save.all", value: -4, formula: "-4", type: "penalty", condition: null },
-          { target: "skill.all", value: -4, formula: "-4", type: "penalty", condition: null },
-          { target: "hp.max", value: -20, formula: "-20", type: "penalty", condition: null }
-        ],
-        damageParts: [],
-        modes: [],
-        ruleFlags: { actionRestriction: "Energy Drained (-4 Negative Levels): -4 on all attacks, saves, skills, ability checks, -20 Max HP, -4 effective Caster Level." }
-      },
-      {
-        id: "cnd-sickened",
-        schemaVersion: 2,
-        name: "Sickened",
-        type: "Condition",
-        source: "Condition",
-        category: "Debuff",
-        durationCategory: "condition",
-        isDebuff: true,
-        active: false,
-        rounds: 10,
-        durationText: "10 Rounds",
-        notes: "D&D 3.5e RAW: -2 penalty on all attack rolls, weapon damage rolls, saving throws, skill checks, and ability checks",
-        modifiers: [
-          { target: "attack.all", value: -2, formula: "-2", type: "penalty", condition: null },
-          { target: "damage.weapon", value: -2, formula: "-2", type: "penalty", condition: null },
-          { target: "save.all", value: -2, formula: "-2", type: "penalty", condition: null },
-          { target: "skill.all", value: -2, formula: "-2", type: "penalty", condition: null }
-        ],
-        damageParts: [],
-        modes: [],
-        ruleFlags: {}
-      },
-      {
-        id: "cnd-shaken",
-        schemaVersion: 2,
-        name: "Shaken",
-        type: "Condition",
-        source: "Condition",
-        category: "Debuff",
-        durationCategory: "condition",
-        isDebuff: true,
-        active: false,
-        rounds: 10,
-        durationText: "10 Rounds",
-        notes: "D&D 3.5e RAW: Fear condition. -2 penalty on attack rolls, saving throws, skill checks, and ability checks",
-        modifiers: [
-          { target: "attack.all", value: -2, formula: "-2", type: "penalty", condition: null },
-          { target: "save.all", value: -2, formula: "-2", type: "penalty", condition: null },
-          { target: "skill.all", value: -2, formula: "-2", type: "penalty", condition: null }
-        ],
-        damageParts: [],
-        modes: [],
-        ruleFlags: {}
-      },
-      {
-        id: "cnd-fatigued",
-        schemaVersion: 2,
-        name: "Fatigued",
-        type: "Condition",
-        source: "Condition",
-        category: "Debuff",
-        durationCategory: "condition",
-        isDebuff: true,
-        active: false,
-        rounds: null,
-        durationText: "8 Hours Rest",
-        notes: "D&D 3.5e RAW: Cannot run or charge; -2 penalty to STR and DEX.",
-        modifiers: [
-          { target: "ability.str", value: -2, formula: "-2", type: "penalty", condition: null },
-          { target: "ability.dex", value: -2, formula: "-2", type: "penalty", condition: null }
-        ],
-        damageParts: [],
-        modes: [],
-        ruleFlags: { actionRestriction: "Cannot run or charge (-2 Str, -2 Dex). 8 hours complete rest removes Fatigue." }
-      },
-      {
-        id: "cnd-entangled",
-        schemaVersion: 2,
-        name: "Entangled",
-        type: "Condition",
-        source: "Condition",
-        category: "Debuff",
-        durationCategory: "condition",
-        isDebuff: true,
-        active: false,
-        rounds: 5,
-        durationText: "5 Rounds",
-        notes: "D&D 3.5e RAW: Move at half speed, cannot run or charge, -2 penalty on attack rolls, -4 penalty to DEX (-2 AC and -2 Reflex)",
-        modifiers: [
-          { target: "attack.all", value: -2, formula: "-2", type: "penalty", condition: null },
-          { target: "ability.dex", value: -4, formula: "-4", type: "penalty", condition: null }
-        ],
-        damageParts: [],
-        modes: [],
-        ruleFlags: { halfSpeed: true, actionRestriction: "Ensnared: moves at half speed, cannot run or charge, Concentration DC 15 + spell level to cast." }
-      },
-      {
-        id: "buf-slow",
-        schemaVersion: 2,
-        name: "Slow (Spell)",
-        type: "Condition",
-        source: "Spell",
-        category: "Debuff",
-        durationCategory: "short",
-        isDebuff: true,
-        active: false,
-        rounds: 6,
-        durationText: "1 rd / CL (6 Rounds)",
-        notes: "D&D 3.5e RAW: Only a single move or standard action per turn, -1 penalty to AC, attack rolls, and Reflex saves, half speed",
-        modifiers: [
-          { target: "ac.total", value: -1, formula: "-1", type: "penalty", condition: null },
-          { target: "attack.all", value: -1, formula: "-1", type: "penalty", condition: null },
-          { target: "save.ref", value: -1, formula: "-1", type: "penalty", condition: null }
-        ],
-        damageParts: [],
-        modes: [],
-        ruleFlags: { halfSpeed: true, actionRestriction: "Slowed: Only a single Move or Standard action per turn, moves at half speed." }
-      }
+  getDefaultBuffs() {
+    const specs = [
+      { id: 'buf-mage-armor', srdId: 'spl-mage-armor', name: 'Mage Armor', category: 'AC', durationCategory: 'hour', rounds: 50, durationText: '1 hr / CL (5 Hours)', notes: '+4 Armor bonus to AC (does not stack with worn armor; highest applies)', fallbackEffects: [{ type: 'stat', targets: ['ac.armor'], mode: 'flat', value: 4, btype: 'Armor' }] },
+      { id: 'buf-shield', srdId: 'spl-shield', name: 'Shield (Spell)', category: 'AC', rounds: 10, durationText: '1 min / CL (5 Min)', notes: '+4 Shield bonus to AC; negates Magic Missile attacks', ruleFlags: { immuneMagicMissile: true }, fallbackEffects: [{ type: 'stat', targets: ['ac.shield'], mode: 'flat', value: 4, btype: 'Shield' }] },
+      { id: 'buf-bulls-strength', srdId: 'spl-bulls-strength', name: "Bull's Strength", source: 'Spell / Potion', category: 'Stat', rounds: 10, durationText: '1 min / CL (5 Min)', notes: '+4 Enhancement bonus to STR (does not stack with Belt of Giant Strength)', fallbackEffects: [{ type: 'stat', targets: ['ability.str'], mode: 'flat', value: 4, btype: 'Enhancement' }] },
+      { id: 'buf-cats-grace', srdId: 'spl-cats-grace', name: "Cat's Grace", source: 'Spell / Potion', category: 'Stat', rounds: 10, durationText: '1 min / CL (5 Min)', notes: '+4 Enhancement bonus to DEX (does not stack with Gloves of Dexterity)', fallbackEffects: [{ type: 'stat', targets: ['ability.dex'], mode: 'flat', value: 4, btype: 'Enhancement' }] },
+      { id: 'buf-bears-endurance', srdId: 'spl-bears-endurance', name: "Bear's Endurance", source: 'Spell / Potion', category: 'Stat', rounds: 10, durationText: '1 min / CL', notes: '+4 Enhancement bonus to CON (+2 HP/level, +2 Fortitude save)', fallbackEffects: [{ type: 'stat', targets: ['ability.con'], mode: 'flat', value: 4, btype: 'Enhancement' }] },
+      { id: 'buf-haste', srdId: 'spl-haste', name: 'Haste', category: 'Combat', rounds: 6, durationText: '1 rd / CL (6 Rounds)', notes: '+1 Attack, +1 Dodge AC, +1 Reflex, +30 ft Speed, +1 extra attack on Full Attack', ruleFlags: { hasted: true, extraAttackFullAttack: true }, fallbackEffects: [{ type: 'stat', targets: ['attack.all'], mode: 'flat', value: 1, btype: 'Untyped' }, { type: 'stat', targets: ['ac.dodge', 'save.ref'], mode: 'flat', value: 1, btype: 'Dodge' }, { type: 'stat', targets: ['speed.all'], mode: 'flat', value: 30, btype: 'Enhancement' }] },
+      { id: 'buf-bless', srdId: 'spl-bless', name: 'Bless', category: 'Morale', rounds: 10, durationText: '1 min / CL', notes: '+1 Morale bonus on attack rolls and saving throws against fear', fallbackEffects: [{ type: 'stat', targets: ['attack.all'], mode: 'flat', value: 1, btype: 'Morale' }] },
+      { id: 'buf-prayer-positive', srdId: 'spl-prayer', name: 'Prayer', category: 'Luck', rounds: 6, durationText: '1 rd / CL', notes: '+1 Luck bonus on attack rolls, weapon damage, saves, and skill checks', fallbackEffects: [{ type: 'stat', targets: ['attack.all', 'damage.weapon', 'save.all', 'skill.all'], mode: 'flat', value: 1, btype: 'Luck' }] },
+      { id: 'buf-barkskin', srdId: 'spl-barkskin', name: 'Barkskin', category: 'AC', rounds: 50, durationText: '10 min / CL', notes: '+2 to +5 Enhancement bonus to Natural Armor (+1 per 3 CL above 3rd, max +5 at CL 12)', fallbackEffects: [{ type: 'stat', targets: ['ac.natural'], mode: 'formula', formula: '2 + min(3, max(0, floor((@cl - 3) / 3)))', btype: 'Natural Armor Enhancement' }] },
+      { id: 'buf-shield-of-faith', srdId: 'spl-shield-of-faith', name: 'Shield of Faith', category: 'AC', rounds: 10, durationText: '1 min / CL', notes: '+2 to +5 Deflection bonus to AC (+1 per 6 CL, max +5 at CL 18)', fallbackEffects: [{ type: 'stat', targets: ['ac.deflection'], mode: 'formula', formula: '2 + min(3, floor(@cl / 6))', btype: 'Deflection' }] },
+      { id: 'buf-divine-favor', srdId: 'spl-divine-favor', name: 'Divine Favor', category: 'Combat', rounds: 10, durationText: '1 min (10 Rounds)', notes: '+1 to +3 Luck bonus on attack and weapon damage rolls (+1 per 3 CL, min +1, max +3)', fallbackEffects: [{ type: 'stat', targets: ['attack.all', 'damage.weapon'], mode: 'formula', formula: 'min(3, max(1, floor(@cl / 3)))', btype: 'Luck' }] },
+      { id: 'buf-punishing-stance', srdId: 'tob-stance-punishing-stance', lookupType: 'Stance', name: 'Punishing Stance', source: 'Stance', category: 'Stance', durationCategory: 'permanent', active: true, rounds: null, durationText: 'Continuous', dmgDice: '1d6', notes: '+1d6 melee weapon damage, -2 penalty to AC', fallbackEffects: [{ type: 'stat', targets: ['ac.total'], mode: 'flat', value: -2, btype: 'Penalty' }, { type: 'roll', kind: 'Damage', dice: '1d6', bonus: 0, dmgType: 'Physical', source: 'Punishing Stance' }] }
     ];
+    return specs.map(s => this._buildDefaultBuffFromCompendium(s));
+  },
+
+  getDefaultDebuffs() {
+    const specs = [
+      { id: 'cnd-energy-drained', srdId: 'cnd-energy-drained', lookupType: 'Condition', name: 'Energy Drain (-4 Lvl)', type: 'Condition', source: 'Spell / Undead', category: 'Debuff', durationCategory: 'condition', isDebuff: true, rounds: null, durationText: 'Permanent (Requires Restoration)', negativeLevels: 4, notes: 'D&D 3.5e RAW: 4 Negative Levels! -4 Attack, -4 Saving Throws, -4 Skill/Ability Checks, -20 Max/Current HP, -4 Effective Caster Level.', ruleFlags: { actionRestriction: 'Energy Drained (-4 Negative Levels): -4 on all attacks, saves, skills, ability checks, -20 Max HP, -4 effective Caster Level.' }, fallbackEffects: [{ type: 'stat', targets: ['attack.all', 'save.all', 'skill.all'], mode: 'flat', value: -4, btype: 'Penalty' }, { type: 'stat', targets: ['hp.max'], mode: 'flat', value: -20, btype: 'Penalty' }] },
+      { id: 'cnd-sickened', srdId: 'cnd-sickened', lookupType: 'Condition', name: 'Sickened', type: 'Condition', source: 'Condition', category: 'Debuff', durationCategory: 'condition', isDebuff: true, rounds: 10, durationText: '10 Rounds', notes: 'D&D 3.5e RAW: -2 penalty on all attack rolls, weapon damage rolls, saving throws, skill checks, and ability checks', fallbackEffects: [{ type: 'stat', targets: ['attack.all', 'damage.weapon', 'save.all', 'skill.all'], mode: 'flat', value: -2, btype: 'Penalty' }] },
+      { id: 'cnd-shaken', srdId: 'cnd-shaken', lookupType: 'Condition', name: 'Shaken', type: 'Condition', source: 'Condition', category: 'Debuff', durationCategory: 'condition', isDebuff: true, rounds: 10, durationText: '10 Rounds', notes: 'D&D 3.5e RAW: Fear condition. -2 penalty on attack rolls, saving throws, skill checks, and ability checks', fallbackEffects: [{ type: 'stat', targets: ['attack.all', 'save.all', 'skill.all'], mode: 'flat', value: -2, btype: 'Penalty' }] },
+      { id: 'cnd-fatigued', srdId: 'cnd-fatigued', lookupType: 'Condition', name: 'Fatigued', type: 'Condition', source: 'Condition', category: 'Debuff', durationCategory: 'condition', isDebuff: true, rounds: null, durationText: '8 Hours Rest', notes: 'D&D 3.5e RAW: Cannot run or charge; -2 penalty to STR and DEX.', ruleFlags: { actionRestriction: 'Cannot run or charge (-2 Str, -2 Dex). 8 hours complete rest removes Fatigue.' }, fallbackEffects: [{ type: 'stat', targets: ['ability.str', 'ability.dex'], mode: 'flat', value: -2, btype: 'Penalty' }] },
+      { id: 'cnd-entangled', srdId: 'cnd-entangled', lookupType: 'Condition', name: 'Entangled', type: 'Condition', source: 'Condition', category: 'Debuff', durationCategory: 'condition', isDebuff: true, rounds: 5, durationText: '5 Rounds', notes: 'D&D 3.5e RAW: Move at half speed, cannot run or charge, -2 penalty on attack rolls, -4 penalty to DEX (-2 AC and -2 Reflex)', ruleFlags: { halfSpeed: true, actionRestriction: 'Ensnared: moves at half speed, cannot run or charge, Concentration DC 15 + spell level to cast.' }, fallbackEffects: [{ type: 'stat', targets: ['attack.all'], mode: 'flat', value: -2, btype: 'Penalty' }, { type: 'stat', targets: ['ability.dex'], mode: 'flat', value: -4, btype: 'Penalty' }] },
+      { id: 'buf-slow', srdId: 'spl-slow', lookupType: 'Spell', name: 'Slow (Spell)', type: 'Condition', source: 'Spell', category: 'Debuff', durationCategory: 'short', isDebuff: true, rounds: 6, durationText: '1 rd / CL (6 Rounds)', notes: 'D&D 3.5e RAW: Only a single move or standard action per turn, -1 penalty to AC, attack rolls, and Reflex saves, half speed', ruleFlags: { halfSpeed: true, actionRestriction: 'Slowed: Only a single Move or Standard action per turn, moves at half speed.' }, fallbackEffects: [{ type: 'stat', targets: ['ac.total', 'attack.all', 'save.ref'], mode: 'flat', value: -1, btype: 'Penalty' }] }
+    ];
+    return specs.map(s => this._buildDefaultBuffFromCompendium(s));
   },
 
   // Evaluate dynamic scaling bonuses based on character level (e.g. "2+1/4lvl", "+1 per 3 levels", "lvl*2")
@@ -5359,7 +5053,7 @@ const RuleEngine = {
     }
 
     // 4. FIREBALL (PHB p.231) & LIGHTNING BOLT (PHB p.248): 1d6 per level (max 10d6)
-    if (cleanName === 'fireball' || cleanName.includes('lightning bolt') || cleanName === 'alevtoptu') {
+    if (cleanName === 'fireball' || cleanName.includes('lightning bolt')) {
       const isWand = (spell.source || '').toLowerCase().includes('wand') || cleanName.includes('wand') || (spell.parent || '').toLowerCase().includes('wand');
       const effectiveCl = isWand ? Math.min(cl, 5) : cl;
       const diceCount = Math.min(10, Math.max(1, effectiveCl));
@@ -5371,7 +5065,7 @@ const RuleEngine = {
         name: rawName,
         casterLevel: cl,
         projectiles: 1,
-        projectileName: 'Patlama',
+        projectileName: 'Burst',
         diceCount,
         dieSides,
         staticBonus: 0,
@@ -5836,52 +5530,38 @@ const RuleEngine = {
       });
     });
 
-    // Built-in Canonical V2 fallback modifiers for the 8 SRD domains that grant Caster Level bonuses
-    const BUILTIN_DOMAIN_CL_MODS = {
-      chaos: [{ target: 'casterLevel.chaotic', value: 1, type: 'untyped' }],
-      evil: [{ target: 'casterLevel.evil', value: 1, type: 'untyped' }],
-      good: [{ target: 'casterLevel.good', value: 1, type: 'untyped' }],
-      law: [{ target: 'casterLevel.lawful', value: 1, type: 'untyped' }],
-      healing: [{ target: 'casterLevel.healing', value: 1, type: 'untyped' }],
-      knowledge: [{ target: 'casterLevel.divination', value: 1, type: 'untyped' }],
-      artifice: [{ target: 'casterLevel.creation', value: 1, type: 'untyped' }],
-      creation: [{ target: 'casterLevel.creation', value: 2, type: 'untyped' }]
-    };
-
     const comp = (typeof window !== 'undefined' && window.SrdCompendium)
       || (typeof SrdCompendium !== 'undefined' ? SrdCompendium : null);
     const candidateModifiers = [];
     domainNames.forEach(domName => {
-      const domLower = domName.toLowerCase();
       const srdDom = ((comp && typeof comp.getDomain === 'function')
         ? comp.getDomain(domName)
         : null) || this.getMasterDbEntry(domName, 'Domain');
-      const mods = (srdDom && Array.isArray(srdDom.modifiers) && srdDom.modifiers.length > 0)
-        ? srdDom.modifiers
-        : (BUILTIN_DOMAIN_CL_MODS[domLower] || []);
-      const displayDom = domName.charAt(0).toUpperCase() + domName.slice(1);
+      const evDom = srdDom ? this.ensureV2Entry(srdDom, { character }) : null;
+      const mods = (evDom && Array.isArray(evDom.modifiers)) ? evDom.modifiers : [];
+      const displayDom = srdDom?.name || (domName.charAt(0).toUpperCase() + domName.slice(1));
       mods.forEach(mod => {
         if (mod && String(mod.target || '').startsWith('casterLevel')) {
-          candidateModifiers.push({ ...mod, _sourceLabel: `${displayDom} Domain` });
+          candidateModifiers.push({ ...mod, condition: mod.condition || mod.sourceLabel || null, _sourceLabel: `${displayDom} Domain` });
         }
       });
     });
 
-    // Also harvest any `casterLevel.*` V2 modifiers from active character feats, equipped items, and active buffs
+    // Harvest any `casterLevel.*` V3 effects from active character feats and active buffs
     const extraSources = [
       ...(Array.isArray(character?.feats) ? character.feats.filter(f => f && f.active !== false).map(f => ({ entry: f, label: f.name || 'Feat' })) : []),
       ...(Array.isArray(character?.buffs) ? character.buffs.filter(b => b && b.active !== false).map(b => ({ entry: b, label: b.name || 'Buff' })) : [])
     ];
     extraSources.forEach(({ entry, label }) => {
-      const dbFeat = (!Array.isArray(entry.modifiers) || entry.modifiers.length === 0)
-        ? (this.getMasterDbEntry(entry) || {})
-        : {};
-      const mods = (Array.isArray(entry.modifiers) && entry.modifiers.length > 0)
-        ? entry.modifiers
-        : (Array.isArray(dbFeat.modifiers) ? dbFeat.modifiers : []);
+      const dbRef = this.getMasterDbEntry(entry) || {};
+      const merged = Object.assign({}, dbRef, entry, {
+        effects: (Array.isArray(entry.effects) && entry.effects.length > 0) ? entry.effects : dbRef.effects
+      });
+      const ev = this.ensureV2Entry(merged, { character });
+      const mods = (ev && Array.isArray(ev.modifiers)) ? ev.modifiers : [];
       mods.forEach(mod => {
         if (mod && String(mod.target || '').startsWith('casterLevel')) {
-          candidateModifiers.push({ ...mod, _sourceLabel: label });
+          candidateModifiers.push({ ...mod, condition: mod.condition || mod.sourceLabel || null, _sourceLabel: label });
         }
       });
     });
@@ -5986,14 +5666,18 @@ const RuleEngine = {
       const mdbDom = this.getMasterDbEntry(domName, 'Domain');
       const compDom = (comp && typeof comp.getDomain === 'function') ? comp.getDomain(domName) : null;
       const srdDom = mdbDom || compDom;
+      const evDom = srdDom ? this.ensureV2Entry(srdDom, { character }) : null;
       entries.push({
+        id: srdDom?.id || `dom-${String(domName).toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,
+        schemaVersion: 3,
         name: srdDom?.name || domName,
-        modifiers: Array.isArray(srdDom?.modifiers) ? srdDom.modifiers : [],
-        ruleFlags: { ...(srdDom?.ruleFlags || {}) },
+        effects: Array.isArray(srdDom?.effects) ? JSON.parse(JSON.stringify(srdDom.effects)) : [],
+        modifiers: Array.isArray(evDom?.modifiers) ? evDom.modifiers : [],
+        ruleFlags: { ...(srdDom?.ruleFlags || {}), ...(evDom?.ruleFlags || {}) },
         spellLikeAbilities: Array.isArray(srdDom?.grantedPower?.spellLikeAbilities)
           ? srdDom.grantedPower.spellLikeAbilities
           : [],
-        description: srdDom?.grantedPower?.description || srdDom?.description || ''
+        description: srdDom?.grantedPower?.description || srdDom?.text || srdDom?.description || ''
       });
     });
     return entries;
@@ -6084,8 +5768,10 @@ const RuleEngine = {
     (Array.isArray(character.feats) ? character.feats : []).forEach((f, idx) => {
       if (!f || f.active === false) return;
       const fName = String(typeof f === 'string' ? f : (f.name || '')).toLowerCase().trim();
-      const mods = Array.isArray(f.modifiers) ? f.modifiers : (this.getMasterDbEntry(f, 'Feat')?.modifiers || []);
-      const turnMod = (mods || []).find(m => m && String(m.target || '').toLowerCase() === 'turnundead');
+      const dbFeat = this.getMasterDbEntry(f, 'Feat');
+      const evFeat = this.ensureV2Entry(typeof f === 'object' ? Object.assign({}, dbFeat || {}, f) : (dbFeat || { name: f }), { character });
+      const mods = Array.isArray(evFeat?.modifiers) ? evFeat.modifiers : [];
+      const turnMod = mods.find(m => m && String(m.target || '').toLowerCase() === 'turnundead');
       if (turnMod) {
         extraTurningUses += Number(turnMod.value) || 4;
         seenExtraTurning.add(idx);
@@ -6159,6 +5845,7 @@ const RuleEngine = {
       if (rf.featOfStrength) {
         activeDomainPowers.push({
           id: 'dom_strength_feat',
+          schemaVersion: 3,
           domain: domName,
           name: 'Feat of Strength',
           icon: '💪',
@@ -6167,12 +5854,13 @@ const RuleEngine = {
           durationText: '1 round',
           summary: `+${domainCasterLvl} Enhancement to STR for 1 round`,
           kind: 'buff',
-          modifiers: [{ target: 'ability.str', value: domainCasterLvl, formula: String(domainCasterLvl), type: 'Enhancement', condition: null }]
+          effects: [{ type: 'stat', targets: ['ability.str'], mode: 'flat', value: domainCasterLvl, btype: 'Enhancement' }]
         });
       }
       if (rf.protectiveWard) {
         activeDomainPowers.push({
           id: 'dom_protection_ward',
+          schemaVersion: 3,
           domain: domName,
           name: 'Protective Ward',
           icon: '🛡️',
@@ -6181,12 +5869,13 @@ const RuleEngine = {
           durationText: '1 hour (next save)',
           summary: `+${domainCasterLvl} Resistance bonus on next saving throw`,
           kind: 'buff',
-          modifiers: [{ target: 'save.all', value: domainCasterLvl, formula: String(domainCasterLvl), type: 'Resistance', condition: null }]
+          effects: [{ type: 'stat', targets: ['save.all'], mode: 'flat', value: domainCasterLvl, btype: 'Resistance' }]
         });
       }
       if (rf.smiteAttack) {
         activeDomainPowers.push({
           id: 'dom_destruction_smite',
+          schemaVersion: 3,
           domain: domName,
           name: 'Destruction Smite',
           icon: '⚔️',
@@ -6195,15 +5884,16 @@ const RuleEngine = {
           durationText: '1 round (single melee attack)',
           summary: `+4 Attack and +${domainCasterLvl} Damage on single melee attack`,
           kind: 'buff',
-          modifiers: [
-            { target: 'attack.all', value: 4, formula: '4', type: 'Untyped', condition: null },
-            { target: 'damage.weapon', value: domainCasterLvl, formula: String(domainCasterLvl), type: 'Untyped', condition: null }
+          effects: [
+            { type: 'stat', targets: ['attack.all'], mode: 'flat', value: 4, btype: 'Untyped' },
+            { type: 'stat', targets: ['damage.weapon'], mode: 'flat', value: domainCasterLvl, btype: 'Untyped' }
           ]
         });
       }
       if (rf.boostChaBy4OncePerDay) {
         activeDomainPowers.push({
           id: 'dom_charm_boost',
+          schemaVersion: 3,
           domain: domName,
           name: 'Charm Boost (+4 CHA)',
           icon: '✨',
@@ -6212,12 +5902,13 @@ const RuleEngine = {
           durationText: '1 min',
           summary: '+4 Untyped bonus to CHA for 1 minute',
           kind: 'buff',
-          modifiers: [{ target: 'ability.cha', value: 4, formula: '4', type: 'Untyped', condition: null }]
+          effects: [{ type: 'stat', targets: ['ability.cha'], mode: 'flat', value: 4, btype: 'Untyped' }]
         });
       }
       if (rf.freedomOfMovementRoundsPerDay) {
         activeDomainPowers.push({
           id: 'dom_travel_fom',
+          schemaVersion: 3,
           domain: domName,
           name: 'Freedom of Movement (Travel)',
           icon: '🪽',
@@ -6227,7 +5918,7 @@ const RuleEngine = {
           durationText: '1 round',
           summary: `Act normally regardless of magical impediments (${domainCasterLvl} rds/day)`,
           kind: 'buff',
-          modifiers: [],
+          effects: [{ type: 'defense', mode: 'Immunity', what: 'Paralysis and Grapple' }],
           ruleFlags: { freedomOfMovement: true }
         });
       }
@@ -6277,8 +5968,8 @@ const RuleEngine = {
         if (!slaName) return;
         const usesStr = String(sla?.uses || '1/day').trim();
         const usesLower = usesStr.toLowerCase();
-        const wisScore = Number(abilityScores?.wis?.total ?? character?.stats?.wis?.score ?? 10);
-        const wisMod = this.getAbilityModifier(wisScore);
+        const wisScore = Number(character?.abilities?.wis ?? character?.baseAbilities?.wis ?? 10);
+        const wisMod = this.getAbilityMod(wisScore);
         let parsedMaxUses = 1;
         let unitLabel = '/day';
         if (usesLower.includes('at will')) {
@@ -6301,6 +5992,7 @@ const RuleEngine = {
           const durRds = Math.max(1, chaMod);
           activeDomainPowers.push({
             id: 'dom_nobility_inspire',
+            schemaVersion: 3,
             domain: domName,
             name: 'Inspire Allies',
             icon: '👑',
@@ -6309,17 +6001,16 @@ const RuleEngine = {
             durationText: `${durRds} round${durRds > 1 ? 's' : ''}`,
             summary: `+2 Morale bonus on saving throws, attack rolls, ability/skill checks, and weapon damage (${durRds} rds)`,
             kind: 'buff',
-            modifiers: [
-              { target: 'save.all', value: 2, formula: '2', type: 'Morale', condition: null },
-              { target: 'attack.all', value: 2, formula: '2', type: 'Morale', condition: null },
-              { target: 'damage.weapon', value: 2, formula: '2', type: 'Morale', condition: null },
-              { target: 'skill.all', value: 2, formula: '2', type: 'Morale', condition: null }
+            effects: [
+              { type: 'stat', targets: ['save.all', 'attack.all', 'damage.weapon', 'skill.all'], mode: 'flat', value: 2, btype: 'Morale' }
             ]
           });
         } else {
           const slaEntry = this.getMasterDbEntry(slaName, 'Special Ability') || this.getMasterDbEntry(slaName, 'Spell') || this.getMasterDbEntry(slaName, 'Feat');
+          const slaEffects = Array.isArray(slaEntry?.effects) ? JSON.parse(JSON.stringify(slaEntry.effects)) : [];
           activeDomainPowers.push({
             id: `dom_${domName.toLowerCase().replace(/[^a-z0-9]+/g, '_')}_sla_${slaName.toLowerCase().replace(/[^a-z0-9]+/g, '_')}`,
+            schemaVersion: 3,
             domain: domName,
             name: `${slaName} (Sp)`,
             icon: '🔮',
@@ -6328,9 +6019,8 @@ const RuleEngine = {
             unitLabel: unitLabel,
             durationText: slaEntry?.duration || `CL ${domainCasterLvl}`,
             summary: sla?.desc || slaEntry?.shortDescription || slaEntry?.benefit || slaEntry?.description || dom.description || `${domName} Domain Active Power (${usesStr} at CL ${domainCasterLvl})`,
-            kind: (Array.isArray(slaEntry?.modifiers) && slaEntry.modifiers.length > 0) ? 'buff' : 'sla',
-            modifiers: Array.isArray(slaEntry?.modifiers) ? JSON.parse(JSON.stringify(slaEntry.modifiers)) : [],
-            damageParts: Array.isArray(slaEntry?.damageParts) ? JSON.parse(JSON.stringify(slaEntry.damageParts)) : [],
+            kind: slaEffects.some(e => e && e.type === 'stat') ? 'buff' : 'sla',
+            effects: slaEffects,
             spellName: slaName
           });
         }
@@ -6374,17 +6064,28 @@ const RuleEngine = {
     const rawSpellName = String(spell.name || '').trim();
     const baseLookupName = rawSpellName.replace(/\s*\((?:fire|cold|acid|electricity|sonic)\)\s*$/i, '').trim();
 
-    // 1. Merge with Canonical Compendium / Master DB Entry if character copy lacks V2 buff fields
-    const dbEntry = this.getMasterDbEntry(spell, 'Spell') || this.getMasterDbEntry({ name: baseLookupName }, 'Spell') || {};
+    // 1. Merge with Canonical V3 Compendium / Custom DB Entry
+    const dbEntry = this.getMasterDbEntry(spell, 'Spell')
+      || this.getMasterDbEntry(spell, 'Power')
+      || this.getMasterDbEntry({ name: baseLookupName }, 'Spell')
+      || this.getMasterDbEntry({ name: baseLookupName }, 'Power')
+      || {};
     const rawName = String(rawSpellName || dbEntry.name || '').trim();
     const cleanName = baseLookupName.toLowerCase();
 
-    let modifiers = (Array.isArray(spell.modifiers) && spell.modifiers.length > 0)
-      ? spell.modifiers
-      : (Array.isArray(dbEntry.modifiers) && dbEntry.modifiers.length > 0 ? dbEntry.modifiers : []);
-    let sizeModifier = spell.sizeModifier || dbEntry.sizeModifier || null;
-    let tempHpFormula = spell.tempHpFormula || dbEntry.tempHpFormula || null;
-    let ruleFlags = { ...(dbEntry.ruleFlags || {}), ...(spell.ruleFlags || {}) };
+    const rawEffects = (Array.isArray(spell.effects) && spell.effects.length > 0)
+      ? spell.effects
+      : (Array.isArray(dbEntry.effects) ? dbEntry.effects : []);
+    const mergedForV3 = Object.assign({}, dbEntry, spell, {
+      schemaVersion: 3,
+      effects: rawEffects,
+      ruleFlags: { ...(dbEntry.ruleFlags || {}), ...(spell.ruleFlags || {}) }
+    });
+    const evSpell = this.evaluateV3Entry(mergedForV3, { ...evalCtx, ml: cl, character });
+    let modifiers = Array.isArray(evSpell.modifiers) ? evSpell.modifiers : [];
+    let sizeModifier = spell.sizeModifier || dbEntry.sizeModifier || (evSpell.sizeSteps ? { targetType: 'creature', scaling: { steps: evSpell.sizeSteps } } : null);
+    let tempHpFormula = evSpell.tempHpFormula || spell.tempHpFormula || dbEntry.tempHpFormula || null;
+    let ruleFlags = { ...(evSpell.ruleFlags || {}) };
     let targetMode = spell.buffTargetMode || dbEntry.buffTargetMode || null;
 
     // 2.Determine Target Mode ('self', 'single', 'party', 'weapon') if not explicitly set
@@ -6535,14 +6236,8 @@ const RuleEngine = {
       }
     }
 
-    // 5. Evaluate Duration string at Caster Level
-    const TEN_MIN_PER_LVL = new Set(['resist energy', 'resist energy, mass', 'mass resist energy', 'protection from energy', 'protection from energy, mass', 'mass protection from energy', 'barkskin', 'stoneskin', 'freedom of movement', 'heroism', 'air walk', 'water walk', 'magic circle against evil', 'magic circle against good', 'magic circle against law', 'magic circle against chaos', 'conviction', 'conviction, mass', 'mass conviction', 'see invisibility']);
-    const ONE_HR_PER_LVL = new Set(['mage armor', 'greater mighty wallop', 'mighty wallop, greater', 'magic weapon, greater', 'greater magic weapon', 'magic vestment', 'protection from arrows', 'overland flight', 'darkvision', 'heart of air', 'heart of water', 'heart of earth', 'heart of fire']);
-    const TWENTY_FOUR_HR = new Set(['primal hunter', 'primal instinct', 'primal senses', 'primal sense', 'primal speed', 'endure elements', 'energy immunity', 'mind blank', 'resistance, greater', 'greater resistance', 'resistance, superior', 'superior resistance', 'moment of prescience']);
-    const fallbackDur = TWENTY_FOUR_HR.has(cleanName)
-      ? '24 hours'
-      : (ONE_HR_PER_LVL.has(cleanName) ? '1 hour/level' : (TEN_MIN_PER_LVL.has(cleanName) ? '10 min./level' : '1 min./level'));
-    const rawDur = String(spell.duration || dbEntry.duration || fallbackDur).trim();
+    // 5. Evaluate Duration string at Caster Level directly from V3 spell metadata
+    const rawDur = String(spell.spell?.duration || dbEntry.spell?.duration || spell.duration || dbEntry.duration || '1 min./level').trim();
     let durationText = rawDur;
     if (/10\s*min\.?\/level/i.test(rawDur)) durationText = `${cl * 10} min`;
     else if (/\b1\s*min\.?\/level/i.test(rawDur)) durationText = `${cl} min`;
@@ -6551,12 +6246,13 @@ const RuleEngine = {
     else if (/\b1\s*round\/level/i.test(rawDur)) durationText = `${cl} rounds`;
 
     return {
+      schemaVersion: 3,
       isBuffSpell: true,
       id: spell.id || dbEntry.id || `buff-${cleanName.replace(/[^a-z0-9]+/g, '-')}`,
       name: baseLookupName || rawName,
       casterLevel: cl,
       targetMode,
-      modifiers: JSON.parse(JSON.stringify(modifiers)),
+      effects: JSON.parse(JSON.stringify(rawEffects)),
       sizeModifier: sizeModifier ? JSON.parse(JSON.stringify(sizeModifier)) : null,
       tempHpFormula,
       evaluatedTempHp,
@@ -6576,9 +6272,11 @@ const RuleEngine = {
     this._activeCharacter = character;
     this._activeCustomEntries = (character.customEntries && typeof character.customEntries === 'object') ? character.customEntries : null;
 
-    // 0. Gatekeeper: Ensure Character Data is Canonical V2
-    if (character.schemaVersion !== 2 && typeof window !== 'undefined' && window.SchemaMigrator) {
-      window.SchemaMigrator.upgradeCharacterToV2(character);
+    // 0. Gatekeeper: Ensure Character Data is Pure Canonical V3
+    const migrator0 = (typeof window !== 'undefined' && window.SchemaMigrator)
+      || (typeof SchemaMigrator !== 'undefined' ? SchemaMigrator : null);
+    if (character.schemaVersion !== 3 && migrator0 && typeof migrator0.upgradeCharacterToV3 === 'function') {
+      migrator0.upgradeCharacterToV3(character);
     }
 
     const charLvl = Number(character.level) || (Array.isArray(character.levelProgression) ? character.levelProgression.filter(l => l.active !== false).length : 1) || 1;
@@ -6731,6 +6429,8 @@ const RuleEngine = {
     let buffSkillBonus = 0;
     let debuffHpPenalty = 0;
     let draconicToughnessHp = 0;
+    let v3FlawHpPenalty = 0;
+    let hasV3FrailApplied = false;
     let conditionLoseDexToAC = false;
     let conditionFlatFooted = false;
     let conditionEffectiveDexZero = false;
@@ -6974,8 +6674,16 @@ const RuleEngine = {
         if (target === 'hp.perlvl' || target === 'hp.perlevel') {
           const isPreScaled = hasFormula && /@(?:level|lvl|hd)\b/i.test(String(mod.formula));
           const hpAdd = isPreScaled ? val : (val * charLvl);
-          if (hpAdd < 0) debuffHpPenalty += Math.abs(hpAdd);
-          else draconicToughnessHp += hpAdd;
+          if (hpAdd < 0) {
+            if (sourceCategory === 'feat') {
+              v3FlawHpPenalty += Math.abs(hpAdd);
+              if (String(sourceName || '').toLowerCase().includes('frail')) hasV3FrailApplied = true;
+            } else {
+              debuffHpPenalty += Math.abs(hpAdd);
+            }
+          } else {
+            draconicToughnessHp += hpAdd;
+          }
           return;
         }
 
@@ -7116,9 +6824,13 @@ const RuleEngine = {
         const cleanSpellQuery = { name: buff.name, id: String(buff.id || '').startsWith('spl-') ? buff.id : undefined };
         const resolvedSpec = this.resolveSpellBuffSpec(cleanSpellQuery, character, buffCl);
         if (resolvedSpec && resolvedSpec.isBuffSpell) {
-          if (Array.isArray(resolvedSpec.modifiers) && resolvedSpec.modifiers.length > 0) {
-            buff.modifiers = resolvedSpec.modifiers;
-            rawBuff.modifiers = resolvedSpec.modifiers;
+          if (Array.isArray(resolvedSpec.effects) && resolvedSpec.effects.length > 0) {
+            rawBuff.schemaVersion = 3;
+            rawBuff.effects = resolvedSpec.effects;
+            delete rawBuff.modifiers;
+            const reEv = this.evaluateV3Entry({ ...rawBuff, casterLevel: buffCl }, { ...buffCtx, character });
+            buff.modifiers = reEv.modifiers;
+            buff.ruleFlags = { ...(buff.ruleFlags || {}), ...(reEv.ruleFlags || {}) };
           }
           if (resolvedSpec.ruleFlags) {
             buff.ruleFlags = { ...(buff.ruleFlags || {}), ...resolvedSpec.ruleFlags };
@@ -7231,6 +6943,9 @@ const RuleEngine = {
 
     const allAbilitiesAndFeats = [
       ...(character.feats || []),
+      ...(character.flaws || []),
+      ...(character.traits || []),
+      ...(character.skillTricks || []),
       ...(character.specialAbilities || [])
     ];
     const existingFeatCounts = new Map();
@@ -7663,8 +7378,8 @@ const RuleEngine = {
       ...Array.from(activeProgFeatSet)
     ];
     const totalHD = Number(character.level) || (activeProgRows.length > 0 ? activeProgRows.length : 1);
-    const hasFrail = charFeatNames.some(f => f.includes('flaw: frail') || f.includes('[flaw] frail') || f === 'frail' || f.endsWith(' frail'));
-    const flawHpPenalty = hasFrail ? totalHD : 0;
+    const hasFrail = hasV3FrailApplied || charFeatNames.some(f => f.includes('flaw: frail') || f.includes('[flaw] frail') || f === 'frail' || f.endsWith(' frail'));
+    const flawHpPenalty = v3FlawHpPenalty > 0 ? v3FlawHpPenalty : (hasFrail ? totalHD : 0);
 
     if (character.hp) {
       if (tempHpBuckets.length > 0) {
@@ -7894,9 +7609,6 @@ const RuleEngine = {
     const baseRef = character.baseSaves?.ref || 0;
     const baseWill = character.baseSaves?.will || 0;
 
-    if (!character.saveBonuses) character.saveBonuses = {};
-    character.saveBonuses.resistance = resistBonus;
-
     // Ensure Great Fortitude / Lightning Reflexes / Iron Will apply even if stored as plain strings
     if (charFeatNames.some(f => f.includes('great fortitude')) && !saveBonusBuckets.fort.some(b => (b.source || '').toLowerCase().includes('great fortitude'))) {
       saveBonusBuckets.fort.push({ val: 2, type: 'Untyped', source: 'Great Fortitude' });
@@ -7907,15 +7619,8 @@ const RuleEngine = {
     if (charFeatNames.some(f => f.includes('iron will')) && !saveBonusBuckets.will.some(b => (b.source || '').toLowerCase().includes('iron will'))) {
       saveBonusBuckets.will.push({ val: 2, type: 'Untyped', source: 'Iron Will' });
     }
-    if (charFeatNames.some(f => f.includes('flaw: poor reflexes') || f === 'poor reflexes')) {
+    if (charFeatNames.some(f => f.includes('flaw: poor reflexes') || f === 'poor reflexes') && !saveBonusBuckets.ref.some(b => (b.source || '').toLowerCase().includes('poor reflexes'))) {
       saveBonusBuckets.ref.push({ val: -2, type: 'penalty', source: 'Flaw: Poor Reflexes' });
-    }
-
-    const miscSaveBonus = (character.saveBonuses?.bonus || 0) + (character.saveBonuses?.misc || 0);
-    if (miscSaveBonus > 0) {
-      saveBonusBuckets.fort.push({ val: miscSaveBonus, type: 'Untyped', source: 'Misc Save Bonus' });
-      saveBonusBuckets.ref.push({ val: miscSaveBonus, type: 'Untyped', source: 'Misc Save Bonus' });
-      saveBonusBuckets.will.push({ val: miscSaveBonus, type: 'Untyped', source: 'Misc Save Bonus' });
     }
 
     // Battle Clarity (Warblade 1, cab-battle-clarity): Add INT modifier (max Warblade active lvl) to Reflex saves when not flat-footed
@@ -8417,25 +8122,37 @@ const RuleEngine = {
       activeModeV3 = this.evaluateV3Entry({ ...activeMode, schemaVersion: 3 }, { character, level: Number(character.level) || 1 });
     }
 
-    const basePrimaryParts = (dbWeapon && Array.isArray(dbWeapon.damageParts) && dbWeapon.damageParts.length > 0)
-      ? dbWeapon.damageParts
-      : [{ dice: v2Weapon.dice || dbWeapon?.dice || '1d8', bonus: 0, type: v2Weapon.dmgType || v2Weapon.type || dbWeapon?.dmgType || 'Slashing', multiplyOnCrit: true, onCritOnly: false, source: 'Base Weapon' }];
+    const dbEvWeapon = dbWeapon ? this.ensureV2Entry(dbWeapon, { character }) : null;
+    const basePrimaryParts = (dbEvWeapon && Array.isArray(dbEvWeapon.damageParts) && dbEvWeapon.damageParts.length > 0)
+      ? dbEvWeapon.damageParts
+      : [{ dice: v2Weapon.weapon?.damageDice || v2Weapon.dice || dbWeapon?.weapon?.damageDice || dbWeapon?.dice || '1d8', bonus: 0, type: v2Weapon.weapon?.dmgType || v2Weapon.dmgType || dbWeapon?.weapon?.dmgType || dbWeapon?.dmgType || 'Slashing', multiplyOnCrit: true, onCritOnly: false, source: 'Base Weapon' }];
     const hasBasePrimaryInV2 = Array.isArray(v2Weapon.damageParts) && v2Weapon.damageParts.some(p => p && (p.source === 'Base Weapon' || p.multiplyOnCrit === true));
     const mergedV2DamageParts = (Array.isArray(v2Weapon.damageParts) && v2Weapon.damageParts.length > 0)
       ? (hasBasePrimaryInV2 ? v2Weapon.damageParts : [...basePrimaryParts, ...v2Weapon.damageParts])
       : basePrimaryParts;
 
-    // Effective weapon merges active mode overrides onto parent V2 weapon
+    const modeBaseDice = activeMode ? (activeMode.weapon?.damageDice || activeMode.damageDice || null) : null;
+    const modeBaseType = activeMode ? (activeMode.weapon?.dmgType || activeMode.dmgType || v2Weapon.dmgType || 'Physical') : null;
+    const modeReplacedPrimary = modeBaseDice
+      ? [
+          { dice: modeBaseDice, bonus: 0, type: modeBaseType, multiplyOnCrit: true, onCritOnly: false, source: activeMode.label || activeMode.name || 'Base Weapon' },
+          ...(activeModeV3 && Array.isArray(activeModeV3.damageParts) ? activeModeV3.damageParts : [])
+        ]
+      : null;
+
+    // Effective weapon merges active mode overrides onto parent evaluated weapon
     const weapon = activeMode ? {
       ...v2Weapon,
       grip: activeMode.grip || v2Weapon.grip,
       isRanged: activeMode.isRanged !== undefined ? activeMode.isRanged : v2Weapon.isRanged,
       range: activeMode.range !== undefined ? activeMode.range : v2Weapon.range,
-      damageParts: (Array.isArray(activeMode.damageParts) && activeMode.damageParts.length > 0)
-        ? activeMode.damageParts
-        : (activeModeV3 && Array.isArray(activeModeV3.damageParts) && activeModeV3.damageParts.length > 0
-            ? [...mergedV2DamageParts, ...activeModeV3.damageParts]
-            : mergedV2DamageParts),
+      damageParts: modeReplacedPrimary
+        ? modeReplacedPrimary
+        : ((Array.isArray(activeMode.damageParts) && activeMode.damageParts.length > 0)
+            ? activeMode.damageParts
+            : (activeModeV3 && Array.isArray(activeModeV3.damageParts) && activeModeV3.damageParts.length > 0
+                ? [...mergedV2DamageParts, ...activeModeV3.damageParts]
+                : mergedV2DamageParts)),
       modifiers: alreadyEvaluatedSameMode
         ? (Array.isArray(v2Weapon.modifiers) ? v2Weapon.modifiers : [])
         : [
@@ -8685,14 +8402,6 @@ const RuleEngine = {
       attackBonusItems.push({ type: 'untyped', val: -2, source: 'Monkey Grip (-2 Att)' });
     }
 
-    // Flaw: Noncombatant (-2 Melee) & Flaw: Shaky (-2 Ranged)
-    if (!isRangedWep && feats.some(f => f.includes('flaw: noncombatant') || f === 'noncombatant')) {
-      attackBonusItems.push({ type: 'untyped', val: -2, source: 'Flaw: Noncombatant (-2 Melee)' });
-    }
-    if (isRangedWep && feats.some(f => f.includes('flaw: shaky') || f === 'shaky')) {
-      attackBonusItems.push({ type: 'untyped', val: -2, source: 'Flaw: Shaky (-2 Ranged)' });
-    }
-
     // Manyshot penalty: 2 arrows -> -2, 3 arrows -> -4, 4 arrows -> -6
     const effectiveManyshotArrows = isRangedWep && manyshot ? Math.min(4, Math.max(2, Number(optManyshotArrows || manyshot) || 2)) : 0;
     if (effectiveManyshotArrows > 0) {
@@ -8756,14 +8465,18 @@ const RuleEngine = {
     });
     if (!hasExplicitWepAtkMod && Number(weapon.enhancementBonus) > 0) {
       attackBonusItems.push({ type: 'enhancement', val: Number(weapon.enhancementBonus), source: 'Weapon Enhancement' });
-    } else if (!hasExplicitWepAtkMod && weapon.isMasterwork) {
+    } else if (!hasExplicitWepAtkMod && (weapon.isMasterwork || weapon.masterwork || weapon.weapon?.masterwork)) {
       attackBonusItems.push({ type: 'enhancement', val: 1, source: 'Masterwork' });
     }
 
-    if (hasWeaponFocus) {
+    const hasV3WeaponFeatDef = (featId) => {
+      const dbF = this.getMasterDbEntry(featId, 'Feat');
+      return Boolean(dbF && Array.isArray(dbF.effects) && dbF.effects.length > 0);
+    };
+    if (hasWeaponFocus && !hasV3WeaponFeatDef('feat-weapon-focus')) {
       attackBonusItems.push({ type: 'untyped', val: 1, source: 'Weapon Focus' });
     }
-    if (hasGreaterWeaponFocus) {
+    if (hasGreaterWeaponFocus && !hasV3WeaponFeatDef('feat-greater-weapon-focus')) {
       attackBonusItems.push({ type: 'untyped', val: 1, source: 'Greater Weapon Focus' });
     }
 
@@ -8805,19 +8518,28 @@ const RuleEngine = {
       ...rawMysteriesForWep.map(m => resolveSubsystemEntryForWep(m, 'Mystery', false)).filter(Boolean),
       ...rawUtterancesForWep.map(u => resolveSubsystemEntryForWep(u, 'Utterance', false)).filter(Boolean)
     ];
+    const resolveWepFeatInstance = (f) => {
+      if (!f) return null;
+      if (typeof f === 'object' && f.active === false) return null;
+      const rawObj = typeof f === 'string' ? { name: f } : f;
+      let dbFeat = this.getMasterDbEntry(f, 'Feat');
+      if (!dbFeat && rawObj.id) {
+        const matchedPrefix = wfWsFeatIds.find(p => String(rawObj.id).toLowerCase().startsWith(`${p}-`));
+        if (matchedPrefix) dbFeat = this.getMasterDbEntry(matchedPrefix, 'Feat');
+      }
+      if (!dbFeat && typeof f === 'string') return null;
+      const merged = Object.assign({}, dbFeat || {}, rawObj, {
+        effects: (Array.isArray(rawObj.effects) && rawObj.effects.length > 0) ? rawObj.effects : dbFeat?.effects,
+        choices: (Array.isArray(rawObj.choices) && rawObj.choices.length > 0) ? rawObj.choices : dbFeat?.choices
+      });
+      if (Array.isArray(merged.effects) && merged.effects.length > 0) {
+        return this.evaluateV3Entry({ ...merged, _v3Evaluated: false, modifiers: [] }, { ...evalCtx, character });
+      }
+      return this.ensureV2Entry(merged);
+    };
     const charAbilityAndFeatEntries = [
       ...(Array.isArray(character.specialAbilities) ? character.specialAbilities.map(sa => this.ensureV2Entry(sa)) : []),
-      ...(Array.isArray(character.feats) ? character.feats.map(f => {
-        if (!f) return null;
-        if (typeof f === 'string') return this.getMasterDbEntry(f, 'Feat') || null;
-        if (typeof f !== 'object' || f.active === false) return null;
-        return this.ensureV2Entry(f);
-      }).filter(f => {
-        if (!f) return false;
-        const fid = String(f.id || '').toLowerCase();
-        if (wfWsFeatIds.some(prefix => fid === prefix || fid.startsWith(`${prefix}-`))) return false;
-        return !/weapon focus|weapon specialization/i.test(String(f.name || ''));
-      }) : []),
+      ...(Array.isArray(character.feats) ? character.feats.map(resolveWepFeatInstance).filter(Boolean) : []),
       ...activeSubsystemWepEntries
     ];
     const collectEntryWeaponModifiers = (isTargetMatch, outItems) => {
@@ -8840,15 +8562,34 @@ const RuleEngine = {
           if (isFinessableOrLightCond && (isRangedWep || !isLightOrFinessableForAbility || !isLightOrNoArmor || isMediumOrHeavyLoad)) return;
           const isWieldingChosenWeaponCond = mod.condition === 'wieldingChosenWeapon';
           if (isWieldingChosenWeaponCond) {
-            const rawE = String(entry.chosenOption || entry.choiceValue || entry.targetWeapon || entry.name || '');
-            const pm = rawE.match(/\(([^)]+)\)/);
-            const chosenW = (entry.chosenOption || entry.choiceValue || entry.targetWeapon || (pm ? pm[1] : '')).trim();
-            if (chosenW && String(chosenW).toLowerCase() !== 'all') {
-              const cKeys = expandWeaponIdentityKeys(chosenW, false);
-              let wepMatched = false;
-              for (const ck of cKeys) {
-                if (ck && weaponIdentityKeys.has(ck)) { wepMatched = true; break; }
-              }
+            const rawChoices = [];
+            [entry.targetWeaponId, entry.weaponId, entry.targetWeapon, entry.selectedWeapon, entry.chosenOption, entry.choiceValue, entry.choice, entry.subChoice].forEach(c => {
+              if (c && typeof c === 'string') rawChoices.push(c);
+            });
+            const eIdLow = String(entry.id || '').toLowerCase();
+            wfWsFeatIds.forEach(prefix => {
+              if (eIdLow.startsWith(`${prefix}-`)) rawChoices.push(eIdLow.slice(prefix.length + 1));
+            });
+            const eName = String(entry.name || '');
+            const pm = eName.match(/\(([^)]+)\)/);
+            if (pm && pm[1] && !/^(?:ex|su|sp|na|3\.0e)$/i.test(pm[1].trim())) {
+              rawChoices.push(pm[1].trim());
+            } else {
+              const extracted = this.extractEntryChoice(entry);
+              if (extracted) rawChoices.push(extracted);
+            }
+            const requiresExplicitChoice = (Array.isArray(entry.choices) && entry.choices.length > 0)
+              || /weapon\s+focus|weapon\s+specialization|improved\s+critical|power\s+critical/i.test(eName);
+            if (rawChoices.length === 0) {
+              if (requiresExplicitChoice) return;
+            } else if (!rawChoices.some(c => String(c).toLowerCase().trim() === 'all')) {
+              const wepMatched = rawChoices.some(choiceStr => {
+                const cKeys = expandWeaponIdentityKeys(choiceStr, false);
+                for (const ck of cKeys) {
+                  if (ck && weaponIdentityKeys.has(ck)) return true;
+                }
+                return false;
+              });
               if (!wepMatched) return;
             }
           }
@@ -8871,6 +8612,13 @@ const RuleEngine = {
     };
     collectEntryWeaponModifiers(isAtkTargetMatch, attackBonusItems);
     collectEntryWeaponModifiers(isCritConfirmTargetMatch, critConfirmItems);
+    // Offline fallback for unresolved plain-string Noncombatant / Shaky when compendium is not loaded
+    if (!isRangedWep && feats.some(f => f.includes('flaw: noncombatant') || f === 'noncombatant') && !attackBonusItems.some(b => String(b.source || '').toLowerCase().includes('noncombatant'))) {
+      attackBonusItems.push({ type: 'untyped', val: -2, source: 'Flaw: Noncombatant (-2 Melee)' });
+    }
+    if (isRangedWep && feats.some(f => f.includes('flaw: shaky') || f === 'shaky') && !attackBonusItems.some(b => String(b.source || '').toLowerCase().includes('shaky'))) {
+      attackBonusItems.push({ type: 'untyped', val: -2, source: 'Flaw: Shaky (-2 Ranged)' });
+    }
     // Flanking (PHB p.153) and Charge (PHB p.154) grant +2 on melee attack rolls only.
     if (flanking && !isRangedWep) {
       attackBonusItems.push({ type: 'untyped', val: 2, source: 'Flanking' });
@@ -8882,10 +8630,11 @@ const RuleEngine = {
       attackBonusItems.push({ type: 'untyped', val: 1, source: 'Higher Ground' });
     }
 
-    // External custom modifiers
-    customModifiers.forEach(m => {
-      if (!m) return;
-      if (Array.isArray(m.modifiers)) {
+    // External custom V3 tactical riders / modifiers
+    customModifiers.forEach(rawM => {
+      if (!rawM) return;
+      const m = this.ensureV2Entry(rawM, { character });
+      if (Array.isArray(m.modifiers) && m.modifiers.length > 0) {
         m.modifiers.forEach(mod => {
           const t = String(mod.target || '').toLowerCase();
           if (isAtkTargetMatch(t)) {
@@ -8893,8 +8642,6 @@ const RuleEngine = {
             if (v !== 0) attackBonusItems.push({ type: mod.type || 'untyped', val: v, source: m.name });
           }
         });
-      } else if (m.bonusAtk) {
-        attackBonusItems.push({ type: m.bonusType || 'untyped', val: m.bonusAtk, source: m.name });
       }
     });
 
@@ -8923,9 +8670,12 @@ const RuleEngine = {
         if (isScalingAtkBuff && (!Array.isArray(b.modifiers) || b.modifiers.some(m => !m || !String(m.formula || '').includes('@cl') || String(m.formula || '').includes('1 + floor(@cl / 3)')))) {
           const cleanSpellQuery = { name: b.name, id: String(b.id || '').startsWith('spl-') ? b.id : undefined };
           const resolvedSpec = this.resolveSpellBuffSpec(cleanSpellQuery, character, bCl);
-          if (resolvedSpec && Array.isArray(resolvedSpec.modifiers) && resolvedSpec.modifiers.length > 0) {
-            b.modifiers = resolvedSpec.modifiers;
-            rawBuff.modifiers = resolvedSpec.modifiers;
+          if (resolvedSpec && Array.isArray(resolvedSpec.effects) && resolvedSpec.effects.length > 0) {
+            rawBuff.schemaVersion = 3;
+            rawBuff.effects = resolvedSpec.effects;
+            delete rawBuff.modifiers;
+            const reEv = this.evaluateV3Entry({ ...rawBuff, casterLevel: bCl }, { ...evalCtx, cl: bCl, character });
+            b.modifiers = reEv.modifiers;
           }
         }
         const bCtx = { ...evalCtx, cl: bCl };
@@ -9054,20 +8804,21 @@ const RuleEngine = {
       damageBonusItems.push({ type: 'enhancement', val: Number(weapon.enhancementBonus), source: 'Weapon Enhancement' });
     }
 
-    if (hasWeaponSpec) {
+    if (hasWeaponSpec && !hasV3WeaponFeatDef('feat-weapon-specialization')) {
       damageBonusItems.push({ type: 'untyped', val: 2, source: 'Weapon Specialization' });
     }
-    if (hasGreaterWeaponSpec) {
+    if (hasGreaterWeaponSpec && !hasV3WeaponFeatDef('feat-greater-weapon-specialization')) {
       damageBonusItems.push({ type: 'untyped', val: 2, source: 'Greater Weapon Specialization' });
     }
 
     // Character Special Abilities & Feats V2 Damage Modifiers (e.g. Swashbuckler Insightful Strike, Point Blank Shot)
     collectEntryWeaponModifiers(isDmgTargetMatch, damageBonusItems);
 
-    // External custom modifiers for damage
-    customModifiers.forEach(m => {
-      if (!m) return;
-      if (Array.isArray(m.modifiers)) {
+    // External custom V3 tactical riders / modifiers for damage
+    customModifiers.forEach(rawM => {
+      if (!rawM) return;
+      const m = this.ensureV2Entry(rawM, { character });
+      if (Array.isArray(m.modifiers) && m.modifiers.length > 0) {
         m.modifiers.forEach(mod => {
           const t = String(mod.target || '').toLowerCase();
           if (isDmgTargetMatch(t)) {
@@ -9075,8 +8826,6 @@ const RuleEngine = {
             if (v !== 0) damageBonusItems.push({ type: mod.type || 'untyped', val: v, source: m.name });
           }
         });
-      } else if (m.bonusDmg) {
-        damageBonusItems.push({ type: m.bonusType || 'untyped', val: m.bonusDmg, source: m.name });
       }
     });
 
@@ -9641,11 +9390,19 @@ const RuleEngine = {
 
       const hasInlineMods = Array.isArray(featObj.modifiers) && featObj.modifiers.length > 0;
       const dbFeat = hasInlineMods ? null : (this.getMasterDbEntry(featObj) || this.getMasterDbEntry(fName));
-      const rawMods = hasInlineMods ? featObj.modifiers : (dbFeat && Array.isArray(dbFeat.modifiers) ? dbFeat.modifiers : []);
+      let rawMods = hasInlineMods ? featObj.modifiers : (dbFeat && Array.isArray(dbFeat.modifiers) ? dbFeat.modifiers : []);
+      if (!hasInlineMods && dbFeat && Array.isArray(dbFeat.effects) && dbFeat.effects.length > 0 && (this.extractEntryChoice(featObj) || /\(/.test(fName))) {
+        const evalWithChoice = this.evaluateV3Entry(
+          Object.assign({}, dbFeat, featObj, { id: featObj.id || dbFeat.id, name: fName, _v3Evaluated: false, modifiers: [] }),
+          evalCtx
+        );
+        if (evalWithChoice && Array.isArray(evalWithChoice.modifiers)) {
+          rawMods = evalWithChoice.modifiers;
+        }
+      }
       const mods = this._extractPreEvaluatedSkillMods(rawMods, 'untyped', evalCtx);
-      const isCollector = fKey.includes('collector of stories');
-      if (mods.length > 0 || isCollector) {
-        featSources.push({ title: fName, mods, isCollector });
+      if (mods.length > 0) {
+        featSources.push({ title: fName, mods });
       }
     }
 
@@ -9783,9 +9540,6 @@ const RuleEngine = {
     for (let i = 0; i < harvested.featSources.length; i++) {
       const f = harvested.featSources[i];
       applyPreEvaluatedMods(f.mods, f.title);
-      if (f.isCollector && isKnowledge) {
-        addBonus('Collector of Stories (Monster Lore)', 5, 'competence');
-      }
     }
 
     // 5. Race, Templates, Domains
@@ -9794,9 +9548,58 @@ const RuleEngine = {
       applyPreEvaluatedMods(ex.mods, ex.title);
     }
 
-    // 6. Resolve Stacking Rules (D&D 3.5e RAW)
+    // 6. Resolve Stacking Rules (D&D 3.5e RAW + Consolidated Skill Group Rule)
     let total = 0;
     const breakdown = [];
+    const rs = this.getActiveRuleset(character);
+    const isMerged = character?.settings?.mergeSkills !== false;
+    let isConsolidatedGroup = false;
+    if (isMerged && rs && rs.consolidatedSkillBonusMode === 'single_highest') {
+      let mapping = character?.settings?.skillMapping || null;
+      if (!mapping) {
+        const masterList = (typeof window !== 'undefined' && window.masterDb) || [];
+        if (Array.isArray(masterList)) {
+          const ruleObj = masterList.find(m => m && (m.name || '').toLowerCase().includes('skill consolidation'));
+          if (ruleObj && ruleObj.skillMapping && typeof ruleObj.skillMapping === 'object') {
+            mapping = ruleObj.skillMapping;
+          }
+        }
+      }
+      if (!mapping) mapping = this.DEFAULT_SKILL_MAPPING;
+      const kClean = sKey.replace(/[^a-z0-9]/g, '');
+      const nClean = sName.replace(/[^a-z0-9]/g, '');
+      if (mapping && typeof mapping === 'object') {
+        const groupKeys = Object.keys(mapping);
+        for (let gi = 0; gi < groupKeys.length; gi++) {
+          const gClean = groupKeys[gi].toLowerCase().replace(/[^a-z0-9]/g, '');
+          if (gClean && (gClean === kClean || gClean === nClean)) {
+            isConsolidatedGroup = true;
+            break;
+          }
+        }
+      }
+    }
+
+    if (isConsolidatedGroup) {
+      let highestPos = null;
+      Object.entries(buckets).forEach(([type, entries]) => {
+        entries.forEach(e => {
+          if (e.val > 0) {
+            if (!highestPos || e.val > highestPos.val) {
+              highestPos = { name: e.name, val: e.val, type };
+            }
+          } else if (e.val < 0) {
+            total += e.val;
+            breakdown.push(`${e.name}: ${e.val} (${type})`);
+          }
+        });
+      });
+      if (highestPos) {
+        total += highestPos.val;
+        breakdown.unshift(`${highestPos.name}: +${highestPos.val} (${highestPos.type})`);
+      }
+      return { total, breakdown };
+    }
 
     Object.entries(buckets).forEach(([type, entries]) => {
       if (type === 'untyped' || type === 'circumstance' || type === 'penalty' || type === 'racial') {
@@ -10370,12 +10173,37 @@ const RuleEngine = {
    * Evaluates structured V2 `damageParts`, healing tiers, condition cures,
    * offensive wands/items, and buff potions with Bilingual Reader Shield support.
    */
-  parseConsumablePlan(itemOrName, effectDesc) {
-    const itemObj = (itemOrName && typeof itemOrName === 'object') ? itemOrName : null;
-    const rawName = itemObj ? String(itemObj.name || '') : String(itemOrName || '');
+  parseConsumablePlan(itemOrName, effectDesc, character = null) {
+    const rawItemObj = (itemOrName && typeof itemOrName === 'object') ? itemOrName : null;
+    const rawName = rawItemObj ? String(rawItemObj.name || '') : String(itemOrName || '');
+    const charCtx = character
+      || this._activeCharacter
+      || (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.getDoc === 'function' ? window.CharStore.getDoc() : null)
+      || (typeof window !== 'undefined' ? window.character : null);
+    let itemObj = rawItemObj;
+    if (itemObj) {
+      const hasDirectParts = Array.isArray(itemObj.damageParts) && itemObj.damageParts.length > 0;
+      const hasDirectEffects = Array.isArray(itemObj.effects) && itemObj.effects.length > 0;
+      const customOv = this.resolveCustomEntryOverride(itemObj, charCtx);
+      if (customOv) {
+        itemObj = this.ensureV2Entry(Object.assign({}, itemObj, customOv), { character: charCtx });
+      } else if (hasDirectEffects && !hasDirectParts) {
+        itemObj = this.ensureV2Entry(itemObj, { character: charCtx });
+      } else if (!hasDirectParts) {
+        const dbLookup = this.getMasterDbEntry(itemObj, charCtx);
+        if (dbLookup && ((Array.isArray(dbLookup.effects) && dbLookup.effects.length > 0) || (Array.isArray(dbLookup.damageParts) && dbLookup.damageParts.length > 0))) {
+          itemObj = this.ensureV2Entry(Object.assign({}, dbLookup, { name: itemObj.name || dbLookup.name }), { character: charCtx });
+        }
+      }
+    } else if (rawName) {
+      const dbByName = this.getMasterDbEntry({ name: rawName }, charCtx);
+      if (dbByName && ((Array.isArray(dbByName.effects) && dbByName.effects.length > 0) || (Array.isArray(dbByName.damageParts) && dbByName.damageParts.length > 0))) {
+        itemObj = this.ensureV2Entry(dbByName, { character: charCtx });
+      }
+    }
     const rawEffect = effectDesc !== undefined
       ? String(effectDesc || '')
-      : (itemObj ? String(itemObj.effect || itemObj.desc || '') : '');
+      : (rawItemObj ? String(rawItemObj.effect || rawItemObj.desc || '') : (itemObj ? String(itemObj.text || itemObj.shortDescription || '') : ''));
 
     const nameFold = this.foldTr(rawName).trim();
     const descFold = this.foldTr(rawEffect).trim();
@@ -11123,7 +10951,8 @@ const RuleEngine = {
       let merged = item._mutated
         ? Object.assign({}, dbMatch || {}, item, { name: cleanName })
         : Object.assign({}, item, dbMatch || {}, { name: cleanName });
-      const benText = merged.benefit || merged.desc || merged.description || '';
+      merged = this.ensureV2Entry(merged, { character: w });
+      const benText = merged.benefit || merged.desc || merged.description || merged.text || '';
 
       if (!merged.dcFormula && !merged.recharge && (!Array.isArray(merged.damageParts) || merged.damageParts.length === 0)) {
         if (ruleMasterRef && typeof ruleMasterRef.parseStructuredAbilityStatBlock === 'function') {
@@ -11143,7 +10972,10 @@ const RuleEngine = {
         }
       }
 
-      const primaryMode = Array.isArray(merged.modes) && merged.modes.length > 0 ? merged.modes[0] : null;
+      const primaryModeRaw = Array.isArray(merged.modes) && merged.modes.length > 0 ? merged.modes[0] : null;
+      const primaryMode = (primaryModeRaw && (Array.isArray(primaryModeRaw.effects) || Array.isArray(primaryModeRaw.blocks)))
+        ? this.evaluateV3Entry({ ...primaryModeRaw, schemaVersion: 3 }, { character: w })
+        : primaryModeRaw;
       const roundRes = Array.isArray(merged.resources)
         ? merged.resources.find(r => r && ((r.recharge && (r.recharge.period === 'rounds' || r.recharge.dice)) || r.rechargeModel === 'cooldown_turns' || r.rechargeFormula))
         : null;
@@ -11364,18 +11196,17 @@ const RuleEngine = {
     if (typeof item.dailyCharges === 'number' && item.dailyCharges > 0) {
       return { current: item.dailyCharges, max: item.dailyCharges, unit: 'charges', recharge: 'long_rest' };
     }
-    const lowerName = String(item.name || '').toLowerCase();
-    if (lowerName.includes('healing belt')) {
-      return { current: 3, max: 3, unit: 'charges', recharge: 'long_rest' };
-    }
-    if (lowerName.includes('witchlight reservoir')) {
-      return { current: 5, max: 5, unit: 'charges', recharge: 'long_rest' };
-    }
-    if (lowerName.includes('boots of speed')) {
-      return { current: 10, max: 10, unit: 'rounds', recharge: 'long_rest' };
-    }
-    if (lowerName.includes('belt of battle')) {
-      return { current: 3, max: 3, unit: 'charges', recharge: 'long_rest' };
+    const dbItem = this.getMasterDbEntry ? this.getMasterDbEntry(item) : null;
+    const v3Effects = (Array.isArray(item.effects) && item.effects.length > 0)
+      ? item.effects
+      : (dbItem && Array.isArray(dbItem.effects) ? dbItem.effects : []);
+    if (v3Effects.length > 0) {
+      const resBlk = v3Effects.find(b => b && (b.type === 'resource' || (b.type === 'carrier' && b.costMode === 'rod')));
+      if (resBlk) {
+        const maxVal = Math.max(1, Number(resBlk.max ?? resBlk.uses ?? resBlk.value ?? 1) || 1);
+        const unit = resBlk.unit || (/round/i.test(String(resBlk.name || '')) ? 'rounds' : (resBlk.type === 'carrier' || /charge/i.test(String(resBlk.name || '')) ? 'charges' : 'uses'));
+        return { current: maxVal, max: maxVal, unit, recharge: 'long_rest' };
+      }
     }
     const combined = `${item.name || ''} ${item.desc || ''} ${item.effect || ''} ${item.benefit || ''}`;
     const match = combined.match(/(\d+)\s*(?:charges?|rounds?|uses?|times?)?\s*(?:\/|\s*per\s*|\s*x\s*|\s*a\s*)\s*day/i);
@@ -12439,15 +12270,44 @@ const RuleEngine = {
     const rawPreparedSpells = Array.isArray(w.spellcasting?.preparedSpells) ? w.spellcasting.preparedSpells : [];
     const rawDivineSpells = Array.isArray(w.spellcasting?.divineSpells) ? w.spellcasting.divineSpells : [];
 
+    const schoolDcEntries = [];
+    const seenSchoolFeatKeys = new Set();
+    rawSpellFeatRefs.forEach(fRef => {
+      if (!fRef) return;
+      const fName = String(typeof fRef === 'string' ? fRef : (fRef.name || fRef.id || '')).replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️\s]+(\[.*?\])?\s*/, '').trim();
+      const fLow = fName.toLowerCase();
+      if (!fLow || seenSpellPenFeatKeys.has(`dc:${fLow}`) || seenSchoolFeatKeys.has(fLow)) return;
+      seenSchoolFeatKeys.add(fLow);
+      const dbF = this.getMasterDbEntry(typeof fRef === 'object' ? fRef : fName, 'Feat');
+      const mergedF = Object.assign({}, dbF || {}, typeof fRef === 'object' ? fRef : { name: fName }, { name: fName });
+      if (Array.isArray(mergedF.effects) && mergedF.effects.length > 0 && this.extractEntryChoice(mergedF)) {
+        schoolDcEntries.push(mergedF);
+      }
+    });
+
     const enrichSpellList = (list, baseDc) => list.map((s, idx) => {
       const lvl = Number(s?.level) || 0;
+      let schoolBonus = 0;
+      if (schoolDcEntries.length > 0 && (s?.school || s?.spell?.school)) {
+        schoolDcEntries.forEach(fe => {
+          const ev = this.evaluateV3Entry(
+            { ...fe, _v3Evaluated: false, modifiers: [] },
+            { character: w, level: activeProg.length || Number(w.level) || 1, spell: s }
+          );
+          (ev.modifiers || []).forEach(m => {
+            if (m && String(m.target || '').toLowerCase() === 'spell.dc') {
+              schoolBonus += Number(m.value) || 0;
+            }
+          });
+        });
+      }
       return {
         ...(s || {}),
         originalIdx: idx,
         level: lvl,
         isCast: Boolean(s?.isCast || s?.cast),
         isDomainSpell: Boolean(s?.isDomainSpell),
-        saveDc: baseDc + lvl,
+        saveDc: baseDc + lvl + schoolBonus,
         srText: String(s?.sr || s?.spellResistance || 'No')
       };
     });

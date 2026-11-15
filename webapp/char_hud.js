@@ -275,7 +275,9 @@
       const syncDefaultRaceTraitsIfEmpty = () => {
         try {
           if (character && character.race && Array.isArray(character.specialAbilities) && character.specialAbilities.length === 0) {
-            const catalog = window.BUNDLED_SRD_CORE_CATALOG || [];
+            const catalog = (window.SrdCompendium && typeof window.SrdCompendium.getAllLoaded === 'function')
+              ? window.SrdCompendium.getAllLoaded()
+              : [];
             const raceObj = (window.SrdCompendium && typeof window.SrdCompendium.getByName === 'function' ? window.SrdCompendium.getByName(character.race, 'Race') : null)
               || catalog.find(i => i && i.type === 'Race' && i.name.toLowerCase() === character.race.toLowerCase());
             if (raceObj && Array.isArray(raceObj.traits) && raceObj.traits.length > 0) {
@@ -522,7 +524,6 @@
           ref: Number(summary.saves?.ref?.total || summary.refSave) || 0,
           will: Number(summary.saves?.will?.total || summary.willSave) || 0
         },
-        saveBonuses: { resistance: 0 },
         saves: {
           fort: { total: Number(summary.saves?.fort?.total || summary.fortSave) || 0 },
           ref: { total: Number(summary.saves?.ref?.total || summary.refSave) || 0 },
@@ -902,101 +903,58 @@
         console.warn('HP reconciliation warning:', reconErr);
       }
 
-      // Fetch character_data.json ONLY when character is missing or legacy Kazmil is missing core fields
+      // Initialize pure V3 character shell when opening sheet directly with empty storage
       try {
-        let defaultChar = window.BUNDLED_CHARACTER_DATA || null;
-        const mightBeKazmil = character && !character.isNpc && (!character._hubId && !queryId);
-        const kazmilNeedsPatch = mightBeKazmil && (
-          !character.bodySlots || Object.keys(character.bodySlots).length === 0 ||
-          !character.gearPool || character.gearPool.length === 0 ||
-          !character.levelProgression || character.levelProgression.length === 0 ||
-          !character.hitDie ||
-          !character.tomeOfBattle || !Array.isArray(character.tomeOfBattle.readiedManeuvers) || character.tomeOfBattle.readiedManeuvers.length === 0
-        );
-        if (!defaultChar && (!character || kazmilNeedsPatch)) {
-          try {
-            const res = await fetch('character_data.json');
-            if (res.ok) defaultChar = await res.json();
-          } catch (fetchErr) {
-            console.warn('Network fetch of character_data.json failed:', fetchErr);
-          }
-        }
-        // saveStateToStorage() writes masterDb into character.customDb. Until it is bound to the character being
-        // loaded, masterDb is still the empty startup array, so a save during hydration would wipe the DB.
         bindMasterDbToLoadedCharacter();
         if (!character) {
-          if (defaultChar) {
-            character = JSON.parse(JSON.stringify(defaultChar));
-            character.id = character._hubId || 'char_active_player';
-            character._hubId = character.id;
-            bindMasterDbToLoadedCharacter();
-            saveStateToStorage(false, true);
-          }
+          character = {
+            schemaVersion: 3,
+            id: 'char_active_player',
+            _hubId: 'char_active_player',
+            name: 'New Hero',
+            race: 'Human',
+            classes: 'Fighter 1',
+            level: 1,
+            bab: 1,
+            baseSpeed: 30,
+            abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+            hp: { current: 10, max: 10, temp: 0 },
+            ac: { total: 10, touch: 10, flatFooted: 10 },
+            baseSaves: { fort: 2, ref: 0, will: 0 },
+            saves: { fort: { total: 2 }, ref: { total: 0 }, will: { total: 0 } },
+            feats: [],
+            buffs: [],
+            weapons: [],
+            inventory: [],
+            gearPool: [],
+            bodySlots: { head: null, eyes: null, neck: null, torso: null, armor: null, cloak: null, waist: null, wrists: null, hands: null, ring1: null, ring2: null, feet: null },
+            tomeOfBattle: { stances: [], readiedManeuvers: [] },
+            periodicHpEffects: [],
+            combatPins: { offense_melee: [], offense_ranged: [], offense_spell: [], spell_control: [], spell_support: [], defense: [] },
+            weaponAttackProfiles: {},
+            customEntries: {},
+            customDb: []
+          };
+          bindMasterDbToLoadedCharacter();
+          saveStateToStorage(false, true);
         } else {
           let updated = false;
-          const isKazmil = !character.isNpc && ((defaultChar && character.name === defaultChar.name) || (!character._hubId && !queryId));
-
-          if (isKazmil && defaultChar) {
-            if (!character.bodySlots || Object.keys(character.bodySlots).length === 0) {
-              character.bodySlots = defaultChar.bodySlots;
-              updated = true;
-            }
-            if (!character.gearPool || character.gearPool.length === 0) {
-              character.gearPool = defaultChar.gearPool;
-              updated = true;
-            }
-            if (!character.levelProgression || character.levelProgression.length === 0) {
-              character.levelProgression = defaultChar.levelProgression;
-              updated = true;
-            }
-            if (!character.hitDie) {
-              character.hitDie = defaultChar.hitDie;
-              updated = true;
-            }
-            const prog = character.levelProgression || [];
-            if (prog.length >= 6) {
-              const sumFirst6 = prog.slice(0, 6).reduce((acc, p) => acc + (Number(p.hpGain) || 0), 0);
-              if (sumFirst6 === 23) {
-                if (prog[0]) prog[0].hpGain = 4;
-                if (prog[1]) prog[1].hpGain = 4;
-                if (prog[2]) prog[2].hpGain = 4;
-                if (prog[3]) prog[3].hpGain = 4;
-                if (prog[4]) prog[4].hpGain = 4;
-                if (prog[5]) prog[5].hpGain = 12;
-                if (character.hp) {
-                  character.hp.baseMax = 32;
-                  character.hp.conBonusHp = 12;
-                  if (!character.hp.max || character.hp.max < 44) character.hp.max = 44;
-                  if (character.hp.current === undefined) character.hp.current = character.hp.max || 44;
-                }
-                updated = true;
-              }
-            }
-            if (!character.tomeOfBattle || !Array.isArray(character.tomeOfBattle.readiedManeuvers) || character.tomeOfBattle.readiedManeuvers.length === 0) {
-              if (defaultChar && defaultChar.tomeOfBattle && Array.isArray(defaultChar.tomeOfBattle.readiedManeuvers) && defaultChar.tomeOfBattle.readiedManeuvers.length > 0) {
-                character.tomeOfBattle = JSON.parse(JSON.stringify(defaultChar.tomeOfBattle));
-                updated = true;
-              }
-            }
-          } else {
-            if (!character.bodySlots) {
-              character.bodySlots = { head: null, eyes: null, neck: null, torso: null, armor: null, cloak: null, waist: null, wrists: null, hands: null, ring1: null, ring2: null, feet: null };
-              updated = true;
-            }
-            if (!Array.isArray(character.gearPool)) {
-              character.gearPool = [];
-              updated = true;
-            }
-            if (!Array.isArray(character.inventory)) {
-              character.inventory = [];
-              updated = true;
-            }
-            if (!character.tomeOfBattle) {
-              character.tomeOfBattle = { stances: [], readiedManeuvers: [] };
-              updated = true;
-            }
+          if (!character.bodySlots) {
+            character.bodySlots = { head: null, eyes: null, neck: null, torso: null, armor: null, cloak: null, waist: null, wrists: null, hands: null, ring1: null, ring2: null, feet: null };
+            updated = true;
           }
-
+          if (!Array.isArray(character.gearPool)) {
+            character.gearPool = [];
+            updated = true;
+          }
+          if (!Array.isArray(character.inventory)) {
+            character.inventory = [];
+            updated = true;
+          }
+          if (!character.tomeOfBattle) {
+            character.tomeOfBattle = { stances: [], readiedManeuvers: [] };
+            updated = true;
+          }
           if (character && !Array.isArray(character.periodicHpEffects)) {
             character.periodicHpEffects = [];
           }
@@ -1007,7 +965,7 @@
             normalizeCharacterSpellcasting(character);
           }
           if (!character.combatPins || (!character.combatPins.offense_melee && !character.combatPins.offense)) {
-            character.combatPins = (defaultChar && defaultChar.combatPins && isKazmil) ? JSON.parse(JSON.stringify(defaultChar.combatPins)) : { offense_melee: [], offense_ranged: [], offense_spell: [], spell_control: [], spell_support: [], defense: [] };
+            character.combatPins = { offense_melee: [], offense_ranged: [], offense_spell: [], spell_control: [], spell_support: [], defense: [] };
             updated = true;
           }
           if (!character.weaponAttackProfiles) {
@@ -1029,8 +987,8 @@
             character.settings.pinDrawerLimit = 5;
             updated = true;
           }
-          if (window.SchemaMigrator && typeof window.SchemaMigrator.upgradeCharacterToV2 === 'function' && character.schemaVersion !== 2) {
-            character = window.SchemaMigrator.upgradeCharacterToV2(character);
+          if (window.SchemaMigrator && typeof window.SchemaMigrator.upgradeCharacterToV3 === 'function' && character.schemaVersion !== 3) {
+            character = window.SchemaMigrator.upgradeCharacterToV3(character);
             bindMasterDbToLoadedCharacter();
             updated = true;
           }
@@ -2387,7 +2345,7 @@
       try { if (character) saveStateToStorage(false); } catch (_) {}
     });
 
-    const ALL_SHEET_TABS = ['tab-combat', 'tab-spells', 'tab-core', 'tab-skills', 'tab-defense', 'tab-inventory', 'tab-database', 'tab-dice'];
+    const ALL_SHEET_TABS = ['tab-combat', 'tab-spells', 'tab-core', 'tab-skills', 'tab-defense', 'tab-inventory', 'tab-dice'];
     const _dirtyTabs = new Set(ALL_SHEET_TABS);
 
     function renderTabIfNeeded(tabId, force = false) {
@@ -2437,14 +2395,6 @@
         case 'tab-inventory':
           try { renderInventory(); } catch (e) { console.error('renderInventory error:', e); }
           try { renderConsumables(); } catch (e) { console.error('renderConsumables error:', e); }
-          break;
-        case 'tab-database':
-          if (typeof renderMasterDbTable === 'function') {
-            try { renderMasterDbTable(); } catch (e) { console.error('renderMasterDbTable error:', e); }
-          }
-          if (window.RuleMaster) {
-            try { RuleMaster.init(); } catch (e) { console.error('RuleMaster.init error:', e); }
-          }
           break;
         case 'tab-dice':
           try { renderDiceHistory(); } catch (e) { console.error('renderDiceHistory error:', e); }
@@ -2608,8 +2558,8 @@
         }
       }
 
-      if (window.SchemaMigrator && typeof window.SchemaMigrator.upgradeCharacterToV2 === 'function' && character.schemaVersion !== 2) {
-        character = window.SchemaMigrator.upgradeCharacterToV2(character);
+      if (window.SchemaMigrator && typeof window.SchemaMigrator.upgradeCharacterToV3 === 'function' && character.schemaVersion !== 3) {
+        character = window.SchemaMigrator.upgradeCharacterToV3(character);
       }
       if (!Array.isArray(character.skills)) {
         character.skills = Object.values(character.skills || {});
@@ -3008,7 +2958,7 @@
       const conMod = RuleEngine ? RuleEngine.getAbilityMod(character.abilities?.con || 10) : 0;
       const dexMod = RuleEngine ? RuleEngine.getAbilityMod(character.abilities?.dex || 10) : 0;
       const wisMod = RuleEngine ? RuleEngine.getAbilityMod(character.abilities?.wis || 10) : 0;
-      const resBonus = character.saveBonuses?.resistance || 0;
+      const resBonus = character.savesBreakdown?.resist || 0;
       const clarityBonus = saves.battleClarityBonus || 0;
       const miscRef = (saves.bonusRef || 0) - clarityBonus;
 
@@ -3850,11 +3800,16 @@
           if (Number(tSum.turnResistance) > 0) pills.push(`<span class="px-1.5 py-0.5 rounded bg-slate-900 text-slate-200 border border-slate-700 font-semibold">☀️ Turn Res +${tSum.turnResistance}</span>`);
           if (Array.isArray(tSum.immunities) && tSum.immunities.length > 0) pills.push(`<span class="px-1.5 py-0.5 rounded bg-sky-950/80 text-sky-300 border border-sky-700/60 font-semibold">Immunities: ${escapeRaceHtml(tSum.immunities.slice(0, 5).join(', '))}${tSum.immunities.length > 5 ? ` (+${tSum.immunities.length - 5})` : ''}</span>`);
           if (Array.isArray(tSum.resistances) && tSum.resistances.length > 0) pills.push(`<span class="px-1.5 py-0.5 rounded bg-teal-950/80 text-teal-300 border border-teal-700/60 font-semibold">Resist: ${escapeRaceHtml(tSum.resistances.join(', '))}</span>`);
-          if (Array.isArray(tSum.damageParts) && tSum.damageParts.length > 0) {
-            tSum.damageParts.forEach(dp => {
-              pills.push(`<span class="px-1.5 py-0.5 rounded bg-rose-950/80 text-rose-300 border border-rose-700/60 font-semibold">🔥 ${escapeRaceHtml(dp.source || 'Attack')}: ${escapeRaceHtml(dp.dice)}${dp.bonus ? `+${dp.bonus}` : ''} ${escapeRaceHtml(dp.type || '')}</span>`);
-            });
-          }
+          const templateRollEffects = Array.isArray(tSum.effects)
+            ? tSum.effects
+            : activeTmpls.flatMap(t => (t && Array.isArray(t.effects) ? t.effects.map(ef => ({ ...ef, source: ef?.source || t.name })) : []));
+          templateRollEffects.forEach(ef => {
+            if (!ef || ef.type !== 'roll' || (ef.kind && ef.kind !== 'Damage')) return;
+            const diceStr = ef.dice || (ef.count && ef.die ? `${ef.count}${ef.die}` : '');
+            if (!diceStr) return;
+            const bonusNum = Number(ef.bonus) || 0;
+            pills.push(`<span class="px-1.5 py-0.5 rounded bg-rose-950/80 text-rose-300 border border-rose-700/60 font-semibold">🔥 ${escapeRaceHtml(ef.source || 'Attack')}: ${escapeRaceHtml(diceStr)}${bonusNum ? `+${bonusNum}` : ''} ${escapeRaceHtml(ef.dmgType || ef.damageType || '')}</span>`);
+          });
 
           tmplSummaryBar.innerHTML = `
             <div class="flex flex-wrap items-center justify-between gap-2">
@@ -3973,13 +3928,9 @@
         if (cachedRacesJson) {
           const cachedRaces = JSON.parse(cachedRacesJson);
           if (Array.isArray(cachedRaces)) {
-            if (!window.BUNDLED_SRD_CORE_CATALOG) window.BUNDLED_SRD_CORE_CATALOG = [];
             const raceSel = document.getElementById('profile-edit-race');
             cachedRaces.forEach(r => {
               if (r && r.name) {
-                if (!window.BUNDLED_SRD_CORE_CATALOG.some(c => c && c.name && c.name.toLowerCase() === r.name.toLowerCase())) {
-                  window.BUNDLED_SRD_CORE_CATALOG.push(r);
-                }
                 if (raceSel && !Array.from(raceSel.options).some(o => o.value.toLowerCase() === r.name.toLowerCase())) {
                   const opt = document.createElement('option');
                   opt.value = r.name;
@@ -4112,16 +4063,8 @@
           raceObj.traits = [{ name: 'Racial Traits', desc: raceObj.benefit || raceObj.description }];
         }
 
-        // Add to in-memory bundled catalog
+        // Cache in localStorage (custom races also save into character.customDb / character.customEntries)
         ensureCustomRacesLoaded();
-        if (typeof window.BUNDLED_SRD_CORE_CATALOG !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
-          const existingIdx = window.BUNDLED_SRD_CORE_CATALOG.findIndex(item => item && item.type === 'Race' && item.name.toLowerCase() === raceObj.name.toLowerCase());
-          if (existingIdx >= 0) {
-            window.BUNDLED_SRD_CORE_CATALOG[existingIdx] = raceObj;
-          } else {
-            window.BUNDLED_SRD_CORE_CATALOG.push(raceObj);
-          }
-        }
 
         // Cache in localStorage
         try {
@@ -4281,8 +4224,8 @@
       ensureCustomRacesLoaded();
       const list = [...DND35_RACE_DEFINITIONS];
 
-      const catalog = (typeof window.BUNDLED_SRD_CORE_CATALOG !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG))
-        ? window.BUNDLED_SRD_CORE_CATALOG
+      const catalog = (window.SrdCompendium && typeof window.SrdCompendium.getAllLoaded === 'function')
+        ? window.SrdCompendium.getAllLoaded()
         : [];
 
       catalog.forEach(item => {
@@ -4444,8 +4387,8 @@
       if (typeof window !== 'undefined' && window.SrdCompendium && typeof window.SrdCompendium.getAllTemplates === 'function') {
         return window.SrdCompendium.getAllTemplates();
       }
-      const catalog = (typeof window.BUNDLED_SRD_CORE_CATALOG !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG))
-        ? window.BUNDLED_SRD_CORE_CATALOG
+      const catalog = (window.SrdCompendium && typeof window.SrdCompendium.getAllLoaded === 'function')
+        ? window.SrdCompendium.getAllLoaded()
         : [];
       return catalog.filter(item => item && item.type === 'Template');
     }
@@ -4474,31 +4417,36 @@
     function formatTemplateModifierPills(tmpl) {
       if (!tmpl) return [];
       const pills = [];
-      if (Array.isArray(tmpl.modifiers)) {
-        tmpl.modifiers.forEach(m => {
-          if (!m || !m.target) return;
-          const t = String(m.target).toLowerCase();
-          const val = Number(m.value) || 0;
-          if (t.startsWith('ability.') || ['str', 'dex', 'con', 'int', 'wis', 'cha'].includes(t)) {
-            if (val === 0) return;
-            const stat = t.replace('ability.', '').toUpperCase();
-            const cond = m.condition ? ` (${m.condition})` : '';
-            pills.push(`${val > 0 ? '+' : ''}${val} ${stat}${cond}`);
-          } else if (t === 'ac.natural' || t === 'natural') {
-            if (val !== 0) pills.push(`${val > 0 ? '+' : ''}${val} Nat AC`);
-          } else if (t === 'ac.deflection') {
-            pills.push(`Defl AC = ${m.formula && String(m.formula).includes('@chaMod') ? 'CHA Mod' : `+${val}`}`);
-          } else if (t === 'ac.dodge' && val > 0) {
-            pills.push(`+${val} ${m.type ? (m.type.charAt(0).toUpperCase() + m.type.slice(1) + ' ') : ''}AC`);
-          } else if (t === 'save.all' && val > 0) {
-            pills.push(`+${val} All Saves`);
-          } else if (t === 'attack.all' && val > 0) {
-            pills.push(`+${val} Attack`);
-          } else if (t === 'speed.land' && val > 0) {
-            pills.push(`+${val} ft. Speed`);
-          } else if (t === 'powerpoints' && val > 0) {
-            pills.push(`+${val} PP`);
-          }
+      if (Array.isArray(tmpl.effects)) {
+        tmpl.effects.forEach(ef => {
+          if (!ef || ef.type !== 'stat') return;
+          const targets = Array.isArray(ef.targets) ? ef.targets : (ef.target ? [ef.target] : []);
+          const val = Number(ef.value) || 0;
+          const btype = ef.btype || ef.bonusType || '';
+          targets.forEach(rawT => {
+            if (!rawT) return;
+            const t = String(rawT).toLowerCase();
+            if (t.startsWith('ability.') || ['str', 'dex', 'con', 'int', 'wis', 'cha'].includes(t)) {
+              if (val === 0) return;
+              const stat = t.replace('ability.', '').toUpperCase();
+              const cond = ef.condition ? ` (${ef.condition})` : '';
+              pills.push(`${val > 0 ? '+' : ''}${val} ${stat}${cond}`);
+            } else if (t === 'ac.natural' || t === 'natural') {
+              if (val !== 0) pills.push(`${val > 0 ? '+' : ''}${val} Nat AC`);
+            } else if (t === 'ac.deflection') {
+              pills.push(`Defl AC = ${ef.formula && String(ef.formula).includes('@chaMod') ? 'CHA Mod' : `+${val}`}`);
+            } else if (t === 'ac.dodge' && val > 0) {
+              pills.push(`+${val} ${btype ? (btype.charAt(0).toUpperCase() + btype.slice(1) + ' ') : ''}AC`);
+            } else if (t === 'save.all' && val > 0) {
+              pills.push(`+${val} All Saves`);
+            } else if (t === 'attack.all' && val > 0) {
+              pills.push(`+${val} Attack`);
+            } else if (t === 'speed.land' && val > 0) {
+              pills.push(`+${val} ft. Speed`);
+            } else if (t === 'powerpoints' && val > 0) {
+              pills.push(`+${val} PP`);
+            }
+          });
         });
       }
       if (tmpl.dr) pills.push(`DR ${tmpl.dr}`);
@@ -5355,8 +5303,8 @@
       }
 
       // 3. Catalog lookup
-      const catalog = (typeof window.BUNDLED_SRD_CORE_CATALOG !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG))
-        ? window.BUNDLED_SRD_CORE_CATALOG
+      const catalog = (window.SrdCompendium && typeof window.SrdCompendium.getAllLoaded === 'function')
+        ? window.SrdCompendium.getAllLoaded()
         : [];
 
       catalog.forEach(item => {
@@ -5970,7 +5918,7 @@
       const descVal = descInput ? descInput.value.trim() : '';
 
       const entry = {
-        schemaVersion: 2,
+        schemaVersion: 3,
         id: _editingDeityOriginalId || ('deity-' + slug),
         type: 'Deity',
         name: name,
@@ -5986,8 +5934,7 @@
         portfolio: portfolioVal,
         benefit: portfolioVal ? `Portfolio: ${portfolioVal}${selectedDomains.length ? ' • Domains: ' + selectedDomains.join(', ') : ''}` : (descVal || `Favored Weapon: ${favoredWeapon} • Domains: ${selectedDomains.join(', ')}`),
         description: descVal,
-        modifiers: [],
-        damageParts: [],
+        effects: [],
         modes: [],
         isCustom: true,
         addedAt: new Date().toISOString()
@@ -6008,13 +5955,19 @@
       if (favoredWeapon && favoredWeapon !== '-' && favoredWeapon.toLowerCase() !== 'none' && !isWeaponInDb(favoredWeapon)) {
         const weaponSlug = favoredWeapon.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'weapon';
         const autoWeapon = {
-          schemaVersion: 2,
+          schemaVersion: 3,
+          blueprint: 'weapon',
           id: 'wpn-' + weaponSlug,
           type: 'Weapon',
           category: 'Weapon',
           name: favoredWeapon,
           source: `${name} Deity Favored Weapon`,
-          damageParts: [{ dice: '1d8', bonus: 0, type: 'Slashing', multiplyOnCrit: true, onCritOnly: false, source: favoredWeapon }],
+          weapon: { category: 'Martial', handedness: 'One-Handed', damageDice: '1d8', damageType: 'Slashing', critRange: 20, critMult: 2 },
+          dice: '1d8',
+          dmgType: 'Slashing',
+          critMin: 20,
+          critMult: 2,
+          effects: [],
           isCustom: true,
           addedAt: new Date().toISOString()
         };
@@ -6327,12 +6280,15 @@
         slaUsesSelect.value = initialData.grantedPower?.spellLikeAbilities?.[0]?.uses || initialData.slaUses || 'None';
       }
 
-      // Modifiers
-      if (Array.isArray(initialData.modifiers) && initialData.modifiers.length > 0) {
-        const m = initialData.modifiers[0];
-        if (modTargetSelect) modTargetSelect.value = m.target || 'None';
-        if (modValInput) modValInput.value = m.value || 0;
-        if (modTypeSelect) modTypeSelect.value = m.type || 'Untyped';
+      // Effects (V3 stat block)
+      const firstStatEffect = Array.isArray(initialData.effects)
+        ? initialData.effects.find(ef => ef && ef.type === 'stat')
+        : null;
+      if (firstStatEffect) {
+        const firstTarget = Array.isArray(firstStatEffect.targets) ? firstStatEffect.targets[0] : firstStatEffect.target;
+        if (modTargetSelect) modTargetSelect.value = firstTarget || 'None';
+        if (modValInput) modValInput.value = firstStatEffect.value || 0;
+        if (modTypeSelect) modTypeSelect.value = firstStatEffect.btype || firstStatEffect.bonusType || 'Untyped';
       } else {
         if (modTargetSelect) modTargetSelect.value = 'None';
         if (modValInput) modValInput.value = 0;
@@ -6522,9 +6478,10 @@
           if (Array.isArray(comb) && comb.length) feats.push(...comb);
         } catch (e) { reportError('char_hud:getAllFeatsFromCompendiumAndCustom', e); }
       }
-      if (Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
-        feats.push(...window.BUNDLED_SRD_CORE_CATALOG.filter(e => e && e.type === 'Feat' && e.name));
-      }
+      const allLoaded = (window.SrdCompendium && typeof window.SrdCompendium.getAllLoaded === 'function')
+        ? window.SrdCompendium.getAllLoaded()
+        : [];
+      feats.push(...allLoaded.filter(e => e && e.type === 'Feat' && e.name));
       if (window.BUNDLED_SRD_FEATS && typeof window.BUNDLED_SRD_FEATS === 'object') {
         Object.entries(window.BUNDLED_SRD_FEATS).forEach(([k, v]) => {
           if (v && typeof v === 'object') feats.push({ name: v.name || k, ...v });
@@ -6559,9 +6516,10 @@
           if (Array.isArray(sList)) spells.push(...sList);
         }
       }
-      if (Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
-        spells.push(...window.BUNDLED_SRD_CORE_CATALOG.filter(e => e && e.type === 'Spell' && e.name));
-      }
+      const allLoadedSpells = (window.SrdCompendium && typeof window.SrdCompendium.getAllLoaded === 'function')
+        ? window.SrdCompendium.getAllLoaded()
+        : [];
+      spells.push(...allLoadedSpells.filter(e => e && e.type === 'Spell' && e.name));
       if (window.BUNDLED_SRD_SPELLS && typeof window.BUNDLED_SRD_SPELLS === 'object') {
         Object.entries(window.BUNDLED_SRD_SPELLS).forEach(([k, v]) => {
           if (v && typeof v === 'object') spells.push({ name: v.name || k, ...v });
@@ -6688,9 +6646,10 @@
       if (typeof window.BUNDLED_SRD_EQUIPMENT !== 'undefined' && Array.isArray(window.BUNDLED_SRD_EQUIPMENT)) {
         weapons.push(...window.BUNDLED_SRD_EQUIPMENT.filter(e => e && e.type === 'Weapon' && e.name));
       }
-      if (typeof window.BUNDLED_SRD_CORE_CATALOG !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
-        weapons.push(...window.BUNDLED_SRD_CORE_CATALOG.filter(e => e && e.type === 'Weapon' && e.name));
-      }
+      const allLoadedWeapons = (window.SrdCompendium && typeof window.SrdCompendium.getAllLoaded === 'function')
+        ? window.SrdCompendium.getAllLoaded()
+        : [];
+      weapons.push(...allLoadedWeapons.filter(e => e && e.type === 'Weapon' && e.name));
       if (typeof character !== 'undefined' && Array.isArray(character.customDb)) {
         weapons.push(...character.customDb.filter(e => e && (e.type === 'Weapon' || e.category === 'Weapon')));
       }
@@ -7232,18 +7191,23 @@
         }
       }
 
+      const domainEffects = (modTarget && modTarget !== 'None' && modVal !== 0)
+        ? [{ type: 'stat', targets: [modTarget], mode: 'flat', value: modVal, btype: modType }]
+        : [];
+
       // Auto-register any missing feat, SLA, or spell in character.customDb & masterDb
       if (feat && !isFeatInDb(feat)) {
         const featSlug = feat.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'feat';
         const autoFeat = {
-          schemaVersion: 2,
+          schemaVersion: 3,
+          blueprint: 'feat',
           id: 'feat-' + featSlug,
           type: 'Feat',
           category: 'General',
           name: feat,
           source: srcInput?.value || 'Domain Bonus',
           benefit: powerDesc || `Granted bonus feat from ${name} Domain.`,
-          modifiers: (modTarget && modTarget !== 'None' && modVal !== 0) ? [{ target: modTarget, value: modVal, type: modType }] : [],
+          effects: JSON.parse(JSON.stringify(domainEffects)),
           isCustom: true,
           addedAt: new Date().toISOString()
         };
@@ -7255,7 +7219,8 @@
         const slaSlug = slaName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'sla';
         const effectiveUses = (slaUses && slaUses !== 'None') ? slaUses : '1/day';
         const autoSla = {
-          schemaVersion: 2,
+          schemaVersion: 3,
+          blueprint: 'feat',
           id: 'abil-' + slaSlug,
           type: 'Special Ability',
           category: 'Special Ability',
@@ -7264,7 +7229,7 @@
           uses: effectiveUses,
           source: srcInput?.value || `${name} Domain`,
           benefit: powerDesc || `${name} Domain Active Power (${effectiveUses}).`,
-          modifiers: (modTarget && modTarget !== 'None' && modVal !== 0) ? [{ target: modTarget, value: modVal, type: modType }] : [],
+          effects: JSON.parse(JSON.stringify(domainEffects)),
           isCustom: true,
           addedAt: new Date().toISOString()
         };
@@ -7277,7 +7242,8 @@
       spellsList.forEach(sp => {
         if (sp.name && !isSpellInDb(sp.name)) {
           const autoSpell = {
-            schemaVersion: 2,
+            schemaVersion: 3,
+            blueprint: 'spell',
             id: sp.id,
             type: 'Spell',
             category: 'Spell',
@@ -7286,6 +7252,7 @@
             school: 'Universal',
             source: srcInput?.value || 'Domain Spell',
             description: `Domain spell from ${name} Domain (Level ${sp.level}).`,
+            effects: [],
             isCustom: true,
             addedAt: new Date().toISOString()
           };
@@ -7301,12 +7268,9 @@
         spellLikeAbilities: (slaName && finalSlaUses !== 'None') ? [{ name: slaName, uses: finalSlaUses, desc: powerDesc }] : []
       };
 
-      const modifiers = (modTarget && modTarget !== 'None' && modVal !== 0)
-        ? [{ target: modTarget, value: modVal, type: modType }]
-        : [];
-
       const entry = {
-        schemaVersion: 2,
+        schemaVersion: 3,
+        blueprint: 'domain',
         id: _editingDomainOriginalId || ('dom-' + slug),
         type: 'Domain',
         category: 'Cleric Domain',
@@ -7316,8 +7280,7 @@
         grantedPower: grantedPower,
         benefit: powerDesc || (spellsList.length ? `Domain Spells: ${spellsList.map(s => s.name).join(', ')}` : 'Cleric Domain'),
         description: powerDesc,
-        modifiers: modifiers,
-        damageParts: [],
+        effects: JSON.parse(JSON.stringify(domainEffects)),
         modes: [],
         spells: spellsList,
         isCustom: true,
@@ -7484,8 +7447,8 @@
       }
 
       ensureCustomRacesLoaded();
-      const catalog = (typeof window.BUNDLED_SRD_CORE_CATALOG !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG))
-        ? window.BUNDLED_SRD_CORE_CATALOG
+      const catalog = (window.SrdCompendium && typeof window.SrdCompendium.getAllLoaded === 'function')
+        ? window.SrdCompendium.getAllLoaded()
         : [];
 
       const raceObj = catalog.find(item => item && item.type === 'Race' && (item.name.toLowerCase() === q || item.name.toLowerCase().includes(q)));
@@ -7494,12 +7457,19 @@
         return;
       }
 
-      // Build Stat Bonus Pill (Canonical V2 modifiers[] first, fallback to legacy V1)
+      // Build Stat Bonus Pill (Canonical V3 effects[] first, fallback to legacy V1)
       const statChanges = [];
       const getRaceAbilityMod = (key, v1Prop) => {
-        if (Array.isArray(raceObj.modifiers)) {
-          const mod = raceObj.modifiers.find(m => m && (m.target === `ability.${key}` || m.target === key));
-          if (mod && mod.value !== undefined) return Number(mod.value) || 0;
+        if (Array.isArray(raceObj.effects)) {
+          const ef = raceObj.effects.find(e => {
+            if (!e || e.type !== 'stat' || e.condition) return false;
+            const tgts = Array.isArray(e.targets) ? e.targets : (e.target ? [e.target] : []);
+            return tgts.some(t => {
+              const l = String(t || '').toLowerCase();
+              return l === `ability.${key}` || l === key;
+            });
+          });
+          if (ef && ef.value !== undefined) return Number(ef.value) || 0;
         }
         return Number(raceObj[v1Prop]) || 0;
       };
@@ -8708,8 +8678,8 @@ function renderManualStatsPanel() {
       // Resolve selected race object for accurate preview
       const rawSelectedRace = (document.getElementById('profile-edit-race')?.value || character?.race || '').trim();
       const curSelectedRace = rawSelectedRace.toLowerCase();
-      const catalog = (typeof window.BUNDLED_SRD_CORE_CATALOG !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG))
-        ? window.BUNDLED_SRD_CORE_CATALOG
+      const catalog = (window.SrdCompendium && typeof window.SrdCompendium.getAllLoaded === 'function')
+        ? window.SrdCompendium.getAllLoaded()
         : [];
       const raceObj = (window.SrdCompendium && typeof window.SrdCompendium.getByName === 'function' ? window.SrdCompendium.getByName(rawSelectedRace, 'Race') : null)
         || catalog.find(item => item && item.type === 'Race' && (item.name || '').toLowerCase().trim() === curSelectedRace);
@@ -8722,21 +8692,25 @@ function renderManualStatsPanel() {
       previewContainer.innerHTML = STAT_KEYS.map(s => {
         const baseScore = Number(statDistState.workingAbilities[s.key]) || 10;
         let racialMod = (raceObj && raceObj[`${s.key}Bonus`]) ? Number(raceObj[`${s.key}Bonus`]) : 0;
-        if (racialMod === 0 && raceObj && Array.isArray(raceObj.modifiers)) {
-          raceObj.modifiers.forEach(m => {
-            if (!m || m.condition) return;
-            const t = String(m.target || '').toLowerCase();
-            if (t === `ability.${s.key}` || t === s.key) racialMod += Number(m.value) || 0;
+        if (racialMod === 0 && raceObj && Array.isArray(raceObj.effects)) {
+          raceObj.effects.forEach(ef => {
+            if (!ef || ef.type !== 'stat' || ef.condition) return;
+            const tgts = Array.isArray(ef.targets) ? ef.targets : (ef.target ? [ef.target] : []);
+            if (tgts.some(t => { const l = String(t || '').toLowerCase(); return l === `ability.${s.key}` || l === s.key; })) {
+              racialMod += Number(ef.value) || 0;
+            }
           });
         }
 
         let templateMod = 0;
         selectedTmplEntries.forEach(tmpl => {
-          if (!tmpl || !Array.isArray(tmpl.modifiers)) return;
-          tmpl.modifiers.forEach(m => {
-            if (!m || m.condition) return;
-            const t = String(m.target || '').toLowerCase();
-            if (t === `ability.${s.key}` || t === s.key) templateMod += Number(m.value) || 0;
+          if (!tmpl || !Array.isArray(tmpl.effects)) return;
+          tmpl.effects.forEach(ef => {
+            if (!ef || ef.type !== 'stat' || ef.condition) return;
+            const tgts = Array.isArray(ef.targets) ? ef.targets : (ef.target ? [ef.target] : []);
+            if (tgts.some(t => { const l = String(t || '').toLowerCase(); return l === `ability.${s.key}` || l === s.key; })) {
+              templateMod += Number(ef.value) || 0;
+            }
           });
         });
         
@@ -8812,8 +8786,8 @@ function renderManualStatsPanel() {
         character.race = newRace;
 
         // Auto-sync racial traits into character.specialAbilities
-        const catalog = (typeof window.BUNDLED_SRD_CORE_CATALOG !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG))
-          ? window.BUNDLED_SRD_CORE_CATALOG
+        const catalog = (window.SrdCompendium && typeof window.SrdCompendium.getAllLoaded === 'function')
+          ? window.SrdCompendium.getAllLoaded('Race')
           : [];
         const raceObj = (window.SrdCompendium && typeof window.SrdCompendium.getByName === 'function' ? window.SrdCompendium.getByName(newRace, 'Race') : null)
           || catalog.find(item => item && item.type === 'Race' && (item.name.toLowerCase() === newRace.toLowerCase() || item.name.toLowerCase().includes(newRace.toLowerCase())));
@@ -9099,7 +9073,7 @@ function renderManualStatsPanel() {
       let extraBuffNote = '';
       if (typeof window.applySpellBuffToCharacter === 'function' && typeof RuleEngine !== 'undefined' && RuleEngine.resolveSpellBuffSpec) {
         const bSpec = RuleEngine.resolveSpellBuffSpec({ name: sourceName }, character);
-        if (bSpec && bSpec.isBuffSpell && Array.isArray(bSpec.modifiers) && bSpec.modifiers.length > 0) {
+        if (bSpec && bSpec.isBuffSpell && Array.isArray(bSpec.effects) && bSpec.effects.length > 0) {
           window.applySpellBuffToCharacter({ name: sourceName }, bSpec.casterLevel, { skipTempHp: true, silentToast: true });
           extraBuffNote = ` • Buff Active (${bSpec.summaryText})`;
         }

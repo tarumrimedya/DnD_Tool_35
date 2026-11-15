@@ -128,7 +128,7 @@
       if (typeof x !== 'object') return;
       add(x.id); add(x.name); add(x.baseItemId); add(x.masterDbName);
     };
-    ['feats', 'specialAbilities', 'buffs', 'legoEntries', 'classFeatures', 'traits', 'flaws', 'gearPool', 'consumables', 'activeModifiers']
+    ['feats', 'specialAbilities', 'buffs', 'legoEntries', 'classFeatures', 'traits', 'flaws', 'gearPool', 'consumables', 'tacticalRiders']
       .forEach(k => { if (Array.isArray(doc[k])) doc[k].forEach(addItem); });
     if (doc.bodySlots && typeof doc.bodySlots === 'object') {
       Object.keys(doc.bodySlots).forEach(k => {

@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "name": "Garrick Ironhand",
   "race": "Human",
   "size": "Medium",
@@ -54,21 +54,27 @@
       "name": "Weapon Focus (Longsword)",
       "type": "Feat",
       "category": "Fighter Bonus",
-      "active": true
+      "active": true,
+      "schemaVersion": 3,
+      "effects": []
     },
     {
       "id": "feat-power-attack",
       "name": "Power Attack",
       "type": "Feat",
       "category": "Fighter Bonus",
-      "active": true
+      "active": true,
+      "schemaVersion": 3,
+      "effects": []
     },
     {
       "id": "feat-cleave",
       "name": "Cleave",
       "type": "Feat",
       "category": "Fighter Bonus",
-      "active": true
+      "active": true,
+      "schemaVersion": 3,
+      "effects": []
     }
   ],
   "specialAbilities": [],
@@ -86,14 +92,17 @@
       "spellFailure": 30,
       "weight": 40,
       "cost": 150,
-      "modifiers": [
-        {
-          "target": "ac.armor",
-          "value": 5,
-          "type": "Armor"
-        }
-      ],
-      "equipped": true
+      "equipped": true,
+      "schemaVersion": 3,
+      "armor": {
+        "armorType": "Medium",
+        "armorBonus": 5,
+        "enhancementBonus": 0,
+        "maxDex": 2,
+        "armorCheckPenalty": -5,
+        "arcaneSpellFailure": 30
+      },
+      "effects": []
     },
     "offHand": {
       "id": "shd-heavy-steel-shield",
@@ -101,21 +110,23 @@
       "type": "Shield",
       "category": "Shield",
       "shieldBonus": 2,
-      "acBonus": 2,
       "enhancementBonus": 0,
       "acp": -2,
       "checkPenalty": -2,
       "spellFailure": 15,
       "weight": 15,
       "cost": 20,
-      "modifiers": [
-        {
-          "target": "ac.shield",
-          "value": 2,
-          "type": "Shield"
-        }
-      ],
-      "equipped": true
+      "equipped": true,
+      "schemaVersion": 3,
+      "armor": {
+        "armorType": "Shield",
+        "armorBonus": 2,
+        "enhancementBonus": 0,
+        "maxDex": null,
+        "armorCheckPenalty": -2,
+        "arcaneSpellFailure": 15
+      },
+      "effects": []
     },
     "mainHand": {
       "id": "wpn-longsword",
@@ -133,17 +144,30 @@
       "dmgType": "Slashing",
       "weight": 4,
       "cost": 15,
-      "damageParts": [
+      "equipped": true,
+      "schemaVersion": 3,
+      "weapon": {
+        "category": "Martial",
+        "handedness": "One-Handed",
+        "damageDice": "1d8",
+        "dmgType": "Slashing",
+        "baseCritRange": 19,
+        "critMultiplier": 2,
+        "enhancementBonus": 0,
+        "masterwork": true
+      },
+      "effects": [
         {
-          "dice": "1d8",
-          "bonus": 0,
-          "type": "Slashing",
-          "multiplyOnCrit": true,
-          "onCritOnly": false,
-          "source": "Base Weapon"
+          "type": "stat",
+          "targets": [
+            "attack.weapon"
+          ],
+          "mode": "flat",
+          "value": 1,
+          "btype": "Enhancement",
+          "source": "Masterwork"
         }
-      ],
-      "equipped": true
+      ]
     }
   },
   "weapons": [
@@ -159,17 +183,30 @@
       "critMin": 19,
       "critMult": 2,
       "dmgType": "Slashing",
-      "damageParts": [
+      "equipped": true,
+      "schemaVersion": 3,
+      "weapon": {
+        "category": "Simple",
+        "handedness": "One-Handed",
+        "damageDice": "1d8",
+        "dmgType": "Slashing",
+        "baseCritRange": 19,
+        "critMultiplier": 2,
+        "enhancementBonus": 0,
+        "masterwork": true
+      },
+      "effects": [
         {
-          "dice": "1d8",
-          "bonus": 0,
-          "type": "Slashing",
-          "multiplyOnCrit": true,
-          "onCritOnly": false,
-          "source": "Base Weapon"
+          "type": "stat",
+          "targets": [
+            "attack.weapon"
+          ],
+          "mode": "flat",
+          "value": 1,
+          "btype": "Enhancement",
+          "source": "Masterwork"
         }
-      ],
-      "equipped": true
+      ]
     }
   ],
   "gearPool": [],
@@ -178,13 +215,30 @@
       "id": "pot-cure-light-wounds",
       "name": "Potion of Cure Light Wounds",
       "qty": 2,
-      "effect": "Heals 1d8+1 HP"
+      "effect": "Heals 1d8+1 HP",
+      "schemaVersion": 3,
+      "effects": []
     }
   ],
   "buffs": [],
   "skills": [
-    { "name": "Climb", "ability": "str", "ranks": 4, "classSkill": true },
-    { "name": "Jump", "ability": "str", "ranks": 4, "classSkill": true },
-    { "name": "Intimidate", "ability": "cha", "ranks": 4, "classSkill": true }
+    {
+      "name": "Climb",
+      "ability": "str",
+      "ranks": 4,
+      "classSkill": true
+    },
+    {
+      "name": "Jump",
+      "ability": "str",
+      "ranks": 4,
+      "classSkill": true
+    },
+    {
+      "name": "Intimidate",
+      "ability": "cha",
+      "ranks": 4,
+      "classSkill": true
+    }
   ]
 }

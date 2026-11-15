@@ -2708,7 +2708,7 @@
         "crit": "normal",
         "count": 0,
         "die": "d6",
-        "scaling": "perCL",
+        "scaling": "formula",
         "amount": 1,
         "per": 1,
         "start": 1,
@@ -4402,7 +4402,6 @@
         "multiplyOnCrit": false,
         "saveType": "Fortitude",
         "save": "Fortitude negates stun",
-        "dice": "1d8",
         "count": 1,
         "die": "d8",
         "scaling": "flat",
@@ -5384,7 +5383,15 @@
     "sr": true,
     "buffTargetMode": "single",
     "powerPointsCost": null,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-sp-nd",
+        "type": "defense",
+        "mode": "Immunity",
+        "what": "Divination/Scrying (Caster Level Check Required)",
+        "value": 0
+      }
+    ],
     "ruleFlags": {
       "passiveDefenseLabel": "Nondetection (Divination Ward)"
     },
@@ -6156,7 +6163,16 @@
     "sr": true,
     "buffTargetMode": "party",
     "powerPointsCost": null,
-    "effects": [],
+    "effects": [
+      {
+        "id": "spl-water-walk-rf",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "waterWalk",
+        "label": "Water Walk",
+        "text": "Subject treads on water as if solid."
+      }
+    ],
     "ruleFlags": {
       "waterWalk": true,
       "passiveDefenseLabel": "Water Walk (Walk on Liquid)"
@@ -9556,7 +9572,6 @@
         "crit": "multiply",
         "multiplyOnCrit": true,
         "touch": true,
-        "dice": "1d6",
         "count": 1,
         "die": "d6",
         "scaling": "flat",
@@ -11201,7 +11216,15 @@
     "save": "Will negates (object)",
     "sr": true,
     "powerPointsCost": null,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-sp-ua",
+        "type": "defense",
+        "mode": "Immunity",
+        "what": "Alignment Divination (24 hours)",
+        "value": 0
+      }
+    ],
     "shortDescription": "Conceals alignment for 24 hours.",
     "text": "An undetectable alignment spell conceals the alignment of an object or a creature from all forms of divination.",
     "tags": [
@@ -12247,7 +12270,7 @@
         "crit": "normal",
         "count": 0,
         "die": "d6",
-        "scaling": "perCL",
+        "scaling": "formula",
         "amount": 1,
         "per": 1,
         "start": 1,
@@ -13370,7 +13393,19 @@
     "save": "See text",
     "sr": true,
     "powerPointsCost": null,
-    "effects": [],
+    "effects": [
+      {
+        "id": "spl-explosive-runes-dm",
+        "type": "roll",
+        "kind": "Damage",
+        "count": 6,
+        "die": "d6",
+        "flat": 0,
+        "dmgType": "Untyped",
+        "scaling": "flat",
+        "crit": "normal"
+      }
+    ],
     "shortDescription": "Deals 6d6 damage when read.",
     "text": "You trace these mystic runes upon a book, map, scroll, or similar object bearing written information. The runes detonate when read, dealing 6d6 points of force damage. Anyone next to the runes (close enough to read them) takes the full damage with no saving throw; any other creature within 10 feet of the runes is entitled to a Reflex save for half damage. The object on which the runes were written also takes full damage (no saving throw).\n\nYou and any characters you specifically instruct can read the protected writing without triggering the runes. Likewise, you can remove the runes whenever desired. Another creature can remove them with a successful dispel magic or erase spell, but attempting to dispel or erase the runes and failing to do so triggers the explosion.\n\nNote: Magic traps such as explosive runes are hard to detect and disable. A rogue (only) can use the Search skill to find the runes and Disable Device to thwart them. The DC in each case is 25 + spell level, or 28 for explosive runes.",
     "tags": [
@@ -14774,7 +14809,6 @@
         "multiplyOnCrit": false,
         "saveType": "Reflex",
         "save": "Reflex partial",
-        "dice": "6d6",
         "count": 6,
         "die": "d6",
         "scaling": "flat",
@@ -17335,7 +17369,19 @@
     "save": "See text",
     "sr": true,
     "powerPointsCost": null,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-sp-dlw",
+        "type": "stat",
+        "targets": [
+          "ac.deflection"
+        ],
+        "mode": "flat",
+        "value": 4,
+        "btype": "Deflection",
+        "condition": "vs. Lawful Creatures"
+      }
+    ],
     "shortDescription": "+4 bonus against attacks by lawful creatures.",
     "text": "You are surrounded by flickering, yellow, chaotic energy.\n\nFirst, you gain a +4 deflection bonus to AC against attacks by lawful creatures.\n\nSecond, on making a successful melee touch attack against an lawful creature from another plane, you can choose to drive that creature back to its home plane. The creature can negate the effects with a successful Will save (spell resistance applies). This use discharges and ends the spell.\n\nThird, with a touch you can automatically dispel any one enchantment spell cast by an lawful creature or any one lawful spell. Exception: Spells that can’t be dispelled by dispel magic also can’t be dispelled by dispel law. Saving throws and spell resistance do not apply to this effect. This use discharges and ends the spell.",
     "tags": [
@@ -17417,7 +17463,16 @@
     "sr": true,
     "buffTargetMode": "single",
     "powerPointsCost": null,
-    "effects": [],
+    "effects": [
+      {
+        "id": "spl-spell-immunity-rf",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "passiveDefenseLabel",
+        "label": "Spell Immunity",
+        "text": "Subject is immune to one spell per four levels."
+      }
+    ],
     "ruleFlags": {
       "passiveDefenseLabel": "Spell Immunity (Unbeatable SR vs Chosen Spells)"
     },
@@ -18124,7 +18179,24 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": null,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-sp-cw",
+        "type": "attack",
+        "attackMode": "drBypass",
+        "appliesToWeapon": "touched",
+        "drBypassList": "evil",
+        "enhEquivalent": 0
+      },
+      {
+        "id": "ef-sp-cw-c",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "autoConfirmCritVsGood",
+        "label": "Automatically Confirms Critical Threats Against Good Foes",
+        "text": "Automatically Confirms Critical Threats Against Good Foes"
+      }
+    ],
     "shortDescription": "This transmutation makes a weapon strike true against good foes. The weapon is treated as having a +1 enhancement bonus for the purpose of bypassing the damage reduction of good creatures or striking good incorporeal cr…",
     "text": "This transmutation makes a weapon strike true against good foes. The weapon is treated as having a +1 enhancement bonus for the purpose of bypassing the damage reduction of good creatures or striking good incorporeal creatures (though the spell doesn’t grant an actual enhancement bonus). The weapon also becomes evil, which means it can bypass the damage reduction of certain creatures. (This effect overrides and suppresses any other alignment the weapon might have.) Individual arrows or bolts can be transmuted, but affected projectile weapons (such as bows) don’t confer the benefit to the projectiles they shoot.\n\nIn addition, all critical hit rolls against good foes are automatically successful, so every threat is a critical hit. This last effect does not apply to any weapon that already has a magical effect related to critical hits, such as a keen weapon or a vorpal sword.",
     "tags": [
@@ -18957,7 +19029,15 @@
     "sr": true,
     "buffTargetMode": "single",
     "powerPointsCost": null,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-sp-pfa",
+        "type": "defense",
+        "mode": "Damage Reduction",
+        "what": "magic (Ranged Weapons)",
+        "value": 10
+      }
+    ],
     "ruleFlags": {
       "drRangedMagic": 10,
       "drPoolFormula": "min(100, @cl * 10)"
@@ -19489,7 +19569,19 @@
     "save": "See text",
     "sr": true,
     "powerPointsCost": null,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-sp-dch",
+        "type": "stat",
+        "targets": [
+          "ac.deflection"
+        ],
+        "mode": "flat",
+        "value": 4,
+        "btype": "Deflection",
+        "condition": "vs. Chaotic Creatures"
+      }
+    ],
     "shortDescription": "+4 bonus against attacks by chaotic creatures.",
     "text": "You are surrounded by constant, blue, lawful energy.\n\nFirst, you gain a +4 deflection bonus to AC against attacks by chaotic creatures.\n\nSecond, on making a successful melee touch attack against an chaotic creature from another plane, you can choose to drive that creature back to its home plane. The creature can negate the effects with a successful Will save (spell resistance applies). This use discharges and ends the spell.\n\nThird, with a touch you can automatically dispel any one enchantment spell cast by an chaotic creature or any one chaotic spell. Exception: Spells that can’t be dispelled by dispel magic also can’t be dispelled by dispel chaos. Saving throws and spell resistance do not apply to this effect. This use discharges and ends the spell.",
     "tags": [
@@ -20962,7 +21054,15 @@
     "sr": true,
     "buffTargetMode": "single",
     "powerPointsCost": null,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-sp-ee",
+        "type": "defense",
+        "mode": "Immunity",
+        "what": "Severe Heat & Cold Environments (-50 to 140 F)",
+        "value": 0
+      }
+    ],
     "ruleFlags": {
       "passiveDefenseLabel": "Endure Elements (-50°F to 140°F)",
       "passiveDefenseCategory": "resistance"
@@ -23188,7 +23288,19 @@
     "save": "None",
     "sr": true,
     "powerPointsCost": null,
-    "effects": [],
+    "effects": [
+      {
+        "id": "spl-wall-of-fire-dm",
+        "type": "roll",
+        "kind": "Damage",
+        "count": 2,
+        "die": "d4",
+        "flat": 0,
+        "dmgType": "Fire",
+        "scaling": "flat",
+        "crit": "normal"
+      }
+    ],
     "shortDescription": "Deals 2d4 fire damage out to 10 ft. and 1d4 out to 20 ft. Passing through wall deals 2d6 damage +1/level.",
     "text": "An immobile, blazing curtain of shimmering violet fire springs into existence. One side of the wall, selected by you, sends forth waves of heat, dealing 2d4 points of fire damage to creatures within 10 feet and 1d4 points of fire damage to those past 10 feet but within 20 feet. The wall deals this damage when it appears and on your turn each round to all creatures in the area. In addition, the wall deals 2d6 points of fire damage +1 point of fire damage per caster level (maximum +20) to any creature passing through it. The wall deals double damage to undead creatures.\n\nIf you evoke the wall so that it appears where creatures are, each creature takes damage as if passing through the wall. If any 5-foot length of wall takes 20 points of cold damage or more in 1 round, that length goes out. (Do not divide cold damage by 4, as normal for objects.)\n\nWall of fire can be made permanent with a permanency spell. A permanent wall of fire that is extinguished by cold damage becomes inactive for 10 minutes, then reforms at normal strength.\n\nArcane Material Component: A small piece of phosphorus.",
     "tags": [
@@ -25742,7 +25854,7 @@
         "crit": "normal",
         "count": 0,
         "die": "d4",
-        "scaling": "perCL",
+        "scaling": "formula",
         "amount": 1,
         "per": 1,
         "start": 1,
@@ -28275,7 +28387,16 @@
     "sr": false,
     "buffTargetMode": "self",
     "powerPointsCost": null,
-    "effects": [],
+    "effects": [
+      {
+        "id": "spl-globe-of-invulnerability-rf",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "spellImmunityLevel",
+        "label": "Globe of Invulnerability",
+        "text": "As lesser globe of invulnerability, plus 4th-level spell effects."
+      }
+    ],
     "ruleFlags": {
       "spellImmunityLevel": 4,
       "passiveDefenseLabel": "Globe of Invulnerability (Immune: 0-4th Lvl Spells)"
@@ -28618,7 +28739,16 @@
     "sr": false,
     "buffTargetMode": "self",
     "powerPointsCost": null,
-    "effects": [],
+    "effects": [
+      {
+        "id": "spl-globe-of-invulnerability-lesser-rf",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "spellImmunityLevel",
+        "label": "Globe of Invulnerability, Lesser",
+        "text": "Stops 1st- through 3rd-level spell effects."
+      }
+    ],
     "ruleFlags": {
       "spellImmunityLevel": 3,
       "passiveDefenseLabel": "Lesser Globe (Immune: 0-3rd Lvl Spells)"
@@ -29344,7 +29474,16 @@
     "sr": true,
     "buffTargetMode": "single",
     "powerPointsCost": null,
-    "effects": [],
+    "effects": [
+      {
+        "id": "spl-protection-from-energy-rf",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "energyChoice",
+        "label": "Protection from Energy",
+        "text": "Absorb 12 points/level of damage from one kind of energy."
+      }
+    ],
     "ruleFlags": {
       "energyChoice": true,
       "energyProtectionPoolFormula": "min(120, @cl * 12)"
@@ -31371,7 +31510,19 @@
     "save": "See text",
     "sr": true,
     "powerPointsCost": null,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-sp-dev",
+        "type": "stat",
+        "targets": [
+          "ac.deflection"
+        ],
+        "mode": "flat",
+        "value": 4,
+        "btype": "Deflection",
+        "condition": "vs. Evil Creatures"
+      }
+    ],
     "shortDescription": "+4 bonus against attacks by evil creatures.",
     "text": "Shimmering, white, holy energy surrounds you. This power has three effects.\n\nFirst, you gain a +4 deflection bonus to AC against attacks by evil creatures.\n\nSecond, on making a successful melee touch attack against an evil creature from another plane, you can choose to drive that creature back to its home plane. The creature can negate the effects with a successful Will save (spell resistance applies). This use discharges and ends the spell.\n\nThird, with a touch you can automatically dispel any one enchantment spell cast by an evil creature or any one evil spell. Exception: Spells that can’t be dispelled by dispel magic also can’t be dispelled by dispel evil. Saving throws and spell resistance do not apply to this effect. This use discharges and ends the spell.",
     "tags": [
@@ -34033,7 +34184,6 @@
         "crit": "multiply",
         "multiplyOnCrit": true,
         "touch": true,
-        "dice": "2d6",
         "count": 2,
         "die": "d6",
         "scaling": "flat",
@@ -34048,7 +34198,6 @@
         "multiplyOnCrit": false,
         "saveType": "Reflex",
         "save": "Reflex half",
-        "dice": "6d6",
         "count": 6,
         "die": "d6",
         "scaling": "flat",
@@ -34306,7 +34455,19 @@
     "save": "See text",
     "sr": true,
     "powerPointsCost": null,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-sp-dgd",
+        "type": "stat",
+        "targets": [
+          "ac.deflection"
+        ],
+        "mode": "flat",
+        "value": 4,
+        "btype": "Deflection",
+        "condition": "vs. Good Creatures"
+      }
+    ],
     "shortDescription": "+4 bonus against attacks by good creatures.",
     "text": "You are surrounded by dark, wavering, unholy energy.\n\nFirst, you gain a +4 deflection bonus to AC against attacks by good creatures.\n\nSecond, on making a successful melee touch attack against an good creature from another plane, you can choose to drive that creature back to its home plane. The creature can negate the effects with a successful Will save (spell resistance applies). This use discharges and ends the spell.\n\nThird, with a touch you can automatically dispel any one enchantment spell cast by a good creature or any one good spell. Exception: Spells that can’t be dispelled by dispel magic also can’t be dispelled by dispel good. Saving throws and spell resistance do not apply to this effect. This use discharges and ends the spell.",
     "tags": [
@@ -36435,7 +36596,16 @@
     "sr": false,
     "buffTargetMode": "single",
     "powerPointsCost": null,
-    "effects": [],
+    "effects": [
+      {
+        "id": "spl-sanctuary-rf",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "sanctuary",
+        "label": "Sanctuary",
+        "text": "Opponents can’t attack you, and you can’t attack."
+      }
+    ],
     "ruleFlags": {
       "sanctuary": true,
       "passiveDefenseLabel": "Sanctuary (Will Save Required to Attack)"
@@ -36944,7 +37114,16 @@
     "sr": true,
     "buffTargetMode": "party",
     "powerPointsCost": null,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-sp-ff",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "featherFall60Ft",
+        "label": "Fall Slowly at 60 ft./Round; Take Zero Falling Damage",
+        "text": "Fall Slowly at 60 ft./Round; Take Zero Falling Damage"
+      }
+    ],
     "ruleFlags": {
       "passiveDefenseLabel": "Feather Fall (Safe Descent)"
     },
@@ -37473,7 +37652,16 @@
     "sr": true,
     "buffTargetMode": "single",
     "powerPointsCost": null,
-    "effects": [],
+    "effects": [
+      {
+        "id": "spl-resist-energy-rf",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "energyChoice",
+        "label": "Resist Energy",
+        "text": "Ignores first 10 (or more) points of damage/attack from specified energy type."
+      }
+    ],
     "ruleFlags": {
       "energyChoice": true,
       "energyResistanceFormula": "@cl >= 11 ? 30 : (@cl >= 7 ? 20 : 10)"
@@ -46837,7 +47025,7 @@
         "crit": "normal",
         "count": 0,
         "die": "d8",
-        "scaling": "perCL",
+        "scaling": "formula",
         "amount": 1,
         "per": 2,
         "start": 2,
@@ -47331,7 +47519,16 @@
     "sr": true,
     "buffTargetMode": "single",
     "powerPointsCost": null,
-    "effects": [],
+    "effects": [
+      {
+        "id": "spl-air-walk-rf",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "airWalk",
+        "label": "Air Walk",
+        "text": "Subject treads on air as if solid (climb at 45-degree angle)."
+      }
+    ],
     "ruleFlags": {
       "airWalk": true,
       "passiveDefenseLabel": "Air Walk (Walk on Air)"
@@ -48423,7 +48620,16 @@
     "sr": true,
     "buffTargetMode": "single",
     "powerPointsCost": null,
-    "effects": [],
+    "effects": [
+      {
+        "id": "spl-spell-immunity-greater-rf",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "passiveDefenseLabel",
+        "label": "Spell Immunity, Greater",
+        "text": "As spell immunity, but up to 8th-level spells."
+      }
+    ],
     "ruleFlags": {
       "passiveDefenseLabel": "Greater Spell Immunity (Unbeatable SR vs Chosen Spells)"
     },
@@ -49798,7 +50004,16 @@
     "sr": true,
     "buffTargetMode": "single",
     "powerPointsCost": null,
-    "effects": [],
+    "effects": [
+      {
+        "id": "spl-true-seeing-rf",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "trueSeeing",
+        "label": "True Seeing",
+        "text": "Lets you see all things as they really are."
+      }
+    ],
     "ruleFlags": {
       "trueSeeing": true,
       "passiveDefenseLabel": "True Seeing (120 ft.)"
@@ -50665,7 +50880,19 @@
     "save": "None; see text",
     "sr": true,
     "powerPointsCost": null,
-    "effects": [],
+    "effects": [
+      {
+        "id": "spl-sympathetic-vibration-dm",
+        "type": "roll",
+        "kind": "Damage",
+        "count": 2,
+        "die": "d10",
+        "flat": 0,
+        "dmgType": "Untyped",
+        "scaling": "flat",
+        "crit": "normal"
+      }
+    ],
     "shortDescription": "Deals 2d10 damage/round to freestanding structure.",
     "text": "By attuning yourself to a freestanding structure such you can create a damaging vibration within it. Once it begins, the vibration deals 2d10 points of damage per round to the target structure. (Hardness has no effect on the spell’s damage.) You can choose at the time of casting to limit the duration of the spell; otherwise it lasts for 1 round/ level. If the spell is cast upon a target that is not freestanding the surrounding stone dissipates the effect and no damage occurs.\n\nSympathetic vibration cannot affect creatures (including constructs). Since a structure is an unattended object, it gets no saving throw to resist the effect.\n\nFocus: A tuning fork.",
     "tags": [
@@ -53959,7 +54186,15 @@
     "sr": true,
     "buffTargetMode": "party",
     "powerPointsCost": null,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-sp-wb",
+        "type": "defense",
+        "mode": "Immunity",
+        "what": "Drowning (Breathe Underwater)",
+        "value": 0
+      }
+    ],
     "ruleFlags": {
       "waterBreathing": true,
       "passiveDefenseLabel": "Water Breathing"
@@ -56246,7 +56481,16 @@
     "sr": false,
     "buffTargetMode": "self",
     "powerPointsCost": null,
-    "effects": [],
+    "effects": [
+      {
+        "id": "spl-moment-of-prescience-rf",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "momentOfPrescience",
+        "label": "Moment of Prescience",
+        "text": "You gain insight bonus on single attack roll, check, or save."
+      }
+    ],
     "ruleFlags": {
       "momentOfPrescience": "min(25, @cl)"
     },
@@ -56788,7 +57032,16 @@
     "sr": true,
     "buffTargetMode": "weapon",
     "powerPointsCost": null,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-sp-ke",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "keen",
+        "label": "Doubles Touched Piercing/Slashing Weapon Critical Threat Range",
+        "text": "Doubles Touched Piercing/Slashing Weapon Critical Threat Range"
+      }
+    ],
     "ruleFlags": {
       "keen": true
     },
@@ -57046,7 +57299,16 @@
     "sr": false,
     "buffTargetMode": "self",
     "powerPointsCost": null,
-    "effects": [],
+    "effects": [
+      {
+        "id": "spl-see-invisibility-rf",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "seeInvisibility",
+        "label": "See Invisibility",
+        "text": "Reveals invisible creatures or objects."
+      }
+    ],
     "ruleFlags": {
       "seeInvisibility": true,
       "passiveDefenseLabel": "See Invisibility & Ethereal"
@@ -57328,7 +57590,16 @@
     "sr": false,
     "buffTargetMode": "self",
     "powerPointsCost": null,
-    "effects": [],
+    "effects": [
+      {
+        "id": "spl-mirror-image-rf",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "mirrorImage",
+        "label": "Mirror Image",
+        "text": "Creates decoy duplicates of you (1d4 +1 per three levels, max 8)."
+      }
+    ],
     "ruleFlags": {
       "mirrorImage": true,
       "passiveDefenseLabel": "Mirror Image (Figments Active)"
@@ -58854,7 +59125,16 @@
     "sr": false,
     "buffTargetMode": "self",
     "powerPointsCost": null,
-    "effects": [],
+    "effects": [
+      {
+        "id": "spl-entropic-shield-rf",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "rangedMissChance",
+        "label": "Entropic Shield",
+        "text": "Ranged attacks against you have 20% miss chance."
+      }
+    ],
     "ruleFlags": {
       "rangedMissChance": 20
     },
@@ -60911,7 +61191,16 @@
     "save": "Fortitude negates (harmless)",
     "sr": true,
     "buffTargetMode": "party",
-    "effects": [],
+    "effects": [
+      {
+        "id": "spl-resist-energy-mass-rf",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "energyChoice",
+        "label": "Resist Energy, Mass",
+        "text": "Targets gain resistance 10 (20 at CL 7th, 30 at CL 11th) against chosen energy type."
+      }
+    ],
     "ruleFlags": {
       "energyChoice": true,
       "energyResistanceFormula": "@cl >= 11 ? 30 : (@cl >= 7 ? 20 : 10)"
@@ -61001,7 +61290,16 @@
     "save": "Fortitude negates (harmless)",
     "sr": true,
     "buffTargetMode": "party",
-    "effects": [],
+    "effects": [
+      {
+        "id": "spl-protection-from-energy-mass-rf",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "energyChoice",
+        "label": "Protection from Energy, Mass",
+        "text": "Absorbs 12 points/level (max 120) of damage from chosen energy type for all targets."
+      }
+    ],
     "ruleFlags": {
       "energyChoice": true,
       "energyProtectionPoolFormula": "min(120, @cl * 12)"
@@ -61084,7 +61382,16 @@
     "save": "None",
     "sr": true,
     "buffTargetMode": "single",
-    "effects": [],
+    "effects": [
+      {
+        "id": "spl-energy-immunity-rf",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "energyChoice",
+        "label": "Energy Immunity",
+        "text": "Subject gains complete immunity to one chosen energy type for 24 hours."
+      }
+    ],
     "ruleFlags": {
       "energyChoice": true,
       "energyImmunity": true

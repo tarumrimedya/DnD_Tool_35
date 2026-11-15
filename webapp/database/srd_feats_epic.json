@@ -18,7 +18,16 @@
     "prereq": "Combat Expertise, Epic Prowess, base attack bonus +15",
     "prerequisites": "Combat Expertise, Epic Prowess, base attack bonus +15",
     "benefit": "When you wield a melee weapon, add Int mod instead of Str mod to damage rolls. (Conditional)",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-ep-ci",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "intModToMeleeDamage",
+        "label": "Add INT Modifier Instead of STR Modifier to Melee Weapon Damage Rolls",
+        "text": "Add INT Modifier Instead of STR Modifier to Melee Weapon Damage Rolls"
+      }
+    ],
     "text": "When you wield a melee weapon, add Int mod instead of Str mod to damage rolls. (Conditional)",
     "tags": [
       "feat",
@@ -53,7 +62,16 @@
     "prereq": "Int 19, Combat Expertise, base attack bonus +21",
     "prerequisites": "Int 19, Combat Expertise, base attack bonus +21",
     "benefit": "When using the attack or full attack action in melee, you may take up to a -5 penalty to attack and add the same amount as a dodge bonus to AC to you and an adjacent ally. The effect lasts until your next turn.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-ep-ece",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "uncappedCombatExpertise",
+        "label": "Combat Expertise Penalty/Dodge Bonus Uncapped up to Full Base Attack Bonus",
+        "text": "Combat Expertise Penalty/Dodge Bonus Uncapped up to Full Base Attack Bonus"
+      }
+    ],
     "text": "When using the attack or full attack action in melee, you may take up to a -5 penalty to attack and add the same amount as a dodge bonus to AC to you and an adjacent ally. The effect lasts until your next turn.",
     "tags": [
       "feat",
@@ -88,7 +106,27 @@
     "prereq": "Str 25, Epic Prowess, Improved Sunder, Power Attack",
     "prerequisites": "Str 25, Epic Prowess, Improved Sunder, Power Attack",
     "benefit": "On a sunder attack double any damage derived from strength. When trying to break an object with sudden force you gain +4 on the strength check.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-ep-esun",
+        "type": "stat",
+        "targets": [
+          "ability.str.check"
+        ],
+        "mode": "flat",
+        "value": 4,
+        "btype": "Untyped",
+        "condition": "Breaking Objects with Sudden Force"
+      },
+      {
+        "id": "ef-ep-esun-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "doubleStrOnSunder",
+        "label": "Double Strength Damage Bonus on Sunder Attacks",
+        "text": "Double Strength Damage Bonus on Sunder Attacks"
+      }
+    ],
     "text": "On a sunder attack double any damage derived from strength. When trying to break an object with sudden force you gain +4 on the strength check.",
     "tags": [
       "feat",
@@ -123,7 +161,16 @@
     "prereq": "Str 25, Monkey Grip, base attack bonus +21",
     "prerequisites": "Str 25, Monkey Grip, base attack bonus +21",
     "benefit": "You can treat any weapon as if it were one category smaller and lighter for determining the effort needed to wield it.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-ep-wow",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "wieldOversizedWeapon",
+        "label": "Treat Weapons as One Size Category Smaller/Lighter for Effort to Wield",
+        "text": "Treat Weapons as One Size Category Smaller/Lighter for Effort to Wield"
+      }
+    ],
     "text": "You can treat any weapon as if it were one category smaller and lighter for determining the effort needed to wield it.",
     "tags": [
       "feat",
@@ -158,7 +205,32 @@
     "prereq": "Wis 21, Iron Will, alignment different from the chosen component, patron deity who does not accept clerics who have the chosen component",
     "prerequisites": "Wis 21, Iron Will, alignment different from the chosen component, patron deity who does not accept clerics who have the chosen component",
     "benefit": "You gain +4 bonus on save vs. spells with the chosen alignment component. You can take this feat multiple times, each time choosing a new alignment component.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-ep-edev",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-ep-edev-br",
+            "condKind": "situational",
+            "condText": "vs. Chosen Alignment Spells",
+            "effects": [
+              {
+                "id": "ef-ep-edev-s",
+                "type": "stat",
+                "targets": [
+                  "save.all"
+                ],
+                "mode": "flat",
+                "value": 4,
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "text": "You gain +4 bonus on save vs. spells with the chosen alignment component. You can take this feat multiple times, each time choosing a new alignment component.",
     "tags": [
       "feat",
@@ -193,7 +265,43 @@
     "prereq": "Skirmish +4d6/+4 AC",
     "prerequisites": "Skirmish +4d6/+4 AC",
     "benefit": "Gain bonus AC or Skirmish damage.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-ep-isk",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-ep-isk-br",
+            "condKind": "situational",
+            "condText": "Moved 20+ ft. This Round",
+            "effects": [
+              {
+                "id": "ef-ep-isk-d",
+                "type": "roll",
+                "kind": "Damage",
+                "count": 2,
+                "die": "d6",
+                "flat": 0,
+                "dmgType": "Precision",
+                "scaling": "flat",
+                "crit": "normal"
+              },
+              {
+                "id": "ef-ep-isk-ac",
+                "type": "stat",
+                "targets": [
+                  "ac.total"
+                ],
+                "mode": "flat",
+                "value": 2,
+                "btype": "Competence"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "text": "Gain bonus AC or Skirmish damage.",
     "tags": [
       "feat",
@@ -228,7 +336,19 @@
     "prereq": "Sudden strike +8d6",
     "prerequisites": "Sudden strike +8d6",
     "benefit": "Add 1d6 to your sudden strike damage.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-ep-iss",
+        "type": "roll",
+        "kind": "Damage",
+        "count": 1,
+        "die": "d6",
+        "flat": 0,
+        "dmgType": "Precision",
+        "scaling": "flat",
+        "crit": "normal"
+      }
+    ],
     "text": "Add 1d6 to your sudden strike damage.",
     "tags": [
       "feat",
@@ -263,7 +383,16 @@
     "prereq": "Dex 21, Balance 24 ranks, Tumble 24 ranks",
     "prerequisites": "Dex 21, Balance 24 ranks, Tumble 24 ranks",
     "benefit": "Ignore all check penalties for accelerated movement while balancing, accelerated tumbling, or for running while balancing on narrow surfaces.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-ep-lacro",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "ignoreAcceleratedBalanceTumblePenalty",
+        "label": "Ignore Accelerated Movement Penalties on Balance and Tumble",
+        "text": "Ignore Accelerated Movement Penalties on Balance and Tumble"
+      }
+    ],
     "text": "Ignore all check penalties for accelerated movement while balancing, accelerated tumbling, or for running while balancing on narrow surfaces.",
     "tags": [
       "feat",
@@ -298,7 +427,17 @@
     "prereq": "Quicken Power, Psicraft 30 ranks, Ability to manifest 9th level powers",
     "prerequisites": "Quicken Power, Psicraft 30 ranks, Ability to manifest 9th level powers",
     "benefit": "You may quicken all 1st level powers without expending your psionic focus (must be psionically focused)",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-ep-aqp",
+        "type": "carrier",
+        "carrierMode": "metamagic",
+        "costMode": "passive",
+        "slotAdj": 0,
+        "transform": "quicken",
+        "riderText": "Quicken 1st-Level Powers Automatically While Psionically Focused"
+      }
+    ],
     "text": "You may quicken all 1st level powers without expending your psionic focus (must be psionically focused)",
     "tags": [
       "feat",
@@ -333,7 +472,18 @@
     "prereq": "Greater Power Penetration, Power Penetration",
     "prerequisites": "Greater Power Penetration, Power Penetration",
     "benefit": "+2 bonus on manifester level checks to overcome a creatures power resistance.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-ep-epp",
+        "type": "stat",
+        "targets": [
+          "caster.spellPenetration"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Untyped"
+      }
+    ],
     "text": "+2 bonus on manifester level checks to overcome a creatures power resistance.",
     "tags": [
       "feat",
@@ -368,7 +518,32 @@
     "prereq": "Greater Psionic Endowment, Psionic Endowment, ability to manifest at least one 9th level power",
     "prerequisites": "Greater Psionic Endowment, Psionic Endowment, ability to manifest at least one 9th level power",
     "benefit": "Expend focus to add 1 to save DC against a power you manifest.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-ep-epe",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-ep-epe-br",
+            "condKind": "state",
+            "condText": "Expending Psionic Focus",
+            "effects": [
+              {
+                "id": "ef-ep-epe-dc",
+                "type": "stat",
+                "targets": [
+                  "spell.dc"
+                ],
+                "mode": "flat",
+                "value": 1,
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "text": "Expend focus to add 1 to save DC against a power you manifest.",
     "tags": [
       "feat",
@@ -403,7 +578,32 @@
     "prereq": "Combat Manifestation, Concentration 25 ranks",
     "prerequisites": "Combat Manifestation, Concentration 25 ranks",
     "benefit": "Gain bonus equal to 1/2 your manifester level on concentration checks to manifest on the defensive.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-ep-icm",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-ep-icm-br",
+            "condKind": "situational",
+            "condText": "Manifesting Defensively",
+            "effects": [
+              {
+                "id": "ef-ep-icm-c",
+                "type": "stat",
+                "targets": [
+                  "skill.concentration"
+                ],
+                "mode": "formula",
+                "formula": "floor(@level / 2)",
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "text": "Gain bonus equal to 1/2 your manifester level on concentration checks to manifest on the defensive.",
     "tags": [
       "feat",
@@ -438,7 +638,16 @@
     "prereq": "Overchannel, Psicraft 25 ranks",
     "prerequisites": "Overchannel, Psicraft 25 ranks",
     "benefit": "Take damage to raise you effective manifester level.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-ep-iov",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "improvedOverchannel",
+        "label": "Overchannel Manifester Level Beyond Normal Cap by Taking HP Damage",
+        "text": "Overchannel Manifester Level Beyond Normal Cap by Taking HP Damage"
+      }
+    ],
     "text": "Take damage to raise you effective manifester level.",
     "tags": [
       "feat",
@@ -473,7 +682,28 @@
     "prereq": "Smite anarchy class feature, any lawful alignment",
     "prerequisites": "Smite anarchy class feature, any lawful alignment",
     "benefit": "Weapons you wield are treated as axiomatic.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-ep-ax",
+        "type": "attack",
+        "attackMode": "drBypass",
+        "appliesToWeapon": "all",
+        "drBypassList": "lawful",
+        "enhEquivalent": 0
+      },
+      {
+        "id": "ef-ep-ax-r",
+        "type": "roll",
+        "kind": "Damage",
+        "count": 2,
+        "die": "d6",
+        "flat": 0,
+        "dmgType": "Lawful",
+        "scaling": "flat",
+        "crit": "normal",
+        "condition": "vs. Chaotic"
+      }
+    ],
     "text": "Weapons you wield are treated as axiomatic.",
     "tags": [
       "feat",
@@ -508,7 +738,32 @@
     "prereq": "War domain, Epic Prowess, Weapon Focus with deity's chosen weapon",
     "prerequisites": "War domain, Epic Prowess, Weapon Focus with deity's chosen weapon",
     "benefit": "+2 on weapon damage with deity's chosen weapon.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-ep-cws",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-ep-cws-br",
+            "condKind": "wieldingChosenWeapon",
+            "condText": "",
+            "effects": [
+              {
+                "id": "ef-ep-cws-d",
+                "type": "stat",
+                "targets": [
+                  "dmg.weapon"
+                ],
+                "mode": "flat",
+                "value": 2,
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "text": "+2 on weapon damage with deity's chosen weapon.",
     "tags": [
       "feat",
@@ -521,7 +776,37 @@
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Feats",
       "row": 2200
-    }
+    },
+    "choices": [
+      {
+        "id": "ch-weapon",
+        "key": "weapon",
+        "label": "Chosen Weapon",
+        "options": [
+          "Longsword",
+          "Greatsword",
+          "Greataxe",
+          "Battleaxe",
+          "Warhammer",
+          "Heavy Mace",
+          "Rapier",
+          "Scimitar",
+          "Short Sword",
+          "Dagger",
+          "Longbow",
+          "Shortbow",
+          "Light Crossbow",
+          "Heavy Crossbow",
+          "Halberd",
+          "Glaive",
+          "Guuisarme",
+          "Spiked Chain",
+          "Unarmed Strike",
+          "Grapple",
+          "Ray"
+        ]
+      }
+    ]
   },
   {
     "schemaVersion": 3,
@@ -542,7 +827,32 @@
     "prereq": "Wis 21, Improved Alignment-Based Casting, domain of chosen alignment, alignment matching chosen component, ability to cast 9th level divine spells",
     "prerequisites": "Wis 21, Improved Alignment-Based Casting, domain of chosen alignment, alignment matching chosen component, ability to cast 9th level divine spells",
     "benefit": "+4 bonus on caster level checks to overcome SR, when you cast spells with the chosen alignment.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-ep-dsp",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-ep-dsp-br",
+            "condKind": "situational",
+            "condText": "Aligned Spells",
+            "effects": [
+              {
+                "id": "ef-ep-dsp-sr",
+                "type": "stat",
+                "targets": [
+                  "caster.spellPenetration"
+                ],
+                "mode": "flat",
+                "value": 4,
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "text": "+4 bonus on caster level checks to overcome SR, when you cast spells with the chosen alignment.",
     "tags": [
       "feat",
@@ -576,7 +886,14 @@
     "prereq": "Knowledge (arcana) 30 ranks, Spellcraft 30 ranks, Skill Focus (spellcraft), metamagic effect class ability",
     "prerequisites": "Knowledge (arcana) 30 ranks, Spellcraft 30 ranks, Skill Focus (spellcraft), metamagic effect class ability",
     "benefit": "Change any variable (except point of origin) of a persistent spell effect that is currently in place.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-ep-enhef",
+        "type": "effect",
+        "effectKind": "rule",
+        "text": "Alter variable parameters of an active persistent spell effect."
+      }
+    ],
     "text": "Change any variable (except point of origin) of a persistent spell effect that is currently in place.",
     "tags": [
       "feat",
@@ -610,7 +927,16 @@
     "prereq": "Spellcraft 30 ranks, Combat Reflexes, Improved Counterspell, Improved Initiative, Quicken Spell, Reactive Counterspell",
     "prerequisites": "Spellcraft 30 ranks, Combat Reflexes, Improved Counterspell, Improved Initiative, Quicken Spell, Reactive Counterspell",
     "benefit": "Counterspell any number of times per round without a readied action.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-ep-ecsp",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "reactiveUnlimitedCounterspell",
+        "label": "Counterspell Any Number of Times per Round Without Readying an Action",
+        "text": "Counterspell Any Number of Times per Round Without Readying an Action"
+      }
+    ],
     "text": "Counterspell any number of times per round without a readied action.",
     "tags": [
       "feat",
@@ -644,7 +970,14 @@
     "prereq": "Concentration 20 ranks, Endurance, Spellfire Wielder",
     "prerequisites": "Concentration 20 ranks, Endurance, Spellfire Wielder",
     "benefit": "Your con score is considered 4 higher for the purpose of determining your limit of stored spellfire energy levels.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-ep-esfw",
+        "type": "effect",
+        "effectKind": "rule",
+        "text": "Effective Constitution +4 for maximum stored Spellfire energy levels."
+      }
+    ],
     "text": "Your con score is considered 4 higher for the purpose of determining your limit of stored spellfire energy levels.",
     "tags": [
       "feat",
@@ -678,7 +1011,17 @@
     "prereq": "Spellcraft 30 ranks, Silent Spell, Still Spell, Quicken Spell, cooperative metamagic class feature",
     "prerequisites": "Spellcraft 30 ranks, Silent Spell, Still Spell, Quicken Spell, cooperative metamagic class feature",
     "benefit": "You can use you cooperative metamagic ability to add Silent, Still or Quicken Spell to your ally's spell.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-ep-icmm",
+        "type": "carrier",
+        "carrierMode": "metamagic",
+        "costMode": "passive",
+        "slotAdj": 0,
+        "transform": "quicken",
+        "riderText": "Apply Silent, Still, or Quicken Spell via Cooperative Metamagic"
+      }
+    ],
     "text": "You can use you cooperative metamagic ability to add Silent, Still or Quicken Spell to your ally's spell.",
     "tags": [
       "feat",
@@ -712,7 +1055,14 @@
     "prereq": "Knowledge (arcana) 40 ranks, Spellcraft 40 ranks, Epic Skill Focus (spellcraft), snatch spell class feature",
     "prerequisites": "Knowledge (arcana) 40 ranks, Spellcraft 40 ranks, Epic Skill Focus (spellcraft), snatch spell class feature",
     "benefit": "Control spells when you use you seize concentration or snatch spell ability.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-ep-isnatch",
+        "type": "effect",
+        "effectKind": "rule",
+        "text": "Redirect and control spells seized via Snatch Spell or Seize Concentration."
+      }
+    ],
     "text": "Control spells when you use you seize concentration or snatch spell ability.",
     "tags": [
       "feat",
@@ -746,7 +1096,14 @@
     "prereq": "Knowledge (arcana) 30 ranks, Spellcraft 30 ranks, ability to cast spells from a spellpool",
     "prerequisites": "Knowledge (arcana) 30 ranks, Spellcraft 30 ranks, ability to cast spells from a spellpool",
     "benefit": "Your chances of a desired spell being available in the spellpool is greater.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-ep-ispa",
+        "type": "effect",
+        "effectKind": "rule",
+        "text": "Increased spell availability threshold when calling spells from a Spellpool."
+      }
+    ],
     "text": "Your chances of a desired spell being available in the spellpool is greater.",
     "tags": [
       "feat",
@@ -780,7 +1137,16 @@
     "prereq": "Int 19, Craft (any appropriate for runecasting) 24 ranks, Inscribe Rune",
     "prerequisites": "Int 19, Craft (any appropriate for runecasting) 24 ranks, Inscribe Rune",
     "benefit": "Inscribe rune that exceed normal limits.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "feat-inscribe-epic-rune-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "inscribe-epic-rune",
+        "label": "Inscribe Epic Rune",
+        "text": "Inscribe rune that exceed normal limits."
+      }
+    ],
     "text": "Inscribe rune that exceed normal limits.",
     "tags": [
       "feat",

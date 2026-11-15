@@ -26,6 +26,7 @@ const ROOT = path.resolve(__dirname, '..');
 // Copies src to dst only when the content differs. On Docker Desktop for Windows (bind-mounted repo),
 // fs.copyFileSync now and then fails with EINVAL and leaves dst deleted; fall back to read + write then.
 function syncCopy(src, dst) {
+  fs.mkdirSync(path.dirname(dst), { recursive: true });
   const data = fs.readFileSync(src);
   if (fs.existsSync(dst)) {
     try { if (fs.readFileSync(dst).equals(data)) return; } catch (_) {}
@@ -54,6 +55,7 @@ const CORE_FILES = [
   'login.html',
   'forge_sandbox.html',
   'forge_sandbox.js',
+  'rulesets/dnd35.js',
   'rule_engine.js',
   'char_store.js',
   'ui_components.js',
@@ -66,9 +68,7 @@ const CORE_FILES = [
   'hub_dice.js',
   'hub_notes.js',
   'hub_ai.js',
-  'dice3d.js',
-  'character_data.json',
-  'master_db.json'
+  'dice3d.js'
 ];
 
 const DB_FILES = fs.readdirSync(path.join(ROOT, 'database')).filter(f => f.endsWith('.json')).sort();

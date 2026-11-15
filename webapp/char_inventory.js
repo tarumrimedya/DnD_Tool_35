@@ -558,7 +558,7 @@
       const baseFort = character.baseSaves?.fort || 0;
       const baseRef = character.baseSaves?.ref || 0;
       const baseWill = character.baseSaves?.will || 0;
-      const resist = character.saveBonuses?.resistance || 0;
+      const resist = character.savesBreakdown?.resist || 0;
 
       const useConForWill = Boolean(saves.hasSteadfastDetermination || character.ruleFlags?.conToWillSave);
       const willStatMod = useConForWill ? conMod : wisMod;
@@ -797,6 +797,75 @@
       renderActiveBuffs();
     }
 
+    function extractV3StatRowsFromEffects(effects, evalCtx = {}) {
+      if (!Array.isArray(effects) || effects.length === 0) return [];
+      const rows = [];
+      effects.forEach(b => {
+        if (!b || typeof b !== 'object' || b.type !== 'stat') return;
+        const targets = Array.isArray(b.targets) && b.targets.length > 0
+          ? b.targets
+          : (b.target ? [b.target] : []);
+        if (targets.length === 0) return;
+        const mode = String(b.mode || 'flat').toLowerCase().trim();
+        const rawVal = b.val !== undefined ? b.val : b.value;
+        let formulaStr = '';
+        let val = 0;
+        if (mode === 'percl' && !b.perCL && !b.perLvl && !b.perLevel) {
+          const step = Number(rawVal ?? 1) || 1;
+          const every = Math.max(1, Number(b.per ?? 1) || 1);
+          const baseMin = Number(b.min ?? 0) || 0;
+          const maxCap = (b.max !== undefined && b.max !== null && b.max !== '') ? Number(b.max) : null;
+          const scaleExpr = every === 1 ? (step === 1 ? '@cl' : `(@cl * ${step})`) : (step === 1 ? `floor(@cl / ${every})` : `(floor(@cl / ${every}) * ${step})`);
+          const uncapExpr = baseMin !== 0 ? `${baseMin} + ${scaleExpr}` : scaleExpr;
+          formulaStr = (maxCap !== null && Number.isFinite(maxCap) && maxCap > 0) ? `min(${maxCap}, ${uncapExpr})` : uncapExpr;
+          val = (typeof RuleEngine !== 'undefined' && RuleEngine.evaluateFormula)
+            ? Math.trunc(Number(RuleEngine.evaluateFormula(formulaStr, evalCtx)) || 0)
+            : baseMin;
+        } else if (b.formula !== undefined && b.formula !== null && String(b.formula).trim() !== '') {
+          formulaStr = String(b.formula).trim();
+          val = (typeof RuleEngine !== 'undefined' && RuleEngine.evaluateFormula)
+            ? (Number(RuleEngine.evaluateFormula(formulaStr, evalCtx)) || 0)
+            : (Number(rawVal) || 0);
+        } else {
+          val = Number(rawVal) || 0;
+          formulaStr = String(val);
+        }
+        const btype = String(b.btype || b.bonusType || (val < 0 ? 'Penalty' : 'Untyped')).toLowerCase();
+        targets.forEach(t => {
+          rows.push({ target: String(t), value: val, formula: formulaStr, type: btype, condition: b.condition || null });
+        });
+      });
+      return rows;
+    }
+
+    function isPurelyNegativeV3Entry(entry) {
+      if (!entry || typeof entry !== 'object') return false;
+      const rf = entry.ruleFlags || {};
+      if (rf.loseDexToAC || rf.effectiveDexZero || rf.halfSpeed || rf.actionRestriction || rf.negativeLevels) {
+        return true;
+      }
+      const effects = Array.isArray(entry.effects) ? entry.effects : [];
+      if (effects.length === 0) return false;
+      let hasNeg = false;
+      let hasPos = false;
+      effects.forEach(b => {
+        if (!b || typeof b !== 'object') return;
+        if (b.type === 'stat') {
+          const v = Number(b.value ?? b.val ?? 0);
+          const f = String(b.formula || '').trim();
+          if (v < 0 || f.startsWith('-')) hasNeg = true;
+          else if (v > 0 || (f && !f.startsWith('-') && Number(f) > 0)) hasPos = true;
+        } else if (b.type === 'roll') {
+          if (String(b.dmgType || b.kind || '').toLowerCase().includes('penalty')) hasNeg = true;
+        } else if (b.type === 'effect' && b.flag) {
+          if (['loseDexToAC', 'effectiveDexZero', 'halfSpeed', 'singleMoveActionOnly', 'singleMoveOrStandardOnly', 'proneFromWind', 'actionRestriction', 'negativeLevels'].includes(b.flag)) {
+            hasNeg = true;
+          }
+        }
+      });
+      return hasNeg && !hasPos;
+    }
+
     function renderActiveBuffs() {
       const container = document.getElementById('buffs-list-container');
       if (!container) return;
@@ -864,75 +933,88 @@
           ? 'bg-slate-950/40 border-rose-950/50 opacity-60 hover:opacity-90' 
           : 'bg-slate-950/40 border-slate-800/80 opacity-60 hover:opacity-90';
 
+        // Resolve V3 effects & stat summary for display and stacking check
+        const buffCl = Number(buff.casterLevel || buff.cl || character.level) || 1;
+        const evalCtx = { cl: buffCl, level: Number(character.level) || 1, bab: Number(character.bab) || 0 };
+        const hasOwnEffects = Array.isArray(buff.effects) && buff.effects.length > 0;
+        const resolvedSpec = (!hasOwnEffects && typeof RuleEngine !== 'undefined' && RuleEngine.resolveSpellBuffSpec)
+          ? RuleEngine.resolveSpellBuffSpec(buff, character, buffCl)
+          : null;
+        const buffEffects = hasOwnEffects
+          ? buff.effects
+          : (resolvedSpec && Array.isArray(resolvedSpec.effects) ? resolvedSpec.effects : []);
+        const statRows = extractV3StatRowsFromEffects(buffEffects, evalCtx);
+
         // Stacking check
         let suppressionWarning = '';
         if (isAct) {
-          if (buff.bonusType === 'Armor' && activeArmor && buff.acBonus && activeArmorVal >= buff.acBonus) {
+          const sumTarget = (targets, btypeFilter) => statRows
+            .filter(r => targets.includes(r.target.toLowerCase()) && (!btypeFilter || r.type === btypeFilter))
+            .reduce((acc, r) => acc + (Number(r.value) || 0), 0);
+          const armorSpellVal = sumTarget(['ac.armor', 'ac.all', 'ac'], 'armor');
+          const shieldSpellVal = sumTarget(['ac.shield', 'ac.all', 'ac'], 'shield');
+          const strEnhVal = sumTarget(['ability.str', 'str'], 'enhancement');
+          const dexEnhVal = sumTarget(['ability.dex', 'dex'], 'enhancement');
+          if (activeArmor && armorSpellVal > 0 && activeArmorVal >= armorSpellVal) {
             suppressionWarning = `⚠️ Suppressed because equipped ${activeArmor.name} (+${activeArmorVal}) provides a higher Armor bonus (D&D 3.5e Stacking).`;
-          } else if (buff.bonusType === 'Shield' && activeShield && buff.acBonus && activeShieldVal >= buff.acBonus) {
+          } else if (activeShield && shieldSpellVal > 0 && activeShieldVal >= shieldSpellVal) {
             suppressionWarning = `⚠️ Suppressed because equipped ${activeShield.name} (+${activeShieldVal}) provides a higher Shield bonus.`;
-          } else if (buff.strBonus && buff.bonusType === 'Enhancement') {
+          } else if (strEnhVal > 0) {
             const belt = character.bodySlots?.belt;
             if (belt && belt.active && (belt.name || '').toLowerCase().includes('giant strength')) {
-              suppressionWarning = `ℹ️ ${belt.name} (+2 Enhancement) is equipped. D&D 3.5e Stacking: Same-type Enhancement bonuses do not stack; higher value (+4) applies (Net gain: +2 STR).`;
+              suppressionWarning = `ℹ️ ${belt.name} (+2 Enhancement) is equipped. D&D 3.5e Stacking: Same-type Enhancement bonuses do not stack; higher value (+${strEnhVal}) applies (Net gain: +${Math.max(0, strEnhVal - 2)} STR).`;
             }
-          } else if (buff.dexBonus && buff.bonusType === 'Enhancement') {
+          } else if (dexEnhVal > 0) {
             const gloves = character.bodySlots?.gloves;
             if (gloves && gloves.active && (gloves.name || '').toLowerCase().includes('dexterity')) {
-              suppressionWarning = `ℹ️ ${gloves.name} (+2 Enhancement) is equipped. D&D 3.5e Stacking: Same-type Enhancement bonuses do not stack; higher value (+4) applies (Net gain: +2 DEX).`;
+              suppressionWarning = `ℹ️ ${gloves.name} (+2 Enhancement) is equipped. D&D 3.5e Stacking: Same-type Enhancement bonuses do not stack; higher value (+${dexEnhVal}) applies (Net gain: +${Math.max(0, dexEnhVal - 2)} DEX).`;
             }
           }
         }
 
-        // Summary badges (Canonical V2 modifiers, ruleFlags, summary + Legacy fields)
+        // Summary badges (Canonical V3 effects, ruleFlags & summary)
         const badges = [];
         if (isDebuff) badges.push(`<span class="bg-rose-950 text-rose-300 border border-rose-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">🩸 DEBUFF</span>`);
         if (buff.targetWeapon) badges.push(`<span class="bg-amber-950 text-amber-200 border border-amber-700 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">⚔️ ${UI.escapeHtml(buff.targetWeapon)}</span>`);
-        if (buff.chosenEnergy) badges.push(`<span class="bg-orange-950 text-orange-200 border border-orange-700 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">🔥 ${buff.chosenEnergy}</span>`);
+        if (buff.chosenEnergy) badges.push(`<span class="bg-orange-950 text-orange-200 border border-orange-700 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">🔥 ${UI.escapeHtml(buff.chosenEnergy)}</span>`);
         if (buff.negativeLevels) badges.push(`<span class="bg-rose-950 text-rose-200 border border-rose-700 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">-${buff.negativeLevels} Level Drain</span>`);
 
-        // Render Canonical V2 modifiers if present
-        const hasV2Modifiers = Array.isArray(buff.modifiers) && buff.modifiers.length > 0;
-        const buffCl = Number(buff.casterLevel || buff.cl || character.level) || 1;
-        const hasDynamicClFormula = hasV2Modifiers && buff.modifiers.some(m => m && String(m.formula || '').includes('@cl'));
+        const hasDynamicClFormula = buffEffects.some(b => b && (String(b.formula || '').includes('@cl') || b.mode === 'perCL' || b.perCL));
         if (hasDynamicClFormula || buff.casterLevel || buff.cl) {
           badges.push(`<span class="bg-slate-800/90 text-amber-300 border border-amber-700/60 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">CL ${buffCl}</span>`);
         }
-        if (hasV2Modifiers) {
-          const evalCtx = { cl: buffCl, level: Number(character.level) || 1, bab: Number(character.bab) || 0 };
-          buff.modifiers.forEach(mod => {
-            if (!mod) return;
+        if (statRows.length > 0) {
+          statRows.forEach(row => {
             const lbl = (typeof RuleEngine !== 'undefined' && RuleEngine.formatBuffModifierLabel)
-              ? RuleEngine.formatBuffModifierLabel(mod, evalCtx)
-              : `${mod.value > 0 ? '+' : ''}${mod.value || mod.formula} ${mod.target}`;
+              ? RuleEngine.formatBuffModifierLabel(row, evalCtx)
+              : `${row.value > 0 ? '+' : ''}${row.value || row.formula} ${row.target}`;
             if (!lbl) return;
             const isNeg = String(lbl).trim().startsWith('-');
             const cls = isNeg
               ? 'bg-rose-950 text-rose-300 border-rose-800'
               : 'bg-indigo-950 text-indigo-200 border-indigo-700/80';
-            badges.push(`<span class="${cls} border px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">${lbl}</span>`);
+            badges.push(`<span class="${cls} border px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">${UI.escapeHtml(lbl)}</span>`);
           });
-        } else {
-          if (buff.acBonus) badges.push(`<span class="${buff.acBonus < 0 ? 'bg-rose-950 text-rose-300 border-rose-800' : 'bg-sky-950 text-sky-300 border-sky-800'} border px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">${buff.acBonus > 0 ? '+' : ''}${buff.acBonus} AC (${buff.bonusType || 'Armor'})</span>`);
-          if (buff.naturalBonus) badges.push(`<span class="bg-teal-950 text-teal-300 border border-teal-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">+${buff.naturalBonus} Natural AC</span>`);
-          if (buff.deflectionBonus) badges.push(`<span class="bg-indigo-950 text-indigo-300 border border-indigo-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">+${buff.deflectionBonus} Deflection AC</span>`);
-          if (buff.dodgeBonus) badges.push(`<span class="bg-amber-950 text-amber-300 border border-amber-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">+${buff.dodgeBonus} Dodge AC</span>`);
-          if (buff.acPenalty) badges.push(`<span class="bg-rose-950 text-rose-300 border border-rose-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">-${buff.acPenalty} AC</span>`);
-          if (buff.strBonus) badges.push(`<span class="${buff.strBonus < 0 ? 'bg-rose-950 text-rose-300 border-rose-800' : 'bg-emerald-950 text-emerald-300 border-emerald-800'} border px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">${buff.strBonus > 0 ? '+' : ''}${buff.strBonus} STR</span>`);
-          if (buff.dexBonus) badges.push(`<span class="${buff.dexBonus < 0 ? 'bg-rose-950 text-rose-300 border-rose-800' : 'bg-emerald-950 text-emerald-300 border-emerald-800'} border px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">${buff.dexBonus > 0 ? '+' : ''}${buff.dexBonus} DEX</span>`);
-          if (buff.conBonus) badges.push(`<span class="${buff.conBonus < 0 ? 'bg-rose-950 text-rose-300 border-rose-800' : 'bg-emerald-950 text-emerald-300 border-emerald-800'} border px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">${buff.conBonus > 0 ? '+' : ''}${buff.conBonus} CON</span>`);
-          if (buff.intBonus) badges.push(`<span class="${buff.intBonus < 0 ? 'bg-rose-950 text-rose-300 border-rose-800' : 'bg-emerald-950 text-emerald-300 border-emerald-800'} border px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">${buff.intBonus > 0 ? '+' : ''}${buff.intBonus} INT</span>`);
-          if (buff.wisBonus) badges.push(`<span class="${buff.wisBonus < 0 ? 'bg-rose-950 text-rose-300 border-rose-800' : 'bg-emerald-950 text-emerald-300 border-emerald-800'} border px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">${buff.wisBonus > 0 ? '+' : ''}${buff.wisBonus} WIS</span>`);
-          if (buff.chaBonus) badges.push(`<span class="${buff.chaBonus < 0 ? 'bg-rose-950 text-rose-300 border-rose-800' : 'bg-emerald-950 text-emerald-300 border-emerald-800'} border px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">${buff.chaBonus > 0 ? '+' : ''}${buff.chaBonus} CHA</span>`);
-          if (buff.attBonus) badges.push(`<span class="${buff.attBonus < 0 ? 'bg-rose-950 text-rose-300 border-rose-800' : 'bg-purple-950 text-purple-300 border-purple-800'} border px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">${buff.attBonus > 0 ? '+' : ''}${buff.attBonus} Attack</span>`);
-          if (buff.dmgBonus) badges.push(`<span class="${buff.dmgBonus < 0 ? 'bg-rose-950 text-rose-300 border-rose-800' : 'bg-purple-950 text-purple-300 border-purple-800'} border px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">${buff.dmgBonus > 0 ? '+' : ''}${buff.dmgBonus} Damage</span>`);
-          if (buff.dmgDice) badges.push(`<span class="bg-purple-950 text-purple-300 border border-purple-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">+${buff.dmgDice} Damage</span>`);
-          if (buff.speedBonus) badges.push(`<span class="bg-sky-950 text-sky-300 border border-sky-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">+${buff.speedBonus} ft Speed</span>`);
-          if (buff.speedPenalty) badges.push(`<span class="bg-rose-950 text-rose-300 border border-rose-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">-${buff.speedPenalty} ft Speed</span>`);
-          if (buff.hpPenalty) badges.push(`<span class="bg-rose-950 text-rose-300 border border-rose-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">-${buff.hpPenalty} HP</span>`);
+        } else if (resolvedSpec && Array.isArray(resolvedSpec.evaluatedLabels) && resolvedSpec.evaluatedLabels.length > 0) {
+          resolvedSpec.evaluatedLabels.forEach(lbl => {
+            const isNeg = String(lbl).trim().startsWith('-');
+            const cls = isNeg ? 'bg-rose-950 text-rose-300 border-rose-800' : 'bg-indigo-950 text-indigo-200 border-indigo-700/80';
+            badges.push(`<span class="${cls} border px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">${UI.escapeHtml(lbl)}</span>`);
+          });
         }
+        buffEffects.forEach(b => {
+          if (!b || typeof b !== 'object') return;
+          if (b.type === 'roll') {
+            const kindLow = String(b.kind || '').toLowerCase();
+            if (kindLow === 'temp hp') {
+              badges.push(`<span class="bg-emerald-950 text-emerald-300 border border-emerald-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">+${UI.escapeHtml(String(b.formula || b.dice || b.value || ''))} Temp HP</span>`);
+            } else if (b.dice) {
+              badges.push(`<span class="bg-purple-950 text-purple-300 border border-purple-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">+${UI.escapeHtml(b.dice)} ${UI.escapeHtml(b.dmgType || 'Damage')}</span>`);
+            }
+          }
+        });
 
-        // Render V2 ruleFlags & special defense pills if not already covered
+        // Render V3 ruleFlags & special defense pills if not already covered
         const rf = buff.ruleFlags || {};
         if (rf.extraAttackFullAttack) badges.push(`<span class="bg-amber-950 text-amber-300 border border-amber-700 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">⚡ +1 Extra Attack</span>`);
         if (rf.babEqualsLevel) badges.push(`<span class="bg-amber-950 text-amber-300 border border-amber-700 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">⚔️ BAB = Level</span>`);
@@ -958,21 +1040,12 @@
               </summary>
               <div class="mt-2 pl-2 border-l-2 border-rose-500/40 space-y-1">
                 ${buff.children.filter(c => c && c.name).map(c => {
-                  const cMods = [];
-                  if (c.attBonus) cMods.push(`${c.attBonus} Atk`);
-                  if (c.dmgBonus) cMods.push(`${c.dmgBonus} Dmg`);
-                  if (c.hpPenalty) cMods.push(`-${c.hpPenalty} HP`);
-                  if (c.fortBonus) cMods.push(`${c.fortBonus} Fort`);
-                  if (c.refBonus) cMods.push(`${c.refBonus} Ref`);
-                  if (c.willBonus) cMods.push(`${c.willBonus} Will`);
-                  if (c.skillBonus) cMods.push(`${c.skillBonus} Skills`);
-                  if (c.strBonus) cMods.push(`${c.strBonus} Str`);
-                  if (c.dexBonus) cMods.push(`${c.dexBonus} Dex`);
-                  if (c.clPenalty) cMods.push(`-${c.clPenalty} CL`);
+                  const cRows = extractV3StatRowsFromEffects(c.effects || [], evalCtx);
+                  const cMods = cRows.map(r => (typeof RuleEngine !== 'undefined' && RuleEngine.formatBuffModifierLabel) ? RuleEngine.formatBuffModifierLabel(r, evalCtx) : `${r.value} ${r.target}`).filter(Boolean);
                   return `
                     <div class="flex items-center justify-between py-0.5 text-[10px] text-slate-300">
                       <span class="font-sans">${UI.escapeHtml(c.name)}</span>
-                      <span class="font-mono text-rose-400 font-bold ml-2">${cMods.join(', ')}</span>
+                      <span class="font-mono text-rose-400 font-bold ml-2">${UI.escapeHtml(cMods.join(', '))}</span>
                     </div>
                   `;
                 }).join('')}
@@ -1095,8 +1168,19 @@
       if (!buff) return 0;
       if (Number(buff.grantedTempHp) > 0) return Number(buff.grantedTempHp);
       if (Number(buff.ruleFlags?.tempHp) > 0) return Number(buff.ruleFlags.tempHp);
-      const mod = (buff.modifiers || []).find(m => m && String(m.target || '').toLowerCase() === 'hp.temp');
-      return mod ? (Number(mod.value) || 0) : 0;
+      const effs = Array.isArray(buff.effects) ? buff.effects : [];
+      const statEff = effs.find(e => e && e.type === 'stat' && Array.isArray(e.targets) && e.targets.some(t => String(t).toLowerCase() === 'hp.temp' || String(t).toLowerCase() === 'temphp'));
+      if (statEff) {
+        const val = Number(statEff.value ?? statEff.val) || 0;
+        if (val > 0) return val;
+      }
+      const rollEff = effs.find(e => e && e.type === 'roll' && String(e.kind || '').toLowerCase() === 'temp hp');
+      if (rollEff) {
+        const val = Number(rollEff.value ?? rollEff.val ?? rollEff.bonus) || 0;
+        if (val > 0) return val;
+      }
+      if (buff.tempHpFormula && !isNaN(Number(buff.tempHpFormula))) return Number(buff.tempHpFormula);
+      return 0;
     }
 
     function markPlayerHpChanged() {
@@ -1477,7 +1561,7 @@
     let _selectedSpotlightEnergy = 'Fire';
     let _buffSpotlightResults = [];
     let _buffSpotlightActiveIdx = 0;
-    let _buffModalV2Modifiers = [];
+    let _buffModalStatRows = [];
     let _buffModalV2RuleFlags = {};
     let _buffManualEdited = false;
 
@@ -1669,10 +1753,10 @@
       const listEl = document.getElementById('buff-v2-modifiers-list');
       if (!listEl) return;
 
-      if (!Array.isArray(_buffModalV2Modifiers) || _buffModalV2Modifiers.length === 0) {
+      if (!Array.isArray(_buffModalStatRows) || _buffModalStatRows.length === 0) {
         listEl.innerHTML = `
           <div class="text-[11px] text-slate-500 italic text-center py-2.5 bg-slate-900/50 rounded-lg border border-dashed border-slate-800">
-            No V2 stat modifiers yet. Click <b>+ Add Modifier</b> or a preset chip above to add one.
+            No V3 stat effects yet. Click <b>+ Add Modifier</b> or a preset chip above to add one.
           </div>
         `;
         return;
@@ -1692,7 +1776,7 @@
         return BUFF_V2_BONUS_TYPES.map(t => `<option value="${t.value}" ${t.value === normType ? 'selected' : ''}>${UI.escapeHtml(t.label)}</option>`).join('');
       };
 
-      listEl.innerHTML = _buffModalV2Modifiers.map((mod, idx) => {
+      listEl.innerHTML = _buffModalStatRows.map((mod, idx) => {
         const formulaStr = mod.formula !== undefined && mod.formula !== null && mod.formula !== ''
           ? String(mod.formula)
           : String(mod.value !== undefined && mod.value !== null ? mod.value : '2');
@@ -1705,7 +1789,7 @@
               </select>
             </div>
             <div class="col-span-2">
-              <input type="text" value="${formulaStr.replace(/"/g, '&quot;')}" placeholder="+2 or @cl" data-input-action="inventory:buff-v2-mod-input" data-mod-idx="${idx}" data-field="formula" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-[11px] font-mono font-bold text-amber-300 text-center focus:border-amber-400 focus:outline-none" title="Number (e.g. 4, -2) or V2 formula (e.g. 2 + min(3, floor(@cl / 6)))">
+              <input type="text" value="${formulaStr.replace(/"/g, '&quot;')}" placeholder="+2 or @cl" data-input-action="inventory:buff-v2-mod-input" data-mod-idx="${idx}" data-field="formula" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-[11px] font-mono font-bold text-amber-300 text-center focus:border-amber-400 focus:outline-none" title="Number (e.g. 4, -2) or V3 formula (e.g. 2 + min(3, floor(@cl / 6)))">
             </div>
             <div class="col-span-3">
               <select data-change-action="inventory:buff-v2-mod-change" data-mod-idx="${idx}" data-field="type" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-[11px] text-indigo-200 focus:border-indigo-500 focus:outline-none">
@@ -1733,20 +1817,20 @@
         type: preset?.type || (isDebuff ? 'penalty' : 'enhancement'),
         condition: preset?.condition || null
       };
-      _buffModalV2Modifiers.push(defaultRow);
+      _buffModalStatRows.push(defaultRow);
       renderBuffModalV2ModifierRows();
     }
     window.addBuffModalV2ModifierRow = addBuffModalV2ModifierRow;
 
     function removeBuffModalV2ModifierRow(idx) {
       _buffManualEdited = true;
-      _buffModalV2Modifiers.splice(idx, 1);
+      _buffModalStatRows.splice(idx, 1);
       renderBuffModalV2ModifierRows();
     }
     window.removeBuffModalV2ModifierRow = removeBuffModalV2ModifierRow;
 
     function onBuffModalV2ModifierChange(idx, field, val) {
-      const row = _buffModalV2Modifiers[idx];
+      const row = _buffModalStatRows[idx];
       if (!row) return;
       _buffManualEdited = true;
       if (field === 'formula') {
@@ -1886,28 +1970,6 @@
         results.push({ entry, kindLabel, score });
       };
 
-      const isPurelyNegativeMods = (mods, rf = {}) => {
-        if (rf && (rf.loseDexToAC || rf.effectiveDexZero || rf.halfSpeed || rf.actionRestriction || rf.negativeLevels)) {
-          return true;
-        }
-        if (!Array.isArray(mods) || mods.length === 0) return false;
-        const hasNeg = mods.some(m => Number(m?.value) < 0 || String(m?.formula || '').trim().startsWith('-'));
-        const hasPos = mods.some(m => Number(m?.value) > 0 || (m?.formula && !String(m.formula).trim().startsWith('-') && Number(m.formula) > 0));
-        return hasNeg && !hasPos;
-      };
-
-      // Canonical V2 Debuff Spells (for Debuff / Condition mode only)
-      const CANONICAL_DEBUFF_SPELLS = [
-        { id: 'debuff-spell-bane', schemaVersion: 2, name: 'Bane', type: 'Debuff', category: 'Enchantment', school: 'Enchantment', duration: '1 min/level', shortDescription: '-1 penalty on attack rolls and -1 penalty on saving throws against fear.', modifiers: [{ target: 'attack.all', value: -1, formula: '-1', type: 'penalty', condition: null }, { target: 'save.will', value: -1, formula: '-1', type: 'penalty', condition: 'vs fear' }], ruleFlags: {} },
-        { id: 'debuff-spell-doom', schemaVersion: 2, name: 'Doom', type: 'Debuff', category: 'Necromancy', school: 'Necromancy', duration: '1 min/level', shortDescription: 'Subject becomes Shaken (-2 on attack rolls, saving throws, skill checks, and ability checks).', modifiers: [{ target: 'attack.all', value: -2, formula: '-2', type: 'penalty', condition: null }, { target: 'save.all', value: -2, formula: '-2', type: 'penalty', condition: null }, { target: 'skill.all', value: -2, formula: '-2', type: 'penalty', condition: null }], ruleFlags: {} },
-        { id: 'debuff-spell-crushing-despair', schemaVersion: 2, name: 'Crushing Despair', type: 'Debuff', category: 'Enchantment', school: 'Enchantment', duration: '1 min/level', shortDescription: '-2 penalty on attack rolls, saving throws, ability checks, skill checks, and weapon damage rolls.', modifiers: [{ target: 'attack.all', value: -2, formula: '-2', type: 'penalty', condition: null }, { target: 'damage.weapon', value: -2, formula: '-2', type: 'penalty', condition: null }, { target: 'save.all', value: -2, formula: '-2', type: 'penalty', condition: null }, { target: 'skill.all', value: -2, formula: '-2', type: 'penalty', condition: null }], ruleFlags: {} },
-        { id: 'debuff-spell-slow', schemaVersion: 2, name: 'Slow', type: 'Debuff', category: 'Transmutation', school: 'Transmutation', duration: '1 round/level', shortDescription: 'Single move or standard action only; -1 on attack rolls, AC, and Reflex saves; half speed.', modifiers: [{ target: 'attack.all', value: -1, formula: '-1', type: 'penalty', condition: null }, { target: 'ac.total', value: -1, formula: '-1', type: 'penalty', condition: null }, { target: 'save.ref', value: -1, formula: '-1', type: 'penalty', condition: null }], ruleFlags: { halfSpeed: true, actionRestriction: 'Slowed: Can take only a single move action or standard action each turn.' } },
-        { id: 'debuff-spell-bestow-curse', schemaVersion: 2, name: 'Bestow Curse (-4 Penalty)', type: 'Debuff', category: 'Necromancy', school: 'Necromancy', duration: 'Permanent', shortDescription: '-4 penalty on attack rolls, saves, ability checks, and skill checks.', modifiers: [{ target: 'attack.all', value: -4, formula: '-4', type: 'penalty', condition: null }, { target: 'save.all', value: -4, formula: '-4', type: 'penalty', condition: null }, { target: 'skill.all', value: -4, formula: '-4', type: 'penalty', condition: null }], ruleFlags: {} },
-        { id: 'debuff-spell-ray-of-enfeeblement', schemaVersion: 2, name: 'Ray of Enfeeblement', type: 'Debuff', category: 'Necromancy', school: 'Necromancy', duration: '1 min/level', shortDescription: '1d6 + 1 per two caster levels (max 1d6+5) penalty to Strength (cannot drop STR below 1).', modifiers: [{ target: 'ability.str', value: -6, formula: '-6', type: 'penalty', condition: null }], ruleFlags: {} },
-        { id: 'debuff-spell-touch-of-idiocy', schemaVersion: 2, name: 'Touch of Idiocy', type: 'Debuff', category: 'Enchantment', school: 'Enchantment', duration: '10 min/level', shortDescription: '1d6 penalty to INT, WIS, and CHA (cannot drop below 1).', modifiers: [{ target: 'ability.int', value: -3, formula: '-3', type: 'penalty', condition: null }, { target: 'ability.wis', value: -3, formula: '-3', type: 'penalty', condition: null }, { target: 'ability.cha', value: -3, formula: '-3', type: 'penalty', condition: null }], ruleFlags: {} },
-        { id: 'debuff-spell-mind-fog', schemaVersion: 2, name: 'Mind Fog', type: 'Debuff', category: 'Enchantment', school: 'Enchantment', duration: '2d6 rounds', shortDescription: '-10 competence penalty on Wisdom checks and Will saves.', modifiers: [{ target: 'save.will', value: -10, formula: '-10', type: 'penalty', condition: null }], ruleFlags: {} }
-      ];
-
       // 1. Scan Character Custom DB (`masterDb`) & Splatbook Buff Spells (Strictly filtered by Buff vs Debuff mode)
       const customList = [
         ...(typeof masterDb !== 'undefined' && Array.isArray(masterDb) ? masterDb : []),
@@ -1920,7 +1982,7 @@
         if (!['condition', 'debuff', 'buff', 'spell'].includes(tLower) && !['combat condition', 'buff', 'debuff'].includes(catLower)) {
           return;
         }
-        const isCondOrDebuff = tLower === 'condition' || tLower === 'debuff' || catLower === 'combat condition' || Boolean(item.isDebuff) || isPurelyNegativeMods(item.modifiers, item.ruleFlags);
+        const isCondOrDebuff = tLower === 'condition' || tLower === 'debuff' || catLower === 'combat condition' || Boolean(item.isDebuff) || isPurelyNegativeV3Entry(item);
         if (isDebuffMode) {
           if (isCondOrDebuff) {
             addCandidate(item, item.source || item.type || 'Custom Debuff', 75);
@@ -1938,9 +2000,17 @@
         }
       });
 
-      if (isDebuffMode) {
-        CANONICAL_DEBUFF_SPELLS.forEach(ds => {
-          addCandidate(ds, `SRD Debuff Spell (${ds.school})`, 88);
+      if (isDebuffMode && window.SrdCompendium && typeof window.SrdCompendium.getById === 'function') {
+        const DEBUFF_SPELL_IDS = ['spl-bane', 'spl-doom', 'spl-crushing-despair', 'spl-slow', 'spl-bestow-curse', 'spl-ray-of-enfeeblement', 'spl-touch-of-idiocy', 'spl-mind-fog'];
+        DEBUFF_SPELL_IDS.forEach(spellId => {
+          const srdSpell = window.SrdCompendium.getById(spellId);
+          if (srdSpell) {
+            addCandidate(
+              { ...srdSpell, id: 'debuff-' + srdSpell.id, type: 'Debuff', isDebuff: true },
+              `SRD Debuff Spell (${srdSpell.school || 'Spell'})`,
+              88
+            );
+          }
         });
       }
 
@@ -1955,7 +2025,7 @@
               addCandidate(rec, 'SRD Condition', 95);
             }
           } else if (rType === 'buff') {
-            const isNegBuff = isPurelyNegativeMods(rec.modifiers, rec.ruleFlags);
+            const isNegBuff = isPurelyNegativeV3Entry(rec);
             if (isDebuffMode && isNegBuff) {
               addCandidate(rec, 'SRD Debuff', 90);
             } else if (!isDebuffMode && !isNegBuff) {
@@ -2056,19 +2126,27 @@
           : null;
 
         const pills = [];
-        const mods = (spec && Array.isArray(spec.modifiers) && spec.modifiers.length > 0)
-          ? spec.modifiers
-          : (Array.isArray(item.modifiers) ? item.modifiers : []);
+        const effList = (spec && Array.isArray(spec.effects) && spec.effects.length > 0)
+          ? spec.effects
+          : (Array.isArray(item.effects) ? item.effects : []);
+        const statRows = extractV3StatRowsFromEffects(effList, evalCtx);
 
-        mods.slice(0, 4).forEach(m => {
-          const lbl = (typeof RuleEngine !== 'undefined' && RuleEngine.formatBuffModifierLabel)
-            ? RuleEngine.formatBuffModifierLabel(m, evalCtx)
-            : `${m.value || m.formula} ${m.target}`;
-          if (lbl) {
+        if (statRows.length > 0) {
+          statRows.slice(0, 4).forEach(m => {
+            const lbl = (typeof RuleEngine !== 'undefined' && RuleEngine.formatBuffModifierLabel)
+              ? RuleEngine.formatBuffModifierLabel(m, evalCtx)
+              : `${m.value || m.formula} ${m.target}`;
+            if (lbl) {
+              const isNeg = String(lbl).trim().startsWith('-');
+              pills.push(`<span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold border ${isNeg ? 'bg-rose-950 text-rose-300 border-rose-700' : 'bg-indigo-950 text-indigo-200 border-indigo-700'}">${UI.escapeHtml(lbl)}</span>`);
+            }
+          });
+        } else if (spec && Array.isArray(spec.evaluatedLabels) && spec.evaluatedLabels.length > 0) {
+          spec.evaluatedLabels.slice(0, 4).forEach(lbl => {
             const isNeg = String(lbl).trim().startsWith('-');
-            pills.push(`<span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold border ${isNeg ? 'bg-rose-950 text-rose-300 border-rose-700' : 'bg-indigo-950 text-indigo-200 border-indigo-700'}">${lbl}</span>`);
-          }
-        });
+            pills.push(`<span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold border ${isNeg ? 'bg-rose-950 text-rose-300 border-rose-700' : 'bg-indigo-950 text-indigo-200 border-indigo-700'}">${UI.escapeHtml(lbl)}</span>`);
+          });
+        }
 
         if (spec && spec.summaryText && pills.length === 0) {
           pills.push(`<span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-950 text-emerald-300 border border-emerald-700">${spec.summaryText}</span>`);
@@ -2136,9 +2214,9 @@
     }
     window.selectBuffModalEnergy = selectBuffModalEnergy;
 
-    function populateManualV2BuilderFromMechanics(modifiers, ruleFlags, evalCtx, entry = null, spec = null) {
-      _buffModalV2Modifiers = Array.isArray(modifiers)
-        ? modifiers.map(m => ({
+    function populateManualV2BuilderFromMechanics(statRows, ruleFlags, evalCtx, entry = null, spec = null) {
+      _buffModalStatRows = Array.isArray(statRows)
+        ? statRows.map(m => ({
             target: m.target || 'ability.str',
             value: (typeof RuleEngine !== 'undefined' && RuleEngine.evaluateFormula)
               ? (Number(RuleEngine.evaluateFormula(m.formula !== undefined && m.formula !== null && m.formula !== '' ? m.formula : m.value, evalCtx)) || Number(m.value) || 0)
@@ -2193,16 +2271,17 @@
         ? RuleEngine.resolveSpellBuffSpec({ ...entry, chosenEnergy: _selectedSpotlightEnergy }, character, cl)
         : null;
 
-      const modifiers = (spec && Array.isArray(spec.modifiers) && spec.modifiers.length > 0)
-        ? spec.modifiers
-        : (Array.isArray(entry.modifiers) ? entry.modifiers : []);
+      const rawEffects = (spec && Array.isArray(spec.effects) && spec.effects.length > 0)
+        ? spec.effects
+        : (Array.isArray(entry.effects) ? entry.effects : []);
+      const statRows = extractV3StatRowsFromEffects(rawEffects, evalCtx);
       const ruleFlags = { ...(entry.ruleFlags || {}), ...(spec?.ruleFlags || {}) };
 
-      // Extract flat form previews for backward-compatible properties
+      // Extract flat form previews for buff modal inputs
       let acVal = 0, attVal = 0, dmgVal = 0, strVal = 0, dexVal = 0, conVal = 0, intVal = 0, wisVal = 0, chaVal = 0;
       let primaryBonusType = entry.bonusType || (currentBuffModalMode === 'debuff' ? 'Penalty' : 'Enhancement');
 
-      modifiers.forEach(m => {
+      statRows.forEach(m => {
         if (!m) return;
         const val = (typeof RuleEngine !== 'undefined' && RuleEngine.evaluateFormula)
           ? (Number(RuleEngine.evaluateFormula(m.formula !== undefined && m.formula !== null && m.formula !== '' ? m.formula : m.value, evalCtx)) || Number(m.value) || 0)
@@ -2263,17 +2342,17 @@
         children: entry.children || []
       });
 
-      // Populate Manual V2 Builder rows & flags from this entry
-      populateManualV2BuilderFromMechanics(modifiers, ruleFlags, evalCtx, entry, spec);
+      // Populate Manual V3 Builder rows & flags from this entry
+      populateManualV2BuilderFromMechanics(statRows, ruleFlags, evalCtx, entry, spec);
 
       const rmInput = document.getElementById('buff-rule-master-input');
       if (rmInput) rmInput.value = entry.name;
 
-      // Render V2 Preview Banner (Modifiers + RuleFlags + Energy/Weapon Pickers)
-      renderBuffV2PreviewBanner(entry, spec, modifiers, ruleFlags, evalCtx, cleanDesc, rounds, durText);
+      // Render V3 Preview Banner (Effects + RuleFlags + Energy/Weapon Pickers)
+      renderBuffV2PreviewBanner(entry, spec, statRows, ruleFlags, evalCtx, cleanDesc, rounds, durText);
     }
 
-    function renderBuffV2PreviewBanner(entry, spec, modifiers, ruleFlags, evalCtx, cleanDesc = '', rounds = null, durText = '') {
+    function renderBuffV2PreviewBanner(entry, spec, statRows, ruleFlags, evalCtx, cleanDesc = '', rounds = null, durText = '') {
       const banner = document.getElementById('buff-v2-preview-banner');
       const emptyBox = document.getElementById('buff-v2-preview-empty');
       const titleEl = document.getElementById('buff-v2-preview-title');
@@ -2302,21 +2381,21 @@
       if (spotDur) spotDur.value = durText || '';
 
       const pills = [];
-      modifiers.forEach(m => {
+      (statRows || []).forEach(m => {
         const lbl = (typeof RuleEngine !== 'undefined' && RuleEngine.formatBuffModifierLabel)
           ? RuleEngine.formatBuffModifierLabel(m, evalCtx)
           : `${m.value || m.formula} ${m.target}`;
         if (lbl) {
           const isNeg = String(lbl).trim().startsWith('-');
-          pills.push(`<span class="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold border ${isNeg ? 'bg-rose-950 text-rose-200 border-rose-700' : 'bg-indigo-950 text-indigo-200 border-indigo-600'}">${lbl}</span>`);
+          pills.push(`<span class="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold border ${isNeg ? 'bg-rose-950 text-rose-200 border-rose-700' : 'bg-indigo-950 text-indigo-200 border-indigo-600'}">${UI.escapeHtml(lbl)}</span>`);
         }
       });
 
       if (spec?.summaryText && pills.length === 0) {
-        pills.push(`<span class="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-emerald-950 text-emerald-200 border border-emerald-700">${spec.summaryText}</span>`);
+        pills.push(`<span class="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-emerald-950 text-emerald-200 border border-emerald-700">${UI.escapeHtml(spec.summaryText)}</span>`);
       }
       if (ruleFlags.actionRestriction) {
-        pills.push(`<span class="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-rose-950 text-rose-200 border border-rose-700">⚠️ ${ruleFlags.actionRestriction}</span>`);
+        pills.push(`<span class="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-rose-950 text-rose-200 border border-rose-700">⚠️ ${UI.escapeHtml(ruleFlags.actionRestriction)}</span>`);
       }
       if (ruleFlags.loseDexToAC) {
         pills.push(`<span class="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-rose-950 text-rose-200 border border-rose-700">Lose DEX to AC</span>`);
@@ -2327,7 +2406,7 @@
 
       pillsEl.innerHTML = pills.length > 0
         ? pills.join('')
-        : `<span class="text-[11px] text-slate-400 italic">Narrative / tactical effect (click "Edit V2 Modifiers" to add custom stat modifiers).</span>`;
+        : `<span class="text-[11px] text-slate-400 italic">Narrative / tactical effect (click "Edit V3 Effects" to add custom stat effects).</span>`;
 
       // Energy Choice Picker
       if (energyBox && energyBtns) {
@@ -2395,7 +2474,7 @@
       if (!opts.keepSelection) {
         currentBuffModalChildren = [];
         _selectedSpotlightV2Entry = null;
-        _buffModalV2Modifiers = [];
+        _buffModalStatRows = [];
         _buffModalV2RuleFlags = {};
         _buffManualEdited = false;
         const childrenPreview = document.getElementById('buff-children-preview-container');
@@ -2533,21 +2612,12 @@
 
       if (badgeEl) badgeEl.textContent = `${children.length} Sub-Effects`;
       listEl.innerHTML = children.map(c => {
-        const cMods = [];
-        if (c.attBonus) cMods.push(`${c.attBonus} Atk`);
-        if (c.dmgBonus) cMods.push(`${c.dmgBonus} Dmg`);
-        if (c.hpPenalty) cMods.push(`-${c.hpPenalty} HP`);
-        if (c.fortBonus) cMods.push(`${c.fortBonus} Fort`);
-        if (c.refBonus) cMods.push(`${c.refBonus} Ref`);
-        if (c.willBonus) cMods.push(`${c.willBonus} Will`);
-        if (c.skillBonus) cMods.push(`${c.skillBonus} Skills`);
-        if (c.strBonus) cMods.push(`${c.strBonus} Str`);
-        if (c.dexBonus) cMods.push(`${c.dexBonus} Dex`);
-        if (c.clPenalty) cMods.push(`-${c.clPenalty} CL`);
+        const cRows = extractV3StatRowsFromEffects(c.effects || [], {});
+        const cMods = cRows.map(r => (typeof RuleEngine !== 'undefined' && RuleEngine.formatBuffModifierLabel) ? RuleEngine.formatBuffModifierLabel(r, {}) : `${r.value} ${r.target}`).filter(Boolean);
         return `
           <div class="flex items-center justify-between p-1.5 rounded bg-slate-900 border border-slate-800 text-[11px]">
             <span class="text-slate-200 font-sans font-medium">${UI.escapeHtml(c.name)}</span>
-            <span class="text-rose-400 font-mono font-bold">${cMods.join(', ')}</span>
+            <span class="text-rose-400 font-mono font-bold">${UI.escapeHtml(cMods.join(', '))}</span>
           </div>
         `;
       }).join('');
@@ -2561,7 +2631,7 @@
       if (!modal) return;
       _selectedSpotlightV2Entry = null;
       _selectedSpotlightEnergy = 'Fire';
-      _buffModalV2Modifiers = [];
+      _buffModalStatRows = [];
       _buffModalV2RuleFlags = {};
       _buffManualEdited = false;
       hideBuffSpotlightDropdown();
@@ -2650,16 +2720,21 @@
       document.getElementById('buff-input-type').value = match.bonusType || (isDebuff ? 'Penalty' : 'Untyped');
       document.getElementById('buff-input-rounds').value = match.rounds !== null && match.rounds !== undefined ? match.rounds : '';
       document.getElementById('buff-input-duration').value = match.durationText || '';
-      document.getElementById('buff-input-ac').value = match.acBonus || match.naturalBonus || match.deflectionBonus || match.dodgeBonus || (match.acPenalty ? -match.acPenalty : '');
-      document.getElementById('buff-input-att').value = match.attBonus || '';
-      document.getElementById('buff-input-dmg').value = match.dmgBonus || '';
-      document.getElementById('buff-input-str').value = match.strBonus || '';
-      document.getElementById('buff-input-dex').value = match.dexBonus || '';
-      document.getElementById('buff-input-con').value = match.conBonus || '';
-      document.getElementById('buff-input-int').value = match.intBonus || '';
-      document.getElementById('buff-input-wis').value = match.wisBonus || '';
-      document.getElementById('buff-input-cha').value = match.chaBonus || '';
+      const clNow = getBuffModalCasterLevel();
+      const presetCtx = { cl: clNow, level: Number(character?.level) || 6, bab: Number(character?.bab) || 0 };
+      const pRows = extractV3StatRowsFromEffects(match.effects || [], presetCtx);
+      const sumP = (pred) => pRows.filter(pred).reduce((a, r) => a + (Number(r.value) || 0), 0) || '';
+      document.getElementById('buff-input-ac').value = sumP(r => r.target.toLowerCase().startsWith('ac'));
+      document.getElementById('buff-input-att').value = sumP(r => r.target.toLowerCase().startsWith('attack') || r.target.toLowerCase() === 'atk');
+      document.getElementById('buff-input-dmg').value = sumP(r => r.target.toLowerCase().startsWith('damage') || r.target.toLowerCase() === 'dmg');
+      document.getElementById('buff-input-str').value = sumP(r => ['ability.str', 'str'].includes(r.target.toLowerCase()));
+      document.getElementById('buff-input-dex').value = sumP(r => ['ability.dex', 'dex'].includes(r.target.toLowerCase()));
+      document.getElementById('buff-input-con').value = sumP(r => ['ability.con', 'con'].includes(r.target.toLowerCase()));
+      document.getElementById('buff-input-int').value = sumP(r => ['ability.int', 'int'].includes(r.target.toLowerCase()));
+      document.getElementById('buff-input-wis').value = sumP(r => ['ability.wis', 'wis'].includes(r.target.toLowerCase()));
+      document.getElementById('buff-input-cha').value = sumP(r => ['ability.cha', 'cha'].includes(r.target.toLowerCase()));
       document.getElementById('buff-input-notes').value = match.notes || '';
+      populateManualV2BuilderFromMechanics(pRows, match.ruleFlags || {}, presetCtx, match, null);
 
       if (Array.isArray(match.children) && match.children.length > 0) {
         currentBuffModalChildren = JSON.parse(JSON.stringify(match.children));
@@ -2846,7 +2921,7 @@
       const cleanTypedBase = name.replace(/\s*\((?:fire|cold|acid|electricity|sonic)\)\s*$/i, '').toLowerCase().trim();
       const matchesSpotlightV2 = Boolean(_selectedSpotlightV2Entry && selectedBaseName && selectedBaseName === cleanTypedBase);
 
-      let v2Modifiers = [];
+      let v3StatRows = [];
       let v2RuleFlags = {};
       let v2Summary = '';
       let chosenWeapon = null;
@@ -2893,8 +2968,8 @@
         }
       }
 
-      // Collect Canonical V2 `modifiers` from `_buffModalV2Modifiers`
-      v2Modifiers = (_buffModalV2Modifiers || [])
+      // Collect Canonical V3 stat rows from `_buffModalStatRows`
+      v3StatRows = (_buffModalStatRows || [])
         .filter(m => m && m.target && (m.formula !== '' || m.value))
         .map(m => {
           const fStr = m.formula !== undefined && m.formula !== null && m.formula !== '' ? String(m.formula).trim() : String(m.value || 0);
@@ -2910,7 +2985,7 @@
           };
         });
 
-      // Collect Canonical V2 `ruleFlags` from toggles + structured defense inputs
+      // Collect Canonical V3 `ruleFlags` from toggles + structured defense inputs
       v2RuleFlags = Object.assign({}, _buffModalV2RuleFlags || {});
       const tempHpRaw = (document.getElementById('buff-v2-flag-temphp')?.value || '').trim();
       const concRaw = parseInt(document.getElementById('buff-v2-flag-concealment')?.value || '', 10);
@@ -2928,17 +3003,17 @@
         const evalTempHp = rolled.total || 0;
         if (evalTempHp > 0) {
           grantedTempHp = evalTempHp;
-          const existingMod = v2Modifiers.find(m => m.target === 'hp.temp');
+          const existingMod = v3StatRows.find(m => m.target === 'hp.temp');
           if (existingMod) {
             existingMod.value = evalTempHp;
             existingMod.formula = tempHpRaw;
           } else {
-            v2Modifiers.push({ target: 'hp.temp', value: evalTempHp, formula: tempHpRaw, type: 'untyped', condition: null });
+            v3StatRows.push({ target: 'hp.temp', value: evalTempHp, formula: tempHpRaw, type: 'untyped', condition: null });
           }
           v2RuleFlags.tempHp = evalTempHp;
         }
       } else {
-        const modTemp = v2Modifiers.find(m => m.target === 'hp.temp');
+        const modTemp = v3StatRows.find(m => m.target === 'hp.temp');
         if (modTemp) {
           const rolled = (typeof RuleEngine !== 'undefined' && RuleEngine.rollOrEvaluateTempHp)
             ? RuleEngine.rollOrEvaluateTempHp(modTemp.formula || modTemp.value, evalCtx)
@@ -2962,27 +3037,35 @@
       if (!isNaN(negLvlRaw) && negLvlRaw > 0) v2RuleFlags.negativeLevels = negLvlRaw;
       if (actionRaw) v2RuleFlags.actionRestriction = actionRaw;
 
-      // Compute legacy summary fields for card badges & backward compatibility
-      let acBonus = 0, attBonus = 0, dmgBonus = 0, strBonus = 0, dexBonus = 0, conBonus = 0, intBonus = 0, wisBonus = 0, chaBonus = 0;
+      // Build Pure V3 `effects[]` & category/summary
+      let hasAcStat = false;
+      let hasAbilityStat = false;
       const summaryParts = [];
-      v2Modifiers.forEach(m => {
-        const v = Number(m.value) || 0;
+      const toCapBtype = (t) => String(t || 'untyped').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+      const v3Effects = v3StatRows.map(m => {
         const t = String(m.target || '').toLowerCase();
-        if (t.startsWith('ac')) acBonus += v;
-        else if (t.startsWith('attack')) attBonus += v;
-        else if (t.startsWith('damage')) dmgBonus += v;
-        else if (t === 'ability.str') strBonus += v;
-        else if (t === 'ability.dex') dexBonus += v;
-        else if (t === 'ability.con') conBonus += v;
-        else if (t === 'ability.int') intBonus += v;
-        else if (t === 'ability.wis') wisBonus += v;
-        else if (t === 'ability.cha') chaBonus += v;
-
+        if (t.startsWith('ac')) hasAcStat = true;
+        else if (t.startsWith('ability.')) hasAbilityStat = true;
         const lbl = (typeof RuleEngine !== 'undefined' && RuleEngine.formatBuffModifierLabel)
           ? RuleEngine.formatBuffModifierLabel(m, evalCtx)
-          : `${v >= 0 ? '+' : ''}${v} ${m.target}`;
+          : `${m.value >= 0 ? '+' : ''}${m.value} ${m.target}`;
         if (lbl) summaryParts.push(lbl);
+        const effBlock = {
+          type: 'stat',
+          targets: [m.target],
+          mode: 'flat',
+          value: m.value,
+          btype: toCapBtype(m.type)
+        };
+        if (m.formula && m.formula !== String(m.value)) effBlock.formula = m.formula;
+        if (m.condition) effBlock.condition = m.condition;
+        return effBlock;
       });
+      if (matchesSpotlightV2 && !_buffManualEdited && Array.isArray(_selectedSpotlightV2Entry?.effects)) {
+        _selectedSpotlightV2Entry.effects.forEach(ef => {
+          if (ef && ef.type !== 'stat') v3Effects.push(JSON.parse(JSON.stringify(ef)));
+        });
+      }
       if (v2RuleFlags.dr) summaryParts.push(`DR ${v2RuleFlags.dr}`);
       if (v2RuleFlags.sr) summaryParts.push(`SR ${v2RuleFlags.sr}`);
       if (v2RuleFlags.concealment) summaryParts.push(`${v2RuleFlags.concealment}% Concealment`);
@@ -2997,7 +3080,7 @@
         id: (_selectedSpotlightV2Entry?.id && matchesSpotlightV2 && !_buffManualEdited)
           ? _selectedSpotlightV2Entry.id
           : ((isDebuff ? 'debuff_' : 'buff_') + Date.now()),
-        schemaVersion: 2,
+        schemaVersion: 3,
         name,
         source,
         bonusType,
@@ -3005,23 +3088,14 @@
         cl,
         isDebuff,
         isCondition: source === 'Condition' || (_selectedSpotlightV2Entry?.type === 'Condition'),
-        category: isDebuff ? 'Debuff' : (acBonus ? 'AC' : (strBonus || dexBonus || conBonus ? 'Stat' : 'Combat')),
+        category: isDebuff ? 'Debuff' : (hasAcStat ? 'AC' : (hasAbilityStat ? 'Stat' : 'Combat')),
         active: true,
         rounds,
         durationText: durationText || (rounds ? `${rounds} Rounds` : 'Permanent'),
         duration: durationText || (rounds ? `${rounds} Rounds` : 'Permanent'),
-        acBonus,
-        attBonus,
-        dmgBonus,
-        strBonus,
-        dexBonus,
-        conBonus,
-        intBonus,
-        wisBonus,
-        chaBonus,
         notes,
         summary: v2Summary || notes,
-        modifiers: v2Modifiers,
+        effects: v3Effects,
         ruleFlags: v2RuleFlags,
         children: (currentBuffModalChildren && currentBuffModalChildren.length > 0) ? JSON.parse(JSON.stringify(currentBuffModalChildren)) : []
       };
@@ -3064,9 +3138,9 @@
         const cleanName = name.trim();
         const existingIdx = masterDb.findIndex(m => (m.name || '').toLowerCase().trim() === cleanName.toLowerCase());
 
-        const v2EntryData = {
+        const v3EntryData = {
           id: newBuff.id,
-          schemaVersion: 2,
+          schemaVersion: 3,
           name: cleanName,
           type: isDebuff ? (source === 'Condition' ? 'Condition' : 'Buff') : (source.toLowerCase().includes('spell') ? 'Spell' : 'Buff'),
           category: isDebuff ? 'Combat Condition' : 'Spell / Combat Buff',
@@ -3075,21 +3149,20 @@
           benefit: notes || (isDebuff ? `${cleanName} debuff effect` : `${cleanName} buff effect`),
           shortDescription: notes || '',
           duration: newBuff.durationText,
-          modifiers: JSON.parse(JSON.stringify(v2Modifiers)),
-          damageParts: [],
+          effects: JSON.parse(JSON.stringify(v3Effects)),
           modes: [],
           ruleFlags: JSON.parse(JSON.stringify(v2RuleFlags)),
           tags: isDebuff ? ['debuff', 'condition'] : ['buff', 'temporary']
         };
 
         if (Array.isArray(newBuff.children) && newBuff.children.length > 0) {
-          v2EntryData.children = JSON.parse(JSON.stringify(newBuff.children));
+          v3EntryData.children = JSON.parse(JSON.stringify(newBuff.children));
         }
 
         if (existingIdx >= 0) {
-          masterDb[existingIdx] = Object.assign({}, masterDb[existingIdx], v2EntryData);
+          masterDb[existingIdx] = Object.assign({}, masterDb[existingIdx], v3EntryData);
         } else {
-          masterDb.push(v2EntryData);
+          masterDb.push(v3EntryData);
         }
         character.customDb = masterDb;
         addedToDb = true;
@@ -3212,7 +3285,7 @@
             <td class="py-2.5 px-3 text-center align-middle font-mono text-amber-400">${isOccupied ? slotData.cost + ' GP' : '-'}</td>
             <td class="py-2.5 px-3 text-center align-middle">
               <div class="inline-flex items-center justify-center gap-1.5">
-                ${isOccupied && isForgeEditableItem(slotData) ? `<button data-action="inventory:forge-slot-item" data-slot-key="${def.key}" title="Customize in Item Forge" class="w-7 h-7 bg-amber-950/80 hover:bg-amber-800 text-amber-300 hover:text-white border border-amber-600/60 text-xs rounded-lg inline-flex items-center justify-center transition cursor-pointer shrink-0">⚒️</button>` : ''}
+                ${isOccupied && isForgeEditableItem(slotData) ? `<button data-action="inventory:forge-slot-item" data-slot-key="${def.key}" title="Customize in Rule Crafter" class="w-7 h-7 bg-amber-950/80 hover:bg-amber-800 text-amber-300 hover:text-white border border-amber-600/60 text-xs rounded-lg inline-flex items-center justify-center transition cursor-pointer shrink-0">⚒️</button>` : ''}
                 ${isOccupied ? `<button data-action="inventory:unequip-slot" data-slot-key="${def.key}" class="w-20 h-7 bg-rose-950/70 hover:bg-rose-900 text-rose-300 hover:text-white border border-rose-800 text-[11px] font-bold px-2.5 rounded-lg inline-flex items-center justify-center transition cursor-pointer">Unequip</button>` : `<button data-action="inventory:open-slot-equip" data-slot-key="${def.key}" class="w-20 h-7 bg-sky-950/70 hover:bg-sky-900 text-sky-300 hover:text-white border border-sky-700/60 text-[11px] font-bold px-2.5 rounded-lg inline-flex items-center justify-center transition cursor-pointer">+ Equip</button>`}
               </div>
             </td>
@@ -4242,7 +4315,7 @@
 
               <div class="flex items-center gap-1.5 shrink-0">
                 ${isForgeEditableItem(slotData) ? `
-                  <button data-action="inventory:forge-slot-item" data-slot-key="${slotKey}" title="Customize in Item Forge" class="w-6 h-6 rounded bg-amber-950/80 hover:bg-amber-800 text-amber-300 hover:text-white border border-amber-600/60 transition text-xs inline-flex items-center justify-center cursor-pointer">
+                  <button data-action="inventory:forge-slot-item" data-slot-key="${slotKey}" title="Customize in Rule Crafter" class="w-6 h-6 rounded bg-amber-950/80 hover:bg-amber-800 text-amber-300 hover:text-white border border-amber-600/60 transition text-xs inline-flex items-center justify-center cursor-pointer">
                     ⚒️
                   </button>
                 ` : ''}
@@ -4365,7 +4438,7 @@
                   <span class="font-bold truncate${ohHas ? ' cursor-pointer hover:underline' : ''}"${ohHas ? ` data-action="entity:inspect" data-entity-kind="item" data-entity-id="${UI.escapeAttr(oh.id || '')}" data-entity-name="${UI.escapeAttr(oh.name)}" data-slot-key="offHand"` : ''}>${UI.escapeHtml(ohHas ? oh.name : '+ Equip Off-Hand')}</span>
                 </div>
                 <div class="flex items-center gap-1 shrink-0">
-                  ${ohHas && isForgeEditableItem(oh) ? `<button type="button" data-action="inventory:forge-slot-item" data-slot-key="offHand" title="Customize Off-Hand in Item Forge" class="w-6 h-6 rounded-md bg-amber-950/80 hover:bg-amber-800 border border-amber-600/70 text-amber-300 hover:text-white text-xs inline-flex items-center justify-center shrink-0 transition cursor-pointer">⚒️</button>` : ''}
+                  ${ohHas && isForgeEditableItem(oh) ? `<button type="button" data-action="inventory:forge-slot-item" data-slot-key="offHand" title="Customize Off-Hand in Rule Crafter" class="w-6 h-6 rounded-md bg-amber-950/80 hover:bg-amber-800 border border-amber-600/70 text-amber-300 hover:text-white text-xs inline-flex items-center justify-center shrink-0 transition cursor-pointer">⚒️</button>` : ''}
                   ${ohHas ? `<button type="button" data-action="inventory:unequip-slot" data-slot-key="offHand" title="Unequip Off-Hand" class="w-6 h-6 rounded-md bg-rose-950/80 hover:bg-rose-700 border border-rose-700/80 text-rose-300 hover:text-white text-xs font-extrabold inline-flex items-center justify-center shrink-0 transition cursor-pointer">✕</button>` : ''}
                 </div>
               </div>
@@ -4392,7 +4465,7 @@
                     ${mhIsDouble ? `<span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-900 text-sky-300 border border-sky-800/60 shrink-0">${isDoubleTwfActive ? '1-Hand' : '2-Hand'}</span>` : ''}
                   </div>
                   <div class="flex items-center gap-1 shrink-0">
-                    ${mhHas && isForgeEditableItem(mh) ? `<button type="button" data-action="inventory:forge-slot-item" data-slot-key="mainHand" title="Customize Main Hand in Item Forge" class="w-6 h-6 rounded-md bg-amber-950/80 hover:bg-amber-800 border border-amber-600/70 text-amber-300 hover:text-white text-xs inline-flex items-center justify-center shrink-0 transition cursor-pointer">⚒️</button>` : ''}
+                    ${mhHas && isForgeEditableItem(mh) ? `<button type="button" data-action="inventory:forge-slot-item" data-slot-key="mainHand" title="Customize Main Hand in Rule Crafter" class="w-6 h-6 rounded-md bg-amber-950/80 hover:bg-amber-800 border border-amber-600/70 text-amber-300 hover:text-white text-xs inline-flex items-center justify-center shrink-0 transition cursor-pointer">⚒️</button>` : ''}
                     ${mhHas ? `<button type="button" data-action="inventory:unequip-slot" data-slot-key="mainHand" title="Unequip Main Hand" class="w-6 h-6 rounded-md bg-rose-950/80 hover:bg-rose-700 border border-rose-700/80 text-rose-300 hover:text-white text-xs font-extrabold inline-flex items-center justify-center shrink-0 transition cursor-pointer">✕</button>` : ''}
                   </div>
                 </div>
@@ -4488,9 +4561,9 @@
           </div>
           <div class="flex items-center gap-1.5 shrink-0">
             ${isForgeEditableItem(currentSlotData) ? `
-              <button type="button" data-action="inventory:forge-slot-item" data-slot-key="${_currentEquipSlotKey}" class="px-2.5 py-1.5 bg-amber-950/90 hover:bg-amber-800 border border-amber-500/70 text-amber-200 hover:text-white rounded-lg text-xs font-bold transition shadow flex items-center gap-1 cursor-pointer" title="Customize in Item Forge">
+              <button type="button" data-action="inventory:forge-slot-item" data-slot-key="${_currentEquipSlotKey}" class="px-2.5 py-1.5 bg-amber-950/90 hover:bg-amber-800 border border-amber-500/70 text-amber-200 hover:text-white rounded-lg text-xs font-bold transition shadow flex items-center gap-1 cursor-pointer" title="Customize in Rule Crafter">
                 <span>⚒️</span>
-                <span>Forge</span>
+                <span>Craft</span>
               </button>
             ` : ''}
             <button type="button" data-action="inventory:unequip-slot-modal" data-slot-key="${_currentEquipSlotKey}" class="px-3 py-1.5 bg-rose-900/90 hover:bg-rose-700 border border-rose-500/70 text-rose-100 hover:text-white rounded-lg text-xs font-bold transition shadow flex items-center gap-1.5 cursor-pointer">
@@ -4562,7 +4635,7 @@
           </div>
           <div class="flex items-center gap-1.5 shrink-0">
             ${isForgeEditableItem(item) ? `
-              <button type="button" data-action="inventory:forge-pool-item" data-item-id="${safeIdAttr}" class="w-8 h-8 rounded-lg bg-amber-950/90 hover:bg-amber-800 border border-amber-500/70 text-amber-200 hover:text-white text-xs font-bold transition shadow inline-flex items-center justify-center cursor-pointer" title="Customize in Item Forge">
+              <button type="button" data-action="inventory:forge-pool-item" data-item-id="${safeIdAttr}" class="w-8 h-8 rounded-lg bg-amber-950/90 hover:bg-amber-800 border border-amber-500/70 text-amber-200 hover:text-white text-xs font-bold transition shadow inline-flex items-center justify-center cursor-pointer" title="Customize in Rule Crafter">
                 ⚒️
               </button>
             ` : ''}
@@ -4673,7 +4746,9 @@
             const isOccupied = Boolean(item && item.name && item.name !== '-');
 
             if (isOccupied) {
-              const acBadge = (item.acBonus || item.armorBonus) ? `<span class="px-1.5 rounded font-mono text-[10px] bg-sky-950 text-sky-300 border border-sky-700 font-bold">+${(item.acBonus || item.armorBonus) + (item.enhancementBonus || 0)} AC</span>` : '';
+              const compAcBase = item.armor?.armorBonus ?? item.acBonus ?? item.armorBonus ?? 0;
+              const compEnh = Number(item.armor?.enhancementBonus ?? item.enhancementBonus) || 0;
+              const acBadge = compAcBase ? `<span class="px-1.5 rounded font-mono text-[10px] bg-sky-950 text-sky-300 border border-sky-700 font-bold">+${Number(compAcBase) + compEnh} AC</span>` : '';
               const enhBadge = item.enhancementBonus ? `<span class="px-1.5 rounded font-mono text-[10px] bg-amber-950 text-amber-300 border border-amber-700 font-bold">+${item.enhancementBonus} Magic</span>` : '';
 
               return `
@@ -4856,7 +4931,9 @@
       }
 
       container.innerHTML = compatibleItems.map(item => {
-        const acBonus = (item.acBonus || item.armorBonus) ? `+${(item.acBonus || item.armorBonus) + (item.enhancementBonus || 0)} AC` : null;
+        const compAcBase = item.armor?.armorBonus ?? item.acBonus ?? item.armorBonus ?? 0;
+        const compEnh = Number(item.armor?.enhancementBonus ?? item.enhancementBonus) || 0;
+        const acBonus = compAcBase ? `+${Number(compAcBase) + compEnh} AC` : null;
         const enhBonus = item.enhancementBonus ? `+${item.enhancementBonus} Magic` : null;
         const safeIdAttr = String(item.id ?? '').replace(/&/g, '&amp;').replace(/"/g, '&quot;');
 
@@ -5005,19 +5082,22 @@
       const isArmorOrShield = cat === 'Armor' || cat === 'Shield' || item.type === 'Armor' || item.type === 'Shield';
 
       const isStubWeaponFallback = isWeapon && !item._statsHydrated && (
-        (item.dice === '1d8' && (!item.critMin || item.critMin === 20) && (!item.critMult || item.critMult === 2) && (!Array.isArray(item.enhancements) || item.enhancements.length === 0)) ||
-        !item.handedness
+        ((item.weapon?.damageDice || item.dice) === '1d8' && (!item.critMin || item.critMin === 20) && (!item.critMult || item.critMult === 2) && (!Array.isArray(item.enhancements) || item.enhancements.length === 0)) ||
+        !(item.weapon?.handedness || item.handedness)
       );
+      const hasWeaponRoll = Array.isArray(item.effects) && item.effects.some(e => e && e.type === 'roll' && (!e.kind || e.kind === 'Damage') && e.dice);
       const missingWeaponStats = isWeapon && (
-        ((!Array.isArray(item.damageParts) || item.damageParts.length === 0) && !item.dice) ||
-        (!item.critMin && !item.critRange && !item.weaponMeta?.critMin) ||
+        (!item.weapon?.damageDice && !item.dice && !hasWeaponRoll) ||
+        (!item.weapon?.effectiveCritRange && !item.weapon?.baseCritRange && !item.critMin && !item.critRange && !item.weaponMeta?.critMin) ||
         isStubWeaponFallback
       );
+      const hasEffectAc = Array.isArray(item.effects) && item.effects.some(e => e && e.type === 'stat' && Array.isArray(e.targets) && e.targets.some(t => t === 'ac.armor' || t === 'ac.shield' || t === 'ac'));
       const missingArmorStats = isArmorOrShield && (
+        (item.armor?.armorBonus === undefined || item.armor?.armorBonus === null) &&
         (item.acBonus === undefined || item.acBonus === null) &&
-        (!Array.isArray(item.modifiers) || !item.modifiers.some(m => m && (m.target === 'ac.armor' || m.target === 'ac.shield' || m.target === 'ac')))
+        !hasEffectAc
       );
-      const missingArmorMeta = (cat === 'Armor' || item.type === 'Armor') && item.maxDex === undefined && !item.armorMeta;
+      const missingArmorMeta = (cat === 'Armor' || item.type === 'Armor') && item.armor?.maxDex === undefined && item.maxDex === undefined && !item.armorMeta;
 
       if (isArmorOrShield) {
         if (item.ruleFlags && item.ruleFlags.bypassDR) {
@@ -5043,11 +5123,13 @@
       const hasValidStats = (cand) => {
         if (!cand || typeof cand !== 'object') return false;
         if (isWeapon) {
-          return (Array.isArray(cand.damageParts) && cand.damageParts.length > 0) || Boolean(cand.dice);
+          return Boolean(cand.weapon?.damageDice || cand.dice || cand.damage) ||
+            (Array.isArray(cand.effects) && cand.effects.some(e => e && e.type === 'roll' && (!e.kind || e.kind === 'Damage') && e.dice));
         }
         if (isArmorOrShield) {
-          return (cand.acBonus !== undefined && cand.acBonus !== null) ||
-            (Array.isArray(cand.modifiers) && cand.modifiers.some(m => m && (m.target === 'ac.armor' || m.target === 'ac.shield' || m.target === 'ac')));
+          return (cand.armor?.armorBonus !== undefined && cand.armor?.armorBonus !== null) ||
+            (cand.acBonus !== undefined && cand.acBonus !== null) ||
+            (Array.isArray(cand.effects) && cand.effects.some(e => e && e.type === 'stat' && Array.isArray(e.targets) && e.targets.some(t => t === 'ac.armor' || t === 'ac.shield' || t === 'ac')));
         }
         return true;
       };
@@ -5090,25 +5172,25 @@
         }
       }
 
-      // 3. Try Master DB & Bundled SRD Core Catalog
+      // 3. Try Master DB
       if (!ref && typeof findMasterItem === 'function') {
         const masterCand = findMasterItem(item.masterDbName || item.name);
         if (hasValidStats(masterCand)) ref = masterCand;
       }
-      if (!ref && typeof findBaseItemInSrdCore === 'function') {
-        const coreCand = findBaseItemInSrdCore(item.name);
-        if (hasValidStats(coreCand)) ref = coreCand;
-      }
 
       if (ref) {
+        item.schemaVersion = 3;
         if ((!item.baseItemId || String(item.baseItemId).startsWith('mi-')) && (ref.baseItemId || ref.id)) {
           item.baseItemId = ref.baseItemId || ref.id;
         }
-        if ((fromAssembler || isStubWeaponFallback || !Array.isArray(item.damageParts) || item.damageParts.length === 0) && Array.isArray(ref.damageParts) && ref.damageParts.length > 0) {
-          item.damageParts = JSON.parse(JSON.stringify(ref.damageParts));
+        if ((fromAssembler || isStubWeaponFallback || !item.weapon) && ref.weapon && typeof ref.weapon === 'object') {
+          item.weapon = JSON.parse(JSON.stringify(ref.weapon));
         }
-        if ((fromAssembler || isStubWeaponFallback || !Array.isArray(item.modifiers) || item.modifiers.length === 0) && Array.isArray(ref.modifiers) && ref.modifiers.length > 0) {
-          item.modifiers = JSON.parse(JSON.stringify(ref.modifiers));
+        if ((fromAssembler || !item.armor) && ref.armor && typeof ref.armor === 'object') {
+          item.armor = JSON.parse(JSON.stringify(ref.armor));
+        }
+        if ((fromAssembler || isStubWeaponFallback || !Array.isArray(item.effects) || item.effects.length === 0) && Array.isArray(ref.effects) && ref.effects.length > 0) {
+          item.effects = JSON.parse(JSON.stringify(ref.effects));
         }
         if ((fromAssembler || isStubWeaponFallback || !item.ruleFlags || Object.keys(item.ruleFlags).length === 0) && ref.ruleFlags) {
           item.ruleFlags = JSON.parse(JSON.stringify(ref.ruleFlags));
@@ -5116,35 +5198,44 @@
         if ((fromAssembler || isStubWeaponFallback || !Array.isArray(item.tacticalBadges) || item.tacticalBadges.length === 0) && Array.isArray(ref.tacticalBadges) && ref.tacticalBadges.length > 0) {
           item.tacticalBadges = JSON.parse(JSON.stringify(ref.tacticalBadges));
         }
-        if ((fromAssembler || isStubWeaponFallback || !item.dice) && (ref.dice || (Array.isArray(ref.damageParts) && ref.damageParts[0]?.dice))) {
-          item.dice = ref.dice || ref.damageParts[0].dice;
+        const refRollEff = Array.isArray(ref.effects) ? ref.effects.find(e => e && e.type === 'roll' && (!e.kind || e.kind === 'Damage') && e.dice) : null;
+        if ((fromAssembler || isStubWeaponFallback || !item.dice) && (ref.weapon?.damageDice || ref.dice || ref.damage || refRollEff?.dice)) {
+          item.dice = ref.weapon?.damageDice || ref.dice || ref.damage || refRollEff.dice;
         }
-        if ((fromAssembler || isStubWeaponFallback || !item.dmgType) && (ref.dmgType || (Array.isArray(ref.damageParts) && ref.damageParts[0]?.type))) {
-          item.dmgType = ref.dmgType || ref.damageParts[0].type;
+        if ((fromAssembler || isStubWeaponFallback || !item.dmgType) && (ref.weapon?.dmgType || ref.dmgType || refRollEff?.dmgType)) {
+          item.dmgType = ref.weapon?.dmgType || ref.dmgType || refRollEff.dmgType;
         }
-        if ((fromAssembler || isStubWeaponFallback || (!item.critMin && !item.critRange)) && (ref.critRange || ref.critMin || ref.weaponMeta?.critMin)) {
-          item.critMin = ref.critRange || ref.critMin || ref.weaponMeta?.critMin;
-          item.critRange = item.critMin;
+        const refCritMin = ref.weapon?.effectiveCritRange || ref.weapon?.baseCritRange || ref.critRange || ref.critMin || ref.weaponMeta?.critMin;
+        if ((fromAssembler || isStubWeaponFallback || (!item.critMin && !item.critRange)) && refCritMin) {
+          item.critMin = refCritMin;
+          item.critRange = refCritMin;
         }
-        if ((fromAssembler || isStubWeaponFallback || !item.critMult) && (ref.critMult || ref.weaponMeta?.critMult)) {
-          item.critMult = ref.critMult || ref.weaponMeta?.critMult;
+        const refCritMult = ref.weapon?.critMultiplier || ref.critMult || ref.weaponMeta?.critMult;
+        if ((fromAssembler || isStubWeaponFallback || !item.critMult) && refCritMult) {
+          item.critMult = refCritMult;
         }
-        if ((fromAssembler || isStubWeaponFallback || !item.handedness) && (ref.handedness || ref.weaponMeta?.handedness)) {
-          item.handedness = ref.handedness || ref.weaponMeta?.handedness;
+        const refHanded = ref.weapon?.handedness || ref.handedness || ref.weaponMeta?.handedness;
+        if ((fromAssembler || isStubWeaponFallback || !item.handedness) && refHanded) {
+          item.handedness = refHanded;
         }
-        const refAcMod = Array.isArray(ref.modifiers) ? ref.modifiers.find(m => m && (m.target === 'ac.armor' || m.target === 'ac.shield' || m.target === 'ac')) : null;
-        const refAcVal = ref.acBonus !== undefined ? ref.acBonus : (refAcMod && refAcMod.value !== undefined ? Number(refAcMod.value) : undefined);
+        const refAcEff = Array.isArray(ref.effects) ? ref.effects.find(e => e && e.type === 'stat' && Array.isArray(e.targets) && e.targets.some(t => t === 'ac.armor' || t === 'ac.shield' || t === 'ac')) : null;
+        const refAcVal = ref.armor?.armorBonus !== undefined
+          ? (Number(ref.armor.armorBonus) + (Number(ref.armor.enhancementBonus ?? ref.enhancementBonus) || 0))
+          : (ref.acBonus !== undefined ? ref.acBonus : (refAcEff ? Number(refAcEff.value ?? refAcEff.val) : undefined));
         if ((fromAssembler || item.acBonus === undefined) && refAcVal !== undefined) {
           item.acBonus = refAcVal;
         }
-        if ((fromAssembler || item.maxDex === undefined) && (ref.maxDex !== undefined || ref.armorMeta?.maxDex !== undefined)) {
-          item.maxDex = ref.maxDex !== undefined ? ref.maxDex : ref.armorMeta?.maxDex;
+        const refMaxDex = ref.armor?.maxDex !== undefined ? ref.armor.maxDex : (ref.maxDex !== undefined ? ref.maxDex : ref.armorMeta?.maxDex);
+        if ((fromAssembler || item.maxDex === undefined) && refMaxDex !== undefined) {
+          item.maxDex = refMaxDex;
         }
-        if ((fromAssembler || item.checkPenalty === undefined) && (ref.checkPenalty !== undefined || ref.armorMeta?.acp !== undefined)) {
-          item.checkPenalty = ref.checkPenalty !== undefined ? ref.checkPenalty : ref.armorMeta?.acp;
+        const refAcp = ref.armor?.armorCheckPenalty !== undefined ? ref.armor.armorCheckPenalty : (ref.checkPenalty !== undefined ? ref.checkPenalty : ref.armorMeta?.acp);
+        if ((fromAssembler || item.checkPenalty === undefined) && refAcp !== undefined) {
+          item.checkPenalty = refAcp;
         }
-        if ((fromAssembler || item.spellFailure === undefined) && (ref.spellFailure !== undefined || ref.armorMeta?.asf !== undefined)) {
-          item.spellFailure = ref.spellFailure !== undefined ? ref.spellFailure : ref.armorMeta?.asf;
+        const refAsf = ref.armor?.arcaneSpellFailure !== undefined ? ref.armor.arcaneSpellFailure : (ref.spellFailure !== undefined ? ref.spellFailure : ref.armorMeta?.asf);
+        if ((fromAssembler || item.spellFailure === undefined) && refAsf !== undefined) {
+          item.spellFailure = refAsf;
         }
         if ((fromAssembler || isStubWeaponFallback || !item.enhancementBonus) && ref.enhancementBonus) {
           item.enhancementBonus = ref.enhancementBonus;
@@ -5276,24 +5367,36 @@
       }
 
       if (isWeapon) {
-        // 1. Damage Parts Badges (with polyhedral SVG dice icons)
-        let dmgParts = Array.isArray(item.damageParts) && item.damageParts.length > 0 ? item.damageParts : null;
-        if (!dmgParts && item.dice) {
-          dmgParts = [{
-            dice: item.dice,
-            bonus: Number(item.enhancementBonus) || 0,
-            type: item.dmgType || 'Physical',
-            multiplyOnCrit: true
-          }];
+        // 1. Damage Badges from V3 weapon chassis & effects[] roll blocks
+        const baseDice = item.weapon?.damageDice || item.dice || item.damage || '';
+        const baseEnh = Number(item.weapon?.enhancementBonus ?? item.enhancementBonus) || 0;
+        const baseDmgType = item.weapon?.dmgType || item.dmgType || 'Physical';
+        const rollEffects = (Array.isArray(item.effects) ? item.effects : []).filter(e => e && e.type === 'roll' && (!e.kind || e.kind === 'Damage'));
+        const badgeParts = [];
+        if (baseDice) {
+          badgeParts.push({ dice: baseDice, bonus: baseEnh, type: baseDmgType, multiplyOnCrit: true });
         }
-        if (dmgParts && window.DnDUI && typeof window.DnDUI.renderDamagePartsBadges === 'function') {
-          const dmgHtml = window.DnDUI.renderDamagePartsBadges(dmgParts, { compact });
+        rollEffects.forEach(re => {
+          if (!re.dice && !re.formula && !re.bonus) return;
+          if (badgeParts.length > 0 && re.source === 'Base Weapon') return;
+          badgeParts.push({
+            dice: re.dice || re.formula || '',
+            bonus: Number(re.bonus) || 0,
+            type: re.dmgType || 'Energy',
+            multiplyOnCrit: Boolean(re.multiplyOnCrit),
+            onCritOnly: Boolean(re.onCritOnly),
+            source: re.source || ''
+          });
+        });
+        if (badgeParts.length > 0 && window.DnDUI && typeof window.DnDUI.renderDamagePartsBadges === 'function') {
+          const dmgHtml = window.DnDUI.renderDamagePartsBadges(badgeParts, { compact });
           if (dmgHtml) coreParts.push(dmgHtml);
         }
 
-        // 2. Attack Bonus Badge (+X Atk)
-        const atkMod = (item.modifiers || []).find(m => m && (m.target === 'attack.weapon' || m.target === 'attack' || m.target === 'attack.all'));
-        const atkVal = atkMod ? (Number(atkMod.value) || 0) : (Number(item.enhancementBonus) || 0);
+        // 2. Attack Bonus Badge (+X Atk) from V3 effects[] or enhancementBonus
+        const statRows = extractV3StatRowsFromEffects(item.effects || [], {});
+        const atkRow = statRows.find(m => ['attack.weapon', 'attack', 'attack.all', 'atk.all'].includes(m.target.toLowerCase()));
+        const atkVal = atkRow ? (Number(atkRow.value) || 0) : baseEnh;
         if (atkVal !== 0) {
           const atkCls = atkVal > 0
             ? 'bg-emerald-950/80 text-emerald-300 border-emerald-600/60'
@@ -5302,15 +5405,15 @@
         }
 
         // 3. Critical Threat Range & Multiplier Badge
-        const cMin = Number(item.critRange || item.critMin || item.weaponMeta?.critMin) || 20;
-        const cMult = Number(item.critMult || item.weaponMeta?.critMult) || 2;
+        const cMin = Number(item.weapon?.effectiveCritRange || item.weapon?.baseCritRange || item.critRange || item.critMin || item.weaponMeta?.critMin) || 20;
+        const cMult = Number(item.weapon?.critMultiplier || item.critMult || item.weaponMeta?.critMult) || 2;
         const critStr = cMin < 20 ? `${cMin}-20/×${cMult}` : `×${cMult}`;
         coreParts.push(`<span class="inline-flex items-center gap-1 rounded-md border font-mono font-bold ${sizeCls} bg-amber-950/75 text-amber-300 border-amber-600/50" title="Critical Threat Range &amp; Multiplier"><span>🎯 ${critStr}</span></span>`);
 
         // 4. Handedness / Double Weapon / Range Badge
         if (!minimal) {
           const isDouble = Boolean(item.ruleFlags?.doubleWeapon || (typeof RuleEngine !== 'undefined' && RuleEngine.isDoubleWeapon && RuleEngine.isDoubleWeapon(item)));
-          const rawHand = String(item.handedness || item.weaponMeta?.handedness || item.grip || '');
+          const rawHand = String(item.weapon?.handedness || item.handedness || item.weaponMeta?.handedness || item.grip || '');
           let gripLabel = '';
           if (isDouble) gripLabel = 'Double Weapon';
           else if (/^(?:2h|two|2-hand)/i.test(rawHand)) gripLabel = '2-Hand';
@@ -5322,19 +5425,24 @@
           }
         }
 
-        // 5. Remaining non-attack modifiers & tactical badges (Row 2: Special Properties)
+        // 5. Remaining non-attack effects & tactical badges (Row 2: Special Properties)
         if (!minimal) {
           const hasDrBypassBadge = Array.isArray(item.tacticalBadges) && item.tacticalBadges.some(tb => {
             const lbl = typeof tb === 'string' ? tb : (tb?.label || tb?.name || '');
             return /dr\s*bypass/i.test(lbl);
           });
-          const otherMods = (item.modifiers || []).filter(m => {
-            if (!m || m.target === 'attack.weapon' || m.target === 'attack') return false;
-            if (m.target === 'dr.bypass' && hasDrBypassBadge) return false;
+          const otherEffects = (item.effects || []).filter(e => {
+            if (!e) return false;
+            if (e.type === 'roll' && (!e.kind || e.kind === 'Damage')) return false;
+            if (e.type === 'stat') {
+              const tgts = Array.isArray(e.targets) ? e.targets : (e.target ? [e.target] : []);
+              if (tgts.every(t => t === 'attack.weapon' || t === 'attack' || t === 'damage.weapon')) return false;
+              if (hasDrBypassBadge && tgts.every(t => t === 'dr.bypass')) return false;
+            }
             return true;
           });
-          if (otherMods.length > 0 && window.DnDUI && typeof window.DnDUI.renderModifiersBadges === 'function') {
-            const modHtml = window.DnDUI.renderModifiersBadges(otherMods, { compact });
+          if (otherEffects.length > 0 && window.DnDUI && typeof window.DnDUI.renderModifiersBadges === 'function') {
+            const modHtml = window.DnDUI.renderModifiersBadges({ schemaVersion: 3, effects: otherEffects }, { compact });
             if (modHtml) propParts.push(modHtml);
           }
           if (window.DnDUI && typeof window.DnDUI.renderTacticalBadges === 'function') {
@@ -5344,9 +5452,12 @@
         }
       } else if (isArmor || isShield) {
         // 1. Armor / Shield AC Bonus Badge
-        const acMod = (item.modifiers || []).find(m => m && (m.target === 'ac.armor' || m.target === 'ac.shield' || m.target === 'ac'));
-        const acVal = acMod ? (Number(acMod.value) || 0) : (Number(item.acBonus) || 0);
-        const enhVal = Number(item.enhancementBonus) || 0;
+        const statRows = extractV3StatRowsFromEffects(item.effects || [], {});
+        const acRow = statRows.find(m => ['ac.armor', 'ac.shield', 'ac'].includes(m.target.toLowerCase()));
+        const enhVal = Number(item.armor?.enhancementBonus ?? item.enhancementBonus) || 0;
+        const acVal = item.armor?.armorBonus !== undefined
+          ? (Number(item.armor.armorBonus) + enhVal)
+          : (acRow ? (Number(acRow.value) || 0) : (Number(item.acBonus) || 0));
         if (acVal > 0) {
           const acLabel = isShield ? `+${acVal} Shield AC` : `+${acVal} Armor AC`;
           const acTitle = `${isShield ? 'Shield' : 'Armor'} Bonus to AC${enhVal > 0 ? ` (includes +${enhVal} Enhancement)` : ''}`;
@@ -5354,38 +5465,42 @@
         }
 
         // 2. Max DEX Bonus Badge
-        const maxDex = item.maxDex !== undefined ? item.maxDex : item.armorMeta?.maxDex;
+        const maxDex = item.armor?.maxDex !== undefined ? item.armor.maxDex : (item.maxDex !== undefined ? item.maxDex : item.armorMeta?.maxDex);
         if (maxDex !== null && maxDex !== undefined && maxDex !== '' && !isNaN(Number(maxDex))) {
           coreParts.push(`<span class="inline-flex items-center gap-1 rounded-md border font-mono font-semibold ${sizeCls} bg-slate-800/90 text-emerald-300 border-slate-600/70" title="Maximum DEX Bonus to AC"><span>Max DEX +${Number(maxDex)}</span></span>`);
         }
 
         // 3. Armor Check Penalty (ACP) Badge
-        const acp = item.checkPenalty !== undefined ? item.checkPenalty : item.armorMeta?.acp;
+        const acp = item.armor?.armorCheckPenalty !== undefined ? item.armor.armorCheckPenalty : (item.checkPenalty !== undefined ? item.checkPenalty : item.armorMeta?.acp);
         if (acp !== null && acp !== undefined && acp !== '' && !isNaN(Number(acp)) && Number(acp) !== 0) {
           coreParts.push(`<span class="inline-flex items-center gap-1 rounded-md border font-mono font-semibold ${sizeCls} bg-rose-950/60 text-rose-300 border-rose-700/50" title="Armor Check Penalty"><span>ACP ${Number(acp)}</span></span>`);
         }
 
         // 4. Arcane Spell Failure (ASF) Badge
         if (!minimal) {
-          const asf = item.spellFailure !== undefined ? item.spellFailure : item.armorMeta?.asf;
+          const asf = item.armor?.arcaneSpellFailure !== undefined ? item.armor.arcaneSpellFailure : (item.spellFailure !== undefined ? item.spellFailure : item.armorMeta?.asf);
           if (asf !== null && asf !== undefined && Number(asf) > 0) {
             coreParts.push(`<span class="inline-flex items-center gap-1 rounded-md border font-mono font-semibold ${sizeCls} bg-indigo-950/60 text-indigo-300 border-indigo-700/50" title="Arcane Spell Failure Chance"><span>ASF ${Number(asf)}%</span></span>`);
           }
         }
 
-        // 5. Other Modifiers & Tactical Badges (Row 2: DR 2/-, Mithral, Fortification, etc.)
+        // 5. Other Effects & Tactical Badges (Row 2: DR 2/-, Mithral, Fortification, etc.)
         const hasDrBadge = Array.isArray(item.tacticalBadges) && item.tacticalBadges.some(tb => {
           const lbl = typeof tb === 'string' ? tb : (tb?.label || tb?.name || '');
           return /^dr\b/i.test(lbl);
         });
-        const otherMods = (item.modifiers || []).filter(m => {
-          if (!m || !m.target) return false;
-          if (m.target === 'ac.armor' || m.target === 'ac.shield') return false;
-          if (m.target === 'dr' && hasDrBadge) return false;
+        const otherEffects = (item.effects || []).filter(e => {
+          if (!e) return false;
+          if (e.type === 'stat') {
+            const tgts = Array.isArray(e.targets) ? e.targets : (e.target ? [e.target] : []);
+            if (tgts.every(t => t === 'ac.armor' || t === 'ac.shield')) return false;
+            if (hasDrBadge && tgts.every(t => t === 'dr')) return false;
+          }
+          if (hasDrBadge && e.type === 'defense' && (e.kind === 'dr' || e.defType === 'dr')) return false;
           return true;
         });
-        if (otherMods.length > 0 && window.DnDUI && typeof window.DnDUI.renderModifiersBadges === 'function') {
-          const modHtml = window.DnDUI.renderModifiersBadges(otherMods, { compact });
+        if (otherEffects.length > 0 && window.DnDUI && typeof window.DnDUI.renderModifiersBadges === 'function') {
+          const modHtml = window.DnDUI.renderModifiersBadges({ schemaVersion: 3, effects: otherEffects }, { compact });
           if (modHtml) propParts.push(modHtml);
         }
         if (window.DnDUI && typeof window.DnDUI.renderTacticalBadges === 'function') {
@@ -5393,14 +5508,16 @@
           if (tacHtml) propParts.push(tacHtml);
         }
       } else {
-        // Wondrous / Rings / Cloaks / Belts / Consumables
-        if (Array.isArray(item.damageParts) && item.damageParts.length > 0 && window.DnDUI && typeof window.DnDUI.renderDamagePartsBadges === 'function') {
-          const dmgHtml = window.DnDUI.renderDamagePartsBadges(item.damageParts, { compact });
-          if (dmgHtml) coreParts.push(dmgHtml);
-        }
-        if (Array.isArray(item.modifiers) && item.modifiers.length > 0 && window.DnDUI && typeof window.DnDUI.renderModifiersBadges === 'function') {
-          const modHtml = window.DnDUI.renderModifiersBadges(item.modifiers, { compact });
-          if (modHtml) coreParts.push(modHtml);
+        // Wondrous / Rings / Cloaks / Belts / Consumables (Pure V3 entry passed directly)
+        if (Array.isArray(item.effects) && item.effects.length > 0 && window.DnDUI) {
+          if (typeof window.DnDUI.renderDamagePartsBadges === 'function') {
+            const dmgHtml = window.DnDUI.renderDamagePartsBadges(item, { compact });
+            if (dmgHtml) coreParts.push(dmgHtml);
+          }
+          if (typeof window.DnDUI.renderModifiersBadges === 'function') {
+            const modHtml = window.DnDUI.renderModifiersBadges(item, { compact });
+            if (modHtml) coreParts.push(modHtml);
+          }
         }
         if (window.DnDUI && typeof window.DnDUI.renderTacticalBadges === 'function') {
           const tacHtml = window.DnDUI.renderTacticalBadges(item, { compact });
@@ -5433,7 +5550,7 @@
           const autoCat = mapEntryToGearCategory(item);
           if (autoCat && autoCat !== 'Other') {
             item.category = autoCat;
-            const base = findBaseItemInSrdCore(item.name);
+            const base = (window.SrdCompendium && typeof window.SrdCompendium.getByName === 'function') ? window.SrdCompendium.getByName(item.name) : null;
             if (base && base.slot) {
               item.slot = base.slot;
             } else if (autoCat === 'Weapon' && (!item.slot || item.slot === 'None' || item.slot === 'Other' || item.slot === '-')) {
@@ -5503,7 +5620,7 @@
                 </div>
               `}
               ${isForgeEditableItem(item) ? `
-                <button data-action="inventory:forge-pool-item" data-item-id="${safeIdAttr}" class="w-7 h-7 flex items-center justify-center bg-amber-950/80 hover:bg-amber-800 border border-amber-600/60 text-amber-300 hover:text-white text-xs rounded-md transition cursor-pointer shrink-0" title="Customize in Item Forge (Material, +1..+5, Keen, Flaming...)">
+                <button data-action="inventory:forge-pool-item" data-item-id="${safeIdAttr}" class="w-7 h-7 flex items-center justify-center bg-amber-950/80 hover:bg-amber-800 border border-amber-600/60 text-amber-300 hover:text-white text-xs rounded-md transition cursor-pointer shrink-0" title="Customize in Rule Crafter (Material, +1..+5, Keen, Flaming...)">
                   ⚒️
                 </button>
               ` : ''}
@@ -5789,9 +5906,9 @@
         result = 'Armor';
       }
 
-      // 2. Fallback to BUNDLED_SRD_CORE_CATALOG only when direct fields are ambiguous
-      if (!result) {
-        const baseMatch = typeof findBaseItemInSrdCore === 'function' ? findBaseItemInSrdCore(entry.name) : null;
+      // 2. Fallback to SrdCompendium only when direct fields are ambiguous
+      if (!result && window.SrdCompendium && typeof window.SrdCompendium.getByName === 'function') {
+        const baseMatch = window.SrdCompendium.getByName(entry.name);
         if (baseMatch && baseMatch.type) {
           const bType = baseMatch.type.toLowerCase();
           if (bType === 'weapon') result = 'Weapon';
@@ -5948,7 +6065,6 @@
 
     function getUnifiedEquipmentCatalog() {
       const mLen = Array.isArray(masterDb) ? masterDb.length : 0;
-      const bLen = (typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) ? window.BUNDLED_SRD_CORE_CATALOG.length : 0;
       const srdReady = Boolean(typeof window !== 'undefined' && window.SrdCompendium && typeof window.SrdCompendium.isReady === 'function' && window.SrdCompendium.isReady());
       if (typeof window !== 'undefined' && window.SrdCompendium && typeof window.SrdCompendium.ensureTypesLoaded === 'function') {
         window.SrdCompendium.ensureTypesLoaded(GEAR_PICKER_TYPES).then((arrived) => {
@@ -5956,8 +6072,8 @@
         }).catch(() => {});
       }
       // The loaded-record count changes when a chunk arrives, so the cache is rebuilt with the new records.
-      const loadedN = (srdReady && typeof window.SrdCompendium.getLoadedEntryCount === 'function') ? window.SrdCompendium.getLoadedEntryCount() : 0;
-      const cacheKey = `${mLen}:${bLen}:${srdReady ? 1 : 0}:${loadedN}`;
+      const loadedN = (typeof window !== 'undefined' && window.SrdCompendium && typeof window.SrdCompendium.getLoadedEntryCount === 'function') ? window.SrdCompendium.getLoadedEntryCount() : 0;
+      const cacheKey = `${mLen}:${srdReady ? 1 : 0}:${loadedN}`;
 
       if (_cachedUnifiedEquipmentCatalog && _cachedUnifiedCatalogKey === cacheKey) {
         return _cachedUnifiedEquipmentCatalog;
@@ -5980,12 +6096,9 @@
       if (Array.isArray(masterDb)) {
         masterDb.forEach(pushUniqueGear);
       }
-      if (srdReady && typeof window.SrdCompendium.getAllLoaded === 'function') {
-        const srdGear = window.SrdCompendium.getAllLoaded(['Weapon', 'Armor', 'Shield', 'Item', 'MagicItem', 'AugmentationCrystal', 'Tool', 'Consumable', 'Ammo', 'Gear']);
+      if (typeof window !== 'undefined' && window.SrdCompendium && typeof window.SrdCompendium.getAllLoaded === 'function') {
+        const srdGear = window.SrdCompendium.getAllLoaded(GEAR_PICKER_TYPES);
         if (Array.isArray(srdGear)) srdGear.forEach(pushUniqueGear);
-      }
-      if (typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
-        window.BUNDLED_SRD_CORE_CATALOG.forEach(pushUniqueGear);
       }
 
       combined.sort((a, b) => String(a?.name || '').localeCompare(String(b?.name || '')));
@@ -6144,7 +6257,7 @@
             </div>
             <div class="flex items-center gap-1.5 shrink-0">
               ${isForgeEditableItem(item) ? `
-                <button type="button" data-action="inventory:forge-spotlight-item" data-index="${idx}" data-is-ai="false" class="bg-amber-950/90 hover:bg-amber-800 border border-amber-500/70 text-amber-200 hover:text-white p-1.5 rounded-lg text-xs font-bold transition cursor-pointer" title="Customize in Item Forge (Material, +1..+5, Keen, Flaming...)">
+                <button type="button" data-action="inventory:forge-spotlight-item" data-index="${idx}" data-is-ai="false" class="bg-amber-950/90 hover:bg-amber-800 border border-amber-500/70 text-amber-200 hover:text-white p-1.5 rounded-lg text-xs font-bold transition cursor-pointer" title="Customize in Rule Crafter (Material, +1..+5, Keen, Flaming...)">
                   ⚒️
                 </button>
               ` : ''}
@@ -6216,7 +6329,7 @@
       if (filtered.length === 0) {
         resultsBox.innerHTML = `
           <div class="p-4 bg-slate-900/80 border border-slate-800 rounded-xl text-center text-xs text-slate-400">
-            No remaining unowned items in this category. Search above or craft in Item Forge.
+            No remaining unowned items in this category. Search above or craft in Rule Crafter.
           </div>
         `;
         return;
@@ -6349,7 +6462,7 @@
       const escapedQ = query.replace(/"/g, '&quot;');
 
       if (!matches || matches.length === 0) {
-        // NO MATCHES FOUND IN SRD + MASTER DB -> PROMINENT AI LOOKUP & ITEM FORGE CALLOUT
+        // NO MATCHES FOUND IN SRD + MASTER DB -> PROMINENT AI LOOKUP & RULE CRAFTER CALLOUT
         resultsBox.innerHTML = `
           <div class="p-4 bg-slate-900/90 border border-amber-500/50 rounded-xl space-y-3 shadow-lg">
             <div class="flex items-start gap-3">
@@ -6357,7 +6470,7 @@
               <div>
                 <h4 class="text-xs font-bold text-amber-300">"${escapedQ}" Not Found in Local SRD / Custom DB</h4>
                 <p class="text-[11px] text-slate-300 mt-0.5">
-                  Scan official D&amp;D 3.5e sourcebooks (PHB, DMG, MIC, Complete) via 🔮 Rule Master AI or craft a custom item in Item Forge.
+                  Scan official D&amp;D 3.5e sourcebooks (PHB, DMG, MIC, Complete) via 🔮 Rule Master AI or craft a custom item in Rule Crafter.
                 </p>
               </div>
             </div>
@@ -6366,9 +6479,9 @@
                 <span>🔮</span>
                 <span>Fetch "${escapedQ}" via Rule Master AI</span>
               </button>
-              <button type="button" data-action="inventory:open-item-forge" class="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold text-xs py-2 px-3 rounded-lg transition flex items-center justify-center gap-1.5 cursor-pointer">
+              <button type="button" data-action="inventory:open-item-forge" data-query="${escapedQ}" class="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold text-xs py-2 px-3 rounded-lg transition flex items-center justify-center gap-1.5 cursor-pointer">
                 <span>⚒️</span>
-                <span>Open in Item Forge</span>
+                <span>Open in Rule Crafter</span>
               </button>
             </div>
           </div>
@@ -6564,9 +6677,18 @@
       const itemDesc = cleanPoolItemDescription(item.benefit || item.description || item.shortDescription || '');
 
       const newId = Date.now();
-      const primaryPart = Array.isArray(item.damageParts) && item.damageParts[0] ? item.damageParts[0] : null;
-      const armorAcMod = Array.isArray(item.modifiers) ? item.modifiers.find(m => m && (m.target === 'ac.armor' || m.target === 'ac.shield')) : null;
+      const rollEff = Array.isArray(item.effects) ? item.effects.find(e => e && e.type === 'roll' && (!e.kind || e.kind === 'Damage') && e.dice) : null;
+      const acEff = Array.isArray(item.effects) ? item.effects.find(e => e && e.type === 'stat' && Array.isArray(e.targets) && e.targets.some(t => t === 'ac.armor' || t === 'ac.shield')) : null;
+      const baseDice = item.weapon?.damageDice || (rollEff && rollEff.dice) || item.dice;
+      const baseDmgType = item.weapon?.dmgType || (rollEff && rollEff.dmgType) || item.dmgType;
+      const baseCritMin = Number(item.weapon?.effectiveCritRange || item.weapon?.baseCritRange || item.critRange || item.critMin || item.weaponMeta?.critMin) || undefined;
+      const baseCritMult = Number(item.weapon?.critMultiplier || item.critMult || item.weaponMeta?.critMult) || undefined;
+      const baseHanded = item.weapon?.handedness || item.handedness || item.weaponMeta?.handedness;
+      const baseAcBonus = item.armor?.armorBonus !== undefined
+        ? (Number(item.armor.armorBonus) + (Number(item.armor.enhancementBonus ?? item.enhancementBonus) || 0))
+        : (item.acBonus !== undefined ? item.acBonus : (acEff ? Number(acEff.value ?? acEff.val) : undefined));
       character.gearPool.push({
+        schemaVersion: 3,
         id: newId,
         baseItemId: item.baseItemId || item.id || null,
         name: item.name,
@@ -6580,58 +6702,70 @@
         material: item.material || null,
         enhancementBonus: Number(item.enhancementBonus) || 0,
         enhancements: Array.isArray(item.enhancements) ? item.enhancements : [],
-        modifiers: Array.isArray(item.modifiers) ? JSON.parse(JSON.stringify(item.modifiers)) : [],
-        damageParts: Array.isArray(item.damageParts) ? JSON.parse(JSON.stringify(item.damageParts)) : [],
+        effects: Array.isArray(item.effects) ? JSON.parse(JSON.stringify(item.effects)) : [],
+        ...(item.weapon ? { weapon: JSON.parse(JSON.stringify(item.weapon)) } : {}),
+        ...(item.armor ? { armor: JSON.parse(JSON.stringify(item.armor)) } : {}),
         modes: Array.isArray(item.modes) ? JSON.parse(JSON.stringify(item.modes)) : [],
         weaponMeta: item.weaponMeta ? JSON.parse(JSON.stringify(item.weaponMeta)) : null,
         armorMeta: item.armorMeta ? JSON.parse(JSON.stringify(item.armorMeta)) : null,
         ruleFlags: item.ruleFlags ? JSON.parse(JSON.stringify(item.ruleFlags)) : {},
         tacticalBadges: Array.isArray(item.tacticalBadges) ? JSON.parse(JSON.stringify(item.tacticalBadges)) : [],
-        dice: (primaryPart && primaryPart.dice) || item.dice,
-        dmgType: (primaryPart && primaryPart.type) || item.dmgType,
-        critMin: Number(item.critRange || item.critMin || item.weaponMeta?.critMin) || undefined,
-        critRange: Number(item.critRange || item.critMin || item.weaponMeta?.critMin) || undefined,
-        critMult: Number(item.critMult || item.weaponMeta?.critMult) || undefined,
-        handedness: item.handedness || item.weaponMeta?.handedness,
-        acBonus: item.acBonus !== undefined ? item.acBonus : (armorAcMod ? Number(armorAcMod.value) : undefined),
-        maxDex: item.maxDex !== undefined ? item.maxDex : item.armorMeta?.maxDex,
-        checkPenalty: item.checkPenalty !== undefined ? item.checkPenalty : item.armorMeta?.acp,
-        spellFailure: item.spellFailure !== undefined ? item.spellFailure : item.armorMeta?.asf,
+        dice: baseDice,
+        dmgType: baseDmgType,
+        critMin: baseCritMin,
+        critRange: baseCritMin,
+        critMult: baseCritMult,
+        handedness: baseHanded,
+        acBonus: baseAcBonus,
+        maxDex: item.armor?.maxDex !== undefined ? item.armor.maxDex : (item.maxDex !== undefined ? item.maxDex : item.armorMeta?.maxDex),
+        checkPenalty: item.armor?.armorCheckPenalty !== undefined ? item.armor.armorCheckPenalty : (item.checkPenalty !== undefined ? item.checkPenalty : item.armorMeta?.acp),
+        spellFailure: item.armor?.arcaneSpellFailure !== undefined ? item.armor.arcaneSpellFailure : (item.spellFailure !== undefined ? item.spellFailure : item.armorMeta?.asf),
         isBelt: isBeltItem,
         isEquipped: false
       });
 
-      // If weapon, sync with weapons array (V2 damageParts & modes)
+      // If weapon, sync with weapons array (Pure V3 weapon chassis, effects[] & modes[])
       if (cat === 'Weapon') {
         if (!character.weapons) character.weapons = [];
         const hasWep = character.weapons.some(w => (w.name || '').toLowerCase() === item.name.toLowerCase());
         if (!hasWep) {
-          const primaryPart = Array.isArray(item.damageParts) && item.damageParts[0] ? item.damageParts[0] : null;
-          const secondaryParts = Array.isArray(item.damageParts) && item.damageParts.length > 1 ? item.damageParts.slice(1) : [];
+          const extraRolls = Array.isArray(item.effects)
+            ? item.effects.filter(e => e && e.type === 'roll' && (!e.kind || e.kind === 'Damage') && e.dice && e.source !== 'Base Weapon')
+            : [];
+          const wCritMin = baseCritMin || 20;
+          const wCritMult = baseCritMult || 2;
           character.weapons.push({
+            schemaVersion: 3,
             id: item.id || ('wep_' + String(item.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '_')),
             baseItemId: item.baseItemId || item.id || null,
             name: item.name,
             grip: (typeof RuleEngine !== 'undefined' && RuleEngine.isTwoHandedWeapon && RuleEngine.isTwoHandedWeapon(item)) ? '2-Hand' : '1-Hand',
-            handedness: item.handedness || item.weaponMeta?.handedness,
-            dice: (primaryPart && primaryPart.dice) || item.dice || '1d8',
-            damageParts: Array.isArray(item.damageParts) && item.damageParts.length > 0
-              ? JSON.parse(JSON.stringify(item.damageParts))
-              : [{ dice: item.dice || '1d8', bonus: 0, type: item.dmgType || 'Slashing', multiplyOnCrit: true }],
-            modifiers: Array.isArray(item.modifiers) ? JSON.parse(JSON.stringify(item.modifiers)) : [],
+            handedness: baseHanded,
+            dice: baseDice || '1d8',
+            weapon: item.weapon ? JSON.parse(JSON.stringify(item.weapon)) : {
+              category: item.category || 'Martial',
+              handedness: baseHanded || '1h',
+              damageDice: baseDice || '1d8',
+              dmgType: baseDmgType || 'Slashing',
+              baseCritRange: wCritMin,
+              effectiveCritRange: wCritMin,
+              critMultiplier: wCritMult,
+              enhancementBonus: Number(item.enhancementBonus) || 0
+            },
+            effects: Array.isArray(item.effects) ? JSON.parse(JSON.stringify(item.effects)) : [],
             modes: Array.isArray(item.modes) ? JSON.parse(JSON.stringify(item.modes)) : [],
             weaponMeta: item.weaponMeta ? JSON.parse(JSON.stringify(item.weaponMeta)) : null,
             ruleFlags: item.ruleFlags ? JSON.parse(JSON.stringify(item.ruleFlags)) : {},
             tacticalBadges: Array.isArray(item.tacticalBadges) ? JSON.parse(JSON.stringify(item.tacticalBadges)) : [],
-            critMin: Number(item.critRange || item.critMin || item.weaponMeta?.critMin) || 20,
-            rawCritMin: Number(item.critRange || item.critMin || item.weaponMeta?.critMin) || 20,
-            critMult: Number(item.critMult || item.weaponMeta?.critMult) || 2,
+            critMin: wCritMin,
+            rawCritMin: wCritMin,
+            critMult: wCritMult,
             enhancementBonus: Number(item.enhancementBonus) || 0,
-            dmgType: (primaryPart && primaryPart.type) || item.dmgType || 'Slashing',
-            isLight: Boolean(item.isLight || (item.handedness && String(item.handedness).toLowerCase().includes('light')) || (typeof RuleEngine !== 'undefined' && RuleEngine.isLightWeapon && RuleEngine.isLightWeapon(item))),
+            dmgType: baseDmgType || 'Slashing',
+            isLight: Boolean(item.isLight || (baseHanded && String(baseHanded).toLowerCase().includes('light')) || (typeof RuleEngine !== 'undefined' && RuleEngine.isLightWeapon && RuleEngine.isLightWeapon(item))),
             bonusType: 'enhancement',
             tags: item.tags || [],
-            elementalMods: secondaryParts.map(sp => ({ name: sp.source || sp.type, dice: sp.dice, type: sp.type })),
+            elementalMods: extraRolls.map(sp => ({ name: sp.source || sp.dmgType || 'Elemental', dice: sp.dice, type: sp.dmgType || 'Energy' })),
             keen: Boolean(item.ruleFlags && item.ruleFlags.keen)
           });
         }
@@ -6650,19 +6784,20 @@
         }
       }
 
-      // Attach embedded V2 modes[] from item
+      // Attach embedded V3 modes[] from item
       let attachedChildCount = 0;
       const itemModes = Array.isArray(item.modes) ? item.modes : [];
       if (itemModes.length > 0) {
         itemModes.forEach(mode => {
-          // Skip weapon grip modes (primary-head, offhand-head, 2h-single) so they aren't added as separate items or elemental activeModifiers
+          // Skip weapon grip modes (primary-head, offhand-head, 2h-single) so they aren't added as separate items or tactical riders
           if (mode.handedness || mode.id === 'primary-head' || mode.id === 'offhand-head' || mode.id === '2h-single' || mode.ruleFlags?.doubleWeapon || mode.ruleFlags?.doubleWeaponOffHand) {
             return;
           }
           const modeClean = (mode.name || mode.label || '').replace(/^↳\s*/, '').trim();
           if (!modeClean) return;
-          const modePart = Array.isArray(mode.damageParts) && mode.damageParts[0] ? mode.damageParts[0] : null;
-          const modeDice = (modePart && modePart.dice) || mode.dice || '';
+          const modeRoll = Array.isArray(mode.effects) ? mode.effects.find(e => e && e.type === 'roll' && (!e.kind || e.kind === 'Damage')) : null;
+          const modeDice = (modeRoll && modeRoll.dice) || mode.dice || '';
+          const modeDmgType = (modeRoll && modeRoll.dmgType) || 'Energy';
           if (mode.action?.toLowerCase().includes('action') || (mode.duration && mode.duration !== 'Continuous')) {
             if (!character.specialAbilities) character.specialAbilities = [];
             if (!character.specialAbilities.some(a => (a.name || '').toLowerCase() === modeClean.toLowerCase())) {
@@ -6679,15 +6814,15 @@
             }
           }
           if (modeDice) {
-            if (!character.activeModifiers) character.activeModifiers = [];
-            if (!character.activeModifiers.some(m => (m.name || '').toLowerCase() === modeClean.toLowerCase())) {
-              character.activeModifiers.push({
+            if (!Array.isArray(character.tacticalRiders)) character.tacticalRiders = [];
+            if (!character.tacticalRiders.some(m => (m.name || '').toLowerCase() === modeClean.toLowerCase())) {
+              character.tacticalRiders.push({
+                schemaVersion: 3,
+                id: mode.id || ('rider_' + modeClean.toLowerCase().replace(/[^a-z0-9]+/g, '_')),
                 name: modeClean,
                 source: item.name,
-                bonusAtk: 0,
-                dice: modeDice,
-                type: (modePart && modePart.type) || 'Energy',
                 active: true,
+                effects: [{ type: 'roll', kind: 'Damage', dice: modeDice, dmgType: modeDmgType }],
                 notes: mode.benefit || mode.description || ''
               });
               attachedChildCount++;
@@ -6728,15 +6863,16 @@
       const item = window._poolCurrentAiEntries?.[idx];
       if (!item) return;
 
-      // Normalize AI entry to Canonical V2 (with embedded modes[] and damageParts[]) and store in masterDb
-      const v2Item = (typeof RuleMaster !== 'undefined' && typeof RuleMaster.normalizeEntry === 'function')
+      // Normalize AI entry to Canonical V3 and store in masterDb
+      const v3Item = (typeof RuleMaster !== 'undefined' && typeof RuleMaster.normalizeEntry === 'function')
         ? RuleMaster.normalizeEntry(item)
-        : item;
+        : Object.assign({ schemaVersion: 3, effects: [] }, item);
+      if (v3Item && typeof v3Item === 'object') v3Item.schemaVersion = 3;
 
       let dbAdded = 0;
-      const exists = masterDb.some(m => (m.name || '').toLowerCase().trim() === (v2Item.name || '').toLowerCase().trim());
+      const exists = masterDb.some(m => (m.name || '').toLowerCase().trim() === (v3Item.name || '').toLowerCase().trim());
       if (!exists) {
-        masterDb.push(v2Item);
+        masterDb.push(v3Item);
         dbAdded++;
       }
 
@@ -6748,78 +6884,95 @@
       }
 
       if (!character.gearPool) character.gearPool = [];
-      const cat = mapEntryToGearCategory(v2Item);
-      const isBeltItem = (v2Item.slot || '').toLowerCase().includes('belt') || cat === 'Consumable';
+      const cat = mapEntryToGearCategory(v3Item);
+      const isBeltItem = (v3Item.slot || '').toLowerCase().includes('belt') || cat === 'Consumable';
 
       const newId = Date.now();
+      const aiRollEff = Array.isArray(v3Item.effects) ? v3Item.effects.find(e => e && e.type === 'roll' && (!e.kind || e.kind === 'Damage') && e.dice) : null;
       character.gearPool.push({
+        schemaVersion: 3,
         id: newId,
-        baseItemId: v2Item.baseItemId || v2Item.id || null,
-        name: v2Item.name,
-        masterDbName: v2Item.name,
+        baseItemId: v3Item.baseItemId || v3Item.id || null,
+        name: v3Item.name,
+        masterDbName: v3Item.name,
         category: cat,
-        slot: v2Item.slot && v2Item.slot !== 'None' ? v2Item.slot : cat,
+        slot: v3Item.slot && v3Item.slot !== 'None' ? v3Item.slot : cat,
         qty: 1,
-        weight: Number(v2Item.weight) || 0,
-        cost: Number(v2Item.cost) || 0,
-        desc: v2Item.benefit || v2Item.description || '',
-        modifiers: Array.isArray(v2Item.modifiers) ? JSON.parse(JSON.stringify(v2Item.modifiers)) : [],
-        damageParts: Array.isArray(v2Item.damageParts) ? JSON.parse(JSON.stringify(v2Item.damageParts)) : [],
-        modes: Array.isArray(v2Item.modes) ? JSON.parse(JSON.stringify(v2Item.modes)) : [],
+        weight: Number(v3Item.weight) || 0,
+        cost: Number(v3Item.cost) || 0,
+        desc: v3Item.benefit || v3Item.description || '',
+        effects: Array.isArray(v3Item.effects) ? JSON.parse(JSON.stringify(v3Item.effects)) : [],
+        ...(v3Item.weapon ? { weapon: JSON.parse(JSON.stringify(v3Item.weapon)) } : {}),
+        ...(v3Item.armor ? { armor: JSON.parse(JSON.stringify(v3Item.armor)) } : {}),
+        modes: Array.isArray(v3Item.modes) ? JSON.parse(JSON.stringify(v3Item.modes)) : [],
         isBelt: isBeltItem,
         isEquipped: false
       });
 
       if (cat === 'Weapon') {
         if (!character.weapons) character.weapons = [];
-        const hasWep = character.weapons.some(w => (w.name || '').toLowerCase() === v2Item.name.toLowerCase());
+        const hasWep = character.weapons.some(w => (w.name || '').toLowerCase() === v3Item.name.toLowerCase());
         if (!hasWep) {
-          const primaryPart = Array.isArray(v2Item.damageParts) && v2Item.damageParts[0] ? v2Item.damageParts[0] : null;
+          const wDice = v3Item.weapon?.damageDice || (aiRollEff && aiRollEff.dice) || v3Item.dice || '1d8';
+          const wType = v3Item.weapon?.dmgType || (aiRollEff && aiRollEff.dmgType) || v3Item.dmgType || 'Slashing';
+          const wCritMin = v3Item.weapon?.effectiveCritRange || v3Item.weapon?.baseCritRange || v3Item.weaponMeta?.critMin || v3Item.critMin || 20;
+          const wCritMult = v3Item.weapon?.critMultiplier || v3Item.weaponMeta?.critMult || v3Item.critMult || 2;
           character.weapons.push({
-            id: v2Item.id || ('wep_' + String(v2Item.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '_')),
-            baseItemId: v2Item.baseItemId || v2Item.id || null,
-            name: v2Item.name,
-            grip: v2Item.slot === 'Main Hand' ? '1-Hand' : '2-Hand',
-            dice: (primaryPart && primaryPart.dice) || v2Item.dice || '1d8',
-            damageParts: Array.isArray(v2Item.damageParts) ? JSON.parse(JSON.stringify(v2Item.damageParts)) : [],
-            modifiers: Array.isArray(v2Item.modifiers) ? JSON.parse(JSON.stringify(v2Item.modifiers)) : [],
-            modes: Array.isArray(v2Item.modes) ? JSON.parse(JSON.stringify(v2Item.modes)) : [],
-            critMin: v2Item.weaponMeta?.critMin || v2Item.critMin || 20,
-            critMult: v2Item.weaponMeta?.critMult || v2Item.critMult || 2,
-            enhancementBonus: Number(v2Item.enhancementBonus) || 0,
-            dmgType: (primaryPart && primaryPart.type) || v2Item.dmgType || 'Slashing',
+            schemaVersion: 3,
+            id: v3Item.id || ('wep_' + String(v3Item.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '_')),
+            baseItemId: v3Item.baseItemId || v3Item.id || null,
+            name: v3Item.name,
+            grip: v3Item.slot === 'Main Hand' ? '1-Hand' : '2-Hand',
+            dice: wDice,
+            weapon: v3Item.weapon ? JSON.parse(JSON.stringify(v3Item.weapon)) : {
+              category: v3Item.category || 'Martial',
+              handedness: v3Item.slot === 'Main Hand' ? '1h' : '2h',
+              damageDice: wDice,
+              dmgType: wType,
+              baseCritRange: wCritMin,
+              effectiveCritRange: wCritMin,
+              critMultiplier: wCritMult,
+              enhancementBonus: Number(v3Item.enhancementBonus) || 0
+            },
+            effects: Array.isArray(v3Item.effects) ? JSON.parse(JSON.stringify(v3Item.effects)) : [],
+            modes: Array.isArray(v3Item.modes) ? JSON.parse(JSON.stringify(v3Item.modes)) : [],
+            critMin: wCritMin,
+            critMult: wCritMult,
+            enhancementBonus: Number(v3Item.enhancementBonus) || 0,
+            dmgType: wType,
             bonusType: 'enhancement',
-            tags: v2Item.tags || []
+            tags: v3Item.tags || []
           });
         }
       }
 
       if (cat === 'Consumable') {
         if (!character.consumables) character.consumables = [];
-        const hasCons = character.consumables.some(c => (c.name || '').toLowerCase() === v2Item.name.toLowerCase());
+        const hasCons = character.consumables.some(c => (c.name || '').toLowerCase() === v3Item.name.toLowerCase());
         if (!hasCons) {
           character.consumables.push({
-            name: v2Item.name,
+            name: v3Item.name,
             qty: 1,
-            effect: v2Item.benefit || 'Potion effect'
+            effect: v3Item.benefit || 'Potion effect'
           });
         }
       }
 
-      // Also attach V2 embedded modes[] to character
+      // Also attach V3 embedded modes[] to character
       let attachedChildCount = 0;
-      const aiModes = Array.isArray(v2Item.modes) ? v2Item.modes : [];
+      const aiModes = Array.isArray(v3Item.modes) ? v3Item.modes : [];
       if (aiModes.length > 0) {
         aiModes.forEach(mode => {
-          const modeClean = (mode.name || '').replace(/^↳\s*/, '').trim();
-          const modePart = Array.isArray(mode.damageParts) && mode.damageParts[0] ? mode.damageParts[0] : null;
-          const modeDice = (modePart && modePart.dice) || mode.dice || '';
+          const modeClean = (mode.name || mode.label || '').replace(/^↳\s*/, '').trim();
+          const modeRoll = Array.isArray(mode.effects) ? mode.effects.find(e => e && e.type === 'roll' && (!e.kind || e.kind === 'Damage')) : null;
+          const modeDice = (modeRoll && modeRoll.dice) || mode.dice || '';
+          const modeDmgType = (modeRoll && modeRoll.dmgType) || 'Energy';
           if (mode.action?.toLowerCase().includes('action') || (mode.duration && mode.duration !== 'Continuous')) {
             if (!character.specialAbilities) character.specialAbilities = [];
             if (!character.specialAbilities.some(a => (a.name || '').toLowerCase() === modeClean.toLowerCase())) {
               character.specialAbilities.push({
                 name: modeClean,
-                source: v2Item.name,
+                source: v3Item.name,
                 action: mode.action || 'Standard Action',
                 duration: mode.duration || 'Special',
                 benefit: mode.benefit || mode.description || '',
@@ -6830,15 +6983,15 @@
             }
           }
           if (modeDice) {
-            if (!character.activeModifiers) character.activeModifiers = [];
-            if (!character.activeModifiers.some(m => (m.name || '').toLowerCase() === modeClean.toLowerCase())) {
-              character.activeModifiers.push({
+            if (!Array.isArray(character.tacticalRiders)) character.tacticalRiders = [];
+            if (!character.tacticalRiders.some(m => (m.name || '').toLowerCase() === modeClean.toLowerCase())) {
+              character.tacticalRiders.push({
+                schemaVersion: 3,
+                id: mode.id || ('rider_' + modeClean.toLowerCase().replace(/[^a-z0-9]+/g, '_')),
                 name: modeClean,
-                source: v2Item.name,
-                bonusAtk: 0,
-                dice: modeDice,
-                type: (modePart && modePart.type) || 'Energy',
+                source: v3Item.name,
                 active: true,
+                effects: [{ type: 'roll', kind: 'Damage', dice: modeDice, dmgType: modeDmgType }],
                 notes: mode.benefit || mode.description || ''
               });
               attachedChildCount++;
@@ -6910,25 +7063,274 @@
       if (typeof showDiceTopToast === 'function') {
         showDiceTopToast({
           icon: '⚒️',
-          title: 'Item Reforged',
+          title: 'Item Crafted',
           breakdown: oldName && oldName !== newName
             ? `"${oldName}" reforged into "${newName}".`
-            : `"${newName}" properties updated in Item Forge.`,
+            : `"${newName}" properties updated in Rule Crafter.`,
           total: `${newCost.toLocaleString('en-US')} gp`
         });
       }
+    }
+
+    function buildItemRuleCrafterDraft(sourceItem) {
+      const bridge = window.CharStore && window.CharStore.StudioBridge;
+      const doc = (window.CharStore && typeof window.CharStore.getDoc === 'function' && window.CharStore.getDoc()) || character;
+      if (!sourceItem || typeof sourceItem !== 'object') {
+        return {
+          schemaVersion: 3,
+          blueprint: 'weapon',
+          id: 'crafted_item_' + Date.now(),
+          name: 'Custom Weapon',
+          source: 'Homebrew',
+          effects: []
+        };
+      }
+      const existingCustom = sourceItem.customEntryId && doc && doc.customEntries && doc.customEntries[sourceItem.customEntryId]
+        ? doc.customEntries[sourceItem.customEntryId]
+        : null;
+      const comp = window.SrdCompendium;
+      let srdBase = null;
+      if (comp && typeof comp.getById === 'function') {
+        const lookupId = sourceItem.baseItemId || sourceItem.id || '';
+        if (lookupId) srdBase = comp.getById(lookupId);
+        if (!srdBase && sourceItem.name && typeof comp.getByName === 'function') {
+          const strippedName = String(sourceItem.name)
+            .replace(/^\+\d+\s+/, '')
+            .replace(/\b(Masterwork|Mithral|Adamantine|Cold Iron|Alchemical Silver|Darkwood|Dragonhide|Keen|Flaming|Frost|Shock|Holy|Unholy|Ghost Touch|Speed|Vorpal)\b\s*/gi, '')
+            .trim();
+          srdBase = comp.getByName(sourceItem.name) || (strippedName ? comp.getByName(strippedName) : null);
+        }
+      }
+      const catRaw = String(sourceItem.category || sourceItem.type || (srdBase && (srdBase.category || srdBase.type)) || 'Weapon');
+      const kind = /armor|shield/i.test(catRaw) || /armor|shield/i.test(String((srdBase && srdBase.type) || ''))
+        ? 'armor'
+        : (/weapon/i.test(catRaw) || /weapon/i.test(String((srdBase && srdBase.type) || '')) ? 'weapon' : 'item');
+
+      const seedSource = existingCustom || srdBase || sourceItem;
+      let draft = (bridge && typeof bridge.toV3CrafterDraft === 'function')
+        ? bridge.toV3CrafterDraft(seedSource, kind)
+        : JSON.parse(JSON.stringify(seedSource));
+
+      draft.schemaVersion = 3;
+      const instanceId = sourceItem.customEntryId || ('crafted_item_' + Date.now() + '_' + Math.floor(Math.random() * 1000));
+      draft.id = instanceId;
+      draft.baseEntryId = sourceItem.baseItemId || (srdBase && srdBase.id) || draft.baseEntryId || null;
+      draft.origin = {
+        mode: 'variant',
+        srdId: (srdBase && srdBase.id) || sourceItem.baseItemId || '',
+        srdName: (srdBase && srdBase.name) || sourceItem.name || ''
+      };
+      if (sourceItem.name) draft.name = sourceItem.name;
+      if (sourceItem.baseItemId || (srdBase && srdBase.id)) {
+        draft.baseItemId = sourceItem.baseItemId || srdBase.id;
+      }
+      if (sourceItem.material) draft.material = sourceItem.material;
+      else if (sourceItem.masterwork && !draft.material && !sourceItem.enhancementBonus) draft.material = 'masterwork';
+      if (sourceItem.enhancementBonus !== undefined) draft.enhancementBonus = Number(sourceItem.enhancementBonus) || 0;
+      if (Array.isArray(sourceItem.enhancements) && sourceItem.enhancements.length > 0) {
+        draft.enhancements = sourceItem.enhancements.slice();
+      }
+      if (sourceItem.augmentCrystal) draft.augmentCrystal = JSON.parse(JSON.stringify(sourceItem.augmentCrystal));
+      else if (sourceItem.crystal && sourceItem.crystal.id) draft.augmentCrystal = { id: sourceItem.crystal.id, tier: sourceItem.crystal.tier || 'least' };
+      if (Array.isArray(sourceItem.effects) && sourceItem.effects.length > 0 && !existingCustom) {
+        draft.effects = JSON.parse(JSON.stringify(sourceItem.effects));
+      }
+      if (sourceItem.desc && !draft.text) draft.text = sourceItem.desc;
+      return { draft, kind };
+    }
+
+    function convertV3CraftedEntryToInventoryItem(v3Entry, originalItem, saveScope) {
+      if (!v3Entry || typeof v3Entry !== 'object') return null;
+      const comp = window.SrdCompendium;
+      const assembler = window.ItemAssembler;
+      const engine = window.RuleEngine;
+      const doc = (window.CharStore && typeof window.CharStore.getDoc === 'function' && window.CharStore.getDoc()) || character;
+      const instanceId = (originalItem && originalItem.customEntryId) || ('crafted_item_' + Date.now() + '_' + Math.floor(Math.random() * 1000));
+      const v3Saved = JSON.parse(JSON.stringify(v3Entry));
+      v3Saved.schemaVersion = 3;
+      v3Saved.id = instanceId;
+      v3Saved._crafterOverride = true;
+
+      let assembled = null;
+      const isChassisItem = v3Entry.blueprint === 'weapon' || v3Entry.blueprint === 'armor' || Boolean(v3Entry.baseItemId || v3Entry.weapon || v3Entry.armor);
+      if (isChassisItem && assembler && typeof assembler.assemble === 'function' && comp) {
+        let baseLookup = v3Entry.baseItemId || (originalItem && originalItem.baseItemId) || '';
+        const prefix = v3Entry.blueprint === 'armor' ? 'arm-' : 'wpn-';
+        let baseRef = baseLookup ? (comp.getById(baseLookup) || comp.getById(prefix + String(baseLookup).replace(/_/g, '-'))) : null;
+        if (!baseRef && v3Entry.origin && v3Entry.origin.srdId) baseRef = comp.getById(v3Entry.origin.srdId);
+        if (!baseRef && v3Entry.origin && v3Entry.origin.srdName && typeof comp.getByName === 'function') baseRef = comp.getByName(v3Entry.origin.srdName);
+        if (baseRef) {
+          const rawMat = String(v3Entry.material || 'standard').trim();
+          const isMwOnly = rawMat === 'masterwork';
+          const matId = (!rawMat || rawMat === 'standard' || isMwOnly)
+            ? null
+            : (rawMat.startsWith('mat-') ? rawMat : ('mat-' + rawMat.replace(/_/g, '-')));
+          const enhIds = Array.isArray(v3Entry.enhancements)
+            ? v3Entry.enhancements.map(eid => {
+                const s = String(eid || '').trim();
+                if (!s) return null;
+                if (s.startsWith('enh-')) return s;
+                const clean = s.replace(/_[wa]$/, '').replace(/_/g, '-');
+                return 'enh-' + clean;
+              }).filter(Boolean)
+            : [];
+          let crystalId = null;
+          if (v3Entry.augmentCrystal && v3Entry.augmentCrystal.id) {
+            const cid = String(v3Entry.augmentCrystal.id);
+            const ctier = String(v3Entry.augmentCrystal.tier || 'least').toLowerCase();
+            crystalId = cid.startsWith('crys-') ? cid : `crys-${cid.replace(/_/g, '-')}-${ctier}`;
+          }
+          try {
+            assembled = assembler.assemble({
+              baseItem: baseRef,
+              baseItemId: baseRef.id,
+              material: matId,
+              masterwork: isMwOnly || (Number(v3Entry.enhancementBonus) || 0) > 0,
+              enhancementBonus: Number(v3Entry.enhancementBonus) || 0,
+              enhancements: enhIds,
+              crystalId
+            });
+          } catch (e) {
+            assembled = null;
+          }
+        }
+      }
+
+      const customEffects = Array.isArray(v3Entry.effects) ? JSON.parse(JSON.stringify(v3Entry.effects)) : [];
+      const evalExtra = (engine && typeof engine.evaluateV3Entry === 'function')
+        ? engine.evaluateV3Entry({
+            schemaVersion: 3,
+            id: instanceId,
+            name: v3Entry.name,
+            blueprint: v3Entry.blueprint,
+            effects: customEffects
+          }, { character: doc })
+        : { ruleFlags: {}, tacticalBadges: [] };
+
+      const out = assembled ? Object.assign({}, assembled) : {
+        schemaVersion: 3,
+        id: (originalItem && originalItem.id) || instanceId,
+        name: v3Entry.name,
+        category: v3Entry.blueprint === 'weapon' ? 'Weapon' : (v3Entry.blueprint === 'armor' ? ((v3Entry.armor && v3Entry.armor.armorType === 'Shield') ? 'Shield' : 'Armor') : ((v3Entry.item && /Potion|Scroll|Wand/i.test(v3Entry.item.subtype || '')) ? 'Consumable' : 'Wondrous Item')),
+        slot: (v3Entry.item && v3Entry.item.slot) || (v3Entry.blueprint === 'weapon' ? 'mainHand' : (v3Entry.blueprint === 'armor' ? ((v3Entry.armor && v3Entry.armor.armorType === 'Shield') ? 'offHand' : 'armor') : 'Slotless')),
+        weight: (originalItem && Number(originalItem.weight)) || 0,
+        cost: Number(v3Entry.gpValue ?? (v3Entry.item && v3Entry.item.price) ?? (originalItem && originalItem.cost)) || 0,
+        priceGp: Number(v3Entry.gpValue ?? (v3Entry.item && v3Entry.item.price) ?? (originalItem && originalItem.cost)) || 0,
+        material: v3Entry.material && v3Entry.material !== 'standard' ? v3Entry.material : null,
+        enhancementBonus: Number(v3Entry.enhancementBonus) || 0,
+        enhancements: Array.isArray(v3Entry.enhancements) ? v3Entry.enhancements.slice() : [],
+        effects: [],
+        ruleFlags: {},
+        tacticalBadges: Array.isArray(v3Entry.tacticalBadges) ? v3Entry.tacticalBadges.slice() : []
+      };
+
+      out.schemaVersion = 3;
+      out.customEntryId = instanceId;
+      out.name = v3Entry.name || out.name;
+      if (v3Entry.gpValue !== undefined) {
+        out.cost = Number(v3Entry.gpValue) || 0;
+        out.priceGp = out.cost;
+      } else if (v3Entry.item && v3Entry.item.price !== undefined) {
+        out.cost = Number(v3Entry.item.price) || 0;
+        out.priceGp = out.cost;
+      }
+      if (v3Entry.text) {
+        out.desc = v3Entry.text;
+        out.benefit = v3Entry.text;
+        out.description = v3Entry.text;
+      }
+      if (v3Entry.weapon && typeof v3Entry.weapon === 'object') {
+        const w = v3Entry.weapon;
+        const rollDmg = customEffects.find(e => e && e.type === 'roll' && (!e.kind || e.kind === 'Damage') && e.dice);
+        out.handedness = w.handedness || out.handedness;
+        out.critMin = Number(w.effectiveCritRange || w.baseCritRange) || out.critMin || 20;
+        out.critRange = out.critMin;
+        out.critMult = Number(w.critMultiplier) || out.critMult || 2;
+        out.dice = w.damageDice || (rollDmg && rollDmg.dice) || out.dice || out.weapon?.damageDice;
+        out.dmgType = w.dmgType || w.damageType || (rollDmg && rollDmg.dmgType) || out.dmgType || out.weapon?.dmgType;
+        out.weapon = Object.assign({}, out.weapon || {}, {
+          category: w.category || out.weapon?.category || 'Martial',
+          handedness: out.handedness || 'One-Handed',
+          damageDice: out.dice || '1d8',
+          dmgType: out.dmgType || 'Slashing',
+          baseCritRange: Number(w.baseCritRange) || out.critMin,
+          effectiveCritRange: out.critMin,
+          critMultiplier: out.critMult,
+          rangeIncrement: w.rangeIncrement != null ? w.rangeIncrement : (out.weapon?.rangeIncrement ?? null),
+          enhancementBonus: Number(v3Entry.enhancementBonus) || 0
+        });
+        out.weaponMeta = Object.assign({}, out.weaponMeta || {}, {
+          category: out.weapon.category,
+          handedness: out.weapon.handedness,
+          critMin: out.critMin,
+          critMult: out.critMult,
+          rangeIncrement: out.weapon.rangeIncrement
+        });
+      }
+      if (v3Entry.armor && typeof v3Entry.armor === 'object') {
+        const a = v3Entry.armor;
+        const enh = Number(v3Entry.enhancementBonus) || 0;
+        const baseArmorBonus = Number(a.armorBonus) || 0;
+        const totalAc = baseArmorBonus + enh;
+        const isShield = a.armorType === 'Shield' || out.category === 'Shield';
+        out.category = isShield ? 'Shield' : 'Armor';
+        out.acBonus = totalAc;
+        out.maxDex = a.maxDex;
+        out.checkPenalty = Number(a.armorCheckPenalty) || 0;
+        out.spellFailure = Number(a.arcaneSpellFailure) || 0;
+        out.armor = Object.assign({}, out.armor || {}, {
+          armorType: a.armorType || (isShield ? 'Shield' : 'Light'),
+          armorBonus: baseArmorBonus,
+          enhancementBonus: enh,
+          maxDex: a.maxDex,
+          armorCheckPenalty: out.checkPenalty,
+          arcaneSpellFailure: out.spellFailure
+        });
+        out.armorMeta = Object.assign({}, out.armorMeta || {}, {
+          armorType: out.armor.armorType,
+          acBonus: totalAc,
+          maxDex: a.maxDex,
+          acp: out.checkPenalty,
+          asf: out.spellFailure
+        });
+      }
+
+      out.effects = customEffects;
+      if (evalExtra.ruleFlags && typeof evalExtra.ruleFlags === 'object') {
+        out.ruleFlags = Object.assign({}, out.ruleFlags || {}, evalExtra.ruleFlags);
+      }
+      if (Array.isArray(evalExtra.tacticalBadges) && evalExtra.tacticalBadges.length > 0) {
+        out.tacticalBadges = Array.from(new Set((out.tacticalBadges || []).concat(evalExtra.tacticalBadges)));
+      }
+
+      if (doc) {
+        if (!doc.customEntries || typeof doc.customEntries !== 'object' || Array.isArray(doc.customEntries)) {
+          doc.customEntries = {};
+        }
+        doc.customEntries[instanceId] = v3Saved;
+      }
+      if (saveScope === 'campaign' && window.CharStore && window.CharStore.StudioBridge && typeof window.CharStore.StudioBridge.saveFromCrafter === 'function') {
+        window.CharStore.StudioBridge.saveFromCrafter(v3Saved, { saveScope: 'campaign', originalId: instanceId });
+      }
+      return out;
     }
 
     function openForgeForPoolItem(itemId) {
       const item = (character.gearPool || []).find(p => p && String(p.id) === String(itemId));
       if (!item) return;
       closeSlotEquipModal();
-      if (window.DnDUI && typeof window.DnDUI.openCompendiumDrawer === 'function') {
-        window.DnDUI.openCompendiumDrawer({
-          defaultTab: 'forge',
-          editMode: true,
-          forgeItem: item,
-          onSelect: (assembledItem) => applyForgedItemUpdate(item, null, assembledItem)
+      if (window.DnDUI && typeof window.DnDUI.openRuleCrafter === 'function') {
+        const { draft, kind } = buildItemRuleCrafterDraft(item);
+        window.DnDUI.openRuleCrafter({
+          entry: draft,
+          kind,
+          originalId: draft.id,
+          allowCharacterScope: true,
+          context: { allowCharacterScope: true, kind, originalName: item.name || '' },
+          onSave: (msg) => {
+            const craftedItem = convertV3CraftedEntryToInventoryItem(msg.entry, item, msg.saveScope);
+            if (craftedItem) applyForgedItemUpdate(item, null, craftedItem);
+          }
         });
       }
     }
@@ -6941,12 +7343,18 @@
       const poolMatch = (character.gearPool || []).find(p => p && String(p.name || '').toLowerCase().trim() === cleanSlotName);
       const sourceItem = poolMatch || slotData;
       closeSlotEquipModal();
-      if (window.DnDUI && typeof window.DnDUI.openCompendiumDrawer === 'function') {
-        window.DnDUI.openCompendiumDrawer({
-          defaultTab: 'forge',
-          editMode: true,
-          forgeItem: sourceItem,
-          onSelect: (assembledItem) => applyForgedItemUpdate(sourceItem, slotKey, assembledItem)
+      if (window.DnDUI && typeof window.DnDUI.openRuleCrafter === 'function') {
+        const { draft, kind } = buildItemRuleCrafterDraft(sourceItem);
+        window.DnDUI.openRuleCrafter({
+          entry: draft,
+          kind,
+          originalId: draft.id,
+          allowCharacterScope: true,
+          context: { allowCharacterScope: true, kind, slotKey, originalName: sourceItem.name || '' },
+          onSave: (msg) => {
+            const craftedItem = convertV3CraftedEntryToInventoryItem(msg.entry, sourceItem, msg.saveScope);
+            if (craftedItem) applyForgedItemUpdate(sourceItem, slotKey, craftedItem);
+          }
         });
       }
     }
@@ -6955,12 +7363,21 @@
     function openForgeForSpotlightItem(idx, isAi = false) {
       const item = isAi ? window._poolCurrentAiEntries?.[idx] : window._poolCurrentMatches?.[idx];
       if (!item) return;
-      if (window.DnDUI && typeof window.DnDUI.openCompendiumDrawer === 'function') {
-        window.DnDUI.openCompendiumDrawer({
-          defaultTab: 'forge',
-          editMode: false,
-          forgeItem: item,
-          onSelect: (assembledItem) => addV2ItemToCharacterGearPool(assembledItem)
+      if (window.DnDUI && typeof window.DnDUI.openRuleCrafter === 'function') {
+        const { draft, kind } = buildItemRuleCrafterDraft(item);
+        window.DnDUI.openRuleCrafter({
+          entry: draft,
+          kind,
+          originalId: draft.id,
+          allowCharacterScope: true,
+          context: { allowCharacterScope: true, kind, originalName: item.name || '' },
+          onSave: (msg) => {
+            const craftedItem = convertV3CraftedEntryToInventoryItem(msg.entry, null, msg.saveScope);
+            if (craftedItem) {
+              closeAddPoolItemModal();
+              addV2ItemToCharacterGearPool(craftedItem);
+            }
+          }
         });
       }
     }
@@ -6982,25 +7399,34 @@
       const wep = character.weapons.find(w => w.name === character.activeWeapon) || character.weapons[0];
       if (!wep) return;
       wep.activeModeId = (wep.activeModeId === modeId) ? null : modeId;
-      const dbWep = typeof findMasterItem === 'function' ? findMasterItem(wep.name) : null;
+      character.activeModes = character.activeModes || {};
+      character.activeModes[wep.id || wep.name] = wep.activeModeId;
+      const dbWep = typeof findMasterItem === 'function'
+        ? findMasterItem(wep.name)
+        : (window.SrdCompendium && typeof window.SrdCompendium.getByName === 'function' ? window.SrdCompendium.getByName(wep.name) : null);
       const modesList = (Array.isArray(wep.modes) && wep.modes.length > 0) ? wep.modes : (Array.isArray(dbWep?.modes) ? dbWep.modes : []);
       const chosenMode = modesList.find(m => (m.id || m.name) === wep.activeModeId);
-      if (chosenMode && Array.isArray(chosenMode.damageParts) && chosenMode.damageParts[0]?.dice) {
-        if (!Array.isArray(character.activeModifiers)) character.activeModifiers = [];
-        const modName = `${wep.name}: ${chosenMode.name}`;
-        let existingMod = character.activeModifiers.find(m => m.name === modName);
-        if (!existingMod) {
-          existingMod = {
+      const chosenRoll = chosenMode && Array.isArray(chosenMode.effects)
+        ? chosenMode.effects.find(e => e && e.type === 'roll' && (!e.kind || e.kind === 'Damage'))
+        : null;
+      const modeDice = (chosenRoll && chosenRoll.dice) || chosenMode?.dice || '';
+      const modeDmgType = (chosenRoll && chosenRoll.dmgType) || 'Energy';
+      if (chosenMode && modeDice) {
+        if (!Array.isArray(character.tacticalRiders)) character.tacticalRiders = [];
+        const modName = `${wep.name}: ${chosenMode.name || chosenMode.label}`;
+        let existingRider = character.tacticalRiders.find(m => m.name === modName);
+        if (!existingRider) {
+          existingRider = {
+            schemaVersion: 3,
+            id: chosenMode.id || ('rider_' + modName.toLowerCase().replace(/[^a-z0-9]+/g, '_')),
             name: modName,
             source: wep.name,
-            bonusAtk: 0,
-            dice: chosenMode.damageParts[0].dice,
-            type: chosenMode.damageParts[0].type || 'Energy',
-            active: true
+            active: true,
+            effects: [{ type: 'roll', kind: 'Damage', dice: modeDice, dmgType: modeDmgType }]
           };
-          character.activeModifiers.push(existingMod);
+          character.tacticalRiders.push(existingRider);
         } else {
-          existingMod.active = true;
+          existingRider.active = true;
         }
       }
       saveStateToStorage(false);
@@ -7174,11 +7600,12 @@
       ));
     }
 
-    // Boots of Speed (DMG p.248) grant the haste spell: its V2 effect (typed modifiers + ruleFlags) comes from the SRD record.
+    // Boots of Speed (DMG p.248) grant the haste spell: its V3 effect (effects[] + ruleFlags) comes from the SRD record.
     function getSrdHasteEffect() {
       const haste = (typeof SrdCompendium !== 'undefined' && SrdCompendium.getById) ? SrdCompendium.getById('spl-haste') : null;
       return {
-        modifiers: JSON.parse(JSON.stringify(haste?.modifiers || [])),
+        schemaVersion: 3,
+        effects: JSON.parse(JSON.stringify(haste?.effects || [])),
         ruleFlags: JSON.parse(JSON.stringify(haste?.ruleFlags || {}))
       };
     }
@@ -7547,14 +7974,15 @@
       } else if (opt.type === 'buff' && opt.buffName) {
         if (!Array.isArray(character.buffs)) character.buffs = [];
         character.buffs.push({
+          schemaVersion: 3,
           id: 'buff_' + Date.now(),
           name: opt.buffName,
           active: true,
-          modifiers: [
-            ...(Number(opt.bonusAtk) ? [{ target: 'attack.all', value: Number(opt.bonusAtk), formula: String(Number(opt.bonusAtk)), type: 'untyped', condition: null }] : []),
-            ...(Number(opt.bonusDmg) ? [{ target: 'damage.weapon', value: Number(opt.bonusDmg), formula: String(Number(opt.bonusDmg)), type: 'untyped', condition: null }] : [])
+          effects: [
+            ...(Number(opt.bonusAtk) ? [{ type: 'stat', targets: ['attack.all'], mode: 'flat', value: Number(opt.bonusAtk), btype: 'Untyped' }] : []),
+            ...(Number(opt.bonusDmg) ? [{ type: 'stat', targets: ['damage.weapon'], mode: 'flat', value: Number(opt.bonusDmg), btype: 'Untyped' }] : []),
+            ...(Number(opt.speedBonus) ? [{ type: 'stat', targets: ['speed.land'], mode: 'flat', value: Number(opt.speedBonus), btype: 'Untyped' }] : [])
           ],
-          speedBonus: opt.speedBonus || 0,
           duration: 1,
           durationText: '1 Round',
           source: item.name
@@ -8077,7 +8505,7 @@
     async function resetToCleanCharacter() {
       if ((await DnDUI.confirm('⚠️ Are you sure you want to reset the current character and start a fresh blank character?', { tone: 'danger' }))) {
         character = {
-          schemaVersion: "2.0",
+          schemaVersion: 3,
           name: "New Character",
           classes: "Fighter 1",
           race: "Human",
@@ -8088,13 +8516,12 @@
           hp: { current: 10, max: 10, temp: 0, nonlethal: 0 },
           acBreakdown: { armor: 0, shield: 0, natural: 0, deflection: 0, size: 0 },
           baseSaves: { fort: 2, ref: 0, will: 0 },
-          saveBonuses: { resistance: 0 },
           activeStance: "None",
           activeWeapon: "Longsword",
           activeGrip: "1-Hand",
           tactical: { powerAttack: 0, flanking: false, charge: false, higherGround: false },
           weapons: [{ name: "Longsword", grip: "1-Hand", dice: "1d8", critMin: 19, critMult: 2, dmgType: "Slashing" }],
-          activeModifiers: [],
+          tacticalRiders: [],
           spellcasting: { slots: [], knownSpells: [] },
           tomeOfBattle: { readiedManeuvers: [], stancesKnown: [] },
           skills: [],
@@ -8255,10 +8682,38 @@
         }
       });
       actionsApi.register('inventory:open-item-forge', (el, data, event) => {
-        if (typeof switchTab === 'function') switchTab('tab-database');
-        if (window.RuleMaster && typeof window.RuleMaster.switchInlineMode === 'function') {
-          window.RuleMaster.switchInlineMode('forge');
+        const qName = String((data && data.query) || document.getElementById('pool-modal-search')?.value || '').trim();
+        const catKey = _currentPoolCategoryFilter || 'all';
+        const bp = catKey === 'armor' ? 'armor' : ((catKey === 'wondrous' || catKey === 'potion' || catKey === 'crystal') ? 'wondrous' : 'weapon');
+        const kind = bp === 'wondrous' ? 'item' : bp;
+        if (window.DnDUI && typeof window.DnDUI.openRuleCrafter === 'function') {
+          const seedDraft = {
+            schemaVersion: 3,
+            blueprint: bp,
+            id: 'crafted_item_' + Date.now(),
+            name: qName || (bp === 'armor' ? 'Custom Armor' : (bp === 'wondrous' ? 'Custom Magic Item' : 'Custom Weapon')),
+            source: 'Homebrew',
+            item: bp === 'wondrous' ? { subtype: catKey === 'potion' ? 'Potion / Oil' : 'Wondrous Item', slot: 'Slotless', price: 0, casterLevel: 1 } : undefined,
+            effects: []
+          };
+          window.DnDUI.openRuleCrafter({
+            entry: seedDraft,
+            kind,
+            originalId: seedDraft.id,
+            allowCharacterScope: true,
+            context: { allowCharacterScope: true, kind, blueprint: bp },
+            onSave: (msg) => {
+              const craftedItem = convertV3CraftedEntryToInventoryItem(msg.entry, null, msg.saveScope);
+              if (craftedItem) {
+                closeAddPoolItemModal();
+                addV2ItemToCharacterGearPool(craftedItem);
+              }
+            }
+          });
+          return;
         }
+        if (typeof openRuleCrafterModal === 'function') openRuleCrafterModal();
+        else if (typeof switchTab === 'function') switchTab('tab-inventory');
       });
       actionsApi.register('inventory:add-ai-pool-item', (el, data, event) => {
         addAiItemToPoolAndDb(Number(data?.index) || 0, el);

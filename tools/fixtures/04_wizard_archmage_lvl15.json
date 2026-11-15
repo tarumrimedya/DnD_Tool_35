@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "name": "Malakor the Archmage",
   "race": "Human",
   "size": "Medium",
@@ -45,23 +45,55 @@
     "casterLevel": 15
   },
   "feats": [
-    { "id": "feat-spell-focus-evocation", "name": "Spell Focus (Evocation)", "type": "Feat", "active": true },
-    { "id": "feat-spell-focus-transmutation", "name": "Spell Focus (Transmutation)", "type": "Feat", "active": true },
-    { "id": "feat-skill-focus-spellcraft", "name": "Skill Focus (Spellcraft)", "type": "Feat", "active": true },
-    { "id": "feat-quicken-spell", "name": "Quicken Spell", "type": "Feat", "active": true }
+    {
+      "id": "feat-spell-focus-evocation",
+      "name": "Spell Focus (Evocation)",
+      "type": "Feat",
+      "active": true,
+      "schemaVersion": 3,
+      "effects": []
+    },
+    {
+      "id": "feat-spell-focus-transmutation",
+      "name": "Spell Focus (Transmutation)",
+      "type": "Feat",
+      "active": true,
+      "schemaVersion": 3,
+      "effects": []
+    },
+    {
+      "id": "feat-skill-focus-spellcraft",
+      "name": "Skill Focus (Spellcraft)",
+      "type": "Feat",
+      "active": true,
+      "schemaVersion": 3,
+      "effects": []
+    },
+    {
+      "id": "feat-quicken-spell",
+      "name": "Quicken Spell",
+      "type": "Feat",
+      "active": true,
+      "schemaVersion": 3,
+      "effects": []
+    }
   ],
   "specialAbilities": [
     {
       "id": "sa-high-arcana-mastery-of-shaping",
       "name": "High Arcana: Mastery of Shaping",
       "category": "Class Feature",
-      "type": "Class Feature"
+      "type": "Class Feature",
+      "schemaVersion": 3,
+      "effects": []
     },
     {
       "id": "sa-high-arcana-arcane-reach",
       "name": "High Arcana: Arcane Reach",
       "category": "Class Feature",
-      "type": "Class Feature"
+      "type": "Class Feature",
+      "schemaVersion": 3,
+      "effects": []
     }
   ],
   "bodySlots": {
@@ -72,10 +104,19 @@
       "category": "Head",
       "slot": "Head",
       "cost": 36000,
-      "modifiers": [
-        { "target": "ability.int", "value": 6, "type": "Enhancement" }
-      ],
-      "equipped": true
+      "equipped": true,
+      "schemaVersion": 3,
+      "effects": [
+        {
+          "type": "stat",
+          "targets": [
+            "ability.int"
+          ],
+          "btype": "Enhancement",
+          "mode": "flat",
+          "value": 6
+        }
+      ]
     },
     "bracers": {
       "id": "item-bracers-of-armor-5",
@@ -84,10 +125,19 @@
       "category": "Bracers",
       "slot": "Arms",
       "cost": 25000,
-      "modifiers": [
-        { "target": "ac.armor", "value": 5, "type": "Armor" }
-      ],
-      "equipped": true
+      "equipped": true,
+      "schemaVersion": 3,
+      "effects": [
+        {
+          "type": "stat",
+          "targets": [
+            "ac.armor"
+          ],
+          "btype": "Armor",
+          "mode": "flat",
+          "value": 5
+        }
+      ]
     },
     "shoulders": {
       "id": "item-cloak-of-resistance-4",
@@ -96,10 +146,19 @@
       "category": "Shoulders",
       "slot": "Shoulders",
       "cost": 16000,
-      "modifiers": [
-        { "target": "save.all", "value": 4, "type": "Resistance" }
-      ],
-      "equipped": true
+      "equipped": true,
+      "schemaVersion": 3,
+      "effects": [
+        {
+          "type": "stat",
+          "targets": [
+            "save.all"
+          ],
+          "btype": "Resistance",
+          "mode": "flat",
+          "value": 4
+        }
+      ]
     },
     "ring1": {
       "id": "item-ring-of-sustenance",
@@ -108,8 +167,9 @@
       "category": "Ring",
       "slot": "Ring",
       "cost": 2500,
-      "modifiers": [],
-      "equipped": true
+      "equipped": true,
+      "schemaVersion": 3,
+      "effects": []
     }
   },
   "weapons": [],
@@ -120,10 +180,35 @@
       "name": "Haste",
       "active": true,
       "durationCategory": "round",
-      "modifiers": [
-        { "target": "ac.dodge", "value": 1, "type": "Dodge" },
-        { "target": "save.ref", "value": 1, "type": "Dodge" },
-        { "target": "attack.all", "value": 1, "type": "Untyped" }
+      "schemaVersion": 3,
+      "effects": [
+        {
+          "type": "stat",
+          "targets": [
+            "ac.dodge"
+          ],
+          "btype": "Dodge",
+          "mode": "flat",
+          "value": 1
+        },
+        {
+          "type": "stat",
+          "targets": [
+            "save.ref"
+          ],
+          "btype": "Dodge",
+          "mode": "flat",
+          "value": 1
+        },
+        {
+          "type": "stat",
+          "targets": [
+            "attack.all"
+          ],
+          "btype": "Untyped",
+          "mode": "flat",
+          "value": 1
+        }
       ]
     },
     {
@@ -131,10 +216,31 @@
       "name": "Greater Heroism",
       "active": true,
       "durationCategory": "minute",
-      "tempHpFormula": "min(20, @cl)",
-      "modifiers": [
-        { "target": "attack.all", "value": 4, "type": "Morale" },
-        { "target": "save.all", "value": 4, "type": "Morale" }
+      "schemaVersion": 3,
+      "effects": [
+        {
+          "type": "stat",
+          "targets": [
+            "attack.all"
+          ],
+          "btype": "Morale",
+          "mode": "flat",
+          "value": 4
+        },
+        {
+          "type": "stat",
+          "targets": [
+            "save.all"
+          ],
+          "btype": "Morale",
+          "mode": "flat",
+          "value": 4
+        },
+        {
+          "type": "roll",
+          "kind": "Temp HP",
+          "tempHpFormula": "min(20, @cl)"
+        }
       ]
     },
     {
@@ -142,21 +248,93 @@
       "name": "Mind Blank",
       "active": true,
       "durationCategory": "day",
-      "modifiers": []
+      "schemaVersion": 3,
+      "effects": []
     }
   ],
   "spells": [
-    { "id": "spl-magic-missile", "name": "Magic Missile", "level": 1, "school": "Evocation", "prepared": 2 },
-    { "id": "spl-fireball", "name": "Fireball", "level": 3, "school": "Evocation", "prepared": 2 },
-    { "id": "spl-haste", "name": "Haste", "level": 3, "school": "Transmutation", "prepared": 1 },
-    { "id": "spl-dimension-door", "name": "Dimension Door", "level": 4, "school": "Conjuration", "prepared": 1 },
-    { "id": "spl-disintegrate", "name": "Disintegrate", "level": 6, "school": "Transmutation", "prepared": 1 },
-    { "id": "spl-greater-heroism", "name": "Greater Heroism", "level": 6, "school": "Enchantment", "prepared": 1 },
-    { "id": "spl-mind-blank", "name": "Mind Blank", "level": 8, "school": "Abjuration", "prepared": 1 }
+    {
+      "id": "spl-magic-missile",
+      "name": "Magic Missile",
+      "level": 1,
+      "school": "Evocation",
+      "prepared": 2,
+      "schemaVersion": 3,
+      "effects": []
+    },
+    {
+      "id": "spl-fireball",
+      "name": "Fireball",
+      "level": 3,
+      "school": "Evocation",
+      "prepared": 2,
+      "schemaVersion": 3,
+      "effects": []
+    },
+    {
+      "id": "spl-haste",
+      "name": "Haste",
+      "level": 3,
+      "school": "Transmutation",
+      "prepared": 1,
+      "schemaVersion": 3,
+      "effects": []
+    },
+    {
+      "id": "spl-dimension-door",
+      "name": "Dimension Door",
+      "level": 4,
+      "school": "Conjuration",
+      "prepared": 1,
+      "schemaVersion": 3,
+      "effects": []
+    },
+    {
+      "id": "spl-disintegrate",
+      "name": "Disintegrate",
+      "level": 6,
+      "school": "Transmutation",
+      "prepared": 1,
+      "schemaVersion": 3,
+      "effects": []
+    },
+    {
+      "id": "spl-greater-heroism",
+      "name": "Greater Heroism",
+      "level": 6,
+      "school": "Enchantment",
+      "prepared": 1,
+      "schemaVersion": 3,
+      "effects": []
+    },
+    {
+      "id": "spl-mind-blank",
+      "name": "Mind Blank",
+      "level": 8,
+      "school": "Abjuration",
+      "prepared": 1,
+      "schemaVersion": 3,
+      "effects": []
+    }
   ],
   "skills": [
-    { "name": "Spellcraft", "ability": "int", "ranks": 18, "classSkill": true },
-    { "name": "Concentration", "ability": "con", "ranks": 18, "classSkill": true },
-    { "name": "Knowledge (Arcana)", "ability": "int", "ranks": 18, "classSkill": true }
+    {
+      "name": "Spellcraft",
+      "ability": "int",
+      "ranks": 18,
+      "classSkill": true
+    },
+    {
+      "name": "Concentration",
+      "ability": "con",
+      "ranks": 18,
+      "classSkill": true
+    },
+    {
+      "name": "Knowledge (Arcana)",
+      "ability": "int",
+      "ranks": 18,
+      "classSkill": true
+    }
   ]
 }

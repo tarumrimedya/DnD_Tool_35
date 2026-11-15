@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "name": "Aurelia Dawnbringer",
   "race": "Human",
   "size": "Medium",
@@ -44,12 +44,36 @@
     "primaryClass": "Cleric",
     "castingAbility": "wis",
     "casterLevel": 9,
-    "domains": ["Healing", "Sun"]
+    "domains": [
+      "Healing",
+      "Sun"
+    ]
   },
   "feats": [
-    { "id": "feat-extra-turning", "name": "Extra Turning", "type": "Feat", "active": true },
-    { "id": "feat-empower-spell", "name": "Empower Spell", "type": "Feat", "active": true },
-    { "id": "feat-divine-metamagic", "name": "Divine Metamagic (Empower Spell)", "type": "Feat", "active": true }
+    {
+      "id": "feat-extra-turning",
+      "name": "Extra Turning",
+      "type": "Feat",
+      "active": true,
+      "schemaVersion": 3,
+      "effects": []
+    },
+    {
+      "id": "feat-empower-spell",
+      "name": "Empower Spell",
+      "type": "Feat",
+      "active": true,
+      "schemaVersion": 3,
+      "effects": []
+    },
+    {
+      "id": "feat-divine-metamagic",
+      "name": "Divine Metamagic (Empower Spell)",
+      "type": "Feat",
+      "active": true,
+      "schemaVersion": 3,
+      "effects": []
+    }
   ],
   "specialAbilities": [
     {
@@ -58,13 +82,17 @@
       "category": "Class Feature",
       "type": "Class Feature",
       "actionType": "standard",
-      "resources": [
+      "schemaVersion": 3,
+      "effects": [
         {
           "id": "res_turn_undead",
+          "type": "resource",
           "name": "Turn Undead Attempts",
-          "kind": "consume",
+          "resMode": "consume",
           "maxFormula": "3 + @chaMod + 4",
-          "recharge": { "period": "day" }
+          "recharge": {
+            "period": "day"
+          }
         }
       ]
     },
@@ -72,7 +100,9 @@
       "id": "sa-radiant-aura",
       "name": "Radiance & Empowered Healing",
       "category": "Class Feature",
-      "type": "Class Feature"
+      "type": "Class Feature",
+      "schemaVersion": 3,
+      "effects": []
     }
   ],
   "bodySlots": {
@@ -90,10 +120,17 @@
       "spellFailure": 35,
       "weight": 50,
       "cost": 2650,
-      "modifiers": [
-        { "target": "ac.armor", "value": 9, "type": "Armor" }
-      ],
-      "equipped": true
+      "equipped": true,
+      "schemaVersion": 3,
+      "armor": {
+        "armorType": "Heavy",
+        "armorBonus": 8,
+        "enhancementBonus": 1,
+        "maxDex": 1,
+        "armorCheckPenalty": -5,
+        "arcaneSpellFailure": 35
+      },
+      "effects": []
     },
     "offHand": {
       "id": "shd-plus1-heavy-steel-shield",
@@ -102,17 +139,23 @@
       "type": "Shield",
       "category": "Shield",
       "shieldBonus": 2,
-      "acBonus": 3,
       "enhancementBonus": 1,
       "acp": -1,
       "checkPenalty": -1,
       "spellFailure": 15,
       "weight": 15,
       "cost": 1170,
-      "modifiers": [
-        { "target": "ac.shield", "value": 3, "type": "Shield" }
-      ],
-      "equipped": true
+      "equipped": true,
+      "schemaVersion": 3,
+      "armor": {
+        "armorType": "Shield",
+        "armorBonus": 2,
+        "enhancementBonus": 1,
+        "maxDex": null,
+        "armorCheckPenalty": -1,
+        "arcaneSpellFailure": 15
+      },
+      "effects": []
     },
     "neck": {
       "id": "item-periapt-of-wisdom-2",
@@ -121,10 +164,19 @@
       "category": "Neck",
       "slot": "Neck",
       "cost": 4000,
-      "modifiers": [
-        { "target": "ability.wis", "value": 2, "type": "Enhancement" }
-      ],
-      "equipped": true
+      "equipped": true,
+      "schemaVersion": 3,
+      "effects": [
+        {
+          "type": "stat",
+          "targets": [
+            "ability.wis"
+          ],
+          "btype": "Enhancement",
+          "mode": "flat",
+          "value": 2
+        }
+      ]
     },
     "shoulders": {
       "id": "item-cloak-of-charisma-2",
@@ -133,10 +185,19 @@
       "category": "Shoulders",
       "slot": "Shoulders",
       "cost": 4000,
-      "modifiers": [
-        { "target": "ability.cha", "value": 2, "type": "Enhancement" }
-      ],
-      "equipped": true
+      "equipped": true,
+      "schemaVersion": 3,
+      "effects": [
+        {
+          "type": "stat",
+          "targets": [
+            "ability.cha"
+          ],
+          "btype": "Enhancement",
+          "mode": "flat",
+          "value": 2
+        }
+      ]
     },
     "ring1": {
       "id": "item-ring-of-protection-1",
@@ -145,10 +206,19 @@
       "category": "Ring",
       "slot": "Ring",
       "cost": 2000,
-      "modifiers": [
-        { "target": "ac.deflection", "value": 1, "type": "Deflection" }
-      ],
-      "equipped": true
+      "equipped": true,
+      "schemaVersion": 3,
+      "effects": [
+        {
+          "type": "stat",
+          "targets": [
+            "ac.deflection"
+          ],
+          "btype": "Deflection",
+          "mode": "flat",
+          "value": 1
+        }
+      ]
     },
     "mainHand": {
       "id": "wpn-plus1-heavy-mace",
@@ -164,13 +234,40 @@
       "critMult": 2,
       "dmgType": "Bludgeoning",
       "enhancementBonus": 1,
-      "modifiers": [
-        { "target": "attack.weapon", "value": 1, "type": "Enhancement" }
-      ],
-      "damageParts": [
-        { "dice": "1d8", "bonus": 1, "type": "Bludgeoning", "multiplyOnCrit": true, "onCritOnly": false, "source": "Base Weapon" }
-      ],
-      "equipped": true
+      "equipped": true,
+      "schemaVersion": 3,
+      "weapon": {
+        "category": "Simple",
+        "handedness": "One-Handed",
+        "damageDice": "1d8",
+        "dmgType": "Bludgeoning",
+        "baseCritRange": 20,
+        "critMultiplier": 2,
+        "enhancementBonus": 1,
+        "masterwork": true
+      },
+      "effects": [
+        {
+          "type": "stat",
+          "targets": [
+            "attack.weapon"
+          ],
+          "mode": "flat",
+          "value": 1,
+          "btype": "Enhancement",
+          "source": "Weapon Enhancement"
+        },
+        {
+          "type": "stat",
+          "targets": [
+            "damage.weapon"
+          ],
+          "mode": "flat",
+          "value": 1,
+          "btype": "Enhancement",
+          "source": "Weapon Enhancement"
+        }
+      ]
     }
   },
   "weapons": [
@@ -186,13 +283,40 @@
       "critMult": 2,
       "dmgType": "Bludgeoning",
       "enhancementBonus": 1,
-      "modifiers": [
-        { "target": "attack.weapon", "value": 1, "type": "Enhancement" }
-      ],
-      "damageParts": [
-        { "dice": "1d8", "bonus": 1, "type": "Bludgeoning", "multiplyOnCrit": true, "onCritOnly": false, "source": "Base Weapon" }
-      ],
-      "equipped": true
+      "equipped": true,
+      "schemaVersion": 3,
+      "weapon": {
+        "category": "Simple",
+        "handedness": "One-Handed",
+        "damageDice": "1d8",
+        "dmgType": "Bludgeoning",
+        "baseCritRange": 20,
+        "critMultiplier": 2,
+        "enhancementBonus": 1,
+        "masterwork": true
+      },
+      "effects": [
+        {
+          "type": "stat",
+          "targets": [
+            "attack.weapon"
+          ],
+          "mode": "flat",
+          "value": 1,
+          "btype": "Enhancement",
+          "source": "Weapon Enhancement"
+        },
+        {
+          "type": "stat",
+          "targets": [
+            "damage.weapon"
+          ],
+          "mode": "flat",
+          "value": 1,
+          "btype": "Enhancement",
+          "source": "Weapon Enhancement"
+        }
+      ]
     }
   ],
   "gearPool": [
@@ -205,7 +329,9 @@
       "qty": 1,
       "cost": 7500,
       "weight": 5,
-      "desc": "Grants 4 extra Turn Undead attempts per day."
+      "desc": "Grants 4 extra Turn Undead attempts per day.",
+      "schemaVersion": 3,
+      "effects": []
     },
     {
       "id": "wand-cure-light-wounds",
@@ -216,7 +342,9 @@
       "qty": 25,
       "cost": 750,
       "weight": 0,
-      "desc": "Heals 1d8+1 HP per charge."
+      "desc": "Heals 1d8+1 HP per charge.",
+      "schemaVersion": 3,
+      "effects": []
     }
   ],
   "buffs": [
@@ -225,9 +353,28 @@
       "name": "Protection from Evil",
       "active": true,
       "durationCategory": "minute",
-      "modifiers": [
-        { "target": "ac.deflection", "value": 2, "type": "Deflection", "condition": "vs. Evil" },
-        { "target": "save.all", "value": 2, "type": "Resistance", "condition": "vs. Evil" }
+      "schemaVersion": 3,
+      "effects": [
+        {
+          "type": "stat",
+          "targets": [
+            "ac.deflection"
+          ],
+          "btype": "Deflection",
+          "mode": "flat",
+          "value": 2,
+          "condition": "vs. Evil"
+        },
+        {
+          "type": "stat",
+          "targets": [
+            "save.all"
+          ],
+          "btype": "Resistance",
+          "mode": "flat",
+          "value": 2,
+          "condition": "vs. Evil"
+        }
       ]
     },
     {
@@ -235,15 +382,47 @@
       "name": "Divine Favor",
       "active": true,
       "durationCategory": "minute",
-      "modifiers": [
-        { "target": "attack.all", "value": 3, "type": "Luck" },
-        { "target": "damage.all", "value": 3, "type": "Luck" }
+      "schemaVersion": 3,
+      "effects": [
+        {
+          "type": "stat",
+          "targets": [
+            "attack.all"
+          ],
+          "btype": "Luck",
+          "mode": "flat",
+          "value": 3
+        },
+        {
+          "type": "stat",
+          "targets": [
+            "damage.all"
+          ],
+          "btype": "Luck",
+          "mode": "flat",
+          "value": 3
+        }
       ]
     }
   ],
   "skills": [
-    { "name": "Concentration", "ability": "con", "ranks": 12, "classSkill": true },
-    { "name": "Heal", "ability": "wis", "ranks": 12, "classSkill": true },
-    { "name": "Knowledge (Religion)", "ability": "int", "ranks": 12, "classSkill": true }
+    {
+      "name": "Concentration",
+      "ability": "con",
+      "ranks": 12,
+      "classSkill": true
+    },
+    {
+      "name": "Heal",
+      "ability": "wis",
+      "ranks": 12,
+      "classSkill": true
+    },
+    {
+      "name": "Knowledge (Religion)",
+      "ability": "int",
+      "ranks": 12,
+      "classSkill": true
+    }
   ]
 }

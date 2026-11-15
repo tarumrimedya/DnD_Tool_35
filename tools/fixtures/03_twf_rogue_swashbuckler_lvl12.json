@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "name": "Lyra Whisperblade",
   "race": "Elf",
   "size": "Medium",
@@ -40,23 +40,55 @@
     "swashbuckler": 8
   },
   "feats": [
-    { "id": "feat-weapon-finesse", "name": "Weapon Finesse", "type": "Feat", "active": true },
-    { "id": "feat-two-weapon-fighting", "name": "Two-Weapon Fighting", "type": "Feat", "active": true },
-    { "id": "feat-improved-two-weapon-fighting", "name": "Improved Two-Weapon Fighting", "type": "Feat", "active": true },
-    { "id": "feat-craven", "name": "Craven", "type": "Feat", "active": true }
+    {
+      "id": "feat-weapon-finesse",
+      "name": "Weapon Finesse",
+      "type": "Feat",
+      "active": true,
+      "schemaVersion": 3,
+      "effects": []
+    },
+    {
+      "id": "feat-two-weapon-fighting",
+      "name": "Two-Weapon Fighting",
+      "type": "Feat",
+      "active": true,
+      "schemaVersion": 3,
+      "effects": []
+    },
+    {
+      "id": "feat-improved-two-weapon-fighting",
+      "name": "Improved Two-Weapon Fighting",
+      "type": "Feat",
+      "active": true,
+      "schemaVersion": 3,
+      "effects": []
+    },
+    {
+      "id": "feat-craven",
+      "name": "Craven",
+      "type": "Feat",
+      "active": true,
+      "schemaVersion": 3,
+      "effects": []
+    }
   ],
   "specialAbilities": [
     {
       "id": "sa-sneak-attack",
       "name": "Sneak Attack +2d6",
       "category": "Class Feature",
-      "type": "Class Feature"
+      "type": "Class Feature",
+      "schemaVersion": 3,
+      "effects": []
     },
     {
       "id": "sa-uncanny-dodge",
       "name": "Uncanny Dodge",
       "category": "Class Feature",
-      "type": "Class Feature"
+      "type": "Class Feature",
+      "schemaVersion": 3,
+      "effects": []
     },
     {
       "id": "sa-swashbuckler-grace",
@@ -64,8 +96,17 @@
       "category": "Class Feature",
       "type": "Class Feature",
       "source": "Swashbuckler 2",
-      "modifiers": [
-        { "target": "save.ref", "value": 1, "type": "Competence" }
+      "schemaVersion": 3,
+      "effects": [
+        {
+          "type": "stat",
+          "targets": [
+            "save.ref"
+          ],
+          "btype": "Competence",
+          "mode": "flat",
+          "value": 1
+        }
       ]
     },
     {
@@ -74,8 +115,19 @@
       "category": "Class Feature",
       "type": "Class Feature",
       "source": "Swashbuckler 3",
-      "modifiers": [
-        { "target": "damage.melee", "formula": "max(0, @intMod)", "condition": "finessable_or_light", "type": "Untyped", "source": "Insightful Strike (INT)" }
+      "schemaVersion": 3,
+      "effects": [
+        {
+          "type": "stat",
+          "targets": [
+            "damage.melee"
+          ],
+          "btype": "Untyped",
+          "mode": "formula",
+          "formula": "max(0, @intMod)",
+          "condition": "finessable_or_light",
+          "source": "Insightful Strike (INT)"
+        }
       ]
     }
   ],
@@ -95,10 +147,17 @@
       "spellFailure": 10,
       "weight": 12.5,
       "cost": 2100,
-      "modifiers": [
-        { "target": "ac.armor", "value": 5, "type": "Armor" }
-      ],
-      "equipped": true
+      "equipped": true,
+      "schemaVersion": 3,
+      "armor": {
+        "armorType": "Light",
+        "armorBonus": 4,
+        "enhancementBonus": 1,
+        "maxDex": 6,
+        "armorCheckPenalty": 0,
+        "arcaneSpellFailure": 10
+      },
+      "effects": []
     },
     "mainHand": {
       "id": "wpn-plus2-keen-rapier",
@@ -116,16 +175,47 @@
       "critMult": 2,
       "dmgType": "Piercing",
       "enhancementBonus": 2,
-      "enhancements": ["enh-keen"],
-      "ruleFlags": { "finessable": true, "keen": true },
-      "modifiers": [
-        { "target": "attack.weapon", "value": 2, "type": "Enhancement" },
-        { "target": "damage.weapon", "value": 2, "type": "Enhancement" }
+      "enhancements": [
+        "enh-keen"
       ],
-      "damageParts": [
-        { "dice": "1d6", "bonus": 2, "type": "Piercing", "multiplyOnCrit": true, "onCritOnly": false, "source": "Base Weapon" }
-      ],
-      "equipped": true
+      "ruleFlags": {
+        "finessable": true,
+        "keen": true
+      },
+      "equipped": true,
+      "schemaVersion": 3,
+      "weapon": {
+        "category": "Martial",
+        "handedness": "One-Handed",
+        "damageDice": "1d6",
+        "dmgType": "Piercing",
+        "baseCritRange": 15,
+        "critMultiplier": 2,
+        "enhancementBonus": 2,
+        "masterwork": true
+      },
+      "effects": [
+        {
+          "type": "stat",
+          "targets": [
+            "attack.weapon"
+          ],
+          "mode": "flat",
+          "value": 2,
+          "btype": "Enhancement",
+          "source": "Weapon Enhancement"
+        },
+        {
+          "type": "stat",
+          "targets": [
+            "damage.weapon"
+          ],
+          "mode": "flat",
+          "value": 2,
+          "btype": "Enhancement",
+          "source": "Weapon Enhancement"
+        }
+      ]
     },
     "offHand": {
       "id": "wpn-plus1-flaming-short-sword",
@@ -144,16 +234,57 @@
       "critMult": 2,
       "dmgType": "Piercing",
       "enhancementBonus": 1,
-      "enhancements": ["enh-flaming"],
-      "ruleFlags": { "isLight": true, "finessable": true },
-      "modifiers": [
-        { "target": "attack.weapon", "value": 1, "type": "Enhancement" }
+      "enhancements": [
+        "enh-flaming"
       ],
-      "damageParts": [
-        { "dice": "1d6", "bonus": 1, "type": "Piercing", "multiplyOnCrit": true, "onCritOnly": false, "source": "Base Weapon" },
-        { "dice": "1d6", "bonus": 0, "type": "Fire", "multiplyOnCrit": false, "onCritOnly": false, "source": "Flaming" }
-      ],
-      "equipped": true
+      "ruleFlags": {
+        "isLight": true,
+        "finessable": true
+      },
+      "equipped": true,
+      "schemaVersion": 3,
+      "weapon": {
+        "category": "Martial",
+        "handedness": "Light",
+        "damageDice": "1d6",
+        "dmgType": "Piercing",
+        "baseCritRange": 19,
+        "critMultiplier": 2,
+        "enhancementBonus": 1,
+        "masterwork": true
+      },
+      "effects": [
+        {
+          "type": "roll",
+          "kind": "Damage",
+          "dice": "1d6",
+          "bonus": 0,
+          "dmgType": "Fire",
+          "multiplyOnCrit": false,
+          "critOnly": false,
+          "source": "Flaming"
+        },
+        {
+          "type": "stat",
+          "targets": [
+            "attack.weapon"
+          ],
+          "mode": "flat",
+          "value": 1,
+          "btype": "Enhancement",
+          "source": "Weapon Enhancement"
+        },
+        {
+          "type": "stat",
+          "targets": [
+            "damage.weapon"
+          ],
+          "mode": "flat",
+          "value": 1,
+          "btype": "Enhancement",
+          "source": "Weapon Enhancement"
+        }
+      ]
     }
   },
   "weapons": [
@@ -171,16 +302,47 @@
       "critMult": 2,
       "dmgType": "Piercing",
       "enhancementBonus": 2,
-      "enhancements": ["enh-keen"],
-      "ruleFlags": { "finessable": true, "keen": true },
-      "modifiers": [
-        { "target": "attack.weapon", "value": 2, "type": "Enhancement" },
-        { "target": "damage.weapon", "value": 2, "type": "Enhancement" }
+      "enhancements": [
+        "enh-keen"
       ],
-      "damageParts": [
-        { "dice": "1d6", "bonus": 2, "type": "Piercing", "multiplyOnCrit": true, "onCritOnly": false, "source": "Base Weapon" }
-      ],
-      "equipped": true
+      "ruleFlags": {
+        "finessable": true,
+        "keen": true
+      },
+      "equipped": true,
+      "schemaVersion": 3,
+      "weapon": {
+        "category": "Simple",
+        "handedness": "One-Handed",
+        "damageDice": "1d6",
+        "dmgType": "Piercing",
+        "baseCritRange": 15,
+        "critMultiplier": 2,
+        "enhancementBonus": 2,
+        "masterwork": true
+      },
+      "effects": [
+        {
+          "type": "stat",
+          "targets": [
+            "attack.weapon"
+          ],
+          "mode": "flat",
+          "value": 2,
+          "btype": "Enhancement",
+          "source": "Weapon Enhancement"
+        },
+        {
+          "type": "stat",
+          "targets": [
+            "damage.weapon"
+          ],
+          "mode": "flat",
+          "value": 2,
+          "btype": "Enhancement",
+          "source": "Weapon Enhancement"
+        }
+      ]
     },
     {
       "id": "wpn-plus1-flaming-short-sword",
@@ -197,24 +359,85 @@
       "critMult": 2,
       "dmgType": "Piercing",
       "enhancementBonus": 1,
-      "enhancements": ["enh-flaming"],
-      "ruleFlags": { "isLight": true, "finessable": true },
-      "modifiers": [
-        { "target": "attack.weapon", "value": 1, "type": "Enhancement" }
+      "enhancements": [
+        "enh-flaming"
       ],
-      "damageParts": [
-        { "dice": "1d6", "bonus": 1, "type": "Piercing", "multiplyOnCrit": true, "onCritOnly": false, "source": "Base Weapon" },
-        { "dice": "1d6", "bonus": 0, "type": "Fire", "multiplyOnCrit": false, "onCritOnly": false, "source": "Flaming" }
-      ],
-      "equipped": true
+      "ruleFlags": {
+        "isLight": true,
+        "finessable": true
+      },
+      "equipped": true,
+      "schemaVersion": 3,
+      "weapon": {
+        "category": "Simple",
+        "handedness": "Light",
+        "damageDice": "1d6",
+        "dmgType": "Piercing",
+        "baseCritRange": 19,
+        "critMultiplier": 2,
+        "enhancementBonus": 1,
+        "masterwork": true
+      },
+      "effects": [
+        {
+          "type": "roll",
+          "kind": "Damage",
+          "dice": "1d6",
+          "bonus": 0,
+          "dmgType": "Fire",
+          "multiplyOnCrit": false,
+          "critOnly": false,
+          "source": "Flaming"
+        },
+        {
+          "type": "stat",
+          "targets": [
+            "attack.weapon"
+          ],
+          "mode": "flat",
+          "value": 1,
+          "btype": "Enhancement",
+          "source": "Weapon Enhancement"
+        },
+        {
+          "type": "stat",
+          "targets": [
+            "damage.weapon"
+          ],
+          "mode": "flat",
+          "value": 1,
+          "btype": "Enhancement",
+          "source": "Weapon Enhancement"
+        }
+      ]
     }
   ],
   "gearPool": [],
   "buffs": [],
   "skills": [
-    { "name": "Tumble", "ability": "dex", "ranks": 15, "classSkill": true },
-    { "name": "Balance", "ability": "dex", "ranks": 5, "classSkill": true },
-    { "name": "Hide", "ability": "dex", "ranks": 12, "classSkill": true },
-    { "name": "Move Silently", "ability": "dex", "ranks": 12, "classSkill": true }
+    {
+      "name": "Tumble",
+      "ability": "dex",
+      "ranks": 15,
+      "classSkill": true
+    },
+    {
+      "name": "Balance",
+      "ability": "dex",
+      "ranks": 5,
+      "classSkill": true
+    },
+    {
+      "name": "Hide",
+      "ability": "dex",
+      "ranks": 12,
+      "classSkill": true
+    },
+    {
+      "name": "Move Silently",
+      "ability": "dex",
+      "ranks": 12,
+      "classSkill": true
+    }
   ]
 }

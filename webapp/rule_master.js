@@ -401,7 +401,7 @@ const RuleMaster = {
     };
   },
 
-  // Helper: Ensure any entry is upgraded to Canonical V2
+  // Helper: Ensure any external/AI entry is upgraded to Pure Canonical V3 (schemaVersion: 3)
   ensureV2(entry) {
     if (!entry || typeof entry !== 'object') return entry;
     const CANONICAL_UA_FLAWS = new Set([
@@ -410,26 +410,21 @@ const RuleMaster = {
       'unreactive', 'vulnerable'
     ]);
     let v2 = entry;
-    if (typeof window !== 'undefined' && window.SchemaMigrator && typeof window.SchemaMigrator.upgradeEntryToV2 === 'function') {
-      v2 = window.SchemaMigrator.upgradeEntryToV2(entry);
-    } else if (!(entry.schemaVersion === 2 && Array.isArray(entry.modifiers) && Array.isArray(entry.damageParts) && Array.isArray(entry.modes))) {
-      v2 = Object.assign({}, entry, { schemaVersion: 2 });
+    if (typeof window !== 'undefined' && window.SchemaMigrator && typeof window.SchemaMigrator.migrateEntryToV3 === 'function') {
+      v2 = window.SchemaMigrator.migrateEntryToV3(entry);
+    } else if (entry.schemaVersion !== 3) {
+      v2 = Object.assign({}, entry, { schemaVersion: 3 });
       if (!v2.id) {
         v2.id = `entry_${String(v2.name || 'item').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '')}`;
       }
-      if (!Array.isArray(v2.modifiers)) v2.modifiers = [];
-      if (!Array.isArray(v2.damageParts)) v2.damageParts = [];
+      if (!Array.isArray(v2.effects)) v2.effects = [];
       if (!Array.isArray(v2.modes)) v2.modes = [];
-      if (!Array.isArray(v2.defenses)) v2.defenses = [];
-      if (!Array.isArray(v2.resources)) v2.resources = [];
-      if (!Array.isArray(v2.grants)) v2.grants = [];
       if (!Array.isArray(v2.choices)) v2.choices = [];
       if (!v2.ruleFlags || typeof v2.ruleFlags !== 'object') v2.ruleFlags = {};
-      if (!Array.isArray(v2.tacticalBadges)) v2.tacticalBadges = [];
+      delete v2.modifiers;
+      delete v2.damageParts;
     }
-    if (!Array.isArray(v2.defenses)) v2.defenses = Array.isArray(entry.defenses) ? entry.defenses.slice() : [];
-    if (!Array.isArray(v2.resources)) v2.resources = Array.isArray(entry.resources) ? entry.resources.slice() : [];
-    if (!Array.isArray(v2.grants)) v2.grants = Array.isArray(entry.grants) ? entry.grants.slice() : [];
+    if (!Array.isArray(v2.effects)) v2.effects = [];
     if (!Array.isArray(v2.choices)) v2.choices = Array.isArray(entry.choices) ? entry.choices.slice() : [];
     if (entry.requires !== undefined && v2.requires === undefined) v2.requires = entry.requires;
     if (entry.overrides !== undefined && v2.overrides === undefined) v2.overrides = entry.overrides;
@@ -2084,8 +2079,8 @@ const RuleMaster = {
         if (m && m.name) names.add(m.name);
       });
     }
-    if (typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
-      window.BUNDLED_SRD_CORE_CATALOG.forEach(m => {
+    if (typeof window !== 'undefined' && window.SrdCompendium && typeof window.SrdCompendium.getAllLoaded === 'function') {
+      window.SrdCompendium.getAllLoaded().forEach(m => {
         if (m && m.name) names.add(m.name);
       });
     }
@@ -3384,277 +3379,18 @@ Schema:
     'agile shiled fighter': 'agile shield fighter',
     'agile shield figther': 'agile shield fighter',
 
-    // Verified Canonical V2 Entries
-    'cleave': {
-      schemaVersion: 2,
-      id: 'feat_cleave',
-      name: 'Cleave',
-      type: 'Feat',
-      slot: 'None',
-      source: 'PHB p.92',
-      prereq: 'Str 13, Power Attack.',
-      benefit: 'Prerequisites: Str 13, Power Attack. Benefit: If you deal a creature enough damage to make it drop (typically by dropping it to below 0 hit points or killing it), you get an immediate, extra melee attack against another creature in the immediate vicinity. The extra attack is with the same weapon and at the same bonus as the attack that dropped the previous creature. You can use this ability once per round.',
-      description: 'If you deal a creature enough damage to make it drop, you get an immediate, extra melee attack against another creature in the immediate vicinity.',
-      scope: 'Melee Only',
-      action: 'Free Action',
-      actionType: 'free',
-      duration: 'Passive',
-      role: 'General',
-      isFighterBonusFeat: true,
-      modifiers: [],
-      damageParts: [],
-      modes: [],
-      ruleFlags: { cleave: true },
-      tacticalBadges: ['Extra Melee Attack on Drop'],
-      weight: 0,
-      cost: 0
-    },
-    'great cleave': {
-      schemaVersion: 2,
-      id: 'feat_great_cleave',
-      name: 'Great Cleave',
-      type: 'Feat',
-      slot: 'None',
-      source: 'PHB p.94',
-      prereq: 'Str 13, Cleave, Power Attack, base attack bonus +4.',
-      benefit: 'Prerequisites: Str 13, Cleave, Power Attack, BAB +4. Benefit: This feat works like Cleave, except that there is no limit in the number of times you can use it per round.',
-      description: 'This feat works like Cleave, except that there is no limit in the number of times you can use it per round.',
-      scope: 'Melee Only',
-      action: 'Free Action',
-      actionType: 'free',
-      duration: 'Passive',
-      role: 'General',
-      isFighterBonusFeat: true,
-      modifiers: [],
-      damageParts: [],
-      modes: [],
-      ruleFlags: { greatCleave: true },
-      tacticalBadges: ['Unlimited Cleave/Round'],
-      weight: 0,
-      cost: 0
-    },
-    'power attack': {
-      schemaVersion: 2,
-      id: 'feat_power_attack',
-      name: 'Power Attack',
-      type: 'Feat',
-      slot: 'None',
-      source: 'PHB p.98',
-      prereq: 'Str 13.',
-      benefit: 'Prerequisites: Str 13. Benefit: On your action, before making attack rolls for a round, you may choose to subtract a number from all melee attack rolls and add the same number to all melee damage rolls. This number may not exceed your base attack bonus. If you attack with a two-handed weapon, add twice the number subtracted.',
-      description: 'Trade melee attack bonus for melee damage bonus (1:1 one-handed, 1:2 two-handed).',
-      scope: 'Melee Only',
-      action: 'Free Action',
-      actionType: 'free',
-      duration: '1 round',
-      role: 'General',
-      isFighterBonusFeat: true,
-      modifiers: [],
-      damageParts: [],
-      modes: [],
-      ruleFlags: { powerAttack: true },
-      tacticalBadges: ['1:1 / 1:2 Two-Handed Dmg'],
-      weight: 0,
-      cost: 0
-    },
-    'weapon finesse': {
-      schemaVersion: 2,
-      id: 'feat_weapon_finesse',
-      name: 'Weapon Finesse',
-      type: 'Feat',
-      slot: 'None',
-      source: 'PHB p.102',
-      prereq: 'Base attack bonus +1.',
-      benefit: 'Prerequisites: BAB +1. Benefit: With a light weapon, rapier, whip, or spiked chain made for a creature of your size category, you may use your Dexterity modifier instead of your Strength modifier on attack rolls. If you carry a shield, its armor check penalty applies to your attack rolls.',
-      description: 'Use Dexterity modifier instead of Strength modifier on attack rolls with light or finessable weapons.',
-      scope: 'Melee Only',
-      action: 'Passive',
-      actionType: 'passive',
-      duration: 'Continuous',
-      role: 'General',
-      isFighterBonusFeat: true,
-      modifiers: [],
-      damageParts: [],
-      modes: [],
-      ruleFlags: { weaponFinesse: true },
-      tacticalBadges: ['DEX to Melee Attack'],
-      weight: 0,
-      cost: 0
-    },
-    'shock trooper': {
-      schemaVersion: 2,
-      id: 'feat_shock_trooper',
-      name: 'Shock Trooper',
-      type: 'Feat',
-      slot: 'None',
-      source: 'Complete Warrior p.112',
-      prereq: 'Base attack bonus +6, Improved Bull Rush, Power Attack.',
-      benefit: 'Prerequisites: BAB +6, Improved Bull Rush, Power Attack. Tactical Feat enabling Directed Bull Rush, Domino Rush (free trip on bull rush collision), and Heedless Charge (divert Power Attack attack penalty to Armor Class instead of attack rolls during a charge with a two-handed weapon).',
-      description: 'Tactical feat with Directed Bull Rush, Domino Rush, and Heedless Charge.',
-      scope: 'Melee Only',
-      action: 'Passive / Tactical',
-      actionType: 'passive',
-      duration: 'Continuous',
-      role: 'General',
-      modifiers: [],
-      damageParts: [],
-      modes: [],
-      ruleFlags: { shockTrooper: true, heedlessCharge: true },
-      tacticalBadges: ['Heedless Charge (PA to AC)'],
-      weight: 0,
-      cost: 0
-    },
-    'shadow blade': {
-      schemaVersion: 2,
-      id: 'feat_shadow_blade',
-      name: 'Shadow Blade',
-      type: 'Feat',
-      slot: 'None',
-      source: 'ToB p.32',
-      prereq: 'One Shadow Hand stance.',
-      benefit: 'Prerequisites: One Shadow Hand stance. Benefit: While you are in a Shadow Hand stance and attack with one of the discipline\'s preferred weapons (dagger, short sword, sai, siangham, unarmed strike, spiked chain), you can add your Dexterity modifier as a bonus on damage rolls.',
-      description: 'Add Dexterity modifier to melee damage while in a Shadow Hand stance with discipline weapons.',
-      scope: 'Melee Only',
-      action: 'Passive',
-      actionType: 'passive',
-      duration: 'Continuous',
-      role: 'General',
-      modifiers: [],
-      damageParts: [],
-      modes: [],
-      ruleFlags: { shadowBlade: true },
-      tacticalBadges: ['+DEX to Damage (Shadow Hand)'],
-      weight: 0,
-      cost: 0
-    },
-    'leap attack': {
-      schemaVersion: 2,
-      id: 'feat_leap_attack',
-      name: 'Leap Attack',
-      type: 'Feat',
-      slot: 'None',
-      source: 'Complete Adventurer p.110',
-      prereq: 'Jump 8 ranks, Power Attack.',
-      benefit: 'Prerequisites: Jump 8 ranks, Power Attack. Benefit: If you cover at least 10 feet of horizontal distance with your jump, and you end your jump in an adjacent square to your target and attack as part of a charge, you deal double the normal extra damage from Power Attack (triple if using a two-handed weapon).',
-      description: 'Double or triple Power Attack damage on a jumping charge.',
-      scope: 'Melee Only',
-      action: 'Full-Round Action (Charge)',
-      actionType: 'full_round',
-      duration: 'Instantaneous',
-      role: 'General',
-      modifiers: [],
-      damageParts: [],
-      modes: [],
-      ruleFlags: { leapAttack: true },
-      tacticalBadges: ['x3 Two-Handed PA on Jump Charge'],
-      weight: 0,
-      cost: 0
-    },
-    'steadfast determination': {
-      schemaVersion: 2,
-      id: 'feat_steadfast_determination',
-      name: 'Steadfast Determination',
-      type: 'Feat',
-      slot: 'None',
-      source: "Player's Handbook II, p. 83",
-      prereq: 'Endurance.',
-      benefit: 'You can use your Constitution modifier in place of your Wisdom modifier on Will saves. You do not automatically fail Fortitude saves on a roll of natural 1.',
-      description: 'Your sheer force of will and physical toughness allow you to shrug off mental assaults and physical hardships alike. You can use your Constitution modifier in place of your Wisdom modifier on Will saves, and you do not automatically fail Fortitude saves on a roll of natural 1.',
-      scope: 'None / General',
-      action: 'Passive',
-      actionType: 'passive',
-      duration: 'Continuous',
-      role: 'General',
-      isFighterBonusFeat: true,
-      modifiers: [],
-      damageParts: [],
-      modes: [],
-      ruleFlags: { conToWillSave: true, noAutoFailFortSaveOnNat1: true },
-      tacticalBadges: ['CON to Will Saves', 'No Auto-Fail on Fort Nat 1'],
-      weight: 0,
-      cost: 0
-    },
-    'agile shield fighter': {
-      schemaVersion: 2,
-      id: 'feat_agile_shield_fighter',
-      name: 'Agile Shield Fighter',
-      type: 'Feat',
-      category: 'Fighter',
-      slot: 'None',
-      source: "Player's Handbook II, p. 74",
-      prereq: 'Shield Proficiency, Improved Shield Bash, Shield Specialization',
-      prerequisites: 'Shield Proficiency, Improved Shield Bash, Shield Specialization',
-      benefit: 'When making a shield bash and armed strike attack as part of a full attack action, you take a -2 penalty on each attack. These penalties replace the normal ones you incur for fighting with two weapons.',
-      description: 'You are skilled in combining your shield bash attack with an armed strike. When you use your shield in unison with a weapon, your training allows you to score telling blows with both.\n\nPrerequisites: Proficiency with shields, Improved Shield Bash, Shield Specialization.\n\nBenefit: When making a shield bash and armed strike attack as part of a full attack action, you take a -2 penalty on each attack. These penalties replace the normal ones you incur for fighting with two weapons.\n\nSpecial: A fighter can select Agile Shield Fighter as one of his fighter bonus feats.',
-      special: 'A fighter can select Agile Shield Fighter as one of his fighter bonus feats.',
-      scope: 'Melee Only',
-      action: 'Full-Round Action',
-      actionType: 'full_round',
-      duration: 'Continuous',
-      role: 'Fighter',
-      isFighterBonusFeat: true,
-      modifiers: [],
-      damageParts: [],
-      modes: [],
-      ruleFlags: { agileShieldFighter: true },
-      tacticalBadges: ['-2/-2 Shield Bash + Weapon Full Attack (Replaces TWF Penalty)'],
-      weight: 0,
-      cost: 0
-    },
-    'haste': {
-      schemaVersion: 2,
-      id: 'spell_haste',
-      name: 'Haste',
-      type: 'Spell',
-      slot: 'None',
-      source: 'PHB p.239',
-      level: 3,
-      school: 'Transmutation',
-      action: '1 standard action',
-      actionType: 'standard',
-      duration: '1 round/level',
-      range: 'Close (25 ft. + 5 ft./2 levels)',
-      benefit: 'Targets receive +1 attack bonus, +1 dodge AC, +1 Reflex save, +30 ft enhancement bonus to base speed, and 1 extra attack when making a full attack.',
-      description: 'The transmuted creatures move and act more quickly than normal, gaining +1 attack, +1 dodge AC/Reflex, +30 ft speed, and 1 extra full-attack strike.',
-      scope: 'All Attacks',
-      modifiers: [
-        { target: 'attack.all', value: 1, type: 'Untyped', condition: null },
-        { target: 'ac.dodge', value: 1, type: 'Dodge', condition: null },
-        { target: 'save.ref', value: 1, type: 'Dodge', condition: null },
-        { target: 'speed.land', value: 30, type: 'Enhancement', condition: null }
-      ],
-      damageParts: [],
-      modes: [],
-      ruleFlags: { hasteExtraAttack: true },
-      tacticalBadges: ['+1 Extra Full Attack', '+30 ft Speed'],
-      weight: 0,
-      cost: 0
-    },
-    'mountain hammer': {
-      schemaVersion: 2,
-      id: 'man_mountain_hammer',
-      name: 'Mountain Hammer',
-      type: 'Maneuver',
-      slot: 'None',
-      source: 'ToB p.84',
-      level: 2,
-      discipline: 'Stone Dragon',
-      action: '1 standard action',
-      actionType: 'standard',
-      duration: 'Instantaneous',
-      benefit: 'Stone Dragon (Strike). As part of this maneuver, you make a single melee attack. If your attack hits, you deal an extra 2d6 points of damage and your attack automatically overcomes damage reduction and hardness.',
-      description: 'Deal +2d6 damage and automatically bypass all DR and hardness.',
-      scope: 'Melee Only',
-      modifiers: [],
-      damageParts: [
-        { dice: '2d6', bonus: 0, type: 'Untyped', multiplyOnCrit: false, onCritOnly: false, source: 'Mountain Hammer' }
-      ],
-      modes: [],
-      ruleFlags: { ignoresDr: true, ignoresHardness: true },
-      tacticalBadges: ['Bypass All DR & Hardness'],
-      weight: 0,
-      cost: 0
-    }
+    // Canonical Name Aliases (resolved directly from Pure V3 SrdCompendium)
+    'cleave': 'Cleave',
+    'great cleave': 'Great Cleave',
+    'power attack': 'Power Attack',
+    'weapon finesse': 'Weapon Finesse',
+    'shock trooper': 'Shock Trooper',
+    'shadow blade': 'Shadow Blade',
+    'leap attack': 'Leap Attack',
+    'steadfast determination': 'Steadfast Determination',
+    'agile shield fighter': 'Agile Shield Fighter',
+    'haste': 'Haste',
+    'mountain hammer': 'Mountain Hammer'
   },
 
   setQueryAndSearch(term, categoryHint = 'Feat') {
@@ -4282,23 +4018,11 @@ Return valid JSON only matching:
       return { exists: true, inMasterDb: false, inCoreCompendium: true, masterDbIndex: -1, sourceLabel: 'Site V2 Core Library' };
     }
 
-    // 4. Check BUNDLED_TOB_MANEUVERS_CATALOG & BUNDLED_SRD_CORE_CATALOG
-    if (typeof window !== 'undefined' && Array.isArray(window.BUNDLED_TOB_MANEUVERS_CATALOG)) {
-      const tobMatch = window.BUNDLED_TOB_MANEUVERS_CATALOG.some(e => e && ((cleanName && (e.name || '').toLowerCase().trim() === cleanName) || (cleanId && (e.id || '').toLowerCase().trim() === cleanId)));
-      if (tobMatch) {
-        return { exists: true, inMasterDb: false, inCoreCompendium: true, masterDbIndex: -1, sourceLabel: 'Site V2 ToB Library' };
-      }
-    }
-    if (typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
-      const coreMatch = window.BUNDLED_SRD_CORE_CATALOG.some(e => e && ((cleanName && (e.name || '').toLowerCase().trim() === cleanName) || (cleanId && (e.id || '').toLowerCase().trim() === cleanId)));
-      if (coreMatch) {
-        return { exists: true, inMasterDb: false, inCoreCompendium: true, masterDbIndex: -1, sourceLabel: 'Site V2 SRD Core' };
-      }
-      if (cleanName) {
-        const baseMatch = this.findBaseItemInSrdCore(cleanName);
-        if (baseMatch && (baseMatch.name || '').toLowerCase().trim() === cleanName) {
-          return { exists: true, inMasterDb: false, inCoreCompendium: true, masterDbIndex: -1, sourceLabel: 'Site V2 SRD Core' };
-        }
+    // 4. Check Base Item Match in SrdCompendium
+    if (cleanName) {
+      const baseMatch = this.findBaseItemInSrdCore(cleanName);
+      if (baseMatch && (baseMatch.name || '').toLowerCase().trim() === cleanName) {
+        return { exists: true, inMasterDb: false, inCoreCompendium: true, masterDbIndex: -1, sourceLabel: 'SRD V3 Compendium' };
       }
     }
 
@@ -4406,22 +4130,10 @@ Return valid JSON only matching:
       return [markSiteDb(this.canonicalDictionary[cleanKey], 'Site V2 Core Library')];
     }
 
-    // 5. Check BUNDLED_TOB_MANEUVERS_CATALOG & BUNDLED_SRD_CORE_CATALOG
-    if (typeof window !== 'undefined' && Array.isArray(window.BUNDLED_TOB_MANEUVERS_CATALOG)) {
-      const tobMatch = window.BUNDLED_TOB_MANEUVERS_CATALOG.find(e => e && ((e.name || '').toLowerCase().trim() === cleanKey || (e.id || '').toLowerCase().trim() === cleanKey));
-      if (tobMatch) {
-        return [markSiteDb(tobMatch, 'Site V2 ToB Library')];
-      }
-    }
-    if (typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
-      const coreExact = window.BUNDLED_SRD_CORE_CATALOG.find(e => e && ((e.name || '').toLowerCase().trim() === cleanKey || (e.id || '').toLowerCase().trim() === cleanKey));
-      if (coreExact) {
-        return [markSiteDb(coreExact, 'Site V2 SRD Core')];
-      }
-      const baseMatch = this.findBaseItemInSrdCore(cleanKey);
-      if (baseMatch && (baseMatch.name || '').toLowerCase().trim() === cleanKey) {
-        return [markSiteDb(this.normalizeEntry(baseMatch), 'Site V2 SRD Core')];
-      }
+    // 5. Check Base Item Fallback in SrdCompendium
+    const baseMatch = this.findBaseItemInSrdCore(cleanKey);
+    if (baseMatch && (baseMatch.name || '').toLowerCase().trim() === cleanKey) {
+      return [markSiteDb(this.normalizeEntry(baseMatch), 'SRD V3 Compendium')];
     }
 
     return [];
@@ -5484,7 +5196,7 @@ Return valid JSON only matching:
       return window.findBaseItemInSrdCore(rawName);
     }
 
-    const catalog = (typeof window !== 'undefined' ? window.BUNDLED_SRD_CORE_CATALOG : null) || [];
+    const catalog = (typeof window !== 'undefined' && window.SrdCompendium && typeof window.SrdCompendium.getAllLoaded === 'function' ? window.SrdCompendium.getAllLoaded() : null) || [];
     if (!Array.isArray(catalog) || catalog.length === 0) return null;
 
     const exact = catalog.find(c => (c.name || '').toLowerCase() === cleaned);

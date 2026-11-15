@@ -8969,7 +8969,32 @@
         4
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-rnl",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-rnl-br",
+            "condKind": "situational",
+            "condText": "vs. Fey Spell-Like Abilities",
+            "effects": [
+              {
+                "id": "ef-rnl-sv",
+                "type": "stat",
+                "targets": [
+                  "save.all"
+                ],
+                "mode": "flat",
+                "value": 4,
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "Starting at 4th level, a druid gains a +4 bonus on saving throws against the spell-like abilities of fey.",
     "text": "Starting at 4th level, a druid gains a +4 bonus on saving throws against the spell-like abilities of fey.",
     "tags": [
@@ -8987,7 +9012,26 @@
     "featKind": "classAbility",
     "abilityType": "ex",
     "associations": [],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-opp-r",
+        "type": "resource",
+        "name": "Opportunist AoO",
+        "varKey": "opportunist_aoo",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 1,
+        "reset": "perRound"
+      },
+      {
+        "id": "ef-opp",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "opportunistAoO",
+        "label": "1/Round Make AoO Against Foe Just Struck for Melee Damage by Another",
+        "text": "1/Round Make AoO Against Foe Just Struck for Melee Damage by Another"
+      }
+    ],
     "shortDescription": "Once per round, the rogue can make an attack of opportunity against an opponent who has just been struck for damage in melee by another character. This attack counts as the rogue’s attack of opportunity for that round.…",
     "text": "Once per round, the rogue can make an attack of opportunity against an opponent who has just been struck for damage in melee by another character. This attack counts as the rogue's attack of opportunity for that round. Even a rogue with the Combat Reflexes feat can't use the opportunist ability more than once per round.",
     "tags": [
@@ -9010,7 +9054,19 @@
         1
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-enh-arr",
+        "type": "stat",
+        "targets": [
+          "atk.ranged",
+          "dmg.ranged"
+        ],
+        "mode": "formula",
+        "formula": "1 + floor((@level - 1) / 2)",
+        "btype": "Enhancement"
+      }
+    ],
     "shortDescription": "At 1st level, every nonmagical arrow an arcane archer nocks and lets fly becomes magical, gaining a +1 enhancement bonus. Unlike magic weapons created by normal means, the archer need not spend experience points or gold…",
     "text": "At 1st level, every nonmagical arrow an arcane archer nocks and lets fly becomes magical, gaining a +1 enhancement bonus. Unlike magic weapons created by normal means, the archer need not spend experience points or gold pieces to accomplish this task. However, an archer’s magic arrows only function for her. For every two levels the character advances past 1st level in the prestige class, the magic arrows she creates gain +1 greater potency (+1 at 1st level, +2 at 3rd level, +3 at 5th level, +4 at 7th level, and +5 at 9th level).",
     "tags": [
@@ -9033,7 +9089,32 @@
         9
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-gwf-mb",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-gwf-mb-br",
+            "condKind": "wieldingChosenWeapon",
+            "condText": "",
+            "effects": [
+              {
+                "id": "ef-gwf-mb-a",
+                "type": "stat",
+                "targets": [
+                  "atk.weapon"
+                ],
+                "mode": "flat",
+                "value": 1,
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "Choose one type of weapon for which you have already selected Weapon Focus. You can also choose unarmed strike or grapple as your weapon for purposes of this feat. Prerequisites Proficiency with selected weapon, Weapon…",
     "text": "Choose one type of weapon for which you have already selected Weapon Focus. You can also choose unarmed strike or grapple as your weapon for purposes of this feat.\n\nPrerequisites\n\nProficiency with selected weapon, Weapon Focus with selected weapon, Fighter level 8th.\n\nBenefit\n\nYou gain a +1 bonus on all attack rolls you make using the selected weapon. This bonus stacks with other bonuses on attack rolls, including the one from Weapon Focus.\n\nSpecial\n\nYou can gain Greater Weapon Focus multiple times. Its effects do not stack. Each time you take the feat, it applies to a new type of weapon.\n\nA fighter must have Greater Weapon Focus with a given weapon to gain the Greater Weapon Specialization feat for that weapon.\n\nA fighter may select Greater Weapon Focus as one of his fighter bonus feats.\n\nInformation\n\nThis feat is automatically applied to Mind Blade attacks created by Mind Blade ability.",
     "tags": [
@@ -9056,7 +9137,27 @@
         3
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-isa-r",
+        "type": "resource",
+        "name": "Impromptu Sneak Attack",
+        "varKey": "impromptu_sneak_attack",
+        "resMode": "spend",
+        "scaling": "formula",
+        "max": 1,
+        "maxFormula": "max(1, floor((@level + 1) / 4))",
+        "reset": "perDay"
+      },
+      {
+        "id": "ef-isa",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "impromptuSneakAttack",
+        "label": "Declare Attack to Be a Sneak Attack (Target Loses Dex to AC)",
+        "text": "Declare Attack to Be a Sneak Attack (Target Loses Dex to AC)"
+      }
+    ],
     "shortDescription": "Beginning at 3rd level, once per day an arcane trickster can declare one melee or ranged attack he makes to be a sneak attack (the target can be no more than 30 feet distant if the impromptu sneak attack is a ranged att…",
     "text": "Beginning at 3rd level, once per day an arcane trickster can declare one melee or ranged attack he makes to be a sneak attack (the target can be no more than 30 feet distant if the impromptu sneak attack is a ranged attack). The target of an impromptu sneak attack loses any Dexterity bonus to AC, but only against that attack. The power can be used against any target, but creatures that are not subject to critical hits take no extra damage (though they still lose any Dexterity bonus to AC against the attack).\n\nAt 7th level, an arcane trickster can use this ability twice per day.",
     "tags": [
@@ -9079,7 +9180,32 @@
         3
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-cab-end",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-cab-end-br",
+            "condKind": "situational",
+            "condText": "vs. Nonlethal Swim, Forced March, Starvation, Thirst, Hot/Cold",
+            "effects": [
+              {
+                "id": "ef-cab-end-s",
+                "type": "stat",
+                "targets": [
+                  "save.fort"
+                ],
+                "mode": "flat",
+                "value": 4,
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "Benefit You gain a +4 bonus on the following checks and saves: Swim checks made to resist nonlethal damage, Constitution checks made to continue running, Constitution checks made to avoid nonlethal damage from a forced…",
     "text": "Benefit\n\nYou gain a +4 bonus on the following checks and saves: Swim checks made to resist nonlethal damage, Constitution checks made to continue running, Constitution checks made to avoid nonlethal damage from a forced march, Constitution checks made to hold your breath, Constitution checks made to avoid nonlethal damage from starvation or thirst, Fortitude saves made to avoid nonlethal damage from hot or cold environments, and Fortitude saves made to resist damage from suffocation. Also, you may sleep in light or medium armor without becoming fatigued.\n\nNormal\n\nA character without this feat who sleeps in medium or heavier armor is automatically fatigued the next day.\n\nSpecial\n\nA ranger automatically gains Endurance as a bonus feat at 3rd level. He need not select it.",
     "tags": [
@@ -9148,7 +9274,37 @@
         20
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-fe",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-fe-br",
+            "condKind": "situational",
+            "condText": "vs. Favored Enemy",
+            "effects": [
+              {
+                "id": "ef-fe-d",
+                "type": "stat",
+                "targets": [
+                  "dmg.all",
+                  "skill.bluff",
+                  "skill.listen",
+                  "skill.sense-motive",
+                  "skill.spot",
+                  "skill.survival"
+                ],
+                "mode": "flat",
+                "value": 2,
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "At 1st level, a ranger may select a type of creature from among those given on Table: Ranger Favored Enemies. The ranger gains a +2 bonus on Bluff, Listen, Sense Motive, Spot, and Survival checks when using these skills…",
     "text": "At 1st level, a ranger may select a type of creature from among those given on Table: Ranger Favored Enemies. The ranger gains a +2 bonus on Bluff, Listen, Sense Motive, Spot, and Survival checks when using these skills against creatures of this type. Likewise, he gets a +2 bonus on weapon damage rolls against such creatures.\n\nAt 5th level and every five levels thereafter (10th, 15th, and 20th level), the ranger may select an additional favored enemy from those given on the table. In addition, at each such interval, the bonus against any one favored enemy (including the one just selected, if so desired) increases by 2.\n\nIf the ranger chooses humanoids or outsiders as a favored enemy, he must also choose an associated subtype, as indicated on the table. If a specific creature falls into more than one category of favored enemy, the ranger's bonuses do not stack; he simply uses whichever bonus is higher.\n\nSet Level custom attribute to 2 if you have improved this favored enemy type once, to 3 if twice.\n\nTable: Ranger Favored Enemies\n\n|\n\nType (Subtype)\n\n|\n\nType (Subtype)\n\n|\n\nAberration\n\nAnimal\n\nConstruct\n\nDragon\n\nElemental\n\nFey\n\nGiant\n\nHumanoid - Aquatic\n\nHumanoid - Dwarf\n\nHumanoid - Elf\n\nHumanoid - Gnoll\n\nHumanoid - Gnome\n\nHumanoid - Goblinoid\n\nHumanoid - Halfling\n\nFavored Enemy (Humanoid - Human)\n\nHumanoid - Orc\n\n|\n\nHumanoid - Reptilian\n\nMagical Beast\n\nMonstrous Humanoid\n\nOoze\n\nOutsider - Air\n\nOutsider - Chaotic\n\nOutsider - Earth\n\nOutsider - Fire\n\nOutsider - Good\n\nOutsider - Lawful\n\nOutsider - Native\n\nOutsider - Water\n\nPlant\n\nUndead\n\nVermin\n\n|",
     "tags": [
@@ -9166,7 +9322,20 @@
     "featKind": "classAbility",
     "abilityType": "ex",
     "associations": [],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-arcf",
+        "type": "roll",
+        "kind": "Damage",
+        "count": 1,
+        "die": "d6",
+        "flat": 0,
+        "dmgType": "Arcane Energy",
+        "scaling": "formula",
+        "crit": "normal",
+        "dice": "(@spellLevel)d6 + @level * 1d6"
+      }
+    ],
     "shortDescription": "School miscellaneous; Level Sorcerer 9, Wizard 9; Saving Throw none; Spell Resistance no Description The archmage gains the ability to change arcane spell energy into arcane fire, manifesting it as a bolt of raw magical…",
     "text": "School miscellaneous;\nLevel Sorcerer 9, Wizard 9;\n\nSaving Throw none; Spell Resistance no\n\nDescription\n\nThe archmage gains the ability to change arcane spell energy into arcane fire, manifesting it as a bolt of raw magical energy. The bolt is a ranged touch attack with long range (400 feet + 40 feet/level of archmage) that deals 1d6 points of damage per class level of the archmage plus 1d6 points of damage per level of the spell used to create the effect. This ability costs one 9th-level spell slot.",
     "tags": [
@@ -9197,7 +9366,16 @@
         1
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "cab-tower-shield-proficiency-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "tower-shield-proficiency",
+        "label": "Tower Shield Proficiency",
+        "text": "You can use a tower shield and suffer only the standard penalties.When you are using a shield with which you are not proficient, you take the shield’s armor check penalty on attack"
+      }
+    ],
     "shortDescription": "You can use a tower shield and suffer only the standard penalties.When you are using a shield with which you are not proficient, you take the shield’s armor check penalty on attack rolls and on all skill checks that inv…",
     "text": "You can use a tower shield and suffer only the standard penalties.When you are using a shield with which you are not proficient, you take the shield’s armor check penalty on attack rolls and on all skill checks that involve moving, including Ride checks.",
     "tags": [
@@ -9333,7 +9511,16 @@
         1
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "cab-armor-proficiency-heavy-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "armor-proficiency-heavy",
+        "label": "Armor Proficiency (Heavy)",
+        "text": "When you wear a type of armor with which you are proficient, the armor check penalty for that armor applies only to Balance, Climb, Escape Artist, Hide, Jump, Move Silently, Sleigh"
+      }
+    ],
     "shortDescription": "When you wear a type of armor with which you are proficient, the armor check penalty for that armor applies only to Balance, Climb, Escape Artist, Hide, Jump, Move Silently, Sleight of Hand, and Tumble checks.",
     "text": "When you wear a type of armor with which you are proficient, the armor check penalty for that armor applies only to Balance, Climb, Escape Artist, Hide, Jump, Move Silently, Sleight of Hand, and Tumble checks.",
     "tags": [
@@ -9409,7 +9596,32 @@
         2
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-asn-psn",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-asn-psn-br",
+            "condKind": "situational",
+            "condText": "vs. Poison",
+            "effects": [
+              {
+                "id": "ef-asn-psn-s",
+                "type": "stat",
+                "targets": [
+                  "save.fort"
+                ],
+                "mode": "formula",
+                "formula": "floor(@level / 2)",
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "The assassin gains a natural saving throw bonus to all poisons gained at 2nd level that increases by +1 for every two additional levels the assassin gains.",
     "text": "The assassin gains a natural saving throw bonus to all poisons gained at 2nd level that increases by +1 for every two additional levels the assassin gains.",
     "tags": [
@@ -9432,7 +9644,16 @@
         6
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "cab-remove-disease-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "remove-disease",
+        "label": "Remove Disease",
+        "text": "A paladin can produce a remove disease effect, as the spell, once per week. She can use this ability one additional time per week for every three levels after 6th (twice per week a"
+      }
+    ],
     "shortDescription": "A paladin can produce a remove disease effect, as the spell, once per week. She can use this ability one additional time per week for every three levels after 6th (twice per week at 9th, three times at 12th, and so fort…",
     "text": "A paladin can produce a remove disease effect, as the spell, once per week. She can use this ability one additional time per week for every three levels after 6th (twice per week at 9th, three times at 12th, and so forth).",
     "tags": [
@@ -9552,7 +9773,16 @@
         4
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-kistrike",
+        "type": "attack",
+        "attackMode": "drBypass",
+        "appliesToWeapon": "unarmed",
+        "drBypassList": "magic, lawful, adamantine",
+        "enhEquivalent": 0
+      }
+    ],
     "shortDescription": "At 4th level, a monk’s unarmed attacks are empowered with ki. Her unarmed attacks are treated as magic weapons for the purpose of dealing damage to creatures with damage reduction. Ki strike improves with the character’…",
     "text": "At 4th level, a monk's unarmed attacks are empowered with ki. Her unarmed attacks are treated as magic weapons for the purpose of dealing damage to creatures with damage reduction. Ki strike improves with the character's monk level. At 10th level, her unarmed attacks are also treated as lawful weapons for the purpose of dealing damage to creatures with damage reduction. At 16th level, her unarmed attacks are treated as adamantine weapons for the purpose of dealing damage to creatures with damage reduction and bypassing hardness.",
     "tags": [
@@ -9638,7 +9868,16 @@
         1
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "cab-detect-evil-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "detect-evil",
+        "label": "Detect Evil",
+        "text": "You can sense the presence of evil. The amount of information revealed depends on how long you study a particular area or subject. 1st Round: Presence or absence of evil. 2nd Round"
+      }
+    ],
     "shortDescription": "You can sense the presence of evil. The amount of information revealed depends on how long you study a particular area or subject. 1st Round: Presence or absence of evil. 2nd Round: Number of evil auras (creatures, obje…",
     "text": "You can sense the presence of evil. The amount of information revealed depends on how long you study a particular area or subject.\n\n1st Round: Presence or absence of evil.\n\n2nd Round: Number of evil auras (creatures, objects, or spells) in the area and the power of the most potent evil aura present.\n\nIf you are of good alignment, and the strongest evil aura’s power is overwhelming (see below), and the HD or level of the aura’s source is at least twice your character level, you are stunned for 1 round and the spell ends.\n\n3rd Round: The power and location of each aura. If an aura is outside your line of sight, then you discern its direction but not its exact location.\n\nAura Power: An evil aura’s power depends on the type of evil creature or object that you’re detecting and its HD, caster level, or (in the case of a cleric) class level; see the accompanying table. If an aura falls into more than one strength category, the spell indicates the stronger of the two.\n\nLingering Aura: An evil aura lingers after its original source dissipates (in the case of a spell) or is destroyed (in the case of a creature or magic item). If detect evil is cast and directed at such a location, the spell indicates an aura strength of dim (even weaker than a faint aura). How long the aura lingers at this dim level depends on its original power.\n\nAnimals, traps, poisons, and other potential perils are not evil, and as such this spell does not detect them.\n\nEach round, you can turn to detect evil in a new area. The spell can penetrate barriers, but 1 foot of stone, 1 inch of common metal, a thin sheet of lead, or 3 feet of wood or dirt blocks it.",
     "tags": [
@@ -9696,7 +9935,16 @@
         13
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "cab-thousand-faces-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "thousand-faces",
+        "label": "Thousand Faces",
+        "text": "At 13th level, a druid gains the ability to change her appearance at will, as if using the Alter Self spell, but only while in her normal form."
+      }
+    ],
     "shortDescription": "At 13th level, a druid gains the ability to change her appearance at will, as if using the Alter Self spell, but only while in her normal form.",
     "text": "At 13th level, a druid gains the ability to change her appearance at will, as if using the Alter Self spell, but only while in her normal form.",
     "tags": [
@@ -9723,7 +9971,16 @@
         7
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "cab-woodland-stride-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "woodland-stride",
+        "label": "Woodland Stride",
+        "text": "You may move through any sort of undergrowth (such as natural thorns, briars, overgrown areas, and similar terrain) at your normal speed and without taking damage or suffering any "
+      }
+    ],
     "shortDescription": "You may move through any sort of undergrowth (such as natural thorns, briars, overgrown areas, and similar terrain) at your normal speed and without taking damage or suffering any other impairment. However, thorns, bria…",
     "text": "You may move through any sort of undergrowth (such as natural thorns, briars, overgrown areas, and similar terrain) at your normal speed and without taking damage or suffering any other impairment. However, thorns, briars, and overgrown areas that have been magically manipulated to impede motion still affect you.",
     "tags": [
@@ -9741,7 +9998,16 @@
     "featKind": "classAbility",
     "abilityType": "ex",
     "associations": [],
-    "effects": [],
+    "effects": [
+      {
+        "id": "cab-mastery-of-counterspelling-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "mastery-of-counterspelling",
+        "label": "Mastery of Counterspelling",
+        "text": "School miscellaneous; Level Sorcerer 7, Wizard 7; Saving Throw none; Spell Resistance yes Description When the archmage counterspells a spell, it is turned back upon the caster as "
+      }
+    ],
     "shortDescription": "School miscellaneous; Level Sorcerer 7, Wizard 7; Saving Throw none; Spell Resistance yes Description When the archmage counterspells a spell, it is turned back upon the caster as if it were fully affected by a Spell Tu…",
     "text": "School miscellaneous;\nLevel Sorcerer 7, Wizard 7;\n\nSaving Throw none; Spell Resistance yes\n\nDescription\n\nWhen the archmage counterspells a spell, it is turned back upon the caster as if it were fully affected by a Spell Turning spell. If the spell cannot be affected by Spell Turning , then it is merely counterspelled. This ability costs one 7th-level spell slot.",
     "tags": [
@@ -9764,7 +10030,16 @@
         1
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "cab-ranged-legerdemain-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "ranged-legerdemain",
+        "label": "Ranged Legerdemain",
+        "text": "An arcane trickster can perform one of the following class skills at a range of 30 feet: Disable Device, Open Lock, or Sleight of Hand. Working at a distance increases the normal s"
+      }
+    ],
     "shortDescription": "An arcane trickster can perform one of the following class skills at a range of 30 feet: Disable Device, Open Lock, or Sleight of Hand. Working at a distance increases the normal skill check DC by 5, and an arcane trick…",
     "text": "An arcane trickster can perform one of the following class skills at a range of 30 feet: Disable Device, Open Lock, or Sleight of Hand. Working at a distance increases the normal skill check DC by 5, and an arcane trickster cannot take 10 on this check. Any object to be manipulated must weigh 5 pounds or less.\n\nAn arcane trickster can use ranged legerdemain once per day initially, twice per day upon attaining 5th level, and three times per day at 9th level or higher. He can make only one ranged legerdemain skill check each day, and only if he has at least 1 rank in the skill being used.",
     "tags": [
@@ -9787,7 +10062,16 @@
         3
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "cab-deliver-touch-spells-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "deliver-touch-spells",
+        "label": "Deliver Touch Spells",
+        "text": "If the master is 3rd level or higher, a familiar can deliver touch spells for him. If the master and the familiar are in contact at the time the master casts a touch spell, he can "
+      }
+    ],
     "shortDescription": "If the master is 3rd level or higher, a familiar can deliver touch spells for him. If the master and the familiar are in contact at the time the master casts a touch spell, he can designate his familiar as the “toucher.…",
     "text": "If the master is 3rd level or higher, a familiar can deliver touch spells for him. If the master and the familiar are in contact at the time the master casts a touch spell, he can designate his familiar as the \"toucher.\" The familiar can then deliver the touch spell just as the master could. As usual, if the master casts another spell before the touch is delivered, the touch spell dissipates.",
     "tags": [
@@ -9810,7 +10094,16 @@
         15
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "cab-channel-power-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "channel-power",
+        "label": "Channel Power",
+        "text": "If the owner is 15th level or higher, he can manifest powers through the psicrystal to a distance of up to 1 mile. The psicrystal is treated as the power’s originator, and all rang"
+      }
+    ],
     "shortDescription": "If the owner is 15th level or higher, he can manifest powers through the psicrystal to a distance of up to 1 mile. The psicrystal is treated as the power’s originator, and all ranges are calculated from its location. Wh…",
     "text": "If the owner is 15th level or higher, he can manifest powers through the psicrystal to a distance of up to 1 mile. The psicrystal is treated as the power's originator, and all ranges are calculated from its location.\n\nWhen channeling a power through his psicrystal, the owner manifests the power by paying its power point cost. He is still subject to attacks of opportunity and other hazards of manifesting a power, if applicable (for instance, he becomes visible when manifesting an offensive power if invisible, as does the psicrystal).",
     "tags": [
@@ -9877,7 +10170,16 @@
         6
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "cab-phase-arrow-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "phase-arrow",
+        "label": "Phase Arrow",
+        "text": "At 6th level, an arcane archer can launch an arrow once per day at a target known to her within range, and the arrow travels to the target in a straight path, passing through any n"
+      }
+    ],
     "shortDescription": "At 6th level, an arcane archer can launch an arrow once per day at a target known to her within range, and the arrow travels to the target in a straight path, passing through any nonmagical barrier or wall in its way. (…",
     "text": "At 6th level, an arcane archer can launch an arrow once per day at a target known to her within range, and the arrow travels to the target in a straight path, passing through any nonmagical barrier or wall in its way. (Any magical barrier stops the arrow.) This ability negates cover, concealment, and even armor modifiers, but otherwise the attack is rolled normally.\n\nUsing this ability is a standard action (and shooting the arrow is part of the action).",
     "tags": [
@@ -9900,7 +10202,34 @@
         4
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-seuph",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-seuph-br",
+            "condKind": "state",
+            "condText": "After Wild Surge",
+            "effects": [
+              {
+                "id": "ef-seuph-b",
+                "type": "stat",
+                "targets": [
+                  "atk.all",
+                  "dmg.all",
+                  "save.all"
+                ],
+                "mode": "formula",
+                "formula": "1 + floor((@level - 4) / 8)",
+                "btype": "Morale"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "Starting at 4th level, when a wilder uses her wild surge ability, she gains a +1 morale bonus on attack rolls, damage rolls, and saving throws for a number of rounds equal to the intensity of her wild surge. If a wilder…",
     "text": "Starting at 4th level, when a wilder uses her wild surge ability, she gains a +1 morale bonus on attack rolls, damage rolls, and saving throws for a number of rounds equal to the intensity of her wild surge.\n\nIf a wilder is overcome by psychic enervation following her wild surge, she does not gain the morale bonus for this use of her wild surge ability.\n\nAt 12th level, the morale bonus on a wilder’s attack rolls, damage rolls, and saving throws increases to +2. At 20th level, the bonus increases to +3.",
     "tags": [
@@ -9923,7 +10252,16 @@
         4
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "cab-slow-fall-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "slow-fall",
+        "label": "Slow Fall",
+        "text": "At 4th level or higher, a monk within arm’s reach of a wall can use it to slow her descent. When first using this ability, she takes damage as if the fall were 20 feet shorter than"
+      }
+    ],
     "shortDescription": "At 4th level or higher, a monk within arm’s reach of a wall can use it to slow her descent. When first using this ability, she takes damage as if the fall were 20 feet shorter than it actually is. The monk’s ability to…",
     "text": "At 4th level or higher, a monk within arm’s reach of a wall can use it to slow her descent. When first using this ability, she takes damage as if the fall were 20 feet shorter than it actually is. The monk’s ability to slow her fall (that is, to reduce the effective distance of the fall when next to a wall) improves with her monk level until at 20th level she can use a nearby wall to slow her descent and fall any distance without harm.",
     "tags": [
@@ -9946,7 +10284,16 @@
         2
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "cab-imbue-arrow-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "imbue-arrow",
+        "label": "Imbue Arrow",
+        "text": "At 2nd level, an arcane archer gains the ability to place an area spell upon an arrow. When the arrow is fired, the spell’s area is centered on where the arrow lands, even if the s"
+      }
+    ],
     "shortDescription": "At 2nd level, an arcane archer gains the ability to place an area spell upon an arrow. When the arrow is fired, the spell’s area is centered on where the arrow lands, even if the spell could normally be centered only on…",
     "text": "At 2nd level, an arcane archer gains the ability to place an area spell upon an arrow. When the arrow is fired, the spell’s area is centered on where the arrow lands, even if the spell could normally be centered only on the caster. This ability allows the archer to use the bow’s range rather than the spell’s range. It takes a standard action to cast the spell and fire the arrow. The arrow must be fired in the round the spell is cast, or the spell is wasted.",
     "tags": [
@@ -10009,7 +10356,16 @@
         1
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "cab-shield-proficiency-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "shield-proficiency",
+        "label": "Shield Proficiency",
+        "text": "You can use a shield and take only the standard penalties. When you are using a shield with which you are not proficient, you take the shield’s armor check penalty on attack rolls "
+      }
+    ],
     "shortDescription": "You can use a shield and take only the standard penalties. When you are using a shield with which you are not proficient, you take the shield’s armor check penalty on attack rolls and on all skill checks that involve mo…",
     "text": "You can use a shield and take only the standard penalties. When you are using a shield with which you are not proficient, you take the shield's armor check penalty on attack rolls and on all skill checks that involve moving, including Ride checks.",
     "tags": [
@@ -10091,7 +10447,16 @@
         1
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "cab-martial-weapon-proficiency-all-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "martial-weapon-proficiency-all",
+        "label": "Martial Weapon Proficiency (All)",
+        "text": "You understand how to use any type of martial weapon in combat. You make attack rolls with the selected weapon normally."
+      }
+    ],
     "shortDescription": "You understand how to use any type of martial weapon in combat. You make attack rolls with the selected weapon normally.",
     "text": "You understand how to use any type of martial weapon in combat. You make attack rolls with the selected weapon normally.",
     "tags": [
@@ -10114,7 +10479,18 @@
         2
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-elude",
+        "type": "stat",
+        "targets": [
+          "ac.touch"
+        ],
+        "mode": "formula",
+        "formula": "max(0, @chaMod)",
+        "btype": "Untyped"
+      }
+    ],
     "shortDescription": "Starting at 2nd level, a wilder’s intuition supersedes her intellect, alerting her to danger from touch attacks (including rays). She gains a bonus to Armor Class against all touch attacks equal to her Charisma bonus; h…",
     "text": "Starting at 2nd level, a wilder’s intuition supersedes her intellect, alerting her to danger from touch attacks (including rays). She gains a bonus to Armor Class against all touch attacks equal to her Charisma bonus; however, her touch AC can never exceed her Armor Class against normal attacks.",
     "tags": [
@@ -10344,7 +10720,16 @@
         3
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "cab-deliver-touch-powers-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "deliver-touch-powers",
+        "label": "Deliver Touch Powers",
+        "text": "If the owner is 3rd level or higher, his psicrystal can deliver touch powers for him. If the owner and psicrystal are in contact at the time the owner manifests a touch power, he c"
+      }
+    ],
     "shortDescription": "If the owner is 3rd level or higher, his psicrystal can deliver touch powers for him. If the owner and psicrystal are in contact at the time the owner manifests a touch power, he can designate his psicrystal as the “tou…",
     "text": "If the owner is 3rd level or higher, his psicrystal can deliver touch powers for him. If the owner and psicrystal are in contact at the time the owner manifests a touch power, he can designate his psicrystal as the \"toucher.\" The psicrystal can then deliver the touch power just as the owner could. As usual, if the owner manifests another power before the touch is delivered, the touch power dissipates.",
     "tags": [
@@ -10367,7 +10752,16 @@
         1
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "cab-track-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "track",
+        "label": "Track",
+        "text": "Benefit To find tracks or to follow them for 1 mile requires a successful Survival check. You must make another Survival check every time the tracks become difficult to follow. You"
+      }
+    ],
     "shortDescription": "Benefit To find tracks or to follow them for 1 mile requires a successful Survival check. You must make another Survival check every time the tracks become difficult to follow. You move at half your normal speed (or at…",
     "text": "Benefit\n\nTo find tracks or to follow them for 1 mile requires a successful Survival check. You must make another Survival check every time the tracks become difficult to follow.\n\nYou move at half your normal speed (or at your normal speed with a –5 penalty on the check, or at up to twice your normal speed with a –20 penalty on the check). The DC depends on the surface and the prevailing conditions, as given on the table below:\n\nSurface |\nSurvival DC |\n\nVery soft ground |\n5 |\n\nFirm ground |\n15 |\n\nSoft ground |\n10 |\n\nHard ground |\n20 |\n\nVery Soft Ground\n\nAny surface (fresh snow, thick dust, wet mud) that holds deep, clear impressions of footprints.\n\nSoft Ground\n\nAny surface soft enough to yield to pressure, but firmer than wet mud or fresh snow, in which a creature leaves frequent but shallow footprints.\n\nFirm Ground\n\nMost normal outdoor surfaces (such as lawns, fields, woods, and the like) or exceptionally soft or dirty indoor surfaces (thick rugs and very dirty or dusty floors). The creature might leave some traces (broken branches or tufts of hair), but it leaves only occasional or partial footprints.\n\nHard Ground\n\nAny surface that doesn’t hold footprints at all, such as bare rock or an indoor floor. Most streambeds fall into this category, since any footprints left behind are obscured or washed away. The creature leaves only traces (scuff marks or displaced pebbles).\n\nSeveral modifiers may apply to the Survival check, as given on the table below.\n\nCondition |\nSurvival\nDC Modifier |\n\nEvery three creatures in the group being tracked |\n–1 |\n\nSize of creature or creatures being tracked:1 |\n|\n\nFine |\n+8 |\n\nDiminutive |\n+4 |\n\nTiny |\n+2 |\n\nSmall |\n+1 |\n\nMedium |\n+0 |\n\nLarge |\n–1 |\n\nHuge |\n–2 |\n\nGargantuan |\n–4 |\n\nColossal |\n–8 |\n\nEvery 24 hours since the trail was made |\n+1 |\n\nEvery hour of rain since the trail was made |\n+1 |\n\nFresh snow cover since the trail was made |\n+10 |\n\nPoor visibility:2 |\n|\n\nOvercast or moonless night |\n+6 |\n\nMoonlight |\n+3 |\n\nFog or precipitation |\n+3 |\n\nTracked party hides trail (and moves at half speed) |\n+5 |\n\n• For a group of mixed sizes, apply only the modifier for the largest size category.\n\n• Apply only the largest modifier from this category.\n\n|\n\nIf you fail a Survival check, you can retry after 1 hour (outdoors) or 10 minutes (indoors) of searching.\n\nNormal\n\nWithout this feat, you can use the Survival skill to find tracks, but you can follow them only if the DC for the task is 10 or lower. Alternatively, you can use the Search skill to find a footprint or similar sign of a creature’s passage using the DCs given above, but you can’t use Search to follow tracks, even if someone else has already found them.\n\nSpecial\n\nA ranger automatically has Track as a bonus feat. He need not select it.\n\nThis feat does not allow you to find or follow the tracks made by a subject of a pass without trace spell.",
     "tags": [
@@ -10492,7 +10886,32 @@
         1
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-wf-mb",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-wf-mb-br",
+            "condKind": "wieldingChosenWeapon",
+            "condText": "",
+            "effects": [
+              {
+                "id": "ef-wf-mb-a",
+                "type": "stat",
+                "targets": [
+                  "atk.weapon"
+                ],
+                "mode": "flat",
+                "value": 1,
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "Choose one type of weapon. You can also choose unarmed strike or grapple (or ray, if you are a spellcaster) as your weapon for purposes of this feat. Prerequisites Proficiency with selected weapon, base attack bonus +1.…",
     "text": "Choose one type of weapon. You can also choose unarmed strike or grapple (or ray, if you are a spellcaster) as your weapon for purposes of this feat.\n\nPrerequisites\n\nProficiency with selected weapon, base attack bonus +1.\n\nBenefit\n\nYou gain a +1 bonus on all attack rolls you make using the selected weapon.\n\nSpecial\n\nYou can gain this feat multiple times. Its effects do not stack. Each time you take the feat, it applies to a new type of weapon.\n\nA fighter may select Weapon Focus as one of his fighter bonus feats. He must have Weapon Focus with a weapon to gain the Weapon Specialization feat for that weapon.\n\nInformation\n\nThis feat is automatically applied to Mind Blade attacks created by Mind Blade ability.",
     "tags": [
@@ -10515,7 +10934,16 @@
         1
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "cab-detect-good-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "detect-good",
+        "label": "Detect Good",
+        "text": "You can sense the presence of good. The amount of information revealed depends on how long you study a particular area or subject. 1st Round: Presence or absence of good. 2nd Round"
+      }
+    ],
     "shortDescription": "You can sense the presence of good. The amount of information revealed depends on how long you study a particular area or subject. 1st Round: Presence or absence of good. 2nd Round: Number of good auras (creatures, obje…",
     "text": "You can sense the presence of good. The amount of information revealed depends on how long you study a particular area or subject.\n\n1st Round: Presence or absence of good.\n\n2nd Round: Number of good auras (creatures, objects, or spells) in the area and the power of the most potent good aura present.\n\nIf you are of good alignment, and the strongest good aura's power is overwhelming (see below), and the HD or level of the aura's source is at least twice your character level, you are stunned for 1 round and the spell ends.\n\n3rd Round: The power and location of each aura. If an aura is outside your line of sight, then you discern its direction but not its exact location.\n\nAura Power: An good aura's power depends on the type of good creature or object that you're detecting and its HD, caster level, or (in the case of a cleric) class level; see the accompanying table. If an aura falls into more than one strength category, the spell indicates the stronger of the two.\n\nLingering Aura: An good aura lingers after its original source dissipates (in the case of a spell) or is destroyed (in the case of a creature or magic item). If detect good is cast and directed at such a location, the spell indicates an aura strength of dim (even weaker than a faint aura). How long the aura lingers at this dim level depends on its original power.\n\nAnimals, traps, poisons, and other potential perils are not good, and as such this spell does not detect them.\n\nEach round, you can turn to detect good in a new area. The spell can penetrate barriers, but 1 foot of stone, 1 inch of common metal, a thin sheet of lead, or 3 feet of wood or dirt blocks it.",
     "tags": [
@@ -10533,7 +10961,26 @@
     "featKind": "classAbility",
     "abilityType": "ex",
     "associations": [],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-droll-r",
+        "type": "resource",
+        "name": "Defensive Roll",
+        "varKey": "defensive_roll",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 1,
+        "reset": "perDay"
+      },
+      {
+        "id": "ef-droll",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "reflexSaveForHalfLethalBlow",
+        "label": "1/Day Reflex Save (DC = Damage Dealt) to Take Half Damage From Lethal Blow",
+        "text": "1/Day Reflex Save (DC = Damage Dealt) to Take Half Damage From Lethal Blow"
+      }
+    ],
     "shortDescription": "The rogue can roll with a potentially lethal blow to take less damage from it than she otherwise would. Once per day, when she would be reduced to 0 or fewer hit points by damage in combat (from a weapon or other blow,…",
     "text": "The rogue can roll with a potentially lethal blow to take less damage from it than she otherwise would. Once per day, when she would be reduced to 0 or fewer hit points by damage in combat (from a weapon or other blow, not a spell or special ability), the rogue can attempt to roll with the damage. To use this ability, the rogue must attempt a Reflex saving throw (DC = damage dealt). If the save succeeds, she takes only half damage from the blow; if it fails, she takes full damage. She must be aware of the attack and able to react to it in order to execute her defensive roll—if she is denied her Dexterity bonus to AC, she can’t use this ability. Since this effect would not normally allow a character to make a Reflex save for half damage, the rogue’s evasion ability does not apply to the defensive roll.",
     "tags": [
@@ -10631,7 +11078,52 @@
         2
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-smg-r",
+        "type": "resource",
+        "name": "Smite Good",
+        "varKey": "smite_good",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 1,
+        "reset": "perDay"
+      },
+      {
+        "id": "ef-smg-w",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-smg-w-br",
+            "condKind": "situational",
+            "condText": "Smite Good Attack",
+            "effects": [
+              {
+                "id": "ef-smg-a",
+                "type": "stat",
+                "targets": [
+                  "atk.melee"
+                ],
+                "mode": "formula",
+                "formula": "max(0, @chaMod)",
+                "btype": "Untyped"
+              },
+              {
+                "id": "ef-smg-d",
+                "type": "stat",
+                "targets": [
+                  "dmg.melee"
+                ],
+                "mode": "formula",
+                "formula": "@level",
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "Once a day, a blackguard of 2nd level or higher may attempt to smite good with one normal melee attack. He adds his Charisma modifier (if positive) to his attack roll and deals 1 extra point of damage per class level. I…",
     "text": "Once a day, a blackguard of 2nd level or higher may attempt to smite good with one normal melee attack.\n\nHe adds his Charisma modifier (if positive) to his attack roll and deals 1 extra point of damage per class level. If a blackguard accidentally smites a creature that is not good, the smite has no effect but it is still used up for that day.\n\nAt 5th level, and again at 10th level, a blackguard may smite good one additional time per day.",
     "tags": [
@@ -10710,7 +11202,16 @@
         1
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "cab-simple-weapon-proficiency-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "simple-weapon-proficiency",
+        "label": "Simple Weapon Proficiency",
+        "text": "You make attack rolls with simple weapons normally. When using a weapon with which you are not proficient, you take a –4 penalty on attack rolls."
+      }
+    ],
     "shortDescription": "You make attack rolls with simple weapons normally. When using a weapon with which you are not proficient, you take a –4 penalty on attack rolls.",
     "text": "You make attack rolls with simple weapons normally. When using a weapon with which you are not proficient, you take a –4 penalty on attack rolls.",
     "tags": [
@@ -10737,7 +11238,16 @@
         8
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "cab-hide-in-plain-sight-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "hide-in-plain-sight",
+        "label": "Hide in Plain Sight",
+        "text": "While in any sort of natural terrain, you can use the Hide skill even while being observed."
+      }
+    ],
     "shortDescription": "While in any sort of natural terrain, you can use the Hide skill even while being observed.",
     "text": "While in any sort of natural terrain, you can use the Hide skill even while being observed.",
     "tags": [
@@ -10791,7 +11301,16 @@
         8
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "cab-hail-of-arrows-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "hail-of-arrows",
+        "label": "Hail of Arrows",
+        "text": "In lieu of her regular attacks, once per day an arcane archer of 8th level or higher can fire an arrow at each and every target within range, to a maximum of one target for every a"
+      }
+    ],
     "shortDescription": "In lieu of her regular attacks, once per day an arcane archer of 8th level or higher can fire an arrow at each and every target within range, to a maximum of one target for every arcane archer level she has earned. Each…",
     "text": "In lieu of her regular attacks, once per day an arcane archer of 8th level or higher can fire an arrow at each and every target within range, to a maximum of one target for every arcane archer level she has earned. Each attack uses the archer’s primary attack bonus, and each enemy may only be targeted by a single arrow.",
     "tags": [
@@ -10845,7 +11364,8 @@
                 "dmgType": "Precision",
                 "crit": "normal",
                 "multiplyOnCrit": false,
-                "source": "Sneak Attack"
+                "source": "Sneak Attack",
+                "scaling": "formula"
               }
             ]
           }
@@ -10874,7 +11394,16 @@
         3
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-aod",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "enemiesWithin10FtMinus2Saves",
+        "label": "Enemies Within 10 ft. Take -2 Penalty on All Saving Throws",
+        "text": "Enemies Within 10 ft. Take -2 Penalty on All Saving Throws"
+      }
+    ],
     "shortDescription": "Beginning at 3rd level, the blackguard radiates a malign aura that causes enemies within 10 feet of him to take a -2 penalty on all saving throws.",
     "text": "Beginning at 3rd level, the blackguard radiates a malign aura that causes enemies within 10 feet of him to take a -2 penalty on all saving throws.",
     "tags": [
@@ -10897,7 +11426,16 @@
         9
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-cab-matk",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "multiattackMinus2",
+        "label": "Secondary Natural Attacks Take Only -2 Penalty (Instead of -5)",
+        "text": "Secondary Natural Attacks Take Only -2 Penalty (Instead of -5)"
+      }
+    ],
     "shortDescription": "Prerequisite Three or more natural attacks. Benefit The creature’s secondary attacks with natural weapons take only a –2 penalty. Normal Without this feat, the creature’s secondary attacks with natural weapons take a –5…",
     "text": "Prerequisite\n\nThree or more natural attacks.\n\nBenefit\n\nThe creature’s secondary attacks with natural weapons take only a –2 penalty.\n\nNormal\n\nWithout this feat, the creature’s secondary attacks with natural weapons take a –5 penalty.",
     "tags": [
@@ -10938,7 +11476,16 @@
     "featKind": "classAbility",
     "abilityType": "ex",
     "associations": [],
-    "effects": [],
+    "effects": [
+      {
+        "id": "cab-arcane-reach-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "arcane-reach",
+        "label": "Arcane Reach",
+        "text": "School miscellaneous; Level Sorcerer 7, Wizard 7; Saving Throw none; Spell Resistance yes Description The archmage can use spells with a range of touch on a target up to 30 feet aw"
+      }
+    ],
     "shortDescription": "School miscellaneous; Level Sorcerer 7, Wizard 7; Saving Throw none; Spell Resistance yes Description The archmage can use spells with a range of touch on a target up to 30 feet away. The archmage must make a ranged tou…",
     "text": "School miscellaneous;\nLevel Sorcerer 7, Wizard 7;\n\nSaving Throw none; Spell Resistance yes\n\nDescription\n\nThe archmage can use spells with a range of touch on a target up to 30 feet away. The archmage must make a ranged touch attack. Arcane reach can be selected a second time as a special ability, in which case the range increases to 60 feet. This ability costs one 7th-level spell slot.",
     "tags": [
@@ -10989,7 +11536,16 @@
         1
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "cab-armor-proficiency-medium-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "armor-proficiency-medium",
+        "label": "Armor Proficiency (Medium)",
+        "text": "When you wear a type of armor with which you are proficient, the armor check penalty for that armor applies only to Balance, Climb, Escape Artist, Hide, Jump, Move Silently, Sleigh"
+      }
+    ],
     "shortDescription": "When you wear a type of armor with which you are proficient, the armor check penalty for that armor applies only to Balance, Climb, Escape Artist, Hide, Jump, Move Silently, Sleight of Hand, and Tumble checks.",
     "text": "When you wear a type of armor with which you are proficient, the armor check penalty for that armor applies only to Balance, Climb, Escape Artist, Hide, Jump, Move Silently, Sleight of Hand, and Tumble checks.",
     "tags": [
@@ -11080,7 +11636,16 @@
         15
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "cab-quivering-palm-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "quivering-palm",
+        "label": "Quivering Palm",
+        "text": "Starting at 15th level, a monk can set up vibrations within the body of another creature that can thereafter be fatal if the monk so desires. She can use this quivering palm attack"
+      }
+    ],
     "shortDescription": "Starting at 15th level, a monk can set up vibrations within the body of another creature that can thereafter be fatal if the monk so desires. She can use this quivering palm attack once a week, and she must announce her…",
     "text": "Starting at 15th level, a monk can set up vibrations within the body of another creature that can thereafter be fatal if the monk so desires. She can use this quivering palm attack once a week, and she must announce her intent before making her attack roll. Constructs, oozes, plants, undead, incorporeal creatures, and creatures immune to critical hits cannot be affected. Otherwise, if the monk strikes successfully and the target takes damage from the blow, the quivering palm attack succeeds. Thereafter the monk can try to slay the victim at any later time, as long as the attempt is made within a number of days equal to her monk level. To make such an attempt, the monk merely wills the target to die (a free action), and unless the target makes a Fortitude saving throw (DC 10 + 1/2 the monk's level + the monk's Wis modifier), it dies. If the saving throw is successful, the target is no longer in danger from that particular quivering palm attack, but it may still be affected by another one at a later time.",
     "tags": [
@@ -11103,7 +11668,16 @@
         1
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "cab-mind-blade-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "mind-blade",
+        "label": "Mind Blade",
+        "text": "As a move action, a soulknife can create a semisolid blade composed of psychic energy distilled from his own mind. The blade is identical in all ways (except visually) to a short s"
+      }
+    ],
     "shortDescription": "As a move action, a soulknife can create a semisolid blade composed of psychic energy distilled from his own mind. The blade is identical in all ways (except visually) to a short sword of a size appropriate for its wiel…",
     "text": "As a move action, a soulknife can create a semisolid blade composed of psychic energy distilled from his own mind. The blade is identical in all ways (except visually) to a short sword of a size appropriate for its wielder. For instance, a Medium soulknife materializes a Medium mind blade that he can wield as a light weapon, and the blade deals 1d6 points of damage (crit 19–20/x2). Soulknives who are smaller or larger than Medium create mind blades identical to short swords appropriate for their size, with a corresponding change to the blade’s damage. The wielder of a mind blade gains the usual benefits to his attack roll and damage roll from a high Strength bonus.\n\nThe blade can be broken (it has hardness 10 and 10 hit points); however, a soulknife can simply create another on his next move action. The moment he relinquishes his grip on his blade, it dissipates (unless he intends to throw it; see below). A mind blade is considered a magic weapon for the purpose of overcoming damage reduction.\n\nA soulknife can use feats such as Power Attack or Combat Expertise in conjunction with the mind blade just as if it were a normal weapon. He can also choose mind blade for feats requiring a specific weapon choice, such as Weapon Specialization. Powers or spells that upgrade weapons can be used on a mind blade.\n\nA soulknife’s mind blade improves as the character gains higher levels. At 4th level and every four levels thereafter, the mind blade gains a cumulative +1 enhancement bonus on attack rolls and damage rolls (+2 at 8th level, +3 at 12th level, +4 at 16th level, and +5 at 20th level).\n\nEven in places where psionic effects do not normally function (such as within a null psionics field), a soulknife can attempt to sustain his mind blade by making a DC 20 Will save. On a successful save, the soulknife maintains his mind blade for a number of rounds equal to his class level before he needs to check again. On an unsuccessful attempt, the mind blade vanishes. As a move action on his turn, the soulknife can attempt a new Will save to rematerialize his mind blade while he remains within the psionics negating effect.",
     "tags": [
@@ -11159,7 +11733,16 @@
         10
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "cab-arrow-of-death-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "arrow-of-death",
+        "label": "Arrow of Death",
+        "text": "At 10th level, an arcane archer can create an arrow of death that forces the target, if damaged by the arrow’s attack, to make a DC 20 Fortitude save or be slain immediately. It ta"
+      }
+    ],
     "shortDescription": "At 10th level, an arcane archer can create an arrow of death that forces the target, if damaged by the arrow’s attack, to make a DC 20 Fortitude save or be slain immediately. It takes one day to make an arrow of death,…",
     "text": "At 10th level, an arcane archer can create an arrow of death that forces the target, if damaged by the arrow's attack, to make a DC 20 Fortitude save or be slain immediately. It takes one day to make an arrow of death, and the arrow only functions for the arcane archer who created it. The arrow of death lasts no longer than one year, and the archer can only have one such arrow in existence at a time.",
     "tags": [
@@ -11260,7 +11843,16 @@
         1
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-wsurge",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "wildSurgeManifesterBoost",
+        "label": "Boost Effective Manifester Level by +1 to +6 During Manifestation (Risk Psychic Enervation)",
+        "text": "Boost Effective Manifester Level by +1 to +6 During Manifestation (Risk Psychic Enervation)"
+      }
+    ],
     "shortDescription": "A wilder can let her passion and emotion rise to the surface in a wild surge when she manifests a power. During a wild surge, a wilder gains phenomenal psionic strength, but may harm herself by the reckless use of her p…",
     "text": "A wilder can let her passion and emotion rise to the surface in a wild surge when she manifests a power. During a wild surge, a wilder gains phenomenal psionic strength, but may harm herself by the reckless use of her power (see Psychic Enervation, below).\n\nA wilder can choose to invoke a wild surge whenever she manifests a power. When she does so, she gains +1 to her manifester level with that manifestation of the power. The manifester level boost gives her the ability to augment her powers to a higher degree than she otherwise could; however, she pays no extra power point for this wild surge. Instead, the additional 1 power point that would normally be required to augment the power is effectively supplied by the wild surge.\n\nLevel-dependent power effects are also improved, depending on the power a wilder manifests with her wild surge.\n\nThis improvement in manifester level does not grant her any other benefits (psicrystal abilities do not advance, she does not gain higher-level class abilities, and so on).\n\nShe cannot use the Overchannel psionic feat and invoke her wild surge at the same time.\n\nAt 3rd level, a wilder can choose to boost her manifester level by two instead of one. At 7th level, she can boost her manifester level by up to three; at 11th level, by up to four; at 15th level, by up to five; and at 19th level, by up to six.\n\nIn all cases, the wild surge effectively pays the extra power point cost that is normally required to augment the power; only the unaugmented power point cost is subtracted from the wilder's power point reserve.",
     "tags": [
@@ -11283,7 +11875,16 @@
         12
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "cab-abundant-step-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "abundant-step",
+        "label": "Abundant Step",
+        "text": "A monk can slip magically between spaces, as if using the spell dimension door, once per day. Her caster level for this effect is one-half her monk level (rounded down)."
+      }
+    ],
     "shortDescription": "A monk can slip magically between spaces, as if using the spell dimension door, once per day. Her caster level for this effect is one-half her monk level (rounded down).",
     "text": "A monk can slip magically between spaces, as if using the spell dimension door, once per day. Her caster level for this effect is one-half her monk level (rounded down).",
     "tags": [
@@ -11340,7 +11941,16 @@
         1
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "cab-death-attack-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "death-attack",
+        "label": "Death Attack",
+        "text": "If an assassin studies his victim for 3 rounds and then makes a sneak attack with a melee weapon that successfully deals damage, the sneak attack has the additional effect of possi"
+      }
+    ],
     "shortDescription": "If an assassin studies his victim for 3 rounds and then makes a sneak attack with a melee weapon that successfully deals damage, the sneak attack has the additional effect of possibly either paralyzing or killing the ta…",
     "text": "If an assassin studies his victim for 3 rounds and then makes a sneak attack with a melee weapon that successfully deals damage, the sneak attack has the additional effect of possibly either paralyzing or killing the target (assassin’s choice). While studying the victim, the assassin can undertake other actions so long as his attention stays focused on the target and the target does not detect the assassin or recognize the assassin as an enemy. If the victim of such an attack fails a Fortitude save (DC 10 + the assassin’s class level + the assassin’s Int modifier) against the kill effect, she dies. If the saving throw fails against the paralysis effect, the victim is rendered helpless and unable to act for 1d6 rounds plus 1 round per level of the assassin. If the victim’s saving throw succeeds, the attack is just a normal sneak attack. Once the assassin has completed the 3 rounds of study, he must make the death attack within the next 3 rounds.\n\nIf a death attack is attempted and fails (the victim makes her save) or if the assassin does not launch the attack within 3 rounds of completing the study, 3 new rounds of study are required before he can attempt another death attack.",
     "tags": [
@@ -11358,7 +11968,16 @@
     "featKind": "classAbility",
     "abilityType": "ex",
     "associations": [],
-    "effects": [],
+    "effects": [
+      {
+        "id": "cab-turn-earth-rebuke-air-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "turn-earth-rebuke-air",
+        "label": "Turn Earth/Rebuke Air",
+        "text": "Turn or destroy earth creatures as a good cleric turns undead. Rebuke, command, or bolster air creatures as an evil cleric rebukes undead. Use these abilities a total number of tim"
+      }
+    ],
     "shortDescription": "Turn or destroy earth creatures as a good cleric turns undead. Rebuke, command, or bolster air creatures as an evil cleric rebukes undead. Use these abilities a total number of times per day equal to 3 + your Charisma m…",
     "text": "Turn or destroy earth creatures as a good cleric turns undead. Rebuke, command, or bolster air creatures as an evil cleric rebukes undead. Use these abilities a total number of times per day equal to 3 + your Charisma modifier. This granted power is a supernatural ability.",
     "tags": [
@@ -11464,7 +12083,16 @@
         3
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "cab-trackless-step-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "trackless-step",
+        "label": "Trackless Step",
+        "text": "You leave no trail in natural surroundings and cannot be tracked. You may choose to leave a trail if so desired."
+      }
+    ],
     "shortDescription": "You leave no trail in natural surroundings and cannot be tracked. You may choose to leave a trail if so desired.",
     "text": "You leave no trail in natural surroundings and cannot be tracked. You may choose to leave a trail if so desired.",
     "tags": [
@@ -11487,7 +12115,16 @@
         5
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "cab-wild-shape-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "wild-shape",
+        "label": "Wild Shape",
+        "text": "At 5th level, a druid gains the ability to turn herself into any Small or Medium animal and back again once per day. Her options for new forms include all creatures with the animal"
+      }
+    ],
     "shortDescription": "At 5th level, a druid gains the ability to turn herself into any Small or Medium animal and back again once per day. Her options for new forms include all creatures with the animal type. This ability functions like the…",
     "text": "At 5th level, a druid gains the ability to turn herself into any Small or Medium animal and back again once per day. Her options for new forms include all creatures with the animal type. This ability functions like the polymorph spell, except as noted here. The effect lasts for 1 hour per druid level, or until she changes back. Changing form (to animal or back) is a standard action and doesn’t provoke an attack of opportunity.\n\nThe form chosen must be that of an animal the druid is familiar with.\n\nA druid loses her ability to speak while in animal form because she is limited to the sounds that a normal, untrained animal can make, but she can communicate normally with other animals of the same general grouping as her new form. (The normal sound a wild parrot makes is a squawk, so changing to this form does not permit speech.)\n\nA druid can use this ability more times per day at 6th, 7th, 10th, 14th, and 18th level, as noted on Table: The Druid. In addition, she gains the ability to take the shape of a Large animal at 8th level, a Tiny animal at 11th level, and a Huge animal at 15th level.\n\nThe new form’s Hit Dice can’t exceed the character’s druid level.\n\nAt 12th level, a druid becomes able to use wild shape to change into a plant creature with the same size restrictions as for animal forms. (A druid can’t use this ability to take the form of a plant that isn’t a creature.)\n\nAt 16th level, a druid becomes able to use wild shape to change into a Small, Medium, or Large elemental (air, earth, fire, or water) once per day. These elemental forms are in addition to her normal wild shape usage. In addition to the normal effects of wild shape, the druid gains all the elemental’s extraordinary, supernatural, and spell-like abilities. She also gains the elemental’s feats for as long as she maintains the wild shape, but she retains her own creature type.\n\nAt 18th level, a druid becomes able to assume elemental form twice per day, and at 20th level she can do so three times per day. At 20th level, a druid may use this wild shape ability to change into a Huge elemental.",
     "tags": [
@@ -11505,7 +12142,18 @@
     "featKind": "classAbility",
     "abilityType": "ex",
     "associations": [],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-sppow",
+        "type": "stat",
+        "targets": [
+          "casterLevel"
+        ],
+        "mode": "flat",
+        "value": 1,
+        "btype": "Untyped"
+      }
+    ],
     "shortDescription": "School miscellaneous; Level Sorcerer 5, Wizard 5; Saving Throw none; Spell Resistance yes Description This ability increases the archmage’s effective caster level by +1 (for purposes of determining level-dependent spell…",
     "text": "School miscellaneous;\nLevel Sorcerer 5, Wizard 5;\n\nSaving Throw none; Spell Resistance yes\n\nDescription\n\nThis ability increases the archmage’s effective caster level by +1 (for purposes of determining level-dependent spell variables such as damage dice or range, and caster level checks only). This ability costs one 5th-level spell slot.",
     "tags": [
@@ -11595,7 +12243,16 @@
         9
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "cab-bladewind-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "bladewind",
+        "label": "Bladewind",
+        "text": "At 9th level, a soulknife gains the ability to momentarily fragment his mind blade into numerous identical blades, each of which strikes at a nearby opponent. As a full attack, whe"
+      }
+    ],
     "shortDescription": "At 9th level, a soulknife gains the ability to momentarily fragment his mind blade into numerous identical blades, each of which strikes at a nearby opponent. As a full attack, when wielding his mind blade, a soulknife…",
     "text": "At 9th level, a soulknife gains the ability to momentarily fragment his mind blade into numerous identical blades, each of which strikes at a nearby opponent.\n\nAs a full attack, when wielding his mind blade, a soulknife can give up his regular attacks and instead fragment his mind blade to make one melee attack at his full base attack bonus against each opponent within reach. Each fragment functions identically to the soulknife’s regular mind blade.\n\nWhen using bladewind, a soulknife forfeits any bonus or extra attacks granted by other feats or abilities (such as the Cleave feat or the haste spell).\n\nThe mind blade immediately reverts to its previous form after the bladewind attack.",
     "tags": [
@@ -11652,7 +12309,16 @@
         1
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "cab-share-powers-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "share-powers",
+        "label": "Share Powers",
+        "text": "At the owner’s option, he can have any power (but not any psi-like ability) he manifests on himself also affect his psicrystal. The psicrystal must be within 5 feet of him at the t"
+      }
+    ],
     "shortDescription": "At the owner’s option, he can have any power (but not any psi-like ability) he manifests on himself also affect his psicrystal. The psicrystal must be within 5 feet of him at the time of the manifestation to receive the…",
     "text": "At the owner's option, he can have any power (but not any psi-like ability) he manifests on himself also affect his psicrystal. The psicrystal must be within 5 feet of him at the time of the manifestation to receive the benefit. If the power has a duration other than instantaneous, it stops affecting the psicrystal if it moves farther than 5 feet away, and will not affect the psicrystal again, even if it returns to its owner before the duration expires.\n\nAdditionally, the owner can manifest a power with a target of \"You\" on his psicrystal (as a touch range power) instead of on himself. The owner and psicrystal cannot share powers if the powers normally do not affect creatures of the psicrystal's type (construct).",
     "tags": [
@@ -11779,7 +12445,16 @@
     "featKind": "classAbility",
     "abilityType": "ex",
     "associations": [],
-    "effects": [],
+    "effects": [
+      {
+        "id": "cab-mastery-of-elements-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "mastery-of-elements",
+        "label": "Mastery of Elements",
+        "text": "School miscellaneous; Level Sorcerer 8, Wizard 8; Saving Throw none; Spell Resistance yes Description The archmage can alter an arcane spell when cast so that it utilizes a differe"
+      }
+    ],
     "shortDescription": "School miscellaneous; Level Sorcerer 8, Wizard 8; Saving Throw none; Spell Resistance yes Description The archmage can alter an arcane spell when cast so that it utilizes a different element from the one it normally use…",
     "text": "School miscellaneous;\nLevel Sorcerer 8, Wizard 8;\n\nSaving Throw none; Spell Resistance yes\n\nDescription\n\nThe archmage can alter an arcane spell when cast so that it utilizes a different element from the one it normally uses. This ability can only alter a spell with the acid, cold, fire, electricity, or sonic descriptor. The spell’s casting time is unaffected. The caster decides whether to alter the spell’s energy type and chooses the new energy type when he begins casting. This ability costs one 8th-level spell slot.",
     "tags": [
@@ -11941,7 +12616,32 @@
         14
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-indw",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-indw-br",
+            "condKind": "situational",
+            "condText": "While Raging vs. Enchantment Spells",
+            "effects": [
+              {
+                "id": "ef-indw-w",
+                "type": "stat",
+                "targets": [
+                  "save.will"
+                ],
+                "mode": "flat",
+                "value": 4,
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "While in a rage, a barbarian of 14th level or higher gains a +4 bonus on Will saves to resist enchantment spells. This bonus stacks with all other modifiers, including the morale bonus on Will saves he also receives dur…",
     "text": "While in a rage, a barbarian of 14th level or higher gains a +4 bonus on Will saves to resist enchantment spells. This bonus stacks with all other modifiers, including the morale bonus on Will saves he also receives during his rage.",
     "tags": [
@@ -11964,7 +12664,16 @@
         4
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "cab-seeker-arrow-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "seeker-arrow",
+        "label": "Seeker Arrow",
+        "text": "At 4th level, an arcane archer can launch an arrow once per day at a target known to her within range, and the arrow travels to the target, even around corners. Only an unavoidable"
+      }
+    ],
     "shortDescription": "At 4th level, an arcane archer can launch an arrow once per day at a target known to her within range, and the arrow travels to the target, even around corners. Only an unavoidable obstacle or the limit of the arrow’s r…",
     "text": "At 4th level, an arcane archer can launch an arrow once per day at a target known to her within range, and the arrow travels to the target, even around corners. Only an unavoidable obstacle or the limit of the arrow’s range prevents the arrow’s flight. This ability negates cover and concealment modifiers, but otherwise the attack is rolled normally. Using this ability is a standard action (and shooting the arrow is part of the action).",
     "tags": [
@@ -12020,7 +12729,32 @@
         6
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-devot",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-devot-br",
+            "condKind": "situational",
+            "condText": "vs. Enchantment Spells & Effects",
+            "effects": [
+              {
+                "id": "ef-devot-w",
+                "type": "stat",
+                "targets": [
+                  "save.will"
+                ],
+                "mode": "flat",
+                "value": 4,
+                "btype": "Morale"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "An animal companion gains a +4 morale bonus on Will saves against enchantment spells and effects.",
     "text": "An animal companion gains a +4 morale bonus on Will saves against enchantment spells and effects.",
     "tags": [
@@ -12043,7 +12777,16 @@
         2
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "cab-combat-style-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "combat-style",
+        "label": "Combat Style",
+        "text": "At 2nd level, a ranger must select one of two combat styles to pursue: archery or two-weapon combat. This choice affects the character’s class features but does not restrict his se"
+      }
+    ],
     "shortDescription": "At 2nd level, a ranger must select one of two combat styles to pursue: archery or two-weapon combat. This choice affects the character’s class features but does not restrict his selection of feats or special abilities i…",
     "text": "At 2nd level, a ranger must select one of two combat styles to pursue: archery or two-weapon combat. This choice affects the character's class features but does not restrict his selection of feats or special abilities in any way.\n\nIf the ranger selects archery, he is treated as having the Rapid Shot feat, even if he does not have the normal prerequisites for that feat.\n\nIf the ranger selects two-weapon combat, he is treated as having the Two-Weapon Fighting feat, even if he does not have the normal prerequisites for that feat.\n\nThe benefits of the ranger's chosen style apply only when he wears light or no armor. He loses all benefits of his combat style when wearing medium or heavy armor.\n\nArchery |\nTwo-Weapon Fighting |\n\nRapid Shot |\nTwo-Weapon Fighting |",
     "tags": [
@@ -12089,7 +12832,16 @@
         11
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "cab-combat-style-mastery-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "combat-style-mastery",
+        "label": "Combat Style Mastery",
+        "text": "At 11th level, a ranger’s aptitude in his chosen combat style (archery or two-weapon combat) improves again. If he selected archery at 2nd level, he is treated as having the Improv"
+      }
+    ],
     "shortDescription": "At 11th level, a ranger’s aptitude in his chosen combat style (archery or two-weapon combat) improves again. If he selected archery at 2nd level, he is treated as having the Improved Precise Shot feat, even if he does n…",
     "text": "At 11th level, a ranger's aptitude in his chosen combat style (archery or two-weapon combat) improves again. If he selected archery at 2nd level, he is treated as having the Improved Precise Shot feat, even if he does not have the normal prerequisites for that feat.\n\nIf the ranger selected two-weapon combat at 2nd level, he is treated as having the Greater Two-Weapon Fighting feat, even if he does not have the normal prerequisites for that feat.\n\nAs before, the benefits of the ranger's chosen style apply only when he wears light or no armor. He loses all benefits of his combat style when wearing medium or heavy armor.\n\nArchery |\nTwo-Weapon Fighting |\n\nImproved Precise Shot |\nGreater Two-Weapon Fighting |",
     "tags": [
@@ -12112,7 +12864,62 @@
         1
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-defst",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-defst-br",
+            "condKind": "state",
+            "condText": "In Defensive Stance",
+            "effects": [
+              {
+                "id": "ef-defst-str",
+                "type": "stat",
+                "targets": [
+                  "str"
+                ],
+                "mode": "flat",
+                "value": 2,
+                "btype": "Untyped"
+              },
+              {
+                "id": "ef-defst-con",
+                "type": "stat",
+                "targets": [
+                  "con"
+                ],
+                "mode": "flat",
+                "value": 4,
+                "btype": "Untyped"
+              },
+              {
+                "id": "ef-defst-sv",
+                "type": "stat",
+                "targets": [
+                  "save.all"
+                ],
+                "mode": "flat",
+                "value": 2,
+                "btype": "Resistance"
+              },
+              {
+                "id": "ef-defst-ac",
+                "type": "stat",
+                "targets": [
+                  "ac.dodge"
+                ],
+                "mode": "flat",
+                "value": 4,
+                "btype": "Dodge"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "When he adopts a defensive stance, a defender gains phenomenal strength and durability, but he cannot move from the spot he is defending. He gains +2 to Strength, +4 to Constitution, a +2 resistance bonus on all saves,…",
     "text": "When he adopts a defensive stance, a defender gains phenomenal strength and durability, but he cannot move from the spot he is defending. He gains +2 to Strength, +4 to Constitution, a +2 resistance bonus on all saves, and a +4 dodge bonus to AC. The increase in Constitution increases the defender’s hit points by 2 points per level, but these hit points go away at the end of the defensive stance when the Constitution score drops back 4 points. These extra hit points are not lost first the way temporary hit points are. While in a defensive stance, a defender cannot use skills or abilities that would require him to shift his position. A defensive stance lasts for a number of rounds equal to 3 + the character’s (newly improved) Constitution modifier. A defender may end his defensive stance voluntarily prior to this limit. At the end of the defensive stance, the defender is winded and takes a -2 penalty to Strength for the duration of that encounter. A defender can only use his defensive stance a certain number of times per day as determined by his level. Using the defensive stance takes no time itself, but a defender can only do so during his action.",
     "tags": [
@@ -12130,7 +12937,16 @@
     "featKind": "classAbility",
     "abilityType": "ex",
     "associations": [],
-    "effects": [],
+    "effects": [
+      {
+        "id": "cab-spell-like-ability-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "spell-like-ability",
+        "label": "Spell-Like Ability",
+        "text": "School miscellaneous; Level Sorcerer 5, Wizard 5; Saving Throw none; Spell Resistance yes Description An archmage who selects this type of high arcana can use one of her arcane spe"
+      }
+    ],
     "shortDescription": "School miscellaneous; Level Sorcerer 5, Wizard 5; Saving Throw none; Spell Resistance yes Description An archmage who selects this type of high arcana can use one of her arcane spell slots (other than a slot expended to…",
     "text": "School miscellaneous;\nLevel Sorcerer 5, Wizard 5;\n\nSaving Throw none; Spell Resistance yes\n\nDescription\n\nAn archmage who selects this type of high arcana can use one of her arcane spell slots (other than a slot expended to learn this or any other type of high arcana) to permanently prepare one of her arcane spells as a spell-like ability that can be used twice per day. The archmage does not use any components when casting the spell, although a spell that costs XP to cast still does so and a spell with a costly material component instead costs her 10 times that amount in XP. This ability costs one 5th-level spell slot.\n\nThe spell-like ability normally uses a spell slot of the spell’s level, although the archmage can choose to make a spell modified by a metamagic feat into a spell-like ability at the appropriate spell level.\n\nThe archmage may use an available higher-level spell slot in order to use the spell-like ability more often. Using a slot three levels higher than the chosen spell allows her to use the spell-like ability four times per day, and a slot six levels higher lets her use it six times per day.\n\nIf spell-like ability is selected more than one time as a high arcana choice, this ability can apply to the same spell chosen the first time (increasing the number of times per day it can be used) or to a different spell.",
     "tags": [
@@ -12161,7 +12977,16 @@
         1
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "cab-share-spells-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "share-spells",
+        "label": "Share Spells",
+        "text": "At the master’s option, he may have any spell (but not any spell-like ability) he casts on himself also affect his familiar. The familiar must be within 5 feet at the time of casti"
+      }
+    ],
     "shortDescription": "At the master’s option, he may have any spell (but not any spell-like ability) he casts on himself also affect his familiar. The familiar must be within 5 feet at the time of casting to receive the benefit. If the spell…",
     "text": "At the master's option, he may have any spell (but not any spell-like ability) he casts on himself also affect his familiar. The familiar must be within 5 feet at the time of casting to receive the benefit.\n\nIf the spell or effect has a duration other than instantaneous, it stops affecting the familiar if it moves farther than 5 feet away and will not affect the familiar again even if it returns to the master before the duration expires. Additionally, the master may cast a spell with a target of \"You\" on his familiar (as a touch range spell) instead of on himself.\n\nA master and his familiar can share spells even if the spells normally do not affect creatures of the familiar's type (magical beast).",
     "tags": [
@@ -12184,7 +13009,16 @@
         13
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "cab-camouflage-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "camouflage",
+        "label": "Camouflage",
+        "text": "A ranger of 13th level or higher can use the Hide skill in any sort of natural terrain, even if the terrain doesn’t grant cover or concealment."
+      }
+    ],
     "shortDescription": "A ranger of 13th level or higher can use the Hide skill in any sort of natural terrain, even if the terrain doesn’t grant cover or concealment.",
     "text": "A ranger of 13th level or higher can use the Hide skill in any sort of natural terrain, even if the terrain doesn’t grant cover or concealment.",
     "tags": [
@@ -12474,7 +13308,16 @@
         1
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "cab-poison-use-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "poison-use",
+        "label": "Poison Use",
+        "text": "Assassins are trained in the use of poison and never risk accidentally poisoning themselves when applying poison to a blade."
+      }
+    ],
     "shortDescription": "Assassins are trained in the use of poison and never risk accidentally poisoning themselves when applying poison to a blade.",
     "text": "Assassins are trained in the use of poison and never risk accidentally poisoning themselves when applying poison to a blade.",
     "tags": [
@@ -12529,7 +13372,15 @@
         20
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-pself",
+        "type": "defense",
+        "mode": "Damage Reduction",
+        "what": "magic",
+        "value": 10
+      }
+    ],
     "shortDescription": "A monk becomes a magical creature. She is forevermore treated as an outsider rather than as a humanoid (or whatever the monk’s creature type was) for the purpose of spells and magical effects. Additionally, the monk gai…",
     "text": "A monk becomes a magical creature. She is forevermore treated as an outsider rather than as a humanoid (or whatever the monk’s creature type was) for the purpose of spells and magical effects. Additionally, the monk gains damage reduction 10/magic, which allows her to ignore the first 10 points of damage from any attack made by a nonmagical weapon or by any natural attack made by a creature that doesn’t have similar damage reduction. Unlike other outsiders, the monk can still be brought back from the dead as if she were a member of her previous creature type.",
     "tags": [
@@ -12552,7 +13403,16 @@
         13
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "cab-knife-to-the-soul-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "knife-to-the-soul",
+        "label": "Knife to the Soul",
+        "text": "Beginning at 13th level, when a soulknife executes a psychic strike, he can choose to substitute Intelligence, Wisdom, or Charisma damage (his choice) for extra dice of damage. For"
+      }
+    ],
     "shortDescription": "Beginning at 13th level, when a soulknife executes a psychic strike, he can choose to substitute Intelligence, Wisdom, or Charisma damage (his choice) for extra dice of damage. For each die of extra damage he gives up,…",
     "text": "Beginning at 13th level, when a soulknife executes a psychic strike, he can choose to substitute Intelligence, Wisdom, or Charisma damage (his choice) for extra dice of damage. For each die of extra damage he gives up, he deals 1 point of damage to the ability score he chooses. A soulknife can combine extra dice of damage and ability damage in any combination.\n\nThe soulknife decides which ability score his psychic strike damages and the division of ability damage and extra dice of damage when he imbues his mind blade with the psychic strike energy.",
     "tags": [
@@ -12625,7 +13485,19 @@
     "featKind": "classAbility",
     "abilityType": "ex",
     "associations": [],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-crip",
+        "type": "roll",
+        "kind": "Ability Damage",
+        "count": 2,
+        "die": "flat",
+        "flat": 0,
+        "dmgType": "STR Damage",
+        "scaling": "flat",
+        "crit": "normal"
+      }
+    ],
     "shortDescription": "A rogue with this ability can sneak attack opponents with such precision that her blows weaken and hamper them. An opponent damaged by one of her sneak attacks also takes 2 points of Strength damage. Ability points lost…",
     "text": "A rogue with this ability can sneak attack opponents with such precision that her blows weaken and hamper them. An opponent damaged by one of her sneak attacks also takes 2 points of Strength damage. Ability points lost to damage return on their own at the rate of 1 point per day for each damaged ability.",
     "tags": [
@@ -12709,7 +13581,16 @@
         6
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "cab-improved-combat-style-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "improved-combat-style",
+        "label": "Improved Combat Style",
+        "text": "At 6th level, a ranger’s aptitude in his chosen combat style (archery or two-weapon combat) improves. If he selected archery at 2nd level, he is treated as having the Manyshot feat"
+      }
+    ],
     "shortDescription": "At 6th level, a ranger’s aptitude in his chosen combat style (archery or two-weapon combat) improves. If he selected archery at 2nd level, he is treated as having the Manyshot feat, even if he does not have the normal p…",
     "text": "At 6th level, a ranger’s aptitude in his chosen combat style (archery or two-weapon combat) improves. If he selected archery at 2nd level, he is treated as having the Manyshot feat, even if he does not have the normal prerequisites for that feat.\n\nIf the ranger selected two-weapon combat at 2nd level, he is treated as having the Improved Two-Weapon Fighting feat, even if he does not have the normal prerequisites for that feat.\n\nAs before, the benefits of the ranger’s chosen style apply only when he wears light or no armor. He loses all benefits of his combat style when wearing medium or heavy armor.\n\nArchery |\nTwo-Weapon Fighting |\n\nManyshot |\nImproved Two-Weapon Fighting |",
     "tags": [
@@ -12780,7 +13661,16 @@
         1
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "cab-armor-proficiency-light-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "armor-proficiency-light",
+        "label": "Armor Proficiency (Light)",
+        "text": "When you wear a type of armor with which you are proficient, the armor check penalty for that armor applies only to Balance, Climb, Escape Artist, Hide, Jump, Move Silently, Sleigh"
+      }
+    ],
     "shortDescription": "When you wear a type of armor with which you are proficient, the armor check penalty for that armor applies only to Balance, Climb, Escape Artist, Hide, Jump, Move Silently, Sleight of Hand, and Tumble checks.",
     "text": "When you wear a type of armor with which you are proficient, the armor check penalty for that armor applies only to Balance, Climb, Escape Artist, Hide, Jump, Move Silently, Sleight of Hand, and Tumble checks.",
     "tags": [
@@ -12865,7 +13755,16 @@
     "featKind": "classAbility",
     "abilityType": "ex",
     "associations": [],
-    "effects": [],
+    "effects": [
+      {
+        "id": "cab-skill-mastery-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "skill-mastery",
+        "label": "Skill Mastery",
+        "text": "The rogue becomes so certain in the use of certain skills that she can use them reliably even under adverse conditions. Upon gaining this ability, she selects a number of skills eq"
+      }
+    ],
     "shortDescription": "The rogue becomes so certain in the use of certain skills that she can use them reliably even under adverse conditions. Upon gaining this ability, she selects a number of skills equal to 3 + her Intelligence modifier. W…",
     "text": "The rogue becomes so certain in the use of certain skills that she can use them reliably even under adverse conditions.\n\nUpon gaining this ability, she selects a number of skills equal to 3 + her Intelligence modifier. When making a skill check with one of these skills, she may take 10 even if stress and distractions would normally prevent her from doing so. A rogue may gain this special ability multiple times, selecting additional skills for it to apply to each time.",
     "tags": [
@@ -12888,7 +13787,16 @@
         16
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "cab-wild-shape-elemental-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "wild-shape-elemental",
+        "label": "Wild Shape (Elemental)",
+        "text": "At 5th level, a druid gains the ability to turn herself into any Small or Medium animal and back again once per day. Her options for new forms include all creatures with the animal"
+      }
+    ],
     "shortDescription": "At 5th level, a druid gains the ability to turn herself into any Small or Medium animal and back again once per day. Her options for new forms include all creatures with the animal type. This ability functions like the…",
     "text": "At 5th level, a druid gains the ability to turn herself into any Small or Medium animal and back again once per day. Her options for new forms include all creatures with the animal type. This ability functions like the polymorph spell, except as noted here. The effect lasts for 1 hour per druid level, or until she changes back. Changing form (to animal or back) is a standard action and doesn’t provoke an attack of opportunity.\n\nThe form chosen must be that of an animal the druid is familiar with.\n\nA druid loses her ability to speak while in animal form because she is limited to the sounds that a normal, untrained animal can make, but she can communicate normally with other animals of the same general grouping as her new form. (The normal sound a wild parrot makes is a squawk, so changing to this form does not permit speech.)\n\nA druid can use this ability more times per day at 6th, 7th, 10th, 14th, and 18th level, as noted on Table: The Druid. In addition, she gains the ability to take the shape of a Large animal at 8th level, a Tiny animal at 11th level, and a Huge animal at 15th level.\n\nThe new form’s Hit Dice can’t exceed the character’s druid level.\n\nAt 12th level, a druid becomes able to use wild shape to change into a plant creature with the same size restrictions as for animal forms. (A druid can’t use this ability to take the form of a plant that isn’t a creature.)\n\nAt 16th level, a druid becomes able to use wild shape to change into a Small, Medium, or Large elemental (air, earth, fire, or water) once per day. These elemental forms are in addition to her normal wild shape usage. In addition to the normal effects of wild shape, the druid gains all the elemental’s extraordinary, supernatural, and spell-like abilities. She also gains the elemental’s feats for as long as she maintains the wild shape, but she retains her own creature type.\n\nAt 18th level, a druid becomes able to assume elemental form twice per day, and at 20th level she can do so three times per day. At 20th level, a druid may use this wild shape ability to change into a Huge elemental.",
     "tags": [
@@ -12906,7 +13814,16 @@
     "featKind": "classAbility",
     "abilityType": "ex",
     "associations": [],
-    "effects": [],
+    "effects": [
+      {
+        "id": "cab-mastery-of-shaping-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "mastery-of-shaping",
+        "label": "Mastery of Shaping",
+        "text": "School miscellaneous; Level Sorcerer 6, Wizard 6; Saving Throw none; Spell Resistance yes Description The archmage can alter area and effect spells that use one of the following sh"
+      }
+    ],
     "shortDescription": "School miscellaneous; Level Sorcerer 6, Wizard 6; Saving Throw none; Spell Resistance yes Description The archmage can alter area and effect spells that use one of the following shapes: burst, cone, cylinder, emanation,…",
     "text": "School miscellaneous;\nLevel Sorcerer 6, Wizard 6;\n\nSaving Throw none; Spell Resistance yes\n\nDescription\n\nThe archmage can alter area and effect spells that use one of the following shapes: burst, cone, cylinder, emanation, or spread. The alteration consists of creating spaces within the spell’s area or effect that are not subject to the spell. The minimum dimension for these spaces is a 5-foot cube. Furthermore, any shapeable spells have a minimum dimension of 5 feet instead of 10 feet. This ability costs one 6th-level spell slot.",
     "tags": [
@@ -16568,7 +17485,19 @@
     "category": "Racial Ability",
     "source": "SRD 3.5e",
     "featKind": "racialTrait",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-rab-stc",
+        "type": "stat",
+        "targets": [
+          "skill.search"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Racial",
+        "condition": "Unusual Stonework"
+      }
+    ],
     "shortDescription": "This ability grants a dwarf a +2 racial bonus on Search checks to notice unusual stonework, such as sliding walls, stonework traps, new construction (even when built to match the old), unsafe stone surfaces, shaky stone…",
     "text": "This ability grants a dwarf a +2 racial bonus on Search checks to notice unusual stonework, such as sliding walls, stonework traps, new construction (even when built to match the old), unsafe stone surfaces, shaky stone ceilings, and the like. Something that isn't stone but that is disguised as stone also counts as unusual stonework. A dwarf who merely comes within 10 feet of unusual stonework can make a Search check as if he were actively searching, and a dwarf can use the Search skill to find stonework traps as a rogue can. A dwarf can also intuit depth, sensing his approximate depth underground as naturally as a human can sense which way is up.",
     "tags": [
@@ -16584,7 +17513,43 @@
     "category": "Racial Ability",
     "source": "SRD 3.5e",
     "featKind": "racialTrait",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-rab-ill-sv",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-rab-ill-sv-br",
+            "condKind": "situational",
+            "condText": "vs. Illusions",
+            "effects": [
+              {
+                "id": "ef-rab-ill-s",
+                "type": "stat",
+                "targets": [
+                  "save.all"
+                ],
+                "mode": "flat",
+                "value": 2,
+                "btype": "Racial"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ef-rab-ill-dc",
+        "type": "stat",
+        "targets": [
+          "spell.dc"
+        ],
+        "mode": "flat",
+        "value": 1,
+        "btype": "Racial",
+        "condition": "Illusion Spells"
+      }
+    ],
     "shortDescription": "You get following benefits +2 racial bonus on saving throws against illusions. Add +1 to the Difficulty Class for all saving throws against illusion spells cast by rock gnomes. This adjustment stacks with those from sim…",
     "text": "You get following benefits\n\n• +2 racial bonus on saving throws against illusions.\n\n• Add +1 to the Difficulty Class for all saving throws against illusion spells cast by rock gnomes. This adjustment stacks with those from similar effects.",
     "tags": [
@@ -16600,7 +17565,16 @@
     "category": "Racial Ability",
     "source": "SRD 3.5e",
     "featKind": "racialTrait",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-rab-nd",
+        "type": "effect",
+        "effectKind": "linkedSpell",
+        "castMode": "linkedSpell",
+        "spellName": "Nondetection",
+        "text": "Continuous Nondetection (CL = Character Level)."
+      }
+    ],
     "shortDescription": "A svirfneblin has a continuous nondetection ability as the spell (caster level equal to class levels). Nondetection",
     "text": "A svirfneblin has a continuous nondetection ability as the spell (caster level equal to class levels).\n\nNondetection",
     "tags": [
@@ -16616,7 +17590,16 @@
     "category": "Racial Ability",
     "source": "SRD 3.5e",
     "featKind": "racialTrait",
-    "effects": [],
+    "effects": [
+      {
+        "id": "rab-malevolence-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "malevolence",
+        "label": "Malevolence",
+        "text": "Once per round, an ethereal ghost can merge its body with a creature on the Material Plane. This ability is similar to a magic jar spell (caster level 10th or the ghost’s Hit Dice,"
+      }
+    ],
     "shortDescription": "Once per round, an ethereal ghost can merge its body with a creature on the Material Plane. This ability is similar to a magic jar spell (caster level 10th or the ghost’s Hit Dice, whichever is higher), except that it d…",
     "text": "Once per round, an ethereal ghost can merge its body with a creature on the Material Plane. This ability is similar to a magic jar spell (caster level 10th or the ghost's Hit Dice, whichever is higher), except that it does not require a receptacle. To use this ability, the ghost must be manifested and it must try move into the target's space; moving into the target's space to use the malevolence ability does not provoke attacks of opportunity. The target can resist the attack with a successful Will save (DC 15 + ghost's Cha modifier). A creature that successfully saves is immune to that same ghost's malevolence for 24 hours, and the ghost cannot enter the target's space. If the save fails, the ghost vanishes into the target's body.",
     "tags": [
@@ -16632,7 +17615,53 @@
     "category": "Racial Ability",
     "source": "SRD 3.5e",
     "featKind": "racialTrait",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-rab-out-r",
+        "type": "resource",
+        "name": "Outburst",
+        "varKey": "outburst",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 1,
+        "reset": "perDay"
+      },
+      {
+        "id": "ef-rab-out",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-rab-out-br",
+            "condKind": "state",
+            "condText": "Outburst Active (Up to 4 Rounds)",
+            "effects": [
+              {
+                "id": "ef-rab-out-s",
+                "type": "stat",
+                "targets": [
+                  "str"
+                ],
+                "mode": "flat",
+                "value": 2,
+                "btype": "Untyped"
+              },
+              {
+                "id": "ef-rab-out-i",
+                "type": "stat",
+                "targets": [
+                  "int",
+                  "wis"
+                ],
+                "mode": "flat",
+                "value": -2,
+                "btype": "Penalty"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "Once per day, for up to 4 rounds, a maenad can subjugate her mentality to gain a boost of raw physical power. When she does so, she takes a –2 penalty to Intelligence and Wisdom but gains a +2 bonus to Strength.",
     "text": "Once per day, for up to 4 rounds, a maenad can subjugate her mentality to gain a boost of raw physical power. When she does so, she takes a –2 penalty to Intelligence and Wisdom but gains a +2 bonus to Strength.",
     "tags": [
@@ -16648,7 +17677,16 @@
     "category": "Racial Ability",
     "source": "SRD 3.5e",
     "featKind": "racialTrait",
-    "effects": [],
+    "effects": [
+      {
+        "id": "rab-dominate-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "dominate",
+        "label": "Dominate",
+        "text": "A vampire can crush an opponent’s will just by looking onto his or her eyes. This is similar to a gaze attack, except that the vampire must use a standard action, and those merely "
+      }
+    ],
     "shortDescription": "A vampire can crush an opponent’s will just by looking onto his or her eyes. This is similar to a gaze attack, except that the vampire must use a standard action, and those merely looking at it are not affected. Anyone…",
     "text": "A vampire can crush an opponent's will just by looking onto his or her eyes. This is similar to a gaze attack, except that the vampire must use a standard action, and those merely looking at it are not affected. Anyone the vampire targets must succeed on a Will save or fall instantly under the vampire's influence as though by a Dominate Person spell (caster level 12th). The ability has a range of 30 feet.",
     "tags": [
@@ -16664,7 +17702,19 @@
     "category": "Racial Ability",
     "source": "SRD 3.5e",
     "featKind": "racialTrait",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-rab-ke",
+        "type": "stat",
+        "targets": [
+          "atk.ranged"
+        ],
+        "mode": "flat",
+        "value": 1,
+        "btype": "Racial",
+        "condition": "Thrown Weapons and Slings"
+      }
+    ],
     "shortDescription": "+1 racial bonus on attack rolls with thrown weapons and slings.",
     "text": "+1 racial bonus on attack rolls with thrown weapons and slings.",
     "tags": [
@@ -16680,7 +17730,19 @@
     "category": "Racial Ability",
     "source": "SRD 3.5e",
     "featKind": "racialTrait",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-rab-ga",
+        "type": "stat",
+        "targets": [
+          "skill.craft"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Racial",
+        "condition": "Craft (Alchemy)"
+      }
+    ],
     "shortDescription": "Gnomes get + 2 racial bonus on Craft (alchemy) checks.",
     "text": "Gnomes get +2 racial bonus on Craft (alchemy) checks.",
     "tags": [
@@ -16696,7 +17758,19 @@
     "category": "Racial Ability",
     "source": "SRD 3.5e",
     "featKind": "racialTrait",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-rab-bd",
+        "type": "roll",
+        "kind": "Ability Drain",
+        "count": 1,
+        "die": "d4",
+        "flat": 0,
+        "dmgType": "CON Drain",
+        "scaling": "flat",
+        "crit": "normal"
+      }
+    ],
     "shortDescription": "A vampire can suck blood from a living victim with its fangs by making a successful grapple check. If it pins the foe, it drains blood, dealing 1d4 points of Constitution drain each round the pin is maintained. On each…",
     "text": "A vampire can suck blood from a living victim with its fangs by making a successful grapple check. If it pins the foe, it drains blood, dealing 1d4 points of Constitution drain each round the pin is maintained. On each such successful attack, the vampire gains 5 temporary hit points.",
     "tags": [
@@ -16740,7 +17814,34 @@
     "category": "Racial Ability",
     "source": "SRD 3.5e",
     "featKind": "racialTrait",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-rab-ls",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-rab-ls-br",
+            "condKind": "state",
+            "condText": "In Bright Sunlight / Daylight",
+            "effects": [
+              {
+                "id": "ef-rab-ls-a",
+                "type": "stat",
+                "targets": [
+                  "atk.all",
+                  "skill.spot",
+                  "skill.search"
+                ],
+                "mode": "flat",
+                "value": -1,
+                "btype": "Penalty"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "You are dazzled in sunlight or within the radius of a daylight spell.",
     "text": "You are dazzled in sunlight or within the radius of a daylight spell.",
     "tags": [
@@ -16756,7 +17857,42 @@
     "category": "Racial Ability",
     "source": "SRD 3.5e",
     "featKind": "racialTrait",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-rab-smg-r",
+        "type": "resource",
+        "name": "Smite Good",
+        "varKey": "smite_good",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 1,
+        "reset": "perDay"
+      },
+      {
+        "id": "ef-rab-smg",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-rab-smg-br",
+            "condKind": "situational",
+            "condText": "Smite Good Melee Attack",
+            "effects": [
+              {
+                "id": "ef-rab-smg-d",
+                "type": "stat",
+                "targets": [
+                  "dmg.melee"
+                ],
+                "mode": "formula",
+                "formula": "min(20, @level)",
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "Once per day, a create may attempt to smite good with one normal melee attack. It deals 1 extra point of damage per character HD.",
     "text": "Once per day, a create may attempt to smite good with one normal melee attack. It deals 1 extra point of damage per character HD.",
     "tags": [
@@ -16772,7 +17908,15 @@
     "category": "Racial Ability",
     "source": "SRD 3.5e",
     "featKind": "racialTrait",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-rab-scent",
+        "type": "defense",
+        "mode": "Sense",
+        "what": "Scent 30 ft.",
+        "value": 30
+      }
+    ],
     "shortDescription": "Its antennae give a dromite the scent ability. A dromite can detect opponents by scent within 30 feet. If the opponent is upwind, the range increases to 60 feet; if downwind, it drops to 15 feet. Strong scents, such as…",
     "text": "Its antennae give a dromite the scent ability. A dromite can detect opponents by scent within 30 feet. If the opponent is upwind, the range increases to 60 feet; if downwind, it drops to 15 feet. Strong scents, such as smoke or rotting garbage, can be detected at twice the ranges noted above. Overpowering scents, such as skunk musk or troglodyte stench, can be detected at triple normal range. When a dromite detects a scent, the exact location of the source is not revealed—only its presence somewhere within range. The dromite can take a move action to note the direction of the scent. Whenever the dromite comes within 5 feet of the source, the dromite pinpoints the source's location.",
     "tags": [
@@ -16815,7 +17959,32 @@
     "category": "Racial Ability",
     "source": "SRD 3.5e",
     "featKind": "racialTrait",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-rab-shfg",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-rab-shfg-br",
+            "condKind": "situational",
+            "condText": "vs. Kobolds, Goblinoids, Orcs, Reptilian Humanoids",
+            "effects": [
+              {
+                "id": "ef-rab-shfg-a",
+                "type": "stat",
+                "targets": [
+                  "atk.all"
+                ],
+                "mode": "flat",
+                "value": 1,
+                "btype": "Racial"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "+1 racial bonus on attack rolls against kobolds, goblinoids, orcs, and reptilian humanoids.",
     "text": "+1 racial bonus on attack rolls against kobolds, goblinoids, orcs, and reptilian humanoids.",
     "tags": [
@@ -16858,7 +18027,16 @@
     "category": "Racial Ability",
     "source": "SRD 3.5e",
     "featKind": "racialTrait",
-    "effects": [],
+    "effects": [
+      {
+        "id": "rab-children-of-the-night-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "children-of-the-night",
+        "label": "Children of the Night",
+        "text": "Vampires command the lesser creatures of the world and once per day can call forth 1d6+1 rat swarms, 1d4+1 bat swarms, or a pack of 3d6 wolves as a standard action. (If the base cr"
+      }
+    ],
     "shortDescription": "Vampires command the lesser creatures of the world and once per day can call forth 1d6+1 rat swarms, 1d4+1 bat swarms, or a pack of 3d6 wolves as a standard action. (If the base creature is not terrestrial, this power m…",
     "text": "Vampires command the lesser creatures of the world and once per day can call forth 1d6+1 rat swarms, 1d4+1 bat swarms, or a pack of 3d6 wolves as a standard action. (If the base creature is not terrestrial, this power might summon other creatures of similar power.) These creatures arrive in 2d6 rounds and serve the vampire for up to 1 hour.",
     "tags": [
@@ -16874,7 +18052,39 @@
     "category": "Racial Ability",
     "source": "SRD 3.5e",
     "featKind": "racialTrait",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-rab-eb-im",
+        "type": "defense",
+        "mode": "Immunity",
+        "what": "Magic Sleep Effects",
+        "value": 0
+      },
+      {
+        "id": "ef-rab-eb-w",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-rab-eb-w-br",
+            "condKind": "situational",
+            "condText": "vs. Enchantment Spells & Effects",
+            "effects": [
+              {
+                "id": "ef-rab-eb-s",
+                "type": "stat",
+                "targets": [
+                  "save.all"
+                ],
+                "mode": "flat",
+                "value": 2,
+                "btype": "Racial"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "Immunity to magic sleep effects, and a +2 racial saving throw bonus against enchantment spells or effects.",
     "text": "Immunity to magic sleep effects, and a +2 racial saving throw bonus against enchantment spells or effects.",
     "tags": [
@@ -16890,7 +18100,18 @@
     "category": "Racial Ability",
     "source": "SRD 3.5e",
     "featKind": "racialTrait",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-rab-stab",
+        "type": "stat",
+        "targets": [
+          "cmd.stability"
+        ],
+        "mode": "flat",
+        "value": 4,
+        "btype": "Racial"
+      }
+    ],
     "shortDescription": "A hill dwarf gains a +4 bonus on ability checks made to resist being bull rushed or tripped when standing on the ground (but not when climbing, flying, riding, or otherwise not standing firmly on the ground).",
     "text": "A hill dwarf gains a +4 bonus on ability checks made to resist being bull rushed or tripped when standing on the ground (but not when climbing, flying, riding, or otherwise not standing firmly on the ground).",
     "tags": [
@@ -16906,7 +18127,16 @@
     "category": "Racial Ability",
     "source": "SRD 3.5e",
     "featKind": "racialTrait",
-    "effects": [],
+    "effects": [
+      {
+        "id": "rab-telekinesis-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "telekinesis",
+        "label": "Telekinesis",
+        "text": "A creature can use Telekinesis as a standard action (caster level 12th or equal to the ghost’s HD, whichever is higher). When a creature uses this power, it must wait 1d4 rounds be"
+      }
+    ],
     "shortDescription": "A creature can use Telekinesis as a standard action (caster level 12th or equal to the ghost’s HD, whichever is higher). When a creature uses this power, it must wait 1d4 rounds before using it again.",
     "text": "A creature can use Telekinesis as a standard action (caster level 12th or equal to the ghost's HD, whichever is higher). When a creature uses this power, it must wait 1d4 rounds before using it again.",
     "tags": [
@@ -16922,7 +18152,32 @@
     "category": "Racial Ability",
     "source": "SRD 3.5e",
     "featKind": "racialTrait",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-rab-gs",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-rab-gs-br",
+            "condKind": "situational",
+            "condText": "vs. Orcs and Goblinoids",
+            "effects": [
+              {
+                "id": "ef-rab-gs-a",
+                "type": "stat",
+                "targets": [
+                  "atk.all"
+                ],
+                "mode": "flat",
+                "value": 1,
+                "btype": "Racial"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "You get +1 racial bonus on attack rolls against orcs (including half-orcs) and goblinoids (including goblins, hobgoblins, and bugbears).",
     "text": "You get +1 racial bonus on attack rolls against orcs (including half-orcs) and goblinoids (including goblins, hobgoblins, and bugbears).",
     "tags": [
@@ -16938,7 +18193,16 @@
     "category": "Racial Ability",
     "source": "SRD 3.5e",
     "featKind": "racialTrait",
-    "effects": [],
+    "effects": [
+      {
+        "id": "rab-daylight-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "daylight",
+        "label": "Daylight",
+        "text": "The object touched sheds light as bright as full daylight in a 60-foot radius, and dim light for an additional 60 feet beyond that. Creatures that take penalties in bright light al"
+      }
+    ],
     "shortDescription": "The object touched sheds light as bright as full daylight in a 60-foot radius, and dim light for an additional 60 feet beyond that. Creatures that take penalties in bright light also take them while within the radius of…",
     "text": "The object touched sheds light as bright as full daylight in a 60-foot radius, and dim light for an additional 60 feet beyond that. Creatures that take penalties in bright light also take them while within the radius of this magical light. Despite its name, this spell is not the equivalent of daylight for the purposes of creatures that are damaged or destroyed by bright light.\n\nIf daylight is cast on a small object that is then placed inside or under a light- proof covering, the spell's effects are blocked until the covering is removed.\n\nDaylight brought into an area of magical darkness (or vice versa) is temporarily negated, so that the otherwise prevailing light conditions exist in the overlapping areas of effect.\n\nDaylight counters or dispels any darkness spell of equal or lower level, such as darkness.",
     "tags": [
@@ -16954,7 +18218,19 @@
     "category": "Racial Ability",
     "source": "SRD 3.5e",
     "featKind": "racialTrait",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-rab-svill",
+        "type": "stat",
+        "targets": [
+          "spell.dc"
+        ],
+        "mode": "flat",
+        "value": 1,
+        "btype": "Racial",
+        "condition": "Illusion Spells"
+      }
+    ],
     "shortDescription": "+1 to the Difficulty Class for all saving throws against illusion spells cast by svirfneblin.",
     "text": "+1 to the Difficulty Class for all saving throws against illusion spells cast by svirfneblin.",
     "tags": [
@@ -16970,7 +18246,32 @@
     "category": "Racial Ability",
     "source": "SRD 3.5e",
     "featKind": "racialTrait",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-rab-sag",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-rab-sag-br",
+            "condKind": "situational",
+            "condText": "vs. Giants",
+            "effects": [
+              {
+                "id": "ef-rab-sag-ac",
+                "type": "stat",
+                "targets": [
+                  "ac.dodge"
+                ],
+                "mode": "flat",
+                "value": 4,
+                "btype": "Dodge"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "You get +4 dodge bonus to Armor Class against creatures of the giant type (such as ogres, trolls, and hill giants).",
     "text": "You get +4 dodge bonus to Armor Class against creatures of the giant type (such as ogres, trolls, and hill giants).",
     "tags": [
@@ -16986,7 +18287,32 @@
     "category": "Racial Ability",
     "source": "SRD 3.5e",
     "featKind": "racialTrait",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-rab-fl",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-rab-fl-br",
+            "condKind": "situational",
+            "condText": "vs. Fear",
+            "effects": [
+              {
+                "id": "ef-rab-fl-s",
+                "type": "stat",
+                "targets": [
+                  "save.all"
+                ],
+                "mode": "flat",
+                "value": 2,
+                "btype": "Morale"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "+2 morale bonus on saving throws against fear: This bonus stacks with the lightfoot halfling’s +1 bonus on saving throws in general",
     "text": "+2 morale bonus on saving throws against fear: This bonus stacks with the lightfoot halfling's +1 bonus on saving throws in general",
     "tags": [
@@ -17002,7 +18328,16 @@
     "category": "Racial Ability",
     "source": "SRD 3.5e",
     "featKind": "racialTrait",
-    "effects": [],
+    "effects": [
+      {
+        "id": "rab-dodge-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "dodge",
+        "label": "Dodge",
+        "text": "School: abjuration; Components: V, S Area: one spellcaster, creature, or object; or 20-ft.-radius burst Duration: Instantaneous Saving Throw: none Spell Resistance: no Description "
+      }
+    ],
     "shortDescription": "School: abjuration; Components: V, S Area: one spellcaster, creature, or object; or 20-ft.-radius burst Duration: Instantaneous Saving Throw: none Spell Resistance: no Description You can use dispel magic to end ongoing…",
     "text": "School: abjuration;\n\nComponents: V, S\n\nArea: one spellcaster, creature, or object; or 20-ft.-radius burst\n\nDuration: Instantaneous\n\nSaving Throw: none\n\nSpell Resistance: no\n\nDescription\n\nYou can use dispel magic to end ongoing spells that have been cast on a creature or object, to temporarily suppress the magical abilities of a magic item, to end ongoing spells (or at least their effects) within an area, or to counter another spellcaster’s spell. A dispelled spell ends as if its duration had expired. Some spells, as detailed in their descriptions, can’t be defeated by dispel magic. Dispel magic can dispel (but not counter) spell-like effects just as it does spells.\n\nNote: The effect of a spell with an instantaneous duration can’t be dispelled, because the magical effect is already over before the dispel magic can take effect.\n\nYou choose to use dispel magic in one of three ways: a targeted dispel, an area dispel, or a counterspell:\n\nTargeted Dispel: One object, creature, or spell is the target of the dispel magic spell. You make a dispel check (1d20 + your caster level, maximum +10) against the spell or against each ongoing spell currently in effect on the object or creature. The DC for this dispel check is 11 + the spell’s caster level. If you succeed on a particular check, that spell is dispelled; if you fail, that spell remains in effect.\n\nIf you target an object or creature that is the effect of an ongoing spell (such as a monster summoned by monster summoning), you make a dispel check to end the spell that conjured the object or creature.\n\nIf the object that you target is a magic item, you make a dispel check against the item’s caster level. If you succeed, all the item’s magical properties are suppressed for 1d4 rounds, after which the item recovers on its own. A suppressed item becomes nonmagical for the duration of the effect. An interdimensional interface (such as a bag of holding) is temporarily closed. A magic item’s physical properties are unchanged: A suppressed magic sword is still a sword (a masterwork sword, in fact). Artifacts and deities are unaffected by mortal magic such as this.\n\nYou automatically succeed on your dispel check against any spell that you cast yourself.\n\nArea Dispel: When dispel magic is used in this way, the spell affects everything within a 20-foot radius.\n\nFor each creature within the area that is the subject of one or more spells, you make a dispel check against the spell with the highest caster level. If that check fails, you make dispel checks against progressively weaker spells until you dispel one spell (which discharges the dispel magic spell so far as that target is concerned) or until you fail all your checks. The creature’s magic items are not affected.\n\nFor each object within the area that is the target of one or more spells, you make dispel checks as with creatures. Magic items are not affected by an area dispel.\n\nFor each ongoing area or effect spell whose point of origin is within the area of the dispel magic spell, you can make a dispel check to dispel the spell.\n\nFor each ongoing spell whose area overlaps that of the dispel magic spell, you can make a dispel check to end the effect, but only within the overlapping area.\n\nIf an object or creature that is the effect of an ongoing spell (such as a monster summoned by monster summoning) is in the area, you can make a dispel check to end the spell that conjured that object or creature (returning it whence it came) in addition to attempting to dispel spells targeting the creature or object.\n\nYou may choose to automatically succeed on dispel checks against any spell that you have cast.\n\nCounterspell: When dispel magic is used in this way, the spell targets a spellcaster and is cast as a counterspell. Unlike a true counterspell, however, dispel magic may not work; you must make a dispel check to counter the other spellcaster’s spell.",
     "tags": [
@@ -17044,7 +18379,42 @@
     "category": "Racial Ability",
     "source": "SRD 3.5e",
     "featKind": "racialTrait",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-rab-br-r",
+        "type": "resource",
+        "name": "Burst",
+        "varKey": "burst",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 3,
+        "reset": "perDay"
+      },
+      {
+        "id": "ef-rab-br",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-rab-br-br",
+            "condKind": "state",
+            "condText": "Burst Active (3 Rounds)",
+            "effects": [
+              {
+                "id": "ef-rab-br-sp",
+                "type": "stat",
+                "targets": [
+                  "speed.land"
+                ],
+                "mode": "formula",
+                "formula": "10 + floor(@level / 4) * 10",
+                "btype": "Competence"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "Three times per day, a xeph can put on a burst of speed to increase her speed by 10 feet, plus 10 feet per four character levels beyond 1st, to a maximum increase of 30 feet at 9th character level and higher. These burs…",
     "text": "Three times per day, a xeph can put on a burst of speed to increase her speed by 10 feet, plus 10 feet per four character levels beyond 1st, to a maximum increase of 30 feet at 9th character level and higher. These bursts of speed are considered a competence bonus to the xeph's base speed. A burst of speed lasts 3 rounds.",
     "tags": [
@@ -17060,7 +18430,32 @@
     "category": "Racial Ability",
     "source": "SRD 3.5e",
     "featKind": "racialTrait",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-rab-sh",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-rab-sh-br",
+            "condKind": "situational",
+            "condText": "vs. Kobolds and Goblinoids",
+            "effects": [
+              {
+                "id": "ef-rab-sh-a",
+                "type": "stat",
+                "targets": [
+                  "atk.all"
+                ],
+                "mode": "flat",
+                "value": 1,
+                "btype": "Racial"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "+1 racial bonus on attack rolls against kobolds and goblinoids.",
     "text": "+1 racial bonus on attack rolls against kobolds and goblinoids.",
     "tags": [
@@ -17076,7 +18471,16 @@
     "category": "Racial Ability",
     "source": "SRD 3.5e",
     "featKind": "racialTrait",
-    "effects": [],
+    "effects": [
+      {
+        "id": "rab-alternate-form-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "alternate-form",
+        "label": "Alternate Form",
+        "text": "A vampire can assume the shape of a bat, dire bat, wolf, or dire wolf as a standard action. While in its alternate form, the vampire loses its natural slam attack and dominate abil"
+      }
+    ],
     "shortDescription": "A vampire can assume the shape of a bat, dire bat, wolf, or dire wolf as a standard action. While in its alternate form, the vampire loses its natural slam attack and dominate ability, but it gains the natural weapons a…",
     "text": "A vampire can assume the shape of a bat, dire bat, wolf, or dire wolf as a standard action. While in its alternate form, the vampire loses its natural slam attack and dominate ability, but it gains the natural weapons and extraordinary special attacks of its new form. It can remain in that form until it assumes another or until the next sunrise. (If the base creature is not terrestrial, this power might allow other forms.)",
     "tags": [
@@ -17119,7 +18523,16 @@
     "category": "Racial Ability",
     "source": "SRD 3.5e",
     "featKind": "racialTrait",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-rab-lb",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "blinded1RoundBrightLight",
+        "label": "Blinded 1 Round on Abrupt Bright Light Exposure; Dazzled Thereafter",
+        "text": "Blinded 1 Round on Abrupt Bright Light Exposure; Dazzled Thereafter"
+      }
+    ],
     "shortDescription": "Abrupt exposure to bright light (such as sunlight or a daylight spell) blinds the character for 1 round. On subsequent rounds, they are dazzled as long as they remain in the affected area.",
     "text": "Abrupt exposure to bright light (such as sunlight or a daylight spell) blinds the character for 1 round. On subsequent rounds, they are dazzled as long as they remain in the affected area.",
     "tags": [
@@ -17135,7 +18548,42 @@
     "category": "Racial Ability",
     "source": "SRD 3.5e",
     "featKind": "racialTrait",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-rab-sme-r",
+        "type": "resource",
+        "name": "Smite Evil",
+        "varKey": "smite_evil",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 1,
+        "reset": "perDay"
+      },
+      {
+        "id": "ef-rab-sme",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-rab-sme-br",
+            "condKind": "situational",
+            "condText": "Smite Evil Melee Attack",
+            "effects": [
+              {
+                "id": "ef-rab-sme-d",
+                "type": "stat",
+                "targets": [
+                  "dmg.melee"
+                ],
+                "mode": "formula",
+                "formula": "min(20, @level)",
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "Once per day, creature may attempt to smite evil with one normal melee attack. It deals 1 extra point of damage per character HD.",
     "text": "Once per day, creature may attempt to smite evil with one normal melee attack. It deals 1 extra point of damage per character HD.",
     "tags": [
@@ -17151,7 +18599,19 @@
     "category": "Racial Ability",
     "source": "SRD 3.5e",
     "featKind": "racialTrait",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-rab-ha",
+        "type": "roll",
+        "kind": "Ability Damage",
+        "count": 1,
+        "die": "d4",
+        "flat": 0,
+        "dmgType": "STR/DEX/CON Damage",
+        "scaling": "flat",
+        "crit": "normal"
+      }
+    ],
     "shortDescription": "Any living creature within 60 feet that views a ghost must succeed on a Fortitude save or immediately take 1d4 points of Strength damage, 1d4 points of Dexterity damage, and 1d4 points of Constitution damage. A creature…",
     "text": "Any living creature within 60 feet that views a ghost must succeed on a Fortitude save or immediately take 1d4 points of Strength damage, 1d4 points of Dexterity damage, and 1d4 points of Constitution damage. A creature that successfully saves against this effect cannot be affected by the same ghost's horrific appearance for 24 hours.",
     "tags": [
@@ -17167,7 +18627,15 @@
     "category": "Racial Ability",
     "source": "SRD 3.5e",
     "featKind": "racialTrait",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-rab-pt",
+        "type": "carrier",
+        "carrierMode": "weaponRider",
+        "riderEffect": "Touch Attack: Permanent Paralysis",
+        "saveType": "Fortitude"
+      }
+    ],
     "shortDescription": "Any living creature a lich hits with its touch attack must succeed on a Fortitude save or be permanently paralyzed. Remove Paralysis or any spell that can remove a curse can free the victim (see the Bestow Curse spell d…",
     "text": "Any living creature a lich hits with its touch attack must succeed on a Fortitude save or be permanently paralyzed. Remove Paralysis or any spell that can remove a curse can free the victim (see the Bestow Curse spell description).\n\nThe effect cannot be dispelled. Anyone paralyzed by a lich seems dead, though a DC 20 Spot check or a DC 15 Heal check reveals that the victim is still alive.",
     "tags": [
@@ -17183,7 +18651,15 @@
     "category": "Racial Ability",
     "source": "SRD 3.5e",
     "featKind": "racialTrait",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-rab-fa",
+        "type": "carrier",
+        "carrierMode": "weaponRider",
+        "riderEffect": "60-ft. Aura (< 5 HD): Fear",
+        "saveType": "Will"
+      }
+    ],
     "shortDescription": "Liches are shrouded in a dreadful aura of death and evil. Creatures of less than 5 HD in a 60-foot radius that look at the lich must succeed on a Will save or be affected as though by a fear spell from a sorcerer of the…",
     "text": "Liches are shrouded in a dreadful aura of death and evil. Creatures of less than 5 HD in a 60-foot radius that look at the lich must succeed on a Will save or be affected as though by a fear spell from a sorcerer of the lich's level. A creature that successfully saves cannot be affected again by the same lich's aura for 24 hours.",
     "tags": [
@@ -17199,7 +18675,16 @@
     "category": "Racial Ability",
     "source": "SRD 3.5e",
     "featKind": "racialTrait",
-    "effects": [],
+    "effects": [
+      {
+        "id": "rab-gaseous-form-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "gaseous-form",
+        "label": "Gaseous Form",
+        "text": "As a standard action, a vampire can assume gaseous form at will as the spell Gaseous Form (caster level 5th), but it can remain gaseous indefinitely and has a fly speed of 20 feet "
+      }
+    ],
     "shortDescription": "As a standard action, a vampire can assume gaseous form at will as the spell Gaseous Form (caster level 5th), but it can remain gaseous indefinitely and has a fly speed of 20 feet with perfect maneuverability.",
     "text": "As a standard action, a vampire can assume gaseous form at will as the spell Gaseous Form (caster level 5th), but it can remain gaseous indefinitely and has a fly speed of 20 feet with perfect maneuverability.",
     "tags": [
@@ -17215,7 +18700,16 @@
     "category": "Racial Ability",
     "source": "SRD 3.5e",
     "featKind": "racialTrait",
-    "effects": [],
+    "effects": [
+      {
+        "id": "rab-pass-without-a-trace-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "pass-without-a-trace",
+        "label": "Pass without a trace",
+        "text": "A forest gnome has the innate ability to use pass without trace (self only, as a free action) as the spell cast by a druid of the forest gnome’s class levels. Pass without Trace"
+      }
+    ],
     "shortDescription": "A forest gnome has the innate ability to use pass without trace (self only, as a free action) as the spell cast by a druid of the forest gnome’s class levels. Pass without Trace",
     "text": "A forest gnome has the innate ability to use pass without trace (self only, as a free action) as the spell cast by a druid of the forest gnome's class levels.\n\nPass without Trace",
     "tags": [
@@ -17231,7 +18725,15 @@
     "category": "Racial Ability",
     "source": "SRD 3.5e",
     "featKind": "racialTrait",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-rab-fm",
+        "type": "carrier",
+        "carrierMode": "weaponRider",
+        "riderEffect": "30-ft. Spread: Panicked for 2d4 Rounds",
+        "saveType": "Will"
+      }
+    ],
     "shortDescription": "A ghost can emit a frightful moan as a standard action. All living creatures within a 30-foot spread must succeed on a Will save or become panicked for 2d4 rounds. This is a sonic necromantic mind-affecting fear effect.…",
     "text": "A ghost can emit a frightful moan as a standard action. All living creatures within a 30-foot spread must succeed on a Will save or become panicked for 2d4 rounds. This is a sonic necromantic mind-affecting fear effect. A creature that successfully saves against the moan cannot be affected by the same ghost's moan for 24 hours.",
     "tags": [
@@ -17247,7 +18749,32 @@
     "category": "Racial Ability",
     "source": "SRD 3.5e",
     "featKind": "racialTrait",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-rab-ir",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-rab-ir-br",
+            "condKind": "situational",
+            "condText": "vs. Powers, Spells, and Spell-Like Effects",
+            "effects": [
+              {
+                "id": "ef-rab-ir-s",
+                "type": "stat",
+                "targets": [
+                  "save.all"
+                ],
+                "mode": "flat",
+                "value": 1,
+                "btype": "Racial"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "+1 racial bonus on saving throws against powers, spells, and spell-like effects. Xephs have an innate resistance to psionics and magic.",
     "text": "+1 racial bonus on saving throws against powers, spells, and spell-like effects. Xephs have an innate resistance to psionics and magic.",
     "tags": [
@@ -17263,7 +18790,16 @@
     "category": "Racial Ability",
     "source": "SRD 3.5e",
     "featKind": "racialTrait",
-    "effects": [],
+    "effects": [
+      {
+        "id": "rab-greater-invisibility-sw",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "greater-invisibility",
+        "label": "Greater Invisibility",
+        "text": "School: evocation [light]; Level: Druid 1; Components: V, S, F, DF Area: creatures and objects within a 5-ft.-radius burst Duration: 1 min./level (D) Saving Throw: none Spell Resis"
+      }
+    ],
     "shortDescription": "School: evocation [light]; Level: Druid 1; Components: V, S, F, DF Area: creatures and objects within a 5-ft.-radius burst Duration: 1 min./level (D) Saving Throw: none Spell Resistance: yes Description A pale glow surr…",
     "text": "School: evocation [light];\n\nLevel: Druid 1;\n\nComponents: V, S, F, DF\n\nArea: creatures and objects within a 5-ft.-radius burst\n\nDuration: 1 min./level (D)\n\nSaving Throw: none\n\nSpell Resistance: yes\n\nDescription\n\nA pale glow surrounds and outlines the subjects. Outlined subjects shed light as candles. Outlined creatures do not benefit from the concealment normally provided by darkness (though a 2nd-level or higher magical darkness effect functions normally), blur, displacement, invisibility, or similar effects. The light is too dim to have any special effect on undead or dark-dwelling creatures vulnerable to light. The faerie fire can be blue, green, or violet, according to your choice at the time of casting. The faerie fire does not cause any harm to the objects or creatures thus outlined.",
     "tags": [
@@ -27541,8 +29077,8 @@
         "branches": [
           {
             "id": "br-bc-1",
-            "condKind": "state",
-            "condText": "notFlatFooted",
+            "condKind": "notFlatFooted",
+            "condText": "",
             "effects": [
               {
                 "id": "ef-bc-ref",

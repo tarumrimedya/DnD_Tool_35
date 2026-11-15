@@ -1035,9 +1035,14 @@
         ? RuleEngine.resolveSpellDynamicScaling(spell, cl)
         : null;
 
-      // 1. Damage / Dice expression (V2 damageParts primary lookup + fallback)
-      const v2PrimaryPart = (Array.isArray(spell.damageParts) && spell.damageParts[0]) || (Array.isArray(masterSpell.damageParts) && masterSpell.damageParts[0]) || null;
-      let diceExpr = (scaling && scaling.diceFormula) ? scaling.diceFormula : ((v2PrimaryPart && v2PrimaryPart.dice) || spell.dice || spell.damageDice || masterSpell.dice || '');
+      // 1. Damage / Dice expression (V3 effects roll block primary lookup + fallback)
+      const v3RollPart = (Array.isArray(spell.effects) && spell.effects.find(e => e && e.type === 'roll'))
+        || (Array.isArray(masterSpell.effects) && masterSpell.effects.find(e => e && e.type === 'roll'))
+        || null;
+      const v3RollDice = v3RollPart
+        ? (v3RollPart.dice || (v3RollPart.die && v3RollPart.die !== 'flat' ? `${v3RollPart.count || 1}${String(v3RollPart.die).replace(/^\d+/, '')}` : ''))
+        : '';
+      let diceExpr = (scaling && scaling.diceFormula) ? scaling.diceFormula : (v3RollDice || spell.dice || spell.damageDice || masterSpell.dice || '');
       if (diceExpr && (String(diceExpr).includes('@') || /\b(min|max|floor|ceil)\s*\(/i.test(String(diceExpr))) && typeof RuleEngine !== 'undefined' && typeof RuleEngine.evaluateFormula === 'function') {
         const evaluated = RuleEngine.evaluateFormula(String(diceExpr), { cl, level: cl, critMult: 1 });
         if (evaluated && String(evaluated) !== '0') diceExpr = String(evaluated).trim();
@@ -1679,8 +1684,8 @@
         }
       }
 
-      // 5. Check Melee dynamic modifiers (character.activeModifiers, pins, stances, maneuvers, masterDb)
-      const allActive = (character.activeModifiers || []);
+      // 5. Check Melee dynamic modifiers (character.tacticalRiders, pins, stances, maneuvers, masterDb)
+      const allActive = (character.tacticalRiders || []);
       const activeMatch = allActive.find(m => m && m.name && m.name.toLowerCase().trim() === idClean);
 
       // Check masterDb for description / details
@@ -1707,11 +1712,16 @@
       const title = activeMatch?.name || dbMatch?.name || mnvMatch?.name || stnMatch?.name || featMatch?.name || identifier;
       const type = dbMatch?.type || dbMatch?.category || (stnMatch ? 'Stance' : (mnvMatch ? 'Maneuver' : (featMatch ? 'Feat' : (activeMatch?.source || 'Tactic'))));
       
-      let val1 = activeMatch?.dice ? `${activeMatch.dice} Damage` : (activeMatch?.bonusDmg ? `+${activeMatch.bonusDmg} Dmg` : (activeMatch?.bonusAtk ? `+${activeMatch.bonusAtk} Atk` : (dbMatch?.dice ? `${dbMatch.dice} Damage` : 'Active Effect')));
+      const activeRoll = getRiderRollBlock(activeMatch);
+      const activeDmgBonus = getRiderStatBonus(activeMatch, 'damage');
+      const activeAtkBonus = getRiderStatBonus(activeMatch, 'attack');
+      let val1 = (activeRoll && activeRoll.dice)
+        ? `${activeRoll.dice} Damage`
+        : (activeDmgBonus ? `+${activeDmgBonus} Dmg` : (activeAtkBonus ? `+${activeAtkBonus} Atk` : (dbMatch?.dice ? `${dbMatch.dice} Damage` : 'Active Effect')));
       let val2 = dbMatch?.school || dbMatch?.discipline || (mnvMatch?.discipline || (stnMatch?.discipline || (featMatch ? 'Passive / Feat' : (itemMatch ? 'Item / Consumable' : 'Tactical'))));
 
       let action = dbMatch?.action || mnvMatch?.action || (stnMatch ? 'Swift Action (Stance)' : 'Free Action');
-      let desc = dbMatch?.description || dbMatch?.desc || dbMatch?.benefit || mnvMatch?.desc || stnMatch?.desc || featMatch?.desc || activeMatch?.desc || 'This tactical modifier applies directly to your combat attack or damage profile.';
+      let desc = dbMatch?.description || dbMatch?.desc || dbMatch?.benefit || mnvMatch?.desc || stnMatch?.desc || featMatch?.desc || activeMatch?.notes || activeMatch?.desc || 'This tactical modifier applies directly to your combat attack or damage profile.';
 
       return {
         title,
@@ -2332,8 +2342,8 @@
         matchingPin.active = nextActive;
       }
 
-      if (Array.isArray(character.activeModifiers)) {
-        const matchingActiveMod = character.activeModifiers.find(m => m && m.name && m.name.toLowerCase().trim() === mod.name.toLowerCase().trim());
+      if (Array.isArray(character.tacticalRiders)) {
+        const matchingActiveMod = character.tacticalRiders.find(m => m && m.name && m.name.toLowerCase().trim() === mod.name.toLowerCase().trim());
         if (matchingActiveMod) {
           matchingActiveMod.active = nextActive;
         }
@@ -2391,7 +2401,7 @@
       if (featKey === 'divine_might') {
         buffObj = {
           id: buffId,
-          schemaVersion: 2,
+          schemaVersion: 3,
           name: 'Divine Might',
           active: true,
           source: 'Divine Feat',
@@ -2400,7 +2410,7 @@
           initialDuration: '1 Round',
           rounds: 1,
           initialRounds: 1,
-          modifiers: [{ target: 'damage.melee', value: chaMod, type: 'sacred', condition: null }],
+          effects: [{ type: 'stat', targets: ['damage.melee'], mode: 'flat', value: chaMod, btype: 'Sacred' }],
           summary: `+${chaMod} Sacred bonus to weapon damage rolls for 1 full round.`,
           description: `Spend 1 Turn/Rebuke attempt as a free action to add your Charisma bonus (+${chaMod}) to weapon damage for 1 full round.`
         };
@@ -2408,7 +2418,7 @@
       } else if (featKey === 'divine_vengeance') {
         buffObj = {
           id: buffId,
-          schemaVersion: 2,
+          schemaVersion: 3,
           name: 'Divine Vengeance',
           active: true,
           source: 'Divine Feat',
@@ -2417,7 +2427,7 @@
           initialDuration: '1 Round',
           rounds: 1,
           initialRounds: 1,
-          damageParts: [{ dice: '2d6', bonus: 0, type: 'Sacred (vs. Undead)', multiplyOnCrit: false, onCritOnly: false, source: 'Divine Vengeance' }],
+          effects: [{ type: 'roll', kind: 'Damage', dice: '2d6', dmgType: 'Sacred (vs. Undead)', crit: false }],
           summary: '+2d6 Sacred energy damage on melee attacks against undead for 1 round.',
           description: 'Spend 1 Turn Undead attempt to add 2d6 sacred energy damage to melee attacks against undead until the end of your next action.'
         };
@@ -2425,7 +2435,7 @@
       } else if (featKey === 'divine_shield') {
         buffObj = {
           id: buffId,
-          schemaVersion: 2,
+          schemaVersion: 3,
           name: 'Divine Shield',
           active: true,
           source: 'Divine Feat',
@@ -2434,7 +2444,7 @@
           initialDuration: `${halfLvl} Rounds`,
           rounds: halfLvl,
           initialRounds: halfLvl,
-          modifiers: [{ target: 'ac.shield', value: chaMod, type: 'sacred', condition: null }],
+          effects: [{ type: 'stat', targets: ['ac.shield'], mode: 'flat', value: chaMod, btype: 'Sacred' }],
           summary: `+${chaMod} Sacred bonus to Shield AC for ${halfLvl} rounds.`,
           description: `Spend 1 Turn/Rebuke attempt as a standard action to add your Charisma bonus (+${chaMod}) to your shield's AC bonus for ${halfLvl} rounds.`
         };
@@ -3222,7 +3232,7 @@
             if (isRanged) return false;
           }
           if (Array.isArray(spell.sizeModifier.targetFilter?.allowedDmgTypes) && spell.sizeModifier.targetFilter.allowedDmgTypes.length > 0) {
-            const pType = (Array.isArray(w.damageParts) && w.damageParts[0]?.type) || w.dmgType || '';
+            const pType = w.weapon?.dmgType || w.weapon?.damageType || w.dmgType || '';
             const dt = String(pType).toLowerCase();
             const tags = (w.tags || []).map(t => String(t).toLowerCase());
             const matchesType = spell.sizeModifier.targetFilter.allowedDmgTypes.some(type => {
@@ -3607,16 +3617,17 @@
         if (!Array.isArray(character.buffs)) character.buffs = [];
         const existingIdx = character.buffs.findIndex(b => b.name === spell.name);
         const buffObj = {
+          schemaVersion: 3,
           name: spell.name,
           active: true,
           source: 'Spell',
           targetType: 'creature',
           sizeSteps: calculatedSteps,
-          // Size-typed ability / AC / attack modifiers come from the spell's own V2 record (SRD entry by id as fallback)
-          modifiers: JSON.parse(JSON.stringify(
-            (Array.isArray(spell.modifiers) && spell.modifiers.length > 0)
-              ? spell.modifiers
-              : ((typeof SrdCompendium !== 'undefined' && SrdCompendium.getById && spell.id ? SrdCompendium.getById(spell.id)?.modifiers : null) || [])
+          // Size-typed ability / AC / attack effects come from the spell's own V3 record (SRD entry by id as fallback)
+          effects: JSON.parse(JSON.stringify(
+            (Array.isArray(spell.effects) && spell.effects.length > 0)
+              ? spell.effects
+              : ((typeof SrdCompendium !== 'undefined' && SrdCompendium.getById && spell.id ? SrdCompendium.getById(spell.id)?.effects : null) || [])
           )),
           cl: cl,
           duration: `${cl} min`,
@@ -3812,7 +3823,7 @@
         const offSelect = document.getElementById('active-offhand-select');
         if (offSelect) offSelect.value = 'None';
 
-        let twfMod = (character.activeModifiers || []).find(m => m && m.name && (m.name.includes('TWF') || m.name.includes('Two-Weapon')));
+        let twfMod = (character.tacticalRiders || []).find(m => m && m.name && (m.name.includes('TWF') || m.name.includes('Two-Weapon')));
         if (twfMod) twfMod.active = false;
 
         if (typeof showToast === 'function') {
@@ -3871,12 +3882,14 @@
         if (found) return ({ ...found, name: wepName });
       }
 
-      // 4.5 Check SrdCompendium O(1) first, then BUNDLED_SRD_CORE_CATALOG fallback
+      // 4.5 Check SrdCompendium O(1) first, then loaded catalog fallback
       if (window.SrdCompendium && typeof window.SrdCompendium.getByName === 'function') {
         found = window.SrdCompendium.getByName(wepName, 'Weapon') || window.SrdCompendium.getByName(wepName);
         if (found) return ({ ...found, name: wepName });
-      } else if (typeof window.BUNDLED_SRD_CORE_CATALOG !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
-        found = window.BUNDLED_SRD_CORE_CATALOG.find(item => item && item.name && item.name.toLowerCase().trim() === wepName.toLowerCase().trim());
+      }
+      if (window.SrdCompendium && typeof window.SrdCompendium.getAllLoaded === 'function') {
+        const loaded = window.SrdCompendium.getAllLoaded() || [];
+        found = loaded.find(item => item && item.name && item.name.toLowerCase().trim() === wepName.toLowerCase().trim());
         if (found) return ({ ...found, name: wepName });
       }
 
@@ -4271,7 +4284,7 @@
       if (isShieldItemMatch) {
         const isBuckler = isBucklerItem(wepName);
         const isHeavy = lower.includes('heavy');
-        const shieldAc = offItem?.shieldBonus || offItem?.acBonus || (isHeavy ? 2 : 1);
+        const shieldAc = offItem?.armor?.armorBonus || offItem?.shieldBonus || (isHeavy ? 2 : 1);
         if (isBuckler) {
           return {
             dmgStr: 'No Attack',
@@ -4314,7 +4327,7 @@
         const activeRangedMods = [];
         const qualifiedRanged = typeof getQualifiedRangedModifiersList === 'function' ? getQualifiedRangedModifiersList() : [];
         qualifiedRanged.forEach(m => {
-          // Point Blank Shot is evaluated natively from V2 feat modifiers inside RuleEngine.evaluateWeaponAttack.
+          // Point Blank Shot is evaluated natively from V3 feat effects inside RuleEngine.evaluateWeaponAttack.
           if (m && m.active && m.id !== 'pointBlankShot') {
             activeRangedMods.push({
               name: m.name,
@@ -4396,7 +4409,7 @@
           const flanking = !!(character.tactical?.flanking);
           const charge = !!(character.tactical?.charge);
           const hg = character.tactical?.higherGround ?? false;
-          const activeMods = (character.activeModifiers || []).filter(m => m && m.active);
+          const activeMods = (character.tacticalRiders || []).filter(m => m && m.active);
           const nonChainMods = activeMods.filter(m => {
         if (!m || !m.name) return false;
         if (m.name.includes('TWF') || m.name.includes('Two-Weapon') || m.name.includes('Flurry')) return false;
@@ -4414,10 +4427,10 @@
             customModifiers: nonChainMods
           });
 
-          const activeDiceMods = activeMods.filter(m => m.dice);
+          const activeDiceMods = activeMods.map(m => ({ m, roll: getRiderRollBlock(m) })).filter(x => x.roll && x.roll.dice);
           let extraDiceStr = '';
           if (activeDiceMods.length > 0) {
-            extraDiceStr = ' + ' + activeDiceMods.map(m => m.dice).join(' + ');
+            extraDiceStr = ' + ' + activeDiceMods.map(x => x.roll.dice).join(' + ');
           }
           if (Array.isArray(wep.elementalMods) && wep.elementalMods.length > 0) {
             extraDiceStr += ' + ' + wep.elementalMods.map(em => `${em.dice} (${em.name || em.type})`).join(' + ');
@@ -4434,7 +4447,7 @@
 
           let dmgType = evalRes.damageType || 'Piercing';
 
-          const hasExtraMods = (paVal > 0 && !isOffHand) || activeDiceMods.length > 0 || (Array.isArray(wep.elementalMods) && wep.elementalMods.length > 0) || nonChainMods.some(m => m.bonusDmg);
+          const hasExtraMods = (paVal > 0 && !isOffHand) || activeDiceMods.length > 0 || (Array.isArray(wep.elementalMods) && wep.elementalMods.length > 0) || nonChainMods.some(m => getRiderStatBonus(m, 'damage') !== 0);
 
           return {
             dmgStr,
@@ -4488,7 +4501,8 @@
         const readyRound = readyRoundFromTactical > curRound ? readyRoundFromTactical : (remainingRounds > 0 ? curRound + remainingRounds : 0);
         const isOnCooldown = remainingRounds > 0;
 
-        const dp = ab.damageParts[0] || { dice: '1d6', bonus: 0, type: 'Damage' };
+        const rollBlk = (ab.effects || []).find(e => e && e.type === 'roll');
+        const dp = { dice: rollBlk?.dice || ab.dice || '1d6', bonus: Number(rollBlk?.bonus || 0), type: rollBlk?.dmgType || ab.dmgType || 'Damage' };
         const bonusNum = Number(dp.bonus || 0);
         const dmgFormula = `${dp.dice}${bonusNum ? (bonusNum > 0 ? '+' + bonusNum : bonusNum) : ''}`;
         const dmgType = dp.type || 'Damage';
@@ -4572,7 +4586,8 @@
         prevCooldown: character.tactical?.abilityCooldowns?.[ab.key] ? JSON.parse(JSON.stringify(character.tactical.abilityCooldowns[ab.key])) : null
       };
 
-      const dp = ab.damageParts[0] || { dice: '1d6', bonus: 0, type: 'Damage' };
+      const rollBlk = (ab.effects || []).find(e => e && e.type === 'roll');
+      const dp = { dice: rollBlk?.dice || ab.dice || '1d6', bonus: Number(rollBlk?.bonus || 0), type: rollBlk?.dmgType || ab.dmgType || 'Damage' };
       const bonusNum = Number(dp.bonus || 0);
       const dmgFormula = `${dp.dice}${bonusNum ? (bonusNum > 0 ? '+' + bonusNum : bonusNum) : ''}`;
       const dmgType = dp.type || 'Damage';
@@ -5113,19 +5128,21 @@
       const hasOversized = typeof RuleEngine !== 'undefined' ? RuleEngine.hasOversizedWeaponFeat(character) : false;
       const isTwoHandLocked = mainIsTwoHand && !mainIsDouble && !hasOversized;
 
-      if (!character.activeModifiers) character.activeModifiers = [];
-      let twfMod = character.activeModifiers.find(m => m && m.name && (m.name.includes('TWF') || m.name.includes('Two-Weapon')));
+      if (!Array.isArray(character.tacticalRiders)) character.tacticalRiders = [];
+      let twfMod = character.tacticalRiders.find(m => m && m.name && (m.name.includes('TWF') || m.name.includes('Two-Weapon')));
       if (!twfMod) {
         twfMod = {
+          id: 'rider-twf',
+          schemaVersion: 3,
           name: 'Two-Weapon Fighting (TWF)',
           source: 'Combat',
-          bonusAtk: 0,
-          dice: '',
-          type: 'TWF',
+          combatScope: 'melee',
+          riderType: 'TWF',
           active: false,
-          notes: 'Extra Off-Hand Attack (RAW TWF)'
+          notes: 'Extra Off-Hand Attack (RAW TWF)',
+          effects: []
         };
-        character.activeModifiers.push(twfMod);
+        character.tacticalRiders.push(twfMod);
       }
 
       // Rule 1, 2, 3: Two-handed weapon enforcement
@@ -5266,24 +5283,26 @@
       const source = poolItem || fromWep || fromDb || {};
       const isShieldItem = source.category === 'Shield' || source.type === 'Shield';
       const clone = (v) => (v === undefined ? undefined : JSON.parse(JSON.stringify(v)));
-      const v2Fields = {
+      const v3Fields = {
+        schemaVersion: 3,
         baseItemId: source.baseItemId,
         material: source.material,
         enhancementBonus: source.enhancementBonus,
         enhancements: clone(source.enhancements),
         isMasterwork: source.isMasterwork,
-        dice: source.dice,
-        critMin: source.critMin,
-        critMult: source.critMult,
-        dmgType: source.dmgType,
+        dice: source.weapon?.damageDice || source.dice,
+        critMin: source.weapon?.baseCritRange || source.critMin,
+        critMult: source.weapon?.critMultiplier || source.critMult,
+        dmgType: source.weapon?.dmgType || source.weapon?.damageType || source.dmgType,
+        weapon: clone(source.weapon),
+        armor: clone(source.armor),
+        effects: clone(source.effects),
         weaponMeta: clone(source.weaponMeta),
-        damageParts: clone(source.damageParts),
-        modifiers: clone(source.modifiers),
         ruleFlags: clone(source.ruleFlags)
       };
 
       character.bodySlots[slotKey] = {
-        ...v2Fields,
+        ...v3Fields,
         name: itemName,
         masterDbName: source.masterDbName || fromDb?.name || itemName,
         category: isShieldItem ? 'Shield' : 'Weapon',
@@ -5291,7 +5310,6 @@
         weight: source.weight,
         cost: source.cost,
         desc: source.desc || '',
-        acBonus: source.acBonus,
         bonusType: source.bonusType
       };
 
@@ -5300,7 +5318,7 @@
         let wExists = character.weapons.find(w => w && w.name === itemName);
         if (!wExists) {
           character.weapons.push({
-            ...v2Fields,
+            ...v3Fields,
             name: itemName,
             grip: slotKey === 'offHand' ? 'Off-Hand' : '1-Hand',
             isLight: source.isLight
@@ -5654,8 +5672,7 @@
         if (type === 'weapon' || type === 'shield') return true;
         if (cat === 'weapon' || cat === 'shield') return true;
         if (slot.includes('hand') || slot === 'off-hand' || slot === 'main hand' || slot === 'two hands') return true;
-        if (item.weaponStats || item.weaponMeta) return true;
-        if (item.damageParts && Array.isArray(item.damageParts) && item.damageParts.length > 0) return true;
+        if (item.weaponStats || item.weaponMeta || (item.weapon && item.weapon.damageDice)) return true;
         if (item.dice && !item.isWondrous) return true;
         if (item.baseItemId && typeof SrdCompendium !== 'undefined' && SrdCompendium.getById) {
           const comp = SrdCompendium.getById(item.baseItemId);
@@ -5707,11 +5724,11 @@
       resultsEl.innerHTML = matches.map((item, idx) => {
         const isShield = (item.category || item.type || item.slot || '').toLowerCase().includes('shield');
         const isTwoHand = (item.slot === 'Two Hands' || (item.weaponType || '').includes('Two-Handed') || (typeof RuleEngine !== 'undefined' && RuleEngine.isTwoHandedWeapon(item)));
-        const primaryPart = Array.isArray(item.damageParts) && item.damageParts.length > 0 ? item.damageParts[0] : null;
-        const diceStr = (primaryPart && primaryPart.dice) || item.dice || item.damage || (isShield ? '1d3' : '1d8');
+        const rollEff = Array.isArray(item.effects) ? item.effects.find(e => e && e.type === 'roll' && (!e.kind || e.kind === 'Damage')) : null;
+        const diceStr = item.weapon?.damageDice || (rollEff && rollEff.dice) || item.dice || item.damage || (isShield ? '1d3' : '1d8');
         const wMeta = item.weaponStats || item.weaponMeta || {};
-        const critStr = item.crit || `${wMeta.critMin || item.critMin || 20}/x${wMeta.critMult || item.critMult || 2}`;
-        const dmgType = (primaryPart && primaryPart.type) || item.dmgType || (isShield ? 'Bludgeoning' : 'Slashing');
+        const critStr = item.crit || `${item.weapon?.baseCritRange || wMeta.critMin || item.critMin || 20}/x${item.weapon?.critMultiplier || wMeta.critMult || item.critMult || 2}`;
+        const dmgType = item.weapon?.dmgType || item.weapon?.damageType || (rollEff && rollEff.dmgType) || item.dmgType || (isShield ? 'Bludgeoning' : 'Slashing');
         const enh = Number(item.enhancementBonus) || 0;
         const enhStr = enh > 0 ? `+${enh}` : '+0';
         const mat = item.material || 'Standard';
@@ -5773,12 +5790,15 @@
       // Check if already in character.weapons
       let existingWep = character.weapons.find(w => w && (w.inventoryId === item.id || (item.id && w.id === item.id) || (w.name && w.name.toLowerCase().trim() === item.name.toLowerCase().trim())));
 
-      const primaryPart = Array.isArray(item.damageParts) && item.damageParts.length > 0 ? item.damageParts[0] : null;
-      const secondaryParts = Array.isArray(item.damageParts) && item.damageParts.length > 1 ? item.damageParts.slice(1) : [];
+      const rollEffects = Array.isArray(item.effects) ? item.effects.filter(e => e && e.type === 'roll' && (!e.kind || e.kind === 'Damage')) : [];
+      const primaryRoll = rollEffects[0] || null;
       const wMeta = item.weaponStats || item.weaponMeta || {};
+      const wepDice = item.weapon?.damageDice || (primaryRoll && primaryRoll.dice) || item.dice || item.damage || (isShield ? '1d3' : '1d8');
+      const wepDmgType = item.weapon?.dmgType || item.weapon?.damageType || (primaryRoll && primaryRoll.dmgType) || item.dmgType || 'Slashing';
 
       const weaponEntry = {
         id: item.id || ('wep_' + String(item.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '_')),
+        schemaVersion: 3,
         inventoryId: item.id || null,
         baseItemId: item.baseItemId || item.id || null,
         name: item.name,
@@ -5786,24 +5806,22 @@
         material: item.material || 'Standard',
         enhancements: Array.isArray(item.enhancements) ? JSON.parse(JSON.stringify(item.enhancements)) : [],
         grip: isTwoHand ? '2-Hand' : '1-Hand',
-        dice: (primaryPart && primaryPart.dice) || item.dice || item.damage || (isShield ? '1d3' : '1d8'),
-        damage: (primaryPart && primaryPart.dice) || item.dice || item.damage || (isShield ? '1d3' : '1d8'),
+        dice: wepDice,
+        damage: wepDice,
         range: item.range || '-',
         type: item.type || (isShield ? 'Shield' : 'Weapon'),
         weight: Number(item.weight) || 0,
-        damageParts: Array.isArray(item.damageParts) && item.damageParts.length > 0
-          ? JSON.parse(JSON.stringify(item.damageParts))
-          : [{ dice: item.dice || item.damage || '1d8', bonus: 0, type: item.dmgType || (primaryPart && primaryPart.type) || 'Slashing', multiplyOnCrit: true }],
-        modifiers: Array.isArray(item.modifiers) ? JSON.parse(JSON.stringify(item.modifiers)) : [],
+        weapon: item.weapon ? JSON.parse(JSON.stringify(item.weapon)) : undefined,
+        effects: Array.isArray(item.effects) ? JSON.parse(JSON.stringify(item.effects)) : [],
         modes: Array.isArray(item.modes) ? JSON.parse(JSON.stringify(item.modes)) : [],
-        crit: item.crit || `${wMeta.critMin || item.critMin || 20}/x${wMeta.critMult || item.critMult || 2}`,
-        critMin: Number(wMeta.critMin || item.critMin) || 20,
-        rawCritMin: Number(wMeta.critMin || item.critMin) || 20,
-        critMult: Number(wMeta.critMult || item.critMult) || 2,
-        dmgType: (primaryPart && primaryPart.type) || item.dmgType || 'Slashing',
+        crit: item.crit || `${item.weapon?.baseCritRange || wMeta.critMin || item.critMin || 20}/x${item.weapon?.critMultiplier || wMeta.critMult || item.critMult || 2}`,
+        critMin: Number(item.weapon?.baseCritRange || wMeta.critMin || item.critMin) || 20,
+        rawCritMin: Number(item.weapon?.baseCritRange || wMeta.critMin || item.critMin) || 20,
+        critMult: Number(item.weapon?.critMultiplier || wMeta.critMult || item.critMult) || 2,
+        dmgType: wepDmgType,
         bonusType: 'enhancement',
         tags: item.tags || [],
-        elementalMods: secondaryParts.map(sp => ({ name: sp.source || sp.type, dice: sp.dice, type: sp.type })),
+        elementalMods: rollEffects.filter((sp, idx) => idx > 0 || (item.weapon?.damageDice && sp.dice !== item.weapon.damageDice)).map(sp => ({ name: sp.source || sp.dmgType, dice: sp.dice, type: sp.dmgType })),
         keen: Boolean((item.ruleFlags && item.ruleFlags.keen) || (Array.isArray(item.enhancements) && item.enhancements.some(e => (typeof e === 'string' && e.toLowerCase().includes('keen')) || (e && e.name && e.name.toLowerCase().includes('keen')))))
       };
 
@@ -6028,70 +6046,189 @@
       return false;
     }
 
+    function getRiderRollBlock(mod) {
+      if (!mod || !Array.isArray(mod.effects)) return { dice: '', dmgType: 'Damage' };
+      const blk = mod.effects.find(e => e && e.type === 'roll' && (!e.kind || e.kind === 'Damage'));
+      if (!blk) return { dice: '', dmgType: 'Damage' };
+      const dice = blk.dice || (blk.die && blk.die !== 'flat' ? `${blk.count || 1}${String(blk.die).replace(/^\d+/, '')}` : '');
+      return {
+        dice: dice || '',
+        dmgType: blk.dmgType || blk.damageType || 'Damage'
+      };
+    }
+
+    function getRiderStatBonus(mod, targetPrefix) {
+      if (!mod || !Array.isArray(mod.effects)) return 0;
+      const pref = String(targetPrefix || '').toLowerCase();
+      let sum = 0;
+      mod.effects.forEach(e => {
+        if (!e || e.type !== 'stat' || !Array.isArray(e.targets)) return;
+        const matches = e.targets.some(t => {
+          const tl = String(t || '').toLowerCase();
+          return tl === pref || tl.startsWith(pref + '.') || (pref === 'attack' && (tl === 'atk' || tl.startsWith('atk.'))) || (pref === 'damage' && (tl === 'dmg' || tl.startsWith('dmg.')));
+        });
+        if (matches) {
+          sum += Number(e.value ?? e.val ?? 0) || 0;
+        }
+      });
+      return sum;
+    }
+
     function ensureActiveModifiersPool() {
       if (!character) return;
       if (typeof window !== 'undefined' && typeof window.pruneOrphanedLevelAbilitiesAndFeats === 'function') {
         window.pruneOrphanedLevelAbilitiesAndFeats(character);
       }
-      if (!Array.isArray(character.activeModifiers)) {
-        character.activeModifiers = [];
+      if (!Array.isArray(character.tacticalRiders)) {
+        character.tacticalRiders = [];
       }
 
       // Sanitize: filter out any null, string, or malformed entries
-      character.activeModifiers = character.activeModifiers.filter(m => m && typeof m === 'object' && typeof m.name === 'string');
+      character.tacticalRiders = character.tacticalRiders.filter(m => m && typeof m === 'object' && typeof m.name === 'string');
 
-      // Qualified pool: ONLY modifiers the character actually qualifies for
+      // Qualified pool: ONLY V3 tactical riders the character actually qualifies for
       const qualifiedPool = [
-        { name: 'Two-Weapon Fighting (TWF)', source: 'Combat', bonusAtk: 0, dice: '', type: 'TWF', combatScope: 'melee', active: false, notes: 'Extra Off-Hand Attack (RAW TWF)' }
+        { id: 'rider-twf', schemaVersion: 3, name: 'Two-Weapon Fighting (TWF)', source: 'Combat', combatScope: 'melee', riderType: 'TWF', active: false, notes: 'Extra Off-Hand Attack (RAW TWF)', effects: [] }
       ];
 
       // Flurry (Monk)
       if (hasFlurryAbility(character)) {
         qualifiedPool.push({
+          id: 'rider-flurry',
+          schemaVersion: 3,
           name: 'Flurry of Blows',
           source: 'Monk',
-          bonusAtk: 0,
-          dice: '',
-          type: 'Flurry',
           combatScope: 'melee',
+          riderType: 'Flurry',
           active: false,
-          notes: 'Full Attack: +1 Extra Attack (-2 Penalty)'
+          notes: 'Full Attack: +1 Extra Attack (-2 Penalty)',
+          effects: []
         });
       }
 
       // Stances
       if (characterHasManeuver(character, 'Punishing Stance')) {
-        qualifiedPool.push({ name: 'Punishing Stance', source: 'Stance', bonusAtk: 0, dice: '1d6', type: 'Slashing', combatScope: 'melee', active: false, notes: '+1d6 Damage, -2 AC' });
+        qualifiedPool.push({
+          id: 'rider-punishing-stance',
+          schemaVersion: 3,
+          name: 'Punishing Stance',
+          source: 'Stance',
+          combatScope: 'melee',
+          riderType: 'Rider',
+          active: false,
+          notes: '+1d6 Damage, -2 AC',
+          effects: [{ type: 'roll', kind: 'Damage', dice: '1d6', dmgType: 'Slashing' }]
+        });
       }
 
       // Strike Maneuvers
       if (characterHasManeuver(character, 'Mountain Hammer')) {
-        qualifiedPool.push({ name: 'Mountain Hammer', source: 'Maneuver', bonusAtk: 0, dice: '2d6', type: 'Slashing', combatScope: 'melee', active: false, notes: 'Bypasses DR and Hardness' });
+        qualifiedPool.push({
+          id: 'rider-mountain-hammer',
+          schemaVersion: 3,
+          name: 'Mountain Hammer',
+          source: 'Maneuver',
+          combatScope: 'melee',
+          riderType: 'Rider',
+          active: false,
+          notes: 'Bypasses DR and Hardness',
+          effects: [{ type: 'roll', kind: 'Damage', dice: '2d6', dmgType: 'Slashing' }]
+        });
       }
       if (characterHasManeuver(character, 'Steel Wind')) {
-        qualifiedPool.push({ name: 'Steel Wind', source: 'Maneuver', bonusAtk: 0, dice: '', type: 'Martial', combatScope: 'melee', active: false, notes: 'Attack 2 Adjacent Targets' });
+        qualifiedPool.push({
+          id: 'rider-steel-wind',
+          schemaVersion: 3,
+          name: 'Steel Wind',
+          source: 'Maneuver',
+          combatScope: 'melee',
+          riderType: 'Rider',
+          active: false,
+          notes: 'Attack 2 Adjacent Targets',
+          effects: []
+        });
       }
 
       // Spells
       if (characterHasSpell(character, 'Blade of Blood')) {
-        qualifiedPool.push({ name: 'Blade of Blood', source: 'Spell', bonusAtk: 0, dice: '3d6', type: 'Negative Energy', combatScope: 'melee', active: false, notes: '+3d6 Damage' });
+        qualifiedPool.push({
+          id: 'rider-blade-of-blood',
+          schemaVersion: 3,
+          name: 'Blade of Blood',
+          source: 'Spell',
+          combatScope: 'melee',
+          riderType: 'Rider',
+          active: false,
+          notes: '+3d6 Damage',
+          effects: [{ type: 'roll', kind: 'Damage', dice: '3d6', dmgType: 'Negative Energy' }]
+        });
       }
 
       // Items
       if (characterHasItem(character, 'Witchlight')) {
-        qualifiedPool.push({ name: 'Witchlight (+2 Damage)', source: 'Item', bonusAtk: 0, bonusDmg: 2, dice: '', type: 'Untyped', combatScope: 'melee', active: false, notes: '+2 Melee Damage (1 Round)' });
-        qualifiedPool.push({ name: 'Witchlight (+4 Damage)', source: 'Item', bonusAtk: 0, bonusDmg: 4, dice: '', type: 'Untyped', combatScope: 'melee', active: false, notes: '+4 Melee Damage (1 Round)' });
+        qualifiedPool.push({
+          id: 'rider-witchlight-2',
+          schemaVersion: 3,
+          name: 'Witchlight (+2 Damage)',
+          source: 'Item',
+          combatScope: 'melee',
+          riderType: 'Rider',
+          active: false,
+          notes: '+2 Melee Damage (1 Round)',
+          effects: [{ type: 'stat', targets: ['damage.melee'], mode: 'flat', value: 2, btype: 'Untyped' }]
+        });
+        qualifiedPool.push({
+          id: 'rider-witchlight-4',
+          schemaVersion: 3,
+          name: 'Witchlight (+4 Damage)',
+          source: 'Item',
+          combatScope: 'melee',
+          riderType: 'Rider',
+          active: false,
+          notes: '+4 Melee Damage (1 Round)',
+          effects: [{ type: 'stat', targets: ['damage.melee'], mode: 'flat', value: 4, btype: 'Untyped' }]
+        });
       }
       if (characterHasItem(character, 'Boots of Speed')) {
-        qualifiedPool.push({ name: 'Boots of Speed', source: 'Item', bonusAtk: 1, dice: '', type: 'Untyped', combatScope: 'both', active: false, notes: '+1 Attack, +1 AC, Extra Attack' });
+        qualifiedPool.push({
+          id: 'rider-boots-of-speed',
+          schemaVersion: 3,
+          name: 'Boots of Speed',
+          source: 'Item',
+          combatScope: 'both',
+          riderType: 'Rider',
+          active: false,
+          notes: '+1 Attack, +1 AC, Extra Attack',
+          effects: [{ type: 'stat', targets: ['attack.melee'], mode: 'flat', value: 1, btype: 'Untyped' }]
+        });
       }
       if (characterHasBuff(character, 'Haste')) {
-        qualifiedPool.push({ name: 'Haste (Spell)', source: 'Spell', bonusAtk: 1, dice: '', type: 'Untyped', combatScope: 'both', active: true, notes: '+1 Attack, +1 AC, Extra Attack' });
+        qualifiedPool.push({
+          id: 'rider-haste-spell',
+          schemaVersion: 3,
+          name: 'Haste (Spell)',
+          source: 'Spell',
+          combatScope: 'both',
+          riderType: 'Rider',
+          active: true,
+          notes: '+1 Attack, +1 AC, Extra Attack',
+          effects: [{ type: 'stat', targets: ['attack.melee'], mode: 'flat', value: 1, btype: 'Untyped' }]
+        });
       }
 
       // Sneak Attack
       if (characterHasSneakAttack(character)) {
-        qualifiedPool.push({ name: 'Sneak Attack', source: 'Feat', bonusAtk: 0, dice: '1d6', type: 'Precision', combatScope: 'both', active: false, notes: '+1d6 Precision Damage' });
+        qualifiedPool.push({
+          id: 'rider-sneak-attack',
+          schemaVersion: 3,
+          name: 'Sneak Attack',
+          source: 'Feat',
+          combatScope: 'both',
+          riderType: 'Rider',
+          active: false,
+          notes: '+1d6 Precision Damage',
+          effects: [{ type: 'roll', kind: 'Damage', dice: '1d6', dmgType: 'Precision' }]
+        });
       }
 
       // CLEANUP: Strictly remove unowned modifiers, spell attacks, skills, and non-melee items lingering from prior storage/dummy data
@@ -6111,14 +6248,14 @@
           .filter(Boolean)
       );
 
-      character.activeModifiers = character.activeModifiers.filter(m => {
+      character.tacticalRiders = character.tacticalRiders.filter(m => {
         if (!m || !m.name) return false;
         const n = m.name.toLowerCase().trim();
         // Exclude standalone special attack cards (e.g. Breath Weapon) from melee weapon modifier toggles
         if (specialAttackNamesSet.has(n) || n.includes('breath weapon')) return false;
         // Never allow Skills inside attack/damage modifier toggles
         if (m.source === 'Skill' || isSkillItemName(n)) return false;
-        // Disallow spell attacks, saving throw spells, and direct ammunition from melee active modifiers
+        // Disallow spell attacks, saving throw spells, and direct ammunition from melee tactical riders
         if (n.includes('acid arrow') || n.includes('fireball') || n.includes('scorching ray') || n.includes('magic missile') || n.includes('ray of frost') || n.includes('disintegrate')) return false;
         if (n.includes('arrow') && !n.includes('enhance arrow') && !n.includes('blade of blood')) return false;
         const dbEntry = typeof findMasterItem === 'function' ? findMasterItem(m.name) : null;
@@ -6158,29 +6295,34 @@
           if (!qualifiedPool.some(q => q.name.toLowerCase().trim() === pNameLower)) {
             const dmgExpr = p.badge || (typeof findDiceExpression === 'function' ? findDiceExpression(p.desc) : '');
             qualifiedPool.push({
+              id: 'rider-pin-' + pNameLower.replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
+              schemaVersion: 3,
               name: p.name,
               source: p.sourceType || 'Combat',
-              bonusAtk: 0,
-              dice: dmgExpr,
-              type: 'Melee',
               combatScope: 'melee',
+              riderType: 'Rider',
               active: Boolean(p.active),
-              notes: p.desc || ''
+              notes: p.desc || '',
+              effects: dmgExpr ? [{ type: 'roll', kind: 'Damage', dice: dmgExpr, dmgType: 'Damage' }] : []
             });
           }
         });
       }
 
-      // Synchronize qualified items into character.activeModifiers
+      // Synchronize qualified items into character.tacticalRiders
       qualifiedPool.forEach(def => {
-        const existing = character.activeModifiers.find(m => m && m.name && m.name.toLowerCase() === def.name.toLowerCase());
+        const existing = character.tacticalRiders.find(m => m && m.name && m.name.toLowerCase() === def.name.toLowerCase());
         if (!existing) {
-          character.activeModifiers.push({ ...def });
+          character.tacticalRiders.push({ ...def, effects: JSON.parse(JSON.stringify(def.effects || [])) });
         } else {
+          existing.schemaVersion = 3;
+          if (def.id && !existing.id) existing.id = def.id;
+          if (def.riderType && !existing.riderType) existing.riderType = def.riderType;
           if (def.combatScope && !existing.combatScope) existing.combatScope = def.combatScope;
-          if (def.bonusDmg && !existing.bonusDmg) existing.bonusDmg = def.bonusDmg;
-          if (def.dice && !existing.dice) existing.dice = def.dice;
           if (def.notes && !existing.notes) existing.notes = def.notes;
+          if (!Array.isArray(existing.effects) || existing.effects.length === 0) {
+            existing.effects = JSON.parse(JSON.stringify(def.effects || []));
+          }
         }
       });
     }
@@ -6194,7 +6336,7 @@
       const flanking = !!character.tactical?.flanking;
       const charge = !!character.tactical?.charge;
       const hg = !!character.tactical?.higherGround;
-      const twfMod = (character.activeModifiers || []).find(m => m && m.name && (m.name.includes('TWF') || m.name.includes('Two-Weapon')));
+      const twfMod = (character.tacticalRiders || []).find(m => m && m.name && (m.name.includes('TWF') || m.name.includes('Two-Weapon')));
       const isTWF = twfMod?.active ?? false;
 
       // Row 1: Fixed 3 items: 1. Flanking, 2. Charge, 3. Higher Ground (Glow Card Toggle)
@@ -6261,7 +6403,10 @@
 
       const dynamicCardsHtml = visibleMods.map((mod, idx) => {
         if (!mod || !mod.name) return '';
-        let bonusStr = mod.dice ? mod.dice : (mod.bonusDmg ? `+${mod.bonusDmg} Dmg` : (mod.bonusAtk ? `+${mod.bonusAtk} Atk` : 'Active'));
+        const rollBlk = getRiderRollBlock(mod);
+        const atkBonus = getRiderStatBonus(mod, 'attack');
+        const dmgBonus = getRiderStatBonus(mod, 'damage');
+        let bonusStr = rollBlk.dice ? rollBlk.dice : (dmgBonus ? `+${dmgBonus} Dmg` : (atkBonus ? `+${atkBonus} Atk` : 'Active'));
         let cardBorderActive = 'border border-rose-500 bg-rose-950/60 text-white shadow-md shadow-rose-950/50 ring-1 ring-rose-500/40';
         let bonusColor = 'text-amber-300';
 
@@ -6270,7 +6415,7 @@
           bonusColor = 'text-rose-300';
         }
 
-        const actualIdx = character.activeModifiers.indexOf(mod);
+        const actualIdx = (character.tacticalRiders || []).indexOf(mod);
 
         const reorderControls = window.meleeReorderModeActive ? `
           <div class="flex items-center justify-between px-0.5 text-[10px] text-slate-500 leading-none shrink-0 w-full">
@@ -6429,9 +6574,9 @@
       const seen = new Set();
 
       function getRangedWeaponDefaultDice(item, low) {
-        if (item && item.dice) return item.dice;
+        if (item && (item.weapon?.damageDice || item.dice)) return item.weapon?.damageDice || item.dice;
         const dbEntry = typeof findMasterItem === 'function' ? findMasterItem(item?.name || low) : null;
-        if (dbEntry && Array.isArray(dbEntry.damageParts) && dbEntry.damageParts[0]?.dice) return dbEntry.damageParts[0].dice;
+        if (dbEntry && dbEntry.weapon?.damageDice) return dbEntry.weapon.damageDice;
         if (dbEntry && dbEntry.dice) return dbEntry.dice;
         if (low.includes('heavy crossbow')) return '1d10';
         if (low.includes('shortbow')) return '1d6';
@@ -6993,8 +7138,8 @@
     }
 
     function getMeleeDynamicModifiers() {
-      if (!character || !character.activeModifiers) return [];
-      return (character.activeModifiers || []).filter(m => {
+      if (!character || !character.tacticalRiders) return [];
+      return (character.tacticalRiders || []).filter(m => {
         if (!m || !m.name) return false;
         if (m.name.includes('TWF')) return false;
         if (m.combatScope === 'ranged' || m.scope === 'Ranged Only') return false;
@@ -7032,20 +7177,20 @@
         event.stopPropagation();
         event.preventDefault();
       }
-      if (!character || !character.activeModifiers) return;
+      if (!character || !character.tacticalRiders) return;
 
       const dynamicMods = getMeleeDynamicModifiers();
       const currentMod = dynamicMods[idx];
       const targetMod = dynamicMods[idx + delta];
       if (!currentMod || !targetMod) return;
 
-      const idxA = character.activeModifiers.indexOf(currentMod);
-      const idxB = character.activeModifiers.indexOf(targetMod);
+      const idxA = character.tacticalRiders.indexOf(currentMod);
+      const idxB = character.tacticalRiders.indexOf(targetMod);
       if (idxA === -1 || idxB === -1) return;
 
-      const temp = character.activeModifiers[idxA];
-      character.activeModifiers[idxA] = character.activeModifiers[idxB];
-      character.activeModifiers[idxB] = temp;
+      const temp = character.tacticalRiders[idxA];
+      character.tacticalRiders[idxA] = character.tacticalRiders[idxB];
+      character.tacticalRiders[idxB] = temp;
 
       saveStateToStorage(true);
       renderOffenseModifiersGrid();
@@ -7063,27 +7208,39 @@
     }
 
     function extractRangedV2Bonus(entry, fallbackAtk = 0, fallbackDmg = 0, fallbackType = 'untyped') {
-      const mods = Array.isArray(entry?.modifiers) ? entry.modifiers : [];
+      const effects = Array.isArray(entry?.effects) ? entry.effects : [];
       let atk = 0;
       let dmg = 0;
       let hasAtkMod = false;
       let hasDmgMod = false;
       let bonusType = '';
-      mods.forEach(mod => {
-        if (!mod || !mod.target) return;
-        const t = String(mod.target).toLowerCase();
-        const val = Number(mod.value ?? 0);
-        if (!Number.isFinite(val)) return;
-        if (t === 'attack' || t === 'attack.all' || t === 'attack.weapon' || t === 'attack.ranged' || t === 'rangedattack') {
-          atk += val;
-          hasAtkMod = true;
-          if (!bonusType && mod.type) bonusType = mod.type;
-        } else if (t === 'damage' || t === 'damage.all' || t === 'damage.weapon' || t === 'damage.ranged' || t === 'rangeddamage') {
-          dmg += val;
-          hasDmgMod = true;
-          if (!bonusType && mod.type) bonusType = mod.type;
-        }
-      });
+      const walkEffects = (list) => {
+        (list || []).forEach(blk => {
+          if (!blk) return;
+          if (blk.type === 'when') {
+            if (Array.isArray(blk.then)) walkEffects(blk.then);
+            if (Array.isArray(blk.effects)) walkEffects(blk.effects);
+            return;
+          }
+          if (blk.type !== 'stat' || !Array.isArray(blk.targets)) return;
+          const val = Number(blk.value ?? 0);
+          if (!Number.isFinite(val)) return;
+          const btype = blk.btype || '';
+          blk.targets.forEach(rawT => {
+            const t = String(rawT || '').toLowerCase();
+            if (t === 'attack' || t === 'attack.all' || t === 'attack.weapon' || t === 'attack.ranged' || t === 'rangedattack') {
+              atk += val;
+              hasAtkMod = true;
+              if (!bonusType && btype) bonusType = btype;
+            } else if (t === 'damage' || t === 'damage.all' || t === 'damage.weapon' || t === 'damage.ranged' || t === 'rangeddamage') {
+              dmg += val;
+              hasDmgMod = true;
+              if (!bonusType && btype) bonusType = btype;
+            }
+          });
+        });
+      };
+      walkEffects(effects);
       return {
         atk: hasAtkMod ? atk : fallbackAtk,
         dmg: hasDmgMod ? dmg : fallbackDmg,
@@ -7142,7 +7299,7 @@
 
       if (hasPBS) {
         const pbsEntry = featsList.find(f => f && typeof f === 'object' && (f.id === 'feat-point-blank-shot' || f.ruleFlags?.pointBlankShot || (f.name || '').toLowerCase().includes('point blank')));
-        const dbPBS = (Array.isArray(pbsEntry?.modifiers) && pbsEntry.modifiers.length > 0)
+        const dbPBS = (Array.isArray(pbsEntry?.effects) && pbsEntry.effects.length > 0)
           ? pbsEntry
           : resolveV2CombatEntry('feat-point-blank-shot', 'Point Blank Shot');
         const pbsV2 = extractRangedV2Bonus(dbPBS, 1, 1, 'untyped');
@@ -7206,7 +7363,7 @@
 
       if (hasEnhanceArrow) {
         const eaObj = specials.find(s => s && typeof s === 'object' && (s.id === 'cab-enhance-arrow' || s.ruleFlags?.enhanceArrow || (s.name || '').toLowerCase().includes('enhance arrow')));
-        const dbEA = (Array.isArray(eaObj?.modifiers) && eaObj.modifiers.length > 0)
+        const dbEA = (Array.isArray(eaObj?.effects) && eaObj.effects.length > 0)
           ? eaObj
           : resolveV2CombatEntry('cab-enhance-arrow', 'Enhance Arrow');
         const eaV2 = extractRangedV2Bonus(dbEA, 1, 1, eaObj?.bonusType || 'enhancement');
@@ -7242,7 +7399,7 @@
 
       if (hasSneak) {
         const dbSA = typeof findMasterItem === 'function' ? findMasterItem('Sneak Attack') : null;
-        const saPart = Array.isArray(dbSA?.damageParts) && dbSA.damageParts[0] ? dbSA.damageParts[0].dice : null;
+        const saPart = (Array.isArray(dbSA?.effects) ? (dbSA.effects.find(e => e && e.type === 'roll' && (!e.kind || e.kind === 'Damage'))?.dice || null) : null);
         const saDice = saPart || dbSA?.dice || '1d6';
         qualifiedRangedList.push({
           id: 'sneakAttack',
@@ -7301,7 +7458,7 @@
           if (qualifiedRangedList.some(q => q.name.toLowerCase().trim() === pNameLower)) return;
 
           const dbEntry = resolveV2CombatEntry(pin.baseItemId || pin.id, pin.name);
-          const dbPartDice = (Array.isArray(dbEntry?.damageParts) && dbEntry.damageParts[0]?.dice) || '';
+          const dbPartDice = (Array.isArray(dbEntry?.effects) && dbEntry.effects.find(e => e && e.type === 'roll' && (!e.kind || e.kind === 'Damage'))?.dice) || '';
           const pinV2 = extractRangedV2Bonus(dbEntry, Number(pin.bonusAtk ?? 0), Number(pin.bonusDmg ?? 0), dbEntry?.bonusType || pin.bonusType || 'untyped');
           qualifiedRangedList.push({
             id: `pin_${pin.name}`,
@@ -7625,7 +7782,7 @@
       const charge = !!(character.tactical?.charge);
       const hg = character.tactical?.higherGround ?? false;
 
-      const activeMods = (character.activeModifiers || []).filter(m => m && m.active);
+      const activeMods = (character.tacticalRiders || []).filter(m => m && m.active);
       const sets = character.tactical?.weaponSets;
       const isDualFromSets = sets && Array.isArray(sets.activeSets) && sets.activeSets.includes(1) && sets.activeSets.includes(2);
       const offHandWep = getResolvedOffHandWeapon(character);
@@ -8064,8 +8221,8 @@
     }
 
     function toggleModifier(idx) {
-      if (!character.activeModifiers || !character.activeModifiers[idx]) return;
-      const modLbl = `Toggle Modifier: ${character.activeModifiers[idx].name || idx}`;
+      if (!character.tacticalRiders || !character.tacticalRiders[idx]) return;
+      const modLbl = `Toggle Modifier: ${character.tacticalRiders[idx].name || idx}`;
       CharStore.dispatch({
         type: 'combat/toggleTacticalMod',
         payload: { globalIdx: idx },
@@ -8147,7 +8304,7 @@
         breakdown: []
       }];
 
-      const activeMods = (character.activeModifiers || []).filter(m => m.active);
+      const activeMods = (character.tacticalRiders || []).filter(m => m.active);
 
       const strikeManeuversUsed = [];
       let bladeOfBloodUsed = false;
@@ -8175,14 +8332,14 @@
         strikeManeuversUsed.forEach(strikeName => {
           const m = character.tomeOfBattle.readiedManeuvers.find(rm => rm.name.toLowerCase() === strikeName.toLowerCase());
           if (m) m.expended = true;
-          const mod = character.activeModifiers.find(am => am.name.toLowerCase() === strikeName.toLowerCase());
+          const mod = (character.tacticalRiders || []).find(am => am.name.toLowerCase() === strikeName.toLowerCase());
           if (mod) mod.active = false;
         });
       }
       if (bladeOfBloodUsed) {
         const slot = character.spellcasting?.slots?.[1];
         if (slot) slot.used = Math.min(slot.daily || 8, (slot.used || 0) + 1);
-        const mod = character.activeModifiers.find(am => am.name === 'Blade of Blood');
+        const mod = (character.tacticalRiders || []).find(am => am.name === 'Blade of Blood');
         if (mod) mod.active = false;
       }
       if (strikeManeuversUsed.length > 0 || bladeOfBloodUsed) {
@@ -8212,7 +8369,7 @@
       }
 
       const { noCritConfirm, maneuverCrit } = getCombatHouseRules(character);
-      const activeMods = (character.activeModifiers || []).filter(m => m.active);
+      const activeMods = (character.tacticalRiders || []).filter(m => m.active);
 
       const diceToRoll3D = [];
       const attackPlans = [];
@@ -8301,14 +8458,15 @@
         const extraDetails = [];
 
         activeMods.forEach(mod => {
-          if (mod.dice) {
-            const isPrecision = (mod.name || '').toLowerCase().includes('sneak') || (mod.name || '').toLowerCase().includes('skirmish') || (mod.tags && mod.tags.includes('precision'));
+          const rollBlk = getRiderRollBlock(mod);
+          if (rollBlk.dice) {
+            const isPrecision = (mod.name || '').toLowerCase().includes('sneak') || (mod.name || '').toLowerCase().includes('skirmish') || (rollBlk.dmgType || '').toLowerCase().includes('precision') || (mod.tags && mod.tags.includes('precision'));
             const precisionRule = character.houseRules?.precisionDamageRule || 'once_per_turn';
             if (isPrecision && precisionRule === 'once_per_turn' && atk.idx > 1) {
               return;
             }
 
-            const mMatch = mod.dice.match(/(\d+)d(\d+)/i);
+            const mMatch = rollBlk.dice.match(/(\d+)d(\d+)/i);
             if (mMatch) {
               let mCount = parseInt(mMatch[1]) || 1;
               const mSides = parseInt(mMatch[2]) || 6;
@@ -8319,7 +8477,7 @@
                 mSum += Math.floor(Math.random() * mSides) + 1;
               }
               extraDiceSum += mSum;
-              extraDetails.push(`${mod.name}: +${mSum} ${mod.type}${isPrecision && precisionRule === 'once_per_turn' ? ' (First Hit)' : ''}`);
+              extraDetails.push(`${mod.name}: +${mSum} ${rollBlk.dmgType}${isPrecision && precisionRule === 'once_per_turn' ? ' (First Hit)' : ''}`);
             }
           }
         });
@@ -8581,8 +8739,8 @@
           character.combatPins[k] = character.combatPins[k].filter(p => (p.name || '').toLowerCase().trim() !== clean);
         }
       });
-      if (Array.isArray(character.activeModifiers)) {
-        character.activeModifiers = character.activeModifiers.filter(m => !m || !m.name || m.name.toLowerCase().trim() !== clean);
+      if (Array.isArray(character.tacticalRiders)) {
+        character.tacticalRiders = character.tacticalRiders.filter(m => !m || !m.name || m.name.toLowerCase().trim() !== clean);
       }
     }
 
@@ -8799,7 +8957,7 @@
           cat = 'defense';
         }
 
-        const dmgExpr = (Array.isArray(m.damageParts) && m.damageParts[0]?.dice) || m.damageDice || (typeof findDiceExpression === 'function' ? findDiceExpression(m.notes || m.benefit) : '');
+        const dmgExpr = (Array.isArray(m.effects) && m.effects.find(e => e && e.type === 'roll' && (!e.kind || e.kind === 'Damage'))?.dice) || m.damageDice || (typeof findDiceExpression === 'function' ? findDiceExpression(m.notes || m.benefit) : '');
         currentAutoPins.push({
           autoKey: `maneuver_${m.name.toLowerCase()}`,
           autoType: 'readied_maneuver',
@@ -8828,7 +8986,7 @@
           cat = 'defense';
         }
 
-        const dmgExpr = (Array.isArray(st.damageParts) && st.damageParts[0]?.dice) || st.damageDice || (typeof findDiceExpression === 'function' ? findDiceExpression(st.benefit) : '');
+        const dmgExpr = (Array.isArray(st.effects) && st.effects.find(e => e && e.type === 'roll' && (!e.kind || e.kind === 'Damage'))?.dice) || st.damageDice || (typeof findDiceExpression === 'function' ? findDiceExpression(st.benefit) : '');
         currentAutoPins.push({
           autoKey: `stance_${st.name.toLowerCase()}`,
           autoType: 'known_stance',
@@ -10795,7 +10953,7 @@
             flanking: false,
             charge: false,
             higherGround: false,
-            activeModifiers: ['Punishing Stance'],
+            tacticalRiders: ['Punishing Stance'],
             summary: '1d6'
           }
         ];
@@ -10849,7 +11007,7 @@
           const fl = !!(character.tactical?.flanking);
           const ch = !!(character.tactical?.charge);
           const hg = character.tactical?.higherGround ?? false;
-          const activeMods = (character.activeModifiers || []).filter(m => m.active);
+          const activeMods = (character.tacticalRiders || []).filter(m => m.active);
 
           const summary = buildProfileSummary(pa, fl, ch, hg, activeMods);
           previewEl.innerHTML = `
@@ -10865,8 +11023,8 @@
           if (t.manyshot) rangedParts.push('Manyshot');
           if (t.preciseShot) rangedParts.push('Precise Shot');
           if (t.farShot) rangedParts.push('Far Shot');
-          const activeMods = (character.activeModifiers || []).filter(m => m.active);
-          activeMods.forEach(m => rangedParts.push(m.dice || m.name));
+          const activeMods = (character.tacticalRiders || []).filter(m => m.active);
+          activeMods.forEach(m => rangedParts.push(getRiderRollBlock(m).dice || m.name));
           const summary = rangedParts.join(', ') || 'Base Shot';
           previewEl.innerHTML = `
             <div><b class="text-white">Type:</b> 🏹 Ranged Combat</div>
@@ -10909,12 +11067,12 @@
         const fl = !!(character.tactical?.flanking);
         const ch = !!(character.tactical?.charge);
         const hg = character.tactical?.higherGround ?? false;
-        const activeMods = (character.activeModifiers || []).filter(m => m.active);
+        const activeMods = (character.tacticalRiders || []).filter(m => m.active);
         newProf.powerAttack = pa;
         newProf.flanking = fl;
         newProf.charge = ch;
         newProf.higherGround = hg;
-        newProf.activeModifiers = activeMods.map(m => m.name);
+        newProf.tacticalRiders = activeMods.map(m => m.name);
         newProf.summary = buildProfileSummary(pa, fl, ch, hg, activeMods);
       } else {
         const t = character.tactical || {};
@@ -10925,16 +11083,16 @@
           preciseShot: !!t.preciseShot,
           farShot: !!t.farShot
         };
-        const activeMods = (character.activeModifiers || []).filter(m => m.active);
+        const activeMods = (character.tacticalRiders || []).filter(m => m.active);
         newProf.rangedMods = rangedMods;
-        newProf.activeModifiers = activeMods.map(m => m.name);
+        newProf.tacticalRiders = activeMods.map(m => m.name);
         const rangedParts = [];
         if (t.pointBlank) rangedParts.push('Point Blank (+1/+1)');
         if (t.rapidShot) rangedParts.push('Rapid Shot');
         if (t.manyshot) rangedParts.push('Manyshot');
         if (t.preciseShot) rangedParts.push('Precise Shot');
         if (t.farShot) rangedParts.push('Far Shot');
-        activeMods.forEach(m => rangedParts.push(m.dice || m.name));
+        activeMods.forEach(m => rangedParts.push(getRiderRollBlock(m).dice || m.name));
         newProf.summary = rangedParts.join(', ') || 'Base Shot';
       }
 
@@ -10967,8 +11125,8 @@
         const paInput = document.getElementById('power-attack-val');
         if (paInput) paInput.value = prof.powerAttack || 0;
 
-        (character.activeModifiers || []).forEach(m => {
-          m.active = (prof.activeModifiers || []).includes(m.name);
+        (character.tacticalRiders || []).forEach(m => {
+          m.active = (prof.tacticalRiders || []).includes(m.name);
         });
 
         recalculateOffense();
@@ -10982,8 +11140,8 @@
         character.tactical.preciseShot = !!rm.preciseShot;
         character.tactical.farShot = !!rm.farShot;
 
-        (character.activeModifiers || []).forEach(m => {
-          m.active = (prof.activeModifiers || []).includes(m.name);
+        (character.tacticalRiders || []).forEach(m => {
+          m.active = (prof.tacticalRiders || []).includes(m.name);
         });
 
         if (typeof renderRangedModifiersGrid === 'function') renderRangedModifiersGrid();
@@ -11023,7 +11181,7 @@
       if (fl) parts.push('Flank');
       if (ch) parts.push('Charge');
       if (hg) parts.push('Higher');
-      activeMods.forEach(m => parts.push(m.dice || m.name));
+      activeMods.forEach(m => parts.push(getRiderRollBlock(m).dice || m.name));
       return parts.join(', ') || 'Base';
     }
 
@@ -11041,13 +11199,13 @@
       if (!drawer.classList.contains('hidden')) {
         const listEl = document.getElementById('decision-toast-custom-modifiers-list');
         if (listEl) {
-          listEl.innerHTML = (character.activeModifiers || []).map((mod, idx) => `
+          listEl.innerHTML = (character.tacticalRiders || []).map((mod, idx) => `
             <label class="flex items-center justify-between p-1.5 rounded bg-slate-950/80 border border-slate-800 cursor-pointer">
               <div class="flex items-center gap-2">
                 <input type="checkbox" id="decision-mod-check-${idx}" ${mod.active ? 'checked' : ''} class="w-3.5 h-3.5 rounded text-rose-500 border-slate-700 focus:ring-0">
                 <span class="text-xs font-bold text-white">${UI.escapeHtml(mod.name)}</span>
               </div>
-              <span class="font-mono text-[10px] text-amber-300 font-bold">${mod.dice || '-'}</span>
+              <span class="font-mono text-[10px] text-amber-300 font-bold">${UI.escapeHtml(getRiderRollBlock(mod).dice || '-')}</span>
             </label>
           `).join('');
         }
@@ -11062,7 +11220,7 @@
       }
 
       if (isCustom) {
-        (character.activeModifiers || []).forEach((mod, idx) => {
+        (character.tacticalRiders || []).forEach((mod, idx) => {
           const cbox = document.getElementById(`decision-mod-check-${idx}`);
           if (cbox) mod.active = cbox.checked;
         });
@@ -11073,7 +11231,7 @@
       const strikeManeuversUsed = [];
       let bladeOfBloodUsed = false;
 
-      (character.activeModifiers || []).forEach(m => {
+      (character.tacticalRiders || []).forEach(m => {
         if (m.active && m.source === 'Maneuver') {
           strikeManeuversUsed.push(m.name);
         }
@@ -11090,8 +11248,8 @@
         strikeManeuversUsed.forEach(strikeName => {
           const m = character.tomeOfBattle.readiedManeuvers.find(rm => rm.name.toLowerCase() === strikeName.toLowerCase());
           if (m) m.expended = true;
-          // Uncheck from activeModifiers so it doesn't apply to subsequent rolls until readied
-          const mod = character.activeModifiers.find(am => am.name.toLowerCase() === strikeName.toLowerCase());
+          // Uncheck from tacticalRiders so it doesn't apply to subsequent rolls until readied
+          const mod = (character.tacticalRiders || []).find(am => am.name.toLowerCase() === strikeName.toLowerCase());
           if (mod) mod.active = false;
         });
       }
@@ -11100,7 +11258,7 @@
       if (bladeOfBloodUsed) {
         const slot = character.spellcasting?.slots?.[1];
         if (slot) slot.used = Math.min(slot.daily || 8, (slot.used || 0) + 1);
-        const mod = character.activeModifiers.find(am => am.name === 'Blade of Blood');
+        const mod = (character.tacticalRiders || []).find(am => am.name === 'Blade of Blood');
         if (mod) mod.active = false;
       }
 
@@ -11409,13 +11567,14 @@
       if (!pin) return;
 
       if (pin.sourceType === 'Maneuver' || pin.sourceType === 'Stance') {
-        const mod = (character.activeModifiers || []).find(m => m.name.toLowerCase() === pin.name.toLowerCase());
+        const mod = (character.tacticalRiders || []).find(m => m.name.toLowerCase() === pin.name.toLowerCase());
         if (mod) {
           mod.active = !mod.active;
+          const rollBlk = getRiderRollBlock(mod);
           showDiceTopToast({
             icon: '⚡',
             title: `${pin.name} ${mod.active ? 'Added to' : 'Removed from'} Rotation`,
-            breakdown: `Damage: ${mod.dice || '-'} (${mod.type || ''})`,
+            breakdown: `Damage: ${rollBlk.dice || '-'} (${rollBlk.dmgType || ''})`,
             total: mod.active ? 'Active' : 'Passive'
           });
         } else {
@@ -11484,18 +11643,18 @@
     }
 
     function syncPinWithActiveModifiers(pin) {
-      if (!character.activeModifiers) character.activeModifiers = [];
+      if (!character.tacticalRiders) character.tacticalRiders = [];
       const cleanName = String(pin.name).replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').trim();
       const lower = cleanName.toLowerCase();
 
       const pinNameLower = (pin.name || '').toLowerCase();
-      let mod = (character.activeModifiers || []).find(m => m && m.name && (m.name.toLowerCase() === lower || m.name.toLowerCase() === pinNameLower));
+      let mod = (character.tacticalRiders || []).find(m => m && m.name && (m.name.toLowerCase() === lower || m.name.toLowerCase() === pinNameLower));
 
       if (pin.active) {
         if (!mod) {
           let bAtk = 0;
           let bDmg = 0;
-          let bType = 'enhancement';
+          let bType = 'Enhancement';
           let dice = '';
 
           // Enhance Arrow (+1, +2, +3, +4, +5)
@@ -11504,11 +11663,11 @@
             const val = parseInt(enhanceMatch[1]) || 1;
             bAtk = val;
             bDmg = val;
-            bType = 'enhancement';
+            bType = 'Enhancement';
           } else if (lower.includes('point blank shot')) {
             bAtk = 1;
             bDmg = 1;
-            bType = 'untyped';
+            bType = 'Untyped';
           } else {
             // General parser for +N bonus in name or description
             const plusMatch = (pin.name + ' ' + (pin.desc || '')).match(/\+(\d+)\s*(attack|damage|enhancement|bonus)/i);
@@ -11523,17 +11682,29 @@
             }
           }
 
+          const riderEffects = [];
+          if (bAtk !== 0) {
+            riderEffects.push({ type: 'stat', targets: ['attack.all'], mode: 'flat', value: bAtk, btype: bType });
+          }
+          if (bDmg !== 0) {
+            riderEffects.push({ type: 'stat', targets: ['damage.all'], mode: 'flat', value: bDmg, btype: bType });
+          }
+          if (dice) {
+            riderEffects.push({ type: 'roll', kind: 'Damage', dice: dice, dmgType: 'Damage' });
+          }
+
           mod = {
+            id: `rider-${cleanName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,
+            schemaVersion: 3,
             name: cleanName,
             source: pin.sourceType || 'Feat',
+            combatScope: 'both',
+            riderType: 'Rider',
             active: true,
-            bonusAtk: bAtk,
-            bonusDmg: bDmg,
-            bonusType: bType,
-            dice: dice,
-            desc: pin.desc || ''
+            notes: pin.desc || '',
+            effects: riderEffects
           };
-          character.activeModifiers.push(mod);
+          character.tacticalRiders.push(mod);
         } else {
           mod.active = true;
         }
@@ -13505,8 +13676,7 @@
       let hasSave = false;
       let rechargeDice = '';
       let actionType = 'passive';
-      const modifiers = [];
-      const defenses = [];
+      const effects = [];
 
       for (let i = 1; i < segments.length; i++) {
         const seg = segments[i];
@@ -13550,19 +13720,23 @@
           const mm = v.match(/^([+-]?\d+|\S+)\s+to\s+([a-zA-Z._]+)(?:\s+\(([^)]+)\))?/i);
           if (mm) {
             const valNum = Number(mm[1]);
-            modifiers.push({
-              target: mm[2].trim(),
-              op: 'add',
+            effects.push({
+              type: 'stat',
+              targets: [mm[2].trim()],
+              mode: 'flat',
               ...(Number.isFinite(valNum) ? { value: valNum } : { formula: mm[1] }),
-              type: mm[3] ? mm[3].trim() : 'Untyped'
+              btype: mm[3] ? mm[3].trim() : 'Untyped'
             });
           }
         } else if (k === 'resist' || k === 'resistance') {
           const rm = v.match(/^([a-zA-Z]+)\s+(\d+)/i);
           if (rm) {
-            defenses.push({ kind: 'resistance', damageType: rm[1], value: Number(rm[2]) || 10 });
+            effects.push({ type: 'defense', kind: 'resistance', dmgType: rm[1], value: Number(rm[2]) || 10 });
           }
         }
+      }
+      if (dice) {
+        effects.push({ type: 'roll', kind: 'Damage', dice: dice, dmgType: dmgType, crit: false });
       }
 
       const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
@@ -13576,7 +13750,7 @@
         passive: 'Passive'
       };
       const entry = {
-        schemaVersion: 2,
+        schemaVersion: 3,
         id: `pack_dm_custom:${slug}`,
         name: name,
         type: dice ? 'Special Ability' : 'DM Boon',
@@ -13589,8 +13763,7 @@
         dcFormula: (hasSave || dice) ? dcFormula : '',
         rechargeDice: rechargeDice || '',
         benefit: `${name}${dice ? ` — ${dice} ${dmgType} damage (${range}, ${actLabelMap[actionType] || 'Standard Action'}${rechargeDice ? `, Recharge ${rechargeDice} rounds` : ''})` : ''}`,
-        modifiers: modifiers,
-        defenses: defenses,
+        effects: effects,
         resources: rechargeDice ? [{
           id: `res_${slug}_recharge`,
           name: `${name} Recharge`,
@@ -13598,7 +13771,6 @@
           rechargeFormula: rechargeDice,
           cooldownRemaining: 0
         }] : [],
-        damageParts: dice ? [{ dice: dice, bonus: 0, type: dmgType, multiplyOnCrit: false, source: name }] : [],
         modes: dice ? [{
           id: `mode_${slug}`,
           name: `Use ${name}`,
@@ -13606,7 +13778,7 @@
           range: range,
           area: { shape: 'line', sizeFt: parseInt(range, 10) || 60 },
           save: { type: saveType, dcFormula: dcFormula, onSave: 'half' },
-          damageParts: [{ dice: dice, bonus: 0, type: dmgType, multiplyOnCrit: false }],
+          effects: [{ type: 'roll', kind: 'Damage', dice: dice, dmgType: dmgType, crit: false }],
           resourceCost: rechargeDice ? { resourceId: `res_${slug}_recharge`, rollCooldownOnUse: true } : undefined
         }] : [],
         grants: [],
@@ -14094,32 +14266,32 @@
           if (!nLower || existingNames.has(nLower) || seenCandNames.has(nLower)) return;
           const sc = subQ ? _termFuzzyScore(subQ, rawObj.name, rawObj.summary || rawObj.benefit || '') : 100;
           if (subQ && sc <= 0) return;
-          let resolvedMods = Array.isArray(rawObj.modifiers) ? JSON.parse(JSON.stringify(rawObj.modifiers)) : [];
+          let resolvedEffects = Array.isArray(rawObj.effects) ? JSON.parse(JSON.stringify(rawObj.effects)) : [];
           let resolvedFlags = (rawObj.ruleFlags && typeof rawObj.ruleFlags === 'object') ? JSON.parse(JSON.stringify(rawObj.ruleFlags)) : {};
           let summary = rawObj.summary || rawObj.benefit || rawObj.description || '';
-          if (resolvedMods.length === 0 && typeof RuleEngine !== 'undefined' && typeof RuleEngine.resolveSpellBuffSpec === 'function') {
+          if (resolvedEffects.length === 0 && typeof RuleEngine !== 'undefined' && typeof RuleEngine.resolveSpellBuffSpec === 'function') {
             const spec = RuleEngine.resolveSpellBuffSpec({ name: rawObj.name, id: rawObj.id }, character, Number(character?.level) || 1);
             if (spec && spec.isBuffSpell) {
-              if (Array.isArray(spec.modifiers)) resolvedMods = JSON.parse(JSON.stringify(spec.modifiers));
+              if (Array.isArray(spec.effects)) resolvedEffects = JSON.parse(JSON.stringify(spec.effects));
               if (spec.ruleFlags) resolvedFlags = Object.assign({}, resolvedFlags, JSON.parse(JSON.stringify(spec.ruleFlags)));
-              if (!summary && spec.summary) summary = spec.summary;
+              if (!summary && (spec.summaryText || spec.summary)) summary = spec.summaryText || spec.summary;
             }
           }
-          if (resolvedMods.length === 0 && Object.keys(resolvedFlags).length === 0 && String(rawObj.type || '').toLowerCase() !== 'buff') {
+          if (resolvedEffects.length === 0 && Object.keys(resolvedFlags).length === 0 && String(rawObj.type || '').toLowerCase() !== 'buff') {
             return;
           }
           seenCandNames.add(nLower);
           candidateTemplates.push({
             id: rawObj.id || `buff_${nLower.replace(/[^a-z0-9]+/g, '_')}`,
-            schemaVersion: 2,
+            schemaVersion: 3,
             name: rawObj.name,
             type: 'Buff',
             source: rawObj.source || 'Spell',
             active: true,
             rounds: Number(rawObj.rounds) || 10,
             durationText: rawObj.durationText || rawObj.duration || '1 min / CL',
-            summary: summary || 'V2 Spell/Buff Effect',
-            modifiers: resolvedMods,
+            summary: summary || 'V3 Spell/Buff Effect',
+            effects: resolvedEffects,
             ruleFlags: resolvedFlags
           });
         };

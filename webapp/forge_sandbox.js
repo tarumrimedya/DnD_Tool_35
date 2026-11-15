@@ -25,9 +25,10 @@
   const DICE_SVG = '<svg class="fs-dice-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 21 7v10l-9 5-9-5V7z"/><path d="M12 2 7.5 9.5h9zM3 7l4.5 2.5M21 7l-4.5 2.5M7.5 9.5 12 17l4.5-7.5M12 17v5M3 17l4.5-7.5M21 17l-4.5-7.5M3 17h18"/></svg>';
 
   // --------------------------------------------------------------------------
-  // 1. Taxonomy & offline seed catalog (DMG / PHB / MIC)
+  // 1. Taxonomy & offline seed catalog (read from `rulesets/dnd35.js` plugin)
   // --------------------------------------------------------------------------
-  const ABILITIES = [['str', 'Strength'], ['dex', 'Dexterity'], ['con', 'Constitution'], ['int', 'Intelligence'], ['wis', 'Wisdom'], ['cha', 'Charisma']];
+  const _RS = (typeof window !== 'undefined' && window.DnD35Ruleset) || null;
+  const ABILITIES = (_RS && Array.isArray(_RS.abilities)) ? _RS.abilities : [['str', 'Strength'], ['dex', 'Dexterity'], ['con', 'Constitution'], ['int', 'Intelligence'], ['wis', 'Wisdom'], ['cha', 'Charisma']];
   const ABIL_KEYS = ABILITIES.map((a) => a[0]);
   const SKILLS = [
     ['Appraise', 'int'], ['Balance', 'dex'], ['Bluff', 'cha'], ['Climb', 'str'], ['Concentration', 'con'], ['Craft', 'int'], ['Decipher Script', 'int'], ['Diplomacy', 'cha'],
@@ -46,21 +47,21 @@
       ['choice.ability.4', 'Chosen Ability #4 (Distinct)']
     ])],
     ['Armor Class', [['ac.total', 'AC (All)'], ['ac.touch', 'Touch AC only'], ['ac.flatFooted', 'Flat-Footed AC only'], ['ac.armor', 'Armor Bonus'], ['ac.shield', 'Shield Bonus'], ['ac.shieldBonus', 'Shield AC Bonus (Stacks w/ Base Shield)'], ['ac.natural', 'Natural Armor'], ['ac.deflection', 'Deflection'], ['ac.dodge', 'Dodge']]],
-    ['Saving Throws', [['save.all', 'All Saving Throws'], ['save.fort', 'Fortitude'], ['save.ref', 'Reflex'], ['save.will', 'Will']]],
-    ['Combat', [['atk.all', 'Attack Rolls (All)'], ['atk.melee', 'Melee Attack'], ['atk.ranged', 'Ranged Attack'], ['dmg.all', 'Damage (All)'], ['dmg.melee', 'Melee Damage'], ['initiative', 'Initiative'], ['speed.land', 'Land Speed (ft.)'], ['hp.temp', 'Temporary Hit Points'], ['grapple', 'Grapple']]],
-    ['Spellcasting', [['casterLevel', 'Caster Level'], ['spell.dc', 'Spell Save DC'], ['spell.effectiveLevel', 'Effective Spell Level'], ['sr.penetration', 'Spell Penetration (vs SR)']]],
-    ['Skills (36)', [['skill.all', 'All Skills']].concat(SKILLS.map((s) => [skillKey(s[0]), s[0]]))]
+    ['Saving Throws', [['save.all', 'All Saving Throws'], ['save.fort', 'Fortitude'], ['save.ref', 'Reflex'], ['save.will', 'Will'], ['choice.save.1', 'Chosen Save (@Choice)']]],
+    ['Combat', [['atk.all', 'Attack Rolls (All)'], ['atk.melee', 'Melee Attack'], ['atk.ranged', 'Ranged Attack'], ['atk.weapon', 'Chosen Weapon Attack (@Choice)'], ['dmg.all', 'Damage (All)'], ['dmg.melee', 'Melee Damage'], ['dmg.ranged', 'Ranged Damage'], ['dmg.weapon', 'Chosen Weapon Damage (@Choice)'], ['atk.critConfirm', 'Critical Confirmation'], ['initiative', 'Initiative'], ['speed.land', 'Land Speed (ft.)'], ['hp.temp', 'Temporary Hit Points'], ['hp.perLevel', 'HP per Level / HD'], ['grapple', 'Grapple']]],
+    ['Spellcasting', [['casterLevel', 'Caster Level'], ['spell.dc', 'Spell Save DC'], ['spell.effectiveLevel', 'Effective Spell Level'], ['sr.penetration', 'Spell Penetration (vs SR)'], ['resource.pp', 'Bonus Power Points'], ['resource.essentia', 'Bonus Essentia']]],
+    ['Skills (36)', [['skill.all', 'All Skills'], ['choice.skill.1', 'Chosen Skill (@Choice)'], ['skill.knowledge', 'All Knowledge Skills']].concat(SKILLS.map((s) => [skillKey(s[0]), s[0]]))]
   ];
   const TARGET_LABEL = {}; TARGET_GROUPS.forEach((g) => g[1].forEach((t) => { TARGET_LABEL[t[0]] = t[1]; }));
-  const BONUS_TYPES = [
+  const BONUS_TYPES = (_RS && Array.isArray(_RS.bonusTypes)) ? _RS.bonusTypes : [
     { id: 'Untyped', stacks: true }, { id: 'Dodge', stacks: true, lostFF: true }, { id: 'Circumstance', stacks: true }, { id: 'Penalty', stacks: true },
     { id: 'Enhancement' }, { id: 'Luck' }, { id: 'Morale' }, { id: 'Sacred' }, { id: 'Profane' }, { id: 'Insight' }, { id: 'Competence' }, { id: 'Resistance' },
     { id: 'Deflection' }, { id: 'Alchemical' }, { id: 'Inherent', cap: 5 }, { id: 'Armor' }, { id: 'Armor Enhancement' }, { id: 'Shield' }, { id: 'Shield Enhancement' },
     { id: 'Natural Armor' }, { id: 'Natural Armor Enhancement' }, { id: 'Racial' }, { id: 'Size' }, { id: 'Exalted' }, { id: 'Perfection' }
   ];
-  const DAMAGE_TYPES = ['Slashing', 'Piercing', 'Bludgeoning', 'Fire', 'Cold', 'Acid', 'Electricity', 'Sonic', 'Force', 'Holy', 'Unholy', 'Positive', 'Negative', 'Precision', 'Vile', 'Nonlethal', 'Untyped', 'Healing'];
+  const DAMAGE_TYPES = (_RS && Array.isArray(_RS.damageTypes)) ? _RS.damageTypes : ['Slashing', 'Piercing', 'Bludgeoning', 'Fire', 'Cold', 'Acid', 'Electricity', 'Sonic', 'Force', 'Holy', 'Unholy', 'Positive', 'Negative', 'Precision', 'Vile', 'Nonlethal', 'Untyped', 'Healing'];
   const DIE_LIST = ['1', '1d2', '1d3', '1d4', '1d6', '1d8', '1d10', '1d12', '2d4', '2d6', '2d8', '2d10', '3d6', '4d6', '6d6', '6d8', 'd4', 'd6', 'd8', 'd10', 'd12', 'flat'];
-  const ENERGY = ['Fire', 'Cold', 'Acid', 'Electricity', 'Sonic', 'Force'];
+  const ENERGY = (_RS && Array.isArray(_RS.energyTypes)) ? _RS.energyTypes : ['Fire', 'Cold', 'Acid', 'Electricity', 'Sonic', 'Force'];
   const ACTIONS = ['Standard', 'Full-Round', 'Move', 'Swift', 'Immediate', 'Free', 'Reaction', 'Passive'];
   const SCHOOLS = ['Abjuration', 'Conjuration', 'Divination', 'Enchantment', 'Evocation', 'Illusion', 'Necromancy', 'Transmutation', 'Universal'];
   const DESCRIPTORS = ['Acid', 'Air', 'Chaotic', 'Cold', 'Darkness', 'Death', 'Earth', 'Electricity', 'Evil', 'Fear', 'Fire', 'Force', 'Good', 'Language-Dependent', 'Lawful', 'Light', 'Mind-Affecting', 'Sonic', 'Water', 'Teleportation', 'Shadow'];
@@ -402,7 +403,8 @@
     wieldingChosenShield: 'While Wielding Chosen Shield',
     wieldingChosenWeapon: 'While Wielding Chosen Weapon',
     wieldingTwoWeapons: 'While Two-Weapon / Double Weapon Fighting',
-    vsAoOFromMovement: 'vs. Attacks of Opportunity from Movement'
+    vsAoOFromMovement: 'vs. Attacks of Opportunity from Movement',
+    castingChosenSchool: 'When Casting Chosen School (@Choice)'
   };
   const RULE_SWITCH_FLAGS = [
     ['babEqualsLevel', 'BAB Equals Character Level'],
@@ -473,9 +475,9 @@
         per: 3, min: 0, max: 5, formula: '', condition: ''
       },
       roll: {
-        kind: 'Damage', count: 1, die: 'd6', dmgType: 'Fire',
+        kind: 'Damage', count: 1, die: 'd6', flat: 0, dmgType: 'Fire',
         scaling: 'flat', amount: 1, per: 1, start: 1, max: 10,
-        varKey: 'augment_pp', varMode: 'dice',
+        varKey: 'augment_pp', varMode: 'dice', dice: '',
         crit: 'normal', save: '', condition: ''
       },
       attack: {
@@ -544,7 +546,11 @@
   function rollBlockText(b) {
     const cnt = num(b.count, 1);
     const die = String(b.die || 'd6');
-    const unit = die === 'flat' ? (cnt > 0 ? String(cnt) : '') : (/^\d+d\d+$/.test(die) ? die : (cnt > 0 ? cnt + die : ''));
+    const flat = die === 'flat' ? 0 : num(b.flat, 0);
+    const flatStr = flat !== 0 ? (flat > 0 ? '+' + flat : String(flat)) : '';
+    const unit = (b.scaling === 'formula' && b.dice)
+      ? String(b.dice).trim()
+      : (die === 'flat' ? (cnt > 0 ? String(cnt) : '') : ((/^\d+d\d+$/.test(die) ? die : (cnt > 0 ? cnt + die : '')) + flatStr));
     let scaleStr = '';
     if (b.scaling === 'perCL') {
       const per = Math.max(1, num(b.per, 1));
@@ -565,13 +571,16 @@
   }
   function rollAtCL(b, cl) {
     if (!b || b.type !== 'roll') return '';
+    if (b.scaling === 'formula' && b.dice) return String(b.dice).trim();
     const cnt = num(b.count, 1), die = String(b.die || 'd6');
-    if (b.scaling !== 'perCL') return die === 'flat' ? String(cnt) : (/^\d+d\d+$/.test(die) ? die : cnt + die);
+    const flat = die === 'flat' ? 0 : num(b.flat, 0);
+    const flatStr = flat !== 0 ? (flat > 0 ? '+' + flat : String(flat)) : '';
+    if (b.scaling !== 'perCL') return die === 'flat' ? String(cnt) : ((/^\d+d\d+$/.test(die) ? die : cnt + die) + flatStr);
     const start = num(b.start, 1), per = Math.max(1, num(b.per, 1)), maxSteps = Math.max(1, num(b.max, 10));
     const steps = cl < start ? 0 : Math.min(maxSteps, Math.floor((cl - start) / per) + 1);
     const total = (cnt > 0 && start > 1 ? cnt + (steps - 1) * num(b.amount, 1) : steps * num(b.amount, cnt || 1));
     if (die === 'flat') return String(total);
-    return total + die.replace(/^\d+/, '');
+    return total + die.replace(/^\d+/, '') + flatStr;
   }
   function whenBranchHeadText(flow, br) {
     if (flow === 'while') {
@@ -2125,9 +2134,15 @@
         o.condition = { toggle: RegExp.$1 };
       }
     }
+    if (b.type === 'roll') {
+      if (b.scaling !== 'formula') delete o.dice;
+      if (b.die === 'flat') o.flat = 0;
+      else o.flat = num(b.flat, 0);
+    }
     if (b.type === 'roll' && b.kind === 'Temp HP') {
-      const cnt = num(b.count, 1), die = String(b.die || 'd6');
-      const baseExpr = die === 'flat' ? (cnt > 0 ? String(cnt) : '') : (/^\d+d\d+$/.test(die) ? die : (cnt > 0 ? cnt + die : ''));
+      const cnt = num(b.count, 1), die = String(b.die || 'd6'), flatBonus = die === 'flat' ? 0 : num(b.flat, 0);
+      const baseRaw = die === 'flat' ? (cnt > 0 ? String(cnt) : '') : (/^\d+d\d+$/.test(die) ? die : (cnt > 0 ? cnt + die : ''));
+      const baseExpr = baseRaw && flatBonus ? (baseRaw + (flatBonus > 0 ? ' + ' + flatBonus : ' - ' + Math.abs(flatBonus))) : (baseRaw || (flatBonus ? String(flatBonus) : ''));
       if (b.scaling === 'perCL') {
         const per = Math.max(1, num(b.per, 1)), amt = num(b.amount, 1), mx = Math.max(1, num(b.max, 10));
         const clPart = per === 1
@@ -2175,6 +2190,7 @@
     const out = { schemaVersion: 3, id: en.origin.mode === 'override' && en.origin.srdId ? en.origin.srdId : en.id, blueprint: en.blueprint, name: entryName(en), source: en.source, tags: en.tags.slice(), facets: F.slice() };
     if (en.origin.mode !== 'new') out.origin = { mode: en.origin.mode, srdId: en.origin.srdId, srdName: en.origin.srdName };
     if (en.text) out.text = en.text;
+    if (Array.isArray(en.choices) && en.choices.length > 0) out.choices = clone(en.choices);
     if (en.blueprint === 'feat') {
       out.featKind = en.featKind || 'feat';
       if (en.featKind === 'acf' || en.featKind === 'substitution') {
@@ -2375,6 +2391,50 @@
         }
       }
     }
+    if (t === 'roll') {
+      if (normalized.rollType || normalized.rollKind) {
+        normalized.kind = normalized.rollType || normalized.rollKind;
+      }
+      if (/^heal(ing)?$/i.test(String(normalized.kind || ''))) normalized.kind = 'Healing';
+      else if (/^damage$/i.test(String(normalized.kind || ''))) normalized.kind = 'Damage';
+      if (normalized.dice && typeof normalized.dice === 'string') {
+        const dStr = normalized.dice.trim();
+        const simpleM = dStr.match(/^(\d+)\s*d(\d+)(?:\s*([+-]\s*\d+))?$/i);
+        if (simpleM) {
+          normalized.count = parseInt(simpleM[1], 10) || 1;
+          normalized.die = 'd' + simpleM[2];
+          if (simpleM[3] && normalized.flat === undefined) {
+            normalized.flat = parseInt(simpleM[3].replace(/\s+/g, ''), 10) || 0;
+          }
+          delete normalized.dice;
+          if (normalized.scaling === 'formula') normalized.scaling = 'flat';
+        } else if (/^\d+$/.test(dStr)) {
+          normalized.count = parseInt(dStr, 10) || 0;
+          normalized.die = 'flat';
+          normalized.flat = 0;
+          delete normalized.dice;
+          if (normalized.scaling === 'formula') normalized.scaling = 'flat';
+        } else {
+          const leadM = dStr.match(/^(\d+)\s*d(\d+)/i);
+          if (leadM) {
+            normalized.count = parseInt(leadM[1], 10) || 1;
+            normalized.die = 'd' + leadM[2];
+          }
+          normalized.scaling = 'formula';
+          normalized.dice = dStr;
+        }
+      }
+      if (normalized.bonus !== undefined && normalized.flat === undefined) {
+        if (normalized.die === 'flat' || (!normalized.dice && !normalized.die && !normalized.count)) {
+          normalized.die = 'flat';
+          normalized.count = Number(normalized.bonus) || 0;
+          normalized.flat = 0;
+        } else {
+          normalized.flat = Number(normalized.bonus) || 0;
+        }
+        delete normalized.bonus;
+      }
+    }
     if (t === 'effect' && (normalized.flag || normalized.ruleFlag) && !normalized.effectKind) {
       normalized.effectKind = 'ruleSwitch';
       normalized.flag = normalized.flag || normalized.ruleFlag;
@@ -2389,6 +2449,9 @@
         if (!br.condKind && WHEN_COND_LABELS[rawWhen]) {
           bo.condKind = rawWhen;
           if (!br.condText) bo.condText = '';
+        } else if ((br.condKind === 'state' || br.condKind === 'situational') && br.condText && WHEN_COND_LABELS[br.condText]) {
+          bo.condKind = br.condText;
+          bo.condText = '';
         }
         delete bo.effects;
         bo.kids = Array.isArray(br.effects || br.kids) ? (br.effects || br.kids).map(parseBlockV3).filter(Boolean) : [];
@@ -2438,6 +2501,7 @@
     if (obj.origin && typeof obj.origin === 'object') en.origin = Object.assign(en.origin, obj.origin);
     if (typeof obj.text === 'string') en.text = obj.text;
     else if (obj.text && typeof obj.text === 'object') en.text = obj.text.summary || '';
+    if (Array.isArray(obj.choices) && obj.choices.length > 0) en.choices = clone(obj.choices);
     if (obj.featKind) en.featKind = obj.featKind;
     if (obj.timesSelectable !== undefined) {
       if (obj.timesSelectable === 'perWeaponOrSchool' || obj.timesSelectable === 'perChoice') en.repeat = { mode: 'per', n: 2 };
@@ -2449,8 +2513,10 @@
       en.acf = Object.assign(en.acf, { targetClass: obj.acf.targetClass || '', level: num(obj.acf.level, 1), replaces: obj.acf.replaces || '', race: obj.acf.race || '' });
     }
     if (obj.item && typeof obj.item === 'object') {
+      const rawSub = String(obj.item.subtype || en.item.subtype || '').trim();
+      const normSub = /^(potion|oil)s?$/i.test(rawSub) ? 'Potion / Oil' : (rawSub || en.item.subtype);
       en.item = Object.assign(en.item, {
-        subtype: obj.item.subtype || en.item.subtype,
+        subtype: normSub,
         slot: obj.item.slot || en.item.slot,
         price: obj.item.price !== undefined ? num(obj.item.price) : en.item.price,
         cl: obj.item.casterLevel !== undefined ? num(obj.item.casterLevel) : (obj.item.cl !== undefined ? num(obj.item.cl) : en.item.cl)
@@ -2682,9 +2748,17 @@
         if (matchA) baseId = matchA.id;
       }
       en.chassis = blankChassis(kind, baseId);
-      en.chassis.material = ch.material || 'standard';
+      const rawMat = String(ch.material || 'standard').trim().replace(/^mat-/i, '').replace(/-/g, '_');
+      en.chassis.material = MATERIALS.some((m) => m.id === rawMat) ? rawMat : (ch.material || 'standard');
       en.chassis.enhancement = ch.enhancement != null ? num(ch.enhancement, 0) : num(ch.enhancementBonus, 0);
-      en.chassis.enchantments = arr(ch.enhancements || ch.enchantments).slice();
+      en.chassis.enchantments = arr(ch.enhancements || ch.enchantments).map((eid) => {
+        const rawE = String(eid || '').trim();
+        if (byId(CAT.enchants, rawE)) return rawE;
+        const stripped = rawE.replace(/^enh-/i, '').replace(/-/g, '_');
+        if (byId(CAT.enchants, stripped)) return stripped;
+        if (stripped === 'ghost_touch') return kind === 'armor' ? 'ghost_touch_a' : 'ghost_touch_w';
+        return rawE;
+      }).filter(Boolean);
       if (ch.augmentCrystal && ch.augmentCrystal.id) en.chassis.crystal = { id: ch.augmentCrystal.id, tier: ch.augmentCrystal.tier || 'least' };
       else if (ch.crystal && ch.crystal.id) en.chassis.crystal = { id: ch.crystal.id, tier: ch.crystal.tier || 'least' };
       const w = obj.weapon || ch.weapon;
@@ -3625,7 +3699,7 @@
     const save = S.ui.tplSaveOpen ? '<span class="fs-row" style="gap:4px">' + inp('newTplName', S.ui.newTplName, { scope: 'ui', ph: 'Template name…', style: 'width:150px', enter: 'save-template' }) + btn('save-template', 'Save', 'fs-xs fs-emerald') + btn('toggle-tpl-save', '✕', 'fs-xs fs-ghost') + '</span>' : btn('toggle-tpl-save', '📌 Save Template', 'fs-xs');
     const skillPop = '<span class="fs-rel">' + btn('toggle-custom-skill', '+ 🎯 Custom Skill', 'fs-xs' + (S.ui.customSkillOpen ? ' fs-on' : '')) + customSkillPopover() + '</span>';
     const importBtn = btn('toggle-import-json', '📥 Import JSON', 'fs-xs' + (S.ui.importOpen ? ' fs-on' : ''));
-    const status = CAT.srdLoaded ? '<span class="fs-pill emerald" title="SrdCompendium + master_db.json">📚 SRD ' + CAT.srdCount.toLocaleString('en-US') + (CAT.customCount ? ' + ' + CAT.customCount + ' custom' : '') + '</span>' : '<span class="fs-pill dim" title="Serve over http:// to load srd_compendium.js data">📚 Offline seed</span>';
+    const status = CAT.srdLoaded ? '<span class="fs-pill emerald" title="SrdCompendium V3 Corpus">📚 SRD ' + CAT.srdCount.toLocaleString('en-US') + (CAT.customCount ? ' + ' + CAT.customCount + ' custom' : '') + '</span>' : '<span class="fs-pill dim" title="Serve over http:// to load srd_compendium.js data">📚 Offline seed</span>';
     $('#fs-topbar').innerHTML = '<div class="fs-topbar-row"><div class="fs-title">' + DICE_SVG + ' Rule Crafter</div>' + catSel +
       '<span class="fs-grow-gap"></span>' + save + skillPop + importBtn + btn('new-entry', '✨ Blank', 'fs-xs') + status + '</div>' +
       '<div class="fs-topbar-row fs-topbar-spot-row"><div class="fs-top-spot">' + spotHtml('load', 'top') + '</div></div>';
@@ -3858,6 +3932,7 @@
         ['wieldingChosenWeapon', 'While Wielding Chosen Weapon'],
         ['wieldingTwoWeapons', 'While Two-Weapon / Double Weapon Fighting'],
         ['vsAoOFromMovement', 'vs. Attacks of Opportunity from Movement'],
+        ['castingChosenSchool', 'When Casting Chosen School (@Choice)'],
         ['oath', '⚖️ Oath / Taboo Unbroken']
       ], { narrow: true });
       if (WHEN_COND_LABELS[ck]) {
@@ -4044,10 +4119,15 @@
       case 'roll': {
         const sc = b.scaling || 'flat';
         const hasDmg = b.kind === 'Damage' || b.kind === 'Ongoing / Round';
-        let h = G(hasDmg ? 4 : 3,
+        const showFlat = b.die !== 'flat' && sc !== 'formula';
+        let h = G((hasDmg || showFlat) ? 4 : 3,
           F('Roll Kind', sel(p + '.kind', b.kind || 'Damage', ['Damage', 'Healing', 'Temp HP', 'Ongoing / Round', 'Fast Healing'], { narrow: true })) +
-          F('Dice / Base Count', inp(p + '.count', b.count, { num: true, min: 0 })) +
-          F('Die / Unit', sel(p + '.die', b.die || 'd6', [['d4', 'd4'], ['d6', 'd6'], ['d8', 'd8'], ['d10', 'd10'], ['d12', 'd12'], ['2d6', '2d6'], ['flat', 'Flat']], { narrow: true })) +
+          (sc === 'formula'
+            ? F('Dice Formula', inp(p + '.dice', b.dice || '1d8+min(5,@cl)', { ph: '1d8+min(5,@cl)' }), 'lego-span-2')
+            : F(b.die === 'flat' ? 'Flat Value' : 'Dice Count', inp(p + '.count', b.count, { num: true, min: 0 })) +
+              F('Die / Unit', sel(p + '.die', b.die || 'd6', [['d4', 'd4'], ['d6', 'd6'], ['d8', 'd8'], ['d10', 'd10'], ['d12', 'd12'], ['2d6', '2d6'], ['flat', 'Flat']], { narrow: true })) +
+              (showFlat ? F('Flat Bonus (+)', inp(p + '.flat', num(b.flat, 0), { num: true })) : '')
+          ) +
           (hasDmg ? F('Damage Type', sel(p + '.dmgType', b.dmgType || 'Fire', DAMAGE_TYPES.slice(0, 16), { narrow: true })) : '')
         );
         if (sc === 'perCL') {
@@ -4065,7 +4145,7 @@
           );
         }
         h += G(4,
-          F('Scaling Mode', sel(p + '.scaling', sc, [['flat', 'Flat'], ['perCL', 'Scale by Level'], ['perVar', '+ @Resource']], { narrow: true })) +
+          F('Scaling Mode', sel(p + '.scaling', sc, [['flat', 'Flat'], ['perCL', 'Scale by Level'], ['perVar', '+ @Resource'], ['formula', 'Formula']], { narrow: true })) +
           F('Critical Rule', sel(p + '.crit', b.crit || 'normal', [['normal', 'Normal Crit'], ['multiply', '×Crit'], ['onCritOnly', 'On Crit Only']], { narrow: true })) +
           F('Save Note', inp(p + '.save', b.save || '', { ph: 'save (Reflex half)' })) +
           F('Condition', inp(p + '.condition', b.condition || '', { ph: 'condition (vs Undead)' }))
@@ -5218,11 +5298,9 @@
     C.init({ basePath: 'database' }).then((ok) => {
       if (!ok) return;
       try { mergeSrd(C); } catch (e) { console.warn('[ForgeSandbox] SRD merge skipped:', e && e.message); }
-      const pMon = typeof C.loadMonsters === 'function'
+      return typeof C.loadMonsters === 'function'
         ? C.loadMonsters().then((mons) => { if (Array.isArray(mons)) { CAT.monsters = mons; CAT.srdCount += mons.length; } }).catch(() => {})
         : Promise.resolve();
-      const pMaster = fetch('./master_db.json').then((r) => (r.ok ? r.json() : [])).then((list) => { mergeMasterDb(Array.isArray(list) ? list : (list && list.entries) || []); }).catch(() => {});
-      return Promise.all([pMon, pMaster]);
     }).then(() => { if (CAT.srdLoaded) { toast('📚 SRD + Bestiary loaded: ' + CAT.srdCount.toLocaleString('en-US') + ' entries' + (CAT.customCount ? ' (+' + CAT.customCount + ' custom)' : '')); renderAll(); } })
       .catch((e) => console.warn('[ForgeSandbox] SrdCompendium unavailable:', e && e.message));
   }

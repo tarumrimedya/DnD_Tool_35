@@ -20,7 +20,7 @@
       "properties": {
         "target": {
           "type": "string",
-          "description": "Target stat or mechanic key (e.g. 'ability.str', 'ability.dex', 'ability.con', 'ability.int', 'ability.wis', 'ability.cha', 'ac', 'ac.armor', 'ac.shield', 'ac.deflection', 'ac.natural', 'ac.dodge', 'attack.all', 'attack.melee', 'attack.ranged', 'damage.all', 'damage.melee', 'save.all', 'save.fort', 'save.ref', 'save.will', 'init', 'speed.land', 'hp', 'casterLevel', 'skill.all', 'skill.tumble')."
+          "description": "Target stat or mechanic key (e.g. 'ability.str', 'ability.dex', 'ability.con', 'ability.int', 'ability.wis', 'ability.cha', 'choice.ability.1', 'choice.save.1', 'choice.skill.1', 'choice.school.1', 'ac', 'ac.armor', 'ac.shield', 'ac.shieldBonus', 'ac.deflection', 'ac.natural', 'ac.dodge', 'attack.all', 'attack.melee', 'attack.ranged', 'atk.weapon', 'atk.critConfirm', 'damage.all', 'damage.melee', 'dmg.ranged', 'dmg.weapon', 'save.all', 'save.fort', 'save.ref', 'save.will', 'init', 'speed.land', 'hp', 'hp.perLevel', 'casterLevel', 'caster.spellPenetration', 'spell.dc', 'skill.all', 'skill.knowledge', 'skill.tumble')."
         },
         "value": {
           "type": "number",

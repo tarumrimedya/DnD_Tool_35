@@ -1446,7 +1446,7 @@
         "crit": "normal",
         "count": 0,
         "die": "d6",
-        "scaling": "perCL",
+        "scaling": "formula",
         "amount": 1,
         "per": 2,
         "start": 2,
@@ -1789,7 +1789,7 @@
         "crit": "normal",
         "count": 0,
         "die": "d6",
-        "scaling": "perCL",
+        "scaling": "formula",
         "amount": 1,
         "per": 1,
         "start": 1,
@@ -2123,7 +2123,16 @@
     "save": "None or Fortitude negates; see text",
     "sr": false,
     "buffTargetMode": "self",
-    "effects": [],
+    "effects": [
+      {
+        "id": "spl-wingblast-rf",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "passiveDefenseLabel",
+        "label": "Wingblast",
+        "text": "Mist wings let you fly; end them for a gust of wind or an obscuring mist."
+      }
+    ],
     "ruleFlags": {
       "passiveDefenseLabel": "Wingblast: Fly = land speed (max 60 ft., Good)"
     },
@@ -2216,7 +2225,16 @@
     "duration": "24 hours",
     "save": "Will negates",
     "sr": true,
-    "effects": [],
+    "effects": [
+      {
+        "id": "spl-curse-of-the-elemental-lords-rf",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "energyChoice",
+        "label": "Curse of the Elemental Lords",
+        "text": "Cursed targets take +1d6 damage from your spells of one chosen energy type."
+      }
+    ],
     "ruleFlags": {
       "energyChoice": true
     },
