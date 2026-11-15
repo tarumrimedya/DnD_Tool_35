@@ -5605,7 +5605,16 @@
     "prereq": "Endurance",
     "prerequisites": "Endurance",
     "benefit": "Use Con modifier instead of Wisdom for Will saves; do not automatically fail Fortitude saves on a natural 1.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-sd",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "conToWillSave",
+        "label": "Use CON modifier instead of WIS for Will saves; no auto-fail Fortitude on natural 1",
+        "text": "Steadfast Determination: CON to Will Saves"
+      }
+    ],
     "ruleFlags": {
       "conToWillSave": true,
       "noAutoFailFortSaveOnNat1": true
@@ -8111,7 +8120,32 @@
     "prereq": "Dex 19, BAB +11, Improved Two-Weapon Fighting, Two-Weapon Defense, Two-Weapon Fighting",
     "prerequisites": "Dex 19, BAB +11, Improved Two-Weapon Fighting, Two-Weapon Defense, Two-Weapon Fighting",
     "benefit": "Gain shield bonus when fighting with two weapons.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-gtwd-when",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-gtwd-when-br",
+            "condKind": "state",
+            "condText": "wieldingTwoWeapons",
+            "effects": [
+              {
+                "id": "ef-gtwd-ac",
+                "type": "stat",
+                "targets": [
+                  "ac.total"
+                ],
+                "mode": "flat",
+                "value": 3,
+                "btype": "Shield"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "text": "Gain shield bonus when fighting with two weapons.",
     "tags": [
       "feat",
@@ -8408,7 +8442,32 @@
     "prereq": "Dex 17, BAB +6, Two-Weapon Defense, Two-Weapon Fighting",
     "prerequisites": "Dex 17, BAB +6, Two-Weapon Defense, Two-Weapon Fighting",
     "benefit": "Gain shield bonus when fighting with two weapons.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-itwd-when",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-itwd-when-br",
+            "condKind": "state",
+            "condText": "wieldingTwoWeapons",
+            "effects": [
+              {
+                "id": "ef-itwd-ac",
+                "type": "stat",
+                "targets": [
+                  "ac.total"
+                ],
+                "mode": "flat",
+                "value": 2,
+                "btype": "Shield"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "text": "Gain shield bonus when fighting with two weapons.",
     "tags": [
       "feat",
@@ -35998,7 +36057,18 @@
     "prereq": "Con 13, character level 6th",
     "prerequisites": "Con 13, character level 6th",
     "benefit": "You gain 1 point of essentia. If you are capable of shaping soulmelds, you instead gain 2 points of essentia.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-be-ess",
+        "type": "stat",
+        "targets": [
+          "incarnum.essentiaPool"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Untyped"
+      }
+    ],
     "text": "You gain 1 point of essentia. If you are capable of shaping soulmelds, you instead gain 2 points of essentia.",
     "tags": [
       "feat",
@@ -36072,7 +36142,18 @@
     "prereq": "Con 15, Meldshaper Level 1st",
     "prerequisites": "Con 15, Meldshaper Level 1st",
     "benefit": "When you shape soulmelds, choose one. The essentia capacity for that soulmeld is increased by one.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-esc-cap",
+        "type": "stat",
+        "targets": [
+          "incarnum.capacityBonus"
+        ],
+        "mode": "flat",
+        "value": 1,
+        "btype": "Untyped"
+      }
+    ],
     "text": "When you shape soulmelds, choose one. The essentia capacity for that soulmeld is increased by one.",
     "tags": [
       "feat",
@@ -65845,5 +65926,40 @@
       "origin": "book-verified-v3",
       "book": "Tome of Magic p.232"
     }
+  },
+  {
+    "schemaVersion": 3,
+    "id": "feat-hidden-talent",
+    "blueprint": "feat",
+    "name": "Hidden Talent",
+    "type": "Feat",
+    "category": "Psionic",
+    "source": "Expanded Psionics Handbook p.67",
+    "featKind": "feat",
+    "isFighterBonusFeat": false,
+    "prereq": "1st level only; Charisma 11",
+    "prereqStruct": {},
+    "prerequisites": "Must be taken at 1st level; Cha 11",
+    "benefit": "Your latent psionic power manifests: you gain 2 power points and learn one 1st-level psionic power from any class list (Cha-based manifesting, DC 11 + Cha mod).",
+    "effects": [
+      {
+        "id": "ef-ht-pp",
+        "type": "stat",
+        "targets": [
+          "psionics.powerPoints"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Untyped"
+      }
+    ],
+    "shortDescription": "Gain 2 power points and know one 1st-level psionic power (Cha-based).",
+    "text": "Benefit: You gain 2 power points and learn one 1st-level power from any psionic power list. Your manifester level is 1st (unless you have levels in a psionic class), and your key ability score for manifesting this power is Charisma.",
+    "tags": [
+      "feat",
+      "psionic",
+      "xph"
+    ],
+    "scope": "All"
   }
 ]

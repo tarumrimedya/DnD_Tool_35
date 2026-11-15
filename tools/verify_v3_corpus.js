@@ -22,17 +22,17 @@ const CANONICAL_V3_TARGETS = new Set([
   'str', 'dex', 'con', 'int', 'wis', 'cha',
   'choice.ability.1', 'choice.ability.2', 'choice.ability.3', 'choice.ability.4',
   'choice.skill.1',
-  'ac.total', 'ac.touch', 'ac.flatFooted', 'ac.armor', 'ac.shield', 'ac.natural', 'ac.deflection', 'ac.dodge', 'ac.size', 'ac.luck', 'ac.insight', 'ac.sacred', 'ac.profane', 'ac.cover',
+  'ac.total', 'ac.touch', 'ac.flatFooted', 'ac.armor', 'ac.shield', 'ac.shieldBonus', 'ac.natural', 'ac.deflection', 'ac.dodge', 'ac.size', 'ac.luck', 'ac.insight', 'ac.sacred', 'ac.profane', 'ac.cover',
   'save.all', 'save.fort', 'save.ref', 'save.will',
   'atk.all', 'atk.melee', 'atk.ranged', 'atk.weapon', 'atk.touch', 'atk.grapple', 'atk.natural', 'atk.critConfirm',
   'dmg.all', 'dmg.melee', 'dmg.ranged', 'dmg.weapon', 'dmg.sneakAttack', 'dmg.natural', 'dmg.unarmed',
   'initiative', 'grapple',
-  'cmd.stability', 'cmd.bullRush', 'cmd.trip', 'cmd.overrun',
+  'cmd.stability', 'cmd.bullRush', 'cmd.trip', 'cmd.overrun', 'cmd.bullRushTripDisarmOverrun',
   'speed.land', 'speed.fly', 'speed.swim', 'speed.climb', 'speed.burrow', 'speed.all',
   'hp.temp', 'hp.max', 'hp.perLevel', 'fastHealing',
-  'casterLevel', 'spell.dc', 'spell.effectiveLevel', 'spell.damage', 'sr.penetration',
+  'casterLevel', 'spell.dc', 'spell.effectiveLevel', 'spell.damage', 'sr.penetration', 'caster.spellPenetration',
   'sr', 'dr', 'fortification', 'turnLevel', 'turning.check', 'turning.damageDice', 'wildEmpathy', 'carryingCapacity',
-  'resource.pp', 'resource.essentia',
+  'resource.pp', 'resource.essentia', 'psionics.powerPoints', 'incarnum.essentiaPool', 'incarnum.capacityBonus',
   'skill.all'
 ]);
 
@@ -198,12 +198,22 @@ function runCorpusAudit() {
                 }
               }
             }
-            if (Array.isArray(ef.branches)) ef.branches.forEach((b) => walk(b.effects || b.kids));
+            if (Array.isArray(ef.branches)) ef.branches.forEach((b) => walk(b.effects || b.kids || b.then || b.children || b.blocks));
             if (Array.isArray(ef.effects)) walk(ef.effects);
-            if (Array.isArray(ef.rows)) ef.rows.forEach((r) => walk(r.effects || r.kids));
+            if (Array.isArray(ef.then)) walk(ef.then);
+            if (Array.isArray(ef.else)) walk(ef.else);
+            if (Array.isArray(ef.blocks)) walk(ef.blocks);
+            if (Array.isArray(ef.children)) walk(ef.children);
+            if (Array.isArray(ef.rows)) ef.rows.forEach((r) => walk(r.effects || r.kids || r.then || r.blocks));
           }
         };
         walk(e.effects);
+        if (Array.isArray(e.modes)) {
+          e.modes.forEach((m) => {
+            if (m && Array.isArray(m.effects)) walk(m.effects);
+            if (m && Array.isArray(m.blocks)) walk(m.blocks);
+          });
+        }
         if (e.chakraBinds && typeof e.chakraBinds === 'object') {
           Object.values(e.chakraBinds).forEach((cb) => {
             if (Array.isArray(cb)) walk(cb);

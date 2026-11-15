@@ -5982,17 +5982,44 @@
       if (typeof window !== 'undefined' && typeof window.pruneOrphanedLevelAbilitiesAndFeats === 'function') {
         window.pruneOrphanedLevelAbilitiesAndFeats(char);
       }
-      if (characterHasFeat(char, 'sneak attack') || characterHasSpecialAbility(char, 'sneak attack')) return true;
+      const allDefs = (typeof getAvailableClassDefs === 'function')
+        ? getAvailableClassDefs()
+        : ((typeof RuleEngine !== 'undefined' && RuleEngine.DND35_CLASS_DEFS) ? RuleEngine.DND35_CLASS_DEFS : {});
       const isSneakClassName = (nameStr) => {
-        const n = String(nameStr || '').toLowerCase();
+        const raw = String(nameStr || '').trim();
+        const n = raw.toLowerCase();
         if (n.includes('adventurer')) return false;
+        const def = allDefs && (allDefs[raw] || Object.values(allDefs).find(d => d && String(d.name || '').toLowerCase() === n));
+        if (def && Array.isArray(def.replaces) && def.replaces.includes('cab-sneak-attack')) return false;
         return n.includes('rogue') || n.includes('ninja') || n.includes('assassin') || n.includes('scout')
           || n.includes('arcane trickster') || n.includes('blackguard') || n.includes('nightsong enfiltrator')
           || n.includes('unseen seer') || n.includes('spellwarp sniper') || n.includes('daggerspell');
       };
+      const hasExplicitNonClassSneakSource = () => {
+        if (characterHasFeat(char, "assassin's stance") || characterHasSpecialAbility(char, "assassin's stance")) return true;
+        const isExplicitNonClass = (entry) => {
+          if (!entry) return false;
+          if (typeof entry === 'string') {
+            const lower = entry.toLowerCase();
+            return lower.includes('sneak attack') && /(boon|racial|race|stance|assassin)/i.test(lower);
+          }
+          const name = String(entry.name || '').toLowerCase();
+          if (!name.includes('sneak attack')) return false;
+          const cat = String(entry.category || entry.type || '');
+          const src = String(entry.source || '');
+          if (/^class\s*feature$/i.test(cat) || /rogue\s*level/i.test(src)) return false;
+          const meta = [src, cat, entry.benefit, entry.desc, entry.name].filter(Boolean).join(' ');
+          return /(martial\s*stance|assassin'?s\s*stance|boon|racial|race|grant|custom|item|spell|template)/i.test(meta);
+        };
+        return (Array.isArray(char.feats) && char.feats.some(isExplicitNonClass))
+          || (Array.isArray(char.specialAbilities) && char.specialAbilities.some(isExplicitNonClass));
+      };
       if (Array.isArray(char.levelProgression) && char.levelProgression.length > 0) {
-        return char.levelProgression.some(p => p && p.active !== false && isSneakClassName(p.className));
+        const hasActiveSneakClass = char.levelProgression.some(p => p && p.active !== false && isSneakClassName(p.className));
+        if (hasActiveSneakClass) return true;
+        return hasExplicitNonClassSneakSource();
       }
+      if (characterHasFeat(char, 'sneak attack') || characterHasSpecialAbility(char, 'sneak attack')) return true;
       const classes = typeof char.classes === 'string' ? char.classes.toLowerCase() : '';
       if (isSneakClassName(classes)) return true;
       if (Array.isArray(char.classes)) {

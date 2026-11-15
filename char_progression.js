@@ -6691,6 +6691,24 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         }
       }
 
+      // Check SrdCompendium ClassAbility records (e.g. Battle Clarity (Ex))
+      if (typeof window !== 'undefined' && window.SrdCompendium && typeof window.SrdCompendium.getAllLoaded === 'function') {
+        const stripExSuSp = (s) => String(s || '').replace(/\s*\((?:Ex|Su|Sp)\)\s*$/i, '').trim().toLowerCase();
+        const lowerBase = stripExSuSp(lower);
+        const classAbilities = window.SrdCompendium.getAllLoaded('ClassAbility') || [];
+        const cab = classAbilities.find(c => {
+          if (!c || !c.name) return false;
+          const cn = c.name.toLowerCase().trim();
+          return cn === lower || stripExSuSp(cn) === lowerBase;
+        });
+        if (cab) {
+          const cat = cab.category || 'Class Ability';
+          const src = cab.source ? ` • ${cab.source}` : '';
+          const desc = cab.shortDescription || cab.benefit || cab.description || (cab.text && cab.text.summary) || '';
+          return `${cab.name} [${cat}${src}]${desc ? '\n' + desc : ''}${formatV2TacticalSuffix(cab)}`;
+        }
+      }
+
       // Check RuleEngine / Compendium class features
       const allClassDefs = (typeof getAvailableClassDefs === 'function')
         ? getAvailableClassDefs()

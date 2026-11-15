@@ -1,9 +1,9 @@
 {
   "schemaVersion": 3,
   "version": "3.0.0",
-  "compendiumHash": "39342d0ff726d545",
+  "compendiumHash": "49a97387fb7971dc",
   "generatedAt": "2026-11-15T11:09:17.716Z",
-  "totalEntries": 7987,
+  "totalEntries": 8007,
   "chunks": {
     "srd_equipment.json": {
       "count": 1131,
@@ -13,14 +13,14 @@
     },
     "srd_feats.json": {
       "count": 468,
-      "bytes": 690361,
-      "hash": "ebff4bf1c3a37150",
+      "bytes": 723455,
+      "hash": "8dbab645eac78085",
       "eagerLoad": true
     },
     "srd_classes_races.json": {
-      "count": 281,
-      "bytes": 871267,
-      "hash": "be4a8b39f3aaf052",
+      "count": 300,
+      "bytes": 928747,
+      "hash": "f5e08ca32da54866",
       "eagerLoad": true
     },
     "srd_combat_rules.json": {
@@ -31,8 +31,8 @@
     },
     "srd_spells.json": {
       "count": 695,
-      "bytes": 1925336,
-      "hash": "00d5f9162cc87b89",
+      "bytes": 1932139,
+      "hash": "d6a836a14b19b450",
       "eagerLoad": true
     },
     "srd_monsters.json": {
@@ -55,8 +55,8 @@
     },
     "srd_domains.json": {
       "count": 37,
-      "bytes": 127481,
-      "hash": "f1adf256867992fe",
+      "bytes": 137122,
+      "hash": "03bd6f74bbd6f338",
       "eagerLoad": true
     },
     "srd_companions.json": {
@@ -78,9 +78,9 @@
       "eagerLoad": false
     },
     "srd_feats_splat.json": {
-      "count": 1766,
-      "bytes": 1845644,
-      "hash": "8a7269209942e488",
+      "count": 1767,
+      "bytes": 1848765,
+      "hash": "23129883383653d8",
       "eagerLoad": false
     },
     "srd_feats_epic.json": {
@@ -98,8 +98,8 @@
     },
     "srd_classes_splat.json": {
       "count": 416,
-      "hash": "9192f6330d73b776",
-      "bytes": 821476,
+      "hash": "2b08451455113eae",
+      "bytes": 821710,
       "eagerLoad": false
     },
     "srd_classes_legacy.json": {
@@ -15190,6 +15190,158 @@
       "n": "Ur-Priest",
       "t": "Class",
       "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cls-rogue-adventurer-variant",
+      "n": "Rogue (Adventurer Variant)",
+      "t": "Class",
+      "c": "Variant",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cls-fighter-thug-variant",
+      "n": "Fighter (Thug Variant)",
+      "t": "Class",
+      "c": "Variant",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cls-cleric-cloistered-variant",
+      "n": "Cleric (Cloistered Cleric)",
+      "t": "Class",
+      "c": "Variant",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cab-battle-clarity",
+      "n": "Battle Clarity (Ex)",
+      "t": "ClassAbility",
+      "c": "Class Feature",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cab-weapon-aptitude",
+      "n": "Weapon Aptitude (Ex)",
+      "t": "ClassAbility",
+      "c": "Class Feature",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cab-battle-ardor",
+      "n": "Battle Ardor (Ex)",
+      "t": "ClassAbility",
+      "c": "Class Feature",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cab-battle-cunning",
+      "n": "Battle Cunning (Ex)",
+      "t": "ClassAbility",
+      "c": "Class Feature",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cab-battle-skill",
+      "n": "Battle Skill (Ex)",
+      "t": "ClassAbility",
+      "c": "Class Feature",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cab-battle-mastery",
+      "n": "Battle Mastery (Ex)",
+      "t": "ClassAbility",
+      "c": "Class Feature",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cab-trapfinding",
+      "n": "Trapfinding (Ex)",
+      "t": "ClassAbility",
+      "c": "Class Feature",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cab-monk-ac-bonus",
+      "n": "AC Bonus (Ex)",
+      "t": "ClassAbility",
+      "c": "Class Feature",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cab-grace",
+      "n": "Grace (Ex)",
+      "t": "ClassAbility",
+      "c": "Class Feature",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cab-insightful-strike",
+      "n": "Insightful Strike (Ex)",
+      "t": "ClassAbility",
+      "c": "Class Feature",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cab-favored-enemy",
+      "n": "Favored Enemy (Ex)",
+      "t": "ClassAbility",
+      "c": "Class Feature",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cab-turn-undead",
+      "n": "Turn Undead (Su)",
+      "t": "ClassAbility",
+      "c": "Class Feature",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cab-lore",
+      "n": "Lore (Ex)",
+      "t": "ClassAbility",
+      "c": "Class Feature",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cab-fighter-bonus-feat",
+      "n": "Fighter Bonus Feat",
+      "t": "ClassAbility",
+      "c": "Class Feature",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cab-bonus-domain-knowledge",
+      "n": "Bonus Domain: Knowledge",
+      "t": "ClassAbility",
+      "c": "Class Feature",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cab-urban-class-skills",
+      "n": "Urban Class Skills (Thug)",
+      "t": "ClassAbility",
+      "c": "Class Feature",
       "s": "None",
       "f": "srd_classes_races.json"
     },
@@ -52903,6 +53055,14 @@
       "n": "Recitation of Vital State",
       "t": "Feat",
       "c": "Recitation",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "feat-hidden-talent",
+      "n": "Hidden Talent",
+      "t": "Feat",
+      "c": "Psionic",
       "s": "None",
       "f": "srd_feats_splat.json"
     },

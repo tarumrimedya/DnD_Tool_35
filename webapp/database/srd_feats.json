@@ -174,7 +174,37 @@
     "prereqStruct": {},
     "prerequisites": "-",
     "benefit": "Move 5 times normal speed when running (4 times in heavy armor). Retain Dex bonus to AC while running. +4 bonus on Jump checks after a running start.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-run-jmp",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-run-jmp-br",
+            "condKind": "situational",
+            "condText": "After Running Start",
+            "effects": [
+              {
+                "id": "ef-run-jump",
+                "type": "stat",
+                "targets": [
+                  "skill.jump"
+                ],
+                "mode": "flat",
+                "value": 4,
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ef-run-spd",
+        "type": "effect",
+        "text": "Run: Move x5 speed (x4 in heavy armor); retain DEX to AC while running"
+      }
+    ],
     "shortDescription": "Move 5 times normal speed when running (4 times in heavy armor). Retain Dex bonus to AC while running. +4 bonus on Jump checks after a running start.",
     "text": "Benefit\n\nWhen running, you move five times your normal speed (if wearing medium, light, or no armor and carrying no more than a medium load) or four times your speed (if wearing heavy armor or carrying a heavy load). If you make a jump after a running start (see the Jump skill description), you gain a +4 bonus on your Jump check. While running, you retain your Dexterity bonus to AC.\n\nNormal\n\nYou move four times your speed while running (if wearing medium, light, or no armor and carrying no more than a medium load) or three times your speed (if wearing heavy armor or carrying a heavy load), and you lose your Dexterity bonus to AC.",
     "tags": [
@@ -288,7 +318,26 @@
     },
     "prerequisites": "Dex 13, Wis 13, Improved Unarmed Strike, BAB +8",
     "benefit": "Declare before attack roll; target damaged by unarmed strike must make Fortitude save (DC 10 + 1/2 level + Wis mod) or be stunned for 1 round (1/day per 4 levels).",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-stunning-res",
+        "type": "resource",
+        "name": "Stunning Fist",
+        "varKey": "stunning_fist_uses",
+        "resMode": "spend",
+        "maxFormula": "max(1, floor(@level / 4))",
+        "reset": "perDay",
+        "unit": "uses",
+        "recharge": {
+          "period": "day"
+        }
+      },
+      {
+        "id": "ef-stunning-note",
+        "type": "effect",
+        "text": "Stunning Fist: Fort DC 10 + 1/2 level + WIS mod or stunned 1 round"
+      }
+    ],
     "shortDescription": "Declare before attack roll; target damaged by unarmed strike must make Fortitude save (DC 10 + 1/2 level + Wis mod) or be stunned for 1 round (1/day per 4 levels).",
     "text": "Prerequisites\n\nDex 13, Wis 13, Improved Unarmed Strike, base attack bonus +8.\n\nBenefit\n\nYou must declare that you are using this feat before you make your attack roll (thus, a failed attack roll ruins the attempt). Stunning Fist forces a foe damaged by your unarmed attack to make a Fortitude saving throw (DC 10 + 1/2 your character level + your Wis modifier), in addition to dealing damage normally. A defender who fails this saving throw is stunned for 1 round (until just before your next action). A stunned character can’t act, loses any Dexterity bonus to AC, and takes a –2 penalty to AC. You may attempt a stunning attack once per day for every four levels you have attained (but see Special), and no more than once per round. Constructs, oozes, plants, undead, incorporeal creatures, and creatures immune to critical hits cannot be stunned.\n\nSpecial\n\nA monk may select Stunning Fist as a bonus feat at 1st level, even if she does not meet the prerequisites. A monk who selects this feat may attempt a stunning attack a number of times per day equal to her monk level, plus one more time per day for every four levels she has in classes other than monk.\n\nA fighter may select Stunning Fist as one of his fighter bonus feats.",
     "tags": [
@@ -336,9 +385,10 @@
     "benefit": "Your mind wakes to a previously unrealized talent for psionics. Benefit Your latent power of psionics flares to life, conferring upon you the designation of a psionic character. As a psionic character, you gain a reserve of 2 power points…",
     "effects": [
       {
+        "id": "ef-wt-pp",
         "type": "stat",
         "targets": [
-          "resource.pp"
+          "psionics.powerPoints"
         ],
         "mode": "flat",
         "value": 2,
@@ -474,7 +524,32 @@
     },
     "prerequisites": "Dex 13, Dodge",
     "benefit": "You are proficient at dodging blows. Prerequisite Dex 13, Dodge. Benefit You must be psionically focused to use this feat. You receive a +1 dodge bonus to your Armor Class. This bonus stacks with the bonus from the Dodge feat (but only app…",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-pdodge",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-pdodge-br",
+            "condKind": "state",
+            "condText": "Psionically Focused",
+            "effects": [
+              {
+                "id": "ef-pdodge-ac",
+                "type": "stat",
+                "targets": [
+                  "ac.dodge"
+                ],
+                "mode": "flat",
+                "value": 1,
+                "btype": "Dodge"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "You are proficient at dodging blows. Prerequisite Dex 13, Dodge. Benefit You must be psionically focused to use this feat. You receive a +1 dodge bonus to your Armor Class. This bonus stacks with the bonus from the Dodge feat (but only app…",
     "text": "You are proficient at dodging blows.\n\nPrerequisite\n\nDex 13, Dodge.\n\nBenefit\n\nYou must be psionically focused to use this feat. You receive a +1 dodge bonus to your Armor Class. This bonus stacks with the bonus from the Dodge feat (but only applies on attacks made by the opponent you have designated).",
     "tags": [
@@ -554,7 +629,32 @@
     },
     "prerequisites": "Cha 25, aura of courage class ability",
     "benefit": "Prerequisite Cha 25, aura of courage class ability. Benefit The character’s aura of courage grants a +8 morale bonus on saving throws against fear effects.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-iaoc",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-iaoc-br",
+            "condKind": "situational",
+            "condText": "vs. Fear (Aura of Courage)",
+            "effects": [
+              {
+                "id": "ef-iaoc-save",
+                "type": "stat",
+                "targets": [
+                  "save.all"
+                ],
+                "mode": "flat",
+                "value": 8,
+                "btype": "Morale"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "Prerequisite Cha 25, aura of courage class ability. Benefit The character’s aura of courage grants a +8 morale bonus on saving throws against fear effects.",
     "text": "Prerequisite\n\nCha 25, aura of courage class ability.\n\nBenefit\n\nThe character’s aura of courage grants a +8 morale bonus on saving throws against fear effects.",
     "tags": [
@@ -702,7 +802,16 @@
     },
     "prerequisites": "Wis 13, wild shape ability, Ability to cast spells",
     "benefit": "You can complete the verbal and somatic components of spells while using wild shape. You substitute noises and gestures for standard verbal and somatic components.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-ns",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "naturalSpell",
+        "label": "Cast spells normally while in Wild Shape",
+        "text": "Cast Spells in Wild Shape"
+      }
+    ],
     "shortDescription": "You can complete the verbal and somatic components of spells while using wild shape. You substitute noises and gestures for standard verbal and somatic components.",
     "text": "Prerequisites\n\nWis 13, wild shape ability.\n\nBenefit\n\nYou can complete the verbal and somatic components of spells while in a wild shape. You substitute various noises and gestures for the normal verbal and somatic components of a spell.\n\nYou can also use any material components or focuses you possess, even if such items are melded within your current form. This feat does not permit the use of magic items while you are in a form that could not ordinarily use them, and you do not gain the ability to speak while in a wild shape.",
     "tags": [
@@ -812,7 +921,13 @@
     },
     "prerequisites": "Int 13, Combat Expertise",
     "benefit": "Do not provoke attack of opportunity when attempting to disarm, and gain a +4 bonus on opposed disarm roll.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-imp-disarm",
+        "type": "effect",
+        "text": "Improved Disarm: +4 on opposed disarm rolls; no Attack of Opportunity"
+      }
+    ],
     "ruleFlags": {
       "disarmBonus": 4
     },
@@ -840,7 +955,13 @@
     },
     "prerequisites": "Point Blank Shot, Precise Shot, base attack bonus +3",
     "benefit": "Prerequisites Point Blank Shot, Precise Shot, base attack bonus +3. Benefit Your targets only receive a +2 bonus to Armor class due to cover. This feat has no effect against foes with no cover or total cover. Normal Cover normally gives a…",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-sharpshoot",
+        "type": "effect",
+        "text": "Sharp-Shooting: Targets receive only +2 AC from cover (instead of +4)"
+      }
+    ],
     "shortDescription": "Prerequisites Point Blank Shot, Precise Shot, base attack bonus +3. Benefit Your targets only receive a +2 bonus to Armor class due to cover. This feat has no effect against foes with no cover or total cover. Normal Cover normally gives a…",
     "text": "Prerequisites\n\nPoint Blank Shot, Precise Shot, base attack bonus +3.\n\nBenefit\n\nYour targets only receive a +2 bonus to Armor class due to cover. This feat has no effect against foes with no cover or total cover.\n\nNormal\n\nCover normally gives a +4 bonus to AC.\n\nSpecial\n\nA fighter may select Sharp-Shooting as one of his bonus feats.",
     "tags": [
@@ -923,7 +1044,13 @@
     },
     "prerequisites": "Str 13, Power Attack",
     "benefit": "If you deal enough damage to drop a creature (below 0 HP), you immediately get an extra melee attack against another creature in reach.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-cleave",
+        "type": "effect",
+        "text": "Cleave: Drop foe -> immediate extra melee attack against adjacent foe (1/rd)"
+      }
+    ],
     "shortDescription": "If you deal enough damage to drop a creature (below 0 HP), you immediately get an extra melee attack against another creature in reach.",
     "text": "Prerequisites\n\nStr 13, Power Attack.\n\nBenefit\n\nIf you deal a creature enough damage to make it drop (typically by dropping it to below 0 hit points or killing it), you get an immediate, extra melee attack against another creature within reach. You cannot take a 5-foot step before making this extra attack. The extra attack is with the same weapon and at the same bonus as the attack that dropped the previous creature. You can use this ability once per round.\n\nSpecial\n\nA fighter may select Cleave as one of his fighter bonus feats.",
     "tags": [
@@ -972,7 +1099,13 @@
     "prereqStruct": {},
     "prerequisites": "-",
     "benefit": "Make attack rolls with all simple weapons without taking the -4 non-proficiency penalty.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-swprof",
+        "type": "effect",
+        "text": "Simple Weapon Proficiency: No -4 nonproficiency penalty with simple weapons"
+      }
+    ],
     "shortDescription": "Make attack rolls with all simple weapons without taking the -4 non-proficiency penalty.",
     "text": "Benefit\n\nYou make attack rolls with simple weapons normally.\n\nNormal\n\nWhen using a weapon with which you are not proficient, you take a –4 penalty on attack rolls.\n\nSpecial\n\nAll characters except for druids, monks, and wizards are automatically proficient with all simple weapons. They need not select this feat.",
     "tags": [
@@ -997,7 +1130,42 @@
     },
     "prerequisites": "Base attack bonus +1",
     "benefit": "You can shift your focus from defense to offense. Prerequisite Base attack bonus +1. Benefit When you use the attack action or full attack action in melee, you can take a penalty of –4 to your Armor Class and add a +2 bonus on your melee a…",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-reckless",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-reckless-br",
+            "condKind": "situational",
+            "condText": "Reckless Offense (Attack / Full Attack)",
+            "effects": [
+              {
+                "id": "ef-reckless-atk",
+                "type": "stat",
+                "targets": [
+                  "atk.melee"
+                ],
+                "mode": "flat",
+                "value": 2,
+                "btype": "Untyped"
+              },
+              {
+                "id": "ef-reckless-ac",
+                "type": "stat",
+                "targets": [
+                  "ac.total"
+                ],
+                "mode": "flat",
+                "value": -4,
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "You can shift your focus from defense to offense. Prerequisite Base attack bonus +1. Benefit When you use the attack action or full attack action in melee, you can take a penalty of –4 to your Armor Class and add a +2 bonus on your melee a…",
     "text": "You can shift your focus from defense to offense.\n\nPrerequisite\n\nBase attack bonus +1.\n\nBenefit\n\nWhen you use the attack action or full attack action in melee, you can take a penalty of –4 to your Armor Class and add a +2 bonus on your melee attack roll. The bonus on attack rolls and penalty to Armor Class last until the beginning of your next turn.",
     "tags": [
@@ -1070,7 +1238,13 @@
     },
     "prerequisites": "Ability to cast spells",
     "benefit": "A stilled spell can be cast with no somatic components. Spells without somatic components are not affected. Uses a slot 1 level higher.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-mm-still",
+        "type": "effect",
+        "text": "Metamagic (+1 Slot Level): Cast without somatic components"
+      }
+    ],
     "ruleFlags": {
       "metamagicLevelMod": 1
     },
@@ -1154,7 +1328,18 @@
     },
     "prerequisites": "Character level 21st, Dex 21, Run",
     "benefit": "Prerequisites Dex 21, Run. Benefit The character’s speed increases by 30 feet. This benefit does not stack with increased speed granted by magic items or nonpermanent magical effects. Special This feat only functions when the character is…",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-epspd",
+        "type": "stat",
+        "targets": [
+          "speed.land"
+        ],
+        "mode": "flat",
+        "value": 30,
+        "btype": "Untyped"
+      }
+    ],
     "shortDescription": "Prerequisites Dex 21, Run. Benefit The character’s speed increases by 30 feet. This benefit does not stack with increased speed granted by magic items or nonpermanent magical effects. Special This feat only functions when the character is…",
     "text": "Prerequisites\n\nDex 21, Run.\n\nBenefit\n\nThe character’s speed increases by 30 feet. This benefit does not stack with increased speed granted by magic items or nonpermanent magical effects.\n\nSpecial\n\nThis feat only functions when the character is wearing medium armor, light armor, or no armor.",
     "tags": [
@@ -1208,7 +1393,32 @@
     },
     "prerequisites": "Dex 15, Two-Weapon Fighting",
     "benefit": "Gain +1 shield bonus to AC when wielding two weapons or a double weapon (+2 when fighting defensively or total defense).",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-twd-when",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-twd-when-br",
+            "condKind": "state",
+            "condText": "wieldingTwoWeapons",
+            "effects": [
+              {
+                "id": "ef-twd-ac",
+                "type": "stat",
+                "targets": [
+                  "ac.total"
+                ],
+                "mode": "flat",
+                "value": 1,
+                "btype": "Shield"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "ruleFlags": {
       "twoWeaponDefense": true
     },
@@ -1289,7 +1499,13 @@
     },
     "prerequisites": "Dex 13, Improved Unarmed Strike",
     "benefit": "Once per round when you would normally be hit with a ranged weapon, you may deflect it so that you take no damage from it (reaction).",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-deflect",
+        "type": "effect",
+        "text": "Deflect Arrows: 1/round deflect a ranged weapon attack (no damage)"
+      }
+    ],
     "shortDescription": "Once per round when you would normally be hit with a ranged weapon, you may deflect it so that you take no damage from it (reaction).",
     "text": "Prerequisites\n\nDex 13, Improved Unarmed Strike.\n\nBenefit\n\nYou must have at least one hand free (holding nothing) to use this feat. Once per round when you would normally be hit with a ranged weapon, you may deflect it so that you take no damage from it. You must be aware of the attack and not flatfooted.\n\nAttempting to deflect a ranged weapon doesn’t count as an action. Unusually massive ranged weapons and ranged attacks generated by spell effects can’t be deflected.\n\nSpecial\n\nA monk may select Deflect Arrows as a bonus feat at 2nd level, even if she does not meet the prerequisites.\n\nA fighter may select Deflect Arrows as one of his fighter bonus feats.",
     "tags": [
@@ -1502,7 +1718,13 @@
     },
     "prerequisites": "Ability to cast spells",
     "benefit": "A heightened spell has a higher spell level than normal (up to 9th level). Effective level equals the slot used, increasing save DC accordingly.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-mm-heighten",
+        "type": "effect",
+        "text": "Metamagic (Variable Slot Level): Increase effective spell level & save DC"
+      }
+    ],
     "shortDescription": "A heightened spell has a higher spell level than normal (up to 9th level). Effective level equals the slot used, increasing save DC accordingly.",
     "text": "Benefit\n\nA heightened spell has a higher spell level than normal (up to a maximum of 9th level). Unlike other metamagic feats, Heighten Spell actually increases the effective level of the spell that it modifies. All effects dependent on spell level (such as saving throw DCs and ability to penetrate a lesser globe of invulnerability) are calculated according to the heightened level. The heightened spell is as difficult to prepare and cast as a spell of its effective level.",
     "tags": [
@@ -1556,7 +1778,13 @@
     },
     "prerequisites": "Dex 19, Point Blank Shot, Precise Shot, BAB +11",
     "benefit": "Ranged attacks ignore AC bonus granted to targets by anything less than total cover, and miss chance granted by anything less than total concealment.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-ips",
+        "type": "effect",
+        "text": "Improved Precise Shot: Ignore less than total cover & less than total concealment"
+      }
+    ],
     "shortDescription": "Ranged attacks ignore AC bonus granted to targets by anything less than total cover, and miss chance granted by anything less than total concealment.",
     "text": "Prerequisites\n\nDex 19, Point Blank Shot, Precise Shot, base attack bonus +11.\n\nBenefit\n\nYour ranged attacks ignore the AC bonus granted to targets by anything less than total cover, and the miss chance granted to targets by anything less than total concealment. Total cover and total concealment provide their normal benefits against your ranged attacks.\n\nIn addition, when you shoot or throw ranged weapons at a grappling opponent, you automatically strike at the opponent you have chosen.\n\nNormal\n\nSee the normal rules on the effects of cover and concealment. Without this feat, a character who shoots or throws a ranged weapon at a target involved in a grapple must roll randomly to see which grappling combatant the attack strikes.\n\nSpecial\n\nA fighter may select Improved Precise Shot as one of his fighter bonus feats.\n\nAn 11th-level ranger who has chosen the archery combat style is treated as having Improved Precise Shot, even if he does not have the prerequisites for it, but only when he is wearing light or no armor.",
     "tags": [
@@ -1612,7 +1840,37 @@
     },
     "prerequisites": "Int 13, Combat Expertise",
     "benefit": "Do not provoke attack of opportunity when making a trip attack. +4 bonus on Strength check to trip. If you succeed, gain immediate extra melee attack against tripped target.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-imp-trip-w",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-imp-trip-w-br",
+            "condKind": "situational",
+            "condText": "vs. Trip / Making Trip Check",
+            "effects": [
+              {
+                "id": "ef-imp-trip-s",
+                "type": "stat",
+                "targets": [
+                  "cmd.trip"
+                ],
+                "mode": "flat",
+                "value": 4,
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ef-imp-trip-n",
+        "type": "effect",
+        "text": "Improved Trip: +4 on Trip checks; immediate extra melee attack on trip; no AoO"
+      }
+    ],
     "ruleFlags": {
       "tripBonus": 4
     },
@@ -1640,7 +1898,32 @@
     },
     "prerequisites": "Psionic ability (Manifester or Wild Talent)",
     "benefit": "You are adept at manifesting powers in combat. Benefit You get a +4 bonus on Concentration checks made to manifest a power or use a psi-like ability while on the defensive or while you are grappling or pinned.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-cman",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-cman-br",
+            "condKind": "situational",
+            "condText": "Manifesting Defensively / While Grappled",
+            "effects": [
+              {
+                "id": "ef-cman-conc",
+                "type": "stat",
+                "targets": [
+                  "skill.concentration"
+                ],
+                "mode": "flat",
+                "value": 4,
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "You are adept at manifesting powers in combat. Benefit You get a +4 bonus on Concentration checks made to manifest a power or use a psi-like ability while on the defensive or while you are grappling or pinned.",
     "text": "You are adept at manifesting powers in combat.\n\nBenefit\n\nYou get a +4 bonus on Concentration checks made to manifest a power or use a psi-like ability while on the defensive or while you are grappling or pinned.",
     "tags": [
@@ -1752,7 +2035,13 @@
     "prereqStruct": {},
     "prerequisites": "-",
     "benefit": "Use a buckler, light shield, or heavy shield without taking its armor check penalty on attack rolls.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-shprof",
+        "type": "effect",
+        "text": "Shield Proficiency: No shield check penalty on attack rolls with bucklers/light/heavy shields"
+      }
+    ],
     "shortDescription": "Use a buckler, light shield, or heavy shield without taking its armor check penalty on attack rolls.",
     "text": "Benefit\n\nYou can use a shield and take only the standard penalties.\n\nNormal\n\nWhen you are using a shield with which you are not proficient, you take the shield’s armor check penalty on attack rolls and on all skill checks that involve moving, including Ride checks.\n\nSpecial\n\nBarbarians, bards, clerics, druids, fighters, paladins, and rangers automatically have Shield Proficiency as a bonus feat. They need not select it.",
     "tags": [
@@ -1781,7 +2070,13 @@
     },
     "prerequisites": "Dex 13, Int 13, Combat Expertise, Dodge, Mobility, Spring Attack, BAB +4",
     "benefit": "As a full attack action, make one melee attack at your highest BAB against each opponent within reach.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-whirl",
+        "type": "effect",
+        "text": "Whirlwind Attack: Full attack -> 1 melee attack at full BAB against every adjacent foe"
+      }
+    ],
     "shortDescription": "As a full attack action, make one melee attack at your highest BAB against each opponent within reach.",
     "text": "Prerequisites\n\nDex 13, Int 13, Combat Expertise, Dodge, Mobility, Spring Attack, base attack bonus +4.\n\nBenefit\n\nWhen you use the full attack action, you can give up your regular attacks and instead make one melee attack at your full base attack bonus against each opponent within reach.\n\nWhen you use the Whirlwind Attack feat, you also forfeit any bonus or extra attacks granted by other feats, spells, or abilities.\n\nSpecial\n\nA fighter may select Whirlwind Attack as one of his fighter bonus feats.",
     "tags": [
@@ -1860,7 +2155,16 @@
     },
     "prerequisites": "Dex 15",
     "benefit": "Penalties for fighting with two weapons are reduced by 2 for primary hand and 6 for off hand (-2/-2 with light off-hand weapon).",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-twf",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "twoWeaponFighting",
+        "label": "Reduce two-weapon fighting penalties (-2/-2 with light off-hand)",
+        "text": "Two-Weapon Fighting: Reduced Off-Hand Penalties"
+      }
+    ],
     "ruleFlags": {
       "twoWeaponFighting": true
     },
@@ -2036,7 +2340,15 @@
     },
     "prerequisites": "Dex 30, Hide 30 ranks, Tumble 30 ranks, improved evasion",
     "benefit": "Prerequisites Dex 30, Hide 30 ranks, Tumble 30 ranks, improved evasion. Benefit Attacks against the character have a 10% miss chance, similar to the effect of concealment. The character loses this benefit whenever he or she would lose his…",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-self-conc",
+        "type": "defense",
+        "mode": "Concealment %",
+        "value": 10,
+        "text": "Self-Concealment: 10% Miss Chance"
+      }
+    ],
     "shortDescription": "Prerequisites Dex 30, Hide 30 ranks, Tumble 30 ranks, improved evasion. Benefit Attacks against the character have a 10% miss chance, similar to the effect of concealment. The character loses this benefit whenever he or she would lose his…",
     "text": "Prerequisites\n\nDex 30, Hide 30 ranks, Tumble 30 ranks, improved evasion.\n\nBenefit\n\nAttacks against the character have a 10% miss chance, similar to the effect of concealment. The character loses this benefit whenever he or she would lose his or her Dexterity bonus to AC.\n\nSpecial\n\nThis feat may be taken multiple times. Each time it is taken, the miss chance increases by 10% to a maximum of 50% after it has been taken five times.",
     "tags": [
@@ -2194,7 +2506,16 @@
     "prereqStruct": {},
     "prerequisites": "Point Blank Shot",
     "benefit": "Shoot or throw ranged weapons at an opponent engaged in melee without taking the standard -4 penalty.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-precshot",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "preciseShot",
+        "label": "No -4 penalty for shooting ranged weapons into melee",
+        "text": "Precise Shot: No -4 Penalty into Melee"
+      }
+    ],
     "ruleFlags": {
       "preciseShot": true
     },
@@ -2222,7 +2543,16 @@
     },
     "prerequisites": "BAB +1",
     "benefit": "With a light weapon, rapier, whip, or spiked chain made for your size, you may use Dexterity modifier instead of Strength modifier on attack rolls.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-wf",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "weaponFinesse",
+        "label": "Use DEX modifier instead of STR on melee attack rolls with light/finesse weapons",
+        "text": "Weapon Finesse: DEX to Melee Attack (Light/Finesse)"
+      }
+    ],
     "ruleFlags": {
       "weaponFinesse": true
     },
@@ -2628,7 +2958,13 @@
     },
     "prerequisites": "Con 13",
     "benefit": "Your wounds heal rapidly. Prerequisite Con 13. Benefit You naturally heal a number of hit points per day equal to the standard healing rate + double your Constitution bonus. You heal even if you do not rest. This healing replaces your norm…",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-rapmet",
+        "type": "effect",
+        "text": "Rapid Metabolism: Natural healing/day = 2 x (level + CON mod)"
+      }
+    ],
     "shortDescription": "Your wounds heal rapidly. Prerequisite Con 13. Benefit You naturally heal a number of hit points per day equal to the standard healing rate + double your Constitution bonus. You heal even if you do not rest. This healing replaces your norm…",
     "text": "Your wounds heal rapidly.\n\nPrerequisite\n\nCon 13.\n\nBenefit\n\nYou naturally heal a number of hit points per day equal to the standard healing rate + double your Constitution bonus. You heal even if you do not rest. This healing replaces your normal natural healing. If you are tended successfully by someone with the Heal skill, you instead regain double the normal amount of hit points + double your Constitution bonus.",
     "tags": [
@@ -2679,7 +3015,17 @@
     },
     "prerequisites": "Dex 17, Point Blank Shot, Rapid Shot, BAB +6",
     "benefit": "As a standard action within 30 ft, fire two or more arrows at a single target: two arrows at BAB +6 (-4 penalty), three arrows at BAB +11 (-6 penalty), four arrows at BAB +16 (-8 penalty). Precision damage applies once.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-ms",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "tacticalSlider",
+        "label": "Enable Manyshot tactical combat slider",
+        "text": "Tactical Slider: Manyshot",
+        "slider": "manyshot"
+      }
+    ],
     "ruleFlags": {
       "manyshot": true
     },
@@ -2709,7 +3055,13 @@
     },
     "prerequisites": "Str 13, Power Attack",
     "benefit": "Do not provoke attack of opportunity when striking an opponent's weapon or shield. +4 bonus on opposed attack roll.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-imp-sunder",
+        "type": "effect",
+        "text": "Improved Sunder: +4 on Sunder opposed attack rolls; no AoO"
+      }
+    ],
     "ruleFlags": {
       "sunderBonus": 4
     },
@@ -2922,7 +3274,16 @@
     "prereqStruct": {},
     "prerequisites": "Shield Proficiency",
     "benefit": "When you perform a shield bash, you may still apply the shield's shield bonus to your AC.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-ishbash",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "improvedShieldBash",
+        "label": "Retain shield AC bonus when performing a shield bash",
+        "text": "Improved Shield Bash: Retain Shield AC"
+      }
+    ],
     "shortDescription": "When you perform a shield bash, you may still apply the shield's shield bonus to your AC.",
     "text": "Prerequisite\n\nShield Proficiency.\n\nBenefit\n\nWhen you perform a shield bash, you may still apply the shield’s shield bonus to your AC.\n\nNormal\n\nWithout this feat, a character who performs a shield bash loses the shield’s shield bonus to AC until his or her next turn.\n\nSpecial\n\nA fighter may select Improved Shield Bash as one of his fighter bonus feats.",
     "tags": [
@@ -2975,7 +3336,13 @@
     },
     "prerequisites": "Cha 25, aura of despair class ability",
     "benefit": "Prerequisite Cha 25, aura of despair class ability. Benefit The character’s aura of despair causes a –4 morale penalty on all saving throws.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-iaod",
+        "type": "effect",
+        "text": "Improved Aura of Despair: Aura imposes -4 morale penalty on enemy saving throws"
+      }
+    ],
     "shortDescription": "Prerequisite Cha 25, aura of despair class ability. Benefit The character’s aura of despair causes a –4 morale penalty on all saving throws.",
     "text": "Prerequisite\n\nCha 25, aura of despair class ability.\n\nBenefit\n\nThe character’s aura of despair causes a –4 morale penalty on all saving throws.",
     "tags": [
@@ -3679,7 +4046,16 @@
     },
     "prerequisites": "Ride 1 rank, Mounted Combat, Ride-By Attack",
     "benefit": "When mounted and charging, deal double damage with a melee weapon (or triple damage with a lance).",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-spcharge",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "spiritedCharge",
+        "label": "Deal x2 melee damage (x3 lance) on mounted charge",
+        "text": "Spirited Charge: 2x Charge Damage (3x Lance)"
+      }
+    ],
     "ruleFlags": {
       "spiritedCharge": true
     },
@@ -3772,7 +4148,13 @@
     "prereqStruct": {},
     "prerequisites": "Shield Proficiency",
     "benefit": "Use a tower shield without taking its armor check penalty on attack rolls.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-tshprof",
+        "type": "effect",
+        "text": "Tower Shield Proficiency: Use tower shields without shield check penalty on attacks"
+      }
+    ],
     "shortDescription": "Use a tower shield without taking its armor check penalty on attack rolls.",
     "text": "Prerequisite\n\nShield Proficiency.\n\nBenefit\n\nYou can use a tower shield and suffer only the standard penalties.\n\nNormal\n\nA character who is using a shield with which he or she is not proficient takes the shield’s armor check penalty on attack rolls and on all skill checks that involve moving, including Ride.\n\nSpecial\n\nFighters automatically have Tower Shield Proficiency as a bonus feat. They need not select it.",
     "tags": [
@@ -3795,7 +4177,13 @@
     "prereqStruct": {},
     "prerequisites": "-",
     "benefit": "Choose a type of martial weapon. You understand how to use that type of martial weapon in combat. Benefit You make attack rolls with the selected weapon normally. Normal When using a weapon with which you are not proficient, you take a –4…",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-mwprof",
+        "type": "effect",
+        "text": "Martial Weapon Proficiency (All): No -4 nonproficiency penalty with martial weapons"
+      }
+    ],
     "shortDescription": "Choose a type of martial weapon. You understand how to use that type of martial weapon in combat. Benefit You make attack rolls with the selected weapon normally. Normal When using a weapon with which you are not proficient, you take a –4…",
     "text": "Choose a type of martial weapon. You understand how to use that type of martial weapon in combat.\n\nBenefit\n\nYou make attack rolls with the selected weapon normally.\n\nNormal\n\nWhen using a weapon with which you are not proficient, you take a –4 penalty on attack rolls.\n\nSpecial\n\nBarbarians, fighters, paladins, and rangers are proficient with all martial weapons. They need not select this feat.\n\nYou can gain Martial Weapon Proficiency multiple times. Each time you take the feat, it applies to a new type of weapon.\n\nA cleric who chooses the War domain automatically gains the Martial Weapon Proficiency feat related to his deity’s favored weapon as a bonus feat, if the weapon is a martial one. He need not select it.",
     "tags": [
@@ -3910,7 +4298,13 @@
     },
     "prerequisites": "Ability to cast spells",
     "benefit": "An extended spell lasts twice as long as normal. Spells of instantaneous, concentration, or permanent duration are not affected. Uses a slot 1 level higher.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-mm-extend",
+        "type": "effect",
+        "text": "Metamagic (+1 Slot Level): Double spell duration"
+      }
+    ],
     "ruleFlags": {
       "metamagicLevelMod": 1
     },
@@ -3945,7 +4339,32 @@
     },
     "prerequisites": "Str 13, Jump 5 ranks",
     "benefit": "You can make amazing jumps. Prerequisite Str 13, Jump 5 ranks. Benefit To use this feat, you must expend your psionic focus. You gain a +10 bonus on a Jump check.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-mleap",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-mleap-br",
+            "condKind": "state",
+            "condText": "Expending Psionic Focus",
+            "effects": [
+              {
+                "id": "ef-mleap-s",
+                "type": "stat",
+                "targets": [
+                  "skill.jump"
+                ],
+                "mode": "flat",
+                "value": 10,
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "You can make amazing jumps. Prerequisite Str 13, Jump 5 ranks. Benefit To use this feat, you must expend your psionic focus. You gain a +10 bonus on a Jump check.",
     "text": "You can make amazing jumps.\n\nPrerequisite\n\nStr 13, Jump 5 ranks.\n\nBenefit\n\nTo use this feat, you must expend your psionic focus. You gain a +10 bonus on a Jump check.",
     "tags": [
@@ -3968,7 +4387,16 @@
     "prereqStruct": {},
     "prerequisites": "Point Blank Shot",
     "benefit": "When you use a projectile weapon, such as a bow, its range increment increases by 50% (multiply by 1-1/2). When you use a thrown weapon, its range increment is doubled (multiply by 2).",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-farshot",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "farShot",
+        "label": "+50% projectile range increment (+100% thrown range increment)",
+        "text": "Far Shot: +50% Projectile / +100% Thrown Range"
+      }
+    ],
     "ruleFlags": {
       "farShot": true
     },
@@ -4190,7 +4618,19 @@
     "prereqStruct": {},
     "prerequisites": "-",
     "benefit": "You have a knack for psionic endeavors. Benefit You get a +2 bonus on all Psicraft checks and Use Psionic Device checks.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-psiaff",
+        "type": "stat",
+        "targets": [
+          "skill.psicraft",
+          "skill.use-psionic-device"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Untyped"
+      }
+    ],
     "shortDescription": "You have a knack for psionic endeavors. Benefit You get a +2 bonus on all Psicraft checks and Use Psionic Device checks.",
     "text": "You have a knack for psionic endeavors.\n\nBenefit\n\nYou get a +2 bonus on all Psicraft checks and Use Psionic Device checks.",
     "tags": [
@@ -4240,7 +4680,17 @@
     },
     "prerequisites": "Con 21",
     "benefit": "Prerequisite Con 21. Benefit The character gains damage reduction 3/–. This does not stack with damage reduction granted by magic items or nonpermanent magical effects, but it does stack with any damage reduction granted by permanent magic…",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-feat-dr",
+        "type": "defense",
+        "mode": "DR",
+        "value": 3,
+        "what": "-",
+        "dr": "3/-",
+        "text": "DR 3/—"
+      }
+    ],
     "shortDescription": "Prerequisite Con 21. Benefit The character gains damage reduction 3/–. This does not stack with damage reduction granted by magic items or nonpermanent magical effects, but it does stack with any damage reduction granted by permanent magic…",
     "text": "Prerequisite\n\nCon 21.\n\nBenefit\n\nThe character gains damage reduction 3/–. This does not stack with damage reduction granted by magic items or nonpermanent magical effects, but it does stack with any damage reduction granted by permanent magical effects, class features, or this feat itself.\n\nSpecial\n\nA character can gain this feat multiple times. Each time he or she gains the feat, his or her damage reduction increases by 3.",
     "tags": [
@@ -4388,7 +4838,32 @@
     },
     "prerequisites": "Dex 13, Dodge",
     "benefit": "+4 dodge bonus to Armor Class against attacks of opportunity caused by moving out of or within a threatened square.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-mob-when",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-mob-when-br",
+            "condKind": "state",
+            "condText": "vsAoOFromMovement",
+            "effects": [
+              {
+                "id": "ef-mob-ac",
+                "type": "stat",
+                "targets": [
+                  "ac.dodge"
+                ],
+                "mode": "flat",
+                "value": 4,
+                "btype": "Dodge"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "ruleFlags": {
       "mobilityBonus": 4
     },
@@ -4416,7 +4891,18 @@
     },
     "prerequisites": "Character level 21st, Greater Spell Penetration, Spell Penetration",
     "benefit": "Prerequisites Greater Spell Penetration, Spell Penetration. Benefit The character gets a +2 bonus on caster level checks to beat a creature’s spell resistance. This stacks with the bonuses from Spell Penetration and Greater Spell Penetrati…",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-esp-pen",
+        "type": "stat",
+        "targets": [
+          "caster.spellPenetration"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Untyped"
+      }
+    ],
     "shortDescription": "Prerequisites Greater Spell Penetration, Spell Penetration. Benefit The character gets a +2 bonus on caster level checks to beat a creature’s spell resistance. This stacks with the bonuses from Spell Penetration and Greater Spell Penetrati…",
     "text": "Prerequisites\n\nGreater Spell Penetration, Spell Penetration.\n\nBenefit\n\nThe character gets a +2 bonus on caster level checks to beat a creature’s spell resistance. This stacks with the bonuses from Spell Penetration and Greater Spell Penetration.",
     "tags": [
@@ -4439,7 +4925,37 @@
     "prereqStruct": {},
     "prerequisites": "-",
     "benefit": "+4 bonus on checks or saves vs nonlethal damage from exhaustion, starvation/thirst, holding breath, cold/hot environments. May sleep in light or medium armor without becoming fatigued.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-endur-w",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-endur-w-br",
+            "condKind": "situational",
+            "condText": "vs. Exhaustion, Starvation, Cold/Hot Environments",
+            "effects": [
+              {
+                "id": "ef-endur-s",
+                "type": "stat",
+                "targets": [
+                  "save.fort"
+                ],
+                "mode": "flat",
+                "value": 4,
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ef-endur-n",
+        "type": "effect",
+        "text": "Endurance: Sleep in light or medium armor without fatigue"
+      }
+    ],
     "shortDescription": "+4 bonus on checks or saves vs nonlethal damage from exhaustion, starvation/thirst, holding breath, cold/hot environments. May sleep in light or medium armor without becoming fatigued.",
     "text": "Benefit\n\nYou gain a +4 bonus on the following checks and saves: Swim checks made to resist nonlethal damage, Constitution checks made to continue running, Constitution checks made to avoid nonlethal damage from a forced march, Constitution checks made to hold your breath, Constitution checks made to avoid nonlethal damage from starvation or thirst, Fortitude saves made to avoid nonlethal damage from hot or cold environments, and Fortitude saves made to resist damage from suffocation. Also, you may sleep in light or medium armor without becoming fatigued.\n\nNormal\n\nA character without this feat who sleeps in medium or heavier armor is automatically fatigued the next day.\n\nSpecial\n\nA ranger automatically gains Endurance as a bonus feat at 3rd level. He need not select it.",
     "tags": [
@@ -4760,7 +5276,16 @@
     },
     "prerequisites": "Ride 1 rank",
     "benefit": "Once per round when mount is hit in combat, make an immediate Ride check (reaction) to negate the hit (against opponent's attack roll result).",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-mcombat",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "mountedCombat",
+        "label": "1/round negate hit on mount with Ride check",
+        "text": "Mounted Combat: Negate Hit on Mount (Ride)"
+      }
+    ],
     "ruleFlags": {
       "mountedCombat": true
     },
@@ -4955,7 +5480,32 @@
     "prereqStruct": {},
     "prerequisites": "Base Will save bonus +2",
     "benefit": "Your mind is armored against mental intrusion. Prerequisite Base Will save bonus +2. Benefit Against psionic attacks that do not employ an energy type to deal damage you gain damage reduction 3/—. In addition, when you are hit with ability…",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-mres",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-mres-br",
+            "condKind": "situational",
+            "condText": "vs. Non-Energy Psionic Attacks",
+            "effects": [
+              {
+                "id": "ef-mres-s",
+                "type": "stat",
+                "targets": [
+                  "save.all"
+                ],
+                "mode": "flat",
+                "value": 3,
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "Your mind is armored against mental intrusion. Prerequisite Base Will save bonus +2. Benefit Against psionic attacks that do not employ an energy type to deal damage you gain damage reduction 3/—. In addition, when you are hit with ability…",
     "text": "Your mind is armored against mental intrusion.\n\nPrerequisite\n\nBase Will save bonus +2.\n\nBenefit\n\nAgainst psionic attacks that do not employ an energy type to deal damage you gain damage reduction 3/—. In addition, when you are hit with ability damage (but not ability drain or ability burn damage) from a psionic attack, you take 3 points less than you would normally take.\n\nThe benefit of this feat applies only to psionic powers and psi-like abilities. This is an exception to the psionics—magic transparency rule.\n\nSpecial\n\nYou cannot take or use this feat if you have the ability to use powers (if you have a power point reserve or psi-like abilities).",
     "tags": [
@@ -5206,7 +5756,37 @@
     },
     "prerequisites": "Str 13, Power Attack",
     "benefit": "Do not provoke attack of opportunity when bull rushing. +4 bonus on Strength check to push opponent back.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-imp-br-w",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-imp-br-w-br",
+            "condKind": "situational",
+            "condText": "vs. Bull Rush / Making Bull Rush",
+            "effects": [
+              {
+                "id": "ef-imp-br-s",
+                "type": "stat",
+                "targets": [
+                  "cmd.bullRush"
+                ],
+                "mode": "flat",
+                "value": 4,
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ef-imp-br-n",
+        "type": "effect",
+        "text": "Improved Bull Rush: +4 on Bull Rush checks; no AoO"
+      }
+    ],
     "ruleFlags": {
       "bullRushBonus": 4
     },
@@ -5232,7 +5812,13 @@
     "prereqStruct": {},
     "prerequisites": "Endurance",
     "benefit": "Automatically stabilize when between -1 and -9 HP. Remain conscious and can take a single standard or move action each round (standard actions deal 1 damage to self).",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-diehard",
+        "type": "effect",
+        "text": "Diehard: Auto-stabilize at -1 to -9 HP; act as disabled instead of dying"
+      }
+    ],
     "shortDescription": "Automatically stabilize when between -1 and -9 HP. Remain conscious and can take a single standard or move action each round (standard actions deal 1 damage to self).",
     "text": "Prerequisite\n\nEndurance.\n\nBenefit\n\nWhen reduced to between –1 and –9 hit points, you automatically become stable. You don’t have to roll d% to see if you lose 1 hit point each round.\n\nWhen reduced to negative hit points, you may choose to act as if you were disabled, rather than dying. You must make this decision as soon as you are reduced to negative hit points (even if it isn’t your turn). If you do not choose to act as if you were disabled, you immediately fall unconscious.\n\nWhen using this feat, you can take either a single move or standard action each turn, but not both, and you cannot take a full round action. You can take a move action without further injuring yourself, but if you perform any standard action (or any other action deemed as strenuous, including some free actions, such as casting a quickened spell) you take 1 point of damage after completing the act. If you reach –10 hit points, you immediately die.\n\nNormal\n\nA character without this feat who is reduced to between –1 and –9 hit points is unconscious and dying.",
     "tags": [
@@ -5307,7 +5893,18 @@
     },
     "prerequisites": "Having a power point reserve",
     "benefit": "You gain additional power points to supplement those you already had. Prerequisite Having a power point reserve. Benefit When you take this feat for the first time, you gain 2 power points. Special You can take this feat multiple times. Ea…",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-psital-pp",
+        "type": "stat",
+        "targets": [
+          "psionics.powerPoints"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Untyped"
+      }
+    ],
     "shortDescription": "You gain additional power points to supplement those you already had. Prerequisite Having a power point reserve. Benefit When you take this feat for the first time, you gain 2 power points. Special You can take this feat multiple times. Ea…",
     "text": "You gain additional power points to supplement those you already had.\n\nPrerequisite\n\nHaving a power point reserve.\n\nBenefit\n\nWhen you take this feat for the first time, you gain 2 power points.\n\nSpecial\n\nYou can take this feat multiple times. Each time you take the feat after the first time, the number of power points you gain increases by 1.",
     "tags": [
@@ -5404,7 +6001,16 @@
     },
     "prerequisites": "Dex 19, Improved Two-Weapon Fighting, Two-Weapon Fighting, BAB +11",
     "benefit": "Gain a third off-hand attack at a -10 penalty on full attack.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-gtwf",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "greaterTwoWeaponFighting",
+        "label": "Gain a third off-hand attack at -10 penalty",
+        "text": "Greater TWF: +1 Off-Hand Attack (-10)"
+      }
+    ],
     "ruleFlags": {
       "greaterTwoWeaponFighting": true
     },
@@ -5561,7 +6167,16 @@
     },
     "prerequisites": "Dex 13, Point Blank Shot",
     "benefit": "Get one extra ranged attack per round at highest BAB, with all ranged attacks in that round taking a -2 penalty.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-rapshot",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "rapidShot",
+        "label": "+1 extra ranged attack on full attack (-2 penalty to all ranged attacks)",
+        "text": "Rapid Shot: +1 Extra Attack (-2 All Ranged)"
+      }
+    ],
     "ruleFlags": {
       "rapidShot": true
     },
@@ -5801,7 +6416,22 @@
     },
     "prerequisites": "Character level 21st",
     "benefit": "Benefit The character gains a +4 bonus on Bluff, Diplomacy, Gather Information, Intimidate, and Perform checks.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-eprep",
+        "type": "stat",
+        "targets": [
+          "skill.bluff",
+          "skill.diplomacy",
+          "skill.gather-information",
+          "skill.intimidate",
+          "skill.perform"
+        ],
+        "mode": "flat",
+        "value": 4,
+        "btype": "Untyped"
+      }
+    ],
     "shortDescription": "Benefit The character gains a +4 bonus on Bluff, Diplomacy, Gather Information, Intimidate, and Perform checks.",
     "text": "Benefit\n\nThe character gains a +4 bonus on Bluff, Diplomacy, Gather Information, Intimidate, and Perform checks.",
     "tags": [
@@ -5967,7 +6597,13 @@
     "prereqStruct": {},
     "prerequisites": "Armor Proficiency (Light)",
     "benefit": "When you wear medium armor, armor check penalty applies only to physical movement skill checks.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-apm",
+        "type": "effect",
+        "text": "Armor Proficiency (Medium): No armor check penalty on attack rolls in medium armor"
+      }
+    ],
     "shortDescription": "When you wear medium armor, armor check penalty applies only to physical movement skill checks.",
     "text": "Prerequisite\n\nArmor Proficiency (light).\n\nBenefit\n\nSee Armor Proficiency (light).\n\nNormal\n\nSee Armor Proficiency (light).\n\nSpecial\n\nFighters, barbarians, paladins, clerics, druids, and bards automatically have Armor Proficiency (medium) as a bonus feat. They need not select it.",
     "tags": [
@@ -6017,7 +6653,32 @@
     "prereqStruct": {},
     "prerequisites": "Sneak attack +8d6",
     "benefit": "Prerequisite Sneak attack +8d6. Benefit Add +1d6 to the character’s sneak attack damage. Special This feat may be taken multiple times. Its effects stack.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-impsa-w",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-impsa-w-br",
+            "condKind": "state",
+            "condText": "sneakAttack",
+            "effects": [
+              {
+                "id": "ef-impsa-r",
+                "type": "roll",
+                "kind": "Damage",
+                "dice": "1d6",
+                "dmgType": "Precision",
+                "crit": "normal",
+                "multiplyOnCrit": false,
+                "source": "Improved Sneak Attack"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "Prerequisite Sneak attack +8d6. Benefit Add +1d6 to the character’s sneak attack damage. Special This feat may be taken multiple times. Its effects stack.",
     "text": "Prerequisite\n\nSneak attack +8d6.\n\nBenefit\n\nAdd +1d6 to the character’s sneak attack damage.\n\nSpecial\n\nThis feat may be taken multiple times. Its effects stack.",
     "tags": [
@@ -6042,7 +6703,32 @@
     },
     "prerequisites": "Psionic ability (Manifester or Wild Talent)",
     "benefit": "Your powers are especially potent, breaking through power resistance more readily than normal. Benefit To use this feat, you must expend your psionic focus. You get a +4 bonus on manifester level checks made to overcome a creature’s power…",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-powpen",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-powpen-br",
+            "condKind": "state",
+            "condText": "Expending Psionic Focus",
+            "effects": [
+              {
+                "id": "ef-powpen-s",
+                "type": "stat",
+                "targets": [
+                  "sr.penetration"
+                ],
+                "mode": "flat",
+                "value": 4,
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "Your powers are especially potent, breaking through power resistance more readily than normal. Benefit To use this feat, you must expend your psionic focus. You get a +4 bonus on manifester level checks made to overcome a creature’s power…",
     "text": "Your powers are especially potent, breaking through power resistance more readily than normal.\n\nBenefit\n\nTo use this feat, you must expend your psionic focus. You get a +4 bonus on manifester level checks made to overcome a creature’s power resistance.",
     "tags": [
@@ -6098,7 +6784,32 @@
     },
     "prerequisites": "Wis 13",
     "benefit": "You know when others lie. Prerequisite Wis 13. Benefit To use this feat, you must expend your psionic focus. You gain a +10 bonus on a Sense Motive check to oppose a Bluff check. You must decide whether or not to use this feat prior to mak…",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-inq",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-inq-br",
+            "condKind": "state",
+            "condText": "Expending Psionic Focus",
+            "effects": [
+              {
+                "id": "ef-inq-s",
+                "type": "stat",
+                "targets": [
+                  "skill.sense-motive"
+                ],
+                "mode": "flat",
+                "value": 10,
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "You know when others lie. Prerequisite Wis 13. Benefit To use this feat, you must expend your psionic focus. You gain a +10 bonus on a Sense Motive check to oppose a Bluff check. You must decide whether or not to use this feat prior to mak…",
     "text": "You know when others lie.\n\nPrerequisite\n\nWis 13.\n\nBenefit\n\nTo use this feat, you must expend your psionic focus.\n\nYou gain a +10 bonus on a Sense Motive check to oppose a Bluff check.\n\nYou must decide whether or not to use this feat prior to making a Sense Motive check. If your check fails, or if the opponent isn't lying, you still expend your psionic focus.",
     "tags": [
@@ -6173,7 +6884,32 @@
     "prereqStruct": {},
     "prerequisites": "-",
     "benefit": "Your mind is better able to resist psionics than normal. Benefit You get a +2 bonus on all saving throws to resist powers. The benefit of this feat applies only to psionic powers and psi-like abilities. This is an exception to the psionics…",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-clmind",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-clmind-br",
+            "condKind": "situational",
+            "condText": "vs. Psionic Powers",
+            "effects": [
+              {
+                "id": "ef-clmind-s",
+                "type": "stat",
+                "targets": [
+                  "save.all"
+                ],
+                "mode": "flat",
+                "value": 2,
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "Your mind is better able to resist psionics than normal. Benefit You get a +2 bonus on all saving throws to resist powers. The benefit of this feat applies only to psionic powers and psi-like abilities. This is an exception to the psionics…",
     "text": "Your mind is better able to resist psionics than normal.\n\nBenefit\n\nYou get a +2 bonus on all saving throws to resist powers.\n\nThe benefit of this feat applies only to psionic powers and psi-like abilities. This is an exception to the psionics–magic transparency rule.\n\nSpecial\n\nYou cannot take or use this feat if you have the ability to use powers (if you have a power point reserve or psi-like abilities).",
     "tags": [
@@ -6226,7 +6962,13 @@
     },
     "prerequisites": "Ability to cast spells",
     "benefit": "A silent spell can be cast with no verbal components. Spells without verbal components are not affected. Uses a slot 1 level higher.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-mm-silent",
+        "type": "effect",
+        "text": "Metamagic (+1 Slot Level): Cast without verbal components"
+      }
+    ],
     "ruleFlags": {
       "metamagicLevelMod": 1
     },
@@ -6330,7 +7072,13 @@
     },
     "prerequisites": "Ability to cast spells",
     "benefit": "Benefit You can cast any spell that has a material component costing 1 gp or less without needing that component. (The casting of the spell still provokes attacks of opportunity as normal.) If the spell requires a material component that c…",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-eschew",
+        "type": "effect",
+        "text": "Eschew Materials: Cast spells without material components costing 1 gp or less"
+      }
+    ],
     "shortDescription": "Benefit You can cast any spell that has a material component costing 1 gp or less without needing that component. (The casting of the spell still provokes attacks of opportunity as normal.) If the spell requires a material component that c…",
     "text": "Benefit\n\nYou can cast any spell that has a material component costing 1 gp or less without needing that component. (The casting of the spell still provokes attacks of opportunity as normal.) If the spell requires a material component that costs more than 1 gp, you must have the material component at hand to cast the spell, just as normal.",
     "tags": [
@@ -6602,7 +7350,42 @@
     },
     "prerequisites": "Spellcraft 5 ranks",
     "benefit": "Your spells are more potent when used against psionic characters and creatures. Prerequisite Spellcraft 5 ranks. Benefit You get a get a +2 bonus on caster level checks made to overcome a psionic creature’s power resistance. This bonus sta…",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-antipsi",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-antipsi-br",
+            "condKind": "situational",
+            "condText": "vs. Psionic Creatures",
+            "effects": [
+              {
+                "id": "ef-antipsi-pen",
+                "type": "stat",
+                "targets": [
+                  "sr.penetration"
+                ],
+                "mode": "flat",
+                "value": 2,
+                "btype": "Untyped"
+              },
+              {
+                "id": "ef-antipsi-dc",
+                "type": "stat",
+                "targets": [
+                  "spell.dc"
+                ],
+                "mode": "flat",
+                "value": 2,
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "Your spells are more potent when used against psionic characters and creatures. Prerequisite Spellcraft 5 ranks. Benefit You get a get a +2 bonus on caster level checks made to overcome a psionic creature’s power resistance. This bonus sta…",
     "text": "Your spells are more potent when used against psionic characters and creatures.\n\nPrerequisite\n\nSpellcraft 5 ranks.\n\nBenefit\n\nYou get a get a +2 bonus on caster level checks made to overcome a psionic creature’s power resistance.\n\nThis bonus stacks with the bonus conferred by Spell Penetration and Greater Spell Penetration. Moreover, whenever a psionic creature attempts to dispel a spell you cast, it makes its manifester level check against a DC of 13 + its manifester level.\n\nThe benefits of this feat apply only to power resistance.\n\nThe bonus does not apply to spell resistance. This is an exception to the psionics–magic transparency rule.\n\nSpecial\n\nYou cannot take or use this feat if you have the ability to use powers (if you have a power point reserve or psi-like abilities).",
     "tags": [
@@ -6756,7 +7539,32 @@
     },
     "prerequisites": "Dex 13",
     "benefit": "+1 dodge bonus to Armor Class against attacks from a designated opponent during your turn.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-dodge-when",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-dodge-when-br",
+            "condKind": "situational",
+            "condText": "vs. Designated Opponent",
+            "effects": [
+              {
+                "id": "ef-dodge-ac",
+                "type": "stat",
+                "targets": [
+                  "ac.dodge"
+                ],
+                "mode": "flat",
+                "value": 1,
+                "btype": "Dodge"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "ruleFlags": {
       "dodgeBonus": 1
     },
@@ -6922,7 +7730,13 @@
     },
     "prerequisites": "Str 13, Power Attack, Cleave, BAB +4",
     "benefit": "No limit to the number of extra attacks you can make per round from Cleave as long as each dropped target qualifies.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-gcleave",
+        "type": "effect",
+        "text": "Great Cleave: Unlimited Cleave follow-up melee attacks per round"
+      }
+    ],
     "shortDescription": "No limit to the number of extra attacks you can make per round from Cleave as long as each dropped target qualifies.",
     "text": "Prerequisites\n\nStr 13, Cleave, Power Attack, base attack bonus +4.\n\nBenefit\n\nThis feat works like Cleave, except that there is no limit to the number of times you can use it per round.\n\nSpecial\n\nA fighter may select Great Cleave as one of his fighter bonus feats.",
     "tags": [
@@ -7036,7 +7850,32 @@
     },
     "prerequisites": "Weapon focus (chosen weapon), base attack bonus +4",
     "benefit": "Prerequisites Weapon focus (chosen weapon), base attack bonus +4 Benefit When using the weapon you selected, you gain a +4 bonus on the roll to confirm a threat. Special A fighter may select Power Critical as one of his fighter bonus feats…",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-powcrit",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-powcrit-br",
+            "condKind": "state",
+            "condText": "wieldingChosenWeapon",
+            "effects": [
+              {
+                "id": "ef-powcrit-atk",
+                "type": "stat",
+                "targets": [
+                  "atk.critConfirm"
+                ],
+                "mode": "flat",
+                "value": 4,
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "Prerequisites Weapon focus (chosen weapon), base attack bonus +4 Benefit When using the weapon you selected, you gain a +4 bonus on the roll to confirm a threat. Special A fighter may select Power Critical as one of his fighter bonus feats…",
     "text": "Prerequisites\n\nWeapon focus (chosen weapon), base attack bonus +4\n\nBenefit\n\nWhen using the weapon you selected, you gain a +4 bonus on the roll to confirm a threat.\n\nSpecial\n\nA fighter may select Power Critical as one of his fighter bonus feats.\n\nYou can gain Power Critical multiple times. Each time you take the feat, it may be with a different weapon or the same weapon. If you take it with the same weapon, the effects of the feats stack.",
     "tags": [
@@ -7087,7 +7926,13 @@
     },
     "prerequisites": "Ability to cast spells",
     "benefit": "Casting a quickened spell is a swift action. You can perform another action, including casting another spell, in the same round. Uses a slot 4 levels higher.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-mm-quick",
+        "type": "effect",
+        "text": "Metamagic (+4 Slot Level): Cast as a Swift action"
+      }
+    ],
     "ruleFlags": {
       "metamagicLevelMod": 4
     },
@@ -7116,7 +7961,18 @@
     },
     "prerequisites": "Ability to cast spells",
     "benefit": "+2 bonus on caster level checks (1d20 + caster level) made to overcome a creature's spell resistance.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-sp-pen",
+        "type": "stat",
+        "targets": [
+          "caster.spellPenetration"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Untyped"
+      }
+    ],
     "shortDescription": "+2 bonus on caster level checks (1d20 + caster level) made to overcome a creature's spell resistance.",
     "text": "Benefit\n\nYou get a +2 bonus on caster level checks (1d20 + caster level) made to overcome a creature’s spell resistance.",
     "tags": [
@@ -7175,7 +8031,18 @@
     },
     "prerequisites": "Str 21, Dex 21, Improved Unarmed Strike, Escape Artist 15 ranks",
     "benefit": "Prerequisite Str 21, Dex 21, Improved Unarmed Strike, Escape Artist 15 ranks. Benefit The character gains a +10 bonus on all grapple checks.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-legwrest",
+        "type": "stat",
+        "targets": [
+          "grapple"
+        ],
+        "mode": "flat",
+        "value": 10,
+        "btype": "Untyped"
+      }
+    ],
     "shortDescription": "Prerequisite Str 21, Dex 21, Improved Unarmed Strike, Escape Artist 15 ranks. Benefit The character gains a +10 bonus on all grapple checks.",
     "text": "Prerequisite\n\nStr 21, Dex 21, Improved Unarmed Strike, Escape Artist 15 ranks.\n\nBenefit\n\nThe character gains a +10 bonus on all grapple checks.",
     "tags": [
@@ -7227,7 +8094,13 @@
     },
     "prerequisites": "Dex 13, Dodge, Mobility, BAB +4",
     "benefit": "When using the attack action with a melee weapon, move both before and after making a single attack up to speed without provoking attacks of opportunity from the defender.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-spring",
+        "type": "effect",
+        "text": "Spring Attack: Move before & after single melee attack without provoking AoO from target"
+      }
+    ],
     "shortDescription": "When using the attack action with a melee weapon, move both before and after making a single attack up to speed without provoking attacks of opportunity from the defender.",
     "text": "Prerequisites\n\nDex 13, Dodge, Mobility, base attack bonus +4.\n\nBenefit\n\nWhen using the attack action with a melee weapon, you can move both before and after the attack, provided that your total distance moved is not greater than your speed. Moving in this way does not provoke an attack of opportunity from the defender you attack, though it might provoke attacks of opportunity from other creatures, if appropriate. You can’t use this feat if you are wearing heavy armor.\n\nYou must move at least 5 feet both before and after you make your attack in order to utilize the benefits of Spring Attack.\n\nSpecial\n\nA fighter may select Spring Attack as one of his fighter bonus feats.",
     "tags": [
@@ -7988,7 +8861,13 @@
     },
     "prerequisites": "Ability to cast spells",
     "benefit": "You can alter a burst, emanation, line, or spread spell to increase its area by 100%. Spells without area are not affected. Uses a slot 3 levels higher.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-mm-widen",
+        "type": "effect",
+        "text": "Metamagic (+3 Slot Level): Double burst, emanation, line, or spread area"
+      }
+    ],
     "ruleFlags": {
       "metamagicLevelMod": 3
     },
@@ -8191,7 +9070,37 @@
     },
     "prerequisites": "Str 13, Power Attack",
     "benefit": "Target cannot avoid you during overrun. +4 bonus on Strength check to knock target prone.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-imp-ovr-w",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-imp-ovr-w-br",
+            "condKind": "situational",
+            "condText": "vs. Overrun / Making Overrun",
+            "effects": [
+              {
+                "id": "ef-imp-ovr-s",
+                "type": "stat",
+                "targets": [
+                  "cmd.overrun"
+                ],
+                "mode": "flat",
+                "value": 4,
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ef-imp-ovr-n",
+        "type": "effect",
+        "text": "Improved Overrun: +4 on Overrun checks; target cannot avoid"
+      }
+    ],
     "ruleFlags": {
       "overrunBonus": 4
     },
@@ -8303,7 +9212,21 @@
     "prereqStruct": {},
     "prerequisites": "Bardic music",
     "benefit": "Prerequisite Bardic music. Benefit You can use your bardic music four extra times per day. Normal Bards without the Extra Music feat can use bardic music once per day per level. Special You can gain this feat multiple times, adding another…",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-extramus-res",
+        "type": "resource",
+        "name": "Extra Bardic Music",
+        "varKey": "extra_bardic_music",
+        "resMode": "spend",
+        "maxFormula": "4",
+        "reset": "perDay",
+        "unit": "uses",
+        "recharge": {
+          "period": "day"
+        }
+      }
+    ],
     "shortDescription": "Prerequisite Bardic music. Benefit You can use your bardic music four extra times per day. Normal Bards without the Extra Music feat can use bardic music once per day per level. Special You can gain this feat multiple times, adding another…",
     "text": "Prerequisite\n\nBardic music.\n\nBenefit\n\nYou can use your bardic music four extra times per day.\n\nNormal\n\nBards without the Extra Music feat can use bardic music once per day per level.\n\nSpecial\n\nYou can gain this feat multiple times, adding another four uses of bardic music each time.",
     "tags": [
@@ -8330,7 +9253,17 @@
     },
     "prerequisites": "Str 13",
     "benefit": "On your action, before making attack rolls, subtract a number from all melee attack rolls (up to BAB) and add that number to all melee damage rolls (+1x for one-handed, +2x for two-handed). Cannot add bonus damage with a light weapon (except unarmed strikes or natural weapon attacks).",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-pa",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "tacticalSlider",
+        "label": "Enable Power Attack tactical combat slider",
+        "text": "Tactical Slider: Power Attack",
+        "slider": "powerAttack"
+      }
+    ],
     "ruleFlags": {
       "powerAttack": true
     },
@@ -8384,7 +9317,13 @@
     },
     "prerequisites": "Ability to cast spells",
     "benefit": "All variable, numeric effects of an empowered spell are increased by one-half (+50%). Saving throws and opposed rolls are not affected. Uses a slot 2 levels higher.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-mm-empower",
+        "type": "effect",
+        "text": "Metamagic (+2 Slot Level): +50% variable numeric spell effects"
+      }
+    ],
     "ruleFlags": {
       "metamagicLevelMod": 2
     },
@@ -8759,7 +9698,32 @@
     },
     "prerequisites": "Power Penetration",
     "benefit": "Your powers are especially potent at breaking through power resistance. Prerequisite Power Penetration. Benefit To use this feat, you must expend your psionic focus (see the Concentration skill description) . You get a +4 +8 bonus on manif…",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-gpowpen",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-gpowpen-br",
+            "condKind": "state",
+            "condText": "Expending Psionic Focus",
+            "effects": [
+              {
+                "id": "ef-gpowpen-s",
+                "type": "stat",
+                "targets": [
+                  "sr.penetration"
+                ],
+                "mode": "flat",
+                "value": 4,
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "Your powers are especially potent at breaking through power resistance. Prerequisite Power Penetration. Benefit To use this feat, you must expend your psionic focus (see the Concentration skill description) . You get a +4 +8 bonus on manif…",
     "text": "Your powers are especially potent at breaking through power resistance.\n\nPrerequisite\n\nPower Penetration.\n\nBenefit\n\nTo use this feat, you must expend your psionic focus (see the Concentration skill description). You get a +4 +8 bonus on manifester level checks to overcome a creature's power resistance. This bonus stacks overlaps with the bonus from Power Penetration.",
     "tags": [
@@ -8921,7 +9885,13 @@
     "prereqStruct": {},
     "prerequisites": "-",
     "benefit": "To find tracks or to follow them for 1 mile requires a successful Survival check. You must make another Survival check every time the tracks become difficult to follow.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-track",
+        "type": "effect",
+        "text": "Track: Follow tracks with Survival checks (DC by surface/conditions)"
+      }
+    ],
     "shortDescription": "To find tracks or to follow them for 1 mile requires a successful Survival check. You must make another Survival check every time the tracks become difficult to follow.",
     "text": "Benefit\n\nTo find tracks or to follow them for 1 mile requires a successful Survival check. You must make another Survival check every time the tracks become difficult to follow.\n\nYou move at half your normal speed (or at your normal speed with a –5 penalty on the check, or at up to twice your normal speed with a –20 penalty on the check). The DC depends on the surface and the prevailing conditions, as given on the table below:\n\nSurface |\nSurvival DC\n|\n\nVery soft ground |\n5\n|\n\nFirm ground |\n15\n|\n\nSoft ground |\n10\n|\n\nHard ground |\n20\n|\n\nVery Soft Ground\n\nAny surface (fresh snow, thick dust, wet mud) that holds deep, clear impressions of footprints.\n\nSoft Ground\n\nAny surface soft enough to yield to pressure, but firmer than wet mud or fresh snow, in which a creature leaves frequent but shallow footprints.\n\nFirm Ground\n\nMost normal outdoor surfaces (such as lawns, fields, woods, and the like) or exceptionally soft or dirty indoor surfaces (thick rugs and very dirty or dusty floors). The creature might leave some traces (broken branches or tufts of hair), but it leaves only occasional or partial footprints.\n\nHard Ground\n\nAny surface that doesn’t hold footprints at all, such as bare rock or an indoor floor. Most streambeds fall into this category, since any footprints left behind are obscured or washed away. The creature leaves only traces (scuff marks or displaced pebbles).\n\nSeveral modifiers may apply to the Survival check, as given on the table below.\n\nCondition |\nSurvival\nDC Modifier\n|\n\nEvery three creatures in the group being tracked |\n–1\n|\n\nSize of creature or creatures being tracked:1 |\n\n|\n\nFine |\n+8\n|\n\nDiminutive |\n+4\n|\n\nTiny |\n+2\n|\n\nSmall |\n+1\n|\n\nMedium |\n+0\n|\n\nLarge |\n–1\n|\n\nHuge |\n–2\n|\n\nGargantuan |\n–4\n|\n\nColossal |\n–8\n|\n\nEvery 24 hours since the trail was made |\n+1\n|\n\nEvery hour of rain since the trail was made |\n+1\n|\n\nFresh snow cover since the trail was made |\n+10\n|\n\nPoor visibility:2 |\n\n|\n\nOvercast or moonless night |\n+6\n|\n\nMoonlight |\n+3\n|\n\nFog or precipitation |\n+3\n|\n\nTracked party hides trail (and moves at half speed) |\n+5\n|\n\n• For a group of mixed sizes, apply only the modifier for the largest size category.\n\n• Apply only the largest modifier from this category.\n\n|\n\nIf you fail a Survival check, you can retry after 1 hour (outdoors) or 10 minutes (indoors) of searching.\n\nNormal\n\nWithout this feat, you can use the Survival skill to find tracks, but you can follow them only if the DC for the task is 10 or lower. Alternatively, you can use the Search skill to find a footprint or similar sign of a creature’s passage using the DCs given above, but you can’t use Search to follow tracks, even if someone else has already found them.\n\nSpecial\n\nA ranger automatically has Track as a bonus feat. He need not select it.\n\nThis feat does not allow you to find or follow the tracks made by a subject of a pass without trace spell.",
     "tags": [
@@ -9080,7 +10050,13 @@
     },
     "prerequisites": "Int 13, Combat Expertise",
     "benefit": "Can make a Bluff check to feint in combat as a move action rather than a standard action.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-impfeint",
+        "type": "effect",
+        "text": "Improved Feint: Feint in combat (Bluff) as a Move action"
+      }
+    ],
     "shortDescription": "Can make a Bluff check to feint in combat as a move action rather than a standard action.",
     "text": "Prerequisites\n\nInt 13, Combat Expertise.\n\nBenefit\n\nYou can make a Bluff check to feint in combat as a move action.\n\nNormal\n\nFeinting in combat is a standard action.\n\nA fighter may select Improved Feint as one of his fighter bonus feats.",
     "tags": [
@@ -9134,7 +10110,18 @@
     },
     "prerequisites": "Spell Penetration, Ability to cast spells",
     "benefit": "+2 bonus on caster level checks made to overcome a creature's spell resistance (stacks with Spell Penetration for a total of +4).",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-gsp-pen",
+        "type": "stat",
+        "targets": [
+          "caster.spellPenetration"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Untyped"
+      }
+    ],
     "shortDescription": "+2 bonus on caster level checks made to overcome a creature's spell resistance (stacks with Spell Penetration for a total of +4).",
     "text": "Prerequisite\n\nSpell Penetration.\n\nBenefit\n\nYou get a +2 bonus on caster level checks (1d20 + caster level) made to overcome a creature’s spell resistance. This bonus stacks with the one from Spell Penetration.",
     "tags": [
@@ -9158,7 +10145,16 @@
     "prereqStruct": {},
     "prerequisites": "-",
     "benefit": "Make additional attacks of opportunity per round equal to Dexterity modifier. May also make attacks of opportunity while flat-footed.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-combat-refl",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "combatReflexes",
+        "label": "Make extra AoOs per round equal to DEX modifier; make AoOs while flat-footed",
+        "text": "Combat Reflexes: Extra AoOs = DEX Mod (even Flat-Footed)"
+      }
+    ],
     "ruleFlags": {
       "combatReflexes": true
     },
@@ -9356,7 +10352,13 @@
     "prereqStruct": {},
     "prerequisites": "Armor Proficiency (Medium)",
     "benefit": "When you wear heavy armor, armor check penalty applies only to physical movement skill checks.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-aph",
+        "type": "effect",
+        "text": "Armor Proficiency (Heavy): No armor check penalty on attack rolls in heavy armor"
+      }
+    ],
     "shortDescription": "When you wear heavy armor, armor check penalty applies only to physical movement skill checks.",
     "text": "Prerequisites\n\nArmor Proficiency (light), Armor Proficiency (medium).\n\nBenefit\n\nSee Armor Proficiency (light).\n\nNormal\n\nSee Armor Proficiency (light).\n\nSpecial\n\nFighters, paladins, and clerics automatically have Armor Proficiency (heavy) as a bonus feat. They need not select it.",
     "tags": [
@@ -9460,7 +10462,13 @@
     },
     "prerequisites": "Base attack bonus +3, Wis 19",
     "benefit": "Prerequisites Base attack bonus +3, Wis 19. Benefit Attackers do not gain the usual +2 attack bonus when flanking you. This feat grants no effect whenever you are attacked without benefit of your Dexterity modifier to AC, such as when you…",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-eyesback",
+        "type": "effect",
+        "text": "Eyes in the Back of Your Head: Attackers gain no +2 flanking attack bonus against you"
+      }
+    ],
     "shortDescription": "Prerequisites Base attack bonus +3, Wis 19. Benefit Attackers do not gain the usual +2 attack bonus when flanking you. This feat grants no effect whenever you are attacked without benefit of your Dexterity modifier to AC, such as when you…",
     "text": "Prerequisites\n\nBase attack bonus +3, Wis 19.\n\nBenefit\n\nAttackers do not gain the usual +2 attack bonus when flanking you. This feat grants no effect whenever you are attacked without benefit of your Dexterity modifier to AC, such as when you are flat-footed or when you are the target of a rogue’s sneak attack.",
     "tags": [
@@ -9509,7 +10517,13 @@
     },
     "prerequisites": "Ability to cast spells",
     "benefit": "All variable, numeric effects of a maximized spell are maximized. Saving throws and opposed rolls are unaffected. Uses a slot 3 levels higher.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-mm-max",
+        "type": "effect",
+        "text": "Metamagic (+3 Slot Level): Maximize variable numeric spell effects"
+      }
+    ],
     "ruleFlags": {
       "metamagicLevelMod": 3
     },
@@ -9536,7 +10550,13 @@
     "prereqStruct": {},
     "prerequisites": "-",
     "benefit": "When you wear light armor, armor check penalty applies only to Balance, Climb, Escape Artist, Hide, Jump, Move Silently, Sleight of Hand, and Tumble.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-apl",
+        "type": "effect",
+        "text": "Armor Proficiency (Light): No armor check penalty on attack rolls in light armor"
+      }
+    ],
     "shortDescription": "When you wear light armor, armor check penalty applies only to Balance, Climb, Escape Artist, Hide, Jump, Move Silently, Sleight of Hand, and Tumble.",
     "text": "Benefit\n\nWhen you wear a type of armor with which you are proficient, the armor check penalty for that armor applies only to Balance, Climb, Escape Artist, Hide, Jump, Move Silently, Sleight of Hand, and Tumble checks.\n\nNormal\n\nA character who is wearing armor with which she is not proficient applies its armor check penalty to attack rolls and to all skill checks that involve moving, including Ride.\n\nSpecial\n\nAll characters except wizards, sorcerers, and monks automatically have Armor Proficiency (light) as a bonus feat. They need not select it.",
     "tags": [
@@ -9559,7 +10579,13 @@
     "prereqStruct": {},
     "prerequisites": "-",
     "benefit": "You are considered armed even when unarmed (do not provoke attacks of opportunity when attacking unarmed). Unarmed strikes deal lethal or nonlethal damage at your choice.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-ius",
+        "type": "effect",
+        "text": "Improved Unarmed Strike: Considered armed; deal lethal or nonlethal damage without AoO"
+      }
+    ],
     "shortDescription": "You are considered armed even when unarmed (do not provoke attacks of opportunity when attacking unarmed). Unarmed strikes deal lethal or nonlethal damage at your choice.",
     "text": "Benefit\n\nYou are considered to be armed even when unarmed—that is, you do not provoke attacks of opportunity from armed opponents when you attack them while unarmed. However, you still get an attack of opportunity against any opponent who makes an unarmed attack on you.\n\nIn addition, your unarmed strikes can deal lethal or nonlethal damage, at your option.\n\nNormal\n\nWithout this feat, you are considered unarmed when attacking with an unarmed strike, and you can deal only nonlethal damage with such an attack.\n\nSpecial\n\nA monk automatically gains Improved Unarmed Strike as a bonus feat at 1st level. She need not select it.\n\nA fighter may select Improved Unarmed Strike as one of his fighter bonus feats.",
     "tags": [
@@ -9816,7 +10842,13 @@
     },
     "prerequisites": "Dex 13, Point Blank Shot, Dodge, Mobility, BAB +4",
     "benefit": "When using the attack action with a ranged weapon, move both before and after making a single attack up to speed.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-sotr",
+        "type": "effect",
+        "text": "Shot on the Run: Move before & after single ranged attack"
+      }
+    ],
     "shortDescription": "When using the attack action with a ranged weapon, move both before and after making a single attack up to speed.",
     "text": "Prerequisites\n\nDex 13, Dodge, Mobility, Point Blank Shot, base attack bonus +4.\n\nBenefit\n\nWhen using the attack action with a ranged weapon, you can move both before and after the attack, provided that your total distance moved is not greater than your speed.\n\nSpecial\n\nA fighter may select Shot on the Run as one of his fighter bonus feats.",
     "tags": [
@@ -9992,7 +11024,13 @@
     },
     "prerequisites": "Ride 1 rank, Mounted Combat",
     "benefit": "Halve penalty for using ranged weapon while mount takes double move (-2 instead of -4) or runs (-4 instead of -8).",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-marchery",
+        "type": "effect",
+        "text": "Mounted Archery: Halve ranged penalties while mounted (-2 double move, -4 run)"
+      }
+    ],
     "shortDescription": "Halve penalty for using ranged weapon while mount takes double move (-2 instead of -4) or runs (-4 instead of -8).",
     "text": "Prerequisites\n\nRide 1 rank, Mounted Combat.\n\nBenefit\n\nThe penalty you take when using a ranged weapon while mounted is halved: –2 instead of –4 if your mount is taking a double move, and –4 instead of –8 if your mount is running.\n\nSpecial\n\nA fighter may select Mounted Archery as one of his fighter bonus feats.",
     "tags": [
@@ -10085,7 +11123,17 @@
     },
     "prerequisites": "Int 13",
     "benefit": "Subtract a number from melee attack rolls (up to BAB, max 5) and add the same number as a dodge bonus to Armor Class.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-ce",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "tacticalSlider",
+        "label": "Enable Combat Expertise tactical combat slider",
+        "text": "Tactical Slider: Combat Expertise",
+        "slider": "combatExpertise"
+      }
+    ],
     "ruleFlags": {
       "combatExpertise": true
     },
@@ -10179,7 +11227,32 @@
     },
     "prerequisites": "Dex 13, Dodge",
     "benefit": "You are skilled at dodging past charging opponents and taking advantage when they miss. Prerequisite Dex 13, Dodge. Benefit You get a +4 dodge bonus to Armor Class against charge attacks. If a charging opponent fails to make a successful a…",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-sidestep",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-sidestep-br",
+            "condKind": "situational",
+            "condText": "vs. Charging Attack",
+            "effects": [
+              {
+                "id": "ef-sidestep-ac",
+                "type": "stat",
+                "targets": [
+                  "ac.dodge"
+                ],
+                "mode": "flat",
+                "value": 4,
+                "btype": "Dodge"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "You are skilled at dodging past charging opponents and taking advantage when they miss. Prerequisite Dex 13, Dodge. Benefit You get a +4 dodge bonus to Armor Class against charge attacks. If a charging opponent fails to make a successful a…",
     "text": "You are skilled at dodging past charging opponents and taking advantage when they miss.\n\nPrerequisite\n\nDex 13, Dodge.\n\nBenefit\n\nYou get a +4 dodge bonus to Armor Class against charge attacks. If a charging opponent fails to make a successful attack against you, you gain an immediate attack of opportunity. This feat does not grant you more attacks of opportunity than you are normally allowed in a round. If you are flat-footed or otherwise denied your Dexterity bonus to Armor Class, you do not gain the benefit of this feat.",
     "tags": [
@@ -10426,7 +11499,16 @@
     "prereqStruct": {},
     "prerequisites": "-",
     "benefit": "Reroll miss chance for concealment once. Retain Dex bonus to AC against invisible attackers. Move at 3/4 speed while blinded.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-blind-fight",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "blindFight",
+        "label": "Reroll concealment miss chance; retain DEX to AC vs invisible melee attackers",
+        "text": "Blind-Fight: Reroll Miss Chance; Retain DEX vs Invisible Melee"
+      }
+    ],
     "ruleFlags": {
       "blindFight": true
     },
@@ -10636,7 +11718,16 @@
     },
     "prerequisites": "Dex 17, Two-Weapon Fighting, BAB +6",
     "benefit": "Gain a second off-hand attack at a -5 penalty on full attack.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-itwf",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "improvedTwoWeaponFighting",
+        "label": "Gain a second off-hand attack at -5 penalty",
+        "text": "Improved TWF: +1 Off-Hand Attack (-5)"
+      }
+    ],
     "ruleFlags": {
       "improvedTwoWeaponFighting": true
     },
@@ -10664,7 +11755,32 @@
     },
     "prerequisites": "Ability to cast spells",
     "benefit": "+4 bonus on Concentration checks made to cast a spell or use a spell-like ability defensively or while grappled or pinned.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-ccast",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-ccast-br",
+            "condKind": "situational",
+            "condText": "Casting Defensively / While Grappled",
+            "effects": [
+              {
+                "id": "ef-ccast-conc",
+                "type": "stat",
+                "targets": [
+                  "skill.concentration"
+                ],
+                "mode": "flat",
+                "value": 4,
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "+4 bonus on Concentration checks made to cast a spell or use a spell-like ability defensively or while grappled or pinned.",
     "text": "Benefit\n\nYou get a +4 bonus on Concentration checks made to cast a spell or use a spell-like ability while on the defensive or while you are grappling or pinned.",
     "tags": [
@@ -10916,7 +12032,16 @@
     },
     "prerequisites": "Proficiency with weapon, BAB +8",
     "benefit": "Doubles the threat range of the selected weapon (e.g. 19-20 becomes 17-20, 18-20 becomes 15-20).",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-impcrit",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "improvedCritical",
+        "label": "Double critical threat range of chosen weapon",
+        "text": "Improved Critical: 2x Threat Range"
+      }
+    ],
     "ruleFlags": {
       "improvedCritical": true
     },
@@ -10989,7 +12114,16 @@
     "prereqStruct": {},
     "prerequisites": "1 Shadow Hand Stance",
     "benefit": "While you are in a Shadow Hand stance and attack with a Shadow Hand preferred weapon (dagger, short sword, sai, siangham, spiked chain, or unarmed strike), you add your Dexterity modifier in place of your Strength modifier on melee damage rolls.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-sb",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "shadowBlade",
+        "label": "Add DEX modifier to damage with Shadow Hand preferred weapons in a Shadow Hand stance",
+        "text": "Shadow Blade: +DEX Damage (Shadow Hand)"
+      }
+    ],
     "shortDescription": "While you are in a Shadow Hand stance and attack with a Shadow Hand preferred weapon (dagger, short sword, sai, siangham, spiked chain, or unarmed strike), you add your Dexterity modifier in place of your Strength modifier on melee damage rolls.",
     "text": "While you are in a Shadow Hand stance and attack with a Shadow Hand preferred weapon (dagger, short sword, sai, siangham, spiked chain, or unarmed strike), you add your Dexterity modifier in place of your Strength modifier on melee damage rolls.",
     "tags": [
@@ -11042,7 +12176,13 @@
     },
     "prerequisites": "Ability to cast 3rd-level arcane spells, BAB +4",
     "benefit": "As a free action, sacrifice a prepared arcane spell or arcane spell slot of 1st level or higher to gain a competence bonus on all melee attack rolls equal to the spell's level and deal +1d4 extra damage per spell level for 1 round.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-arc-strike",
+        "type": "effect",
+        "text": "Arcane Strike: Sacrifice arcane slot (level L) -> +L melee attack & +Ld4 melee damage (1 rd)"
+      }
+    ],
     "shortDescription": "As a free action, sacrifice a prepared arcane spell or arcane spell slot of 1st level or higher to gain a competence bonus on all melee attack rolls equal to the spell's level and deal +1d4 extra damage per spell level for 1 round.",
     "text": "As a free action, sacrifice a prepared arcane spell or arcane spell slot of 1st level or higher to gain a competence bonus on all melee attack rolls equal to the spell's level and deal +1d4 extra damage per spell level for 1 round.",
     "tags": [
@@ -11070,7 +12210,13 @@
     },
     "prerequisites": "Spellcraft 4 ranks, Ability to cast spells",
     "benefit": "Your caster level for the chosen spellcasting class increases by +4 (up to a maximum equal to your total Hit Dice / Character Level). Does not grant additional spells per day or spells known.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-prac-cast",
+        "type": "effect",
+        "text": "Practiced Spellcaster: +4 Caster Level (capped at Character Level / HD)"
+      }
+    ],
     "shortDescription": "Your caster level for the chosen spellcasting class increases by +4 (up to a maximum equal to your total Hit Dice / Character Level). Does not grant additional spells per day or spells known.",
     "text": "Your caster level for the chosen spellcasting class increases by +4 (up to a maximum equal to your total Hit Dice / Character Level). Does not grant additional spells per day or spells known.",
     "tags": [
@@ -11122,7 +12268,13 @@
     },
     "prerequisites": "Jump 8 ranks, Power Attack",
     "benefit": "If you cover at least 10 feet of horizontal distance with a Jump check as part of a charge, double the extra damage from Power Attack (+100% with a one-handed weapon, or +200% / 3x with a two-handed weapon).",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-leap-atk",
+        "type": "effect",
+        "text": "Leap Attack: 10+ ft. Jump on charge doubles Power Attack bonus damage"
+      }
+    ],
     "shortDescription": "If you cover at least 10 feet of horizontal distance with a Jump check as part of a charge, double the extra damage from Power Attack (+100% with a one-handed weapon, or +200% / 3x with a two-handed weapon).",
     "text": "If you cover at least 10 feet of horizontal distance with a Jump check as part of a charge, double the extra damage from Power Attack (+100% with a one-handed weapon, or +200% / 3x with a two-handed weapon).",
     "tags": [
@@ -11174,7 +12326,16 @@
     },
     "prerequisites": "BAB +1",
     "benefit": "You can wield melee weapons one size category larger than you with a -2 penalty on attack rolls, using the same number of hands normally required for a weapon of that type.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-mg",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "monkeyGrip",
+        "label": "Wield melee weapons one size category larger with -2 attack penalty",
+        "text": "Monkey Grip: Wield +1 Size Weapon (-2 Attack)"
+      }
+    ],
     "shortDescription": "You can wield melee weapons one size category larger than you with a -2 penalty on attack rolls, using the same number of hands normally required for a weapon of that type.",
     "text": "You can wield melee weapons one size category larger than you with a -2 penalty on attack rolls, using the same number of hands normally required for a weapon of that type.",
     "tags": [
@@ -12260,7 +13421,13 @@
     },
     "prerequisites": "BAB +6, Improved Unarmed Strike",
     "benefit": "When you make a melee attack with one or more melee weapons (including a standard attack, full attack, or martial strike), you can make one additional unarmed strike at your highest attack bonus; all attacks in the round take a -2 penalty.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-snap-kick",
+        "type": "effect",
+        "text": "Snap Kick: +1 extra unarmed attack (-2 on all attacks) during melee attack action"
+      }
+    ],
     "shortDescription": "When you make a melee attack with one or more melee weapons (including a standard attack, full attack, or martial strike), you can make one additional unarmed strike at your highest attack bonus; all attacks in the round take a -2 penalty.",
     "text": "When you make a melee attack with one or more melee weapons (including a standard attack, full attack, or martial strike), you can make one additional unarmed strike at your highest attack bonus; all attacks in the round take a -2 penalty.",
     "tags": [
@@ -12287,7 +13454,13 @@
     },
     "prerequisites": "Str 13, 1 Stone Dragon maneuver",
     "benefit": "When making a melee attack, full attack, or Stone Dragon strike, you can take a penalty of up to -5 on attack rolls (not exceeding your BAB) to gain 2 temporary hit points per point of penalty until the start of your next turn.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-stone-pow",
+        "type": "effect",
+        "text": "Stone Power: Trade up to -5 melee attack (max BAB) for 2 x penalty Temp HP"
+      }
+    ],
     "shortDescription": "When making a melee attack, full attack, or Stone Dragon strike, you can take a penalty of up to -5 on attack rolls (not exceeding your BAB) to gain 2 temporary hit points per point of penalty until the start of your next turn.",
     "text": "When making a melee attack, full attack, or Stone Dragon strike, you can take a penalty of up to -5 on attack rolls (not exceeding your BAB) to gain 2 temporary hit points per point of penalty until the start of your next turn.",
     "tags": [
@@ -12460,7 +13633,32 @@
     },
     "prerequisites": "Special attack (Eldritch Blast)",
     "benefit": "Add +2 to the DC for all saving throws against your Eldritch Blast, including any Eldritch Essence or Blast Shape invocations applied to it.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-afeb",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-afeb-br",
+            "condKind": "situational",
+            "condText": "Eldritch Blast",
+            "effects": [
+              {
+                "id": "ef-afeb-dc",
+                "type": "stat",
+                "targets": [
+                  "spell.dc"
+                ],
+                "mode": "flat",
+                "value": 2,
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "Add +2 to the DC for all saving throws against your Eldritch Blast, including any Eldritch Essence or Blast Shape invocations applied to it.",
     "text": "Add +2 to the DC for all saving throws against your Eldritch Blast, including any Eldritch Essence or Blast Shape invocations applied to it.",
     "tags": [
@@ -12485,7 +13683,45 @@
     },
     "prerequisites": "Spell-like ability",
     "benefit": "Five times per day, you can imbue a spell-like ability (such as Eldritch Blast) to deal an extra +2d6 damage against living non-outsider, non-undead, non-construct targets, at the cost of dealing half damage to outsiders, undead, and constructs.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-mbane-res",
+        "type": "resource",
+        "name": "Mortal Bane",
+        "varKey": "mortal_bane_uses",
+        "resMode": "spend",
+        "maxFormula": "5",
+        "reset": "perDay",
+        "unit": "uses",
+        "recharge": {
+          "period": "day"
+        }
+      },
+      {
+        "id": "ef-mbane-w",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-mbane-w-br",
+            "condKind": "situational",
+            "condText": "vs. Living Non-Outsider/Construct/Undead (SLA)",
+            "effects": [
+              {
+                "id": "ef-mbane-r",
+                "type": "roll",
+                "kind": "Damage",
+                "dice": "2d6",
+                "dmgType": "Untyped",
+                "crit": "normal",
+                "multiplyOnCrit": false,
+                "source": "Mortal Bane"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "Five times per day, you can imbue a spell-like ability (such as Eldritch Blast) to deal an extra +2d6 damage against living non-outsider, non-undead, non-construct targets, at the cost of dealing half damage to outsiders, undead, and constructs.",
     "text": "Five times per day, you can imbue a spell-like ability (such as Eldritch Blast) to deal an extra +2d6 damage against living non-outsider, non-undead, non-construct targets, at the cost of dealing half damage to outsiders, undead, and constructs.",
     "tags": [
@@ -12961,11 +14197,51 @@
     "prereq": "Shield Proficiency",
     "prerequisites": "Shield Proficiency",
     "benefit": "Choose a specific type of shield (heavy steel shield, light steel shield, heavy wooden shield, light wooden shield, or buckler). When you are wielding the chosen type of shield, its shield bonus to AC increases by 1.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-shspec-when",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-shspec-when-br",
+            "condKind": "state",
+            "condText": "wieldingChosenShield",
+            "effects": [
+              {
+                "id": "ef-shspec-ac",
+                "type": "stat",
+                "targets": [
+                  "ac.shieldBonus"
+                ],
+                "mode": "flat",
+                "value": 1,
+                "btype": "Untyped",
+                "stacksWithShield": true
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "ruleFlags": {
       "shieldSpecialization": true
     },
-    "text": "Choose a specific type of shield (heavy steel shield, light steel shield, heavy wooden shield, light wooden shield, or buckler). When you are wielding the chosen type of shield, its shield bonus to AC increases by 1."
+    "text": "Choose a specific type of shield (heavy steel shield, light steel shield, heavy wooden shield, light wooden shield, or buckler). When you are wielding the chosen type of shield, its shield bonus to AC increases by 1.",
+    "choices": [
+      {
+        "id": "ch-shield-type",
+        "key": "shieldType",
+        "label": "Shield Type",
+        "options": [
+          "Buckler",
+          "Light Wooden Shield",
+          "Light Steel Shield",
+          "Heavy Wooden Shield",
+          "Heavy Steel Shield"
+        ]
+      }
+    ]
   },
   {
     "schemaVersion": 3,
@@ -12980,7 +14256,16 @@
     "prereq": "Shield Proficiency, Shield Specialization",
     "prerequisites": "Shield Proficiency, Shield Specialization",
     "benefit": "You apply your shield bonus to AC against touch attacks and on checks or grapple rolls to resist bull rush, disarm, grapple, overrun, or trip attempts.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-shward",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "shieldToTouchAc",
+        "label": "Apply Shield AC bonus to Touch AC and resist Bull Rush, Disarm, Grapple, Overrun, Trip",
+        "text": "Shield Bonus Applies to Touch AC & Combat Maneuver Resistance"
+      }
+    ],
     "ruleFlags": {
       "shieldToTouchAc": true
     },
@@ -13000,7 +14285,16 @@
     "prerequisites": "Shield Proficiency, Improved Shield Bash, Shield Specialization",
     "benefit": "When making a shield bash and armed strike attack as part of a full attack action, you take a -2 penalty on each attack. These penalties replace the normal ones you incur for fighting with two weapons.",
     "special": "A fighter can select Agile Shield Fighter as one of his fighter bonus feats.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-asf",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "agileShieldFighter",
+        "label": "Shield bash + armed strike at flat -2/-2 penalty",
+        "text": "Agile Shield Fighter: Flat -2/-2 Shield Bash"
+      }
+    ],
     "ruleFlags": {
       "agileShieldFighter": true
     },

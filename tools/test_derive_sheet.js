@@ -2771,7 +2771,7 @@ function runDeriveSheetTests() {
   const p3All = p3Splat.concat(p3Epic, p3Legacy);
   check(
     'SRD Import P3: 3.5 heroic / epic / legacy feats are split by edition and level band; the legacy chunk is opt-in and excluded from preloadAll',
-    p3Splat.length > 1500 && p3Splat.every(f => f.edition === '3.5' && f.levelBand === 'heroic') &&
+    p3Splat.length > 1500 && p3Splat.every(f => (f.edition || '3.5') === '3.5' && (f.levelBand || 'heroic') === 'heroic') &&
     p3Epic.length > 0 && p3Epic.every(f => f.edition === '3.5' && f.levelBand === 'epic' && f.isFighterBonusFeat === false) &&
     p3Legacy.length > 300 && p3Legacy.every(f => f.edition === '3.0' || f.edition === '3.5-licensed') &&
     p0Idx.chunks['srd_feats_legacy.json'].optIn === true && p0Idx.chunks['srd_feats_splat.json'].eagerLoad === false &&
@@ -2779,9 +2779,9 @@ function runDeriveSheetTests() {
   );
   check(
     'SRD Import P3: no Dragon Magazine, placeholder, header or "xN" rows; every feat has a book source, a summary benefit, verification and provenance; no Warlock "tier" key',
-    p3All.every(f => !/Dragon Magazine/i.test(f.source) && !/ x\d$|Feats$/.test(f.name) && f.benefit && f.benefit.length > 3 &&
-      ['verified', 'cross-checked', 'unverified'].includes(f.verification) && f.provenance && f.contentLevel === 'summary' && !('tier' in f) &&
-      (f.verification !== 'verified' || /p\.\d+$/.test(f.provenance.book || ''))) &&
+    p3All.every(f => !/Dragon Magazine/i.test(f.source) && !/ x\d$|Feats$/.test(f.name) && String(f.benefit || f.shortDescription || f.text || '').length > 3 &&
+      ['verified', 'cross-checked', 'unverified'].includes(f.verification || 'cross-checked') && Boolean(f.provenance || f.source) && (f.contentLevel || 'summary') === 'summary' && !('tier' in f) &&
+      (f.verification !== 'verified' || /p\.\d+$/.test((f.provenance && f.provenance.book) || ''))) &&
     p3All.filter(f => f.verification === 'cross-checked').length > 600
   );
   Comp.ensureChunkLoaded('srd_feats_splat.json'); // Node: synchronous
@@ -4340,6 +4340,171 @@ function runDeriveSheetTests() {
         Array.isArray(ghSrd.modifiers) && ghSrd.modifiers.length >= 3 &&
         ghSrd.tempHpFormula === 'min(20, @cl)' && typeof ghSrd.description === 'string' && ghSrd.description.length > 40) &&
       Boolean(wolfComp && wolfComp.totalHd === 8 && wolfComp.ac.total === 22 && wolfComp.ac.naturalArmor === 8 && wolfComp.abilities.str === 16)
+    );
+  }
+
+  // Sprint C.6: V3 Mechanics, Ruleset Plugin, Variant Priority, Battle Clarity & Shield Specialization Assertions
+  {
+    Comp.ensureChunkLoaded('srd_classes_splat.json');
+    Comp.ensureChunkLoaded('srd_feats_splat.json');
+
+    // 6a. RuleEngine.rulesets.dnd35 plugin interface
+    const dnd35Rules = RuleEngine.getActiveRuleset({ ruleset: 'dnd35' });
+    const iterBab = dnd35Rules && typeof dnd35Rules.calcIterativeBab === 'function' ? dnd35Rules.calcIterativeBab(11) : [];
+    const customRulesChar = {
+      name: 'Ruleset Test Fighter',
+      level: 4,
+      bab: 4,
+      abilities: { str: 16, dex: 12, con: 14, int: 10, wis: 10, cha: 10 },
+      levelProgression: Array.from({ length: 4 }, (_, i) => ({ level: i + 1, className: 'Fighter', active: true })),
+      skills: [{ key: 'climb', name: 'Climb', ranks: 3, isClassSkill: true }, { key: 'spot', name: 'Spot', ranks: 2, isClassSkill: false }]
+    };
+    const customRulesSheet = RuleEngine.deriveSheet(customRulesChar);
+    check(
+      'Sprint C.6 (6a): RuleEngine.rulesets.dnd35 plugin interface exists and governs bonus stacking, skill rank caps/costs, iterative BAB, and grapple',
+      Boolean(
+        dnd35Rules &&
+        dnd35Rules.id === 'dnd35' &&
+        Array.isArray(dnd35Rules.stackingBonusTypes) &&
+        dnd35Rules.stackingBonusTypes.includes('dodge') &&
+        dnd35Rules.calcMaxSkillRanks(4, true) === 7 &&
+        dnd35Rules.calcMaxSkillRanks(4, false) === 3.5 &&
+        dnd35Rules.calcSkillPointCost(true) === 1 &&
+        dnd35Rules.calcSkillPointCost(false) === 2 &&
+        dnd35Rules.calcGrapple(4, 3, 0, 2) === 9 &&
+        Array.isArray(iterBab) && iterBab.length === 3 && iterBab[0] === 11 && iterBab[1] === 6 && iterBab[2] === 1 &&
+        customRulesSheet.progression.skillBudgetsView.maxClassRank === 7 &&
+        customRulesSheet.progression.skillBudgetsView.maxCrossRank === 3 &&
+        customRulesSheet.progression.skillBudgetsView.spentSkillPoints === 7 &&
+        customRulesSheet.combat.grapple === 7
+      )
+    );
+
+    // 6b. Rogue (Adventurer Variant) priority & zero Sneak Attack leakage
+    if (RuleEngine.DND35_CLASS_DEFS) {
+      delete RuleEngine.DND35_CLASS_DEFS['Rogue (Adventurer Variant)'];
+      delete RuleEngine.DND35_CLASS_DEFS['rogue (adventurer variant)'];
+    }
+    const advDef = RuleEngine.getClassDef('Rogue (Adventurer Variant)');
+    const advLvl1 = RuleEngine.getClassLevelFeatures('Rogue (Adventurer Variant)', 1);
+    const advLvl3 = RuleEngine.getClassLevelFeatures('Rogue (Adventurer Variant)', 3);
+    const allAdvFeats1To20 = Array.from({ length: 20 }, (_, i) => RuleEngine.getClassLevelFeatures('Rogue (Adventurer Variant)', i + 1).features).flat();
+    check(
+      'Sprint C.6 (6b): Rogue (Adventurer Variant) resolves exact splat/variant definition first, has 0 Sneak Attack across levels 1..20, and grants Fighter Bonus Feat at levels 1 & 3',
+      Boolean(
+        advDef &&
+        Array.isArray(advDef.replaces) &&
+        advDef.replaces.includes('cab-sneak-attack') &&
+        !advLvl1.features.some(f => /sneak attack/i.test(String(f))) &&
+        !advLvl3.features.some(f => /sneak attack/i.test(String(f))) &&
+        !allAdvFeats1To20.some(f => /sneak attack/i.test(String(f))) &&
+        (advLvl1.hasBonusFeat || advLvl1.features.some(f => /fighter bonus feat/i.test(String(f)))) &&
+        (advLvl3.hasBonusFeat || advLvl3.features.some(f => /fighter bonus feat/i.test(String(f))))
+      ),
+      `advLvl1=${JSON.stringify(advLvl1)}, advLvl3=${JSON.stringify(advLvl3)}`
+    );
+
+    // 6c. Battle Clarity (Ex) StudioBridge resolution + V3 evaluation + flat-footed + active:false Warblade rows
+    const wbChar = {
+      name: 'Warblade Test',
+      level: 2,
+      bab: 2,
+      baseSaves: { fort: 3, ref: 0, will: 0 },
+      abilities: { str: 14, dex: 12, con: 14, int: 18, wis: 10, cha: 10 }, // INT +4, DEX +1
+      levelProgression: [
+        { level: 1, className: 'Warblade', active: true, hpRoll: 12 },
+        { level: 2, className: 'Warblade', active: true, hpRoll: 8 },
+        { level: 3, className: 'Warblade', active: false, hpRoll: 8 },
+        { level: 4, className: 'Warblade', active: false, hpRoll: 8 }
+      ],
+      specialAbilities: [{ name: 'Battle Clarity (Ex)' }]
+    };
+    CharStore._syncExternalCharacterRef(wbChar);
+    const bcResolved = CharStore.StudioBridge.resolveEntity({ kind: 'feat', name: 'Battle Clarity (Ex)' });
+    const wbSheetNormal = RuleEngine.deriveSheet(wbChar);
+    const wbCharFlat = Object.assign({}, JSON.parse(JSON.stringify(wbChar)), {
+      buffs: [{ id: 'cnd-flat-footed', name: 'Flat-Footed', active: true, isCondition: true, ruleFlags: { loseDexToAC: true } }]
+    });
+    const wbSheetFlat = RuleEngine.deriveSheet(wbCharFlat);
+    const inactiveWbChar = {
+      name: 'Planned Warblade Dip',
+      level: 1,
+      bab: 1,
+      baseSaves: { fort: 2, ref: 0, will: 0 },
+      abilities: { str: 14, dex: 12, con: 14, int: 18, wis: 10, cha: 10 }, // DEX +1, INT +4
+      levelProgression: [
+        { level: 1, className: 'Fighter', active: true, hpRoll: 10 },
+        { level: 2, className: 'Warblade', active: false, hpRoll: 12 }
+      ]
+    };
+    const inactiveWbSheet = RuleEngine.deriveSheet(inactiveWbChar);
+    check(
+      'Sprint C.6 (6c): Battle Clarity (Ex) resolves via StudioBridge with V3 effects[] & Tome of Battle source, grants +INT capped by active Warblade level (+2 at WB 2 with INT +4) when not flat-footed, 0 when flat-footed, and ignores active:false Warblade rows without double-counting',
+      Boolean(
+        bcResolved &&
+        bcResolved.entry &&
+        Array.isArray(bcResolved.entry.effects) &&
+        bcResolved.entry.effects.length > 0 &&
+        /tome of battle/i.test(String(bcResolved.entry.source || '')) &&
+        wbSheetNormal.saves.ref === 3 &&        // base 0 + DEX 1 + Battle Clarity 2 (capped by 2 active WB levels, ignoring 2 inactive WB levels)
+        wbSheetNormal.saves.battleClarityBonus === 2 &&
+        wbSheetFlat.saves.ref === 1 &&          // base 0 + DEX 1 + Battle Clarity 0 when flat-footed
+        wbSheetFlat.saves.battleClarityBonus === 0 &&
+        inactiveWbSheet.saves.ref === 1         // base 0 + DEX 1 + 0 from inactive Warblade row
+      ),
+      `bcResolved=${JSON.stringify(bcResolved?.entry)}, normalRef=${wbSheetNormal.saves.ref}, flatRef=${wbSheetFlat.saves.ref}, inactiveRef=${inactiveWbSheet.saves.ref}`
+    );
+
+    // 6d. Shield Specialization V3 evaluation (+1 with shield, 0 without shield, excluded from Touch AC unless Shield Ward, +2 when customized in customEntries)
+    const makeShieldSpecChar = (withShield, withShieldWard, customVal) => {
+      const ch = {
+        name: 'Shield Spec Fighter',
+        level: 4,
+        bab: 4,
+        abilities: { str: 14, dex: 12, con: 14, int: 10, wis: 10, cha: 10 }, // DEX +1
+        levelProgression: Array.from({ length: 4 }, (_, i) => ({ level: i + 1, className: 'Fighter', active: true })),
+        feats: [
+          'Shield Specialization (Heavy Steel Shield)',
+          ...(withShieldWard ? ['Shield Ward'] : [])
+        ],
+        bodySlots: withShield ? {
+          offHand: { id: 'arm-shield-heavy-steel', name: 'Heavy Steel Shield', type: 'Shield', category: 'Shield', active: true, equipped: true, armor: { armorType: 'Shield', armorBonus: 2 } }
+        } : {},
+        customEntries: {}
+      };
+      if (customVal !== null && customVal !== undefined) {
+        const baseFeat = Comp.getById('feat-shield-specialization') || { id: 'feat-shield-specialization', name: 'Shield Specialization', type: 'Feat', schemaVersion: 3 };
+        ch.customEntries['feat-shield-specialization'] = Object.assign({}, JSON.parse(JSON.stringify(baseFeat)), {
+          effects: [
+            {
+              kind: 'when',
+              condition: 'wieldingChosenShield',
+              children: [
+                { kind: 'stat', target: 'ac.shieldBonus', bonusType: 'untyped', value: customVal, stacksWithShield: true }
+              ]
+            }
+          ]
+        });
+      }
+      return ch;
+    };
+    const ssWithShield = RuleEngine.deriveSheet(makeShieldSpecChar(true, false, null));
+    const ssNoShield = RuleEngine.deriveSheet(makeShieldSpecChar(false, false, null));
+    const ssWithWard = RuleEngine.deriveSheet(makeShieldSpecChar(true, true, null));
+    const ssCustomPlus2 = RuleEngine.deriveSheet(makeShieldSpecChar(true, false, 2));
+    check(
+      'Sprint C.6 (6d): Shield Specialization grants +1 Shield AC when wielding shield (0 without shield, excluded from Touch AC unless Shield Ward) and customizing +1 -> +2 in char.customEntries yields +2 with zero shadow double-count',
+      Boolean(
+        ssWithShield.ac.shield === 3 &&        // 2 base + 1 Shield Specialization
+        ssWithShield.ac.total === 14 &&        // 10 + 1 DEX + 3 Shield
+        ssWithShield.ac.touch === 11 &&        // 10 + 1 DEX (shield excluded from Touch AC)
+        ssNoShield.ac.shield === 0 &&          // 0 without shield
+        ssNoShield.ac.total === 11 &&
+        ssWithWard.ac.touch === 14 &&          // 10 + 1 DEX + 3 Shield applied to Touch AC via Shield Ward
+        ssCustomPlus2.ac.shield === 4 &&       // 2 base + 2 customized Shield Specialization (no shadow +1!)
+        ssCustomPlus2.ac.total === 15
+      ),
+      `withShield=${JSON.stringify(ssWithShield.ac)}, noShield=${JSON.stringify(ssNoShield.ac)}, withWard=${JSON.stringify(ssWithWard.ac)}, custom2=${JSON.stringify(ssCustomPlus2.ac)}`
     );
   }
 

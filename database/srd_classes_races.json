@@ -251,19 +251,22 @@
           "name": "Animal Companion (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Begin play with an animal companion selected from the Druid companion list."
+          "summary": "Begin play with an animal companion selected from the Druid companion list.",
+          "id": "cab-animal-companion"
         },
         {
           "name": "Nature Sense (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Gain a +2 bonus on Knowledge (nature) and Survival checks."
+          "summary": "Gain a +2 bonus on Knowledge (nature) and Survival checks.",
+          "id": "cab-nature-sense"
         },
         {
           "name": "Wild Empathy (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Improve the attitude of an animal with a 1d20 + Druid level + Cha modifier check."
+          "summary": "Improve the attitude of an animal with a 1d20 + Druid level + Cha modifier check.",
+          "id": "cab-wild-empathy"
         }
       ],
       "2": [
@@ -271,7 +274,8 @@
           "name": "Woodland Stride (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Move through any sort of undergrowth (natural thorns, briars, overgrown areas) at normal speed without taking damage."
+          "summary": "Move through any sort of undergrowth (natural thorns, briars, overgrown areas) at normal speed without taking damage.",
+          "id": "cab-woodland-stride"
         }
       ],
       "3": [
@@ -279,7 +283,8 @@
           "name": "Trackless Step (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Leave no trail in natural surroundings and cannot be tracked unless desired."
+          "summary": "Leave no trail in natural surroundings and cannot be tracked unless desired.",
+          "id": "cab-trackless-step"
         }
       ],
       "4": [
@@ -287,7 +292,8 @@
           "name": "Resist Nature's Lure (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Gain a +4 bonus on saving throws against the spell-like abilities of fey."
+          "summary": "Gain a +4 bonus on saving throws against the spell-like abilities of fey.",
+          "id": "cab-resist-natures-lure"
         }
       ],
       "5": [
@@ -1001,13 +1007,15 @@
           "name": "Detect Good (Sp)",
           "category": "Class Feature",
           "type": "Sp",
-          "summary": "Use detect good at will by concentrating."
+          "summary": "Use detect good at will by concentrating.",
+          "id": "cab-detect-good"
         },
         {
           "name": "Poison Use (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Skilled in the use of poison and never risk accidentally poisoning yourself when applying poison to a blade."
+          "summary": "Skilled in the use of poison and never risk accidentally poisoning yourself when applying poison to a blade.",
+          "id": "cab-poison-use"
         }
       ],
       "2": [
@@ -1015,7 +1023,8 @@
           "name": "Dark Blessing (Su)",
           "category": "Class Feature",
           "type": "Su",
-          "summary": "Add your Charisma bonus (if positive) to all saving throws."
+          "summary": "Add your Charisma bonus (if positive) to all saving throws.",
+          "id": "cab-dark-blessing"
         },
         {
           "name": "Smite Good 1/day (Su)",
@@ -1035,7 +1044,8 @@
           "name": "Aura of Despair (Su)",
           "category": "Class Feature",
           "type": "Su",
-          "summary": "Radiate a malign aura that causes enemies within 10 feet to take a -2 penalty on all saving throws."
+          "summary": "Radiate a malign aura that causes enemies within 10 feet to take a -2 penalty on all saving throws.",
+          "id": "cab-aura-of-despair"
         }
       ],
       "4": [
@@ -1043,7 +1053,8 @@
           "name": "Sneak Attack +1d6 (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Deal +1d6 extra precision damage when target is denied Dex to AC or flanked (stacks with other sources)."
+          "summary": "Deal +1d6 extra precision damage when target is denied Dex to AC or flanked (stacks with other sources).",
+          "id": "cab-sneak-attack"
         }
       ],
       "5": [
@@ -1065,7 +1076,8 @@
           "name": "Sneak Attack +2d6 (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Sneak Attack extra damage increases to +2d6."
+          "summary": "Sneak Attack extra damage increases to +2d6.",
+          "id": "cab-sneak-attack"
         }
       ],
       "10": [
@@ -1073,7 +1085,8 @@
           "name": "Sneak Attack +3d6 (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Sneak Attack extra damage increases to +3d6."
+          "summary": "Sneak Attack extra damage increases to +3d6.",
+          "id": "cab-sneak-attack"
         },
         {
           "name": "Smite Good 3/day (Su)",
@@ -1449,7 +1462,8 @@
           "name": "Summon Familiar",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Obtain a magical beast companion that grants special abilities to its master."
+          "summary": "Obtain a magical beast companion that grants special abilities to its master.",
+          "id": "cab-summon-familiar"
         }
       ]
     },
@@ -1937,13 +1951,15 @@
           "name": "Flurry of Blows (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Make one extra unarmed or special monk weapon attack per round as a full-attack action."
+          "summary": "Make one extra unarmed or special monk weapon attack per round as a full-attack action.",
+          "id": "cab-flurry-of-blows"
         },
         {
           "name": "Unarmed Strike",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Gain Improved Unarmed Strike as a bonus feat; deal 1d6 base lethal or nonlethal unarmed damage."
+          "summary": "Gain Improved Unarmed Strike as a bonus feat; deal 1d6 base lethal or nonlethal unarmed damage.",
+          "id": "cab-unarmed-strike-monk"
         },
         {
           "name": "Bonus Feat (1st)",
@@ -1957,7 +1973,8 @@
           "name": "Evasion (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Take no damage on a successful Reflex save against attacks that normally deal half damage."
+          "summary": "Take no damage on a successful Reflex save against attacks that normally deal half damage.",
+          "id": "cab-evasion"
         },
         {
           "name": "Bonus Feat (2nd)",
@@ -1971,13 +1988,15 @@
           "name": "Fast Movement +10 ft (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Gain a +10 ft. enhancement bonus to unarmored speed (+10 ft. every 3 Monk levels)."
+          "summary": "Gain a +10 ft. enhancement bonus to unarmored speed (+10 ft. every 3 Monk levels).",
+          "id": "cab-fast-movement"
         },
         {
           "name": "Still Mind (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Gain a +2 bonus on saving throws against spells and effects from the school of enchantment."
+          "summary": "Gain a +2 bonus on saving throws against spells and effects from the school of enchantment.",
+          "id": "cab-still-mind"
         }
       ],
       "4": [
@@ -1999,13 +2018,15 @@
           "name": "Purity of Body (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Gain immunity to all diseases except for supernatural and magical diseases."
+          "summary": "Gain immunity to all diseases except for supernatural and magical diseases.",
+          "id": "cab-purity-of-body"
         },
         {
           "name": "AC Bonus +1 (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Unarmored AC bonus increases by +1 (plus Wisdom modifier)."
+          "summary": "Unarmored AC bonus increases by +1 (plus Wisdom modifier).",
+          "id": "cab-monk-ac-bonus"
         }
       ],
       "6": [
@@ -2019,7 +2040,8 @@
           "name": "Fast Movement +20 ft (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Unarmored enhancement bonus to speed increases to +20 ft."
+          "summary": "Unarmored enhancement bonus to speed increases to +20 ft.",
+          "id": "cab-fast-movement"
         },
         {
           "name": "Slow Fall 30 ft. (Ex)",
@@ -2033,7 +2055,8 @@
           "name": "Wholeness of Body (Su)",
           "category": "Class Feature",
           "type": "Su",
-          "summary": "Heal your own wounds up to twice your Monk level in hit points per day."
+          "summary": "Heal your own wounds up to twice your Monk level in hit points per day.",
+          "id": "cab-wholeness-of-body"
         }
       ],
       "8": [
@@ -2049,13 +2072,15 @@
           "name": "Improved Evasion (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Take no damage on a successful Reflex save and only half damage even on a failed save."
+          "summary": "Take no damage on a successful Reflex save and only half damage even on a failed save.",
+          "id": "cab-improved-evasion"
         },
         {
           "name": "Fast Movement +30 ft (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Unarmored enhancement bonus to speed increases to +30 ft."
+          "summary": "Unarmored enhancement bonus to speed increases to +30 ft.",
+          "id": "cab-fast-movement"
         }
       ],
       "10": [
@@ -2075,7 +2100,8 @@
           "name": "AC Bonus +2 (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Unarmored AC bonus increases to +2 (plus Wisdom modifier)."
+          "summary": "Unarmored AC bonus increases to +2 (plus Wisdom modifier).",
+          "id": "cab-monk-ac-bonus"
         }
       ],
       "11": [
@@ -2083,7 +2109,8 @@
           "name": "Diamond Body (Su)",
           "category": "Class Feature",
           "type": "Su",
-          "summary": "Gain immunity to poisons of all kinds."
+          "summary": "Gain immunity to poisons of all kinds.",
+          "id": "cab-diamond-body"
         },
         {
           "name": "Greater Flurry (Ex)",
@@ -2097,13 +2124,15 @@
           "name": "Abundant Step (Su)",
           "category": "Class Feature",
           "type": "Su",
-          "summary": "Slip magically between spaces as if using the spell dimension door once per day (CL = 1/2 Monk level)."
+          "summary": "Slip magically between spaces as if using the spell dimension door once per day (CL = 1/2 Monk level).",
+          "id": "cab-abundant-step"
         },
         {
           "name": "Fast Movement +40 ft (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Unarmored enhancement bonus to speed increases to +40 ft."
+          "summary": "Unarmored enhancement bonus to speed increases to +40 ft.",
+          "id": "cab-fast-movement"
         },
         {
           "name": "Slow Fall 60 ft. (Ex)",
@@ -2117,7 +2146,8 @@
           "name": "Diamond Soul (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Gain spell resistance equal to current Monk level + 10."
+          "summary": "Gain spell resistance equal to current Monk level + 10.",
+          "id": "cab-diamond-soul"
         }
       ],
       "14": [
@@ -2133,19 +2163,22 @@
           "name": "Quivering Palm (Su)",
           "category": "Class Feature",
           "type": "Su",
-          "summary": "Set up fatal vibrations within the body of another creature once per week (Fort DC 10 + 1/2 Monk level + Wis mod)."
+          "summary": "Set up fatal vibrations within the body of another creature once per week (Fort DC 10 + 1/2 Monk level + Wis mod).",
+          "id": "cab-quivering-palm"
         },
         {
           "name": "Fast Movement +50 ft (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Unarmored enhancement bonus to speed increases to +50 ft."
+          "summary": "Unarmored enhancement bonus to speed increases to +50 ft.",
+          "id": "cab-fast-movement"
         },
         {
           "name": "AC Bonus +3 (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Unarmored AC bonus increases to +3 (plus Wisdom modifier)."
+          "summary": "Unarmored AC bonus increases to +3 (plus Wisdom modifier).",
+          "id": "cab-monk-ac-bonus"
         }
       ],
       "16": [
@@ -2181,7 +2214,8 @@
           "name": "Fast Movement +60 ft (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Unarmored enhancement bonus to speed increases to +60 ft."
+          "summary": "Unarmored enhancement bonus to speed increases to +60 ft.",
+          "id": "cab-fast-movement"
         },
         {
           "name": "Slow Fall 90 ft. (Ex)",
@@ -2195,7 +2229,8 @@
           "name": "Empty Body (Su)",
           "category": "Class Feature",
           "type": "Su",
-          "summary": "Assume an ethereal state for up to 1 round per Monk level per day, as if using the spell etherealness."
+          "summary": "Assume an ethereal state for up to 1 round per Monk level per day, as if using the spell etherealness.",
+          "id": "cab-empty-body"
         }
       ],
       "20": [
@@ -2203,7 +2238,8 @@
           "name": "Perfect Self (Su)",
           "category": "Class Feature",
           "type": "Su",
-          "summary": "Become a magical creature (Outsider [Native]) and gain DR 10/magic."
+          "summary": "Become a magical creature (Outsider [Native]) and gain DR 10/magic.",
+          "id": "cab-perfect-self"
         },
         {
           "name": "Slow Fall Any Distance (Ex)",
@@ -2215,7 +2251,8 @@
           "name": "AC Bonus +4 (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Unarmored AC bonus increases to +4 (plus Wisdom modifier)."
+          "summary": "Unarmored AC bonus increases to +4 (plus Wisdom modifier).",
+          "id": "cab-monk-ac-bonus"
         }
       ]
     },
@@ -2403,19 +2440,22 @@
           "name": "Sneak Attack +1d6 (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "+1d6 precision damage against flat-footed or flanked targets."
+          "summary": "+1d6 precision damage against flat-footed or flanked targets.",
+          "id": "cab-sneak-attack"
         },
         {
           "name": "Death Attack (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Study victim for 3 rounds, then sneak attack in melee to kill or paralyze (Fort DC 10 + Assassin lvl + INT mod)."
+          "summary": "Study victim for 3 rounds, then sneak attack in melee to kill or paralyze (Fort DC 10 + Assassin lvl + INT mod).",
+          "id": "cab-death-attack"
         },
         {
           "name": "Poison Use (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Never risk accidentally poisoning yourself when applying poison to a blade."
+          "summary": "Never risk accidentally poisoning yourself when applying poison to a blade.",
+          "id": "cab-poison-use"
         }
       ],
       "2": [
@@ -2429,7 +2469,8 @@
           "name": "Uncanny Dodge (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Retain Dexterity bonus to AC even if caught flat-footed."
+          "summary": "Retain Dexterity bonus to AC even if caught flat-footed.",
+          "id": "cab-uncanny-dodge"
         }
       ],
       "3": [
@@ -2437,7 +2478,8 @@
           "name": "Sneak Attack +2d6 (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Sneak attack damage bonus increases to +2d6."
+          "summary": "Sneak attack damage bonus increases to +2d6.",
+          "id": "cab-sneak-attack"
         }
       ],
       "4": [
@@ -2453,13 +2495,15 @@
           "name": "Improved Uncanny Dodge (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Can no longer be flanked except by a rogue at least 4 levels higher."
+          "summary": "Can no longer be flanked except by a rogue at least 4 levels higher.",
+          "id": "cab-improved-uncanny-dodge"
         },
         {
           "name": "Sneak Attack +3d6 (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Sneak attack damage bonus increases to +3d6."
+          "summary": "Sneak attack damage bonus increases to +3d6.",
+          "id": "cab-sneak-attack"
         }
       ],
       "6": [
@@ -2475,7 +2519,8 @@
           "name": "Sneak Attack +4d6 (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Sneak attack damage bonus increases to +4d6."
+          "summary": "Sneak attack damage bonus increases to +4d6.",
+          "id": "cab-sneak-attack"
         }
       ],
       "8": [
@@ -2489,7 +2534,8 @@
           "name": "Hide in Plain Sight (Su)",
           "category": "Special Ability",
           "type": "Su",
-          "summary": "Use the Hide skill even while being observed as long as within 10 ft. of some sort of shadow."
+          "summary": "Use the Hide skill even while being observed as long as within 10 ft. of some sort of shadow.",
+          "id": "cab-hide-in-plain-sight"
         }
       ],
       "9": [
@@ -2497,7 +2543,8 @@
           "name": "Sneak Attack +5d6 (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Sneak attack damage bonus increases to +5d6."
+          "summary": "Sneak attack damage bonus increases to +5d6.",
+          "id": "cab-sneak-attack"
         }
       ],
       "10": [
@@ -2872,13 +2919,15 @@
           "name": "Sneak Attack +1d6",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Deal +1d6 extra precision damage when target is denied Dex to AC or flanked."
+          "summary": "Deal +1d6 extra precision damage when target is denied Dex to AC or flanked.",
+          "id": "cab-sneak-attack"
         },
         {
           "name": "Trapfinding (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Use the Search skill to locate traps with a DC higher than 20 and Disable Device to bypass magic traps."
+          "summary": "Use the Search skill to locate traps with a DC higher than 20 and Disable Device to bypass magic traps.",
+          "id": "cab-trapfinding"
         }
       ],
       "2": [
@@ -2886,7 +2935,8 @@
           "name": "Evasion (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Take no damage on a successful Reflex save against attacks that normally deal half damage."
+          "summary": "Take no damage on a successful Reflex save against attacks that normally deal half damage.",
+          "id": "cab-evasion"
         }
       ],
       "3": [
@@ -2894,13 +2944,15 @@
           "name": "Sneak Attack +2d6",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Sneak Attack extra damage increases to +2d6."
+          "summary": "Sneak Attack extra damage increases to +2d6.",
+          "id": "cab-sneak-attack"
         },
         {
           "name": "Trap Sense +1 (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Gain a +1 bonus on Reflex saves and a +1 dodge bonus to AC against traps."
+          "summary": "Gain a +1 bonus on Reflex saves and a +1 dodge bonus to AC against traps.",
+          "id": "cab-trap-sense"
         }
       ],
       "4": [
@@ -2908,7 +2960,8 @@
           "name": "Uncanny Dodge (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Retain Dexterity bonus to AC even if caught flat-footed or struck by an invisible attacker."
+          "summary": "Retain Dexterity bonus to AC even if caught flat-footed or struck by an invisible attacker.",
+          "id": "cab-uncanny-dodge"
         }
       ],
       "5": [
@@ -2916,7 +2969,8 @@
           "name": "Sneak Attack +3d6",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Sneak Attack extra damage increases to +3d6."
+          "summary": "Sneak Attack extra damage increases to +3d6.",
+          "id": "cab-sneak-attack"
         }
       ],
       "6": [
@@ -2924,7 +2978,8 @@
           "name": "Trap Sense +2 (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Trap Sense bonus increases to +2."
+          "summary": "Trap Sense bonus increases to +2.",
+          "id": "cab-trap-sense"
         }
       ],
       "7": [
@@ -2932,7 +2987,8 @@
           "name": "Sneak Attack +4d6",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Sneak Attack extra damage increases to +4d6."
+          "summary": "Sneak Attack extra damage increases to +4d6.",
+          "id": "cab-sneak-attack"
         }
       ],
       "8": [
@@ -2940,7 +2996,8 @@
           "name": "Improved Uncanny Dodge (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Can no longer be flanked except by a Rogue at least 4 levels higher."
+          "summary": "Can no longer be flanked except by a Rogue at least 4 levels higher.",
+          "id": "cab-improved-uncanny-dodge"
         }
       ],
       "9": [
@@ -2948,13 +3005,15 @@
           "name": "Sneak Attack +5d6",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Sneak Attack extra damage increases to +5d6."
+          "summary": "Sneak Attack extra damage increases to +5d6.",
+          "id": "cab-sneak-attack"
         },
         {
           "name": "Trap Sense +3 (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Trap Sense bonus increases to +3."
+          "summary": "Trap Sense bonus increases to +3.",
+          "id": "cab-trap-sense"
         }
       ],
       "10": [
@@ -2970,7 +3029,8 @@
           "name": "Sneak Attack +6d6",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Sneak Attack extra damage increases to +6d6."
+          "summary": "Sneak Attack extra damage increases to +6d6.",
+          "id": "cab-sneak-attack"
         }
       ],
       "12": [
@@ -2978,7 +3038,8 @@
           "name": "Trap Sense +4 (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Trap Sense bonus increases to +4."
+          "summary": "Trap Sense bonus increases to +4.",
+          "id": "cab-trap-sense"
         }
       ],
       "13": [
@@ -2986,7 +3047,8 @@
           "name": "Sneak Attack +7d6",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Sneak Attack extra damage increases to +7d6."
+          "summary": "Sneak Attack extra damage increases to +7d6.",
+          "id": "cab-sneak-attack"
         },
         {
           "name": "Special Ability (Ex)",
@@ -3000,13 +3062,15 @@
           "name": "Sneak Attack +8d6",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Sneak Attack extra damage increases to +8d6."
+          "summary": "Sneak Attack extra damage increases to +8d6.",
+          "id": "cab-sneak-attack"
         },
         {
           "name": "Trap Sense +5 (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Trap Sense bonus increases to +5."
+          "summary": "Trap Sense bonus increases to +5.",
+          "id": "cab-trap-sense"
         }
       ],
       "16": [
@@ -3022,7 +3086,8 @@
           "name": "Sneak Attack +9d6",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Sneak Attack extra damage increases to +9d6."
+          "summary": "Sneak Attack extra damage increases to +9d6.",
+          "id": "cab-sneak-attack"
         }
       ],
       "18": [
@@ -3030,7 +3095,8 @@
           "name": "Trap Sense +6 (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Trap Sense bonus increases to +6."
+          "summary": "Trap Sense bonus increases to +6.",
+          "id": "cab-trap-sense"
         }
       ],
       "19": [
@@ -3038,7 +3104,8 @@
           "name": "Sneak Attack +10d6",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Sneak Attack extra damage increases to +10d6."
+          "summary": "Sneak Attack extra damage increases to +10d6.",
+          "id": "cab-sneak-attack"
         },
         {
           "name": "Special Ability (Ex)",
@@ -3366,7 +3433,8 @@
           "name": "Imbue Arrow (Sp)",
           "category": "Special Ability",
           "type": "Sp",
-          "summary": "Place an area spell upon an arrow; when the arrow is fired, the spell's area is centered on where the arrow lands."
+          "summary": "Place an area spell upon an arrow; when the arrow is fired, the spell's area is centered on where the arrow lands.",
+          "id": "cab-imbue-arrow"
         }
       ],
       "3": [
@@ -3382,7 +3450,8 @@
           "name": "Seeker Arrow (Sp)",
           "category": "Special Ability",
           "type": "Sp",
-          "summary": "1/day: Launch an arrow at a known target within range that travels around corners and ignores cover/concealment."
+          "summary": "1/day: Launch an arrow at a known target within range that travels around corners and ignores cover/concealment.",
+          "id": "cab-seeker-arrow"
         }
       ],
       "5": [
@@ -3398,7 +3467,8 @@
           "name": "Phase Arrow (Sp)",
           "category": "Special Ability",
           "type": "Sp",
-          "summary": "1/day: Launch an arrow that travels in a straight line through any nonmagical barrier or wall, ignoring cover, concealment, and armor/shield modifiers."
+          "summary": "1/day: Launch an arrow that travels in a straight line through any nonmagical barrier or wall, ignoring cover, concealment, and armor/shield modifiers.",
+          "id": "cab-phase-arrow"
         }
       ],
       "7": [
@@ -3414,7 +3484,8 @@
           "name": "Hail of Arrows (Sp)",
           "category": "Special Ability",
           "type": "Sp",
-          "summary": "1/day: In lieu of regular attacks, fire an arrow at each and every target within range (up to 1 target per Arcane Archer level)."
+          "summary": "1/day: In lieu of regular attacks, fire an arrow at each and every target within range (up to 1 target per Arcane Archer level).",
+          "id": "cab-hail-of-arrows"
         }
       ],
       "9": [
@@ -3430,7 +3501,8 @@
           "name": "Arrow of Death (Sp)",
           "category": "Special Ability",
           "type": "Sp",
-          "summary": "1/day: Create a slaying arrow that forces the target to make a DC 20 Fortitude save or be slain instantly."
+          "summary": "1/day: Create a slaying arrow that forces the target to make a DC 20 Fortitude save or be slain instantly.",
+          "id": "cab-arrow-of-death"
         }
       ]
     },
@@ -3527,13 +3599,15 @@
           "name": "Scribe Scroll",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Gain Scribe Scroll as a bonus feat."
+          "summary": "Gain Scribe Scroll as a bonus feat.",
+          "id": "cab-scribe-scroll"
         },
         {
           "name": "Summon Familiar",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Obtain a magical beast companion that grants special abilities to its master."
+          "summary": "Obtain a magical beast companion that grants special abilities to its master.",
+          "id": "cab-summon-familiar"
         }
       ],
       "5": [
@@ -3983,13 +4057,15 @@
           "name": "Bardic Music (Su)",
           "category": "Class Feature",
           "type": "Su",
-          "summary": "Use Bardic Music effects once per day per Bard level."
+          "summary": "Use Bardic Music effects once per day per Bard level.",
+          "id": "cab-bardic-music"
         },
         {
           "name": "Bardic Knowledge (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Make a Bard level + Int modifier check to recall relevant lore regarding notable people, places, or items."
+          "summary": "Make a Bard level + Int modifier check to recall relevant lore regarding notable people, places, or items.",
+          "id": "cab-bardic-knowledge"
         },
         {
           "name": "Countersong (Su)",
@@ -5024,7 +5100,8 @@
           "name": "Sneak Attack +1d6 (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Sneak attack damage increases by +1d6 (stacks with other sources)."
+          "summary": "Sneak attack damage increases by +1d6 (stacks with other sources).",
+          "id": "cab-sneak-attack"
         },
         {
           "name": "+1 Level of Existing Arcane Spellcasting Class",
@@ -5052,7 +5129,8 @@
           "name": "Sneak Attack +2d6 (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Sneak attack damage bonus reaches +2d6."
+          "summary": "Sneak attack damage bonus reaches +2d6.",
+          "id": "cab-sneak-attack"
         },
         {
           "name": "+1 Level of Existing Arcane Spellcasting Class",
@@ -5080,7 +5158,8 @@
           "name": "Sneak Attack +3d6 (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Sneak attack damage bonus reaches +3d6."
+          "summary": "Sneak attack damage bonus reaches +3d6.",
+          "id": "cab-sneak-attack"
         },
         {
           "name": "+1 Level of Existing Arcane Spellcasting Class",
@@ -5108,7 +5187,8 @@
           "name": "Sneak Attack +4d6 (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Sneak attack damage bonus reaches +4d6."
+          "summary": "Sneak attack damage bonus reaches +4d6.",
+          "id": "cab-sneak-attack"
         },
         {
           "name": "+1 Level of Existing Arcane Spellcasting Class",
@@ -5136,7 +5216,8 @@
           "name": "Sneak Attack +5d6 (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Sneak attack damage bonus reaches +5d6."
+          "summary": "Sneak attack damage bonus reaches +5d6.",
+          "id": "cab-sneak-attack"
         },
         {
           "name": "+1 Level of Existing Arcane Spellcasting Class",
@@ -5318,13 +5399,15 @@
           "name": "Detect Evil (Sp)",
           "category": "Class Feature",
           "type": "Sp",
-          "summary": "Use detect evil at will by concentrating."
+          "summary": "Use detect evil at will by concentrating.",
+          "id": "cab-detect-evil"
         },
         {
           "name": "Smite Evil 1/day (Su)",
           "category": "Class Feature",
           "type": "Su",
-          "summary": "Add Cha bonus to attack roll and Paladin level to damage roll against an evil foe once per day."
+          "summary": "Add Cha bonus to attack roll and Paladin level to damage roll against an evil foe once per day.",
+          "id": "cab-smite-evil"
         }
       ],
       "2": [
@@ -5332,13 +5415,15 @@
           "name": "Divine Grace (Su)",
           "category": "Class Feature",
           "type": "Su",
-          "summary": "Add your Charisma bonus (if positive) to all saving throws."
+          "summary": "Add your Charisma bonus (if positive) to all saving throws.",
+          "id": "cab-divine-grace"
         },
         {
           "name": "Lay on Hands (Su)",
           "category": "Class Feature",
           "type": "Su",
-          "summary": "Heal wounds equal to Paladin level x Charisma bonus in hit points per day."
+          "summary": "Heal wounds equal to Paladin level x Charisma bonus in hit points per day.",
+          "id": "cab-lay-on-hands"
         }
       ],
       "3": [
@@ -5346,13 +5431,15 @@
           "name": "Aura of Courage (Su)",
           "category": "Class Feature",
           "type": "Su",
-          "summary": "Immune to fear; allies within 10 ft. gain a +4 morale bonus on saves against fear."
+          "summary": "Immune to fear; allies within 10 ft. gain a +4 morale bonus on saves against fear.",
+          "id": "cab-aura-of-courage"
         },
         {
           "name": "Divine Health (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Immunity to all diseases, including supernatural and magical diseases."
+          "summary": "Immunity to all diseases, including supernatural and magical diseases.",
+          "id": "cab-divine-health"
         }
       ],
       "4": [
@@ -5360,7 +5447,8 @@
           "name": "Turn Undead (Su)",
           "category": "Class Feature",
           "type": "Su",
-          "summary": "Channel positive energy to turn undead as a Cleric of Paladin level - 3 (3 + Cha mod/day)."
+          "summary": "Channel positive energy to turn undead as a Cleric of Paladin level - 3 (3 + Cha mod/day).",
+          "id": "cab-turn-undead"
         }
       ],
       "5": [
@@ -5368,13 +5456,15 @@
           "name": "Special Mount (Sp)",
           "category": "Class Feature",
           "type": "Sp",
-          "summary": "Call an unusually intelligent, strong, and loyal steed to serve your crusade."
+          "summary": "Call an unusually intelligent, strong, and loyal steed to serve your crusade.",
+          "id": "cab-special-mount"
         },
         {
           "name": "Smite Evil 2/day (Su)",
           "category": "Class Feature",
           "type": "Su",
-          "summary": "Use Smite Evil up to 2 times per day."
+          "summary": "Use Smite Evil up to 2 times per day.",
+          "id": "cab-smite-evil"
         }
       ],
       "6": [
@@ -5382,7 +5472,8 @@
           "name": "Remove Disease 1/week (Sp)",
           "category": "Class Feature",
           "type": "Sp",
-          "summary": "Produce a remove disease effect once per week."
+          "summary": "Produce a remove disease effect once per week.",
+          "id": "cab-remove-disease"
         }
       ],
       "9": [
@@ -5390,7 +5481,8 @@
           "name": "Remove Disease 2/week (Sp)",
           "category": "Class Feature",
           "type": "Sp",
-          "summary": "Produce a remove disease effect up to 2 times per week."
+          "summary": "Produce a remove disease effect up to 2 times per week.",
+          "id": "cab-remove-disease"
         }
       ],
       "10": [
@@ -5398,7 +5490,8 @@
           "name": "Smite Evil 3/day (Su)",
           "category": "Class Feature",
           "type": "Su",
-          "summary": "Use Smite Evil up to 3 times per day."
+          "summary": "Use Smite Evil up to 3 times per day.",
+          "id": "cab-smite-evil"
         }
       ],
       "12": [
@@ -5406,7 +5499,8 @@
           "name": "Remove Disease 3/week (Sp)",
           "category": "Class Feature",
           "type": "Sp",
-          "summary": "Produce a remove disease effect up to 3 times per week."
+          "summary": "Produce a remove disease effect up to 3 times per week.",
+          "id": "cab-remove-disease"
         }
       ],
       "15": [
@@ -5414,13 +5508,15 @@
           "name": "Smite Evil 4/day (Su)",
           "category": "Class Feature",
           "type": "Su",
-          "summary": "Use Smite Evil up to 4 times per day."
+          "summary": "Use Smite Evil up to 4 times per day.",
+          "id": "cab-smite-evil"
         },
         {
           "name": "Remove Disease 4/week (Sp)",
           "category": "Class Feature",
           "type": "Sp",
-          "summary": "Produce a remove disease effect up to 4 times per week."
+          "summary": "Produce a remove disease effect up to 4 times per week.",
+          "id": "cab-remove-disease"
         }
       ],
       "18": [
@@ -5428,7 +5524,8 @@
           "name": "Remove Disease 5/week (Sp)",
           "category": "Class Feature",
           "type": "Sp",
-          "summary": "Produce a remove disease effect up to 5 times per week."
+          "summary": "Produce a remove disease effect up to 5 times per week.",
+          "id": "cab-remove-disease"
         }
       ],
       "20": [
@@ -5436,7 +5533,8 @@
           "name": "Smite Evil 5/day (Su)",
           "category": "Class Feature",
           "type": "Su",
-          "summary": "Use Smite Evil up to 5 times per day."
+          "summary": "Use Smite Evil up to 5 times per day.",
+          "id": "cab-smite-evil"
         }
       ]
     },
@@ -5745,7 +5843,8 @@
           "name": "Elude Touch (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Add your Charisma bonus as a bonus to Touch AC (up to your normal AC)."
+          "summary": "Add your Charisma bonus as a bonus to Touch AC (up to your normal AC).",
+          "id": "cab-elude-touch"
         }
       ],
       "3": [
@@ -6400,7 +6499,8 @@
           "name": "Turn Undead (Su)",
           "category": "Special Ability",
           "type": "Su",
-          "summary": "Channel positive energy to turn or destroy undead 3+Cha times/day"
+          "summary": "Channel positive energy to turn or destroy undead 3+Cha times/day",
+          "id": "cab-turn-undead"
         }
       ]
     },
@@ -6774,7 +6874,8 @@
           "name": "Uncanny Dodge (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Retain Dexterity bonus to AC even if caught flat-footed."
+          "summary": "Retain Dexterity bonus to AC even if caught flat-footed.",
+          "id": "cab-uncanny-dodge"
         }
       ],
       "3": [
@@ -6796,7 +6897,8 @@
           "name": "Trap Sense +1 (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "+1 bonus on Reflex saves and AC against traps."
+          "summary": "+1 bonus on Reflex saves and AC against traps.",
+          "id": "cab-trap-sense"
         }
       ],
       "5": [
@@ -6818,7 +6920,8 @@
           "name": "Improved Uncanny Dodge (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Can no longer be flanked."
+          "summary": "Can no longer be flanked.",
+          "id": "cab-improved-uncanny-dodge"
         }
       ],
       "7": [
@@ -6846,7 +6949,8 @@
           "name": "Trap Sense +2 (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Trap Sense bonus increases to +2."
+          "summary": "Trap Sense bonus increases to +2.",
+          "id": "cab-trap-sense"
         }
       ],
       "9": [
@@ -7093,7 +7197,8 @@
           "name": "Fighter Bonus Feat",
           "category": "Class Feature",
           "type": "Special",
-          "summary": "Gain a bonus combat-oriented feat from the Fighter bonus feat list."
+          "summary": "Gain a bonus combat-oriented feat from the Fighter bonus feat list.",
+          "id": "cab-fighter-bonus-feat"
         }
       ],
       "2": [
@@ -7101,7 +7206,8 @@
           "name": "Fighter Bonus Feat",
           "category": "Class Feature",
           "type": "Special",
-          "summary": "Gain a bonus combat-oriented feat from the Fighter bonus feat list."
+          "summary": "Gain a bonus combat-oriented feat from the Fighter bonus feat list.",
+          "id": "cab-fighter-bonus-feat"
         }
       ],
       "4": [
@@ -7109,7 +7215,8 @@
           "name": "Fighter Bonus Feat",
           "category": "Class Feature",
           "type": "Special",
-          "summary": "Gain a bonus combat-oriented feat from the Fighter bonus feat list."
+          "summary": "Gain a bonus combat-oriented feat from the Fighter bonus feat list.",
+          "id": "cab-fighter-bonus-feat"
         }
       ],
       "6": [
@@ -7117,7 +7224,8 @@
           "name": "Fighter Bonus Feat",
           "category": "Class Feature",
           "type": "Special",
-          "summary": "Gain a bonus combat-oriented feat from the Fighter bonus feat list."
+          "summary": "Gain a bonus combat-oriented feat from the Fighter bonus feat list.",
+          "id": "cab-fighter-bonus-feat"
         }
       ],
       "8": [
@@ -7125,7 +7233,8 @@
           "name": "Fighter Bonus Feat",
           "category": "Class Feature",
           "type": "Special",
-          "summary": "Gain a bonus combat-oriented feat from the Fighter bonus feat list."
+          "summary": "Gain a bonus combat-oriented feat from the Fighter bonus feat list.",
+          "id": "cab-fighter-bonus-feat"
         }
       ],
       "10": [
@@ -7133,7 +7242,8 @@
           "name": "Fighter Bonus Feat",
           "category": "Class Feature",
           "type": "Special",
-          "summary": "Gain a bonus combat-oriented feat from the Fighter bonus feat list."
+          "summary": "Gain a bonus combat-oriented feat from the Fighter bonus feat list.",
+          "id": "cab-fighter-bonus-feat"
         }
       ],
       "12": [
@@ -7141,7 +7251,8 @@
           "name": "Fighter Bonus Feat",
           "category": "Class Feature",
           "type": "Special",
-          "summary": "Gain a bonus combat-oriented feat from the Fighter bonus feat list."
+          "summary": "Gain a bonus combat-oriented feat from the Fighter bonus feat list.",
+          "id": "cab-fighter-bonus-feat"
         }
       ],
       "14": [
@@ -7149,7 +7260,8 @@
           "name": "Fighter Bonus Feat",
           "category": "Class Feature",
           "type": "Special",
-          "summary": "Gain a bonus combat-oriented feat from the Fighter bonus feat list."
+          "summary": "Gain a bonus combat-oriented feat from the Fighter bonus feat list.",
+          "id": "cab-fighter-bonus-feat"
         }
       ],
       "16": [
@@ -7157,7 +7269,8 @@
           "name": "Fighter Bonus Feat",
           "category": "Class Feature",
           "type": "Special",
-          "summary": "Gain a bonus combat-oriented feat from the Fighter bonus feat list."
+          "summary": "Gain a bonus combat-oriented feat from the Fighter bonus feat list.",
+          "id": "cab-fighter-bonus-feat"
         }
       ],
       "18": [
@@ -7165,7 +7278,8 @@
           "name": "Fighter Bonus Feat",
           "category": "Class Feature",
           "type": "Special",
-          "summary": "Gain a bonus combat-oriented feat from the Fighter bonus feat list."
+          "summary": "Gain a bonus combat-oriented feat from the Fighter bonus feat list.",
+          "id": "cab-fighter-bonus-feat"
         }
       ],
       "20": [
@@ -7173,7 +7287,8 @@
           "name": "Fighter Bonus Feat",
           "category": "Class Feature",
           "type": "Special",
-          "summary": "Gain a bonus combat-oriented feat from the Fighter bonus feat list."
+          "summary": "Gain a bonus combat-oriented feat from the Fighter bonus feat list.",
+          "id": "cab-fighter-bonus-feat"
         }
       ]
     },
@@ -7274,7 +7389,8 @@
           "name": "Summon Familiar",
           "category": "Special Ability",
           "type": "Sp",
-          "summary": "Summon a magical animal companion"
+          "summary": "Summon a magical animal companion",
+          "id": "cab-summon-familiar"
         }
       ]
     },
@@ -7850,19 +7966,22 @@
           "name": "1st Favored Enemy (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Select a creature type to gain a +2 bonus on Bluff, Listen, Sense Motive, Spot, Survival, and weapon damage rolls."
+          "summary": "Select a creature type to gain a +2 bonus on Bluff, Listen, Sense Motive, Spot, Survival, and weapon damage rolls.",
+          "id": "cab-favored-enemy"
         },
         {
           "name": "Track",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Gain Track as a bonus feat."
+          "summary": "Gain Track as a bonus feat.",
+          "id": "cab-track"
         },
         {
           "name": "Wild Empathy (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Improve the attitude of an animal with a 1d20 + Ranger level + Cha modifier check."
+          "summary": "Improve the attitude of an animal with a 1d20 + Ranger level + Cha modifier check.",
+          "id": "cab-wild-empathy"
         }
       ],
       "2": [
@@ -7870,7 +7989,8 @@
           "name": "Combat Style (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Choose Archery (Rapid Shot) or Two-Weapon Combat (Two-Weapon Fighting) while in light or no armor."
+          "summary": "Choose Archery (Rapid Shot) or Two-Weapon Combat (Two-Weapon Fighting) while in light or no armor.",
+          "id": "cab-combat-style"
         }
       ],
       "3": [
@@ -7878,7 +7998,8 @@
           "name": "Endurance",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Gain Endurance as a bonus feat."
+          "summary": "Gain Endurance as a bonus feat.",
+          "id": "cab-endurance"
         }
       ],
       "4": [
@@ -7886,7 +8007,8 @@
           "name": "Animal Companion (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Gain an animal companion (effective Druid level equals 1/2 Ranger level)."
+          "summary": "Gain an animal companion (effective Druid level equals 1/2 Ranger level).",
+          "id": "cab-animal-companion"
         }
       ],
       "5": [
@@ -7894,7 +8016,8 @@
           "name": "2nd Favored Enemy (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Select a second favored enemy (+2) and increase an existing favored enemy bonus by +2."
+          "summary": "Select a second favored enemy (+2) and increase an existing favored enemy bonus by +2.",
+          "id": "cab-favored-enemy"
         }
       ],
       "6": [
@@ -7902,7 +8025,8 @@
           "name": "Improved Combat Style (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Gain Manyshot (Archery) or Improved Two-Weapon Fighting (Two-Weapon Combat) while in light or no armor."
+          "summary": "Gain Manyshot (Archery) or Improved Two-Weapon Fighting (Two-Weapon Combat) while in light or no armor.",
+          "id": "cab-improved-combat-style"
         }
       ],
       "7": [
@@ -7910,7 +8034,8 @@
           "name": "Woodland Stride (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Move through any sort of natural undergrowth at normal speed without taking damage."
+          "summary": "Move through any sort of natural undergrowth at normal speed without taking damage.",
+          "id": "cab-woodland-stride"
         }
       ],
       "8": [
@@ -7926,7 +8051,8 @@
           "name": "Evasion (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Take no damage on a successful Reflex save against attacks that normally deal half damage while in light or no armor."
+          "summary": "Take no damage on a successful Reflex save against attacks that normally deal half damage while in light or no armor.",
+          "id": "cab-evasion"
         }
       ],
       "10": [
@@ -7934,7 +8060,8 @@
           "name": "3rd Favored Enemy (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Select a third favored enemy (+2) and increase an existing favored enemy bonus by +2."
+          "summary": "Select a third favored enemy (+2) and increase an existing favored enemy bonus by +2.",
+          "id": "cab-favored-enemy"
         }
       ],
       "11": [
@@ -7942,7 +8069,8 @@
           "name": "Combat Style Mastery (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Gain Improved Precise Shot (Archery) or Greater Two-Weapon Fighting (Two-Weapon Combat) while in light or no armor."
+          "summary": "Gain Improved Precise Shot (Archery) or Greater Two-Weapon Fighting (Two-Weapon Combat) while in light or no armor.",
+          "id": "cab-combat-style-mastery"
         }
       ],
       "13": [
@@ -7950,7 +8078,8 @@
           "name": "Camouflage (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Use the Hide skill in any sort of natural terrain, even if the terrain doesn't grant cover or concealment."
+          "summary": "Use the Hide skill in any sort of natural terrain, even if the terrain doesn't grant cover or concealment.",
+          "id": "cab-camouflage"
         }
       ],
       "15": [
@@ -7958,7 +8087,8 @@
           "name": "4th Favored Enemy (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Select a fourth favored enemy (+2) and increase an existing favored enemy bonus by +2."
+          "summary": "Select a fourth favored enemy (+2) and increase an existing favored enemy bonus by +2.",
+          "id": "cab-favored-enemy"
         }
       ],
       "17": [
@@ -7966,7 +8096,8 @@
           "name": "Hide in Plain Sight (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Use the Hide skill in any sort of natural terrain even while being observed."
+          "summary": "Use the Hide skill in any sort of natural terrain even while being observed.",
+          "id": "cab-hide-in-plain-sight"
         }
       ],
       "20": [
@@ -7974,7 +8105,8 @@
           "name": "5th Favored Enemy (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Select a fifth favored enemy (+2) and increase an existing favored enemy bonus by +2."
+          "summary": "Select a fifth favored enemy (+2) and increase an existing favored enemy bonus by +2.",
+          "id": "cab-favored-enemy"
         }
       ]
     },
@@ -8277,13 +8409,15 @@
           "name": "Fast Movement (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Land speed is faster than the norm by +10 feet when wearing no, light, or medium armor."
+          "summary": "Land speed is faster than the norm by +10 feet when wearing no, light, or medium armor.",
+          "id": "cab-fast-movement"
         },
         {
           "name": "Rage 1/day (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Gain +4 Str, +4 Con, +2 morale on Will saves, and -2 AC for 3 + (newly improved) Con modifier rounds."
+          "summary": "Gain +4 Str, +4 Con, +2 morale on Will saves, and -2 AC for 3 + (newly improved) Con modifier rounds.",
+          "id": "cab-rage"
         }
       ],
       "2": [
@@ -8291,7 +8425,8 @@
           "name": "Uncanny Dodge (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Retain your Dexterity bonus to AC even if caught flat-footed or struck by an invisible attacker."
+          "summary": "Retain your Dexterity bonus to AC even if caught flat-footed or struck by an invisible attacker.",
+          "id": "cab-uncanny-dodge"
         }
       ],
       "3": [
@@ -8299,7 +8434,8 @@
           "name": "Trap Sense +1 (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Gain a +1 bonus on Reflex saves and a +1 dodge bonus to AC against traps."
+          "summary": "Gain a +1 bonus on Reflex saves and a +1 dodge bonus to AC against traps.",
+          "id": "cab-trap-sense"
         }
       ],
       "4": [
@@ -8307,7 +8443,8 @@
           "name": "Rage 2/day (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Enter a rage up to 2 times per day."
+          "summary": "Enter a rage up to 2 times per day.",
+          "id": "cab-rage"
         }
       ],
       "5": [
@@ -8315,7 +8452,8 @@
           "name": "Improved Uncanny Dodge (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Can no longer be flanked except by a Rogue at least 4 levels higher."
+          "summary": "Can no longer be flanked except by a Rogue at least 4 levels higher.",
+          "id": "cab-improved-uncanny-dodge"
         }
       ],
       "6": [
@@ -8323,7 +8461,8 @@
           "name": "Trap Sense +2 (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Trap Sense bonus increases to +2."
+          "summary": "Trap Sense bonus increases to +2.",
+          "id": "cab-trap-sense"
         }
       ],
       "7": [
@@ -8339,7 +8478,8 @@
           "name": "Rage 3/day (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Enter a rage up to 3 times per day."
+          "summary": "Enter a rage up to 3 times per day.",
+          "id": "cab-rage"
         }
       ],
       "9": [
@@ -8347,7 +8487,8 @@
           "name": "Trap Sense +3 (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Trap Sense bonus increases to +3."
+          "summary": "Trap Sense bonus increases to +3.",
+          "id": "cab-trap-sense"
         }
       ],
       "10": [
@@ -8363,7 +8504,8 @@
           "name": "Greater Rage (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Bonuses during rage increase to +6 Strength, +6 Constitution, and +3 morale on Will saves."
+          "summary": "Bonuses during rage increase to +6 Strength, +6 Constitution, and +3 morale on Will saves.",
+          "id": "cab-rage"
         }
       ],
       "12": [
@@ -8371,13 +8513,15 @@
           "name": "Rage 4/day (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Enter a rage up to 4 times per day."
+          "summary": "Enter a rage up to 4 times per day.",
+          "id": "cab-rage"
         },
         {
           "name": "Trap Sense +4 (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Trap Sense bonus increases to +4."
+          "summary": "Trap Sense bonus increases to +4.",
+          "id": "cab-trap-sense"
         }
       ],
       "13": [
@@ -8393,7 +8537,8 @@
           "name": "Indomitable Will (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "While in a rage, gain a +4 bonus on Will saves to resist enchantment spells."
+          "summary": "While in a rage, gain a +4 bonus on Will saves to resist enchantment spells.",
+          "id": "cab-indomitable-will"
         }
       ],
       "15": [
@@ -8401,7 +8546,8 @@
           "name": "Trap Sense +5 (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Trap Sense bonus increases to +5."
+          "summary": "Trap Sense bonus increases to +5.",
+          "id": "cab-trap-sense"
         }
       ],
       "16": [
@@ -8415,7 +8561,8 @@
           "name": "Rage 5/day (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Enter a rage up to 5 times per day."
+          "summary": "Enter a rage up to 5 times per day.",
+          "id": "cab-rage"
         }
       ],
       "17": [
@@ -8431,7 +8578,8 @@
           "name": "Trap Sense +6 (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Trap Sense bonus increases to +6."
+          "summary": "Trap Sense bonus increases to +6.",
+          "id": "cab-trap-sense"
         }
       ],
       "19": [
@@ -8447,13 +8595,15 @@
           "name": "Mighty Rage (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Bonuses during rage increase to +8 Strength, +8 Constitution, and +4 morale on Will saves."
+          "summary": "Bonuses during rage increase to +8 Strength, +8 Constitution, and +4 morale on Will saves.",
+          "id": "cab-rage"
         },
         {
           "name": "Rage 6/day (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Enter a rage up to 6 times per day."
+          "summary": "Enter a rage up to 6 times per day.",
+          "id": "cab-rage"
         }
       ]
     },
@@ -8537,19 +8687,22 @@
           "name": "Mind Blade (Su)",
           "category": "Class Feature",
           "type": "Su",
-          "summary": "Materialize a semisolid blade of psychic energy (1d6 slashing/piercing, 19-20/x2) as a move action."
+          "summary": "Materialize a semisolid blade of psychic energy (1d6 slashing/piercing, 19-20/x2) as a move action.",
+          "id": "cab-mind-blade"
         },
         {
           "name": "Weapon Focus (Mind Blade)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Gain Weapon Focus (mind blade) as a bonus feat."
+          "summary": "Gain Weapon Focus (mind blade) as a bonus feat.",
+          "id": "cab-weapon-focus-mind-blade"
         },
         {
           "name": "Wild Talent",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Gain Wild Talent as a bonus feat."
+          "summary": "Gain Wild Talent as a bonus feat.",
+          "id": "cab-wild-talent"
         }
       ],
       "2": [
@@ -8601,7 +8754,8 @@
           "name": "Speed of Thought",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Gain Speed of Thought as a bonus feat."
+          "summary": "Gain Speed of Thought as a bonus feat.",
+          "id": "cab-speed-of-thought"
         }
       ],
       "7": [
@@ -8625,13 +8779,15 @@
           "name": "Bladewind (Su)",
           "category": "Class Feature",
           "type": "Su",
-          "summary": "Expend your psionic focus as a full attack to fragment your mind blade and make one melee attack against each adjacent opponent."
+          "summary": "Expend your psionic focus as a full attack to fragment your mind blade and make one melee attack against each adjacent opponent.",
+          "id": "cab-bladewind"
         },
         {
           "name": "Greater Weapon Focus (Mind Blade)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Gain Greater Weapon Focus (mind blade) as a bonus feat."
+          "summary": "Gain Greater Weapon Focus (mind blade) as a bonus feat.",
+          "id": "cab-greater-weapon-focus-mind-blade"
         }
       ],
       "10": [
@@ -8663,7 +8819,8 @@
           "name": "Knife to the Soul (Su)",
           "category": "Class Feature",
           "type": "Su",
-          "summary": "When you execute a Psychic Strike, you can sacrifice 1d8 of Psychic Strike damage per point to deal Intelligence, Wisdom, or Charisma damage."
+          "summary": "When you execute a Psychic Strike, you can sacrifice 1d8 of Psychic Strike damage per point to deal Intelligence, Wisdom, or Charisma damage.",
+          "id": "cab-knife-to-the-soul"
         }
       ],
       "14": [
@@ -8780,7 +8937,16 @@
         1
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-flurry",
+        "type": "attack",
+        "attackMode": "extra",
+        "extraKind": "flurry",
+        "count": 1,
+        "penalty": -2
+      }
+    ],
     "shortDescription": "When unarmored, a monk may strike with a flurry of blows at the expense of accuracy. When doing so, she may make one extra attack in a round at her highest base attack bonus, but this attack takes a –2 penalty, as does…",
     "text": "When unarmored, a monk may strike with a flurry of blows at the expense of accuracy. When doing so, she may make one extra attack in a round at her highest base attack bonus, but this attack takes a –2 penalty, as does each other attack made that round. The resulting modified base attack bonuses are shown in the Flurry of Blows Attack Bonus column on Table: The Monk. This penalty applies for 1 round, so it also affects attacks of opportunity the monk might make before her next action. When a monk reaches 5th level, the penalty lessens to –1, and at 9th level it disappears. A monk must use a full attack action to strike with a flurry of blows.\n\nWhen using flurry of blows, a monk may attack only with unarmed strikes or with special monk weapons (kama, nunchaku, quarterstaff, sai, shuriken, and siangham). She may attack with unarmed strikes and special monk weapons interchangeably as desired. When using weapons as part of a flurry of blows, a monk applies her Strength bonus (not Str bonus x1-1/2 or x1/2) to her damage rolls for all successful attacks, whether she wields a weapon in one or both hands. The monk can’t use any weapon other than a special monk weapon as part of a flurry of blows.\n\nIn the case of the quarterstaff, each end counts as a separate weapon for the purpose of using the flurry of blows ability. Even though the quarterstaff requires two hands to use, a monk may still intersperse unarmed strikes with quarterstaff strikes, assuming that she has enough attacks in her flurry of blows routine to do so.\n\nWhen a monk reaches 11th level, her flurry of blows ability improves. In addition to the standard single extra attack she gets from flurry of blows, she gets a second extra attack at her full base attack bonus.",
     "tags": [
@@ -9112,7 +9278,15 @@
         11
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-diamond-body",
+        "type": "defense",
+        "mode": "Immunity",
+        "what": "Poison",
+        "text": "Immune to all poisons"
+      }
+    ],
     "shortDescription": "A a monk gains immunity to poisons of all kinds.",
     "text": "A a monk gains immunity to poisons of all kinds.",
     "tags": [
@@ -9281,7 +9455,15 @@
         3
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-aoc-imm",
+        "type": "defense",
+        "mode": "Immunity",
+        "what": "Fear",
+        "text": "Immune to Fear (allies within 10 ft. gain +4 Morale vs Fear)"
+      }
+    ],
     "shortDescription": "A paladin is immune to fear (magical or otherwise). Each ally within 10 feet of her gains a +4 morale bonus on saving throws against fear effects. This ability functions while the paladin is conscious, but not if she is…",
     "text": "A paladin is immune to fear (magical or otherwise). Each ally within 10 feet of her gains a +4 morale bonus on saving throws against fear effects.\n\nThis ability functions while the paladin is conscious, but not if she is unconscious or dead.",
     "tags": [
@@ -9312,7 +9494,42 @@
         4
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-trap-sense-when",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "br-trap-sense",
+            "condKind": "situational",
+            "condText": "vs. Traps",
+            "effects": [
+              {
+                "id": "ef-ts-ref",
+                "type": "stat",
+                "targets": [
+                  "save.ref"
+                ],
+                "mode": "formula",
+                "formula": "max(1, floor(@classLevel / 3))",
+                "btype": "Untyped"
+              },
+              {
+                "id": "ef-ts-ac",
+                "type": "stat",
+                "targets": [
+                  "ac.dodge"
+                ],
+                "mode": "formula",
+                "formula": "max(1, floor(@classLevel / 3))",
+                "btype": "Dodge"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "+1 bonus on Reflex saves made to avoid traps and a +1 dodge bonus to AC against attacks made by traps. These bonuses rise by +1 every three levels thereafter (6th, 9th, 12th, 15th, and 18th level). Trap sense bonuses ga…",
     "text": "+1 bonus on Reflex saves made to avoid traps and a +1 dodge bonus to AC against attacks made by traps. These bonuses rise by +1 every three levels thereafter (6th, 9th, 12th, 15th, and 18th level). Trap sense bonuses gained from multiple classes stack.",
     "tags": [
@@ -9358,11 +9575,51 @@
         1
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-bm-res",
+        "type": "resource",
+        "name": "Bardic Music",
+        "varKey": "bardic_music_uses",
+        "resMode": "spend",
+        "maxFormula": "max(1, @bardLevel)",
+        "reset": "perDay",
+        "unit": "uses",
+        "recharge": {
+          "period": "day"
+        }
+      }
+    ],
     "shortDescription": "Once per day per bard level, a bard can use his song or poetics to produce magical effects on those around him (usually including himself, if desired). While these abilities fall under the category of bardic music and t…",
     "text": "Once per day per bard level, a bard can use his song or poetics to produce magical effects on those around him (usually including himself, if desired). While these abilities fall under the category of bardic music and the descriptions discuss singing or playing instruments, they can all be activated by reciting poetry, chanting, singing lyrical songs, singing melodies, whistling, playing an instrument, or playing an instrument in combination with some spoken performance. Each ability requires both a minimum bard level and a minimum number of ranks in the Perform skill to qualify; if a bard does not have the required number of ranks in at least one Perform skill, he does not gain the bardic music ability until he acquires the needed ranks.\n\nStarting a bardic music effect is a standard action. Some bardic music abilities require concentration, which means the bard must take a standard action each round to maintain the ability. Even while using bardic music that doesn't require concentration, a bard cannot cast spells, activate magic items by spell completion (such as scrolls), or activate magic items by magic word (such as wands). Just as for casting a spell with a verbal component, a deaf bard has a 20% chance to fail when attempting to use bardic music. If he fails, the attempt still counts against his daily limit.",
     "tags": [
       "class-ability"
+    ],
+    "modes": [
+      {
+        "id": "mode-bm-off",
+        "name": "Inactive",
+        "label": "Inactive",
+        "effects": []
+      },
+      {
+        "id": "mode-bm-ic",
+        "name": "Inspire Courage",
+        "label": "Inspire Courage (+1..+4 Morale Atk/Dmg/vs Charm & Fear)",
+        "effects": [
+          {
+            "id": "ef-bm-ic-atk",
+            "type": "stat",
+            "targets": [
+              "atk.all",
+              "dmg.weapon"
+            ],
+            "mode": "formula",
+            "formula": "@bardLevel >= 20 ? 4 : (@bardLevel >= 14 ? 3 : (@bardLevel >= 8 ? 2 : 1))",
+            "btype": "Morale"
+          }
+        ]
+      }
     ]
   },
   {
@@ -9588,7 +9845,16 @@
         3
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-evasion",
+        "type": "defense",
+        "mode": "State Flag",
+        "flag": "evasion",
+        "what": "Reflex Half -> No Damage in Light or No Armor",
+        "text": "Evasion: Reflex Half -> No Damage (Light/No Armor)"
+      }
+    ],
     "shortDescription": "You can avoid even magical and unusual attacks with great agility. If you make a successful Reflex saving throw against an attack that normally deals half damage on a successful save, you instead take no damage. Evasion…",
     "text": "You can avoid even magical and unusual attacks with great agility. If you make a successful Reflex saving throw against an attack that normally deals half damage on a successful save, you instead take no damage. Evasion can be used only if the you are wearing light armor or no armor. When helpless you do not gain the benefit of evasion.",
     "tags": [
@@ -9766,7 +10032,15 @@
         5
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-purity-body",
+        "type": "defense",
+        "mode": "Immunity",
+        "what": "Disease",
+        "text": "Immune to all nonmagical diseases"
+      }
+    ],
     "shortDescription": "At 5th level, a monk gains immunity to all diseases except for supernatural and magical diseases.",
     "text": "At 5th level, a monk gains immunity to all diseases except for supernatural and magical diseases.",
     "tags": [
@@ -9998,11 +10272,60 @@
         1
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-smite-res",
+        "type": "resource",
+        "name": "Smite Evil",
+        "varKey": "smite_evil_uses",
+        "resMode": "spend",
+        "maxFormula": "1 + floor(@paladinLevel / 5)",
+        "reset": "perDay",
+        "unit": "uses",
+        "recharge": {
+          "period": "day"
+        }
+      }
+    ],
     "shortDescription": "Once per day, a paladin may attempt to smite evil with one normal melee attack. She adds her Charisma bonus (if any) to her attack roll and deals 1 extra point of damage per paladin level. If the paladin accidentally sm…",
     "text": "Once per day, a paladin may attempt to smite evil with one normal melee attack. She adds her Charisma bonus (if any) to her attack roll and deals 1 extra point of damage per paladin level. If the paladin accidentally smites a creature that is not evil, the smite has no effect, but the ability is still used up for that day.\n\nAt 5th level, and at every five levels thereafter, the paladin may smite evil one additional time per day, as indicated on Table: The Paladin, to a maximum of five times per day at 20th level.",
     "tags": [
       "class-ability"
+    ],
+    "modes": [
+      {
+        "id": "mode-smite-off",
+        "name": "Inactive",
+        "label": "Inactive",
+        "effects": []
+      },
+      {
+        "id": "mode-smite-on",
+        "name": "Smite Evil",
+        "label": "Smite Evil (+CHA Atk, +Paladin Lvl Dmg)",
+        "effects": [
+          {
+            "id": "ef-smite-atk",
+            "type": "stat",
+            "targets": [
+              "atk.melee"
+            ],
+            "mode": "formula",
+            "formula": "max(0, @chaMod)",
+            "btype": "Untyped"
+          },
+          {
+            "id": "ef-smite-dmg",
+            "type": "stat",
+            "targets": [
+              "dmg.melee"
+            ],
+            "mode": "formula",
+            "formula": "@paladinLevel",
+            "btype": "Untyped"
+          }
+        ]
+      }
     ]
   },
   {
@@ -10062,7 +10385,13 @@
     "featKind": "classAbility",
     "abilityType": "ex",
     "associations": [],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-slippery-mind",
+        "type": "effect",
+        "text": "Slippery Mind: Reroll failed Will save vs enchantment 1 round later"
+      }
+    ],
     "shortDescription": "This ability represents the rogue’s ability to wriggle free from magical effects that would otherwise control or compel her. If a rogue with slippery mind is affected by an enchantment spell or effect and fails her savi…",
     "text": "This ability represents the rogue's ability to wriggle free from magical effects that would otherwise control or compel her. If a rogue with slippery mind is affected by an enchantment spell or effect and fails her saving throw, she can attempt it again 1 round later at the same DC. She gets only this one extra chance to succeed on her saving throw.",
     "tags": [
@@ -10097,7 +10426,16 @@
         2
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-uncanny-dodge",
+        "type": "defense",
+        "mode": "State Flag",
+        "flag": "uncannyDodge",
+        "what": "Retain DEX bonus to AC when Flat-Footed or struck by an invisible attacker",
+        "text": "Uncanny Dodge: Retain DEX to AC when Flat-Footed"
+      }
+    ],
     "shortDescription": "You retain your Dexterity bonus to AC (if any) even if you are caught flat-footed or struck by an invisible attacker. However, you still lose your Dexterity bonus to AC if immobilized.",
     "text": "You retain your Dexterity bonus to AC (if any) even if you are caught flat-footed or struck by an invisible attacker. However, you still lose your Dexterity bonus to AC if immobilized.",
     "tags": [
@@ -10122,17 +10460,14 @@
     ],
     "effects": [
       {
+        "id": "ef-divine-grace",
         "type": "stat",
         "targets": [
           "save.all"
         ],
-        "mode": "stat",
-        "stat": "chaMod",
-        "mult": 1,
-        "value": 0,
-        "cap": null,
-        "btype": "Sacred",
-        "formula": "@chaMod"
+        "mode": "formula",
+        "formula": "max(0, @chaMod)",
+        "btype": "Sacred"
       }
     ],
     "shortDescription": "At 2nd level, a paladin gains a bonus equal to her Charisma bonus (if any) on all saving throws.",
@@ -10225,7 +10560,21 @@
         4
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-turn-reb-res",
+        "type": "resource",
+        "name": "Turn/Rebuke Undead",
+        "varKey": "turn_undead_uses",
+        "resMode": "spend",
+        "maxFormula": "3 + max(0, @chaMod)",
+        "reset": "perDay",
+        "unit": "uses",
+        "recharge": {
+          "period": "day"
+        }
+      }
+    ],
     "shortDescription": "Any cleric, regardless of alignment, has the power to affect undead creatures by channeling the power of his faith through his holy (or unholy) symbol (see Turn or Rebuke Undead ). A good cleric (or a neutral cleric who…",
     "text": "Any cleric, regardless of alignment, has the power to affect undead creatures by channeling the power of his faith through his holy (or unholy) symbol (see Turn or Rebuke Undead).\n\nA good cleric (or a neutral cleric who worships a good deity) can turn or destroy undead creatures. An evil cleric (or a neutral cleric who worships an evil deity) instead rebukes or commands such creatures. A neutral cleric of a neutral deity must choose whether his turning ability functions as that of a good cleric or an evil cleric. Once this choice is made, it cannot be reversed. This decision also determines whether the cleric can cast spontaneous cure or inflict spells.\n\nA cleric may attempt to turn undead a number of times per day equal to 3 + his Charisma modifier. A cleric with 5 or more ranks in Knowledge (religion) gets a +2 bonus on turning checks against undead.",
     "tags": [
@@ -10411,7 +10760,15 @@
         3
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-div-health",
+        "type": "defense",
+        "mode": "Immunity",
+        "what": "Disease",
+        "text": "Immune to all diseases (including supernatural & magical)"
+      }
+    ],
     "shortDescription": "A paladin gains immunity to all diseases, including supernatural and magical diseases.",
     "text": "A paladin gains immunity to all diseases, including supernatural and magical diseases.",
     "tags": [
@@ -10469,7 +10826,32 @@
         4
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-sa-when",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "br-sa-1",
+            "condKind": "state",
+            "condText": "sneakAttack",
+            "effects": [
+              {
+                "id": "ef-sa-roll",
+                "type": "roll",
+                "kind": "Damage",
+                "dice": "ceil(@rogueLevel / 2)d6",
+                "dmgType": "Precision",
+                "crit": "normal",
+                "multiplyOnCrit": false,
+                "source": "Sneak Attack"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "If rogue can catch an opponent when he is unable to defend himself effectively from her attack, she can strike a vital spot for extra damage. The rogue’s attack deals extra damage any time her target would be denied a D…",
     "text": "If rogue can catch an opponent when he is unable to defend himself effectively from her attack, she can strike a vital spot for extra damage.\n\nThe rogue's attack deals extra damage any time her target would be denied a Dexterity bonus to AC (whether the target actually has a Dexterity bonus or not), or when the rogue flanks her target. This extra damage is 1d6 at 1st level, and it increases by 1d6 every two rogue levels thereafter. Should the rogue score a critical hit with a sneak attack, this extra damage is not multiplied.\n\nRanged attacks can count as sneak attacks only if the target is within 30 feet.",
     "tags": [
@@ -10830,7 +11212,32 @@
         3
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-still-mind-when",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "br-still-mind",
+            "condKind": "situational",
+            "condText": "vs. Enchantment Spells & Effects",
+            "effects": [
+              {
+                "id": "ef-still-mind-stat",
+                "type": "stat",
+                "targets": [
+                  "save.all"
+                ],
+                "mode": "flat",
+                "value": 2,
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "A monk of 3rd level or higher gains a +2 bonus on saving throws against spells and effects from the school of enchantment.",
     "text": "A monk of 3rd level or higher gains a +2 bonus on saving throws against spells and effects from the school of enchantment.",
     "tags": [
@@ -10974,11 +11381,71 @@
         1
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-rage-res",
+        "type": "resource",
+        "name": "Rage",
+        "varKey": "rage_uses",
+        "resMode": "spend",
+        "maxFormula": "1 + floor((max(1, @barbarianLevel) - 1) / 4)",
+        "reset": "perDay",
+        "unit": "uses",
+        "recharge": {
+          "period": "day"
+        }
+      }
+    ],
     "shortDescription": "A barbarian can fly into a rage a certain number of times per day. In a rage, a barbarian temporarily gains a +4 bonus to Strength, a +4 bonus to Constitution, and a +2 morale bonus on Will saves, but he takes a -2 pena…",
     "text": "A barbarian can fly into a rage a certain number of times per day. In a rage, a barbarian temporarily gains a +4 bonus to Strength, a +4 bonus to Constitution, and a +2 morale bonus on Will saves, but he takes a -2 penalty to Armor Class. The increase in Constitution increases the barbarian’s hit points by 2 points per level, but these hit points go away at the end of the rage when his Constitution score drops back to normal. (These extra hit points are not lost first the way temporary hit points are.) While raging, a barbarian cannot use any Charisma-, Dexterity-, or Intelligence-based skills (except for Balance, Escape Artist, Intimidate, and Ride), the Concentration skill, or any abilities that require patience or concentration, nor can he cast spells or activate magic items that require a command word, a spell trigger (such as a wand), or spell completion (such as a scroll) to function. He can use any feat he has except Combat Expertise, item creation feats, and metamagic feats. A fit of rage lasts for a number of rounds equal to 3 + the character’s (newly improved) Constitution modifier. A barbarian may prematurely end his rage. At the end of the rage, the barbarian loses the rage modifiers and restrictions and becomes fatigued (-2 penalty to Strength, -2 penalty to Dexterity, can’t charge or run) for the duration of the current encounter (unless he is a 17th-level barbarian, at which point this limitation no longer applies).\n\nA barbarian can fly into a rage only once per encounter. At 1st level he can use his rage ability once per day. At 4th level and every four levels thereafter, he can use it one additional time per day (to a maximum of six times per day at 20th level). Entering a rage takes no time itself, but a barbarian can do it only during his action, not in response to someone else’s action.",
     "tags": [
       "class-ability"
+    ],
+    "modes": [
+      {
+        "id": "mode-rage-calm",
+        "name": "Calm",
+        "label": "Calm",
+        "effects": []
+      },
+      {
+        "id": "mode-rage-active",
+        "name": "Raging",
+        "label": "Raging (+4 STR/CON, +2 Will, -2 AC)",
+        "effects": [
+          {
+            "id": "ef-rage-str",
+            "type": "stat",
+            "targets": [
+              "str",
+              "con"
+            ],
+            "mode": "flat",
+            "value": 4,
+            "btype": "Morale"
+          },
+          {
+            "id": "ef-rage-will",
+            "type": "stat",
+            "targets": [
+              "save.will"
+            ],
+            "mode": "flat",
+            "value": 2,
+            "btype": "Morale"
+          },
+          {
+            "id": "ef-rage-ac",
+            "type": "stat",
+            "targets": [
+              "ac.total"
+            ],
+            "mode": "flat",
+            "value": -2,
+            "btype": "Untyped"
+          }
+        ]
+      }
     ]
   },
   {
@@ -11096,7 +11563,16 @@
         0
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-bk",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "loreCheck",
+        "label": "Bardic Knowledge: 1d20 + Bard Level + INT mod",
+        "text": "Bardic Knowledge: 1d20 + Bard Level + INT Mod"
+      }
+    ],
     "shortDescription": "A bard may make a special bardic knowledge check with a bonus equal to his bard level + his Intelligence modifier to see whether he knows some relevant information about local notable people, legendary items, or notewor…",
     "text": "A bard may make a special bardic knowledge check with a bonus equal to his bard level + his Intelligence modifier to see whether he knows some relevant information about local notable people, legendary items, or noteworthy places. (If the bard has 5 or more ranks in Knowledge (history), he gains a +2 bonus on this check.)\n\nA successful bardic knowledge check will not reveal the powers of a magic item but may give a hint as to its general function. A bard may not take 10 or take 20 on this check; this sort of knowledge is essentially random.",
     "tags": [
@@ -12021,7 +12497,16 @@
         9
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-imp-evasion",
+        "type": "defense",
+        "mode": "State Flag",
+        "flag": "improvedEvasion",
+        "what": "Half damage even on failed Reflex save (Light or No Armor)",
+        "text": "Improved Evasion: Half Damage on Failed Reflex Save"
+      }
+    ],
     "shortDescription": "This ability works like evasion, except that while the rogue still takes no damage on a successful Reflex saving throw against attacks henceforth she takes only half damage on a failed save. A helpless rogue does not ga…",
     "text": "This ability works like evasion, except that while the rogue still takes no damage on a successful Reflex saving throw against attacks henceforth she takes only half damage on a failed save. A helpless rogue does not gain the benefit of improved evasion.",
     "tags": [
@@ -12672,7 +13157,16 @@
         6
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-imp-uncanny-dodge",
+        "type": "defense",
+        "mode": "State Flag",
+        "flag": "improvedUncannyDodge",
+        "what": "Cannot be flanked except by a Rogue at least 4 levels higher",
+        "text": "Improved Uncanny Dodge: Cannot Be Flanked"
+      }
+    ],
     "shortDescription": "A rogue of 8th level or higher can no longer be flanked. This defense denies another rogue the ability to sneak attack the character by flanking her, unless the attacker has at least four more rogue levels than the targ…",
     "text": "A rogue of 8th level or higher can no longer be flanked.\n\nThis defense denies another rogue the ability to sneak attack the character by flanking her, unless the attacker has at least four more rogue levels than the target does.\n\nIf a character already has uncanny dodge (see above) from a second class, the character automatically gains improved uncanny dodge instead, and the levels from the classes that grant uncanny dodge stack to determine the minimum rogue level required to flank the character.",
     "tags": [
@@ -17562,7 +18056,8 @@
           "name": "Grace (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "+2 competence bonus on all Reflex saving throws when wearing no armor and not using a shield."
+          "summary": "+2 competence bonus on all Reflex saving throws when wearing no armor and not using a shield.",
+          "id": "cab-grace"
         }
       ],
       "5": [
@@ -18035,7 +18530,8 @@
           "name": "Lore (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Recall legends or information (1d20 + Loremaster level + INT modifier), functioning like Bardic Knowledge."
+          "summary": "Recall legends or information (1d20 + Loremaster level + INT modifier), functioning like Bardic Knowledge.",
+          "id": "cab-lore"
         },
         {
           "name": "+1 Level of Existing Spellcasting Class",
@@ -18575,7 +19071,8 @@
           "name": "Hide in Plain Sight (Su)",
           "category": "Special Ability",
           "type": "Su",
-          "summary": "Use the Hide skill even while being observed as long as within 10 ft. of some sort of shadow."
+          "summary": "Use the Hide skill even while being observed as long as within 10 ft. of some sort of shadow.",
+          "id": "cab-hide-in-plain-sight"
         }
       ],
       "2": [
@@ -18583,7 +19080,8 @@
           "name": "Evasion (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Take no damage on a successful Reflex save against area attacks."
+          "summary": "Take no damage on a successful Reflex save against area attacks.",
+          "id": "cab-evasion"
         },
         {
           "name": "Darkvision 60 ft. (Su)",
@@ -18595,7 +19093,8 @@
           "name": "Uncanny Dodge (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Retain Dexterity bonus to AC even if caught flat-footed."
+          "summary": "Retain Dexterity bonus to AC even if caught flat-footed.",
+          "id": "cab-uncanny-dodge"
         }
       ],
       "3": [
@@ -18625,13 +19124,15 @@
           "name": "Defensive Roll (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "1/day make a Reflex save (DC = damage dealt) to take only half damage from a lethal blow."
+          "summary": "1/day make a Reflex save (DC = damage dealt) to take only half damage from a lethal blow.",
+          "id": "cab-defensive-roll"
         },
         {
           "name": "Improved Uncanny Dodge (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Can no longer be flanked."
+          "summary": "Can no longer be flanked.",
+          "id": "cab-improved-uncanny-dodge"
         }
       ],
       "6": [
@@ -18647,7 +19148,8 @@
           "name": "Slippery Mind (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Retry a failed saving throw against an enchantment spell or effect 1 round later."
+          "summary": "Retry a failed saving throw against an enchantment spell or effect 1 round later.",
+          "id": "cab-slippery-mind"
         }
       ],
       "8": [
@@ -18671,7 +19173,8 @@
           "name": "Improved Evasion (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Take no damage on a successful Reflex save and only half damage on a failed save."
+          "summary": "Take no damage on a successful Reflex save and only half damage on a failed save.",
+          "id": "cab-improved-evasion"
         }
       ]
     },
@@ -20048,7 +20551,8 @@
           "name": "Favored Enemy +2 (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "+2 bonus on Bluff, Listen, Sense Motive, Spot, Survival, and weapon damage rolls against chosen psionic enemy."
+          "summary": "+2 bonus on Bluff, Listen, Sense Motive, Spot, Survival, and weapon damage rolls against chosen psionic enemy.",
+          "id": "cab-favored-enemy"
         },
         {
           "name": "Enemy Sense (Su)",
@@ -20084,7 +20588,8 @@
           "name": "Favored Enemy +4 (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Favored Enemy bonus increases to +4."
+          "summary": "Favored Enemy bonus increases to +4.",
+          "id": "cab-favored-enemy"
         }
       ],
       "6": [
@@ -20100,7 +20605,8 @@
           "name": "Favored Enemy +6 (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Favored Enemy bonus increases to +6."
+          "summary": "Favored Enemy bonus increases to +6.",
+          "id": "cab-favored-enemy"
         },
         {
           "name": "Breach Power Resistance (Ex)",
@@ -20130,7 +20636,8 @@
           "name": "Favored Enemy +8 (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Favored Enemy bonus increases to +8."
+          "summary": "Favored Enemy bonus increases to +8.",
+          "id": "cab-favored-enemy"
         },
         {
           "name": "Blast Feedback (Ex)",
@@ -20524,13 +21031,15 @@
           "name": "Battle Clarity (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Add Intelligence bonus (max Warblade level) on Reflex saves while not flat-footed."
+          "summary": "Add Intelligence bonus (max Warblade level) on Reflex saves while not flat-footed.",
+          "id": "cab-battle-clarity"
         },
         {
           "name": "Weapon Aptitude (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Spend 1 hour practicing to reassign weapon-specific feats to another weapon; qualify for Fighter-only feats as Fighter level - 2."
+          "summary": "Spend 1 hour practicing to reassign weapon-specific feats to another weapon; qualify for Fighter-only feats as Fighter level - 2.",
+          "id": "cab-weapon-aptitude"
         }
       ],
       "2": [
@@ -20538,7 +21047,8 @@
           "name": "Uncanny Dodge (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Retain Dexterity bonus to AC even if caught flat-footed or struck by an invisible attacker."
+          "summary": "Retain Dexterity bonus to AC even if caught flat-footed or struck by an invisible attacker.",
+          "id": "cab-uncanny-dodge"
         }
       ],
       "3": [
@@ -20546,7 +21056,8 @@
           "name": "Battle Ardor (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Add Intelligence bonus (max Warblade level) as an insight bonus on attack rolls made to confirm critical hits."
+          "summary": "Add Intelligence bonus (max Warblade level) as an insight bonus on attack rolls made to confirm critical hits.",
+          "id": "cab-battle-ardor"
         }
       ],
       "5": [
@@ -20562,7 +21073,8 @@
           "name": "Improved Uncanny Dodge (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Can no longer be flanked except by a Rogue at least 4 levels higher."
+          "summary": "Can no longer be flanked except by a Rogue at least 4 levels higher.",
+          "id": "cab-improved-uncanny-dodge"
         }
       ],
       "7": [
@@ -20570,7 +21082,8 @@
           "name": "Battle Cunning (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Add Intelligence bonus (max Warblade level) as an insight bonus on melee damage rolls against flat-footed or flanked opponents."
+          "summary": "Add Intelligence bonus (max Warblade level) as an insight bonus on melee damage rolls against flat-footed or flanked opponents.",
+          "id": "cab-battle-cunning"
         }
       ],
       "9": [
@@ -20586,7 +21099,8 @@
           "name": "Battle Skill (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Add Intelligence bonus (max Warblade level) as an insight bonus on opposed checks made to bull rush, disarm, feint, overrun, sunder, or trip."
+          "summary": "Add Intelligence bonus (max Warblade level) as an insight bonus on opposed checks made to bull rush, disarm, feint, overrun, sunder, or trip.",
+          "id": "cab-battle-skill"
         }
       ],
       "13": [
@@ -20602,7 +21116,8 @@
           "name": "Battle Mastery (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Add Intelligence bonus (max Warblade level) as an insight bonus on melee attack and damage rolls made for attacks of opportunity."
+          "summary": "Add Intelligence bonus (max Warblade level) as an insight bonus on melee attack and damage rolls made for attacks of opportunity.",
+          "id": "cab-battle-mastery"
         }
       ],
       "17": [
@@ -20925,7 +21440,8 @@
           "name": "AC Bonus (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Add your Wisdom bonus (if positive) to AC while wearing light armor and not using a shield."
+          "summary": "Add your Wisdom bonus (if positive) to AC while wearing light armor and not using a shield.",
+          "id": "cab-monk-ac-bonus"
         }
       ],
       "4": [
@@ -20965,7 +21481,8 @@
           "name": "Evasion (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Take no damage on a successful Reflex save against attacks that normally deal half damage."
+          "summary": "Take no damage on a successful Reflex save against attacks that normally deal half damage.",
+          "id": "cab-evasion"
         }
       ],
       "10": [
@@ -21005,7 +21522,8 @@
           "name": "Improved Evasion (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Take no damage on a successful Reflex save and only half damage on a failed save."
+          "summary": "Take no damage on a successful Reflex save and only half damage on a failed save.",
+          "id": "cab-improved-evasion"
         }
       ],
       "20": [
@@ -21495,7 +22013,8 @@
           "name": "Weapon Aptitude (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Reassign weapon-specific feats to other weapons with 1 hour of practice; stacks with Warblade level (Tome of Battle p. 101)"
+          "summary": "Reassign weapon-specific feats to other weapons with 1 hour of practice; stacks with Warblade level (Tome of Battle p. 101)",
+          "id": "cab-weapon-aptitude"
         }
       ],
       "2": [
@@ -21565,7 +22084,8 @@
           "name": "Fighter Bonus Feat",
           "category": "Bonus Feat",
           "type": "Ex",
-          "summary": "Gain an additional bonus feat from the Fighter bonus feat list at 9th level (Tome of Battle p. 102)"
+          "summary": "Gain an additional bonus feat from the Fighter bonus feat list at 9th level (Tome of Battle p. 102)",
+          "id": "cab-fighter-bonus-feat"
         }
       ],
       "10": [
@@ -21703,7 +22223,8 @@
           "name": "Fast Movement +5 ft (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Gain a +5 ft. enhancement bonus to speed."
+          "summary": "Gain a +5 ft. enhancement bonus to speed.",
+          "id": "cab-fast-movement"
         }
       ],
       "3": [
@@ -21739,7 +22260,8 @@
           "name": "Fast Movement +10 ft (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Enhancement bonus to speed increases to +10 ft."
+          "summary": "Enhancement bonus to speed increases to +10 ft.",
+          "id": "cab-fast-movement"
         },
         {
           "name": "AC Bonus +2 (Ex)",
@@ -21775,7 +22297,8 @@
           "name": "Fast Movement +15 ft (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Enhancement bonus to speed increases to +15 ft."
+          "summary": "Enhancement bonus to speed increases to +15 ft.",
+          "id": "cab-fast-movement"
         }
       ],
       "9": [
@@ -22597,7 +23120,8 @@
           "name": "Trapfinding (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Use the Search skill to locate traps with a DC higher than 20 and Disable Device to bypass magic traps."
+          "summary": "Use the Search skill to locate traps with a DC higher than 20 and Disable Device to bypass magic traps.",
+          "id": "cab-trapfinding"
         }
       ],
       "2": [
@@ -22842,7 +23366,8 @@
           "name": "Trapfinding (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Use Search and Disable Device to find and disable traps with DCs over 20."
+          "summary": "Use Search and Disable Device to find and disable traps with DCs over 20.",
+          "id": "cab-trapfinding"
         }
       ],
       "2": [
@@ -23096,7 +23621,8 @@
           "name": "Trapfinding (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Use Search and Disable Device to locate and disable traps with DCs over 20."
+          "summary": "Use Search and Disable Device to locate and disable traps with DCs over 20.",
+          "id": "cab-trapfinding"
         }
       ],
       "2": [
@@ -23110,7 +23636,8 @@
           "name": "Uncanny Dodge (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Retain Dexterity bonus to AC even if caught flat-footed."
+          "summary": "Retain Dexterity bonus to AC even if caught flat-footed.",
+          "id": "cab-uncanny-dodge"
         }
       ],
       "3": [
@@ -23118,7 +23645,8 @@
           "name": "Fast Movement +10 ft. (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Gain a +10 ft. enhancement bonus to land speed in light or no armor."
+          "summary": "Gain a +10 ft. enhancement bonus to land speed in light or no armor.",
+          "id": "cab-fast-movement"
         },
         {
           "name": "Skirmish (+1d6, +1 AC) (Ex)",
@@ -23130,7 +23658,8 @@
           "name": "Trackless Step (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Leave no trail in natural surroundings and cannot be tracked."
+          "summary": "Leave no trail in natural surroundings and cannot be tracked.",
+          "id": "cab-trackless-step"
         }
       ],
       "4": [
@@ -23146,7 +23675,8 @@
           "name": "Evasion (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Take no damage on a successful Reflex save against attacks that normally deal half damage."
+          "summary": "Take no damage on a successful Reflex save against attacks that normally deal half damage.",
+          "id": "cab-evasion"
         },
         {
           "name": "Skirmish (+2d6, +1 AC) (Ex)",
@@ -23176,7 +23706,8 @@
           "name": "Camouflage (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Use the Hide skill in any sort of natural terrain, even without cover or concealment."
+          "summary": "Use the Hide skill in any sort of natural terrain, even without cover or concealment.",
+          "id": "cab-camouflage"
         },
         {
           "name": "Scout Bonus Feat",
@@ -23212,7 +23743,8 @@
           "name": "Fast Movement +20 ft. (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Enhancement bonus to land speed increases to +20 ft."
+          "summary": "Enhancement bonus to land speed increases to +20 ft.",
+          "id": "cab-fast-movement"
         },
         {
           "name": "Skirmish (+3d6, +3 AC) (Ex)",
@@ -23242,7 +23774,8 @@
           "name": "Hide in Plain Sight (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Use the Hide skill in any sort of natural terrain even while being observed."
+          "summary": "Use the Hide skill in any sort of natural terrain even while being observed.",
+          "id": "cab-hide-in-plain-sight"
         }
       ],
       "15": [
@@ -23401,7 +23934,8 @@
           "name": "Weapon Finesse",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Gain Weapon Finesse as a bonus feat."
+          "summary": "Gain Weapon Finesse as a bonus feat.",
+          "id": "feat-weapon-finesse"
         }
       ],
       "2": [
@@ -23409,7 +23943,8 @@
           "name": "Grace +1 (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Gain a +1 competence bonus on Reflex saves when wearing no or light armor and not carrying a medium or heavy load."
+          "summary": "Gain a +1 competence bonus on Reflex saves when wearing no or light armor and not carrying a medium or heavy load.",
+          "id": "cab-grace"
         }
       ],
       "3": [
@@ -23417,7 +23952,8 @@
           "name": "Insightful Strike (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Add your Intelligence bonus (if positive, in addition to Strength) to damage rolls with any light or Finesse-eligible weapon."
+          "summary": "Add your Intelligence bonus (if positive, in addition to Strength) to damage rolls with any light or Finesse-eligible weapon.",
+          "id": "cab-insightful-strike"
         }
       ],
       "5": [
@@ -23457,7 +23993,8 @@
           "name": "Grace +2 (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Grace competence bonus on Reflex saves increases to +2."
+          "summary": "Grace competence bonus on Reflex saves increases to +2.",
+          "id": "cab-grace"
         },
         {
           "name": "Lucky (Ex)",
@@ -23495,7 +24032,8 @@
           "name": "Slippery Mind (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Attempt a second saving throw 1 round later if affected by an enchantment spell or effect."
+          "summary": "Attempt a second saving throw 1 round later if affected by an enchantment spell or effect.",
+          "id": "cab-slippery-mind"
         }
       ],
       "19": [
@@ -23517,7 +24055,8 @@
           "name": "Grace +3 (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Grace competence bonus on Reflex saves increases to +3."
+          "summary": "Grace competence bonus on Reflex saves increases to +3.",
+          "id": "cab-grace"
         }
       ]
     },
@@ -23622,7 +24161,8 @@
           "name": "Summon Familiar",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Obtain a magical beast companion as a Sorcerer of your Hexblade level - 3."
+          "summary": "Obtain a magical beast companion as a Sorcerer of your Hexblade level - 3.",
+          "id": "cab-summon-familiar"
         }
       ],
       "5": [
@@ -23818,7 +24358,8 @@
           "name": "Sneak Attack +1d6 (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Deal +1d6 extra precision damage when target is denied Dex to AC or flanked."
+          "summary": "Deal +1d6 extra precision damage when target is denied Dex to AC or flanked.",
+          "id": "cab-sneak-attack"
         },
         {
           "name": "Steal Spell (0 or 1st) (Su)",
@@ -23830,7 +24371,8 @@
           "name": "Trapfinding (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Use Search and Disable Device to locate and disable traps with DCs over 20."
+          "summary": "Use Search and Disable Device to locate and disable traps with DCs over 20.",
+          "id": "cab-trapfinding"
         }
       ],
       "2": [
@@ -23880,7 +24422,8 @@
           "name": "Sneak Attack +2d6 (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Sneak Attack extra damage increases to +2d6."
+          "summary": "Sneak Attack extra damage increases to +2d6.",
+          "id": "cab-sneak-attack"
         },
         {
           "name": "Steal Spell (3rd) (Su)",
@@ -23920,7 +24463,8 @@
           "name": "Sneak Attack +3d6 (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Sneak Attack extra damage increases to +3d6."
+          "summary": "Sneak Attack extra damage increases to +3d6.",
+          "id": "cab-sneak-attack"
         },
         {
           "name": "Steal Spell (5th) (Su)",
@@ -23960,7 +24504,8 @@
           "name": "Sneak Attack +4d6 (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Sneak Attack extra damage increases to +4d6."
+          "summary": "Sneak Attack extra damage increases to +4d6.",
+          "id": "cab-sneak-attack"
         },
         {
           "name": "Steal Spell (7th) (Su)",
@@ -23988,7 +24533,8 @@
           "name": "Sneak Attack +5d6 (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Sneak Attack extra damage increases to +5d6."
+          "summary": "Sneak Attack extra damage increases to +5d6.",
+          "id": "cab-sneak-attack"
         },
         {
           "name": "Steal Spell (9th) (Su)",
@@ -24472,7 +25018,8 @@
           "name": "Summon Familiar (Su)",
           "category": "Class Feature",
           "type": "Su",
-          "summary": "Summon an advanced planar/undead familiar (imp, quasit, vargouille, or ghostly/vampiric creature)."
+          "summary": "Summon an advanced planar/undead familiar (imp, quasit, vargouille, or ghostly/vampiric creature).",
+          "id": "cab-summon-familiar"
         }
       ],
       "8": [
@@ -25208,13 +25755,15 @@
           "name": "Trapfinding (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Use Search and Disable Device to locate and disable traps with DCs over 20."
+          "summary": "Use Search and Disable Device to locate and disable traps with DCs over 20.",
+          "id": "cab-trapfinding"
         },
         {
           "name": "AC Bonus (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Add your Wisdom bonus (if positive) to AC when unarmored and unencumbered."
+          "summary": "Add your Wisdom bonus (if positive) to AC when unarmored and unencumbered.",
+          "id": "cab-monk-ac-bonus"
         }
       ],
       "2": [
@@ -25230,7 +25779,8 @@
           "name": "Poison Use (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Never risk accidentally poisoning yourself when applying poison to a weapon."
+          "summary": "Never risk accidentally poisoning yourself when applying poison to a weapon.",
+          "id": "cab-poison-use"
         },
         {
           "name": "Sudden Strike +2d6 (Ex)",
@@ -25258,7 +25808,8 @@
           "name": "AC Bonus +1 (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Unarmored AC bonus increases by +1 (plus Wisdom modifier)."
+          "summary": "Unarmored AC bonus increases by +1 (plus Wisdom modifier).",
+          "id": "cab-monk-ac-bonus"
         }
       ],
       "6": [
@@ -25322,7 +25873,8 @@
           "name": "AC Bonus +2 (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Unarmored AC bonus increases to +2 (plus Wisdom modifier)."
+          "summary": "Unarmored AC bonus increases to +2 (plus Wisdom modifier).",
+          "id": "cab-monk-ac-bonus"
         }
       ],
       "11": [
@@ -25344,7 +25896,8 @@
           "name": "Evasion (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Take no damage on a successful Reflex save against attacks that normally deal half damage."
+          "summary": "Take no damage on a successful Reflex save against attacks that normally deal half damage.",
+          "id": "cab-evasion"
         }
       ],
       "13": [
@@ -25374,7 +25927,8 @@
           "name": "AC Bonus +3 (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Unarmored AC bonus increases to +3 (plus Wisdom modifier)."
+          "summary": "Unarmored AC bonus increases to +3 (plus Wisdom modifier).",
+          "id": "cab-monk-ac-bonus"
         }
       ],
       "16": [
@@ -25426,7 +25980,8 @@
           "name": "AC Bonus +4 (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Unarmored AC bonus increases to +4 (plus Wisdom modifier)."
+          "summary": "Unarmored AC bonus increases to +4 (plus Wisdom modifier).",
+          "id": "cab-monk-ac-bonus"
         }
       ]
     },
@@ -26035,5 +26590,1563 @@
       "prestige"
     ],
     "role": "Prestige Class"
+  },
+  {
+    "schemaVersion": 3,
+    "id": "cls-rogue-adventurer-variant",
+    "blueprint": "class",
+    "name": "Rogue (Adventurer Variant)",
+    "type": "Class",
+    "category": "Variant",
+    "source": "Unearthed Arcana p.58",
+    "variantOf": "cls-rogue",
+    "replaces": [
+      "cab-sneak-attack"
+    ],
+    "aliases": [
+      "cls_rogue_adventurer_ua",
+      "Martial Rogue",
+      "Feat Rogue"
+    ],
+    "hitDie": "d6",
+    "hd": 6,
+    "bab": 0.75,
+    "babProgression": "medium",
+    "savingThrows": {
+      "fort": "low",
+      "ref": "high",
+      "will": "low"
+    },
+    "fort": "poor",
+    "ref": "good",
+    "will": "poor",
+    "skills": 8,
+    "skillPointsPerLevel": 8,
+    "classSkills": [
+      "appraise",
+      "balance",
+      "bluff",
+      "climb",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "decipher_script",
+      "diplomacy",
+      "disable_device",
+      "disguise",
+      "escape_artist",
+      "forgery",
+      "gather_information",
+      "hide",
+      "intimidate",
+      "jump",
+      "k_local",
+      "listen",
+      "move_silently",
+      "open_lock",
+      "perform",
+      "profession",
+      "search",
+      "sense_motive",
+      "sleight_of_hand",
+      "spot",
+      "swim",
+      "tumble",
+      "umd",
+      "use_rope"
+    ],
+    "isPrestige": false,
+    "maxLevel": 20,
+    "features": {
+      "1": [
+        {
+          "id": "cab-fighter-bonus-feat",
+          "name": "Fighter Bonus Feat",
+          "category": "Bonus Feat",
+          "type": "Ex",
+          "summary": "Select a Fighter Bonus Feat (in place of Sneak Attack, Unearthed Arcana p.58)"
+        },
+        {
+          "name": "Trapfinding (Ex)",
+          "category": "Class Feature",
+          "type": "Ex",
+          "summary": "Use the Search skill to locate traps with a DC higher than 20 and Disable Device to bypass magic traps.",
+          "id": "cab-trapfinding"
+        }
+      ],
+      "2": [
+        {
+          "name": "Evasion (Ex)",
+          "category": "Class Feature",
+          "type": "Ex",
+          "summary": "Take no damage on a successful Reflex save against attacks that normally deal half damage.",
+          "id": "cab-evasion"
+        }
+      ],
+      "3": [
+        {
+          "id": "cab-fighter-bonus-feat",
+          "name": "Fighter Bonus Feat",
+          "category": "Bonus Feat",
+          "type": "Ex",
+          "summary": "Select a Fighter Bonus Feat (in place of Sneak Attack, Unearthed Arcana p.58)"
+        },
+        {
+          "name": "Trap Sense +1 (Ex)",
+          "category": "Class Feature",
+          "type": "Ex",
+          "summary": "Gain a +1 bonus on Reflex saves and a +1 dodge bonus to AC against traps.",
+          "id": "cab-trap-sense"
+        }
+      ],
+      "4": [
+        {
+          "name": "Uncanny Dodge (Ex)",
+          "category": "Class Feature",
+          "type": "Ex",
+          "summary": "Retain Dexterity bonus to AC even if caught flat-footed or struck by an invisible attacker.",
+          "id": "cab-uncanny-dodge"
+        }
+      ],
+      "5": [
+        {
+          "id": "cab-fighter-bonus-feat",
+          "name": "Fighter Bonus Feat",
+          "category": "Bonus Feat",
+          "type": "Ex",
+          "summary": "Select a Fighter Bonus Feat (in place of Sneak Attack, Unearthed Arcana p.58)"
+        }
+      ],
+      "6": [
+        {
+          "name": "Trap Sense +2 (Ex)",
+          "category": "Class Feature",
+          "type": "Ex",
+          "summary": "Trap Sense bonus increases to +2.",
+          "id": "cab-trap-sense"
+        }
+      ],
+      "7": [
+        {
+          "id": "cab-fighter-bonus-feat",
+          "name": "Fighter Bonus Feat",
+          "category": "Bonus Feat",
+          "type": "Ex",
+          "summary": "Select a Fighter Bonus Feat (in place of Sneak Attack, Unearthed Arcana p.58)"
+        }
+      ],
+      "8": [
+        {
+          "name": "Improved Uncanny Dodge (Ex)",
+          "category": "Class Feature",
+          "type": "Ex",
+          "summary": "Can no longer be flanked except by a Rogue at least 4 levels higher.",
+          "id": "cab-improved-uncanny-dodge"
+        }
+      ],
+      "9": [
+        {
+          "id": "cab-fighter-bonus-feat",
+          "name": "Fighter Bonus Feat",
+          "category": "Bonus Feat",
+          "type": "Ex",
+          "summary": "Select a Fighter Bonus Feat (in place of Sneak Attack, Unearthed Arcana p.58)"
+        },
+        {
+          "name": "Trap Sense +3 (Ex)",
+          "category": "Class Feature",
+          "type": "Ex",
+          "summary": "Trap Sense bonus increases to +3.",
+          "id": "cab-trap-sense"
+        }
+      ],
+      "10": [
+        {
+          "name": "Special Ability (Ex)",
+          "category": "Class Feature",
+          "type": "Ex",
+          "summary": "Choose a Rogue Special Ability (Crippling Strike, Defensive Roll, Improved Evasion, Opportunist, Skill Mastery, Slippery Mind, or Bonus Feat)."
+        }
+      ],
+      "11": [
+        {
+          "id": "cab-fighter-bonus-feat",
+          "name": "Fighter Bonus Feat",
+          "category": "Bonus Feat",
+          "type": "Ex",
+          "summary": "Select a Fighter Bonus Feat (in place of Sneak Attack, Unearthed Arcana p.58)"
+        }
+      ],
+      "12": [
+        {
+          "name": "Trap Sense +4 (Ex)",
+          "category": "Class Feature",
+          "type": "Ex",
+          "summary": "Trap Sense bonus increases to +4.",
+          "id": "cab-trap-sense"
+        }
+      ],
+      "13": [
+        {
+          "id": "cab-fighter-bonus-feat",
+          "name": "Fighter Bonus Feat",
+          "category": "Bonus Feat",
+          "type": "Ex",
+          "summary": "Select a Fighter Bonus Feat (in place of Sneak Attack, Unearthed Arcana p.58)"
+        },
+        {
+          "name": "Special Ability (Ex)",
+          "category": "Class Feature",
+          "type": "Ex",
+          "summary": "Choose an additional Rogue Special Ability or Bonus Feat."
+        }
+      ],
+      "15": [
+        {
+          "id": "cab-fighter-bonus-feat",
+          "name": "Fighter Bonus Feat",
+          "category": "Bonus Feat",
+          "type": "Ex",
+          "summary": "Select a Fighter Bonus Feat (in place of Sneak Attack, Unearthed Arcana p.58)"
+        },
+        {
+          "name": "Trap Sense +5 (Ex)",
+          "category": "Class Feature",
+          "type": "Ex",
+          "summary": "Trap Sense bonus increases to +5.",
+          "id": "cab-trap-sense"
+        }
+      ],
+      "16": [
+        {
+          "name": "Special Ability (Ex)",
+          "category": "Class Feature",
+          "type": "Ex",
+          "summary": "Choose an additional Rogue Special Ability or Bonus Feat."
+        }
+      ],
+      "17": [
+        {
+          "id": "cab-fighter-bonus-feat",
+          "name": "Fighter Bonus Feat",
+          "category": "Bonus Feat",
+          "type": "Ex",
+          "summary": "Select a Fighter Bonus Feat (in place of Sneak Attack, Unearthed Arcana p.58)"
+        }
+      ],
+      "18": [
+        {
+          "name": "Trap Sense +6 (Ex)",
+          "category": "Class Feature",
+          "type": "Ex",
+          "summary": "Trap Sense bonus increases to +6.",
+          "id": "cab-trap-sense"
+        }
+      ],
+      "19": [
+        {
+          "id": "cab-fighter-bonus-feat",
+          "name": "Fighter Bonus Feat",
+          "category": "Bonus Feat",
+          "type": "Ex",
+          "summary": "Select a Fighter Bonus Feat (in place of Sneak Attack, Unearthed Arcana p.58)"
+        },
+        {
+          "name": "Special Ability (Ex)",
+          "category": "Class Feature",
+          "type": "Ex",
+          "summary": "Choose an additional Rogue Special Ability or Bonus Feat."
+        }
+      ]
+    },
+    "addedAbilities": [],
+    "bonusFeatLevels": [
+      1,
+      3,
+      5,
+      7,
+      9,
+      11,
+      13,
+      15,
+      17,
+      19
+    ],
+    "bonusFeatContract": {
+      "mode": "tag",
+      "tag": "isFighterBonusFeat",
+      "label": "Fighter Bonus Feat",
+      "filter": "FIGHTER"
+    },
+    "spellcasting": {
+      "type": "none",
+      "ability": "int",
+      "spontaneous": false,
+      "spellsPerDay": {},
+      "spellsKnown": {}
+    },
+    "progression": {
+      "mode": "base",
+      "maxLevel": 20,
+      "hitDie": "d6",
+      "bab": "3/4",
+      "goodSaves": [
+        "ref"
+      ],
+      "skillPointsPerLevel": 8,
+      "classSkills": [
+        "appraise",
+        "balance",
+        "bluff",
+        "climb",
+        "craft_alchemy",
+        "craft_armor",
+        "craft_weapon",
+        "decipher_script",
+        "diplomacy",
+        "disable_device",
+        "disguise",
+        "escape_artist",
+        "forgery",
+        "gather_information",
+        "hide",
+        "intimidate",
+        "jump",
+        "k_local",
+        "listen",
+        "move_silently",
+        "open_lock",
+        "perform",
+        "profession",
+        "search",
+        "sense_motive",
+        "sleight_of_hand",
+        "spot",
+        "swim",
+        "tumble",
+        "umd",
+        "use_rope"
+      ]
+    },
+    "effects": [],
+    "shortDescription": "Trades all Sneak Attack progression for Fighter Bonus Feats at 1st, 3rd, and every odd Rogue level (Unearthed Arcana p.58).",
+    "text": "Adventurer / Martial Rogue Variant (Unearthed Arcana p.58). Gives up Sneak Attack (+1d6 at 1st level and every odd level thereafter) to gain a Fighter Bonus Feat at 1st, 3rd, 5th, 7th, 9th, 11th, 13th, 15th, 17th, and 19th level, while retaining d6 Hit Die, 8 + INT skill points per level, Trapfinding, Evasion, Uncanny Dodge, Trap Sense, and Rogue Special Abilities.",
+    "tags": [
+      "class",
+      "base",
+      "variant",
+      "unearthed-arcana"
+    ],
+    "role": "Variant Base Class / Martial Feat Rogue"
+  },
+  {
+    "schemaVersion": 3,
+    "id": "cls-fighter-thug-variant",
+    "blueprint": "class",
+    "name": "Fighter (Thug Variant)",
+    "type": "Class",
+    "category": "Variant",
+    "source": "Unearthed Arcana p.51",
+    "variantOf": "cls-fighter",
+    "replaces": [
+      "cab-fighter-bonus-feat-1"
+    ],
+    "aliases": [
+      "cls_fighter_thug_ua"
+    ],
+    "hitDie": "d10",
+    "hd": 10,
+    "bab": 1,
+    "babProgression": "high",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "low",
+      "will": "low"
+    },
+    "fort": "good",
+    "ref": "poor",
+    "will": "poor",
+    "skills": 4,
+    "skillPointsPerLevel": 4,
+    "classSkills": [
+      "climb",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "handle_animal",
+      "intimidate",
+      "jump",
+      "ride",
+      "swim",
+      "bluff",
+      "gather_information",
+      "k_local",
+      "sleight_of_hand"
+    ],
+    "isPrestige": false,
+    "maxLevel": 20,
+    "features": {
+      "1": [
+        {
+          "id": "cab-urban-class-skills",
+          "name": "Urban Class Skills (Thug)",
+          "category": "Class Feature",
+          "type": "Ex",
+          "summary": "Gains 4 + INT skill points/level and adds Bluff, Gather Information, Knowledge (local), and Sleight of Hand to Fighter class skills (replaces 1st-level Fighter Bonus Feat, Unearthed Arcana p.51)."
+        }
+      ],
+      "2": [
+        {
+          "id": "cab-fighter-bonus-feat",
+          "name": "Fighter Bonus Feat",
+          "category": "Bonus Feat",
+          "type": "Special",
+          "summary": "Gain a bonus combat-oriented feat from the Fighter bonus feat list."
+        }
+      ],
+      "4": [
+        {
+          "id": "cab-fighter-bonus-feat",
+          "name": "Fighter Bonus Feat",
+          "category": "Bonus Feat",
+          "type": "Special",
+          "summary": "Gain a bonus combat-oriented feat from the Fighter bonus feat list."
+        }
+      ],
+      "6": [
+        {
+          "id": "cab-fighter-bonus-feat",
+          "name": "Fighter Bonus Feat",
+          "category": "Bonus Feat",
+          "type": "Special",
+          "summary": "Gain a bonus combat-oriented feat from the Fighter bonus feat list."
+        }
+      ],
+      "8": [
+        {
+          "id": "cab-fighter-bonus-feat",
+          "name": "Fighter Bonus Feat",
+          "category": "Bonus Feat",
+          "type": "Special",
+          "summary": "Gain a bonus combat-oriented feat from the Fighter bonus feat list."
+        }
+      ],
+      "10": [
+        {
+          "id": "cab-fighter-bonus-feat",
+          "name": "Fighter Bonus Feat",
+          "category": "Bonus Feat",
+          "type": "Special",
+          "summary": "Gain a bonus combat-oriented feat from the Fighter bonus feat list."
+        }
+      ],
+      "12": [
+        {
+          "id": "cab-fighter-bonus-feat",
+          "name": "Fighter Bonus Feat",
+          "category": "Bonus Feat",
+          "type": "Special",
+          "summary": "Gain a bonus combat-oriented feat from the Fighter bonus feat list."
+        }
+      ],
+      "14": [
+        {
+          "id": "cab-fighter-bonus-feat",
+          "name": "Fighter Bonus Feat",
+          "category": "Bonus Feat",
+          "type": "Special",
+          "summary": "Gain a bonus combat-oriented feat from the Fighter bonus feat list."
+        }
+      ],
+      "16": [
+        {
+          "id": "cab-fighter-bonus-feat",
+          "name": "Fighter Bonus Feat",
+          "category": "Bonus Feat",
+          "type": "Special",
+          "summary": "Gain a bonus combat-oriented feat from the Fighter bonus feat list."
+        }
+      ],
+      "18": [
+        {
+          "id": "cab-fighter-bonus-feat",
+          "name": "Fighter Bonus Feat",
+          "category": "Bonus Feat",
+          "type": "Special",
+          "summary": "Gain a bonus combat-oriented feat from the Fighter bonus feat list."
+        }
+      ],
+      "20": [
+        {
+          "id": "cab-fighter-bonus-feat",
+          "name": "Fighter Bonus Feat",
+          "category": "Bonus Feat",
+          "type": "Special",
+          "summary": "Gain a bonus combat-oriented feat from the Fighter bonus feat list."
+        }
+      ]
+    },
+    "addedAbilities": [],
+    "bonusFeatLevels": [
+      2,
+      4,
+      6,
+      8,
+      10,
+      12,
+      14,
+      16,
+      18,
+      20
+    ],
+    "bonusFeatContract": {
+      "mode": "tag",
+      "tag": "isFighterBonusFeat",
+      "label": "Fighter Class Bonus Feat",
+      "filter": "FIGHTER"
+    },
+    "spellcasting": {
+      "type": "none",
+      "ability": "int",
+      "spontaneous": false,
+      "spellsPerDay": {},
+      "spellsKnown": {}
+    },
+    "progression": {
+      "mode": "base",
+      "maxLevel": 20,
+      "hitDie": "d10",
+      "bab": "full",
+      "goodSaves": [
+        "fort"
+      ],
+      "skillPointsPerLevel": 4,
+      "classSkills": [
+        "climb",
+        "craft_alchemy",
+        "craft_armor",
+        "craft_weapon",
+        "handle_animal",
+        "intimidate",
+        "jump",
+        "ride",
+        "swim",
+        "bluff",
+        "gather_information",
+        "k_local",
+        "sleight_of_hand"
+      ]
+    },
+    "effects": [],
+    "shortDescription": "Urban brawler Fighter variant gaining 4 + INT skill points and urban class skills in exchange for the 1st-level bonus feat and medium/heavy armor & tower shield proficiencies (Unearthed Arcana p.51).",
+    "text": "Thug Fighter Variant (Unearthed Arcana p.51). Gains 4 + INT skill points per level and adds Bluff, Gather Information, Knowledge (local), and Sleight of Hand to class skills, trading away medium armor, heavy armor, and tower shield proficiencies as well as the 1st-level Fighter Bonus Feat.",
+    "tags": [
+      "class",
+      "base",
+      "variant",
+      "unearthed-arcana"
+    ],
+    "role": "Variant Base Class / Urban Brawler"
+  },
+  {
+    "schemaVersion": 3,
+    "id": "cls-cleric-cloistered-variant",
+    "blueprint": "class",
+    "name": "Cleric (Cloistered Cleric)",
+    "type": "Class",
+    "category": "Variant",
+    "source": "Unearthed Arcana p.50",
+    "variantOf": "cls-cleric",
+    "replaces": [],
+    "aliases": [
+      "cls_cleric_cloistered_ua"
+    ],
+    "hitDie": "d6",
+    "hd": 6,
+    "bab": 0.5,
+    "babProgression": "low",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "low",
+      "will": "high"
+    },
+    "fort": "good",
+    "ref": "poor",
+    "will": "good",
+    "skills": 6,
+    "skillPointsPerLevel": 6,
+    "classSkills": [
+      "concentration",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "diplomacy",
+      "heal",
+      "k_arcana",
+      "k_history",
+      "k_religion",
+      "k_planes",
+      "profession",
+      "spellcraft",
+      "decipher_script",
+      "speak_language",
+      "k_arch",
+      "k_dungeon",
+      "k_geo",
+      "k_local",
+      "k_nature",
+      "k_nobility"
+    ],
+    "isPrestige": false,
+    "maxLevel": 20,
+    "features": {
+      "1": [
+        {
+          "id": "cab-turn-undead",
+          "name": "Turn Undead (Su)",
+          "category": "Special Ability",
+          "type": "Su",
+          "summary": "Channel positive energy to turn or destroy undead 3 + CHA mod times/day."
+        },
+        {
+          "id": "cab-lore",
+          "name": "Lore (Ex)",
+          "category": "Class Feature",
+          "type": "Ex",
+          "summary": "Functions like Bardic Knowledge (Cleric level + INT modifier)."
+        },
+        {
+          "id": "cab-bonus-domain-knowledge",
+          "name": "Bonus Domain: Knowledge",
+          "category": "Class Feature",
+          "type": "Ex",
+          "summary": "Gains the Knowledge domain as a bonus third Cleric domain."
+        }
+      ]
+    },
+    "addedAbilities": [],
+    "spellcasting": {
+      "type": "divine",
+      "ability": "wis",
+      "spontaneous": false,
+      "spellsPerDay": {
+        "1": [
+          3,
+          1,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "2": [
+          4,
+          2,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "3": [
+          4,
+          2,
+          1,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "4": [
+          5,
+          3,
+          2,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "5": [
+          5,
+          3,
+          2,
+          1,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "6": [
+          5,
+          3,
+          3,
+          2,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "7": [
+          6,
+          4,
+          3,
+          2,
+          1,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "8": [
+          6,
+          4,
+          3,
+          3,
+          2,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "9": [
+          6,
+          4,
+          4,
+          3,
+          2,
+          1,
+          null,
+          null,
+          null,
+          null
+        ],
+        "10": [
+          6,
+          4,
+          4,
+          3,
+          3,
+          2,
+          null,
+          null,
+          null,
+          null
+        ],
+        "11": [
+          6,
+          5,
+          4,
+          4,
+          3,
+          2,
+          1,
+          null,
+          null,
+          null
+        ],
+        "12": [
+          6,
+          5,
+          4,
+          4,
+          3,
+          3,
+          2,
+          null,
+          null,
+          null
+        ],
+        "13": [
+          6,
+          5,
+          5,
+          4,
+          4,
+          3,
+          2,
+          1,
+          null,
+          null
+        ],
+        "14": [
+          6,
+          5,
+          5,
+          4,
+          4,
+          3,
+          3,
+          2,
+          null,
+          null
+        ],
+        "15": [
+          6,
+          5,
+          5,
+          5,
+          4,
+          4,
+          3,
+          2,
+          1,
+          null
+        ],
+        "16": [
+          6,
+          5,
+          5,
+          5,
+          4,
+          4,
+          3,
+          3,
+          2,
+          null
+        ],
+        "17": [
+          6,
+          5,
+          5,
+          5,
+          5,
+          4,
+          4,
+          3,
+          2,
+          1
+        ],
+        "18": [
+          6,
+          5,
+          5,
+          5,
+          5,
+          4,
+          4,
+          3,
+          3,
+          2
+        ],
+        "19": [
+          6,
+          5,
+          5,
+          5,
+          5,
+          5,
+          4,
+          4,
+          3,
+          3
+        ],
+        "20": [
+          6,
+          5,
+          5,
+          5,
+          5,
+          5,
+          4,
+          4,
+          4,
+          4
+        ]
+      },
+      "spellsKnown": {}
+    },
+    "progression": {
+      "mode": "base",
+      "maxLevel": 20,
+      "hitDie": "d6",
+      "bab": "1/2",
+      "goodSaves": [
+        "fort",
+        "will"
+      ],
+      "skillPointsPerLevel": 6,
+      "classSkills": [
+        "concentration",
+        "craft_alchemy",
+        "craft_armor",
+        "craft_weapon",
+        "diplomacy",
+        "heal",
+        "k_arcana",
+        "k_history",
+        "k_religion",
+        "k_planes",
+        "profession",
+        "spellcraft",
+        "decipher_script",
+        "speak_language",
+        "k_arch",
+        "k_dungeon",
+        "k_geo",
+        "k_local",
+        "k_nature",
+        "k_nobility"
+      ]
+    },
+    "effects": [],
+    "shortDescription": "Scholarly Cleric variant with d6 HD, 1/2 BAB, 6 + INT skill points, all Knowledge skills, Lore (Ex), and the Knowledge domain as a bonus third domain (Unearthed Arcana p.50).",
+    "text": "Cloistered Cleric Variant (Unearthed Arcana p.50). Trades heavy/medium armor, shield proficiency, d8 Hit Die, and 3/4 BAB for d6 Hit Die, 1/2 BAB, 6 + INT skill points per level, Decipher Script, Speak Language, all Knowledge skills as class skills, Lore (functions as Bardic Knowledge), and the Knowledge domain as a bonus third domain.",
+    "tags": [
+      "class",
+      "base",
+      "variant",
+      "unearthed-arcana"
+    ],
+    "role": "Variant Base Class / Scholarly Divine Caster"
+  },
+  {
+    "schemaVersion": 3,
+    "id": "cab-battle-clarity",
+    "blueprint": "feat",
+    "name": "Battle Clarity (Ex)",
+    "type": "ClassAbility",
+    "category": "Class Feature",
+    "source": "Tome of Battle p.21",
+    "featKind": "classAbility",
+    "abilityType": "ex",
+    "associations": [
+      [
+        "Warblade",
+        1
+      ]
+    ],
+    "effects": [
+      {
+        "id": "ef-bc-when",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "br-bc-1",
+            "condKind": "state",
+            "condText": "notFlatFooted",
+            "effects": [
+              {
+                "id": "ef-bc-ref",
+                "type": "stat",
+                "targets": [
+                  "save.ref"
+                ],
+                "mode": "formula",
+                "formula": "min(@warbladeLevel, max(0, @intMod))",
+                "btype": "Insight"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "shortDescription": "While not flat-footed, add your Intelligence bonus (up to your Warblade level) as an insight bonus on Reflex saves.",
+    "text": "While not flat-footed, add your Intelligence bonus (up to your Warblade level) as an insight bonus on Reflex saves.",
+    "tags": [
+      "class-ability"
+    ]
+  },
+  {
+    "schemaVersion": 3,
+    "id": "cab-weapon-aptitude",
+    "blueprint": "feat",
+    "name": "Weapon Aptitude (Ex)",
+    "type": "ClassAbility",
+    "category": "Class Feature",
+    "source": "Tome of Battle p.22",
+    "featKind": "classAbility",
+    "abilityType": "ex",
+    "associations": [
+      [
+        "Warblade",
+        1
+      ]
+    ],
+    "effects": [
+      {
+        "id": "ef-wa-note",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "weaponAptitude",
+        "label": "Reassign weapon-specific feats (1 hr practice); Fighter level = Warblade - 2 for feat prerequisites",
+        "text": "Weapon Aptitude: Reassign weapon feats (1 hr); Fighter lvl = Warblade - 2 for prereqs"
+      }
+    ],
+    "shortDescription": "Reassign weapon-specific feats (Weapon Focus, Improved Critical, etc.) with 1 hour of weapon practice; count Warblade level - 2 as Fighter level for feat prerequisites.",
+    "text": "Reassign weapon-specific feats (Weapon Focus, Improved Critical, etc.) with 1 hour of weapon practice; count Warblade level - 2 as Fighter level for feat prerequisites.",
+    "tags": [
+      "class-ability"
+    ]
+  },
+  {
+    "schemaVersion": 3,
+    "id": "cab-battle-ardor",
+    "blueprint": "feat",
+    "name": "Battle Ardor (Ex)",
+    "type": "ClassAbility",
+    "category": "Class Feature",
+    "source": "Tome of Battle p.22",
+    "featKind": "classAbility",
+    "abilityType": "ex",
+    "associations": [
+      [
+        "Warblade",
+        3
+      ]
+    ],
+    "effects": [
+      {
+        "id": "ef-ba-crit",
+        "type": "stat",
+        "targets": [
+          "atk.critConfirm"
+        ],
+        "mode": "formula",
+        "formula": "max(0, @intMod)",
+        "btype": "Insight"
+      }
+    ],
+    "shortDescription": "Add your Intelligence bonus (if positive) as an insight bonus on attack rolls made to confirm critical hits.",
+    "text": "Add your Intelligence bonus (if positive) as an insight bonus on attack rolls made to confirm critical hits.",
+    "tags": [
+      "class-ability"
+    ]
+  },
+  {
+    "schemaVersion": 3,
+    "id": "cab-battle-cunning",
+    "blueprint": "feat",
+    "name": "Battle Cunning (Ex)",
+    "type": "ClassAbility",
+    "category": "Class Feature",
+    "source": "Tome of Battle p.22",
+    "featKind": "classAbility",
+    "abilityType": "ex",
+    "associations": [
+      [
+        "Warblade",
+        7
+      ]
+    ],
+    "effects": [
+      {
+        "id": "ef-bcun-when",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "br-bcun-1",
+            "condKind": "situational",
+            "condText": "vsFlatFootedOrFlanked",
+            "effects": [
+              {
+                "id": "ef-bcun-dmg",
+                "type": "stat",
+                "targets": [
+                  "dmg.melee"
+                ],
+                "mode": "formula",
+                "formula": "max(0, @intMod)",
+                "btype": "Insight"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "shortDescription": "Add your Intelligence bonus (if positive) as an insight bonus on melee damage rolls against flat-footed or flanked opponents.",
+    "text": "Add your Intelligence bonus (if positive) as an insight bonus on melee damage rolls against flat-footed or flanked opponents.",
+    "tags": [
+      "class-ability"
+    ]
+  },
+  {
+    "schemaVersion": 3,
+    "id": "cab-battle-skill",
+    "blueprint": "feat",
+    "name": "Battle Skill (Ex)",
+    "type": "ClassAbility",
+    "category": "Class Feature",
+    "source": "Tome of Battle p.23",
+    "featKind": "classAbility",
+    "abilityType": "ex",
+    "associations": [
+      [
+        "Warblade",
+        11
+      ]
+    ],
+    "effects": [
+      {
+        "id": "ef-bsk",
+        "type": "stat",
+        "targets": [
+          "cmd.bullRushTripDisarmOverrun"
+        ],
+        "mode": "formula",
+        "formula": "max(0, @intMod)",
+        "btype": "Insight"
+      }
+    ],
+    "shortDescription": "Add your Intelligence bonus (if positive) as an insight bonus on opposed checks made to bull rush, disarm, feint, overrun, sunder, or trip.",
+    "text": "Add your Intelligence bonus (if positive) as an insight bonus on opposed checks made to bull rush, disarm, feint, overrun, sunder, or trip.",
+    "tags": [
+      "class-ability"
+    ]
+  },
+  {
+    "schemaVersion": 3,
+    "id": "cab-battle-mastery",
+    "blueprint": "feat",
+    "name": "Battle Mastery (Ex)",
+    "type": "ClassAbility",
+    "category": "Class Feature",
+    "source": "Tome of Battle p.23",
+    "featKind": "classAbility",
+    "abilityType": "ex",
+    "associations": [
+      [
+        "Warblade",
+        15
+      ]
+    ],
+    "effects": [
+      {
+        "id": "ef-bmas",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "battleMasteryAoO",
+        "label": "+INT Insight on AoO attack & damage rolls",
+        "text": "Battle Mastery: +INT Insight on AoO attack & damage rolls"
+      }
+    ],
+    "shortDescription": "Add your Intelligence bonus (if positive) as an insight bonus on melee attack and damage rolls made for attacks of opportunity.",
+    "text": "Add your Intelligence bonus (if positive) as an insight bonus on melee attack and damage rolls made for attacks of opportunity.",
+    "tags": [
+      "class-ability"
+    ]
+  },
+  {
+    "schemaVersion": 3,
+    "id": "cab-trapfinding",
+    "blueprint": "feat",
+    "name": "Trapfinding (Ex)",
+    "type": "ClassAbility",
+    "category": "Class Feature",
+    "source": "SRD / PHB p.50",
+    "featKind": "classAbility",
+    "abilityType": "ex",
+    "associations": [
+      [
+        "Rogue",
+        1
+      ],
+      [
+        "Rogue (Adventurer Variant)",
+        1
+      ]
+    ],
+    "effects": [
+      {
+        "id": "ef-trapfinding",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "trapfinding",
+        "label": "Locate traps DC > 20 with Search and disarm magic traps with Disable Device",
+        "text": "Trapfinding: Search DC > 20 traps & Disable Device magic traps"
+      }
+    ],
+    "shortDescription": "Use the Search skill to locate traps with a DC higher than 20 and Disable Device to disarm magic traps.",
+    "text": "Use the Search skill to locate traps with a DC higher than 20 and Disable Device to disarm magic traps.",
+    "tags": [
+      "class-ability"
+    ]
+  },
+  {
+    "schemaVersion": 3,
+    "id": "cab-monk-ac-bonus",
+    "blueprint": "feat",
+    "name": "AC Bonus (Ex)",
+    "type": "ClassAbility",
+    "category": "Class Feature",
+    "source": "SRD / PHB p.40",
+    "featKind": "classAbility",
+    "abilityType": "ex",
+    "associations": [
+      [
+        "Monk",
+        1
+      ]
+    ],
+    "effects": [
+      {
+        "id": "ef-monk-ac-when",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "br-monk-ac-1",
+            "condKind": "state",
+            "condText": "unarmoredNoShield",
+            "effects": [
+              {
+                "id": "ef-monk-ac-wis",
+                "type": "stat",
+                "targets": [
+                  "ac.total"
+                ],
+                "mode": "formula",
+                "formula": "max(0, @wisMod) + floor(@monkLevel / 5)",
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "shortDescription": "When unarmored and unencumbered (no shield), add your Wisdom bonus (if any) plus +1 per 5 Monk levels to AC (applies to touch and flat-footed AC).",
+    "text": "When unarmored and unencumbered (no shield), add your Wisdom bonus (if any) plus +1 per 5 Monk levels to AC (applies to touch and flat-footed AC).",
+    "tags": [
+      "class-ability"
+    ]
+  },
+  {
+    "schemaVersion": 3,
+    "id": "cab-grace",
+    "blueprint": "feat",
+    "name": "Grace (Ex)",
+    "type": "ClassAbility",
+    "category": "Class Feature",
+    "source": "Complete Warrior p.11",
+    "featKind": "classAbility",
+    "abilityType": "ex",
+    "associations": [
+      [
+        "Swashbuckler",
+        2
+      ]
+    ],
+    "effects": [
+      {
+        "id": "ef-grace-ref",
+        "type": "stat",
+        "targets": [
+          "save.ref"
+        ],
+        "mode": "formula",
+        "formula": "@swashbucklerLevel >= 20 ? 3 : (@swashbucklerLevel >= 11 ? 2 : (@swashbucklerLevel >= 2 ? 1 : 0))",
+        "btype": "Competence"
+      }
+    ],
+    "shortDescription": "Gain a +1 competence bonus on Reflex saves at 2nd level (+2 at 11th, +3 at 20th) when wearing no or light armor and carrying no more than a light load.",
+    "text": "Gain a +1 competence bonus on Reflex saves at 2nd level (+2 at 11th, +3 at 20th) when wearing no or light armor and carrying no more than a light load.",
+    "tags": [
+      "class-ability"
+    ]
+  },
+  {
+    "schemaVersion": 3,
+    "id": "cab-insightful-strike",
+    "blueprint": "feat",
+    "name": "Insightful Strike (Ex)",
+    "type": "ClassAbility",
+    "category": "Class Feature",
+    "source": "Complete Warrior p.11",
+    "featKind": "classAbility",
+    "abilityType": "ex",
+    "associations": [
+      [
+        "Swashbuckler",
+        3
+      ]
+    ],
+    "effects": [
+      {
+        "id": "ef-inst-dmg",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "insightfulStrike",
+        "label": "+INT modifier precision damage on light or Weapon Finesse-eligible melee attacks",
+        "text": "Insightful Strike: +INT Precision Damage (Light/Finesse Weapons)"
+      }
+    ],
+    "shortDescription": "Add your Intelligence bonus (if positive, in addition to Strength) to damage rolls with any light or Weapon Finesse-eligible weapon (excludes creatures immune to critical hits).",
+    "text": "Add your Intelligence bonus (if positive, in addition to Strength) to damage rolls with any light or Weapon Finesse-eligible weapon (excludes creatures immune to critical hits).",
+    "tags": [
+      "class-ability"
+    ]
+  },
+  {
+    "schemaVersion": 3,
+    "id": "cab-favored-enemy",
+    "blueprint": "feat",
+    "name": "Favored Enemy (Ex)",
+    "type": "ClassAbility",
+    "category": "Class Feature",
+    "source": "SRD / PHB p.47",
+    "featKind": "classAbility",
+    "abilityType": "ex",
+    "associations": [
+      [
+        "Ranger",
+        1
+      ]
+    ],
+    "effects": [
+      {
+        "id": "ef-fe-when",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "br-fe-1",
+            "condKind": "situational",
+            "condText": "vs. Favored Enemy",
+            "effects": [
+              {
+                "id": "ef-fe-dmg",
+                "type": "stat",
+                "targets": [
+                  "dmg.all"
+                ],
+                "mode": "flat",
+                "value": 2,
+                "btype": "Untyped"
+              },
+              {
+                "id": "ef-fe-sk",
+                "type": "stat",
+                "targets": [
+                  "skill.bluff",
+                  "skill.listen",
+                  "skill.sense-motive",
+                  "skill.spot",
+                  "skill.survival"
+                ],
+                "mode": "flat",
+                "value": 2,
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "shortDescription": "Gain +2 bonus on Bluff, Listen, Sense Motive, Spot, and Survival checks and +2 weapon damage rolls against selected favored enemy creature type.",
+    "text": "Gain +2 bonus on Bluff, Listen, Sense Motive, Spot, and Survival checks and +2 weapon damage rolls against selected favored enemy creature type.",
+    "tags": [
+      "class-ability"
+    ]
+  },
+  {
+    "schemaVersion": 3,
+    "id": "cab-turn-undead",
+    "blueprint": "feat",
+    "name": "Turn Undead (Su)",
+    "type": "ClassAbility",
+    "category": "Class Feature",
+    "source": "SRD / PHB p.33",
+    "featKind": "classAbility",
+    "abilityType": "su",
+    "associations": [
+      [
+        "Cleric",
+        1
+      ],
+      [
+        "Cleric (Cloistered Cleric)",
+        1
+      ],
+      [
+        "Paladin",
+        4
+      ]
+    ],
+    "aliases": [
+      "Turn/Rebuke Undead"
+    ],
+    "effects": [
+      {
+        "id": "ef-turn-res",
+        "type": "resource",
+        "name": "Turn Undead",
+        "varKey": "turn_undead_uses",
+        "resMode": "spend",
+        "maxFormula": "3 + max(0, @chaMod)",
+        "reset": "perDay",
+        "unit": "uses",
+        "recharge": {
+          "period": "day"
+        }
+      },
+      {
+        "id": "ef-turn-note",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "turnUndead",
+        "label": "Channel positive energy to turn/destroy undead (3 + CHA mod/day)",
+        "text": "Turn Undead (3 + CHA mod/day)"
+      }
+    ],
+    "shortDescription": "Channel positive energy to turn or destroy undead a number of times per day equal to 3 + Charisma modifier.",
+    "text": "Channel positive energy to turn or destroy undead a number of times per day equal to 3 + Charisma modifier.",
+    "tags": [
+      "class-ability"
+    ]
+  },
+  {
+    "schemaVersion": 3,
+    "id": "cab-lore",
+    "blueprint": "feat",
+    "name": "Lore (Ex)",
+    "type": "ClassAbility",
+    "category": "Class Feature",
+    "source": "Unearthed Arcana p.50",
+    "featKind": "classAbility",
+    "abilityType": "ex",
+    "associations": [
+      [
+        "Cleric (Cloistered Cleric)",
+        1
+      ]
+    ],
+    "effects": [
+      {
+        "id": "ef-lore",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "loreCheck",
+        "label": "Lore check = 1d20 + Cleric level + INT modifier (functions as Bardic Knowledge)",
+        "text": "Lore Check: 1d20 + Cleric Level + INT Mod"
+      }
+    ],
+    "shortDescription": "Functions like Bardic Knowledge, using Cleric level + Intelligence modifier (+2 synergy with 5+ ranks in Knowledge (history)).",
+    "text": "Functions like Bardic Knowledge, using Cleric level + Intelligence modifier (+2 synergy with 5+ ranks in Knowledge (history)).",
+    "tags": [
+      "class-ability"
+    ]
+  },
+  {
+    "schemaVersion": 3,
+    "id": "cab-fighter-bonus-feat",
+    "blueprint": "feat",
+    "name": "Fighter Bonus Feat",
+    "type": "ClassAbility",
+    "category": "Class Feature",
+    "source": "SRD / PHB p.38 / Unearthed Arcana p.58",
+    "featKind": "classAbility",
+    "abilityType": "ex",
+    "associations": [
+      [
+        "Fighter",
+        1
+      ],
+      [
+        "Fighter (Thug Variant)",
+        2
+      ],
+      [
+        "Rogue (Adventurer Variant)",
+        1
+      ]
+    ],
+    "effects": [
+      {
+        "id": "ef-fbf",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "grantsFighterBonusFeat",
+        "label": "Select a Fighter Bonus Feat",
+        "text": "Grants Fighter Bonus Feat"
+      }
+    ],
+    "shortDescription": "Select a bonus combat-oriented feat from the Fighter Bonus Feat list.",
+    "text": "Select a bonus combat-oriented feat from the Fighter Bonus Feat list.",
+    "tags": [
+      "class-ability"
+    ]
+  },
+  {
+    "schemaVersion": 3,
+    "id": "cab-bonus-domain-knowledge",
+    "blueprint": "feat",
+    "name": "Bonus Domain: Knowledge",
+    "type": "ClassAbility",
+    "category": "Class Feature",
+    "source": "Unearthed Arcana p.50",
+    "featKind": "classAbility",
+    "abilityType": "ex",
+    "associations": [
+      [
+        "Cleric (Cloistered Cleric)",
+        1
+      ]
+    ],
+    "effects": [
+      {
+        "id": "ef-bdk",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "bonusDomainKnowledge",
+        "label": "Bonus 3rd Cleric Domain: Knowledge (+1 CL on Divination spells)",
+        "text": "Bonus Domain: Knowledge (+1 CL Divination)"
+      }
+    ],
+    "shortDescription": "Cloistered Clerics gain the Knowledge domain as a bonus third domain (all Knowledge skills are class skills; cast divination spells at +1 CL).",
+    "text": "Cloistered Clerics gain the Knowledge domain as a bonus third domain (all Knowledge skills are class skills; cast divination spells at +1 CL).",
+    "tags": [
+      "class-ability"
+    ]
+  },
+  {
+    "schemaVersion": 3,
+    "id": "cab-urban-class-skills",
+    "blueprint": "feat",
+    "name": "Urban Class Skills (Thug)",
+    "type": "ClassAbility",
+    "category": "Class Feature",
+    "source": "Unearthed Arcana p.51",
+    "featKind": "classAbility",
+    "abilityType": "ex",
+    "associations": [
+      [
+        "Fighter (Thug Variant)",
+        1
+      ]
+    ],
+    "effects": [
+      {
+        "id": "ef-urban-thug",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "urbanThugSkills",
+        "label": "4 + INT skill points/lvl; Bluff, Gather Information, K (local), Sleight of Hand",
+        "text": "Thug Urban Skills (4 + INT/lvl)"
+      }
+    ],
+    "shortDescription": "Gains 4 + INT skill points per level and adds Bluff, Gather Information, Knowledge (local), and Sleight of Hand to class skills.",
+    "text": "Gains 4 + INT skill points per level and adds Bluff, Gather Information, Knowledge (local), and Sleight of Hand to class skills.",
+    "tags": [
+      "class-ability"
+    ]
   }
 ]

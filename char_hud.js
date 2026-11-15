@@ -3010,6 +3010,7 @@
       const wisMod = RuleEngine ? RuleEngine.getAbilityMod(character.abilities?.wis || 10) : 0;
       const resBonus = character.saveBonuses?.resistance || 0;
       const clarityBonus = saves.battleClarityBonus || 0;
+      const miscRef = (saves.bonusRef || 0) - clarityBonus;
 
       const btnFort = saveFortEl?.closest('button');
       if (btnFort) {
@@ -3017,7 +3018,7 @@
       }
       const btnRef = saveRefEl?.closest('button');
       if (btnRef) {
-        btnRef.title = `⚡ Reflex: Base ${baseRef} + DEX (${dexMod >= 0 ? '+' : ''}${dexMod})${resBonus ? ` + Resist (+${resBonus})` : ''}${clarityBonus ? ` + Battle Clarity (+${clarityBonus})` : ''}${saves.bonusRef ? ` + Misc (+${saves.bonusRef})` : ''} = ${saves.ref >= 0 ? '+' : ''}${saves.ref}`;
+        btnRef.title = `⚡ Reflex: Base ${baseRef} + DEX (${dexMod >= 0 ? '+' : ''}${dexMod})${resBonus ? ` + Resist (+${resBonus})` : ''}${clarityBonus ? ` + Battle Clarity (+${clarityBonus})` : ''}${miscRef ? ` + Misc (${miscRef >= 0 ? '+' : ''}${miscRef})` : ''} = ${saves.ref >= 0 ? '+' : ''}${saves.ref}`;
       }
       const btnWill = saveWillEl?.closest('button');
       if (btnWill) {

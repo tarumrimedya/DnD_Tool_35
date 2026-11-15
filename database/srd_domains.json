@@ -117,7 +117,26 @@
       }
     ],
     "requiredAlignment": [],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-dom-air-res",
+        "type": "resource",
+        "name": "Turn Earth / Rebuke Air",
+        "varKey": "domain_air_uses",
+        "resMode": "spend",
+        "maxFormula": "3 + max(0, @chaMod)",
+        "reset": "perDay",
+        "unit": "uses",
+        "recharge": {
+          "period": "day"
+        }
+      },
+      {
+        "id": "ef-dom-air-n",
+        "type": "effect",
+        "text": "Turn or destroy Earth creatures; rebuke or command Air creatures (3 + CHA mod/day)"
+      }
+    ],
     "ruleFlags": {
       "turnEarth": true,
       "rebukeAir": true
@@ -256,7 +275,26 @@
       }
     ],
     "requiredAlignment": [],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-dom-anim-res",
+        "type": "resource",
+        "name": "Speak with Animals (SLA)",
+        "varKey": "domain_animal_sla",
+        "resMode": "spend",
+        "maxFormula": "1",
+        "reset": "perDay",
+        "unit": "uses",
+        "recharge": {
+          "period": "day"
+        }
+      },
+      {
+        "id": "ef-dom-anim-n",
+        "type": "effect",
+        "text": "Speak with Animals 1/day (SLA); Knowledge (nature) is a class skill"
+      }
+    ],
     "shortDescription": "You can use speak with animals once per day as a spell-like ability.",
     "text": "You can use speak with animals once per day as a spell-like ability.",
     "tags": [
@@ -525,7 +563,26 @@
       }
     ],
     "requiredAlignment": [],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-dom-death-res",
+        "type": "resource",
+        "name": "Death Touch",
+        "varKey": "domain_death_touch",
+        "resMode": "spend",
+        "maxFormula": "1",
+        "reset": "perDay",
+        "unit": "uses",
+        "recharge": {
+          "period": "day"
+        }
+      },
+      {
+        "id": "ef-dom-death-n",
+        "type": "effect",
+        "text": "Death Touch 1/day (Su): Melee touch, roll 1d6/Cleric level; kills living creature if >= current HP"
+      }
+    ],
     "ruleFlags": {
       "deathTouch": "1/day"
     },
@@ -655,7 +712,26 @@
       }
     ],
     "requiredAlignment": [],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-dom-dest-res",
+        "type": "resource",
+        "name": "Smite (Destruction)",
+        "varKey": "domain_destruction_smite",
+        "resMode": "spend",
+        "maxFormula": "1",
+        "reset": "perDay",
+        "unit": "uses",
+        "recharge": {
+          "period": "day"
+        }
+      },
+      {
+        "id": "ef-dom-dest-n",
+        "type": "effect",
+        "text": "Smite 1/day (Su): Single melee attack with +4 attack and +Cleric level damage"
+      }
+    ],
     "ruleFlags": {
       "smiteAttack": "1/day"
     },
@@ -785,7 +861,26 @@
       }
     ],
     "requiredAlignment": [],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-dom-earth-res",
+        "type": "resource",
+        "name": "Turn Air / Rebuke Earth",
+        "varKey": "domain_earth_uses",
+        "resMode": "spend",
+        "maxFormula": "3 + max(0, @chaMod)",
+        "reset": "perDay",
+        "unit": "uses",
+        "recharge": {
+          "period": "day"
+        }
+      },
+      {
+        "id": "ef-dom-earth-n",
+        "type": "effect",
+        "text": "Turn or destroy Air creatures; rebuke or command Earth creatures (3 + CHA mod/day)"
+      }
+    ],
     "ruleFlags": {
       "turnAir": true,
       "rebukeEarth": true
@@ -1058,7 +1153,26 @@
       }
     ],
     "requiredAlignment": [],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-dom-fire-res",
+        "type": "resource",
+        "name": "Turn Water / Rebuke Fire",
+        "varKey": "domain_fire_uses",
+        "resMode": "spend",
+        "maxFormula": "3 + max(0, @chaMod)",
+        "reset": "perDay",
+        "unit": "uses",
+        "recharge": {
+          "period": "day"
+        }
+      },
+      {
+        "id": "ef-dom-fire-n",
+        "type": "effect",
+        "text": "Turn or destroy Water creatures; rebuke or command Fire creatures (3 + CHA mod/day)"
+      }
+    ],
     "ruleFlags": {
       "turnWater": true,
       "rebukeFire": true
@@ -1751,7 +1865,26 @@
       }
     ],
     "requiredAlignment": [],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-dom-luck-res",
+        "type": "resource",
+        "name": "Good Fortune",
+        "varKey": "domain_luck_reroll",
+        "resMode": "spend",
+        "maxFormula": "1",
+        "reset": "perDay",
+        "unit": "uses",
+        "recharge": {
+          "period": "day"
+        }
+      },
+      {
+        "id": "ef-dom-luck-n",
+        "type": "effect",
+        "text": "Good Fortune 1/day (Ex): Reroll one roll before result is declared"
+      }
+    ],
     "ruleFlags": {
       "goodFortuneReroll": "1/day"
     },
@@ -1881,7 +2014,13 @@
       }
     ],
     "requiredAlignment": [],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-dom-magic-n",
+        "type": "effect",
+        "text": "Use scrolls, wands, and spell-completion/trigger items as a Wizard of 1/2 Cleric level (min 1)"
+      }
+    ],
     "ruleFlags": {
       "useWizardSpellDevices": true
     },
@@ -2013,7 +2152,26 @@
       }
     ],
     "requiredAlignment": [],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-dom-plant-res",
+        "type": "resource",
+        "name": "Rebuke Plants",
+        "varKey": "domain_plant_uses",
+        "resMode": "spend",
+        "maxFormula": "3 + max(0, @chaMod)",
+        "reset": "perDay",
+        "unit": "uses",
+        "recharge": {
+          "period": "day"
+        }
+      },
+      {
+        "id": "ef-dom-plant-n",
+        "type": "effect",
+        "text": "Rebuke or command plant creatures (3 + CHA mod/day); Knowledge (nature) is a class skill"
+      }
+    ],
     "ruleFlags": {
       "rebukePlant": true
     },
@@ -2273,7 +2431,26 @@
       }
     ],
     "requiredAlignment": [],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-dom-str-res",
+        "type": "resource",
+        "name": "Feat of Strength",
+        "varKey": "domain_strength_uses",
+        "resMode": "spend",
+        "maxFormula": "1",
+        "reset": "perDay",
+        "unit": "uses",
+        "recharge": {
+          "period": "day"
+        }
+      },
+      {
+        "id": "ef-dom-str-n",
+        "type": "effect",
+        "text": "Feat of Strength 1/day (Su): +Cleric level Enhancement bonus to Strength for 1 round"
+      }
+    ],
     "ruleFlags": {
       "featOfStrength": "1/day"
     },
@@ -2403,7 +2580,26 @@
       }
     ],
     "requiredAlignment": [],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-dom-sun-res",
+        "type": "resource",
+        "name": "Greater Turning",
+        "varKey": "domain_sun_greater",
+        "resMode": "spend",
+        "maxFormula": "1",
+        "reset": "perDay",
+        "unit": "uses",
+        "recharge": {
+          "period": "day"
+        }
+      },
+      {
+        "id": "ef-dom-sun-n",
+        "type": "effect",
+        "text": "Greater Turning 1/day: Undead that would be turned are destroyed instead"
+      }
+    ],
     "ruleFlags": {
       "greaterTurning": "1/day"
     },
@@ -2535,7 +2731,26 @@
       }
     ],
     "requiredAlignment": [],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-dom-trav-res",
+        "type": "resource",
+        "name": "Freedom of Movement (Domain)",
+        "varKey": "domain_travel_rounds",
+        "resMode": "spend",
+        "maxFormula": "@cl",
+        "reset": "perDay",
+        "unit": "rounds",
+        "recharge": {
+          "period": "day"
+        }
+      },
+      {
+        "id": "ef-dom-trav-n",
+        "type": "effect",
+        "text": "Freedom of Movement 1 round/Cleric level per day (Su); Survival is a class skill"
+      }
+    ],
     "ruleFlags": {
       "freedomOfMovementRoundsPerDay": "clericLevel"
     },
@@ -2669,7 +2884,13 @@
       }
     ],
     "requiredAlignment": [],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-dom-trick-n",
+        "type": "effect",
+        "text": "Class Skills: Bluff, Disguise, and Hide are Cleric class skills"
+      }
+    ],
     "shortDescription": "Bluff, Disguise and Hide are class skills.",
     "text": "Bluff, Disguise and Hide are class skills.",
     "tags": [
@@ -2799,7 +3020,15 @@
       }
     ],
     "requiredAlignment": [],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-dom-war-grant",
+        "type": "effect",
+        "effectKind": "grant",
+        "targetId": "feat-martial-weapon-proficiency",
+        "text": "Grants Martial Weapon Proficiency & Weapon Focus with deity favored weapon"
+      }
+    ],
     "ruleFlags": {
       "warDeityFavoredWeapon": true
     },
@@ -2929,7 +3158,26 @@
       }
     ],
     "requiredAlignment": [],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-dom-water-res",
+        "type": "resource",
+        "name": "Turn Fire / Rebuke Water",
+        "varKey": "domain_water_uses",
+        "resMode": "spend",
+        "maxFormula": "3 + max(0, @chaMod)",
+        "reset": "perDay",
+        "unit": "uses",
+        "recharge": {
+          "period": "day"
+        }
+      },
+      {
+        "id": "ef-dom-water-n",
+        "type": "effect",
+        "text": "Turn or destroy Fire creatures; rebuke or command Water creatures (3 + CHA mod/day)"
+      }
+    ],
     "ruleFlags": {
       "turnFire": true,
       "rebukeWater": true
@@ -3207,7 +3455,26 @@
       }
     ],
     "requiredAlignment": [],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-dom-charm-res",
+        "type": "resource",
+        "name": "Charm Boost (+4 CHA)",
+        "varKey": "domain_charm_boost",
+        "resMode": "spend",
+        "maxFormula": "1",
+        "reset": "perDay",
+        "unit": "uses",
+        "recharge": {
+          "period": "day"
+        }
+      },
+      {
+        "id": "ef-dom-charm-n",
+        "type": "effect",
+        "text": "Charm Boost 1/day (free action): +4 Charisma for 1 minute"
+      }
+    ],
     "ruleFlags": {
       "boostChaBy4OncePerDay": true
     },
@@ -3620,7 +3887,15 @@
       }
     ],
     "requiredAlignment": [],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-dom-dark-grant",
+        "type": "effect",
+        "effectKind": "grant",
+        "targetId": "feat-blind-fight",
+        "text": "Grants Blind-Fight as a bonus feat"
+      }
+    ],
     "shortDescription": "Free Blind-Fight feat.",
     "text": "Free Blind-Fight feat.",
     "tags": [
@@ -4040,7 +4315,13 @@
       }
     ],
     "requiredAlignment": [],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-dom-mad-n",
+        "type": "effect",
+        "text": "Insanity Score: +1/2 Cleric level to WIS for spellcasting DCs & bonus spells; -1/2 level penalty to Wisdom checks & Will saves"
+      }
+    ],
     "ruleFlags": {
       "insanityBonus": "clericLevel / 2"
     },
@@ -4176,7 +4457,26 @@
       }
     ],
     "requiredAlignment": [],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-dom-nob-res",
+        "type": "resource",
+        "name": "Inspire Allies",
+        "varKey": "domain_nobility_inspire",
+        "resMode": "spend",
+        "maxFormula": "1",
+        "reset": "perDay",
+        "unit": "uses",
+        "recharge": {
+          "period": "day"
+        }
+      },
+      {
+        "id": "ef-dom-nob-n",
+        "type": "effect",
+        "text": "Inspire Allies 1/day (SLA, CHA mod rounds): +2 Morale bonus on saves, attacks, ability/skill checks, and weapon damage"
+      }
+    ],
     "shortDescription": "You have the spell-like ability to inspire allies, giving them a +2 morale bonus on saving throws, attack rolls, ability checks, skill checks, and weapon damage rolls. Allies must be able to hear t...",
     "text": "You have the spell-like ability to inspire allies, giving them a +2 morale bonus on saving throws, attack rolls, ability checks, skill checks, and weapon damage rolls. Allies must be able to hear the character speak for 1 round. Using this ability is a standard action. It lasts a number of rounds equal to the character's Charisma bonus and can be used once per day.",
     "tags": [
@@ -4310,7 +4610,26 @@
       "CG",
       "CN"
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-dom-rep-res",
+        "type": "resource",
+        "name": "Death Touch (Repose)",
+        "varKey": "domain_repose_touch",
+        "resMode": "spend",
+        "maxFormula": "1",
+        "reset": "perDay",
+        "unit": "uses",
+        "recharge": {
+          "period": "day"
+        }
+      },
+      {
+        "id": "ef-dom-rep-n",
+        "type": "effect",
+        "text": "Death Touch 1/day (Su): Melee touch, roll 1d6/Cleric level vs current HP"
+      }
+    ],
     "ruleFlags": {
       "deathTouch": "1/day"
     },
@@ -4442,7 +4761,15 @@
       }
     ],
     "requiredAlignment": [],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-dom-rune-grant",
+        "type": "effect",
+        "effectKind": "grant",
+        "targetId": "feat-scribe-scroll",
+        "text": "Grants Scribe Scroll as a bonus feat"
+      }
+    ],
     "shortDescription": "Free Scribe Scroll feat.",
     "text": "Free Scribe Scroll feat.",
     "tags": [
@@ -4569,7 +4896,26 @@
       }
     ],
     "requiredAlignment": [],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-dom-scaly-res",
+        "type": "resource",
+        "name": "Rebuke Reptilian/Snakes",
+        "varKey": "domain_scalykind_uses",
+        "resMode": "spend",
+        "maxFormula": "3 + max(0, @chaMod)",
+        "reset": "perDay",
+        "unit": "uses",
+        "recharge": {
+          "period": "day"
+        }
+      },
+      {
+        "id": "ef-dom-scaly-n",
+        "type": "effect",
+        "text": "Rebuke or command reptilian creatures and snakes (3 + CHA mod/day)"
+      }
+    ],
     "ruleFlags": {
       "rebukeScalykind": true
     },
@@ -4701,7 +5047,13 @@
       }
     ],
     "requiredAlignment": [],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-dom-weath-n",
+        "type": "effect",
+        "text": "Class Skill: Survival is a Cleric class skill"
+      }
+    ],
     "shortDescription": "Survival is a class skill.",
     "text": "Survival is a class skill.",
     "tags": [
@@ -4980,7 +5332,13 @@
       }
     ],
     "requiredAlignment": [],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-dom-drag-n",
+        "type": "effect",
+        "text": "Class Skills: Bluff and Intimidate are Cleric class skills"
+      }
+    ],
     "shortDescription": "Add Bluff and Intimidate to your list of cleric class skills.",
     "text": "Add Bluff and Intimidate to your list of cleric class skills.",
     "tags": [

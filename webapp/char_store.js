@@ -4599,6 +4599,7 @@
     if (k === 'armor' || k === 'shield') return 'Armor';
     if (k === 'item' || k === 'gear' || k === 'wondrous') return 'Magic Item';
     if (k === 'feat' || k === 'boon') return 'Feat';
+    if (k === 'classability' || k === 'class_ability' || k === 'classfeature' || k === 'class_feature') return 'ClassAbility';
     if (k === 'spell') return 'Spell';
     if (k === 'maneuver') return 'Maneuver';
     if (k === 'psionic' || k === 'psionics') return 'Power';
@@ -4612,26 +4613,89 @@
     return undefined;
   }
 
+  const _SOURCE_BOOK_NAMES = {
+    'tob': 'Tome of Battle (ToB)',
+    'phb2': 'Player\'s Handbook II (PHB2)',
+    'phbii': 'Player\'s Handbook II (PHB2)',
+    'cad': 'Complete Adventurer (CAdv)',
+    'cadv': 'Complete Adventurer (CAdv)',
+    'cw': 'Complete Warrior (CW)',
+    'cd': 'Complete Divine (CD)',
+    'ca': 'Complete Arcane (CArc)',
+    'carc': 'Complete Arcane (CArc)',
+    'cm': 'Complete Mage (CM)',
+    'cs': 'Complete Scoundrel (CS)',
+    'cc': 'Complete Champion (CC)',
+    'moi': 'Magic of Incarnum (MoI)',
+    'tom': 'Tome of Magic (ToM)',
+    'xph': 'Expanded Psionics Handbook (XPH)',
+    'ua': 'Unearthed Arcana (UA)'
+  };
+
   function _findInSrdCompendium(id, name, kind) {
     const comp = typeof root !== 'undefined' ? root.SrdCompendium : null;
     if (!comp) return null;
     const typeHint = _srdTypeForKind(kind);
-    if (id && typeof comp.getById === 'function') {
-      const byId = comp.getById(id);
-      if (byId) return byId;
-    }
     const cleanName = _stripBoonPrefix(name);
-    if (cleanName && typeof comp.getByName === 'function') {
-      const byName = typeHint ? comp.getByName(cleanName, typeHint) : null;
-      if (byName) return byName;
-      const anyName = comp.getByName(cleanName);
-      if (anyName) return anyName;
+    const strippedAbilityName = cleanName
+      ? cleanName.replace(/\s*\((?:ex|su|sp|na)\)\s*$/i, '').replace(/\s*\+\d+(?:d\d+)?.*$/i, '').trim()
+      : '';
+    const cabSlug = strippedAbilityName
+      ? ('cab-' + _slugifyCrafterId(strippedAbilityName).replace(/_/g, '-'))
+      : '';
+
+    const tryDirectLookup = function () {
+      if (id && typeof comp.getById === 'function') {
+        const byId = comp.getById(id);
+        if (byId) return byId;
+      }
+      if (cleanName && typeof comp.getByName === 'function') {
+        const byName = typeHint ? comp.getByName(cleanName, typeHint) : null;
+        if (byName) return byName;
+        const byCab = comp.getByName(cleanName, 'ClassAbility');
+        if (byCab) return byCab;
+        if (strippedAbilityName && strippedAbilityName !== cleanName) {
+          const byStrippedHint = typeHint ? comp.getByName(strippedAbilityName, typeHint) : null;
+          if (byStrippedHint) return byStrippedHint;
+          const byStrippedCab = comp.getByName(strippedAbilityName, 'ClassAbility');
+          if (byStrippedCab) return byStrippedCab;
+          const byStrippedAny = comp.getByName(strippedAbilityName);
+          if (byStrippedAny) return byStrippedAny;
+        }
+        const anyName = comp.getByName(cleanName);
+        if (anyName) return anyName;
+      }
+      if (cabSlug && typeof comp.getById === 'function') {
+        const byCabSlug = comp.getById(cabSlug);
+        if (byCabSlug) return byCabSlug;
+      }
+      return null;
+    };
+
+    const directHit = tryDirectLookup();
+    if (directHit) return directHit;
+
+    if (typeof comp.findIndexEntry === 'function' && typeof comp.ensureChunkLoaded === 'function') {
+      const idxHit = (id && comp.findIndexEntry(id))
+        || (cabSlug && comp.findIndexEntry(cabSlug))
+        || (cleanName && typeHint && comp.findIndexEntry(cleanName, typeHint))
+        || (cleanName && comp.findIndexEntry(cleanName, 'ClassAbility'))
+        || (strippedAbilityName && comp.findIndexEntry(strippedAbilityName, 'ClassAbility'))
+        || (cleanName && comp.findIndexEntry(cleanName))
+        || (strippedAbilityName && comp.findIndexEntry(strippedAbilityName));
+      if (idxHit && idxHit.f) {
+        comp.ensureChunkLoaded(idxHit.f);
+        const lazyHit = tryDirectLookup();
+        if (lazyHit) return lazyHit;
+      }
     }
+
     if (cleanName && typeof comp.search === 'function') {
       const hits = comp.search(cleanName, typeHint ? { type: typeHint, limit: 5 } : { limit: 5 });
       if (Array.isArray(hits) && hits.length > 0) {
         const exact = hits.find(function (h) {
-          return h && String(h.name || '').trim().toLowerCase() === cleanName.toLowerCase();
+          const hn = String((h && h.name) || '').trim().toLowerCase();
+          return hn === cleanName.toLowerCase() || (strippedAbilityName && hn === strippedAbilityName.toLowerCase());
         });
         if (exact) return exact;
       }
@@ -5032,8 +5096,90 @@
         kind
       );
 
+      // 4.5. Fallback search in active/all Classes' `features` map for Class Features (`cab-*`)
+      let classFeatureEntry = null;
+      if (!srdEntry && (cleanName || idQuery)) {
+        const comp = typeof root !== 'undefined' ? root.SrdCompendium : null;
+        const re = typeof root !== 'undefined' ? root.RuleEngine : null;
+        const normAbilityKey = function (s) {
+          return String(s || '')
+            .toLowerCase()
+            .replace(/\s*\((?:ex|su|sp|na)\)\s*/gi, ' ')
+            .replace(/\s*\+\d+(?:d\d+)?.*$/i, '')
+            .replace(/[^a-z0-9]+/g, ' ')
+            .trim();
+        };
+        const targetNorm = normAbilityKey(cleanName || (charItem && charItem.name) || '');
+        const candidateClasses = [];
+        const seenClsNames = new Set();
+        const pushCls = function (clsObj) {
+          if (!clsObj || typeof clsObj !== 'object') return;
+          const k = String(clsObj.id || clsObj.name || '').toLowerCase().trim();
+          if (k && !seenClsNames.has(k)) {
+            seenClsNames.add(k);
+            candidateClasses.push(clsObj);
+          }
+        };
+        if (Array.isArray(doc.levelProgression) && re && typeof re.getClassDef === 'function') {
+          doc.levelProgression.forEach(function (row) {
+            if (row && (row.className || row.class)) {
+              pushCls(re.getClassDef(row.className || row.class, doc));
+            }
+          });
+        }
+        if (comp && typeof comp.getAllClasses === 'function') {
+          if (typeof comp.ensureChunkLoaded === 'function') {
+            comp.ensureChunkLoaded('srd_classes_splat.json');
+          }
+          const allCls = comp.getAllClasses() || [];
+          allCls.forEach(pushCls);
+        }
+        for (let ci = 0; ci < candidateClasses.length && !classFeatureEntry; ci++) {
+          const cls = candidateClasses[ci];
+          const featsMap = cls && cls.features && typeof cls.features === 'object' ? cls.features : null;
+          if (!featsMap) continue;
+          const lvlKeys = Object.keys(featsMap);
+          for (let li = 0; li < lvlKeys.length && !classFeatureEntry; li++) {
+            const lvl = lvlKeys[li];
+            const fArr = Array.isArray(featsMap[lvl]) ? featsMap[lvl] : [];
+            for (let fi = 0; fi < fArr.length; fi++) {
+              const f = fArr[fi];
+              if (!f) continue;
+              const fObj = typeof f === 'string' ? { name: f } : f;
+              const fId = String(fObj.id || '').trim();
+              const fName = String(fObj.name || '').trim();
+              const isMatch = (idQuery && fId && fId.toLowerCase() === idQuery.toLowerCase()) ||
+                (cleanName && fName.toLowerCase() === cleanName.toLowerCase()) ||
+                (targetNorm && normAbilityKey(fName) === targetNorm);
+              if (isMatch) {
+                const linkedCab = (fId && comp && typeof comp.getById === 'function') ? comp.getById(fId) : null;
+                const slug = _slugifyCrafterId(fName.replace(/\s*\((?:ex|su|sp|na)\)\s*$/i, '')).replace(/_/g, '-');
+                const rawSrc = String((linkedCab && linkedCab.source) || cls.source || 'PHB').trim();
+                const expandedSrc = _SOURCE_BOOK_NAMES[rawSrc.toLowerCase()] || rawSrc;
+                const summaryText = (linkedCab && (linkedCab.shortDescription || linkedCab.text || linkedCab.benefit || linkedCab.description)) || fObj.summary || fObj.benefit || fObj.description || '';
+                classFeatureEntry = Object.assign({}, linkedCab || {}, {
+                  id: (linkedCab && linkedCab.id) || fId || ('cab-' + slug),
+                  name: (linkedCab && linkedCab.name) || fName,
+                  type: 'ClassAbility',
+                  blueprint: 'feat',
+                  featKind: 'classAbility',
+                  abilityType: String((linkedCab && linkedCab.abilityType) || fObj.type || 'Ex').toLowerCase(),
+                  source: expandedSrc + ' (' + (cls.name || 'Class') + ' Level ' + lvl + ')',
+                  shortDescription: summaryText,
+                  text: summaryText,
+                  effects: (linkedCab && Array.isArray(linkedCab.effects) && linkedCab.effects.length > 0)
+                    ? linkedCab.effects
+                    : (Array.isArray(fObj.effects) ? fObj.effects : [])
+                });
+                break;
+              }
+            }
+          }
+        }
+      }
+
       if (!overrideEntry && doc.customEntries && typeof doc.customEntries === 'object' && !Array.isArray(doc.customEntries)) {
-        const lookupId = (charItem && (charItem.customEntryId || charItem.id || charItem.baseItemId)) || (srdEntry && srdEntry.id) || '';
+        const lookupId = (charItem && (charItem.customEntryId || charItem.id || charItem.baseItemId)) || (srdEntry && srdEntry.id) || (classFeatureEntry && classFeatureEntry.id) || '';
         if (lookupId && doc.customEntries[lookupId]) {
           overrideEntry = doc.customEntries[lookupId];
           resolvedId = overrideEntry.id || lookupId;
@@ -5045,16 +5191,32 @@
       if (overrideEntry) {
         entry = CharStore._fastCloneHistoryVal(overrideEntry);
       } else if (charItem && typeof charItem === 'object') {
-        const baseObj = srdEntry || masterEntry;
-        entry = baseObj
-          ? Object.assign(CharStore._fastCloneHistoryVal(baseObj), CharStore._fastCloneHistoryVal(charItem))
-          : CharStore._fastCloneHistoryVal(charItem);
+        const baseObj = srdEntry || masterEntry || classFeatureEntry;
+        if (baseObj) {
+          const clonedBase = CharStore._fastCloneHistoryVal(baseObj);
+          const clonedChar = CharStore._fastCloneHistoryVal(charItem);
+          entry = Object.assign({}, clonedBase, clonedChar);
+          if ((!Array.isArray(clonedChar.effects) || clonedChar.effects.length === 0) && Array.isArray(clonedBase.effects) && clonedBase.effects.length > 0) {
+            entry.effects = clonedBase.effects;
+          }
+          if ((!clonedChar.source || clonedChar.source === 'Custom') && clonedBase.source) {
+            entry.source = clonedBase.source;
+          }
+          if (!clonedChar.id && clonedBase.id) {
+            entry.id = clonedBase.id;
+          }
+        } else {
+          entry = CharStore._fastCloneHistoryVal(charItem);
+        }
         sourceLocation = sourceLocation || 'character';
       } else if (masterEntry) {
         entry = CharStore._fastCloneHistoryVal(masterEntry);
         sourceLocation = 'masterDb';
       } else if (srdEntry) {
         entry = CharStore._fastCloneHistoryVal(srdEntry);
+        sourceLocation = 'srd';
+      } else if (classFeatureEntry) {
+        entry = CharStore._fastCloneHistoryVal(classFeatureEntry);
         sourceLocation = 'srd';
       } else if (cleanName) {
         entry = {
@@ -5066,19 +5228,29 @@
         sourceLocation = 'synthetic';
       }
 
+      if (entry && (entry.type === 'ClassAbility' || String(entry.id || '').startsWith('cab-'))) {
+        if (!entry.blueprint) entry.blueprint = 'feat';
+        if (!entry.featKind) entry.featKind = 'classAbility';
+        const rawEntrySrc = String(entry.source || '').trim().toLowerCase();
+        if (_SOURCE_BOOK_NAMES[rawEntrySrc]) {
+          entry.source = _SOURCE_BOOK_NAMES[rawEntrySrc];
+        }
+      }
+
       if (entry && !resolvedId) {
         resolvedId = entry.id || entry.baseEntryId || ((kind || 'entry') + '_' + _slugifyCrafterId(entry.name || cleanName));
         if (!entry.id) entry.id = resolvedId;
       }
 
+      const effSrdBase = srdEntry || classFeatureEntry || null;
       return {
         entry: entry,
         resolvedId: resolvedId || null,
         kind: kind || null,
         sourceLocation: sourceLocation,
         isCustomOverride: Boolean(overrideEntry || (entry && entry.schemaVersion === 3 && entry._crafterOverride)),
-        hasSrdBase: Boolean(srdEntry),
-        srdBaseEntry: srdEntry ? CharStore._fastCloneHistoryVal(srdEntry) : null
+        hasSrdBase: Boolean(effSrdBase),
+        srdBaseEntry: effSrdBase ? CharStore._fastCloneHistoryVal(effSrdBase) : null
       };
     },
     toV3CrafterDraft(entry, kind) {

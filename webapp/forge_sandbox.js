@@ -45,7 +45,7 @@
       ['choice.ability.3', 'Chosen Ability #3 (Distinct)'],
       ['choice.ability.4', 'Chosen Ability #4 (Distinct)']
     ])],
-    ['Armor Class', [['ac.total', 'AC (All)'], ['ac.touch', 'Touch AC only'], ['ac.flatFooted', 'Flat-Footed AC only'], ['ac.armor', 'Armor Bonus'], ['ac.shield', 'Shield Bonus'], ['ac.natural', 'Natural Armor'], ['ac.deflection', 'Deflection'], ['ac.dodge', 'Dodge']]],
+    ['Armor Class', [['ac.total', 'AC (All)'], ['ac.touch', 'Touch AC only'], ['ac.flatFooted', 'Flat-Footed AC only'], ['ac.armor', 'Armor Bonus'], ['ac.shield', 'Shield Bonus'], ['ac.shieldBonus', 'Shield AC Bonus (Stacks w/ Base Shield)'], ['ac.natural', 'Natural Armor'], ['ac.deflection', 'Deflection'], ['ac.dodge', 'Dodge']]],
     ['Saving Throws', [['save.all', 'All Saving Throws'], ['save.fort', 'Fortitude'], ['save.ref', 'Reflex'], ['save.will', 'Will']]],
     ['Combat', [['atk.all', 'Attack Rolls (All)'], ['atk.melee', 'Melee Attack'], ['atk.ranged', 'Ranged Attack'], ['dmg.all', 'Damage (All)'], ['dmg.melee', 'Melee Damage'], ['initiative', 'Initiative'], ['speed.land', 'Land Speed (ft.)'], ['hp.temp', 'Temporary Hit Points'], ['grapple', 'Grapple']]],
     ['Spellcasting', [['casterLevel', 'Caster Level'], ['spell.dc', 'Spell Save DC'], ['spell.effectiveLevel', 'Effective Spell Level'], ['sr.penetration', 'Spell Penetration (vs SR)']]],
@@ -397,6 +397,23 @@
     loseDex: 'Lose DEX Bonus to AC', flatFooted: 'Flat-Footed', cannotAct: 'Cannot Take Actions (Stunned/Dazed)', blinded: 'Blinded (-2 AC, Lose DEX)',
     entangled: 'Entangled (-2 Atk, -4 DEX)', negLevel: 'Negative Level (-1 Atk/Saves/Checks/CL, -5 HP per stack)', extraAttack: 'Extra Attack on Full Attack (Haste / Speed)'
   };
+  const WHEN_COND_LABELS = {
+    notFlatFooted: 'While Not Flat-Footed',
+    wieldingChosenShield: 'While Wielding Chosen Shield',
+    wieldingChosenWeapon: 'While Wielding Chosen Weapon',
+    wieldingTwoWeapons: 'While Two-Weapon / Double Weapon Fighting',
+    vsAoOFromMovement: 'vs. Attacks of Opportunity from Movement'
+  };
+  const RULE_SWITCH_FLAGS = [
+    ['babEqualsLevel', 'BAB Equals Character Level'],
+    ['shieldToTouchAc', 'Shield Bonus Applies to Touch AC'],
+    ['conToWillSave', 'Use CON Modifier for Will Saves'],
+    ['weaponFinesse', 'Weapon Finesse (DEX to Melee Attack)'],
+    ['shadowBlade', 'Shadow Blade (+DEX to Shadow Hand Damage)'],
+    ['monkeyGrip', 'Monkey Grip (Wield Larger Weapons at -2)'],
+    ['tacticalSlider', 'Enable Tactical Combat Slider']
+  ];
+  const RULE_SWITCH_LABEL = {}; RULE_SWITCH_FLAGS.forEach((x) => { RULE_SWITCH_LABEL[x[0]] = x[1]; });
 
   const BLOCK_TYPES = {
     resource: { icon: '🔋', label: 'Resource / Dial (@X)', shortLabel: '@Resource', color: 'b-teal' },
@@ -565,6 +582,12 @@
         const brk = { suppress: 'Suppress', loss24h: '24h Loss', atonement: 'Needs Atonement', irrevocable: 'Irrevocable' }[br.onBreak || 'suppress'] || 'Suppress';
         return 'Oath (' + (br.oathRule || 'Unbroken') + ' — Break: ' + brk + ')';
       }
+      if (WHEN_COND_LABELS[br.condKind]) {
+        return WHEN_COND_LABELS[br.condKind] + (br.condText ? ' (' + br.condText + ')' : '');
+      }
+      if (WHEN_COND_LABELS[br.condText]) {
+        return WHEN_COND_LABELS[br.condText];
+      }
       const kindLbl = { state: 'While State', bound: 'While Bound', levelTier: 'Tier', synergy: 'Synergy', situational: 'When' }[br.condKind || 'state'] || 'While';
       return kindLbl + ': ' + (br.condText || 'Active');
     }
@@ -686,6 +709,10 @@
       }
       case 'effect': {
         const ek = b.effectKind || 'rule';
+        const fk = b.flag || b.ruleFlag || '';
+        if (ek === 'ruleSwitch' || (fk && RULE_SWITCH_LABEL[fk])) {
+          return 'Rule Switch: ' + (RULE_SWITCH_LABEL[fk] || fk || 'Flag');
+        }
         if (ek === 'castSpell') {
           const what = b.castMode === 'ownSlotUpTo'
             ? 'Cast Self Spell (Own Slot ≤ Lvl ' + num(b.maxSpellLvl, 2) + ')'
@@ -2348,12 +2375,21 @@
         }
       }
     }
+    if (t === 'effect' && (normalized.flag || normalized.ruleFlag) && !normalized.effectKind) {
+      normalized.effectKind = 'ruleSwitch';
+      normalized.flag = normalized.flag || normalized.ruleFlag;
+    }
     const b = BLK(t, normalized);
     delete b.summary;
     delete b.effects;
     if (t === 'when' && Array.isArray(ef.branches)) {
       b.branches = ef.branches.map((br) => {
         const bo = blankBranch(br);
+        const rawWhen = (typeof br.when === 'string' && br.when) || (typeof br.condition === 'string' && br.condition) || '';
+        if (!br.condKind && WHEN_COND_LABELS[rawWhen]) {
+          bo.condKind = rawWhen;
+          if (!br.condText) bo.condText = '';
+        }
         delete bo.effects;
         bo.kids = Array.isArray(br.effects || br.kids) ? (br.effects || br.kids).map(parseBlockV3).filter(Boolean) : [];
         return bo;
@@ -3817,8 +3853,16 @@
         ['choicePath', '🔀 Chosen Path (@Choice)'],
         ['synergy', 'Active #Tag / Synergy'],
         ['situational', 'Equipment / Combat State'],
+        ['notFlatFooted', 'While Not Flat-Footed'],
+        ['wieldingChosenShield', 'While Wielding Chosen Shield'],
+        ['wieldingChosenWeapon', 'While Wielding Chosen Weapon'],
+        ['wieldingTwoWeapons', 'While Two-Weapon / Double Weapon Fighting'],
+        ['vsAoOFromMovement', 'vs. Attacks of Opportunity from Movement'],
         ['oath', '⚖️ Oath / Taboo Unbroken']
       ], { narrow: true });
+      if (WHEN_COND_LABELS[ck]) {
+        return G(2, F('Condition Kind', kindSel) + F('Condition Note (Optional)', inp(bp + '.condText', br.condText || '', { ph: WHEN_COND_LABELS[ck] })));
+      }
       if (ck === 'choicePath') {
         return G(2,
           F('Condition Kind', kindSel) +
@@ -4123,8 +4167,9 @@
         return G(2, F('Defense Kind', modeSel) + F('Trait / Scope', inp(p + '.what', b.what, { list: 'fs-defense-list', ph: 'Fear / Darkvision 60 ft. / Pounce' })));
       }
       case 'effect': {
-        const ek = b.effectKind || 'rule';
+        const ek = b.effectKind || ((b.flag || b.ruleFlag) ? 'ruleSwitch' : 'rule');
         const modeSel = sel(p + '.effectKind', ek, [
+          ['ruleSwitch', '🔀 Rule Switch Flag'],
           ['castSpell', '🔮 Cast Spell / Free Buff'],
           ['recoverSlot', '🔄 Recover Expended Slot / Maneuver'],
           ['stealStore', '⚡ Steal / Drain into @Buffer'],
@@ -4132,6 +4177,9 @@
           ['castEvolution', '✨ Upgrade Cast Nature (Spell → Sp → Su)'],
           ['rule', '📜 Rule Text']
         ], { narrow: true });
+        if (ek === 'ruleSwitch') {
+          return G(2, F('Effect Kind', modeSel) + F('Rule Switch Flag', sel(p + '.flag', b.flag || b.ruleFlag || 'babEqualsLevel', RULE_SWITCH_FLAGS, { narrow: true })));
+        }
         if (ek === 'castSpell') {
           const cm = b.castMode || 'linkedSpell';
           const spellLbl = cm === 'ownSlotUpTo' ? 'Max Spell Level' : 'Spell / Buff Options';

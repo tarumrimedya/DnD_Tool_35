@@ -62,7 +62,16 @@
     "sr": false,
     "buffTargetMode": "weapon",
     "powerPointsCost": null,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-bless-weapon",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "blessWeapon",
+        "label": "Weapon counts as good-aligned (bypasses DR/good) and auto-confirms critical threats vs. evil foes",
+        "text": "Bless Weapon: Good-Aligned & Auto-Confirm Crits vs. Evil"
+      }
+    ],
     "ruleFlags": {
       "bypassDR": [
         "Evil"
@@ -2235,7 +2244,23 @@
     "save": "Reflex half",
     "sr": true,
     "powerPointsCost": null,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-lightning-bolt",
+        "type": "roll",
+        "kind": "Damage",
+        "dmgType": "Electricity",
+        "crit": "normal",
+        "multiplyOnCrit": false,
+        "saveType": "Reflex",
+        "save": "Reflex half",
+        "dice": "min(10, @cl)d6",
+        "count": 1,
+        "die": "d6",
+        "scaling": "formula",
+        "source": "Lightning Bolt"
+      }
+    ],
     "shortDescription": "Electricity deals 1d6/level damage.",
     "text": "You release a powerful stroke of electrical energy that deals 1d6 points of electricity damage per caster level (maximum 10d6) to each creature within its area. The bolt begins at your fingertips.\n\nThe lightning bolt sets fire to combustibles and damages objects in its path. It can melt metals with a low melting point, such as lead, gold, copper, silver, or bronze. If the damage caused to an interposing barrier shatters or breaks through it, the bolt may continue beyond the barrier if the spell’s range permits; otherwise, it stops at the barrier just as any other spell effect does.\n\nMaterial Component: A bit of fur and an amber, crystal, or glass rod.",
     "tags": [
@@ -2784,7 +2809,18 @@
     "sr": true,
     "buffTargetMode": "single",
     "powerPointsCost": null,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-stoneskin-dr",
+        "type": "defense",
+        "mode": "DR",
+        "value": 10,
+        "what": "adamantine",
+        "dr": "10/adamantine",
+        "poolFormula": "min(150, @cl * 10)",
+        "text": "DR 10/adamantine (absorbs up to min(150, 10 x CL) total damage)"
+      }
+    ],
     "ruleFlags": {
       "drAdamantine": 10,
       "drPoolFormula": "min(150, @cl * 10)"
@@ -2937,7 +2973,16 @@
     "save": "None",
     "sr": true,
     "powerPointsCost": null,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-faerie-fire",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "negatesConcealment",
+        "label": "Outlines subjects in pale glow, negating blur, displacement, invisibility, and concealment",
+        "text": "Faerie Fire: Negates Blur/Displacement/Invisibility/Concealment"
+      }
+    ],
     "shortDescription": "Outlines subjects with light, canceling blur, concealment, and the like.",
     "text": "A pale glow surrounds and outlines the subjects. Outlined subjects shed light as candles. Outlined creatures do not benefit from the concealment normally provided by darkness (though a 2nd-level or higher magical darkness effect functions normally), blur, displacement, invisibility, or similar effects. The light is too dim to have any special effect on undead or dark-dwelling creatures vulnerable to light. The faerie fire can be blue, green, or violet, according to your choice at the time of casting. The faerie fire does not cause any harm to the objects or creatures thus outlined.",
     "tags": [
@@ -4347,7 +4392,23 @@
     "save": "Fortitude partial",
     "sr": true,
     "powerPointsCost": null,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-sound-burst",
+        "type": "roll",
+        "kind": "Damage",
+        "dmgType": "Sonic",
+        "crit": "normal",
+        "multiplyOnCrit": false,
+        "saveType": "Fortitude",
+        "save": "Fortitude negates stun",
+        "dice": "1d8",
+        "count": 1,
+        "die": "d8",
+        "scaling": "flat",
+        "source": "Sound Burst"
+      }
+    ],
     "shortDescription": "Deals 1d8 sonic damage to subjects; may stun them.",
     "text": "You blast an area with a tremendous cacophony. Every creature in the area takes 1d8 points of sonic damage and must succeed on a Fortitude save to avoid being stunned for 1 round.\n\nCreatures that cannot hear are not stunned but are still damaged.\n\nArcane Focus: A musical instrument.",
     "tags": [
@@ -4516,7 +4577,22 @@
     "save": "None",
     "sr": true,
     "powerPointsCost": null,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-polar-ray",
+        "type": "roll",
+        "kind": "Damage",
+        "dmgType": "Cold",
+        "crit": "multiply",
+        "multiplyOnCrit": true,
+        "touch": true,
+        "dice": "min(25, @cl)d6",
+        "count": 1,
+        "die": "d6",
+        "scaling": "formula",
+        "source": "Polar Ray"
+      }
+    ],
     "shortDescription": "Ranged touch attack deals 1d6/level cold damage.",
     "text": "A blue-white ray of freezing air and ice springs from your hand. You must succeed on a ranged touch attack with the ray to deal damage to a target. The ray deals 1d6 points of cold damage per caster level (maximum 25d6).\n\nFocus: A small, white ceramic cone or prism.",
     "tags": [
@@ -9471,7 +9547,27 @@
     "save": "Fortitude partial or Will negates; see text",
     "sr": true,
     "powerPointsCost": null,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-chill-touch",
+        "type": "roll",
+        "kind": "Damage",
+        "dmgType": "Negative Energy",
+        "crit": "multiply",
+        "multiplyOnCrit": true,
+        "touch": true,
+        "dice": "1d6",
+        "count": 1,
+        "die": "d6",
+        "scaling": "flat",
+        "source": "Chill Touch"
+      },
+      {
+        "id": "ef-chill-touch-str",
+        "type": "effect",
+        "text": "1 touch/CL: deals 1d6 damage + 1 STR damage (Fort negates STR damage; undead flee on failed Will save)"
+      }
+    ],
     "shortDescription": "One touch/level deals 1d6 damage and possibly 1 Str damage.",
     "text": "A touch from your hand, which glows with blue energy, disrupts the life force of living creatures. Each touch channels negative energy that deals 1d6 points of damage. The touched creature also takes 1 point of Strength damage unless it makes a successful Fortitude saving throw. You can use this melee touch attack up to one time per level.\n\nAn undead creature you touch takes no damage of either sort, but it must make a successful Will saving throw or flee as if panicked for 1d4 rounds +1 round per caster level.",
     "tags": [
@@ -14668,7 +14764,28 @@
     "save": "Reflex partial; see text",
     "sr": true,
     "powerPointsCost": null,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-sunburst",
+        "type": "roll",
+        "kind": "Damage",
+        "dmgType": "Untyped",
+        "crit": "normal",
+        "multiplyOnCrit": false,
+        "saveType": "Reflex",
+        "save": "Reflex partial",
+        "dice": "6d6",
+        "count": 6,
+        "die": "d6",
+        "scaling": "flat",
+        "source": "Sunburst"
+      },
+      {
+        "id": "ef-sunburst-undead",
+        "type": "effect",
+        "text": "Blinds targets (Reflex negates); deals min(25, @cl)d6 damage to undead and light-vulnerable creatures"
+      }
+    ],
     "shortDescription": "Blinds all within 10 ft., deals 6d6 damage.",
     "text": "Sunburst causes a globe of searing radiance to explode silently from a point you select. All creatures in the globe are blinded and take 6d6 points of damage. A creature to which sunlight is harmful or unnatural takes double damage. A successful Reflex save negates the blindness and reduces the damage by half.\n\nAn undead creature caught within the globe takes 1d6 points of damage per caster level (maximum 25d6), or half damage if a Reflex save is successful. In addition, the burst results in the destruction of any undead creature specifically harmed by bright light if it fail its save.\n\nThe ultraviolet light generated by the spell deals damage to fungi, mold, oozes, and slimes just as if they were undead creatures.\n\nSunburst dispels any darkness spells of lower than 9th level within its area.\n\nArcane Material Component: A piece of sunstone and a naked flame.",
     "tags": [
@@ -28404,7 +28521,23 @@
     "save": "Reflex half or Reflex negates; see text",
     "sr": true,
     "powerPointsCost": null,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-blade-barrier",
+        "type": "roll",
+        "kind": "Damage",
+        "dmgType": "Slashing",
+        "crit": "normal",
+        "multiplyOnCrit": false,
+        "saveType": "Reflex",
+        "save": "Reflex half",
+        "dice": "min(15, @cl)d6",
+        "count": 1,
+        "die": "d6",
+        "scaling": "formula",
+        "source": "Blade Barrier"
+      }
+    ],
     "shortDescription": "Wall of blades deals 1d6/level damage.",
     "text": "An immobile, vertical curtain of whirling blades shaped of pure force springs into existence. Any creature passing through the wall takes 1d6 points of damage per caster level (maximum 15d6), with a Reflex save for half damage.\n\nIf you evoke the barrier so that it appears where creatures are, each creature takes damage as if passing through the wall. Each such creature can avoid the wall (ending up on the side of its choice) and thus take no damage by making a successful Reflex save.\n\nA blade barrier provides cover (+4 bonus to AC, +2 bonus on Reflex saves) against attacks made through it.",
     "tags": [
@@ -31058,7 +31191,22 @@
     "save": "None",
     "sr": true,
     "powerPointsCost": null,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-ray-enfeeble",
+        "type": "roll",
+        "kind": "Damage",
+        "dmgType": "STR Penalty",
+        "crit": "normal",
+        "multiplyOnCrit": false,
+        "touch": true,
+        "dice": "1d6+min(5, floor(@cl / 2))",
+        "count": 1,
+        "die": "d6",
+        "scaling": "formula",
+        "source": "Ray of Enfeeblement"
+      }
+    ],
     "shortDescription": "Ray deals 1d6 +1 per two levels Str damage.",
     "text": "A coruscating ray springs from your hand. You must succeed on a ranged touch attack to strike a target. The subject takes a penalty to Strength equal to 1d6+1 per two caster levels (maximum 1d6+5). The subject’s Strength score cannot drop below 1.",
     "tags": [
@@ -33876,7 +34024,37 @@
     "save": "None or Reflex half; see text",
     "sr": true,
     "powerPointsCost": null,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-meteor-swarm-bludg",
+        "type": "roll",
+        "kind": "Damage",
+        "dmgType": "Bludgeoning",
+        "crit": "multiply",
+        "multiplyOnCrit": true,
+        "touch": true,
+        "dice": "2d6",
+        "count": 2,
+        "die": "d6",
+        "scaling": "flat",
+        "source": "Meteor Swarm (Sphere Impact)"
+      },
+      {
+        "id": "ef-meteor-swarm-fire",
+        "type": "roll",
+        "kind": "Damage",
+        "dmgType": "Fire",
+        "crit": "normal",
+        "multiplyOnCrit": false,
+        "saveType": "Reflex",
+        "save": "Reflex half",
+        "dice": "6d6",
+        "count": 6,
+        "die": "d6",
+        "scaling": "flat",
+        "source": "Meteor Swarm (Fire Explosion x4)"
+      }
+    ],
     "shortDescription": "Four exploding spheres each deal 6d6 fire damage.",
     "text": "Meteor swarm is a very powerful and spectacular spell that is similar to fireball in many aspects. When you cast it, four 2- foot-diameter spheres spring from your outstretched hand and streak in straight lines to the spots you select. The meteor spheres leave a fiery trail of sparks.\n\nIf you aim a sphere at a specific creature, you may make a ranged touch attack to strike the target with the meteor. Any creature struck by one of these spheres takes 2d6 points of bludgeoning damage (no save) and receives no saving throw against the sphere’s fire damage (see below). If a targeted sphere misses its target, it simply explodes at the nearest corner of the target’s space. You may aim more than one meteor at the same target.\n\nOnce a sphere reaches its destination, it explodes in a 40-foot-radius spread, dealing 6d6 points of fire damage to each creature in the area. If a creature is within the area of more than one sphere, it must save separately against each. (Fire resistance applies to each sphere’s damage individually.)",
     "tags": [
@@ -37797,7 +37975,27 @@
     "save": "None",
     "sr": true,
     "powerPointsCost": null,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-searing-light",
+        "type": "roll",
+        "kind": "Damage",
+        "dmgType": "Untyped",
+        "crit": "multiply",
+        "multiplyOnCrit": true,
+        "touch": true,
+        "dice": "min(5, max(1, floor(@cl / 2)))d8",
+        "count": 1,
+        "die": "d8",
+        "scaling": "formula",
+        "source": "Searing Light"
+      },
+      {
+        "id": "ef-searing-undead",
+        "type": "effect",
+        "text": "Searing Light: 1d6/CL (max 10d6) vs. undead; 1d8/CL (max 10d8) vs. undead vulnerable to bright light"
+      }
+    ],
     "shortDescription": "Ray deals 1d8/two levels damage, more against undead.",
     "text": "Focusing divine power like a ray of the sun, you project a blast of light from your open palm. You must succeed on a ranged touch attack to strike your target. A creature struck by this ray of light takes 1d8 points of damage per two caster levels (maximum 5d8). An undead creature takes 1d6 points of damage per caster level (maximum 10d6), and an undead creature particularly vulnerable to bright light takes 1d8 points of damage per caster level (maximum 10d8). A construct or inanimate object takes only 1d6 points of damage per two caster levels (maximum 5d6).",
     "tags": [
@@ -42786,7 +42984,27 @@
     "save": "None",
     "sr": true,
     "powerPointsCost": null,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-vamp-touch",
+        "type": "roll",
+        "kind": "Damage",
+        "dmgType": "Untyped",
+        "crit": "multiply",
+        "multiplyOnCrit": true,
+        "touch": true,
+        "dice": "min(10, max(1, floor(@cl / 2)))d6",
+        "count": 1,
+        "die": "d6",
+        "scaling": "formula",
+        "source": "Vampiric Touch"
+      },
+      {
+        "id": "ef-vamp-touch-thp",
+        "type": "effect",
+        "text": "Caster gains temporary HP equal to damage dealt (lasts 1 hour)"
+      }
+    ],
     "shortDescription": "Touch deals 1d6/two levels damage; caster gains damage as hp.",
     "text": "You must succeed on a melee touch attack. Your touch deals 1d6 points of damage per two caster levels (maximum 10d6). You gain temporary hit points equal to the damage you deal. However, you can’t gain more than the subject’s current hit points +10, which is enough to kill the subject. The temporary hit points disappear 1 hour later.",
     "tags": [
@@ -43832,7 +44050,22 @@
     "save": "None",
     "sr": true,
     "powerPointsCost": null,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-shocking-grasp",
+        "type": "roll",
+        "kind": "Damage",
+        "dmgType": "Electricity",
+        "crit": "multiply",
+        "multiplyOnCrit": true,
+        "touch": true,
+        "dice": "min(5, @cl)d6",
+        "count": 1,
+        "die": "d6",
+        "scaling": "formula",
+        "source": "Shocking Grasp"
+      }
+    ],
     "shortDescription": "Touch delivers 1d6/level electricity damage (max 5d6).",
     "text": "Your successful melee touch attack deals 1d6 points of electricity damage per caster level (maximum 5d6). When delivering the jolt, you gain a +3 bonus on attack rolls if the opponent is wearing metal armor (or made out of metal, carrying a lot of metal, or the like).",
     "tags": [
@@ -57186,7 +57419,26 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": null,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-fire-shield-dmg",
+        "type": "roll",
+        "kind": "Damage",
+        "dmgType": "Fire",
+        "crit": "normal",
+        "multiplyOnCrit": false,
+        "dice": "1d6+min(15, @cl)",
+        "count": 1,
+        "die": "d6",
+        "scaling": "formula",
+        "source": "Fire Shield (Retaliation)"
+      },
+      {
+        "id": "ef-fire-shield-prot",
+        "type": "effect",
+        "text": "Melee attackers take 1d6 + CL (max +15) Fire/Cold damage; half damage (none on save) from opposing energy"
+      }
+    ],
     "shortDescription": "Creatures attacking you take fire damage; you’re protected from heat or cold.",
     "text": "This spell wreathes you in flame and causes damage to each creature that attacks you in melee. The flames also protect you from either cold-based or fire-based attacks (your choice).\n\nAny creature striking you with its body or a handheld weapon deals normal damage, but at the same time the attacker takes 1d6 points of damage +1 point per caster level (maximum +15). This damage is either cold damage (if the shield protects against fire-based attacks) or fire damage (if the shield protects against cold-based attacks). If the attacker has spell resistance, it applies to this effect. Creatures wielding weapons with exceptional reach are not subject to this damage if they attack you.\n\nWhen casting this spell, you appear to immolate yourself, but the flames are thin and wispy, giving off light equal to only half the illumination of a normal torch (10 feet). The color of the flames is determined randomly (50% chance of either color)—blue or green if the chill shield is cast, violet or blue if the warm shield is employed. The special powers of each version are as follows.\n\nWarm Shield: The flames are warm to the touch. You take only half damage from cold-based attacks. If such an attack allows a Reflex save for half damage, you take no damage on a successful save.\n\nChill Shield: The flames are cool to the touch. You take only half damage from fire-based attacks. If such an attack allows a Reflex save for half damage, you take no damage on a successful save.\n\nArcane Material Component: A bit of phosphorus for the warm shield; a live firefly or glowworm or the tail portions of four dead ones for the chill shield.",
     "tags": [

@@ -8438,11 +8438,36 @@
       const stripTag = (str) => String(str || '').replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️\s]+(\[.*?\])?\s*/, '').trim();
       const activeRows = char.levelProgression.filter(p => p && p.active !== false);
 
+      let changed = false;
+      const allDefs = (typeof getAvailableClassDefs === 'function')
+        ? getAvailableClassDefs()
+        : ((typeof RuleEngine !== 'undefined' && RuleEngine.DND35_CLASS_DEFS) ? RuleEngine.DND35_CLASS_DEFS : {});
+      const classReplacesSneak = (clsName) => {
+        const raw = String(clsName || '').trim();
+        if (!raw) return false;
+        if (raw.toLowerCase().includes('adventurer')) return true;
+        const def = allDefs && (allDefs[raw] || Object.values(allDefs).find(d => d && String(d.name || '').toLowerCase() === raw.toLowerCase()));
+        return Boolean(def && Array.isArray(def.replaces) && def.replaces.includes('cab-sneak-attack'));
+      };
+
       // 1. Build active class counts (lowercased class name -> active level count)
       const activeClassCounts = {};
       activeRows.forEach(r => {
         const cn = String(r.className || '').trim().toLowerCase();
         if (cn) activeClassCounts[cn] = (activeClassCounts[cn] || 0) + 1;
+        // Strip any mistakenly stamped Sneak Attack from variant rows that replace it (e.g. Rogue (Adventurer Variant))
+        if (classReplacesSneak(r.className)) {
+          ['specialAbilities', 'classFeatures'].forEach(arrKey => {
+            if (Array.isArray(r[arrKey])) {
+              const before = r[arrKey].length;
+              r[arrKey] = r[arrKey].filter(item => {
+                const n = stripTag(typeof item === 'string' ? item : (item?.name || '')).toLowerCase();
+                return !/^sneak\s*attack\b/i.test(n);
+              });
+              if (r[arrKey].length !== before) changed = true;
+            }
+          });
+        }
       });
 
       // 2. Collect all feat/ability names present on active levelProgression rows
@@ -8458,9 +8483,6 @@
       });
 
       // Also collect auto class features granted by active classes at or below their active level count
-      const allDefs = (typeof getAvailableClassDefs === 'function')
-        ? getAvailableClassDefs()
-        : ((typeof RuleEngine !== 'undefined' && RuleEngine.DND35_CLASS_DEFS) ? RuleEngine.DND35_CLASS_DEFS : {});
       if (allDefs && typeof allDefs === 'object') {
         Object.entries(allDefs).forEach(([cName, cDef]) => {
           const activeCnt = activeClassCounts[String(cName).toLowerCase()] || 0;
@@ -8495,7 +8517,7 @@
 
       const sneakClasses = ['rogue', 'ninja', 'assassin', 'scout', 'arcane trickster', 'blackguard', 'nightsong enfiltrator', 'unseen seer', 'spellwarp sniper', 'daggerspell mage', 'daggerspell shaper', 'shadowbane stalker'];
       const hasActiveSneakClass = Object.keys(activeClassCounts).some(cn => {
-        if (cn.includes('adventurer')) return false;
+        if (classReplacesSneak(cn)) return false;
         return sneakClasses.some(sc => cn.includes(sc));
       });
 
@@ -8518,8 +8540,6 @@
         }
         return false;
       };
-
-      let changed = false;
 
       if (Array.isArray(char.specialAbilities)) {
         const beforeLen = char.specialAbilities.length;
@@ -8917,14 +8937,16 @@
             source: c.source || prev.source || 'SRD 3.5e',
             edition: c.edition || prev.edition || '3.5',
             contentLevel: c.contentLevel || prev.contentLevel || null,
+            replaces: Array.isArray(c.replaces) ? c.replaces : (prev.replaces || []),
+            variantOf: c.variantOf || prev.variantOf || null,
             type: isPrestige ? 'Prestige Class' : 'Base Class',
             isPrestige
           });
         });
       }
 
-      // Hydrate Canonical Unearthed Arcana (UA) Variant Base Classes (0ms local lookup)
-      if (all['Rogue'] && !all['Rogue (Adventurer Variant)']) {
+      // Offline-only fallback for UA Variant Base Classes when SrdCompendium is not loaded (srdLoaded === 0)
+      if (srdLoaded === 0 && all['Rogue'] && !all['Rogue (Adventurer Variant)']) {
         const baseRogue = all['Rogue'];
         const advFeatures = {};
         const bFeatLvls = [1, 3, 5, 7, 9, 11, 13, 15, 17, 19];
@@ -8944,10 +8966,12 @@
           if (filtered.length > 0) advFeatures[lvl] = filtered;
         }
         all['Rogue (Adventurer Variant)'] = Object.assign({}, baseRogue, {
-          id: 'cls_rogue_adventurer_ua',
+          id: 'cls-rogue-adventurer-variant',
           name: 'Rogue (Adventurer Variant)',
           features: advFeatures,
           bonusFeatLevels: bFeatLvls,
+          replaces: ['cab-sneak-attack'],
+          variantOf: 'Rogue',
           role: 'Variant Base Class • Martial Feat Rogue (Trades Sneak Attack for Fighter Bonus Feats)',
           source: 'Unearthed Arcana p.58',
           description: 'Martial / Adventurer Rogue variant (Unearthed Arcana p. 58). Gives up Sneak Attack progression (+1d6 at 1st, 3rd, 5th..19th level) to gain a Fighter Bonus Feat at each of those levels (1st, 3rd, 5th, 7th, 9th, 11th, 13th, 15th, 17th, and 19th), while retaining d6 HD, 8+INT skill points, Trapfinding, Evasion, Uncanny Dodge, and Rogue Special Abilities.',
@@ -8956,7 +8980,7 @@
         });
       }
 
-      if (all['Fighter'] && !all['Fighter (Thug Variant)']) {
+      if (srdLoaded === 0 && all['Fighter'] && !all['Fighter (Thug Variant)']) {
         const baseFighter = all['Fighter'];
         const thugFeatures = {};
         for (let lvl = 2; lvl <= 20; lvl += 2) {
@@ -8977,7 +9001,7 @@
         });
       }
 
-      if (all['Cleric'] && !all['Cleric (Cloistered Cleric)']) {
+      if (srdLoaded === 0 && all['Cleric'] && !all['Cleric (Cloistered Cleric)']) {
         const baseCleric = all['Cleric'];
         const cloisteredFeatures = JSON.parse(JSON.stringify(baseCleric.features || {}));
         if (!Array.isArray(cloisteredFeatures[1])) cloisteredFeatures[1] = [];
@@ -10342,6 +10366,42 @@
       const fFromComp = (typeof window !== 'undefined' && window.SrdCompendium && typeof window.SrdCompendium.getByName === 'function')
         ? (window.SrdCompendium.getByName(featName, 'Feat') || window.SrdCompendium.getByName(cleanName, 'Feat') || window.SrdCompendium.getByName(baseFeatName, 'Feat'))
         : null;
+      const stripExSuSp = (s) => String(s || '').replace(/\s*\((?:Ex|Su|Sp)\)\s*$/i, '').trim().toLowerCase();
+      let cabFromComp = null;
+      if (typeof window !== 'undefined' && window.SrdCompendium) {
+        const candidateId = (fFromChar && fFromChar.id) || (aFromChar && aFromChar.id) || (fFromDb && fFromDb.id) || null;
+        if (candidateId && typeof window.SrdCompendium.getById === 'function') {
+          const byId = window.SrdCompendium.getById(candidateId);
+          if (byId && (byId.type === 'ClassAbility' || String(byId.id || '').startsWith('cab-'))) cabFromComp = byId;
+        }
+        if (!cabFromComp && typeof window.SrdCompendium.getByName === 'function') {
+          cabFromComp = window.SrdCompendium.getByName(featName, 'ClassAbility')
+            || window.SrdCompendium.getByName(cleanName, 'ClassAbility')
+            || window.SrdCompendium.getByName(baseFeatName, 'ClassAbility');
+        }
+        if (!cabFromComp && typeof window.SrdCompendium.getAllLoaded === 'function') {
+          const cleanBase = stripExSuSp(cleanName);
+          const allCabs = window.SrdCompendium.getAllLoaded('ClassAbility') || [];
+          cabFromComp = allCabs.find(c => {
+            if (!c || !c.name) return false;
+            const cn = c.name.toLowerCase().trim();
+            return cn === cleanName.toLowerCase() || stripExSuSp(cn) === cleanBase;
+          }) || null;
+        }
+      }
+      let studioEntry = null;
+      if (typeof CharStore !== 'undefined' && CharStore.StudioBridge && typeof CharStore.StudioBridge.resolveEntity === 'function') {
+        try {
+          studioEntry = CharStore.StudioBridge.resolveEntity((fFromChar && fFromChar.id) || (aFromChar && aFromChar.id) || cleanName) || null;
+        } catch (_) { studioEntry = null; }
+      }
+      const customEntry = Array.isArray(character?.customEntries)
+        ? character.customEntries.find(e => e && (
+            (e.id && ((fFromChar && e.id === fFromChar.id) || (aFromChar && e.id === aFromChar.id)))
+            || String(e.name || '').toLowerCase() === cleanName.toLowerCase()
+            || stripExSuSp(e.name) === stripExSuSp(cleanName)
+          ))
+        : null;
       const fFromBundled = (typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG))
         ? window.BUNDLED_SRD_CORE_CATALOG.find(i => i && i.type === 'Feat' && (i.name.toLowerCase() === featName.toLowerCase() || i.name.toLowerCase() === cleanName.toLowerCase() || i.name.toLowerCase() === baseFeatName.toLowerCase()))
         : null;
@@ -10352,6 +10412,11 @@
       let benefit = 'This feat or special ability modifies your character rules.';
       let notes = '';
 
+      if (cabFromComp) {
+        source = cabFromComp.source || source;
+        category = cabFromComp.category || 'Class Ability';
+        benefit = cabFromComp.shortDescription || cabFromComp.benefit || cabFromComp.description || (cabFromComp.text && cabFromComp.text.summary) || benefit;
+      }
       if (fFromComp) {
         source = fFromComp.source || source;
         category = fFromComp.category || category;
@@ -10362,6 +10427,16 @@
         category = fFromBundled.category || category;
         benefit = fFromBundled.benefit || benefit;
         if (fFromBundled.prereq && fFromBundled.prereq !== '-') notes = `Prerequisite: ${fFromBundled.prereq}`;
+      }
+      if (studioEntry) {
+        source = studioEntry.source || source;
+        category = studioEntry.category || category;
+        benefit = studioEntry.shortDescription || studioEntry.benefit || studioEntry.description || (studioEntry.text && studioEntry.text.summary) || benefit;
+      }
+      if (customEntry) {
+        source = customEntry.source || source;
+        category = customEntry.category || category;
+        benefit = customEntry.shortDescription || customEntry.benefit || customEntry.description || (customEntry.text && customEntry.text.summary) || benefit;
       }
 
       if (fFromChar && typeof fFromChar === 'object') {
@@ -10412,11 +10487,14 @@
       const benefitEl = document.getElementById('feat-modal-benefit');
       if (benefitEl) benefitEl.textContent = benefit;
 
-      // Merge V2 tactical ability fields (damageParts, save, dcFormula, range, recharge, rechargeDice)
+      // Merge V2/V3 tactical ability fields (damageParts, save, dcFormula, range, recharge, rechargeDice, effects)
       let mergedV2 = Object.assign(
         {},
+        (typeof cabFromComp === 'object' && cabFromComp) ? cabFromComp : {},
         (typeof fFromComp === 'object' && fFromComp) ? fFromComp : {},
         (typeof fFromBundled === 'object' && fFromBundled) ? fFromBundled : {},
+        (typeof studioEntry === 'object' && studioEntry) ? studioEntry : {},
+        (typeof customEntry === 'object' && customEntry) ? customEntry : {},
         (typeof fFromChar === 'object' && fFromChar) ? fFromChar : {},
         (typeof aFromChar === 'object' && aFromChar) ? aFromChar : {},
         (typeof fFromDb === 'object' && fFromDb) ? fFromDb : {}
@@ -10443,9 +10521,110 @@
         const hasSave = Boolean(mergedV2.save || mergedV2.dcFormula);
         const hasRange = Boolean(mergedV2.range);
         const hasRecharge = Boolean(mergedV2.recharge || mergedV2.rechargeDice);
+        const hasV3Effects = Array.isArray(mergedV2.effects) && mergedV2.effects.length > 0;
 
-        if (hasDmg || hasSave || hasRange || hasRecharge) {
+        if (hasDmg || hasSave || hasRange || hasRecharge || hasV3Effects) {
+          const escHtml = (typeof UI !== 'undefined' && typeof UI.escapeHtml === 'function') ? UI.escapeHtml : safeEscapeHtml;
           const badgesHtml = [];
+          if (hasV3Effects) {
+            const v3TargetMap = {
+              'ac.total': 'AC', 'ac.touch': 'Touch AC', 'ac.flatFooted': 'Flat-Footed AC',
+              'ac.armor': 'Armor AC', 'ac.shield': 'Shield AC', 'ac.shieldBonus': 'Shield AC',
+              'ac.natural': 'Natural Armor AC', 'ac.deflection': 'Deflection AC', 'ac.dodge': 'Dodge AC',
+              'save.all': 'All Saves', 'save.fort': 'Fortitude Save', 'save.ref': 'Reflex Save', 'save.will': 'Will Save',
+              'atk.all': 'Attack Rolls', 'atk.melee': 'Melee Attack', 'atk.ranged': 'Ranged Attack',
+              'dmg.all': 'Damage', 'dmg.melee': 'Melee Damage', 'initiative': 'Initiative', 'grapple': 'Grapple'
+            };
+            const v3CondMap = {
+              notFlatFooted: 'When Not Flat-Footed',
+              wieldingChosenShield: 'When Wielding Chosen Shield',
+              wieldingChosenWeapon: 'When Wielding Chosen Weapon',
+              wieldingTwoWeapons: 'When Two-Weapon / Double Weapon Fighting',
+              vsAoOFromMovement: 'vs. AoO from Movement'
+            };
+            const v3FlagMap = {
+              babEqualsLevel: 'BAB Equals Character Level',
+              shieldToTouchAc: 'Shield Bonus Applies to Touch AC',
+              conToWillSave: 'Use CON Modifier for Will Saves',
+              weaponFinesse: 'Weapon Finesse (DEX to Melee Attack)',
+              shadowBlade: 'Shadow Blade (+DEX to Shadow Hand Damage)',
+              monkeyGrip: 'Monkey Grip (Wield Larger Weapons at -2)',
+              tacticalSlider: 'Enable Tactical Combat Slider'
+            };
+            const humanizeV3Formula = (rawF) => {
+              let s = String(rawF || '').trim();
+              if (/^min\(\s*@([a-z]+)Level\s*,\s*max\(\s*0\s*,\s*@([a-z]{3})Mod\s*\)\s*\)$/i.test(s)) {
+                const m = s.match(/^min\(\s*@([a-z]+)Level\s*,\s*max\(\s*0\s*,\s*@([a-z]{3})Mod\s*\)\s*\)$/i);
+                const clsCap = m[1].charAt(0).toUpperCase() + m[1].slice(1);
+                return `+${m[2].toUpperCase()} (max ${clsCap} Lvl)`;
+              }
+              if (/^max\(\s*0\s*,\s*@([a-z]{3})Mod\s*\)$/i.test(s)) {
+                const m = s.match(/^max\(\s*0\s*,\s*@([a-z]{3})Mod\s*\)$/i);
+                return `+${m[1].toUpperCase()} Mod`;
+              }
+              s = s.replace(/@([a-z]{3})Mod\b/gi, (_, ab) => ab.toUpperCase())
+                   .replace(/@([a-z]+)Level\b/gi, (_, cl) => `${cl.charAt(0).toUpperCase() + cl.slice(1)} Lvl`)
+                   .replace(/@cl\b/gi, 'CL')
+                   .replace(/@level\b/gi, 'Lvl');
+              return /^[+-]/.test(s) ? s : `+${s}`;
+            };
+            const formatV3Leaf = (ef) => {
+              if (!ef || typeof ef !== 'object') return '';
+              if (ef.summary) return String(ef.summary);
+              if (ef.type === 'stat') {
+                const tgts = (Array.isArray(ef.targets) ? ef.targets : (ef.target ? [ef.target] : []))
+                  .map(t => v3TargetMap[t] || t).join(', ');
+                let valStr = '';
+                if (ef.formula) {
+                  valStr = humanizeV3Formula(ef.formula);
+                } else if (ef.value !== undefined && ef.value !== null) {
+                  const n = Number(ef.value);
+                  valStr = isNaN(n) ? String(ef.value) : `${n >= 0 ? '+' : ''}${n}`;
+                }
+                const bt = (ef.btype || ef.bonusType || '').trim();
+                const btStr = (bt && bt.toLowerCase() !== 'untyped') ? ` ${bt}` : '';
+                const condStr = (typeof ef.condition === 'string' && ef.condition.trim()) ? ` (${ef.condition.trim()})` : '';
+                return `${valStr}${btStr} → ${tgts || 'Stat'}${condStr}`.trim();
+              }
+              if (ef.type === 'effect') {
+                const fk = ef.flag || ef.ruleFlag;
+                if (fk) return v3FlagMap[fk] || fk;
+                return ef.text || ef.effectKind || 'Rule Effect';
+              }
+              if (ef.type === 'defense') return ef.mode ? `${ef.mode}${ef.what ? ': ' + ef.what : ''}${ef.value ? ' ' + ef.value : ''}` : 'Defense';
+              if (ef.type === 'roll') return `${ef.count || 1}${ef.die || 'd6'} ${ef.dmgType || 'Damage'}`.trim();
+              if (ef.type === 'attack') return ef.text || ef.attackMode || 'Attack Mod';
+              return ef.text || ef.type || '';
+            };
+            const formatV3Block = (ef) => {
+              if (!ef || typeof ef !== 'object') return [];
+              if (ef.type === 'when' && Array.isArray(ef.branches)) {
+                const out = [];
+                ef.branches.forEach(br => {
+                  if (!br) return;
+                  const rawCond = br.when || br.condition || br.condText || br.condKind || '';
+                  const condKey = (typeof rawCond === 'string') ? rawCond : (rawCond.condition || rawCond.flag || '');
+                  const condLbl = v3CondMap[br.condText] || v3CondMap[condKey] || v3CondMap[br.condKind] || br.condText || condKey || 'Conditional';
+                  const kids = Array.isArray(br.effects || br.kids) ? (br.effects || br.kids) : [];
+                  const kidTexts = kids.map(formatV3Leaf).filter(Boolean);
+                  if (kidTexts.length > 0) {
+                    kidTexts.forEach(kt => out.push({ icon: /shield|ac/i.test(kt + condLbl) ? '🛡️' : '⚡', text: `${condLbl}: ${kt}` }));
+                  } else if (condLbl) {
+                    out.push({ icon: '⚡', text: condLbl });
+                  }
+                });
+                return out;
+              }
+              const leaf = formatV3Leaf(ef);
+              if (!leaf) return [];
+              return [{ icon: /shield|ac|defense/i.test(leaf) ? '🛡️' : '✨', text: leaf }];
+            };
+            mergedV2.effects.forEach(ef => {
+              formatV3Block(ef).forEach(pill => {
+                badgesHtml.push(`<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-950/80 text-emerald-200 border border-emerald-700/60">${pill.icon} ${escHtml(pill.text)}</span>`);
+              });
+            });
+          }
           if (hasSave) {
             const dcEval = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.evaluateAbilitySaveDc === 'function')
               ? RuleEngine.evaluateAbilitySaveDc(Object.assign({}, mergedV2, { benefit }), typeof character !== 'undefined' ? character : null)
