@@ -1523,7 +1523,41 @@
     const sks = allSkills();
     return TARGET_GROUPS.slice(0, -1).concat([['Skills (' + sks.length + ')', [['skill.all', 'All Skills']].concat(sks.map((s) => [s.key, s.name + (s.custom ? ' (custom)' : '')]))]]);
   }
-  function targetLabel(k) { if (TARGET_LABEL[k]) return TARGET_LABEL[k]; const c = (S.customSkills || []).find((x) => x.id === k); return c ? c.name : k; }
+  const V2_TARGET_ALIASES = {
+    'ability.str': 'str', 'ability.dex': 'dex', 'ability.con': 'con', 'ability.int': 'int', 'ability.wis': 'wis', 'ability.cha': 'cha',
+    'ac': 'ac.total', 'ac.all': 'ac.total', 'ac.naturalarmor': 'ac.natural',
+    'attack': 'atk.all', 'attack.all': 'atk.all', 'attack.weapon': 'atk.all', 'attack.melee': 'atk.melee', 'attack.ranged': 'atk.ranged',
+    'damage': 'dmg.all', 'damage.all': 'dmg.all', 'damage.weapon': 'dmg.all', 'damage.melee': 'dmg.melee', 'damage.ranged': 'dmg.all',
+    'saves': 'save.all', 'saves.all': 'save.all', 'saves.fort': 'save.fort', 'saves.ref': 'save.ref', 'saves.will': 'save.will',
+    'skills': 'skill.all', 'skills.all': 'skill.all', 'skill.knowledge_all': 'skill.knowledge', 'skill.wilderness_lore': 'skill.survival',
+    'init': 'initiative', 'speed': 'speed.land', 'speed.all': 'speed.land', 'speed.base': 'speed.land', 'cmb': 'grapple'
+  };
+  function normTargetKey(k) {
+    const raw = String(k || '').trim();
+    if (!raw) return 'atk.all';
+    const low = raw.toLowerCase();
+    if (V2_TARGET_ALIASES[low]) return V2_TARGET_ALIASES[low];
+    if (TARGET_LABEL[raw]) return raw;
+    if (TARGET_LABEL[low]) return low;
+    return raw;
+  }
+  function targetLabel(k) {
+    const nk = normTargetKey(k);
+    if (TARGET_LABEL[nk]) return TARGET_LABEL[nk];
+    const c = (S.customSkills || []).find((x) => x.id === nk || x.id === k);
+    if (c) return c.name;
+    const skSub = String(nk).match(/^skill\.(craft|knowledge|perform|profession)_(.+)$/i);
+    if (skSub) return cap1(skSub[1].toLowerCase()) + ' (' + skSub[2].replace(/_/g, ' ').replace(/\b\w/g, (ch) => ch.toUpperCase()) + ')';
+    const skAny = String(nk).match(/^skill\.(.+)$/i);
+    if (skAny) return skAny[1].replace(/_/g, ' ').replace(/\b\w/g, (ch) => ch.toUpperCase());
+    const clSub = String(nk).match(/^casterlevel\.(.+)$/i);
+    if (clSub) return 'Caster Level (' + cap1(clSub[1]) + ')';
+    if (nk === 'hp.max') return 'Max Hit Points';
+    if (nk === 'speed.fly') return 'Fly Speed (ft.)';
+    if (nk === 'speed.swim') return 'Swim Speed (ft.)';
+    if (nk === 'speed.climb') return 'Climb Speed (ft.)';
+    return k;
+  }
   function entryResourceBlocks(en) {
     return ((en && en.effects) || []).filter((b) => b && b.type === 'resource');
   }
@@ -2191,7 +2225,29 @@
   function parseBlockV3(ef) {
     if (!ef || typeof ef !== 'object') return null;
     const t = BLOCK_TYPES[ef.type] ? ef.type : 'effect';
-    const b = BLK(t, ef);
+    const normalized = Object.assign({}, ef);
+    if (t === 'stat') {
+      if (Array.isArray(normalized.targets)) {
+        normalized.targets = normalized.targets.map(normTargetKey);
+      } else if (normalized.target) {
+        normalized.targets = [normTargetKey(normalized.target)];
+      }
+      if (normalized.btype || normalized.bonusType) {
+        normalized.btype = bonusTypeName(normalized.btype || normalized.bonusType);
+      }
+      if (normalized.mode === 'formula') {
+        const fStr = String(normalized.formula == null ? '' : normalized.formula).trim();
+        if (fStr !== '' && !isNaN(Number(fStr))) {
+          normalized.mode = 'flat';
+          normalized.value = Number(fStr);
+        } else {
+          const parsedScale = parseStatFormulaSrd(fStr, normalized.value);
+          if (parsedScale) Object.assign(normalized, parsedScale);
+          else normalized.mode = 'flat';
+        }
+      }
+    }
+    const b = BLK(t, normalized);
     delete b.summary;
     delete b.effects;
     if (t === 'when' && Array.isArray(ef.branches)) {
@@ -2519,11 +2575,153 @@
   function partsFromSrd(dps) {
     return (dps || []).map((p) => { const m = String(p.dice || '').match(/^(\d+)(d\d+)$/); return m ? { count: num(m[1]), die: m[2], type: cap1(String(p.type || 'Untyped').split(' ')[0]), crit: p.onCritOnly ? 'onCritOnly' : p.multiplyOnCrit ? 'multiply' : 'normal', cond: (String(p.type || '').match(/\((.*)\)/) || [])[1] || '' } : null; }).filter(Boolean);
   }
-  function bonusTypeName(t) { const b = BONUS_TYPES.find((x) => x.id.toLowerCase() === String(t || '').toLowerCase()); return b ? b.id : 'Untyped'; }
+  const BONUS_TYPE_ALIASES = {
+    natural: 'Natural Armor',
+    natural_armor: 'Natural Armor',
+    natural_enhancement: 'Natural Armor Enhancement',
+    armor_enhancement: 'Armor Enhancement',
+    shield_enhancement: 'Shield Enhancement',
+    divine: 'Sacred',
+    haste: 'Untyped',
+    trait: 'Untyped',
+    domain: 'Untyped',
+    cover: 'Circumstance'
+  };
+  function bonusTypeName(t) {
+    const raw = String(t || '').trim();
+    if (!raw) return 'Untyped';
+    const low = raw.toLowerCase();
+    if (BONUS_TYPE_ALIASES[low]) return BONUS_TYPE_ALIASES[low];
+    const b = BONUS_TYPES.find((x) => x.id.toLowerCase() === low);
+    return b ? b.id : 'Untyped';
+  }
+  function parseStatFormulaSrd(formula, fallbackVal) {
+    const f = String(formula || '').trim();
+    if (!f) return null;
+    if (!isNaN(Number(f))) return { mode: 'flat', value: Number(f) };
+    let m;
+    // e.g. min(3, max(1, floor(@cl / 3))) or min(5, max(1, floor(@cl / 4)))
+    if ((m = f.match(/^min\(\s*(\d+)\s*,\s*max\(\s*(\d+)\s*,\s*floor\(\s*@cl\s*\/\s*(\d+)\s*\)\s*(?:\*\s*(\d+))?\s*\)\s*\)$/i))) {
+      return { mode: 'perCL', value: m[4] ? num(m[4], 1) : 1, per: num(m[3], 1), min: num(m[2], 0), max: num(m[1], 5) };
+    }
+    // e.g. 2 + min(3, floor(@cl / 6)) (Shield of Faith) or 2 + min(3, max(0, floor((@cl - 3) / 3))) (Barkskin)
+    if ((m = f.match(/^(\d+)\s*\+\s*min\(\s*(\d+)\s*,\s*(?:max\(\s*\d+\s*,\s*)?floor\(\s*(?:\(\s*@cl\s*-\s*\d+\s*\)|@cl)\s*\/\s*(\d+)\s*\)\s*\)?\s*\)$/i))) {
+      const base = num(m[1], 2), addMax = num(m[2], 3), per = num(m[3], 3);
+      return { mode: 'perCL', value: 1, per: per, min: base, max: base + addMax };
+    }
+    // e.g. floor(@cl / 2)
+    if ((m = f.match(/^floor\(\s*@cl\s*\/\s*(\d+)\s*\)$/i))) {
+      return { mode: 'perCL', value: 1, per: num(m[1], 2), min: 0, max: 20 };
+    }
+    // e.g. 1 + @cl or 2 + @cl * 2
+    if ((m = f.match(/^(?:(\d+)\s*\+\s*)?@cl(?:\s*\*\s*(\d+))?$/i))) {
+      const base = m[1] ? num(m[1], 0) : 0, mult = m[2] ? num(m[2], 1) : 1;
+      return { mode: 'perCL', value: mult, per: 1, min: base + mult, max: base + mult * 20 };
+    }
+    // e.g. @abilities.cha.mod or max(1, @chaMod)
+    if ((m = f.match(/@(?:abilities\.)?(str|dex|con|int|wis|cha)(?:\.mod|Mod)/i))) {
+      return { mode: 'stat', stat: m[1].toLowerCase() + 'Mod', mult: 1, value: num(fallbackVal, 0), cap: 'none' };
+    }
+    if (/@level\b/i.test(f) && !/[+*\/-]/.test(f.replace(/@level\b/i, ''))) {
+      return { mode: 'stat', stat: 'level', mult: 1, value: 0, cap: 'none' };
+    }
+    return null;
+  }
   function statBlocksFromSrd(list) {
-    return (list || [])
-      .filter((m) => m && m.target && Number.isFinite(Number(m.value)) && Number(m.value) !== 0)
-      .map((m) => BLK('stat', { targets: [m.target], mode: 'flat', value: num(m.value), btype: bonusTypeName(m.type), condition: m.condition || '' }));
+    const out = [];
+    const groups = new Map();
+    (list || []).forEach((m) => {
+      if (!m || !m.target) return;
+      const tgt = normTargetKey(m.target);
+      const btype = bonusTypeName(m.type);
+      const cond = m.condition ? String(m.condition) : '';
+      const fStr = m.formula != null ? String(m.formula).trim() : '';
+      const hasDynamicFormula = fStr !== '' && isNaN(Number(fStr));
+      let spec = null;
+      if (hasDynamicFormula) {
+        const parsed = parseStatFormulaSrd(fStr, m.value);
+        if (parsed) spec = Object.assign({ btype: btype, condition: cond }, parsed);
+      } else {
+        const v = Number.isFinite(Number(m.value)) && Number(m.value) !== 0
+          ? num(m.value)
+          : (!isNaN(Number(fStr)) && Number(fStr) !== 0 ? num(fStr) : 0);
+        if (v !== 0) spec = { mode: 'flat', value: v, btype: btype, condition: cond };
+      }
+      if (!spec) return;
+      const gKey = [spec.mode, spec.value, spec.btype, spec.stat || '', spec.mult || '', spec.per || '', spec.min || '', spec.max || '', spec.condition || ''].join('|');
+      if (groups.has(gKey)) {
+        const existing = groups.get(gKey);
+        if (existing.targets.indexOf(tgt) < 0) existing.targets.push(tgt);
+      } else {
+        const blk = BLK('stat', Object.assign({ targets: [tgt] }, spec));
+        groups.set(gKey, blk);
+        out.push(blk);
+      }
+    });
+    return out;
+  }
+  function tempHpBlockFromSrd(formula) {
+    const f = String(formula || '').trim();
+    if (!f) return null;
+    if (!isNaN(Number(f)) && Number(f) > 0) {
+      return BLK('roll', { kind: 'Temp HP', count: num(f), die: 'flat', scaling: 'flat' });
+    }
+    let m;
+    // e.g. 1d8 + min(10, @cl) or 1d10 + min(10, @cl)
+    if ((m = f.match(/^(\d+)d(\d+)\s*\+\s*min\(\s*(\d+)\s*,\s*@cl(?:\s*\*\s*(\d+))?\s*\)$/i))) {
+      return BLK('roll', { kind: 'Temp HP', count: num(m[1], 1), die: 'd' + m[2], scaling: 'perCL', amount: m[4] ? num(m[4], 1) : 1, per: 1, start: 1, max: num(m[3], 10) });
+    }
+    // e.g. min(20, @cl) or min(30, @cl * 2)
+    if ((m = f.match(/^min\(\s*(\d+)\s*,\s*@cl(?:\s*\*\s*(\d+))?\s*\)$/i))) {
+      return BLK('roll', { kind: 'Temp HP', count: 0, die: 'flat', scaling: 'perCL', amount: m[2] ? num(m[2], 1) : 1, per: 1, start: 1, max: num(m[1], 20) });
+    }
+    // e.g. @cl or 5 * @cl or @cl * 5
+    if ((m = f.match(/^(?:(\d+)\s*\*\s*)?@cl(?:\s*\*\s*(\d+))?$/i))) {
+      const amt = m[1] ? num(m[1], 1) : (m[2] ? num(m[2], 1) : 1);
+      return BLK('roll', { kind: 'Temp HP', count: 0, die: 'flat', scaling: 'perCL', amount: amt, per: 1, start: 1, max: amt * 20 });
+    }
+    return null;
+  }
+  function ruleFlagBlocksFromSrd(rf) {
+    if (!rf || typeof rf !== 'object') return [];
+    const out = [];
+    const immMap = [
+      ['immuneFear', 'Fear'],
+      ['immuneMindAffecting', 'Mind-Affecting'],
+      ['immuneDeathEffects', 'Death Effects'],
+      ['immunePoison', 'Poison'],
+      ['immuneDisease', 'Disease'],
+      ['immuneParalysis', 'Paralysis'],
+      ['immuneSleep', 'Sleep'],
+      ['immuneNegativeEnergy', 'Negative Energy & Energy Drain'],
+      ['immuneMagicMissile', 'Magic Missile'],
+      ['immuneMentalControl', 'Mental Control']
+    ];
+    immMap.forEach((pair) => {
+      if (rf[pair[0]]) out.push(BLK('defense', { mode: 'Immunity', what: pair[1] }));
+    });
+    if (rf.freedomOfMovement) out.push(BLK('defense', { mode: 'Condition Immunity', what: 'Grapple, Paralysis & Movement Impediments (Freedom of Movement)' }));
+    if (rf.extraAttackFullAttack) out.push(BLK('attack', { attackMode: 'extra', extraKind: 'extraFull', count: 1, rider: 'Extra attack on Full Attack (Haste)' }));
+    if (rf.concealment || rf.missChance) out.push(BLK('defense', { mode: 'Concealment %', value: num(rf.concealment || rf.missChance, 20) }));
+    if (rf.dr) {
+      const dm = String(rf.dr).match(/^(\d+)\s*\/\s*(.+)$/);
+      if (dm) out.push(BLK('defense', { mode: 'DR', value: num(dm[1], 5), what: dm[2].trim() }));
+    } else if (rf.drAdamantine) {
+      out.push(BLK('defense', { mode: 'DR', value: num(rf.drAdamantine, 10), what: 'adamantine' }));
+    }
+    if (typeof rf.sr === 'number' && rf.sr > 0) out.push(BLK('defense', { mode: 'Spell Resistance', srMode: 'flat', value: num(rf.sr, 15) }));
+    else if (rf.srFormula) out.push(BLK('defense', { mode: 'Spell Resistance', srMode: 'level', value: 12 }));
+    if (rf.darkvision || rf.darkvisionFt) out.push(BLK('defense', { mode: 'Sense / Movement', what: 'Darkvision ' + num(rf.darkvision || rf.darkvisionFt, 60) + ' ft.' }));
+    if (rf.lowLightVision) out.push(BLK('defense', { mode: 'Sense / Movement', what: 'Low-Light Vision' }));
+    if (rf.seeInvisibility) out.push(BLK('defense', { mode: 'Sense / Movement', what: 'See Invisibility' }));
+    if (rf.trueSeeing) out.push(BLK('defense', { mode: 'Sense / Movement', what: 'True Seeing (120 ft.)' }));
+    if (rf.uncannyDodge) out.push(BLK('defense', { mode: 'Sense / Movement', what: 'Uncanny Dodge' }));
+    if (rf.flySpeed) out.push(BLK('defense', { mode: 'Sense / Movement', what: 'Fly ' + num(rf.flySpeed, 60) + ' ft.' }));
+    if (rf.airWalk) out.push(BLK('defense', { mode: 'Sense / Movement', what: 'Air Walk' }));
+    if (rf.waterBreathing) out.push(BLK('defense', { mode: 'Sense / Movement', what: 'Water Breathing' }));
+    if (rf.waterWalk) out.push(BLK('defense', { mode: 'Sense / Movement', what: 'Water Walk' }));
+    if (rf.actionRestriction) out.push(BLK('effect', { effectKind: 'rule', text: String(rf.actionRestriction) }));
+    return out;
   }
   function levelTextFromLearned(la) {
     const out = [], seen = {};
@@ -2623,7 +2821,10 @@
     return { type: cap1(type.toLowerCase()), effect: effect };
   }
   function parseDuration(l, d) {
-    const t = String(d || '');
+    const raw = String(d || '').trim();
+    const dismiss = /\(\s*D\s*\)/i.test(raw);
+    const t = raw.replace(/\s*\(\s*D\s*\)\s*/gi, '').trim();
+    if (dismiss) l.dismissible = true;
     let m;
     if (!t || /instant/i.test(t)) l.duration = 'instant';
     else if (/permanent/i.test(t)) l.duration = 'permanent';
@@ -2631,6 +2832,7 @@
     else if ((m = t.match(/^(\d+)?\s*rounds?\s*\/\s*level/i))) { l.duration = 'roundsPerLevel'; l.durValue = num(m[1], 1); }
     else if ((m = t.match(/^(\d+)?\s*min(ute)?s?\.?\s*\/\s*level/i))) { l.duration = 'minPerLevel'; l.durValue = num(m[1], 1); }
     else if ((m = t.match(/^(\d+)?\s*hours?\s*\/\s*level/i))) { l.duration = 'hourPerLevel'; l.durValue = num(m[1], 1); }
+    else if ((m = t.match(/^(\d+)\s*rounds?$/i))) { l.duration = 'rounds'; l.durValue = num(m[1], 1); }
     else { l.duration = 'text'; l.durText = t; }
   }
   function rollBlockFromSrd(dps, descriptors) {
@@ -2645,44 +2847,114 @@
     return null;
   }
   function setOrigin(e, x, typeLabel) { e.origin = { mode: 'override', srdId: x.id || '', srdName: x.name || '', srdType: typeLabel }; e.source = x.source || e.source; }
-  function hydrate(x) {
-    const t = x.type || (x.learnedAt ? 'Spell' : '');
+  function hydrate(x, kindHint) {
+    if (!x || typeof x !== 'object') return null;
+    const kh = String(kindHint || '').toLowerCase();
+    const rawT = x.type || (x.learnedAt ? 'Spell' : '');
+    const t = rawT || (kh === 'spell' ? 'Spell' : kh === 'maneuver' ? 'Maneuver' : (kh === 'psionic' || kh === 'psionics') ? 'Power' : kh === 'incarnum' ? 'Soulmeld' : kh === 'pactmagic' ? 'Vestige' : kh === 'shadowmagic' ? 'Mystery' : kh === 'truenaming' ? 'Utterance' : kh === 'feat' ? 'Feat' : kh === 'boon' ? 'Feat' : kh === 'class' ? 'Class' : kh === 'race' ? 'Race' : '');
     let e;
-    if (t === 'Weapon') { e = blankEntry('weapon'); const w = byId(CAT.weapons, x.id) || CAT.weapons.find((y) => normName(baseName(y)) === normName(x.name)); e.chassis = blankChassis('weapon', w ? w.id : 'longsword'); }
-    else if (t === 'Armor' || t === 'Shield') { e = blankEntry('armor'); const a = byId(CAT.armors, x.id) || CAT.armors.find((y) => normName(y.name) === normName(x.name)); e.chassis = blankChassis('armor', a ? a.id : 'chain_shirt'); e.item.subtype = t; }
+    if (t === 'Weapon') {
+      e = blankEntry('weapon');
+      e.name = x.name || '';
+      e.text = stripHtml(x.description || x.shortDescription || '');
+      let w = byId(CAT.weapons, x.id || x.baseItemId) || CAT.weapons.find((y) => normName(baseName(y)) === normName(x.name));
+      if (!w && x.name) {
+        const dp = (x.damageParts || [])[0] || {};
+        w = { id: x.id || ('wpn-' + slug(x.name)), name: x.name, cost: num(x.cost), dice: dp.dice || x.damage || '1d6', critRange: num(x.critRange, 20), critMult: num(x.critMult, 2), category: /exotic/i.test(x.category) ? 'Exotic' : /martial/i.test(x.category) ? 'Martial' : 'Simple', handed: HANDED[x.handedness] || x.handedness || 'One-Handed', dmgType: cap1(String(dp.type || x.dmgType || 'Slashing').split(/[\s/]/)[0]), weight: num(x.weight, 1), range: num(x.rangeIncrement || x.range), wooden: /wood|staff|club|bow/i.test(x.name), ranged: x.handedness === 'ranged', src: x.source || 'SRD', desc: x.shortDescription || '' };
+        CAT.weapons.push(w);
+      }
+      e.chassis = blankChassis('weapon', w ? w.id : 'longsword');
+      if (x.enhancementBonus) e.chassis.enhancement = num(x.enhancementBonus, 0);
+      e.effects = statBlocksFromSrd(x.modifiers).concat(ruleFlagBlocksFromSrd(x.ruleFlags));
+    } else if (t === 'Armor' || t === 'Shield') {
+      e = blankEntry('armor');
+      e.name = x.name || '';
+      e.text = stripHtml(x.description || x.shortDescription || '');
+      let a = byId(CAT.armors, x.id || x.baseItemId) || CAT.armors.find((y) => normName(y.name) === normName(x.name));
+      if (!a && x.name) {
+        const isS = t === 'Shield', ab = (x.modifiers || []).find((m) => /^ac\.(armor|shield)$/.test(m.target));
+        a = { id: x.id || ('arm-' + slug(x.name)), name: x.name, cost: num(x.cost), armorBonus: ab ? num(ab.value) : num(x.armorBonus, 0), maxDex: x.maxDex == null ? 99 : num(x.maxDex), acp: num(x.checkPenalty != null ? x.checkPenalty : x.acp), asf: num(x.spellFailure != null ? x.spellFailure : x.asf), type: isS ? 'Shield' : (x.category || 'Light'), speed: parseInt(x.speed30, 10) || 30, kind: isS ? 'shield' : 'armor', weight: num(x.weight), wooden: /wood/i.test(x.name), src: x.source || 'SRD', desc: x.shortDescription || '' };
+        CAT.armors.push(a);
+      }
+      e.chassis = blankChassis('armor', a ? a.id : 'chain_shirt');
+      if (x.enhancementBonus) e.chassis.enhancement = num(x.enhancementBonus, 0);
+      e.item.subtype = t;
+      e.effects = statBlocksFromSrd(x.modifiers).concat(ruleFlagBlocksFromSrd(x.ruleFlags));
+    }
     else if (t === 'MagicItem' || t === 'Consumable') {
       e = blankEntry('wondrous');
-      e.name = x.name; e.text = x.shortDescription || stripHtml(x.description).slice(0, 300);
+      e.name = x.name; e.text = stripHtml(x.description) || x.shortDescription || '';
       const nm = String(x.name);
       e.item.subtype = x.category === 'Rod' ? 'Rod' : x.category === 'Staff' ? 'Staff' : x.slot === 'Ring' ? 'Ring' : /potion|oil/i.test(nm) ? 'Potion / Oil' : /scroll/i.test(nm) ? 'Scroll' : /wand/i.test(nm) ? 'Wand' : 'Wondrous Item';
       e.item.slot = SLOT_MAP[x.slot] || (BODY_SLOTS.indexOf(x.slot) >= 0 ? x.slot : 'Slotless');
       e.item.consumable = t === 'Consumable' || /Potion|Scroll|Wand/.test(e.item.subtype);
-      e.item.price = num(x.cost); e.item.cl = num(x.casterLevel);
-      e.effects = statBlocksFromSrd(x.modifiers);
-    } else if (t === 'Spell') {
+      e.item.price = num(x.cost != null ? x.cost : x.gpValue); e.item.cl = num(x.casterLevel != null ? x.casterLevel : x.cl);
+      e.effects = statBlocksFromSrd(x.modifiers).concat(ruleFlagBlocksFromSrd(x.ruleFlags));
+    } else if (['Spell', 'Power', 'Maneuver', 'Invocation', 'Soulmeld', 'Vestige', 'Mystery', 'Utterance'].indexOf(t) >= 0) {
       e = blankEntry('spell');
-      e.name = x.name; e.text = x.shortDescription || '';
-      const lt = levelTextFromLearned(x.learnedAt) || x.levelText || '';
-      e.spell.classes = lt ? lt.split(', ').map((s) => { const m = s.match(/^(.*) (\d+)$/); return { cls: m ? m[1] : s, lvl: m ? num(m[2]) : 1 }; }) : [{ cls: 'Sor/Wiz', lvl: num(x.level, 1) }];
-      e.spell.school = SCHOOLS.indexOf(x.category || x.school) >= 0 ? (x.category || x.school) : 'Universal';
-      e.spell.descriptors = String(x.descriptors || '').split(/,\s*|\s+or\s+/).map((d) => DESCRIPTORS.find((k) => k.toLowerCase() === d.trim().toLowerCase())).filter(Boolean);
-      const comps = Array.isArray(x.components) ? x.components : [];
-      e.spell.comps = { V: comps.indexOf('V') >= 0, S: comps.indexOf('S') >= 0, M: comps.indexOf('M') >= 0, F: comps.indexOf('F') >= 0, DF: comps.indexOf('DF') >= 0, XP: comps.indexOf('XP') >= 0 };
+      e.name = x.name;
+      e.text = stripHtml(x.description || x.benefit || '') || x.shortDescription || '';
+      if (t === 'Power') {
+        e.spell.system = 'psionic';
+        e.spell.discipline = PSIONIC_DISCIPLINES.find((k) => k.toLowerCase() === String(x.discipline || x.category || '').toLowerCase()) || 'Psychokinesis';
+        e.spell.maneuverLvl = num(x.level, 1);
+        e.spell.ppCost = num(x.powerPointsCost != null ? x.powerPointsCost : (x.ppCost != null ? x.ppCost : Math.max(1, num(x.level, 1) * 2 - 1)), 1);
+        e.spell.augmentable = !!(x.augment || /augment/i.test(e.text));
+      } else if (t === 'Maneuver') {
+        e.spell.system = 'maneuver';
+        e.spell.discipline = TOB_DISCIPLINES.find((k) => k.toLowerCase() === String(x.discipline || x.category || '').toLowerCase()) || 'Iron Heart';
+        e.spell.maneuverType = MANEUVER_TYPES.find((k) => k.toLowerCase() === String(x.maneuverType || x.subschool || 'Strike').toLowerCase()) || 'Strike';
+        e.spell.maneuverLvl = num(x.level, 1);
+      } else if (t === 'Invocation') {
+        e.spell.system = 'invocation';
+        e.spell.invGrade = INV_GRADES.find((k) => k.toLowerCase() === String(x.grade || 'Least').toLowerCase()) || 'Least';
+        e.spell.maneuverLvl = num(x.level, 1);
+      } else if (t === 'Soulmeld') {
+        e.spell.system = 'soulmeld';
+        e.spell.chakraSlots = Array.isArray(x.chakras) ? x.chakras.join(' / ') : (x.chakraSlots || 'Arms / Totem');
+      } else if (t === 'Vestige') {
+        e.spell.system = 'vestige';
+        e.spell.vestigeLvl = num(x.level, 1);
+        e.spell.bindingDc = num(x.bindingDC || x.bindingDc, 15);
+      } else if (t === 'Utterance') {
+        e.spell.system = 'utterance';
+        e.spell.lexicon = TRUENAME_LEXICONS.find((k) => k.toLowerCase() === String(x.lexicon || '').toLowerCase()) || 'Evolving Mind';
+        e.spell.maneuverLvl = num(x.level, 1);
+      } else if (t === 'Mystery') {
+        e.spell.system = 'mystery';
+        e.spell.mysteryTier = MYSTERY_TIERS.find((k) => k.toLowerCase() === String(x.tier || '').toLowerCase()) || 'Apprentice';
+        e.spell.mysteryPath = x.path || '';
+        e.spell.maneuverLvl = num(x.level, 1);
+      } else {
+        const lt = levelTextFromLearned(x.learnedAt) || x.levelText || '';
+        e.spell.classes = lt ? lt.split(', ').map((s) => { const m = s.match(/^(.*) (\d+)$/); return { cls: m ? m[1] : s, lvl: m ? num(m[2]) : 1 }; }) : [{ cls: 'Sor/Wiz', lvl: num(x.level, 1) }];
+        e.spell.school = SCHOOLS.indexOf(x.category || x.school) >= 0 ? (x.category || x.school) : 'Universal';
+        const comps = Array.isArray(x.components) ? x.components : [];
+        e.spell.comps = { V: comps.indexOf('V') >= 0, S: comps.indexOf('S') >= 0, M: comps.indexOf('M') >= 0, F: comps.indexOf('F') >= 0, DF: comps.indexOf('DF') >= 0, XP: comps.indexOf('XP') >= 0 };
+        const firstLvl = e.spell.classes[0] ? num(e.spell.classes[0].lvl, 1) : num(x.level, 1);
+        e.lifecycle.use = Object.assign(blankUse('spellSlot'), { slotLevel: firstLvl });
+      }
+      const descRaw = Array.isArray(x.descriptors) ? x.descriptors.join(', ') : String(x.descriptors || '');
+      e.spell.descriptors = descRaw.split(/,\s*|\s+or\s+/).map((d) => DESCRIPTORS.find((k) => k.toLowerCase() === d.trim().toLowerCase())).filter(Boolean);
       const d = e.delivery;
-      d.action = ACTION_MAP[String(x.castingTime || 'standard').toLowerCase().split(/[\s-]/)[0]] || 'Standard';
+      d.action = ACTION_MAP[String(x.castingTime || x.initiationAction || 'standard').toLowerCase().split(/[\s-]/)[0]] || 'Standard';
       d.range = RANGE_MAP[String(x.range || '').toLowerCase()] || x.range || '';
       d.area = x.area || x.target || '';
       d.attack = { rsak: 'ranged-touch', msak: 'melee-touch', rwak: 'weapon', mwak: 'weapon' }[x.actionType] || 'none';
       d.attackOn = d.attack !== 'none';
-      d.save = Object.assign(d.save, parseSave(x.save));
-      d.sr = x.sr === true ? 'Yes' : x.sr === false ? 'No' : String(x.sr || 'Yes');
+      d.save = Object.assign(d.save, parseSave(x.save || x.savingThrow));
+      d.sr = x.sr === true ? (/harmless/i.test(String(x.save || '')) ? 'Yes (harmless)' : 'Yes') : x.sr === false ? 'No' : String(x.sr || x.spellResistance || 'Yes');
       parseDuration(e.lifecycle, x.duration);
       const rb = rollBlockFromSrd(x.damageParts, e.spell.descriptors);
       if (rb) e.effects.push(rb);
       statBlocksFromSrd(x.modifiers).forEach((sb) => e.effects.push(sb));
+      ruleFlagBlocksFromSrd(x.ruleFlags).forEach((fb) => e.effects.push(fb));
+      const thp = tempHpBlockFromSrd(x.tempHpFormula);
+      if (thp) e.effects.push(thp);
     } else if (t === 'Feat' || t === 'Flaw') {
       e = blankEntry('feat');
-      e.name = x.name; e.text = stripHtml(x.benefit || x.shortDescription || '').slice(0, 400);
+      if (kh === 'boon') e.featKind = 'boon';
+      e.name = x.name; e.text = stripHtml(x.benefit || x.description || x.shortDescription || '').slice(0, 600);
       if (x.isFighterBonusFeat) e.tags.push('#FighterBonus');
       if (x.category === 'Metamagic') e.tags.push('#Metamagic');
       if (x.category === 'Item Creation') e.tags.push('#ItemCreation');
@@ -2698,7 +2970,16 @@
         const f = CAT.feats.find((y) => normName(y.name) === normName(tok));
         e.prereqs.push({ id: uid('p'), alts: [f ? ALT({ kind: 'feat', feat: f.name }) : ALT({ kind: 'custom', text: tok })] });
       });
-      e.effects = statBlocksFromSrd(x.modifiers);
+      e.effects = statBlocksFromSrd(x.modifiers).concat(ruleFlagBlocksFromSrd(x.ruleFlags));
+    } else if (t === 'Race' || t === 'Template') {
+      e = blankEntry('race');
+      e.name = x.name;
+      e.race.kind = t === 'Template' || kh === 'template' ? 'template' : 'race';
+      e.race.size = CREATURE_SIZES.indexOf(x.size) >= 0 ? x.size : 'Medium';
+      e.race.speed = num(x.speed || x.baseSpeed, 30);
+      e.race.la = num(x.levelAdjustment != null ? x.levelAdjustment : x.la, 0);
+      e.text = stripHtml(x.description || x.shortDescription || '');
+      e.effects = statBlocksFromSrd(x.modifiers).concat(ruleFlagBlocksFromSrd(x.ruleFlags));
     } else if (t === 'Class') {
       e = blankEntry('class');
       e.name = x.name;
@@ -2711,7 +2992,7 @@
       p.good = { fort: /high|good/.test(st.fort || ''), ref: /high|good/.test(st.ref || ''), will: /high|good/.test(st.will || '') };
       p.skillPts = num(x.skillPointsPerLevel, 2);
       Object.keys(x.features || {}).forEach((L) => { const row = p.levels[num(L) - 1]; if (row) (x.features[L] || []).forEach((f) => row.features.push(FEATURE(f.name, { kind: 'ref', text: f.summary || '' }))); });
-      e.text = x.shortDescription || '';
+      e.text = stripHtml(x.description || x.shortDescription || '');
     } else if (t === 'Domain') {
       e = blankEntry('domain');
       e.name = x.name + ' Domain';
@@ -2719,7 +3000,7 @@
       const sp = (x.spells || []).slice().sort((a, b) => num(a.level) - num(b.level)).map((s) => (typeof s === 'string' ? s : s.name));
       e.grants.ladder = sp.concat(['', '', '', '', '', '', '', '', '']).slice(0, 9);
     } else return null;
-    setOrigin(e, x, t);
+    setOrigin(e, x, t || 'Entry');
     return e;
   }
 
@@ -3873,7 +4154,7 @@
     let idGrid = '';
     if (sys === 'spell') {
       const comps = ['V', 'S', 'M', 'F', 'DF', 'XP'].map((k) => '<button type="button" class="lego-pill' + (sp.comps[k] ? ' on' : '') + '" data-action="toggle-comp" data-k="' + k + '">' + k + '</button>').join('');
-      const clsChips = sp.classes.map((c, i) => '<span class="fs-pill indigo" style="padding:2px 4px"><input class="fs-in" style="width:70px" data-bind="spell.classes.' + i + '.cls" list="fs-spellcls-list" value="' + esc(c.cls) + '">' + sel('spell.classes.' + i + '.lvl', c.lvl, range(0, 9), { num: true, style: 'width:52px' }) + '<span class="fs-x" data-action="remove-spellcls" data-i="' + i + '">×</span></span>').join('') + '<button type="button" class="fs-btn fs-xs fs-dashed" data-action="add-spellcls">+</button>';
+      const clsChips = sp.classes.map((c, i) => '<span class="fs-pill indigo" style="padding:2px 4px"><input class="fs-in" style="width:86px" data-bind="spell.classes.' + i + '.cls" list="fs-spellcls-list" value="' + esc(c.cls) + '">' + sel('spell.classes.' + i + '.lvl', c.lvl, range(0, 9), { num: true, style: 'width:52px' }) + '<span class="fs-x" data-action="remove-spellcls" data-i="' + i + '">×</span></span>').join('') + '<button type="button" class="fs-btn fs-xs fs-dashed" data-action="add-spellcls">+</button>';
       idGrid = G(3,
         F('Name', inp('name', en.name, { ph: 'Name' })) +
         sysField +
@@ -4503,6 +4784,15 @@
           S.embed.context = ctx;
           const allowChar = ctx.allowCharacterScope !== false;
           S.embed.saveScope = allowChar ? (ctx.defaultScope || 'character') : 'campaign';
+          if (msg.rawEntry && msg.rawEntry.schemaVersion !== 3) {
+            const hydrated = hydrate(msg.rawEntry, ctx.kind);
+            if (hydrated) {
+              S.embed.originalId = msg.rawEntry.id || (msg.entry && msg.entry.id) || hydrated.id || '';
+              loadEntry(hydrated, '');
+              renderAll();
+              return;
+            }
+          }
           if (msg.entry) {
             try {
               const en = fromCanonicalV3(msg.entry);
@@ -4545,7 +4835,7 @@
 
   // Read-only QA hook (Lego Core V3 + V25 alias)
   window.ForgeSandbox = {
-    state: S, catalog: CAT, chassisView: chassisView,
+    state: S, catalog: CAT, chassisView: chassisView, hydrate: hydrate,
     exportEntry: exportEntry, fromCanonicalV3: fromCanonicalV3, fromCanonicalV25: fromCanonicalV3,
     importFromJson: importFromJson, rawHeaderLine: rawHeaderLine, damageAtCL: rollAtCL,
     presets: PRESETS.map((p) => p.id), presetList: PRESETS, blueprints: BLUEPRINTS, blockTypes: BLOCK_TYPES,

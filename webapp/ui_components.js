@@ -392,21 +392,74 @@
     return typeof window !== 'undefined' && window.innerWidth < 640;
   }
 
+  const _INSPECTOR_TARGET_LABELS = {
+    str: 'Strength', dex: 'Dexterity', con: 'Constitution', int: 'Intelligence', wis: 'Wisdom', cha: 'Charisma',
+    'ability.str': 'Strength', 'ability.dex': 'Dexterity', 'ability.con': 'Constitution', 'ability.int': 'Intelligence', 'ability.wis': 'Wisdom', 'ability.cha': 'Charisma',
+    ac: 'AC (All)', 'ac.all': 'AC (All)', 'ac.total': 'AC (All)', 'ac.touch': 'Touch AC', 'ac.flatfooted': 'Flat-Footed AC',
+    'ac.armor': 'Armor Bonus', 'ac.shield': 'Shield Bonus', 'ac.natural': 'Natural Armor', 'ac.deflection': 'Deflection AC', 'ac.dodge': 'Dodge AC',
+    attack: 'Attack Rolls (All)', 'attack.all': 'Attack Rolls (All)', 'atk.all': 'Attack Rolls (All)',
+    'attack.melee': 'Melee Attack', 'atk.melee': 'Melee Attack', 'attack.ranged': 'Ranged Attack', 'atk.ranged': 'Ranged Attack',
+    damage: 'Damage (All)', 'damage.all': 'Damage (All)', 'dmg.all': 'Damage (All)', 'damage.melee': 'Melee Damage', 'dmg.melee': 'Melee Damage',
+    'save.all': 'All Saving Throws', 'saves.all': 'All Saving Throws', 'save.fort': 'Fortitude', 'save.ref': 'Reflex', 'save.will': 'Will',
+    'skill.all': 'All Skills', 'skills.all': 'All Skills', initiative: 'Initiative', init: 'Initiative',
+    'speed.land': 'Land Speed', speed: 'Land Speed', 'hp.temp': 'Temporary HP', grapple: 'Grapple'
+  };
+
+  function _humanizeInspectorTarget(t) {
+    const raw = String(t || '').trim();
+    if (!raw) return 'Stat';
+    const low = raw.toLowerCase();
+    if (_INSPECTOR_TARGET_LABELS[low]) return _INSPECTOR_TARGET_LABELS[low];
+    const sk = raw.match(/^skill\.(.+)$/i);
+    if (sk) return sk[1].replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+    return raw;
+  }
+
+  function _cleanInspectorHtml(raw) {
+    return String(raw || '')
+      .replace(/<\s*br\s*\/?>/gi, '\n')
+      .replace(/<\s*\/p\s*>/gi, '\n\n')
+      .replace(/<\s*\/li\s*>/gi, '\n')
+      .replace(/<\s*li[^>]*>/gi, '• ')
+      .replace(/<\s*hr\s*\/?>/gi, '\n')
+      .replace(/<[^>]*>/g, '')
+      .replace(/&nbsp;/gi, ' ')
+      .replace(/&amp;/gi, '&')
+      .replace(/&lt;/gi, '<')
+      .replace(/&gt;/gi, '>')
+      .replace(/&quot;/gi, '"')
+      .replace(/&#39;/gi, "'")
+      .replace(/[ \t]+\n/g, '\n')
+      .replace(/\n[ \t]+/g, '\n')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
+  }
+
   function _formatBlockChipText(eff) {
     if (!eff || typeof eff !== 'object') return '';
+    if (eff.summary) return String(eff.summary);
     const t = String(eff.type || 'effect');
     if (t === 'stat') {
-      const tgt = Array.isArray(eff.targets) ? eff.targets.join(', ') : (eff.target || 'stat');
+      const tgt = Array.isArray(eff.targets) ? eff.targets.map(_humanizeInspectorTarget).join(', ') : _humanizeInspectorTarget(eff.target || 'stat');
       const val = eff.mode === 'formula' ? (eff.formula || '0') : ((Number(eff.value) >= 0 ? '+' : '') + (eff.value !== undefined ? eff.value : 0));
-      const btype = eff.btype && eff.btype !== 'Untyped' ? ` (${eff.btype})` : '';
-      return `${tgt} ${val}${btype}`;
+      const btRaw = eff.btype || eff.bonusType || '';
+      const btype = btRaw && btRaw.toLowerCase() !== 'untyped' ? ` ${btRaw.charAt(0).toUpperCase() + btRaw.slice(1)}` : '';
+      return `${val}${btype} → ${tgt}`;
     }
     if (t === 'roll') {
+      if (eff.kind === 'Temp HP') {
+        if (eff.scaling === 'perCL') {
+          const base = eff.die === 'flat' ? (Number(eff.count) > 0 ? `${eff.count} + ` : '') : `${eff.count || 1}${eff.die} + `;
+          return `Temp HP: ${base}${eff.amount || 1}/CL (max +${eff.max || 20})`;
+        }
+        return `Temp HP: ${eff.die === 'flat' ? (eff.count || 0) : `${eff.count || 1}${eff.die || 'd6'}`}`;
+      }
       const dice = eff.die === 'flat' ? String(eff.count || 0) : `${eff.count || 1}${eff.die || 'd6'}`;
       return `${eff.kind || 'Damage'} ${dice}${eff.dmgType ? ' ' + eff.dmgType : ''}`;
     }
     if (t === 'defense') {
-      return `Defense: ${eff.defKind || eff.sense || eff.state || 'Trait'}`;
+      if (eff.mode && eff.what) return `${eff.mode}: ${eff.what}`;
+      return `Defense: ${eff.defKind || eff.what || eff.sense || eff.state || 'Trait'}`;
     }
     if (t === 'when') {
       return `When / While (${Array.isArray(eff.branches) ? eff.branches.length : 1} branch)`;
@@ -418,9 +471,9 @@
       return `Carrier: ${eff.carrierMode || 'channel'}`;
     }
     if (t === 'attack') {
-      return `Attack: ${eff.natural || eff.weaponMod || 'mod'}`;
+      return `Attack: ${eff.rider || eff.natural || eff.weaponMod || 'Extra Attack'}`;
     }
-    return eff.summary || eff.name || eff.spell || `Rule: ${t}`;
+    return eff.name || eff.spell || `Rule: ${t}`;
   }
 
   function _collectRuleBlockSummaries(entry) {
@@ -435,17 +488,29 @@
     if (!chips.length && Array.isArray(entry.modifiers)) {
       entry.modifiers.forEach((m) => {
         if (!m || !m.target) return;
-        const val = m.formula !== undefined ? m.formula : ((Number(m.value) >= 0 ? '+' : '') + (m.value !== undefined ? m.value : 0));
-        const tp = m.type && m.type !== 'Untyped' ? ` (${m.type})` : '';
-        chips.push(`${m.target} ${val}${tp}`);
+        const fStr = m.formula !== undefined && m.formula !== null ? String(m.formula).trim() : '';
+        const isNumFormula = fStr !== '' && !isNaN(Number(fStr));
+        const numV = Number.isFinite(Number(m.value)) && Number(m.value) !== 0 ? Number(m.value) : (isNumFormula ? Number(fStr) : null);
+        const val = numV !== null ? ((numV >= 0 ? '+' : '') + numV) : (fStr || '0');
+        const tp = m.type && String(m.type).toLowerCase() !== 'untyped' ? ` ${String(m.type).charAt(0).toUpperCase() + String(m.type).slice(1)}` : '';
+        chips.push(`${val}${tp} → ${_humanizeInspectorTarget(m.target)}`);
       });
     }
-    if (!chips.length && Array.isArray(entry.damageParts)) {
+    if (Array.isArray(entry.damageParts) && entry.damageParts.length) {
       entry.damageParts.forEach((d) => {
         if (!d) return;
         const part = [d.dice || '', d.bonus ? ((d.bonus >= 0 ? '+' : '') + d.bonus) : '', d.type || ''].filter(Boolean).join(' ');
         if (part) chips.push(part);
       });
+    }
+    if (entry.ruleFlags && typeof entry.ruleFlags === 'object') {
+      if (entry.ruleFlags.immuneFear && !chips.some((c) => /fear/i.test(c))) chips.push('Immunity: Fear');
+      if (entry.ruleFlags.immuneMindAffecting && !chips.some((c) => /mind-affecting/i.test(c))) chips.push('Immunity: Mind-Affecting');
+      if (entry.ruleFlags.freedomOfMovement) chips.push('Freedom of Movement');
+      if (entry.ruleFlags.extraAttackFullAttack) chips.push('+1 Extra Attack (Full Attack)');
+    }
+    if (entry.tempHpFormula && !chips.some((c) => /temp hp/i.test(c))) {
+      chips.push(`Temp HP: ${entry.tempHpFormula}`);
     }
     return chips;
   }
@@ -453,35 +518,57 @@
   function _collectStatChips(entry, kind) {
     const stats = [];
     if (!entry || typeof entry !== 'object') return stats;
+    const capWord = (s) => { const str = String(s || '').trim(); return str ? str.charAt(0).toUpperCase() + str.slice(1) : ''; };
     const addStat = (label, val) => {
       if (val === undefined || val === null || val === '') return;
       stats.push({ label, val: String(val) });
     };
+    const isSpellLike = ['spell', 'maneuver', 'psionic', 'psionics', 'incarnum', 'pactmagic', 'shadowmagic', 'truenaming'].includes(kind) || entry.type === 'Spell' || Boolean(entry.learnedAt);
     if (entry.damage) addStat('Damage', entry.damage);
     if (entry.crit) addStat('Crit', entry.crit);
     else if (entry.weapon && entry.weapon.critMultiplier) {
       const low = entry.weapon.effectiveCritRange || entry.weapon.baseCritRange || 20;
       addStat('Crit', `${low < 20 ? low + '-20' : '20'}/x${entry.weapon.critMultiplier}`);
     }
-    if (entry.range) addStat('Range', entry.range);
+    const schoolVal = (entry.spell && entry.spell.school) || entry.school || (isSpellLike && entry.category ? entry.category : '');
+    if (schoolVal) {
+      const sub = entry.subschool ? ` (${capWord(entry.subschool)})` : '';
+      const descList = Array.isArray(entry.descriptors) ? entry.descriptors.join(', ') : (entry.spell && Array.isArray(entry.spell.descriptors) ? entry.spell.descriptors.join(', ') : (entry.descriptors || ''));
+      const desc = descList ? ` [${descList}]` : '';
+      addStat('School', `${schoolVal}${sub}${desc}`);
+    }
+    if (entry.discipline || (entry.spell && entry.spell.discipline)) addStat('Discipline', entry.discipline || entry.spell.discipline);
+    if (entry.learnedAt && entry.learnedAt.class && Object.keys(entry.learnedAt.class).length) {
+      const abbr = { Wizard: 'Sor/Wiz', Sorcerer: 'Sor/Wiz', Cleric: 'Clr', Druid: 'Drd', Bard: 'Brd', Paladin: 'Pal', Ranger: 'Rgr' };
+      const seen = {};
+      const parts = [];
+      Object.keys(entry.learnedAt.class).forEach((c) => {
+        const a = abbr[c] || c;
+        if (seen[a] === undefined) { seen[a] = true; parts.push(`${a} ${entry.learnedAt.class[c]}`); }
+      });
+      addStat('Level', parts.join(', '));
+    } else if (entry.spell && Array.isArray(entry.spell.classLevels) && entry.spell.classLevels.length) {
+      addStat('Level', entry.spell.classLevels.map((c) => `${c.class} ${c.level}`).join(', '));
+    } else if (entry.level !== undefined) {
+      addStat('Level', entry.level);
+    }
+    if (entry.ppCost !== undefined || entry.powerPointsCost) addStat('PP Cost', entry.ppCost !== undefined ? entry.ppCost : entry.powerPointsCost);
+    if (entry.castingTime || (entry.delivery && entry.delivery.action)) addStat('Action', capWord(entry.castingTime || entry.delivery.action));
+    if (entry.range || (entry.delivery && entry.delivery.range)) addStat('Range', capWord(entry.range || entry.delivery.range));
     else if (entry.weapon && entry.weapon.rangeIncrement) addStat('Range', `${entry.weapon.rangeIncrement} ft.`);
+    if (entry.target || entry.area || (entry.delivery && entry.delivery.area)) addStat('Target / Area', entry.area || entry.target || entry.delivery.area);
+    if (entry.duration || (entry.lifecycle && entry.lifecycle.durationText)) addStat('Duration', entry.duration || entry.lifecycle.durationText);
+    const saveVal = entry.save || entry.savingThrow || (entry.delivery && entry.delivery.save && entry.delivery.save.type ? `${entry.delivery.save.type} ${(entry.delivery.save.effect || '').toLowerCase()}`.trim() : '');
+    if (saveVal && !/^none$/i.test(saveVal)) addStat('Save', saveVal);
+    const srVal = entry.sr === true ? 'Yes' : (entry.sr === false ? 'No' : (entry.spellResistance || (entry.delivery && entry.delivery.spellResistance) || ''));
+    if (srVal) addStat('SR', srVal);
     if (entry.armorBonus !== undefined) addStat('Armor Bonus', `+${entry.armorBonus}`);
     else if (entry.armor && entry.armor.armorBonus !== undefined) addStat('Armor Bonus', `+${entry.armor.armorBonus}`);
     if (entry.maxDex !== undefined && entry.maxDex !== null) addStat('Max Dex', `+${entry.maxDex}`);
     if (entry.acp !== undefined) addStat('ACP', entry.acp);
     if (entry.asf !== undefined) addStat('ASF', `${entry.asf}%`);
-    if (entry.school) addStat('School', entry.school);
-    if (entry.discipline) addStat('Discipline', entry.discipline);
-    if (entry.level !== undefined) addStat('Level', entry.level);
-    if (entry.ppCost !== undefined) addStat('PP Cost', entry.ppCost);
-    if (entry.castingTime || (entry.delivery && entry.delivery.action)) addStat('Action', entry.castingTime || entry.delivery.action);
-    if (entry.savingThrow || (entry.delivery && entry.delivery.save && entry.delivery.save.type)) {
-      addStat('Save', entry.savingThrow || entry.delivery.save.type);
-    }
-    if (entry.spellResistance || (entry.delivery && entry.delivery.spellResistance)) {
-      addStat('SR', entry.spellResistance || entry.delivery.spellResistance);
-    }
-    if (entry.slot || (entry.item && entry.item.slot)) addStat('Slot', entry.slot || entry.item.slot);
+    const slotVal = (entry.item && entry.item.slot) || entry.slot;
+    if (slotVal && String(slotVal).toLowerCase() !== 'none') addStat('Slot', slotVal);
     if (entry.gpValue !== undefined || (entry.item && entry.item.price)) addStat('Value', `${entry.gpValue !== undefined ? entry.gpValue : entry.item.price} gp`);
     const prereq = entry.prereq || (entry.prerequisites && entry.prerequisites.text);
     if (prereq && prereq !== '-') addStat('Prerequisites', prereq);
@@ -579,14 +666,18 @@
       if (msg.type === 'crafter:ready') {
         if (iframe.contentWindow) {
           const bridge = root.CharStore && root.CharStore.StudioBridge;
+          const rawEntry = options.rawEntry || ((options.entry && options.entry.schemaVersion !== 3) ? options.entry : null);
           let payloadEntry = options.entry || null;
+          const kindStr = options.kind || (options.context && options.context.kind);
           if (payloadEntry && payloadEntry.schemaVersion !== 3 && bridge && typeof bridge.toV3CrafterDraft === 'function') {
-            payloadEntry = bridge.toV3CrafterDraft(payloadEntry, options.kind || (options.context && options.context.kind));
+            payloadEntry = bridge.toV3CrafterDraft(payloadEntry, kindStr);
           }
           iframe.contentWindow.postMessage({
             type: 'crafter:loadEntry',
+            rawEntry: rawEntry,
             entry: payloadEntry,
             context: Object.assign({
+              kind: kindStr || null,
               allowCharacterScope: options.allowCharacterScope !== false,
               originalId: options.originalId || (payloadEntry && payloadEntry.id) || null
             }, options.context || {})
@@ -687,7 +778,8 @@
     };
     const kindLabel = kindLabelMap[kind] || (entry.type || 'Entity');
     const sourceText = entry.source || (resolved.sourceLocation === 'srd' ? 'Official SRD' : 'Character Sheet');
-    const bodyDesc = entry.benefit || entry.description || entry.text || entry.summary || entry.notes || 'No official rule text recorded for this entry.';
+    const rawBodyDesc = entry.benefit || entry.description || entry.text || entry.summary || entry.shortDescription || entry.notes || '';
+    const bodyDesc = _cleanInspectorHtml(rawBodyDesc) || 'No official rule text recorded for this entry.';
     const statChips = _collectStatChips(entry, kind);
     const blockChips = _collectRuleBlockSummaries(entry);
     const showReplace = _kindSupportsReplace(kind);
@@ -858,6 +950,7 @@
         ? bridge.toV3CrafterDraft(resolved.entry, resolved.kind || spec.kind)
         : resolved.entry;
       openRuleCrafter({
+        rawEntry: (resolved.entry && resolved.entry.schemaVersion !== 3) ? resolved.entry : null,
         entry: draft,
         kind: resolved.kind || spec.kind,
         originalId: resolved.resolvedId || (resolved.entry && resolved.entry.id) || null,
@@ -943,11 +1036,16 @@
     Actions.register('crafter:open', (el, dataset) => {
       const bridge = root.CharStore && root.CharStore.StudioBridge;
       let entry = null;
+      let rawEntry = null;
       if ((dataset.entityId || dataset.entityName) && bridge && typeof bridge.resolveEntity === 'function') {
         const res = bridge.resolveEntity({ kind: dataset.entityKind || dataset.kind, id: dataset.entityId, name: dataset.entityName });
-        if (res && res.entry) entry = bridge.toV3CrafterDraft(res.entry, dataset.entityKind || dataset.kind);
+        if (res && res.entry) {
+          if (res.entry.schemaVersion !== 3) rawEntry = res.entry;
+          entry = bridge.toV3CrafterDraft(res.entry, dataset.entityKind || dataset.kind);
+        }
       }
       openRuleCrafter({
+        rawEntry,
         entry,
         kind: dataset.entityKind || dataset.kind || 'feat',
         originalId: dataset.entityId || (entry && entry.id) || null,
@@ -972,6 +1070,7 @@
         ? bridge.toV3CrafterDraft(res.entry, 'feat')
         : res.entry;
       openRuleCrafter({
+        rawEntry: (res.entry && res.entry.schemaVersion !== 3) ? res.entry : null,
         entry: draft,
         kind: 'feat',
         originalId: res.resolvedId || (draft && draft.id) || null,

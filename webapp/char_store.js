@@ -4639,21 +4639,130 @@
     return null;
   }
 
+  const _V2_TARGET_ALIASES = {
+    'ability.str': 'str', 'ability.dex': 'dex', 'ability.con': 'con', 'ability.int': 'int', 'ability.wis': 'wis', 'ability.cha': 'cha',
+    'ac': 'ac.total', 'ac.all': 'ac.total', 'ac.naturalarmor': 'ac.natural',
+    'attack': 'atk.all', 'attack.all': 'atk.all', 'attack.weapon': 'atk.all', 'attack.melee': 'atk.melee', 'attack.ranged': 'atk.ranged',
+    'damage': 'dmg.all', 'damage.all': 'dmg.all', 'damage.weapon': 'dmg.all', 'damage.melee': 'dmg.melee', 'damage.ranged': 'dmg.all',
+    'saves': 'save.all', 'saves.all': 'save.all', 'saves.fort': 'save.fort', 'saves.ref': 'save.ref', 'saves.will': 'save.will',
+    'skills': 'skill.all', 'skills.all': 'skill.all', 'skill.knowledge_all': 'skill.knowledge', 'skill.wilderness_lore': 'skill.survival',
+    'init': 'initiative', 'speed': 'speed.land', 'speed.all': 'speed.land', 'speed.base': 'speed.land', 'cmb': 'grapple'
+  };
+
+  const _V2_BONUS_TYPES = {
+    untyped: 'Untyped', dodge: 'Dodge', circumstance: 'Circumstance', penalty: 'Penalty',
+    enhancement: 'Enhancement', luck: 'Luck', morale: 'Morale', sacred: 'Sacred', divine: 'Sacred',
+    profane: 'Profane', insight: 'Insight', competence: 'Competence', resistance: 'Resistance',
+    deflection: 'Deflection', alchemical: 'Alchemical', inherent: 'Inherent',
+    armor: 'Armor', armor_enhancement: 'Armor Enhancement', shield: 'Shield', shield_enhancement: 'Shield Enhancement',
+    natural: 'Natural Armor', natural_armor: 'Natural Armor', natural_enhancement: 'Natural Armor Enhancement',
+    racial: 'Racial', size: 'Size', exalted: 'Exalted', perfection: 'Perfection', haste: 'Untyped', trait: 'Untyped', domain: 'Untyped', cover: 'Circumstance'
+  };
+
+  function _stripHtmlText(html) {
+    return String(html || '')
+      .replace(/<\s*br\s*\/?>/gi, '\n')
+      .replace(/<\s*\/p\s*>/gi, '\n\n')
+      .replace(/<\s*hr\s*\/?>/gi, '\n')
+      .replace(/<[^>]*>/g, ' ')
+      .replace(/&nbsp;/gi, ' ')
+      .replace(/&amp;/gi, '&')
+      .replace(/&lt;/gi, '<')
+      .replace(/&gt;/gi, '>')
+      .replace(/&quot;/gi, '"')
+      .replace(/&#39;/gi, "'")
+      .replace(/[ \t]+/g, ' ')
+      .replace(/\n\s*\n\s*\n+/g, '\n\n')
+      .trim();
+  }
+
+  function _normCrafterTarget(raw) {
+    const s = String(raw || '').trim();
+    if (!s) return 'atk.all';
+    const low = s.toLowerCase();
+    return _V2_TARGET_ALIASES[low] || s;
+  }
+
+  function _normCrafterBonusType(raw) {
+    const s = String(raw || '').trim();
+    if (!s) return 'Untyped';
+    return _V2_BONUS_TYPES[s.toLowerCase()] || (s.charAt(0).toUpperCase() + s.slice(1));
+  }
+
   function _convertV2ModToV3Block(mod) {
     if (!mod || typeof mod !== 'object') return null;
-    const target = String(mod.target || '').trim() || 'atk.all';
-    const rawVal = mod.value !== undefined ? mod.value : (mod.formula !== undefined ? mod.formula : 0);
-    const numVal = Number(rawVal);
-    const isFormula = (typeof rawVal === 'string' && isNaN(numVal)) || !!mod.formula;
+    const target = _normCrafterTarget(mod.target);
+    const btype = _normCrafterBonusType(mod.type);
+    const condition = mod.condition ? String(mod.condition) : '';
+    const fStr = mod.formula !== undefined && mod.formula !== null ? String(mod.formula).trim() : '';
+    const hasDynamicFormula = fStr !== '' && isNaN(Number(fStr));
+    if (hasDynamicFormula) {
+      let m;
+      if ((m = fStr.match(/^min\(\s*(\d+)\s*,\s*max\(\s*(\d+)\s*,\s*floor\(\s*@cl\s*\/\s*(\d+)\s*\)\s*(?:\*\s*(\d+))?\s*\)\s*\)$/i))) {
+        return { type: 'stat', targets: [target], mode: 'perCL', value: m[4] ? (Number(m[4]) || 1) : 1, per: Number(m[3]) || 1, min: Number(m[2]) || 0, max: Number(m[1]) || 5, btype: btype, condition: condition };
+      }
+      if ((m = fStr.match(/^(\d+)\s*\+\s*min\(\s*(\d+)\s*,\s*(?:max\(\s*\d+\s*,\s*)?floor\(\s*(?:\(\s*@cl\s*-\s*\d+\s*\)|@cl)\s*\/\s*(\d+)\s*\)\s*\)?\s*\)$/i))) {
+        const base = Number(m[1]) || 2, addMax = Number(m[2]) || 3, per = Number(m[3]) || 3;
+        return { type: 'stat', targets: [target], mode: 'perCL', value: 1, per: per, min: base, max: base + addMax, btype: btype, condition: condition };
+      }
+      if ((m = fStr.match(/@(?:abilities\.)?(str|dex|con|int|wis|cha)(?:\.mod|Mod)/i))) {
+        return { type: 'stat', targets: [target], mode: 'stat', stat: m[1].toLowerCase() + 'Mod', mult: 1, value: Number(mod.value) || 0, cap: 'none', btype: btype, condition: condition };
+      }
+    }
+    const numVal = Number.isFinite(Number(mod.value)) && Number(mod.value) !== 0
+      ? Number(mod.value)
+      : (!isNaN(Number(fStr)) && fStr !== '' ? Number(fStr) : 0);
+    if (numVal === 0 && !hasDynamicFormula) return null;
     return {
       type: 'stat',
       targets: [target],
-      mode: isFormula ? 'formula' : 'flat',
-      value: isFormula ? 0 : (isNaN(numVal) ? 0 : numVal),
-      formula: isFormula ? String(mod.formula || rawVal) : '',
-      btype: mod.type ? String(mod.type) : 'Untyped',
-      condition: mod.condition ? String(mod.condition) : ''
+      mode: 'flat',
+      value: numVal,
+      btype: btype,
+      condition: condition
     };
+  }
+
+  function _convertTempHpToV3Block(formula) {
+    const f = String(formula || '').trim();
+    if (!f) return null;
+    if (!isNaN(Number(f)) && Number(f) > 0) {
+      return { type: 'roll', kind: 'Temp HP', count: Number(f), die: 'flat', scaling: 'flat' };
+    }
+    let m;
+    if ((m = f.match(/^(\d+)d(\d+)\s*\+\s*min\(\s*(\d+)\s*,\s*@cl(?:\s*\*\s*(\d+))?\s*\)$/i))) {
+      return { type: 'roll', kind: 'Temp HP', count: Number(m[1]) || 1, die: 'd' + m[2], scaling: 'perCL', amount: m[4] ? (Number(m[4]) || 1) : 1, per: 1, start: 1, max: Number(m[3]) || 10 };
+    }
+    if ((m = f.match(/^min\(\s*(\d+)\s*,\s*@cl(?:\s*\*\s*(\d+))?\s*\)$/i))) {
+      return { type: 'roll', kind: 'Temp HP', count: 0, die: 'flat', scaling: 'perCL', amount: m[2] ? (Number(m[2]) || 1) : 1, per: 1, start: 1, max: Number(m[1]) || 20 };
+    }
+    if ((m = f.match(/^(?:(\d+)\s*\*\s*)?@cl(?:\s*\*\s*(\d+))?$/i))) {
+      const amt = m[1] ? (Number(m[1]) || 1) : (m[2] ? (Number(m[2]) || 1) : 1);
+      return { type: 'roll', kind: 'Temp HP', count: 0, die: 'flat', scaling: 'perCL', amount: amt, per: 1, start: 1, max: amt * 20 };
+    }
+    return null;
+  }
+
+  function _convertRuleFlagsToV3Blocks(rf) {
+    if (!rf || typeof rf !== 'object') return [];
+    const out = [];
+    const immMap = [
+      ['immuneFear', 'Fear'], ['immuneMindAffecting', 'Mind-Affecting'], ['immuneDeathEffects', 'Death Effects'],
+      ['immunePoison', 'Poison'], ['immuneDisease', 'Disease'], ['immuneParalysis', 'Paralysis'],
+      ['immuneSleep', 'Sleep'], ['immuneNegativeEnergy', 'Negative Energy & Energy Drain'],
+      ['immuneMagicMissile', 'Magic Missile'], ['immuneMentalControl', 'Mental Control']
+    ];
+    immMap.forEach(function (pair) {
+      if (rf[pair[0]]) out.push({ type: 'defense', mode: 'Immunity', what: pair[1] });
+    });
+    if (rf.freedomOfMovement) out.push({ type: 'defense', mode: 'Condition Immunity', what: 'Grapple, Paralysis & Movement Impediments (Freedom of Movement)' });
+    if (rf.extraAttackFullAttack) out.push({ type: 'attack', attackMode: 'extra', extraKind: 'extraFull', count: 1, rider: 'Extra attack on Full Attack (Haste)' });
+    if (rf.concealment || rf.missChance) out.push({ type: 'defense', mode: 'Concealment %', value: Number(rf.concealment || rf.missChance) || 20 });
+    if (rf.dr) {
+      const dm = String(rf.dr).match(/^(\d+)\s*\/\s*(.+)$/);
+      if (dm) out.push({ type: 'defense', mode: 'DR', value: Number(dm[1]) || 5, what: dm[2].trim() });
+    }
+    return out;
   }
 
   function _convertDmgPartToV3Block(part) {
@@ -4923,6 +5032,15 @@
         kind
       );
 
+      if (!overrideEntry && doc.customEntries && typeof doc.customEntries === 'object' && !Array.isArray(doc.customEntries)) {
+        const lookupId = (charItem && (charItem.customEntryId || charItem.id || charItem.baseItemId)) || (srdEntry && srdEntry.id) || '';
+        if (lookupId && doc.customEntries[lookupId]) {
+          overrideEntry = doc.customEntries[lookupId];
+          resolvedId = overrideEntry.id || lookupId;
+          sourceLocation = 'customEntries';
+        }
+      }
+
       let entry = null;
       if (overrideEntry) {
         entry = CharStore._fastCloneHistoryVal(overrideEntry);
@@ -4984,20 +5102,38 @@
         return cloned;
       }
       const k = String(kind || entry.type || entry.category || 'feat').toLowerCase().trim();
+      const entryTypeLow = String(entry.type || '').toLowerCase().trim();
+      const hasRealSlot = Boolean(entry.slot && String(entry.slot).toLowerCase() !== 'none');
+      const isSpellLike = Boolean(
+        entry.learnedAt
+        || ['spell', 'power', 'maneuver', 'invocation', 'soulmeld', 'vestige', 'mystery', 'utterance'].includes(entryTypeLow)
+        || k.includes('spell') || k.includes('maneuver') || k.includes('psionic') || k.includes('power')
+        || k.includes('incarnum') || k.includes('soulmeld') || k.includes('pact') || k.includes('vestige')
+        || k.includes('shadow') || k.includes('mystery') || k.includes('truename') || k.includes('utterance') || k.includes('invocation')
+      );
       let blueprint = 'feat';
-      if (k.includes('weapon') || entry.weapon || (entry.damage && entry.crit)) blueprint = 'weapon';
-      else if (k.includes('armor') || k.includes('shield') || entry.armorBonus !== undefined) blueprint = 'armor';
-      else if (k.includes('item') || k.includes('wondrous') || k.includes('ring') || k.includes('rod') || k.includes('staff') || k.includes('wand') || entry.slot || entry.gpValue !== undefined) blueprint = 'wondrous';
-      else if (k.includes('spell') || k.includes('maneuver') || k.includes('psionic') || k.includes('power') || k.includes('incarnum') || k.includes('soulmeld') || k.includes('pact') || k.includes('vestige') || k.includes('shadow') || k.includes('mystery') || k.includes('truename') || k.includes('utterance') || k.includes('invocation')) blueprint = 'spell';
-      else if (k.includes('race') || k.includes('template')) blueprint = 'race';
-      else if (k.includes('class')) blueprint = 'class';
+      if (isSpellLike) blueprint = 'spell';
+      else if (k.includes('weapon') || entryTypeLow === 'weapon' || entry.weapon || (entry.damage && entry.crit)) blueprint = 'weapon';
+      else if (k.includes('armor') || k.includes('shield') || entryTypeLow === 'armor' || entryTypeLow === 'shield' || entry.armorBonus !== undefined) blueprint = 'armor';
+      else if (k.includes('item') || k.includes('wondrous') || k.includes('ring') || k.includes('rod') || k.includes('staff') || k.includes('wand') || entryTypeLow === 'magicitem' || entryTypeLow === 'consumable' || hasRealSlot || entry.gpValue !== undefined || entry.cost !== undefined) blueprint = 'wondrous';
+      else if (k.includes('race') || k.includes('template') || entryTypeLow === 'race' || entryTypeLow === 'template') blueprint = 'race';
+      else if (k.includes('class') || entryTypeLow === 'class') blueprint = 'class';
       else if (k.includes('buff')) blueprint = 'buff';
 
       const effects = [];
       if (Array.isArray(entry.modifiers)) {
+        const statGroups = {};
         entry.modifiers.forEach(function (m) {
           const blk = _convertV2ModToV3Block(m);
-          if (blk) effects.push(blk);
+          if (!blk) return;
+          const gKey = [blk.mode, blk.value, blk.btype, blk.stat || '', blk.per || '', blk.min || '', blk.max || '', blk.condition || ''].join('|');
+          if (statGroups[gKey]) {
+            const tgt = blk.targets[0];
+            if (statGroups[gKey].targets.indexOf(tgt) < 0) statGroups[gKey].targets.push(tgt);
+          } else {
+            statGroups[gKey] = blk;
+            effects.push(blk);
+          }
         });
       }
       if (Array.isArray(entry.damageParts) && blueprint !== 'weapon') {
@@ -5006,16 +5142,25 @@
           if (blk) effects.push(blk);
         });
       }
+      _convertRuleFlagsToV3Blocks(entry.ruleFlags).forEach(function (fb) { effects.push(fb); });
+      const thpBlk = _convertTempHpToV3Block(entry.tempHpFormula);
+      if (thpBlk) effects.push(thpBlk);
 
+      const schoolLow = String(entry.school || entry.category || '').toLowerCase().trim();
+      const srdTypeLabel = entry.type || (blueprint.charAt(0).toUpperCase() + blueprint.slice(1));
       const out = {
         schemaVersion: 3,
         blueprint: blueprint,
         id: entry.id || ('crafted_' + _slugifyCrafterId(entry.name)),
         baseEntryId: entry.baseEntryId || entry.baseItemId || entry.id || null,
+        origin: entry.id ? { mode: 'override', srdId: entry.id, srdName: entry.name || '', srdType: srdTypeLabel } : { mode: 'new', srdId: '', srdName: '', srdType: '' },
         name: entry.name || 'Crafted Entry',
         source: entry.source || 'Official SRD',
-        tags: Array.isArray(entry.tags) ? entry.tags.slice() : [],
-        text: entry.benefit || entry.description || entry.text || entry.summary || '',
+        tags: Array.isArray(entry.tags) ? entry.tags.filter(function (tg) {
+          const tl = String(tg || '').toLowerCase();
+          return tl !== 'spell' && !(blueprint === 'spell' && schoolLow && tl === schoolLow);
+        }) : [],
+        text: _stripHtmlText(entry.benefit || entry.description || entry.text || entry.summary || entry.shortDescription || ''),
         effects: effects
       };
 
@@ -5034,57 +5179,110 @@
           out.weapon = {
             category: entry.category || (entry.weapon && entry.weapon.category) || 'Martial',
             handedness: entry.handedness || (entry.weapon && entry.weapon.handedness) || 'One-Handed',
-            baseCritRange: (entry.weapon && entry.weapon.baseCritRange) || 20,
-            critMultiplier: (entry.weapon && entry.weapon.critMultiplier) || 2,
-            rangeIncrement: entry.range ? (parseInt(String(entry.range), 10) || null) : ((entry.weapon && entry.weapon.rangeIncrement) || null)
+            baseCritRange: (entry.weapon && entry.weapon.baseCritRange) || entry.critRange || 20,
+            critMultiplier: (entry.weapon && entry.weapon.critMultiplier) || entry.critMult || 2,
+            rangeIncrement: entry.range ? (parseInt(String(entry.range), 10) || null) : ((entry.weapon && entry.weapon.rangeIncrement) || entry.rangeIncrement || null)
           };
           if (Array.isArray(entry.damageParts)) {
             out.damageParts = CharStore._fastCloneHistoryVal(entry.damageParts);
           }
         } else if (blueprint === 'armor') {
           out.armor = {
-            armorType: entry.armorType || 'Light',
+            armorType: entry.armorType || entry.category || 'Light',
             armorBonus: Number(entry.armorBonus) || 0,
             maxDex: entry.maxDex !== undefined ? entry.maxDex : null,
-            armorCheckPenalty: Number(entry.acp !== undefined ? entry.acp : entry.armorCheckPenalty) || 0,
-            arcaneSpellFailure: Number(entry.asf !== undefined ? entry.asf : entry.arcaneSpellFailure) || 0
+            armorCheckPenalty: Number(entry.acp !== undefined ? entry.acp : (entry.checkPenalty !== undefined ? entry.checkPenalty : entry.armorCheckPenalty)) || 0,
+            arcaneSpellFailure: Number(entry.asf !== undefined ? entry.asf : (entry.spellFailure !== undefined ? entry.spellFailure : entry.arcaneSpellFailure)) || 0
           };
         } else {
           out.item = {
-            subtype: entry.subtype || 'Wondrous',
-            slot: entry.slot || 'Slotless',
-            price: Number(entry.price !== undefined ? entry.price : entry.gpValue) || 0,
+            subtype: entry.subtype || 'Wondrous Item',
+            slot: (entry.slot && entry.slot !== 'None') ? entry.slot : 'Slotless',
+            price: Number(entry.price !== undefined ? entry.price : (entry.cost !== undefined ? entry.cost : entry.gpValue)) || 0,
             cl: Number(entry.cl !== undefined ? entry.cl : entry.casterLevel) || 1
           };
         }
       } else if (blueprint === 'spell') {
         let sys = 'spell';
-        if (k.includes('maneuver')) sys = 'maneuver';
-        else if (k.includes('psionic') || k.includes('power')) sys = 'psionic';
-        else if (k.includes('incarnum') || k.includes('soulmeld')) sys = 'soulmeld';
-        else if (k.includes('pact') || k.includes('vestige')) sys = 'vestige';
-        else if (k.includes('shadow') || k.includes('mystery')) sys = 'mystery';
-        else if (k.includes('truename') || k.includes('utterance')) sys = 'utterance';
-        else if (k.includes('invocation')) sys = 'invocation';
+        if (k.includes('maneuver') || entryTypeLow === 'maneuver') sys = 'maneuver';
+        else if (k.includes('psionic') || k.includes('power') || entryTypeLow === 'power') sys = 'psionic';
+        else if (k.includes('incarnum') || k.includes('soulmeld') || entryTypeLow === 'soulmeld') sys = 'soulmeld';
+        else if (k.includes('pact') || k.includes('vestige') || entryTypeLow === 'vestige') sys = 'vestige';
+        else if (k.includes('shadow') || k.includes('mystery') || entryTypeLow === 'mystery') sys = 'mystery';
+        else if (k.includes('truename') || k.includes('utterance') || entryTypeLow === 'utterance') sys = 'utterance';
+        else if (k.includes('invocation') || entryTypeLow === 'invocation') sys = 'invocation';
+
+        const classAbbr = { Wizard: 'Sor/Wiz', Sorcerer: 'Sor/Wiz', Cleric: 'Clr', Druid: 'Drd', Bard: 'Brd', Paladin: 'Pal', Ranger: 'Rgr' };
+        const classLevels = [];
+        const seenCls = {};
+        if (entry.learnedAt && entry.learnedAt.class) {
+          Object.keys(entry.learnedAt.class).forEach(function (clsKey) {
+            const abbr = classAbbr[clsKey] || clsKey;
+            if (seenCls[abbr] === undefined) {
+              seenCls[abbr] = entry.learnedAt.class[clsKey];
+              classLevels.push({ class: abbr, level: Number(entry.learnedAt.class[clsKey]) || 1 });
+            }
+          });
+        }
+        if (entry.learnedAt && entry.learnedAt.domain) {
+          Object.keys(entry.learnedAt.domain).forEach(function (domKey) {
+            classLevels.push({ class: domKey, level: Number(entry.learnedAt.domain[domKey]) || 1 });
+          });
+        }
+        if (!classLevels.length) {
+          classLevels.push({ class: 'Sor/Wiz', level: entry.level !== undefined ? Number(entry.level) : 1 });
+        }
+        const rawDescs = Array.isArray(entry.descriptors)
+          ? entry.descriptors
+          : String(entry.descriptors || '').split(/,\s*|\s+or\s+/).map(function (d) { return d.trim(); }).filter(Boolean);
+        const normDescs = rawDescs.map(function (d) {
+          return d.split('-').map(function (p) { return p ? p.charAt(0).toUpperCase() + p.slice(1).toLowerCase() : p; }).join('-');
+        });
         out.spell = {
           system: sys,
-          school: entry.school || 'Evocation',
+          school: entry.school || entry.category || 'Universal',
           discipline: entry.discipline || '',
-          descriptors: Array.isArray(entry.descriptors) ? entry.descriptors.slice() : [],
+          classLevels: classLevels,
+          components: Array.isArray(entry.components) ? entry.components.slice() : ['V', 'S'],
+          descriptors: normDescs,
           level: entry.level !== undefined ? Number(entry.level) : 1,
-          ppCost: entry.ppCost !== undefined ? Number(entry.ppCost) : undefined
+          ppCost: entry.ppCost !== undefined ? Number(entry.ppCost) : (entry.powerPointsCost !== undefined && entry.powerPointsCost !== null ? Number(entry.powerPointsCost) : undefined)
         };
-        if (entry.castingTime || entry.range || entry.area || entry.savingThrow || entry.spellResistance) {
-          out.delivery = {
-            action: entry.castingTime || '1 standard action',
-            range: entry.range || null,
-            area: entry.area || null,
-            spellResistance: entry.spellResistance || 'Yes'
-          };
-          if (entry.savingThrow && entry.savingThrow !== 'None') {
-            out.delivery.save = { type: entry.savingThrow, effect: 'Partial' };
-          }
+        const actionMap = { standard: 'Standard', free: 'Free', swift: 'Swift', immediate: 'Immediate', full: 'Full-Round', move: 'Move', '1': 'Full-Round' };
+        const rangeMap = { close: 'Close (25 ft. + 5 ft./2 levels)', medium: 'Medium (100 ft. + 10 ft./level)', long: 'Long (400 ft. + 40 ft./level)', touch: 'Touch', personal: 'Personal', unlimited: 'Unlimited' };
+        const rawAction = String(entry.castingTime || entry.initiationAction || 'standard').toLowerCase().split(/[\s-]/)[0];
+        const rawRange = String(entry.range || '').trim();
+        const saveRaw = String(entry.save || entry.savingThrow || '').trim();
+        const srRaw = entry.sr === true ? (/harmless/i.test(saveRaw) ? 'Yes (harmless)' : 'Yes') : (entry.sr === false ? 'No' : (entry.spellResistance || 'Yes'));
+        out.delivery = {
+          action: actionMap[rawAction] || 'Standard',
+          range: rangeMap[rawRange.toLowerCase()] || rawRange || null,
+          area: entry.area || entry.target || null,
+          spellResistance: srRaw
+        };
+        if (saveRaw && !/^none/i.test(saveRaw)) {
+          const svTypeM = saveRaw.match(/Fortitude|Reflex|Will/i);
+          const svType = svTypeM ? (svTypeM[0].charAt(0).toUpperCase() + svTypeM[0].slice(1).toLowerCase()) : 'Will';
+          const svEff = /half/i.test(saveRaw) ? 'Half' : (/partial/i.test(saveRaw) ? 'Partial' : (/harmless/i.test(saveRaw) ? 'Negates (harmless)' : (/disbelief/i.test(saveRaw) ? 'Disbelief' : 'Negates')));
+          out.delivery.save = { type: svType, effect: svEff };
         }
+        const durStr = String(entry.duration || '').trim();
+        const dismissible = /\(\s*D\s*\)/i.test(durStr);
+        const cleanDur = durStr.replace(/\s*\(\s*D\s*\)\s*/gi, '').trim();
+        let durCode = 'instant';
+        if (!cleanDur || /instant/i.test(cleanDur)) durCode = 'instant';
+        else if (/permanent/i.test(cleanDur)) durCode = 'permanent';
+        else if (/10 min\.?\s*\/\s*level/i.test(cleanDur)) durCode = 'tenMinPerLevel';
+        else if (/rounds?\s*\/\s*level/i.test(cleanDur)) durCode = 'roundsPerLevel';
+        else if (/min(ute)?s?\.?\s*\/\s*level/i.test(cleanDur)) durCode = 'minPerLevel';
+        else if (/hours?\s*\/\s*level/i.test(cleanDur)) durCode = 'hourPerLevel';
+        else durCode = 'text';
+        out.lifecycle = {
+          usage: sys === 'spell' ? { mode: 'spellSlot', slotLevel: classLevels[0] ? classLevels[0].level : (Number(entry.level) || 1) } : { mode: 'atwill' },
+          duration: durCode,
+          durationText: cleanDur || 'Instantaneous',
+          dismissible: dismissible
+        };
       } else if (blueprint === 'race') {
         out.race = {
           kind: k.includes('template') ? 'template' : 'race',

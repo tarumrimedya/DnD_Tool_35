@@ -1244,23 +1244,40 @@ const RuleEngine = {
     const buildStatFormulaAndValue = (b, branchCtx) => {
       const terms = [];
       const rawVal = b.val !== undefined ? b.val : b.value;
-      const mode = String(b.mode || '').toLowerCase();
-      const statAbility = String(b.stat || '').toLowerCase().trim();
+      const mode = String(b.mode || '').toLowerCase().trim();
+      const statAbilityRaw = String(b.stat || '').toLowerCase().trim();
+      const statAbility = statAbilityRaw.replace(/mod$/, '').replace(/^var:/, '');
 
-      if ((mode === 'stat' || statAbility) && ['str', 'dex', 'con', 'int', 'wis', 'cha'].includes(statAbility)) {
+      // Rule Crafter `mode: 'perCL'` (`Scale by Level`: min + floor(@cl / per) * value, capped at max)
+      if (mode === 'percl' && !b.perCL && !b.perLvl && !b.perLevel) {
+        const step = Number(rawVal ?? 1) || 1;
+        const every = Math.max(1, Number(b.per ?? 1) || 1);
+        const baseMin = Number(b.min ?? 0) || 0;
+        const maxCap = (b.max !== undefined && b.max !== null && b.max !== '') ? Number(b.max) : null;
+        const scaleExpr = every === 1
+          ? (step === 1 ? '@cl' : `(@cl * ${step})`)
+          : (step === 1 ? `floor(@cl / ${every})` : `(floor(@cl / ${every}) * ${step})`);
+        const uncapExpr = baseMin !== 0 ? `${baseMin} + ${scaleExpr}` : scaleExpr;
+        const expr = (maxCap !== null && Number.isFinite(maxCap) && maxCap > 0) ? `min(${maxCap}, ${uncapExpr})` : uncapExpr;
+        const ev = Number(this.evaluateFormula(expr, branchCtx)) || 0;
+        return { value: Math.trunc(ev), formula: expr, cap: maxCap };
+      }
+
+      const useStatMode = (mode === 'stat') || (!mode && Boolean(statAbilityRaw));
+      if (useStatMode && ['str', 'dex', 'con', 'int', 'wis', 'cha'].includes(statAbility)) {
         const mult = Number(b.mult ?? b.multiplier ?? 1);
         const modToken = `@${statAbility}Mod`;
         terms.push(mult !== 1 ? `floor(${modToken} * ${mult})` : modToken);
-        const flatAdd = Number(rawVal);
-        if (!Number.isNaN(flatAdd) && flatAdd !== 0) {
+        const flatAdd = Number(b.val !== undefined ? b.val : 0);
+        if (!mode && !Number.isNaN(flatAdd) && flatAdd !== 0) {
           terms.push(String(flatAdd));
         }
-      } else if ((mode === 'stat' || statAbility) && ['essentia', 'cl', 'ml', 'il', 'ebl', 'level', 'hd', 'bab', 'augmentpp'].includes(statAbility)) {
+      } else if (useStatMode && ['essentia', 'cl', 'ml', 'il', 'ebl', 'level', 'hd', 'bab', 'augmentpp'].includes(statAbility)) {
         const mult = Number(b.mult ?? b.multiplier ?? 1);
         const token = statAbility === 'augmentpp' ? '@augmentPP' : `@${statAbility}`;
         terms.push(mult !== 1 ? `floor(${token} * ${mult})` : token);
-        const flatAdd = Number(rawVal);
-        if (!Number.isNaN(flatAdd) && flatAdd !== 0) {
+        const flatAdd = Number(b.val !== undefined ? b.val : 0);
+        if (!mode && !Number.isNaN(flatAdd) && flatAdd !== 0) {
           terms.push(String(flatAdd));
         }
       } else if (b.formula !== undefined && b.formula !== null && String(b.formula).trim() !== '') {
@@ -1299,7 +1316,19 @@ const RuleEngine = {
       }
 
       const rawExpr = terms.length > 0 ? terms.join(' + ') : '0';
-      const capRaw = b.cap !== undefined && b.cap !== null && b.cap !== '' ? b.cap : (b.max !== undefined && b.max !== null && b.max !== '' ? b.max : null);
+      let capRaw = null;
+      const bCapStr = b.cap !== undefined && b.cap !== null ? String(b.cap).trim() : '';
+      if (bCapStr && bCapStr.toLowerCase() !== 'none') {
+        if (bCapStr.toLowerCase() === 'number') {
+          capRaw = b.capVal !== undefined && b.capVal !== null ? b.capVal : null;
+        } else if (isNaN(Number(bCapStr)) && !bCapStr.startsWith('@') && !/[+\-*/()]/.test(bCapStr)) {
+          capRaw = `@${bCapStr}`;
+        } else {
+          capRaw = b.cap;
+        }
+      } else if (!mode && b.max !== undefined && b.max !== null && b.max !== '') {
+        capRaw = b.max;
+      }
       let evaluated = Number(this.evaluateFormula(rawExpr, branchCtx)) || 0;
       let formulaStr = rawExpr;
       if (capRaw !== null) {
@@ -1524,21 +1553,67 @@ const RuleEngine = {
           return;
         }
 
-        // 5. Roll / Attack Damage Block (`roll` / `attack`)
+        // 5. Roll / Attack Damage / Temp HP / Healing Block (`roll` / `attack`)
         if (bType === 'roll' || bType === 'attack') {
-          const diceStr = b.dice
+          if (bType === 'attack' && b.attackMode === 'extra') {
+            if (b.extraKind === 'flurry') {
+              addBadge(`+${Number(b.count) || 1} Extra Attack (${Number(b.penalty) || -2} All Atk)`);
+            } else {
+              ruleFlags.extraAttackFullAttack = true;
+              addBadge(`+${Number(b.count) || 1} Extra Attack (Full Attack)`);
+            }
+            return;
+          }
+          const rollKind = String(b.kind || 'Damage').trim();
+          if (rollKind === 'Temp HP') {
+            const cnt = Number(b.count ?? 0) || 0;
+            const die = String(b.die || 'flat');
+            const dicePart = die === 'flat' ? (cnt > 0 ? String(cnt) : '') : `${cnt || 1}${die.replace(/^\d+/, '')}`;
+            let scalePart = '';
+            if (b.scaling === 'perCL') {
+              const amt = Number(b.amount ?? 1) || 1;
+              const per = Math.max(1, Number(b.per ?? 1) || 1);
+              const maxCap = Number(b.max ?? 20) || 20;
+              const clExpr = per === 1 ? (amt === 1 ? '@cl' : `(@cl * ${amt})`) : `(floor(@cl / ${per}) * ${amt})`;
+              scalePart = `min(${maxCap}, ${clExpr})`;
+            }
+            out.tempHpFormula = [dicePart, scalePart].filter(Boolean).join(' + ') || '0';
+            return;
+          }
+          if (rollKind === 'Fast Healing') {
+            const fhVal = Number(b.count ?? 1) || 1;
+            defenses.push({ kind: 'fast_healing', target: 'hp', value: fhVal, formula: null });
+            pushModifier({ op: 'add', target: 'fastHealing', value: fhVal, type: 'Untyped', source: out.name || 'Fast Healing' });
+            return;
+          }
+          let diceStr = b.dice
             ? String(b.dice).trim()
-            : ((b.n || b.d) ? `${b.n || 1}d${b.d || 6}` : '1d6');
-          const flatBonus = b.bonus !== undefined
+            : (b.die === 'flat' ? null : ((b.count || b.die) ? `${b.count || 1}${String(b.die || 'd6').replace(/^\d+/, '')}` : ((b.n || b.d) ? `${b.n || 1}d${b.d || 6}` : '1d6')));
+          let flatBonus = b.bonus !== undefined
             ? Number(this.evaluateFormula(b.bonus, curCtx)) || 0
-            : (Number(b.flat || 0) || 0);
-          const dmgType = b.dmgType || b.damageType || 'Untyped';
+            : (b.die === 'flat' ? (Number(b.count) || 0) : (Number(b.flat || 0) || 0));
+          if (b.scaling === 'perCL') {
+            const start = Number(b.start ?? 1) || 1;
+            const per = Math.max(1, Number(b.per ?? 1) || 1);
+            const maxSteps = Math.max(1, Number(b.max ?? 10) || 10);
+            const clNow = Number(curCtx.cl) || 1;
+            const steps = clNow < start ? 0 : Math.min(maxSteps, Math.floor((clNow - start) / per) + 1);
+            const amt = Number(b.amount ?? 1) || 1;
+            if (b.die === 'flat') {
+              flatBonus = (Number(b.count) > 0 && start > 1 ? Number(b.count) + (steps - 1) * amt : steps * amt);
+              diceStr = null;
+            } else {
+              const totalDice = (Number(b.count) > 0 && start > 1 ? Number(b.count) + (steps - 1) * amt : steps * amt);
+              diceStr = `${Math.max(1, totalDice)}${String(b.die || 'd6').replace(/^\d+/, '')}`;
+            }
+          }
+          const dmgType = rollKind === 'Healing' ? 'Positive' : (b.dmgType || b.damageType || 'Untyped');
           damageParts.push({
             dice: diceStr,
             bonus: flatBonus,
             type: dmgType,
-            multiplyOnCrit: Boolean(b.multiplyOnCrit),
-            onCritOnly: Boolean(b.onCritOnly),
+            multiplyOnCrit: Boolean(b.multiplyOnCrit || b.crit === 'multiply'),
+            onCritOnly: Boolean(b.onCritOnly || b.crit === 'onCritOnly'),
             touchAttack: Boolean(b.touch || b.isTouch),
             saveType: b.saveType || b.save || null,
             dcFormula: b.dc || b.dcFormula || null,
@@ -1550,6 +1625,67 @@ const RuleEngine = {
 
         // 6. Defense Block (`defense`)
         if (bType === 'defense') {
+          if (b.mode) {
+            const dm = String(b.mode).trim();
+            const what = String(b.what || '').trim();
+            if (dm === 'Immunity' || dm === 'Condition Immunity') {
+              const lowW = what.toLowerCase();
+              if (lowW === 'fear') ruleFlags.immuneFear = true;
+              else if (lowW.includes('mind-affecting') || lowW.includes('mind affecting')) ruleFlags.immuneMindAffecting = true;
+              else if (lowW.includes('death')) ruleFlags.immuneDeathEffects = true;
+              else if (lowW.includes('poison')) ruleFlags.immunePoison = true;
+              else if (lowW.includes('disease')) ruleFlags.immuneDisease = true;
+              else if (lowW.includes('paralysis') && lowW.includes('grapple')) ruleFlags.freedomOfMovement = true;
+              else if (lowW.includes('paralysis')) ruleFlags.immuneParalysis = true;
+              else if (lowW.includes('sleep')) ruleFlags.immuneSleep = true;
+              defenses.push({ kind: 'immunity', target: lowW || 'effect', value: 1 });
+              addBadge(`Immune: ${what || 'Effect'}`);
+              return;
+            }
+            if (dm === 'DR') {
+              const drV = Number(b.value ?? 5) || 0;
+              const byp = what || '-';
+              defenses.push({ kind: 'dr', target: 'physical', value: drV, formula: null, bypass: byp });
+              pushModifier({ op: 'add', target: 'dr', value: drV, type: 'Untyped', bypass: byp, source: out.name || 'Defense' });
+              return;
+            }
+            if (dm === 'Energy Resistance') {
+              const resV = Number(b.value ?? 10) || 0;
+              const elem = (what || 'fire').toLowerCase();
+              defenses.push({ kind: 'resistance', target: elem, value: resV, formula: null });
+              pushModifier({ op: 'add', target: `resist.${elem}`, value: resV, type: 'Untyped', source: out.name || 'Defense' });
+              return;
+            }
+            if (dm === 'Spell Resistance') {
+              const srExpr = b.srMode === 'level' ? '10 + @level' : String(Number(b.value ?? 15) || 15);
+              const srV = Math.floor(Number(this.evaluateFormula(srExpr, curCtx)) || 0);
+              defenses.push({ kind: 'sr', target: 'magic', value: srV, formula: b.srMode === 'level' ? srExpr : null });
+              pushModifier({ op: 'add', target: 'sr', value: srV, formula: b.srMode === 'level' ? srExpr : null, type: 'Untyped', source: out.name || 'Defense' });
+              return;
+            }
+            if (dm === 'Concealment %') {
+              const concV = Number(b.value ?? 20) || 20;
+              ruleFlags.concealment = concV;
+              addBadge(`Concealment ${concV}%`);
+              return;
+            }
+            if (dm === 'State Flag') {
+              if (b.flag === 'extraAttack') { ruleFlags.extraAttackFullAttack = true; addBadge('+1 Extra Attack (Full Attack)'); }
+              else if (b.flag) addBadge(`State: ${b.flag}`);
+              return;
+            }
+            if (dm === 'Sense / Movement' && what) {
+              grants.push({ grantType: 'sense', targetId: what, value: 1 });
+              addBadge(what);
+              return;
+            }
+            if (dm === 'Size Change') {
+              const steps = Number(b.steps ?? 1) || 1;
+              out.sizeSteps = steps;
+              addBadge(`Size ${steps > 0 ? '+' : ''}${steps} category`);
+              return;
+            }
+          }
           if (b.dr !== undefined || b.sr !== undefined || b.resist !== undefined || b.fastHealing !== undefined) {
             if (b.dr !== undefined && b.dr !== null) {
               const drStr = String(b.dr).trim();
