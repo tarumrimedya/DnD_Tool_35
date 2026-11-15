@@ -382,9 +382,9 @@
   let _crafterCleanup = null;
 
   function _syncDnDUI() {
-    if (typeof global !== 'undefined' && global.DnDUI && typeof global.DnDUI === 'object') {
-      global.DnDUI.openEntityInspector = openEntityInspector;
-      global.DnDUI.openRuleCrafter = openRuleCrafter;
+    if (typeof root !== 'undefined' && root.DnDUI && typeof root.DnDUI === 'object') {
+      root.DnDUI.openEntityInspector = openEntityInspector;
+      root.DnDUI.openRuleCrafter = openRuleCrafter;
     }
   }
 
@@ -493,9 +493,9 @@
   function _kindSupportsReplace(kind) {
     const k = String(kind || '').toLowerCase();
     if (['weapon', 'item', 'armor', 'shield', 'feat', 'race', 'template', 'spell', 'maneuver', 'psionic', 'psionics', 'incarnum', 'pactmagic', 'shadowmagic', 'truenaming'].includes(k)) {
-      return typeof global.openCompendiumDrawer === 'function'
-        || typeof global.openEquipmentSlotModal === 'function'
-        || typeof global.openWeaponSetModal === 'function';
+      return typeof root.openCompendiumDrawer === 'function'
+        || typeof root.openEquipmentSlotModal === 'function'
+        || typeof root.openWeaponSetModal === 'function';
     }
     return false;
   }
@@ -578,7 +578,7 @@
       const msg = event.data;
       if (msg.type === 'crafter:ready') {
         if (iframe.contentWindow) {
-          const bridge = global.CharStore && global.CharStore.StudioBridge;
+          const bridge = root.CharStore && root.CharStore.StudioBridge;
           let payloadEntry = options.entry || null;
           if (payloadEntry && payloadEntry.schemaVersion !== 3 && bridge && typeof bridge.toV3CrafterDraft === 'function') {
             payloadEntry = bridge.toV3CrafterDraft(payloadEntry, options.kind || (options.context && options.context.kind));
@@ -595,8 +595,8 @@
       } else if (msg.type === 'crafter:saveEntry') {
         if (typeof options.onSave === 'function') {
           options.onSave(msg);
-        } else if (global.CharStore && global.CharStore.StudioBridge && typeof global.CharStore.StudioBridge.saveFromCrafter === 'function') {
-          global.CharStore.StudioBridge.saveFromCrafter(msg.entry, {
+        } else if (root.CharStore && root.CharStore.StudioBridge && typeof root.CharStore.StudioBridge.saveFromCrafter === 'function') {
+          root.CharStore.StudioBridge.saveFromCrafter(msg.entry, {
             saveScope: msg.saveScope,
             originalId: msg.originalId || options.originalId || null,
             context: Object.assign({}, options.context || {}, msg.context || {})
@@ -647,7 +647,7 @@
     if (typeof document === 'undefined' || !document.body) return null;
     _syncDnDUI();
     const query = typeof spec === 'string' ? { name: spec } : Object.assign({}, spec || {});
-    const bridge = global.CharStore && global.CharStore.StudioBridge;
+    const bridge = root.CharStore && root.CharStore.StudioBridge;
     const resolved = (bridge && typeof bridge.resolveEntity === 'function')
       ? bridge.resolveEntity(query)
       : {
@@ -745,7 +745,7 @@
   }
 
   function _removeEntityFromCharacter(spec, resolved) {
-    const doc = (global.CharStore && typeof global.CharStore.getDoc === 'function' && global.CharStore.getDoc()) || global.character;
+    const doc = (root.CharStore && typeof root.CharStore.getDoc === 'function' && root.CharStore.getDoc()) || root.character;
     if (!doc) return false;
     const kind = String((spec && spec.kind) || (resolved && resolved.kind) || '').toLowerCase();
     const targetName = String((resolved && resolved.entry && resolved.entry.name) || (spec && spec.name) || '').trim().toLowerCase();
@@ -819,11 +819,11 @@
     });
 
     if (changed) {
-      if (global.CharStore && typeof global.CharStore.recompute === 'function') {
-        global.CharStore.recompute('crafter');
+      if (root.CharStore && typeof root.CharStore.recompute === 'function') {
+        root.CharStore.recompute('crafter');
       }
-      if (typeof global.saveStateToStorage === 'function') global.saveStateToStorage(true);
-      if (typeof global.renderAll === 'function') global.renderAll();
+      if (typeof root.saveStateToStorage === 'function') root.saveStateToStorage(true);
+      if (typeof root.renderAll === 'function') root.renderAll();
     }
     return changed;
   }
@@ -853,7 +853,7 @@
       const resolved = _activeInspectorResolved;
       const spec = _activeInspectorSpec || {};
       if (!resolved || !resolved.entry) return;
-      const bridge = global.CharStore && global.CharStore.StudioBridge;
+      const bridge = root.CharStore && root.CharStore.StudioBridge;
       const draft = (bridge && typeof bridge.toV3CrafterDraft === 'function')
         ? bridge.toV3CrafterDraft(resolved.entry, resolved.kind || spec.kind)
         : resolved.entry;
@@ -877,7 +877,7 @@
       const resolved = _activeInspectorResolved;
       if (!resolved || !resolved.resolvedId) return;
       const name = (resolved.entry && resolved.entry.name) || 'this entry';
-      const dndUi = global.DnDUI;
+      const dndUi = root.DnDUI;
       let ok = true;
       if (dndUi && typeof dndUi.confirm === 'function') {
         ok = await dndUi.confirm(`Restore "${name}" to Official SRD Rules? Any character-local Rule Crafter edits for this entry will be removed.`, {
@@ -887,7 +887,7 @@
         });
       }
       if (!ok) return;
-      const bridge = global.CharStore && global.CharStore.StudioBridge;
+      const bridge = root.CharStore && root.CharStore.StudioBridge;
       if (bridge && typeof bridge.resetCustomEntry === 'function') {
         bridge.resetCustomEntry(resolved.resolvedId);
       }
@@ -902,17 +902,17 @@
       const spec = _activeInspectorSpec || {};
       const kind = String(spec.kind || (_activeInspectorResolved && _activeInspectorResolved.kind) || '').toLowerCase();
       closeEntityInspector();
-      if (spec.slotKey && typeof global.openEquipmentSlotModal === 'function') {
-        global.openEquipmentSlotModal(spec.slotKey);
+      if (spec.slotKey && typeof root.openEquipmentSlotModal === 'function') {
+        root.openEquipmentSlotModal(spec.slotKey);
         return;
       }
-      if (kind === 'weapon' && typeof global.openWeaponSetModal === 'function') {
-        global.openWeaponSetModal(spec.index || 1);
+      if (kind === 'weapon' && typeof root.openWeaponSetModal === 'function') {
+        root.openWeaponSetModal(spec.index || 1);
         return;
       }
-      if (typeof global.openCompendiumDrawer === 'function') {
+      if (typeof root.openCompendiumDrawer === 'function') {
         const typeMap = { feat: 'Feat', spell: 'Spell', weapon: 'Weapon', item: 'Magic Item', armor: 'Armor', shield: 'Armor', race: 'Race', template: 'Template', class: 'Class' };
-        global.openCompendiumDrawer(typeMap[kind] || 'All');
+        root.openCompendiumDrawer(typeMap[kind] || 'All');
       }
     });
 
@@ -920,12 +920,12 @@
       const resolved = _activeInspectorResolved;
       const spec = _activeInspectorSpec || {};
       const name = (resolved && resolved.entry && resolved.entry.name) || spec.name || 'this entry';
-      const doc = (global.CharStore && typeof global.CharStore.getDoc === 'function' && global.CharStore.getDoc()) || global.character;
+      const doc = (root.CharStore && typeof root.CharStore.getDoc === 'function' && root.CharStore.getDoc()) || root.character;
       const isPlayMode = Boolean(doc && doc.uiMode === 'play');
       const promptMsg = isPlayMode
         ? `Play Mode Active: Removing "${name}" during play may change live combat stats, HP, or prerequisites. Remove anyway?`
         : `Remove "${name}" from this character?`;
-      const dndUi = global.DnDUI;
+      const dndUi = root.DnDUI;
       let ok = true;
       if (dndUi && typeof dndUi.confirm === 'function') {
         ok = await dndUi.confirm(promptMsg, {
@@ -941,7 +941,7 @@
     });
 
     Actions.register('crafter:open', (el, dataset) => {
-      const bridge = global.CharStore && global.CharStore.StudioBridge;
+      const bridge = root.CharStore && root.CharStore.StudioBridge;
       let entry = null;
       if ((dataset.entityId || dataset.entityName) && bridge && typeof bridge.resolveEntity === 'function') {
         const res = bridge.resolveEntity({ kind: dataset.entityKind || dataset.kind, id: dataset.entityId, name: dataset.entityName });
@@ -960,14 +960,14 @@
     });
 
     Actions.register('crafter:edit-viewed-feat', () => {
-      const viewed = global.currentViewedFeatItem;
-      const name = (viewed && viewed.name) || global.currentViewedFeatName || '';
+      const viewed = root.currentViewedFeatItem;
+      const name = (viewed && viewed.name) || root.currentViewedFeatName || '';
       if (!name) return;
-      const bridge = global.CharStore && global.CharStore.StudioBridge;
+      const bridge = root.CharStore && root.CharStore.StudioBridge;
       const res = bridge && typeof bridge.resolveEntity === 'function'
         ? bridge.resolveEntity({ kind: 'feat', name })
         : { entry: { name, benefit: (viewed && viewed.desc) || '' }, resolvedId: null };
-      if (typeof global.closeFeatDetailModal === 'function') global.closeFeatDetailModal();
+      if (typeof root.closeFeatDetailModal === 'function') root.closeFeatDetailModal();
       const draft = bridge && typeof bridge.toV3CrafterDraft === 'function'
         ? bridge.toV3CrafterDraft(res.entry, 'feat')
         : res.entry;
@@ -981,15 +981,15 @@
     });
 
     Actions.register('crafter:reset-viewed-feat', () => {
-      const viewed = global.currentViewedFeatItem;
-      const name = (viewed && viewed.name) || global.currentViewedFeatName || '';
+      const viewed = root.currentViewedFeatItem;
+      const name = (viewed && viewed.name) || root.currentViewedFeatName || '';
       if (!name) return;
-      const bridge = global.CharStore && global.CharStore.StudioBridge;
+      const bridge = root.CharStore && root.CharStore.StudioBridge;
       if (bridge && typeof bridge.resolveEntity === 'function' && typeof bridge.resetCustomEntry === 'function') {
         const res = bridge.resolveEntity({ kind: 'feat', name });
         if (res && res.resolvedId) bridge.resetCustomEntry(res.resolvedId);
       }
-      if (typeof global.closeFeatDetailModal === 'function') global.closeFeatDetailModal();
+      if (typeof root.closeFeatDetailModal === 'function') root.closeFeatDetailModal();
     });
   }
 
