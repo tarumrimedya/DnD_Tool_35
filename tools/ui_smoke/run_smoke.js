@@ -115,6 +115,13 @@ async function waitHubReady(page) {
   await page.waitForTimeout(800);
 }
 
+async function waitSandboxReady(page) {
+  await page.waitForFunction(() => document.readyState === 'complete'
+    && !!document.querySelector('#fs-topbar') && document.querySelector('#fs-topbar').children.length > 0
+    && !!document.querySelector('#fs-live') && document.querySelector('#fs-live').children.length > 0, null, { timeout: 30000 });
+  await page.evaluate(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))));
+}
+
 async function newSheetPage(contextOpts, initScript) {
   const context = await newContext(contextOpts);
   if (initScript) await context.addInitScript(initScript);
@@ -163,6 +170,70 @@ function assertNoErrors(page) {
   const e = page.__errs;
   assert(e.page.length === 0, 'page errors: ' + e.page.slice(0, 3).join(' | '));
   assert(e.console.length === 0, 'console errors: ' + e.console.slice(0, 3).join(' | '));
+}
+
+async function assertNoViewportOrCardOverflow(page, formatLabel) {
+  await page.evaluate(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))));
+  const report = await page.evaluate(() => {
+    const sw = document.documentElement.scrollWidth;
+    const iw = window.innerWidth;
+    const cardViolations = [];
+    const describeEl = el => {
+      const tag = el.tagName.toLowerCase();
+      const id = el.id ? '#' + el.id : '';
+      const cls = typeof el.className === 'string' && el.className.trim()
+        ? '.' + el.className.trim().split(/\s+/).slice(0, 3).join('.')
+        : '';
+      return `${tag}${id}${cls}`;
+    };
+    const isVisible = (rect, cs) => {
+      if (rect.width <= 0 || rect.height <= 0) return false;
+      if (cs.display === 'none' || cs.visibility === 'hidden' || cs.opacity === '0') return false;
+      return true;
+    };
+    const cards = Array.from(document.querySelectorAll('.bg-dndCard'));
+    let visibleCards = 0;
+    for (const card of cards) {
+      const cardRect = card.getBoundingClientRect();
+      const cardCs = getComputedStyle(card);
+      if (!isVisible(cardRect, cardCs)) continue;
+      visibleCards++;
+      const cardDesc = describeEl(card);
+      const descendants = card.querySelectorAll('button, input, select, [id], .flex, .grid');
+      for (const el of descendants) {
+        const elCs = getComputedStyle(el);
+        const elRect = el.getBoundingClientRect();
+        if (!isVisible(elRect, elCs)) continue;
+        if (elCs.position === 'fixed' || elCs.position === 'absolute') continue;
+        let skip = false;
+        let p = el.parentElement;
+        while (p && p !== card) {
+          const pCs = getComputedStyle(p);
+          if (pCs.position === 'fixed' || pCs.position === 'absolute') { skip = true; break; }
+          if (pCs.overflowX === 'auto' || pCs.overflowX === 'scroll' || pCs.overflowX === 'hidden') { skip = true; break; }
+          p = p.parentElement;
+        }
+        if (skip) continue;
+        if (elRect.right > cardRect.right + 2 || elRect.left < cardRect.left - 2) {
+          const leftOver = Math.round(cardRect.left - elRect.left);
+          const rightOver = Math.round(elRect.right - cardRect.right);
+          cardViolations.push(
+            `${describeEl(el)} overflows ${cardDesc} (left:${Math.round(elRect.left)} vs ${Math.round(cardRect.left)} [${leftOver}px], right:${Math.round(elRect.right)} vs ${Math.round(cardRect.right)} [${rightOver}px])`
+          );
+        }
+      }
+    }
+    return { sw, iw, visibleCards, cardViolations };
+  });
+  const errors = [];
+  if (report.sw > report.iw + 1) {
+    errors.push(`horizontal scroll ${report.sw}>${report.iw}`);
+  }
+  if (report.cardViolations.length > 0) {
+    errors.push(...report.cardViolations);
+  }
+  assert(errors.length === 0, `${formatLabel}: ${errors.slice(0, 5).join(' | ')}`);
+  return report;
 }
 
 // GitHub Actions annotations: make failures visible without the job log.
@@ -908,6 +979,91 @@ async function main() {
       return 'save, fill, delete ok';
     });
     await context.close();
+  }
+
+  // K. 3-Format Viewport & Card-Boundary QA Gate (Desktop, Tablet Portrait, Phone)
+  {
+    const formats = [
+      { key: 'K1', label: 'Desktop 1440x900', viewport: { width: 1440, height: 900 }, signedInHero: false },
+      { key: 'K2', label: 'Desktop 1280x800', viewport: { width: 1280, height: 800 }, signedInHero: false },
+      { key: 'K3', label: 'Tablet Portrait 768x1024', viewport: { width: 768, height: 1024 }, signedInHero: true },
+      { key: 'K4', label: 'Tablet Portrait 720x960', viewport: { width: 720, height: 960 }, signedInHero: true },
+      { key: 'K5', label: 'Phone 375x812', viewport: { width: 375, height: 812 }, signedInHero: false }
+    ];
+
+    for (const fmt of formats) {
+      await check(`${fmt.key}a. ${fmt.label}: index.html all tabs viewport & .bg-dndCard containment`, async () => {
+        const page = await newSheetPage({ viewport: fmt.viewport });
+        try {
+          await loadFixture(page, FIXTURE_03);
+          let savedHero = null;
+          if (fmt.signedInHero) {
+            savedHero = await page.evaluate(() => {
+              const slot = document.getElementById('user-profile-slot');
+              const cls = document.getElementById('char-classes-display');
+              const prev = { slotHtml: slot ? slot.innerHTML : null, clsText: cls ? cls.textContent : null };
+              if (slot) {
+                slot.innerHTML =
+                  '<div class="w-full h-9 flex items-center justify-between gap-1.5 bg-slate-900/90 border border-slate-700/80 px-2.5 rounded-xl shadow-md">' +
+                    '<div class="flex items-center gap-2 min-w-0">' +
+                      '<div class="w-6 h-6 rounded-full bg-indigo-600 flex items-center justify-center text-xs font-bold text-white shrink-0">M</div>' +
+                      '<span class="text-xs font-semibold text-white max-w-[105px] truncate" title="murat@example.com">murat aydemir</span>' +
+                    '</div>' +
+                    '<button type="button" data-action="auth:sign-out" class="px-2 py-0.5 rounded-lg bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-200 border border-slate-700 hover:border-rose-700 text-[10px] font-bold transition flex items-center gap-1 cursor-pointer shrink-0" title="Sign Out">' +
+                      '<span>🚪</span><span>Sign Out</span>' +
+                    '</button>' +
+                  '</div>';
+              }
+              if (cls) {
+                cls.textContent = 'Warblade 5 / Rogue (Adventurer Variant) 2 / Bloodstorm Blade 10';
+              }
+              return prev;
+            });
+          }
+          const ids = await tabIds(page);
+          let totalCards = 0;
+          try {
+            for (const id of ids) {
+              await page.evaluate(i => switchTab(i), id);
+              const r = await assertNoViewportOrCardOverflow(page, `${fmt.label} [${id}]`);
+              totalCards += r.visibleCards;
+            }
+          } finally {
+            if (savedHero) {
+              await page.evaluate(prev => {
+                const slot = document.getElementById('user-profile-slot');
+                const cls = document.getElementById('char-classes-display');
+                if (slot && prev.slotHtml !== null) slot.innerHTML = prev.slotHtml;
+                if (cls && prev.clsText !== null) cls.textContent = prev.clsText;
+              }, savedHero);
+            }
+          }
+          assertNoErrors(page);
+          return `${ids.length} tabs, ${totalCards} card checks`;
+        } finally {
+          await closeSheet(page);
+        }
+      });
+
+      await check(`${fmt.key}b. ${fmt.label}: hub.html & forge_sandbox.html?embed=1 viewport & card containment`, async () => {
+        const context = await newContext({ viewport: fmt.viewport });
+        try {
+          const hubPage = await openPage(context, '/hub.html');
+          await waitHubReady(hubPage);
+          const hubRes = await assertNoViewportOrCardOverflow(hubPage, `${fmt.label} [hub.html]`);
+          assertNoErrors(hubPage);
+
+          const sbPage = await openPage(context, '/forge_sandbox.html?embed=1');
+          await waitSandboxReady(sbPage);
+          const sbRes = await assertNoViewportOrCardOverflow(sbPage, `${fmt.label} [forge_sandbox.html?embed=1]`);
+          assertNoErrors(sbPage);
+
+          return `hub(${hubRes.visibleCards} cards, ${hubRes.sw}<=${hubRes.iw}) + sandbox(${sbRes.sw}<=${sbRes.iw})`;
+        } finally {
+          await context.close();
+        }
+      });
+    }
   }
 
   await browser.close();
