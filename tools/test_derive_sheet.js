@@ -4034,6 +4034,280 @@ function runDeriveSheetTests() {
     );
   }
 
+  // ---------------------------------------------------------------------------
+  // FAZ C.1: Canonical V3 Rule Crafter Interpreter, 5-Subsystem RAW Math & Copy-on-Write Overrides
+  // ---------------------------------------------------------------------------
+  {
+    // 1. Canonical V3 Interpreter (`RuleEngine.evaluateV3Entry`) across all block types
+    const v3SampleEntry = {
+      id: 'v3-test-mantle',
+      name: 'Mantle of the Astral Aegis',
+      schemaVersion: 3,
+      ruleFlags: {
+        bypassDR: ['cold iron', 'evil'],
+        requiresHand: 'One Free Hand',
+        reach: 10,
+        fortDc: 18,
+        isSkillTrick: true
+      },
+      blocks: [
+        { type: 'stat', targets: ['ac.deflection', 'save.all'], mode: 'stat', stat: 'cha', perLvl: 0.5, cap: 6, bonusType: 'Deflection' },
+        { type: 'stat', targets: ['ac.natural'], value: 2, perEssentia: 1, bonusType: 'Natural Armor' },
+        { type: 'defense', dr: '5/magic', sr: '10 + @HD', resist: { fire: 10, cold: 5 }, fastHealing: 2 },
+        { type: 'resource', max: '3 + @CHA', recharge: 'encounter' },
+        {
+          type: 'when',
+          condition: 'charging',
+          children: [
+            { type: 'stat', targets: ['atk.melee'], value: 2, bonusType: 'Morale' },
+            { type: 'roll', dice: '2d6', dmgType: 'Psychic' }
+          ]
+        },
+        {
+          type: 'table',
+          key: '@CL',
+          rows: [
+            { min: 1, max: 5, value: 1 },
+            { min: 6, max: 12, value: 3 },
+            { min: 13, max: 20, value: 5 }
+          ],
+          target: 'init',
+          bonusType: 'Insight'
+        },
+        {
+          type: 'effect',
+          text: 'Astral Step: Teleport 10 ft as a swift action.',
+          carrier: { type: 'save', save: 'Will', dc: 17, effect: 'Dazed 1 round' }
+        }
+      ]
+    };
+    const v3EvalCharging = RuleEngine.evaluateV3Entry(v3SampleEntry, {
+      level: 8,
+      cl: 8,
+      hd: 8,
+      chaMod: 4,
+      essentia: 2,
+      tactical: { charge: true }
+    });
+    const v3EvalIdle = RuleEngine.evaluateV3Entry(v3SampleEntry, {
+      level: 8,
+      cl: 8,
+      hd: 8,
+      chaMod: 4,
+      essentia: 2,
+      tactical: { charge: false }
+    });
+    check(
+      'C1.1: RuleEngine.evaluateV3Entry evaluates stat (stat+perLvl+cap, perEssentia), defense, resource, when/while branches, table lookup, carrier, and passive ruleFlags -> English tacticalBadges',
+      v3EvalCharging.modifiers.some(m => m.target === 'ac.deflection' && m.value === 6 && m.type === 'Deflection') &&
+      v3EvalCharging.modifiers.some(m => m.target === 'ac.natural' && m.value === 4 && m.type === 'Natural Armor') &&
+      v3EvalCharging.modifiers.some(m => m.target === 'init' && m.value === 3 && m.type === 'Insight') &&
+      v3EvalCharging.modifiers.some(m => m.target === 'atk.melee' && m.value === 2 && m.type === 'Morale') &&
+      !v3EvalIdle.modifiers.some(m => m.target === 'atk.melee') &&
+      v3EvalCharging.modifiers.some(m => m.target === 'dr' && m.value === 5 && m.bypass === 'magic') &&
+      v3EvalCharging.modifiers.some(m => m.target === 'sr' && m.value === 18) &&
+      v3EvalCharging.damageParts.some(d => d.dice === '2d6' && d.type === 'Psychic') &&
+      v3EvalIdle.damageParts.length === 0 &&
+      v3EvalCharging.tacticalBadges.includes('Bypasses DR/cold iron/evil') &&
+      v3EvalCharging.tacticalBadges.includes('Reach 10 ft.') &&
+      v3EvalCharging.tacticalBadges.some(b => b.includes('Carrier: Will DC 17')),
+      `mods=${JSON.stringify(v3EvalCharging.modifiers)}, badges=${JSON.stringify(v3EvalCharging.tacticalBadges)}`
+    );
+
+    // 2. Copy-on-Write Character Overrides (`char.customEntries`) without mutating SRD
+    const cowChar = {
+      name: 'CoW Override Tester',
+      race: 'Human',
+      level: 6,
+      abilities: { str: 16, dex: 14, con: 14, int: 12, wis: 12, cha: 10 },
+      levelProgression: [
+        { level: 1, class: 'Fighter', hd: 10, hpRoll: 10, bab: 1, fort: 2, ref: 0, will: 0, feats: ['feat-dodge'] }
+      ],
+      feats: [{ id: 'feat-dodge', name: 'Dodge', active: true }],
+      weapons: [{ id: 'wpn-longsword-1', baseItemId: 'wpn-longsword', name: 'Longsword', grip: '1-Hand', equipped: true }],
+      customEntries: {
+        'feat-dodge': {
+          id: 'feat-dodge',
+          name: 'Dodge (V3 Rule Crafter Override)',
+          schemaVersion: 3,
+          blocks: [
+            { type: 'stat', targets: ['ac.dodge'], value: 4, bonusType: 'Dodge' }
+          ]
+        },
+        'wpn-longsword-1': {
+          id: 'wpn-longsword-1',
+          name: 'Sunblade Override',
+          schemaVersion: 3,
+          modes: [
+            { id: 'mode-normal', name: 'One-Handed', blocks: [{ type: 'stat', targets: ['atk.melee'], value: 1, bonusType: 'Insight' }] },
+            { id: 'mode-solar', name: 'Solar Overdrive', blocks: [{ type: 'stat', targets: ['atk.melee'], value: 3, bonusType: 'Sacred' }, { type: 'roll', dice: '1d6', dmgType: 'Fire' }] }
+          ]
+        }
+      },
+      activeModes: {
+        'wpn-longsword-1': 1
+      }
+    };
+    const cowSheet = RuleEngine.deriveSheet(cowChar);
+    const cowControlSheet = RuleEngine.deriveSheet({ ...cowChar, customEntries: {} });
+    const evalWep = cowSheet.combat.weapons[0]?.evaluated;
+    check(
+      'C1.2: char.customEntries Copy-on-Write overrides feat & weapon V3 blocks and modes[] via char.activeModes without mutating SrdCompendium',
+      (cowSheet.ac.dodge ?? cowSheet.ac.dodgeBonus ?? 0) >= 4 &&
+      (cowControlSheet.ac.dodge ?? 0) === 0 &&
+      evalWep && evalWep.activeMode?.id === 'mode-solar' &&
+      evalWep.attackBonusItems.some(b => b.type === 'sacred' && b.val === 3) &&
+      evalWep.extraDamageParts.some(p => p.dice === '1d6' && p.type === 'Fire'),
+      `ac=${JSON.stringify(cowSheet.ac)}, ctrlDodge=${cowControlSheet.ac.dodge}, mode=${evalWep?.activeMode?.id}, extraDmg=${JSON.stringify(evalWep?.extraDamageParts)}`
+    );
+
+    // 3. Psionics Subsystem Math (XPH RAW bonus PP & augment ML cap)
+    const psiChar = {
+      name: 'XPH Psion Tester',
+      race: 'Human',
+      level: 8,
+      abilities: { str: 10, dex: 14, con: 14, int: 18, wis: 12, cha: 10 }, // INT 18 -> +4 mod
+      levelProgression: Array.from({ length: 8 }, (_, i) => ({
+        level: i + 1, class: 'Psion', hd: 4, hpRoll: 4, bab: Math.floor((i + 1) * 0.5), fort: 0, ref: 0, will: 2
+      })),
+      psionics: {
+        powers: [
+          {
+            id: 'pwr-energy-ray',
+            name: 'Energy Ray',
+            level: 1,
+            baseCost: 1,
+            augmentPP: 12, // Exceeds ML 8 -> capped at 7 (baseCost 1 + 7 = 8 <= ML 8)
+            active: true,
+            schemaVersion: 3,
+            blocks: [
+              { type: 'roll', dice: '1d6', dmgType: 'Electricity' },
+              { type: 'stat', targets: ['atk.ranged'], formula: '@augmentPP', bonusType: 'Insight' }
+            ]
+          }
+        ]
+      }
+    };
+    const psiSheet = RuleEngine.deriveSheet(psiChar);
+    const psiSub = psiSheet.subsystems.psionics;
+    // Psion 8 basePP = 58; bonusPP = floor(4 * 8 / 2) = 16; maxPP = 74
+    check(
+      'C1.3: Psionics XPH RAW computes bonusPP = floor(keyAbilityMod * ML / 2) and caps power augmentPP so baseCost + augmentPP <= ML',
+      psiSheet.subsystems.totalLevel === 8 &&
+      psiSheet.subsystems.activeDisciplines.includes('psionics') &&
+      psiSub.manifesterLevel === 8 &&
+      psiSub.basePP === 58 &&
+      psiSub.bonusPP === 16 &&
+      psiSub.maxPP === 74 &&
+      psiSub.powers[0].augmentPP === 7 &&
+      psiSub.powers[0].totalPPCost === 8 &&
+      psiSub.powers[0].isOverMLCap === true &&
+      psiSub.powers[0].modifiers.some(m => m.value === 7),
+      `psiSub=${JSON.stringify(psiSub)}`
+    );
+
+    // 4. Incarnum Subsystem Math (MoI RAW capacity by level, @essentia scaling & chakraBinds)
+    const moiChar = {
+      name: 'MoI Incarnate Tester',
+      race: 'Azurin',
+      level: 6, // Level 6 -> base capacity 2 (+1 Incarnate 3+ = 3)
+      abilities: { str: 14, dex: 12, con: 16, int: 10, wis: 14, cha: 10 },
+      levelProgression: Array.from({ length: 6 }, (_, i) => ({
+        level: i + 1, class: 'Incarnate', hd: 6, hpRoll: 5, bab: Math.floor((i + 1) * 0.5), fort: 2, ref: 0, will: 2
+      })),
+      incarnum: {
+        soulmelds: [
+          {
+            id: 'sm-crystal-helm',
+            name: 'Crystal Helm',
+            shaped: true,
+            essentia: 2,
+            boundChakra: 'Crown',
+            schemaVersion: 3,
+            blocks: [
+              { type: 'stat', targets: ['save.will'], value: 1, perEssentia: 1, bonusType: 'Resistance' }
+            ],
+            chakraBinds: {
+              Crown: [
+                { type: 'stat', targets: ['ac.deflection'], formula: '1 + @essentia', bonusType: 'Deflection' },
+                { type: 'effect', text: 'Melee attacks gain Force descriptor and strike incorporeal creatures.' }
+              ]
+            }
+          }
+        ]
+      }
+    };
+    const moiSheet = RuleEngine.deriveSheet(moiChar);
+    const moiSub = moiSheet.subsystems.incarnum;
+    check(
+      'C1.4: Incarnum MoI RAW computes essentiaCapacity, pool, invested/available essentia, @essentia scaling, and active chakraBinds[boundChakra] into AC & Saves',
+      moiSheet.subsystems.activeDisciplines.includes('incarnum') &&
+      moiSub.essentiaCapacity >= 2 &&
+      moiSub.investedEssentia === 2 &&
+      moiSub.availableEssentia === (moiSub.essentiaPool - 2) &&
+      (moiSheet.ac.deflection ?? moiSheet.ac.deflectionBonus ?? 0) >= 3 &&
+      moiSub.soulmelds[0].tacticalBadges.some(b => b.includes('Force descriptor')),
+      `moiSub=${JSON.stringify(moiSub)}, ac=${JSON.stringify(moiSheet.ac)}`
+    );
+
+    // 5. Pact Magic (Binder EBL), Shadow Magic (Mystery Tiers), and Truenaming (Law of Resistance DC)
+    const multiSubChar = {
+      name: 'Tome of Magic Tri-Tester',
+      race: 'Human',
+      level: 14,
+      abilities: { str: 12, dex: 14, con: 14, int: 18, wis: 12, cha: 16 },
+      classes: 'Binder 8 / Shadowcaster 3 / Truenamer 3',
+      feats: ['Improved Bind Vestige'], // +2 EBL -> Binder 8 + 2 = EBL 10 (maxVestiges=2, maxVestigeLevel=5)
+      pactMagic: {
+        vestiges: [
+          {
+            id: 'vst-naberius',
+            name: 'Naberius',
+            level: 1,
+            bound: true,
+            schemaVersion: 3,
+            blocks: [
+              { type: 'stat', targets: ['skill.diplomacy'], value: 4, bonusType: 'Competence' },
+              { type: 'defense', fastHealing: 1 }
+            ]
+          }
+        ]
+      },
+      shadowMagic: {
+        casterLevel: 13,
+        mysteries: [
+          { id: 'mys-steel-shadows', name: 'Steel Shadows', level: 1, active: true, schemaVersion: 3, blocks: [{ type: 'stat', targets: ['ac.armor'], value: 3, bonusType: 'Armor' }] }
+        ]
+      },
+      truenaming: {
+        utterances: [
+          { id: 'utt-inertia-surge', name: 'Inertia Surge', level: 1, targetCR: 6, castsToday: 3, schemaVersion: 3, blocks: [] }
+        ]
+      }
+    };
+    const multiSubSheet = RuleEngine.deriveSheet(multiSubChar);
+    const pactSub = multiSubSheet.subsystems.pact;
+    const shadowSub = multiSubSheet.subsystems.shadow;
+    const trueSub = multiSubSheet.subsystems.truenaming;
+    // Law of Resistance DC = 15 + (2 * 6) + (2 * 3) = 15 + 12 + 6 = 33
+    check(
+      'C1.5: Pact Magic EBL (maxVestiges/maxVestigeLevel), Shadow Magic Apprentice->Su evolution, and Truenaming Law of Resistance DC (15 + 2*CR + 2*castsToday) evaluate per RAW',
+      multiSubSheet.subsystems.activeDisciplines.includes('pact') &&
+      multiSubSheet.subsystems.activeDisciplines.includes('shadow') &&
+      multiSubSheet.subsystems.activeDisciplines.includes('truenaming') &&
+      pactSub.binderLevel === 8 &&
+      pactSub.effectiveBinderLevel === 10 &&
+      pactSub.maxVestiges === 2 &&
+      pactSub.maxVestigeLevel === 5 &&
+      shadowSub.mysteries[0].tier === 'Apprentice' &&
+      shadowSub.mysteries[0].castType === 'Su' &&
+      shadowSub.mysteries[0].usesPerDay === 3 &&
+      trueSub.utterances[0].lawOfResistanceDC === 33 &&
+      multiSubSheet.defenses.fastHealing >= 1,
+      `pact=${JSON.stringify(pactSub)}, shadow=${JSON.stringify(shadowSub)}, true=${JSON.stringify(trueSub)}`
+    );
+  }
+
   CharStore.clearHistory();
 
   return { passed, elapsedMs: Date.now() - startMs };
