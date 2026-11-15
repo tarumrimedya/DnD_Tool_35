@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Living Facet Studio — Rule Forge 3.0 Sandbox (D&amp;D 3.5e)</title>
+<title>Rule Crafter — D&amp;D 3.5e V3 Rule Studio</title>
 <link rel="icon" href="data:,">
 <link rel="stylesheet" href="./tailwind_compiled.css?v=101216d709">
 <link rel="stylesheet" href="./design_tokens.css?v=e83cdd2e81">
 <style>
-  /* ===== Living Facet Studio — sandbox-scoped custom CSS (no arbitrary Tailwind) ===== */
-  html, body { background: var(--bg-page-wallpaper, #050811); color: var(--text-secondary, #cbd5e1); touch-action: manipulation; -webkit-text-size-adjust: 100%; }
+  /* ===== Rule Crafter — sandbox-scoped custom CSS (no arbitrary Tailwind) ===== */
+  html, body { background: var(--bg-page-wallpaper, #050811); color: var(--text-secondary, #cbd5e1); touch-action: manipulation; -webkit-text-size-adjust: 100%; overflow-x: clip; max-width: 100%; }
   button, input, select, textarea, label { touch-action: manipulation; }
   body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; margin: 0; }
   .z-30 { z-index: 30; }
@@ -170,7 +170,7 @@
   .fs-dice-svg { width: 14px; height: 14px; display: inline-block; vertical-align: -2px; }
   .fs-origin { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; margin-bottom: 6px; padding: 7px 12px; border-radius: 10px; background: #0f172a; border: 1px solid var(--border-default); border-left: 3px solid #64748b; font-size: 11.5px; color: var(--text-secondary); }
 
-  /* ===== Scratch Lego view — calm Character-Sheet slate surfaces, inputs forward ===== */
+  /* ===== Rule Blocks view — calm Character-Sheet slate surfaces, inputs forward ===== */
   .lego-canvas { margin-top: 12px; padding: 14px; border-radius: 14px; background: rgba(8, 14, 30, .75); border: 1px solid var(--border-subtle); }
   .lego-stack { display: flex; flex-direction: column; gap: 0; }
   .lego-hat, .lego-block { --acc: #64748b; --tint: rgba(100,116,139,.06); position: relative; color: #e2e8f0; border: 1px solid rgba(148,163,184,.2); border-left: 3px solid var(--acc);
@@ -266,7 +266,11 @@
     .fs-spot-dd { position: fixed; left: 10px !important; right: 10px !important; top: 12vh; min-width: 0; max-width: 440px; margin: 0 auto; max-height: 70vh; z-index: 95; }
     .fs-live { padding: 8px 10px; }
     .fs-live-name { font-size: 14px; }
+    .fs-embed-scope { flex: 1 1 140px; max-width: 100%; }
   }
+  .fs-embed-scope { width: auto; min-width: 140px; max-width: 240px; }
+  body.is-embed .fs-topbar { padding: 8px 10px; }
+  body.is-embed .fs-main { padding: 10px 10px 44px; }
 </style>
 </head>
 <body class="min-h-screen bg-slate-950">

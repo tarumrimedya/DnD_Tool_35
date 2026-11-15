@@ -373,6 +373,626 @@
     return container ? render(container, fullTpl) : fullTpl.toString();
   }
 
+  // =========================================================================
+  // UNIVERSAL ENTITY INSPECTOR & RULE CRAFTER CAPSULE (?embed=1)
+  // Zero idle DOM overhead: modals and <iframe> are created on open and destroyed on close.
+  // =========================================================================
+  let _activeInspectorSpec = null;
+  let _activeInspectorResolved = null;
+  let _crafterCleanup = null;
+
+  function _syncDnDUI() {
+    if (typeof root !== 'undefined' && root.DnDUI && typeof root.DnDUI === 'object') {
+      root.DnDUI.openEntityInspector = openEntityInspector;
+      root.DnDUI.openRuleCrafter = openRuleCrafter;
+    }
+  }
+
+  function _isSmallViewport() {
+    return typeof window !== 'undefined' && window.innerWidth < 640;
+  }
+
+  function _formatBlockChipText(eff) {
+    if (!eff || typeof eff !== 'object') return '';
+    const t = String(eff.type || 'effect');
+    if (t === 'stat') {
+      const tgt = Array.isArray(eff.targets) ? eff.targets.join(', ') : (eff.target || 'stat');
+      const val = eff.mode === 'formula' ? (eff.formula || '0') : ((Number(eff.value) >= 0 ? '+' : '') + (eff.value !== undefined ? eff.value : 0));
+      const btype = eff.btype && eff.btype !== 'Untyped' ? ` (${eff.btype})` : '';
+      return `${tgt} ${val}${btype}`;
+    }
+    if (t === 'roll') {
+      const dice = eff.die === 'flat' ? String(eff.count || 0) : `${eff.count || 1}${eff.die || 'd6'}`;
+      return `${eff.kind || 'Damage'} ${dice}${eff.dmgType ? ' ' + eff.dmgType : ''}`;
+    }
+    if (t === 'defense') {
+      return `Defense: ${eff.defKind || eff.sense || eff.state || 'Trait'}`;
+    }
+    if (t === 'when') {
+      return `When / While (${Array.isArray(eff.branches) ? eff.branches.length : 1} branch)`;
+    }
+    if (t === 'resource') {
+      return `@${eff.varKey || eff.name || 'resource'}`;
+    }
+    if (t === 'carrier') {
+      return `Carrier: ${eff.carrierMode || 'channel'}`;
+    }
+    if (t === 'attack') {
+      return `Attack: ${eff.natural || eff.weaponMod || 'mod'}`;
+    }
+    return eff.summary || eff.name || eff.spell || `Rule: ${t}`;
+  }
+
+  function _collectRuleBlockSummaries(entry) {
+    const chips = [];
+    if (!entry || typeof entry !== 'object') return chips;
+    if (Array.isArray(entry.effects)) {
+      entry.effects.forEach((ef) => {
+        const txt = _formatBlockChipText(ef);
+        if (txt) chips.push(txt);
+      });
+    }
+    if (!chips.length && Array.isArray(entry.modifiers)) {
+      entry.modifiers.forEach((m) => {
+        if (!m || !m.target) return;
+        const val = m.formula !== undefined ? m.formula : ((Number(m.value) >= 0 ? '+' : '') + (m.value !== undefined ? m.value : 0));
+        const tp = m.type && m.type !== 'Untyped' ? ` (${m.type})` : '';
+        chips.push(`${m.target} ${val}${tp}`);
+      });
+    }
+    if (!chips.length && Array.isArray(entry.damageParts)) {
+      entry.damageParts.forEach((d) => {
+        if (!d) return;
+        const part = [d.dice || '', d.bonus ? ((d.bonus >= 0 ? '+' : '') + d.bonus) : '', d.type || ''].filter(Boolean).join(' ');
+        if (part) chips.push(part);
+      });
+    }
+    return chips;
+  }
+
+  function _collectStatChips(entry, kind) {
+    const stats = [];
+    if (!entry || typeof entry !== 'object') return stats;
+    const addStat = (label, val) => {
+      if (val === undefined || val === null || val === '') return;
+      stats.push({ label, val: String(val) });
+    };
+    if (entry.damage) addStat('Damage', entry.damage);
+    if (entry.crit) addStat('Crit', entry.crit);
+    else if (entry.weapon && entry.weapon.critMultiplier) {
+      const low = entry.weapon.effectiveCritRange || entry.weapon.baseCritRange || 20;
+      addStat('Crit', `${low < 20 ? low + '-20' : '20'}/x${entry.weapon.critMultiplier}`);
+    }
+    if (entry.range) addStat('Range', entry.range);
+    else if (entry.weapon && entry.weapon.rangeIncrement) addStat('Range', `${entry.weapon.rangeIncrement} ft.`);
+    if (entry.armorBonus !== undefined) addStat('Armor Bonus', `+${entry.armorBonus}`);
+    else if (entry.armor && entry.armor.armorBonus !== undefined) addStat('Armor Bonus', `+${entry.armor.armorBonus}`);
+    if (entry.maxDex !== undefined && entry.maxDex !== null) addStat('Max Dex', `+${entry.maxDex}`);
+    if (entry.acp !== undefined) addStat('ACP', entry.acp);
+    if (entry.asf !== undefined) addStat('ASF', `${entry.asf}%`);
+    if (entry.school) addStat('School', entry.school);
+    if (entry.discipline) addStat('Discipline', entry.discipline);
+    if (entry.level !== undefined) addStat('Level', entry.level);
+    if (entry.ppCost !== undefined) addStat('PP Cost', entry.ppCost);
+    if (entry.castingTime || (entry.delivery && entry.delivery.action)) addStat('Action', entry.castingTime || entry.delivery.action);
+    if (entry.savingThrow || (entry.delivery && entry.delivery.save && entry.delivery.save.type)) {
+      addStat('Save', entry.savingThrow || entry.delivery.save.type);
+    }
+    if (entry.spellResistance || (entry.delivery && entry.delivery.spellResistance)) {
+      addStat('SR', entry.spellResistance || entry.delivery.spellResistance);
+    }
+    if (entry.slot || (entry.item && entry.item.slot)) addStat('Slot', entry.slot || entry.item.slot);
+    if (entry.gpValue !== undefined || (entry.item && entry.item.price)) addStat('Value', `${entry.gpValue !== undefined ? entry.gpValue : entry.item.price} gp`);
+    const prereq = entry.prereq || (entry.prerequisites && entry.prerequisites.text);
+    if (prereq && prereq !== '-') addStat('Prerequisites', prereq);
+    if (kind === 'class' && entry.hd) addStat('Hit Die', `d${entry.hd}`);
+    if (kind === 'race' && entry.size) addStat('Size', entry.size);
+    return stats;
+  }
+
+  function _kindSupportsReplace(kind) {
+    const k = String(kind || '').toLowerCase();
+    if (['weapon', 'item', 'armor', 'shield', 'feat', 'race', 'template', 'spell', 'maneuver', 'psionic', 'psionics', 'incarnum', 'pactmagic', 'shadowmagic', 'truenaming'].includes(k)) {
+      return typeof root.openCompendiumDrawer === 'function'
+        || typeof root.openEquipmentSlotModal === 'function'
+        || typeof root.openWeaponSetModal === 'function';
+    }
+    return false;
+  }
+
+  function _kindSupportsRemove(kind) {
+    const k = String(kind || '').toLowerCase();
+    return ['weapon', 'item', 'armor', 'shield', 'feat', 'boon', 'template', 'spell', 'maneuver', 'psionic', 'psionics', 'incarnum', 'pactmagic', 'shadowmagic', 'truenaming', 'class'].includes(k);
+  }
+
+  function closeEntityInspector() {
+    if (typeof document === 'undefined') return;
+    const modal = document.getElementById('entity-inspector-modal');
+    if (modal) modal.remove();
+    _activeInspectorSpec = null;
+    _activeInspectorResolved = null;
+  }
+
+  function closeRuleCrafter() {
+    if (typeof _crafterCleanup === 'function') {
+      const fn = _crafterCleanup;
+      _crafterCleanup = null;
+      try { fn(); } catch (_) {}
+    }
+    if (typeof document !== 'undefined') {
+      const modal = document.getElementById('rule-crafter-modal');
+      if (modal) {
+        const iframe = modal.querySelector('iframe');
+        if (iframe) {
+          try { iframe.src = 'about:blank'; } catch (_) {}
+          iframe.remove();
+        }
+        modal.remove();
+      }
+    }
+  }
+
+  function openRuleCrafter(opts) {
+    if (typeof document === 'undefined' || !document.body) return null;
+    const options = opts || {};
+    closeRuleCrafter();
+
+    const modal = document.createElement('div');
+    modal.id = 'rule-crafter-modal';
+    modal.className = 'fixed inset-0 flex justify-center bg-slate-950/85 backdrop-blur-sm';
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-label', 'Rule Crafter');
+
+    const applyResponsiveShell = () => {
+      const small = _isSmallViewport();
+      modal.style.zIndex = '10050';
+      modal.style.alignItems = small ? 'flex-end' : 'center';
+      modal.style.padding = small ? '0' : '12px';
+      const panel = modal.firstElementChild;
+      if (panel) {
+        panel.style.maxWidth = '1220px';
+        panel.style.width = '100%';
+        panel.style.height = small ? '94vh' : '90vh';
+        panel.style.maxHeight = '94vh';
+        panel.style.borderRadius = small ? '16px 16px 0 0' : '16px';
+      }
+    };
+
+    const panel = document.createElement('div');
+    panel.className = 'w-full bg-slate-900 border border-amber-500/40 shadow-2xl overflow-hidden flex flex-col';
+
+    const iframe = document.createElement('iframe');
+    iframe.id = 'rule-crafter-iframe';
+    iframe.src = 'forge_sandbox.html?embed=1';
+    iframe.title = 'Rule Crafter';
+    iframe.setAttribute('style', 'width:100%;height:100%;border:0;background:#0a0f1d;display:block;flex:1 1 auto;');
+    panel.appendChild(iframe);
+    modal.appendChild(panel);
+    document.body.appendChild(modal);
+    applyResponsiveShell();
+
+    const onMessage = (event) => {
+      if (!event || !event.data || typeof event.data !== 'object') return;
+      if (iframe.contentWindow && event.source !== iframe.contentWindow) return;
+      const msg = event.data;
+      if (msg.type === 'crafter:ready') {
+        if (iframe.contentWindow) {
+          const bridge = root.CharStore && root.CharStore.StudioBridge;
+          let payloadEntry = options.entry || null;
+          if (payloadEntry && payloadEntry.schemaVersion !== 3 && bridge && typeof bridge.toV3CrafterDraft === 'function') {
+            payloadEntry = bridge.toV3CrafterDraft(payloadEntry, options.kind || (options.context && options.context.kind));
+          }
+          iframe.contentWindow.postMessage({
+            type: 'crafter:loadEntry',
+            entry: payloadEntry,
+            context: Object.assign({
+              allowCharacterScope: options.allowCharacterScope !== false,
+              originalId: options.originalId || (payloadEntry && payloadEntry.id) || null
+            }, options.context || {})
+          }, '*');
+        }
+      } else if (msg.type === 'crafter:saveEntry') {
+        if (typeof options.onSave === 'function') {
+          options.onSave(msg);
+        } else if (root.CharStore && root.CharStore.StudioBridge && typeof root.CharStore.StudioBridge.saveFromCrafter === 'function') {
+          root.CharStore.StudioBridge.saveFromCrafter(msg.entry, {
+            saveScope: msg.saveScope,
+            originalId: msg.originalId || options.originalId || null,
+            context: Object.assign({}, options.context || {}, msg.context || {})
+          });
+        }
+        const reopenSpec = _activeInspectorSpec ? Object.assign({}, _activeInspectorSpec) : null;
+        closeRuleCrafter();
+        if (reopenSpec && document.getElementById('entity-inspector-modal')) {
+          openEntityInspector(reopenSpec);
+        }
+      } else if (msg.type === 'crafter:close') {
+        closeRuleCrafter();
+        if (typeof options.onClose === 'function') options.onClose();
+      }
+    };
+
+    const handleModalKeyDown = (event) => {
+      if (event && event.key === 'Escape') {
+        closeRuleCrafter();
+        if (typeof options.onClose === 'function') options.onClose();
+      }
+    };
+
+    const onBackdropClick = (event) => {
+      if (event && event.target === modal) {
+        closeRuleCrafter();
+        if (typeof options.onClose === 'function') options.onClose();
+      }
+    };
+
+    const onResize = () => applyResponsiveShell();
+
+    window.addEventListener('message', onMessage);
+    window.addEventListener('keydown', handleModalKeyDown);
+    window.addEventListener('resize', onResize);
+    modal.addEventListener('click', onBackdropClick);
+
+    _crafterCleanup = () => {
+      window.removeEventListener('message', onMessage);
+      window.removeEventListener('keydown', handleModalKeyDown);
+      window.removeEventListener('resize', onResize);
+      modal.removeEventListener('click', onBackdropClick);
+    };
+    return modal;
+  }
+
+  function openEntityInspector(spec) {
+    if (typeof document === 'undefined' || !document.body) return null;
+    _syncDnDUI();
+    const query = typeof spec === 'string' ? { name: spec } : Object.assign({}, spec || {});
+    const bridge = root.CharStore && root.CharStore.StudioBridge;
+    const resolved = (bridge && typeof bridge.resolveEntity === 'function')
+      ? bridge.resolveEntity(query)
+      : {
+        entry: query.entry || { id: query.id || '', name: query.name || 'Entry', type: query.kind || 'Feature' },
+        resolvedId: query.id || null,
+        kind: query.kind || null,
+        isCustomOverride: false,
+        hasSrdBase: false
+      };
+
+    if (!resolved || !resolved.entry) return null;
+    const entry = resolved.entry;
+    const kind = String(resolved.kind || query.kind || entry.type || 'feature').toLowerCase();
+
+    closeEntityInspector();
+    _activeInspectorSpec = query;
+    _activeInspectorResolved = resolved;
+
+    const kindLabelMap = {
+      weapon: 'Weapon',
+      item: 'Equipment / Item',
+      armor: 'Armor',
+      shield: 'Shield',
+      feat: 'Feat',
+      boon: 'DM Boon',
+      spell: 'Spell',
+      maneuver: 'Maneuver',
+      psionic: 'Psionic Power',
+      psionics: 'Psionic Power',
+      incarnum: 'Soulmeld',
+      pactmagic: 'Vestige',
+      shadowmagic: 'Mystery',
+      truenaming: 'Utterance',
+      class: 'Class',
+      race: 'Race',
+      template: 'Template'
+    };
+    const kindLabel = kindLabelMap[kind] || (entry.type || 'Entity');
+    const sourceText = entry.source || (resolved.sourceLocation === 'srd' ? 'Official SRD' : 'Character Sheet');
+    const bodyDesc = entry.benefit || entry.description || entry.text || entry.summary || entry.notes || 'No official rule text recorded for this entry.';
+    const statChips = _collectStatChips(entry, kind);
+    const blockChips = _collectRuleBlockSummaries(entry);
+    const showReplace = _kindSupportsReplace(kind);
+    const showRemove = _kindSupportsRemove(kind);
+
+    const modal = document.createElement('div');
+    modal.id = 'entity-inspector-modal';
+    modal.className = 'fixed inset-0 flex justify-center bg-slate-950/80 backdrop-blur-sm';
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-label', entry.name || 'Entity Inspector');
+
+    const small = _isSmallViewport();
+    modal.style.zIndex = '10040';
+    modal.style.alignItems = small ? 'flex-end' : 'center';
+    modal.style.padding = small ? '0' : '16px';
+
+    const panelRadius = small ? '16px 16px 0 0' : '16px';
+    modal.innerHTML = `<div class="w-full max-w-lg bg-slate-900 border border-slate-700 shadow-2xl overflow-hidden flex flex-col" style="max-height:90vh;border-radius:${panelRadius};">
+      <div class="p-4 border-b border-slate-800 bg-slate-950/70 flex items-start justify-between gap-3">
+        <div class="min-w-0 flex-1">
+          <div class="flex items-center gap-2 flex-wrap">
+            <h3 class="text-base font-bold text-white leading-tight break-words">${escapeHtml(entry.name || query.name || 'Entity')}</h3>
+            ${resolved.isCustomOverride ? '<span class="px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-500/50 text-[10px] font-bold">⚒️ Crafted</span>' : ''}
+          </div>
+          <div class="mt-1 flex items-center gap-1.5 flex-wrap text-[11px] text-slate-400">
+            <span class="px-2 py-0.5 rounded bg-slate-800 text-slate-200 border border-slate-700 font-semibold">${escapeHtml(kindLabel)}</span>
+            <span class="text-slate-400">• ${escapeHtml(sourceText)}</span>
+          </div>
+        </div>
+        <button type="button" data-action="entity:close-inspector" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-bold cursor-pointer shrink-0" aria-label="Close">✕</button>
+      </div>
+      <div class="p-4 overflow-y-auto space-y-3 text-xs text-slate-200" style="min-height:0;">
+        <div class="bg-slate-950/60 border border-slate-800 rounded-lg p-3 leading-relaxed text-slate-200 break-words" style="white-space:pre-wrap;">${escapeHtml(bodyDesc)}</div>
+        ${statChips.length ? `<div class="flex flex-wrap gap-1.5">${statChips.map((s) => `<div class="px-2 py-1 rounded bg-slate-800/90 border border-slate-700 text-[11px]"><span class="text-slate-400">${escapeHtml(s.label)}:</span> <span class="text-white font-semibold">${escapeHtml(s.val)}</span></div>`).join('')}</div>` : ''}
+        ${blockChips.length ? `<div><div class="text-[10px] font-bold uppercase tracking-wider text-amber-300 mb-1.5">Active Rule Blocks</div><div class="flex flex-wrap gap-1.5">${blockChips.map((b) => `<span class="px-2 py-0.5 rounded bg-amber-950/60 text-amber-200 border border-amber-500/40 text-[10px] font-mono">${escapeHtml(b)}</span>`).join('')}</div></div>` : ''}
+      </div>
+      <div class="p-3 border-t border-slate-800 bg-slate-950/80 flex flex-wrap items-center justify-between gap-2">
+        <div class="flex flex-wrap items-center gap-1.5">
+          <button type="button" data-action="entity:edit-crafter" class="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold text-xs cursor-pointer shadow-sm">⚒️ Edit in Rule Crafter</button>
+          ${resolved.isCustomOverride ? '<button type="button" data-action="entity:reset-srd" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-200 border border-amber-500/40 font-semibold text-xs cursor-pointer">↺ Reset to Official SRD</button>' : ''}
+        </div>
+        <div class="flex flex-wrap items-center gap-1.5">
+          ${showReplace ? '<button type="button" data-action="entity:replace" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-semibold text-xs cursor-pointer">🔄 Replace</button>' : ''}
+          ${showRemove ? '<button type="button" data-action="entity:remove" class="px-2.5 py-1.5 rounded-lg bg-rose-950/80 hover:bg-rose-900 text-rose-200 border border-rose-700/60 font-semibold text-xs cursor-pointer">🗑️ Remove</button>' : ''}
+        </div>
+      </div>
+    </div>`;
+
+    modal.addEventListener('click', (event) => {
+      if (event.target === modal) closeEntityInspector();
+    });
+    document.body.appendChild(modal);
+    return modal;
+  }
+
+  function _removeEntityFromCharacter(spec, resolved) {
+    const doc = (root.CharStore && typeof root.CharStore.getDoc === 'function' && root.CharStore.getDoc()) || root.character;
+    if (!doc) return false;
+    const kind = String((spec && spec.kind) || (resolved && resolved.kind) || '').toLowerCase();
+    const targetName = String((resolved && resolved.entry && resolved.entry.name) || (spec && spec.name) || '').trim().toLowerCase();
+    const targetId = (resolved && resolved.resolvedId) || (spec && spec.id) || null;
+    const matches = (item) => {
+      if (!item) return false;
+      if (typeof item === 'string') {
+        const clean = item.replace(/^\[DM\s*Boon\]\s*/i, '').replace(/^DM\s*Boon:\s*/i, '').trim().toLowerCase();
+        return targetName && (item.trim().toLowerCase() === targetName || clean === targetName);
+      }
+      if (targetId && (item.id === targetId || item.customEntryId === targetId)) return true;
+      if (targetName && item.name && item.name.trim().toLowerCase() === targetName) return true;
+      return false;
+    };
+
+    let changed = false;
+    if (spec && spec.slotKey && doc.bodySlots && doc.bodySlots[spec.slotKey]) {
+      doc.bodySlots[spec.slotKey] = null;
+      changed = true;
+    }
+    if (kind === 'weapon' && Array.isArray(doc.weaponSets) && targetName) {
+      doc.weaponSets.forEach((ws) => {
+        if (ws && String(ws.mainWeapon || '').trim().toLowerCase() === targetName) {
+          ws.mainWeapon = '';
+          changed = true;
+        }
+      });
+    }
+    if (kind === 'boon' && Array.isArray(doc.levelProgression) && spec && spec.levelIndex !== undefined && spec.levelIndex !== null) {
+      const lp = doc.levelProgression[Number(spec.levelIndex)];
+      if (lp) {
+        ['otherBonuses', 'bonusFeats', 'specials'].forEach((k) => {
+          if (Array.isArray(lp[k])) {
+            const next = lp[k].filter((x) => !matches(x));
+            if (next.length !== lp[k].length) { lp[k] = next; changed = true; }
+          }
+        });
+      }
+    }
+    if (kind === 'class' && Array.isArray(doc.levelProgression) && spec && spec.levelIndex !== undefined && spec.levelIndex !== null) {
+      const idx = Number(spec.levelIndex);
+      if (doc.levelProgression[idx]) {
+        doc.levelProgression.splice(idx, 1);
+        changed = true;
+      }
+    }
+    const listMap = {
+      weapon: ['weapons'],
+      item: ['gearPool', 'inventory'],
+      armor: ['gearPool', 'inventory'],
+      shield: ['gearPool', 'inventory'],
+      feat: ['feats'],
+      boon: ['dmBoons', 'feats'],
+      template: ['templates'],
+      spell: ['spells', 'knownSpells', 'preparedSpells'],
+      maneuver: ['maneuvers', 'spells'],
+      psionic: ['psionics'],
+      psionics: ['psionics'],
+      incarnum: ['incarnum'],
+      pactmagic: ['pactMagic'],
+      shadowmagic: ['shadowMagic'],
+      truenaming: ['truenaming']
+    };
+    (listMap[kind] || []).forEach((arrKey) => {
+      if (!Array.isArray(doc[arrKey])) return;
+      const next = doc[arrKey].filter((item) => !matches(item));
+      if (next.length !== doc[arrKey].length) {
+        doc[arrKey] = next;
+        changed = true;
+      }
+    });
+
+    if (changed) {
+      if (root.CharStore && typeof root.CharStore.recompute === 'function') {
+        root.CharStore.recompute('crafter');
+      }
+      if (typeof root.saveStateToStorage === 'function') root.saveStateToStorage(true);
+      if (typeof root.renderAll === 'function') root.renderAll();
+    }
+    return changed;
+  }
+
+  function _registerCrafterActionsOnce() {
+    if (Actions.has('entity:inspect')) return;
+
+    Actions.register('entity:inspect', (el, dataset, event) => {
+      if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+      const spec = {
+        kind: dataset.entityKind || dataset.kind || 'feat',
+        id: dataset.entityId || undefined,
+        name: dataset.entityName || undefined,
+        slotKey: dataset.slotKey || undefined,
+        discipline: dataset.discipline || undefined,
+        levelIndex: dataset.levelIndex !== undefined && dataset.levelIndex !== '' ? Number(dataset.levelIndex) : undefined,
+        index: dataset.index !== undefined && dataset.index !== '' ? Number(dataset.index) : undefined
+      };
+      openEntityInspector(spec);
+    });
+
+    Actions.register('entity:close-inspector', () => {
+      closeEntityInspector();
+    });
+
+    Actions.register('entity:edit-crafter', () => {
+      const resolved = _activeInspectorResolved;
+      const spec = _activeInspectorSpec || {};
+      if (!resolved || !resolved.entry) return;
+      const bridge = root.CharStore && root.CharStore.StudioBridge;
+      const draft = (bridge && typeof bridge.toV3CrafterDraft === 'function')
+        ? bridge.toV3CrafterDraft(resolved.entry, resolved.kind || spec.kind)
+        : resolved.entry;
+      openRuleCrafter({
+        entry: draft,
+        kind: resolved.kind || spec.kind,
+        originalId: resolved.resolvedId || (resolved.entry && resolved.entry.id) || null,
+        allowCharacterScope: true,
+        context: {
+          allowCharacterScope: true,
+          kind: resolved.kind || spec.kind,
+          originalName: resolved.entry.name || spec.name || '',
+          slotKey: spec.slotKey,
+          levelIndex: spec.levelIndex,
+          index: spec.index
+        }
+      });
+    });
+
+    Actions.register('entity:reset-srd', async () => {
+      const resolved = _activeInspectorResolved;
+      if (!resolved || !resolved.resolvedId) return;
+      const name = (resolved.entry && resolved.entry.name) || 'this entry';
+      const dndUi = root.DnDUI;
+      let ok = true;
+      if (dndUi && typeof dndUi.confirm === 'function') {
+        ok = await dndUi.confirm(`Restore "${name}" to Official SRD Rules? Any character-local Rule Crafter edits for this entry will be removed.`, {
+          title: 'Reset to Official SRD',
+          confirmLabel: 'Restore Official SRD',
+          cancelLabel: 'Cancel'
+        });
+      }
+      if (!ok) return;
+      const bridge = root.CharStore && root.CharStore.StudioBridge;
+      if (bridge && typeof bridge.resetCustomEntry === 'function') {
+        bridge.resetCustomEntry(resolved.resolvedId);
+      }
+      if (_activeInspectorSpec) {
+        openEntityInspector(_activeInspectorSpec);
+      } else {
+        closeEntityInspector();
+      }
+    });
+
+    Actions.register('entity:replace', () => {
+      const spec = _activeInspectorSpec || {};
+      const kind = String(spec.kind || (_activeInspectorResolved && _activeInspectorResolved.kind) || '').toLowerCase();
+      closeEntityInspector();
+      if (spec.slotKey && typeof root.openEquipmentSlotModal === 'function') {
+        root.openEquipmentSlotModal(spec.slotKey);
+        return;
+      }
+      if (kind === 'weapon' && typeof root.openWeaponSetModal === 'function') {
+        root.openWeaponSetModal(spec.index || 1);
+        return;
+      }
+      if (typeof root.openCompendiumDrawer === 'function') {
+        const typeMap = { feat: 'Feat', spell: 'Spell', weapon: 'Weapon', item: 'Magic Item', armor: 'Armor', shield: 'Armor', race: 'Race', template: 'Template', class: 'Class' };
+        root.openCompendiumDrawer(typeMap[kind] || 'All');
+      }
+    });
+
+    Actions.register('entity:remove', async () => {
+      const resolved = _activeInspectorResolved;
+      const spec = _activeInspectorSpec || {};
+      const name = (resolved && resolved.entry && resolved.entry.name) || spec.name || 'this entry';
+      const doc = (root.CharStore && typeof root.CharStore.getDoc === 'function' && root.CharStore.getDoc()) || root.character;
+      const isPlayMode = Boolean(doc && doc.uiMode === 'play');
+      const promptMsg = isPlayMode
+        ? `Play Mode Active: Removing "${name}" during play may change live combat stats, HP, or prerequisites. Remove anyway?`
+        : `Remove "${name}" from this character?`;
+      const dndUi = root.DnDUI;
+      let ok = true;
+      if (dndUi && typeof dndUi.confirm === 'function') {
+        ok = await dndUi.confirm(promptMsg, {
+          title: isPlayMode ? 'Play Mode Removal Warning' : 'Remove Entry',
+          confirmLabel: 'Remove',
+          cancelLabel: 'Cancel',
+          tone: 'danger'
+        });
+      }
+      if (!ok) return;
+      _removeEntityFromCharacter(spec, resolved);
+      closeEntityInspector();
+    });
+
+    Actions.register('crafter:open', (el, dataset) => {
+      const bridge = root.CharStore && root.CharStore.StudioBridge;
+      let entry = null;
+      if ((dataset.entityId || dataset.entityName) && bridge && typeof bridge.resolveEntity === 'function') {
+        const res = bridge.resolveEntity({ kind: dataset.entityKind || dataset.kind, id: dataset.entityId, name: dataset.entityName });
+        if (res && res.entry) entry = bridge.toV3CrafterDraft(res.entry, dataset.entityKind || dataset.kind);
+      }
+      openRuleCrafter({
+        entry,
+        kind: dataset.entityKind || dataset.kind || 'feat',
+        originalId: dataset.entityId || (entry && entry.id) || null,
+        allowCharacterScope: dataset.allowCharacterScope !== 'false',
+        context: {
+          allowCharacterScope: dataset.allowCharacterScope !== 'false',
+          kind: dataset.entityKind || dataset.kind || 'feat'
+        }
+      });
+    });
+
+    Actions.register('crafter:edit-viewed-feat', () => {
+      const viewed = root.currentViewedFeatItem;
+      const name = (viewed && viewed.name) || root.currentViewedFeatName || '';
+      if (!name) return;
+      const bridge = root.CharStore && root.CharStore.StudioBridge;
+      const res = bridge && typeof bridge.resolveEntity === 'function'
+        ? bridge.resolveEntity({ kind: 'feat', name })
+        : { entry: { name, benefit: (viewed && viewed.desc) || '' }, resolvedId: null };
+      if (typeof root.closeFeatDetailModal === 'function') root.closeFeatDetailModal();
+      const draft = bridge && typeof bridge.toV3CrafterDraft === 'function'
+        ? bridge.toV3CrafterDraft(res.entry, 'feat')
+        : res.entry;
+      openRuleCrafter({
+        entry: draft,
+        kind: 'feat',
+        originalId: res.resolvedId || (draft && draft.id) || null,
+        allowCharacterScope: true,
+        context: { allowCharacterScope: true, kind: 'feat', originalName: name }
+      });
+    });
+
+    Actions.register('crafter:reset-viewed-feat', () => {
+      const viewed = root.currentViewedFeatItem;
+      const name = (viewed && viewed.name) || root.currentViewedFeatName || '';
+      if (!name) return;
+      const bridge = root.CharStore && root.CharStore.StudioBridge;
+      if (bridge && typeof bridge.resolveEntity === 'function' && typeof bridge.resetCustomEntry === 'function') {
+        const res = bridge.resolveEntity({ kind: 'feat', name });
+        if (res && res.resolvedId) bridge.resetCustomEntry(res.resolvedId);
+      }
+      if (typeof root.closeFeatDetailModal === 'function') root.closeFeatDetailModal();
+    });
+  }
+
   const UI = {
     escapeHtml,
     escapeAttr,
@@ -386,7 +1006,11 @@
     SectionHeader,
     EmptyState,
     CONSUMABLE_GROUPS,
-    renderConsumablesView
+    renderConsumablesView,
+    openEntityInspector,
+    closeEntityInspector,
+    openRuleCrafter,
+    closeRuleCrafter
   };
 
   // ==========================================================================
@@ -432,6 +1056,8 @@
   function init(rootDoc) {
     const doc = rootDoc || (typeof document !== 'undefined' ? document : null);
     if (!doc || typeof doc.addEventListener !== 'function') return;
+    _syncDnDUI();
+    _registerCrafterActionsOnce();
     if (_initialized && doc === (typeof document !== 'undefined' ? document : null)) return;
     if (doc === (typeof document !== 'undefined' ? document : null)) {
       _initialized = true;

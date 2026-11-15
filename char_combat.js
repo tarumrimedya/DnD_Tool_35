@@ -4848,7 +4848,7 @@
             </div>
             <!-- Equipment & Grip -->
             <div class="text-[10px] text-slate-400 truncate mt-0.5 font-mono">
-              <span class="${is1 ? 'text-amber-300 font-bold' : 'text-slate-400 font-bold'}">${UI.escapeHtml(s1.mainWeapon || 'None')}</span>
+              <span class="${is1 ? 'text-amber-300 font-bold' : 'text-slate-400 font-bold'}${s1.mainWeapon && s1.mainWeapon !== 'None' && s1.mainWeapon !== '-' ? ' cursor-pointer hover:underline' : ''}"${s1.mainWeapon && s1.mainWeapon !== 'None' && s1.mainWeapon !== '-' ? ` data-action="entity:inspect" data-entity-kind="weapon" data-entity-name="${UI.escapeAttr(s1.mainWeapon)}" data-index="1"` : ''}>${UI.escapeHtml(s1.mainWeapon || 'None')}</span>
               <span class="text-slate-500">(${s1MainStats?.isShield ? 'Shield' : effectiveS1Grip})</span>
             </div>
             <!-- Row 1: Modified Weapon Damage or Shield Defense -->
@@ -4898,7 +4898,7 @@
             </div>
             <!-- Equipment Info -->
             <div class="text-[10px] text-slate-500 truncate mt-0.5 font-mono">
-              <span>${UI.escapeHtml(s1.mainWeapon || 'Weapon')} (2-Hand)</span>
+              <span${s1.mainWeapon && s1.mainWeapon !== 'None' && s1.mainWeapon !== '-' ? ` class="cursor-pointer hover:underline" data-action="entity:inspect" data-entity-kind="weapon" data-entity-name="${UI.escapeAttr(s1.mainWeapon)}" data-index="1"` : ''}>${UI.escapeHtml(s1.mainWeapon || 'Weapon')}</span><span> (2-Hand)</span>
             </div>
             <!-- Description -->
             <div class="text-[10px] text-slate-600 mt-0.5 font-mono">
@@ -4927,7 +4927,7 @@
             </div>
             <!-- Equipment & Type -->
             <div class="text-[10px] text-slate-400 truncate mt-0.5 font-mono">
-              <span class="${is2 ? 'text-sky-300 font-bold' : 'text-amber-200/90 font-bold'}">${UI.escapeHtml(s1.mainWeapon)}</span>
+              <span class="${is2 ? 'text-sky-300 font-bold' : 'text-amber-200/90 font-bold'}${s1.mainWeapon && s1.mainWeapon !== 'None' && s1.mainWeapon !== '-' ? ' cursor-pointer hover:underline' : ''}"${s1.mainWeapon && s1.mainWeapon !== 'None' && s1.mainWeapon !== '-' ? ` data-action="entity:inspect" data-entity-kind="weapon" data-entity-name="${UI.escapeAttr(s1.mainWeapon)}" data-index="1"` : ''}>${UI.escapeHtml(s1.mainWeapon)}</span>
               <span class="text-slate-500">(${is2 ? 'Off-Hand Light' : '2-Hand Grip'})</span>
             </div>
             <!-- Row 1: Weapon Damage -->
@@ -4965,7 +4965,7 @@
             </div>
             <!-- Equipment & Type -->
             <div class="text-[10px] text-slate-400 truncate mt-0.5 font-mono">
-              <span class="${is2 ? 'text-sky-300 font-bold' : 'text-slate-400 font-bold'}">${UI.escapeHtml(s2.mainWeapon || 'None')}</span>
+              <span class="${is2 ? 'text-sky-300 font-bold' : 'text-slate-400 font-bold'}${s2.mainWeapon && s2.mainWeapon !== 'None' && s2.mainWeapon !== '-' ? ' cursor-pointer hover:underline' : ''}"${s2.mainWeapon && s2.mainWeapon !== 'None' && s2.mainWeapon !== '-' ? ` data-action="entity:inspect" data-entity-kind="${isCard2Shield ? 'shield' : 'weapon'}" data-entity-name="${UI.escapeAttr(s2.mainWeapon)}" data-index="2"` : ''}>${UI.escapeHtml(s2.mainWeapon || 'None')}</span>
               <span class="text-slate-500">(${isCard2Shield ? 'Shield' : (!s2.mainWeapon || s2.mainWeapon === 'None' || s2.mainWeapon === '-' ? 'Empty' : 'Off-Hand')})</span>
             </div>
             <!-- Row 1: Weapon Damage or Shield Defense -->

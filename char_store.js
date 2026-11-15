@@ -4527,11 +4527,11 @@
     return doc;
   });
 
-  // Sprint B.5 -> Sprint C Isolated Living Facet Studio Capsule Bridge (0-DOM Overhead)
-  CharStore.registerReducer('customDb/upsertV3', function (doc, action) {
+  // Sprint B.5 -> Faz C.3 Isolated Rule Crafter Capsule Bridge (0-DOM Overhead)
+  CharStore.registerReducer('customDb/upsertV3', function (doc, action, stateObj) {
     const entry = action && action.payload && action.payload.entry;
     if (!entry || typeof entry !== 'object' || !entry.id || !entry.name) {
-      CharStore._setOutcome({ status: 'invalid_payload' });
+      setStoreOutcome(stateObj, { status: 'invalid_payload' });
       return doc;
     }
     if (!Array.isArray(doc.customDb)) doc.customDb = [];
@@ -4546,9 +4546,214 @@
     } else {
       doc.customDb.unshift(copy);
     }
-    CharStore._setOutcome({ status: 'ok', id: copy.id, updated: idx >= 0 });
+    setStoreOutcome(stateObj, { status: 'ok', id: copy.id, updated: idx >= 0 });
     return doc;
   });
+
+  function _slugifyCrafterId(val) {
+    return String(val || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '') || ('crafted_' + Date.now());
+  }
+
+  function _stripBoonPrefix(val) {
+    return String(val || '')
+      .replace(/^\[DM\s*Boon\]\s*/i, '')
+      .replace(/^DM\s*Boon:\s*/i, '')
+      .trim();
+  }
+
+  function _showCrafterToast(msg, tone) {
+    try {
+      if (typeof root !== 'undefined' && typeof root.showDiceTopToast === 'function') {
+        root.showDiceTopToast({
+          title: 'Rule Crafter',
+          message: String(msg || ''),
+          icon: tone === 'reset' ? '↺' : '⚒️'
+        });
+        return;
+      }
+      if (typeof root !== 'undefined' && typeof root.showToast === 'function') {
+        root.showToast(String(msg || ''));
+        return;
+      }
+      if (typeof document !== 'undefined' && document.body) {
+        let el = document.getElementById('crafter-bridge-toast');
+        if (!el) {
+          el = document.createElement('div');
+          el.id = 'crafter-bridge-toast';
+          el.setAttribute('style', 'position:fixed;top:16px;right:16px;z-index:10090;padding:10px 14px;border-radius:10px;background:#0f172a;color:#fde68a;border:1px solid rgba(245,158,11,0.55);font-size:12px;font-weight:700;box-shadow:0 12px 30px rgba(0,0,0,0.45);pointer-events:none;transition:opacity 0.2s ease;');
+          document.body.appendChild(el);
+        }
+        el.textContent = (tone === 'reset' ? '↺ ' : '⚒️ ') + String(msg || '');
+        el.style.opacity = '1';
+        clearTimeout(el._hideTimer);
+        el._hideTimer = setTimeout(function () {
+          if (el) el.style.opacity = '0';
+        }, 2800);
+      }
+    } catch (_) {}
+  }
+
+  function _srdTypeForKind(kind) {
+    const k = String(kind || '').toLowerCase().trim();
+    if (k === 'weapon' || k === 'weapons') return 'Weapon';
+    if (k === 'armor' || k === 'shield') return 'Armor';
+    if (k === 'item' || k === 'gear' || k === 'wondrous') return 'Magic Item';
+    if (k === 'feat' || k === 'boon') return 'Feat';
+    if (k === 'spell') return 'Spell';
+    if (k === 'maneuver') return 'Maneuver';
+    if (k === 'psionic' || k === 'psionics') return 'Power';
+    if (k === 'incarnum') return 'Soulmeld';
+    if (k === 'pactmagic' || k === 'vestige') return 'Vestige';
+    if (k === 'shadowmagic' || k === 'mystery') return 'Mystery';
+    if (k === 'truenaming' || k === 'utterance') return 'Utterance';
+    if (k === 'class') return 'Class';
+    if (k === 'race') return 'Race';
+    if (k === 'template' || k === 'templates') return 'Template';
+    return undefined;
+  }
+
+  function _findInSrdCompendium(id, name, kind) {
+    const comp = typeof root !== 'undefined' ? root.SrdCompendium : null;
+    if (!comp) return null;
+    const typeHint = _srdTypeForKind(kind);
+    if (id && typeof comp.getById === 'function') {
+      const byId = comp.getById(id);
+      if (byId) return byId;
+    }
+    const cleanName = _stripBoonPrefix(name);
+    if (cleanName && typeof comp.getByName === 'function') {
+      const byName = typeHint ? comp.getByName(cleanName, typeHint) : null;
+      if (byName) return byName;
+      const anyName = comp.getByName(cleanName);
+      if (anyName) return anyName;
+    }
+    if (cleanName && typeof comp.search === 'function') {
+      const hits = comp.search(cleanName, typeHint ? { type: typeHint, limit: 5 } : { limit: 5 });
+      if (Array.isArray(hits) && hits.length > 0) {
+        const exact = hits.find(function (h) {
+          return h && String(h.name || '').trim().toLowerCase() === cleanName.toLowerCase();
+        });
+        if (exact) return exact;
+      }
+    }
+    return null;
+  }
+
+  function _convertV2ModToV3Block(mod) {
+    if (!mod || typeof mod !== 'object') return null;
+    const target = String(mod.target || '').trim() || 'atk.all';
+    const rawVal = mod.value !== undefined ? mod.value : (mod.formula !== undefined ? mod.formula : 0);
+    const numVal = Number(rawVal);
+    const isFormula = (typeof rawVal === 'string' && isNaN(numVal)) || !!mod.formula;
+    return {
+      type: 'stat',
+      targets: [target],
+      mode: isFormula ? 'formula' : 'flat',
+      value: isFormula ? 0 : (isNaN(numVal) ? 0 : numVal),
+      formula: isFormula ? String(mod.formula || rawVal) : '',
+      btype: mod.type ? String(mod.type) : 'Untyped',
+      condition: mod.condition ? String(mod.condition) : ''
+    };
+  }
+
+  function _convertDmgPartToV3Block(part) {
+    if (!part || typeof part !== 'object') return null;
+    let count = 1;
+    let die = 'd6';
+    if (part.dice && typeof part.dice === 'string') {
+      const m = part.dice.trim().match(/^(\d+)\s*d(\d+)$/i);
+      if (m) {
+        count = parseInt(m[1], 10) || 1;
+        die = 'd' + m[2];
+      }
+    } else if (part.bonus !== undefined && part.bonus !== null) {
+      count = Number(part.bonus) || 0;
+      die = 'flat';
+    }
+    return {
+      type: 'roll',
+      kind: 'Damage',
+      count: count,
+      die: die,
+      flat: part.dice && part.bonus ? (Number(part.bonus) || 0) : 0,
+      dmgType: String(part.type || 'Untyped'),
+      critRule: part.onCritOnly ? 'onCritOnly' : (part.multiplyOnCrit ? 'multiply' : 'flat'),
+      condition: part.condition ? String(part.condition) : ''
+    };
+  }
+
+  function _syncCharacterTargetWithV3(doc, v3Copy, originalId, context) {
+    if (!doc || !v3Copy) return;
+    const ctx = context || {};
+    const targetName = String(v3Copy.name || '').trim();
+    const matchName = String(ctx.originalName || ctx.name || '').trim().toLowerCase();
+    const matchesTarget = function (obj) {
+      if (!obj || typeof obj !== 'object') return false;
+      if (originalId && (obj.id === originalId || obj.customEntryId === originalId || obj.baseEntryId === originalId)) return true;
+      if (v3Copy.id && (obj.id === v3Copy.id || obj.customEntryId === v3Copy.id)) return true;
+      if (matchName && String(obj.name || '').trim().toLowerCase() === matchName) return true;
+      return false;
+    };
+    const applyToObj = function (obj) {
+      if (!obj || typeof obj !== 'object') return;
+      if (targetName) obj.name = targetName;
+      obj.customEntryId = v3Copy.id;
+      obj.schemaVersion = 3;
+      if (v3Copy.text) {
+        obj.description = v3Copy.text;
+        if ('benefit' in obj) obj.benefit = v3Copy.text;
+      }
+      if (v3Copy.weapon && typeof v3Copy.weapon === 'object') {
+        if (v3Copy.weapon.rangeIncrement !== undefined && v3Copy.weapon.rangeIncrement !== null) {
+          obj.range = String(v3Copy.weapon.rangeIncrement) + ' ft.';
+        }
+        if (v3Copy.weapon.effectiveCritRange && v3Copy.weapon.critMultiplier) {
+          obj.crit = (v3Copy.weapon.effectiveCritRange < 20 ? (v3Copy.weapon.effectiveCritRange + '-20') : '20') + '/x' + v3Copy.weapon.critMultiplier;
+        }
+      }
+      if (Array.isArray(v3Copy.damageParts) && v3Copy.damageParts.length) {
+        obj.damageParts = CharStore._fastCloneHistoryVal(v3Copy.damageParts);
+      }
+      if (v3Copy.armor && typeof v3Copy.armor === 'object') {
+        if (v3Copy.armor.armorBonus !== undefined) obj.armorBonus = v3Copy.armor.armorBonus;
+        if (v3Copy.armor.maxDex !== undefined) obj.maxDex = v3Copy.armor.maxDex;
+        if (v3Copy.armor.armorCheckPenalty !== undefined) obj.acp = v3Copy.armor.armorCheckPenalty;
+        if (v3Copy.armor.arcaneSpellFailure !== undefined) obj.asf = v3Copy.armor.arcaneSpellFailure;
+      }
+    };
+
+    if (doc.bodySlots && typeof doc.bodySlots === 'object') {
+      if (ctx.slotKey && doc.bodySlots[ctx.slotKey]) {
+        applyToObj(doc.bodySlots[ctx.slotKey]);
+      } else {
+        Object.values(doc.bodySlots).forEach(function (s) {
+          if (matchesTarget(s)) applyToObj(s);
+        });
+      }
+    }
+    ['weapons', 'gearPool', 'inventory', 'feats', 'specialAbilities', 'dmBoons', 'spells', 'knownSpells', 'preparedSpells', 'psionics', 'incarnum', 'pactMagic', 'shadowMagic', 'truenaming', 'templates'].forEach(function (arrKey) {
+      const list = doc[arrKey];
+      if (!Array.isArray(list)) return;
+      list.forEach(function (entry) {
+        if (matchesTarget(entry)) applyToObj(entry);
+      });
+    });
+    if (ctx.kind === 'weapon' && Array.isArray(doc.weaponSets) && matchName && targetName) {
+      doc.weaponSets.forEach(function (ws) {
+        if (ws && String(ws.mainWeapon || '').trim().toLowerCase() === matchName) {
+          ws.mainWeapon = targetName;
+        }
+      });
+    }
+    if (ctx.kind === 'class' && Array.isArray(doc.levelProgression) && typeof ctx.levelIndex === 'number' && doc.levelProgression[ctx.levelIndex]) {
+      const row = doc.levelProgression[ctx.levelIndex];
+      if (targetName) row.className = targetName;
+      row.customEntryId = v3Copy.id;
+    }
+    if (ctx.kind === 'race' && targetName) {
+      doc.race = targetName;
+    }
+  }
 
   const StudioBridge = {
     upsertEntry(v3Entry, meta) {
@@ -4561,6 +4766,446 @@
     getCustomDb() {
       const doc = CharStore.getDoc();
       return (doc && Array.isArray(doc.customDb)) ? doc.customDb : [];
+    },
+    resolveEntity(spec) {
+      const q = typeof spec === 'string' ? { name: spec } : (spec || {});
+      const doc = CharStore.getDoc() || (typeof root !== 'undefined' ? root.character : null) || {};
+      const kind = String(q.kind || '').toLowerCase().trim();
+      const rawName = String(q.name || '').trim();
+      const cleanName = _stripBoonPrefix(rawName);
+      const nameLower = cleanName.toLowerCase();
+      const idQuery = q.id ? String(q.id).trim() : '';
+
+      const matchesItem = function (item) {
+        if (!item) return false;
+        if (typeof item === 'string') {
+          return nameLower && _stripBoonPrefix(item).toLowerCase() === nameLower;
+        }
+        if (idQuery && (item.id === idQuery || item.customEntryId === idQuery || item.baseEntryId === idQuery || item.baseItemId === idQuery)) return true;
+        if (nameLower && item.name && _stripBoonPrefix(item.name).toLowerCase() === nameLower) return true;
+        return false;
+      };
+
+      let overrideEntry = null;
+      let resolvedId = idQuery || '';
+      let sourceLocation = null;
+
+      // 1. Character-local Copy-on-Write dictionary: character.customEntries?.[id]
+      if (doc.customEntries && typeof doc.customEntries === 'object' && !Array.isArray(doc.customEntries)) {
+        if (idQuery && doc.customEntries[idQuery]) {
+          overrideEntry = doc.customEntries[idQuery];
+          resolvedId = idQuery;
+          sourceLocation = 'customEntries';
+        } else {
+          const keys = Object.keys(doc.customEntries);
+          for (let i = 0; i < keys.length; i++) {
+            const candidate = doc.customEntries[keys[i]];
+            if (matchesItem(candidate)) {
+              overrideEntry = candidate;
+              resolvedId = candidate.id || keys[i];
+              sourceLocation = 'customEntries';
+              break;
+            }
+          }
+        }
+      }
+
+      // 2. Character's own arrays / fields
+      let charItem = null;
+      const tryList = function (arr, locName) {
+        if (charItem || !Array.isArray(arr)) return;
+        if (typeof q.index === 'number' && arr[q.index] && (kind === locName || !nameLower || matchesItem(arr[q.index]))) {
+          charItem = arr[q.index];
+          sourceLocation = sourceLocation || locName;
+          return;
+        }
+        for (let i = 0; i < arr.length; i++) {
+          if (matchesItem(arr[i])) {
+            charItem = arr[i];
+            sourceLocation = sourceLocation || locName;
+            return;
+          }
+        }
+      };
+
+      if (q.slotKey && doc.bodySlots && doc.bodySlots[q.slotKey]) {
+        charItem = doc.bodySlots[q.slotKey];
+        sourceLocation = sourceLocation || 'bodySlots';
+      }
+      if (!charItem && kind === 'class' && Array.isArray(doc.levelProgression)) {
+        const lp = (typeof q.levelIndex === 'number' && doc.levelProgression[q.levelIndex]) ? doc.levelProgression[q.levelIndex] : doc.levelProgression.find(function (r) {
+          return r && nameLower && String(r.className || '').trim().toLowerCase() === nameLower;
+        });
+        if (lp) {
+          charItem = {
+            id: lp.customEntryId || ('class_' + _slugifyCrafterId(lp.className || cleanName)),
+            name: lp.className || cleanName,
+            type: 'Class',
+            level: lp.level,
+            hd: lp.hd,
+            bab: lp.bab,
+            notes: lp.notes || '',
+            source: 'Character Progression'
+          };
+          sourceLocation = sourceLocation || 'levelProgression';
+        }
+      }
+      if (!charItem && kind === 'race' && (doc.race || cleanName)) {
+        charItem = {
+          id: 'race_' + _slugifyCrafterId(cleanName || doc.race),
+          name: cleanName || doc.race,
+          type: 'Race',
+          source: 'Character Race'
+        };
+        sourceLocation = sourceLocation || 'race';
+      }
+      if (!charItem && kind === 'boon' && Array.isArray(doc.levelProgression) && typeof q.levelIndex === 'number' && doc.levelProgression[q.levelIndex]) {
+        const lp = doc.levelProgression[q.levelIndex];
+        const bonuses = [].concat(Array.isArray(lp.otherBonuses) ? lp.otherBonuses : [], Array.isArray(lp.bonusFeats) ? lp.bonusFeats : [], Array.isArray(lp.specials) ? lp.specials : []);
+        const hit = bonuses.find(function (b) { return matchesItem(b); });
+        if (hit) {
+          charItem = typeof hit === 'string'
+            ? { id: 'boon_' + _slugifyCrafterId(cleanName), name: cleanName, type: 'DM Boon', benefit: hit, source: 'DM Boon' }
+            : hit;
+          sourceLocation = sourceLocation || 'levelProgression';
+        }
+      }
+      if (!charItem && doc.bodySlots && typeof doc.bodySlots === 'object') {
+        const slots = Object.values(doc.bodySlots);
+        for (let i = 0; i < slots.length; i++) {
+          if (matchesItem(slots[i])) {
+            charItem = slots[i];
+            sourceLocation = sourceLocation || 'bodySlots';
+            break;
+          }
+        }
+      }
+      tryList(doc.weapons, 'weapons');
+      tryList(doc.gearPool, 'gearPool');
+      tryList(doc.inventory, 'inventory');
+      tryList(doc.feats, 'feats');
+      tryList(doc.specialAbilities, 'specialAbilities');
+      tryList(doc.dmBoons, 'dmBoons');
+      tryList(doc.spells, 'spells');
+      tryList(doc.knownSpells, 'knownSpells');
+      tryList(doc.preparedSpells, 'preparedSpells');
+      tryList(doc.psionics, 'psionics');
+      tryList(doc.incarnum, 'incarnum');
+      tryList(doc.pactMagic, 'pactMagic');
+      tryList(doc.shadowMagic, 'shadowMagic');
+      tryList(doc.truenaming, 'truenaming');
+      tryList(doc.templates, 'templates');
+
+      if (typeof charItem === 'string') {
+        charItem = {
+          id: resolvedId || ((kind || 'entry') + '_' + _slugifyCrafterId(charItem)),
+          name: _stripBoonPrefix(charItem),
+          type: _srdTypeForKind(kind) || 'Feature'
+        };
+      }
+
+      // 3. masterDb (character customDb / campaign DB)
+      let masterEntry = null;
+      const dbList = (typeof root !== 'undefined' && Array.isArray(root.masterDb))
+        ? root.masterDb
+        : (Array.isArray(doc.customDb) ? doc.customDb : []);
+      for (let i = 0; i < dbList.length; i++) {
+        if (matchesItem(dbList[i])) {
+          masterEntry = dbList[i];
+          break;
+        }
+      }
+
+      // 4. Official SrdCompendium
+      const srdEntry = _findInSrdCompendium(
+        idQuery || (charItem && (charItem.baseEntryId || charItem.baseItemId || charItem.id)) || (overrideEntry && (overrideEntry.baseEntryId || overrideEntry.id)),
+        cleanName || (charItem && charItem.name) || (masterEntry && masterEntry.name) || (overrideEntry && overrideEntry.name),
+        kind
+      );
+
+      let entry = null;
+      if (overrideEntry) {
+        entry = CharStore._fastCloneHistoryVal(overrideEntry);
+      } else if (charItem && typeof charItem === 'object') {
+        const baseObj = srdEntry || masterEntry;
+        entry = baseObj
+          ? Object.assign(CharStore._fastCloneHistoryVal(baseObj), CharStore._fastCloneHistoryVal(charItem))
+          : CharStore._fastCloneHistoryVal(charItem);
+        sourceLocation = sourceLocation || 'character';
+      } else if (masterEntry) {
+        entry = CharStore._fastCloneHistoryVal(masterEntry);
+        sourceLocation = 'masterDb';
+      } else if (srdEntry) {
+        entry = CharStore._fastCloneHistoryVal(srdEntry);
+        sourceLocation = 'srd';
+      } else if (cleanName) {
+        entry = {
+          id: resolvedId || ((kind || 'entry') + '_' + _slugifyCrafterId(cleanName)),
+          name: cleanName,
+          type: _srdTypeForKind(kind) || 'Feature',
+          source: kind === 'boon' ? 'DM Boon' : 'Custom'
+        };
+        sourceLocation = 'synthetic';
+      }
+
+      if (entry && !resolvedId) {
+        resolvedId = entry.id || entry.baseEntryId || ((kind || 'entry') + '_' + _slugifyCrafterId(entry.name || cleanName));
+        if (!entry.id) entry.id = resolvedId;
+      }
+
+      return {
+        entry: entry,
+        resolvedId: resolvedId || null,
+        kind: kind || null,
+        sourceLocation: sourceLocation,
+        isCustomOverride: Boolean(overrideEntry || (entry && entry.schemaVersion === 3 && entry._crafterOverride)),
+        hasSrdBase: Boolean(srdEntry),
+        srdBaseEntry: srdEntry ? CharStore._fastCloneHistoryVal(srdEntry) : null
+      };
+    },
+    toV3CrafterDraft(entry, kind) {
+      if (!entry || typeof entry !== 'object') {
+        const k = String(kind || 'feat').toLowerCase().trim();
+        return {
+          schemaVersion: 3,
+          blueprint: k === 'weapon' ? 'weapon' : (k === 'armor' || k === 'shield' ? 'armor' : (k === 'spell' || k === 'maneuver' ? 'spell' : (k === 'class' ? 'class' : (k === 'race' || k === 'template' ? 'race' : 'feat')))),
+          id: 'crafted_' + Date.now(),
+          name: 'New Crafted Rule',
+          source: 'Homebrew',
+          text: '',
+          effects: []
+        };
+      }
+      if (entry.schemaVersion === 3) {
+        const cloned = CharStore._fastCloneHistoryVal(entry);
+        if (!cloned.baseEntryId && (entry.baseItemId || entry.id)) {
+          cloned.baseEntryId = entry.baseEntryId || entry.baseItemId || entry.id;
+        }
+        return cloned;
+      }
+      const k = String(kind || entry.type || entry.category || 'feat').toLowerCase().trim();
+      let blueprint = 'feat';
+      if (k.includes('weapon') || entry.weapon || (entry.damage && entry.crit)) blueprint = 'weapon';
+      else if (k.includes('armor') || k.includes('shield') || entry.armorBonus !== undefined) blueprint = 'armor';
+      else if (k.includes('item') || k.includes('wondrous') || k.includes('ring') || k.includes('rod') || k.includes('staff') || k.includes('wand') || entry.slot || entry.gpValue !== undefined) blueprint = 'wondrous';
+      else if (k.includes('spell') || k.includes('maneuver') || k.includes('psionic') || k.includes('power') || k.includes('incarnum') || k.includes('soulmeld') || k.includes('pact') || k.includes('vestige') || k.includes('shadow') || k.includes('mystery') || k.includes('truename') || k.includes('utterance') || k.includes('invocation')) blueprint = 'spell';
+      else if (k.includes('race') || k.includes('template')) blueprint = 'race';
+      else if (k.includes('class')) blueprint = 'class';
+      else if (k.includes('buff')) blueprint = 'buff';
+
+      const effects = [];
+      if (Array.isArray(entry.modifiers)) {
+        entry.modifiers.forEach(function (m) {
+          const blk = _convertV2ModToV3Block(m);
+          if (blk) effects.push(blk);
+        });
+      }
+      if (Array.isArray(entry.damageParts) && blueprint !== 'weapon') {
+        entry.damageParts.forEach(function (p) {
+          const blk = _convertDmgPartToV3Block(p);
+          if (blk) effects.push(blk);
+        });
+      }
+
+      const out = {
+        schemaVersion: 3,
+        blueprint: blueprint,
+        id: entry.id || ('crafted_' + _slugifyCrafterId(entry.name)),
+        baseEntryId: entry.baseEntryId || entry.baseItemId || entry.id || null,
+        name: entry.name || 'Crafted Entry',
+        source: entry.source || 'Official SRD',
+        tags: Array.isArray(entry.tags) ? entry.tags.slice() : [],
+        text: entry.benefit || entry.description || entry.text || entry.summary || '',
+        effects: effects
+      };
+
+      if (entry.prereq || entry.prerequisites) {
+        out.prerequisites = typeof entry.prerequisites === 'object' && !Array.isArray(entry.prerequisites)
+          ? CharStore._fastCloneHistoryVal(entry.prerequisites)
+          : { all: [], text: String(entry.prereq || entry.prerequisites || '') };
+      }
+
+      if (blueprint === 'weapon' || blueprint === 'armor' || blueprint === 'wondrous') {
+        if (entry.baseItemId) out.baseItemId = entry.baseItemId;
+        if (entry.material) out.material = entry.material;
+        if (entry.enhancementBonus !== undefined) out.enhancementBonus = Number(entry.enhancementBonus) || 0;
+        if (Array.isArray(entry.enhancements)) out.enhancements = entry.enhancements.slice();
+        if (blueprint === 'weapon') {
+          out.weapon = {
+            category: entry.category || (entry.weapon && entry.weapon.category) || 'Martial',
+            handedness: entry.handedness || (entry.weapon && entry.weapon.handedness) || 'One-Handed',
+            baseCritRange: (entry.weapon && entry.weapon.baseCritRange) || 20,
+            critMultiplier: (entry.weapon && entry.weapon.critMultiplier) || 2,
+            rangeIncrement: entry.range ? (parseInt(String(entry.range), 10) || null) : ((entry.weapon && entry.weapon.rangeIncrement) || null)
+          };
+          if (Array.isArray(entry.damageParts)) {
+            out.damageParts = CharStore._fastCloneHistoryVal(entry.damageParts);
+          }
+        } else if (blueprint === 'armor') {
+          out.armor = {
+            armorType: entry.armorType || 'Light',
+            armorBonus: Number(entry.armorBonus) || 0,
+            maxDex: entry.maxDex !== undefined ? entry.maxDex : null,
+            armorCheckPenalty: Number(entry.acp !== undefined ? entry.acp : entry.armorCheckPenalty) || 0,
+            arcaneSpellFailure: Number(entry.asf !== undefined ? entry.asf : entry.arcaneSpellFailure) || 0
+          };
+        } else {
+          out.item = {
+            subtype: entry.subtype || 'Wondrous',
+            slot: entry.slot || 'Slotless',
+            price: Number(entry.price !== undefined ? entry.price : entry.gpValue) || 0,
+            cl: Number(entry.cl !== undefined ? entry.cl : entry.casterLevel) || 1
+          };
+        }
+      } else if (blueprint === 'spell') {
+        let sys = 'spell';
+        if (k.includes('maneuver')) sys = 'maneuver';
+        else if (k.includes('psionic') || k.includes('power')) sys = 'psionic';
+        else if (k.includes('incarnum') || k.includes('soulmeld')) sys = 'soulmeld';
+        else if (k.includes('pact') || k.includes('vestige')) sys = 'vestige';
+        else if (k.includes('shadow') || k.includes('mystery')) sys = 'mystery';
+        else if (k.includes('truename') || k.includes('utterance')) sys = 'utterance';
+        else if (k.includes('invocation')) sys = 'invocation';
+        out.spell = {
+          system: sys,
+          school: entry.school || 'Evocation',
+          discipline: entry.discipline || '',
+          descriptors: Array.isArray(entry.descriptors) ? entry.descriptors.slice() : [],
+          level: entry.level !== undefined ? Number(entry.level) : 1,
+          ppCost: entry.ppCost !== undefined ? Number(entry.ppCost) : undefined
+        };
+        if (entry.castingTime || entry.range || entry.area || entry.savingThrow || entry.spellResistance) {
+          out.delivery = {
+            action: entry.castingTime || '1 standard action',
+            range: entry.range || null,
+            area: entry.area || null,
+            spellResistance: entry.spellResistance || 'Yes'
+          };
+          if (entry.savingThrow && entry.savingThrow !== 'None') {
+            out.delivery.save = { type: entry.savingThrow, effect: 'Partial' };
+          }
+        }
+      } else if (blueprint === 'race') {
+        out.race = {
+          kind: k.includes('template') ? 'template' : 'race',
+          size: entry.size || 'Medium',
+          creatureType: entry.creatureType || 'Humanoid',
+          speed: Number(entry.speed) || 30,
+          levelAdjustment: Number(entry.levelAdjustment !== undefined ? entry.levelAdjustment : entry.la) || 0
+        };
+      }
+      return out;
+    },
+    saveFromCrafter(v3Entry, opts) {
+      const options = opts || {};
+      const saveScope = options.saveScope === 'campaign' ? 'campaign' : 'character';
+      const originalId = options.originalId || null;
+      const context = options.context || {};
+      if (!v3Entry || typeof v3Entry !== 'object' || !v3Entry.name) {
+        return { ok: false, reason: 'invalid_entry' };
+      }
+      const copy = CharStore._fastCloneHistoryVal(v3Entry);
+      copy.schemaVersion = 3;
+      const targetId = copy.id || originalId || ('crafted_' + _slugifyCrafterId(copy.name));
+      copy.id = targetId;
+      if (originalId && !copy.baseEntryId) {
+        copy.baseEntryId = originalId;
+      }
+
+      if (saveScope === 'character') {
+        const doc = CharStore.getDoc();
+        if (!doc) return { ok: false, reason: 'no_character' };
+        copy._crafterOverride = true;
+        if (!doc.customEntries || typeof doc.customEntries !== 'object' || Array.isArray(doc.customEntries)) {
+          doc.customEntries = {};
+        }
+        doc.customEntries[targetId] = copy;
+        if (originalId && originalId !== targetId) {
+          doc.customEntries[originalId] = copy;
+        }
+        _syncCharacterTargetWithV3(doc, copy, originalId, context);
+        StudioBridge.upsertEntry(copy, { label: 'Apply Crafted Rules: ' + copy.name, persist: false });
+        CharStore.recompute('crafter');
+        if (typeof root !== 'undefined' && typeof root.saveStateToStorage === 'function') {
+          root.saveStateToStorage(true);
+        }
+        if (typeof root !== 'undefined' && typeof root.renderAll === 'function') {
+          root.renderAll();
+        }
+        _showCrafterToast('Applied Crafted Rules to Character');
+        return { ok: true, saveScope: 'character', id: targetId, entry: copy };
+      }
+
+      // saveScope === 'campaign'
+      if (typeof root !== 'undefined' && Array.isArray(root.masterDb)) {
+        const idx = root.masterDb.findIndex(function (e) { return e && e.id === targetId; });
+        if (idx >= 0) root.masterDb[idx] = copy;
+        else root.masterDb.unshift(copy);
+      }
+      if (typeof localStorage !== 'undefined') {
+        try {
+          const raw = localStorage.getItem('dnd35_custom_db');
+          const parsed = raw ? JSON.parse(raw) : [];
+          const list = Array.isArray(parsed) ? parsed : [];
+          const exIdx = list.findIndex(function (e) { return e && (e.id === targetId || (originalId && e.id === originalId)); });
+          if (exIdx >= 0) list[exIdx] = copy;
+          else list.unshift(copy);
+          localStorage.setItem('dnd35_custom_db', JSON.stringify(list));
+        } catch (err) {
+          console.warn('StudioBridge campaign library storage error:', err);
+        }
+      }
+      const doc = CharStore.getDoc();
+      if (doc) {
+        StudioBridge.upsertEntry(copy, { label: 'Campaign Rule Crafter: ' + copy.name, persist: false });
+        CharStore.recompute('crafter');
+        if (typeof root !== 'undefined' && typeof root.saveStateToStorage === 'function') {
+          root.saveStateToStorage(true);
+        }
+        if (typeof root !== 'undefined' && typeof root.renderAll === 'function') {
+          root.renderAll();
+        }
+      }
+      _showCrafterToast('Saved to Campaign Rule Crafter Library');
+      return { ok: true, saveScope: 'campaign', id: targetId, entry: copy };
+    },
+    resetCustomEntry(id) {
+      const targetId = String(id || '').trim();
+      const doc = CharStore.getDoc();
+      if (!doc || !targetId) return false;
+      let removed = false;
+      if (doc.customEntries && typeof doc.customEntries === 'object') {
+        if (doc.customEntries[targetId]) {
+          delete doc.customEntries[targetId];
+          removed = true;
+        }
+        Object.keys(doc.customEntries).forEach(function (k) {
+          const val = doc.customEntries[k];
+          if (val && (val.id === targetId || val.baseEntryId === targetId)) {
+            delete doc.customEntries[k];
+            removed = true;
+          }
+        });
+      }
+      if (Array.isArray(doc.customDb)) {
+        const nextDb = doc.customDb.filter(function (e) {
+          if (!e) return false;
+          const matches = (e.id === targetId || e.baseEntryId === targetId) && (e._crafterOverride || e.schemaVersion === 3);
+          if (matches) removed = true;
+          return !matches;
+        });
+        doc.customDb = nextDb;
+        if (typeof root !== 'undefined') root.masterDb = nextDb;
+      }
+      CharStore.recompute('crafter');
+      if (typeof root !== 'undefined' && typeof root.saveStateToStorage === 'function') {
+        root.saveStateToStorage(true);
+      }
+      if (typeof root !== 'undefined' && typeof root.renderAll === 'function') {
+        root.renderAll();
+      }
+      _showCrafterToast('Restored Official SRD Rules', 'reset');
+      return removed;
     }
   };
   CharStore.StudioBridge = StudioBridge;
