@@ -7922,8 +7922,10 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
                     ${featsList.length > 0 ? featsList.map(f => {
                       const safeTip = (getFeatTooltipText(f.name) || f.benefit || f.source || 'View rule details').replace(/"/g, '&quot;');
                       const catBadge = f.category && f.category !== 'Feat' ? `<span class="text-[10px] opacity-75 font-normal">(${safeEscapeHtml(f.category)})</span>` : '';
+                      const isBoonFeat = Boolean(f.isDmBoon || /\[DM\s*Boon\]|^DM\s*Boon:/i.test(f.name || ''));
+                      const cleanBoonName = String(f.name || '').replace(/^\[DM\s*Boon\]\s*/i, '').replace(/^DM\s*Boon:\s*/i, '').trim();
                       return `
-                        <button type="button" data-action="progression:show-feat-detail" data-feat-name="${UI.escapeAttr(f.name || '')}" data-feat-type="feat" title="${safeTip}" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-indigo-950/80 hover:bg-indigo-900 text-indigo-200 border border-indigo-600/60 hover:border-indigo-400 shadow-sm transition active:scale-95 cursor-pointer text-left">
+                        <button type="button" data-action="${isBoonFeat ? 'entity:inspect' : 'progression:show-feat-detail'}" ${isBoonFeat ? `data-entity-kind="boon" data-entity-name="${UI.escapeAttr(cleanBoonName || f.name || '')}"` : `data-feat-name="${UI.escapeAttr(f.name || '')}" data-feat-type="feat"`} title="${safeTip}" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-indigo-950/80 hover:bg-indigo-900 text-indigo-200 border border-indigo-600/60 hover:border-indigo-400 shadow-sm transition active:scale-95 cursor-pointer text-left">
                           <span class="text-amber-400 shrink-0">🎖️</span>
                           <span class="truncate max-w-[170px]">${safeEscapeHtml(f.name)}</span>
                           ${catBadge}
@@ -8016,6 +8018,9 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
           if (npcBanner) npcBanner.remove();
           progBlock.style.display = '';
         }
+      }
+      if (typeof wireProgressionEntityInspectors === 'function') {
+        wireProgressionEntityInspectors();
       }
     }
 
@@ -8360,6 +8365,8 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
           const safeTip = tip.replace(/"/g, '&quot;');
           let bgCls = 'bg-amber-950/80 hover:bg-amber-900 text-amber-300 border-amber-600/70';
           let icon = '🌟';
+          let isDmBoon = false;
+          let boonCoreName = '';
           let labelText = str.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+/, '').trim();
           if (str.includes('[Trait]')) {
             bgCls = 'bg-indigo-950 text-indigo-300 border-indigo-600';
@@ -8377,12 +8384,14 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
               labelText = `[Flaw] ${rawName}`;
             }
           } else if (str.includes('[DM Boon]') || str.includes('Boon') || str.includes('DM Grant')) {
+            isDmBoon = true;
             bgCls = 'bg-amber-950/80 hover:bg-amber-900 text-amber-300 border-amber-600/70';
             icon = '🌟';
             const boonCore = labelText
               .replace(/^\[DM\s*Boon\]\s*/i, '')
               .replace(/^DM\s*Boon:\s*/i, '')
               .trim();
+            boonCoreName = boonCore;
             labelText = `DM Boon: ${boonCore}`;
           } else if (str.includes('[Invocation]') || str.includes('[Extra Invocation]') || str.includes('Invocation') || str.includes('🔮')) {
             bgCls = 'bg-purple-950/80 hover:bg-purple-900 text-purple-300 border-purple-600/70';
@@ -8396,7 +8405,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
           }
           const cleanStr = labelText;
           const cornerBadge = getFeatPinCornerBadgeHtml(rawName);
-          return `<button data-action="progression:show-feat-detail" data-feat-name="${rawName.replace(/"/g, '&quot;')}" data-level-idx="${idx}" data-feat-type="feat" title="${safeTip}" style="width: 150px; min-width: 150px; max-width: 150px; box-sizing: border-box; overflow: hidden;" class="relative min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[10px] font-bold ${bgCls} border shadow-sm transition text-left cursor-pointer"><span class="shrink-0">${icon}</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">${cleanStr}</span>${cornerBadge}</button>`;
+          return `<button data-action="${isDmBoon ? 'entity:inspect' : 'progression:show-feat-detail'}" ${isDmBoon ? `data-entity-kind="boon" data-entity-name="${UI.escapeAttr(boonCoreName || rawName)}" data-level-index="${idx}"` : `data-feat-name="${rawName.replace(/"/g, '&quot;')}" data-level-idx="${idx}" data-feat-type="feat"`} title="${safeTip}" style="width: 150px; min-width: 150px; max-width: 150px; box-sizing: border-box; overflow: hidden;" class="relative min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[10px] font-bold ${bgCls} border shadow-sm transition text-left cursor-pointer"><span class="shrink-0">${icon}</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">${cleanStr}</span>${cornerBadge}</button>`;
         });
 
         const qualifiesForHumanBonus = (lvl.level === 1 && isHuman);
@@ -8486,7 +8495,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
             </div>
           </td>
           <td class="py-2 px-1.5 align-top text-left" style="width: 18%;">
-            <div class="flex items-center font-sans font-bold text-white text-xs leading-tight break-words line-clamp-2" title="${UI.escapeAttr(lvl.className)}-${classLevelSoFar}">${UI.escapeHtml(lvl.className)}-${classLevelSoFar}</div>
+            <div data-action="entity:inspect" data-entity-kind="class" data-entity-name="${UI.escapeAttr(lvl.className || '')}" data-level-index="${idx}" class="flex items-center font-sans font-bold text-white text-xs leading-tight break-words line-clamp-2 cursor-pointer hover:underline hover:text-amber-300 transition" title="${UI.escapeAttr(lvl.className)}-${classLevelSoFar}">${UI.escapeHtml(lvl.className)}-${classLevelSoFar}</div>
           </td>
           <td class="py-2 px-0.5 align-top text-center" style="width: 3.6%;">
             <div class="h-6 flex items-center justify-center text-slate-400 font-bold text-xs">${lvl.hd}</div>
@@ -8562,7 +8571,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
             <div class="flex items-center justify-between gap-2">
               <div class="flex items-center gap-2 min-w-0 flex-1">
                 <span class="inline-flex items-center justify-center px-2 py-0.5 rounded bg-amber-950/90 border border-amber-600/80 text-amber-300 font-extrabold text-xs font-mono shrink-0">Lv.${lvl.level}</span>
-                <span class="font-sans font-bold text-white text-xs truncate" title="${UI.escapeAttr(lvl.className)}-${classLevelSoFar}">${UI.escapeHtml(lvl.className)}-${classLevelSoFar}</span>
+                <span data-action="entity:inspect" data-entity-kind="class" data-entity-name="${UI.escapeAttr(lvl.className || '')}" data-level-index="${idx}" class="font-sans font-bold text-white text-xs truncate cursor-pointer hover:underline hover:text-amber-300 transition" title="${UI.escapeAttr(lvl.className)}-${classLevelSoFar}">${UI.escapeHtml(lvl.className)}-${classLevelSoFar}</span>
                 <label class="inline-flex items-center gap-1 shrink-0 ${isToggleDisabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}" title="${toggleTitle}">
                   <input type="checkbox" data-change-action="progression:toggle-level-active" data-level-idx="${idx}" ${isActive ? 'checked' : ''} ${isToggleDisabled ? 'disabled' : ''} class="w-3.5 h-3.5 rounded text-emerald-500 m-0 ${isToggleDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}">
                   <span class="badge ${isActive ? 'bg-emerald-950 text-emerald-300 border-emerald-600' : 'bg-slate-800 text-slate-400 border-slate-700'} text-[10px] px-1 py-0.5 leading-none font-bold whitespace-nowrap">
@@ -8613,6 +8622,44 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
           mobileCardsContainer.appendChild(mCard);
         }
       });
+      wireProgressionEntityInspectors();
+    }
+
+    function wireProgressionEntityInspectors() {
+      const raceName = String((character && character.race) || '').trim();
+      const raceBadge = document.getElementById('core-profile-race-badge');
+      if (raceBadge && raceName) {
+        raceBadge.setAttribute('data-action', 'entity:inspect');
+        raceBadge.setAttribute('data-entity-kind', 'race');
+        raceBadge.setAttribute('data-entity-name', raceName);
+        raceBadge.style.cursor = 'pointer';
+      }
+      const raceEl = document.getElementById('core-profile-race');
+      if (raceEl && raceName && !/^(INPUT|SELECT|TEXTAREA)$/i.test(raceEl.tagName)) {
+        raceEl.setAttribute('data-action', 'entity:inspect');
+        raceEl.setAttribute('data-entity-kind', 'race');
+        raceEl.setAttribute('data-entity-name', raceName);
+        raceEl.style.cursor = 'pointer';
+      }
+      const tplBar = document.getElementById('core-profile-template-summary-bar');
+      if (tplBar) {
+        const templates = Array.isArray(character && character.templates) ? character.templates : [];
+        const pills = tplBar.querySelectorAll('span, button, a');
+        pills.forEach((pill, i) => {
+          if (pill.getAttribute('data-action')) return;
+          const rawTxt = String(pill.textContent || '').replace(/^[🧬✨⚙️\s]+/, '').replace(/\(\s*LA[^)]*\)/i, '').trim();
+          const tplObj = templates[i];
+          const tplName = (tplObj && (typeof tplObj === 'string' ? tplObj : tplObj.name)) || rawTxt;
+          if (!tplName || /^templates?:/i.test(tplName)) return;
+          pill.setAttribute('data-action', 'entity:inspect');
+          pill.setAttribute('data-entity-kind', 'template');
+          pill.setAttribute('data-entity-name', tplName);
+          if (tplObj && typeof tplObj === 'object' && tplObj.id) {
+            pill.setAttribute('data-entity-id', tplObj.id);
+          }
+          pill.style.cursor = 'pointer';
+        });
+      }
     }
 
     // D&D 3.5e RAW Core Skills Catalog (52 Official Skills)

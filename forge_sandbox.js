@@ -1,6 +1,6 @@
 /* ============================================================================
- * LIVING FACET STUDIO — Rule Forge 3.0 Sandbox (Lego Core V3)
- * Zero-Patchwork 5 Orthogonal Scratch Primitives & 40 Benchmark Presets.
+ * RULE CRAFTER — V3 Rule Studio (D&D 3.5e)
+ * Zero-Patchwork 5 Orthogonal Rule Block Primitives & 40 Benchmark Presets.
  * Self-contained: offline seed catalog over file://, real SrdCompendium +
  * master_db.json over http://. No blocking browser dialogs and no inline
  * handlers — all routing via delegated data-action / data-spot attributes.
@@ -1474,6 +1474,7 @@
   // --------------------------------------------------------------------------
   // 5. App state & persistence
   // --------------------------------------------------------------------------
+  const IS_EMBED = typeof window !== 'undefined' && typeof window.location === 'object' && new URLSearchParams(window.location.search).get('embed') === '1';
   const LS_KEY = 'forgeSandbox.v3';
   function loadLS() { try { return JSON.parse(window.localStorage.getItem(LS_KEY) || '{}') || {}; } catch (e) { return {}; } }
   function saveLS() {
@@ -1483,6 +1484,7 @@
   const S = {
     entry: blankEntry('weapon'),
     activePreset: '',
+    embed: { context: {}, originalId: '', saveScope: 'character' },
     templates: Array.isArray(persisted.templates) ? persisted.templates : [],
     livingTags: Array.isArray(persisted.livingTags) ? persisted.livingTags : [],
     customBonusTypes: Array.isArray(persisted.customBonusTypes) ? persisted.customBonusTypes : [],
@@ -2503,7 +2505,7 @@
     S.ui.importOpen = false;
     S.ui.importText = '';
     loadEntry(en, '');
-    toast('Loaded "' + entryName(en) + '" into Scratch Lego Studio.', 'emerald');
+    toast('Loaded "' + entryName(en) + '" into Rule Crafter.', 'emerald');
     return en;
   }
 
@@ -3047,13 +3049,25 @@
   }
   function renderTopbar() {
     const curTpl = S.entry.templateId || '';
-    const catSel = '<select class="fs-sel" data-topcat="1" style="width:auto;min-width:190px" title="Category / Template"><optgroup label="Category">' + opts(BLUEPRINTS.map((b) => [b.id, b.icon + ' ' + b.name]), curTpl ? '' : S.entry.blueprint) + '</optgroup>' +
+    const catSel = '<select class="fs-sel" data-topcat="1" style="width:auto;min-width:170px" title="Category / Template"><optgroup label="Category">' + opts(BLUEPRINTS.map((b) => [b.id, b.icon + ' ' + b.name]), curTpl ? '' : S.entry.blueprint) + '</optgroup>' +
       (S.templates.length ? '<optgroup label="📌 Saved Templates">' + opts(S.templates.map((t) => [t.id, t.name]), curTpl) + '</optgroup>' : '') + '</select>';
+    if (IS_EMBED) {
+      const ctx = S.embed && S.embed.context ? S.embed.context : {};
+      const allowChar = ctx.allowCharacterScope !== false;
+      const scope = allowChar ? ((S.embed && S.embed.saveScope) || 'character') : 'campaign';
+      const scopeSel = '<select class="fs-sel fs-embed-scope" data-embed-scope="1" title="Save Target">' +
+        (allowChar ? '<option value="character"' + (scope === 'character' ? ' selected' : '') + '>This Character Only</option>' : '') +
+        '<option value="campaign"' + (scope === 'campaign' ? ' selected' : '') + '>Campaign Rule Crafter Library</option></select>';
+      $('#fs-topbar').innerHTML = '<div class="fs-topbar-row"><div class="fs-title">⚒️ Rule Crafter</div>' + scopeSel +
+        '<span class="fs-grow-gap"></span>' + btn('embed-save', '💾 Save & Apply', 'fs-xs fs-emerald') + btn('embed-cancel', '✕ Cancel', 'fs-xs fs-ghost') + '</div>' +
+        '<div class="fs-topbar-row fs-topbar-spot-row">' + catSel + '<div class="fs-top-spot" style="flex:1 1 200px">' + spotHtml('load', 'top') + '</div></div>';
+      return;
+    }
     const save = S.ui.tplSaveOpen ? '<span class="fs-row" style="gap:4px">' + inp('newTplName', S.ui.newTplName, { scope: 'ui', ph: 'Template name…', style: 'width:150px', enter: 'save-template' }) + btn('save-template', 'Save', 'fs-xs fs-emerald') + btn('toggle-tpl-save', '✕', 'fs-xs fs-ghost') + '</span>' : btn('toggle-tpl-save', '📌 Save Template', 'fs-xs');
     const skillPop = '<span class="fs-rel">' + btn('toggle-custom-skill', '+ 🎯 Custom Skill', 'fs-xs' + (S.ui.customSkillOpen ? ' fs-on' : '')) + customSkillPopover() + '</span>';
     const importBtn = btn('toggle-import-json', '📥 Import JSON', 'fs-xs' + (S.ui.importOpen ? ' fs-on' : ''));
     const status = CAT.srdLoaded ? '<span class="fs-pill emerald" title="SrdCompendium + master_db.json">📚 SRD ' + CAT.srdCount.toLocaleString('en-US') + (CAT.customCount ? ' + ' + CAT.customCount + ' custom' : '') + '</span>' : '<span class="fs-pill dim" title="Serve over http:// to load srd_compendium.js data">📚 Offline seed</span>';
-    $('#fs-topbar').innerHTML = '<div class="fs-topbar-row"><div class="fs-title">' + DICE_SVG + ' Living Facet Studio</div>' + catSel +
+    $('#fs-topbar').innerHTML = '<div class="fs-topbar-row"><div class="fs-title">' + DICE_SVG + ' Rule Crafter</div>' + catSel +
       '<span class="fs-grow-gap"></span>' + save + skillPop + importBtn + btn('new-entry', '✨ Blank', 'fs-xs') + status + '</div>' +
       '<div class="fs-topbar-row fs-topbar-spot-row"><div class="fs-top-spot">' + spotHtml('load', 'top') + '</div></div>';
   }
@@ -3126,7 +3140,7 @@
     const segs = rawHeaderLine(en);
     const l2 = segs.length ? segs.map(esc).join(' <span class="fs-sep">•</span> ') : '<span class="fs-hint">Configure the sections below — the clean RAW stat line renders here.</span>';
     const pills = summaryPills(en);
-    const l3 = pills.length ? pills.map((p) => '<span class="fs-pill ' + p[0] + '">' + esc(p[1]) + '</span>').join('') : '<span class="fs-hint">Snap Lego Core V3 blocks below to compose resources, triggers, carriers, stats, rolls, attacks, defenses, and effects.</span>';
+    const l3 = pills.length ? pills.map((p) => '<span class="fs-pill ' + p[0] + '">' + esc(p[1]) + '</span>').join('') : '<span class="fs-hint">Snap Rule Blocks below to compose resources, triggers, carriers, stats, rolls, attacks, defenses, and effects.</span>';
     const warns = has('chassis') ? chassisView(en.chassis, en).warnings : [];
     liveMetrics.pillsCount = pills.length;
     if (!hasGrow) l1 += '<span class="fs-grow-gap"></span>';
@@ -3620,7 +3634,7 @@
   function blockPalette(listPath, allowContainers, compact, extraHtml) {
     const types = allowContainers ? BLOCK_ORDER : ['stat', 'roll', 'attack', 'defense', 'effect', 'carrier'];
     return '<div class="lego-palette' + (compact ? ' compact' : '') + '">' +
-      (compact ? '' : '<span class="lego-lbl">+ Snap Block:</span>') +
+      (compact ? '' : '<span class="lego-lbl">+ Rule Block:</span>') +
       types.map((t) => '<button type="button" class="lego-add ' + BLOCK_TYPES[t].color + '" data-action="add-block" data-p="' + listPath + '" data-t="' + t + '">+ ' + BLOCK_TYPES[t].icon + ' ' + esc(BLOCK_TYPES[t].shortLabel) + '</button>').join('') +
       (extraHtml || '') +
       '</div>';
@@ -4154,9 +4168,9 @@
     const open = S.ui.jsonOpen, imp = S.ui.importOpen;
     $('#fs-json-wrap').className = 'fs-glass fs-facet' + (open || imp ? ' open' : '');
     const headBtns = btn('toggle-import-json', '📥 Import JSON', 'fs-xs' + (imp ? ' fs-on' : '')) + (open ? btn('copy-json', 'Copy JSON', 'fs-xs') : '<span class="fs-hint">click to expand</span>');
-    const importBox = imp ? '<div class="fs-import-box"><div class="fs-row" style="justify-content:space-between;margin-bottom:6px"><span class="fs-label-mini">📥 Paste Canonical V3 JSON Blueprint</span><span class="fs-hint">Reconstructs Lego Core V3 blocks, @Resource variables, C-Block branches, carriers & progressions</span></div>' +
+    const importBox = imp ? '<div class="fs-import-box"><div class="fs-row" style="justify-content:space-between;margin-bottom:6px"><span class="fs-label-mini">📥 Paste Canonical V3 JSON Blueprint</span><span class="fs-hint">Reconstructs Rule Blocks, @Resource variables, C-Block branches, carriers & progressions</span></div>' +
       '<textarea class="fs-in" data-uibind="importText" placeholder="Paste exported Canonical V3 JSON here…">' + esc(S.ui.importText) + '</textarea>' +
-      '<div class="fs-row" style="margin-top:8px">' + btn('run-import-json', '⚡ Load JSON into Lego Studio', 'fs-xs fs-emerald') + btn('toggle-import-json', 'Cancel', 'fs-xs fs-ghost') + '</div></div>' : '';
+      '<div class="fs-row" style="margin-top:8px">' + btn('run-import-json', '⚡ Load JSON into Rule Crafter', 'fs-xs fs-emerald') + btn('toggle-import-json', 'Cancel', 'fs-xs fs-ghost') + '</div></div>' : '';
     $('#fs-json-wrap').innerHTML = '<div class="fs-facet-head" data-action="toggle-json"><span class="fs-chev">▶</span><span>📜</span><span class="fs-facet-title">Canonical V3 JSON Output Inspector</span><span class="fs-facet-meta">' + headBtns + '</span></div>' +
       '<div class="fs-facet-body">' + importBox + (open ? '<pre class="fs-json" id="fs-json-pre">' + esc(JSON.stringify(exportEntry(S.entry), null, 2)) + '</pre>' : '') + '</div>';
   }
@@ -4284,6 +4298,27 @@
     },
     'load-preset': (el) => { const p = PRESETS.find((x) => x.id === el.dataset.id); if (!p) return; loadEntry(p.build(), p.id); toast('Preset loaded: ' + p.label); renderAll(); },
     'new-entry': () => { loadEntry(scaffold(blankEntry(S.entry.blueprint))); renderAll(); },
+    'embed-save': () => {
+      const exported = exportEntry(S.entry);
+      if (!exported.name || !String(exported.name).trim()) { toast('Please enter a name before saving.', 'warn'); return; }
+      const ctx = S.embed && S.embed.context ? S.embed.context : {};
+      const allowChar = ctx.allowCharacterScope !== false;
+      const saveScope = allowChar ? ((S.embed && S.embed.saveScope) || 'character') : 'campaign';
+      if (typeof window !== 'undefined' && window.parent && window.parent !== window) {
+        window.parent.postMessage({
+          type: 'crafter:saveEntry',
+          entry: exported,
+          saveScope: saveScope,
+          originalId: (S.embed && S.embed.originalId) || exported.id || '',
+          context: ctx
+        }, '*');
+      }
+    },
+    'embed-cancel': () => {
+      if (typeof window !== 'undefined' && window.parent && window.parent !== window) {
+        window.parent.postMessage({ type: 'crafter:close' }, '*');
+      }
+    },
     'toggle-live': () => {
       const liveEl = $('#fs-live');
       const next = !!(liveEl && liveEl.classList.contains('collapsed'));
@@ -4399,6 +4434,9 @@
     renderSpotDD();
   }
   function init() {
+    if (IS_EMBED && typeof document !== 'undefined' && document.body) {
+      document.body.classList.add('is-embed');
+    }
     const root = document.getElementById('fs-app');
     root.addEventListener('click', (ev) => {
       const el = ev.target.closest('[data-action]');
@@ -4429,6 +4467,7 @@
     });
     root.addEventListener('change', (ev) => {
       const el = ev.target;
+      if (el.dataset.embedScope) { S.embed.saveScope = el.value; return; }
       if (el.dataset.topcat) { setBlueprint(el.value); return; }
       if (el.dataset.push) { if (el.value) { getPath(S.entry, el.dataset.push).push(el.value); renderAll(); } return; }
       if (el.type === 'checkbox' || el.tagName === 'SELECT') handleBind(el, true);
@@ -4443,16 +4482,53 @@
         if (ev.key === 'Escape') { ev.preventDefault(); S.spot = null; renderSpotDD(); el.blur(); return; }
         return;
       }
+      if (ev.key === 'Escape' && IS_EMBED) {
+        if (typeof window !== 'undefined' && window.parent && window.parent !== window) {
+          ev.preventDefault();
+          window.parent.postMessage({ type: 'crafter:close' }, '*');
+        }
+        return;
+      }
       if (ev.key !== 'Enter' || !el.dataset || !el.dataset.enter) return;
       ev.preventDefault();
       const fn = ACT[el.dataset.enter];
       if (fn) fn(el, ev);
     });
+    if (IS_EMBED && typeof window !== 'undefined') {
+      window.addEventListener('message', (ev) => {
+        const msg = ev && ev.data;
+        if (!msg || typeof msg !== 'object') return;
+        if (msg.type === 'crafter:loadEntry') {
+          const ctx = (msg.context && typeof msg.context === 'object') ? msg.context : {};
+          S.embed.context = ctx;
+          const allowChar = ctx.allowCharacterScope !== false;
+          S.embed.saveScope = allowChar ? (ctx.defaultScope || 'character') : 'campaign';
+          if (msg.entry) {
+            try {
+              const en = fromCanonicalV3(msg.entry);
+              S.embed.originalId = msg.entry.id || en.id || '';
+              loadEntry(en, '');
+            } catch (err) {
+              toast('Could not load entry: ' + ((err && err.message) || 'invalid format'), 'err');
+            }
+          } else {
+            const bp = (ctx.blueprint && BP_BY_ID[ctx.blueprint]) ? ctx.blueprint : 'feat';
+            const en = scaffold(blankEntry(bp));
+            S.embed.originalId = '';
+            loadEntry(en, '');
+          }
+          renderAll();
+        }
+      });
+    }
     window.addEventListener('scroll', () => { syncLiveScroll(false); }, { passive: true });
     window.addEventListener('resize', () => { measureLiveMetrics(); syncLiveScroll(false); }, { passive: true });
     loadEntry(PRESETS[0].build(), PRESETS[0].id);
     renderAll();
     bootCompendium();
+    if (IS_EMBED && typeof window !== 'undefined' && window.parent && window.parent !== window) {
+      window.parent.postMessage({ type: 'crafter:ready' }, '*');
+    }
   }
   function bootCompendium() {
     const C = window.SrdCompendium;

@@ -4228,7 +4228,7 @@
                     })()}
                   </div>
                   <div class="text-xs font-bold text-white truncate group-hover:text-amber-300 transition flex items-center gap-1" title="${UI.escapeAttr(slotData.name)}">
-                    <span class="truncate">${UI.escapeHtml(slotData.name)}</span>
+                    <span class="truncate cursor-pointer hover:underline" data-action="entity:inspect" data-entity-kind="item" data-entity-id="${UI.escapeAttr(slotData.id || '')}" data-entity-name="${UI.escapeAttr(slotData.name)}" data-slot-key="${UI.escapeAttr(slotKey)}">${UI.escapeHtml(slotData.name)}</span>
                     ${(() => { const pw = getEquipmentProficiencyWarning(slotData); return pw ? `<span class="text-rose-400 text-[11px] shrink-0" title="${UI.escapeAttr(pw.tooltip)}">⚠️</span>` : ''; })()}
                   </div>
                   ${renderGearItemStatsBadgesHtml(slotData, { compact: true, minimal: true })}
@@ -4362,7 +4362,7 @@
               <div class="flex items-center justify-between gap-2 min-w-0">
                 <div class="flex items-center gap-1.5 min-w-0 flex-1">
                   <span class="text-amber-400 font-bold text-[10px] shrink-0">OFF-HAND:</span>
-                  <span class="font-bold truncate">${UI.escapeHtml(ohHas ? oh.name : '+ Equip Off-Hand')}</span>
+                  <span class="font-bold truncate${ohHas ? ' cursor-pointer hover:underline' : ''}"${ohHas ? ` data-action="entity:inspect" data-entity-kind="item" data-entity-id="${UI.escapeAttr(oh.id || '')}" data-entity-name="${UI.escapeAttr(oh.name)}" data-slot-key="offHand"` : ''}>${UI.escapeHtml(ohHas ? oh.name : '+ Equip Off-Hand')}</span>
                 </div>
                 <div class="flex items-center gap-1 shrink-0">
                   ${ohHas && isForgeEditableItem(oh) ? `<button type="button" data-action="inventory:forge-slot-item" data-slot-key="offHand" title="Customize Off-Hand in Item Forge" class="w-6 h-6 rounded-md bg-amber-950/80 hover:bg-amber-800 border border-amber-600/70 text-amber-300 hover:text-white text-xs inline-flex items-center justify-center shrink-0 transition cursor-pointer">⚒️</button>` : ''}
@@ -4388,7 +4388,7 @@
                 <div class="flex items-center justify-between gap-2 min-w-0">
                   <div class="flex items-center gap-1.5 min-w-0 flex-1">
                     <span class="text-sky-400 font-bold text-[10px] shrink-0">MAIN HAND:</span>
-                    <span class="font-bold truncate">${UI.escapeHtml(mhHas ? mh.name : '+ Equip Main Hand')}</span>
+                    <span class="font-bold truncate${mhHas ? ' cursor-pointer hover:underline' : ''}"${mhHas ? ` data-action="entity:inspect" data-entity-kind="item" data-entity-id="${UI.escapeAttr(mh.id || '')}" data-entity-name="${UI.escapeAttr(mh.name)}" data-slot-key="mainHand"` : ''}>${UI.escapeHtml(mhHas ? mh.name : '+ Equip Main Hand')}</span>
                     ${mhIsDouble ? `<span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-900 text-sky-300 border border-sky-800/60 shrink-0">${isDoubleTwfActive ? '1-Hand' : '2-Hand'}</span>` : ''}
                   </div>
                   <div class="flex items-center gap-1 shrink-0">
@@ -5467,7 +5467,7 @@
           <td class="py-2 px-3 align-middle font-semibold text-purple-400">${UI.escapeHtml(item.category)}</td>
           <td class="py-2 px-3 align-middle font-bold text-white">
             <div class="flex items-center gap-1.5">
-              <span>${UI.escapeHtml(item.name)}</span>
+              <span class="cursor-pointer hover:underline hover:text-amber-300 transition" data-action="entity:inspect" data-entity-kind="item" data-entity-id="${safeIdAttr}" data-entity-name="${UI.escapeAttr(item.name)}">${UI.escapeHtml(item.name)}</span>
               ${profWarn ? `<span class="text-rose-400 text-xs shrink-0 cursor-help" title="${UI.escapeAttr(profWarn.tooltip)}">⚠️</span>` : ''}
             </div>
           </td>
