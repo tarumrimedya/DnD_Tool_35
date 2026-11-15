@@ -774,11 +774,14 @@
       truenaming: 'Utterance',
       class: 'Class',
       race: 'Race',
+      domain: 'Domain',
+      deity: 'Deity',
       template: 'Template'
     };
     const kindLabel = kindLabelMap[kind] || (entry.type || 'Entity');
     const sourceText = entry.source || (resolved.sourceLocation === 'srd' ? 'Official SRD' : 'Character Sheet');
-    const rawBodyDesc = entry.benefit || entry.description || entry.text || entry.summary || entry.shortDescription || entry.notes || '';
+    const gpDesc = (entry.grants && entry.grants.grantedPower && entry.grants.grantedPower.text) || (entry.grantedPower && entry.grantedPower.description) || '';
+    const rawBodyDesc = entry.benefit || entry.description || entry.text || gpDesc || entry.summary || entry.shortDescription || entry.notes || '';
     const bodyDesc = _cleanInspectorHtml(rawBodyDesc) || 'No official rule text recorded for this entry.';
     const statChips = _collectStatChips(entry, kind);
     const blockChips = _collectRuleBlockSummaries(entry);

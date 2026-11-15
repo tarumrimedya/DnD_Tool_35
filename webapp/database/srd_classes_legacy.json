@@ -100,6 +100,98 @@
         "ride",
         "sense_motive",
         "swim"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 1,
+          "fort": 2,
+          "ref": 0,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 2,
+          "fort": 3,
+          "ref": 0,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 3,
+          "fort": 3,
+          "ref": 1,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 4,
+          "fort": 4,
+          "ref": 1,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 5,
+          "fort": 4,
+          "ref": 1,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 6,
+          "fort": 5,
+          "ref": 2,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 7,
+          "fort": 5,
+          "ref": 2,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 8,
+          "fort": 6,
+          "ref": 2,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 9,
+          "fort": 6,
+          "ref": 3,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 10,
+          "fort": 7,
+          "ref": 3,
+          "will": 7,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -113,7 +205,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Oriental Adventures Table 11-4 (d10, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Will, 10 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -208,6 +301,98 @@
         "handle_animal",
         "profession",
         "ride"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 1,
+          "fort": 2,
+          "ref": 0,
+          "will": 0,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 2,
+          "fort": 3,
+          "ref": 0,
+          "will": 0,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 3,
+          "fort": 3,
+          "ref": 1,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 4,
+          "fort": 4,
+          "ref": 1,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 5,
+          "fort": 4,
+          "ref": 1,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 6,
+          "fort": 5,
+          "ref": 2,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 7,
+          "fort": 5,
+          "ref": 2,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 8,
+          "fort": 6,
+          "ref": 2,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 9,
+          "fort": 6,
+          "ref": 3,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 10,
+          "fort": 7,
+          "ref": 3,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -221,7 +406,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Oriental Adventures Table 3-2 (d10, 2 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, 10 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -351,6 +537,53 @@
         "ride",
         "survival",
         "tumble"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 1,
+          "fort": 2,
+          "ref": 0,
+          "will": 0,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 2,
+          "fort": 3,
+          "ref": 0,
+          "will": 0,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 3,
+          "fort": 3,
+          "ref": 1,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 4,
+          "fort": 4,
+          "ref": 1,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 5,
+          "fort": 4,
+          "ref": 1,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -364,7 +597,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Races of Faerun Table A-6 (d12, 2 + Int, BAB +1/+2/+3/+4/+5, good Fort, 5 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -490,6 +724,98 @@
         "swim",
         "tumble",
         "use_rope"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 0,
+          "fort": 2,
+          "ref": 2,
+          "will": 0,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 1,
+          "fort": 3,
+          "ref": 3,
+          "will": 0,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 2,
+          "fort": 3,
+          "ref": 3,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 3,
+          "fort": 4,
+          "ref": 4,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 3,
+          "fort": 4,
+          "ref": 4,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 4,
+          "fort": 5,
+          "ref": 5,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 5,
+          "fort": 5,
+          "ref": 5,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 6,
+          "fort": 6,
+          "ref": 6,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 6,
+          "fort": 6,
+          "ref": 6,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 7,
+          "fort": 7,
+          "ref": 7,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -503,7 +829,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Oriental Adventures Table 11-6 (d8, 6 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Fort, Ref, 10 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -610,6 +937,98 @@
         "profession",
         "ride",
         "tumble"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 1,
+          "fort": 0,
+          "ref": 2,
+          "will": 0,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 2,
+          "fort": 0,
+          "ref": 3,
+          "will": 0,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 3,
+          "fort": 1,
+          "ref": 3,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 4,
+          "fort": 1,
+          "ref": 4,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 5,
+          "fort": 1,
+          "ref": 4,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 6,
+          "fort": 2,
+          "ref": 5,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 7,
+          "fort": 2,
+          "ref": 5,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 8,
+          "fort": 2,
+          "ref": 6,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 9,
+          "fort": 3,
+          "ref": 6,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 10,
+          "fort": 3,
+          "ref": 7,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -623,7 +1042,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Oriental Adventures Table 3-4 (d8, 2 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Ref, 10 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -729,6 +1149,53 @@
         "listen",
         "spot",
         "swim"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 1,
+          "fort": 0,
+          "ref": 2,
+          "will": 0,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 2,
+          "fort": 0,
+          "ref": 3,
+          "will": 0,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 3,
+          "fort": 1,
+          "ref": 3,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 4,
+          "fort": 1,
+          "ref": 4,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 5,
+          "fort": 1,
+          "ref": 4,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -742,7 +1209,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Races of Faerun Table A-8 (d10, 2 + Int, BAB +1/+2/+3/+4/+5, good Ref, 5 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -896,6 +1364,98 @@
         "swim",
         "tumble",
         "use_rope"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 0,
+          "fort": 2,
+          "ref": 2,
+          "will": 0,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 1,
+          "fort": 3,
+          "ref": 3,
+          "will": 0,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 2,
+          "fort": 3,
+          "ref": 3,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 3,
+          "fort": 4,
+          "ref": 4,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 3,
+          "fort": 4,
+          "ref": 4,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 4,
+          "fort": 5,
+          "ref": 5,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 5,
+          "fort": 5,
+          "ref": 5,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 6,
+          "fort": 6,
+          "ref": 6,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 6,
+          "fort": 6,
+          "ref": 6,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 7,
+          "fort": 7,
+          "ref": 7,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -909,7 +1469,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Book of Vile Darkness Table 5-1 (d6, 6 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Fort, Ref, 10 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -1006,6 +1567,98 @@
         "search",
         "sense_motive",
         "spot"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 1,
+          "fort": 2,
+          "ref": 0,
+          "will": 0,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 2,
+          "fort": 3,
+          "ref": 0,
+          "will": 0,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 3,
+          "fort": 3,
+          "ref": 1,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 4,
+          "fort": 4,
+          "ref": 1,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 5,
+          "fort": 4,
+          "ref": 1,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 6,
+          "fort": 5,
+          "ref": 2,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 7,
+          "fort": 5,
+          "ref": 2,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 8,
+          "fort": 6,
+          "ref": 2,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 9,
+          "fort": 6,
+          "ref": 3,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 10,
+          "fort": 7,
+          "ref": 3,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -1019,7 +1672,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Oriental Adventures Table 11-2 (d12, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, 10 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -1121,6 +1775,98 @@
         "spellcraft",
         "survival",
         "swim"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 0,
+          "fort": 0,
+          "ref": 0,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 1,
+          "fort": 0,
+          "ref": 0,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 1,
+          "fort": 1,
+          "ref": 1,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 2,
+          "fort": 1,
+          "ref": 1,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 2,
+          "fort": 1,
+          "ref": 1,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 3,
+          "fort": 2,
+          "ref": 2,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 3,
+          "fort": 2,
+          "ref": 2,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 4,
+          "fort": 2,
+          "ref": 2,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 4,
+          "fort": 3,
+          "ref": 3,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 5,
+          "fort": 3,
+          "ref": 3,
+          "will": 7,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -1133,7 +1879,8 @@
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Class_Info",
       "index": "crystalkeep-3.5-class-index"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -1234,6 +1981,98 @@
         "ride",
         "sense_motive",
         "spellcraft"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 0,
+          "fort": 0,
+          "ref": 0,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 1,
+          "fort": 0,
+          "ref": 0,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 1,
+          "fort": 1,
+          "ref": 1,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 2,
+          "fort": 1,
+          "ref": 1,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 2,
+          "fort": 1,
+          "ref": 1,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 3,
+          "fort": 2,
+          "ref": 2,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 3,
+          "fort": 2,
+          "ref": 2,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 4,
+          "fort": 2,
+          "ref": 2,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 4,
+          "fort": 3,
+          "ref": 3,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 5,
+          "fort": 3,
+          "ref": 3,
+          "will": 7,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -1247,7 +2086,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Book of Vile Darkness Table 5-2 (d4, 4 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Will, 10 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -1341,6 +2181,98 @@
         "search",
         "sense_motive",
         "spot"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 1,
+          "fort": 2,
+          "ref": 2,
+          "will": 0,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 2,
+          "fort": 3,
+          "ref": 3,
+          "will": 0,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 3,
+          "fort": 3,
+          "ref": 3,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 4,
+          "fort": 4,
+          "ref": 4,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 5,
+          "fort": 4,
+          "ref": 4,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 6,
+          "fort": 5,
+          "ref": 5,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 7,
+          "fort": 5,
+          "ref": 5,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 8,
+          "fort": 6,
+          "ref": 6,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 9,
+          "fort": 6,
+          "ref": 6,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 10,
+          "fort": 7,
+          "ref": 7,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -1354,7 +2286,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Sword and Fist Table 2-2 (d12, 2 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Ref, 10 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -1462,6 +2395,98 @@
         "k_planes",
         "spellcraft",
         "spot"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 0,
+          "fort": 0,
+          "ref": 0,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 1,
+          "fort": 0,
+          "ref": 0,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 1,
+          "fort": 1,
+          "ref": 1,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 2,
+          "fort": 1,
+          "ref": 1,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 2,
+          "fort": 1,
+          "ref": 1,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 3,
+          "fort": 2,
+          "ref": 2,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 3,
+          "fort": 2,
+          "ref": 2,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 4,
+          "fort": 2,
+          "ref": 2,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 4,
+          "fort": 3,
+          "ref": 3,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 5,
+          "fort": 3,
+          "ref": 3,
+          "will": 7,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -1475,7 +2500,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Book of Vile Darkness Table 5-3 (d4, 2 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Will, 10 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -1605,6 +2631,98 @@
         "sense_motive",
         "spellcraft",
         "spot"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 0,
+          "fort": 0,
+          "ref": 0,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 1,
+          "fort": 0,
+          "ref": 0,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 2,
+          "fort": 1,
+          "ref": 1,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 3,
+          "fort": 1,
+          "ref": 1,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 3,
+          "fort": 1,
+          "ref": 1,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 4,
+          "fort": 2,
+          "ref": 2,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 5,
+          "fort": 2,
+          "ref": 2,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 6,
+          "fort": 2,
+          "ref": 2,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 6,
+          "fort": 3,
+          "ref": 3,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 7,
+          "fort": 3,
+          "ref": 3,
+          "will": 7,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -1618,7 +2736,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Book of Vile Darkness Table 5-4 (d6, 4 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Will, 10 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -1746,6 +2865,98 @@
         "sleight_of_hand",
         "spot",
         "umd"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 0,
+          "fort": 0,
+          "ref": 2,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 1,
+          "fort": 0,
+          "ref": 3,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 2,
+          "fort": 1,
+          "ref": 3,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 3,
+          "fort": 1,
+          "ref": 4,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 3,
+          "fort": 1,
+          "ref": 4,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 4,
+          "fort": 2,
+          "ref": 5,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 5,
+          "fort": 2,
+          "ref": 5,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 6,
+          "fort": 2,
+          "ref": 6,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 6,
+          "fort": 3,
+          "ref": 6,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 7,
+          "fort": 3,
+          "ref": 7,
+          "will": 7,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -1759,7 +2970,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Book of Vile Darkness Table 5-5 (d6, 6 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Ref, Will, 10 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -1869,6 +3081,98 @@
         "ride",
         "search",
         "spot"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 1,
+          "fort": 2,
+          "ref": 2,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 2,
+          "fort": 3,
+          "ref": 3,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 3,
+          "fort": 3,
+          "ref": 3,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 4,
+          "fort": 4,
+          "ref": 4,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 5,
+          "fort": 4,
+          "ref": 4,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 6,
+          "fort": 5,
+          "ref": 5,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 7,
+          "fort": 5,
+          "ref": 5,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 8,
+          "fort": 6,
+          "ref": 6,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 9,
+          "fort": 6,
+          "ref": 6,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 10,
+          "fort": 7,
+          "ref": 7,
+          "will": 7,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -1882,7 +3186,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Book of Vile Darkness Table 5-6 (d10, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Ref, Will, 10 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -2019,6 +3324,98 @@
         "search",
         "sleight_of_hand",
         "spot"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 0,
+          "fort": 0,
+          "ref": 2,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 1,
+          "fort": 0,
+          "ref": 3,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 2,
+          "fort": 1,
+          "ref": 3,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 3,
+          "fort": 1,
+          "ref": 4,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 3,
+          "fort": 1,
+          "ref": 4,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 4,
+          "fort": 2,
+          "ref": 5,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 5,
+          "fort": 2,
+          "ref": 5,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 6,
+          "fort": 2,
+          "ref": 6,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 6,
+          "fort": 3,
+          "ref": 6,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 7,
+          "fort": 3,
+          "ref": 7,
+          "will": 7,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -2032,7 +3429,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Book of Vile Darkness Table 5-7 (d6, 4 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Ref, Will, 10 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -2137,6 +3535,98 @@
         "ride",
         "search",
         "spot"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 1,
+          "fort": 2,
+          "ref": 2,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 2,
+          "fort": 3,
+          "ref": 3,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 3,
+          "fort": 3,
+          "ref": 3,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 4,
+          "fort": 4,
+          "ref": 4,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 5,
+          "fort": 4,
+          "ref": 4,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 6,
+          "fort": 5,
+          "ref": 5,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 7,
+          "fort": 5,
+          "ref": 5,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 8,
+          "fort": 6,
+          "ref": 6,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 9,
+          "fort": 6,
+          "ref": 6,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 10,
+          "fort": 7,
+          "ref": 7,
+          "will": 7,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -2150,7 +3640,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Book of Vile Darkness Table 5-8 (d8, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Ref, Will, 10 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -2244,6 +3735,98 @@
         "spellcraft",
         "spot",
         "umd"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 0,
+          "fort": 0,
+          "ref": 0,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 1,
+          "fort": 0,
+          "ref": 0,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 2,
+          "fort": 1,
+          "ref": 1,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 3,
+          "fort": 1,
+          "ref": 1,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 3,
+          "fort": 1,
+          "ref": 1,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 4,
+          "fort": 2,
+          "ref": 2,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 5,
+          "fort": 2,
+          "ref": 2,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 6,
+          "fort": 2,
+          "ref": 2,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 6,
+          "fort": 3,
+          "ref": 3,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 7,
+          "fort": 3,
+          "ref": 3,
+          "will": 7,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -2257,7 +3840,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Manual of the Planes Table 3-3 (d8, 4 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Will, 10 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -2378,6 +3962,98 @@
         "ride",
         "spellcraft",
         "survival"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 1,
+          "fort": 2,
+          "ref": 0,
+          "will": 0,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 2,
+          "fort": 3,
+          "ref": 0,
+          "will": 0,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 3,
+          "fort": 3,
+          "ref": 1,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 4,
+          "fort": 4,
+          "ref": 1,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 5,
+          "fort": 4,
+          "ref": 1,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 6,
+          "fort": 5,
+          "ref": 2,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 7,
+          "fort": 5,
+          "ref": 2,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 8,
+          "fort": 6,
+          "ref": 2,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 9,
+          "fort": 6,
+          "ref": 3,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 10,
+          "fort": 7,
+          "ref": 3,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -2390,7 +4066,8 @@
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Class_Info",
       "index": "crystalkeep-3.5-class-index"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -2480,6 +4157,98 @@
         "k_arcana",
         "profession",
         "spellcraft"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 0,
+          "fort": 0,
+          "ref": 0,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 1,
+          "fort": 0,
+          "ref": 0,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 1,
+          "fort": 1,
+          "ref": 1,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 2,
+          "fort": 1,
+          "ref": 1,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 2,
+          "fort": 1,
+          "ref": 1,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 3,
+          "fort": 2,
+          "ref": 2,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 3,
+          "fort": 2,
+          "ref": 2,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 4,
+          "fort": 2,
+          "ref": 2,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 4,
+          "fort": 3,
+          "ref": 3,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 5,
+          "fort": 3,
+          "ref": 3,
+          "will": 7,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -2493,7 +4262,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Oriental Adventures Table 3-5 (d6, 4 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Will, 10 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -2566,6 +4336,188 @@
         "ride",
         "sense_motive",
         "tumble"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 1,
+          "fort": 2,
+          "ref": 2,
+          "will": 0,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 2,
+          "fort": 3,
+          "ref": 3,
+          "will": 0,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 3,
+          "fort": 3,
+          "ref": 3,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 4,
+          "fort": 4,
+          "ref": 4,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 5,
+          "fort": 4,
+          "ref": 4,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 6,
+          "fort": 5,
+          "ref": 5,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 7,
+          "fort": 5,
+          "ref": 5,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 8,
+          "fort": 6,
+          "ref": 6,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 9,
+          "fort": 6,
+          "ref": 6,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 10,
+          "fort": 7,
+          "ref": 7,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 11,
+          "bab": 11,
+          "fort": 7,
+          "ref": 7,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 12,
+          "bab": 12,
+          "fort": 8,
+          "ref": 8,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 13,
+          "bab": 13,
+          "fort": 8,
+          "ref": 8,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 14,
+          "bab": 14,
+          "fort": 9,
+          "ref": 9,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 15,
+          "bab": 15,
+          "fort": 9,
+          "ref": 9,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 16,
+          "bab": 16,
+          "fort": 10,
+          "ref": 10,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 17,
+          "bab": 17,
+          "fort": 10,
+          "ref": 10,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 18,
+          "bab": 18,
+          "fort": 11,
+          "ref": 11,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 19,
+          "bab": 19,
+          "fort": 11,
+          "ref": 11,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 20,
+          "bab": 20,
+          "fort": 12,
+          "ref": 12,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -2578,7 +4530,8 @@
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Class_Info",
       "index": null
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -2641,6 +4594,188 @@
         "perform",
         "profession",
         "spot"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 0,
+          "fort": 2,
+          "ref": 0,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 1,
+          "fort": 3,
+          "ref": 0,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 2,
+          "fort": 3,
+          "ref": 1,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 3,
+          "fort": 4,
+          "ref": 1,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 3,
+          "fort": 4,
+          "ref": 1,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 4,
+          "fort": 5,
+          "ref": 2,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 5,
+          "fort": 5,
+          "ref": 2,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 6,
+          "fort": 6,
+          "ref": 2,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 6,
+          "fort": 6,
+          "ref": 3,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 7,
+          "fort": 7,
+          "ref": 3,
+          "will": 7,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 11,
+          "bab": 8,
+          "fort": 7,
+          "ref": 3,
+          "will": 7,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 12,
+          "bab": 9,
+          "fort": 8,
+          "ref": 4,
+          "will": 8,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 13,
+          "bab": 9,
+          "fort": 8,
+          "ref": 4,
+          "will": 8,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 14,
+          "bab": 10,
+          "fort": 9,
+          "ref": 4,
+          "will": 9,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 15,
+          "bab": 11,
+          "fort": 9,
+          "ref": 5,
+          "will": 9,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 16,
+          "bab": 12,
+          "fort": 10,
+          "ref": 5,
+          "will": 10,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 17,
+          "bab": 12,
+          "fort": 10,
+          "ref": 5,
+          "will": 10,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 18,
+          "bab": 13,
+          "fort": 11,
+          "ref": 6,
+          "will": 11,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 19,
+          "bab": 14,
+          "fort": 11,
+          "ref": 6,
+          "will": 11,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 20,
+          "bab": 15,
+          "fort": 12,
+          "ref": 6,
+          "will": 12,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -2653,7 +4788,8 @@
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Class_Info",
       "index": null
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -2810,6 +4946,98 @@
         "tumble",
         "umd",
         "use_rope"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 0,
+          "fort": 0,
+          "ref": 2,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 1,
+          "fort": 0,
+          "ref": 3,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 2,
+          "fort": 1,
+          "ref": 3,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 3,
+          "fort": 1,
+          "ref": 4,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 3,
+          "fort": 1,
+          "ref": 4,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 4,
+          "fort": 2,
+          "ref": 5,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 5,
+          "fort": 2,
+          "ref": 5,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 6,
+          "fort": 2,
+          "ref": 6,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 6,
+          "fort": 3,
+          "ref": 6,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 7,
+          "fort": 3,
+          "ref": 7,
+          "will": 7,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -2823,7 +5051,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Manual of the Planes Table 3-4 (d6, 8 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Ref, Will, 10 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -2932,6 +5161,98 @@
         "profession",
         "search",
         "use_rope"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 0,
+          "fort": 0,
+          "ref": 2,
+          "will": 0,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 1,
+          "fort": 0,
+          "ref": 3,
+          "will": 0,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 2,
+          "fort": 1,
+          "ref": 3,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 3,
+          "fort": 1,
+          "ref": 4,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 3,
+          "fort": 1,
+          "ref": 4,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 4,
+          "fort": 2,
+          "ref": 5,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 5,
+          "fort": 2,
+          "ref": 5,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 6,
+          "fort": 2,
+          "ref": 6,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 6,
+          "fort": 3,
+          "ref": 6,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 7,
+          "fort": 3,
+          "ref": 7,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -2945,7 +5266,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Magic of Faerun Table 3-1 (d6, 4 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Ref, 10 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -3046,6 +5368,98 @@
         "profession",
         "ride",
         "spot"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 1,
+          "fort": 2,
+          "ref": 2,
+          "will": 0,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 2,
+          "fort": 3,
+          "ref": 3,
+          "will": 0,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 3,
+          "fort": 3,
+          "ref": 3,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 4,
+          "fort": 4,
+          "ref": 4,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 5,
+          "fort": 4,
+          "ref": 4,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 6,
+          "fort": 5,
+          "ref": 5,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 7,
+          "fort": 5,
+          "ref": 5,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 8,
+          "fort": 6,
+          "ref": 6,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 9,
+          "fort": 6,
+          "ref": 6,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 10,
+          "fort": 7,
+          "ref": 7,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -3059,7 +5473,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Races of Faerun Table A-10 (d10, 2 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Ref, 10 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -3173,6 +5588,98 @@
         "k_planes",
         "profession",
         "spellcraft"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 0,
+          "fort": 0,
+          "ref": 0,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 1,
+          "fort": 0,
+          "ref": 0,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 1,
+          "fort": 1,
+          "ref": 1,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 2,
+          "fort": 1,
+          "ref": 1,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 2,
+          "fort": 1,
+          "ref": 1,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 3,
+          "fort": 2,
+          "ref": 2,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 3,
+          "fort": 2,
+          "ref": 2,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 4,
+          "fort": 2,
+          "ref": 2,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 4,
+          "fort": 3,
+          "ref": 3,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 5,
+          "fort": 3,
+          "ref": 3,
+          "will": 7,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -3186,7 +5693,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Magic of Faerun Table 3-2 (d4, 4 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Will, 10 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -3336,6 +5844,53 @@
         "sense_motive",
         "spellcraft",
         "spot"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 0,
+          "fort": 0,
+          "ref": 0,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 1,
+          "fort": 0,
+          "ref": 0,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 1,
+          "fort": 1,
+          "ref": 1,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 2,
+          "fort": 1,
+          "ref": 1,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 2,
+          "fort": 1,
+          "ref": 1,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -3349,7 +5904,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Magic of Faerun Table 3-3 (d4, 4 + Int, BAB +0/+1/+1/+2/+2, good Will, 5 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -3487,6 +6043,53 @@
         "spot",
         "survival",
         "swim"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 0,
+          "fort": 2,
+          "ref": 0,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 1,
+          "fort": 3,
+          "ref": 0,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 2,
+          "fort": 3,
+          "ref": 1,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 3,
+          "fort": 4,
+          "ref": 1,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 3,
+          "fort": 4,
+          "ref": 1,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -3500,7 +6103,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Magic of Faerun Table 3-4 (d8, 4 + Int, BAB +0/+1/+2/+3/+3, good Fort, Will, 5 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -3620,6 +6224,98 @@
         "spellcraft",
         "swim",
         "tumble"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 0,
+          "fort": 2,
+          "ref": 2,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 1,
+          "fort": 3,
+          "ref": 3,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 2,
+          "fort": 3,
+          "ref": 3,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 3,
+          "fort": 4,
+          "ref": 4,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 3,
+          "fort": 4,
+          "ref": 4,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 4,
+          "fort": 5,
+          "ref": 5,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 5,
+          "fort": 5,
+          "ref": 5,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 6,
+          "fort": 6,
+          "ref": 6,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 6,
+          "fort": 6,
+          "ref": 6,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 7,
+          "fort": 7,
+          "ref": 7,
+          "will": 7,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -3633,7 +6329,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Oriental Adventures Table 3-6 (d8, 4 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Fort, Ref, Will, 10 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -3714,6 +6411,98 @@
         "ride",
         "sense_motive",
         "swim"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 1,
+          "fort": 2,
+          "ref": 0,
+          "will": 0,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 2,
+          "fort": 3,
+          "ref": 0,
+          "will": 0,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 3,
+          "fort": 3,
+          "ref": 1,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 4,
+          "fort": 4,
+          "ref": 1,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 5,
+          "fort": 4,
+          "ref": 1,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 6,
+          "fort": 5,
+          "ref": 2,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 7,
+          "fort": 5,
+          "ref": 2,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 8,
+          "fort": 6,
+          "ref": 2,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 9,
+          "fort": 6,
+          "ref": 3,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 10,
+          "fort": 7,
+          "ref": 3,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -3727,7 +6516,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Oriental Adventures Table 11-1 (d12, 2 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, 10 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -3821,6 +6611,98 @@
         "ride",
         "sense_motive",
         "tumble"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 1,
+          "fort": 0,
+          "ref": 2,
+          "will": 0,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 2,
+          "fort": 0,
+          "ref": 3,
+          "will": 0,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 3,
+          "fort": 1,
+          "ref": 3,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 4,
+          "fort": 1,
+          "ref": 4,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 5,
+          "fort": 1,
+          "ref": 4,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 6,
+          "fort": 2,
+          "ref": 5,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 7,
+          "fort": 2,
+          "ref": 5,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 8,
+          "fort": 2,
+          "ref": 6,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 9,
+          "fort": 3,
+          "ref": 6,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 10,
+          "fort": 3,
+          "ref": 7,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -3834,7 +6716,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Oriental Adventures Table 3-7 (d10, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Ref, 10 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -3959,6 +6842,98 @@
         "swim",
         "tumble",
         "use_rope"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 0,
+          "fort": 0,
+          "ref": 2,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 1,
+          "fort": 0,
+          "ref": 3,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 2,
+          "fort": 1,
+          "ref": 3,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 3,
+          "fort": 1,
+          "ref": 4,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 3,
+          "fort": 1,
+          "ref": 4,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 4,
+          "fort": 2,
+          "ref": 5,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 5,
+          "fort": 2,
+          "ref": 5,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 6,
+          "fort": 2,
+          "ref": 6,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 6,
+          "fort": 3,
+          "ref": 6,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 7,
+          "fort": 3,
+          "ref": 7,
+          "will": 7,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -3971,7 +6946,8 @@
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Class_Info",
       "index": "crystalkeep-3.5-class-index"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -4058,6 +7034,188 @@
         "search",
         "spot",
         "use_rope"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 0,
+          "fort": 0,
+          "ref": 2,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 1,
+          "fort": 0,
+          "ref": 3,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 1,
+          "fort": 1,
+          "ref": 3,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 2,
+          "fort": 1,
+          "ref": 4,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 2,
+          "fort": 1,
+          "ref": 4,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 3,
+          "fort": 2,
+          "ref": 5,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 3,
+          "fort": 2,
+          "ref": 5,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 4,
+          "fort": 2,
+          "ref": 6,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 4,
+          "fort": 3,
+          "ref": 6,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 5,
+          "fort": 3,
+          "ref": 7,
+          "will": 7,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 11,
+          "bab": 5,
+          "fort": 3,
+          "ref": 7,
+          "will": 7,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 12,
+          "bab": 6,
+          "fort": 4,
+          "ref": 8,
+          "will": 8,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 13,
+          "bab": 6,
+          "fort": 4,
+          "ref": 8,
+          "will": 8,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 14,
+          "bab": 7,
+          "fort": 4,
+          "ref": 9,
+          "will": 9,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 15,
+          "bab": 7,
+          "fort": 5,
+          "ref": 9,
+          "will": 9,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 16,
+          "bab": 8,
+          "fort": 5,
+          "ref": 10,
+          "will": 10,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 17,
+          "bab": 8,
+          "fort": 5,
+          "ref": 10,
+          "will": 10,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 18,
+          "bab": 9,
+          "fort": 6,
+          "ref": 11,
+          "will": 11,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 19,
+          "bab": 9,
+          "fort": 6,
+          "ref": 11,
+          "will": 11,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 20,
+          "bab": 10,
+          "fort": 6,
+          "ref": 12,
+          "will": 12,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -4070,7 +7228,8 @@
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Class_Info",
       "index": null
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -4175,6 +7334,98 @@
         "spellcraft",
         "survival",
         "swim"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 1,
+          "fort": 2,
+          "ref": 0,
+          "will": 0,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 2,
+          "fort": 3,
+          "ref": 0,
+          "will": 0,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 3,
+          "fort": 3,
+          "ref": 1,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 4,
+          "fort": 4,
+          "ref": 1,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 5,
+          "fort": 4,
+          "ref": 1,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 6,
+          "fort": 5,
+          "ref": 2,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 7,
+          "fort": 5,
+          "ref": 2,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 8,
+          "fort": 6,
+          "ref": 2,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 9,
+          "fort": 6,
+          "ref": 3,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 10,
+          "fort": 7,
+          "ref": 3,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -4188,7 +7439,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Oriental Adventures Table 3-8 (d10, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, 10 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -4269,6 +7521,98 @@
         "jump",
         "spot",
         "use_rope"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 1,
+          "fort": 0,
+          "ref": 2,
+          "will": 0,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 2,
+          "fort": 0,
+          "ref": 3,
+          "will": 0,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 3,
+          "fort": 1,
+          "ref": 3,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 4,
+          "fort": 1,
+          "ref": 4,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 5,
+          "fort": 1,
+          "ref": 4,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 6,
+          "fort": 2,
+          "ref": 5,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 7,
+          "fort": 2,
+          "ref": 5,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 8,
+          "fort": 2,
+          "ref": 6,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 9,
+          "fort": 3,
+          "ref": 6,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 10,
+          "fort": 3,
+          "ref": 7,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -4282,7 +7626,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Sword and Fist Table 2-10 (d10, 2 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Ref, 10 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -4375,6 +7720,98 @@
         "sense_motive",
         "spellcraft",
         "spot"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 0,
+          "fort": 2,
+          "ref": 2,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 1,
+          "fort": 3,
+          "ref": 3,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 2,
+          "fort": 3,
+          "ref": 3,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 3,
+          "fort": 4,
+          "ref": 4,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 3,
+          "fort": 4,
+          "ref": 4,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 4,
+          "fort": 5,
+          "ref": 5,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 5,
+          "fort": 5,
+          "ref": 5,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 6,
+          "fort": 6,
+          "ref": 6,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 6,
+          "fort": 6,
+          "ref": 6,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 7,
+          "fort": 7,
+          "ref": 7,
+          "will": 7,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -4388,7 +7825,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Book of Vile Darkness Table 5-9 (d12, 4 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Fort, Ref, Will, 10 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -4496,6 +7934,98 @@
         "k_religion",
         "k_planes",
         "spellcraft"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 0,
+          "fort": 0,
+          "ref": 0,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 1,
+          "fort": 0,
+          "ref": 0,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 1,
+          "fort": 1,
+          "ref": 1,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 2,
+          "fort": 1,
+          "ref": 1,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 2,
+          "fort": 1,
+          "ref": 1,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 3,
+          "fort": 2,
+          "ref": 2,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 3,
+          "fort": 2,
+          "ref": 2,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 4,
+          "fort": 2,
+          "ref": 2,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 4,
+          "fort": 3,
+          "ref": 3,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 5,
+          "fort": 3,
+          "ref": 3,
+          "will": 7,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -4509,7 +8039,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Magic of Faerun Table 3-7 (d4, 2 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Will, 10 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -4588,6 +8119,188 @@
         "perform",
         "ride",
         "sense_motive"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 0,
+          "fort": 0,
+          "ref": 2,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 1,
+          "fort": 0,
+          "ref": 3,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 2,
+          "fort": 1,
+          "ref": 3,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 3,
+          "fort": 1,
+          "ref": 4,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 3,
+          "fort": 1,
+          "ref": 4,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 4,
+          "fort": 2,
+          "ref": 5,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 5,
+          "fort": 2,
+          "ref": 5,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 6,
+          "fort": 2,
+          "ref": 6,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 6,
+          "fort": 3,
+          "ref": 6,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 7,
+          "fort": 3,
+          "ref": 7,
+          "will": 7,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 11,
+          "bab": 8,
+          "fort": 3,
+          "ref": 7,
+          "will": 7,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 12,
+          "bab": 9,
+          "fort": 4,
+          "ref": 8,
+          "will": 8,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 13,
+          "bab": 9,
+          "fort": 4,
+          "ref": 8,
+          "will": 8,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 14,
+          "bab": 10,
+          "fort": 4,
+          "ref": 9,
+          "will": 9,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 15,
+          "bab": 11,
+          "fort": 5,
+          "ref": 9,
+          "will": 9,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 16,
+          "bab": 12,
+          "fort": 5,
+          "ref": 10,
+          "will": 10,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 17,
+          "bab": 12,
+          "fort": 5,
+          "ref": 10,
+          "will": 10,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 18,
+          "bab": 13,
+          "fort": 6,
+          "ref": 11,
+          "will": 11,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 19,
+          "bab": 14,
+          "fort": 6,
+          "ref": 11,
+          "will": 11,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 20,
+          "bab": 15,
+          "fort": 6,
+          "ref": 12,
+          "will": 12,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -4600,7 +8313,8 @@
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Class_Info",
       "index": null
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -4692,6 +8406,53 @@
         "jump",
         "profession",
         "swim"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 1,
+          "fort": 2,
+          "ref": 0,
+          "will": 0,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 2,
+          "fort": 3,
+          "ref": 0,
+          "will": 0,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 3,
+          "fort": 3,
+          "ref": 1,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 4,
+          "fort": 4,
+          "ref": 1,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 5,
+          "fort": 4,
+          "ref": 1,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -4705,7 +8466,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Oriental Adventures Table 11-9 (d10, 2 + Int, BAB +1/+2/+3/+4/+5, good Fort, 5 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -4784,6 +8546,188 @@
         "swim",
         "tumble",
         "use_rope"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 1,
+          "fort": 2,
+          "ref": 2,
+          "will": 0,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 2,
+          "fort": 3,
+          "ref": 3,
+          "will": 0,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 3,
+          "fort": 3,
+          "ref": 3,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 4,
+          "fort": 4,
+          "ref": 4,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 5,
+          "fort": 4,
+          "ref": 4,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 6,
+          "fort": 5,
+          "ref": 5,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 7,
+          "fort": 5,
+          "ref": 5,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 8,
+          "fort": 6,
+          "ref": 6,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 9,
+          "fort": 6,
+          "ref": 6,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 10,
+          "fort": 7,
+          "ref": 7,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 11,
+          "bab": 11,
+          "fort": 7,
+          "ref": 7,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 12,
+          "bab": 12,
+          "fort": 8,
+          "ref": 8,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 13,
+          "bab": 13,
+          "fort": 8,
+          "ref": 8,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 14,
+          "bab": 14,
+          "fort": 9,
+          "ref": 9,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 15,
+          "bab": 15,
+          "fort": 9,
+          "ref": 9,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 16,
+          "bab": 16,
+          "fort": 10,
+          "ref": 10,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 17,
+          "bab": 17,
+          "fort": 10,
+          "ref": 10,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 18,
+          "bab": 18,
+          "fort": 11,
+          "ref": 11,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 19,
+          "bab": 19,
+          "fort": 11,
+          "ref": 11,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 20,
+          "bab": 20,
+          "fort": 12,
+          "ref": 12,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -4797,7 +8741,8 @@
       "sheet": "Class_Info",
       "index": null,
       "crossCheck": "srd.dndtools.org class table (baseDragonlance/mariner.html), 2026-11-10: book taken from the site (workbook had Age of Mortals; neither book in the user's library); chassis agrees"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -4878,6 +8823,98 @@
         "k_arcana",
         "profession",
         "spellcraft"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 0,
+          "fort": 0,
+          "ref": 0,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 1,
+          "fort": 0,
+          "ref": 0,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 1,
+          "fort": 1,
+          "ref": 1,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 2,
+          "fort": 1,
+          "ref": 1,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 2,
+          "fort": 1,
+          "ref": 1,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 3,
+          "fort": 2,
+          "ref": 2,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 3,
+          "fort": 2,
+          "ref": 2,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 4,
+          "fort": 2,
+          "ref": 2,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 4,
+          "fort": 3,
+          "ref": 3,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 5,
+          "fort": 3,
+          "ref": 3,
+          "will": 7,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -4891,7 +8928,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Magic of Faerun Table 3-8 (d4, 2 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Will, 10 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -4996,6 +9034,98 @@
         "ride",
         "sense_motive",
         "swim"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 1,
+          "fort": 2,
+          "ref": 0,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 2,
+          "fort": 3,
+          "ref": 0,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 3,
+          "fort": 3,
+          "ref": 1,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 4,
+          "fort": 4,
+          "ref": 1,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 5,
+          "fort": 4,
+          "ref": 1,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 6,
+          "fort": 5,
+          "ref": 2,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 7,
+          "fort": 5,
+          "ref": 2,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 8,
+          "fort": 6,
+          "ref": 2,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 9,
+          "fort": 6,
+          "ref": 3,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 10,
+          "fort": 7,
+          "ref": 3,
+          "will": 7,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -5009,7 +9139,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Oriental Adventures Table 11-3 (d10, 2 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Will, 10 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -5130,6 +9261,98 @@
         "sense_motive",
         "spot",
         "survival"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 1,
+          "fort": 2,
+          "ref": 0,
+          "will": 0,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 2,
+          "fort": 3,
+          "ref": 0,
+          "will": 0,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 3,
+          "fort": 3,
+          "ref": 1,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 4,
+          "fort": 4,
+          "ref": 1,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 5,
+          "fort": 4,
+          "ref": 1,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 6,
+          "fort": 5,
+          "ref": 2,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 7,
+          "fort": 5,
+          "ref": 2,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 8,
+          "fort": 6,
+          "ref": 2,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 9,
+          "fort": 6,
+          "ref": 3,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 10,
+          "fort": 7,
+          "ref": 3,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -5143,7 +9366,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Book of Vile Darkness Table 5-10 (d10, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, 10 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -5242,6 +9466,98 @@
         "sense_motive",
         "spellcraft",
         "swim"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 1,
+          "fort": 2,
+          "ref": 0,
+          "will": 0,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 2,
+          "fort": 3,
+          "ref": 0,
+          "will": 0,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 3,
+          "fort": 3,
+          "ref": 1,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 4,
+          "fort": 4,
+          "ref": 1,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 5,
+          "fort": 4,
+          "ref": 1,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 6,
+          "fort": 5,
+          "ref": 2,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 7,
+          "fort": 5,
+          "ref": 2,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 8,
+          "fort": 6,
+          "ref": 2,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 9,
+          "fort": 6,
+          "ref": 3,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 10,
+          "fort": 7,
+          "ref": 3,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -5255,7 +9571,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Oriental Adventures Table 11-8 (d10, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, 10 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -5372,6 +9689,98 @@
         "k_religion",
         "profession",
         "spellcraft"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 0,
+          "fort": 0,
+          "ref": 2,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 1,
+          "fort": 0,
+          "ref": 3,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 1,
+          "fort": 1,
+          "ref": 3,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 2,
+          "fort": 1,
+          "ref": 4,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 2,
+          "fort": 1,
+          "ref": 4,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 3,
+          "fort": 2,
+          "ref": 5,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 3,
+          "fort": 2,
+          "ref": 5,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 4,
+          "fort": 2,
+          "ref": 6,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 4,
+          "fort": 3,
+          "ref": 6,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 5,
+          "fort": 3,
+          "ref": 7,
+          "will": 7,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -5385,7 +9794,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Magic of Faerun Table 3-9 (d8, 2 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Ref, Will, 10 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -5505,6 +9915,98 @@
         "sleight_of_hand",
         "spot",
         "tumble"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 0,
+          "fort": 2,
+          "ref": 2,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 1,
+          "fort": 3,
+          "ref": 3,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 2,
+          "fort": 3,
+          "ref": 3,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 3,
+          "fort": 4,
+          "ref": 4,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 3,
+          "fort": 4,
+          "ref": 4,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 4,
+          "fort": 5,
+          "ref": 5,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 5,
+          "fort": 5,
+          "ref": 5,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 6,
+          "fort": 6,
+          "ref": 6,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 6,
+          "fort": 6,
+          "ref": 6,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 7,
+          "fort": 7,
+          "ref": 7,
+          "will": 7,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -5518,7 +10020,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Oriental Adventures Table 3-9 (d6, 6 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Fort, Ref, Will, 10 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -5638,6 +10141,53 @@
         "sense_motive",
         "spot",
         "survival"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 1,
+          "fort": 2,
+          "ref": 0,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 2,
+          "fort": 3,
+          "ref": 0,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 3,
+          "fort": 3,
+          "ref": 1,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 4,
+          "fort": 4,
+          "ref": 1,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 5,
+          "fort": 4,
+          "ref": 1,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -5651,7 +10201,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Races of Faerun Table A-11 (d12, 2 + Int, BAB +1/+2/+3/+4/+5, good Fort, Will, 5 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -5753,6 +10304,98 @@
         "survival",
         "swim",
         "umd"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 1,
+          "fort": 2,
+          "ref": 2,
+          "will": 0,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 2,
+          "fort": 3,
+          "ref": 3,
+          "will": 0,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 3,
+          "fort": 3,
+          "ref": 3,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 4,
+          "fort": 4,
+          "ref": 4,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 5,
+          "fort": 4,
+          "ref": 4,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 6,
+          "fort": 5,
+          "ref": 5,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 7,
+          "fort": 5,
+          "ref": 5,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 8,
+          "fort": 6,
+          "ref": 6,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 9,
+          "fort": 6,
+          "ref": 6,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 10,
+          "fort": 7,
+          "ref": 7,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -5766,7 +10409,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Manual of the Planes Table 3-5 (d10, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Ref, 10 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -5888,6 +10532,98 @@
         "search",
         "spellcraft",
         "swim"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 0,
+          "fort": 2,
+          "ref": 0,
+          "will": 0,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 1,
+          "fort": 3,
+          "ref": 0,
+          "will": 0,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 1,
+          "fort": 3,
+          "ref": 1,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 2,
+          "fort": 4,
+          "ref": 1,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 2,
+          "fort": 4,
+          "ref": 1,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 3,
+          "fort": 5,
+          "ref": 2,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 3,
+          "fort": 5,
+          "ref": 2,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 4,
+          "fort": 6,
+          "ref": 2,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 4,
+          "fort": 6,
+          "ref": 3,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 5,
+          "fort": 7,
+          "ref": 3,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -5901,7 +10637,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Manual of the Planes Table 3-6 (d4, 4 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Fort, 10 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -6045,6 +10782,98 @@
         "survival",
         "tumble",
         "use_rope"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 0,
+          "fort": 2,
+          "ref": 2,
+          "will": 0,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 1,
+          "fort": 3,
+          "ref": 3,
+          "will": 0,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 2,
+          "fort": 3,
+          "ref": 3,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 3,
+          "fort": 4,
+          "ref": 4,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 3,
+          "fort": 4,
+          "ref": 4,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 4,
+          "fort": 5,
+          "ref": 5,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 5,
+          "fort": 5,
+          "ref": 5,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 6,
+          "fort": 6,
+          "ref": 6,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 6,
+          "fort": 6,
+          "ref": 6,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 7,
+          "fort": 7,
+          "ref": 7,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -6057,7 +10886,8 @@
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Class_Info",
       "index": "crystalkeep-3.5-class-index"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -6126,6 +10956,188 @@
         "ride",
         "sense_motive",
         "swim"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 1,
+          "fort": 2,
+          "ref": 0,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 2,
+          "fort": 3,
+          "ref": 0,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 3,
+          "fort": 3,
+          "ref": 1,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 4,
+          "fort": 4,
+          "ref": 1,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 5,
+          "fort": 4,
+          "ref": 1,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 6,
+          "fort": 5,
+          "ref": 2,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 7,
+          "fort": 5,
+          "ref": 2,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 8,
+          "fort": 6,
+          "ref": 2,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 9,
+          "fort": 6,
+          "ref": 3,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 10,
+          "fort": 7,
+          "ref": 3,
+          "will": 7,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 11,
+          "bab": 11,
+          "fort": 7,
+          "ref": 3,
+          "will": 7,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 12,
+          "bab": 12,
+          "fort": 8,
+          "ref": 4,
+          "will": 8,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 13,
+          "bab": 13,
+          "fort": 8,
+          "ref": 4,
+          "will": 8,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 14,
+          "bab": 14,
+          "fort": 9,
+          "ref": 4,
+          "will": 9,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 15,
+          "bab": 15,
+          "fort": 9,
+          "ref": 5,
+          "will": 9,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 16,
+          "bab": 16,
+          "fort": 10,
+          "ref": 5,
+          "will": 10,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 17,
+          "bab": 17,
+          "fort": 10,
+          "ref": 5,
+          "will": 10,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 18,
+          "bab": 18,
+          "fort": 11,
+          "ref": 6,
+          "will": 11,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 19,
+          "bab": 19,
+          "fort": 11,
+          "ref": 6,
+          "will": 11,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 20,
+          "bab": 20,
+          "fort": 12,
+          "ref": 6,
+          "will": 12,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -6138,7 +11150,8 @@
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Class_Info",
       "index": null
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -6246,6 +11259,98 @@
         "spot",
         "survival",
         "use_rope"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 1,
+          "fort": 2,
+          "ref": 0,
+          "will": 0,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 2,
+          "fort": 3,
+          "ref": 0,
+          "will": 0,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 3,
+          "fort": 3,
+          "ref": 1,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 4,
+          "fort": 4,
+          "ref": 1,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 5,
+          "fort": 4,
+          "ref": 1,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 6,
+          "fort": 5,
+          "ref": 2,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 7,
+          "fort": 5,
+          "ref": 2,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 8,
+          "fort": 6,
+          "ref": 2,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 9,
+          "fort": 6,
+          "ref": 3,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 10,
+          "fort": 7,
+          "ref": 3,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -6259,7 +11364,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Oriental Adventures Table 3-10 (d10, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, 10 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -6319,6 +11425,188 @@
         "k_arcana",
         "profession",
         "spellcraft"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 0,
+          "fort": 0,
+          "ref": 0,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 1,
+          "fort": 0,
+          "ref": 0,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 2,
+          "fort": 1,
+          "ref": 1,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 3,
+          "fort": 1,
+          "ref": 1,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 3,
+          "fort": 1,
+          "ref": 1,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 4,
+          "fort": 2,
+          "ref": 2,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 5,
+          "fort": 2,
+          "ref": 2,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 6,
+          "fort": 2,
+          "ref": 2,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 6,
+          "fort": 3,
+          "ref": 3,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 7,
+          "fort": 3,
+          "ref": 3,
+          "will": 7,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 11,
+          "bab": 8,
+          "fort": 3,
+          "ref": 3,
+          "will": 7,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 12,
+          "bab": 9,
+          "fort": 4,
+          "ref": 4,
+          "will": 8,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 13,
+          "bab": 9,
+          "fort": 4,
+          "ref": 4,
+          "will": 8,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 14,
+          "bab": 10,
+          "fort": 4,
+          "ref": 4,
+          "will": 9,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 15,
+          "bab": 11,
+          "fort": 5,
+          "ref": 5,
+          "will": 9,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 16,
+          "bab": 12,
+          "fort": 5,
+          "ref": 5,
+          "will": 10,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 17,
+          "bab": 12,
+          "fort": 5,
+          "ref": 5,
+          "will": 10,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 18,
+          "bab": 13,
+          "fort": 6,
+          "ref": 6,
+          "will": 11,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 19,
+          "bab": 14,
+          "fort": 6,
+          "ref": 6,
+          "will": 11,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 20,
+          "bab": 15,
+          "fort": 6,
+          "ref": 6,
+          "will": 12,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -6332,7 +11620,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Oriental Adventures Table 2-3, p.23 (d6, 4 + Int, BAB +15 at 20th, good Will only; the site table shows good Fort, the book wins)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -6416,6 +11705,98 @@
         "spellcraft",
         "survival",
         "swim"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 0,
+          "fort": 2,
+          "ref": 2,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 1,
+          "fort": 3,
+          "ref": 3,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 2,
+          "fort": 3,
+          "ref": 3,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 3,
+          "fort": 4,
+          "ref": 4,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 3,
+          "fort": 4,
+          "ref": 4,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 4,
+          "fort": 5,
+          "ref": 5,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 5,
+          "fort": 5,
+          "ref": 5,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 6,
+          "fort": 6,
+          "ref": 6,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 6,
+          "fort": 6,
+          "ref": 6,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 7,
+          "fort": 7,
+          "ref": 7,
+          "will": 7,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -6429,7 +11810,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Oriental Adventures Table 3-11 (d8, 4 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Fort, Ref, Will, 10 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -6533,6 +11915,98 @@
         "sense_motive",
         "spellcraft",
         "swim"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 0,
+          "fort": 2,
+          "ref": 0,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 1,
+          "fort": 3,
+          "ref": 0,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 2,
+          "fort": 3,
+          "ref": 1,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 3,
+          "fort": 4,
+          "ref": 1,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 3,
+          "fort": 4,
+          "ref": 1,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 4,
+          "fort": 5,
+          "ref": 2,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 5,
+          "fort": 5,
+          "ref": 2,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 6,
+          "fort": 6,
+          "ref": 2,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 6,
+          "fort": 6,
+          "ref": 3,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 7,
+          "fort": 7,
+          "ref": 3,
+          "will": 7,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -6546,7 +12020,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Oriental Adventures Table 11-5 (d10, 2 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Fort, Will, 10 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -6664,6 +12139,98 @@
         "spellcraft",
         "swim",
         "tumble"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 0,
+          "fort": 2,
+          "ref": 2,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 1,
+          "fort": 3,
+          "ref": 3,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 2,
+          "fort": 3,
+          "ref": 3,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 3,
+          "fort": 4,
+          "ref": 4,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 3,
+          "fort": 4,
+          "ref": 4,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 4,
+          "fort": 5,
+          "ref": 5,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 5,
+          "fort": 5,
+          "ref": 5,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 6,
+          "fort": 6,
+          "ref": 6,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 6,
+          "fort": 6,
+          "ref": 6,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 7,
+          "fort": 7,
+          "ref": 7,
+          "will": 7,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -6677,7 +12244,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Oriental Adventures Table 3-12 (d8, 4 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Fort, Ref, Will, 10 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -6760,6 +12328,98 @@
         "ride",
         "sense_motive",
         "swim"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 1,
+          "fort": 2,
+          "ref": 0,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 2,
+          "fort": 3,
+          "ref": 0,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 3,
+          "fort": 3,
+          "ref": 1,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 4,
+          "fort": 4,
+          "ref": 1,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 5,
+          "fort": 4,
+          "ref": 1,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 6,
+          "fort": 5,
+          "ref": 2,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 7,
+          "fort": 5,
+          "ref": 2,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 8,
+          "fort": 6,
+          "ref": 2,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 9,
+          "fort": 6,
+          "ref": 3,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 10,
+          "fort": 7,
+          "ref": 3,
+          "will": 7,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -6773,7 +12433,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Oriental Adventures Table 3-13 (d12, 2 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Will, 10 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -6834,6 +12495,188 @@
         "heal",
         "k_religion",
         "profession"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 0,
+          "fort": 2,
+          "ref": 0,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 1,
+          "fort": 3,
+          "ref": 0,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 2,
+          "fort": 3,
+          "ref": 1,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 3,
+          "fort": 4,
+          "ref": 1,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 3,
+          "fort": 4,
+          "ref": 1,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 4,
+          "fort": 5,
+          "ref": 2,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 5,
+          "fort": 5,
+          "ref": 2,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 6,
+          "fort": 6,
+          "ref": 2,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 6,
+          "fort": 6,
+          "ref": 3,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 7,
+          "fort": 7,
+          "ref": 3,
+          "will": 7,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 11,
+          "bab": 8,
+          "fort": 7,
+          "ref": 3,
+          "will": 7,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 12,
+          "bab": 9,
+          "fort": 8,
+          "ref": 4,
+          "will": 8,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 13,
+          "bab": 9,
+          "fort": 8,
+          "ref": 4,
+          "will": 8,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 14,
+          "bab": 10,
+          "fort": 9,
+          "ref": 4,
+          "will": 9,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 15,
+          "bab": 11,
+          "fort": 9,
+          "ref": 5,
+          "will": 9,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 16,
+          "bab": 12,
+          "fort": 10,
+          "ref": 5,
+          "will": 10,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 17,
+          "bab": 12,
+          "fort": 10,
+          "ref": 5,
+          "will": 10,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 18,
+          "bab": 13,
+          "fort": 11,
+          "ref": 6,
+          "will": 11,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 19,
+          "bab": 14,
+          "fort": 11,
+          "ref": 6,
+          "will": 11,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 20,
+          "bab": 15,
+          "fort": 12,
+          "ref": 6,
+          "will": 12,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -6847,7 +12690,8 @@
       "sheet": "Class_Info",
       "index": null,
       "crossCheck": "srd.dndtools.org class table (sohei.html), 2026-11-10"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -6958,6 +12802,98 @@
         "spot",
         "swim",
         "use_rope"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 1,
+          "fort": 2,
+          "ref": 2,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 2,
+          "fort": 3,
+          "ref": 3,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 3,
+          "fort": 3,
+          "ref": 3,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 4,
+          "fort": 4,
+          "ref": 4,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 5,
+          "fort": 4,
+          "ref": 4,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 6,
+          "fort": 5,
+          "ref": 5,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 7,
+          "fort": 5,
+          "ref": 5,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 8,
+          "fort": 6,
+          "ref": 6,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 9,
+          "fort": 6,
+          "ref": 6,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 10,
+          "fort": 7,
+          "ref": 7,
+          "will": 7,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -6971,7 +12907,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Book of Vile Darkness Table 5-11 (d8, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Ref, Will, 10 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -7081,6 +13018,53 @@
         "spellcraft",
         "swim",
         "tumble"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 0,
+          "fort": 0,
+          "ref": 2,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 1,
+          "fort": 0,
+          "ref": 3,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 1,
+          "fort": 1,
+          "ref": 3,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 2,
+          "fort": 1,
+          "ref": 4,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 2,
+          "fort": 1,
+          "ref": 4,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -7094,7 +13078,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Magic of Faerun Table 3-10 (d6, 4 + Int, BAB +0/+1/+1/+2/+2, good Ref, Will, 5 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -7194,6 +13179,98 @@
         "sense_motive",
         "spellcraft",
         "survival"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 0,
+          "fort": 2,
+          "ref": 0,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 1,
+          "fort": 3,
+          "ref": 0,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 1,
+          "fort": 3,
+          "ref": 1,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 2,
+          "fort": 4,
+          "ref": 1,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 2,
+          "fort": 4,
+          "ref": 1,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 3,
+          "fort": 5,
+          "ref": 2,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 3,
+          "fort": 5,
+          "ref": 2,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 4,
+          "fort": 6,
+          "ref": 2,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 4,
+          "fort": 6,
+          "ref": 3,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 5,
+          "fort": 7,
+          "ref": 3,
+          "will": 7,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -7207,7 +13284,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Magic of Faerun Table 3-11 (d4, 2 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Fort, Will, 10 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -7329,6 +13407,53 @@
         "profession",
         "spellcraft",
         "umd"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 0,
+          "fort": 0,
+          "ref": 2,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 1,
+          "fort": 0,
+          "ref": 3,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 2,
+          "fort": 1,
+          "ref": 3,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 3,
+          "fort": 1,
+          "ref": 4,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 3,
+          "fort": 1,
+          "ref": 4,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -7342,7 +13467,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Races of Faerun Table A-12 (d6, 4 + Int, BAB +0/+1/+2/+3/+3, good Ref, Will, 5 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -7473,6 +13599,98 @@
         "spot",
         "swim",
         "use_rope"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 1,
+          "fort": 2,
+          "ref": 0,
+          "will": 0,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 2,
+          "fort": 3,
+          "ref": 0,
+          "will": 0,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 3,
+          "fort": 3,
+          "ref": 1,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 4,
+          "fort": 4,
+          "ref": 1,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 5,
+          "fort": 4,
+          "ref": 1,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 6,
+          "fort": 5,
+          "ref": 2,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 7,
+          "fort": 5,
+          "ref": 2,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 8,
+          "fort": 6,
+          "ref": 2,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 9,
+          "fort": 6,
+          "ref": 3,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 10,
+          "fort": 7,
+          "ref": 3,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -7486,7 +13704,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Book of Vile Darkness Table 5-12 (d8, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, 10 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -7626,6 +13845,98 @@
         "spellcraft",
         "spot",
         "umd"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 0,
+          "fort": 0,
+          "ref": 0,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 1,
+          "fort": 0,
+          "ref": 0,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 1,
+          "fort": 1,
+          "ref": 1,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 2,
+          "fort": 1,
+          "ref": 1,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 2,
+          "fort": 1,
+          "ref": 1,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 3,
+          "fort": 2,
+          "ref": 2,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 3,
+          "fort": 2,
+          "ref": 2,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 4,
+          "fort": 2,
+          "ref": 2,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 4,
+          "fort": 3,
+          "ref": 3,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 5,
+          "fort": 3,
+          "ref": 3,
+          "will": 7,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -7639,7 +13950,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Book of Vile Darkness Table 5-13 (d6, 4 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Will, 10 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -7741,6 +14053,98 @@
         "listen",
         "move_silently",
         "spot"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 1,
+          "fort": 2,
+          "ref": 2,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 2,
+          "fort": 3,
+          "ref": 3,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 3,
+          "fort": 3,
+          "ref": 3,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 4,
+          "fort": 4,
+          "ref": 4,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 5,
+          "fort": 4,
+          "ref": 4,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 6,
+          "fort": 5,
+          "ref": 5,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 7,
+          "fort": 5,
+          "ref": 5,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 8,
+          "fort": 6,
+          "ref": 6,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 9,
+          "fort": 6,
+          "ref": 6,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 10,
+          "fort": 7,
+          "ref": 7,
+          "will": 7,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -7754,7 +14158,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Book of Vile Darkness Table 5-14 (d10, 2 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Ref, Will, 10 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -7884,6 +14289,98 @@
         "move_silently",
         "profession",
         "spot"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 1,
+          "fort": 2,
+          "ref": 0,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 2,
+          "fort": 3,
+          "ref": 0,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 3,
+          "fort": 3,
+          "ref": 1,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 4,
+          "fort": 4,
+          "ref": 1,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 5,
+          "fort": 4,
+          "ref": 1,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 6,
+          "fort": 5,
+          "ref": 2,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 7,
+          "fort": 5,
+          "ref": 2,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 8,
+          "fort": 6,
+          "ref": 2,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 9,
+          "fort": 6,
+          "ref": 3,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 10,
+          "fort": 7,
+          "ref": 3,
+          "will": 7,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -7897,7 +14394,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Book of Vile Darkness Table 5-15 (d8, 2 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Will, 10 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -7986,6 +14484,98 @@
         "spot",
         "survival",
         "swim"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 0,
+          "fort": 2,
+          "ref": 0,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 1,
+          "fort": 3,
+          "ref": 0,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 2,
+          "fort": 3,
+          "ref": 1,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 3,
+          "fort": 4,
+          "ref": 1,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 3,
+          "fort": 4,
+          "ref": 1,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 4,
+          "fort": 5,
+          "ref": 2,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 5,
+          "fort": 5,
+          "ref": 2,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 6,
+          "fort": 6,
+          "ref": 2,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 6,
+          "fort": 6,
+          "ref": 3,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 7,
+          "fort": 7,
+          "ref": 3,
+          "will": 7,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -7998,7 +14588,8 @@
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Class_Info",
       "index": "crystalkeep-3.5-class-index"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -8107,6 +14698,98 @@
         "sleight_of_hand",
         "spellcraft",
         "spot"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 0,
+          "fort": 0,
+          "ref": 0,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 1,
+          "fort": 0,
+          "ref": 0,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 1,
+          "fort": 1,
+          "ref": 1,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 2,
+          "fort": 1,
+          "ref": 1,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 2,
+          "fort": 1,
+          "ref": 1,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 3,
+          "fort": 2,
+          "ref": 2,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 3,
+          "fort": 2,
+          "ref": 2,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 4,
+          "fort": 2,
+          "ref": 2,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 4,
+          "fort": 3,
+          "ref": 3,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 5,
+          "fort": 3,
+          "ref": 3,
+          "will": 7,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -8120,7 +14803,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Book of Vile Darkness Table 5-17 (d6, 4 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Will, 10 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -8223,6 +14907,53 @@
         "k_planes",
         "profession",
         "spellcraft"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 0,
+          "fort": 2,
+          "ref": 0,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 1,
+          "fort": 3,
+          "ref": 0,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 1,
+          "fort": 3,
+          "ref": 1,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 2,
+          "fort": 4,
+          "ref": 1,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 2,
+          "fort": 4,
+          "ref": 1,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -8236,7 +14967,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Magic of Faerun Table 3-12 (d4, 2 + Int, BAB +0/+1/+1/+2/+2, good Fort, Will, 5 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -8335,6 +15067,98 @@
         "move_silently",
         "ride",
         "spellcraft"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 1,
+          "fort": 2,
+          "ref": 0,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 2,
+          "fort": 3,
+          "ref": 0,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 3,
+          "fort": 3,
+          "ref": 1,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 4,
+          "fort": 4,
+          "ref": 1,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 5,
+          "fort": 4,
+          "ref": 1,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 6,
+          "fort": 5,
+          "ref": 2,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 7,
+          "fort": 5,
+          "ref": 2,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 8,
+          "fort": 6,
+          "ref": 2,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 9,
+          "fort": 6,
+          "ref": 3,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 10,
+          "fort": 7,
+          "ref": 3,
+          "will": 7,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -8348,7 +15172,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Book of Vile Darkness Table 5-18 (d10, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Will, 10 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -8448,6 +15273,98 @@
         "profession",
         "sense_motive",
         "swim"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 1,
+          "fort": 2,
+          "ref": 2,
+          "will": 0,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 2,
+          "fort": 3,
+          "ref": 3,
+          "will": 0,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 3,
+          "fort": 3,
+          "ref": 3,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 4,
+          "fort": 4,
+          "ref": 4,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 5,
+          "fort": 4,
+          "ref": 4,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 6,
+          "fort": 5,
+          "ref": 5,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 7,
+          "fort": 5,
+          "ref": 5,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 8,
+          "fort": 6,
+          "ref": 6,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 9,
+          "fort": 6,
+          "ref": 6,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 10,
+          "fort": 7,
+          "ref": 7,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -8461,7 +15378,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Races of Faerun Table A-13 (d6, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Ref, 10 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -8569,6 +15487,62 @@
         "profession",
         "sense_motive",
         "spot"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 1,
+          "fort": 0,
+          "ref": 2,
+          "will": 0,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 2,
+          "fort": 0,
+          "ref": 3,
+          "will": 0,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 3,
+          "fort": 1,
+          "ref": 3,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 4,
+          "fort": 1,
+          "ref": 4,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 5,
+          "fort": 1,
+          "ref": 4,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 6,
+          "fort": 2,
+          "ref": 5,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -8582,7 +15556,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Races of Faerun Table A-14 (d6, 2 + Int, BAB +1/+2/+3/+4/+5/+6, good Ref, 6 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -8680,6 +15655,98 @@
         "listen",
         "sense_motive",
         "spot"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 1,
+          "fort": 0,
+          "ref": 2,
+          "will": 0,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 2,
+          "fort": 0,
+          "ref": 3,
+          "will": 0,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 3,
+          "fort": 1,
+          "ref": 3,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 4,
+          "fort": 1,
+          "ref": 4,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 5,
+          "fort": 1,
+          "ref": 4,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 6,
+          "fort": 2,
+          "ref": 5,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 7,
+          "fort": 2,
+          "ref": 5,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 8,
+          "fort": 2,
+          "ref": 6,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 9,
+          "fort": 3,
+          "ref": 6,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 10,
+          "fort": 3,
+          "ref": 7,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -8693,7 +15760,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Oriental Adventures Table 3-16 (d10, 2 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Ref, 10 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -8803,6 +15871,98 @@
         "survival",
         "swim",
         "use_rope"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 1,
+          "fort": 2,
+          "ref": 0,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 2,
+          "fort": 3,
+          "ref": 0,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 3,
+          "fort": 3,
+          "ref": 1,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 4,
+          "fort": 4,
+          "ref": 1,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 5,
+          "fort": 4,
+          "ref": 1,
+          "will": 4,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 6,
+          "fort": 5,
+          "ref": 2,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 7,
+          "fort": 5,
+          "ref": 2,
+          "will": 5,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 8,
+          "fort": 6,
+          "ref": 2,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 9,
+          "fort": 6,
+          "ref": 3,
+          "will": 6,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 10,
+          "fort": 7,
+          "ref": 3,
+          "will": 7,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -8816,7 +15976,8 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Oriental Adventures Table 3-17 (d8, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Will, 10 levels)"
-    }
+    },
+    "grants": {}
   },
   {
     "schemaVersion": 3,
@@ -8914,6 +16075,98 @@
         "sense_motive",
         "sleight_of_hand",
         "spot"
+      ],
+      "levels": [
+        {
+          "level": 1,
+          "bab": 0,
+          "fort": 0,
+          "ref": 2,
+          "will": 0,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 2,
+          "bab": 1,
+          "fort": 0,
+          "ref": 3,
+          "will": 0,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 3,
+          "bab": 2,
+          "fort": 1,
+          "ref": 3,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 4,
+          "bab": 3,
+          "fort": 1,
+          "ref": 4,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 5,
+          "bab": 3,
+          "fort": 1,
+          "ref": 4,
+          "will": 1,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 6,
+          "bab": 4,
+          "fort": 2,
+          "ref": 5,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 7,
+          "bab": 5,
+          "fort": 2,
+          "ref": 5,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 8,
+          "bab": 6,
+          "fort": 2,
+          "ref": 6,
+          "will": 2,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 9,
+          "bab": 6,
+          "fort": 3,
+          "ref": 6,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        },
+        {
+          "level": 10,
+          "bab": 7,
+          "fort": 3,
+          "ref": 7,
+          "will": 3,
+          "features": [],
+          "spellcasting": null
+        }
       ]
     },
     "effects": [],
@@ -8927,6 +16180,7 @@
       "sheet": "Class_Info",
       "index": null,
       "book": "Oriental Adventures Table 3-18 (d6, 8 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Ref, 10 levels)"
-    }
+    },
+    "grants": {}
   }
 ]

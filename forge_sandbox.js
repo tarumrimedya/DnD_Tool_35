@@ -2183,9 +2183,20 @@
     if (pw.exportStandalone) o.exportStandalone = true;
     return o;
   }
-  function exportFeature(f) { const o = { kind: f.kind, name: f.name }; if (f.refId) o.refId = f.refId; if (f.branchPath) o.branchPath = f.branchPath; if (f.kind === 'inline') { o.abilityType = f.abilityType; if (f.text) o.text = f.text; } else if (f.abilityType === 'Sp') { o.abilityType = 'Sp'; } return o; }
+  const PASSTHROUGH_V3_KEYS = [
+    'type', 'category', 'subCategory', 'role', 'edition', 'contentLevel', 'verification', 'provenance',
+    'bonusFeatContract', 'bonusFeatContracts', 'spellcasting', 'spellcastingProgression', 'castingProgression', 'dualProgression',
+    'variantOf', 'replaces', 'proficiencies', 'meldshaping', 'pactProgression', 'mysteryProgression', 'utteranceProgression',
+    'abilityType', 'associations', 'modes', 'isFighterBonusFeat', 'bonusFeatFor', 'featTypes', 'slotDiff', 'drawback',
+    'chakraBinds', 'shapedEffect', 'essentiaEffect', 'augment', 'title', 'weight', 'charges', 'maxCharges',
+    'crIncrease', 'hitDieOverride', 'templateAcquisition', 'specialAttacks', 'specialQualities',
+    'vision', 'immunities', 'resistances', 'fastHealing', 'turnResistance', 'requiredAlignment',
+    'ruleFlags', 'shortDescription', 'aliases'
+  ];
+  function exportFeature(f) { const o = { kind: f.kind, name: f.name }; if (f.refId) o.refId = f.refId; if (f.branchPath) o.branchPath = f.branchPath; o.abilityType = f.abilityType || 'Ex'; if (f.text) o.text = f.text; if (f.category) o.category = f.category; return o; }
 
   function exportEntry(en) {
+    en = en || S.entry;
     const F = en.facets, has = (k) => F.indexOf(k) >= 0;
     const out = { schemaVersion: 3, id: en.origin.mode === 'override' && en.origin.srdId ? en.origin.srdId : en.id, blueprint: en.blueprint, name: entryName(en), source: en.source, tags: en.tags.slice(), facets: F.slice() };
     if (en.origin.mode !== 'new') out.origin = { mode: en.origin.mode, srdId: en.origin.srdId, srdName: en.origin.srdName };
@@ -2200,14 +2211,18 @@
         out.timesSelectable = en.repeat.mode === 'upto' ? num(en.repeat.n) : en.repeat.mode === 'per' ? 'perWeaponOrSchool' : 1;
       }
     }
-    if (isItemBp(en.blueprint)) { out.item = { subtype: en.item.subtype, slot: en.item.slot, consumable: isConsumable(en) }; if (!has('chassis')) { out.item.price = num(en.item.price); out.item.casterLevel = num(en.item.cl); } }
+    if (isItemBp(en.blueprint)) { out.item = { subtype: en.item.subtype, slot: en.item.slot, consumable: isConsumable(en), price: num(en.item.price), casterLevel: num(en.item.cl) }; }
     if (en.blueprint === 'spell') {
       const sp = en.spell, sys = sp.system || 'spell';
       if (sys === 'maneuver') out.spell = { system: 'maneuver', maneuverType: sp.maneuverType, discipline: sp.discipline, level: num(sp.maneuverLvl, 1), prereqManeuvers: num(sp.prereqManeuvers, 0), descriptors: sp.descriptors.slice() };
       else if (sys === 'invocation') out.spell = { system: 'invocation', grade: sp.invGrade, kind: sp.invKind || 'Invocation', effectiveLevel: num(sp.maneuverLvl, 1), school: sp.school, descriptors: sp.descriptors.slice() };
       else if (sys === 'psionic') out.spell = { system: 'psionic', discipline: sp.discipline, level: num(sp.maneuverLvl, 1), ppCost: num(sp.ppCost, 1), augmentable: !!sp.augmentable, descriptors: sp.descriptors.slice() };
       else if (sys === 'soulmeld') out.spell = { system: 'soulmeld', chakraSlots: sp.chakraSlots || 'Arms / Totem', meldshaperList: sp.meldshaperList || 'Totemist', descriptors: sp.descriptors.slice() };
-      else if (sys === 'vestige') out.spell = { system: 'vestige', level: num(sp.vestigeLvl, 1), bindingDc: num(sp.bindingDc, 15), sign: sp.vestigeSign || '', descriptors: sp.descriptors.slice() };
+      else if (sys === 'vestige') {
+        out.spell = { system: 'vestige', level: num(sp.vestigeLvl, 1), bindingDc: num(sp.bindingDc, 15), sign: sp.vestigeSign || '', descriptors: sp.descriptors.slice() };
+        if (en._spellExtra && en._spellExtra.vestigeInfluence) out.spell.vestigeInfluence = en._spellExtra.vestigeInfluence;
+        if (en._spellExtra && en._spellExtra.specialRequirement) out.spell.specialRequirement = en._spellExtra.specialRequirement;
+      }
       else if (sys === 'utterance') out.spell = { system: 'utterance', lexicon: sp.lexicon || 'Evolving Mind', level: num(sp.maneuverLvl, 1), descriptors: sp.descriptors.slice() };
       else if (sys === 'mystery') out.spell = { system: 'mystery', tier: sp.mysteryTier || 'Apprentice', path: sp.mysteryPath || '', level: num(sp.maneuverLvl, 1), descriptors: sp.descriptors.slice() };
       else out.spell = { system: 'spell', classLevels: sp.classes.map((c) => ({ class: c.cls, level: num(c.lvl) })), school: sp.school, descriptors: sp.descriptors.slice(), components: Object.keys(sp.comps).filter((k) => sp.comps[k]) };
@@ -2221,12 +2236,9 @@
         if (im.badge) imOut.tacticalBadge = im.badge;
       } else if (im.kind === 'crystal') {
         imOut.tiers = CRYSTAL_TIERS.map((t, i) => ({ tier: t, cost: im.crystalCosts[i] != null && im.crystalCosts[i] !== '' ? num(im.crystalCosts[i]) : null, text: im.crystalTiers[i] || '' }));
+        if (num(im.gp) > 0) imOut.flatGp = num(im.gp);
       } else if (im.kind === 'material') {
         imOut.material = { acpDelta: num(im.mat.acpDelta), maxDexDelta: num(im.mat.maxDexDelta), asfDelta: num(im.mat.asfDelta), critMultOverride: num(im.mat.critMultOverride), drBypass: im.mat.drBypass || null, weaponGp: num(im.mat.weaponGp), lightGp: num(im.mat.lightGp), medGp: num(im.mat.medGp), heavyGp: num(im.mat.heavyGp) };
-      }
-      const rParts = topRollParts(en);
-      if (rParts.length) {
-        imOut.damageParts = rParts.map((p) => ({ dice: p.die === 'flat' ? null : (/^\d+d\d+$/.test(p.die) ? p.die : num(p.count, 1) + p.die), bonus: p.die === 'flat' ? num(p.count) : 0, type: String(p.type || 'Untyped').toLowerCase(), multiplyOnCrit: p.crit === 'multiply', onCritOnly: p.crit === 'onCritOnly', condition: p.cond || null }));
       }
       out.itemModifier = imOut;
     }
@@ -2279,11 +2291,12 @@
     if (has('prereqs')) out.prerequisites = { all: en.prereqs.map((r) => ({ anyOf: r.alts.map(cleanAlt) })), text: prereqText(en.prereqs) };
     if (has('chassis')) {
       const ch = en.chassis, v = chassisView(ch, en);
-      Object.assign(out, { baseItemId: ch.baseId, material: ch.material, enhancementBonus: v.enh, enhancements: ch.enchantments.slice(), effectiveEnhancement: v.effective, gpValue: v.gpTotal });
+      const customPrice = num(en.item.price) > v.gpTotal ? num(en.item.price) : (num(en.item.price) > 0 && v.enh === 0 && !ch.enchantments.length && ch.material === 'standard' ? num(en.item.price) : v.gpTotal);
+      Object.assign(out, { baseItemId: ch.baseId, material: ch.material, enhancementBonus: v.enh, enhancements: ch.enchantments.slice(), effectiveEnhancement: v.effective, gpValue: customPrice });
+      if (out.item) out.item.price = customPrice;
       if (v.crystal) out.augmentCrystal = { id: v.crystal.c.id, tier: v.crystal.tier };
       if (v.isW) {
-        out.weapon = { category: ch.weapon.category, handedness: ch.weapon.handed, baseCritRange: num(ch.weapon.critRange), keen: v.keen, effectiveCritRange: v.critLow, critCappedByHouseRule: v.capped, critMultiplier: v.critMult, rangeIncrement: ch.weapon.rangeOn ? num(ch.weapon.range) : null };
-        out.damageParts = v.parts.map((p) => ({ dice: p.die === 'flat' ? null : (/^\d+d\d+$/.test(p.die) ? p.die : num(p.count, 1) + p.die), bonus: p.die === 'flat' ? num(p.count) : 0, type: String(p.type).toLowerCase(), multiplyOnCrit: p.crit === 'multiply', onCritOnly: p.crit === 'onCritOnly', condition: p.cond || null, source: p.source }));
+        out.weapon = { category: ch.weapon.category, handedness: ch.weapon.handed, damageDice: v.dice, dmgType: v.dmgType, baseCritRange: num(ch.weapon.critRange), keen: v.keen, effectiveCritRange: v.critLow, critCappedByHouseRule: v.capped, critMultiplier: v.critMult, rangeIncrement: ch.weapon.rangeOn ? num(ch.weapon.range) : null };
       } else out.armor = { armorType: v.armor.type, armorBonus: v.armor.armorBonus, maxDex: v.armor.maxDex >= 99 ? null : v.armor.maxDex, armorCheckPenalty: v.armor.acp, arcaneSpellFailure: v.armor.asf, speed: v.armor.speed };
       if (v.badges.length) out.tacticalBadges = v.badges.map((b) => b.replace(/^\S+\s/, ''));
     }
@@ -2291,7 +2304,8 @@
     if (has('delivery')) {
       const d = en.delivery, sys = en.spell ? (en.spell.system || 'spell') : 'spell';
       out.delivery = { action: d.action, range: d.range || null, area: d.area || null, attack: d.attackOn ? d.attack : 'none', spellResistance: en.blueprint === 'spell' && ['maneuver', 'soulmeld', 'vestige'].indexOf(sys) >= 0 ? null : d.sr };
-      if (d.save.type !== 'None') out.delivery.save = { type: d.save.type, effect: d.save.effect, dc: dcText(en) };
+      if (d.target) out.delivery.target = d.target;
+      if (d.save.type !== 'None') out.delivery.save = { type: d.save.type, effect: d.save.effect, dc: dcText(en), dcMode: d.save.dcMode || 'spell', stat: d.save.stat || 'int', flat: num(d.save.flat, 15) };
       if (d.extras.length) out.delivery.rules = d.extras.map((x) => ({ kind: x.kind, text: x.text }));
     }
     if (has('lifecycle')) {
@@ -2340,11 +2354,30 @@
     if (has('grants')) {
       const g = en.grants, o = {};
       if (en.blueprint === 'deity') Object.assign(o, { alignment: g.deityAlign, clericAlignments: ALIGNS.filter((a) => clericLegal(g.deityAlign, a)), favoredWeapon: g.favoredWeapon, portfolio: g.portfolio || null, dogma: g.dogma || null });
-      if (en.blueprint === 'domain') Object.assign(o, { grantedPower: g.grantedPower || g.grantedPowerName ? { name: g.grantedPowerName || null, text: g.grantedPower, usage: exportUse(g.gpUse) } : null, spellLadder: g.ladder.map((s, i) => ({ level: i + 1, spell: s || null })).filter((x) => x.spell) });
+      if (en.blueprint === 'domain') {
+        const gpObj = g.grantedPower || g.grantedPowerName ? { name: g.grantedPowerName || null, text: g.grantedPower, usage: exportUse(g.gpUse) } : null;
+        if (gpObj && en._domainGpExtra) {
+          if (en._domainGpExtra.classSkills) gpObj.classSkills = clone(en._domainGpExtra.classSkills);
+          if (en._domainGpExtra.grantedFeats) gpObj.grantedFeats = clone(en._domainGpExtra.grantedFeats);
+          if (en._domainGpExtra.spellLikeAbilities) gpObj.spellLikeAbilities = clone(en._domainGpExtra.spellLikeAbilities);
+        }
+        const ladderOut = g.ladder.map((s, i) => {
+          if (!s) return null;
+          const spRef = (CAT.spells || []).find((x) => normName(x.name) === normName(s));
+          const prevRef = en._domainLadderRefs && en._domainLadderRefs[i];
+          return { level: i + 1, spell: s, refId: (spRef && spRef.id) || prevRef || null };
+        }).filter(Boolean);
+        Object.assign(o, { grantedPower: gpObj, spellLadder: ladderOut });
+      }
       if (g.domains.length) o.domains = g.domains.map((d) => (d.kind === 'ref' ? { kind: 'ref', name: d.name, refId: d.refId || null } : { kind: 'inline', name: d.name, grantedPower: d.grantedPower, spellLadder: d.ladder.map((s, i) => ({ level: i + 1, spell: s || null })).filter((x) => x.spell) }));
       if (g.deities.length) o.deities = g.deities.map((d) => ({ kind: d.kind, name: d.name, alignment: d.align, favoredWeapon: d.favoredWeapon }));
       if (g.featGrants.length) o.bonusFeats = g.featGrants.map((x) => ({ count: num(x.count), pool: x.pool, level: num(x.level) }));
       out.grants = o;
+    }
+    if (en._passthrough && typeof en._passthrough === 'object') {
+      Object.keys(en._passthrough).forEach((k) => {
+        if (!(k in out)) out[k] = clone(en._passthrough[k]);
+      });
     }
     return out;
   }
@@ -2493,6 +2526,10 @@
       : obj.item ? 'wondrous'
       : 'feat';
     const en = blankEntry(bpId);
+    en._passthrough = {};
+    PASSTHROUGH_V3_KEYS.forEach((k) => {
+      if (obj[k] !== undefined) en._passthrough[k] = clone(obj[k]);
+    });
     en.id = obj.id || en.id;
     en.name = obj.name || '';
     en.source = obj.source || 'Homebrew';
@@ -2518,7 +2555,7 @@
       en.item = Object.assign(en.item, {
         subtype: normSub,
         slot: obj.item.slot || en.item.slot,
-        price: obj.item.price !== undefined ? num(obj.item.price) : en.item.price,
+        price: obj.item.price !== undefined ? num(obj.item.price) : (obj.gpValue !== undefined ? num(obj.gpValue) : en.item.price),
         cl: obj.item.casterLevel !== undefined ? num(obj.item.casterLevel) : (obj.item.cl !== undefined ? num(obj.item.cl) : en.item.cl)
       });
     }
@@ -2526,13 +2563,16 @@
       const sp = obj.spell, sys = sp.system || 'spell';
       en.spell.system = sys;
       if (sp.descriptors) en.spell.descriptors = arr(sp.descriptors).slice();
-      if (sys === 'maneuver') Object.assign(en.spell, { maneuverType: sp.maneuverType || 'Strike', discipline: sp.discipline || en.spell.discipline, maneuverLvl: num(sp.level, 1), prereqManeuvers: num(sp.prereqManeuvers, 0) });
-      else if (sys === 'invocation') Object.assign(en.spell, { invGrade: sp.grade || 'Least', invKind: sp.kind || 'Invocation', maneuverLvl: num(sp.effectiveLevel, 1), school: sp.school || en.spell.school });
-      else if (sys === 'psionic') Object.assign(en.spell, { discipline: sp.discipline || en.spell.discipline, maneuverLvl: num(sp.level, 1), ppCost: num(sp.ppCost, 1), augmentable: !!sp.augmentable });
+      if (sys === 'maneuver') Object.assign(en.spell, { maneuverType: sp.maneuverType || 'Strike', discipline: sp.discipline || en.spell.discipline, maneuverLvl: num(sp.level != null ? sp.level : sp.maneuverLvl, 1), prereqManeuvers: num(sp.prereqManeuvers, 0) });
+      else if (sys === 'invocation') Object.assign(en.spell, { invGrade: sp.grade || sp.invGrade || 'Least', invKind: sp.kind || sp.invKind || 'Invocation', maneuverLvl: num(sp.effectiveLevel != null ? sp.effectiveLevel : sp.maneuverLvl, 1), school: sp.school || en.spell.school });
+      else if (sys === 'psionic') Object.assign(en.spell, { discipline: sp.discipline || en.spell.discipline, maneuverLvl: num(sp.level != null ? sp.level : sp.maneuverLvl, 1), ppCost: num(sp.ppCost, 1), augmentable: !!sp.augmentable });
       else if (sys === 'soulmeld') Object.assign(en.spell, { chakraSlots: sp.chakraSlots || 'Arms / Totem', meldshaperList: sp.meldshaperList || 'Totemist' });
-      else if (sys === 'vestige') Object.assign(en.spell, { vestigeLvl: num(sp.level, 1), bindingDc: num(sp.bindingDc, 15), vestigeSign: sp.sign || '' });
-      else if (sys === 'utterance') Object.assign(en.spell, { lexicon: sp.lexicon || 'Evolving Mind', maneuverLvl: num(sp.level, 1) });
-      else if (sys === 'mystery') Object.assign(en.spell, { mysteryTier: sp.tier || 'Apprentice', mysteryPath: sp.path || '', maneuverLvl: num(sp.level, 1) });
+      else if (sys === 'vestige') {
+        Object.assign(en.spell, { vestigeLvl: num(sp.level != null ? sp.level : sp.vestigeLvl, 1), bindingDc: num(sp.bindingDc, 15), vestigeSign: sp.sign != null ? sp.sign : (sp.vestigeSign || '') });
+        if (sp.vestigeInfluence || sp.specialRequirement) en._spellExtra = { vestigeInfluence: sp.vestigeInfluence || null, specialRequirement: sp.specialRequirement || null };
+      }
+      else if (sys === 'utterance') Object.assign(en.spell, { lexicon: sp.lexicon || 'Evolving Mind', maneuverLvl: num(sp.level != null ? sp.level : sp.maneuverLvl, 1) });
+      else if (sys === 'mystery') Object.assign(en.spell, { mysteryTier: sp.tier || sp.mysteryTier || 'Apprentice', mysteryPath: sp.path != null ? sp.path : (sp.mysteryPath || ''), maneuverLvl: num(sp.level != null ? sp.level : sp.maneuverLvl, 1) });
       else {
         if (sp.school) en.spell.school = sp.school;
         if (Array.isArray(sp.classLevels)) en.spell.classes = sp.classLevels.map((c) => ({ cls: c.class || c.cls || 'Sor/Wiz', lvl: num(c.level != null ? c.level : c.lvl, 1) }));
@@ -2556,6 +2596,13 @@
       if (Array.isArray(im.tiers)) {
         en.itemMod.crystalCosts = im.tiers.map((t) => (t.cost == null ? null : num(t.cost)));
         en.itemMod.crystalTiers = im.tiers.map((t) => t.text || '');
+      } else if (im.kind === 'crystal' && num(im.flatGp) > 0) {
+        const tierM = String(obj.name || '').match(/\b(Least|Lesser|Greater)\b/i);
+        const ti = tierM ? Math.max(0, CRYSTAL_TIERS.indexOf(tierM[1].toLowerCase())) : 0;
+        en.itemMod.crystalCosts = [null, null, null];
+        en.itemMod.crystalTiers = ['', '', ''];
+        en.itemMod.crystalCosts[ti] = num(im.flatGp);
+        en.itemMod.crystalTiers[ti] = en.text || obj.shortDescription || '';
       }
       if (im.material && typeof im.material === 'object') {
         en.itemMod.mat = Object.assign(en.itemMod.mat, im.material, { drBypass: im.material.drBypass || '' });
@@ -2639,7 +2686,7 @@
     if (obj.delivery && typeof obj.delivery === 'object') {
       const d = obj.delivery;
       Object.assign(en.delivery, {
-        action: d.action || en.delivery.action, range: d.range || '', area: d.area || '',
+        action: d.action || en.delivery.action, range: d.range || '', area: d.area || '', target: d.target || '',
         attackOn: !!(d.attack && d.attack !== 'none'), attack: d.attack && d.attack !== 'none' ? d.attack : en.delivery.attack,
         sr: d.spellResistance || d.sr || en.delivery.sr
       });
@@ -2647,27 +2694,35 @@
         const rawSv = d.save.type || 'None';
         en.delivery.save.type = SAVE_V3_ALIAS[rawSv] || rawSv;
         en.delivery.save.effect = d.save.effect || 'Negates';
-        const dcStr = String(d.save.dc || '');
-        const statM = dcStr.match(/\+\s*(STR|DEX|CON|INT|WIS|CHA)/i);
-        if (/1\/2\s*HD/i.test(dcStr)) { en.delivery.save.dcMode = 'hd'; if (statM) en.delivery.save.stat = statM[1].toLowerCase(); }
-        else if (/Spell Level/i.test(dcStr) || /\+\s*\d+\s*\+\s*(STR|DEX|CON|INT|WIS|CHA)/i.test(dcStr)) { en.delivery.save.dcMode = 'spell'; if (statM) en.delivery.save.stat = statM[1].toLowerCase(); }
-        else { const flatM = dcStr.match(/DC\s*(\d+)/i); if (flatM) { en.delivery.save.dcMode = 'flat'; en.delivery.save.flat = num(flatM[1], 15); } }
+        if (d.save.dcMode) {
+          en.delivery.save.dcMode = d.save.dcMode;
+          if (d.save.stat) en.delivery.save.stat = String(d.save.stat).toLowerCase();
+          if (d.save.flat != null) en.delivery.save.flat = num(d.save.flat, 15);
+        } else {
+          const dcStr = String(d.save.dc || '');
+          const statM = dcStr.match(/\+\s*(STR|DEX|CON|INT|WIS|CHA)/i);
+          if (/1\/2\s*HD/i.test(dcStr)) { en.delivery.save.dcMode = 'hd'; if (statM) en.delivery.save.stat = statM[1].toLowerCase(); }
+          else if (/Spell Level/i.test(dcStr) || /\+\s*\d+\s*\+\s*(STR|DEX|CON|INT|WIS|CHA)/i.test(dcStr)) { en.delivery.save.dcMode = 'spell'; if (statM) en.delivery.save.stat = statM[1].toLowerCase(); }
+          else { const flatM = dcStr.match(/DC\s*(\d+)/i); if (flatM) { en.delivery.save.dcMode = 'flat'; en.delivery.save.flat = num(flatM[1], 15); } }
+        }
       }
       if (Array.isArray(d.rules)) en.delivery.extras = d.rules.map((r) => ({ id: uid('x'), kind: r.kind || 'other', text: r.text || '' }));
     }
     if (obj.lifecycle && typeof obj.lifecycle === 'object') {
       const l = obj.lifecycle;
       const durCode = DUR_V3_ALIAS[l.duration] || l.duration || en.lifecycle.duration;
-      const durM = String(l.durationText || '').match(/^(\d+)/);
+      const rawDurTxt = l.durationText != null ? String(l.durationText) : (l.durText != null ? String(l.durText) : '');
+      const durM = rawDurTxt.match(/^(\d+)/);
       Object.assign(en.lifecycle, {
         duration: durCode,
         durValue: durM ? num(durM[1], 1) : en.lifecycle.durValue,
-        durText: durCode === 'text' ? (l.durationText || '') : en.lifecycle.durText,
+        durText: durCode === 'text' ? rawDurTxt : en.lifecycle.durText,
         dismissible: !!l.dismissible,
         stackable: num(l.maxStacks) > 0,
         maxStacks: num(l.maxStacks, en.lifecycle.maxStacks)
       });
-      if (l.usage) en.lifecycle.use = parseUseObj(l.usage);
+      const uObj = l.usage || l.use;
+      if (uObj) en.lifecycle.use = parseUseObj(uObj);
     }
     if (obj.grants && typeof obj.grants === 'object') {
       const gr = obj.grants;
@@ -2679,9 +2734,22 @@
         en.grants.grantedPowerName = gr.grantedPower.name || '';
         en.grants.grantedPower = gr.grantedPower.text || '';
         if (gr.grantedPower.usage) en.grants.gpUse = parseUseObj(gr.grantedPower.usage);
+        if (gr.grantedPower.classSkills || gr.grantedPower.grantedFeats || gr.grantedPower.spellLikeAbilities) {
+          en._domainGpExtra = {
+            classSkills: gr.grantedPower.classSkills ? clone(gr.grantedPower.classSkills) : undefined,
+            grantedFeats: gr.grantedPower.grantedFeats ? clone(gr.grantedPower.grantedFeats) : undefined,
+            spellLikeAbilities: gr.grantedPower.spellLikeAbilities ? clone(gr.grantedPower.spellLikeAbilities) : undefined
+          };
+        }
       }
       if (Array.isArray(gr.spellLadder)) {
-        gr.spellLadder.forEach((sl) => { if (sl && sl.level >= 1 && sl.level <= 9) en.grants.ladder[sl.level - 1] = sl.spell || ''; });
+        en._domainLadderRefs = {};
+        gr.spellLadder.forEach((sl) => {
+          if (sl && sl.level >= 1 && sl.level <= 9) {
+            en.grants.ladder[sl.level - 1] = sl.spell || '';
+            if (sl.refId) en._domainLadderRefs[sl.level - 1] = sl.refId;
+          }
+        });
       }
       if (Array.isArray(gr.domains)) {
         en.grants.domains = gr.domains.map((d) => {
@@ -2732,6 +2800,21 @@
       if (ps.casterLevel) rows.push({ id: uid('p'), alts: [ALT({ kind: 'level', levelKind: 'casterLevel', min: num(ps.casterLevel, 1) })] });
       if (ps.charLevel) rows.push({ id: uid('p'), alts: [ALT({ kind: 'level', levelKind: 'charLevel', min: num(ps.charLevel, 1) })] });
       if (rows.length > 0) en.prereqs = rows;
+    } else if (Array.isArray(obj.prerequisites) && obj.prerequisites.length > 0) {
+      en.prereqs = obj.prerequisites.map((r) => {
+        if (!r || typeof r !== 'object') return { id: uid('p'), alts: [ALT({ kind: 'custom', text: String(r || '') })] };
+        if (r.key === 'bab') return { id: uid('p'), alts: [ALT({ kind: 'bab', min: num(r.min, 1) })] };
+        if (r.key === 'skill') return { id: uid('p'), alts: [ALT({ kind: 'skill', skill: String(r.skill || 'tumble').startsWith('skill.') ? r.skill : ('skill.' + r.skill), min: num(r.ranks, 4) })] };
+        if (r.key === 'feat') return { id: uid('p'), alts: [ALT({ kind: 'feat', feat: r.name || r.val || r.text || '' })] };
+        if (r.key === 'alignment') {
+          const al = Array.isArray(r.allowed) && r.allowed.length ? r.allowed.join(', ') : (r.text || 'Any');
+          return { id: uid('p'), alts: [ALT({ kind: 'alignment', align: al })] };
+        }
+        if (r.key === 'arcane' || r.key === 'divine' || r.key === 'spells') {
+          return { id: uid('p'), alts: [ALT({ kind: 'spellcasting', cls: r.key === 'arcane' ? 'arcane' : (r.key === 'divine' ? 'divine' : 'any'), min: num(r.minSpellLevel || r.level, 1) })] };
+        }
+        return { id: uid('p'), alts: [ALT({ kind: 'custom', text: r.text || (r.key === 'race' && r.val ? ('Race: ' + r.val) : JSON.stringify(r)) })] };
+      });
     } else if (typeof obj.prerequisites === 'string' && obj.prerequisites.trim() && obj.prerequisites.trim().toLowerCase() !== 'none') {
       en.prereqs = obj.prerequisites.split(',').map((s) => s.trim()).filter(Boolean).map((s) => ({ id: uid('p'), alts: [ALT({ kind: 'custom', text: s })] }));
     }
@@ -2765,11 +2848,13 @@
       if (w && typeof w === 'object') {
         const dps = arr(obj.damageParts || w.damageParts);
         const rawPart = dps.find((d) => d && (d.raw || d.source === 'Base')) || dps[0];
+        const v3Dice = w.damageDice || w.dice || (rawPart && rawPart.dice) || en.chassis.weapon.dice;
+        const v3DmgType = w.dmgType || w.damageType || ((rawPart && rawPart.type) ? cap1(rawPart.type) : en.chassis.weapon.dmgType);
         en.chassis.weapon = Object.assign(en.chassis.weapon, {
           category: w.category || en.chassis.weapon.category,
           handed: w.handedness || w.handed || en.chassis.weapon.handed,
-          dice: (rawPart && rawPart.dice) || w.dice || en.chassis.weapon.dice,
-          dmgType: (rawPart && rawPart.type) ? cap1(rawPart.type) : en.chassis.weapon.dmgType,
+          dice: v3Dice,
+          dmgType: v3DmgType,
           critRange: w.baseCritRange !== undefined ? num(w.baseCritRange, en.chassis.weapon.critRange) : en.chassis.weapon.critRange,
           critMult: w.critMultiplier !== undefined ? num(w.critMultiplier, en.chassis.weapon.critMult) : en.chassis.weapon.critMult,
           rangeOn: w.rangeIncrement != null && num(w.rangeIncrement) > 0,
@@ -2783,7 +2868,11 @@
         if (a.armorType && a.armorType !== computed.type) en.chassis.armor.type = a.armorType;
         if (a.armorBonus !== undefined && num(a.armorBonus) !== num(computed.armorBonus)) en.chassis.armor.armorBonus = num(a.armorBonus);
         if (aMax !== undefined && num(aMax) !== num(computed.maxDex)) en.chassis.armor.maxDex = num(aMax);
-        if (a.armorCheckPenalty !== undefined && num(a.armorCheckPenalty) !== num(computed.acp)) en.chassis.armor.acp = num(a.armorCheckPenalty);
+        if (a.armorCheckPenalty !== undefined && num(a.armorCheckPenalty) !== num(computed.acp)) {
+          const mwApplies = (en.chassis.enhancement > 0 || en.chassis.material === 'masterwork') && en.chassis.material !== 'mithral' && en.chassis.material !== 'darkwood';
+          const targetAcp = num(a.armorCheckPenalty);
+          en.chassis.armor.acp = (mwApplies && targetAcp < 0) ? (targetAcp - 1) : targetAcp;
+        }
         if (a.arcaneSpellFailure !== undefined && num(a.arcaneSpellFailure) !== num(computed.asf)) en.chassis.armor.asf = num(a.arcaneSpellFailure);
         if (a.speed !== undefined && num(a.speed) !== num(computed.speed)) en.chassis.armor.speed = num(a.speed);
       }
@@ -2831,8 +2920,22 @@
         pr.milestones.forEach((ms) => {
           const i = num(ms.level, 1) - 1;
           if (!levels[i]) return;
-          levels[i].features = arr(ms.features).map((f) => FEATURE(f.name || '', { kind: f.kind || (f.refId ? 'ref' : 'inline'), refId: f.refId || '', abilityType: f.abilityType || 'Ex', branchPath: f.branchPath || '', text: f.text || '' }));
+          levels[i].features = arr(ms.features).map((f) => FEATURE(f.name || '', { kind: f.kind || (f.refId ? 'ref' : 'inline'), refId: f.refId || '', abilityType: f.abilityType || 'Ex', branchPath: f.branchPath || '', text: f.text || '', category: f.category || '' }));
         });
+      } else if (obj.features && typeof obj.features === 'object') {
+        Object.keys(obj.features).forEach((lvlKey) => {
+          const i = num(lvlKey, 0) - 1;
+          if (i < 0 || !levels[i]) return;
+          levels[i].features = arr(obj.features[lvlKey]).map((f) => {
+            if (typeof f === 'string') return FEATURE(f, { kind: 'inline', abilityType: 'Ex' });
+            const refId = f.refId || f.id || '';
+            return FEATURE(f.name || '', { kind: refId ? 'ref' : 'inline', refId, abilityType: f.abilityType || f.type || 'Ex', text: f.text || f.summary || f.benefit || '' });
+          });
+        });
+      }
+      if (!en.grants.featGrants.length && Array.isArray(obj.bonusFeatLevels) && obj.bonusFeatLevels.length > 0) {
+        const pool = (obj.bonusFeatContract && obj.bonusFeatContract.tag === 'isFighterBonusFeat') ? '#FighterBonus' : (obj.name === 'Wizard' ? '#Metamagic / #ItemCreation' : 'Class List');
+        en.grants.featGrants = obj.bonusFeatLevels.map((lvl) => ({ id: uid('g'), count: 1, pool, level: num(lvl, 1) }));
       }
       en.progression = Object.assign(en.progression, {
         mode: pr.mode || en.progression.mode,
@@ -3038,22 +3141,24 @@
     let n = 0;
     C.getByType('Weapon').forEach((w) => {
       if (seenW.has(normName(w.name))) return;
-      const dp = (w.damageParts || [])[0] || {};
       const wObj = w.weapon || {};
       const handRaw = wObj.handedness || w.handedness;
-      const wCost = (w.item && w.item.price != null) ? w.item.price : w.cost;
-      CAT.weapons.push({ id: w.id, name: w.name, cost: num(wCost), dice: dp.dice || '1d6', critRange: num(wObj.baseCritRange != null ? wObj.baseCritRange : w.critRange, 20), critMult: num(wObj.critMultiplier != null ? wObj.critMultiplier : w.critMult, 2), category: /exotic/i.test(wObj.category || w.category) ? 'Exotic' : /martial/i.test(wObj.category || w.category) ? 'Martial' : 'Simple', handed: HANDED[handRaw] || handRaw || 'One-Handed', dmgType: cap1(String(dp.type || 'Slashing').split(/[\s/]/)[0]), weight: num(w.weight, 1), range: num(wObj.rangeIncrement != null ? wObj.rangeIncrement : w.rangeIncrement), wooden: /wood|staff|club|bow/i.test(w.name), ranged: /ranged/i.test(handRaw || ''), src: w.source || 'SRD', desc: w.shortDescription || '', raw: w });
+      const wCost = (w.item && w.item.price != null) ? w.item.price : (w.gpValue != null ? w.gpValue : w.cost);
+      const wDice = wObj.damageDice || wObj.dice || w.damage || '1d6';
+      const wDmgType = cap1(String(wObj.dmgType || wObj.damageType || w.dmgType || 'Slashing').split(/[\s/]/)[0]);
+      CAT.weapons.push({ id: w.id, name: w.name, cost: num(wCost), dice: wDice, critRange: num(wObj.baseCritRange != null ? wObj.baseCritRange : w.critRange, 20), critMult: num(wObj.critMultiplier != null ? wObj.critMultiplier : w.critMult, 2), category: /exotic/i.test(wObj.category || w.category) ? 'Exotic' : /martial/i.test(wObj.category || w.category) ? 'Martial' : 'Simple', handed: HANDED[handRaw] || handRaw || 'One-Handed', dmgType: wDmgType, weight: num(w.weight, 1), range: num(wObj.rangeIncrement != null ? wObj.rangeIncrement : w.rangeIncrement), wooden: /wood|staff|club|bow/i.test(w.name), ranged: /ranged/i.test(handRaw || ''), src: w.source || 'SRD', desc: w.shortDescription || '', raw: w });
       n++;
     });
     C.getByType('Armor').concat(C.getByType('Shield')).forEach((a) => {
       if (seenA.has(normName(a.name))) return;
       const aObj = a.armor || {};
-      const isS = a.type === 'Shield' || aObj.armorType === 'Shield', ab = (a.modifiers || []).find((m) => /^ac\.(armor|shield)$/.test(m.target));
-      const aBonus = aObj.armorBonus != null ? num(aObj.armorBonus) : (ab ? num(ab.value) : 0);
+      const isS = a.type === 'Shield' || aObj.armorType === 'Shield';
+      const v3AcBlk = (a.effects || []).find((ef) => ef && ef.type === 'stat' && Array.isArray(ef.targets) && ef.targets.some((t) => /^ac\.(armor|shield)$/.test(t)));
+      const aBonus = aObj.armorBonus != null ? num(aObj.armorBonus) : (v3AcBlk ? num(v3AcBlk.value) : 0);
       const aMaxDex = aObj.maxDex !== undefined ? (aObj.maxDex == null ? 99 : num(aObj.maxDex)) : (a.maxDex == null ? 99 : num(a.maxDex));
       const aAcp = aObj.armorCheckPenalty != null ? num(aObj.armorCheckPenalty) : num(a.checkPenalty);
       const aAsf = aObj.arcaneSpellFailure != null ? num(aObj.arcaneSpellFailure) : num(a.spellFailure);
-      const aCost = (a.item && a.item.price != null) ? a.item.price : a.cost;
+      const aCost = (a.item && a.item.price != null) ? a.item.price : (a.gpValue != null ? a.gpValue : a.cost);
       CAT.armors.push({ id: a.id, name: a.name, cost: num(aCost), armorBonus: aBonus, maxDex: aMaxDex, acp: aAcp, asf: aAsf, type: isS ? 'Shield' : (aObj.armorType || a.category || 'Light'), speed: parseInt(aObj.speed || a.speed30, 10) || 30, kind: isS ? 'shield' : 'armor', weight: num(a.weight), wooden: /wood/i.test(a.name), src: a.source || 'SRD', desc: a.shortDescription || '', raw: a });
       n++;
     });
@@ -3063,9 +3168,20 @@
       const im = e.itemModifier || {};
       const applies = String(im.appliesTo || e.appliesTo || '').toLowerCase();
       const on = /Weapon/.test(e.category) || applies === 'weapon' ? 'weapon' : e.targetType === 'Shield' || applies === 'shield' ? 'shield' : applies === 'armor' ? 'armor' : 'armor+shield';
-      const parts = partsFromSrd(im.damageParts || e.damageParts);
-      const mods = (e.modifiers || []).filter((m) => m && m.target && Number.isFinite(Number(m.value)) && Number(m.value) !== 0).map((m) => ({ target: m.target, value: num(m.value), type: bonusTypeName(m.type) }));
-      CAT.enchants.push({ id: e.id, name: e.name, on: on, plus: num(im.enhancementIncrease != null ? im.enhancementIncrease : e.enhIncrease), gp: num(im.flatGp != null ? im.flatGp : e.flatCost), effect: { parts: parts.length ? parts : undefined, keen: !!(im.keen || (e.ruleFlags && e.ruleFlags.keen)), mods: mods }, desc: e.shortDescription || stripHtml(e.text || e.description).slice(0, 160), src: e.source || 'SRD' });
+      const v3RollParts = (e.effects || []).filter((b) => b && b.type === 'roll' && (!b.kind || b.kind === 'Damage')).map((b) => ({
+        count: b.die === 'flat' ? num(b.count || b.flat, 1) : num(b.count, 1),
+        die: b.die || 'd6',
+        type: cap1(String(b.dmgType || 'Untyped')),
+        crit: b.critRule || 'normal',
+        cond: b.condition || ''
+      }));
+      const v3StatMods = [];
+      (e.effects || []).forEach((b) => {
+        if (b && b.type === 'stat' && Number.isFinite(Number(b.value)) && Number(b.value) !== 0) {
+          (Array.isArray(b.targets) ? b.targets : (b.target ? [b.target] : [])).forEach((t) => v3StatMods.push({ target: t, value: num(b.value), type: cap1(b.btype || b.bonusType || 'Untyped') }));
+        }
+      });
+      CAT.enchants.push({ id: e.id, name: e.name, on: on, plus: num(im.enhancementIncrease != null ? im.enhancementIncrease : e.enhIncrease), gp: num(im.flatGp != null ? im.flatGp : e.flatCost), effect: { parts: v3RollParts.length ? v3RollParts : undefined, keen: !!(im.keen || (e.ruleFlags && e.ruleFlags.keen)), mods: v3StatMods }, desc: e.shortDescription || stripHtml(e.text || e.description).slice(0, 160), src: e.source || 'SRD' });
       seenE.add(normName(e.name)); n++;
     });
     const groups = {};
@@ -3075,9 +3191,9 @@
       const cSlot = (c.item && c.item.slot) || (c.itemModifier && c.itemModifier.appliesTo) || c.slot || '';
       const g = groups[baseN] = groups[baseN] || { id: 'crys-' + slug(baseN), name: baseN, on: /Weapon/i.test(cSlot) ? 'weapon' : /Shield/i.test(cSlot) ? 'shield' : 'armor+shield', cost: [null, null, null], tiers: ['', '', ''], parts: [null, null, null], src: c.source || 'MIC' };
       const ti = CRYSTAL_TIERS.indexOf(tier);
-      g.cost[ti] = num((c.item && c.item.price != null) ? c.item.price : c.cost); g.tiers[ti] = c.shortDescription || stripHtml(c.text || c.description).slice(0, 140);
-      const dp = partsFromSrd((c.itemModifier && c.itemModifier.damageParts) || c.damageParts)[0];
-      if (dp) { g.parts[ti] = [dp.count, dp.die]; g.ptype = dp.type; g.cond = dp.cond; }
+      g.cost[ti] = num((c.item && c.item.price != null) ? c.item.price : (c.itemModifier && c.itemModifier.flatGp != null ? c.itemModifier.flatGp : c.cost)); g.tiers[ti] = c.shortDescription || stripHtml(c.text || c.description).slice(0, 140);
+      const rBlk = (c.effects || []).find((b) => b && b.type === 'roll' && (!b.kind || b.kind === 'Damage'));
+      if (rBlk) { g.parts[ti] = [rBlk.die === 'flat' ? 0 : num(rBlk.count, 1), rBlk.die === 'flat' ? num(rBlk.count || rBlk.flat, 1) : (rBlk.die || 'd6')]; g.ptype = cap1(String(rBlk.dmgType || 'Untyped')); g.cond = rBlk.condition || ''; }
     });
     Object.keys(groups).forEach((k) => {
       const g = groups[k];
@@ -3121,8 +3237,10 @@
       if (i >= 0) CAT.domains[i] = row; else CAT.domains.push(row);
       n++;
     });
-    C.getByType('MagicItem').concat(C.getByType('Consumable')).forEach((x) => { CAT.magicItems.push(x); n++; });
+    C.getByType('MagicItem').concat(C.getByType('Consumable')).concat(C.getByType('Gear')).concat(C.getByType('Ammo')).forEach((x) => { CAT.magicItems.push(x); n++; });
     C.getByType('Class').forEach((x) => { CAT.classes.push(x); n++; });
+    CAT.races = C.getByType('Race').concat(C.getByType('Template')); n += CAT.races.length;
+    CAT.subsystems = C.getByType('Maneuver').concat(C.getByType('Power')).concat(C.getByType('Soulmeld')).concat(C.getByType('Vestige')).concat(C.getByType('Mystery')).concat(C.getByType('Utterance')); n += CAT.subsystems.length;
     CAT.srdLoaded = true; CAT.srdCount = n;
   }
   function mergeMasterDb(list) {
@@ -3187,7 +3305,7 @@
           const dp = (x.damageParts || [])[0] || {};
           const wObj = x.weapon || {};
           const handRaw = wObj.handedness || x.handedness;
-          w = { id: x.id || ('wpn-' + slug(x.name)), name: x.name, cost: num((x.item && x.item.price != null) ? x.item.price : x.cost), dice: dp.dice || x.damage || '1d6', critRange: num(wObj.baseCritRange != null ? wObj.baseCritRange : x.critRange, 20), critMult: num(wObj.critMultiplier != null ? wObj.critMultiplier : x.critMult, 2), category: /exotic/i.test(wObj.category || x.category) ? 'Exotic' : /martial/i.test(wObj.category || x.category) ? 'Martial' : 'Simple', handed: HANDED[handRaw] || handRaw || 'One-Handed', dmgType: cap1(String(dp.type || x.dmgType || 'Slashing').split(/[\s/]/)[0]), weight: num(x.weight, 1), range: num(wObj.rangeIncrement != null ? wObj.rangeIncrement : (x.rangeIncrement || x.range)), wooden: /wood|staff|club|bow/i.test(x.name), ranged: /ranged/i.test(handRaw || ''), src: x.source || 'SRD', desc: x.shortDescription || '', raw: x };
+          w = { id: x.id || ('wpn-' + slug(x.name)), name: x.name, cost: num((x.item && x.item.price != null) ? x.item.price : (x.gpValue != null ? x.gpValue : x.cost)), dice: wObj.damageDice || wObj.dice || dp.dice || x.damage || '1d6', critRange: num(wObj.baseCritRange != null ? wObj.baseCritRange : x.critRange, 20), critMult: num(wObj.critMultiplier != null ? wObj.critMultiplier : x.critMult, 2), category: /exotic/i.test(wObj.category || x.category) ? 'Exotic' : /martial/i.test(wObj.category || x.category) ? 'Martial' : 'Simple', handed: HANDED[handRaw] || handRaw || 'One-Handed', dmgType: cap1(String(wObj.dmgType || wObj.damageType || dp.type || x.dmgType || 'Slashing').split(/[\s/]/)[0]), weight: num(x.weight, 1), range: num(wObj.rangeIncrement != null ? wObj.rangeIncrement : (x.rangeIncrement || x.range)), wooden: /wood|staff|club|bow/i.test(x.name), ranged: /ranged/i.test(handRaw || ''), src: x.source || 'SRD', desc: x.shortDescription || '', raw: x };
           CAT.weapons.push(w);
         }
       } else if (t === 'Armor' || t === 'Shield' || x.blueprint === 'armor') {
@@ -3439,10 +3557,12 @@
         };
         add('⚔️ Weapons', CAT.weapons, (x) => gp(x.cost), (x) => [x.category + ' ' + x.handed + (x.ranged ? ' Ranged (' + x.range + ' ft.)' : ' Melee'), x.dice + ' ' + x.dmgType + ' (' + (x.critRange < 20 ? x.critRange + '–20/' : '') + '×' + x.critMult + ')', stripHtml(x.desc || (x.raw && x.raw.description) || ''), x.src].filter(Boolean).join(' • '), 'Weapon');
         add('🛡️ Armor & Shields', CAT.armors, (x) => gp(x.cost), (x) => [x.type === 'Shield' ? 'Shield' : x.type + ' Armor', '+' + x.armorBonus + ' AC', 'Max Dex ' + (x.maxDex >= 99 ? '—' : '+' + x.maxDex), 'ACP ' + x.acp, 'ASF ' + x.asf + '%', stripHtml(x.desc || (x.raw && x.raw.description) || ''), x.src].filter(Boolean).join(' • '), 'Armor');
-        add('💎 Magic Items (SRD / MIC)', CAT.magicItems, (x) => num(x.cost) > 0 ? gp(x.cost) : (x.slot || x.category || 'Magic Item'), (x) => [x.slot || x.category || 'Magic Item', x.casterLevel ? 'CL ' + x.casterLevel : '', stripHtml(x.shortDescription || x.description || ''), x.source || 'SRD'].filter(Boolean).join(' • '), 'MagicItem', 8);
-        add('🔮 Spells', CAT.spells, (x) => x.levelText || 'Spell', (x) => [x.school, x.action ? x.action + ' Action' : '', x.range, x.save && x.save !== 'None' ? 'Save: ' + x.save : '', stripHtml(x.desc || (x.raw && x.raw.description) || ''), x.src].filter(Boolean).join(' • '), 'Spell', 8);
-        add('📜 Feats', CAT.feats, (x) => (x.custom ? 'Custom' : x.src || 'Feat'), (x) => [x.prereq ? 'Prerequisites: ' + x.prereq : '', stripHtml(x.desc || (x.raw && (x.raw.benefit || x.raw.description)) || ''), x.src].filter(Boolean).join(' • '), 'Feat', 6);
-        add('💎 Classes', CAT.classes, (x) => x.category || 'Class', (x) => [x.hitDie ? 'd' + x.hitDie + ' HD' : '', x.babProgression ? 'BAB ' + x.babProgression : '', stripHtml(x.shortDescription || x.description || ''), x.source || 'SRD'].filter(Boolean).join(' • '), 'Class', 4);
+        add('💎 Magic Items (SRD / MIC)', CAT.magicItems, (x) => { const pr = (x.item && x.item.price != null) ? x.item.price : x.cost; return num(pr) > 0 ? gp(pr) : ((x.item && x.item.slot) || x.slot || x.category || 'Item'); }, (x) => [(x.item && x.item.slot) || x.slot || x.category || 'Item', ((x.item && x.item.casterLevel) || x.casterLevel) ? 'CL ' + ((x.item && x.item.casterLevel) || x.casterLevel) : '', stripHtml(x.shortDescription || x.text || x.description || ''), x.source || 'SRD'].filter(Boolean).join(' • '), 'MagicItem', 8);
+        add('🔮 Spells', CAT.spells, (x) => x.levelText || 'Spell', (x) => [x.school, x.action ? x.action + ' Action' : '', x.range, x.save && x.save !== 'None' ? 'Save: ' + x.save : '', stripHtml(x.desc || (x.raw && (x.raw.text || x.raw.description)) || ''), x.src].filter(Boolean).join(' • '), 'Spell', 8);
+        add('⚔️ Maneuvers, Powers & Subsystems', CAT.subsystems || [], (x) => x.type || 'Power', (x) => [x.spell && x.spell.discipline ? x.spell.discipline : (x.category || ''), x.spell && x.spell.level != null ? 'Lv ' + x.spell.level : '', stripHtml(x.shortDescription || x.text || ''), x.source || 'SRD'].filter(Boolean).join(' • '), 'Spell', 6);
+        add('📜 Feats', CAT.feats, (x) => (x.custom ? 'Custom' : x.src || 'Feat'), (x) => [x.prereq ? 'Prerequisites: ' + x.prereq : '', stripHtml(x.desc || (x.raw && (x.raw.benefit || x.raw.text || x.raw.description)) || ''), x.src].filter(Boolean).join(' • '), 'Feat', 6);
+        add('💎 Classes', CAT.classes, (x) => x.category || 'Class', (x) => [(x.progression && x.progression.hitDie) ? x.progression.hitDie + ' HD' : (x.hitDie ? 'd' + String(x.hitDie).replace(/^d/i, '') + ' HD' : ''), (x.progression && x.progression.bab) ? 'BAB ' + x.progression.bab : (x.babProgression ? 'BAB ' + x.babProgression : ''), stripHtml(x.shortDescription || x.text || x.description || ''), x.source || 'SRD'].filter(Boolean).join(' • '), 'Class', 4);
+        add('🧬 Races & Templates', CAT.races || [], (x) => x.type || 'Race', (x) => [(x.race && x.race.size) || x.size || 'Medium', (x.race && x.race.speed) ? x.race.speed + ' ft.' : '', (x.race && x.race.levelAdjustment) ? 'LA +' + x.race.levelAdjustment : '', stripHtml(x.shortDescription || x.text || ''), x.source || 'SRD'].filter(Boolean).join(' • '), 'Race', 4);
         add('✨ Domains', CAT.domains, () => 'Domain', (x) => ['Granted Power: ' + stripHtml(x.grantedPower || ''), x.spells && x.spells.length ? 'Spells: ' + x.spells.join(', ') : '', x.src].filter(Boolean).join(' • '), 'Domain', 4);
         add('👹 Monsters & Bestiary', CAT.monsters || [], (x) => 'CR ' + (x.cr || '1'), (x) => [(x.size || 'Medium') + ' ' + (x.category || (x.monster && x.monster.creatureType) || 'Monster'), x.hitDice ? 'HD ' + x.hitDice : '', x.hp ? 'HP ' + x.hp : '', stripHtml(x.shortDescription || x.text || ''), x.source || 'SRD'].filter(Boolean).join(' • '), 'Monster', 6);
         if (sNorm) srdBuckets.sort((a, b) => b.best - a.best);
@@ -5304,10 +5424,12 @@
     }).then(() => { if (CAT.srdLoaded) { toast('📚 SRD + Bestiary loaded: ' + CAT.srdCount.toLocaleString('en-US') + ' entries' + (CAT.customCount ? ' (+' + CAT.customCount + ' custom)' : '')); renderAll(); } })
       .catch((e) => console.warn('[ForgeSandbox] SrdCompendium unavailable:', e && e.message));
   }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+  if (typeof document !== 'undefined') {
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+  }
 
   // Read-only QA hook (Lego Core V3 + V25 alias)
-  window.ForgeSandbox = {
+  const forgeApi = {
     state: S, catalog: CAT, chassisView: chassisView, hydrate: hydrate,
     exportEntry: exportEntry, fromCanonicalV3: fromCanonicalV3, fromCanonicalV25: fromCanonicalV3,
     importFromJson: importFromJson, rawHeaderLine: rawHeaderLine, damageAtCL: rollAtCL,
@@ -5316,4 +5438,6 @@
     loadPreset: (id) => ACT['load-preset']({ dataset: { id: id } }),
     act: (name, data) => { const el = document.createElement('div'); Object.keys(data || {}).forEach((k) => { el.dataset[k] = data[k]; }); ACT[name](el, { target: el }); }
   };
+  if (typeof window !== 'undefined') window.ForgeSandbox = forgeApi;
+  if (typeof module !== 'undefined' && module.exports) module.exports = forgeApi;
 })();

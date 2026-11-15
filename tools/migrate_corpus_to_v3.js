@@ -1091,7 +1091,7 @@ function migrateStandardEntry(raw) {
           flyManeuverability: null,
           levelAdjustment: Number(e.levelAdjustment ?? 0) || 0,
           favoredClass: e.favoredClass || 'Any',
-          bonusFeatAt1st: Boolean(Array.isArray(e.bonusFeats) && e.bonusFeats.includes('Any')),
+          bonusFeatAt1st: Boolean((Array.isArray(e.bonusFeats) && e.bonusFeats.includes('Any')) || (typeof e.bonusFeats === 'number' && e.bonusFeats > 0)),
           humanBonusSkillPoints: Number(e.bonusSkillPointsPerLevel) > 0
         };
     // Preserve structural Race/Template fields read by Level-Up & Template engines

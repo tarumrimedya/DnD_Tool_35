@@ -5721,6 +5721,9 @@
       if (typeof character !== 'undefined' && Array.isArray(character.customDb)) {
         domains.push(...character.customDb.filter(e => e && (e.type === 'Domain' || e.category === 'Cleric Domain')));
       }
+      if (typeof character !== 'undefined' && character && character.customEntries && typeof character.customEntries === 'object') {
+        domains.push(...Object.values(character.customEntries).filter(e => e && (e.blueprint === 'domain' || e.type === 'Domain' || e.category === 'Cleric Domain')));
+      }
       if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
         domains.push(...masterDb.filter(e => e && (e.type === 'Domain' || e.category === 'Cleric Domain')));
       }
@@ -6266,18 +6269,19 @@
       if (nameInput) nameInput.value = initialData.name || '';
       if (srcInput) srcInput.value = initialData.source || 'Spell Compendium';
       if (alignSelect) alignSelect.value = initialData.alignment || 'Any';
+      const v3Gp = initialData.grants && initialData.grants.grantedPower ? initialData.grants.grantedPower : null;
       if (pDescInput) {
-        pDescInput.value = initialData.grantedPower?.description || initialData.powerDesc || initialData.benefit || initialData.description || '';
+        pDescInput.value = v3Gp?.text || initialData.grantedPower?.description || initialData.powerDesc || initialData.benefit || initialData.text || initialData.description || '';
       }
       if (featInput) {
-        const feat = initialData.grantedPower?.grantedFeats?.[0] || initialData.grantedFeat || initialData.bonusFeat || '';
+        const feat = v3Gp?.grantedFeats?.[0] || initialData.grantedPower?.grantedFeats?.[0] || initialData.grantedFeat || initialData.bonusFeat || '';
         featInput.value = feat;
       }
       if (slaNameInput) {
-        slaNameInput.value = initialData.grantedPower?.spellLikeAbilities?.[0]?.name || initialData.slaName || '';
+        slaNameInput.value = v3Gp?.spellLikeAbilities?.[0]?.name || initialData.grantedPower?.spellLikeAbilities?.[0]?.name || initialData.slaName || '';
       }
       if (slaUsesSelect) {
-        slaUsesSelect.value = initialData.grantedPower?.spellLikeAbilities?.[0]?.uses || initialData.slaUses || 'None';
+        slaUsesSelect.value = v3Gp?.spellLikeAbilities?.[0]?.uses || initialData.grantedPower?.spellLikeAbilities?.[0]?.uses || initialData.slaUses || 'None';
       }
 
       // Effects (V3 stat block)
@@ -6296,12 +6300,14 @@
       }
 
       // Class skills
-      const initialSkills = initialData.grantedPower?.classSkills || initialData.classSkills || [];
+      const initialSkills = v3Gp?.classSkills || initialData.grantedPower?.classSkills || initialData.classSkills || [];
       _customDomainSelectedSkills = new Set(Array.isArray(initialSkills) ? initialSkills : []);
       updateCustomDomainSkillsUI();
 
       // Spells 1-9
-      const spells = Array.isArray(initialData.spells) ? initialData.spells : [];
+      const spells = Array.isArray(initialData.grants?.spellLadder)
+        ? initialData.grants.spellLadder.map(s => ({ level: s.level, name: s.spell || s.name }))
+        : (Array.isArray(initialData.spells) ? initialData.spells : []);
       for (let lvl = 1; lvl <= 9; lvl++) {
         const spInput = document.getElementById(`custom-domain-spell-${lvl}`);
         if (spInput) {
@@ -6725,14 +6731,14 @@
       // 2. Active SLAs from all SRD + Custom Domains
       if (window.SrdCompendium && typeof window.SrdCompendium.getAllDomains === 'function') {
         window.SrdCompendium.getAllDomains().forEach(dom => {
-          const slas = dom?.grantedPower?.spellLikeAbilities || dom?.spellLikeAbilities || [];
+          const slas = dom?.grants?.grantedPower?.spellLikeAbilities || dom?.grantedPower?.spellLikeAbilities || dom?.spellLikeAbilities || [];
           slas.forEach(sla => {
             if (!sla || !sla.name) return;
             pushUnique({
               name: sla.name,
               uses: sla.uses || '1/day',
               category: `${dom.name} Domain`,
-              desc: sla.desc || dom?.grantedPower?.description || dom?.description || ''
+              desc: sla.desc || dom?.grants?.grantedPower?.text || dom?.grantedPower?.description || dom?.text || dom?.description || ''
             });
           });
         });
@@ -7277,8 +7283,20 @@
         name: name,
         alignment: alignSelect ? alignSelect.value : 'Any',
         source: srcInput ? (srcInput.value.trim() || 'Custom Domain') : 'Custom Domain',
+        grants: {
+          grantedPower: {
+            name: `${name} Domain Power`,
+            text: powerDesc,
+            usage: { mode: 'passive' },
+            classSkills: grantedPower.classSkills,
+            grantedFeats: grantedPower.grantedFeats,
+            spellLikeAbilities: grantedPower.spellLikeAbilities
+          },
+          spellLadder: spellsList.map(s => ({ level: s.level, spell: s.name, refId: s.id || null }))
+        },
         grantedPower: grantedPower,
         benefit: powerDesc || (spellsList.length ? `Domain Spells: ${spellsList.map(s => s.name).join(', ')}` : 'Cleric Domain'),
+        text: powerDesc,
         description: powerDesc,
         effects: JSON.parse(JSON.stringify(domainEffects)),
         modes: [],

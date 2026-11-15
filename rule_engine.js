@@ -1395,11 +1395,16 @@ const RuleEngine = {
       if (a.armorType && !out.armorCategory && !['Light', 'Medium', 'Heavy'].includes(out.category)) out.armorCategory = a.armorType;
     }
     if (out.race && typeof out.race === 'object') {
-      if (out.race.size && !out.size) out.size = out.race.size;
-      if (out.race.baseSpeed && !out.baseSpeed) out.baseSpeed = Number(out.race.baseSpeed) || 30;
-      if (out.race.levelAdjustment !== undefined && out.levelAdjustment === undefined) {
+      if (out.race.size) out.size = out.race.size;
+      const rSpd = out.race.speed !== undefined ? out.race.speed : out.race.baseSpeed;
+      if (rSpd !== undefined && rSpd !== null) out.baseSpeed = Number(rSpd) || 30;
+      if (out.race.levelAdjustment !== undefined && out.race.levelAdjustment !== null) {
         out.levelAdjustment = Number(out.race.levelAdjustment) || 0;
       }
+      if (out.race.creatureType) out.creatureType = out.race.creatureType;
+      if (out.race.favoredClass) out.favoredClass = out.race.favoredClass;
+      if (out.race.bonusFeatAt1st !== undefined) out.bonusFeatAt1st = Boolean(out.race.bonusFeatAt1st);
+      if (out.race.humanBonusSkillPoints !== undefined) out.humanBonusSkillPoints = Boolean(out.race.humanBonusSkillPoints);
     }
     if (out.monster && typeof out.monster === 'object') {
       const m = out.monster;
@@ -4402,7 +4407,7 @@ const RuleEngine = {
         if (profData.shields.tower) res.shields.tower = true;
       } else {
         // Fallback for custom or unrecognized classes using BAB/role
-        const def = this.getClassDef(cName) || (typeof DND35_CLASS_DEFS !== 'undefined' ? DND35_CLASS_DEFS[cName] : null) || {};
+        const def = this.getClassDef(cName, character) || (typeof DND35_CLASS_DEFS !== 'undefined' ? DND35_CLASS_DEFS[cName] : null) || {};
         if (def.bab === 1.0) {
           res.weapons.simple = true;
           res.weapons.martial = true;
@@ -5534,9 +5539,10 @@ const RuleEngine = {
       || (typeof SrdCompendium !== 'undefined' ? SrdCompendium : null);
     const candidateModifiers = [];
     domainNames.forEach(domName => {
-      const srdDom = ((comp && typeof comp.getDomain === 'function')
-        ? comp.getDomain(domName)
-        : null) || this.getMasterDbEntry(domName, 'Domain');
+      const custDom = this.resolveCustomEntryOverride(domName, character);
+      const srdDom = custDom
+        || this.getMasterDbEntry(domName, 'Domain')
+        || ((comp && typeof comp.getDomain === 'function') ? comp.getDomain(domName) : null);
       const evDom = srdDom ? this.ensureV2Entry(srdDom, { character }) : null;
       const mods = (evDom && Array.isArray(evDom.modifiers)) ? evDom.modifiers : [];
       const displayDom = srdDom?.name || (domName.charAt(0).toUpperCase() + domName.slice(1));
@@ -5663,21 +5669,24 @@ const RuleEngine = {
       || (typeof SrdCompendium !== 'undefined' ? SrdCompendium : null);
     const entries = [];
     domainNames.forEach(domName => {
+      const custDom = this.resolveCustomEntryOverride(domName, character);
       const mdbDom = this.getMasterDbEntry(domName, 'Domain');
       const compDom = (comp && typeof comp.getDomain === 'function') ? comp.getDomain(domName) : null;
-      const srdDom = mdbDom || compDom;
+      const srdDom = custDom || mdbDom || compDom;
       const evDom = srdDom ? this.ensureV2Entry(srdDom, { character }) : null;
+      const v3Gp = srdDom?.grants?.grantedPower;
       entries.push({
         id: srdDom?.id || `dom-${String(domName).toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,
         schemaVersion: 3,
         name: srdDom?.name || domName,
+        grants: srdDom?.grants ? JSON.parse(JSON.stringify(srdDom.grants)) : null,
         effects: Array.isArray(srdDom?.effects) ? JSON.parse(JSON.stringify(srdDom.effects)) : [],
         modifiers: Array.isArray(evDom?.modifiers) ? evDom.modifiers : [],
         ruleFlags: { ...(srdDom?.ruleFlags || {}), ...(evDom?.ruleFlags || {}) },
-        spellLikeAbilities: Array.isArray(srdDom?.grantedPower?.spellLikeAbilities)
-          ? srdDom.grantedPower.spellLikeAbilities
-          : [],
-        description: srdDom?.grantedPower?.description || srdDom?.text || srdDom?.description || ''
+        spellLikeAbilities: Array.isArray(v3Gp?.spellLikeAbilities)
+          ? v3Gp.spellLikeAbilities
+          : (Array.isArray(srdDom?.grantedPower?.spellLikeAbilities) ? srdDom.grantedPower.spellLikeAbilities : []),
+        description: v3Gp?.text || srdDom?.grantedPower?.description || srdDom?.text || srdDom?.description || ''
       });
     });
     return entries;
@@ -7231,9 +7240,10 @@ const RuleEngine = {
       }
     }
 
-    // 3.92. Collect Character Template Modifiers (Canonical V2 `srd_templates.json`)
+    // 3.92. Collect Character Template Modifiers (Canonical V3 `srd_templates.json`)
     const activeTemplateEntries = this.getCharacterActiveTemplateEntries(character);
-    let totalLevelAdjustment = Number(this.getMasterDbEntry(character.race, 'Race')?.levelAdjustment) || 0;
+    const raceTraitsForLa = typeof this.getRaceTraits === 'function' ? this.getRaceTraits(character) : null;
+    let totalLevelAdjustment = raceTraitsForLa ? raceTraitsForLa.levelAdjustment : (Number(this.getMasterDbEntry(character.race, 'Race')?.levelAdjustment) || 0);
     const templateSummary = {
       activeCount: activeTemplateEntries.length,
       names: [],
@@ -7274,18 +7284,36 @@ const RuleEngine = {
         const tmplLabel = `${tmpl.name} (Template)`;
         templateSummary.names.push(tmpl.name);
         if (tmpl.id) templateSummary.ids.push(tmpl.id);
-        const la = Number(tmpl.levelAdjustment ?? tmpl.ruleFlags?.levelAdjustment) || 0;
+        const la = Number(tmpl.race?.levelAdjustment ?? tmpl.levelAdjustment ?? tmpl.ruleFlags?.levelAdjustment) || 0;
         const cr = Number(tmpl.crIncrease ?? tmpl.ruleFlags?.crIncrease) || 0;
         templateSummary.levelAdjustment += la;
         templateSummary.crIncrease += cr;
         totalLevelAdjustment += la;
-        if (tmpl.creatureType) templateSummary.creatureType = tmpl.creatureType;
+        if (tmpl.race?.creatureType || tmpl.creatureType) templateSummary.creatureType = tmpl.race?.creatureType || tmpl.creatureType;
         if (tmpl.hitDieOverride) templateSummary.hitDieOverride = tmpl.hitDieOverride;
         if (tmpl.dr && !templateSummary.dr.includes(tmpl.dr)) templateSummary.dr.push(tmpl.dr);
         if (tmpl.sr || tmpl.ruleFlags?.srFormula) {
           const srExpr = tmpl.ruleFlags?.srFormula || tmpl.sr;
           const srVal = Number(this.evaluateFormula(srExpr, tmplEvalCtx)) || parseInt(srExpr, 10) || 0;
           if (srVal > templateSummary.sr) templateSummary.sr = srVal;
+        }
+        if (Array.isArray(tmpl.effects)) {
+          tmpl.effects.forEach(ef => {
+            if (!ef || ef.type !== 'defense') return;
+            if (ef.mode === 'Immunity' && ef.what && !templateSummary.immunities.includes(ef.what)) templateSummary.immunities.push(ef.what);
+            else if (ef.mode === 'Energy Resistance' && ef.what) {
+              const rTxt = `${ef.what} ${ef.value || 5}`;
+              if (!templateSummary.resistances.includes(rTxt)) templateSummary.resistances.push(rTxt);
+            } else if (ef.mode === 'DR' && ef.value) {
+              const drTxt = `${ef.value}/${ef.what || '-'}`;
+              if (!templateSummary.dr.includes(drTxt)) templateSummary.dr.push(drTxt);
+            } else if (ef.mode === 'Spell Resistance' && ef.value) {
+              const srV = Number(ef.value) || 0;
+              if (srV > templateSummary.sr) templateSummary.sr = srV;
+            } else if (ef.mode === 'Sense / Movement' && ef.what && !templateSummary.vision.includes(ef.what)) {
+              templateSummary.vision.push(ef.what);
+            }
+          });
         }
         if (Number(tmpl.fastHealing) > templateSummary.fastHealing) {
           templateSummary.fastHealing = Number(tmpl.fastHealing);
@@ -8659,6 +8687,25 @@ const RuleEngine = {
       });
     });
 
+    // Active Cleric Domains V3 Attack Modifiers (skipping any domain already mirrored in character.specialAbilities)
+    const activeDomainsForAtk = this.getCharacterActiveDomainEntries(character);
+    activeDomainsForAtk.forEach(dom => {
+      if (!dom || !Array.isArray(dom.modifiers)) return;
+      const domLow = String(dom.name || '').toLowerCase();
+      const alreadyMirrored = Array.isArray(character.specialAbilities) && character.specialAbilities.some(a =>
+        a && typeof a === 'object' && a.active !== false && (String(a.domainSource || '').toLowerCase() === domLow || String(a.name || '').toLowerCase().includes(`${domLow} domain`)) && Array.isArray(a.effects) && a.effects.length > 0
+      );
+      if (alreadyMirrored) return;
+      dom.modifiers.forEach(mod => {
+        if (!mod || !mod.target || mod.condition) return;
+        const t = String(mod.target).toLowerCase();
+        if (isAtkTargetMatch(t)) {
+          const v = evalModExpr(mod, evalCtx);
+          if (v !== 0) attackBonusItems.push({ type: mod.type || 'untyped', val: v, source: `${dom.name} Domain` });
+        }
+      });
+    });
+
     // Active Buffs & Conditions V2 Attack Modifiers
     if (Array.isArray(character.buffs)) {
       character.buffs.forEach(rawBuff => {
@@ -8839,6 +8886,25 @@ const RuleEngine = {
         if (isDmgTargetMatch(t)) {
           const v = evalModExpr(mod, evalCtx);
           if (v !== 0) damageBonusItems.push({ type: mod.type || 'template', val: v, source: `${tmpl.name} (Template)` });
+        }
+      });
+    });
+
+    // Active Cleric Domains V3 Damage Modifiers (skipping any domain already mirrored in character.specialAbilities)
+    const activeDomainsForDmg = this.getCharacterActiveDomainEntries(character);
+    activeDomainsForDmg.forEach(dom => {
+      if (!dom || !Array.isArray(dom.modifiers)) return;
+      const domLow = String(dom.name || '').toLowerCase();
+      const alreadyMirrored = Array.isArray(character.specialAbilities) && character.specialAbilities.some(a =>
+        a && typeof a === 'object' && a.active !== false && (String(a.domainSource || '').toLowerCase() === domLow || String(a.name || '').toLowerCase().includes(`${domLow} domain`)) && Array.isArray(a.effects) && a.effects.length > 0
+      );
+      if (alreadyMirrored) return;
+      dom.modifiers.forEach(mod => {
+        if (!mod || !mod.target || mod.condition) return;
+        const t = String(mod.target).toLowerCase();
+        if (isDmgTargetMatch(t)) {
+          const v = evalModExpr(mod, evalCtx);
+          if (v !== 0) damageBonusItems.push({ type: mod.type || 'untyped', val: v, source: `${dom.name} Domain` });
         }
       });
     });
@@ -9709,6 +9775,202 @@ const RuleEngine = {
     }
   },
 
+  // Canonical V3 Race Traits Resolver (reads `race.*` V3 facet first, with character.customEntries support)
+  getRaceTraits(character = null) {
+    const rawRaceName = String((character && typeof character === 'object' ? character.race : character) || '').trim();
+    const charCtx = (character && typeof character === 'object') ? character : null;
+    const custRace = rawRaceName ? this.resolveCustomEntryOverride(rawRaceName, charCtx) : null;
+    const dbRace = custRace || (rawRaceName ? this.getMasterDbEntry(rawRaceName, 'Race') : null);
+    if (dbRace && typeof dbRace === 'object') {
+      const r = (dbRace.race && typeof dbRace.race === 'object') ? dbRace.race : {};
+      const bf1 = r.bonusFeatAt1st !== undefined
+        ? Boolean(r.bonusFeatAt1st)
+        : Boolean((Array.isArray(dbRace.bonusFeats) && dbRace.bonusFeats.includes('Any')) || (typeof dbRace.bonusFeats === 'number' && dbRace.bonusFeats > 0));
+      const bsp = r.humanBonusSkillPoints !== undefined
+        ? (typeof r.humanBonusSkillPoints === 'number' ? r.humanBonusSkillPoints : (r.humanBonusSkillPoints ? 1 : 0))
+        : (Number(dbRace.bonusSkillPointsPerLevel) || 0);
+      return {
+        found: true,
+        id: dbRace.id || null,
+        name: dbRace.name || rawRaceName,
+        size: r.size || dbRace.size || 'Medium',
+        speed: Number(r.speed ?? r.baseSpeed ?? dbRace.baseSpeed ?? 30) || 30,
+        favoredClass: r.favoredClass || dbRace.favoredClass || 'Any',
+        levelAdjustment: Number(r.levelAdjustment ?? dbRace.levelAdjustment ?? 0) || 0,
+        bonusFeatAt1st: bf1,
+        humanBonusSkillPoints: bsp
+      };
+    }
+    const fallbackHuman = rawRaceName.toLowerCase().includes('human');
+    return {
+      found: false,
+      id: null,
+      name: rawRaceName,
+      size: 'Medium',
+      speed: 30,
+      favoredClass: 'Any',
+      levelAdjustment: 0,
+      bonusFeatAt1st: fallbackHuman,
+      humanBonusSkillPoints: fallbackHuman ? 1 : 0
+    };
+  },
+
+  // Canonical V3 Class Definition Normalizer (single source of truth for RuleEngine & getAvailableClassDefs)
+  normalizeV3ClassDef(srdClass, localDef = null, fallbackName = '') {
+    if (!srdClass || typeof srdClass !== 'object') return localDef;
+    const prev = localDef || {};
+    const pr = (srdClass.progression && typeof srdClass.progression === 'object') ? srdClass.progression : null;
+    const isPrestige = Boolean(
+      (pr && pr.mode === 'prestige') ||
+      srdClass.isPrestige ||
+      srdClass.category === 'Prestige' ||
+      srdClass.subCategory === 'Prestige' ||
+      srdClass.type === 'Prestige Class' ||
+      prev.isPrestige
+    );
+    const hdRaw = (pr && pr.hitDie) ? pr.hitDie : (srdClass.hitDie || srdClass.hd || prev.hd || 8);
+    const hdNum = Number(String(hdRaw).replace(/[^0-9]/g, '')) || 8;
+    let babRate = 0.75;
+    if (pr && pr.bab) {
+      babRate = pr.bab === 'full' ? 1.0 : (pr.bab === '1/2' ? 0.5 : 0.75);
+    } else if (srdClass.bab !== undefined && !isNaN(Number(srdClass.bab))) {
+      babRate = Number(srdClass.bab);
+    } else if (srdClass.babProgression) {
+      babRate = srdClass.babProgression === 'high' ? 1.0 : (srdClass.babProgression === 'low' ? 0.5 : 0.75);
+    } else if (prev.bab !== undefined) {
+      babRate = Number(prev.bab) || 0.5;
+    } else {
+      babRate = 0.5;
+    }
+    const hasV3Saves = Boolean(pr && Array.isArray(pr.goodSaves));
+    const fortSave = hasV3Saves ? (pr.goodSaves.includes('fort') ? 'good' : 'poor') : (srdClass.fort || (srdClass.savingThrows?.fort === 'high' ? 'good' : (prev.fort || 'poor')));
+    const refSave = hasV3Saves ? (pr.goodSaves.includes('ref') ? 'good' : 'poor') : (srdClass.ref || (srdClass.savingThrows?.ref === 'high' ? 'good' : (prev.ref || 'poor')));
+    const willSave = hasV3Saves ? (pr.goodSaves.includes('will') ? 'good' : 'poor') : (srdClass.will || (srdClass.savingThrows?.will === 'high' ? 'good' : (prev.will || 'poor')));
+    const skillPts = (pr && pr.skillPointsPerLevel !== undefined)
+      ? (Number(pr.skillPointsPerLevel) || 2)
+      : (Number(srdClass.skillPointsPerLevel ?? srdClass.skills ?? prev.skills) || 2);
+    const maxLvl = (pr && pr.maxLevel)
+      ? (Number(pr.maxLevel) || (isPrestige ? 10 : 20))
+      : (Number(srdClass.maxLevel || prev.maxLevel) || (isPrestige ? 10 : 20));
+    const classSkills = (pr && Array.isArray(pr.classSkills) && pr.classSkills.length > 0)
+      ? pr.classSkills.slice()
+      : (Array.isArray(srdClass.classSkills) && srdClass.classSkills.length > 0 ? srdClass.classSkills.slice() : (prev.classSkills || []));
+
+    let featuresMap = prev.features || {};
+    if (pr && (Array.isArray(pr.levels) || Array.isArray(pr.milestones))) {
+      featuresMap = {};
+      const srcRows = Array.isArray(pr.levels) ? pr.levels : pr.milestones;
+      srcRows.forEach((lv, idx) => {
+        if (!lv) return;
+        const lvlNum = Number(lv.level) || (idx + 1);
+        const fList = Array.isArray(lv.features) ? lv.features : [];
+        if (fList.length > 0) {
+          featuresMap[String(lvlNum)] = fList.filter(Boolean).map(f => {
+            if (typeof f === 'string') return { name: f, category: 'Special Ability', type: 'Ex', summary: '' };
+            const refId = f.refId || f.id || undefined;
+            return {
+              ...(refId ? { id: refId } : {}),
+              name: f.name || 'Class Feature',
+              category: f.category || 'Special Ability',
+              type: f.abilityType || f.type || 'Ex',
+              summary: f.text || f.summary || f.benefit || f.description || ''
+            };
+          });
+        }
+      });
+    } else if (srdClass.features && typeof srdClass.features === 'object' && Object.keys(srdClass.features).length > 0) {
+      featuresMap = srdClass.features;
+    }
+
+    let bonusFeatLevels = prev.bonusFeatLevels || [];
+    if (srdClass.grants && Array.isArray(srdClass.grants.bonusFeats)) {
+      bonusFeatLevels = Array.from(new Set(srdClass.grants.bonusFeats.map(g => Number(g && g.level)).filter(n => n > 0))).sort((a, b) => a - b);
+    } else if (srdClass.grants && typeof srdClass.grants === 'object' && Array.isArray(srdClass.facets) && srdClass.facets.includes('grants')) {
+      bonusFeatLevels = [];
+    } else if (Array.isArray(srdClass.bonusFeatLevels) && srdClass.bonusFeatLevels.length > 0) {
+      bonusFeatLevels = srdClass.bonusFeatLevels.slice();
+    }
+
+    let prereqsArr = prev.prerequisites || [];
+    if (Array.isArray(srdClass.prerequisites)) {
+      prereqsArr = srdClass.prerequisites;
+    } else if (srdClass.prerequisites && Array.isArray(srdClass.prerequisites.all)) {
+      prereqsArr = srdClass.prerequisites.all.map(group => {
+        const alts = Array.isArray(group) ? group : (Array.isArray(group?.anyOf) ? group.anyOf : [group]);
+        const a = alts[0] || {};
+        if (a.kind === 'bab') return { key: 'bab', min: Number(a.min) || 1, text: `Base Attack Bonus +${Number(a.min) || 1}` };
+        if (a.kind === 'skill') {
+          const sk = String(a.skill || '').replace(/^skill\./, '');
+          const rk = Number(a.ranks ?? a.min) || 4;
+          return { key: 'skill', skill: sk, ranks: rk, text: `${sk} ${rk} ranks` };
+        }
+        if (a.kind === 'feat') {
+          const fn = a.name || a.feat || a.tag || '';
+          return { key: 'feat', name: fn, val: fn, text: `Feat: ${fn}` };
+        }
+        if (a.kind === 'alignment') {
+          const rawAl = String(a.value || a.align || '');
+          const allowed = rawAl.split(/[,/]/).map(s => s.trim()).filter(Boolean);
+          return { key: 'alignment', allowed, text: `Alignment: ${rawAl}` };
+        }
+        if (a.kind === 'spellcasting') {
+          const tr = String(a.tradition || a.cls || 'any').toLowerCase();
+          const key = tr.includes('arcane') ? 'arcane' : (tr.includes('divine') ? 'divine' : 'spells');
+          return { key, minSpellLevel: Number(a.spellLevel ?? a.min) || 1, text: `Spellcasting (${tr})` };
+        }
+        return { key: 'special', text: a.text || srdClass.prerequisites.text || 'Special Prerequisite' };
+      });
+    }
+
+    let spellProg = srdClass.spellcastingProgression || prev.spellcastingProgression || 'none';
+    if (spellProg === 'none' && pr) {
+      if (pr.spellcastingChassis && pr.spellcastingChassis.mode && pr.spellcastingChassis.mode !== 'none') {
+        spellProg = pr.spellcastingChassis.mode;
+      } else if (Array.isArray(pr.levels) && pr.levels.some(lv => lv && (lv.spellcasting || lv.spell))) {
+        const advCount = pr.levels.filter(lv => lv && (lv.spellcasting || lv.spell)).length;
+        spellProg = advCount >= maxLvl ? 'full' : 'half';
+      }
+    }
+
+    const rawDesc = srdClass.text || srdClass.description || srdClass.shortDescription || prev.description || '';
+    const cleanDesc = (rawDesc && !/<[a-z][\s\S]*>/i.test(rawDesc))
+      ? rawDesc
+      : (srdClass.shortDescription || prev.description || String(rawDesc).replace(/<img[^>]*>/gi, '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim());
+
+    return Object.assign({}, prev, {
+      _v2Hydrated: true,
+      schemaVersion: 3,
+      id: srdClass.id || prev.id || null,
+      name: srdClass.name || prev.name || fallbackName,
+      source: srdClass.source || prev.source || 'SRD 3.5e',
+      hd: hdNum,
+      bab: babRate,
+      fort: fortSave,
+      ref: refSave,
+      will: willSave,
+      skills: skillPts,
+      maxLevel: maxLvl,
+      classSkills,
+      features: featuresMap,
+      progression: pr || prev.progression || null,
+      grants: srdClass.grants || prev.grants || null,
+      replaces: Array.isArray(srdClass.replaces) ? srdClass.replaces : (prev.replaces || []),
+      variantOf: srdClass.variantOf || prev.variantOf || null,
+      bonusFeatLevels,
+      bonusFeatContract: srdClass.bonusFeatContract || prev.bonusFeatContract || null,
+      bonusFeatContracts: srdClass.bonusFeatContracts || prev.bonusFeatContracts || null,
+      prerequisites: prereqsArr,
+      spellcastingProgression: spellProg,
+      description: cleanDesc,
+      role: srdClass.role || prev.role || (isPrestige ? 'Prestige Class' : 'Base Class'),
+      edition: srdClass.edition || prev.edition || '3.5',
+      contentLevel: srdClass.contentLevel || prev.contentLevel || null,
+      effects: Array.isArray(srdClass.effects) ? srdClass.effects : (prev.effects || []),
+      isPrestige,
+      type: isPrestige ? 'Prestige Class' : 'Base Class'
+    });
+  },
+
   // D&D 3.5e Class Definitions Cache (Hydrated on-demand from database/srd_classes_races.json via SrdCompendium)
   DND35_CLASS_DEFS: {},
 
@@ -9771,36 +10033,7 @@ const RuleEngine = {
       }
       return localDef;
     }
-    const babRate = Number(srdClass.bab) || (srdClass.babProgression === 'high' ? 1.0 : (srdClass.babProgression === 'med' || srdClass.babProgression === 'medium' ? 0.75 : 0.5));
-    const fortSave = srdClass.fort || (srdClass.savingThrows?.fort === 'high' ? 'good' : 'poor');
-    const refSave = srdClass.ref || (srdClass.savingThrows?.ref === 'high' ? 'good' : 'poor');
-    const willSave = srdClass.will || (srdClass.savingThrows?.will === 'high' ? 'good' : 'poor');
-    const hdNum = Number(String(srdClass.hitDie || srdClass.hd || 8).replace(/[^0-9]/g, '')) || 8;
-    const skillPts = Number(srdClass.skillPointsPerLevel || srdClass.skills) || 2;
-    const merged = Object.assign({}, localDef || {}, {
-      _v2Hydrated: true,
-      id: srdClass.id || localDef?.id || null,
-      name: srdClass.name || localDef?.name || className,
-      source: srdClass.source || localDef?.source || '',
-      hd: hdNum,
-      bab: babRate,
-      fort: fortSave,
-      ref: refSave,
-      will: willSave,
-      skills: skillPts,
-      maxLevel: Number(srdClass.maxLevel) || (localDef?.maxLevel) || (srdClass.isPrestige || srdClass.category === 'Prestige' ? 10 : 20),
-      features: (srdClass.features && Object.keys(srdClass.features).length > 0) ? srdClass.features : (localDef?.features || {}),
-      replaces: Array.isArray(srdClass.replaces) ? srdClass.replaces : (localDef?.replaces || []),
-      bonusFeatLevels: Array.isArray(srdClass.bonusFeatLevels) && srdClass.bonusFeatLevels.length > 0 ? srdClass.bonusFeatLevels : (localDef?.bonusFeatLevels || []),
-      bonusFeatContract: srdClass.bonusFeatContract || localDef?.bonusFeatContract || null,
-      bonusFeatContracts: srdClass.bonusFeatContracts || localDef?.bonusFeatContracts || null,
-      prerequisites: Array.isArray(srdClass.prerequisites) && srdClass.prerequisites.length > 0 ? srdClass.prerequisites : (localDef?.prerequisites || []),
-      classSkills: Array.isArray(srdClass.classSkills) && srdClass.classSkills.length > 0 ? srdClass.classSkills : (localDef?.classSkills || [])
-    });
-    if (!merged.type) {
-      merged.isPrestige = Boolean(srdClass.isPrestige || srdClass.category === 'Prestige');
-      merged.type = merged.isPrestige ? 'Prestige Class' : 'Base Class';
-    }
+    const merged = this.normalizeV3ClassDef(srdClass, localDef, className);
     if (this.DND35_CLASS_DEFS && !customClassOverride && srdClass.name) {
       this.DND35_CLASS_DEFS[srdClass.name] = merged;
       this.DND35_CLASS_DEFS[String(srdClass.name).toLowerCase().trim()] = merged;
@@ -9813,8 +10046,8 @@ const RuleEngine = {
   },
 
   // Get slot contract for bonus feats
-  getClassBonusFeatContract(className, classLevel) {
-    const def = this.getClassDef(className);
+  getClassBonusFeatContract(className, classLevel, character = null) {
+    const def = this.getClassDef(className, character);
     if (!def) return null;
     const cl = Number(classLevel) || 1;
     if (def.bonusFeatContracts && def.bonusFeatContracts[cl]) return def.bonusFeatContracts[cl];
@@ -9823,8 +10056,8 @@ const RuleEngine = {
   },
 
   // Get granted class features, bonus feats and Slot Contract for a given class and level
-  getClassLevelFeatures(className, classLevel) {
-    const def = this.getClassDef(className);
+  getClassLevelFeatures(className, classLevel, character = null) {
+    const def = this.getClassDef(className, character);
     if (!def) return { features: [], featureObjects: [], hasBonusFeat: false, bonusFeatContract: null };
     const cl = Number(classLevel) || 1;
     const rawFeatures = (def.features && (def.features[cl] || def.features[String(cl)])) ? (def.features[cl] || def.features[String(cl)]) : [];
@@ -9834,7 +10067,7 @@ const RuleEngine = {
 
     let bonusFeatContract = null;
     if (hasBonusFeat) {
-      bonusFeatContract = this.getClassBonusFeatContract(className, cl);
+      bonusFeatContract = this.getClassBonusFeatContract(className, cl, character);
       if (!bonusFeatContract) {
         if (className === 'Fighter') {
           bonusFeatContract = {
@@ -9863,7 +10096,9 @@ const RuleEngine = {
   calculateProgression(levelProgression = [], options = {}) {
     const system = options.system || 'fractional'; // 'fractional' or 'standard'
     const isHuman = options.isHuman ?? true;
+    const racialSkillBonus = typeof isHuman === 'number' ? isHuman : (isHuman ? 1 : 0);
     const intMod = Number(options.intMod) || 0;
+    const charRef = options.character || null;
 
     let activeLevels = 0;
     let plannedLevels = levelProgression.length;
@@ -9890,7 +10125,7 @@ const RuleEngine = {
       baseHp += Number(lvl.hpGain) || 0;
 
       const cName = lvl.className || 'Warblade';
-      const cDef = this.getClassDef(cName) || { hd: 8, bab: 0.75, fort: 'poor', ref: 'poor', will: 'good', skills: 4 };
+      const cDef = this.getClassDef(cName, charRef) || { hd: 8, bab: 0.75, fort: 'poor', ref: 'poor', will: 'good', skills: 4 };
       classCounts[cName] = (classCounts[cName] || 0) + 1;
 
       // Fractional BAB
@@ -9921,9 +10156,9 @@ const RuleEngine = {
       // Skill Points
       const baseSkill = cDef.skills || 2;
       if (activeLevels === 1) {
-        totalSkillPts += Math.max(4, (baseSkill + intMod) * 4) + (isHuman ? 4 : 0);
+        totalSkillPts += Math.max(4, (baseSkill + intMod) * 4) + (racialSkillBonus * 4);
       } else {
-        totalSkillPts += Math.max(1, baseSkill + intMod) + (isHuman ? 1 : 0);
+        totalSkillPts += Math.max(1, baseSkill + intMod) + racialSkillBonus;
       }
 
       // Collect active feats & abilities
@@ -9948,7 +10183,7 @@ const RuleEngine = {
     } else {
       // Standard Core 3.5e: sum table values for each class
       Object.entries(classCounts).forEach(([cName, count]) => {
-        const cDef = this.getClassDef(cName) || { hd: 8, bab: 0.75, fort: 'poor', ref: 'poor', will: 'good' };
+        const cDef = this.getClassDef(cName, charRef) || { hd: 8, bab: 0.75, fort: 'poor', ref: 'poor', will: 'good' };
         if (cDef.bab === 1.0) finalBab += count;
         else if (cDef.bab === 0.75) finalBab += Math.floor(count * 0.75);
         else finalBab += Math.floor(count * 0.5);
@@ -12485,7 +12720,9 @@ const RuleEngine = {
 
     const abi = w.abilities || { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 };
     const intMod = this.getAbilityMod(abi.int || 10);
-    const isHuman = String(w.race || '').toLowerCase().includes('human');
+    const raceTraits = typeof this.getRaceTraits === 'function' ? this.getRaceTraits(w) : null;
+    const isHuman = raceTraits ? raceTraits.humanBonusSkillPoints : String(w.race || '').toLowerCase().includes('human');
+    const hasRaceBonusFeat1 = raceTraits ? raceTraits.bonusFeatAt1st : isHuman;
     const sys = w.settings?.babSaveSystem || 'standard';
     const rawFeatMode = String(w.settings?.featMode || 'Standard 3.5e (1, 3, 6, 9, 12, 15, 18)');
     const featMode = rawFeatMode.startsWith('Every 2 Levels')
@@ -12502,7 +12739,7 @@ const RuleEngine = {
 
     const rawProg = Array.isArray(w.levelProgression) ? w.levelProgression : [];
     const progSummary = typeof this.calculateProgression === 'function'
-      ? this.calculateProgression(rawProg, { system: sys, isHuman, intMod })
+      ? this.calculateProgression(rawProg, { system: sys, isHuman, intMod, character: w })
       : null;
 
     const classCountsSoFar = {};
@@ -12526,7 +12763,7 @@ const RuleEngine = {
 
       const rowSlice = rawProg.slice(0, idx + 1).map(p => ({ ...p, active: true }));
       const rowCalc = typeof this.calculateProgression === 'function'
-        ? this.calculateProgression(rowSlice, { system: sys, isHuman, intMod })
+        ? this.calculateProgression(rowSlice, { system: sys, isHuman, intMod, character: w })
         : null;
       const rowBab = rowCalc ? rowCalc.baseBab : (Number(lvl?.bab) || 0);
       const rowFort = rowCalc ? rowCalc.baseSaves.fort : (Number(lvl?.fort) || 0);
@@ -12536,7 +12773,7 @@ const RuleEngine = {
       const featsArr = Array.isArray(lvl?.feats) ? [...lvl.feats] : [];
       const qualifiesReg = isLevelQualifiesForFeat(lvlNum, featMode);
       if (isActive && qualifiesReg) regularSlotsEarned++;
-      if (isActive && lvlNum === 1 && isHuman) bonusSlotsEarned++;
+      if (isActive && lvlNum === 1 && hasRaceBonusFeat1) bonusSlotsEarned++;
 
       featsArr.forEach(fStr => {
         const s = String(fStr || '');
@@ -12582,7 +12819,7 @@ const RuleEngine = {
       for (let l = 1; l <= charLvl; l++) {
         if (isLevelQualifiesForFeat(l, featMode)) regularSlotsEarned++;
       }
-      if (isHuman) bonusSlotsEarned++;
+      if (hasRaceBonusFeat1) bonusSlotsEarned++;
       regularFeatsTaken = Array.isArray(w.feats)
         ? w.feats.filter(f => !(f && typeof f === 'object' && (f.type === 'Trait' || f.type === 'Skill Trick'))).length
         : 0;

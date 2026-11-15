@@ -440,6 +440,26 @@
     if (typeof copy.shortDescription === 'string' && copy.shortDescription.length > 240) {
       copy.shortDescription = copy.shortDescription.slice(0, 237) + '...';
     }
+    if (copy.progression && Array.isArray(copy.progression.levels)) {
+      delete copy.features;
+      delete copy.bonusFeatLevels;
+      delete copy.savingThrows;
+      delete copy.babProgression;
+      delete copy.hitDie;
+      copy.progression.levels.forEach((lv) => {
+        if (lv && Array.isArray(lv.features)) {
+          lv.features.forEach((f) => {
+            if (f && typeof f === 'object' && typeof f.text === 'string' && f.text.length > 160) {
+              f.text = f.text.slice(0, 157) + '...';
+            }
+          });
+        }
+      });
+    }
+    if (copy.grants && copy.grants.grantedPower) {
+      delete copy.grantedPower;
+      delete copy.spells;
+    }
     return copy;
   }
 
@@ -1923,13 +1943,16 @@
         } catch (_) {}
       }
 
-      // 2. Merge Custom Domains from character.customDb & masterDb (takes highest precedence)
+      // 2. Merge Custom Domains from character.customDb, character.customEntries & masterDb (takes highest precedence)
       if (typeof window !== 'undefined') {
         if (window.character && Array.isArray(window.character.customDb)) {
           window.character.customDb.forEach(mergeDomainOverride);
         }
         if (Array.isArray(window.masterDb)) {
           window.masterDb.forEach(mergeDomainOverride);
+        }
+        if (window.character && window.character.customEntries && typeof window.character.customEntries === 'object') {
+          Object.values(window.character.customEntries).forEach(mergeDomainOverride);
         }
       }
       const activeMasterDb = SrdCompendium.getMasterDb();

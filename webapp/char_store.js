@@ -4637,6 +4637,8 @@
     if (k === 'truenaming' || k === 'utterance') return 'Utterance';
     if (k === 'class') return 'Class';
     if (k === 'race') return 'Race';
+    if (k === 'domain') return 'Domain';
+    if (k === 'deity') return 'Deity';
     if (k === 'template' || k === 'templates') return 'Template';
     return undefined;
   }
@@ -4944,6 +4946,39 @@
         if (v3Copy.armor.armorCheckPenalty !== undefined) obj.acp = v3Copy.armor.armorCheckPenalty;
         if (v3Copy.armor.arcaneSpellFailure !== undefined) obj.asf = v3Copy.armor.arcaneSpellFailure;
       }
+      if (v3Copy.item && typeof v3Copy.item === 'object') {
+        obj.item = CharStore._fastCloneHistoryVal(v3Copy.item);
+        if (v3Copy.item.price !== undefined) { obj.cost = v3Copy.item.price; obj.gpValue = v3Copy.item.price; }
+        if (v3Copy.item.casterLevel !== undefined) obj.casterLevel = v3Copy.item.casterLevel;
+      }
+      if (v3Copy.spell && typeof v3Copy.spell === 'object') {
+        obj.spell = CharStore._fastCloneHistoryVal(v3Copy.spell);
+        const sp = v3Copy.spell;
+        if (sp.school) obj.school = sp.school;
+        if (sp.discipline) obj.discipline = sp.discipline;
+        if (sp.level !== undefined) obj.level = sp.level;
+        else if (Array.isArray(sp.classLevels) && sp.classLevels[0] && sp.classLevels[0].level !== undefined) obj.level = sp.classLevels[0].level;
+        if (sp.ppCost !== undefined) { obj.ppCost = sp.ppCost; obj.powerPointsCost = sp.ppCost; }
+        if (Array.isArray(sp.components)) obj.components = sp.components.join(', ');
+      }
+      if (v3Copy.delivery && typeof v3Copy.delivery === 'object') {
+        obj.delivery = CharStore._fastCloneHistoryVal(v3Copy.delivery);
+        if (v3Copy.delivery.action) { obj.action = v3Copy.delivery.action; obj.castingTime = v3Copy.delivery.action; }
+        if (v3Copy.delivery.range) obj.range = v3Copy.delivery.range;
+        if (v3Copy.delivery.area) obj.area = v3Copy.delivery.area;
+        if (v3Copy.delivery.spellResistance) obj.sr = v3Copy.delivery.spellResistance;
+        if (v3Copy.delivery.save && v3Copy.delivery.save.type) {
+          obj.save = v3Copy.delivery.save.type === 'None' ? 'None' : (v3Copy.delivery.save.dc || (v3Copy.delivery.save.type + ' ' + String(v3Copy.delivery.save.effect || '').toLowerCase()).trim());
+        }
+      }
+      if (v3Copy.lifecycle && typeof v3Copy.lifecycle === 'object') {
+        obj.lifecycle = CharStore._fastCloneHistoryVal(v3Copy.lifecycle);
+        if (v3Copy.lifecycle.durationText) obj.duration = v3Copy.lifecycle.durationText;
+      }
+      if (v3Copy.prerequisites && typeof v3Copy.prerequisites === 'object' && v3Copy.prerequisites.text) {
+        obj.prerequisites = CharStore._fastCloneHistoryVal(v3Copy.prerequisites);
+        obj.prereq = v3Copy.prerequisites.text;
+      }
     };
 
     if (doc.bodySlots && typeof doc.bodySlots === 'object') {
@@ -4955,7 +4990,7 @@
         });
       }
     }
-    ['weapons', 'gearPool', 'inventory', 'feats', 'specialAbilities', 'dmBoons', 'spells', 'knownSpells', 'preparedSpells', 'psionics', 'incarnum', 'pactMagic', 'shadowMagic', 'truenaming', 'templates'].forEach(function (arrKey) {
+    ['weapons', 'gearPool', 'inventory', 'feats', 'specialAbilities', 'dmBoons', 'spells', 'knownSpells', 'preparedSpells', 'maneuvers', 'stances', 'psionics', 'incarnum', 'pactMagic', 'shadowMagic', 'truenaming', 'templates'].forEach(function (arrKey) {
       const list = doc[arrKey];
       if (!Array.isArray(list)) return;
       list.forEach(function (entry) {
@@ -5060,28 +5095,16 @@
         const lp = (typeof q.levelIndex === 'number' && doc.levelProgression[q.levelIndex]) ? doc.levelProgression[q.levelIndex] : doc.levelProgression.find(function (r) {
           return r && nameLower && String(r.className || '').trim().toLowerCase() === nameLower;
         });
-        if (lp) {
-          charItem = {
-            id: lp.customEntryId || ('class_' + _slugifyCrafterId(lp.className || cleanName)),
-            name: lp.className || cleanName,
-            type: 'Class',
-            level: lp.level,
-            hd: lp.hd,
-            bab: lp.bab,
-            notes: lp.notes || '',
-            source: 'Character Progression'
-          };
-          sourceLocation = sourceLocation || 'levelProgression';
+        if (lp && lp.customEntryId && !resolvedId) {
+          resolvedId = lp.customEntryId;
         }
+        sourceLocation = sourceLocation || 'levelProgression';
       }
       if (!charItem && kind === 'race' && (doc.race || cleanName)) {
-        charItem = {
-          id: 'race_' + _slugifyCrafterId(cleanName || doc.race),
-          name: cleanName || doc.race,
-          type: 'Race',
-          source: 'Character Race'
-        };
         sourceLocation = sourceLocation || 'race';
+      }
+      if (!charItem && kind === 'domain') {
+        sourceLocation = sourceLocation || 'domains';
       }
       if (!charItem && kind === 'boon' && Array.isArray(doc.levelProgression) && typeof q.levelIndex === 'number' && doc.levelProgression[q.levelIndex]) {
         const lp = doc.levelProgression[q.levelIndex];
@@ -5113,6 +5136,8 @@
       tryList(doc.spells, 'spells');
       tryList(doc.knownSpells, 'knownSpells');
       tryList(doc.preparedSpells, 'preparedSpells');
+      tryList(doc.maneuvers, 'maneuvers');
+      tryList(doc.stances, 'stances');
       tryList(doc.psionics, 'psionics');
       tryList(doc.incarnum, 'incarnum');
       tryList(doc.pactMagic, 'pactMagic');
@@ -5190,17 +5215,20 @@
         }
         for (let ci = 0; ci < candidateClasses.length && !classFeatureEntry; ci++) {
           const cls = candidateClasses[ci];
-          const featsMap = cls && cls.features && typeof cls.features === 'object' ? cls.features : null;
-          if (!featsMap) continue;
-          const lvlKeys = Object.keys(featsMap);
-          for (let li = 0; li < lvlKeys.length && !classFeatureEntry; li++) {
-            const lvl = lvlKeys[li];
-            const fArr = Array.isArray(featsMap[lvl]) ? featsMap[lvl] : [];
+          let levelEntries = [];
+          if (cls && cls.progression && Array.isArray(cls.progression.levels)) {
+            levelEntries = cls.progression.levels.map(function (lv) { return { lvl: lv.level, list: Array.isArray(lv.features) ? lv.features : [] }; });
+          } else if (cls && cls.features && typeof cls.features === 'object') {
+            levelEntries = Object.keys(cls.features).map(function (k) { return { lvl: k, list: Array.isArray(cls.features[k]) ? cls.features[k] : [] }; });
+          }
+          for (let li = 0; li < levelEntries.length && !classFeatureEntry; li++) {
+            const lvl = levelEntries[li].lvl;
+            const fArr = levelEntries[li].list;
             for (let fi = 0; fi < fArr.length; fi++) {
               const f = fArr[fi];
               if (!f) continue;
               const fObj = typeof f === 'string' ? { name: f } : f;
-              const fId = String(fObj.id || '').trim();
+              const fId = String(fObj.refId || fObj.id || '').trim();
               const fName = String(fObj.name || '').trim();
               const isMatch = (idQuery && fId && fId.toLowerCase() === idQuery.toLowerCase()) ||
                 (cleanName && fName.toLowerCase() === cleanName.toLowerCase()) ||
@@ -5210,14 +5238,14 @@
                 const slug = _slugifyCrafterId(fName.replace(/\s*\((?:ex|su|sp|na)\)\s*$/i, '')).replace(/_/g, '-');
                 const rawSrc = String((linkedCab && linkedCab.source) || cls.source || 'PHB').trim();
                 const expandedSrc = _SOURCE_BOOK_NAMES[rawSrc.toLowerCase()] || rawSrc;
-                const summaryText = (linkedCab && (linkedCab.shortDescription || linkedCab.text || linkedCab.benefit || linkedCab.description)) || fObj.summary || fObj.benefit || fObj.description || '';
+                const summaryText = (linkedCab && (linkedCab.shortDescription || linkedCab.text || linkedCab.benefit || linkedCab.description)) || fObj.text || fObj.summary || fObj.benefit || fObj.description || '';
                 classFeatureEntry = Object.assign({}, linkedCab || {}, {
                   id: (linkedCab && linkedCab.id) || fId || ('cab-' + slug),
                   name: (linkedCab && linkedCab.name) || fName,
                   type: 'ClassAbility',
                   blueprint: 'feat',
                   featKind: 'classAbility',
-                  abilityType: String((linkedCab && linkedCab.abilityType) || fObj.type || 'Ex').toLowerCase(),
+                  abilityType: String((linkedCab && linkedCab.abilityType) || fObj.abilityType || fObj.type || 'Ex').toLowerCase(),
                   source: expandedSrc + ' (' + (cls.name || 'Class') + ' Level ' + lvl + ')',
                   shortDescription: summaryText,
                   text: summaryText,
@@ -5541,6 +5569,16 @@
         }
         _syncCharacterTargetWithV3(doc, copy, originalId, context);
         StudioBridge.upsertEntry(copy, { label: 'Apply Crafted Rules: ' + copy.name, persist: false });
+        if (typeof root !== 'undefined') {
+          if (root.RuleEngine && root.RuleEngine.DND35_CLASS_DEFS) root.RuleEngine.DND35_CLASS_DEFS = {};
+          root._customClassCacheVer = (root._customClassCacheVer || 0) + 1;
+          if ((copy.blueprint === 'class' || copy.type === 'Class') && typeof root.syncCustomClassesToRuleEngine === 'function') {
+            root.syncCustomClassesToRuleEngine();
+          }
+          if ((copy.blueprint === 'domain' || copy.type === 'Domain') && typeof root.syncClericDomainsToCharacterSpecialAbilities === 'function') {
+            root.syncClericDomainsToCharacterSpecialAbilities();
+          }
+        }
         CharStore.recompute('crafter');
         if (typeof root !== 'undefined' && typeof root.saveStateToStorage === 'function') {
           root.saveStateToStorage(true);
@@ -5574,6 +5612,16 @@
       const doc = CharStore.getDoc();
       if (doc) {
         StudioBridge.upsertEntry(copy, { label: 'Campaign Rule Crafter: ' + copy.name, persist: false });
+        if (typeof root !== 'undefined') {
+          if (root.RuleEngine && root.RuleEngine.DND35_CLASS_DEFS) root.RuleEngine.DND35_CLASS_DEFS = {};
+          root._customClassCacheVer = (root._customClassCacheVer || 0) + 1;
+          if ((copy.blueprint === 'class' || copy.type === 'Class') && typeof root.syncCustomClassesToRuleEngine === 'function') {
+            root.syncCustomClassesToRuleEngine();
+          }
+          if ((copy.blueprint === 'domain' || copy.type === 'Domain') && typeof root.syncClericDomainsToCharacterSpecialAbilities === 'function') {
+            root.syncClericDomainsToCharacterSpecialAbilities();
+          }
+        }
         CharStore.recompute('crafter');
         if (typeof root !== 'undefined' && typeof root.saveStateToStorage === 'function') {
           root.saveStateToStorage(true);
@@ -5612,6 +5660,12 @@
         });
         doc.customDb = nextDb;
         if (typeof root !== 'undefined') root.masterDb = nextDb;
+      }
+      if (typeof root !== 'undefined') {
+        if (root.RuleEngine && root.RuleEngine.DND35_CLASS_DEFS) root.RuleEngine.DND35_CLASS_DEFS = {};
+        root._customClassCacheVer = (root._customClassCacheVer || 0) + 1;
+        if (typeof root.syncCustomClassesToRuleEngine === 'function') root.syncCustomClassesToRuleEngine();
+        if (typeof root.syncClericDomainsToCharacterSpecialAbilities === 'function') root.syncClericDomainsToCharacterSpecialAbilities();
       }
       CharStore.recompute('crafter');
       if (typeof root !== 'undefined' && typeof root.saveStateToStorage === 'function') {

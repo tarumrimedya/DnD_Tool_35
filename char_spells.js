@@ -768,15 +768,19 @@
         if (Array.isArray(loaded)) {
           loaded.forEach(d => {
             if (!d || !d.name) return;
+            const v3Gp = d.grants?.grantedPower;
+            const v3Spells = Array.isArray(d.grants?.spellLadder)
+              ? d.grants.spellLadder.map(s => ({ level: s.level, id: s.refId || s.id, name: s.spell || s.name }))
+              : (d.spells || []);
             catalog[d.name] = {
               id: d.id,
               name: d.name,
-              grantedPower: d.grantedPower?.description || d.description || '',
-              classSkills: d.grantedPower?.classSkills || d.classSkills || [],
-              grantedFeats: d.grantedPower?.grantedFeats || [],
+              grantedPower: v3Gp?.text || d.grantedPower?.description || d.text || d.description || '',
+              classSkills: v3Gp?.classSkills || d.grantedPower?.classSkills || d.classSkills || [],
+              grantedFeats: v3Gp?.grantedFeats || d.grantedPower?.grantedFeats || [],
               effects: d.effects || [],
               ruleFlags: d.ruleFlags || {},
-              spells: d.spells || []
+              spells: v3Spells
             };
           });
         }
@@ -8674,7 +8678,9 @@
       }
 
       const sys = character.settings?.babSaveSystem || 'standard';
-      const isHuman = (character.race || '').toLowerCase().includes('human');
+      const isHuman = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getRaceTraits === 'function')
+        ? RuleEngine.getRaceTraits(character).humanBonusSkillPoints
+        : (character.race || '').toLowerCase().includes('human');
       const intMod = (typeof RuleEngine !== 'undefined' && RuleEngine.getAbilityMod)
         ? RuleEngine.getAbilityMod(character.abilities?.int || 10)
         : Math.floor(((character.abilities?.int || 10) - 10) / 2);
@@ -8863,7 +8869,7 @@
           const domDef = (window.SrdCompendium && typeof window.SrdCompendium.getDomain === 'function')
             ? window.SrdCompendium.getDomain(domName)
             : (typeof DND35_CLERIC_DOMAINS === 'object' ? DND35_CLERIC_DOMAINS[domName] : null);
-          const skills = domDef?.grantedPower?.classSkills || domDef?.classSkills || [];
+          const skills = domDef?.grants?.grantedPower?.classSkills || domDef?.grantedPower?.classSkills || domDef?.classSkills || [];
           if (Array.isArray(skills)) {
             skills.forEach(sk => classSkills.add(sk));
           }
@@ -8907,11 +8913,19 @@
         ? (SrdCompendium.getAllClasses()?.length || 0)
         : 0;
       const customLen = Array.isArray(character?.customClasses) ? character.customClasses.length : 0;
+      const customEntriesLen = (character?.customEntries && typeof character.customEntries === 'object') ? Object.keys(character.customEntries).length : 0;
       const dbLen = Array.isArray(masterDb) ? masterDb.length : 0;
-      const cacheKey = `${srdLoaded}_${window._srdCatalogVersion || 0}_${customLen}_${dbLen}_${window._customClassCacheVer || 0}`;
+      const cacheKey = `${srdLoaded}_${window._srdCatalogVersion || 0}_${customLen}_${customEntriesLen}_${dbLen}_${window._customClassCacheVer || 0}`;
       if (!forceRefresh && _cachedAvailableClassDefs && _cachedAvailableClassDefsKey === cacheKey) {
         return _cachedAvailableClassDefs;
       }
+
+      const normClass = (c, prev, fallbackName) => {
+        if (typeof RuleEngine !== 'undefined' && typeof RuleEngine.normalizeV3ClassDef === 'function') {
+          return RuleEngine.normalizeV3ClassDef(c, prev, fallbackName);
+        }
+        return Object.assign({}, prev || {}, c);
+      };
 
       const all = {};
       Object.assign(all, DND35_BASE_CLASS_DEFS);
@@ -8925,48 +8939,14 @@
         });
       }
 
-      // Hydrate Canonical V2 Base & Prestige Classes from SrdCompendium (database/srd_classes_races.json)
+      // Hydrate Canonical V3 Base & Prestige Classes from SrdCompendium (database/srd_classes_races.json)
       if (typeof SrdCompendium !== 'undefined' && typeof SrdCompendium.getAllClasses === 'function') {
         const srdClasses = SrdCompendium.getAllClasses() || [];
         srdClasses.forEach(c => {
           if (!c || !c.name) return;
           // Skip NPC classes in main PC Level-Up Wizard unless already present
           if (/\(npc\)/i.test(c.name) && !all[c.name]) return;
-          const isPrestige = Boolean(c.isPrestige || c.category === 'Prestige' || c.subCategory === 'Prestige' || c.type === 'Prestige Class');
-          const babRate = Number(c.bab) || (c.babProgression === 'high' ? 1.0 : (c.babProgression === 'med' || c.babProgression === 'medium' ? 0.75 : 0.5));
-          const fortSave = c.fort || (c.savingThrows?.fort === 'high' ? 'good' : 'poor');
-          const refSave = c.ref || (c.savingThrows?.ref === 'high' ? 'good' : 'poor');
-          const willSave = c.will || (c.savingThrows?.will === 'high' ? 'good' : 'poor');
-          const hdNum = Number(String(c.hitDie || c.hd || 8).replace(/[^0-9]/g, '')) || 8;
-          const skillPts = Number(c.skillPointsPerLevel || c.skills) || 2;
-          const prev = all[c.name] || {};
-
-          all[c.name] = Object.assign({}, prev, {
-            id: c.id || prev.id,
-            hd: hdNum,
-            bab: babRate,
-            fort: fortSave,
-            ref: refSave,
-            will: willSave,
-            skills: skillPts,
-            maxLevel: Number(c.maxLevel || prev.maxLevel) || (isPrestige ? 10 : 20),
-            classSkills: Array.isArray(c.classSkills) && c.classSkills.length > 0 ? c.classSkills : (prev.classSkills || []),
-            features: (c.features && Object.keys(c.features).length > 0) ? c.features : (prev.features || {}),
-            bonusFeatLevels: Array.isArray(c.bonusFeatLevels) && c.bonusFeatLevels.length > 0 ? c.bonusFeatLevels : (prev.bonusFeatLevels || []),
-            bonusFeatContract: c.bonusFeatContract || prev.bonusFeatContract || null,
-            bonusFeatContracts: c.bonusFeatContracts || prev.bonusFeatContracts || null,
-            prerequisites: Array.isArray(c.prerequisites) && c.prerequisites.length > 0 ? c.prerequisites : (prev.prerequisites || []),
-            spellcastingProgression: c.spellcastingProgression || prev.spellcastingProgression || 'none',
-            description: (c.description && !/<[a-z][\s\S]*>/i.test(c.description)) ? c.description : (c.shortDescription || prev.description || (c.description ? c.description.replace(/<img[^>]*>/gi, '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() : '')),
-            role: c.role || prev.role || (isPrestige ? 'Prestige Class' : 'Base Class'),
-            source: c.source || prev.source || 'SRD 3.5e',
-            edition: c.edition || prev.edition || '3.5',
-            contentLevel: c.contentLevel || prev.contentLevel || null,
-            replaces: Array.isArray(c.replaces) ? c.replaces : (prev.replaces || []),
-            variantOf: c.variantOf || prev.variantOf || null,
-            type: isPrestige ? 'Prestige Class' : 'Base Class',
-            isPrestige
-          });
+          all[c.name] = normClass(c, all[c.name] || {}, c.name);
         });
       }
 
@@ -9088,35 +9068,35 @@
       if (Array.isArray(masterDb)) {
         for (let i = masterDb.length - 1; i >= 0; i--) {
           const m = masterDb[i];
-          if (m && (m.type === 'Class' || m.category === 'Class' || m.type === 'Prestige Class') && isBogusClassName(m.name)) {
+          if (m && (m.blueprint === 'class' || m.type === 'Class' || m.category === 'Class' || m.type === 'Prestige Class') && isBogusClassName(m.name)) {
             masterDb.splice(i, 1);
           }
         }
-        masterDb.filter(m => m && (m.type === 'Class' || m.category === 'Class' || m.type === 'Prestige Class') && !isBogusClassName(m.name)).forEach(c => {
-          if (c && c.name && !all[c.name]) {
-            // srd-snapshot of a lazy-chunk class (chunk not loaded): an official class, typed from isPrestige.
+        masterDb.filter(m => m && (m.blueprint === 'class' || m.type === 'Class' || m.category === 'Class' || m.type === 'Prestige Class') && !isBogusClassName(m.name)).forEach(c => {
+          if (c && c.name) {
             const isSnap = Boolean(c._snapshot) && c.type === 'Class';
-            const snapPrestige = isSnap && Boolean(c.isPrestige || c.category === 'Prestige');
-            all[c.name] = {
-              hd: Number(c.hd) || 8,
-              bab: Number(c.bab) || 0.75,
-              fort: c.fort || 'poor',
-              ref: c.ref || 'poor',
-              will: c.will || 'poor',
-              skills: Number(c.skills) || 2,
-              maxLevel: Number(c.maxLevel) || ((c.type === 'Prestige Class' || snapPrestige) ? 10 : 20),
-              classSkills: Array.isArray(c.classSkills) ? c.classSkills : [],
-              features: c.features || {},
-              bonusFeatLevels: Array.isArray(c.bonusFeatLevels) ? c.bonusFeatLevels : [],
-              bonusFeatContract: c.bonusFeatContract || null,
-              prerequisites: c.prerequisites || [],
-              description: c.description || c.desc || '',
-              role: c.role || '',
-              source: c.source || 'Master DB',
-              type: isSnap ? (snapPrestige ? 'Prestige Class' : 'Base Class') : (c.type || 'Prestige Class'),
-              isCustom: !isSnap,
-              ...(isSnap ? { id: c.id, isPrestige: snapPrestige, edition: c.edition || '3.5', contentLevel: c.contentLevel || null } : {})
-            };
+            if (isSnap && all[c.name]) return;
+            const existing = all[c.name] || null;
+            if (!existing || c._crafterOverride || c.blueprint === 'class') {
+              all[c.name] = Object.assign(normClass(c, existing || {}, c.name), {
+                isCustom: !isSnap,
+              });
+            }
+          }
+        });
+      }
+
+      // Overlay character-scoped Rule Crafter V3 Class overrides (`character.customEntries`)
+      if (character && character.customEntries && typeof character.customEntries === 'object' && !Array.isArray(character.customEntries)) {
+        Object.values(character.customEntries).forEach(ce => {
+          if (!ce || isBogusClassName(ce.name)) return;
+          if (ce.blueprint === 'class' || ce.type === 'Class' || ce.type === 'Prestige Class' || String(ce.id || '').startsWith('cls-')) {
+            const matchKey = all[ce.name]
+              ? ce.name
+              : (Object.keys(all).find(k => all[k] && ce.id && all[k].id === ce.id) || ce.name);
+            const normalized = normClass(ce, all[matchKey] || {}, ce.name);
+            normalized.isCustom = true;
+            all[ce.name] = normalized;
           }
         });
       }

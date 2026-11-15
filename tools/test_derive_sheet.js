@@ -4731,6 +4731,119 @@ function runDeriveSheetTests() {
       ),
       `conc=${JSON.stringify(concBonus)}, spot=${JSON.stringify(spotBonus)}, arcana=${JSON.stringify(arcanaBonus)}, fbDc=${fireballEnriched?.saveDc}, hasteDc=${hasteEnriched?.saveDc}, maxHp=${wizSheet.hp.max}, hb=${JSON.stringify(hbDc)}, bos=${JSON.stringify(bosDc)}`
     );
+
+    // -------------------------------------------------------------------------
+    // Sprint C.6+: V3 Single-Source Authority & Rule Crafter Live Round-Trip
+    // -------------------------------------------------------------------------
+    const ForgeSandbox = require('../forge_sandbox.js');
+    const warbladeCanonical = JSON.parse(JSON.stringify(Comp.getClass('Warblade')));
+    const wbDraft = ForgeSandbox.fromCanonicalV3(warbladeCanonical);
+    const wbFeatureLvls = (wbDraft.progression.levels || []).filter((l) => Array.isArray(l.features) && l.features.length > 0).length;
+    const wbFeatGrantLvls = ((wbDraft.grants && wbDraft.grants.featGrants) || []).map((g) => g.level);
+    wbDraft.progression.hitDie = 10;
+    wbDraft.progression.skillPts = 6;
+    wbDraft.progression.levels[0].features.push({ mode: 'inline', name: 'Magnus Blade Mastery', text: 'Custom V3 Lv1 feature.', effects: [] });
+    wbDraft.grants.featGrants.push({ id: 'g_lvl3', count: 1, pool: 'Warblade Bonus Feat', level: 3 });
+    const wbExported = ForgeSandbox.exportEntry(wbDraft);
+    // Strip legacy top-level fields if any to prove pure V3 progression/grants single-source authority
+    delete wbExported.hd;
+    delete wbExported.hitDie;
+    delete wbExported.features;
+    delete wbExported.bonusFeatLevels;
+
+    const humanCanonical = JSON.parse(JSON.stringify(Comp.getById('race-human')));
+    const humanDraft = ForgeSandbox.fromCanonicalV3(humanCanonical);
+    humanDraft.race.speed = 40;
+    humanDraft.race.bonusFeat1 = false;
+    humanDraft.race.bonusSkillPts = false;
+    const humanExported = ForgeSandbox.exportEntry(humanDraft);
+
+    const magnusChar = {
+      name: 'Magnus',
+      race: 'Human',
+      raceId: 'race-human',
+      classes: 'Warblade 3',
+      level: 3,
+      abilities: { str: 16, dex: 14, con: 14, int: 14, wis: 10, cha: 10 },
+      baseAbilities: { str: 16, dex: 14, con: 14, int: 14, wis: 10, cha: 10 },
+      hp: { current: 30, max: 30, baseMax: 24, temp: 0 },
+      levelProgression: [
+        { level: 1, className: 'Warblade', hd: 'd10', hpGain: 10, active: true, feats: ['Power Attack'] },
+        { level: 2, className: 'Warblade', hd: 'd10', hpGain: 7, active: true, feats: [] },
+        { level: 3, className: 'Warblade', hd: 'd10', hpGain: 7, active: true, feats: ['Cleave'] }
+      ],
+      feats: [{ id: 'feat-power-attack', name: 'Power Attack', active: true }],
+      weapons: [{ id: 'wpn-greatsword', baseItemId: 'wpn-greatsword', name: 'Greatsword', dice: '2d6', critMin: 19, critMult: 2, dmgType: 'Slashing', grip: '2-Hand' }],
+      gearPool: [],
+      customEntries: {
+        'cls-warblade': wbExported,
+        'race-human': humanExported
+      }
+    };
+    const wbCustomDef = RuleEngine.getClassDef('Warblade', magnusChar);
+    const wbLvl1Feats = RuleEngine.getClassLevelFeatures('Warblade', 1, magnusChar);
+    const wbLvl3Feats = RuleEngine.getClassLevelFeatures('Warblade', 3, magnusChar);
+    const magnusRaceTraits = RuleEngine.getRaceTraits(magnusChar);
+    const magnusSheet = RuleEngine.deriveSheet(magnusChar);
+
+    // Cleric Domain V3 override round-trip
+    const domStrength = JSON.parse(JSON.stringify(Comp.getDomain('Strength')));
+    domStrength.effects = [...(domStrength.effects || []), { type: 'stat', targets: ['atk.melee'], btype: 'sacred', value: 2 }];
+    const domDraft = ForgeSandbox.fromCanonicalV3(domStrength);
+    domDraft.grants.grantedPower = 'Custom V3 Strength Surge';
+    const domExported = ForgeSandbox.exportEntry(domDraft);
+
+    const clericBase = {
+      name: 'V3 Domain Cleric',
+      race: 'Dwarf',
+      classes: 'Cleric 1',
+      level: 1,
+      abilities: { str: 14, dex: 10, con: 14, int: 10, wis: 16, cha: 12 },
+      baseAbilities: { str: 14, dex: 10, con: 14, int: 10, wis: 16, cha: 12 },
+      hp: { current: 10, max: 10, baseMax: 8, temp: 0 },
+      levelProgression: [{ level: 1, className: 'Cleric', hd: 'd8', hpGain: 8, active: true, feats: [] }],
+      spellcasting: { domains: ['Strength', 'War'] },
+      weapons: [{ id: 'wpn-heavy-mace', baseItemId: 'wpn-heavy-mace', name: 'Heavy Mace', dice: '1d8', critMin: 20, critMult: 2, dmgType: 'Bludgeoning', grip: '1-Hand' }],
+      gearPool: []
+    };
+    const clericSheetBefore = RuleEngine.deriveSheet(clericBase);
+    const clericAtkBefore = RuleEngine.evaluateWeaponAttack(clericBase, clericBase.weapons[0]).netAttackBonus;
+    const clericWithOverride = {
+      ...clericBase,
+      customEntries: { 'dom-strength': domExported }
+    };
+    const clericSheetAfter = RuleEngine.deriveSheet(clericWithOverride);
+    const clericAtkAfter = RuleEngine.evaluateWeaponAttack(clericWithOverride, clericWithOverride.weapons[0]).netAttackBonus;
+    const activeDomEntries = RuleEngine.getCharacterActiveDomainEntries(clericWithOverride);
+
+    // Weapon & Enhancement pure V3 export (zero damageParts / modifiers)
+    const longswordDraft = ForgeSandbox.fromCanonicalV3(JSON.parse(JSON.stringify(Comp.getByName('Longsword', 'Weapon') || Comp.getById('wpn-longsword'))));
+    const longswordExported = ForgeSandbox.exportEntry(longswordDraft);
+    const flamingDraft = ForgeSandbox.fromCanonicalV3(JSON.parse(JSON.stringify(Comp.getByName('Flaming', 'Enhancement') || Comp.getById('enh-flaming'))));
+    const flamingExported = ForgeSandbox.exportEntry(flamingDraft);
+
+    check(
+      'Sprint C.6+: V3 Single-Source Authority — Rule Crafter hydrates Warblade levels/featGrants, exports zero V2 keys, and live-updates Class, Race, and Domain mechanics in RuleEngine & deriveSheet',
+      Boolean(
+        wbFeatureLvls === 12 &&
+        JSON.stringify(wbFeatGrantLvls) === JSON.stringify([5, 9, 13, 17]) &&
+        wbExported.damageParts === undefined && wbExported.modifiers === undefined &&
+        wbCustomDef && wbCustomDef.hd === 10 && wbCustomDef.skills === 6 &&
+        wbLvl1Feats.features.includes('Magnus Blade Mastery') &&
+        wbLvl3Feats.hasBonusFeat === true &&
+        magnusRaceTraits.speed === 40 &&
+        magnusRaceTraits.bonusFeatAt1st === false &&
+        magnusRaceTraits.humanBonusSkillPoints === 0 &&
+        magnusSheet.progression.progressionSummary.totalSkillPoints === ((6 + 2) * 4) + ((6 + 2) * 2) &&
+        clericAtkAfter === clericAtkBefore + 2 &&
+        clericSheetAfter && clericSheetBefore &&
+        activeDomEntries.some((d) => d.grants?.grantedPower?.text === 'Custom V3 Strength Surge') &&
+        longswordExported.damageParts === undefined && longswordExported.modifiers === undefined &&
+        longswordExported.weapon && longswordExported.weapon.damageDice === '1d8' &&
+        flamingExported.damageParts === undefined && flamingExported.modifiers === undefined
+      ),
+      `wbFeatureLvls=${wbFeatureLvls}, wbFeatGrantLvls=${JSON.stringify(wbFeatGrantLvls)}, wbHd=${wbCustomDef?.hd}, wbSkills=${wbCustomDef?.skills}, wbLvl1=${JSON.stringify(wbLvl1Feats.features)}, wbLvl3Bonus=${wbLvl3Feats.hasBonusFeat}, race=${JSON.stringify(magnusRaceTraits)}, skillPool=${magnusSheet.progression.progressionSummary?.totalSkillPoints}, atkBefore=${clericAtkBefore}, atkAfter=${clericAtkAfter}`
+    );
   }
 
   CharStore.clearHistory();

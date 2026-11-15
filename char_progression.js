@@ -70,15 +70,43 @@
       return Math.max(250, 750 - (totalDist * 120) - wordPenalty);
     }
 
+    function _prereqText(f) {
+      if (!f) return '';
+      if (typeof f.prerequisites === 'string') return f.prerequisites;
+      if (f.prerequisites && typeof f.prerequisites === 'object' && !Array.isArray(f.prerequisites) && typeof f.prerequisites.text === 'string') {
+        return f.prerequisites.text;
+      }
+      if (Array.isArray(f.prerequisites) && f.prerequisites.length > 0) {
+        return f.prerequisites.map(p => (p && typeof p === 'object') ? (p.text || p.name || '') : String(p || '')).filter(Boolean).join(', ');
+      }
+      if (typeof f.prereq === 'string') return f.prereq;
+      return '';
+    }
+
+    function _raceFeatBonus1(ch) {
+      if (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getRaceTraits === 'function') {
+        return Boolean(RuleEngine.getRaceTraits(ch).bonusFeatAt1st);
+      }
+      return Boolean(ch && String(ch.race || '').toLowerCase().includes('human'));
+    }
+
+    function _raceSkillBonus(ch) {
+      if (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getRaceTraits === 'function') {
+        const n = Number(RuleEngine.getRaceTraits(ch).humanBonusSkillPoints);
+        return Number.isFinite(n) ? n : 0;
+      }
+      return (ch && String(ch.race || '').toLowerCase().includes('human')) ? 1 : 0;
+    }
+
     function matchesFeatSearchQuery(item, query) {
       if (!query) return true;
       if (!item) return false;
       const cleanQ = String(query).toLowerCase().trim();
       if (!cleanQ) return true;
       const n = (item.name || '').toLowerCase();
-      const b = (item.benefit || item.desc || '').toLowerCase();
+      const b = (item.benefit || item.desc || item.text || '').toLowerCase();
       const s = (item.source || '').toLowerCase();
-      const p = (item.prereq || item.prerequisites || '').toLowerCase();
+      const p = _prereqText(item).toLowerCase();
       if (n.includes(cleanQ) || b.includes(cleanQ) || s.includes(cleanQ) || p.includes(cleanQ)) {
         return true;
       }
@@ -98,9 +126,9 @@
       if (name.includes(cleanQ)) return 1000;
       const fuzzyScore = _getFuzzyNameMatchScore(name, cleanQ);
       if (fuzzyScore > 0) return fuzzyScore;
-      const benefit = (item.benefit || item.desc || '').toLowerCase();
+      const benefit = (item.benefit || item.desc || item.text || '').toLowerCase();
       if (benefit.includes(cleanQ)) return 100;
-      const prereq = (item.prereq || '').toLowerCase();
+      const prereq = _prereqText(item).toLowerCase();
       if (prereq.includes(cleanQ)) return 50;
       const source = (item.source || '').toLowerCase();
       if (source.includes(cleanQ)) return 20;
@@ -163,8 +191,8 @@
       return comp.getAllLoaded(kind ? [kind] : TRAIT_OPTION_TYPES).filter(f => f && f.name).map(f => ({
         ...f,
         category: f.type,
-        prereq: f.prerequisites || f.prereq || '-',
-        benefit: f.shortDescription || f.benefit || f.description || '',
+        prereq: _prereqText(f) || '-',
+        benefit: f.shortDescription || f.benefit || f.text || f.description || '',
         prereqStruct: f.prereqStruct || {}
       }));
     }
@@ -240,7 +268,8 @@
       const srdReady = Boolean(typeof window !== 'undefined' && window.SrdCompendium && window.SrdCompendium._ready);
       const loadedCnt = (srdReady && typeof window.SrdCompendium.getLoadedEntryCount === 'function') ? window.SrdCompendium.getLoadedEntryCount() : 0;
       const dbLen = (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) ? masterDb.length : 0;
-      const cacheKey = `${srdReady ? 1 : 0}_${loadedCnt}_${(typeof window !== 'undefined' && window._srdCatalogVersion) || 0}_${dbLen}_${(typeof window !== 'undefined' && window._featCatalogCacheVer) || 0}_${includeLegacyFeats() ? 1 : 0}_${_featChunkCatalogVer}`;
+      const customEntLen = (typeof character !== 'undefined' && character && character.customEntries && typeof character.customEntries === 'object') ? Object.keys(character.customEntries).length : 0;
+      const cacheKey = `${srdReady ? 1 : 0}_${loadedCnt}_${(typeof window !== 'undefined' && window._srdCatalogVersion) || 0}_${dbLen}_${customEntLen}_${(typeof window !== 'undefined' && window._customClassCacheVer) || 0}_${(typeof window !== 'undefined' && window._featCatalogCacheVer) || 0}_${includeLegacyFeats() ? 1 : 0}_${_featChunkCatalogVer}`;
       if (_cachedFeatCatalogKey === cacheKey) {
         if (includeInvocations && _cachedFeatCatalogWithInv) return _cachedFeatCatalogWithInv;
         if (!includeInvocations && _cachedFeatCatalogNoInv) return _cachedFeatCatalogNoInv;
@@ -294,8 +323,8 @@
             ...f,
             name: displayName,
             category: f.category || (f.type === 'DM Boon' ? 'DM Boon' : (f.type === 'Special Ability' ? 'Special Ability' : 'General')),
-            prereq: f.prerequisites || f.prereq || (isBoonType && f.requires && Array.isArray(f.requires.feats) ? f.requires.feats.join(', ') : '-'),
-            benefit: f.shortDescription || f.benefit || f.description || '',
+            prereq: _prereqText(f) || (isBoonType && f.requires && Array.isArray(f.requires.feats) ? f.requires.feats.join(', ') : '-'),
+            benefit: f.shortDescription || f.benefit || f.text || f.description || '',
             prereqStruct: f.prereqStruct || {}
           });
         });
@@ -306,11 +335,12 @@
           const k = (f.name || '').toLowerCase().trim();
           if (k && !skipPlaceholders.has(k) && f.category !== 'Warlock Invocation' && !invocationByName.has(k)) {
             const existing = map.get(k);
+            const fPrereq = _prereqText(f);
             if (!existing) {
-              map.set(k, { ...f, prereq: f.prerequisites || f.prereq || '-' });
-            } else if ((!existing.prereq || existing.prereq === '-') && (f.prerequisites || f.prereq) && (f.prerequisites || f.prereq) !== '-') {
-              existing.prereq = f.prerequisites || f.prereq;
-              existing.prerequisites = f.prerequisites || f.prereq;
+              map.set(k, { ...f, prereq: fPrereq || '-' });
+            } else if ((!existing.prereq || existing.prereq === '-') && fPrereq && fPrereq !== '-') {
+              existing.prereq = fPrereq;
+              existing.prerequisites = fPrereq;
             }
           }
         });
@@ -324,8 +354,8 @@
           if (!k || skipPlaceholders.has(k) || map.has(k)) return;
           map.set(k, {
             ...f,
-            prereq: f.prerequisites || f.prereq || '-',
-            benefit: f.shortDescription || f.benefit || f.description || '',
+            prereq: _prereqText(f) || '-',
+            benefit: f.shortDescription || f.benefit || f.text || f.description || '',
             prereqStruct: f.prereqStruct || {}
           });
         });
@@ -382,12 +412,34 @@
               ? 'Warlock Invocation'
               : (t === 'special ability' ? 'Special Ability' : ((t === 'dm grant' || t === 'dm boon') ? 'DM Boon' : (isKnownFlaw ? 'Flaw' : (m.category || 'General')))),
             slotDiff: isKnownFlaw ? (Number(m.slotDiff) || 1) : (m.slotDiff || 0),
-            prereq: (canonicalInv ? (canonicalInv.prerequisites || canonicalInv.prereq || `Warlock Level ${canonicalInv.minLevel || 1}`) : null) || m.prerequisites || m.prereq || '-',
+            prereq: (canonicalInv ? (_prereqText(canonicalInv) || `Warlock Level ${canonicalInv.minLevel || 1}`) : null) || _prereqText(m) || '-',
             source: m.source || 'Master DB',
-            benefit: m.shortDescription || m.benefit || m.description || ''
+            benefit: m.shortDescription || m.benefit || m.text || m.description || ''
           });
         }
       });
+      if (typeof character !== 'undefined' && character && character.customEntries && typeof character.customEntries === 'object') {
+        Object.values(character.customEntries).forEach(ce => {
+          if (!ce || !ce.name) return;
+          const tLow = String(ce.type || '').toLowerCase();
+          const bpLow = String(ce.blueprint || '').toLowerCase();
+          if (bpLow !== 'feat' && !['feat', 'flaw', 'dm boon', 'special ability', 'racial trait'].includes(tLow)) return;
+          const k = String(ce.name).toLowerCase().trim();
+          if (!k || skipPlaceholders.has(k)) return;
+          const isKnownFlaw = Boolean(ce.drawback || tLow === 'flaw' || String(ce.category || '').toLowerCase() === 'flaw' || (ce.ruleFlags && ce.ruleFlags.isFlaw) || Number(ce.slotDiff) > 0);
+          const prev = map.get(k) || {};
+          map.set(k, {
+            ...prev,
+            ...ce,
+            name: ce.name,
+            type: isKnownFlaw ? 'Flaw' : (ce.type || prev.type || 'Feat'),
+            category: isKnownFlaw ? 'Flaw' : (ce.category || prev.category || 'General'),
+            slotDiff: isKnownFlaw ? (Number(ce.slotDiff) || 1) : (ce.slotDiff ?? prev.slotDiff ?? 0),
+            prereq: _prereqText(ce) || _prereqText(prev) || '-',
+            benefit: ce.shortDescription || ce.benefit || ce.text || ce.description || prev.benefit || ''
+          });
+        });
+      }
       if (includeInvocations) {
         allInvs.forEach(inv => {
           const k = (inv.name || '').toLowerCase().trim();
@@ -395,7 +447,7 @@
             map.set(k, {
               ...inv,
               category: 'Warlock Invocation',
-              prereq: inv.prerequisites || inv.prereq || (`Warlock Level ${inv.minLevel || 1}`)
+              prereq: _prereqText(inv) || (`Warlock Level ${inv.minLevel || 1}`)
             });
           }
         });
@@ -1220,7 +1272,7 @@
 
       const featMode = character.settings?.featMode || 'Standard 3.5e (1, 3, 6, 9, 12, 15, 18)';
       const qualifiesForRegularFeat = isLevelQualifiesForFeat(lvlNum, featMode);
-      const isHuman = (character.race || '').toLowerCase().includes('human');
+      const isHuman = _raceFeatBonus1(character);
       const qualifiesForHumanBonus = (lvlNum === 1 && isHuman);
       const hasSlotRegularFeat = regularFeats.some(f => !String(f).includes('[Extra]'));
       const hasSlotClassBonusFeat = classBonusFeats.some(f => !String(f).includes('[Extra'));
@@ -1544,7 +1596,7 @@
           minLevel: inv.minLevel || (inv.tier === 'Dark' ? 16 : (inv.tier === 'Greater' ? 11 : (inv.tier === 'Lesser' ? 6 : 1))),
           benefit: inv.desc || inv.benefit || inv.shortDescription || '',
           source: inv.source || 'Complete Arcane',
-          prereq: inv.prerequisites || inv.prereq || (`Warlock Level ${inv.minLevel || 1}`)
+          prereq: _prereqText(inv) || (`Warlock Level ${inv.minLevel || 1}`)
         }));
       }
 
@@ -1882,7 +1934,7 @@
             category: 'Warlock Invocation',
             benefit: inv.desc || inv.benefit || '',
             source: inv.source || 'Complete Arcane',
-            prereq: inv.prerequisites || inv.prereq || (`Warlock Level ${inv.minLevel || 1}`)
+            prereq: _prereqText(inv) || (`Warlock Level ${inv.minLevel || 1}`)
           };
         }
       }
@@ -1994,7 +2046,7 @@
           found = {
             name: inv.name,
             category: 'Warlock Invocation',
-            prereq: inv.prerequisites || inv.prereq || (`Warlock Level ${inv.minLevel || 1}`),
+            prereq: _prereqText(inv) || (`Warlock Level ${inv.minLevel || 1}`),
             benefit: inv.desc || inv.benefit || ''
           };
         }
@@ -3376,7 +3428,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
               hasPrereqs: true,
               allMet: true,
               checks: [{ label: 'RAW Class Exemption', met: true, info: 'Granted without prerequisites per D&D 3.5e RAW class feature rules' }],
-              rawPrereq: resolvedFeat.prereq || resolvedFeat.prerequisites || '-',
+              rawPrereq: _prereqText(resolvedFeat) || '-',
               isAlreadyKnownFromClass: false,
               alreadyKnownReason: '',
               isAlreadyTaken: false,
@@ -3477,7 +3529,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           : (isAlreadyKnownFromClass ? '🔒 Class Proficiency (Owned)' : '');
 
         // 3. Determine effective rawPrereq (including implicit Metamagic / Caster Only / Warlock Invocation rules)
-        let rawPrereq = String(resolvedFeat.prerequisites || resolvedFeat.prereq || '').trim();
+        let rawPrereq = _prereqText(resolvedFeat).trim();
         const catLow = String(resolvedFeat.category || '').toLowerCase();
         const scopeLow = String(resolvedFeat.scope || '').toLowerCase();
         const pStruct = resolvedFeat.prereqStruct || {};
@@ -3529,9 +3581,9 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
             prospectiveProg = prog.length > 0 ? prog.slice(0, rowIdx + 1).map(p => ({ ...p, active: true })) : [{ className: selectedClassName, hd: `d${def.hd || 8}`, hpGain: 0, active: true }];
             if (typeof RuleEngine !== 'undefined' && RuleEngine.calculateProgression) {
               const sys = character.settings?.babSaveSystem || character.settings?.progressionSystem || 'standard';
-              const isHuman = (character.race || '').toLowerCase().includes('human');
+              const isHuman = _raceSkillBonus(character);
               const intMod = (typeof RuleEngine.getAbilityMod === 'function') ? RuleEngine.getAbilityMod(character.abilities?.int || 10) : Math.floor(((character.abilities?.int || 10) - 10) / 2);
-              const calc = RuleEngine.calculateProgression(prospectiveProg, { system: sys, isHuman, intMod });
+              const calc = RuleEngine.calculateProgression(prospectiveProg, { system: sys, isHuman, intMod, character });
               prospectiveBab = Math.max(calc?.baseBab ?? 0, Number(targetRow.bab) || 0);
               prospectiveBaseSaves = {
                 fort: Math.max(calc?.baseSaves?.fort ?? 0, Number(targetRow.fort) || 0),
@@ -3567,9 +3619,9 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
             const babInputVal = parseInt(document.getElementById('lvlup-bab-input')?.value, 10);
             if (typeof RuleEngine !== 'undefined' && RuleEngine.calculateProgression) {
               const sys = character.settings?.babSaveSystem || character.settings?.progressionSystem || 'standard';
-              const isHuman = (character.race || '').toLowerCase().includes('human');
+              const isHuman = _raceSkillBonus(character);
               const intMod = (typeof RuleEngine.getAbilityMod === 'function') ? RuleEngine.getAbilityMod(character.abilities?.int || 10) : Math.floor(((character.abilities?.int || 10) - 10) / 2);
-              const calc = RuleEngine.calculateProgression(prospectiveProg, { system: sys, isHuman, intMod });
+              const calc = RuleEngine.calculateProgression(prospectiveProg, { system: sys, isHuman, intMod, character });
               prospectiveBab = !isNaN(babInputVal) ? babInputVal : (calc?.baseBab ?? (Number(character.bab) || 0));
               prospectiveBaseSaves = calc?.baseSaves ?? { fort: Number(character.baseSaves?.fort ?? character.savingThrows?.fortitude?.base) || 0, ref: Number(character.baseSaves?.ref ?? character.savingThrows?.reflex?.base) || 0, will: Number(character.baseSaves?.will ?? character.savingThrows?.will?.base) || 0 };
             } else {
@@ -5061,14 +5113,14 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
 
       // 2. Calculate BAB, Saves, HD, Skill points using RuleEngine
       const sys = character.settings?.babSaveSystem || 'standard';
-      const isHuman = (character.race || '').toLowerCase().includes('human');
+      const isHuman = _raceSkillBonus(character);
       const intMod = (typeof RuleEngine !== 'undefined' && RuleEngine.getAbilityMod)
         ? RuleEngine.getAbilityMod(character.abilities?.int || 10)
         : Math.floor(((character.abilities?.int || 10) - 10) / 2);
 
       const prospectiveProg = [...prog, { className, hd: `d${def.hd}`, hpGain: 0, active: true }];
       const prospectiveSummary = (typeof RuleEngine !== 'undefined' && RuleEngine.calculateProgression)
-        ? RuleEngine.calculateProgression(prospectiveProg, { system: sys, isHuman, intMod })
+        ? RuleEngine.calculateProgression(prospectiveProg, { system: sys, isHuman, intMod, character })
         : null;
 
       if (prospectiveSummary) {
@@ -6240,7 +6292,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       activeLevelUpFeatSearchSlot = null;
       levelUpFeatSearchFilters = {};
       levelUpFeatSearchQueries = {};
-      const isHuman = (character.race || '').toLowerCase().includes('human');
+      const isHuman = _raceFeatBonus1(character);
       if (nextLvl === 1) {
         levelUpModalFeatSlots.push({
           title: 'Standard Feat (Level 1)',
@@ -7483,7 +7535,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       const intMod = (typeof RuleEngine !== 'undefined' && RuleEngine.getAbilityMod)
         ? RuleEngine.getAbilityMod(character.abilities?.int || 10)
         : Math.floor(((character.abilities?.int || 10) - 10) / 2);
-      const isHuman = (character.race || '').toLowerCase().includes('human') ? 1 : 0;
+      const isHuman = _raceSkillBonus(character);
 
       // Calculate old vs new HP difference if active (using pure die roll without double-counting CON)
       const oldHp = Number(prog[idx].hpGain) || 0;
@@ -7608,7 +7660,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       const intMod = (typeof RuleEngine !== 'undefined' && RuleEngine.getAbilityMod)
         ? RuleEngine.getAbilityMod(character.abilities?.int || 10)
         : Math.floor(((character.abilities?.int || 10) - 10) / 2);
-      const isHuman = (character.race || '').toLowerCase().includes('human') ? 1 : 0;
+      const isHuman = _raceSkillBonus(character);
 
       let classLvlSoFar = 0;
       prog.forEach(p => { if (p.className === targetClass) classLvlSoFar++; });
@@ -7623,7 +7675,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
 
       const prospectiveProg = [...prog, { className: targetClass, hd: `d${def.hd}`, hpGain, active: true }];
       const prospectiveSummary = (typeof RuleEngine !== 'undefined' && RuleEngine.calculateProgression)
-        ? RuleEngine.calculateProgression(prospectiveProg, { system: character.settings?.babSaveSystem || 'standard', isHuman: (character.race || '').toLowerCase().includes('human'), intMod })
+        ? RuleEngine.calculateProgression(prospectiveProg, { system: character.settings?.babSaveSystem || 'standard', isHuman, intMod, character })
         : null;
 
       const bab = prospectiveSummary ? prospectiveSummary.baseBab : (def.bab >= 1.0 ? 1 : 0);
@@ -8090,7 +8142,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
 
       const prog = character.levelProgression || [];
       const sys = character.settings?.babSaveSystem || 'standard';
-      const isHuman = (character.race || '').toLowerCase().includes('human');
+      const isHuman = _raceSkillBonus(character);
       const intMod = (typeof RuleEngine !== 'undefined' && RuleEngine.getAbilityMod)
         ? RuleEngine.getAbilityMod(character.abilities?.int || 10)
         : Math.floor(((character.abilities?.int || 10) - 10) / 2);
@@ -8101,7 +8153,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       const conModStr = conMod >= 0 ? `+${conMod}` : `${conMod}`;
 
       const summary = (typeof RuleEngine !== 'undefined' && RuleEngine.calculateProgression)
-        ? RuleEngine.calculateProgression(prog, { system: sys, isHuman, intMod })
+        ? RuleEngine.calculateProgression(prog, { system: sys, isHuman, intMod, character })
         : null;
 
       // Render Level Progression HUD Summary Bar
@@ -8299,7 +8351,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
                 ? window.SrdCompendium.getDomain(domName)
                 : (typeof DND35_CLERIC_DOMAINS === 'object' ? DND35_CLERIC_DOMAINS[domName] : null);
               const elig = (typeof checkClericDomainEligibility === 'function') ? checkClericDomainEligibility(domName, character) : { eligible: true, reason: '' };
-              const gPower = domDef ? (domDef.grantedPower?.description || domDef.grantedPower || domDef.description || 'Cleric Domain Granted Power') : 'Cleric Domain Granted Power';
+              const gPower = domDef ? (domDef.grants?.grantedPower?.text || domDef.grantedPower?.description || domDef.grantedPower || domDef.text || domDef.description || 'Cleric Domain Granted Power') : 'Cleric Domain Granted Power';
               const warSuffix = (domName === 'War' && favWep) ? ` [WF: ${favWep}]` : '';
               const warnPrefix = !elig.eligible ? `⚠️ RAW Conflict: ${elig.reason} — ` : '';
               const safeTip = `${warnPrefix}Cleric Domain (${dSlot + 1}/2): ${domName}${warSuffix} — ${gPower} (Click to change domain)`.replace(/"/g, '&quot;');
@@ -8424,7 +8476,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
           return `<button data-action="${isDmBoon ? 'entity:inspect' : 'progression:show-feat-detail'}" ${isDmBoon ? `data-entity-kind="boon" data-entity-name="${UI.escapeAttr(boonCoreName || rawName)}" data-level-index="${idx}"` : `data-feat-name="${rawName.replace(/"/g, '&quot;')}" data-level-idx="${idx}" data-feat-type="feat"`} title="${safeTip}" style="width: 150px; min-width: 150px; max-width: 150px; box-sizing: border-box; overflow: hidden;" class="relative min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[10px] font-bold ${bgCls} border shadow-sm transition text-left cursor-pointer"><span class="shrink-0">${icon}</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">${cleanStr}</span>${cornerBadge}</button>`;
         });
 
-        const qualifiesForHumanBonus = (lvl.level === 1 && isHuman);
+        const qualifiesForHumanBonus = (lvl.level === 1 && _raceFeatBonus1(character));
         const hasSlotRacialBonus = otherBonusFeats.some(f => String(f).includes('[Racial]'));
         const pendingBonusButtons = [];
         if (qualifiesForHumanBonus && !hasSlotRacialBonus) {
@@ -9062,7 +9114,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       const intMod = (typeof RuleEngine !== 'undefined' && RuleEngine.getAbilityMod)
         ? RuleEngine.getAbilityMod(char.abilities?.int || 10)
         : Math.floor(((char.abilities?.int || 10) - 10) / 2);
-      const isHuman = (char.race || '').toLowerCase().includes('human') ? 1 : 0;
+      const isHuman = _raceSkillBonus(char);
 
       let totalPts = 0;
       let currentLevelIndex = 1;
@@ -9560,7 +9612,10 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         if (Array.isArray(domains) && domains.length > 0) {
           domains.forEach(d => {
             if (!d || !d.name) return;
-            domainSpellsMap[d.name] = (d.spells || []).map(s => ({ level: s.level, name: s.name, id: s.id }));
+            const rawSp = Array.isArray(d.grants?.spellLadder)
+              ? d.grants.spellLadder.map(s => ({ level: s.level, name: s.spell || s.name, id: s.refId || s.id }))
+              : (d.spells || []).map(s => ({ level: s.level, name: s.name, id: s.id }));
+            domainSpellsMap[d.name] = rawSp;
           });
           return domainSpellsMap;
         }
@@ -9711,10 +9766,13 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
 
       const query = (document.getElementById('cleric-domain-search-input')?.value || '').toLowerCase().trim();
       
-      // Load Compendium + Custom Domains (character.customDb, masterDb, localStorage)
+      // Load Compendium + Custom Domains (character.customDb, character.customEntries, masterDb, localStorage)
       let customDomainsList = [];
       if (typeof character !== 'undefined' && Array.isArray(character.customDb)) {
         customDomainsList.push(...character.customDb.filter(e => e && (e.type === 'Domain' || e.category === 'Cleric Domain')));
+      }
+      if (typeof character !== 'undefined' && character && character.customEntries && typeof character.customEntries === 'object') {
+        customDomainsList.push(...Object.values(character.customEntries).filter(e => e && (e.blueprint === 'domain' || e.type === 'Domain' || e.category === 'Cleric Domain')));
       }
       if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
         customDomainsList.push(...masterDb.filter(e => e && (e.type === 'Domain' || e.category === 'Cleric Domain')));
@@ -9744,15 +9802,15 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       const entries = allDomains.filter(d => {
         if (!d || !d.name) return false;
         if (!query) return true;
-        const gp = String(d.grantedPower?.description || d.description || '').toLowerCase();
+        const gp = String(d.grants?.grantedPower?.text || d.grantedPower?.description || d.text || d.description || '').toLowerCase();
         const spList = (domainSpellsMap[d.name] || d.spells || []).map(s => (s.name || '').toLowerCase()).join(' ');
         return d.name.toLowerCase().includes(query) || gp.includes(query) || spList.includes(query);
       }).map(d => {
         const domName = d.name;
         const meta = {
-          grantedPower: d.grantedPower?.description || d.description || '',
-          classSkills: d.grantedPower?.classSkills || d.classSkills || [],
-          spells: d.spells || [],
+          grantedPower: d.grants?.grantedPower?.text || d.grantedPower?.description || d.text || d.description || '',
+          classSkills: d.grants?.grantedPower?.classSkills || d.grantedPower?.classSkills || d.classSkills || [],
+          spells: domainSpellsMap[domName] || d.spells || [],
           source: d.source || (d.isCustom ? 'Custom Domain' : 'PHB / SRD')
         };
         const elig = (typeof checkClericDomainEligibility === 'function')
@@ -9829,11 +9887,14 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
                 <span class="text-[10px] text-slate-500 font-mono">${UI.escapeHtml(meta.source || 'PHB / SRD')}</span>
                 ${statusBadges}
               </div>
-              <p class="text-[11px] text-slate-200"><strong class="text-amber-300">Granted Power:</strong> ${meta.grantedPower}</p>
+              <p class="text-[11px] text-slate-200"><strong class="text-amber-300">Granted Power:</strong> ${UI.escapeHtml(meta.grantedPower)}</p>
               ${!elig.eligible ? `<p class="text-[10px] text-rose-300/90 font-semibold">${UI.escapeHtml(elig.reason)}</p>` : ''}
               <div class="flex flex-wrap gap-1 pt-0.5">${spellsBadges}</div>
             </div>
-            <div class="shrink-0 pt-1">${btnHtml}</div>
+            <div class="shrink-0 pt-1 flex items-center gap-1.5">
+              <button type="button" data-action="entity:inspect" data-entity-kind="domain" data-entity-name="${UI.escapeAttr(domName)}" title="Inspect / Edit ${UI.escapeAttr(domName)} Domain in Rule Crafter" class="text-[11px] px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 transition cursor-pointer">⚒️</button>
+              ${btnHtml}
+            </div>
           </div>
         `;
       }).join('');
@@ -9851,7 +9912,10 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         if (!domName) return null;
         const lower = String(domName).toLowerCase().trim();
         let dDef = null;
-        if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
+        if (typeof character !== 'undefined' && character && character.customEntries && typeof character.customEntries === 'object') {
+          dDef = Object.values(character.customEntries).find(e => e && (e.blueprint === 'domain' || e.type === 'Domain' || e.category === 'Cleric Domain') && String(e.name || '').toLowerCase().trim() === lower) || null;
+        }
+        if (!dDef && typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
           dDef = masterDb.find(e => e && (e.type === 'Domain' || e.category === 'Cleric Domain') && String(e.name || '').toLowerCase().trim() === lower);
         }
         if (!dDef && typeof character !== 'undefined' && Array.isArray(character.customDb)) {
@@ -9911,8 +9975,8 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
           category: featDef?.category || 'Domain Bonus',
           source: `${domName} Domain (Bonus Feat)`,
           benefit: featDef?.shortDescription || featDef?.benefit || featDef?.description || `Granted bonus feat from ${domName} Domain.`,
-          prereq: featDef?.prerequisites || featDef?.prereq || '-',
-          prerequisites: featDef?.prerequisites || featDef?.prereq || '-',
+          prereq: _prereqText(featDef) || '-',
+          prerequisites: _prereqText(featDef) || '-',
           effects: Array.isArray(featDef?.effects) ? JSON.parse(JSON.stringify(featDef.effects)) : [],
           ruleFlags: featDef?.ruleFlags ? JSON.parse(JSON.stringify(featDef.ruleFlags)) : {},
           slotDiff: featDef?.slotDiff ?? featDef?.levelAdjustment,
@@ -9937,7 +10001,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       chosen.forEach(domName => {
         const dDef = resolveDomainDef(domName);
         if (dDef) {
-          const gFeats = dDef.grantedPower?.grantedFeats || dDef.grantedFeats || (dDef.grantedFeat ? [dDef.grantedFeat] : []);
+          const gFeats = dDef.grants?.grantedPower?.grantedFeats || dDef.grantedPower?.grantedFeats || dDef.grantedFeats || (dDef.grantedFeat ? [dDef.grantedFeat] : []);
           if (Array.isArray(gFeats)) {
             gFeats.forEach(featName => {
               if (featName && typeof featName === 'string') {
@@ -9997,7 +10061,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         const meta = resolveDomainDef(d);
         const benefitText = (d === 'War' && favWeapon)
           ? `Free Martial Weapon Proficiency (${favWeapon}) and Weapon Focus (${favWeapon}).`
-          : (meta?.grantedPower?.description || (typeof meta?.grantedPower === 'string' ? meta.grantedPower : '') || meta?.description || `${d} Domain Granted Power`);
+          : (meta?.grants?.grantedPower?.text || meta?.grantedPower?.description || (typeof meta?.grantedPower === 'string' ? meta.grantedPower : '') || meta?.text || meta?.description || `${d} Domain Granted Power`);
         character.specialAbilities.push({
           schemaVersion: 3,
           name: `⚜️ ${d} Domain (Granted Power)`,
@@ -10012,7 +10076,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         });
 
         // Also sync any explicit Domain Active SLA / Power into character.specialAbilities with full V3 relationships
-        const slas = meta?.grantedPower?.spellLikeAbilities || meta?.spellLikeAbilities || [];
+        const slas = meta?.grants?.grantedPower?.spellLikeAbilities || meta?.grantedPower?.spellLikeAbilities || meta?.spellLikeAbilities || [];
         if (Array.isArray(slas)) {
           slas.forEach(sla => {
             const slaName = typeof sla === 'string' ? sla : (sla?.name || '');
@@ -10078,7 +10142,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       showDiceTopToast({
         icon: '⚜️',
         title: `${domainName} Domain Selected`,
-        breakdown: meta?.grantedPower?.description || meta?.grantedPower || meta?.description || `Granted Power & Domain Spells unlocked.`,
+        breakdown: meta?.grants?.grantedPower?.text || meta?.grantedPower?.description || meta?.grantedPower || meta?.text || meta?.description || `Granted Power & Domain Spells unlocked.`,
         total: `Domain ${ctx.slotIdx + 1}/2`
       });
     }

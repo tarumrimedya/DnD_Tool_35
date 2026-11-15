@@ -163,7 +163,17 @@
         "text": "You can use speak with animals once per day as a spell-like ability.",
         "usage": {
           "mode": "passive"
-        }
+        },
+        "classSkills": [
+          "Knowledge (nature)"
+        ],
+        "spellLikeAbilities": [
+          {
+            "name": "Speak with Animals",
+            "uses": "1/day",
+            "casterLevel": "clericLevel"
+          }
+        ]
       },
       "spellLadder": [
         {
@@ -1515,7 +1525,10 @@
         "text": "All knowledge skills are class skills.  You cast divinations at +1 caster level.",
         "usage": {
           "mode": "passive"
-        }
+        },
+        "classSkills": [
+          "Knowledge (all)"
+        ]
       },
       "spellLadder": [
         {
@@ -2085,7 +2098,10 @@
         "text": "Rebuke or command plant creatures as an evil cleric rebukes or commands undead. Use this ability a total number of times per day equal to 3 + your Charisma modifier. This granted power is a supernatural ability.",
         "usage": {
           "mode": "passive"
-        }
+        },
+        "classSkills": [
+          "Knowledge (nature)"
+        ]
       },
       "spellLadder": [
         {
@@ -2728,7 +2744,10 @@
         "text": "For a total time per day of 1 round per cleric level you possess, you can act normally regardless of magical effects that impede movement as if you were affected by the spell freedom of movement. This effect occurs automatically as soon as it applies, lasts until it runs out or is no longer needed, and can operate multiple times per day (up to the total daily limit of rounds).This granted power is a supernatural ability.",
         "usage": {
           "mode": "passive"
-        }
+        },
+        "classSkills": [
+          "Survival"
+        ]
       },
       "spellLadder": [
         {
@@ -2897,7 +2916,12 @@
         "text": "Bluff, Disguise and Hide are class skills.",
         "usage": {
           "mode": "passive"
-        }
+        },
+        "classSkills": [
+          "Bluff",
+          "Disguise",
+          "Hide"
+        ]
       },
       "spellLadder": [
         {
@@ -3034,7 +3058,11 @@
         "text": "Free Martial Weapon Proficiency with deity's favored weapon (if necessary) and Weapon Focus with the deity's favored weapon.",
         "usage": {
           "mode": "passive"
-        }
+        },
+        "grantedFeats": [
+          "Martial Weapon Proficiency (Favored Weapon)",
+          "Weapon Focus (Favored Weapon)"
+        ]
       },
       "spellLadder": [
         {
@@ -3642,7 +3670,14 @@
         "text": "Use calm emotions as a spell-like ability once per day. Gain a +2 competence bonus on Diplomacy checks.",
         "usage": {
           "mode": "passive"
-        }
+        },
+        "spellLikeAbilities": [
+          {
+            "name": "Calm Emotions",
+            "uses": "1/day",
+            "casterLevel": "clericLevel"
+          }
+        ]
       },
       "spellLadder": [
         {
@@ -3923,7 +3958,10 @@
         "text": "Free Blind-Fight feat.",
         "usage": {
           "mode": "passive"
-        }
+        },
+        "grantedFeats": [
+          "Blind-Fight"
+        ]
       },
       "spellLadder": [
         {
@@ -4489,7 +4527,14 @@
         "text": "You have the spell-like ability to inspire allies, giving them a +2 morale bonus on saving throws, attack rolls, ability checks, skill checks, and weapon damage rolls. Allies must be able to hear the character speak for 1 round. Using this ability is a standard action. It lasts a number of rounds equal to the character's Charisma bonus and can be used once per day.",
         "usage": {
           "mode": "passive"
-        }
+        },
+        "spellLikeAbilities": [
+          {
+            "name": "Inspire Allies (+2 Morale to saves, attack, checks, damage)",
+            "uses": "1/day",
+            "duration": "Charisma bonus rounds"
+          }
+        ]
       },
       "spellLadder": [
         {
@@ -4826,7 +4871,10 @@
         "text": "Free Scribe Scroll feat.",
         "usage": {
           "mode": "passive"
-        }
+        },
+        "grantedFeats": [
+          "Scribe Scroll"
+        ]
       },
       "spellLadder": [
         {
@@ -5112,7 +5160,10 @@
         "text": "Survival is a class skill.",
         "usage": {
           "mode": "passive"
-        }
+        },
+        "classSkills": [
+          "Survival"
+        ]
       },
       "spellLadder": [
         {
@@ -5396,7 +5447,11 @@
         "text": "Add Bluff and Intimidate to your list of cleric class skills.",
         "usage": {
           "mode": "passive"
-        }
+        },
+        "classSkills": [
+          "Bluff",
+          "Intimidate"
+        ]
       },
       "spellLadder": [
         {

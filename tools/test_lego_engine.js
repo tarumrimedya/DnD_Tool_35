@@ -913,37 +913,22 @@ function createBaseChar(overrides = {}) {
     ],
     [true, true, false]);
 
-  // Phase P11 Regression Test 53: SchemaMigrator.upgradeCharacterToV2 zero-data-loss category routing, physical item guard, synergy exclusion, and generic stem/completeness deduplication
-  const dirtyCharP11 = {
-    gearPool: [
-      { id: 'shd-heavy-steel-shield', name: 'Heavy Steel Shield', category: 'Shield', type: 'Shield', cost: 20, weight: 15 },
-      { id: 'scroll-fireball', name: 'Scroll of Fireball', category: 'Spell', type: 'Spell', cost: 375 },
-      { id: 'feat_dodge_ misplaced', name: 'Dodge', category: 'Feat', type: 'Feat' },
-      { id: 'spell_magic_missile', name: 'Magic Missile', category: 'Spell', type: 'Spell' },
-      { id: 'synergy_twin_fang', name: 'Twin Fang Synergy', category: 'Synergy', type: 'Synergy', autoUnlock: true, isSynergy: true },
-      { id: 'ability_dragon_breath_damage_deals_deals', name: 'Dragon Breath', category: 'Special Ability', type: 'Special Ability' }
-    ],
-    feats: [],
-    spells: [],
-    specialAbilities: [
-      { id: 'ability_dragon_breath_damage_deals_deals', name: 'Dragon Breath', category: 'Special Ability', damageParts: [{ dice: '4d8', type: 'Untyped' }] },
-      { id: 'ability_dragon_breath_weapon_acid', name: 'Dragon Breath Weapon (Acid)', category: 'Special Ability', dcFormula: '10 + floor(level / 2) + conMod', damageParts: [{ dice: '4d6', type: 'Acid' }] }
-    ]
-  };
-  SchemaMigrator.upgradeCharacterToV2(dirtyCharP11);
-  assertEq('Phase P11 Test 53: SchemaMigrator.upgradeCharacterToV2 routes feat->feats, spell->spells, keeps physical shield & scroll in gearPool, excludes autoUnlock synergy from specialAbilities, and deduplicates malformed Dragon Breath',
+  // Phase P11 Pure V3 Contract Test 53: Legacy V1/V2 character migrator is purged; only external-boundary migrateEntryToV3 remains
+  const v3MigratedAbility = SchemaMigrator.migrateEntryToV3({
+    id: 'ability_dragon_breath_weapon_acid',
+    name: 'Dragon Breath Weapon (Acid)',
+    category: 'Special Ability',
+    damageParts: [{ dice: '4d6', type: 'Acid' }]
+  });
+  assertEq('Phase P11 Test 53: SchemaMigrator purges upgradeCharacterToV2 and converts external boundary entry into Pure Canonical V3 without damageParts/modifiers',
     [
-      dirtyCharP11.gearPool.map(g => g.id),
-      dirtyCharP11.feats.map(f => f.name),
-      dirtyCharP11.spells.map(s => s.name),
-      dirtyCharP11.specialAbilities.map(a => a.id)
+      typeof SchemaMigrator.upgradeCharacterToV2,
+      v3MigratedAbility.schemaVersion,
+      v3MigratedAbility.damageParts,
+      v3MigratedAbility.modifiers,
+      Array.isArray(v3MigratedAbility.effects) && v3MigratedAbility.effects.some(e => e.type === 'roll' && e.dice === '4d6')
     ],
-    [
-      ['shd-heavy-steel-shield', 'scroll-fireball'],
-      ['Dodge'],
-      ['Magic Missile'],
-      ['ability_dragon_breath_weapon_acid']
-    ]);
+    ['undefined', 3, undefined, undefined, true]);
 
   // Phase P11 Regression Test 54: RuleMaster.parseStructuredAbilityStatBlock strips damage/deals keywords from extracted name and id
   const parsedBreathStatBlock = RuleMaster.parseStructuredAbilityStatBlock('Dragon Breath, dmg: 4d8, deals 4d8 damage, Range: 60 ft., Recharge: 1d4+1 rounds');
