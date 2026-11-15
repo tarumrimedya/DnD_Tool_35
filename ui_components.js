@@ -613,7 +613,7 @@
       }
     };
 
-    const onKeyDown = (event) => {
+    const handleModalKeyDown = (event) => {
       if (event && event.key === 'Escape') {
         closeRuleCrafter();
         if (typeof options.onClose === 'function') options.onClose();
@@ -630,13 +630,13 @@
     const onResize = () => applyResponsiveShell();
 
     window.addEventListener('message', onMessage);
-    window.addEventListener('keydown', onKeyDown);
+    window.addEventListener('keydown', handleModalKeyDown);
     window.addEventListener('resize', onResize);
     modal.addEventListener('click', onBackdropClick);
 
     _crafterCleanup = () => {
       window.removeEventListener('message', onMessage);
-      window.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('keydown', handleModalKeyDown);
       window.removeEventListener('resize', onResize);
       modal.removeEventListener('click', onBackdropClick);
     };
@@ -831,7 +831,7 @@
   function _registerCrafterActionsOnce() {
     if (Actions.has('entity:inspect')) return;
 
-    register('entity:inspect', (el, dataset, event) => {
+    Actions.register('entity:inspect', (el, dataset, event) => {
       if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
       const spec = {
         kind: dataset.entityKind || dataset.kind || 'feat',
@@ -845,11 +845,11 @@
       openEntityInspector(spec);
     });
 
-    register('entity:close-inspector', () => {
+    Actions.register('entity:close-inspector', () => {
       closeEntityInspector();
     });
 
-    register('entity:edit-crafter', () => {
+    Actions.register('entity:edit-crafter', () => {
       const resolved = _activeInspectorResolved;
       const spec = _activeInspectorSpec || {};
       if (!resolved || !resolved.entry) return;
@@ -873,7 +873,7 @@
       });
     });
 
-    register('entity:reset-srd', async () => {
+    Actions.register('entity:reset-srd', async () => {
       const resolved = _activeInspectorResolved;
       if (!resolved || !resolved.resolvedId) return;
       const name = (resolved.entry && resolved.entry.name) || 'this entry';
@@ -898,7 +898,7 @@
       }
     });
 
-    register('entity:replace', () => {
+    Actions.register('entity:replace', () => {
       const spec = _activeInspectorSpec || {};
       const kind = String(spec.kind || (_activeInspectorResolved && _activeInspectorResolved.kind) || '').toLowerCase();
       closeEntityInspector();
@@ -916,7 +916,7 @@
       }
     });
 
-    register('entity:remove', async () => {
+    Actions.register('entity:remove', async () => {
       const resolved = _activeInspectorResolved;
       const spec = _activeInspectorSpec || {};
       const name = (resolved && resolved.entry && resolved.entry.name) || spec.name || 'this entry';
@@ -940,7 +940,7 @@
       closeEntityInspector();
     });
 
-    register('crafter:open', (el, dataset) => {
+    Actions.register('crafter:open', (el, dataset) => {
       const bridge = global.CharStore && global.CharStore.StudioBridge;
       let entry = null;
       if ((dataset.entityId || dataset.entityName) && bridge && typeof bridge.resolveEntity === 'function') {
@@ -959,7 +959,7 @@
       });
     });
 
-    register('crafter:edit-viewed-feat', () => {
+    Actions.register('crafter:edit-viewed-feat', () => {
       const viewed = global.currentViewedFeatItem;
       const name = (viewed && viewed.name) || global.currentViewedFeatName || '';
       if (!name) return;
@@ -980,7 +980,7 @@
       });
     });
 
-    register('crafter:reset-viewed-feat', () => {
+    Actions.register('crafter:reset-viewed-feat', () => {
       const viewed = global.currentViewedFeatItem;
       const name = (viewed && viewed.name) || global.currentViewedFeatName || '';
       if (!name) return;
