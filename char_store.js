@@ -188,11 +188,24 @@
     },
 
     replaceDoc(newDoc, meta = {}) {
-      return this.dispatch({
+      const out = this.dispatch({
         type: 'doc/replace',
         payload: newDoc,
         meta
       });
+      if (typeof window !== 'undefined' && _state.doc) {
+        if (!Array.isArray(_state.doc.customDb)) _state.doc.customDb = [];
+        this.reconcileSrdSnapshots().then((res) => {
+          if (res && ((res.migrated && res.migrated.length > 0) || res.changed)) {
+            if (typeof root.renderAll === 'function') {
+              try { root.renderAll(); } catch (err) {
+                if (typeof root.reportError === 'function') root.reportError('CharStore.replaceDocRender', err);
+              }
+            }
+          }
+        });
+      }
+      return out;
     },
 
     getSession() {

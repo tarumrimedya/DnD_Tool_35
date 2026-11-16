@@ -2256,6 +2256,20 @@ const RuleEngine = {
             else if (flagKey === 'ignoreArmorSpeedPenalty') ruleFlags.ignoreArmorSpeedPenalty = true;
             else if (flagKey === 'oneHandedOffHandAsLight') ruleFlags.oneHandedOffHandAsLight = true;
             else ruleFlags[flagKey] = b.slider !== undefined ? b.slider : true;
+            if (flagKey === 'energyChoice' || ruleFlags.energyChoice) {
+              const rawChosenElem = String(out.chosenEnergy || this.extractEntryChoice(out) || '').trim().toLowerCase();
+              if (['acid', 'cold', 'electricity', 'fire', 'sonic'].includes(rawChosenElem)) {
+                const effClNow = Number(curCtx.cl || out.casterLevel || 1) || 1;
+                if (ruleFlags.energyResistanceFormula || /resist\s+energy/i.test(String(out.name || ''))) {
+                  const resAmt = effClNow >= 11 ? 30 : (effClNow >= 7 ? 20 : 10);
+                  defenses.push({ kind: 'resistance', target: rawChosenElem, value: resAmt });
+                  pushModifier({ op: 'add', target: `resist.${rawChosenElem}`, value: resAmt, type: 'Untyped', source: out.name || 'Resist Energy' });
+                }
+                if (ruleFlags.energyImmunity) {
+                  defenses.push({ kind: 'immunity', target: rawChosenElem, value: 1 });
+                }
+              }
+            }
           }
           if (b.carrier && typeof b.carrier === 'object') {
             const c = b.carrier;
@@ -6421,7 +6435,7 @@ const RuleEngine = {
     if (ruleFlags.keen) evaluatedLabels.push('Keen (2x Crit Range)');
 
     // Energy Choice Spells (Resist Energy, Protection from Energy, Energy Immunity)
-    const chosenEnergy = spell.chosenEnergy || null;
+    const chosenEnergy = spell.chosenEnergy || this.extractEntryChoice(spell) || null;
     const energyLabel = chosenEnergy || 'Chosen Energy';
     let evaluatedEnergyRes = 0;
     let evaluatedProtectionPool = 0;

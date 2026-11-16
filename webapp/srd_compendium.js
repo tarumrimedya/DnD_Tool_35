@@ -697,6 +697,17 @@
     },
 
     /**
+     * Loads all non-opt-in lazy compendium chunks into memory (used by Rule Crafter & full-catalog views).
+     */
+    async ensureAllLoaded() {
+      if (!_indexData) await SrdCompendium.initIndex();
+      const optIn = getOptInChunkNames();
+      const lazy = getLazyChunkNames().filter((n) => !optIn.includes(n));
+      await Promise.all(lazy.map((fname) => SrdCompendium.ensureChunkLoaded(fname)));
+      return true;
+    },
+
+    /**
      * Ensures a specific chunk (e.g. 'srd_spells.json' or 'srd_monsters.json') is loaded into memory.
      */
     async ensureChunkLoaded(fileName) {

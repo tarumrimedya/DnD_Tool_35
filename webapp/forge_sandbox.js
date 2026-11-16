@@ -5612,7 +5612,10 @@
     const C = window.SrdCompendium;
     const http = /^https?:$/.test(location.protocol);
     if (!C || typeof C.init !== 'function' || !http) return;
-    C.init({ basePath: 'database' }).then((ok) => {
+    C.init({ basePath: 'database', preloadAll: true }).then((ok) => {
+      if (!ok) return false;
+      return typeof C.ensureAllLoaded === 'function' ? C.ensureAllLoaded().then(() => true) : true;
+    }).then((ok) => {
       if (!ok) return;
       try { mergeSrd(C); } catch (e) { console.warn('[ForgeSandbox] SRD merge skipped:', e && e.message); }
       return typeof C.loadMonsters === 'function'
