@@ -35707,6 +35707,20 @@
         "btype": "Enhancement"
       },
       {
+        "type": "stat",
+        "mode": "replaceStat",
+        "swapTarget": "bab",
+        "targets": [
+          "bab"
+        ],
+        "subOp": "max",
+        "fromStat": "bab",
+        "toStat": "@level",
+        "scope": "all",
+        "formula": "@level",
+        "summary": "Higher of Character Level / Total HD / BAB on Base Attack Bonus"
+      },
+      {
         "type": "roll",
         "kind": "Temp HP",
         "count": 0,

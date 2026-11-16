@@ -595,7 +595,8 @@
         "kind": "Special",
         "dice": "(@cl)d6",
         "dmgType": "Death",
-        "text": "Melee touch, roll 1d6/Cleric level; if total >= target current HP, it dies (no save)"
+        "text": "Melee touch, roll 1d6/Cleric level; if total >= target current HP, it dies (no save)",
+        "scaling": "formula"
       }
     ],
     "ruleFlags": {
@@ -4843,7 +4844,8 @@
         "kind": "Special",
         "dice": "(@cl)d6",
         "dmgType": "Death",
-        "text": "Melee touch, roll 1d6/Cleric level; if total >= target current HP, it dies (no save)"
+        "text": "Melee touch, roll 1d6/Cleric level; if total >= target current HP, it dies (no save)",
+        "scaling": "formula"
       }
     ],
     "ruleFlags": {

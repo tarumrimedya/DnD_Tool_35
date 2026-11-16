@@ -903,6 +903,14 @@
 
     if (baseOptions.length === 0) {
       baseSel.innerHTML = '<option value="" disabled selected>⏳ Loading SRD Equipment Compendium...</option>';
+      if (global.SrdCompendium && typeof global.SrdCompendium.ensureTypesLoaded === 'function') {
+        global.SrdCompendium.ensureTypesLoaded(['Weapon', 'Armor', 'Shield', 'Material', 'Enhancement', 'AugmentationCrystal']).then(arrived => {
+          if (arrived && arrived.length > 0) {
+            populateForgeControls();
+            updateForgePreview();
+          }
+        }).catch(() => {});
+      }
       return;
     }
 
@@ -1274,9 +1282,12 @@
     if (input) input.value = initialQuery;
     _drawerState.query = initialQuery;
 
-    if (global.SrdCompendium && typeof global.SrdCompendium.init === 'function') {
-      if (typeof global.SrdCompendium.isReady !== 'function' || !global.SrdCompendium.isReady()) {
-        await global.SrdCompendium.init();
+    if (global.SrdCompendium) {
+      if (typeof global.SrdCompendium.isIndexReady === 'function' && !global.SrdCompendium.isIndexReady() && typeof global.SrdCompendium.initIndex === 'function') {
+        await global.SrdCompendium.initIndex();
+      }
+      if ((initialTab === 'forge' || options.forgeItem) && typeof global.SrdCompendium.ensureTypesLoaded === 'function') {
+        await global.SrdCompendium.ensureTypesLoaded(['Weapon', 'Armor', 'Shield', 'Material', 'Enhancement', 'AugmentationCrystal']);
       }
     }
     updateSrdSubFilterButtonsUI();
@@ -1349,6 +1360,9 @@
       if (searchView) searchView.classList.add('hidden');
       if (customView) customView.classList.add('hidden');
       if (forgeView) forgeView.classList.remove('hidden');
+      if (global.SrdCompendium && typeof global.SrdCompendium.ensureTypesLoaded === 'function') {
+        await global.SrdCompendium.ensureTypesLoaded(['Weapon', 'Armor', 'Shield', 'Material', 'Enhancement', 'AugmentationCrystal']);
+      }
       populateForgeControls();
       updateForgePreview();
       return;

@@ -79,9 +79,16 @@ const TARGET_ALIAS_MAP = {
 
 const EXTRA_CANONICAL_TARGETS = new Set([
   'ability.str.check', 'ability.dex.check', 'ability.con.check',
-  'ability.int.check', 'ability.wis.check', 'ability.cha.check'
+  'ability.int.check', 'ability.wis.check', 'ability.cha.check',
+  'bab',
+  'atk.melee.abilityMod', 'atk.ranged.abilityMod', 'atk.thrown.abilityMod', 'atk.touch.abilityMod', 'grapple.abilityMod',
+  'dmg.melee.abilityMod', 'dmg.ranged.abilityMod',
+  'save.fort.abilityMod', 'save.ref.abilityMod', 'save.will.abilityMod',
+  'ac.abilityMod', 'initiative.abilityMod', 'hp.abilityMod', 'concentration.abilityMod',
+  'choice.skill.1.abilityMod', 'spell.dc.abilityMod', 'spell.bonusSlots.abilityMod'
 ]);
 EXTRA_CANONICAL_TARGETS.forEach((t) => CANONICAL_V3_TARGETS.add(t));
+CANONICAL_SKILLS.forEach((s) => CANONICAL_V3_TARGETS.add('skill.' + s + '.abilityMod'));
 
 function canonicalizeTarget(rawTarget) {
   if (!rawTarget || typeof rawTarget !== 'string') return { ok: false, canonical: null, raw: rawTarget };

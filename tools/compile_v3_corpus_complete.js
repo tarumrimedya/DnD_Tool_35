@@ -235,7 +235,35 @@ const WEAPON_CHOICE_DEF = [{
   id: 'ch-weapon',
   key: 'weapon',
   label: 'Chosen Weapon',
-  options: ['Longsword', 'Greatsword', 'Greataxe', 'Battleaxe', 'Warhammer', 'Heavy Mace', 'Rapier', 'Scimitar', 'Short Sword', 'Dagger', 'Longbow', 'Shortbow', 'Light Crossbow', 'Heavy Crossbow', 'Halberd', 'Glaive', 'Guuisarme', 'Spiked Chain', 'Unarmed Strike', 'Grapple', 'Ray']
+  options: ['Longsword', 'Greatsword', 'Greataxe', 'Battleaxe', 'Warhammer', 'Heavy Mace', 'Rapier', 'Scimitar', 'Short Sword', 'Dagger', 'Longbow', 'Shortbow', 'Light Crossbow', 'Heavy Crossbow', 'Halberd', 'Glaive', 'Guisarme', 'Spiked Chain', 'Unarmed Strike', 'Grapple', 'Ray']
+}];
+
+const EXOTIC_WEAPON_CHOICE_DEF = [{
+  id: 'ch-exotic-weapon',
+  key: 'weapon',
+  label: 'Exotic Weapon',
+  options: ['Bastard Sword', 'Dwarven Waraxe', 'Spiked Chain', 'Whip', 'Dire Flail', 'Two-Bladed Sword', 'Orc Double Axe', 'Gnome Hooked Hammer', 'Dwarven Urgrosh', 'Hand Crossbow', 'Repeating Light Crossbow', 'Repeating Heavy Crossbow', 'Bolas', 'Net', 'Shuriken', 'Kama', 'Kukri', 'Nunchaku', 'Sai', 'Siangham']
+}];
+
+const MARTIAL_WEAPON_CHOICE_DEF = [{
+  id: 'ch-martial-weapon',
+  key: 'weapon',
+  label: 'Martial Weapon',
+  options: ['Longsword', 'Greatsword', 'Greataxe', 'Battleaxe', 'Warhammer', 'Rapier', 'Scimitar', 'Short Sword', 'Handaxe', 'Light Hammer', 'Light Pick', 'Heavy Pick', 'Flail', 'Heavy Flail', 'Falchion', 'Glaive', 'Guisarme', 'Halberd', 'Lance', 'Longspear', 'Ranseur', 'Scythe', 'Trident', 'Shortbow', 'Longbow']
+}];
+
+const CROSSBOW_CHOICE_DEF = [{
+  id: 'ch-crossbow',
+  key: 'weapon',
+  label: 'Crossbow Type',
+  options: ['Hand Crossbow', 'Light Crossbow', 'Heavy Crossbow', 'Repeating Light Crossbow', 'Repeating Heavy Crossbow']
+}];
+
+const NATURAL_WEAPON_CHOICE_DEF = [{
+  id: 'ch-natural-weapon',
+  key: 'weapon',
+  label: 'Natural Weapon',
+  options: ['Unarmed Strike', 'Bite', 'Claw', 'Slam', 'Gore', 'Tail Slap', 'Wing', 'Tentacle', 'Talon', 'Sting']
 }];
 
 const SCHOOL_CHOICE_DEF = [{
@@ -249,7 +277,7 @@ const SKILL_CHOICE_DEF = [{
   id: 'ch-skill',
   key: 'skill',
   label: 'Chosen Skill',
-  options: ['Acrobatics', 'Appraise', 'Autohypnosis', 'Balance', 'Bluff', 'Climb', 'Concentration', 'Craft', 'Decipher Script', 'Diplomacy', 'Disable Device', 'Disguise', 'Escape Artist', 'Forgery', 'Gather Information', 'Handle Animal', 'Heal', 'Hide', 'Intimidate', 'Jump', 'Knowledge', 'Listen', 'Move Silently', 'Open Lock', 'Perform', 'Profession', 'Psicraft', 'Ride', 'Search', 'Sense Motive', 'Sleight of Hand', 'Spellcraft', 'Spot', 'Survival', 'Swim', 'Truespeak', 'Tumble', 'Use Magic Device', 'Use Psionic Device', 'Use Rope']
+  options: ['Appraise', 'Autohypnosis', 'Balance', 'Bluff', 'Climb', 'Concentration', 'Craft', 'Decipher Script', 'Diplomacy', 'Disable Device', 'Disguise', 'Escape Artist', 'Forgery', 'Gather Information', 'Handle Animal', 'Heal', 'Hide', 'Intimidate', 'Jump', 'Knowledge', 'Listen', 'Move Silently', 'Open Lock', 'Perform', 'Profession', 'Psicraft', 'Ride', 'Search', 'Sense Motive', 'Sleight of Hand', 'Speak Language', 'Spellcraft', 'Spot', 'Survival', 'Swim', 'Truespeak', 'Tumble', 'Use Magic Device', 'Use Psionic Device', 'Use Rope']
 }];
 
 const ENERGY_CHOICE_DEF = [{
@@ -348,17 +376,62 @@ const EXPLICIT_PATCHES = {
     choices: ENERGY_CHOICE_DEF,
     effects: [defB('ef-eres', 'Energy Resistance', '@Choice', 10)]
   },
+  'feat-energy-substitution': {
+    choices: ENERGY_CHOICE_DEF,
+    effects: [metaB('feat-energy-substitution-mm', 0, 'energySub', 'Energy Substitution (@Choice)')]
+  },
+  'feat-privileged-energy': {
+    choices: ENERGY_CHOICE_DEF,
+    effects: [switchB('feat-privileged-energy-sw', 'privileged-energy', 'Privileged Energy', 'Deal +1 damage per die with spells of chosen energy type.')]
+  },
+  'feat-exotic-weapon-proficiency': {
+    choices: EXOTIC_WEAPON_CHOICE_DEF,
+    effects: [switchB('feat-exotic-weapon-proficiency-sw', 'exotic-weapon-proficiency', 'Exotic Weapon Proficiency', 'Make attack rolls with chosen exotic weapon without taking the -4 non-proficiency penalty.')]
+  },
+  'feat-martial-weapon-proficiency': {
+    choices: MARTIAL_WEAPON_CHOICE_DEF,
+    effects: [switchB('feat-martial-weapon-proficiency-sw', 'martial-weapon-proficiency', 'Martial Weapon Proficiency', 'Make attack rolls with chosen martial weapon without taking the -4 non-proficiency penalty.')]
+  },
+  'feat-improved-critical': {
+    choices: WEAPON_CHOICE_DEF,
+    effects: [whenNamedB('ef-icrit-w', 'wieldingChosenWeapon', [switchB('ef-icrit', 'improvedCritical', 'Doubles Critical Threat Range with Chosen Weapon')])]
+  },
   'feat-improved-critical-no-weapon-selected': {
     choices: WEAPON_CHOICE_DEF,
     effects: [whenNamedB('ef-icrit-w', 'wieldingChosenWeapon', [switchB('ef-icrit', 'improvedCritical', 'Doubles Critical Threat Range with Chosen Weapon')])]
   },
-  'feat-improved-natural-attack-no-weapon-selected': {
+  'feat-power-critical': {
     choices: WEAPON_CHOICE_DEF,
+    effects: [whenNamedB('ef-powcrit', 'wieldingChosenWeapon', [statB('ef-powcrit-atk', ['atk.critConfirm'], 4, 'Untyped')])]
+  },
+  'feat-weapon-supremacy': {
+    choices: WEAPON_CHOICE_DEF,
+    effects: [whenNamedB('ef-wsup-w', 'wieldingChosenWeapon', [statB('ef-wsup-ac', ['ac.all'], 1, 'Untyped'), switchB('ef-wsup-sw', 'weapon-supremacy', 'Weapon Supremacy', 'Mastery bonuses with chosen weapon.')])]
+  },
+  'feat-rapid-reload': {
+    choices: CROSSBOW_CHOICE_DEF,
+    effects: [switchB('feat-rapid-reload-sw', 'rapid-reload', 'Rapid Reload', 'Reduce reload action for chosen crossbow type (hand/light: free action; heavy: move action).')]
+  },
+  'feat-rapid-reload-none': {
+    choices: CROSSBOW_CHOICE_DEF,
+    effects: [switchB('feat-rapid-reload-none-sw', 'rapid-reload', 'Rapid Reload', 'Reduce reload action for chosen crossbow type (hand/light: free action; heavy: move action).')]
+  },
+  'feat-improved-natural-attack': {
+    choices: NATURAL_WEAPON_CHOICE_DEF,
+    effects: [switchB('ef-ina', 'improvedNaturalAttack', 'Chosen Natural Weapon Damage Increases by One Size Step')]
+  },
+  'feat-improved-natural-attack-no-weapon-selected': {
+    choices: NATURAL_WEAPON_CHOICE_DEF,
     effects: [switchB('ef-ina', 'improvedNaturalAttack', 'Chosen Natural Weapon Damage Increases by One Size Step')]
   },
   'feat-improved-natural-attack-no-weapon-set': {
-    choices: WEAPON_CHOICE_DEF,
+    choices: NATURAL_WEAPON_CHOICE_DEF,
     effects: [switchB('ef-ina', 'improvedNaturalAttack', 'Chosen Natural Weapon Damage Increases by One Size Step')]
+  },
+  'gear-tools-masterworked': {
+    choices: SKILL_CHOICE_DEF,
+    forceOverwriteEffects: true,
+    effects: [statB('ef-mw-tool', ['choice.skill.1'], 2, 'Circumstance')]
   },
   'feat-armor-specialization': {
     choices: [{ id: 'ch-armor', key: 'armorType', label: 'Medium or Heavy Armor Type', options: ['Breastplate', 'Chainmail', 'Splint Mail', 'Banded Mail', 'Half-Plate', 'Full Plate'] }],
@@ -1040,8 +1113,8 @@ function compileEquipmentAndMic(eqData, micEntries) {
     }
     if (EXPLICIT_PATCHES[e.id]) {
       const p = EXPLICIT_PATCHES[e.id];
+      if (p.choices) e.choices = p.choices;
       if (p.forceOverwriteEffects || !Array.isArray(e.effects) || e.effects.length === 0) {
-        if (p.choices) e.choices = p.choices;
         e.effects = JSON.parse(JSON.stringify(p.effects));
         patched++;
       }
@@ -1747,6 +1820,7 @@ function compilePowers(pwrData) {
     'pwr-painful-strike': { effects: [rollB('ef-pw-pstr', 'Damage', 1, 'd6', 0, 'Nonlethal')] },
     'pwr-weapon-of-energy': { choices: ENERGY_CHOICE_DEF, effects: [rollB('ef-pw-woe', 'Damage', 1, 'd6', 0, '@Choice')] },
     'pwr-claw-of-energy': { choices: ENERGY_CHOICE_DEF, effects: [rollB('ef-pw-coe', 'Damage', 1, 'd6', 0, '@Choice')] },
+    'pwr-energy-ray': { choices: ENERGY_CHOICE_DEF, effects: [rollB('ef-pw-eray', 'Damage', 1, 'd6', 0, '@Choice', { touch: true })] },
     'pwr-ego-whip': { effects: [rollB('ef-pw-ew', 'Ability Damage', 1, 'd4', 0, 'CHA Damage')] },
     'pwr-distract': { effects: [statB('ef-pw-dist', ['skill.listen', 'skill.search', 'skill.sense-motive', 'skill.spot'], -4, 'Penalty')] },
     'pwr-inflict-pain': { effects: [statB('ef-pw-ipain', ['atk.all', 'skill.all'], -4, 'Penalty')] },
@@ -1757,13 +1831,16 @@ function compilePowers(pwrData) {
   };
 
   for (const e of pwrData) {
-    if (!e || (Array.isArray(e.effects) && e.effects.length > 0)) continue;
+    if (!e) continue;
     if (POWER_EXPLICIT[e.id]) {
       if (POWER_EXPLICIT[e.id].choices) e.choices = POWER_EXPLICIT[e.id].choices;
-      e.effects = POWER_EXPLICIT[e.id].effects;
+      if (!Array.isArray(e.effects) || e.effects.length === 0) {
+        e.effects = POWER_EXPLICIT[e.id].effects;
+      }
       count++;
       continue;
     }
+    if (Array.isArray(e.effects) && e.effects.length > 0) continue;
     const d = String(e.shortDescription || e.text || '');
     // Parse damage dice powers (`Deal 5d6 energy damage`, `deals 9d4 slashing damage`, `Deal 1d10 damage`, etc.)
     const dmgM = d.match(/(?:deals?|subjects\s+your\s+foes\s+to|takes?)\s+(\d+)d(\d+)\s*(?:points?\s+)?(acid|cold|electricity|fire|sonic|force|slashing|nonlethal|energy)?\s*damage/i);

@@ -2253,8 +2253,11 @@
     function selectBuffSpotlightCandidate(entry, opts = {}) {
       if (!entry) return;
       _selectedSpotlightV2Entry = JSON.parse(JSON.stringify(entry));
+      const entryCh0 = (Array.isArray(entry.choices) && entry.choices.length > 0 && Array.isArray(entry.choices[0].options) && entry.choices[0].options.length > 0)
+        ? entry.choices[0]
+        : null;
       if (!opts.keepEnergy) {
-        _selectedSpotlightEnergy = entry.chosenEnergy || 'Fire';
+        _selectedSpotlightEnergy = entry.chosenEnergy || entry.chosenOption || entry.choice || (entryCh0 ? entryCh0.options[0] : 'Fire');
       }
 
       const cl = getBuffModalCasterLevel();
@@ -2320,7 +2323,8 @@
         .replace(/\s+/g, ' ')
         .trim();
 
-      const displayName = ruleFlags.energyChoice ? `${entry.name} (${_selectedSpotlightEnergy})` : entry.name;
+      const hasBuffChoice = Boolean(ruleFlags.energyChoice || (Array.isArray(entry.choices) && entry.choices.length > 0 && Array.isArray(entry.choices[0].options) && entry.choices[0].options.length > 0));
+      const displayName = hasBuffChoice ? `${entry.name} (${_selectedSpotlightEnergy})` : entry.name;
       const sourceVal = isCond ? 'Condition' : (rType === 'spell' ? 'Spell' : (entry.source && entry.source !== 'SRD 3.5e' ? entry.source : 'Spell'));
 
       fillBuffFormFromEntry({
@@ -2408,19 +2412,18 @@
         ? pills.join('')
         : `<span class="text-[11px] text-slate-400 italic">Narrative / tactical effect (click "Edit V3 Effects" to add custom stat effects).</span>`;
 
-      // Energy Choice Picker
+      // Energy / V3 Entry Choice Picker
       if (energyBox && energyBtns) {
-        if (ruleFlags.energyChoice) {
-          const ENERGIES = [
-            { type: 'Fire', icon: '🔥' },
-            { type: 'Cold', icon: '❄️' },
-            { type: 'Acid', icon: '🧪' },
-            { type: 'Electricity', icon: '⚡' },
-            { type: 'Sonic', icon: '🔊' }
-          ];
-          energyBtns.innerHTML = ENERGIES.map(e => {
-            const active = _selectedSpotlightEnergy === e.type;
-            return `<button type="button" data-action="inventory:select-buff-energy" data-energy="${e.type}" class="px-2 py-1 rounded-lg text-[10px] font-bold border transition cursor-pointer ${active ? 'bg-amber-600 text-white border-amber-300 shadow' : 'bg-slate-900 text-slate-300 border-slate-700 hover:text-white'}">${e.icon} ${e.type}</button>`;
+        const entryCh0 = (Array.isArray(entry.choices) && entry.choices.length > 0 && Array.isArray(entry.choices[0].options) && entry.choices[0].options.length > 0)
+          ? entry.choices[0]
+          : null;
+        if (ruleFlags.energyChoice || entryCh0) {
+          const CHOICE_ICONS = { Fire: '🔥', Cold: '❄️', Acid: '🧪', Electricity: '⚡', Sonic: '🔊', STR: '💪', DEX: '🏹', CON: '🛡️', INT: '📘', WIS: '👁️', CHA: '✨' };
+          const optsList = entryCh0 ? entryCh0.options : ['Fire', 'Cold', 'Acid', 'Electricity', 'Sonic'];
+          energyBtns.innerHTML = optsList.map(optVal => {
+            const active = String(_selectedSpotlightEnergy).toLowerCase() === String(optVal).toLowerCase();
+            const ic = CHOICE_ICONS[optVal] || '✨';
+            return `<button type="button" data-action="inventory:select-buff-energy" data-energy="${UI.escapeAttr(optVal)}" class="px-2 py-1 rounded-lg text-[10px] font-bold border transition cursor-pointer ${active ? 'bg-amber-600 text-white border-amber-300 shadow' : 'bg-slate-900 text-slate-300 border-slate-700 hover:text-white'}">${ic} ${UI.escapeHtml(optVal)}</button>`;
           }).join('');
           energyBox.classList.remove('hidden');
         } else {
@@ -2937,8 +2940,9 @@
           if (spec.targetMode === 'weapon' && weaponSelectEl && weaponSelectEl.value) {
             chosenWeapon = weaponSelectEl.value;
           }
-          if (spec.ruleFlags?.energyChoice) {
-            chosenEnergy = _selectedSpotlightEnergy || 'Fire';
+          const hasV3Choices = Array.isArray(_selectedSpotlightV2Entry?.choices) && _selectedSpotlightV2Entry.choices.length > 0;
+          if (spec.ruleFlags?.energyChoice || hasV3Choices) {
+            chosenEnergy = _selectedSpotlightEnergy || (hasV3Choices ? (_selectedSpotlightV2Entry.choices[0]?.options?.[0] || '') : 'Fire');
           }
           const created = window.applySpellBuffToCharacter(_selectedSpotlightV2Entry, cl, {
             chosenEnergy,
@@ -3097,6 +3101,13 @@
         summary: v2Summary || notes,
         effects: v3Effects,
         ruleFlags: v2RuleFlags,
+        ...(matchesSpotlightV2 && Array.isArray(_selectedSpotlightV2Entry?.choices) && _selectedSpotlightV2Entry.choices.length > 0
+          ? {
+              choice: _selectedSpotlightEnergy,
+              chosenOption: _selectedSpotlightEnergy,
+              choices: JSON.parse(JSON.stringify(_selectedSpotlightV2Entry.choices)).map((ch, idx) => idx === 0 && _selectedSpotlightEnergy ? { ...ch, value: _selectedSpotlightEnergy } : ch)
+            }
+          : {}),
         children: (currentBuffModalChildren && currentBuffModalChildren.length > 0) ? JSON.parse(JSON.stringify(currentBuffModalChildren)) : []
       };
 
@@ -4231,6 +4242,35 @@
       `;
     }
 
+    function renderItemInlineChoiceSelectHtml(itemObj, locationKind, refKey) {
+      if (!itemObj || typeof itemObj !== 'object') return '';
+      let chArr = Array.isArray(itemObj.choices) && itemObj.choices.length > 0 ? itemObj.choices : null;
+      if (!chArr && window.SrdCompendium && typeof window.SrdCompendium.getById === 'function') {
+        const baseRec = (itemObj.baseItemId && window.SrdCompendium.getById(itemObj.baseItemId))
+          || (itemObj.id && window.SrdCompendium.getById(itemObj.id))
+          || (itemObj.masterDbName && typeof window.SrdCompendium.getByName === 'function' ? window.SrdCompendium.getByName(itemObj.masterDbName) : null);
+        if (baseRec && Array.isArray(baseRec.choices) && baseRec.choices.length > 0) chArr = baseRec.choices;
+      }
+      const ch0 = chArr && chArr[0];
+      if (!ch0 || !Array.isArray(ch0.options) || ch0.options.length === 0) return '';
+      let opts = ch0.options.slice();
+      if (ch0.key === 'skill' && typeof character !== 'undefined' && Array.isArray(character?.skills) && character.skills.length > 0) {
+        const skSet = new Set(opts);
+        character.skills.forEach(sk => { if (sk && sk.name) skSet.add(sk.name); });
+        opts = Array.from(skSet).sort((a, b) => a.localeCompare(b));
+      }
+      const curVal = itemObj.chosenOption || itemObj.choice || ch0.value || '';
+      return `
+        <div class="inline-flex items-center gap-1 mt-0.5" data-action="inventory:noop-stop">
+          <span class="text-[10px] font-bold text-amber-300">${UI.escapeHtml(ch0.label || 'Choice')}:</span>
+          <select data-change-action="inventory:set-item-choice" data-loc="${UI.escapeAttr(locationKind)}" data-ref="${UI.escapeAttr(refKey)}" class="h-5 bg-slate-950 border border-amber-600/60 rounded px-1.5 text-[10px] text-white font-bold cursor-pointer focus:outline-none">
+            <option value="">-- Select --</option>
+            ${opts.map(o => `<option value="${UI.escapeAttr(o)}" ${String(curVal).toLowerCase() === String(o).toLowerCase() ? 'selected' : ''}>${UI.escapeHtml(o)}</option>`).join('')}
+          </select>
+        </div>
+      `;
+    }
+
     function renderBodySlotsSilhouette() {
       if (!character) return;
       if (!character.bodySlots) character.bodySlots = {};
@@ -4305,6 +4345,7 @@
                     ${(() => { const pw = getEquipmentProficiencyWarning(slotData); return pw ? `<span class="text-rose-400 text-[11px] shrink-0" title="${UI.escapeAttr(pw.tooltip)}">⚠️</span>` : ''; })()}
                   </div>
                   ${renderGearItemStatsBadgesHtml(slotData, { compact: true, minimal: true })}
+                  ${renderItemInlineChoiceSelectHtml(slotData, 'slot', slotKey)}
                   <div class="text-[10px] sm:text-[10px] text-slate-400 truncate flex items-center gap-2">
                     ${slotData.desc ? `<span class="truncate max-w-[120px] sm:max-w-[160px]">${UI.escapeHtml(slotData.desc)}</span>` : ''}
                     <span class="font-mono text-slate-500">${slotData.weight ? slotData.weight + ' lb' : ''}</span>
@@ -5590,6 +5631,7 @@
           </td>
           <td class="py-2 px-3 align-middle text-slate-300 text-xs">
             ${statsBadgesHtml}
+            ${typeof renderItemInlineChoiceSelectHtml === 'function' ? renderItemInlineChoiceSelectHtml(item, 'pool', String(item.id ?? '')) : ''}
             <div>${UI.escapeHtml(item.desc || '-')}</div>
           </td>
           <td class="py-2 px-3 text-center align-middle font-mono">
@@ -6703,6 +6745,11 @@
         enhancementBonus: Number(item.enhancementBonus) || 0,
         enhancements: Array.isArray(item.enhancements) ? item.enhancements : [],
         effects: Array.isArray(item.effects) ? JSON.parse(JSON.stringify(item.effects)) : [],
+        ...(Array.isArray(item.choices) && item.choices.length > 0 ? {
+          choices: JSON.parse(JSON.stringify(item.choices)),
+          choice: item.chosenOption || item.choice || item.choices[0]?.options?.[0] || '',
+          chosenOption: item.chosenOption || item.choice || item.choices[0]?.options?.[0] || ''
+        } : {}),
         ...(item.weapon ? { weapon: JSON.parse(JSON.stringify(item.weapon)) } : {}),
         ...(item.armor ? { armor: JSON.parse(JSON.stringify(item.armor)) } : {}),
         modes: Array.isArray(item.modes) ? JSON.parse(JSON.stringify(item.modes)) : [],
@@ -8792,6 +8839,37 @@
         if (data && data.energy) {
           selectBuffModalEnergy(data.energy);
         }
+      });
+      actionsApi.register('inventory:set-item-choice', (el, data, event) => {
+        if (!el || !data || !character) return;
+        const val = String(el.value || '').trim();
+        const applyItemChoice = (obj) => {
+          if (!obj || typeof obj !== 'object') return;
+          obj.choice = val;
+          obj.chosenOption = val;
+          if (Array.isArray(obj.choices) && obj.choices[0]) obj.choices[0].value = val;
+          const baseClean = String(obj.masterDbName || obj.name || '').replace(/\s*\([^)]+\)\s*$/, '').trim();
+          if (baseClean) obj.name = val ? `${baseClean} (${val})` : baseClean;
+        };
+        if (data.loc === 'slot' && character.bodySlots && character.bodySlots[data.ref]) {
+          const sl = character.bodySlots[data.ref];
+          applyItemChoice(sl);
+          if (Array.isArray(character.gearPool) && sl.id) {
+            const pMatch = character.gearPool.find(p => p && String(p.id) === String(sl.id));
+            if (pMatch) applyItemChoice(pMatch);
+          }
+        } else if (data.loc === 'pool' && Array.isArray(character.gearPool)) {
+          const pItem = character.gearPool.find(p => p && String(p.id) === String(data.ref));
+          if (pItem) applyItemChoice(pItem);
+        }
+        if (window.CharStore && typeof window.CharStore.recompute === 'function') {
+          if (typeof window.CharStore._syncExternalCharacterRef === 'function') {
+            window.CharStore._syncExternalCharacterRef(character);
+          }
+          window.CharStore.recompute();
+        }
+        if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
+        if (typeof renderAll === 'function') renderAll();
       });
       actionsApi.register('inventory:noop-stop', (el, data, event) => {
         if (event && typeof event.stopPropagation === 'function') event.stopPropagation();

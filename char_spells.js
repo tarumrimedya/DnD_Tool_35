@@ -1525,8 +1525,10 @@
     function applySpellBuffToCharacter(spellItem, cl = 1, options = {}) {
       if (!character || !spellItem) return null;
       const effCl = Math.max(1, Number(cl || spellItem.casterLevel || character.level) || 1);
-      const chosenEnergy = options.chosenEnergy ? String(options.chosenEnergy).trim() : (spellItem.chosenEnergy || null);
-      const spellWithChoice = chosenEnergy ? { ...spellItem, chosenEnergy } : spellItem;
+      const chosenEnergy = options.chosenEnergy
+        ? String(options.chosenEnergy).trim()
+        : (spellItem.chosenOption || spellItem.choice || spellItem.chosenEnergy || null);
+      const spellWithChoice = chosenEnergy ? { ...spellItem, chosenEnergy, choice: chosenEnergy, chosenOption: chosenEnergy } : spellItem;
       const buffSpec = (typeof RuleEngine !== 'undefined' && RuleEngine.resolveSpellBuffSpec)
         ? RuleEngine.resolveSpellBuffSpec(spellWithChoice, character, effCl)
         : null;
@@ -1563,6 +1565,10 @@
         casterLevel: effCl,
         cl: effCl,
         chosenEnergy: chosenEnergy || null,
+        ...(chosenEnergy ? { choice: chosenEnergy, chosenOption: chosenEnergy } : {}),
+        ...(Array.isArray(buffSpec.choices) && buffSpec.choices.length > 0
+          ? { choices: buffSpec.choices.map((ch, idx) => idx === 0 && chosenEnergy ? { ...ch, value: chosenEnergy } : ch) }
+          : {}),
         duration: durText,
         durationText: durText,
         initialDuration: durText,
@@ -9852,34 +9858,307 @@
     }
     window.resolveBaseWeaponName = resolveBaseWeaponName;
 
-    // D&D 3.5e Standard SRD Weapons Dynamic Helper (Sourced from window.SrdCompendium & masterDb)
-    function getSrdWeaponNames() {
+    const DND35_RAW_SPECIAL_WEAPON_TARGETS = [
+      'Unarmed Strike', 'Grapple', 'Ray',
+      'Bite', 'Claw', 'Slam', 'Gore', 'Tail Slap', 'Wing', 'Tentacle', 'Talon', 'Sting'
+    ];
+
+    // D&D 3.5e Standard SRD Weapons Dynamic Helper (Sourced from window.SrdCompendium, customDb & masterDb)
+    function getSrdWeaponNames(filterMode = 'all') {
       const set = new Set();
+      const mode = String(filterMode || 'all').toLowerCase();
+      if (mode === 'natural') {
+        ['Unarmed Strike', 'Bite', 'Claw', 'Slam', 'Gore', 'Tail Slap', 'Wing', 'Tentacle', 'Talon', 'Sting'].forEach(n => set.add(n));
+        return Array.from(set).sort((a, b) => a.localeCompare(b));
+      }
+      if (mode === 'crossbow') {
+        ['Hand Crossbow', 'Light Crossbow', 'Heavy Crossbow', 'Repeating Light Crossbow', 'Repeating Heavy Crossbow'].forEach(n => set.add(n));
+      }
+      if (mode === 'all') {
+        DND35_RAW_SPECIAL_WEAPON_TARGETS.forEach(n => set.add(n));
+      }
+      const addWeaponEntry = (w) => {
+        if (!w || !isBaseMundaneWeaponEntry(w)) return;
+        const cat = String(w.weapon?.category || w.category || '').toLowerCase();
+        const sub = String(w.subcategory || w.proficiency || w.weaponType || '').toLowerCase();
+        const nm = String(w.name || '').replace(/^[↳\s*•\-]+/, '').replace(/\[.*?\]/g, '').replace(/\(.*?\)/g, '').trim();
+        if (!nm) return;
+        if (mode === 'exotic' && !(cat === 'exotic' || sub.includes('exotic'))) return;
+        if (mode === 'martial' && !(cat === 'martial' || sub.includes('martial'))) return;
+        if (mode === 'crossbow' && !/crossbow/i.test(nm)) return;
+        set.add(nm);
+      };
       const weapons = (window.SrdCompendium && typeof window.SrdCompendium.getByType === 'function')
         ? window.SrdCompendium.getByType('Weapon')
         : [];
-      weapons.forEach(w => {
-        if (w && isBaseMundaneWeaponEntry(w)) {
-          const clean = String(w.name || '').replace(/^[↳\s*•\-]+/, '').replace(/\[.*?\]/g, '').replace(/\(.*?\)/g, '').trim();
-          if (clean) set.add(clean);
-        }
-      });
+      weapons.forEach(addWeaponEntry);
+      if (typeof character !== 'undefined' && Array.isArray(character?.customDb)) {
+        character.customDb.filter(i => i && (i.type === 'Weapon' || i.category === 'Weapon')).forEach(addWeaponEntry);
+      }
       if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
-        masterDb.filter(i => i && (i.type === 'Weapon' || i.category === 'Weapon')).forEach(w => {
-          if (w && isBaseMundaneWeaponEntry(w)) {
-            const clean = String(w.name || '').replace(/^[↳\s*•\-]+/, '').replace(/\[.*?\]/g, '').replace(/\(.*?\)/g, '').trim();
-            if (clean) set.add(clean);
-          }
-        });
+        masterDb.filter(i => i && (i.type === 'Weapon' || i.category === 'Weapon')).forEach(addWeaponEntry);
+      }
+      if (mode === 'exotic' && set.size === 0) {
+        ['Bastard Sword', 'Dwarven Waraxe', 'Spiked Chain', 'Whip', 'Dire Flail', 'Two-Bladed Sword', 'Orc Double Axe', 'Gnome Hooked Hammer', 'Dwarven Urgrosh', 'Hand Crossbow', 'Repeating Light Crossbow', 'Repeating Heavy Crossbow', 'Bolas', 'Net', 'Shuriken', 'Kama', 'Kukri', 'Nunchaku', 'Sai', 'Siangham'].forEach(n => set.add(n));
+      }
+      if (mode === 'martial' && set.size === 0) {
+        ['Battleaxe', 'Falchion', 'Flail', 'Glaive', 'Greataxe', 'Greatclub', 'Greatsword', 'Guisarme', 'Halberd', 'Handaxe', 'Heavy Flail', 'Heavy Pick', 'Lance', 'Light Hammer', 'Light Pick', 'Longbow', 'Longspear', 'Longsword', 'Ranseur', 'Rapier', 'Scimitar', 'Scythe', 'Short Sword', 'Shortbow', 'Trident', 'Warhammer'].forEach(n => set.add(n));
       }
       return Array.from(set).sort((a, b) => a.localeCompare(b));
     }
     window.getSrdWeaponNames = getSrdWeaponNames;
 
+    function ensureSrdChoiceChunksLoaded(types, onArrived) {
+      if (typeof window === 'undefined' || !window.SrdCompendium || typeof window.SrdCompendium.ensureTypesLoaded !== 'function') return;
+      window.SrdCompendium.ensureTypesLoaded(types).then((arrived) => {
+        if (arrived && arrived.length > 0 && typeof onArrived === 'function') {
+          onArrived(arrived);
+        }
+      }).catch(() => {});
+    }
+    if (typeof UI === 'object' && UI) UI.ensureSrdChoiceChunksLoaded = ensureSrdChoiceChunksLoaded;
+
     const DND35_SPELL_SCHOOLS = [
       "Abjuration", "Conjuration", "Divination", "Enchantment", 
       "Evocation", "Illusion", "Necromancy", "Transmutation"
     ];
+    const DND35_ENERGY_TYPES = ["Acid", "Cold", "Electricity", "Fire", "Sonic"];
+    const DND35_ABILITY_KEYS = ["STR", "DEX", "CON", "INT", "WIS", "CHA"];
+    const DND35_SHIELD_TYPES = ["Buckler", "Light Wooden Shield", "Light Steel Shield", "Heavy Wooden Shield", "Heavy Steel Shield", "Tower Shield"];
+    const DND35_ARMOR_TYPES = ["Breastplate", "Chainmail", "Hide", "Scale Mail", "Splint Mail", "Banded Mail", "Half-Plate", "Full Plate"];
+
+    function lookupChoiceSourceEntry(rawNameOrEntry) {
+      if (rawNameOrEntry && typeof rawNameOrEntry === 'object') return rawNameOrEntry;
+      const raw = String(rawNameOrEntry || '').replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️\s]+(\[.*?\])?\s*/, '').trim();
+      if (!raw) return null;
+      const base = raw.replace(/\(.*?\)/g, '').trim();
+      const rawLow = raw.toLowerCase();
+      const baseLow = base.toLowerCase();
+      if (window.SrdCompendium && typeof window.SrdCompendium.getByName === 'function') {
+        const hit = window.SrdCompendium.getByName(base, 'Feat')
+          || window.SrdCompendium.getByName(base, 'Trait')
+          || window.SrdCompendium.getByName(base, 'Flaw')
+          || window.SrdCompendium.getByName(base)
+          || window.SrdCompendium.getByName(raw);
+        if (hit) return hit;
+      }
+      if (typeof getCombinedFeatCatalog === 'function') {
+        const cat = getCombinedFeatCatalog(true);
+        const fHit = cat.find(f => f && ((f.name || '').toLowerCase().trim() === baseLow || (f.name || '').toLowerCase().trim() === rawLow));
+        if (fHit) return fHit;
+      }
+      if (typeof findTraitOptionByName === 'function') {
+        const tHit = findTraitOptionByName(base) || findTraitOptionByName(raw);
+        if (tHit) return tHit;
+      }
+      const pools = [
+        ...(typeof character !== 'undefined' && Array.isArray(character?.customDb) ? character.customDb : []),
+        ...(typeof masterDb !== 'undefined' && Array.isArray(masterDb) ? masterDb : [])
+      ];
+      return pools.find(m => m && ((m.name || '').toLowerCase().trim() === baseLow || (m.name || '').toLowerCase().trim() === rawLow)) || null;
+    }
+
+    function resolveV3ChoiceConfig(featTitleOrEntry, fallbackCurrentTarget = '') {
+      const entryObj = (featTitleOrEntry && typeof featTitleOrEntry === 'object') ? featTitleOrEntry : null;
+      const rawTitle = String(entryObj ? (entryObj.name || '') : (featTitleOrEntry || ''))
+        .replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️\s]+(\[.*?\])?\s*/, '')
+        .trim();
+      if (!rawTitle) return null;
+
+      const parenMatch = rawTitle.match(/\(([^)]+)\)\s*$/);
+      const extractedParen = (parenMatch && parenMatch[1] && !/^(?:ex|su|sp|na|3\.0e|no weapon.*|no spell.*|not set|none)$/i.test(parenMatch[1].trim()))
+        ? parenMatch[1].trim()
+        : '';
+      const baseName = rawTitle
+        .replace(/\s*\((?:no weapon selected|no weapon set|no spell school selected|not set|none)\)\s*$/i, '')
+        .replace(/\(([^)]+)\)\s*$/, (m, g1) => /^(?:ex|su|sp|na|3\.0e)$/i.test(g1.trim()) ? m : '')
+        .trim();
+      const lower = baseName.toLowerCase();
+      const srcEntry = entryObj || lookupChoiceSourceEntry(baseName);
+      const chDef = (srcEntry && Array.isArray(srcEntry.choices) && srcEntry.choices.length > 0) ? srcEntry.choices[0] : null;
+      const chId = String(chDef?.id || '').toLowerCase();
+      const chKey = String(chDef?.key || '').toLowerCase();
+      const currentTarget = extractedParen
+        || (entryObj && (entryObj.chosenOption || entryObj.choice || entryObj.targetWeapon || ''))
+        || fallbackCurrentTarget
+        || '';
+
+      const collectSkillOptions = (specCraftKnowProfOnly = false) => {
+        const skSet = new Set();
+        if (typeof character !== 'undefined' && Array.isArray(character?.skills)) {
+          character.skills.forEach(sk => {
+            const nm = String(sk?.name || '').trim();
+            if (!nm) return;
+            if (specCraftKnowProfOnly && !/^(craft|knowledge|profession)\b/i.test(nm)) return;
+            skSet.add(nm);
+          });
+        }
+        (Array.isArray(chDef?.options) ? chDef.options : []).forEach(o => {
+          const nm = String(o || '').trim();
+          if (!nm) return;
+          if (specCraftKnowProfOnly && !/^(craft|knowledge|profession)\b/i.test(nm)) return;
+          skSet.add(nm);
+        });
+        if (skSet.size === 0) {
+          ['Appraise', 'Balance', 'Bluff', 'Climb', 'Concentration', 'Craft', 'Decipher Script', 'Diplomacy', 'Disable Device', 'Disguise', 'Escape Artist', 'Forgery', 'Gather Information', 'Handle Animal', 'Heal', 'Hide', 'Intimidate', 'Jump', 'Knowledge', 'Listen', 'Move Silently', 'Open Lock', 'Perform', 'Profession', 'Ride', 'Search', 'Sense Motive', 'Sleight of Hand', 'Spellcraft', 'Spot', 'Survival', 'Swim', 'Tumble', 'Use Magic Device', 'Use Rope']
+            .filter(nm => !specCraftKnowProfOnly || /^(craft|knowledge|profession)\b/i.test(nm))
+            .forEach(nm => skSet.add(nm));
+        }
+        return Array.from(skSet).sort((a, b) => a.localeCompare(b));
+      };
+
+      // 1. Weapon-targeted feats (Exotic / Martial / Crossbow / Natural / All Base Weapons)
+      if (/^exotic weapon proficiency$/i.test(lower) || chId === 'ch-exotic-weapon') {
+        return {
+          baseName, currentTarget, kind: 'weapon', weaponMode: 'exotic', isSpotlightWeapon: true,
+          icon: '🗡️', label: 'Exotic Weapon', title: 'Spotlight: Select Exotic Weapon',
+          placeholder: '-- Select an Exotic Weapon --',
+          helpText: 'Eliminates the -4 nonproficiency penalty when wielding this exotic weapon.',
+          options: getSrdWeaponNames('exotic')
+        };
+      }
+      if (/^martial weapon proficiency$/i.test(lower) || chId === 'ch-martial-weapon') {
+        return {
+          baseName, currentTarget, kind: 'weapon', weaponMode: 'martial', isSpotlightWeapon: true,
+          icon: '⚔️', label: 'Martial Weapon', title: 'Spotlight: Select Martial Weapon',
+          placeholder: '-- Select a Martial Weapon --',
+          helpText: 'Eliminates the -4 nonproficiency penalty when wielding this martial weapon.',
+          options: getSrdWeaponNames('martial')
+        };
+      }
+      if (/^rapid reload$/i.test(lower) || chId === 'ch-crossbow') {
+        return {
+          baseName, currentTarget, kind: 'weapon', weaponMode: 'crossbow', isSpotlightWeapon: true,
+          icon: '🏹', label: 'Crossbow Type', title: 'Spotlight: Select Crossbow Type',
+          placeholder: '-- Select a Crossbow --',
+          helpText: 'Reduces reload time for the selected type of crossbow.',
+          options: getSrdWeaponNames('crossbow')
+        };
+      }
+      if (/^improved natural attack$/i.test(lower) || chId === 'ch-natural-weapon') {
+        return {
+          baseName, currentTarget, kind: 'weapon', weaponMode: 'natural', isSpotlightWeapon: true,
+          icon: '🐾', label: 'Natural Weapon', title: 'Spotlight: Select Natural Weapon',
+          placeholder: '-- Select a Natural Weapon --',
+          helpText: 'Increases the damage dice of the selected natural weapon by one size step.',
+          options: getSrdWeaponNames('natural')
+        };
+      }
+      if (/^(weapon focus|greater weapon focus|epic weapon focus|weapon specialization|greater weapon specialization|epic weapon specialization|chosen weapon specialization|improved critical|power critical|weapon supremacy)$/i.test(lower) || chId === 'ch-weapon' || chKey === 'weapon') {
+        return {
+          baseName, currentTarget, kind: 'weapon', weaponMode: 'all', isSpotlightWeapon: true,
+          icon: '⚔️', label: 'Target Weapon', title: 'Spotlight: Select Target Weapon',
+          placeholder: '-- Select a Weapon --',
+          helpText: 'Rule Engine automatically applies the feat bonus when wielding this weapon.',
+          options: getSrdWeaponNames('all')
+        };
+      }
+
+      // 2. Spell School feats & traits (`Spell Focus`, `Greater Spell Focus`, `Epic Spell Focus`, `Spellgifted`)
+      if (/^(spell focus|greater spell focus|epic spell focus|spellgifted)$/i.test(lower) || chId === 'ch-school' || chKey === 'school') {
+        return {
+          baseName, currentTarget, kind: 'spell_school', isSpotlightWeapon: false,
+          icon: '🔮', label: 'Spell School', title: 'Select Target Spell School',
+          placeholder: '-- Select a Spell School --',
+          helpText: 'Applies the school-specific DC or Caster Level modifier when casting spells of this school.',
+          options: (Array.isArray(chDef?.options) && chDef.options.length > 0) ? chDef.options.slice() : DND35_SPELL_SCHOOLS.slice()
+        };
+      }
+
+      // 3. Craft/Knowledge/Profession Specialized trait (`ch-spec-skill`) & General Skill feats/traits (`Skill Focus`, `Illiterate`, `Inattentive`)
+      if (/^specialized$/i.test(lower) || chId === 'ch-spec-skill') {
+        return {
+          baseName, currentTarget, kind: 'skill', isSpotlightWeapon: false,
+          icon: '🎯', label: 'Specialized Skill', title: 'Select Craft, Knowledge, or Profession Skill',
+          placeholder: '-- Select a Specialized Skill --',
+          helpText: 'Applies the trait bonus to the chosen Craft, Knowledge, or Profession skill.',
+          options: collectSkillOptions(true)
+        };
+      }
+      if (/^(skill focus|epic skill focus|illiterate|inattentive)$/i.test(lower) || chId === 'ch-skill' || chKey === 'skill') {
+        return {
+          baseName, currentTarget, kind: 'skill', isSpotlightWeapon: false,
+          icon: '🎯', label: 'Target Skill', title: 'Select Target Skill',
+          placeholder: '-- Select a Skill --',
+          helpText: 'Rule Engine automatically applies the skill bonus to checks with the selected skill.',
+          options: collectSkillOptions(false)
+        };
+      }
+
+      // 4. Energy Type feats (`Energy Resistance`, `Energy Substitution`, `Privileged Energy`)
+      if (/^(energy resistance|energy substitution|privileged energy)$/i.test(lower) || chId === 'ch-energy' || chKey === 'energy') {
+        return {
+          baseName, currentTarget, kind: 'energy', isSpotlightWeapon: false,
+          icon: '⚡', label: 'Energy Type', title: 'Select Energy Type',
+          placeholder: '-- Select an Energy Type --',
+          helpText: 'Applies resistance or metamagic energy substitution for the chosen energy type.',
+          options: (Array.isArray(chDef?.options) && chDef.options.length > 0) ? chDef.options.slice() : DND35_ENERGY_TYPES.slice()
+        };
+      }
+
+      // 5. Ability Score flaws & feats (`Pathetic`, etc.)
+      if (/^pathetic$/i.test(lower) || chId === 'ch-ability' || chKey === 'ability') {
+        return {
+          baseName, currentTarget, kind: 'ability', isSpotlightWeapon: false,
+          icon: '🧬', label: 'Ability Score', title: 'Select Target Ability Score',
+          placeholder: '-- Select an Ability Score --',
+          helpText: 'Applies the modifier directly to the chosen ability score.',
+          options: (Array.isArray(chDef?.options) && chDef.options.length > 0) ? chDef.options.slice() : DND35_ABILITY_KEYS.slice()
+        };
+      }
+
+      // 6. Shield Type (`Shield Specialization`)
+      if (/^shield specialization$/i.test(lower) || chId === 'ch-shield-type' || chKey === 'shieldtype') {
+        const shSet = new Set(Array.isArray(chDef?.options) && chDef.options.length > 0 ? chDef.options : DND35_SHIELD_TYPES);
+        if (window.SrdCompendium && typeof window.SrdCompendium.getByType === 'function') {
+          window.SrdCompendium.getByType('Shield').forEach(sh => {
+            if (sh && sh.name && !sh.enhancementBonus && !sh.isMagic && !/^mi-|-mic-/i.test(sh.id || '')) shSet.add(sh.name);
+          });
+        }
+        return {
+          baseName, currentTarget, kind: 'shield', isSpotlightWeapon: false,
+          icon: '🛡️', label: 'Shield Type', title: 'Select Target Shield Type',
+          placeholder: '-- Select a Shield Type --',
+          helpText: 'Grants +1 Shield AC bonus when wielding the chosen type of shield.',
+          options: Array.from(shSet)
+        };
+      }
+
+      // 7. Armor Type (`Armor Specialization`)
+      if (/^armor specialization$/i.test(lower) || chId === 'ch-armor' || chKey === 'armortype') {
+        const armSet = new Set(Array.isArray(chDef?.options) && chDef.options.length > 0 ? chDef.options : DND35_ARMOR_TYPES);
+        if (window.SrdCompendium && typeof window.SrdCompendium.getByType === 'function') {
+          window.SrdCompendium.getByType('Armor').forEach(ar => {
+            const aCat = String(ar?.armor?.armorType || ar?.category || '').toLowerCase();
+            if (ar && ar.name && (aCat.includes('medium') || aCat.includes('heavy')) && !ar.enhancementBonus && !ar.isMagic && !/^mi-|-mic-/i.test(ar.id || '')) {
+              armSet.add(ar.name);
+            }
+          });
+        }
+        return {
+          baseName, currentTarget, kind: 'armor', isSpotlightWeapon: false,
+          icon: '🛡️', label: 'Armor Type', title: 'Select Medium or Heavy Armor Type',
+          placeholder: '-- Select an Armor Type --',
+          helpText: 'Grants DR 2/- while wearing the chosen type of medium or heavy armor.',
+          options: Array.from(armSet)
+        };
+      }
+
+      // 8. Generic V3 `choices[]` contract (any custom Rule Crafter / Compendium entry with `choices[0].options`)
+      if (chDef && Array.isArray(chDef.options) && chDef.options.length > 0) {
+        const lbl = chDef.label || 'Chosen Option';
+        return {
+          baseName, currentTarget, kind: 'generic', isSpotlightWeapon: false,
+          icon: '✨', label: lbl, title: `Select ${lbl}`,
+          placeholder: `-- Select ${lbl} --`,
+          helpText: 'Rule Engine applies this selection to @Choice blocks on this entry.',
+          options: chDef.options.slice()
+        };
+      }
+
+      return null;
+    }
+    if (typeof UI === 'object' && UI) UI.resolveV3ChoiceConfig = resolveV3ChoiceConfig;
 
     window.currentFeatTargetConfig = null;
 
@@ -9896,7 +10175,8 @@
         ? getWeaponDisplayMeta
         : (window.getWeaponDisplayMeta || (() => ''));
 
-      const allWeapons = (typeof getSrdWeaponNames === 'function') ? getSrdWeaponNames() : [];
+      const weaponMode = window.currentFeatTargetConfig?.weaponMode || 'all';
+      const allWeapons = (typeof getSrdWeaponNames === 'function') ? getSrdWeaponNames(weaponMode) : [];
       const charWeps = (character.weapons || []).map(w => resolveFn(w)).filter(Boolean);
       const equippedWeapons = [...new Set(charWeps.filter(cw => allWeapons.some(aw => aw.toLowerCase() === cw.toLowerCase())))];
       const compendiumWeapons = allWeapons.filter(aw => !equippedWeapons.some(ew => ew.toLowerCase() === aw.toLowerCase()));
@@ -9911,8 +10191,8 @@
             <div class="flex items-center justify-between px-2.5 py-1.5 bg-amber-950/70 border border-amber-600/70 rounded-lg text-xs text-amber-200 shadow-sm">
               <div class="flex items-center gap-1.5 min-w-0">
                 <span class="text-amber-400 font-bold text-[10px] uppercase tracking-wide">Selected:</span>
-                <span class="font-extrabold text-white truncate">${currentTarget}</span>
-                ${meta ? `<span class="text-[10px] px-1.5 rounded bg-amber-900/80 text-amber-300 font-mono">${meta}</span>` : ''}
+                <span class="font-extrabold text-white truncate">${UI.escapeHtml(currentTarget)}</span>
+                ${meta ? `<span class="text-[10px] px-1.5 rounded bg-amber-900/80 text-amber-300 font-mono">${UI.escapeHtml(meta)}</span>` : ''}
               </div>
               <button type="button" data-action="spells:clear-feat-target-weapon" class="text-[10px] text-amber-400 hover:text-white underline cursor-pointer ml-2 shrink-0">Change</button>
             </div>
@@ -9930,7 +10210,7 @@
       if (filteredEquipped.length === 0 && filteredCompendium.length === 0) {
         resultsEl.innerHTML = `
           <div class="p-3 text-center text-slate-400 text-xs">
-            No matching base weapon found for "<strong>${q}</strong>".
+            No matching base weapon found for "<strong>${UI.escapeHtml(q)}</strong>".
           </div>
         `;
         return;
@@ -9948,13 +10228,13 @@
         filteredEquipped.forEach(w => {
           const isSel = (currentTarget || '').toLowerCase() === w.toLowerCase();
           const meta = metaFn(w);
-          const safeW = escape(w);
+          const safeW = encodeURIComponent(w);
           html += `
-            <button type="button" data-action="spells:select-feat-target-weapon" data-weapon="${safeW}" class="w-full text-left p-1.5 rounded-lg ${isSel ? 'bg-amber-950/90 border border-amber-500 text-amber-200' : 'bg-slate-900/50 hover:bg-amber-950/40 border border-transparent text-slate-200'} transition flex items-center justify-between gap-2 group cursor-pointer active:scale-[0.99]">
+            <button type="button" data-action="spells:select-feat-target-weapon" data-weapon="${UI.escapeAttr(safeW)}" class="w-full text-left p-1.5 rounded-lg ${isSel ? 'bg-amber-950/90 border border-amber-500 text-amber-200' : 'bg-slate-900/50 hover:bg-amber-950/40 border border-transparent text-slate-200'} transition flex items-center justify-between gap-2 group cursor-pointer active:scale-[0.99]">
               <div class="flex items-center gap-1.5 min-w-0">
-                <span class="font-bold text-white text-xs group-hover:text-amber-200 truncate">${w}</span>
+                <span class="font-bold text-white text-xs group-hover:text-amber-200 truncate">${UI.escapeHtml(w)}</span>
                 <span class="text-[10px] px-1.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-700/60 font-bold shrink-0">Equipped</span>
-                ${meta ? `<span class="text-[10px] px-1.5 rounded bg-slate-950 text-slate-400 font-mono shrink-0">${meta}</span>` : ''}
+                ${meta ? `<span class="text-[10px] px-1.5 rounded bg-slate-950 text-slate-400 font-mono shrink-0">${UI.escapeHtml(meta)}</span>` : ''}
               </div>
               ${isSel ? '<span class="text-xs text-amber-400 font-bold shrink-0">Selected ✓</span>' : '<span class="text-xs text-slate-500 group-hover:text-amber-300 font-bold shrink-0">Select ➔</span>'}
             </button>
@@ -9963,21 +10243,28 @@
       }
 
       if (filteredCompendium.length > 0) {
+        const compHeader = weaponMode === 'exotic'
+          ? '🗡️ D&D 3.5e Exotic Weapon Compendium'
+          : (weaponMode === 'martial'
+              ? '⚔️ D&D 3.5e Martial Weapon Compendium'
+              : (weaponMode === 'crossbow'
+                  ? '🏹 D&D 3.5e Crossbows'
+                  : (weaponMode === 'natural' ? '🐾 D&D 3.5e Natural Weapons' : '📚 All D&D 3.5e Base Weapons')));
         html += `
           <div class="px-2 py-1 text-[10px] font-bold text-purple-300 uppercase tracking-wider flex items-center justify-between bg-slate-900/90 rounded mt-1">
-            <span>📚 All D&D 3.5e Base Weapons</span>
+            <span>${compHeader}</span>
             <span class="text-slate-400 font-mono">${filteredCompendium.length}</span>
           </div>
         `;
         filteredCompendium.forEach(w => {
           const isSel = (currentTarget || '').toLowerCase() === w.toLowerCase();
           const meta = metaFn(w);
-          const safeW = escape(w);
+          const safeW = encodeURIComponent(w);
           html += `
-            <button type="button" data-action="spells:select-feat-target-weapon" data-weapon="${safeW}" class="w-full text-left p-1.5 rounded-lg ${isSel ? 'bg-amber-950/90 border border-amber-500 text-amber-200' : 'bg-slate-900/50 hover:bg-purple-950/40 border border-transparent hover:border-purple-600/50 text-slate-200'} transition flex items-center justify-between gap-2 group cursor-pointer active:scale-[0.99]">
+            <button type="button" data-action="spells:select-feat-target-weapon" data-weapon="${UI.escapeAttr(safeW)}" class="w-full text-left p-1.5 rounded-lg ${isSel ? 'bg-amber-950/90 border border-amber-500 text-amber-200' : 'bg-slate-900/50 hover:bg-purple-950/40 border border-transparent hover:border-purple-600/50 text-slate-200'} transition flex items-center justify-between gap-2 group cursor-pointer active:scale-[0.99]">
               <div class="flex items-center gap-1.5 min-w-0">
-                <span class="font-bold text-white text-xs group-hover:text-purple-200 truncate">${w}</span>
-                ${meta ? `<span class="text-[10px] px-1.5 rounded bg-slate-950 text-slate-400 font-mono shrink-0">${meta}</span>` : ''}
+                <span class="font-bold text-white text-xs group-hover:text-purple-200 truncate">${UI.escapeHtml(w)}</span>
+                ${meta ? `<span class="text-[10px] px-1.5 rounded bg-slate-950 text-slate-400 font-mono shrink-0">${UI.escapeHtml(meta)}</span>` : ''}
               </div>
               ${isSel ? '<span class="text-xs text-amber-400 font-bold shrink-0">Selected ✓</span>' : '<span class="text-xs text-slate-500 group-hover:text-purple-300 font-bold shrink-0">Select ➔</span>'}
             </button>
@@ -10033,51 +10320,42 @@
         return;
       }
 
-      const t = String(featTitle).trim();
-      const lower = t.toLowerCase();
-
-      // Check weapon feats
-      const isWeaponFeat = /^(weapon focus|greater weapon focus|weapon specialization|greater weapon specialization|improved critical|exotic weapon proficiency|martial weapon proficiency)/i.test(lower);
-      // Check spell focus
-      const isSpellFocus = /^(spell focus|greater spell focus)/i.test(lower);
-      // Check skill focus
-      const isSkillFocus = /^skill focus/i.test(lower);
-
-      if (!isWeaponFeat && !isSpellFocus && !isSkillFocus) {
+      const cfg = resolveV3ChoiceConfig(window.currentViewedFeatItem || featTitle);
+      if (!cfg) {
         container.classList.add('hidden');
+        ensureSrdChoiceChunksLoaded(['Feat', 'Trait', 'Flaw'], () => {
+          if (currentViewedFeatName) setupFeatTargetSelector(currentViewedFeatName);
+        });
         return;
       }
 
-      // Extract current target in parentheses if present e.g. "Weapon Focus (Rapier)" -> target = "Rapier"
-      const match = t.match(/\((.*?)\)/);
-      const currentTarget = match ? match[1].trim() : '';
-      const baseName = t.replace(/\(.*?\)/g, '').trim();
-
+      const { baseName, currentTarget } = cfg;
       window.currentFeatTargetConfig = {
         baseName,
         currentTarget,
-        type: isWeaponFeat ? 'weapon' : (isSpellFocus ? 'spell_school' : 'skill')
+        type: cfg.kind,
+        weaponMode: cfg.weaponMode || 'all'
       };
 
       select.innerHTML = '';
+      select.setAttribute('data-change-action', 'spells:feat-target-select-change');
 
       let spotlightWrapper = document.getElementById('feat-modal-target-spotlight-wrapper');
 
-      if (isWeaponFeat) {
-        if (titleEl) titleEl.textContent = 'Spotlight: Select Target Weapon';
-        if (iconEl) iconEl.textContent = '⚔️';
-        if (helpEl) helpEl.textContent = 'Rule Engine automatically applies the feat bonus when wielding this weapon.';
+      if (cfg.isSpotlightWeapon) {
+        if (titleEl) titleEl.textContent = cfg.title;
+        if (iconEl) iconEl.textContent = cfg.icon;
+        if (helpEl) helpEl.textContent = cfg.helpText;
 
-        // Hide legacy select while keeping options populated
         select.style.display = 'none';
         select.classList.add('hidden');
 
         const defOpt = document.createElement('option');
         defOpt.value = '';
-        defOpt.textContent = '-- Select a Weapon --';
+        defOpt.textContent = cfg.placeholder;
         select.appendChild(defOpt);
 
-        getSrdWeaponNames().forEach(w => {
+        cfg.options.forEach(w => {
           const opt = document.createElement('option');
           opt.value = w;
           opt.textContent = w;
@@ -10122,48 +10400,42 @@
         }
 
         renderFeatModalTargetSpotlightResults('', currentTarget);
-
+        ensureSrdChoiceChunksLoaded(['Weapon'], () => {
+          if (currentViewedFeatName) setupFeatTargetSelector(currentViewedFeatName);
+        });
       } else {
-        // Non-weapon feats (Spell Focus, Skill Focus) use standard select
+        // Non-weapon choice entries (Spell Focus, Skill Focus, Shield/Armor Spec, Energy, Ability, Traits/Flaws, Generic choices[])
         select.style.display = '';
         select.classList.remove('hidden');
         if (spotlightWrapper) spotlightWrapper.style.display = 'none';
 
-        if (isSpellFocus) {
-          if (titleEl) titleEl.textContent = 'Select Target Spell School';
-          if (iconEl) iconEl.textContent = '🔮';
-          if (helpEl) helpEl.textContent = 'Increases Saving Throw DC for spells of the selected school.';
+        if (titleEl) titleEl.textContent = cfg.title;
+        if (iconEl) iconEl.textContent = cfg.icon;
+        if (helpEl) helpEl.textContent = cfg.helpText;
 
-          const defOpt = document.createElement('option');
-          defOpt.value = '';
-          defOpt.textContent = '-- Select a Spell School --';
-          select.appendChild(defOpt);
+        const defOpt = document.createElement('option');
+        defOpt.value = '';
+        defOpt.textContent = cfg.placeholder;
+        select.appendChild(defOpt);
 
-          DND35_SPELL_SCHOOLS.forEach(s => {
-            const opt = document.createElement('option');
-            opt.value = s;
-            opt.textContent = s;
-            if (currentTarget.toLowerCase() === s.toLowerCase()) opt.selected = true;
-            select.appendChild(opt);
-          });
+        cfg.options.forEach(optVal => {
+          const opt = document.createElement('option');
+          opt.value = optVal;
+          opt.textContent = optVal;
+          if (currentTarget.toLowerCase() === String(optVal).toLowerCase()) opt.selected = true;
+          select.appendChild(opt);
+        });
+        if (currentTarget && !Array.from(select.options).some(o => o.value.toLowerCase() === currentTarget.toLowerCase())) {
+          const curOpt = document.createElement('option');
+          curOpt.value = currentTarget;
+          curOpt.textContent = currentTarget;
+          curOpt.selected = true;
+          select.appendChild(curOpt);
+        }
 
-        } else if (isSkillFocus) {
-          if (titleEl) titleEl.textContent = 'Select Target Skill';
-          if (iconEl) iconEl.textContent = '🎯';
-          if (helpEl) helpEl.textContent = 'Grants a +3 bonus on all checks involving the selected skill.';
-
-          const defOpt = document.createElement('option');
-          defOpt.value = '';
-          defOpt.textContent = '-- Select a Skill --';
-          select.appendChild(defOpt);
-
-          const skills = (character.skills || []).map(sk => sk.name).filter(Boolean);
-          skills.forEach(sk => {
-            const opt = document.createElement('option');
-            opt.value = sk;
-            opt.textContent = sk;
-            if (currentTarget.toLowerCase() === sk.toLowerCase()) opt.selected = true;
-            select.appendChild(opt);
+        if (cfg.kind === 'shield' || cfg.kind === 'armor') {
+          ensureSrdChoiceChunksLoaded(['Shield', 'Armor'], () => {
+            if (currentViewedFeatName) setupFeatTargetSelector(currentViewedFeatName);
           });
         }
       }
@@ -10237,6 +10509,27 @@
               character.feats[i] = newFullName;
             } else if (f && typeof f === 'object') {
               f.name = newFullName;
+              f.choice = newTarget;
+              f.chosenOption = newTarget;
+              if (Array.isArray(f.choices) && f.choices[0]) f.choices[0].value = newTarget;
+            }
+            break;
+          }
+        }
+      }
+      if (Array.isArray(character.specialAbilities)) {
+        for (let i = 0; i < character.specialAbilities.length; i++) {
+          const a = character.specialAbilities[i];
+          const rawStr = String(typeof a === 'string' ? a : (a?.name || ''));
+          const str = rawStr.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').trim().toLowerCase();
+          if (str === oldClean || str.startsWith(baseClean)) {
+            if (typeof a === 'string') {
+              character.specialAbilities[i] = newFullName;
+            } else if (a && typeof a === 'object') {
+              a.name = newFullName;
+              a.choice = newTarget;
+              a.chosenOption = newTarget;
+              if (Array.isArray(a.choices) && a.choices[0]) a.choices[0].value = newTarget;
             }
             break;
           }
@@ -11163,6 +11456,18 @@
           const totalCost = baseCost + augPP;
           const descText = p.shortDescription || p.benefit || p.description || 'Psionic power.';
           const pDisc = p.discipline || p.spell?.discipline || 'Psionics';
+          const srdPwr = (window.SrdCompendium && typeof window.SrdCompendium.getById === 'function' && p.id) ? window.SrdCompendium.getById(p.id) : null;
+          const pChoices = (Array.isArray(p.choices) && p.choices.length > 0) ? p.choices : (Array.isArray(srdPwr?.choices) ? srdPwr.choices : []);
+          const pCh0 = pChoices[0];
+          const curPwrChoice = p.chosenOption || p.choice || (Array.isArray(pCh0?.options) ? pCh0.options[0] : '') || '';
+          const pChoiceHtml = (pCh0 && Array.isArray(pCh0.options) && pCh0.options.length > 0) ? `
+            <div class="flex items-center justify-between gap-2 pt-1">
+              <span class="text-[10px] text-cyan-300 font-bold shrink-0">${UI.escapeHtml(pCh0.label || 'Choice')}:</span>
+              <select data-change-action="spells:subsys-power-choice" data-idx="${idx}" class="ui-input-sm h-6 bg-slate-950 border border-cyan-700/60 rounded px-1.5 text-[11px] text-white font-bold cursor-pointer">
+                ${pCh0.options.map(opt => `<option value="${UI.escapeAttr(opt)}" ${String(curPwrChoice).toLowerCase() === String(opt).toLowerCase() ? 'selected' : ''}>${UI.escapeHtml(opt)}</option>`).join('')}
+              </select>
+            </div>
+          ` : '';
           return `
             <div class="discipline-tab-card bg-slate-900/90 border border-cyan-500/40 rounded-xl p-3 flex flex-col justify-between gap-2.5 shadow-sm">
               <div class="space-y-1.5 min-w-0">
@@ -11172,6 +11477,7 @@
                 </div>
                 <button type="button" data-action="entity:inspect" data-entity-kind="power" data-entity-id="${UI.escapeAttr(p.id || p.baseEntryId || '')}" data-entity-name="${UI.escapeAttr(p.name || '')}" data-entity-index="${idx}" data-discipline="psionics" class="text-left text-xs font-extrabold text-white hover:text-white cursor-pointer hover:underline block truncate max-w-full" title="Inspect / Edit in Rule Crafter">${UI.escapeHtml(p.name || 'Unnamed Power')}</button>
                 <p class="text-[11px] text-slate-300 line-clamp-2">${UI.escapeHtml(descText)}</p>
+                ${pChoiceHtml}
               </div>
               <div class="pt-2 border-t border-slate-800 flex flex-wrap items-center justify-between gap-2">
                 <div class="flex items-center gap-1">
@@ -11522,6 +11828,9 @@
         const found = all.find(it => (data.entryId && it.id === data.entryId) || (data.entryName && String(it.name || '').toLowerCase() === String(data.entryName).toLowerCase()));
         if (!found) return;
         if (disc === 'psionics') {
+          const defCh = (Array.isArray(found.choices) && found.choices[0] && Array.isArray(found.choices[0].options))
+            ? (found.choices[0].options[0] || '')
+            : '';
           bucket.powers.push({
             id: found.id || '',
             name: found.name,
@@ -11529,6 +11838,8 @@
             discipline: found.spell?.discipline || 'Psionics',
             ppCost: Number(found.spell?.ppCost ?? ((Number(found.level || 1) * 2) - 1)) || 1,
             augmentPP: 0,
+            ...(Array.isArray(found.choices) && found.choices.length > 0 ? { choices: JSON.parse(JSON.stringify(found.choices)), choice: defCh, chosenOption: defCh } : {}),
+            ...(Array.isArray(found.effects) && found.effects.length > 0 ? { effects: JSON.parse(JSON.stringify(found.effects)) } : {}),
             shortDescription: found.shortDescription || '',
             benefit: found.shortDescription || found.description || ''
           });
@@ -11608,6 +11919,18 @@
         const maxAug = Math.max(0, (snap.manifesterLevel || 0) - baseCost);
         const nextAug = Math.max(0, Math.min(maxAug, (Number(p.augmentPP) || 0) + (Number(data.delta) || 0)));
         p.augmentPP = nextAug;
+        patchSubsystemCockpitDOM('psionics');
+      });
+      Actions.register('spells:subsys-power-choice', (el, data) => {
+        const bucket = ensureSubsystemBucket('psionics');
+        const idx = Number(data.idx);
+        if (!bucket || !bucket.powers[idx] || !el) return;
+        const val = String(el.value || '').trim();
+        bucket.powers[idx].choice = val;
+        bucket.powers[idx].chosenOption = val;
+        if (Array.isArray(bucket.powers[idx].choices) && bucket.powers[idx].choices[0]) {
+          bucket.powers[idx].choices[0].value = val;
+        }
         patchSubsystemCockpitDOM('psionics');
       });
       Actions.register('spells:subsys-manifest-power', (el, data) => {
@@ -11918,7 +12241,14 @@
         if (typeof window.clearFeatModalTargetSelection === 'function') window.clearFeatModalTargetSelection();
       });
       Actions.register('spells:select-feat-target-weapon', (el, data, event) => {
-        if (typeof window.selectFeatModalTargetWeapon === 'function') window.selectFeatModalTargetWeapon(unescape(data.weapon || ''));
+        if (typeof window.selectFeatModalTargetWeapon === 'function') {
+          let decoded = data.weapon || '';
+          try { decoded = decodeURIComponent(decoded); } catch (_) { decoded = unescape(decoded); }
+          window.selectFeatModalTargetWeapon(decoded);
+        }
+      });
+      Actions.register('spells:feat-target-select-change', (el, data, event) => {
+        onFeatTargetSelectChanged();
       });
       Actions.register('spells:roll-ability-tactical-dice', (el, data, event) => {
         rollAbilityTacticalDice(

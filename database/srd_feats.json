@@ -383,31 +383,20 @@
     "scope": "All",
     "choices": [
       {
-        "id": "ch-weapon",
+        "id": "ch-natural-weapon",
         "key": "weapon",
-        "label": "Chosen Weapon",
+        "label": "Natural Weapon",
         "options": [
-          "Longsword",
-          "Greatsword",
-          "Greataxe",
-          "Battleaxe",
-          "Warhammer",
-          "Heavy Mace",
-          "Rapier",
-          "Scimitar",
-          "Short Sword",
-          "Dagger",
-          "Longbow",
-          "Shortbow",
-          "Light Crossbow",
-          "Heavy Crossbow",
-          "Halberd",
-          "Glaive",
-          "Guuisarme",
-          "Spiked Chain",
           "Unarmed Strike",
-          "Grapple",
-          "Ray"
+          "Bite",
+          "Claw",
+          "Slam",
+          "Gore",
+          "Tail Slap",
+          "Wing",
+          "Tentacle",
+          "Talon",
+          "Sting"
         ]
       }
     ]
@@ -3102,11 +3091,18 @@
     "effects": [
       {
         "id": "ef-wf",
-        "type": "effect",
-        "effectKind": "ruleSwitch",
-        "flag": "weaponFinesse",
-        "label": "Use DEX modifier instead of STR on melee attack rolls with light/finesse weapons",
-        "text": "Weapon Finesse: DEX to Melee Attack (Light/Finesse)"
+        "type": "stat",
+        "mode": "replaceStat",
+        "swapTarget": "atk.melee.abilityMod",
+        "targets": [
+          "atk.melee.abilityMod"
+        ],
+        "subOp": "max",
+        "fromStat": "str",
+        "toStat": "dex",
+        "scope": "finessable",
+        "formula": "@dexMod",
+        "summary": "Higher of DEX Modifier / STR on Melee Attack Ability [Light & Finesse Weapons]"
       }
     ],
     "ruleFlags": {
@@ -3584,7 +3580,7 @@
           "Heavy Crossbow",
           "Halberd",
           "Glaive",
-          "Guuisarme",
+          "Guisarme",
           "Spiked Chain",
           "Unarmed Strike",
           "Grapple",
@@ -3910,7 +3906,7 @@
           "Heavy Crossbow",
           "Halberd",
           "Glaive",
-          "Guuisarme",
+          "Guisarme",
           "Spiked Chain",
           "Unarmed Strike",
           "Grapple",
@@ -4067,9 +4063,9 @@
         "type": "carrier",
         "carrierMode": "metamagic",
         "costMode": "slot",
-        "slotAdj": 1,
+        "slotAdj": 0,
         "transform": "energySub",
-        "riderText": "Energy Substitution"
+        "riderText": "Energy Substitution (@Choice)"
       }
     ],
     "shortDescription": "Prerequisites Any other metamagic feat, Knowledge (arcana) 5 ranks. Benefit You choose one type of energy: acid, cold, electricity, fire, or sonic. When employing a spell with the acid, cold, electricity, fire, or sonic designator, you can…",
@@ -4078,7 +4074,21 @@
       "feat",
       "general"
     ],
-    "scope": "All"
+    "scope": "All",
+    "choices": [
+      {
+        "id": "ch-energy",
+        "key": "energy",
+        "label": "Energy Type",
+        "options": [
+          "Acid",
+          "Cold",
+          "Electricity",
+          "Fire",
+          "Sonic"
+        ]
+      }
+    ]
   },
   {
     "schemaVersion": 3,
@@ -4140,7 +4150,7 @@
         "effectKind": "ruleSwitch",
         "flag": "exotic-weapon-proficiency",
         "label": "Exotic Weapon Proficiency",
-        "text": "Choose one type of exotic weapon; make attack rolls with that weapon without taking the -4 non-proficiency penalty."
+        "text": "Make attack rolls with chosen exotic weapon without taking the -4 non-proficiency penalty."
       }
     ],
     "shortDescription": "Choose one type of exotic weapon; make attack rolls with that weapon without taking the -4 non-proficiency penalty.",
@@ -4149,7 +4159,36 @@
       "feat",
       "fighter"
     ],
-    "scope": "All"
+    "scope": "All",
+    "choices": [
+      {
+        "id": "ch-exotic-weapon",
+        "key": "weapon",
+        "label": "Exotic Weapon",
+        "options": [
+          "Bastard Sword",
+          "Dwarven Waraxe",
+          "Spiked Chain",
+          "Whip",
+          "Dire Flail",
+          "Two-Bladed Sword",
+          "Orc Double Axe",
+          "Gnome Hooked Hammer",
+          "Dwarven Urgrosh",
+          "Hand Crossbow",
+          "Repeating Light Crossbow",
+          "Repeating Heavy Crossbow",
+          "Bolas",
+          "Net",
+          "Shuriken",
+          "Kama",
+          "Kukri",
+          "Nunchaku",
+          "Sai",
+          "Siangham"
+        ]
+      }
+    ]
   },
   {
     "schemaVersion": 3,
@@ -4442,9 +4481,9 @@
         "id": "feat-rapid-reload-none-sw",
         "type": "effect",
         "effectKind": "ruleSwitch",
-        "flag": "rapid-reload-none",
-        "label": "Rapid Reload (None)",
-        "text": "Choose a type of crossbow (hand, light, or heavy). Prerequisite Weapon Proficiency (crossbow type chosen). Benefit The time required for you to reload your chosen type of crossbow "
+        "flag": "rapid-reload",
+        "label": "Rapid Reload",
+        "text": "Reduce reload action for chosen crossbow type (hand/light: free action; heavy: move action)."
       }
     ],
     "shortDescription": "Choose a type of crossbow (hand, light, or heavy). Prerequisite Weapon Proficiency (crossbow type chosen). Benefit The time required for you to reload your chosen type of crossbow is reduced to a free action (for a hand or light crossbow)…",
@@ -4453,7 +4492,21 @@
       "feat",
       "fighter"
     ],
-    "scope": "All"
+    "scope": "All",
+    "choices": [
+      {
+        "id": "ch-crossbow",
+        "key": "weapon",
+        "label": "Crossbow Type",
+        "options": [
+          "Hand Crossbow",
+          "Light Crossbow",
+          "Heavy Crossbow",
+          "Repeating Light Crossbow",
+          "Repeating Heavy Crossbow"
+        ]
+      }
+    ]
   },
   {
     "schemaVersion": 3,
@@ -5970,7 +6023,7 @@
           "Heavy Crossbow",
           "Halberd",
           "Glaive",
-          "Guuisarme",
+          "Guisarme",
           "Spiked Chain",
           "Unarmed Strike",
           "Grapple",
@@ -7622,7 +7675,7 @@
           "Heavy Crossbow",
           "Halberd",
           "Glaive",
-          "Guuisarme",
+          "Guisarme",
           "Spiked Chain",
           "Unarmed Strike",
           "Grapple",
@@ -9805,7 +9858,37 @@
       "feat",
       "fighter"
     ],
-    "scope": "All"
+    "scope": "All",
+    "choices": [
+      {
+        "id": "ch-weapon",
+        "key": "weapon",
+        "label": "Chosen Weapon",
+        "options": [
+          "Longsword",
+          "Greatsword",
+          "Greataxe",
+          "Battleaxe",
+          "Warhammer",
+          "Heavy Mace",
+          "Rapier",
+          "Scimitar",
+          "Short Sword",
+          "Dagger",
+          "Longbow",
+          "Shortbow",
+          "Light Crossbow",
+          "Heavy Crossbow",
+          "Halberd",
+          "Glaive",
+          "Guisarme",
+          "Spiked Chain",
+          "Unarmed Strike",
+          "Grapple",
+          "Ray"
+        ]
+      }
+    ]
   },
   {
     "schemaVersion": 3,
@@ -11184,7 +11267,7 @@
           "Heavy Crossbow",
           "Halberd",
           "Glaive",
-          "Guuisarme",
+          "Guisarme",
           "Spiked Chain",
           "Unarmed Strike",
           "Grapple",
@@ -11443,7 +11526,6 @@
         "key": "skill",
         "label": "Chosen Skill",
         "options": [
-          "Acrobatics",
           "Appraise",
           "Autohypnosis",
           "Balance",
@@ -11474,6 +11556,7 @@
           "Search",
           "Sense Motive",
           "Sleight of Hand",
+          "Speak Language",
           "Spellcraft",
           "Spot",
           "Survival",
@@ -12385,7 +12468,6 @@
         "key": "skill",
         "label": "Chosen Skill",
         "options": [
-          "Acrobatics",
           "Appraise",
           "Autohypnosis",
           "Balance",
@@ -12416,6 +12498,7 @@
           "Search",
           "Sense Motive",
           "Sleight of Hand",
+          "Speak Language",
           "Spellcraft",
           "Spot",
           "Survival",
@@ -14321,7 +14404,7 @@
           "Heavy Crossbow",
           "Halberd",
           "Glaive",
-          "Guuisarme",
+          "Guisarme",
           "Spiked Chain",
           "Unarmed Strike",
           "Grapple",
@@ -14868,7 +14951,7 @@
           "Heavy Crossbow",
           "Halberd",
           "Glaive",
-          "Guuisarme",
+          "Guisarme",
           "Spiked Chain",
           "Unarmed Strike",
           "Grapple",
@@ -15030,7 +15113,7 @@
           "Heavy Crossbow",
           "Halberd",
           "Glaive",
-          "Guuisarme",
+          "Guisarme",
           "Spiked Chain",
           "Unarmed Strike",
           "Grapple",
@@ -15116,7 +15199,7 @@
           "Heavy Crossbow",
           "Halberd",
           "Glaive",
-          "Guuisarme",
+          "Guisarme",
           "Spiked Chain",
           "Unarmed Strike",
           "Grapple",
@@ -15202,7 +15285,7 @@
           "Heavy Crossbow",
           "Halberd",
           "Glaive",
-          "Guuisarme",
+          "Guisarme",
           "Spiked Chain",
           "Unarmed Strike",
           "Grapple",
@@ -15288,7 +15371,7 @@
           "Heavy Crossbow",
           "Halberd",
           "Glaive",
-          "Guuisarme",
+          "Guisarme",
           "Spiked Chain",
           "Unarmed Strike",
           "Grapple",
@@ -15315,12 +15398,26 @@
     "benefit": "Doubles the threat range of the selected weapon (e.g. 19-20 becomes 17-20, 18-20 becomes 15-20).",
     "effects": [
       {
-        "id": "ef-impcrit",
-        "type": "effect",
-        "effectKind": "ruleSwitch",
-        "flag": "improvedCritical",
-        "label": "Double critical threat range of chosen weapon",
-        "text": "Improved Critical: 2x Threat Range"
+        "id": "ef-icrit-w",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-icrit-w-br",
+            "condKind": "wieldingChosenWeapon",
+            "condText": "",
+            "effects": [
+              {
+                "id": "ef-icrit",
+                "type": "effect",
+                "effectKind": "ruleSwitch",
+                "flag": "improvedCritical",
+                "label": "Doubles Critical Threat Range with Chosen Weapon",
+                "text": "Doubles Critical Threat Range with Chosen Weapon"
+              }
+            ]
+          }
+        ]
       }
     ],
     "ruleFlags": {
@@ -15333,7 +15430,37 @@
       "fighter",
       "improved-critical"
     ],
-    "scope": "General"
+    "scope": "General",
+    "choices": [
+      {
+        "id": "ch-weapon",
+        "key": "weapon",
+        "label": "Chosen Weapon",
+        "options": [
+          "Longsword",
+          "Greatsword",
+          "Greataxe",
+          "Battleaxe",
+          "Warhammer",
+          "Heavy Mace",
+          "Rapier",
+          "Scimitar",
+          "Short Sword",
+          "Dagger",
+          "Longbow",
+          "Shortbow",
+          "Light Crossbow",
+          "Heavy Crossbow",
+          "Halberd",
+          "Glaive",
+          "Guisarme",
+          "Spiked Chain",
+          "Unarmed Strike",
+          "Grapple",
+          "Ray"
+        ]
+      }
+    ]
   },
   {
     "schemaVersion": 3,
@@ -15356,7 +15483,7 @@
         "effectKind": "ruleSwitch",
         "flag": "rapid-reload",
         "label": "Rapid Reload",
-        "text": "Reduce the time required to reload a crossbow: heavy crossbow becomes move action, light crossbow becomes free action."
+        "text": "Reduce reload action for chosen crossbow type (hand/light: free action; heavy: move action)."
       }
     ],
     "shortDescription": "Reduce the time required to reload a crossbow: heavy crossbow becomes move action, light crossbow becomes free action.",
@@ -15365,7 +15492,21 @@
       "feat",
       "fighter"
     ],
-    "scope": "All"
+    "scope": "All",
+    "choices": [
+      {
+        "id": "ch-crossbow",
+        "key": "weapon",
+        "label": "Crossbow Type",
+        "options": [
+          "Hand Crossbow",
+          "Light Crossbow",
+          "Heavy Crossbow",
+          "Repeating Light Crossbow",
+          "Repeating Heavy Crossbow"
+        ]
+      }
+    ]
   },
   {
     "schemaVersion": 3,
@@ -15388,7 +15529,7 @@
         "effectKind": "ruleSwitch",
         "flag": "martial-weapon-proficiency",
         "label": "Martial Weapon Proficiency",
-        "text": "Choose one type of martial weapon; make attack rolls with that weapon without taking the -4 non-proficiency penalty."
+        "text": "Make attack rolls with chosen martial weapon without taking the -4 non-proficiency penalty."
       }
     ],
     "shortDescription": "Choose one type of martial weapon; make attack rolls with that weapon without taking the -4 non-proficiency penalty.",
@@ -15397,7 +15538,41 @@
       "feat",
       "general"
     ],
-    "scope": "All"
+    "scope": "All",
+    "choices": [
+      {
+        "id": "ch-martial-weapon",
+        "key": "weapon",
+        "label": "Martial Weapon",
+        "options": [
+          "Longsword",
+          "Greatsword",
+          "Greataxe",
+          "Battleaxe",
+          "Warhammer",
+          "Rapier",
+          "Scimitar",
+          "Short Sword",
+          "Handaxe",
+          "Light Hammer",
+          "Light Pick",
+          "Heavy Pick",
+          "Flail",
+          "Heavy Flail",
+          "Falchion",
+          "Glaive",
+          "Guisarme",
+          "Halberd",
+          "Lance",
+          "Longspear",
+          "Ranseur",
+          "Scythe",
+          "Trident",
+          "Shortbow",
+          "Longbow"
+        ]
+      }
+    ]
   },
   {
     "schemaVersion": 3,
@@ -15416,11 +15591,18 @@
     "effects": [
       {
         "id": "ef-sb",
-        "type": "effect",
-        "effectKind": "ruleSwitch",
-        "flag": "shadowBlade",
-        "label": "Add DEX modifier to damage with Shadow Hand preferred weapons in a Shadow Hand stance",
-        "text": "Shadow Blade: +DEX Damage (Shadow Hand)"
+        "type": "stat",
+        "mode": "replaceStat",
+        "swapTarget": "dmg.melee.abilityMod",
+        "targets": [
+          "dmg.melee.abilityMod"
+        ],
+        "subOp": "add",
+        "fromStat": "str",
+        "toStat": "dex",
+        "scope": "discipline_weapons",
+        "formula": "@dexMod",
+        "summary": "+DEX Modifier alongside STR on Melee Damage Ability [Shadow Hand / Discipline Weapons]"
       }
     ],
     "shortDescription": "While you are in a Shadow Hand stance and attack with a Shadow Hand preferred weapon (dagger, short sword, sai, siangham, spiked chain, or unarmed strike), you add your Dexterity modifier in place of your Strength modifier on melee damage rolls.",
@@ -17751,7 +17933,6 @@
         "key": "skill",
         "label": "Chosen Skill",
         "options": [
-          "Acrobatics",
           "Appraise",
           "Autohypnosis",
           "Balance",
@@ -17782,6 +17963,7 @@
           "Search",
           "Sense Motive",
           "Sleight of Hand",
+          "Speak Language",
           "Spellcraft",
           "Spot",
           "Survival",

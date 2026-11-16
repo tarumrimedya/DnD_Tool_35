@@ -839,11 +839,42 @@ const RuleEngine = {
       'caster.spellpenetration': 'caster.spellPenetration',
       'dc.all': 'dc.all',
       'skill.all': 'skill.all',
-      'skills.all': 'skill.all'
+      'skills.all': 'skill.all',
+      'bab': 'bab',
+      'atk.melee.abilitymod': 'atk.melee.abilityMod',
+      'attack.melee.abilitymod': 'atk.melee.abilityMod',
+      'atk.ranged.abilitymod': 'atk.ranged.abilityMod',
+      'attack.ranged.abilitymod': 'atk.ranged.abilityMod',
+      'atk.thrown.abilitymod': 'atk.thrown.abilityMod',
+      'attack.thrown.abilitymod': 'atk.thrown.abilityMod',
+      'atk.touch.abilitymod': 'atk.touch.abilityMod',
+      'attack.touch.abilitymod': 'atk.touch.abilityMod',
+      'grapple.abilitymod': 'grapple.abilityMod',
+      'atk.grapple.abilitymod': 'grapple.abilityMod',
+      'dmg.melee.abilitymod': 'dmg.melee.abilityMod',
+      'damage.melee.abilitymod': 'dmg.melee.abilityMod',
+      'dmg.ranged.abilitymod': 'dmg.ranged.abilityMod',
+      'damage.ranged.abilitymod': 'dmg.ranged.abilityMod',
+      'save.fort.abilitymod': 'save.fort.abilityMod',
+      'save.ref.abilitymod': 'save.ref.abilityMod',
+      'save.will.abilitymod': 'save.will.abilityMod',
+      'ac.abilitymod': 'ac.abilityMod',
+      'init.abilitymod': 'initiative.abilityMod',
+      'initiative.abilitymod': 'initiative.abilityMod',
+      'hp.abilitymod': 'hp.abilityMod',
+      'concentration.abilitymod': 'concentration.abilityMod',
+      'skill.concentration.abilitymod': 'concentration.abilityMod',
+      'choice.skill.1.abilitymod': 'choice.skill.1.abilityMod',
+      'spell.dc.abilitymod': 'spell.dc.abilityMod',
+      'spell.bonusslots.abilitymod': 'spell.bonusSlots.abilityMod'
     };
     if (map[low]) return map[low];
     if (low.startsWith('resist.') || low.startsWith('resistance.')) {
       return `resist.${low.split('.')[1]}`;
+    }
+    if (/^skills?\.[a-z0-9_-]+\.abilitymod$/i.test(low)) {
+      const skSlug = low.replace(/^skills?\./, '').replace(/\.abilitymod$/i, '').replace(/_/g, '-');
+      return `skill.${skSlug}.abilityMod`;
     }
     if (low.startsWith('skill.') || low.startsWith('skills.')) {
       const skName = t.replace(/^skills?\./i, '').trim();
@@ -1455,6 +1486,41 @@ const RuleEngine = {
       const statAbilityRaw = String(b.stat || '').toLowerCase().trim();
       const statAbility = statAbilityRaw.replace(/mod$/, '').replace(/^var:/, '');
 
+      // Rule Crafter `mode: 'replaceStat'` (Parametric A -> B Stat / Formula Swap)
+      if (mode === 'replacestat') {
+        const rawTo = String(b.toStat || b.formula || 'wis').trim();
+        let swapExpr = rawTo;
+        if (rawTo === 'choice.abilityMod' || rawTo === '@choice.abilityMod') {
+          const chosenAbRaw = String(this.extractEntryChoice(out) || 'wis').toLowerCase().trim();
+          const abMap = { str: 'str', strength: 'str', dex: 'dex', dexterity: 'dex', con: 'con', constitution: 'con', int: 'int', intelligence: 'int', wis: 'wis', wisdom: 'wis', cha: 'cha', charisma: 'cha' };
+          const abKey = abMap[chosenAbRaw] || 'wis';
+          swapExpr = `@${abKey}Mod`;
+        } else if (/^([0-9.]+)\*([a-z]+)$/i.test(rawTo)) {
+          const mm = rawTo.match(/^([0-9.]+)\*([a-z]+)$/i);
+          swapExpr = `floor(@${mm[2].toLowerCase()}Mod * ${mm[1]})`;
+        } else if (/^(str|dex|con|int|wis|cha)$/i.test(rawTo)) {
+          swapExpr = `@${rawTo.toLowerCase()}Mod`;
+        }
+        let capRaw = null;
+        const bCapStr = b.cap !== undefined && b.cap !== null ? String(b.cap).trim() : '';
+        if (bCapStr && bCapStr.toLowerCase() !== 'none') {
+          if (bCapStr.toLowerCase() === 'flat' || bCapStr.toLowerCase() === 'number') capRaw = b.capVal !== undefined && b.capVal !== null ? b.capVal : null;
+          else if (isNaN(Number(bCapStr)) && !bCapStr.startsWith('@') && !/[+\-*/()]/.test(bCapStr)) capRaw = `@${bCapStr}`;
+          else capRaw = b.cap;
+        }
+        let ev = Number(this.evaluateFormula(swapExpr, branchCtx));
+        if (!Number.isFinite(ev)) ev = 0;
+        let finalExpr = swapExpr;
+        if (capRaw !== null && String(b.subOp || 'max').toLowerCase() === 'add') {
+          const capNum = Number(this.evaluateFormula(capRaw, branchCtx));
+          if (Number.isFinite(capNum)) {
+            ev = Math.min(ev, capNum);
+            finalExpr = `min(${capRaw}, ${swapExpr})`;
+          }
+        }
+        return { value: Math.trunc(ev), formula: finalExpr, cap: String(b.subOp || 'max').toLowerCase() === 'add' ? capRaw : null };
+      }
+
       // Rule Crafter `mode: 'perCL'` (`Scale by Level`: min + floor(@cl / per) * value, capped at max)
       if (mode === 'percl' && !b.perCL && !b.perLvl && !b.perLevel) {
         const step = Number(rawVal ?? 1) || 1;
@@ -1747,8 +1813,44 @@ const RuleEngine = {
               : situationalCond);
           const effNote = (!isObjectPredicate && InlineCondResult === true && b.condition && typeof b.condition === 'string') ? b.condition : sourceLabel;
 
-          rawTargets.forEach(rawT => {
+          const isReplaceStatMode = String(b.mode || '').toLowerCase().trim() === 'replacestat';
+          const effectiveRawTargets = (isReplaceStatMode && b.swapTarget) ? [b.swapTarget] : rawTargets;
+
+          effectiveRawTargets.forEach(rawT => {
             let canonT = this.canonicalizeV3Target(rawT);
+            if (isReplaceStatMode) {
+              const swapLegacyAlias = {
+                'save.will': 'save.will.abilityMod',
+                'save.ref': 'save.ref.abilityMod',
+                'save.fort': 'save.fort.abilityMod',
+                'ac.all': 'ac.abilityMod',
+                'atk.melee': 'atk.melee.abilityMod',
+                'atk.ranged': 'atk.ranged.abilityMod',
+                'atk.touch': 'atk.touch.abilityMod',
+                'atk.grapple': 'grapple.abilityMod',
+                'dmg.melee': 'dmg.melee.abilityMod',
+                'dmg.ranged': 'dmg.ranged.abilityMod',
+                'init': 'initiative.abilityMod',
+                'hp': 'hp.abilityMod',
+                'hp.perLvl': 'hp.abilityMod',
+                'spell.dc': 'spell.dc.abilityMod'
+              };
+              if (swapLegacyAlias[canonT]) canonT = swapLegacyAlias[canonT];
+              else if (/^skill\.[a-z0-9_-]+$/i.test(canonT) && !canonT.endsWith('.abilityMod')) {
+                canonT = `${canonT.replace(/_/g, '-')}.abilityMod`;
+              }
+              if (canonT === 'choice.skill.1.abilityMod') {
+                const chosenSk = String(this.extractEntryChoice(out) || '').toLowerCase().trim();
+                const skSlug = chosenSk.replace(/^skill\./, '').replace(/\.abilitymod$/, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+                if (skSlug) canonT = `skill.${skSlug}.abilityMod`;
+              }
+              const toLow = String(b.toStat || '').toLowerCase().trim();
+              const scLow = String(b.scope || 'all').toLowerCase().trim();
+              if (canonT === 'save.will.abilityMod' && toLow === 'con' && scLow === 'all') ruleFlags.conToWillSave = true;
+              if (canonT === 'atk.melee.abilityMod' && toLow === 'dex' && scLow === 'finessable') ruleFlags.weaponFinesse = true;
+              if (canonT === 'bab' && toLow === '@level') ruleFlags.babEqualsLevel = true;
+              if (canonT === 'dmg.melee.abilityMod' && toLow === 'dex' && scLow === 'discipline_weapons') ruleFlags.shadowBlade = true;
+            }
             if (canonT.startsWith('choice.')) {
               const chosenRaw = this.extractEntryChoice(out);
               if (chosenRaw) {
@@ -1848,8 +1950,11 @@ const RuleEngine = {
               });
               return;
             }
+            const resolvedOp = isReplaceStatMode
+              ? (String(b.subOp || b.op || 'max').toLowerCase())
+              : (b.op || 'add');
             pushModifier({
-              op: b.op || 'add',
+              op: resolvedOp,
               target: canonT,
               value,
               formula,
@@ -1859,6 +1964,11 @@ const RuleEngine = {
               condition: effSituational,
               sourceLabel: effNote,
               source: b.source || out.name || out.id || 'V3 Entry',
+              ...(isReplaceStatMode ? {
+                scope: b.scope || 'all',
+                fromStat: b.fromStat || null,
+                toStat: b.toStat || null
+              } : {}),
               ...(b.selector ? { selector: b.selector } : {}),
               ...(b.when ? { when: b.when } : {}),
               ...(b.appliesTo ? { appliesTo: b.appliesTo } : {}),
@@ -1939,7 +2049,11 @@ const RuleEngine = {
               diceStr = `${Math.max(1, totalDice)}${String(b.die || 'd6').replace(/^\d+/, '')}`;
             }
           }
-          const dmgType = rollKind === 'Healing' ? 'Positive' : (b.dmgType || b.damageType || 'Untyped');
+          let dmgType = rollKind === 'Healing' ? 'Positive' : (b.dmgType || b.damageType || 'Untyped');
+          if (typeof dmgType === 'string' && /^(@choice|chosen|chosen energy)$/i.test(dmgType.trim())) {
+            const chDmg = this.extractEntryChoice(out);
+            dmgType = chDmg || 'Energy';
+          }
           const dpObj = {
             dice: diceStr,
             bonus: flatBonus,
@@ -1962,7 +2076,11 @@ const RuleEngine = {
         if (bType === 'defense') {
           if (b.mode) {
             const dm = String(b.mode).trim();
-            const what = String(b.what || '').trim();
+            let what = String(b.what || '').trim();
+            if (/^(@choice|chosen|chosen energy)$/i.test(what)) {
+              const chWhat = this.extractEntryChoice(out);
+              if (chWhat) what = chWhat;
+            }
             if (dm === 'Immunity' || dm === 'Condition Immunity') {
               const lowW = what.toLowerCase();
               if (lowW === 'fear') ruleFlags.immuneFear = true;
@@ -1973,23 +2091,39 @@ const RuleEngine = {
               else if (lowW.includes('paralysis') && lowW.includes('grapple')) ruleFlags.freedomOfMovement = true;
               else if (lowW.includes('paralysis')) ruleFlags.immuneParalysis = true;
               else if (lowW.includes('sleep')) ruleFlags.immuneSleep = true;
+              const labelW = /^(@choice|chosen|chosen energy)$/i.test(what) ? 'Chosen Energy' : (what || 'Effect');
               defenses.push({ kind: 'immunity', target: lowW || 'effect', value: 1 });
-              addBadge(`Immune: ${what || 'Effect'}`);
+              addBadge(`Immune: ${labelW}`);
               return;
             }
-            if (dm === 'DR') {
+            if (dm === 'DR' || dm === 'Damage Reduction') {
+              if (out.id === 'feat-armor-specialization') {
+                const chosenArmor = this.extractEntryChoice(out).toLowerCase();
+                const ch = curCtx.character || this._activeCharacter;
+                const wornArmor = (ch?.bodySlots?.armor && ch.bodySlots.armor.name && ch.bodySlots.armor.name !== '-')
+                  ? ch.bodySlots.armor
+                  : ch?.armor;
+                if (!wornArmor || !wornArmor.name || wornArmor.name === '-' || wornArmor.active === false) return;
+                if (chosenArmor) {
+                  const aStr = `${wornArmor.name || ''} ${wornArmor.baseItemId || ''} ${wornArmor.id || ''}`.toLowerCase().replace(/[-_]+/g, ' ');
+                  if (!aStr.includes(chosenArmor)) return;
+                }
+              }
               const drV = Number(b.value ?? 5) || 0;
               const byp = what || '-';
               defenses.push({ kind: 'dr', target: 'physical', value: drV, formula: null, bypass: byp });
               pushModifier({ op: 'add', target: 'dr', value: drV, type: 'Untyped', bypass: byp, source: out.name || 'Defense' });
               return;
             }
-            if (dm === 'Energy Resistance') {
+            if (dm === 'Energy Resistance' || dm === 'Resistance') {
               const resV = Number(b.value ?? 10) || 0;
               let elem = (what || 'fire').toLowerCase();
               if (elem === '@choice' || elem === 'chosen' || elem === 'chosen energy') {
                 const chElem = this.extractEntryChoice(out).toLowerCase();
                 elem = ['fire', 'cold', 'acid', 'electricity', 'sonic'].find(x => chElem.includes(x)) || 'chosen';
+              } else {
+                const matchedElem = ['fire', 'cold', 'acid', 'electricity', 'sonic'].find(x => elem === x || elem.includes(x));
+                if (matchedElem && !elem.includes(',')) elem = matchedElem;
               }
               defenses.push({ kind: 'resistance', target: elem, value: resV, formula: null });
               pushModifier({ op: 'add', target: `resist.${elem}`, value: resV, type: 'Untyped', source: out.name || 'Defense' });
@@ -2117,6 +2251,10 @@ const RuleEngine = {
             else if (flagKey === 'twoWeaponDefense') ruleFlags.twoWeaponDefense = true;
             else if (flagKey === 'tacticalSlider') ruleFlags.tacticalSlider = b.slider || true;
             else if (flagKey === 'naturalSpell') ruleFlags.naturalSpell = true;
+            else if (flagKey === 'noAutoFailFortSaveOnNat1') ruleFlags.noAutoFailFortSaveOnNat1 = true;
+            else if (flagKey === 'uncannyDodge') ruleFlags.uncannyDodge = true;
+            else if (flagKey === 'ignoreArmorSpeedPenalty') ruleFlags.ignoreArmorSpeedPenalty = true;
+            else if (flagKey === 'oneHandedOffHandAsLight') ruleFlags.oneHandedOffHandAsLight = true;
             else ruleFlags[flagKey] = b.slider !== undefined ? b.slider : true;
           }
           if (b.carrier && typeof b.carrier === 'object') {
@@ -3235,12 +3373,34 @@ const RuleEngine = {
 
       if (op === 'replace' || op === 'max' || op === 'set') {
         replacements[t] = replacements[t] || [];
-        replacements[t].push({ op, value: Math.floor(v), source: sourceEntry.name, affects: mod.affects || null });
+        replacements[t].push({
+          op,
+          value: Math.floor(v),
+          source: sourceEntry.name,
+          sourceId: sourceEntry.id || null,
+          affects: mod.affects || null,
+          scope: mod.scope || 'all',
+          fromStat: mod.fromStat || null,
+          toStat: mod.toStat || null,
+          condition: mod.condition || null,
+          entryChoice: this.extractEntryChoice(sourceEntry) || null
+        });
         return;
       }
-      if (/^(?:save\.(?:fort|ref|will)|ac)\.abilitymod$/i.test(t) && op === 'add') {
+      if ((/\.abilitymod$/i.test(t) || t === 'bab') && op === 'add') {
         replacements[t] = replacements[t] || [];
-        replacements[t].push({ op: 'add', value: Math.floor(v), source: sourceEntry.name, affects: mod.affects || null });
+        replacements[t].push({
+          op: 'add',
+          value: Math.floor(v),
+          source: sourceEntry.name,
+          sourceId: sourceEntry.id || null,
+          affects: mod.affects || null,
+          scope: mod.scope || 'all',
+          fromStat: mod.fromStat || null,
+          toStat: mod.toStat || null,
+          condition: mod.condition || null,
+          entryChoice: this.extractEntryChoice(sourceEntry) || null
+        });
         return;
       }
 
@@ -3272,9 +3432,9 @@ const RuleEngine = {
 
     // Resolve Sub-Component Ability Modifiers (e.g. save.will.abilityMod, save.ref.abilityMod, ac.abilityMod)
     const resolveSubComponentMod = (slotKey, defaultMod) => {
-      const cands = replacements[slotKey];
-      const addSum = (cands || []).filter(c => c.op === 'add').reduce((acc, c) => acc + c.value, 0);
-      const nonAdd = (cands || []).filter(c => c.op !== 'add');
+      const cands = (replacements[slotKey] || []).filter(c => !c.scope || c.scope === 'all' || c.scope === 'not_flat_footed' || c.scope === 'light_or_no_armor');
+      const addSum = cands.filter(c => c.op === 'add').reduce((acc, c) => acc + c.value, 0);
+      const nonAdd = cands.filter(c => c.op !== 'add');
       let baseVal = defaultMod;
       if (nonAdd.length > 0) {
         const forced = nonAdd.filter(c => c.op === 'replace' || c.op === 'set');
@@ -3478,6 +3638,7 @@ const RuleEngine = {
         healingReceived: 1 + multipliers.healingReceived
       },
       effectiveSizeScopes,
+      replacements,
       resources,
       grantedCapabilities,
       modes: evaluatedModes,
@@ -4290,6 +4451,98 @@ const RuleEngine = {
       'crossbow', 'heavy crossbow', 'light crossbow', 'dart', 'javelin', 'sling'
     ];
     return standardSimpleWeapons.some(sw => baseWepName.includes(sw) || name.includes(sw));
+  },
+
+  // Check if weapon is a Thrown weapon according to D&D 3.5e RAW rules
+  isThrownWeapon(weapon) {
+    if (!weapon) return false;
+    const name = (typeof weapon === 'string' ? weapon : (weapon.name || '')).toLowerCase().trim();
+    if (!name || name === '-' || name === 'none') return false;
+    if (name.includes('crossbow') || (name.includes('bow') && !name.includes('club'))) return false;
+    if (typeof weapon === 'object') {
+      if (weapon.isThrown || weapon.thrown || weapon.ruleFlags?.thrown) return true;
+      if (Array.isArray(weapon.tags) && weapon.tags.some(t => String(t).toLowerCase() === 'thrown')) return true;
+      if (String(weapon.weaponType || weapon.subtype || '').toLowerCase().includes('thrown')) return true;
+    }
+    const db = this.getMasterDbEntry(weapon);
+    if (db) {
+      if (db.isThrown || db.thrown || db.ruleFlags?.thrown) return true;
+      if (Array.isArray(db.tags) && db.tags.some(t => String(t).toLowerCase() === 'thrown')) return true;
+    }
+    const baseWepName = name.replace(/\+\d+/g, '').replace(/\(.*?\)/g, '').trim();
+    const standardThrownWeapons = [
+      'dagger', 'club', 'shortspear', 'spear', 'javelin', 'dart', 'sling',
+      'throwing axe', 'light hammer', 'trident', 'bolas', 'net', 'shuriken', 'chakram', 'harpoon'
+    ];
+    return standardThrownWeapons.some(tw => baseWepName.includes(tw) || name.includes(tw));
+  },
+
+  // Evaluate deterministic weapon/character scope filter for V3 `mode: 'replaceStat'` swaps
+  matchesSwapScope(scope, weapon, ctx = {}) {
+    const sc = String(scope || 'all').toLowerCase().trim();
+    if (!sc || sc === 'all') return true;
+    const ch = ctx.character || {};
+    if (sc === 'not_flat_footed') return !ch.acBreakdown?.loseDexToAC;
+    if (sc === 'light_or_no_armor') {
+      const armCat = ch.effectiveArmorCategory || ch.acBreakdown?.armorCategory || 'None';
+      return armCat !== 'Medium' && armCat !== 'Heavy';
+    }
+    if (!weapon) return sc !== 'mind_affecting';
+    if (sc === 'finessable') return !ctx.isRangedWep && this.isFinessable(weapon);
+    if (sc === 'simple_or_natural') {
+      const wName = String(weapon.name || '').toLowerCase();
+      const isNat = Boolean(weapon.isNatural || weapon.isNaturalWeapon || weapon.ruleFlags?.naturalWeapon || String(weapon.category || '').toLowerCase() === 'natural' || wName.includes('unarmed'));
+      return isNat || this.isSimpleWeapon(weapon);
+    }
+    if (sc === 'thrown') return this.isThrownWeapon(weapon);
+    if (sc === 'bow_or_crossbow') return Boolean(ctx.isBow || ctx.isCrossbow);
+    if (sc === 'discipline_weapons') return Boolean(ctx.isShadowStance && this.isShadowHandWeapon(weapon));
+    if (sc === 'chosen_weapon') {
+      const chRaw = String(ctx.entryChoice || '').toLowerCase().trim();
+      if (!chRaw) return false;
+      const wLow = String(weapon.name || '').toLowerCase();
+      const bLow = String(weapon.baseItemId || '').toLowerCase().replace(/^wpn[-_]/, '').replace(/[-_]/g, ' ');
+      return wLow.includes(chRaw) || chRaw.includes(wLow) || (bLow && (bLow.includes(chRaw) || chRaw.includes(bLow)));
+    }
+    return true;
+  },
+
+  // Resolve a V3 `replacements[slotKey]` list against a baseline value
+  resolveSwapSlot(replacementsMap, slotKey, defaultVal, defaultLabel = '', scopeCtx = {}) {
+    const rawList = (replacementsMap && Array.isArray(replacementsMap[slotKey])) ? replacementsMap[slotKey] : [];
+    const cands = rawList.filter(c => c && this.matchesSwapScope(c.scope, scopeCtx.weapon || null, Object.assign({}, scopeCtx, { entryChoice: c.entryChoice })));
+    if (cands.length === 0) return { value: defaultVal, label: defaultLabel, addItems: [], changed: false, winningToStat: null };
+    const addCands = cands.filter(c => c.op === 'add');
+    const nonAdd = cands.filter(c => c.op !== 'add');
+    let baseVal = defaultVal;
+    let label = defaultLabel;
+    let winningToStat = null;
+    let changed = false;
+    if (nonAdd.length > 0) {
+      const forced = nonAdd.filter(c => c.op === 'replace' || c.op === 'set');
+      if (forced.length > 0) {
+        const best = forced.reduce((a, b) => (b.value >= a.value ? b : a), forced[0]);
+        baseVal = best.value;
+        winningToStat = best.toStat || null;
+        const stUp = best.toStat && /^[a-z]{3}$/i.test(best.toStat) ? best.toStat.toUpperCase() : null;
+        label = stUp ? `${stUp} (${best.source})` : `${best.source}`;
+        changed = true;
+      } else {
+        const best = nonAdd.reduce((a, b) => (b.value >= a.value ? b : a), nonAdd[0]);
+        if (best.value > defaultVal) {
+          baseVal = best.value;
+          winningToStat = best.toStat || null;
+          const stUp = best.toStat && /^[a-z]{3}$/i.test(best.toStat) ? best.toStat.toUpperCase() : null;
+          label = stUp ? `${stUp} (${best.source})` : `${best.source}`;
+          changed = true;
+        }
+      }
+    }
+    const addItems = addCands.filter(c => c.value !== 0).map(c => {
+      const stUp = c.toStat && /^[a-z]{3}$/i.test(c.toStat) ? c.toStat.toUpperCase() : null;
+      return { val: c.value, source: stUp ? `${c.source} (${stUp})` : c.source, toStat: c.toStat || null };
+    });
+    return { value: baseVal, label, addItems, changed: changed || addItems.length > 0, winningToStat };
   },
 
   // Check if item is a Shield according to D&D 3.5e RAW rules
@@ -6069,9 +6322,9 @@ const RuleEngine = {
     const chaMod = this.getAbilityMod(character?.abilities?.cha || 10);
     const evalCtx = { cl, level: charLvl, bab: Number(character?.bab) || 0, chaMod };
 
-    // Strip any appended energy choice suffix like "(Fire)" when looking up the canonical base spell
+    // Strip any appended energy/ability choice suffix like "(Fire)" or "(DEX)" when looking up the canonical base spell/power
     const rawSpellName = String(spell.name || '').trim();
-    const baseLookupName = rawSpellName.replace(/\s*\((?:fire|cold|acid|electricity|sonic)\)\s*$/i, '').trim();
+    const baseLookupName = rawSpellName.replace(/\s*\((?:fire|cold|acid|electricity|sonic|str|dex|con|int|wis|cha)\)\s*$/i, '').trim();
 
     // 1. Merge with Canonical V3 Compendium / Custom DB Entry
     const dbEntry = this.getMasterDbEntry(spell, 'Spell')
@@ -6262,6 +6515,9 @@ const RuleEngine = {
       casterLevel: cl,
       targetMode,
       effects: JSON.parse(JSON.stringify(rawEffects)),
+      choices: Array.isArray(spell.choices) && spell.choices.length > 0
+        ? JSON.parse(JSON.stringify(spell.choices))
+        : (Array.isArray(dbEntry.choices) && dbEntry.choices.length > 0 ? JSON.parse(JSON.stringify(dbEntry.choices)) : []),
       sizeModifier: sizeModifier ? JSON.parse(JSON.stringify(sizeModifier)) : null,
       tempHpFormula,
       evaluatedTempHp,
@@ -7416,7 +7672,9 @@ const RuleEngine = {
           character.hp.temp = stackedTempHp;
         }
       }
-      const effectiveConMod = this.getAbilityMod(character.abilities?.con || 10);
+      const rawConModForHp = this.getAbilityMod(character.abilities?.con || 10);
+      const hpSwapRes = this.resolveSwapSlot(legoEval?.replacements, 'hp.abilityMod', rawConModForHp, 'CON', { character });
+      const effectiveConMod = hpSwapRes.value + hpSwapRes.addItems.reduce((s, x) => s + x.val, 0);
       const newConBonusHp = effectiveConMod * totalHD;
 
       if (character.hp.baseMax === undefined || character.hp.baseMax === null) {
@@ -7679,8 +7937,16 @@ const RuleEngine = {
 
     const hasLegoSaveAbiMod = (saveKey) => (legoEval.entries || []).some(e =>
       (e.modifiers || []).concat((e.modes || []).filter(m => m && (m.actionType === 'passive' || m.isPassive)).flatMap(m => m.modifiers || []))
-        .some(m => m && String(m.target || '').toLowerCase() === `save.${saveKey}.abilitymod`)
+        .some(m => m && String(m.target || '').toLowerCase() === `save.${saveKey}.abilitymod` && (!m.scope || m.scope === 'all' || m.scope === 'not_flat_footed' || m.scope === 'light_or_no_armor'))
     );
+
+    const mindAffectingWillSwaps = ((legoEval?.replacements && legoEval.replacements['save.will.abilityMod']) || []).filter(c => c && c.scope === 'mind_affecting');
+    mindAffectingWillSwaps.forEach(c => {
+      const delta = c.op === 'add' ? c.value : (c.op === 'replace' ? (c.value - wisMod) : Math.max(0, c.value - wisMod));
+      if (delta !== 0) {
+        conditionalSaveBonuses.push({ save: 'Will', val: delta, type: 'Untyped', condition: 'vs. Mind-Affecting', source: c.source });
+      }
+    });
 
     const fortStatMod = (hasLegoSaveAbiMod('fort') && legoEval.saves?.abilityMods?.fort !== undefined)
       ? legoEval.saves.abilityMods.fort
@@ -7691,6 +7957,10 @@ const RuleEngine = {
     const willStatMod = (hasLegoSaveAbiMod('will') && legoEval.saves?.abilityMods?.will !== undefined)
       ? legoEval.saves.abilityMods.will
       : (hasSteadfastDetermination ? conMod : wisMod);
+    const willSwapRes = this.resolveSwapSlot(legoEval?.replacements, 'save.will.abilityMod', wisMod, 'WIS', { character });
+    const resolvedWillAbilityKey = (willSwapRes.winningToStat && /^[a-z]{3}$/i.test(willSwapRes.winningToStat))
+      ? willSwapRes.winningToStat.toLowerCase()
+      : (hasSteadfastDetermination ? 'con' : 'wis');
 
     const finalFort = baseFort + fortStatMod + netBonusFort;
     const finalRef = baseRef + refStatMod + netBonusRef;
@@ -7705,7 +7975,7 @@ const RuleEngine = {
       bonusWill: netBonusWill,
       battleClarityBonus: battleClarityBonus,
       hasSteadfastDetermination: hasSteadfastDetermination,
-      willAbility: hasSteadfastDetermination ? 'CON' : 'WIS',
+      willAbility: resolvedWillAbilityKey.toUpperCase(),
       willAbilityMod: willStatMod
     };
 
@@ -7713,7 +7983,7 @@ const RuleEngine = {
       if (!character.saves || typeof character.saves !== 'object') character.saves = {};
       character.saves.fort = { ...(character.saves.fort || {}), base: baseFort, ability: fortStatMod, magic: resistBonus, misc: netBonusFort - resistBonus, total: finalFort };
       character.saves.ref = { ...(character.saves.ref || {}), base: baseRef, ability: refStatMod, magic: resistBonus, misc: netBonusRef - resistBonus, total: finalRef };
-      character.saves.will = { ...(character.saves.will || {}), base: baseWill, ability: willStatMod, abilityKey: hasSteadfastDetermination ? 'con' : 'wis', magic: resistBonus, misc: netBonusWill - resistBonus, total: finalWill };
+      character.saves.will = { ...(character.saves.will || {}), base: baseWill, ability: willStatMod, abilityKey: resolvedWillAbilityKey, magic: resistBonus, misc: netBonusWill - resistBonus, total: finalWill };
     } else if (character.saves) {
       if (character.saves.fort?.total !== undefined) character.evaluatedSaves.fort = character.saves.fort.total;
       if (character.saves.ref?.total !== undefined) character.evaluatedSaves.ref = character.saves.ref.total;
@@ -7723,8 +7993,9 @@ const RuleEngine = {
     // 7. Resolve Effective Speed (RAW D&D 3.5e Table 8-2: Armor and Speed + Condition Half-Speed)
     const baseSpeed = character.baseSpeed || 30;
     const isDwarf = (character.race || '').toLowerCase().includes('dwarf');
+    const preRuleFlagsForSpeed = this.evaluateRuleFlags(character);
     let armorSpeedPenalty = 0;
-    if (!isDwarf && (equippedArmorCategory === 'Medium' || equippedArmorCategory === 'Heavy')) {
+    if (!isDwarf && !preRuleFlagsForSpeed.ignoreArmorSpeedPenalty && (equippedArmorCategory === 'Medium' || equippedArmorCategory === 'Heavy')) {
       armorSpeedPenalty = (baseSpeed > 20) ? 10 : 5;
     }
     let calcSpeed = Math.max(5, baseSpeed - armorSpeedPenalty + itemSpeedBonus + buffSpeedBonus - buffSpeedPenalty);
@@ -7756,10 +8027,17 @@ const RuleEngine = {
     // (the size category whose Table 8-1 modifier equals the AC size modifier after size-change effects).
     const grappleSizeKey = Object.keys(this.SIZE_MODIFIERS).find(k => this.SIZE_MODIFIERS[k] === sizeBonus) || this.getSizeCategoryKey(character);
     const grappleSizeMod = grappleSizeKey ? this.GRAPPLE_SIZE_MODIFIERS[grappleSizeKey] : 0;
+    const babSwapForGrapple = this.resolveSwapSlot(legoEval?.replacements, 'bab', Number(character.bab) || 0, 'BAB', { character });
+    if (babSwapForGrapple.changed) {
+      character.bab = babSwapForGrapple.value + babSwapForGrapple.addItems.reduce((s, x) => s + x.val, 0);
+    }
+    const grappleStrDefault = this.getAbilityMod(character.abilities?.str || 10);
+    const grappleAbiSwap = this.resolveSwapSlot(legoEval?.replacements, 'grapple.abilityMod', grappleStrDefault, 'STR', { character });
+    const effGrappleAbiMod = grappleAbiSwap.value + grappleAbiSwap.addItems.reduce((s, x) => s + x.val, 0);
     const activeRulesetForGrapple = this.getActiveRuleset(character);
     character.grappleBonus = (activeRulesetForGrapple && typeof activeRulesetForGrapple.calcGrapple === 'function')
-      ? activeRulesetForGrapple.calcGrapple(character.bab, this.getAbilityMod(character.abilities?.str || 10), grappleSizeMod, character.ruleFlags?.opposedCheckBonus?.grapple || 0)
-      : ((Number(character.bab) || 0) + this.getAbilityMod(character.abilities?.str || 10) + grappleSizeMod + (character.ruleFlags?.opposedCheckBonus?.grapple || 0));
+      ? activeRulesetForGrapple.calcGrapple(character.bab, effGrappleAbiMod, grappleSizeMod, character.ruleFlags?.opposedCheckBonus?.grapple || 0)
+      : ((Number(character.bab) || 0) + effGrappleAbiMod + grappleSizeMod + (character.ruleFlags?.opposedCheckBonus?.grapple || 0));
     character.actionEconomy = this.evaluateActionEconomy(character, options);
 
     return {
@@ -8338,7 +8616,30 @@ const RuleEngine = {
 
     const isRangedWep = grip === 'Ranged' || weapon.isRanged || (Array.isArray(weapon.tags) && weapon.tags.includes('ranged')) || (weapon.weaponStats && weapon.weaponStats.category === 'Ranged');
 
-    // 1. Attack Stat Calculation
+    // 1. Attack Stat Calculation (D&D 3.5e Baseline + Parametric V3 A -> B Stat Swaps)
+    const wepLegoReplacements = (character && character.legoEvaluation && character.legoEvaluation.replacements)
+      ? character.legoEvaluation.replacements
+      : ((character ? this.evaluateLegoCharacter(character)?.replacements : null) || {});
+    const isThrownWep = this.isThrownWeapon(weapon);
+    const isCrossbowEarly = baseWepName.includes('crossbow');
+    const isBowEarly = baseWepName.includes('bow') && !isCrossbowEarly;
+    const isTouchAtkWep = Boolean(weapon.isTouch || weapon.touchAttack || weapon.ruleFlags?.touchAttack);
+    const isShadowStanceEarly = (activeStance.toLowerCase().includes('shadow') || activeStance.toLowerCase().includes('island of blades') || activeStance.toLowerCase().includes('child of shadow') || activeStance.toLowerCase().includes('assassin'));
+    const wepSwapScopeCtx = {
+      character,
+      weapon,
+      isRangedWep,
+      isThrownWep,
+      isBow: isBowEarly,
+      isCrossbow: isCrossbowEarly,
+      isShadowStance: isShadowStanceEarly
+    };
+
+    const babSwapWep = this.resolveSwapSlot(wepLegoReplacements, 'bab', bab, 'BAB', wepSwapScopeCtx);
+    if (babSwapWep.changed) {
+      bab = babSwapWep.value + babSwapWep.addItems.reduce((s, x) => s + x.val, 0);
+    }
+
     let attackStatMod = isRangedWep ? dexMod : strMod;
     let attackStatName = isRangedWep ? 'DEX (Ranged)' : 'STR';
 
@@ -8346,6 +8647,21 @@ const RuleEngine = {
       attackStatMod = dexMod;
       attackStatName = 'DEX (Weapon Finesse)';
     }
+
+    const atkSwapSlots = [];
+    if (!isRangedWep) atkSwapSlots.push('atk.melee.abilityMod');
+    if (isRangedWep) atkSwapSlots.push('atk.ranged.abilityMod');
+    if (isRangedWep && isThrownWep) atkSwapSlots.push('atk.thrown.abilityMod');
+    if (isTouchAtkWep) atkSwapSlots.push('atk.touch.abilityMod');
+    const atkSwapAddItems = [];
+    atkSwapSlots.forEach(slotKey => {
+      const swRes = this.resolveSwapSlot(wepLegoReplacements, slotKey, attackStatMod, attackStatName, wepSwapScopeCtx);
+      if (swRes.changed && swRes.value !== attackStatMod) {
+        attackStatMod = swRes.value;
+        attackStatName = swRes.label;
+      }
+      swRes.addItems.forEach(it => atkSwapAddItems.push(it));
+    });
 
     // Power attack penalty: cannot exceed BAB
     const effectivePA = Math.min(bab, Math.max(0, Number(powerAttack) || 0));
@@ -8355,6 +8671,9 @@ const RuleEngine = {
       { type: 'untyped', val: attackStatMod, source: attackStatName },
       { type: 'untyped', val: -effectivePA, source: 'Power Attack Penalty' }
     ];
+    atkSwapAddItems.forEach(it => {
+      attackBonusItems.push({ type: 'untyped', val: it.val, source: it.source });
+    });
 
     // Size modifier on attack rolls (PHB p.134, Table 8-1) from the size category. Size-change effects (Enlarge / Reduce Person)
     // carry their own size-typed attack modifier, so this base value is untyped and stacks with them.
@@ -8809,12 +9128,24 @@ const RuleEngine = {
       }
     }
 
+    const dmgSwapSlotKey = isRangedWep ? 'dmg.ranged.abilityMod' : 'dmg.melee.abilityMod';
+    const dmgSwapRes = this.resolveSwapSlot(wepLegoReplacements, dmgSwapSlotKey, baseStrDmg, strDesc, wepSwapScopeCtx);
+    if (dmgSwapRes.changed && dmgSwapRes.value !== baseStrDmg) {
+      baseStrDmg = dmgSwapRes.value;
+      strDesc = dmgSwapRes.label;
+    }
+
     const paDmg = effectivePA * paDamageMultiplier;
 
     const damageBonusItems = [
       { type: 'untyped', val: baseStrDmg, source: strDesc },
       { type: 'untyped', val: paDmg, source: `Power Attack (${paDamageMultiplier}x)` }
     ];
+    let hasV3DisciplineDexAdd = false;
+    dmgSwapRes.addItems.forEach(it => {
+      if (String(it.toStat || '').toLowerCase() === 'dex') hasV3DisciplineDexAdd = true;
+      damageBonusItems.push({ type: 'untyped', val: it.val, source: it.source });
+    });
 
     // Power Attack Item Synergy (e.g. Armbands of Might MIC p.72: +2 melee damage when taking at least -2 Power Attack penalty)
     if (!isRangedWep && effectivePA >= 2 && character && character.bodySlots && typeof character.bodySlots === 'object') {
@@ -8938,7 +9269,7 @@ const RuleEngine = {
 
     // Shadow Blade: Add DEX mod to damage if in Shadow Hand stance and using Shadow Hand weapon
     const isShadowStance = (activeStance.toLowerCase().includes('shadow') || activeStance.toLowerCase().includes('island of blades') || activeStance.toLowerCase().includes('child of shadow') || activeStance.toLowerCase().includes('assassin'));
-    if (hasShadowBlade && isShadowStance && this.isShadowHandWeapon(weapon)) {
+    if (hasShadowBlade && !hasV3DisciplineDexAdd && isShadowStance && this.isShadowHandWeapon(weapon)) {
       damageBonusItems.push({ type: 'untyped', val: dexMod, source: 'Shadow Blade (DEX)' });
     }
 
@@ -9333,6 +9664,7 @@ const RuleEngine = {
       if (!mod || !mod.target) continue;
       const rawTarget = String(mod.target).trim().toLowerCase();
       if (!rawTarget.startsWith('skill.') && !rawTarget.startsWith('skills.') && rawTarget !== 'skills') continue;
+      if (rawTarget.endsWith('.abilitymod')) continue;
       const subTarget = rawTarget.replace(/^skills?\./, '').trim();
       const tNorm = subTarget.replace(/[^a-z0-9]/g, '');
       const hasFormula = mod.formula !== undefined && mod.formula !== null && String(mod.formula).trim() !== '';
@@ -9612,6 +9944,32 @@ const RuleEngine = {
     for (let i = 0; i < harvested.extraSources.length; i++) {
       const ex = harvested.extraSources[i];
       applyPreEvaluatedMods(ex.mods, ex.title);
+    }
+
+    // 5b. V3 Parametric Skill / Concentration Key Ability Swaps (`skill.<slug>.abilityMod`, `concentration.abilityMod`)
+    const skillLegoReplacements = (character.legoEvaluation && character.legoEvaluation.replacements)
+      ? character.legoEvaluation.replacements
+      : (this.evaluateLegoCharacter(character)?.replacements || null);
+    if (skillLegoReplacements) {
+      const skSlugDash = (sKey || sName).replace(/^skills?\./, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+      const defaultSkAbKey = String(statName || '').toLowerCase().trim() ||
+        (((_ => {
+          const rs = this.getActiveRuleset(character);
+          const found = (rs && Array.isArray(rs.skills)) ? rs.skills.find(x => String(x[0]).toLowerCase() === sName || String(x[0]).toLowerCase().replace(/[^a-z0-9]+/g, '-') === skSlugDash) : null;
+          return found ? found[1] : '';
+        })()) || 'int');
+      const defaultSkMod = this.getAbilityMod(character.abilities?.[defaultSkAbKey] || 10);
+      const slotCandidates = [`skill.${skSlugDash}.abilityMod`];
+      if (skSlugDash === 'concentration') slotCandidates.push('concentration.abilityMod');
+      slotCandidates.forEach(slotKey => {
+        if (!Array.isArray(skillLegoReplacements[slotKey])) return;
+        const swRes = this.resolveSwapSlot(skillLegoReplacements, slotKey, defaultSkMod, defaultSkAbKey.toUpperCase(), { character });
+        const swappedTotal = swRes.value + swRes.addItems.reduce((acc, x) => acc + x.val, 0);
+        const delta = swappedTotal - defaultSkMod;
+        if (delta !== 0) {
+          addBonus(swRes.label || 'Ability Swap', delta, 'untyped');
+        }
+      });
     }
 
     // 6. Resolve Stacking Rules (D&D 3.5e RAW + Consolidated Skill Group Rule)
@@ -13758,7 +14116,10 @@ const RuleEngine = {
         round: Number(working.tactical?.round || working.encounterRound || 1),
         bab: Number(working.bab) || 0,
         grapple: Number(working.grappleBonus) || 0,
-        initiative: (Number(working.buffInitiativeBonus) || 0) + mods.dex,
+        initiative: (Number(working.buffInitiativeBonus) || 0) + (() => {
+          const initSwap = this.resolveSwapSlot(working.legoEvaluation?.replacements, 'initiative.abilityMod', mods.dex, 'DEX', { character: working });
+          return initSwap.value + initSwap.addItems.reduce((s, x) => s + x.val, 0);
+        })(),
         initiativeBreakdown: working.initiativeBreakdown || [],
         speed: {
           land: working.effectiveSpeed || working.baseSpeed || 30,

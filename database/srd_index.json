@@ -1,26 +1,26 @@
 {
   "schemaVersion": 3,
   "version": "3.0.0",
-  "compendiumHash": "aaf5f4996b71f65f",
+  "compendiumHash": "9ae7efc5347a8c7c",
   "generatedAt": "2026-11-15T19:43:51.694Z",
   "totalEntries": 7949,
   "chunks": {
     "srd_equipment.json": {
       "count": 1131,
-      "bytes": 1854393,
-      "hash": "14362375b3805a07",
+      "bytes": 1856631,
+      "hash": "9dd11efbd936f671",
       "eagerLoad": true
     },
     "srd_feats.json": {
       "count": 468,
-      "bytes": 856135,
-      "hash": "50ff47b290f48e56",
+      "bytes": 859618,
+      "hash": "aff8440070a13f92",
       "eagerLoad": true
     },
     "srd_classes_races.json": {
       "count": 300,
-      "bytes": 1536764,
-      "hash": "5fb783b7598e4ad1",
+      "bytes": 1536441,
+      "hash": "f921c173236ef71d",
       "eagerLoad": true
     },
     "srd_combat_rules.json": {
@@ -32,7 +32,7 @@
     "srd_spells.json": {
       "count": 695,
       "bytes": 1940413,
-      "hash": "b35108fd66e9a9aa",
+      "hash": "3981b02cf676579c",
       "eagerLoad": true
     },
     "srd_monsters.json": {
@@ -49,14 +49,14 @@
     },
     "mic_compendium.json": {
       "count": 953,
-      "bytes": 1892193,
-      "hash": "133e82b97129a3cc",
+      "bytes": 1892481,
+      "hash": "b81c84e13adf8c15",
       "eagerLoad": true
     },
     "srd_domains.json": {
       "count": 37,
-      "bytes": 143002,
-      "hash": "fea8f7b8a2d79401",
+      "bytes": 143062,
+      "hash": "94b9474bd5a98457",
       "eagerLoad": true
     },
     "srd_companions.json": {
@@ -79,14 +79,14 @@
     },
     "srd_feats_splat.json": {
       "count": 1767,
-      "bytes": 2327077,
-      "hash": "58472c29af31cae1",
+      "bytes": 2328595,
+      "hash": "e9b53434c588d893",
       "eagerLoad": false
     },
     "srd_feats_epic.json": {
       "count": 23,
-      "hash": "1733d9e00b77e9e5",
-      "bytes": 34606,
+      "hash": "74cd2af78db44d99",
+      "bytes": 34605,
       "eagerLoad": false
     },
     "srd_feats_legacy.json": {
@@ -111,8 +111,8 @@
     },
     "srd_powers.json": {
       "count": 287,
-      "hash": "892bb54bd5d6a262",
-      "bytes": 767081,
+      "hash": "a6b83133f5692ecd",
+      "bytes": 767597,
       "eagerLoad": false
     },
     "srd_spells_splat.json": {

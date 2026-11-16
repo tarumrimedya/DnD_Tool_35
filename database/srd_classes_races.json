@@ -47728,6 +47728,60 @@
       "spellsPerDay": {},
       "spellsKnown": {}
     },
+    "grants": {
+      "bonusFeats": [
+        {
+          "count": 1,
+          "pool": "#FighterBonus",
+          "level": 1
+        },
+        {
+          "count": 1,
+          "pool": "#FighterBonus",
+          "level": 3
+        },
+        {
+          "count": 1,
+          "pool": "#FighterBonus",
+          "level": 5
+        },
+        {
+          "count": 1,
+          "pool": "#FighterBonus",
+          "level": 7
+        },
+        {
+          "count": 1,
+          "pool": "#FighterBonus",
+          "level": 9
+        },
+        {
+          "count": 1,
+          "pool": "#FighterBonus",
+          "level": 11
+        },
+        {
+          "count": 1,
+          "pool": "#FighterBonus",
+          "level": 13
+        },
+        {
+          "count": 1,
+          "pool": "#FighterBonus",
+          "level": 15
+        },
+        {
+          "count": 1,
+          "pool": "#FighterBonus",
+          "level": 17
+        },
+        {
+          "count": 1,
+          "pool": "#FighterBonus",
+          "level": 19
+        }
+      ]
+    },
     "progression": {
       "mode": "base",
       "maxLevel": 20,
@@ -48168,61 +48222,7 @@
       "variant",
       "unearthed-arcana"
     ],
-    "role": "Variant Base Class / Martial Feat Rogue",
-    "grants": {
-      "bonusFeats": [
-        {
-          "count": 1,
-          "pool": "#FighterBonus",
-          "level": 1
-        },
-        {
-          "count": 1,
-          "pool": "#FighterBonus",
-          "level": 3
-        },
-        {
-          "count": 1,
-          "pool": "#FighterBonus",
-          "level": 5
-        },
-        {
-          "count": 1,
-          "pool": "#FighterBonus",
-          "level": 7
-        },
-        {
-          "count": 1,
-          "pool": "#FighterBonus",
-          "level": 9
-        },
-        {
-          "count": 1,
-          "pool": "#FighterBonus",
-          "level": 11
-        },
-        {
-          "count": 1,
-          "pool": "#FighterBonus",
-          "level": 13
-        },
-        {
-          "count": 1,
-          "pool": "#FighterBonus",
-          "level": 15
-        },
-        {
-          "count": 1,
-          "pool": "#FighterBonus",
-          "level": 17
-        },
-        {
-          "count": 1,
-          "pool": "#FighterBonus",
-          "level": 19
-        }
-      ]
-    }
+    "role": "Variant Base Class / Martial Feat Rogue"
   },
   {
     "schemaVersion": 3,
@@ -49331,18 +49331,7 @@
           "features": [],
           "spellcasting": null
         }
-      ],
-      "spellcastingChassis": {
-        "mode": "fullPrep",
-        "clFormula": "full",
-        "clCustom": null,
-        "tradition": "Divine",
-        "keyAbility": "wis",
-        "spellList": "Cleric (Cloistered Cleric)",
-        "ignoreAsf": "all",
-        "ignoreShieldAsf": true,
-        "castInRage": false
-      }
+      ]
     },
     "effects": [],
     "shortDescription": "Scholarly Cleric variant with d6 HD, 1/2 BAB, 6 + INT skill points, all Knowledge skills, Lore (Ex), and the Knowledge domain as a bonus third domain (Unearthed Arcana p.50).",

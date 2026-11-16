@@ -2037,12 +2037,13 @@
       {
         "type": "roll",
         "kind": "Damage",
-        "dice": "2d6",
         "bonus": 0,
         "dmgType": "Good (vs. Evil)",
         "multiplyOnCrit": false,
         "critOnly": false,
-        "source": "Holy"
+        "source": "Holy",
+        "count": 2,
+        "die": "d6"
       }
     ],
     "ruleFlags": {
@@ -5497,12 +5498,13 @@
       {
         "type": "roll",
         "kind": "Damage",
-        "dice": "1d6",
         "bonus": 0,
         "dmgType": "Cold",
         "multiplyOnCrit": false,
         "critOnly": false,
-        "source": "Frost"
+        "source": "Frost",
+        "count": 1,
+        "die": "d6"
       }
     ],
     "ruleFlags": {
@@ -7138,12 +7140,13 @@
       {
         "type": "roll",
         "kind": "Damage",
-        "dice": "2d6",
         "bonus": 0,
         "dmgType": "Evil (vs. Good)",
         "multiplyOnCrit": false,
         "critOnly": false,
-        "source": "Unholy"
+        "source": "Unholy",
+        "count": 2,
+        "die": "d6"
       }
     ],
     "ruleFlags": {
@@ -7584,32 +7587,35 @@
       {
         "type": "roll",
         "kind": "Damage",
-        "dice": "1d6",
         "bonus": 0,
         "dmgType": "Fire",
         "multiplyOnCrit": false,
         "critOnly": false,
-        "source": "Flaming"
+        "source": "Flaming",
+        "count": 1,
+        "die": "d6"
       },
       {
         "type": "roll",
         "kind": "Damage",
-        "dice": "1d6",
         "bonus": 0,
         "dmgType": "Cold",
         "multiplyOnCrit": false,
         "critOnly": false,
-        "source": "Frost"
+        "source": "Frost",
+        "count": 1,
+        "die": "d6"
       },
       {
         "type": "roll",
         "kind": "Damage",
-        "dice": "1d6",
         "bonus": 0,
         "dmgType": "Electricity",
         "multiplyOnCrit": false,
         "critOnly": false,
-        "source": "Shock"
+        "source": "Shock",
+        "count": 1,
+        "die": "d6"
       }
     ],
     "ruleFlags": {
@@ -12123,12 +12129,13 @@
       {
         "type": "roll",
         "kind": "Damage",
-        "dice": "2d6",
         "bonus": 0,
         "dmgType": "Evil (vs. Good)",
         "multiplyOnCrit": false,
         "critOnly": false,
-        "source": "Unholy"
+        "source": "Unholy",
+        "count": 2,
+        "die": "d6"
       }
     ],
     "ruleFlags": {
@@ -21095,12 +21102,13 @@
       {
         "type": "roll",
         "kind": "Damage",
-        "dice": "1d6",
         "bonus": 0,
         "dmgType": "Fire",
         "multiplyOnCrit": false,
         "critOnly": false,
-        "source": "Flaming"
+        "source": "Flaming",
+        "count": 1,
+        "die": "d6"
       }
     ],
     "ruleFlags": {
@@ -24397,12 +24405,13 @@
       {
         "type": "roll",
         "kind": "Damage",
-        "dice": "1d6",
         "bonus": 0,
         "dmgType": "Fire",
         "multiplyOnCrit": false,
         "critOnly": false,
-        "source": "Flaming"
+        "source": "Flaming",
+        "count": 1,
+        "die": "d6"
       }
     ],
     "ruleFlags": {
@@ -31493,12 +31502,13 @@
       {
         "type": "roll",
         "kind": "Damage",
-        "dice": "2d6",
         "bonus": 0,
         "dmgType": "Good (vs. Evil)",
         "multiplyOnCrit": false,
         "critOnly": false,
-        "source": "Holy"
+        "source": "Holy",
+        "count": 2,
+        "die": "d6"
       }
     ],
     "ruleFlags": {
@@ -37134,12 +37144,13 @@
       {
         "type": "roll",
         "kind": "Damage",
-        "dice": "2d6",
         "bonus": 0,
         "dmgType": "Evil (vs. Good)",
         "multiplyOnCrit": false,
         "critOnly": false,
-        "source": "Unholy"
+        "source": "Unholy",
+        "count": 2,
+        "die": "d6"
       }
     ],
     "ruleFlags": {
@@ -39911,12 +39922,13 @@
       {
         "type": "roll",
         "kind": "Damage",
-        "dice": "2d6",
         "bonus": 0,
         "dmgType": "Good (vs. Evil)",
         "multiplyOnCrit": false,
         "critOnly": false,
-        "source": "Holy"
+        "source": "Holy",
+        "count": 2,
+        "die": "d6"
       }
     ],
     "ruleFlags": {
@@ -39989,12 +40001,13 @@
       {
         "type": "roll",
         "kind": "Damage",
-        "dice": "1d6",
         "bonus": 0,
         "dmgType": "Fire",
         "multiplyOnCrit": false,
         "critOnly": false,
-        "source": "Flaming"
+        "source": "Flaming",
+        "count": 1,
+        "die": "d6"
       }
     ],
     "ruleFlags": {
@@ -40360,12 +40373,13 @@
       {
         "type": "roll",
         "kind": "Damage",
-        "dice": "1d6",
         "bonus": 0,
         "dmgType": "Fire",
         "multiplyOnCrit": false,
         "critOnly": false,
-        "source": "Flaming"
+        "source": "Flaming",
+        "count": 1,
+        "die": "d6"
       }
     ],
     "ruleFlags": {
@@ -43783,22 +43797,24 @@
       {
         "type": "roll",
         "kind": "Damage",
-        "dice": "1d6",
         "bonus": 0,
         "dmgType": "Fire",
         "multiplyOnCrit": false,
         "critOnly": false,
-        "source": "Flaming"
+        "source": "Flaming",
+        "count": 1,
+        "die": "d6"
       },
       {
         "type": "roll",
         "kind": "Damage",
-        "dice": "1d6",
         "bonus": 0,
         "dmgType": "Cold",
         "multiplyOnCrit": false,
         "critOnly": false,
-        "source": "Frost"
+        "source": "Frost",
+        "count": 1,
+        "die": "d6"
       }
     ],
     "ruleFlags": {

@@ -8643,7 +8643,20 @@
     "save": "None",
     "sr": true,
     "powerPointsCost": 1,
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-pw-eray",
+        "type": "roll",
+        "kind": "Damage",
+        "count": 1,
+        "die": "d6",
+        "flat": 0,
+        "dmgType": "@Choice",
+        "scaling": "flat",
+        "crit": "normal",
+        "touch": true
+      }
+    ],
     "shortDescription": "Deal 1d6 energy (cold, electricity, fire, or sonic) damage.",
     "text": "Upon manifesting this power, you choose cold, electricity, fire, or sonic. You create a ray of energy of the chosen type that shoots forth from your fingertip and strikes a target within range, dealing 1d6 points of damage, if you succeed on a ranged touch attack with the ray.\nCold: A ray of this energy type deals +1 point of damage per die.\nElectricity: Manifesting a ray of this energy type provides a +3 bonus on your attack roll if the target is wearing metal armor and a +2 bonus on manifester level checks for the purpose of overcoming power resistance.\nFire: A ray of this energy type deals +1 point of damage per die.\nSonic: A ray of this energy type deals -1 point of damage per die and ignores an object’s hardness.\nThis power’s subtype is the same as the type of energy you manifest.\nAugment: For every additional power point you spend, this power’s damage increases by one die (d6).",
     "tags": [
@@ -8656,7 +8669,21 @@
     "provenance": {
       "origin": "foundry-d35e-compendium",
       "crossCheck": "srd.dndtools.org srd/magic/psionics/powers/powersAllCore.html (3.5 psionics SRD = Expanded Psionics Handbook), 2026-11-10"
-    }
+    },
+    "choices": [
+      {
+        "id": "ch-energy",
+        "key": "energy",
+        "label": "Energy Type",
+        "options": [
+          "Acid",
+          "Cold",
+          "Electricity",
+          "Fire",
+          "Sonic"
+        ]
+      }
+    ]
   },
   {
     "schemaVersion": 3,

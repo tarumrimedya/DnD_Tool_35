@@ -212,6 +212,92 @@
     'wilder': { weapons: { simple: true, martial: false, specific: [] }, armors: { light: true, medium: false, heavy: false }, shields: { shield: false, tower: false } }
   };
 
+  const STAT_SWAP_TARGET_GROUPS = [
+    ['Attack Rolls', [
+      ['atk.melee.abilityMod', 'Melee Attack Ability (Default: STR)', 'str'],
+      ['atk.ranged.abilityMod', 'Ranged Attack Ability (Default: DEX)', 'dex'],
+      ['atk.thrown.abilityMod', 'Thrown Weapon Attack Ability (Default: DEX)', 'dex'],
+      ['atk.touch.abilityMod', 'Touch Attack Ability (Default: STR / DEX)', 'dex'],
+      ['grapple.abilityMod', 'Grapple / Combat Maneuver Ability (Default: STR)', 'str']
+    ]],
+    ['Damage Rolls', [
+      ['dmg.melee.abilityMod', 'Melee Damage Ability (Default: STR)', 'str'],
+      ['dmg.ranged.abilityMod', 'Ranged / Thrown Damage Ability (Default: None / STR)', 'str']
+    ]],
+    ['Saving Throws', [
+      ['save.fort.abilityMod', 'Fortitude Save Ability (Default: CON)', 'con'],
+      ['save.ref.abilityMod', 'Reflex Save Ability (Default: DEX)', 'dex'],
+      ['save.will.abilityMod', 'Will Save Ability (Default: WIS)', 'wis']
+    ]],
+    ['Defense & Vitals', [
+      ['ac.abilityMod', 'Armor Class Ability (Default: DEX)', 'dex'],
+      ['initiative.abilityMod', 'Initiative Ability (Default: DEX)', 'dex'],
+      ['hp.abilityMod', 'Hit Points per HD Ability (Default: CON)', 'con']
+    ]],
+    ['Skills & Concentration', [
+      ['concentration.abilityMod', 'Concentration Ability (Default: CON)', 'con'],
+      ['choice.skill.1.abilityMod', 'Chosen Skill (@Choice) Key Ability', 'wis']
+    ].concat(SKILLS.map(function (s) {
+      const skSlug = String(s[0]).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      return ['skill.' + skSlug + '.abilityMod', s[0] + ' Skill Ability (Default: ' + String(s[1]).toUpperCase() + ')', s[1]];
+    }))],
+    ['Core Scaling & Spellcasting', [
+      ['bab', 'Base Attack Bonus (Default: Class BAB)', 'bab'],
+      ['spell.dc.abilityMod', 'Spell Save DC Key Ability', 'wis'],
+      ['spell.bonusSlots.abilityMod', 'Bonus Spells Key Ability', 'wis']
+    ]]
+  ];
+
+  const STAT_SWAP_SOURCES = [
+    ['str', 'STR Modifier (@strMod)'],
+    ['dex', 'DEX Modifier (@dexMod)'],
+    ['con', 'CON Modifier (@conMod)'],
+    ['int', 'INT Modifier (@intMod)'],
+    ['wis', 'WIS Modifier (@wisMod)'],
+    ['cha', 'CHA Modifier (@chaMod)'],
+    ['0.5*str', '½× STR Modifier'],
+    ['0.5*dex', '½× DEX Modifier'],
+    ['0.5*int', '½× INT Modifier'],
+    ['0.5*wis', '½× WIS Modifier'],
+    ['0.5*cha', '½× CHA Modifier'],
+    ['1.5*str', '1.5× STR Modifier'],
+    ['1.5*dex', '1.5× DEX Modifier'],
+    ['choice.abilityMod', 'Chosen Ability Modifier (@Choice)'],
+    ['@level', 'Character Level / Total HD (@level)'],
+    ['@classLevel', 'Class Level (@classLevel)'],
+    ['@cl', 'Caster Level (@cl)']
+  ];
+
+  const STAT_SWAP_OPS = [
+    ['max', 'Higher Of A or B (May Use B Instead of A)'],
+    ['replace', 'Replace A with B (Always Use B)'],
+    ['add', 'Add B Alongside A (A + B)']
+  ];
+
+  const STAT_SWAP_SCOPES = [
+    ['all', 'All Applicable Rolls (Unconditional)'],
+    ['finessable', 'Light & Finesse Weapons (Light, Rapier, Whip, Spiked Chain)'],
+    ['simple_or_natural', 'Simple & Natural Weapons (Intuitive Attack)'],
+    ['thrown', 'Thrown Weapons Only (Brutal / Power Throw)'],
+    ['bow_or_crossbow', 'Bows & Crossbows Only'],
+    ['chosen_weapon', 'Chosen Weapon (@Choice)'],
+    ['discipline_weapons', 'Shadow Hand / Discipline Weapons (In Stance)'],
+    ['light_or_no_armor', 'In Light or No Armor'],
+    ['not_flat_footed', 'While Not Flat-Footed'],
+    ['mind_affecting', 'vs. Mind-Affecting Effects Only']
+  ];
+
+  const RULE_SWITCH_FLAGS = [
+    ['noAutoFailFortSaveOnNat1', 'Do Not Auto-Fail Fortitude Save on Natural 1'],
+    ['shieldToTouchAc', 'Shield AC Bonus Applies to Touch AC'],
+    ['monkeyGrip', 'Wield +1 Size Larger Weapons at -2 Attack (Monkey Grip)'],
+    ['naturalSpell', 'Cast Spells While in Wild Shape (Natural Spell)'],
+    ['uncannyDodge', 'Retain DEX Bonus to AC When Flat-Footed (Uncanny Dodge)'],
+    ['ignoreArmorSpeedPenalty', 'Ignore Medium/Heavy Armor Speed Reduction'],
+    ['oneHandedOffHandAsLight', 'Treat One-Handed Off-Hand Weapon as Light (Oversized TWF)'],
+    ['tacticalSlider', 'Enable Tactical Combat Slider (Power Attack / Expertise / Manyshot)']
+  ];
+
   const DnD35Ruleset = {
     id: 'dnd35',
     name: 'D&D 3.5e Official RAW',
@@ -231,6 +317,11 @@
     srdArmors: SRD_ARMORS,
     srdShields: SRD_SHIELDS,
     classProficiencies: CLASS_PROFICIENCIES,
+    statSwapTargetGroups: STAT_SWAP_TARGET_GROUPS,
+    statSwapSources: STAT_SWAP_SOURCES,
+    statSwapOps: STAT_SWAP_OPS,
+    statSwapScopes: STAT_SWAP_SCOPES,
+    ruleSwitchFlags: RULE_SWITCH_FLAGS,
 
     calcAbilityMod(score) {
       return Math.floor(((Number(score) || 10) - 10) / 2);

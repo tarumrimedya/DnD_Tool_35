@@ -4164,6 +4164,13 @@
 
       const q = searchInput ? searchInput.value.trim() : '';
       renderRaceSpotlightItems(q);
+      if (window.SrdCompendium && typeof window.SrdCompendium.ensureTypesLoaded === 'function') {
+        window.SrdCompendium.ensureTypesLoaded(['Race']).then((arrived) => {
+          if (arrived && arrived.length > 0 && _raceSpotlightOpen) {
+            renderRaceSpotlightItems(searchInput ? searchInput.value.trim() : '');
+          }
+        }).catch(() => {});
+      }
 
       setTimeout(() => {
         if (searchInput) {
@@ -4499,6 +4506,13 @@
       dropdown.classList.remove('hidden');
       if (chevron) chevron.style.transform = 'rotate(180deg)';
       renderTemplateSpotlightItems();
+      if (window.SrdCompendium && typeof window.SrdCompendium.ensureTypesLoaded === 'function') {
+        window.SrdCompendium.ensureTypesLoaded(['Template']).then((arrived) => {
+          if (arrived && arrived.length > 0 && _templateSpotlightOpen) {
+            renderTemplateSpotlightItems();
+          }
+        }).catch(() => {});
+      }
       setTimeout(() => {
         if (searchInput) searchInput.focus();
       }, 25);
@@ -5180,6 +5194,13 @@
 
       const q = searchInput ? searchInput.value.trim() : '';
       renderDeitySpotlightItems(q);
+      if (window.SrdCompendium && typeof window.SrdCompendium.ensureTypesLoaded === 'function') {
+        window.SrdCompendium.ensureTypesLoaded(['Domain', 'Weapon']).then((arrived) => {
+          if (arrived && arrived.length > 0 && _deitySpotlightOpen) {
+            renderDeitySpotlightItems(searchInput ? searchInput.value.trim() : '');
+          }
+        }).catch(() => {});
+      }
 
       setTimeout(() => {
         if (searchInput) {
@@ -5793,8 +5814,9 @@
       }
 
       // 3. Populate Domains Grid
-      const domainsGrid = document.getElementById('custom-deity-domains-grid');
-      if (domainsGrid) {
+      const populateDeityDomainsGrid = () => {
+        const domainsGrid = document.getElementById('custom-deity-domains-grid');
+        if (!domainsGrid) return;
         const allDoms = getAllDomainsWithCustom();
         const domainNames = allDoms.map(d => d.name || d.id || '').filter(Boolean);
         domainsGrid.innerHTML = domainNames.map(d => `
@@ -5802,6 +5824,15 @@
             ${escapeDeityHtml(d)}
           </button>
         `).join('');
+      };
+      populateDeityDomainsGrid();
+      if (window.SrdCompendium && typeof window.SrdCompendium.ensureTypesLoaded === 'function') {
+        window.SrdCompendium.ensureTypesLoaded(['Domain', 'Weapon']).then((arrived) => {
+          if (arrived && arrived.length > 0) {
+            populateDeityDomainsGrid();
+            if (weaponInput) updateDeityWeaponBadge(weaponInput.value);
+          }
+        }).catch(() => {});
       }
 
       // 4. Fill Values
@@ -6243,6 +6274,13 @@
       }
 
       // Interactive pickers handle search on demand (Zero datalist bottleneck)
+      if (window.SrdCompendium && typeof window.SrdCompendium.ensureTypesLoaded === 'function') {
+        window.SrdCompendium.ensureTypesLoaded(['Domain', 'Feat', 'Spell']).then((arrived) => {
+          if (arrived && arrived.length > 0 && typeof updateAllDomainBadges === 'function') {
+            updateAllDomainBadges();
+          }
+        }).catch(() => {});
+      }
 
       // 3. Render Skill Chips
       const skillsGrid = document.getElementById('custom-domain-skills-grid');

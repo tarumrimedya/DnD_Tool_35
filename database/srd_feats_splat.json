@@ -796,7 +796,6 @@
         "key": "skill",
         "label": "Chosen Skill",
         "options": [
-          "Acrobatics",
           "Appraise",
           "Autohypnosis",
           "Balance",
@@ -827,6 +826,7 @@
           "Search",
           "Sense Motive",
           "Sleight of Hand",
+          "Speak Language",
           "Spellcraft",
           "Spot",
           "Survival",
@@ -903,7 +903,6 @@
         "key": "skill",
         "label": "Chosen Skill",
         "options": [
-          "Acrobatics",
           "Appraise",
           "Autohypnosis",
           "Balance",
@@ -934,6 +933,7 @@
           "Search",
           "Sense Motive",
           "Sleight of Hand",
+          "Speak Language",
           "Spellcraft",
           "Spot",
           "Survival",
@@ -6667,12 +6667,36 @@
     "benefit": "Gain even further abilities with chosen weapon.",
     "effects": [
       {
-        "id": "feat-weapon-supremacy-sw",
-        "type": "effect",
-        "effectKind": "ruleSwitch",
-        "flag": "weapon-supremacy",
-        "label": "Weapon Supremacy",
-        "text": "Gain even further abilities with chosen weapon."
+        "id": "ef-wsup-w",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-wsup-w-br",
+            "condKind": "wieldingChosenWeapon",
+            "condText": "",
+            "effects": [
+              {
+                "id": "ef-wsup-ac",
+                "type": "stat",
+                "targets": [
+                  "ac.all"
+                ],
+                "mode": "flat",
+                "value": 1,
+                "btype": "Untyped"
+              },
+              {
+                "id": "ef-wsup-sw",
+                "type": "effect",
+                "effectKind": "ruleSwitch",
+                "flag": "weapon-supremacy",
+                "label": "Weapon Supremacy",
+                "text": "Mastery bonuses with chosen weapon."
+              }
+            ]
+          }
+        ]
       }
     ],
     "text": "Gain even further abilities with chosen weapon.",
@@ -6687,7 +6711,37 @@
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Feats",
       "row": 221
-    }
+    },
+    "choices": [
+      {
+        "id": "ch-weapon",
+        "key": "weapon",
+        "label": "Chosen Weapon",
+        "options": [
+          "Longsword",
+          "Greatsword",
+          "Greataxe",
+          "Battleaxe",
+          "Warhammer",
+          "Heavy Mace",
+          "Rapier",
+          "Scimitar",
+          "Short Sword",
+          "Dagger",
+          "Longbow",
+          "Shortbow",
+          "Light Crossbow",
+          "Heavy Crossbow",
+          "Halberd",
+          "Glaive",
+          "Guisarme",
+          "Spiked Chain",
+          "Unarmed Strike",
+          "Grapple",
+          "Ray"
+        ]
+      }
+    ]
   },
   {
     "schemaVersion": 3,
@@ -7139,12 +7193,27 @@
     "benefit": "Use Con modifier instead of Wisdom for Will saves; do not automatically fail Fortitude saves on a natural 1.",
     "effects": [
       {
-        "id": "ef-sd",
+        "id": "ef-sd-swap",
+        "type": "stat",
+        "mode": "replaceStat",
+        "swapTarget": "save.will.abilityMod",
+        "targets": [
+          "save.will.abilityMod"
+        ],
+        "subOp": "replace",
+        "fromStat": "wis",
+        "toStat": "con",
+        "scope": "all",
+        "formula": "@conMod",
+        "summary": "Replace WIS → CON Modifier on Will Save Ability"
+      },
+      {
+        "id": "ef-sd-nat1",
         "type": "effect",
         "effectKind": "ruleSwitch",
-        "flag": "conToWillSave",
-        "label": "Use CON modifier instead of WIS for Will saves; no auto-fail Fortitude on natural 1",
-        "text": "Steadfast Determination: CON to Will Saves"
+        "flag": "noAutoFailFortSaveOnNat1",
+        "label": "Do not automatically fail Fortitude saves on a natural 1",
+        "text": "Do Not Auto-Fail Fortitude Save on Natural 1"
       }
     ],
     "ruleFlags": {
@@ -11605,12 +11674,19 @@
     "benefit": "Use Wis instead of Dex for ranged attacks.",
     "effects": [
       {
-        "id": "feat-zen-archery-sw",
-        "type": "effect",
-        "effectKind": "ruleSwitch",
-        "flag": "zen-archery",
-        "label": "Zen Archery",
-        "text": "Use Wis instead of Dex for ranged attacks."
+        "id": "ef-za",
+        "type": "stat",
+        "mode": "replaceStat",
+        "swapTarget": "atk.ranged.abilityMod",
+        "targets": [
+          "atk.ranged.abilityMod"
+        ],
+        "subOp": "max",
+        "fromStat": "dex",
+        "toStat": "wis",
+        "scope": "all",
+        "formula": "@wisMod",
+        "summary": "Higher of WIS Modifier / DEX on Ranged Attack Ability"
       }
     ],
     "text": "Use Wis instead of Dex for ranged attacks.",
@@ -17110,12 +17186,19 @@
     "benefit": "Use Str rather than Dex to attack rolls with thrown weapons",
     "effects": [
       {
-        "id": "feat-brutal-throw-sw",
-        "type": "effect",
-        "effectKind": "ruleSwitch",
-        "flag": "brutal-throw",
-        "label": "Brutal Throw",
-        "text": "Use Str rather than Dex to attack rolls with thrown weapons"
+        "id": "ef-bt",
+        "type": "stat",
+        "mode": "replaceStat",
+        "swapTarget": "atk.thrown.abilityMod",
+        "targets": [
+          "atk.thrown.abilityMod"
+        ],
+        "subOp": "max",
+        "fromStat": "dex",
+        "toStat": "str",
+        "scope": "thrown",
+        "formula": "@strMod",
+        "summary": "Higher of STR Modifier / DEX on Thrown Weapon Attack Ability [Thrown Weapons Only]"
       }
     ],
     "text": "Use Str rather than Dex to attack rolls with thrown weapons",
@@ -17846,12 +17929,19 @@
     "benefit": "Add Cha modifier, rather than Wis modifier, to some Will saves",
     "effects": [
       {
-        "id": "feat-force-of-personality-sw",
-        "type": "effect",
-        "effectKind": "ruleSwitch",
-        "flag": "force-of-personality",
-        "label": "Force of Personality",
-        "text": "Add Cha modifier, rather than Wis modifier, to some Will saves"
+        "id": "ef-fop",
+        "type": "stat",
+        "mode": "replaceStat",
+        "swapTarget": "save.will.abilityMod",
+        "targets": [
+          "save.will.abilityMod"
+        ],
+        "subOp": "max",
+        "fromStat": "wis",
+        "toStat": "cha",
+        "scope": "mind_affecting",
+        "formula": "@chaMod",
+        "summary": "Higher of CHA Modifier / WIS on Will Save Ability [vs. Mind-Affecting Effects Only]"
       }
     ],
     "text": "Add Cha modifier, rather than Wis modifier, to some Will saves",
@@ -18130,12 +18220,19 @@
     "benefit": "Add Int modifier, rather than Dex modifier to Reflex saves",
     "effects": [
       {
-        "id": "feat-insightful-reflexes-sw",
-        "type": "effect",
-        "effectKind": "ruleSwitch",
-        "flag": "insightful-reflexes",
-        "label": "Insightful Reflexes",
-        "text": "Add Int modifier, rather than Dex modifier to Reflex saves"
+        "id": "ef-ir",
+        "type": "stat",
+        "mode": "replaceStat",
+        "swapTarget": "save.ref.abilityMod",
+        "targets": [
+          "save.ref.abilityMod"
+        ],
+        "subOp": "max",
+        "fromStat": "dex",
+        "toStat": "int",
+        "scope": "all",
+        "formula": "@intMod",
+        "summary": "Higher of INT Modifier / DEX on Reflex Save Ability"
       }
     ],
     "text": "Add Int modifier, rather than Dex modifier to Reflex saves",
@@ -20234,7 +20331,7 @@
         "effectKind": "ruleSwitch",
         "flag": "privileged-energy",
         "label": "Privileged Energy",
-        "text": "Deal +1 damage per die with chosen energy"
+        "text": "Deal +1 damage per die with spells of chosen energy type."
       }
     ],
     "text": "Deal +1 damage per die with chosen energy",
@@ -20250,7 +20347,21 @@
       "sheet": "Feats",
       "row": 760,
       "crossCheck": "srd.dndtools.org Feat Index (srd/tools/toolsFeatIndex.html), 2026-11-10"
-    }
+    },
+    "choices": [
+      {
+        "id": "ch-energy",
+        "key": "energy",
+        "label": "Energy Type",
+        "options": [
+          "Acid",
+          "Cold",
+          "Electricity",
+          "Fire",
+          "Sonic"
+        ]
+      }
+    ]
   },
   {
     "schemaVersion": 3,
@@ -34711,12 +34822,34 @@
     "benefit": "Use Dex for Climb and Jump checks.",
     "effects": [
       {
-        "id": "feat-agile-athlete-sw",
-        "type": "effect",
-        "effectKind": "ruleSwitch",
-        "flag": "agile-athlete",
-        "label": "Agile Athlete",
-        "text": "Use Dex for Climb and Jump checks."
+        "id": "ef-aa-climb",
+        "type": "stat",
+        "mode": "replaceStat",
+        "swapTarget": "skill.climb.abilityMod",
+        "targets": [
+          "skill.climb.abilityMod"
+        ],
+        "subOp": "max",
+        "fromStat": "str",
+        "toStat": "dex",
+        "scope": "all",
+        "formula": "@dexMod",
+        "summary": "Higher of DEX Modifier / STR on Climb Skill Ability"
+      },
+      {
+        "id": "ef-aa-jump",
+        "type": "stat",
+        "mode": "replaceStat",
+        "swapTarget": "skill.jump.abilityMod",
+        "targets": [
+          "skill.jump.abilityMod"
+        ],
+        "subOp": "max",
+        "fromStat": "str",
+        "toStat": "dex",
+        "scope": "all",
+        "formula": "@dexMod",
+        "summary": "Higher of DEX Modifier / STR on Jump Skill Ability"
       }
     ],
     "text": "Use Dex for Climb and Jump checks.",
@@ -51438,12 +51571,19 @@
     "benefit": "Use Wisdom modifier instead of Strength modifier on attack rolls with simple and natural weapons.",
     "effects": [
       {
-        "id": "feat-intuitive-attack-sw",
-        "type": "effect",
-        "effectKind": "ruleSwitch",
-        "flag": "intuitive-attack",
-        "label": "Intuitive Attack",
-        "text": "Use Wisdom modifier instead of Strength modifier on attack rolls with simple and natural weapons."
+        "id": "ef-ia",
+        "type": "stat",
+        "mode": "replaceStat",
+        "swapTarget": "atk.melee.abilityMod",
+        "targets": [
+          "atk.melee.abilityMod"
+        ],
+        "subOp": "max",
+        "fromStat": "str",
+        "toStat": "wis",
+        "scope": "simple_or_natural",
+        "formula": "@wisMod",
+        "summary": "Higher of WIS Modifier / STR on Melee Attack Ability [Simple & Natural Weapons]"
       }
     ],
     "text": "Use Wisdom modifier instead of Strength modifier on attack rolls with simple and natural weapons.",

@@ -54,6 +54,13 @@ function writeChunk(fp, data, wasMinified) {
 function upsertById(arr, record) {
   const idx = arr.findIndex((e) => e && e.id === record.id);
   if (idx >= 0) {
+    const prev = arr[idx];
+    if (prev && typeof prev === 'object') {
+      if (!record.grants && prev.grants) record.grants = deepClone(prev.grants);
+      if (prev.progression?.levels && !record.progression?.levels) {
+        record.progression = Object.assign({}, record.progression || {}, { levels: deepClone(prev.progression.levels) });
+      }
+    }
     arr[idx] = record;
     return 'updated';
   }
@@ -150,15 +157,42 @@ function compileVariantClasses(crData) {
       filter: 'FIGHTER'
     },
     spellcasting: deepClone(baseRogue.spellcasting || { type: 'none', ability: 'int', spontaneous: false, spellsPerDay: {}, spellsKnown: {} }),
-    progression: deepClone(baseRogue.progression || {
-      mode: 'base',
-      maxLevel: 20,
-      hitDie: 'd6',
-      bab: '3/4',
-      goodSaves: ['ref'],
-      skillPointsPerLevel: 8,
-      classSkills: deepClone(baseRogue.classSkills || [])
-    }),
+    grants: {
+      bonusFeats: advBonusLvls.map((lvl) => ({ count: 1, pool: '#FighterBonus', level: lvl }))
+    },
+    progression: (() => {
+      const prog = deepClone(baseRogue.progression || {
+        mode: 'base',
+        maxLevel: 20,
+        hitDie: 'd6',
+        bab: '3/4',
+        goodSaves: ['ref'],
+        skillPointsPerLevel: 8,
+        classSkills: deepClone(baseRogue.classSkills || [])
+      });
+      if (Array.isArray(prog.levels)) {
+        prog.levels = prog.levels.map((row) => {
+          const lvl = Number(row?.level) || 0;
+          const nextRow = deepClone(row);
+          const filteredRefs = Array.isArray(nextRow.features)
+            ? nextRow.features.filter((f) => f?.refId !== 'cab-sneak-attack' && !/sneak\s*attack/i.test(String(f?.name || '')))
+            : [];
+          if (advBonusLvls.includes(lvl)) {
+            filteredRefs.unshift({
+              kind: 'ref',
+              name: 'Fighter Bonus Feat',
+              abilityType: 'Ex',
+              refId: 'cab-fighter-bonus-feat',
+              text: 'Select a Fighter Bonus Feat (in place of Sneak Attack, Unearthed Arcana p.58)',
+              category: 'Bonus Feat'
+            });
+          }
+          nextRow.features = filteredRefs;
+          return nextRow;
+        });
+      }
+      return prog;
+    })(),
     effects: [],
     shortDescription: 'Trades all Sneak Attack progression for Fighter Bonus Feats at 1st, 3rd, and every odd Rogue level (Unearthed Arcana p.58).',
     text: 'Adventurer / Martial Rogue Variant (Unearthed Arcana p.58). Gives up Sneak Attack (+1d6 at 1st level and every odd level thereafter) to gain a Fighter Bonus Feat at 1st, 3rd, 5th, 7th, 9th, 11th, 13th, 15th, 17th, and 19th level, while retaining d6 Hit Die, 8 + INT skill points per level, Trapfinding, Evasion, Uncanny Dodge, Trap Sense, and Rogue Special Abilities.',
@@ -1205,7 +1239,7 @@ function compileFeatPatches(featsCore, featsSplat) {
     },
     'feat-weapon-finesse': {
       effects: [
-        switchBlock('ef-wf', 'weaponFinesse', 'Use DEX modifier instead of STR on melee attack rolls with light/finesse weapons', 'Weapon Finesse: DEX to Melee Attack (Light/Finesse)')
+        { id: 'ef-wf', type: 'stat', mode: 'replaceStat', swapTarget: 'atk.melee.abilityMod', targets: ['atk.melee.abilityMod'], subOp: 'max', fromStat: 'str', toStat: 'dex', scope: 'finessable', formula: '@dexMod' }
       ]
     },
     'feat-power-attack': {
@@ -1230,12 +1264,13 @@ function compileFeatPatches(featsCore, featsSplat) {
     },
     'feat-shadow-blade': {
       effects: [
-        switchBlock('ef-sb', 'shadowBlade', 'Add DEX modifier to damage with Shadow Hand preferred weapons in a Shadow Hand stance', 'Shadow Blade: +DEX Damage (Shadow Hand)')
+        { id: 'ef-sb', type: 'stat', mode: 'replaceStat', swapTarget: 'dmg.melee.abilityMod', targets: ['dmg.melee.abilityMod'], subOp: 'add', fromStat: 'str', toStat: 'dex', scope: 'discipline_weapons', formula: '@dexMod' }
       ]
     },
     'feat-steadfast-determination': {
       effects: [
-        switchBlock('ef-sd', 'conToWillSave', 'Use CON modifier instead of WIS for Will saves; no auto-fail Fortitude on natural 1', 'Steadfast Determination: CON to Will Saves')
+        { id: 'ef-sd-swap', type: 'stat', mode: 'replaceStat', swapTarget: 'save.will.abilityMod', targets: ['save.will.abilityMod'], subOp: 'replace', fromStat: 'wis', toStat: 'con', scope: 'all', formula: '@conMod' },
+        switchBlock('ef-sd-nat1', 'noAutoFailFortSaveOnNat1', 'Do not automatically fail Fortitude saves on a natural 1', 'No Auto-Fail Fortitude Save on Natural 1')
       ]
     },
     'feat-natural-spell': {
@@ -1831,7 +1866,7 @@ function compileDomainPatches(domains) {
 
   let count = 0;
   for (const d of domains) {
-    if (d && d.id && patches[d.id]) {
+    if (d && d.id && patches[d.id] && (!Array.isArray(d.effects) || d.effects.length === 0)) {
       d.effects = patches[d.id];
       count++;
     }
@@ -2192,13 +2227,13 @@ function compileEquipmentPotions(eqData) {
       { type: 'defense', mode: 'Immunity', what: 'Poison' }
     ],
     'pot-resist-energy-10': [
-      { type: 'defense', mode: 'Resistance', what: 'Chosen Energy', value: 10 }
+      { type: 'defense', mode: 'Energy Resistance', what: '@Choice', value: 10 }
     ],
     'pot-resist-energy-20': [
-      { type: 'defense', mode: 'Resistance', what: 'Chosen Energy', value: 20 }
+      { type: 'defense', mode: 'Energy Resistance', what: '@Choice', value: 20 }
     ],
     'pot-resist-energy-30': [
-      { type: 'defense', mode: 'Resistance', what: 'Chosen Energy', value: 30 }
+      { type: 'defense', mode: 'Energy Resistance', what: '@Choice', value: 30 }
     ],
     'pot-protection-from-energy': [
       { type: 'effect', effectKind: 'rule', text: 'Absorbs up to 60 points of damage from the specified energy type (50 minutes, CL 5th).' }
@@ -2225,11 +2260,15 @@ function compileEquipmentPotions(eqData) {
       { type: 'effect', effectKind: 'ruleSwitch', flag: 'autoConfirmCritVsEvil', text: 'Weapon becomes good-aligned and automatically confirms critical threats against evil foes (2 minutes, CL 2nd).' }
     ]
   };
+  const ENERGY_POTION_IDS = new Set(['pot-resist-energy-10', 'pot-resist-energy-20', 'pot-resist-energy-30', 'pot-protection-from-energy']);
   let patched = 0;
   for (const e of eqData) {
     if (!e || !e.id || !POTION_PATCHES[e.id]) continue;
     e.schemaVersion = 3;
     e.effects = POTION_PATCHES[e.id];
+    if (ENERGY_POTION_IDS.has(e.id)) {
+      e.choices = [{ id: 'ch-energy', key: 'energy', label: 'Energy Type', options: ['Acid', 'Cold', 'Electricity', 'Fire', 'Sonic'] }];
+    }
     patched++;
   }
   return patched;

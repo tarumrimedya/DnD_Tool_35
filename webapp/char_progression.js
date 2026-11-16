@@ -646,7 +646,13 @@
       renderAll();
 
       if (isFlaw) {
-        alert(`⚠️ Flaw "${entry.name}" added to character!\n\n🎖️ Per D&D 3.5e Unearthed Arcana rules, taking this flaw grants you 1 EXTRA BONUS FEAT!\n\nPlease select your bonus feat from the list now.`);
+        if (typeof showDiceTopToast === 'function') {
+          showDiceTopToast({
+            icon: '🎖️',
+            title: `Flaw Taken: ${entry.name} (+1 Bonus Feat Unlocked)`,
+            desc: 'Per D&D 3.5e Unearthed Arcana rules, taking this flaw grants 1 extra bonus feat.'
+          });
+        }
       } else if (isRacial && (entry.grantsBonusFeat || entry.name.toLowerCase().includes('bonus feat'))) {
         showToast(`🧬 Racial trait "${entry.name}" added!\n\n🎖️ This trait grants 1 extra bonus feat. Please select your bonus feat from the list.`, 'info', { wrap: true });
       }
@@ -655,6 +661,11 @@
     function learnFeatObject(entry) {
       if (!entry || !entry.name) return;
       const clean = entry.name.toLowerCase().trim();
+      const parenMatch = String(entry.name || '').match(/\(([^)]+)\)\s*$/);
+      const resolvedChoiceVal = entry.chosenOption || entry.choice || (Array.isArray(entry.choices) && entry.choices[0]?.value) || (parenMatch ? parenMatch[1].trim() : '');
+      const clonedChoices = Array.isArray(entry.choices)
+        ? JSON.parse(JSON.stringify(entry.choices)).map((ch, idx) => (idx === 0 && resolvedChoiceVal) ? { ...ch, value: resolvedChoiceVal } : ch)
+        : [];
       const v2Extras = {
         ...(entry.id ? { id: entry.id } : {}),
         schemaVersion: 3,
@@ -672,7 +683,8 @@
         resources: Array.isArray(entry.resources) ? JSON.parse(JSON.stringify(entry.resources)) : [],
         modes: Array.isArray(entry.modes) ? JSON.parse(JSON.stringify(entry.modes)) : [],
         grants: Array.isArray(entry.grants) ? JSON.parse(JSON.stringify(entry.grants)) : [],
-        choices: Array.isArray(entry.choices) ? JSON.parse(JSON.stringify(entry.choices)) : [],
+        choices: clonedChoices,
+        ...(resolvedChoiceVal ? { choice: resolvedChoiceVal, chosenOption: resolvedChoiceVal } : {}),
         ruleFlags: entry.ruleFlags ? JSON.parse(JSON.stringify(entry.ruleFlags)) : (clean.includes('agile shield fighter') ? { agileShieldFighter: true } : {}),
         tacticalBadges: Array.isArray(entry.tacticalBadges) ? JSON.parse(JSON.stringify(entry.tacticalBadges)) : []
       };
@@ -834,8 +846,11 @@
       return Array.from(set).sort((a, b) => a.localeCompare(b));
     }
 
-    function getAvailableTargetWeapons(isExoticOnly = false) {
-      if (isExoticOnly) return getAvailableExoticWeapons();
+    function getAvailableTargetWeapons(isExoticOrMode = false) {
+      const mode = typeof isExoticOrMode === 'string'
+        ? isExoticOrMode
+        : (isExoticOrMode ? 'exotic' : 'all');
+      if (mode === 'exotic') return getAvailableExoticWeapons();
       const getSrdFn = (typeof getSrdWeaponNames === 'function')
         ? getSrdWeaponNames
         : (window.getSrdWeaponNames || (() => []));
@@ -846,8 +861,8 @@
         ? resolveBaseWeaponName
         : (window.resolveBaseWeaponName || (w => (w.name || '').replace(/^↳\s*/, '').replace(/\(.*?\)/g, '').trim()));
 
-      const set = new Set(getSrdFn());
-      if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
+      const set = new Set(getSrdFn(mode));
+      if (mode === 'all' && typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
         masterDb.forEach(item => {
           if (item && (item.type === 'Weapon' || item.category === 'Weapon') && filterFn(item)) {
             const baseName = resolveFn(item);
@@ -884,17 +899,21 @@
     }
     window.getWeaponDisplayMeta = getWeaponDisplayMeta;
 
-    function renderQuickFeatTargetSpotlightResults(filterText = '', isExotic = false, currentTarget = '') {
+    function renderQuickFeatTargetSpotlightResults(filterText = '', weaponModeOrExotic = false, currentTarget = '') {
       const resultsEl = document.getElementById('quick-feat-target-spotlight-results');
       const badgeContainer = document.getElementById('quick-feat-target-active-badge-container');
       if (!resultsEl) return;
 
+      const weaponMode = typeof weaponModeOrExotic === 'string'
+        ? weaponModeOrExotic
+        : (weaponModeOrExotic ? 'exotic' : 'all');
+      const isExotic = weaponMode === 'exotic';
       const q = String(filterText || '').toLowerCase().trim();
       const resolveFn = (typeof resolveBaseWeaponName === 'function')
         ? resolveBaseWeaponName
         : (window.resolveBaseWeaponName || (w => (w.name || '').replace(/\+\d+/g, '').replace(/\(.*?\)/g, '').trim()));
 
-      const allWeapons = isExotic ? getAvailableExoticWeapons() : getAvailableTargetWeapons(false);
+      const allWeapons = getAvailableTargetWeapons(weaponMode);
       const charWeps = (character.weapons || []).map(w => resolveFn(w)).filter(Boolean);
       const equippedWeapons = [...new Set(charWeps.filter(cw => allWeapons.some(aw => aw.toLowerCase() === cw.toLowerCase())))];
       const compendiumWeapons = allWeapons.filter(aw => !equippedWeapons.some(ew => ew.toLowerCase() === aw.toLowerCase()));
@@ -910,7 +929,7 @@
             <div class="flex items-center justify-between px-2.5 py-1.5 bg-amber-950/70 border border-amber-600/70 rounded-lg text-xs text-amber-200 shadow-sm">
               <div class="flex items-center gap-1.5 min-w-0">
                 <span class="text-amber-400 font-bold text-[10px] uppercase tracking-wide">Selected:</span>
-                <span class="font-extrabold text-white truncate">${currentTarget}</span>
+                <span class="font-extrabold text-white truncate">${UI.escapeHtml(currentTarget)}</span>
                 ${meta ? `<span class="text-[10px] px-1.5 rounded bg-amber-900/80 text-amber-300 font-mono">${UI.escapeHtml(meta)}</span>` : ''}
               </div>
               <button type="button" data-action="progression:clear-quick-feat-target" class="text-[10px] text-amber-400 hover:text-white underline cursor-pointer ml-2 shrink-0">Change</button>
@@ -1003,9 +1022,11 @@
 
       onQuickFeatTargetSelectChange(wName);
 
-      const isExotic = /exotic weapon proficiency/i.test(document.getElementById('quick-feat-name')?.value || '');
+      const curNameVal = document.getElementById('quick-feat-name')?.value || '';
+      const cfg = (typeof UI === 'object' && typeof UI?.resolveV3ChoiceConfig === 'function') ? UI.resolveV3ChoiceConfig(curNameVal) : null;
+      const weaponMode = cfg?.weaponMode || (/exotic weapon proficiency/i.test(curNameVal) ? 'exotic' : 'all');
       const searchInput = document.getElementById('quick-feat-target-spotlight-input');
-      renderQuickFeatTargetSpotlightResults(searchInput ? searchInput.value : '', isExotic, wName);
+      renderQuickFeatTargetSpotlightResults(searchInput ? searchInput.value : '', weaponMode, wName);
     };
 
     window.clearQuickFeatTargetSelection = function() {
@@ -1025,73 +1046,117 @@
       if (!container || !select) return;
 
       const t = String(featName || '').trim();
-      const lower = t.toLowerCase();
-      const isWeaponFeat = /^(weapon focus|greater weapon focus|weapon specialization|greater weapon specialization|improved critical|exotic weapon proficiency|martial weapon proficiency)/i.test(lower);
-
-      if (!isWeaponFeat) {
+      if (!t) {
         container.classList.add('hidden');
         return;
       }
 
-      const isExotic = /exotic weapon proficiency/i.test(lower);
-      const match = t.match(/\((.*?)\)/);
-      const currentTarget = match ? match[1].trim() : (select.value || '');
+      const cfg = (typeof UI === 'object' && typeof UI?.resolveV3ChoiceConfig === 'function')
+        ? UI.resolveV3ChoiceConfig(t, select.value || '')
+        : null;
 
-      if (titleEl) titleEl.textContent = isExotic ? 'Spotlight: Select Exotic Weapon' : 'Spotlight: Select Target Weapon';
-      if (iconEl) iconEl.textContent = isExotic ? '🗡️' : '⚔️';
+      if (!cfg) {
+        container.classList.add('hidden');
+        return;
+      }
 
-      // Hide legacy select while keeping options populated for 100% backward compatibility
-      select.style.display = 'none';
-      select.classList.add('hidden');
-      select.innerHTML = '<option value="">-- Select a Weapon --</option>';
+      const currentTarget = cfg.currentTarget || '';
+      if (titleEl) titleEl.textContent = cfg.title;
+      if (iconEl) iconEl.textContent = cfg.icon;
+      select.setAttribute('data-change-action', 'progression:quick-feat-target-select');
 
-      const allWeapons = isExotic ? getAvailableExoticWeapons() : getAvailableTargetWeapons(false);
-      allWeapons.forEach(w => {
-        const opt = document.createElement('option');
-        opt.value = w;
-        opt.textContent = w;
-        if (currentTarget.toLowerCase() === w.toLowerCase()) opt.selected = true;
-        select.appendChild(opt);
-      });
-      select.value = currentTarget;
-
-      // Mount or update Spotlight search UI inside container
       let spotlightWrapper = document.getElementById('quick-feat-target-spotlight-wrapper');
-      if (!spotlightWrapper) {
-        spotlightWrapper = document.createElement('div');
-        spotlightWrapper.id = 'quick-feat-target-spotlight-wrapper';
-        spotlightWrapper.className = 'space-y-2 mt-1.5';
-        container.appendChild(spotlightWrapper);
+
+      if (cfg.isSpotlightWeapon) {
+        const weaponMode = cfg.weaponMode || 'all';
+        select.style.display = 'none';
+        select.classList.add('hidden');
+        select.innerHTML = `<option value="">${UI.escapeHtml(cfg.placeholder)}</option>`;
+
+        const allWeapons = getAvailableTargetWeapons(weaponMode);
+        allWeapons.forEach(w => {
+          const opt = document.createElement('option');
+          opt.value = w;
+          opt.textContent = w;
+          if (currentTarget.toLowerCase() === w.toLowerCase()) opt.selected = true;
+          select.appendChild(opt);
+        });
+        select.value = currentTarget;
+
+        if (!spotlightWrapper) {
+          spotlightWrapper = document.createElement('div');
+          spotlightWrapper.id = 'quick-feat-target-spotlight-wrapper';
+          spotlightWrapper.className = 'space-y-2 mt-1.5';
+          container.appendChild(spotlightWrapper);
+        }
+        spotlightWrapper.style.display = 'block';
+
+        spotlightWrapper.innerHTML = `
+          <div class="relative flex items-center">
+            <span class="absolute left-2.5 text-slate-400 text-xs pointer-events-none">🔍</span>
+            <input type="text" id="quick-feat-target-spotlight-input"
+              placeholder="Type weapon name (e.g. Longsword, Greatsword, Scimitar)..."
+              class="w-full bg-slate-950 border border-amber-500/70 focus:border-amber-400 rounded-lg pl-8 pr-7 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-amber-400 font-medium transition"
+              autocomplete="off">
+            <button type="button" id="quick-feat-target-spotlight-clear-btn" data-action="progression:clear-quick-feat-target" class="absolute right-2 text-slate-400 hover:text-white text-xs font-bold transition cursor-pointer ${currentTarget ? '' : 'hidden'}" title="Clear selection">&times;</button>
+          </div>
+          <div id="quick-feat-target-active-badge-container"></div>
+          <div id="quick-feat-target-spotlight-results" class="max-h-52 overflow-y-auto space-y-1 p-1 bg-slate-950/70 border border-slate-800 rounded-lg custom-scroll text-xs"></div>
+        `;
+
+        const searchInput = document.getElementById('quick-feat-target-spotlight-input');
+        if (searchInput) {
+          searchInput.addEventListener('input', (e) => {
+            renderQuickFeatTargetSpotlightResults(e.target.value, weaponMode, select.value);
+          });
+          searchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              const firstBtn = document.querySelector('#quick-feat-target-spotlight-results button');
+              if (firstBtn) firstBtn.click();
+            }
+          });
+        }
+
+        renderQuickFeatTargetSpotlightResults('', weaponMode, currentTarget);
+        if (window.SrdCompendium && typeof window.SrdCompendium.ensureTypesLoaded === 'function') {
+          window.SrdCompendium.ensureTypesLoaded(['Weapon']).then((arrived) => {
+            if (arrived && arrived.length > 0 && !container.classList.contains('hidden')) {
+              const liveVal = document.getElementById('quick-feat-name')?.value || t;
+              updateQuickFeatTargetSelector(liveVal);
+            }
+          }).catch(() => {});
+        }
+      } else {
+        if (spotlightWrapper) spotlightWrapper.style.display = 'none';
+        select.style.display = '';
+        select.classList.remove('hidden');
+        select.innerHTML = `<option value="">${UI.escapeHtml(cfg.placeholder)}</option>`;
+        cfg.options.forEach(optVal => {
+          const opt = document.createElement('option');
+          opt.value = optVal;
+          opt.textContent = optVal;
+          if (currentTarget.toLowerCase() === String(optVal).toLowerCase()) opt.selected = true;
+          select.appendChild(opt);
+        });
+        if (currentTarget && !Array.from(select.options).some(o => o.value.toLowerCase() === currentTarget.toLowerCase())) {
+          const extra = document.createElement('option');
+          extra.value = currentTarget;
+          extra.textContent = currentTarget;
+          extra.selected = true;
+          select.appendChild(extra);
+        }
+        select.value = currentTarget;
+        if ((cfg.kind === 'shield' || cfg.kind === 'armor') && window.SrdCompendium && typeof window.SrdCompendium.ensureTypesLoaded === 'function') {
+          window.SrdCompendium.ensureTypesLoaded(['Shield', 'Armor']).then((arrived) => {
+            if (arrived && arrived.length > 0 && !container.classList.contains('hidden')) {
+              const liveVal = document.getElementById('quick-feat-name')?.value || t;
+              updateQuickFeatTargetSelector(liveVal);
+            }
+          }).catch(() => {});
+        }
       }
 
-      spotlightWrapper.innerHTML = `
-        <div class="relative flex items-center">
-          <span class="absolute left-2.5 text-slate-400 text-xs pointer-events-none">🔍</span>
-          <input type="text" id="quick-feat-target-spotlight-input"
-            placeholder="Type weapon name (e.g. Longsword, Greatsword, Scimitar)..."
-            class="w-full bg-slate-950 border border-amber-500/70 focus:border-amber-400 rounded-lg pl-8 pr-7 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-amber-400 font-medium transition"
-            autocomplete="off">
-          <button type="button" id="quick-feat-target-spotlight-clear-btn" data-action="progression:clear-quick-feat-target" class="absolute right-2 text-slate-400 hover:text-white text-xs font-bold transition cursor-pointer ${currentTarget ? '' : 'hidden'}" title="Clear selection">&times;</button>
-        </div>
-        <div id="quick-feat-target-active-badge-container"></div>
-        <div id="quick-feat-target-spotlight-results" class="max-h-52 overflow-y-auto space-y-1 p-1 bg-slate-950/70 border border-slate-800 rounded-lg custom-scroll text-xs"></div>
-      `;
-
-      const searchInput = document.getElementById('quick-feat-target-spotlight-input');
-      if (searchInput) {
-        searchInput.addEventListener('input', (e) => {
-          renderQuickFeatTargetSpotlightResults(e.target.value, isExotic, select.value);
-        });
-        searchInput.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            const firstBtn = document.querySelector('#quick-feat-target-spotlight-results button');
-            if (firstBtn) firstBtn.click();
-          }
-        });
-      }
-
-      renderQuickFeatTargetSpotlightResults('', isExotic, currentTarget);
       container.classList.remove('hidden');
     }
 
@@ -1107,10 +1172,16 @@
         if (benefitInput) {
           if (/exotic weapon proficiency/i.test(baseName)) {
             benefitInput.value = `You make attack rolls with the ${targetWeapon} normally (without the -4 nonproficiency penalty).`;
+          } else if (/martial weapon proficiency/i.test(baseName)) {
+            benefitInput.value = `You make attack rolls with the ${targetWeapon} normally (without the -4 nonproficiency penalty).`;
           } else if (/weapon focus/i.test(baseName)) {
             benefitInput.value = `You gain a +1 bonus on all attack rolls you make using the selected weapon (${targetWeapon}).`;
           } else if (/improved critical/i.test(baseName)) {
             benefitInput.value = `Doubles the critical threat range of the selected weapon (${targetWeapon}).`;
+          } else if (/^skill focus$/i.test(baseName)) {
+            benefitInput.value = `You get a +3 bonus on all checks involving ${targetWeapon}.`;
+          } else if (/^spell focus$/i.test(baseName)) {
+            benefitInput.value = `Add +1 to the Difficulty Class for all saving throws against spells from the ${targetWeapon} school.`;
           }
         }
       } else {
@@ -1992,24 +2063,23 @@
       updateQuickFeatTargetSelector(featName);
       updateQuickFeatPrereqBadge();
 
-      // Check if this feat requires choosing a target weapon
-      const lower = String(featName || '').toLowerCase().trim();
-      const isWeaponFeat = /^(weapon focus|greater weapon focus|weapon specialization|greater weapon specialization|improved critical|exotic weapon proficiency|martial weapon proficiency)/i.test(lower);
-      const hasTargetInParentheses = featName.includes('(') && featName.includes(')');
-      const needsTargetSelection = isWeaponFeat && !hasTargetInParentheses;
+      // Check if this feat/trait/flaw requires choosing a target (Weapon, Skill, School, Energy, Ability, Shield, Armor, or V3 choices[])
+      const choiceCfg = (typeof UI === 'object' && typeof UI?.resolveV3ChoiceConfig === 'function') ? UI.resolveV3ChoiceConfig(featName) : null;
+      const hasTargetInParentheses = Boolean(choiceCfg && choiceCfg.currentTarget);
+      const needsTargetSelection = Boolean(choiceCfg && !hasTargetInParentheses);
 
       if (needsTargetSelection) {
-        // Needs target weapon selection: keep modal open and highlight target selector
+        // Needs target selection: keep modal open and highlight target selector
         closeQuickFeatCatalogConsole();
         const spotlightInput = document.getElementById('quick-feat-target-spotlight-input');
-        if (spotlightInput) {
+        if (choiceCfg.isSpotlightWeapon && spotlightInput) {
           setTimeout(() => {
             spotlightInput.focus();
             spotlightInput.select();
           }, 60);
         } else {
           const targetSelect = document.getElementById('quick-feat-target-select');
-          if (targetSelect) targetSelect.focus();
+          if (targetSelect) setTimeout(() => targetSelect.focus(), 40);
         }
         const targetContainer = document.getElementById('quick-feat-target-container');
         if (targetContainer) {
@@ -2129,12 +2199,34 @@
         return;
       }
 
-      // If targetable weapon feat without chosen target but target select has a value
+      // If choice-bearing feat/trait/flaw without chosen target, apply selected value or prompt user
       const targetSelect = document.getElementById('quick-feat-target-select');
-      const isWeaponFeat = /^(weapon focus|greater weapon focus|weapon specialization|greater weapon specialization|improved critical|exotic weapon proficiency)/i.test(featName);
-      if (isWeaponFeat && !featName.includes('(') && targetSelect && targetSelect.value) {
-        featName = `${featName} (${targetSelect.value})`;
+      const choiceCfgConfirm = (typeof UI === 'object' && typeof UI?.resolveV3ChoiceConfig === 'function') ? UI.resolveV3ChoiceConfig(featName) : null;
+      if (choiceCfgConfirm && !choiceCfgConfirm.currentTarget) {
+        if (targetSelect && targetSelect.value) {
+          featName = `${choiceCfgConfirm.baseName} (${targetSelect.value})`;
+        } else {
+          updateQuickFeatTargetSelector(featName);
+          if (typeof showDiceTopToast === 'function') {
+            showDiceTopToast({
+              icon: '🎯',
+              title: 'Target Selection Required',
+              desc: `Please select a ${choiceCfgConfirm.label || 'target option'} for "${choiceCfgConfirm.baseName}" first.`,
+              type: 'warning'
+            });
+          }
+          const spotInp = document.getElementById('quick-feat-target-spotlight-input');
+          if (choiceCfgConfirm.isSpotlightWeapon && spotInp) spotInp.focus();
+          else if (targetSelect) targetSelect.focus();
+          return;
+        }
       }
+
+      const strippedBaseName = featName.replace(/\(.*?\)/g, '').trim();
+      const parenTargetMatch = featName.match(/\(([^)]+)\)\s*$/);
+      const chosenTargetVal = (parenTargetMatch && parenTargetMatch[1] && !/^(?:ex|su|sp|na|3\.0e)$/i.test(parenTargetMatch[1].trim()))
+        ? parenTargetMatch[1].trim()
+        : '';
 
       // Standardize name formatting (case, punctuation, DM Boon syntax) before saving
       const initialCatHint = document.getElementById('quick-feat-category')?.value || 'Regular Feat';
@@ -2146,8 +2238,13 @@
       } else if (typeof RuleMaster !== 'undefined' && typeof RuleMaster.standardizeName === 'function') {
         const exactCat = getCombinedFeatCatalog(true).find(f => (f.name || '').toLowerCase().trim() === featName.toLowerCase().trim())
           || findTraitOptionByName(featName);
+        const baseCat = !exactCat && chosenTargetVal
+          ? (getCombinedFeatCatalog(true).find(f => (f.name || '').toLowerCase().trim() === strippedBaseName.toLowerCase()) || findTraitOptionByName(strippedBaseName))
+          : null;
         if (exactCat && exactCat.name) {
           featName = exactCat.name;
+        } else if (baseCat && baseCat.name) {
+          featName = `${baseCat.name} (${chosenTargetVal})`;
         } else {
           featName = RuleMaster.standardizeName(featName, initialCatHint);
         }
@@ -2174,12 +2271,15 @@
       let category = document.getElementById('quick-feat-category')?.value || 'Regular Feat';
       const benefit = document.getElementById('quick-feat-benefit')?.value.trim() || '';
 
-      let catalogMatch = getCombinedFeatCatalog(true).find(f => (f.name || '').toLowerCase().trim() === featName.toLowerCase().trim());
-      if ((catalogMatch && isFlawFeat(catalogMatch)) || CANONICAL_UA_FLAW_NAMES.has(featName.toLowerCase().trim())) {
+      let catalogMatch = getCombinedFeatCatalog(true).find(f => (f.name || '').toLowerCase().trim() === featName.toLowerCase().trim())
+        || (chosenTargetVal ? getCombinedFeatCatalog(true).find(f => (f.name || '').toLowerCase().trim() === strippedBaseName.toLowerCase()) : null);
+      if ((catalogMatch && isFlawFeat(catalogMatch)) || CANONICAL_UA_FLAW_NAMES.has(featName.toLowerCase().trim()) || CANONICAL_UA_FLAW_NAMES.has(strippedBaseName.toLowerCase())) {
         category = 'Flaw';
       }
       // UA traits / skill tricks: use their own record, and file a picked trait or trick under its own category
-      const traitOptionMatch = (TRAIT_OPTION_TYPES.includes(category) || (!catalogMatch && category === 'Regular Feat')) ? findTraitOptionByName(featName) : null;
+      const traitOptionMatch = (TRAIT_OPTION_TYPES.includes(category) || (!catalogMatch && category === 'Regular Feat'))
+        ? (findTraitOptionByName(featName) || (chosenTargetVal ? findTraitOptionByName(strippedBaseName) : null))
+        : null;
       if (traitOptionMatch) {
         catalogMatch = traitOptionMatch;
         category = traitOptionMatch.type;
@@ -2340,7 +2440,14 @@
         ...(Array.isArray(v2SourceObj?.resources) && v2SourceObj.resources.length > 0 ? { resources: JSON.parse(JSON.stringify(v2SourceObj.resources)) } : {}),
         ...(Array.isArray(v2SourceObj?.modes) && v2SourceObj.modes.length > 0 ? { modes: JSON.parse(JSON.stringify(v2SourceObj.modes)) } : {}),
         ...(Array.isArray(v2SourceObj?.grants) && v2SourceObj.grants.length > 0 ? { grants: JSON.parse(JSON.stringify(v2SourceObj.grants)) } : {}),
-        ...(Array.isArray(v2SourceObj?.choices) && v2SourceObj.choices.length > 0 ? { choices: JSON.parse(JSON.stringify(v2SourceObj.choices)) } : {}),
+        ...(Array.isArray(v2SourceObj?.choices) && v2SourceObj.choices.length > 0 ? {
+          choices: (() => {
+            const cArr = JSON.parse(JSON.stringify(v2SourceObj.choices));
+            if (chosenTargetVal && cArr[0]) cArr[0].value = chosenTargetVal;
+            return cArr;
+          })()
+        } : {}),
+        ...(chosenTargetVal ? { choice: chosenTargetVal, chosenOption: chosenTargetVal } : {}),
         ...(catalogMatch?.slotDiff !== undefined ? { slotDiff: catalogMatch.slotDiff } : {}),
         effects: resolvedEffects,
         tacticalBadges: resolvedTacticalBadges
@@ -3258,15 +3365,29 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
     const TARGETED_REPEATABLE_FEATS = new Set([
       'weapon focus',
       'greater weapon focus',
+      'epic weapon focus',
       'weapon specialization',
       'greater weapon specialization',
+      'epic weapon specialization',
+      'chosen weapon specialization',
       'improved critical',
+      'power critical',
+      'weapon supremacy',
       'exotic weapon proficiency',
       'martial weapon proficiency',
       'simple weapon proficiency',
+      'rapid reload',
+      'improved natural attack',
       'spell focus',
       'greater spell focus',
+      'epic spell focus',
       'skill focus',
+      'epic skill focus',
+      'energy resistance',
+      'energy substitution',
+      'privileged energy',
+      'shield specialization',
+      'armor specialization',
       'extra spell',
       'extra slot',
       'extra invocation'
@@ -4307,24 +4428,29 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
               </div>
             </div>
 
-            <!-- Inline Target Selector if Weapon Feat -->
+            <!-- Inline Target Selector if Choice-Bearing Feat / Trait / Flaw -->
             ${(() => {
-              const lowerName = (slot.name || '').toLowerCase();
-              const isWeapon = /^(weapon focus|greater weapon focus|weapon specialization|greater weapon specialization|improved critical|exotic weapon proficiency)/i.test(lowerName);
-              if (!isWeapon) return '';
-              const isExotic = /exotic weapon proficiency/i.test(lowerName);
-              const match = (slot.name || '').match(/\((.*?)\)/);
-              const curTarget = match ? match[1].trim() : '';
-              const targetList = isExotic ? getAvailableExoticWeapons() : getAvailableTargetWeapons(false);
+              const cfg = (typeof UI === 'object' && typeof UI?.resolveV3ChoiceConfig === 'function') ? UI.resolveV3ChoiceConfig(slot.name || '') : null;
+              if (!cfg) return '';
+              if ((cfg.isSpotlightWeapon || cfg.kind === 'shield' || cfg.kind === 'armor') && window.SrdCompendium && typeof window.SrdCompendium.ensureTypesLoaded === 'function') {
+                const needTypes = cfg.isSpotlightWeapon ? ['Weapon'] : ['Shield', 'Armor'];
+                window.SrdCompendium.ensureTypesLoaded(needTypes).then((arrived) => {
+                  if (arrived && arrived.length > 0 && typeof renderLevelUpFeatSlots === 'function') {
+                    renderLevelUpFeatSlots();
+                  }
+                }).catch(() => {});
+              }
+              const curTarget = cfg.currentTarget || '';
+              const targetList = cfg.isSpotlightWeapon ? getAvailableTargetWeapons(cfg.weaponMode || 'all') : (cfg.options || []);
               return `
                 <div class="bg-slate-900 border border-amber-600/60 rounded-lg p-2 flex items-center justify-between gap-2 shadow-sm">
                   <span class="text-[10px] font-bold text-amber-300 flex items-center gap-1 shrink-0">
-                    <span>${isExotic ? '🗡️' : '⚔️'}</span>
-                    <span>${isExotic ? 'Exotic Weapon:' : 'Target Weapon:'}</span>
+                    <span>${cfg.icon || '🎯'}</span>
+                    <span>${UI.escapeHtml(cfg.label || 'Target')}:</span>
                   </span>
                   <select data-change-action="progression:lvlup-feat-target" data-slot-idx="${idx}" class="flex-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs text-white font-bold focus:outline-none focus:border-amber-500">
-                    <option value="">-- Select a Weapon --</option>
-                    ${targetList.map(w => `<option value="${UI.escapeHtml(w)}" ${curTarget.toLowerCase() === w.toLowerCase() ? 'selected' : ''}>${UI.escapeHtml(w)}</option>`).join('')}
+                    <option value="">${UI.escapeHtml(cfg.placeholder || '-- Select --')}</option>
+                    ${targetList.map(w => `<option value="${UI.escapeHtml(w)}" ${curTarget.toLowerCase() === String(w).toLowerCase() ? 'selected' : ''}>${UI.escapeHtml(w)}</option>`).join('')}
                   </select>
                 </div>
               `;
@@ -4373,18 +4499,24 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
       function onLevelUpFeatTargetChange(slotIdx, targetWeapon) {
         if (!levelUpModalFeatSlots[slotIdx]) return;
         const currentName = levelUpModalFeatSlots[slotIdx].name || '';
-        const baseName = currentName.replace(/\(.*?\)/g, '').trim() || 'Exotic Weapon Proficiency';
+        const baseName = currentName.replace(/\(.*?\)/g, '').trim() || 'Weapon Focus';
         if (targetWeapon) {
           levelUpModalFeatSlots[slotIdx].name = `${baseName} (${targetWeapon})`;
+          levelUpModalFeatSlots[slotIdx].choice = targetWeapon;
+          levelUpModalFeatSlots[slotIdx].chosenOption = targetWeapon;
           if (/exotic weapon proficiency/i.test(baseName)) {
             levelUpModalFeatSlots[slotIdx].benefit = `You make attack rolls with the ${targetWeapon} normally (without the -4 nonproficiency penalty).`;
-          } else if (/weapon focus/i.test(baseName)) {
+          } else if (/martial weapon proficiency/i.test(baseName)) {
+            levelUpModalFeatSlots[slotIdx].benefit = `You make attack rolls with the ${targetWeapon} normally (without the -4 nonproficiency penalty).`;
+          } else if (/weapon focus/i.test(baseName) && !/greater/i.test(baseName)) {
             levelUpModalFeatSlots[slotIdx].benefit = `You gain a +1 bonus on all attack rolls you make using the selected weapon (${targetWeapon}).`;
           } else if (/improved critical/i.test(baseName)) {
             levelUpModalFeatSlots[slotIdx].benefit = `Doubles the critical threat range of the selected weapon (${targetWeapon}).`;
           }
         } else {
           levelUpModalFeatSlots[slotIdx].name = baseName;
+          delete levelUpModalFeatSlots[slotIdx].choice;
+          delete levelUpModalFeatSlots[slotIdx].chosenOption;
         }
         levelUpFeatSearchQueries[slotIdx] = levelUpModalFeatSlots[slotIdx].name;
         renderLevelUpFeatSlots();
@@ -6453,13 +6585,22 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
               benefit: slot.benefit || 'Class feature gained via level progression.'
             });
           } else {
-            const catalog = getCombinedFeatCatalog();
-            const found = catalog.find(c => c.name.toLowerCase() === fName.toLowerCase()) || {
-              name: fName,
-              category: slot.category,
-              source: `Level ${nextLvl}`,
-              benefit: slot.benefit || 'Feat gained via level progression.'
-            };
+            const catalog = getCombinedFeatCatalog(true);
+            const strippedSlotBase = fName.replace(/\(.*?\)/g, '').trim();
+            const baseCatalogHit = catalog.find(c => c.name.toLowerCase() === fName.toLowerCase())
+              || catalog.find(c => c.name.toLowerCase() === strippedSlotBase.toLowerCase())
+              || findTraitOptionByName(fName)
+              || findTraitOptionByName(strippedSlotBase);
+            const slotChosen = slot.chosenOption || slot.choice || '';
+            const found = baseCatalogHit
+              ? { ...baseCatalogHit, name: fName, benefit: slot.benefit || baseCatalogHit.benefit || '', ...(slotChosen ? { choice: slotChosen, chosenOption: slotChosen } : {}) }
+              : {
+                  name: fName,
+                  category: slot.category,
+                  source: `Level ${nextLvl}`,
+                  benefit: slot.benefit || 'Feat gained via level progression.',
+                  ...(slotChosen ? { choice: slotChosen, chosenOption: slotChosen } : {})
+                };
             learnFeatObject(found);
           }
         }
@@ -9694,9 +9835,9 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       modal.classList.remove('hidden');
       renderClericDomainPickerList();
 
-      // Every chunk with Spell rows (srd_spells.json, srd_spells_splat.json, ...), found through the index.
+      // Every chunk with Domain and Spell rows (srd_domains.json, srd_spells.json, srd_spells_splat.json), found through the index.
       if (window.SrdCompendium && typeof window.SrdCompendium.ensureTypesLoaded === 'function') {
-        window.SrdCompendium.ensureTypesLoaded(['Spell']).then((arrived) => {
+        window.SrdCompendium.ensureTypesLoaded(['Domain', 'Spell']).then((arrived) => {
           if (arrived.length) renderClericDomainPickerList();
         }).catch(() => {});
       }
@@ -10280,9 +10421,12 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         }
       }
 
-      // Ensure srd_monsters is loaded
+      // Ensure srd_companions and srd_monsters are loaded
       if (window.SrdCompendium && typeof window.SrdCompendium.ensureChunkLoaded === 'function') {
-        window.SrdCompendium.ensureChunkLoaded('srd_monsters.json').then(() => {
+        Promise.all([
+          window.SrdCompendium.ensureChunkLoaded('srd_companions.json'),
+          window.SrdCompendium.ensureChunkLoaded('srd_monsters.json')
+        ]).then(() => {
           renderCompanionModalContent();
         }).catch(() => {});
       }
@@ -10810,6 +10954,9 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         if (data.weapon !== undefined && typeof window.selectQuickFeatTargetWeapon === 'function') {
           window.selectQuickFeatTargetWeapon(data.weapon);
         }
+      });
+      Actions.register('progression:quick-feat-target-select', (el, data, event) => {
+        if (el) onQuickFeatTargetSelectChange(el.value || '');
       });
       Actions.register('progression:select-feat-for-quick-level', (el, data, event) => {
         if (data.featName) selectFeatForQuickLevel(data.featName, true);

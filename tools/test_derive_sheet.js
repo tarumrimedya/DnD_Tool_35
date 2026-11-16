@@ -3107,7 +3107,7 @@ function runDeriveSheetTests() {
       !featFilesDefault.includes('srd_feats_legacy.json') && featFilesOptIn.includes('srd_feats_legacy.json') &&
       typeof Comp.getLoadedEntryCount() === 'number' &&
       !/ensureChunkLoaded\('srd_spells\.json'\)/.test(spellsSrc + progSrc + invSrc) &&
-      /ensureTypesLoaded\(SPELL_PICKER_TYPES\)/.test(spellsSrc) && /ensureTypesLoaded\(\['Spell'\]\)/.test(progSrc) &&
+      /ensureTypesLoaded\(SPELL_PICKER_TYPES\)/.test(spellsSrc) && /ensureTypesLoaded\(\['Domain', 'Spell'\]\)/.test(progSrc) &&
       /ensureTypesLoaded\(GEAR_PICKER_TYPES\)/.test(invSrc) && /ensureTypesLoaded\(\['Condition', 'Buff', 'Spell'\]\)/.test(invSrc)
     );
     // A spell fetched by Rule Master AI from a filtered picker (e.g. a level 0 slot) must stay visible: the picker
@@ -4844,6 +4844,210 @@ function runDeriveSheetTests() {
       ),
       `wbFeatureLvls=${wbFeatureLvls}, wbFeatGrantLvls=${JSON.stringify(wbFeatGrantLvls)}, wbHd=${wbCustomDef?.hd}, wbSkills=${wbCustomDef?.skills}, wbLvl1=${JSON.stringify(wbLvl1Feats.features)}, wbLvl3Bonus=${wbLvl3Feats.hasBonusFeat}, race=${JSON.stringify(magnusRaceTraits)}, skillPool=${magnusSheet.progression.progressionSummary?.totalSkillPoints}, atkBefore=${clericAtkBefore}, atkAfter=${clericAtkAfter}`
     );
+
+    // Sprint C.6+: Choice-Bearing Objects & Lazy-Chunk Picker Authority
+    {
+      const choiceIds = [
+      'feat-weapon-focus', 'feat-exotic-weapon-proficiency', 'feat-martial-weapon-proficiency',
+      'feat-improved-critical', 'feat-rapid-reload', 'feat-skill-focus', 'feat-spell-focus',
+      'feat-energy-substitution', 'feat-shield-specialization', 'feat-armor-specialization',
+      'flaw-pathetic', 'trait-illiterate', 'trait-specialized', 'trait-spellgifted',
+      'mi-ring-of-energy-resistance-minor', 'mi-ring-of-energy-immunity', 'gear-tools-masterworked',
+      'pot-resist-energy-10', 'pwr-animal-affinity', 'pwr-energy-ray', 'pwr-energy-ball'
+    ];
+    const missingChoices = choiceIds.filter((cid) => {
+      const rec = Comp.getById(cid);
+      return !rec || !Array.isArray(rec.choices) || rec.choices.length === 0;
+    });
+    const wfOpts = Comp.getById('feat-weapon-focus')?.choices?.[0]?.options || [];
+    const sfOpts = Comp.getById('feat-skill-focus')?.choices?.[0]?.options || [];
+    const choiceCleanLists = wfOpts.includes('Guisarme') && !wfOpts.includes('Guuisarme') && !sfOpts.includes('Acrobatics');
+
+    const wfFeat = Object.assign({}, JSON.parse(JSON.stringify(Comp.getById('feat-weapon-focus'))), {
+      name: 'Weapon Focus (Longsword)', choice: 'Longsword', chosenOption: 'Longsword'
+    });
+    const sfFeat = Object.assign({}, JSON.parse(JSON.stringify(Comp.getById('feat-skill-focus'))), {
+      name: 'Skill Focus (Spot)', choice: 'Spot', chosenOption: 'Spot'
+    });
+    const patheticFlaw = Object.assign({}, JSON.parse(JSON.stringify(Comp.getById('flaw-pathetic'))), {
+      name: 'Pathetic (STR)', choice: 'STR', chosenOption: 'STR'
+    });
+    const armorSpecFeat = Object.assign({}, JSON.parse(JSON.stringify(Comp.getById('feat-armor-specialization'))), {
+      name: 'Armor Specialization (Full Plate)', choice: 'Full Plate', chosenOption: 'Full Plate'
+    });
+    const ringFire = Object.assign({}, JSON.parse(JSON.stringify(Comp.getById('mi-ring-of-energy-resistance-minor'))), {
+      active: true, choice: 'Fire', chosenOption: 'Fire'
+    });
+    const ringImmCold = Object.assign({}, JSON.parse(JSON.stringify(Comp.getById('mi-ring-of-energy-immunity'))), {
+      active: true, choice: 'Cold', chosenOption: 'Cold'
+    });
+    const mwTools = Object.assign({}, JSON.parse(JSON.stringify(Comp.getById('gear-tools-masterworked'))), {
+      equipped: true, active: true, choice: 'Disable Device', chosenOption: 'Disable Device'
+    });
+    const animAffSpec = RuleEngine.resolveSpellBuffSpec(
+      Object.assign({}, JSON.parse(JSON.stringify(Comp.getById('pwr-animal-affinity'))), { chosenEnergy: 'DEX', choice: 'DEX', chosenOption: 'DEX' }),
+      null, 5
+    );
+    const animAffBuff = {
+      id: 'pwr-animal-affinity-dex',
+      schemaVersion: 3,
+      name: 'Animal Affinity (DEX)',
+      active: true,
+      source: 'Power',
+      casterLevel: 5,
+      choice: 'DEX',
+      chosenOption: 'DEX',
+      choices: animAffSpec.choices,
+      effects: animAffSpec.effects
+    };
+    const eBallEv = RuleEngine.evaluateV3Entry(
+      Object.assign({}, JSON.parse(JSON.stringify(Comp.getById('pwr-energy-ball'))), { choice: 'Electricity', chosenOption: 'Electricity' }),
+      { ml: 7, cl: 7 }
+    );
+
+    const choiceHero = {
+      name: 'Choice Test Hero',
+      race: 'Human',
+      classes: 'Fighter 12',
+      level: 12,
+      abilities: { str: 16, dex: 14, con: 14, int: 12, wis: 12, cha: 10 },
+      baseAbilities: { str: 16, dex: 14, con: 14, int: 12, wis: 12, cha: 10 },
+      hp: { current: 80, max: 80, baseMax: 80, temp: 0 },
+      levelProgression: Array.from({ length: 12 }, (_, idx) => ({ level: idx + 1, className: 'Fighter', hd: 'd10', hpGain: 6, active: true, feats: [] })),
+      feats: [wfFeat, sfFeat, patheticFlaw, armorSpecFeat],
+      skills: [
+        { name: 'Spot', stat: 'WIS', ranks: 4, misc: 0, isClassSkill: false },
+        { name: 'Disable Device', stat: 'INT', ranks: 4, misc: 0, isClassSkill: true }
+      ],
+      armor: { baseItemId: 'arm-full-plate', name: 'Full Plate', category: 'Heavy', bonus: 8, maxDex: 1, acp: -6, asf: 35 },
+      bodySlots: {
+        armor: { baseItemId: 'arm-full-plate', name: 'Full Plate', active: true },
+        ring1: ringFire,
+        ring2: ringImmCold
+      },
+      gearPool: [mwTools],
+      buffs: [animAffBuff],
+      weapons: [
+        { id: 'wpn-longsword', baseItemId: 'wpn-longsword', name: 'Longsword', dice: '1d8', critMin: 19, critMult: 2, dmgType: 'Slashing', grip: '1-Hand' },
+        { id: 'wpn-shortbow', baseItemId: 'wpn-shortbow', name: 'Shortbow', isRanged: true, dice: '1d6', critMin: 20, critMult: 3, dmgType: 'Piercing', grip: '2-Hand' }
+      ]
+    };
+    const chSheet = RuleEngine.deriveSheet(choiceHero);
+    const lsAtk = RuleEngine.evaluateWeaponAttack(choiceHero, choiceHero.weapons[0]);
+    const sbAtk = RuleEngine.evaluateWeaponAttack(choiceHero, choiceHero.weapons[1]);
+    const spotBonus = Number(chSheet.skillsBonusMap?.spot?.total ?? chSheet.skillsBonusMap?.Spot?.total ?? 0);
+    const ddBonus = Number(chSheet.skillsBonusMap?.disable_device?.total ?? chSheet.skillsBonusMap?.['disable device']?.total ?? chSheet.skillsBonusMap?.['Disable Device']?.total ?? 0);
+      const lsHasWf = Array.isArray(lsAtk.attackBonusItems) && lsAtk.attackBonusItems.some((b) => /weapon focus/i.test(String(b.source || b.label || '')) && b.val === 1);
+      const sbHasWf = Array.isArray(sbAtk.attackBonusItems) && sbAtk.attackBonusItems.some((b) => /weapon focus/i.test(String(b.source || b.label || '')));
+      const fireResVal = Number(chSheet.defenses?.resistances?.fire ?? chSheet.defenses?.resistances?.Fire ?? 0);
+      const hasDr2 = Array.isArray(chSheet.defenses?.dr) && chSheet.defenses.dr.some((d) => d.value === 2 && d.bypass === '-');
+      const uiSharedSrc = fs.readFileSync(path.join(__dirname, '..', 'ui_shared.js'), 'utf8');
+      const progChoiceSrc = fs.readFileSync(path.join(__dirname, '..', 'char_progression.js'), 'utf8');
+      const spellsChoiceSrc = fs.readFileSync(path.join(__dirname, '..', 'char_spells.js'), 'utf8');
+
+      check(
+        'Sprint C.6+: Choice-Bearing Objects & Lazy-Chunk Pickers — V3 choices[] resolve end-to-end across Feats, Flaws, Rings, Gear, Armor Spec, Psionic Buffs/Powers, and cold-boot pickers load required chunks',
+        Boolean(
+          missingChoices.length === 0 &&
+          choiceCleanLists &&
+          chSheet.abilities.str === 14 &&
+          chSheet.abilities.dex === 18 &&
+          spotBonus >= 3 &&
+          ddBonus >= 2 &&
+          lsHasWf && !sbHasWf &&
+          fireResVal >= 10 &&
+          Array.isArray(chSheet.defenses?.immunities) && chSheet.defenses.immunities.some((im) => /cold/i.test(String(im))) &&
+          hasDr2 &&
+          Array.isArray(eBallEv.damageParts) && eBallEv.damageParts[0]?.type === 'Electricity' &&
+          /ensureTypesLoaded\(\['Weapon', 'Armor', 'Shield', 'Material', 'Enhancement', 'AugmentationCrystal'\]\)/.test(uiSharedSrc) &&
+          /srd_companions\.json/.test(progChoiceSrc) &&
+          /UI\.resolveV3ChoiceConfig = resolveV3ChoiceConfig/.test(spellsChoiceSrc)
+        ),
+        `missingChoices=${JSON.stringify(missingChoices)}, str=${chSheet.abilities.str}, dex=${chSheet.abilities.dex}, spotBonus=${spotBonus}, ddBonus=${ddBonus}, lsHasWf=${lsHasWf}, fireRes=${fireResVal}, imm=${JSON.stringify(chSheet.defenses?.immunities)}, dr=${JSON.stringify(chSheet.defenses?.dr)}, eBall=${JSON.stringify(eBallEv.damageParts)}`
+      );
+    }
+
+    // Parametric V3 A -> B Stat / Formula Swap Suite (Zen Archery, Intuitive Attack, Brutal Throw, Insightful Reflexes, Agile Athlete, HP/HD Swap)
+    {
+      const swapHero = {
+        name: 'Parametric Swap Monk-Cleric',
+        race: 'Human',
+        size: 'Medium',
+        classes: 'Cleric 4',
+        level: 4,
+        bab: 3,
+        abilities: { str: 10, dex: 12, con: 10, int: 16, wis: 18, cha: 16 }, // STR +0, DEX +1, CON +0, INT +3, WIS +4, CHA +3
+        baseSaves: { fort: 4, ref: 1, will: 4 },
+        hp: { current: 24, max: 24, baseMax: 24, conBonusHp: 0 },
+        feats: [
+          { id: 'feat-zen-archery', name: 'Zen Archery', type: 'Feat', active: true },
+          { id: 'feat-intuitive-attack', name: 'Intuitive Attack', type: 'Feat', active: true },
+          { id: 'feat-insightful-reflexes', name: 'Insightful Reflexes', type: 'Feat', active: true },
+          { id: 'feat-force-of-personality', name: 'Force of Personality', type: 'Feat', active: true },
+          { id: 'feat-agile-athlete', name: 'Agile Athlete', type: 'Feat', active: true }
+        ],
+        skills: [
+          { key: 'climb', name: 'Climb', stat: 'str', ranks: 4 },
+          { key: 'jump', name: 'Jump', stat: 'str', ranks: 4 }
+        ],
+        weapons: [
+          { id: 'w-bow', name: 'Longbow', baseItemId: 'wpn-longbow', grip: 'Ranged', isRanged: true, category: 'Weapon', dice: '1d8', critMin: 20, critMult: 3, dmgType: 'Piercing' },
+          { id: 'w-mace', name: 'Heavy Mace', baseItemId: 'wpn-heavy-mace', grip: '1-Hand', category: 'Weapon', proficiency: 'Simple', dice: '1d8', critMin: 20, critMult: 2, dmgType: 'Bludgeoning' },
+          { id: 'w-sword', name: 'Longsword', baseItemId: 'wpn-longsword', grip: '1-Hand', category: 'Weapon', proficiency: 'Martial', dice: '1d8', critMin: 19, critMult: 2, dmgType: 'Slashing' }
+        ],
+        customEntries: [
+          {
+            schemaVersion: 3, id: 'custom-faerie-hp', name: 'Faerie Mysteries Initiate', type: 'Feat',
+            effects: [{ type: 'stat', mode: 'replaceStat', swapTarget: 'hp.abilityMod', targets: ['hp.abilityMod'], subOp: 'replace', fromStat: 'con', toStat: 'int', scope: 'all', formula: '@intMod' }]
+          }
+        ],
+        specialAbilities: [
+          { id: 'custom-faerie-hp', name: 'Faerie Mysteries Initiate', active: true }
+        ]
+      };
+      // Grant Longbow & Longsword proficiency so we measure pure ability swaps without -4 non-proficiency noise
+      swapHero.classes = 'Fighter 1 / Cleric 3';
+      const swSheet = RuleEngine.deriveSheet(swapHero, []);
+      const bowAtk = swSheet.combat.weapons.find((w) => w.id === 'w-bow')?.evaluated;
+      const maceAtk = swSheet.combat.weapons.find((w) => w.id === 'w-mace')?.evaluated;
+      const swordAtk = swSheet.combat.weapons.find((w) => w.id === 'w-sword')?.evaluated;
+      const climbRes = swSheet.skillsBonusMap?.climb;
+
+      // Brutal Throw check: STR 18 (+4), DEX 10 (+0) on Thrown Javelin vs Longbow
+      const throwHero = {
+        name: 'Brutal Thrower',
+        race: 'Human',
+        size: 'Medium',
+        classes: 'Fighter 4',
+        level: 4,
+        bab: 4,
+        abilities: { str: 18, dex: 10, con: 12, int: 10, wis: 10, cha: 10 },
+        baseSaves: { fort: 4, ref: 1, will: 1 },
+        feats: [{ id: 'feat-brutal-throw', name: 'Brutal Throw', type: 'Feat', active: true }],
+        weapons: [
+          { id: 'w-jav', name: 'Javelin', baseItemId: 'wpn-javelin', grip: 'Ranged', isRanged: true, isThrown: true, category: 'Weapon', dice: '1d6', critMin: 20, critMult: 2, dmgType: 'Piercing' },
+          { id: 'w-lbow', name: 'Longbow', baseItemId: 'wpn-longbow', grip: 'Ranged', isRanged: true, category: 'Weapon', dice: '1d8', critMin: 20, critMult: 3, dmgType: 'Piercing' }
+        ]
+      };
+      const thSheet = RuleEngine.deriveSheet(throwHero, []);
+      const javAtk = thSheet.combat.weapons.find((w) => w.id === 'w-jav')?.evaluated;
+      const lbowAtk = thSheet.combat.weapons.find((w) => w.id === 'w-lbow')?.evaluated;
+
+      check(
+        'V3 Parametric A -> B Swap Engine: Zen Archery (WIS +4 > DEX +1 on Longbow), Intuitive Attack (WIS +4 on Simple Heavy Mace, STR +0 on Martial Longsword), Brutal Throw (STR +4 on Thrown Javelin, DEX +0 on Longbow), Insightful Reflexes (INT +3 > DEX +1 on Reflex), Agile Athlete (DEX +1 > STR +0 on Climb), and HP/HD INT swap all evaluate without hardcoded feat checks',
+        Boolean(
+          bowAtk && bowAtk.netAttackBonus === 7 && /WIS/i.test(bowAtk.attackStatName || '') &&
+          maceAtk && maceAtk.netAttackBonus === 7 && /WIS/i.test(maceAtk.attackStatName || '') &&
+          swordAtk && swordAtk.netAttackBonus === 3 &&
+          javAtk && javAtk.netAttackBonus === 8 && /STR/i.test(javAtk.attackStatName || '') &&
+          lbowAtk && lbowAtk.netAttackBonus === 4 &&
+          swSheet.saves.ref === 4 &&
+          swSheet.hp.max === 36 &&
+          climbRes && climbRes.total === 1
+        ),
+        `bow=${bowAtk?.netAttackBonus}(${bowAtk?.attackStatName}), mace=${maceAtk?.netAttackBonus}(${maceAtk?.attackStatName}), sword=${swordAtk?.netAttackBonus}, jav=${javAtk?.netAttackBonus}, lbow=${lbowAtk?.netAttackBonus}, ref=${swSheet?.saves?.ref}, hpMax=${swSheet?.hp?.max}, climb=${climbRes?.total}`
+      );
+    }
   }
 
   CharStore.clearHistory();

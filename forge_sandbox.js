@@ -406,16 +406,126 @@
     vsAoOFromMovement: 'vs. Attacks of Opportunity from Movement',
     castingChosenSchool: 'When Casting Chosen School (@Choice)'
   };
-  const RULE_SWITCH_FLAGS = [
-    ['babEqualsLevel', 'BAB Equals Character Level'],
-    ['shieldToTouchAc', 'Shield Bonus Applies to Touch AC'],
-    ['conToWillSave', 'Use CON Modifier for Will Saves'],
-    ['weaponFinesse', 'Weapon Finesse (DEX to Melee Attack)'],
-    ['shadowBlade', 'Shadow Blade (+DEX to Shadow Hand Damage)'],
-    ['monkeyGrip', 'Monkey Grip (Wield Larger Weapons at -2)'],
-    ['tacticalSlider', 'Enable Tactical Combat Slider']
+  const RULE_SWITCH_FLAGS = (_RS && Array.isArray(_RS.ruleSwitchFlags)) ? _RS.ruleSwitchFlags : [
+    ['noAutoFailFortSaveOnNat1', 'Do Not Auto-Fail Fortitude Save on Natural 1'],
+    ['shieldToTouchAc', 'Shield AC Bonus Applies to Touch AC'],
+    ['monkeyGrip', 'Wield +1 Size Larger Weapons at -2 Attack (Monkey Grip)'],
+    ['naturalSpell', 'Cast Spells While in Wild Shape (Natural Spell)'],
+    ['uncannyDodge', 'Retain DEX Bonus to AC When Flat-Footed (Uncanny Dodge)'],
+    ['ignoreArmorSpeedPenalty', 'Ignore Medium/Heavy Armor Speed Reduction'],
+    ['oneHandedOffHandAsLight', 'Treat One-Handed Off-Hand Weapon as Light (Oversized TWF)'],
+    ['tacticalSlider', 'Enable Tactical Combat Slider (Power Attack / Expertise / Manyshot)']
   ];
   const RULE_SWITCH_LABEL = {}; RULE_SWITCH_FLAGS.forEach((x) => { RULE_SWITCH_LABEL[x[0]] = x[1]; });
+
+  const SWAP_TARGET_GROUPS = (_RS && Array.isArray(_RS.statSwapTargetGroups)) ? _RS.statSwapTargetGroups : [
+    ['Attack Rolls', [
+      ['atk.melee.abilityMod', 'Melee Attack Ability (Default: STR)', 'str'],
+      ['atk.ranged.abilityMod', 'Ranged Attack Ability (Default: DEX)', 'dex'],
+      ['atk.thrown.abilityMod', 'Thrown Weapon Attack Ability (Default: DEX)', 'dex'],
+      ['atk.touch.abilityMod', 'Touch Attack Ability (Default: STR / DEX)', 'dex'],
+      ['grapple.abilityMod', 'Grapple / Combat Maneuver Ability (Default: STR)', 'str']
+    ]],
+    ['Damage Rolls', [
+      ['dmg.melee.abilityMod', 'Melee Damage Ability (Default: STR)', 'str'],
+      ['dmg.ranged.abilityMod', 'Ranged / Thrown Damage Ability (Default: None / STR)', 'str']
+    ]],
+    ['Saving Throws', [
+      ['save.fort.abilityMod', 'Fortitude Save Ability (Default: CON)', 'con'],
+      ['save.ref.abilityMod', 'Reflex Save Ability (Default: DEX)', 'dex'],
+      ['save.will.abilityMod', 'Will Save Ability (Default: WIS)', 'wis']
+    ]],
+    ['Defense & Vitals', [
+      ['ac.abilityMod', 'Armor Class Ability (Default: DEX)', 'dex'],
+      ['initiative.abilityMod', 'Initiative Ability (Default: DEX)', 'dex'],
+      ['hp.abilityMod', 'Hit Points per HD Ability (Default: CON)', 'con']
+    ]],
+    ['Skills & Concentration', [
+      ['concentration.abilityMod', 'Concentration Ability (Default: CON)', 'con'],
+      ['choice.skill.1.abilityMod', 'Chosen Skill (@Choice) Key Ability', 'wis']
+    ].concat(SKILLS.map((s) => ['skill.' + String(s[0]).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '.abilityMod', s[0] + ' Skill Ability (Default: ' + String(s[1]).toUpperCase() + ')', s[1]]))],
+    ['Core Scaling & Spellcasting', [
+      ['bab', 'Base Attack Bonus (Default: Class BAB)', 'bab'],
+      ['spell.dc.abilityMod', 'Spell Save DC Key Ability', 'wis'],
+      ['spell.bonusSlots.abilityMod', 'Bonus Spells Key Ability', 'wis']
+    ]]
+  ];
+  const SWAP_TARGET_LABEL = {};
+  const SWAP_DEFAULT_FROM = {};
+  SWAP_TARGET_GROUPS.forEach((g) => g[1].forEach((t) => {
+    SWAP_TARGET_LABEL[t[0]] = t[1];
+    if (t[2]) SWAP_DEFAULT_FROM[t[0]] = t[2];
+  }));
+  const SWAP_SOURCES = (_RS && Array.isArray(_RS.statSwapSources)) ? _RS.statSwapSources : [
+    ['str', 'STR Modifier (@strMod)'], ['dex', 'DEX Modifier (@dexMod)'], ['con', 'CON Modifier (@conMod)'],
+    ['int', 'INT Modifier (@intMod)'], ['wis', 'WIS Modifier (@wisMod)'], ['cha', 'CHA Modifier (@chaMod)'],
+    ['0.5*str', '½× STR Modifier'], ['0.5*dex', '½× DEX Modifier'], ['0.5*int', '½× INT Modifier'],
+    ['0.5*wis', '½× WIS Modifier'], ['0.5*cha', '½× CHA Modifier'],
+    ['1.5*str', '1.5× STR Modifier'], ['1.5*dex', '1.5× DEX Modifier'],
+    ['choice.abilityMod', 'Chosen Ability Modifier (@Choice)'],
+    ['@level', 'Character Level / Total HD (@level)'], ['@classLevel', 'Class Level (@classLevel)'], ['@cl', 'Caster Level (@cl)']
+  ];
+  const SWAP_SOURCE_LABEL = {}; SWAP_SOURCES.forEach((x) => { SWAP_SOURCE_LABEL[x[0]] = x[1]; });
+  const SWAP_OPS = (_RS && Array.isArray(_RS.statSwapOps)) ? _RS.statSwapOps : [
+    ['max', 'Higher Of A or B (May Use B Instead of A)'],
+    ['replace', 'Replace A with B (Always Use B)'],
+    ['add', 'Add B Alongside A (A + B)']
+  ];
+  const SWAP_SCOPES = (_RS && Array.isArray(_RS.statSwapScopes)) ? _RS.statSwapScopes : [
+    ['all', 'All Applicable Rolls (Unconditional)'],
+    ['finessable', 'Light & Finesse Weapons (Light, Rapier, Whip, Spiked Chain)'],
+    ['simple_or_natural', 'Simple & Natural Weapons (Intuitive Attack)'],
+    ['thrown', 'Thrown Weapons Only (Brutal / Power Throw)'],
+    ['bow_or_crossbow', 'Bows & Crossbows Only'],
+    ['chosen_weapon', 'Chosen Weapon (@Choice)'],
+    ['discipline_weapons', 'Shadow Hand / Discipline Weapons (In Stance)'],
+    ['light_or_no_armor', 'In Light or No Armor'],
+    ['not_flat_footed', 'While Not Flat-Footed'],
+    ['mind_affecting', 'vs. Mind-Affecting Effects Only']
+  ];
+  const SWAP_SCOPE_LABEL = {}; SWAP_SCOPES.forEach((x) => { SWAP_SCOPE_LABEL[x[0]] = x[1]; });
+
+  const LEGACY_SWITCH_TO_SWAP = {
+    weaponFinesse: { swapTarget: 'atk.melee.abilityMod', subOp: 'max', fromStat: 'str', toStat: 'dex', scope: 'finessable' },
+    conToWillSave: { swapTarget: 'save.will.abilityMod', subOp: 'replace', fromStat: 'wis', toStat: 'con', scope: 'all' },
+    babEqualsLevel: { swapTarget: 'bab', subOp: 'max', fromStat: 'bab', toStat: '@level', scope: 'all' },
+    shadowBlade: { swapTarget: 'dmg.melee.abilityMod', subOp: 'add', fromStat: 'str', toStat: 'dex', scope: 'discipline_weapons' },
+    'zen-archery': { swapTarget: 'atk.ranged.abilityMod', subOp: 'max', fromStat: 'dex', toStat: 'wis', scope: 'all' },
+    'intuitive-attack': { swapTarget: 'atk.melee.abilityMod', subOp: 'max', fromStat: 'str', toStat: 'wis', scope: 'simple_or_natural' },
+    'brutal-throw': { swapTarget: 'atk.thrown.abilityMod', subOp: 'max', fromStat: 'dex', toStat: 'str', scope: 'thrown' },
+    'force-of-personality': { swapTarget: 'save.will.abilityMod', subOp: 'max', fromStat: 'wis', toStat: 'cha', scope: 'mind_affecting' },
+    'insightful-reflexes': { swapTarget: 'save.ref.abilityMod', subOp: 'max', fromStat: 'dex', toStat: 'int', scope: 'all' },
+    'charming-the-arrow': { swapTarget: 'atk.ranged.abilityMod', subOp: 'max', fromStat: 'dex', toStat: 'cha', scope: 'bow_or_crossbow' }
+  };
+
+  function normalizeSwapTargetKey(raw) {
+    const k = String(raw || '').trim();
+    const alias = {
+      'atk.all': 'atk.melee.abilityMod', 'atk.melee': 'atk.melee.abilityMod', 'attack.melee': 'atk.melee.abilityMod',
+      'atk.ranged': 'atk.ranged.abilityMod', 'attack.ranged': 'atk.ranged.abilityMod',
+      'atk.touch': 'atk.touch.abilityMod', 'grapple': 'grapple.abilityMod', 'atk.grapple': 'grapple.abilityMod',
+      'dmg.all': 'dmg.melee.abilityMod', 'dmg.melee': 'dmg.melee.abilityMod', 'damage.melee': 'dmg.melee.abilityMod',
+      'dmg.ranged': 'dmg.ranged.abilityMod', 'damage.ranged': 'dmg.ranged.abilityMod',
+      'save.will': 'save.will.abilityMod', 'save.ref': 'save.ref.abilityMod', 'save.fort': 'save.fort.abilityMod',
+      'ac': 'ac.abilityMod', 'ac.total': 'ac.abilityMod', 'ac.all': 'ac.abilityMod',
+      'init': 'initiative.abilityMod', 'initiative': 'initiative.abilityMod',
+      'hp': 'hp.abilityMod', 'hp.perLevel': 'hp.abilityMod', 'hp.perLvl': 'hp.abilityMod',
+      'skill.concentration': 'concentration.abilityMod', 'spell.dc': 'spell.dc.abilityMod'
+    }[k];
+    if (alias) return alias;
+    if (/^skill\.[a-z0-9_-]+$/i.test(k)) return 'skill.' + k.slice(6).toLowerCase().replace(/_/g, '-') + '.abilityMod';
+    if (k === 'choice.skill.1') return 'choice.skill.1.abilityMod';
+    return SWAP_TARGET_LABEL[k] ? k : 'atk.melee.abilityMod';
+  }
+  function swapSourceFormula(src) {
+    const s = String(src || 'wis').trim();
+    if (s.startsWith('@')) return s;
+    if (s === 'choice.abilityMod') return '@choice.abilityMod';
+    const multM = s.match(/^([0-9.]+)\*([a-z]+)$/i);
+    if (multM) return 'floor(@' + multM[2].toLowerCase() + 'Mod * ' + multM[1] + ')';
+    if (/^(str|dex|con|int|wis|cha)$/i.test(s)) return '@' + s.toLowerCase() + 'Mod';
+    return s;
+  }
 
   const BLOCK_TYPES = {
     resource: { icon: '🔋', label: 'Resource / Dial (@X)', shortLabel: '@Resource', color: 'b-teal' },
@@ -471,7 +581,7 @@
       stat: {
         targets: ['atk.all'], mode: 'flat', value: 1, btype: 'Morale',
         stat: 'chaMod', mult: 1, cap: 'none', capVal: 5,
-        subOp: 'replace', fromStat: 'wis', toStat: 'con',
+        swapTarget: 'atk.melee.abilityMod', subOp: 'max', fromStat: 'str', toStat: 'wis', scope: 'all',
         per: 3, min: 0, max: 5, formula: '', condition: ''
       },
       roll: {
@@ -521,12 +631,21 @@
     return baseStr + prefix + '@' + (m.stat || 'chaMod') + cap;
   }
   function replaceStatTargetLabel(k) {
-    return k === 'save.will' ? 'Will Save' : k === 'save.fort' ? 'Fortitude Save' : k === 'save.ref' ? 'Reflex Save' : targetLabel(k);
+    const nk = normalizeSwapTargetKey(k);
+    return (SWAP_TARGET_LABEL[nk] || targetLabel(k)).replace(/\s*\(Default:.*?\)$/, '');
   }
   function replaceStatSummary(m, targetText) {
-    const from = String(m.fromStat || 'wis').toUpperCase();
-    const to = String(m.toStat || 'con').toUpperCase();
-    return (m.subOp === 'max' ? 'Higher of ' + to + '/' + from : to + ' → ' + from) + ' on ' + targetText + (m.condition ? ' (' + m.condition + ')' : '');
+    const swapTgt = normalizeSwapTargetKey(m.swapTarget || (m.targets && m.targets[0]) || 'atk.melee.abilityMod');
+    const lbl = replaceStatTargetLabel(swapTgt) || targetText;
+    const from = String(m.fromStat || SWAP_DEFAULT_FROM[swapTgt] || 'str').toUpperCase();
+    const toRaw = String(m.toStat || 'wis');
+    const toLbl = (SWAP_SOURCE_LABEL[toRaw] || toRaw.toUpperCase()).replace(/\s*\(@.*?\)$/, '');
+    const sc = m.scope && m.scope !== 'all' ? ' [' + (SWAP_SCOPE_LABEL[m.scope] || m.scope).replace(/\s*\(.*?\)$/, '') + ']' : '';
+    const capTxt = m.subOp === 'add' && m.cap === 'classLevel' ? ' (cap @classLevel)' : (m.subOp === 'add' && m.cap === 'flat' ? ' (cap +' + num(m.capVal, 5) + ')' : '');
+    const core = m.subOp === 'add'
+      ? '+' + toLbl + capTxt + ' alongside ' + from + ' on ' + lbl
+      : (m.subOp === 'replace' ? 'Replace ' + from + ' → ' + toLbl + ' on ' + lbl : 'Higher of ' + toLbl + ' / ' + from + ' on ' + lbl);
+    return core + sc + (m.condition ? ' (' + m.condition + ')' : '');
   }
   function metamagicCostText(b) {
     if (b.costMode === 'passive') return 'Passive (+0 Slot)';
@@ -2127,7 +2246,17 @@
     if (b.type === 'stat') {
       const mode = modMode(b);
       o.mode = mode;
-      if (mode === 'stat') { o.formula = exportModFormula(b); o.cap = exportModCap(b); }
+      if (mode === 'replaceStat') {
+        const swapTgt = normalizeSwapTargetKey(b.swapTarget || (b.targets && b.targets[0]) || 'atk.melee.abilityMod');
+        o.targets = [swapTgt];
+        o.swapTarget = swapTgt;
+        o.subOp = b.subOp || 'max';
+        o.fromStat = b.fromStat || SWAP_DEFAULT_FROM[swapTgt] || 'str';
+        o.toStat = b.toStat || 'wis';
+        o.scope = b.scope || 'all';
+        o.formula = swapSourceFormula(o.toStat);
+        o.cap = o.subOp === 'add' ? exportModCap(b) : null;
+      } else if (mode === 'stat') { o.formula = exportModFormula(b); o.cap = exportModCap(b); }
       else if (mode === 'perCL') { o.formula = exportPerCLFormula(b); }
       else if (mode === 'formula') { o.formula = String(b.formula || '').trim(); }
       if (typeof o.condition === 'string' && /^toggle:([A-Za-z0-9_.-]+)$/.test(o.condition.trim())) {
@@ -2395,10 +2524,34 @@
 
   function parseBlockV3(ef) {
     if (!ef || typeof ef !== 'object') return null;
+    if ((ef.type === 'effect' || !ef.type) && (ef.flag || ef.ruleFlag)) {
+      const rawFlag = String(ef.flag || ef.ruleFlag).trim();
+      if (LEGACY_SWITCH_TO_SWAP[rawFlag]) {
+        const sw = LEGACY_SWITCH_TO_SWAP[rawFlag];
+        return BLK('stat', {
+          mode: 'replaceStat',
+          swapTarget: sw.swapTarget,
+          targets: [sw.swapTarget],
+          subOp: sw.subOp,
+          fromStat: sw.fromStat,
+          toStat: sw.toStat,
+          scope: sw.scope || 'all',
+          condition: ef.condition || ''
+        });
+      }
+    }
     const t = BLOCK_TYPES[ef.type] ? ef.type : 'effect';
     const normalized = Object.assign({}, ef);
     if (t === 'stat') {
-      if (Array.isArray(normalized.targets)) {
+      if (normalized.mode === 'replaceStat') {
+        const swapTgt = normalizeSwapTargetKey(normalized.swapTarget || (Array.isArray(normalized.targets) && normalized.targets[0]) || normalized.target || 'atk.melee.abilityMod');
+        normalized.swapTarget = swapTgt;
+        normalized.targets = [swapTgt];
+        normalized.subOp = normalized.subOp || normalized.op || 'max';
+        normalized.fromStat = normalized.fromStat || SWAP_DEFAULT_FROM[swapTgt] || 'str';
+        normalized.toStat = normalized.toStat || 'wis';
+        normalized.scope = normalized.scope || 'all';
+      } else if (Array.isArray(normalized.targets)) {
         normalized.targets = normalized.targets.map(normTargetKey);
       } else if (normalized.target) {
         normalized.targets = [normTargetKey(normalized.target)];
@@ -3980,8 +4133,23 @@
 
   function statControlsHtml(p, m) {
     const mode = modMode(m);
+    const modeF = F('Modifier Mode', sel(p + '.mode', mode, [['flat', 'Flat (+/-)'], ['stat', '+ @Stat / @Resource'], ['replaceStat', '🔄 Stat / Formula Swap (A → B)'], ['perCL', 'Scale by Level'], ['formula', '∑ Custom Formula']], { narrow: true }));
+    if (mode === 'replaceStat') {
+      const swapTgt = normalizeSwapTargetKey(m.swapTarget || (m.targets && m.targets[0]) || 'atk.melee.abilityMod');
+      const isAdd = m.subOp === 'add';
+      const hasFlatCap = isAdd && m.cap === 'flat';
+      return G(3,
+        modeF +
+        F('Component to Swap (A)', selGroups(p + '.swapTarget', swapTgt, SWAP_TARGET_GROUPS), 'lego-span-2') +
+        F('Swap Rule', sel(p + '.subOp', m.subOp || 'max', SWAP_OPS, { narrow: true })) +
+        F('With Source (B)', sel(p + '.toStat', m.toStat || 'wis', SWAP_SOURCES, { narrow: true })) +
+        F('Weapon / Roll Scope', sel(p + '.scope', m.scope || 'all', SWAP_SCOPES, { narrow: true })) +
+        (isAdd ? F('Cap Mode', sel(p + '.cap', m.cap || 'none', [['none', 'No Cap'], ['classLevel', 'Cap @Class Lvl'], ['flat', 'Cap Max N']], { narrow: true })) : '') +
+        (hasFlatCap ? F('Max Cap', inp(p + '.capVal', m.capVal == null ? 5 : m.capVal, { num: true })) : '') +
+        F('Condition / Note (Optional)', inp(p + '.condition', m.condition || '', { ph: 'Optional situational note…' }), isAdd ? (hasFlatCap ? '' : 'lego-span-2') : 'lego-span-full')
+      );
+    }
     const tgtRow = F('Target', targetChips(m.targets || ['atk.all'], p + '.targets'), 'lego-span-full');
-    const modeF = F('Modifier Mode', sel(p + '.mode', mode, [['flat', 'Flat (+/-)'], ['stat', '+ @Stat / @Resource'], ['replaceStat', '🔄 Replace Stat'], ['perCL', 'Scale by Level'], ['formula', '∑ Custom Formula']], { narrow: true }));
     const btypeF = F('Bonus Type', sel(p + '.btype', m.btype || 'Untyped', bonusTypeOpts().map((x) => [x[0], x[0]]), { narrow: true }));
     if (mode === 'formula') {
       return G(4,
@@ -3990,16 +4158,6 @@
         F('Formula Expression', inp(p + '.formula', m.formula || '', { ph: '2 + min(3, floor(@cl / 6))' }), 'lego-span-2') +
         btypeF +
         F('Condition', inp(p + '.condition', m.condition || '', { ph: 'condition (vs Fear)' }), 'lego-span-full')
-      );
-    }
-    if (mode === 'replaceStat') {
-      return G(3,
-        tgtRow +
-        modeF +
-        F('Substitution Rule', sel(p + '.subOp', m.subOp || 'replace', [['replace', 'Replace'], ['max', 'Higher Of']], { narrow: true })) +
-        F('From Ability', sel(p + '.fromStat', m.fromStat || 'wis', ABIL_KEYS.map((k) => [k, k.toUpperCase()]), { narrow: true })) +
-        F('To Ability', sel(p + '.toStat', m.toStat || 'con', ABIL_KEYS.map((k) => [k, k.toUpperCase()]), { narrow: true })) +
-        F('Condition', inp(p + '.condition', m.condition || '', { ph: 'Light / Rapier…' }), 'lego-span-2')
       );
     }
     if (mode === 'stat') {
@@ -4369,7 +4527,8 @@
       case 'effect': {
         const ek = b.effectKind || ((b.flag || b.ruleFlag) ? 'ruleSwitch' : 'rule');
         const modeSel = sel(p + '.effectKind', ek, [
-          ['ruleSwitch', '🔀 Rule Switch Flag'],
+          ['statSwap', '🔄 Stat / Formula Swap (A → B)'],
+          ['ruleSwitch', '🔀 Rule Switch Flag (Boolean)'],
           ['castSpell', '🔮 Cast Spell / Free Buff'],
           ['recoverSlot', '🔄 Recover Expended Slot / Maneuver'],
           ['stealStore', '⚡ Steal / Drain into @Buffer'],
@@ -4378,7 +4537,9 @@
           ['rule', '📜 Rule Text']
         ], { narrow: true });
         if (ek === 'ruleSwitch') {
-          return G(2, F('Effect Kind', modeSel) + F('Rule Switch Flag', sel(p + '.flag', b.flag || b.ruleFlag || 'babEqualsLevel', RULE_SWITCH_FLAGS, { narrow: true })));
+          const curFlag = b.flag || b.ruleFlag || 'noAutoFailFortSaveOnNat1';
+          const switchOpts = RULE_SWITCH_LABEL[curFlag] ? RULE_SWITCH_FLAGS : RULE_SWITCH_FLAGS.concat([[curFlag, curFlag + ' (Custom Switch)']]);
+          return G(2, F('Effect Kind', modeSel) + F('Rule Switch Flag', sel(p + '.flag', curFlag, switchOpts, { narrow: true })));
         }
         if (ek === 'castSpell') {
           const cm = b.castMode || 'linkedSpell';
@@ -5060,6 +5221,42 @@
   function setEntry(path, v) { setPath(S.entry, path, v); onSet(path, v); }
   function onSet(path, v) {
     const en = S.entry;
+    if (/\.effectKind$/.test(path) && v === 'statSwap') {
+      const blk = getPath(en, path.replace(/\.effectKind$/, ''));
+      if (blk) {
+        delete blk.effectKind;
+        delete blk.flag;
+        delete blk.ruleFlag;
+        Object.assign(blk, {
+          type: 'stat', mode: 'replaceStat', swapTarget: 'atk.ranged.abilityMod',
+          targets: ['atk.ranged.abilityMod'], subOp: 'max', fromStat: 'dex', toStat: 'wis',
+          scope: 'all', cap: 'none', capVal: 5, condition: blk.condition || ''
+        });
+        S.ui.cardOpen['b:' + blk.id] = true;
+      }
+      return;
+    }
+    if (/\.mode$/.test(path) && v === 'replaceStat') {
+      const blk = getPath(en, path.replace(/\.mode$/, ''));
+      if (blk && blk.type === 'stat') {
+        const swapTgt = normalizeSwapTargetKey(blk.swapTarget || (blk.targets && blk.targets[0]) || 'atk.melee.abilityMod');
+        blk.swapTarget = swapTgt;
+        blk.targets = [swapTgt];
+        blk.subOp = blk.subOp || 'max';
+        blk.fromStat = SWAP_DEFAULT_FROM[swapTgt] || blk.fromStat || 'str';
+        blk.toStat = blk.toStat || 'wis';
+        blk.scope = blk.scope || 'all';
+      }
+    }
+    if (/\.swapTarget$/.test(path)) {
+      const blk = getPath(en, path.replace(/\.swapTarget$/, ''));
+      if (blk && blk.type === 'stat') {
+        const swapTgt = normalizeSwapTargetKey(v);
+        blk.swapTarget = swapTgt;
+        blk.targets = [swapTgt];
+        blk.fromStat = SWAP_DEFAULT_FROM[swapTgt] || blk.fromStat || 'str';
+      }
+    }
     if (/^effects\.\d+\.name$/.test(path)) {
       const blk = getPath(en, path.replace(/\.name$/, ''));
       if (blk && blk.type === 'resource') {

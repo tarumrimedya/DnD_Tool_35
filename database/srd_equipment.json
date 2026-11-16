@@ -15860,12 +15860,13 @@
       {
         "type": "roll",
         "kind": "Damage",
-        "dice": "2d6",
         "bonus": 0,
         "dmgType": "Holy",
         "multiplyOnCrit": false,
         "critOnly": false,
-        "source": "Holy"
+        "source": "Holy",
+        "count": 2,
+        "die": "d6"
       }
     ],
     "ruleFlags": {
@@ -19788,12 +19789,13 @@
       {
         "type": "roll",
         "kind": "Damage",
-        "dice": "1d6",
         "bonus": 0,
         "dmgType": "Physical",
         "multiplyOnCrit": false,
         "critOnly": false,
-        "source": "Sylvan Outdoors"
+        "source": "Sylvan Outdoors",
+        "count": 1,
+        "die": "d6"
       }
     ],
     "ruleFlags": {
@@ -23302,12 +23304,13 @@
       {
         "type": "roll",
         "kind": "Damage",
-        "dice": "2d6",
         "bonus": 0,
         "dmgType": "Good (vs. Evil)",
         "multiplyOnCrit": false,
         "critOnly": false,
-        "source": "Holy"
+        "source": "Holy",
+        "count": 2,
+        "die": "d6"
       }
     ],
     "ruleFlags": {
@@ -24305,12 +24308,13 @@
       {
         "type": "roll",
         "kind": "Damage",
-        "dice": "2d6",
         "bonus": 0,
         "dmgType": "Evil (vs. Good)",
         "multiplyOnCrit": false,
         "critOnly": false,
-        "source": "Unholy"
+        "source": "Unholy",
+        "count": 2,
+        "die": "d6"
       }
     ],
     "ruleFlags": {
@@ -28359,12 +28363,13 @@
       {
         "type": "roll",
         "kind": "Damage",
-        "dice": "5d6",
         "bonus": 0,
         "dmgType": "Electricity",
         "multiplyOnCrit": false,
         "critOnly": false,
-        "source": "Lightning Bolt (DC 14)"
+        "source": "Lightning Bolt (DC 14)",
+        "count": 5,
+        "die": "d6"
       }
     ],
     "shortDescription": "Javelin of Lightning: This javelin becomes a 5d6 lightning bolt when thrown (Reflex DC 14 half ). It is consumed in the attack. Faint evocation; CL 5th; Craft Magic Arms and Armor, lightning bolt ; Price 1,500 gp; Cost…",
@@ -31222,12 +31227,13 @@
       {
         "type": "roll",
         "kind": "Damage",
-        "dice": "2d6",
         "bonus": 0,
         "dmgType": "Physical",
         "multiplyOnCrit": false,
         "critOnly": false,
-        "source": "vs Shapechangers"
+        "source": "vs Shapechangers",
+        "count": 2,
+        "die": "d6"
       }
     ],
     "ruleFlags": {
@@ -32225,12 +32231,13 @@
       {
         "type": "roll",
         "kind": "Damage",
-        "dice": "1d6",
         "bonus": 0,
         "dmgType": "Fire",
         "multiplyOnCrit": false,
         "critOnly": false,
-        "source": "Flaming"
+        "source": "Flaming",
+        "count": 1,
+        "die": "d6"
       }
     ],
     "ruleFlags": {
@@ -35864,12 +35871,13 @@
       {
         "type": "roll",
         "kind": "Damage",
-        "dice": "1d6",
         "bonus": 0,
         "dmgType": "Electricity",
         "multiplyOnCrit": false,
         "critOnly": false,
-        "source": "Shock"
+        "source": "Shock",
+        "count": 1,
+        "die": "d6"
       }
     ],
     "ruleFlags": {
@@ -37914,7 +37922,56 @@
       "wondrous",
       "slotless"
     ],
-    "casterLevel": 0
+    "casterLevel": 0,
+    "choices": [
+      {
+        "id": "ch-skill",
+        "key": "skill",
+        "label": "Chosen Skill",
+        "options": [
+          "Appraise",
+          "Autohypnosis",
+          "Balance",
+          "Bluff",
+          "Climb",
+          "Concentration",
+          "Craft",
+          "Decipher Script",
+          "Diplomacy",
+          "Disable Device",
+          "Disguise",
+          "Escape Artist",
+          "Forgery",
+          "Gather Information",
+          "Handle Animal",
+          "Heal",
+          "Hide",
+          "Intimidate",
+          "Jump",
+          "Knowledge",
+          "Listen",
+          "Move Silently",
+          "Open Lock",
+          "Perform",
+          "Profession",
+          "Psicraft",
+          "Ride",
+          "Search",
+          "Sense Motive",
+          "Sleight of Hand",
+          "Speak Language",
+          "Spellcraft",
+          "Spot",
+          "Survival",
+          "Swim",
+          "Truespeak",
+          "Tumble",
+          "Use Magic Device",
+          "Use Psionic Device",
+          "Use Rope"
+        ]
+      }
+    ]
   },
   {
     "schemaVersion": 3,
@@ -44608,8 +44665,8 @@
     "effects": [
       {
         "type": "defense",
-        "mode": "Resistance",
-        "what": "Chosen Energy",
+        "mode": "Energy Resistance",
+        "what": "@Choice",
         "value": 10
       }
     ],
@@ -44627,7 +44684,21 @@
       "slotless"
     ],
     "casterLevel": 3,
-    "priceText": "300 gp"
+    "priceText": "300 gp",
+    "choices": [
+      {
+        "id": "ch-energy",
+        "key": "energy",
+        "label": "Energy Type",
+        "options": [
+          "Acid",
+          "Cold",
+          "Electricity",
+          "Fire",
+          "Sonic"
+        ]
+      }
+    ]
   },
   {
     "schemaVersion": 3,
@@ -44652,8 +44723,8 @@
     "effects": [
       {
         "type": "defense",
-        "mode": "Resistance",
-        "what": "Chosen Energy",
+        "mode": "Energy Resistance",
+        "what": "@Choice",
         "value": 20
       }
     ],
@@ -44671,7 +44742,21 @@
       "slotless"
     ],
     "casterLevel": 7,
-    "priceText": "700 gp"
+    "priceText": "700 gp",
+    "choices": [
+      {
+        "id": "ch-energy",
+        "key": "energy",
+        "label": "Energy Type",
+        "options": [
+          "Acid",
+          "Cold",
+          "Electricity",
+          "Fire",
+          "Sonic"
+        ]
+      }
+    ]
   },
   {
     "schemaVersion": 3,
@@ -44696,8 +44781,8 @@
     "effects": [
       {
         "type": "defense",
-        "mode": "Resistance",
-        "what": "Chosen Energy",
+        "mode": "Energy Resistance",
+        "what": "@Choice",
         "value": 30
       }
     ],
@@ -44715,7 +44800,21 @@
       "slotless"
     ],
     "casterLevel": 11,
-    "priceText": "1,100 gp"
+    "priceText": "1,100 gp",
+    "choices": [
+      {
+        "id": "ch-energy",
+        "key": "energy",
+        "label": "Energy Type",
+        "options": [
+          "Acid",
+          "Cold",
+          "Electricity",
+          "Fire",
+          "Sonic"
+        ]
+      }
+    ]
   },
   {
     "schemaVersion": 3,
@@ -44758,7 +44857,21 @@
       "slotless"
     ],
     "casterLevel": 5,
-    "priceText": "750 gp"
+    "priceText": "750 gp",
+    "choices": [
+      {
+        "id": "ch-energy",
+        "key": "energy",
+        "label": "Energy Type",
+        "options": [
+          "Acid",
+          "Cold",
+          "Electricity",
+          "Fire",
+          "Sonic"
+        ]
+      }
+    ]
   },
   {
     "schemaVersion": 3,
