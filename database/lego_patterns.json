@@ -1,318 +1,749 @@
 {
-  "schemaVersion": 2,
-  "version": "2.5.0",
-  "description": "Curated Atomic V2.5 Lego Pattern Library for D&D 3.5e Rule Master AI & Universal Rule Forge. AI clones structural skeletons from this library and patches domain parameters.",
+  "schemaVersion": 3,
+  "version": "3.0.0",
+  "description": "Curated Pure Canonical V3 Lego Pattern Library (schemaVersion: 3) for the D&D 3.5e Rule Master AI and Rule Crafter. Each template is a complete V3 entry (effects[], choices[], powers[], blueprint sub-objects). The AI clones a structural skeleton and patches only domain parameters. Legacy V2 modifiers[]/damageParts[]/modes[] are banned.",
   "patterns": [
     {
       "patternId": "pat_breath_weapon_recharge",
-      "name": "Breath Weapon (Scaling Save DC & Dice Recharge)",
-      "keywords": ["breath weapon", "cone", "line", "recharge", "1d4", "reflex", "acid", "fire", "cold", "lightning"],
+      "name": "Breath Weapon (Save DC & Recharge Cooldown Power)",
+      "keywords": [
+        "breath weapon",
+        "cone",
+        "line",
+        "recharge",
+        "1d4",
+        "reflex",
+        "acid",
+        "fire",
+        "cold",
+        "lightning"
+      ],
       "template": {
-        "schemaVersion": 2,
+        "schemaVersion": 3,
         "id": "boon_draconic_breath_weapon",
+        "blueprint": "feat",
+        "featKind": "feat",
         "name": "Breath Weapon (Acid)",
         "type": "Special Ability",
         "source": "DM Draconic Boon",
-        "benefit": "60 ft. line/cone deals 4d8 Acid damage (Reflex DC 10 + Level + CON mod half; recharge 1d4+1 rounds).",
-        "description": "Exhale a 60-foot line of acid dealing 4d8 acid damage. Creatures caught in the area can make a Reflex save (DC 10 + character level + Con modifier) for half damage. Usable once every 1d4+1 rounds.",
-        "action": "Standard Action",
-        "actionType": "standard",
-        "tags": ["breath_weapon", "draconic", "acid"],
-        "modifiers": [],
-        "defenses": [],
-        "resources": [
-          {
-            "id": "res_breath_recharge",
-            "name": "Breath Weapon Recharge",
-            "kind": "consume",
-            "maxFormula": 1,
-            "recharge": { "period": "rounds", "dice": "1d4+1" }
-          }
+        "tags": [
+          "breath_weapon",
+          "draconic",
+          "acid"
         ],
-        "modes": [
+        "facets": [
+          "identity",
+          "effects",
+          "powers"
+        ],
+        "text": "Exhale a 60-foot line of acid dealing 4d8 acid damage. Creatures caught in the area can make a Reflex save (DC 10 + character level + Con modifier) for half damage. Usable once every 1d4+1 rounds.",
+        "effects": [],
+        "powers": [
           {
-            "id": "breath_acid",
+            "id": "pw-breath-acid",
+            "kind": "inline",
             "name": "Breath Weapon (4d8 Acid)",
-            "actionType": "standard",
-            "area": "60 ft. line",
-            "resourceCost": [{ "resourceId": "res_breath_recharge", "amount": 1 }],
+            "action": "Standard",
+            "usage": {
+              "mode": "cooldown",
+              "recharge": "1d4+1"
+            },
+            "area": "60-ft. Line",
             "save": {
               "type": "Reflex",
-              "dcFormula": "10 + @level + @conMod",
-              "onSave": "half"
+              "effect": "Half"
             },
-            "damageParts": [
+            "effects": [
               {
-                "dice": "4d8",
-                "bonus": 0,
-                "type": "Acid",
-                "multiplyOnCrit": false,
-                "onCritOnly": false,
-                "source": "Breath Weapon"
+                "type": "roll",
+                "kind": "Damage",
+                "count": 4,
+                "die": "d8",
+                "flat": 0,
+                "dmgType": "Acid",
+                "scaling": "flat",
+                "save": "Reflex half"
               }
             ],
-            "modifiers": [],
-            "defenses": []
+            "text": "Reflex DC 10 + @level + @conMod for half damage. Recharges in 1d4+1 rounds."
           }
-        ],
-        "grants": [],
-        "choices": []
+        ]
       }
     },
     {
       "patternId": "pat_scaling_natural_armor",
       "name": "Level-Scaling Natural Armor Bonus",
-      "keywords": ["nat ac", "natural armor", "1/4lvl", "per level", "scales"],
+      "keywords": [
+        "nat ac",
+        "natural armor",
+        "1/4lvl",
+        "per level",
+        "scales"
+      ],
       "template": {
-        "schemaVersion": 2,
+        "schemaVersion": 3,
         "id": "boon_draconic_nat_ac",
+        "blueprint": "feat",
+        "featKind": "feat",
         "name": "Draconic Natural Armor",
         "type": "DM Boon",
         "source": "DM Draconic Boon",
-        "benefit": "Gain Natural Armor bonus equal to 2 + 1 per 4 character levels.",
-        "description": "Your skin hardens into draconic scales, granting a Natural Armor bonus of 2 + 1 per 4 character levels.",
-        "action": "Passive",
-        "actionType": "passive",
-        "modifiers": [
-          {
-            "target": "ac.natural",
-            "op": "add",
-            "formula": "2 + floor(@level / 4)",
-            "type": "Natural Armor",
-            "condition": null
-          }
+        "tags": [
+          "draconic"
         ],
-        "defenses": [],
-        "resources": [],
-        "damageParts": [],
-        "modes": [],
-        "grants": [],
-        "choices": []
+        "text": "Your skin hardens into draconic scales, granting a Natural Armor bonus of 2 + 1 per 4 character levels.",
+        "effects": [
+          {
+            "type": "stat",
+            "targets": [
+              "ac.natural"
+            ],
+            "btype": "Natural Armor",
+            "mode": "formula",
+            "value": 0,
+            "formula": "2 + floor(@level / 4)"
+          }
+        ]
       }
     },
     {
       "patternId": "pat_scaling_energy_resistance",
-      "name": "Level-Scaling Energy Resistance",
-      "keywords": ["resist", "acid resist", "fire resist", "cold resist", "lvl*2", "immunity"],
+      "name": "Tiered Energy Resistance (Level Breakpoints)",
+      "keywords": [
+        "resist",
+        "acid resist",
+        "fire resist",
+        "cold resist",
+        "energy resistance",
+        "per level",
+        "scaling resistance"
+      ],
       "template": {
-        "schemaVersion": 2,
+        "schemaVersion": 3,
         "id": "boon_acid_resist_scaling",
+        "blueprint": "feat",
+        "featKind": "feat",
         "name": "Draconic Acid Resistance",
         "type": "DM Boon",
         "source": "DM Draconic Boon",
-        "benefit": "Gain Acid Resistance equal to Character Level x 2.",
-        "description": "Your draconic blood grants Acid Resistance equal to twice your character level.",
-        "action": "Passive",
-        "actionType": "passive",
-        "modifiers": [],
-        "defenses": [
-          {
-            "kind": "resistance",
-            "target": "acid",
-            "formula": "@level * 2"
-          }
+        "tags": [
+          "draconic",
+          "acid"
         ],
-        "resources": [],
-        "damageParts": [],
-        "modes": [],
-        "grants": [],
-        "choices": []
+        "text": "Your draconic blood grants acid resistance 10, increasing to 20 at 7th level and 30 at 11th level (Resist Energy breakpoints). Breakpoints use first-match `when` branches; the final `else` branch is the floor.",
+        "effects": [
+          {
+            "type": "when",
+            "flow": "if",
+            "branches": [
+              {
+                "condKind": "levelTier",
+                "condText": "@level >= 11",
+                "effects": [
+                  {
+                    "type": "defense",
+                    "mode": "Energy Resistance",
+                    "what": "Acid",
+                    "value": 30
+                  }
+                ]
+              },
+              {
+                "condKind": "levelTier",
+                "condText": "@level >= 7",
+                "effects": [
+                  {
+                    "type": "defense",
+                    "mode": "Energy Resistance",
+                    "what": "Acid",
+                    "value": 20
+                  }
+                ]
+              },
+              {
+                "condKind": "else",
+                "condText": "",
+                "effects": [
+                  {
+                    "type": "defense",
+                    "mode": "Energy Resistance",
+                    "what": "Acid",
+                    "value": 10
+                  }
+                ]
+              }
+            ]
+          }
+        ]
       }
     },
     {
       "patternId": "pat_reactive_save_counter_temp_hp",
-      "name": "Reactive Save Booster & Temp HP Spawner (Absorb Magic)",
-      "keywords": ["absorb magic", "immediate", "temp hp", "spell level", "dispelled", "save vs a spell"],
+      "name": "Reactive Save Booster & Temp HP Power (Absorb Magic)",
+      "keywords": [
+        "absorb magic",
+        "immediate",
+        "temp hp",
+        "spell level",
+        "dispelled",
+        "save vs a spell"
+      ],
       "template": {
-        "schemaVersion": 2,
+        "schemaVersion": 3,
         "id": "boon_absorb_magic",
+        "blueprint": "feat",
+        "featKind": "feat",
         "name": "Absorb Magic",
         "type": "DM Boon",
         "source": "DM Draconic Defence Path",
-        "benefit": "Immediate Action: +2 Competence bonus on saves vs targeted spells. On save, gain 10 Temp HP per spell level (EONT).",
-        "description": "Gain +2 competence bonus on saving throws vs a spell that targets you. If saved, gain 10 temporary HP for each spell level dispelled this way until the end of your next turn.",
-        "action": "Immediate Action",
-        "actionType": "immediate",
-        "modifiers": [
-          {
-            "target": "save.all",
-            "op": "add",
-            "value": 2,
-            "type": "Competence",
-            "when": { "toggle": "vs_targeted_spell" }
-          }
+        "tags": [
+          "draconic",
+          "absorb_magic"
         ],
-        "defenses": [],
-        "resources": [],
-        "damageParts": [],
-        "modes": [
+        "facets": [
+          "identity",
+          "effects",
+          "powers"
+        ],
+        "text": "Gain a +2 competence bonus on saving throws against a spell that targets you. If you save, gain 10 temporary hit points per spell level until the end of your next turn.",
+        "effects": [
           {
-            "id": "absorb_on_save",
-            "name": "Absorb Spell (Gain Temp HP)",
-            "actionType": "immediate",
-            "reactsTo": "on_spell_targeted",
-            "inputs": [
-              { "id": "spellLevel", "label": "Absorbed Spell Level", "type": "int", "min": 1, "max": 9, "default": 3 }
+            "type": "when",
+            "flow": "while",
+            "branches": [
+              {
+                "condKind": "state",
+                "condText": "toggle:vs_targeted_spell",
+                "effects": [
+                  {
+                    "type": "stat",
+                    "targets": [
+                      "save.all"
+                    ],
+                    "btype": "Competence",
+                    "mode": "flat",
+                    "value": 2
+                  }
+                ]
+              }
             ],
-            "spawnsBuff": {
-              "id": "buff_absorb_magic_eont",
-              "name": "Absorbed Magic Shield (EONT)",
-              "durationRounds": 1,
-              "tempHpFormula": "10 * @input.spellLevel",
-              "modifiers": [],
-              "defenses": []
-            },
-            "damageParts": [],
-            "modifiers": []
+            "label": "vs. Targeted Spell"
+          },
+          {
+            "type": "resource",
+            "name": "Absorbed Spell Level",
+            "varKey": "absorbed_spell_level",
+            "resMode": "dial",
+            "maxMode": "flat",
+            "max": 9,
+            "reset": "atWill"
           }
         ],
-        "grants": [],
-        "choices": []
+        "powers": [
+          {
+            "id": "pw-absorb-on-save",
+            "kind": "inline",
+            "name": "Absorb Spell (Gain Temp HP)",
+            "action": "Immediate",
+            "usage": {
+              "mode": "atwill"
+            },
+            "duration": "Until end of your next turn",
+            "effects": [
+              {
+                "type": "roll",
+                "kind": "Temp HP",
+                "count": 0,
+                "die": "flat",
+                "flat": 0,
+                "scaling": "formula",
+                "dice": "10 * @absorbed_spell_level"
+              }
+            ],
+            "text": "Triggered when you succeed on a save against a targeted spell; set @absorbed_spell_level to that spell's level."
+          }
+        ]
       }
     },
     {
       "patternId": "pat_synergy_mutator_unlock",
-      "name": "Synergy Auto-Unlock & Entity Mutator (Arcane Shield)",
-      "keywords": ["synergy", "instead of", "competence bonus is now", "arcane shield", "when saved with"],
+      "name": "Synergy Upgrade via Bonus-Type Stacking (Arcane Shield)",
+      "keywords": [
+        "synergy",
+        "instead of",
+        "competence bonus is now",
+        "arcane shield",
+        "when saved with"
+      ],
       "template": {
-        "schemaVersion": 2,
+        "schemaVersion": 3,
         "id": "boon_arcane_shield",
+        "blueprint": "feat",
+        "featKind": "feat",
         "name": "Arcane Shield",
         "type": "DM Boon",
         "source": "DM Draconic Synergy (Absorb Magic + Elemental Accustomed)",
-        "benefit": "Requires Absorb Magic + Elemental Accustomed. Upgrades Absorb Magic save bonus from +2 to +4 Competence, and grants +Sacred AC equal to spell level on save.",
-        "description": "When saved with Absorb Magic, gain Improved Evasion, Mettle, and Sacred AC bonus per spell level (EONT). Absorb Magic's competence bonus becomes +4 instead of +2.",
-        "action": "Passive",
-        "actionType": "passive",
-        "requires": {
-          "all": ["boon_absorb_magic", "boon_elemental_accustomed"]
-        },
-        "modifiers": [
-          {
-            "target": "entity.saveBonus",
-            "selector": { "id": "boon_absorb_magic" },
-            "op": "set",
-            "value": 4,
-            "type": "Competence"
-          }
+        "tags": [
+          "draconic",
+          "synergy"
         ],
-        "defenses": [],
-        "resources": [],
-        "damageParts": [],
-        "modes": [],
-        "grants": [],
-        "choices": []
+        "text": "Requires Absorb Magic and Elemental Accustomed. Absorb Magic's competence bonus becomes +4 (same-type Competence bonuses do not stack, so the higher +4 wins instead of mutating the other entry). When you save with Absorb Magic, gain Improved Evasion, Mettle, and a sacred bonus to AC equal to the absorbed spell level until the end of your next turn.",
+        "effects": [
+          {
+            "type": "when",
+            "flow": "while",
+            "branches": [
+              {
+                "condKind": "state",
+                "condText": "toggle:vs_targeted_spell",
+                "effects": [
+                  {
+                    "type": "stat",
+                    "targets": [
+                      "save.all"
+                    ],
+                    "btype": "Competence",
+                    "mode": "flat",
+                    "value": 4
+                  }
+                ]
+              }
+            ],
+            "label": "vs. Targeted Spell"
+          },
+          {
+            "type": "when",
+            "flow": "while",
+            "branches": [
+              {
+                "condKind": "state",
+                "condText": "toggle:absorbed_magic_eont",
+                "effects": [
+                  {
+                    "type": "stat",
+                    "targets": [
+                      "ac.total"
+                    ],
+                    "btype": "Sacred",
+                    "mode": "formula",
+                    "value": 0,
+                    "formula": "@absorbed_spell_level"
+                  },
+                  {
+                    "type": "defense",
+                    "mode": "Sense / Movement",
+                    "what": "Improved Evasion"
+                  },
+                  {
+                    "type": "defense",
+                    "mode": "Sense / Movement",
+                    "what": "Mettle"
+                  }
+                ]
+              }
+            ],
+            "label": "Absorbed Magic (EONT)"
+          }
+        ]
       }
     },
     {
       "patternId": "pat_skill_replaces_ac",
-      "name": "Skill Check Replaces AC (Boon of Combat Perform)",
-      "keywords": ["perform", "dance", "as your ac", "replace ac", "instead of ac"],
+      "name": "Skill Check Replaces AC + Stance Rider (Boon of Combat Perform)",
+      "keywords": [
+        "perform",
+        "dance",
+        "as your ac",
+        "replace ac",
+        "instead of ac"
+      ],
       "template": {
-        "schemaVersion": 2,
+        "schemaVersion": 3,
         "id": "boon_combat_perform_lesser",
-        "name": "Boon of Combat Perform Lesser",
+        "blueprint": "feat",
+        "featKind": "feat",
+        "name": "Boon of Combat Perform (Lesser)",
         "type": "DM Boon",
         "source": "DM Lesser Boons",
-        "benefit": "Benefit 1: Use Perform (Dance) check result as your AC while dancing. Benefit 2: +2 attack with small/light weapons while dancing.",
-        "description": "You can use your Perform (Dance) check as your AC as long as you spend 1 action to dance each turn. While dancing you get +2 to all attacks with small weapons.",
-        "action": "Move Action",
-        "actionType": "move",
-        "modifiers": [
+        "tags": [
+          "perform",
+          "dance"
+        ],
+        "text": "Benefit 1: While dancing (1 move action each turn), use your Perform (Dance) check result as your AC. Benefit 2: While dancing, gain +2 on attack rolls with light weapons.",
+        "effects": [
           {
-            "target": "ac.total",
-            "op": "replace",
-            "formula": "@state.perform_dance_roll",
-            "type": "Untyped",
-            "affects": ["normal", "touch", "flatFooted"],
-            "sourceLabel": "Benefit 1",
-            "when": { "toggle": "dancing" }
+            "type": "resource",
+            "name": "Perform (Dance) Result",
+            "varKey": "perform_dance_roll",
+            "resMode": "dial",
+            "maxMode": "flat",
+            "max": 60,
+            "reset": "atWill"
           },
           {
-            "target": "attack.melee",
-            "op": "add",
-            "value": 2,
-            "type": "Untyped",
-            "sourceLabel": "Benefit 2",
-            "when": { "toggle": "dancing" }
+            "type": "when",
+            "flow": "while",
+            "branches": [
+              {
+                "condKind": "state",
+                "condText": "toggle:dancing",
+                "effects": [
+                  {
+                    "type": "effect",
+                    "effectKind": "rule",
+                    "label": "Benefit 1: Dance Defense",
+                    "text": "Your AC (normal, touch and flat-footed) equals @perform_dance_roll while dancing."
+                  },
+                  {
+                    "type": "stat",
+                    "targets": [
+                      "atk.melee"
+                    ],
+                    "btype": "Untyped",
+                    "mode": "flat",
+                    "value": 2,
+                    "condition": "finessable_or_light"
+                  }
+                ]
+              }
+            ],
+            "label": "Dancing"
           }
-        ],
-        "defenses": [],
-        "resources": [],
-        "damageParts": [],
-        "modes": [],
-        "grants": [],
-        "choices": []
+        ]
       }
     },
     {
       "patternId": "pat_ability_score_substitution",
-      "name": "X Stat to Y Bonus / Ability Modifier Substitution (Steadfast Determination)",
-      "keywords": ["instead of wisdom", "instead of dexterity", "con to will", "cha to will", "int to reflex"],
+      "name": "A->B Ability Modifier Substitution (Steadfast Determination)",
+      "keywords": [
+        "instead of wisdom",
+        "instead of dexterity",
+        "con to will",
+        "cha to will",
+        "int to reflex"
+      ],
       "template": {
-        "schemaVersion": 2,
+        "schemaVersion": 3,
         "id": "feat_steadfast_determination",
+        "blueprint": "feat",
+        "featKind": "feat",
         "name": "Steadfast Determination",
         "type": "Feat",
-        "source": "Player's Handbook II, p. 83",
-        "benefit": "Use your Constitution modifier instead of your Wisdom modifier on Will saves. Do not automatically fail Fortitude saves on a natural 1.",
-        "description": "You can use your Constitution modifier instead of your Wisdom modifier on Will saves.",
-        "action": "Passive",
-        "actionType": "passive",
-        "modifiers": [
-          {
-            "target": "save.will.abilityMod",
-            "op": "max",
-            "formula": "@conMod",
-            "type": "Untyped"
-          }
+        "source": "Player's Handbook II p.83",
+        "tags": [
+          "feat",
+          "general"
         ],
-        "defenses": [],
-        "resources": [],
-        "damageParts": [],
-        "modes": [],
-        "grants": [],
-        "choices": []
+        "prerequisites": "Endurance.",
+        "text": "You can use your Constitution modifier in place of your Wisdom modifier on Will saves. In addition, you do not automatically fail Fortitude saves on a roll of natural 1.",
+        "effects": [
+          {
+            "type": "stat",
+            "mode": "replaceStat",
+            "swapTarget": "save.will.abilityMod",
+            "targets": [
+              "save.will.abilityMod"
+            ],
+            "subOp": "max",
+            "fromStat": "wis",
+            "toStat": "con",
+            "scope": "all",
+            "formula": "@conMod"
+          },
+          {
+            "type": "effect",
+            "effectKind": "ruleSwitch",
+            "flag": "noAutoFailFortSaveOnNat1",
+            "label": "Do Not Auto-Fail Fortitude Save on Natural 1"
+          }
+        ]
       }
     },
     {
       "patternId": "pat_weapon_die_step_upgrade",
-      "name": "Weapon Damage Die Step Upgrade (Boon of Blacksmith)",
-      "keywords": ["1 damage dice higher", "step_die", "crafted", "weapon size", "shortword you craft is 1d8"],
+      "name": "Crafted Gear Rider + Conditional DR (Boon of Blacksmith)",
+      "keywords": [
+        "1 damage dice higher",
+        "step_die",
+        "crafted",
+        "weapon size",
+        "shortsword you craft is 1d8"
+      ],
       "template": {
-        "schemaVersion": 2,
+        "schemaVersion": 3,
         "id": "boon_blacksmith_lesser",
-        "name": "Boon of Blacksmith Lesser",
+        "blueprint": "feat",
+        "featKind": "feat",
+        "name": "Boon of Blacksmith (Lesser)",
         "type": "DM Boon",
         "source": "DM Lesser Boons",
-        "benefit": "Benefit 1: Weapons you craft have +1 damage die step. Benefit 2: Shields you craft grant DR 2/-.",
-        "description": "All weapons you craft have 1 damage die step higher (e.g. 1d6 becomes 1d8). Shields you craft grant +2 DR.",
-        "action": "Passive",
-        "actionType": "passive",
-        "modifiers": [
+        "tags": [
+          "crafting"
+        ],
+        "text": "Benefit 1: Weapons you craft deal damage one die step higher (1d6 becomes 1d8). Benefit 2: While using a shield you crafted, gain DR 2/-.",
+        "effects": [
           {
-            "target": "entity.damageDice",
-            "selector": { "type": "Weapon", "tag": "crafted_by_self" },
-            "op": "step_die",
+            "type": "effect",
+            "effectKind": "rule",
+            "label": "Benefit 1: Masterful Edge",
+            "text": "Weapons tagged crafted_by_self roll damage one die step higher (record the stepped die on the weapon's damageDice)."
+          },
+          {
+            "type": "when",
+            "flow": "while",
+            "branches": [
+              {
+                "condKind": "state",
+                "condText": "toggle:using_crafted_shield",
+                "effects": [
+                  {
+                    "type": "defense",
+                    "mode": "DR",
+                    "value": 2,
+                    "what": "-"
+                  }
+                ]
+              }
+            ],
+            "label": "Using Crafted Shield"
+          }
+        ]
+      }
+    },
+    {
+      "patternId": "pat_choice_weapon_focus",
+      "name": "@Choice Weapon Feat (Weapon Focus)",
+      "keywords": [
+        "weapon focus",
+        "chosen weapon",
+        "selected weapon",
+        "+1 attack",
+        "choose a weapon"
+      ],
+      "template": {
+        "schemaVersion": 3,
+        "id": "feat-weapon-focus",
+        "blueprint": "feat",
+        "name": "Weapon Focus",
+        "type": "Feat",
+        "category": "Fighter",
+        "source": "SRD / PHB p.90",
+        "featKind": "feat",
+        "isFighterBonusFeat": true,
+        "tags": [
+          "feat",
+          "fighter",
+          "weapon-focus"
+        ],
+        "text": "+1 bonus on all attack rolls you make using the selected weapon.",
+        "timesSelectable": "perWeaponOrSchool",
+        "prerequisites": "Proficiency with selected weapon, base attack bonus +1.",
+        "choices": [
+          {
+            "id": "ch-weapon",
+            "key": "weapon",
+            "label": "Chosen Weapon",
+            "count": 1
+          }
+        ],
+        "effects": [
+          {
+            "type": "when",
+            "flow": "while",
+            "branches": [
+              {
+                "condKind": "wieldingChosenWeapon",
+                "condText": "",
+                "effects": [
+                  {
+                    "type": "stat",
+                    "targets": [
+                      "atk.weapon"
+                    ],
+                    "mode": "flat",
+                    "value": 1,
+                    "btype": "Untyped"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "patternId": "pat_choice_energy_resistance",
+      "name": "@Choice Energy Resistance Feat (Energy Resistance)",
+      "keywords": [
+        "energy resistance",
+        "choose a type of energy",
+        "resistance 10",
+        "acid, cold, electricity, fire, or sonic"
+      ],
+      "template": {
+        "schemaVersion": 3,
+        "id": "feat-energy-resistance",
+        "blueprint": "feat",
+        "featKind": "feat",
+        "name": "Energy Resistance",
+        "type": "Feat",
+        "category": "Epic",
+        "source": "SRD 3.5e (Epic)",
+        "tags": [
+          "feat",
+          "epic"
+        ],
+        "timesSelectable": "perWeaponOrSchool",
+        "prerequisites": "Character level 21st.",
+        "text": "Choose a type of energy (acid, cold, electricity, fire, or sonic). You gain resistance 10 to that type of energy, or your existing resistance to it increases by 10. A character can gain this feat multiple times; if the same type is chosen, the effects stack.",
+        "choices": [
+          {
+            "id": "ch-energy",
+            "key": "energy",
+            "label": "Energy Type",
+            "count": 1,
+            "options": [
+              "Acid",
+              "Cold",
+              "Electricity",
+              "Fire",
+              "Sonic"
+            ]
+          }
+        ],
+        "effects": [
+          {
+            "type": "defense",
+            "mode": "Energy Resistance",
+            "what": "@Choice",
+            "value": 10
+          }
+        ]
+      }
+    },
+    {
+      "patternId": "pat_clamped_per_cl_buff",
+      "name": "Clamped Per-Caster-Level Buff (Divine Favor)",
+      "keywords": [
+        "divine favor",
+        "per three caster levels",
+        "per 3 levels",
+        "maximum +3",
+        "luck bonus",
+        "per caster level"
+      ],
+      "template": {
+        "schemaVersion": 3,
+        "id": "spl-divine-favor",
+        "blueprint": "spell",
+        "name": "Divine Favor",
+        "source": "SRD 3.5e (PHB p.224)",
+        "tags": [
+          "spell",
+          "evocation"
+        ],
+        "spell": {
+          "system": "spell",
+          "classLevels": [
+            {
+              "class": "Cleric",
+              "level": 1
+            },
+            {
+              "class": "Paladin",
+              "level": 1
+            }
+          ],
+          "school": "Evocation",
+          "descriptors": [],
+          "components": [
+            "V",
+            "S",
+            "DF"
+          ]
+        },
+        "delivery": {
+          "action": "Standard",
+          "range": "Personal",
+          "attack": "none",
+          "spellResistance": "No"
+        },
+        "lifecycle": {
+          "usage": {
+            "mode": "spellSlot",
+            "slotLevel": 1
+          },
+          "duration": "minute",
+          "durationText": "1 minute",
+          "dismissible": false
+        },
+        "text": "You gain a +1 luck bonus on attack and weapon damage rolls for every three caster levels you have (at least +1, maximum +3).",
+        "effects": [
+          {
+            "type": "stat",
+            "targets": [
+              "atk.all",
+              "dmg.weapon"
+            ],
+            "btype": "Luck",
+            "mode": "perCL",
             "value": 1,
-            "sourceLabel": "Benefit 1"
+            "per": 3,
+            "min": 1,
+            "max": 3,
+            "formula": "clamp(floor(@cl/3)*1,1,3)"
           }
+        ]
+      }
+    },
+    {
+      "patternId": "pat_conditional_stance_rider_dice",
+      "name": "Conditional Stance Rider Dice (Assassin's Stance)",
+      "keywords": [
+        "stance",
+        "while in this stance",
+        "extra damage",
+        "sneak attack",
+        "+2d6",
+        "rider"
+      ],
+      "template": {
+        "schemaVersion": 3,
+        "id": "man-assassins-stance",
+        "blueprint": "feat",
+        "featKind": "feat",
+        "name": "Assassin's Stance",
+        "type": "Maneuver (Stance)",
+        "source": "Tome of Battle (Shadow Hand)",
+        "tags": [
+          "stance",
+          "shadow_hand"
         ],
-        "defenses": [
+        "text": "Shadow Hand 3rd-level stance (swift action). While you are in this stance, you deal an extra 2d6 points of sneak attack damage. This stacks with sneak attack from other sources.",
+        "effects": [
           {
-            "kind": "dr",
-            "target": "physical",
-            "value": 2,
-            "bypass": "-",
-            "sourceLabel": "Benefit 2",
-            "when": { "toggle": "using_crafted_shield" }
+            "type": "when",
+            "flow": "while",
+            "branches": [
+              {
+                "condKind": "state",
+                "condText": "stance:Assassin's Stance",
+                "effects": [
+                  {
+                    "type": "roll",
+                    "kind": "Damage",
+                    "count": 2,
+                    "die": "d6",
+                    "flat": 0,
+                    "dmgType": "Precision",
+                    "scaling": "flat",
+                    "condition": "sneak attack eligible (flanking or target denied Dex)"
+                  }
+                ]
+              }
+            ]
           }
-        ],
-        "resources": [],
-        "damageParts": [],
-        "modes": [],
-        "grants": [],
-        "choices": []
+        ]
       }
     }
   ]

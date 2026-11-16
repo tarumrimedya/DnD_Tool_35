@@ -1,1205 +1,1866 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "RuleMasterAiResponseSchemaV3",
-  "description": "Canonical V3 JSON response schema (schemaVersion: 3) for D&D 3.5e Rule Master AI & Rule Crafter queries. All responses must be returned inside the 'entries' array using Canonical V3 'effects', blueprint sub-objects ('weapon', 'armor', 'chassis', 'race', 'monster', 'itemModifier'), and 'powers'.",
+  "description": "Pure Canonical V3 (schemaVersion: 3) response schema for the D&D 3.5e Rule Master AI and Rule Crafter. Return every result inside `entries` using V3 effects[] blocks, choices[], powers[] and blueprint sub-objects. Legacy V2 modifiers[], damageParts[], defenses[], resources[] and modes[] are banned.",
   "type": "object",
-  "required": ["entries"],
+  "required": [
+    "entries"
+  ],
   "properties": {
     "entries": {
       "type": "array",
-      "description": "List of Canonical V2 objects for the queried D&D 3.5e rule, spell, feat, item, or entity.",
+      "description": "Pure Canonical V3 entries for the queried rule, spell, feat, item, or entity.",
       "items": {
-        "$ref": "#/definitions/RuleMasterEntryV2"
+        "$ref": "#/definitions/RuleMasterEntryV3"
       }
     }
   },
   "definitions": {
-    "ModifierEntryV2": {
+    "RuleMasterEntryV3": {
       "type": "object",
-      "required": ["target", "type"],
-      "properties": {
-        "target": {
-          "type": "string",
-          "description": "Target stat or mechanic key (e.g. 'ability.str', 'ability.dex', 'ability.con', 'ability.int', 'ability.wis', 'ability.cha', 'choice.ability.1', 'choice.save.1', 'choice.skill.1', 'choice.school.1', 'ac', 'ac.armor', 'ac.shield', 'ac.shieldBonus', 'ac.deflection', 'ac.natural', 'ac.dodge', 'ac.abilityMod', 'attack.all', 'attack.melee', 'attack.ranged', 'atk.weapon', 'atk.critConfirm', 'atk.melee.abilityMod', 'atk.ranged.abilityMod', 'atk.thrown.abilityMod', 'atk.touch.abilityMod', 'grapple.abilityMod', 'damage.all', 'damage.melee', 'dmg.ranged', 'dmg.weapon', 'dmg.melee.abilityMod', 'dmg.ranged.abilityMod', 'save.all', 'save.fort', 'save.ref', 'save.will', 'save.fort.abilityMod', 'save.ref.abilityMod', 'save.will.abilityMod', 'init', 'initiative.abilityMod', 'speed.land', 'hp', 'hp.perLevel', 'hp.abilityMod', 'bab', 'concentration.abilityMod', 'casterLevel', 'caster.spellPenetration', 'spell.dc', 'spell.dc.abilityMod', 'spell.bonusSlots.abilityMod', 'skill.all', 'skill.knowledge', 'skill.tumble', 'skill.<slug>.abilityMod')."
-        },
-        "value": {
-          "type": "number",
-          "description": "Static numeric bonus or penalty value."
-        },
-        "formula": {
-          "type": "string",
-          "description": "Dynamic scaling bonus formula (e.g. 'min(5, 2 + floor(casterLevel / 6))'). Used instead of static 'value'."
-        },
-        "type": {
-          "type": "string",
-          "enum": [
-            "Enhancement",
-            "Deflection",
-            "Armor",
-            "Shield",
-            "Natural Armor",
-            "Resistance",
-            "Morale",
-            "Luck",
-            "Insight",
-            "Sacred",
-            "Profane",
-            "Competence",
-            "Circumstance",
-            "Alchemical",
-            "Racial",
-            "Size",
-            "Dodge",
-            "Inherent",
-            "Untyped",
-            "Penalty"
-          ],
-          "default": "Untyped",
-          "description": "Official D&D 3.5e bonus type (bonuses of the same type do not stack except Dodge, Circumstance, and Untyped)."
-        },
-        "condition": {
-          "type": ["string", "null"],
-          "default": null,
-          "description": "Optional situational condition (e.g. 'vs evil', 'while charging', or null)."
-        },
-        "op": {
-          "type": "string",
-          "enum": ["add", "set", "max", "min", "replace", "multiply", "step_die"],
-          "default": "add",
-          "description": "Lego operation: 'add' (default), 'set', 'max' (may use X instead of Y), 'min', 'replace' (uses X instead of Y), 'multiply' (RAW multiplier), or 'step_die' (increase/decrease weapon damage die step)."
-        },
-        "selector": {
-          "type": ["object", "null"],
-          "default": null,
-          "description": "Entity/component filter when target modifies another ability, spell, or weapon (e.g. {'id': 'boon_absorb_magic'}, {'type': 'Spell', 'maxLevel': 3, 'school': 'Evocation'}, {'type': 'Weapon', 'tag': 'crafted_by_self'}).",
-          "properties": {
-            "id": { "type": "string" },
-            "type": { "type": "string" },
-            "school": { "type": "string" },
-            "maxLevel": { "type": "integer" },
-            "minLevel": { "type": "integer" },
-            "tag": { "type": "string" },
-            "mode": { "type": "string" }
+      "description": "One Pure Canonical V3 entry. Mechanics live ONLY in effects[] (plus powers[] for activated abilities and choices[] for @Choice inputs). Narrative-only entries keep effects: [].",
+      "required": [
+        "schemaVersion",
+        "id",
+        "blueprint",
+        "name"
+      ],
+      "additionalProperties": true,
+      "not": {
+        "anyOf": [
+          {
+            "required": [
+              "modifiers"
+            ]
+          },
+          {
+            "required": [
+              "damageParts"
+            ]
+          },
+          {
+            "required": [
+              "defenses"
+            ]
+          },
+          {
+            "required": [
+              "resources"
+            ]
           }
-        },
-        "cap": {
-          "type": ["number", "string", "null"],
-          "default": null,
-          "description": "Optional maximum cap value or formula (e.g. '@classes.duelist.level' for Canny Defense)."
-        },
-        "appliesTo": {
-          "type": "array",
-          "items": { "type": "string" },
-          "description": "Sub-scopes for scoped modifiers such as Powerful Build (e.g. ['grapple', 'bullRush', 'trip', 'overrun', 'sunder', 'weaponSize', 'opposedSize'])."
-        },
-        "affects": {
-          "type": "array",
-          "items": { "type": "string", "enum": ["normal", "touch", "flatFooted"] },
-          "description": "Which AC variants a base/total AC replacement affects."
-        },
-        "sourceLabel": {
-          "type": ["string", "null"],
-          "default": null,
-          "description": "Sub-feature origin label for multi-benefit Boons (e.g. 'Benefit 1', 'Benefit 2')."
-        },
-        "when": {
-          "type": ["object", "null"],
-          "default": null,
-          "description": "Structured predicate condition ({ toggle, equipped, has, vs, terrain, armorCategory, all, any, not })."
-        }
-      }
-    },
-    "DefenseEntryV2": {
-      "type": "object",
-      "required": ["kind", "target"],
+        ]
+      },
       "properties": {
-        "kind": {
-          "type": "string",
-          "enum": ["dr", "sr", "resistance", "immunity", "vulnerability", "regen", "fast_healing", "fortification", "absorption"],
-          "description": "Defense primitive type."
+        "schemaVersion": {
+          "const": 3
         },
-        "target": {
-          "type": "string",
-          "description": "Damage, energy, or effect type (e.g. 'acid', 'fire', 'cold', 'electricity', 'sonic', 'magic', 'all', 'crit', 'mind_affecting', 'fear', 'sleep', 'paralysis', 'stun', 'slow', 'poison', 'disease')."
-        },
-        "value": {
-          "type": "number",
-          "description": "Static numeric value (e.g. 10 for Acid Resist 10, 25 for Fortification 25%)."
-        },
-        "formula": {
-          "type": "string",
-          "description": "Dynamic scaling formula (e.g. '@level * 2', '21 + @level', '@chaMod')."
-        },
-        "bypass": {
-          "type": ["string", "null"],
-          "default": null,
-          "description": "DR or Regen bypass type (e.g. '-', 'magic', 'adamantine', 'cold_iron', 'acid_or_fire')."
-        },
-        "healRatio": {
-          "type": "number",
-          "default": 1,
-          "description": "For kind='absorption', ratio of absorbed energy damage converted into healing (e.g. 1.0 for Elemental Supremacy, 0.33 for Iron Golem)."
-        },
-        "sourceLabel": {
-          "type": ["string", "null"],
-          "default": null
-        },
-        "when": {
-          "type": ["object", "null"],
-          "default": null
-        }
-      }
-    },
-    "ResourceEntryV2": {
-      "type": "object",
-      "required": ["id", "name"],
-      "properties": {
-        "id": { "type": "string" },
-        "name": { "type": "string" },
-        "kind": {
-          "type": "string",
-          "enum": ["consume", "allocate"],
-          "default": "consume",
-          "description": "'consume' for daily/hourly/cooldown charges; 'allocate' for reusable investment pools such as Incarnum Essentia."
-        },
-        "maxFormula": {
-          "type": ["string", "number"],
-          "default": 1,
-          "description": "Maximum pool capacity or formula (e.g. 1, 3, '1 + @wisMod', 'floor(@level / 3)')."
-        },
-        "recharge": {
-          "type": "object",
-          "properties": {
-            "period": {
-              "type": "string",
-              "enum": ["at_will", "day", "hour", "encounter", "rounds", "rest"],
-              "default": "day"
-            },
-            "dice": {
-              "type": ["string", "null"],
-              "default": null,
-              "description": "Rollable round cooldown expression when period='rounds' (e.g. '1d4+1')."
-            }
-          }
-        }
-      }
-    },
-    "GrantEntryV2": {
-      "type": "object",
-      "required": ["grantType"],
-      "properties": {
-        "grantType": {
-          "type": "string",
-          "enum": ["entity", "spell_at_will", "proficiency", "metamagic", "sense", "movement"],
-          "description": "Type of automatic grant or synergy unlock."
-        },
-        "targetId": {
-          "type": ["string", "null"],
-          "default": null,
-          "description": "Granted entity ID, sense ID (e.g. 'blindsense_30', 'blindsight_120', 'scent_30', 'darkvision_60'), or proficiency group."
-        },
-        "value": {
-          "type": ["number", "string", "null"],
-          "default": null
-        },
-        "filter": {
-          "type": ["object", "null"],
-          "default": null,
-          "description": "Filter for spell_at_will or metamagic grants (e.g. {'school': 'Abjuration', 'level': 1})."
-        },
-        "requires": {
-          "type": ["object", "null"],
-          "default": null,
-          "description": "Synergy prerequisite predicate (e.g. {'all': ['boon_absorb_magic', 'boon_elemental_accustomed']})."
-        },
-        "sourceLabel": {
-          "type": ["string", "null"],
-          "default": null
-        }
-      }
-    },
-    "ChoiceEntryV2": {
-      "type": "object",
-      "required": ["id", "label"],
-      "properties": {
-        "id": { "type": "string" },
-        "label": { "type": "string" },
-        "pickCount": { "type": "integer", "default": 1 },
-        "options": {
-          "type": "array",
-          "items": { "type": "string" },
-          "default": []
-        },
-        "bindsTo": {
-          "type": "string",
-          "description": "Variable token bound by this selection (e.g. '$chosenEnergy', '$chosenSchool', '$chosenWeapon')."
-        }
-      }
-    },
-    "DamagePartEntryV2": {
-      "type": "object",
-      "required": ["dice", "type"],
-      "properties": {
-        "dice": {
-          "type": "string",
-          "description": "Damage or healing dice formula (e.g. '1d8', '2d6', 'min(10, casterLevel)d6'). Never include the 6-sided die emoji (U+1F3B2)."
-        },
-        "bonus": {
-          "type": "number",
-          "default": 0,
-          "description": "Flat numeric damage bonus added to the dice."
-        },
-        "type": {
-          "type": "string",
-          "default": "Untyped",
-          "description": "Damage type (Slashing, Piercing, Bludgeoning, Fire, Cold, Electricity, Acid, Sonic, Force, Positive Energy, Negative Energy, Holy, Unholy, Untyped / Divine Light)."
-        },
-        "multiplyOnCrit": {
-          "type": "boolean",
-          "default": false,
-          "description": "Whether this dice expression multiplies on a critical hit (true for base weapon damage, false for bonus energy dice such as Flaming)."
-        },
-        "onCritOnly": {
-          "type": "boolean",
-          "default": false,
-          "description": "Whether this extra dice triggers only on a confirmed critical hit (e.g. Flaming Burst +1d10)."
-        },
-        "source": {
-          "type": "string",
-          "description": "Origin of the damage part (e.g. 'Base Weapon', 'Flaming', 'Mountain Hammer')."
-        }
-      }
-    },
-    "ModeEntryV2": {
-      "type": "object",
-      "required": ["id", "name"],
-      "properties": {
         "id": {
           "type": "string",
-          "description": "Unique slug identifier for the mode (e.g. 'vs_undead', 'two_handed', 'sacrifice_4_hp')."
+          "description": "Immutable kebab/snake-case id (e.g. \"feat-weapon-focus\"). References match by id, never by display name."
+        },
+        "blueprint": {
+          "type": "string",
+          "enum": [
+            "weapon",
+            "armor",
+            "wondrous",
+            "spell",
+            "feat",
+            "buff",
+            "class",
+            "item_mod",
+            "race",
+            "deity",
+            "domain",
+            "monster"
+          ]
         },
         "name": {
           "type": "string",
-          "description": "Short UI pill label for the mode (e.g. 'Undead (1d6/CL)', 'Two-Handed', 'Sacrifice 4 HP (+2d6)')."
+          "description": "Official D&D 3.5e English name."
         },
-        "actionType": {
+        "type": {
           "type": "string",
-          "enum": ["passive", "standard", "move", "swift", "immediate", "full_round", "free"],
-          "default": "standard"
+          "description": "Display type (Feat, Spell, Domain, DM Boon, ...)."
         },
-        "grip": {
+        "category": {
+          "type": "string"
+        },
+        "source": {
           "type": "string",
-          "enum": ["one_handed", "two_handed", "off_hand", "none"],
-          "default": "none"
+          "description": "Book and page, e.g. \"Complete Warrior p.106\"."
         },
-        "isRanged": {
-          "type": "boolean",
-          "default": false
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "facets": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "identity",
+              "chassis",
+              "delivery",
+              "lifecycle",
+              "effects",
+              "powers",
+              "grants",
+              "progression",
+              "prereqs"
+            ]
+          }
+        },
+        "text": {
+          "type": [
+            "string",
+            "object"
+          ],
+          "description": "Rules text (string) or { summary }."
+        },
+        "featKind": {
+          "type": "string",
+          "enum": [
+            "feat",
+            "acf",
+            "substitution",
+            "trait",
+            "flaw"
+          ]
+        },
+        "timesSelectable": {
+          "type": [
+            "number",
+            "string"
+          ],
+          "description": "1, N, or \"perWeaponOrSchool\" for repeatable @Choice feats."
+        },
+        "prerequisites": {
+          "type": [
+            "string",
+            "object"
+          ]
+        },
+        "baseItemId": {
+          "type": "string",
+          "description": "Composite gear base item id (e.g. \"katana\")."
+        },
+        "material": {
+          "type": "string",
+          "description": "Special material id (e.g. \"adamantine\", \"mithral\", \"cold_iron\")."
+        },
+        "enhancementBonus": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 5
+        },
+        "enhancements": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Special ability ids (e.g. \"keen\", \"flaming_burst\")."
+        },
+        "ruleFlags": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "choices": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ChoiceV3"
+          }
+        },
+        "effects": {
+          "type": "array",
+          "description": "Atomic V3 effect blocks (stat, roll, attack, defense, effect, resource, when, table, carrier).",
+          "items": {
+            "$ref": "#/definitions/EffectBlockV3"
+          }
+        },
+        "powers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PowerV3"
+          }
+        },
+        "spell": {
+          "$ref": "#/definitions/SpellV3"
+        },
+        "delivery": {
+          "$ref": "#/definitions/DeliveryV3"
+        },
+        "lifecycle": {
+          "$ref": "#/definitions/LifecycleV3"
+        },
+        "weapon": {
+          "$ref": "#/definitions/WeaponV3"
+        },
+        "armor": {
+          "$ref": "#/definitions/ArmorV3"
+        },
+        "item": {
+          "$ref": "#/definitions/ItemV3"
+        },
+        "itemModifier": {
+          "$ref": "#/definitions/ItemModifierV3"
+        },
+        "progression": {
+          "$ref": "#/definitions/ProgressionV3"
+        },
+        "grants": {
+          "$ref": "#/definitions/GrantsV3"
+        },
+        "race": {
+          "$ref": "#/definitions/RaceV3"
+        },
+        "monster": {
+          "$ref": "#/definitions/MonsterV3"
+        }
+      }
+    },
+    "ChoiceV3": {
+      "type": "object",
+      "required": [
+        "id",
+        "key",
+        "label"
+      ],
+      "additionalProperties": true,
+      "description": "@Choice input resolved when the entry is taken. Blocks reference it via \"@Choice\" or choice.* targets (choice.ability.1, choice.skill.1, ...).",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string",
+          "enum": [
+            "weapon",
+            "skill",
+            "ability",
+            "school",
+            "energy",
+            "custom"
+          ]
+        },
+        "label": {
+          "type": "string"
+        },
+        "count": {
+          "type": "number",
+          "minimum": 1
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "EffectBlockV3": {
+      "type": "object",
+      "required": [
+        "type"
+      ],
+      "additionalProperties": true,
+      "description": "Discriminated by `type`. Unknown keys are tolerated (Rule Crafter UI state) but only the documented keys carry mechanics.",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "stat",
+            "roll",
+            "attack",
+            "defense",
+            "effect",
+            "resource",
+            "when",
+            "table",
+            "carrier"
+          ]
+        },
+        "condition": {
+          "type": [
+            "string",
+            "object"
+          ]
+        },
+        "summary": {
+          "type": "string"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "stat"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/definitions/StatBlockV3"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "roll"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/definitions/RollBlockV3"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "attack"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/definitions/AttackBlockV3"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "defense"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/definitions/DefenseBlockV3"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "effect"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/definitions/RuleEffectBlockV3"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "resource"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/definitions/ResourceBlockV3"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "when"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/definitions/WhenBlockV3"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "table"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/definitions/TableBlockV3"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "carrier"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/definitions/CarrierBlockV3"
+          }
+        }
+      ]
+    },
+    "StatBlockV3": {
+      "type": "object",
+      "required": [
+        "targets",
+        "mode"
+      ],
+      "additionalProperties": true,
+      "description": "Numeric modifier. ALWAYS plural `targets: string[]` + `btype` (never singular target/type). Targets must be canonical keys from tools/verify_v3_corpus.js (ac.deflection, atk.all, save.will, skill.hide, choice.ability.1, ...).",
+      "properties": {
+        "targets": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "btype": {
+          "type": "string",
+          "enum": [
+            "Untyped",
+            "Dodge",
+            "Circumstance",
+            "Penalty",
+            "Racial",
+            "Synergy",
+            "Enhancement",
+            "Luck",
+            "Morale",
+            "Sacred",
+            "Profane",
+            "Insight",
+            "Competence",
+            "Resistance",
+            "Deflection",
+            "Alchemical",
+            "Inherent",
+            "Armor",
+            "Armor Enhancement",
+            "Shield",
+            "Shield Enhancement",
+            "Natural Armor",
+            "Natural Armor Enhancement",
+            "Size",
+            "Exalted",
+            "Perfection"
+          ]
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "flat",
+            "stat",
+            "perCL",
+            "formula",
+            "replaceStat"
+          ]
+        },
+        "value": {
+          "type": "number",
+          "description": "Flat value (mode flat) or per-step amount (mode perCL)."
+        },
+        "formula": {
+          "type": "string",
+          "description": "Engine formula (@cl, @level, @classLevel, @strMod..@chaMod, floor/min/max/clamp)."
+        },
+        "cap": {
+          "type": [
+            "number",
+            "string",
+            "null"
+          ],
+          "description": "Optional cap (number, \"@classLevel\", or null)."
+        },
+        "per": {
+          "type": "number",
+          "description": "perCL: caster levels per step."
+        },
+        "min": {
+          "type": "number",
+          "description": "perCL: floor."
+        },
+        "max": {
+          "type": "number",
+          "description": "perCL: ceiling."
+        },
+        "condition": {
+          "type": [
+            "string",
+            "object"
+          ],
+          "description": "Situational qualifier string, or { toggle: \"<key>\" }."
+        },
+        "swapTarget": {
+          "type": "string",
+          "enum": [
+            "atk.melee.abilityMod",
+            "atk.ranged.abilityMod",
+            "atk.thrown.abilityMod",
+            "atk.touch.abilityMod",
+            "grapple.abilityMod",
+            "dmg.melee.abilityMod",
+            "dmg.ranged.abilityMod",
+            "save.fort.abilityMod",
+            "save.ref.abilityMod",
+            "save.will.abilityMod",
+            "ac.abilityMod",
+            "initiative.abilityMod",
+            "hp.abilityMod",
+            "concentration.abilityMod",
+            "choice.skill.1.abilityMod",
+            "skill.appraise.abilityMod",
+            "skill.autohypnosis.abilityMod",
+            "skill.balance.abilityMod",
+            "skill.bluff.abilityMod",
+            "skill.climb.abilityMod",
+            "skill.concentration.abilityMod",
+            "skill.craft.abilityMod",
+            "skill.decipher-script.abilityMod",
+            "skill.diplomacy.abilityMod",
+            "skill.disable-device.abilityMod",
+            "skill.disguise.abilityMod",
+            "skill.escape-artist.abilityMod",
+            "skill.forgery.abilityMod",
+            "skill.gather-information.abilityMod",
+            "skill.handle-animal.abilityMod",
+            "skill.heal.abilityMod",
+            "skill.hide.abilityMod",
+            "skill.intimidate.abilityMod",
+            "skill.jump.abilityMod",
+            "skill.knowledge.abilityMod",
+            "skill.knowledge-psionics.abilityMod",
+            "skill.listen.abilityMod",
+            "skill.move-silently.abilityMod",
+            "skill.open-lock.abilityMod",
+            "skill.perform.abilityMod",
+            "skill.profession.abilityMod",
+            "skill.psicraft.abilityMod",
+            "skill.ride.abilityMod",
+            "skill.search.abilityMod",
+            "skill.sense-motive.abilityMod",
+            "skill.sleight-of-hand.abilityMod",
+            "skill.speak-language.abilityMod",
+            "skill.spellcraft.abilityMod",
+            "skill.spot.abilityMod",
+            "skill.survival.abilityMod",
+            "skill.swim.abilityMod",
+            "skill.truespeak.abilityMod",
+            "skill.tumble.abilityMod",
+            "skill.use-magic-device.abilityMod",
+            "skill.use-psionic-device.abilityMod",
+            "skill.use-rope.abilityMod",
+            "bab",
+            "spell.dc.abilityMod",
+            "spell.bonusSlots.abilityMod"
+          ]
+        },
+        "subOp": {
+          "type": "string",
+          "enum": [
+            "max",
+            "replace",
+            "add"
+          ]
+        },
+        "fromStat": {
+          "type": "string",
+          "enum": [
+            "str",
+            "dex",
+            "con",
+            "int",
+            "wis",
+            "cha"
+          ]
+        },
+        "toStat": {
+          "type": "string",
+          "enum": [
+            "str",
+            "dex",
+            "con",
+            "int",
+            "wis",
+            "cha",
+            "0.5*str",
+            "0.5*dex",
+            "0.5*int",
+            "0.5*wis",
+            "0.5*cha",
+            "1.5*str",
+            "1.5*dex",
+            "choice.abilityMod",
+            "@level",
+            "@classLevel",
+            "@cl"
+          ]
+        },
+        "scope": {
+          "type": "string",
+          "enum": [
+            "all",
+            "finessable",
+            "simple_or_natural",
+            "thrown",
+            "bow_or_crossbow",
+            "chosen_weapon",
+            "discipline_weapons",
+            "light_or_no_armor",
+            "not_flat_footed",
+            "mind_affecting"
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "mode": {
+                "const": "replaceStat"
+              }
+            },
+            "required": [
+              "mode"
+            ]
+          },
+          "then": {
+            "required": [
+              "swapTarget",
+              "targets",
+              "subOp",
+              "fromStat",
+              "toStat",
+              "scope"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mode": {
+                "const": "perCL"
+              }
+            },
+            "required": [
+              "mode"
+            ]
+          },
+          "then": {
+            "required": [
+              "value",
+              "per",
+              "min",
+              "max"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mode": {
+                "const": "formula"
+              }
+            },
+            "required": [
+              "mode"
+            ]
+          },
+          "then": {
+            "required": [
+              "formula"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mode": {
+                "const": "flat"
+              }
+            },
+            "required": [
+              "mode"
+            ]
+          },
+          "then": {
+            "required": [
+              "value"
+            ]
+          }
+        }
+      ]
+    },
+    "RollBlockV3": {
+      "type": "object",
+      "required": [
+        "kind"
+      ],
+      "additionalProperties": true,
+      "description": "Dice payload: damage, healing, temporary hit points, ongoing damage or fast healing.",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "Damage",
+            "Healing",
+            "Temp HP",
+            "Ongoing / Round",
+            "Fast Healing"
+          ]
+        },
+        "count": {
+          "type": "number"
+        },
+        "die": {
+          "type": "string",
+          "description": "d4..d20, or \"flat\" for a fixed number."
+        },
+        "flat": {
+          "type": "number",
+          "description": "Flat bonus added to the dice."
+        },
+        "dmgType": {
+          "type": "string",
+          "description": "Fire, Cold, Acid, Electricity, Sonic, Force, Precision, Untyped, ..."
+        },
+        "scaling": {
+          "type": "string",
+          "enum": [
+            "flat",
+            "perCL",
+            "perVar",
+            "formula"
+          ]
+        },
+        "per": {
+          "type": "number"
+        },
+        "amount": {
+          "type": "number"
+        },
+        "max": {
+          "type": "number"
+        },
+        "varKey": {
+          "type": "string",
+          "description": "perVar: the @resource dial key."
+        },
+        "dice": {
+          "type": "string",
+          "description": "scaling formula: dice expression (e.g. \"10 * @absorbed_spell_level\")."
+        },
+        "save": {
+          "type": "string",
+          "description": "e.g. \"Reflex half\"."
+        },
+        "tempHpFormula": {
+          "type": "string",
+          "description": "Derived by the Rule Crafter for Temp HP rolls."
+        }
+      }
+    },
+    "AttackBlockV3": {
+      "type": "object",
+      "required": [
+        "attackMode"
+      ],
+      "additionalProperties": true,
+      "description": "Natural attacks, extra attacks, unarmed die progression, weapon imbue/strike bypass.",
+      "properties": {
+        "attackMode": {
+          "type": "string"
+        },
+        "natKind": {
+          "type": "string",
+          "enum": [
+            "primary",
+            "secondary"
+          ]
+        },
+        "count": {
+          "type": "number"
+        },
+        "weaponName": {
+          "type": "string"
+        },
+        "dice": {
+          "type": "string"
+        },
+        "dmgType": {
+          "type": "string"
+        },
+        "penalty": {
+          "type": "number"
+        },
+        "rider": {
+          "type": "string"
+        }
+      }
+    },
+    "DefenseBlockV3": {
+      "type": "object",
+      "required": [
+        "mode"
+      ],
+      "additionalProperties": true,
+      "description": "Defensive trait. Energy Resistance/DR use `value` + `what` (energy type or DR bypass; \"@Choice\" reads the chosen energy). Spell Resistance uses srMode flat|level (10 + @level). Fast healing is a roll block (kind \"Fast Healing\").",
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": [
+            "Immunity",
+            "Condition Immunity",
+            "DR",
+            "Energy Resistance",
+            "Spell Resistance",
+            "Concealment %",
+            "Sense / Movement",
+            "Vulnerability",
+            "Size Change",
+            "State Flag"
+          ]
+        },
+        "what": {
+          "type": "string"
+        },
+        "value": {
+          "type": "number"
+        },
+        "srMode": {
+          "type": "string",
+          "enum": [
+            "flat",
+            "level"
+          ]
+        },
+        "steps": {
+          "type": "number"
+        },
+        "flag": {
+          "type": "string"
+        }
+      }
+    },
+    "RuleEffectBlockV3": {
+      "type": "object",
+      "required": [
+        "effectKind"
+      ],
+      "additionalProperties": true,
+      "description": "Rule switch (ruleSwitchFlags from rulesets/dnd35.js), narrative rule, or linked spell cast.",
+      "properties": {
+        "effectKind": {
+          "type": "string",
+          "enum": [
+            "ruleSwitch",
+            "rule",
+            "castSpell",
+            "linkedSpell",
+            "castEvolution",
+            "grant",
+            "grantFeat",
+            "bonusSlot",
+            "trait",
+            "reroll"
+          ],
+          "description": "Primary kinds: ruleSwitch (engine flag), rule (narrative/manual rule), castSpell (spell-like cast). The rest mirror engine-supported corpus kinds."
+        },
+        "flag": {
+          "type": "string",
+          "description": "ruleSwitch only: one of noAutoFailFortSaveOnNat1, shieldToTouchAc, monkeyGrip, naturalSpell, uncannyDodge, ignoreArmorSpeedPenalty, oneHandedOffHandAsLight, tacticalSlider, or a documented engine flag."
+        },
+        "label": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "effectKind": {
+                "const": "ruleSwitch"
+              }
+            },
+            "required": [
+              "effectKind"
+            ]
+          },
+          "then": {
+            "required": [
+              "flag"
+            ]
+          }
+        }
+      ]
+    },
+    "ResourceBlockV3": {
+      "type": "object",
+      "required": [
+        "name",
+        "varKey",
+        "resMode"
+      ],
+      "additionalProperties": true,
+      "description": "Declares a pool/dial exposed as @varKey to formulas and as a spendable pool to powers (usage.mode \"resourcePool\").",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "varKey": {
+          "type": "string"
+        },
+        "resMode": {
+          "type": "string",
+          "enum": [
+            "spend",
+            "invest",
+            "dial",
+            "choice",
+            "focus",
+            "buffer"
+          ]
+        },
+        "scaling": {
+          "type": "string",
+          "enum": [
+            "flat",
+            "level",
+            "halfLevel",
+            "plusMod",
+            "halfLvlPlusMod",
+            "twoPerLvlPlusMod"
+          ]
+        },
+        "maxMode": {
+          "type": "string",
+          "enum": [
+            "flat",
+            "bab",
+            "level",
+            "spellLvl",
+            "pool"
+          ]
+        },
+        "max": {
+          "type": "number"
+        },
+        "ability": {
+          "type": "string",
+          "enum": [
+            "str",
+            "dex",
+            "con",
+            "int",
+            "wis",
+            "cha"
+          ]
+        },
+        "reset": {
+          "type": "string",
+          "enum": [
+            "atWill",
+            "cooldown",
+            "perEncounter",
+            "perDay"
+          ]
+        },
+        "cooldownText": {
+          "type": "string"
+        }
+      }
+    },
+    "WhenBlockV3": {
+      "type": "object",
+      "required": [
+        "flow",
+        "branches"
+      ],
+      "additionalProperties": true,
+      "description": "Conditional container. Branches are evaluated in order; the first matching branch applies (condKind \"else\" is the fallback). condText accepts \"toggle:<key>\", \"stance:<name>\", \"buff:<id>\", \"@level >= 7\", \"@cl >= 11\", or named states (wieldingChosenWeapon, notFlatFooted, ...).",
+      "properties": {
+        "flow": {
+          "type": "string",
+          "enum": [
+            "while",
+            "if"
+          ]
+        },
+        "branches": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/BranchV3"
+          }
+        }
+      }
+    },
+    "BranchV3": {
+      "type": "object",
+      "required": [
+        "condKind",
+        "effects"
+      ],
+      "additionalProperties": true,
+      "properties": {
+        "condKind": {
+          "type": "string",
+          "enum": [
+            "state",
+            "bound",
+            "levelTier",
+            "choicePath",
+            "synergy",
+            "situational",
+            "notFlatFooted",
+            "wieldingChosenShield",
+            "wieldingChosenWeapon",
+            "wieldingTwoWeapons",
+            "vsAoOFromMovement",
+            "castingChosenSchool",
+            "oath",
+            "else"
+          ]
+        },
+        "condText": {
+          "type": "string"
+        },
+        "effects": {
+          "type": "array",
+          "description": "Atomic V3 effect blocks.",
+          "items": {
+            "$ref": "#/definitions/EffectBlockV3"
+          }
+        }
+      }
+    },
+    "TableBlockV3": {
+      "type": "object",
+      "required": [
+        "rows"
+      ],
+      "additionalProperties": true,
+      "properties": {
+        "die": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string",
+          "description": "Lookup key for level tables (level, cl, classLevel, ...)."
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/TableRowV3"
+          }
+        }
+      }
+    },
+    "TableRowV3": {
+      "type": "object",
+      "required": [
+        "roll",
+        "effects"
+      ],
+      "additionalProperties": true,
+      "properties": {
+        "roll": {
+          "type": "string"
+        },
+        "effects": {
+          "type": "array",
+          "description": "Atomic V3 effect blocks.",
+          "items": {
+            "$ref": "#/definitions/EffectBlockV3"
+          }
+        }
+      }
+    },
+    "CarrierBlockV3": {
+      "type": "object",
+      "required": [
+        "carrierMode"
+      ],
+      "additionalProperties": true,
+      "description": "Spell delivery through a weapon/channel or a metamagic-style cast modifier.",
+      "properties": {
+        "carrierMode": {
+          "type": "string"
+        },
+        "maxSpellLvl": {
+          "type": "number"
+        },
+        "costMode": {
+          "type": "string"
+        },
+        "transform": {
+          "type": "string"
+        },
+        "energy": {
+          "type": "string"
+        }
+      }
+    },
+    "PowerV3": {
+      "type": "object",
+      "required": [
+        "id",
+        "kind",
+        "name",
+        "action",
+        "usage"
+      ],
+      "additionalProperties": true,
+      "description": "Activated ability (replaces V2 modes[]). kind \"inline\" carries its own effects[]; kind \"attached\" references a spell by refId.",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "inline",
+            "attached"
+          ]
+        },
+        "name": {
+          "type": "string"
+        },
+        "action": {
+          "type": "string",
+          "enum": [
+            "Standard",
+            "Move",
+            "Swift",
+            "Immediate",
+            "Free",
+            "Full-Round",
+            "Full Round",
+            "Reaction"
+          ]
+        },
+        "usage": {
+          "$ref": "#/definitions/UsageV3"
+        },
+        "refId": {
+          "type": "string"
+        },
+        "grantMode": {
+          "type": "string"
+        },
+        "casterLevel": {
+          "type": "number"
+        },
+        "saveDC": {
+          "type": "number"
+        },
+        "duration": {
+          "type": "string"
+        },
+        "attack": {
+          "type": "string"
         },
         "range": {
           "type": "string"
         },
-        "benefit": {
-          "type": "string",
-          "description": "Concise mechanical description of this sub-mode or secondary power."
-        },
-        "damageParts": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/DamagePartEntryV2"
-          },
-          "default": []
-        },
-        "modifiers": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/ModifierEntryV2"
-          },
-          "default": []
+        "area": {
+          "type": "string"
         },
         "save": {
-          "type": ["string", "object", "null"],
-          "default": null,
-          "description": "Saving throw descriptor string or structured object ({ type: 'Reflex'|'Fortitude'|'Will', dcFormula: '10 + @level + @conMod', onSave: 'half'|'negate'|'partial' })."
-        },
-        "sourceLabel": {
-          "type": ["string", "null"],
-          "default": null,
-          "description": "Origin sub-label for multi-benefit Boons or paths (e.g. 'Benefit 1', 'Benefit 2')."
-        },
-        "reactsTo": {
-          "type": ["string", "null"],
-          "enum": ["save_failed", "on_spell_targeted", "on_hit", "on_kill", "on_damaged", "on_crit_received", "initiative", "turn_start", null],
-          "default": null,
-          "description": "UI reaction placement hint so reactive buttons render next to Saves, HP, or Attack panels."
-        },
-        "resourceCost": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "resourceId": { "type": "string" },
-              "amount": { "type": ["number", "string"], "default": 1 },
-              "level": { "type": ["number", "string", "null"], "default": null }
-            }
-          },
-          "default": []
-        },
-        "inputs": {
-          "type": "array",
-          "description": "Runtime user inputs required when activating this mode (referenced in formulas as @input.<id>).",
-          "items": {
-            "type": "object",
-            "required": ["id", "label"],
-            "properties": {
-              "id": { "type": "string" },
-              "label": { "type": "string" },
-              "type": { "type": "string", "enum": ["int", "slider", "select"], "default": "int" },
-              "min": { "type": ["number", "string"], "default": 0 },
-              "max": { "type": ["number", "string"], "default": 9 },
-              "default": { "type": ["number", "string"], "default": 1 }
-            }
-          },
-          "default": []
-        },
-        "area": {
-          "type": ["string", "null"],
-          "default": null,
-          "description": "Area of effect shape and size (e.g. '60 ft. line', '30 ft. cone', '@level * 5 ft. radius')."
-        },
-        "defenses": {
-          "type": "array",
-          "items": { "$ref": "#/definitions/DefenseEntryV2" },
-          "default": []
-        },
-        "spawnsBuff": {
-          "type": ["object", "null"],
-          "default": null,
-          "description": "Active buff, temporary HP, or round countdown timer spawned when this mode is triggered.",
+          "type": "object",
+          "description": "Saving throw.",
+          "additionalProperties": true,
           "properties": {
-            "id": { "type": "string" },
-            "name": { "type": "string" },
-            "durationRounds": { "type": ["number", "string"], "default": 1 },
-            "maxStacks": { "type": ["number", "null"], "default": null },
-            "tempHpFormula": { "type": ["string", "number", "null"], "default": null },
-            "healFormula": { "type": ["string", "number", "null"], "default": null },
-            "modifiers": {
-              "type": "array",
-              "items": { "$ref": "#/definitions/ModifierEntryV2" },
-              "default": []
+            "type": {
+              "type": "string",
+              "enum": [
+                "Fortitude",
+                "Reflex",
+                "Will",
+                "Fort",
+                "Ref",
+                "None"
+              ]
             },
-            "defenses": {
-              "type": "array",
-              "items": { "$ref": "#/definitions/DefenseEntryV2" },
-              "default": []
-            },
-            "note": { "type": ["string", "null"], "default": null }
+            "effect": {
+              "type": "string"
+            }
           }
-        },
-        "requires": {
-          "type": ["object", "null"],
-          "default": null
-        },
-        "when": {
-          "type": ["object", "null"],
-          "default": null
-        }
-      }
-    },
-    "RuleMasterEntryV2": {
-      "type": "object",
-      "required": ["schemaVersion", "id", "name", "type"],
-      "properties": {
-        "schemaVersion": {
-          "type": "integer",
-          "enum": [3, 2],
-          "default": 3,
-          "description": "Canonical V3 schema version (default 3)."
-        },
-        "blueprint": {
-          "type": "string",
-          "enum": ["feat", "spell", "item", "weapon", "armor", "itemMod", "class", "race", "monster"],
-          "description": "Rule Crafter blueprint family."
         },
         "effects": {
           "type": "array",
-          "default": [],
-          "description": "Canonical V3 Rule Blocks ('stat', 'roll', 'attack', 'defense', 'effect', 'resource', 'when', 'table', 'carrier').",
-          "items": { "type": "object" }
-        },
-        "powers": {
-          "type": "array",
-          "default": [],
-          "description": "Granted spells, spell-like abilities, or inline activated powers.",
-          "items": { "type": "object" }
+          "description": "Atomic V3 effect blocks.",
+          "items": {
+            "$ref": "#/definitions/EffectBlockV3"
+          }
         },
         "text": {
-          "type": "string",
-          "description": "Clean plain-text D&D 3.5e RAW rulebook description."
-        },
-        "monster": {
-          "type": ["object", "null"],
-          "default": null,
-          "description": "Structured V3 Bestiary / Companion chassis (size, creatureType, subtypes, alignment, cr, levelAdjustment, hitDice, speeds, ac, bab, grapple, space, reach, abilities, nonabilities, saves, skills)."
-        },
-        "id": {
-          "type": "string",
-          "description": "Immutable unique slug identifier (e.g. 'item_ring_of_protection_2', 'spell_searing_light', 'feat_power_attack').",
-          "example": "item_ring_of_protection_2"
-        },
-        "baseItemId": {
-          "type": ["string", "null"],
-          "default": null,
-          "description": "Base SRD item ID for composite weapons or armors (e.g. 'wpn_longsword', 'arm_mithral_shirt')."
-        },
-        "name": {
-          "type": "string",
-          "description": "Official D&D 3.5e English name of the entity. Sub-powers must be embedded inside 'modes', never as separate rows.",
-          "example": "Ring of Protection +2"
-        },
-        "type": {
-          "type": "string",
-          "enum": [
-            "Feat",
-            "Spell",
-            "Power",
-            "Weapon",
-            "Armor",
-            "Shield",
-            "Wondrous Item",
-            "Ring",
-            "Potion",
-            "Scroll",
-            "Wand",
-            "Consumable",
-            "Augment Crystal",
-            "AugmentationCrystal",
-            "Enhancement",
-            "Material",
-            "Maneuver",
-            "Stance",
-            "Soulmeld",
-            "Vestige",
-            "Mystery",
-            "Utterance",
-            "Race",
-            "Monster",
-            "Deity",
-            "Domain",
-            "Template",
-            "Class",
-            "Special Ability",
-            "Racial Trait",
-            "Class Feature",
-            "DM Boon",
-            "Flaw",
-            "Trait",
-            "Skill Trick"
-          ],
-          "description": "Primary rule category of the entity. Flaw = Unearthed Arcana character flaw (grants a bonus feat); Trait = Unearthed Arcana character trait (benefit + drawback); Skill Trick = Complete Scoundrel skill trick (bought with skill points)."
-        },
-        "slot": {
-          "type": "string",
-          "enum": [
-            "None",
-            "Main Hand",
-            "Off-Hand/Shield",
-            "Two Hands",
-            "Armor",
-            "Head",
-            "Face",
-            "Throat",
-            "Shoulders",
-            "Body",
-            "Torso",
-            "Waist",
-            "Feet",
-            "Arms",
-            "Hands",
-            "Ring",
-            "Belt"
-          ],
-          "default": "None",
-          "description": "Equipment body slot ('None' for Feats, Spells, Races, Deities, Domains, Templates, and Classes)."
-        },
-        "role": {
-          "type": "string",
-          "enum": [
-            "General",
-            "Offense / Spell",
-            "Offense / Strike",
-            "Offense / Weapon",
-            "Defense / Armor",
-            "Defense / Shield",
-            "Tactical / Stance",
-            "Tactical / Boost"
-          ],
-          "default": "General",
-          "description": "Tactical UI role of the card."
-        },
-        "source": {
-          "type": "string",
-          "description": "Official D&D 3.5e sourcebook name and page number.",
-          "example": "Dungeon Master's Guide v.3.5, p. 232"
-        },
-        "benefit": {
-          "type": "string",
-          "description": "Concise mechanical summary and rule benefit in English."
-        },
-        "description": {
-          "type": "string",
-          "description": "Full official D&D 3.5e RAW rulebook text in English."
-        },
-        "prereq": {
-          "type": "string",
-          "default": "-",
-          "description": "Official D&D 3.5e prerequisites for Feats, Maneuvers, or Prestige Classes."
-        },
-        "action": {
-          "type": "string",
-          "default": "Passive",
-          "description": "Action economy cost (Standard Action, Move Action, Swift Action, Immediate Action, Free Action, Full-Round Action, Passive)."
-        },
-        "actionType": {
-          "type": "string",
-          "enum": ["passive", "standard", "move", "swift", "immediate", "full_round", "free"],
-          "default": "passive",
-          "description": "Normalized action type key for RuleEngine."
-        },
-        "duration": {
-          "type": "string",
-          "default": "Continuous",
-          "description": "Effect duration (Instantaneous, 1 round/level, 10 min./level, 24 hours, Continuous)."
-        },
-        "cost": {
-          "type": "number",
-          "default": 0,
-          "description": "Market price in gold pieces (gp)."
-        },
-        "weight": {
-          "type": "number",
-          "default": 0,
-          "description": "Weight in pounds (lb)."
-        },
-        "material": {
-          "type": ["string", "null"],
-          "default": null,
-          "description": "Special material identifier (e.g. 'mat_mithral', 'mat_adamantine', 'mat_cold_iron', 'mat_alchemical_silver', or null)."
-        },
-        "enhancementBonus": {
-          "type": "integer",
-          "default": 0,
-          "description": "Base magical enhancement bonus (+1 to +5) for weapons, armor, or shields."
-        },
-        "enhancements": {
-          "type": "array",
-          "items": { "type": "string" },
-          "default": [],
-          "description": "Special ability identifiers applied to a weapon or armor (e.g. ['enh_keen', 'enh_flaming'])."
-        },
-        "requiresEnergyChoice": {
-          "type": "boolean",
-          "default": false,
-          "description": "True if the spell or buff requires selecting an energy type on activation (e.g. Resist Energy, Protection from Energy)."
-        },
-        "dailyCharges": {
-          "type": ["object", "null"],
-          "default": null,
-          "description": "Daily charge pool for MIC/DMG charged magic items (e.g. Belt of Battle).",
-          "properties": {
-            "max": { "type": "integer", "default": 3 },
-            "recharge": { "type": "string", "default": "dawn" }
-          }
-        },
-        "crystalTier": {
-          "type": ["string", "null"],
-          "enum": ["Least", "Lesser", "Greater", null],
-          "default": null,
-          "description": "MIC Augment Crystal tier."
-        },
-        "crystalSlot": {
-          "type": ["string", "null"],
-          "enum": ["Weapon", "Armor", "Shield", null],
-          "default": null,
-          "description": "MIC Augment Crystal attachment target."
-        },
-        "modifiers": {
-          "type": "array",
-          "description": "All numeric or formula-based stat and roll modifiers granted by this entry.",
-          "items": {
-            "$ref": "#/definitions/ModifierEntryV2"
-          },
-          "default": []
-        },
-        "damageParts": {
-          "type": "array",
-          "description": "Structured damage dice parts for weapons, spells, maneuvers, or crystals.",
-          "items": {
-            "$ref": "#/definitions/DamagePartEntryV2"
-          },
-          "default": []
-        },
-        "modes": {
-          "type": "array",
-          "description": "Embedded sub-modes, conditional variants, or secondary powers of the spell, weapon, or item.",
-          "items": {
-            "$ref": "#/definitions/ModeEntryV2"
-          },
-          "default": []
-        },
-        "defenses": {
-          "type": "array",
-          "description": "Structured V2.5 defense primitives (DR, SR, Energy Resistance, Immunity, Vulnerability, Regeneration, Fast Healing, Fortification, Absorption).",
-          "items": {
-            "$ref": "#/definitions/DefenseEntryV2"
-          },
-          "default": []
-        },
-        "resources": {
-          "type": "array",
-          "description": "Structured V2.5 consumable or allocatable resource pools and cooldowns.",
-          "items": {
-            "$ref": "#/definitions/ResourceEntryV2"
-          },
-          "default": []
-        },
-        "grants": {
-          "type": "array",
-          "description": "Structured V2.5 synergy unlocks, automatic grants, at-will spells, senses, or proficiencies.",
-          "items": {
-            "$ref": "#/definitions/GrantEntryV2"
-          },
-          "default": []
-        },
-        "choices": {
-          "type": "array",
-          "description": "Structured V2.5 permanent character build choices.",
-          "items": {
-            "$ref": "#/definitions/ChoiceEntryV2"
-          },
-          "default": []
-        },
-        "requires": {
-          "type": ["object", "null"],
-          "default": null,
-          "description": "Structured V2.5 prerequisite predicate ({ all, any, minLevel, minBab, minAbility, has }) for deterministic HUB/Character eligibility filtering."
-        },
-        "overrides": {
-          "type": ["string", "null"],
-          "default": null,
-          "description": "Optional target entity ID that this house-rule/DM pack entry overrides (e.g. 'srd:feat_power_attack')."
-        },
-        "pack": {
-          "type": ["object", "null"],
-          "default": null,
-          "description": "DM Campaign Rule Pack namespace and version metadata.",
-          "properties": {
-            "id": { "type": "string" },
-            "name": { "type": "string" },
-            "author": { "type": "string" },
-            "version": { "type": "string", "default": "1.0.0" }
-          }
-        },
-        "weaponMeta": {
-          "type": ["object", "null"],
-          "default": null,
-          "description": "Canonical V2 weapon metadata required for Weapon entries and proficiency checks.",
-          "properties": {
-            "proficiency": { "type": "string", "enum": ["Simple", "Martial", "Exotic"] },
-            "handedness": { "type": "string", "enum": ["Unarmed", "Light", "One-Handed", "Two-Handed", "Ranged"] },
-            "damageDice": { "type": "string", "example": "1d8" },
-            "critMin": { "type": "integer", "default": 20 },
-            "critMult": { "type": "integer", "default": 2 },
-            "damageType": { "type": "string", "example": "Slashing" },
-            "rangeIncrement": { "type": "number", "default": 0 },
-            "isDoubleWeapon": { "type": "boolean", "default": false },
-            "isFinessable": { "type": "boolean", "default": false }
-          }
-        },
-        "armorMeta": {
-          "type": ["object", "null"],
-          "default": null,
-          "description": "Canonical V2 armor/shield metadata required for Armor or Shield entries and proficiency checks.",
-          "properties": {
-            "category": { "type": "string", "enum": ["Light", "Medium", "Heavy", "Shield"] },
-            "armorBonus": { "type": "integer", "default": 0 },
-            "maxDex": { "type": ["integer", "null"], "default": null },
-            "acp": { "type": "integer", "default": 0 },
-            "asf": { "type": "integer", "default": 0 },
-            "speed30": { "type": "integer", "default": 30 },
-            "speed20": { "type": "integer", "default": 20 }
-          }
-        },
-        "weaponStats": {
-          "type": ["object", "null"],
-          "default": null,
-          "description": "Structured weapon attributes for Weapon category entries.",
-          "properties": {
-            "category": { "type": "string", "enum": ["Simple", "Martial", "Exotic"] },
-            "handedness": { "type": "string", "enum": ["Unarmed", "Light", "One-Handed", "Two-Handed", "Ranged"] },
-            "baseDamage": { "type": "string", "example": "1d8" },
-            "critMin": { "type": "integer", "default": 20 },
-            "critMult": { "type": "integer", "default": 2 },
-            "damageTypes": { "type": "array", "items": { "type": "string" } },
-            "rangeIncrement": { "type": "number", "default": 0 },
-            "finessable": { "type": "boolean", "default": false },
-            "isLight": { "type": "boolean", "default": false }
-          }
-        },
-        "armorStats": {
-          "type": ["object", "null"],
-          "default": null,
-          "description": "Structured armor attributes for Armor or Shield category entries.",
-          "properties": {
-            "category": { "type": "string", "enum": ["Light", "Medium", "Heavy", "Shield"] },
-            "baseAc": { "type": "integer", "default": 0 },
-            "maxDex": { "type": ["integer", "null"], "default": null },
-            "acp": { "type": "integer", "default": 0 },
-            "asf": { "type": "integer", "default": 0 },
-            "speed30": { "type": "integer", "default": 30 },
-            "speed20": { "type": "integer", "default": 20 }
-          }
-        },
-        "spellStats": {
-          "type": ["object", "null"],
-          "default": null,
-          "description": "Structured spell or maneuver attributes.",
-          "properties": {
-            "school": { "type": "string" },
-            "discipline": { "type": "string" },
-            "level": { "type": ["integer", "string"] },
-            "components": { "type": "string" },
-            "castingTime": { "type": "string" },
-            "range": { "type": "string" },
-            "targetOrArea": { "type": "string" },
-            "duration": { "type": "string" },
-            "savingThrow": { "type": "string" },
-            "spellResistance": { "type": "string" }
-          }
-        },
-        "range": {
-          "type": "string",
-          "description": "Spell, maneuver, ability, or weapon range (Personal, Touch, 60 ft., Close [25 ft. + 5 ft./2 levels], Medium [100 ft. + 10 ft./level], Long [400 ft. + 40 ft./level])."
-        },
-        "save": {
-          "type": ["string", "null"],
-          "default": null,
-          "description": "Saving throw type and effect for spells or special abilities (e.g. 'Reflex half', 'Fortitude negates', 'Will negates', 'None')."
-        },
-        "dcFormula": {
-          "type": ["string", "null"],
-          "default": null,
-          "description": "Dynamic Save DC formula using RuleEngine tokens (e.g. '10 + @level + @conMod', '10 + floor(@level / 2) + @conMod', '15')."
-        },
-        "recharge": {
-          "type": ["string", "null"],
-          "default": null,
-          "description": "Cooldown or recharge duration for special abilities such as Breath Weapon (e.g. '1d4+1 rounds', '1d4 rounds', '5 rounds'). Never place recharge dice inside damageParts."
-        },
-        "rechargeDice": {
-          "type": ["string", "null"],
-          "default": null,
-          "description": "Rollable dice expression for ability recharge/cooldown timer (e.g. '1d4+1', '1d4')."
-        },
-        "school": {
-          "type": "string",
-          "description": "Spell school (Abjuration, Conjuration, Divination, Enchantment, Evocation, Illusion, Necromancy, Transmutation, Universal)."
-        },
-        "level": {
-          "type": ["integer", "string"],
-          "description": "Spell, power, or maneuver level (0-9)."
-        },
-        "discipline": {
-          "type": "string",
-          "description": "Tome of Battle Sublime Way discipline."
-        },
-        "isFighterBonusFeat": {
-          "type": "boolean",
-          "default": false,
-          "description": "Whether this feat can be selected as a Fighter bonus feat (PHB Table 5-1). Means the heroic (1st-20th level) list; epic fighter bonus feats use fighterBonusFeatTier: 'epic'."
-        },
-        "levelBand": {
-          "type": "string",
-          "enum": ["heroic", "epic"],
-          "default": "heroic",
-          "description": "Level band of the entry. 'epic' = Epic Level Handbook / DMG epic content usable at character level 21+. (Not 'tier': that key is the Warlock invocation grade.)"
-        },
-        "fighterBonusFeatTier": {
-          "type": "string",
-          "enum": ["epic"],
-          "description": "Set to 'epic' on feats from the Epic Fighter Bonus Feat List (ELH p.11-12): fighter bonus feat choices at fighter level 21+ only."
-        },
-        "edition": {
-          "type": "string",
-          "enum": ["3.5", "3.0", "3.5-licensed"],
-          "default": "3.5",
-          "description": "Rules edition of the source book. '3.0' and '3.5-licensed' (non-WotC licensed books) live in an opt-in chunk that is never loaded at page open."
-        },
-        "bonusFeatFor": {
-          "type": "array",
-          "items": { "type": "string" },
-          "default": [],
-          "description": "Classes that may take this feat as a class bonus feat (e.g. ['Fighter', 'Psychic Warrior'])."
-        },
-        "featTypes": {
-          "type": "array",
-          "items": { "type": "string" },
-          "default": [],
-          "description": "All feat type tags of the feat (e.g. ['General', 'Fighter'], ['Metamagic'], ['Epic'])."
-        },
-        "contentLevel": {
-          "type": "string",
-          "enum": ["full", "summary", "stub"],
-          "default": "full",
-          "description": "How complete the rules text is. 'summary' = structured fields plus a short paraphrased benefit (no verbatim book text); 'stub' = name/source/prerequisites only."
-        },
-        "verification": {
-          "type": "string",
-          "enum": ["verified", "cross-checked", "unverified"],
-          "default": "verified",
-          "description": "'verified' = checked against the rulebook; 'cross-checked' = two independent secondary sources agree on every structured field (e.g. a character-builder workbook + the crystalkeep equipment index); 'unverified' = single secondary source, not checked against the rulebook."
-        },
-        "provenance": {
-          "type": ["object", "null"],
-          "default": null,
-          "description": "Import origin for bulk-imported records, e.g. {'origin': 'builder-workbook-7.4.0.1', 'sheet': 'Feats', 'row': 385}. Character-side copies of compendium entries carry a separate internal '_snapshot' object, and copies of Campaign DB rule pack entries an internal '_campaignPack' object ({campaignId, packId, version, hash, status}); neither is ever produced by the AI."
-        },
-        "featType": {
-          "type": "string",
-          "enum": ["General", "Item Creation", "Metamagic", "Special", "Tactical", "Fighter", "Divine", "Reserve", "Psionic", "Epic"],
-          "default": "General"
-        },
-        "ruleFlags": {
-          "type": "object",
-          "default": {},
-          "description": "Declarative RuleEngine flags (e.g. {'conToWillSave': true, 'noAutoFailFortSaveOnNat1': true, 'agileShieldFighter': true, 'ignoresHardness': true, 'touchAttack': true, 'keen': true, 'hasteExtraAttack': true, 'powerAttackBonusDamage': 2, 'powerAttackMinPenalty': 2, 'concealment': 20, 'sr': 21, 'dr': '3/-', 'energyResistance': '10', 'darkvisionFt': 60})."
-        },
-        "tacticalBadges": {
-          "type": "array",
-          "items": { "type": "string" },
-          "default": [],
-          "description": "Passive or situational tactical badges rendered on UI cards (e.g. ['Bypass DR/Hardness', 'Ranged Touch', 'Fortification 25%'])."
-        },
-        "tags": {
-          "type": "array",
-          "items": { "type": "string" },
-          "default": [],
-          "description": "Search and catalog filter tags."
-        },
-        "size": {
-          "type": ["string", "null"],
-          "default": null,
-          "description": "Creature size category for Race entries (Fine, Diminutive, Tiny, Small, Medium, Large, Huge, Gargantuan, Colossal)."
-        },
-        "baseSpeed": {
-          "type": ["number", "null"],
-          "default": null,
-          "description": "Base land speed in feet for Race entries."
-        },
-        "vision": {
-          "type": ["string", "null"],
-          "default": null,
-          "description": "Racial vision trait (Normal, Low-Light Vision, Darkvision 60 ft., Darkvision 120 ft.)."
-        },
-        "favoredClass": {
-          "type": ["string", "null"],
-          "default": null,
-          "description": "Favored class for Race entries (e.g. 'Any', 'Fighter', 'Wizard')."
-        },
-        "traits": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "required": ["name", "desc"],
-            "properties": {
-              "name": { "type": "string" },
-              "desc": { "type": "string" }
-            }
-          }
-        },
-        "alignment": {
-          "type": ["string", "null"],
-          "default": null,
-          "description": "Deity alignment code (LG, NG, CG, LN, N, CN, LE, NE, CE)."
-        },
-        "favoredWeapon": {
-          "type": ["string", "null"],
-          "default": null,
-          "description": "Deity favored weapon name."
-        },
-        "domains": {
-          "type": "array",
-          "items": { "type": "string" },
-          "description": "Cleric domains granted by a Deity."
-        },
-        "grantedPower": {
-          "type": ["string", "null"],
-          "default": null,
-          "description": "Official granted power text for a Cleric Domain."
-        },
-        "domainSpells": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "required": ["level", "name"],
-            "properties": {
-              "level": { "type": "integer" },
-              "id": { "type": "string" },
-              "name": { "type": "string" }
-            }
-          },
-          "description": "Levels 1-9 spell list for a Cleric Domain."
-        },
-        "levelAdjustment": {
-          "type": ["integer", "null"],
-          "default": null,
-          "description": "Level Adjustment (LA) for Race or Template entries."
-        },
-        "crAdjustment": {
-          "type": ["integer", "null"],
-          "default": null,
-          "description": "Challenge Rating (CR) adjustment for Template entries."
+          "type": "string"
         }
       }
+    },
+    "UsageV3": {
+      "type": "object",
+      "required": [
+        "mode"
+      ],
+      "additionalProperties": true,
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": [
+            "passive",
+            "atwill",
+            "perDay",
+            "perEncounter",
+            "charges",
+            "spellSlot",
+            "resourcePool",
+            "cooldown"
+          ]
+        },
+        "uses": {
+          "type": "number"
+        },
+        "slotLevel": {
+          "type": "number"
+        },
+        "pool": {
+          "type": "string",
+          "description": "resourcePool: the resource block name to spend."
+        },
+        "cost": {
+          "type": "number"
+        },
+        "recharge": {
+          "type": "string",
+          "description": "cooldown: dice, e.g. \"1d4+1\"."
+        }
+      }
+    },
+    "SpellV3": {
+      "type": "object",
+      "description": "Spell chassis.",
+      "additionalProperties": true,
+      "properties": {
+        "system": {
+          "type": "string"
+        },
+        "school": {
+          "type": "string"
+        },
+        "descriptors": {
+          "type": "array"
+        },
+        "components": {
+          "type": "array"
+        },
+        "classLevels": {
+          "type": "array"
+        }
+      }
+    },
+    "DeliveryV3": {
+      "type": "object",
+      "description": "Casting/delivery.",
+      "additionalProperties": true,
+      "properties": {
+        "action": {
+          "type": "string"
+        },
+        "range": {
+          "type": "string"
+        },
+        "area": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "target": {
+          "type": "string"
+        },
+        "attack": {
+          "type": "string"
+        },
+        "spellResistance": {
+          "type": "string"
+        },
+        "save": {
+          "type": "object"
+        }
+      }
+    },
+    "LifecycleV3": {
+      "type": "object",
+      "description": "Usage, duration and dismissal.",
+      "additionalProperties": true,
+      "properties": {
+        "usage": {
+          "$ref": "#/definitions/UsageV3"
+        },
+        "duration": {
+          "type": "string"
+        },
+        "durationText": {
+          "type": "string"
+        },
+        "dismissible": {
+          "type": "boolean"
+        }
+      }
+    },
+    "WeaponV3": {
+      "type": "object",
+      "description": "Weapon chassis (Forge-derived for composite gear).",
+      "additionalProperties": true,
+      "properties": {
+        "category": {
+          "type": "string"
+        },
+        "handedness": {
+          "type": "string"
+        },
+        "damageDice": {
+          "type": "string"
+        },
+        "dmgType": {
+          "type": "string"
+        },
+        "baseCritRange": {
+          "type": "number"
+        },
+        "critMultiplier": {
+          "type": "number"
+        },
+        "rangeIncrement": {
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      }
+    },
+    "ArmorV3": {
+      "type": "object",
+      "description": "Armor chassis.",
+      "additionalProperties": true,
+      "properties": {
+        "armorType": {
+          "type": "string"
+        },
+        "armorBonus": {
+          "type": "number"
+        },
+        "maxDex": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "armorCheckPenalty": {
+          "type": "number"
+        },
+        "arcaneSpellFailure": {
+          "type": "number"
+        },
+        "speed": {
+          "type": "number"
+        }
+      }
+    },
+    "ItemV3": {
+      "type": "object",
+      "description": "Item envelope (slot, price, caster level).",
+      "additionalProperties": true,
+      "properties": {
+        "subtype": {
+          "type": "string"
+        },
+        "slot": {
+          "type": "string"
+        },
+        "price": {
+          "type": "number"
+        },
+        "casterLevel": {
+          "type": "number"
+        },
+        "consumable": {
+          "type": "boolean"
+        }
+      }
+    },
+    "ItemModifierV3": {
+      "type": "object",
+      "description": "Weapon/armor special ability or augment crystal applied to a host item.",
+      "additionalProperties": true,
+      "properties": {}
+    },
+    "ProgressionV3": {
+      "type": "object",
+      "description": "Class level progression (levels[], goodSaves, bab, spellcastingChassis).",
+      "additionalProperties": true,
+      "properties": {}
+    },
+    "GrantsV3": {
+      "type": "object",
+      "description": "Deity/domain grants: alignment, domains[], favoredWeapon, grantedPower { name, text, usage }, spellLadder[{ level, spell, refId }].",
+      "additionalProperties": true,
+      "properties": {}
+    },
+    "RaceV3": {
+      "type": "object",
+      "description": "Race or template chassis (kind, size, creatureType, speed, levelAdjustment, ...).",
+      "additionalProperties": true,
+      "properties": {}
+    },
+    "MonsterV3": {
+      "type": "object",
+      "description": "Monster stat chassis (HD, type, size, attacks, special attacks/qualities).",
+      "additionalProperties": true,
+      "properties": {}
     }
   },
   "canonicalExamples": [
     {
-      "category": "Magic Item / Ring (Canonical V2 Ring Example)",
-      "payload": {
-        "entries": [
+      "title": "Scaling Spell (Shield of Faith: formula-scaled Deflection bonus)",
+      "entry": {
+        "schemaVersion": 3,
+        "id": "spl-shield-of-faith",
+        "blueprint": "spell",
+        "name": "Shield of Faith",
+        "type": "Spell",
+        "category": "Abjuration",
+        "source": "SRD 3.5e",
+        "tags": [
+          "spell",
+          "abjuration"
+        ],
+        "text": "This spell creates a shimmering, magical field around the touched creature that averts attacks. The spell grants the subject a +2 deflection bonus to AC, with an additional +1 to the bonus for every six levels you have (maximum +5 deflection bonus at 18th level).\n\nMaterial Component: A small parchment with a bit of holy text written upon it.",
+        "spell": {
+          "system": "spell",
+          "classLevels": [
+            {
+              "class": "Cleric",
+              "level": 1
+            }
+          ],
+          "school": "Abjuration",
+          "descriptors": [],
+          "components": [
+            "V",
+            "S",
+            "M"
+          ]
+        },
+        "delivery": {
+          "action": "Standard",
+          "castingTime": "standard",
+          "range": "touch",
+          "area": null,
+          "target": "creature touched",
+          "attack": "none",
+          "spellResistance": "Yes",
+          "save": {
+            "type": "Will",
+            "effect": "Negates",
+            "raw": "Will negates (harmless)"
+          }
+        },
+        "lifecycle": {
+          "usage": {
+            "mode": "spellSlot",
+            "slotLevel": 1
+          },
+          "duration": "minLvl",
+          "durationText": "1 min./level",
+          "dismissible": false
+        },
+        "effects": [
           {
-            "schemaVersion": 2,
-            "id": "item_ring_of_protection_2",
-            "name": "Ring of Protection +2",
-            "type": "Ring",
-            "slot": "Ring",
-            "role": "Defense / Armor",
-            "source": "Dungeon Master's Guide v.3.5, p. 232",
-            "benefit": "+2 Deflection bonus to Armor Class.",
-            "description": "This ring offers continual magical protection in the form of a deflection bonus of +2 to AC.",
-            "cost": 8000,
-            "weight": 0,
-            "action": "Passive",
-            "actionType": "passive",
-            "duration": "Continuous",
-            "modifiers": [
-              {
-                "target": "ac.deflection",
-                "value": 2,
-                "type": "Deflection",
-                "condition": null
-              }
+            "type": "stat",
+            "targets": [
+              "ac.deflection"
             ],
-            "damageParts": [],
-            "modes": [],
-            "ruleFlags": {},
-            "tacticalBadges": ["+2 Deflection AC"],
-            "tags": ["ring", "magic item", "deflection", "ac"]
+            "btype": "Deflection",
+            "mode": "formula",
+            "value": 0,
+            "formula": "min(5, 2 + floor(@cl / 6))"
           }
         ]
       }
     },
     {
-      "category": "Spell with Embedded Modes (Canonical V2 Spell Example)",
-      "payload": {
-        "entries": [
+      "title": "@Choice Feat (Weapon Focus: choices[] + while wieldingChosenWeapon)",
+      "entry": {
+        "schemaVersion": 3,
+        "id": "feat-weapon-focus",
+        "blueprint": "feat",
+        "name": "Weapon Focus",
+        "type": "Feat",
+        "category": "Fighter",
+        "source": "SRD / PHB p.90",
+        "featKind": "feat",
+        "isFighterBonusFeat": true,
+        "tags": [
+          "feat",
+          "fighter",
+          "weapon-focus"
+        ],
+        "text": "+1 bonus on all attack rolls you make using the selected weapon.",
+        "timesSelectable": "perWeaponOrSchool",
+        "prerequisites": "Proficiency with selected weapon, base attack bonus +1.",
+        "choices": [
           {
-            "schemaVersion": 2,
-            "id": "spell_searing_light",
-            "name": "Searing Light",
-            "type": "Spell",
-            "level": 3,
-            "school": "Evocation",
-            "slot": "None",
-            "role": "Offense / Spell",
-            "source": "Player's Handbook v.3.5, p. 275",
-            "benefit": "Ranged touch ray deals 1d8/2 CL (max 5d8) to creatures, or 1d6/CL (max 10d6) to undead.",
-            "description": "Focusing divine power like a ray of the sun, you project a blast of light from your open palm. You must succeed on a ranged touch attack to strike a target.",
-            "range": "Medium (100 ft. + 10 ft./level)",
-            "action": "Standard Action",
-            "actionType": "standard",
-            "duration": "Instantaneous",
-            "modifiers": [],
-            "damageParts": [
+            "id": "ch-weapon",
+            "key": "weapon",
+            "label": "Chosen Weapon",
+            "count": 1
+          }
+        ],
+        "effects": [
+          {
+            "type": "when",
+            "flow": "while",
+            "branches": [
               {
-                "dice": "3d8",
-                "bonus": 0,
-                "type": "Untyped / Divine Light",
-                "multiplyOnCrit": true,
-                "onCritOnly": false,
-                "source": "Searing Light (Standard)"
+                "condKind": "wieldingChosenWeapon",
+                "condText": "",
+                "effects": [
+                  {
+                    "type": "stat",
+                    "targets": [
+                      "atk.weapon"
+                    ],
+                    "mode": "flat",
+                    "value": 1,
+                    "btype": "Untyped"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "title": "A->B Stat Swap Feat (Zen Archery: replaceStat Wis for Dex on ranged attacks)",
+      "entry": {
+        "schemaVersion": 3,
+        "id": "feat-zen-archery",
+        "blueprint": "feat",
+        "name": "Zen Archery",
+        "type": "Feat",
+        "category": "General",
+        "source": "Complete Warrior p.106",
+        "featKind": "feat",
+        "tags": [
+          "feat",
+          "general"
+        ],
+        "prerequisites": "Wis 13, base attack bonus +1.",
+        "text": "Your intuition guides your hand when you use a ranged weapon. You can use your Wisdom modifier instead of your Dexterity modifier when making a ranged attack against a target within 30 feet.",
+        "effects": [
+          {
+            "type": "stat",
+            "mode": "replaceStat",
+            "swapTarget": "atk.ranged.abilityMod",
+            "targets": [
+              "atk.ranged.abilityMod"
+            ],
+            "subOp": "max",
+            "fromStat": "dex",
+            "toStat": "wis",
+            "scope": "all",
+            "formula": "@wisMod",
+            "condition": "within 30 ft."
+          }
+        ]
+      }
+    },
+    {
+      "title": "Composite Weapon (+2 Keen Flaming Burst Adamantine Katana)",
+      "entry": {
+        "schemaVersion": 3,
+        "id": "wpn-katana-plus2-keen-flaming-burst-adamantine",
+        "blueprint": "weapon",
+        "name": "+2 Keen Flaming Burst Adamantine Katana",
+        "source": "DMG p.222-226 / Oriental Adventures",
+        "tags": [
+          "#Weapon",
+          "#Composite"
+        ],
+        "facets": [
+          "identity",
+          "chassis"
+        ],
+        "item": {
+          "subtype": "Weapon",
+          "slot": "Held",
+          "consumable": false,
+          "price": 53900,
+          "casterLevel": 0
+        },
+        "baseItemId": "katana",
+        "material": "adamantine",
+        "enhancementBonus": 2,
+        "enhancements": [
+          "keen",
+          "flaming_burst"
+        ],
+        "effectiveEnhancement": 5,
+        "gpValue": 53900,
+        "weapon": {
+          "category": "Exotic",
+          "handedness": "One-Handed",
+          "damageDice": "1d10",
+          "dmgType": "Slashing",
+          "baseCritRange": 19,
+          "keen": true,
+          "effectiveCritRange": 17,
+          "critCappedByHouseRule": false,
+          "critMultiplier": 2,
+          "rangeIncrement": null
+        },
+        "tacticalBadges": [
+          "Bypasses DR/adamantine & hardness < 20"
+        ],
+        "text": "Composite gear assembled from baseItemId + material + enhancementBonus + enhancements[]. The engine derives the effective +5 enhancement price, keen crit range (17-20 for a 19-20 base), adamantine DR bypass, and flaming burst dice."
+      }
+    },
+    {
+      "title": "Breath Weapon (Half-Dragon: resource pool + powers[] spend)",
+      "entry": {
+        "schemaVersion": 3,
+        "id": "race-half-dragon-red",
+        "blueprint": "race",
+        "name": "Half-Dragon (Red)",
+        "source": "Monster Manual p.146",
+        "tags": [
+          "#Draconic",
+          "#Fire"
+        ],
+        "facets": [
+          "identity",
+          "effects",
+          "powers"
+        ],
+        "text": "Inherited template. Type changes to Dragon (augmented). +8 Str, +2 Con, +2 Int, +2 Cha, +4 natural armor, immunity to fire, darkvision 60 ft. and low-light vision. Breath weapon 1/day: 30-ft. cone of fire, 6d8 fire damage, Reflex DC 10 + 1/2 HD + Con modifier half.",
+        "race": {
+          "kind": "template",
+          "timing": "Inherited",
+          "size": "Medium",
+          "creatureType": "Dragon",
+          "subtype": "Augmented",
+          "speed": 30,
+          "flySpeed": 60,
+          "flyManeuverability": "Average",
+          "levelAdjustment": 3,
+          "racialHitDice": null,
+          "favoredClass": "Any",
+          "bonusFeatAt1st": false,
+          "humanBonusSkillPoints": false
+        },
+        "effects": [
+          {
+            "type": "stat",
+            "targets": [
+              "str"
+            ],
+            "mode": "flat",
+            "value": 8,
+            "btype": "Racial"
+          },
+          {
+            "type": "stat",
+            "targets": [
+              "con",
+              "int",
+              "cha"
+            ],
+            "mode": "flat",
+            "value": 2,
+            "btype": "Racial"
+          },
+          {
+            "type": "stat",
+            "targets": [
+              "ac.natural"
+            ],
+            "mode": "flat",
+            "value": 4,
+            "btype": "Natural Armor"
+          },
+          {
+            "type": "defense",
+            "mode": "Immunity",
+            "what": "Fire"
+          },
+          {
+            "type": "defense",
+            "mode": "Sense / Movement",
+            "what": "Darkvision 60 ft."
+          },
+          {
+            "type": "resource",
+            "name": "Breath Weapon",
+            "varKey": "breath_weapon",
+            "resMode": "spend",
+            "scaling": "flat",
+            "max": 1,
+            "reset": "perDay"
+          }
+        ],
+        "powers": [
+          {
+            "id": "pw-half-dragon-red-breath",
+            "kind": "inline",
+            "name": "Breath Weapon (Su)",
+            "action": "Standard",
+            "usage": {
+              "mode": "resourcePool",
+              "pool": "Breath Weapon",
+              "cost": 1
+            },
+            "area": "30-ft. Cone",
+            "save": {
+              "type": "Reflex",
+              "effect": "Half"
+            },
+            "effects": [
+              {
+                "type": "roll",
+                "kind": "Damage",
+                "count": 6,
+                "die": "d8",
+                "flat": 0,
+                "dmgType": "Fire",
+                "scaling": "flat",
+                "save": "Reflex half"
               }
             ],
-            "modes": [
-              {
-                "id": "standard",
-                "name": "Standard (1d8/2 CL)",
-                "actionType": "standard",
-                "isRanged": true,
-                "range": "Medium",
-                "benefit": "Deals 1d8 per two caster levels (max 5d8) to regular creatures.",
-                "damageParts": [
-                  {
-                    "dice": "3d8",
-                    "bonus": 0,
-                    "type": "Untyped / Divine Light",
-                    "multiplyOnCrit": true,
-                    "onCritOnly": false,
-                    "source": "Searing Light"
-                  }
-                ],
-                "modifiers": []
-              },
-              {
-                "id": "vs_undead",
-                "name": "Undead (1d6/CL)",
-                "actionType": "standard",
-                "isRanged": true,
-                "range": "Medium",
-                "benefit": "Deals 1d6 per caster level (max 10d6) against undead creatures.",
-                "damageParts": [
-                  {
-                    "dice": "6d6",
-                    "bonus": 0,
-                    "type": "Untyped / Divine Light",
-                    "multiplyOnCrit": true,
-                    "onCritOnly": false,
-                    "source": "Searing Light (Undead)"
-                  }
-                ],
-                "modifiers": []
-              }
-            ],
-            "spellStats": {
-              "school": "Evocation",
+            "text": "Reflex DC 10 + 1/2 HD + Con modifier for half damage."
+          }
+        ]
+      }
+    },
+    {
+      "title": "Cleric Domain (Sun: grants.grantedPower + spellLadder + resource)",
+      "entry": {
+        "schemaVersion": 3,
+        "id": "dom-sun",
+        "blueprint": "domain",
+        "name": "Sun",
+        "type": "Domain",
+        "category": "Cleric Domain",
+        "source": "SRD 3.5e / Player's Handbook",
+        "text": "Once per day, you can perform a greater turning against undead in place of a regular turning. The greater turning is like a normal turning except that the undead creatures that would be turned are destroyed instead.",
+        "grants": {
+          "grantedPower": {
+            "name": "Sun Domain Power",
+            "text": "Once per day, you can perform a greater turning against undead in place of a regular turning. The greater turning is like a normal turning except that the undead creatures that would be turned are destroyed instead.",
+            "usage": {
+              "mode": "passive"
+            }
+          },
+          "spellLadder": [
+            {
+              "level": 1,
+              "spell": "Endure Elements",
+              "refId": "spl-endure-elements"
+            },
+            {
+              "level": 2,
+              "spell": "Heat Metal",
+              "refId": "spl-heat-metal"
+            },
+            {
               "level": 3,
-              "components": "V, S",
-              "castingTime": "1 standard action",
-              "range": "Medium (100 ft. + 10 ft./level)",
-              "targetOrArea": "Ray",
-              "duration": "Instantaneous",
-              "savingThrow": "None",
-              "spellResistance": "Yes"
+              "spell": "Searing Light",
+              "refId": "spl-searing-light"
             },
-            "ruleFlags": {
-              "touchAttack": true,
-              "rangedTouch": true
+            {
+              "level": 4,
+              "spell": "Fire Shield",
+              "refId": "spl-fire-shield"
             },
-            "tacticalBadges": ["Ranged Touch", "No Save", "SR: Yes"],
-            "tags": ["spell", "evocation", "divine", "ray"]
-          }
-        ]
-      }
-    },
-    {
-      "category": "Weapon (Canonical V2 Composite Weapon Example)",
-      "payload": {
-        "entries": [
+            {
+              "level": 5,
+              "spell": "Flame Strike",
+              "refId": "spl-flame-strike"
+            },
+            {
+              "level": 6,
+              "spell": "Fire Seeds",
+              "refId": "spl-fire-seeds"
+            },
+            {
+              "level": 7,
+              "spell": "Sunbeam",
+              "refId": "spl-sunbeam"
+            },
+            {
+              "level": 8,
+              "spell": "Sunburst",
+              "refId": "spl-sunburst"
+            },
+            {
+              "level": 9,
+              "spell": "Prismatic Sphere",
+              "refId": "spl-prismatic-sphere"
+            }
+          ]
+        },
+        "effects": [
           {
-            "schemaVersion": 2,
-            "id": "wpn_longsword_plus_1",
-            "baseItemId": "wpn_longsword",
-            "name": "+1 Longsword",
-            "type": "Weapon",
-            "slot": "Main Hand",
-            "role": "Offense / Weapon",
-            "source": "Dungeon Master's Guide v.3.5, p. 222",
-            "benefit": "+1 Enhancement bonus on attack and damage rolls (1d8, 19-20/x2 Slashing).",
-            "description": "A masterwork longsword magically enhanced to grant a +1 enhancement bonus on attack and damage rolls.",
-            "enhancementBonus": 1,
-            "enhancements": [],
-            "material": null,
-            "cost": 2315,
-            "weight": 4,
-            "action": "Standard Action",
-            "actionType": "standard",
-            "duration": "Continuous",
-            "modifiers": [
-              {
-                "target": "attack.melee",
-                "value": 1,
-                "type": "Enhancement",
-                "condition": null
-              },
-              {
-                "target": "damage.melee",
-                "value": 1,
-                "type": "Enhancement",
-                "condition": null
-              }
-            ],
-            "damageParts": [
-              {
-                "dice": "1d8",
-                "bonus": 1,
-                "type": "Slashing",
-                "multiplyOnCrit": true,
-                "onCritOnly": false,
-                "source": "Base Weapon"
-              }
-            ],
-            "modes": [
-              {
-                "id": "one_handed",
-                "name": "One-Handed (1x STR)",
-                "grip": "one_handed",
-                "actionType": "standard",
-                "damageParts": [
-                  {
-                    "dice": "1d8",
-                    "bonus": 1,
-                    "type": "Slashing",
-                    "multiplyOnCrit": true,
-                    "onCritOnly": false,
-                    "source": "Base Weapon"
-                  }
-                ],
-                "modifiers": []
-              },
-              {
-                "id": "two_handed",
-                "name": "Two-Handed (1.5x STR)",
-                "grip": "two_handed",
-                "actionType": "standard",
-                "damageParts": [
-                  {
-                    "dice": "1d8",
-                    "bonus": 1,
-                    "type": "Slashing",
-                    "multiplyOnCrit": true,
-                    "onCritOnly": false,
-                    "source": "Base Weapon"
-                  }
-                ],
-                "modifiers": []
-              }
-            ],
-            "weaponMeta": {
-              "proficiency": "Martial",
-              "handedness": "One-Handed",
-              "damageDice": "1d8",
-              "critMin": 19,
-              "critMult": 2,
-              "damageType": "Slashing",
-              "rangeIncrement": 0,
-              "isDoubleWeapon": false,
-              "isFinessable": false
-            },
-            "weaponStats": {
-              "category": "Martial",
-              "handedness": "One-Handed",
-              "baseDamage": "1d8",
-              "critMin": 19,
-              "critMult": 2,
-              "damageTypes": ["Slashing"],
-              "rangeIncrement": 0,
-              "finessable": false,
-              "isLight": false
-            },
-            "ruleFlags": {},
-            "tacticalBadges": ["19-20/x2"],
-            "tags": ["weapon", "magic item", "slashing", "martial"]
+            "type": "resource",
+            "name": "Greater Turning",
+            "varKey": "domain_sun_greater_turning",
+            "resMode": "spend",
+            "scaling": "flat",
+            "max": 1,
+            "reset": "perDay"
+          },
+          {
+            "type": "effect",
+            "effectKind": "rule",
+            "label": "Greater Turning (1/day)",
+            "text": "In place of a regular turning, perform a greater turning: undead that would be turned are destroyed instead."
           }
         ]
       }

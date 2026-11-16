@@ -20,6 +20,7 @@ const crypto = require('crypto');
 const vm = require('vm');
 const { runRuleEngineTests } = require('./test_rule_engine');
 const { runDeriveSheetTests } = require('./test_derive_sheet');
+const { runAiV3ContractTests } = require('./test_ai_v3_contract');
 
 const ROOT = path.resolve(__dirname, '..');
 
@@ -605,13 +606,21 @@ function main() {
     console.error(`[FAIL] ${dsErr.message}`);
     errors++;
   }
+  // 7b. AI V3 Contract Gate (rule_master_ai_schema.json + lego_patterns.json: pure V3, Rule Crafter round-trip, deriveSheet)
+  let aiContractRes = { passed: 0, elapsedMs: 0 };
+  try {
+    aiContractRes = runAiV3ContractTests();
+  } catch (aiErr) {
+    console.error(`[FAIL] ${aiErr.message}`);
+    errors++;
+  }
 
   const elapsed = Date.now() - startMs;
   if (errors > 0) {
     console.error(`\n❌ VERIFICATION FAILED with ${errors} error(s) (${elapsed}ms).`);
     process.exit(1);
   } else {
-    console.log(`✅ ALL CHECKS PASSED (${CORE_FILES.length} core files synced & verified, ${ruleTestRes.passed}/${ruleTestRes.passed} RAW math tests + ${deriveTestRes.passed}/${deriveTestRes.passed} golden fixture tests passed, 0 U+1F3B2, 100% JS/HTML/Event/JSON valid) in ${elapsed}ms.`);
+    console.log(`✅ ALL CHECKS PASSED (${CORE_FILES.length} core files synced & verified, ${ruleTestRes.passed}/${ruleTestRes.passed} RAW math tests + ${deriveTestRes.passed}/${deriveTestRes.passed} golden fixture tests + ${aiContractRes.passed}/${aiContractRes.passed} AI V3 contract checks passed, 0 U+1F3B2, 100% JS/HTML/Event/JSON valid) in ${elapsed}ms.`);
     console.log(`📉 Strangler Ratchet Gate: ${totalInline}/${maxInline} inline events, ${totalWin}/${maxWin} window.* globals.`);
     console.log(`📊 Active TR/Mojibake Lines Remaining: ${totalActiveTrLines} [${trSummary.join(', ') || '0 — 100% PURE ENGLISH!'}]`);
   }

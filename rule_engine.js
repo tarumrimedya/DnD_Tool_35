@@ -1521,7 +1521,9 @@ const RuleEngine = {
         return { value: Math.trunc(ev), formula: finalExpr, cap: String(b.subOp || 'max').toLowerCase() === 'add' ? capRaw : null };
       }
 
-      // Rule Crafter `mode: 'perCL'` (`Scale by Level`: min + floor(@cl / per) * value, capped at max)
+      // Rule Crafter `mode: 'perCL'` (`Scale by Level`): clamp(floor(@cl / per) * value, min, max), matching the
+      // Rule Crafter export `clamp(floor(@cl/per)*value,min,max)`. `min` is a floor, not an additive base
+      // (Divine Favor: +1 per 3 CL, at least +1, max +3 -> CL 3 = +1, CL 6 = +2, CL 9+ = +3).
       if (mode === 'percl' && !b.perCL && !b.perLvl && !b.perLevel) {
         const step = Number(rawVal ?? 1) || 1;
         const every = Math.max(1, Number(b.per ?? 1) || 1);
@@ -1530,8 +1532,8 @@ const RuleEngine = {
         const scaleExpr = every === 1
           ? (step === 1 ? '@cl' : `(@cl * ${step})`)
           : (step === 1 ? `floor(@cl / ${every})` : `(floor(@cl / ${every}) * ${step})`);
-        const uncapExpr = baseMin !== 0 ? `${baseMin} + ${scaleExpr}` : scaleExpr;
-        const expr = (maxCap !== null && Number.isFinite(maxCap) && maxCap > 0) ? `min(${maxCap}, ${uncapExpr})` : uncapExpr;
+        const cappedExpr = (maxCap !== null && Number.isFinite(maxCap) && maxCap > 0) ? `min(${maxCap}, ${scaleExpr})` : scaleExpr;
+        const expr = baseMin !== 0 ? `max(${baseMin}, ${cappedExpr})` : cappedExpr;
         const ev = Number(this.evaluateFormula(expr, branchCtx)) || 0;
         return { value: Math.trunc(ev), formula: expr, cap: maxCap };
       }
@@ -3996,8 +3998,10 @@ const RuleEngine = {
     const templatesJson = JSON.stringify(matchedPatterns.map(p => p.template), null, 2);
     return [
       'You are the D&D 3.5e Rule Master Lego Assembler.',
-      'Clone and combine the provided V2.5 Composable Lego JSON templates (`modifiers`, `defenses`, `resources`, `modes`, `grants`, `choices`) and adapt only the domain parameters to match the user request.',
-      'For multi-benefit DM Boons, include both benefits active simultaneously using `sourceLabel: "Benefit 1"` and `sourceLabel: "Benefit 2"`.',
+      'Clone and combine the provided Pure Canonical V3 Lego templates (`schemaVersion: 3`) and adapt only the domain parameters to match the user request. Output complete V3 entries that validate against `rule_master_ai_schema.json` (`RuleMasterEntryV3`).',
+      'Mechanics live only in `effects[]` blocks (`stat`, `roll`, `attack`, `defense`, `effect`, `resource`, `when`, `table`, `carrier`), `choices[]` (@Choice inputs) and `powers[]` (activated abilities with `action`, `usage`, `save`, `effects[]`). Never emit legacy `modifiers`, `damageParts`, `defenses`, `resources` or `modes` arrays.',
+      '`stat` blocks use plural `targets: string[]` with canonical keys (e.g. `ac.deflection`, `atk.all`, `save.will`) plus `btype` and `mode` (`flat`, `stat`, `perCL`, `formula`, `replaceStat`); ability swaps use `mode: "replaceStat"` with `swapTarget`, `subOp`, `fromStat`, `toStat`, `scope`. Toggled or situational benefits go inside `when` branches (`flow: "while"`, `condText: "toggle:<key>"`, `"stance:<name>"` or `"@level >= N"`).',
+      'For multi-benefit DM Boons, write each benefit as its own `effects[]` or `powers[]` element and describe it in `label`/`text`; all benefits stay active simultaneously.',
       `Matched Structural Lego Templates:\n${templatesJson}`,
       `User Rule / Ability Request:\n${userQuery}`
     ].join('\n\n');
