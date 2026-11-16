@@ -763,7 +763,7 @@
       armor: 'Armor',
       shield: 'Shield',
       feat: 'Feat',
-      boon: 'DM Boon',
+      boon: 'Homebrew',
       spell: 'Spell',
       maneuver: 'Maneuver',
       psionic: 'Psionic Power',

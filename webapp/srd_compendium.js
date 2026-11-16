@@ -3143,7 +3143,7 @@
 
       const effects = Array.isArray(entry.effects) ? safeClone(entry.effects) : [];
       const defaultBonusType = String(entry.bonusType || 'Untyped');
-      const isWeapon = entry.type === 'Weapon' || Boolean(entry.weapon || entry.weaponStats || (srdMatch && srdMatch.type === 'Weapon') || ((entry.dice || entry.damage) && !['Spell', 'Power', 'Maneuver', 'Special Ability', 'DM Boon'].includes(entry.type)));
+      const isWeapon = entry.type === 'Weapon' || Boolean(entry.weapon || entry.weaponStats || (srdMatch && srdMatch.type === 'Weapon') || ((entry.dice || entry.damage) && !['Spell', 'Power', 'Maneuver', 'Special Ability', 'Homebrew'].includes(entry.type)));
       const isArmor = entry.type === 'Armor' || Boolean(entry.armor && entry.type !== 'Shield');
       const isShield = entry.type === 'Shield';
 
@@ -3427,12 +3427,12 @@
     sanitizeCharacterAbilitiesAndPool(charData) {
       if (!charData || typeof charData !== 'object') return charData;
       const EXPLICIT_NON_GEAR_CATS = new Set([
-        'special ability', 'dm grant', 'dm boon', 'boon',
+        'special ability', 'dm grant', 'homebrew', 'boon',
         'feat', 'flaw', 'class feature', 'racial trait', 'synergy', 'template',
         'spell', 'maneuver', 'stance'
       ]);
       const STRICT_NON_PHYSICAL_CATS = new Set([
-        'special ability', 'dm boon', 'dm grant', 'boon', 'feat', 'flaw', 'class feature', 'racial trait', 'synergy', 'template'
+        'special ability', 'homebrew', 'dm grant', 'boon', 'feat', 'flaw', 'class feature', 'racial trait', 'synergy', 'template'
       ]);
       const PHYSICAL_SLOTS = new Set([
         'mainhand', 'main hand', 'offhand', 'off-hand', 'off hand', 'off-hand/shield', 'two hands', 'two-handed',
@@ -3501,7 +3501,7 @@
             effectiveCat === 'stance' ||
             effectiveCat === 'special ability' ||
             effectiveCat === 'dm grant' ||
-            effectiveCat === 'dm boon' ||
+            effectiveCat === 'homebrew' ||
             effectiveCat === 'boon' ||
             effectiveCat === 'class feature' ||
             effectiveCat === 'racial trait' ||

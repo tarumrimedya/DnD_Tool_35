@@ -206,7 +206,7 @@ function runDeriveSheetTests() {
   check('04_wizard_archmage_lvl15: Saves Fort +15 / Ref +16 / Will +20 (Cloak +4 Resistance + Greater Heroism +4 Morale + Haste +1 Dodge Ref) & Greater Heroism V3 Temp HP roll block', f04.saves.fort === 15 && f04.saves.ref === 16 && f04.saves.will === 20 && f04Raw.buffs.some(b => b.id === 'spl-greater-heroism' && Array.isArray(b.effects) && b.effects.some(e => e.type === 'roll' && e.kind === 'Temp HP' && e.tempHpFormula === 'min(20, @cl)')), `got ${JSON.stringify(f04.saves)}`);
 
   // --------------------------------------------------------------------------
-  // Fixture 05: Level 17 Half-Dragon Warblade with V2.5 DM Boons & Sanitization
+  // Fixture 05: Level 17 Half-Dragon Warblade with V2.5 Homebrew & Sanitization
   // --------------------------------------------------------------------------
   const f05Raw = loadFixture('05_dragon_blooded_boons_lvl17.json');
   const f05 = computeBaselineMetrics(f05Raw);
@@ -216,7 +216,7 @@ function runDeriveSheetTests() {
   const boonBreathMode = f05.lego.modes.find(m => m.id === 'breath_acid_line');
   const racialBreathMode = f05.lego.modes.find(m => m.id === 'half_dragon_breath_6d8');
   const reflectMode = f05.lego.modes.find(m => m.id === 'mode_reflect_ward');
-  check('05_dragon_blooded_boons_lvl17: DM Boon Breath Weapon DC = 31 (10 + @level 17 + @conMod 4) & Half-Dragon Racial Breath Weapon DC = 22 (10 + floor(17/2) + 4)', Boolean(boonBreathMode && boonBreathMode.dc === 31 && racialBreathMode && racialBreathMode.dc === 22), `got boon=${JSON.stringify(boonBreathMode)}, racial=${JSON.stringify(racialBreathMode)}`);
+  check('05_dragon_blooded_boons_lvl17: Homebrew Breath Weapon DC = 31 (10 + @level 17 + @conMod 4) & Half-Dragon Racial Breath Weapon DC = 22 (10 + floor(17/2) + 4)', Boolean(boonBreathMode && boonBreathMode.dc === 31 && racialBreathMode && racialBreathMode.dc === 22), `got boon=${JSON.stringify(boonBreathMode)}, racial=${JSON.stringify(racialBreathMode)}`);
   check('05_dragon_blooded_boons_lvl17: Immediate Reaction mode_reflect_ward reactsTo incoming_spell', Boolean(reflectMode && reflectMode.actionType === 'immediate' && reflectMode.reactsTo === 'incoming_spell'), `got ${JSON.stringify(reflectMode)}`);
   check('05_dragon_blooded_boons_lvl17: SchemaMigrator deduplicates Dragon Breath (3 distinct specialAbilities remain) & removes ability from gearPool while keeping Ring of Blinking', f05.specialAbilitiesCount === 3 && f05.gearPoolCount === 1, `got sa=${f05.specialAbilitiesCount}, gear=${f05.gearPoolCount}`);
 
@@ -526,7 +526,7 @@ function runDeriveSheetTests() {
   // Switch to Character B (with its own distinct customDb)
   const charB = JSON.parse(JSON.stringify(f05Raw));
   charB.customDb = [
-    { id: 'hb_kaelen_draconic_boon', name: 'Draconic Path Boon', category: 'DM Boon', schemaVersion: 3, effects: [] }
+    { id: 'hb_kaelen_draconic_boon', name: 'Draconic Path Boon', category: 'Homebrew', schemaVersion: 3, effects: [] }
   ];
   CharStore.replaceDoc(charB, { label: 'Switch to Kaelen' });
   check(
@@ -664,7 +664,7 @@ function runDeriveSheetTests() {
     )
   );
   check(
-    'Phase R3: Fixture 05 (Dragon-Blooded Boons) derives both Half-Dragon Breath Weapon (6d8 Acid, DC 22) and DM Boon Breath Weapon (4d8 Acid, 1d4+1 recharge, DC 31)',
+    'Phase R3: Fixture 05 (Dragon-Blooded Boons) derives both Half-Dragon Breath Weapon (6d8 Acid, DC 22) and Homebrew Breath Weapon (4d8 Acid, 1d4+1 recharge, DC 31)',
     v05Combat.combat.specialAttacks.some(sa => sa.name.includes('Half-Dragon') && sa.diceFormula === '6d8' && sa.dcVal === 22) &&
     v05Combat.combat.specialAttacks.some(sa => sa.name.includes('Dragon Breath Weapon') && sa.diceFormula === '4d8' && sa.dcVal === 31 && sa.cooldownExpr === '1d4+1'),
     JSON.stringify(v05Combat.combat.specialAttacks.map(s => ({ key: s.key, name: s.name, dice: s.diceFormula, dc: s.dcVal, cd: s.cooldownExpr })))
@@ -1781,10 +1781,10 @@ function runDeriveSheetTests() {
   CharStore.dispatch({
     type: 'spells/toggleDmBoon',
     payload: { discipline: 'spontaneous', fallbackDiscipline: 'martial' },
-    meta: { label: 'Enable DM Boon (spontaneous)' }
+    meta: { label: 'Enable Homebrew (spontaneous)' }
   });
   check(
-    'Phase R5 Reducer (spells/toggleDmBoon): enables spontaneous DM Boon in doc.settings.boonDisciplines',
+    'Phase R5 Reducer (spells/toggleDmBoon): enables spontaneous Homebrew in doc.settings.boonDisciplines',
     Array.isArray(CharStore.getDoc().settings?.boonDisciplines) &&
     CharStore.getDoc().settings.boonDisciplines.includes('spontaneous')
   );
@@ -3144,7 +3144,7 @@ function runDeriveSheetTests() {
     const dbOf = id => sandbox.state.characters.find(c => c.id === id).fullData.customDb;
     return { res: sandbox.result, dbOf, sheetDb: JSON.parse(store.dnd35_character).customDb };
   };
-  const hubPack = [{ id: 'pack:boon_a', name: 'Boon A', type: 'DM Boon' }, { id: 'pack:feat_shared', name: 'Shared Name', type: 'Feat' }];
+  const hubPack = [{ id: 'pack:boon_a', name: 'Boon A', type: 'Homebrew' }, { id: 'pack:feat_shared', name: 'Shared Name', type: 'Feat' }];
   const hubAll = hubRun('all', 'c_free', hubPack);
   const hubMain = hubRun('camp_main', 'c_other', hubPack);
   const hubSheet = hubRun('camp_main', 'c_main', hubPack);
@@ -3160,7 +3160,7 @@ function runDeriveSheetTests() {
     hubReplace.res.updated === 1 && hubReplace.dbOf('c_main').length === 1 && hubReplace.dbOf('c_main')[0].weight === 2
   );
 
-  // Campaign DB (CAMPAIGN_PACKS_DESIGN.md): campaign_db.js reconcile rules on the real DM Boons pack.
+  // Campaign DB (CAMPAIGN_PACKS_DESIGN.md): campaign_db.js reconcile rules on the real Homebrew pack.
   const CampaignDb = require('../campaign_db.js');
   const boonFile = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'exports', 'dm_boons_master_db_import.json'), 'utf8'));
   const boonPack = CampaignDb.readPackFile(boonFile);
@@ -3213,7 +3213,7 @@ function runDeriveSheetTests() {
 
   // The tag does not change the rule engine: boons from tagged copies give the same sheet as a plain import.
   const cdbFixture = loadFixture('05_dragon_blooded_boons_lvl17.json');
-  cdbFixture.feats = (cdbFixture.feats || []).concat(boonFile.entries.filter(e => e.type === 'DM Boon').map(e => ({ id: e.id, name: e.name, type: e.type })));
+  cdbFixture.feats = (cdbFixture.feats || []).concat(boonFile.entries.filter(e => e.type === 'Homebrew').map(e => ({ id: e.id, name: e.name, type: e.type })));
   const cdbPlainDb = JSON.parse(JSON.stringify(boonFile.entries));
   const cdbTaggedDb = [];
   CampaignDb.reconcile(cdbTaggedDb, cdbPacksV1, { campaignId: 'camp_main', used: new Set() });
@@ -3221,7 +3221,7 @@ function runDeriveSheetTests() {
   const cdbSheetTagged = RuleEngine.deriveSheet(JSON.parse(JSON.stringify(cdbFixture)), cdbTaggedDb);
   const cdbSig = (s) => JSON.stringify({ ac: s.ac && [s.ac.total, s.ac.touch, s.ac.flatFooted, s.ac.natural], saves: s.saves && [s.saves.fort, s.saves.ref, s.saves.will], hp: s.hp && s.hp.max });
   check(
-    'Campaign DB: fixture 05 with all DM boons derives the same AC, saves and HP from tagged Campaign DB copies as from a plain pack import',
+    'Campaign DB: fixture 05 with all Homebrew derives the same AC, saves and HP from tagged Campaign DB copies as from a plain pack import',
     cdbSig(cdbSheetPlain) === cdbSig(cdbSheetTagged) && cdbSheetPlain.ac.total > 23,
     `plain=${cdbSig(cdbSheetPlain)} tagged=${cdbSig(cdbSheetTagged)}`
   );
@@ -3400,7 +3400,7 @@ function runDeriveSheetTests() {
     (() => { const ix = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8'); return ix.indexOf('campaign_db.js') > 0 && ix.indexOf('campaign_db.js') < ix.indexOf('char_hud.js'); })()
   );
 
-  // Sheet: spells granted at will (DM boons) are listed as records. Named spells keep the boon's text when no DB
+  // Sheet: spells granted at will (Homebrew) are listed as records. Named spells keep the boon's text when no DB
   // entry exists (Charm Reptiles is not SRD); a school/level filter grant is listed as that choice with its benefit line.
   {
     const awChar = JSON.parse(JSON.stringify(f05Raw));
@@ -3418,7 +3418,7 @@ function runDeriveSheetTests() {
     const abjRec = recs.find(r => r.isChoice && r.school === 'Abjuration');
     const ixHtml = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
     check(
-      'Sheet: DM boon spell_at_will grants become At Will records: Lord of Reptiles lists Charm Reptiles and Summon Locust Swarm with the boon text, Boon of Abjuration Lesser lists "1st-level Abjuration spell of your choice" with its Benefit 1 line; nothing without such a boon',
+      'Sheet: Homebrew spell_at_will grants become At Will records: Lord of Reptiles lists Charm Reptiles and Summon Locust Swarm with the boon text, Boon of Abjuration Lesser lists "1st-level Abjuration spell of your choice" with its Benefit 1 line; nothing without such a boon',
       recs.length === 3 && charm && charm.source === lord.name && /Charm Reptiles/.test(charm.desc) &&
       recs.some(r => r.name === 'Summon Locust Swarm') &&
       abjRec && abjRec.name === '1st-level Abjuration spell of your choice' && /^Benefit 1: Choose a 1st level spell/i.test(abjRec.desc) && abjRec.source === abj.name &&

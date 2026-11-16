@@ -32,7 +32,7 @@
     const add = (f) => {
       if (featRefTypeOf(f) !== refType) return;
       const raw = typeof f === 'string' ? f : (f && (f.name || f.featName));
-      // levelProgression stores display strings such as "🎖️ Aberration Banemagic" / "🌟 [DM Boon] Name"
+      // levelProgression stores display strings such as "🎖️ Aberration Banemagic" / "🌟 [Homebrew] Name"
       // (same cleanup as char_progression cleanFeatNameString)
       const n = String(raw || '').replace(/^[^A-Za-z0-9(]+(\[.*?\])?\s*/, '').trim();
       if (n) out.add(n);
@@ -3362,7 +3362,7 @@
       if (nextBoons.length === 1 && nextBoons[0] === 'warlock') {
         doc.settings.clMode = 'Warlock Boon (Invocations & Eldritch Blast)';
       } else {
-        doc.settings.clMode = 'Character Level (DM Boon)';
+        doc.settings.clMode = 'Character Level (Homebrew)';
       }
     } else {
       doc.settings.casterTypeExplicit = false;
@@ -5125,7 +5125,7 @@
         const hit = bonuses.find(function (b) { return matchesItem(b); });
         if (hit) {
           charItem = typeof hit === 'string'
-            ? { id: 'boon_' + _slugifyCrafterId(cleanName), name: cleanName, type: 'DM Boon', benefit: hit, source: 'DM Boon' }
+            ? { id: 'boon_' + _slugifyCrafterId(cleanName), name: cleanName, type: 'Homebrew', benefit: hit, source: 'Homebrew' }
             : hit;
           sourceLocation = sourceLocation || 'levelProgression';
         }
@@ -5318,7 +5318,7 @@
           id: resolvedId || ((kind || 'entry') + '_' + _slugifyCrafterId(cleanName)),
           name: cleanName,
           type: _srdTypeForKind(kind) || 'Feature',
-          source: kind === 'boon' ? 'DM Boon' : 'Custom'
+          source: kind === 'boon' ? 'Homebrew' : 'Custom'
         };
         sourceLocation = 'synthetic';
       }

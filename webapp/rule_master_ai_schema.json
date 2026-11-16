@@ -81,7 +81,7 @@
         },
         "type": {
           "type": "string",
-          "description": "Display type (Feat, Spell, Domain, DM Boon, ...)."
+          "description": "Display type (Feat, Spell, Domain, Homebrew, ...)."
         },
         "category": {
           "type": "string"

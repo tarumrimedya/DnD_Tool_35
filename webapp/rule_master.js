@@ -214,7 +214,7 @@ const RuleMaster = {
     return str.replace(/(^|[\s\/\(\[\-])([a-zğüşıöç])/gi, (match, sep, ch) => sep + ch.toUpperCase());
   },
 
-  // Standardizes any rule, feat, class, item, or DM Boon name into canonical D&D 3.5e Title Case & punctuation
+  // Standardizes any rule, feat, class, item, or Homebrew name into canonical D&D 3.5e Title Case & punctuation
   standardizeName(val, categoryHint = '') {
     if (!val || typeof val !== 'string') return val;
     let str = val.trim();
@@ -232,13 +232,13 @@ const RuleMaster = {
       .trim();
     if (!cleanStr) return prefix;
 
-    // 2. Check if this is a DM Boon / Grant that can be synthesized deterministically
+    // 2. Check if this is a Homebrew entry / Grant that can be synthesized deterministically
     const isBoonQuery = String(categoryHint || '').toLowerCase().includes('boon')
       || /^(?:dm\s*boon|dm\s*grant|boon|grant)\b/i.test(cleanStr)
       || /\bskill\s*:/i.test(cleanStr);
 
     if (isBoonQuery && typeof window !== 'undefined' && typeof window.synthesizeDmBoonFromQuery === 'function') {
-      const synth = window.synthesizeDmBoonFromQuery(cleanStr, '', 'DM Boon');
+      const synth = window.synthesizeDmBoonFromQuery(cleanStr, '', 'Homebrew');
       if (synth && synth.name && !/^dm\s*boon$/i.test(synth.name.trim())) {
         return prefix + synth.name;
       }
@@ -258,14 +258,14 @@ const RuleMaster = {
       cleanStr = `${baseCls} (${varPart}${/variant|cleric/i.test(varPart) ? '' : ' Variant'})`;
     }
 
-    // 5. Extract and normalize DM Boon prefix if present
+    // 5. Extract and normalize Homebrew prefix if present
     let boonPrefix = '';
     if (isBoonQuery) {
       cleanStr = cleanStr
         .replace(/^(?:dm\s*boon|dm\s*grant|boon|grant)[\s:\-–—,\.]*/i, '')
         .replace(/^(?:skill|stat|ability|save)[\s:\-–—,\.]*/i, '')
         .trim();
-      boonPrefix = 'DM Boon: ';
+      boonPrefix = 'Homebrew: ';
       // Convert trailing bare "+4" or "-2" (when not after "=") into "(+4)"
       if (!cleanStr.includes('(') && !cleanStr.includes('=')) {
         const trailingSign = cleanStr.match(/^([a-z\s]+?)\s*([+-]\d+)$/i);
@@ -823,10 +823,10 @@ const RuleMaster = {
       rawTitle = 'Special Ability';
     }
 
-    const effectiveCat = (categoryHint && ['Special Ability', 'Racial Trait', 'DM Boon', 'Class Feature', 'Feat'].includes(categoryHint))
+    const effectiveCat = (categoryHint && ['Special Ability', 'Racial Trait', 'Homebrew', 'Class Feature', 'Feat'].includes(categoryHint))
       ? categoryHint
       : 'Special Ability';
-    const cleanName = this.standardizeName(rawTitle, effectiveCat === 'DM Boon' ? '' : effectiveCat);
+    const cleanName = this.standardizeName(rawTitle, effectiveCat === 'Homebrew' ? '' : effectiveCat);
 
     damageParts.forEach(dp => {
       dp.source = cleanName;
@@ -879,11 +879,11 @@ const RuleMaster = {
       schemaVersion: 2,
       id: `ability_${slug}`,
       name: cleanName,
-      type: effectiveCat === 'DM Boon' ? 'DM Boon' : (effectiveCat === 'Racial Trait' ? 'Racial Trait' : 'Special Ability'),
+      type: effectiveCat === 'Homebrew' ? 'Homebrew' : (effectiveCat === 'Racial Trait' ? 'Racial Trait' : 'Special Ability'),
       category: effectiveCat,
       slot: 'None',
       prereq: '-',
-      source: effectiveCat === 'DM Boon' ? 'DM Boon / Campaign Grant' : 'D&D 3.5e Special Ability',
+      source: effectiveCat === 'Homebrew' ? 'Homebrew / Campaign Grant' : 'D&D 3.5e Special Ability',
       benefit: benefitSummary,
       description: benefitSummary,
       action: parsedActionLabel,
@@ -1482,7 +1482,7 @@ const RuleMaster = {
         fuzzySc > 0 ||
         (item.name && item.name.toLowerCase().includes(query)) ||
         haystack.includes(query);
-      const matchCat = cat === 'ALL' || item.type === cat || (cat === 'DM Grant' && item.type === 'DM Boon') || (cat === 'Class' && (item.category === 'Class' || item.type === 'Base Class' || item.type === 'Prestige Class' || item.type === 'Custom Class'));
+      const matchCat = cat === 'ALL' || item.type === cat || (cat === 'DM Grant' && item.type === 'Homebrew') || (cat === 'Class' && (item.category === 'Class' || item.type === 'Base Class' || item.type === 'Prestige Class' || item.type === 'Custom Class'));
       const itemBonusType = item.modifiers?.[0]?.type || (item.type === 'Weapon' && item.enhancementBonus ? 'Enhancement' : 'Untyped');
       const matchBonus = bonusFilter === 'ALL' || itemBonusType === bonusFilter;
       const matchScope = scopeFilter === 'ALL' || (item.scope || 'None / General') === scopeFilter;
@@ -2376,7 +2376,7 @@ const RuleMaster = {
       if (rawItem && typeof rawItem === 'object') fuzzyScores.set(rawItem, fuzzySc);
       const matchQ = !query || fuzzySc > 0 || (item.name && item.name.toLowerCase().includes(query)) || haystack.includes(query);
 
-      const matchCat = cat === 'ALL' || item.type === cat || (cat === 'DM Grant' && item.type === 'DM Boon') || (cat === 'Class' && (item.category === 'Class' || item.type === 'Base Class' || item.type === 'Prestige Class' || item.type === 'Custom Class'));
+      const matchCat = cat === 'ALL' || item.type === cat || (cat === 'DM Grant' && item.type === 'Homebrew') || (cat === 'Class' && (item.category === 'Class' || item.type === 'Base Class' || item.type === 'Prestige Class' || item.type === 'Custom Class'));
       const itemBonusType = item.modifiers?.[0]?.type || (item.type === 'Weapon' && item.enhancementBonus ? 'Enhancement' : 'Untyped');
       const matchBonus = bonusFilter === 'ALL' || itemBonusType === bonusFilter;
       const matchScope = scopeFilter === 'ALL' || (item.scope || 'None / General') === scopeFilter;
@@ -2671,22 +2671,22 @@ const RuleMaster = {
   lastAiResults: [],
   _cachedModels: null,
 
-  DND35_RAW_GUARDRAIL: `D&D 3.5E RAW + SPLATBOOK / VARIANT / ACF / DM BOON ENGINE RULES:
+  DND35_RAW_GUARDRAIL: `D&D 3.5E RAW + SPLATBOOK / VARIANT / ACF / Homebrew ENGINE RULES:
 1. BROAD D&D 3.5E SOURCES (CORE + SPLATBOOKS + UNEARTHED ARCANA + DRAGON MAGAZINE):
-   - Because standard core rules are already in the local compendium, queries sent to Rule Master AI often target extended D&D 3.5e sources, variants, or DM Boons:
+   - Because standard core rules are already in the local compendium, queries sent to Rule Master AI often target extended D&D 3.5e sources, variants, or Homebrew:
      a) Official System Reference Document (SRD v3.5 as archived on d20srd.org) & Unearthed Arcana (Class Variants like Adventurer/Martial Rogue, Cloistered Cleric, Thug Fighter, Domain Wizard, Urban Ranger, Whirling Frenzy, Flaws, Traits, Bloodlines)
      b) Official D&D 3.5e Rulebooks & Splatbooks (Player's Handbook I & II, DMG I & II, Monster Manual I-V, Complete Warrior/Arcane/Divine/Adventurer/Mage/Scoundrel/Champion, Spell Compendium, Magic Item Compendium, Tome of Battle, Tome of Magic, Frostburn, Sandstorm, Stormwrack, Libris Mortis, Lords of Madness, Heroes of Horror/Battle, Book of Exalted Deeds, Book of Vile Darkness, Expanded Psionics Handbook, Complete Psionic, Magic of Incarnum, Races of Stone/Destiny/the Wild/the Dragon, Dungeonscape, Cityscape, Planar Handbook, Dragon Magic, Draconomicon, Fiendish Codex I & II, Champions of Valor/Ruin, Forgotten Realms / Eberron 3.5e books)
      c) Official Alternate Class Features (ACFs), Racial Substitution Levels, Tactical/Reserve/Regional/Heritage Feats, and Dragon Magazine Compendium / Dragon Magazine 3.5e issues.
-2. DM BOONS, SKILL/STAT GRANTS & CAMPAIGN CUSTOMIZATIONS:
-   - If the query asks for a DM Boon, Skill Bonus, Ability/Save/Attack/AC Grant, or Campaign Feature (e.g., "boon, skill: +ride", "DM Boon: +4 Ride", "+2 Initiative", "Boon: CL +1"), DO NOT reject it and NEVER force-map it to an unrelated PHB feat (such as mapping a Ride skill boon to "Mounted Combat").
-   - Instead, synthesize a clean, accurate Canonical V2 D&D 3.5e entry with exact "modifiers" (e.g. [{"target": "skill.ride", "value": 4, "type": "Untyped", "condition": null}]) and source "DM Boon / Campaign Grant".
+2. HomebrewS, SKILL/STAT GRANTS & CAMPAIGN CUSTOMIZATIONS:
+   - If the query asks for a Homebrew entry, Skill Bonus, Ability/Save/Attack/AC Grant, or Campaign Feature (e.g., "boon, skill: +ride", "Homebrew: +4 Ride", "+2 Initiative", "Boon: CL +1"), DO NOT reject it and NEVER force-map it to an unrelated PHB feat (such as mapping a Ride skill boon to "Mounted Combat").
+   - Instead, synthesize a clean, accurate Canonical V2 D&D 3.5e entry with exact "modifiers" (e.g. [{"target": "skill.ride", "value": 4, "type": "Untyped", "condition": null}]) and source "Homebrew / Campaign Grant".
 3. ZERO 5E / 4E / PATHFINDER MECHANICS:
    - Absolutely NO 5e mechanics (No Advantage/Disadvantage, No Bonus Action, No Finesse adding Dex to damage, No -5/+10 GWM, No Short Rest, No Concentration slots).
-   - Absolutely NO Pathfinder / PF1e / Starfinder rules or DandWiki forum inventions unless explicitly requested as a DM Boon/Custom rule.
+   - Absolutely NO Pathfinder / PF1e / Starfinder rules or DandWiki forum inventions unless explicitly requested as a Homebrew/Custom rule.
 4. OFFICIAL 3.5E ENGLISH, NAME STANDARDIZATION & NO DICE EMOJI (U+1F3B2):
    - Output 100% official D&D 3.5e RAW English terminology in all fields.
    - STANDARDIZE ALL NAMES ("name" field): Always convert messy user input (lowercase, ALL CAPS, stray dashes '-', ellipses '...', colons) into clean, canonical D&D 3.5e Title Case:
-     * DM Boons / Grants -> "DM Boon: Ride (+4)", "DM Boon: Initiative (+2)", "DM Boon: CL = Level 1"
+     * Homebrew / Grants -> "Homebrew: Ride (+4)", "Homebrew: Initiative (+2)", "Homebrew: CL = Level 1"
      * Targetable Feats -> "Weapon Focus (Longsword)", "Skill Focus (Spot)"
      * Class Variants -> "Rogue (Adventurer Variant)", "Cleric (Cloistered Cleric)"
    - NEVER output placeholder names like "Non-Existent Class" or "Unknown".
@@ -3768,21 +3768,21 @@ Return valid JSON only matching:
 }`;
     }
 
-    // 3. FEAT / DM BOON / SPECIAL ABILITY / RACIAL TRAIT / FLAW
-    if (['feat', 'dm boon', 'boon', 'special ability', 'ability', 'racial trait', 'flaw', 'class bonus feat', 'warlock invocation'].includes(cat)) {
-      const isBoonQuery = cat === 'dm boon' || cat === 'boon' || /\b(boon|grant|custom)\b/i.test(cleanQuery) || /\bskill\s*:/i.test(cleanQuery) || /^[+-]\d+\s+[a-z]/i.test(cleanQuery);
+    // 3. FEAT / Homebrew / SPECIAL ABILITY / RACIAL TRAIT / FLAW
+    if (['feat', 'homebrew', 'boon', 'special ability', 'ability', 'racial trait', 'flaw', 'class bonus feat', 'warlock invocation'].includes(cat)) {
+      const isBoonQuery = cat === 'homebrew' || cat === 'boon' || /\b(boon|grant|custom)\b/i.test(cleanQuery) || /\bskill\s*:/i.test(cleanQuery) || /^[+-]\d+\s+[a-z]/i.test(cleanQuery);
       return `You are a master D&D 3.5e Rule Arbiter & Canonical V2 Architect.
 Target query: "${cleanQuery}" (Category: "${effectiveCategory || 'Feat'}").
 
 ${this.DND35_RAW_GUARDRAIL}
 
-FEAT / ABILITY / DM BOON CANONICAL V2 RULES:
+FEAT / ABILITY / Homebrew CANONICAL V2 RULES:
 1. OFFICIAL 3.5E FEATS, ACFs, FLAWS, TRAITS & SPLATBOOKS:
    - Consult Player's Handbook I & II, Complete Series, Tome of Battle, Unearthed Arcana (Flaws, Traits, Variant Class Features), Dragon Magazine Compendium, Races of Stone/Destiny/the Wild/the Dragon, Frostburn, Sandstorm, Stormwrack, Libris Mortis, Book of Exalted Deeds/Vile Darkness, etc.
-2. DM BOON & CUSTOM BONUS SYNTHESIS (CRITICAL — DO NOT MAP TO UNRELATED PHB FEATS!):
-   - ${isBoonQuery ? 'THIS QUERY IS A DM BOON / SKILL OR STAT BONUS REQUEST!' : 'If the query describes a DM Boon, Skill Bonus (e.g. "boon, skill: +ride", "+4 Ride"), Stat/Save/Attack/AC Bonus, or Campaign Grant:'}
+2. Homebrew & CUSTOM BONUS SYNTHESIS (CRITICAL — DO NOT MAP TO UNRELATED PHB FEATS!):
+   - ${isBoonQuery ? 'THIS QUERY IS A HOMEBREW / SKILL OR STAT BONUS REQUEST!' : 'If the query describes a Homebrew entry, Skill Bonus (e.g. "boon, skill: +ride", "+4 Ride"), Stat/Save/Attack/AC Bonus, or Campaign Grant:'}
    - NEVER substitute an unrelated official feat like "Mounted Combat" or "Skill Focus" when the user asks for a direct skill/stat boon (such as "boon, skill: +ride" or "+4 Ride").
-   - Instead, create a dedicated Canonical V2 entry named clearly (e.g. "DM Boon: Ride Bonus (+4)" or "DM Boon: +4 Ride") with exact numerical "modifiers" (e.g. [{"target": "skill.ride", "value": 4, "type": "Untyped", "condition": null}]), "prereq": "-", "source": "DM Boon / Campaign Grant", and a concise English "benefit" describing the bonus. (If a skill bonus query like "boon, skill: +ride" omits the number, default to +2 or +4).
+   - Instead, create a dedicated Canonical V2 entry named clearly (e.g. "Homebrew: Ride Bonus (+4)" or "Homebrew: +4 Ride") with exact numerical "modifiers" (e.g. [{"target": "skill.ride", "value": 4, "type": "Untyped", "condition": null}]), "prereq": "-", "source": "Homebrew / Campaign Grant", and a concise English "benefit" describing the bonus. (If a skill bonus query like "boon, skill: +ride" omits the number, default to +2 or +4).
 3. CANONICAL V2 FIELDS:
    - "prereq": exact prerequisites or "-"
    - "benefit": concise mechanical summary in English
@@ -3806,7 +3806,7 @@ Return valid JSON only matching:
     {
       "schemaVersion": 2,
       "id": "feat_unique_slug",
-      "name": "Official 3.5e Name or DM Boon Title",
+      "name": "Official 3.5e Name or Homebrew Title",
       "type": "${cat === 'special ability' || cat === 'ability' ? 'Special Ability' : (cat === 'flaw' ? 'Flaw' : 'Feat')}",
       "prereq": "Prerequisites or '-'",
       "benefit": "Concise mechanical summary in English",
@@ -3819,8 +3819,8 @@ Return valid JSON only matching:
       "rechargeDice": "1d4+1",
       "modifiers": [],
       "damageParts": [],
-      "source": "Official 3.5e book and page or 'DM Boon / Campaign Grant'",
-      "description": "Full official RAW or DM Boon description in English"
+      "source": "Official 3.5e book and page or 'Homebrew / Campaign Grant'",
+      "description": "Full official RAW or Homebrew description in English"
     }
   ]
 }`;
@@ -4134,7 +4134,7 @@ Return valid JSON only matching:
       return [this.ensureV2(structuredStatBlock)];
     }
 
-    // 0b. Check if query is a DM Boon / Skill or Stat Grant (e.g. "dm boon ride +4", "boon, skill: +ride")
+    // 0b. Check if query is a Homebrew entry / Skill or Stat Grant (e.g. "homebrew ride +4", "boon, skill: +ride")
     if (typeof window !== 'undefined' && typeof window.synthesizeDmBoonFromQuery === 'function') {
       const synthBoon = window.synthesizeDmBoonFromQuery(cleanKey, '', '');
       if (synthBoon && synthBoon.name) {
@@ -4818,8 +4818,8 @@ Return valid JSON only matching:
     const cat = item.category || item.type || 'Other';
     const catLower = String(cat || '').toLowerCase();
 
-    // 1. Ensure item is placed in character.gearPool (except pure Feats/Spells/Maneuvers/Stances/Racial Traits/Flaws/Deities/Domains/Special Abilities/DM Boons)
-    const nonPhysicalTypes = ['feat', 'spell', 'maneuver', 'stance', 'flaw', 'racial trait', 'race', 'deity', 'domain', 'cleric domain', 'special ability', 'dm grant', 'dm boon', 'boon', 'class feature', 'trait', 'synergy', 'template'];
+    // 1. Ensure item is placed in character.gearPool (except pure Feats/Spells/Maneuvers/Stances/Racial Traits/Flaws/Deities/Domains/Special Abilities/Homebrew)
+    const nonPhysicalTypes = ['feat', 'spell', 'maneuver', 'stance', 'flaw', 'racial trait', 'race', 'deity', 'domain', 'cleric domain', 'special ability', 'dm grant', 'homebrew', 'boon', 'class feature', 'trait', 'synergy', 'template'];
     const isNonPhysical = nonPhysicalTypes.includes(type) || nonPhysicalTypes.includes(catLower) || String(item.id || '').startsWith('ability_') || String(item.id || '').startsWith('feat_') || String(item.id || '').startsWith('boon_');
     if (type === 'deity') {
       if (typeof selectDeityItem === 'function') {
@@ -5103,7 +5103,7 @@ Return valid JSON only matching:
       if (!character.feats) character.feats = [];
       character.feats.push(item.name);
       notify(`✨ Feat "${item.name}" added to character!`, 'success');
-    } else if (['special ability', 'dm grant', 'dm boon', 'boon', 'class feature', 'synergy', 'trait', 'template'].includes(type) || ['special ability', 'dm grant', 'dm boon', 'boon', 'class feature', 'synergy', 'trait', 'template'].includes(catLower) || String(item.id || '').startsWith('ability_') || String(item.id || '').startsWith('boon_')) {
+    } else if (['special ability', 'dm grant', 'homebrew', 'boon', 'class feature', 'synergy', 'trait', 'template'].includes(type) || ['special ability', 'dm grant', 'homebrew', 'boon', 'class feature', 'synergy', 'trait', 'template'].includes(catLower) || String(item.id || '').startsWith('ability_') || String(item.id || '').startsWith('boon_')) {
       if (!Array.isArray(character.specialAbilities)) character.specialAbilities = [];
       const existingIdx = character.specialAbilities.findIndex(a => {
         if (!a) return false;
@@ -6506,8 +6506,8 @@ Return valid JSON only matching:
     const isArmorShield = typeVal === 'Armor' || typeVal === 'Shield';
     const isSpellManeuver = typeVal === 'Spell' || typeVal === 'Maneuver' || typeVal === 'Stance';
     const isWeapon = typeVal === 'Weapon';
-    const isFeatLike = ['Feat', 'DM Boon', 'DM Grant'].includes(typeVal);
-    const isNonPhysicalRule = ['Feat', 'Spell', 'Maneuver', 'Stance', 'Race', 'Flaw', 'Special Ability', 'DM Grant', 'DM Boon', 'Racial Trait', 'Class Feature'].includes(typeVal);
+    const isFeatLike = ['Feat', 'Homebrew', 'DM Grant'].includes(typeVal);
+    const isNonPhysicalRule = ['Feat', 'Spell', 'Maneuver', 'Stance', 'Race', 'Flaw', 'Special Ability', 'DM Grant', 'Homebrew', 'Racial Trait', 'Class Feature'].includes(typeVal);
 
     const pArmor = document.getElementById('im-panel-armor');
     const pSpell = document.getElementById('im-panel-spell');
@@ -6663,7 +6663,7 @@ Return valid JSON only matching:
       ruleFlags
     });
 
-    if (['Feat', 'DM Boon', 'DM Grant'].includes(typeVal)) {
+    if (['Feat', 'Homebrew', 'DM Grant'].includes(typeVal)) {
       const maxRanksRaw = document.getElementById('im-feat-max-ranks')?.value || '1';
       const checkedTags = Array.from(document.querySelectorAll('.im-feat-tag-chk:checked')).map(cb => cb.value).filter(Boolean);
       entry.featTags = checkedTags;
@@ -6690,7 +6690,7 @@ Return valid JSON only matching:
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '_')
         .replace(/^_+|_+$/g, '') || 'entry';
-      const isAbilityType = ['Special Ability', 'DM Boon', 'DM Grant', 'Racial Trait', 'Class Feature'].includes(typeVal);
+      const isAbilityType = ['Special Ability', 'Homebrew', 'DM Grant', 'Racial Trait', 'Class Feature'].includes(typeVal);
       entry.id = isAbilityType ? `ability_${slug}` : `custom_${slug}_${Date.now()}`;
     }
 
@@ -6829,7 +6829,7 @@ Return valid JSON only matching:
   // ====================================================
   _ensureEditingDraft() {
     if (!this._currentEditingEntry) {
-      const typeVal = document.getElementById('im-type')?.value || 'DM Boon';
+      const typeVal = document.getElementById('im-type')?.value || 'Homebrew';
       this._currentEditingEntry = this.createEmptyEntry(typeVal);
     }
     const e = this._currentEditingEntry;
@@ -7773,7 +7773,7 @@ Return valid JSON only matching:
       "schemaVersion": 2,
       "id": "unique_slug_id",
       "name": "Entry Name",
-      "type": "Feat|Special Ability|Racial Trait|Class Feature|DM Boon|Weapon|Armor|Shield|Ring|Wondrous Item|Augment Crystal|Spell|Power|Potion|Scroll|Wand|Consumable|Maneuver|Stance|Template|Race|Deity|Domain",
+      "type": "Feat|Special Ability|Racial Trait|Class Feature|Homebrew|Weapon|Armor|Shield|Ring|Wondrous Item|Augment Crystal|Spell|Power|Potion|Scroll|Wand|Consumable|Maneuver|Stance|Template|Race|Deity|Domain",
       "slot": "None|Main Hand|Two Hands|Armor|Off-Hand/Shield|Ring|Belt|Waist|Shoulders|Neck|Throat|Head|Face|Body|Torso|Feet|Hands|Arms",
       "source": "PHB p.92 / DMG p.224",
       "prereq": "-",

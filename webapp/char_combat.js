@@ -13688,7 +13688,7 @@
       const body = String(rawQuery || '').replace(/^boon\s*:\s*/i, '').trim();
       if (!body) return null;
       const segments = body.split(',').map(s => s.trim()).filter(Boolean);
-      const name = segments[0] || 'Custom DM Boon';
+      const name = segments[0] || 'Custom Homebrew';
       let dice = '';
       let dmgType = 'Untyped';
       let range = '60 ft.';
@@ -13774,8 +13774,8 @@
         schemaVersion: 3,
         id: `pack_dm_custom:${slug}`,
         name: name,
-        type: dice ? 'Special Ability' : 'DM Boon',
-        category: dice ? 'Special Ability' : 'DM Boon',
+        type: dice ? 'Special Ability' : 'Homebrew',
+        category: dice ? 'Special Ability' : 'Homebrew',
         source: 'Spotlight Lego Terminal',
         action: actLabelMap[actionType] || 'Standard Action',
         actionType: actionType,
@@ -13816,7 +13816,7 @@
       const isGeneralLevel = (lvl === 1 || lvl % 3 === 0);
       const className = (row && row.className) ? row.className : ((character && character.classes) ? String(character.classes).split(' ')[0] : 'Fighter');
       const isFighterBonusLevel = /fighter/i.test(className) && (lvl === 1 || lvl % 2 === 0);
-      const hasRegularTaken = existingFeats.some(f => !/\[(Bonus|Extra Bonus|DM Boon|Flaw|Flaw Bonus|Racial|Extra Racial|Invocation)\]/i.test(String(f)));
+      const hasRegularTaken = existingFeats.some(f => !/\[(Bonus|Extra Bonus|Homebrew|Flaw|Flaw Bonus|Racial|Extra Racial|Invocation)\]/i.test(String(f)));
       const hasClassBonusTaken = existingFeats.some(f => /\[(Bonus|Extra Bonus)\]/i.test(String(f)));
       const nextGeneralLvl = [1, 3, 6, 9, 12, 15, 18, 21, 24, 27, 30].find(n => n > lvl) || 3;
 
@@ -13844,7 +13844,7 @@
       if (!q) {
         const { ownedIds, ownedNames } = _collectCharacterOwnedSets(typeof character !== 'undefined' ? character : null);
         const catalog = (typeof getCombinedFeatCatalog === 'function') ? getCombinedFeatCatalog(true) : [];
-        const dmBoons = catalog.filter(entry => entry && (entry.pack || (entry.id && String(entry.id).includes(':') && !String(entry.id).startsWith('srd:')) || entry.category === 'DM Boon'));
+        const dmBoons = catalog.filter(entry => entry && (entry.pack || (entry.id && String(entry.id).includes(':') && !String(entry.id).startsWith('srd:')) || entry.category === 'Homebrew'));
 
         const synergyCards = dmBoons.slice(0, 6).map((b, idx) => {
           const reqFeats = (b.requires && Array.isArray(b.requires.feats)) ? b.requires.feats : [];
@@ -13870,7 +13870,7 @@
                 <div class="flex items-center gap-2 flex-wrap">
                   <span class="font-bold text-white text-xs">${_escTermHtml(b.name)}</span>
                   <span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold ${(reqFeats.length > 0 || hasV25Pred) ? (reqMet ? 'bg-emerald-950 text-emerald-300 border border-emerald-700' : 'bg-amber-950 text-amber-300 border border-amber-700') : 'bg-purple-950 text-purple-300 border border-purple-800'}">
-                    ${(reqFeats.length > 0 || hasV25Pred) ? (reqMet ? '✨ Synergy Ready' : `Requires: ${_escTermHtml(reqFeats.join(' + ') || 'Prerequisites')}`) : _escTermHtml(b.type || 'DM Boon')}
+                    ${(reqFeats.length > 0 || hasV25Pred) ? (reqMet ? '✨ Synergy Ready' : `Requires: ${_escTermHtml(reqFeats.join(' + ') || 'Prerequisites')}`) : _escTermHtml(b.type || 'Homebrew')}
                   </span>
                   ${isOwned ? '<span class="px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-400 text-[10px] font-bold">✅ Owned</span>' : ''}
                 </div>
@@ -13940,7 +13940,7 @@
             <div class="p-2.5 rounded-xl bg-amber-950/70 border border-amber-600/70 text-amber-200 text-[11px] flex items-center justify-between gap-2">
               <div>
                 <span class="font-bold">⚠️ D&amp;D 3.5e RAW Slot Notice (Level ${targetLvl}):</span>
-                <span>General Feats are gained at Levels 1, 3, 6, 9, 12, 15, 18. Selecting a feat at Level ${targetLvl} will add it as a <strong>[Class Bonus Feat]</strong> or <strong>[DM Boon]</strong>, or you can route it to Level ${slotDiag.nextGeneralLvl}.</span>
+                <span>General Feats are gained at Levels 1, 3, 6, 9, 12, 15, 18. Selecting a feat at Level ${targetLvl} will add it as a <strong>[Class Bonus Feat]</strong> or <strong>[Homebrew]</strong>, or you can route it to Level ${slotDiag.nextGeneralLvl}.</span>
               </div>
             </div>
           `;
@@ -13961,7 +13961,7 @@
           const f = m.feat;
           const isQual = m.pEval.allMet && !m.pEval.isAlreadyKnownFromClass;
           const slotMode = (!slotDiag.isGeneralLevel || slotDiag.hasRegularTaken)
-            ? (slotDiag.isFighterBonusLevel && !slotDiag.hasClassBonusTaken ? 'Class Bonus Feat' : 'DM Boon')
+            ? (slotDiag.isFighterBonusLevel && !slotDiag.hasClassBonusTaken ? 'Class Bonus Feat' : 'Homebrew')
             : 'Regular Feat';
           _spotlightTerminalItems.push({
             type: 'ADD_LEVEL_FEAT',
@@ -14006,7 +14006,7 @@
         const catalog = (typeof getCombinedFeatCatalog === 'function') ? getCombinedFeatCatalog(true) : [];
         const matchedCatalogBoons = (!subBoonQ.includes(',') && subBoonQ)
           ? catalog
-              .filter(entry => entry && (entry.type === 'DM Boon' || entry.category === 'DM Boon' || entry.pack))
+              .filter(entry => entry && (entry.type === 'Homebrew' || entry.category === 'Homebrew' || entry.pack))
               .map(b => ({ b, sc: _termFuzzyScore(subBoonQ, b.name, b.benefit || b.description || '') }))
               .filter(x => x.sc > 0)
               .sort((a, b) => b.sc - a.sc)
@@ -14024,7 +14024,7 @@
           return `
             <div data-action="combat:exec-spotlight-item" data-item-idx="${idx}" class="p-2.5 rounded-xl border transition cursor-pointer flex items-center justify-between gap-2 ${idx === 0 ? 'bg-slate-900 border-amber-500/80' : 'bg-slate-900/50 border-slate-800 hover:border-slate-700'}">
               <div class="min-w-0 flex-1">
-                <div class="text-xs font-bold text-white">${_escTermHtml(b.name)} <span class="text-[10px] font-mono text-amber-300">(${_escTermHtml(b.type || 'DM Boon')})</span></div>
+                <div class="text-xs font-bold text-white">${_escTermHtml(b.name)} <span class="text-[10px] font-mono text-amber-300">(${_escTermHtml(b.type || 'Homebrew')})</span></div>
                 <div class="text-[11px] text-slate-400 truncate">${_escTermHtml(b.benefit || b.description || '')}</div>
               </div>
               <span class="px-2 py-1 rounded bg-amber-950 text-amber-300 border border-amber-700 font-mono text-[10px] font-bold">Add ↵</span>
@@ -14083,7 +14083,7 @@
       if (/^synergy/i.test(q)) {
         const { ownedIds, ownedNames } = _collectCharacterOwnedSets(typeof character !== 'undefined' ? character : null);
         const catalog = (typeof getCombinedFeatCatalog === 'function') ? getCombinedFeatCatalog(true) : [];
-        const dmBoons = catalog.filter(entry => entry && (entry.pack || (entry.id && String(entry.id).includes(':') && !String(entry.id).startsWith('srd:')) || entry.category === 'DM Boon'));
+        const dmBoons = catalog.filter(entry => entry && (entry.pack || (entry.id && String(entry.id).includes(':') && !String(entry.id).startsWith('srd:')) || entry.category === 'Homebrew'));
 
         const cards = dmBoons.map((b, idx) => {
           const reqFeats = (b.requires && Array.isArray(b.requires.feats)) ? b.requires.feats : [];
@@ -14397,7 +14397,7 @@
         return;
       }
 
-      // Default Fallback: Fuzzy Feat & DM Boon Search across entire compendium
+      // Default Fallback: Fuzzy Feat & Homebrew Search across entire compendium
       onSpotlightTerminalInput(`feat: ${q}`, true);
     }
 

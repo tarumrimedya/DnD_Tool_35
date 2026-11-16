@@ -4001,7 +4001,7 @@ const RuleEngine = {
       'Clone and combine the provided Pure Canonical V3 Lego templates (`schemaVersion: 3`) and adapt only the domain parameters to match the user request. Output complete V3 entries that validate against `rule_master_ai_schema.json` (`RuleMasterEntryV3`).',
       'Mechanics live only in `effects[]` blocks (`stat`, `roll`, `attack`, `defense`, `effect`, `resource`, `when`, `table`, `carrier`), `choices[]` (@Choice inputs) and `powers[]` (activated abilities with `action`, `usage`, `save`, `effects[]`). Never emit legacy `modifiers`, `damageParts`, `defenses`, `resources` or `modes` arrays.',
       '`stat` blocks use plural `targets: string[]` with canonical keys (e.g. `ac.deflection`, `atk.all`, `save.will`) plus `btype` and `mode` (`flat`, `stat`, `perCL`, `formula`, `replaceStat`); ability swaps use `mode: "replaceStat"` with `swapTarget`, `subOp`, `fromStat`, `toStat`, `scope`. Toggled or situational benefits go inside `when` branches (`flow: "while"`, `condText: "toggle:<key>"`, `"stance:<name>"` or `"@level >= N"`).',
-      'For multi-benefit DM Boons, write each benefit as its own `effects[]` or `powers[]` element and describe it in `label`/`text`; all benefits stay active simultaneously.',
+      'For multi-benefit Homebrew, write each benefit as its own `effects[]` or `powers[]` element and describe it in `label`/`text`; all benefits stay active simultaneously.',
       `Matched Structural Lego Templates:\n${templatesJson}`,
       `User Rule / Ability Request:\n${userQuery}`
     ].join('\n\n');
@@ -7190,7 +7190,7 @@ const RuleEngine = {
       ? 'Moderate Fortification 50% (4/4 Heart Spells)'
       : (activeHeartCount >= 2 ? `Light Fortification 25% (${activeHeartCount}/4 Heart Spells)` : null);
 
-    // 3.5. Evaluate Feats, Special Abilities & DM Boons (Canonical V2/V3)
+    // 3.5. Evaluate Feats, Special Abilities & Homebrew (Canonical V2/V3)
     if (character.flatFooted || character.tactical?.flatFooted || tacticalOptions?.flatFooted) {
       conditionFlatFooted = true;
     }
@@ -7250,7 +7250,7 @@ const RuleEngine = {
           : 1;
         if (currentCount < Math.min(maxAllowed, seenInProg)) {
           existingFeatCounts.set(clean, currentCount + 1);
-          allAbilitiesAndFeats.push(typeof fStr === 'string' ? { name: fStr, category: String(fStr).includes('Boon') ? 'DM Boon' : 'Feat' } : fStr);
+          allAbilitiesAndFeats.push(typeof fStr === 'string' ? { name: fStr, category: String(fStr).includes('Boon') ? 'Homebrew' : 'Feat' } : fStr);
         }
       });
     });
@@ -7304,13 +7304,13 @@ const RuleEngine = {
             ? featObj.modifiers
             : (dbEntry && Array.isArray(dbEntry.modifiers) ? dbEntry.modifiers : [])));
 
-      // Auto-hydrate legacy DM Boon entries (e.g. "DM Boon: HP +20", "DM Boon: Ride +4", "DM Boon: Natural Armor AC (+2 (+1/4 Lvl))") if saved without V2 modifiers or missing scaling formula
+      // Auto-hydrate legacy Homebrew entries (e.g. "Homebrew: HP +20", "Homebrew: Ride +4", "Homebrew: Natural Armor AC (+2 (+1/4 Lvl))") if saved without V2 modifiers or missing scaling formula
       const needsScalingFormulaHydration = (cleanName.includes('boon') || cleanName.includes('grant') || String(featObj.category || '').toLowerCase().includes('boon'))
         && /([+-]?\d+)\s*(?:\/|\bper\b|\bevery\b)\s*(\d+)?\s*(?:lvl|level|cl)s?\b/i.test(`${cleanName} ${featObj.benefit || featObj.description || ''}`)
         && !featMods.some(m => m && m.formula);
       if ((featMods.length === 0 || needsScalingFormulaHydration) && (cleanName.includes('boon') || cleanName.includes('grant') || String(featObj.category || '').toLowerCase().includes('boon'))) {
         if (typeof window !== 'undefined' && typeof window.synthesizeDmBoonFromQuery === 'function') {
-          const synth = window.synthesizeDmBoonFromQuery(cleanName, featObj.benefit || featObj.description || '', 'DM Boon');
+          const synth = window.synthesizeDmBoonFromQuery(cleanName, featObj.benefit || featObj.description || '', 'Homebrew');
           if (synth && Array.isArray(synth.modifiers) && synth.modifiers.length > 0) {
             featMods = synth.modifiers;
           }
@@ -11298,7 +11298,7 @@ const RuleEngine = {
       const effSlotKey = slotKey || item.slotKey || '';
       const combined = `${name} ${desc}`;
 
-      if (['feat', 'special ability', 'dm grant', 'dm boon', 'boon', 'class feature', 'racial trait', 'spell', 'maneuver', 'stance'].includes(catLower)) {
+      if (['feat', 'special ability', 'dm grant', 'homebrew', 'boon', 'class feature', 'racial trait', 'spell', 'maneuver', 'stance'].includes(catLower)) {
         return true;
       }
       if (/wand|scroll|potion|elixir|oil/i.test(name)) return false;
@@ -12159,14 +12159,14 @@ const RuleEngine = {
       }
       const clMode = w.settings.clMode || 'Class Level';
       const isWarlockBoon = clMode.includes('Warlock Boon') || w.settings.warlockBoon === true;
-      const isDmBoonActive = (clMode === 'Character Level (DM Boon)') || isWarlockBoon;
+      const isDmBoonActive = (clMode === 'Character Level (Homebrew)') || isWarlockBoon;
       if (!isDmBoonActive) return [];
       const out = [];
       if (isWarlockBoon) out.push('warlock');
       const rawCasterType = String(w.settings.casterType || '').toLowerCase().trim();
       if (w.settings.casterTypeExplicit === true && valid.includes(rawCasterType)) {
         if (!out.includes(rawCasterType)) out.push(rawCasterType);
-      } else if (clMode === 'Character Level (DM Boon)') {
+      } else if (clMode === 'Character Level (Homebrew)') {
         const order = ['spontaneous', 'prepared', 'divine', 'martial'];
         let bestDisc = null;
         let maxLvl = 0;
@@ -12257,8 +12257,8 @@ const RuleEngine = {
 
     // 1. Spontaneous Caster Info
     const defaultSpontClass = isWarlockBoon && sorcLvls === 0
-      ? 'Warlock (DM Boon)'
-      : (isSpontBoon && sorcLvls === 0 ? 'Sorcerer (DM Boon)' : 'Sorcerer');
+      ? 'Warlock (Homebrew)'
+      : (isSpontBoon && sorcLvls === 0 ? 'Sorcerer (Homebrew)' : 'Sorcerer');
     const spontClassLabel = w.spellcasting?.primaryClass || (hasSpontaneous ? defaultSpontClass : (w.isNpc ? 'Sorcerer' : ''));
     let spontStatKey = 'CHA';
     if (['Wizard', 'Artificer'].includes(spontClassLabel)) spontStatKey = 'INT';
@@ -12268,7 +12268,7 @@ const RuleEngine = {
     const spontStatVal = Number(w.stats?.[spontStatKey]?.value ?? abi[spontStatKey.toLowerCase()] ?? 10);
     const spontStatMod = this.getAbilityMod(spontStatVal);
     const spontClMode = isSpontBoon
-      ? (isWarlockBoon ? 'Warlock Boon (CL = Char Lvl)' : 'Character Level (DM Boon)')
+      ? (isWarlockBoon ? 'Warlock Boon (CL = Char Lvl)' : 'Character Level (Homebrew)')
       : rawClMode;
     let spontCl = 0;
     if (w.isNpc && (w.spellcasting?.cl !== undefined || w.spellcasting?.caster_level !== undefined)) {
@@ -12287,7 +12287,7 @@ const RuleEngine = {
     if (isPrepBoon) prepCl = Math.max(wizLvls, activeLevels, 1);
     else if (wizLvls > 0) prepCl = wizLvls;
     else if (hasPrepared) prepCl = 1;
-    const prepClMode = isPrepBoon ? 'Character Level (DM Boon)' : rawClMode;
+    const prepClMode = isPrepBoon ? 'Character Level (Homebrew)' : rawClMode;
 
     // 3. Divine Caster Info & Domains (pure, no mutation of w.spellcasting.domains)
     const getPureClericDomains = () => {
@@ -12312,7 +12312,7 @@ const RuleEngine = {
     const insanityBonus = (hasMadness && (divLvls > 0 || divCl > 0)) ? Math.max(1, Math.floor((divLvls || divCl || 1) / 2)) : 0;
     const wisVal = baseWisVal + insanityBonus;
     const wisMod = this.getAbilityMod(wisVal);
-    const divClMode = isDivBoon ? 'Character Level (DM Boon)' : rawClMode;
+    const divClMode = isDivBoon ? 'Character Level (Homebrew)' : rawClMode;
 
     const hasDomainCap = (() => {
       const rNames = [];
@@ -12626,7 +12626,7 @@ const RuleEngine = {
         };
       }
       if (!adeptClass) {
-        adeptClass = (martialStudyCount > 0 || martialStanceCount > 0) ? 'Martial Study / Stance' : 'Martial Adept (DM Boon)';
+        adeptClass = (martialStudyCount > 0 || martialStanceCount > 0) ? 'Martial Study / Stance' : 'Martial Adept (Homebrew)';
       }
       const activeCharLvl = activeProg.length || Number(w.level) || 1;
       const computedIl = isMartialBoon
@@ -12951,7 +12951,7 @@ const RuleEngine = {
         },
         prepared: {
           active: Boolean(hasPrepared),
-          classLabel: isPrepBoon && wizLvls === 0 ? 'Wizard (DM Boon)' : 'Wizard',
+          classLabel: isPrepBoon && wizLvls === 0 ? 'Wizard (Homebrew)' : 'Wizard',
           abilityKey: 'int',
           statKey: 'INT',
           abilityScore: intVal,
@@ -12966,7 +12966,7 @@ const RuleEngine = {
         },
         divine: {
           active: Boolean(hasDivine),
-          classLabel: isDivBoon && divLvls === 0 ? 'Cleric (DM Boon)' : 'Cleric',
+          classLabel: isDivBoon && divLvls === 0 ? 'Cleric (Homebrew)' : 'Cleric',
           abilityKey: 'wis',
           statKey: 'WIS',
           abilityScore: wisVal,
@@ -13163,7 +13163,7 @@ const RuleEngine = {
             bonusFeatsTaken++;
             if (s.includes('[Bonus]')) bonusSlotsEarned++;
           }
-        } else if (!s.includes('[DM Boon]') && !s.includes('Invocation')) {
+        } else if (!s.includes('[Homebrew]') && !s.includes('Invocation')) {
           if (isActive) regularFeatsTaken++;
         }
       });

@@ -7524,7 +7524,7 @@
       const combined = name + ' ' + desc;
 
       // Exclude non-gear rule entries (feats, special abilities, boons, spells, maneuvers, etc.)
-      if (['feat', 'special ability', 'dm grant', 'dm boon', 'boon', 'class feature', 'racial trait', 'spell', 'maneuver', 'stance'].includes(catLower)) {
+      if (['feat', 'special ability', 'dm grant', 'homebrew', 'boon', 'class feature', 'racial trait', 'spell', 'maneuver', 'stance'].includes(catLower)) {
         return true;
       }
 
