@@ -302,10 +302,25 @@
     const a = byId(CAT.armors, baseId) || ARMORS[3];
     return { type: a.type, armorBonus: a.armorBonus, maxDex: a.maxDex, acp: a.acp, asf: a.asf, speed: a.speed };
   }
+  function shieldBashDefaults(a) {
+    const rw = a && a.raw && a.raw.weapon ? a.raw.weapon : null;
+    const idN = ((a && a.id) || '') + ' ' + ((a && a.name) || '');
+    const noBash = /buckler|tower/i.test(idN) && !rw;
+    const rawHand = rw ? String(rw.handedness || rw.handed || '') : '';
+    const isLight = rw ? /light/i.test(rawHand) : /light|buckler/i.test(idN);
+    const dDice = rw && (rw.damageDice || rw.dice) ? (rw.damageDice || rw.dice) : (isLight ? '1d3' : '1d4');
+    const dType = rw && (rw.dmgType || rw.damageType) ? cap1(String(rw.dmgType || rw.damageType).split(/[\s/]/)[0]) : 'Bludgeoning';
+    const cRng = rw && rw.baseCritRange != null ? num(rw.baseCritRange, 20) : 20;
+    const cMult = rw && rw.critMultiplier != null ? num(rw.critMultiplier, 2) : 2;
+    const rng = rw && rw.rangeIncrement != null ? num(rw.rangeIncrement, 0) : 0;
+    return { canBash: !noBash, dice: dDice, critRange: cRng, critMult: cMult, rangeOn: rng > 0, range: rng, category: 'Shield', handed: isLight ? 'Light' : 'One-Handed', dmgType: dType };
+  }
   function blankChassis(kind, baseId) {
     const isW = kind === 'weapon';
     const id = baseId || (isW ? 'longsword' : 'chain_shirt');
-    return { kind: kind, baseId: id, material: 'standard', enhancement: 0, enchantments: [], crystal: { id: '', tier: 'least' }, weapon: weaponOverrides(isW ? id : 'longsword'), armor: armorOverrides(isW ? 'chain_shirt' : id) };
+    const baseA = !isW ? (byId(CAT.armors, id) || ARMORS[3]) : null;
+    const wep = isW ? weaponOverrides(id) : (baseA && baseA.kind === 'shield' ? shieldBashDefaults(baseA) : weaponOverrides('longsword'));
+    return { kind: kind, baseId: id, material: 'standard', enhancement: 0, enchantments: [], crystal: { id: '', tier: 'least' }, weapon: wep, armor: armorOverrides(isW ? 'chain_shirt' : id) };
   }
   const blankUse = (mode) => ({ mode: mode || 'atwill', n: 3, slotLevel: 1, pool: 'Turn Undead', poolCost: 1, cooldown: '1d4+1' });
   function blankLevels() { const a = []; for (let i = 0; i < 20; i++) a.push({ features: [], spell: false }); return a; }
@@ -1910,7 +1925,7 @@
       const ranged = !!base.ranged;
       const fmt = (lo) => (lo < 20 ? lo + '–20' : '20') + '/×' + mult;
       Object.assign(view, { dice: w.dice, critLow: low, rawLow: rawLow, capped: capped, critMult: mult, keen: keen, parts: parts, ranged: ranged, handed: w.handed, dmgType: w.dmgType,
-        critText: fmt(low) + (capped ? ' (Capped by House Rule)' : ''), rawCritText: fmt(rawLow), rangeText: w.rangeOn && num(w.range) > 0 ? num(w.range) + ' ft.' : '',
+        critText: fmt(low) + (capped ? ' (Capped by House Rule)' : ''), rawCritText: fmt(rawLow), rangeText: num(w.range) > 0 ? num(w.range) + ' ft.' : '',
         dmgBonus: enh > 0 ? enh : 0, atkBonus: enh > 0 ? enh : isMW ? 1 : 0 });
     } else {
       const a = ch.armor;
@@ -1928,7 +1943,31 @@
         if (e.effect && e.effect.dr) dr.push(Object.assign({ source: e.name }, e.effect.dr));
         if (e.effect && e.effect.energy) energy.push(Object.assign({ source: e.name }, e.effect.energy));
       });
-      Object.assign(view, { armor: { type: type, armorBonus: num(a.armorBonus), maxDex: maxDex, acp: acp, asf: asf, speed: speed }, sr: sr });
+      let bash = null;
+      if (kind === 'shield') {
+        const bw = ch.weapon || shieldBashDefaults(base);
+        const canBash = bw.canBash !== false;
+        const bSize = Math.max(1, 21 - num(bw.critRange, 20));
+        const bCapAt = num(S.house.critCap);
+        const bRawLow = 21 - bSize;
+        const bCapped = bCapAt > 0 && bRawLow < bCapAt;
+        const bLow = bCapped ? bCapAt : bRawLow;
+        const bMult = customMat && num(customMat.critMultOverride) >= 2 ? num(customMat.critMultOverride) : Math.max(2, num(bw.critMult, 2));
+        const bFmt = (lo) => (lo < 20 ? lo + '–20' : '20') + '/×' + bMult;
+        bash = {
+          canBash: canBash,
+          dice: bw.dice || '1d4',
+          dmgType: bw.dmgType || 'Bludgeoning',
+          handed: bw.handed === 'Light' ? 'Light' : 'One-Handed',
+          critRange: num(bw.critRange, 20),
+          critLow: bLow,
+          capped: bCapped,
+          critMult: bMult,
+          critText: bFmt(bLow) + (bCapped ? ' (Capped by House Rule)' : ''),
+          range: Math.max(0, num(bw.range, 0))
+        };
+      }
+      Object.assign(view, { armor: { type: type, armorBonus: num(a.armorBonus), maxDex: maxDex, acp: acp, asf: asf, speed: speed }, sr: sr, bash: bash });
     }
     view.name = synthChassisName(ch, view);
     return view;
@@ -2045,6 +2084,7 @@
         seg.push('Armor Check Penalty ' + a.acp);
         seg.push('Arcane Spell Failure ' + a.asf + '%');
         if (v.kind !== 'shield') seg.push(a.type + ' • Speed ' + a.speed + ' ft.');
+        else if (v.bash && v.bash.canBash) seg.push('Bash ' + v.bash.dice + ' ' + v.bash.dmgType + ' (' + v.bash.critText + (v.bash.range > 0 ? ', ' + v.bash.range + ' ft.' : '') + ')');
       }
     }
     if (en.blueprint === 'spell' || has('delivery')) {
@@ -2425,8 +2465,17 @@
       if (out.item) out.item.price = customPrice;
       if (v.crystal) out.augmentCrystal = { id: v.crystal.c.id, tier: v.crystal.tier };
       if (v.isW) {
-        out.weapon = { category: ch.weapon.category, handedness: ch.weapon.handed, damageDice: v.dice, dmgType: v.dmgType, baseCritRange: num(ch.weapon.critRange), keen: v.keen, effectiveCritRange: v.critLow, critCappedByHouseRule: v.capped, critMultiplier: v.critMult, rangeIncrement: ch.weapon.rangeOn ? num(ch.weapon.range) : null };
-      } else out.armor = { armorType: v.armor.type, armorBonus: v.armor.armorBonus, maxDex: v.armor.maxDex >= 99 ? null : v.armor.maxDex, armorCheckPenalty: v.armor.acp, arcaneSpellFailure: v.armor.asf, speed: v.armor.speed };
+        out.weapon = { category: ch.weapon.category, handedness: ch.weapon.handed, damageDice: v.dice, dmgType: v.dmgType, baseCritRange: num(ch.weapon.critRange), keen: v.keen, effectiveCritRange: v.critLow, critCappedByHouseRule: v.capped, critMultiplier: v.critMult, rangeIncrement: num(ch.weapon.range) > 0 ? num(ch.weapon.range) : null };
+      } else {
+        out.armor = { armorType: v.armor.type, armorBonus: v.armor.armorBonus, maxDex: v.armor.maxDex >= 99 ? null : v.armor.maxDex, armorCheckPenalty: v.armor.acp, arcaneSpellFailure: v.armor.asf, speed: v.armor.speed };
+        if (v.kind === 'shield' && v.bash) {
+          if (v.bash.canBash) {
+            out.weapon = { category: 'Shield', handedness: v.bash.handed, damageDice: v.bash.dice, dmgType: v.bash.dmgType, baseCritRange: v.bash.critRange, keen: false, effectiveCritRange: v.bash.critLow, critCappedByHouseRule: v.bash.capped, critMultiplier: v.bash.critMult, rangeIncrement: v.bash.range > 0 ? v.bash.range : null };
+          } else {
+            out.canShieldBash = false;
+          }
+        }
+      }
       if (v.badges.length) out.tacticalBadges = v.badges.map((b) => b.replace(/^\S+\s/, ''));
     }
     if (en.blueprint === 'buff') out.buffKind = en.buffKind;
@@ -2998,14 +3047,18 @@
       if (ch.augmentCrystal && ch.augmentCrystal.id) en.chassis.crystal = { id: ch.augmentCrystal.id, tier: ch.augmentCrystal.tier || 'least' };
       else if (ch.crystal && ch.crystal.id) en.chassis.crystal = { id: ch.crystal.id, tier: ch.crystal.tier || 'least' };
       const w = obj.weapon || ch.weapon;
-      if (w && typeof w === 'object') {
+      if (obj.canShieldBash === false) {
+        en.chassis.weapon.canBash = false;
+      } else if (w && typeof w === 'object') {
         const dps = arr(obj.damageParts || w.damageParts);
         const rawPart = dps.find((d) => d && (d.raw || d.source === 'Base')) || dps[0];
         const v3Dice = w.damageDice || w.dice || (rawPart && rawPart.dice) || en.chassis.weapon.dice;
         const v3DmgType = w.dmgType || w.damageType || ((rawPart && rawPart.type) ? cap1(rawPart.type) : en.chassis.weapon.dmgType);
+        const normHand = HANDED[w.handedness || w.handed] || w.handedness || w.handed || en.chassis.weapon.handed;
         en.chassis.weapon = Object.assign(en.chassis.weapon, {
+          canBash: w.canBash !== false,
           category: w.category || en.chassis.weapon.category,
-          handed: w.handedness || w.handed || en.chassis.weapon.handed,
+          handed: normHand,
           dice: v3Dice,
           dmgType: v3DmgType,
           critRange: w.baseCritRange !== undefined ? num(w.baseCritRange, en.chassis.weapon.critRange) : en.chassis.weapon.critRange,
@@ -4788,6 +4841,22 @@
           F('Armor Check Penalty', inp('chassis.armor.acp', a.acp, { num: true })) +
           F('Arcane Spell Failure (%)', inp('chassis.armor.asf', a.asf, { num: true }))
         ));
+      if (v.kind === 'shield') {
+        const bw = ch.weapon || shieldBashDefaults(v.base);
+        const canBash = bw.canBash !== false;
+        h += stack('b-red',
+          H(L('⚔️ Shield Bash'),
+            chk('chassis.weapon.canBash', canBash, 'Shield Bash Capable') +
+            (canBash && v.bash ? '<span class="fs-pill sky">' + esc(v.bash.dice + ' ' + v.bash.dmgType + ' • ' + v.bash.critText) + '</span>' : '<span class="lego-desc">Cannot make Shield Bash attacks (e.g. Buckler / Tower Shield)</span>')) +
+          (canBash ? G(3,
+            F('Bash Damage', inp('chassis.weapon.dice', bw.dice, { list: 'fs-dice-list' })) +
+            F('Damage Type', sel('chassis.weapon.dmgType', bw.dmgType, DAMAGE_TYPES.slice(0, 3), { narrow: true })) +
+            F('Bash Handedness', sel('chassis.weapon.handed', bw.handed === 'Light' ? 'Light' : 'One-Handed', ['Light', 'One-Handed'], { narrow: true })) +
+            F('Threat Range', sel('chassis.weapon.critRange', bw.critRange, [[20, '20'], [19, '19–20'], [18, '18–20'], [17, '17–20'], [15, '15–20']], { narrow: true, num: true })) +
+            F('Crit Multiplier', sel('chassis.weapon.critMult', bw.critMult, [[2, '×2'], [3, '×3'], [4, '×4']], { narrow: true, num: true })) +
+            F('Throw Range (ft.)', inp('chassis.weapon.range', bw.range, { num: true }))
+          ) : ''));
+      }
     }
     h += enchCBlock(en);
     return h + universalExtraStacks(en) + universalSnapPalette(en);
@@ -5269,7 +5338,9 @@
       if (en.chassis.kind === 'weapon') { en.chassis.weapon = weaponOverrides(v); en.chassis.enchantments = en.chassis.enchantments.filter((id) => enchApplies(enchById(id), 'weapon')); }
       else {
         en.chassis.armor = armorOverrides(v);
-        const k = (byId(CAT.armors, v) || {}).kind;
+        const baseArm = byId(CAT.armors, v) || {};
+        const k = baseArm.kind;
+        if (k === 'shield') en.chassis.weapon = shieldBashDefaults(baseArm);
         en.chassis.enchantments = en.chassis.enchantments.filter((id) => enchApplies(enchById(id), k));
         if (en.chassis.crystal.id && !crystalApplies(crystalById(en.chassis.crystal.id), k)) en.chassis.crystal.id = '';
         if (isItemBp(en.blueprint)) en.item.subtype = k === 'shield' ? 'Shield' : 'Armor';

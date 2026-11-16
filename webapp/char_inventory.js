@@ -7182,6 +7182,21 @@
       if (Array.isArray(sourceItem.effects) && sourceItem.effects.length > 0 && !existingCustom) {
         draft.effects = JSON.parse(JSON.stringify(sourceItem.effects));
       }
+      if (sourceItem.canShieldBash === false && !existingCustom) {
+        draft.canShieldBash = false;
+      } else if (!existingCustom && (sourceItem.weapon || sourceItem.dice || sourceItem.critMin || sourceItem.critMult) && kind === 'armor') {
+        const sw = sourceItem.weapon || {};
+        draft.weapon = Object.assign({}, draft.weapon || {}, {
+          category: 'Shield',
+          handedness: sw.handedness || sourceItem.handedness || (/light/i.test(sourceItem.name || '') ? 'Light' : 'One-Handed'),
+          damageDice: sw.damageDice || sourceItem.dice || (/light/i.test(sourceItem.name || '') ? '1d3' : '1d4'),
+          dmgType: sw.dmgType || sourceItem.dmgType || 'Bludgeoning',
+          baseCritRange: Number(sw.baseCritRange || sw.effectiveCritRange || sourceItem.critMin) || 20,
+          effectiveCritRange: Number(sw.effectiveCritRange || sourceItem.critMin) || 20,
+          critMultiplier: Number(sw.critMultiplier || sourceItem.critMult) || 2,
+          rangeIncrement: sw.rangeIncrement != null ? sw.rangeIncrement : (sourceItem.rangeIncrement ?? null)
+        });
+      }
       if (sourceItem.desc && !draft.text) draft.text = sourceItem.desc;
       return { draft, kind };
     }
@@ -7202,8 +7217,13 @@
       const isChassisItem = v3Entry.blueprint === 'weapon' || v3Entry.blueprint === 'armor' || Boolean(v3Entry.baseItemId || v3Entry.weapon || v3Entry.armor);
       if (isChassisItem && assembler && typeof assembler.assemble === 'function' && comp) {
         let baseLookup = v3Entry.baseItemId || (originalItem && originalItem.baseItemId) || '';
-        const prefix = v3Entry.blueprint === 'armor' ? 'arm-' : 'wpn-';
-        let baseRef = baseLookup ? (comp.getById(baseLookup) || comp.getById(prefix + String(baseLookup).replace(/_/g, '-'))) : null;
+        const normStub = String(baseLookup).replace(/^shield_/, '').replace(/_/g, '-');
+        let baseRef = baseLookup ? (
+          comp.getById(baseLookup) ||
+          (v3Entry.blueprint === 'armor'
+            ? (comp.getById('arm-' + String(baseLookup).replace(/_/g, '-')) || comp.getById('shd-' + normStub) || comp.getById('shd-' + normStub + '-shield'))
+            : comp.getById('wpn-' + String(baseLookup).replace(/_/g, '-')))
+        ) : null;
         if (!baseRef && v3Entry.origin && v3Entry.origin.srdId) baseRef = comp.getById(v3Entry.origin.srdId);
         if (!baseRef && v3Entry.origin && v3Entry.origin.srdName && typeof comp.getByName === 'function') baseRef = comp.getByName(v3Entry.origin.srdName);
         if (baseRef) {
@@ -7286,7 +7306,14 @@
         out.benefit = v3Entry.text;
         out.description = v3Entry.text;
       }
-      if (v3Entry.weapon && typeof v3Entry.weapon === 'object') {
+      if (v3Entry.canShieldBash === false) {
+        out.canShieldBash = false;
+        delete out.weapon;
+        delete out.dice;
+        delete out.critMin;
+        delete out.critRange;
+        delete out.critMult;
+      } else if (v3Entry.weapon && typeof v3Entry.weapon === 'object') {
         const w = v3Entry.weapon;
         const rollDmg = customEffects.find(e => e && e.type === 'roll' && (!e.kind || e.kind === 'Damage') && e.dice);
         out.handedness = w.handedness || out.handedness;

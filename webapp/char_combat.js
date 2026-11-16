@@ -7555,15 +7555,36 @@
         if (typeof hydrateGearItemStats === 'function') hydrateGearItemStats(offHandItem);
         const isShield = offHandItem.category === 'Shield' || (offHandItem.desc && offHandItem.desc.toLowerCase().includes('shield'));
         if (isShield) {
-          const isHeavy = (offHandItem.name || '').toLowerCase().includes('heavy');
-          const isBuckler = (offHandItem.name || '').toLowerCase().includes('buckler');
+          const customOv = (RuleEngine && typeof RuleEngine.resolveCustomEntryOverride === 'function')
+            ? RuleEngine.resolveCustomEntryOverride(offHandItem, character)
+            : null;
+          const srdEntry = (!customOv && RuleEngine && typeof RuleEngine.getMasterDbEntry === 'function')
+            ? RuleEngine.getMasterDbEntry(offHandItem, 'Shield')
+            : null;
+          const refEntry = customOv || srdEntry || null;
+          if (offHandItem.canShieldBash === false || (refEntry && refEntry.canShieldBash === false)) {
+            return null;
+          }
+          const wObj = (customOv && customOv.weapon) || offHandItem.weapon || (refEntry && refEntry.weapon) || null;
+          const isHeavy = wObj
+            ? !/light/i.test(String(wObj.handedness || wObj.handed || ''))
+            : (offHandItem.name || '').toLowerCase().includes('heavy');
+          const isBuckler = !wObj && (offHandItem.name || '').toLowerCase().includes('buckler');
+          const bashDice = (wObj && (wObj.damageDice || wObj.dice)) || offHandItem.dice || (isHeavy ? '1d4' : '1d3');
+          const bashCritMin = Number((wObj && (wObj.effectiveCritRange || wObj.baseCritRange)) || offHandItem.critMin || offHandItem.critRange) || 20;
+          const bashCritMult = Number((wObj && wObj.critMultiplier) || offHandItem.critMult) || 2;
+          const bashDmgType = (wObj && (wObj.dmgType || wObj.damageType)) || offHandItem.dmgType || 'Bludgeoning';
+          const bashRange = Number((wObj && wObj.rangeIncrement) ?? offHandItem.rangeIncrement) || 0;
           return {
+            ...offHandItem,
             name: offHandItem.name + ' (Shield Bash)',
             grip: 'Off-Hand',
-            dice: isHeavy ? '1d4' : '1d3',
-            critMin: 20,
-            critMult: 2,
-            dmgType: 'Bludgeoning',
+            dice: bashDice,
+            critMin: bashCritMin,
+            critRange: bashCritMin,
+            critMult: bashCritMult,
+            dmgType: bashDmgType,
+            rangeIncrement: bashRange > 0 ? bashRange : null,
             isLight: !isHeavy,
             isBuckler,
             tags: ['off-hand', 'shield-bash']
