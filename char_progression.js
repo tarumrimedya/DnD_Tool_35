@@ -1633,7 +1633,7 @@
       // Parametric classification predicates
       const quickSlotCharLevel = (activeQuickLevelIndex !== null && activeQuickLevelIndex !== undefined) ? Number(activeQuickLevelIndex) + 1 : (Number(character.level) || 0);
       const isFighterFeat = f => isFighterBonusFeatEntry(f, quickSlotCharLevel);
-      const isBoonFeat = f => Boolean(f.category === 'DM Boon' || f.category === 'DM Grant' || f.type === 'DM Grant' || f.type === 'DM Boon' || (f.source && f.source.toLowerCase().includes('campaign')));
+      const isBoonFeat = f => Boolean(f.category === 'DM Boon' || f.category === 'DM Grant' || f.type === 'DM Grant' || f.type === 'DM Boon' || f.isDmBoon === true || /^DM Boon\b|Campaign Grant/i.test(String(f.source || '')));
       const isFlawFeat = f => Boolean(f.category === 'Flaw' || f.type === 'Flaw' || (f.name || '').toLowerCase().startsWith('flaw:'));
 
       // Warlock Invocations are ONLY allowed when the slot is explicitly 'Warlock Invocation' or 'DM Boon' (NEVER in Regular Feat, Human Bonus Feat / Racial Trait, Flaw Bonus Feat, or Class Bonus Feat)
@@ -4579,7 +4579,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
 
         // Parametric classification predicates
           const isFighterFeat = f => isFighterBonusFeatEntry(f, (character.levelProgression || []).length + 1);
-        const isBoonFeat = f => Boolean(f.category === 'DM Boon' || f.category === 'DM Grant' || f.type === 'DM Grant' || f.type === 'DM Boon' || (f.source && f.source.toLowerCase().includes('campaign')));
+        const isBoonFeat = f => Boolean(f.category === 'DM Boon' || f.category === 'DM Grant' || f.type === 'DM Grant' || f.type === 'DM Boon' || f.isDmBoon === true || /^DM Boon\b|Campaign Grant/i.test(String(f.source || '')));
         const isFlawFeat = f => Boolean(f.category === 'Flaw' || f.type === 'Flaw' || (f.name || '').toLowerCase().startsWith('flaw:'));
 
         // 1. Filter by category
