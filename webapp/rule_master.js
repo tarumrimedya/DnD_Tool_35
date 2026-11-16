@@ -1971,7 +1971,20 @@ const RuleMaster = {
     const body = document.getElementById('modal-master-db-editor-body');
     const targetId = mode === 'forge' ? 'inline-mode-forge' : 'inline-mode-manual';
     const targetPanel = document.getElementById(targetId);
-    if (!modal || !body || !targetPanel) return;
+    if (!modal || !body || !targetPanel) {
+      if (window.DnDUI && typeof window.DnDUI.openRuleCrafter === 'function') {
+        window.DnDUI.openRuleCrafter({
+          entry: entry || undefined,
+          originalId: entry && entry.id ? entry.id : undefined,
+          allowCharacterScope: true,
+          context: { allowCharacterScope: true },
+          onSave: () => {
+            if (typeof this.renderTable === 'function') this.renderTable();
+          }
+        });
+      }
+      return;
+    }
 
     // First restore any previously mounted panel back to inline dock
     this._dockPanelsBackToInline();
@@ -6148,6 +6161,19 @@ Return valid JSON only matching:
   // SERBEST METİN (FREE-TEXT) AI & THE FORGE INLINE ENGINE (CANONICAL V2)
   // ====================================================
   switchInlineMode(mode) {
+    if (mode === 'forge' || mode === 'manual') {
+      if (window.DnDUI && typeof window.DnDUI.openRuleCrafter === 'function') {
+        window.DnDUI.openRuleCrafter({
+          allowCharacterScope: true,
+          context: { allowCharacterScope: true },
+          onSave: () => {
+            if (typeof this.renderTable === 'function') this.renderTable();
+          }
+        });
+        return;
+      }
+      mode = 'search';
+    }
     // If modal was open and user clicks an inline mode tab directly, dock panels back to inline first
     const modal = document.getElementById('modal-master-db-editor');
     if (modal && !modal.classList.contains('hidden')) {
@@ -8576,6 +8602,17 @@ if (typeof window !== 'undefined' && window.Actions && typeof window.Actions.reg
   // --- Static index.html Rule Master controls (inline modes, AI query, Forge, Master DB sub-tabs, editor modal) ---
   window.Actions.register('mdb:switch-inline-mode', (el, data) => {
     RuleMaster.switchInlineMode(data.mode);
+  });
+  window.Actions.register('mdb:open-rule-crafter', () => {
+    if (window.DnDUI && typeof window.DnDUI.openRuleCrafter === 'function') {
+      window.DnDUI.openRuleCrafter({
+        allowCharacterScope: true,
+        context: { allowCharacterScope: true },
+        onSave: () => {
+          if (typeof RuleMaster.renderTable === 'function') RuleMaster.renderTable();
+        }
+      });
+    }
   });
   window.Actions.register('mdb:inline-ai-rule-keydown', (el, data, event) => {
     if (event && event.key === 'Enter') RuleMaster.queryInlineAiRule();
