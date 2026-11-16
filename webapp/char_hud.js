@@ -2345,7 +2345,7 @@
       try { if (character) saveStateToStorage(false); } catch (_) {}
     });
 
-    const ALL_SHEET_TABS = ['tab-combat', 'tab-spells', 'tab-core', 'tab-skills', 'tab-defense', 'tab-inventory', 'tab-dice'];
+    const ALL_SHEET_TABS = ['tab-combat', 'tab-spells', 'tab-core', 'tab-skills', 'tab-defense', 'tab-inventory', 'tab-database', 'tab-dice'];
     const _dirtyTabs = new Set(ALL_SHEET_TABS);
 
     function renderTabIfNeeded(tabId, force = false) {
@@ -2395,6 +2395,11 @@
         case 'tab-inventory':
           try { renderInventory(); } catch (e) { console.error('renderInventory error:', e); }
           try { renderConsumables(); } catch (e) { console.error('renderConsumables error:', e); }
+          break;
+        case 'tab-database':
+          if (window.RuleMaster && typeof RuleMaster.init === 'function') {
+            try { RuleMaster.init(); } catch (e) { console.error('RuleMaster.init error:', e); }
+          }
           break;
         case 'tab-dice':
           try { renderDiceHistory(); } catch (e) { console.error('renderDiceHistory error:', e); }
