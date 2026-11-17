@@ -4759,6 +4759,13 @@
 
   // Race / template entries grow with character level: their sub-powers and top-level blocks carry "Gained at Level / HD".
   function isLevelGainEntry() { return S.entry && S.entry.blueprint === 'race'; }
+  const levelOf = (x) => Math.max(1, Math.floor(num(x && x.gainedAt, 1)) || 1);
+  // A level 2+ gain renders inside its Level / HD Table row (when the table is attached and reaches that level).
+  function inLevelRow(x) {
+    if (!isLevelGainEntry() || !hasFacet(S.entry, 'progression') || !S.entry.progression) return false;
+    const lv = levelOf(x);
+    return lv > 1 && lv <= Math.max(1, Math.min(20, num(S.entry.progression.maxLevel, 20)));
+  }
   function levelGainChip(b, p, listPath) {
     if (!isLevelGainEntry() || listPath !== 'effects') return '';
     return '<label class="fs-hint" style="display:inline-flex;align-items:center;gap:4px;margin-left:8px">Gained at Lvl ' +
@@ -4789,8 +4796,9 @@
       '</div></details>';
   }
 
-  function scratchBlocks(list, listPath) {
+  function scratchBlocks(list, listPath, keep) {
     return (list || []).map((b, i) => {
+      if (keep && !keep(b, i)) return '';
       const p = listPath + '.' + i, T = BLOCK_TYPES[b.type] || BLOCK_TYPES.effect;
       if (!T.container) {
         const liveExtra = b.type === 'roll' ? '<span class="fs-pill amber">' + live('roll-preview', p) + '</span>' : '';
@@ -4870,7 +4878,10 @@
         ? '<b class="lego-lvl">Lvl ' + Lv + '</b><span class="lego-desc">BAB ' + sgn(classBAB(p.bab, Lv)) + ' • F ' + sgn(p.good.fort ? goodSave(Lv) : poorSave(Lv)) + ' / R ' + sgn(p.good.ref ? goodSave(Lv) : poorSave(Lv)) + ' / W ' + sgn(p.good.will ? goodSave(Lv) : poorSave(Lv)) + '</span>'
         : '<b class="lego-lvl">' + (p.mode === 'hd' ? 'HD ' : 'Lvl ') + Lv + '</b>';
       const suffix = showClassCols ? chk('progression.levels.' + i + '.spell', l.spell, '✓ +1 Spellcasting') : '';
-      const gainChips = (gainRows[Lv] || []).map((g) => '<span class="fs-pill ' + (g.kind === 'power' ? 'amber' : 'sky') + '" title="Gained at ' + (p.mode === 'hd' ? 'HD ' : 'Level ') + Lv + '">' + g.html + '</span>').join('');
+      const rowEditors = isLevelGainEntry() && Lv > 1
+        ? scratchBlocks(en.effects, 'effects', (b) => inLevelRow(b) && levelOf(b) === Lv) + (en.powers || []).map((pw, pi) => (inLevelRow(pw) && levelOf(pw) === Lv ? powerCBlock(pw, pi) : '')).join('')
+        : '';
+      const gainChips = (Lv > 1 ? [] : (gainRows[Lv] || [])).map((g) => '<span class="fs-pill ' + (g.kind === 'power' ? 'amber' : 'sky') + '" title="Gained at ' + (p.mode === 'hd' ? 'HD ' : 'Level ') + Lv + '">' + g.html + '</span>').join('');
       const topRow = '<div class="lego-lvl-top">' + prefix + chips + gainChips + '</div>';
       const actRow = '<div class="lego-lvl-actions">' +
         spotHtml('feature', i, { style: 'width:210px', ph: '🔍 + Feature / SLA / Feat' }) +
@@ -4878,7 +4889,7 @@
         (isLevelGainEntry() ? levelBlockMenu(Lv) + btn('add-power-at-level', '+ ⚡ Sub-Power', 'fs-xs fs-dashed', { lv: Lv }) : '') +
         suffix +
         '</div>';
-      return stack('b-slate', '<div class="lego-lvl-stack">' + topRow + actRow + editors + '</div>');
+      return stack('b-slate', '<div class="lego-lvl-stack">' + topRow + actRow + editors + (rowEditors ? '<div class="lego-lvl-gains" style="margin-top:6px">' + rowEditors + '</div>' : '') + '</div>');
     }).join('');
     const patBar = !isCls ? patternGeneratorStack(p, maxLv, p.mode === 'hd' ? 'HD' : 'Lvl') : '';
     const head = isCls
@@ -4940,8 +4951,8 @@
     o = o || {};
     let h = '';
     if (!o.skipPrereqs && hasFacet(en, 'prereqs')) h += prereqCBlock(en, 'Prerequisites');
-    h += scratchBlocks(en.effects, 'effects');
-    h += en.powers.map(powerCBlock).join('');
+    h += scratchBlocks(en.effects, 'effects', (b) => !inLevelRow(b));
+    h += en.powers.map((pw, i) => (inLevelRow(pw) ? '' : powerCBlock(pw, i))).join('');
     if (isLevelGainEntry() && ((en.powers || []).length || (en.effects || []).length)) {
       h += stack('b-slate', H(L('📋 Level / HD Overview')) +
         '<div class="fs-hint" style="margin-bottom:4px">What the character gains at each level (character level / total HD). Set "Gained at Level / HD" on a sub-power or rule block to move it.</div>' +
