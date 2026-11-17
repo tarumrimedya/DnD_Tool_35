@@ -5353,6 +5353,38 @@ function runDeriveSheetTests() {
       leftAtR1 === 3 && readyAtR4.cooldownRemaining === 0 && readyAtR4.isOnCooldown === false && thirdUse === 'special_attack_rolled',
       JSON.stringify({ firstUse, secondUse, leftAtR1, readyAtR4: readyAtR4.cooldownRemaining, thirdUse })
     );
+    // 9. Formula authoring: plain-word DC formulas, nested dice counts and every "!" help example evaluate.
+    const insp = (f) => RuleEngine.inspectFormula(f);
+    const dcShort = insp('DC: 10 + 1/2 HD + Con');
+    check(
+      'Formula: "DC: 10 + 1/2 HD + Con" reads as 10 + floor(@level / 2) + @conMod (12 / 14 / 17 / 22 at levels 1 / 5 / 10 / 20 with Con +2)',
+      dcShort.normalized === '10 + floor(@level / 2) + @conMod' && dcShort.unknown.length === 0 &&
+      dcShort.samples.map(x => x.value).join(',') === '12,14,17,22',
+      JSON.stringify(dcShort)
+    );
+    const nestedDice = insp('(1 + floor(@hd / 4))d8').samples.map(x => x.value).join(',');
+    check(
+      'Formula: (1 + floor(@hd / 4))d8 is 1d8 at 1 HD (a nested floor is not raised to one die), 2d8 / 3d8 / 6d8 at 5 / 10 / 20',
+      nestedDice === '1d8,2d8,3d8,6d8',
+      nestedDice
+    );
+    check(
+      'Formula: an unknown term is reported instead of being evaluated',
+      insp('10 + lvl + Strenght').unknown.join(',') === 'Strenght',
+      JSON.stringify(insp('10 + lvl + Strenght'))
+    );
+    const badRecipes = [];
+    Object.entries(RuleEngine.FORMULA_RECIPES).forEach(([kind, list]) => list.forEach(r => {
+      const res = insp(r.formula);
+      if (res.unknown.length || res.samples.some(x => x.value === null || x.value === '' || (typeof x.value === 'number' && !Number.isFinite(x.value)))) {
+        badRecipes.push(`${kind}: ${r.formula} -> ${JSON.stringify(res)}`);
+      }
+    }));
+    check(
+      'Formula help: every FORMULA_RECIPES example evaluates with no unknown terms',
+      badRecipes.length === 0,
+      badRecipes.join(' | ')
+    );
     check(
       'Race "Acid Breath" special attack carries its delivery (Breath Weapon) on the card data',
       Boolean(raceAcid && raceAcid.delivery && raceAcid.delivery.isBreath),

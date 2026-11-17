@@ -329,7 +329,7 @@
   function blankPower(kind, o) {
     return Object.assign({
       id: uid('pw'), kind: kind, name: kind === 'inline' ? 'New Power' : '', ref: null, grantMode: 'cast',
-      use: blankUse('perDay'), action: 'Standard', cl: '', dc: 0, duration: '',
+      use: blankUse('perDay'), action: 'Standard', cl: '', dc: 0, dcFormula: '', duration: '',
       attack: 'none', attackOn: false, range: '', area: '',
       save: { type: 'None', effect: 'Negates' }, effects: [], text: '', exportStandalone: false
     }, o || {});
@@ -2359,7 +2359,10 @@
     const o = { id: pw.id, kind: pw.kind, name: pw.kind === 'attached' && pw.ref ? pw.ref.name : pw.name, action: pw.action, usage: exportUse(pw.use) };
     if (pw.kind === 'attached') { o.refId = pw.ref ? pw.ref.id : null; o.grantMode = pw.grantMode; }
     if (num(pw.cl)) o.casterLevel = num(pw.cl);
-    if (num(pw.dc)) o.saveDC = num(pw.dc);
+    // Save DC: a plain number exports as saveDC, anything else as dcFormula ("10 + 1/2 HD + Con").
+    const dcRaw = String(pw.dcFormula || '').trim() || (num(pw.dc) ? String(num(pw.dc)) : '');
+    if (/^\d+$/.test(dcRaw)) o.saveDC = Number(dcRaw);
+    else if (dcRaw) o.dcFormula = dcRaw;
     if (pw.duration) o.duration = pw.duration;
     if (pw.attackOn && pw.attack !== 'none') o.attack = pw.attack;
     if (pw.range) o.range = pw.range;
@@ -3122,6 +3125,7 @@
           use: parseUseObj(pw.usage || pw.use),
           cl: pw.casterLevel != null ? num(pw.casterLevel) : (pw.cl != null ? num(pw.cl) : 0),
           dc: num(pw.saveDC != null ? pw.saveDC : pw.dc, 0),
+          dcFormula: String(pw.dcFormula || (num(pw.saveDC != null ? pw.saveDC : pw.dc, 0) ? num(pw.saveDC != null ? pw.saveDC : pw.dc, 0) : '')),
           duration: pw.duration || '',
           attackOn: !!(pw.attack && pw.attack !== 'none'),
           attack: pw.attack && pw.attack !== 'none' ? pw.attack : 'none',
@@ -3726,7 +3730,8 @@
     o = o || {};
     return '<input class="fs-in' + (o.narrow ? ' fs-narrow' : '') + '" ' + bindAttr(o.scope) + '="' + path + '"' + (o.num ? ' data-t="num" type="number"' : ' type="text"') + (o.list ? ' list="' + o.list + '"' : '') +
       (o.min != null ? ' min="' + o.min + '"' : '') + (o.max != null ? ' max="' + o.max + '"' : '') + (o.ph ? ' placeholder="' + esc(o.ph) + '"' : '') + (o.style ? ' style="' + o.style + '"' : '') +
-      (o.enter ? ' data-enter="' + o.enter + '"' : '') + (o.fx ? ' data-fx="1"' : '') + ' value="' + esc(val) + '">';
+      (o.enter ? ' data-enter="' + o.enter + '"' : '') + (o.fx ? ' data-fx="1"' : '') + ' value="' + esc(val) + '">' +
+      (o.fx && !o.scope ? '<div class="fs-hint" style="margin-top:3px">' + live('fx-preview', path) + '</div>' : '');
   }
   function opts(list, val) { return list.map((x) => { const v = Array.isArray(x) ? x[0] : x, l = Array.isArray(x) ? x[1] : x; return '<option value="' + esc(v) + '"' + (String(v) === String(val) ? ' selected' : '') + '>' + esc(l) + '</option>'; }).join(''); }
   function sel(path, val, list, o) { o = o || {}; return '<select class="fs-sel' + (o.narrow ? ' fs-narrow' : '') + '" ' + bindAttr(o.scope) + '="' + path + '"' + (o.num ? ' data-t="num"' : '') + (o.style ? ' style="' + o.style + '"' : '') + '>' + opts(list, val) + '</select>'; }
@@ -4015,6 +4020,15 @@
     'feat-sum': (a) => { const p = a.split(':'); const f = (S.entry.progression.levels[num(p[0])] || { features: [] }).features[num(p[1])]; return f ? (f.branchPath ? '🔀 ' + esc(f.branchPath) + ': ' : '') + esc(f.name) : ''; },
     'dom-sum': (i) => { const d = S.entry.grants.domains[num(i)]; return d ? esc(d.name + (d.grantedPower ? ' — ' + short(d.grantedPower, 80) : '')) : ''; },
     'deity-sum': (i) => { const d = S.entry.grants.deities[num(i)]; return d ? esc(d.name + ' (' + d.align + ') • Favored Weapon: ' + d.favoredWeapon) : ''; },
+    // How the engine reads a formula field: normalized form + sample values, or the unknown terms.
+    'fx-preview': (path) => {
+      const raw = getPath(S.entry, path);
+      const v = String(raw == null ? '' : raw).trim();
+      if (!v || /^-?\d+(\.\d+)?$/.test(v) || !window.RuleEngine || typeof window.RuleEngine.inspectFormula !== 'function') return '';
+      const r = window.RuleEngine.inspectFormula(v);
+      if (r.unknown.length) return '<span class="fs-warn" style="font-size:11px">⚠️ Unknown term' + (r.unknown.length > 1 ? 's' : '') + ': ' + esc(r.unknown.join(', ')) + '. Click ! Formula help for the terms you can use.</span>';
+      return 'Reads as <code>' + esc(r.normalized) + '</code> • ' + r.samples.map((x) => 'Lvl ' + x.level + ': <b>' + esc(String(x.value)) + '</b>').join(' • ') + ' <span style="opacity:.7">(ability mods +2)</span>';
+    },
     'roll-preview': (path) => {
       const b = getPath(S.entry, path);
       if (!b || b.type !== 'roll') return '';
@@ -4245,7 +4259,7 @@
       return G(4,
         tgtRow +
         modeF +
-        F('Formula Expression', inp(p + '.formula', m.formula || '', { ph: '2 + min(3, floor(@cl / 6))', fx: true }) + fxRefBtn(), 'lego-span-2') +
+        F('Formula Expression', inp(p + '.formula', m.formula || '', { ph: '2 + min(3, floor(@cl / 6))', fx: true }) + fxRefBtn('value', p + '.formula'), 'lego-span-2') +
         btypeF +
         F('Condition', inp(p + '.condition', m.condition || '', { ph: 'condition (vs Fear)' }), 'lego-span-full')
       );
@@ -4354,12 +4368,12 @@
       ['perDay', 'N / Day']
     ], { narrow: true })));
     if (ck === 'pool') {
-      cells.push(F('Pool Cost', inp(bp + '.costFormula', br.costFormula || '1', { ph: '1 / Spell Level', fx: true }) + fxRefBtn()));
+      cells.push(F('Pool Cost', inp(bp + '.costFormula', br.costFormula || '1', { ph: '1 / Spell Level', fx: true }) + fxRefBtn('value', bp + '.costFormula')));
       cells.push(F('Resource Pool', '<input class="fs-in" data-bind="' + bp + '.poolName" list="fs-pool-list" value="' + esc(br.poolName || 'Arcane Pool') + '">'));
     } else if (ck === 'forgoSA') {
       cells.push(F('Sacrificed SA Dice (d6)', inp(bp + '.costVal', br.costVal || 1, { num: true, min: 1 })));
     } else if (ck === 'skillCheck') {
-      cells.push(F('Skill Check Formula', inp(bp + '.checkFormula', br.checkFormula || '', { ph: 'Truespeak DC 15 + 2×CR + 2×@uses_today', fx: true }) + fxRefBtn(), 'lego-span-full'));
+      cells.push(F('Skill Check Formula', inp(bp + '.checkFormula', br.checkFormula || '', { ph: 'Truespeak DC 15 + 2×CR + 2×@uses_today', fx: true }) + fxRefBtn('dc', bp + '.checkFormula'), 'lego-span-full'));
     } else if (ck === 'cooldown') {
       cells.push(F('Cooldown', inp(bp + '.cooldownText', br.cooldownText || '5 rounds', { ph: '5 rounds / 1d4' })));
     } else if (ck === 'perDay') {
@@ -4491,7 +4505,7 @@
         let h = G((hasDmg || showFlat) ? 4 : 3,
           F('Roll Kind', sel(p + '.kind', b.kind || 'Damage', ['Damage', 'Healing', 'Temp HP', 'Ongoing / Round', 'Fast Healing'], { narrow: true })) +
           (sc === 'formula'
-            ? F('Dice Formula', inp(p + '.dice', b.dice || '1d8+min(5,@cl)', { ph: '1d8+min(5,@cl)', fx: true }) + fxRefBtn(), 'lego-span-2')
+            ? F('Dice Formula', inp(p + '.dice', b.dice || '1d8+min(5,@cl)', { ph: '1d8+min(5,@cl)', fx: true }) + fxRefBtn('dice', p + '.dice'), 'lego-span-2')
             : F(b.die === 'flat' ? 'Flat Value' : 'Dice Count', inp(p + '.count', b.count, { num: true, min: 0 })) +
               F('Die / Unit', sel(p + '.die', b.die || 'd6', [['d4', 'd4'], ['d6', 'd6'], ['d8', 'd8'], ['d10', 'd10'], ['d12', 'd12'], ['2d6', '2d6'], ['flat', 'Flat']], { narrow: true })) +
               (showFlat ? F('Flat Bonus (+)', inp(p + '.flat', num(b.flat, 0), { num: true })) : '')
@@ -4664,7 +4678,11 @@
     }
   }
 
-  const fxRefBtn = () => '<button type="button" class="fs-btn fs-xs fs-ghost" data-fx-keep="1" data-action="toggle-fxref" style="margin-top:4px">ƒx Formula Reference</button>';
+  // "!" help next to a formula field. kind picks the ready-made examples (RuleEngine.FORMULA_RECIPES: dc, dice, value, cl);
+  // path lets an example fill this exact field without clicking into it first.
+  const fxRefBtn = (kind, path) => '<button type="button" class="fs-btn fs-xs fs-ghost" data-fx-keep="1" data-action="toggle-fxref" data-kind="' + esc(kind || 'value') + '"' +
+    (path ? ' data-fxpath="' + esc(path) + '"' : '') + ' title="Formula help: examples and terms you can use" aria-label="Formula help" style="margin-top:4px">' +
+    '<b style="display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;border:1px solid currentColor;font-size:10px;margin-right:4px">!</b>Formula help</button>';
   function renderFxRef() {
     const el = document.getElementById('fs-fxref');
     if (!el) return;
@@ -4672,11 +4690,23 @@
     const vars = fxVars(), funcs = fxFuncs(), groups = {};
     vars.forEach((v) => { (groups[v.group || 'Variables'] = groups[v.group || 'Variables'] || []).push(v); });
     const item = (ins, title, sub, ex) => '<button type="button" class="fs-fxitem" data-fx-keep="1" data-action="fx-insert" data-ins="' + esc(ins) + '"><b>' + esc(title) + '</b>' + (sub ? '<span>' + esc(sub) + '</span>' : '') + (ex ? '<code>' + esc(ex) + '</code>' : '') + '</button>';
+    const RE = window.RuleEngine || {};
+    const recipes = ((RE.FORMULA_RECIPES || {})[S.ui.fxKind || 'value']) || (RE.FORMULA_RECIPES || {}).value || [];
+    const recipe = (r) => '<button type="button" class="fs-fxitem" data-fx-keep="1" data-action="fx-apply" data-ins="' + esc(r.formula) + '"><b>' + esc(r.label) + '</b>' +
+      (r.desc ? '<span>' + esc(r.desc) + '</span>' : '') + '<code>' + esc(r.formula) + '</code></button>';
+    const shorthand = (RE.FORMULA_SHORTHAND || []).map((s) => '<div class="fs-bd-row" style="font-size:11px"><span class="src"><b>' + esc(s.words) + '</b> — ' + esc(s.desc) + '</span>' +
+      (s.means ? '<code style="color:#a5f3fc;font-size:10.5px">' + esc(s.means) + '</code>' : '') + '</div>').join('');
     el.style.display = 'flex';
-    el.innerHTML = '<div class="fs-fxhead"><span>ƒx Formula Reference</span><button type="button" class="fs-btn fs-xs fs-ghost" data-action="toggle-fxref">Close</button></div>' +
-      '<div class="fs-hint" style="padding:0 10px 6px">Click a formula field, then click an entry to insert it at the cursor.</div>' +
-      '<div class="fs-fxbody">' + (vars.length || funcs.length ? Object.keys(groups).map((g) => '<div class="fs-section-label">' + esc(g) + '</div>' + groups[g].map((v) => item(v.token, v.token + (v.label ? ' — ' + v.label : ''), v.desc, v.example)).join('')).join('') +
-        (funcs.length ? '<div class="fs-section-label">Functions</div>' + funcs.map((f) => item(f.name + '()', f.signature || f.name, f.desc, '')).join('') : '') : '<div class="fs-hint">Rule Engine formula catalog is not loaded.</div>') + '</div>';
+    el.innerHTML = '<div class="fs-fxhead"><span>! Formula help</span><button type="button" class="fs-btn fs-xs fs-ghost" data-action="toggle-fxref">Close</button></div>' +
+      '<div class="fs-hint" style="padding:0 10px 6px">Pick an example to fill the field, then adjust the numbers. The line under the field shows how it is read and its value at levels 1, 5, 10 and 20.</div>' +
+      '<div class="fs-fxbody">' +
+        (recipes.length ? '<div class="fs-section-label">Examples for this field</div>' + recipes.map(recipe).join('') : '') +
+        (shorthand ? '<div class="fs-section-label">Plain words you can type</div>' + shorthand : '') +
+        '<div class="fs-section-label">Operators</div><div class="fs-hint" style="font-size:11px">+ − × (*) ÷ (/), parentheses, and dice as NdX: (1 + floor(@hd / 4))d8. Division keeps fractions, so wrap it in floor() to round down.</div>' +
+        '<details style="margin-top:6px"><summary class="fs-section-label" style="cursor:pointer">All terms &amp; functions (click to insert at the cursor)</summary>' +
+        (vars.length || funcs.length ? Object.keys(groups).map((g) => '<div class="fs-section-label">' + esc(g) + '</div>' + groups[g].map((v) => item(v.token, v.token + (v.label ? ' — ' + v.label : ''), v.desc, v.example)).join('')).join('') +
+          (funcs.length ? '<div class="fs-section-label">Functions</div>' + funcs.map((f) => item(f.name + '()', f.signature || f.name, f.desc, '')).join('') : '') : '<div class="fs-hint">Rule Engine formula catalog is not loaded.</div>') +
+        '</details></div>';
   }
   function fxTarget() {
     const a = document.activeElement;
@@ -4831,7 +4861,7 @@
           F('Saving Throw', sel(p + '.save.type', pw.save.type, ['None', 'Fortitude', 'Reflex', 'Will'], { narrow: true })) +
           (hasSave
             ? F('Save Outcome', sel(p + '.save.effect', pw.save.effect, ['Negates', 'Half', 'Partial', 'Negates (harmless)'], { narrow: true })) +
-              F('Fixed DC (0 = Auto)', inp(p + '.dc', pw.dc, { num: true }))
+              F('Save DC (number or formula)', inp(p + '.dcFormula', pw.dcFormula || (num(pw.dc) ? String(num(pw.dc)) : ''), { ph: '10 + 1/2 HD + Con', fx: true }) + fxRefBtn('dc', p + '.dcFormula'))
             : '')
         ));
     }
@@ -5104,7 +5134,7 @@
             F('Key Ability', sel('progression.caster.ability', c.ability || 'int', ABIL_KEYS.map((k) => [k, k.toUpperCase()]), { narrow: true })) +
             F('Spell / Power List', '<input class="fs-in" data-bind="progression.caster.spellList" list="fs-spellcls-list" placeholder="Cleric / Magus" value="' + esc(c.spellList) + '">') +
             F('Caster Level Progression', sel('progression.caster.clFormula', c.clFormula || 'full', CL_FORMULAS, { narrow: true })) +
-            (c.clFormula === 'custom' ? F('Custom CL Formula', inp('progression.caster.clCustom', c.clCustom || '', { ph: '@classLevel + 2' })) : '') +
+            (c.clFormula === 'custom' ? F('Custom CL Formula', inp('progression.caster.clCustom', c.clCustom || '', { ph: '@classLevel + 2', fx: true }) + fxRefBtn('cl', 'progression.caster.clCustom')) : '') +
             F('Armored Casting (Ignore ASF)', sel('progression.caster.ignoreAsf', c.ignoreAsf || 'none', [['none', 'Normal ASF'], ['light', 'Light Armor'], ['medium', 'Up to Medium'], ['heavy', 'Up to Heavy']], { narrow: true })) +
             F('Shield ASF', chk('progression.caster.ignoreShieldAsf', !!c.ignoreShieldAsf, 'Ignore Shield ASF')) +
             F('Rage Casting', chk('progression.caster.castInRage', !!c.castInRage, '🩸 Cast in Rage'))
@@ -5542,7 +5572,21 @@
       S.ui.liveOpenMobile = next;
       syncLiveScroll(true);
     },
-    'toggle-fxref': () => { S.ui.fxRefOpen = !S.ui.fxRefOpen; renderFxRef(); },
+    'toggle-fxref': (el) => {
+      const kind = el && el.dataset ? el.dataset.kind : '';
+      if (el && el.dataset && el.dataset.fxpath) S.fxPath = el.dataset.fxpath;
+      // A "!" button for another field switches the examples instead of closing the panel.
+      S.ui.fxRefOpen = kind && S.ui.fxRefOpen && S.ui.fxKind !== kind ? true : !S.ui.fxRefOpen;
+      if (kind) S.ui.fxKind = kind;
+      renderFxRef();
+    },
+    'fx-apply': (el) => {
+      const t = fxTarget();
+      if (!t) { toast('Click a formula field first', 'warn'); return; }
+      t.value = el.dataset.ins || '';
+      t.focus(); t.setSelectionRange(t.value.length, t.value.length);
+      handleBind(t, false);
+    },
     'fx-insert': (el) => {
       const t = fxTarget();
       if (!t) { toast('Click a formula field first', 'warn'); return; }
@@ -5682,7 +5726,7 @@
       if (fn) fn(el, ev);
     });
     root.addEventListener('mousedown', (ev) => {
-      if (ev.target.closest('[data-fx-keep]')) { ev.preventDefault(); if (ev.target.closest('[data-action="fx-insert"]') || ev.target.closest('[data-action="toggle-fxref"]')) return; }
+      if (ev.target.closest('[data-fx-keep]')) { ev.preventDefault(); if (ev.target.closest('[data-action="fx-insert"]') || ev.target.closest('[data-action="fx-apply"]') || ev.target.closest('[data-action="toggle-fxref"]')) return; }
       const del = ev.target.closest('[data-spot-del]');
       if (del && S.spot) { ev.preventDefault(); ev.stopPropagation(); const t = S.templates.find((x) => x.id === del.dataset.spotDel); S.templates = S.templates.filter((x) => x.id !== del.dataset.spotDel); saveLS(); toast('Template deleted: ' + (t ? t.name : ''), 'warn'); renderSpotDD(); return; }
       const lay = ev.target.closest('[data-spot-layer]');

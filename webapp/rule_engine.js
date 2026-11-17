@@ -65,7 +65,8 @@ const RuleEngine = {
       .replace(/^dc\s*[:=]?\s*/i, '')
       .replace(/\b1\s*\/\s*2\s*(?:@?level|@?lvl|@?hd)\b/gi, 'floor(@level / 2)')
       .replace(/\bhalf\s+(?:@?level|@?lvl|@?hd)\b/gi, 'floor(@level / 2)')
-      .replace(/(?:@?level|@?lvl|@?hd)\s*\/\s*2\b/gi, 'floor(@level / 2)')
+      // Not inside an already-normalized floor(@level / 2), and not the tail of a longer token (@classLevel / 2).
+      .replace(/(?<!floor\()(?<!floor\(@)(?<![a-zA-Z.])(?:@?level|@?lvl|@?hd)\s*\/\s*2\b/gi, 'floor(@level / 2)')
       .replace(/@(?:lvl|level|hd)\b/gi, '@level')
       .replace(/@cl\b/gi, '@cl')
       .replace(/@ml\b/gi, '@ml')
@@ -400,6 +401,47 @@ const RuleEngine = {
     { name: 'clamp', signature: 'clamp(x, lo, hi)', desc: 'Limit x to the range lo..hi.', impl: (args) => Math.min(args[2] ?? 0, Math.max(args[1] ?? 0, args[0] ?? 0)) }
   ],
 
+  // Ready-made formulas per field kind for the Rule Crafter "!" help: plain-English label, the formula, and when to use it.
+  // Every formula here must evaluate through evaluateFormula (checked by tools/test_derive_sheet.js).
+  FORMULA_RECIPES: {
+    dc: [
+      { label: '10 + 1/2 HD + Con modifier', formula: '10 + 1/2 HD + Con', desc: 'Breath weapons and most extraordinary / supernatural abilities (PHB p.180).' },
+      { label: '10 + spell level + Cha modifier', formula: '10 + 3 + Cha', desc: 'Spell-like ability: replace 3 with the spell level.' },
+      { label: '10 + 1/2 class level + Wis modifier', formula: '10 + floor(@classLevel / 2) + Wis', desc: 'Class feature keyed to one class (Stunning Fist style).' },
+      { label: 'Fixed DC', formula: '15', desc: 'A plain number is used as it is.' }
+    ],
+    dice: [
+      { label: '1d8, +1d8 per 4 Hit Dice', formula: '(1 + floor(@hd / 4))d8', desc: '1d8 at 1 HD, 2d8 at 4 HD, 3d8 at 8 HD ...' },
+      { label: '1d6 per caster level (max 10d6)', formula: 'min(10, @cl)d6', desc: 'Fireball / Lightning Bolt scaling.' },
+      { label: '1d6 per 2 caster levels', formula: 'max(1, floor(@cl / 2))d6', desc: 'At least 1d6.' },
+      { label: '1d8 + caster level (max +5)', formula: '1d8 + min(5, @cl)', desc: 'Cure Light Wounds scaling.' },
+      { label: '2d6 + Str modifier', formula: '2d6 + Str', desc: 'Natural attack or slam style damage.' }
+    ],
+    value: [
+      { label: '+1 per 4 levels (max +5)', formula: 'min(5, floor(@level / 4))', desc: 'Grows with character level.' },
+      { label: 'Cha modifier (minimum +1)', formula: 'max(1, Cha)', desc: 'Never below +1.' },
+      { label: '+2, +1 per 3 caster levels above 3rd (max +5)', formula: '2 + clamp(floor((@cl - 3) / 3), 0, 3)', desc: 'Barkskin style scaling.' },
+      { label: 'One-half character level', formula: '1/2 level', desc: 'Rounded down.' }
+    ],
+    cl: [
+      { label: 'Class level', formula: '@classLevel', desc: 'Level in the class that grants the ability.' },
+      { label: 'Class level + 2', formula: '@classLevel + 2', desc: 'Practiced Spellcaster style bonus.' },
+      { label: 'One-half class level', formula: 'floor(@classLevel / 2)', desc: 'Half-caster progression.' },
+      { label: 'Character level', formula: '@level', desc: 'Total character level / Hit Dice.' }
+    ]
+  },
+
+  // Plain words a formula field accepts (normalizeFormulaTokens rewrites them), shown in the Rule Crafter "!" help.
+  FORMULA_SHORTHAND: [
+    { words: 'lvl, level, HD', means: '@level', desc: 'Character level / Hit Dice' },
+    { words: '1/2 HD, half level, HD/2', means: 'floor(@level / 2)', desc: 'One-half level, rounded down' },
+    { words: 'Str, Dex, Con, Int, Wis, Cha', means: '@strMod ... @chaMod', desc: 'Ability modifiers' },
+    { words: 'CL, caster level', means: '@cl', desc: 'Caster level' },
+    { words: 'BAB', means: '@bab', desc: 'Base attack bonus' },
+    { words: 'ML, IL, ECL', means: '@ml, @il, @ecl', desc: 'Manifester, initiator and effective character level' },
+    { words: 'DC: (prefix)', means: '', desc: 'Ignored, so "DC: 10 + lvl + Con" also works' }
+  ],
+
   // Scalar values for every FORMULA_VARS `key`, from an evaluation context.
   _resolveFormulaScalars(context = {}) {
     const cl = Number(context.cl ?? context.casterLevel ?? context.level ?? 1) || 1;
@@ -433,6 +475,43 @@ const RuleEngine = {
   },
 
   // Lower-case token name (no '@') -> scalar key, built once from FORMULA_VARS tokens and aliases.
+  /**
+   * Authoring check for a formula field (Rule Crafter): the normalized form the engine evaluates
+   * ("10+lvl+Con" -> "10 + @level + @conMod"), terms the engine does not know, and sample values at a few
+   * character levels (every ability modifier set to opts.abilityMod, default +2). Samples are skipped while
+   * unknown terms remain. Returns { normalized, unknown: [], samples: [{ level, value }] }.
+   */
+  inspectFormula(formula, opts = {}) {
+    const normalized = this.normalizeFormulaTokens(formula);
+    if (!normalized) return { normalized: '', unknown: [], samples: [] };
+    const idx = this._formulaTokenIndex();
+    const funcs = new Set(this.FORMULA_FUNCS.map(f => f.name.toLowerCase()));
+    const familyRe = /^@(?:[a-z]+level|classes\.[\w-]+\.level|ability\.(?:str|dex|con|int|wis|cha)\.mod|skill\.[\w-]+\.(?:total|ranks|bonus)|input\.\w+|self\.\w+|state\.\w+|spells\.maxunspentlevel)$/i;
+    const unknown = [];
+    (normalized.match(/@[a-z_][\w.]*/gi) || []).forEach(t => {
+      const name = t.slice(1).toLowerCase();
+      if (idx.simple.has(name) || idx.dotted.some(d => d.name === name) || familyRe.test(t)) return;
+      if (!unknown.includes(t)) unknown.push(t);
+    });
+    (normalized.replace(/@[a-z_][\w.]*/gi, ' ').match(/[a-z_][a-z0-9_]*/gi) || []).forEach(word => {
+      const low = word.toLowerCase();
+      if (funcs.has(low) || /^d\d+$/.test(low)) return;
+      if (!unknown.includes(word)) unknown.push(word);
+    });
+    const levels = Array.isArray(opts.levels) ? opts.levels : [1, 5, 10, 20];
+    const mod = opts.abilityMod !== undefined ? Number(opts.abilityMod) || 0 : 2;
+    const samples = unknown.length ? [] : levels.map(level => {
+      const ctx = {
+        level, hd: level, ecl: level, cl: level, casterLevel: level, ml: level, il: level, ebl: level, classLevel: level,
+        bab: level, enhancement: 1, strMod: mod, dexMod: mod, conMod: mod, intMod: mod, wisMod: mod, chaMod: mod
+      };
+      let value = null;
+      try { value = this.evaluateFormula(normalized, ctx); } catch (e) { value = null; }
+      return { level, value };
+    });
+    return { normalized, unknown, samples };
+  },
+
   _formulaTokenIndex() {
     if (this._formulaTokenIndexCache) return this._formulaTokenIndexCache;
     const simple = new Map();
@@ -697,9 +776,12 @@ const RuleEngine = {
     if (/\d*d\d+/i.test(expr)) {
       // Function-wrapped dice counts (`min(10, @cl)d6`) first, so the bare-parenthesis pass below cannot strip
       // the argument list away from its function name.
-      let diceResolved = expr.replace(/(^|[^a-z0-9_])(min|max|floor|ceil|round|abs|clamp)\(([^()]+)\)(?=\)*d\d+)/gi, (full, lead, fn, inner) => {
-        const val = this.evaluateFormula(`${fn}(${inner})`, context);
-        return `${lead}${Math.max(1, Math.floor(Number(val) || 1))}`;
+      // Only a call that is the whole dice count (`min(10, @cl)d6`) is raised to at least one die; a call nested in a
+      // larger count (`(1 + floor(@hd / 4))d8`) keeps its own value so the outer sum is right (1d8 at 1 HD, not 2d8).
+      let diceResolved = expr.replace(/(^|[^a-z0-9_])(min|max|floor|ceil|round|abs|clamp)\(([^()]+)\)(?=\)*d\d+)/gi, (full, lead, fn, inner, offset, whole) => {
+        const val = Math.floor(Number(this.evaluateFormula(`${fn}(${inner})`, context)) || 0);
+        const isWholeCount = whole.charAt(offset + full.length).toLowerCase() === 'd';
+        return `${lead}${isWholeCount ? Math.max(1, val) : val}`;
       });
       diceResolved = diceResolved.replace(/\(([^()]+)\)(?=d\d+)/gi, (_, sub) => {
         const val = this.evaluateFormula(sub, context);
