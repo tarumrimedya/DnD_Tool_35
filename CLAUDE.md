@@ -19,11 +19,14 @@
 - If neither local `node.exe` nor Docker is available, state explicitly that the task is unverified. Never hand-edit `character.html`, `webapp/*`, or index hashes as a substitute.
 - `powershell -ExecutionPolicy Bypass -File tools/check_all.ps1` runs `verify_and_sync.js` + Playwright `run_smoke.js` in Docker (~1 min); run it before merging to `main`. GitHub Actions `checks.yml` enforces the same gates on every push.
 
-## Session start
+## Session flow (one topic per session)
 
-For project work, check `git branch` / `git worktree list`, then read `D:\Obsidian\dndtools35\00-Dashboard.md`, `01-Architecture/UI-UX Design System and Do-Dont Master Guide.md`, and the latest note in `04-DevLogs/` first. If the vault is not accessible, say so and continue from the repo.
-
-Counts and line numbers in notes can go stale. Check the repo before relying on them; the code wins over the notes.
+- **Opening:** The user opens with `Konu`, `Tür` (`motor` | `ui` | `veri` | `soru`), and `Bitti sayılır` (definition of done). If any of these is missing, infer it and state it in one line; do not ask.
+- **Session start reads:** Check `git branch` / `git worktree list`, then read `D:\Obsidian\dndtools35\00-Dashboard.md` and the latest note in `04-DevLogs/`. Read `01-Architecture/UI-UX Design System and Do-Dont Master Guide.md` only for `ui` work. If the vault is not accessible, say so and continue from the repo. Counts and line numbers in notes can go stale; the code wins over the notes.
+- **Model per type:** `motor` (rule engine, V3 contract, architecture) and `soru` (design questions, no file edits) use Opus. `ui` (labels, layout, copy) and `veri` (corpus edits) use Sonnet; bulk data cleanup can go to a Haiku subagent. When an Opus session turns up routine `ui`/`veri` work, propose it as a separate Sonnet session instead of doing it here.
+- **During work:** Prefer batched, numbered feedback and close each item explicitly. Ask for a screenshot or a one-line pointer instead of pasted HTML/JSON, and read the file yourself. If an unrelated request arrives mid-topic, offer to hand it off to a new session.
+- **Verification ladder:** Logic/data change → `tools/verify_and_sync.js` + `git diff` only. Small visual change → add one screenshot. Layout change → add `tools/ui_smoke/run.ps1`. Before merging to `main` → `tools/check_all.ps1`. No long browser tours unless the user asks or a smoke test fails.
+- **Closing:** When the definition of done is met, say so, commit and push the branch, and remind the user to say *"obsidian devlog"* and start a new session for the next topic. If the conversation grows long (roughly 80k+ tokens), propose closing even if the topic is unfinished.
 
 ## Obsidian writes
 
