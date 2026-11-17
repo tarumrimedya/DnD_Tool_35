@@ -1,14 +1,14 @@
 {
   "schemaVersion": 3,
   "version": "3.0.0",
-  "compendiumHash": "9ae7efc5347a8c7c",
+  "compendiumHash": "7640efbe2515ed1f",
   "generatedAt": "2026-11-15T19:43:51.694Z",
-  "totalEntries": 7949,
+  "totalEntries": 7961,
   "chunks": {
     "srd_equipment.json": {
-      "count": 1131,
+      "count": 1143,
       "bytes": 1856631,
-      "hash": "9dd11efbd936f671",
+      "hash": "4661c02cfe423ef6",
       "eagerLoad": true
     },
     "srd_feats.json": {
@@ -50,7 +50,7 @@
     "mic_compendium.json": {
       "count": 953,
       "bytes": 1892481,
-      "hash": "b81c84e13adf8c15",
+      "hash": "454540315e8d5c7f",
       "eagerLoad": true
     },
     "srd_domains.json": {
@@ -65753,6 +65753,102 @@
       "s": "None",
       "f": "srd_powers_splat.json",
       "l": 7
+    },
+    {
+      "id": "enh-shadow-improved",
+      "n": "Shadow, Improved",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "enh-shadow-greater",
+      "n": "Shadow, Greater",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "enh-silent-moves-improved",
+      "n": "Silent Moves, Improved",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "enh-silent-moves-greater",
+      "n": "Silent Moves, Greater",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "enh-slick-improved",
+      "n": "Slick, Improved",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "enh-slick-greater",
+      "n": "Slick, Greater",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "enh-fortification-moderate",
+      "n": "Moderate Fortification",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "enh-fortification-heavy",
+      "n": "Heavy Fortification",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "enh-spell-resistance-15",
+      "n": "Spell Resistance (15)",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "enh-spell-resistance-17",
+      "n": "Spell Resistance (17)",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "enh-spell-resistance-19",
+      "n": "Spell Resistance (19)",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "enh-ghost-touch-armor",
+      "n": "Ghost Touch, Armor",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "srd_equipment.json"
     }
   ]
 }

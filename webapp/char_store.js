@@ -32,7 +32,7 @@
     const add = (f) => {
       if (featRefTypeOf(f) !== refType) return;
       const raw = typeof f === 'string' ? f : (f && (f.name || f.featName));
-      // levelProgression stores display strings such as "🎖️ Aberration Banemagic" / "🌟 [DM Boon] Name"
+      // levelProgression stores display strings such as "🎖️ Aberration Banemagic" / "🌟 [Homebrew] Name"
       // (same cleanup as char_progression cleanFeatNameString)
       const n = String(raw || '').replace(/^[^A-Za-z0-9(]+(\[.*?\])?\s*/, '').trim();
       if (n) out.add(n);
@@ -2235,7 +2235,10 @@
       qty: qtyVal,
       weight: Number(srcItem.weightLb ?? srcItem.weight) || 0,
       cost: Number(srcItem.priceGp ?? srcItem.cost) || 0,
-      desc: srcItem.desc || srcItem.benefit || srcItem.description || srcItem.text || '',
+      desc: srcItem.desc || srcItem.benefit || srcItem.description || '',
+      shortDescription: srcItem.shortDescription || '',
+      text: srcItem.text || '',
+      bash: (srcItem.bash && typeof srcItem.bash === 'object') ? JSON.parse(JSON.stringify(srcItem.bash)) : undefined,
       material: srcItem.material || null,
       enhancementBonus: Number(srcItem.enhancementBonus) || 0,
       enhancements: Array.isArray(srcItem.enhancements) ? srcItem.enhancements.slice() : [],
@@ -2384,7 +2387,11 @@
       : (engine && typeof engine.inferInventoryItemCategory === 'function' ? engine.inferInventoryItemCategory(forgedItem) : (forgedItem.type || originalItem?.category || 'Weapon'));
     const newWeight = Number(forgedItem.weightLb ?? forgedItem.weight) || 0;
     const newCost = Number(forgedItem.priceGp ?? forgedItem.cost) || 0;
-    const newDesc = forgedItem.benefit || forgedItem.description || originalItem?.desc || '';
+    // desc holds only user-written notes; forged prose lives in shortDescription / text.
+    const newDesc = forgedItem.desc || originalItem?.desc || '';
+    const newShortDesc = forgedItem.shortDescription || '';
+    const newText = forgedItem.text || '';
+    const clonedBash = (forgedItem.bash && typeof forgedItem.bash === 'object') ? JSON.parse(JSON.stringify(forgedItem.bash)) : null;
 
     const clonedEffects = Array.isArray(forgedItem.effects) ? JSON.parse(JSON.stringify(forgedItem.effects)) : [];
     const rollEffects = clonedEffects.filter(e => e && e.type === 'roll' && (!e.kind || e.kind === 'Damage'));
@@ -2413,6 +2420,9 @@
       poolItem.weight = newWeight;
       poolItem.cost = newCost;
       poolItem.desc = newDesc;
+      poolItem.shortDescription = newShortDesc;
+      poolItem.text = newText;
+      if (clonedBash) poolItem.bash = JSON.parse(JSON.stringify(clonedBash)); else delete poolItem.bash;
       poolItem.material = forgedItem.material || null;
       poolItem.enhancementBonus = Number(forgedItem.enhancementBonus) || 0;
       poolItem.enhancements = Array.isArray(forgedItem.enhancements) ? forgedItem.enhancements.slice() : [];
@@ -2461,8 +2471,11 @@
       sd.weight = newWeight;
       sd.cost = newCost;
       sd.desc = newDesc;
-      sd.benefit = newDesc;
-      sd.description = newDesc;
+      sd.shortDescription = newShortDesc;
+      sd.text = newText;
+      delete sd.benefit;
+      delete sd.description;
+      if (clonedBash) sd.bash = JSON.parse(JSON.stringify(clonedBash)); else delete sd.bash;
       sd.material = forgedItem.material || null;
       sd.enhancementBonus = Number(forgedItem.enhancementBonus) || 0;
       sd.enhancements = Array.isArray(forgedItem.enhancements) ? forgedItem.enhancements.slice() : [];
@@ -3329,8 +3342,8 @@
     return doc;
   });
 
-  // 12. 'spells/toggleDmBoon' ({ key })
-  CharStore.registerReducer('spells/toggleDmBoon', (doc, action, stateObj) => {
+  // 12. 'spells/toggleHomebrew' ({ key })
+  CharStore.registerReducer('spells/toggleHomebrew', (doc, action, stateObj) => {
     ensureSpellsDocStructures(doc);
     if (!doc.settings || typeof doc.settings !== 'object') doc.settings = {};
     const payload = (action && action.payload) || {};
@@ -3362,7 +3375,7 @@
       if (nextBoons.length === 1 && nextBoons[0] === 'warlock') {
         doc.settings.clMode = 'Warlock Boon (Invocations & Eldritch Blast)';
       } else {
-        doc.settings.clMode = 'Character Level (DM Boon)';
+        doc.settings.clMode = 'Character Level (Homebrew)';
       }
     } else {
       doc.settings.casterTypeExplicit = false;
@@ -3371,7 +3384,7 @@
     }
 
     setStoreOutcome(stateObj, {
-      status: 'dm_boon_toggled',
+      status: 'homebrew_toggled',
       key: target,
       enabled: !wasActive,
       boonDisciplines: [...nextBoons]
@@ -5003,7 +5016,7 @@
         });
       }
     }
-    ['weapons', 'gearPool', 'inventory', 'feats', 'specialAbilities', 'dmBoons', 'spells', 'knownSpells', 'preparedSpells', 'maneuvers', 'stances', 'psionics', 'incarnum', 'pactMagic', 'shadowMagic', 'truenaming', 'templates'].forEach(function (arrKey) {
+    ['weapons', 'gearPool', 'inventory', 'feats', 'specialAbilities', 'homebrewBoons', 'spells', 'knownSpells', 'preparedSpells', 'maneuvers', 'stances', 'psionics', 'incarnum', 'pactMagic', 'shadowMagic', 'truenaming', 'templates'].forEach(function (arrKey) {
       const list = doc[arrKey];
       if (!Array.isArray(list)) return;
       list.forEach(function (entry) {
@@ -5024,6 +5037,32 @@
     }
     if (ctx.kind === 'race' && targetName) {
       doc.race = targetName;
+    }
+  }
+
+  const _CRAFTER_META_KEYS = {
+    _crafterOverride: 1, _snapshot: 1, _srdSnapshot: 1, source: 1, id: 1, baseEntryId: 1, customEntryId: 1,
+    createdAt: 1, updatedAt: 1, modifiedAt: 1, _createdAt: 1, _updatedAt: 1, timestamp: 1, ts: 1, origin: 1, schemaVersion: 1
+  };
+  function _crafterNormalizeForCompare(val) {
+    if (Array.isArray(val)) return val.map(_crafterNormalizeForCompare);
+    if (val && typeof val === 'object') {
+      const out = {};
+      Object.keys(val).sort().forEach(function (k) {
+        if (_CRAFTER_META_KEYS[k]) return;
+        if (val[k] === undefined) return;
+        out[k] = _crafterNormalizeForCompare(val[k]);
+      });
+      return out;
+    }
+    return val;
+  }
+  function _crafterEntriesEquivalent(a, b) {
+    if (!a || !b) return false;
+    try {
+      return JSON.stringify(_crafterNormalizeForCompare(a)) === JSON.stringify(_crafterNormalizeForCompare(b));
+    } catch (err) {
+      return false;
     }
   }
 
@@ -5125,7 +5164,7 @@
         const hit = bonuses.find(function (b) { return matchesItem(b); });
         if (hit) {
           charItem = typeof hit === 'string'
-            ? { id: 'boon_' + _slugifyCrafterId(cleanName), name: cleanName, type: 'DM Boon', benefit: hit, source: 'DM Boon' }
+            ? { id: 'boon_' + _slugifyCrafterId(cleanName), name: cleanName, type: 'Homebrew', benefit: hit, source: 'Homebrew' }
             : hit;
           sourceLocation = sourceLocation || 'levelProgression';
         }
@@ -5145,7 +5184,7 @@
       tryList(doc.inventory, 'inventory');
       tryList(doc.feats, 'feats');
       tryList(doc.specialAbilities, 'specialAbilities');
-      tryList(doc.dmBoons, 'dmBoons');
+      tryList(doc.homebrewBoons, 'homebrewBoons');
       tryList(doc.spells, 'spells');
       tryList(doc.knownSpells, 'knownSpells');
       tryList(doc.preparedSpells, 'preparedSpells');
@@ -5318,7 +5357,7 @@
           id: resolvedId || ((kind || 'entry') + '_' + _slugifyCrafterId(cleanName)),
           name: cleanName,
           type: _srdTypeForKind(kind) || 'Feature',
-          source: kind === 'boon' ? 'DM Boon' : 'Custom'
+          source: kind === 'boon' ? 'Homebrew' : 'Custom'
         };
         sourceLocation = 'synthetic';
       }
@@ -5338,12 +5377,19 @@
       }
 
       const effSrdBase = srdEntry || classFeatureEntry || null;
+      const hasCustomLayer = Boolean(overrideEntry || (entry && entry.schemaVersion === 3 && entry._crafterOverride));
+      let customKind = null;
+      if (hasCustomLayer) {
+        if (!effSrdBase) customKind = 'homebrew';
+        else customKind = _crafterEntriesEquivalent(entry, effSrdBase) ? 'snapshot' : 'override';
+      }
       return {
         entry: entry,
         resolvedId: resolvedId || null,
         kind: kind || null,
         sourceLocation: sourceLocation,
-        isCustomOverride: Boolean(overrideEntry || (entry && entry.schemaVersion === 3 && entry._crafterOverride)),
+        customKind: customKind,
+        isCustomOverride: customKind === 'override' || customKind === 'homebrew',
         hasSrdBase: Boolean(effSrdBase),
         srdBaseEntry: effSrdBase ? CharStore._fastCloneHistoryVal(effSrdBase) : null
       };
@@ -5572,6 +5618,13 @@
       if (saveScope === 'character') {
         const doc = CharStore.getDoc();
         if (!doc) return { ok: false, reason: 'no_character' };
+        const srdBaseForSave = _findInSrdCompendium(originalId || targetId, '', '');
+        if (srdBaseForSave && _crafterEntriesEquivalent(copy, srdBaseForSave)) {
+          // Identical to the official SRD entry: store nothing (drop any stale override).
+          StudioBridge.resetCustomEntry(originalId || targetId, { silent: true });
+          if (originalId && originalId !== targetId) StudioBridge.resetCustomEntry(targetId, { silent: true });
+          return { ok: true, saveScope: 'character', id: targetId, entry: srdBaseForSave, unchanged: true };
+        }
         copy._crafterOverride = true;
         if (!doc.customEntries || typeof doc.customEntries !== 'object' || Array.isArray(doc.customEntries)) {
           doc.customEntries = {};
@@ -5646,7 +5699,8 @@
       _showCrafterToast('Saved to Campaign Rule Crafter Library');
       return { ok: true, saveScope: 'campaign', id: targetId, entry: copy };
     },
-    resetCustomEntry(id) {
+    resetCustomEntry(id, opts) {
+      const resetOpts = opts || {};
       const targetId = String(id || '').trim();
       const doc = CharStore.getDoc();
       if (!doc || !targetId) return false;
@@ -5687,7 +5741,9 @@
       if (typeof root !== 'undefined' && typeof root.renderAll === 'function') {
         root.renderAll();
       }
-      _showCrafterToast('Restored Official SRD Rules', 'reset');
+      if (!resetOpts.silent) {
+        _showCrafterToast(resetOpts.homebrew ? 'Homebrew entry deleted' : 'Restored Official SRD Rules', 'reset');
+      }
       return removed;
     }
   };

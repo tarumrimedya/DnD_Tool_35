@@ -5,23 +5,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>D&D 3.5e Character & Campaign Command Center (Hub)</title>
   <link rel="stylesheet" href="tailwind_compiled.css?v=101216d709">
-  <script src="srd_compendium.js?v=b6dcf1ee56"></script>
+  <script src="srd_compendium.js?v=b46d8badd2"></script>
   <script src="rulesets/dnd35.js?v=efbdcde12f"></script>
-  <script src="rule_engine.js?v=20b99bb362"></script>
-  <script src="ui_components.js?v=21c1fd5e01"></script>
-  <script src="rule_master.js?v=696136644d"></script>
-  <script src="ui_shared.js?v=2c7a6fc34d"></script>
+  <script src="rule_engine.js?v=c517de3bd1"></script>
+  <script src="ui_components.js?v=8aa3286bcb"></script>
+  <script src="rule_master.js?v=eddff6461a"></script>
+  <script src="ui_shared.js?v=8c6454a6cc"></script>
   <script src="campaign_db.js?v=1e45440d78"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase_auth.js?v=47247ea179"></script>
   <!-- Prefetch Character Sheet & Domain Modules during Hub Idle Time -->
   <link rel="prefetch" href="index.html">
   <link rel="prefetch" href="char_modals.js?v=36586098a5">
-  <link rel="prefetch" href="char_hud.js?v=470422db6d">
-  <link rel="prefetch" href="char_combat.js?v=f41eff0d97">
-  <link rel="prefetch" href="char_spells.js?v=ee06ec9503">
-  <link rel="prefetch" href="char_progression.js?v=64771bcc16">
-  <link rel="prefetch" href="char_inventory.js?v=a8dbda7d06">
+  <link rel="prefetch" href="char_hud.js?v=d378cf7b09">
+  <link rel="prefetch" href="char_combat.js?v=528ca3c4d6">
+  <link rel="prefetch" href="char_spells.js?v=5e9179bfe1">
+  <link rel="prefetch" href="char_progression.js?v=6fcfff7a0c">
+  <link rel="prefetch" href="char_inventory.js?v=8e775d5ff1">
   <!-- Three.js & 3D Dice Roller Engine -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -6040,7 +6040,7 @@ CRITICAL RULES:
                   </div>
                   <select id="setting-cl-mode" data-change-action="hub:setting-cl-mode" class="w-full bg-slate-950 border border-slate-700 text-purple-300 font-semibold text-[11px] rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-purple-400 transition cursor-pointer truncate">
                     <option value="Class Level" selected>Class Level (Strict RAW Class Level Only)</option>
-                    <option value="Character Level (DM Boon)">Character Level (DM Boon: CL = Character Level)</option>
+                    <option value="Character Level (Homebrew)">Character Level (Homebrew: CL = Character Level)</option>
                     <option value="Warlock Boon (Invocations &amp; Eldritch Blast)">Warlock Boon (CL = Character Level + Invocations)</option>
                     <option value="Custom">Custom (Manual)</option>
                   </select>
@@ -6070,7 +6070,7 @@ CRITICAL RULES:
               <div class="min-w-0 flex-1">
                 <div class="font-bold text-slate-200 flex items-center gap-1.5 text-xs flex-wrap">
                   <span class="text-slate-300 font-semibold">🛡️ Ignore ASF / Boon</span>
-                  <span class="badge bg-emerald-950 text-emerald-300 border border-emerald-700 text-[9px] px-1.5 py-0.5 rounded whitespace-nowrap shrink-0">DM Boon</span>
+                  <span class="badge bg-emerald-950 text-emerald-300 border border-emerald-700 text-[9px] px-1.5 py-0.5 rounded whitespace-nowrap shrink-0">Homebrew</span>
                 </div>
                 <div class="text-[10px] text-slate-400 mt-0.5">Ignores Arcane Spell Failure (ASF %) chance from worn armor and shields.</div>
               </div>
@@ -6248,7 +6248,7 @@ CRITICAL RULES:
         if (raw) {
           const parsed = JSON.parse(raw);
           if (parsed.settings) {
-            if (!parsed.settings.clModeDefaultRawV2 && parsed.settings.clMode === 'Character Level (DM Boon)') {
+            if (!parsed.settings.clModeDefaultRawV2 && parsed.settings.clMode === 'Character Level (Homebrew)') {
               parsed.settings.clMode = 'Class Level';
               parsed.settings.clModeDefaultRawV2 = true;
               localStorage.setItem(HUB_GLOBAL_SETTINGS_KEY, JSON.stringify(parsed));

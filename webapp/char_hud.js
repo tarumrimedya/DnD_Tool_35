@@ -275,11 +275,7 @@
       const syncDefaultRaceTraitsIfEmpty = () => {
         try {
           if (character && character.race && Array.isArray(character.specialAbilities) && character.specialAbilities.length === 0) {
-            const catalog = (window.SrdCompendium && typeof window.SrdCompendium.getAllLoaded === 'function')
-              ? window.SrdCompendium.getAllLoaded()
-              : [];
-            const raceObj = (window.SrdCompendium && typeof window.SrdCompendium.getByName === 'function' ? window.SrdCompendium.getByName(character.race, 'Race') : null)
-              || catalog.find(i => i && i.type === 'Race' && i.name.toLowerCase() === character.race.toLowerCase());
+            const raceObj = resolveRaceEntry(character.race);
             if (raceObj && Array.isArray(raceObj.traits) && raceObj.traits.length > 0) {
               raceObj.traits.forEach(t => {
                 character.specialAbilities.push({
@@ -3927,28 +3923,90 @@
       return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     }
 
+    function isRaceEntry(e) {
+      return !!(window.SrdCompendium && typeof window.SrdCompendium.isRaceEntry === 'function' && window.SrdCompendium.isRaceEntry(e));
+    }
+
+    // Homebrew races: character.customEntries (V3 copy-on-write), character.customDb (user-authored entries and
+    // campaign pack copies; unmodified SRD snapshots are excluded) merged and de-duplicated by id.
+    function getHomebrewRaceEntries() {
+      const out = [];
+      const seen = new Set();
+      const push = (e) => {
+        if (!e || typeof e !== 'object' || !e.name || !isRaceEntry(e)) return;
+        const id = String(e.id || e.name).toLowerCase();
+        if (seen.has(id)) return;
+        seen.add(id);
+        out.push(e);
+      };
+      if (character && character.customEntries && typeof character.customEntries === 'object') {
+        Object.values(character.customEntries).forEach(push);
+      }
+      const db = (character && Array.isArray(character.customDb)) ? character.customDb : [];
+      db.forEach((e) => {
+        if (e && e._snapshot && e._snapshot.origin === 'srd-snapshot' && !(e.origin && /^(override|variant|homebrew)$/.test(e.origin.mode))) return;
+        push(e);
+      });
+      return out;
+    }
+
+    // Resolve a race by id or name: homebrew sources first, then the SRD compendium.
+    function resolveRaceEntry(nameOrId, allowPartial = false) {
+      const q = String(nameOrId || '').trim().toLowerCase();
+      if (!q) return null;
+      const hb = getHomebrewRaceEntries();
+      let hit = hb.find((e) => String(e.id || '').toLowerCase() === q || String(e.name).toLowerCase() === q);
+      if (hit) return hit;
+      const C = window.SrdCompendium;
+      if (C && typeof C.getById === 'function') {
+        const byId = C.getById(String(nameOrId).trim());
+        if (byId && isRaceEntry(byId)) return byId;
+      }
+      if (C && typeof C.getByName === 'function') {
+        const byName = C.getByName(nameOrId, 'Race');
+        if (byName) return byName;
+      }
+      const catalog = (C && typeof C.getAllLoaded === 'function') ? C.getAllLoaded() : [];
+      hit = catalog.find((e) => isRaceEntry(e) && String(e.name || '').toLowerCase().trim() === q);
+      if (!hit && allowPartial) hit = hb.concat(catalog.filter(isRaceEntry)).find((e) => String(e.name || '').toLowerCase().includes(q));
+      return hit || null;
+    }
+
+    // Legacy localStorage 'dnd35_custom_races' is superseded by character.customDb; migrate once, then drop the key.
     function ensureCustomRacesLoaded() {
       try {
         const cachedRacesJson = localStorage.getItem('dnd35_custom_races');
-        if (cachedRacesJson) {
-          const cachedRaces = JSON.parse(cachedRacesJson);
-          if (Array.isArray(cachedRaces)) {
-            const raceSel = document.getElementById('profile-edit-race');
-            cachedRaces.forEach(r => {
-              if (r && r.name) {
-                if (raceSel && !Array.from(raceSel.options).some(o => o.value.toLowerCase() === r.name.toLowerCase())) {
-                  const opt = document.createElement('option');
-                  opt.value = r.name;
-                  opt.textContent = `${r.name} (Custom / AI)`;
-                  raceSel.appendChild(opt);
-                }
-              }
-            });
-          }
+        if (!cachedRacesJson) return;
+        const cachedRaces = JSON.parse(cachedRacesJson);
+        if (character && Array.isArray(cachedRaces)) {
+          if (!Array.isArray(character.customDb)) character.customDb = [];
+          cachedRaces.forEach((r) => {
+            if (r && r.name && !getHomebrewRaceEntries().some((e) => String(e.name).toLowerCase() === String(r.name).toLowerCase())) {
+              addHomebrewRaceEntry(r);
+            }
+          });
+          localStorage.removeItem('dnd35_custom_races');
         }
       } catch (e) {
-        console.warn('Failed to load custom races from storage:', e);
+        console.warn('Failed to migrate legacy custom races:', e);
       }
+    }
+
+    function addHomebrewRaceEntry(raceObj) {
+      if (!character || !raceObj || !raceObj.name) return null;
+      if (!Array.isArray(character.customDb)) character.customDb = [];
+      const slug = String(raceObj.name).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+      const entry = Object.assign({}, raceObj, {
+        schemaVersion: 3,
+        id: raceObj.id || ('race-hb-' + slug),
+        type: 'Race',
+        blueprint: raceObj.blueprint || 'race',
+        origin: Object.assign({}, raceObj.origin || {}, { mode: 'homebrew' })
+      });
+      const idx = character.customDb.findIndex((e) => e && (e.id === entry.id || String(e.name).toLowerCase() === String(entry.name).toLowerCase()));
+      if (idx >= 0) character.customDb[idx] = entry;
+      else character.customDb.push(entry);
+      return entry;
     }
 
     function renderRaceAiSearchCard(card) {
@@ -4068,21 +4126,9 @@
           raceObj.traits = [{ name: 'Racial Traits', desc: raceObj.benefit || raceObj.description }];
         }
 
-        // Cache in localStorage (custom races also save into character.customDb / character.customEntries)
-        ensureCustomRacesLoaded();
-
-        // Cache in localStorage
-        try {
-          let customRaces = [];
-          const existingSaved = localStorage.getItem('dnd35_custom_races');
-          if (existingSaved) customRaces = JSON.parse(existingSaved) || [];
-          const idx = customRaces.findIndex(r => r.name.toLowerCase() === raceObj.name.toLowerCase());
-          if (idx >= 0) customRaces[idx] = raceObj;
-          else customRaces.push(raceObj);
-          localStorage.setItem('dnd35_custom_races', JSON.stringify(customRaces));
-        } catch (e) {
-          console.warn('Failed to cache race in localStorage:', e);
-        }
+        // Persist as a homebrew race in character.customDb (same source the Race picker reads)
+        addHomebrewRaceEntry(raceObj);
+        try { saveStateToStorage(true); } catch (e) { console.warn('Race save warning:', e); }
 
         // Add option to select if not present
         const raceSel = document.getElementById('profile-edit-race');
@@ -4234,26 +4280,43 @@
 
     function getAllRacesForSpotlight() {
       ensureCustomRacesLoaded();
-      const list = [...DND35_RACE_DEFINITIONS];
-
-      const catalog = (window.SrdCompendium && typeof window.SrdCompendium.getAllLoaded === 'function')
-        ? window.SrdCompendium.getAllLoaded()
-        : [];
-
-      catalog.forEach(item => {
-        if (item && item.type === 'Race' && !list.some(r => r.name.toLowerCase() === item.name.toLowerCase())) {
-          list.push({
-            name: item.name,
-            label: `${item.name} (Custom / AI)`,
-            category: 'Custom / AI-Added Races',
-            icon: '🔮',
-            size: item.size || 'Medium',
-            speed: item.baseSpeed || 30,
-            tags: ['custom', 'ai', item.name.toLowerCase()]
-          });
-        }
+      const C = window.SrdCompendium;
+      // Static definitions only supply picker metadata (icon/label/tags); size and speed come from the DB record when loaded.
+      const list = DND35_RACE_DEFINITIONS.map((r) => {
+        const rec = (C && typeof C.getByName === 'function') ? C.getByName(r.name, 'Race') : null;
+        return rec ? Object.assign({}, r, { size: rec.size || r.size, speed: rec.baseSpeed || r.speed }) : Object.assign({}, r);
       });
-
+      const known = new Set(list.map((r) => r.name.toLowerCase()));
+      const catalog = (C && typeof C.getAllLoaded === 'function') ? C.getAllLoaded() : [];
+      catalog.forEach((item) => {
+        if (!item || !item.name || String(item.type || '').toLowerCase() === 'template' || !isRaceEntry(item)) return;
+        if (known.has(item.name.toLowerCase())) return;
+        known.add(item.name.toLowerCase());
+        list.push({
+          id: item.id,
+          name: item.name,
+          label: item.name,
+          category: 'Expanded Official Races',
+          icon: '🧬',
+          size: item.size || 'Medium',
+          speed: item.baseSpeed || 30,
+          tags: [String(item.source || '').toLowerCase(), item.name.toLowerCase()].filter(Boolean)
+        });
+      });
+      getHomebrewRaceEntries().forEach((item) => {
+        if (String(item.type || '').toLowerCase() === 'template' || known.has(item.name.toLowerCase())) return;
+        known.add(item.name.toLowerCase());
+        list.push({
+          id: item.id,
+          name: item.name,
+          label: item.name + ' (Homebrew)',
+          category: 'Homebrew Races',
+          icon: '🔮',
+          size: item.size || 'Medium',
+          speed: item.baseSpeed || 30,
+          tags: ['homebrew', item.name.toLowerCase()]
+        });
+      });
       return list;
     }
 
@@ -7508,11 +7571,7 @@
       }
 
       ensureCustomRacesLoaded();
-      const catalog = (window.SrdCompendium && typeof window.SrdCompendium.getAllLoaded === 'function')
-        ? window.SrdCompendium.getAllLoaded()
-        : [];
-
-      const raceObj = catalog.find(item => item && item.type === 'Race' && (item.name.toLowerCase() === q || item.name.toLowerCase().includes(q)));
+      const raceObj = resolveRaceEntry(q, true);
       if (!raceObj) {
         renderRaceNotFoundCard(card, raceName);
         return;
@@ -8739,11 +8798,7 @@ function renderManualStatsPanel() {
       // Resolve selected race object for accurate preview
       const rawSelectedRace = (document.getElementById('profile-edit-race')?.value || character?.race || '').trim();
       const curSelectedRace = rawSelectedRace.toLowerCase();
-      const catalog = (window.SrdCompendium && typeof window.SrdCompendium.getAllLoaded === 'function')
-        ? window.SrdCompendium.getAllLoaded()
-        : [];
-      const raceObj = (window.SrdCompendium && typeof window.SrdCompendium.getByName === 'function' ? window.SrdCompendium.getByName(rawSelectedRace, 'Race') : null)
-        || catalog.find(item => item && item.type === 'Race' && (item.name || '').toLowerCase().trim() === curSelectedRace);
+      const raceObj = resolveRaceEntry(rawSelectedRace);
 
       // Resolve selected template objects for accurate preview
       const selectedTmplEntries = (Array.isArray(_modalSelectedTemplates) ? _modalSelectedTemplates : [])
@@ -8847,11 +8902,7 @@ function renderManualStatsPanel() {
         character.race = newRace;
 
         // Auto-sync racial traits into character.specialAbilities
-        const catalog = (window.SrdCompendium && typeof window.SrdCompendium.getAllLoaded === 'function')
-          ? window.SrdCompendium.getAllLoaded('Race')
-          : [];
-        const raceObj = (window.SrdCompendium && typeof window.SrdCompendium.getByName === 'function' ? window.SrdCompendium.getByName(newRace, 'Race') : null)
-          || catalog.find(item => item && item.type === 'Race' && (item.name.toLowerCase() === newRace.toLowerCase() || item.name.toLowerCase().includes(newRace.toLowerCase())));
+        const raceObj = resolveRaceEntry(newRace, true);
 
         if (raceObj) {
           if (!character.size || (oldRace && oldRace.toLowerCase() !== newRace.toLowerCase())) {

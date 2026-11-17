@@ -1273,7 +1273,7 @@
           </div>
         </div>
 
-        <!-- Spells granted at will (DM boons and other grants): shown under every discipline, hidden when none -->
+        <!-- Spells granted at will (homebrew and other grants): shown under every discipline, hidden when none -->
         <div id="granted-at-will-spells" class="hidden"></div>
 
         <!-- ==================================================== -->
@@ -2554,7 +2554,7 @@
                 <option value="Deity">Deities &amp; Patrons</option>
                 <option value="Domain">Cleric Domains</option>
                 <option value="Race">Races</option>
-                <option value="DM Boon">DM Boons (V2.5)</option>
+                <option value="Homebrew">Homebrew (V2.5)</option>
                 <option value="DM Grant">DM Grants / Boons</option>
               </select>
               <select id="mdb-eligibility-filter" data-change-action="mdb:render-table" class="h-8 flex-1 sm:flex-none min-w-0 bg-slate-950/95 border border-emerald-500/40 rounded-lg px-2 text-xs text-emerald-200 font-semibold focus:outline-none cursor-pointer truncate" title="Filter entries by active character eligibility and synergy prerequisites">
@@ -3477,24 +3477,24 @@
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script defer src="supabase_auth.js?v=47247ea179"></script>
   <!-- data-srd-autoinit: srd_compendium.js starts SrdCompendium.init() as soon as it runs. -->
-  <script defer src="srd_compendium.js?v=b6dcf1ee56" data-srd-autoinit></script>
-  <script defer src="rule_engine.js?v=20b99bb362"></script>
-  <script defer src="char_store.js?v=9c945d3265"></script>
+  <script defer src="srd_compendium.js?v=b46d8badd2" data-srd-autoinit></script>
+  <script defer src="rule_engine.js?v=c517de3bd1"></script>
+  <script defer src="char_store.js?v=dd07511963"></script>
   <!-- ui_components.js stays blocking on purpose: it has no dependencies, and while the document is
        still loading it binds the data-action router on DOMContentLoaded, after the outside-click
        listeners the deferred scripts register. Deferring it would bind the router first. -->
-  <script src="ui_components.js?v=21c1fd5e01"></script>
-  <script defer src="rule_master.js?v=696136644d"></script>
-  <script defer src="ui_shared.js?v=2c7a6fc34d"></script>
+  <script src="ui_components.js?v=8aa3286bcb"></script>
+  <script defer src="rule_master.js?v=eddff6461a"></script>
+  <script defer src="ui_shared.js?v=8c6454a6cc"></script>
   <script defer src="campaign_db.js?v=1e45440d78"></script>
   <script defer src="hub_notes.js?v=a275652b58"></script>
   <script defer src="dice3d.js?v=aa07002406"></script>
 
-  <script defer src="char_hud.js?v=470422db6d"></script>
-  <script defer src="char_combat.js?v=f41eff0d97"></script>
-  <script defer src="char_spells.js?v=ee06ec9503"></script>
-  <script defer src="char_progression.js?v=64771bcc16"></script>
-  <script defer src="char_inventory.js?v=a8dbda7d06"></script>
+  <script defer src="char_hud.js?v=d378cf7b09"></script>
+  <script defer src="char_combat.js?v=528ca3c4d6"></script>
+  <script defer src="char_spells.js?v=5e9179bfe1"></script>
+  <script defer src="char_progression.js?v=6fcfff7a0c"></script>
+  <script defer src="char_inventory.js?v=8e775d5ff1"></script>
   <!-- Floating Tooltip for Combat Spells Hover (Tap or click to dismiss) -->
   <div id="combat-spell-hover-tooltip" data-action="combat:hide-spell-tooltip" class="hidden fixed z-[200] pointer-events-auto bg-slate-950/95 border border-purple-500/80 rounded-xl p-3 shadow-2xl w-[340px] max-w-[92vw] text-xs space-y-2 backdrop-blur-md transition-opacity duration-150 text-slate-200 cursor-pointer select-none">
     

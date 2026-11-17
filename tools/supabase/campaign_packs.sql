@@ -22,7 +22,7 @@ create table if not exists public.campaign_packs (
   updated_by  uuid default auth.uid(),
   updated_at  timestamptz not null default now(),
   unique (campaign_id, pack_id),
-  -- one pack stays well below the size of a character row; 107 DM boons are about 150 KB
+  -- one pack stays well below the size of a character row; 107 homebrew are about 150 KB
   constraint campaign_packs_entries_size check (pg_column_size(entries) < 4000000)
 );
 

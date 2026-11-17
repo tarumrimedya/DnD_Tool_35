@@ -4284,7 +4284,12 @@
       if (isShieldItemMatch) {
         const isBuckler = isBucklerItem(wepName);
         const isHeavy = lower.includes('heavy');
-        const shieldAc = offItem?.armor?.armorBonus || offItem?.shieldBonus || (isHeavy ? 2 : 1);
+        const shieldItem = (offItem && offItem.name === wepName)
+          ? offItem
+          : (findWeaponEverywhere(wepName) || { name: wepName, type: 'Shield', category: 'Shield' });
+        const shieldDbEntry = RuleEngine.getMasterDbEntry(shieldItem, 'Shield');
+        const chassis = RuleEngine.resolveArmorChassis(shieldItem, shieldDbEntry);
+        const shieldAc = (chassis && chassis.total > 0) ? chassis.total : (isHeavy ? 2 : 1);
         if (isBuckler) {
           return {
             dmgStr: 'No Attack',
@@ -4295,11 +4300,36 @@
             isBuckler: true
           };
         }
+        // Shield bash damage from the same canonical bash weapon the attack chain uses (STR + enhancement included).
+        const bashWep = RuleEngine.buildShieldBashWeapon(shieldItem, character);
+        if (!bashWep) {
+          return {
+            dmgStr: 'No Attack',
+            critStr: '-',
+            dmgType: 'Shield',
+            shieldAcText: `+${shieldAc} Shield AC`,
+            isShield: true,
+            isWeapon: false
+          };
+        }
+        let bashDmgStr = bashWep.dice;
+        let bashCritStr = `${bashWep.critMin === 20 ? '20' : `${bashWep.critMin}-20`} / x${bashWep.critMult}`;
+        let bashDmgType = bashWep.dmgType;
+        try {
+          const bashEval = RuleEngine.evaluateWeaponAttack(character, bashWep, { grip: isOffHand ? 'Off-Hand' : grip });
+          const flat = Number(bashEval.netFlatDamage) || 0;
+          bashDmgStr = `${bashEval.baseDice || bashWep.dice}${flat >= 0 ? '+' : ''}${flat}`;
+          bashCritStr = `${bashEval.critMin === 20 ? '20' : `${bashEval.critMin}-20`} / x${bashEval.critMult}`;
+          bashDmgType = bashEval.damageType || bashWep.dmgType;
+        } catch (e) {
+          reportError('getWeaponCombatDisplayStats: shield bash', e);
+        }
         return {
-          dmgStr: isHeavy ? '1d4' : '1d3',
-          critStr: '20 / x2',
-          dmgType: 'Bludgeoning',
+          dmgStr: bashDmgStr,
+          critStr: bashCritStr,
+          dmgType: bashDmgType,
           shieldAcText: `+${shieldAc} Shield AC`,
+          bashEnhancement: bashWep.enhancementBonus,
           isShield: true,
           isWeapon: true
         };
@@ -4501,11 +4531,9 @@
         const readyRound = readyRoundFromTactical > curRound ? readyRoundFromTactical : (remainingRounds > 0 ? curRound + remainingRounds : 0);
         const isOnCooldown = remainingRounds > 0;
 
-        const rollBlk = (ab.effects || []).find(e => e && e.type === 'roll');
-        const dp = { dice: rollBlk?.dice || ab.dice || '1d6', bonus: Number(rollBlk?.bonus || 0), type: rollBlk?.dmgType || ab.dmgType || 'Damage' };
-        const bonusNum = Number(dp.bonus || 0);
-        const dmgFormula = `${dp.dice}${bonusNum ? (bonusNum > 0 ? '+' + bonusNum : bonusNum) : ''}`;
-        const dmgType = dp.type || 'Damage';
+        // RuleEngine.deriveSpecialAttacks resolves the V3 roll blocks into dmgFormula / dmgType (bonus included).
+        const dmgFormula = String(ab.dmgFormula || ab.dice || '1d6');
+        const dmgType = ab.dmgType || 'Damage';
 
         let dcBadgeHtml = '';
         let dcSummaryStr = '';
@@ -4586,11 +4614,9 @@
         prevCooldown: character.tactical?.abilityCooldowns?.[ab.key] ? JSON.parse(JSON.stringify(character.tactical.abilityCooldowns[ab.key])) : null
       };
 
-      const rollBlk = (ab.effects || []).find(e => e && e.type === 'roll');
-      const dp = { dice: rollBlk?.dice || ab.dice || '1d6', bonus: Number(rollBlk?.bonus || 0), type: rollBlk?.dmgType || ab.dmgType || 'Damage' };
-      const bonusNum = Number(dp.bonus || 0);
-      const dmgFormula = `${dp.dice}${bonusNum ? (bonusNum > 0 ? '+' + bonusNum : bonusNum) : ''}`;
-      const dmgType = dp.type || 'Damage';
+      // RuleEngine.deriveSpecialAttacks resolves the V3 roll blocks into dmgFormula / dmgType (bonus included).
+      const dmgFormula = String(ab.dmgFormula || ab.dice || '1d6');
+      const dmgType = ab.dmgType || 'Damage';
 
       if (typeof parseAndRollDiceFormula !== 'function') {
         if (typeof executeStandardCustomFormula === 'function') executeStandardCustomFormula(dmgFormula);
@@ -4871,6 +4897,7 @@
               ${s1MainStats?.isShield ? `
                 <span class="text-slate-400 font-sans text-[10px] uppercase tracking-wider">Defense:</span>
                 <span class="font-bold text-emerald-400">${s1MainStats?.shieldAcText || '+1 Shield AC'}</span>
+                ${s1MainStats?.isWeapon ? `<span class="text-slate-600">•</span><span class="text-slate-400 font-sans text-[10px] uppercase tracking-wider">Shield Bash:</span><span class="font-bold text-amber-300">${UI.escapeHtml(s1MainStats.dmgStr)}</span>` : ''}
               ` : `
                 <span class="text-slate-400 font-sans text-[10px] uppercase tracking-wider">Damage:</span>
                 <span class="font-bold ${is1 ? 'text-amber-300' : 'text-slate-300'}">${s1MainStats?.dmgStr || '1d6+3'}</span>
@@ -4988,6 +5015,7 @@
               ${isCard2Shield ? `
                 <span class="text-slate-400 font-sans text-[10px] uppercase tracking-wider">Defense:</span>
                 <span class="font-bold text-emerald-400">${s2OffStats?.shieldAcText || '+1 Shield AC'}</span>
+                ${s2OffStats?.isWeapon ? `<span class="text-slate-600">•</span><span class="text-slate-400 font-sans text-[10px] uppercase tracking-wider">Shield Bash:</span><span class="font-bold text-sky-300">${UI.escapeHtml(s2OffStats.dmgStr)}</span>` : ''}
               ` : `
                 <span class="text-slate-400 font-sans text-[10px] uppercase tracking-wider">Damage:</span>
                 <span class="font-bold ${is2 ? 'text-sky-300' : 'text-slate-300'}">${s2OffStats?.dmgStr || '1d4'}</span>
@@ -7555,40 +7583,8 @@
         if (typeof hydrateGearItemStats === 'function') hydrateGearItemStats(offHandItem);
         const isShield = offHandItem.category === 'Shield' || (offHandItem.desc && offHandItem.desc.toLowerCase().includes('shield'));
         if (isShield) {
-          const customOv = (RuleEngine && typeof RuleEngine.resolveCustomEntryOverride === 'function')
-            ? RuleEngine.resolveCustomEntryOverride(offHandItem, character)
-            : null;
-          const srdEntry = (!customOv && RuleEngine && typeof RuleEngine.getMasterDbEntry === 'function')
-            ? RuleEngine.getMasterDbEntry(offHandItem, 'Shield')
-            : null;
-          const refEntry = customOv || srdEntry || null;
-          if (offHandItem.canShieldBash === false || (refEntry && refEntry.canShieldBash === false)) {
-            return null;
-          }
-          const wObj = (customOv && customOv.weapon) || offHandItem.weapon || (refEntry && refEntry.weapon) || null;
-          const isHeavy = wObj
-            ? !/light/i.test(String(wObj.handedness || wObj.handed || ''))
-            : (offHandItem.name || '').toLowerCase().includes('heavy');
-          const isBuckler = !wObj && (offHandItem.name || '').toLowerCase().includes('buckler');
-          const bashDice = (wObj && (wObj.damageDice || wObj.dice)) || offHandItem.dice || (isHeavy ? '1d4' : '1d3');
-          const bashCritMin = Number((wObj && (wObj.effectiveCritRange || wObj.baseCritRange)) || offHandItem.critMin || offHandItem.critRange) || 20;
-          const bashCritMult = Number((wObj && wObj.critMultiplier) || offHandItem.critMult) || 2;
-          const bashDmgType = (wObj && (wObj.dmgType || wObj.damageType)) || offHandItem.dmgType || 'Bludgeoning';
-          const bashRange = Number((wObj && wObj.rangeIncrement) ?? offHandItem.rangeIncrement) || 0;
-          return {
-            ...offHandItem,
-            name: offHandItem.name + ' (Shield Bash)',
-            grip: 'Off-Hand',
-            dice: bashDice,
-            critMin: bashCritMin,
-            critRange: bashCritMin,
-            critMult: bashCritMult,
-            dmgType: bashDmgType,
-            rangeIncrement: bashRange > 0 ? bashRange : null,
-            isLight: !isHeavy,
-            isBuckler,
-            tags: ['off-hand', 'shield-bash']
-          };
+          // Single canonical bash weapon (dice by shield size, enhancement per item.bash.mode); null = cannot bash.
+          return RuleEngine.buildShieldBashWeapon(offHandItem, character);
         }
         const enrichedOff = { ...offHandItem, name: currentOffHandName, grip: 'Off-Hand' };
         if (RuleEngine && RuleEngine.isLightWeapon && RuleEngine.isLightWeapon(enrichedOff)) enrichedOff.isLight = true;
@@ -13688,7 +13684,7 @@
       const body = String(rawQuery || '').replace(/^boon\s*:\s*/i, '').trim();
       if (!body) return null;
       const segments = body.split(',').map(s => s.trim()).filter(Boolean);
-      const name = segments[0] || 'Custom DM Boon';
+      const name = segments[0] || 'Custom Homebrew';
       let dice = '';
       let dmgType = 'Untyped';
       let range = '60 ft.';
@@ -13774,8 +13770,8 @@
         schemaVersion: 3,
         id: `pack_dm_custom:${slug}`,
         name: name,
-        type: dice ? 'Special Ability' : 'DM Boon',
-        category: dice ? 'Special Ability' : 'DM Boon',
+        type: dice ? 'Special Ability' : 'Homebrew',
+        category: dice ? 'Special Ability' : 'Homebrew',
         source: 'Spotlight Lego Terminal',
         action: actLabelMap[actionType] || 'Standard Action',
         actionType: actionType,
@@ -13816,7 +13812,7 @@
       const isGeneralLevel = (lvl === 1 || lvl % 3 === 0);
       const className = (row && row.className) ? row.className : ((character && character.classes) ? String(character.classes).split(' ')[0] : 'Fighter');
       const isFighterBonusLevel = /fighter/i.test(className) && (lvl === 1 || lvl % 2 === 0);
-      const hasRegularTaken = existingFeats.some(f => !/\[(Bonus|Extra Bonus|DM Boon|Flaw|Flaw Bonus|Racial|Extra Racial|Invocation)\]/i.test(String(f)));
+      const hasRegularTaken = existingFeats.some(f => !/\[(Bonus|Extra Bonus|Homebrew|Flaw|Flaw Bonus|Racial|Extra Racial|Invocation)\]/i.test(String(f)));
       const hasClassBonusTaken = existingFeats.some(f => /\[(Bonus|Extra Bonus)\]/i.test(String(f)));
       const nextGeneralLvl = [1, 3, 6, 9, 12, 15, 18, 21, 24, 27, 30].find(n => n > lvl) || 3;
 
@@ -13844,9 +13840,9 @@
       if (!q) {
         const { ownedIds, ownedNames } = _collectCharacterOwnedSets(typeof character !== 'undefined' ? character : null);
         const catalog = (typeof getCombinedFeatCatalog === 'function') ? getCombinedFeatCatalog(true) : [];
-        const dmBoons = catalog.filter(entry => entry && (entry.pack || (entry.id && String(entry.id).includes(':') && !String(entry.id).startsWith('srd:')) || entry.category === 'DM Boon'));
+        const homebrewBoons = catalog.filter(entry => entry && (entry.pack || (entry.id && String(entry.id).includes(':') && !String(entry.id).startsWith('srd:')) || entry.category === 'Homebrew'));
 
-        const synergyCards = dmBoons.slice(0, 6).map((b, idx) => {
+        const synergyCards = homebrewBoons.slice(0, 6).map((b, idx) => {
           const reqFeats = (b.requires && Array.isArray(b.requires.feats)) ? b.requires.feats : [];
           const hasV25Pred = Boolean(b.requires && (b.requires.all || b.requires.any || b.requires.has || b.requires.not));
           const reqMet = hasV25Pred && typeof RuleEngine !== 'undefined' && typeof RuleEngine.evaluatePredicate === 'function'
@@ -13870,7 +13866,7 @@
                 <div class="flex items-center gap-2 flex-wrap">
                   <span class="font-bold text-white text-xs">${_escTermHtml(b.name)}</span>
                   <span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold ${(reqFeats.length > 0 || hasV25Pred) ? (reqMet ? 'bg-emerald-950 text-emerald-300 border border-emerald-700' : 'bg-amber-950 text-amber-300 border border-amber-700') : 'bg-purple-950 text-purple-300 border border-purple-800'}">
-                    ${(reqFeats.length > 0 || hasV25Pred) ? (reqMet ? '✨ Synergy Ready' : `Requires: ${_escTermHtml(reqFeats.join(' + ') || 'Prerequisites')}`) : _escTermHtml(b.type || 'DM Boon')}
+                    ${(reqFeats.length > 0 || hasV25Pred) ? (reqMet ? '✨ Synergy Ready' : `Requires: ${_escTermHtml(reqFeats.join(' + ') || 'Prerequisites')}`) : _escTermHtml(b.type || 'Homebrew')}
                   </span>
                   ${isOwned ? '<span class="px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-400 text-[10px] font-bold">✅ Owned</span>' : ''}
                 </div>
@@ -13940,7 +13936,7 @@
             <div class="p-2.5 rounded-xl bg-amber-950/70 border border-amber-600/70 text-amber-200 text-[11px] flex items-center justify-between gap-2">
               <div>
                 <span class="font-bold">⚠️ D&amp;D 3.5e RAW Slot Notice (Level ${targetLvl}):</span>
-                <span>General Feats are gained at Levels 1, 3, 6, 9, 12, 15, 18. Selecting a feat at Level ${targetLvl} will add it as a <strong>[Class Bonus Feat]</strong> or <strong>[DM Boon]</strong>, or you can route it to Level ${slotDiag.nextGeneralLvl}.</span>
+                <span>General Feats are gained at Levels 1, 3, 6, 9, 12, 15, 18. Selecting a feat at Level ${targetLvl} will add it as a <strong>[Class Bonus Feat]</strong> or <strong>[Homebrew]</strong>, or you can route it to Level ${slotDiag.nextGeneralLvl}.</span>
               </div>
             </div>
           `;
@@ -13961,7 +13957,7 @@
           const f = m.feat;
           const isQual = m.pEval.allMet && !m.pEval.isAlreadyKnownFromClass;
           const slotMode = (!slotDiag.isGeneralLevel || slotDiag.hasRegularTaken)
-            ? (slotDiag.isFighterBonusLevel && !slotDiag.hasClassBonusTaken ? 'Class Bonus Feat' : 'DM Boon')
+            ? (slotDiag.isFighterBonusLevel && !slotDiag.hasClassBonusTaken ? 'Class Bonus Feat' : 'Homebrew')
             : 'Regular Feat';
           _spotlightTerminalItems.push({
             type: 'ADD_LEVEL_FEAT',
@@ -14006,7 +14002,7 @@
         const catalog = (typeof getCombinedFeatCatalog === 'function') ? getCombinedFeatCatalog(true) : [];
         const matchedCatalogBoons = (!subBoonQ.includes(',') && subBoonQ)
           ? catalog
-              .filter(entry => entry && (entry.type === 'DM Boon' || entry.category === 'DM Boon' || entry.pack))
+              .filter(entry => entry && (entry.type === 'Homebrew' || entry.category === 'Homebrew' || entry.pack))
               .map(b => ({ b, sc: _termFuzzyScore(subBoonQ, b.name, b.benefit || b.description || '') }))
               .filter(x => x.sc > 0)
               .sort((a, b) => b.sc - a.sc)
@@ -14024,7 +14020,7 @@
           return `
             <div data-action="combat:exec-spotlight-item" data-item-idx="${idx}" class="p-2.5 rounded-xl border transition cursor-pointer flex items-center justify-between gap-2 ${idx === 0 ? 'bg-slate-900 border-amber-500/80' : 'bg-slate-900/50 border-slate-800 hover:border-slate-700'}">
               <div class="min-w-0 flex-1">
-                <div class="text-xs font-bold text-white">${_escTermHtml(b.name)} <span class="text-[10px] font-mono text-amber-300">(${_escTermHtml(b.type || 'DM Boon')})</span></div>
+                <div class="text-xs font-bold text-white">${_escTermHtml(b.name)} <span class="text-[10px] font-mono text-amber-300">(${_escTermHtml(b.type || 'Homebrew')})</span></div>
                 <div class="text-[11px] text-slate-400 truncate">${_escTermHtml(b.benefit || b.description || '')}</div>
               </div>
               <span class="px-2 py-1 rounded bg-amber-950 text-amber-300 border border-amber-700 font-mono text-[10px] font-bold">Add ↵</span>
@@ -14083,9 +14079,9 @@
       if (/^synergy/i.test(q)) {
         const { ownedIds, ownedNames } = _collectCharacterOwnedSets(typeof character !== 'undefined' ? character : null);
         const catalog = (typeof getCombinedFeatCatalog === 'function') ? getCombinedFeatCatalog(true) : [];
-        const dmBoons = catalog.filter(entry => entry && (entry.pack || (entry.id && String(entry.id).includes(':') && !String(entry.id).startsWith('srd:')) || entry.category === 'DM Boon'));
+        const homebrewBoons = catalog.filter(entry => entry && (entry.pack || (entry.id && String(entry.id).includes(':') && !String(entry.id).startsWith('srd:')) || entry.category === 'Homebrew'));
 
-        const cards = dmBoons.map((b, idx) => {
+        const cards = homebrewBoons.map((b, idx) => {
           const reqFeats = (b.requires && Array.isArray(b.requires.feats)) ? b.requires.feats : [];
           const hasV25Pred = Boolean(b.requires && (b.requires.all || b.requires.any || b.requires.has || b.requires.not));
           const reqMet = hasV25Pred && typeof RuleEngine !== 'undefined' && typeof RuleEngine.evaluatePredicate === 'function'
@@ -14397,7 +14393,7 @@
         return;
       }
 
-      // Default Fallback: Fuzzy Feat & DM Boon Search across entire compendium
+      // Default Fallback: Fuzzy Feat & Homebrew Search across entire compendium
       onSpotlightTerminalInput(`feat: ${q}`, true);
     }
 

@@ -1834,21 +1834,42 @@
       return this._mergeMasterDbByType(this.getAllLoaded('Material'), 'Material');
     },
 
+    // Shared race predicate: Race/Template type (case-insensitive) or the 'race' blueprint.
+    isRaceEntry(e) {
+      if (!e || typeof e !== 'object') return false;
+      const t = String(e.type || '').toLowerCase().trim();
+      return t === 'race' || t === 'template' || String(e.blueprint || '').toLowerCase().trim() === 'race';
+    },
+
+    // Single applicability rule for Enhancement records. kind: 'weapon' | 'armor' | 'shield'.
+    // appliesTo 'armor+shield' matches both armor and shield; legacy records fall back to targetType.
+    enhancementApplies(rec, kind) {
+      if (!rec) return false;
+      const k = String(kind || '').toLowerCase();
+      const a = String(rec.appliesTo || '').toLowerCase().trim();
+      if (a === 'armor' || a === 'shield' || a === 'armor+shield') {
+        if (k === 'armor') return a !== 'shield';
+        if (k === 'shield') return a !== 'armor';
+        return false;
+      }
+      if (a === 'weapon') return k === 'weapon';
+      // Records without a normalised appliesTo: targetType, then category. No information => applies to nothing
+      // (Misc ability/AC bonuses are wondrous-item mods, not weapon/armor/shield special abilities).
+      const tt = String(rec.targetType || '').toLowerCase().trim();
+      const cat = String(rec.category || '').toLowerCase();
+      const base = tt === 'any' ? k
+        : (tt || (/weapon/.test(cat) ? 'weapon' : (/armor/.test(cat) ? 'armor' : '')));
+      if (!base) return false;
+      if (base === k) return true;
+      return base === 'armor' && k === 'shield';
+    },
+
     getEnhancements(targetType = null) {
       this._ensureNodeEquipmentLoaded();
       const list = this._mergeMasterDbByType(this.getAllLoaded('Enhancement'), 'Enhancement');
       if (!targetType) return list;
-      if (targetType === 'Shield' || targetType === 'Armor') {
-        return list.filter((e) => {
-          if (!e.targetType || e.targetType === 'Any') return true;
-          if (e.targetType !== 'Armor' && e.targetType !== 'Shield') return false;
-          const applies = String(e.appliesTo || '').toLowerCase().trim();
-          if (targetType === 'Shield' && applies === 'armor') return false;
-          if (targetType === 'Armor' && applies === 'shield') return false;
-          return true;
-        });
-      }
-      return list.filter((e) => !e.targetType || e.targetType === targetType || e.targetType === 'Any');
+      const kind = String(targetType).toLowerCase();
+      return list.filter((e) => this.enhancementApplies(e, kind));
     },
 
     getCrystals(targetType = null) {
@@ -2358,78 +2379,6 @@
     17: 13
   };
 
-  const BUILT_IN_ENHANCEMENT_FALLBACKS = {
-    'enh-corrosive': {
-      schemaVersion: 3,
-      id: 'enh-corrosive',
-      name: 'Corrosive',
-      type: 'Enhancement',
-      targetType: 'Weapon',
-      enhIncrease: 1,
-      flatCost: 0,
-      effects: [
-        { id: 'ef-enh-corrosive', type: 'roll', kind: 'Damage', count: 1, die: 'd6', flat: 0, dmgType: 'Acid', scaling: 'flat', crit: 'normal', source: 'Corrosive' }
-      ],
-      shortDescription: 'Deals +1d6 acid damage on a successful hit.'
-    },
-    'enh-ghost-touch': {
-      schemaVersion: 3,
-      id: 'enh-ghost-touch',
-      name: 'Ghost Touch',
-      type: 'Enhancement',
-      targetType: 'Weapon',
-      enhIncrease: 1,
-      flatCost: 0,
-      effects: [
-        { id: 'ef-enh-gt', type: 'effect', effectKind: 'ruleSwitch', flag: 'ghostTouch', label: 'Deals Normal Damage to Incorporeal Creatures', text: 'Deals Normal Damage to Incorporeal Creatures' }
-      ],
-      ruleFlags: { ghostTouch: true },
-      shortDescription: 'Deals normal damage to incorporeal creatures.'
-    },
-    'enh-fortification-light': {
-      schemaVersion: 3,
-      id: 'enh-fortification-light',
-      name: 'Light Fortification',
-      type: 'Enhancement',
-      targetType: 'Armor',
-      enhIncrease: 1,
-      flatCost: 0,
-      effects: [
-        { id: 'ef-enh-fort-l', type: 'defense', mode: 'Fortification', what: 'Critical Hits & Sneak Attack', value: 25 }
-      ],
-      ruleFlags: { fortification: 25 },
-      shortDescription: '25% chance to negate Critical Hits and Sneak Attack bonus damage.'
-    },
-    'enh-fortification-moderate': {
-      schemaVersion: 3,
-      id: 'enh-fortification-moderate',
-      name: 'Moderate Fortification',
-      type: 'Enhancement',
-      targetType: 'Armor',
-      enhIncrease: 3,
-      flatCost: 0,
-      effects: [
-        { id: 'ef-enh-fort-m', type: 'defense', mode: 'Fortification', what: 'Critical Hits & Sneak Attack', value: 75 }
-      ],
-      ruleFlags: { fortification: 75 },
-      shortDescription: '75% chance to negate Critical Hits and Sneak Attack bonus damage.'
-    },
-    'enh-fortification-heavy': {
-      schemaVersion: 3,
-      id: 'enh-fortification-heavy',
-      name: 'Heavy Fortification',
-      type: 'Enhancement',
-      targetType: 'Armor',
-      enhIncrease: 5,
-      flatCost: 0,
-      effects: [
-        { id: 'ef-enh-fort-h', type: 'defense', mode: 'Fortification', what: 'Critical Hits & Sneak Attack', value: 100 }
-      ],
-      ruleFlags: { fortification: 100 },
-      shortDescription: '100% immunity to Critical Hits and Sneak Attack bonus damage.'
-    }
-  };
-
   const ItemAssembler = {
     /**
      * Builds a complete Canonical V2 Equipment Item from modular Lego components:
@@ -2512,7 +2461,6 @@
           const enhObj = typeof eRef === 'object' && eRef !== null
             ? eRef
             : (SrdCompendium.getById(eRef) ||
-               BUILT_IN_ENHANCEMENT_FALLBACKS[eRef] ||
                SrdCompendium.getByName(eRef, 'Enhancement') ||
                SrdCompendium.getById(slugify(eRef, 'enh')));
           if (enhObj) resolvedEnhs.push(safeClone(enhObj));
@@ -3143,7 +3091,7 @@
 
       const effects = Array.isArray(entry.effects) ? safeClone(entry.effects) : [];
       const defaultBonusType = String(entry.bonusType || 'Untyped');
-      const isWeapon = entry.type === 'Weapon' || Boolean(entry.weapon || entry.weaponStats || (srdMatch && srdMatch.type === 'Weapon') || ((entry.dice || entry.damage) && !['Spell', 'Power', 'Maneuver', 'Special Ability', 'DM Boon'].includes(entry.type)));
+      const isWeapon = entry.type === 'Weapon' || Boolean(entry.weapon || entry.weaponStats || (srdMatch && srdMatch.type === 'Weapon') || ((entry.dice || entry.damage) && !['Spell', 'Power', 'Maneuver', 'Special Ability', 'Homebrew'].includes(entry.type)));
       const isArmor = entry.type === 'Armor' || Boolean(entry.armor && entry.type !== 'Shield');
       const isShield = entry.type === 'Shield';
 
@@ -3427,12 +3375,12 @@
     sanitizeCharacterAbilitiesAndPool(charData) {
       if (!charData || typeof charData !== 'object') return charData;
       const EXPLICIT_NON_GEAR_CATS = new Set([
-        'special ability', 'dm grant', 'dm boon', 'boon',
+        'special ability', 'dm grant', 'homebrew', 'boon',
         'feat', 'flaw', 'class feature', 'racial trait', 'synergy', 'template',
         'spell', 'maneuver', 'stance'
       ]);
       const STRICT_NON_PHYSICAL_CATS = new Set([
-        'special ability', 'dm boon', 'dm grant', 'boon', 'feat', 'flaw', 'class feature', 'racial trait', 'synergy', 'template'
+        'special ability', 'homebrew', 'dm grant', 'boon', 'feat', 'flaw', 'class feature', 'racial trait', 'synergy', 'template'
       ]);
       const PHYSICAL_SLOTS = new Set([
         'mainhand', 'main hand', 'offhand', 'off-hand', 'off hand', 'off-hand/shield', 'two hands', 'two-handed',
@@ -3501,7 +3449,7 @@
             effectiveCat === 'stance' ||
             effectiveCat === 'special ability' ||
             effectiveCat === 'dm grant' ||
-            effectiveCat === 'dm boon' ||
+            effectiveCat === 'homebrew' ||
             effectiveCat === 'boon' ||
             effectiveCat === 'class feature' ||
             effectiveCat === 'racial trait' ||

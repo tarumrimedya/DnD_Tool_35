@@ -45,11 +45,11 @@ Until the table exists, attaching a pack to a cloud campaign fails with "The Cam
 - **Characters in a campaign this Hub does not hold** (a player's character in another DM's campaign) are left alone; the sheet keeps them current (phase 3).
 - **Moving a campaign to the cloud** uploads its packs. Its sub-campaigns now follow the main campaign's new id; before, their `parentId` kept the old local id.
 
-Naming: **Campaign DB** is the campaign's shared rule database, one of the search sources next to the built-in SRD data, the extra (lazy / opt-in) data and AI. A DM rule pack (e.g. the DM Boons pack) is one unit inside it; the cloud table is `campaign_packs` because it stores one row per pack.
+Naming: **Campaign DB** is the campaign's shared rule database, one of the search sources next to the built-in SRD data, the extra (lazy / opt-in) data and AI. A DM rule pack (e.g. the Homebrew pack) is one unit inside it; the cloud table is `campaign_packs` because it stores one row per pack.
 
 ## Problem
 
-- A DM rule pack (for example `exports/dm_boons_master_db_import.json`) reaches a character only by being merged into that character's `customDb`.
+- A DM rule pack (for example `exports/homebrew_boons_master_db_import.json`) reaches a character only by being merged into that character's `customDb`.
 - The Hub can merge a pack only into the DM's own characters on the DM's device. A player's cloud character (Supabase `characters` row, owned by the player) cannot receive it. Every player has to import the pack by hand, and nothing updates their copy when the DM changes the pack.
 - The DM Pack Manager builds its list by joining every character's `customDb`, so it has no single source of truth.
 

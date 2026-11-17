@@ -21,6 +21,8 @@
   const slug = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
   const cap1 = (s) => String(s || '').charAt(0).toUpperCase() + String(s || '').slice(1);
   const stripHtml = (s) => String(s || '').replace(/<[^>]*>/g, ' ').replace(/&[a-z#0-9]+;/gi, ' ').replace(/\s+/g, ' ').trim();
+  const DEFAULT_SOURCE = 'Homebrew';
+  const normSource = (v) => String(v == null ? '' : v).trim() || DEFAULT_SOURCE;
   const range = (a, b) => { const r = []; for (let i = a; i <= b; i++) r.push(i); return r; };
   const DICE_SVG = '<svg class="fs-dice-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 21 7v10l-9 5-9-5V7z"/><path d="M12 2 7.5 9.5h9zM3 7l4.5 2.5M21 7l-4.5 2.5M7.5 9.5 12 17l4.5-7.5M12 17v5M3 17l4.5-7.5M21 17l-4.5-7.5M3 17h18"/></svg>';
 
@@ -155,51 +157,7 @@
     { id: 'darkwood', name: 'Darkwood', note: 'Wooden items only. Half weight; shields ACP -2 (toward 0). Always masterwork.' }
   ];
 
-  const E = (id, name, on, plus, gpCost, effect, desc) => ({ id: id, name: name, on: on, plus: plus || 0, gp: gpCost || 0, effect: effect || {}, desc: desc || '', src: 'DMG' });
-  const ENCHANTMENTS = [
-    E('bane', 'Bane', 'weapon', 1, 0, { badge: '+2 Enh & +2d6 vs designated foe' }, 'Against a designated foe, +2 better enhancement and +2d6 damage.'),
-    E('defending', 'Defending', 'weapon', 1, 0, { badge: 'Transfer Enh to AC' }, 'Wielder may transfer some or all of the enhancement bonus to AC.'),
-    E('flaming', 'Flaming', 'weapon', 1, 0, { parts: [{ count: 1, die: 'd6', type: 'Fire', crit: 'normal' }] }, '+1d6 fire damage on a successful hit.'),
-    E('frost', 'Frost', 'weapon', 1, 0, { parts: [{ count: 1, die: 'd6', type: 'Cold', crit: 'normal' }] }, '+1d6 cold damage on a successful hit.'),
-    E('shock', 'Shock', 'weapon', 1, 0, { parts: [{ count: 1, die: 'd6', type: 'Electricity', crit: 'normal' }] }, '+1d6 electricity damage on a successful hit.'),
-    E('ghost_touch_w', 'Ghost Touch', 'weapon', 1, 0, { badge: 'Full damage vs incorporeal' }, 'Deals damage normally against incorporeal creatures.'),
-    E('keen', 'Keen', 'weapon', 1, 0, { keen: true }, 'Doubles the threat range. Slashing or piercing weapons only.'),
-    E('merciful', 'Merciful', 'weapon', 1, 0, { parts: [{ count: 1, die: 'd6', type: 'Nonlethal', crit: 'normal' }] }, '+1d6 damage; all damage is nonlethal.'),
-    E('spell_storing', 'Spell Storing', 'weapon', 1, 0, { badge: 'Stores a 3rd-level spell' }, 'Stores a single targeted spell of up to 3rd level.'),
-    E('thundering', 'Thundering', 'weapon', 1, 0, { parts: [{ count: 1, die: 'd8', type: 'Sonic', crit: 'onCritOnly', perMult: true }] }, '+1d8 sonic on a critical hit (per multiplier above ×1).'),
-    E('vicious', 'Vicious', 'weapon', 1, 0, { parts: [{ count: 2, die: 'd6', type: 'Force', crit: 'normal' }], badge: 'Wielder takes 1d6' }, '+2d6 damage to the target, 1d6 to the wielder.'),
-    E('anarchic', 'Anarchic', 'weapon', 2, 0, { parts: [{ count: 2, die: 'd6', type: 'Unholy', crit: 'normal', cond: 'vs Lawful' }] }, 'Chaotic-aligned; +2d6 vs lawful creatures.'),
-    E('axiomatic', 'Axiomatic', 'weapon', 2, 0, { parts: [{ count: 2, die: 'd6', type: 'Holy', crit: 'normal', cond: 'vs Chaotic' }] }, 'Lawful-aligned; +2d6 vs chaotic creatures.'),
-    E('flaming_burst', 'Flaming Burst', 'weapon', 2, 0, { parts: [{ count: 1, die: 'd6', type: 'Fire', crit: 'normal' }, { count: 1, die: 'd10', type: 'Fire', crit: 'onCritOnly', perMult: true }] }, 'As flaming; +1d10 fire on a critical (+2d10 at ×3, +3d10 at ×4).'),
-    E('icy_burst', 'Icy Burst', 'weapon', 2, 0, { parts: [{ count: 1, die: 'd6', type: 'Cold', crit: 'normal' }, { count: 1, die: 'd10', type: 'Cold', crit: 'onCritOnly', perMult: true }] }, 'As frost; +1d10 cold on a critical hit.'),
-    E('shocking_burst', 'Shocking Burst', 'weapon', 2, 0, { parts: [{ count: 1, die: 'd6', type: 'Electricity', crit: 'normal' }, { count: 1, die: 'd10', type: 'Electricity', crit: 'onCritOnly', perMult: true }] }, 'As shock; +1d10 electricity on a critical hit.'),
-    E('holy', 'Holy', 'weapon', 2, 0, { parts: [{ count: 2, die: 'd6', type: 'Holy', crit: 'normal', cond: 'vs Evil' }] }, 'Good-aligned; +2d6 vs evil creatures.'),
-    E('unholy', 'Unholy', 'weapon', 2, 0, { parts: [{ count: 2, die: 'd6', type: 'Unholy', crit: 'normal', cond: 'vs Good' }] }, 'Evil-aligned; +2d6 vs good creatures.'),
-    E('wounding', 'Wounding', 'weapon', 2, 0, { badge: '1 Con damage per hit' }, 'Each hit deals 1 point of Constitution damage from blood loss.'),
-    E('speed', 'Speed', 'weapon', 3, 0, { badge: '+1 extra attack on Full Attack' }, 'One extra attack at full bonus when making a full attack.'),
-    E('brilliant_energy', 'Brilliant Energy', 'weapon', 4, 0, { badge: 'Ignores armor & shield AC' }, 'Passes through nonliving matter; ignores armor and shield bonuses.'),
-    E('dancing', 'Dancing', 'weapon', 4, 0, { badge: 'Fights alone 4 rounds' }, 'Loosed as a standard action, it fights on its own for 4 rounds.'),
-    E('vorpal', 'Vorpal', 'weapon', 5, 0, { badge: 'Severs head on confirmed natural 20' }, 'Slashing only; a confirmed natural 20 severs the opponent’s head.'),
-    E('glamered', 'Glamered', 'armor', 0, 2700, { badge: 'Appears as normal clothing' }, 'On command, appears as normal clothing.'),
-    E('fort_light', 'Light Fortification', 'armor+shield', 1, 0, { badge: 'Fortification 25%' }, '25% chance to negate a critical hit or sneak attack.'),
-    E('shadow', 'Shadow', 'armor', 0, 3750, { mods: [{ target: 'skill.hide', value: 5, type: 'Competence' }] }, '+5 competence bonus on Hide checks.'),
-    E('silent_moves', 'Silent Moves', 'armor', 0, 3750, { mods: [{ target: 'skill.move_silently', value: 5, type: 'Competence' }] }, '+5 competence bonus on Move Silently checks.'),
-    E('slick', 'Slick', 'armor', 0, 3750, { mods: [{ target: 'skill.escape_artist', value: 5, type: 'Competence' }] }, '+5 competence bonus on Escape Artist checks.'),
-    E('improved_shadow', 'Improved Shadow', 'armor', 0, 15000, { mods: [{ target: 'skill.hide', value: 10, type: 'Competence' }] }, '+10 competence bonus on Hide checks.'),
-    E('spell_res_13', 'Spell Resistance (13)', 'armor+shield', 2, 0, { sr: 13 }, 'Grants spell resistance 13.'),
-    E('fort_moderate', 'Moderate Fortification', 'armor+shield', 3, 0, { badge: 'Fortification 75%' }, '75% chance to negate a critical hit or sneak attack.'),
-    E('ghost_touch_a', 'Ghost Touch', 'armor+shield', 3, 0, { badge: 'Ghost Touch armor' }, 'Armor bonus counts against incorporeal attacks.'),
-    E('invulnerability', 'Invulnerability', 'armor', 3, 0, { dr: { value: 5, bypass: 'magic' } }, 'Grants damage reduction 5/magic.'),
-    E('fort_heavy', 'Heavy Fortification', 'armor+shield', 5, 0, { badge: 'Fortification 100%' }, 'Negates all critical hits and sneak attacks.'),
-    E('fire_res', 'Fire Resistance', 'armor+shield', 0, 18000, { energy: { type: 'Fire', value: 10 } }, 'Resistance 10 against fire.'),
-    E('cold_res', 'Cold Resistance', 'armor+shield', 0, 18000, { energy: { type: 'Cold', value: 10 } }, 'Resistance 10 against cold.'),
-    E('acid_res', 'Acid Resistance', 'armor+shield', 0, 18000, { energy: { type: 'Acid', value: 10 } }, 'Resistance 10 against acid.'),
-    E('bashing', 'Bashing', 'shield', 1, 0, { badge: 'Bash as two sizes larger' }, 'Shield bash deals damage as a shield two sizes larger.'),
-    E('animated', 'Animated', 'shield', 2, 0, { badge: 'Floats, hands free' }, 'Floats near the wearer, leaving both hands free.'),
-    E('arrow_deflection', 'Arrow Deflection', 'shield', 2, 0, { badge: 'Deflect ranged weapons' }, 'Once per round, DC 20 Reflex save to deflect a ranged weapon.'),
-    E('reflecting', 'Reflecting', 'shield', 5, 0, { badge: 'Spell Turning 1/day' }, 'Once per day, reflects a spell as spell turning.')
-  ];
-
+  // Enhancements (special abilities) are NOT hardcoded: CAT.enchants is populated solely from SrdCompendium 'Enhancement' records (SRD + MIC) in mergeSrd().
   const CRYSTALS = [
     { id: 'truedeath', name: 'Truedeath Crystal', on: 'weapon', cost: [500, 1400, 10000], tiers: ['+1d6 damage vs undead', '+1d6 vs undead; +2 to confirm criticals vs undead', '+1d6 vs undead; slain undead cannot rise'], parts: [[1, 'd6'], [1, 'd6'], [1, 'd6']], ptype: 'Positive', cond: 'vs undead' },
     { id: 'energy_assault', name: 'Crystal of Energy Assault', on: 'weapon', cost: [1000, 3000, 8000], tiers: ['+1 energy damage', '+1d6 energy damage', '+2d6 energy damage'], parts: [[0, '1'], [1, 'd6'], [2, 'd6']], ptype: 'Fire' },
@@ -265,7 +223,7 @@
     ['Low-Light Vision', 'Ex', 'See twice as far as a human in dim light.'], ['Darkvision', 'Ex', 'See in darkness out to 60 ft.'], ['Damage Reduction', 'Ex', 'Ignore a portion of damage from each attack.']
   ].map((c) => ({ id: 'seed-cab-' + slug(c[0]), name: c[0], abilityType: c[1], desc: c[2], src: 'SRD (seed)' }));
 
-  const CAT = { weapons: WEAPONS, armors: ARMORS, enchants: ENCHANTMENTS, crystals: CRYSTALS, feats: FEATS, spells: SPELLS, domains: DOMAINS, deities: DEITIES, classFeatures: CLASS_FEATURES, special: [], magicItems: [], classes: [], monsters: [], srdLoaded: false, srdCount: 0, customCount: 0 };
+  const CAT = { weapons: WEAPONS, armors: ARMORS, enchants: [], crystals: CRYSTALS, feats: FEATS, spells: SPELLS, domains: DOMAINS, deities: DEITIES, classFeatures: CLASS_FEATURES, special: [], magicItems: [], classes: [], monsters: [], srdLoaded: false, srdCount: 0, customCount: 0 };
   const byId = (list, id) => list.find((x) => x.id === id);
 
   // --------------------------------------------------------------------------
@@ -327,7 +285,7 @@
   function blankEntry(bpId) {
     const bp = BP_BY_ID[bpId] || BLUEPRINTS[0];
     return {
-      schemaVersion: 3, id: uid('custom'), blueprint: bp.id, name: '', source: 'Homebrew', text: '', tags: [], repeat: { mode: 'once', n: 2 },
+      schemaVersion: 3, id: uid('custom'), blueprint: bp.id, name: '', source: DEFAULT_SOURCE, text: '', tags: [], repeat: { mode: 'once', n: 2 },
       featKind: 'feat', acf: { targetClass: 'Barbarian', level: 1, replaces: 'Fast Movement', race: '' },
       origin: { mode: 'new', srdId: '', srdName: '', srdType: '' },
       facets: bp.facets.slice(),
@@ -636,6 +594,40 @@
     return out;
   }
 
+  // Blocks added from the palette start neutral (no target, 0, Untyped, no dice/energy). BLK() keeps its schema-shaped
+  // defaults for the built-in presets / importers; the curated starting points live in QUICK_PRESETS below.
+  const NEUTRAL_BLOCK = {
+    stat: { targets: [], mode: 'flat', value: 0, btype: 'Untyped', condition: '' },
+    roll: { kind: 'Damage', count: 0, die: 'd6', flat: 0, dmgType: 'Untyped' },
+    attack: { weaponName: '', dice: '', dmgType: '', count: 1, rider: '' },
+    defense: { what: '', value: 0 },
+    carrier: { atkPenalty: 0, dcBonus: 0, slotAdj: 0, rider: '', appliesTo: '' },
+    effect: { spellName: '', spellOptions: '', maxSpellLvl: 1, text: '' }
+  };
+  const QUICK_PRESETS = {
+    stat: [
+      { label: 'Morale +1 to all attack rolls', o: { targets: ['atk.all'], value: 1, btype: 'Morale' } },
+      { label: 'Enhancement +2 natural armor', o: { targets: ['ac.natural'], value: 2, btype: 'Enhancement' } },
+      { label: 'Enhancement +10 ft. land speed', o: { targets: ['speed.land'], value: 10, btype: 'Enhancement' } }
+    ],
+    roll: [
+      { label: '1d6 fire damage', o: { kind: 'Damage', count: 1, die: 'd6', dmgType: 'Fire' } },
+      { label: '1d8 healing', o: { kind: 'Healing', count: 1, die: 'd8' } }
+    ],
+    attack: [
+      { label: 'Natural claws (2 × 1d4)', o: { attackMode: 'natural', natKind: 'primary', count: 2, weaponName: 'Claw', dice: '1d4', dmgType: 'B/P/S' } }
+    ],
+    defense: [
+      { label: 'Immunity: Fear', o: { mode: 'Immunity', what: 'Fear' } },
+      { label: 'Energy Resistance 10: Fire', o: { mode: 'Energy Resistance', what: 'Fire', value: 10 } }
+    ],
+    carrier: [
+      { label: 'Spellstrike-style melee channel', o: { carrierMode: 'meleeChannel', channelStyle: 'spellstrikeFree', atkPenalty: -2, dcBonus: 1, slotAdj: 1 } }
+    ],
+    effect: [
+      { label: 'Linked spell: Command', o: { effectKind: 'castSpell', castMode: 'linkedSpell', spellName: 'Command', maxSpellLvl: 2 } }
+    ]
+  };
   const modMode = (m) => m.mode || 'flat';
   function statFormulaText(m) {
     const baseVal = num(m.value, 0);
@@ -888,9 +880,9 @@
   }
 
   const PRESETS = [
-    { id: 'hourglass', icon: '⏳', label: 'Chronos Hourglass (DM Relic: 3/day Reroll + 1/day Replay Turn)', build() {
+    { id: 'hourglass', icon: '⏳', label: 'Chronos Hourglass (Homebrew Relic: 3/day Reroll + 1/day Replay Turn)', build() {
       const e = blankEntry('wondrous');
-      Object.assign(e, { name: 'Chronos Hourglass', source: 'DM Relic (Homebrew)', tags: ['#DMGrant', '#Relic'], text: 'A palm-sized hourglass of star-glass whose sand flows upward. Bound to a single wielder by the DM.' });
+      Object.assign(e, { name: 'Chronos Hourglass', source: DEFAULT_SOURCE, tags: ['#DMGrant', '#Relic'], text: 'A palm-sized hourglass of star-glass whose sand flows upward. Bound to a single wielder by the DM.' });
       Object.assign(e.item, { subtype: 'Artifact / Relic', slot: 'Held', consumable: false, price: 0, cl: 20 });
       e.effects = [BLK('stat', { targets: ['initiative'], value: 2, btype: 'Insight' })];
       e.powers = [
@@ -1757,13 +1749,12 @@
     entryResourceBlocks(S.entry).forEach((b) => add(b.name));
     return out;
   }
+  // Authoring tokens / functions come from the engine (single source of truth), never a hand-kept list.
+  const fxVars = () => (window.RuleEngine && Array.isArray(window.RuleEngine.FORMULA_VARS) ? window.RuleEngine.FORMULA_VARS : []);
+  const fxFuncs = () => (window.RuleEngine && Array.isArray(window.RuleEngine.FORMULA_FUNCS) ? window.RuleEngine.FORMULA_FUNCS : []);
   function statFormulaOpts(en) {
-    const base = [
-      ['strMod', '@STR Mod'], ['dexMod', '@DEX Mod'], ['conMod', '@CON Mod'],
-      ['intMod', '@INT Mod'], ['wisMod', '@WIS Mod'], ['chaMod', '@CHA Mod'],
-      ['level', '@Char Level'], ['classLevel', '@Class Level'], ['halfLevel', '@½ Level'],
-      ['il', '@Initiator Lvl'], ['bab', '@BAB']
-    ];
+    // Pattern rows (@<class>Level, @skill.<key>.total ...) are templates for the Formula Reference panel, not selectable tokens.
+    const base = fxVars().filter((v) => !v.pattern).map((v) => { const k = String(v.token || '').replace(/^@/, ''); return [k, '@' + k + (v.label ? ' (' + v.label + ')' : '')]; }).filter((x) => x[0]);
     const seen = new Set(base.map((x) => x[0]));
     entryResourceBlocks(en || S.entry).forEach((b) => {
       const k = b.varKey || slug(b.name || 'res');
@@ -1778,8 +1769,11 @@
       const k = b.varKey || slug(b.name || 'res');
       if (k && !seen.has(k)) { seen.add(k); out.push([k, '@' + k + ' (' + (b.name || k) + ')']); }
     });
-    [['augment_pp', '@augment_pp'], ['arcane_strike', '@arcane_strike'], ['essentia', '@essentia'], ['power_attack', '@power_attack'], ['uses_today', '@uses_today'], ['stolen_lvl', '@stolen_lvl']].forEach((x) => {
-      if (!seen.has(x[0])) { seen.add(x[0]); out.push(x); }
+    const all = fxVars().filter((v) => !v.pattern);
+    const runtime = all.filter((v) => /resource|variable|runtime|feature|state|pool|dial/i.test(v.group || ''));
+    (runtime.length ? runtime : all).forEach((v) => {
+      const k = String(v.token || '').replace(/^@/, '');
+      if (k && !seen.has(k)) { seen.add(k); out.push([k, '@' + k + (v.label ? ' (' + v.label + ')' : '')]); }
     });
     return out;
   }
@@ -1811,7 +1805,13 @@
   }
 
   const baseName = (b) => String((b && b.name) || '').replace(/\s*\(.*\)$/, '');
-  function enchApplies(e, kind) { return !!e && (e.on === kind || (e.on === 'armor+shield' && kind !== 'weapon')); }
+  // Single applicability rule lives in SrdCompendium.enhancementApplies (DB records carry appliesTo). Only user-registered
+  // custom item mods (localStorage, no DB record) carry their own `on` slot.
+  function enchApplies(e, kind) {
+    if (!e) return false;
+    if (e.raw) return !!window.SrdCompendium.enhancementApplies(e.raw, kind);
+    return e.on === kind || (e.on === 'armor+shield' && kind !== 'weapon');
+  }
   function crystalApplies(c, kind) { return !!c && (c.on === kind || (c.on === 'armor+shield' && kind !== 'weapon')); }
   const enchById = (id) => byId(allEnchs(), id);
   const crystalById = (id) => byId(allCrystals(), id);
@@ -2261,6 +2261,29 @@
   function exportModCap(m) {
     return m.cap === 'classLevel' ? '@classLevel' : m.cap === 'flat' ? num(m.capVal, 5) : null;
   }
+  function rollBaseExpr(b) {
+    const cnt = num(b.count, 1), die = String(b.die || 'd6'), flatBonus = die === 'flat' ? 0 : num(b.flat, 0);
+    const baseRaw = die === 'flat' ? (cnt > 0 ? String(cnt) : '') : (/^\d+d\d+$/.test(die) ? die : (cnt > 0 ? cnt + die : ''));
+    return baseRaw && flatBonus ? (baseRaw + (flatBonus > 0 ? ' + ' + flatBonus : ' - ' + Math.abs(flatBonus))) : (baseRaw || (flatBonus ? String(flatBonus) : ''));
+  }
+  function rollPerCLExpr(b) {
+    const per = Math.max(1, num(b.per, 1)), amt = num(b.amount, 1), mx = Math.max(1, num(b.max, 10));
+    return per === 1
+      ? (amt === 1 ? 'min(' + mx + ', @cl)' : 'min(' + mx + ', @cl * ' + amt + ')')
+      : 'min(' + mx + ', floor(@cl / ' + per + ') * ' + amt + ')';
+  }
+  function seedStatFormula(b, prevMode) {
+    const pm = prevMode || 'flat';
+    if (pm === 'stat') return exportModFormula(b);
+    if (pm === 'perCL') return exportPerCLFormula(b);
+    if (pm === 'replaceStat') return swapSourceFormula(b.toStat || 'wis');
+    return String(num(b.value, 0));
+  }
+  function seedRollFormula(b, prevScaling) {
+    const base = rollBaseExpr(b);
+    if (prevScaling === 'perCL') return base ? base + ' + ' + rollPerCLExpr(b) : rollPerCLExpr(b);
+    return base;
+  }
   function exportPerCLFormula(m) {
     return 'clamp(floor(@cl/' + Math.max(1, num(m.per, 1)) + ')*' + num(m.value, 1) + ',' + num(m.min, 0) + ',' + num(m.max, 5) + ')';
   }
@@ -2309,14 +2332,9 @@
       else o.flat = num(b.flat, 0);
     }
     if (b.type === 'roll' && b.kind === 'Temp HP') {
-      const cnt = num(b.count, 1), die = String(b.die || 'd6'), flatBonus = die === 'flat' ? 0 : num(b.flat, 0);
-      const baseRaw = die === 'flat' ? (cnt > 0 ? String(cnt) : '') : (/^\d+d\d+$/.test(die) ? die : (cnt > 0 ? cnt + die : ''));
-      const baseExpr = baseRaw && flatBonus ? (baseRaw + (flatBonus > 0 ? ' + ' + flatBonus : ' - ' + Math.abs(flatBonus))) : (baseRaw || (flatBonus ? String(flatBonus) : ''));
+      const baseExpr = rollBaseExpr(b);
       if (b.scaling === 'perCL') {
-        const per = Math.max(1, num(b.per, 1)), amt = num(b.amount, 1), mx = Math.max(1, num(b.max, 10));
-        const clPart = per === 1
-          ? (amt === 1 ? 'min(' + mx + ', @cl)' : 'min(' + mx + ', @cl * ' + amt + ')')
-          : 'min(' + mx + ', floor(@cl / ' + per + ') * ' + amt + ')';
+        const clPart = rollPerCLExpr(b);
         o.tempHpFormula = baseExpr ? (baseExpr + ' + ' + clPart) : clPart;
       } else if (baseExpr) {
         o.tempHpFormula = baseExpr;
@@ -2367,7 +2385,7 @@
   function exportEntry(en) {
     en = en || S.entry;
     const F = en.facets, has = (k) => F.indexOf(k) >= 0;
-    const out = { schemaVersion: 3, id: en.origin.mode === 'override' && en.origin.srdId ? en.origin.srdId : en.id, blueprint: en.blueprint, name: entryName(en), source: en.source, tags: en.tags.slice(), facets: F.slice() };
+    const out = { schemaVersion: 3, id: en.origin.mode === 'override' && en.origin.srdId ? en.origin.srdId : en.id, blueprint: en.blueprint, name: entryName(en), source: normSource(en.source), tags: en.tags.slice(), facets: F.slice() };
     if (en.origin.mode !== 'new') out.origin = { mode: en.origin.mode, srdId: en.origin.srdId, srdName: en.origin.srdName };
     if (en.text) out.text = en.text;
     if (Array.isArray(en.choices) && en.choices.length > 0) out.choices = clone(en.choices);
@@ -2413,6 +2431,7 @@
     }
     if (en.blueprint === 'race') {
       const r = en.race;
+      out.type = r.kind === 'template' ? 'Template' : 'Race';
       out.race = { kind: r.kind, timing: r.kind === 'template' ? r.timing : null, size: r.size, creatureType: r.creatureType, subtype: r.subtype || null, speed: num(r.speed, 30), flySpeed: num(r.flySpeed, 0), flyManeuverability: num(r.flySpeed, 0) > 0 ? r.flyMan : null, levelAdjustment: num(r.la, 0), racialHitDice: num(r.rhdCount, 0) > 0 ? { count: num(r.rhdCount), die: 'd' + num(r.rhdDie, 8) } : null, favoredClass: r.favoredClass || null, bonusFeatAt1st: !!r.bonusFeat1, humanBonusSkillPoints: !!r.bonusSkillPts };
     }
     if (en.blueprint === 'monster') {
@@ -2469,6 +2488,10 @@
       } else {
         out.armor = { armorType: v.armor.type, armorBonus: v.armor.armorBonus, maxDex: v.armor.maxDex >= 99 ? null : v.armor.maxDex, armorCheckPenalty: v.armor.acp, arcaneSpellFailure: v.armor.asf, speed: v.armor.speed };
         if (v.kind === 'shield' && v.bash) {
+          const bwc = ch.weapon || {};
+          const indep = bwc.bashMode === 'independent';
+          const bashObj = { mode: indep ? 'independent' : 'linked', enhancementBonus: indep ? Math.max(0, Math.min(5, num(bwc.bashEnh, 0))) : v.enh };
+          if (out.item) out.item.bash = bashObj; else out.bash = bashObj;
           if (v.bash.canBash) {
             out.weapon = { category: 'Shield', handedness: v.bash.handed, damageDice: v.bash.dice, dmgType: v.bash.dmgType, baseCritRange: v.bash.critRange, keen: false, effectiveCritRange: v.bash.critLow, critCappedByHouseRule: v.bash.capped, critMultiplier: v.bash.critMult, rangeIncrement: v.bash.range > 0 ? v.bash.range : null };
           } else {
@@ -2734,7 +2757,7 @@
     });
     en.id = obj.id || en.id;
     en.name = obj.name || '';
-    en.source = obj.source || 'Homebrew';
+    en.source = normSource(obj.source);
     en.tags = arr(obj.tags).slice();
     if (Array.isArray(obj.facets) && obj.facets.length) en.facets = obj.facets.slice();
     if (obj.origin && typeof obj.origin === 'object') en.origin = Object.assign(en.origin, obj.origin);
@@ -3039,14 +3062,17 @@
       en.chassis.enchantments = arr(ch.enhancements || ch.enchantments).map((eid) => {
         const rawE = String(eid || '').trim();
         if (byId(CAT.enchants, rawE)) return rawE;
-        const stripped = rawE.replace(/^enh-/i, '').replace(/-/g, '_');
-        if (byId(CAT.enchants, stripped)) return stripped;
-        if (stripped === 'ghost_touch') return kind === 'armor' ? 'ghost_touch_a' : 'ghost_touch_w';
-        return rawE;
+        const byNm = CAT.enchants.find((x) => normName(x.name) === normName(rawE.replace(/^enh-/i, '').replace(/[-_]/g, ' ')));
+        return byNm ? byNm.id : rawE;
       }).filter(Boolean);
       if (ch.augmentCrystal && ch.augmentCrystal.id) en.chassis.crystal = { id: ch.augmentCrystal.id, tier: ch.augmentCrystal.tier || 'least' };
       else if (ch.crystal && ch.crystal.id) en.chassis.crystal = { id: ch.crystal.id, tier: ch.crystal.tier || 'least' };
       const w = obj.weapon || ch.weapon;
+      const bashIn = (obj.item && obj.item.bash) || obj.bash;
+      if (bashIn && typeof bashIn === 'object' && kind === 'armor') {
+        en.chassis.weapon.bashMode = bashIn.mode === 'independent' ? 'independent' : 'linked';
+        if (en.chassis.weapon.bashMode === 'independent') en.chassis.weapon.bashEnh = Math.max(0, Math.min(5, num(bashIn.enhancementBonus, 0)));
+      }
       if (obj.canShieldBash === false) {
         en.chassis.weapon.canBash = false;
       } else if (w && typeof w === 'object') {
@@ -3372,22 +3398,33 @@
     (C.getEnhancements ? C.getEnhancements() : C.getByType('Enhancement')).forEach((e) => {
       if (seenE.has(normName(e.name)) || /Misc/.test(e.category || '')) return;
       const im = e.itemModifier || {};
-      const applies = String(im.appliesTo || e.appliesTo || '').toLowerCase();
-      const on = /Weapon/.test(e.category) || applies === 'weapon' ? 'weapon' : e.targetType === 'Shield' || applies === 'shield' ? 'shield' : applies === 'armor' ? 'armor' : 'armor+shield';
-      const v3RollParts = (e.effects || []).filter((b) => b && b.type === 'roll' && (!b.kind || b.kind === 'Damage')).map((b) => ({
+      const effs = e.effects || [];
+      const v3RollParts = effs.filter((b) => b && b.type === 'roll' && (!b.kind || b.kind === 'Damage')).map((b) => ({
         count: b.die === 'flat' ? num(b.count || b.flat, 1) : num(b.count, 1),
         die: b.die || 'd6',
         type: cap1(String(b.dmgType || 'Untyped')),
-        crit: b.critRule || 'normal',
+        crit: b.critRule || b.crit || 'normal',
         cond: b.condition || ''
       }));
       const v3StatMods = [];
-      (e.effects || []).forEach((b) => {
+      effs.forEach((b) => {
         if (b && b.type === 'stat' && Number.isFinite(Number(b.value)) && Number(b.value) !== 0) {
           (Array.isArray(b.targets) ? b.targets : (b.target ? [b.target] : [])).forEach((t) => v3StatMods.push({ target: t, value: num(b.value), type: cap1(b.btype || b.bonusType || 'Untyped') }));
         }
       });
-      CAT.enchants.push({ id: e.id, name: e.name, on: on, plus: num(im.enhancementIncrease != null ? im.enhancementIncrease : e.enhIncrease), gp: num(im.flatGp != null ? im.flatGp : e.flatCost), effect: { parts: v3RollParts.length ? v3RollParts : undefined, keen: !!(im.keen || (e.ruleFlags && e.ruleFlags.keen)), mods: v3StatMods }, desc: e.shortDescription || stripHtml(e.text || e.description).slice(0, 160), src: e.source || 'SRD' });
+      // Defensive riders come straight from the record's V3 defense blocks (no per-ability code).
+      const eff = { parts: v3RollParts.length ? v3RollParts : undefined, keen: !!(im.keen || (e.ruleFlags && e.ruleFlags.keen)), mods: v3StatMods };
+      effs.forEach((b) => {
+        if (!b || b.type !== 'defense') return;
+        if (b.mode === 'Energy Resistance') eff.energy = { type: cap1(String(b.what || '')), value: num(b.value) };
+        else if (b.mode === 'Damage Reduction') eff.dr = { value: num(b.value), bypass: String(b.what || b.bypass || 'magic').replace(/^[\/]/, '') };
+        else if (b.mode === 'Spell Resistance') eff.sr = num(b.value);
+      });
+      const sw = effs.find((b) => b && b.type === 'effect' && (b.label || b.text) && !(b.flag === 'keen'));
+      const hasMech = eff.parts || eff.keen || v3StatMods.length || eff.energy || eff.dr || eff.sr;
+      if (sw) eff.badge = String(sw.label || sw.text);
+      else if (!hasMech) eff.badge = short(e.shortDescription || e.text || '', 80);
+      CAT.enchants.push({ id: e.id, name: e.name, raw: e, plus: num(im.enhancementIncrease != null ? im.enhancementIncrease : e.enhIncrease), gp: num(im.flatGp != null ? im.flatGp : e.flatCost), effect: eff, desc: e.shortDescription || stripHtml(e.text || e.description).slice(0, 160), src: e.source || 'SRD' });
       seenE.add(normName(e.name)); n++;
     });
     const groups = {};
@@ -3689,7 +3726,7 @@
     o = o || {};
     return '<input class="fs-in' + (o.narrow ? ' fs-narrow' : '') + '" ' + bindAttr(o.scope) + '="' + path + '"' + (o.num ? ' data-t="num" type="number"' : ' type="text"') + (o.list ? ' list="' + o.list + '"' : '') +
       (o.min != null ? ' min="' + o.min + '"' : '') + (o.max != null ? ' max="' + o.max + '"' : '') + (o.ph ? ' placeholder="' + esc(o.ph) + '"' : '') + (o.style ? ' style="' + o.style + '"' : '') +
-      (o.enter ? ' data-enter="' + o.enter + '"' : '') + ' value="' + esc(val) + '">';
+      (o.enter ? ' data-enter="' + o.enter + '"' : '') + (o.fx ? ' data-fx="1"' : '') + ' value="' + esc(val) + '">';
   }
   function opts(list, val) { return list.map((x) => { const v = Array.isArray(x) ? x[0] : x, l = Array.isArray(x) ? x[1] : x; return '<option value="' + esc(v) + '"' + (String(v) === String(val) ? ' selected' : '') + '>' + esc(l) + '</option>'; }).join(''); }
   function sel(path, val, list, o) { o = o || {}; return '<select class="fs-sel' + (o.narrow ? ' fs-narrow' : '') + '" ' + bindAttr(o.scope) + '="' + path + '"' + (o.num ? ' data-t="num"' : '') + (o.style ? ' style="' + o.style + '"' : '') + '>' + opts(list, val) + '</select>'; }
@@ -3801,7 +3838,7 @@
       search(q, ctx, layer) {
         const ch = S.entry.chassis, v = chassisView(ch, S.entry), L = layer || 'All';
         const lf = (e) => L === 'All' || (L === 'Flat GP' ? !e.plus : L === '+1..+5 Bonus' ? !!e.plus : L === 'MIC' ? /MIC|Magic Item Compendium/i.test(e.src) : !/MIC|Magic Item Compendium/i.test(e.src));
-        return rank(allEnchs().filter((e) => enchApplies(e, v.kind) && ch.enchantments.indexOf(e.id) < 0 && lf(e)), q, (e) => e.name, (e) => e.desc, 40)
+        return rank(allEnchs().filter((e) => enchApplies(e, v.kind) && ch.enchantments.indexOf(e.id) < 0 && lf(e)), q, (e) => e.name, (e) => e.desc, Infinity)
           .map((e) => SI(e.plus ? 'Bonus-Equivalent (+' + e.plus + ')' : 'Flat Price', e.id, e.name, e.plus ? '+' + e.plus + ' bonus' : gp(e.gp), short(e.desc, 120) + ' • ' + e.src, { id: e.id }));
       },
       pick(it) { addEnchantment(it.data.id); }
@@ -3824,7 +3861,7 @@
         const tags = allTags().filter((t) => !q || t.toLowerCase().indexOf(String(q).toLowerCase().replace(/^#?/, '#')) >= 0 || t.toLowerCase().indexOf(String(q).toLowerCase()) >= 0).slice(0, 8);
         if (L === 'All' || L === '#Pools') tags.forEach((t) => out.push(SI('#Tag Pools (any feat from pool)', t, t, 'Pool', 'Any feat carrying this tag satisfies the requirement', { feat: t })));
         if (L === 'All' || L === 'Feats') rank(CAT.feats, q, (f) => f.name, (f) => f.desc, 15).forEach((f) => out.push(SI(f.custom ? 'Custom DB Feats' : 'Feats', f.id, f.name, f.custom ? 'Custom' : (f.tags[0] || 'Feat'), short(f.prereq ? 'Prerequisites: ' + f.prereq : f.desc), { feat: f.name })));
-        if (L === 'All' || L === 'Abilities') rank(CAT.special, q, (f) => f.name, (f) => f.desc, 6).forEach((f) => out.push(SI('Special Abilities / DM Boons', f.id, f.name, f.cat, short(f.desc), { feat: f.name })));
+        if (L === 'All' || L === 'Abilities') rank(CAT.special, q, (f) => f.name, (f) => f.desc, 6).forEach((f) => out.push(SI('Special Abilities / Homebrew', f.id, f.name, f.cat, short(f.desc), { feat: f.name })));
         if (String(q || '').trim()) out.push(SI('Custom Story / DM Requirement', 'custom', '📜 Custom requirement: "' + q + '"', 'DM', 'Free-text story requirement checked by the DM', { custom: String(q).trim() }));
         return out;
       },
@@ -4202,13 +4239,13 @@
         F('Condition / Note (Optional)', inp(p + '.condition', m.condition || '', { ph: 'Optional situational note…' }), isAdd ? (hasFlatCap ? '' : 'lego-span-2') : 'lego-span-full')
       );
     }
-    const tgtRow = F('Target', targetChips(m.targets || ['atk.all'], p + '.targets'), 'lego-span-full');
+    const tgtRow = F('Target', targetChips(m.targets || [], p + '.targets') + ((m.targets || []).length ? '' : '<div class="fs-hint" style="color:#fbbf24;margin-top:4px">⚠ No target selected. Pick at least one target or this bonus will not apply.</div>'), 'lego-span-full');
     const btypeF = F('Bonus Type', sel(p + '.btype', m.btype || 'Untyped', bonusTypeOpts().map((x) => [x[0], x[0]]), { narrow: true }));
     if (mode === 'formula') {
       return G(4,
         tgtRow +
         modeF +
-        F('Formula Expression', inp(p + '.formula', m.formula || '', { ph: '2 + min(3, floor(@cl / 6))' }), 'lego-span-2') +
+        F('Formula Expression', inp(p + '.formula', m.formula || '', { ph: '2 + min(3, floor(@cl / 6))', fx: true }) + fxRefBtn(), 'lego-span-2') +
         btypeF +
         F('Condition', inp(p + '.condition', m.condition || '', { ph: 'condition (vs Fear)' }), 'lego-span-full')
       );
@@ -4317,12 +4354,12 @@
       ['perDay', 'N / Day']
     ], { narrow: true })));
     if (ck === 'pool') {
-      cells.push(F('Pool Cost', inp(bp + '.costFormula', br.costFormula || '1', { ph: '1 / Spell Level' })));
+      cells.push(F('Pool Cost', inp(bp + '.costFormula', br.costFormula || '1', { ph: '1 / Spell Level', fx: true }) + fxRefBtn()));
       cells.push(F('Resource Pool', '<input class="fs-in" data-bind="' + bp + '.poolName" list="fs-pool-list" value="' + esc(br.poolName || 'Arcane Pool') + '">'));
     } else if (ck === 'forgoSA') {
       cells.push(F('Sacrificed SA Dice (d6)', inp(bp + '.costVal', br.costVal || 1, { num: true, min: 1 })));
     } else if (ck === 'skillCheck') {
-      cells.push(F('Skill Check Formula', inp(bp + '.checkFormula', br.checkFormula || '', { ph: 'Truespeak DC 15 + 2×CR + 2×@uses_today' }), 'lego-span-full'));
+      cells.push(F('Skill Check Formula', inp(bp + '.checkFormula', br.checkFormula || '', { ph: 'Truespeak DC 15 + 2×CR + 2×@uses_today', fx: true }) + fxRefBtn(), 'lego-span-full'));
     } else if (ck === 'cooldown') {
       cells.push(F('Cooldown', inp(bp + '.cooldownText', br.cooldownText || '5 rounds', { ph: '5 rounds / 1d4' })));
     } else if (ck === 'perDay') {
@@ -4454,7 +4491,7 @@
         let h = G((hasDmg || showFlat) ? 4 : 3,
           F('Roll Kind', sel(p + '.kind', b.kind || 'Damage', ['Damage', 'Healing', 'Temp HP', 'Ongoing / Round', 'Fast Healing'], { narrow: true })) +
           (sc === 'formula'
-            ? F('Dice Formula', inp(p + '.dice', b.dice || '1d8+min(5,@cl)', { ph: '1d8+min(5,@cl)' }), 'lego-span-2')
+            ? F('Dice Formula', inp(p + '.dice', b.dice || '1d8+min(5,@cl)', { ph: '1d8+min(5,@cl)', fx: true }) + fxRefBtn(), 'lego-span-2')
             : F(b.die === 'flat' ? 'Flat Value' : 'Dice Count', inp(p + '.count', b.count, { num: true, min: 0 })) +
               F('Die / Unit', sel(p + '.die', b.die || 'd6', [['d4', 'd4'], ['d6', 'd6'], ['d8', 'd8'], ['d10', 'd10'], ['d12', 'd12'], ['2d6', '2d6'], ['flat', 'Flat']], { narrow: true })) +
               (showFlat ? F('Flat Bonus (+)', inp(p + '.flat', num(b.flat, 0), { num: true })) : '')
@@ -4627,11 +4664,40 @@
     }
   }
 
+  const fxRefBtn = () => '<button type="button" class="fs-btn fs-xs fs-ghost" data-fx-keep="1" data-action="toggle-fxref" style="margin-top:4px">ƒx Formula Reference</button>';
+  function renderFxRef() {
+    const el = document.getElementById('fs-fxref');
+    if (!el) return;
+    if (!S.ui.fxRefOpen) { el.style.display = 'none'; el.innerHTML = ''; return; }
+    const vars = fxVars(), funcs = fxFuncs(), groups = {};
+    vars.forEach((v) => { (groups[v.group || 'Variables'] = groups[v.group || 'Variables'] || []).push(v); });
+    const item = (ins, title, sub, ex) => '<button type="button" class="fs-fxitem" data-fx-keep="1" data-action="fx-insert" data-ins="' + esc(ins) + '"><b>' + esc(title) + '</b>' + (sub ? '<span>' + esc(sub) + '</span>' : '') + (ex ? '<code>' + esc(ex) + '</code>' : '') + '</button>';
+    el.style.display = 'flex';
+    el.innerHTML = '<div class="fs-fxhead"><span>ƒx Formula Reference</span><button type="button" class="fs-btn fs-xs fs-ghost" data-action="toggle-fxref">Close</button></div>' +
+      '<div class="fs-hint" style="padding:0 10px 6px">Click a formula field, then click an entry to insert it at the cursor.</div>' +
+      '<div class="fs-fxbody">' + (vars.length || funcs.length ? Object.keys(groups).map((g) => '<div class="fs-section-label">' + esc(g) + '</div>' + groups[g].map((v) => item(v.token, v.token + (v.label ? ' — ' + v.label : ''), v.desc, v.example)).join('')).join('') +
+        (funcs.length ? '<div class="fs-section-label">Functions</div>' + funcs.map((f) => item(f.name + '()', f.signature || f.name, f.desc, '')).join('') : '') : '<div class="fs-hint">Rule Engine formula catalog is not loaded.</div>') + '</div>';
+  }
+  function fxTarget() {
+    const a = document.activeElement;
+    if (a && a.dataset && a.dataset.fx) return a;
+    return S.fxPath ? document.querySelector('[data-fx][data-bind="' + S.fxPath + '"]') : null;
+  }
+  function quickPresetMenu(listPath, types) {
+    const items = [];
+    types.forEach((t) => (QUICK_PRESETS[t] || []).forEach((q, k) => {
+      items.push('<button type="button" class="fs-btn fs-xs fs-ghost" style="justify-content:flex-start;text-align:left;white-space:nowrap" data-action="add-block-preset" data-p="' + esc(listPath) + '" data-t="' + t + '" data-k="' + k + '">' + BLOCK_TYPES[t].icon + ' ' + esc(BLOCK_TYPES[t].shortLabel) + ': ' + esc(q.label) + '</button>');
+    }));
+    if (!items.length) return '';
+    return '<details class="lego-qp" style="position:relative;display:inline-block"><summary class="fs-btn fs-xs fs-dashed" style="cursor:pointer;list-style:none">⭐ Quick Presets</summary>' +
+      '<div class="fs-glass" style="position:absolute;z-index:60;top:calc(100% + 4px);left:0;display:flex;flex-direction:column;gap:3px;padding:6px;min-width:260px;max-width:min(360px,86vw);max-height:300px;overflow-y:auto;border-radius:10px">' + items.join('') + '</div></details>';
+  }
   function blockPalette(listPath, allowContainers, compact, extraHtml) {
     const types = allowContainers ? BLOCK_ORDER : ['stat', 'roll', 'attack', 'defense', 'effect', 'carrier'];
     return '<div class="lego-palette' + (compact ? ' compact' : '') + '">' +
       (compact ? '' : '<span class="lego-lbl">+ Rule Block:</span>') +
       types.map((t) => '<button type="button" class="lego-add ' + BLOCK_TYPES[t].color + '" data-action="add-block" data-p="' + listPath + '" data-t="' + t + '">+ ' + BLOCK_TYPES[t].icon + ' ' + esc(BLOCK_TYPES[t].shortLabel) + '</button>').join('') +
+      quickPresetMenu(listPath, types) +
       (extraHtml || '') +
       '</div>';
   }
@@ -4665,7 +4731,7 @@
     }).join('');
   }
 
-  function srcField(en, span) { return F('Source', inp('source', en.source, { ph: 'Source (PHB, MIC, Homebrew)' }), span); }
+  function srcField(en, span) { return F('Source', inp('source', normSource(en.source), { ph: 'Source (PHB, MIC, Homebrew)' }), span); }
   function tagSockets(en) {
     return G(1, F('Tags', en.tags.map((t, i) => '<span class="fs-pill purple">' + esc(t) + '<span class="fs-x" data-action="remove-tag" data-i="' + i + '">×</span></span>').join('') + spotHtml('tag', 'identity', { ph: '🔍 + #Tag' })));
   }
@@ -4847,6 +4913,7 @@
         h += stack('b-red',
           H(L('⚔️ Shield Bash'),
             chk('chassis.weapon.canBash', canBash, 'Shield Bash Capable') +
+            (canBash ? sel('chassis.weapon.bashMode', bw.bashMode || 'linked', [['linked', 'Linked to Shield Enhancement'], ['independent', 'Independent Enhancement']], { narrow: true }) + (bw.bashMode === 'independent' ? '<span class="fs-field" style="display:inline-flex;align-items:center;gap:4px">' + inp('chassis.weapon.bashEnh', num(bw.bashEnh, 0), { num: true, min: 0, max: 5, narrow: true, style: 'width:64px' }) + '<span class="fs-hint">Bash Enhancement (+)</span></span>' : '') : '') +
             (canBash && v.bash ? '<span class="fs-pill sky">' + esc(v.bash.dice + ' ' + v.bash.dmgType + ' • ' + v.bash.critText) + '</span>' : '<span class="lego-desc">Cannot make Shield Bash attacks (e.g. Buckler / Tower Shield)</span>')) +
           (canBash ? G(3,
             F('Bash Damage', inp('chassis.weapon.dice', bw.dice, { list: 'fs-dice-list' })) +
@@ -5269,7 +5336,7 @@
     renderLiveHeader(); refreshSlots();
     if (S.ui.jsonOpen) { const pre = $('#fs-json-pre'); if (pre) pre.textContent = JSON.stringify(exportEntry(S.entry), null, 2); }
   }
-  function renderAll() { S.spot = null; renderTopbar(); renderLiveHeader(); renderFacets(); renderJson(); }
+  function renderAll() { S.spot = null; renderTopbar(); renderLiveHeader(); renderFacets(); renderJson(); renderFxRef(); }
   function toast(msg, kind) {
     const wrap = $('#fs-toasts'); if (!wrap) return;
     while (wrap.children.length >= 2) wrap.firstElementChild.remove();
@@ -5283,13 +5350,36 @@
   // 16. Actions (delegated data-action routing)
   // --------------------------------------------------------------------------
   function loadEntry(en, presetId) {
+    en.source = normSource(en.source);
     S.entry = en; S.activePreset = presetId || ''; S.ui.cardOpen = {}; S.ui.facetOpen = {}; S.spot = null;
     S.ui.liveUserOverride = null;
     S.ui.liveWasScrolled = false;
   }
-  function setEntry(path, v) { setPath(S.entry, path, v); onSet(path, v); }
-  function onSet(path, v) {
+  function addPaletteBlock(listPath, type, preset) {
+    const list = getPath(S.entry, listPath);
+    if (!Array.isArray(list)) return;
+    const wondrousCarrier = type === 'carrier' && S.entry.blueprint === 'wondrous' ? { carrierMode: 'metamagic', costMode: 'rod', transform: 'quicken' } : null;
+    const b = BLK(type, Object.assign({}, NEUTRAL_BLOCK[type] ? clone(NEUTRAL_BLOCK[type]) : {}, wondrousCarrier, preset ? clone(preset) : null));
+    list.push(b);
+    if ((listPath || '').indexOf('effects') === 0) ensureFacet('effects');
+    S.ui.cardOpen['blk:' + b.id] = true;
+    renderAll();
+  }
+  function setEntry(path, v) { const prev = getPath(S.entry, path); setPath(S.entry, path, v); onSet(path, v, prev); }
+  function onSet(path, v, prev) {
     const en = S.entry;
+    // Switching a block into formula mode converts the current selection of the previous mode into its formula,
+    // so nothing has to be retyped (a stale formula from an earlier formula session is replaced).
+    if (/\.mode$/.test(path) && v === 'formula' && prev !== 'formula') {
+      const blk = getPath(en, path.replace(/\.mode$/, ''));
+      const seeded = blk && blk.type === 'stat' ? seedStatFormula(blk, prev) : '';
+      if (String(seeded || '').trim()) blk.formula = seeded;
+    }
+    if (/\.scaling$/.test(path) && v === 'formula' && prev !== 'formula') {
+      const blk = getPath(en, path.replace(/\.scaling$/, ''));
+      const seeded = blk && blk.type === 'roll' ? seedRollFormula(blk, prev) : '';
+      if (String(seeded || '').trim()) blk.dice = seeded;
+    }
     if (/\.effectKind$/.test(path) && v === 'statSwap') {
       const blk = getPath(en, path.replace(/\.effectKind$/, ''));
       if (blk) {
@@ -5356,8 +5446,9 @@
     } else if (/^prereqs\.\d+\.alts\.\d+\.kind$/.test(path)) {
       const alt = getPath(en, path.replace(/\.kind$/, ''));
       alt.min = { ability: 13, bab: 1, skill: 4, level: 1 }[v] || alt.min;
-    } else if (path === 'origin.mode' && v === 'variant') {
-      en.id = uid('custom');
+    } else if (path === 'origin.mode' && (v === 'variant' || v === 'new')) {
+      if (v === 'variant') en.id = uid('custom');
+      if (prev === 'override') en.source = DEFAULT_SOURCE;
     } else if (path === 'spell.system') {
       if (v === 'maneuver') { en.lifecycle.use.mode = en.spell.maneuverType === 'Stance' ? 'passive' : 'perEncounter'; en.lifecycle.use.n = 1; }
       else if (v === 'invocation' || v === 'utterance') { en.lifecycle.use.mode = 'atwill'; }
@@ -5389,7 +5480,7 @@
   function scaffold(en) {
     if (en.blueprint === 'wondrous' && !en.powers.length) en.powers.push(blankPower('inline', { name: '', use: Object.assign(blankUse('perDay'), { n: 1 }) }));
     if ((en.blueprint === 'feat' || en.blueprint === 'class') && !en.prereqs.length) en.prereqs.push({ id: uid('p'), alts: [ALT({ kind: en.blueprint === 'class' ? 'bab' : 'ability', min: en.blueprint === 'class' ? 5 : 13 })] });
-    if (en.blueprint === 'race' && !en.effects.length) en.effects.push(BLK('stat', { targets: ['dex'], value: 2, btype: 'Racial' }));
+    if (en.blueprint === 'race' && !en.effects.length) en.effects.push(BLK('stat', { targets: ['dex'], value: 0, btype: 'Racial' }));
     return en;
   }
   function setBlueprint(id) {
@@ -5450,15 +5541,20 @@
       S.ui.liveOpenMobile = next;
       syncLiveScroll(true);
     },
-    'add-block': (el) => {
-      const list = getPath(S.entry, el.dataset.p);
-      if (!Array.isArray(list)) return;
-      const b = BLK(el.dataset.t, el.dataset.t === 'carrier' && S.entry.blueprint === 'wondrous' ? { carrierMode: 'metamagic', costMode: 'rod', transform: 'quicken' } : null);
-      list.push(b);
-      if ((el.dataset.p || '').indexOf('effects') === 0) ensureFacet('effects');
-      S.ui.cardOpen['blk:' + b.id] = true;
-      renderAll();
+    'toggle-fxref': () => { S.ui.fxRefOpen = !S.ui.fxRefOpen; renderFxRef(); },
+    'fx-insert': (el) => {
+      const t = fxTarget();
+      if (!t) { toast('Click a formula field first', 'warn'); return; }
+      const ins = el.dataset.ins || '';
+      const a = t === document.activeElement || !S.fxSel ? (t.selectionStart == null ? t.value.length : t.selectionStart) : S.fxSel[0];
+      const b = t === document.activeElement || !S.fxSel ? (t.selectionEnd == null ? a : t.selectionEnd) : S.fxSel[1];
+      t.value = t.value.slice(0, a) + ins + t.value.slice(b);
+      const caret = a + ins.length - (/\(\)$/.test(ins) ? 1 : 0);
+      t.focus(); t.setSelectionRange(caret, caret);
+      handleBind(t, false);
     },
+    'add-block': (el) => { addPaletteBlock(el.dataset.p, el.dataset.t, null); },
+    'add-block-preset': (el) => { const q = (QUICK_PRESETS[el.dataset.t] || [])[num(el.dataset.k)]; if (q) addPaletteBlock(el.dataset.p, el.dataset.t, q.o); },
     'remove-block': (el) => { getPath(S.entry, el.dataset.p).splice(num(el.dataset.i), 1); renderAll(); },
     'add-branch': (el) => { getPath(S.entry, el.dataset.p).push(blankBranch({ condKind: 'levelTier', condText: 'CL ≥ 15' })); renderAll(); },
     'remove-branch': (el) => { getPath(S.entry, el.dataset.p).splice(num(el.dataset.i), 1); renderAll(); },
@@ -5513,13 +5609,13 @@
       });
       let modObj;
       if (im.kind === 'material') {
-        modObj = { id: modSlug, kind: 'material', name: name, on: im.on, desc: en.text || '', src: en.source || 'Custom', mat: clone(im.mat) };
+        modObj = { id: modSlug, kind: 'material', name: name, on: im.on, desc: en.text || '', src: normSource(en.source), mat: clone(im.mat) };
       } else if (im.kind === 'crystal') {
-        modObj = { id: modSlug, kind: 'crystal', name: name, on: im.on, cost: im.crystalCosts.map((c) => (c === '' || c == null ? null : num(c))), tiers: im.crystalTiers.slice(), src: en.source || 'Custom',
+        modObj = { id: modSlug, kind: 'crystal', name: name, on: im.on, cost: im.crystalCosts.map((c) => (c === '' || c == null ? null : num(c))), tiers: im.crystalTiers.slice(), src: normSource(en.source),
           customParts: cParts, customMods: cMods };
       } else {
         modObj = { id: modSlug, kind: 'enchantment', name: name, on: im.on, plus: im.costMode === 'plus' ? num(im.plus, 1) : 0, gp: im.costMode === 'gp' ? num(im.gp, 0) : 0,
-          desc: en.text || im.badge || '', src: en.source || 'Custom',
+          desc: en.text || im.badge || '', src: normSource(en.source),
           effect: { keen: !!im.keen, badge: im.badge || '', parts: cParts, mods: cMods } };
       }
       const idx = S.customItemMods.findIndex((x) => x.id === modObj.id || x.name.toLowerCase() === name.toLowerCase());
@@ -5585,6 +5681,7 @@
       if (fn) fn(el, ev);
     });
     root.addEventListener('mousedown', (ev) => {
+      if (ev.target.closest('[data-fx-keep]')) { ev.preventDefault(); if (ev.target.closest('[data-action="fx-insert"]') || ev.target.closest('[data-action="toggle-fxref"]')) return; }
       const del = ev.target.closest('[data-spot-del]');
       if (del && S.spot) { ev.preventDefault(); ev.stopPropagation(); const t = S.templates.find((x) => x.id === del.dataset.spotDel); S.templates = S.templates.filter((x) => x.id !== del.dataset.spotDel); saveLS(); toast('Template deleted: ' + (t ? t.name : ''), 'warn'); renderSpotDD(); return; }
       const lay = ev.target.closest('[data-spot-layer]');
@@ -5594,6 +5691,8 @@
       ev.preventDefault();
       spotPick(num(it.dataset.spotPick));
     });
+    root.addEventListener('focusin', (ev) => { if (ev.target.dataset && ev.target.dataset.fx) S.fxPath = ev.target.dataset.bind; });
+    root.addEventListener('focusout', (ev) => { const t = ev.target; if (t.dataset && t.dataset.fx) S.fxSel = [t.selectionStart, t.selectionEnd]; });
     root.addEventListener('focusin', (ev) => { if (ev.target.dataset && ev.target.dataset.spotInput) openSpot(ev.target); });
     root.addEventListener('focusout', (ev) => {
       if (!ev.target.dataset || !ev.target.dataset.spotInput) return;
@@ -5672,7 +5771,8 @@
     }
     window.addEventListener('scroll', () => { syncLiveScroll(false); }, { passive: true });
     window.addEventListener('resize', () => { measureLiveMetrics(); syncLiveScroll(false); }, { passive: true });
-    loadEntry(PRESETS[0].build(), PRESETS[0].id);
+    // Start on a blank Homebrew feat; demo presets are opt-in from the Presets menu.
+    loadEntry(scaffold(blankEntry('feat')), '');
     renderAll();
     bootCompendium();
     if (IS_EMBED && typeof window !== 'undefined' && window.parent && window.parent !== window) {

@@ -329,6 +329,68 @@ function runRuleEngineTests() {
     assert.ok(primalSpec && primalSpec.isBuffSpell && primalSpec.ruleFlags?.primalSpell === true, 'Primal Instinct must resolve from srd_spells_splat.json');
   });
 
+  // 11. Shield bash weapon (PHB p.125 / Table 7-5): one canonical builder for the attack chain and the combat card.
+  test('Shield Bash: buildShieldBashWeapon dice by size/spikes, item.bash linked vs independent enhancement, tower shield cannot bash', () => {
+    const char = {
+      name: 'Bash Tester', size: 'Medium', level: 4, bab: 4, classes: 'Fighter 4',
+      abilities: { str: 16, dex: 10, con: 10, int: 10, wis: 10, cha: 10 }, // STR +3
+      feats: [], buffs: [], weapons: [], bodySlots: {}
+    };
+    const plus5 = { schemaVersion: 3, id: 'custom-hss-5', name: '+5 Heavy Steel Shield', type: 'Shield', category: 'Shield', enhancementBonus: 5, armor: { armorType: 'Shield', armorBonus: 2 }, effects: [] };
+    const linked = RuleEngine.buildShieldBashWeapon(plus5, char);
+    assert.ok(linked && linked.dice === '1d4' && linked.critMin === 20 && linked.critMult === 2 && linked.dmgType === 'Bludgeoning', `heavy bash 1d4 20/x2 Bludgeoning, got ${JSON.stringify(linked)}`);
+    assert.strictEqual(linked.bashMode, 'linked');
+    assert.strictEqual(linked.enhancementBonus, 5, 'linked (default) bash uses the shield enhancement');
+    assert.ok(!linked.modifiers.length && !linked.effects.length && !linked.armor, 'shield AC modifiers / effects / chassis must not leak into the bash weapon');
+    const linkedEval = RuleEngine.evaluateWeaponAttack(char, linked, { grip: 'Off-Hand' });
+    // Damage: 1d4 + 1 (1/2 STR off-hand) + 5 enhancement
+    assert.strictEqual(linkedEval.netFlatDamage, 6, `linked bash flat damage 6, got ${linkedEval.netFlatDamage}`);
+
+    const independent = RuleEngine.buildShieldBashWeapon(Object.assign({}, plus5, { bash: { mode: 'independent', enhancementBonus: 1 } }), char);
+    assert.strictEqual(independent.enhancementBonus, 1, 'independent bash uses item.bash.enhancementBonus');
+    const indepEval = RuleEngine.evaluateWeaponAttack(char, independent, { grip: 'Off-Hand' });
+    assert.strictEqual(linkedEval.netAttackBonus - indepEval.netAttackBonus, 4, 'linked +5 vs independent +1 attack differ by 4');
+
+    const light = RuleEngine.buildShieldBashWeapon({ name: 'Light Steel Shield', type: 'Shield', category: 'Shield' }, char);
+    assert.ok(light.dice === '1d3' && light.isLight === true, `light shield bash 1d3 light weapon, got ${light.dice}/${light.isLight}`);
+    const smallLight = RuleEngine.buildShieldBashWeapon({ name: 'Light Steel Shield', type: 'Shield', category: 'Shield' }, Object.assign({}, char, { size: 'Small' }));
+    assert.strictEqual(smallLight.dice, '1d2', 'Small light shield bash 1d2');
+    const spiked = RuleEngine.buildShieldBashWeapon({ name: 'Spiked Heavy Steel Shield', type: 'Shield', category: 'Shield' }, char);
+    assert.ok(spiked.dice === '1d6' && spiked.dmgType === 'Piercing', `spiked heavy shield 1d6 piercing, got ${spiked.dice}/${spiked.dmgType}`);
+    assert.strictEqual(RuleEngine.buildShieldBashWeapon({ name: 'Tower Shield', type: 'Shield', category: 'Shield' }, char), null, 'tower shield cannot bash');
+    assert.strictEqual(RuleEngine.buildShieldBashWeapon(Object.assign({}, plus5, { canShieldBash: false }), char), null, 'canShieldBash false');
+  });
+
+  // 12. Formula registry: FORMULA_VARS / FORMULA_FUNCS are the evaluator's single source of truth.
+  test('Formula Registry: every scalar token and alias resolves, @halfLevel, @augment_pp / @uses_today aliases, functions table drives the evaluator', () => {
+    const vars = RuleEngine.FORMULA_VARS;
+    const funcs = RuleEngine.FORMULA_FUNCS;
+    assert.ok(Array.isArray(vars) && vars.length > 0 && Array.isArray(funcs) && funcs.length > 0, 'registry exported');
+    const tokens = vars.map(v => v.token);
+    assert.strictEqual(new Set(tokens).size, tokens.length, 'tokens are unique');
+    vars.forEach(v => assert.ok(v.token && v.label && v.group && v.desc && v.example, `registry row complete: ${v.token}`));
+    const ctx = {
+      level: 9, cl: 7, ml: 6, il: 5, ebl: 4, ecl: 10, classLevel: 3, hd: 9, bab: 6, enhancement: 2, critMult: 3,
+      essentia: 2, soulmeldsCount: 1, baseSlots: 4, augmentPP: 4, castsToday: 2, targetCR: 8,
+      strMod: 1, dexMod: 2, conMod: 3, intMod: 4, wisMod: 5, chaMod: 6
+    };
+    const scalars = RuleEngine._resolveFormulaScalars(ctx);
+    vars.filter(v => !v.pattern).forEach(v => {
+      [v.token].concat(v.aliases || []).forEach(t => {
+        const got = RuleEngine.evaluateFormula(t, ctx);
+        assert.strictEqual(got, scalars[v.key], `${t} -> ${scalars[v.key]}, got ${got}`);
+      });
+    });
+    assert.strictEqual(RuleEngine.evaluateFormula('10 + @halfLevel + @conMod', ctx), 17);
+    assert.strictEqual(RuleEngine.evaluateFormula('@augment_pp', ctx), 4);
+    assert.strictEqual(RuleEngine.evaluateFormula('@uses_today', ctx), 2);
+    assert.strictEqual(RuleEngine.evaluateFormula('@paladinLevel', { level: 9, paladinLevel: 5 }), 5);
+    assert.strictEqual(RuleEngine.evaluateFormula('@classes.warblade.level', { level: 9, classLevels: { warblade: 4 } }), 4);
+    assert.strictEqual(RuleEngine.evaluateFormula('min(10, @cl)d6', ctx), '7d6');
+    funcs.forEach(f => assert.ok(f.name && f.signature && f.desc && typeof f.impl === 'function', `function row complete: ${f.name}`));
+    assert.strictEqual(RuleEngine.evaluateFormula('clamp(@level, 1, 5) + abs(-2) + ceil(1.2) + round(1.6) + floor(@level / 2) + max(1, @chaMod) + min(3, @strMod)', ctx), 5 + 2 + 2 + 2 + 4 + 6 + 1);
+  });
+
   return { passed, elapsedMs: Date.now() - startMs };
 }
 

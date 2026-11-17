@@ -1,6 +1,6 @@
 /**
  * D&D 3.5e V2.5 Composable Lego Object Engine — 21-Example Benchmark & Security Test Suite
- * Verifies 15 DM Boon / SRD Golden Set cases + 6 Giant in the Playground / ENWorld Forum Edge Cases
+ * Verifies 15 Homebrew / SRD Golden Set cases + 6 Giant in the Playground / ENWorld Forum Edge Cases
  * against a deterministic Level 8 Test Character with expected numeric outputs.
  */
 
@@ -59,7 +59,7 @@ function createBaseChar(overrides = {}) {
 }
 
 // ============================================================================
-// PART A: 15 GOLDEN SET EXAMPLES (DM BOONS & SRD)
+// PART A: 15 GOLDEN SET EXAMPLES (HOMEBREW & SRD)
 // ============================================================================
 
 // 1 & 2. Breath Weapon 4d8 Acid, DC 10 + lvl + Con (10 + 8 + 3 = 21), 60ft, recharge 1d4+1
@@ -93,7 +93,7 @@ function createBaseChar(overrides = {}) {
     legoEntries: [{
       id: 'boon_nat_ac',
       name: 'Draconic Natural Armor',
-      type: 'DM Boon',
+      type: 'Homebrew',
       modifiers: [{ target: 'ac.natural', op: 'add', formula: '2 + floor(@level / 4)', type: 'Natural Armor' }]
     }]
   });
@@ -107,7 +107,7 @@ function createBaseChar(overrides = {}) {
     legoEntries: [{
       id: 'boon_acid_resist',
       name: 'Acid Resistance',
-      type: 'DM Boon',
+      type: 'Homebrew',
       defenses: [{ kind: 'resistance', target: 'acid', formula: '@level * 2' }]
     }]
   });
@@ -120,7 +120,7 @@ function createBaseChar(overrides = {}) {
   const absorbMagic = {
     id: 'boon_absorb_magic',
     name: 'Absorb Magic',
-    type: 'DM Boon',
+    type: 'Homebrew',
     modifiers: [{ target: 'save.all', op: 'add', value: 2, type: 'Competence', when: { toggle: 'vs_targeted_spell' } }],
     modes: [{
       id: 'absorb_react',
@@ -140,7 +140,7 @@ function createBaseChar(overrides = {}) {
   const elementalAccustomed = {
     id: 'boon_elemental_accustomed',
     name: 'Elemental Accustomed',
-    type: 'DM Boon',
+    type: 'Homebrew',
     modifiers: [{ target: 'ac.natural', op: 'add', value: 3, type: 'Untyped', when: { terrain: ['marsh', 'bog', 'swamp'] } }],
     defenses: [
       { kind: 'immunity', target: 'acid' },
@@ -150,7 +150,7 @@ function createBaseChar(overrides = {}) {
   const arcaneShieldInPool = {
     id: 'boon_arcane_shield',
     name: 'Arcane Shield',
-    type: 'DM Boon',
+    type: 'Homebrew',
     requires: { all: ['boon_absorb_magic', 'boon_elemental_accustomed'] },
     modifiers: [{
       target: 'entity.saveBonus',
@@ -187,7 +187,7 @@ function createBaseChar(overrides = {}) {
       {
         id: 'boon_low_magic_lesser',
         name: 'Boon of Low Magic Lesser',
-        type: 'DM Boon',
+        type: 'Homebrew',
         modifiers: [{ target: 'entity.dc', selector: { type: 'Spell', maxLevel: 3 }, op: 'add', value: 1, sourceLabel: 'Benefit 2' }],
         grants: [{ grantType: 'spell_at_will', filter: { school: 'Abjuration', level: 1 }, sourceLabel: 'Benefit 1' }]
       }
@@ -204,7 +204,7 @@ function createBaseChar(overrides = {}) {
     legoEntries: [{
       id: 'buff_bloodlust_active',
       name: 'Boon of Bloodlust (Kills)',
-      type: 'DM Boon',
+      type: 'Homebrew',
       stacks: 5,
       modifiers: [{ target: 'damage.all', op: 'add', formula: 'min(10, @self.stacks)', type: 'Untyped', sourceLabel: 'Benefit 1' }]
     }]
@@ -230,7 +230,7 @@ function createBaseChar(overrides = {}) {
       {
         id: 'boon_blacksmith_lesser',
         name: 'Boon of Blacksmith Lesser',
-        type: 'DM Boon',
+        type: 'Homebrew',
         modifiers: [{ target: 'entity.damageDice', selector: { type: 'Weapon', tag: 'crafted_by_self' }, op: 'step_die', value: 1 }]
       }
     ]
@@ -245,7 +245,7 @@ function createBaseChar(overrides = {}) {
   const ch = createBaseChar({
     legoEntries: [
       { id: 'act_disable_device', name: 'Disable Device', type: 'Special Ability', actionType: 'full_round', modes: [{ id: 'use', name: 'Use', actionType: 'full_round' }] },
-      { id: 'boon_dexterous', name: 'Boon of Dexterous Lesser', type: 'DM Boon', modifiers: [{ target: 'entity.actionType', selector: { id: 'act_disable_device' }, op: 'set', value: 'move' }] }
+      { id: 'boon_dexterous', name: 'Boon of Dexterous Lesser', type: 'Homebrew', modifiers: [{ target: 'entity.actionType', selector: { id: 'act_disable_device' }, op: 'set', value: 'move' }] }
     ]
   });
   const res = RuleEngine.evaluateLegoCharacter(ch);
@@ -258,7 +258,7 @@ function createBaseChar(overrides = {}) {
     legoEntries: [{
       id: 'boon_combat_perform',
       name: 'Boon of Combat Perform Lesser',
-      type: 'DM Boon',
+      type: 'Homebrew',
       modifiers: [{
         target: 'ac.total',
         op: 'replace',
@@ -287,13 +287,13 @@ function createBaseChar(overrides = {}) {
       {
         id: 'boon_draconic_core',
         name: 'Draconic Core',
-        type: 'DM Boon',
+        type: 'Homebrew',
         modifiers: [{ target: 'entity.damageMultiplier', selector: { tag: 'breath_weapon' }, op: 'multiply', value: 2 }]
       },
       {
         id: 'boon_warrior_mage',
         name: 'Boon of the Warrior Mage Lesser',
-        type: 'DM Boon',
+        type: 'Homebrew',
         modes: [{
           id: 'sacrifice_heal',
           name: 'Sacrifice Spell (Heal)',
@@ -317,7 +317,7 @@ function createBaseChar(overrides = {}) {
       {
         id: 'boon_master_of_deferment',
         name: 'Master of Deferment',
-        type: 'DM Boon',
+        type: 'Homebrew',
         resources: [{ id: 'postponed_fate_hr', name: 'Postponed Fate', kind: 'consume', maxFormula: 1, recharge: { period: 'hour' } }],
         modes: [{
           id: 'postponed_fate',
@@ -330,7 +330,7 @@ function createBaseChar(overrides = {}) {
       {
         id: 'boon_ability_shift',
         name: 'Ability Shift (+2 Str, -2 Cha)',
-        type: 'DM Boon',
+        type: 'Homebrew',
         modifiers: [
           { target: 'ability.str', op: 'add', value: 2, type: 'Untyped', sourceLabel: 'Benefit 1' },
           { target: 'ability.cha', op: 'add', value: -2, type: 'Penalty', sourceLabel: 'Benefit 2' }
@@ -455,19 +455,19 @@ function createBaseChar(overrides = {}) {
       {
         id: 'boon_elemental_supremacy',
         name: 'Elemental Supremacy',
-        type: 'DM Boon',
+        type: 'Homebrew',
         defenses: [{ kind: 'absorption', target: 'acid', healRatio: 1.0 }]
       },
       {
         id: 'boon_caster_combat',
         name: 'Boon of Caster Combat Lesser',
-        type: 'DM Boon',
+        type: 'Homebrew',
         modifiers: [{ target: 'spell.damageMultiplier', op: 'add', value: 0.10 }]
       },
       {
         id: 'boon_superior_blood',
         name: 'Boon of Superior Blood Lesser',
-        type: 'DM Boon',
+        type: 'Homebrew',
         modifiers: [{ target: 'healing.receivedMultiplier', op: 'add', value: 0.25 }]
       }
     ]
@@ -490,7 +490,7 @@ function createBaseChar(overrides = {}) {
       {
         id: 'boon_atlas_lesser',
         name: 'Boon of Atlas Lesser',
-        type: 'DM Boon',
+        type: 'Homebrew',
         modifiers: [{ target: 'carryingCapacity.multiplier', op: 'multiply', value: 3 }]
       }
     ]
@@ -564,7 +564,7 @@ function createBaseChar(overrides = {}) {
   const dupBoon = {
     id: 'pack_dm_draconic_boons:boon_scales',
     name: 'Draconic Scales',
-    type: 'DM Boon',
+    type: 'Homebrew',
     modifiers: [{ target: 'ac.natural', op: 'add', value: 3, type: 'Untyped' }]
   };
   const dupRing = {
@@ -617,7 +617,7 @@ function createBaseChar(overrides = {}) {
 {
   const rawV25 = {
     name: 'Test V2.5 Boon',
-    type: 'DM Boon',
+    type: 'Homebrew',
     pack: 'pack_test',
     overrides: 'srd:toughness',
     requires: { all: ['srd:power_attack'] },
@@ -638,21 +638,21 @@ function createBaseChar(overrides = {}) {
   const absorbMagic = {
     id: 'boon_absorb_magic',
     name: 'Absorb Magic',
-    type: 'DM Boon',
+    type: 'Homebrew',
     modifiers: [{ target: 'save.all', op: 'add', value: 2, type: 'Competence', when: { toggle: 'vs_targeted_spell' } }],
     modes: [{ id: 'absorb_react', name: 'Absorb Spell', actionType: 'immediate', reactsTo: 'on_spell_targeted' }]
   };
   const elemAcc = {
     id: 'boon_elemental_accustomed',
     name: 'Elemental Accustomed',
-    type: 'DM Boon',
+    type: 'Homebrew',
     modifiers: [{ target: 'ac.natural', op: 'add', value: 3, type: 'Untyped', when: { terrain: ['swamp'] } }],
     defenses: [{ kind: 'immunity', target: 'acid' }, { kind: 'dr', target: 'physical', value: 3, bypass: '-', when: { terrain: ['swamp'] } }]
   };
   const arcaneShield = {
     id: 'boon_arcane_shield',
     name: 'Arcane Shield',
-    type: 'DM Boon',
+    type: 'Homebrew',
     sourceCategory: 'Synergy',
     autoUnlock: true,
     isSynergy: true,
@@ -696,15 +696,15 @@ function createBaseChar(overrides = {}) {
     [legoDirect.ac.normal, legoDirect.saves.fort, legoDirect.saves.ref, legoDirect.saves.will]);
 }
 
-// Phase P4 Standalone DM Boons Master DB Import Pack Validation Test
+// Phase P4 Standalone Homebrew Master DB Import Pack Validation Test
 {
-  const exportPackPath = path.join(rootDir, 'exports', 'dm_boons_master_db_import.json');
+  const exportPackPath = path.join(rootDir, 'exports', 'homebrew_boons_master_db_import.json');
   const exportPack = JSON.parse(fs.readFileSync(exportPackPath, 'utf8'));
   const allValidV25 = Array.isArray(exportPack.entries)
     && !('masterDb' in exportPack)
     && exportPack.entries.length === 107
     && exportPack.entries.every(e => e.schemaVersion === 2 && e.id && e.pack === 'pack_dm_draconic_boons' && Array.isArray(e.modifiers) && Array.isArray(e.defenses) && Array.isArray(e.resources) && Array.isArray(e.modes));
-  assertEq('Phase P4 Export Pack Validation (M9): exports/dm_boons_master_db_import.json contains 107 valid V2.5 entries (24 Draconic Path + 83 Lesser Boons, single entries array)',
+  assertEq('Phase P4 Export Pack Validation (M9): exports/homebrew_boons_master_db_import.json contains 107 valid V2.5 entries (24 Draconic Path + 83 Lesser Boons, single entries array)',
     [allValidV25, exportPack.pack.draconicPathCount, exportPack.pack.lesserBoonsCount],
     [true, 24, 83]);
 }
@@ -834,7 +834,7 @@ function createBaseChar(overrides = {}) {
     {
       id: 'syn_power_surge',
       name: 'Power Surge (Synergy)',
-      type: 'DM Boon',
+      type: 'Homebrew',
       sourceCategory: 'Synergy',
       autoUnlock: true,
       isSynergy: true,

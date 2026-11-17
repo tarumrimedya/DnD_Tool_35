@@ -271,6 +271,13 @@
   .fs-embed-scope { width: auto; min-width: 140px; max-width: 240px; }
   body.is-embed .fs-topbar { padding: 8px 10px; }
   body.is-embed .fs-main { padding: 10px 10px 44px; }
+  .fs-fxref { position: fixed; top: 72px; right: 12px; bottom: 12px; width: min(340px, calc(100vw - 24px)); z-index: 85; flex-direction: column; border-radius: 12px; background: rgba(11,18,36,.98); border: 1px solid var(--border-default); box-shadow: 0 18px 44px rgba(0,0,0,.65); }
+  .fs-fxhead { display: flex; align-items: center; justify-content: space-between; padding: 10px; font-weight: 800; font-size: 12px; color: var(--text-primary); }
+  .fs-fxbody { flex: 1; overflow-y: auto; padding: 0 10px 10px; }
+  .fs-fxitem { display: flex; flex-direction: column; gap: 2px; width: 100%; text-align: left; padding: 6px 8px; margin-bottom: 4px; border-radius: 8px; border: 1px solid var(--border-subtle); background: var(--bg-surface); color: var(--text-primary); font-size: 11.5px; cursor: pointer; }
+  .fs-fxitem:hover { border-color: var(--accent-indigo); }
+  .fs-fxitem span { color: var(--text-muted); font-size: 11px; }
+  .fs-fxitem code { color: #a5f3fc; font-size: 10.5px; }
 </style>
 </head>
 <body class="min-h-screen bg-slate-950">
@@ -282,10 +289,12 @@
       <div id="fs-facets"></div>
       <div class="fs-glass fs-facet" id="fs-json-wrap"></div>
     </main>
+    <aside class="fs-fxref" id="fs-fxref" style="display:none" aria-label="Formula Reference"></aside>
     <div class="fs-toast-wrap" id="fs-toasts"></div>
   </div>
-  <script src="./srd_compendium.js?v=b6dcf1ee56"></script>
+  <script src="./srd_compendium.js?v=b46d8badd2"></script>
   <script src="./rulesets/dnd35.js?v=efbdcde12f"></script>
-  <script src="./forge_sandbox.js?v=8ca33f116a"></script>
+  <script src="./rule_engine.js?v=c517de3bd1"></script>
+  <script src="./forge_sandbox.js?v=811f130e9b"></script>
 </body>
 </html>

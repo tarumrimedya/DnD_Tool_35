@@ -3290,7 +3290,7 @@
             </td>
             <td class="py-2.5 px-3 align-middle text-slate-300 text-xs">
               ${isOccupied ? renderGearItemStatsBadgesHtml(slotData, { compact: true }) : ''}
-              <div>${UI.escapeHtml(slotData.desc || '-')}</div>
+              <div class="line-clamp-2">${UI.escapeHtml(getItemShortDescription(slotData) || '-')}</div>
             </td>
             <td class="py-2.5 px-3 text-center align-middle font-mono text-slate-400">${isOccupied ? slotData.weight + ' lb' : '-'}</td>
             <td class="py-2.5 px-3 text-center align-middle font-mono text-amber-400">${isOccupied ? slotData.cost + ' GP' : '-'}</td>
@@ -5383,6 +5383,33 @@
       return null;
     }
 
+    // One-line, generated summary for inventory rows (full rulebook text stays in item.text for the inspect view).
+    function getItemShortDescription(item) {
+      if (!item) return '';
+      if (item.shortDescription && String(item.shortDescription).trim()) return String(item.shortDescription).trim();
+      const parts = [];
+      const name = String(item.name || '').trim();
+      const cat = String(item.category || '');
+      const dice = item.dice || (item.weapon && item.weapon.damageDice) || '';
+      const critMin = Number(item.critMin || (item.weapon && item.weapon.effectiveCritRange)) || 20;
+      const critMult = Number(item.critMult || (item.weapon && item.weapon.critMultiplier)) || 2;
+      const critTxt = (critMin < 20 ? critMin + '-20/' : '') + 'x' + critMult;
+      if (cat === 'Shield' || cat === 'Armor') {
+        if (name) parts.push(name);
+        const ac = Number(item.acBonus ?? (item.armor && item.armor.armorBonus));
+        if (Number.isFinite(ac)) parts.push((cat === 'Shield' ? 'Shield +' : 'Armor +') + ac + ' AC');
+        if (cat === 'Shield' && dice && item.canShieldBash !== false) parts.push('Bash ' + dice);
+      } else if (cat === 'Weapon' && dice) {
+        if (name) parts.push(name);
+        parts.push(dice + ' ' + critTxt);
+      } else {
+        const raw = String(item.desc || item.effect || item.benefit || '').replace(/s+/g, ' ').trim();
+        if (!raw) return '';
+        return raw.length > 110 ? raw.slice(0, 107).replace(/s+S*$/, '') + '...' : raw;
+      }
+      return parts.join(' · ');
+    }
+
     function renderGearItemStatsBadgesHtml(rawItem, options = {}) {
       if (!rawItem || typeof rawItem !== 'object' || !rawItem.name || rawItem.name === '-') return '';
       const item = Object.assign({}, rawItem);
@@ -5632,7 +5659,7 @@
           <td class="py-2 px-3 align-middle text-slate-300 text-xs">
             ${statsBadgesHtml}
             ${typeof renderItemInlineChoiceSelectHtml === 'function' ? renderItemInlineChoiceSelectHtml(item, 'pool', String(item.id ?? '')) : ''}
-            <div>${UI.escapeHtml(item.desc || '-')}</div>
+            <div class="line-clamp-2">${UI.escapeHtml(getItemShortDescription(item) || '-')}</div>
           </td>
           <td class="py-2 px-3 text-center align-middle font-mono">
             <div class="flex items-center justify-center gap-1">
@@ -7186,10 +7213,14 @@
         draft.canShieldBash = false;
       } else if (!existingCustom && (sourceItem.weapon || sourceItem.dice || sourceItem.critMin || sourceItem.critMult) && kind === 'armor') {
         const sw = sourceItem.weapon || {};
+        // Bash chassis defaults come from the engine's single shield-bash builder (size table, light/heavy, spikes).
+        const bash = (window.RuleEngine && typeof window.RuleEngine.buildShieldBashWeapon === 'function')
+          ? window.RuleEngine.buildShieldBashWeapon(sourceItem, null) || {}
+          : {};
         draft.weapon = Object.assign({}, draft.weapon || {}, {
           category: 'Shield',
-          handedness: sw.handedness || sourceItem.handedness || (/light/i.test(sourceItem.name || '') ? 'Light' : 'One-Handed'),
-          damageDice: sw.damageDice || sourceItem.dice || (/light/i.test(sourceItem.name || '') ? '1d3' : '1d4'),
+          handedness: sw.handedness || sourceItem.handedness || bash.handedness || 'One-Handed',
+          damageDice: sw.damageDice || sourceItem.dice || bash.dice || '1d4',
           dmgType: sw.dmgType || sourceItem.dmgType || 'Bludgeoning',
           baseCritRange: Number(sw.baseCritRange || sw.effectiveCritRange || sourceItem.critMin) || 20,
           effectiveCritRange: Number(sw.effectiveCritRange || sourceItem.critMin) || 20,
@@ -7197,7 +7228,7 @@
           rangeIncrement: sw.rangeIncrement != null ? sw.rangeIncrement : (sourceItem.rangeIncrement ?? null)
         });
       }
-      if (sourceItem.desc && !draft.text) draft.text = sourceItem.desc;
+      if (!draft.text && (sourceItem.text || sourceItem.desc)) draft.text = sourceItem.text || sourceItem.desc;
       return { draft, kind };
     }
 
@@ -7302,9 +7333,8 @@
         out.priceGp = out.cost;
       }
       if (v3Entry.text) {
-        out.desc = v3Entry.text;
-        out.benefit = v3Entry.text;
-        out.description = v3Entry.text;
+        // Full rulebook text lives in `text` (inspect view only); inventory rows use the generated shortDescription.
+        out.text = v3Entry.text;
       }
       if (v3Entry.canShieldBash === false) {
         out.canShieldBash = false;
@@ -7386,6 +7416,7 @@
       if (saveScope === 'campaign' && window.CharStore && window.CharStore.StudioBridge && typeof window.CharStore.StudioBridge.saveFromCrafter === 'function') {
         window.CharStore.StudioBridge.saveFromCrafter(v3Saved, { saveScope: 'campaign', originalId: instanceId });
       }
+      out.shortDescription = getItemShortDescription(Object.assign({}, out, { shortDescription: '' }));
       return out;
     }
 
@@ -7524,7 +7555,7 @@
       const combined = name + ' ' + desc;
 
       // Exclude non-gear rule entries (feats, special abilities, boons, spells, maneuvers, etc.)
-      if (['feat', 'special ability', 'dm grant', 'dm boon', 'boon', 'class feature', 'racial trait', 'spell', 'maneuver', 'stance'].includes(catLower)) {
+      if (['feat', 'special ability', 'dm grant', 'homebrew', 'boon', 'class feature', 'racial trait', 'spell', 'maneuver', 'stance'].includes(catLower)) {
         return true;
       }
 

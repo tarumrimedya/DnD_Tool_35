@@ -15,6 +15,8 @@ const _loadedDnd35Ruleset = (typeof window !== 'undefined' && window.DnD35Rulese
     : (typeof require === 'function' ? (() => { try { return require('./rulesets/dnd35.js'); } catch (_) { return null; } })() : null));
 
 const RuleEngine = {
+  // Canonical persisted entry type / source / category string for campaign grants
+  HOMEBREW_TYPE: 'Homebrew',
   // Pluggable Ruleset Registry (loaded from `rulesets/*.js`, D&D 3.5e Official RAW default)
   rulesets: {
     dnd35: _loadedDnd35Ruleset || {
@@ -349,6 +351,105 @@ const RuleEngine = {
     };
   },
 
+  // ── Formula registry: the single source of truth for authoring tokens and functions ──────────────────────
+  // evaluateFormula resolves every scalar token through FORMULA_VARS (`key` -> _resolveFormulaScalars) and every
+  // function through FORMULA_FUNCS (`impl`), so Rule Crafter / UI token pickers cannot drift from the evaluator.
+  // `pattern: true` rows are token families (placeholder shown in angle brackets) resolved by evaluateFormula.
+  FORMULA_VARS: [
+    { token: '@level', aliases: ['@lvl'], key: 'level', label: 'Character Level', group: 'Levels', desc: 'Total character level (Hit Dice from class levels).', example: '10 + floor(@level / 2) + @chaMod' },
+    { token: '@halfLevel', key: 'halfLevel', label: 'One-Half Character Level', group: 'Levels', desc: 'floor(@level / 2), as in the standard save DC formula.', example: '10 + @halfLevel + @conMod' },
+    { token: '@hd', key: 'hd', label: 'Hit Dice', group: 'Levels', desc: 'Hit Dice of the creature (equals character level for most characters).', example: '10 + floor(@hd / 2) + @conMod' },
+    { token: '@ecl', key: 'ecl', label: 'Effective Character Level', group: 'Levels', desc: 'Character level plus level adjustment.', example: '@ecl' },
+    { token: '@classLevel', aliases: ['@class_level'], key: 'classLevel', label: 'Class Level', group: 'Levels', desc: 'Level in the class that grants this feature.', example: 'floor(@classLevel / 2)' },
+    { token: '@<class>Level', pattern: true, label: 'Class Level (named class)', group: 'Levels', desc: 'Level in a named class, e.g. @paladinLevel, @warbladeLevel; 0 when the character has none.', example: '@paladinLevel' },
+    { token: '@classes.<id>.level', pattern: true, label: 'Class Level (by class id)', group: 'Levels', desc: 'Level in any class by its id or name slug.', example: '@classes.warblade.level' },
+    { token: '@cl', aliases: ['@casterLevel', '@item.level'], key: 'cl', label: 'Caster Level', group: 'Spellcasting', desc: 'Caster level of the entry or the character.', example: 'min(10, @cl)d6' },
+    { token: '@baseSlots', key: 'baseSlots', label: 'Base Spell Slots', group: 'Spellcasting', desc: 'Base spell slots of the referenced spell level.', example: '@baseSlots + 1' },
+    { token: '@spells.maxUnspentLevel', pattern: true, label: 'Highest Unspent Spell Level', group: 'Spellcasting', desc: 'Highest prepared, unexpended spell level; optional descriptor filter in parentheses.', example: '@spells.maxUnspentLevel(fire)' },
+    { token: '@ml', aliases: ['@manifesterLevel'], key: 'ml', label: 'Manifester Level', group: 'Psionics', desc: 'Manifester level of the power or the character.', example: '@ml' },
+    { token: '@augmentPP', aliases: ['@augment_pp'], key: 'augmentPP', label: 'Augment Power Points', group: 'Psionics', desc: 'Power points spent to augment (capped by manifester level).', example: '1d6 * (1 + floor(@augmentPP / 2))' },
+    { token: '@il', aliases: ['@initiatorLevel'], key: 'il', label: 'Initiator Level', group: 'Martial Adepts', desc: 'Initiator level for maneuvers and stances.', example: '10 + @il + @wisMod' },
+    { token: '@ebl', aliases: ['@effectiveBinderLevel'], key: 'ebl', label: 'Effective Binder Level', group: 'Pact Magic', desc: 'Effective binder level for vestige granted abilities.', example: '10 + floor(@ebl / 2) + @chaMod' },
+    { token: '@essentia', aliases: ['@invested'], key: 'essentia', label: 'Invested Essentia', group: 'Incarnum', desc: 'Essentia invested in this receptacle.', example: '@essentia * 2' },
+    { token: '@soulmeldsCount', key: 'soulmeldsCount', label: 'Soulmelds Shaped', group: 'Incarnum', desc: 'Number of soulmelds currently shaped.', example: '@soulmeldsCount' },
+    { token: '@bab', key: 'bab', label: 'Base Attack Bonus', group: 'Combat', desc: 'Base attack bonus.', example: 'floor(@bab / 4)' },
+    { token: '@enhancement', aliases: ['@enhancementBonus'], key: 'enhancement', label: 'Enhancement Bonus', group: 'Combat', desc: 'Enhancement bonus of the item.', example: '@enhancement * 2' },
+    { token: '@critMult', key: 'critMult', label: 'Critical Multiplier', group: 'Combat', desc: 'Critical multiplier of the attack (1 on a normal hit).', example: '1d6 * @critMult' },
+    { token: '@targetCR', aliases: ['@target_cr'], key: 'targetCR', label: 'Target Challenge Rating', group: 'Combat', desc: 'Challenge Rating of the target (defaults to character level).', example: '@targetCR' },
+    { token: '@strMod', aliases: ['@str'], key: 'strMod', label: 'Strength Modifier', group: 'Ability Modifiers', desc: 'Strength modifier.', example: '@strMod' },
+    { token: '@dexMod', aliases: ['@dex'], key: 'dexMod', label: 'Dexterity Modifier', group: 'Ability Modifiers', desc: 'Dexterity modifier.', example: '@dexMod' },
+    { token: '@conMod', aliases: ['@con'], key: 'conMod', label: 'Constitution Modifier', group: 'Ability Modifiers', desc: 'Constitution modifier.', example: '10 + @halfLevel + @conMod' },
+    { token: '@intMod', aliases: ['@int'], key: 'intMod', label: 'Intelligence Modifier', group: 'Ability Modifiers', desc: 'Intelligence modifier.', example: '@intMod' },
+    { token: '@wisMod', aliases: ['@wis'], key: 'wisMod', label: 'Wisdom Modifier', group: 'Ability Modifiers', desc: 'Wisdom modifier.', example: '@wisMod' },
+    { token: '@chaMod', aliases: ['@cha'], key: 'chaMod', label: 'Charisma Modifier', group: 'Ability Modifiers', desc: 'Charisma modifier.', example: '@chaMod' },
+    { token: '@ability.<str|dex|con|int|wis|cha>.mod', pattern: true, label: 'Ability Modifier (dotted)', group: 'Ability Modifiers', desc: 'Dotted form of an ability modifier.', example: '@ability.cha.mod' },
+    { token: '@skill.<key>.total', pattern: true, label: 'Skill Modifier', group: 'Skills', desc: 'Skill total, ranks or bonus (.total / .ranks / .bonus).', example: '@skill.tumble.ranks' },
+    { token: '@castsToday', aliases: ['@uses_today', '@usesToday', '@casts_today'], key: 'castsToday', label: 'Uses Today', group: 'Resources', desc: 'Times this ability has been used today.', example: '@castsToday + 1' },
+    { token: '@input.<key>', pattern: true, label: 'Activation Input', group: 'Runtime State', desc: 'Value entered when the ability is activated.', example: '@input.rounds' },
+    { token: '@self.<key>', pattern: true, label: 'Entry State', group: 'Runtime State', desc: 'State of this entry (e.g. stacks, invested).', example: '@self.stacks' },
+    { token: '@state.<key>', pattern: true, label: 'Character State', group: 'Runtime State', desc: 'Character-wide runtime state variable.', example: '@state.rage_rounds' }
+  ],
+
+  FORMULA_FUNCS: [
+    { name: 'min', signature: 'min(a, b, ...)', desc: 'Smallest argument (caps, e.g. min(10, @cl)).', impl: (args) => (args.length ? Math.min(...args) : 0) },
+    { name: 'max', signature: 'max(a, b, ...)', desc: 'Largest argument (floors, e.g. max(1, @chaMod)).', impl: (args) => (args.length ? Math.max(...args) : 0) },
+    { name: 'floor', signature: 'floor(x)', desc: 'Round down (D&D 3.5e default rounding).', impl: (args) => Math.floor(args[0] || 0) },
+    { name: 'ceil', signature: 'ceil(x)', desc: 'Round up.', impl: (args) => Math.ceil(args[0] || 0) },
+    { name: 'round', signature: 'round(x)', desc: 'Round to the nearest integer.', impl: (args) => Math.round(args[0] || 0) },
+    { name: 'abs', signature: 'abs(x)', desc: 'Absolute value.', impl: (args) => Math.abs(args[0] || 0) },
+    { name: 'clamp', signature: 'clamp(x, lo, hi)', desc: 'Limit x to the range lo..hi.', impl: (args) => Math.min(args[2] ?? 0, Math.max(args[1] ?? 0, args[0] ?? 0)) }
+  ],
+
+  // Scalar values for every FORMULA_VARS `key`, from an evaluation context.
+  _resolveFormulaScalars(context = {}) {
+    const cl = Number(context.cl ?? context.casterLevel ?? context.level ?? 1) || 1;
+    const level = Number(context.level ?? cl) || 1;
+    return {
+      cl,
+      level,
+      halfLevel: Math.floor(level / 2),
+      hd: Number(context.hd ?? level) || level,
+      ml: Number(context.ml ?? context.manifesterLevel ?? cl) || 1,
+      il: Number(context.il ?? context.initiatorLevel ?? level) || 1,
+      ebl: Number(context.ebl ?? context.effectiveBinderLevel ?? level) || 1,
+      ecl: Number(context.ecl ?? level) || 1,
+      classLevel: Number(context.classLevel ?? level) || 1,
+      bab: Number(context.bab ?? 0) || 0,
+      enhancement: Number(context.enhancement ?? context.enhancementBonus ?? 0) || 0,
+      critMult: Number(context.critMult ?? 1) || 1,
+      essentia: Number(context.essentia ?? context.self?.invested ?? 0) || 0,
+      soulmeldsCount: Number(context.soulmeldsCount ?? 0) || 0,
+      baseSlots: Number(context.baseSlots ?? 0) || 0,
+      augmentPP: Number(context.augmentPP ?? 0) || 0,
+      castsToday: Number(context.castsToday ?? context.usesToday ?? 0) || 0,
+      targetCR: Number(context.targetCR ?? level ?? 1) || 1,
+      strMod: Number(context.strMod) || 0,
+      dexMod: Number(context.dexMod) || 0,
+      conMod: Number(context.conMod) || 0,
+      intMod: Number(context.intMod) || 0,
+      wisMod: Number(context.wisMod) || 0,
+      chaMod: Number(context.chaMod) || 0
+    };
+  },
+
+  // Lower-case token name (no '@') -> scalar key, built once from FORMULA_VARS tokens and aliases.
+  _formulaTokenIndex() {
+    if (this._formulaTokenIndexCache) return this._formulaTokenIndexCache;
+    const simple = new Map();
+    const dotted = [];
+    this.FORMULA_VARS.forEach(v => {
+      if (!v || v.pattern || !v.key) return;
+      [v.token].concat(v.aliases || []).forEach(t => {
+        const name = String(t || '').replace(/^@/, '');
+        if (!name) return;
+        if (name.includes('.')) dotted.push({ name: name.toLowerCase(), key: v.key });
+        else simple.set(name.toLowerCase(), v.key);
+      });
+    });
+    this._formulaTokenIndexCache = { simple, dotted };
+    return this._formulaTokenIndexCache;
+  },
+
   // Zero-eval recursive-descent arithmetic, comparison, ternary, and math-function evaluator
   safeEvaluateMathExpr(exprStr) {
     const src = String(exprStr || '').trim();
@@ -385,6 +486,7 @@ const RuleEngine = {
       return 0;
     }
 
+    const funcIndex = new Map(this.FORMULA_FUNCS.map(f => [f.name.toLowerCase(), f]));
     let pos = 0;
     const peek = () => tokens[pos] || null;
     const consume = () => tokens[pos++] || null;
@@ -496,14 +598,8 @@ const RuleEngine = {
           }
           if (peek() && peek().type === 'op' && peek().value === ')') consume();
         }
-        if (fn === 'min') return args.length ? Math.min(...args) : 0;
-        if (fn === 'max') return args.length ? Math.max(...args) : 0;
-        if (fn === 'floor') return Math.floor(args[0] || 0);
-        if (fn === 'ceil') return Math.ceil(args[0] || 0);
-        if (fn === 'round') return Math.round(args[0] || 0);
-        if (fn === 'abs') return Math.abs(args[0] || 0);
-        if (fn === 'clamp') return Math.min(args[2] ?? 0, Math.max(args[1] ?? 0, args[0] ?? 0));
-        return 0;
+        const fnDef = funcIndex.get(String(fn).toLowerCase());
+        return fnDef ? fnDef.impl(args) : 0;
       }
       consume();
       return 0;
@@ -525,33 +621,21 @@ const RuleEngine = {
     const directNum = Number(raw);
     if (!Number.isNaN(directNum)) return directNum;
 
-    const cl = Number(context.cl ?? context.casterLevel ?? context.level ?? 1) || 1;
-    const level = Number(context.level ?? cl) || 1;
-    const ml = Number(context.ml ?? context.manifesterLevel ?? cl) || 1;
-    const il = Number(context.il ?? context.initiatorLevel ?? level) || 1;
-    const ebl = Number(context.ebl ?? context.effectiveBinderLevel ?? level) || 1;
-    const ecl = Number(context.ecl ?? level) || 1;
-    const classLevel = Number(context.classLevel ?? level) || 1;
-    const bab = Number(context.bab ?? 0) || 0;
-    const enh = Number(context.enhancement ?? context.enhancementBonus ?? 0) || 0;
-    const critMult = Number(context.critMult ?? 1) || 1;
-    const essentia = Number(context.essentia ?? context.self?.invested ?? 0) || 0;
-    const augmentPP = Number(context.augmentPP ?? 0) || 0;
-    const castsToday = Number(context.castsToday ?? context.usesToday ?? 0) || 0;
-    const targetCR = Number(context.targetCR ?? level ?? 1) || 1;
+    // Scalar tokens (and their aliases) resolve through the FORMULA_VARS registry.
+    const scalars = this._resolveFormulaScalars(context);
+    const tokenIndex = this._formulaTokenIndex();
+    let expr = raw;
+    tokenIndex.dotted.forEach(d => {
+      const re = new RegExp(`@${d.name.replace(/[.]/g, '\\.')}\\b`, 'gi');
+      expr = expr.replace(re, String(scalars[d.key]));
+    });
+    expr = expr.replace(/@([a-z_][a-z0-9_]*)\b(?!\.)/gi, (full, name) => {
+      const key = tokenIndex.simple.get(name.toLowerCase());
+      return key ? String(scalars[key]) : full;
+    });
 
-    let expr = raw
-      .replace(/@item\.level\b/gi, String(cl))
-      .replace(/@cl\b/gi, String(cl))
-      .replace(/@casterLevel\b/gi, String(cl))
-      .replace(/@ml\b/gi, String(ml))
-      .replace(/@manifesterLevel\b/gi, String(ml))
-      .replace(/@il\b/gi, String(il))
-      .replace(/@initiatorLevel\b/gi, String(il))
-      .replace(/@ebl\b/gi, String(ebl))
-      .replace(/@effectiveBinderLevel\b/gi, String(ebl))
-      .replace(/@ecl\b/gi, String(ecl))
-      .replace(/@classLevel\b/gi, String(classLevel))
+    // Token families (FORMULA_VARS rows with `pattern: true`).
+    expr = expr
       .replace(/@(warblade|paladin|monk|barbarian|rogue|swashbuckler|fighter|cleric|bard|ranger|sorcerer|wizard|druid|psion|wilder|incarnate|totemist|binder|shadowcaster|truenamer|swordsage|crusader)Level\b/gi, (_, cls) => {
         const lowCls = cls.toLowerCase();
         const propKey = `${lowCls}Level`;
@@ -559,23 +643,6 @@ const RuleEngine = {
         if (context.classLevels && typeof context.classLevels[lowCls] === 'number') return String(context.classLevels[lowCls]);
         return '0';
       })
-      .replace(/@hd\b/gi, String(Number(context.hd ?? level) || level))
-      .replace(/@level\b/gi, String(level))
-      .replace(/@bab\b/gi, String(bab))
-      .replace(/@essentia\b/gi, String(essentia))
-      .replace(/@soulmeldsCount\b/gi, String(Number(context.soulmeldsCount ?? 0) || 0))
-      .replace(/@baseSlots\b/gi, String(Number(context.baseSlots ?? 0) || 0))
-      .replace(/@augmentPP\b/gi, String(augmentPP))
-      .replace(/@castsToday\b/gi, String(castsToday))
-      .replace(/@targetCR\b/gi, String(targetCR))
-      .replace(/@enhancement\b/gi, String(enh))
-      .replace(/@critMult\b/gi, String(critMult))
-      .replace(/@strMod\b/gi, String(Number(context.strMod) || 0))
-      .replace(/@dexMod\b/gi, String(Number(context.dexMod) || 0))
-      .replace(/@conMod\b/gi, String(Number(context.conMod) || 0))
-      .replace(/@intMod\b/gi, String(Number(context.intMod) || 0))
-      .replace(/@wisMod\b/gi, String(Number(context.wisMod) || 0))
-      .replace(/@chaMod\b/gi, String(Number(context.chaMod) || 0))
       .replace(/@(?:ability|abilities)\.(str|dex|con|int|wis|cha)\.mod\b/gi, (_, a) => String(Number(context[`${a.toLowerCase()}Mod`]) || 0))
       .replace(/@(?:classes|class)\.([a-z0-9_-]+)\.level\b/gi, (_, cName) => {
         const key = cName.toLowerCase();
@@ -628,12 +695,14 @@ const RuleEngine = {
 
     // If expression contains dice notation like "(min(10, 5))d6" or "2d8+(min(5, 10))*1", evaluate math parts
     if (/\d*d\d+/i.test(expr)) {
-      let diceResolved = expr.replace(/\(([^()]+)\)(?=d\d+)/gi, (_, sub) => {
-        const val = this.evaluateFormula(sub, context);
-        return String(Math.max(1, Math.floor(Number(val) || 1)));
+      // Function-wrapped dice counts (`min(10, @cl)d6`) first, so the bare-parenthesis pass below cannot strip
+      // the argument list away from its function name.
+      let diceResolved = expr.replace(/(^|[^a-z0-9_])(min|max|floor|ceil|round|abs|clamp)\(([^()]+)\)(?=\)*d\d+)/gi, (full, lead, fn, inner) => {
+        const val = this.evaluateFormula(`${fn}(${inner})`, context);
+        return `${lead}${Math.max(1, Math.floor(Number(val) || 1))}`;
       });
-      diceResolved = diceResolved.replace(/^(min|max|floor|ceil|round)\(([^()]+)\)(?=d\d+)/i, (full) => {
-        const val = this.evaluateFormula(full, context);
+      diceResolved = diceResolved.replace(/\(([^()]+)\)(?=d\d+)/gi, (_, sub) => {
+        const val = this.evaluateFormula(sub, context);
         return String(Math.max(1, Math.floor(Number(val) || 1)));
       });
       diceResolved = diceResolved.replace(/^([0-9+\-*/\s]+)(?=d\d+)/i, (prefix) => {
@@ -1406,16 +1475,14 @@ const RuleEngine = {
     }
     if (out.armor && typeof out.armor === 'object') {
       const a = out.armor;
-      const aType = String(a.armorType || out.category || '').toLowerCase();
-      const isShield = aType === 'shield' || aType.includes('buckler') || String(out.type || '').toLowerCase() === 'shield';
-      const rawArmorBonus = a.armorBonus ?? a.acBonus ?? 0;
-      const baseBonus = Number(rawArmorBonus || 0) + (Number(a.enhancementBonus) || 0);
-      if (baseBonus > 0) {
-        const targetKey = isShield ? 'ac.shield' : 'ac.armor';
-        const bonusType = isShield ? 'Shield' : 'Armor';
-        if (!modifiers.some(m => m && m.target === targetKey)) {
-          modifiers.push({ target: targetKey, value: baseBonus, type: bonusType, condition: null, source: out.name || 'Armor' });
-        }
+      // Single canonical chassis derivation (base + top-level enhancementBonus); flagged `chassis` so
+      // parseItemModifiers re-applies it exactly once instead of treating it as an explicit modifier.
+      const chassis = this.resolveArmorChassis(out);
+      for (let ci = modifiers.length - 1; ci >= 0; ci--) {
+        if (modifiers[ci] && modifiers[ci].chassis) modifiers.splice(ci, 1);
+      }
+      if (chassis && chassis.total > 0 && !modifiers.some(m => m && m.target === chassis.target)) {
+        modifiers.push({ target: chassis.target, value: chassis.total, type: chassis.bonusType, condition: null, source: chassis.label, chassis: true });
       }
       if (a.maxDex !== undefined && a.maxDex !== null && out.maxDex === undefined) out.maxDex = Number(a.maxDex);
       const rawAcp = a.armorCheckPenalty ?? a.acp;
@@ -4001,7 +4068,7 @@ const RuleEngine = {
       'Clone and combine the provided Pure Canonical V3 Lego templates (`schemaVersion: 3`) and adapt only the domain parameters to match the user request. Output complete V3 entries that validate against `rule_master_ai_schema.json` (`RuleMasterEntryV3`).',
       'Mechanics live only in `effects[]` blocks (`stat`, `roll`, `attack`, `defense`, `effect`, `resource`, `when`, `table`, `carrier`), `choices[]` (@Choice inputs) and `powers[]` (activated abilities with `action`, `usage`, `save`, `effects[]`). Never emit legacy `modifiers`, `damageParts`, `defenses`, `resources` or `modes` arrays.',
       '`stat` blocks use plural `targets: string[]` with canonical keys (e.g. `ac.deflection`, `atk.all`, `save.will`) plus `btype` and `mode` (`flat`, `stat`, `perCL`, `formula`, `replaceStat`); ability swaps use `mode: "replaceStat"` with `swapTarget`, `subOp`, `fromStat`, `toStat`, `scope`. Toggled or situational benefits go inside `when` branches (`flow: "while"`, `condText: "toggle:<key>"`, `"stance:<name>"` or `"@level >= N"`).',
-      'For multi-benefit DM Boons, write each benefit as its own `effects[]` or `powers[]` element and describe it in `label`/`text`; all benefits stay active simultaneously.',
+      'For multi-benefit Homebrew, write each benefit as its own `effects[]` or `powers[]` element and describe it in `label`/`text`; all benefits stay active simultaneously.',
       `Matched Structural Lego Templates:\n${templatesJson}`,
       `User Rule / Ability Request:\n${userQuery}`
     ].join('\n\n');
@@ -4563,6 +4630,139 @@ const RuleEngine = {
     return { value: baseVal, label, addItems, changed: changed || addItems.length > 0, winningToStat };
   },
 
+  // Canonical Armor / Shield chassis (PHB p.123 Table 7-6, DMG p.216 Magic Armor): the one place that derives an
+  // item's base Armor or Shield bonus plus its enhancement bonus. The item's top-level `enhancementBonus` is canonical
+  // (Rule Crafter and the SRD gear assembler write it); `armor.enhancementBonus` mirrors the same value and is only a
+  // fallback, never additive. Returns null for items that are neither armor nor a shield.
+  resolveArmorChassis(item, dbEntry = null) {
+    if (!item || typeof item !== 'object') return null;
+    const firstNum = (...vals) => {
+      for (const v of vals) {
+        if (v !== undefined && v !== null && v !== '' && Number.isFinite(Number(v))) return Number(v);
+      }
+      return null;
+    };
+    const db = dbEntry && typeof dbEntry === 'object' ? dbEntry : null;
+    const a = item.armor && typeof item.armor === 'object' ? item.armor : {};
+    const da = db && db.armor && typeof db.armor === 'object' ? db.armor : {};
+    const aType = String(a.armorType || da.armorType || '').toLowerCase();
+    const typeOf = (o) => String((o && (o.type || '')) || '').toLowerCase();
+    const catOf = (o) => String((o && (o.category || '')) || '').toLowerCase();
+    const isShield = typeOf(item) === 'shield' || catOf(item) === 'shield' || a.kind === 'shield'
+      || aType === 'shield' || aType.includes('buckler') || typeOf(db) === 'shield' || catOf(db) === 'shield';
+    const isArmor = !isShield && (typeOf(item) === 'armor' || catOf(item) === 'armor' || typeOf(db) === 'armor'
+      || ['light', 'medium', 'heavy'].includes(aType) || Object.keys(a).length > 0);
+    if (!isShield && !isArmor) return null;
+    const base = firstNum(
+      a.armorBonus, a.acBonus, item.armorBonus, item.shieldBonus, item.armorStats?.baseAc, item.acBonus,
+      da.armorBonus, da.acBonus, db?.armorBonus, db?.shieldBonus, db?.armorStats?.baseAc, db?.acBonus
+    ) || 0;
+    const enh = Math.max(0, firstNum(item.enhancementBonus, a.enhancementBonus, db?.enhancementBonus, da.enhancementBonus) || 0);
+    const total = base > 0 ? base + enh : 0;
+    const kind = isShield ? 'shield' : 'armor';
+    const name = String(item.name || db?.name || (isShield ? 'Shield' : 'Armor'));
+    const label = enh > 0 ? `${name} (+${base} base, +${enh} Enhancement)` : name;
+    return {
+      kind,
+      base,
+      enh,
+      total,
+      target: isShield ? 'ac.shield' : 'ac.armor',
+      bonusType: isShield ? 'Shield' : 'Armor',
+      label
+    };
+  },
+
+  // PHB p.125 / Table 7-5 shield bash weapon, built once for both the attack chain and the combat card.
+  // Medium damage: light shield 1d3, heavy shield 1d4; with Shield Spikes 1d4 / 1d6 piercing; 20/x2; scaled one die
+  // step per size category away from Medium (DMG p.28). A tower shield cannot bash (PHB p.125).
+  // Enhancement contract (`item.bash = { mode, enhancementBonus }`):
+  //   'linked' (default)  -> bash attack and damage use the shield's own enhancement bonus;
+  //   'independent' (RAW) -> bash uses item.bash.enhancementBonus (the shield's AC enhancement does not apply).
+  // Returns null when the item is not a shield or cannot bash (canShieldBash === false, tower shield).
+  buildShieldBashWeapon(item, character = null) {
+    if (!item || typeof item !== 'object' || !this.isShieldItem(item)) return null;
+    if (this.isTowerShield(item)) return null;
+    const customOv = this.resolveCustomEntryOverride(item, character);
+    const refEntry = (customOv && customOv !== item) ? customOv : this.getMasterDbEntry(item, 'Shield');
+    if (item.canShieldBash === false || (refEntry && refEntry.canShieldBash === false)) return null;
+
+    const nameLower = String(item.name || '').toLowerCase();
+    // Authored bash chassis (Rule Crafter / item) vs. the SRD entry's synthesized weapon view (Medium table values).
+    const authoredW = (customOv && customOv !== item && customOv.weapon) || item.weapon || null;
+    const wObj = authoredW || (refEntry && refEntry.weapon) || null;
+    const chassis = this.resolveArmorChassis(item, refEntry) || { base: 0, enh: 0, total: 0 };
+    const isBuckler = nameLower.includes('buckler') || String(item.armor?.armorType || '').toLowerCase().includes('buckler');
+    const handed = wObj ? String(wObj.handedness || wObj.handed || '').toLowerCase() : '';
+    const isHeavy = /light/.test(handed) ? false
+      : (/heavy/.test(handed) ? true
+        : (nameLower.includes('heavy') || (!nameLower.includes('light') && !isBuckler && chassis.base >= 2)));
+    const enhList = Array.isArray(item.enhancements) ? item.enhancements : [];
+    const isSpiked = Boolean(
+      item.spiked || item.shieldSpikes || item.ruleFlags?.shieldSpikes || refEntry?.ruleFlags?.shieldSpikes ||
+      /\bspiked\b/.test(nameLower) ||
+      enhList.some(e => /shield.?spikes/i.test(String((e && (e.id || e.name)) || e || '')))
+    );
+
+    const mediumDice = isSpiked ? (isHeavy ? '1d6' : '1d4') : (isHeavy ? '1d4' : '1d3');
+    // An authored bash die (Rule Crafter weapon chassis) wins; a hydrated copy of the Medium table value does not,
+    // so the size scaling below still applies to it.
+    const authoredRaw = (authoredW && (authoredW.damageDice || authoredW.dice)) || item.dice || null;
+    const authoredDice = authoredRaw && String(authoredRaw).trim().toLowerCase() !== mediumDice ? authoredRaw : null;
+    let dice;
+    if (authoredDice) {
+      dice = String(authoredDice);
+    } else {
+      const SIZE_STEPS = { fine: -4, diminutive: -3, tiny: -2, small: -1, medium: 0, large: 1, huge: 2, gargantuan: 3, colossal: 4 };
+      const sizeKey = character ? this.getSizeCategoryKey(character) : null;
+      const steps = sizeKey ? (SIZE_STEPS[sizeKey] || 0) : 0;
+      dice = steps !== 0 ? this.stepDamageDice(mediumDice, steps) : mediumDice;
+    }
+    const critMin = Number(wObj && (wObj.effectiveCritRange || wObj.baseCritRange || wObj.critRange)) || 20;
+    const critMult = Number(wObj && (wObj.critMultiplier || wObj.critMult)) || 2;
+    const dmgType = (wObj && (wObj.dmgType || wObj.damageType)) || (isSpiked ? 'Piercing' : 'Bludgeoning');
+    const rangeIncrement = Number(wObj && wObj.rangeIncrement) || 0;
+
+    const bashCfg = (item.bash && typeof item.bash === 'object') ? item.bash : {};
+    const mode = bashCfg.mode === 'independent' ? 'independent' : 'linked';
+    const enhancementBonus = mode === 'independent'
+      ? Math.max(0, Number(bashCfg.enhancementBonus) || 0)
+      : Math.max(0, Number(chassis.enh) || 0);
+
+    // Copy identity fields only: the shield's AC modifiers, V3 effects, armor chassis and armor masterwork
+    // (which lowers armor check penalty, PHB p.126) must not leak into the bash attack.
+    return {
+      id: item.id ? `${item.id}::shield-bash` : undefined,
+      inventoryId: item.inventoryId,
+      name: `${item.name} (Shield Bash)`,
+      type: item.type || 'Shield',
+      category: item.category || 'Shield',
+      material: item.material,
+      proficiency: 'Martial',
+      handedness: isHeavy ? 'One-Handed' : 'Light',
+      grip: 'Off-Hand',
+      dice,
+      damageParts: [{ dice, bonus: 0, type: dmgType, multiplyOnCrit: true, onCritOnly: false, source: 'Base Weapon' }],
+      critMin,
+      critRange: critMin,
+      critMult,
+      dmgType,
+      rangeIncrement: rangeIncrement > 0 ? rangeIncrement : null,
+      enhancementBonus,
+      isMasterwork: mode === 'independent' && Boolean(bashCfg.masterwork),
+      bashMode: mode,
+      shieldEnhancement: Number(chassis.enh) || 0,
+      shieldAcTotal: Number(chassis.total) || 0,
+      isShieldBash: true,
+      isSpiked,
+      isLight: !isHeavy,
+      isBuckler,
+      modifiers: [],
+      effects: [],
+      tags: ['off-hand', 'shield-bash']
+    };
+  },
+
   // Check if item is a Shield according to D&D 3.5e RAW rules
   isShieldItem(item) {
     if (!item) return false;
@@ -5035,6 +5235,8 @@ const RuleEngine = {
     for (let i = 0; i < rawMods.length; i++) {
       const m = rawMods[i];
       if (!m || !m.target) continue;
+      // The chassis projection (resolveArmorChassis) is applied exactly once below.
+      if (m.chassis) continue;
       const hasFormula = m.formula !== undefined && m.formula !== null && String(m.formula).trim() !== '';
       const val = this.evaluateFormula(hasFormula ? m.formula : m.value, evalCtx);
       if (!val) continue;
@@ -5114,17 +5316,19 @@ const RuleEngine = {
       else if (target === 'sr') res.sr = Math.max(res.sr, val);
     }
 
-    // If Armor or Shield has V3 `armor.armorBonus` or `armorStats.baseAc` and no `ac.armor`/`ac.shield` modifier was present yet
-    const baseArmorAc = Number(item.armor?.armorBonus ?? item.armorBonus ?? item.shieldBonus ?? item.armorStats?.baseAc ?? dbEntry?.armor?.armorBonus ?? dbEntry?.armorBonus ?? dbEntry?.shieldBonus ?? dbEntry?.armorStats?.baseAc ?? 0) || 0;
-    const enhBonus = Number(item.enhancementBonus ?? item.armor?.enhancementBonus ?? dbEntry?.enhancementBonus ?? dbEntry?.armor?.enhancementBonus ?? 0) || 0;
-    const totalArmorAc = baseArmorAc > 0 ? (baseArmorAc + enhBonus) : 0;
-    if (totalArmorAc > 0) {
-      if (isShield && res.shield === 0) {
-        res.shield = totalArmorAc;
-        res.modifiers.push({ target: 'ac.shield', value: totalArmorAc, type: 'shield', condition: null, source: item.name });
-      } else if (isArmor && res.armor === 0) {
-        res.armor = totalArmorAc;
-        res.modifiers.push({ target: 'ac.armor', value: totalArmorAc, type: 'armor', condition: null, source: item.name });
+    // Armor / Shield chassis (base + enhancement) from the single canonical resolver. Armor bonuses (and Shield
+    // bonuses) do not stack with each other (PHB p.171), so an explicit same-column modifier competes by max and
+    // exactly one Armor- or Shield-typed modifier is emitted for the column.
+    const chassis = this.resolveArmorChassis(item, dbEntry);
+    if (chassis && chassis.total > 0) {
+      res.armorChassis = chassis;
+      const col = chassis.kind;
+      const isColumnMod = (m) => m && (m.target === chassis.target || m.target === col) && (m.type === col || m.type === 'untyped');
+      if (chassis.total >= res[col]) {
+        res[col] = chassis.total;
+        res[`${col}SourceLabel`] = chassis.label;
+        res.modifiers = res.modifiers.filter(m => !isColumnMod(m));
+        res.modifiers.push({ target: chassis.target, value: chassis.total, type: col, condition: null, source: chassis.label });
       }
     }
 
@@ -7044,8 +7248,8 @@ const RuleEngine = {
           equippedArmorCategory = mods.effectiveArmorCategory || 'Light';
         }
 
-        if (mods.armor > 0) armorBonuses.push({ val: mods.armor, source: slotData.name, type: 'Armor' });
-        if (mods.shield > 0) shieldBonuses.push({ val: mods.shield, source: slotData.name, type: 'Shield' });
+        if (mods.armor > 0) armorBonuses.push({ val: mods.armor, source: mods.armorSourceLabel || slotData.name, type: 'Armor' });
+        if (mods.shield > 0) shieldBonuses.push({ val: mods.shield, source: mods.shieldSourceLabel || slotData.name, type: 'Shield' });
         if (mods.natural > 0) naturalBonuses.push({ val: mods.natural, source: slotData.name, type: mods.naturalBonusType || mods.bonusType || 'Natural' });
         if (mods.deflection > 0) deflectionBonuses.push({ val: mods.deflection, source: slotData.name, type: 'Deflection' });
         if (mods.dodge > 0) dodgeBonuses.push({ val: mods.dodge, source: slotData.name, type: 'Dodge' });
@@ -7190,7 +7394,7 @@ const RuleEngine = {
       ? 'Moderate Fortification 50% (4/4 Heart Spells)'
       : (activeHeartCount >= 2 ? `Light Fortification 25% (${activeHeartCount}/4 Heart Spells)` : null);
 
-    // 3.5. Evaluate Feats, Special Abilities & DM Boons (Canonical V2/V3)
+    // 3.5. Evaluate Feats, Special Abilities & Homebrew (Canonical V2/V3)
     if (character.flatFooted || character.tactical?.flatFooted || tacticalOptions?.flatFooted) {
       conditionFlatFooted = true;
     }
@@ -7250,7 +7454,7 @@ const RuleEngine = {
           : 1;
         if (currentCount < Math.min(maxAllowed, seenInProg)) {
           existingFeatCounts.set(clean, currentCount + 1);
-          allAbilitiesAndFeats.push(typeof fStr === 'string' ? { name: fStr, category: String(fStr).includes('Boon') ? 'DM Boon' : 'Feat' } : fStr);
+          allAbilitiesAndFeats.push(typeof fStr === 'string' ? { name: fStr, category: String(fStr).includes('Boon') ? 'Homebrew' : 'Feat' } : fStr);
         }
       });
     });
@@ -7304,13 +7508,13 @@ const RuleEngine = {
             ? featObj.modifiers
             : (dbEntry && Array.isArray(dbEntry.modifiers) ? dbEntry.modifiers : [])));
 
-      // Auto-hydrate legacy DM Boon entries (e.g. "DM Boon: HP +20", "DM Boon: Ride +4", "DM Boon: Natural Armor AC (+2 (+1/4 Lvl))") if saved without V2 modifiers or missing scaling formula
+      // Auto-hydrate legacy Homebrew entries (e.g. "Homebrew: HP +20", "Homebrew: Ride +4", "Homebrew: Natural Armor AC (+2 (+1/4 Lvl))") if saved without V2 modifiers or missing scaling formula
       const needsScalingFormulaHydration = (cleanName.includes('boon') || cleanName.includes('grant') || String(featObj.category || '').toLowerCase().includes('boon'))
         && /([+-]?\d+)\s*(?:\/|\bper\b|\bevery\b)\s*(\d+)?\s*(?:lvl|level|cl)s?\b/i.test(`${cleanName} ${featObj.benefit || featObj.description || ''}`)
         && !featMods.some(m => m && m.formula);
       if ((featMods.length === 0 || needsScalingFormulaHydration) && (cleanName.includes('boon') || cleanName.includes('grant') || String(featObj.category || '').toLowerCase().includes('boon'))) {
-        if (typeof window !== 'undefined' && typeof window.synthesizeDmBoonFromQuery === 'function') {
-          const synth = window.synthesizeDmBoonFromQuery(cleanName, featObj.benefit || featObj.description || '', 'DM Boon');
+        if (typeof window !== 'undefined' && typeof window.synthesizeHomebrewFromQuery === 'function') {
+          const synth = window.synthesizeHomebrewFromQuery(cleanName, featObj.benefit || featObj.description || '', 'Homebrew');
           if (synth && Array.isArray(synth.modifiers) && synth.modifiers.length > 0) {
             featMods = synth.modifiers;
           }
@@ -11298,7 +11502,7 @@ const RuleEngine = {
       const effSlotKey = slotKey || item.slotKey || '';
       const combined = `${name} ${desc}`;
 
-      if (['feat', 'special ability', 'dm grant', 'dm boon', 'boon', 'class feature', 'racial trait', 'spell', 'maneuver', 'stance'].includes(catLower)) {
+      if (['feat', 'special ability', 'dm grant', 'homebrew', 'boon', 'class feature', 'racial trait', 'spell', 'maneuver', 'stance'].includes(catLower)) {
         return true;
       }
       if (/wand|scroll|potion|elixir|oil/i.test(name)) return false;
@@ -11506,6 +11710,66 @@ const RuleEngine = {
    * Projects structured V2 / V2.5 special attack cards (`6d8 Acid`, `4d8` `1d4+1` recharge, etc.)
    * without mutating `w`.
    */
+  // Rule Crafter sub-powers (`entry.powers[]`, forge_sandbox exportPower) normalized into mode-like records:
+  // { id, name, kind, action, usage, usageText, casterLevel, dcFormula, save: { type, onSave } | null, attack, range,
+  //   area, rechargeDice, damageParts, text }. Each power's V3 roll blocks are evaluated exactly like an entry mode;
+  // an attached power (refId) with no blocks of its own uses the referenced entry's effects.
+  expandEntryPowers(entry, ctx = {}) {
+    if (!entry || !Array.isArray(entry.powers) || entry.powers.length === 0) return [];
+    const character = (ctx && ctx.character) || this._activeCharacter || null;
+    const usageTextOf = (u) => {
+      if (!u || typeof u !== 'object') return '';
+      const n = Number(u.uses) || 0;
+      switch (u.mode) {
+        case 'perDay': return n ? `${n}/day` : '';
+        case 'perEncounter': return n ? `${n}/encounter` : '';
+        case 'charges': return n ? `${n} charges` : '';
+        case 'atWill': return 'At will';
+        case 'cooldown': return u.recharge ? `Recharge ${u.recharge} rounds` : '';
+        case 'spellSlot': return u.slotLevel !== undefined ? `Level ${u.slotLevel} spell slot` : '';
+        case 'resourcePool': return u.pool ? `${Number(u.cost) || 1} ${u.pool}` : '';
+        default: return '';
+      }
+    };
+    return entry.powers.map((pw, idx) => {
+      if (!pw || typeof pw !== 'object') return null;
+      let effects = Array.isArray(pw.effects) ? pw.effects : [];
+      const ref = (pw.kind === 'attached' && pw.refId) ? this.getMasterDbEntry(pw.refId) : null;
+      if (effects.length === 0 && ref && Array.isArray(ref.effects)) effects = ref.effects;
+      const id = String(pw.id || `power-${idx + 1}`);
+      const name = String(pw.name || (ref && ref.name) || `Power ${idx + 1}`);
+      const cl = Number(pw.casterLevel) || 0;
+      const evaluated = effects.length > 0
+        ? this.evaluateV3Entry(
+          Object.assign({ schemaVersion: 3, id: `${entry.id || 'entry'}:${id}`, name, effects }, cl ? { casterLevel: cl } : {}),
+          Object.assign({ character }, cl ? { cl, casterLevel: cl } : {})
+        )
+        : null;
+      const saveType = pw.save && typeof pw.save === 'object' ? String(pw.save.type || '') : '';
+      const save = saveType && saveType !== 'None'
+        ? { type: saveType, onSave: String(pw.save.effect || pw.save.onSave || 'half').toLowerCase() }
+        : null;
+      const usage = pw.usage && typeof pw.usage === 'object' ? pw.usage : null;
+      return {
+        id,
+        name,
+        kind: pw.kind || 'inline',
+        action: pw.action || '',
+        usage,
+        usageText: usageTextOf(usage),
+        casterLevel: cl || null,
+        dcFormula: (Number(pw.saveDC) || 0) > 0 ? String(Number(pw.saveDC)) : String(pw.dcFormula || ''),
+        save,
+        attack: typeof pw.attack === 'string' && pw.attack !== 'none' ? pw.attack : '',
+        range: pw.range || '',
+        area: pw.area || '',
+        rechargeDice: usage && usage.mode === 'cooldown' && usage.recharge ? String(usage.recharge) : '',
+        damageParts: evaluated && Array.isArray(evaluated.damageParts) ? evaluated.damageParts : [],
+        text: pw.text || ''
+      };
+    }).filter(Boolean);
+  },
+
   deriveSpecialAttacks(w, legoEval = null, customDb = []) {
     if (!w || typeof w !== 'object') return [];
     const stripTag = (str) => String(str || '').replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️\s]+(\[.*?\])?\s*/, '').trim();
@@ -11545,27 +11809,135 @@ const RuleEngine = {
     const dbList = Array.isArray(customDb) && customDb.length > 0
       ? customDb
       : (Array.isArray(w.customDb) ? w.customDb : []);
+    const charDbList = Array.isArray(w.customDb) ? w.customDb : [];
+    const customEntryMap = (w.customEntries && typeof w.customEntries === 'object') ? w.customEntries : null;
+    const shortId = (id) => String(id || '').trim().toLowerCase().split(':').pop();
+
+    // Immutable-id resolution first (character customEntries -> character customDb -> supplied db -> compendium),
+    // display-name match only as the legacy fallback.
+    const resolveDbRecord = (item, lowerName) => {
+      const ids = [item.id, item.entryId, item.baseEntryId, item.srdId].filter(Boolean).map(String);
+      for (const id of ids) {
+        if (customEntryMap) {
+          const mapKey = Object.prototype.hasOwnProperty.call(customEntryMap, id)
+            ? id
+            : Object.keys(customEntryMap).find(k => shortId(k) === shortId(id));
+          const direct = mapKey ? customEntryMap[mapKey] : null;
+          if (direct && typeof direct === 'object') return direct;
+        }
+        for (const pool of [charDbList, dbList]) {
+          const hit = pool.find(m => m && m.id && (m.id === id || shortId(m.id) === shortId(id)));
+          if (hit) return hit;
+        }
+        const master = this.getMasterDbEntry(id);
+        if (master && master.id && shortId(master.id) === shortId(id)) return master;
+      }
+      return dbList.find(m => m && m.name && stripTag(m.name).toLowerCase() === lowerName)
+        || charDbList.find(m => m && m.name && stripTag(m.name).toLowerCase() === lowerName)
+        || null;
+    };
 
     const seen = new Set();
+    const seenNames = new Map();
     const result = [];
     const curRound = Number(w.tactical?.round || w.encounterRound) || 1;
     const ruleMasterRef = (typeof window !== 'undefined' && window.RuleMaster)
       || (typeof RuleMaster !== 'undefined' ? RuleMaster : null);
 
+    const parseActionLabel = (raw) => {
+      const c = String(raw || 'Standard Action').trim().toLowerCase();
+      if (c.includes('move')) return ['move', 'Move Action'];
+      if (c.includes('swift')) return ['swift', 'Swift Action'];
+      if (c.includes('immediate') || c.includes('reaction')) return ['immediate', 'Immediate Action'];
+      if (c.includes('full')) return ['full', 'Full-Round Action'];
+      if (c.includes('free')) return ['free', 'Free Action'];
+      return ['standard', 'Standard Action'];
+    };
+
+    const emitAttack = (spec) => {
+      const cleanParts = (spec.damageParts || []).filter(dp => dp && dp.dice);
+      const dp0 = cleanParts[0] || { dice: '1d6', bonus: 0, type: 'Damage' };
+      const bonusNum = Number(dp0.bonus || 0);
+      const dmgFormula = `${dp0.dice}${bonusNum ? (bonusNum > 0 ? '+' + bonusNum : bonusNum) : ''}`;
+      const dmgType = dp0.type || 'Damage';
+      const key = spec.key;
+
+      const cdEntry = w.tactical?.abilityCooldowns?.[key];
+      const readyRoundFromTactical = (cdEntry && typeof cdEntry === 'object')
+        ? Number(cdEntry.readyRound || 0)
+        : Number(cdEntry || 0);
+      const remFromTactical = Math.max(0, readyRoundFromTactical - curRound);
+      const remFromDirect = Number(w.specialAttackCooldowns?.[key]) || 0;
+      const remFromRes = Number(spec.roundRes?.cooldownRemaining) || 0;
+      const cooldownRemaining = Math.max(remFromTactical, remFromDirect, remFromRes);
+      const readyRound = readyRoundFromTactical > curRound
+        ? readyRoundFromTactical
+        : (cooldownRemaining > 0 ? curRound + cooldownRemaining : 0);
+
+      const dcEval = (spec.save || spec.dcFormula)
+        ? this.evaluateAbilitySaveDc({ dcFormula: spec.dcFormula, benefit: spec.benefit }, w)
+        : null;
+      const [rawActionType, effActionLabel] = parseActionLabel(spec.actionCandidate);
+
+      result.push({
+        key,
+        abilityKey: key,
+        id: spec.id || key,
+        entryId: spec.entryId || key,
+        powerId: spec.powerId || null,
+        modeId: spec.modeId || null,
+        resourceId: spec.resourceId || null,
+        name: spec.name,
+        source: spec.source || 'Special Ability',
+        damageParts: cleanParts,
+        dice: dmgFormula,
+        dmgFormula,
+        diceFormula: dmgFormula,
+        dmgType,
+        save: spec.save || '',
+        dcFormula: spec.dcFormula || '',
+        dc: dcEval ? dcEval.dc : null,
+        dcVal: dcEval ? dcEval.dc : null,
+        dcBreakdown: dcEval ? dcEval.breakdown : '',
+        range: spec.range || '',
+        attack: spec.attack || '',
+        usage: spec.usage || null,
+        usageText: spec.usageText || '',
+        recharge: spec.recharge || '',
+        rechargeDice: spec.rechargeDice || '',
+        cooldownExpr: spec.rechargeDice || '',
+        cooldownRemaining,
+        remainingCooldown: cooldownRemaining,
+        readyRound,
+        isOnCooldown: cooldownRemaining > 0,
+        isReady: cooldownRemaining === 0,
+        action: effActionLabel,
+        actionType: rawActionType,
+        benefit: spec.benefit || '',
+        desc: spec.benefit || ''
+      });
+    };
+
     rawPool.forEach(item => {
       const cleanName = stripTag(item.name || '');
       if (!cleanName) return;
       const lower = cleanName.toLowerCase();
-      if (seen.has(lower) || excludedNames.has(lower) || lower.startsWith('sneak attack')) return;
+      if (excludedNames.has(lower) || lower.startsWith('sneak attack')) return;
 
-      const dbMatch = dbList.find(m => m && m.name && stripTag(m.name).toLowerCase() === lower) || null;
+      const dbMatch = resolveDbRecord(item, lower);
+      const identity = String(item.id || (dbMatch && dbMatch.id) || '').trim().toLowerCase();
+      const identityKey = identity ? `id:${shortId(identity)}` : `name:${lower}`;
+      const nameIds = seenNames.get(lower);
+      if (seen.has(identityKey) || (nameIds && (!identity || nameIds.has(`name:${lower}`)))) return;
+
       let merged = item._mutated
         ? Object.assign({}, dbMatch || {}, item, { name: cleanName })
         : Object.assign({}, item, dbMatch || {}, { name: cleanName });
       merged = this.ensureV2Entry(merged, { character: w });
       const benText = merged.benefit || merged.desc || merged.description || merged.text || '';
+      const entryPowers = this.expandEntryPowers(merged, { character: w });
 
-      if (!merged.dcFormula && !merged.recharge && (!Array.isArray(merged.damageParts) || merged.damageParts.length === 0)) {
+      if (!merged.dcFormula && !merged.recharge && entryPowers.length === 0 && (!Array.isArray(merged.damageParts) || merged.damageParts.length === 0)) {
         if (ruleMasterRef && typeof ruleMasterRef.parseStructuredAbilityStatBlock === 'function') {
           const parsed = ruleMasterRef.parseStructuredAbilityStatBlock(cleanName, benText, merged.category || merged.type || '');
           if (parsed) {
@@ -11583,6 +11955,16 @@ const RuleEngine = {
         }
       }
 
+      const entryName = merged.name || cleanName;
+      const entryKey = (merged.id || lower).replace(/[^a-z0-9_:]+/gi, '_').replace(/^_|_$/g, '');
+      const entrySource = merged.source || merged.category || 'Special Ability';
+      const dbExplicitAction = dbMatch ? (dbMatch.action || dbMatch.actionType || '') : '';
+      const itemNonDefaultAction = (item && item.actionType && !['standard', 'passive'].includes(String(item.actionType).toLowerCase()))
+        ? item.actionType
+        : ((item && item.action && !/^(standard(\s+action)?|passive)$/i.test(String(item.action).trim())) ? item.action : '');
+      let emitted = false;
+
+      // (a) The entry itself (V2 damageParts or its primary V3 mode).
       const primaryModeRaw = Array.isArray(merged.modes) && merged.modes.length > 0 ? merged.modes[0] : null;
       const primaryMode = (primaryModeRaw && (Array.isArray(primaryModeRaw.effects) || Array.isArray(primaryModeRaw.blocks)))
         ? this.evaluateV3Entry({ ...primaryModeRaw, schemaVersion: 3 }, { character: w })
@@ -11600,100 +11982,67 @@ const RuleEngine = {
       const rf = merged.ruleFlags || {};
       const effRechargeDice = merged.rechargeDice || rf.rechargeFormula || (roundRes && ((roundRes.recharge && roundRes.recharge.dice) || roundRes.rechargeFormula)) || '';
       const effRange = merged.range || (primaryMode && (primaryMode.area || primaryMode.range)) || '';
-      const dbExplicitAction = dbMatch ? (dbMatch.action || dbMatch.actionType || '') : '';
-      const itemNonDefaultAction = (item && item.actionType && !['standard', 'passive'].includes(String(item.actionType).toLowerCase()))
-        ? item.actionType
-        : ((item && item.action && !/^(standard(\s+action)?|passive)$/i.test(String(item.action).trim())) ? item.action : '');
-      const rawActionCandidate = String(
-        dbExplicitAction ||
-        itemNonDefaultAction ||
-        (primaryMode && (primaryMode.action || primaryMode.actionType)) ||
-        merged.action ||
-        merged.actionType ||
-        'Standard Action'
-      ).trim().toLowerCase();
-      let rawActionType = 'standard';
-      let effActionLabel = 'Standard Action';
-      if (rawActionCandidate.includes('move')) {
-        rawActionType = 'move';
-        effActionLabel = 'Move Action';
-      } else if (rawActionCandidate.includes('swift')) {
-        rawActionType = 'swift';
-        effActionLabel = 'Swift Action';
-      } else if (rawActionCandidate.includes('immediate') || rawActionCandidate.includes('reaction')) {
-        rawActionType = 'immediate';
-        effActionLabel = 'Immediate Action';
-      } else if (rawActionCandidate.includes('full')) {
-        rawActionType = 'full';
-        effActionLabel = 'Full-Round Action';
-      } else if (rawActionCandidate.includes('free')) {
-        rawActionType = 'free';
-        effActionLabel = 'Free Action';
-      }
-
+      const effAttack = (typeof merged.attack === 'string' && merged.attack) || (primaryMode && typeof primaryMode.attack === 'string' && primaryMode.attack) || '';
       const hasDmgParts = Array.isArray(effDamageParts) && effDamageParts.some(dp => dp && dp.dice);
       const hasV2SpecialFlag = Boolean(rf.isBreathWeapon || rf.isSpecialAttack || rf.isStructuredAbility || rf.rechargeFormula);
-      const hasSaveOrRecharge = Boolean(hasV2SpecialFlag || effDcFormula || effSaveStr || merged.recharge || effRechargeDice);
-      const isBreathOrBlast = hasV2SpecialFlag || /\b(breath weapon|breath|cone of|line of|gaze|spit|acid|fire|cold|electricity|sonic)\b/i.test(`${cleanName} ${benText}`);
+      const hasDelivery = Boolean(hasV2SpecialFlag || effDcFormula || effSaveStr || merged.recharge || effRechargeDice || effRange || effAttack);
 
-      if (hasDmgParts && (hasSaveOrRecharge || isBreathOrBlast || effRange)) {
-        seen.add(lower);
-        const key = (merged.id || lower).replace(/[^a-z0-9_:]+/gi, '_').replace(/^_|_$/g, '');
-        const cleanParts = effDamageParts.filter(dp => dp && dp.dice);
-        const dp0 = cleanParts[0] || { dice: '1d6', bonus: 0, type: 'Damage' };
-        const bonusNum = Number(dp0.bonus || 0);
-        const dmgFormula = `${dp0.dice}${bonusNum ? (bonusNum > 0 ? '+' + bonusNum : bonusNum) : ''}`;
-        const dmgType = dp0.type || 'Damage';
-
-        const cdEntry = w.tactical?.abilityCooldowns?.[key];
-        const readyRoundFromTactical = (cdEntry && typeof cdEntry === 'object')
-          ? Number(cdEntry.readyRound || 0)
-          : Number(cdEntry || 0);
-        const remFromTactical = Math.max(0, readyRoundFromTactical - curRound);
-        const remFromDirect = Number(w.specialAttackCooldowns?.[key]) || 0;
-        const remFromRes = Number(roundRes?.cooldownRemaining) || 0;
-        const cooldownRemaining = Math.max(remFromTactical, remFromDirect, remFromRes);
-        const readyRound = readyRoundFromTactical > curRound
-          ? readyRoundFromTactical
-          : (cooldownRemaining > 0 ? curRound + cooldownRemaining : 0);
-
-        const dcEval = (effSaveStr || effDcFormula)
-          ? this.evaluateAbilitySaveDc({ dcFormula: effDcFormula, benefit: benText }, w)
-          : null;
-
-        result.push({
-          key,
-          abilityKey: key,
-          id: merged.id || key,
-          entryId: merged.id || key,
+      // Structural gate: damage plus a delivery (save / DC / recharge / range / area / attack roll).
+      if (hasDmgParts && hasDelivery) {
+        emitted = true;
+        emitAttack({
+          key: entryKey,
+          id: merged.id || entryKey,
+          entryId: merged.id || entryKey,
           modeId: primaryMode?.id || null,
           resourceId: anyRes?.id || null,
-          name: merged.name || cleanName,
-          source: merged.source || merged.category || 'Special Ability',
-          damageParts: cleanParts,
-          dice: dmgFormula,
-          dmgFormula,
-          diceFormula: dmgFormula,
-          dmgType,
+          roundRes,
+          name: entryName,
+          source: entrySource,
+          damageParts: effDamageParts,
           save: effSaveStr,
           dcFormula: effDcFormula,
-          dc: dcEval ? dcEval.dc : null,
-          dcVal: dcEval ? dcEval.dc : null,
-          dcBreakdown: dcEval ? dcEval.breakdown : '',
           range: effRange,
+          attack: effAttack,
           recharge: merged.recharge || (effRechargeDice ? `${effRechargeDice} rounds` : ''),
           rechargeDice: effRechargeDice,
-          cooldownExpr: effRechargeDice,
-          cooldownRemaining,
-          remainingCooldown: cooldownRemaining,
-          readyRound,
-          isOnCooldown: cooldownRemaining > 0,
-          isReady: cooldownRemaining === 0,
-          action: effActionLabel,
-          actionType: rawActionType,
-          benefit: benText,
-          desc: benText
+          actionCandidate: dbExplicitAction || itemNonDefaultAction || (primaryMode && (primaryMode.action || primaryMode.actionType)) || merged.action || merged.actionType || 'Standard Action',
+          benefit: benText
         });
+      }
+
+      // (b) Each Rule Crafter sub-power (entry.powers[]) as its own special attack keyed `entryId:powerId`.
+      entryPowers.forEach(pw => {
+        const pwHasDmg = Array.isArray(pw.damageParts) && pw.damageParts.some(dp => dp && dp.dice);
+        const pwSaveStr = pw.save ? `${pw.save.type} (${pw.save.onSave})` : '';
+        const pwDelivery = Boolean(pwSaveStr || pw.dcFormula || pw.area || pw.range || pw.attack || pw.rechargeDice);
+        if (!pwHasDmg || !pwDelivery) return;
+        emitted = true;
+        emitAttack({
+          key: `${entryKey}:${String(pw.id).replace(/[^a-z0-9_:-]+/gi, '_')}`,
+          id: `${merged.id || entryKey}:${pw.id}`,
+          entryId: merged.id || entryKey,
+          powerId: pw.id,
+          name: `${entryName} — ${pw.name}`,
+          source: entrySource,
+          damageParts: pw.damageParts,
+          save: pwSaveStr,
+          dcFormula: pw.dcFormula,
+          range: [pw.area, pw.range].filter(Boolean).join(', '),
+          attack: pw.attack,
+          usage: pw.usage,
+          usageText: pw.usageText,
+          recharge: pw.rechargeDice ? `${pw.rechargeDice} rounds` : '',
+          rechargeDice: pw.rechargeDice,
+          actionCandidate: pw.action || 'Standard Action',
+          benefit: pw.text || benText
+        });
+      });
+
+      if (emitted) {
+        seen.add(identityKey);
+        if (!seenNames.has(lower)) seenNames.set(lower, new Set());
+        seenNames.get(lower).add(identityKey);
       }
     });
 
@@ -12159,14 +12508,14 @@ const RuleEngine = {
       }
       const clMode = w.settings.clMode || 'Class Level';
       const isWarlockBoon = clMode.includes('Warlock Boon') || w.settings.warlockBoon === true;
-      const isDmBoonActive = (clMode === 'Character Level (DM Boon)') || isWarlockBoon;
-      if (!isDmBoonActive) return [];
+      const isHomebrewActive = (clMode === 'Character Level (Homebrew)') || isWarlockBoon;
+      if (!isHomebrewActive) return [];
       const out = [];
       if (isWarlockBoon) out.push('warlock');
       const rawCasterType = String(w.settings.casterType || '').toLowerCase().trim();
       if (w.settings.casterTypeExplicit === true && valid.includes(rawCasterType)) {
         if (!out.includes(rawCasterType)) out.push(rawCasterType);
-      } else if (clMode === 'Character Level (DM Boon)') {
+      } else if (clMode === 'Character Level (Homebrew)') {
         const order = ['spontaneous', 'prepared', 'divine', 'martial'];
         let bestDisc = null;
         let maxLvl = 0;
@@ -12257,8 +12606,8 @@ const RuleEngine = {
 
     // 1. Spontaneous Caster Info
     const defaultSpontClass = isWarlockBoon && sorcLvls === 0
-      ? 'Warlock (DM Boon)'
-      : (isSpontBoon && sorcLvls === 0 ? 'Sorcerer (DM Boon)' : 'Sorcerer');
+      ? 'Warlock (Homebrew)'
+      : (isSpontBoon && sorcLvls === 0 ? 'Sorcerer (Homebrew)' : 'Sorcerer');
     const spontClassLabel = w.spellcasting?.primaryClass || (hasSpontaneous ? defaultSpontClass : (w.isNpc ? 'Sorcerer' : ''));
     let spontStatKey = 'CHA';
     if (['Wizard', 'Artificer'].includes(spontClassLabel)) spontStatKey = 'INT';
@@ -12268,7 +12617,7 @@ const RuleEngine = {
     const spontStatVal = Number(w.stats?.[spontStatKey]?.value ?? abi[spontStatKey.toLowerCase()] ?? 10);
     const spontStatMod = this.getAbilityMod(spontStatVal);
     const spontClMode = isSpontBoon
-      ? (isWarlockBoon ? 'Warlock Boon (CL = Char Lvl)' : 'Character Level (DM Boon)')
+      ? (isWarlockBoon ? 'Warlock Boon (CL = Char Lvl)' : 'Character Level (Homebrew)')
       : rawClMode;
     let spontCl = 0;
     if (w.isNpc && (w.spellcasting?.cl !== undefined || w.spellcasting?.caster_level !== undefined)) {
@@ -12287,7 +12636,7 @@ const RuleEngine = {
     if (isPrepBoon) prepCl = Math.max(wizLvls, activeLevels, 1);
     else if (wizLvls > 0) prepCl = wizLvls;
     else if (hasPrepared) prepCl = 1;
-    const prepClMode = isPrepBoon ? 'Character Level (DM Boon)' : rawClMode;
+    const prepClMode = isPrepBoon ? 'Character Level (Homebrew)' : rawClMode;
 
     // 3. Divine Caster Info & Domains (pure, no mutation of w.spellcasting.domains)
     const getPureClericDomains = () => {
@@ -12312,7 +12661,7 @@ const RuleEngine = {
     const insanityBonus = (hasMadness && (divLvls > 0 || divCl > 0)) ? Math.max(1, Math.floor((divLvls || divCl || 1) / 2)) : 0;
     const wisVal = baseWisVal + insanityBonus;
     const wisMod = this.getAbilityMod(wisVal);
-    const divClMode = isDivBoon ? 'Character Level (DM Boon)' : rawClMode;
+    const divClMode = isDivBoon ? 'Character Level (Homebrew)' : rawClMode;
 
     const hasDomainCap = (() => {
       const rNames = [];
@@ -12626,7 +12975,7 @@ const RuleEngine = {
         };
       }
       if (!adeptClass) {
-        adeptClass = (martialStudyCount > 0 || martialStanceCount > 0) ? 'Martial Study / Stance' : 'Martial Adept (DM Boon)';
+        adeptClass = (martialStudyCount > 0 || martialStanceCount > 0) ? 'Martial Study / Stance' : 'Martial Adept (Homebrew)';
       }
       const activeCharLvl = activeProg.length || Number(w.level) || 1;
       const computedIl = isMartialBoon
@@ -12951,7 +13300,7 @@ const RuleEngine = {
         },
         prepared: {
           active: Boolean(hasPrepared),
-          classLabel: isPrepBoon && wizLvls === 0 ? 'Wizard (DM Boon)' : 'Wizard',
+          classLabel: isPrepBoon && wizLvls === 0 ? 'Wizard (Homebrew)' : 'Wizard',
           abilityKey: 'int',
           statKey: 'INT',
           abilityScore: intVal,
@@ -12966,7 +13315,7 @@ const RuleEngine = {
         },
         divine: {
           active: Boolean(hasDivine),
-          classLabel: isDivBoon && divLvls === 0 ? 'Cleric (DM Boon)' : 'Cleric',
+          classLabel: isDivBoon && divLvls === 0 ? 'Cleric (Homebrew)' : 'Cleric',
           abilityKey: 'wis',
           statKey: 'WIS',
           abilityScore: wisVal,
@@ -13163,7 +13512,7 @@ const RuleEngine = {
             bonusFeatsTaken++;
             if (s.includes('[Bonus]')) bonusSlotsEarned++;
           }
-        } else if (!s.includes('[DM Boon]') && !s.includes('Invocation')) {
+        } else if (!s.includes('[Homebrew]') && !s.includes('Invocation')) {
           if (isActive) regularFeatsTaken++;
         }
       });
@@ -13877,9 +14226,9 @@ const RuleEngine = {
       discSet.add('truenaming');
     }
 
-    // Check dmBoons / specialAbilities for granted spells/powers/maneuvers
+    // Check homebrewBoons / specialAbilities for granted spells/powers/maneuvers
     const boonsAndAbilities = [
-      ...(Array.isArray(w.dmBoons) ? w.dmBoons : []),
+      ...(Array.isArray(w.homebrewBoons) ? w.homebrewBoons : []),
       ...(Array.isArray(w.specialAbilities) ? w.specialAbilities : [])
     ];
     boonsAndAbilities.forEach(b => {

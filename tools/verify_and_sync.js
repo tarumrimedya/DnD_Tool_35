@@ -345,7 +345,7 @@ function main() {
         console.error(`[FAIL] Architectural violation in ${rel}: 'new Proxy()' is banned per project consistency rules.`);
         errors++;
       }
-      if (/const\s+(DND35_FEAT_CATALOG|DND35_DM_BOONS_CATALOG|DND35_FLAWS_CATALOG|DND35_WARLOCK_INVOCATIONS|SRD_WEAPON_PROPERTIES|DND35_CLERIC_DOMAINS)\s*=/.test(text)) {
+      if (/const\s+(DND35_FEAT_CATALOG|DND35_HOMEBREW_BOONS_CATALOG|DND35_FLAWS_CATALOG|DND35_WARLOCK_INVOCATIONS|SRD_WEAPON_PROPERTIES|DND35_CLERIC_DOMAINS)\s*=/.test(text)) {
         console.error(`[FAIL] Architectural violation in ${rel}: Duplicate static catalog definition detected. Use SrdCompendium single-source-of-truth.`);
         errors++;
       }
@@ -468,7 +468,7 @@ function main() {
   ]);
   const RATCHET_LIMITS = {
     'index.html':         { inlineEvents: 0,   windowAssigns: 0 },
-    'char_hud.js':        { inlineEvents: 0,   windowAssigns: 48 },
+    'char_hud.js':        { inlineEvents: 0,   windowAssigns: 47 },
     'char_combat.js':     { inlineEvents: 0,   windowAssigns: 80 },
     'char_spells.js':     { inlineEvents: 0,   windowAssigns: 67 },
     'char_progression.js':{ inlineEvents: 0,   windowAssigns: 45 },

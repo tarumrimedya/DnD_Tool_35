@@ -746,6 +746,7 @@
         resolvedId: query.id || null,
         kind: query.kind || null,
         isCustomOverride: false,
+        customKind: null,
         hasSrdBase: false
       };
 
@@ -763,7 +764,7 @@
       armor: 'Armor',
       shield: 'Shield',
       feat: 'Feat',
-      boon: 'DM Boon',
+      boon: 'Homebrew',
       spell: 'Spell',
       maneuver: 'Maneuver',
       psionic: 'Psionic Power',
@@ -806,7 +807,7 @@
         <div class="min-w-0 flex-1">
           <div class="flex items-center gap-2 flex-wrap">
             <h3 class="text-base font-bold text-white leading-tight break-words">${escapeHtml(entry.name || query.name || 'Entity')}</h3>
-            ${resolved.isCustomOverride ? '<span class="px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-500/50 text-[10px] font-bold">⚒️ Crafted</span>' : ''}
+            ${resolved.customKind === 'override' ? '<span class="px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-500/50 text-[10px] font-bold">⚒️ Crafted Override</span>' : (resolved.customKind === 'homebrew' ? '<span class="px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-500/50 text-[10px] font-bold">⚒️ Homebrew</span>' : '')}
           </div>
           <div class="mt-1 flex items-center gap-1.5 flex-wrap text-[11px] text-slate-400">
             <span class="px-2 py-0.5 rounded bg-slate-800 text-slate-200 border border-slate-700 font-semibold">${escapeHtml(kindLabel)}</span>
@@ -823,7 +824,7 @@
       <div class="p-3 border-t border-slate-800 bg-slate-950/80 flex flex-wrap items-center justify-between gap-2">
         <div class="flex flex-wrap items-center gap-1.5">
           <button type="button" data-action="entity:edit-crafter" class="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold text-xs cursor-pointer shadow-sm">⚒️ Edit in Rule Crafter</button>
-          ${resolved.isCustomOverride ? '<button type="button" data-action="entity:reset-srd" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-200 border border-amber-500/40 font-semibold text-xs cursor-pointer">↺ Reset to Official SRD</button>' : ''}
+          ${resolved.customKind === 'override' ? '<button type="button" data-action="entity:reset-srd" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-200 border border-amber-500/40 font-semibold text-xs cursor-pointer">↺ Reset to Official SRD</button>' : (resolved.customKind === 'homebrew' ? '<button type="button" data-action="entity:reset-srd" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-rose-200 border border-rose-500/40 font-semibold text-xs cursor-pointer">🗑️ Delete Homebrew</button>' : '')}
         </div>
         <div class="flex flex-wrap items-center gap-1.5">
           ${showReplace ? '<button type="button" data-action="entity:replace" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-semibold text-xs cursor-pointer">🔄 Replace</button>' : ''}
@@ -893,7 +894,7 @@
       armor: ['gearPool', 'inventory'],
       shield: ['gearPool', 'inventory'],
       feat: ['feats'],
-      boon: ['dmBoons', 'feats'],
+      boon: ['homebrewBoons', 'feats'],
       template: ['templates'],
       spell: ['spells', 'knownSpells', 'preparedSpells'],
       maneuver: ['maneuvers', 'spells'],
@@ -974,9 +975,16 @@
       if (!resolved || !resolved.resolvedId) return;
       const name = (resolved.entry && resolved.entry.name) || 'this entry';
       const dndUi = root.DnDUI;
+      const isHomebrew = resolved.customKind === 'homebrew';
       let ok = true;
       if (dndUi && typeof dndUi.confirm === 'function') {
-        ok = await dndUi.confirm(`Restore "${name}" to Official SRD Rules? Any character-local Rule Crafter edits for this entry will be removed.`, {
+        ok = await dndUi.confirm(isHomebrew
+          ? `Delete homebrew entry "${name}"? This removes it from this character and cannot be undone.`
+          : `Restore "${name}" to Official SRD Rules? Any character-local Rule Crafter edits for this entry will be removed.`, isHomebrew ? {
+          title: 'Delete Homebrew',
+          confirmLabel: 'Delete Homebrew',
+          cancelLabel: 'Cancel'
+        } : {
           title: 'Reset to Official SRD',
           confirmLabel: 'Restore Official SRD',
           cancelLabel: 'Cancel'
@@ -985,7 +993,7 @@
       if (!ok) return;
       const bridge = root.CharStore && root.CharStore.StudioBridge;
       if (bridge && typeof bridge.resetCustomEntry === 'function') {
-        bridge.resetCustomEntry(resolved.resolvedId);
+        bridge.resetCustomEntry(resolved.resolvedId, { homebrew: isHomebrew });
       }
       if (_activeInspectorSpec) {
         openEntityInspector(_activeInspectorSpec);
@@ -1082,14 +1090,25 @@
       });
     });
 
-    Actions.register('crafter:reset-viewed-feat', () => {
+    Actions.register('crafter:reset-viewed-feat', async () => {
       const viewed = root.currentViewedFeatItem;
       const name = (viewed && viewed.name) || root.currentViewedFeatName || '';
       if (!name) return;
       const bridge = root.CharStore && root.CharStore.StudioBridge;
       if (bridge && typeof bridge.resolveEntity === 'function' && typeof bridge.resetCustomEntry === 'function') {
-        const res = bridge.resolveEntity({ kind: 'feat', name });
-        if (res && res.resolvedId) bridge.resetCustomEntry(res.resolvedId);
+        const res = bridge.resolveEntity({ kind: 'feat', id: viewed && viewed.id ? viewed.id : undefined, name });
+        if (res && res.resolvedId) {
+          const isHomebrew = res.customKind === 'homebrew';
+          if (isHomebrew && root.DnDUI && typeof root.DnDUI.confirm === 'function') {
+            const ok = await root.DnDUI.confirm(`Delete homebrew entry "${name}"? This removes it from this character and cannot be undone.`, {
+              title: 'Delete Homebrew',
+              confirmLabel: 'Delete Homebrew',
+              cancelLabel: 'Cancel'
+            });
+            if (!ok) return;
+          }
+          bridge.resetCustomEntry(res.resolvedId, { homebrew: isHomebrew });
+        }
       }
       if (typeof root.closeFeatDetailModal === 'function') root.closeFeatDetailModal();
     });

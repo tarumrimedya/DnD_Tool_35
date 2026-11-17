@@ -66,14 +66,14 @@
     "source": "Magic Item Compendium p.6",
     "cost": 0,
     "targetType": "Armor",
-    "appliesTo": "Armor or shield",
+    "appliesTo": "armor+shield",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 6,
     "requirements": "Craft Magic Arms and Armor, Melf's acid arrow.",
     "itemModifier": {
       "kind": "enchantment",
-      "appliesTo": "armor",
+      "appliesTo": "armor+shield",
       "costMode": "plus",
       "enhancementIncrease": 1,
       "flatGp": 0,
@@ -94,13 +94,15 @@
     "tags": [
       "mic",
       "armor",
-      "enhancement"
+      "enhancement",
+      "shield"
     ],
     "weight": 0,
     "aura": "Moderate; (DC 18) conjuration",
     "activation": "--",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Armor or shield"
   },
   {
     "schemaVersion": 3,
@@ -112,7 +114,7 @@
     "source": "Magic Item Compendium p.28",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 12,
@@ -163,7 +165,8 @@
     "aura": "Strong; (DC 21) conjuration",
     "activation": "Standard (command) and --",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -267,7 +270,7 @@
     "source": "Magic Item Compendium p.6",
     "cost": 500,
     "targetType": "Armor",
-    "appliesTo": "Armor",
+    "appliesTo": "armor",
     "enhIncrease": 0,
     "flatCost": 500,
     "casterLevel": 5,
@@ -302,7 +305,8 @@
     "aura": "Faint; (DC 17) transmutation",
     "activation": "--",
     "priceText": "+500 gp",
-    "costToCreate": "250 gp, 20 XP, 1 day."
+    "costToCreate": "250 gp, 20 XP, 1 day.",
+    "appliesToText": "Armor"
   },
   {
     "schemaVersion": 3,
@@ -352,7 +356,8 @@
     "aura": "Strong; (DC 22) transmutation",
     "activation": "--",
     "priceText": "+8,000 gp",
-    "costToCreate": "4,000 gp, 320 XP, 8 days."
+    "costToCreate": "4,000 gp, 320 XP, 8 days.",
+    "appliesTo": "armor"
   },
   {
     "schemaVersion": 3,
@@ -402,7 +407,8 @@
     "aura": "Moderate; (DC 19) transmutation",
     "activation": "--",
     "priceText": "+4,000 gp",
-    "costToCreate": "2,000 gp, 160 XP, 4 days."
+    "costToCreate": "2,000 gp, 160 XP, 4 days.",
+    "appliesTo": "armor"
   },
   {
     "schemaVersion": 3,
@@ -923,14 +929,14 @@
     "source": "Magic Item Compendium p.6",
     "cost": 0,
     "targetType": "Armor",
-    "appliesTo": "Armor or shield",
+    "appliesTo": "armor+shield",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 5,
     "requirements": "Craft Magic Arms and Armor, bull's strength.",
     "itemModifier": {
       "kind": "enchantment",
-      "appliesTo": "armor",
+      "appliesTo": "armor+shield",
       "costMode": "plus",
       "enhancementIncrease": 1,
       "flatGp": 0,
@@ -953,13 +959,15 @@
     "tags": [
       "mic",
       "armor",
-      "enhancement"
+      "enhancement",
+      "shield"
     ],
     "weight": 0,
     "aura": "Faint; (DC 17) transmutation",
     "activation": "--",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Armor or shield"
   },
   {
     "schemaVersion": 3,
@@ -977,7 +985,7 @@
     "requirements": "Synergy Prerequisite: Anchoring.",
     "itemModifier": {
       "kind": "enchantment",
-      "appliesTo": "armor",
+      "appliesTo": "armor+shield",
       "costMode": "plus",
       "enhancementIncrease": 1,
       "flatGp": 0,
@@ -1004,13 +1012,15 @@
       "mic",
       "armor",
       "enhancement",
-      "synergy"
+      "synergy",
+      "shield"
     ],
     "weight": 0,
     "aura": "Moderate; (DC 20) transmutation",
     "activation": "--",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesTo": "armor+shield"
   },
   {
     "schemaVersion": 3,
@@ -1178,14 +1188,14 @@
     "source": "Magic Item Compendium p.6",
     "cost": 20000,
     "targetType": "Armor",
-    "appliesTo": "Armor or shield",
+    "appliesTo": "armor+shield",
     "enhIncrease": 0,
     "flatCost": 20000,
     "casterLevel": 10,
     "requirements": "Craft Magic Arms and Armor, dimension door.",
     "itemModifier": {
       "kind": "enchantment",
-      "appliesTo": "armor",
+      "appliesTo": "armor+shield",
       "costMode": "gp",
       "enhancementIncrease": 0,
       "flatGp": 20000,
@@ -1206,13 +1216,15 @@
     "tags": [
       "mic",
       "armor",
-      "enhancement"
+      "enhancement",
+      "shield"
     ],
     "weight": 0,
     "aura": "Moderate; (DC 20) conjuration",
     "activation": "Standard (mental)",
     "priceText": "+20,000 gp",
-    "costToCreate": "10,000 gp, 800 XP, 20 days."
+    "costToCreate": "10,000 gp, 800 XP, 20 days.",
+    "appliesToText": "Armor or shield"
   },
   {
     "schemaVersion": 3,
@@ -1224,7 +1236,7 @@
     "source": "Magic Item Compendium p.28",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 2,
     "flatCost": 0,
     "casterLevel": 7,
@@ -1261,7 +1273,8 @@
     "aura": "Moderate; (DC 18) evocation",
     "activation": "--",
     "priceText": "+2 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -1273,7 +1286,7 @@
     "source": "Magic Item Compendium p.28",
     "cost": 2000,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 0,
     "flatCost": 2000,
     "casterLevel": 7,
@@ -1307,7 +1320,8 @@
     "aura": "Moderate; (DC 18) abjuration",
     "activation": "--",
     "priceText": "+2,000 gp",
-    "costToCreate": "1,000 gp, 80 XP, 2 days."
+    "costToCreate": "1,000 gp, 80 XP, 2 days.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -1319,7 +1333,7 @@
     "source": "Magic Item Compendium p.28",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Bows (not crossbows)",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 15,
@@ -1353,7 +1367,8 @@
     "aura": "Strong; (DC 22) transmutation",
     "activation": "Swift (mental)",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Bows (not crossbows)"
   },
   {
     "schemaVersion": 3,
@@ -1904,7 +1919,7 @@
     "source": "Magic Item Compendium p.28",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 2,
     "flatCost": 0,
     "casterLevel": 7,
@@ -1941,7 +1956,8 @@
     "aura": "Moderate; (DC 18) evocation",
     "activation": "--",
     "priceText": "+2 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -1953,14 +1969,14 @@
     "source": "Magic Item Compendium p.7",
     "cost": 13000,
     "targetType": "Armor",
-    "appliesTo": "Shield",
+    "appliesTo": "shield",
     "enhIncrease": 0,
     "flatCost": 13000,
     "casterLevel": 5,
     "requirements": "Craft Magic Arms and Armor, suggestion or aversion (EPH 79).",
     "itemModifier": {
       "kind": "enchantment",
-      "appliesTo": "armor",
+      "appliesTo": "shield",
       "costMode": "gp",
       "enhancementIncrease": 0,
       "flatGp": 13000,
@@ -1981,13 +1997,15 @@
     "tags": [
       "mic",
       "armor",
-      "enhancement"
+      "enhancement",
+      "shield"
     ],
     "weight": 0,
     "aura": "Faint; (DC 17) enchantment",
     "activation": "Standard (mental)",
     "priceText": "+13,000 gp",
-    "costToCreate": "6,500 gp, 520 XP, 13 days."
+    "costToCreate": "6,500 gp, 520 XP, 13 days.",
+    "appliesToText": "Shield"
   },
   {
     "schemaVersion": 3,
@@ -2146,14 +2164,14 @@
     "source": "Magic Item Compendium p.7",
     "cost": 0,
     "targetType": "Armor",
-    "appliesTo": "Armor or shield",
+    "appliesTo": "armor+shield",
     "enhIncrease": 2,
     "flatCost": 0,
     "casterLevel": 7,
     "requirements": "Craft Magic Arms and Armor, stoneskin.",
     "itemModifier": {
       "kind": "enchantment",
-      "appliesTo": "armor",
+      "appliesTo": "armor+shield",
       "costMode": "plus",
       "enhancementIncrease": 2,
       "flatGp": 0,
@@ -2175,13 +2193,15 @@
     "tags": [
       "mic",
       "armor",
-      "enhancement"
+      "enhancement",
+      "shield"
     ],
     "weight": 0,
     "aura": "Moderate; (DC 18) abjuration",
     "activation": "--",
     "priceText": "+2 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Armor or shield"
   },
   {
     "schemaVersion": 3,
@@ -2484,7 +2504,7 @@
     "source": "Magic Item Compendium p.7",
     "cost": 3750,
     "targetType": "Armor",
-    "appliesTo": "Armor",
+    "appliesTo": "armor",
     "enhIncrease": 0,
     "flatCost": 3750,
     "casterLevel": 5,
@@ -2522,7 +2542,8 @@
     "costToCreate": "1,875 gp, 150 XP, 4 days.",
     "errata": [
       "Official aura errata (MIC Errata p.295): Aura: Divination"
-    ]
+    ],
+    "appliesToText": "Armor"
   },
   {
     "schemaVersion": 3,
@@ -2575,7 +2596,8 @@
     "costToCreate": "9,375 gp, 750 XP, 19 days.",
     "errata": [
       "Official aura errata (MIC Errata p.295): Aura: Divination"
-    ]
+    ],
+    "appliesTo": "armor"
   },
   {
     "schemaVersion": 3,
@@ -2628,7 +2650,8 @@
     "costToCreate": "5,625 gp, 450 XP, 12 days.",
     "errata": [
       "Official aura errata (MIC Errata p.295): Aura: Divination"
-    ]
+    ],
+    "appliesTo": "armor"
   },
   {
     "schemaVersion": 3,
@@ -2673,7 +2696,7 @@
     "source": "Magic Item Compendium p.7",
     "cost": 15000,
     "targetType": "Armor",
-    "appliesTo": "Armor",
+    "appliesTo": "armor",
     "enhIncrease": 0,
     "flatCost": 15000,
     "casterLevel": 7,
@@ -2712,7 +2735,8 @@
     "costToCreate": "7,500 gp, 600 XP, 15 days.",
     "errata": [
       "Official errata (MIC Errata p.291): last sentence of the second paragraph substituted."
-    ]
+    ],
+    "appliesToText": "Armor"
   },
   {
     "schemaVersion": 3,
@@ -2724,7 +2748,7 @@
     "source": "Magic Item Compendium p.28",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 2,
     "flatCost": 0,
     "casterLevel": 13,
@@ -2758,7 +2782,8 @@
     "aura": "Strong; (DC 21) abjuration",
     "activation": "Free (command)",
     "priceText": "+2 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -3024,7 +3049,7 @@
     "source": "Magic Item Compendium p.7",
     "cost": 0,
     "targetType": "Armor",
-    "appliesTo": "Armor",
+    "appliesTo": "armor",
     "enhIncrease": 2,
     "flatCost": 0,
     "casterLevel": 13,
@@ -3058,7 +3083,8 @@
     "aura": "Strong; (DC 21) transmutation",
     "activation": "--",
     "priceText": "+2 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Armor"
   },
   {
     "schemaVersion": 3,
@@ -3540,7 +3566,7 @@
     "source": "Magic Item Compendium p.29",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Two-handed melee weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 7,
@@ -3591,7 +3617,8 @@
     "aura": "Moderate; (DC 18) enchantment",
     "activation": "--",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Two-handed melee weapon"
   },
   {
     "schemaVersion": 3,
@@ -3603,7 +3630,7 @@
     "source": "Magic Item Compendium p.29",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 10,
@@ -3637,7 +3664,8 @@
     "aura": "Moderate; (DC 20) abjuration",
     "activation": "Swift (command)",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -3867,7 +3895,7 @@
     "source": "Magic Item Compendium p.29",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 5,
@@ -3906,7 +3934,8 @@
     "aura": "Faint; (DC 17) transmutation",
     "activation": "-- and swift (command)",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -4132,7 +4161,7 @@
     "source": "Magic Item Compendium p.29",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 2,
     "flatCost": 0,
     "casterLevel": 6,
@@ -4166,7 +4195,8 @@
     "aura": "Moderate; (DC 18) divination",
     "activation": "Standard (command)",
     "priceText": "+2 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -4178,7 +4208,7 @@
     "source": "Magic Item Compendium p.9",
     "cost": 15000,
     "targetType": "Armor",
-    "appliesTo": "Armor",
+    "appliesTo": "armor",
     "enhIncrease": 0,
     "flatCost": 15000,
     "casterLevel": 10,
@@ -4212,7 +4242,8 @@
     "aura": "Moderate; (DC 20) transmutation",
     "activation": "Standard (command)",
     "priceText": "+15,000 gp",
-    "costToCreate": "7,500 gp, 600 XP, 15 days."
+    "costToCreate": "7,500 gp, 600 XP, 15 days.",
+    "appliesToText": "Armor"
   },
   {
     "schemaVersion": 3,
@@ -4267,7 +4298,7 @@
     "source": "Magic Item Compendium p.29",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Melee weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 7,
@@ -4301,7 +4332,8 @@
     "aura": "Moderate; (DC 18) necromancy",
     "activation": "-- and free (command)",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Melee weapon"
   },
   {
     "schemaVersion": 3,
@@ -4313,7 +4345,7 @@
     "source": "Magic Item Compendium p.29",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Melee weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 10,
@@ -4347,7 +4379,8 @@
     "aura": "Moderate; (DC 20) necromancy",
     "activation": "Free (command)",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Melee weapon"
   },
   {
     "schemaVersion": 3,
@@ -4359,7 +4392,7 @@
     "source": "Magic Item Compendium p.9",
     "cost": 1500,
     "targetType": "Armor",
-    "appliesTo": "Metal armor",
+    "appliesTo": "armor",
     "enhIncrease": 0,
     "flatCost": 1500,
     "casterLevel": 12,
@@ -4394,7 +4427,8 @@
     "aura": "Strong; (DC 21) abjuration",
     "activation": "--",
     "priceText": "+1,500 gp",
-    "costToCreate": "750 gp, 60 XP, 2 days."
+    "costToCreate": "750 gp, 60 XP, 2 days.",
+    "appliesToText": "Metal armor"
   },
   {
     "schemaVersion": 3,
@@ -4406,7 +4440,7 @@
     "source": "Magic Item Compendium p.9",
     "cost": 0,
     "targetType": "Armor",
-    "appliesTo": "Armor",
+    "appliesTo": "armor",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 5,
@@ -4440,7 +4474,8 @@
     "aura": "Faint; (DC 17) illusion",
     "activation": "Swift (command)",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Armor"
   },
   {
     "schemaVersion": 3,
@@ -4489,7 +4524,8 @@
     "aura": "Strong; (DC 21) illusion",
     "activation": "Swift (command)",
     "priceText": "+2 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesTo": "armor"
   },
   {
     "schemaVersion": 3,
@@ -4501,7 +4537,7 @@
     "source": "Magic Item Compendium p.29",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Melee weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 2,
     "flatCost": 0,
     "casterLevel": 6,
@@ -4535,7 +4571,8 @@
     "aura": "Moderate; (DC 18) illusion",
     "activation": "Swift (command)",
     "priceText": "+2 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Melee weapon"
   },
   {
     "schemaVersion": 3,
@@ -4547,7 +4584,7 @@
     "source": "Magic Item Compendium p.30",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 3,
     "flatCost": 0,
     "casterLevel": 9,
@@ -4581,7 +4618,8 @@
     "aura": "Moderate; (DC 19) necromancy",
     "activation": "--",
     "priceText": "+3 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -6185,7 +6223,7 @@
     "source": "Magic Item Compendium p.30",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Melee weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 5,
@@ -6219,7 +6257,8 @@
     "aura": "Faint; (DC 17) abjuration",
     "activation": "--",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Melee weapon"
   },
   {
     "schemaVersion": 3,
@@ -6407,7 +6446,7 @@
     "source": "Magic Item Compendium p.30",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Melee weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 11,
@@ -6441,7 +6480,8 @@
     "aura": "Moderate; (DC 20) evocation",
     "activation": "Swift (command)",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Melee weapon"
   },
   {
     "schemaVersion": 3,
@@ -6549,7 +6589,7 @@
     "source": "Magic Item Compendium p.9",
     "cost": 4000,
     "targetType": "Armor",
-    "appliesTo": "Armor",
+    "appliesTo": "armor",
     "enhIncrease": 0,
     "flatCost": 4000,
     "casterLevel": 5,
@@ -6584,7 +6624,8 @@
     "aura": "Faint; (DC 17) transmutation",
     "activation": "--",
     "priceText": "+4,000 gp",
-    "costToCreate": "2,000 gp, 160 XP, 4 days."
+    "costToCreate": "2,000 gp, 160 XP, 4 days.",
+    "appliesToText": "Armor"
   },
   {
     "schemaVersion": 3,
@@ -6705,14 +6746,14 @@
     "source": "Magic Item Compendium p.9",
     "cost": 2000,
     "targetType": "Armor",
-    "appliesTo": "Armor or shield",
+    "appliesTo": "armor+shield",
     "enhIncrease": 0,
     "flatCost": 2000,
     "casterLevel": 9,
     "requirements": "Craft Magic Arms and Armor, teleport.",
     "itemModifier": {
       "kind": "enchantment",
-      "appliesTo": "armor",
+      "appliesTo": "armor+shield",
       "costMode": "gp",
       "enhancementIncrease": 0,
       "flatGp": 2000,
@@ -6733,13 +6774,15 @@
     "tags": [
       "mic",
       "armor",
-      "enhancement"
+      "enhancement",
+      "shield"
     ],
     "weight": 0,
     "aura": "Moderate; (DC 19) conjuration",
     "activation": "Standard (command)",
     "priceText": "+2,000 gp",
-    "costToCreate": "1,000 gp, 80 XP, 2 days."
+    "costToCreate": "1,000 gp, 80 XP, 2 days.",
+    "appliesToText": "Armor or shield"
   },
   {
     "schemaVersion": 3,
@@ -7182,7 +7225,7 @@
     "source": "Magic Item Compendium p.31",
     "cost": 2000,
     "targetType": "Weapon",
-    "appliesTo": "Spear, shortspear, or longspear",
+    "appliesTo": "weapon",
     "enhIncrease": 0,
     "flatCost": 2000,
     "casterLevel": 5,
@@ -7216,7 +7259,8 @@
     "aura": "Faint; (DC 17) transmutation",
     "activation": "Swift (command)",
     "priceText": "+2,000 gp",
-    "costToCreate": "1,000 gp, 80 XP, 2 days."
+    "costToCreate": "1,000 gp, 80 XP, 2 days.",
+    "appliesToText": "Spear, shortspear, or longspear"
   },
   {
     "schemaVersion": 3,
@@ -7228,7 +7272,7 @@
     "source": "Magic Item Compendium p.31",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Melee weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 5,
@@ -7262,7 +7306,8 @@
     "aura": "Faint; (DC 17) enchantment",
     "activation": "--",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Melee weapon"
   },
   {
     "schemaVersion": 3,
@@ -7274,7 +7319,7 @@
     "source": "Magic Item Compendium p.31",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Melee weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 8,
@@ -7325,7 +7370,8 @@
     "aura": "Moderate; (DC 19) transmutation",
     "activation": "--",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Melee weapon"
   },
   {
     "schemaVersion": 3,
@@ -8758,7 +8804,7 @@
     "source": "Magic Item Compendium p.31",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 2,
     "flatCost": 0,
     "casterLevel": 6,
@@ -8794,7 +8840,8 @@
     "aura": "Moderate; (DC 18) transmutation",
     "activation": "--",
     "priceText": "+2 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -8806,14 +8853,14 @@
     "source": "Magic Item Compendium p.9",
     "cost": 2000,
     "targetType": "Armor",
-    "appliesTo": "Armor or shield",
+    "appliesTo": "armor+shield",
     "enhIncrease": 0,
     "flatCost": 2000,
     "casterLevel": 5,
     "requirements": "Craft Magic Arms and Armor, eagle's splendor.",
     "itemModifier": {
       "kind": "enchantment",
-      "appliesTo": "armor",
+      "appliesTo": "armor+shield",
       "costMode": "gp",
       "enhancementIncrease": 0,
       "flatGp": 2000,
@@ -8835,13 +8882,15 @@
     "tags": [
       "mic",
       "armor",
-      "enhancement"
+      "enhancement",
+      "shield"
     ],
     "weight": 0,
     "aura": "Faint; (DC 17) transmutation",
     "activation": "--",
     "priceText": "+2,000 gp",
-    "costToCreate": "1,000 gp, 80 XP, 2 days."
+    "costToCreate": "1,000 gp, 80 XP, 2 days.",
+    "appliesToText": "Armor or shield"
   },
   {
     "schemaVersion": 3,
@@ -8896,7 +8945,7 @@
     "source": "Magic Item Compendium p.31",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 2,
     "flatCost": 0,
     "casterLevel": 7,
@@ -8930,7 +8979,8 @@
     "aura": "Moderate; (DC 18) necromancy",
     "activation": "Standard (command)",
     "priceText": "+2 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -9074,7 +9124,7 @@
     "source": "Magic Item Compendium p.31",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 10,
@@ -9110,7 +9160,8 @@
     "aura": "Moderate; (DC 20) conjuration",
     "activation": "Standard (command)",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -11938,7 +11989,7 @@
     "source": "Magic Item Compendium p.31",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 3,
     "flatCost": 0,
     "casterLevel": 11,
@@ -11972,7 +12023,8 @@
     "aura": "Moderate; (DC 20) necromancy",
     "activation": "--",
     "priceText": "+3 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -12241,14 +12293,14 @@
     "source": "Magic Item Compendium p.9",
     "cost": 3000,
     "targetType": "Armor",
-    "appliesTo": "Armor or shield",
+    "appliesTo": "armor+shield",
     "enhIncrease": 0,
     "flatCost": 3000,
     "casterLevel": 5,
     "requirements": "Craft Magic Arms and Armor, daylight.",
     "itemModifier": {
       "kind": "enchantment",
-      "appliesTo": "armor",
+      "appliesTo": "armor+shield",
       "costMode": "gp",
       "enhancementIncrease": 0,
       "flatGp": 3000,
@@ -12269,13 +12321,15 @@
     "tags": [
       "mic",
       "armor",
-      "enhancement"
+      "enhancement",
+      "shield"
     ],
     "weight": 0,
     "aura": "Faint; (DC 17) evocation",
     "activation": "Swift (command)",
     "priceText": "+3,000 gp",
-    "costToCreate": "1,500 gp, 120 XP, 3 days."
+    "costToCreate": "1,500 gp, 120 XP, 3 days.",
+    "appliesToText": "Armor or shield"
   },
   {
     "schemaVersion": 3,
@@ -12330,7 +12384,7 @@
     "source": "Magic Item Compendium p.32",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 5,
@@ -12367,7 +12421,8 @@
     "aura": "Faint; (DC 17) transmutation",
     "activation": "--",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -12446,14 +12501,14 @@
     "source": "Magic Item Compendium p.10",
     "cost": 0,
     "targetType": "Armor",
-    "appliesTo": "Armor or shield",
+    "appliesTo": "armor+shield",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 7,
     "requirements": "Craft Magic Arms and Armor, death ward.",
     "itemModifier": {
       "kind": "enchantment",
-      "appliesTo": "armor",
+      "appliesTo": "armor+shield",
       "costMode": "plus",
       "enhancementIncrease": 1,
       "flatGp": 0,
@@ -12483,13 +12538,15 @@
     "tags": [
       "mic",
       "armor",
-      "enhancement"
+      "enhancement",
+      "shield"
     ],
     "weight": 0,
     "aura": "Moderate; (DC 18) necromancy",
     "activation": "Immediate (mental)",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Armor or shield"
   },
   {
     "schemaVersion": 3,
@@ -12574,7 +12631,7 @@
     "source": "Magic Item Compendium p.10",
     "cost": 12000,
     "targetType": "Armor",
-    "appliesTo": "Armor",
+    "appliesTo": "armor",
     "enhIncrease": 0,
     "flatCost": 12000,
     "casterLevel": 9,
@@ -12608,7 +12665,8 @@
     "aura": "Moderate; (DC 19) transmutation",
     "activation": "--",
     "priceText": "+12,000 gp",
-    "costToCreate": "6,000 gp, 480 XP, 12 days."
+    "costToCreate": "6,000 gp, 480 XP, 12 days.",
+    "appliesToText": "Armor"
   },
   {
     "schemaVersion": 3,
@@ -12620,7 +12678,7 @@
     "source": "Magic Item Compendium p.32",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Melee weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 5,
@@ -12654,7 +12712,8 @@
     "aura": "Faint; (DC 17) abjuration",
     "activation": "Swift (command)",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Melee weapon"
   },
   {
     "schemaVersion": 3,
@@ -12815,7 +12874,7 @@
     "source": "Magic Item Compendium p.32",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 8,
@@ -12851,7 +12910,8 @@
     "aura": "Moderate; (DC 19) necromancy",
     "activation": "--",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -12863,7 +12923,7 @@
     "source": "Magic Item Compendium p.32",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 12,
@@ -12918,7 +12978,8 @@
     "errata": [
       "Official errata (MIC Errata p.291): first sentence of the second paragraph completed.",
       "Official errata (MIC Errata p.291): last sentence of the second paragraph disregarded; the desiccating ability is always active."
-    ]
+    ],
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -13124,7 +13185,7 @@
     "source": "Magic Item Compendium p.32",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 2,
     "flatCost": 0,
     "casterLevel": 5,
@@ -13161,7 +13222,8 @@
     "aura": "Moderate; (DC 17) transmutation",
     "activation": "--",
     "priceText": "+2 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -13173,7 +13235,7 @@
     "source": "Magic Item Compendium p.32",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 12,
@@ -13207,7 +13269,8 @@
     "aura": "Strong; (DC 21) conjuration",
     "activation": "Swift (mental)",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -13219,7 +13282,7 @@
     "source": "Magic Item Compendium p.33",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 5,
@@ -13253,7 +13316,8 @@
     "aura": "Faint; (DC 17) abjuration",
     "activation": "Free (command)",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -13343,7 +13407,8 @@
     "aura": "Strong; (DC 22) abjuration",
     "activation": "Free (command)",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesTo": "weapon"
   },
   {
     "schemaVersion": 3,
@@ -13355,7 +13420,7 @@
     "source": "Magic Item Compendium p.10",
     "cost": 0,
     "targetType": "Armor",
-    "appliesTo": "Armor",
+    "appliesTo": "armor",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 5,
@@ -13389,7 +13454,8 @@
     "aura": "Faint; (DC 17) illusion",
     "activation": "Swift (command)",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Armor"
   },
   {
     "schemaVersion": 3,
@@ -13401,7 +13467,7 @@
     "source": "Magic Item Compendium p.33",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 13,
@@ -13435,7 +13501,8 @@
     "aura": "Strong; (DC 21) evocation",
     "activation": "Swift (mental)",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -13483,7 +13550,7 @@
     "source": "Magic Item Compendium p.33",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 2,
     "flatCost": 0,
     "casterLevel": 11,
@@ -13520,7 +13587,8 @@
     "costToCreate": "Varies.",
     "errata": [
       "Official errata (MIC Errata p.291): omitted statement added to the first paragraph."
-    ]
+    ],
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -13532,7 +13600,7 @@
     "source": "Magic Item Compendium p.33",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 2,
     "flatCost": 0,
     "casterLevel": 11,
@@ -13569,7 +13637,8 @@
     "costToCreate": "Varies.",
     "errata": [
       "Official errata (MIC Errata p.291): omitted statement added to the first paragraph."
-    ]
+    ],
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -13871,7 +13940,7 @@
     "source": "Magic Item Compendium p.10",
     "cost": 0,
     "targetType": "Armor",
-    "appliesTo": "Light armor",
+    "appliesTo": "armor",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 9,
@@ -13905,7 +13974,8 @@
     "aura": "Moderate; (DC 19) transmutation",
     "activation": "--",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Light armor"
   },
   {
     "schemaVersion": 3,
@@ -13917,7 +13987,7 @@
     "source": "Magic Item Compendium p.33",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Melee weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 7,
@@ -13951,7 +14021,8 @@
     "aura": "Moderate; (DC 18) transmutation",
     "activation": "Swift (command)",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Melee weapon"
   },
   {
     "schemaVersion": 3,
@@ -14052,7 +14123,7 @@
     "source": "Magic Item Compendium p.33",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Projectile weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 9,
@@ -14089,7 +14160,8 @@
     "costToCreate": "Varies.",
     "errata": [
       "Official aura errata (MIC Errata p.295): Aura: Transmutation"
-    ]
+    ],
+    "appliesToText": "Projectile weapon"
   },
   {
     "schemaVersion": 3,
@@ -14393,7 +14465,7 @@
     "source": "Magic Item Compendium p.34",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Melee weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 9,
@@ -14434,7 +14506,8 @@
     "costToCreate": "Varies.",
     "errata": [
       "Official aura errata (MIC Errata p.295): Aura: Transmutation"
-    ]
+    ],
+    "appliesToText": "Melee weapon"
   },
   {
     "schemaVersion": 3,
@@ -14553,7 +14626,7 @@
     "source": "Magic Item Compendium p.10",
     "cost": 1500,
     "targetType": "Armor",
-    "appliesTo": "Armor",
+    "appliesTo": "armor",
     "enhIncrease": 0,
     "flatCost": 1500,
     "casterLevel": 5,
@@ -14587,7 +14660,8 @@
     "aura": "Faint; (DC 17) transmutation",
     "activation": "--",
     "priceText": "+1,500 gp",
-    "costToCreate": "750 gp, 60 XP, 2 days."
+    "costToCreate": "750 gp, 60 XP, 2 days.",
+    "appliesToText": "Armor"
   },
   {
     "schemaVersion": 3,
@@ -14599,7 +14673,7 @@
     "source": "Magic Item Compendium p.10",
     "cost": 0,
     "targetType": "Armor",
-    "appliesTo": "Armor",
+    "appliesTo": "armor",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 5,
@@ -14633,7 +14707,8 @@
     "aura": "Faint; (DC 17) abjuration",
     "activation": "--",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Armor"
   },
   {
     "schemaVersion": 3,
@@ -14645,14 +14720,14 @@
     "source": "Magic Item Compendium p.11",
     "cost": 0,
     "targetType": "Armor",
-    "appliesTo": "Shield",
+    "appliesTo": "shield",
     "enhIncrease": 2,
     "flatCost": 0,
     "casterLevel": 11,
     "requirements": "Craft Magic Arms and Armor, wall of iron or wall of ectoplasm (EPH 140).",
     "itemModifier": {
       "kind": "enchantment",
-      "appliesTo": "armor",
+      "appliesTo": "shield",
       "costMode": "plus",
       "enhancementIncrease": 2,
       "flatGp": 0,
@@ -14673,13 +14748,15 @@
     "tags": [
       "mic",
       "armor",
-      "enhancement"
+      "enhancement",
+      "shield"
     ],
     "weight": 0,
     "aura": "Moderate; (DC 20) conjuration",
     "activation": "Standard (command)",
     "priceText": "+2 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Shield"
   },
   {
     "schemaVersion": 3,
@@ -15038,7 +15115,7 @@
     "source": "Magic Item Compendium p.34",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 2,
     "flatCost": 0,
     "casterLevel": 15,
@@ -15078,7 +15155,8 @@
     "costToCreate": "Varies.",
     "errata": [
       "Official aura errata (MIC Errata p.295): Aura: Conjuration/evocation/transmutation"
-    ]
+    ],
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -15090,14 +15168,14 @@
     "source": "Magic Item Compendium p.11",
     "cost": 0,
     "targetType": "Armor",
-    "appliesTo": "Armor or shield",
+    "appliesTo": "armor+shield",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 10,
     "requirements": "Craft Magic Arms and Armor, fire shield, resist energy. Synergy Prerequisite: Energy resistance, improved energy resistance, or greater energy resistance.",
     "itemModifier": {
       "kind": "enchantment",
-      "appliesTo": "armor",
+      "appliesTo": "armor+shield",
       "costMode": "plus",
       "enhancementIncrease": 1,
       "flatGp": 0,
@@ -15122,13 +15200,15 @@
       "mic",
       "armor",
       "enhancement",
-      "synergy"
+      "synergy",
+      "shield"
     ],
     "weight": 0,
     "aura": "Moderate; (DC 20) evocation",
     "activation": "Immediate (command)",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Armor or shield"
   },
   {
     "schemaVersion": 3,
@@ -15140,14 +15220,14 @@
     "source": "Magic Item Compendium p.11",
     "cost": 0,
     "targetType": "Armor",
-    "appliesTo": "Armor or shield",
+    "appliesTo": "armor+shield",
     "enhIncrease": 2,
     "flatCost": 0,
     "casterLevel": 13,
     "requirements": "Craft Magic Arms and Armor, protection from energy.",
     "itemModifier": {
       "kind": "enchantment",
-      "appliesTo": "armor",
+      "appliesTo": "armor+shield",
       "costMode": "plus",
       "enhancementIncrease": 2,
       "flatGp": 0,
@@ -15168,13 +15248,15 @@
     "tags": [
       "mic",
       "armor",
-      "enhancement"
+      "enhancement",
+      "shield"
     ],
     "weight": 0,
     "aura": "Strong; (DC 21) abjuration",
     "activation": "Immediate (mental)",
     "priceText": "+2 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Armor or shield"
   },
   {
     "schemaVersion": 3,
@@ -15186,7 +15268,7 @@
     "source": "Magic Item Compendium p.34",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Melee weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 5,
@@ -15224,7 +15306,8 @@
     "aura": "Faint; (DC 17) evocation",
     "activation": "Swift (command)",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Melee weapon"
   },
   {
     "schemaVersion": 3,
@@ -15236,7 +15319,7 @@
     "source": "Magic Item Compendium p.34",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 2,
     "flatCost": 0,
     "casterLevel": 11,
@@ -15270,7 +15353,8 @@
     "aura": "Moderate; (DC 20) necromancy",
     "activation": "--",
     "priceText": "+2 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -15506,7 +15590,7 @@
     "source": "Magic Item Compendium p.34",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Melee weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 3,
     "flatCost": 0,
     "casterLevel": 12,
@@ -15540,7 +15624,8 @@
     "aura": "Strong; (DC 21) divination",
     "activation": "--",
     "priceText": "+3 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Melee weapon"
   },
   {
     "schemaVersion": 3,
@@ -15552,7 +15637,7 @@
     "source": "Magic Item Compendium p.34",
     "cost": 2000,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 0,
     "flatCost": 2000,
     "casterLevel": 12,
@@ -15600,7 +15685,8 @@
     "errata": [
       "Official errata (MIC Errata p.291): omitted statement added to the first paragraph.",
       "Official errata (MIC Errata p.291): Cost to Create 1,000 gp, 80 XP, 2 days."
-    ]
+    ],
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -16219,14 +16305,14 @@
     "source": "Magic Item Compendium p.11",
     "cost": 15000,
     "targetType": "Armor",
-    "appliesTo": "Armor or shield",
+    "appliesTo": "armor+shield",
     "enhIncrease": 0,
     "flatCost": 15000,
     "casterLevel": 7,
     "requirements": "Craft Magic Arms and Armor, fear.",
     "itemModifier": {
       "kind": "enchantment",
-      "appliesTo": "armor",
+      "appliesTo": "armor+shield",
       "costMode": "gp",
       "enhancementIncrease": 0,
       "flatGp": 15000,
@@ -16247,7 +16333,8 @@
     "tags": [
       "mic",
       "armor",
-      "enhancement"
+      "enhancement",
+      "shield"
     ],
     "weight": 0,
     "aura": "Moderate; (DC 18) necromancy",
@@ -16256,7 +16343,8 @@
     "costToCreate": "7,500 gp, 600 XP, 15 days.",
     "errata": [
       "Official errata (MIC Errata p.291): omitted statement added to the first paragraph."
-    ]
+    ],
+    "appliesToText": "Armor or shield"
   },
   {
     "schemaVersion": 3,
@@ -16493,7 +16581,7 @@
     "source": "Magic Item Compendium p.35",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 12,
@@ -16532,7 +16620,8 @@
     "activation": "--",
     "priceText": "+1 bonus",
     "costToCreate": "Varies.",
-    "lore": "Few rangers acquire the skills needed to create magic items, but the gnome ranger Tir Hearthand learned to hate orcs at an early age. Unsatisfied with normal orc bane weapons, he devoted the last half of his life to creating the ultimate weapon for slaying orcs (Knowledge [arcana] or Knowledge [history] DC 20). The first fiercebane weapon was an orc bane scimitar sized for a gnome and named Hearthand, after its creator. Tir Hearthand wielded this weapon for many years, and it eventually achieved a near-legendary status. Gnomes with an interest in weaponcraft now believe it to be a potent artifact capable of striking dead any orc that even sets eyes upon it. The original weapon is believed to have been lost in the dark hills near the long-dead orc kingdom where Tir Hearthand met his end (Knowledge [arcana] or Knowledge [history] DC 30)."
+    "lore": "Few rangers acquire the skills needed to create magic items, but the gnome ranger Tir Hearthand learned to hate orcs at an early age. Unsatisfied with normal orc bane weapons, he devoted the last half of his life to creating the ultimate weapon for slaying orcs (Knowledge [arcana] or Knowledge [history] DC 20). The first fiercebane weapon was an orc bane scimitar sized for a gnome and named Hearthand, after its creator. Tir Hearthand wielded this weapon for many years, and it eventually achieved a near-legendary status. Gnomes with an interest in weaponcraft now believe it to be a potent artifact capable of striking dead any orc that even sets eyes upon it. The original weapon is believed to have been lost in the dark hills near the long-dead orc kingdom where Tir Hearthand met his end (Knowledge [arcana] or Knowledge [history] DC 30).",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -16752,7 +16841,7 @@
     "source": "Magic Item Compendium p.35",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Piercing or slashing melee weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 2,
     "flatCost": 0,
     "casterLevel": 11,
@@ -16789,7 +16878,8 @@
     "costToCreate": "Varies.",
     "errata": [
       "Official errata (MIC Errata p.291): last sentence of the second paragraph substituted."
-    ]
+    ],
+    "appliesToText": "Piercing or slashing melee weapon"
   },
   {
     "schemaVersion": 3,
@@ -16848,7 +16938,7 @@
     "source": "Magic Item Compendium p.35",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Projectile weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 2,
     "flatCost": 0,
     "casterLevel": 9,
@@ -16882,7 +16972,8 @@
     "aura": "Moderate; (DC 19) evocation",
     "activation": "--",
     "priceText": "+2 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Projectile weapon"
   },
   {
     "schemaVersion": 3,
@@ -17114,7 +17205,7 @@
     "source": "Magic Item Compendium p.11",
     "cost": 0,
     "targetType": "Armor",
-    "appliesTo": "Armor",
+    "appliesTo": "armor",
     "enhIncrease": 5,
     "flatCost": 0,
     "casterLevel": 7,
@@ -17148,7 +17239,8 @@
     "aura": "Moderate; (DC 18) abjuration",
     "activation": "--",
     "priceText": "+5 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Armor"
   },
   {
     "schemaVersion": 3,
@@ -18211,7 +18303,7 @@
     "source": "Magic Item Compendium p.35",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Melee weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 11,
@@ -18252,7 +18344,8 @@
     "costToCreate": "Varies.",
     "errata": [
       "Official aura errata (MIC Errata p.295): Aura: Necromancy"
-    ]
+    ],
+    "appliesToText": "Melee weapon"
   },
   {
     "schemaVersion": 3,
@@ -18264,14 +18357,14 @@
     "source": "Magic Item Compendium p.11",
     "cost": 0,
     "targetType": "Armor",
-    "appliesTo": "Armor or shield",
+    "appliesTo": "armor+shield",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 5,
     "requirements": "Craft Magic Arms and Armor, mage armor.",
     "itemModifier": {
       "kind": "enchantment",
-      "appliesTo": "armor",
+      "appliesTo": "armor+shield",
       "costMode": "plus",
       "enhancementIncrease": 1,
       "flatGp": 0,
@@ -18292,13 +18385,15 @@
     "tags": [
       "mic",
       "armor",
-      "enhancement"
+      "enhancement",
+      "shield"
     ],
     "weight": 0,
     "aura": "Faint; (DC 17) conjuration",
     "activation": "--",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Armor or shield"
   },
   {
     "schemaVersion": 3,
@@ -18390,7 +18485,7 @@
     "source": "Magic Item Compendium p.11",
     "cost": 6000,
     "targetType": "Armor",
-    "appliesTo": "Armor",
+    "appliesTo": "armor",
     "enhIncrease": 0,
     "flatCost": 6000,
     "casterLevel": 5,
@@ -18424,7 +18519,8 @@
     "aura": "Faint; (DC 17) transmutation",
     "activation": "--",
     "priceText": "+6,000 gp",
-    "costToCreate": "3,000 gp, 240 XP, 6 days."
+    "costToCreate": "3,000 gp, 240 XP, 6 days.",
+    "appliesToText": "Armor"
   },
   {
     "schemaVersion": 3,
@@ -19723,14 +19819,14 @@
     "source": "Magic Item Compendium p.12",
     "cost": 0,
     "targetType": "Armor",
-    "appliesTo": "Armor or shield",
+    "appliesTo": "armor+shield",
     "enhIncrease": 2,
     "flatCost": 0,
     "casterLevel": 7,
     "requirements": "Craft Magic Arms and Armor, stoneskin.",
     "itemModifier": {
       "kind": "enchantment",
-      "appliesTo": "armor",
+      "appliesTo": "armor+shield",
       "costMode": "plus",
       "enhancementIncrease": 2,
       "flatGp": 0,
@@ -19752,13 +19848,15 @@
     "tags": [
       "mic",
       "armor",
-      "enhancement"
+      "enhancement",
+      "shield"
     ],
     "weight": 0,
     "aura": "Moderate; (DC 18) abjuration",
     "activation": "--",
     "priceText": "+2 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Armor or shield"
   },
   {
     "schemaVersion": 3,
@@ -19878,7 +19976,7 @@
     "source": "Magic Item Compendium p.35",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Melee weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 5,
@@ -19914,7 +20012,8 @@
     "aura": "Faint; (DC 17) illusion",
     "activation": "--; see text",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Melee weapon"
   },
   {
     "schemaVersion": 3,
@@ -20166,7 +20265,7 @@
     "source": "Magic Item Compendium p.12",
     "cost": 8000,
     "targetType": "Armor",
-    "appliesTo": "Armor",
+    "appliesTo": "armor",
     "enhIncrease": 0,
     "flatCost": 8000,
     "casterLevel": 5,
@@ -20213,7 +20312,8 @@
     "aura": "Faint; (DC 17) conjuration",
     "activation": "Swift (command) and --; see text",
     "priceText": "+8,000 gp",
-    "costToCreate": "4,000 gp, 320 XP, 8 days."
+    "costToCreate": "4,000 gp, 320 XP, 8 days.",
+    "appliesToText": "Armor"
   },
   {
     "schemaVersion": 3,
@@ -20394,7 +20494,8 @@
     "aura": "Strong; (DC 22) conjuration",
     "activation": "Swift (command) and --; see text",
     "priceText": "+24,000 gp",
-    "costToCreate": "12,000 gp, 960 XP, 24 days."
+    "costToCreate": "12,000 gp, 960 XP, 24 days.",
+    "appliesTo": "armor"
   },
   {
     "schemaVersion": 3,
@@ -20406,14 +20507,14 @@
     "source": "Magic Item Compendium p.12",
     "cost": 2000,
     "targetType": "Armor",
-    "appliesTo": "Shield",
+    "appliesTo": "shield",
     "enhIncrease": 0,
     "flatCost": 2000,
     "casterLevel": 5,
     "requirements": "Craft Magic Arms and Armor, false life.",
     "itemModifier": {
       "kind": "enchantment",
-      "appliesTo": "armor",
+      "appliesTo": "shield",
       "costMode": "gp",
       "enhancementIncrease": 0,
       "flatGp": 2000,
@@ -20447,13 +20548,15 @@
     "tags": [
       "mic",
       "armor",
-      "enhancement"
+      "enhancement",
+      "shield"
     ],
     "weight": 0,
     "aura": "Faint; (DC 17) necromancy",
     "activation": "Immediate (mental)",
     "priceText": "+2,000 gp",
-    "costToCreate": "1,000 gp, 80 XP, 1 day."
+    "costToCreate": "1,000 gp, 80 XP, 1 day.",
+    "appliesToText": "Shield"
   },
   {
     "schemaVersion": 3,
@@ -20509,7 +20612,7 @@
     "source": "Magic Item Compendium p.36",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 7,
@@ -20545,7 +20648,8 @@
     "aura": "Moderate; (DC 18) evocation",
     "activation": "--",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -20969,7 +21073,7 @@
     "source": "Magic Item Compendium p.36",
     "cost": 2000,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 0,
     "flatCost": 2000,
     "casterLevel": 5,
@@ -21003,7 +21107,8 @@
     "aura": "Faint; (DC 17) transmutation",
     "activation": "Swift (command)",
     "priceText": "+2,000 gp",
-    "costToCreate": "1,000 gp, 80 XP, 2 days."
+    "costToCreate": "1,000 gp, 80 XP, 2 days.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -21015,7 +21120,7 @@
     "source": "Magic Item Compendium p.36",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Melee weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 11,
@@ -21053,7 +21158,8 @@
     "aura": "Moderate; (DC 20) evocation",
     "activation": "-- and swift (command)",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Melee weapon"
   },
   {
     "schemaVersion": 3,
@@ -21286,7 +21392,7 @@
     "source": "Magic Item Compendium p.36",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 6,
@@ -21323,7 +21429,8 @@
     "costToCreate": "Varies.",
     "errata": [
       "Official aura errata (MIC Errata p.295): Aura: Transmutation"
-    ]
+    ],
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -21378,7 +21485,7 @@
     "source": "Magic Item Compendium p.36",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 2,
     "flatCost": 0,
     "casterLevel": 7,
@@ -21415,7 +21522,8 @@
     "aura": "Moderate; (DC 18) evocation",
     "activation": "--",
     "priceText": "+2 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -21427,7 +21535,7 @@
     "source": "Magic Item Compendium p.36",
     "cost": 500,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 0,
     "flatCost": 500,
     "casterLevel": 5,
@@ -21461,7 +21569,8 @@
     "aura": "Faint; (DC 17) evocation",
     "activation": "--",
     "priceText": "+500 gp",
-    "costToCreate": "250 gp, 20 XP, 1 day."
+    "costToCreate": "250 gp, 20 XP, 1 day.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -21473,7 +21582,7 @@
     "source": "Magic Item Compendium p.36",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 10,
@@ -21508,7 +21617,8 @@
     "activation": "-- and swift (command)",
     "priceText": "+1 bonus",
     "costToCreate": "Varies.",
-    "lore": "The illusion bane property was created by a sect of the church of St. Cuthbert whose members despised illusionists and desired a way to destroy their protective illusions (Knowledge [religion] DC 20). An illusion bane weapon functions much like the dispel magic spell, but only against illusion effects (Knowledge [arcana] DC 25)."
+    "lore": "The illusion bane property was created by a sect of the church of St. Cuthbert whose members despised illusionists and desired a way to destroy their protective illusions (Knowledge [religion] DC 20). An illusion bane weapon functions much like the dispel magic spell, but only against illusion effects (Knowledge [arcana] DC 25).",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -21520,7 +21630,7 @@
     "source": "Magic Item Compendium p.37",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 2,
     "flatCost": 0,
     "casterLevel": 17,
@@ -21558,7 +21668,8 @@
     "aura": "Strong; (DC 23) divination",
     "activation": "Standard (command)",
     "priceText": "+2 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -21570,7 +21681,7 @@
     "source": "Magic Item Compendium p.37",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Bludgeoning weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 10,
@@ -21610,7 +21721,8 @@
     "costToCreate": "Varies.",
     "errata": [
       "Official aura errata (MIC Errata p.295): Aura: Transmutation"
-    ]
+    ],
+    "appliesToText": "Bludgeoning weapon"
   },
   {
     "schemaVersion": 3,
@@ -21622,7 +21734,7 @@
     "source": "Magic Item Compendium p.37",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Piercing melee weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 9,
@@ -21661,7 +21773,8 @@
     "costToCreate": "Varies.",
     "errata": [
       "Official aura errata (MIC Errata p.295): Aura: Divination"
-    ]
+    ],
+    "appliesToText": "Piercing melee weapon"
   },
   {
     "schemaVersion": 3,
@@ -21673,7 +21786,7 @@
     "source": "Magic Item Compendium p.37",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 2,
     "flatCost": 0,
     "casterLevel": 11,
@@ -21707,7 +21820,8 @@
     "aura": "Moderate; (DC 20) abjuration",
     "activation": "--",
     "priceText": "+2 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -21762,7 +21876,7 @@
     "source": "Magic Item Compendium p.37",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 3,
     "flatCost": 0,
     "casterLevel": 9,
@@ -21796,7 +21910,8 @@
     "aura": "Moderate; (DC 18) necromancy",
     "activation": "--",
     "priceText": "+3 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -21877,7 +21992,7 @@
     "source": "Magic Item Compendium p.38",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Melee weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 9,
@@ -21915,7 +22030,8 @@
     "aura": "Moderate; (DC 19) conjuration",
     "activation": "--",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Melee weapon"
   },
   {
     "schemaVersion": 3,
@@ -22127,7 +22243,7 @@
     "source": "Magic Item Compendium p.38",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 11,
@@ -22174,7 +22290,8 @@
     "costToCreate": "Varies.",
     "errata": [
       "Official aura errata (MIC Errata p.295): Aura: Abjuration"
-    ]
+    ],
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -22240,7 +22357,7 @@
     "source": "Magic Item Compendium p.12",
     "cost": 4000,
     "targetType": "Armor",
-    "appliesTo": "Armor",
+    "appliesTo": "armor",
     "enhIncrease": 0,
     "flatCost": 4000,
     "casterLevel": 5,
@@ -22274,7 +22391,8 @@
     "aura": "Faint; (DC 17) transmutation",
     "activation": "--",
     "priceText": "+4,000 gp",
-    "costToCreate": "2,000 gp, 160 XP, 4 days."
+    "costToCreate": "2,000 gp, 160 XP, 4 days.",
+    "appliesToText": "Armor"
   },
   {
     "schemaVersion": 3,
@@ -22658,14 +22776,14 @@
     "source": "Magic Item Compendium p.12",
     "cost": 6000,
     "targetType": "Armor",
-    "appliesTo": "Armor or shield",
+    "appliesTo": "armor+shield",
     "enhIncrease": 0,
     "flatCost": 6000,
     "casterLevel": 7,
     "requirements": "Craft Magic Arms and Armor, Rary's telepathic bond or mindlink (EPH 120).",
     "itemModifier": {
       "kind": "enchantment",
-      "appliesTo": "armor",
+      "appliesTo": "armor+shield",
       "costMode": "gp",
       "enhancementIncrease": 0,
       "flatGp": 6000,
@@ -22686,13 +22804,15 @@
     "tags": [
       "mic",
       "armor",
-      "enhancement"
+      "enhancement",
+      "shield"
     ],
     "weight": 0,
     "aura": "Moderate; (DC 18) divination",
     "activation": "Standard (mental)",
     "priceText": "+6,000 gp",
-    "costToCreate": "3,000 gp, 240 XP, 6 days."
+    "costToCreate": "3,000 gp, 240 XP, 6 days.",
+    "appliesToText": "Armor or shield"
   },
   {
     "schemaVersion": 3,
@@ -22855,7 +22975,7 @@
     "source": "Magic Item Compendium p.38",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 15,
@@ -22891,7 +23011,8 @@
     "aura": "Strong; (DC 22) divination",
     "activation": "Free (mental)",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -23017,7 +23138,7 @@
     "source": "Magic Item Compendium p.38",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 8,
@@ -23054,7 +23175,8 @@
     "costToCreate": "Varies.",
     "errata": [
       "Official aura errata (MIC Errata p.295): Aura: Abjuration"
-    ]
+    ],
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -23152,7 +23274,7 @@
     "source": "Magic Item Compendium p.12",
     "cost": 10000,
     "targetType": "Armor",
-    "appliesTo": "Armor",
+    "appliesTo": "armor",
     "enhIncrease": 0,
     "flatCost": 10000,
     "casterLevel": 16,
@@ -23186,7 +23308,8 @@
     "aura": "Strong; (DC 23) abjuration",
     "activation": "--",
     "priceText": "+10,000 gp",
-    "costToCreate": "5,000 gp, 400 XP, 10 days."
+    "costToCreate": "5,000 gp, 400 XP, 10 days.",
+    "appliesToText": "Armor"
   },
   {
     "schemaVersion": 3,
@@ -23198,7 +23321,7 @@
     "source": "Magic Item Compendium p.38",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 5,
@@ -23232,7 +23355,8 @@
     "aura": "Faint; (DC 17) transmutation",
     "activation": "--",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -23244,14 +23368,14 @@
     "source": "Magic Item Compendium p.12",
     "cost": 6000,
     "targetType": "Armor",
-    "appliesTo": "Shield",
+    "appliesTo": "shield",
     "enhIncrease": 0,
     "flatCost": 6000,
     "casterLevel": 6,
     "requirements": "Craft Magic Arms and Armor, any 2nd-level psionic power.",
     "itemModifier": {
       "kind": "enchantment",
-      "appliesTo": "armor",
+      "appliesTo": "shield",
       "costMode": "gp",
       "enhancementIncrease": 0,
       "flatGp": 6000,
@@ -23274,7 +23398,8 @@
     "tags": [
       "mic",
       "armor",
-      "enhancement"
+      "enhancement",
+      "shield"
     ],
     "weight": 0,
     "aura": "Moderate; (DC 18) abjuration",
@@ -23283,7 +23408,8 @@
     "costToCreate": "3,000 gp, 240 XP, 6 days.",
     "errata": [
       "Official aura errata (MIC Errata p.295): Aura: Evocation"
-    ]
+    ],
+    "appliesToText": "Shield"
   },
   {
     "schemaVersion": 3,
@@ -23295,7 +23421,7 @@
     "source": "Magic Item Compendium p.38",
     "cost": 6000,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 0,
     "flatCost": 6000,
     "casterLevel": 6,
@@ -23334,7 +23460,8 @@
     "costToCreate": "6,000 gp, 480 XP, 12 days.",
     "errata": [
       "Official aura errata (MIC Errata p.295): Aura: Evocation"
-    ]
+    ],
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -23846,7 +23973,7 @@
     "source": "Magic Item Compendium p.12",
     "cost": 40000,
     "targetType": "Armor",
-    "appliesTo": "Armor",
+    "appliesTo": "armor",
     "enhIncrease": 0,
     "flatCost": 40000,
     "casterLevel": 10,
@@ -23880,7 +24007,8 @@
     "aura": "Moderate; (DC 20) abjuration",
     "activation": "--",
     "priceText": "+40,000 gp",
-    "costToCreate": "20,000 gp, 1,600 XP, 40 days."
+    "costToCreate": "20,000 gp, 1,600 XP, 40 days.",
+    "appliesToText": "Armor"
   },
   {
     "schemaVersion": 3,
@@ -24045,7 +24173,7 @@
     "source": "Magic Item Compendium p.13",
     "cost": 30000,
     "targetType": "Armor",
-    "appliesTo": "Armor",
+    "appliesTo": "armor",
     "enhIncrease": 0,
     "flatCost": 30000,
     "casterLevel": 9,
@@ -24082,7 +24210,8 @@
     "costToCreate": "15,000 gp, 1,200 XP, 30 days.",
     "errata": [
       "Official errata (MIC Errata p.291): omitted statement added to the first paragraph."
-    ]
+    ],
+    "appliesToText": "Armor"
   },
   {
     "schemaVersion": 3,
@@ -24127,7 +24256,7 @@
     "source": "Magic Item Compendium p.38",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 2,
     "flatCost": 0,
     "casterLevel": 9,
@@ -24161,7 +24290,8 @@
     "aura": "Moderate; (DC 19) transmutation",
     "activation": "Standard (command)",
     "priceText": "+2 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -24448,7 +24578,7 @@
     "source": "Magic Item Compendium p.39",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Melee weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 8,
@@ -24482,7 +24612,8 @@
     "aura": "Moderate; (DC 19) evocation",
     "activation": "--",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Melee weapon"
   },
   {
     "schemaVersion": 3,
@@ -24661,14 +24792,14 @@
     "source": "Magic Item Compendium p.13",
     "cost": 3000,
     "targetType": "Armor",
-    "appliesTo": "Armor or shield",
+    "appliesTo": "armor+shield",
     "enhIncrease": 0,
     "flatCost": 3000,
     "casterLevel": 5,
     "requirements": "Craft Magic Arms and Armor, heroism or empty mind (EPH 99).",
     "itemModifier": {
       "kind": "enchantment",
-      "appliesTo": "armor",
+      "appliesTo": "armor+shield",
       "costMode": "gp",
       "enhancementIncrease": 0,
       "flatGp": 3000,
@@ -24689,13 +24820,15 @@
     "tags": [
       "mic",
       "armor",
-      "enhancement"
+      "enhancement",
+      "shield"
     ],
     "weight": 0,
     "aura": "Faint; (DC 17) enchantment",
     "activation": "Immediate (mental)",
     "priceText": "+3,000 gp",
-    "costToCreate": "1,500 gp, 120 XP, 3 days."
+    "costToCreate": "1,500 gp, 120 XP, 3 days.",
+    "appliesToText": "Armor or shield"
   },
   {
     "schemaVersion": 3,
@@ -24707,7 +24840,7 @@
     "source": "Magic Item Compendium p.39",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 2,
     "flatCost": 0,
     "casterLevel": 12,
@@ -24741,7 +24874,8 @@
     "aura": "Strong; (DC 21) necromancy",
     "activation": "--",
     "priceText": "+2 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -24753,7 +24887,7 @@
     "source": "Magic Item Compendium p.39",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 15,
@@ -24787,7 +24921,8 @@
     "aura": "Strong; (DC 22) necromancy",
     "activation": "--",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -25022,7 +25157,7 @@
     "source": "Magic Item Compendium p.13",
     "cost": 0,
     "targetType": "Armor",
-    "appliesTo": "Light armor",
+    "appliesTo": "armor",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 5,
@@ -25056,7 +25191,8 @@
     "aura": "Faint; (DC 17) transmutation",
     "activation": "--",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Light armor"
   },
   {
     "schemaVersion": 3,
@@ -25223,7 +25359,7 @@
     "source": "Magic Item Compendium p.39",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Melee or thrown weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 9,
@@ -25260,7 +25396,8 @@
     "costToCreate": "Varies.",
     "errata": [
       "Official errata (MIC Errata p.291): Activation: Standard (command)."
-    ]
+    ],
+    "appliesToText": "Melee or thrown weapon"
   },
   {
     "schemaVersion": 3,
@@ -25346,7 +25483,7 @@
     "source": "Magic Item Compendium p.39",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Melee weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 3,
     "flatCost": 0,
     "casterLevel": 7,
@@ -25380,7 +25517,8 @@
     "aura": "Moderate; (DC 18) necromancy",
     "activation": "--",
     "priceText": "+3 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Melee weapon"
   },
   {
     "schemaVersion": 3,
@@ -25392,7 +25530,7 @@
     "source": "Magic Item Compendium p.13",
     "cost": 0,
     "targetType": "Armor",
-    "appliesTo": "Armor",
+    "appliesTo": "armor",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 8,
@@ -25426,7 +25564,8 @@
     "aura": "Moderate; (DC 19) transmutation",
     "activation": "--",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Armor"
   },
   {
     "schemaVersion": 3,
@@ -25854,7 +25993,7 @@
     "source": "Magic Item Compendium p.39",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 2,
     "flatCost": 0,
     "casterLevel": 9,
@@ -25888,7 +26027,8 @@
     "aura": "Moderate; (DC 19) enchantment",
     "activation": "--",
     "priceText": "+2 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -25900,7 +26040,7 @@
     "source": "Magic Item Compendium p.39",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Melee weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 10,
@@ -25937,7 +26077,8 @@
     "costToCreate": "Varies.",
     "errata": [
       "Official errata (MIC Errata p.291): first sentence of the description revised."
-    ]
+    ],
+    "appliesToText": "Melee weapon"
   },
   {
     "schemaVersion": 3,
@@ -25949,7 +26090,7 @@
     "source": "Magic Item Compendium p.40",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 2,
     "flatCost": 0,
     "casterLevel": 15,
@@ -25985,7 +26126,8 @@
     "aura": "Strong; (DC 22) enchantment",
     "activation": "--",
     "priceText": "+2 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -26847,7 +26989,7 @@
     "source": "Magic Item Compendium p.40",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 12,
@@ -26881,7 +27023,8 @@
     "aura": "Strong; (DC 21) evocation",
     "activation": "Free (command)",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -26893,7 +27036,7 @@
     "source": "Magic Item Compendium p.40",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Ranged weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 5,
@@ -26927,7 +27070,8 @@
     "aura": "Faint; (DC 17) evocation",
     "activation": "--",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Ranged weapon"
   },
   {
     "schemaVersion": 3,
@@ -26939,7 +27083,7 @@
     "source": "Magic Item Compendium p.40",
     "cost": 30000,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 0,
     "flatCost": 30000,
     "casterLevel": 13,
@@ -26976,7 +27120,8 @@
     "costToCreate": "15,000 gp, 1,200 XP, 30 days.",
     "errata": [
       "Official errata (MIC Errata p.291): Cost to Create 15,000 gp, 1,200 XP, 30 days."
-    ]
+    ],
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -26988,7 +27133,7 @@
     "source": "Magic Item Compendium p.40",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 7,
@@ -27029,7 +27174,8 @@
     "aura": "Moderate; (DC 17) necromancy",
     "activation": "Standard (command)",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -27041,7 +27187,7 @@
     "source": "Magic Item Compendium p.40",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 12,
@@ -27095,7 +27241,8 @@
     "aura": "Strong; (DC 21) necromancy",
     "activation": "Standard (command) and --",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -27107,7 +27254,7 @@
     "source": "Magic Item Compendium p.41",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 2,
     "flatCost": 0,
     "casterLevel": 15,
@@ -27144,7 +27291,8 @@
     "costToCreate": "Varies.",
     "errata": [
       "Official aura errata (MIC Errata p.295): Aura: Abjuration"
-    ]
+    ],
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -27192,7 +27340,7 @@
     "source": "Magic Item Compendium p.41",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 2,
     "flatCost": 0,
     "casterLevel": 17,
@@ -27226,7 +27374,8 @@
     "aura": "Strong; (DC 23) no school",
     "activation": "--",
     "priceText": "+2 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -27894,7 +28043,7 @@
     "source": "Magic Item Compendium p.41",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 10,
@@ -27930,7 +28079,8 @@
     "aura": "Moderate; (DC 20) evocation",
     "activation": "Standard (command)",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -27942,7 +28092,7 @@
     "source": "Magic Item Compendium p.41",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 12,
@@ -27982,7 +28132,8 @@
     "aura": "Strong; (DC 21) evocation",
     "activation": "Standard (command) and --",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -28059,7 +28210,7 @@
     "source": "Magic Item Compendium p.41",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Crossbow",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 9,
@@ -28093,7 +28244,8 @@
     "aura": "Moderate; (DC 19) conjuration",
     "activation": "Free (manipulation) or move (manipulation); see text",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Crossbow"
   },
   {
     "schemaVersion": 3,
@@ -28105,7 +28257,7 @@
     "source": "Magic Item Compendium p.13",
     "cost": 5000,
     "targetType": "Armor",
-    "appliesTo": "Armor",
+    "appliesTo": "armor",
     "enhIncrease": 0,
     "flatCost": 5000,
     "casterLevel": 5,
@@ -28140,7 +28292,8 @@
     "aura": "Faint; (DC 17) transmutation",
     "activation": "--",
     "priceText": "+5,000 gp",
-    "costToCreate": "2,500 gp, 200 XP, 5 days."
+    "costToCreate": "2,500 gp, 200 XP, 5 days.",
+    "appliesToText": "Armor"
   },
   {
     "schemaVersion": 3,
@@ -28225,7 +28378,7 @@
     "source": "Magic Item Compendium p.13",
     "cost": 0,
     "targetType": "Armor",
-    "appliesTo": "Armor",
+    "appliesTo": "armor",
     "enhIncrease": 4,
     "flatCost": 0,
     "casterLevel": 9,
@@ -28258,7 +28411,8 @@
     "aura": "Moderate; (DC 19) abjuration",
     "activation": "--",
     "priceText": "+4 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Armor"
   },
   {
     "schemaVersion": 3,
@@ -28367,14 +28521,14 @@
     "source": "Magic Item Compendium p.13",
     "cost": 0,
     "targetType": "Armor",
-    "appliesTo": "Shield (except a tower shields)",
+    "appliesTo": "shield",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 5,
     "requirements": "Craft Magic Arms and Armor, hurl (SC 117) or far hand (EPH 106).",
     "itemModifier": {
       "kind": "enchantment",
-      "appliesTo": "armor",
+      "appliesTo": "shield",
       "costMode": "plus",
       "enhancementIncrease": 1,
       "flatGp": 0,
@@ -28395,13 +28549,15 @@
     "tags": [
       "mic",
       "armor",
-      "enhancement"
+      "enhancement",
+      "shield"
     ],
     "weight": 0,
     "aura": "Faint; (DC 17) transmutation",
     "activation": "--",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Shield (except a tower shields)"
   },
   {
     "schemaVersion": 3,
@@ -29012,7 +29168,7 @@
     "source": "Magic Item Compendium p.42",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Melee weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 5,
@@ -29046,7 +29202,8 @@
     "aura": "Faint; (DC 17) enchantment",
     "activation": "--",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Melee weapon"
   },
   {
     "schemaVersion": 3,
@@ -29105,7 +29262,7 @@
     "source": "Magic Item Compendium p.14",
     "cost": 0,
     "targetType": "Armor",
-    "appliesTo": "Armor",
+    "appliesTo": "armor",
     "enhIncrease": 2,
     "flatCost": 0,
     "casterLevel": 9,
@@ -29139,7 +29296,8 @@
     "aura": "Moderate; (DC 19) necromancy",
     "activation": "--",
     "priceText": "+2 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Armor"
   },
   {
     "schemaVersion": 3,
@@ -29184,7 +29342,7 @@
     "source": "Magic Item Compendium p.42",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 5,
@@ -29218,7 +29376,8 @@
     "aura": "Faint; (DC 17) evocation",
     "activation": "--",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -31063,7 +31222,7 @@
     "source": "Magic Item Compendium p.14",
     "cost": 0,
     "targetType": "Armor",
-    "appliesTo": "Armor",
+    "appliesTo": "armor",
     "enhIncrease": 3,
     "flatCost": 0,
     "casterLevel": 13,
@@ -31098,7 +31257,8 @@
     "aura": "Strong; (DC 21) divination",
     "activation": "--",
     "priceText": "+3 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Armor"
   },
   {
     "schemaVersion": 3,
@@ -34698,7 +34858,7 @@
     "source": "Magic Item Compendium p.42",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 7,
@@ -34739,7 +34899,8 @@
     "aura": "Moderate; (DC 18) conjuration",
     "activation": "Standard (command)",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -34751,7 +34912,7 @@
     "source": "Magic Item Compendium p.42",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 12,
@@ -34805,7 +34966,8 @@
     "aura": "Strong; (DC 21) conjuration",
     "activation": "--",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -35395,7 +35557,7 @@
     "source": "Magic Item Compendium p.42",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 7,
@@ -35431,7 +35593,8 @@
     "aura": "Moderate; (DC 18) evocation",
     "activation": "Standard (command)",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -35443,7 +35606,7 @@
     "source": "Magic Item Compendium p.42",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 12,
@@ -35494,7 +35657,8 @@
     "aura": "Strong; (DC 21) evocation",
     "activation": "--",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -35983,7 +36147,7 @@
     "source": "Magic Item Compendium p.43",
     "cost": 5000,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 0,
     "flatCost": 5000,
     "casterLevel": 15,
@@ -36019,7 +36183,8 @@
     "aura": "Strong; (DC 22) illusion",
     "activation": "Swift (mental)",
     "priceText": "+5,000 gp",
-    "costToCreate": "2,500 gp, 200 XP, 5 days."
+    "costToCreate": "2,500 gp, 200 XP, 5 days.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -36077,7 +36242,7 @@
     "source": "Magic Item Compendium p.43",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 5,
@@ -36111,7 +36276,8 @@
     "aura": "Faint; (DC 17) divination",
     "activation": "--",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -36342,7 +36508,7 @@
     "source": "Magic Item Compendium p.43",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Light melee weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 10,
@@ -36376,7 +36542,8 @@
     "aura": "Moderate; (DC 20) transmutation",
     "activation": "Swift (command)",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Light melee weapon"
   },
   {
     "schemaVersion": 3,
@@ -37061,7 +37228,7 @@
     "source": "Magic Item Compendium p.43",
     "cost": 5000,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 0,
     "flatCost": 5000,
     "casterLevel": 9,
@@ -37095,7 +37262,8 @@
     "aura": "Moderate; (DC 19) transmutation",
     "activation": "Swift (command)",
     "priceText": "+5,000 gp",
-    "costToCreate": "2,500 gp, 200 XP, 5 days."
+    "costToCreate": "2,500 gp, 200 XP, 5 days.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -37381,7 +37549,7 @@
     "source": "Magic Item Compendium p.43",
     "cost": 5000,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 0,
     "flatCost": 5000,
     "casterLevel": 5,
@@ -37415,7 +37583,8 @@
     "aura": "Faint; (DC 17) transmutation",
     "activation": "--",
     "priceText": "+5,000 gp",
-    "costToCreate": "2,500 gp, 200 XP, 5 days."
+    "costToCreate": "2,500 gp, 200 XP, 5 days.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -37526,14 +37695,14 @@
     "source": "Magic Item Compendium p.14",
     "cost": 0,
     "targetType": "Armor",
-    "appliesTo": "Armor or shield",
+    "appliesTo": "armor+shield",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 6,
     "requirements": "Craft Magic Arms and Armor, magic vestment, essentia pool 2.",
     "itemModifier": {
       "kind": "enchantment",
-      "appliesTo": "armor",
+      "appliesTo": "armor+shield",
       "costMode": "plus",
       "enhancementIncrease": 1,
       "flatGp": 0,
@@ -37556,7 +37725,8 @@
     "tags": [
       "mic",
       "armor",
-      "enhancement"
+      "enhancement",
+      "shield"
     ],
     "weight": 0,
     "aura": "Moderate; (DC 18) abjuration",
@@ -37565,7 +37735,8 @@
     "costToCreate": "Varies.",
     "errata": [
       "Official aura errata (MIC Errata p.295): Aura: Transmutation"
-    ]
+    ],
+    "appliesToText": "Armor or shield"
   },
   {
     "schemaVersion": 3,
@@ -37577,7 +37748,7 @@
     "source": "Magic Item Compendium p.43",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 6,
@@ -37616,7 +37787,8 @@
     "costToCreate": "Varies.",
     "errata": [
       "Official aura errata (MIC Errata p.295): Aura: Transmutation"
-    ]
+    ],
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -37634,7 +37806,7 @@
     "requirements": "Craft Magic Arms and Armor, magic vestment, essentia pool 4. Synergy Prerequisite: Soulbound.",
     "itemModifier": {
       "kind": "enchantment",
-      "appliesTo": "armor",
+      "appliesTo": "armor+shield",
       "costMode": "plus",
       "enhancementIncrease": 2,
       "flatGp": 0,
@@ -37661,7 +37833,8 @@
       "mic",
       "armor",
       "enhancement",
-      "synergy"
+      "synergy",
+      "shield"
     ],
     "weight": 0,
     "aura": "Strong; (DC 24) abjuration",
@@ -37670,7 +37843,8 @@
     "costToCreate": "Varies.",
     "errata": [
       "Official aura errata (MIC Errata p.295): Aura: Transmutation"
-    ]
+    ],
+    "appliesTo": "armor+shield"
   },
   {
     "schemaVersion": 3,
@@ -37724,7 +37898,8 @@
     "costToCreate": "Varies.",
     "errata": [
       "Official aura errata (MIC Errata p.295): Aura: Transmutation"
-    ]
+    ],
+    "appliesTo": "weapon"
   },
   {
     "schemaVersion": 3,
@@ -37736,7 +37911,7 @@
     "source": "Magic Item Compendium p.44",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 17,
@@ -37774,7 +37949,8 @@
     "aura": "Strong; (DC 23) necromancy",
     "activation": "--",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -37786,7 +37962,7 @@
     "source": "Magic Item Compendium p.44",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Melee weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 5,
@@ -37824,7 +38000,8 @@
     "aura": "Faint; (DC 17) necromancy",
     "activation": "--",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Melee weapon"
   },
   {
     "schemaVersion": 3,
@@ -38054,14 +38231,14 @@
     "source": "Magic Item Compendium p.14",
     "cost": 0,
     "targetType": "Armor",
-    "appliesTo": "Armor or shield",
+    "appliesTo": "armor+shield",
     "enhIncrease": 2,
     "flatCost": 0,
     "casterLevel": 7,
     "requirements": "Craft Magic Arms and Armor, stoneskin.",
     "itemModifier": {
       "kind": "enchantment",
-      "appliesTo": "armor",
+      "appliesTo": "armor+shield",
       "costMode": "plus",
       "enhancementIncrease": 2,
       "flatGp": 0,
@@ -38083,13 +38260,15 @@
     "tags": [
       "mic",
       "armor",
-      "enhancement"
+      "enhancement",
+      "shield"
     ],
     "weight": 0,
     "aura": "Moderate; (DC 18) abjuration",
     "activation": "--",
     "priceText": "+2 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Armor or shield"
   },
   {
     "schemaVersion": 3,
@@ -38166,14 +38345,14 @@
     "source": "Magic Item Compendium p.14",
     "cost": 6000,
     "targetType": "Armor",
-    "appliesTo": "Armor or shield",
+    "appliesTo": "armor+shield",
     "enhIncrease": 0,
     "flatCost": 6000,
     "casterLevel": 5,
     "requirements": "Craft Magic Arms and Armor, haste.",
     "itemModifier": {
       "kind": "enchantment",
-      "appliesTo": "armor",
+      "appliesTo": "armor+shield",
       "costMode": "gp",
       "enhancementIncrease": 0,
       "flatGp": 6000,
@@ -38196,13 +38375,15 @@
     "tags": [
       "mic",
       "armor",
-      "enhancement"
+      "enhancement",
+      "shield"
     ],
     "weight": 0,
     "aura": "Faint; (DC 17) transmutation",
     "activation": "Swift (mental)",
     "priceText": "+6,000 gp",
-    "costToCreate": "3,000 gp, 240 XP, 6 days."
+    "costToCreate": "3,000 gp, 240 XP, 6 days.",
+    "appliesToText": "Armor or shield"
   },
   {
     "schemaVersion": 3,
@@ -38363,7 +38544,7 @@
     "source": "Magic Item Compendium p.44",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 8,
@@ -38397,7 +38578,8 @@
     "aura": "Moderate; (DC 19) abjuration",
     "activation": "Free (mental)",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -38681,7 +38863,7 @@
     "source": "Magic Item Compendium p.15",
     "cost": 500,
     "targetType": "Armor",
-    "appliesTo": "Armor",
+    "appliesTo": "armor",
     "enhIncrease": 0,
     "flatCost": 500,
     "casterLevel": 5,
@@ -38716,7 +38898,8 @@
     "aura": "Faint; (DC 17) transmutation",
     "activation": "--",
     "priceText": "+500 gp",
-    "costToCreate": "250 gp, 20 XP, 1 day."
+    "costToCreate": "250 gp, 20 XP, 1 day.",
+    "appliesToText": "Armor"
   },
   {
     "schemaVersion": 3,
@@ -38766,7 +38949,8 @@
     "aura": "Strong; (DC 22) transmutation",
     "activation": "--",
     "priceText": "+8,000 gp",
-    "costToCreate": "4,000 gp, 320 XP, 8 days."
+    "costToCreate": "4,000 gp, 320 XP, 8 days.",
+    "appliesTo": "armor"
   },
   {
     "schemaVersion": 3,
@@ -38816,7 +39000,8 @@
     "aura": "Moderate; (DC 19) transmutation",
     "activation": "--",
     "priceText": "+4,000 gp",
-    "costToCreate": "2,000 gp, 160 XP, 4 days."
+    "costToCreate": "2,000 gp, 160 XP, 4 days.",
+    "appliesTo": "armor"
   },
   {
     "schemaVersion": 3,
@@ -39232,7 +39417,7 @@
     "source": "Magic Item Compendium p.44",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 9,
@@ -39270,7 +39455,8 @@
     "aura": "Moderate; (DC 19) enchantment",
     "activation": "--",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -39325,7 +39511,7 @@
     "source": "Magic Item Compendium p.44",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 9,
@@ -39359,7 +39545,8 @@
     "aura": "Moderate; (DC 19) enchantment",
     "activation": "Swift (command)",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -39436,7 +39623,7 @@
     "source": "Magic Item Compendium p.44",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 9,
@@ -39470,7 +39657,8 @@
     "aura": "Moderate; (DC 19) necromancy",
     "activation": "Swift (mental)",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -39482,7 +39670,7 @@
     "source": "Magic Item Compendium p.15",
     "cost": 0,
     "targetType": "Armor",
-    "appliesTo": "Armor",
+    "appliesTo": "armor",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 7,
@@ -39516,7 +39704,8 @@
     "aura": "Moderate; (DC 18) conjuration",
     "activation": "--",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Armor"
   },
   {
     "schemaVersion": 3,
@@ -39571,7 +39760,7 @@
     "source": "Magic Item Compendium p.44",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Melee weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 5,
@@ -39608,7 +39797,8 @@
     "aura": "Faint; (DC 17) transmutation",
     "activation": "--",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Melee weapon"
   },
   {
     "schemaVersion": 3,
@@ -39769,7 +39959,7 @@
     "source": "Magic Item Compendium p.44",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Melee weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 5,
@@ -39805,7 +39995,8 @@
     "aura": "Faint; (DC 17) transmutation",
     "activation": "--",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Melee weapon"
   },
   {
     "schemaVersion": 3,
@@ -40587,7 +40778,7 @@
     "source": "Magic Item Compendium p.45",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 2,
     "flatCost": 0,
     "casterLevel": 7,
@@ -40624,7 +40815,8 @@
     "aura": "Moderate; (DC 18) evocation",
     "activation": "--",
     "priceText": "+2 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -41448,14 +41640,14 @@
     "source": "Magic Item Compendium p.15",
     "cost": 0,
     "targetType": "Armor",
-    "appliesTo": "Shield",
+    "appliesTo": "shield",
     "enhIncrease": 5,
     "flatCost": 0,
     "casterLevel": 17,
     "requirements": "Craft Magic Arms and Armor, temporal stasis or timeless body (EPH 138).",
     "itemModifier": {
       "kind": "enchantment",
-      "appliesTo": "armor",
+      "appliesTo": "shield",
       "costMode": "plus",
       "enhancementIncrease": 5,
       "flatGp": 0,
@@ -41476,13 +41668,15 @@
     "tags": [
       "mic",
       "armor",
-      "enhancement"
+      "enhancement",
+      "shield"
     ],
     "weight": 0,
     "aura": "Strong; (DC 23) transmutation",
     "activation": "Standard (mental)",
     "priceText": "+5 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Shield"
   },
   {
     "schemaVersion": 3,
@@ -41909,7 +42103,7 @@
     "source": "Magic Item Compendium p.45",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 2,
     "flatCost": 0,
     "casterLevel": 13,
@@ -41943,7 +42137,8 @@
     "aura": "Strong; (DC 21) transmutation",
     "activation": "--",
     "priceText": "+2 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -42423,7 +42618,7 @@
     "source": "Magic Item Compendium p.15",
     "cost": 0,
     "targetType": "Armor",
-    "appliesTo": "Armor",
+    "appliesTo": "armor",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 5,
@@ -42457,7 +42652,8 @@
     "aura": "Faint; (DC 17) transmutation",
     "activation": "--",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Armor"
   },
   {
     "schemaVersion": 3,
@@ -42469,7 +42665,7 @@
     "source": "Magic Item Compendium p.45",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Melee weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 11,
@@ -42507,7 +42703,8 @@
     "aura": "Moderate; (DC 20) evocation",
     "activation": "-- and swift (command)",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Melee weapon"
   },
   {
     "schemaVersion": 3,
@@ -42707,7 +42904,7 @@
     "source": "Magic Item Compendium p.45",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Melee weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 2,
     "flatCost": 0,
     "casterLevel": 9,
@@ -42743,7 +42940,8 @@
     "aura": "Moderate; (DC 19) necromancy",
     "activation": "--",
     "priceText": "+2 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Melee weapon"
   },
   {
     "schemaVersion": 3,
@@ -42856,14 +43054,14 @@
     "source": "Magic Item Compendium p.15",
     "cost": 0,
     "targetType": "Armor",
-    "appliesTo": "Armor or shield",
+    "appliesTo": "armor+shield",
     "enhIncrease": 3,
     "flatCost": 0,
     "casterLevel": 5,
     "requirements": "Craft Magic Arms and Armor, suggestion or cloud mind (EPH 84).",
     "itemModifier": {
       "kind": "enchantment",
-      "appliesTo": "armor",
+      "appliesTo": "armor+shield",
       "costMode": "plus",
       "enhancementIncrease": 3,
       "flatGp": 0,
@@ -42884,13 +43082,15 @@
     "tags": [
       "mic",
       "armor",
-      "enhancement"
+      "enhancement",
+      "shield"
     ],
     "weight": 0,
     "aura": "Faint; (DC 17) enchantment",
     "activation": "Standard (mental)",
     "priceText": "+3 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Armor or shield"
   },
   {
     "schemaVersion": 3,
@@ -42902,7 +43102,7 @@
     "source": "Magic Item Compendium p.45",
     "cost": 8000,
     "targetType": "Weapon",
-    "appliesTo": "Melee weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 0,
     "flatCost": 8000,
     "casterLevel": 5,
@@ -42938,7 +43138,8 @@
     "aura": "Faint; (DC 17) enchantment",
     "activation": "Swift (command)",
     "priceText": "+8,000 gp",
-    "costToCreate": "4,000 gp, 320 XP, 8 days."
+    "costToCreate": "4,000 gp, 320 XP, 8 days.",
+    "appliesToText": "Melee weapon"
   },
   {
     "schemaVersion": 3,
@@ -42950,14 +43151,14 @@
     "source": "Magic Item Compendium p.15",
     "cost": 0,
     "targetType": "Armor",
-    "appliesTo": "Shield",
+    "appliesTo": "shield",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 5,
     "requirements": "Craft Magic Arms and Armor, shrink item.",
     "itemModifier": {
       "kind": "enchantment",
-      "appliesTo": "armor",
+      "appliesTo": "shield",
       "costMode": "plus",
       "enhancementIncrease": 1,
       "flatGp": 0,
@@ -42978,13 +43179,15 @@
     "tags": [
       "mic",
       "armor",
-      "enhancement"
+      "enhancement",
+      "shield"
     ],
     "weight": 0,
     "aura": "Faint; (DC 17) transmutation",
     "activation": "Swift (mental)",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Shield"
   },
   {
     "schemaVersion": 3,
@@ -43128,7 +43331,7 @@
     "source": "Magic Item Compendium p.45",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 9,
@@ -43162,7 +43365,8 @@
     "aura": "Moderate; (DC 19) necromancy",
     "activation": "Swift (command)",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -43636,7 +43840,7 @@
     "source": "Magic Item Compendium p.46",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 7,
@@ -43671,7 +43875,8 @@
     "aura": "Moderate; (DC 18) transmutation",
     "activation": "--",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -43851,7 +44056,7 @@
     "source": "Magic Item Compendium p.46",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 5,
@@ -43885,7 +44090,8 @@
     "aura": "Faint; (DC 17) necromancy",
     "activation": "--",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Weapon"
   },
   {
     "schemaVersion": 3,
@@ -43962,7 +44168,7 @@
     "source": "Magic Item Compendium p.46",
     "cost": 0,
     "targetType": "Weapon",
-    "appliesTo": "Slashing melee weapon",
+    "appliesTo": "weapon",
     "enhIncrease": 1,
     "flatCost": 0,
     "casterLevel": 11,
@@ -43998,7 +44204,8 @@
     "aura": "Moderate; (DC 20) transmutation",
     "activation": "Full-round (mental)",
     "priceText": "+1 bonus",
-    "costToCreate": "Varies."
+    "costToCreate": "Varies.",
+    "appliesToText": "Slashing melee weapon"
   },
   {
     "schemaVersion": 3,
@@ -44322,7 +44529,7 @@
     "source": "Magic Item Compendium p.15",
     "cost": 9000,
     "targetType": "Armor",
-    "appliesTo": "Armor",
+    "appliesTo": "armor",
     "enhIncrease": 0,
     "flatCost": 9000,
     "casterLevel": 9,
@@ -44356,7 +44563,8 @@
     "aura": "Moderate; (DC 19) conjuration",
     "activation": "Standard (command)",
     "priceText": "+9,000 gp",
-    "costToCreate": "4,500 gp, 360 XP, 9 days."
+    "costToCreate": "4,500 gp, 360 XP, 9 days.",
+    "appliesToText": "Armor"
   },
   {
     "schemaVersion": 3,

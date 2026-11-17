@@ -82,9 +82,9 @@
     {
       "id": "ability_dragon_breath_weapon_acid",
       "name": "Dragon Breath Weapon (Acid)",
-      "category": "DM Boon",
-      "type": "DM Boon",
-      "source": "DM Boon / Draconic Path",
+      "category": "Homebrew",
+      "type": "Homebrew",
+      "source": "Homebrew / Draconic Path",
       "actionType": "move",
       "action": "Move Action",
       "range": "60 ft. line",
@@ -190,8 +190,8 @@
     {
       "id": "ability_spell_reflection_ward",
       "name": "Spell Reflection Ward",
-      "category": "DM Boon",
-      "type": "DM Boon",
+      "category": "Homebrew",
+      "type": "Homebrew",
       "actionType": "immediate",
       "modes": [
         {

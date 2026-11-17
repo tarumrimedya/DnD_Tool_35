@@ -86,7 +86,7 @@
         "blueprint": "feat",
         "featKind": "feat",
         "name": "Draconic Natural Armor",
-        "type": "DM Boon",
+        "type": "Homebrew",
         "source": "DM Draconic Boon",
         "tags": [
           "draconic"
@@ -124,7 +124,7 @@
         "blueprint": "feat",
         "featKind": "feat",
         "name": "Draconic Acid Resistance",
-        "type": "DM Boon",
+        "type": "Homebrew",
         "source": "DM Draconic Boon",
         "tags": [
           "draconic",
@@ -194,7 +194,7 @@
         "blueprint": "feat",
         "featKind": "feat",
         "name": "Absorb Magic",
-        "type": "DM Boon",
+        "type": "Homebrew",
         "source": "DM Draconic Defence Path",
         "tags": [
           "draconic",
@@ -281,7 +281,7 @@
         "blueprint": "feat",
         "featKind": "feat",
         "name": "Arcane Shield",
-        "type": "DM Boon",
+        "type": "Homebrew",
         "source": "DM Draconic Synergy (Absorb Magic + Elemental Accustomed)",
         "tags": [
           "draconic",
@@ -363,7 +363,7 @@
         "blueprint": "feat",
         "featKind": "feat",
         "name": "Boon of Combat Perform (Lesser)",
-        "type": "DM Boon",
+        "type": "Homebrew",
         "source": "DM Lesser Boons",
         "tags": [
           "perform",
@@ -475,7 +475,7 @@
         "blueprint": "feat",
         "featKind": "feat",
         "name": "Boon of Blacksmith (Lesser)",
-        "type": "DM Boon",
+        "type": "Homebrew",
         "source": "DM Lesser Boons",
         "tags": [
           "crafting"

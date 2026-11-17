@@ -793,7 +793,7 @@
     // Filter catalog by selected item type (Weapon vs Armor vs Shield)
     let eligibleCatalog = [];
     if (global.SrdCompendium && typeof global.SrdCompendium.getEnhancements === 'function') {
-      const compList = global.SrdCompendium.getEnhancements(baseType === 'Shield' ? 'Shield' : baseType);
+      const compList = global.SrdCompendium.getEnhancements(baseType);
       if (Array.isArray(compList) && compList.length > 0) {
         eligibleCatalog = compList.map(e => ({
           id: e.id,
@@ -1612,7 +1612,7 @@
           badgesHtml += `<span class="px-1.5 py-0.5 rounded bg-amber-950/90 text-amber-300 border border-amber-500/50 text-[10px] font-mono font-semibold">⚠️ ${escapeHtml(w)}</span>`;
         });
       }
-      const hasPrereqOrFeat = Boolean(r.requires || (r.prereq && r.prereq !== '-') || r.type === 'Feat' || r.type === 'DM Boon');
+      const hasPrereqOrFeat = Boolean(r.requires || (r.prereq && r.prereq !== '-') || r.type === 'Feat' || r.type === 'Homebrew');
       if (hasPrereqOrFeat && global.RuleMaster && typeof global.RuleMaster.evaluateEntryEligibilityForCharacter === 'function') {
         const elig = global.RuleMaster.evaluateEntryEligibilityForCharacter(r);
         if (elig.status === 'SYNERGY_READY') {
