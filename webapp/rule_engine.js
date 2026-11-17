@@ -1846,6 +1846,8 @@ const RuleEngine = {
 
       blockList.forEach(b => {
         if (!b || typeof b !== 'object') return;
+        // "Gained at Level / HD" (race and template progression): the block applies from that character level on.
+        if (!this.isLevelGainUnlocked(b, curCtx)) return;
         const rawBType = b.type || (['when', 'while', 'table', 'carrier', 'stat', 'roll', 'attack', 'defense', 'effect', 'resource'].includes(String(b.kind || '').toLowerCase().trim()) ? b.kind : 'stat');
         const bType = String(rawBType || 'stat').toLowerCase().trim();
 
@@ -11850,9 +11852,65 @@ const RuleEngine = {
   // { id, name, kind, action, usage, usageText, casterLevel, dcFormula, save: { type, onSave } | null, attack, range,
   //   area, rechargeDice, damageParts, text }. Each power's V3 roll blocks are evaluated exactly like an entry mode;
   // an attached power (refId) with no blocks of its own uses the referenced entry's effects.
+  /**
+   * "Gained at Level / HD" gate for race and template progression (character level / total HD, like templates).
+   * item.gainedAt <= 1 (or unset) is always unlocked. ctx is a formula context or anything carrying `level` / `hd`.
+   */
+  isLevelGainUnlocked(item, ctx) {
+    const gainedAt = Number(item && item.gainedAt) || 0;
+    if (gainedAt <= 1) return true;
+    const level = Number(ctx && (ctx.hd ?? ctx.level)) || 1;
+    return level >= gainedAt;
+  },
+
+  /**
+   * Everything the character's race and active templates grant, by the level it is gained at:
+   * [{ level, source, sourceId, kind: 'power' | 'effect', name, summary, unlocked }], sorted by level.
+   * Sub-powers and top-level effect blocks without gainedAt count as level 1.
+   */
+  getRaceTemplateLevelGains(character) {
+    const w = character || {};
+    const level = Number(this.buildFormulaContext(w).level) || 1;
+    const sources = [];
+    const raceName = String(w.race || '').trim();
+    if (raceName) {
+      const raceEntry = this.resolveCustomEntryOverride(raceName, w, { family: 'race' }) || this.getMasterDbEntry(raceName, 'Race');
+      if (raceEntry) sources.push(raceEntry);
+    }
+    if (typeof this.getCharacterActiveTemplateEntries === 'function') {
+      (this.getCharacterActiveTemplateEntries(w) || []).forEach(t => { if (t) sources.push(t); });
+    }
+    const out = [];
+    sources.forEach(src => out.push(...this.getEntryLevelGains(src, level)));
+    return out.sort((a, b) => a.level - b.level);
+  },
+
+  /** Level gains of one race / template entry at a given character level (see getRaceTemplateLevelGains). */
+  getEntryLevelGains(entry, level = 1) {
+    if (!entry || typeof entry !== 'object') return [];
+    const lvl = Number(level) || 1;
+    const sourceName = entry.name || 'Race';
+    const atOf = (x) => Math.max(1, Math.floor(Number(x && x.gainedAt) || 1));
+    const out = [];
+    (Array.isArray(entry.powers) ? entry.powers : []).forEach(pw => {
+      if (!pw || typeof pw !== 'object') return;
+      const at = atOf(pw);
+      const summary = String(pw.text || (Array.isArray(pw.effects) ? pw.effects.map(e => e && e.summary).filter(Boolean).join('; ') : '') || '');
+      out.push({ level: at, source: sourceName, sourceId: entry.id || null, kind: 'power', name: String(pw.name || 'Power'), summary, unlocked: lvl >= at });
+    });
+    (Array.isArray(entry.effects) ? entry.effects : []).forEach(b => {
+      if (!b || typeof b !== 'object') return;
+      const at = atOf(b);
+      out.push({ level: at, source: sourceName, sourceId: entry.id || null, kind: 'effect', name: String(b.summary || b.label || b.name || b.type || 'Effect'), summary: '', unlocked: lvl >= at });
+    });
+    return out.sort((a, b) => a.level - b.level);
+  },
+
   expandEntryPowers(entry, ctx = {}) {
     if (!entry || !Array.isArray(entry.powers) || entry.powers.length === 0) return [];
     const character = (ctx && ctx.character) || this._activeCharacter || null;
+    // Powers gained at a later character level (race / template progression) stay locked until then.
+    const levelCtx = character ? this.buildFormulaContext(character) : null;
     const usageTextOf = (u) => {
       if (!u || typeof u !== 'object') return '';
       const n = Number(u.uses) || 0;
@@ -11869,6 +11927,7 @@ const RuleEngine = {
     };
     return entry.powers.map((pw, idx) => {
       if (!pw || typeof pw !== 'object') return null;
+      if (levelCtx && !this.isLevelGainUnlocked(pw, levelCtx)) return null;
       let effects = Array.isArray(pw.effects) ? pw.effects : [];
       const ref = (pw.kind === 'attached' && pw.refId) ? this.getMasterDbEntry(pw.refId) : null;
       if (effects.length === 0 && ref && Array.isArray(ref.effects)) effects = ref.effects;

@@ -6364,6 +6364,21 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       openLevelUpModal(true);
     }
 
+    // Race / template gains that unlock automatically at the new character level (no feat slot is spent).
+    function renderLevelUpRacialGains(anchorEl, nextLvl) {
+      const prev = document.getElementById('lvlup-racial-gains');
+      if (prev) prev.remove();
+      if (!anchorEl || !anchorEl.parentElement || typeof RuleEngine === 'undefined' || typeof RuleEngine.getRaceTemplateLevelGains !== 'function') return;
+      const gains = RuleEngine.getRaceTemplateLevelGains(character).filter(g => g.level === nextLvl);
+      if (!gains.length) return;
+      const box = document.createElement('div');
+      box.id = 'lvlup-racial-gains';
+      box.className = 'mt-2 rounded-lg border border-emerald-500/40 bg-emerald-950/30 p-2 space-y-1';
+      box.innerHTML = `<div class="text-[10px] font-bold uppercase tracking-wide text-emerald-300">🧬 Racial / Template Gains at Level ${nextLvl} (automatic)</div>` +
+        gains.map(g => `<div class="text-xs text-slate-200"><span class="text-emerald-300">${g.kind === 'power' ? '⚡' : '✨'}</span> <b>${UI.escapeHtml(g.source)}</b> — ${UI.escapeHtml(g.name)}${g.summary ? ` <span class="text-slate-400">(${UI.escapeHtml(g.summary)})</span>` : ''}</div>`).join('');
+      anchorEl.insertAdjacentElement('afterend', box);
+    }
+
     function openLevelUpModal(forPlanningOnly = false) {
       if (typeof window.ensureModalsMounted === 'function') window.ensureModalsMounted();
       const modal = document.getElementById('level-up-modal');
@@ -6418,6 +6433,8 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         }
         if (featHint) featHint.textContent = 'Not a standard feat level. You may still add a class bonus feat or Homebrew.';
       }
+
+      renderLevelUpRacialGains(featHint, nextLvl);
 
       // Initialize levelUpModalFeatSlots
       levelUpModalFeatSlots = [];

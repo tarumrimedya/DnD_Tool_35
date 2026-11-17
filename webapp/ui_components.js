@@ -619,6 +619,46 @@
     }
   }
 
+  // The character's own entries for the Rule Crafter pickers (homebrew, Crafter overrides, campaign packs);
+  // unmodified SRD snapshot copies are core data and stay out.
+  function collectCrafterHomebrew() {
+    const doc = (root.CharStore && typeof root.CharStore.getDoc === 'function' && root.CharStore.getDoc()) || root.character || null;
+    if (!doc) return [];
+    const SC = root.SrdCompendium;
+    const seen = new Set();
+    const out = [];
+    const add = (e) => {
+      if (!e || typeof e !== 'object' || !e.name) return;
+      const id = String(e.id || e.name);
+      if (seen.has(id)) return;
+      seen.add(id);
+      const abil = String(e.abilityType || '').trim();
+      out.push({
+        id,
+        name: String(e.name),
+        type: e.type || '',
+        blueprint: e.blueprint || '',
+        kindLabel: e.type || e.blueprint || 'Homebrew',
+        abilityType: /^(su|sp|ex)/i.test(abil) ? abil.slice(0, 2).charAt(0).toUpperCase() + abil.slice(1, 2).toLowerCase() : 'Ex',
+        desc: String(e.shortDescription || e.text || e.benefit || e.description || ''),
+        level: e.level,
+        learnedAt: e.learnedAt,
+        category: e.category,
+        prereq: typeof e.prereq === 'string' ? e.prereq : '',
+        source: e.source || 'Homebrew'
+      });
+    };
+    if (doc.customEntries && typeof doc.customEntries === 'object' && !Array.isArray(doc.customEntries)) {
+      Object.values(doc.customEntries).forEach(add);
+    }
+    (Array.isArray(doc.customDb) ? doc.customDb : []).forEach((e) => {
+      const isSnapshot = e && e._snapshot && e._snapshot.origin === 'srd-snapshot';
+      if (isSnapshot && !(SC && typeof SC.isUserCustomizedEntry === 'function' && SC.isUserCustomizedEntry(e))) return;
+      add(e);
+    });
+    return out;
+  }
+
   function openRuleCrafter(opts) {
     if (typeof document === 'undefined' || !document.body) return null;
     const options = opts || {};
@@ -676,6 +716,7 @@
             type: 'crafter:loadEntry',
             rawEntry: rawEntry,
             entry: payloadEntry,
+            homebrew: collectCrafterHomebrew(),
             context: Object.assign({
               kind: kindStr || null,
               allowCharacterScope: options.allowCharacterScope !== false,

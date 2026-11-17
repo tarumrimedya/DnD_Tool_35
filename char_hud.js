@@ -7582,7 +7582,8 @@
       const getRaceAbilityMod = (key, v1Prop) => {
         if (Array.isArray(raceObj.effects)) {
           const ef = raceObj.effects.find(e => {
-            if (!e || e.type !== 'stat' || e.condition) return false;
+            // Adjustments gained at a later level are listed under Racial Level Progression instead.
+            if (!e || e.type !== 'stat' || e.condition || Number(e.gainedAt) > 1) return false;
             const tgts = Array.isArray(e.targets) ? e.targets : (e.target ? [e.target] : []);
             return tgts.some(t => {
               const l = String(t || '').toLowerCase();
@@ -7618,6 +7619,21 @@
           `).join('')
         : `<p class="text-[10px] text-slate-300">${UI.escapeHtml(raceObj.benefit || '')}</p>`;
 
+      // Racial level progression: what the race grants at each character level, gained ones checked.
+      const charLevelNow = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.buildFormulaContext === 'function')
+        ? (Number(RuleEngine.buildFormulaContext(character).level) || 1) : (Number(character && character.level) || 1);
+      const levelGains = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getEntryLevelGains === 'function')
+        ? RuleEngine.getEntryLevelGains(raceObj, charLevelNow) : [];
+      const levelGainsHtml = levelGains.length ? `
+        <div class="bg-slate-900/80 border border-slate-800/80 rounded-lg p-2 space-y-1">
+          <div class="text-[10px] uppercase font-bold text-slate-400">Racial Level Progression (character level ${charLevelNow})</div>
+          ${levelGains.map(g => `
+            <div class="text-[10px] flex items-start gap-1.5 ${g.unlocked ? 'text-slate-200' : 'text-slate-500'}">
+              <span class="font-mono font-bold shrink-0 ${g.unlocked ? 'text-emerald-300' : 'text-slate-500'}">${g.unlocked ? '✓' : '○'} Lvl ${g.level}</span>
+              <span>${g.kind === 'power' ? '⚡' : '✨'} ${UI.escapeHtml(g.name)}${g.summary ? ` <span class="text-slate-500">(${UI.escapeHtml(g.summary)})</span>` : ''}</span>
+            </div>`).join('')}
+        </div>` : '';
+
       // Auto-update size & speed inputs in form
       const sizeInput = document.getElementById('profile-edit-size');
       if (sizeInput && raceObj.size) {
@@ -7646,6 +7662,8 @@
         <div class="max-h-36 overflow-y-auto bg-slate-900/80 border border-slate-800/80 rounded-lg p-2 space-y-1">
           ${traitsList}
         </div>
+
+        ${levelGainsHtml}
 
         <div class="pt-1.5 border-t border-slate-800 flex items-center text-[10px]">
           <span class="text-amber-300 font-medium flex items-center gap-1.5">

@@ -223,7 +223,7 @@
     ['Low-Light Vision', 'Ex', 'See twice as far as a human in dim light.'], ['Darkvision', 'Ex', 'See in darkness out to 60 ft.'], ['Damage Reduction', 'Ex', 'Ignore a portion of damage from each attack.']
   ].map((c) => ({ id: 'seed-cab-' + slug(c[0]), name: c[0], abilityType: c[1], desc: c[2], src: 'SRD (seed)' }));
 
-  const CAT = { weapons: WEAPONS, armors: ARMORS, enchants: [], crystals: CRYSTALS, feats: FEATS, spells: SPELLS, domains: DOMAINS, deities: DEITIES, classFeatures: CLASS_FEATURES, special: [], magicItems: [], classes: [], monsters: [], srdLoaded: false, srdCount: 0, customCount: 0 };
+  const CAT = { weapons: WEAPONS, armors: ARMORS, enchants: [], crystals: CRYSTALS, feats: FEATS, spells: SPELLS, domains: DOMAINS, deities: DEITIES, classFeatures: CLASS_FEATURES, homebrew: [], special: [], magicItems: [], classes: [], monsters: [], srdLoaded: false, srdCount: 0, customCount: 0 };
   const byId = (list, id) => list.find((x) => x.id === id);
 
   // --------------------------------------------------------------------------
@@ -329,7 +329,7 @@
   function blankPower(kind, o) {
     return Object.assign({
       id: uid('pw'), kind: kind, name: kind === 'inline' ? 'New Power' : '', ref: null, grantMode: 'cast',
-      use: blankUse('perDay'), action: 'Standard', cl: '', dc: 0, dcFormula: '', spellLevel: '', duration: '',
+      use: blankUse('perDay'), action: 'Standard', cl: '', dc: 0, dcFormula: '', spellLevel: '', gainedAt: '', duration: '',
       attack: 'none', attackOn: false, range: '', area: '',
       save: { type: 'None', effect: 'Negates' }, effects: [], text: '', exportStandalone: false
     }, o || {});
@@ -2341,6 +2341,8 @@
       }
     }
     o.summary = blockText(b);
+    // Race / template progression: only a real later level is kept.
+    if (num(b.gainedAt) > 1) o.gainedAt = Math.floor(num(b.gainedAt)); else delete o.gainedAt;
     if (b.type === 'when' && Array.isArray(b.branches)) {
       o.branches = b.branches.map((br) => {
         const bo = clone(br);
@@ -2364,6 +2366,7 @@
     if (/^\d+$/.test(dcRaw)) o.saveDC = Number(dcRaw);
     else if (dcRaw) o.dcFormula = dcRaw;
     if (pw.spellLevel !== '' && pw.spellLevel !== null && pw.spellLevel !== undefined && Number.isFinite(Number(pw.spellLevel))) o.spellLevel = Number(pw.spellLevel);
+    if (num(pw.gainedAt) > 1) o.gainedAt = Math.floor(num(pw.gainedAt));
     if (pw.duration) o.duration = pw.duration;
     if (pw.attackOn && pw.attack !== 'none') o.attack = pw.attack;
     if (pw.range) o.range = pw.range;
@@ -3128,6 +3131,7 @@
           dc: num(pw.saveDC != null ? pw.saveDC : pw.dc, 0),
           dcFormula: String(pw.dcFormula || (num(pw.saveDC != null ? pw.saveDC : pw.dc, 0) ? num(pw.saveDC != null ? pw.saveDC : pw.dc, 0) : '')),
           spellLevel: pw.spellLevel != null ? pw.spellLevel : '',
+          gainedAt: num(pw.gainedAt) > 1 ? Math.floor(num(pw.gainedAt)) : '',
           duration: pw.duration || '',
           attackOn: !!(pw.attack && pw.attack !== 'none'),
           attack: pw.attack && pw.attack !== 'none' ? pw.attack : 'none',
@@ -3918,12 +3922,14 @@
     },
     feature: {
       ph: '🔍 + Feature / SLA / Feat…',
-      layers: ['All', 'Features', 'Spells (SLA)', 'Feats'],
+      layers: ['All', 'Homebrew', 'Features', 'Spells (SLA)', 'Feats'],
       search(q, ctx, layer) {
         const L = layer || 'All', out = [];
+        // The character's own homebrew entries (sent by the sheet with crafter:loadEntry).
+        if (L === 'All' || L === 'Homebrew') rank(CAT.homebrew || [], q, (h) => h.name, (h) => h.desc, 12).forEach((h) => out.push(SI('Homebrew', h.id, h.name, h.kindLabel || 'Homebrew', short(h.desc), { name: h.name, refId: h.id, type: h.abilityType || 'Ex', desc: h.desc })));
         if (L === 'All' || L === 'Features') rank(CAT.classFeatures, q, (c) => c.name, (c) => c.desc, 12).forEach((c) => out.push(SI('Class Features', c.id, c.name, c.abilityType || 'Ex', short(c.desc), { name: c.name, refId: c.id, type: c.abilityType || 'Ex', desc: c.desc })));
         if (L === 'All' || L === 'Spells (SLA)') rank(CAT.spells, q, (s) => s.name, (s) => s.desc, 12).forEach((s) => out.push(SI('Spells (as Sp SLA)', s.id, s.name, 'Sp • ' + (s.levelText || 'Lvl ' + s.level), short(s.school + ' • ' + s.desc), { name: s.name + ' (1/day, Sp)', refId: s.id, type: 'Sp', desc: s.desc })));
-        if (L === 'All' || L === 'Feats') rank(CAT.feats, q, (f) => f.name, (f) => f.desc, 8).forEach((f) => out.push(SI('Feats (granted)', f.id, f.name, 'Feat', short(f.desc), { name: f.name, refId: f.id, type: 'Ex', desc: f.desc })));
+        if (L === 'All' || L === 'Feats') rank(CAT.feats.filter((f) => !f.custom), q, (f) => f.name, (f) => f.desc, 8).forEach((f) => out.push(SI('Feats (granted)', f.id, f.name, 'Feat', short(f.desc), { name: f.name, refId: f.id, type: 'Ex', desc: f.desc })));
         return out;
       },
       pick(it, ctx) { S.entry.progression.levels[num(ctx)].features.push(FEATURE(it.data.name, { refId: it.data.refId, abilityType: it.data.type || 'Ex', text: short(it.data.desc, 200) })); renderAll(); }
@@ -4022,6 +4028,7 @@
     'feat-sum': (a) => { const p = a.split(':'); const f = (S.entry.progression.levels[num(p[0])] || { features: [] }).features[num(p[1])]; return f ? (f.branchPath ? '🔀 ' + esc(f.branchPath) + ': ' : '') + esc(f.name) : ''; },
     'dom-sum': (i) => { const d = S.entry.grants.domains[num(i)]; return d ? esc(d.name + (d.grantedPower ? ' — ' + short(d.grantedPower, 80) : '')) : ''; },
     'deity-sum': (i) => { const d = S.entry.grants.deities[num(i)]; return d ? esc(d.name + ' (' + d.align + ') • Favored Weapon: ' + d.favoredWeapon) : ''; },
+    'lvl-overview': () => levelGainRows(),
     // How the engine reads a formula field: normalized form + sample values, or the unknown terms.
     'fx-preview': (path) => {
       const raw = getPath(S.entry, path);
@@ -4750,17 +4757,36 @@
       '</div>';
   }
 
+  // Race / template entries grow with character level: their sub-powers and top-level blocks carry "Gained at Level / HD".
+  function isLevelGainEntry() { return S.entry && S.entry.blueprint === 'race'; }
+  function levelGainChip(b, p, listPath) {
+    if (!isLevelGainEntry() || listPath !== 'effects') return '';
+    return '<label class="fs-hint" style="display:inline-flex;align-items:center;gap:4px;margin-left:8px">Gained at Lvl ' +
+      inp(p + '.gainedAt', num(b.gainedAt) || '', { num: true, min: 1, max: 20, ph: '1', style: 'width:56px' }) + '</label>';
+  }
+  // Read-only summary of what the race / template grants at each character level (from the gainedAt fields).
+  function levelGainRows() {
+    const en = S.entry, rows = {};
+    const at = (x) => Math.max(1, Math.floor(num(x && x.gainedAt, 1)) || 1);
+    const add = (lv, html) => { (rows[lv] = rows[lv] || []).push(html); };
+    (en.powers || []).forEach((pw) => add(at(pw), '⚡ ' + esc(pw.kind === 'attached' && pw.ref ? pw.ref.name : (pw.name || 'Power'))));
+    (en.effects || []).forEach((b) => add(at(b), (BLOCK_TYPES[b.type] || BLOCK_TYPES.effect).icon + ' ' + esc(blockText(b) || (BLOCK_TYPES[b.type] || BLOCK_TYPES.effect).label)));
+    const lvls = Object.keys(rows).map(Number).sort((a, b) => a - b);
+    if (!lvls.length) return '<div class="fs-hint">Add sub-powers or rule blocks, then set "Gained at Level / HD" on each.</div>';
+    return lvls.map((lv) => '<div class="fs-fxrow fs-fxrow-inline"><code>Lvl ' + lv + '</code><span style="color:var(--text-primary)">' + rows[lv].join(' • ') + '</span></div>').join('');
+  }
+
   function scratchBlocks(list, listPath) {
     return (list || []).map((b, i) => {
       const p = listPath + '.' + i, T = BLOCK_TYPES[b.type] || BLOCK_TYPES.effect;
       if (!T.container) {
         const liveExtra = b.type === 'roll' ? '<span class="fs-pill amber">' + live('roll-preview', p) + '</span>' : '';
         return '<div class="lego-block lego-tab ' + T.color + '">' +
-          H('<span class="lego-lbl">' + T.icon + ' ' + esc(T.label) + '</span>' + liveExtra, delBtn('remove-block', { p: listPath, i: i })) +
+          H('<span class="lego-lbl">' + T.icon + ' ' + esc(T.label) + '</span>' + liveExtra + levelGainChip(b, p, listPath), delBtn('remove-block', { p: listPath, i: i })) +
           blockControls(b, p) +
           '</div>';
       }
-      const head = H('<span class="lego-lbl">' + T.icon + ' ' + esc(T.label) + '</span>', delBtn('remove-block', { p: listPath, i: i })) + blockControls(b, p);
+      const head = H('<span class="lego-lbl">' + T.icon + ' ' + esc(T.label) + '</span>' + levelGainChip(b, p, listPath), delBtn('remove-block', { p: listPath, i: i })) + blockControls(b, p);
       let inner = '';
       if (T.container === 'branches') {
         const flow = b.flow || 'while';
@@ -4857,6 +4883,7 @@
       F('Power Name', pw.kind === 'inline' ? inp(p + '.name', pw.name, { ph: 'Sub-power name' }) : '<span class="fs-pill purple">🔮 ' + esc(pw.ref ? pw.ref.name : pw.name) + '</span>') +
       F('Action', sel(p + '.action', pw.action, ACTIONS, { narrow: true })) +
       F('Caster Level', inp(p + '.cl', num(pw.cl) || '', { num: true, ph: 'Character CL' })) +
+      (isLevelGainEntry() ? F('Gained at Level / HD', inp(p + '.gainedAt', num(pw.gainedAt) || '', { num: true, min: 1, max: 20, ph: '1' })) : '') +
       usageFields(p + '.use', pw.use, 3)
     );
     let kids = '';
@@ -4898,6 +4925,11 @@
     if (!o.skipPrereqs && hasFacet(en, 'prereqs')) h += prereqCBlock(en, 'Prerequisites');
     h += scratchBlocks(en.effects, 'effects');
     h += en.powers.map(powerCBlock).join('');
+    if (isLevelGainEntry() && ((en.powers || []).length || (en.effects || []).length)) {
+      h += stack('b-slate', H(L('📋 Level / HD Overview')) +
+        '<div class="fs-hint" style="margin-bottom:4px">What the character gains at each level (character level / total HD). Set "Gained at Level / HD" on a sub-power or rule block to move it.</div>' +
+        live('lvl-overview', ''));
+    }
     if (!o.skipProgression && hasFacet(en, 'progression')) h += progressionCBlock(en);
     return h;
   }
@@ -5805,6 +5837,10 @@
         if (msg.type === 'crafter:loadEntry') {
           const ctx = (msg.context && typeof msg.context === 'object') ? msg.context : {};
           S.embed.context = ctx;
+          if (Array.isArray(msg.homebrew)) {
+            CAT.homebrew = msg.homebrew.filter((h) => h && h.id && h.name);
+            mergeMasterDb(msg.homebrew.map((h) => h.raw || h));
+          }
           const allowChar = ctx.allowCharacterScope !== false;
           S.embed.saveScope = allowChar ? (ctx.defaultScope || 'character') : 'campaign';
           if (msg.rawEntry && msg.rawEntry.schemaVersion !== 3) {

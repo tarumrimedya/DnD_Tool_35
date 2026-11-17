@@ -5407,6 +5407,42 @@ function runDeriveSheetTests() {
       RuleEngine.inspectFormula('@input.spellLevel * 10').normalized === '@input.spellLevel * 10',
       RuleEngine.inspectFormula('@input.spellLevel * 10').normalized
     );
+    // 11. Race / template progression: "Gained at Level / HD" gates blocks and sub-powers by character level.
+    const growRace = {
+      schemaVersion: 3, id: 'custom-grow-race', blueprint: 'race', type: 'Race', name: 'Growing Drake', race: { kind: 'race', size: 'Medium', speed: 30 },
+      effects: [
+        { type: 'stat', targets: ['ac.natural'], mode: 'flat', value: 2, btype: 'Untyped', summary: '+2 Natural Armor' },
+        { type: 'stat', targets: ['ability.str'], mode: 'flat', value: 2, btype: 'Racial', gainedAt: 5, summary: '+2 Str' }
+      ],
+      powers: [
+        { id: 'pw-g1', kind: 'inline', name: 'Drake Bite', usage: { mode: 'atWill' }, effects: [{ type: 'roll', kind: 'Damage', count: 1, die: 'd6', dmgType: 'Piercing' }] },
+        { id: 'pw-g10', kind: 'inline', name: 'Drake Roar', gainedAt: 10, usage: { mode: 'perDay', uses: 1 }, area: '30-ft. Cone', effects: [{ type: 'roll', kind: 'Damage', count: 4, die: 'd6', dmgType: 'Sonic' }] }
+      ]
+    };
+    const growChar = (lvl) => baseChar({
+      race: 'Growing Drake', classes: 'Fighter ' + lvl, level: lvl, bab: lvl,
+      abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+      customEntries: { 'custom-grow-race': growRace }, customDb: [growRace]
+    });
+    const growAt = (lvl) => {
+      const c = growChar(lvl);
+      const sheet = RuleEngine.deriveSheet(c);
+      const strObj = sheet.abilities && sheet.abilities.str;
+      const str = typeof strObj === 'object' ? Number(strObj.total ?? strObj.score) : Number(strObj);
+      return { str, attacks: RuleEngine.deriveSpecialAttacks(c, null, []).map(a => a.powerId).filter(Boolean).sort().join(',') };
+    };
+    const g1 = growAt(1), g5 = growAt(5), g10 = growAt(10);
+    check(
+      'Race progression: +2 Str gained at level 5 is not applied at level 1, applies at 5; Drake Roar (level 10) has no card before 10',
+      g1.str === 10 && g5.str === 12 && g1.attacks === 'pw-g1' && g5.attacks === 'pw-g1' && g10.attacks === 'pw-g1,pw-g10',
+      JSON.stringify({ g1, g5, g10 })
+    );
+    const gains5 = RuleEngine.getRaceTemplateLevelGains(growChar(5));
+    check(
+      'Race progression: getRaceTemplateLevelGains lists every gain by level with its unlocked state',
+      gains5.map(g => `${g.level}:${g.name}:${g.unlocked ? 'Y' : 'N'}`).join('|') === '1:Drake Bite:Y|1:+2 Natural Armor:Y|5:+2 Str:Y|10:Drake Roar:N',
+      gains5.map(g => `${g.level}:${g.name}:${g.unlocked ? 'Y' : 'N'}`).join('|')
+    );
     check(
       'Race "Acid Breath" special attack carries its delivery (Breath Weapon) on the card data',
       Boolean(raceAcid && raceAcid.delivery && raceAcid.delivery.isBreath),
