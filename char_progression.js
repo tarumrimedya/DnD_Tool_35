@@ -8352,6 +8352,14 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         `;
       }
 
+      // Race / template gains by character level (shown in the BONUS column of their level, automatic, no slot spent)
+      const racialGainsByLevel = {};
+      if (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getRaceTemplateLevelGains === 'function') {
+        RuleEngine.getRaceTemplateLevelGains(character).forEach(g => {
+          (racialGainsByLevel[g.level] = racialGainsByLevel[g.level] || []).push(g);
+        });
+      }
+
       // Render Table Rows
       prog.forEach((lvl, idx) => {
         const isActive = lvl.active !== false;
@@ -8632,6 +8640,11 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
           const cleanStr = labelText;
           const cornerBadge = getFeatPinCornerBadgeHtml(rawName);
           return `<button data-action="${isHomebrewBoon ? 'entity:inspect' : 'progression:show-feat-detail'}" ${isHomebrewBoon ? `data-entity-kind="boon" data-entity-name="${UI.escapeAttr(boonCoreName || rawName)}" data-level-index="${idx}"` : `data-feat-name="${rawName.replace(/"/g, '&quot;')}" data-level-idx="${idx}" data-feat-type="feat"`} title="${safeTip}" style="width: 150px; min-width: 150px; max-width: 150px; box-sizing: border-box; overflow: hidden;" class="relative min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[10px] font-bold ${bgCls} border shadow-sm transition text-left cursor-pointer"><span class="shrink-0">${icon}</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">${cleanStr}</span>${cornerBadge}</button>`;
+        });
+
+        (racialGainsByLevel[idx + 1] || []).forEach(g => {
+          const tip = String(g.source) + ' (Race / Template): ' + String(g.name) + (g.summary ? ' — ' + String(g.summary) : '');
+          otherBonusBadgeItems.push(`<span style="width: 150px; min-width: 150px; max-width: 150px; box-sizing: border-box; overflow: hidden;" class="min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[10px] font-bold bg-teal-950/80 text-teal-300 border border-teal-600/70 text-left" title="${UI.escapeAttr(tip)}"><span class="shrink-0">${g.kind === 'power' ? '⚡' : '🧬'}</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight">${UI.escapeHtml(g.name)}</span></span>`);
         });
 
         const qualifiesForHumanBonus = (lvl.level === 1 && _raceFeatBonus1(character));

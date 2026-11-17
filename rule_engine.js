@@ -11901,7 +11901,14 @@ const RuleEngine = {
     (Array.isArray(entry.effects) ? entry.effects : []).forEach(b => {
       if (!b || typeof b !== 'object') return;
       const at = atOf(b);
-      out.push({ level: at, source: sourceName, sourceId: entry.id || null, kind: 'effect', name: String(b.summary || b.label || b.name || b.type || 'Effect'), summary: '', unlocked: lvl >= at });
+      let name = String(b.summary || b.label || b.name || b.type || 'Effect');
+      // A formula stat block reads as its value at the character's level ("+2 Untyped → Natural Armor (scales)").
+      const formula = String(b.formula || '').trim();
+      if (b.type === 'stat' && b.mode === 'formula' && formula && name.indexOf(formula) === 0) {
+        const val = Number(this.evaluateFormula(formula, { level: lvl, hd: lvl, cl: lvl, casterLevel: lvl }));
+        if (Number.isFinite(val)) name = `${val >= 0 ? '+' : ''}${Math.floor(val)}${name.slice(formula.length)} (scales)`;
+      }
+      out.push({ level: at, source: sourceName, sourceId: entry.id || null, kind: 'effect', name, summary: '', unlocked: lvl >= at });
     });
     return out.sort((a, b) => a.level - b.level);
   },
