@@ -4764,16 +4764,29 @@
     return '<label class="fs-hint" style="display:inline-flex;align-items:center;gap:4px;margin-left:8px">Gained at Lvl ' +
       inp(p + '.gainedAt', num(b.gainedAt) || '', { num: true, min: 1, max: 20, ph: '1', style: 'width:56px' }) + '</label>';
   }
-  // Read-only summary of what the race / template grants at each character level (from the gainedAt fields).
-  function levelGainRows() {
+  // { level: [{ kind: 'power' | 'effect', html }] } from the gainedAt fields of the sub-powers and top-level blocks.
+  function levelGainItems() {
     const en = S.entry, rows = {};
     const at = (x) => Math.max(1, Math.floor(num(x && x.gainedAt, 1)) || 1);
-    const add = (lv, html) => { (rows[lv] = rows[lv] || []).push(html); };
-    (en.powers || []).forEach((pw) => add(at(pw), '⚡ ' + esc(pw.kind === 'attached' && pw.ref ? pw.ref.name : (pw.name || 'Power'))));
-    (en.effects || []).forEach((b) => add(at(b), (BLOCK_TYPES[b.type] || BLOCK_TYPES.effect).icon + ' ' + esc(blockText(b) || (BLOCK_TYPES[b.type] || BLOCK_TYPES.effect).label)));
+    const add = (lv, kind, html) => { (rows[lv] = rows[lv] || []).push({ kind: kind, html: html }); };
+    (en.powers || []).forEach((pw) => add(at(pw), 'power', '⚡ ' + esc(pw.kind === 'attached' && pw.ref ? pw.ref.name : (pw.name || 'Power'))));
+    (en.effects || []).forEach((b) => add(at(b), 'effect', (BLOCK_TYPES[b.type] || BLOCK_TYPES.effect).icon + ' ' + esc(blockText(b) || (BLOCK_TYPES[b.type] || BLOCK_TYPES.effect).label)));
+    return rows;
+  }
+  // Read-only summary of what the race / template grants at each character level.
+  function levelGainRows() {
+    const rows = levelGainItems();
     const lvls = Object.keys(rows).map(Number).sort((a, b) => a - b);
     if (!lvls.length) return '<div class="fs-hint">Add sub-powers or rule blocks, then set "Gained at Level / HD" on each.</div>';
-    return lvls.map((lv) => '<div class="fs-fxrow fs-fxrow-inline"><code>Lvl ' + lv + '</code><span style="color:var(--text-primary)">' + rows[lv].join(' • ') + '</span></div>').join('');
+    return lvls.map((lv) => '<div class="fs-fxrow fs-fxrow-inline"><code>Lvl ' + lv + '</code><span style="color:var(--text-primary)">' + rows[lv].map((r) => r.html).join(' • ') + '</span></div>').join('');
+  }
+  // "+ Rule Block" menu in a Level / HD Table row: the new block is gained at that level.
+  function levelBlockMenu(lv) {
+    const types = ['stat', 'roll', 'attack', 'defense', 'effect', 'resource'];
+    return '<details class="lego-qp" style="position:relative;display:inline-block"><summary class="fs-btn fs-xs fs-dashed" style="cursor:pointer;list-style:none">+ Rule Block</summary>' +
+      '<div class="fs-glass" style="position:absolute;z-index:60;top:calc(100% + 4px);left:0;display:flex;flex-direction:column;gap:3px;padding:6px;min-width:200px;border-radius:10px">' +
+      types.map((t) => '<button type="button" class="fs-btn fs-xs fs-ghost" style="justify-content:flex-start" data-action="add-block-at-level" data-t="' + t + '" data-lv="' + lv + '">' + BLOCK_TYPES[t].icon + ' ' + esc(BLOCK_TYPES[t].shortLabel) + '</button>').join('') +
+      '</div></details>';
   }
 
   function scratchBlocks(list, listPath) {
@@ -4838,8 +4851,10 @@
     const maxLv = Math.max(1, Math.min(20, num(p.maxLevel, 20)));
     const hideEmpty = !isCls && S.ui.progHideEmpty;
     let levelIndices = range(0, maxLv - 1);
+    // Race / template: the rule blocks and sub-powers gained at each level ("Gained at Level / HD") show in their row.
+    const gainRows = isLevelGainEntry() ? levelGainItems() : {};
     if (hideEmpty) {
-      const nonEmpty = levelIndices.filter((i) => p.levels[i].features.length > 0 || (showClassCols && p.levels[i].spell));
+      const nonEmpty = levelIndices.filter((i) => p.levels[i].features.length > 0 || (showClassCols && p.levels[i].spell) || (gainRows[i + 1] || []).length > 0);
       levelIndices = nonEmpty.length ? nonEmpty : [0];
     }
     const rows = levelIndices.map((i) => {
@@ -4855,10 +4870,12 @@
         ? '<b class="lego-lvl">Lvl ' + Lv + '</b><span class="lego-desc">BAB ' + sgn(classBAB(p.bab, Lv)) + ' • F ' + sgn(p.good.fort ? goodSave(Lv) : poorSave(Lv)) + ' / R ' + sgn(p.good.ref ? goodSave(Lv) : poorSave(Lv)) + ' / W ' + sgn(p.good.will ? goodSave(Lv) : poorSave(Lv)) + '</span>'
         : '<b class="lego-lvl">' + (p.mode === 'hd' ? 'HD ' : 'Lvl ') + Lv + '</b>';
       const suffix = showClassCols ? chk('progression.levels.' + i + '.spell', l.spell, '✓ +1 Spellcasting') : '';
-      const topRow = '<div class="lego-lvl-top">' + prefix + chips + '</div>';
+      const gainChips = (gainRows[Lv] || []).map((g) => '<span class="fs-pill ' + (g.kind === 'power' ? 'amber' : 'sky') + '" title="Gained at ' + (p.mode === 'hd' ? 'HD ' : 'Level ') + Lv + '">' + g.html + '</span>').join('');
+      const topRow = '<div class="lego-lvl-top">' + prefix + chips + gainChips + '</div>';
       const actRow = '<div class="lego-lvl-actions">' +
         spotHtml('feature', i, { style: 'width:210px', ph: '🔍 + Feature / SLA / Feat' }) +
         btn('add-feature-inline', '✨ + Inline', 'fs-xs fs-dashed', { l: i }) +
+        (isLevelGainEntry() ? levelBlockMenu(Lv) + btn('add-power-at-level', '+ ⚡ Sub-Power', 'fs-xs fs-dashed', { lv: Lv }) : '') +
         suffix +
         '</div>';
       return stack('b-slate', '<div class="lego-lvl-stack">' + topRow + actRow + editors + '</div>');
@@ -5718,6 +5735,16 @@
       const idx = S.customItemMods.findIndex((x) => x.id === modObj.id || x.name.toLowerCase() === name.toLowerCase());
       if (idx >= 0) S.customItemMods[idx] = modObj; else S.customItemMods.push(modObj);
       saveLS(); toast('📌 Registered "' + name + '" in Item Catalog'); renderAll();
+    },
+    // Level / HD Table rows (race / template): the new block or sub-power is gained at that level.
+    'add-block-at-level': (el) => { const lv = num(el.dataset.lv, 1); addPaletteBlock('effects', el.dataset.t, lv > 1 ? { gainedAt: lv } : null); },
+    'add-power-at-level': (el) => {
+      ensureFacet('powers');
+      const lv = num(el.dataset.lv, 1);
+      const pw = blankPower('inline', { name: 'New Power ' + (S.entry.powers.length + 1), gainedAt: lv > 1 ? lv : '' });
+      S.entry.powers.push(pw);
+      S.ui.cardOpen['pw:' + pw.id] = true;
+      renderAll();
     },
     'add-power-inline': () => { ensureFacet('powers'); const pw = blankPower('inline', { name: 'New Power ' + (S.entry.powers.length + 1) }); S.entry.powers.push(pw); S.ui.cardOpen['pw:' + pw.id] = true; renderAll(); },
     'remove-power': (el) => { S.entry.powers.splice(num(el.dataset.i), 1); renderAll(); },
