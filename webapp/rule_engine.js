@@ -722,8 +722,37 @@ const RuleEngine = {
     return this.safeEvaluateMathExpr(expr);
   },
 
-  // Copy-on-Write Per-Character Custom Entry Override Lookup (`char.customEntries[id]`)
-  resolveCustomEntryOverride(itemOrName, character = null) {
+  // Rule family of an entry ('feat', 'spell', 'item', 'race', ...; '' when unknown). A name-only override
+  // lookup never crosses families, so a homebrew feat named "Fireball" cannot replace the Fireball spell.
+  RULE_FAMILY_BY_KIND: {
+    feat: 'feat', flaw: 'feat', trait: 'feat', homebrew: 'feat', classability: 'feat', 'class ability': 'feat',
+    'special ability': 'feat', feature: 'feat',
+    spell: 'spell',
+    power: 'power', 'psionic power': 'power',
+    maneuver: 'maneuver', stance: 'maneuver',
+    weapon: 'item', armor: 'item', shield: 'item', item: 'item', 'wondrous item': 'item', ring: 'item', rod: 'item',
+    staff: 'item', wand: 'item', potion: 'item', scroll: 'item', 'magic item': 'item', gear: 'item', equipment: 'item',
+    ammunition: 'item',
+    race: 'race', template: 'race',
+    class: 'class', 'base class': 'class', 'prestige class': 'class', 'custom class': 'class',
+    domain: 'domain', deity: 'deity', meld: 'meld', soulmeld: 'meld', vestige: 'vestige', mystery: 'mystery',
+    utterance: 'utterance', monster: 'monster', condition: 'condition'
+  },
+
+  entryRuleFamily(entry) {
+    if (!entry || typeof entry !== 'object') return '';
+    const kinds = [entry.blueprint, entry.type, entry.category];
+    for (let i = 0; i < kinds.length; i++) {
+      const k = String(kinds[i] || '').toLowerCase().trim();
+      if (k && this.RULE_FAMILY_BY_KIND[k]) return this.RULE_FAMILY_BY_KIND[k];
+    }
+    return '';
+  },
+
+  // Copy-on-Write Per-Character Custom Entry Override Lookup (`char.customEntries[id]`).
+  // Explicit ids always match; name-derived matches (slug ids, display name) must share the rule family.
+  // `opts.family` gives the family for a plain-name lookup (e.g. 'race', 'class', 'domain').
+  resolveCustomEntryOverride(itemOrName, character = null, opts = {}) {
     if (!itemOrName) return null;
     const customMap = (character && character.customEntries && typeof character.customEntries === 'object' ? character.customEntries : null)
       || (this._activeCustomEntries && typeof this._activeCustomEntries === 'object' ? this._activeCustomEntries : null)
@@ -734,6 +763,12 @@ const RuleEngine = {
     if (mapKeys.length === 0) return null;
 
     const isObj = typeof itemOrName === 'object';
+    const inFamily = (opts && opts.family) || (isObj ? this.entryRuleFamily(itemOrName) : '');
+    const sameFamily = (fam) => !inFamily || !fam || fam === inFamily;
+    const PREFIX_FAMILY = {
+      'feat-': 'feat', 'cab-': 'feat', 'sa-': 'feat', 'spl-': 'spell', 'pwr-': 'power', 'meld-': 'meld',
+      'vst-': 'vestige', 'mys-': 'mystery', 'utt-': 'utterance', 'wpn-': 'item', 'arm-': 'item', 'itm-': 'item', 'cls-': 'class'
+    };
     const candidateIds = [];
     if (isObj) {
       ['id', 'baseEntryId', 'baseItemId', 'srdId'].forEach(k => {
@@ -754,7 +789,8 @@ const RuleEngine = {
       const baseNameNoParen = rawName.replace(/\s*\([^)]+\)\s*$/g, '').trim();
       const slugBase = (baseNameNoParen || rawName).replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
       if (slugBase) {
-        ['feat-', 'cab-', 'sa-', 'spl-', 'pwr-', 'meld-', 'vst-', 'mys-', 'utt-', 'wpn-', 'arm-', 'itm-', 'cls-'].forEach(pref => {
+        Object.keys(PREFIX_FAMILY).forEach(pref => {
+          if (!sameFamily(PREFIX_FAMILY[pref])) return;
           const cand = `${pref}${slugBase}`;
           if (!candidateIds.includes(cand)) candidateIds.push(cand);
         });
@@ -781,7 +817,7 @@ const RuleEngine = {
       const eId = String(entry.id || entry.baseEntryId || entry.baseItemId || '').trim().toLowerCase();
       if (eId && candidateIds.some(c => c.toLowerCase() === eId)) return entry;
       const eName = String(entry.name || entry.masterDbName || '').trim().toLowerCase();
-      if (eName && (eName === rawName || (baseNameNoParen && eName === baseNameNoParen))) return entry;
+      if (eName && (eName === rawName || (baseNameNoParen && eName === baseNameNoParen)) && sameFamily(this.entryRuleFamily(entry))) return entry;
     }
     return null;
   },
@@ -4975,6 +5011,8 @@ const RuleEngine = {
   // Check weapon proficiency
   isProficientWithWeapon(character, weapon, targetLevelIdx = null) {
     if (!weapon) return true;
+    // Touch spells and rays need no weapon proficiency (PHB p.141).
+    if (typeof weapon === 'object' && weapon.isSpellAttack) return true;
     const name = (typeof weapon === 'string' ? weapon : (weapon.name || '')).toLowerCase().trim();
     if (!name || name === '-' || name === 'none') return true;
 
@@ -6014,7 +6052,7 @@ const RuleEngine = {
       || (typeof SrdCompendium !== 'undefined' ? SrdCompendium : null);
     const candidateModifiers = [];
     domainNames.forEach(domName => {
-      const custDom = this.resolveCustomEntryOverride(domName, character);
+      const custDom = this.resolveCustomEntryOverride(domName, character, { family: 'domain' });
       const srdDom = custDom
         || this.getMasterDbEntry(domName, 'Domain')
         || ((comp && typeof comp.getDomain === 'function') ? comp.getDomain(domName) : null);
@@ -6144,7 +6182,7 @@ const RuleEngine = {
       || (typeof SrdCompendium !== 'undefined' ? SrdCompendium : null);
     const entries = [];
     domainNames.forEach(domName => {
-      const custDom = this.resolveCustomEntryOverride(domName, character);
+      const custDom = this.resolveCustomEntryOverride(domName, character, { family: 'domain' });
       const mdbDom = this.getMasterDbEntry(domName, 'Domain');
       const compDom = (comp && typeof comp.getDomain === 'function') ? comp.getDomain(domName) : null;
       const srdDom = custDom || mdbDom || compDom;
@@ -8647,7 +8685,7 @@ const RuleEngine = {
     const alreadyEvaluatedSameMode = Boolean(v2Weapon.activeMode && activeMode && (v2Weapon.activeMode === activeMode || (v2Weapon.activeMode.id && v2Weapon.activeMode.id === activeMode.id)));
     let activeModeV3 = null;
     if (activeMode && !alreadyEvaluatedSameMode && (Array.isArray(activeMode.blocks) || Array.isArray(activeMode.effects))) {
-      activeModeV3 = this.evaluateV3Entry({ ...activeMode, schemaVersion: 3 }, { character, level: Number(character.level) || 1 });
+      activeModeV3 = this.evaluateV3Entry({ ...activeMode, schemaVersion: 3, _customOverrideApplied: true }, { character, level: Number(character.level) || 1 });
     }
 
     const dbEvWeapon = dbWeapon ? this.ensureV2Entry(dbWeapon, { character }) : null;
@@ -10359,7 +10397,7 @@ const RuleEngine = {
   getRaceTraits(character = null) {
     const rawRaceName = String((character && typeof character === 'object' ? character.race : character) || '').trim();
     const charCtx = (character && typeof character === 'object') ? character : null;
-    const custRace = rawRaceName ? this.resolveCustomEntryOverride(rawRaceName, charCtx) : null;
+    const custRace = rawRaceName ? this.resolveCustomEntryOverride(rawRaceName, charCtx, { family: 'race' }) : null;
     const dbRace = custRace || (rawRaceName ? this.getMasterDbEntry(rawRaceName, 'Race') : null);
     if (dbRace && typeof dbRace === 'object') {
       const r = (dbRace.race && typeof dbRace.race === 'object') ? dbRace.race : {};
@@ -10557,7 +10595,7 @@ const RuleEngine = {
   getClassDef(className, character = null) {
     if (!className) return null;
     const lowerKey = String(className).toLowerCase().trim();
-    const customClassOverride = this.resolveCustomEntryOverride(className, character);
+    const customClassOverride = this.resolveCustomEntryOverride(className, character, { family: 'class' });
     if (this.DND35_CLASS_DEFS && !customClassOverride) {
       const cached = this.DND35_CLASS_DEFS[className] || this.DND35_CLASS_DEFS[lowerKey];
       if (cached && cached._v2Hydrated) {
@@ -11741,7 +11779,9 @@ const RuleEngine = {
       const cl = Number(pw.casterLevel) || 0;
       const evaluated = effects.length > 0
         ? this.evaluateV3Entry(
-          Object.assign({ schemaVersion: 3, id: `${entry.id || 'entry'}:${id}`, name, effects }, cl ? { casterLevel: cl } : {}),
+          // The parent entry is already resolved (overrides included); `_customOverrideApplied` stops the
+          // name-based override lookup from swapping in the parent when a power shares its name.
+          Object.assign({ schemaVersion: 3, id: `${entry.id || 'entry'}:${id}`, name, effects, _customOverrideApplied: true }, cl ? { casterLevel: cl } : {}),
           Object.assign({ character }, cl ? { cl, casterLevel: cl } : {})
         )
         : null;
@@ -11750,9 +11790,12 @@ const RuleEngine = {
         ? { type: saveType, onSave: String(pw.save.effect || pw.save.onSave || 'half').toLowerCase() }
         : null;
       const usage = pw.usage && typeof pw.usage === 'object' ? pw.usage : null;
+      const summary = String(pw.text || effects.map(e => e && e.summary).filter(Boolean).join('; ')
+        || (ref && (ref.shortDescription || ref.text)) || '').trim();
       return {
         id,
         name,
+        summary,
         kind: pw.kind || 'inline',
         action: pw.action || '',
         usage,
@@ -11768,6 +11811,113 @@ const RuleEngine = {
         text: pw.text || ''
       };
     }).filter(Boolean);
+  },
+
+  /**
+   * Attack bonus of a touch attack, ray or natural/special weapon attack (PHB p.136, p.141).
+   * Runs the same pipeline as weapon attacks so every "bonus on attack rolls" applies with RAW stacking
+   * (buffs, conditions, Fighting Defensively, Flanking / Higher Ground for melee, Combat Expertise for melee,
+   * Point Blank Shot toggle and Weapon Focus (ray) for rays), while weapon-only bonuses (enhancement,
+   * masterwork, Power Attack, Manyshot) never apply. Touch spells and rays need no weapon proficiency.
+   * attackKind: 'melee-touch' | 'ranged-touch' | 'weapon'. Returns { total, breakdown, items }.
+   */
+  evaluateTouchAttack(character, spec = {}) {
+    const w = character || {};
+    const kind = spec.attackKind || 'melee-touch';
+    const ranged = kind === 'ranged-touch' || (kind === 'weapon' && Boolean(spec.ranged));
+    const isTouch = kind !== 'weapon';
+    const tac = w.tactical || {};
+    // A ranged touch attack named "... Ray" (Scorching Ray, Ray of Frost) is a ray (Weapon Focus (ray) applies).
+    spec = Object.assign({}, spec, {
+      isRay: spec.isRay !== undefined ? Boolean(spec.isRay) : (kind === 'ranged-touch' && /\bray\b/i.test(String(spec.name || '')))
+    });
+    const label = spec.isRay ? 'Ray' : (isTouch ? (ranged ? 'Ranged Touch Attack' : 'Melee Touch Attack') : String(spec.name || 'Special Attack'));
+    const synthetic = {
+      id: `attack-delivery:${spec.isRay ? 'ray' : kind}`,
+      name: label,
+      baseItemId: spec.isRay ? 'ray' : `attack-delivery-${kind}`,
+      isTouch,
+      touchAttack: isTouch,
+      isSpellAttack: true,
+      isRanged: ranged,
+      tags: ranged ? ['ranged'] : [],
+      weaponStats: { category: ranged ? 'Ranged' : 'Melee' },
+      enhancementBonus: 0,
+      damageParts: []
+    };
+    const ev = this.evaluateWeaponAttack(w, synthetic, {
+      grip: ranged ? 'Ranged' : '1-Hand',
+      powerAttack: 0,
+      flanking: !ranged && Boolean(tac.flanking),
+      charge: !ranged && Boolean(tac.charge),
+      higherGround: !ranged && Boolean(tac.higherGround),
+      manyshot: false,
+      manyshotArrows: 0
+    }) || {};
+    const items = (Array.isArray(ev.attackBonusItems) ? ev.attackBonusItems : [])
+      .filter(it => it && it.applied !== false && Number(it.val) !== 0);
+    const sgn = (n) => (n >= 0 ? `+${n}` : `${n}`);
+    return {
+      total: Number(ev.netAttackBonus) || 0,
+      breakdown: items.map(it => `${it.source} ${sgn(Number(it.val))}`).join(', '),
+      items
+    };
+  },
+
+  /**
+   * Delivery and area shape of a special attack (PHB p.175 area shapes, p.141 touch attacks).
+   * Returns { attackKind, attackLabel, vsAc, toHit, toHitBreakdown, isRay, isBreath, shape, areaMode, areaSize,
+   * areaLabel, rangeLabel }. attackKind: 'melee-touch' | 'ranged-touch' | 'weapon' | '' (no attack roll).
+   */
+  describeAttackDelivery(spec, character) {
+    const sp = spec || {};
+    const w = character || {};
+    const area = String(sp.area || '').trim();
+    const range = String(sp.range || '').trim();
+    const lowArea = area.toLowerCase();
+    const attackKind = ['melee-touch', 'ranged-touch', 'weapon'].includes(sp.attack) ? sp.attack : '';
+    const isRay = attackKind === 'ranged-touch' && /\bray/.test(`${lowArea} ${String(sp.name || '').toLowerCase()}`);
+    const isBreath = Boolean(sp.isBreath) || /\bbreath\b/i.test(String(sp.name || ''));
+
+    let shape = '';
+    if (/\bcone/.test(lowArea)) shape = 'Cone';
+    else if (/\bline/.test(lowArea)) shape = 'Line';
+    else if (/\bcylinder/.test(lowArea)) shape = 'Cylinder';
+    else if (/\b(sphere|radius|burst|spread|emanation)/.test(lowArea)) shape = 'Sphere';
+    let areaMode = '';
+    if (/\bburst/.test(lowArea)) areaMode = 'Burst';
+    else if (/\bspread/.test(lowArea)) areaMode = 'Spread';
+    else if (/\bemanation/.test(lowArea)) areaMode = 'Emanation';
+    const sizeMatch = lowArea.match(/(\d+)\s*-?\s*(?:ft|foot|feet)\.?/);
+    const areaSize = sizeMatch ? `${sizeMatch[1]}-ft.${shape === 'Sphere' || shape === 'Cylinder' ? ' radius' : ''}` : '';
+
+    let toHit = null;
+    let toHitBreakdown = '';
+    let toHitItems = [];
+    if (attackKind) {
+      const atk = this.evaluateTouchAttack(w, { attackKind, isRay, ranged: Boolean(sp.ranged), name: sp.name });
+      toHit = atk.total;
+      toHitBreakdown = atk.breakdown;
+      toHitItems = atk.items;
+    }
+    const attackLabel = attackKind === 'melee-touch' ? 'Melee Touch Attack'
+      : (attackKind === 'ranged-touch' ? (isRay ? 'Ray (Ranged Touch Attack)' : 'Ranged Touch Attack')
+        : (attackKind === 'weapon' ? 'Weapon Attack' : ''));
+    return {
+      attackKind,
+      attackLabel,
+      vsAc: attackKind === 'weapon' ? 'AC' : (attackKind ? 'Touch AC' : ''),
+      toHit,
+      toHitBreakdown,
+      toHitItems,
+      isRay,
+      isBreath,
+      shape,
+      areaMode,
+      areaSize,
+      areaLabel: area,
+      rangeLabel: range && range.toLowerCase() !== lowArea ? range : ''
+    };
   },
 
   deriveSpecialAttacks(w, legoEval = null, customDb = []) {
@@ -11798,6 +11948,22 @@ const RuleEngine = {
         if (f) rawPool.push(typeof f === 'string' ? { name: f, _src: 'feats' } : { ...f, _src: 'feats' });
       });
     }
+    // Rule Crafter sub-power carriers beyond feats: every active lego entry (class features, equipped items,
+    // buffs ...), the race and active templates. These only contribute their `powers[]`, never a card of their own.
+    const powerSources = (resolvedLego && Array.isArray(resolvedLego.entries))
+      ? resolvedLego.entries.slice()
+      : (typeof this.collectLegoEntries === 'function' ? this.collectLegoEntries(w) : []);
+    const raceName = String(w.race || '').trim();
+    if (raceName) {
+      const raceEntry = this.resolveCustomEntryOverride(raceName, w, { family: 'race' }) || this.getMasterDbEntry(raceName, 'Race');
+      if (raceEntry) powerSources.push(raceEntry);
+    }
+    if (typeof this.getCharacterActiveTemplateEntries === 'function') {
+      powerSources.push(...this.getCharacterActiveTemplateEntries(w));
+    }
+    powerSources.forEach(e => {
+      if (e && typeof e === 'object' && e.name) rawPool.push({ ...e, _src: 'powerSource', _powersOnly: true });
+    });
 
     const excludedNames = new Set([
       'power attack', 'sneak attack', 'punishing stance', 'mountain hammer', 'steel wind',
@@ -11854,13 +12020,19 @@ const RuleEngine = {
       return ['standard', 'Standard Action'];
     };
 
+    const TRACKED_USAGE = ['perDay', 'perEncounter', 'charges'];
     const emitAttack = (spec) => {
       const cleanParts = (spec.damageParts || []).filter(dp => dp && dp.dice);
+      const isUtility = Boolean(spec.utility);
       const dp0 = cleanParts[0] || { dice: '1d6', bonus: 0, type: 'Damage' };
       const bonusNum = Number(dp0.bonus || 0);
-      const dmgFormula = `${dp0.dice}${bonusNum ? (bonusNum > 0 ? '+' + bonusNum : bonusNum) : ''}`;
-      const dmgType = dp0.type || 'Damage';
+      const dmgFormula = isUtility ? '' : `${dp0.dice}${bonusNum ? (bonusNum > 0 ? '+' + bonusNum : bonusNum) : ''}`;
+      const dmgType = isUtility ? '' : (dp0.type || 'Damage');
       const key = spec.key;
+      const usageMode = spec.usage && TRACKED_USAGE.includes(spec.usage.mode) ? spec.usage.mode : '';
+      const usesMax = usageMode ? Math.max(0, Number(spec.usage.uses) || 0) : 0;
+      const useRec = w.powerUses && w.powerUses[key];
+      const usesUsed = usesMax ? Math.min(usesMax, Math.max(0, Number(useRec && typeof useRec === 'object' ? useRec.used : useRec) || 0)) : 0;
 
       const cdEntry = w.tactical?.abilityCooldowns?.[key];
       const readyRoundFromTactical = (cdEntry && typeof cdEntry === 'object')
@@ -11901,8 +12073,18 @@ const RuleEngine = {
         dcBreakdown: dcEval ? dcEval.breakdown : '',
         range: spec.range || '',
         attack: spec.attack || '',
+        delivery: this.describeAttackDelivery({
+          attack: spec.attack, area: spec.area, range: spec.rangeOnly, name: spec.name, isBreath: spec.isBreath
+        }, w),
         usage: spec.usage || null,
         usageText: spec.usageText || '',
+        utility: isUtility,
+        summary: spec.summary || '',
+        usageMode,
+        usesMax,
+        usesUsed,
+        usesLeft: usesMax ? usesMax - usesUsed : null,
+        isExhausted: Boolean(usesMax) && usesUsed >= usesMax,
         recharge: spec.recharge || '',
         rechargeDice: spec.rechargeDice || '',
         cooldownExpr: spec.rechargeDice || '',
@@ -11925,6 +12107,7 @@ const RuleEngine = {
       if (excludedNames.has(lower) || lower.startsWith('sneak attack')) return;
 
       const dbMatch = resolveDbRecord(item, lower);
+      if (item._powersOnly && !((Array.isArray(item.powers) && item.powers.length > 0) || (dbMatch && Array.isArray(dbMatch.powers) && dbMatch.powers.length > 0))) return;
       const identity = String(item.id || (dbMatch && dbMatch.id) || '').trim().toLowerCase();
       const identityKey = identity ? `id:${shortId(identity)}` : `name:${lower}`;
       const nameIds = seenNames.get(lower);
@@ -11967,7 +12150,7 @@ const RuleEngine = {
       // (a) The entry itself (V2 damageParts or its primary V3 mode).
       const primaryModeRaw = Array.isArray(merged.modes) && merged.modes.length > 0 ? merged.modes[0] : null;
       const primaryMode = (primaryModeRaw && (Array.isArray(primaryModeRaw.effects) || Array.isArray(primaryModeRaw.blocks)))
-        ? this.evaluateV3Entry({ ...primaryModeRaw, schemaVersion: 3 }, { character: w })
+        ? this.evaluateV3Entry({ ...primaryModeRaw, schemaVersion: 3, _customOverrideApplied: true }, { character: w })
         : primaryModeRaw;
       const roundRes = Array.isArray(merged.resources)
         ? merged.resources.find(r => r && ((r.recharge && (r.recharge.period === 'rounds' || r.recharge.dice)) || r.rechargeModel === 'cooldown_turns' || r.rechargeFormula))
@@ -11988,7 +12171,7 @@ const RuleEngine = {
       const hasDelivery = Boolean(hasV2SpecialFlag || effDcFormula || effSaveStr || merged.recharge || effRechargeDice || effRange || effAttack);
 
       // Structural gate: damage plus a delivery (save / DC / recharge / range / area / attack roll).
-      if (hasDmgParts && hasDelivery) {
+      if (!item._powersOnly && hasDmgParts && hasDelivery) {
         emitted = true;
         emitAttack({
           key: entryKey,
@@ -12003,6 +12186,9 @@ const RuleEngine = {
           save: effSaveStr,
           dcFormula: effDcFormula,
           range: effRange,
+          area: merged.area || (primaryMode && primaryMode.area) || '',
+          rangeOnly: merged.range || (primaryMode && primaryMode.range) || '',
+          isBreath: Boolean(rf.isBreathWeapon),
           attack: effAttack,
           recharge: merged.recharge || (effRechargeDice ? `${effRechargeDice} rounds` : ''),
           rechargeDice: effRechargeDice,
@@ -12015,26 +12201,28 @@ const RuleEngine = {
       entryPowers.forEach(pw => {
         const pwHasDmg = Array.isArray(pw.damageParts) && pw.damageParts.some(dp => dp && dp.dice);
         const pwSaveStr = pw.save ? `${pw.save.type} (${pw.save.onSave})` : '';
-        const pwDelivery = Boolean(pwSaveStr || pw.dcFormula || pw.area || pw.range || pw.attack || pw.rechargeDice);
-        if (!pwHasDmg || !pwDelivery) return;
         emitted = true;
         emitAttack({
           key: `${entryKey}:${String(pw.id).replace(/[^a-z0-9_:-]+/gi, '_')}`,
           id: `${merged.id || entryKey}:${pw.id}`,
           entryId: merged.id || entryKey,
           powerId: pw.id,
-          name: `${entryName} — ${pw.name}`,
+          name: String(pw.name).trim().toLowerCase() === String(entryName).trim().toLowerCase() ? entryName : `${entryName} — ${pw.name}`,
           source: entrySource,
           damageParts: pw.damageParts,
           save: pwSaveStr,
           dcFormula: pw.dcFormula,
           range: [pw.area, pw.range].filter(Boolean).join(', '),
+          area: pw.area,
+          rangeOnly: pw.range,
           attack: pw.attack,
           usage: pw.usage,
           usageText: pw.usageText,
           recharge: pw.rechargeDice ? `${pw.rechargeDice} rounds` : '',
           rechargeDice: pw.rechargeDice,
           actionCandidate: pw.action || 'Standard Action',
+          utility: !pwHasDmg,
+          summary: pw.summary,
           benefit: pw.text || benText
         });
       });

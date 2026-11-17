@@ -5149,6 +5149,197 @@ function runDeriveSheetTests() {
     );
   }
 
+  // --- Name-only override lookups: same-name sub-powers / modes and cross-family collisions ---
+  {
+    const baseChar = (extra) => Object.assign({
+      name: 'Collision Tester', race: 'Human', size: 'Medium', classes: 'Fighter 5', level: 5, bab: 5,
+      abilities: { str: 10, dex: 10, con: 14, int: 10, wis: 10, cha: 10 },
+      feats: [], buffs: [], weapons: [], bodySlots: {}, customEntries: {}
+    }, extra);
+
+    // 1. Sub-power named like its parent feat keeps its own damage block.
+    const acidFeat = {
+      schemaVersion: 3, id: 'custom-acid-breath', blueprint: 'feat', type: 'Feat', name: 'Acid Breath', effects: [],
+      powers: [{
+        id: 'pw-acid', kind: 'inline', name: 'Acid Breath', action: 'Move', usage: { mode: 'cooldown', recharge: '1d4+1' }, casterLevel: 5,
+        effects: [{ type: 'roll', kind: 'Damage', count: 1, die: 'd8', dmgType: 'Acid', scaling: 'perCL', amount: 1, per: 4, start: 1, max: 10 }]
+      }]
+    };
+    const acidAttacks = RuleEngine.deriveSpecialAttacks(baseChar({
+      feats: [{ id: 'custom-acid-breath', name: 'Acid Breath' }],
+      customEntries: { 'custom-acid-breath': acidFeat }
+    }), null, []);
+    const acidCard = acidAttacks.find(a => a.powerId === 'pw-acid');
+    check(
+      'Same-name sub-power: "Acid Breath" feat power keeps its own 2d8 Acid damage (not the parent feat\'s empty effects) and shows a single name',
+      Boolean(acidCard) && acidCard.dmgFormula === '2d8' && acidCard.dmgType === 'Acid' && acidCard.name === 'Acid Breath' && acidCard.recharge === '1d4+1 rounds',
+      JSON.stringify(acidCard || acidAttacks)
+    );
+
+    // 2. Mode named like its parent feat keeps its own damage block.
+    const blastFeat = {
+      schemaVersion: 3, id: 'custom-fire-blast', blueprint: 'feat', type: 'Feat', name: 'Fire Blast', effects: [],
+      modes: [{ id: 'm-fire-blast', name: 'Fire Blast', save: 'Reflex half', range: '30 ft.', effects: [{ type: 'roll', kind: 'Damage', count: 3, die: 'd6', dmgType: 'Fire' }] }]
+    };
+    const blastAttacks = RuleEngine.deriveSpecialAttacks(baseChar({
+      feats: [{ id: 'custom-fire-blast', name: 'Fire Blast' }],
+      customEntries: { 'custom-fire-blast': blastFeat }
+    }), null, []);
+    check(
+      'Same-name mode: "Fire Blast" feat mode keeps its own 3d6 Fire damage',
+      blastAttacks.some(a => a.name === 'Fire Blast' && a.dmgFormula === '3d6' && a.dmgType === 'Fire'),
+      JSON.stringify(blastAttacks)
+    );
+
+    // 3. A homebrew feat named like an SRD spell must not replace that spell.
+    const fireballSpell = { schemaVersion: 3, id: 'spl-fireball-collision', type: 'Spell', name: 'Fireball', effects: [{ type: 'roll', kind: 'Damage', count: 5, die: 'd6', dmgType: 'Fire' }] };
+    const collisionChar = baseChar({ customEntries: { 'custom-fireball-feat': { schemaVersion: 3, id: 'custom-fireball-feat', blueprint: 'feat', type: 'Feat', name: 'Fireball', effects: [] } } });
+    const fbDice = (RuleEngine.evaluateV3Entry(fireballSpell, { character: collisionChar }).damageParts || []).map(d => d.dice);
+    check(
+      'Cross-family name collision: a homebrew feat named "Fireball" leaves the Fireball spell\'s 5d6 Fire intact',
+      fbDice.length === 1 && fbDice[0] === '5d6',
+      JSON.stringify(fbDice)
+    );
+    check(
+      'Cross-family name collision: resolveCustomEntryOverride returns no feat for a spell and still finds a same-family override',
+      RuleEngine.resolveCustomEntryOverride(fireballSpell, collisionChar) === null &&
+      Boolean(RuleEngine.resolveCustomEntryOverride({ name: 'Fireball', type: 'Feat' }, collisionChar)),
+      'family-gated lookup failed'
+    );
+
+    // 4. Plain-name race lookup only resolves race-family overrides.
+    const raceChar = baseChar({
+      customEntries: {
+        'custom-avatar-feat': { schemaVersion: 3, id: 'custom-avatar-feat', blueprint: 'feat', type: 'Feat', name: 'Black Dragon Avatar', effects: [] },
+        'custom-avatar-race': { schemaVersion: 3, id: 'custom-avatar-race', blueprint: 'race', type: 'Race', name: 'Black Dragon Avatar', effects: [] }
+      }
+    });
+    const raceHit = RuleEngine.resolveCustomEntryOverride('Black Dragon Avatar', raceChar, { family: 'race' });
+    check(
+      'Plain-name lookup with { family: "race" } skips a same-name feat and returns the race',
+      Boolean(raceHit) && raceHit.id === 'custom-avatar-race',
+      JSON.stringify(raceHit && raceHit.id)
+    );
+
+    // 5. Sub-powers on the race, damage without a delivery (at-will claw) and utility (no damage) powers.
+    const avatarRace = {
+      schemaVersion: 3, id: 'custom-black-dragon-avatar', blueprint: 'race', type: 'Race', name: 'Black Dragon Avatar', effects: [],
+      race: { kind: 'race', size: 'Medium', creatureType: 'Humanoid', speed: 30 },
+      powers: [
+        { id: 'pw-race-acid', kind: 'inline', name: 'Acid Breath', action: 'Move', usage: { mode: 'cooldown', recharge: '1d4+1' }, casterLevel: 5,
+          effects: [{ type: 'roll', kind: 'Damage', count: 1, die: 'd8', dmgType: 'Acid', scaling: 'perCL', amount: 1, per: 4, start: 1, max: 10 }] },
+        { id: 'pw-race-claw', kind: 'inline', name: 'Claw', action: 'Standard', usage: { mode: 'atWill' },
+          effects: [{ type: 'roll', kind: 'Damage', count: 1, die: 'd6', dmgType: 'Slashing' }] },
+        { id: 'pw-race-wings', kind: 'inline', name: 'Dragon Wings', action: 'Move', usage: { mode: 'perDay', uses: 3 },
+          effects: [{ type: 'stat', targets: ['speed.fly'], mode: 'flat', value: 60, btype: 'Untyped', summary: '+60 ft. fly speed' }] }
+      ]
+    };
+    const raceAttackChar = baseChar({ race: 'Black Dragon Avatar', customEntries: { 'custom-black-dragon-avatar': avatarRace } });
+    const raceAttacks = RuleEngine.deriveSpecialAttacks(raceAttackChar, null, []);
+    const raceAcid = raceAttacks.find(a => a.powerId === 'pw-race-acid');
+    const raceClaw = raceAttacks.find(a => a.powerId === 'pw-race-claw');
+    const raceWings = raceAttacks.find(a => a.powerId === 'pw-race-wings');
+    check(
+      'Race sub-power: "Black Dragon Avatar — Acid Breath" special attack (2d8 Acid, Recharge 1d4+1, Move Action)',
+      Boolean(raceAcid) && raceAcid.name === 'Black Dragon Avatar — Acid Breath' && raceAcid.dmgFormula === '2d8' && raceAcid.rechargeDice === '1d4+1' && raceAcid.action === 'Move Action',
+      JSON.stringify(raceAttacks.map(a => a.name))
+    );
+    check(
+      'Damage power without save/range/recharge (at-will Claw 1d6 Slashing) still gets an attack card',
+      Boolean(raceClaw) && raceClaw.dmgFormula === '1d6' && raceClaw.dmgType === 'Slashing' && !raceClaw.utility,
+      JSON.stringify(raceClaw || null)
+    );
+    check(
+      'Utility power without damage ("Dragon Wings", 3/day) becomes a Use card with its effect summary and 3 uses',
+      Boolean(raceWings) && raceWings.utility === true && raceWings.dmgFormula === '' && /\+60 ft\. fly speed/.test(raceWings.summary) &&
+      raceWings.usesMax === 3 && raceWings.usesLeft === 3 && raceWings.isExhausted === false,
+      JSON.stringify(raceWings || null)
+    );
+    const spentWings = RuleEngine.deriveSpecialAttacks(Object.assign({}, raceAttackChar, {
+      powerUses: { [raceWings ? raceWings.key : 'x']: { used: 3, mode: 'perDay' } }
+    }), null, []).find(a => a.powerId === 'pw-race-wings');
+    check(
+      'Tracked uses: 3/3 spent per-day uses mark the Use card exhausted',
+      Boolean(spentWings) && spentWings.usesLeft === 0 && spentWings.isExhausted === true,
+      JSON.stringify(spentWings || null)
+    );
+    // 6. Delivery types and area shapes (PHB p.175): breath cone, ray, melee touch, spread sphere, line, cylinder.
+    const dlv = (spec) => RuleEngine.describeAttackDelivery(spec, baseChar({ bab: 5, abilities: { str: 14, dex: 16, con: 14, int: 10, wis: 10, cha: 10 } }));
+    const cone = dlv({ name: 'Acid Breath', area: '30-ft. Cone' });
+    const ray = dlv({ name: 'Scorching Ray', attack: 'ranged-touch', area: 'One or more rays', range: 'Close (25 ft. + 5 ft./2 levels)' });
+    const touch = dlv({ name: 'Shocking Grasp', attack: 'melee-touch', range: 'Touch' });
+    const spread = dlv({ name: 'Fireball', area: '20-ft.-radius Spread', range: 'Long (400 ft. + 40 ft./level)' });
+    const line = dlv({ name: 'Lightning Bolt', area: '120-ft. Line' });
+    const cyl = dlv({ name: 'Flame Strike', area: 'Cylinder (10-ft. radius, 40 ft. high)' });
+    check(
+      'Delivery: "Acid Breath" in a 30-ft. Cone is a Breath Weapon with no attack roll',
+      cone.isBreath && cone.shape === 'Cone' && cone.areaSize === '30-ft.' && cone.attackKind === '' && cone.toHit === null,
+      JSON.stringify(cone)
+    );
+    check(
+      'Delivery: ray uses a Ranged Touch Attack (BAB +5, Dex +3 = +8) vs Touch AC',
+      ray.isRay && ray.attackLabel === 'Ray (Ranged Touch Attack)' && ray.toHit === 8 && ray.vsAc === 'Touch AC' && /Close/.test(ray.rangeLabel),
+      JSON.stringify(ray)
+    );
+    check(
+      'Delivery: melee touch uses BAB +5, Str +2 = +7 vs Touch AC',
+      touch.attackKind === 'melee-touch' && touch.toHit === 7 && touch.vsAc === 'Touch AC',
+      JSON.stringify(touch)
+    );
+    check(
+      'Area shapes: 20-ft.-radius Spread (Sphere), 120-ft. Line, 10-ft.-radius Cylinder',
+      spread.shape === 'Sphere' && spread.areaMode === 'Spread' && spread.areaSize === '20-ft. radius' &&
+      line.shape === 'Line' && line.areaSize === '120-ft.' && cyl.shape === 'Cylinder' && cyl.areaSize === '10-ft. radius',
+      JSON.stringify([spread, line, cyl].map(d => [d.shape, d.areaMode, d.areaSize]))
+    );
+    // 7. Touch / ray attack bonus runs the weapon attack pipeline (PHB p.136, p.141): every "bonus on attack rolls"
+    //    applies with RAW stacking, melee-only and ranged-only modifiers stay in their lane, weapon-only bonuses never apply.
+    const touchChar = (extra) => baseChar(Object.assign({ bab: 5, abilities: { str: 14, dex: 16, con: 14, int: 10, wis: 10, cha: 10 }, tactical: {} }, extra));
+    const tAtk = (extra, spec) => RuleEngine.evaluateTouchAttack(touchChar(extra), spec);
+    const rayAtk = { attackKind: 'ranged-touch', isRay: true };
+    const meleeAtk = { attackKind: 'melee-touch' };
+    const morale = (name, v) => ({ name, active: true, modifiers: [{ target: 'atk.all', value: v, type: 'Morale' }] });
+    const shakenDebuff = Object.assign({}, RuleEngine.getDefaultDebuffs().find(d => /shaken/i.test(d.name)), { active: true });
+    check(
+      'Touch attack: Bless +1 morale applies to a ray (+9); Bless + Heroism morale bonuses do not stack (+10)',
+      tAtk({ buffs: [morale('Bless', 1)] }, rayAtk).total === 9 && tAtk({ buffs: [morale('Bless', 1), morale('Heroism', 2)] }, rayAtk).total === 10,
+      'morale stacking'
+    );
+    check(
+      'Touch attack: Shaken -2 applies to rays; Fighting Defensively -4 applies to melee touch',
+      tAtk({ buffs: [shakenDebuff] }, rayAtk).total === 6 && tAtk({ tactical: { fightingDefensively: true } }, meleeAtk).total === 3,
+      'penalties'
+    );
+    check(
+      'Touch attack: Flanking +2 and Combat Expertise apply to melee touch only, never to rays',
+      tAtk({ tactical: { flanking: true } }, meleeAtk).total === 9 && tAtk({ tactical: { flanking: true } }, rayAtk).total === 8 &&
+      tAtk({ tactical: { combatExpertise: 2 } }, meleeAtk).total === 5 && tAtk({ tactical: { combatExpertise: 2 } }, rayAtk).total === 8,
+      'melee-only modifiers'
+    );
+    check(
+      'Touch attack: Point Blank Shot +1 follows the ranged-modifier toggle; Weapon Focus (Ray) +1 applies to rays only',
+      tAtk({ feats: ['Point Blank Shot'] }, rayAtk).total === 8 && tAtk({ feats: ['Point Blank Shot'], tactical: { pointBlankShot: true } }, rayAtk).total === 9 &&
+      tAtk({ feats: ['Weapon Focus (Ray)'] }, rayAtk).total === 9 && tAtk({ feats: ['Weapon Focus (Ray)'] }, meleeAtk).total === 7,
+      'ray feats'
+    );
+    check(
+      'Touch attack: rays need no weapon proficiency (no -4) and a "... Ray" spell name counts as a ray',
+      tAtk({ classes: 'Wizard 5' }, rayAtk).total === 8 &&
+      tAtk({ feats: ['Weapon Focus (Ray)'] }, { attackKind: 'ranged-touch', name: 'Scorching Ray' }).total === 9,
+      'proficiency / ray name'
+    );
+    check(
+      'Race "Acid Breath" special attack carries its delivery (Breath Weapon) on the card data',
+      Boolean(raceAcid && raceAcid.delivery && raceAcid.delivery.isBreath),
+      JSON.stringify(raceAcid && raceAcid.delivery)
+    );
+    check(
+      'Power carriers do not emit a card of their own: the race itself is not listed as an attack',
+      !raceAttacks.some(a => !a.powerId),
+      JSON.stringify(raceAttacks.map(a => a.key))
+    );
+  }
+
   CharStore.clearHistory();
 
   return { passed, elapsedMs: Date.now() - startMs };

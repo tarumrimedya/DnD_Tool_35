@@ -769,6 +769,24 @@
     },
 
     /**
+     * True when `id` belongs to the official compendium (loaded chunk or index row),
+     * ignoring every character-scoped entry. Separates SRD overrides from pure homebrew.
+     */
+    isCoreId(id) {
+      if (!id) return false;
+      const key = String(id).trim();
+      if (_byId.has(key)) return true;
+      return ensureIndexMaps() && _indexRowsById.has(key);
+    },
+
+    /**
+     * True for a customDb entry the user authored or changed; false for an unmodified `srd-snapshot` copy.
+     */
+    isUserCustomizedEntry(entry) {
+      return isUserCustomizedDbEntry(entry);
+    },
+
+    /**
      * Synchronous O(1) lookup by name (and optional type filter).
      */
     getByName(name, typeFilter = null) {

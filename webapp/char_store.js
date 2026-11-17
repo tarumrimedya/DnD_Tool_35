@@ -1481,12 +1481,34 @@
   });
 
   // 4. 'combat/specialAttackRoll', 'combat/specialAttackRecharge', & 'combat/specialAttackReady'
+  // Rule Crafter sub-power use counters (`doc.powerUses[abilityKey] = { used, mode }`).
+  function resetPowerUsesOnDoc(doc, modes) {
+    if (!doc || !doc.powerUses || typeof doc.powerUses !== 'object') return;
+    Object.keys(doc.powerUses).forEach(function (k) {
+      const rec = doc.powerUses[k];
+      const mode = rec && typeof rec === 'object' ? rec.mode : '';
+      if (!mode || modes.indexOf(mode) >= 0) delete doc.powerUses[k];
+    });
+  }
+
   CharStore.registerReducer('combat/specialAttackRoll', (doc, action, stateObj) => {
     const payload = (action && action.payload) || {};
     const abilityKey = payload.abilityKey;
     if (!abilityKey) {
       setStoreOutcome(stateObj, { status: 'invalid_payload' });
       return doc;
+    }
+    const usesMax = Math.max(0, Number(payload.usesMax) || 0);
+    const usageMode = String(payload.usageMode || '');
+    if (usesMax && (usageMode === 'perDay' || usageMode === 'perEncounter' || usageMode === 'charges')) {
+      if (!doc.powerUses || typeof doc.powerUses !== 'object' || Array.isArray(doc.powerUses)) doc.powerUses = {};
+      const prev = doc.powerUses[abilityKey];
+      const used = Math.max(0, Number(prev && typeof prev === 'object' ? prev.used : prev) || 0);
+      if (used >= usesMax) {
+        setStoreOutcome(stateObj, { status: 'uses_exhausted', abilityKey, usesMax });
+        return doc;
+      }
+      doc.powerUses[abilityKey] = { used: used + 1, mode: usageMode };
     }
     const actOut = applyConsumeActionOnDoc(doc, payload.actionType || 'standard', payload.name || abilityKey);
     if (payload.cooldownRounds !== undefined && payload.cooldownRounds !== null && Number(payload.cooldownRounds) > 0) {
@@ -4148,6 +4170,7 @@
       doc.tactical.abilityCooldowns = {};
       doc.specialAttackCooldowns = {};
     }
+    resetPowerUsesOnDoc(doc, ['perEncounter']);
     doc.actionEconomy = { standard: true, move: true, swift: true, immediate: true };
     doc.tactical.spentActions = { standard: false, move: false, swift: false, immediate: false, fullRound: false };
 
@@ -4388,6 +4411,7 @@
       doc.tactical.round = 1;
     }
     doc.specialAttackCooldowns = {};
+    resetPowerUsesOnDoc(doc, ['perDay', 'perEncounter']);
     doc.actionEconomy = { standard: true, move: true, swift: true, immediate: true };
     doc.tactical.spentActions = { standard: false, move: false, swift: false, immediate: false, fullRound: false };
 

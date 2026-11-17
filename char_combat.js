@@ -2817,14 +2817,19 @@
       const strMod = RuleEngine ? RuleEngine.getAbilityMod(character?.abilities?.str || 10) : 0;
       const chaMod = RuleEngine ? RuleEngine.getAbilityMod(character?.abilities?.cha || 10) : 0;
 
-      const rangedTouchAtk = bab + dexMod;
-      const meleeTouchAtk = bab + strMod;
+      // Same attack pipeline as weapons: buffs, conditions, Point Blank Shot, Weapon Focus (ray), RAW stacking.
+      const touchAtkOf = (kind) => ((typeof RuleEngine !== 'undefined' && typeof RuleEngine.evaluateTouchAttack === 'function')
+        ? RuleEngine.evaluateTouchAttack(character, { attackKind: kind, name: spell.name }).total
+        : (bab + (kind === 'ranged-touch' ? dexMod : strMod)));
+      const rangedTouchAtk = touchAtkOf('ranged-touch');
+      const meleeTouchAtk = touchAtkOf('melee-touch');
       const saveDc = 10 + finalLvl + chaMod + dcBonus;
 
       const dcEl = document.getElementById('combat-spell-dc-display');
       if (dcEl) {
         const isRanged = (spell.attackType || '').toLowerCase().includes('ranged') || (spell.range || '').toLowerCase().includes('ft');
-        const atkText = isRanged ? `Ranged Touch +${rangedTouchAtk}` : `Melee Touch +${meleeTouchAtk}`;
+        const sgnAtk = (n) => (n >= 0 ? `+${n}` : `${n}`);
+        const atkText = isRanged ? `Ranged Touch ${sgnAtk(rangedTouchAtk)}` : `Melee Touch ${sgnAtk(meleeTouchAtk)}`;
         dcEl.textContent = `DC ${saveDc} • ${atkText}`;
       }
 
@@ -4551,26 +4556,46 @@
         }
 
         const safeKeyAttr = esc(ab.key);
+        const isUtility = Boolean(ab.utility);
+        const isExhausted = Boolean(ab.isExhausted);
+        const usesBadgeHtml = ab.usesMax
+          ? `<span class="text-[10px] font-black px-1.5 rounded ${isExhausted ? 'text-rose-300 border border-rose-500/60' : 'text-sky-200 border border-sky-500/50'}">${isExhausted ? 'USED UP' : `${ab.usesLeft}/${ab.usesMax} ${ab.usageMode === 'charges' ? 'CHARGES' : (ab.usageMode === 'perEncounter' ? 'PER ENCOUNTER' : 'PER DAY')}`}</span>`
+          : (ab.usageText && !ab.rechargeDice ? `<span class="text-[10px] font-bold px-1.5 rounded text-sky-200 border border-sky-500/50">${esc(ab.usageText)}</span>` : '');
+        const dv = ab.delivery || {};
+        const sgnNum = (n) => (Number(n) >= 0 ? `+${Number(n)}` : `${Number(n)}`);
+        const deliveryBadgesHtml = [
+          dv.isBreath ? '<span class="text-[10px] font-bold px-1.5 rounded bg-amber-500/20 text-amber-200 border border-amber-500/40">🐉 Breath Weapon</span>' : '',
+          dv.attackKind ? `<span class="text-[10px] font-bold px-1.5 rounded bg-rose-950/70 text-rose-300 border border-rose-500/50" title="${esc(dv.toHitBreakdown)}">🎯 ${esc(dv.attackLabel)} ${sgnNum(dv.toHit)} vs ${esc(dv.vsAc)}</span>` : '',
+          dv.shape ? `<span class="text-[10px] font-bold px-1.5 rounded bg-sky-950/70 text-sky-300 border border-sky-500/50" title="${esc(dv.areaLabel)}">📐 ${esc([dv.areaSize, dv.shape].filter(Boolean).join(' '))}${dv.areaMode ? ` (${esc(dv.areaMode)})` : ''}</span>`
+            : (dv.areaLabel && !(dv.isRay && /^rays?$/i.test(dv.areaLabel)) ? `<span class="text-[10px] font-bold px-1.5 rounded bg-sky-950/70 text-sky-300 border border-sky-500/50">📐 ${esc(dv.areaLabel)}</span>` : ''),
+          dv.rangeLabel ? `<span class="text-[10px] font-bold px-1.5 rounded bg-sky-950/70 text-sky-300 border border-sky-500/50">📏 ${esc(dv.rangeLabel)}</span>` : ''
+        ].filter(Boolean).join('');
+        const hasDeliveryInfo = Boolean(ab.delivery);
+        const firstRowHtml = isUtility
+          ? `<span class="text-slate-400 font-sans text-[10px] uppercase tracking-wider">Effect:</span>
+              <span class="font-sans text-slate-200 text-[10px]">${esc(ab.summary || 'See ability description')}</span>`
+          : `<span class="text-slate-400 font-sans text-[10px] uppercase tracking-wider">Damage:</span>
+              <span class="font-bold text-amber-300">${esc(dmgFormula)} ${esc(dmgType)}</span>
+              ${dcSummaryStr ? `<span class="text-slate-600">•</span><span class="text-amber-200/90 text-[10px]">${esc(dcSummaryStr)}</span>` : ''}`;
 
         return `
         <!-- SPECIAL ATTACK / BREATH WEAPON CARD -->
         <div data-action="combat:special-attack-roll" data-ability-key="${safeKeyAttr}" class="p-2.5 rounded-xl border transition-all cursor-pointer select-none flex items-center justify-between gap-2 ${isOnCooldown ? 'bg-gradient-to-r to-slate-900/90 border-purple-500/60 text-purple-200 shadow-md' : 'bg-gradient-to-r to-slate-900/90 border-emerald-500/80 text-emerald-100 shadow-md shadow-emerald-950/40 ring-1 ring-emerald-500/30 hover:border-emerald-400'}">
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-1.5 flex-wrap">
-              <span class="text-xs">${isOnCooldown ? '⏳' : '🔥'}</span>
+              <span class="text-xs">${isOnCooldown ? '⏳' : (isUtility ? '✨' : '🔥')}</span>
               <span class="text-xs font-black truncate text-white">${esc(ab.name)}</span>
               ${isOnCooldown
                 ? `<span class="text-[10px] font-black px-1.5 rounded text-purple-200 border border-purple-400/60">⏳ COOLDOWN: ${remainingRounds} ${remainingRounds === 1 ? 'ROUND' : 'ROUNDS'} LEFT (R${readyRound})</span>`
                 : `<span class="text-[10px] font-black px-1.5 rounded text-emerald-300 border border-emerald-500/50">READY</span>`
               }
+              ${usesBadgeHtml}
               ${dcBadgeHtml}
-              ${ab.range ? `<span class="text-[10px] font-bold px-1.5 rounded bg-sky-950/70 text-sky-300 border border-sky-500/50">📏 ${esc(ab.range)}</span>` : ''}
+              ${hasDeliveryInfo ? deliveryBadgesHtml : (ab.range ? `<span class="text-[10px] font-bold px-1.5 rounded bg-sky-950/70 text-sky-300 border border-sky-500/50">📏 ${esc(ab.range)}</span>` : '')}
             </div>
             <!-- Row 1: Damage & Save Breakdown -->
             <div class="text-[10px] font-mono mt-0.5 flex items-center gap-1.5 flex-wrap">
-              <span class="text-slate-400 font-sans text-[10px] uppercase tracking-wider">Damage:</span>
-              <span class="font-bold text-amber-300">${esc(dmgFormula)} ${esc(dmgType)}</span>
-              ${dcSummaryStr ? `<span class="text-slate-600">•</span><span class="text-amber-200/90 text-[10px]">${esc(dcSummaryStr)}</span>` : ''}
+              ${firstRowHtml}
             </div>
             <!-- Row 2: Action & Recharge -->
             <div class="text-[10px] font-mono flex items-center gap-1.5 flex-wrap">
@@ -4590,8 +4615,8 @@
               </button>
             ` : '')}
             <button type="button" data-action="combat:special-attack-roll" data-ability-key="${safeKeyAttr}" class="text-[10px] font-black px-2.5 py-1.5 rounded-lg ${isOnCooldown ? 'bg-purple-600 hover:bg-purple-500 text-white' : 'bg-emerald-500 text-slate-950'} shadow transition active:scale-95 cursor-pointer flex items-center gap-1">
-              <span>🔥</span>
-              <span>Roll ${esc(dmgFormula)}</span>
+              <span>${isUtility ? '✨' : '🔥'}</span>
+              <span>${isUtility ? 'Use' : `Roll ${esc(dmgFormula)}`}</span>
             </button>
           </div>
         </div>
@@ -4599,6 +4624,46 @@
       }).join('');
     }
     window.renderSpecialAttackAbilityCardsHtml = renderSpecialAttackAbilityCardsHtml;
+
+    function executeUtilityPowerUse(ab) {
+      let waitRounds = 0;
+      let rechargeNote = '';
+      if (ab.rechargeDice && typeof parseAndRollDiceFormula === 'function') {
+        const parsedRecharge = parseAndRollDiceFormula(ab.rechargeDice);
+        if (parsedRecharge) {
+          const curRound = Number(character.tactical?.round || character.encounterRound) || 1;
+          waitRounds = Math.max(1, parsedRecharge.grandTotal);
+          rechargeNote = `Recharge (${ab.rechargeDice}): ${waitRounds} rounds (Ready R${curRound + waitRounds})`;
+        }
+      }
+      if (!window.CharStore.getDoc() && typeof character !== 'undefined') {
+        window.CharStore._syncExternalCharacterRef(character);
+      }
+      window.CharStore.dispatch({
+        type: 'combat/specialAttackRoll',
+        label: `Use Ability: ${ab.name}`,
+        payload: {
+          abilityKey: ab.key,
+          name: ab.name,
+          cooldownRounds: waitRounds,
+          actionType: ab.actionType || ab.action || 'standard',
+          resourceId: ab.resourceId || null,
+          usageMode: ab.usageMode || '',
+          usesMax: ab.usesMax || 0
+        },
+        meta: { label: `Use Ability: ${ab.name}`, cloudSync: false }
+      });
+      if (typeof updateActionEconomyUI === 'function') updateActionEconomyUI();
+      renderWeaponSetsUI();
+      const usesNote = ab.usesMax ? `${Math.max(0, (ab.usesLeft || 0) - 1)}/${ab.usesMax} left` : '';
+      const breakdown = [ab.summary, ab.action, rechargeNote, usesNote].filter(Boolean).join(' • ');
+      if (typeof addDiceHistoryEntry === 'function') {
+        addDiceHistoryEntry({ title: `✨ ${ab.name}`, formula: 'Use', total: 'Used', breakdown });
+      }
+      if (typeof showDiceTopToast === 'function') {
+        showDiceTopToast({ icon: '✨', title: ab.name, breakdown, total: 'Used' }, { stack: true });
+      }
+    }
 
     function executeSpecialAttackAbilityRoll(abilityKey) {
       if (!character) return;
@@ -4614,6 +4679,17 @@
         prevCooldown: character.tactical?.abilityCooldowns?.[ab.key] ? JSON.parse(JSON.stringify(character.tactical.abilityCooldowns[ab.key])) : null
       };
 
+      if (ab.isExhausted) {
+        if (typeof showDiceTopToast === 'function') {
+          showDiceTopToast({ icon: '⚠️', title: 'No Uses Left', breakdown: `${ab.name}: all ${ab.usesMax} use(s) are spent. Rest to recover them.`, total: '0 left' }, { stack: true, toastId: 'power-uses-exhausted-toast' });
+        }
+        return;
+      }
+      if (ab.utility) {
+        executeUtilityPowerUse(ab);
+        return;
+      }
+
       // RuleEngine.deriveSpecialAttacks resolves the V3 roll blocks into dmgFormula / dmgType (bonus included).
       const dmgFormula = String(ab.dmgFormula || ab.dice || '1d6');
       const dmgType = ab.dmgType || 'Damage';
@@ -4626,6 +4702,16 @@
       const parsedDmg = parseAndRollDiceFormula(dmgFormula);
       if (!parsedDmg) return;
 
+      const dv = ab.delivery || {};
+      let atkNote = '';
+      let atkD20 = null;
+      if (dv.attackKind && Number.isFinite(Number(dv.toHit))) {
+        atkD20 = Math.floor(Math.random() * 20) + 1;
+        const atkTotal = atkD20 + Number(dv.toHit);
+        const sg = Number(dv.toHit) >= 0 ? '+' : '-';
+        atkNote = `🎯 ${dv.attackLabel}: d20 [${atkD20}] ${sg} ${Math.abs(Number(dv.toHit))} = ${atkTotal} vs ${dv.vsAc}${atkD20 === 20 ? ' (Natural 20: threat)' : (atkD20 === 1 ? ' (Natural 1: miss)' : '')}`;
+      }
+      const shapeNote = dv.shape ? `📐 ${[dv.areaSize, dv.shape].filter(Boolean).join(' ')}${dv.areaMode ? ` (${dv.areaMode})` : ''}` : '';
       const dmgBreakdownParts = parsedDmg.diceGroups.map(g => `${g.notation}: [${g.rolls.join(', ')}]`);
       if (parsedDmg.modifiers.length > 0) {
         const modSum = parsedDmg.modifiers.reduce((a, b) => a + b, 0);
@@ -4673,7 +4759,9 @@
           name: ab.name,
           cooldownRounds: waitRounds,
           actionType: actType,
-          resourceId: ab.resourceId || null
+          resourceId: ab.resourceId || null,
+          usageMode: ab.usageMode || '',
+          usesMax: ab.usesMax || 0
         },
         meta: { label: `Special Attack: ${ab.name}`, cloudSync: false }
       });
@@ -4708,10 +4796,14 @@
       }
 
       const fullBreakdown = [
+        atkNote,
         `${dmgBreakdownParts.join(' • ')} ${dmgType}`,
+        shapeNote,
         dcNote,
         rechargeNote
       ].filter(Boolean).join(' • ');
+      if (atkD20 !== null) dice3dList.unshift({ type: 'd20', value: atkD20 });
+      if (dice3dList.length > 6) dice3dList.length = 6;
 
       const onDone = () => {
         if (typeof addDiceHistoryEntry === 'function') {
@@ -4722,7 +4814,7 @@
             total: parsedDmg.grandTotal,
             isCrit: false,
             critDamage: null,
-            critInfo: [dcNote, rechargeNote].filter(Boolean).join(' • ')
+            critInfo: [atkNote, dcNote, rechargeNote].filter(Boolean).join(' • ')
           });
         }
         if (typeof showDiceTopToast === 'function') {
@@ -8783,7 +8875,11 @@
       const bab = Number(character.bab) || 0;
       const dexMod = RuleEngine ? RuleEngine.getAbilityMod(character.abilities?.dex || 10) : 0;
       const strMod = RuleEngine ? RuleEngine.getAbilityMod(character.abilities?.str || 10) : 0;
-      const touchAtkBonus = isRanged ? (bab + dexMod) : (bab + strMod);
+      // Same attack pipeline as weapons: buffs, conditions, Point Blank Shot, Weapon Focus (ray), RAW stacking.
+      const touchAtkEval = (RuleEngine && typeof RuleEngine.evaluateTouchAttack === 'function')
+        ? RuleEngine.evaluateTouchAttack(character, { attackKind: isRanged ? 'ranged-touch' : 'melee-touch', name: s.name })
+        : null;
+      const touchAtkBonus = touchAtkEval ? touchAtkEval.total : (isRanged ? (bab + dexMod) : (bab + strMod));
 
       const d20 = Math.floor(Math.random() * 20) + 1;
       const totalAtk = d20 + touchAtkBonus;
@@ -8826,14 +8922,14 @@
         showDiceTopToast({
           icon: '⚡',
           title: `${s.name} - ${typeLabel}`,
-          breakdown: `Touch Attack: d20 [${d20}] + ${touchAtkBonus} = ${totalAtk} (vs. Target Touch AC)${critText}${dmgText}`,
+          breakdown: `Touch Attack: d20 [${d20}] ${touchAtkBonus >= 0 ? '+' : '-'} ${Math.abs(touchAtkBonus)} = ${totalAtk} (vs. Target Touch AC)${touchAtkEval && touchAtkEval.breakdown ? ` [${touchAtkEval.breakdown}]` : ''}${critText}${dmgText}`,
           total: `${totalAtk} Touch Attack`
         });
 
         addDiceHistoryEntry({
           icon: '⚡',
           title: `${s.name} Touch Attack`,
-          formula: `d20+${touchAtkBonus}${dmgExpr ? ` & ${dmgExpr}` : ''}`,
+          formula: `d20${touchAtkBonus >= 0 ? '+' : ''}${touchAtkBonus}${dmgExpr ? ` & ${dmgExpr}` : ''}`,
           breakdown: `Atk: ${totalAtk} (d20:${d20})${dmgText}`,
           total: `${totalAtk} to Hit`
         });

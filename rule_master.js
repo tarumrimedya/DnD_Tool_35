@@ -4108,6 +4108,99 @@ Return valid JSON only matching:
   },
 
   // 0ms Local Resolution Helper: Master DB -> SrdCompendium -> ItemAssembler -> Canonical Dictionary
+  // Search-by-Name category (dropdown value or "feat:" prefix) -> lowercased entry types / blueprints it covers
+  SEARCH_CATEGORY_TYPES: {
+    'Feat': { types: ['feat', 'homebrew'], blueprints: ['feat'] },
+    'Flaw': { types: ['flaw'], blueprints: [] },
+    'Spell': { types: ['spell'], blueprints: ['spell'] },
+    'Weapon': { types: ['weapon'], blueprints: ['weapon'] },
+    'Armor / Shield': { types: ['armor', 'shield'], blueprints: ['armor', 'shield'] },
+    'Armor': { types: ['armor'], blueprints: ['armor'] },
+    'Shield': { types: ['shield'], blueprints: ['shield'] },
+    'Wondrous Item': { types: ['wondrous item'], blueprints: [] },
+    'Ring': { types: ['ring'], blueprints: [] },
+    'Magic Item': { types: ['wondrous item', 'ring', 'magic item', 'rod', 'staff', 'wand', 'potion', 'scroll', 'item'], blueprints: ['item'] },
+    'Maneuver': { types: ['maneuver', 'stance'], blueprints: ['maneuver'] },
+    'Deity': { types: ['deity'], blueprints: ['deity'] },
+    'Domain': { types: ['domain'], blueprints: ['domain'] },
+    'Race': { types: ['race', 'template'], blueprints: ['race', 'template'] },
+    'Class': { types: ['class', 'base class', 'prestige class', 'custom class'], blueprints: ['class'] },
+    'Condition': { types: ['condition'], blueprints: ['condition'] }
+  },
+
+  entryMatchesSearchCategory(entry, categoryHint) {
+    const spec = this.SEARCH_CATEGORY_TYPES[categoryHint];
+    if (!spec) return true;
+    const t = String(entry.type || '').toLowerCase();
+    const c = String(entry.category || '').toLowerCase();
+    const bp = String(entry.blueprint || '').toLowerCase();
+    return spec.types.includes(t) || spec.types.includes(c) || (bp !== '' && spec.blueprints.includes(bp));
+  },
+
+  // The character's stored copy of an entry (Crafter override layer first, then Master DB / customDb)
+  getStoredCustomEntry(id) {
+    if (!id) return null;
+    const ce = (typeof character !== 'undefined' && character && character.customEntries && typeof character.customEntries === 'object' && !Array.isArray(character.customEntries)) ? character.customEntries : null;
+    if (ce && ce[id]) return ce[id];
+    if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
+      return masterDb.find(m => m && m.id === id) || null;
+    }
+    return null;
+  },
+
+  // 'homebrew' | 'override' | 'campaign' | null (null = unmodified SRD snapshot copy, i.e. core data)
+  classifyCustomEntry(entry) {
+    if (!entry || typeof entry !== 'object') return null;
+    if (entry._campaignPack && entry._campaignPack.packId) return 'campaign';
+    const SC = (typeof window !== 'undefined') ? window.SrdCompendium : null;
+    if (this.getSnapshotMeta(entry) && !(SC && typeof SC.isUserCustomizedEntry === 'function' && SC.isUserCustomizedEntry(entry))) return null;
+    const baseId = entry.baseEntryId || (entry._snapshot && entry._snapshot.srcId) || entry.id;
+    return (SC && typeof SC.isCoreId === 'function' && SC.isCoreId(baseId)) ? 'override' : 'homebrew';
+  },
+
+  getCustomKindBadgeHtml(item) {
+    const stored = item && this.getStoredCustomEntry(item.id);
+    const kind = this.classifyCustomEntry(stored);
+    if (kind === 'campaign') return this.getCampaignPackBadgeHtml(stored);
+    if (kind === 'override') return '<span class="px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-500/50 text-[10px] font-bold">⚒️ Crafted Override</span>';
+    if (kind === 'homebrew') return '<span class="px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-500/50 text-[10px] font-bold">⚒️ Homebrew</span>';
+    return '';
+  },
+
+  // Partial / fuzzy name search over the character's own entries (homebrew, Crafter overrides, campaign packs),
+  // filtered by the selected category. Unmodified SRD snapshot copies are core data and are left to the SRD lookup.
+  searchCustomEntries(rawQuery, categoryHint = 'ALL', limit = 12) {
+    const q = String(rawQuery || '').trim()
+      .replace(/^(spell|feat|race|deity|god|patron|domain|weapon|armor|shield|item|magic item|maneuver|stance|class|condition):\s*/i, '')
+      .trim();
+    if (!q) return [];
+    const pool = new Map();
+    const add = (e) => {
+      if (!e || typeof e !== 'object' || !e.name) return;
+      const key = String(e.id || e.name).toLowerCase();
+      if (!pool.has(key)) pool.set(key, e);
+    };
+    const ce = (typeof character !== 'undefined' && character && character.customEntries && typeof character.customEntries === 'object' && !Array.isArray(character.customEntries)) ? character.customEntries : null;
+    if (ce) Object.values(ce).forEach(add);
+    if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) masterDb.forEach(add);
+
+    const SC = (typeof window !== 'undefined') ? window.SrdCompendium : null;
+    const qLow = q.toLowerCase();
+    const scored = [];
+    pool.forEach((e) => {
+      if (!this.classifyCustomEntry(e)) return;
+      if (!this.entryMatchesSearchCategory(e, categoryHint)) return;
+      const name = String(e.name || '');
+      const haystack = `${e.shortDescription || ''} ${e.benefit || ''} ${e.description || ''}`;
+      const score = (SC && typeof SC.fuzzyScore === 'function')
+        ? SC.fuzzyScore(q, name, haystack)
+        : (name.toLowerCase().includes(qLow) ? 350 : 0);
+      if (score > 0) scored.push({ e, score });
+    });
+    scored.sort((a, b) => (b.score - a.score) || String(a.e.name).localeCompare(String(b.e.name)));
+    return scored.slice(0, limit).map(({ e }) => this.ensureV2(JSON.parse(JSON.stringify(e))));
+  },
+
   resolveLocalZeroTokenQuery(rawQuery) {
     if (!rawQuery || typeof rawQuery !== 'string') return [];
     let cleanKey = rawQuery.toLowerCase().trim();
@@ -5951,8 +6044,13 @@ Return valid JSON only matching:
       return;
     }
 
-    // 0ms Local Resolution (Master DB -> SrdCompendium -> ItemAssembler -> Canonical Dictionary)
-    const localHits = this.resolveLocalZeroTokenQuery(query);
+    // 0ms Local Resolution: the character's own entries (partial match, category-filtered) first,
+    // then exact core lookup (Master DB -> SrdCompendium -> ItemAssembler -> Canonical Dictionary)
+    const customHits = this.searchCustomEntries(query, categoryHint);
+    const customIds = new Set(customHits.map(e => String(e.id || e.name).toLowerCase()));
+    const localHits = customHits.concat(
+      this.resolveLocalZeroTokenQuery(query).filter(e => !customIds.has(String(e.id || e.name).toLowerCase()))
+    );
     if (localHits.length > 0) {
       this.renderInlineAiResults(localHits);
       const st = document.getElementById('inline-ai-status-text');
@@ -6059,6 +6157,7 @@ Return valid JSON only matching:
               <div class="flex items-center gap-2 flex-wrap">
                 <span class="text-xs md:text-sm font-extrabold text-white">${RuleMaster.escapeHtml(item.name)}</span>
                 <span class="badge ${badgeClass} text-[10px]">${item.type}</span>
+                ${this.getCustomKindBadgeHtml(item)}
                 ${dbInfo.exists ? `<span class="badge bg-amber-950/90 text-amber-300 border border-amber-500/60 text-[10px] font-bold">📌 Already in ${dbInfo.inMasterDb ? 'Custom Master DB' : 'Site Database'}</span>` : ''}
                 ${modes.length > 0 ? `<span class="badge bg-purple-950 text-purple-200 border border-purple-600 text-[10px] font-bold">⚡ ${modes.length} Embedded Mode(s)</span>` : ''}
                 <span class="text-[10px] text-slate-400">📚 <b>${RuleMaster.escapeHtml(item.source || 'PHB')}</b></span>

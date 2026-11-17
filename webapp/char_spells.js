@@ -5828,7 +5828,10 @@
         const bab = Number(character.bab) || 0;
         const dexMod = (typeof RuleEngine !== 'undefined' && RuleEngine.getAbilityMod) ? RuleEngine.getAbilityMod(character.abilities?.dex || 10) : Math.floor(((character?.abilities?.dex || 10) - 10) / 2);
         const strMod = (typeof RuleEngine !== 'undefined' && RuleEngine.getAbilityMod) ? RuleEngine.getAbilityMod(character.abilities?.str || 10) : Math.floor(((character?.abilities?.str || 10) - 10) / 2);
-        const touchAtkBonus = isRangedTouch ? (bab + dexMod) : (bab + strMod);
+        // Same attack pipeline as weapons: buffs, conditions, Point Blank Shot, Weapon Focus (ray), RAW stacking.
+        const touchAtkBonus = (isTouchAttack && typeof RuleEngine !== 'undefined' && typeof RuleEngine.evaluateTouchAttack === 'function')
+          ? RuleEngine.evaluateTouchAttack(character, { attackKind: isRangedTouch ? 'ranged-touch' : 'melee-touch', name: s.name }).total
+          : (isRangedTouch ? (bab + dexMod) : (bab + strMod));
 
         const tr = document.createElement('tr');
         tr.className = `transition border-l-4 ${theme.borderLeft} ${
