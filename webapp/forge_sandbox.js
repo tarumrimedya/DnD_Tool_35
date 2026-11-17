@@ -2342,7 +2342,8 @@
     }
     o.summary = blockText(b);
     // Race / template progression: only a real later level is kept.
-    if (num(b.gainedAt) > 1) o.gainedAt = Math.floor(num(b.gainedAt)); else delete o.gainedAt;
+    // A level only exists through the race / template Level / HD Table; without the table everything is level 1.
+    if (num(b.gainedAt) > 1 && levelTableOn()) o.gainedAt = Math.floor(num(b.gainedAt)); else delete o.gainedAt;
     if (b.type === 'when' && Array.isArray(b.branches)) {
       o.branches = b.branches.map((br) => {
         const bo = clone(br);
@@ -2366,7 +2367,7 @@
     if (/^\d+$/.test(dcRaw)) o.saveDC = Number(dcRaw);
     else if (dcRaw) o.dcFormula = dcRaw;
     if (pw.spellLevel !== '' && pw.spellLevel !== null && pw.spellLevel !== undefined && Number.isFinite(Number(pw.spellLevel))) o.spellLevel = Number(pw.spellLevel);
-    if (num(pw.gainedAt) > 1) o.gainedAt = Math.floor(num(pw.gainedAt));
+    if (num(pw.gainedAt) > 1 && levelTableOn()) o.gainedAt = Math.floor(num(pw.gainedAt));
     if (pw.duration) o.duration = pw.duration;
     if (pw.attackOn && pw.attack !== 'none') o.attack = pw.attack;
     if (pw.range) o.range = pw.range;
@@ -4028,7 +4029,6 @@
     'feat-sum': (a) => { const p = a.split(':'); const f = (S.entry.progression.levels[num(p[0])] || { features: [] }).features[num(p[1])]; return f ? (f.branchPath ? '🔀 ' + esc(f.branchPath) + ': ' : '') + esc(f.name) : ''; },
     'dom-sum': (i) => { const d = S.entry.grants.domains[num(i)]; return d ? esc(d.name + (d.grantedPower ? ' — ' + short(d.grantedPower, 80) : '')) : ''; },
     'deity-sum': (i) => { const d = S.entry.grants.deities[num(i)]; return d ? esc(d.name + ' (' + d.align + ') • Favored Weapon: ' + d.favoredWeapon) : ''; },
-    'lvl-overview': () => levelGainRows(),
     // How the engine reads a formula field: normalized form + sample values, or the unknown terms.
     'fx-preview': (path) => {
       const raw = getPath(S.entry, path);
@@ -4766,10 +4766,19 @@
     const lv = levelOf(x);
     return lv <= Math.max(1, Math.min(20, num(S.entry.progression.maxLevel, 20)));
   }
+  // The Level / HD Table is the only place a level is set: an item's level is the row it sits in.
+  const levelTableOn = () => isLevelGainEntry() && hasFacet(S.entry, 'progression') && !!S.entry.progression;
+  // Row control that moves a block / sub-power to another row of the table (shown only inside a row).
+  function levelMoveSel(path, x) {
+    if (!inLevelRow(x)) return '';
+    const p = S.entry.progression;
+    const maxLv = Math.max(1, Math.min(20, num(p.maxLevel, 20)));
+    const unit = p.mode === 'hd' ? 'HD ' : 'Lvl ';
+    return '<span title="Move to another level of the table" style="display:inline-flex;margin-left:8px">' +
+      sel(path + '.gainedAt', levelOf(x), range(1, maxLv).map((n) => [n, unit + n]), { narrow: true, num: true }) + '</span>';
+  }
   function levelGainChip(b, p, listPath) {
-    if (!isLevelGainEntry() || listPath !== 'effects') return '';
-    return '<label class="fs-hint" style="display:inline-flex;align-items:center;gap:4px;margin-left:8px">Gained at Lvl ' +
-      inp(p + '.gainedAt', num(b.gainedAt) || '', { num: true, min: 1, max: 20, ph: '1', style: 'width:56px' }) + '</label>';
+    return listPath === 'effects' ? levelMoveSel(p, b) : '';
   }
   // { level: [{ kind: 'power' | 'effect', html }] } from the gainedAt fields of the sub-powers and top-level blocks.
   function levelGainItems() {
@@ -4779,13 +4788,6 @@
     (en.powers || []).forEach((pw) => add(at(pw), 'power', '⚡ ' + esc(pw.kind === 'attached' && pw.ref ? pw.ref.name : (pw.name || 'Power'))));
     (en.effects || []).forEach((b) => add(at(b), 'effect', (BLOCK_TYPES[b.type] || BLOCK_TYPES.effect).icon + ' ' + esc(blockText(b) || (BLOCK_TYPES[b.type] || BLOCK_TYPES.effect).label)));
     return rows;
-  }
-  // Read-only summary of what the race / template grants at each character level.
-  function levelGainRows() {
-    const rows = levelGainItems();
-    const lvls = Object.keys(rows).map(Number).sort((a, b) => a - b);
-    if (!lvls.length) return '<div class="fs-hint">Add sub-powers or rule blocks, then set "Gained at Level / HD" on each.</div>';
-    return lvls.map((lv) => '<div class="fs-fxrow fs-fxrow-inline"><code>Lvl ' + lv + '</code><span style="color:var(--text-primary)">' + rows[lv].map((r) => r.html).join(' • ') + '</span></div>').join('');
   }
   // "+ Rule Block" menu in a Level / HD Table row: the new block is gained at that level.
   function levelBlockMenu(lv) {
@@ -4905,13 +4907,12 @@
   function powerCBlock(pw, i) {
     const p = 'powers.' + i;
     const head = H(
-      L('⚡ Sub-Power'),
+      L('⚡ Sub-Power') + levelMoveSel(p, pw),
       '<span class="fs-row" style="margin-left:auto;gap:4px">' + btn('move-power', '↑', 'fs-xs fs-ghost', { i: i, d: -1 }) + delBtn('remove-power', { i: i }) + '</span>'
     ) + G(3,
       F('Power Name', pw.kind === 'inline' ? inp(p + '.name', pw.name, { ph: 'Sub-power name' }) : '<span class="fs-pill purple">🔮 ' + esc(pw.ref ? pw.ref.name : pw.name) + '</span>') +
       F('Action', sel(p + '.action', pw.action, ACTIONS, { narrow: true })) +
       F('Caster Level', inp(p + '.cl', num(pw.cl) || '', { num: true, ph: 'Character CL' })) +
-      (isLevelGainEntry() ? F('Gained at Level / HD', inp(p + '.gainedAt', num(pw.gainedAt) || '', { num: true, min: 1, max: 20, ph: '1' })) : '') +
       usageFields(p + '.use', pw.use, 3)
     );
     let kids = '';
@@ -4953,11 +4954,6 @@
     if (!o.skipPrereqs && hasFacet(en, 'prereqs')) h += prereqCBlock(en, 'Prerequisites');
     h += scratchBlocks(en.effects, 'effects', (b) => !inLevelRow(b));
     h += en.powers.map((pw, i) => (inLevelRow(pw) ? '' : powerCBlock(pw, i))).join('');
-    if (isLevelGainEntry() && ((en.powers || []).length || (en.effects || []).length)) {
-      h += stack('b-slate', H(L('📋 Level / HD Overview')) +
-        '<div class="fs-hint" style="margin-bottom:4px">What the character gains at each level (character level / total HD). Set "Gained at Level / HD" on a sub-power or rule block to move it.</div>' +
-        live('lvl-overview', ''));
-    }
     if (!o.skipProgression && hasFacet(en, 'progression')) h += progressionCBlock(en);
     return h;
   }
