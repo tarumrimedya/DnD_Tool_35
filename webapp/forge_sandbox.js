@@ -114,7 +114,7 @@
   const CREATURE_TYPES = ['Humanoid', 'Outsider', 'Dragon', 'Fey', 'Monstrous Humanoid', 'Construct', 'Undead', 'Aberration', 'Giant', 'Magical Beast'];
   const FLY_MANEUVERABILITIES = ['Clumsy', 'Poor', 'Average', 'Good', 'Perfect'];
   const RANGES = ['Personal', 'Touch', 'Close (25 ft. + 5 ft./2 levels)', 'Medium (100 ft. + 10 ft./level)', 'Long (400 ft. + 40 ft./level)', '30 ft.', '60 ft.', 'Unlimited', 'See text'];
-  const AREAS = ['30-ft. Cone', '60-ft. Line', '20-ft.-radius Spread', '10-ft.-radius Burst', 'One creature', 'One or more rays', 'You', 'One creature/level'];
+  const AREAS = ['30-ft. Cone', '60-ft. Line', '20-ft.-radius Spread', '10-ft.-radius Burst', '30-ft.-radius Emanation', 'Cylinder (10-ft. radius, 40 ft. high)', 'One creature', 'One or more rays', 'You', 'One creature/level'];
   const ALIGNS = ['LG', 'NG', 'CG', 'LN', 'N', 'CN', 'LE', 'NE', 'CE'];
   const ALIGN_NAMES = { LG: 'Lawful Good', NG: 'Neutral Good', CG: 'Chaotic Good', LN: 'Lawful Neutral', N: 'True Neutral', CN: 'Chaotic Neutral', LE: 'Lawful Evil', NE: 'Neutral Evil', CE: 'Chaotic Evil' };
   const ALIGN_REQS = ALIGNS.concat(['Any Good', 'Any Evil', 'Any Lawful', 'Any Chaotic', 'Any Non-Good', 'Any Non-Evil', 'Any Non-Lawful', 'Any Non-Chaotic', 'Any Neutral']);
@@ -4827,10 +4827,11 @@
         G(hasSave ? 3 : 3,
           F('Attack Type', sel(p + '.attack', pw.attack, Object.keys(ATTACK_LABEL).map((k) => [k, ATTACK_LABEL[k]]), { narrow: true })) +
           F('Range', inp(p + '.range', pw.range, { list: 'fs-range-list', ph: 'Range' })) +
+          F('Area', inp(p + '.area', pw.area, { list: 'fs-area-list', ph: 'e.g. 30-ft. Cone' })) +
           F('Saving Throw', sel(p + '.save.type', pw.save.type, ['None', 'Fortitude', 'Reflex', 'Will'], { narrow: true })) +
           (hasSave
             ? F('Save Outcome', sel(p + '.save.effect', pw.save.effect, ['Negates', 'Half', 'Partial', 'Negates (harmless)'], { narrow: true })) +
-              F('Fixed DC (0 = Auto)', inp(p + '.dc', pw.dc, { num: true }), 'lego-span-2')
+              F('Fixed DC (0 = Auto)', inp(p + '.dc', pw.dc, { num: true }))
             : '')
         ));
     }
