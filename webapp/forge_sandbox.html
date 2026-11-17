@@ -277,7 +277,21 @@
   .fs-fxitem { display: flex; flex-direction: column; gap: 2px; width: 100%; text-align: left; padding: 6px 8px; margin-bottom: 4px; border-radius: 8px; border: 1px solid var(--border-subtle); background: var(--bg-surface); color: var(--text-primary); font-size: 11.5px; cursor: pointer; }
   .fs-fxitem:hover { border-color: var(--accent-indigo); }
   .fs-fxitem span { color: var(--text-muted); font-size: 11px; }
-  .fs-fxitem code { color: #a5f3fc; font-size: 10.5px; }
+  .fs-fxitem code { color: #a5f3fc; font-size: 10.5px; white-space: normal; overflow-wrap: anywhere; }
+  .fs-fxbody { overflow-x: hidden; }
+  .fs-fxbody .fs-section-label { margin: 10px 0 5px; }
+  .fs-fxhead + .fs-hint { line-height: 1.45; }
+  .fs-fxrow { display: flex; flex-direction: column; gap: 2px; padding: 6px 8px; margin-bottom: 4px; border-radius: 8px; border: 1px solid var(--border-subtle); background: var(--bg-surface); color: var(--text-primary); font-size: 11.5px; line-height: 1.35; }
+  .fs-fxrow span { color: var(--text-muted); font-size: 11px; }
+  .fs-fxrow code { color: #a5f3fc; font-size: 10.5px; white-space: normal; overflow-wrap: anywhere; }
+  .fs-fxrow-inline { flex-direction: row; align-items: baseline; gap: 8px; }
+  .fs-fxrow-inline code { flex: 0 0 64px; }
+  .fs-fxprev { display: flex; flex-direction: column; gap: 3px; margin-top: 2px; line-height: 1.35; }
+  .fs-fxprev code { color: #a5f3fc; font-size: 10.5px; white-space: normal; overflow-wrap: anywhere; }
+  .fs-fxprev > div { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+  .fs-fxprev-k { color: var(--text-muted); opacity: .8; }
+  .fs-fxprev-lv { white-space: nowrap; }
+  .fs-fxprev-lv b { color: var(--text-primary); }
 </style>
 </head>
 <body class="min-h-screen bg-slate-950">
@@ -294,7 +308,7 @@
   </div>
   <script src="./srd_compendium.js?v=4652bc4668"></script>
   <script src="./rulesets/dnd35.js?v=efbdcde12f"></script>
-  <script src="./rule_engine.js?v=106f0a7d8f"></script>
-  <script src="./forge_sandbox.js?v=66468d6946"></script>
+  <script src="./rule_engine.js?v=eca3b81bcd"></script>
+  <script src="./forge_sandbox.js?v=59d7fbd0dd"></script>
 </body>
 </html>

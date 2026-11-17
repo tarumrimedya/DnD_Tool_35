@@ -63,6 +63,10 @@ const RuleEngine = {
     if (!s) return '';
     s = s
       .replace(/^dc\s*[:=]?\s*/i, '')
+      // "spell level" first, so the plain "level" rules below never turn it into character level.
+      // Not inside a dotted runtime token such as @input.spellLevel.
+      .replace(/(?<![a-zA-Z@.])spell[\s_]*level\b/gi, '@spellLevel')
+      .replace(/@spell_?level\b/gi, '@spellLevel')
       .replace(/\b1\s*\/\s*2\s*(?:@?level|@?lvl|@?hd)\b/gi, 'floor(@level / 2)')
       .replace(/\bhalf\s+(?:@?level|@?lvl|@?hd)\b/gi, 'floor(@level / 2)')
       // Not inside an already-normalized floor(@level / 2), and not the tail of a longer token (@classLevel / 2).
@@ -298,6 +302,12 @@ const RuleEngine = {
   // Build V3 formula evaluation context with active class levels (@warbladeLevel, @paladinLevel, etc.) and entry-associated @classLevel
   buildV3FormulaContext(character, entry = null, options = {}) {
     const baseCtx = this.buildFormulaContext(character, options || {});
+    // @spellLevel: an explicit spellLevel, else the level of a spell entry.
+    if (entry && typeof entry === 'object' && options?.spellLevel === undefined) {
+      const isSpellEntry = String(entry.blueprint || '').toLowerCase() === 'spell' || String(entry.type || '').toLowerCase() === 'spell';
+      const sl = Number(entry.spellLevel ?? (isSpellEntry ? entry.level : undefined));
+      if (Number.isFinite(sl) && sl >= 0) baseCtx.spellLevel = sl;
+    }
     if (entry && typeof entry === 'object' && options?.classLevel === undefined) {
       let assocClass = '';
       if (typeof entry.sourceClass === 'string' && entry.sourceClass.trim()) {
@@ -329,12 +339,14 @@ const RuleEngine = {
       : String(entryOrFormula || '');
     const normFormula = this.normalizeFormulaTokens(rawFormula);
     if (!normFormula) return null;
-    const ctx = this.buildFormulaContext(character);
+    const dcSpellLevel = (entryOrFormula && typeof entryOrFormula === 'object') ? Number(entryOrFormula.spellLevel) : NaN;
+    const ctx = this.buildFormulaContext(character, Number.isFinite(dcSpellLevel) ? { spellLevel: dcSpellLevel } : {});
     const dc = Math.floor(Number(this.evaluateFormula(normFormula, ctx)) || 0);
     if (dc <= 0) return null;
 
     const breakdownParts = normFormula
       .replace(/floor\(\s*@level\s*\/\s*2\s*\)/gi, `${Math.floor(ctx.level / 2)} [1/2 Lvl]`)
+      .replace(/@spellLevel\b/gi, `${Number(ctx.spellLevel) || 0} Spell Lvl`)
       .replace(/@level\b/gi, `${ctx.level} Lvl`)
       .replace(/@cl\b/gi, `${ctx.cl} CL`)
       .replace(/@bab\b/gi, `${ctx.bab} BAB`)
@@ -365,6 +377,7 @@ const RuleEngine = {
     { token: '@<class>Level', pattern: true, label: 'Class Level (named class)', group: 'Levels', desc: 'Level in a named class, e.g. @paladinLevel, @warbladeLevel; 0 when the character has none.', example: '@paladinLevel' },
     { token: '@classes.<id>.level', pattern: true, label: 'Class Level (by class id)', group: 'Levels', desc: 'Level in any class by its id or name slug.', example: '@classes.warblade.level' },
     { token: '@cl', aliases: ['@casterLevel', '@item.level'], key: 'cl', label: 'Caster Level', group: 'Spellcasting', desc: 'Caster level of the entry or the character.', example: 'min(10, @cl)d6' },
+    { token: '@spellLevel', aliases: ['@spell_level'], key: 'spellLevel', label: 'Spell Level', group: 'Spellcasting', desc: 'Level of the spell or spell-like ability: the power\'s Spell Level field, its attached spell, or the spell entry itself.', example: '10 + @spellLevel + @chaMod' },
     { token: '@baseSlots', key: 'baseSlots', label: 'Base Spell Slots', group: 'Spellcasting', desc: 'Base spell slots of the referenced spell level.', example: '@baseSlots + 1' },
     { token: '@spells.maxUnspentLevel', pattern: true, label: 'Highest Unspent Spell Level', group: 'Spellcasting', desc: 'Highest prepared, unexpended spell level; optional descriptor filter in parentheses.', example: '@spells.maxUnspentLevel(fire)' },
     { token: '@ml', aliases: ['@manifesterLevel'], key: 'ml', label: 'Manifester Level', group: 'Psionics', desc: 'Manifester level of the power or the character.', example: '@ml' },
@@ -406,7 +419,7 @@ const RuleEngine = {
   FORMULA_RECIPES: {
     dc: [
       { label: '10 + 1/2 HD + Con modifier', formula: '10 + 1/2 HD + Con', desc: 'Breath weapons and most extraordinary / supernatural abilities (PHB p.180).' },
-      { label: '10 + spell level + Cha modifier', formula: '10 + 3 + Cha', desc: 'Spell-like ability: replace 3 with the spell level.' },
+      { label: '10 + spell level + Cha modifier', formula: '10 + @spellLevel + Cha', desc: 'Spell-like ability. Fill in the Spell Level field of the power (or attach the spell).' },
       { label: '10 + 1/2 class level + Wis modifier', formula: '10 + floor(@classLevel / 2) + Wis', desc: 'Class feature keyed to one class (Stunning Fist style).' },
       { label: 'Fixed DC', formula: '15', desc: 'A plain number is used as it is.' }
     ],
@@ -437,6 +450,7 @@ const RuleEngine = {
     { words: '1/2 HD, half level, HD/2', means: 'floor(@level / 2)', desc: 'One-half level, rounded down' },
     { words: 'Str, Dex, Con, Int, Wis, Cha', means: '@strMod ... @chaMod', desc: 'Ability modifiers' },
     { words: 'CL, caster level', means: '@cl', desc: 'Caster level' },
+    { words: 'spell level', means: '@spellLevel', desc: 'Level of the spell or spell-like ability' },
     { words: 'BAB', means: '@bab', desc: 'Base attack bonus' },
     { words: 'ML, IL, ECL', means: '@ml, @il, @ecl', desc: 'Manifester, initiator and effective character level' },
     { words: 'DC: (prefix)', means: '', desc: 'Ignored, so "DC: 10 + lvl + Con" also works' }
@@ -470,7 +484,8 @@ const RuleEngine = {
       conMod: Number(context.conMod) || 0,
       intMod: Number(context.intMod) || 0,
       wisMod: Number(context.wisMod) || 0,
-      chaMod: Number(context.chaMod) || 0
+      chaMod: Number(context.chaMod) || 0,
+      spellLevel: Number(context.spellLevel ?? 0) || 0
     };
   },
 
@@ -503,7 +518,8 @@ const RuleEngine = {
     const samples = unknown.length ? [] : levels.map(level => {
       const ctx = {
         level, hd: level, ecl: level, cl: level, casterLevel: level, ml: level, il: level, ebl: level, classLevel: level,
-        bab: level, enhancement: 1, strMod: mod, dexMod: mod, conMod: mod, intMod: mod, wisMod: mod, chaMod: mod
+        bab: level, enhancement: 1, strMod: mod, dexMod: mod, conMod: mod, intMod: mod, wisMod: mod, chaMod: mod,
+        spellLevel: opts.spellLevel !== undefined ? Number(opts.spellLevel) || 0 : 3
       };
       let value = null;
       try { value = this.evaluateFormula(normalized, ctx); } catch (e) { value = null; }
@@ -11859,12 +11875,15 @@ const RuleEngine = {
       const id = String(pw.id || `power-${idx + 1}`);
       const name = String(pw.name || (ref && ref.name) || `Power ${idx + 1}`);
       const cl = Number(pw.casterLevel) || 0;
+      // @spellLevel: the power's own Spell Level, else its attached spell's level.
+      const spellLevelRaw = pw.spellLevel !== undefined && pw.spellLevel !== '' ? Number(pw.spellLevel) : (ref ? Number(ref.level) : NaN);
+      const spellLevel = Number.isFinite(spellLevelRaw) ? spellLevelRaw : null;
       const evaluated = effects.length > 0
         ? this.evaluateV3Entry(
           // The parent entry is already resolved (overrides included); `_customOverrideApplied` stops the
           // name-based override lookup from swapping in the parent when a power shares its name.
           Object.assign({ schemaVersion: 3, id: `${entry.id || 'entry'}:${id}`, name, effects, _customOverrideApplied: true }, cl ? { casterLevel: cl } : {}),
-          Object.assign({ character }, cl ? { cl, casterLevel: cl } : {})
+          Object.assign({ character }, cl ? { cl, casterLevel: cl } : {}, spellLevel !== null ? { spellLevel } : {})
         )
         : null;
       const saveType = pw.save && typeof pw.save === 'object' ? String(pw.save.type || '') : '';
@@ -11883,6 +11902,7 @@ const RuleEngine = {
         usage,
         usageText: usageTextOf(usage),
         casterLevel: cl || null,
+        spellLevel,
         dcFormula: (Number(pw.saveDC) || 0) > 0 ? String(Number(pw.saveDC)) : String(pw.dcFormula || ''),
         save,
         attack: typeof pw.attack === 'string' && pw.attack !== 'none' ? pw.attack : '',
@@ -12131,7 +12151,7 @@ const RuleEngine = {
         : (cooldownRemaining > 0 ? curRound + cooldownRemaining : 0);
 
       const dcEval = (spec.save || spec.dcFormula)
-        ? this.evaluateAbilitySaveDc({ dcFormula: spec.dcFormula, benefit: spec.benefit }, w)
+        ? this.evaluateAbilitySaveDc({ dcFormula: spec.dcFormula, benefit: spec.benefit, spellLevel: spec.spellLevel }, w)
         : null;
       const [rawActionType, effActionLabel] = parseActionLabel(spec.actionCandidate);
 
@@ -12152,6 +12172,7 @@ const RuleEngine = {
         dmgType,
         save: spec.save || '',
         dcFormula: spec.dcFormula || '',
+        spellLevel: spec.spellLevel ?? null,
         dc: dcEval ? dcEval.dc : null,
         dcVal: dcEval ? dcEval.dc : null,
         dcBreakdown: dcEval ? dcEval.breakdown : '',
@@ -12304,6 +12325,7 @@ const RuleEngine = {
           usageText: pw.usageText,
           recharge: pw.rechargeDice ? `${pw.rechargeDice} rounds` : '',
           rechargeDice: pw.rechargeDice,
+          spellLevel: pw.spellLevel,
           actionCandidate: pw.action || 'Standard Action',
           utility: !pwHasDmg,
           summary: pw.summary,

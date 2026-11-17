@@ -329,7 +329,7 @@
   function blankPower(kind, o) {
     return Object.assign({
       id: uid('pw'), kind: kind, name: kind === 'inline' ? 'New Power' : '', ref: null, grantMode: 'cast',
-      use: blankUse('perDay'), action: 'Standard', cl: '', dc: 0, dcFormula: '', duration: '',
+      use: blankUse('perDay'), action: 'Standard', cl: '', dc: 0, dcFormula: '', spellLevel: '', duration: '',
       attack: 'none', attackOn: false, range: '', area: '',
       save: { type: 'None', effect: 'Negates' }, effects: [], text: '', exportStandalone: false
     }, o || {});
@@ -2363,6 +2363,7 @@
     const dcRaw = String(pw.dcFormula || '').trim() || (num(pw.dc) ? String(num(pw.dc)) : '');
     if (/^\d+$/.test(dcRaw)) o.saveDC = Number(dcRaw);
     else if (dcRaw) o.dcFormula = dcRaw;
+    if (pw.spellLevel !== '' && pw.spellLevel !== null && pw.spellLevel !== undefined && Number.isFinite(Number(pw.spellLevel))) o.spellLevel = Number(pw.spellLevel);
     if (pw.duration) o.duration = pw.duration;
     if (pw.attackOn && pw.attack !== 'none') o.attack = pw.attack;
     if (pw.range) o.range = pw.range;
@@ -3126,6 +3127,7 @@
           cl: pw.casterLevel != null ? num(pw.casterLevel) : (pw.cl != null ? num(pw.cl) : 0),
           dc: num(pw.saveDC != null ? pw.saveDC : pw.dc, 0),
           dcFormula: String(pw.dcFormula || (num(pw.saveDC != null ? pw.saveDC : pw.dc, 0) ? num(pw.saveDC != null ? pw.saveDC : pw.dc, 0) : '')),
+          spellLevel: pw.spellLevel != null ? pw.spellLevel : '',
           duration: pw.duration || '',
           attackOn: !!(pw.attack && pw.attack !== 'none'),
           attack: pw.attack && pw.attack !== 'none' ? pw.attack : 'none',
@@ -4025,9 +4027,18 @@
       const raw = getPath(S.entry, path);
       const v = String(raw == null ? '' : raw).trim();
       if (!v || /^-?\d+(\.\d+)?$/.test(v) || !window.RuleEngine || typeof window.RuleEngine.inspectFormula !== 'function') return '';
-      const r = window.RuleEngine.inspectFormula(v);
+      // Sample @spellLevel: the sub-power's Spell Level (or its attached spell), the spell entry's level, else 3.
+      const pwMatch = path.match(/^powers\.\d+/);
+      const pw = pwMatch ? getPath(S.entry, pwMatch[0]) : null;
+      const slRaw = pw && pw.spellLevel !== undefined && pw.spellLevel !== '' ? Number(pw.spellLevel)
+        : (pw && pw.ref ? Number(pw.ref.level) : (S.entry.blueprint === 'spell' ? Number(S.entry.level) : NaN));
+      const sl = Number.isFinite(slRaw) ? slRaw : 3;
+      const r = window.RuleEngine.inspectFormula(v, { spellLevel: sl });
       if (r.unknown.length) return '<span class="fs-warn" style="font-size:11px">⚠️ Unknown term' + (r.unknown.length > 1 ? 's' : '') + ': ' + esc(r.unknown.join(', ')) + '. Click ! Formula help for the terms you can use.</span>';
-      return 'Reads as <code>' + esc(r.normalized) + '</code> • ' + r.samples.map((x) => 'Lvl ' + x.level + ': <b>' + esc(String(x.value)) + '</b>').join(' • ') + ' <span style="opacity:.7">(ability mods +2)</span>';
+      const usesSl = /@spellLevel\b/.test(r.normalized);
+      return '<div class="fs-fxprev"><div><span class="fs-fxprev-k">Reads as</span> <code>' + esc(r.normalized) + '</code></div>' +
+        '<div>' + r.samples.map((x) => '<span class="fs-fxprev-lv">Lvl ' + x.level + ' <b>' + esc(String(x.value)) + '</b></span>').join('') +
+        '<span class="fs-fxprev-k">ability mods +2' + (usesSl ? ', spell level ' + sl : '') + '</span></div></div>';
     },
     'roll-preview': (path) => {
       const b = getPath(S.entry, path);
@@ -4694,15 +4705,22 @@
     const recipes = ((RE.FORMULA_RECIPES || {})[S.ui.fxKind || 'value']) || (RE.FORMULA_RECIPES || {}).value || [];
     const recipe = (r) => '<button type="button" class="fs-fxitem" data-fx-keep="1" data-action="fx-apply" data-ins="' + esc(r.formula) + '"><b>' + esc(r.label) + '</b>' +
       (r.desc ? '<span>' + esc(r.desc) + '</span>' : '') + '<code>' + esc(r.formula) + '</code></button>';
-    const shorthand = (RE.FORMULA_SHORTHAND || []).map((s) => '<div class="fs-bd-row" style="font-size:11px"><span class="src"><b>' + esc(s.words) + '</b> — ' + esc(s.desc) + '</span>' +
-      (s.means ? '<code style="color:#a5f3fc;font-size:10.5px">' + esc(s.means) + '</code>' : '') + '</div>').join('');
+    // One card per plain word: what you type, what it means, the term it becomes.
+    const shorthand = (RE.FORMULA_SHORTHAND || []).map((s) => '<div class="fs-fxrow"><b>' + esc(s.words) + '</b><span>' + esc(s.desc) + '</span>' +
+      (s.means ? '<code>= ' + esc(s.means) + '</code>' : '') + '</div>').join('');
+    const ops = [
+      ['+  -  *  /', 'Add, subtract, multiply, divide'],
+      ['( )', 'Group terms: 10 + (2 * @bab)'],
+      ['NdX', 'Dice, e.g. 2d6 or (1 + floor(@hd / 4))d8'],
+      ['floor(x)', 'Round down, as D&D 3.5e does. Division alone can leave a fraction.']
+    ].map((o) => '<div class="fs-fxrow fs-fxrow-inline"><code>' + esc(o[0]) + '</code><span>' + esc(o[1]) + '</span></div>').join('');
     el.style.display = 'flex';
     el.innerHTML = '<div class="fs-fxhead"><span>! Formula help</span><button type="button" class="fs-btn fs-xs fs-ghost" data-action="toggle-fxref">Close</button></div>' +
       '<div class="fs-hint" style="padding:0 10px 6px">Pick an example to fill the field, then adjust the numbers. The line under the field shows how it is read and its value at levels 1, 5, 10 and 20.</div>' +
       '<div class="fs-fxbody">' +
         (recipes.length ? '<div class="fs-section-label">Examples for this field</div>' + recipes.map(recipe).join('') : '') +
         (shorthand ? '<div class="fs-section-label">Plain words you can type</div>' + shorthand : '') +
-        '<div class="fs-section-label">Operators</div><div class="fs-hint" style="font-size:11px">+ − × (*) ÷ (/), parentheses, and dice as NdX: (1 + floor(@hd / 4))d8. Division keeps fractions, so wrap it in floor() to round down.</div>' +
+        '<div class="fs-section-label">Operators</div>' + ops +
         '<details style="margin-top:6px"><summary class="fs-section-label" style="cursor:pointer">All terms &amp; functions (click to insert at the cursor)</summary>' +
         (vars.length || funcs.length ? Object.keys(groups).map((g) => '<div class="fs-section-label">' + esc(g) + '</div>' + groups[g].map((v) => item(v.token, v.token + (v.label ? ' — ' + v.label : ''), v.desc, v.example)).join('')).join('') +
           (funcs.length ? '<div class="fs-section-label">Functions</div>' + funcs.map((f) => item(f.name + '()', f.signature || f.name, f.desc, '')).join('') : '') : '<div class="fs-hint">Rule Engine formula catalog is not loaded.</div>') +
@@ -4862,7 +4880,9 @@
           (hasSave
             ? F('Save Outcome', sel(p + '.save.effect', pw.save.effect, ['Negates', 'Half', 'Partial', 'Negates (harmless)'], { narrow: true })) +
               F('Save DC (number or formula)', inp(p + '.dcFormula', pw.dcFormula || (num(pw.dc) ? String(num(pw.dc)) : ''), { ph: '10 + 1/2 HD + Con', fx: true }) + fxRefBtn('dc', p + '.dcFormula'))
-            : '')
+            : '') +
+          F('Spell Level', inp(p + '.spellLevel', pw.spellLevel === undefined || pw.spellLevel === null ? '' : pw.spellLevel,
+            { num: true, min: 0, max: 9, ph: pw.ref ? 'Spell: ' + num(pw.ref.level) : 'Spell-like ability' }))
         ));
     }
     kids += scratchBlocks(pw.effects || [], p + '.effects');

@@ -4544,7 +4544,7 @@
         let dcSummaryStr = '';
         if (ab.save || ab.dcFormula) {
           const dcEval = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.evaluateAbilitySaveDc === 'function')
-            ? RuleEngine.evaluateAbilitySaveDc({ dcFormula: ab.dcFormula, benefit: ab.benefit }, char)
+            ? RuleEngine.evaluateAbilitySaveDc({ dcFormula: ab.dcFormula, benefit: ab.benefit, spellLevel: ab.spellLevel }, char)
             : null;
           if (dcEval) {
             dcBadgeHtml = `<span class="text-[10px] font-black px-1.5 rounded bg-amber-500/25 text-amber-200 border border-amber-500/50">🛡️ ${esc(ab.save || 'Save')} DC ${dcEval.dc}</span>`;
@@ -4734,7 +4734,7 @@
       let dcNote = '';
       if (ab.save || ab.dcFormula) {
         const dcEval = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.evaluateAbilitySaveDc === 'function')
-          ? RuleEngine.evaluateAbilitySaveDc({ dcFormula: ab.dcFormula, benefit: ab.benefit }, character)
+          ? RuleEngine.evaluateAbilitySaveDc({ dcFormula: ab.dcFormula, benefit: ab.benefit, spellLevel: ab.spellLevel }, character)
           : null;
         if (dcEval) {
           dcNote = `🛡️ ${ab.save || 'Save'} DC ${dcEval.dc} [${dcEval.breakdown}]`;

@@ -5385,6 +5385,28 @@ function runDeriveSheetTests() {
       badRecipes.length === 0,
       badRecipes.join(' | ')
     );
+    // 10. @spellLevel: "spell level" in a DC formula reads the sub-power's Spell Level field.
+    const slaFeat = {
+      schemaVersion: 3, id: 'custom-sla-test', blueprint: 'feat', type: 'Feat', name: 'Fey Heritage', effects: [],
+      powers: [{ id: 'pw-sla', kind: 'inline', name: 'Faerie Bolt', action: 'Standard', usage: { mode: 'perDay', uses: 3 },
+        spellLevel: 3, save: { type: 'Reflex', effect: 'Half' }, dcFormula: '10 + spell level + Cha', area: '20-ft.-radius Burst',
+        effects: [{ type: 'roll', kind: 'Damage', count: 3, die: 'd6', dmgType: 'Fire' }] }]
+    };
+    const slaCard = RuleEngine.deriveSpecialAttacks(baseChar({
+      abilities: { str: 10, dex: 10, con: 14, int: 10, wis: 10, cha: 14 },
+      feats: [{ id: 'custom-sla-test', name: 'Fey Heritage' }], customEntries: { 'custom-sla-test': slaFeat }
+    }), null, []).find(a => a.powerId === 'pw-sla');
+    check(
+      '@spellLevel: "10 + spell level + Cha" on a Spell Level 3 power with Cha 14 gives DC 15',
+      Boolean(slaCard) && slaCard.dc === 15 && /3 Spell Lvl/.test(slaCard.dcBreakdown) &&
+      RuleEngine.inspectFormula('10 + spell level + Cha').normalized === '10 + @spellLevel + @chaMod',
+      JSON.stringify(slaCard && { dc: slaCard.dc, dcBreakdown: slaCard.dcBreakdown })
+    );
+    check(
+      '@spellLevel: dotted runtime tokens keep their name (@input.spellLevel is not rewritten)',
+      RuleEngine.inspectFormula('@input.spellLevel * 10').normalized === '@input.spellLevel * 10',
+      RuleEngine.inspectFormula('@input.spellLevel * 10').normalized
+    );
     check(
       'Race "Acid Breath" special attack carries its delivery (Breath Weapon) on the card data',
       Boolean(raceAcid && raceAcid.delivery && raceAcid.delivery.isBreath),
