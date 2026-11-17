@@ -3762,7 +3762,7 @@
     const rawTarget = String(payload.featName || payload.featString || '').trim();
     const cleanTarget = rawTarget
       .replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️\s]+(\[.*?\])?\s*/i, '')
-      .replace(/^DM\s*Boon:\s*/i, '')
+      .replace(/^Homebrew:\s*/i, '')
       .replace(/^Flaw:\s*/i, '')
       .trim()
       .toLowerCase();
@@ -3775,7 +3775,7 @@
     const matchesFeatStr = function (s) {
       const cleaned = String(s || '')
         .replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️\s]+(\[.*?\])?\s*/i, '')
-        .replace(/^DM\s*Boon:\s*/i, '')
+        .replace(/^Homebrew:\s*/i, '')
         .replace(/^Flaw:\s*/i, '')
         .trim()
         .toLowerCase();
@@ -4610,8 +4610,8 @@
 
   function _stripBoonPrefix(val) {
     return String(val || '')
-      .replace(/^\[DM\s*Boon\]\s*/i, '')
-      .replace(/^DM\s*Boon:\s*/i, '')
+      .replace(/^\[Homebrew\]\s*/i, '')
+      .replace(/^Homebrew:\s*/i, '')
       .trim();
   }
 

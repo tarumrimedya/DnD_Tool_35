@@ -232,14 +232,14 @@ const RuleMaster = {
       .trim();
     if (!cleanStr) return prefix;
 
-    // 2. Check if this is a Homebrew / Grant that can be synthesized deterministically
+    // 2. Check if this is a Homebrew entry / Grant that can be synthesized deterministically
     const isBoonQuery = String(categoryHint || '').toLowerCase().includes('boon')
-      || /^(?:dm\s*boon|dm\s*grant|boon|grant)\b/i.test(cleanStr)
+      || /^(?:homebrew|dm\s*grant|boon|grant)\b/i.test(cleanStr)
       || /\bskill\s*:/i.test(cleanStr);
 
     if (isBoonQuery && typeof window !== 'undefined' && typeof window.synthesizeHomebrewFromQuery === 'function') {
       const synth = window.synthesizeHomebrewFromQuery(cleanStr, '', 'Homebrew');
-      if (synth && synth.name && !/^dm\s*boon$/i.test(synth.name.trim())) {
+      if (synth && synth.name && !/^homebrew$/i.test(synth.name.trim())) {
         return prefix + synth.name;
       }
     }
@@ -262,7 +262,7 @@ const RuleMaster = {
     let boonPrefix = '';
     if (isBoonQuery) {
       cleanStr = cleanStr
-        .replace(/^(?:dm\s*boon|dm\s*grant|boon|grant)[\s:\-–—,\.]*/i, '')
+        .replace(/^(?:homebrew|dm\s*grant|boon|grant)[\s:\-–—,\.]*/i, '')
         .replace(/^(?:skill|stat|ability|save)[\s:\-–—,\.]*/i, '')
         .trim();
       boonPrefix = 'Homebrew: ';
@@ -815,7 +815,7 @@ const RuleMaster = {
       }
     }
     rawTitle = rawTitle
-      .replace(/^(?:special\s*ability|racial\s*trait|class\s*feature|feat|dm\s*boon|boon)\s*:\s*/i, '')
+      .replace(/^(?:special\s*ability|racial\s*trait|class\s*feature|feat|homebrew|boon)\s*:\s*/i, '')
       .replace(/\b(?:deals?|dealing|damage|dmg|takes?|taking|suffers?|usable\s+every|usable\s+once|in\s+a\s+\d|cone\s+of|line\s+of|range\s*:|save\s*:|dc\s*:|recharge\s*:|cooldown\s*:)\b[\s\S]*$/i, '')
       .replace(/[\r\n|,;:\-•()]+$/g, '')
       .trim();
@@ -1966,23 +1966,59 @@ const RuleMaster = {
     };
   },
 
+  // Master DB → Rule Crafter launcher. Every save lands in Master DB (character.customDb)
+  // in addition to the scope chosen inside the Crafter (character override / campaign library).
+  openMasterDbRuleCrafter(entry = null) {
+    if (!window.DnDUI || typeof window.DnDUI.openRuleCrafter !== 'function') return false;
+    const originalId = entry && entry.id ? entry.id : undefined;
+    window.DnDUI.openRuleCrafter({
+      entry: entry || undefined,
+      originalId,
+      allowCharacterScope: true,
+      context: { allowCharacterScope: true },
+      onSave: (msg) => this.saveCrafterEntryToMasterDb(msg, originalId)
+    });
+    return true;
+  },
+
+  saveCrafterEntryToMasterDb(msg, originalId = null) {
+    if (!msg || !msg.entry || !msg.entry.name) return false;
+    const origId = msg.originalId || originalId || null;
+    let saved = null;
+    const bridge = window.CharStore && window.CharStore.StudioBridge;
+    if (bridge && typeof bridge.saveFromCrafter === 'function') {
+      const res = bridge.saveFromCrafter(msg.entry, {
+        saveScope: msg.saveScope,
+        originalId: origId,
+        context: Object.assign({ allowCharacterScope: true }, msg.context || {})
+      });
+      if (res && res.ok && res.entry) saved = res.entry;
+    }
+    if (!saved) {
+      saved = JSON.parse(JSON.stringify(msg.entry));
+      saved.schemaVersion = 3;
+      if (!saved.id) saved.id = origId || ('crafted_' + String(saved.name).toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, ''));
+    }
+    if (typeof masterDb === 'undefined' || !Array.isArray(masterDb)) return false;
+    const db = masterDb;
+    const idx = db.findIndex(m => m && (m.id === saved.id || (origId && m.id === origId)));
+    if (idx >= 0) db[idx] = saved;
+    else db.unshift(saved);
+    if (typeof character !== 'undefined' && character && character.customDb !== db) character.customDb = db;
+    if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
+    this.renderTable();
+    if (typeof renderAll === 'function') renderAll();
+    notify(`✅ "${saved.name}" saved to Master DB.`, 'success');
+    return true;
+  },
+
   openMasterDbEditorModal(mode = 'manual', entry = null) {
     const modal = document.getElementById('modal-master-db-editor');
     const body = document.getElementById('modal-master-db-editor-body');
     const targetId = mode === 'forge' ? 'inline-mode-forge' : 'inline-mode-manual';
     const targetPanel = document.getElementById(targetId);
     if (!modal || !body || !targetPanel) {
-      if (window.DnDUI && typeof window.DnDUI.openRuleCrafter === 'function') {
-        window.DnDUI.openRuleCrafter({
-          entry: entry || undefined,
-          originalId: entry && entry.id ? entry.id : undefined,
-          allowCharacterScope: true,
-          context: { allowCharacterScope: true },
-          onSave: () => {
-            if (typeof this.renderTable === 'function') this.renderTable();
-          }
-        });
-      }
+      this.openMasterDbRuleCrafter(entry);
       return;
     }
 
@@ -4098,7 +4134,7 @@ Return valid JSON only matching:
       return [this.ensureV2(structuredStatBlock)];
     }
 
-    // 0b. Check if query is a Homebrew / Skill or Stat Grant (e.g. "homebrew ride +4", "boon, skill: +ride")
+    // 0b. Check if query is a Homebrew entry / Skill or Stat Grant (e.g. "homebrew ride +4", "boon, skill: +ride")
     if (typeof window !== 'undefined' && typeof window.synthesizeHomebrewFromQuery === 'function') {
       const synthBoon = window.synthesizeHomebrewFromQuery(cleanKey, '', '');
       if (synthBoon && synthBoon.name) {
@@ -6162,16 +6198,7 @@ Return valid JSON only matching:
   // ====================================================
   switchInlineMode(mode) {
     if (mode === 'forge' || mode === 'manual') {
-      if (window.DnDUI && typeof window.DnDUI.openRuleCrafter === 'function') {
-        window.DnDUI.openRuleCrafter({
-          allowCharacterScope: true,
-          context: { allowCharacterScope: true },
-          onSave: () => {
-            if (typeof this.renderTable === 'function') this.renderTable();
-          }
-        });
-        return;
-      }
+      if (this.openMasterDbRuleCrafter()) return;
       mode = 'search';
     }
     // If modal was open and user clicks an inline mode tab directly, dock panels back to inline first
@@ -8604,15 +8631,7 @@ if (typeof window !== 'undefined' && window.Actions && typeof window.Actions.reg
     RuleMaster.switchInlineMode(data.mode);
   });
   window.Actions.register('mdb:open-rule-crafter', () => {
-    if (window.DnDUI && typeof window.DnDUI.openRuleCrafter === 'function') {
-      window.DnDUI.openRuleCrafter({
-        allowCharacterScope: true,
-        context: { allowCharacterScope: true },
-        onSave: () => {
-          if (typeof RuleMaster.renderTable === 'function') RuleMaster.renderTable();
-        }
-      });
-    }
+    RuleMaster.openMasterDbRuleCrafter();
   });
   window.Actions.register('mdb:inline-ai-rule-keydown', (el, data, event) => {
     if (event && event.key === 'Enter') RuleMaster.queryInlineAiRule();

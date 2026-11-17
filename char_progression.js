@@ -1633,7 +1633,7 @@
       // Parametric classification predicates
       const quickSlotCharLevel = (activeQuickLevelIndex !== null && activeQuickLevelIndex !== undefined) ? Number(activeQuickLevelIndex) + 1 : (Number(character.level) || 0);
       const isFighterFeat = f => isFighterBonusFeatEntry(f, quickSlotCharLevel);
-      const isBoonFeat = f => Boolean(f.category === 'Homebrew' || f.category === 'DM Grant' || f.type === 'DM Grant' || f.type === 'Homebrew' || (f.source && f.source.toLowerCase().includes('campaign')));
+      const isBoonFeat = f => Boolean(f.category === 'Homebrew' || f.category === 'DM Grant' || f.type === 'DM Grant' || f.type === 'Homebrew' || f.isHomebrewBoon === true || /^Homebrew\b|Campaign Grant/i.test(String(f.source || '')));
       const isFlawFeat = f => Boolean(f.category === 'Flaw' || f.type === 'Flaw' || (f.name || '').toLowerCase().startsWith('flaw:'));
 
       // Warlock Invocations are ONLY allowed when the slot is explicitly 'Warlock Invocation' or 'Homebrew' (NEVER in Regular Feat, Human Bonus Feat / Racial Trait, Flaw Bonus Feat, or Class Bonus Feat)
@@ -1982,7 +1982,7 @@
       }
       const catalog = getCombinedFeatCatalog();
       const pickCatVal = document.getElementById('quick-feat-category')?.value || 'Regular Feat';
-      // UA traits / skill tricks resolve from their own catalog (never synthesized as a Homebrew)
+      // UA traits / skill tricks resolve from their own catalog (never synthesized as a Homebrew entry)
       let found = TRAIT_OPTION_TYPES.includes(pickCatVal) ? findTraitOptionByName(featName) : null;
       if (!found) found = catalog.find(f => f.name.toLowerCase() === featName.toLowerCase() || f.name.toLowerCase() === featName.toLowerCase().replace(/\(.*?\)/g, '').trim());
       if (!found && window._lastQuickFeatAiV2Entry && (window._lastQuickFeatAiV2Entry.name || '').toLowerCase().trim() === featName.toLowerCase().trim()) {
@@ -2642,7 +2642,7 @@
       }
 
       const isExplicitBoon = categoryHint === 'Homebrew'
-        || /\b(dm\s*boon|boon|grant)\b/i.test(q)
+        || /\b(homebrew|boon|grant)\b/i.test(q)
         || /\bskill\s*:/i.test(q)
         || /^[+-]\d+\s+[a-z]/i.test(q)
         || /([+-]?\d+)\s*(?:\/|\bper\b|\bevery\b)\s*(\d+)?\s*(?:lvl|level|cl)s?\b/i.test(combined);
@@ -2803,7 +2803,7 @@
       if (!query) return null;
       const qLower = query.toLowerCase().trim();
       // Do not fuzzy-hijack explicit Homebrew / skill grant queries with unrelated catalog entries
-      if (/\b(dm\s*boon|boon|grant)\b/i.test(qLower) || /\bskill\s*:/i.test(qLower) || /^[+-]\d+\s+[a-z]/i.test(qLower)) {
+      if (/\b(homebrew|boon|grant)\b/i.test(qLower) || /\bskill\s*:/i.test(qLower) || /^[+-]\d+\s+[a-z]/i.test(qLower)) {
         if (Array.isArray(masterDb)) {
           const exactBoon = masterDb.find(item => (item.name || '').toLowerCase().trim() === qLower);
           if (exactBoon) {
@@ -3009,7 +3009,7 @@
           if (nameInput) nameInput.value = featName;
           if (benefitInput) benefitInput.value = featBenefit;
           if (catSel) {
-            if (categoryHint === 'Homebrew' || /dm\s*boon/i.test(featName) || /dm\s*boon/i.test(featSource)) {
+            if (categoryHint === 'Homebrew' || /homebrew/i.test(featName) || /homebrew/i.test(featSource)) {
               catSel.value = 'Homebrew';
             } else if (featType === 'Special Ability' || categoryHint === 'Special Ability') {
               catSel.value = 'Special Ability';
@@ -4579,7 +4579,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
 
         // Parametric classification predicates
           const isFighterFeat = f => isFighterBonusFeatEntry(f, (character.levelProgression || []).length + 1);
-        const isBoonFeat = f => Boolean(f.category === 'Homebrew' || f.category === 'DM Grant' || f.type === 'DM Grant' || f.type === 'Homebrew' || (f.source && f.source.toLowerCase().includes('campaign')));
+        const isBoonFeat = f => Boolean(f.category === 'Homebrew' || f.category === 'DM Grant' || f.type === 'DM Grant' || f.type === 'Homebrew' || f.isHomebrewBoon === true || /^Homebrew\b|Campaign Grant/i.test(String(f.source || '')));
         const isFlawFeat = f => Boolean(f.category === 'Flaw' || f.type === 'Flaw' || (f.name || '').toLowerCase().startsWith('flaw:'));
 
         // 1. Filter by category
@@ -7192,7 +7192,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       if (statHint) {
         statHint.textContent = (row.level % 4 === 0)
           ? `Level ${row.level} grants a permanent +1 ability score increase per D&D 3.5e RAW (every 4th character level).`
-          : `D&D 3.5e RAW: At levels 4, 8, 12, 16, and 20, add +1 to one ability score (or assign as a homebrew).`;
+          : `D&D 3.5e RAW: At levels 4, 8, 12, 16, and 20, add +1 to one ability score (or assign as a Homebrew entry).`;
       }
 
       const searchInp = document.getElementById('change-class-search-input');
@@ -8131,8 +8131,8 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
                     ${featsList.length > 0 ? featsList.map(f => {
                       const safeTip = (getFeatTooltipText(f.name) || f.benefit || f.source || 'View rule details').replace(/"/g, '&quot;');
                       const catBadge = f.category && f.category !== 'Feat' ? `<span class="text-[10px] opacity-75 font-normal">(${safeEscapeHtml(f.category)})</span>` : '';
-                      const isBoonFeat = Boolean(f.isHomebrewBoon || /\[DM\s*Boon\]|^DM\s*Boon:/i.test(f.name || ''));
-                      const cleanBoonName = String(f.name || '').replace(/^\[DM\s*Boon\]\s*/i, '').replace(/^DM\s*Boon:\s*/i, '').trim();
+                      const isBoonFeat = Boolean(f.isHomebrewBoon || /\[Homebrew\]|^Homebrew:/i.test(f.name || ''));
+                      const cleanBoonName = String(f.name || '').replace(/^\[Homebrew\]\s*/i, '').replace(/^Homebrew:\s*/i, '').trim();
                       return `
                         <button type="button" data-action="${isBoonFeat ? 'entity:inspect' : 'progression:show-feat-detail'}" ${isBoonFeat ? `data-entity-kind="boon" data-entity-name="${UI.escapeAttr(cleanBoonName || f.name || '')}"` : `data-feat-name="${UI.escapeAttr(f.name || '')}" data-feat-type="feat"`} title="${safeTip}" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-indigo-950/80 hover:bg-indigo-900 text-indigo-200 border border-indigo-600/60 hover:border-indigo-400 shadow-sm transition active:scale-95 cursor-pointer text-left">
                           <span class="text-amber-400 shrink-0">🎖️</span>
@@ -8393,7 +8393,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         // Group & sort feats within the same level for clean, deterministic visual organization
         const extractFeatSortName = (s) => String(s || '')
           .replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️\s]+(\[.*?\])?\s*/i, '')
-          .replace(/^DM\s*Boon:\s*/i, '')
+          .replace(/^Homebrew:\s*/i, '')
           .replace(/^Flaw:\s*/i, '')
           .trim()
           .toLowerCase();
@@ -8597,8 +8597,8 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
             bgCls = 'bg-amber-950/80 hover:bg-amber-900 text-amber-300 border-amber-600/70';
             icon = '🌟';
             const boonCore = labelText
-              .replace(/^\[DM\s*Boon\]\s*/i, '')
-              .replace(/^DM\s*Boon:\s*/i, '')
+              .replace(/^\[Homebrew\]\s*/i, '')
+              .replace(/^Homebrew:\s*/i, '')
               .trim();
             boonCoreName = boonCore;
             labelText = `Homebrew: ${boonCore}`;

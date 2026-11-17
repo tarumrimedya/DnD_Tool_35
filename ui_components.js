@@ -849,7 +849,7 @@
     const matches = (item) => {
       if (!item) return false;
       if (typeof item === 'string') {
-        const clean = item.replace(/^\[DM\s*Boon\]\s*/i, '').replace(/^DM\s*Boon:\s*/i, '').trim().toLowerCase();
+        const clean = item.replace(/^\[Homebrew\]\s*/i, '').replace(/^Homebrew:\s*/i, '').trim().toLowerCase();
         return targetName && (item.trim().toLowerCase() === targetName || clean === targetName);
       }
       if (targetId && (item.id === targetId || item.customEntryId === targetId)) return true;
