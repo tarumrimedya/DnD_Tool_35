@@ -4845,7 +4845,7 @@
 
   function patternGeneratorStack(p, maxLv, unitLbl) {
     return stack('b-blue',
-      H(L('🔁 Repeating Feature Generator'), btn('gen-pattern', '⚡ Apply to Levels', 'fs-xs fs-primary')) +
+      H(L('🔁 Repeating Feature Generator'), '<span class="fs-row" style="margin-left:auto;gap:6px">' + btn('gen-pattern', '⚡ Apply to Levels', 'fs-xs fs-primary') + delBtn('toggle-prog-pattern', {}) + '</span>') +
       G(3,
         F('Every N ' + unitLbl + 's', sel('progression.pattern.every', p.pattern.every, range(1, 10), { narrow: true, num: true })) +
         F('Start ' + unitLbl, sel('progression.pattern.start', Math.min(p.pattern.start, maxLv), range(1, maxLv), { narrow: true, num: true })) +
@@ -4893,10 +4893,11 @@
         '</div>';
       return stack('b-slate', '<div class="lego-lvl-stack">' + topRow + actRow + editors + (rowEditors ? '<div class="lego-lvl-gains" style="margin-top:6px">' + rowEditors + '</div>' : '') + '</div>');
     }).join('');
-    const patBar = !isCls ? patternGeneratorStack(p, maxLv, p.mode === 'hd' ? 'HD' : 'Lvl') : '';
+    // Optional tool, closed by default: opened from the table header, closed with its own ✕.
+    const patBar = !isCls && S.ui.progPatternOpen ? patternGeneratorStack(p, maxLv, p.mode === 'hd' ? 'HD' : 'Lvl') : '';
     const head = isCls
       ? H(L('📊 Level Progression (1–' + maxLv + ')'))
-      : H(L('📊 Level / HD Table (1–' + maxLv + ')'), '<span class="fs-row" style="margin-left:auto;gap:6px">' + btn('toggle-prog-empty', S.ui.progHideEmpty ? '👁️ Show All Rows' : '🗜️ Hide Empty Rows', 'fs-xs') + delBtn('detach-progression', {}) + '</span>') +
+      : H(L('📊 Level / HD Table (1–' + maxLv + ')'), '<span class="fs-row" style="margin-left:auto;gap:6px">' + (S.ui.progPatternOpen ? '' : btn('toggle-prog-pattern', '+ 🔁 Repeating Feature', 'fs-xs fs-dashed')) + btn('toggle-prog-empty', S.ui.progHideEmpty ? '👁️ Show All Rows' : '🗜️ Hide Empty Rows', 'fs-xs') + delBtn('detach-progression', {}) + '</span>') +
         G(2,
           F('Progression Mode', sel('progression.mode', p.mode, PROGRESSION_MODES, { narrow: true })) +
           F('Max Level / HD', sel('progression.maxLevel', maxLv, [5, 10, 12, 15, 20].map((n) => [n, String(n)]), { narrow: true, num: true }))
@@ -5608,6 +5609,7 @@
     'attach-progression': () => { attachProgression(S.entry); toast('Attached: Level / HD Table'); renderAll(); },
     'detach-progression': () => { if (S.entry.blueprint === 'class') return; S.entry.facets = S.entry.facets.filter((f) => f !== 'progression'); toast('Detached: Level / HD Table', 'warn'); renderAll(); },
     'toggle-prog-empty': () => { S.ui.progHideEmpty = !S.ui.progHideEmpty; renderFacets(); },
+    'toggle-prog-pattern': () => { S.ui.progPatternOpen = !S.ui.progPatternOpen; renderFacets(); },
     'attach-prereqs': () => { ensureFacet('prereqs'); toast('Attached: Prerequisites'); renderAll(); },
     'detach-prereqs': () => { if (S.entry.blueprint === 'feat' || S.entry.blueprint === 'class') return; S.entry.facets = S.entry.facets.filter((f) => f !== 'prereqs'); toast('Detached: Prerequisites', 'warn'); renderAll(); },
     'toggle-json': (el, ev) => { if (ev && ev.target && ev.target.closest && ev.target.closest('[data-action="copy-json"],[data-action="toggle-import-json"]')) return; S.ui.jsonOpen = !S.ui.jsonOpen; renderJson(); },
