@@ -12039,7 +12039,9 @@ const RuleEngine = {
         ? Number(cdEntry.readyRound || 0)
         : Number(cdEntry || 0);
       const remFromTactical = Math.max(0, readyRoundFromTactical - curRound);
-      const remFromDirect = Number(w.specialAttackCooldowns?.[key]) || 0;
+      // `specialAttackCooldowns[key]` stores the rolled wait (it never counts down), so it is only a fallback
+      // for old saves without a round-anchored `tactical.abilityCooldowns` entry.
+      const remFromDirect = (cdEntry && typeof cdEntry === 'object') ? 0 : (Number(w.specialAttackCooldowns?.[key]) || 0);
       const remFromRes = Number(spec.roundRes?.cooldownRemaining) || 0;
       const cooldownRemaining = Math.max(remFromTactical, remFromDirect, remFromRes);
       const readyRound = readyRoundFromTactical > curRound

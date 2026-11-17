@@ -329,7 +329,7 @@
   function blankPower(kind, o) {
     return Object.assign({
       id: uid('pw'), kind: kind, name: kind === 'inline' ? 'New Power' : '', ref: null, grantMode: 'cast',
-      use: blankUse('perDay'), action: 'Standard', cl: 5, dc: 0, duration: '',
+      use: blankUse('perDay'), action: 'Standard', cl: '', dc: 0, duration: '',
       attack: 'none', attackOn: false, range: '', area: '',
       save: { type: 'None', effect: 'Negates' }, effects: [], text: '', exportStandalone: false
     }, o || {});
@@ -4808,7 +4808,7 @@
     ) + G(3,
       F('Power Name', pw.kind === 'inline' ? inp(p + '.name', pw.name, { ph: 'Sub-power name' }) : '<span class="fs-pill purple">🔮 ' + esc(pw.ref ? pw.ref.name : pw.name) + '</span>') +
       F('Action', sel(p + '.action', pw.action, ACTIONS, { narrow: true })) +
-      F('Caster Level', inp(p + '.cl', pw.cl, { num: true })) +
+      F('Caster Level', inp(p + '.cl', num(pw.cl) || '', { num: true, ph: 'Character CL' })) +
       usageFields(p + '.use', pw.use, 3)
     );
     let kids = '';

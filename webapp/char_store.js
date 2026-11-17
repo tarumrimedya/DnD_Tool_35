@@ -1498,6 +1498,14 @@
       setStoreOutcome(stateObj, { status: 'invalid_payload' });
       return doc;
     }
+    // A recharging ability (breath weapon, cooldown power) cannot be used before its ready round.
+    const cdRec = doc.tactical && doc.tactical.abilityCooldowns && doc.tactical.abilityCooldowns[abilityKey];
+    const readyAt = cdRec && typeof cdRec === 'object' ? (Number(cdRec.readyRound) || 0) : 0;
+    const roundNow = Number((doc.tactical && doc.tactical.round) || doc.encounterRound) || 1;
+    if (!payload.force && readyAt > roundNow) {
+      setStoreOutcome(stateObj, { status: 'on_cooldown', abilityKey, readyRound: readyAt, roundsLeft: readyAt - roundNow });
+      return doc;
+    }
     const usesMax = Math.max(0, Number(payload.usesMax) || 0);
     const usageMode = String(payload.usageMode || '');
     if (usesMax && (usageMode === 'perDay' || usageMode === 'perEncounter' || usageMode === 'charges')) {

@@ -4672,6 +4672,18 @@
         ? abilities[abilityKey]
         : abilities.find(a => a.key === abilityKey || a.name.toLowerCase() === String(abilityKey || '').toLowerCase());
       if (!ab) return;
+      if (ab.isOnCooldown) {
+        if (typeof showDiceTopToast === 'function') {
+          const left = Number(ab.cooldownRemaining) || 0;
+          showDiceTopToast({
+            icon: '⏳',
+            title: 'Recharging',
+            breakdown: `${ab.name} is recharging: ${left} ${left === 1 ? 'round' : 'rounds'} left${ab.readyRound ? ` (Ready R${ab.readyRound})` : ''}. Use ↺ Ready to override.`,
+            total: `${left} left`
+          }, { stack: true, toastId: 'special-attack-cooldown-toast' });
+        }
+        return;
+      }
 
       window._lastCombatActivationUndo = {
         abilityKey: ab.key,

@@ -5328,6 +5328,31 @@ function runDeriveSheetTests() {
       tAtk({ feats: ['Weapon Focus (Ray)'] }, { attackKind: 'ranged-touch', name: 'Scorching Ray' }).total === 9,
       'proficiency / ray name'
     );
+    // 8. Recharge: a cooldown power cannot be used again before its ready round, and the cooldown counts down.
+    const cdChar = baseChar({
+      race: 'Black Dragon Avatar', customEntries: { 'custom-black-dragon-avatar': avatarRace },
+      tactical: { round: 1 }, encounterRound: 1
+    });
+    CharStore.dispatch({ type: 'doc/replace', payload: cdChar, meta: { skipHistory: true } });
+    const cdKey = raceAcid ? raceAcid.key : 'missing';
+    CharStore.dispatch({ type: 'combat/specialAttackRoll', payload: { abilityKey: cdKey, name: 'Acid Breath', cooldownRounds: 3, actionType: 'move' } });
+    const firstUse = CharStore.getLastOutcome().status;
+    CharStore.dispatch({ type: 'combat/specialAttackRoll', payload: { abilityKey: cdKey, name: 'Acid Breath', cooldownRounds: 2, actionType: 'move' } });
+    const secondUse = CharStore.getLastOutcome();
+    const cdCard = () => RuleEngine.deriveSpecialAttacks(CharStore.getDoc(), null, []).find(a => a.key === cdKey) || {};
+    const leftAtR1 = cdCard().cooldownRemaining;
+    CharStore.dispatch({ type: 'combat/advanceRound', payload: {} });
+    CharStore.dispatch({ type: 'combat/advanceRound', payload: {} });
+    CharStore.dispatch({ type: 'combat/advanceRound', payload: {} });
+    const readyAtR4 = cdCard();
+    CharStore.dispatch({ type: 'combat/specialAttackRoll', payload: { abilityKey: cdKey, name: 'Acid Breath', cooldownRounds: 2, actionType: 'move' } });
+    const thirdUse = CharStore.getLastOutcome().status;
+    check(
+      'Recharge: Acid Breath used in round 1 with a 3-round recharge is refused until round 4, then usable again',
+      firstUse === 'special_attack_rolled' && secondUse.status === 'on_cooldown' && secondUse.readyRound === 4 &&
+      leftAtR1 === 3 && readyAtR4.cooldownRemaining === 0 && readyAtR4.isOnCooldown === false && thirdUse === 'special_attack_rolled',
+      JSON.stringify({ firstUse, secondUse, leftAtR1, readyAtR4: readyAtR4.cooldownRemaining, thirdUse })
+    );
     check(
       'Race "Acid Breath" special attack carries its delivery (Breath Weapon) on the card data',
       Boolean(raceAcid && raceAcid.delivery && raceAcid.delivery.isBreath),
