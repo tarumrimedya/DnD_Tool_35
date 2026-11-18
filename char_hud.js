@@ -4174,28 +4174,6 @@
     // =========================================================================
     // 🧬 SPOTLIGHT RACE SELECTOR & SEARCH COMBOBOX
     // =========================================================================
-    const DND35_RACE_DEFINITIONS = [
-      // 1. Standart D&D 3.5e RAW Irkları
-      { name: 'Human', label: 'Human', category: 'Core D&D 3.5e RAW Races', icon: '👤', size: 'Medium', speed: 30, tags: ['core', 'bonus feat', 'flexible', 'insan'] },
-      { name: 'Elf', label: 'Elf', category: 'Core D&D 3.5e RAW Races', icon: '🏹', size: 'Medium', speed: 30, tags: ['core', '+2 dex', '-2 con', 'sleep immunity'] },
-      { name: 'Dwarf', label: 'Dwarf', category: 'Core D&D 3.5e RAW Races', icon: '🛡️', size: 'Medium', speed: 20, tags: ['core', '+2 con', '-2 cha', 'darkvision', 'cuce'] },
-      { name: 'Halfling', label: 'Halfling', category: 'Core D&D 3.5e RAW Races', icon: '🍀', size: 'Small', speed: 20, tags: ['core', '+2 dex', '-2 str', 'luck', 'bucukluk'] },
-      { name: 'Gnome', label: 'Gnome', category: 'Core D&D 3.5e RAW Races', icon: '🎩', size: 'Small', speed: 20, tags: ['core', '+2 con', '-2 str', 'illusion', 'gnom'] },
-      { name: 'Half-Elf', label: 'Half-Elf', category: 'Core D&D 3.5e RAW Races', icon: '✨', size: 'Medium', speed: 30, tags: ['core', 'diplomat', 'adaptable', 'yari-elf'] },
-      { name: 'Half-Orc', label: 'Half-Orc', category: 'Core D&D 3.5e RAW Races', icon: '⚔️', size: 'Medium', speed: 30, tags: ['core', '+2 str', '-2 int', 'darkvision', 'yari-ork'] },
-
-      // 2. Genişletilmiş Resmi Irklar (SRD & Ek Kitaplar)
-      { name: 'Aasimar', label: 'Aasimar (Planetouched)', category: 'Expanded Official Races', icon: '😇', size: 'Medium', speed: 30, tags: ['planetouched', '+2 wis', '+2 cha', 'daylight'] },
-      { name: 'Tiefling', label: 'Tiefling (Planetouched)', category: 'Expanded Official Races', icon: '😈', size: 'Medium', speed: 30, tags: ['planetouched', '+2 dex', '+2 int', '-2 cha', 'darkness'] },
-      { name: 'Dragonborn', label: 'Dragonborn of Bahamut', category: 'Expanded Official Races', icon: '🐲', size: 'Medium', speed: 30, tags: ['races of dragon', '+2 con', '-2 dex', 'breath', 'ejderha'] },
-      { name: 'Drow', label: 'Drow (Dark Elf)', category: 'Expanded Official Races', icon: '🕷️', size: 'Medium', speed: 30, tags: ['underdark', '+2 dex', '+2 int', 'spell resistance', 'kara elf'] },
-      { name: 'Orc', label: 'Orc', category: 'Expanded Official Races', icon: '🪓', size: 'Medium', speed: 30, tags: ['monster manual', '+4 str', 'darkvision', 'ork'] },
-      { name: 'Goblin', label: 'Goblin', category: 'Expanded Official Races', icon: '👺', size: 'Small', speed: 30, tags: ['fast small', '+2 dex', '-2 str', 'stealth'] },
-      { name: 'Kobold', label: 'Kobold', category: 'Expanded Official Races', icon: '🦎', size: 'Small', speed: 30, tags: ['dragonblood', '+2 dex', '+1 natural ac'] },
-      { name: 'Goliath', label: 'Goliath (Races of Stone)', category: 'Expanded Official Races', icon: '⛰️', size: 'Medium', speed: 30, tags: ['races of stone', '+4 str', 'powerful build'] },
-      { name: 'Warforged', label: 'Warforged (Eberron)', category: 'Expanded Official Races', icon: '🤖', size: 'Medium', speed: 30, tags: ['living construct', '+2 con', '-2 wis', '-2 cha', 'eberron'] }
-    ];
-
     let _raceSpotlightOpen = false;
 
     function toggleRaceSpotlightDropdown() {
@@ -4278,31 +4256,36 @@
       }
     }
 
+    const RACE_PICKER_CORE_CATEGORY = 'Core D&D 3.5e RAW Races';
+    const RACE_PICKER_EXPANDED_CATEGORY = 'Expanded Official Races';
+
+    // Picker rows come only from Race records: `icon` and `tags` (the 'core' tag marks the PHB races) are record data.
     function getAllRacesForSpotlight() {
       ensureCustomRacesLoaded();
       const C = window.SrdCompendium;
-      // Static definitions only supply picker metadata (icon/label/tags); size and speed come from the DB record when loaded.
-      const list = DND35_RACE_DEFINITIONS.map((r) => {
-        const rec = (C && typeof C.getByName === 'function') ? C.getByName(r.name, 'Race') : null;
-        return rec ? Object.assign({}, r, { size: rec.size || r.size, speed: rec.baseSpeed || r.speed }) : Object.assign({}, r);
-      });
-      const known = new Set(list.map((r) => r.name.toLowerCase()));
       const catalog = (C && typeof C.getAllLoaded === 'function') ? C.getAllLoaded() : [];
+      const known = new Set();
+      const core = [];
+      const expanded = [];
       catalog.forEach((item) => {
         if (!item || !item.name || String(item.type || '').toLowerCase() === 'template' || !isRaceEntry(item)) return;
         if (known.has(item.name.toLowerCase())) return;
         known.add(item.name.toLowerCase());
-        list.push({
+        const tags = Array.isArray(item.tags) ? item.tags.map((t) => String(t).toLowerCase()) : [];
+        const isCore = tags.includes('core');
+        (isCore ? core : expanded).push({
           id: item.id,
           name: item.name,
           label: item.name,
-          category: 'Expanded Official Races',
-          icon: '🧬',
+          category: isCore ? RACE_PICKER_CORE_CATEGORY : RACE_PICKER_EXPANDED_CATEGORY,
+          icon: item.icon || '🧬',
           size: item.size || 'Medium',
           speed: item.baseSpeed || 30,
-          tags: [String(item.source || '').toLowerCase(), item.name.toLowerCase()].filter(Boolean)
+          tags: tags.concat([String(item.source || '').toLowerCase()]).filter(Boolean)
         });
       });
+      const byName = (a, b) => a.name.localeCompare(b.name);
+      const list = core.sort(byName).concat(expanded.sort(byName));
       getHomebrewRaceEntries().forEach((item) => {
         if (String(item.type || '').toLowerCase() === 'template' || known.has(item.name.toLowerCase())) return;
         known.add(item.name.toLowerCase());
@@ -4311,7 +4294,7 @@
           name: item.name,
           label: item.name + ' (Homebrew)',
           category: 'Homebrew Races',
-          icon: '🔮',
+          icon: item.icon || '🔮',
           size: item.size || 'Medium',
           speed: item.baseSpeed || 30,
           tags: ['homebrew', item.name.toLowerCase()]

@@ -23499,6 +23499,7 @@
   {
     "schemaVersion": 3,
     "id": "race-goblin",
+    "icon": "👺",
     "blueprint": "race",
     "name": "Goblin",
     "type": "Race",
@@ -23589,6 +23590,7 @@
   {
     "schemaVersion": 3,
     "id": "race-orc",
+    "icon": "🪓",
     "blueprint": "race",
     "name": "Orc",
     "type": "Race",
@@ -23868,6 +23870,7 @@
   {
     "schemaVersion": 3,
     "id": "race-half-elf",
+    "icon": "✨",
     "blueprint": "race",
     "name": "Half-Elf",
     "type": "Race",
@@ -23953,6 +23956,7 @@
     "text": "Half-elves are not truly an elf subrace, but they are often mistaken for elves. Half-elves usually inherit a good blend of their parents’ physical characteristics.\n\n• Humanoid (Elf).\n• Medium: As Medium creatures, half-elves have no special bonuses or penalties due to their size.\n• Half-elf base land speed is 30 feet.\n• Immunity to sleep spells and similar magical effects, and a +2 racial bonus on saving throws against enchantment spells or effects.\n• Low-Light Vision: A half-elf can see twice as far as a human in starlight, moonlight, torchlight, and similar conditions of poor illumination. She retains the ability to distinguish color and detail under these conditions.\n• +1 racial bonus on Listen, Search, and Spot checks.\n• +2 racial bonus on Diplomacy and Gather Information checks.\n• Elven Blood: For all effects related to race, a half-elf is considered an elf.\n• Automatic Languages: Common and Elven. Bonus Languages: Any (other than secret languages, such as Druidic).\n• Favored Class: Any. When determining whether a multiclass half-elf takes an experience point penalty, her highest-level class does not count.\n• Level Adjustment: +0.",
     "tags": [
       "race",
+      "core",
       "half-elf"
     ],
     "bonusFeats": 0,
@@ -24292,6 +24296,7 @@
   {
     "schemaVersion": 3,
     "id": "race-kobold",
+    "icon": "🦎",
     "blueprint": "race",
     "name": "Kobold",
     "type": "Race",
@@ -24624,6 +24629,7 @@
   {
     "schemaVersion": 3,
     "id": "race-aasimar",
+    "icon": "😇",
     "blueprint": "race",
     "name": "Aasimar",
     "type": "Race",
@@ -24894,6 +24900,7 @@
   {
     "schemaVersion": 3,
     "id": "race-elf-drow",
+    "icon": "🕷️",
     "blueprint": "race",
     "name": "Elf, Drow",
     "type": "Race",
@@ -25355,6 +25362,7 @@
   {
     "schemaVersion": 3,
     "id": "race-human",
+    "icon": "👤",
     "blueprint": "race",
     "name": "Human",
     "type": "Race",
@@ -25401,6 +25409,7 @@
     "text": "• Humanoid (Human)\n• Medium: As Medium creatures, humans have no special bonuses or penalties due to their size.\n• Human base land speed is 30 feet.\n• 1 extra feat at 1st level.\n• 4 extra skill points at 1st level and 1 extra skill point at each additional level.\n• Automatic Language: Common. Bonus Languages: Any (other than secret languages, such as Druidic). See the Speak Language skill.\n• Favored Class: Any. When determining whether a multiclass human takes an experience point penalty, his or her highest-level class does not count",
     "tags": [
       "race",
+      "core",
       "human"
     ],
     "benefit": "1 bonus feat at 1st level; 4 extra skill points at 1st level and +1 extra skill point per additional level. Favored Class: Any."
@@ -25408,6 +25417,7 @@
   {
     "schemaVersion": 3,
     "id": "race-tiefling",
+    "icon": "😈",
     "blueprint": "race",
     "name": "Tiefling",
     "type": "Race",
@@ -25512,6 +25522,7 @@
   {
     "schemaVersion": 3,
     "id": "race-half-orc",
+    "icon": "⚔️",
     "blueprint": "race",
     "name": "Half-Orc",
     "type": "Race",
@@ -25582,6 +25593,7 @@
     "text": "These orc–human crossbreeds can be found in either orc or human society (where their status varies according to local sentiments), or in communities of their own. Half-orcs usually inherit a good blend of the physical characteristics of their parents. They are as tall as humans and a little heavier, thanks to their muscle. They have greenish pigmentation, sloping foreheads, jutting jaws, prominent teeth, and coarse body hair. Half-orcs who have lived among or near orcs have scars, in keeping with orcish tradition.\n\n• +2 Strength, –2 Intelligence, –2 Charisma.\n• A half-orc’s starting Intelligence score is always at least 3. If this adjustment would lower the character’s score to 1 or 2, his score is nevertheless 3.\n• Humanoid (Orc).\n• Medium: As Medium creatures, half-orcs have no special bonuses or penalties due to their size.\n• Half-orc base land speed is 30 feet.\n• Darkvision: Half-orcs (and orcs) can see in the dark up to 60 feet. Darkvision is black and white only, but it is otherwise like normal sight, and half-orcs can function just fine with no light at all.\n• Orc Blood: For all effects related to race, a half-orc is considered an orc.\n• Automatic Languages: Common and Orc. Bonus Languages: Draconic, Giant, Gnoll, Goblin, and Abyssal.\n• Favored Class: Barbarian. A multiclass half-orc’s barbarian class does not count when determining whether he takes an experience point penalty.\n• Level Adjustment: +0.",
     "tags": [
       "race",
+      "core",
       "half-orc"
     ],
     "bonusFeats": 0,
@@ -27639,6 +27651,7 @@
   {
     "schemaVersion": 3,
     "id": "race-dwarf",
+    "icon": "🛡️",
     "blueprint": "race",
     "name": "Dwarf",
     "type": "Race",
@@ -27737,6 +27750,7 @@
     "text": "Hill dwarves are the most common variety of dwarves. Hill dwarves favor earth tones in their clothing and prefer simple and functional garb. The skin can be very dark, but it is always some shade of tan or brown. Hair color can be black, gray, or brown. Hill dwarves average 4 feet tall and weigh as much as adult humans.• +2 Constitution, –2 Charisma.• Humanoid (Dwarf).• Medium: As Medium creatures, hill dwarves have no special bonuses or penalties due to their size.• Hill dwarf base land speed is 20 feet. However, hill dwarves can move at this speed even when wearing medium or heavy armor or when carrying a medium or heavy load (unlike other creatures, whose speed is reduced in such situations).• Darkvision: Hill dwarves can see in the dark up to 60 feet. Darkvision is black and white only, but it is otherwise like normal sight, and hill dwarves can function just fine with no light at all.• Stonecunning: This ability grants a hill dwarf a +2 racial bonus on Search checks to notice unusual stonework, such as sliding walls, stonework traps, new construction (even when built to match the old), unsafe stone surfaces, shaky stone ceilings, and the like. Something that isn’t stone but that is disguised as stone also counts as unusual stonework. A hill dwarf who merely comes within 10 feet of unusual stonework can make a Search check as if he were actively searching, and a hill dwarf can use the Search skill to find stonework traps as a rogue can. A hill dwarf can also intuit depth, sensing his approximate depth underground as naturally as a human can sense which way is up.• Weapon Familiarity: Hill dwarves may treat dwarven waraxes and dwarven urgroshes as martial weapons, rather than exotic weapons.• Stability: A hill dwarf gains a +4 bonus on ability checks made to resist being bull rushed or tripped when standing on the ground (but not when climbing, flying, riding, or otherwise not standing firmly on the ground).• +2 racial bonus on saving throws against poison.• +2 racial bonus on saving throws against spells and spell-like effects.• +1 racial bonus on attack rolls against orcs and goblinoids.• +4 dodge bonus to Armor Class against monsters of the giant type. Any time a creature loses its Dexterity bonus (if any) to Armor Class, such as when it’s caught flat-footed, it loses its dodge bonus, too.• +2 racial bonus on Appraise checks that are related to stone or metal items.• +2 racial bonus on Craft checks that are related to stone or metal.• Automatic Languages: Common and Dwarven. Bonus Languages: Giant, Gnome, Goblin, Orc, Terran, and Undercommon.• Favored Class: Fighter. A multiclass hill dwarf’s Fighter class does not count when determining whether he takes an experience point penalty for multiclassing.• Level Adjustment: +0.",
     "tags": [
       "race",
+      "core",
       "dwarf",
       "medium",
       "stonecunning"
@@ -27748,6 +27762,7 @@
   {
     "schemaVersion": 3,
     "id": "race-elf",
+    "icon": "🏹",
     "blueprint": "race",
     "name": "Elf",
     "type": "Race",
@@ -27830,6 +27845,7 @@
     "text": "The high elf is the most common elf variety. High elves average 5 feet tall and typically weigh just over 100 pounds. They live on fruits and grains, though they occasionally hunt for fresh meat. High elves prefer colorful clothes, usually with a green-and-gray cloak that blends well with the colors of the forest.\n\n• +2 Dexterity, –2 Constitution.\n\n• Humanoid (Elf).\n\n• Medium: As Medium creatures, high elves have no special bonuses or penalties due to their size.\n\n• High elf base land speed is 30 feet.\n\n• Elven Blood: Immunity to magic sleep effects, and a +2 racial saving throw bonus against enchantment spells or effects.\n\n• Low-Light Vision: A high elf can see twice as far as a human in starlight, moonlight, torchlight, and similar conditions of poor illumination. She retains the ability to distinguish color and detail under these conditions.\n\n• Weapon Proficiency: High elves receive the Martial Weapon Proficiency feats for the longsword, rapier, longbow (including composite longbow), and shortbow (including composite shortbow) as bonus feats.\n\n• +2 racial bonus on Listen, Search, and Spot checks. A high elf who merely passes within 5 feet of a secret or concealed door is entitled to a Search check to notice it as if she were actively looking for it.\n\n• Automatic Languages: Common and Elven. Bonus Languages: Draconic, Gnoll, Gnome, Goblin, Orc, and Sylvan.\n\n• Favored Class: Wizard. A multiclass high elf's wizard class does not count when determining whether she takes an experience point penalty for multiclassing.\n\n• Level Adjustment: +0.",
     "tags": [
       "race",
+      "core",
       "elf",
       "medium",
       "low-light-vision"
@@ -27840,6 +27856,7 @@
   {
     "schemaVersion": 3,
     "id": "race-gnome",
+    "icon": "🎩",
     "blueprint": "race",
     "name": "Gnome",
     "type": "Race",
@@ -27936,6 +27953,7 @@
     "text": "Rock gnomes are the most common variety of gnomes. Rock gnomes stand 3 to 3-1/2 feet tall and weigh 40 to 45 pounds. Their skin color ranges from dark tan to woody brown, their hair is fair, and their eyes can be any shade of blue. Rock gnome males prefer short, carefully trimmed beards. Rock gnomes generally wear leather or earth tones, though they decorate their clothes with intricate stitching or fine jewelry. Rock gnomes reach adulthood at about age 40, and they live about 350 years, though some can live almost 500 years.\n\n• +2 Constitution, –2 Strength.\n\n• Humanoid (Gnome).\n\n• Small: As a Small creature, a rock gnome gains a +1 size bonus to Armor Class, a +1 size bonus on attack rolls, and a +4 size bonus on Hide checks, but he uses smaller weapons than humans use, and his lifting and carrying limits are three-quarters of those of a Medium character.\n\n• Rock gnome base land speed is 20 feet.\n\n• Low-Light Vision: A rock gnome can see twice as far as a human in starlight, moonlight, torchlight, and similar conditions of poor illumination. He retains the ability to distinguish color and detail under these conditions.\n\n• Weapon Familiarity: Rock gnomes may treat gnome hooked hammers as martial weapons rather than exotic weapons.\n\n• Illusionist: +2 racial bonus on saving throws against illusions. Add +1 to the Difficulty Class for all saving throws against illusion spells cast by rock gnomes. This adjustment stacks with those from similar effects.\n\n• Small Hunter: +1 racial bonus on attack rolls against kobolds and goblinoids.\n\n• +4 dodge bonus to Armor Class against monsters of the giant type. Any time a creature loses its Dexterity bonus (if any) to Armor Class, such as when it's caught flat-footed, it loses its dodge bonus, too.\n\n• +2 racial bonus on Listen checks.\n\n• +2 racial bonus on Craft (alchemy) checks.\n\n• Automatic Languages: Common and Gnome. Bonus Languages: Draconic, Dwarven, Elven, Giant, Goblin, and Orc. In addition, a rock gnome can speak with a burrowing mammal (a badger, fox, rabbit, or the like, see below). This ability is innate to rock gnomes. See the speak with animals spell description.\n\n• Spell-Like Abilities: 1/day—speak with animals (burrowing mammal only, duration 1 minute). A rock gnome with a Charisma score of at least 10 also has the following spell-like abilities: 1/day—dancing lights, ghost sound, prestidigitation. Caster level 1st; save DC 10 + rock gnome's Cha modifier + spell level.\n\n• Favored Class: Bard. A multiclass rock gnome's bard class does not count when determining whether he takes an experience point penalty.\n\n• Level Adjustment: +0.",
     "tags": [
       "race",
+      "core",
       "gnome",
       "small",
       "low-light-vision"
@@ -27946,6 +27964,7 @@
   {
     "schemaVersion": 3,
     "id": "race-halfling",
+    "icon": "🍀",
     "blueprint": "race",
     "name": "Halfling",
     "type": "Race",
@@ -28060,6 +28079,7 @@
     "text": "The lightfoot halfling is the most common halfling variety. Lightfoot halflings stand about 3 feet tall and usually weigh between 30 and 35 pounds. They have brown or black eyes. Lightfoot halfling men often have long sideburns, but beards are rare among them and mustaches almost unseen. Lightfoot halflings prefer simple, comfortable, and practical clothes. Unlike members of most races, they prefer actual comfort to shows of wealth. Lightfoot halflings reach adulthood in their early twenties and generally live into the middle of their second century.\n\n• +2 Dexterity, –2 Strength.\n\n• Humanoid (Halfling).\n\n• Small: As a Small creature, a lightfoot halfling gains a +1 size bonus to Armor Class, a +1 size bonus on attack rolls, and a +4 size bonus on Hide checks, but she uses smaller weapons than humans use, and her lifting and carrying limits are three-quarters of those of a Medium character.\n\n• Lightfoot halfling base land speed is 20 feet.\n\n• +2 racial bonus on Climb, Jump, and Move Silently checks.\n\n• +1 racial bonus on all saving throws.\n\n• Fearless: +2 morale bonus on saving throws against fear: This bonus stacks with the lightfoot halfling's +1 bonus on saving throws in general.\n\n• Keen Eye: +1 racial bonus on attack rolls with thrown weapons and slings.\n\n• +2 racial bonus on Listen checks.\n\n• Automatic Languages: Common and Halfling. Bonus Languages: Dwarven, Elven, Gnome, Goblin, and Orc.\n\n• Favored Class: Rogue. A multiclass lightfoot halfling's rogue class does not count when determining whether she takes an experience point penalty for multiclassing.\n\n• Level Adjustment: +0.",
     "tags": [
       "race",
+      "core",
       "halfling",
       "small",
       "halfling-luck"
