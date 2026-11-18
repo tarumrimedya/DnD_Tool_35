@@ -25606,17 +25606,207 @@
         "mode": "flat",
         "value": -2,
         "btype": "Racial"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "ac.dodge"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Dodge",
+        "condition": "vs. Dragons"
+      },
+      {
+        "type": "defense",
+        "mode": "Immunity",
+        "what": "Frightful Presence (dragons)"
+      },
+      {
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "condKind": "state",
+            "condText": "toggle:aspect-mind",
+            "effects": [
+              {
+                "type": "defense",
+                "mode": "Immunity",
+                "what": "Paralysis"
+              },
+              {
+                "type": "defense",
+                "mode": "Immunity",
+                "what": "Sleep"
+              },
+              {
+                "type": "stat",
+                "targets": [
+                  "skill.listen",
+                  "skill.search",
+                  "skill.spot"
+                ],
+                "mode": "flat",
+                "value": 2,
+                "btype": "Racial"
+              },
+              {
+                "type": "when",
+                "flow": "if",
+                "branches": [
+                  {
+                    "condKind": "state",
+                    "condText": "@level >= 12",
+                    "effects": [
+                      {
+                        "type": "defense",
+                        "mode": "Sense / Movement",
+                        "what": "Darkvision 120 ft."
+                      },
+                      {
+                        "type": "defense",
+                        "mode": "Sense / Movement",
+                        "what": "Low-light vision (x4)"
+                      }
+                    ]
+                  },
+                  {
+                    "condKind": "state",
+                    "condText": "@level >= 9",
+                    "effects": [
+                      {
+                        "type": "defense",
+                        "mode": "Sense / Movement",
+                        "what": "Darkvision 90 ft."
+                      },
+                      {
+                        "type": "defense",
+                        "mode": "Sense / Movement",
+                        "what": "Low-light vision (x3)"
+                      }
+                    ]
+                  },
+                  {
+                    "condKind": "state",
+                    "condText": "@level >= 6",
+                    "effects": [
+                      {
+                        "type": "defense",
+                        "mode": "Sense / Movement",
+                        "what": "Darkvision 60 ft."
+                      },
+                      {
+                        "type": "defense",
+                        "mode": "Sense / Movement",
+                        "what": "Low-light vision (x2)"
+                      }
+                    ]
+                  },
+                  {
+                    "condKind": "else",
+                    "condText": "",
+                    "effects": [
+                      {
+                        "type": "defense",
+                        "mode": "Sense / Movement",
+                        "what": "Darkvision 30 ft."
+                      },
+                      {
+                        "type": "defense",
+                        "mode": "Sense / Movement",
+                        "what": "Low-light vision (x2)"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "defense",
+                "mode": "Sense / Movement",
+                "what": "Blindsense 30 ft.",
+                "gainedAt": 15
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "condKind": "state",
+            "condText": "toggle:aspect-wings",
+            "effects": [
+              {
+                "type": "stat",
+                "targets": [
+                  "skill.jump"
+                ],
+                "mode": "flat",
+                "value": 10,
+                "btype": "Racial"
+              },
+              {
+                "type": "stat",
+                "targets": [
+                  "speed.fly"
+                ],
+                "mode": "flat",
+                "value": 30,
+                "btype": "Racial",
+                "gainedAt": 6
+              }
+            ]
+          }
+        ]
       }
     ],
     "shortDescription": "Rebirth template of Bahamut. +2 Constitution, -2 Dexterity. Dragonblood subtype, +2 dodge vs. dragons, immune to dragon frightful presence, Draconic Aspect (heart breath weapon, mind senses, or wings).",
-    "text": "Dragonborn are not born but reborn: a humanoid who completes the Rite of Rebirth gives up her former racial identity and becomes a servant of Bahamut. Only the traits gained from the transformation are listed; the original race's size, speed, languages, favored classes, racial Hit Dice and level adjustment are retained, and its other racial traits are lost.\n\n• +2 Constitution, -2 Dexterity.\n• Humanoid (dragonblood).\n• +2 dodge bonus to Armor Class against creatures of the dragon type.\n• Immunity to Frightful Presence of dragons.\n• Draconic Aspect (choose one): Heart (breath weapon), Mind (immunity to paralysis and sleep, darkvision, low-light vision, +2 Listen/Search/Spot), Wings (+10 Jump, gliding, flight at 6 HD).\n• Automatic Languages: Draconic.\n• Favored Class: Fighter. Dragonborn paladins can leave and return to that class without penalty.",
+    "text": "Dragonborn are not born but reborn: a humanoid who completes the Rite of Rebirth gives up her former racial identity and becomes a servant of Bahamut. Only the traits gained from the transformation are listed; the original race's size, speed, languages, favored classes, racial Hit Dice and level adjustment are retained, and its other racial traits are lost.\n\n• +2 Constitution, -2 Dexterity.\n• Humanoid (dragonblood).\n• +2 dodge bonus to Armor Class against creatures of the dragon type.\n• Immunity to Frightful Presence of dragons.\n• Draconic Aspect (choose one; the Mind and Wings aspects are the toggles aspect-mind / aspect-wings, Heart is the Breath Weapon power): Heart (breath weapon), Mind (immunity to paralysis and sleep, darkvision, low-light vision, +2 Listen/Search/Spot), Wings (+10 Jump, gliding, flight at 6 HD).\n• Automatic Languages: Draconic.\n• Favored Class: Fighter. Dragonborn paladins can leave and return to that class without penalty.",
     "tags": [
       "race",
       "dragonborn",
       "dragonblood",
       "rebirth"
     ],
-    "bonusFeats": 0
+    "bonusFeats": 0,
+    "powers": [
+      {
+        "id": "pw-dragonborn-breath",
+        "kind": "inline",
+        "name": "Breath Weapon (Su, Draconic Aspect: Heart)",
+        "action": "Standard",
+        "usage": {
+          "mode": "cooldown",
+          "recharge": "1d4"
+        },
+        "dcFormula": "10 + 1/2 HD + Con",
+        "area": "Line",
+        "save": {
+          "type": "Reflex",
+          "effect": "Half"
+        },
+        "effects": [
+          {
+            "type": "roll",
+            "kind": "Damage",
+            "dmgType": "Acid",
+            "count": 2,
+            "die": "d8",
+            "scaling": "perCL",
+            "start": 3,
+            "per": 3,
+            "amount": 1,
+            "max": 10,
+            "crit": "normal",
+            "save": "Reflex half"
+          }
+        ],
+        "text": "Line 5 ft. per HD (max 100 ft.), 1d8 plus 1d8 per 3 HD. Choose acid, cold, electricity or fire on each use. Reflex half (DC 10 + 1/2 HD + Con modifier). Usable once every 1d4 rounds."
+      }
+    ]
   },
   {
     "schemaVersion": 3,
