@@ -1479,6 +1479,66 @@ function runDeriveSheetTests() {
     CharStore.getDoc().gearPool.some(i => i && i.id === 'pool_test_cloak_res_2' && i.qty === 3)
   );
 
+  // inventory/reforgeItem rename: pool row, equipped slot and weapon row follow the immutable poolItemId link,
+  // the reducer completes (persists + recomputes), and an unrelated same-named row is not touched.
+  CharStore.clearHistory();
+  const renameDoc = JSON.parse(JSON.stringify(r4Doc));
+  renameDoc.gearPool.push({
+    id: 'pool_test_rename_sword', schemaVersion: 3, baseItemId: 'wpn-longsword', name: 'Longsword',
+    category: 'Weapon', slot: 'Main Hand', qty: 1, weight: 4, cost: 15,
+    weapon: { category: 'Martial', handedness: 'One-Handed', damageDice: '1d8', dmgType: 'Slashing', baseCritRange: 19, critMultiplier: 2 }
+  });
+  CharStore.replaceDoc(renameDoc, { skipHistory: true });
+  CharStore.dispatch({ type: 'inventory/equipPoolItem', payload: { itemId: 'pool_test_rename_sword', forceSlotKey: 'mainHand' } });
+  const swordSlotBefore = CharStore.getDoc().bodySlots.mainHand;
+  const swordWepBefore = (CharStore.getDoc().weapons || []).find(w => w && w.poolItemId === 'pool_test_rename_sword');
+  check(
+    'Inventory rename: equipPoolItem links bodySlot and weapon row to the gearPool row by poolItemId',
+    swordSlotBefore && swordSlotBefore.poolItemId === 'pool_test_rename_sword' && Boolean(swordWepBefore),
+    JSON.stringify({ slot: swordSlotBefore && swordSlotBefore.poolItemId, wep: Boolean(swordWepBefore) })
+  );
+  const swordWepIdBefore = swordWepBefore && swordWepBefore.id;
+  const swordPoolRow = CharStore.getDoc().gearPool.find(i => i && i.id === 'pool_test_rename_sword');
+  let reforgeThrew = null;
+  try {
+    CharStore.dispatch({
+      type: 'inventory/reforgeItem',
+      payload: {
+        // The UI passes the live gearPool row; an assembled chassis reports its proficiency group as category.
+        targetContext: { originalItem: swordPoolRow, targetSlotKey: null },
+        itemData: Object.assign(JSON.parse(JSON.stringify(swordPoolRow)), { name: 'Oathkeeper', category: 'Martial', customEntryId: 'crafted_item_test_rename', enhancementBonus: 1 })
+      }
+    });
+  } catch (err) {
+    reforgeThrew = err;
+  }
+  const renamedDoc = CharStore.getDoc();
+  const renamedPool = renamedDoc.gearPool.find(i => i && i.id === 'pool_test_rename_sword');
+  const renamedWep = (renamedDoc.weapons || []).find(w => w && w.poolItemId === 'pool_test_rename_sword');
+  check(
+    'Inventory rename: inventory/reforgeItem completes without throwing and records an item_reforged outcome',
+    !reforgeThrew && CharStore.getLastOutcome()?.status === 'item_reforged',
+    reforgeThrew ? String(reforgeThrew.message) : JSON.stringify(CharStore.getLastOutcome())
+  );
+  check(
+    'Inventory rename: gearPool row (same id), equipped mainHand slot, weapon row (same id) and activeWeapon all carry the new name',
+    renamedPool && renamedPool.name === 'Oathkeeper' && renamedPool.category === 'Weapon' &&
+    renamedDoc.bodySlots.mainHand.name === 'Oathkeeper' && renamedDoc.bodySlots.mainHand.poolItemId === 'pool_test_rename_sword' &&
+    renamedWep && renamedWep.name === 'Oathkeeper' && renamedWep.id === swordWepIdBefore &&
+    renamedDoc.activeWeapon === 'Oathkeeper' &&
+    (renamedDoc.weapons || []).filter(w => w && w.poolItemId === 'pool_test_rename_sword').length === 1,
+    JSON.stringify({ pool: renamedPool && renamedPool.name, slot: renamedDoc.bodySlots.mainHand.name, wep: renamedWep && [renamedWep.id, renamedWep.name], active: renamedDoc.activeWeapon })
+  );
+  CharStore.dispatch({ type: 'inventory/unequipSlot', payload: { slotKey: 'mainHand' } });
+  const renamedPoolAfterUnequip = CharStore.getDoc().gearPool.filter(i => i && i.id === 'pool_test_rename_sword');
+  check(
+    'Inventory rename: unequipping the renamed item returns it to its own gearPool row (no duplicate row)',
+    renamedPoolAfterUnequip.length === 1 && renamedPoolAfterUnequip[0].isEquipped === false &&
+    CharStore.getDoc().gearPool.filter(i => i && i.name === 'Oathkeeper').length === 1
+  );
+  CharStore.replaceDoc(r4Doc, { skipHistory: true });
+  CharStore.clearHistory();
+
   // Test inventory/updateWealth + wealthView calculation + Undo
   CharStore.dispatch({
     type: 'inventory/updateWealth',

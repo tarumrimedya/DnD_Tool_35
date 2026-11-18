@@ -16140,7 +16140,42 @@
       "wondrous",
       "slotless"
     ],
-    "casterLevel": 10
+    "casterLevel": 10,
+    "powers": [
+      {
+        "id": "pw-necklace-of-fireballs-sphere",
+        "kind": "inline",
+        "name": "Hurl Sphere (Fireball)",
+        "action": "Standard",
+        "usage": {
+          "mode": "charges"
+        },
+        "casterLevel": 10,
+        "saveDC": 14,
+        "range": "70 ft.",
+        "area": "20-ft.-radius spread",
+        "save": {
+          "type": "Reflex",
+          "effect": "Half"
+        },
+        "effects": [
+          {
+            "id": "pw-necklace-of-fireballs-sphere-dmg",
+            "type": "roll",
+            "kind": "Damage",
+            "count": 2,
+            "die": "d6",
+            "flat": 0,
+            "dmgType": "Fire",
+            "scaling": "flat",
+            "maxCount": 10,
+            "save": "Reflex half",
+            "label": "2d6–10d6 Fire per sphere (by necklace type)"
+          }
+        ],
+        "text": "Detach and hurl a sphere up to 70 feet; it detonates as a fireball (Reflex DC 14 half). Spheres deal 2d6 to 10d6 fire damage depending on the necklace type."
+      }
+    ]
   },
   {
     "schemaVersion": 3,

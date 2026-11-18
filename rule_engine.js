@@ -6471,6 +6471,134 @@ const RuleEngine = {
     };
   },
 
+  // Short mechanical summary of an inventory item, derived only from its V3 data
+  // (`effects[]`, `powers[]`, normalized daily charges). The item's own blocks win; when the
+  // carried row has none, the compendium entry it was built from (`baseItemId`) is used.
+  // Returns an array of short RAW-English phrases; never parses description prose.
+  summarizeItemMechanics(item, opts = {}) {
+    if (!item || typeof item !== 'object') return [];
+    const hasBlocks = (o) => o && ((Array.isArray(o.effects) && o.effects.length > 0) || (Array.isArray(o.powers) && o.powers.length > 0));
+    let src = item;
+    if (!hasBlocks(item)) {
+      const comp = opts.compendium
+        || (typeof window !== 'undefined' && window.SrdCompendium)
+        || (typeof SrdCompendium !== 'undefined' ? SrdCompendium : null);
+      const baseId = item.baseItemId || '';
+      const base = baseId && comp && typeof comp.getById === 'function' ? comp.getById(baseId) : null;
+      if (hasBlocks(base)) src = base;
+    }
+    const TARGET_LABELS = {
+      'atk.all': 'Attack', 'atk.melee': 'Melee Attack', 'atk.ranged': 'Ranged Attack', 'atk.weapon': 'Weapon Attack',
+      'dmg.all': 'Damage', 'dmg.weapon': 'Weapon Damage', 'dmg.melee': 'Melee Damage', 'dmg.ranged': 'Ranged Damage',
+      'attack.all': 'Attack', 'attack.melee': 'Melee Attack', 'attack.ranged': 'Ranged Attack', 'attack.weapon': 'Weapon Attack',
+      'damage.all': 'Damage', 'damage.weapon': 'Weapon Damage', 'damage.melee': 'Melee Damage', 'damage.ranged': 'Ranged Damage',
+      'save.all': 'Saves', 'saves.all': 'Saves', 'save.fort': 'Fortitude', 'save.ref': 'Reflex', 'save.will': 'Will',
+      'skill.all': 'Skill Checks', 'ac.total': 'AC', 'ac.armor': 'Armor AC', 'ac.shield': 'Shield AC',
+      'ac.natural': 'Natural Armor', 'ac.deflection': 'Deflection AC', 'ac.dodge': 'Dodge AC', 'ac.luck': 'Luck AC',
+      'initiative': 'Initiative', 'speed.land': 'Land Speed', 'speed.fly': 'Fly Speed', 'speed.climb': 'Climb Speed',
+      'hp.temp': 'Temp HP', 'sr': 'Spell Resistance', 'dr': 'Damage Reduction', 'grapple': 'Grapple',
+      str: 'STR', dex: 'DEX', con: 'CON', int: 'INT', wis: 'WIS', cha: 'CHA',
+      'ability.str': 'STR', 'ability.dex': 'DEX', 'ability.con': 'CON', 'ability.int': 'INT', 'ability.wis': 'WIS', 'ability.cha': 'CHA'
+    };
+    const titleCase = (s) => String(s || '').replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    const targetLabel = (t) => {
+      const key = String(t || '').trim();
+      if (TARGET_LABELS[key]) return TARGET_LABELS[key];
+      if (/^skill\./.test(key)) return titleCase(key.slice(6));
+      return titleCase(key.replace(/\./g, ' '));
+    };
+    const saveAbbr = (s) => {
+      const v = String(s || '').toLowerCase();
+      if (v.startsWith('fort')) return 'Fort';
+      if (v.startsWith('ref')) return 'Ref';
+      if (v.startsWith('will')) return 'Will';
+      return '';
+    };
+    const RESET_LABELS = { perDay: '/day', daily: '/day', perEncounter: '/encounter', atWill: ' at will', perWeek: '/week' };
+    const rollText = (r) => {
+      if (!r || r.type !== 'roll') return '';
+      if (r.label) return String(r.label);
+      const kind = String(r.kind || 'Damage');
+      let amount = '';
+      if (r.scaling === 'formula' && r.dice) amount = String(r.dice);
+      else if (r.die === 'flat' || !r.die) amount = String((Number(r.count) || 0) + (Number(r.flat) || 0) || '');
+      else {
+        const flat = Number(r.flat) || 0;
+        amount = `${Number(r.count) || 1}${r.die}${flat ? (flat > 0 ? `+${flat}` : `${flat}`) : ''}`;
+      }
+      if (!amount) return '';
+      if (/heal/i.test(kind)) return `Heals ${amount} HP`;
+      if (/temp/i.test(kind)) return `${amount} Temp HP`;
+      const dt = r.dmgType && !/untyped/i.test(r.dmgType) ? ` ${r.dmgType}` : '';
+      return `${amount}${dt}${/damage/i.test(kind) ? '' : ` ${kind}`}`;
+    };
+    const statText = (s) => {
+      const targets = Array.isArray(s.targets) ? s.targets : (s.target ? [s.target] : []);
+      if (!targets.length) return '';
+      const btype = s.btype && !/^untyped$/i.test(s.btype) ? ` ${titleCase(s.btype)}` : '';
+      let val;
+      if (s.mode === 'formula' || (s.formula && s.value === undefined)) {
+        val = s.formula ? `+(${s.formula})` : '';
+      } else {
+        const n = Number(s.value) || 0;
+        if (!n) return '';
+        val = n > 0 ? `+${n}` : `${n}`;
+      }
+      return `${val}${btype} ${targets.map(targetLabel).join(', ')}`.trim();
+    };
+    const blockText = (b) => {
+      if (!b || typeof b !== 'object') return [];
+      switch (b.type) {
+        case 'stat': { const t = statText(b); return t ? [t] : []; }
+        case 'roll': { const t = rollText(b); return t ? [t] : []; }
+        case 'defense': {
+          if (!b.value) return [];
+          if (/damage reduction/i.test(b.mode || '')) return [`DR ${b.value}/${b.what || '-'}`];
+          if (/resist/i.test(b.mode || '')) return [`${b.what ? b.what + ' ' : ''}Resistance ${b.value}`];
+          return [`${b.mode || 'Defense'} ${b.value}`];
+        }
+        case 'carrier': {
+          const sv = saveAbbr(b.saveType);
+          return sv && b.dc ? [`${sv} DC ${b.dc}`] : [];
+        }
+        case 'resource': {
+          const max = Number(b.max) || 0;
+          if (!max) return [];
+          const reset = RESET_LABELS[b.reset] !== undefined ? RESET_LABELS[b.reset] : '';
+          return [`${max}${reset} ${b.name || 'Uses'}`.trim()];
+        }
+        case 'when': {
+          const out = [];
+          (b.branches || []).forEach(br => (br.effects || []).forEach(inner => blockText(inner).forEach(t => out.push(b.label ? `${t} (${b.label})` : t))));
+          return out;
+        }
+        default: return [];
+      }
+    };
+    const parts = [];
+    (Array.isArray(src.effects) ? src.effects : []).forEach(b => blockText(b).forEach(t => parts.push(t)));
+    (Array.isArray(src.powers) ? src.powers : []).forEach(pw => {
+      if (!pw || typeof pw !== 'object') return;
+      const bits = [];
+      (Array.isArray(pw.effects) ? pw.effects : []).forEach(b => blockText(b).forEach(t => bits.push(t)));
+      const sv = saveAbbr(pw.save && pw.save.type);
+      if (sv) {
+        const dc = Number(pw.saveDC) || Number(pw.save && pw.save.dc) || 0;
+        const eff = pw.save && pw.save.effect ? ` ${String(pw.save.effect).toLowerCase()}` : '';
+        bits.push(`${sv}${dc ? ` DC ${dc}` : ''}${eff}`);
+      }
+      const usage = pw.usage || {};
+      if (usage.mode === 'perDay' && Number(usage.uses || usage.n)) bits.push(`${Number(usage.uses || usage.n)}/day`);
+      const name = String(pw.name || '').trim();
+      if (name || bits.length) parts.push(name ? (bits.length ? `${name}: ${bits.join(', ')}` : name) : bits.join(', '));
+    });
+    const dc = item.dailyCharges;
+    if (dc && typeof dc === 'object' && Number(dc.max) > 0) {
+      parts.push(`${Number(dc.current ?? dc.max)}/${Number(dc.max)} charges`);
+    }
+    return Array.from(new Set(parts.filter(Boolean)));
+  },
+
   // Format a single V2 modifier into a human-readable D&D 3.5e label
   formatBuffModifierLabel(mod, evalCtx = { cl: 1, level: 1, bab: 0, chaMod: 0 }) {
     if (!mod || !mod.target) return '';

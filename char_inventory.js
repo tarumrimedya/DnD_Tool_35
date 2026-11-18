@@ -3290,7 +3290,7 @@
             </td>
             <td class="py-2.5 px-3 align-middle text-slate-300 text-xs">
               ${isOccupied ? renderGearItemStatsBadgesHtml(slotData, { compact: true }) : ''}
-              <div class="line-clamp-2">${UI.escapeHtml(getItemShortDescription(slotData) || '-')}</div>
+              ${isOccupied ? renderItemDescSummaryHtml(slotData) : '<div>-</div>'}
             </td>
             <td class="py-2.5 px-3 text-center align-middle font-mono text-slate-400">${isOccupied ? slotData.weight + ' lb' : '-'}</td>
             <td class="py-2.5 px-3 text-center align-middle font-mono text-amber-400">${isOccupied ? slotData.cost + ' GP' : '-'}</td>
@@ -4347,7 +4347,7 @@
                   ${renderGearItemStatsBadgesHtml(slotData, { compact: true, minimal: true })}
                   ${renderItemInlineChoiceSelectHtml(slotData, 'slot', slotKey)}
                   <div class="text-[10px] sm:text-[10px] text-slate-400 truncate flex items-center gap-2">
-                    ${slotData.desc ? `<span class="truncate max-w-[120px] sm:max-w-[160px]">${UI.escapeHtml(slotData.desc)}</span>` : ''}
+                    ${slotData.desc ? `<span class="truncate max-w-[120px] sm:max-w-[160px]"${itemDescTipAttrs(slotData)}>${UI.escapeHtml(getItemDescSummary(slotData).summary)}</span>` : ''}
                     <span class="font-mono text-slate-500">${slotData.weight ? slotData.weight + ' lb' : ''}</span>
                     <span class="font-mono text-amber-400/80">${slotData.cost ? slotData.cost + ' GP' : ''}</span>
                   </div>
@@ -4598,7 +4598,7 @@
               <span class="text-xs font-extrabold text-white truncate">${UI.escapeHtml(currentSlotData.name)}</span>
             </div>
             ${renderGearItemStatsBadgesHtml(currentSlotData, { compact: true })}
-            <div class="text-[10px] text-slate-300 truncate mt-0.5">${UI.escapeHtml(currentSlotData.desc || 'Equipped in ' + (def?.trName || def?.name || _currentEquipSlotKey))}</div>
+            <div class="text-[10px] text-slate-300 truncate mt-0.5"${itemDescTipAttrs(currentSlotData)}>${UI.escapeHtml(getItemDescSummary(currentSlotData).summary || 'Equipped in ' + (def?.trName || def?.name || _currentEquipSlotKey))}</div>
           </div>
           <div class="flex items-center gap-1.5 shrink-0">
             ${isForgeEditableItem(currentSlotData) ? `
@@ -4667,7 +4667,7 @@
               <span class="text-[10px] font-bold px-1.5 rounded bg-purple-950 text-purple-300 border border-purple-800/60">${UI.escapeHtml(item.category)}</span>
             </div>
             ${renderGearItemStatsBadgesHtml(item, { compact: true })}
-            <div class="text-[10px] text-slate-400 truncate mt-0.5">${UI.escapeHtml(item.desc || 'No properties specified')}</div>
+            <div class="text-[10px] text-slate-400 truncate mt-0.5"${itemDescTipAttrs(item)}>${UI.escapeHtml(getItemDescSummary(item).summary || 'No properties specified')}</div>
             <div class="text-[10px] text-slate-500 flex items-center gap-2 mt-0.5">
               <span>Weight: <strong class="text-slate-300 font-mono">${item.weight || 0} lb</strong></span>
               <span>•</span>
@@ -5659,7 +5659,7 @@
           <td class="py-2 px-3 align-middle text-slate-300 text-xs">
             ${statsBadgesHtml}
             ${typeof renderItemInlineChoiceSelectHtml === 'function' ? renderItemInlineChoiceSelectHtml(item, 'pool', String(item.id ?? '')) : ''}
-            <div class="line-clamp-2">${UI.escapeHtml(getItemShortDescription(item) || '-')}</div>
+            ${renderItemDescSummaryHtml(item)}
           </td>
           <td class="py-2 px-3 text-center align-middle font-mono">
             <div class="flex items-center justify-center gap-1">
@@ -6118,6 +6118,95 @@
         .replace(/\s+/g, ' ')
         .trim();
     }
+
+    // Inventory row description: a short mechanical summary derived from the item's V3 data
+    // (RuleEngine.summarizeItemMechanics), with the full description in an accessible hover/focus tooltip.
+    const ITEM_DESC_FALLBACK_MAX = 110;
+    function getItemDescSummary(item) {
+      const fullDesc = cleanPoolItemDescription(String((item && (item.desc || item.description || item.benefit)) || ''));
+      const parts = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.summarizeItemMechanics === 'function')
+        ? RuleEngine.summarizeItemMechanics(item)
+        : [];
+      let summary = parts.join(' · ');
+      if (!summary) {
+        const comp = window.SrdCompendium;
+        const base = item && item.baseItemId && comp && typeof comp.getById === 'function' ? comp.getById(item.baseItemId) : null;
+        const shortDesc = cleanPoolItemDescription(String((item && item.shortDescription) || (base && base.shortDescription) || ''));
+        summary = shortDesc || fullDesc;
+      }
+      if (summary.length > ITEM_DESC_FALLBACK_MAX) summary = summary.slice(0, ITEM_DESC_FALLBACK_MAX - 1).trimEnd() + '…';
+      return { summary, fullDesc };
+    }
+
+    function renderItemDescSummaryHtml(item, emptyText = '-') {
+      const { summary, fullDesc } = getItemDescSummary(item);
+      if (!summary) return `<div>${UI.escapeHtml(emptyText)}</div>`;
+      if (!fullDesc || fullDesc === summary) return `<div>${UI.escapeHtml(summary)}</div>`;
+      return `<div class="ui-desc-tip-trigger" tabindex="0" data-desc-tip="${UI.escapeAttr(fullDesc)}">${UI.escapeHtml(summary)}</div>`;
+    }
+
+    // Tooltip attributes for compact (already truncated) description lines.
+    function itemDescTipAttrs(item) {
+      const { summary, fullDesc } = getItemDescSummary(item);
+      return (fullDesc && fullDesc !== summary) ? ` tabindex="0" data-desc-tip="${UI.escapeAttr(fullDesc)}"` : '';
+    }
+
+    // One shared, viewport-fixed tooltip so table rows inside overflow containers never clip it.
+    (function initItemDescTooltip() {
+      if (typeof document === 'undefined' || document.getElementById('item-desc-tooltip')) return;
+      let tipEl = null;
+      let activeTrigger = null;
+      function ensureTip() {
+        if (tipEl) return tipEl;
+        tipEl = document.createElement('div');
+        tipEl.id = 'item-desc-tooltip';
+        tipEl.className = 'ui-desc-tooltip';
+        tipEl.setAttribute('role', 'tooltip');
+        tipEl.hidden = true;
+        document.body.appendChild(tipEl);
+        return tipEl;
+      }
+      function hide() {
+        if (activeTrigger) activeTrigger.removeAttribute('aria-describedby');
+        activeTrigger = null;
+        if (tipEl) tipEl.hidden = true;
+      }
+      function show(trigger) {
+        const text = trigger.getAttribute('data-desc-tip');
+        if (!text) return;
+        const tip = ensureTip();
+        tip.textContent = text;
+        tip.hidden = false;
+        activeTrigger = trigger;
+        trigger.setAttribute('aria-describedby', tip.id);
+        const r = trigger.getBoundingClientRect();
+        const margin = 8;
+        const w = tip.offsetWidth;
+        const h = tip.offsetHeight;
+        const left = Math.max(margin, Math.min(r.left, window.innerWidth - w - margin));
+        const below = r.bottom + 4;
+        const top = (below + h + margin > window.innerHeight && r.top - h - 4 >= margin) ? (r.top - h - 4) : below;
+        tip.style.left = `${Math.round(left)}px`;
+        tip.style.top = `${Math.round(Math.max(margin, top))}px`;
+      }
+      const triggerOf = (target) => (target && typeof target.closest === 'function') ? target.closest('[data-desc-tip]') : null;
+      document.addEventListener('mouseover', (ev) => {
+        const t = triggerOf(ev.target);
+        if (t && t !== activeTrigger) show(t);
+        else if (!t && activeTrigger) hide();
+      });
+      document.addEventListener('focusin', (ev) => {
+        const t = triggerOf(ev.target);
+        if (t) show(t);
+      });
+      document.addEventListener('focusout', (ev) => {
+        if (triggerOf(ev.target) === activeTrigger) hide();
+      });
+      document.addEventListener('keydown', (ev) => {
+        if (ev.key === 'Escape' && activeTrigger) hide();
+      });
+      window.addEventListener('scroll', () => { if (activeTrigger) hide(); }, true);
+    })();
 
     // Record types the gear picker lists; every chunk holding them (srd_equipment.json, srd_equipment_splat.json,
     // mic_compendium.json, ...) is found through the index.
@@ -7325,6 +7414,8 @@
       out.schemaVersion = 3;
       out.customEntryId = instanceId;
       out.name = v3Entry.name || out.name;
+      // An assembled weapon chassis reports its proficiency group ("Martial") as category; inventory rows use "Weapon".
+      if (v3Entry.blueprint === 'weapon' || (v3Entry.weapon && !v3Entry.armor && v3Entry.blueprint !== 'armor')) out.category = 'Weapon';
       if (v3Entry.gpValue !== undefined) {
         out.cost = Number(v3Entry.gpValue) || 0;
         out.priceGp = out.cost;
@@ -7445,7 +7536,9 @@
       const slotData = character.bodySlots?.[slotKey];
       if (!slotData || !slotData.name || slotData.name === '-') return;
       const cleanSlotName = String(slotData.name || '').toLowerCase().trim();
-      const poolMatch = (character.gearPool || []).find(p => p && String(p.name || '').toLowerCase().trim() === cleanSlotName);
+      const hasPoolLink = slotData.poolItemId !== undefined && slotData.poolItemId !== null && slotData.poolItemId !== '';
+      const poolMatch = (hasPoolLink && (character.gearPool || []).find(p => p && String(p.id) === String(slotData.poolItemId)))
+        || (character.gearPool || []).find(p => p && String(p.name || '').toLowerCase().trim() === cleanSlotName);
       const sourceItem = poolMatch || slotData;
       closeSlotEquipModal();
       if (window.DnDUI && typeof window.DnDUI.openRuleCrafter === 'function') {

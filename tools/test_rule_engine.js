@@ -391,6 +391,21 @@ function runRuleEngineTests() {
     assert.strictEqual(RuleEngine.evaluateFormula('clamp(@level, 1, 5) + abs(-2) + ceil(1.2) + round(1.6) + floor(@level / 2) + max(1, @chaMod) + min(3, @strMod)', ctx), 5 + 2 + 2 + 2 + 4 + 6 + 1);
   });
 
+  // Inventory row summary: derived from V3 effects[] / powers[] (never from description prose)
+  test('summarizeItemMechanics: Potion of Heal / Heroism, Necklace of Fireballs powers[] via baseItemId, charges', () => {
+    const heal = RuleEngine.summarizeItemMechanics({ name: 'Potion of Heal', effects: [{ type: 'roll', kind: 'Healing', count: 110, die: 'flat', flat: 0, scaling: 'flat' }] });
+    assert.deepStrictEqual(heal, ['Heals 110 HP']);
+    const heroism = RuleEngine.summarizeItemMechanics({ name: 'Potion of Heroism', effects: [{ type: 'stat', targets: ['atk.all', 'save.all', 'skill.all'], mode: 'flat', value: 2, btype: 'Morale' }] });
+    assert.deepStrictEqual(heroism, ['+2 Morale Attack, Saves, Skill Checks']);
+    // Carried row has no blocks (and a long description): the compendium entry's powers[] supply the summary.
+    const necklace = RuleEngine.summarizeItemMechanics({ name: 'Necklace of Fireballs', baseItemId: 'mi-necklace-of-fireballs', effects: [], desc: 'x'.repeat(2000) });
+    assert.strictEqual(necklace.length, 1, JSON.stringify(necklace));
+    assert.ok(/Fire/.test(necklace[0]) && /Ref DC 14 half/.test(necklace[0]) && /2d6/.test(necklace[0]), necklace[0]);
+    const ring = RuleEngine.summarizeItemMechanics({ name: 'Ring', dailyCharges: { max: 3, current: 2 }, effects: [{ type: 'defense', mode: 'Energy Resistance', what: 'Fire', value: 10 }] });
+    assert.deepStrictEqual(ring, ['Fire Resistance 10', '2/3 charges']);
+    assert.deepStrictEqual(RuleEngine.summarizeItemMechanics({ name: 'Rope', desc: 'Deals 9d6 fire damage (prose must not be scraped).' }), []);
+  });
+
   return { passed, elapsedMs: Date.now() - startMs };
 }
 

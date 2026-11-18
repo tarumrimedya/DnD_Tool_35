@@ -118,3 +118,10 @@ body[data-sheet-mode="build"] [data-mode-only="play"] {
 }
 
 
+
+/* Item description tooltip (Inventory rows): summary line is the trigger; the full text renders in one
+ * viewport-fixed panel (char_inventory.js initItemDescTooltip) so overflow containers never clip it. */
+.ui-desc-tip-trigger { cursor: help; text-decoration: underline dotted var(--border-strong); text-underline-offset: 2px; }
+.ui-desc-tip-trigger:focus-visible, [data-desc-tip]:focus-visible { outline: 1px solid var(--accent-amber); outline-offset: 1px; border-radius: 0.125rem; }
+.ui-desc-tooltip { position: fixed; z-index: 250; max-width: min(28rem, calc(100vw - 1rem)); max-height: 75vh; overflow: hidden; padding: 0.5rem 0.625rem; background: var(--bg-surface); border: 1px solid var(--border-strong); border-radius: 0.5rem; color: var(--text-secondary); font-size: 0.6875rem; line-height: 1.45; white-space: normal; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.55); pointer-events: none; }
+.ui-desc-tooltip[hidden] { display: none; }

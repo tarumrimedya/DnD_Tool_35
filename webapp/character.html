@@ -22,7 +22,7 @@
   
   <!-- Static Compiled Tailwind CSS (Zero Runtime JIT Overhead) -->
   <link rel="stylesheet" href="tailwind_compiled.css?v=101216d709">
-  <link rel="stylesheet" href="design_tokens.css?v=e83cdd2e81">
+  <link rel="stylesheet" href="design_tokens.css?v=e36252e504">
 
   <!-- Google Fonts: Cinzel for RPG Dice -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -3483,8 +3483,8 @@
   <script defer src="supabase_auth.js?v=47247ea179"></script>
   <!-- data-srd-autoinit: srd_compendium.js starts SrdCompendium.init() as soon as it runs. -->
   <script defer src="srd_compendium.js?v=4652bc4668" data-srd-autoinit></script>
-  <script defer src="rule_engine.js?v=14c99a8c63"></script>
-  <script defer src="char_store.js?v=644a599075"></script>
+  <script defer src="rule_engine.js?v=875fea1bd4"></script>
+  <script defer src="char_store.js?v=e0d81baecc"></script>
   <!-- ui_components.js stays blocking on purpose: it has no dependencies, and while the document is
        still loading it binds the data-action router on DOMContentLoaded, after the outside-click
        listeners the deferred scripts register. Deferring it would bind the router first. -->
@@ -3499,7 +3499,7 @@
   <script defer src="char_combat.js?v=835df77fbc"></script>
   <script defer src="char_spells.js?v=f46854f497"></script>
   <script defer src="char_progression.js?v=cd81d6e8e9"></script>
-  <script defer src="char_inventory.js?v=68e110b0b5"></script>
+  <script defer src="char_inventory.js?v=02097e22ad"></script>
   <!-- Floating Tooltip for Combat Spells Hover (Tap or click to dismiss) -->
   <div id="combat-spell-hover-tooltip" data-action="combat:hide-spell-tooltip" class="hidden fixed z-[200] pointer-events-auto bg-slate-950/95 border border-purple-500/80 rounded-xl p-3 shadow-2xl w-[340px] max-w-[92vw] text-xs space-y-2 backdrop-blur-md transition-opacity duration-150 text-slate-200 cursor-pointer select-none">
     

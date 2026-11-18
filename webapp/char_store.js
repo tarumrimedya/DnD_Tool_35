@@ -1809,13 +1809,25 @@
     }
   }
 
+  // Resolves the gearPool row an equipped slot / weapon row was created from.
+  // Immutable `poolItemId` link first; display-name match only for legacy rows saved before the link existed.
+  function findLinkedPoolItem(doc, ref) {
+    if (!doc || !Array.isArray(doc.gearPool) || !ref) return null;
+    if (ref.poolItemId !== undefined && ref.poolItemId !== null && ref.poolItemId !== '') {
+      const byId = doc.gearPool.find(p => p && String(p.id) === String(ref.poolItemId));
+      if (byId) return byId;
+    }
+    const nameLower = String(ref.name || '').toLowerCase().trim();
+    if (!nameLower || nameLower === '-') return null;
+    return doc.gearPool.find(p => p && String(p.name || '').toLowerCase().trim() === nameLower) || null;
+  }
+
   function unequipSlotOnDoc(doc, slotKey) {
     ensureInventoryDocStructures(doc);
     const slot = doc.bodySlots[slotKey];
     if (!slot || !slot.name || slot.name === '-') return null;
     const engine = resolveRuleEngine();
-    const slotNameLower = String(slot.name || '').toLowerCase().trim();
-    const existingInPool = doc.gearPool.find(p => p && String(p.name || '').toLowerCase().trim() === slotNameLower);
+    const existingInPool = findLinkedPoolItem(doc, slot);
     if (existingInPool) {
       existingInPool.isEquipped = false;
     } else {
@@ -2038,6 +2050,7 @@
       : item.dailyCharges;
 
     doc.bodySlots[targetSlotKey] = {
+      poolItemId: item.id,
       baseItemId: item.baseItemId,
       name: item.name,
       masterDbName: item.masterDbName || item.name,
@@ -2092,10 +2105,12 @@
     if (item.category === 'Weapon') {
       const wepDice = item.weapon?.damageDice || item.dice;
       const wepDmgType = item.weapon?.dmgType || item.weapon?.damageType || item.dmgType;
-      const existingWep = doc.weapons.find(w => w && String(w.name || '').toLowerCase() === String(item.name || '').toLowerCase());
+      const existingWep = doc.weapons.find(w => w && w.poolItemId !== undefined && w.poolItemId !== null && String(w.poolItemId) === String(item.id))
+        || doc.weapons.find(w => w && String(w.name || '').toLowerCase() === String(item.name || '').toLowerCase());
       const targetGrip = isTwoHand ? '2-Hand' : (targetSlotKey === 'offHand' ? 'Off-Hand' : '1-Hand');
       if (existingWep) {
         existingWep.schemaVersion = 3;
+        existingWep.poolItemId = item.id;
         existingWep.grip = targetGrip;
         if (item.weapon) existingWep.weapon = JSON.parse(JSON.stringify(item.weapon));
         if (Array.isArray(item.effects)) existingWep.effects = JSON.parse(JSON.stringify(item.effects));
@@ -2109,6 +2124,7 @@
       } else {
         doc.weapons.push({
           schemaVersion: 3,
+          poolItemId: item.id,
           baseItemId: item.baseItemId,
           name: item.name,
           grip: targetGrip,
@@ -2463,9 +2479,19 @@
     const oldName = String(originalItem?.name || '').trim();
     const oldNameLower = oldName.toLowerCase();
     const newName = String(forgedItem.name || oldName || 'Forged Item').trim();
-    const cat = forgedItem.category && forgedItem.category !== 'Other'
-      ? forgedItem.category
-      : (engine && typeof engine.inferInventoryItemCategory === 'function' ? engine.inferInventoryItemCategory(forgedItem) : (forgedItem.type || originalItem?.category || 'Weapon'));
+    // originalItem can be the live gearPool row this reducer mutates below: snapshot its category first.
+    const originalCategory = String(originalItem?.category || '').trim();
+    // Inventory category, not a weapon proficiency group (an assembled chassis reports "Simple"/"Martial"/"Exotic").
+    const rawForgedCat = String(forgedItem.category || '').trim();
+    const isProficiencyGroup = /^(simple|martial|exotic)$/i.test(rawForgedCat);
+    const isWeaponChassis = Boolean(forgedItem.weapon) && !forgedItem.armor && rawForgedCat !== 'Shield' && rawForgedCat !== 'Armor';
+    const cat = isWeaponChassis
+      ? 'Weapon'
+      : (rawForgedCat && rawForgedCat !== 'Other' && !isProficiencyGroup
+        ? rawForgedCat
+        : (engine && typeof engine.inferInventoryItemCategory === 'function'
+          ? engine.inferInventoryItemCategory(Object.assign({}, forgedItem, { category: isProficiencyGroup ? 'Weapon' : '' }))
+          : (forgedItem.type || originalCategory || 'Weapon')));
     const newWeight = Number(forgedItem.weightLb ?? forgedItem.weight) || 0;
     const newCost = Number(forgedItem.priceGp ?? forgedItem.cost) || 0;
     // desc holds only user-written notes; forged prose lives in shortDescription / text.
@@ -2485,13 +2511,22 @@
     const clonedRuleFlags = forgedItem.ruleFlags ? JSON.parse(JSON.stringify(forgedItem.ruleFlags)) : {};
     const clonedTacticalBadges = Array.isArray(forgedItem.tacticalBadges) ? JSON.parse(JSON.stringify(forgedItem.tacticalBadges)) : [];
 
-    const poolItem = doc.gearPool.find(p => {
-      if (!p) return false;
-      if (originalItem?.id !== undefined && String(p.id) === String(originalItem.id)) return true;
-      return oldNameLower && String(p.name || '').toLowerCase().trim() === oldNameLower;
-    });
+    // Resolve the edited gearPool row by immutable id (originalItem may be a pool row or an equipped slot
+    // carrying `poolItemId`); the display name is only a fallback for legacy rows without ids.
+    const hasLink = (v) => v !== undefined && v !== null && v !== '';
+    const targetSlotRef = targetSlotKey ? doc.bodySlots[targetSlotKey] : null;
+    const originalPoolId = hasLink(originalItem?.poolItemId)
+      ? originalItem.poolItemId
+      : (hasLink(targetSlotRef?.poolItemId) ? targetSlotRef.poolItemId : originalItem?.id);
+    const poolItem = findLinkedPoolItem(doc, { poolItemId: originalPoolId, name: oldName });
+    const poolItemId = poolItem ? poolItem.id : undefined;
+    const isLinkedRef = (ref) => Boolean(ref && poolItemId !== undefined && ref.poolItemId !== undefined && ref.poolItemId !== null && String(ref.poolItemId) === String(poolItemId));
+    const isLegacyNameRef = (ref) => Boolean(ref && (ref.poolItemId === undefined || ref.poolItemId === null || ref.poolItemId === '') && oldNameLower && String(ref.name || '').toLowerCase().trim() === oldNameLower);
+    // A crafted item's own `id` is the edited row's id (or a crafted instance id), never a catalog base id.
+    const forgedBaseId = forgedItem.baseItemId
+      || (forgedItem.id !== undefined && String(forgedItem.id) !== String(poolItemId ?? originalItem?.id) && !/^crafted_item_/.test(String(forgedItem.id)) ? forgedItem.id : null);
     if (poolItem) {
-      poolItem.baseItemId = forgedItem.baseItemId || forgedItem.id || poolItem.baseItemId || null;
+      poolItem.baseItemId = forgedBaseId || poolItem.baseItemId || null;
       if (forgedItem.customEntryId) poolItem.customEntryId = forgedItem.customEntryId;
       poolItem.schemaVersion = 3;
       poolItem.name = newName;
@@ -2532,18 +2567,17 @@
     const slotKeysToUpdate = [];
     if (targetSlotKey && doc.bodySlots[targetSlotKey] && doc.bodySlots[targetSlotKey].name !== '-') {
       slotKeysToUpdate.push(targetSlotKey);
-    } else if (oldNameLower) {
-      Object.keys(doc.bodySlots).forEach(sk => {
-        const sd = doc.bodySlots[sk];
-        if (sd && sd.name && String(sd.name).toLowerCase().trim() === oldNameLower) {
-          slotKeysToUpdate.push(sk);
-        }
-      });
     }
+    Object.keys(doc.bodySlots).forEach(sk => {
+      const sd = doc.bodySlots[sk];
+      if (!sd || !sd.name || sd.name === '-' || slotKeysToUpdate.includes(sk)) return;
+      if (isLinkedRef(sd) || isLegacyNameRef(sd)) slotKeysToUpdate.push(sk);
+    });
     slotKeysToUpdate.forEach(sk => {
       const sd = doc.bodySlots[sk];
       if (!sd) return;
-      sd.baseItemId = forgedItem.baseItemId || forgedItem.id || sd.baseItemId || null;
+      if (poolItemId !== undefined) sd.poolItemId = poolItemId;
+      sd.baseItemId = forgedBaseId || sd.baseItemId || null;
       if (forgedItem.customEntryId) sd.customEntryId = forgedItem.customEntryId;
       sd.schemaVersion = 3;
       sd.name = newName;
@@ -2582,17 +2616,14 @@
       }
     });
 
-    if (cat === 'Weapon' || originalItem?.category === 'Weapon') {
-      const wepIdx = doc.weapons.findIndex(w => {
-        if (!w) return false;
-        if (originalItem?.id !== undefined && String(w.id) === String(originalItem.id)) return true;
-        return oldNameLower && String(w.name || '').toLowerCase().trim() === oldNameLower;
-      });
+    if (cat === 'Weapon' || originalCategory === 'Weapon') {
+      let wepIdx = doc.weapons.findIndex(w => isLinkedRef(w));
+      if (wepIdx < 0) wepIdx = doc.weapons.findIndex(w => isLegacyNameRef(w));
       const wepDice = (clonedWeapon && clonedWeapon.damageDice) || (primaryRoll && primaryRoll.dice) || forgedItem.dice || '1d8';
       const wepDmgType = (clonedWeapon && (clonedWeapon.dmgType || clonedWeapon.damageType)) || (primaryRoll && primaryRoll.dmgType) || forgedItem.dmgType || 'Slashing';
       const updatedWepObj = {
-        id: forgedItem.id || originalItem?.id || ('wep_' + Date.now()),
-        baseItemId: forgedItem.baseItemId || forgedItem.id || null,
+        poolItemId: poolItemId !== undefined ? poolItemId : (wepIdx >= 0 ? doc.weapons[wepIdx].poolItemId : undefined),
+        baseItemId: forgedBaseId || (wepIdx >= 0 ? doc.weapons[wepIdx].baseItemId : null) || null,
         customEntryId: forgedItem.customEntryId || originalItem?.customEntryId || null,
         schemaVersion: 3,
         name: newName,
@@ -2615,8 +2646,10 @@
         keen: Boolean(clonedRuleFlags && clonedRuleFlags.keen)
       };
       if (wepIdx >= 0) {
+        // Keep the existing weapon row's own id; only the content changes.
         doc.weapons[wepIdx] = Object.assign({}, doc.weapons[wepIdx], updatedWepObj);
       } else {
+        updatedWepObj.id = 'wep_' + Date.now();
         doc.weapons.push(updatedWepObj);
       }
       if (oldNameLower && String(doc.activeWeapon || '').toLowerCase().trim() === oldNameLower) {
@@ -2638,12 +2671,16 @@
     }
 
     if (!Array.isArray(doc.customDb)) doc.customDb = [];
-    if (forgedV2Item.enhancementBonus > 0 || forgedV2Item.material || (Array.isArray(forgedV2Item.enhancements) && forgedV2Item.enhancements.length > 0)) {
-      const existingIdx = doc.customDb.findIndex(m => m && String(m.name || '').toLowerCase().trim() === newName.toLowerCase());
+    if (forgedItem.enhancementBonus > 0 || forgedItem.material || (Array.isArray(forgedItem.enhancements) && forgedItem.enhancements.length > 0)) {
+      // Key the catalog copy by its Copy-on-Write entry id so a rename replaces it instead of duplicating.
+      let existingIdx = forgedItem.customEntryId
+        ? doc.customDb.findIndex(m => m && m.customEntryId && String(m.customEntryId) === String(forgedItem.customEntryId))
+        : -1;
+      if (existingIdx < 0) existingIdx = doc.customDb.findIndex(m => m && String(m.name || '').toLowerCase().trim() === newName.toLowerCase());
       if (existingIdx >= 0) {
-        doc.customDb[existingIdx] = Object.assign({}, doc.customDb[existingIdx], JSON.parse(JSON.stringify(forgedV2Item)));
+        doc.customDb[existingIdx] = Object.assign({}, doc.customDb[existingIdx], JSON.parse(JSON.stringify(forgedItem)));
       } else {
-        doc.customDb.push(JSON.parse(JSON.stringify(forgedV2Item)));
+        doc.customDb.push(JSON.parse(JSON.stringify(forgedItem)));
       }
     }
 
