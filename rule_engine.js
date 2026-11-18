@@ -3230,6 +3230,27 @@ const RuleEngine = {
       }
     });
 
+    // The race is a regular Lego entry (override-aware, like getRaceTemplateProgressionSources) so Lego-only outputs
+    // (grantedCapabilities, effectiveSizeScopes, multipliers, entity grants) are computed for it. Its stats are applied
+    // once, in recalculateCharacter section 3.6 (`_legoSource === 'race'`, bonus type `race`).
+    const raceNameForLego = String(ch.race || '').trim();
+    if (raceNameForLego) {
+      const raceLegoEntry = this.resolveCustomEntryOverride(raceNameForLego, ch, { family: 'race' }) || this.getMasterDbEntry(raceNameForLego, 'Race');
+      if (raceLegoEntry && typeof raceLegoEntry === 'object' && this.isLevelGainUnlocked(raceLegoEntry, this.buildFormulaContext(ch))) {
+        // Normalize directly (no addEntry object merge): the merge copy drops the non-enumerable `_v3Evaluated`
+        // flag and the already-evaluated race would be evaluated twice (duplicate DR / defenses / senses).
+        const raceNorm = this.normalizeLegoEntry(raceLegoEntry);
+        if (raceNorm) {
+          raceNorm._legoSource = 'race';
+          const raceFullId = String(raceNorm.id || raceNorm.name || '').trim().toLowerCase();
+          const raceNameLow = String(raceNorm.name || '').trim().toLowerCase();
+          if (raceFullId) seenFullIds.add(raceFullId);
+          if (raceNameLow) seenNames.add(raceNameLow);
+          collected.push(raceNorm);
+        }
+      }
+    }
+
     // Race / template Level / HD Table features: a row's referenced entries (refId, e.g. cab-*) apply once the
     // character's level / total HD reaches that row. Inline (text-only) features stay descriptive.
     if (typeof this.getRaceTemplateProgressionSources === 'function') {
@@ -7377,7 +7398,7 @@ const RuleEngine = {
         if (target === 'dr' || target.startsWith('dr.')) {
           if (character.evaluatedDefenses && Array.isArray(character.evaluatedDefenses.dr)) {
             const bypass = mod.bypass || (target.startsWith('dr.') ? target.slice(3) : '-');
-            if (!character.evaluatedDefenses.dr.some(d => d && d.source === sourceName && d.value === val)) {
+            if (!character.evaluatedDefenses.dr.some(d => d && String(d.source || '').replace(/ \(Race\)$/, '') === String(sourceName || '').replace(/ \(Race\)$/, '') && d.value === val)) {
               character.evaluatedDefenses.dr.push({ value: val, bypass, source: sourceName });
             }
           }
@@ -7811,7 +7832,7 @@ const RuleEngine = {
         if (s.name) processedLegoSourceNames.add(String(s.name).toLowerCase().trim());
       }
     });
-    const validExtraLegoSources = new Set(['legoEntries', 'classFeatures', 'soulmelds', 'vestiges', 'powers', 'mysteries', 'utterances']);
+    const validExtraLegoSources = new Set(['legoEntries', 'classFeatures', 'soulmelds', 'vestiges', 'powers', 'mysteries', 'utterances', 'race']);
     (legoEval.entries || []).forEach(le => {
       if (!le) return;
       if (!validExtraLegoSources.has(le._legoSource) && le._autoUnlocked !== true) {
@@ -7837,7 +7858,13 @@ const RuleEngine = {
         leToApply = this.evaluateV3Entry(Object.assign({}, le, { _v3Evaluated: false, modifiers: [] }), leCtx);
       }
       if (Array.isArray(leToApply.modifiers) && leToApply.modifiers.length > 0) {
-        applyV2Modifiers(leToApply.modifiers, leToApply.name || leToApply.id || 'Lego Entry', 'feat', leCtx);
+        const isRaceLego = le._legoSource === 'race';
+        applyV2Modifiers(
+          leToApply.modifiers,
+          isRaceLego ? `${leToApply.name || character.race} (Race)` : (leToApply.name || leToApply.id || 'Lego Entry'),
+          isRaceLego ? 'race' : 'feat',
+          leCtx
+        );
       }
       if (leToApply.ruleFlags?.conToWillSave) hasSteadfastDetermination = true;
       if (leToApply.ruleFlags?.shieldToTouchAc) hasShieldWard = true;
@@ -7870,16 +7897,8 @@ const RuleEngine = {
       });
     }
 
-    // 3.9. Collect Racial Modifiers from Canonical V2 Race Entry (D&D 3.5e RAW)
-    if (character.race) {
-      const raceObj = this.getMasterDbEntry(character.race, 'Race');
-      if (raceObj && Array.isArray(raceObj.modifiers)) {
-        const raceLabel = `${raceObj.name || character.race} (Race)`;
-        applyV2Modifiers(raceObj.modifiers, raceLabel, 'race', evalContext);
-      }
-      // Racial conditional AC / save bonuses (vs. Giants, vs. Poison, vs. Fear, ...) come from the Race record's
-      // V3 `effects[]` (bridged into `raceObj.modifiers` above); no race-name matching here.
-    }
+    // 3.9. Racial modifiers (incl. conditional AC / save bonuses) are applied in section 3.6 from the race's
+    // Lego entry (`_legoSource === 'race'`); no separate race bridge and no race-name matching here.
 
     // 3.92. Collect Character Template Modifiers (Canonical V3 `srd_templates.json`)
     const activeTemplateEntries = this.getCharacterActiveTemplateEntries(character);
@@ -8024,7 +8043,7 @@ const RuleEngine = {
       }
       if (Array.isArray(prevEvalDefenses.dr)) {
         prevEvalDefenses.dr.forEach(d => {
-          if (d && !character.evaluatedDefenses.dr.some(ed => ed && ed.source === d.source && ed.value === d.value)) {
+          if (d && !character.evaluatedDefenses.dr.some(ed => ed && String(ed.source || '').replace(/ \(Race\)$/, '') === String(d.source || '').replace(/ \(Race\)$/, '') && ed.value === d.value)) {
             character.evaluatedDefenses.dr.push(d);
           }
         });
@@ -12187,9 +12206,11 @@ const RuleEngine = {
     }
     // Rule Crafter sub-power carriers beyond feats: every active lego entry (class features, equipped items,
     // buffs ...), the race and active templates. These only contribute their `powers[]`, never a card of their own.
-    const powerSources = (resolvedLego && Array.isArray(resolvedLego.entries))
+    // The race is itself a Lego entry (`_legoSource === 'race'`); it is pushed once below, so skip it here (no duplicate cards).
+    const powerSources = ((resolvedLego && Array.isArray(resolvedLego.entries))
       ? resolvedLego.entries.slice()
-      : (typeof this.collectLegoEntries === 'function' ? this.collectLegoEntries(w) : []);
+      : (typeof this.collectLegoEntries === 'function' ? this.collectLegoEntries(w) : []))
+      .filter(e => !e || e._legoSource !== 'race');
     const raceName = String(w.race || '').trim();
     if (raceName) {
       const raceEntry = this.resolveCustomEntryOverride(raceName, w, { family: 'race' }) || this.getMasterDbEntry(raceName, 'Race');
