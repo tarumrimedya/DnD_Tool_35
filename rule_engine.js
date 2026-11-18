@@ -5314,6 +5314,30 @@ const RuleEngine = {
   },
 
   // Parse modifiers and stat bonuses from a Canonical V2 equipment item (zero heuristic regex guessing per Rule #10.3)
+  // True when an item carries the given V3 Rule Switch flag through its own ruleFlags or one of its enhancements
+  // (e.g. `ghostTouchArmor` from the Ghost Touch, Armor enhancement). Enhancements are ids or { id } objects.
+  itemHasEnhancementFlag(item, flag) {
+    if (!item || typeof item !== 'object' || !flag) return false;
+    if (item.ruleFlags && item.ruleFlags[flag]) return true;
+    const list = Array.isArray(item.enhancements) ? item.enhancements : [];
+    return list.some(e => {
+      const entry = this.getMasterDbEntry((e && typeof e === 'object') ? (e.id || e.name) : e);
+      return Boolean(entry && Array.isArray(entry.effects) && entry.effects.some(b => b && b.flag === flag));
+    });
+  },
+
+  // PHB p.296 (incorporeal subtype): an incorporeal touch attack ignores armor, natural armor and shield bonuses
+  // unless they are force effects (Mage Armor, Shield, Bracers of Armor, Ring of Force Shield) or the armor / shield
+  // has the Ghost Touch property (DMG p.224). Spells are matched by their Force descriptor in the compendium.
+  isForceAcSource(sourceName) {
+    const clean = String(sourceName || '').replace(/^[^A-Za-z0-9]+/, '').trim();
+    if (!clean) return false;
+    if (/\b(bracers of armor|ring of force shield)\b/i.test(clean)) return true;
+    const spell = this.getMasterDbEntry(clean.replace(/\s*\((?:spell|buff)\)\s*$/i, ''), 'Spell');
+    const desc = spell ? (Array.isArray(spell.descriptors) ? spell.descriptors.join(' ') : String(spell.descriptors || '')) : '';
+    return /\bforce\b/i.test(desc);
+  },
+
   parseItemModifiers(rawItem, masterDb = [], context = {}) {
     if (!rawItem || !rawItem.name || rawItem.name === '-') return null;
 
@@ -7202,7 +7226,7 @@ const RuleEngine = {
             buffAcPenalty += Math.abs(val);
             acPenaltySources.push(String(sourceName || '').toLowerCase());
           } else if (acSub === 'shield' || mTypeLower === 'shield') {
-            shieldBonuses.push({ val, source: sourceName, type: 'Shield' });
+            shieldBonuses.push({ val, source: sourceName, type: 'Shield', incorporeal: this.isForceAcSource(sourceName) });
           } else if (acSub === 'deflection' || mTypeLower === 'deflection') {
             deflectionBonuses.push({ val, source: sourceName, type: 'Deflection' });
           } else if (acSub === 'natural' || mTypeLower.includes('natural')) {
@@ -7213,7 +7237,7 @@ const RuleEngine = {
                 : 'Natural');
             naturalBonuses.push({ val, source: sourceName, type: natType });
           } else if (acSub === 'armor' || mTypeLower === 'armor') {
-            armorBonuses.push({ val, source: sourceName, type: 'Armor' });
+            armorBonuses.push({ val, source: sourceName, type: 'Armor', incorporeal: this.isForceAcSource(sourceName) });
           } else if (mTypeLower === 'dodge' || mTypeLower === 'haste' || (acSub === 'dodge' && mTypeLower === 'untyped')) {
             dodgeBonuses.push({ val, source: sourceName, type: mTypeLower === 'haste' ? mType : 'Dodge' });
           } else {
@@ -7411,8 +7435,9 @@ const RuleEngine = {
           equippedArmorCategory = mods.effectiveArmorCategory || 'Light';
         }
 
-        if (mods.armor > 0) armorBonuses.push({ val: mods.armor, source: mods.armorSourceLabel || slotData.name, type: 'Armor' });
-        if (mods.shield > 0) shieldBonuses.push({ val: mods.shield, source: mods.shieldSourceLabel || slotData.name, type: 'Shield' });
+        const slotIncorp = this.itemHasEnhancementFlag(slotData, 'ghostTouchArmor') || this.isForceAcSource(slotData.name);
+        if (mods.armor > 0) armorBonuses.push({ val: mods.armor, source: mods.armorSourceLabel || slotData.name, type: 'Armor', incorporeal: slotIncorp });
+        if (mods.shield > 0) shieldBonuses.push({ val: mods.shield, source: mods.shieldSourceLabel || slotData.name, type: 'Shield', incorporeal: slotIncorp });
         if (mods.natural > 0) naturalBonuses.push({ val: mods.natural, source: slotData.name, type: mods.naturalBonusType || mods.bonusType || 'Natural' });
         if (mods.deflection > 0) deflectionBonuses.push({ val: mods.deflection, source: slotData.name, type: 'Deflection' });
         if (mods.dodge > 0) dodgeBonuses.push({ val: mods.dodge, source: slotData.name, type: 'Dodge' });
@@ -8200,6 +8225,12 @@ const RuleEngine = {
     let totalAC = baseAC + effectiveArmor + effectiveShield + effectiveNatural + effectiveDeflection + sizeBonus + effectiveDex + legoAcAbilityDelta + effectiveDodge + effectiveMiscAc;
     let touchAC = baseAC + (hasShieldWard ? effectiveShield : 0) + effectiveDeflection + sizeBonus + effectiveDex + legoAcAbilityDelta + effectiveDodge + effectiveMiscAc + effectiveTouchOnlyAc;
 
+    // AC against an incorporeal touch attack: touch AC plus only the armor / shield bonuses that are force effects or
+    // come from Ghost Touch gear. When a shield already counts toward touch AC (Shield Ward), it is not added twice.
+    const incorpArmor = this.resolveBonusStacking(armorBonuses.filter(b => b && b.incorporeal), character);
+    const incorpShield = hasShieldWard ? 0 : this.resolveBonusStacking(shieldBonuses.filter(b => b && b.incorporeal), character);
+    const incorporealBonus = incorpArmor + incorpShield;
+
     // Flat-footed AC (RAW: retain negative Dex penalty even when flat-footed; retain Dex & Dodge if Uncanny Dodge unless immobilized/helpless)
     const flatDex = hasUncannyDodge ? (effectiveDex + legoAcAbilityDelta) : Math.min(0, fullDexMod);
     const flatDodge = hasUncannyDodge ? effectiveDodge : 0;
@@ -8225,6 +8256,7 @@ const RuleEngine = {
     totalAC -= totalPenalty;
     touchAC -= totalPenalty;
     flatAC -= totalPenalty;
+    const incorporealTouchAC = touchAC + incorporealBonus;
 
     character.acBreakdown = {
       armor: effectiveArmor,
@@ -8246,6 +8278,8 @@ const RuleEngine = {
       penalty: totalPenalty,
       total: totalAC,
       touch: touchAC,
+      incorporealTouch: incorporealTouchAC,
+      incorporealTouchBonus: incorporealBonus,
       flat: flatAC,
       flatFooted: flatAC,
       armorCategory: equippedArmorCategory,

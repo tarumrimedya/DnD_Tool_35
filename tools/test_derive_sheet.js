@@ -4514,6 +4514,31 @@ function runDeriveSheetTests() {
       `withShield=${JSON.stringify(ssWithShield.ac)}, noShield=${JSON.stringify(ssNoShield.ac)}, withWard=${JSON.stringify(ssWithWard.ac)}, custom2=${JSON.stringify(ssCustomPlus2.ac)}`
     );
 
+    // Ghost Touch / force effects vs incorporeal touch (PHB incorporeal subtype, DMG Ghost Touch): armor and shield bonuses
+    // count only when they are force effects (Bracers of Armor, Mage Armor) or the item has the Ghost Touch property.
+    const makeIncorpChar = (armorEnh, shieldEnh, extra) => ({
+      name: 'Incorporeal Touch Tester', level: 4, bab: 4,
+      abilities: { str: 14, dex: 12, con: 14, int: 10, wis: 10, cha: 10 }, // DEX +1
+      levelProgression: Array.from({ length: 4 }, (_, i) => ({ level: i + 1, className: 'Fighter', active: true })),
+      bodySlots: Object.assign({
+        armor: { id: 'arm-chain-shirt', name: 'Chain Shirt', type: 'Armor', category: 'Light', active: true, equipped: true, enhancements: armorEnh, armor: { armorType: 'Light', armorBonus: 4, maxDex: 4 } },
+        offHand: { id: 'arm-shield-heavy-steel', name: 'Heavy Steel Shield', type: 'Shield', category: 'Shield', active: true, equipped: true, enhancements: shieldEnh, armor: { armorType: 'Shield', armorBonus: 2 } }
+      }, extra || {}),
+      customEntries: {}
+    });
+    const incPlain = RuleEngine.deriveSheet(makeIncorpChar([], []));
+    const incArmorGt = RuleEngine.deriveSheet(makeIncorpChar(['enh-ghost-touch-armor'], []));
+    const incBothGt = RuleEngine.deriveSheet(makeIncorpChar(['enh-ghost-touch-armor'], ['enh-ghost-touch-armor']));
+    check(
+      'Ghost Touch: armor / shield bonuses count against incorporeal touch only on Ghost Touch items (plain gear adds nothing)',
+      Boolean(
+        incPlain.ac.touch === 11 && incPlain.ac.incorporealTouch === 11 &&
+        incArmorGt.ac.touch === 11 && incArmorGt.ac.incorporealTouch === 15 &&   // +4 chain shirt armor bonus only
+        incBothGt.ac.incorporealTouch === 17                                    // +4 armor +2 shield
+      ),
+      JSON.stringify({ plain: [incPlain.ac.touch, incPlain.ac.incorporealTouch], armorGt: [incArmorGt.ac.touch, incArmorGt.ac.incorporealTouch], both: [incBothGt.ac.touch, incBothGt.ac.incorporealTouch] })
+    );
+
     // Sprint C.6 Finding 1 (C6-F1): V3 Potion of Cure Light Wounds in Compendium + parseConsumablePlan + customEntries override
     const potClw = Comp.getById('pot-cure-light-wounds');
     const potHeal = Comp.getById('pot-heal');
