@@ -1,14 +1,14 @@
 {
   "schemaVersion": 3,
   "version": "3.0.0",
-  "compendiumHash": "40b4c9ffd9fb35fe",
+  "compendiumHash": "bf71c2314d0f2539",
   "generatedAt": "2026-11-15T19:43:51.694Z",
   "totalEntries": 7987,
   "chunks": {
     "srd_equipment.json": {
       "count": 1143,
       "bytes": 1873880,
-      "hash": "7d2a79d31d55801a",
+      "hash": "837fd3c9925877c5",
       "eagerLoad": true
     },
     "srd_feats.json": {
@@ -50,7 +50,7 @@
     "mic_compendium.json": {
       "count": 953,
       "bytes": 1898703,
-      "hash": "454540315e8d5c7f",
+      "hash": "1e485a7680aa4328",
       "eagerLoad": true
     },
     "srd_domains.json": {

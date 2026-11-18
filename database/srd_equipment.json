@@ -13533,7 +13533,7 @@
     },
     "armor": {
       "armorType": "Heavy",
-      "armorBonus": 11,
+      "armorBonus": 8,
       "maxDex": 1,
       "armorCheckPenalty": -5,
       "arcaneSpellFailure": 35,
@@ -13731,7 +13731,7 @@
     },
     "armor": {
       "armorType": "Shield",
-      "armorBonus": 4,
+      "armorBonus": 2,
       "maxDex": null,
       "armorCheckPenalty": -1,
       "arcaneSpellFailure": 15,
@@ -14712,7 +14712,7 @@
     },
     "armor": {
       "armorType": "Heavy",
-      "armorBonus": 14,
+      "armorBonus": 8,
       "maxDex": 1,
       "armorCheckPenalty": -5,
       "arcaneSpellFailure": 35,
@@ -14830,7 +14830,7 @@
     },
     "armor": {
       "armorType": "Heavy",
-      "armorBonus": 9,
+      "armorBonus": 8,
       "maxDex": 1,
       "armorCheckPenalty": -5,
       "arcaneSpellFailure": 35,
@@ -16673,7 +16673,7 @@
     },
     "armor": {
       "armorType": "Shield",
-      "armorBonus": 5,
+      "armorBonus": 2,
       "maxDex": null,
       "armorCheckPenalty": -1,
       "arcaneSpellFailure": 15,
@@ -17586,7 +17586,7 @@
     },
     "armor": {
       "armorType": "Shield",
-      "armorBonus": 3,
+      "armorBonus": 2,
       "maxDex": null,
       "armorCheckPenalty": -1,
       "arcaneSpellFailure": 15,
@@ -18761,7 +18761,7 @@
     },
     "armor": {
       "armorType": "Medium",
-      "armorBonus": 9,
+      "armorBonus": 8,
       "maxDex": 3,
       "armorCheckPenalty": -3,
       "arcaneSpellFailure": 25,
@@ -19770,7 +19770,7 @@
     },
     "armor": {
       "armorType": "Medium",
-      "armorBonus": 9,
+      "armorBonus": 3,
       "maxDex": 4,
       "armorCheckPenalty": -2,
       "arcaneSpellFailure": 20,
@@ -20715,7 +20715,7 @@
     },
     "armor": {
       "armorType": "Heavy",
-      "armorBonus": 9,
+      "armorBonus": 8,
       "maxDex": 1,
       "armorCheckPenalty": -5,
       "arcaneSpellFailure": 35,
@@ -21429,7 +21429,7 @@
     },
     "armor": {
       "armorType": "Heavy",
-      "armorBonus": 18,
+      "armorBonus": 8,
       "maxDex": 1,
       "armorCheckPenalty": -5,
       "arcaneSpellFailure": 35,
@@ -23069,7 +23069,7 @@
     },
     "armor": {
       "armorType": "Heavy",
-      "armorBonus": 9,
+      "armorBonus": 6,
       "maxDex": 1,
       "armorCheckPenalty": -5,
       "arcaneSpellFailure": 35,
@@ -24896,7 +24896,7 @@
     },
     "armor": {
       "armorType": "Light",
-      "armorBonus": 8,
+      "armorBonus": 5,
       "maxDex": 8,
       "armorCheckPenalty": -2,
       "arcaneSpellFailure": 15,
@@ -24958,7 +24958,7 @@
     },
     "armor": {
       "armorType": "Heavy",
-      "armorBonus": 9,
+      "armorBonus": 8,
       "maxDex": 1,
       "armorCheckPenalty": -5,
       "arcaneSpellFailure": 35,
@@ -25465,7 +25465,7 @@
     },
     "armor": {
       "armorType": "Heavy",
-      "armorBonus": 12,
+      "armorBonus": 8,
       "maxDex": 1,
       "armorCheckPenalty": -5,
       "arcaneSpellFailure": 35,
@@ -26045,7 +26045,7 @@
     },
     "armor": {
       "armorType": "Light",
-      "armorBonus": 11,
+      "armorBonus": 5,
       "maxDex": 5,
       "armorCheckPenalty": -1,
       "arcaneSpellFailure": 15,
@@ -26935,7 +26935,7 @@
     },
     "armor": {
       "armorType": "Shield",
-      "armorBonus": 8,
+      "armorBonus": 2,
       "maxDex": null,
       "armorCheckPenalty": -1,
       "arcaneSpellFailure": 15,
@@ -27162,7 +27162,7 @@
     },
     "armor": {
       "armorType": "Shield",
-      "armorBonus": 3,
+      "armorBonus": 2,
       "maxDex": null,
       "armorCheckPenalty": -1,
       "arcaneSpellFailure": 15,
@@ -28706,7 +28706,7 @@
     },
     "armor": {
       "armorType": "Medium",
-      "armorBonus": 5,
+      "armorBonus": 3,
       "maxDex": 4,
       "armorCheckPenalty": -1,
       "arcaneSpellFailure": 20,
@@ -28813,7 +28813,7 @@
     },
     "armor": {
       "armorType": "Medium",
-      "armorBonus": 7,
+      "armorBonus": 5,
       "maxDex": 3,
       "armorCheckPenalty": -3,
       "arcaneSpellFailure": 25,
@@ -29009,7 +29009,7 @@
     },
     "armor": {
       "armorType": "Light",
-      "armorBonus": 12,
+      "armorBonus": 5,
       "maxDex": 8,
       "armorCheckPenalty": -2,
       "arcaneSpellFailure": 15,
@@ -35007,7 +35007,7 @@
     },
     "armor": {
       "armorType": "Light",
-      "armorBonus": 9,
+      "armorBonus": 4,
       "maxDex": 4,
       "armorCheckPenalty": -1,
       "arcaneSpellFailure": 20,
@@ -35176,7 +35176,7 @@
     },
     "armor": {
       "armorType": "Shield",
-      "armorBonus": 2,
+      "armorBonus": 1,
       "maxDex": null,
       "armorCheckPenalty": 0,
       "arcaneSpellFailure": 0,
@@ -35257,7 +35257,7 @@
     },
     "armor": {
       "armorType": "Heavy",
-      "armorBonus": 13,
+      "armorBonus": 8,
       "maxDex": 1,
       "armorCheckPenalty": -5,
       "arcaneSpellFailure": 35,
