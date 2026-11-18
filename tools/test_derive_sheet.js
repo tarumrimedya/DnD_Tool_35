@@ -1536,6 +1536,35 @@ function runDeriveSheetTests() {
     renamedPoolAfterUnequip.length === 1 && renamedPoolAfterUnequip[0].isEquipped === false &&
     CharStore.getDoc().gearPool.filter(i => i && i.name === 'Oathkeeper').length === 1
   );
+  // Wondrous item rename (Rule Crafter on a non-chassis item): equipped neck slot follows the pool row,
+  // category stays "Wondrous" and edited powers[] are stored on both rows.
+  const wondrousDoc = JSON.parse(JSON.stringify(r4Doc));
+  wondrousDoc.gearPool.push({
+    id: 'pool_test_rename_necklace', schemaVersion: 3, baseItemId: 'mi-necklace-of-fireballs', name: 'Necklace of Fireballs',
+    category: 'Wondrous', slot: 'Neck', qty: 1, weight: 0, cost: 0, effects: []
+  });
+  CharStore.replaceDoc(wondrousDoc, { skipHistory: true });
+  CharStore.dispatch({ type: 'inventory/equipPoolItem', payload: { itemId: 'pool_test_rename_necklace', forceSlotKey: 'neck' } });
+  const necklaceRow = CharStore.getDoc().gearPool.find(i => i && i.id === 'pool_test_rename_necklace');
+  const editedPowers = [{ id: 'pw-test-sphere', kind: 'inline', name: 'Hurl Sphere (Fireball)', action: 'Standard', usage: { mode: 'charges' }, save: { type: 'Reflex', effect: 'Half' }, saveDC: 14, effects: [] }];
+  CharStore.dispatch({
+    type: 'inventory/reforgeItem',
+    payload: {
+      targetContext: { originalItem: necklaceRow, targetSlotKey: null },
+      itemData: { id: 'pool_test_rename_necklace', schemaVersion: 3, name: 'Necklace of Fireballs (Type III)', category: 'Wondrous', slot: 'Neck', customEntryId: 'crafted_item_test_necklace', effects: [], powers: editedPowers }
+    }
+  });
+  const neckDoc = CharStore.getDoc();
+  const neckPool = neckDoc.gearPool.find(i => i && i.id === 'pool_test_rename_necklace');
+  check(
+    'Inventory rename: wondrous item rename updates its pool row and linked neck slot, keeps category, baseItemId and edited powers[]',
+    CharStore.getLastOutcome()?.status === 'item_reforged' &&
+    neckPool && neckPool.name === 'Necklace of Fireballs (Type III)' && neckPool.category === 'Wondrous' &&
+    neckPool.baseItemId === 'mi-necklace-of-fireballs' && Array.isArray(neckPool.powers) && neckPool.powers[0].id === 'pw-test-sphere' &&
+    neckDoc.bodySlots.neck.name === 'Necklace of Fireballs (Type III)' && neckDoc.bodySlots.neck.poolItemId === 'pool_test_rename_necklace' &&
+    Array.isArray(neckDoc.bodySlots.neck.powers) && neckDoc.bodySlots.neck.powers.length === 1,
+    JSON.stringify({ pool: neckPool && [neckPool.name, neckPool.category, neckPool.baseItemId], slot: neckDoc.bodySlots.neck && neckDoc.bodySlots.neck.name })
+  );
   CharStore.replaceDoc(r4Doc, { skipHistory: true });
   CharStore.clearHistory();
 

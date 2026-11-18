@@ -2501,6 +2501,8 @@
     const clonedBash = (forgedItem.bash && typeof forgedItem.bash === 'object') ? JSON.parse(JSON.stringify(forgedItem.bash)) : null;
 
     const clonedEffects = Array.isArray(forgedItem.effects) ? JSON.parse(JSON.stringify(forgedItem.effects)) : [];
+    const hasForgedPowers = Array.isArray(forgedItem.powers);
+    const clonedPowers = hasForgedPowers ? JSON.parse(JSON.stringify(forgedItem.powers)) : null;
     const rollEffects = clonedEffects.filter(e => e && e.type === 'roll' && (!e.kind || e.kind === 'Damage'));
     const primaryRoll = rollEffects[0] || null;
     const clonedWeapon = forgedItem.weapon ? JSON.parse(JSON.stringify(forgedItem.weapon)) : null;
@@ -2543,6 +2545,7 @@
       poolItem.enhancementBonus = Number(forgedItem.enhancementBonus) || 0;
       poolItem.enhancements = Array.isArray(forgedItem.enhancements) ? forgedItem.enhancements.slice() : [];
       poolItem.effects = JSON.parse(JSON.stringify(clonedEffects));
+      if (hasForgedPowers) poolItem.powers = JSON.parse(JSON.stringify(clonedPowers));
       poolItem.weapon = clonedWeapon ? JSON.parse(JSON.stringify(clonedWeapon)) : undefined;
       poolItem.armor = clonedArmor ? JSON.parse(JSON.stringify(clonedArmor)) : undefined;
       poolItem.modes = clonedModes;
@@ -2595,6 +2598,7 @@
       sd.enhancementBonus = Number(forgedItem.enhancementBonus) || 0;
       sd.enhancements = Array.isArray(forgedItem.enhancements) ? forgedItem.enhancements.slice() : [];
       sd.effects = JSON.parse(JSON.stringify(clonedEffects));
+      if (hasForgedPowers) sd.powers = JSON.parse(JSON.stringify(clonedPowers));
       sd.weapon = clonedWeapon ? JSON.parse(JSON.stringify(clonedWeapon)) : undefined;
       sd.armor = clonedArmor ? JSON.parse(JSON.stringify(clonedArmor)) : undefined;
       sd.modes = JSON.parse(JSON.stringify(clonedModes));

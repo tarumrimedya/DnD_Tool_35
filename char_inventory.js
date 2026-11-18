@@ -7200,12 +7200,15 @@
       }
     }
 
+    // Rule Crafter editing (rename, effects, powers): weapon/armor/shield chassis and permanent magic items
+    // (slotted or slotless wondrous items, rings, rods, staffs). Consumables, tools and crystals stay read-only.
+    const FORGE_EDITABLE_GEAR_CATEGORIES = ['Weapon', 'Armor', 'Shield', 'Head', 'Eyes', 'Neck', 'Shoulders', 'Torso', 'Belt', 'Bracers', 'Gloves', 'Ring', 'Boots', 'Rod', 'Staff', 'Wondrous'];
     function isForgeEditableItem(item) {
       if (!item || !item.name || item.name === '-') return false;
       const directCat = String(item.category || item.type || '').trim();
       if (['Weapon', 'Armor', 'Shield'].includes(directCat)) return true;
       const mapped = typeof mapEntryToGearCategory === 'function' ? mapEntryToGearCategory(item) : 'Other';
-      return ['Weapon', 'Armor', 'Shield'].includes(mapped);
+      return FORGE_EDITABLE_GEAR_CATEGORIES.includes(mapped);
     }
     window.isForgeEditableItem = isForgeEditableItem;
 
@@ -7334,7 +7337,9 @@
       v3Saved._crafterOverride = true;
 
       let assembled = null;
-      const isChassisItem = v3Entry.blueprint === 'weapon' || v3Entry.blueprint === 'armor' || Boolean(v3Entry.baseItemId || v3Entry.weapon || v3Entry.armor);
+      // Wondrous items carry a baseItemId too, but are not weapon/armor chassis for ItemAssembler.
+      const isChassisItem = v3Entry.blueprint === 'weapon' || v3Entry.blueprint === 'armor'
+        || (v3Entry.blueprint !== 'wondrous' && Boolean(v3Entry.baseItemId || v3Entry.weapon || v3Entry.armor));
       if (isChassisItem && assembler && typeof assembler.assemble === 'function' && comp) {
         let baseLookup = v3Entry.baseItemId || (originalItem && originalItem.baseItemId) || '';
         const normStub = String(baseLookup).replace(/^shield_/, '').replace(/_/g, '-');
@@ -7416,6 +7421,12 @@
       out.name = v3Entry.name || out.name;
       // An assembled weapon chassis reports its proficiency group ("Martial") as category; inventory rows use "Weapon".
       if (v3Entry.blueprint === 'weapon' || (v3Entry.weapon && !v3Entry.armor && v3Entry.blueprint !== 'armor')) out.category = 'Weapon';
+      else if (!isChassisItem && originalItem && originalItem.category && originalItem.category !== 'Other') {
+        // Non-chassis magic items keep their inventory category/slot (e.g. "Wondrous" / "Slotless", "Neck").
+        out.category = originalItem.category;
+        if (originalItem.slot && !(v3Entry.item && v3Entry.item.slot)) out.slot = originalItem.slot;
+      }
+      out.powers = Array.isArray(v3Entry.powers) ? JSON.parse(JSON.stringify(v3Entry.powers)) : [];
       if (v3Entry.gpValue !== undefined) {
         out.cost = Number(v3Entry.gpValue) || 0;
         out.priceGp = out.cost;
