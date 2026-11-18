@@ -307,6 +307,44 @@ function runDeriveSheetTests() {
     `medArmor=${v03MedArmor.combat.weapons[0].evaluated.netFlatDamage}, medLoad=${v03MedLoad.combat.weapons[0].evaluated.netFlatDamage}, greatsword=${greatswordEval.netFlatDamage}`
   );
 
+  // Carried consumables grant nothing until used (DMG p.229); non-consumable slotless gear (Stone of Good Luck) works while carried.
+  const heroismEffects = [{ type: 'stat', targets: ['atk.all', 'save.all', 'skill.all'], mode: 'flat', value: 2, btype: 'Morale' }];
+  const v03Plain = RuleEngine.deriveSheet(JSON.parse(JSON.stringify(f03Raw)), []);
+  const f03Potion = JSON.parse(JSON.stringify(f03Raw));
+  f03Potion.gearPool = (f03Potion.gearPool || []).concat([{
+    id: 'gp-heroism', baseItemId: 'pot-heroism', name: 'Potion of Heroism', category: 'Consumable', slot: 'Slotless',
+    qty: 1, isBelt: true, isEquipped: false, schemaVersion: 3, effects: heroismEffects
+  }]);
+  const v03Potion = RuleEngine.deriveSheet(f03Potion, []);
+  const f03Drunk = JSON.parse(JSON.stringify(f03Potion));
+  f03Drunk.buffs = (f03Drunk.buffs || []).concat([{ id: 'buff-heroism', name: 'Heroism', category: 'Buff', active: true, schemaVersion: 3, effects: heroismEffects }]);
+  const v03Drunk = RuleEngine.deriveSheet(f03Drunk, []);
+  const f03Stone = JSON.parse(JSON.stringify(f03Raw));
+  f03Stone.gearPool = (f03Stone.gearPool || []).concat([{
+    id: 'gp-luckstone', name: 'Stone of Good Luck (Luckstone)', category: 'Wondrous Item', slot: 'Slotless', qty: 1, isEquipped: false,
+    schemaVersion: 3, effects: [{ type: 'stat', targets: ['save.all'], mode: 'flat', value: 1, btype: 'Luck' }]
+  }]);
+  const v03Stone = RuleEngine.deriveSheet(f03Stone, []);
+  check(
+    '03_twf_rogue_swashbuckler_lvl12: carried Potion of Heroism adds no save bonus; drinking it (active Heroism buff) adds +2 Morale; carried Luckstone adds +1 Luck',
+    v03Potion.saves.fort === v03Plain.saves.fort && v03Potion.saves.ref === v03Plain.saves.ref && v03Potion.saves.will === v03Plain.saves.will &&
+    v03Drunk.saves.fort === v03Plain.saves.fort + 2 && v03Drunk.saves.will === v03Plain.saves.will + 2 &&
+    v03Stone.saves.fort === v03Plain.saves.fort + 1,
+    `plain=${v03Plain.saves.fort}/${v03Plain.saves.ref}/${v03Plain.saves.will}, carried=${v03Potion.saves.fort}/${v03Potion.saves.ref}/${v03Potion.saves.will}, drunk=${v03Drunk.saves.fort}/${v03Drunk.saves.will}, luckstone=${v03Stone.saves.fort}`
+  );
+
+  // Derived character.ruleFlags from a previous recalculation must not feed back: removed sources drop their flags.
+  const f03Stale = JSON.parse(JSON.stringify(f03Raw));
+  f03Stale.ruleFlags = Object.assign({}, f03Stale.ruleFlags || {}, { conToWillSave: true, hasSteadfastDetermination: true, durationRounds: 500, spellRef: 'Heroism' });
+  const v03Stale = RuleEngine.deriveSheet(f03Stale, []);
+  const staleFlags = (v03Stale._workingSnapshot && v03Stale._workingSnapshot.ruleFlags) || {};
+  check(
+    '03_twf_rogue_swashbuckler_lvl12: stale persisted ruleFlags (Steadfast Determination, Heroism duration) are dropped when no source grants them',
+    v03Stale.saves.will === v03Plain.saves.will && v03Stale.saves.willAbility === 'WIS' &&
+    !staleFlags.conToWillSave && !('durationRounds' in staleFlags) && !('spellRef' in staleFlags),
+    `will=${v03Stale.saves.will} (plain ${v03Plain.saves.will}), ability=${v03Stale.saves.willAbility}, flags=${JSON.stringify({ c: staleFlags.conToWillSave, d: staleFlags.durationRounds, s: staleFlags.spellRef })}`
+  );
+
   // Multi-Render Temp HP Stability Gate (Fixture 04 Greater Heroism)
   CharStore.clearHistory();
   CharStore.dispatch({ type: 'doc/replace', payload: f04Raw, meta: { skipHistory: true } });

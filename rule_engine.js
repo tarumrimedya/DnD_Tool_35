@@ -3516,6 +3516,31 @@ const RuleEngine = {
     return collected;
   },
 
+  // Consumables (potions, oils, scrolls, wands, belt-carried items) apply their effects only when used, via the buff
+  // they create (DMG p.229 potions, p.237 scrolls, p.245 wands); carrying one grants nothing.
+  isConsumableGearItem(item, dbEntry = null) {
+    if (!item || typeof item !== 'object') return false;
+    const cat = String(item.category || '').toLowerCase().trim();
+    if (cat === 'weapon' || cat === 'armor' || cat === 'shield') return false;
+    const consumableRe = /\b(consumable|potion|oil|scroll|wand|elixir)\b/;
+    const typeHints = [cat, item.type, item.item?.subtype, dbEntry?.type, dbEntry?.category, dbEntry?.item?.subtype]
+      .map(v => String(v || '').toLowerCase());
+    if (typeHints.some(v => consumableRe.test(v))) return true;
+    if (item.isBelt || item.inBelt) return true;
+    return /^(potion|oil|scroll|wand|elixir) of\b/.test(String(item.name || '').toLowerCase().trim());
+  },
+
+  // A gear-pool item contributes passive bonuses only when equipped, or when it is non-consumable slotless/wondrous
+  // gear that works while carried (Stone of Good Luck, Ioun Stones).
+  isPassiveGearPoolItem(item, dbEntry = null) {
+    if (!item || typeof item !== 'object') return false;
+    if (item.isEquipped || item.equipped) return true;
+    if (this.isConsumableGearItem(item, dbEntry)) return false;
+    const slotLow = String(item.slot || dbEntry?.slot || '').toLowerCase();
+    const catLow = String(item.category || '').toLowerCase();
+    return slotLow.includes('slotless') || catLow === 'other' || catLow === 'wondrous item';
+  },
+
   // Single Unified V2.5 Composable Lego Evaluation Pipeline
   // Stages: 1. Grants/Synergies -> 2. Selector Modifiers -> 3. Stat/Sub-Component Modifiers -> 4. Defenses -> 5. Resources -> 6. Modes
   evaluateLegoCharacter(character, candidatePool = [], options = {}) {
@@ -8249,9 +8274,7 @@ const RuleEngine = {
         if (!rawItem || !rawItem.name) return;
         const item = this.ensureV2Entry(rawItem);
         const dbEntry = this.getMasterDbEntry(item);
-        const isSlotless = (item.slot || dbEntry?.slot || '').toLowerCase().includes('slotless')
-          || (item.category || '').toLowerCase() === 'other';
-        if (!item.isEquipped && !item.equipped && !isSlotless) return;
+        if (!this.isPassiveGearPoolItem(item, dbEntry)) return;
 
         const itemMods = (Array.isArray(item.modifiers) && item.modifiers.length > 0)
           ? item.modifiers
@@ -8721,7 +8744,7 @@ const RuleEngine = {
     const netBonusRef = this.resolveBonusStacking(saveBonusBuckets.ref, character) + (bcBucketEntry || hasV3BattleClarity ? 0 : battleClarityBonus);
     const netBonusWill = this.resolveBonusStacking(saveBonusBuckets.will, character);
 
-    if (character.ruleFlags?.conToWillSave) {
+    if (this.evaluateRuleFlags(character).conToWillSave) {
       hasSteadfastDetermination = true;
     }
 
@@ -9002,9 +9025,8 @@ const RuleEngine = {
       });
     };
 
-    if (character.ruleFlags && typeof character.ruleFlags === 'object') {
-      mergeFlags(character.ruleFlags);
-    }
+    // `character.ruleFlags` is this function's own previous output, so it is never read back as input: a flag must
+    // disappear once its source feat, item or buff is removed or deactivated.
 
     // Merge declarative ruleFlags from character feats, abilities, progression & Compendium entries
     activeFeatAndAbilityPool.forEach(f => {
@@ -10676,10 +10698,7 @@ const RuleEngine = {
         const item = character.gearPool[i];
         if (!item || !item.name) continue;
         if ((item.id && activeSlotIds.has(item.id)) || activeSlotNames.has(item.name)) continue;
-        const slotLow = String(item.slot || '').toLowerCase();
-        const catLow = String(item.category || '').toLowerCase();
-        const isSlotless = slotLow.includes('slotless') || catLow === 'other' || catLow === 'wondrous item';
-        if (item.isEquipped || isSlotless) {
+        if (this.isPassiveGearPoolItem(item)) {
           const chain = buildItemChain(item);
           if (chain) itemChains.push(chain);
         }
