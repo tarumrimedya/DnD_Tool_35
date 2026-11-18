@@ -4263,7 +4263,7 @@
           "category": "Class Feature",
           "type": "Ex",
           "summary": "Gain a +10 ft. enhancement bonus to unarmored speed (+10 ft. every 3 Monk levels).",
-          "id": "cab-fast-movement"
+          "id": "cab-monk-fast-movement"
         },
         {
           "name": "Still Mind (Ex)",
@@ -4315,7 +4315,7 @@
           "category": "Class Feature",
           "type": "Ex",
           "summary": "Unarmored enhancement bonus to speed increases to +20 ft.",
-          "id": "cab-fast-movement"
+          "id": "cab-monk-fast-movement"
         },
         {
           "name": "Slow Fall 30 ft. (Ex)",
@@ -4354,7 +4354,7 @@
           "category": "Class Feature",
           "type": "Ex",
           "summary": "Unarmored enhancement bonus to speed increases to +30 ft.",
-          "id": "cab-fast-movement"
+          "id": "cab-monk-fast-movement"
         }
       ],
       "10": [
@@ -4406,7 +4406,7 @@
           "category": "Class Feature",
           "type": "Ex",
           "summary": "Unarmored enhancement bonus to speed increases to +40 ft.",
-          "id": "cab-fast-movement"
+          "id": "cab-monk-fast-movement"
         },
         {
           "name": "Slow Fall 60 ft. (Ex)",
@@ -4445,7 +4445,7 @@
           "category": "Class Feature",
           "type": "Ex",
           "summary": "Unarmored enhancement bonus to speed increases to +50 ft.",
-          "id": "cab-fast-movement"
+          "id": "cab-monk-fast-movement"
         },
         {
           "name": "AC Bonus +3 (Ex)",
@@ -4489,7 +4489,7 @@
           "category": "Class Feature",
           "type": "Ex",
           "summary": "Unarmored enhancement bonus to speed increases to +60 ft.",
-          "id": "cab-fast-movement"
+          "id": "cab-monk-fast-movement"
         },
         {
           "name": "Slow Fall 90 ft. (Ex)",
@@ -4675,7 +4675,7 @@
               "kind": "ref",
               "name": "Fast Movement +10 ft (Ex)",
               "abilityType": "Ex",
-              "refId": "cab-fast-movement",
+              "refId": "cab-monk-fast-movement",
               "text": "Gain a +10 ft. enhancement bonus to unarmored speed (+10 ft. every 3 Monk levels).",
               "category": "Class Feature"
             },
@@ -4758,7 +4758,7 @@
               "kind": "ref",
               "name": "Fast Movement +20 ft (Ex)",
               "abilityType": "Ex",
-              "refId": "cab-fast-movement",
+              "refId": "cab-monk-fast-movement",
               "text": "Unarmored enhancement bonus to speed increases to +20 ft.",
               "category": "Class Feature"
             },
@@ -4826,7 +4826,7 @@
               "kind": "ref",
               "name": "Fast Movement +30 ft (Ex)",
               "abilityType": "Ex",
-              "refId": "cab-fast-movement",
+              "refId": "cab-monk-fast-movement",
               "text": "Unarmored enhancement bonus to speed increases to +30 ft.",
               "category": "Class Feature"
             }
@@ -4909,7 +4909,7 @@
               "kind": "ref",
               "name": "Fast Movement +40 ft (Ex)",
               "abilityType": "Ex",
-              "refId": "cab-fast-movement",
+              "refId": "cab-monk-fast-movement",
               "text": "Unarmored enhancement bonus to speed increases to +40 ft.",
               "category": "Class Feature"
             },
@@ -4977,7 +4977,7 @@
               "kind": "ref",
               "name": "Fast Movement +50 ft (Ex)",
               "abilityType": "Ex",
-              "refId": "cab-fast-movement",
+              "refId": "cab-monk-fast-movement",
               "text": "Unarmored enhancement bonus to speed increases to +50 ft.",
               "category": "Class Feature"
             },
@@ -5051,7 +5051,7 @@
               "kind": "ref",
               "name": "Fast Movement +60 ft (Ex)",
               "abilityType": "Ex",
-              "refId": "cab-fast-movement",
+              "refId": "cab-monk-fast-movement",
               "text": "Unarmored enhancement bonus to speed increases to +60 ft.",
               "category": "Class Feature"
             },
@@ -5118,28 +5118,6 @@
         }
       ]
     },
-    "effects": [
-      {
-        "type": "stat",
-        "targets": [
-          "ac.total"
-        ],
-        "mode": "formula",
-        "value": 0,
-        "formula": "floor(@classes.monk.level/5)+max(0,@wisMod)",
-        "btype": "Inherent"
-      },
-      {
-        "type": "stat",
-        "targets": [
-          "speed.land"
-        ],
-        "mode": "formula",
-        "value": 0,
-        "formula": "floor(@classes.monk.level / 3) * 10",
-        "btype": "Enhancement"
-      }
-    ],
     "shortDescription": "Unarmed martial artist with all good saving throws, Flurry of Blows, Evasion, and high speed.",
     "text": "For the truly exemplary, martial skill transcends the battlefield—it is a lifestyle, a doctrine, a state of mind. These warrior-artists search out methods of battle beyond swords and shields, finding weapons within themselves just as capable of crippling or killing as any blade. These monks (so called since they adhere to ancient philosophies and strict martial disciplines) elevate their bodies to become weapons of war, from battle-minded ascetics to self-taught brawlers. Monks tread the path of discipline, and those with the will to endure that path discover within themselves not what they are, but what they are meant to be.\n\nAlignment: Any lawful.\n\nHit Die: d8.\n\nClass Skills\n\nThe monk’s class skills (and the key ability for each skill) are Balance (Dex), Climb (Str), Concentration (Con), Craft (Int), Diplomacy (Cha), Escape Artist (Dex), Hide (Dex), Jump (Str), Knowledge (arcana) (Int), Knowledge (religion) (Int), Listen (Wis), Move Silently (Dex), Perform (Cha), Profession (Wis), Sense Motive (Wis), Spot (Wis), Swim (Str), and Tumble (Dex).\n\nSkill Points at 1st Level: (4 + Int modifier) x4.\n\nSkill Points at Each Additional Level: 4 + Int modifier.\n\nEx-Monks\n\nA monk who becomes nonlawful cannot gain new levels as a monk but retains all monk abilities.\n\nLike a member of any other class, a monk may be a multiclass character, but multiclass monks face a special restriction. A monk who gains a new class or (if already multiclass) raises another class by a level may never again raise her monk level, though she retains all her monk abilities.\n\nSome description after Pathfinder RPG Core Rulebook. © 2009, Paizo Publishing, LLC; Author: Jason Bulmahn, based on material by Jonathan Tweet, Monte Cook, and Skip Williams. Artwork by Daniel Comerci.",
     "tags": [
@@ -13611,7 +13589,7 @@
           "category": "Special Ability",
           "type": "Ex",
           "summary": "+1 bonus on Reflex saves and AC against traps.",
-          "id": "cab-trap-sense"
+          "id": "cab-dwarven-defender-trap-sense"
         }
       ],
       "5": [
@@ -13667,7 +13645,7 @@
           "category": "Special Ability",
           "type": "Ex",
           "summary": "Trap Sense bonus increases to +2.",
-          "id": "cab-trap-sense"
+          "id": "cab-dwarven-defender-trap-sense"
         }
       ],
       "9": [
@@ -13805,7 +13783,7 @@
               "kind": "ref",
               "name": "Trap Sense +1 (Ex)",
               "abilityType": "Ex",
-              "refId": "cab-trap-sense",
+              "refId": "cab-dwarven-defender-trap-sense",
               "text": "+1 bonus on Reflex saves and AC against traps.",
               "category": "Special Ability"
             }
@@ -13900,7 +13878,7 @@
               "kind": "ref",
               "name": "Trap Sense +2 (Ex)",
               "abilityType": "Ex",
-              "refId": "cab-trap-sense",
+              "refId": "cab-dwarven-defender-trap-sense",
               "text": "Trap Sense bonus increases to +2.",
               "category": "Special Ability"
             }
@@ -18600,10 +18578,6 @@
       [
         "Rogue",
         3
-      ],
-      [
-        "Dwarven Defender",
-        4
       ]
     ],
     "effects": [
@@ -21373,22 +21347,43 @@
       [
         "Barbarian",
         1
+      ],
+      [
+        "Scout",
+        1
       ]
     ],
     "effects": [
       {
-        "type": "stat",
-        "targets": [
-          "speed.land"
-        ],
-        "mode": "flat",
-        "value": 10,
-        "btype": "Untyped"
+        "id": "ef-fm",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-fm-br",
+            "condKind": "state",
+            "condText": "notHeavyArmor & notHeavyLoad",
+            "effects": [
+              {
+                "id": "ef-fm-s",
+                "type": "stat",
+                "targets": [
+                  "speed.land"
+                ],
+                "mode": "flat",
+                "value": 10,
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
       }
     ],
     "tags": [
       "class-ability"
-    ]
+    ],
+    "shortDescription": "Land speed is +10 ft. faster than normal. Applies only when wearing no armor, light armor, or medium armor and not carrying a heavy load.",
+    "text": "Land speed is +10 ft. faster than normal. Applies only when wearing no armor, light armor, or medium armor and not carrying a heavy load."
   },
   {
     "schemaVersion": 3,
@@ -32688,7 +32683,7 @@
           "category": "Special Ability",
           "type": "Ex",
           "summary": "Recall legends or information (1d20 + Loremaster level + INT modifier), functioning like Bardic Knowledge.",
-          "id": "cab-lore"
+          "id": "cab-loremaster-lore"
         },
         {
           "name": "+1 Level of Existing Spellcasting Class",
@@ -32880,7 +32875,7 @@
               "kind": "ref",
               "name": "Lore (Ex)",
               "abilityType": "Ex",
-              "refId": "cab-lore",
+              "refId": "cab-loremaster-lore",
               "text": "Recall legends or information (1d20 + Loremaster level + INT modifier), functioning like Bardic Knowledge.",
               "category": "Special Ability"
             },
@@ -52766,9 +52761,9 @@
         "flow": "while",
         "branches": [
           {
-            "id": "br-monk-ac-1",
+            "id": "ef-monk-ac-when-br",
             "condKind": "state",
-            "condText": "unarmoredNoShield",
+            "condText": "unarmored & noShield & unencumbered",
             "effects": [
               {
                 "id": "ef-monk-ac-wis",
@@ -52777,7 +52772,8 @@
                   "ac.total"
                 ],
                 "mode": "formula",
-                "formula": "max(0, @wisMod) + floor(@monkLevel / 5)",
+                "value": 0,
+                "formula": "max(0, @wisMod) + floor(@classes.monk.level / 5)",
                 "btype": "Untyped"
               }
             ]
@@ -54082,6 +54078,147 @@
     ],
     "shortDescription": "Darkvision 60 ft. (or +30 ft. to existing darkvision).",
     "text": "Darkvision 60 ft. (or +30 ft. to existing darkvision).",
+    "tags": [
+      "class-ability"
+    ]
+  },
+  {
+    "schemaVersion": 3,
+    "id": "cab-monk-fast-movement",
+    "blueprint": "feat",
+    "name": "Fast Movement (Ex)",
+    "type": "ClassAbility",
+    "category": "Class Feature",
+    "source": "SRD / PHB p.41",
+    "featKind": "classAbility",
+    "abilityType": "ex",
+    "associations": [
+      [
+        "Monk",
+        3
+      ]
+    ],
+    "effects": [
+      {
+        "id": "ef-mfm",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-mfm-br",
+            "condKind": "state",
+            "condText": "unarmored & unencumbered",
+            "effects": [
+              {
+                "id": "ef-mfm-s",
+                "type": "stat",
+                "targets": [
+                  "speed.land"
+                ],
+                "mode": "formula",
+                "value": 0,
+                "formula": "floor(@classes.monk.level / 3) * 10",
+                "btype": "Enhancement"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "shortDescription": "Enhancement bonus to land speed: +10 ft. at 3rd level, +10 ft. more every three levels (+60 ft. at 18th). Lost when wearing any armor or carrying a medium or heavy load.",
+    "text": "Enhancement bonus to land speed: +10 ft. at 3rd level, +10 ft. more every three levels (+60 ft. at 18th). Lost when wearing any armor or carrying a medium or heavy load.",
+    "tags": [
+      "class-ability"
+    ]
+  },
+  {
+    "schemaVersion": 3,
+    "id": "cab-dwarven-defender-trap-sense",
+    "blueprint": "feat",
+    "name": "Trap Sense (Ex)",
+    "type": "ClassAbility",
+    "category": "Class Feature",
+    "source": "SRD / DMG",
+    "featKind": "classAbility",
+    "abilityType": "ex",
+    "associations": [
+      [
+        "Dwarven Defender",
+        4
+      ]
+    ],
+    "effects": [
+      {
+        "id": "ef-ddts",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-ddts-br",
+            "condKind": "situational",
+            "condText": "vs. Traps",
+            "effects": [
+              {
+                "id": "ef-ddts-ref",
+                "type": "stat",
+                "targets": [
+                  "save.ref"
+                ],
+                "mode": "formula",
+                "value": 0,
+                "formula": "@classes.dwarven_defender.level >= 8 ? 2 : 1",
+                "btype": "Untyped"
+              },
+              {
+                "id": "ef-ddts-ac",
+                "type": "stat",
+                "targets": [
+                  "ac.dodge"
+                ],
+                "mode": "formula",
+                "value": 0,
+                "formula": "@classes.dwarven_defender.level >= 8 ? 2 : 1",
+                "btype": "Dodge"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "shortDescription": "+1 bonus on Reflex saves made to avoid traps and a +1 dodge bonus to AC against attacks made by traps at 4th level; +2 at 8th level. Stacks with Trap Sense from other classes.",
+    "text": "+1 bonus on Reflex saves made to avoid traps and a +1 dodge bonus to AC against attacks made by traps at 4th level; +2 at 8th level. Stacks with Trap Sense from other classes.",
+    "tags": [
+      "class-ability"
+    ]
+  },
+  {
+    "schemaVersion": 3,
+    "id": "cab-loremaster-lore",
+    "blueprint": "feat",
+    "name": "Lore (Ex)",
+    "type": "ClassAbility",
+    "category": "Class Feature",
+    "source": "SRD / DMG",
+    "featKind": "classAbility",
+    "abilityType": "ex",
+    "associations": [
+      [
+        "Loremaster",
+        2
+      ]
+    ],
+    "effects": [
+      {
+        "id": "ef-lm-lore",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "loreCheck",
+        "label": "Lore check = 1d20 + Loremaster level + INT modifier (functions as Bardic Knowledge)",
+        "text": "Lore Check: 1d20 + Loremaster Level + INT Mod"
+      }
+    ],
+    "shortDescription": "A loremaster gains the ability to know legends or information (1d20 + Loremaster level + Intelligence modifier), functioning like Bardic Knowledge.",
+    "text": "A loremaster gains the ability to know legends or information (1d20 + Loremaster level + Intelligence modifier), functioning like Bardic Knowledge.",
     "tags": [
       "class-ability"
     ]

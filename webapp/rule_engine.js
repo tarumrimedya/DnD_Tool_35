@@ -1254,6 +1254,64 @@ const RuleEngine = {
   // Stat-block targets that are multipliers: their value may be fractional (all other targets are truncated to integers).
   V3_FRACTIONAL_TARGETS: new Set(['healing.receivedMultiplier', 'spell.damageMultiplier', 'carryingCapacity.multiplier']),
 
+  // Worn-gear condition atoms for `when` branches (normalized: lower case, no spaces / `_` / `-`). Each reads getWornGearState().
+  V3_GEAR_ATOMS: {
+    unarmored: g => g.armor === 'none',
+    lightarmor: g => g.armor === 'light',
+    lightornoarmor: g => g.armor === 'none' || g.armor === 'light',
+    notheavyarmor: g => g.armor !== 'heavy',
+    noshield: g => !g.shield,
+    unarmorednoshield: g => g.armor === 'none' && !g.shield,
+    lightornoarmornoshield: g => (g.armor === 'none' || g.armor === 'light') && !g.shield,
+    unencumbered: g => g.load === 'light',
+    notheavyload: g => g.load === 'light' || g.load === 'medium',
+    wieldingmeleeweapon: g => g.meleeWeapon
+  },
+
+  // Equipped-gear snapshot for condition atoms: armor category ('none'|'light'|'medium'|'heavy'), shield, load, wielded
+  // melee weapon. Mirrors the body-slot rules in recalculateCharacter (2.5): active slots only, a two-handed main-hand
+  // weapon disables the off-hand slot.
+  getWornGearState(character) {
+    const ch = character || {};
+    const slots = (ch.bodySlots && typeof ch.bodySlots === 'object') ? ch.bodySlots : {};
+    const mh = slots.mainHand;
+    const oh = slots.offHand;
+    const isDoublePair = mh && oh && this.isDoubleWeapon(mh) && this.isOffHandWeaponHead(oh);
+    const mhTwoHand = Boolean(mh && mh.name && mh.name !== '-' && this.isTwoHandedWeapon(mh) && !isDoublePair);
+    const offHandOff = Boolean(mhTwoHand && oh && oh.active !== false && oh.name && oh.name !== '-');
+    let armor = 'none';
+    let shield = false;
+    let meleeWeapon = false;
+    const isMeleeWeapon = (it) => {
+      if (!it || typeof it !== 'object' || it.active === false || !it.name || it.name === '-') return false;
+      if (this.isShieldItem(it)) return false;
+      const lowName = String(it.name).toLowerCase();
+      if (lowName.includes('unarmed strike')) return false;
+      if (it.isNaturalWeapon || it.ruleFlags?.naturalWeapon || String(it.category || '').toLowerCase() === 'natural') return false;
+      if (it.grip === 'Ranged' || it.isRanged || (Array.isArray(it.tags) && it.tags.includes('ranged')) || String(it.weaponType || '').toLowerCase().includes('ranged')) return false;
+      return this.isDoubleWeapon(it) || this.isOffHandWeaponHead(it) || this.isSimpleWeapon(it) || this.isMartialWeapon(it) || this.isExoticWeapon(it);
+    };
+    Object.entries(slots).forEach(([slotKey, slotData]) => {
+      if (!slotData || slotData.active === false || !slotData.name || slotData.name === '-') return;
+      if (slotKey === 'offHand' && offHandOff) return;
+      if (slotKey === 'mainHand' || slotKey === 'offHand') {
+        if (isMeleeWeapon(slotData)) meleeWeapon = true;
+      }
+      const mods = this.parseItemModifiers(slotData, [], {});
+      if (!mods) return;
+      if (slotKey === 'armor' || (mods.armor > 0 && mods.effectiveArmorCategory)) {
+        armor = String(mods.effectiveArmorCategory || 'Light').toLowerCase();
+      }
+      if (mods.shield > 0 || (slotKey === 'offHand' && this.isShieldItem(slotData))) shield = true;
+    });
+    let load = 'light';
+    try {
+      const st = String(this.computeEncumbrance(ch)?.loadStatus?.status || '').toLowerCase();
+      load = st.includes('overload') ? 'overloaded' : (st.includes('heavy') ? 'heavy' : (st.includes('medium') ? 'medium' : 'light'));
+    } catch (_) { load = 'light'; }
+    return { armor, shield, load, meleeWeapon };
+  },
+
   V3_NAMED_WHEN_CONDS: new Set([
     'notflatfooted', 'wieldingchosenshield', 'wieldingchosenweapon',
     'wieldingtwoweapons', 'vsaoofrommovement', 'castingchosenschool',
@@ -1326,6 +1384,16 @@ const RuleEngine = {
     };
     if ( Object.prototype.hasOwnProperty.call(toggleAliases, low) ) {
       return toggleAliases[low];
+    }
+
+    // 3a. Worn-gear state (armor category, shield, load, wielded melee weapon), read from the equipped body slots so the
+    // answer is correct on the first recalculation pass. Atoms may be joined with `&` ("unarmored & noShield & unencumbered").
+    {
+      const gearAtoms = low.split('&').map(a => a.replace(/[\s_-]+/g, ''));
+      if (gearAtoms.length > 0 && gearAtoms.every(a => Object.prototype.hasOwnProperty.call(this.V3_GEAR_ATOMS, a))) {
+        const gear = this.getWornGearState(ch);
+        return gearAtoms.every(a => this.V3_GEAR_ATOMS[a](gear));
+      }
     }
 
     // 3b. V3 Equipment & Movement Conditions (`wieldingChosenShield`, `wieldingChosenWeapon`, `vsAoOFromMovement`, armor/load checks)
@@ -1401,14 +1469,12 @@ const RuleEngine = {
       return 'qualifier';
     }
     if (low === 'notheavyarmororheavyload') {
-      const armCat = String(ch.effectiveArmorCategory || ch.acBreakdown?.armorCategory || '').toLowerCase();
-      const loadStr = String(ch.encumbrance || ch.loadCategory || ch.carryingLoad || ch.acBreakdown?.load || '').toLowerCase();
-      return armCat !== 'heavy' && !loadStr.includes('heavy') && !loadStr.includes('overload');
+      const gear = this.getWornGearState(ch);
+      return gear.armor !== 'heavy' && gear.load !== 'heavy' && gear.load !== 'overloaded';
     }
     if (low === 'lightornoarmorandlightload') {
-      const armCat = String(ch.effectiveArmorCategory || ch.acBreakdown?.armorCategory || '').toLowerCase();
-      const loadStr = String(ch.encumbrance || ch.loadCategory || ch.carryingLoad || ch.acBreakdown?.load || '').toLowerCase();
-      return armCat !== 'medium' && armCat !== 'heavy' && !loadStr.includes('medium') && !loadStr.includes('heavy') && !loadStr.includes('overload');
+      const gear = this.getWornGearState(ch);
+      return gear.armor !== 'medium' && gear.armor !== 'heavy' && gear.load === 'light';
     }
 
     // 4. HP Thresholds (`hp <= 50%`, `hp < 50%`, `bloodied`, `full hp`)

@@ -1,9 +1,9 @@
 {
   "schemaVersion": 3,
   "version": "3.0.0",
-  "compendiumHash": "5a5ad173d5e4af06",
+  "compendiumHash": "40b4c9ffd9fb35fe",
   "generatedAt": "2026-11-15T19:43:51.694Z",
-  "totalEntries": 7984,
+  "totalEntries": 7987,
   "chunks": {
     "srd_equipment.json": {
       "count": 1143,
@@ -18,9 +18,9 @@
       "eagerLoad": true
     },
     "srd_classes_races.json": {
-      "count": 323,
+      "count": 326,
       "bytes": 1611663,
-      "hash": "861e6d9f2eb8092a",
+      "hash": "aba7fa7958227d49",
       "eagerLoad": true
     },
     "srd_combat_rules.json": {
@@ -66029,6 +66029,30 @@
     {
       "id": "cab-shadowdancer-darkvision",
       "n": "Darkvision (Su)",
+      "t": "ClassAbility",
+      "c": "Class Feature",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cab-monk-fast-movement",
+      "n": "Fast Movement (Ex)",
+      "t": "ClassAbility",
+      "c": "Class Feature",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cab-dwarven-defender-trap-sense",
+      "n": "Trap Sense (Ex)",
+      "t": "ClassAbility",
+      "c": "Class Feature",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cab-loremaster-lore",
+      "n": "Lore (Ex)",
       "t": "ClassAbility",
       "c": "Class Feature",
       "s": "None",

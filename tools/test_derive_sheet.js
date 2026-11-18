@@ -5793,6 +5793,76 @@ function runDeriveSheetTests() {
     );
   }
 
+  // Worn-gear conditions (unarmored / noShield / unencumbered ...) read the equipped body slots; class engine gap fixes.
+  {
+    const gcls = (parts, extra) => {
+      const rows = [];
+      parts.forEach(([name, n]) => { for (let i = 0; i < n; i++) rows.push({ level: rows.length + 1, className: name, hd: 'd8', hpGain: 6, active: true, feats: [] }); });
+      const c = Object.assign({
+        name: 'Gear Probe', race: 'Human', classes: parts.map(([n, l]) => `${n} ${l}`).join('/'), level: rows.length, size: 'Medium', baseSpeed: 30,
+        abilities: { str: 14, dex: 14, con: 14, int: 14, wis: 16, cha: 14 }, baseAbilities: { str: 14, dex: 14, con: 14, int: 14, wis: 16, cha: 14 },
+        levelProgression: rows, feats: [], bodySlots: {}, weapons: [], gearPool: [], hp: { max: 60, current: 60 }
+      }, extra || {});
+      RuleEngine.recalculateCharacter(c, []);
+      return c;
+    };
+    const chain = { name: 'Chain Shirt', active: true };
+    const plate = { name: 'Full Plate', active: true };
+    const shield = { name: 'Heavy Steel Shield', active: true };
+    const spd = (c) => RuleEngine.deriveSheet(JSON.parse(JSON.stringify(c))).combat.speed.land;
+    const miscAc = (c) => c.acBreakdown.misc;
+    const load = { gearPool: [{ name: 'Boulder', weight: 150, qty: 1 }] };
+    check(
+      'Gear state: getWornGearState reads armor category, shield and load from the body slots',
+      JSON.stringify(RuleEngine.getWornGearState(gcls([['Fighter', 1]], { bodySlots: { armor: plate, offHand: shield } })))
+        === JSON.stringify({ armor: 'heavy', shield: true, load: 'light', meleeWeapon: false })
+      && RuleEngine.getWornGearState(gcls([['Fighter', 1]])).armor === 'none'
+      && RuleEngine.getWornGearState(gcls([['Fighter', 1]], load)).load === 'heavy',
+      JSON.stringify(RuleEngine.getWornGearState(gcls([['Fighter', 1]], { bodySlots: { armor: plate, offHand: shield } })))
+    );
+    check(
+      'Gear condition: Monk AC bonus (Wis + 1 per 5 levels) is lost with armor, a shield or a medium / heavy load (PHB p.41)',
+      miscAc(gcls([['Monk', 9]])) === 4 && miscAc(gcls([['Monk', 9]], { bodySlots: { armor: chain } })) === 0
+      && miscAc(gcls([['Monk', 9]], { bodySlots: { offHand: shield } })) === 0 && miscAc(gcls([['Monk', 9]], load)) === 0,
+      JSON.stringify([miscAc(gcls([['Monk', 9]])), miscAc(gcls([['Monk', 9]], { bodySlots: { armor: chain } })), miscAc(gcls([['Monk', 9]], { bodySlots: { offHand: shield } })), miscAc(gcls([['Monk', 9]], load))])
+    );
+    check(
+      'Class blocks: Monk Fast Movement is +10 ft. per three levels (3rd +10, 6th +20, 9th +30, 18th +60), lost in any armor or with a medium / heavy load; a shield does not matter',
+      spd(gcls([['Monk', 1]])) === 30 && spd(gcls([['Monk', 3]])) === 40 && spd(gcls([['Monk', 6]])) === 50 && spd(gcls([['Monk', 9]])) === 60
+      && spd(gcls([['Monk', 20]])) === 90 && spd(gcls([['Monk', 9]], { bodySlots: { armor: chain } })) === 30
+      && spd(gcls([['Monk', 9]], { bodySlots: { offHand: shield } })) === 60 && spd(gcls([['Monk', 9]], load)) === 30,
+      JSON.stringify([1, 3, 6, 9, 20].map(l => spd(gcls([['Monk', l]]))))
+    );
+    check(
+      'Class blocks: Barbarian Fast Movement +10 ft. stays in light / medium armor but is lost in heavy armor or with a heavy load (PHB p.25)',
+      spd(gcls([['Barbarian', 5]])) === 40 && spd(gcls([['Barbarian', 5]], { bodySlots: { armor: chain } })) === 40
+      && spd(gcls([['Barbarian', 5]], { bodySlots: { armor: plate } })) === 20 && spd(gcls([['Barbarian', 5]], load)) === 30,
+      JSON.stringify([spd(gcls([['Barbarian', 5]])), spd(gcls([['Barbarian', 5]], { bodySlots: { armor: plate } })), spd(gcls([['Barbarian', 5]], load))])
+    );
+    const ddTrap = (n) => ((gcls([['Dwarven Defender', n]]).conditionalSaveBonuses || []).find(x => /trap/i.test(x.source || '')) || {}).val;
+    check(
+      'Class blocks: Dwarven Defender Trap Sense is +1 at 4th and +2 at 8th (not every three levels); Rogue keeps +1 per three levels',
+      ddTrap(3) === undefined && ddTrap(4) === 1 && ddTrap(7) === 1 && ddTrap(8) === 2 && ddTrap(10) === 2
+      && ((gcls([['Rogue', 9]]).conditionalSaveBonuses || []).find(x => /trap/i.test(x.source || '')) || {}).val === 3,
+      JSON.stringify([3, 4, 7, 8, 10].map(ddTrap))
+    );
+    const dervAc = (extra) => miscAc(gcls([['Dervish', 9]], extra));
+    const duelRef = (extra) => gcls([['Duelist', 4]], extra).saves.ref.total;
+    check(
+      'Gear condition: Dervish AC bonus needs light / no armor and no shield; Duelist Grace and Canny Defense need no armor and no shield',
+      dervAc() === 3 && dervAc({ bodySlots: { armor: chain } }) === 3 && dervAc({ bodySlots: { armor: { name: 'Breastplate', active: true } } }) === 0 && dervAc({ bodySlots: { offHand: shield } }) === 0
+      && duelRef() > duelRef({ bodySlots: { armor: chain } }) && duelRef() > duelRef({ bodySlots: { offHand: shield } }),
+      JSON.stringify([dervAc(), dervAc({ bodySlots: { armor: chain } }), duelRef(), duelRef({ bodySlots: { armor: chain } })])
+    );
+    check(
+      'Class blocks: Loremaster Lore is its own record (Loremaster level), Cloistered Cleric keeps cab-lore; cls-monk carries no dead effects[]',
+      gcls([['Wizard', 7], ['Loremaster', 3]]).legoEvaluation.entries.some(e => e.id === 'cab-loremaster-lore')
+      && !gcls([['Wizard', 7], ['Loremaster', 3]]).legoEvaluation.entries.some(e => e.id === 'cab-lore')
+      && !(RuleEngine.getClassDef('Monk').effects || []).length,
+      ''
+    );
+  }
+
   // Natural weapons (Rule Crafter `attack` block, `attackMode: 'natural'`): Warforged Slam (1d4, primary, uses hands).
   {
     const probe = (raceName, size, str) => {

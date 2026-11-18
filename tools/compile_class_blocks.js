@@ -250,12 +250,55 @@ const NEW_CABS = [
     effects: [defense('ef-shdn-dv', 'Sense / Movement', 'Darkvision 60 ft.')],
     link: [['cls-shadowdancer', /^Darkvision/i]]
   },
+  // Monk (PHB p.41, Table 3-10): +10 ft. per three levels (+60 at 18th); lost in armor (even light) or with a medium / heavy load.
+  // Replaces the dead `cls-monk.effects[]` speed formula and the Barbarian record the Monk rows used to share.
+  {
+    id: 'cab-monk-fast-movement', name: 'Fast Movement (Ex)', source: 'SRD / PHB p.41', abilityType: 'ex',
+    associations: [['Monk', 3]],
+    shortDescription: 'Enhancement bonus to land speed: +10 ft. at 3rd level, +10 ft. more every three levels (+60 ft. at 18th). Lost when wearing any armor or carrying a medium or heavy load.',
+    effects: [whenState('ef-mfm', 'state', 'unarmored & unencumbered', [stat('ef-mfm-s', 'speed.land', `floor(${lvl('monk')} / 3) * 10`, 'Enhancement')])],
+    link: [['cls-monk', /^Fast Movement/i, true]]
+  },
+  // Dwarven Defender (SRD / DMG): Trap Sense +1 at 4th, +2 at 8th (the shared Rogue / Barbarian record counts every three levels).
+  {
+    id: 'cab-dwarven-defender-trap-sense', name: 'Trap Sense (Ex)', source: 'SRD / DMG', abilityType: 'ex',
+    associations: [['Dwarven Defender', 4]],
+    shortDescription: '+1 bonus on Reflex saves made to avoid traps and a +1 dodge bonus to AC against attacks made by traps at 4th level; +2 at 8th level. Stacks with Trap Sense from other classes.',
+    effects: [whenState('ef-ddts', 'situational', 'vs. Traps', [
+      stat('ef-ddts-ref', 'save.ref', `${lvl('dwarven_defender')} >= 8 ? 2 : 1`, 'Untyped'),
+      stat('ef-ddts-ac', 'ac.dodge', `${lvl('dwarven_defender')} >= 8 ? 2 : 1`, 'Dodge')
+    ])],
+    link: [['cls-dwarven-defender', /^Trap Sense/i, true]]
+  },
+  // Loremaster (SRD / DMG): the shared `cab-lore` record is the Cloistered Cleric (UA) one and counts Cleric level.
+  {
+    id: 'cab-loremaster-lore', name: 'Lore (Ex)', source: 'SRD / DMG', abilityType: 'ex',
+    associations: [['Loremaster', 2]],
+    shortDescription: 'A loremaster gains the ability to know legends or information (1d20 + Loremaster level + Intelligence modifier), functioning like Bardic Knowledge.',
+    effects: [{ id: 'ef-lm-lore', type: 'effect', effectKind: 'ruleSwitch', flag: 'loreCheck', label: 'Lore check = 1d20 + Loremaster level + INT modifier (functions as Bardic Knowledge)', text: 'Lore Check: 1d20 + Loremaster Level + INT Mod' }],
+    link: [['cls-loremaster', /^Lore$/i, true]]
+  },
 ];
 
 // ---------------------------------------------------------------------------------------------------------------
 // Patches to existing cab records (rewrite `effects` / `modes`). `link` as above (rows that exist but lack an id).
 // ---------------------------------------------------------------------------------------------------------------
 const PATCHES = {
+  // Barbarian (PHB p.25): +10 ft. with no, light or medium armor and not carrying a heavy load (Scout rows share it).
+  'cab-fast-movement': (rec) => {
+    rec.associations = [['Barbarian', 1], ['Scout', 1]];
+    rec.shortDescription = 'Land speed is +10 ft. faster than normal. Applies only when wearing no armor, light armor, or medium armor and not carrying a heavy load.';
+    rec.text = rec.shortDescription;
+    rec.effects = [whenState('ef-fm', 'state', 'notHeavyArmor & notHeavyLoad', [flat('ef-fm-s', 'speed.land', 10, 'Untyped')])];
+  },
+  // Monk (PHB p.41): the AC bonus is lost with any armor, a shield, or a medium / heavy load (unarmored AND unencumbered).
+  'cab-monk-ac-bonus': (rec) => {
+    rec.effects = [whenState('ef-monk-ac-when', 'state', 'unarmored & noShield & unencumbered', [stat('ef-monk-ac-wis', 'ac.total', `max(0, @wisMod) + floor(${lvl('monk')} / 5)`, 'Untyped')])];
+  },
+  // Trap Sense of the Barbarian and the Rogue: +1 at 3rd, +1 every three levels. Dwarven Defender has its own record.
+  'cab-trap-sense': (rec) => {
+    rec.associations = rec.associations.filter((a) => a[0] !== 'Dwarven Defender');
+  },
   // Greater Rage (11th) and Mighty Rage (20th) were rows of cab-rage but the mode stayed +4/+4/+2.
   'cab-rage': (rec) => {
     const L = lvl('barbarian');
@@ -341,6 +384,10 @@ const REMOVED_CABS = ['cab-dervish-spring-attack', 'cab-thaumaturgist-augment-su
 
 function applyAll(crData) {
   const stats = { created: 0, patched: 0, linked: 0, missingClass: [] };
+  // `cls-monk.effects[]` was never consumed (the engine builds classes from progression rows); its AC / speed live on
+  // cab-monk-ac-bonus / cab-monk-fast-movement.
+  const monkRec = crData.find((e) => e && e.id === 'cls-monk');
+  if (monkRec && monkRec.effects) delete monkRec.effects;
   for (let i = crData.length - 1; i >= 0; i--) if (crData[i] && REMOVED_CABS.includes(crData[i].id)) crData.splice(i, 1);
   crData.forEach((cls) => {
     if (!cls || cls.type !== 'Class') return;
