@@ -4709,8 +4709,22 @@
       }
 
       cardEl.classList.remove('hidden');
+      const tplCharLevel = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.buildFormulaContext === 'function')
+        ? (Number(RuleEngine.buildFormulaContext(character).level) || 1) : (Number(character && character.level) || 1);
       cardEl.innerHTML = entries.map(t => {
         const pills = formatTemplateModifierPills(t);
+        // Template level progression: what the template grants at each character level, gained ones checked.
+        const tplGains = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getEntryLevelGains === 'function')
+          ? RuleEngine.getEntryLevelGains(t, tplCharLevel) : [];
+        const tplGainsHtml = tplGains.length ? `
+            <div class="text-[11px] text-slate-300 bg-slate-950/60 p-2 rounded-lg border border-slate-800/80 space-y-0.5">
+              <div class="text-[10px] font-bold text-emerald-300 uppercase">Template Level Progression (character level ${tplCharLevel})</div>
+              ${tplGains.map(g => `
+                <div class="text-[10px] flex items-start gap-1.5 ${g.unlocked ? 'text-slate-200' : 'text-slate-500'}">
+                  <span class="font-mono font-bold shrink-0 ${g.unlocked ? 'text-emerald-300' : 'text-slate-500'}">${g.unlocked ? '✓' : '○'} Lvl ${g.level}</span>
+                  <span>${g.kind === 'power' ? '⚡' : '✨'} ${escapeRaceHtml(g.name)}${g.summary ? ` <span class="text-slate-500">(${escapeRaceHtml(g.summary)})</span>` : ''}</span>
+                </div>`).join('')}
+            </div>` : '';
         const la = Number(t.levelAdjustment) || 0;
         const cr = Number(t.crIncrease) || 0;
         const imm = Array.isArray(t.immunities) && t.immunities.length > 0 ? t.immunities.join(', ') : '';
@@ -4760,6 +4774,8 @@
                 ${qualities.map(q => `<div class="text-[11px] text-slate-200">• ${escapeRaceHtml(q)}</div>`).join('')}
               </div>
             ` : ''}
+
+            ${tplGainsHtml}
           </div>
         `;
       }).join('');
