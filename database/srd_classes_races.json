@@ -27584,6 +27584,26 @@
         "mode": "Fortification",
         "what": "25% Fortification",
         "value": 25
+      },
+      {
+        "id": "ef-race-half-healing",
+        "type": "stat",
+        "targets": [
+          "healing.receivedMultiplier"
+        ],
+        "mode": "flat",
+        "value": -0.5,
+        "btype": "Untyped"
+      },
+      {
+        "id": "ef-race-plating-asf",
+        "type": "stat",
+        "targets": [
+          "spell.asf"
+        ],
+        "mode": "flat",
+        "value": 5,
+        "btype": "Untyped"
       }
     ],
     "shortDescription": "+2 Constitution, -2 Wisdom, -2 Charisma. Living construct, +2 composite plating armor bonus, light fortification, immune to poison/sleep/paralysis/disease, slam 1d4.",

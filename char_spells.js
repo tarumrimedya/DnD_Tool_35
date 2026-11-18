@@ -1354,7 +1354,7 @@
               </div>
             </div>
             <div class="flex items-center gap-2">
-              <span class="h-8 px-2.5 rounded-lg ${ignoreAsf ? 'bg-emerald-950 text-emerald-300 border border-emerald-600' : 'bg-slate-800 text-slate-400 border border-slate-700'} text-xs font-bold inline-flex items-center">${ignoreAsf ? '🛡️ ASF: 0% (Homebrew)' : '🛡️ ASF: Standard'}</span>
+              <span class="h-8 px-2.5 rounded-lg ${ignoreAsf ? 'bg-emerald-950 text-emerald-300 border border-emerald-600' : 'bg-slate-800 text-slate-400 border border-slate-700'} text-xs font-bold inline-flex items-center">${ignoreAsf ? '🛡️ ASF: 0% (Homebrew)' : `🛡️ ASF: ${Number(character?.arcaneSpellFailure?.total) || 0}%`}</span>
               <button data-action="spells:restore-all-prepared" class="w-40 h-8 bg-sky-800 hover:bg-sky-700 text-white text-xs font-bold px-3 rounded-lg border border-sky-500/50 shadow transition inline-flex items-center justify-center gap-1.5 cursor-pointer">
                 <span>✨</span>
                 <span>Restore All Slots</span>
@@ -3787,7 +3787,7 @@
       const asfBadge = document.getElementById('spells-hud-asf-badge');
       if (asfBadge) {
         const ignoreAsf = character?.settings?.ignoreAsf !== false;
-        asfBadge.textContent = ignoreAsf ? '🛡️ ASF: 0% (Homebrew)' : '🛡️ ASF: Standard';
+        asfBadge.textContent = ignoreAsf ? '🛡️ ASF: 0% (Homebrew)' : `🛡️ ASF: ${Number(character?.arcaneSpellFailure?.total) || 0}%`;
         asfBadge.className = ignoreAsf
           ? 'h-8 px-2.5 rounded-lg bg-emerald-950 text-emerald-300 border border-emerald-600 text-xs font-bold inline-flex items-center'
           : 'h-8 px-2.5 rounded-lg bg-slate-800 text-slate-400 border border-slate-700 text-xs font-bold inline-flex items-center';

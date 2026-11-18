@@ -2010,7 +2010,12 @@ const RuleEngine = {
             ? b.targets
             : (b.target ? [b.target] : ['ac.all']);
           const bonusType = this.normalizeV3BonusType(b.bonusType || b.btype || 'Untyped');
-          const { value, formula, cap } = buildStatFormulaAndValue(b, curCtx);
+          let { value, formula, cap } = buildStatFormulaAndValue(b, curCtx);
+          // Fractional multiplier targets (Warforged: healing.receivedMultiplier -0.5) must not be truncated to an integer.
+          if (!formula && rawTargets.length > 0 && rawTargets.every(t => String(t) === 'healing.receivedMultiplier')) {
+            const fracVal = Number(b.value !== undefined ? b.value : b.val);
+            if (Number.isFinite(fracVal)) value = fracVal;
+          }
           const effSituational = isObjectPredicate
             ? Object.assign({}, b.condition)
             : ((InlineCondResult === 'situational' || InlineCondResult === 'qualifier')
@@ -3965,6 +3970,8 @@ const RuleEngine = {
       effectiveSizeScopes,
       // Defender-side maneuver checks (Stability: bonus on ability checks to resist bull rush / trip while standing on the ground)
       maneuverDefense: { stability: sumBucket('cmd.stability') },
+      // Non-armor arcane spell failure (e.g. Warforged composite plating: 5%); armor/shield ASF is summed separately in recalculateCharacter
+      arcaneSpellFailure: Math.max(0, sumBucket('spell.asf')),
       replacements,
       resources,
       grantedCapabilities,
@@ -5378,6 +5385,13 @@ const RuleEngine = {
   getEffectiveSizeShift(character, scope) {
     const scopes = character?.effectiveSizeScopes || character?.legoEvaluation?.effectiveSizeScopes || {};
     return Math.floor(Number(scopes[scope]) || 0);
+  },
+
+  // `healing.receivedMultiplier` (Warforged: 0.5). Applies to healing-subschool spells and supernatural cures,
+  // not to manual HP edits, rests or natural recovery. Never below 0.
+  getHealingReceivedMultiplier(character) {
+    const m = Number(character?.legoEvaluation?.multipliers?.healingReceived);
+    return Number.isFinite(m) ? Math.max(0, m) : 1;
   },
 
   // Feats granted to the character by data (Race / template / class feature / item `effect` block `effectKind: 'feat'`).
@@ -7250,6 +7264,7 @@ const RuleEngine = {
     let hasTwoWeaponDefense = false;
     let minMaxDex = null;
     let totalAcp = 0;
+    let totalArmorAsf = 0;
     let resistBonus = 0;
     let itemSpeedBonus = 0;
     let buffSpeedBonus = 0;
@@ -7616,6 +7631,10 @@ const RuleEngine = {
           if (minMaxDex === null || mods.maxDex < minMaxDex) minMaxDex = mods.maxDex;
         }
         if (mods.acp) totalAcp += mods.acp;
+        if (slotKey === 'armor' || slotKey === 'offHand' || mods.armor > 0 || mods.shield > 0) {
+          const slotAsf = Number(slotData.armor?.arcaneSpellFailure ?? slotData.spellFailure ?? slotData.armorMeta?.asf);
+          if (Number.isFinite(slotAsf) && slotAsf > 0) totalArmorAsf += slotAsf;
+        }
         if (mods.resistance > 0) {
           saveBonusBuckets.fort.push({ val: mods.resistance, source: slotData.name, type: 'Resistance' });
           saveBonusBuckets.ref.push({ val: mods.resistance, source: slotData.name, type: 'Resistance' });
@@ -8567,6 +8586,10 @@ const RuleEngine = {
     character.bonusSpellSlotsByLevel = bonusSpellSlotsByLevel;
     character.conditionalSaveBonuses = conditionalSaveBonuses;
     character.effectiveArmorCategory = equippedArmorCategory;
+    {
+      const racialAsf = Math.max(0, Math.floor(Number(character.legoEvaluation?.arcaneSpellFailure) || 0));
+      character.arcaneSpellFailure = { armor: totalArmorAsf, other: racialAsf, total: Math.min(100, totalArmorAsf + racialAsf) };
+    }
     character.buffSkillBonus = buffSkillBonus;
     character.buffInitiativeBonus = this.resolveBonusStacking(initBonusBuckets);
     character.initiativeBreakdown = initBonusBuckets;

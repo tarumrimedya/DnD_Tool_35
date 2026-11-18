@@ -477,6 +477,21 @@ function createBaseChar(overrides = {}) {
   assertEq('Forum 5b. Spell Damage (+10%) & Healing (+25%) Multipliers', [res.multipliers.spellDamage, res.multipliers.healingReceived], [1.1, 1.25]);
 }
 
+// Warforged: half healing (healing.receivedMultiplier -0.5, fractional) + 5% non-armor ASF (spell.asf)
+{
+  const ch = createBaseChar({
+    legoEntries: [{
+      id: 'race-warforged-probe', name: 'Warforged Probe', type: 'Race', schemaVersion: 3, blueprint: 'race',
+      effects: [
+        { id: 'ef-half-heal', type: 'stat', targets: ['healing.receivedMultiplier'], mode: 'flat', value: -0.5, btype: 'Untyped' },
+        { id: 'ef-plating-asf', type: 'stat', targets: ['spell.asf'], mode: 'flat', value: 5, btype: 'Untyped' }
+      ]
+    }]
+  });
+  const res = RuleEngine.evaluateLegoCharacter(ch);
+  assertEq('Warforged 6a. Half Healing Multiplier (0.5) & Plating ASF (5%)', [res.multipliers.healingReceived, res.arcaneSpellFailure], [0.5, 5]);
+}
+
 // Forum #6: Powerful Build Scoped Size & Carrying Capacity x3 (Races of Stone / Boon of Atlas)
 {
   const ch = createBaseChar({

@@ -28,7 +28,7 @@ const CANONICAL_V3_TARGETS = new Set([
   'atk.all', 'atk.melee', 'atk.ranged', 'atk.weapon', 'atk.touch', 'atk.grapple', 'atk.natural', 'atk.critConfirm',
   'dmg.all', 'dmg.melee', 'dmg.ranged', 'dmg.weapon', 'dmg.sneakAttack', 'dmg.natural', 'dmg.unarmed',
   'initiative', 'grapple',
-  'cmd.stability', 'size.effective', 'cmd.bullRush', 'cmd.trip', 'cmd.overrun', 'cmd.bullRushTripDisarmOverrun',
+  'cmd.stability', 'size.effective', 'healing.receivedMultiplier', 'spell.asf', 'cmd.bullRush', 'cmd.trip', 'cmd.overrun', 'cmd.bullRushTripDisarmOverrun',
   'speed.land', 'speed.fly', 'speed.swim', 'speed.climb', 'speed.burrow', 'speed.all',
   'hp.temp', 'hp.max', 'hp.perLevel', 'fastHealing',
   'casterLevel', 'spell.dc', 'spell.effectiveLevel', 'spell.damage', 'sr.penetration', 'caster.spellPenetration',

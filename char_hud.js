@@ -9184,7 +9184,12 @@ function renderManualStatsPanel() {
 
     function applySpellHealToSelf(amount, sourceName = 'Spell Healing') {
       if (!character || !character.hp) return;
-      const healVal = Math.max(0, Number(amount) || 0);
+      const rawHeal = Math.max(0, Number(amount) || 0);
+      if (rawHeal <= 0) return;
+      // Race / item `healing.receivedMultiplier` (Warforged: half effect from healing spells and cures)
+      const healMult = (typeof RuleEngine !== 'undefined' && RuleEngine.getHealingReceivedMultiplier)
+        ? RuleEngine.getHealingReceivedMultiplier(character) : 1;
+      const healVal = healMult === 1 ? rawHeal : Math.max(0, Math.floor(rawHeal * healMult));
       if (healVal <= 0) return;
       const prevHp = Number(character.hp.current) || 0;
       const maxHp = Number(character.hp.max) || 1;
