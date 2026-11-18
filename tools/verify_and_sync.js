@@ -615,6 +615,18 @@ function main() {
     errors++;
   }
 
+  // 7c. Silent-failure gate (unrecognized V3 conditions, orphan cab-* records, unconsumed class effects[]; ratcheted baseline)
+  try {
+    const sfGate = require('./v3_silent_failure_gate.js').runSilentFailureGate();
+    sfGate.errors.slice(0, 25).forEach((m) => console.error('[FAIL] V3 silent failure: ' + m));
+    if (sfGate.errors.length > 0) errors++;
+    console.log(require('./v3_silent_failure_gate.js').formatSummary(sfGate));
+    sfGate.tighten.slice(0, 5).forEach((m) => console.log('📉 V3 silent-failure baseline can be tightened: ' + m));
+  } catch (sfErr) {
+    console.error('[FAIL] V3 silent-failure gate crashed: ' + sfErr.message);
+    errors++;
+  }
+
   const elapsed = Date.now() - startMs;
   if (errors > 0) {
     console.error(`\n❌ VERIFICATION FAILED with ${errors} error(s) (${elapsed}ms).`);

@@ -1249,6 +1249,14 @@ const RuleEngine = {
     return '';
   },
 
+  // Branch `condKind` values that ARE the condition (condText is ignored). Shared with tools/verify_v3_corpus.js
+  // (silent-failure gate) so the gate and the engine cannot drift apart.
+  V3_NAMED_WHEN_CONDS: new Set([
+    'notflatfooted', 'wieldingchosenshield', 'wieldingchosenweapon',
+    'wieldingtwoweapons', 'vsaoofrommovement', 'castingchosenschool',
+    'notheavyarmororheavyload', 'lightornoarmorandlightload'
+  ]),
+
   // Evaluate V3 `when` / `while` branch condition against character combat state, HP thresholds, buffs, activeModes, or chakra binds
   evaluateV3BranchCondition(rawCond, branchType, evalCtx = {}, character = null, entry = null) {
     if (!rawCond) return true;
@@ -1838,11 +1846,7 @@ const RuleEngine = {
         return fallbackCond;
       };
 
-      const NAMED_WHEN_CONDS = new Set([
-        'notflatfooted', 'wieldingchosenshield', 'wieldingchosenweapon',
-        'wieldingtwoweapons', 'vsaoofrommovement', 'castingchosenschool',
-        'notheavyarmororheavyload', 'lightornoarmorandlightload'
-      ]);
+      const NAMED_WHEN_CONDS = this.V3_NAMED_WHEN_CONDS;
 
       blockList.forEach(b => {
         if (!b || typeof b !== 'object') return;
