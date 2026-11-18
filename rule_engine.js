@@ -3295,6 +3295,24 @@ const RuleEngine = {
       }
     }
 
+    // Active templates are regular Lego entries too (stacked templates each get one). Same direct normalization as the
+    // race; their stats are applied once in recalculateCharacter section 3.92 (`_legoSource === 'template'`).
+    if (typeof this.getCharacterTemplateRecords === 'function') {
+      const ctxForTmpl = this.buildFormulaContext(ch);
+      this.getCharacterTemplateRecords(ch).forEach(tRec => {
+        if (!tRec || typeof tRec !== 'object' || !this.isLevelGainUnlocked(tRec, ctxForTmpl)) return;
+        const tNorm = this.normalizeLegoEntry(tRec);
+        if (!tNorm) return;
+        tNorm._legoSource = 'template';
+        const tId = String(tNorm.id || tNorm.name || '').trim().toLowerCase();
+        const tName = String(tNorm.name || '').trim().toLowerCase();
+        if (tId && seenFullIds.has(tId)) return;
+        if (tId) seenFullIds.add(tId);
+        if (tName) seenNames.add(tName);
+        collected.push(tNorm);
+      });
+    }
+
     // Race / template Level / HD Table features: a row's referenced entries (refId, e.g. cab-*) apply once the
     // character's level / total HD reaches that row. Inline (text-only) features stay descriptive.
     if (typeof this.getRaceTemplateProgressionSources === 'function') {
@@ -6567,7 +6585,10 @@ const RuleEngine = {
   },
 
   // Canonical V2 Active Character Templates Harvester (`srd_templates.json` + Master DB)
-  getCharacterActiveTemplateEntries(character = null) {
+  // Raw, override-aware template records (`char.customEntries` Copy-on-Write first, then SrdCompendium / Master DB).
+  // These feed the Lego pipeline (`collectLegoEntries`, `_legoSource: 'template'`); the V2-evaluated view is
+  // `getCharacterActiveTemplateEntries`.
+  getCharacterTemplateRecords(character = null) {
     if (!character) return [];
     const rawList = Array.isArray(character.templates)
       ? character.templates
@@ -6583,16 +6604,16 @@ const RuleEngine = {
       const query = typeof item === 'object' ? (item.id || item.name || '') : String(item).trim();
       if (!query) return;
 
-      let tmpl = null;
-      if (typeof window !== 'undefined' && window.SrdCompendium && typeof window.SrdCompendium.getTemplate === 'function') {
+      let tmpl = this.resolveCustomEntryOverride(item, character, { family: 'race' });
+      if (!tmpl && typeof window !== 'undefined' && window.SrdCompendium && typeof window.SrdCompendium.getTemplate === 'function') {
         tmpl = window.SrdCompendium.getTemplate(query);
-      } else if (typeof SrdCompendium !== 'undefined' && typeof SrdCompendium.getTemplate === 'function') {
+      } else if (!tmpl && typeof SrdCompendium !== 'undefined' && typeof SrdCompendium.getTemplate === 'function') {
         tmpl = SrdCompendium.getTemplate(query);
       }
       if (!tmpl) {
         tmpl = this.getMasterDbEntry(item, 'Template') || this.getMasterDbEntry(query, 'Template');
       }
-      if (!tmpl && typeof item === 'object' && Array.isArray(item.modifiers)) {
+      if (!tmpl && typeof item === 'object' && (Array.isArray(item.modifiers) || Array.isArray(item.effects))) {
         tmpl = this.ensureV2Entry(item);
       }
       if (!tmpl) return;
@@ -6600,10 +6621,14 @@ const RuleEngine = {
       const key = String(tmpl.id || tmpl.name || query).toLowerCase();
       if (seenIds.has(key)) return;
       seenIds.add(key);
-      resolved.push(this.ensureV2Entry(tmpl, { character }));
+      resolved.push(tmpl);
     });
 
     return resolved;
+  },
+
+  getCharacterActiveTemplateEntries(character = null) {
+    return this.getCharacterTemplateRecords(character).map(t => this.ensureV2Entry(t, { character }));
   },
 
   // Canonical V2 Turn/Rebuke Undead, Elemental Turning & Cleric Domain Active Powers Resolver
@@ -8198,8 +8223,18 @@ const RuleEngine = {
         if (Array.isArray(tmpl.damageParts)) {
           tmpl.damageParts.forEach(dp => { if (dp) templateSummary.damageParts.push(dp); });
         }
-        if (Array.isArray(tmpl.modifiers) && tmpl.modifiers.length > 0) {
-          applyV2Modifiers(tmpl.modifiers, tmplLabel, 'template', tmplEvalCtx);
+        // Stats come from the template's Lego entry (`_legoSource === 'template'`), evaluated with the Cha-aware context.
+        const tmplIdLow = String(tmpl.id || '').toLowerCase();
+        const tmplNameLow = String(tmpl.name || '').toLowerCase();
+        const tmplLego = (legoEval.entries || []).find(le => le && le._legoSource === 'template'
+          && ((tmplIdLow && String(le.id || '').toLowerCase() === tmplIdLow) || (!tmplIdLow && String(le.name || '').toLowerCase() === tmplNameLow)));
+        let tmplToApply = tmplLego || null;
+        if (tmplLego && !tmplLego._mutated && ((Array.isArray(tmplLego.effects) && tmplLego.effects.length > 0) || (Array.isArray(tmplLego.blocks) && tmplLego.blocks.length > 0))) {
+          tmplToApply = this.evaluateV3Entry(Object.assign({}, tmplLego, { _v3Evaluated: false, modifiers: [] }), tmplEvalCtx);
+        }
+        const tmplMods = tmplToApply ? tmplToApply.modifiers : tmpl.modifiers;
+        if (Array.isArray(tmplMods) && tmplMods.length > 0) {
+          applyV2Modifiers(tmplMods, tmplLabel, 'template', tmplEvalCtx);
         }
       });
     }
@@ -8239,7 +8274,7 @@ const RuleEngine = {
       }
       if (Array.isArray(prevEvalDefenses.dr)) {
         prevEvalDefenses.dr.forEach(d => {
-          if (d && !character.evaluatedDefenses.dr.some(ed => ed && String(ed.source || '').replace(/ \(Race\)$/, '') === String(d.source || '').replace(/ \(Race\)$/, '') && ed.value === d.value)) {
+          if (d && !character.evaluatedDefenses.dr.some(ed => ed && String(ed.source || '').replace(/ \((?:Race|Template)\)$/, '') === String(d.source || '').replace(/ \((?:Race|Template)\)$/, '') && ed.value === d.value)) {
             character.evaluatedDefenses.dr.push(d);
           }
         });
@@ -12485,7 +12520,7 @@ const RuleEngine = {
     const powerSources = ((resolvedLego && Array.isArray(resolvedLego.entries))
       ? resolvedLego.entries.slice()
       : (typeof this.collectLegoEntries === 'function' ? this.collectLegoEntries(w) : []))
-      .filter(e => !e || e._legoSource !== 'race');
+      .filter(e => !e || (e._legoSource !== 'race' && e._legoSource !== 'template'));
     const raceName = String(w.race || '').trim();
     if (raceName) {
       const raceEntry = this.resolveCustomEntryOverride(raceName, w, { family: 'race' }) || this.getMasterDbEntry(raceName, 'Race');

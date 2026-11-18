@@ -1248,6 +1248,70 @@ function compileRaceNaturalWeapons(crData) {
   return 1;
 }
 
+// Templates as Lego entries: bonus feats (`effect` block `effectKind: 'feat'`, immutable `feat-*` id) and natural weapons
+// (`attack` block `attackMode: 'natural'`). Idempotent (blocks `ef-tmpl-*`). Feat names with a choice in parentheses
+// (e.g. "Weapon Focus (Bite)") and feats without a record stay text only. Form-dependent natural weapons (lycanthropes) are not written.
+const TEMPLATE_NATURAL_WEAPONS = {
+  'tmpl-vampire': [{ weaponName: 'Slam', dice: '1d6', dmgType: 'Bludgeoning', count: 1, usesHands: true }],
+  'tmpl-zombie': [{ weaponName: 'Slam', dice: '1d6', dmgType: 'Bludgeoning', count: 1, usesHands: true }],
+  'tmpl-skeleton': [{ weaponName: 'Claw', dice: '1d4', dmgType: 'Slashing', count: 2, usesHands: true }]
+};
+['red', 'gold', 'silver', 'blue', 'black', 'green', 'white', 'brass', 'bronze', 'copper'].forEach((c) => {
+  TEMPLATE_NATURAL_WEAPONS['tmpl-half-dragon-' + c] = [
+    { weaponName: 'Bite', dice: '1d6', dmgType: 'Piercing', count: 1 },
+    { weaponName: 'Claw', dice: '1d4', dmgType: 'Slashing', count: 2, usesHands: true }
+  ];
+});
+TEMPLATE_NATURAL_WEAPONS['tmpl-half-fiend'] = TEMPLATE_NATURAL_WEAPONS['tmpl-half-dragon-red'];
+
+function compileTemplateBlocks(tmplData, featNameToId) {
+  let n = 0;
+  for (const rec of tmplData) {
+    if (!rec || !/^tmpl-/.test(String(rec.id || ''))) continue;
+    if (!Array.isArray(rec.effects)) rec.effects = [];
+    rec.effects = rec.effects.filter((b) => !(b && typeof b.id === 'string' && b.id.startsWith('ef-tmpl-')));
+    const slug = (s) => String(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    (Array.isArray(rec.bonusFeats) ? rec.bonusFeats : []).forEach((nm) => {
+      const name = String(nm || '').trim();
+      if (!name || /\(/.test(name)) return;
+      const fid = featNameToId.get(name.toLowerCase());
+      if (!fid) return;
+      rec.effects.push({ id: 'ef-tmpl-bonus-feat-' + fid.replace(/^feat-/, ''), type: 'effect', effectKind: 'feat', targetId: fid });
+      n++;
+    });
+    (TEMPLATE_NATURAL_WEAPONS[rec.id] || []).forEach((w) => {
+      const b = { id: 'ef-tmpl-natural-' + slug(w.weaponName), type: 'attack', attackMode: 'natural', natKind: 'primary', count: w.count, weaponName: w.weaponName, dice: w.dice, dmgType: w.dmgType };
+      if (w.usesHands) b.usesHands = true;
+      b.summary = (w.count > 1 ? w.count + ' ' : '') + w.weaponName + ' ' + w.dice + ' ' + w.dmgType.toLowerCase() + ' natural weapon (primary).';
+      rec.effects.push(b);
+      n++;
+    });
+  }
+  return n;
+}
+
+function loadFeatNameMap() {
+  const map = new Map();
+  ['srd_feats.json', 'srd_feats_splat.json', 'srd_feats_epic.json', 'srd_feats_legacy.json'].forEach((f) => {
+    const d = readChunk(f).data;
+    (Array.isArray(d) ? d : (d.entries || [])).forEach((e) => {
+      if (e && e.id && /^feat-/.test(e.id) && e.name && !map.has(e.name.toLowerCase())) map.set(e.name.toLowerCase(), e.id);
+    });
+  });
+  return map;
+}
+
+// Isolated runner (does NOT re-run the full compile): rewrites only `srd_templates.json` and refreshes `srd_index.json`.
+function compileTemplateBlocksOnly() {
+  const t = readChunk('srd_templates.json');
+  const entries = Array.isArray(t.data) ? t.data : (t.data.entries || t.data.templates);
+  const n = compileTemplateBlocks(entries, loadFeatNameMap());
+  const wr = writeChunk(t.fp, t.data, t.wasMinified);
+  wr.count = entries.length;
+  rebuildSrdIndex({ 'srd_templates.json': wr });
+  return n;
+}
+
 function compileFeatPatches(featsCore, featsSplat) {
   // Ensure Hidden Talent (XPH p.67) exists in srd_feats_splat.json
   const hiddenTalent = {
@@ -2531,4 +2595,4 @@ if (require.main === module) {
   main();
 }
 
-module.exports = { main };
+module.exports = { main, compileTemplateBlocks, compileTemplateBlocksOnly };

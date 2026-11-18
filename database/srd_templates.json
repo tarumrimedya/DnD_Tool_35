@@ -106,6 +106,29 @@
         "type": "defense",
         "mode": "Sense / Movement",
         "what": "Low-Light Vision"
+      },
+      {
+        "id": "ef-tmpl-natural-bite",
+        "type": "attack",
+        "attackMode": "natural",
+        "natKind": "primary",
+        "count": 1,
+        "weaponName": "Bite",
+        "dice": "1d6",
+        "dmgType": "Piercing",
+        "summary": "Bite 1d6 piercing natural weapon (primary)."
+      },
+      {
+        "id": "ef-tmpl-natural-claw",
+        "type": "attack",
+        "attackMode": "natural",
+        "natKind": "primary",
+        "count": 2,
+        "weaponName": "Claw",
+        "dice": "1d4",
+        "dmgType": "Slashing",
+        "usesHands": true,
+        "summary": "2 Claw 1d4 slashing natural weapon (primary)."
       }
     ],
     "ruleFlags": {
@@ -237,6 +260,29 @@
         "type": "defense",
         "mode": "Sense / Movement",
         "what": "Low-Light Vision"
+      },
+      {
+        "id": "ef-tmpl-natural-bite",
+        "type": "attack",
+        "attackMode": "natural",
+        "natKind": "primary",
+        "count": 1,
+        "weaponName": "Bite",
+        "dice": "1d6",
+        "dmgType": "Piercing",
+        "summary": "Bite 1d6 piercing natural weapon (primary)."
+      },
+      {
+        "id": "ef-tmpl-natural-claw",
+        "type": "attack",
+        "attackMode": "natural",
+        "natKind": "primary",
+        "count": 2,
+        "weaponName": "Claw",
+        "dice": "1d4",
+        "dmgType": "Slashing",
+        "usesHands": true,
+        "summary": "2 Claw 1d4 slashing natural weapon (primary)."
       }
     ],
     "ruleFlags": {
@@ -368,6 +414,29 @@
         "type": "defense",
         "mode": "Sense / Movement",
         "what": "Low-Light Vision"
+      },
+      {
+        "id": "ef-tmpl-natural-bite",
+        "type": "attack",
+        "attackMode": "natural",
+        "natKind": "primary",
+        "count": 1,
+        "weaponName": "Bite",
+        "dice": "1d6",
+        "dmgType": "Piercing",
+        "summary": "Bite 1d6 piercing natural weapon (primary)."
+      },
+      {
+        "id": "ef-tmpl-natural-claw",
+        "type": "attack",
+        "attackMode": "natural",
+        "natKind": "primary",
+        "count": 2,
+        "weaponName": "Claw",
+        "dice": "1d4",
+        "dmgType": "Slashing",
+        "usesHands": true,
+        "summary": "2 Claw 1d4 slashing natural weapon (primary)."
       }
     ],
     "ruleFlags": {
@@ -499,6 +568,29 @@
         "type": "defense",
         "mode": "Sense / Movement",
         "what": "Low-Light Vision"
+      },
+      {
+        "id": "ef-tmpl-natural-bite",
+        "type": "attack",
+        "attackMode": "natural",
+        "natKind": "primary",
+        "count": 1,
+        "weaponName": "Bite",
+        "dice": "1d6",
+        "dmgType": "Piercing",
+        "summary": "Bite 1d6 piercing natural weapon (primary)."
+      },
+      {
+        "id": "ef-tmpl-natural-claw",
+        "type": "attack",
+        "attackMode": "natural",
+        "natKind": "primary",
+        "count": 2,
+        "weaponName": "Claw",
+        "dice": "1d4",
+        "dmgType": "Slashing",
+        "usesHands": true,
+        "summary": "2 Claw 1d4 slashing natural weapon (primary)."
       }
     ],
     "ruleFlags": {
@@ -630,6 +722,29 @@
         "type": "defense",
         "mode": "Sense / Movement",
         "what": "Low-Light Vision"
+      },
+      {
+        "id": "ef-tmpl-natural-bite",
+        "type": "attack",
+        "attackMode": "natural",
+        "natKind": "primary",
+        "count": 1,
+        "weaponName": "Bite",
+        "dice": "1d6",
+        "dmgType": "Piercing",
+        "summary": "Bite 1d6 piercing natural weapon (primary)."
+      },
+      {
+        "id": "ef-tmpl-natural-claw",
+        "type": "attack",
+        "attackMode": "natural",
+        "natKind": "primary",
+        "count": 2,
+        "weaponName": "Claw",
+        "dice": "1d4",
+        "dmgType": "Slashing",
+        "usesHands": true,
+        "summary": "2 Claw 1d4 slashing natural weapon (primary)."
       }
     ],
     "ruleFlags": {
@@ -761,6 +876,29 @@
         "type": "defense",
         "mode": "Sense / Movement",
         "what": "Low-Light Vision"
+      },
+      {
+        "id": "ef-tmpl-natural-bite",
+        "type": "attack",
+        "attackMode": "natural",
+        "natKind": "primary",
+        "count": 1,
+        "weaponName": "Bite",
+        "dice": "1d6",
+        "dmgType": "Piercing",
+        "summary": "Bite 1d6 piercing natural weapon (primary)."
+      },
+      {
+        "id": "ef-tmpl-natural-claw",
+        "type": "attack",
+        "attackMode": "natural",
+        "natKind": "primary",
+        "count": 2,
+        "weaponName": "Claw",
+        "dice": "1d4",
+        "dmgType": "Slashing",
+        "usesHands": true,
+        "summary": "2 Claw 1d4 slashing natural weapon (primary)."
       }
     ],
     "ruleFlags": {
@@ -892,6 +1030,29 @@
         "type": "defense",
         "mode": "Sense / Movement",
         "what": "Low-Light Vision"
+      },
+      {
+        "id": "ef-tmpl-natural-bite",
+        "type": "attack",
+        "attackMode": "natural",
+        "natKind": "primary",
+        "count": 1,
+        "weaponName": "Bite",
+        "dice": "1d6",
+        "dmgType": "Piercing",
+        "summary": "Bite 1d6 piercing natural weapon (primary)."
+      },
+      {
+        "id": "ef-tmpl-natural-claw",
+        "type": "attack",
+        "attackMode": "natural",
+        "natKind": "primary",
+        "count": 2,
+        "weaponName": "Claw",
+        "dice": "1d4",
+        "dmgType": "Slashing",
+        "usesHands": true,
+        "summary": "2 Claw 1d4 slashing natural weapon (primary)."
       }
     ],
     "ruleFlags": {
@@ -1023,6 +1184,29 @@
         "type": "defense",
         "mode": "Sense / Movement",
         "what": "Low-Light Vision"
+      },
+      {
+        "id": "ef-tmpl-natural-bite",
+        "type": "attack",
+        "attackMode": "natural",
+        "natKind": "primary",
+        "count": 1,
+        "weaponName": "Bite",
+        "dice": "1d6",
+        "dmgType": "Piercing",
+        "summary": "Bite 1d6 piercing natural weapon (primary)."
+      },
+      {
+        "id": "ef-tmpl-natural-claw",
+        "type": "attack",
+        "attackMode": "natural",
+        "natKind": "primary",
+        "count": 2,
+        "weaponName": "Claw",
+        "dice": "1d4",
+        "dmgType": "Slashing",
+        "usesHands": true,
+        "summary": "2 Claw 1d4 slashing natural weapon (primary)."
       }
     ],
     "ruleFlags": {
@@ -1154,6 +1338,29 @@
         "type": "defense",
         "mode": "Sense / Movement",
         "what": "Low-Light Vision"
+      },
+      {
+        "id": "ef-tmpl-natural-bite",
+        "type": "attack",
+        "attackMode": "natural",
+        "natKind": "primary",
+        "count": 1,
+        "weaponName": "Bite",
+        "dice": "1d6",
+        "dmgType": "Piercing",
+        "summary": "Bite 1d6 piercing natural weapon (primary)."
+      },
+      {
+        "id": "ef-tmpl-natural-claw",
+        "type": "attack",
+        "attackMode": "natural",
+        "natKind": "primary",
+        "count": 2,
+        "weaponName": "Claw",
+        "dice": "1d4",
+        "dmgType": "Slashing",
+        "usesHands": true,
+        "summary": "2 Claw 1d4 slashing natural weapon (primary)."
       }
     ],
     "ruleFlags": {
@@ -1285,6 +1492,29 @@
         "type": "defense",
         "mode": "Sense / Movement",
         "what": "Low-Light Vision"
+      },
+      {
+        "id": "ef-tmpl-natural-bite",
+        "type": "attack",
+        "attackMode": "natural",
+        "natKind": "primary",
+        "count": 1,
+        "weaponName": "Bite",
+        "dice": "1d6",
+        "dmgType": "Piercing",
+        "summary": "Bite 1d6 piercing natural weapon (primary)."
+      },
+      {
+        "id": "ef-tmpl-natural-claw",
+        "type": "attack",
+        "attackMode": "natural",
+        "natKind": "primary",
+        "count": 2,
+        "weaponName": "Claw",
+        "dice": "1d4",
+        "dmgType": "Slashing",
+        "usesHands": true,
+        "summary": "2 Claw 1d4 slashing natural weapon (primary)."
       }
     ],
     "ruleFlags": {
@@ -1536,6 +1766,29 @@
         "type": "defense",
         "mode": "Sense / Movement",
         "what": "Darkvision 60 ft."
+      },
+      {
+        "id": "ef-tmpl-natural-bite",
+        "type": "attack",
+        "attackMode": "natural",
+        "natKind": "primary",
+        "count": 1,
+        "weaponName": "Bite",
+        "dice": "1d6",
+        "dmgType": "Piercing",
+        "summary": "Bite 1d6 piercing natural weapon (primary)."
+      },
+      {
+        "id": "ef-tmpl-natural-claw",
+        "type": "attack",
+        "attackMode": "natural",
+        "natKind": "primary",
+        "count": 2,
+        "weaponName": "Claw",
+        "dice": "1d4",
+        "dmgType": "Slashing",
+        "usesHands": true,
+        "summary": "2 Claw 1d4 slashing natural weapon (primary)."
       }
     ],
     "ruleFlags": {
@@ -2008,6 +2261,48 @@
         "type": "defense",
         "mode": "Sense / Movement",
         "what": "Darkvision 60 ft."
+      },
+      {
+        "id": "ef-tmpl-bonus-feat-alertness",
+        "type": "effect",
+        "effectKind": "feat",
+        "targetId": "feat-alertness"
+      },
+      {
+        "id": "ef-tmpl-bonus-feat-combat-reflexes",
+        "type": "effect",
+        "effectKind": "feat",
+        "targetId": "feat-combat-reflexes"
+      },
+      {
+        "id": "ef-tmpl-bonus-feat-dodge",
+        "type": "effect",
+        "effectKind": "feat",
+        "targetId": "feat-dodge"
+      },
+      {
+        "id": "ef-tmpl-bonus-feat-improved-initiative",
+        "type": "effect",
+        "effectKind": "feat",
+        "targetId": "feat-improved-initiative"
+      },
+      {
+        "id": "ef-tmpl-bonus-feat-lightning-reflexes",
+        "type": "effect",
+        "effectKind": "feat",
+        "targetId": "feat-lightning-reflexes"
+      },
+      {
+        "id": "ef-tmpl-natural-slam",
+        "type": "attack",
+        "attackMode": "natural",
+        "natKind": "primary",
+        "count": 1,
+        "weaponName": "Slam",
+        "dice": "1d6",
+        "dmgType": "Bludgeoning",
+        "usesHands": true,
+        "summary": "Slam 1d6 bludgeoning natural weapon (primary)."
       }
     ],
     "ruleFlags": {
@@ -2283,6 +2578,24 @@
         "type": "defense",
         "mode": "Sense / Movement",
         "what": "Darkvision 60 ft."
+      },
+      {
+        "id": "ef-tmpl-bonus-feat-blinding-speed",
+        "type": "effect",
+        "effectKind": "feat",
+        "targetId": "feat-blinding-speed"
+      },
+      {
+        "id": "ef-tmpl-bonus-feat-tenacious-magic",
+        "type": "effect",
+        "effectKind": "feat",
+        "targetId": "feat-tenacious-magic"
+      },
+      {
+        "id": "ef-tmpl-bonus-feat-automatic-quicken-spell",
+        "type": "effect",
+        "effectKind": "feat",
+        "targetId": "feat-automatic-quicken-spell"
       }
     ],
     "ruleFlags": {
@@ -2396,6 +2709,24 @@
         "type": "defense",
         "mode": "Sense / Movement",
         "what": "Darkvision 60 ft."
+      },
+      {
+        "id": "ef-tmpl-bonus-feat-improved-initiative",
+        "type": "effect",
+        "effectKind": "feat",
+        "targetId": "feat-improved-initiative"
+      },
+      {
+        "id": "ef-tmpl-natural-claw",
+        "type": "attack",
+        "attackMode": "natural",
+        "natKind": "primary",
+        "count": 2,
+        "weaponName": "Claw",
+        "dice": "1d4",
+        "dmgType": "Slashing",
+        "usesHands": true,
+        "summary": "2 Claw 1d4 slashing natural weapon (primary)."
       }
     ],
     "ruleFlags": {
@@ -2506,6 +2837,24 @@
         "type": "defense",
         "mode": "Sense / Movement",
         "what": "Darkvision 60 ft."
+      },
+      {
+        "id": "ef-tmpl-bonus-feat-toughness",
+        "type": "effect",
+        "effectKind": "feat",
+        "targetId": "feat-toughness"
+      },
+      {
+        "id": "ef-tmpl-natural-slam",
+        "type": "attack",
+        "attackMode": "natural",
+        "natKind": "primary",
+        "count": 1,
+        "weaponName": "Slam",
+        "dice": "1d6",
+        "dmgType": "Bludgeoning",
+        "usesHands": true,
+        "summary": "Slam 1d6 bludgeoning natural weapon (primary)."
       }
     ],
     "ruleFlags": {
@@ -2636,6 +2985,18 @@
         "type": "defense",
         "mode": "Sense / Movement",
         "what": "Scent"
+      },
+      {
+        "id": "ef-tmpl-bonus-feat-iron-will",
+        "type": "effect",
+        "effectKind": "feat",
+        "targetId": "feat-iron-will"
+      },
+      {
+        "id": "ef-tmpl-bonus-feat-track",
+        "type": "effect",
+        "effectKind": "feat",
+        "targetId": "feat-track"
       }
     ],
     "ruleFlags": {
@@ -2774,6 +3135,30 @@
         "type": "defense",
         "mode": "Sense / Movement",
         "what": "Scent"
+      },
+      {
+        "id": "ef-tmpl-bonus-feat-iron-will",
+        "type": "effect",
+        "effectKind": "feat",
+        "targetId": "feat-iron-will"
+      },
+      {
+        "id": "ef-tmpl-bonus-feat-endurance",
+        "type": "effect",
+        "effectKind": "feat",
+        "targetId": "feat-endurance"
+      },
+      {
+        "id": "ef-tmpl-bonus-feat-run",
+        "type": "effect",
+        "effectKind": "feat",
+        "targetId": "feat-run"
+      },
+      {
+        "id": "ef-tmpl-bonus-feat-track",
+        "type": "effect",
+        "effectKind": "feat",
+        "targetId": "feat-track"
       }
     ],
     "ruleFlags": {
@@ -2901,6 +3286,24 @@
         "type": "defense",
         "mode": "Sense / Movement",
         "what": "Scent"
+      },
+      {
+        "id": "ef-tmpl-bonus-feat-iron-will",
+        "type": "effect",
+        "effectKind": "feat",
+        "targetId": "feat-iron-will"
+      },
+      {
+        "id": "ef-tmpl-bonus-feat-alertness",
+        "type": "effect",
+        "effectKind": "feat",
+        "targetId": "feat-alertness"
+      },
+      {
+        "id": "ef-tmpl-bonus-feat-weapon-finesse",
+        "type": "effect",
+        "effectKind": "feat",
+        "targetId": "feat-weapon-finesse"
       }
     ],
     "ruleFlags": {
@@ -3038,6 +3441,18 @@
         "type": "defense",
         "mode": "Sense / Movement",
         "what": "Scent"
+      },
+      {
+        "id": "ef-tmpl-bonus-feat-iron-will",
+        "type": "effect",
+        "effectKind": "feat",
+        "targetId": "feat-iron-will"
+      },
+      {
+        "id": "ef-tmpl-bonus-feat-alertness",
+        "type": "effect",
+        "effectKind": "feat",
+        "targetId": "feat-alertness"
       }
     ],
     "ruleFlags": {
@@ -3165,6 +3580,24 @@
         "type": "defense",
         "mode": "Sense / Movement",
         "what": "Scent"
+      },
+      {
+        "id": "ef-tmpl-bonus-feat-iron-will",
+        "type": "effect",
+        "effectKind": "feat",
+        "targetId": "feat-iron-will"
+      },
+      {
+        "id": "ef-tmpl-bonus-feat-alertness",
+        "type": "effect",
+        "effectKind": "feat",
+        "targetId": "feat-alertness"
+      },
+      {
+        "id": "ef-tmpl-bonus-feat-toughness",
+        "type": "effect",
+        "effectKind": "feat",
+        "targetId": "feat-toughness"
       }
     ],
     "ruleFlags": {
@@ -3304,6 +3737,30 @@
         "type": "defense",
         "mode": "Sense / Movement",
         "what": "Scent"
+      },
+      {
+        "id": "ef-tmpl-bonus-feat-iron-will",
+        "type": "effect",
+        "effectKind": "feat",
+        "targetId": "feat-iron-will"
+      },
+      {
+        "id": "ef-tmpl-bonus-feat-alertness",
+        "type": "effect",
+        "effectKind": "feat",
+        "targetId": "feat-alertness"
+      },
+      {
+        "id": "ef-tmpl-bonus-feat-run",
+        "type": "effect",
+        "effectKind": "feat",
+        "targetId": "feat-run"
+      },
+      {
+        "id": "ef-tmpl-bonus-feat-track",
+        "type": "effect",
+        "effectKind": "feat",
+        "targetId": "feat-track"
       }
     ],
     "ruleFlags": {
@@ -3431,6 +3888,24 @@
         "type": "defense",
         "mode": "Sense / Movement",
         "what": "Scent"
+      },
+      {
+        "id": "ef-tmpl-bonus-feat-iron-will",
+        "type": "effect",
+        "effectKind": "feat",
+        "targetId": "feat-iron-will"
+      },
+      {
+        "id": "ef-tmpl-bonus-feat-alertness",
+        "type": "effect",
+        "effectKind": "feat",
+        "targetId": "feat-alertness"
+      },
+      {
+        "id": "ef-tmpl-bonus-feat-endurance",
+        "type": "effect",
+        "effectKind": "feat",
+        "targetId": "feat-endurance"
       }
     ],
     "ruleFlags": {
@@ -3536,6 +4011,12 @@
         "type": "defense",
         "mode": "Sense / Movement",
         "what": "Scent"
+      },
+      {
+        "id": "ef-tmpl-bonus-feat-iron-will",
+        "type": "effect",
+        "effectKind": "feat",
+        "targetId": "feat-iron-will"
       }
     ],
     "ruleFlags": {
@@ -3650,6 +4131,12 @@
         "type": "defense",
         "mode": "Sense / Movement",
         "what": "Scent"
+      },
+      {
+        "id": "ef-tmpl-bonus-feat-iron-will",
+        "type": "effect",
+        "effectKind": "feat",
+        "targetId": "feat-iron-will"
       }
     ],
     "ruleFlags": {
@@ -3773,6 +4260,12 @@
         "type": "defense",
         "mode": "Sense / Movement",
         "what": "Scent"
+      },
+      {
+        "id": "ef-tmpl-bonus-feat-iron-will",
+        "type": "effect",
+        "effectKind": "feat",
+        "targetId": "feat-iron-will"
       }
     ],
     "ruleFlags": {

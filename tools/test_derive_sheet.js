@@ -5813,6 +5813,77 @@ function runDeriveSheetTests() {
     );
   }
 
+  // Templates are Lego entries (`_legoSource: 'template'`): Lego-only outputs (granted feats, natural weapons, senses) see them,
+  // stats are applied once (section 3.92), stacked templates work, powers/cards are not duplicated, Copy-on-Write overrides win.
+  {
+    const probe = (templates, customEntries, size, raw) => {
+      const c = {
+        name: 'Template Probe', race: 'Human', classes: 'Fighter 1', level: 1, bab: 1, size: size || 'Medium',
+        abilities: { str: 14, dex: 12, con: 12, int: 10, wis: 10, cha: 10 },
+        baseAbilities: { str: 14, dex: 12, con: 12, int: 10, wis: 10, cha: 10 },
+        levelProgression: [{ level: 1, className: 'Fighter', hd: 'd10', hpGain: 10, active: true, feats: [] }],
+        feats: [], bodySlots: {}, weapons: [], gearPool: [], templates, hp: { max: 10, current: 10 }
+      };
+      if (customEntries) c.customEntries = customEntries;
+      if (raw) return c;
+      RuleEngine.recalculateCharacter(c, []);
+      return c;
+    };
+    const vamp = probe(['tmpl-vampire']);
+    const vFeats = (vamp.grantedCapabilities.grantedFeats || []).map(f => f.id).sort();
+    check(
+      'Template as Lego entry: Vampire is a `_legoSource: template` entry; its 5 bonus feats are granted (Lego-only) and it grants a Slam natural weapon',
+      (vamp.legoEvaluation.entries || []).filter(e => e._legoSource === 'template').length === 1 &&
+      JSON.stringify(vFeats) === JSON.stringify(['feat-alertness', 'feat-combat-reflexes', 'feat-dodge', 'feat-improved-initiative', 'feat-lightning-reflexes']) &&
+      RuleEngine.getNaturalWeapons(vamp).map(w => w.name).join() === 'Slam',
+      JSON.stringify({ vFeats, nat: RuleEngine.getNaturalWeapons(vamp).map(w => w.name) })
+    );
+    const vSheet = RuleEngine.deriveSheet(JSON.parse(JSON.stringify(vamp)), []);
+    check(
+      'Template as Lego entry: stats applied exactly once (Vampire +6 Str, +6 natural armor, Lightning Reflexes +2 Ref, DR 10/silver and magic listed once)',
+      vamp.abilities.str === 20 && vSheet.ac.natural === 6 && vSheet.saves.bonusRef === 2 &&
+      (vamp.evaluatedDefenses.dr || []).filter(d => d.bypass === 'silver and magic').length === 1,
+      JSON.stringify({ str: vamp.abilities.str, nat: vSheet.ac && vSheet.ac.natural, dr: vamp.evaluatedDefenses.dr })
+    );
+    const stacked = probe(['tmpl-zombie', 'tmpl-half-dragon-red']);
+    check(
+      'Template as Lego entry: stacked templates (Zombie + Half-Dragon) both apply: Toughness, Slam + Bite + 2 Claws, fire immunity, creature summary of both',
+      (stacked.grantedCapabilities.grantedFeats || []).some(f => f.id === 'feat-toughness') &&
+      RuleEngine.getNaturalWeapons(stacked).map(w => w.name).sort().join() === 'Bite,Claw,Slam' &&
+      (stacked.evaluatedDefenses.immunities || []).some(i => /fire/i.test(i)) && stacked.templateSummary.names.length === 2,
+      JSON.stringify(RuleEngine.getNaturalWeapons(stacked).map(w => w.name))
+    );
+    const zombieNone = probe([]);
+    const hpOf = (tpls) => { const d = loadFixture('01_fighter_lvl1.json'); d.templates = tpls; return RuleEngine.deriveSheet(d, [])._workingSnapshot.hp.max; };
+    const zHp = hpOf(['tmpl-zombie']);
+    const nHp = hpOf([]);
+    check(
+      'Template as Lego entry: Zombie Toughness (+3 HP) applies on top of the base HP; a character without templates grants nothing',
+      zHp === nHp + 3 && (zombieNone.grantedCapabilities.grantedFeats || []).length === 0,
+      String(zHp) + ' vs ' + String(nHp)
+    );
+    const hbTpl = { id: 'hb-tpl', name: 'Homebrew Template', type: 'Template', active: true,
+      effects: [{ type: 'stat', targets: ['str'], mode: 'flat', value: 2, btype: 'Racial' }, { type: 'effect', effectKind: 'feat', targetId: 'feat-iron-will' }] };
+    const hb = probe([hbTpl]);
+    check(
+      'Template as Lego entry: a homebrew template object with V3 effects applies once (+2 Str, Iron Will granted)',
+      hb.abilities.str === 16 && (hb.grantedCapabilities.grantedFeats || []).some(f => f.id === 'feat-iron-will'),
+      JSON.stringify({ str: hb.abilities.str })
+    );
+    const ov = probe(['tmpl-vampire'], { 'tmpl-vampire': { id: 'tmpl-vampire', schemaVersion: 3, blueprint: 'race', name: 'Vampire', type: 'Template',
+      effects: [{ type: 'stat', targets: ['str'], mode: 'flat', value: 1, btype: 'Racial' }] } });
+    check(
+      'Template as Lego entry: a Copy-on-Write `customEntries` override replaces the SRD template record (Str +1, no granted feats)',
+      ov.abilities.str === 15 && (ov.grantedCapabilities.grantedFeats || []).length === 0,
+      JSON.stringify({ str: ov.abilities.str })
+    );
+    check(
+      'Template as Lego entry: collectLegoEntries holds exactly one entry per active template',
+      (RuleEngine.collectLegoEntries(vamp).filter(e => e._legoSource === 'template').length) === 1,
+      ''
+    );
+  }
+
   CharStore.clearHistory();
 
   return { passed, elapsedMs: Date.now() - startMs };
