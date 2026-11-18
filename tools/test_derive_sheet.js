@@ -5768,6 +5768,31 @@ function runDeriveSheetTests() {
     );
   }
 
+  // Fractional block values: multiplier targets keep fractions, every other target is truncated to an integer.
+  {
+    const fracChar = { name: 'Frac', race: 'Human', classes: 'Fighter 8', level: 8, bab: 8, size: 'Medium', abilities: { str: 14, dex: 12, con: 12, int: 10, wis: 10, cha: 10 }, baseAbilities: { str: 14, dex: 12, con: 12, int: 10, wis: 10, cha: 10 }, feats: [], bodySlots: {}, weapons: [], gearPool: [] };
+    const stat = (target, mode, value, formula) => ({ schemaVersion: 3, id: 'x-frac', blueprint: 'feat', type: 'Feat', name: 'Frac', effects: [Object.assign({ type: 'stat', targets: [target], mode, value, btype: 'Untyped' }, formula ? { formula } : {})] });
+    const modOf = (entry, target) => ((RuleEngine.evaluateV3Entry(entry, { character: fracChar }).modifiers || []).find(m => m.target === target) || {}).value;
+    check(
+      'Fractional values: healing.receivedMultiplier keeps -0.5 (flat and formula), spell.damageMultiplier and carryingCapacity.multiplier keep fractions',
+      modOf(stat('healing.receivedMultiplier', 'flat', -0.5), 'healing.receivedMultiplier') === -0.5
+      && modOf(stat('healing.receivedMultiplier', 'formula', 0, '-@level/16'), 'healing.receivedMultiplier') === -0.5
+      && modOf(stat('spell.damageMultiplier', 'formula', 0, '@level/16'), 'spell.damageMultiplier') === 0.5
+      && modOf(stat('carryingCapacity.multiplier', 'flat', 1.5), 'carryingCapacity.multiplier') === 1.5,
+      JSON.stringify([modOf(stat('healing.receivedMultiplier', 'flat', -0.5), 'healing.receivedMultiplier'), modOf(stat('healing.receivedMultiplier', 'formula', 0, '-@level/16'), 'healing.receivedMultiplier'), modOf(stat('spell.damageMultiplier', 'formula', 0, '@level/16'), 'spell.damageMultiplier'), modOf(stat('carryingCapacity.multiplier', 'flat', 1.5), 'carryingCapacity.multiplier')])
+    );
+    check(
+      'Fractional values: non-multiplier targets stay integers (ac.total formula @level/16 -> 0, flat 1.5 -> 1, atk.all -0.5 -> 0)',
+      modOf(stat('ac.total', 'formula', 0, '@level/16'), 'ac.all') === 0 || modOf(stat('ac.total', 'formula', 0, '@level/16'), 'ac.total') === 0,
+      JSON.stringify(RuleEngine.evaluateV3Entry(stat('ac.total', 'formula', 0, '@level/16'), { character: fracChar }).modifiers)
+    );
+    check(
+      'Fractional values: flat 1.5 on ac.total truncates to 1',
+      ((RuleEngine.evaluateV3Entry(stat('ac.total', 'flat', 1.5), { character: fracChar }).modifiers || [])[0] || {}).value === 1,
+      JSON.stringify(RuleEngine.evaluateV3Entry(stat('ac.total', 'flat', 1.5), { character: fracChar }).modifiers)
+    );
+  }
+
   // Natural weapons (Rule Crafter `attack` block, `attackMode: 'natural'`): Warforged Slam (1d4, primary, uses hands).
   {
     const probe = (raceName, size, str) => {

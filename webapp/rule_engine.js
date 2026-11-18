@@ -1251,6 +1251,9 @@ const RuleEngine = {
 
   // Branch `condKind` values that ARE the condition (condText is ignored). Shared with tools/verify_v3_corpus.js
   // (silent-failure gate) so the gate and the engine cannot drift apart.
+  // Stat-block targets that are multipliers: their value may be fractional (all other targets are truncated to integers).
+  V3_FRACTIONAL_TARGETS: new Set(['healing.receivedMultiplier', 'spell.damageMultiplier', 'carryingCapacity.multiplier']),
+
   V3_NAMED_WHEN_CONDS: new Set([
     'notflatfooted', 'wieldingchosenshield', 'wieldingchosenweapon',
     'wieldingtwoweapons', 'vsaoofrommovement', 'castingchosenschool',
@@ -1688,7 +1691,10 @@ const RuleEngine = {
       if (!isDup) modifiers.push(modObj);
     };
 
-    const buildStatFormulaAndValue = (b, branchCtx) => {
+    // Block values are integers (RAW bonuses never carry fractions) except for multiplier targets (V3_FRACTIONAL_TARGETS), which
+    // keep the evaluated fraction (Warforged half healing = -0.5).
+    const buildStatFormulaAndValue = (b, branchCtx, keepFraction = false) => {
+      const toBlockValue = (n) => (keepFraction && Number.isFinite(n) ? n : Math.trunc(n));
       const terms = [];
       const rawVal = b.val !== undefined ? b.val : b.value;
       const mode = String(b.mode || '').toLowerCase().trim();
@@ -1727,7 +1733,7 @@ const RuleEngine = {
             finalExpr = `min(${capRaw}, ${swapExpr})`;
           }
         }
-        return { value: Math.trunc(ev), formula: finalExpr, cap: String(b.subOp || 'max').toLowerCase() === 'add' ? capRaw : null };
+        return { value: toBlockValue(ev), formula: finalExpr, cap: String(b.subOp || 'max').toLowerCase() === 'add' ? capRaw : null };
       }
 
       // Rule Crafter `mode: 'perCL'` (`Scale by Level`): clamp(floor(@cl / per) * value, min, max), matching the
@@ -1744,7 +1750,7 @@ const RuleEngine = {
         const cappedExpr = (maxCap !== null && Number.isFinite(maxCap) && maxCap > 0) ? `min(${maxCap}, ${scaleExpr})` : scaleExpr;
         const expr = baseMin !== 0 ? `max(${baseMin}, ${cappedExpr})` : cappedExpr;
         const ev = Number(this.evaluateFormula(expr, branchCtx)) || 0;
-        return { value: Math.trunc(ev), formula: expr, cap: maxCap };
+        return { value: toBlockValue(ev), formula: expr, cap: maxCap };
       }
 
       const useStatMode = (mode === 'stat') || (!mode && Boolean(statAbilityRaw));
@@ -1824,7 +1830,7 @@ const RuleEngine = {
       }
       const isDynamic = /@|floor|ceil|min|max/i.test(formulaStr);
       return {
-        value: Math.trunc(evaluated),
+        value: toBlockValue(evaluated),
         formula: isDynamic ? formulaStr : null,
         cap: capRaw
       };
@@ -2014,12 +2020,9 @@ const RuleEngine = {
             ? b.targets
             : (b.target ? [b.target] : ['ac.all']);
           const bonusType = this.normalizeV3BonusType(b.bonusType || b.btype || 'Untyped');
-          let { value, formula, cap } = buildStatFormulaAndValue(b, curCtx);
-          // Fractional multiplier targets (Warforged: healing.receivedMultiplier -0.5) must not be truncated to an integer.
-          if (!formula && rawTargets.length > 0 && rawTargets.every(t => String(t) === 'healing.receivedMultiplier')) {
-            const fracVal = Number(b.value !== undefined ? b.value : b.val);
-            if (Number.isFinite(fracVal)) value = fracVal;
-          }
+          // General rule: multiplier targets keep fractional values, everything else is an integer.
+          const keepFraction = rawTargets.length > 0 && rawTargets.every(t => this.V3_FRACTIONAL_TARGETS.has(this.canonicalizeV3Target(t)));
+          let { value, formula, cap } = buildStatFormulaAndValue(b, curCtx, keepFraction);
           const effSituational = isObjectPredicate
             ? Object.assign({}, b.condition)
             : ((InlineCondResult === 'situational' || InlineCondResult === 'qualifier')
