@@ -9175,6 +9175,8 @@
 
         if (cName.toLowerCase() === currentVal.toLowerCase()) {
           opt.selected = true;
+        } else if (typeof getPickerClassLevelCap === 'function' && getPickerClassLevelCap(cName, def).atCap) {
+          opt.disabled = true;
         }
 
         if (def.isCustom) {

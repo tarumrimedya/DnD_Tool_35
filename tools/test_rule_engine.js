@@ -406,6 +406,86 @@ function runRuleEngineTests() {
     assert.deepStrictEqual(RuleEngine.summarizeItemMechanics({ name: 'Rope', desc: 'Deals 9d6 fire damage (prose must not be scraped).' }), []);
   });
 
+  // 11. Class level cap by immutable class id (Bloodstorm Blade is a 10-level prestige class, ToB p.110)
+  test('Class Level Cap: prestige class blocked at progression.maxLevel; base class uncapped; excludeIndex for re-class', () => {
+    const bsbDef = RuleEngine.getClassDef('Bloodstorm Blade'); // srd_classes_races.json (eager chunk)
+    assert.ok(bsbDef && Number(bsbDef.maxLevel) === 10 && bsbDef.isPrestige === true, 'Bloodstorm Blade record: 10-level prestige class');
+    const rows = [];
+    for (let i = 0; i < 4; i++) rows.push({ className: 'Warblade' });
+    for (let i = 0; i < 2; i++) rows.push({ className: 'Rogue (Adventurer Variant)' });
+    for (let i = 0; i < 10; i++) rows.push({ className: 'Bloodstorm Blade' });
+    const bsb = RuleEngine.getClassLevelCapStatus('Bloodstorm Blade', rows, { classDef: bsbDef });
+    assert.strictEqual(bsb.classId, 'cls-bloodstorm-blade');
+    assert.strictEqual(bsb.maxLevel, 10);
+    assert.strictEqual(bsb.taken, 10);
+    assert.strictEqual(bsb.atCap, true, 'Bloodstorm Blade 11 must be blocked');
+    const reclass = RuleEngine.getClassLevelCapStatus('Bloodstorm Blade', rows, { classDef: bsbDef, excludeIndex: 15 });
+    assert.strictEqual(reclass.atCap, false, 'Re-classing one of the 10 Bloodstorm Blade rows keeps it at 9/10');
+    const nine = RuleEngine.getClassLevelCapStatus('Bloodstorm Blade', rows.slice(0, 15), { classDef: bsbDef });
+    assert.strictEqual(nine.atCap, false);
+    assert.strictEqual(nine.remaining, 1);
+    const warblade = RuleEngine.getClassLevelCapStatus('Warblade', rows);
+    assert.strictEqual(warblade.hasCap, false, '20-level base classes continue into epic levels (ELH)');
+    assert.strictEqual(warblade.atCap, false);
+    // Rows match by immutable class id: a row stored under the id (not the display name) still counts.
+    const byId = RuleEngine.getClassLevelCapStatus('Fighter', [{ className: 'cls-fighter' }, { className: 'Fighter' }], {
+      classDef: { id: 'cls-fighter', name: 'Fighter', type: 'Prestige Class', maxLevel: 2 }
+    });
+    assert.strictEqual(byId.taken, 2);
+    assert.strictEqual(byId.atCap, true);
+  });
+
+  // 12. Prerequisites respect build order: a feat picked at row N only sees rows 0..N (+ unleveled grants)
+  test('Build-Order Prerequisites: getFeatNamesKnownAtLevel excludes feats first gained on later rows', () => {
+    const ch = {
+      race: 'Human',
+      feats: [
+        { name: 'Power Attack', source: 'Level 1 (Warblade)' },
+        { name: 'Combat Expertise', source: 'Level 5 (Warblade)' },
+        { name: 'Improved Trip', source: 'Level 7 (Rogue (Adventurer Variant))' },
+        { name: 'Exotic Weapon Proficiency (Jovar)', source: 'Level 11 (Bloodstorm Blade)', choice: 'Jovar' },
+        { name: 'Wotemberere Born', source: 'Level 1 (Warblade)' }
+      ],
+      specialAbilities: [{ name: 'Evasion (Ex)', source: 'Rogue (Adventurer Variant) Level 7' }],
+      levelProgression: [
+        { className: 'Warblade', feats: ['🧬 [Racial] Power Attack', '🎖️ [Extra] Wotemberere Born'] },
+        { className: 'Warblade', feats: [] },
+        { className: 'Warblade', feats: [] },
+        { className: 'Warblade', feats: ['+1 Stat: INT'] },
+        { className: 'Warblade', feats: ['🎖️ Combat Expertise'] },
+        { className: 'Rogue (Adventurer Variant)', feats: [] },
+        { className: 'Rogue (Adventurer Variant)', feats: ['🎖️ Improved Trip'], specialAbilities: ['Evasion (Ex)'] }
+      ]
+    };
+    // Same normalization as checkFeatPrerequisites (strips emoji + "[Tag]" row prefixes)
+    const norm = s => String(s).toLowerCase().replace(/^[^a-z0-9[]*(\[.*?\])?\s*/, '').replace(/[^a-z0-9]/g, '');
+    const at = idx => new Set(RuleEngine.getFeatNamesKnownAtLevel(ch, idx).map(norm));
+    const lv3 = at(2);
+    assert.ok(lv3.has('powerattack') && lv3.has('wotemberereborn'), 'Level 1 feats count at level 3');
+    assert.ok(!lv3.has('combatexpertise'), 'Combat Expertise (level 5) must not satisfy a level-3 prerequisite');
+    assert.ok(!lv3.has('improvedtrip'), 'Improved Trip (level 7) must not satisfy a level-3 prerequisite');
+    assert.ok(!lv3.has('evasionex'), 'Evasion (level 7) must not count at level 3');
+    assert.ok(!lv3.has('exoticweaponproficiencyjovar'), 'A feat sourced at Level 11 must not count at level 3');
+    const lv5 = at(4);
+    assert.ok(lv5.has('combatexpertise') && !lv5.has('improvedtrip'));
+    const lv7 = at(6);
+    assert.ok(lv7.has('improvedtrip') && lv7.has('evasionex'));
+  });
+
+  // 13. Feats granted by templates (bonusFeats) and domains (V3 grant effects) surface as owned feats
+  test('Granted Feats: Vampire template bonus feats and War domain grant surface via getGrantedFeats', () => {
+    const vamp = RuleEngine.getGrantedFeats({ race: 'Human', templates: ['Vampire'] });
+    const vampNames = vamp.map(g => g.name);
+    ['Alertness', 'Combat Reflexes', 'Dodge', 'Improved Initiative', 'Lightning Reflexes'].forEach(n => {
+      assert.ok(vampNames.includes(n), `Vampire must grant ${n}`);
+    });
+    assert.ok(vamp.every(g => g.grantSource === 'template' && /vampire/i.test(g.source)));
+    const war = RuleEngine.getGrantedFeats({ race: 'Human', spellcasting: { domains: ['War'] } });
+    assert.ok(war.some(g => g.id === 'feat-martial-weapon-proficiency' && g.grantSource === 'domain'), 'War domain grants Martial Weapon Proficiency');
+    const known = RuleEngine.getFeatNamesKnownAtLevel({ race: 'Human', templates: ['Vampire'], feats: [], levelProgression: [{ className: 'Fighter', feats: [] }] }, 0);
+    assert.ok(known.includes('Dodge'), 'Template-granted feats count toward prerequisites at every level');
+  });
+
   return { passed, elapsedMs: Date.now() - startMs };
 }
 

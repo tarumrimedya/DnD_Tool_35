@@ -11475,6 +11475,127 @@ const RuleEngine = {
     return merged;
   },
 
+  // Class level cap (prestige classes end at progression.maxLevel, e.g. Bloodstorm Blade 10, ToB p.110).
+  // Rows are matched to the class by immutable class `id`, falling back to the normalized display name.
+  // A 20-level base class has no cap here: ELH lets base classes advance past 20th level (epic).
+  getClassLevelCapStatus(classRef, levelProgression = [], options = {}) {
+    const character = options.character || null;
+    const def = (options.classDef && typeof options.classDef === 'object')
+      ? options.classDef
+      : ((classRef && typeof classRef === 'object') ? classRef : this.getClassDef(classRef, character));
+    const displayName = typeof classRef === 'string' ? classRef : String((def && def.name) || '');
+    const normName = s => String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
+    const isPrestige = Boolean(def && (def.isPrestige || def.type === 'Prestige Class'));
+    const maxLevel = Number(def && ((def.progression && def.progression.maxLevel) || def.maxLevel)) || (isPrestige ? 10 : 20);
+    const hasCap = isPrestige || maxLevel < 20;
+    const classId = def && def.id ? String(def.id).toLowerCase() : '';
+    const targetName = normName(displayName);
+    const rows = Array.isArray(levelProgression) ? levelProgression : [];
+    const excludeIndex = Number.isInteger(options.excludeIndex) ? options.excludeIndex : -1;
+    // Row -> class id memo (keyed by row object, invalidated when the row's className changes)
+    if (!this._rowClassIdCache) this._rowClassIdCache = new WeakMap();
+    const rowClassId = (row, rowName) => {
+      const hit = this._rowClassIdCache.get(row);
+      if (hit && hit.name === rowName) return hit.id;
+      const rowDef = this.getClassDef(rowName, character);
+      const id = rowDef && rowDef.id ? String(rowDef.id).toLowerCase() : '';
+      this._rowClassIdCache.set(row, { name: rowName, id });
+      return id;
+    };
+    let taken = 0;
+    rows.forEach((row, idx) => {
+      if (!row || typeof row !== 'object' || idx === excludeIndex) return;
+      const rowName = row.className || row.class || '';
+      if (!rowName) return;
+      if (targetName && normName(rowName) === targetName) { taken++; return; }
+      if (hasCap && classId && rowClassId(row, rowName) === classId) taken++;
+    });
+    return {
+      classId: classId || null,
+      maxLevel,
+      hasCap,
+      taken,
+      remaining: hasCap ? Math.max(0, maxLevel - taken) : Infinity,
+      atCap: hasCap && taken >= maxLevel
+    };
+  },
+
+  // Feats & special abilities a character owns at levelProgression row `levelIdx` (0-based), in build order:
+  // rows 0..levelIdx plus unleveled grants (race, template, DM). Anything first gained on a later row is excluded.
+  getFeatNamesKnownAtLevel(character, levelIdx) {
+    const ch = character || {};
+    const rows = Array.isArray(ch.levelProgression) ? ch.levelProgression : [];
+    const cut = Math.max(0, Math.min(Number(levelIdx) || 0, rows.length - 1));
+    const norm = s => String(s || '').toLowerCase().replace(/^[^a-z0-9[]*(\[.*?\])?\s*/, '').replace(/[^a-z0-9]/g, '');
+    const nameOf = e => (typeof e === 'string' ? e : (e && e.name) || '');
+    const rowNames = row => []
+      .concat(Array.isArray(row && row.feats) ? row.feats : [])
+      .concat(Array.isArray(row && row.specialAbilities) ? row.specialAbilities : [])
+      .map(nameOf)
+      .filter(n => n && n.trim());
+    const out = [];
+    const earlier = new Set();
+    rows.slice(0, cut + 1).forEach(row => rowNames(row).forEach(n => { out.push(n); earlier.add(norm(n)); }));
+    const laterOnly = new Set();
+    rows.slice(cut + 1).forEach(row => rowNames(row).forEach(n => { const k = norm(n); if (!earlier.has(k)) laterOnly.add(k); }));
+    const gainedLater = entry => {
+      const k = norm(nameOf(entry));
+      if (laterOnly.has(k)) return true;
+      const src = String((entry && typeof entry === 'object' && entry.source) || '');
+      const m = src.match(/^Level\s+(\d+)\b/i);
+      return Boolean(m && Number(m[1]) > cut + 1);
+    };
+    []
+      .concat(Array.isArray(ch.feats) ? ch.feats : [])
+      .concat(Array.isArray(ch.specialAbilities) ? ch.specialAbilities : [])
+      .forEach(entry => {
+        const n = nameOf(entry);
+        if (n && n.trim() && !gainedLater(entry)) out.push(n);
+      });
+    this.getGrantedFeats(ch).forEach(g => out.push(g.name));
+    return out;
+  },
+
+  // Feats granted by race, templates and domains (bonusFeats lists + V3 `grant` effects targeting `feat-*` ids).
+  getGrantedFeats(character) {
+    if (!character || typeof character !== 'object') return [];
+    const comp = (typeof window !== 'undefined' && window.SrdCompendium)
+      || (typeof SrdCompendium !== 'undefined' ? SrdCompendium : null);
+    const out = [];
+    const seen = new Set();
+    const push = (name, id, sourceName, grantSource) => {
+      const clean = String(name || '').trim();
+      if (!clean || /^any$/i.test(clean)) return;
+      const key = clean.toLowerCase();
+      if (seen.has(key)) return;
+      seen.add(key);
+      out.push({ name: clean, id: id || null, source: sourceName, grantSource, category: 'Granted Feat' });
+    };
+    const harvest = (entry, grantSource) => {
+      if (!entry || typeof entry !== 'object') return;
+      const sourceName = entry.name || entry.id || grantSource;
+      if (Array.isArray(entry.bonusFeats)) {
+        entry.bonusFeats.forEach(bf => push(typeof bf === 'string' ? bf : (bf && bf.name), bf && bf.id, sourceName, grantSource));
+      }
+      (Array.isArray(entry.effects) ? entry.effects : []).forEach(eff => {
+        if (!eff || eff.type !== 'effect') return;
+        const kind = String(eff.effectKind || '').toLowerCase();
+        if (kind !== 'grant' && kind !== 'feat') return;
+        const targetId = String(eff.targetId || eff.feat || '');
+        if (!/^feat-/.test(targetId)) return;
+        const featEntry = (comp && typeof comp.getById === 'function') ? comp.getById(targetId) : null;
+        push((featEntry && featEntry.name) || eff.label || targetId, targetId, sourceName, grantSource);
+      });
+    };
+    if (character.race) {
+      const raceEntry = this.resolveCustomEntryOverride(String(character.race), character) || this.getMasterDbEntry(String(character.race), 'Race');
+      harvest(raceEntry, 'race');
+    }
+    this.getCharacterActiveTemplateEntries(character).forEach(t => harvest(t, 'template'));
+    this.getCharacterActiveDomainEntries(character).forEach(d => harvest(d, 'domain'));
+    return out;
+  },
+
   // Get slot contract for bonus feats
   getClassBonusFeatContract(className, classLevel, character = null) {
     const def = this.getClassDef(className, character);

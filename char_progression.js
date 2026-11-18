@@ -402,6 +402,11 @@
             if (m.isFighterBonusFeat === true) existingCanonical.isFighterBonusFeat = true;
             return;
           }
+          // A picked instance of a canonical @Choice feat (e.g. "Exotic Weapon Proficiency (Jovar)" saved under
+          // id feat-exotic-weapon-proficiency) is character data, not a catalog definition: the canonical feat owns the choice.
+          const baseKey = key.replace(/\s*\([^)]*\)\s*$/, '').trim();
+          const canonicalBase = baseKey !== key ? map.get(baseKey) : null;
+          if (canonicalBase && ((m.id && canonicalBase.id === m.id) || m.chosenOption || m.choice)) return;
           const canonicalInv = invocationByName.get(key);
           const isKnownFlaw = t === 'flaw' || String(m.category || '').toLowerCase() === 'flaw' || Boolean(m.ruleFlags && m.ruleFlags.isFlaw) || Number(m.slotDiff) > 0;
           map.set(key, {
@@ -1726,23 +1731,13 @@
       if (query) {
         queryFiltered = baseList.filter(f => matchesFeatSearchQuery(f, query));
 
-        // Dynamic exotic weapon suggestion if query matches an exotic weapon
-        const exoticWeapons = getAvailableExoticWeapons();
-        const matchedExotics = exoticWeapons.filter(w => w.toLowerCase().includes(query));
-        matchedExotics.forEach(ew => {
-          const synthName = `Exotic Weapon Proficiency (${ew})`;
-          if (!queryFiltered.some(item => item.name.toLowerCase() === synthName.toLowerCase())) {
-            queryFiltered.unshift({
-              name: synthName,
-              category: 'Fighter',
-              type: 'Feat',
-              isFighterBonusFeat: true,
-              prereq: 'BAB +1',
-              source: 'PHB p.94 / RAW',
-              benefit: `You make attack rolls with the ${ew} normally (without the -4 nonproficiency penalty).`
-            });
-          }
-        });
+        // Query naming an exotic weapon surfaces the single canonical Exotic Weapon Proficiency feat (weapon @Choice);
+        // never per-weapon "Exotic Weapon Proficiency (X)" variants.
+        const exoticWeapons = (typeof getAvailableExoticWeapons === 'function') ? getAvailableExoticWeapons() : [];
+        if (exoticWeapons.some(w => w.toLowerCase().includes(query))) {
+          const ewpBase = baseList.find(f => f && f.id === 'feat-exotic-weapon-proficiency');
+          if (ewpBase && !queryFiltered.includes(ewpBase)) queryFiltered.unshift(ewpBase);
+        }
       }
 
       // Prerequisite evaluation with targetLevelIdx (memoized per modal session)
@@ -2496,7 +2491,10 @@
 
       let customDbEntry = null;
       let customDbUpdateOnly = false;
-      if (Array.isArray(masterDb)) {
+      // A choice instance ('Exotic Weapon Proficiency (Jovar)') of a canonical feat stays on the character
+      // (feats[] keeps choice/chosenOption); it must not be written to the catalog as a separate fixed feat.
+      const isChoiceOfCanonical = Boolean(chosenTargetVal && catalogMatch && (catalogMatch.name || '').toLowerCase().trim() === strippedBaseName.toLowerCase());
+      if (Array.isArray(masterDb) && !isChoiceOfCanonical) {
         const clean = featName.toLowerCase().trim();
         const existingDbIdx = masterDb.findIndex(m => m && (m.name || '').toLowerCase().trim() === clean);
         if (existingDbIdx >= 0) {
@@ -3728,15 +3726,16 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
               };
             }
 
+            // baseAbilities already includes the +1 of every ACTIVE row (activation bakes it in), so rebuild the
+            // score as it stood at this row: remove all active-row increases, then re-add rows 0..rowIdx.
             statKeys.forEach(stat => {
               let val = Number(character.baseAbilities?.[stat] ?? character.abilities?.[stat] ?? 10);
-              for (let i = 0; i <= rowIdx && i < prog.length; i++) {
-                const r = prog[i];
+              prog.forEach((r, i) => {
                 const incStat = getLevelStatIncrease(r);
-                if (incStat && incStat.toLowerCase() === stat) {
-                  val += 1;
-                }
-              }
+                if (!incStat || incStat.toLowerCase() !== stat) return;
+                if (r && r.active !== false) val -= 1;
+                if (i <= rowIdx) val += 1;
+              });
               abilities[stat] = val;
             });
           } else {
@@ -3785,35 +3784,29 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           const knownFeats = new Set();
           const normalizeFeatName = str => (str || '').toLowerCase().replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').replace(/[^a-z0-9]/g, '');
 
-          if (Array.isArray(character.feats)) {
-            character.feats.forEach(f => {
-              const name = typeof f === 'string' ? f : f?.name;
-              if (name) {
-                knownFeats.add(normalizeFeatName(name));
-                knownFeats.add(normalizeFeatName(name.replace(/\(.*?\)/g, '')));
-              }
-            });
+          const addKnownName = name => {
+            if (!name) return;
+            knownFeats.add(normalizeFeatName(name));
+            knownFeats.add(normalizeFeatName(name.replace(/\(.*?\)/g, '')));
+          };
+          const canGateByLevel = isTableMode && prog.length > 0 && typeof RuleEngine !== 'undefined' && typeof RuleEngine.getFeatNamesKnownAtLevel === 'function';
+          if (canGateByLevel) {
+            // Build order: only feats / abilities gained on rows 0..targetLevelIdx (plus unleveled grants) count.
+            RuleEngine.getFeatNamesKnownAtLevel(character, Number(targetLevelIdx)).forEach(addKnownName);
+          } else {
+            (Array.isArray(character.feats) ? character.feats : []).forEach(f => addKnownName(typeof f === 'string' ? f : f?.name));
+            (Array.isArray(character.specialAbilities) ? character.specialAbilities : []).forEach(s => addKnownName(typeof s === 'string' ? s : s?.name));
+            if (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getGrantedFeats === 'function') {
+              RuleEngine.getGrantedFeats(character).forEach(g => addKnownName(g.name));
+            }
           }
-          // Feats granted by data (race / template / class feature / item) count as owned for prerequisites
+          // Feats granted by data through the Lego evaluation (race / template / class feature / item) count as owned too
+          // (a Set, so overlap with getGrantedFeats / getFeatNamesKnownAtLevel never double counts).
           if (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getGrantedFeatList === 'function') {
-            RuleEngine.getGrantedFeatList(character).forEach(gf => {
-              if (gf.name) {
-                knownFeats.add(normalizeFeatName(gf.name));
-                knownFeats.add(normalizeFeatName(gf.name.replace(/(.*?)/g, '')));
-              }
-            });
-          }
-          if (Array.isArray(character.specialAbilities)) {
-            character.specialAbilities.forEach(s => {
-              const name = typeof s === 'string' ? s : s?.name;
-              if (name) {
-                knownFeats.add(normalizeFeatName(name));
-                knownFeats.add(normalizeFeatName(name.replace(/\(.*?\)/g, '')));
-              }
-            });
+            RuleEngine.getGrantedFeatList(character).forEach(gf => addKnownName(gf.name));
           }
 
-          const progSliceForFeats = isTableMode ? prog.slice(0, Number(targetLevelIdx) + 1) : prog;
+          const progSliceForFeats = canGateByLevel ? [] : (isTableMode ? prog.slice(0, Number(targetLevelIdx) + 1) : prog);
           if (Array.isArray(progSliceForFeats)) {
             progSliceForFeats.forEach(lvl => {
               if (lvl && (isTableMode || lvl.active !== false)) {
@@ -4076,7 +4069,10 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
               const sKey = (s.key || '').toLowerCase();
               return sName.includes(skillQuery) || skillQuery.includes(sName) || sKey.includes(skillQuery);
             });
-            const curRanks = sk ? (Number(sk.ranks) || 0) : 0;
+            // Ranks are stored as current totals; at an earlier row they cannot exceed the RAW cap (character level + 3, PHB p.62).
+            const isRowEval = targetLevelIdx !== null && targetLevelIdx !== undefined;
+            const storedRanks = sk ? (Number(sk.ranks) || 0) : 0;
+            const curRanks = isRowEval ? Math.min(storedRanks, totalCharacterLevel + 3) : storedRanks;
             met = curRanks >= reqRanks;
             info = met ? `(Ranks: ${curRanks} ≥ ${reqRanks})` : `(Current: ${curRanks}, Req: ${reqRanks})`;
             if (!met) allMet = false;
@@ -4619,23 +4615,13 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
         if (query) {
           queryFiltered = baseList.filter(f => matchesFeatSearchQuery(f, query));
 
-          // Dynamic exotic weapon suggestion if query matches an exotic weapon
+          // Query naming an exotic weapon surfaces the single canonical Exotic Weapon Proficiency feat (weapon @Choice);
+          // never per-weapon "Exotic Weapon Proficiency (X)" variants.
           const exoticWeapons = (typeof getAvailableExoticWeapons === 'function') ? getAvailableExoticWeapons() : [];
-          const matchedExotics = exoticWeapons.filter(w => w.toLowerCase().includes(query));
-          matchedExotics.forEach(ew => {
-            const synthName = `Exotic Weapon Proficiency (${ew})`;
-            if (!queryFiltered.some(item => item.name.toLowerCase() === synthName.toLowerCase())) {
-              queryFiltered.unshift({
-                name: synthName,
-                category: 'Fighter',
-                type: 'Feat',
-                isFighterBonusFeat: true,
-                prereq: 'BAB +1',
-                source: 'PHB p.94 / RAW',
-                benefit: `You make attack rolls with the ${ew} normally (without the -4 nonproficiency penalty).`
-              });
-            }
-          });
+          if (exoticWeapons.some(w => w.toLowerCase().includes(query))) {
+            const ewpBase = baseList.find(f => f && f.id === 'feat-exotic-weapon-proficiency');
+            if (ewpBase && !queryFiltered.includes(ewpBase)) queryFiltered.unshift(ewpBase);
+          }
         }
 
         // 3. Evaluate prerequisites for all candidates
@@ -5518,6 +5504,22 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
       return (def.type === 'Prestige Class') ? 10 : 20;
     }
 
+    // Class level cap (by class id) for the Level-Up / Change Class pickers; excludeIndex = row being re-classed.
+    function getPickerClassLevelCap(cName, def, excludeIndex = -1) {
+      if (typeof RuleEngine === 'undefined' || typeof RuleEngine.getClassLevelCapStatus !== 'function') {
+        return { atCap: false, taken: 0, maxLevel: getClassMaxLevel(def) };
+      }
+      return RuleEngine.getClassLevelCapStatus(cName, (character && character.levelProgression) || [], {
+        character,
+        classDef: (def && typeof def === 'object' && def.id) ? def : undefined,
+        excludeIndex
+      });
+    }
+
+    function warnClassAtMaxLevel(cName, cap) {
+      showToast(`${cName} has a maximum of ${cap.maxLevel} class levels (${cap.taken}/${cap.maxLevel} already in Level Progression). Choose a different class.`, 'error', { wrap: true });
+    }
+
     function getClassLevelStats(def, lvl) {
       const babRate = Number(def.bab) || 0.75;
       let bab = 0;
@@ -5841,6 +5843,8 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
         const isCustom = item.isCustom;
         const isProgExpanded = _expandedClassProgressions.has(cName);
         const prereqResult = item.prereqResult;
+        const levelCap = getPickerClassLevelCap(cName, def);
+        const selectAction = levelCap.atCap ? '' : `data-action="progression:select-class-search" data-class-name="${String(cName || '').replace(/"/g, '&quot;')}"`;
 
         // Group Header Divider
         if (item.priority !== lastPriority) {
@@ -5925,7 +5929,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
         const cleanDesc = (def.description || def.shortDescription || '').replace(/<img[^>]*>/gi, '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
 
         htmlOutput += `
-          <div data-action="progression:select-class-search" data-class-name="${String(cName || '').replace(/"/g, '&quot;')}" class="bg-slate-950/70 hover:bg-slate-900/90 border ${isSelected ? 'border-emerald-500 ring-1 ring-emerald-500/50 bg-emerald-950/20' : 'border-slate-800 hover:border-slate-700'} rounded-lg p-2.5 transition space-y-1.5 cursor-pointer group">
+          <div ${selectAction} class="bg-slate-950/70 hover:bg-slate-900/90 border ${isSelected ? 'border-emerald-500 ring-1 ring-emerald-500/50 bg-emerald-950/20' : 'border-slate-800 hover:border-slate-700'} rounded-lg p-2.5 transition space-y-1.5 cursor-pointer group">
             <div class="flex flex-wrap items-center justify-between gap-1.5">
               <div class="flex items-center gap-2">
                 <span class="text-base">${isPrestige ? '👑' : (isCustom ? '⚙️' : '🛡️')}</span>
@@ -5962,6 +5966,11 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
                   <span class="text-[11px] font-bold text-emerald-400 bg-emerald-950/90 border border-emerald-600/70 px-2.5 py-1 rounded-lg flex items-center gap-1 shadow-sm select-none">
                     <span>✓</span>
                     <span>Selected Class</span>
+                  </span>
+                ` : levelCap.atCap ? `
+                  <span class="text-[11px] font-bold text-rose-200 bg-rose-950/80 border border-rose-500/50 px-2.5 py-1 rounded-lg flex items-center gap-1 shadow-sm select-none" title="${UI.escapeAttr(cName)} has a maximum of ${levelCap.maxLevel} class levels">
+                    <span>🔒</span>
+                    <span>Max Level (${levelCap.taken}/${levelCap.maxLevel})</span>
                   </span>
                 ` : `
                   <button type="button" data-action="progression:select-class-search" data-class-name="${String(cName || '').replace(/"/g, '&quot;')}" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] shadow flex items-center gap-1 transition active:scale-95 cursor-pointer">
@@ -6250,6 +6259,11 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
     function selectClassFromSearch(className) {
       const select = document.getElementById('lvlup-class-select');
       if (!select) return;
+      const pickCap = getPickerClassLevelCap(className, getAvailableClassDefs()[className]);
+      if (pickCap.atCap) {
+        warnClassAtMaxLevel(className, pickCap);
+        return;
+      }
 
       let found = false;
       for (let i = 0; i < select.options.length; i++) {
@@ -6556,6 +6570,11 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
 
       const defaultClass = (character.classes?.split(' ')[0]) || (character.levelProgression?.[0]?.className) || 'Fighter';
       const className = document.getElementById('lvlup-class-select')?.value || defaultClass;
+      const confirmCap = getPickerClassLevelCap(className, getAvailableClassDefs()[className]);
+      if (confirmCap.atCap) {
+        warnClassAtMaxLevel(className, confirmCap);
+        return;
+      }
       const hd = document.getElementById('lvlup-hd-input')?.value || 'd8';
       const hpGain = Math.max(1, parseInt(document.getElementById('lvlup-hp-gain-input')?.value) || 1);
       const bab = parseInt(document.getElementById('lvlup-bab-input')?.value) || 0;
@@ -7146,6 +7165,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         const babText = def.bab === 1.0 ? 'Full BAB' : (def.bab === 0.75 ? '3/4 BAB' : '1/2 BAB');
         opt.textContent = `${cName} (${hdText} • ${babText})`;
         if (cName.toLowerCase() === targetSelected) opt.selected = true;
+        else if (getPickerClassLevelCap(cName, def, Number.isInteger(currentChangeClassLevelIndex) ? currentChangeClassLevelIndex : -1).atCap) opt.disabled = true;
         if (def.isCustom) {
           customGroup.appendChild(opt);
         } else {
@@ -7284,6 +7304,11 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
     function selectChangeClassFromSearch(className) {
       const select = document.getElementById('change-class-select');
       if (!select) return;
+      const pickCap = getPickerClassLevelCap(className, getAvailableClassDefs()[className], Number.isInteger(currentChangeClassLevelIndex) ? currentChangeClassLevelIndex : -1);
+      if (pickCap.atCap) {
+        warnClassAtMaxLevel(className, pickCap);
+        return;
+      }
 
       let found = false;
       for (let i = 0; i < select.options.length; i++) {
@@ -7419,6 +7444,8 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         const isCustom = item.isCustom;
         const isProgExpanded = _expandedClassProgressions.has(cName);
         const prereqResult = item.prereqResult;
+        const levelCap = getPickerClassLevelCap(cName, def, Number.isInteger(currentChangeClassLevelIndex) ? currentChangeClassLevelIndex : -1);
+        const selectAction = levelCap.atCap ? '' : `data-action="progression:select-change-class-search" data-class-name="${String(cName || '').replace(/"/g, '&quot;')}"`;
 
         // Group Header Divider (Identical to Level Up / Plan)
         if (item.priority !== lastPriority) {
@@ -7503,7 +7530,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         const cleanDesc = (def.description || def.shortDescription || '').replace(/<img[^>]*>/gi, '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
 
         htmlOutput += `
-          <div data-action="progression:select-change-class-search" data-class-name="${String(cName || '').replace(/"/g, '&quot;')}" class="bg-slate-950/70 hover:bg-slate-900/90 border ${isSelected ? 'border-emerald-500 ring-1 ring-emerald-500/50 bg-emerald-950/20' : 'border-slate-800 hover:border-slate-700'} rounded-lg p-2.5 transition space-y-1.5 cursor-pointer group">
+          <div ${selectAction} class="bg-slate-950/70 hover:bg-slate-900/90 border ${isSelected ? 'border-emerald-500 ring-1 ring-emerald-500/50 bg-emerald-950/20' : 'border-slate-800 hover:border-slate-700'} rounded-lg p-2.5 transition space-y-1.5 cursor-pointer group">
             <div class="flex flex-wrap items-center justify-between gap-1.5">
               <div class="flex items-center gap-2">
                 <span class="text-base">${isPrestige ? '👑' : (isCustom ? '⚙️' : '🛡️')}</span>
@@ -7540,6 +7567,11 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
                   <span class="text-[11px] font-bold text-emerald-400 bg-emerald-950/90 border border-emerald-600/70 px-2.5 py-1 rounded-lg flex items-center gap-1 shadow-sm select-none">
                     <span>✓</span>
                     <span>Selected Class</span>
+                  </span>
+                ` : levelCap.atCap ? `
+                  <span class="text-[11px] font-bold text-rose-200 bg-rose-950/80 border border-rose-500/50 px-2.5 py-1 rounded-lg flex items-center gap-1 shadow-sm select-none" title="${UI.escapeAttr(cName)} has a maximum of ${levelCap.maxLevel} class levels">
+                    <span>🔒</span>
+                    <span>Max Level (${levelCap.taken}/${levelCap.maxLevel})</span>
                   </span>
                 ` : `
                   <button type="button" data-action="progression:select-change-class-search" data-class-name="${String(cName || '').replace(/"/g, '&quot;')}" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] shadow flex items-center gap-1 transition active:scale-95 cursor-pointer">
@@ -7703,6 +7735,11 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       const newClass = sel.value;
       const allDefs = getAvailableClassDefs();
       const def = allDefs[newClass] || DND35_CLASS_DEFS[newClass] || { hd: 8, bab: 0.75, fort: 'poor', ref: 'poor', will: 'good', skills: 4 };
+      const changeCap = getPickerClassLevelCap(newClass, allDefs[newClass], idx);
+      if (changeCap.atCap) {
+        warnClassAtMaxLevel(newClass, changeCap);
+        return;
+      }
 
       const conMod = (typeof RuleEngine !== 'undefined' && RuleEngine.getAbilityMod)
         ? RuleEngine.getAbilityMod(character.abilities?.con || 14)
@@ -7977,6 +8014,21 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         });
       });
 
+      // Feats granted by race, templates and domains (not picked in a level slot)
+      if (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getGrantedFeats === 'function') {
+        const GRANT_CATEGORY = { template: 'Template', race: 'Racial', domain: 'Domain' };
+        RuleEngine.getGrantedFeats(character).forEach(g => {
+          const lower = g.name.toLowerCase();
+          if (featMap.has(lower)) return;
+          featMap.set(lower, {
+            name: g.name,
+            category: GRANT_CATEGORY[g.grantSource] || 'Granted Feat',
+            benefit: '',
+            source: g.source || ''
+          });
+        });
+      }
+
       const featsList = Array.from(featMap.values());
 
       // Collect all special abilities
@@ -8169,7 +8221,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
                       <span class="text-sm">🎖️</span>
                       <span class="text-xs font-bold text-amber-300 uppercase tracking-wide">Acquired Feats</span>
                     </div>
-                    <span class="text-[10px] text-slate-400 font-normal">From levels and race</span>
+                    <span class="text-[10px] text-slate-400 font-normal">From levels, race and templates</span>
                   </div>
                   <div class="flex flex-wrap gap-1.5 min-h-[40px] items-start">
                     ${featsList.length > 0 ? featsList.map(f => {
@@ -8837,7 +8889,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
             <div class="flex items-center justify-between gap-2">
               <div class="flex items-center gap-2 min-w-0 flex-1">
                 <span class="inline-flex items-center justify-center px-2 py-0.5 rounded bg-amber-950/90 border border-amber-600/80 text-amber-300 font-extrabold text-xs font-mono shrink-0">Lv.${lvl.level}</span>
-                <span data-action="entity:inspect" data-entity-kind="class" data-entity-name="${UI.escapeAttr(lvl.className || '')}" data-level-index="${idx}" class="font-sans font-bold text-white text-xs truncate cursor-pointer hover:underline hover:text-amber-300 transition" title="${UI.escapeAttr(lvl.className)}-${classLevelSoFar}">${UI.escapeHtml(lvl.className)}-${classLevelSoFar}</span>
+                <span data-action="entity:inspect" data-entity-kind="class" data-entity-name="${UI.escapeAttr(lvl.className || '')}" data-level-index="${idx}" class="font-sans font-bold text-white text-xs leading-tight break-words min-w-0 cursor-pointer hover:underline hover:text-amber-300 transition" title="${UI.escapeAttr(lvl.className)}-${classLevelSoFar}">${UI.escapeHtml(lvl.className)}-${classLevelSoFar}</span>
                 <label class="inline-flex items-center gap-1 shrink-0 ${isToggleDisabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}" title="${toggleTitle}">
                   <input type="checkbox" data-change-action="progression:toggle-level-active" data-level-idx="${idx}" ${isActive ? 'checked' : ''} ${isToggleDisabled ? 'disabled' : ''} class="w-3.5 h-3.5 rounded text-emerald-500 m-0 ${isToggleDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}">
                   <span class="badge ${isActive ? 'bg-emerald-950 text-emerald-300 border-emerald-600' : 'bg-slate-800 text-slate-400 border-slate-700'} text-[10px] px-1 py-0.5 leading-none font-bold whitespace-nowrap">
