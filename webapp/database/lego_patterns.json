@@ -49,6 +49,7 @@
               "recharge": "1d4+1"
             },
             "area": "60-ft. Line",
+            "dcFormula": "10 + @level + Con",
             "save": {
               "type": "Reflex",
               "effect": "Half"
@@ -65,7 +66,7 @@
                 "save": "Reflex half"
               }
             ],
-            "text": "Reflex DC 10 + @level + @conMod for half damage. Recharges in 1d4+1 rounds."
+            "text": "Reflex save for half damage. Recharges in 1d4+1 rounds."
           }
         ]
       }

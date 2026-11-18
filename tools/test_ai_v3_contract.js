@@ -206,6 +206,31 @@ function runAiV3ContractTests() {
   const forgeBlueprints = Forge.blueprints.map((b) => b.id).sort();
   check(deepEqual(defs.RuleMasterEntryV3.properties.blueprint.enum.slice().sort(), forgeBlueprints), 'schema blueprint enum must equal ForgeSandbox.blueprints');
 
+  // 2b. Export field coverage: every key the Rule Crafter writes in exportPower / exportUse / exportBlock must be
+  // documented in the schema, so new Crafter fields (dcFormula, gainedAt, ...) cannot drift past the AI contract.
+  const forgeSrc = fs.readFileSync(path.join(ROOT, 'forge_sandbox.js'), 'utf8');
+  const assignedKeys = (fnName) => {
+    const start = forgeSrc.indexOf(`function ${fnName}(`);
+    if (start < 0) return null;
+    const end = forgeSrc.indexOf('\n  }\n', start);
+    const body = forgeSrc.slice(start, end > start ? end : start + 4000);
+    return [...new Set([...body.matchAll(/\bo\.([A-Za-z_][A-Za-z0-9_]*)\s*=(?!=)/g)].map((m) => m[1]))];
+  };
+  const blockDocKeys = new Set();
+  Object.entries(defs).forEach(([name, def]) => {
+    if (/BlockV3$/.test(name) || name === 'BranchV3' || name === 'TableRowV3') Object.keys(def.properties || {}).forEach((k) => blockDocKeys.add(k));
+  });
+  [
+    ['exportPower', new Set(Object.keys(defs.PowerV3.properties || {})), 'PowerV3'],
+    ['exportUse', new Set(Object.keys(defs.UsageV3.properties || {})), 'UsageV3'],
+    ['exportBlock', blockDocKeys, '*BlockV3']
+  ].forEach(([fn, documented, defName]) => {
+    const keys = assignedKeys(fn);
+    check(Array.isArray(keys) && keys.length > 0, `forge_sandbox.js: ${fn}() not found for the export coverage check`);
+    const undocumented = (keys || []).filter((k) => !documented.has(k));
+    check(undocumented.length === 0, `${fn}() writes keys missing from ${defName} in rule_master_ai_schema.json: ${undocumented.join(', ')}`);
+  });
+
   corpus.forEach(({ label, entry }) => {
     check(isObj(entry), `${label}: entry must be an object`);
     if (!isObj(entry)) return;
@@ -257,6 +282,18 @@ function runAiV3ContractTests() {
   // 5. RuleEngine.deriveSheet smoke on replaceStat / perCL / defense templates ----------------
   const RuleEngine = require('../rule_engine.js');
   require('../char_store.js');
+
+  // 4b. Every power dcFormula must evaluate to a real Save DC on a live character (fixture 02, level 9).
+  const dcProbeChar = readJson(path.join(FIXTURES_DIR, '02_cleric_radiant_lvl9.json'));
+  RuleEngine.recalculateCharacter(dcProbeChar, []);
+  corpus.forEach(({ label, entry }) => {
+    (isObj(entry) && Array.isArray(entry.powers) ? entry.powers : []).forEach((pw, i) => {
+      if (pw.dcFormula === undefined) return;
+      const res = RuleEngine.evaluateAbilitySaveDc({ dcFormula: pw.dcFormula, spellLevel: pw.spellLevel }, dcProbeChar);
+      check(Boolean(res) && Number.isFinite(res.dc) && res.dc >= 10,
+        `${label} powers[${i}].dcFormula "${pw.dcFormula}" does not evaluate to a Save DC (got ${res ? res.dc : 'null'})`);
+    });
+  });
   // Probes get a unique id + name so the engine cannot resolve them to an SRD/seed entry (by id or by name)
   // and must evaluate the template's own effects[] blocks.
   const tpl = (id) => Object.assign(JSON.parse(JSON.stringify((patterns.find((p) => p.patternId === id) || {}).template || {})),

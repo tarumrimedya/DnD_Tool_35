@@ -290,6 +290,11 @@
         },
         "summary": {
           "type": "string"
+        },
+        "gainedAt": {
+          "type": "integer",
+          "minimum": 2,
+          "description": "Race / template Level / HD Table only: the character level (HD) at which this top-level block unlocks. Omit for blocks active from level 1. Children of when / table blocks inherit the parent's level and never carry their own."
         }
       },
       "allOf": [
@@ -1215,7 +1220,25 @@
           "type": "string"
         },
         "saveDC": {
-          "type": "number"
+          "type": "number",
+          "description": "Fixed Save DC. Use dcFormula when the DC scales."
+        },
+        "dcFormula": {
+          "type": "string",
+          "description": "Scaling Save DC formula evaluated against the bearer, e.g. \"10 + 1/2 HD + Con\" (breath weapons, racial traits) or \"10 + @spellLevel + Cha\" (spell-like abilities). A plain number belongs in saveDC."
+        },
+        "spellLevel": {
+          "type": "number",
+          "description": "Spell level used by @spellLevel in dcFormula (spell-like abilities whose attached spell is not resolvable)."
+        },
+        "gainedAt": {
+          "type": "integer",
+          "minimum": 2,
+          "description": "Race / template Level / HD Table only: the character level (HD) at which this power unlocks."
+        },
+        "exportStandalone": {
+          "type": "boolean",
+          "description": "Rule Crafter flag: also export this power as its own entry."
         },
         "duration": {
           "type": "string"
@@ -1787,6 +1810,7 @@
               "cost": 1
             },
             "area": "30-ft. Cone",
+            "dcFormula": "10 + 1/2 HD + Con",
             "save": {
               "type": "Reflex",
               "effect": "Half"
@@ -1803,7 +1827,7 @@
                 "save": "Reflex half"
               }
             ],
-            "text": "Reflex DC 10 + 1/2 HD + Con modifier for half damage."
+            "text": "Reflex save for half damage."
           }
         ]
       }
