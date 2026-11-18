@@ -860,6 +860,7 @@
         if (ek === 'stealStore') return 'Steal / Drain Spell (' + (b.maxLvlFormula || '≤ ⅓ Class Lvl') + ') → @' + slug(b.bufferVar || 'stolen_lvl');
         if (ek === 'grantFeat') return 'Grant ' + (b.floatingDaily ? 'Floating Daily ' : 'Bonus ') + 'Feat (' + (b.featOrPool || '#General') + ')';
         if (ek === 'proficiency') return 'Proficiency: ' + (b.targetId || '?');
+        if (ek === 'feat') return 'Bonus Feat: ' + (b.targetId || '?');
         if (ek === 'familiarity') return 'Weapon Familiarity: ' + (b.targetId || '?') + ' as ' + (b.treatAs || 'martial');
         if (ek === 'castEvolution') return 'Cast Nature → ' + (b.castNature || 'Supernatural (Su, No SR/AoO)');
         return b.text || 'Rule effect (empty)';
@@ -4677,6 +4678,7 @@
           ['castEvolution', '✨ Upgrade Cast Nature (Spell → Sp → Su)'],
           ['proficiency', '🛡️ Grant Proficiency (weapon / armor / shield)'],
           ['familiarity', '⚔️ Weapon Familiarity (treat as Martial)'],
+          ['feat', '🎖️ Grant Specific Bonus Feat (by feat id)'],
           ['rule', '📜 Rule Text']
         ], { narrow: true });
         if (ek === 'ruleSwitch') {
@@ -4710,6 +4712,9 @@
         }
         if (ek === 'proficiency') {
           return G(2, F('Effect Kind', modeSel) + F('Proficiency Token', inp(p + '.targetId', b.targetId || 'weapon:simple', { ph: 'weapon:simple / weapon:wpn-longbow / armor:light / shield:shield' })));
+        }
+        if (ek === 'feat') {
+          return G(2, F('Effect Kind', modeSel) + F('Feat Id (granted as a bonus feat)', inp(p + '.targetId', b.targetId || '', { ph: 'feat-dodge' })));
         }
         if (ek === 'familiarity') {
           return G(2, F('Effect Kind', modeSel) + F('Weapon Id (treated as Martial)', inp(p + '.targetId', b.targetId || '', { ph: 'wpn-dwarven-waraxe' })));

@@ -1216,6 +1216,23 @@ function compileRaceManeuvers(crData) {
   return n;
 }
 
+// Racial bonus feats (V3 `effect` block `effectKind: 'feat'`, `targetId` = immutable feat id; consumed by RuleEngine Stage 1 as a granted feat).
+// Pixie: MM/Dragon "Racial Feats: A pixie receives Dodge as a bonus feat". Dromite: EPH "Its antennae also give a dromite Blind-Fight as a bonus feat".
+// Wood/Aquatic/Wild/Grey elf "Martial Weapon Proficiency feats ... as bonus feats" stay proficiency blocks (compileRaceProficiencies); Human/Azurin are open feat slots.
+function compileRaceBonusFeats(crData) {
+  const SPEC = { 'race-sprite-pixie': ['feat-dodge'], 'race-dromite': ['feat-blind-fight'] };
+  let n = 0;
+  for (const [rid, feats] of Object.entries(SPEC)) {
+    const rec = crData.find((e) => e && e.id === rid);
+    if (!rec) continue;
+    if (!Array.isArray(rec.effects)) rec.effects = [];
+    rec.effects = rec.effects.filter((b) => !(b && typeof b.id === 'string' && b.id.startsWith('ef-race-bonus-feat-')));
+    feats.forEach((fid) => rec.effects.push({ id: 'ef-race-bonus-feat-' + fid.replace(/^feat-/, ''), type: 'effect', effectKind: 'feat', targetId: fid }));
+    n++;
+  }
+  return n;
+}
+
 function compileFeatPatches(featsCore, featsSplat) {
   // Ensure Hidden Talent (XPH p.67) exists in srd_feats_splat.json
   const hiddenTalent = {
@@ -2361,6 +2378,7 @@ function main() {
   const cabExistingEnriched = enrichExistingClassAbilities(cr.data);
   const raceProfCount = compileRaceProficiencies(cr.data);
   compileRaceManeuvers(cr.data);
+  compileRaceBonusFeats(cr.data);
 
   const cabLookup = new Map();
   for (const e of cr.data) {

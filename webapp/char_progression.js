@@ -3449,6 +3449,14 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           });
         }
 
+        // Feats granted by data (race / template / class feature / item) cannot be taken a second time
+        if (typeof character !== 'undefined' && typeof RuleEngine !== 'undefined' && typeof RuleEngine.getGrantedFeatList === 'function') {
+          RuleEngine.getGrantedFeatList(character).forEach(gf => {
+            const c = cleanFeatNameString(gf.name || '');
+            if (c) recordTaken(c);
+          });
+        }
+
         // From character.levelProgression
         if (typeof character !== 'undefined' && Array.isArray(character.levelProgression)) {
           character.levelProgression.forEach((lvl, lIdx) => {
@@ -3783,6 +3791,15 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
               if (name) {
                 knownFeats.add(normalizeFeatName(name));
                 knownFeats.add(normalizeFeatName(name.replace(/\(.*?\)/g, '')));
+              }
+            });
+          }
+          // Feats granted by data (race / template / class feature / item) count as owned for prerequisites
+          if (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getGrantedFeatList === 'function') {
+            RuleEngine.getGrantedFeatList(character).forEach(gf => {
+              if (gf.name) {
+                knownFeats.add(normalizeFeatName(gf.name));
+                knownFeats.add(normalizeFeatName(gf.name.replace(/(.*?)/g, '')));
               }
             });
           }
@@ -7932,6 +7949,16 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
           });
         }
       });
+
+      // Bonus feats granted by data (race / template / class feature / item): shown as read-only chips marked with their source.
+      if (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getGrantedFeatList === 'function') {
+        RuleEngine.getGrantedFeatList(character).forEach(gf => {
+          const lower = String(gf.name || '').toLowerCase();
+          if (lower && !featMap.has(lower)) {
+            featMap.set(lower, { name: gf.name, category: gf.source ? `Bonus Feat: ${gf.source}` : 'Bonus Feat', benefit: gf.benefit || '', source: gf.source || '', granted: true });
+          }
+        });
+      }
 
       // Also harvest feats from levelProgression if any
       (character.levelProgression || []).forEach(p => {

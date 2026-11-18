@@ -2532,6 +2532,9 @@ const RuleEngine = {
           } else if (effKind === 'grant' || effKind === 'proficiency' || effKind === 'feat') {
             grants.push({
               grantType: b.grantType || (effKind === 'proficiency' ? 'proficiency' : 'entity'),
+              // `effectKind: 'feat'` + `targetId` (immutable feat id) = a specific bonus feat the source grants (Race, template,
+              // class feature, item...). Stage 1 of evaluateLegoCharacter turns it into a feat the character owns (`_grantedFeat`).
+              ...(effKind === 'feat' ? { entityKind: 'feat' } : {}),
               targetId: b.targetId || b.grant || b.feat || b.proficiency || b.value,
               ...(b.value !== undefined ? { value: b.value } : {}),
               ...(b.filter ? { filter: b.filter } : {}),
@@ -3376,14 +3379,59 @@ const RuleEngine = {
     const ctx = this.buildFormulaContext(ch, { ownedIds });
 
     // STAGE 1: Synergy & Grant Resolution (auto-unlocks entries from candidatePool or embedded grants when requires predicate passes)
-    const grantedCapabilities = { spellsAtWill: [], proficiencies: [], familiarities: [], senses: [], movements: [], unlockedEntities: [] };
+    const grantedCapabilities = { spellsAtWill: [], proficiencies: [], familiarities: [], senses: [], movements: [], unlockedEntities: [], grantedFeats: [] };
     const poolNormalized = Array.isArray(candidatePool) ? candidatePool.map(p => this.normalizeLegoEntry(p)) : [];
+
+    // Bonus feats granted by data (`effect` block `effectKind: 'feat'`, `targetId` = immutable feat id). The feat becomes a
+    // real owned feat (`_grantedFeat`, applied through the same feat pipeline as a taken feat) unless the character already
+    // has it and it cannot be taken twice (then it is only listed with `duplicate: true`; never double counted).
+    const featOwnKeys = this.buildCharacterOwnedIdsSet(ch);
+    const grantedFeatIdsNow = new Set();
+    // Level-progression feats are plain strings, often with an emoji / [tag] prefix: compare on the stripped lowercase name.
+    (Array.isArray(ch.levelProgression) ? ch.levelProgression : []).forEach(r => {
+      if (!r || r.active === false) return;
+      (r.feats || []).forEach(f => {
+        const nm = String(typeof f === 'string' ? f : (f && f.name) || '')
+          .replace(/^(?:[☀-➿\uD83C-􏰀-\uDFFF️\s]+|\[.*?\]\s*)+/g, '').toLowerCase().trim();
+        if (nm) featOwnKeys.add(nm);
+      });
+    });
+    const resolveGrantedFeat = (id) => {
+      const pf = poolNormalized.find(p => p && (p.id === id || String(p.id).split(':').pop() === id));
+      if (pf) return pf;
+      const compNow = (typeof window !== 'undefined' && window.SrdCompendium) || (typeof SrdCompendium !== 'undefined' ? SrdCompendium : null);
+      const raw = (compNow && typeof compNow.getById === 'function' && compNow.getById(id)) || this.getMasterDbEntry(id, 'Feat');
+      return raw && typeof raw === 'object' ? this.normalizeLegoEntry(raw) : null;
+    };
+    const grantFeatEntry = (src, g) => {
+      const featId = String(g.targetId || '').trim();
+      const featDef = featId ? resolveGrantedFeat(featId) : null;
+      if (!featDef) return;
+      const idLow = String(featDef.id || featId).toLowerCase();
+      const nameLow = String(featDef.name || '').trim().toLowerCase();
+      const stackable = Number(featDef.maxRanks) > 1 || featDef.stackable === true;
+      const owned = featOwnKeys.has(idLow) || featOwnKeys.has(nameLow) || ownedIds.has(featDef.id) || grantedFeatIdsNow.has(idLow);
+      const rec = { id: featDef.id || featId, name: featDef.name || featId, category: featDef.category || 'Feat', benefit: featDef.benefit || featDef.shortDescription || '', source: src.name || '', sourceId: src.id || '' };
+      if (owned && !stackable) {
+        grantedCapabilities.grantedFeats.push(Object.assign(rec, { duplicate: true }));
+        return;
+      }
+      grantedFeatIdsNow.add(idLow);
+      const unlockedFeat = Object.assign({}, featDef, { _autoUnlocked: true, _grantedFeat: true, _grantedBy: src.name || '', _grantedById: src.id || '' });
+      activeEntries.push(unlockedFeat);
+      ownedIds.add(unlockedFeat.id);
+      ownedIds.add(String(unlockedFeat.id).split(':').pop());
+      grantedCapabilities.unlockedEntities.push(unlockedFeat.id);
+      grantedCapabilities.grantedFeats.push(rec);
+    };
 
     // First process embedded grants (which may unlock entities needed by candidatePool requires predicates)
     activeEntries.slice().forEach(e => {
       (e.grants || []).forEach(g => {
         if (!this.evaluatePredicate(g.requires, ch, ctx)) return;
-        if (g.grantType === 'entity' && g.targetId && !ownedIds.has(g.targetId)) {
+        if (g.grantType === 'entity' && g.entityKind === 'feat' && g.targetId) {
+          grantFeatEntry(e, g);
+        } else if (g.grantType === 'entity' && g.targetId && !ownedIds.has(g.targetId)) {
           const found = poolNormalized.find(p => p.id === g.targetId || String(p.id).split(':').pop() === g.targetId);
           if (found) {
             const unlocked = Object.assign({}, found, { _autoUnlocked: true });
@@ -5095,8 +5143,8 @@ const RuleEngine = {
 
     // 2. Collect learned feats and special abilities
     const learnedFeats = [];
-    if (Array.isArray(character.feats)) {
-      character.feats.forEach(f => learnedFeats.push(typeof f === 'string' ? f : f?.name || ''));
+    if (this.getEffectiveFeats(character).length > 0) {
+      this.getEffectiveFeats(character).forEach(f => learnedFeats.push(typeof f === 'string' ? f : f?.name || ''));
     }
     if (Array.isArray(character.specialAbilities)) {
       character.specialAbilities.forEach(a => learnedFeats.push(typeof a === 'string' ? a : a?.name || ''));
@@ -5332,10 +5380,31 @@ const RuleEngine = {
     return Math.floor(Number(scopes[scope]) || 0);
   },
 
+  // Feats granted to the character by data (Race / template / class feature / item `effect` block `effectKind: 'feat'`).
+  // Full normalized feat entries (`_grantedFeat: true`, `_grantedBy` = source name), computed by the last Lego evaluation.
+  getGrantedFeatEntries(character) {
+    const ev = character && character.legoEvaluation;
+    return (ev && Array.isArray(ev.entries) ? ev.entries : []).filter(e => e && e._grantedFeat);
+  },
+
+  // Light descriptors for display (feat chips, sheet feat list). Duplicates of a feat the character took itself are omitted.
+  getGrantedFeatList(character) {
+    const gc = character && character.grantedCapabilities;
+    return (gc && Array.isArray(gc.grantedFeats) ? gc.grantedFeats : []).filter(f => f && !f.duplicate)
+      .map(f => ({ id: f.id, name: f.name, category: f.category || 'Feat', benefit: f.benefit || '', source: f.source || '', granted: true }));
+  },
+
+  // The character's feats as a rule consumer must see them: owned feats + feats granted by data.
+  getEffectiveFeats(character) {
+    const own = Array.isArray(character && character.feats) ? character.feats : [];
+    const granted = this.getGrantedFeatEntries(character);
+    return granted.length ? own.concat(granted) : own;
+  },
+
   // Check if character possesses feat/trait allowing two-handed weapons or oversized weapons in one hand
   hasOversizedWeaponFeat(character) {
     if (!character) return false;
-    const feats = (character.feats || []).map(f => (typeof f === 'string' ? f : f.name || '').toLowerCase());
+    const feats = this.getEffectiveFeats(character).map(f => (typeof f === 'string' ? f : f.name || '').toLowerCase());
     const abilities = (character.specialAbilities || []).map(a => (typeof a === 'string' ? a : a.name || '').toLowerCase());
     const all = [...feats, ...abilities];
     return all.some(f => 
@@ -6312,7 +6381,7 @@ const RuleEngine = {
 
     // Harvest any `casterLevel.*` V3 effects from active character feats and active buffs
     const extraSources = [
-      ...(Array.isArray(character?.feats) ? character.feats.filter(f => f && f.active !== false).map(f => ({ entry: f, label: f.name || 'Feat' })) : []),
+      ...(character?.feats ? this.getEffectiveFeats(character).filter(f => f && f.active !== false).map(f => ({ entry: f, label: f.name || 'Feat' })) : []),
       ...(Array.isArray(character?.buffs) ? character.buffs.filter(b => b && b.active !== false).map(b => ({ entry: b, label: b.name || 'Buff' })) : [])
     ];
     extraSources.forEach(({ entry, label }) => {
@@ -6513,7 +6582,7 @@ const RuleEngine = {
     }
 
     const allFeatsAndAbilities = [
-      ...(Array.isArray(character.feats) ? character.feats : []),
+      ...(this.getEffectiveFeats(character)),
       ...(Array.isArray(character.specialAbilities) ? character.specialAbilities : []),
       ...progList.flatMap(p => [...(p.feats || []), ...(p.specialAbilities || [])])
     ];
@@ -6531,7 +6600,7 @@ const RuleEngine = {
     // Count Extra Turning (+4 uses per feat) from V2 `turnUndead` modifier or feat name
     let extraTurningUses = 0;
     const seenExtraTurning = new Set();
-    (Array.isArray(character.feats) ? character.feats : []).forEach((f, idx) => {
+    this.getEffectiveFeats(character).forEach((f, idx) => {
       if (!f || f.active === false) return;
       const fName = String(typeof f === 'string' ? f : (f.name || '')).toLowerCase().trim();
       const dbFeat = this.getMasterDbEntry(f, 'Feat');
@@ -7712,7 +7781,7 @@ const RuleEngine = {
     );
 
     const allAbilitiesAndFeats = [
-      ...(character.feats || []),
+      ...this.getEffectiveFeats(character),
       ...(character.flaws || []),
       ...(character.traits || []),
       ...(character.skillTricks || []),
@@ -8134,7 +8203,7 @@ const RuleEngine = {
 
     // 4.5. Resolve Dynamic Hit Points (HP) based on Constitution Changes, Feats/Boons, Flaws, and Debuff Penalties
     const charFeatNames = [
-      ...(character.feats || [])
+      ...this.getEffectiveFeats(character)
         .map(f => stripFeatTag(typeof f === 'string' ? f : (f.name || '')))
         .filter(n => n && !inactiveOnlyFeatSet.has(n)),
       ...Array.from(activeProgFeatSet)
@@ -8584,9 +8653,9 @@ const RuleEngine = {
 
     // Check Improved Critical Feat
     let hasImpCrit = false;
-    if (character && Array.isArray(character.feats)) {
+    if (character && this.getEffectiveFeats(character).length > 0) {
       const cleanWepName = wepName.replace(/\+\d+/g, '').replace(/\(.*?\)/g, '').trim();
-      hasImpCrit = character.feats.some(f => {
+      hasImpCrit = this.getEffectiveFeats(character).some(f => {
         const fn = (typeof f === 'string' ? f : f.name || '').toLowerCase();
         if (!fn.includes('improved critical')) return false;
         if (fn.includes('all') || fn === 'improved critical') return true;
@@ -8645,7 +8714,7 @@ const RuleEngine = {
     const progFeats = Array.isArray(character.levelProgression)
       ? character.levelProgression.filter(r => r && r.active !== false).flatMap(r => [...(r.feats || []), ...(r.specialAbilities || [])])
       : [];
-    const activeFeatAndAbilityPool = [...(character.feats || []), ...(character.specialAbilities || []), ...progFeats]
+    const activeFeatAndAbilityPool = [...this.getEffectiveFeats(character), ...(character.specialAbilities || []), ...progFeats]
       .filter(f => f && (typeof f !== 'object' || f.active !== false));
     const feats = activeFeatAndAbilityPool
       .map(f => (typeof f === 'string' ? f : f?.name || '').toLowerCase());
@@ -8778,7 +8847,7 @@ const RuleEngine = {
     const wepTags = Array.isArray(weapon?.tags) ? weapon.tags.map(t => String(t).toLowerCase()) : [];
     const isLance = wepName.includes('lance') || wepTags.includes('lance');
 
-    const feats = (character?.feats || []).map(f => (typeof f === 'string' ? f : f.name || '').toLowerCase());
+    const feats = this.getEffectiveFeats(character).map(f => (typeof f === 'string' ? f : f.name || '').toLowerCase());
     const hasSpiritedCharge = feats.some(f => f.includes('spirited charge'));
 
     let multiplier = 1;
@@ -9071,7 +9140,7 @@ const RuleEngine = {
     if (weapon.id && /^(?:srd[-_])?(?:wpn|wep)[-_]/i.test(String(weapon.id))) addWepKeys(weapon.id, false);
     if (weapon.name) addWepKeys(weapon.name, true);
 
-    const activeFeatEntries = (character.feats || []).filter(f => f && (typeof f !== 'object' || f.active !== false));
+    const activeFeatEntries = this.getEffectiveFeats(character).filter(f => f && (typeof f !== 'object' || f.active !== false));
     const feats = activeFeatEntries.map(f => (typeof f === 'string' ? f : f.name || '').toLowerCase());
     const matchesWeaponSpecificFeat = (featBaseName, excludePrefix = null) => {
       const baseLower = featBaseName.toLowerCase();
@@ -9388,7 +9457,7 @@ const RuleEngine = {
     };
     const charAbilityAndFeatEntries = [
       ...(Array.isArray(character.specialAbilities) ? character.specialAbilities.map(sa => this.ensureV2Entry(sa)) : []),
-      ...(Array.isArray(character.feats) ? character.feats.map(resolveWepFeatInstance).filter(Boolean) : []),
+      ...this.getEffectiveFeats(character).map(resolveWepFeatInstance).filter(Boolean),
       ...activeSubsystemWepEntries
     ];
     const collectEntryWeaponModifiers = (isTargetMatch, outItems) => {
@@ -10290,7 +10359,7 @@ const RuleEngine = {
           .filter(p => p && p.active !== false)
           .flatMap(p => [...(p.feats || []), ...(p.specialAbilities || [])])
       : [];
-    const featsList = [...(character.feats || []), ...(character.specialAbilities || []), ...progFeats];
+    const featsList = [...this.getEffectiveFeats(character), ...(character.specialAbilities || []), ...progFeats];
     const seenFeatNames = new Set();
     const featSources = [];
     const rawAbilityNamesWithMods = [];
@@ -14172,6 +14241,13 @@ const RuleEngine = {
           benefit: typeof f === 'object' ? (f.benefit || f.desc || '') : '',
           source: typeof f === 'object' ? (f.source || '') : ''
         });
+      }
+    });
+    // Feats granted by data (race / template / class feature / item bonus feat): read-only entries marked `granted`.
+    this.getGrantedFeatList(w).forEach(gf => {
+      const key = String(gf.name || '').toLowerCase();
+      if (key && !featMap.has(key)) {
+        featMap.set(key, { name: gf.name, category: gf.category, benefit: gf.benefit, source: gf.source ? `${gf.source} (bonus feat)` : 'Bonus feat', granted: true, grantedBy: gf.source, id: gf.id });
       }
     });
     rows.forEach(r => {

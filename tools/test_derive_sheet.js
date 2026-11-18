@@ -5700,6 +5700,74 @@ function runDeriveSheetTests() {
     );
   }
 
+  // Bonus feats granted by data (`effect` block `effectKind: 'feat'`, immutable feat id): Pixie Dodge, Dromite Blind-Fight.
+  {
+    const probe = (raceName, feats, extra) => {
+      const c = Object.assign({
+        name: 'Bonus Feat Probe', race: raceName, classes: 'Fighter 1', level: 1, bab: 1,
+        abilities: { str: 12, dex: 14, con: 12, int: 10, wis: 10, cha: 10 },
+        baseAbilities: { str: 12, dex: 14, con: 12, int: 10, wis: 10, cha: 10 },
+        levelProgression: [{ level: 1, className: 'Fighter', hd: 'd10', hpGain: 10, active: true, feats: [] }],
+        feats: feats || [], bodySlots: {}, weapons: [], gearPool: []
+      }, extra || {});
+      RuleEngine.recalculateCharacter(c, []);
+      return c;
+    };
+    const names = (c) => RuleEngine.getEffectiveFeats(c).map(f => (typeof f === 'string' ? f : f.name));
+    const dodgeAc = (c) => (c.conditionalAcBonuses || []).filter(b => /dodge/i.test(b.source || '') || /designated/i.test(b.condition || '')).length;
+    const pixie = probe('Sprite, Pixie');
+    const dromite = probe('Dromite');
+    const human = probe('Human');
+    check(
+      'Bonus feat grant: Pixie owns Dodge and Dromite owns Blind-Fight (by feat id); a Human owns neither; granted feats are marked with their source',
+      names(pixie).includes('Dodge') && names(dromite).includes('Blind-Fight') && !names(human).includes('Dodge') && !names(human).includes('Blind-Fight') &&
+      RuleEngine.getGrantedFeatList(pixie)[0].id === 'feat-dodge' && /Pixie/.test(RuleEngine.getGrantedFeatList(pixie)[0].source),
+      JSON.stringify({ p: names(pixie), d: names(dromite), list: RuleEngine.getGrantedFeatList(pixie) })
+    );
+    const humanDodge = probe('Human', [{ id: 'feat-dodge', name: 'Dodge' }]);
+    check(
+      'Bonus feat grant: a granted Dodge applies its own V3 effects (same conditional dodge bonus as a taken Dodge)',
+      dodgeAc(pixie) === 1 && dodgeAc(humanDodge) === 1 && dodgeAc(human) === 0,
+      JSON.stringify({ p: pixie.conditionalAcBonuses, h: humanDodge.conditionalAcBonuses })
+    );
+    const pixieTook = probe('Sprite, Pixie', [{ id: 'feat-dodge', name: 'Dodge' }]);
+    const pixieTookProg = probe('Sprite, Pixie', [], { levelProgression: [{ level: 1, className: 'Fighter', hd: 'd10', hpGain: 10, active: true, feats: ['🎖️ Dodge'] }] });
+    check(
+      'Bonus feat grant: not double counted when the character also took the feat (feats[] or a level row); only one dodge bonus, listed as duplicate',
+      dodgeAc(pixieTook) === 1 && dodgeAc(pixieTookProg) === 1 &&
+      RuleEngine.getGrantedFeatList(pixieTook).length === 0 && RuleEngine.getGrantedFeatList(pixieTookProg).length === 0 &&
+      pixieTook.grantedCapabilities.grantedFeats.length === 1 && pixieTook.grantedCapabilities.grantedFeats[0].duplicate === true &&
+      names(pixieTook).filter(n => n === 'Dodge').length === 1,
+      JSON.stringify({ a: pixieTook.conditionalAcBonuses, b: pixieTookProg.conditionalAcBonuses })
+    );
+    const hbRace = { schemaVersion: 3, id: 'race-skyfolk', blueprint: 'race', type: 'Race', name: 'Skyfolk', effects: [
+      { id: 'e1', type: 'effect', effectKind: 'feat', targetId: 'feat-blind-fight' },
+      { id: 'e2', type: 'effect', effectKind: 'feat', targetId: 'feat-does-not-exist' }
+    ] };
+    const hbChar = probe('Skyfolk', [], { customEntries: { 'race-skyfolk': hbRace } });
+    const ringChar = probe('Human', [], { bodySlots: { ring1: { id: 'itm-test-ring', name: 'Dodge Ring', type: 'Item', schemaVersion: 3, equipped: true, effects: [{ id: 'e1', type: 'effect', effectKind: 'feat', targetId: 'feat-dodge' }] } } });
+    check(
+      'Bonus feat grant: works for a homebrew race (customEntries) and an equipped item, matched by feat id; an unknown feat id grants nothing',
+      names(hbChar).join() === 'Blind-Fight' && names(ringChar).join() === 'Dodge' && dodgeAc(ringChar) === 1,
+      JSON.stringify({ hb: names(hbChar), ring: names(ringChar) })
+    );
+    const stackFeat = { schemaVersion: 3, id: 'feat-hb-stack', blueprint: 'feat', type: 'Feat', name: 'Stack Me', stackable: true, effects: [{ id: 's', type: 'stat', targets: ['hp.max'], mode: 'flat', value: 2, btype: 'Untyped' }] };
+    const stackRace = { schemaVersion: 3, id: 'race-stacker', blueprint: 'race', type: 'Race', name: 'Stacker', effects: [{ id: 'g', type: 'effect', effectKind: 'feat', targetId: 'feat-hb-stack' }] };
+    const stackBoth = probe('Stacker', [stackFeat], { customEntries: { 'race-stacker': stackRace }, customDb: [stackFeat] });
+    check(
+      'Bonus feat grant: a repeatable (stackable) feat that is also taken stacks (two copies); a non-repeatable one never does',
+      names(stackBoth).filter(n => n === 'Stack Me').length === 2 && pixieTook.grantedCapabilities.grantedFeats[0].duplicate === true,
+      JSON.stringify(names(stackBoth))
+    );
+    const sheetFeats = RuleEngine.deriveSheet(probe('Sprite, Pixie')).progression.featuresView.featsList;
+    const sheetDodge = sheetFeats.find(f => f.name === 'Dodge');
+    check(
+      'Bonus feat grant: the sheet feat list shows the granted feat as read-only (granted flag + source), once',
+      sheetFeats.filter(f => f.name === 'Dodge').length === 1 && sheetDodge && sheetDodge.granted === true && /Pixie/.test(sheetDodge.grantedBy),
+      JSON.stringify(sheetDodge)
+    );
+  }
+
   CharStore.clearHistory();
 
   return { passed, elapsedMs: Date.now() - startMs };

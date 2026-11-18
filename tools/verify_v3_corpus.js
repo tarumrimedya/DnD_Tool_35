@@ -129,6 +129,15 @@ function runCorpusAudit() {
     (Array.isArray(eqRaw) ? eqRaw : (eqRaw.entries || [])).forEach((x) => { if (x && /^wpn-/.test(x.id || '')) WEAPON_IDS.add(x.id); });
   } catch (_) { /* equipment chunk missing: weapon-id check is skipped */ }
 
+  // Feat ids a `feat` effect block (specific bonus feat) may reference (immutable `feat-*` ids from every feat chunk)
+  const FEAT_IDS = new Set();
+  ['srd_feats.json', 'srd_feats_splat.json', 'srd_feats_epic.json', 'srd_feats_legacy.json'].forEach((fn) => {
+    try {
+      const raw = JSON.parse(fs.readFileSync(path.join(DB_DIR, fn), 'utf8'));
+      (Array.isArray(raw) ? raw : (raw.entries || [])).forEach((x) => { if (x && /^feat-/.test(x.id || '')) FEAT_IDS.add(x.id); });
+    } catch (_) { /* chunk missing: feat-id check is skipped */ }
+  });
+
   const report = {
     totalEntries: 0,
     v2Entries: 0,
@@ -221,6 +230,10 @@ function runCorpusAudit() {
                   : m[1] === 'armor' ? ['light', 'medium', 'heavy'].includes(m[2]) : ['shield', 'tower'].includes(m[2]));
               }
               if (!ok) report.badProficiencyGrants.push((e.id || '?') + ' -> ' + ef.effectKind + ' ' + tok);
+            }
+            if (ef.type === 'effect' && ef.effectKind === 'feat') {
+              const fid = String(ef.targetId || '');
+              if (!/^feat-/.test(fid) || (FEAT_IDS.size > 0 && !FEAT_IDS.has(fid))) report.badProficiencyGrants.push((e.id || '?') + ' -> feat ' + fid);
             }
             if (ef.type === 'stat') {
               if (ef.mode === 'perVar') {

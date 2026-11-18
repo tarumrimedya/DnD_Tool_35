@@ -901,6 +901,7 @@
             "grantFeat",
             "proficiency",
             "familiarity",
+            "feat",
             "bonusSlot",
             "trait",
             "reroll"
@@ -919,7 +920,7 @@
         },
         "targetId": {
           "type": "string",
-          "description": "proficiency: token weapon:simple | weapon:martial | weapon:exotic | weapon:<wpn-id> | armor:light|medium|heavy | shield:shield|tower. familiarity: immutable weapon id (wpn-*)."
+          "description": "proficiency: token weapon:simple | weapon:martial | weapon:exotic | weapon:<wpn-id> | armor:light|medium|heavy | shield:shield|tower. familiarity: immutable weapon id (wpn-*). feat: immutable feat id (feat-*) the source grants as a bonus feat (a feat the character owns: applies its own effects[], counts for prerequisites, not double counted if also taken and not repeatable)."
         },
         "treatAs": {
           "type": "string",
