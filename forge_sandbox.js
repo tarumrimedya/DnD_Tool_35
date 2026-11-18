@@ -859,6 +859,8 @@
         if (ek === 'recoverSlot') return 'Recover Expended Slot / Maneuver (≤ Lvl ' + num(b.maxSpellLvl, 6) + ', ' + (b.targetPoolOrClass || 'Spell') + ')';
         if (ek === 'stealStore') return 'Steal / Drain Spell (' + (b.maxLvlFormula || '≤ ⅓ Class Lvl') + ') → @' + slug(b.bufferVar || 'stolen_lvl');
         if (ek === 'grantFeat') return 'Grant ' + (b.floatingDaily ? 'Floating Daily ' : 'Bonus ') + 'Feat (' + (b.featOrPool || '#General') + ')';
+        if (ek === 'proficiency') return 'Proficiency: ' + (b.targetId || '?');
+        if (ek === 'familiarity') return 'Weapon Familiarity: ' + (b.targetId || '?') + ' as ' + (b.treatAs || 'martial');
         if (ek === 'castEvolution') return 'Cast Nature → ' + (b.castNature || 'Supernatural (Su, No SR/AoO)');
         return b.text || 'Rule effect (empty)';
       }
@@ -2306,6 +2308,7 @@
     delete o.id;
     delete o.summary;
     delete o.formula;
+    if (b.type === 'effect' && b.effectKind === 'familiarity') o.treatAs = b.treatAs || 'martial';
     if (b.type === 'stat') {
       const mode = modMode(b);
       o.mode = mode;
@@ -4659,6 +4662,8 @@
           ['stealStore', '⚡ Steal / Drain into @Buffer'],
           ['grantFeat', '🎯 Grant Bonus / Floating Feat'],
           ['castEvolution', '✨ Upgrade Cast Nature (Spell → Sp → Su)'],
+          ['proficiency', '🛡️ Grant Proficiency (weapon / armor / shield)'],
+          ['familiarity', '⚔️ Weapon Familiarity (treat as Martial)'],
           ['rule', '📜 Rule Text']
         ], { narrow: true });
         if (ek === 'ruleSwitch') {
@@ -4689,6 +4694,12 @@
         }
         if (ek === 'grantFeat') {
           return G(3, F('Effect Kind', modeSel) + F('Feat or #Tag Pool', inp(p + '.featOrPool', b.featOrPool || '#FighterBonus', { ph: '#FighterBonus or Feat Name' })) + F('Reassignment', chk(p + '.floatingDaily', !!b.floatingDaily, 'Floating (Reassign Daily)')));
+        }
+        if (ek === 'proficiency') {
+          return G(2, F('Effect Kind', modeSel) + F('Proficiency Token', inp(p + '.targetId', b.targetId || 'weapon:simple', { ph: 'weapon:simple / weapon:wpn-longbow / armor:light / shield:shield' })));
+        }
+        if (ek === 'familiarity') {
+          return G(2, F('Effect Kind', modeSel) + F('Weapon Id (treated as Martial)', inp(p + '.targetId', b.targetId || '', { ph: 'wpn-dwarven-waraxe' })));
         }
         if (ek === 'castEvolution') {
           return G(2, F('Effect Kind', modeSel) + F('Upgraded Nature', sel(p + '.castNature', b.castNature || 'Arcane Spell', ['Arcane Spell', 'Spell-Like (Sp)', 'Supernatural (Su, No SR/AoO)'], { narrow: true })));

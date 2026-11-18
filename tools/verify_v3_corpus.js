@@ -121,6 +121,13 @@ function runCorpusAudit() {
   const idx = JSON.parse(fs.readFileSync(path.join(DB_DIR, 'srd_index.json'), 'utf8'));
   const reSrc = fs.readFileSync(path.join(ROOT, 'rule_engine.js'), 'utf8');
 
+  // Weapon ids a `proficiency` / `familiarity` effect block may reference (immutable `wpn-*` ids from the equipment chunk)
+  const WEAPON_IDS = new Set();
+  try {
+    const eqRaw = JSON.parse(fs.readFileSync(path.join(DB_DIR, 'srd_equipment.json'), 'utf8'));
+    (Array.isArray(eqRaw) ? eqRaw : (eqRaw.entries || [])).forEach((x) => { if (x && /^wpn-/.test(x.id || '')) WEAPON_IDS.add(x.id); });
+  } catch (_) { /* equipment chunk missing: weapon-id check is skipped */ }
+
   const report = {
     totalEntries: 0,
     v2Entries: 0,
@@ -138,6 +145,7 @@ function runCorpusAudit() {
     splatV3PerVarCount: 0,
     unmappedTargets: {},
     unmappedV3BlockTypes: {},
+    badProficiencyGrants: [],
     structuredSubsystems: {
       v2ModesEntries: 0,
       xphAugmentPowers: 0,
@@ -192,6 +200,18 @@ function runCorpusAudit() {
             }
             if (ef.formula && /\$\{this\.|@attributes\./.test(String(ef.formula))) {
               report.foundryGarbageFormulasCount++;
+            }
+            if (ef.type === 'effect' && (ef.effectKind === 'proficiency' || ef.effectKind === 'familiarity')) {
+              const tok = String(ef.targetId || '');
+              let ok;
+              if (ef.effectKind === 'familiarity') {
+                ok = (WEAPON_IDS.size === 0 || WEAPON_IDS.has(tok)) && ef.treatAs === 'martial';
+              } else {
+                const m = /^(weapon|armor|shield):(.+)$/.exec(tok);
+                ok = !!m && (m[1] === 'weapon' ? (['simple', 'martial', 'exotic'].includes(m[2]) || WEAPON_IDS.size === 0 || WEAPON_IDS.has(m[2]))
+                  : m[1] === 'armor' ? ['light', 'medium', 'heavy'].includes(m[2]) : ['shield', 'tower'].includes(m[2]));
+              }
+              if (!ok) report.badProficiencyGrants.push((e.id || '?') + ' -> ' + ef.effectKind + ' ' + tok);
             }
             if (ef.type === 'stat') {
               if (ef.mode === 'perVar') {
@@ -294,6 +314,7 @@ if (require.main === module) {
   console.log(`   • Unmapped targets/blocks: ${unmappedTargetList.length} targets, ${unmappedBlockList.length} block types`);
   if (unmappedTargetList.length > 0) console.error('   ❌ Unmapped targets:', unmappedTargetList.slice(0, 20));
   if (unmappedBlockList.length > 0) console.error('   ❌ Unmapped block types:', unmappedBlockList);
+  if (rep.badProficiencyGrants.length > 0) console.error('   ❌ Invalid proficiency/familiarity grants:', rep.badProficiencyGrants.slice(0, 20));
 
   const failed =
     rep.v2Entries > 0 ||
@@ -305,7 +326,8 @@ if (require.main === module) {
     rep.nonItemSlotNoneCount > 0 ||
     rep.foundryGarbageFormulasCount > 0 ||
     unmappedTargetList.length > 0 ||
-    unmappedBlockList.length > 0;
+    unmappedBlockList.length > 0 ||
+    rep.badProficiencyGrants.length > 0;
   if (failed) {
     console.error('❌ FAIL: Pure V3 Corpus Gate failed.');
     process.exit(1);

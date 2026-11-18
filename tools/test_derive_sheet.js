@@ -5590,6 +5590,69 @@ function runDeriveSheetTests() {
     );
   }
 
+  // Race proficiency / familiarity: V3 `proficiency` + `familiarity` effect blocks feed grantedCapabilities, which
+  // RuleEngine.getCharacterProficiencies / isProficientWithWeapon read (immutable wpn-* ids, no name matching).
+  {
+    const probeRace = (raceName, className) => {
+      const c = {
+        name: 'Prof Probe', race: raceName, classes: className + ' 1', level: 1, bab: 0,
+        abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+        baseAbilities: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+        levelProgression: [{ level: 1, className, hd: 'd6', hpGain: 4, active: true, feats: [] }],
+        bodySlots: {}, weapons: [], gearPool: []
+      };
+      RuleEngine.recalculateCharacter(c, []);
+      return c;
+    };
+    const wp = (c, id, name, grip) => RuleEngine.isProficientWithWeapon(c, { name, baseItemId: id, grip: grip || '1-Hand' });
+    const elfWiz = probeRace('Elf, High', 'Wizard');
+    const humanWiz = probeRace('Human', 'Wizard');
+    check(
+      'Race proficiency: an elf wizard is proficient with longbow, composite longbow (+2) and rapier; a human wizard is not',
+      wp(elfWiz, 'wpn-longbow', 'Longbow') && wp(elfWiz, 'wpn-composite-longbow-plus-2', 'Composite Longbow (+2)') && wp(elfWiz, 'wpn-rapier', 'Rapier') &&
+      !wp(humanWiz, 'wpn-longbow', 'Longbow') && !wp(humanWiz, 'wpn-rapier', 'Rapier'),
+      JSON.stringify(elfWiz.grantedCapabilities && elfWiz.grantedCapabilities.proficiencies)
+    );
+    check(
+      'Race proficiency: an elf is NOT proficient with a martial weapon outside the list (greatsword) or an exotic one (hand crossbow)',
+      !wp(elfWiz, 'wpn-greatsword', 'Greatsword') && !wp(elfWiz, 'wpn-hand-crossbow', 'Hand Crossbow')
+    );
+    const drowWiz = probeRace('Elf, Drow', 'Wizard');
+    check(
+      'Race proficiency: a drow is proficient with hand crossbow (exotic), rapier and short sword, but not longbow',
+      wp(drowWiz, 'wpn-hand-crossbow', 'Hand Crossbow') && wp(drowWiz, 'wpn-rapier', 'Rapier') && wp(drowWiz, 'wpn-short-sword', 'Short Sword') && !wp(drowWiz, 'wpn-longbow', 'Longbow')
+    );
+    const dwarfWiz = probeRace('Dwarf, Hill', 'Wizard');
+    const dwarfFtr = probeRace('Dwarf, Hill', 'Fighter');
+    check(
+      'Race familiarity: dwarven waraxe / urgrosh count as Martial for a dwarf, so a Fighter dwarf is proficient and a Wizard dwarf is not; other exotic weapons stay exotic',
+      wp(dwarfFtr, 'wpn-dwarven-waraxe', 'Dwarven Waraxe') && wp(dwarfFtr, 'wpn-dwarven-urgrosh', 'Dwarven Urgrosh', '2-Hand') &&
+      !wp(dwarfWiz, 'wpn-dwarven-waraxe', 'Dwarven Waraxe') && !wp(dwarfFtr, 'wpn-spiked-chain', 'Spiked Chain') &&
+      !wp(probeRace('Human', 'Fighter'), 'wpn-dwarven-urgrosh', 'Dwarven Urgrosh', '2-Hand'),
+      JSON.stringify(dwarfFtr.grantedCapabilities && dwarfFtr.grantedCapabilities.familiarities)
+    );
+    const gnomeFtr = probeRace('Gnome, Rock', 'Fighter');
+    const orcFtr = probeRace('Orc', 'Fighter');
+    check(
+      'Race familiarity: gnome hooked hammer (gnomes) and orc double axe (orcs) count as Martial; a gnome gets no waraxe familiarity',
+      wp(gnomeFtr, 'wpn-gnome-hooked-hammer', 'Gnome Hooked Hammer', '2-Hand') && wp(orcFtr, 'wpn-orc-double-axe', 'Orc Double Axe', '2-Hand') &&
+      !wp(gnomeFtr, 'wpn-dwarven-waraxe', 'Dwarven Waraxe')
+    );
+    const aasWiz = probeRace('Aasimar', 'Wizard');
+    const profAas = RuleEngine.getCharacterProficiencies(aasWiz);
+    const profTief = RuleEngine.getCharacterProficiencies(probeRace('Tiefling', 'Wizard'));
+    check(
+      'Race proficiency: Aasimar gets simple + martial weapons, light + medium armor and shields; Tiefling gets light armor only',
+      profAas.weapons.simple && profAas.weapons.martial && profAas.armors.light && profAas.armors.medium && !profAas.armors.heavy && profAas.shields.shield && !profAas.shields.tower &&
+      profTief.armors.light && !profTief.armors.medium
+    );
+    check(
+      'Race proficiency: armor proficiency from a Race record clears the armor non-proficiency check (aasimar wizard in a chain shirt)',
+      RuleEngine.isProficientWithArmor(aasWiz, { name: 'Chain Shirt', armorCategory: 'light' }) && RuleEngine.isProficientWithArmor(aasWiz, { name: 'Breastplate', armorCategory: 'medium' }) &&
+      !RuleEngine.isProficientWithArmor(humanWiz, { name: 'Chain Shirt', armorCategory: 'light' })
+    );
+  }
+
   CharStore.clearHistory();
 
   return { passed, elapsedMs: Date.now() - startMs };

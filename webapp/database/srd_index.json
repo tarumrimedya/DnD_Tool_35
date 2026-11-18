@@ -1,26 +1,26 @@
 {
   "schemaVersion": 3,
   "version": "3.0.0",
-  "compendiumHash": "18588ff75a22bd4c",
+  "compendiumHash": "16b968e834211381",
   "generatedAt": "2026-11-15T19:43:51.694Z",
   "totalEntries": 7964,
   "chunks": {
     "srd_equipment.json": {
       "count": 1143,
-      "bytes": 1856631,
+      "bytes": 1873880,
       "hash": "7d2a79d31d55801a",
       "eagerLoad": true
     },
     "srd_feats.json": {
       "count": 468,
-      "bytes": 859618,
+      "bytes": 859917,
       "hash": "aff8440070a13f92",
       "eagerLoad": true
     },
     "srd_classes_races.json": {
       "count": 303,
-      "bytes": 1536441,
-      "hash": "a4b31164b67e8318",
+      "bytes": 1610444,
+      "hash": "4d2d52705f57acd7",
       "eagerLoad": true
     },
     "srd_combat_rules.json": {
@@ -31,7 +31,7 @@
     },
     "srd_spells.json": {
       "count": 695,
-      "bytes": 1940413,
+      "bytes": 1940779,
       "hash": "3981b02cf676579c",
       "eagerLoad": true
     },
@@ -49,7 +49,7 @@
     },
     "mic_compendium.json": {
       "count": 953,
-      "bytes": 1892481,
+      "bytes": 1898703,
       "hash": "454540315e8d5c7f",
       "eagerLoad": true
     },
@@ -79,7 +79,7 @@
     },
     "srd_feats_splat.json": {
       "count": 1767,
-      "bytes": 2328595,
+      "bytes": 2330390,
       "hash": "e9b53434c588d893",
       "eagerLoad": false
     },
@@ -1499,7 +1499,7 @@
     },
     {
       "id": "enh-fortification",
-      "n": "Fortification",
+      "n": "Light Fortification",
       "t": "Enhancement",
       "c": "Armor Enhancement",
       "s": "None",
@@ -1651,9 +1651,9 @@
     },
     {
       "id": "enh-spell-resistance",
-      "n": "Spell Resistance",
+      "n": "Spell Resistance (13)",
       "t": "Enhancement",
-      "c": "Misc Enhancement",
+      "c": "Armor Enhancement",
       "s": "None",
       "f": "srd_equipment.json"
     },
@@ -9202,6 +9202,102 @@
       "f": "srd_equipment.json"
     },
     {
+      "id": "enh-shadow-improved",
+      "n": "Shadow, Improved",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "enh-shadow-greater",
+      "n": "Shadow, Greater",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "enh-silent-moves-improved",
+      "n": "Silent Moves, Improved",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "enh-silent-moves-greater",
+      "n": "Silent Moves, Greater",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "enh-slick-improved",
+      "n": "Slick, Improved",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "enh-slick-greater",
+      "n": "Slick, Greater",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "enh-fortification-moderate",
+      "n": "Moderate Fortification",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "enh-fortification-heavy",
+      "n": "Heavy Fortification",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "enh-spell-resistance-15",
+      "n": "Spell Resistance (15)",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "enh-spell-resistance-17",
+      "n": "Spell Resistance (17)",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "enh-spell-resistance-19",
+      "n": "Spell Resistance (19)",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "enh-ghost-touch-armor",
+      "n": "Ghost Touch, Armor",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "srd_equipment.json"
+    },
+    {
       "id": "feat-hold-the-line",
       "n": "Hold the Line",
       "t": "Feat",
@@ -14436,6 +14532,30 @@
     {
       "id": "race-tiefling",
       "n": "Tiefling",
+      "t": "Race",
+      "c": "Standard Race",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "race-dragonborn",
+      "n": "Dragonborn",
+      "t": "Race",
+      "c": "Standard Race",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "race-goliath",
+      "n": "Goliath",
+      "t": "Race",
+      "c": "Standard Race",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "race-warforged",
+      "n": "Warforged",
       "t": "Race",
       "c": "Standard Race",
       "s": "None",
@@ -65753,126 +65873,6 @@
       "s": "None",
       "f": "srd_powers_splat.json",
       "l": 7
-    },
-    {
-      "id": "enh-shadow-improved",
-      "n": "Shadow, Improved",
-      "t": "Enhancement",
-      "c": "Armor Enhancement",
-      "s": "None",
-      "f": "srd_equipment.json"
-    },
-    {
-      "id": "enh-shadow-greater",
-      "n": "Shadow, Greater",
-      "t": "Enhancement",
-      "c": "Armor Enhancement",
-      "s": "None",
-      "f": "srd_equipment.json"
-    },
-    {
-      "id": "enh-silent-moves-improved",
-      "n": "Silent Moves, Improved",
-      "t": "Enhancement",
-      "c": "Armor Enhancement",
-      "s": "None",
-      "f": "srd_equipment.json"
-    },
-    {
-      "id": "enh-silent-moves-greater",
-      "n": "Silent Moves, Greater",
-      "t": "Enhancement",
-      "c": "Armor Enhancement",
-      "s": "None",
-      "f": "srd_equipment.json"
-    },
-    {
-      "id": "enh-slick-improved",
-      "n": "Slick, Improved",
-      "t": "Enhancement",
-      "c": "Armor Enhancement",
-      "s": "None",
-      "f": "srd_equipment.json"
-    },
-    {
-      "id": "enh-slick-greater",
-      "n": "Slick, Greater",
-      "t": "Enhancement",
-      "c": "Armor Enhancement",
-      "s": "None",
-      "f": "srd_equipment.json"
-    },
-    {
-      "id": "enh-fortification-moderate",
-      "n": "Moderate Fortification",
-      "t": "Enhancement",
-      "c": "Armor Enhancement",
-      "s": "None",
-      "f": "srd_equipment.json"
-    },
-    {
-      "id": "enh-fortification-heavy",
-      "n": "Heavy Fortification",
-      "t": "Enhancement",
-      "c": "Armor Enhancement",
-      "s": "None",
-      "f": "srd_equipment.json"
-    },
-    {
-      "id": "enh-spell-resistance-15",
-      "n": "Spell Resistance (15)",
-      "t": "Enhancement",
-      "c": "Armor Enhancement",
-      "s": "None",
-      "f": "srd_equipment.json"
-    },
-    {
-      "id": "enh-spell-resistance-17",
-      "n": "Spell Resistance (17)",
-      "t": "Enhancement",
-      "c": "Armor Enhancement",
-      "s": "None",
-      "f": "srd_equipment.json"
-    },
-    {
-      "id": "enh-spell-resistance-19",
-      "n": "Spell Resistance (19)",
-      "t": "Enhancement",
-      "c": "Armor Enhancement",
-      "s": "None",
-      "f": "srd_equipment.json"
-    },
-    {
-      "id": "enh-ghost-touch-armor",
-      "n": "Ghost Touch, Armor",
-      "t": "Enhancement",
-      "c": "Armor Enhancement",
-      "s": "None",
-      "f": "srd_equipment.json"
-    },
-    {
-      "id": "race-dragonborn",
-      "n": "Dragonborn",
-      "t": "Race",
-      "c": "Standard Race",
-      "s": "None",
-      "f": "srd_classes_races.json"
-    },
-    {
-      "id": "race-goliath",
-      "n": "Goliath",
-      "t": "Race",
-      "c": "Standard Race",
-      "s": "None",
-      "f": "srd_classes_races.json"
-    },
-    {
-      "id": "race-warforged",
-      "n": "Warforged",
-      "t": "Race",
-      "c": "Standard Race",
-      "s": "None",
-      "f": "srd_classes_races.json"
     }
   ]
 }

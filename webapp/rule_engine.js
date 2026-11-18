@@ -2523,6 +2523,12 @@ const RuleEngine = {
           } else if (effKind === 'condition') {
             const condName = b.condition || b.target || '';
             if (condName) addBadge(`Condition: ${condName}`);
+          } else if (effKind === 'familiarity') {
+            grants.push({
+              grantType: 'familiarity',
+              targetId: b.targetId || b.weapon || b.value,
+              value: String(b.treatAs || 'martial').toLowerCase()
+            });
           } else if (effKind === 'grant' || effKind === 'proficiency' || effKind === 'feat') {
             grants.push({
               grantType: b.grantType || (effKind === 'proficiency' ? 'proficiency' : 'entity'),
@@ -3370,7 +3376,7 @@ const RuleEngine = {
     const ctx = this.buildFormulaContext(ch, { ownedIds });
 
     // STAGE 1: Synergy & Grant Resolution (auto-unlocks entries from candidatePool or embedded grants when requires predicate passes)
-    const grantedCapabilities = { spellsAtWill: [], proficiencies: [], senses: [], movements: [], unlockedEntities: [] };
+    const grantedCapabilities = { spellsAtWill: [], proficiencies: [], familiarities: [], senses: [], movements: [], unlockedEntities: [] };
     const poolNormalized = Array.isArray(candidatePool) ? candidatePool.map(p => this.normalizeLegoEntry(p)) : [];
 
     // First process embedded grants (which may unlock entities needed by candidatePool requires predicates)
@@ -3394,6 +3400,9 @@ const RuleEngine = {
           grantedCapabilities.spellsAtWill.push({ source: e.id, targetId: g.targetId, filter: g.filter || null, sourceLabel: g.sourceLabel || null });
         } else if (g.grantType === 'proficiency') {
           grantedCapabilities.proficiencies.push(g.targetId || g.value);
+        } else if (g.grantType === 'familiarity') {
+          // Weapon familiarity (PHB racial trait): `targetId` is an immutable weapon id (wpn-*), `value` the category it counts as.
+          if (g.targetId) grantedCapabilities.familiarities.push({ source: e.id, targetId: String(g.targetId), treatAs: String(g.value || 'martial').toLowerCase() });
         } else if (g.grantType === 'sense') {
           grantedCapabilities.senses.push({ type: g.targetId, range: g.value });
         } else if (g.grantType === 'movement') {
@@ -5151,7 +5160,52 @@ const RuleEngine = {
       }
     });
 
+    // V3 `effect` blocks with `effectKind: 'proficiency'` (race, template, class feature, feat, item...) fill
+    // `grantedCapabilities.proficiencies` / `.familiarities` during recalculation. Tokens: `weapon:simple`,
+    // `weapon:martial`, `weapon:exotic`, `weapon:<wpn-id>`, `armor:light|medium|heavy`, `shield:shield|tower`.
+    res.weapons.specificIds = new Set();
+    res.weapons.familiarity = new Map();
+    const gc = character.grantedCapabilities;
+    if (gc) {
+      (gc.proficiencies || []).forEach(tok => {
+        const t = String(tok || '').toLowerCase().trim();
+        const sep = t.indexOf(':');
+        if (sep < 0) return;
+        const kind = t.slice(0, sep);
+        const key = t.slice(sep + 1);
+        if (kind === 'weapon') {
+          if (key === 'simple') res.weapons.simple = true;
+          else if (key === 'martial') res.weapons.martial = true;
+          else if (key === 'exotic') res.weapons.exoticAll = true;
+          else if (key) res.weapons.specificIds.add(key);
+        } else if (kind === 'armor' && (key === 'light' || key === 'medium' || key === 'heavy')) {
+          res.armors[key] = true;
+        } else if (kind === 'shield' && (key === 'shield' || key === 'tower')) {
+          res.shields[key] = true;
+        }
+      });
+      (gc.familiarities || []).forEach(f => {
+        if (f && f.targetId) res.weapons.familiarity.set(String(f.targetId).toLowerCase(), f.treatAs || 'martial');
+      });
+    }
+
     return res;
+  },
+
+  // Immutable weapon id candidates (item id, baseItemId, Master DB id) with enhancement/composite-rating suffixes stripped
+  getWeaponIdCandidates(weapon) {
+    const out = new Set();
+    if (!weapon || typeof weapon !== 'object') return out;
+    const add = (v) => {
+      if (!v) return;
+      const s = String(v).toLowerCase().trim().replace(/-plus-\d+$/, '').replace(/-masterwork$/, '');
+      if (s) out.add(s);
+    };
+    add(weapon.baseItemId);
+    add(weapon.id);
+    const db = this.getMasterDbEntry(weapon);
+    if (db) { add(db.id); add(db.baseItemId); }
+    return out;
   },
 
   // Check weapon proficiency
@@ -5172,9 +5226,19 @@ const RuleEngine = {
       }
     }
 
+    // 1b. Immutable-id proficiencies from V3 `proficiency` effect blocks (race, feats, class features...)
+    const wpnIds = this.getWeaponIdCandidates(typeof weapon === 'object' ? weapon : null);
+    for (const wid of wpnIds) {
+      if (prof.weapons.specificIds.has(wid)) return true;
+    }
+
     // 2. Check Exotic
     if (this.isExoticWeapon(weapon)) {
       if (prof.weapons.exoticAll) return true;
+      // Weapon familiarity (V3 `familiarity` effect block): the weapon counts as Martial for proficiency purposes
+      for (const wid of wpnIds) {
+        if (prof.weapons.familiarity.get(wid) === 'martial' && prof.weapons.martial) return true;
+      }
       // Bastard sword / Dwarven waraxe RAW exception (PHB p. 121): Martial when wielded Two-Handed
       const isHandAndAHalf = baseWepName.includes('bastard sword') || baseWepName.includes('dwarven waraxe');
       const gripStr = (typeof weapon === 'object' ? String(weapon.grip || '') : '').toLowerCase();

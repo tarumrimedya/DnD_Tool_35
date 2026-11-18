@@ -891,6 +891,8 @@
             "castEvolution",
             "grant",
             "grantFeat",
+            "proficiency",
+            "familiarity",
             "bonusSlot",
             "trait",
             "reroll"
@@ -906,6 +908,15 @@
         },
         "text": {
           "type": "string"
+        },
+        "targetId": {
+          "type": "string",
+          "description": "proficiency: token weapon:simple | weapon:martial | weapon:exotic | weapon:<wpn-id> | armor:light|medium|heavy | shield:shield|tower. familiarity: immutable weapon id (wpn-*)."
+        },
+        "treatAs": {
+          "type": "string",
+          "enum": ["martial"],
+          "description": "familiarity only: category the (exotic) weapon counts as for proficiency (PHB racial Weapon Familiarity)."
         }
       },
       "allOf": [

@@ -1154,6 +1154,41 @@ function noteBlock(id, text) {
   return { id, type: 'effect', text };
 }
 
+// Race weapon/armor proficiency + weapon familiarity (V3 `effect` blocks, immutable ids; consumed by RuleEngine.getCharacterProficiencies).
+// Sources: PHB (elf, dwarf, gnome), Drow of the Underdark (drow), MM (orc), SRD race text for the rest.
+function profBlock(id, token) { return { id, type: 'effect', effectKind: 'proficiency', targetId: token }; }
+function familiarityBlock(id, weaponId) { return { id, type: 'effect', effectKind: 'familiarity', targetId: weaponId, treatAs: 'martial' }; }
+function compileRaceProficiencies(crData) {
+  const ELF_WPNS = ['wpn-longsword', 'wpn-rapier', 'wpn-longbow', 'wpn-composite-longbow', 'wpn-shortbow', 'wpn-composite-shortbow'];
+  const DWARF_FAM = ['wpn-dwarven-waraxe', 'wpn-dwarven-urgrosh'];
+  const GNOME_FAM = ['wpn-gnome-hooked-hammer'];
+  const SPEC = {};
+  ['race-elf', 'race-elf-high', 'race-elf-wood', 'race-elf-wild', 'race-elf-grey', 'race-elf-aquatic'].forEach((id) => {
+    SPEC[id] = { prof: ELF_WPNS.map((w) => 'weapon:' + w) };
+  });
+  SPEC['race-elf-drow'] = { prof: ['weapon:wpn-hand-crossbow', 'weapon:wpn-rapier', 'weapon:wpn-short-sword', 'weapon:wpn-shortsword'] };
+  ['race-dwarf', 'race-dwarf-hill', 'race-dwarf-mountain', 'race-dwarf-deep'].forEach((id) => { SPEC[id] = { fam: DWARF_FAM }; });
+  ['race-gnome', 'race-gnome-rock', 'race-gnome-forest', 'race-gnome-svirfneblin'].forEach((id) => { SPEC[id] = { fam: GNOME_FAM }; });
+  SPEC['race-orc'] = { fam: ['wpn-orc-double-axe'] };
+  SPEC['race-dromite'] = { prof: ['weapon:simple', 'weapon:wpn-longsword', 'armor:light', 'shield:shield'] };
+  SPEC['race-elan'] = { prof: ['weapon:simple', 'weapon:wpn-longbow', 'weapon:wpn-warhammer', 'armor:light', 'shield:shield'] };
+  SPEC['race-half-giant'] = { prof: ['weapon:simple', 'weapon:martial', 'armor:light', 'armor:medium', 'shield:shield'] };
+  SPEC['race-aasimar'] = { prof: ['weapon:simple', 'weapon:martial', 'armor:light', 'armor:medium', 'shield:shield'] };
+  SPEC['race-tiefling'] = { prof: ['weapon:simple', 'weapon:martial', 'armor:light', 'shield:shield'] };
+  SPEC['race-goliath'] = { prof: ['weapon:simple'] };
+  let n = 0;
+  for (const [rid, spec] of Object.entries(SPEC)) {
+    const rec = crData.find((e) => e && e.id === rid);
+    if (!rec) continue;
+    if (!Array.isArray(rec.effects)) rec.effects = [];
+    rec.effects = rec.effects.filter((b) => !(b && typeof b.id === 'string' && b.id.startsWith('ef-race-prof-')));
+    (spec.prof || []).forEach((tok, i) => rec.effects.push(profBlock('ef-race-prof-' + i, tok)));
+    (spec.fam || []).forEach((w, i) => rec.effects.push(familiarityBlock('ef-race-prof-fam-' + i, w)));
+    n++;
+  }
+  return n;
+}
+
 function compileFeatPatches(featsCore, featsSplat) {
   // Ensure Hidden Talent (XPH p.67) exists in srd_feats_splat.json
   const hiddenTalent = {
@@ -2297,6 +2332,7 @@ function main() {
     else cabUpdated++;
   }
   const cabExistingEnriched = enrichExistingClassAbilities(cr.data);
+  const raceProfCount = compileRaceProficiencies(cr.data);
 
   const cabLookup = new Map();
   for (const e of cr.data) {

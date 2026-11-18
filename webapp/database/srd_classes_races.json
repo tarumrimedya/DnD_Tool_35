@@ -23108,6 +23108,30 @@
             ]
           }
         ]
+      },
+      {
+        "id": "ef-race-prof-0",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "weapon:simple"
+      },
+      {
+        "id": "ef-race-prof-1",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "weapon:wpn-longsword"
+      },
+      {
+        "id": "ef-race-prof-2",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "armor:light"
+      },
+      {
+        "id": "ef-race-prof-3",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "shield:shield"
       }
     ],
     "shortDescription": "Dromites stand about 3 feet tall and usually weigh slightly more than 30 pounds. They have iridescent compound eyes. Dromites wear heavy boots and light clothing, and are sometimes content with just a sturdy harness. +2…",
@@ -23364,6 +23388,13 @@
         "value": 2,
         "btype": "Racial",
         "condition": "Underground"
+      },
+      {
+        "id": "ef-race-prof-fam-0",
+        "type": "effect",
+        "effectKind": "familiarity",
+        "targetId": "wpn-gnome-hooked-hammer",
+        "treatAs": "martial"
       }
     ],
     "shortDescription": "Also called deep gnomes, svirfneblin are said to dwell in great cities deep underground. A svirfneblin has wiry, rock-colored skin usually medium brown to brownish gray. Only males are bald; females have stringy gray ha…",
@@ -23529,6 +23560,42 @@
         "type": "defense",
         "mode": "Sense / Movement",
         "what": "Low-light vision"
+      },
+      {
+        "id": "ef-race-prof-0",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "weapon:wpn-longsword"
+      },
+      {
+        "id": "ef-race-prof-1",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "weapon:wpn-rapier"
+      },
+      {
+        "id": "ef-race-prof-2",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "weapon:wpn-longbow"
+      },
+      {
+        "id": "ef-race-prof-3",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "weapon:wpn-composite-longbow"
+      },
+      {
+        "id": "ef-race-prof-4",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "weapon:wpn-shortbow"
+      },
+      {
+        "id": "ef-race-prof-5",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "weapon:wpn-composite-shortbow"
       }
     ],
     "shortDescription": "Their hair color ranges from yellow to a coppery red, and they are more muscular than other elves. Their clothing is in dark shades of green and earth tones to better blend in with their natural surroundings. +2 Strengt…",
@@ -23780,6 +23847,36 @@
         "mode": "flat",
         "value": 2,
         "btype": "Racial"
+      },
+      {
+        "id": "ef-race-prof-0",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "weapon:simple"
+      },
+      {
+        "id": "ef-race-prof-1",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "weapon:wpn-longbow"
+      },
+      {
+        "id": "ef-race-prof-2",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "weapon:wpn-warhammer"
+      },
+      {
+        "id": "ef-race-prof-3",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "armor:light"
+      },
+      {
+        "id": "ef-race-prof-4",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "shield:shield"
       }
     ],
     "shortDescription": "Elans typically stand just under 6 feet tall and weigh in the neighborhood of 180 pounds, with men sometimes taller and heavier than women, but not always. –2 Charisma Aberration (Psionic): Elans are not subject to spel…",
@@ -23979,6 +24076,13 @@
         "value": -1,
         "btype": "Penalty",
         "condition": "Dazzled in Bright Sunlight / Daylight"
+      },
+      {
+        "id": "ef-race-prof-fam-0",
+        "type": "effect",
+        "effectKind": "familiarity",
+        "targetId": "wpn-orc-double-axe",
+        "treatAs": "martial"
       }
     ],
     "shortDescription": "Orcs are aggressive humanoids that raid, pillage, and battle other creatures. They have a hatred of elves and dwarves that began generations ago, and often kill such creatures on sight. An orc’s hair usually is black. I…",
@@ -24510,6 +24614,20 @@
         "flag": "ignoreArmorSpeedPenalty",
         "label": "Steady Speed",
         "text": "Speed is not reduced by medium or heavy armor or a medium or heavy load."
+      },
+      {
+        "id": "ef-race-prof-fam-0",
+        "type": "effect",
+        "effectKind": "familiarity",
+        "targetId": "wpn-dwarven-waraxe",
+        "treatAs": "martial"
+      },
+      {
+        "id": "ef-race-prof-fam-1",
+        "type": "effect",
+        "effectKind": "familiarity",
+        "targetId": "wpn-dwarven-urgrosh",
+        "treatAs": "martial"
       }
     ],
     "shortDescription": "Mountain dwarves live deeper under the mountains than mountain dwarves but generally not as far underground as deep dwarves. They average about 4-1/2 feet tall and have lighter skin and hair than mountain dwarves, but t…",
@@ -24665,6 +24783,13 @@
         "mode": "flat",
         "value": 2,
         "btype": "Racial"
+      },
+      {
+        "id": "ef-race-prof-fam-0",
+        "type": "effect",
+        "effectKind": "familiarity",
+        "targetId": "wpn-gnome-hooked-hammer",
+        "treatAs": "martial"
       }
     ],
     "shortDescription": "Rock gnomes are the most common variety of gnomes. Rock gnomes stand 3 to 3-1/2 feet tall and weigh 40 to 45 pounds. Their skin color ranges from dark tan to woody brown, their hair is fair, and their eyes can be any sh…",
@@ -24839,6 +24964,36 @@
         "value": 2,
         "btype": "Racial",
         "condition": "vs. Fire Spells & Effects"
+      },
+      {
+        "id": "ef-race-prof-0",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "weapon:simple"
+      },
+      {
+        "id": "ef-race-prof-1",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "weapon:martial"
+      },
+      {
+        "id": "ef-race-prof-2",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "armor:light"
+      },
+      {
+        "id": "ef-race-prof-3",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "armor:medium"
+      },
+      {
+        "id": "ef-race-prof-4",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "shield:shield"
       }
     ],
     "shortDescription": "+2 Strength, +2 Constitution, –2 Dexterity: Half-giants are tough and strong, but not too nimble. Giant (Psionic): Half-giants are not subject to spells or effects that affect humanoids only, such as charm person or dom…",
@@ -25122,6 +25277,42 @@
         "type": "defense",
         "mode": "Sense / Movement",
         "what": "Low-light vision (x4)"
+      },
+      {
+        "id": "ef-race-prof-0",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "weapon:wpn-longsword"
+      },
+      {
+        "id": "ef-race-prof-1",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "weapon:wpn-rapier"
+      },
+      {
+        "id": "ef-race-prof-2",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "weapon:wpn-longbow"
+      },
+      {
+        "id": "ef-race-prof-3",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "weapon:wpn-composite-longbow"
+      },
+      {
+        "id": "ef-race-prof-4",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "weapon:wpn-shortbow"
+      },
+      {
+        "id": "ef-race-prof-5",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "weapon:wpn-composite-shortbow"
       }
     ],
     "shortDescription": "Also called sea elves, these creatures are waterbreathing cousins to land-dwelling elves. +2 Dexterity, –2 Intelligence. Humanoid (Elf, Aquatic). Medium: As Medium creatures, aquatic elves have no special bonuses or pen…",
@@ -25343,6 +25534,20 @@
         "value": -1,
         "btype": "Penalty",
         "condition": "Dazzled in Bright Sunlight / Daylight"
+      },
+      {
+        "id": "ef-race-prof-fam-0",
+        "type": "effect",
+        "effectKind": "familiarity",
+        "targetId": "wpn-dwarven-waraxe",
+        "treatAs": "martial"
+      },
+      {
+        "id": "ef-race-prof-fam-1",
+        "type": "effect",
+        "effectKind": "familiarity",
+        "targetId": "wpn-dwarven-urgrosh",
+        "treatAs": "martial"
       }
     ],
     "shortDescription": "These dwarves live far underground and tend to be more standoffish with non-dwarves. Deep dwarves are the same height as other dwarves, but leaner. Their skin sometimes has a reddish tinge, and their large eyes lack the…",
@@ -25461,6 +25666,36 @@
         "mode": "Energy Resistance",
         "what": "Electricity",
         "value": 5
+      },
+      {
+        "id": "ef-race-prof-0",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "weapon:simple"
+      },
+      {
+        "id": "ef-race-prof-1",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "weapon:martial"
+      },
+      {
+        "id": "ef-race-prof-2",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "armor:light"
+      },
+      {
+        "id": "ef-race-prof-3",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "armor:medium"
+      },
+      {
+        "id": "ef-race-prof-4",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "shield:shield"
       }
     ],
     "shortDescription": "Aasimars are usually tall, good-looking, and generally pleasant. Some have a minor physical trait suggesting their heritage, such as silver hair, golden eyes, or an unnaturally intense stare. Most aasimars are decidedly…",
@@ -25583,6 +25818,42 @@
         "type": "defense",
         "mode": "Sense / Movement",
         "what": "Low-light vision"
+      },
+      {
+        "id": "ef-race-prof-0",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "weapon:wpn-longsword"
+      },
+      {
+        "id": "ef-race-prof-1",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "weapon:wpn-rapier"
+      },
+      {
+        "id": "ef-race-prof-2",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "weapon:wpn-longbow"
+      },
+      {
+        "id": "ef-race-prof-3",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "weapon:wpn-composite-longbow"
+      },
+      {
+        "id": "ef-race-prof-4",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "weapon:wpn-shortbow"
+      },
+      {
+        "id": "ef-race-prof-5",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "weapon:wpn-composite-shortbow"
       }
     ],
     "shortDescription": "Wild elves are barbaric and tribal. Wild elves’ hair color ranges from black to light brown, lightening to silvery white with age. They dress in simple clothing of animal skins and basic plant weaves. +2 Dexterity, –2 I…",
@@ -25693,6 +25964,42 @@
         "type": "defense",
         "mode": "Sense / Movement",
         "what": "Low-light vision"
+      },
+      {
+        "id": "ef-race-prof-0",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "weapon:wpn-longsword"
+      },
+      {
+        "id": "ef-race-prof-1",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "weapon:wpn-rapier"
+      },
+      {
+        "id": "ef-race-prof-2",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "weapon:wpn-longbow"
+      },
+      {
+        "id": "ef-race-prof-3",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "weapon:wpn-composite-longbow"
+      },
+      {
+        "id": "ef-race-prof-4",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "weapon:wpn-shortbow"
+      },
+      {
+        "id": "ef-race-prof-5",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "weapon:wpn-composite-shortbow"
       }
     ],
     "shortDescription": "Taller and grander in physical appearance than others of their race, gray elves have a reputation for being aloof and arrogant (even by elven standards). They have either silver hair and amber eyes or pale golden hair a…",
@@ -25849,6 +26156,30 @@
         "value": 2,
         "btype": "Racial",
         "condition": "vs. Spells & Spell-Like Abilities"
+      },
+      {
+        "id": "ef-race-prof-0",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "weapon:wpn-hand-crossbow"
+      },
+      {
+        "id": "ef-race-prof-1",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "weapon:wpn-rapier"
+      },
+      {
+        "id": "ef-race-prof-2",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "weapon:wpn-short-sword"
+      },
+      {
+        "id": "ef-race-prof-3",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "weapon:wpn-shortsword"
       }
     ],
     "shortDescription": "Also known as dark elves, drow are a depraved and evil subterranean offshoot. White is the most common hair color among drow, but almost any pale shade is possible. Drow tend to be smaller and thinner than other sorts o…",
@@ -26605,6 +26936,30 @@
         "mode": "Energy Resistance",
         "what": "Fire",
         "value": 5
+      },
+      {
+        "id": "ef-race-prof-0",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "weapon:simple"
+      },
+      {
+        "id": "ef-race-prof-1",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "weapon:martial"
+      },
+      {
+        "id": "ef-race-prof-2",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "armor:light"
+      },
+      {
+        "id": "ef-race-prof-3",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "shield:shield"
       }
     ],
     "shortDescription": "Many tieflings are indistinguishable from humans. Others have small horns, pointed teeth, red eyes, a whiff of brimstone about them, or even cloven feet. No two tieflings are the same. +2 Dexterity, +2 Intelligence, –2…",
@@ -27017,6 +27372,12 @@
         "mode": "flat",
         "value": 2,
         "btype": "Racial"
+      },
+      {
+        "id": "ef-race-prof-0",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "weapon:simple"
       }
     ],
     "shortDescription": "+4 Strength, -2 Dexterity, +2 Constitution. Monstrous Humanoid, Powerful Build, Mountain Movement, +2 Sense Motive. Level Adjustment +1.",
@@ -27481,6 +27842,13 @@
         "value": 4,
         "btype": "Racial",
         "condition": "In Wooded Areas"
+      },
+      {
+        "id": "ef-race-prof-fam-0",
+        "type": "effect",
+        "effectKind": "familiarity",
+        "targetId": "wpn-gnome-hooked-hammer",
+        "treatAs": "martial"
       }
     ],
     "shortDescription": "They are the smallest of all the gnomes, averaging 2 to 2-1/2 feet in height, but look just like regular gnomes except with bark-colored or gray-green skin, and eyes that can be brown or green as well as blue. A very lo…",
@@ -28296,6 +28664,20 @@
         "flag": "ignoreArmorSpeedPenalty",
         "label": "Steady Speed",
         "text": "Speed is not reduced by medium or heavy armor or a medium or heavy load."
+      },
+      {
+        "id": "ef-race-prof-fam-0",
+        "type": "effect",
+        "effectKind": "familiarity",
+        "targetId": "wpn-dwarven-waraxe",
+        "treatAs": "martial"
+      },
+      {
+        "id": "ef-race-prof-fam-1",
+        "type": "effect",
+        "effectKind": "familiarity",
+        "targetId": "wpn-dwarven-urgrosh",
+        "treatAs": "martial"
       }
     ],
     "shortDescription": "Hill dwarves are the most common variety of dwarves. Hill dwarves favor earth tones in their clothing and prefer simple and functional garb. The skin can be very dark, but it is always some shade of tan or brown. Hair c…",
@@ -28410,6 +28792,42 @@
         "type": "defense",
         "mode": "Sense / Movement",
         "what": "Low-light vision"
+      },
+      {
+        "id": "ef-race-prof-0",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "weapon:wpn-longsword"
+      },
+      {
+        "id": "ef-race-prof-1",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "weapon:wpn-rapier"
+      },
+      {
+        "id": "ef-race-prof-2",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "weapon:wpn-longbow"
+      },
+      {
+        "id": "ef-race-prof-3",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "weapon:wpn-composite-longbow"
+      },
+      {
+        "id": "ef-race-prof-4",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "weapon:wpn-shortbow"
+      },
+      {
+        "id": "ef-race-prof-5",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "weapon:wpn-composite-shortbow"
       }
     ],
     "shortDescription": "The high elf is the most common elf variety. High elves average 5 feet tall and typically weigh just over 100 pounds. They live on fruits and grains, though they occasionally hunt for fresh meat. High elves prefer color…",
@@ -29939,6 +30357,20 @@
         "flag": "ignoreArmorSpeedPenalty",
         "label": "Steady Speed",
         "text": "Speed is not reduced by medium or heavy armor or a medium or heavy load."
+      },
+      {
+        "id": "ef-race-prof-fam-0",
+        "type": "effect",
+        "effectKind": "familiarity",
+        "targetId": "wpn-dwarven-waraxe",
+        "treatAs": "martial"
+      },
+      {
+        "id": "ef-race-prof-fam-1",
+        "type": "effect",
+        "effectKind": "familiarity",
+        "targetId": "wpn-dwarven-urgrosh",
+        "treatAs": "martial"
       }
     ],
     "shortDescription": "+2 Constitution, -2 Charisma. Darkvision 60 ft, Stonecunning, Weapon Familiarity (Dwarven Waraxe/Urgrosh), Stability (+4 vs trip/bull rush), +2 saves vs poison and spells, +1 attack vs orcs/goblinoids, +4 AC vs giants.",
@@ -30066,6 +30498,42 @@
         "mode": "flat",
         "value": 2,
         "btype": "Racial"
+      },
+      {
+        "id": "ef-race-prof-0",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "weapon:wpn-longsword"
+      },
+      {
+        "id": "ef-race-prof-1",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "weapon:wpn-rapier"
+      },
+      {
+        "id": "ef-race-prof-2",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "weapon:wpn-longbow"
+      },
+      {
+        "id": "ef-race-prof-3",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "weapon:wpn-composite-longbow"
+      },
+      {
+        "id": "ef-race-prof-4",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "weapon:wpn-shortbow"
+      },
+      {
+        "id": "ef-race-prof-5",
+        "type": "effect",
+        "effectKind": "proficiency",
+        "targetId": "weapon:wpn-composite-shortbow"
       }
     ],
     "shortDescription": "+2 Dexterity, -2 Constitution. Immunity to magic sleep effects, +2 saves vs enchantment, Low-Light Vision, weapon proficiency (longsword, rapier, bows), +2 Listen/Search/Spot with passive secret door check.",
@@ -30219,6 +30687,13 @@
         "value": 4,
         "btype": "Dodge",
         "condition": "vs. Giants"
+      },
+      {
+        "id": "ef-race-prof-fam-0",
+        "type": "effect",
+        "effectKind": "familiarity",
+        "targetId": "wpn-gnome-hooked-hammer",
+        "treatAs": "martial"
       }
     ],
     "shortDescription": "+2 Constitution, -2 Strength. Small size (+1 AC, +1 attack, +4 Hide), Low-Light Vision, Weapon Familiarity (Hooked Hammer), +2 saves vs illusions, +1 illusion DC, +1 attack vs kobolds/goblinoids, +4 AC vs giants, +2 Listen/Craft (alchemy), Spell-Like Abilities.",
