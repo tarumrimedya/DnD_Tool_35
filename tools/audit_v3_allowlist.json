@@ -1,0 +1,10 @@
+{
+  "_note": "Reviewed, intended differences for tools/audit_v3_full.js. records: id -> reason (the record's LOST/CHANGED atoms are listed under 'Allowlisted'). removed / removedPrefixes: records that left the corpus on purpose. Add an entry only with the commit or the verified reason.",
+  "records": {
+    "cls-monk": "bd902e0: Monk AC bonus and fast movement moved to cab-monk-ac-bonus / cab-monk-fast-movement (Class effects[] are never consumed); the V2 class modifiers had value 0 with unevaluable formulas"
+  },
+  "removed": {},
+  "removedPrefixes": {
+    "dt-": "4ad663f: damage-type records removed from the corpus; damage types are plain strings on damageParts / roll blocks"
+  }
+}
