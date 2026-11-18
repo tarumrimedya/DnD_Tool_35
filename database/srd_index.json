@@ -1,14 +1,14 @@
 {
   "schemaVersion": 3,
   "version": "3.0.0",
-  "compendiumHash": "f7711a242ee26dea",
+  "compendiumHash": "c1fa887a0cdc7c7e",
   "generatedAt": "2026-11-15T19:43:51.694Z",
   "totalEntries": 7961,
   "chunks": {
     "srd_equipment.json": {
       "count": 1143,
       "bytes": 1856631,
-      "hash": "4661c02cfe423ef6",
+      "hash": "7d2a79d31d55801a",
       "eagerLoad": true
     },
     "srd_feats.json": {
