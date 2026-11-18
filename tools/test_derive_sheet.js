@@ -5884,6 +5884,100 @@ function runDeriveSheetTests() {
     );
   }
 
+  // Class feature rows carry `cab-*` refs with V3 blocks (tools/compile_class_blocks.js). Scaling uses the class level
+  // (`@classes.<slug>.level`), never the character level.
+  {
+    const cls = (parts, extra) => {
+      const rows = [];
+      parts.forEach(([name, n]) => { for (let i = 0; i < n; i++) rows.push({ level: rows.length + 1, className: name, hd: 'd8', hpGain: 6, active: true, feats: [] }); });
+      const total = rows.length;
+      const c = Object.assign({
+        name: 'Class Probe', race: 'Human', classes: parts.map(([n, l]) => `${n} ${l}`).join('/'), level: total, size: 'Medium',
+        abilities: { str: 14, dex: 14, con: 14, int: 14, wis: 14, cha: 14 }, baseAbilities: { str: 14, dex: 14, con: 14, int: 14, wis: 14, cha: 14 },
+        levelProgression: rows, feats: [], bodySlots: {}, weapons: [], gearPool: [], hp: { max: 10 * total, current: 10 * total }
+      }, extra || {});
+      RuleEngine.recalculateCharacter(c, []);
+      return c;
+    };
+    const drVals = c => ((c.legoEvaluation && c.legoEvaluation.defenses && c.legoEvaluation.defenses.dr) || []).map(d => d.value);
+    check(
+      'Class blocks: Barbarian Damage Reduction table (none at 6, 1/- at 7, 3/- at 13, 5/- at 19)',
+      drVals(cls([['Barbarian', 6]])).length === 0 && Math.max(...drVals(cls([['Barbarian', 7]]))) === 1 &&
+      Math.max(...drVals(cls([['Barbarian', 13]]))) === 3 && Math.max(...drVals(cls([['Barbarian', 19]]))) === 5,
+      JSON.stringify([6, 7, 13, 19].map(n => drVals(cls([['Barbarian', n]]))))
+    );
+    const rageStr = n => cls([['Barbarian', n]], { activeModes: { 'cab-rage': 1 } }).abilities.str;
+    check(
+      'Class blocks: Rage scales by level (+4 Str at 3rd, Greater Rage +6 at 11th, Mighty Rage +8 at 20th)',
+      rageStr(3) === 18 && rageStr(11) === 20 && rageStr(20) === 22,
+      JSON.stringify([rageStr(3), rageStr(11), rageStr(20)])
+    );
+    const mixed = cls([['Fighter', 6], ['Assassin', 4]]);
+    check(
+      'Class blocks: Assassin save bonus vs. poison uses the Assassin class level (Fighter 6 / Assassin 4 = +2), not the character level',
+      (mixed.conditionalSaveBonuses || []).some(b => /poison/i.test(b.condition) && b.val === 2) && !(mixed.conditionalSaveBonuses || []).some(b => /poison/i.test(b.condition) && b.val === 5),
+      JSON.stringify(mixed.conditionalSaveBonuses)
+    );
+    const dd10 = cls([['Dragon Disciple', 10]]);
+    check(
+      'Class blocks: Dragon Disciple 10 gets Str +8 total (+4 over 14 base... ability boosts), Con/Int/Cha +2, natural armor +4, bite and claws as natural weapons',
+      dd10.abilities.str === 22 && dd10.abilities.con === 16 && dd10.abilities.int === 16 && dd10.abilities.cha === 16 &&
+      dd10.acBreakdown.natural === 4 && RuleEngine.getNaturalWeapons(dd10).map(w => w.name).sort().join() === 'Bite,Claw',
+      JSON.stringify({ str: dd10.abilities.str, nat: dd10.acBreakdown.natural })
+    );
+    const breathDice = n => {
+      const c = cls([['Dragon Disciple', n]]);
+      const p = RuleEngine.deriveSpecialPowerPool(c, c.legoEvaluation, []).find(x => /breath/i.test(x.name));
+      return p ? p.dmgFormula : null;
+    };
+    check(
+      'Class blocks: Dragon Disciple breath weapon dice formula is resolved on the card (2d8 at 3rd, 4d8 at 7th, 6d8 at 10th)',
+      breathDice(3) === '2d8' && breathDice(7) === '4d8' && breathDice(10) === '6d8' && breathDice(2) === null,
+      JSON.stringify([breathDice(2), breathDice(3), breathDice(7), breathDice(10)])
+    );
+    const resMax = (c, rid) => { const r = RuleEngine.deriveSheet(c).resources; return r && r[rid] && r[rid].max; };
+    check(
+      'Class blocks: per-day resources by class level (Blackguard Smite Good 1/2/3 at 2/5/10, Dwarven Defender Defensive Stance 3 at 6th, Dervish Dance 3 at 5th)',
+      resMax(cls([['Blackguard', 2]]), 'ef-smg-r') === 1 && resMax(cls([['Blackguard', 5]]), 'ef-smg-r') === 2 && resMax(cls([['Blackguard', 10]]), 'ef-smg-r') === 3 &&
+      resMax(cls([['Dwarven Defender', 6]]), 'ef-defst-res') === 3 && resMax(cls([['Dervish', 5]]), 'ef-derv-dance-res') === 3,
+      ''
+    );
+    const dwd = cls([['Dwarven Defender', 10]]);
+    const dwdStance = cls([['Dwarven Defender', 10]], { activeModes: { 'cab-defensive-stance': 1 } });
+    check(
+      'Class blocks: Dwarven Defender AC bonus +4 at 10th (dodge) and Defensive Stance is a mode (+4 dodge, +4 Con only while active)',
+      dwd.acBreakdown.dodge === 4 && dwd.abilities.con === 14 && dwdStance.acBreakdown.dodge === 8 && dwdStance.abilities.con === 18,
+      JSON.stringify({ d: dwd.acBreakdown.dodge, ds: dwdStance.acBreakdown.dodge, con: dwdStance.abilities.con })
+    );
+    const druid9 = cls([['Druid', 9]]);
+    check(
+      'Class blocks: Druid Venom Immunity from 9th level only',
+      druid9.ruleFlags.immunePoison === true && !cls([['Druid', 8]]).ruleFlags.immunePoison,
+      ''
+    );
+    const duel8 = cls([['Duelist', 8]]);
+    check(
+      'Class blocks: Duelist Canny Defense (Int bonus capped by class level), Improved Reaction +4, Grace +2 Reflex, Enhanced Mobility as a conditional dodge bonus',
+      duel8.acBreakdown.dodge === 2 && (duel8.initiativeBreakdown || []).some(i => i.val === 4) &&
+      (duel8.conditionalAcBonuses || []).some(b => b.val === 4 && /AoO/i.test(b.condition)),
+      JSON.stringify({ dodge: duel8.acBreakdown.dodge, init: duel8.initiativeBreakdown })
+    );
+    const derv = cls([['Dervish', 5]]);
+    check(
+      'Class blocks: Dervish has its own Fast Movement / AC bonus records (not the Barbarian +10 ft. record and not the Monk Wis AC bonus)',
+      RuleEngine.collectLegoEntries(derv).map(e => e.id).includes('cab-dervish-fast-movement') &&
+      !RuleEngine.collectLegoEntries(derv).map(e => e.id).includes('cab-fast-movement') &&
+      !RuleEngine.collectLegoEntries(derv).map(e => e.id).includes('cab-monk-ac-bonus'),
+      ''
+    );
+    const bardGreat = cls([['Bard', 9]], { activeModes: { 'cab-bardic-music': 2 } });
+    check(
+      'Class blocks: Bardic Music Inspire Greatness mode (+1 Fort, competence) is gated by Bard level 9',
+      bardGreat.evaluatedSaves.fort === cls([['Bard', 9]]).evaluatedSaves.fort + 1 && cls([['Bard', 8]], { activeModes: { 'cab-bardic-music': 2 } }).evaluatedSaves.fort === cls([['Bard', 8]]).evaluatedSaves.fort,
+      JSON.stringify([bardGreat.evaluatedSaves.fort, cls([['Bard', 9]]).evaluatedSaves.fort])
+    );
+  }
+
   CharStore.clearHistory();
 
   return { passed, elapsedMs: Date.now() - startMs };

@@ -2491,6 +2491,8 @@ function main() {
   const extraFeatsEpic = compileFeatList(feEpic.data);
   const extraFeatsLegacy = compileFeatList(feLegacy.data);
   const extraCabRab = compileClassAbilitiesAndRacialTraits(cr.data);
+  // Class feature V3 blocks (cab-* records + class row refs); must run after the generic cab compile so it is not overwritten.
+  const classBlockStats = require('./compile_class_blocks').applyAll(cr.data);
   const extraConditions = compileFeatList(cndChunk.data) + (() => {
     let n = 0;
     const { EXPLICIT_PATCHES } = require('./compile_v3_corpus_complete');
@@ -2567,6 +2569,7 @@ function main() {
     classAbilitiesUpdated: cabUpdated,
     existingClassAbilitiesEnriched: cabExistingEnriched,
     classFeatureLinksAdded: { core: linkedCore, splat: linkedSplat },
+    classBlocks: classBlockStats,
     featsPatched,
     domainsPatched: domainsPatched + extraDom,
     spellsPatched: spellsPatched + extraSpells,

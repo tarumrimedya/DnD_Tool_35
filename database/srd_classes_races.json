@@ -785,7 +785,8 @@
           "name": "Venom Immunity (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Gain immunity to all organic poisons (monster, plant, and giant vermin poisons)."
+          "summary": "Gain immunity to all organic poisons (monster, plant, and giant vermin poisons).",
+          "id": "cab-venom-immunity"
         }
       ],
       "10": [
@@ -1314,11 +1315,12 @@
           "will": 6,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Venom Immunity (Ex)",
               "abilityType": "Ex",
               "text": "Gain immunity to all organic poisons (monster, plant, and giant vermin poisons).",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-venom-immunity"
             }
           ],
           "spellcasting": null
@@ -2306,7 +2308,8 @@
           "name": "Smite Good 1/day (Su)",
           "category": "Class Feature",
           "type": "Su",
-          "summary": "Add Cha bonus to attack roll and Blackguard level to damage roll against a good foe once per day."
+          "summary": "Add Cha bonus to attack roll and Blackguard level to damage roll against a good foe once per day.",
+          "id": "cab-smite-good"
         }
       ],
       "3": [
@@ -2344,7 +2347,8 @@
           "name": "Smite Good 2/day (Su)",
           "category": "Class Feature",
           "type": "Su",
-          "summary": "Use Smite Good up to 2 times per day."
+          "summary": "Use Smite Good up to 2 times per day.",
+          "id": "cab-smite-good"
         }
       ],
       "7": [
@@ -2368,7 +2372,8 @@
           "name": "Smite Good 3/day (Su)",
           "category": "Class Feature",
           "type": "Su",
-          "summary": "Use Smite Good up to 3 times per day."
+          "summary": "Use Smite Good up to 3 times per day.",
+          "id": "cab-smite-good"
         }
       ]
     },
@@ -2576,11 +2581,12 @@
               "category": "Class Feature"
             },
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Smite Good 1/day (Su)",
               "abilityType": "Su",
               "text": "Add Cha bonus to attack roll and Blackguard level to damage roll against a good foe once per day.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-smite-good"
             }
           ],
           "spellcasting": null
@@ -2643,11 +2649,12 @@
               "category": "Class Feature"
             },
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Smite Good 2/day (Su)",
               "abilityType": "Su",
               "text": "Use Smite Good up to 2 times per day.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-smite-good"
             }
           ],
           "spellcasting": null
@@ -2713,11 +2720,12 @@
               "category": "Class Feature"
             },
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Smite Good 3/day (Su)",
               "abilityType": "Su",
               "text": "Use Smite Good up to 3 times per day.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-smite-good"
             }
           ],
           "spellcasting": null
@@ -5260,7 +5268,8 @@
           "name": "+1 Save against Poison (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "+1 natural saving throw bonus against all poisons."
+          "summary": "+1 natural saving throw bonus against all poisons.",
+          "id": "cab-save-bonus-against-poison"
         },
         {
           "name": "Uncanny Dodge (Ex)",
@@ -5284,7 +5293,8 @@
           "name": "+2 Save against Poison (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "+2 bonus on saving throws against poison."
+          "summary": "+2 bonus on saving throws against poison.",
+          "id": "cab-save-bonus-against-poison"
         }
       ],
       "5": [
@@ -5308,7 +5318,8 @@
           "name": "+3 Save against Poison (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "+3 bonus on saving throws against poison."
+          "summary": "+3 bonus on saving throws against poison.",
+          "id": "cab-save-bonus-against-poison"
         }
       ],
       "7": [
@@ -5325,7 +5336,8 @@
           "name": "+4 Save against Poison (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "+4 bonus on saving throws against poison."
+          "summary": "+4 bonus on saving throws against poison.",
+          "id": "cab-save-bonus-against-poison"
         },
         {
           "name": "Hide in Plain Sight (Su)",
@@ -5349,7 +5361,8 @@
           "name": "+5 Save against Poison (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "+5 bonus on saving throws against poison."
+          "summary": "+5 bonus on saving throws against poison.",
+          "id": "cab-save-bonus-against-poison"
         }
       ]
     },
@@ -5684,11 +5697,12 @@
           "will": 0,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "+1 Save against Poison (Ex)",
               "abilityType": "Ex",
               "text": "+1 natural saving throw bonus against all poisons.",
-              "category": "Special Ability"
+              "category": "Special Ability",
+              "refId": "cab-save-bonus-against-poison"
             },
             {
               "kind": "ref",
@@ -5727,11 +5741,12 @@
           "will": 1,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "+2 Save against Poison (Ex)",
               "abilityType": "Ex",
               "text": "+2 bonus on saving throws against poison.",
-              "category": "Special Ability"
+              "category": "Special Ability",
+              "refId": "cab-save-bonus-against-poison"
             }
           ],
           "spellcasting": null
@@ -5770,11 +5785,12 @@
           "will": 2,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "+3 Save against Poison (Ex)",
               "abilityType": "Ex",
               "text": "+3 bonus on saving throws against poison.",
-              "category": "Special Ability"
+              "category": "Special Ability",
+              "refId": "cab-save-bonus-against-poison"
             }
           ],
           "spellcasting": null
@@ -5805,11 +5821,12 @@
           "will": 2,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "+4 Save against Poison (Ex)",
               "abilityType": "Ex",
               "text": "+4 bonus on saving throws against poison.",
-              "category": "Special Ability"
+              "category": "Special Ability",
+              "refId": "cab-save-bonus-against-poison"
             },
             {
               "kind": "ref",
@@ -5848,11 +5865,12 @@
           "will": 3,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "+5 Save against Poison (Ex)",
               "abilityType": "Ex",
               "text": "+5 bonus on saving throws against poison.",
-              "category": "Special Ability"
+              "category": "Special Ability",
+              "refId": "cab-save-bonus-against-poison"
             }
           ],
           "spellcasting": null
@@ -9809,7 +9827,8 @@
           "name": "Ranged Legerdemain 1/day (Su)",
           "category": "Special Ability",
           "type": "Su",
-          "summary": "Perform Disable Device, Open Lock, or Sleight of Hand at up to 30 ft. range (+5 DC)."
+          "summary": "Perform Disable Device, Open Lock, or Sleight of Hand at up to 30 ft. range (+5 DC).",
+          "id": "cab-ranged-legerdemain"
         },
         {
           "name": "+1 Level of Existing Arcane Spellcasting Class",
@@ -9838,7 +9857,8 @@
           "name": "Impromptu Sneak Attack 1/day (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Declare any single melee or ranged attack to be a sneak attack (target loses Dex bonus to AC)."
+          "summary": "Declare any single melee or ranged attack to be a sneak attack (target loses Dex bonus to AC).",
+          "id": "cab-impromptu-sneak-attack"
         },
         {
           "name": "+1 Level of Existing Arcane Spellcasting Class",
@@ -9867,7 +9887,8 @@
           "name": "Ranged Legerdemain 2/day (Su)",
           "category": "Special Ability",
           "type": "Su",
-          "summary": "Use Ranged Legerdemain twice per day."
+          "summary": "Use Ranged Legerdemain twice per day.",
+          "id": "cab-ranged-legerdemain"
         },
         {
           "name": "+1 Level of Existing Arcane Spellcasting Class",
@@ -9896,7 +9917,8 @@
           "name": "Impromptu Sneak Attack 2/day (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Use Impromptu Sneak Attack twice per day."
+          "summary": "Use Impromptu Sneak Attack twice per day.",
+          "id": "cab-impromptu-sneak-attack"
         },
         {
           "name": "+1 Level of Existing Arcane Spellcasting Class",
@@ -9925,7 +9947,8 @@
           "name": "Ranged Legerdemain 3/day (Su)",
           "category": "Special Ability",
           "type": "Su",
-          "summary": "Use Ranged Legerdemain three times per day."
+          "summary": "Use Ranged Legerdemain three times per day.",
+          "id": "cab-ranged-legerdemain"
         },
         {
           "name": "+1 Level of Existing Arcane Spellcasting Class",
@@ -10017,11 +10040,12 @@
           "will": 2,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Ranged Legerdemain 1/day (Su)",
               "abilityType": "Su",
               "text": "Perform Disable Device, Open Lock, or Sleight of Hand at up to 30 ft. range (+5 DC).",
-              "category": "Special Ability"
+              "category": "Special Ability",
+              "refId": "cab-ranged-legerdemain"
             },
             {
               "kind": "inline",
@@ -10066,11 +10090,12 @@
           "will": 3,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Impromptu Sneak Attack 1/day (Ex)",
               "abilityType": "Ex",
               "text": "Declare any single melee or ranged attack to be a sneak attack (target loses Dex bonus to AC).",
-              "category": "Special Ability"
+              "category": "Special Ability",
+              "refId": "cab-impromptu-sneak-attack"
             },
             {
               "kind": "inline",
@@ -10115,11 +10140,12 @@
           "will": 4,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Ranged Legerdemain 2/day (Su)",
               "abilityType": "Su",
               "text": "Use Ranged Legerdemain twice per day.",
-              "category": "Special Ability"
+              "category": "Special Ability",
+              "refId": "cab-ranged-legerdemain"
             },
             {
               "kind": "inline",
@@ -10164,11 +10190,12 @@
           "will": 5,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Impromptu Sneak Attack 2/day (Ex)",
               "abilityType": "Ex",
               "text": "Use Impromptu Sneak Attack twice per day.",
-              "category": "Special Ability"
+              "category": "Special Ability",
+              "refId": "cab-impromptu-sneak-attack"
             },
             {
               "kind": "inline",
@@ -10213,11 +10240,12 @@
           "will": 6,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Ranged Legerdemain 3/day (Su)",
               "abilityType": "Su",
               "text": "Use Ranged Legerdemain three times per day.",
-              "category": "Special Ability"
+              "category": "Special Ability",
+              "refId": "cab-ranged-legerdemain"
             },
             {
               "kind": "inline",
@@ -13541,13 +13569,15 @@
           "name": "Defensive Stance 1/day (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Gain +2 STR, +4 CON, +2 resistance bonus on all saves, and +4 dodge bonus to AC while rooted in place."
+          "summary": "Gain +2 STR, +4 CON, +2 resistance bonus on all saves, and +4 dodge bonus to AC while rooted in place.",
+          "id": "cab-defensive-stance"
         },
         {
           "name": "AC Bonus +1 (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "+1 dodge bonus to Armor Class."
+          "summary": "+1 dodge bonus to Armor Class.",
+          "id": "cab-dwarven-defender-ac-bonus"
         }
       ],
       "2": [
@@ -13564,7 +13594,8 @@
           "name": "Defensive Stance 2/day (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Use Defensive Stance twice per day."
+          "summary": "Use Defensive Stance twice per day.",
+          "id": "cab-defensive-stance"
         }
       ],
       "4": [
@@ -13572,7 +13603,8 @@
           "name": "AC Bonus +2 (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Dodge bonus to AC increases to +2."
+          "summary": "Dodge bonus to AC increases to +2.",
+          "id": "cab-dwarven-defender-ac-bonus"
         },
         {
           "name": "Trap Sense +1 (Ex)",
@@ -13587,7 +13619,8 @@
           "name": "Defensive Stance 3/day (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Use Defensive Stance three times per day."
+          "summary": "Use Defensive Stance three times per day.",
+          "id": "cab-defensive-stance"
         }
       ],
       "6": [
@@ -13595,7 +13628,8 @@
           "name": "Damage Reduction 3/- (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Subtract 3 points from damage taken each time you are dealt damage from a weapon or natural attack."
+          "summary": "Subtract 3 points from damage taken each time you are dealt damage from a weapon or natural attack.",
+          "id": "cab-dwarven-defender-damage-reduction"
         },
         {
           "name": "Improved Uncanny Dodge (Ex)",
@@ -13610,13 +13644,15 @@
           "name": "AC Bonus +3 (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Dodge bonus to AC increases to +3."
+          "summary": "Dodge bonus to AC increases to +3.",
+          "id": "cab-dwarven-defender-ac-bonus"
         },
         {
           "name": "Defensive Stance 4/day (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Use Defensive Stance four times per day."
+          "summary": "Use Defensive Stance four times per day.",
+          "id": "cab-defensive-stance"
         }
       ],
       "8": [
@@ -13639,7 +13675,8 @@
           "name": "Defensive Stance 5/day (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Use Defensive Stance five times per day."
+          "summary": "Use Defensive Stance five times per day.",
+          "id": "cab-defensive-stance"
         }
       ],
       "10": [
@@ -13647,13 +13684,15 @@
           "name": "AC Bonus +4 (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Dodge bonus to AC increases to +4."
+          "summary": "Dodge bonus to AC increases to +4.",
+          "id": "cab-dwarven-defender-ac-bonus"
         },
         {
           "name": "Damage Reduction 6/- (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Damage Reduction increases to 6/-."
+          "summary": "Damage Reduction increases to 6/-.",
+          "id": "cab-dwarven-defender-damage-reduction"
         }
       ]
     },
@@ -13693,18 +13732,20 @@
           "will": 2,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Defensive Stance 1/day (Ex)",
               "abilityType": "Ex",
               "text": "Gain +2 STR, +4 CON, +2 resistance bonus on all saves, and +4 dodge bonus to AC while rooted in place.",
-              "category": "Special Ability"
+              "category": "Special Ability",
+              "refId": "cab-defensive-stance"
             },
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "AC Bonus +1 (Ex)",
               "abilityType": "Ex",
               "text": "+1 dodge bonus to Armor Class.",
-              "category": "Special Ability"
+              "category": "Special Ability",
+              "refId": "cab-dwarven-defender-ac-bonus"
             }
           ],
           "spellcasting": null
@@ -13735,11 +13776,12 @@
           "will": 3,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Defensive Stance 2/day (Ex)",
               "abilityType": "Ex",
               "text": "Use Defensive Stance twice per day.",
-              "category": "Special Ability"
+              "category": "Special Ability",
+              "refId": "cab-defensive-stance"
             }
           ],
           "spellcasting": null
@@ -13752,11 +13794,12 @@
           "will": 4,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "AC Bonus +2 (Ex)",
               "abilityType": "Ex",
               "text": "Dodge bonus to AC increases to +2.",
-              "category": "Special Ability"
+              "category": "Special Ability",
+              "refId": "cab-dwarven-defender-ac-bonus"
             },
             {
               "kind": "ref",
@@ -13777,11 +13820,12 @@
           "will": 4,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Defensive Stance 3/day (Ex)",
               "abilityType": "Ex",
               "text": "Use Defensive Stance three times per day.",
-              "category": "Special Ability"
+              "category": "Special Ability",
+              "refId": "cab-defensive-stance"
             }
           ],
           "spellcasting": null
@@ -13794,11 +13838,12 @@
           "will": 5,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Damage Reduction 3/- (Ex)",
               "abilityType": "Ex",
               "text": "Subtract 3 points from damage taken each time you are dealt damage from a weapon or natural attack.",
-              "category": "Special Ability"
+              "category": "Special Ability",
+              "refId": "cab-dwarven-defender-damage-reduction"
             },
             {
               "kind": "ref",
@@ -13819,18 +13864,20 @@
           "will": 5,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "AC Bonus +3 (Ex)",
               "abilityType": "Ex",
               "text": "Dodge bonus to AC increases to +3.",
-              "category": "Special Ability"
+              "category": "Special Ability",
+              "refId": "cab-dwarven-defender-ac-bonus"
             },
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Defensive Stance 4/day (Ex)",
               "abilityType": "Ex",
               "text": "Use Defensive Stance four times per day.",
-              "category": "Special Ability"
+              "category": "Special Ability",
+              "refId": "cab-defensive-stance"
             }
           ],
           "spellcasting": null
@@ -13868,11 +13915,12 @@
           "will": 6,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Defensive Stance 5/day (Ex)",
               "abilityType": "Ex",
               "text": "Use Defensive Stance five times per day.",
-              "category": "Special Ability"
+              "category": "Special Ability",
+              "refId": "cab-defensive-stance"
             }
           ],
           "spellcasting": null
@@ -13885,18 +13933,20 @@
           "will": 7,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "AC Bonus +4 (Ex)",
               "abilityType": "Ex",
               "text": "Dodge bonus to AC increases to +4.",
-              "category": "Special Ability"
+              "category": "Special Ability",
+              "refId": "cab-dwarven-defender-ac-bonus"
             },
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Damage Reduction 6/- (Ex)",
               "abilityType": "Ex",
               "text": "Damage Reduction increases to 6/-.",
-              "category": "Special Ability"
+              "category": "Special Ability",
+              "refId": "cab-dwarven-defender-damage-reduction"
             }
           ],
           "spellcasting": null
@@ -16526,7 +16576,8 @@
           "name": "Damage Reduction 1/- (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Subtract 1 from the damage taken each time you are dealt damage from a weapon or natural attack."
+          "summary": "Subtract 1 from the damage taken each time you are dealt damage from a weapon or natural attack.",
+          "id": "cab-barbarian-damage-reduction"
         }
       ],
       "8": [
@@ -16552,7 +16603,8 @@
           "name": "Damage Reduction 2/- (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Damage reduction increases to 2/-."
+          "summary": "Damage reduction increases to 2/-.",
+          "id": "cab-barbarian-damage-reduction"
         }
       ],
       "11": [
@@ -16585,7 +16637,8 @@
           "name": "Damage Reduction 3/- (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Damage reduction increases to 3/-."
+          "summary": "Damage reduction increases to 3/-.",
+          "id": "cab-barbarian-damage-reduction"
         }
       ],
       "14": [
@@ -16611,7 +16664,8 @@
           "name": "Damage Reduction 4/- (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Damage reduction increases to 4/-."
+          "summary": "Damage reduction increases to 4/-.",
+          "id": "cab-barbarian-damage-reduction"
         },
         {
           "name": "Rage 5/day (Ex)",
@@ -16643,7 +16697,8 @@
           "name": "Damage Reduction 5/- (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Damage reduction increases to 5/-."
+          "summary": "Damage reduction increases to 5/-.",
+          "id": "cab-barbarian-damage-reduction"
         }
       ],
       "20": [
@@ -16818,11 +16873,12 @@
           "will": 2,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Damage Reduction 1/- (Ex)",
               "abilityType": "Ex",
               "text": "Subtract 1 from the damage taken each time you are dealt damage from a weapon or natural attack.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-barbarian-damage-reduction"
             }
           ],
           "spellcasting": null
@@ -16871,11 +16927,12 @@
           "will": 3,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Damage Reduction 2/- (Ex)",
               "abilityType": "Ex",
               "text": "Damage reduction increases to 2/-.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-barbarian-damage-reduction"
             }
           ],
           "spellcasting": null
@@ -16932,11 +16989,12 @@
           "will": 4,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Damage Reduction 3/- (Ex)",
               "abilityType": "Ex",
               "text": "Damage reduction increases to 3/-.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-barbarian-damage-reduction"
             }
           ],
           "spellcasting": null
@@ -16985,11 +17043,12 @@
           "will": 5,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Damage Reduction 4/- (Ex)",
               "abilityType": "Ex",
               "text": "Damage reduction increases to 4/-.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-barbarian-damage-reduction"
             },
             {
               "kind": "ref",
@@ -17045,11 +17104,12 @@
           "will": 6,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Damage Reduction 5/- (Ex)",
               "abilityType": "Ex",
               "text": "Damage reduction increases to 5/-.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-barbarian-damage-reduction"
             }
           ],
           "spellcasting": null
@@ -17976,7 +18036,7 @@
         "resMode": "spend",
         "scaling": "formula",
         "max": 1,
-        "maxFormula": "max(1, floor((@level + 1) / 4))",
+        "maxFormula": "1 + (@classes.arcane_trickster.level >= 7 ? 1 : 0)",
         "reset": "perDay"
       },
       {
@@ -18441,10 +18501,11 @@
                 "id": "ef-asn-psn-s",
                 "type": "stat",
                 "targets": [
-                  "save.fort"
+                  "save.all"
                 ],
                 "mode": "formula",
-                "formula": "floor(@level / 2)",
+                "value": 0,
+                "formula": "floor(@classes.assassin.level / 2)",
                 "btype": "Untyped"
               }
             ]
@@ -18665,7 +18726,7 @@
       {
         "id": "mode-bm-ic",
         "name": "Inspire Courage",
-        "label": "Inspire Courage (+1..+4 Morale Atk/Dmg/vs Charm & Fear)",
+        "label": "Inspire Courage (+1..+4 Morale Atk/Dmg, +1..+4 vs Charm & Fear)",
         "effects": [
           {
             "id": "ef-bm-ic-atk",
@@ -18677,6 +18738,89 @@
             "mode": "formula",
             "formula": "@bardLevel >= 20 ? 4 : (@bardLevel >= 14 ? 3 : (@bardLevel >= 8 ? 2 : 1))",
             "btype": "Morale"
+          },
+          {
+            "id": "ef-bm-ic-sv",
+            "type": "when",
+            "flow": "while",
+            "branches": [
+              {
+                "id": "ef-bm-ic-sv-br",
+                "condKind": "situational",
+                "condText": "vs. Charm and Fear Effects",
+                "effects": [
+                  {
+                    "id": "ef-bm-ic-sv-s",
+                    "type": "stat",
+                    "targets": [
+                      "save.all"
+                    ],
+                    "mode": "formula",
+                    "value": 0,
+                    "formula": "@bardLevel >= 20 ? 4 : (@bardLevel >= 14 ? 3 : (@bardLevel >= 8 ? 2 : 1))",
+                    "btype": "Morale"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "mode-bm-greatness",
+        "name": "Inspire Greatness",
+        "label": "Inspire Greatness (Bard 9+; +2 attack, +1 Fort; bonus HD not applied)",
+        "effects": [
+          {
+            "id": "ef-bm-ig-atk",
+            "type": "stat",
+            "targets": [
+              "atk.all"
+            ],
+            "mode": "formula",
+            "value": 0,
+            "formula": "@bardLevel >= 9 ? 2 : 0",
+            "btype": "Competence"
+          },
+          {
+            "id": "ef-bm-ig-fort",
+            "type": "stat",
+            "targets": [
+              "save.fort"
+            ],
+            "mode": "formula",
+            "value": 0,
+            "formula": "@bardLevel >= 9 ? 1 : 0",
+            "btype": "Competence"
+          }
+        ]
+      },
+      {
+        "id": "mode-bm-heroics",
+        "name": "Inspire Heroics",
+        "label": "Inspire Heroics (Bard 15+; +4 saves, +4 dodge AC)",
+        "effects": [
+          {
+            "id": "ef-bm-ih-sv",
+            "type": "stat",
+            "targets": [
+              "save.all"
+            ],
+            "mode": "formula",
+            "value": 0,
+            "formula": "@bardLevel >= 15 ? 4 : 0",
+            "btype": "Morale"
+          },
+          {
+            "id": "ef-bm-ih-ac",
+            "type": "stat",
+            "targets": [
+              "ac.dodge"
+            ],
+            "mode": "formula",
+            "value": 0,
+            "formula": "@bardLevel >= 15 ? 4 : 0",
+            "btype": "Dodge"
           }
         ]
       }
@@ -18861,6 +19005,19 @@
       ]
     ],
     "effects": [
+      {
+        "id": "ef-rl-res",
+        "type": "resource",
+        "name": "Ranged Legerdemain",
+        "varKey": "ranged_legerdemain_uses",
+        "resMode": "spend",
+        "maxFormula": "1 + (@classes.arcane_trickster.level >= 5 ? 1 : 0) + (@classes.arcane_trickster.level >= 9 ? 1 : 0)",
+        "reset": "perDay",
+        "unit": "uses",
+        "recharge": {
+          "period": "day"
+        }
+      },
       {
         "id": "cab-ranged-legerdemain-sw",
         "type": "effect",
@@ -19915,49 +20072,55 @@
         "name": "Smite Good",
         "varKey": "smite_good",
         "resMode": "spend",
-        "scaling": "flat",
-        "max": 1,
-        "reset": "perDay"
-      },
-      {
-        "id": "ef-smg-w",
-        "type": "when",
-        "flow": "while",
-        "branches": [
-          {
-            "id": "ef-smg-w-br",
-            "condKind": "situational",
-            "condText": "Smite Good Attack",
-            "effects": [
-              {
-                "id": "ef-smg-a",
-                "type": "stat",
-                "targets": [
-                  "atk.melee"
-                ],
-                "mode": "formula",
-                "formula": "max(0, @chaMod)",
-                "btype": "Untyped"
-              },
-              {
-                "id": "ef-smg-d",
-                "type": "stat",
-                "targets": [
-                  "dmg.melee"
-                ],
-                "mode": "formula",
-                "formula": "@level",
-                "btype": "Untyped"
-              }
-            ]
-          }
-        ]
+        "maxFormula": "1 + (@classes.blackguard.level >= 5 ? 1 : 0) + (@classes.blackguard.level >= 10 ? 1 : 0)",
+        "reset": "perDay",
+        "unit": "uses",
+        "recharge": {
+          "period": "day"
+        }
       }
     ],
     "shortDescription": "Once a day, a blackguard of 2nd level or higher may attempt to smite good with one normal melee attack. He adds his Charisma modifier (if positive) to his attack roll and deals 1 extra point of damage per class level. I…",
     "text": "Once a day, a blackguard of 2nd level or higher may attempt to smite good with one normal melee attack.\n\nHe adds his Charisma modifier (if positive) to his attack roll and deals 1 extra point of damage per class level. If a blackguard accidentally smites a creature that is not good, the smite has no effect but it is still used up for that day.\n\nAt 5th level, and again at 10th level, a blackguard may smite good one additional time per day.",
     "tags": [
       "class-ability"
+    ],
+    "modes": [
+      {
+        "id": "mode-smg-off",
+        "name": "Inactive",
+        "label": "Inactive",
+        "effects": []
+      },
+      {
+        "id": "mode-smg-on",
+        "name": "Smite Good",
+        "label": "Smite Good (+CHA Atk, +Blackguard Lvl Dmg)",
+        "effects": [
+          {
+            "id": "ef-smg-a",
+            "type": "stat",
+            "targets": [
+              "atk.melee"
+            ],
+            "mode": "formula",
+            "value": 0,
+            "formula": "max(0, @chaMod)",
+            "btype": "Untyped"
+          },
+          {
+            "id": "ef-smg-d",
+            "type": "stat",
+            "targets": [
+              "dmg.melee"
+            ],
+            "mode": "formula",
+            "value": 0,
+            "formula": "@classes.blackguard.level",
+            "btype": "Untyped"
+          }
+        ]
+      }
     ]
   },
   {
@@ -20860,7 +21023,7 @@
       {
         "id": "mode-rage-active",
         "name": "Raging",
-        "label": "Raging (+4 STR/CON, +2 Will, -2 AC)",
+        "label": "Raging (+4 STR/CON, +2 Will, -2 AC; +6/+3 Greater Rage, +8/+4 Mighty Rage)",
         "effects": [
           {
             "id": "ef-rage-str",
@@ -20869,8 +21032,9 @@
               "str",
               "con"
             ],
-            "mode": "flat",
-            "value": 4,
+            "mode": "formula",
+            "value": 0,
+            "formula": "@classes.barbarian.level >= 20 ? 8 : (@classes.barbarian.level >= 11 ? 6 : 4)",
             "btype": "Morale"
           },
           {
@@ -20879,8 +21043,9 @@
             "targets": [
               "save.will"
             ],
-            "mode": "flat",
-            "value": 2,
+            "mode": "formula",
+            "value": 0,
+            "formula": "@classes.barbarian.level >= 20 ? 4 : (@classes.barbarian.level >= 11 ? 3 : 2)",
             "btype": "Morale"
           },
           {
@@ -21696,64 +21861,78 @@
     ],
     "effects": [
       {
-        "id": "ef-defst",
-        "type": "when",
-        "flow": "while",
-        "branches": [
-          {
-            "id": "ef-defst-br",
-            "condKind": "state",
-            "condText": "In Defensive Stance",
-            "effects": [
-              {
-                "id": "ef-defst-str",
-                "type": "stat",
-                "targets": [
-                  "str"
-                ],
-                "mode": "flat",
-                "value": 2,
-                "btype": "Untyped"
-              },
-              {
-                "id": "ef-defst-con",
-                "type": "stat",
-                "targets": [
-                  "con"
-                ],
-                "mode": "flat",
-                "value": 4,
-                "btype": "Untyped"
-              },
-              {
-                "id": "ef-defst-sv",
-                "type": "stat",
-                "targets": [
-                  "save.all"
-                ],
-                "mode": "flat",
-                "value": 2,
-                "btype": "Resistance"
-              },
-              {
-                "id": "ef-defst-ac",
-                "type": "stat",
-                "targets": [
-                  "ac.dodge"
-                ],
-                "mode": "flat",
-                "value": 4,
-                "btype": "Dodge"
-              }
-            ]
-          }
-        ]
+        "id": "ef-defst-res",
+        "type": "resource",
+        "name": "Defensive Stance",
+        "varKey": "defensive_stance_uses",
+        "resMode": "spend",
+        "maxFormula": "floor((@classes.dwarven_defender.level + 1) / 2)",
+        "reset": "perDay",
+        "unit": "uses",
+        "recharge": {
+          "period": "day"
+        }
       }
     ],
     "shortDescription": "When he adopts a defensive stance, a defender gains phenomenal strength and durability, but he cannot move from the spot he is defending. He gains +2 to Strength, +4 to Constitution, a +2 resistance bonus on all saves,…",
     "text": "When he adopts a defensive stance, a defender gains phenomenal strength and durability, but he cannot move from the spot he is defending. He gains +2 to Strength, +4 to Constitution, a +2 resistance bonus on all saves, and a +4 dodge bonus to AC. The increase in Constitution increases the defender’s hit points by 2 points per level, but these hit points go away at the end of the defensive stance when the Constitution score drops back 4 points. These extra hit points are not lost first the way temporary hit points are. While in a defensive stance, a defender cannot use skills or abilities that would require him to shift his position. A defensive stance lasts for a number of rounds equal to 3 + the character’s (newly improved) Constitution modifier. A defender may end his defensive stance voluntarily prior to this limit. At the end of the defensive stance, the defender is winded and takes a -2 penalty to Strength for the duration of that encounter. A defender can only use his defensive stance a certain number of times per day as determined by his level. Using the defensive stance takes no time itself, but a defender can only do so during his action.",
     "tags": [
       "class-ability"
+    ],
+    "modes": [
+      {
+        "id": "mode-defst-off",
+        "name": "Inactive",
+        "label": "Inactive",
+        "effects": []
+      },
+      {
+        "id": "mode-defst-on",
+        "name": "Defensive Stance",
+        "label": "Defensive Stance (+2 STR, +4 CON, +2 resistance on saves, +4 dodge AC)",
+        "effects": [
+          {
+            "id": "ef-defst-str",
+            "type": "stat",
+            "targets": [
+              "str"
+            ],
+            "mode": "flat",
+            "value": 2,
+            "btype": "Untyped"
+          },
+          {
+            "id": "ef-defst-con",
+            "type": "stat",
+            "targets": [
+              "con"
+            ],
+            "mode": "flat",
+            "value": 4,
+            "btype": "Untyped"
+          },
+          {
+            "id": "ef-defst-sv",
+            "type": "stat",
+            "targets": [
+              "save.all"
+            ],
+            "mode": "flat",
+            "value": 2,
+            "btype": "Resistance"
+          },
+          {
+            "id": "ef-defst-ac",
+            "type": "stat",
+            "targets": [
+              "ac.dodge"
+            ],
+            "mode": "flat",
+            "value": 4,
+            "btype": "Dodge"
+          }
+        ]
+      }
     ]
   },
   {
@@ -31032,7 +31211,8 @@
           "name": "Natural Armor Increase +1 (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Existing natural armor bonus increases by +1."
+          "summary": "Existing natural armor bonus increases by +1.",
+          "id": "cab-dragon-disciple-natural-armor"
         },
         {
           "name": "Bonus Spell (1st)",
@@ -31046,13 +31226,15 @@
           "name": "Ability Boost (STR +2) (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Permanent +2 increase to Strength score."
+          "summary": "Permanent +2 increase to Strength score.",
+          "id": "cab-dragon-disciple-ability-boost"
         },
         {
           "name": "Claws and Bite (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Gain bite (1d6) and two claw attacks (1d4) for Medium size."
+          "summary": "Gain bite (1d6) and two claw attacks (1d4) for Medium size.",
+          "id": "cab-dragon-disciple-claws-and-bite"
         },
         {
           "name": "Bonus Spell (2nd)",
@@ -31066,7 +31248,8 @@
           "name": "Breath Weapon 2d8 (Su)",
           "category": "Special Ability",
           "type": "Su",
-          "summary": "1/day breath weapon (2d8 energy damage based on dragon variety; Ref DC 10 + class lvl + CON mod)."
+          "summary": "1/day breath weapon (2d8 energy damage based on dragon variety; Ref DC 10 + class lvl + CON mod).",
+          "id": "cab-dragon-disciple-breath-weapon"
         }
       ],
       "4": [
@@ -31074,13 +31257,15 @@
           "name": "Ability Boost (STR +2) (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Strength increases by an additional +2 (+4 total)."
+          "summary": "Strength increases by an additional +2 (+4 total).",
+          "id": "cab-dragon-disciple-ability-boost"
         },
         {
           "name": "Natural Armor Increase +2 (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Natural armor bonus increase reaches +2."
+          "summary": "Natural armor bonus increase reaches +2.",
+          "id": "cab-dragon-disciple-natural-armor"
         },
         {
           "name": "Bonus Spell (3rd)",
@@ -31094,7 +31279,8 @@
           "name": "Blindsense 30 ft. (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Detect unseen creatures within 30 ft. by nonvisual senses."
+          "summary": "Detect unseen creatures within 30 ft. by nonvisual senses.",
+          "id": "cab-dragon-disciple-blindsense"
         },
         {
           "name": "Bonus Spell (4th)",
@@ -31108,7 +31294,8 @@
           "name": "Ability Boost (CON +2) (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Permanent +2 increase to Constitution score."
+          "summary": "Permanent +2 increase to Constitution score.",
+          "id": "cab-dragon-disciple-ability-boost"
         },
         {
           "name": "Bonus Spell (5th)",
@@ -31122,13 +31309,15 @@
           "name": "Breath Weapon 4d8 (Su)",
           "category": "Special Ability",
           "type": "Su",
-          "summary": "Breath weapon damage increases to 4d8."
+          "summary": "Breath weapon damage increases to 4d8.",
+          "id": "cab-dragon-disciple-breath-weapon"
         },
         {
           "name": "Natural Armor Increase +3 (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Natural armor bonus increase reaches +3."
+          "summary": "Natural armor bonus increase reaches +3.",
+          "id": "cab-dragon-disciple-natural-armor"
         }
       ],
       "8": [
@@ -31136,7 +31325,8 @@
           "name": "Ability Boost (INT +2) (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Permanent +2 increase to Intelligence score."
+          "summary": "Permanent +2 increase to Intelligence score.",
+          "id": "cab-dragon-disciple-ability-boost"
         },
         {
           "name": "Bonus Spell (6th)",
@@ -31164,13 +31354,15 @@
           "name": "Dragon Apotheosis (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Acquire Half-Dragon template: +4 additional STR (+8 total), +2 CHA, Natural Armor +4 total, 6d8 Breath Weapon, Darkvision 60 ft., Low-Light Vision, immunity to sleep, paralysis, and chosen dragon energy type."
+          "summary": "Acquire Half-Dragon template: +4 additional STR (+8 total), +2 CHA, Natural Armor +4 total, 6d8 Breath Weapon, Darkvision 60 ft., Low-Light Vision, immunity to sleep, paralysis, and chosen dragon energy type.",
+          "id": "cab-dragon-disciple-apotheosis"
         },
         {
           "name": "Blindsense 60 ft. (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Blindsense range increases to 60 ft."
+          "summary": "Blindsense range increases to 60 ft.",
+          "id": "cab-dragon-disciple-blindsense"
         }
       ]
     },
@@ -31219,11 +31411,12 @@
           "will": 2,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Natural Armor Increase +1 (Ex)",
               "abilityType": "Ex",
               "text": "Existing natural armor bonus increases by +1.",
-              "category": "Special Ability"
+              "category": "Special Ability",
+              "refId": "cab-dragon-disciple-natural-armor"
             },
             {
               "kind": "inline",
@@ -31243,18 +31436,20 @@
           "will": 3,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Ability Boost (STR +2) (Ex)",
               "abilityType": "Ex",
               "text": "Permanent +2 increase to Strength score.",
-              "category": "Special Ability"
+              "category": "Special Ability",
+              "refId": "cab-dragon-disciple-ability-boost"
             },
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Claws and Bite (Ex)",
               "abilityType": "Ex",
               "text": "Gain bite (1d6) and two claw attacks (1d4) for Medium size.",
-              "category": "Special Ability"
+              "category": "Special Ability",
+              "refId": "cab-dragon-disciple-claws-and-bite"
             },
             {
               "kind": "inline",
@@ -31274,11 +31469,12 @@
           "will": 3,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Breath Weapon 2d8 (Su)",
               "abilityType": "Su",
               "text": "1/day breath weapon (2d8 energy damage based on dragon variety; Ref DC 10 + class lvl + CON mod).",
-              "category": "Special Ability"
+              "category": "Special Ability",
+              "refId": "cab-dragon-disciple-breath-weapon"
             }
           ],
           "spellcasting": null
@@ -31291,18 +31487,20 @@
           "will": 4,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Ability Boost (STR +2) (Ex)",
               "abilityType": "Ex",
               "text": "Strength increases by an additional +2 (+4 total).",
-              "category": "Special Ability"
+              "category": "Special Ability",
+              "refId": "cab-dragon-disciple-ability-boost"
             },
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Natural Armor Increase +2 (Ex)",
               "abilityType": "Ex",
               "text": "Natural armor bonus increase reaches +2.",
-              "category": "Special Ability"
+              "category": "Special Ability",
+              "refId": "cab-dragon-disciple-natural-armor"
             },
             {
               "kind": "inline",
@@ -31322,11 +31520,12 @@
           "will": 4,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Blindsense 30 ft. (Ex)",
               "abilityType": "Ex",
               "text": "Detect unseen creatures within 30 ft. by nonvisual senses.",
-              "category": "Special Ability"
+              "category": "Special Ability",
+              "refId": "cab-dragon-disciple-blindsense"
             },
             {
               "kind": "inline",
@@ -31346,11 +31545,12 @@
           "will": 5,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Ability Boost (CON +2) (Ex)",
               "abilityType": "Ex",
               "text": "Permanent +2 increase to Constitution score.",
-              "category": "Special Ability"
+              "category": "Special Ability",
+              "refId": "cab-dragon-disciple-ability-boost"
             },
             {
               "kind": "inline",
@@ -31370,18 +31570,20 @@
           "will": 5,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Breath Weapon 4d8 (Su)",
               "abilityType": "Su",
               "text": "Breath weapon damage increases to 4d8.",
-              "category": "Special Ability"
+              "category": "Special Ability",
+              "refId": "cab-dragon-disciple-breath-weapon"
             },
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Natural Armor Increase +3 (Ex)",
               "abilityType": "Ex",
               "text": "Natural armor bonus increase reaches +3.",
-              "category": "Special Ability"
+              "category": "Special Ability",
+              "refId": "cab-dragon-disciple-natural-armor"
             }
           ],
           "spellcasting": null
@@ -31394,11 +31596,12 @@
           "will": 6,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Ability Boost (INT +2) (Ex)",
               "abilityType": "Ex",
               "text": "Permanent +2 increase to Intelligence score.",
-              "category": "Special Ability"
+              "category": "Special Ability",
+              "refId": "cab-dragon-disciple-ability-boost"
             },
             {
               "kind": "inline",
@@ -31442,18 +31645,20 @@
           "will": 7,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Dragon Apotheosis (Ex)",
               "abilityType": "Ex",
               "text": "Acquire Half-Dragon template: +4 additional STR (+8 total), +2 CHA, Natural Armor +4 total, 6d8 Breath Weapon, Darkvision 60 ft., Low-Light Vision, immunity to sleep, paralysis, and chosen dragon energy type.",
-              "category": "Special Ability"
+              "category": "Special Ability",
+              "refId": "cab-dragon-disciple-apotheosis"
             },
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Blindsense 60 ft. (Ex)",
               "abilityType": "Ex",
               "text": "Blindsense range increases to 60 ft.",
-              "category": "Special Ability"
+              "category": "Special Ability",
+              "refId": "cab-dragon-disciple-blindsense"
             }
           ],
           "spellcasting": null
@@ -31541,7 +31746,8 @@
           "name": "Canny Defense (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "When wearing no armor and not using a shield, add +1 INT bonus per Duelist level as a dodge bonus to AC while wielding a melee weapon."
+          "summary": "When wearing no armor and not using a shield, add +1 INT bonus per Duelist level as a dodge bonus to AC while wielding a melee weapon.",
+          "id": "cab-duelist-canny-defense"
         }
       ],
       "2": [
@@ -31549,7 +31755,8 @@
           "name": "Improved Reaction +2 (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "+2 bonus on Initiative checks."
+          "summary": "+2 bonus on Initiative checks.",
+          "id": "cab-duelist-improved-reaction"
         }
       ],
       "3": [
@@ -31557,7 +31764,8 @@
           "name": "Enhanced Mobility (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "When wearing no armor and not using a shield, gain an additional +4 bonus to AC against Attacks of Opportunity caused by movement (+8 total with Mobility)."
+          "summary": "When wearing no armor and not using a shield, gain an additional +4 bonus to AC against Attacks of Opportunity caused by movement (+8 total with Mobility).",
+          "id": "cab-duelist-enhanced-mobility"
         }
       ],
       "4": [
@@ -31566,7 +31774,7 @@
           "category": "Special Ability",
           "type": "Ex",
           "summary": "+2 competence bonus on all Reflex saving throws when wearing no armor and not using a shield.",
-          "id": "cab-grace"
+          "id": "cab-duelist-grace"
         }
       ],
       "5": [
@@ -31598,7 +31806,8 @@
           "name": "Improved Reaction +4 (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Initiative bonus increases to +4."
+          "summary": "Initiative bonus increases to +4.",
+          "id": "cab-duelist-improved-reaction"
         }
       ],
       "9": [
@@ -31649,11 +31858,12 @@
           "will": 0,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Canny Defense (Ex)",
               "abilityType": "Ex",
               "text": "When wearing no armor and not using a shield, add +1 INT bonus per Duelist level as a dodge bonus to AC while wielding a melee weapon.",
-              "category": "Special Ability"
+              "category": "Special Ability",
+              "refId": "cab-duelist-canny-defense"
             }
           ],
           "spellcasting": null
@@ -31666,11 +31876,12 @@
           "will": 0,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Improved Reaction +2 (Ex)",
               "abilityType": "Ex",
               "text": "+2 bonus on Initiative checks.",
-              "category": "Special Ability"
+              "category": "Special Ability",
+              "refId": "cab-duelist-improved-reaction"
             }
           ],
           "spellcasting": null
@@ -31683,11 +31894,12 @@
           "will": 1,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Enhanced Mobility (Ex)",
               "abilityType": "Ex",
               "text": "When wearing no armor and not using a shield, gain an additional +4 bonus to AC against Attacks of Opportunity caused by movement (+8 total with Mobility).",
-              "category": "Special Ability"
+              "category": "Special Ability",
+              "refId": "cab-duelist-enhanced-mobility"
             }
           ],
           "spellcasting": null
@@ -31703,7 +31915,7 @@
               "kind": "ref",
               "name": "Grace (Ex)",
               "abilityType": "Ex",
-              "refId": "cab-grace",
+              "refId": "cab-duelist-grace",
               "text": "+2 competence bonus on all Reflex saving throws when wearing no armor and not using a shield.",
               "category": "Special Ability"
             }
@@ -31769,11 +31981,12 @@
           "will": 2,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Improved Reaction +4 (Ex)",
               "abilityType": "Ex",
               "text": "Initiative bonus increases to +4.",
-              "category": "Special Ability"
+              "category": "Special Ability",
+              "refId": "cab-duelist-improved-reaction"
             }
           ],
           "spellcasting": null
@@ -32990,7 +33203,8 @@
           "name": "Specialist Defense +1 (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "+1 bonus on saving throws against spells from your specialist school."
+          "summary": "+1 bonus on saving throws against spells from your specialist school.",
+          "id": "cab-red-wizard-specialist-defense"
         },
         {
           "name": "+1 Level of Existing Arcane Spellcasting Class",
@@ -33018,7 +33232,8 @@
           "name": "Specialist Defense +2 (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Specialist Defense bonus increases to +2."
+          "summary": "Specialist Defense bonus increases to +2.",
+          "id": "cab-red-wizard-specialist-defense"
         },
         {
           "name": "+1 Level of Existing Arcane Spellcasting Class",
@@ -33086,7 +33301,8 @@
           "name": "Specialist Defense +3 (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Specialist Defense bonus increases to +3."
+          "summary": "Specialist Defense bonus increases to +3.",
+          "id": "cab-red-wizard-specialist-defense"
         },
         {
           "name": "+1 Level of Existing Arcane Spellcasting Class",
@@ -33114,7 +33330,8 @@
           "name": "Specialist Defense +4 (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Specialist Defense bonus increases to +4."
+          "summary": "Specialist Defense bonus increases to +4.",
+          "id": "cab-red-wizard-specialist-defense"
         },
         {
           "name": "+1 Level of Existing Arcane Spellcasting Class",
@@ -33191,11 +33408,12 @@
               "category": "Special Ability"
             },
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Specialist Defense +1 (Ex)",
               "abilityType": "Ex",
               "text": "+1 bonus on saving throws against spells from your specialist school.",
-              "category": "Special Ability"
+              "category": "Special Ability",
+              "refId": "cab-red-wizard-specialist-defense"
             },
             {
               "kind": "inline",
@@ -33239,11 +33457,12 @@
           "will": 3,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Specialist Defense +2 (Ex)",
               "abilityType": "Ex",
               "text": "Specialist Defense bonus increases to +2.",
-              "category": "Special Ability"
+              "category": "Special Ability",
+              "refId": "cab-red-wizard-specialist-defense"
             },
             {
               "kind": "inline",
@@ -33349,11 +33568,12 @@
               "category": "Bonus Feat"
             },
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Specialist Defense +3 (Ex)",
               "abilityType": "Ex",
               "text": "Specialist Defense bonus increases to +3.",
-              "category": "Special Ability"
+              "category": "Special Ability",
+              "refId": "cab-red-wizard-specialist-defense"
             },
             {
               "kind": "inline",
@@ -33397,11 +33617,12 @@
           "will": 6,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Specialist Defense +4 (Ex)",
               "abilityType": "Ex",
               "text": "Specialist Defense bonus increases to +4.",
-              "category": "Special Ability"
+              "category": "Special Ability",
+              "refId": "cab-red-wizard-specialist-defense"
             },
             {
               "kind": "inline",
@@ -33554,7 +33775,8 @@
           "name": "Darkvision 60 ft. (Su)",
           "category": "Special Ability",
           "type": "Su",
-          "summary": "See in the dark up to 60 ft. (or +30 ft. if already possessing darkvision)."
+          "summary": "See in the dark up to 60 ft. (or +30 ft. if already possessing darkvision).",
+          "id": "cab-shadowdancer-darkvision"
         },
         {
           "name": "Uncanny Dodge (Ex)",
@@ -33710,11 +33932,12 @@
               "category": "Special Ability"
             },
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Darkvision 60 ft. (Su)",
               "abilityType": "Su",
               "text": "See in the dark up to 60 ft. (or +30 ft. if already possessing darkvision).",
-              "category": "Special Ability"
+              "category": "Special Ability",
+              "refId": "cab-shadowdancer-darkvision"
             },
             {
               "kind": "ref",
@@ -40114,13 +40337,15 @@
           "name": "Dervish Dance 1/day (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Take a full attack action with a slashing weapon while moving up to your speed (+1 attack/damage per odd Dervish level)."
+          "summary": "Take a full attack action with a slashing weapon while moving up to your speed (+1 attack/damage per odd Dervish level).",
+          "id": "cab-dervish-dance"
         },
         {
           "name": "AC Bonus +1 (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Gain a +1 AC bonus when wearing no or light armor and not carrying a shield."
+          "summary": "Gain a +1 AC bonus when wearing no or light armor and not carrying a shield.",
+          "id": "cab-dervish-ac-bonus"
         },
         {
           "name": "Movement Mastery (Ex)",
@@ -40141,7 +40366,7 @@
           "category": "Class Feature",
           "type": "Ex",
           "summary": "Gain a +5 ft. enhancement bonus to speed.",
-          "id": "cab-fast-movement"
+          "id": "cab-dervish-fast-movement"
         }
       ],
       "3": [
@@ -40155,7 +40380,8 @@
           "name": "Dervish Dance 2/day (+2) (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Use Dervish Dance 2/day (+2 bonus on attack and damage rolls)."
+          "summary": "Use Dervish Dance 2/day (+2 bonus on attack and damage rolls).",
+          "id": "cab-dervish-dance"
         }
       ],
       "4": [
@@ -40171,20 +40397,22 @@
           "name": "Dervish Dance 3/day (+3) (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Use Dervish Dance 3/day (+3 bonus on attack and damage rolls)."
+          "summary": "Use Dervish Dance 3/day (+3 bonus on attack and damage rolls).",
+          "id": "cab-dervish-dance"
         },
         {
           "name": "Fast Movement +10 ft (Ex)",
           "category": "Class Feature",
           "type": "Ex",
           "summary": "Enhancement bonus to speed increases to +10 ft.",
-          "id": "cab-fast-movement"
+          "id": "cab-dervish-fast-movement"
         },
         {
           "name": "AC Bonus +2 (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "AC bonus increases to +2."
+          "summary": "AC bonus increases to +2.",
+          "id": "cab-dervish-ac-bonus"
         }
       ],
       "6": [
@@ -40192,7 +40420,8 @@
           "name": "Improved Reaction (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Gain a +2 bonus on initiative checks."
+          "summary": "Gain a +2 bonus on initiative checks.",
+          "id": "cab-dervish-improved-reaction"
         }
       ],
       "7": [
@@ -40206,7 +40435,8 @@
           "name": "Dervish Dance 4/day (+4) (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Use Dervish Dance 4/day (+4 bonus on attack and damage rolls)."
+          "summary": "Use Dervish Dance 4/day (+4 bonus on attack and damage rolls).",
+          "id": "cab-dervish-dance"
         }
       ],
       "8": [
@@ -40215,7 +40445,7 @@
           "category": "Class Feature",
           "type": "Ex",
           "summary": "Enhancement bonus to speed increases to +15 ft.",
-          "id": "cab-fast-movement"
+          "id": "cab-dervish-fast-movement"
         }
       ],
       "9": [
@@ -40229,13 +40459,15 @@
           "name": "Dervish Dance 5/day (+5) (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Use Dervish Dance 5/day (+5 bonus on attack and damage rolls)."
+          "summary": "Use Dervish Dance 5/day (+5 bonus on attack and damage rolls).",
+          "id": "cab-dervish-dance"
         },
         {
           "name": "AC Bonus +3 (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "AC bonus increases to +3."
+          "summary": "AC bonus increases to +3.",
+          "id": "cab-dervish-ac-bonus"
         }
       ],
       "10": [
@@ -40280,18 +40512,20 @@
           "will": 2,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Dervish Dance 1/day (Ex)",
               "abilityType": "Ex",
               "text": "Take a full attack action with a slashing weapon while moving up to your speed (+1 attack/damage per odd Dervish level).",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-dervish-dance"
             },
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "AC Bonus +1 (Ex)",
               "abilityType": "Ex",
               "text": "Gain a +1 AC bonus when wearing no or light armor and not carrying a shield.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-dervish-ac-bonus"
             },
             {
               "kind": "inline",
@@ -40321,7 +40555,7 @@
               "kind": "ref",
               "name": "Fast Movement +5 ft (Ex)",
               "abilityType": "Ex",
-              "refId": "cab-fast-movement",
+              "refId": "cab-dervish-fast-movement",
               "text": "Gain a +5 ft. enhancement bonus to speed.",
               "category": "Class Feature"
             }
@@ -40343,11 +40577,12 @@
               "category": "Class Feature"
             },
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Dervish Dance 2/day (+2) (Ex)",
               "abilityType": "Ex",
               "text": "Use Dervish Dance 2/day (+2 bonus on attack and damage rolls).",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-dervish-dance"
             }
           ],
           "spellcasting": null
@@ -40377,26 +40612,28 @@
           "will": 4,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Dervish Dance 3/day (+3) (Ex)",
               "abilityType": "Ex",
               "text": "Use Dervish Dance 3/day (+3 bonus on attack and damage rolls).",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-dervish-dance"
             },
             {
               "kind": "ref",
               "name": "Fast Movement +10 ft (Ex)",
               "abilityType": "Ex",
-              "refId": "cab-fast-movement",
+              "refId": "cab-dervish-fast-movement",
               "text": "Enhancement bonus to speed increases to +10 ft.",
               "category": "Class Feature"
             },
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "AC Bonus +2 (Ex)",
               "abilityType": "Ex",
               "text": "AC bonus increases to +2.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-dervish-ac-bonus"
             }
           ],
           "spellcasting": null
@@ -40409,11 +40646,12 @@
           "will": 5,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Improved Reaction (Ex)",
               "abilityType": "Ex",
               "text": "Gain a +2 bonus on initiative checks.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-dervish-improved-reaction"
             }
           ],
           "spellcasting": null
@@ -40433,11 +40671,12 @@
               "category": "Class Feature"
             },
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Dervish Dance 4/day (+4) (Ex)",
               "abilityType": "Ex",
               "text": "Use Dervish Dance 4/day (+4 bonus on attack and damage rolls).",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-dervish-dance"
             }
           ],
           "spellcasting": null
@@ -40453,7 +40692,7 @@
               "kind": "ref",
               "name": "Fast Movement +15 ft (Ex)",
               "abilityType": "Ex",
-              "refId": "cab-fast-movement",
+              "refId": "cab-dervish-fast-movement",
               "text": "Enhancement bonus to speed increases to +15 ft.",
               "category": "Class Feature"
             }
@@ -40475,18 +40714,20 @@
               "category": "Class Feature"
             },
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Dervish Dance 5/day (+5) (Ex)",
               "abilityType": "Ex",
               "text": "Use Dervish Dance 5/day (+5 bonus on attack and damage rolls).",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-dervish-dance"
             },
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "AC Bonus +3 (Ex)",
               "abilityType": "Ex",
               "text": "AC bonus increases to +3.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-dervish-ac-bonus"
             }
           ],
           "spellcasting": null
@@ -52866,6 +53107,981 @@
     ],
     "shortDescription": "Gains 4 + INT skill points per level and adds Bluff, Gather Information, Knowledge (local), and Sleight of Hand to class skills.",
     "text": "Gains 4 + INT skill points per level and adds Bluff, Gather Information, Knowledge (local), and Sleight of Hand to class skills.",
+    "tags": [
+      "class-ability"
+    ]
+  },
+  {
+    "schemaVersion": 3,
+    "id": "cab-barbarian-damage-reduction",
+    "blueprint": "feat",
+    "name": "Damage Reduction (Ex)",
+    "type": "ClassAbility",
+    "category": "Class Feature",
+    "source": "SRD / PHB p.25",
+    "featKind": "classAbility",
+    "abilityType": "ex",
+    "associations": [
+      [
+        "Barbarian",
+        7
+      ]
+    ],
+    "effects": [
+      {
+        "id": "ef-barb-dr",
+        "type": "table",
+        "key": "classLevel",
+        "rows": [
+          {
+            "min": 7,
+            "max": 9,
+            "blocks": [
+              {
+                "id": "ef-barb-dr-1",
+                "type": "defense",
+                "mode": "Damage Reduction",
+                "what": "-",
+                "value": 1
+              }
+            ]
+          },
+          {
+            "min": 10,
+            "max": 12,
+            "blocks": [
+              {
+                "id": "ef-barb-dr-2",
+                "type": "defense",
+                "mode": "Damage Reduction",
+                "what": "-",
+                "value": 2
+              }
+            ]
+          },
+          {
+            "min": 13,
+            "max": 15,
+            "blocks": [
+              {
+                "id": "ef-barb-dr-3",
+                "type": "defense",
+                "mode": "Damage Reduction",
+                "what": "-",
+                "value": 3
+              }
+            ]
+          },
+          {
+            "min": 16,
+            "max": 18,
+            "blocks": [
+              {
+                "id": "ef-barb-dr-4",
+                "type": "defense",
+                "mode": "Damage Reduction",
+                "what": "-",
+                "value": 4
+              }
+            ]
+          },
+          {
+            "min": 19,
+            "max": 99,
+            "blocks": [
+              {
+                "id": "ef-barb-dr-5",
+                "type": "defense",
+                "mode": "Damage Reduction",
+                "what": "-",
+                "value": 5
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "shortDescription": "Subtract 1 from the damage taken each time you are dealt damage from a weapon or natural attack; increases by 1 every three levels after 7th (maximum 5/- at 19th).",
+    "text": "Subtract 1 from the damage taken each time you are dealt damage from a weapon or natural attack; increases by 1 every three levels after 7th (maximum 5/- at 19th).",
+    "tags": [
+      "class-ability"
+    ]
+  },
+  {
+    "schemaVersion": 3,
+    "id": "cab-venom-immunity",
+    "blueprint": "feat",
+    "name": "Venom Immunity (Ex)",
+    "type": "ClassAbility",
+    "category": "Class Feature",
+    "source": "SRD / PHB p.36",
+    "featKind": "classAbility",
+    "abilityType": "ex",
+    "associations": [
+      [
+        "Druid",
+        9
+      ]
+    ],
+    "effects": [
+      {
+        "id": "ef-venom-imm",
+        "type": "defense",
+        "mode": "Immunity",
+        "what": "Poison",
+        "text": "Immune to all organic poisons"
+      }
+    ],
+    "shortDescription": "Immunity to all organic poisons (monster, plant, and giant vermin poisons).",
+    "text": "Immunity to all organic poisons (monster, plant, and giant vermin poisons).",
+    "tags": [
+      "class-ability"
+    ]
+  },
+  {
+    "schemaVersion": 3,
+    "id": "cab-dwarven-defender-ac-bonus",
+    "blueprint": "feat",
+    "name": "AC Bonus (Ex)",
+    "type": "ClassAbility",
+    "category": "Class Feature",
+    "source": "SRD / DMG",
+    "featKind": "classAbility",
+    "abilityType": "ex",
+    "associations": [
+      [
+        "Dwarven Defender",
+        1
+      ]
+    ],
+    "effects": [
+      {
+        "id": "ef-dd-ac",
+        "type": "stat",
+        "targets": [
+          "ac.dodge"
+        ],
+        "mode": "formula",
+        "value": 0,
+        "formula": "1 + floor((@classes.dwarven_defender.level - 1) / 3)",
+        "btype": "Dodge"
+      }
+    ],
+    "shortDescription": "Dodge bonus to Armor Class: +1 at 1st level, +2 at 4th, +3 at 7th, +4 at 10th.",
+    "text": "Dodge bonus to Armor Class: +1 at 1st level, +2 at 4th, +3 at 7th, +4 at 10th.",
+    "tags": [
+      "class-ability"
+    ]
+  },
+  {
+    "schemaVersion": 3,
+    "id": "cab-dwarven-defender-damage-reduction",
+    "blueprint": "feat",
+    "name": "Damage Reduction (Ex)",
+    "type": "ClassAbility",
+    "category": "Class Feature",
+    "source": "SRD / DMG",
+    "featKind": "classAbility",
+    "abilityType": "ex",
+    "associations": [
+      [
+        "Dwarven Defender",
+        6
+      ]
+    ],
+    "effects": [
+      {
+        "id": "ef-ddef-dr",
+        "type": "table",
+        "key": "classLevel",
+        "rows": [
+          {
+            "min": 6,
+            "max": 9,
+            "blocks": [
+              {
+                "id": "ef-ddef-dr-3",
+                "type": "defense",
+                "mode": "Damage Reduction",
+                "what": "-",
+                "value": 3
+              }
+            ]
+          },
+          {
+            "min": 10,
+            "max": 99,
+            "blocks": [
+              {
+                "id": "ef-ddef-dr-6",
+                "type": "defense",
+                "mode": "Damage Reduction",
+                "what": "-",
+                "value": 6
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "shortDescription": "Damage reduction 3/- at 6th level, 6/- at 10th level.",
+    "text": "Damage reduction 3/- at 6th level, 6/- at 10th level.",
+    "tags": [
+      "class-ability"
+    ]
+  },
+  {
+    "schemaVersion": 3,
+    "id": "cab-dragon-disciple-natural-armor",
+    "blueprint": "feat",
+    "name": "Natural Armor Increase (Ex)",
+    "type": "ClassAbility",
+    "category": "Class Feature",
+    "source": "SRD / DMG",
+    "featKind": "classAbility",
+    "abilityType": "ex",
+    "associations": [
+      [
+        "Dragon Disciple",
+        1
+      ]
+    ],
+    "effects": [
+      {
+        "id": "ef-ddisc-na",
+        "type": "stat",
+        "targets": [
+          "ac.natural"
+        ],
+        "mode": "formula",
+        "value": 0,
+        "formula": "@classes.dragon_disciple.level >= 10 ? 4 : (@classes.dragon_disciple.level >= 7 ? 3 : (@classes.dragon_disciple.level >= 4 ? 2 : 1))",
+        "btype": "Natural"
+      }
+    ],
+    "shortDescription": "Existing natural armor bonus increases by +1 at 1st, 4th and 7th level; Dragon Apotheosis (10th) brings the total to +4.",
+    "text": "Existing natural armor bonus increases by +1 at 1st, 4th and 7th level; Dragon Apotheosis (10th) brings the total to +4.",
+    "tags": [
+      "class-ability"
+    ]
+  },
+  {
+    "schemaVersion": 3,
+    "id": "cab-dragon-disciple-ability-boost",
+    "blueprint": "feat",
+    "name": "Ability Boost (Ex)",
+    "type": "ClassAbility",
+    "category": "Class Feature",
+    "source": "SRD / DMG",
+    "featKind": "classAbility",
+    "abilityType": "ex",
+    "associations": [
+      [
+        "Dragon Disciple",
+        2
+      ]
+    ],
+    "effects": [
+      {
+        "id": "ef-ddisc-str",
+        "type": "stat",
+        "targets": [
+          "str"
+        ],
+        "mode": "formula",
+        "value": 0,
+        "formula": "(@classes.dragon_disciple.level >= 2 ? 2 : 0) + (@classes.dragon_disciple.level >= 4 ? 2 : 0) + (@classes.dragon_disciple.level >= 10 ? 4 : 0)",
+        "btype": "Untyped"
+      },
+      {
+        "id": "ef-ddisc-con",
+        "type": "stat",
+        "targets": [
+          "con"
+        ],
+        "mode": "formula",
+        "value": 0,
+        "formula": "@classes.dragon_disciple.level >= 6 ? 2 : 0",
+        "btype": "Untyped"
+      },
+      {
+        "id": "ef-ddisc-int",
+        "type": "stat",
+        "targets": [
+          "int"
+        ],
+        "mode": "formula",
+        "value": 0,
+        "formula": "@classes.dragon_disciple.level >= 8 ? 2 : 0",
+        "btype": "Untyped"
+      },
+      {
+        "id": "ef-ddisc-cha",
+        "type": "stat",
+        "targets": [
+          "cha"
+        ],
+        "mode": "formula",
+        "value": 0,
+        "formula": "@classes.dragon_disciple.level >= 10 ? 2 : 0",
+        "btype": "Untyped"
+      }
+    ],
+    "shortDescription": "Str +2 at 2nd and 4th level, Con +2 at 6th, Int +2 at 8th; Dragon Apotheosis (10th) adds Str +4 and Cha +2.",
+    "text": "Str +2 at 2nd and 4th level, Con +2 at 6th, Int +2 at 8th; Dragon Apotheosis (10th) adds Str +4 and Cha +2.",
+    "tags": [
+      "class-ability"
+    ]
+  },
+  {
+    "schemaVersion": 3,
+    "id": "cab-dragon-disciple-claws-and-bite",
+    "blueprint": "feat",
+    "name": "Claws and Bite (Ex)",
+    "type": "ClassAbility",
+    "category": "Class Feature",
+    "source": "SRD / DMG",
+    "featKind": "classAbility",
+    "abilityType": "ex",
+    "associations": [
+      [
+        "Dragon Disciple",
+        2
+      ]
+    ],
+    "effects": [
+      {
+        "id": "ef-ddisc-bite",
+        "type": "attack",
+        "attackMode": "natural",
+        "natKind": "primary",
+        "count": 1,
+        "weaponName": "Bite",
+        "dice": "1d6",
+        "dmgType": "Piercing",
+        "summary": "Bite 1d6 piercing natural weapon (primary)."
+      },
+      {
+        "id": "ef-ddisc-claw",
+        "type": "attack",
+        "attackMode": "natural",
+        "natKind": "primary",
+        "count": 2,
+        "weaponName": "Claw",
+        "dice": "1d4",
+        "dmgType": "Slashing",
+        "usesHands": true,
+        "summary": "2 Claw 1d4 slashing natural weapon (primary)."
+      }
+    ],
+    "shortDescription": "Gain two claw attacks (1d4) and a bite attack (1d6) for Medium size.",
+    "text": "Gain two claw attacks (1d4) and a bite attack (1d6) for Medium size.",
+    "tags": [
+      "class-ability"
+    ]
+  },
+  {
+    "schemaVersion": 3,
+    "id": "cab-dragon-disciple-breath-weapon",
+    "blueprint": "feat",
+    "name": "Breath Weapon (Su)",
+    "type": "ClassAbility",
+    "category": "Class Feature",
+    "source": "SRD / DMG",
+    "featKind": "classAbility",
+    "abilityType": "su",
+    "associations": [
+      [
+        "Dragon Disciple",
+        3
+      ]
+    ],
+    "effects": [],
+    "shortDescription": "Once per day, a breath weapon of the chosen dragon variety: 2d8 at 3rd level, 4d8 at 7th, 6d8 at 10th (Reflex half, DC 10 + class level + Con modifier).",
+    "text": "Once per day, a breath weapon of the chosen dragon variety: 2d8 at 3rd level, 4d8 at 7th, 6d8 at 10th (Reflex half, DC 10 + class level + Con modifier).",
+    "tags": [
+      "class-ability"
+    ],
+    "powers": [
+      {
+        "id": "pw-ddisc-breath",
+        "kind": "inline",
+        "name": "Breath Weapon (Su, Dragon Disciple)",
+        "action": "Standard",
+        "usage": {
+          "mode": "perDay",
+          "uses": 1
+        },
+        "dcFormula": "10 + @classes.dragon_disciple.level + @conMod",
+        "save": {
+          "type": "Reflex",
+          "effect": "Half"
+        },
+        "effects": [
+          {
+            "type": "roll",
+            "kind": "Damage",
+            "dmgType": "Energy",
+            "dice": "(@classes.dragon_disciple.level >= 10 ? 6 : (@classes.dragon_disciple.level >= 7 ? 4 : 2))d8",
+            "crit": "normal",
+            "save": "Reflex half",
+            "source": "Breath Weapon"
+          }
+        ],
+        "text": "Energy type and shape (cone or line) follow the chosen dragon variety. 2d8 at 3rd level, 4d8 at 7th, 6d8 at 10th."
+      }
+    ]
+  },
+  {
+    "schemaVersion": 3,
+    "id": "cab-dragon-disciple-blindsense",
+    "blueprint": "feat",
+    "name": "Blindsense (Ex)",
+    "type": "ClassAbility",
+    "category": "Class Feature",
+    "source": "SRD / DMG",
+    "featKind": "classAbility",
+    "abilityType": "ex",
+    "associations": [
+      [
+        "Dragon Disciple",
+        5
+      ]
+    ],
+    "effects": [
+      {
+        "id": "ef-ddisc-bs",
+        "type": "table",
+        "key": "classLevel",
+        "rows": [
+          {
+            "min": 5,
+            "max": 9,
+            "blocks": [
+              {
+                "id": "ef-ddisc-bs-30",
+                "type": "defense",
+                "mode": "Sense / Movement",
+                "what": "Blindsense 30 ft."
+              }
+            ]
+          },
+          {
+            "min": 10,
+            "max": 99,
+            "blocks": [
+              {
+                "id": "ef-ddisc-bs-60",
+                "type": "defense",
+                "mode": "Sense / Movement",
+                "what": "Blindsense 60 ft."
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "shortDescription": "Blindsense 30 ft. at 5th level, 60 ft. at 10th level.",
+    "text": "Blindsense 30 ft. at 5th level, 60 ft. at 10th level.",
+    "tags": [
+      "class-ability"
+    ]
+  },
+  {
+    "schemaVersion": 3,
+    "id": "cab-dragon-disciple-apotheosis",
+    "blueprint": "feat",
+    "name": "Dragon Apotheosis (Ex)",
+    "type": "ClassAbility",
+    "category": "Class Feature",
+    "source": "SRD / DMG",
+    "featKind": "classAbility",
+    "abilityType": "ex",
+    "associations": [
+      [
+        "Dragon Disciple",
+        10
+      ]
+    ],
+    "effects": [
+      {
+        "id": "ef-ddisc-apo-sleep",
+        "type": "defense",
+        "mode": "Immunity",
+        "what": "Sleep"
+      },
+      {
+        "id": "ef-ddisc-apo-para",
+        "type": "defense",
+        "mode": "Immunity",
+        "what": "Paralysis"
+      },
+      {
+        "id": "ef-ddisc-apo-dv",
+        "type": "defense",
+        "mode": "Sense / Movement",
+        "what": "Darkvision 60 ft."
+      },
+      {
+        "id": "ef-ddisc-apo-ll",
+        "type": "defense",
+        "mode": "Sense / Movement",
+        "what": "Low-Light Vision"
+      }
+    ],
+    "shortDescription": "Acquire the half-dragon template: darkvision 60 ft., low-light vision, immunity to sleep, paralysis and the chosen dragon energy type. (Ability and natural armor increases are in Ability Boost / Natural Armor Increase.)",
+    "text": "Acquire the half-dragon template: darkvision 60 ft., low-light vision, immunity to sleep, paralysis and the chosen dragon energy type. (Ability and natural armor increases are in Ability Boost / Natural Armor Increase.)",
+    "tags": [
+      "class-ability"
+    ]
+  },
+  {
+    "schemaVersion": 3,
+    "id": "cab-duelist-canny-defense",
+    "blueprint": "feat",
+    "name": "Canny Defense (Ex)",
+    "type": "ClassAbility",
+    "category": "Class Feature",
+    "source": "SRD / DMG",
+    "featKind": "classAbility",
+    "abilityType": "ex",
+    "associations": [
+      [
+        "Duelist",
+        1
+      ]
+    ],
+    "effects": [
+      {
+        "id": "ef-duel-canny",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-duel-canny-br",
+            "condKind": "state",
+            "condText": "unarmoredNoShield",
+            "effects": [
+              {
+                "id": "ef-duel-canny-ac",
+                "type": "stat",
+                "targets": [
+                  "ac.dodge"
+                ],
+                "mode": "formula",
+                "value": 0,
+                "formula": "min(max(0, @intMod), @classes.duelist.level)",
+                "btype": "Dodge"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "shortDescription": "When wearing no armor and not using a shield, add your Intelligence bonus (maximum equal to your Duelist level) as a dodge bonus to AC while wielding a melee weapon.",
+    "text": "When wearing no armor and not using a shield, add your Intelligence bonus (maximum equal to your Duelist level) as a dodge bonus to AC while wielding a melee weapon.",
+    "tags": [
+      "class-ability"
+    ]
+  },
+  {
+    "schemaVersion": 3,
+    "id": "cab-duelist-improved-reaction",
+    "blueprint": "feat",
+    "name": "Improved Reaction (Ex)",
+    "type": "ClassAbility",
+    "category": "Class Feature",
+    "source": "SRD / DMG",
+    "featKind": "classAbility",
+    "abilityType": "ex",
+    "associations": [
+      [
+        "Duelist",
+        2
+      ]
+    ],
+    "effects": [
+      {
+        "id": "ef-duel-init",
+        "type": "stat",
+        "targets": [
+          "init"
+        ],
+        "mode": "formula",
+        "value": 0,
+        "formula": "@classes.duelist.level >= 8 ? 4 : 2",
+        "btype": "Competence"
+      }
+    ],
+    "shortDescription": "+2 competence bonus on initiative checks at 2nd level, +4 at 8th level.",
+    "text": "+2 competence bonus on initiative checks at 2nd level, +4 at 8th level.",
+    "tags": [
+      "class-ability"
+    ]
+  },
+  {
+    "schemaVersion": 3,
+    "id": "cab-duelist-enhanced-mobility",
+    "blueprint": "feat",
+    "name": "Enhanced Mobility (Ex)",
+    "type": "ClassAbility",
+    "category": "Class Feature",
+    "source": "SRD / DMG",
+    "featKind": "classAbility",
+    "abilityType": "ex",
+    "associations": [
+      [
+        "Duelist",
+        3
+      ]
+    ],
+    "effects": [
+      {
+        "id": "ef-duel-mob",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-duel-mob-br",
+            "condKind": "vsAoOFromMovement",
+            "condText": "",
+            "effects": [
+              {
+                "id": "ef-duel-mob-ac",
+                "type": "stat",
+                "targets": [
+                  "ac.dodge"
+                ],
+                "mode": "flat",
+                "value": 4,
+                "btype": "Dodge"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "shortDescription": "When wearing no armor and not using a shield, +4 dodge bonus to AC against attacks of opportunity provoked by moving (stacks with Mobility).",
+    "text": "When wearing no armor and not using a shield, +4 dodge bonus to AC against attacks of opportunity provoked by moving (stacks with Mobility).",
+    "tags": [
+      "class-ability"
+    ]
+  },
+  {
+    "schemaVersion": 3,
+    "id": "cab-duelist-grace",
+    "blueprint": "feat",
+    "name": "Grace (Ex)",
+    "type": "ClassAbility",
+    "category": "Class Feature",
+    "source": "SRD / DMG",
+    "featKind": "classAbility",
+    "abilityType": "ex",
+    "associations": [
+      [
+        "Duelist",
+        4
+      ]
+    ],
+    "effects": [
+      {
+        "id": "ef-duel-grace",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-duel-grace-br",
+            "condKind": "state",
+            "condText": "unarmoredNoShield",
+            "effects": [
+              {
+                "id": "ef-duel-grace-ref",
+                "type": "stat",
+                "targets": [
+                  "save.ref"
+                ],
+                "mode": "flat",
+                "value": 2,
+                "btype": "Competence"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "shortDescription": "+2 competence bonus on Reflex saving throws when wearing no armor and not using a shield.",
+    "text": "+2 competence bonus on Reflex saving throws when wearing no armor and not using a shield.",
+    "tags": [
+      "class-ability"
+    ]
+  },
+  {
+    "schemaVersion": 3,
+    "id": "cab-dervish-fast-movement",
+    "blueprint": "feat",
+    "name": "Fast Movement (Ex)",
+    "type": "ClassAbility",
+    "category": "Class Feature",
+    "source": "Complete Warrior",
+    "featKind": "classAbility",
+    "abilityType": "ex",
+    "associations": [
+      [
+        "Dervish",
+        2
+      ]
+    ],
+    "effects": [
+      {
+        "id": "ef-derv-speed",
+        "type": "stat",
+        "targets": [
+          "speed.land"
+        ],
+        "mode": "formula",
+        "value": 0,
+        "formula": "@classes.dervish.level >= 8 ? 15 : (@classes.dervish.level >= 5 ? 10 : 5)",
+        "btype": "Enhancement"
+      }
+    ],
+    "shortDescription": "+5 ft. enhancement bonus to land speed at 2nd level, +10 ft. at 5th, +15 ft. at 8th.",
+    "text": "+5 ft. enhancement bonus to land speed at 2nd level, +10 ft. at 5th, +15 ft. at 8th.",
+    "tags": [
+      "class-ability"
+    ]
+  },
+  {
+    "schemaVersion": 3,
+    "id": "cab-dervish-ac-bonus",
+    "blueprint": "feat",
+    "name": "AC Bonus (Ex)",
+    "type": "ClassAbility",
+    "category": "Class Feature",
+    "source": "Complete Warrior",
+    "featKind": "classAbility",
+    "abilityType": "ex",
+    "associations": [
+      [
+        "Dervish",
+        1
+      ]
+    ],
+    "effects": [
+      {
+        "id": "ef-derv-ac",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-derv-ac-br",
+            "condKind": "state",
+            "condText": "lightOrNoArmorNoShield",
+            "effects": [
+              {
+                "id": "ef-derv-ac-b",
+                "type": "stat",
+                "targets": [
+                  "ac.total"
+                ],
+                "mode": "formula",
+                "value": 0,
+                "formula": "@classes.dervish.level >= 9 ? 3 : (@classes.dervish.level >= 5 ? 2 : 1)",
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "shortDescription": "AC bonus when wearing no or light armor and not carrying a shield: +1 at 1st level, +2 at 5th, +3 at 9th.",
+    "text": "AC bonus when wearing no or light armor and not carrying a shield: +1 at 1st level, +2 at 5th, +3 at 9th.",
+    "tags": [
+      "class-ability"
+    ]
+  },
+  {
+    "schemaVersion": 3,
+    "id": "cab-dervish-dance",
+    "blueprint": "feat",
+    "name": "Dervish Dance (Ex)",
+    "type": "ClassAbility",
+    "category": "Class Feature",
+    "source": "Complete Warrior",
+    "featKind": "classAbility",
+    "abilityType": "ex",
+    "associations": [
+      [
+        "Dervish",
+        1
+      ]
+    ],
+    "effects": [
+      {
+        "id": "ef-derv-dance-res",
+        "type": "resource",
+        "name": "Dervish Dance",
+        "varKey": "dervish_dance_uses",
+        "resMode": "spend",
+        "maxFormula": "floor((@classes.dervish.level + 1) / 2)",
+        "reset": "perDay",
+        "unit": "uses",
+        "recharge": {
+          "period": "day"
+        }
+      }
+    ],
+    "shortDescription": "Full attack with a slashing weapon while moving; +1 attack and damage per odd Dervish level, usable 1/day at 1st level, +1/day at 3rd, 5th, 7th and 9th.",
+    "text": "Full attack with a slashing weapon while moving; +1 attack and damage per odd Dervish level, usable 1/day at 1st level, +1/day at 3rd, 5th, 7th and 9th.",
+    "tags": [
+      "class-ability"
+    ],
+    "modes": [
+      {
+        "id": "mode-derv-dance-off",
+        "name": "Inactive",
+        "label": "Inactive",
+        "effects": []
+      },
+      {
+        "id": "mode-derv-dance-on",
+        "name": "Dervish Dance",
+        "label": "Dervish Dance (+1 attack/damage per odd Dervish level)",
+        "effects": [
+          {
+            "id": "ef-derv-dance-atk",
+            "type": "stat",
+            "targets": [
+              "atk.melee"
+            ],
+            "mode": "formula",
+            "value": 0,
+            "formula": "floor((@classes.dervish.level + 1) / 2)",
+            "btype": "Untyped"
+          },
+          {
+            "id": "ef-derv-dance-dmg",
+            "type": "stat",
+            "targets": [
+              "dmg.melee"
+            ],
+            "mode": "formula",
+            "value": 0,
+            "formula": "floor((@classes.dervish.level + 1) / 2)",
+            "btype": "Untyped"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "schemaVersion": 3,
+    "id": "cab-dervish-improved-reaction",
+    "blueprint": "feat",
+    "name": "Improved Reaction (Ex)",
+    "type": "ClassAbility",
+    "category": "Class Feature",
+    "source": "Complete Warrior",
+    "featKind": "classAbility",
+    "abilityType": "ex",
+    "associations": [
+      [
+        "Dervish",
+        6
+      ]
+    ],
+    "effects": [
+      {
+        "id": "ef-derv-init",
+        "type": "stat",
+        "targets": [
+          "init"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Competence"
+      }
+    ],
+    "shortDescription": "+2 bonus on initiative checks.",
+    "text": "+2 bonus on initiative checks.",
+    "tags": [
+      "class-ability"
+    ]
+  },
+  {
+    "schemaVersion": 3,
+    "id": "cab-red-wizard-specialist-defense",
+    "blueprint": "feat",
+    "name": "Specialist Defense (Ex)",
+    "type": "ClassAbility",
+    "category": "Class Feature",
+    "source": "SRD",
+    "featKind": "classAbility",
+    "abilityType": "ex",
+    "associations": [
+      [
+        "Red Wizard",
+        1
+      ]
+    ],
+    "effects": [
+      {
+        "id": "ef-rw-def",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-rw-def-br",
+            "condKind": "situational",
+            "condText": "vs. Spells from Specialist School",
+            "effects": [
+              {
+                "id": "ef-rw-def-s",
+                "type": "stat",
+                "targets": [
+                  "save.all"
+                ],
+                "mode": "formula",
+                "value": 0,
+                "formula": "@classes.red_wizard.level >= 9 ? 4 : (@classes.red_wizard.level >= 7 ? 3 : (@classes.red_wizard.level >= 3 ? 2 : 1))",
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "shortDescription": "Bonus on saving throws against spells from your specialist school: +1 at 1st level, +2 at 3rd, +3 at 7th, +4 at 9th.",
+    "text": "Bonus on saving throws against spells from your specialist school: +1 at 1st level, +2 at 3rd, +3 at 7th, +4 at 9th.",
+    "tags": [
+      "class-ability"
+    ]
+  },
+  {
+    "schemaVersion": 3,
+    "id": "cab-shadowdancer-darkvision",
+    "blueprint": "feat",
+    "name": "Darkvision (Su)",
+    "type": "ClassAbility",
+    "category": "Class Feature",
+    "source": "SRD / DMG",
+    "featKind": "classAbility",
+    "abilityType": "su",
+    "associations": [
+      [
+        "Shadowdancer",
+        2
+      ]
+    ],
+    "effects": [
+      {
+        "id": "ef-shdn-dv",
+        "type": "defense",
+        "mode": "Sense / Movement",
+        "what": "Darkvision 60 ft."
+      }
+    ],
+    "shortDescription": "Darkvision 60 ft. (or +30 ft. to existing darkvision).",
+    "text": "Darkvision 60 ft. (or +30 ft. to existing darkvision).",
     "tags": [
       "class-ability"
     ]

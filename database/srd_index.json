@@ -1,9 +1,9 @@
 {
   "schemaVersion": 3,
   "version": "3.0.0",
-  "compendiumHash": "2aa9d89618c04849",
+  "compendiumHash": "5a5ad173d5e4af06",
   "generatedAt": "2026-11-15T19:43:51.694Z",
-  "totalEntries": 7964,
+  "totalEntries": 7984,
   "chunks": {
     "srd_equipment.json": {
       "count": 1143,
@@ -18,9 +18,9 @@
       "eagerLoad": true
     },
     "srd_classes_races.json": {
-      "count": 303,
+      "count": 323,
       "bytes": 1611663,
-      "hash": "e2ce6fad802cc042",
+      "hash": "861e6d9f2eb8092a",
       "eagerLoad": true
     },
     "srd_combat_rules.json": {
@@ -65873,6 +65873,166 @@
       "s": "None",
       "f": "srd_powers_splat.json",
       "l": 7
+    },
+    {
+      "id": "cab-barbarian-damage-reduction",
+      "n": "Damage Reduction (Ex)",
+      "t": "ClassAbility",
+      "c": "Class Feature",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cab-venom-immunity",
+      "n": "Venom Immunity (Ex)",
+      "t": "ClassAbility",
+      "c": "Class Feature",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cab-dwarven-defender-ac-bonus",
+      "n": "AC Bonus (Ex)",
+      "t": "ClassAbility",
+      "c": "Class Feature",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cab-dwarven-defender-damage-reduction",
+      "n": "Damage Reduction (Ex)",
+      "t": "ClassAbility",
+      "c": "Class Feature",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cab-dragon-disciple-natural-armor",
+      "n": "Natural Armor Increase (Ex)",
+      "t": "ClassAbility",
+      "c": "Class Feature",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cab-dragon-disciple-ability-boost",
+      "n": "Ability Boost (Ex)",
+      "t": "ClassAbility",
+      "c": "Class Feature",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cab-dragon-disciple-claws-and-bite",
+      "n": "Claws and Bite (Ex)",
+      "t": "ClassAbility",
+      "c": "Class Feature",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cab-dragon-disciple-breath-weapon",
+      "n": "Breath Weapon (Su)",
+      "t": "ClassAbility",
+      "c": "Class Feature",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cab-dragon-disciple-blindsense",
+      "n": "Blindsense (Ex)",
+      "t": "ClassAbility",
+      "c": "Class Feature",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cab-dragon-disciple-apotheosis",
+      "n": "Dragon Apotheosis (Ex)",
+      "t": "ClassAbility",
+      "c": "Class Feature",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cab-duelist-canny-defense",
+      "n": "Canny Defense (Ex)",
+      "t": "ClassAbility",
+      "c": "Class Feature",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cab-duelist-improved-reaction",
+      "n": "Improved Reaction (Ex)",
+      "t": "ClassAbility",
+      "c": "Class Feature",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cab-duelist-enhanced-mobility",
+      "n": "Enhanced Mobility (Ex)",
+      "t": "ClassAbility",
+      "c": "Class Feature",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cab-duelist-grace",
+      "n": "Grace (Ex)",
+      "t": "ClassAbility",
+      "c": "Class Feature",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cab-dervish-fast-movement",
+      "n": "Fast Movement (Ex)",
+      "t": "ClassAbility",
+      "c": "Class Feature",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cab-dervish-ac-bonus",
+      "n": "AC Bonus (Ex)",
+      "t": "ClassAbility",
+      "c": "Class Feature",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cab-dervish-dance",
+      "n": "Dervish Dance (Ex)",
+      "t": "ClassAbility",
+      "c": "Class Feature",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cab-dervish-improved-reaction",
+      "n": "Improved Reaction (Ex)",
+      "t": "ClassAbility",
+      "c": "Class Feature",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cab-red-wizard-specialist-defense",
+      "n": "Specialist Defense (Ex)",
+      "t": "ClassAbility",
+      "c": "Class Feature",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cab-shadowdancer-darkvision",
+      "n": "Darkvision (Su)",
+      "t": "ClassAbility",
+      "c": "Class Feature",
+      "s": "None",
+      "f": "srd_classes_races.json"
     }
   ]
 }
