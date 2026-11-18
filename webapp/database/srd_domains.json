@@ -5469,12 +5469,11 @@
         {
           "level": 3,
           "spell": "Greater Magic Fang",
-          "refId": "spl-greater-magic-fang"
+          "refId": "spl-magic-fang-greater"
         },
         {
           "level": 4,
-          "spell": "Voice of the Dragon",
-          "refId": "spl-voice-of-the-dragon"
+          "spell": "Voice of the Dragon"
         },
         {
           "level": 5,
@@ -5488,13 +5487,12 @@
         },
         {
           "level": 7,
-          "spell": "Dragon Ally",
-          "refId": "spl-dragon-ally"
+          "spell": "Dragon Ally"
         },
         {
           "level": 8,
           "spell": "Mass Suggestion",
-          "refId": "spl-mass-suggestion"
+          "refId": "spl-suggestion-mass"
         },
         {
           "level": 9,

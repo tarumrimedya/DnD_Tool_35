@@ -1,7 +1,10 @@
 {
   "_note": "Reviewed, intended differences for tools/audit_v3_full.js. records: id -> reason (the record's LOST/CHANGED atoms are listed under 'Allowlisted'). removed / removedPrefixes: records that left the corpus on purpose. Add an entry only with the commit or the verified reason.",
   "records": {
-    "cls-monk": "bd902e0: Monk AC bonus and fast movement moved to cab-monk-ac-bonus / cab-monk-fast-movement (Class effects[] are never consumed); the V2 class modifiers had value 0 with unevaluable formulas"
+    "crys-truedeath-crystal-least": "fixed after the audit: was an unconditional Healing roll; now +1d6 Damage with condition 'vs. undead', untyped per the record text (MIC: 'an extra 1d6 points of damage to undead'); V2 typed it 'positive (vs. undead)'",
+    "crys-truedeath-crystal-lesser": "same as crys-truedeath-crystal-least",
+    "crys-truedeath-crystal-greater": "same as crys-truedeath-crystal-least",
+    "cls-monk":"bd902e0: Monk AC bonus and fast movement moved to cab-monk-ac-bonus / cab-monk-fast-movement (Class effects[] are never consumed); the V2 class modifiers had value 0 with unevaluable formulas"
   },
   "removed": {},
   "removedPrefixes": {

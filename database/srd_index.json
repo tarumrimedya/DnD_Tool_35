@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
   "version": "3.0.0",
-  "compendiumHash": "bf71c2314d0f2539",
+  "compendiumHash": "fdb832a76da0b9a1",
   "generatedAt": "2026-11-15T19:43:51.694Z",
   "totalEntries": 7987,
   "chunks": {
@@ -20,7 +20,7 @@
     "srd_classes_races.json": {
       "count": 326,
       "bytes": 1611663,
-      "hash": "aba7fa7958227d49",
+      "hash": "7fc88b7eea4beaef",
       "eagerLoad": true
     },
     "srd_combat_rules.json": {
@@ -50,13 +50,13 @@
     "mic_compendium.json": {
       "count": 953,
       "bytes": 1898703,
-      "hash": "1e485a7680aa4328",
+      "hash": "d4ddf324f670bbcc",
       "eagerLoad": true
     },
     "srd_domains.json": {
       "count": 37,
       "bytes": 143062,
-      "hash": "94b9474bd5a98457",
+      "hash": "ad20390dffa67ea0",
       "eagerLoad": true
     },
     "srd_companions.json": {

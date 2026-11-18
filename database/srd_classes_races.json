@@ -51362,9 +51362,7 @@
     "category": "Variant",
     "source": "Unearthed Arcana p.51",
     "variantOf": "cls-fighter",
-    "replaces": [
-      "cab-fighter-bonus-feat-1"
-    ],
+    "replaces": [],
     "aliases": [
       "cls_fighter_thug_ua"
     ],

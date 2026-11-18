@@ -42365,12 +42365,13 @@
     "effects": [
       {
         "type": "roll",
-        "kind": "Healing",
-        "dmgType": "Positive",
+        "kind": "Damage",
+        "dmgType": "Untyped",
         "crit": "normal",
         "count": 1,
         "die": "d6",
         "scaling": "flat",
+        "condition": "vs. undead",
         "source": "Truedeath Crystal"
       }
     ],
@@ -42415,12 +42416,13 @@
     "effects": [
       {
         "type": "roll",
-        "kind": "Healing",
-        "dmgType": "Positive",
+        "kind": "Damage",
+        "dmgType": "Untyped",
         "crit": "normal",
         "count": 1,
         "die": "d6",
         "scaling": "flat",
+        "condition": "vs. undead",
         "source": "Truedeath Crystal"
       }
     ],
@@ -42461,12 +42463,13 @@
     "effects": [
       {
         "type": "roll",
-        "kind": "Healing",
-        "dmgType": "Positive",
+        "kind": "Damage",
+        "dmgType": "Untyped",
         "crit": "normal",
         "count": 1,
         "die": "d6",
         "scaling": "flat",
+        "condition": "vs. undead",
         "source": "Truedeath Crystal"
       }
     ],
