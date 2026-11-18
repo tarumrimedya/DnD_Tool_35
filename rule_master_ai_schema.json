@@ -439,6 +439,14 @@
       "additionalProperties": true,
       "description": "Numeric modifier. ALWAYS plural `targets: string[]` + `btype` (never singular target/type). Targets must be canonical keys from tools/verify_v3_corpus.js (ac.deflection, atk.all, save.will, skill.hide, choice.ability.1, ...).",
       "properties": {
+        "appliesTo": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["grapple", "bullRush", "trip", "overrun", "sunder", "weaponSize", "opposedSize"]
+          },
+          "description": "Only for target `size.effective` (Powerful Build: value 1): scopes in which the creature counts as that many size categories larger (opposed-check special size modifier, weapon size). AC, attack size modifier, space and reach never change. Target `cmd.stability` = defender-side bonus on ability checks to resist bull rush / trip."
+        },
         "targets": {
           "type": "array",
           "minItems": 1,

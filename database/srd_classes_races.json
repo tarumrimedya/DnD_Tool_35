@@ -24994,6 +24994,24 @@
         "type": "effect",
         "effectKind": "proficiency",
         "targetId": "shield:shield"
+      },
+      {
+        "id": "ef-race-powerful-build",
+        "type": "stat",
+        "targets": [
+          "size.effective"
+        ],
+        "mode": "flat",
+        "value": 1,
+        "btype": "Untyped",
+        "appliesTo": [
+          "grapple",
+          "bullRush",
+          "trip",
+          "overrun",
+          "opposedSize",
+          "weaponSize"
+        ]
       }
     ],
     "shortDescription": "+2 Strength, +2 Constitution, –2 Dexterity: Half-giants are tough and strong, but not too nimble. Giant (Psionic): Half-giants are not subject to spells or effects that affect humanoids only, such as charm person or dom…",
@@ -27378,6 +27396,24 @@
         "type": "effect",
         "effectKind": "proficiency",
         "targetId": "weapon:simple"
+      },
+      {
+        "id": "ef-race-powerful-build",
+        "type": "stat",
+        "targets": [
+          "size.effective"
+        ],
+        "mode": "flat",
+        "value": 1,
+        "btype": "Untyped",
+        "appliesTo": [
+          "grapple",
+          "bullRush",
+          "trip",
+          "overrun",
+          "opposedSize",
+          "weaponSize"
+        ]
       }
     ],
     "shortDescription": "+4 Strength, -2 Dexterity, +2 Constitution. Monstrous Humanoid, Powerful Build, Mountain Movement, +2 Sense Motive. Level Adjustment +1.",

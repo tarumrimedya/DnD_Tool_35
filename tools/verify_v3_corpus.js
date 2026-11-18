@@ -18,6 +18,7 @@ const CANONICAL_V3_BLOCK_TYPES = new Set([
   'stat', 'roll', 'attack', 'defense', 'effect', 'resource', 'when', 'table', 'carrier'
 ]);
 
+const SIZE_SCOPES = new Set(['grapple', 'bullRush', 'trip', 'overrun', 'sunder', 'weaponSize', 'opposedSize']);
 const CANONICAL_V3_TARGETS = new Set([
   'str', 'dex', 'con', 'int', 'wis', 'cha',
   'choice.ability.1', 'choice.ability.2', 'choice.ability.3', 'choice.ability.4',
@@ -27,7 +28,7 @@ const CANONICAL_V3_TARGETS = new Set([
   'atk.all', 'atk.melee', 'atk.ranged', 'atk.weapon', 'atk.touch', 'atk.grapple', 'atk.natural', 'atk.critConfirm',
   'dmg.all', 'dmg.melee', 'dmg.ranged', 'dmg.weapon', 'dmg.sneakAttack', 'dmg.natural', 'dmg.unarmed',
   'initiative', 'grapple',
-  'cmd.stability', 'cmd.bullRush', 'cmd.trip', 'cmd.overrun', 'cmd.bullRushTripDisarmOverrun',
+  'cmd.stability', 'size.effective', 'cmd.bullRush', 'cmd.trip', 'cmd.overrun', 'cmd.bullRushTripDisarmOverrun',
   'speed.land', 'speed.fly', 'speed.swim', 'speed.climb', 'speed.burrow', 'speed.all',
   'hp.temp', 'hp.max', 'hp.perLevel', 'fastHealing',
   'casterLevel', 'spell.dc', 'spell.effectiveLevel', 'spell.damage', 'sr.penetration', 'caster.spellPenetration',
@@ -146,6 +147,7 @@ function runCorpusAudit() {
     unmappedTargets: {},
     unmappedV3BlockTypes: {},
     badProficiencyGrants: [],
+    badSizeScopes: [],
     structuredSubsystems: {
       v2ModesEntries: 0,
       xphAugmentPowers: 0,
@@ -200,6 +202,13 @@ function runCorpusAudit() {
             }
             if (ef.formula && /\$\{this\.|@attributes\./.test(String(ef.formula))) {
               report.foundryGarbageFormulasCount++;
+            }
+            if (ef.type === 'stat' && Array.isArray(ef.targets) && ef.targets.includes('size.effective')) {
+              // Scoped size shift (Powerful Build): appliesTo must name known scopes (rule_engine.js evaluateLegoCharacter consumers)
+              const scopes = Array.isArray(ef.appliesTo) ? ef.appliesTo : [];
+              if (ef.targets.length !== 1 || !(Number(ef.value) > 0) || scopes.some((sc) => !SIZE_SCOPES.has(sc))) {
+                report.badSizeScopes.push((e.id || '?') + ' -> ' + JSON.stringify(ef.appliesTo));
+              }
             }
             if (ef.type === 'effect' && (ef.effectKind === 'proficiency' || ef.effectKind === 'familiarity')) {
               const tok = String(ef.targetId || '');
@@ -314,6 +323,7 @@ if (require.main === module) {
   console.log(`   • Unmapped targets/blocks: ${unmappedTargetList.length} targets, ${unmappedBlockList.length} block types`);
   if (unmappedTargetList.length > 0) console.error('   ❌ Unmapped targets:', unmappedTargetList.slice(0, 20));
   if (unmappedBlockList.length > 0) console.error('   ❌ Unmapped block types:', unmappedBlockList);
+  if (rep.badSizeScopes.length > 0) console.error('   ❌ Invalid size.effective blocks:', rep.badSizeScopes.slice(0, 20));
   if (rep.badProficiencyGrants.length > 0) console.error('   ❌ Invalid proficiency/familiarity grants:', rep.badProficiencyGrants.slice(0, 20));
 
   const failed =
@@ -327,7 +337,8 @@ if (require.main === module) {
     rep.foundryGarbageFormulasCount > 0 ||
     unmappedTargetList.length > 0 ||
     unmappedBlockList.length > 0 ||
-    rep.badProficiencyGrants.length > 0;
+    rep.badProficiencyGrants.length > 0 ||
+    rep.badSizeScopes.length > 0;
   if (failed) {
     console.error('❌ FAIL: Pure V3 Corpus Gate failed.');
     process.exit(1);

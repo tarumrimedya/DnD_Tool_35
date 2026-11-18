@@ -5653,6 +5653,53 @@ function runDeriveSheetTests() {
     );
   }
 
+  // Powerful Build (`size.effective` scoped) and Stability (`cmd.stability` defender side): data-driven, race records only.
+  {
+    const probe = (raceName, size) => {
+      const c = {
+        name: 'Maneuver Probe', race: raceName, size, classes: 'Fighter 1', level: 1, bab: 1,
+        abilities: { str: 16, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+        baseAbilities: { str: 16, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+        levelProgression: [{ level: 1, className: 'Fighter', hd: 'd10', hpGain: 10, active: true, feats: [] }],
+        bodySlots: {}, weapons: [], gearPool: []
+      };
+      RuleEngine.recalculateCharacter(c, []);
+      return c;
+    };
+    const human = probe('Human');
+    const goliath = probe('Goliath');
+    const halfGiant = probe('Half-Giant');
+    const goliathStr = Number(goliath.abilities.str.score !== undefined ? goliath.abilities.str.score : goliath.abilities.str) || 0;
+    const goliathMod = Math.floor((goliathStr - 10) / 2);
+    check(
+      'Powerful Build: Goliath grapple uses the Large special size modifier (+4) while AC / actual size stay Medium; a Human gets none',
+      goliath.grappleBonus === 1 + goliathMod + 4 && goliath.acBreakdown.size === 0 && human.grappleBonus === 1 + 3 && !RuleEngine.hasOversizedWeaponFeat(human) && RuleEngine.hasOversizedWeaponFeat(goliath),
+      JSON.stringify({ g: goliath.grappleBonus, ac: goliath.acBreakdown.size, h: human.grappleBonus })
+    );
+    check(
+      'Powerful Build: scopes cover grapple / bull rush / trip / overrun / weapon size; special size modifier +4 for trip and bull rush, +0 for a Human',
+      RuleEngine.getSpecialSizeModifier(goliath, 'trip') === 4 && RuleEngine.getSpecialSizeModifier(halfGiant, 'bullRush') === 4 && RuleEngine.getSpecialSizeModifier(human, 'trip') === 0 &&
+      RuleEngine.getEffectiveSizeShift(halfGiant, 'weaponSize') === 1 && RuleEngine.getEffectiveSizeShift(halfGiant, 'sunder') === 0,
+      JSON.stringify(goliath.effectiveSizeScopes)
+    );
+    const goliathLarge = probe('Goliath', 'Large');
+    check(
+      'Powerful Build stacks on top of the actual size (Large goliath counts as Huge: +8 special size modifier)',
+      RuleEngine.getSpecialSizeModifier(goliathLarge, 'grapple') === 8,
+      String(RuleEngine.getSpecialSizeModifier(goliathLarge, 'grapple'))
+    );
+    const stab = (c) => RuleEngine.evaluateRuleFlags(c).defenderCheckBonus;
+    const hillDwarf = probe('Dwarf, Hill');
+    const duergar = probe('Duergar');
+    const elf = probe('Elf, High');
+    check(
+      'Stability: dwarves and duergar get +4 on ability checks to resist bull rush and trip; elf / human get none; it is not an attacker-side opposedCheckBonus',
+      stab(hillDwarf).bullrush === 4 && stab(hillDwarf).trip === 4 && stab(duergar).trip === 4 && stab(elf).trip === 0 && stab(human).bullrush === 0 &&
+      RuleEngine.evaluateRuleFlags(hillDwarf).opposedCheckBonus.trip === 0,
+      JSON.stringify({ d: stab(hillDwarf), g: stab(duergar), e: stab(elf) })
+    );
+  }
+
   CharStore.clearHistory();
 
   return { passed, elapsedMs: Date.now() - startMs };

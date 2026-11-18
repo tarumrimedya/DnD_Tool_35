@@ -50,7 +50,7 @@
     ])],
     ['Armor Class', [['ac.total', 'AC (All)'], ['ac.touch', 'Touch AC only'], ['ac.flatFooted', 'Flat-Footed AC only'], ['ac.armor', 'Armor Bonus'], ['ac.shield', 'Shield Bonus'], ['ac.shieldBonus', 'Shield AC Bonus (Stacks w/ Base Shield)'], ['ac.natural', 'Natural Armor'], ['ac.deflection', 'Deflection'], ['ac.dodge', 'Dodge']]],
     ['Saving Throws', [['save.all', 'All Saving Throws'], ['save.fort', 'Fortitude'], ['save.ref', 'Reflex'], ['save.will', 'Will'], ['choice.save.1', 'Chosen Save (@Choice)']]],
-    ['Combat', [['atk.all', 'Attack Rolls (All)'], ['atk.melee', 'Melee Attack'], ['atk.ranged', 'Ranged Attack'], ['atk.weapon', 'Chosen Weapon Attack (@Choice)'], ['dmg.all', 'Damage (All)'], ['dmg.melee', 'Melee Damage'], ['dmg.ranged', 'Ranged Damage'], ['dmg.weapon', 'Chosen Weapon Damage (@Choice)'], ['atk.critConfirm', 'Critical Confirmation'], ['initiative', 'Initiative'], ['speed.land', 'Land Speed (ft.)'], ['hp.max', 'Max Hit Points'], ['hp.temp', 'Temporary Hit Points'], ['hp.perLevel', 'HP per Level / HD'], ['grapple', 'Grapple']]],
+    ['Combat', [['atk.all', 'Attack Rolls (All)'], ['atk.melee', 'Melee Attack'], ['atk.ranged', 'Ranged Attack'], ['atk.weapon', 'Chosen Weapon Attack (@Choice)'], ['dmg.all', 'Damage (All)'], ['dmg.melee', 'Melee Damage'], ['dmg.ranged', 'Ranged Damage'], ['dmg.weapon', 'Chosen Weapon Damage (@Choice)'], ['atk.critConfirm', 'Critical Confirmation'], ['initiative', 'Initiative'], ['speed.land', 'Land Speed (ft.)'], ['hp.max', 'Max Hit Points'], ['hp.temp', 'Temporary Hit Points'], ['hp.perLevel', 'HP per Level / HD'], ['grapple', 'Grapple'], ['cmd.stability', 'Stability (resist Bull Rush / Trip)'], ['size.effective', 'Effective Size (Powerful Build, scoped)']]],
     ['Spellcasting', [['casterLevel', 'Caster Level'], ['spell.dc', 'Spell Save DC'], ['spell.effectiveLevel', 'Effective Spell Level'], ['sr.penetration', 'Spell Penetration (vs SR)'], ['resource.pp', 'Bonus Power Points'], ['resource.essentia', 'Bonus Essentia']]],
     ['Skills (36)', [['skill.all', 'All Skills'], ['choice.skill.1', 'Chosen Skill (@Choice)'], ['skill.knowledge', 'All Knowledge Skills']].concat(SKILLS.map((s) => [skillKey(s[0]), s[0]]))]
   ];
@@ -2312,6 +2312,10 @@
     if (b.type === 'stat') {
       const mode = modMode(b);
       o.mode = mode;
+      if (typeof o.appliesTo === 'string') {
+        o.appliesTo = o.appliesTo.split(',').map((x) => x.trim()).filter(Boolean);
+        if (!o.appliesTo.length) delete o.appliesTo;
+      }
       if (mode === 'replaceStat') {
         const swapTgt = normalizeSwapTargetKey(b.swapTarget || (b.targets && b.targets[0]) || 'atk.melee.abilityMod');
         o.targets = [swapTgt];
@@ -4312,6 +4316,15 @@
         F('Maximum Cap', inp(p + '.max', m.max == null ? 5 : m.max, { num: true })) +
         btypeF +
         F('Condition', inp(p + '.condition', m.condition || '', { ph: 'condition (vs Fear)' }), 'lego-span-full')
+      );
+    }
+    if ((m.targets || []).includes('size.effective')) {
+      return G(4,
+        tgtRow +
+        modeF +
+        F('Size Categories Larger', inp(p + '.value', m.value, { num: true })) +
+        btypeF +
+        F('Scopes (comma list)', inp(p + '.appliesTo', Array.isArray(m.appliesTo) ? m.appliesTo.join(', ') : (m.appliesTo || ''), { ph: 'grapple, bullRush, trip, overrun, opposedSize, weaponSize' }), 'lego-span-full')
       );
     }
     return G(4,

@@ -1189,6 +1189,33 @@ function compileRaceProficiencies(crData) {
   return n;
 }
 
+// Powerful Build (Half-Giant EPH, Goliath Races of Stone): one size larger for opposed-check special size modifiers and weapon size
+// (space, reach, AC and attack size modifier are unchanged). Stability: +4 on ability checks to resist bull rush / trip on the ground.
+function compileRaceManeuvers(crData) {
+  const POWERFUL_BUILD = ['race-goliath', 'race-half-giant'];
+  const STABILITY = ['race-dwarf', 'race-dwarf-hill', 'race-dwarf-mountain', 'race-dwarf-deep', 'race-duergar'];
+  let n = 0;
+  const put = (rec, blk) => {
+    if (!Array.isArray(rec.effects)) rec.effects = [];
+    rec.effects = rec.effects.filter((b) => !(b && (b.id === blk.id || (Array.isArray(b.targets) && b.targets.length === 1 && b.targets[0] === blk.targets[0]))));
+    rec.effects.push(blk);
+    n++;
+  };
+  for (const id of POWERFUL_BUILD) {
+    const rec = crData.find((e) => e && e.id === id);
+    if (rec) put(rec, { id: 'ef-race-powerful-build', type: 'stat', targets: ['size.effective'], mode: 'flat', value: 1, btype: 'Untyped', appliesTo: ['grapple', 'bullRush', 'trip', 'overrun', 'opposedSize', 'weaponSize'] });
+  }
+  for (const id of STABILITY) {
+    const rec = crData.find((e) => e && e.id === id);
+    if (!rec) continue;
+    rec.effects = (rec.effects || []).filter((b) => !(b && b.id === 'ef-race-stability'));
+    if (!(rec.effects || []).some((b) => b && Array.isArray(b.targets) && b.targets.includes('cmd.stability'))) {
+      put(rec, { id: 'ef-race-stability', type: 'stat', targets: ['cmd.stability'], mode: 'flat', value: 4, btype: 'Untyped', condition: 'Standing on Ground' });
+    }
+  }
+  return n;
+}
+
 function compileFeatPatches(featsCore, featsSplat) {
   // Ensure Hidden Talent (XPH p.67) exists in srd_feats_splat.json
   const hiddenTalent = {
@@ -2333,6 +2360,7 @@ function main() {
   }
   const cabExistingEnriched = enrichExistingClassAbilities(cr.data);
   const raceProfCount = compileRaceProficiencies(cr.data);
+  compileRaceManeuvers(cr.data);
 
   const cabLookup = new Map();
   for (const e of cr.data) {

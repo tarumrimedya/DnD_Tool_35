@@ -3636,8 +3636,11 @@ const RuleEngine = {
         return;
       }
       if (t === 'size.effective') {
-        const scopes = Array.isArray(mod.appliesTo) && mod.appliesTo.length > 0
-          ? mod.appliesTo
+        const rawScopes = Array.isArray(mod.appliesTo) ? mod.appliesTo
+          : (typeof mod.appliesTo === 'string' ? mod.appliesTo.split(',') : []);
+        const scopeList = rawScopes.map(x => String(x).trim()).filter(Boolean);
+        const scopes = scopeList.length > 0
+          ? scopeList
           : ['grapple', 'bullRush', 'trip', 'overrun', 'sunder', 'weaponSize', 'opposedSize'];
         scopes.forEach(sc => {
           effectiveSizeScopes[sc] = (effectiveSizeScopes[sc] || 0) + Math.floor(v);
@@ -3912,6 +3915,8 @@ const RuleEngine = {
         healingReceived: 1 + multipliers.healingReceived
       },
       effectiveSizeScopes,
+      // Defender-side maneuver checks (Stability: bonus on ability checks to resist bull rush / trip while standing on the ground)
+      maneuverDefense: { stability: sumBucket('cmd.stability') },
       replacements,
       resources,
       grantedCapabilities,
@@ -5321,6 +5326,12 @@ const RuleEngine = {
     return Boolean(prof.shields.shield);
   },
 
+  // `size.effective` shift (e.g. Powerful Build +1) a scope receives; data-driven, read from the evaluated Lego pipeline
+  getEffectiveSizeShift(character, scope) {
+    const scopes = character?.effectiveSizeScopes || character?.legoEvaluation?.effectiveSizeScopes || {};
+    return Math.floor(Number(scopes[scope]) || 0);
+  },
+
   // Check if character possesses feat/trait allowing two-handed weapons or oversized weapons in one hand
   hasOversizedWeaponFeat(character) {
     if (!character) return false;
@@ -5332,9 +5343,8 @@ const RuleEngine = {
       f.includes('oversized two-weapon fighting') || 
       f.includes('oversized weapon fighting') || 
       f.includes('oversized weapon') || 
-      f.includes('powerful build') ||
       f.includes('jotunbrud')
-    );
+    ) || this.getEffectiveSizeShift(character, 'weaponSize') > 0;
   },
 
   // Resolve bonus stacking according to active ruleset (D&D 3.5e RAW default)
@@ -8502,7 +8512,10 @@ const RuleEngine = {
     }
     // Grapple check (PHB p.155-156): BAB + Str modifier + special size modifier of the current size category
     // (the size category whose Table 8-1 modifier equals the AC size modifier after size-change effects).
-    const grappleSizeKey = Object.keys(this.SIZE_MODIFIERS).find(k => this.SIZE_MODIFIERS[k] === sizeBonus) || this.getSizeCategoryKey(character);
+    character.effectiveSizeScopes = Object.assign({}, legoEval?.effectiveSizeScopes || {});
+    const grappleBaseSizeKey = Object.keys(this.SIZE_MODIFIERS).find(k => this.SIZE_MODIFIERS[k] === sizeBonus) || this.getSizeCategoryKey(character);
+    // Powerful Build style effects (`size.effective`, scope `grapple`) count the creature as larger for this special size modifier only
+    const grappleSizeKey = this.shiftSizeKey(grappleBaseSizeKey, character.effectiveSizeScopes.grapple);
     const grappleSizeMod = grappleSizeKey ? this.GRAPPLE_SIZE_MODIFIERS[grappleSizeKey] : 0;
     const babSwapForGrapple = this.resolveSwapSlot(legoEval?.replacements, 'bab', Number(character.bab) || 0, 'BAB', { character });
     if (babSwapForGrapple.changed) {
@@ -8666,7 +8679,9 @@ const RuleEngine = {
         grapple: feats.some(f => f.includes('improved grapple')) ? 4 : 0,
         bullrush: feats.some(f => f.includes('improved bull rush')) ? 4 : 0,
         overrun: feats.some(f => f.includes('improved overrun')) ? 4 : 0
-      }
+      },
+      // Defender side: bonus on ability checks to resist a maneuver (Stability: bull rush / trip while standing on the ground)
+      defenderCheckBonus: { bullrush: 0, trip: 0 }
     };
 
     const mergeFlags = (rf) => {
@@ -8697,6 +8712,10 @@ const RuleEngine = {
       character.legoEvaluation.entries.forEach(le => {
         if (le && le.ruleFlags) mergeFlags(le.ruleFlags);
       });
+    }
+    {
+      const stab = Math.floor(Number(character.legoEvaluation?.maneuverDefense?.stability) || 0);
+      flags.defenderCheckBonus = { bullrush: stab, trip: stab };
     }
     // Race record rule switches (e.g. Steady Speed `ignoreArmorSpeedPenalty`); the race is applied through
     // its bridged entry (section 3.9 of recalculateCharacter), not as a Lego entry.
@@ -10067,6 +10086,27 @@ const RuleEngine = {
   // PHB Table 8-1 size modifier (attack rolls and AC) and PHB p.156 special size modifier (grapple checks)
   SIZE_MODIFIERS: { fine: 8, diminutive: 4, tiny: 2, small: 1, medium: 0, large: -1, huge: -2, gargantuan: -4, colossal: -8 },
   GRAPPLE_SIZE_MODIFIERS: { fine: -16, diminutive: -12, tiny: -8, small: -4, medium: 0, large: 4, huge: 8, gargantuan: 12, colossal: 16 },
+
+  SIZE_ORDER: ['fine', 'diminutive', 'tiny', 'small', 'medium', 'large', 'huge', 'gargantuan', 'colossal'],
+
+  // Size key shifted by N categories (clamped). Only a positive shift is applied: "treated as one size larger" effects
+  // (Powerful Build) apply "if advantageous", and a larger special size modifier is always the advantageous one.
+  shiftSizeKey(sizeKey, shift) {
+    const n = Math.floor(Number(shift) || 0);
+    const i = this.SIZE_ORDER.indexOf(sizeKey);
+    if (i < 0 || n <= 0) return sizeKey;
+    return this.SIZE_ORDER[Math.min(this.SIZE_ORDER.length - 1, i + n)];
+  },
+
+  // Special size modifier (PHB p.156) for an opposed check scope ('grapple', 'bullRush', 'trip', 'overrun', 'opposedSize')
+  // after `size.effective` effects; 'opposedSize' also feeds "size-based special attack" checks (improved grab, swallow whole).
+  getSpecialSizeModifier(character, scope) {
+    const baseMod = this.getBaseSizeModifier(character);
+    const key = this.getSizeCategoryKey(character) || Object.keys(this.SIZE_MODIFIERS).find(k => this.SIZE_MODIFIERS[k] === baseMod);
+    if (!key) return 0;
+    const shifts = character?.effectiveSizeScopes || character?.legoEvaluation?.effectiveSizeScopes || {};
+    return this.GRAPPLE_SIZE_MODIFIERS[this.shiftSizeKey(key, shifts[scope])] || 0;
+  },
 
   // Size category key ('small', 'large', ...) from character.size, or null when it names no PHB size
   getSizeCategoryKey(character) {

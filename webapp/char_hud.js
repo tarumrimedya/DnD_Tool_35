@@ -2135,8 +2135,11 @@
         if (flags.castInWildShape) {
           badges.push('<span class="px-2 py-0.5 rounded bg-emerald-950 border border-emerald-600/50 text-emerald-300 font-semibold" title="Natural Spell: Can cast spells while in Wild Shape">🐾 Natural Spell</span>');
         }
-        if (flags.opposedCheckBonus && Object.values(flags.opposedCheckBonus).some(v => v > 0)) {
-          const ops = Object.entries(flags.opposedCheckBonus).filter(([k, v]) => v > 0).map(([k, v]) => `+${v} ${k}`).join(', ');
+        const defenderChecks = flags.defenderCheckBonus || {};
+        if ((flags.opposedCheckBonus && Object.values(flags.opposedCheckBonus).some(v => v > 0)) || Object.values(defenderChecks).some(v => v > 0)) {
+          const opsList = Object.entries(flags.opposedCheckBonus || {}).filter(([k, v]) => v > 0).map(([k, v]) => `+${v} ${k}`);
+          Object.entries(defenderChecks).filter(([k, v]) => v > 0).forEach(([k, v]) => opsList.push(`+${v} resist ${k}`));
+          const ops = opsList.join(', ');
           badges.push(`<span class="px-2 py-0.5 rounded bg-amber-950 border border-amber-600/50 text-amber-300 font-semibold" title="Maneuver Checks: ${ops}">⚔️ Maneuvers: ${ops}</span>`);
         }
         passiveContainer.innerHTML = badges.join(' ');
