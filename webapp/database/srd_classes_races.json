@@ -25527,7 +25527,7 @@
     "name": "Dragonborn",
     "type": "Race",
     "category": "Standard Race",
-    "source": "Races of the Dragon (Dragonborn of Bahamut)",
+    "source": "Races of the Dragon p.8 (Dragonborn of Bahamut)",
     "race": {
       "kind": "race",
       "timing": null,
@@ -25736,7 +25736,7 @@
     "name": "Warforged",
     "type": "Race",
     "category": "Standard Race",
-    "source": "Eberron Campaign Setting",
+    "source": "Races of Eberron p.7 (Eberron Campaign Setting)",
     "race": {
       "kind": "race",
       "timing": null,
