@@ -4468,7 +4468,11 @@
             extraDiceStr = ' + ' + activeDiceMods.map(x => x.roll.dice).join(' + ');
           }
           if (Array.isArray(wep.elementalMods) && wep.elementalMods.length > 0) {
-            extraDiceStr += ' + ' + wep.elementalMods.map(em => `${em.dice} (${em.name || em.type})`).join(' + ');
+            // Conditional riders (e.g. "vs. undead") are not part of the always-on total; shown after the total instead.
+            const alwaysOnMods = wep.elementalMods.filter(em => !em.condition);
+            const situationalMods = wep.elementalMods.filter(em => em.condition);
+            if (alwaysOnMods.length > 0) extraDiceStr += ' + ' + alwaysOnMods.map(em => `${em.dice} (${em.name || em.type})`).join(' + ');
+            if (situationalMods.length > 0) extraDiceStr += ' [' + situationalMods.map(em => UI.escapeHtml(`+${em.dice} ${em.condition}`)).join(', ') + ']';
           }
 
           const flatDmg = evalRes.netFlatDamage;
@@ -5994,7 +5998,7 @@
         dmgType: wepDmgType,
         bonusType: 'enhancement',
         tags: item.tags || [],
-        elementalMods: rollEffects.filter((sp, idx) => idx > 0 || (item.weapon?.damageDice && sp.dice !== item.weapon.damageDice)).map(sp => ({ name: sp.source || sp.dmgType, dice: sp.dice, type: sp.dmgType })),
+        elementalMods: rollEffects.filter((sp, idx) => idx > 0 || (item.weapon?.damageDice && sp.dice !== item.weapon.damageDice)).map(sp => ({ name: sp.source || sp.dmgType, dice: sp.dice, type: sp.dmgType, condition: sp.condition || '' })),
         keen: Boolean((item.ruleFlags && item.ruleFlags.keen) || (Array.isArray(item.enhancements) && item.enhancements.some(e => (typeof e === 'string' && e.toLowerCase().includes('keen')) || (e && e.name && e.name.toLowerCase().includes('keen')))))
       };
 
@@ -8701,7 +8705,10 @@
         const wepElementalMods = atk.weapon?.elementalMods || (atk.hand === 'natural' ? [] : atk.hand === 'offHand' ? getResolvedOffHandWeapon(character)?.elementalMods : (character.weapons || []).find(w => w.name === (character.activeWeapon || character.tactical?.weaponSets?.set1?.mainWeapon))?.elementalMods) || [];
         if (Array.isArray(wepElementalMods) && wepElementalMods.length > 0) {
           wepElementalMods.forEach(em => {
-            if (em.dice) {
+            if (em.dice && em.condition) {
+              // Situational rider: not rolled into the total, listed so the player can add it when it applies.
+              extraDetails.push(`${em.name || 'Rider'}: ${em.dice} ${em.condition} (situational, not included)`);
+            } else if (em.dice) {
               const eMatch = em.dice.match(/(\d+)d(\d+)/i);
               if (eMatch) {
                 const count = parseInt(eMatch[1]) || 1;

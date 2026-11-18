@@ -10144,14 +10144,17 @@ const RuleEngine = {
         multiplyOnCrit: part.multiplyOnCrit !== undefined ? !!part.multiplyOnCrit : isPrimary,
         onCritOnly: !!part.onCritOnly,
         source: part.source || (isPrimary ? (weapon.name || 'Base Weapon') : 'Extra'),
+        condition: (!isPrimary && part.condition) ? String(part.condition) : '',
         isPrimary
       };
     });
 
     const primaryPart = evaluatedDamageParts[0] || { dice: '1d8', rawDice: '1d8', bonus: netFlatDamage, type: 'Slashing' };
-    const normalDamageParts = evaluatedDamageParts.filter(p => !p.onCritOnly);
+    // Conditional riders (condition text such as "vs. undead") are situational: kept out of the always-on totals.
+    const situationalDamageParts = evaluatedDamageParts.filter(p => p.condition);
+    const normalDamageParts = evaluatedDamageParts.filter(p => !p.onCritOnly && !p.condition);
     const extraDamageParts = normalDamageParts.slice(1);
-    const critOnlyDamageParts = evaluatedDamageParts.filter(p => p.onCritOnly);
+    const critOnlyDamageParts = evaluatedDamageParts.filter(p => p.onCritOnly && !p.condition);
 
     // Build ready-to-roll 3D Dice Engine formulas (normal & critical)
     const primaryFormula = `${primaryPart.dice}${netFlatDamage !== 0 ? (netFlatDamage > 0 ? `+${netFlatDamage}` : `${netFlatDamage}`) : ''}`;
@@ -10203,6 +10206,7 @@ const RuleEngine = {
       damageParts: evaluatedDamageParts,
       normalDamageParts,
       extraDamageParts,
+      situationalDamageParts,
       critOnlyDamageParts,
       diceFormula,
       critDiceFormula,
