@@ -2348,6 +2348,7 @@
       o.branches = b.branches.map((br) => {
         const bo = clone(br);
         delete bo.id;
+        delete bo.gainedAt; // branches never carry their own level; the parent block's gainedAt gates them
         bo.effects = (br.kids || []).map(exportBlock);
         delete bo.kids;
         return bo;
