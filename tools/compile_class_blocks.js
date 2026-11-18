@@ -324,7 +324,7 @@ const PATCHES = {
     const modes = Array.isArray(rec.modes) ? rec.modes.filter((m) => m && ['mode-bm-off', 'mode-bm-ic'].includes(m.id)) : [];
     const icMode = modes.find((m) => m.id === 'mode-bm-ic');
     if (icMode) {
-      icMode.label = 'Inspire Courage (+1..+4 Morale Atk/Dmg, +1..+4 vs Charm & Fear)';
+      icMode.label = 'Inspire Courage (+1..+4 Competence Atk/Dmg, +1..+4 Morale vs Charm & Fear)';
       icMode.effects = (icMode.effects || []).filter((e) => e && e.id === 'ef-bm-ic-atk');
       icMode.effects.push(whenState('ef-bm-ic-sv', 'situational', 'vs. Charm and Fear Effects', [stat('ef-bm-ic-sv-s', 'save.all', ic, 'Morale')]));
     }

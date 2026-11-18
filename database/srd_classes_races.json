@@ -18700,7 +18700,7 @@
       {
         "id": "mode-bm-ic",
         "name": "Inspire Courage",
-        "label": "Inspire Courage (+1..+4 Morale Atk/Dmg, +1..+4 vs Charm & Fear)",
+        "label": "Inspire Courage (+1..+4 Competence Atk/Dmg, +1..+4 Morale vs Charm & Fear)",
         "effects": [
           {
             "id": "ef-bm-ic-atk",
@@ -18711,7 +18711,7 @@
             ],
             "mode": "formula",
             "formula": "@bardLevel >= 20 ? 4 : (@bardLevel >= 14 ? 3 : (@bardLevel >= 8 ? 2 : 1))",
-            "btype": "Morale"
+            "btype": "Competence"
           },
           {
             "id": "ef-bm-ic-sv",
