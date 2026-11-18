@@ -9747,8 +9747,8 @@
     "cost": 3750,
     "enhIncrease": 0,
     "flatCost": 3750,
-    "casterLevel": 5,
-    "requirements": "CL 5th; Craft Magic Arms and Armor, grease",
+    "casterLevel": 4,
+    "requirements": "CL 4th; Craft Magic Arms and Armor, grease",
     "itemModifier": {
       "kind": "enchantment",
       "appliesTo": "armor",
@@ -48113,7 +48113,7 @@
     "enhIncrease": 3,
     "flatCost": 0,
     "casterLevel": 15,
-    "requirements": "CL 15th; Craft Magic Arms and Armor, plane shift",
+    "requirements": "CL 15th; Craft Magic Arms and Armor, etherealness",
     "itemModifier": {
       "kind": "enchantment",
       "appliesTo": "armor+shield",
