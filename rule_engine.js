@@ -7877,33 +7877,8 @@ const RuleEngine = {
         const raceLabel = `${raceObj.name || character.race} (Race)`;
         applyV2Modifiers(raceObj.modifiers, raceLabel, 'race', evalContext);
       }
-      const rLower = String(character.race).toLowerCase();
-      if (rLower.includes('dwarf')) {
-        if (!conditionalAcBonuses.some(c => c.condition === 'vs. Giants')) {
-          conditionalAcBonuses.push({ target: 'AC', val: 4, type: 'Dodge', condition: 'vs. Giants', source: `${character.race} (Race)` });
-        }
-        if (!conditionalSaveBonuses.some(c => c.condition === 'vs. Poison' && (c.source || '').includes('Race'))) {
-          conditionalSaveBonuses.push({ target: 'All Saves', val: 2, type: 'Racial', condition: 'vs. Poison', source: `${character.race} (Race)` });
-        }
-        if (!conditionalSaveBonuses.some(c => c.condition === 'vs. Spells & Spell-Like Effects' && (c.source || '').includes('Race'))) {
-          conditionalSaveBonuses.push({ target: 'All Saves', val: 2, type: 'Racial', condition: 'vs. Spells & Spell-Like Effects', source: `${character.race} (Race)` });
-        }
-      } else if (rLower.includes('gnome')) {
-        if (!conditionalAcBonuses.some(c => c.condition === 'vs. Giants')) {
-          conditionalAcBonuses.push({ target: 'AC', val: 4, type: 'Dodge', condition: 'vs. Giants', source: `${character.race} (Race)` });
-        }
-        if (!conditionalSaveBonuses.some(c => c.condition === 'vs. Illusions' && (c.source || '').includes('Race'))) {
-          conditionalSaveBonuses.push({ target: 'All Saves', val: 2, type: 'Racial', condition: 'vs. Illusions', source: `${character.race} (Race)` });
-        }
-      } else if (rLower.includes('halfling')) {
-        if (!conditionalSaveBonuses.some(c => c.condition === 'vs. Fear' && (c.source || '').includes('Race'))) {
-          conditionalSaveBonuses.push({ target: 'All Saves', val: 2, type: 'Morale', condition: 'vs. Fear', source: `${character.race} (Race)` });
-        }
-      } else if (rLower.includes('elf') || rLower.includes('elven')) {
-        if (!conditionalSaveBonuses.some(c => c.condition === 'vs. Enchantment Spells & Effects' && (c.source || '').includes('Race'))) {
-          conditionalSaveBonuses.push({ target: 'All Saves', val: 2, type: 'Racial', condition: 'vs. Enchantment Spells & Effects', source: `${character.race} (Race)` });
-        }
-      }
+      // Racial conditional AC / save bonuses (vs. Giants, vs. Poison, vs. Fear, ...) come from the Race record's
+      // V3 `effects[]` (bridged into `raceObj.modifiers` above); no race-name matching here.
     }
 
     // 3.92. Collect Character Template Modifiers (Canonical V3 `srd_templates.json`)
@@ -8411,10 +8386,10 @@ const RuleEngine = {
 
     // 7. Resolve Effective Speed (RAW D&D 3.5e Table 8-2: Armor and Speed + Condition Half-Speed)
     const baseSpeed = character.baseSpeed || 30;
-    const isDwarf = (character.race || '').toLowerCase().includes('dwarf');
+    // Steady Speed (dwarves, duergar) is the `ignoreArmorSpeedPenalty` rule switch on the Race record.
     const preRuleFlagsForSpeed = this.evaluateRuleFlags(character);
     let armorSpeedPenalty = 0;
-    if (!isDwarf && !preRuleFlagsForSpeed.ignoreArmorSpeedPenalty && (equippedArmorCategory === 'Medium' || equippedArmorCategory === 'Heavy')) {
+    if (!preRuleFlagsForSpeed.ignoreArmorSpeedPenalty && (equippedArmorCategory === 'Medium' || equippedArmorCategory === 'Heavy')) {
       armorSpeedPenalty = (baseSpeed > 20) ? 10 : 5;
     }
     let calcSpeed = Math.max(5, baseSpeed - armorSpeedPenalty + itemSpeedBonus + buffSpeedBonus - buffSpeedPenalty);
@@ -8639,6 +8614,12 @@ const RuleEngine = {
       character.legoEvaluation.entries.forEach(le => {
         if (le && le.ruleFlags) mergeFlags(le.ruleFlags);
       });
+    }
+    // Race record rule switches (e.g. Steady Speed `ignoreArmorSpeedPenalty`); the race is applied through
+    // its bridged entry (section 3.9 of recalculateCharacter), not as a Lego entry.
+    if (character.race) {
+      const raceFlagEntry = this.getMasterDbEntry(character.race, 'Race');
+      if (raceFlagEntry && raceFlagEntry.ruleFlags) mergeFlags(raceFlagEntry.ruleFlags);
     }
     if (flags.naturalSpell) flags.castInWildShape = true;
 

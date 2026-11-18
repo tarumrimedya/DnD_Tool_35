@@ -23022,6 +23022,20 @@
         "mode": "flat",
         "value": 1,
         "btype": "Racial"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "ac.natural"
+        ],
+        "mode": "flat",
+        "value": 3,
+        "btype": "Natural Armor"
+      },
+      {
+        "type": "defense",
+        "mode": "Sense / Movement",
+        "what": "Scent 30 ft."
       }
     ],
     "shortDescription": "Dromites stand about 3 feet tall and usually weigh slightly more than 30 pounds. They have iridescent compound eyes. Dromites wear heavy boots and light clothing, and are sometimes content with just a sturdy harness. +2…",
@@ -23137,15 +23151,6 @@
       {
         "type": "stat",
         "targets": [
-          "speed.all"
-        ],
-        "mode": "flat",
-        "value": -10,
-        "btype": "Racial"
-      },
-      {
-        "type": "stat",
-        "targets": [
           "skill.listen",
           "dex",
           "wis",
@@ -23192,6 +23197,65 @@
         "value": 0,
         "formula": "11+(@level)",
         "btype": "Racial"
+      },
+      {
+        "type": "defense",
+        "mode": "Sense / Movement",
+        "what": "Darkvision 120 ft."
+      },
+      {
+        "type": "defense",
+        "mode": "Sense / Movement",
+        "what": "Low-light vision"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.search"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Racial",
+        "condition": "Unusual Stonework"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "spell.dc"
+        ],
+        "mode": "flat",
+        "value": 1,
+        "btype": "Racial",
+        "condition": "Illusion Spells"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "atk.all"
+        ],
+        "mode": "flat",
+        "value": 1,
+        "btype": "Racial",
+        "condition": "vs. Kobolds & Goblinoids"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.craft-alchemy"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Racial"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.hide"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Racial",
+        "condition": "Underground"
       }
     ],
     "shortDescription": "Also called deep gnomes, svirfneblin are said to dwell in great cities deep underground. A svirfneblin has wiry, rock-colored skin usually medium brown to brownish gray. Only males are bald; females have stringy gray ha…",
@@ -23281,6 +23345,27 @@
         "mode": "flat",
         "value": -2,
         "btype": "Racial"
+      },
+      {
+        "type": "defense",
+        "mode": "Immunity",
+        "what": "Magic Sleep Effects",
+        "value": 0
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "save.all"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Racial",
+        "condition": "vs. Enchantment Spells & Effects"
+      },
+      {
+        "type": "defense",
+        "mode": "Sense / Movement",
+        "what": "Low-light vision"
       }
     ],
     "shortDescription": "Their hair color ranges from yellow to a coppery red, and they are more muscular than other elves. Their clothing is in dark shades of green and earth tones to better blend in with their natural surroundings. +2 Strengt…",
@@ -23362,15 +23447,6 @@
       {
         "type": "stat",
         "targets": [
-          "speed.all"
-        ],
-        "mode": "flat",
-        "value": -10,
-        "btype": "Racial"
-      },
-      {
-        "type": "stat",
-        "targets": [
           "skill.listen",
           "dex"
         ],
@@ -23395,6 +23471,61 @@
         "mode": "flat",
         "value": -2,
         "btype": "Racial"
+      },
+      {
+        "type": "defense",
+        "mode": "Sense / Movement",
+        "what": "Darkvision 60 ft."
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.search"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Racial",
+        "condition": "Unusual Stonework"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.appraise"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Racial",
+        "condition": "Stone or Metal Items"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.craft"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Racial",
+        "condition": "Stone or Metal Items"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "save.all"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Morale",
+        "condition": "vs. Fear"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "atk.ranged"
+        ],
+        "mode": "flat",
+        "value": 1,
+        "btype": "Racial",
+        "condition": "Thrown Weapons & Slings"
       }
     ],
     "shortDescription": "Deep halflings are shorter and stockier than the more common lightfeet. Deep halflings are about 2-1/2 tall and weigh between 30 and 35 pounds. Deep halflings speak Dwarven fluently. +2 Dexterity, –2 Strength. Humanoid…",
@@ -23577,6 +23708,11 @@
         "mode": "flat",
         "value": -2,
         "btype": "Racial"
+      },
+      {
+        "type": "defense",
+        "mode": "Sense / Movement",
+        "what": "Darkvision 60 ft."
       }
     ],
     "shortDescription": "A goblin stands 3 to 3-1/2 feet tall and weigh 40 to 45 pounds. Its eyes are usually dull and glazed, varying in color from red to yellow. A goblin’s skin color ranges from yellow through any shade of orange to a deep r…",
@@ -23663,6 +23799,23 @@
         "mode": "flat",
         "value": -2,
         "btype": "Racial"
+      },
+      {
+        "type": "defense",
+        "mode": "Sense / Movement",
+        "what": "Darkvision 60 ft."
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "atk.all",
+          "skill.search",
+          "skill.spot"
+        ],
+        "mode": "flat",
+        "value": -1,
+        "btype": "Penalty",
+        "condition": "Dazzled in Bright Sunlight / Daylight"
       }
     ],
     "shortDescription": "Orcs are aggressive humanoids that raid, pillage, and battle other creatures. They have a hatred of elves and dwarves that began generations ago, and often kill such creatures on sight. An orc’s hair usually is black. I…",
@@ -23739,20 +23892,26 @@
       {
         "type": "stat",
         "targets": [
-          "speed.land"
-        ],
-        "mode": "flat",
-        "value": -25,
-        "btype": "Racial"
-      },
-      {
-        "type": "stat",
-        "targets": [
           "speed.swim"
         ],
         "mode": "flat",
         "value": 50,
         "btype": "Racial"
+      },
+      {
+        "type": "defense",
+        "mode": "Sense / Movement",
+        "what": "Low-light vision"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.swim"
+        ],
+        "mode": "flat",
+        "value": 8,
+        "btype": "Racial",
+        "condition": "Special Action or Hazard"
       }
     ],
     "shortDescription": "The merfolk are playful, marine dwelling people. Although wary of surface dwellers, they are not usually hostile: They prefer sunning themselves on rocks to engaging in warfare. Both male and female merfolk decorate the…",
@@ -23822,15 +23981,6 @@
       {
         "type": "stat",
         "targets": [
-          "speed.all"
-        ],
-        "mode": "flat",
-        "value": -10,
-        "btype": "Racial"
-      },
-      {
-        "type": "stat",
-        "targets": [
           "skill.listen",
           "dex",
           "skill.search",
@@ -23857,6 +24007,26 @@
         "mode": "flat",
         "value": -2,
         "btype": "Racial"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "save.all"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Morale",
+        "condition": "vs. Fear"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "atk.ranged"
+        ],
+        "mode": "flat",
+        "value": 1,
+        "btype": "Racial",
+        "condition": "Thrown Weapons & Slings"
       }
     ],
     "shortDescription": "Tallfellows are somewhat rare among halfling folk. Tallfellows are 4 feet tall or more and weigh between 30 and 35 pounds. They generally speak Elven in addition to Common and Halfling. +2 Dexterity, –2 Strength. Humano…",
@@ -23950,6 +24120,27 @@
         "mode": "flat",
         "value": 2,
         "btype": "Racial"
+      },
+      {
+        "type": "defense",
+        "mode": "Immunity",
+        "what": "Magic Sleep Effects",
+        "value": 0
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "save.all"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Racial",
+        "condition": "vs. Enchantment Spells & Effects"
+      },
+      {
+        "type": "defense",
+        "mode": "Sense / Movement",
+        "what": "Low-light vision"
       }
     ],
     "shortDescription": "Medium size. Immunity to magic sleep effects, +2 saves vs enchantment, Low-Light Vision, Elven Blood, +2 Diplomacy/Gather Information, +1 Listen/Search/Spot. Favored Class: Any.",
@@ -24050,15 +24241,6 @@
       {
         "type": "stat",
         "targets": [
-          "speed.all"
-        ],
-        "mode": "flat",
-        "value": -10,
-        "btype": "Racial"
-      },
-      {
-        "type": "stat",
-        "targets": [
           "cha"
         ],
         "mode": "flat",
@@ -24073,6 +24255,98 @@
         "mode": "flat",
         "value": 2,
         "btype": "Racial"
+      },
+      {
+        "type": "defense",
+        "mode": "Sense / Movement",
+        "what": "Darkvision 60 ft."
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.search"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Racial",
+        "condition": "Unusual Stonework"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "cmd.stability"
+        ],
+        "mode": "flat",
+        "value": 4,
+        "btype": "Untyped",
+        "condition": "Standing on Ground"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "save.all"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Racial",
+        "condition": "vs. Poison"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "save.all"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Racial",
+        "condition": "vs. Spells & Spell-Like Effects"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "atk.all"
+        ],
+        "mode": "flat",
+        "value": 1,
+        "btype": "Racial",
+        "condition": "vs. Orcs & Goblinoids"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "ac.dodge"
+        ],
+        "mode": "flat",
+        "value": 4,
+        "btype": "Dodge",
+        "condition": "vs. Giants"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.appraise"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Racial",
+        "condition": "Stone or Metal Items"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.craft"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Racial",
+        "condition": "Stone or Metal Items"
+      },
+      {
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "ignoreArmorSpeedPenalty",
+        "label": "Steady Speed",
+        "text": "Speed is not reduced by medium or heavy armor or a medium or heavy load."
       }
     ],
     "shortDescription": "Mountain dwarves live deeper under the mountains than mountain dwarves but generally not as far underground as deep dwarves. They average about 4-1/2 feet tall and have lighter skin and hair than mountain dwarves, but t…",
@@ -24159,15 +24433,6 @@
       {
         "type": "stat",
         "targets": [
-          "speed.all"
-        ],
-        "mode": "flat",
-        "value": -10,
-        "btype": "Racial"
-      },
-      {
-        "type": "stat",
-        "targets": [
           "skill.listen",
           "con"
         ],
@@ -24182,6 +24447,60 @@
         ],
         "mode": "flat",
         "value": -2,
+        "btype": "Racial"
+      },
+      {
+        "type": "defense",
+        "mode": "Sense / Movement",
+        "what": "Low-light vision"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "save.all"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Racial",
+        "condition": "vs. Illusions"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "spell.dc"
+        ],
+        "mode": "flat",
+        "value": 1,
+        "btype": "Racial",
+        "condition": "Illusion Spells"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "atk.all"
+        ],
+        "mode": "flat",
+        "value": 1,
+        "btype": "Racial",
+        "condition": "vs. Kobolds & Goblinoids"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "ac.dodge"
+        ],
+        "mode": "flat",
+        "value": 4,
+        "btype": "Dodge",
+        "condition": "vs. Giants"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.craft-alchemy"
+        ],
+        "mode": "flat",
+        "value": 2,
         "btype": "Racial"
       }
     ],
@@ -24283,6 +24602,21 @@
         "mode": "flat",
         "value": -2,
         "btype": "Racial"
+      },
+      {
+        "type": "defense",
+        "mode": "Sense / Movement",
+        "what": "Low-light vision"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "save.all"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Racial",
+        "condition": "vs. Fire Spells & Effects"
       }
     ],
     "shortDescription": "+2 Strength, +2 Constitution, –2 Dexterity: Half-giants are tough and strong, but not too nimble. Giant (Psionic): Half-giants are not subject to spells or effects that affect humanoids only, such as charm person or dom…",
@@ -24390,6 +24724,43 @@
         "mode": "flat",
         "value": 1,
         "btype": "Racial"
+      },
+      {
+        "type": "defense",
+        "mode": "Sense / Movement",
+        "what": "Darkvision 60 ft."
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.craft"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Racial",
+        "condition": "Craft (Trapmaking)"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.profession"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Racial",
+        "condition": "Profession (Miner)"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "atk.all",
+          "skill.search",
+          "skill.spot"
+        ],
+        "mode": "flat",
+        "value": -1,
+        "btype": "Penalty",
+        "condition": "Dazzled in Bright Sunlight / Daylight"
       }
     ],
     "shortDescription": "Kobolds are short, reptilian humanoids with cowardly and sadistic tendencies. A kobold’s scaly skin ranges from dark rusty brown to a rusty black color. It has glowing red eyes. Its tail is nonprehensile. Kobolds wear r…",
@@ -24490,6 +24861,27 @@
         "mode": "flat",
         "value": 40,
         "btype": "Racial"
+      },
+      {
+        "type": "defense",
+        "mode": "Immunity",
+        "what": "Magic Sleep Effects",
+        "value": 0
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "save.all"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Racial",
+        "condition": "vs. Enchantment Spells & Effects"
+      },
+      {
+        "type": "defense",
+        "mode": "Sense / Movement",
+        "what": "Low-light vision (x4)"
       }
     ],
     "shortDescription": "Also called sea elves, these creatures are waterbreathing cousins to land-dwelling elves. +2 Dexterity, –2 Intelligence. Humanoid (Elf, Aquatic). Medium: As Medium creatures, aquatic elves have no special bonuses or pen…",
@@ -24593,15 +24985,6 @@
       {
         "type": "stat",
         "targets": [
-          "speed.all"
-        ],
-        "mode": "flat",
-        "value": -10,
-        "btype": "Racial"
-      },
-      {
-        "type": "stat",
-        "targets": [
           "cha"
         ],
         "mode": "flat",
@@ -24616,6 +24999,110 @@
         "mode": "flat",
         "value": 2,
         "btype": "Racial"
+      },
+      {
+        "type": "defense",
+        "mode": "Sense / Movement",
+        "what": "Darkvision 90 ft."
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.search"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Racial",
+        "condition": "Unusual Stonework"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "cmd.stability"
+        ],
+        "mode": "flat",
+        "value": 4,
+        "btype": "Untyped",
+        "condition": "Standing on Ground"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "save.all"
+        ],
+        "mode": "flat",
+        "value": 3,
+        "btype": "Racial",
+        "condition": "vs. Poison"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "save.all"
+        ],
+        "mode": "flat",
+        "value": 3,
+        "btype": "Racial",
+        "condition": "vs. Spells & Spell-Like Effects"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "atk.all"
+        ],
+        "mode": "flat",
+        "value": 1,
+        "btype": "Racial",
+        "condition": "vs. Orcs & Goblinoids"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "ac.dodge"
+        ],
+        "mode": "flat",
+        "value": 4,
+        "btype": "Dodge",
+        "condition": "vs. Giants"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.appraise"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Racial",
+        "condition": "Stone or Metal Items"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.craft"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Racial",
+        "condition": "Stone or Metal Items"
+      },
+      {
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "ignoreArmorSpeedPenalty",
+        "label": "Steady Speed",
+        "text": "Speed is not reduced by medium or heavy armor or a medium or heavy load."
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "atk.all",
+          "skill.search",
+          "skill.spot"
+        ],
+        "mode": "flat",
+        "value": -1,
+        "btype": "Penalty",
+        "condition": "Dazzled in Bright Sunlight / Daylight"
       }
     ],
     "shortDescription": "These dwarves live far underground and tend to be more standoffish with non-dwarves. Deep dwarves are the same height as other dwarves, but leaner. Their skin sometimes has a reddish tinge, and their large eyes lack the…",
@@ -24711,6 +25198,29 @@
         "mode": "flat",
         "value": 2,
         "btype": "Racial"
+      },
+      {
+        "type": "defense",
+        "mode": "Sense / Movement",
+        "what": "Darkvision 60 ft."
+      },
+      {
+        "type": "defense",
+        "mode": "Energy Resistance",
+        "what": "Acid",
+        "value": 5
+      },
+      {
+        "type": "defense",
+        "mode": "Energy Resistance",
+        "what": "Cold",
+        "value": 5
+      },
+      {
+        "type": "defense",
+        "mode": "Energy Resistance",
+        "what": "Electricity",
+        "value": 5
       }
     ],
     "shortDescription": "Aasimars are usually tall, good-looking, and generally pleasant. Some have a minor physical trait suggesting their heritage, such as silver hair, golden eyes, or an unnaturally intense stare. Most aasimars are decidedly…",
@@ -24798,6 +25308,27 @@
         "mode": "flat",
         "value": -2,
         "btype": "Racial"
+      },
+      {
+        "type": "defense",
+        "mode": "Immunity",
+        "what": "Magic Sleep Effects",
+        "value": 0
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "save.all"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Racial",
+        "condition": "vs. Enchantment Spells & Effects"
+      },
+      {
+        "type": "defense",
+        "mode": "Sense / Movement",
+        "what": "Low-light vision"
       }
     ],
     "shortDescription": "Wild elves are barbaric and tribal. Wild elves’ hair color ranges from black to light brown, lightening to silvery white with age. They dress in simple clothing of animal skins and basic plant weaves. +2 Dexterity, –2 I…",
@@ -24887,6 +25418,27 @@
         "mode": "flat",
         "value": -2,
         "btype": "Racial"
+      },
+      {
+        "type": "defense",
+        "mode": "Immunity",
+        "what": "Magic Sleep Effects",
+        "value": 0
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "save.all"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Racial",
+        "condition": "vs. Enchantment Spells & Effects"
+      },
+      {
+        "type": "defense",
+        "mode": "Sense / Movement",
+        "what": "Low-light vision"
       }
     ],
     "shortDescription": "Taller and grander in physical appearance than others of their race, gray elves have a reputation for being aloof and arrogant (even by elven standards). They have either silver hair and amber eyes or pale golden hair a…",
@@ -25012,6 +25564,37 @@
         "value": 0,
         "formula": "11+(@level)",
         "btype": "Racial"
+      },
+      {
+        "type": "defense",
+        "mode": "Immunity",
+        "what": "Magic Sleep Effects",
+        "value": 0
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "save.all"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Racial",
+        "condition": "vs. Enchantment Spells & Effects"
+      },
+      {
+        "type": "defense",
+        "mode": "Sense / Movement",
+        "what": "Darkvision 120 ft."
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "save.will"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Racial",
+        "condition": "vs. Spells & Spell-Like Abilities"
       }
     ],
     "shortDescription": "Also known as dark elves, drow are a depraved and evil subterranean offshoot. White is the most common hair color among drow, but almost any pale shade is possible. Drow tend to be smaller and thinner than other sorts o…",
@@ -25242,6 +25825,118 @@
         "mode": "flat",
         "value": 1,
         "btype": "Racial"
+      },
+      {
+        "type": "defense",
+        "mode": "Sense / Movement",
+        "what": "Darkvision 120 ft."
+      },
+      {
+        "type": "defense",
+        "mode": "Immunity",
+        "what": "Paralysis",
+        "value": 0
+      },
+      {
+        "type": "defense",
+        "mode": "Immunity",
+        "what": "Phantasms",
+        "value": 0
+      },
+      {
+        "type": "defense",
+        "mode": "Immunity",
+        "what": "Poison",
+        "value": 0
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "save.all"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Racial",
+        "condition": "vs. Spells & Spell-Like Effects"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "cmd.stability"
+        ],
+        "mode": "flat",
+        "value": 4,
+        "btype": "Untyped",
+        "condition": "Standing on Ground"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.search"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Racial",
+        "condition": "Unusual Stonework"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "atk.all"
+        ],
+        "mode": "flat",
+        "value": 1,
+        "btype": "Racial",
+        "condition": "vs. Orcs & Goblinoids"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "ac.dodge"
+        ],
+        "mode": "flat",
+        "value": 4,
+        "btype": "Dodge",
+        "condition": "vs. Giants"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.appraise"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Racial",
+        "condition": "Stone or Metal Items"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.craft"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Racial",
+        "condition": "Stone or Metal Items"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "atk.all",
+          "skill.search",
+          "skill.spot"
+        ],
+        "mode": "flat",
+        "value": -1,
+        "btype": "Penalty",
+        "condition": "Dazzled in Bright Sunlight / Daylight"
+      },
+      {
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "ignoreArmorSpeedPenalty",
+        "label": "Steady Speed",
+        "text": "Speed is not reduced by medium or heavy armor or a medium or heavy load."
       }
     ],
     "shortDescription": "Sometimes called gray dwarves, these evil beings dwell in the underground. Most duergar are bald (even the females), and they dress in drab clothing that is designed to blend into stone. In their lairs they may wear jew…",
@@ -25349,6 +26044,11 @@
         "mode": "flat",
         "value": 1,
         "btype": "Racial"
+      },
+      {
+        "type": "defense",
+        "mode": "Sense / Movement",
+        "what": "Darkvision 60 ft."
       }
     ],
     "shortDescription": "Blues are a subrace of goblins with an innate knack for psionics. A blue is often smaller than an average goblin, standing just about 3 feet tall and weighing about 40 pounds. Blues have noticeably blue-tinged skin, and…",
@@ -25509,6 +26209,29 @@
         "mode": "flat",
         "value": -2,
         "btype": "Racial"
+      },
+      {
+        "type": "defense",
+        "mode": "Sense / Movement",
+        "what": "Darkvision 60 ft."
+      },
+      {
+        "type": "defense",
+        "mode": "Energy Resistance",
+        "what": "Cold",
+        "value": 5
+      },
+      {
+        "type": "defense",
+        "mode": "Energy Resistance",
+        "what": "Electricity",
+        "value": 5
+      },
+      {
+        "type": "defense",
+        "mode": "Energy Resistance",
+        "what": "Fire",
+        "value": 5
       }
     ],
     "shortDescription": "Many tieflings are indistinguishable from humans. Others have small horns, pointed teeth, red eyes, a whiff of brimstone about them, or even cloven feet. No two tieflings are the same. +2 Dexterity, +2 Intelligence, –2…",
@@ -26011,6 +26734,66 @@
         "mode": "flat",
         "value": 2,
         "btype": "Armor"
+      },
+      {
+        "type": "defense",
+        "mode": "Immunity",
+        "what": "Poison",
+        "value": 0
+      },
+      {
+        "type": "defense",
+        "mode": "Immunity",
+        "what": "Sleep Effects",
+        "value": 0
+      },
+      {
+        "type": "defense",
+        "mode": "Immunity",
+        "what": "Paralysis",
+        "value": 0
+      },
+      {
+        "type": "defense",
+        "mode": "Immunity",
+        "what": "Disease",
+        "value": 0
+      },
+      {
+        "type": "defense",
+        "mode": "Immunity",
+        "what": "Nausea",
+        "value": 0
+      },
+      {
+        "type": "defense",
+        "mode": "Immunity",
+        "what": "Fatigue",
+        "value": 0
+      },
+      {
+        "type": "defense",
+        "mode": "Immunity",
+        "what": "Exhaustion",
+        "value": 0
+      },
+      {
+        "type": "defense",
+        "mode": "Immunity",
+        "what": "Sickened",
+        "value": 0
+      },
+      {
+        "type": "defense",
+        "mode": "Immunity",
+        "what": "Energy Drain",
+        "value": 0
+      },
+      {
+        "type": "defense",
+        "mode": "Fortification",
+        "what": "25% Fortification",
+        "value": 25
       }
     ],
     "shortDescription": "+2 Constitution, -2 Wisdom, -2 Charisma. Living construct, +2 composite plating armor bonus, light fortification, immune to poison/sleep/paralysis/disease, slam 1d4.",
@@ -26091,6 +26874,11 @@
         "mode": "flat",
         "value": 2,
         "btype": "Racial"
+      },
+      {
+        "type": "defense",
+        "mode": "Sense / Movement",
+        "what": "Darkvision 60 ft."
       }
     ],
     "shortDescription": "+2 Strength, -2 Intelligence, -2 Charisma. Darkvision 60 ft, Orc Blood. Favored Class: Barbarian.",
@@ -26193,15 +26981,6 @@
       {
         "type": "stat",
         "targets": [
-          "speed.all"
-        ],
-        "mode": "flat",
-        "value": -10,
-        "btype": "Racial"
-      },
-      {
-        "type": "stat",
-        "targets": [
           "skill.listen",
           "con"
         ],
@@ -26226,6 +27005,70 @@
         "mode": "flat",
         "value": 4,
         "btype": "Racial"
+      },
+      {
+        "type": "defense",
+        "mode": "Sense / Movement",
+        "what": "Low-light vision"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "save.all"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Racial",
+        "condition": "vs. Illusions"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "spell.dc"
+        ],
+        "mode": "flat",
+        "value": 1,
+        "btype": "Racial",
+        "condition": "Illusion Spells"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "atk.all"
+        ],
+        "mode": "flat",
+        "value": 1,
+        "btype": "Racial",
+        "condition": "vs. Goblinoids, Orcs & Reptilian Humanoids"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "ac.dodge"
+        ],
+        "mode": "flat",
+        "value": 4,
+        "btype": "Dodge",
+        "condition": "vs. Giants"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.craft-alchemy"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Racial"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.hide"
+        ],
+        "mode": "flat",
+        "value": 4,
+        "btype": "Racial",
+        "condition": "In Wooded Areas"
       }
     ],
     "shortDescription": "They are the smallest of all the gnomes, averaging 2 to 2-1/2 feet in height, but look just like regular gnomes except with bark-colored or gray-green skin, and eyes that can be brown or green as well as blue. A very lo…",
@@ -26303,15 +27146,6 @@
       {
         "type": "stat",
         "targets": [
-          "speed.all"
-        ],
-        "mode": "flat",
-        "value": -10,
-        "btype": "Racial"
-      },
-      {
-        "type": "stat",
-        "targets": [
           "skill.move-silently",
           "skill.listen",
           "skill.climb",
@@ -26339,6 +27173,26 @@
         "mode": "flat",
         "value": -2,
         "btype": "Racial"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "save.all"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Morale",
+        "condition": "vs. Fear"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "atk.ranged"
+        ],
+        "mode": "flat",
+        "value": 1,
+        "btype": "Racial",
+        "condition": "Thrown Weapons & Slings"
       }
     ],
     "shortDescription": "The lightfoot halfling is the most common halfling variety. Lightfoot halflings stand about 3 feet tall and usually weigh between 30 and 35 pounds. They have brown or black eyes. Lightfoot halfling men often have long s…",
@@ -26433,6 +27287,21 @@
         "mode": "flat",
         "value": 1,
         "btype": "Racial"
+      },
+      {
+        "type": "defense",
+        "mode": "Sense / Movement",
+        "what": "Darkvision 60 ft."
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "save.all"
+        ],
+        "mode": "flat",
+        "value": 1,
+        "btype": "Racial",
+        "condition": "vs. Powers, Spells & Spell-Like Effects"
       }
     ],
     "shortDescription": "+2 Dexterity, –2 Strength Humanoid (Psionic, Xeph) Medium: As Medium creatures, xephs have no special bonuses or penalties due to their size. Xeph base land speed is 30 feet. Darkvision out to 60 feet. +1 racial bonus o…",
@@ -26561,15 +27430,6 @@
       {
         "type": "stat",
         "targets": [
-          "speed.land"
-        ],
-        "mode": "flat",
-        "value": -10,
-        "btype": "Racial"
-      },
-      {
-        "type": "stat",
-        "targets": [
           "speed.fly"
         ],
         "mode": "flat",
@@ -26605,6 +27465,17 @@
         "value": 0,
         "formula": "15+(@level)",
         "btype": "Racial"
+      },
+      {
+        "type": "defense",
+        "mode": "Sense / Movement",
+        "what": "Low-light vision"
+      },
+      {
+        "type": "defense",
+        "mode": "Damage Reduction",
+        "what": "cold iron",
+        "value": 10
       }
     ],
     "shortDescription": "Sprites are reclusive fey. They go out of their way to fight evil and ugliness and to protect their homelands. Legend claims that sprites die only through injury or disease. Pixies are merry pranksters that love to lead…",
@@ -26695,15 +27566,6 @@
       {
         "type": "stat",
         "targets": [
-          "speed.all"
-        ],
-        "mode": "flat",
-        "value": -10,
-        "btype": "Racial"
-      },
-      {
-        "type": "stat",
-        "targets": [
           "cha"
         ],
         "mode": "flat",
@@ -26718,6 +27580,98 @@
         "mode": "flat",
         "value": 2,
         "btype": "Racial"
+      },
+      {
+        "type": "defense",
+        "mode": "Sense / Movement",
+        "what": "Darkvision 60 ft."
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.search"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Racial",
+        "condition": "Unusual Stonework"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "cmd.stability"
+        ],
+        "mode": "flat",
+        "value": 4,
+        "btype": "Untyped",
+        "condition": "Standing on Ground"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "save.all"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Racial",
+        "condition": "vs. Poison"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "save.all"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Racial",
+        "condition": "vs. Spells & Spell-Like Effects"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "atk.all"
+        ],
+        "mode": "flat",
+        "value": 1,
+        "btype": "Racial",
+        "condition": "vs. Orcs & Goblinoids"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "ac.dodge"
+        ],
+        "mode": "flat",
+        "value": 4,
+        "btype": "Dodge",
+        "condition": "vs. Giants"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.appraise"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Racial",
+        "condition": "Stone or Metal Items"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.craft"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Racial",
+        "condition": "Stone or Metal Items"
+      },
+      {
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "ignoreArmorSpeedPenalty",
+        "label": "Steady Speed",
+        "text": "Speed is not reduced by medium or heavy armor or a medium or heavy load."
       }
     ],
     "shortDescription": "Hill dwarves are the most common variety of dwarves. Hill dwarves favor earth tones in their clothing and prefer simple and functional garb. The skin can be very dark, but it is always some shade of tan or brown. Hair c…",
@@ -26811,6 +27765,27 @@
         "mode": "flat",
         "value": -2,
         "btype": "Racial"
+      },
+      {
+        "type": "defense",
+        "mode": "Immunity",
+        "what": "Magic Sleep Effects",
+        "value": 0
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "save.all"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Racial",
+        "condition": "vs. Enchantment Spells & Effects"
+      },
+      {
+        "type": "defense",
+        "mode": "Sense / Movement",
+        "what": "Low-light vision"
       }
     ],
     "shortDescription": "The high elf is the most common elf variety. High elves average 5 feet tall and typically weigh just over 100 pounds. They live on fruits and grains, though they occasionally hunt for fresh meat. High elves prefer color…",
@@ -28248,6 +29223,98 @@
         "mode": "flat",
         "value": -2,
         "btype": "Racial"
+      },
+      {
+        "type": "defense",
+        "mode": "Sense / Movement",
+        "what": "Darkvision 60 ft."
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.search"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Racial",
+        "condition": "Unusual Stonework"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "cmd.stability"
+        ],
+        "mode": "flat",
+        "value": 4,
+        "btype": "Untyped",
+        "condition": "Standing on Ground"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "save.all"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Racial",
+        "condition": "vs. Poison"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "save.all"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Racial",
+        "condition": "vs. Spells & Spell-Like Effects"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "atk.all"
+        ],
+        "mode": "flat",
+        "value": 1,
+        "btype": "Racial",
+        "condition": "vs. Orcs & Goblinoids"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "ac.dodge"
+        ],
+        "mode": "flat",
+        "value": 4,
+        "btype": "Dodge",
+        "condition": "vs. Giants"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.appraise"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Racial",
+        "condition": "Stone or Metal Items"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.craft"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Racial",
+        "condition": "Stone or Metal Items"
+      },
+      {
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "ignoreArmorSpeedPenalty",
+        "label": "Steady Speed",
+        "text": "Speed is not reduced by medium or heavy armor or a medium or heavy load."
       }
     ],
     "shortDescription": "+2 Constitution, -2 Charisma. Darkvision 60 ft, Stonecunning, Weapon Familiarity (Dwarven Waraxe/Urgrosh), Stability (+4 vs trip/bull rush), +2 saves vs poison and spells, +1 attack vs orcs/goblinoids, +4 AC vs giants.",
@@ -28342,6 +29409,38 @@
         ],
         "mode": "flat",
         "value": -2,
+        "btype": "Racial"
+      },
+      {
+        "type": "defense",
+        "mode": "Immunity",
+        "what": "Magic Sleep Effects",
+        "value": 0
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "save.all"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Racial",
+        "condition": "vs. Enchantment Spells & Effects"
+      },
+      {
+        "type": "defense",
+        "mode": "Sense / Movement",
+        "what": "Low-light vision"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.listen",
+          "skill.search",
+          "skill.spot"
+        ],
+        "mode": "flat",
+        "value": 2,
         "btype": "Racial"
       }
     ],
@@ -28451,6 +29550,51 @@
         "mode": "flat",
         "value": 2,
         "btype": "Racial"
+      },
+      {
+        "type": "defense",
+        "mode": "Sense / Movement",
+        "what": "Low-light vision"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "save.all"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Racial",
+        "condition": "vs. Illusions"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "spell.dc"
+        ],
+        "mode": "flat",
+        "value": 1,
+        "btype": "Racial",
+        "condition": "Illusion Spells"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "atk.all"
+        ],
+        "mode": "flat",
+        "value": 1,
+        "btype": "Racial",
+        "condition": "vs. Kobolds & Goblinoids"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "ac.dodge"
+        ],
+        "mode": "flat",
+        "value": 4,
+        "btype": "Dodge",
+        "condition": "vs. Giants"
       }
     ],
     "shortDescription": "+2 Constitution, -2 Strength. Small size (+1 AC, +1 attack, +4 Hide), Low-Light Vision, Weapon Familiarity (Hooked Hammer), +2 saves vs illusions, +1 illusion DC, +1 attack vs kobolds/goblinoids, +4 AC vs giants, +2 Listen/Craft (alchemy), Spell-Like Abilities.",
@@ -28566,7 +29710,7 @@
         "mode": "flat",
         "value": 2,
         "btype": "Morale",
-        "condition": "vs Fear"
+        "condition": "vs. Fear"
       },
       {
         "type": "stat",
@@ -28577,6 +29721,18 @@
         "value": 1,
         "btype": "Racial",
         "condition": "Thrown Weapons & Slings"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.climb",
+          "skill.jump",
+          "skill.move-silently",
+          "skill.listen"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Racial"
       }
     ],
     "shortDescription": "+2 Dexterity, -2 Strength. Small size (+1 AC, +1 attack, +4 Hide), +2 Climb/Jump/Move Silently, +1 all saves (Halfling Luck), +2 saves vs fear, +1 attack with thrown weapons and slings, +2 Listen. Favored Class: Rogue.",

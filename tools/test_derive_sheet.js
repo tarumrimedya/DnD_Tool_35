@@ -5543,6 +5543,53 @@ function runDeriveSheetTests() {
     );
   }
 
+  // Race traits come from the Race record's V3 effects[] only (no race-name matching in rule_engine.js).
+  {
+    const racial = (raceName) => {
+      const rec = Comp.getByName(raceName, 'Race');
+      const c = {
+        name: 'Race Trait Probe', race: raceName, classes: 'Fighter 1', level: 1, bab: 1,
+        abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+        baseAbilities: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+        levelProgression: [{ level: 1, className: 'Fighter', hd: 'd10', hpGain: 10, active: true, feats: [] }],
+        baseSpeed: rec && rec.baseSpeed,
+        bodySlots: { armor: { name: 'Full Plate', baseItemId: 'arm-full-plate', active: true } },
+        weapons: [], gearPool: []
+      };
+      RuleEngine.recalculateCharacter(c, []);
+      return {
+        speed: c.effectiveSpeed,
+        saves: (c.conditionalSaveBonuses || []).map(b => `${b.val} ${b.condition}`),
+        ac: (c.conditionalAcBonuses || []).map(b => `${b.val} ${b.condition}`)
+      };
+    };
+    const mtn = racial('Dwarf, Mountain');
+    const deep = racial('Dwarf, Deep');
+    const duergar = racial('Duergar');
+    const halfling = racial('Halfling');
+    const svirf = racial('Gnome, Svirfneblin');
+    check(
+      'Race V3: Steady Speed (ignoreArmorSpeedPenalty rule switch) keeps dwarves and duergar at 20 ft. in full plate; baseSpeed 20 is not reduced twice',
+      mtn.speed === 20 && deep.speed === 20 && duergar.speed === 20,
+      JSON.stringify({ mtn: mtn.speed, deep: deep.speed, duergar: duergar.speed })
+    );
+    check(
+      'Race V3: Deep Dwarf +3 vs. Poison / Spells and Duergar +4 dodge vs. Giants come from the record',
+      deep.saves.includes('3 vs. Poison') && deep.saves.includes('3 vs. Spells & Spell-Like Effects') && duergar.ac.includes('4 vs. Giants'),
+      JSON.stringify({ deep: deep.saves, duergar: duergar.ac })
+    );
+    check(
+      'Race V3: Halfling has one +2 morale vs. Fear (no duplicate from name matching)',
+      halfling.saves.filter(s => s === '2 vs. Fear').length === 1,
+      JSON.stringify(halfling.saves)
+    );
+    check(
+      'Race V3: Svirfneblin gets no gnome name-matched vs. Giants / vs. Illusions bonus (its dodge +4 applies against all creatures)',
+      svirf.ac.length === 0 && !svirf.saves.some(s => /Illusions/.test(s)),
+      JSON.stringify(svirf)
+    );
+  }
+
   CharStore.clearHistory();
 
   return { passed, elapsedMs: Date.now() - startMs };
