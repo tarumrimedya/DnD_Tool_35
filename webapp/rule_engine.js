@@ -3230,6 +3230,30 @@ const RuleEngine = {
       }
     });
 
+    // Race / template Level / HD Table features: a row's referenced entries (refId, e.g. cab-*) apply once the
+    // character's level / total HD reaches that row. Inline (text-only) features stay descriptive.
+    if (typeof this.getRaceTemplateProgressionSources === 'function') {
+      const hdNow = Number(this.buildFormulaContext(ch).level) || 1;
+      this.getRaceTemplateProgressionSources(ch).forEach(src => {
+        const pr = src && src.progression;
+        const rows = pr && (Array.isArray(pr.milestones) ? pr.milestones : (Array.isArray(pr.levels) ? pr.levels : null));
+        if (!rows) return;
+        rows.forEach((row, idx) => {
+          if (!row || !Array.isArray(row.features)) return;
+          const rowLevel = Number(row.level) || (idx + 1);
+          if (rowLevel > hdNow) return;
+          row.features.forEach(f => {
+            const refId = f && typeof f === 'object' ? String(f.refId || '').trim() : '';
+            if (!refId || seenFullIds.has(refId.toLowerCase())) return;
+            const resolved = (comp && typeof comp.getById === 'function' && comp.getById(refId))
+              || (typeof this.getMasterDbEntry === 'function' && this.getMasterDbEntry(refId));
+            if (!resolved || typeof resolved !== 'object' || !Array.isArray(resolved.effects) || resolved.effects.length === 0) return;
+            addEntry(Object.assign({}, resolved, { sourceRace: src.name || '' }), 'ClassAbility', 'classFeatures');
+          });
+        });
+      });
+    }
+
     Object.values(ch.bodySlots || {}).forEach(slotItem => {
       if (slotItem && typeof slotItem === 'object' && slotItem.active !== false && slotItem.equipped !== false) {
         addItem(slotItem, true);
@@ -11869,9 +11893,9 @@ const RuleEngine = {
    * [{ level, source, sourceId, kind: 'power' | 'effect', name, summary, unlocked }], sorted by level.
    * Sub-powers and top-level effect blocks without gainedAt count as level 1.
    */
-  getRaceTemplateLevelGains(character) {
+  /** The character's race entry (override-aware) plus its active template entries. */
+  getRaceTemplateProgressionSources(character) {
     const w = character || {};
-    const level = Number(this.buildFormulaContext(w).level) || 1;
     const sources = [];
     const raceName = String(w.race || '').trim();
     if (raceName) {
@@ -11881,6 +11905,13 @@ const RuleEngine = {
     if (typeof this.getCharacterActiveTemplateEntries === 'function') {
       (this.getCharacterActiveTemplateEntries(w) || []).forEach(t => { if (t) sources.push(t); });
     }
+    return sources;
+  },
+
+  getRaceTemplateLevelGains(character) {
+    const w = character || {};
+    const level = Number(this.buildFormulaContext(w).level) || 1;
+    const sources = this.getRaceTemplateProgressionSources(w);
     const out = [];
     sources.forEach(src => out.push(...this.getEntryLevelGains(src, level)));
     return out.sort((a, b) => a.level - b.level);

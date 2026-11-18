@@ -5486,6 +5486,26 @@ function runDeriveSheetTests() {
       gains5.map(g => `${g.level}:${g.name}:${g.unlocked ? 'Y' : 'N'}`).join('|') === '1:Drake Bite:Y|1:+2 Natural Armor:Y|5:+2 Str:Y|10:Drake Roar:N',
       gains5.map(g => `${g.level}:${g.name}:${g.unlocked ? 'Y' : 'N'}`).join('|')
     );
+    // 11b. Level / HD Table features with a refId grant that entry's effects from the row's level on.
+    const tableAbility = { schemaVersion: 3, id: 'cab-table-test', blueprint: 'classAbility', type: 'ClassAbility', name: 'Table Might', effects: [{ type: 'stat', targets: ['ability.str'], mode: 'flat', value: 4, btype: 'Racial', summary: '+4 Str' }] };
+    const tableRace = Object.assign({}, growRace, {
+      id: 'custom-table-race', name: 'Table Drake', effects: [], powers: [],
+      progression: { mode: 'hd', maxLevel: 10, milestones: [{ level: 3, features: [{ kind: 'ref', name: 'Table Might', refId: 'cab-table-test' }] }] }
+    });
+    const tableStr = (lvl) => {
+      const c = baseChar({
+        race: 'Table Drake', classes: 'Fighter ' + lvl, level: lvl, bab: lvl,
+        abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+        customEntries: { 'custom-table-race': tableRace, 'cab-table-test': tableAbility }, customDb: [tableRace, tableAbility]
+      });
+      const so = RuleEngine.deriveSheet(c).abilities.str;
+      return typeof so === 'object' ? Number(so.total ?? so.score) : Number(so);
+    };
+    check(
+      'Race Level / HD Table: a refId feature in the level 3 row grants its +4 Str only from level 3',
+      tableStr(2) === 10 && tableStr(3) === 14,
+      JSON.stringify({ l2: tableStr(2), l3: tableStr(3) })
+    );
     check(
       'Race "Acid Breath" special attack carries its delivery (Breath Weapon) on the card data',
       Boolean(raceAcid && raceAcid.delivery && raceAcid.delivery.isBreath),
