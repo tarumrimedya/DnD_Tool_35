@@ -25521,6 +25521,320 @@
   },
   {
     "schemaVersion": 3,
+    "id": "race-dragonborn",
+    "icon": "🐲",
+    "blueprint": "race",
+    "name": "Dragonborn",
+    "type": "Race",
+    "category": "Standard Race",
+    "source": "Races of the Dragon (Dragonborn of Bahamut)",
+    "race": {
+      "kind": "race",
+      "timing": null,
+      "size": "Medium",
+      "creatureType": "Humanoid",
+      "subtype": "Dragonblood",
+      "speed": 30,
+      "flySpeed": 0,
+      "flyManeuverability": null,
+      "levelAdjustment": 0,
+      "favoredClass": "Fighter",
+      "bonusFeatAt1st": false,
+      "humanBonusSkillPoints": false
+    },
+    "size": "Medium",
+    "baseSpeed": 30,
+    "favoredClass": "Fighter",
+    "languages": [
+      "Draconic"
+    ],
+    "bonusLanguages": [],
+    "bonusSkillPointsPerLevel": 0,
+    "traits": [
+      {
+        "name": "Ability Modifiers",
+        "desc": "+2 Constitution, -2 Dexterity. Added to the original race's ability modifiers."
+      },
+      {
+        "name": "Humanoid (Dragonblood)",
+        "desc": "Dragonborn gain the dragonblood subtype in addition to the type and subtypes of their original race. For all effects related to race, a dragonborn is considered a dragon and a member of her original race. Size, speed, racial Hit Dice and level adjustment are retained from the original race."
+      },
+      {
+        "name": "Dodge Bonus",
+        "desc": "+2 dodge bonus to Armor Class against creatures of the dragon type."
+      },
+      {
+        "name": "Immunity to Frightful Presence",
+        "desc": "Immune to the frightful presence ability of dragons, just as if a dragon."
+      },
+      {
+        "name": "Draconic Aspect (Heart, Su)",
+        "desc": "Breath weapon: line of 5 ft. per Hit Die (max 100 ft.), 1d8 damage plus 1d8 per 3 HD; acid, cold, electricity or fire chosen on each use; Reflex half (DC 10 + 1/2 HD + Con modifier); usable once every 1d4 rounds."
+      },
+      {
+        "name": "Draconic Aspect (Mind, Ex)",
+        "desc": "Immunity to paralysis and magic sleep effects; darkvision 30 ft. and low-light vision; +2 racial bonus on Listen, Search and Spot checks. Darkvision extends to 60 ft. at 6 HD, 90 ft. at 9 HD (low-light x3) and 120 ft. at 12 HD (low-light x4); blindsense 30 ft. at 15 HD."
+      },
+      {
+        "name": "Draconic Aspect (Wings, Ex)",
+        "desc": "+10 racial bonus on Jump checks and gliding (30 ft., average maneuverability, not with a medium or heavy load). At 6 HD, fly speed 30 ft. (average); fatigue limits apply until 12 HD. Dive attack with a piercing weapon deals double damage."
+      },
+      {
+        "name": "Automatic Languages",
+        "desc": "Draconic (in addition to languages already known)."
+      },
+      {
+        "name": "Level Adjustment",
+        "desc": "Level Adjustment: as the original race (the Rite of Rebirth adds none)."
+      }
+    ],
+    "effects": [
+      {
+        "type": "stat",
+        "targets": [
+          "con"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Racial"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "dex"
+        ],
+        "mode": "flat",
+        "value": -2,
+        "btype": "Racial"
+      }
+    ],
+    "shortDescription": "Rebirth template of Bahamut. +2 Constitution, -2 Dexterity. Dragonblood subtype, +2 dodge vs. dragons, immune to dragon frightful presence, Draconic Aspect (heart breath weapon, mind senses, or wings).",
+    "text": "Dragonborn are not born but reborn: a humanoid who completes the Rite of Rebirth gives up her former racial identity and becomes a servant of Bahamut. Only the traits gained from the transformation are listed; the original race's size, speed, languages, favored classes, racial Hit Dice and level adjustment are retained, and its other racial traits are lost.\n\n• +2 Constitution, -2 Dexterity.\n• Humanoid (dragonblood).\n• +2 dodge bonus to Armor Class against creatures of the dragon type.\n• Immunity to Frightful Presence of dragons.\n• Draconic Aspect (choose one): Heart (breath weapon), Mind (immunity to paralysis and sleep, darkvision, low-light vision, +2 Listen/Search/Spot), Wings (+10 Jump, gliding, flight at 6 HD).\n• Automatic Languages: Draconic.\n• Favored Class: Fighter. Dragonborn paladins can leave and return to that class without penalty.",
+    "tags": [
+      "race",
+      "dragonborn",
+      "dragonblood",
+      "rebirth"
+    ],
+    "bonusFeats": 0
+  },
+  {
+    "schemaVersion": 3,
+    "id": "race-goliath",
+    "icon": "⛰️",
+    "blueprint": "race",
+    "name": "Goliath",
+    "type": "Race",
+    "category": "Standard Race",
+    "source": "Races of Stone",
+    "race": {
+      "kind": "race",
+      "timing": null,
+      "size": "Medium",
+      "creatureType": "Monstrous Humanoid",
+      "subtype": null,
+      "speed": 30,
+      "flySpeed": 0,
+      "flyManeuverability": null,
+      "levelAdjustment": 1,
+      "favoredClass": "Barbarian",
+      "bonusFeatAt1st": false,
+      "humanBonusSkillPoints": false
+    },
+    "size": "Medium",
+    "baseSpeed": 30,
+    "favoredClass": "Barbarian",
+    "languages": [
+      "Common",
+      "Gol-Kaa"
+    ],
+    "bonusLanguages": [
+      "Dwarven",
+      "Giant",
+      "Gnoll",
+      "Terran"
+    ],
+    "bonusSkillPointsPerLevel": 0,
+    "traits": [
+      {
+        "name": "Monstrous Humanoid",
+        "desc": "Goliaths are proficient with all simple weapons but have no proficiency with any armor or shield."
+      },
+      {
+        "name": "Powerful Build",
+        "desc": "Functions in many ways as if one size category larger: treated as one size larger for opposed checks (grapple, bull rush, trip) when advantageous, and when determining whether size-based special attacks affect him. Can use weapons designed for a creature one size larger without penalty; space and reach remain those of Medium. Stacks with effects that change size category."
+      },
+      {
+        "name": "Mountain Movement",
+        "desc": "Can make standing long jumps and high jumps as if running jumps. Can use accelerated climbing (half speed as a move action) without the -5 penalty on Climb checks."
+      },
+      {
+        "name": "Acclimated",
+        "desc": "Automatically acclimated to high altitude; takes no altitude penalties and never loses the acclimation."
+      },
+      {
+        "name": "Sense Motive",
+        "desc": "+2 racial bonus on Sense Motive checks."
+      },
+      {
+        "name": "Level Adjustment",
+        "desc": "Level Adjustment: +1."
+      }
+    ],
+    "effects": [
+      {
+        "type": "stat",
+        "targets": [
+          "str"
+        ],
+        "mode": "flat",
+        "value": 4,
+        "btype": "Racial"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "dex"
+        ],
+        "mode": "flat",
+        "value": -2,
+        "btype": "Racial"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "con"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Racial"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.sense-motive"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Racial"
+      }
+    ],
+    "shortDescription": "+4 Strength, -2 Dexterity, +2 Constitution. Monstrous Humanoid, Powerful Build, Mountain Movement, +2 Sense Motive. Level Adjustment +1.",
+    "text": "Goliaths practically live on the ledges and cliffs of the most forbidding mountains.\n\n• +4 Strength, -2 Dexterity, +2 Constitution.\n• Monstrous Humanoid: proficient with all simple weapons, no armor or shield proficiency.\n• Medium size.\n• A goliath's base land speed is 30 feet.\n• Powerful Build.\n• Mountain Movement.\n• Acclimated to high altitude.\n• +2 bonus on Sense Motive checks.\n• Automatic Languages: Common, Gol-Kaa. Bonus Languages: Dwarven, Giant, Gnoll, Terran.\n• Favored Class: Barbarian.\n• Level Adjustment: +1.",
+    "tags": [
+      "race",
+      "goliath",
+      "powerful-build"
+    ],
+    "bonusFeats": 0
+  },
+  {
+    "schemaVersion": 3,
+    "id": "race-warforged",
+    "icon": "🤖",
+    "blueprint": "race",
+    "name": "Warforged",
+    "type": "Race",
+    "category": "Standard Race",
+    "source": "Eberron Campaign Setting",
+    "race": {
+      "kind": "race",
+      "timing": null,
+      "size": "Medium",
+      "creatureType": "Construct",
+      "subtype": "Living Construct",
+      "speed": 30,
+      "flySpeed": 0,
+      "flyManeuverability": null,
+      "levelAdjustment": 0,
+      "favoredClass": "Fighter",
+      "bonusFeatAt1st": false,
+      "humanBonusSkillPoints": false
+    },
+    "size": "Medium",
+    "baseSpeed": 30,
+    "favoredClass": "Fighter",
+    "languages": [
+      "Common"
+    ],
+    "bonusLanguages": [],
+    "bonusSkillPointsPerLevel": 0,
+    "traits": [
+      {
+        "name": "Living Construct Subtype (Ex)",
+        "desc": "A created being with sentience and free will. Hit Dice, base attack bonus, saves and skill points come from class. Has a Constitution score; no low-light vision or darkvision; not immune to mind-affecting effects. Immune to poison, sleep effects, paralysis, disease, nausea, fatigue, exhaustion, effects that cause the sickened condition, and energy drain. Cannot heal lethal damage naturally. Subject to critical hits, nonlethal damage, stunning, ability damage, ability drain, death effects and necromancy effects. Healing-subschool spells and supernatural cures provide only half effect. Does not need to eat, sleep or breathe (a warforged wizard must still rest 8 hours to prepare spells). Can be raised or resurrected. Vulnerable to rusting grasp, heat metal, chill metal and repel metal or stone as if wearing metal armor; affected by repel wood."
+      },
+      {
+        "name": "Disabled and Inert",
+        "desc": "At 0 hit points a warforged is disabled but strenuous activity does not risk further injury; between -1 and -9 hit points he is inert (unconscious, helpless, and does not lose further hit points unless damaged again)."
+      },
+      {
+        "name": "Composite Plating",
+        "desc": "+2 armor bonus that does not stack with other armor bonuses (other than natural armor); occupies the armor and robe slots, so no magic armor or robes. Can take enhancement bonuses and armor properties. 5% arcane spell failure chance."
+      },
+      {
+        "name": "Light Fortification (Ex)",
+        "desc": "25% chance that a critical hit or sneak attack scored on a warforged is negated and damage is rolled normally."
+      },
+      {
+        "name": "Natural Weapon",
+        "desc": "Slam attack that deals 1d4 points of damage."
+      },
+      {
+        "name": "Level Adjustment",
+        "desc": "Level Adjustment: +0."
+      }
+    ],
+    "effects": [
+      {
+        "type": "stat",
+        "targets": [
+          "con"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Racial"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "wis"
+        ],
+        "mode": "flat",
+        "value": -2,
+        "btype": "Racial"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "cha"
+        ],
+        "mode": "flat",
+        "value": -2,
+        "btype": "Racial"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "ac.armor"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Armor"
+      }
+    ],
+    "shortDescription": "+2 Constitution, -2 Wisdom, -2 Charisma. Living construct, +2 composite plating armor bonus, light fortification, immune to poison/sleep/paralysis/disease, slam 1d4.",
+    "text": "Warforged are living constructs given sentience and free will through complex creation enchantments.\n\n• +2 Constitution, -2 Wisdom, -2 Charisma.\n• Construct (Living Construct subtype).\n• Medium size.\n• A warforged's base land speed is 30 feet.\n• Composite Plating: +2 armor bonus (5% arcane spell failure).\n• Light Fortification (25%).\n• Slam attack 1d4.\n• Automatic Languages: Common. Bonus Languages: None.\n• Favored Class: Fighter.\n• Level Adjustment: +0.",
+    "tags": [
+      "race",
+      "warforged",
+      "construct",
+      "living-construct"
+    ],
+    "bonusFeats": 0
+  },
+  {
+    "schemaVersion": 3,
     "id": "race-half-orc",
     "icon": "⚔️",
     "blueprint": "race",

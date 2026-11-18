@@ -1,9 +1,9 @@
 {
   "schemaVersion": 3,
   "version": "3.0.0",
-  "compendiumHash": "f7711a242ee26dea",
+  "compendiumHash": "e6ed04a2199682c4",
   "generatedAt": "2026-11-15T19:43:51.694Z",
-  "totalEntries": 7961,
+  "totalEntries": 7964,
   "chunks": {
     "srd_equipment.json": {
       "count": 1143,
@@ -18,9 +18,9 @@
       "eagerLoad": true
     },
     "srd_classes_races.json": {
-      "count": 300,
+      "count": 303,
       "bytes": 1536441,
-      "hash": "07792ab8a7998cba",
+      "hash": "73e6678a3725b06c",
       "eagerLoad": true
     },
     "srd_combat_rules.json": {
@@ -65849,6 +65849,30 @@
       "c": "Armor Enhancement",
       "s": "None",
       "f": "srd_equipment.json"
+    },
+    {
+      "id": "race-dragonborn",
+      "n": "Dragonborn",
+      "t": "Race",
+      "c": "Standard Race",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "race-goliath",
+      "n": "Goliath",
+      "t": "Race",
+      "c": "Standard Race",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "race-warforged",
+      "n": "Warforged",
+      "t": "Race",
+      "c": "Standard Race",
+      "s": "None",
+      "f": "srd_classes_races.json"
     }
   ]
 }
