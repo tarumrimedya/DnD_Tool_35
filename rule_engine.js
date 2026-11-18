@@ -12308,6 +12308,15 @@ const RuleEngine = {
         default: return '';
       }
     };
+    // A damage part whose dice count is a formula ("(@classes.dragon_disciple.level >= 7 ? 4 : 2)d8") is resolved here,
+    // because the card rolls the plain "NdM" string. Parts without "@" are returned untouched.
+    const resolveFormulaDice = (dp) => {
+      if (!dp || typeof dp.dice !== 'string' || !levelCtx) return dp;
+      const m = dp.dice.trim().match(/^(.*\S)\s*d(\d+)$/i);
+      if (!m || !/@/.test(m[1])) return dp;
+      const n = Math.floor(Number(this.evaluateFormula(m[1], levelCtx)) || 0);
+      return n > 0 ? Object.assign({}, dp, { dice: `${n}d${m[2]}` }) : null;
+    };
     return entry.powers.map((pw, idx) => {
       if (!pw || typeof pw !== 'object') return null;
       if (levelCtx && !this.isLevelGainUnlocked(pw, levelCtx)) return null;
@@ -12358,7 +12367,9 @@ const RuleEngine = {
         range: pw.range || '',
         area: pw.area || '',
         rechargeDice: usage && usage.mode === 'cooldown' && usage.recharge ? String(usage.recharge) : '',
-        damageParts: evaluated && Array.isArray(evaluated.damageParts) ? evaluated.damageParts : [],
+        damageParts: (evaluated && Array.isArray(evaluated.damageParts) ? evaluated.damageParts : [])
+          .map(dp => resolveFormulaDice(dp))
+          .filter(Boolean),
         text: pw.text || ''
       };
     }).filter(Boolean);
