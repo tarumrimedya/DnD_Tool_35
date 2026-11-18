@@ -2458,7 +2458,9 @@ const RuleEngine = {
             }
             if (dm === 'State Flag') {
               if (b.flag === 'extraAttack') { ruleFlags.extraAttackFullAttack = true; addBadge('+1 Extra Attack (Full Attack)'); }
+              else if (b.flag === 'uncannyDodge') { ruleFlags.uncannyDodge = true; addBadge(String(b.summary || b.text || 'Uncanny Dodge').replace(/@/g, '').trim()); }
               else if (b.flag) addBadge(`State: ${b.flag}`);
+              else if (b.summary || b.text) addBadge(String(b.summary || b.text).replace(/@/g, '').trim());
               return;
             }
             if (dm === 'Sense / Movement' && what) {
@@ -2554,6 +2556,7 @@ const RuleEngine = {
         // 7. Effect Block (`effect`: sense, movement, condition, summon, grant, bonusSlot, rule switch flag, or text/carrier)
         if (bType === 'effect') {
           if (b.text || b.label) addBadge(String(b.text || b.label).trim());
+          else if (b.effectKind === 'castEvolution' && b.castNature) addBadge(`Cast as: ${String(b.castNature).trim()}`);
           if (b.flag) {
             const flagKey = String(b.flag).trim();
             if (flagKey === 'babEqualsLevel') ruleFlags.babEqualsLevel = true;

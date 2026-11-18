@@ -4,7 +4,15 @@
     "crys-truedeath-crystal-least": "fixed after the audit: was an unconditional Healing roll; now +1d6 Damage with condition 'vs. undead', untyped per the record text (MIC: 'an extra 1d6 points of damage to undead'); V2 typed it 'positive (vs. undead)'",
     "crys-truedeath-crystal-lesser": "same as crys-truedeath-crystal-least",
     "crys-truedeath-crystal-greater": "same as crys-truedeath-crystal-least",
-    "cls-monk":"bd902e0: Monk AC bonus and fast movement moved to cab-monk-ac-bonus / cab-monk-fast-movement (Class effects[] are never consumed); the V2 class modifiers had value 0 with unevaluable formulas"
+    "cls-monk": "bd902e0: Monk AC bonus and fast movement moved to cab-monk-ac-bonus / cab-monk-fast-movement (Class effects[] are never consumed); the V2 class modifiers had value 0 with unevaluable formulas",
+    "gear-holy-symbol-silver": "Tool flag from V2 that no code ever read; the tool text is the player-facing rule (nothing to restore) (divineFocus)",
+    "gear-holy-symbol-wooden": "Tool flag from V2 that no code ever read; the tool text is the player-facing rule (nothing to restore) (divineFocus)",
+    "gear-spellbook": "Tool flag from V2 that no code ever read; the tool text is the player-facing rule (nothing to restore) (spellbookPages)",
+    "gear-pouch-spell-component": "Tool flag from V2 that no code ever read; the tool text is the player-facing rule (nothing to restore) (spellComponentFocus)",
+    "gear-thieves-tools": "Tool flag from V2 that no code ever read; the tool text is the player-facing rule (nothing to restore) (eliminatesImprovisedPenalty)",
+    "gear-artisans-tools": "Tool flag from V2 that no code ever read; the tool text is the player-facing rule (nothing to restore) (eliminatesImprovisedPenalty)",
+    "enh-fortification": "V2 stored fortification 100; Light Fortification is 25% (DMG), V3 defense block is right; the LOST zero-value enhancement mod was a placeholder",
+    "mi-ring-of-epic-wizardry-vii": "V2 doubled level 6 slots on the VII ring (typo); V3 bonusSlot slotLevel 7 matches the text"
   },
   "removed": {},
   "removedPrefixes": {
