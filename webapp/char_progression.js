@@ -5504,6 +5504,47 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
       return (def.type === 'Prestige Class') ? 10 : 20;
     }
 
+    // Level row "⋯" menu: Add / Edit / Delete reuse the existing progression actions (delegated via Actions).
+    let _levelRowMenuAnchor = null;
+    function closeLevelRowActionsMenu() {
+      const menu = document.getElementById('level-row-actions-menu');
+      if (menu) menu.classList.add('hidden');
+      _levelRowMenuAnchor = null;
+    }
+    function toggleLevelRowActionsMenu(anchorEl, idx) {
+      if (_levelRowMenuAnchor === anchorEl) { closeLevelRowActionsMenu(); return; }
+      let menu = document.getElementById('level-row-actions-menu');
+      if (!menu) {
+        menu = document.createElement('div');
+        menu.id = 'level-row-actions-menu';
+        menu.setAttribute('role', 'menu');
+        menu.className = 'hidden fixed bg-slate-950/95 border border-slate-700 rounded-lg shadow-2xl py-1 text-xs';
+        menu.style.zIndex = '9000';
+        menu.style.minWidth = '176px';
+        document.body.appendChild(menu);
+        document.addEventListener('click', ev => {
+          if (!_levelRowMenuAnchor) return;
+          if (ev.target.closest('[data-action="progression:open-level-actions"]')) return;
+          closeLevelRowActionsMenu();
+        });
+        document.addEventListener('keydown', ev => { if (ev.key === 'Escape') closeLevelRowActionsMenu(); });
+        window.addEventListener('scroll', closeLevelRowActionsMenu, true);
+        window.addEventListener('resize', closeLevelRowActionsMenu);
+      }
+      const item = (action, icon, label, cls) => `<button type="button" role="menuitem" data-action="${action}" data-level-idx="${idx}" class="w-full flex items-center gap-2 px-3 py-1.5 text-left font-semibold ${cls} hover:bg-slate-800 transition cursor-pointer"><span class="shrink-0">${icon}</span><span>${label}</span></button>`;
+      menu.innerHTML = item('progression:open-quick-feat-picker', '➕', 'Add Feat / Ability', 'text-emerald-300')
+        + item('progression:open-change-level-class', '✏️', 'Edit Class &amp; Stats', 'text-slate-200')
+        + (idx > 0 ? item('progression:delete-level-row', '🗑️', 'Delete Level', 'text-rose-300') : '');
+      menu.classList.remove('hidden');
+      const r = anchorEl.getBoundingClientRect();
+      const w = menu.offsetWidth, h = menu.offsetHeight;
+      const left = Math.max(8, Math.min(r.right - w, window.innerWidth - w - 8));
+      const top = (r.bottom + 4 + h > window.innerHeight - 8) ? Math.max(8, r.top - h - 4) : r.bottom + 4;
+      menu.style.left = `${left}px`;
+      menu.style.top = `${top}px`;
+      _levelRowMenuAnchor = anchorEl;
+    }
+
     // Class level cap (by class id) for the Level-Up / Change Class pickers; excludeIndex = row being re-classed.
     function getPickerClassLevelCap(cName, def, excludeIndex = -1) {
       if (typeof RuleEngine === 'undefined' || typeof RuleEngine.getClassLevelCapStatus !== 'function') {
@@ -8225,7 +8266,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
                   </div>
                   <div class="flex flex-wrap gap-1.5 min-h-[40px] items-start">
                     ${featsList.length > 0 ? featsList.map(f => {
-                      const safeTip = (getFeatTooltipText(f.name) || f.benefit || f.source || 'View rule details').replace(/"/g, '&quot;');
+                      const safeTip = UI.escapeAttr((f.name || '') + ' — Click for rule details');
                       const catBadge = f.category && f.category !== 'Feat' ? `<span class="text-[10px] opacity-75 font-normal">(${safeEscapeHtml(f.category)})</span>` : '';
                       const isBoonFeat = Boolean(f.isHomebrewBoon || /\[Homebrew\]|^Homebrew:/i.test(f.name || ''));
                       const cleanBoonName = String(f.name || '').replace(/^\[Homebrew\]\s*/i, '').replace(/^Homebrew:\s*/i, '').trim();
@@ -8257,7 +8298,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
                   </div>
                   <div class="flex flex-wrap gap-1.5 min-h-[40px] items-start">
                     ${abilitiesList.length > 0 ? abilitiesList.map(a => {
-                      const safeTip = (getFeatTooltipText(a.name) || a.benefit || a.source || 'View rule details').replace(/"/g, '&quot;');
+                      const safeTip = UI.escapeAttr((a.name || '') + ' — Click for rule details');
                       let typeBadge = '';
                       let borderCls = 'border-purple-600/60 hover:border-purple-400 text-purple-200 bg-purple-950/80 hover:bg-purple-900';
                       const tUpper = (a.type || '').toUpperCase();
@@ -8562,21 +8603,17 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         }).sort((a, b) => extractFeatSortName(a).localeCompare(extractFeatSortName(b))).map(aStr => {
           const str = String(aStr);
           const rawName = str.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️\s]+(\[.*?\])?\s*/, '').trim();
-          const tip = getFeatTooltipText(aStr);
-          const safeTip = tip.replace(/"/g, '&quot;');
-          const cleanStr = str.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️\s]+/, '').trim();
+          const badgeLabel = rawName;
           const cornerBadge = getFeatPinCornerBadgeHtml(rawName);
-          return `<button data-action="progression:show-feat-detail" data-feat-name="${rawName.replace(/"/g, '&quot;')}" data-level-idx="${idx}" data-feat-type="ability" title="${safeTip}" style="width: 150px; min-width: 150px; max-width: 150px; box-sizing: border-box; overflow: hidden;" class="relative min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[10px] font-bold bg-sky-950/80 hover:bg-sky-900 text-sky-300 border border-sky-600/70 shadow-sm transition text-left cursor-pointer"><span class="shrink-0">✨</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">${cleanStr}</span>${cornerBadge}</button>`;
+          return `<button data-action="progression:show-feat-detail" data-feat-name="${rawName.replace(/"/g, '&quot;')}" data-level-idx="${idx}" data-feat-type="ability" title="${UI.escapeAttr(rawName)} — Click for rule details" style="width: 150px; min-width: 150px; max-width: 150px; box-sizing: border-box; overflow: hidden;" class="relative min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[10px] font-bold bg-sky-950/80 hover:bg-sky-900 text-sky-300 border border-sky-600/70 shadow-sm transition text-left cursor-pointer"><span class="shrink-0">✨</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">${UI.escapeHtml(badgeLabel)}</span>${cornerBadge}</button>`;
         });
 
         const classBonusBadgeItems = classBonusFeats.map(fStr => {
           const str = String(fStr);
           const rawName = str.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').trim();
-          const tip = getFeatTooltipText(fStr);
-          const safeTip = tip.replace(/"/g, '&quot;');
-          const cleanStr = str.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+/, '').replace(/^\[Extra Bonus\]/i, '[Bonus]').trim();
+          const badgeLabel = rawName;
           const cornerBadge = getFeatPinCornerBadgeHtml(rawName);
-          return `<button data-action="progression:show-feat-detail" data-feat-name="${rawName.replace(/"/g, '&quot;')}" data-level-idx="${idx}" data-feat-type="feat" title="${safeTip}" style="width: 150px; min-width: 150px; max-width: 150px; box-sizing: border-box; overflow: hidden;" class="relative min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[10px] font-bold bg-indigo-950/80 hover:bg-indigo-900 text-indigo-300 border border-indigo-600/70 shadow-sm transition text-left cursor-pointer"><span class="shrink-0">⚔️</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">${cleanStr}</span>${cornerBadge}</button>`;
+          return `<button data-action="progression:show-feat-detail" data-feat-name="${rawName.replace(/"/g, '&quot;')}" data-level-idx="${idx}" data-feat-type="feat" title="${UI.escapeAttr(rawName)} — Click for rule details" style="width: 150px; min-width: 150px; max-width: 150px; box-sizing: border-box; overflow: hidden;" class="relative min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[10px] font-bold bg-indigo-950/80 hover:bg-indigo-900 text-indigo-300 border border-indigo-600/70 shadow-sm transition text-left cursor-pointer"><span class="shrink-0">⚔️</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">${UI.escapeHtml(badgeLabel)}</span>${cornerBadge}</button>`;
         });
 
         const pendingClassBonusButtons = [];
@@ -8654,11 +8691,9 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         const regularFeatBadgeItems = regularFeats.map(fStr => {
           const str = String(fStr);
           const rawName = str.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').trim();
-          const tip = getFeatTooltipText(fStr);
-          const safeTip = tip.replace(/"/g, '&quot;');
-          const cleanStr = str.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[Extra\]\s*)?/i, '').trim();
+          const badgeLabel = rawName;
           const cornerBadge = getFeatPinCornerBadgeHtml(rawName);
-          return `<button data-action="progression:show-feat-detail" data-feat-name="${rawName.replace(/"/g, '&quot;')}" data-level-idx="${idx}" data-feat-type="feat" title="${safeTip}" style="width: 150px; min-width: 150px; max-width: 150px; box-sizing: border-box; overflow: hidden;" class="relative min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[10px] font-bold bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border border-emerald-600/70 shadow-sm transition text-left cursor-pointer"><span class="shrink-0">🎖️</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">${cleanStr}</span>${cornerBadge}</button>`;
+          return `<button data-action="progression:show-feat-detail" data-feat-name="${rawName.replace(/"/g, '&quot;')}" data-level-idx="${idx}" data-feat-type="feat" title="${UI.escapeAttr(rawName)} — Click for rule details" style="width: 150px; min-width: 150px; max-width: 150px; box-sizing: border-box; overflow: hidden;" class="relative min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[10px] font-bold bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border border-emerald-600/70 shadow-sm transition text-left cursor-pointer"><span class="shrink-0">🎖️</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">${UI.escapeHtml(badgeLabel)}</span>${cornerBadge}</button>`;
         });
 
         // Check regular feat eligibility
@@ -8674,8 +8709,6 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         const otherBonusBadgeItems = otherBonusFeats.map(fStr => {
           const str = String(fStr);
           const rawName = str.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').trim();
-          const tip = getFeatTooltipText(fStr);
-          const safeTip = tip.replace(/"/g, '&quot;');
           let bgCls = 'bg-amber-950/80 hover:bg-amber-900 text-amber-300 border-amber-600/70';
           let icon = '🌟';
           let isHomebrewBoon = false;
@@ -8716,9 +8749,9 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
             const featOnly = labelText.replace(/^\[(Extra\s+)?Racial\]\s*/i, '').trim();
             labelText = `[Human Bonus] ${featOnly}`;
           }
-          const cleanStr = labelText;
+          const badgeLabel = isHomebrewBoon ? (boonCoreName || rawName) : rawName;
           const cornerBadge = getFeatPinCornerBadgeHtml(rawName);
-          return `<button data-action="${isHomebrewBoon ? 'entity:inspect' : 'progression:show-feat-detail'}" ${isHomebrewBoon ? `data-entity-kind="boon" data-entity-name="${UI.escapeAttr(boonCoreName || rawName)}" data-level-index="${idx}"` : `data-feat-name="${rawName.replace(/"/g, '&quot;')}" data-level-idx="${idx}" data-feat-type="feat"`} title="${safeTip}" style="width: 150px; min-width: 150px; max-width: 150px; box-sizing: border-box; overflow: hidden;" class="relative min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[10px] font-bold ${bgCls} border shadow-sm transition text-left cursor-pointer"><span class="shrink-0">${icon}</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">${cleanStr}</span>${cornerBadge}</button>`;
+          return `<button data-action="${isHomebrewBoon ? 'entity:inspect' : 'progression:show-feat-detail'}" ${isHomebrewBoon ? `data-entity-kind="boon" data-entity-name="${UI.escapeAttr(boonCoreName || rawName)}" data-level-index="${idx}"` : `data-feat-name="${rawName.replace(/"/g, '&quot;')}" data-level-idx="${idx}" data-feat-type="feat"`} title="${UI.escapeAttr(rawName)} — Click for rule details" style="width: 150px; min-width: 150px; max-width: 150px; box-sizing: border-box; overflow: hidden;" class="relative min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[10px] font-bold ${bgCls} border shadow-sm transition text-left cursor-pointer"><span class="shrink-0">${icon}</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">${UI.escapeHtml(badgeLabel)}</span>${cornerBadge}</button>`;
         });
 
         (racialGainsByLevel[idx + 1] || []).forEach(g => {
@@ -8852,18 +8885,8 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
             </div>
           </td>
           <td class="py-2 align-top text-center whitespace-nowrap shrink-0" style="width: 34px; min-width: 34px; max-width: 34px; padding-left: 2px; padding-right: 2px;">
-            <div class="flex flex-col items-center justify-start gap-0.5 leading-none">
-              <button data-action="progression:open-quick-feat-picker" data-level-idx="${idx}" class="text-emerald-400 hover:text-emerald-300 p-0.5 text-[11px] leading-none transition font-bold" title="Add Feat, Ability, Invocation, or Bonus to this level">
-                ➕
-              </button>
-              <button data-action="progression:open-change-level-class" data-level-idx="${idx}" class="text-slate-400 hover:text-amber-400 p-0.5 text-[11px] leading-none transition" title="Edit class & stats for this level">
-                ✏️
-              </button>
-              ${idx > 0 ? `
-                <button data-action="progression:delete-level-row" data-level-idx="${idx}" class="text-slate-500 hover:text-rose-400 p-0.5 text-[11px] leading-none transition" title="Delete this level">
-                  🗑️
-                </button>
-              ` : ''}
+            <div class="flex flex-col items-center justify-start leading-none">
+              <button type="button" data-action="progression:open-level-actions" data-level-idx="${idx}" aria-haspopup="menu" class="text-slate-400 hover:text-amber-300 p-0.5 text-sm leading-none font-bold transition cursor-pointer" title="Level actions">⋯</button>
             </div>
           </td>
         `;
@@ -8898,9 +8921,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
                 </label>
               </div>
               <div class="flex items-center gap-1.5 shrink-0">
-                <button data-action="progression:open-quick-feat-picker" data-level-idx="${idx}" class="ui-btn-icon-sm bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-600/70 text-emerald-300" title="Add Feat, Ability, Invocation, or Bonus to this level">➕</button>
-                <button data-action="progression:open-change-level-class" data-level-idx="${idx}" class="ui-btn-icon-sm bg-slate-800/90 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-amber-400" title="Edit class & stats for this level">✏️</button>
-                ${idx > 0 ? `<button data-action="progression:delete-level-row" data-level-idx="${idx}" class="ui-btn-icon-sm bg-rose-950/70 hover:bg-rose-900 border border-rose-700/70 text-rose-300" title="Delete this level">🗑️</button>` : ''}
+                <button type="button" data-action="progression:open-level-actions" data-level-idx="${idx}" aria-haspopup="menu" class="ui-btn-icon-sm bg-slate-800/90 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-amber-300 font-bold" title="Level actions">⋯</button>
               </div>
             </div>
             <div class="flex flex-wrap items-center gap-y-1 px-2 py-1 rounded-lg bg-slate-900/90 border border-slate-800/90 font-mono text-[10px]">
@@ -11192,6 +11213,9 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       });
       Actions.register('progression:open-change-level-class', (el, data, event) => {
         openChangeLevelClassModal(Number(data.levelIdx) || 0);
+      });
+      Actions.register('progression:open-level-actions', (el, data, event) => {
+        toggleLevelRowActionsMenu(el, Number(data.levelIdx) || 0);
       });
       Actions.register('progression:delete-level-row', (el, data, event) => {
         deleteLevelRow(Number(data.levelIdx) || 0);
