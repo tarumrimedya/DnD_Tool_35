@@ -4521,8 +4521,25 @@
     }
     window.getCharacterSpecialAttackAbilities = getCharacterSpecialAttackAbilities;
 
-    function renderSpecialAttackAbilityCardsHtml(char) {
-      const abilities = getCharacterSpecialAttackAbilities(char);
+    // Utility and healing sub-powers (the "Abilities" section of the Activated Abilities & Items card).
+    function getCharacterActivatedAbilities(char) {
+      if (!char) return [];
+      if (typeof RuleEngine !== 'undefined' && typeof RuleEngine.deriveActivatedAbilities === 'function') {
+        const dbList = (typeof masterDb !== 'undefined' && Array.isArray(masterDb) && masterDb.length > 0)
+          ? masterDb
+          : (Array.isArray(char.customDb) ? char.customDb : []);
+        return RuleEngine.deriveActivatedAbilities(char, char.legoEvaluation, dbList);
+      }
+      return [];
+    }
+
+    // Attack cards plus ability cards: key lookups (roll / recharge / ready / quick search) span both lists.
+    function getCharacterAllSpecialCards(char) {
+      return getCharacterSpecialAttackAbilities(char).concat(getCharacterActivatedAbilities(char));
+    }
+
+    function renderSpecialAttackAbilityCardsHtml(char, list) {
+      const abilities = Array.isArray(list) ? list : getCharacterSpecialAttackAbilities(char);
       if (!abilities || abilities.length === 0) return '';
 
       const curRound = Number(char.tactical?.round || char.encounterRound) || 1;
@@ -4571,9 +4588,15 @@
           dv.rangeLabel ? `<span class="text-[10px] font-bold px-1.5 rounded bg-sky-950/70 text-sky-300 border border-sky-500/50">📏 ${esc(dv.rangeLabel)}</span>` : ''
         ].filter(Boolean).join('');
         const hasDeliveryInfo = Boolean(ab.delivery);
+        const isHealing = Boolean(ab.healing);
+        const healFormula = String(ab.healFormula || '');
         const firstRowHtml = isUtility
           ? `<span class="text-slate-400 font-sans text-[10px] uppercase tracking-wider">Effect:</span>
               <span class="font-sans text-slate-200 text-[10px]">${esc(ab.summary || 'See ability description')}</span>`
+          : isHealing
+          ? `<span class="text-slate-400 font-sans text-[10px] uppercase tracking-wider">Healing:</span>
+              <span class="font-bold text-emerald-300">${esc(healFormula)} HP</span>
+              ${dcSummaryStr ? `<span class="text-slate-600">•</span><span class="text-amber-200/90 text-[10px]">${esc(dcSummaryStr)}</span>` : ''}`
           : `<span class="text-slate-400 font-sans text-[10px] uppercase tracking-wider">Damage:</span>
               <span class="font-bold text-amber-300">${esc(dmgFormula)} ${esc(dmgType)}</span>
               ${dcSummaryStr ? `<span class="text-slate-600">•</span><span class="text-amber-200/90 text-[10px]">${esc(dcSummaryStr)}</span>` : ''}`;
@@ -4583,7 +4606,7 @@
         <div data-action="combat:special-attack-roll" data-ability-key="${safeKeyAttr}" class="p-2.5 rounded-xl border transition-all cursor-pointer select-none flex items-center justify-between gap-2 ${isOnCooldown ? 'bg-gradient-to-r to-slate-900/90 border-purple-500/60 text-purple-200 shadow-md' : 'bg-gradient-to-r to-slate-900/90 border-emerald-500/80 text-emerald-100 shadow-md shadow-emerald-950/40 ring-1 ring-emerald-500/30 hover:border-emerald-400'}">
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-1.5 flex-wrap">
-              <span class="text-xs">${isOnCooldown ? '⏳' : (isUtility ? '✨' : '🔥')}</span>
+              <span class="text-xs">${isOnCooldown ? '⏳' : (isUtility ? '✨' : (isHealing ? '💚' : '🔥'))}</span>
               <span class="text-xs font-black truncate text-white">${esc(ab.name)}</span>
               ${isOnCooldown
                 ? `<span class="text-[10px] font-black px-1.5 rounded text-purple-200 border border-purple-400/60">⏳ COOLDOWN: ${remainingRounds} ${remainingRounds === 1 ? 'ROUND' : 'ROUNDS'} LEFT (R${readyRound})</span>`
@@ -4615,8 +4638,8 @@
               </button>
             ` : '')}
             <button type="button" data-action="combat:special-attack-roll" data-ability-key="${safeKeyAttr}" class="text-[10px] font-black px-2.5 py-1.5 rounded-lg ${isOnCooldown ? 'bg-purple-600 hover:bg-purple-500 text-white' : 'bg-emerald-500 text-slate-950'} shadow transition active:scale-95 cursor-pointer flex items-center gap-1">
-              <span>${isUtility ? '✨' : '🔥'}</span>
-              <span>${isUtility ? 'Use' : `Roll ${esc(dmgFormula)}`}</span>
+              <span>${isUtility ? '✨' : (isHealing ? '💚' : '🔥')}</span>
+              <span>${isUtility ? 'Use' : (isHealing ? `Roll ${esc(healFormula)} Healing` : `Roll ${esc(dmgFormula)}`)}</span>
             </button>
           </div>
         </div>
@@ -4657,17 +4680,33 @@
       renderWeaponSetsUI();
       const usesNote = ab.usesMax ? `${Math.max(0, (ab.usesLeft || 0) - 1)}/${ab.usesMax} left` : '';
       const breakdown = [ab.summary, ab.action, rechargeNote, usesNote].filter(Boolean).join(' • ');
+      // Healing powers also roll their heal dice (no attack roll, no save).
+      let healTotal = null;
+      let healNote = '';
+      if (ab.healing && ab.healFormula && typeof parseAndRollDiceFormula === 'function') {
+        const parsedHeal = parseAndRollDiceFormula(ab.healFormula);
+        if (parsedHeal) {
+          healTotal = parsedHeal.grandTotal;
+          const healRolls = parsedHeal.diceGroups.map(g => `${g.notation}: [${g.rolls.join(', ')}]`).join(' • ');
+          const healMod = parsedHeal.modifiers.reduce((a, b) => a + b, 0);
+          healNote = `${healRolls}${healMod ? ` ${healMod >= 0 ? '+' : ''}${healMod}` : ''} Healing`;
+        }
+      }
+      const fullBreakdown = [healNote, breakdown].filter(Boolean).join(' • ');
+      const icon = healTotal !== null ? '💚' : '✨';
       if (typeof addDiceHistoryEntry === 'function') {
-        addDiceHistoryEntry({ title: `✨ ${ab.name}`, formula: 'Use', total: 'Used', breakdown });
+        addDiceHistoryEntry(healTotal !== null
+          ? { title: `${icon} ${ab.name} (Healing)`, formula: ab.healFormula, total: healTotal, breakdown: fullBreakdown }
+          : { title: `${icon} ${ab.name}`, formula: 'Use', total: 'Used', breakdown: fullBreakdown });
       }
       if (typeof showDiceTopToast === 'function') {
-        showDiceTopToast({ icon: '✨', title: ab.name, breakdown, total: 'Used' }, { stack: true });
+        showDiceTopToast({ icon, title: ab.name, breakdown: fullBreakdown, total: healTotal !== null ? `${healTotal} HP` : 'Used' }, { stack: true });
       }
     }
 
     function executeSpecialAttackAbilityRoll(abilityKey) {
       if (!character) return;
-      const abilities = getCharacterSpecialAttackAbilities(character);
+      const abilities = getCharacterAllSpecialCards(character);
       const ab = (typeof abilityKey === 'number' && !isNaN(abilityKey))
         ? abilities[abilityKey]
         : abilities.find(a => a.key === abilityKey || a.name.toLowerCase() === String(abilityKey || '').toLowerCase());
@@ -4697,7 +4736,7 @@
         }
         return;
       }
-      if (ab.utility) {
+      if (ab.utility || ab.healing) {
         executeUtilityPowerUse(ab);
         return;
       }
@@ -4861,7 +4900,7 @@
 
     function rollSpecialAttackCooldownOnly(abilityKey) {
       if (!character) return;
-      const abilities = getCharacterSpecialAttackAbilities(character);
+      const abilities = getCharacterAllSpecialCards(character);
       const ab = (typeof abilityKey === 'number' && !isNaN(abilityKey))
         ? abilities[abilityKey]
         : abilities.find(a => a.key === abilityKey || a.name.toLowerCase() === String(abilityKey || '').toLowerCase());
@@ -5152,6 +5191,8 @@
         ? renderSpecialAttackAbilityCardsHtml(character)
         : '';
       container.innerHTML = card1Html + card2Html + specialAttacksHtml;
+      // Utility / healing abilities share the same uses and cooldown state, so their card refreshes with the rotation.
+      try { renderCockpitConsumables(); } catch (e) { console.error('renderCockpitConsumables error:', e); }
       populateWeaponSetsEditorDropdowns();
     } catch (err) {
       console.error('renderWeaponSetsUI execution error:', err);
@@ -6375,7 +6416,7 @@
       };
 
       const specialAttackNamesSet = new Set(
-        (typeof getCharacterSpecialAttackAbilities === 'function' ? getCharacterSpecialAttackAbilities(character) : [])
+        (typeof getCharacterAllSpecialCards === 'function' ? getCharacterAllSpecialCards(character) : [])
           .map(sa => String(sa.name || '').toLowerCase().trim())
           .filter(Boolean)
       );
@@ -9997,11 +10038,6 @@
       if (physSummary) {
         physSummary.textContent = `${character.activeWeapon || 'No Weapon'}`;
       }
-      const consSummary = document.getElementById('combat-consumables-collapsed-summary');
-      if (consSummary) {
-        const beltItems = (character.gearPool || []).filter(g => g && g.isBelt && !g.isEquipped);
-        consSummary.textContent = `${beltItems.length} Belt / Consumable Items`;
-      }
 
       // Stepper & Toggles
       const ceValEl = document.getElementById('combat-expertise-val');
@@ -10432,7 +10468,7 @@
       }
     }
 
-    // --- QUICK CONSUMABLES BELT ---
+    // --- ACTIVATED ABILITIES & ITEMS (abilities, charged items, consumables) ---
     function renderCockpitConsumables() {
       const listEl = document.getElementById('cockpit-consumables-list');
       if (!listEl) return;
@@ -10474,15 +10510,30 @@
         !ensureItemDailyCharges(g)
       );
 
-      if (dailyItems.length === 0 && normalConsumables.length === 0) {
-        listEl.innerHTML = '<div class="text-[11px] text-slate-500 italic p-2 text-center">No quick-access consumables or daily-charge items on belt.</div>';
+      // 0. Utility and healing sub-powers (engine-derived; attack-roll powers stay in Attack Rotation)
+      const activatedAbilities = getCharacterActivatedAbilities(character);
+
+      const consSummary = document.getElementById('combat-consumables-collapsed-summary');
+      if (consSummary) {
+        consSummary.textContent = `${activatedAbilities.length} Abilities • ${dailyItems.length} Items • ${normalConsumables.length} Consumables`;
+      }
+
+      if (activatedAbilities.length === 0 && dailyItems.length === 0 && normalConsumables.length === 0) {
+        listEl.innerHTML = '<div class="text-[11px] text-slate-500 italic p-2 text-center">No activated abilities, charged items or consumables.</div>';
         return;
       }
 
+      const sectionHeader = (icon, label) => `<div class="text-[10px] font-black uppercase tracking-wider text-slate-400 pt-1">${icon} ${label}</div>`;
       let html = '';
 
-      // Daily-Charge Items
+      // Abilities (utility + healing sub-powers)
+      if (activatedAbilities.length > 0) {
+        html += sectionHeader('✨', 'Abilities') + renderSpecialAttackAbilityCardsHtml(character, activatedAbilities);
+      }
+
+      // Charged Items (daily-charge items)
       if (dailyItems.length > 0) {
+        html += sectionHeader('🔋', 'Charged Items');
         html += dailyItems.map(({ item, slotKey, isSlot, dailyCharges: dc }) => {
           const lower = (item.name || '').toLowerCase();
           const isHeal = lower.includes('heal');
@@ -10564,6 +10615,7 @@
 
       // Standard Consumables (Potions, Scrolls, etc.)
       if (normalConsumables.length > 0) {
+        html += sectionHeader('🧪', 'Consumables');
         html += normalConsumables.map((item) => {
           const isPotion = item.name.toLowerCase().includes('potion');
           const isWand = item.name.toLowerCase().includes('wand');
@@ -14266,7 +14318,7 @@
       const useMatch = q.match(/^use\s*:\s*(.*)$/i);
       if (useMatch) {
         const subQ = (useMatch[1] || '').toLowerCase().trim();
-        const abilities = typeof getCharacterSpecialAttackAbilities === 'function' ? getCharacterSpecialAttackAbilities() : [];
+        const abilities = typeof getCharacterAllSpecialCards === 'function' ? getCharacterAllSpecialCards(character) : [];
         const filtered = abilities
           .map(a => ({ a, sc: subQ ? _termFuzzyScore(subQ, a.name, a.dmgType || '') : 100 }))
           .filter(x => !subQ || x.sc > 0)

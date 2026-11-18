@@ -2271,6 +2271,7 @@ const RuleEngine = {
             source: b.source || out.name || out.id || 'V3 Entry'
           };
           if (b.critScaleByMult) dpObj.critScaleByMult = true;
+          if (rollKind === 'Healing') dpObj.healing = true;
           if (b.condition || situationalCond) dpObj.condition = b.condition || situationalCond;
           damageParts.push(dpObj);
           if (b.touch || b.isTouch) addBadge('Touch Attack');
@@ -11964,6 +11965,7 @@ const RuleEngine = {
         name,
         summary,
         kind: pw.kind || 'inline',
+        refId: pw.kind === 'attached' && pw.refId ? String(pw.refId) : '',
         action: pw.action || '',
         usage,
         usageText: usageTextOf(usage),
@@ -12088,7 +12090,22 @@ const RuleEngine = {
     };
   },
 
+  /** Damage-dealing special attacks (breath, claws, rays ...). Utility and healing powers live in `deriveActivatedAbilities`. */
   deriveSpecialAttacks(w, legoEval = null, customDb = []) {
+    return this.deriveSpecialPowerPool(w, legoEval, customDb).filter(r => r.category === 'attack');
+  },
+
+  /** Activated abilities: utility sub-powers (no damage) and healing powers. Single source with `deriveSpecialAttacks`. */
+  deriveActivatedAbilities(w, legoEval = null, customDb = []) {
+    // Attached-spell powers stay here until the slot-based Spell Command Center can host them (category 'spell').
+    return this.deriveSpecialPowerPool(w, legoEval, customDb).filter(r => r.category === 'ability' || r.category === 'spell');
+  },
+
+  /**
+   * Every special card of a character, each tagged `category`: 'attack' (damage), 'ability' (utility / healing),
+   * or 'spell' (a sub-power that is directly an attached spell; listed with the abilities until the Spell Command Center hosts it).
+   */
+  deriveSpecialPowerPool(w, legoEval = null, customDb = []) {
     if (!w || typeof w !== 'object') return [];
     const stripTag = (str) => String(str || '').replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️\s]+(\[.*?\])?\s*/, '').trim();
     const rawPool = [];
@@ -12220,8 +12237,17 @@ const RuleEngine = {
         ? this.evaluateAbilitySaveDc({ dcFormula: spec.dcFormula, benefit: spec.benefit, spellLevel: spec.spellLevel }, w)
         : null;
       const [rawActionType, effActionLabel] = parseActionLabel(spec.actionCandidate);
+      const healParts = isUtility ? [] : cleanParts.filter(dp => dp.healing);
+      const isHealing = healParts.length > 0 && healParts.length === cleanParts.length;
+      const category = spec.attachedSpell ? 'spell' : ((isUtility || isHealing) ? 'ability' : 'attack');
+      const healFormula = isHealing ? `${dp0.dice}${bonusNum ? (bonusNum > 0 ? '+' + bonusNum : bonusNum) : ''}` : '';
 
       result.push({
+        category,
+        healing: isHealing,
+        healParts,
+        healFormula,
+        attachedSpellId: spec.attachedSpell || null,
         key,
         abilityKey: key,
         id: spec.id || key,
@@ -12392,6 +12418,7 @@ const RuleEngine = {
           recharge: pw.rechargeDice ? `${pw.rechargeDice} rounds` : '',
           rechargeDice: pw.rechargeDice,
           spellLevel: pw.spellLevel,
+          attachedSpell: (pw.kind === 'attached' && pw.refId) ? String(pw.refId) : '',
           actionCandidate: pw.action || 'Standard Action',
           utility: !pwHasDmg,
           summary: pw.summary,
@@ -14765,7 +14792,9 @@ const RuleEngine = {
     const spellsView = this.deriveSpellsView(working, workingDb);
     const progressionView = this.deriveProgressionView(working, workingDb);
     const subsystemsView = this.deriveSubsystemsView(working, workingDb);
-    const specialAttacks = this.deriveSpecialAttacks(working, working.legoEvaluation, workingDb);
+    const specialPool = this.deriveSpecialPowerPool(working, working.legoEvaluation, workingDb);
+    const specialAttacks = specialPool.filter(r => r.category === 'attack');
+    const activatedAbilities = specialPool.filter(r => r.category === 'ability' || r.category === 'spell');
     const activeBuffsStrip = this.deriveActiveBuffsStrip(working);
     const skillsBonusMap = this.deriveSkillsBonusMap(working);
     const spent = working.tactical?.spentActions || working.actionEconomy?.spentActions || {};
@@ -14860,6 +14889,7 @@ const RuleEngine = {
         actionEconomy: derivedActionEconomy,
         tactical: derivedTactical,
         specialAttacks,
+        activatedAbilities,
         activeBuffsStrip
       },
       defenses: {

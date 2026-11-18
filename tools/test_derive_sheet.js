@@ -5235,7 +5235,7 @@ function runDeriveSheetTests() {
       ]
     };
     const raceAttackChar = baseChar({ race: 'Black Dragon Avatar', customEntries: { 'custom-black-dragon-avatar': avatarRace } });
-    const raceAttacks = RuleEngine.deriveSpecialAttacks(raceAttackChar, null, []);
+    const raceAttacks = RuleEngine.deriveSpecialPowerPool(raceAttackChar, null, []);
     const raceAcid = raceAttacks.find(a => a.powerId === 'pw-race-acid');
     const raceClaw = raceAttacks.find(a => a.powerId === 'pw-race-claw');
     const raceWings = raceAttacks.find(a => a.powerId === 'pw-race-wings');
@@ -5255,13 +5255,56 @@ function runDeriveSheetTests() {
       raceWings.usesMax === 3 && raceWings.usesLeft === 3 && raceWings.isExhausted === false,
       JSON.stringify(raceWings || null)
     );
-    const spentWings = RuleEngine.deriveSpecialAttacks(Object.assign({}, raceAttackChar, {
+    const spentWings = RuleEngine.deriveSpecialPowerPool(Object.assign({}, raceAttackChar, {
       powerUses: { [raceWings ? raceWings.key : 'x']: { used: 3, mode: 'perDay' } }
     }), null, []).find(a => a.powerId === 'pw-race-wings');
     check(
       'Tracked uses: 3/3 spent per-day uses mark the Use card exhausted',
       Boolean(spentWings) && spentWings.usesLeft === 0 && spentWings.isExhausted === true,
       JSON.stringify(spentWings || null)
+    );
+    // 5b. Activated Abilities & Items: utility and healing powers leave Attack Rotation; attached spells belong to the Spell Command Center.
+    const abilityRace = {
+      schemaVersion: 3, id: 'custom-ability-split-race', blueprint: 'race', type: 'Race', name: 'Ability Split Race', effects: [],
+      race: { kind: 'race', size: 'Medium', creatureType: 'Humanoid', speed: 30 },
+      powers: [
+        { id: 'pw-split-claw', kind: 'inline', name: 'Claw', action: 'Standard', usage: { mode: 'atWill' },
+          effects: [{ type: 'roll', kind: 'Damage', count: 1, die: 'd6', dmgType: 'Slashing' }] },
+        { id: 'pw-split-utility', kind: 'inline', name: 'Charm Reptiles', action: 'Standard', usage: { mode: 'perDay', uses: 2 },
+          effects: [{ type: 'stat', targets: ['speed.fly'], mode: 'flat', value: 10, btype: 'Untyped', summary: 'Charms reptiles' }] },
+        { id: 'pw-split-heal', kind: 'inline', name: 'Soothing Touch', action: 'Standard', usage: { mode: 'perDay', uses: 3 },
+          effects: [{ type: 'roll', kind: 'Healing', count: 2, die: 'd8' }] },
+        { id: 'pw-split-spell', kind: 'attached', refId: 'spl-cure-light-wounds', name: 'Cure Light Wounds', action: 'Standard' }
+      ]
+    };
+    const splitChar = baseChar({ race: 'Ability Split Race', customEntries: { 'custom-ability-split-race': abilityRace } });
+    const splitAttacks = RuleEngine.deriveSpecialAttacks(splitChar, null, []);
+    const splitAbilities = RuleEngine.deriveActivatedAbilities(splitChar, null, []);
+    const splitHeal = splitAbilities.find(a => a.powerId === 'pw-split-heal');
+    check(
+      'Activated Abilities: a damage power stays in attacks; a utility power is not in attacks but is an ability',
+      splitAttacks.some(a => a.powerId === 'pw-split-claw') && !splitAttacks.some(a => a.powerId === 'pw-split-utility') &&
+      splitAbilities.some(a => a.powerId === 'pw-split-utility' && a.utility === true) && !splitAbilities.some(a => a.powerId === 'pw-split-claw'),
+      JSON.stringify({ attacks: splitAttacks.map(a => a.powerId), abilities: splitAbilities.map(a => a.powerId) })
+    );
+    check(
+      'Activated Abilities: a Healing roll power is an ability (not an attack) with healFormula 2d8 and 3 tracked uses',
+      Boolean(splitHeal) && splitHeal.healing === true && splitHeal.healFormula === '2d8' && splitHeal.usesMax === 3 &&
+      !splitAttacks.some(a => a.powerId === 'pw-split-heal'),
+      JSON.stringify(splitHeal || null)
+    );
+    check(
+      'Activated Abilities: an attached-spell power is never an attack; it is tagged category "spell" with its spell id (listed with abilities for now)',
+      !splitAttacks.some(a => a.powerId === 'pw-split-spell') &&
+      splitAbilities.some(a => a.powerId === 'pw-split-spell' && a.category === 'spell' && a.attachedSpellId === 'spl-cure-light-wounds'),
+      JSON.stringify({ attacks: splitAttacks.map(a => a.powerId), abilities: splitAbilities.map(a => a.powerId) })
+    );
+    check(
+      'Sheet: combat.activatedAbilities mirrors deriveActivatedAbilities and specialAttacks has no ability cards',
+      Array.isArray(RuleEngine.deriveSheet(splitChar).combat.activatedAbilities) &&
+      RuleEngine.deriveSheet(splitChar).combat.activatedAbilities.length === splitAbilities.length &&
+      RuleEngine.deriveSheet(splitChar).combat.specialAttacks.every(a => a.category === 'attack'),
+      ''
     );
     // 6. Delivery types and area shapes (PHB p.175): breath cone, ray, melee touch, spread sphere, line, cylinder.
     const dlv = (spec) => RuleEngine.describeAttackDelivery(spec, baseChar({ bab: 5, abilities: { str: 14, dex: 16, con: 14, int: 10, wis: 10, cha: 10 } }));
