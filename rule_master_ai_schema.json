@@ -1185,6 +1185,9 @@
         "casterLevel": {
           "type": "number"
         },
+        "casterLevelFormula": {
+          "type": "string"
+        },
         "saveDC": {
           "type": "number"
         },

@@ -11987,7 +11987,13 @@ const RuleEngine = {
       if (effects.length === 0 && ref && Array.isArray(ref.effects)) effects = ref.effects;
       const id = String(pw.id || `power-${idx + 1}`);
       const name = String(pw.name || (ref && ref.name) || `Power ${idx + 1}`);
-      const cl = Number(pw.casterLevel) || 0;
+      // Caster / manifester level: a number, or `casterLevelFormula` for racial traits keyed to Hit Dice
+      // ("max(1, floor(@hd / 2))" psi-like, "max(3, @level * 2)" duergar).
+      let cl = Number(pw.casterLevel) || 0;
+      if (!cl && typeof pw.casterLevelFormula === 'string' && pw.casterLevelFormula.trim() && levelCtx) {
+        const clVal = Number(this.evaluateFormula(pw.casterLevelFormula, levelCtx));
+        if (Number.isFinite(clVal) && clVal > 0) cl = Math.floor(clVal);
+      }
       // @spellLevel: the power's own Spell Level, else its attached spell's level.
       const spellLevelRaw = pw.spellLevel !== undefined && pw.spellLevel !== '' ? Number(pw.spellLevel) : (ref ? Number(ref.level) : NaN);
       const spellLevel = Number.isFinite(spellLevelRaw) ? spellLevelRaw : null;

@@ -23036,6 +23036,78 @@
         "type": "defense",
         "mode": "Sense / Movement",
         "what": "Scent 30 ft."
+      },
+      {
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "condKind": "state",
+            "condText": "toggle:chitin-cold",
+            "effects": [
+              {
+                "type": "defense",
+                "mode": "Energy Resistance",
+                "what": "Cold",
+                "value": 5
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "condKind": "state",
+            "condText": "toggle:chitin-electricity",
+            "effects": [
+              {
+                "type": "defense",
+                "mode": "Energy Resistance",
+                "what": "Electricity",
+                "value": 5
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "condKind": "state",
+            "condText": "toggle:chitin-fire",
+            "effects": [
+              {
+                "type": "defense",
+                "mode": "Energy Resistance",
+                "what": "Fire",
+                "value": 5
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "condKind": "state",
+            "condText": "toggle:chitin-sonic",
+            "effects": [
+              {
+                "type": "defense",
+                "mode": "Energy Resistance",
+                "what": "Sonic",
+                "value": 5
+              }
+            ]
+          }
+        ]
       }
     ],
     "shortDescription": "Dromites stand about 3 feet tall and usually weigh slightly more than 30 pounds. They have iridescent compound eyes. Dromites wear heavy boots and light clothing, and are sometimes content with just a sturdy harness. +2…",
@@ -23044,7 +23116,43 @@
       "race",
       "dromite"
     ],
-    "bonusFeats": 0
+    "bonusFeats": 0,
+    "powers": [
+      {
+        "id": "pw-dromite-energy-ray",
+        "kind": "attached",
+        "name": "Energy Ray (psi-like)",
+        "action": "Standard",
+        "usage": {
+          "mode": "perDay",
+          "uses": 1
+        },
+        "refId": "pwr-energy-ray",
+        "grantMode": "cast",
+        "casterLevelFormula": "max(1, floor(@hd / 2))",
+        "dcFormula": "10 + @spellLevel + Cha",
+        "spellLevel": 1,
+        "attack": "ranged-touch",
+        "range": "Close (25 ft. + 5 ft./2 levels)",
+        "area": "Ray",
+        "effects": [
+          {
+            "type": "roll",
+            "kind": "Damage",
+            "count": 1,
+            "die": "d6",
+            "dmgType": "Energy",
+            "scaling": "perCL",
+            "start": 1,
+            "per": 2,
+            "amount": 1,
+            "crit": "normal",
+            "touch": true
+          }
+        ],
+        "text": "Always deals the energy type the chitin resists. Manifester level equals 1/2 Hit Dice (minimum 1st); save DC is Charisma-based."
+      }
+    ]
   },
   {
     "schemaVersion": 3,
@@ -23264,7 +23372,62 @@
       "race",
       "gnome-svirfneblin"
     ],
-    "bonusFeats": 0
+    "bonusFeats": 0,
+    "powers": [
+      {
+        "id": "pw-gnome-svirfneblin-blindness-deafness",
+        "kind": "attached",
+        "name": "Blindness/Deafness",
+        "action": "Standard",
+        "usage": {
+          "mode": "perDay",
+          "uses": 1
+        },
+        "refId": "spl-blindness-deafness",
+        "grantMode": "cast",
+        "dcFormula": "10 + @spellLevel + Cha",
+        "save": {
+          "type": "Fortitude",
+          "effect": "Negates"
+        }
+      },
+      {
+        "id": "pw-gnome-svirfneblin-blur",
+        "kind": "attached",
+        "name": "Blur",
+        "action": "Standard",
+        "usage": {
+          "mode": "perDay",
+          "uses": 1
+        },
+        "refId": "spl-blur",
+        "grantMode": "cast"
+      },
+      {
+        "id": "pw-gnome-svirfneblin-disguise-self",
+        "kind": "attached",
+        "name": "Disguise Self",
+        "action": "Standard",
+        "usage": {
+          "mode": "perDay",
+          "uses": 1
+        },
+        "refId": "spl-disguise-self",
+        "grantMode": "cast"
+      },
+      {
+        "id": "pw-gnome-svirfneblin-nondetection",
+        "kind": "attached",
+        "name": "Nondetection (Su, continuous)",
+        "action": "Free",
+        "usage": {
+          "mode": "atWill"
+        },
+        "refId": "spl-nondetection",
+        "grantMode": "cast",
+        "text": "Continuous; caster level equals class levels."
+      }
+    ]
   },
   {
     "schemaVersion": 3,
@@ -24511,7 +24674,66 @@
       "gnome-rock"
     ],
     "bonusFeats": 0,
-    "benefit": "+2 Constitution, -2 Strength. Small size (+1 AC, +1 attack, +4 Hide), Low-Light Vision, Weapon Familiarity (Hooked Hammer), +2 saves vs illusions, +1 illusion DC, +1 attack vs kobolds/goblinoids, +4 AC vs giants, +2 Listen/Craft (alchemy), Spell-Like Abilities."
+    "benefit": "+2 Constitution, -2 Strength. Small size (+1 AC, +1 attack, +4 Hide), Low-Light Vision, Weapon Familiarity (Hooked Hammer), +2 saves vs illusions, +1 illusion DC, +1 attack vs kobolds/goblinoids, +4 AC vs giants, +2 Listen/Craft (alchemy), Spell-Like Abilities.",
+    "powers": [
+      {
+        "id": "pw-gnome-rock-speak-with-animals",
+        "kind": "attached",
+        "name": "Speak with Animals (burrowing mammal)",
+        "action": "Standard",
+        "usage": {
+          "mode": "perDay",
+          "uses": 1
+        },
+        "refId": "spl-speak-with-animals",
+        "grantMode": "cast",
+        "text": "1/day, burrowing mammals only."
+      },
+      {
+        "id": "pw-gnome-rock-dancing-lights",
+        "kind": "attached",
+        "name": "Dancing Lights",
+        "action": "Standard",
+        "usage": {
+          "mode": "perDay",
+          "uses": 1
+        },
+        "refId": "spl-dancing-lights",
+        "grantMode": "cast",
+        "text": "Requires Charisma 10 or higher."
+      },
+      {
+        "id": "pw-gnome-rock-ghost-sound",
+        "kind": "attached",
+        "name": "Ghost Sound",
+        "action": "Standard",
+        "usage": {
+          "mode": "perDay",
+          "uses": 1
+        },
+        "refId": "spl-ghost-sound",
+        "grantMode": "cast",
+        "dcFormula": "10 + @spellLevel + Cha",
+        "save": {
+          "type": "Will",
+          "effect": "Negates"
+        },
+        "text": "Requires Charisma 10 or higher."
+      },
+      {
+        "id": "pw-gnome-rock-prestidigitation",
+        "kind": "attached",
+        "name": "Prestidigitation",
+        "action": "Standard",
+        "usage": {
+          "mode": "perDay",
+          "uses": 1
+        },
+        "refId": "spl-prestidigitation",
+        "grantMode": "cast",
+        "text": "Requires Charisma 10 or higher."
+      }
+    ]
   },
   {
     "schemaVersion": 3,
@@ -24625,7 +24847,25 @@
       "race",
       "half-giant"
     ],
-    "bonusFeats": 0
+    "bonusFeats": 0,
+    "powers": [
+      {
+        "id": "pw-half-giant-stomp",
+        "kind": "attached",
+        "name": "Stomp (psi-like)",
+        "action": "Standard",
+        "usage": {
+          "mode": "perDay",
+          "uses": 1
+        },
+        "refId": "pwr-stomp",
+        "grantMode": "cast",
+        "casterLevelFormula": "max(1, floor(@hd / 2))",
+        "spellLevel": 1,
+        "dcFormula": "10 + @spellLevel + Cha",
+        "text": "Manifester level equals 1/2 Hit Dice (minimum 1st); save DC is Charisma-based."
+      }
+    ]
   },
   {
     "schemaVersion": 3,
@@ -25229,7 +25469,21 @@
       "race",
       "aasimar"
     ],
-    "bonusFeats": 0
+    "bonusFeats": 0,
+    "powers": [
+      {
+        "id": "pw-aasimar-daylight",
+        "kind": "attached",
+        "name": "Daylight",
+        "action": "Standard",
+        "usage": {
+          "mode": "perDay",
+          "uses": 1
+        },
+        "refId": "spl-daylight",
+        "grantMode": "cast"
+      }
+    ]
   },
   {
     "schemaVersion": 3,
@@ -25603,7 +25857,45 @@
       "race",
       "elf-drow"
     ],
-    "bonusFeats": 0
+    "bonusFeats": 0,
+    "powers": [
+      {
+        "id": "pw-elf-drow-dancing-lights",
+        "kind": "attached",
+        "name": "Dancing Lights",
+        "action": "Standard",
+        "usage": {
+          "mode": "perDay",
+          "uses": 1
+        },
+        "refId": "spl-dancing-lights",
+        "grantMode": "cast"
+      },
+      {
+        "id": "pw-elf-drow-darkness",
+        "kind": "attached",
+        "name": "Darkness",
+        "action": "Standard",
+        "usage": {
+          "mode": "perDay",
+          "uses": 1
+        },
+        "refId": "spl-darkness",
+        "grantMode": "cast"
+      },
+      {
+        "id": "pw-elf-drow-faerie-fire",
+        "kind": "attached",
+        "name": "Faerie Fire",
+        "action": "Standard",
+        "usage": {
+          "mode": "perDay",
+          "uses": 1
+        },
+        "refId": "spl-faerie-fire",
+        "grantMode": "cast"
+      }
+    ]
   },
   {
     "schemaVersion": 3,
@@ -25673,7 +25965,43 @@
       "race",
       "maenad"
     ],
-    "bonusFeats": 0
+    "bonusFeats": 0,
+    "powers": [
+      {
+        "id": "pw-maenad-energy-ray",
+        "kind": "attached",
+        "name": "Energy Ray (psi-like, sonic)",
+        "action": "Standard",
+        "usage": {
+          "mode": "perDay",
+          "uses": 1
+        },
+        "refId": "pwr-energy-ray",
+        "grantMode": "cast",
+        "casterLevelFormula": "max(1, floor(@hd / 2))",
+        "dcFormula": "10 + @spellLevel + Cha",
+        "spellLevel": 1,
+        "attack": "ranged-touch",
+        "range": "Close (25 ft. + 5 ft./2 levels)",
+        "area": "Ray",
+        "effects": [
+          {
+            "type": "roll",
+            "kind": "Damage",
+            "count": 1,
+            "die": "d6",
+            "dmgType": "Sonic",
+            "scaling": "perCL",
+            "start": 1,
+            "per": 2,
+            "amount": 1,
+            "crit": "normal",
+            "touch": true
+          }
+        ],
+        "text": "Sonic damage only, with a tremendous scream of rage. Manifester level equals 1/2 Hit Dice (minimum 1st); save DC is Charisma-based."
+      }
+    ]
   },
   {
     "schemaVersion": 3,
@@ -25945,7 +26273,52 @@
       "race",
       "duergar"
     ],
-    "bonusFeats": 0
+    "bonusFeats": 0,
+    "powers": [
+      {
+        "id": "pw-duergar-enlarge-person",
+        "kind": "attached",
+        "name": "Enlarge Person (self only)",
+        "action": "Standard",
+        "usage": {
+          "mode": "perDay",
+          "uses": 1
+        },
+        "refId": "spl-enlarge-person",
+        "grantMode": "cast",
+        "casterLevelFormula": "max(3, @level * 2)",
+        "text": "As a wizard of twice the duergar’s class level (minimum caster level 3rd); affects only the duergar and what it carries."
+      },
+      {
+        "id": "pw-duergar-invisibility",
+        "kind": "attached",
+        "name": "Invisibility (self only)",
+        "action": "Standard",
+        "usage": {
+          "mode": "perDay",
+          "uses": 1
+        },
+        "refId": "spl-invisibility",
+        "grantMode": "cast",
+        "casterLevelFormula": "max(3, @level * 2)",
+        "text": "As a wizard of twice the duergar’s class level (minimum caster level 3rd); affects only the duergar and what it carries."
+      },
+      {
+        "id": "pw-duergar-expansion",
+        "kind": "attached",
+        "name": "Expansion (psi-like)",
+        "action": "Standard",
+        "usage": {
+          "mode": "perDay",
+          "uses": 1
+        },
+        "refId": "pwr-expansion",
+        "grantMode": "cast",
+        "casterLevelFormula": "max(3, @hd)",
+        "spellLevel": 1,
+        "text": "Manifester level equals Hit Dice (minimum 3rd); affects only the duergar and what it carries. The psi-like invisibility uses the same 1/day as the spell-like one above."
+      }
+    ]
   },
   {
     "schemaVersion": 3,
@@ -26240,7 +26613,21 @@
       "race",
       "tiefling"
     ],
-    "bonusFeats": 0
+    "bonusFeats": 0,
+    "powers": [
+      {
+        "id": "pw-tiefling-darkness",
+        "kind": "attached",
+        "name": "Darkness",
+        "action": "Standard",
+        "usage": {
+          "mode": "perDay",
+          "uses": 1
+        },
+        "refId": "spl-darkness",
+        "grantMode": "cast"
+      }
+    ]
   },
   {
     "schemaVersion": 3,
@@ -26804,7 +27191,32 @@
       "construct",
       "living-construct"
     ],
-    "bonusFeats": 0
+    "bonusFeats": 0,
+    "powers": [
+      {
+        "id": "pw-warforged-slam",
+        "kind": "inline",
+        "name": "Slam (Natural Weapon)",
+        "action": "Standard",
+        "usage": {
+          "mode": "atWill"
+        },
+        "attack": "weapon",
+        "effects": [
+          {
+            "type": "roll",
+            "kind": "Damage",
+            "count": 1,
+            "die": "d4",
+            "dmgType": "Bludgeoning",
+            "scaling": "formula",
+            "dice": "1d4 + Str",
+            "crit": "normal"
+          }
+        ],
+        "text": "Slam attack, 1d4 plus Strength modifier."
+      }
+    ]
   },
   {
     "schemaVersion": 3,
@@ -27077,7 +27489,65 @@
       "race",
       "gnome-forest"
     ],
-    "bonusFeats": 0
+    "bonusFeats": 0,
+    "powers": [
+      {
+        "id": "pw-gnome-forest-dancing-lights",
+        "kind": "attached",
+        "name": "Dancing Lights",
+        "action": "Standard",
+        "usage": {
+          "mode": "perDay",
+          "uses": 1
+        },
+        "refId": "spl-dancing-lights",
+        "grantMode": "cast",
+        "text": "Requires Charisma 10 or higher."
+      },
+      {
+        "id": "pw-gnome-forest-ghost-sound",
+        "kind": "attached",
+        "name": "Ghost Sound",
+        "action": "Standard",
+        "usage": {
+          "mode": "perDay",
+          "uses": 1
+        },
+        "refId": "spl-ghost-sound",
+        "grantMode": "cast",
+        "dcFormula": "10 + @spellLevel + Cha",
+        "save": {
+          "type": "Will",
+          "effect": "Negates"
+        },
+        "text": "Requires Charisma 10 or higher."
+      },
+      {
+        "id": "pw-gnome-forest-prestidigitation",
+        "kind": "attached",
+        "name": "Prestidigitation",
+        "action": "Standard",
+        "usage": {
+          "mode": "perDay",
+          "uses": 1
+        },
+        "refId": "spl-prestidigitation",
+        "grantMode": "cast",
+        "text": "Requires Charisma 10 or higher."
+      },
+      {
+        "id": "pw-gnome-forest-pass-without-trace",
+        "kind": "attached",
+        "name": "Pass without Trace (Su)",
+        "action": "Free",
+        "usage": {
+          "mode": "atWill"
+        },
+        "refId": "spl-pass-without-trace",
+        "grantMode": "cast",
+        "text": "Innate, self only, as a free action; caster level equals class levels."
+      }
+    ]
   },
   {
     "schemaVersion": 3,
@@ -27484,7 +27954,161 @@
       "race",
       "sprite-pixie"
     ],
-    "bonusFeats": 0
+    "bonusFeats": 0,
+    "powers": [
+      {
+        "id": "pw-sprite-pixie-invisibility-greater",
+        "kind": "attached",
+        "name": "Greater Invisibility",
+        "action": "Free",
+        "usage": {
+          "mode": "atWill"
+        },
+        "refId": "spl-invisibility-greater",
+        "grantMode": "cast",
+        "text": "At will; always active unless the pixie cancels it."
+      },
+      {
+        "id": "pw-sprite-pixie-confusion-lesser",
+        "kind": "attached",
+        "name": "Lesser Confusion",
+        "action": "Standard",
+        "usage": {
+          "mode": "perDay",
+          "uses": 1
+        },
+        "refId": "spl-confusion-lesser",
+        "grantMode": "cast",
+        "dcFormula": "10 + @spellLevel + Cha",
+        "save": {
+          "type": "Will",
+          "effect": "Negates"
+        }
+      },
+      {
+        "id": "pw-sprite-pixie-dancing-lights",
+        "kind": "attached",
+        "name": "Dancing Lights",
+        "action": "Standard",
+        "usage": {
+          "mode": "perDay",
+          "uses": 1
+        },
+        "refId": "spl-dancing-lights",
+        "grantMode": "cast"
+      },
+      {
+        "id": "pw-sprite-pixie-detect-chaos",
+        "kind": "attached",
+        "name": "Detect Chaos",
+        "action": "Standard",
+        "usage": {
+          "mode": "perDay",
+          "uses": 1
+        },
+        "refId": "spl-detect-chaos",
+        "grantMode": "cast"
+      },
+      {
+        "id": "pw-sprite-pixie-detect-evil",
+        "kind": "attached",
+        "name": "Detect Evil",
+        "action": "Standard",
+        "usage": {
+          "mode": "perDay",
+          "uses": 1
+        },
+        "refId": "spl-detect-evil",
+        "grantMode": "cast"
+      },
+      {
+        "id": "pw-sprite-pixie-detect-good",
+        "kind": "attached",
+        "name": "Detect Good",
+        "action": "Standard",
+        "usage": {
+          "mode": "perDay",
+          "uses": 1
+        },
+        "refId": "spl-detect-good",
+        "grantMode": "cast"
+      },
+      {
+        "id": "pw-sprite-pixie-detect-law",
+        "kind": "attached",
+        "name": "Detect Law",
+        "action": "Standard",
+        "usage": {
+          "mode": "perDay",
+          "uses": 1
+        },
+        "refId": "spl-detect-law",
+        "grantMode": "cast"
+      },
+      {
+        "id": "pw-sprite-pixie-detect-thoughts",
+        "kind": "attached",
+        "name": "Detect Thoughts",
+        "action": "Standard",
+        "usage": {
+          "mode": "perDay",
+          "uses": 1
+        },
+        "refId": "spl-detect-thoughts",
+        "grantMode": "cast",
+        "dcFormula": "10 + @spellLevel + Cha",
+        "save": {
+          "type": "Will",
+          "effect": "Negates"
+        }
+      },
+      {
+        "id": "pw-sprite-pixie-dispel-magic",
+        "kind": "attached",
+        "name": "Dispel Magic",
+        "action": "Standard",
+        "usage": {
+          "mode": "perDay",
+          "uses": 1
+        },
+        "refId": "spl-dispel-magic",
+        "grantMode": "cast"
+      },
+      {
+        "id": "pw-sprite-pixie-entangle",
+        "kind": "attached",
+        "name": "Entangle",
+        "action": "Standard",
+        "usage": {
+          "mode": "perDay",
+          "uses": 1
+        },
+        "refId": "spl-entangle",
+        "grantMode": "cast",
+        "dcFormula": "10 + @spellLevel + Cha",
+        "save": {
+          "type": "Reflex",
+          "effect": "Negates"
+        }
+      },
+      {
+        "id": "pw-sprite-pixie-permanent-image",
+        "kind": "attached",
+        "name": "Permanent Image (visual and auditory only)",
+        "action": "Standard",
+        "usage": {
+          "mode": "perDay",
+          "uses": 1
+        },
+        "refId": "spl-permanent-image",
+        "grantMode": "cast",
+        "dcFormula": "10 + @spellLevel + Cha",
+        "save": {
+          "type": "Will",
+          "effect": "Negates"
+        }
+      }
+    ]
   },
   {
     "schemaVersion": 3,
@@ -29607,7 +30231,66 @@
       "low-light-vision"
     ],
     "bonusFeats": 0,
-    "benefit": "+2 Constitution, -2 Strength. Small size (+1 AC, +1 attack, +4 Hide), Low-Light Vision, Weapon Familiarity (Hooked Hammer), +2 saves vs illusions, +1 illusion DC, +1 attack vs kobolds/goblinoids, +4 AC vs giants, +2 Listen/Craft (alchemy), Spell-Like Abilities."
+    "benefit": "+2 Constitution, -2 Strength. Small size (+1 AC, +1 attack, +4 Hide), Low-Light Vision, Weapon Familiarity (Hooked Hammer), +2 saves vs illusions, +1 illusion DC, +1 attack vs kobolds/goblinoids, +4 AC vs giants, +2 Listen/Craft (alchemy), Spell-Like Abilities.",
+    "powers": [
+      {
+        "id": "pw-gnome-speak-with-animals",
+        "kind": "attached",
+        "name": "Speak with Animals (burrowing mammal)",
+        "action": "Standard",
+        "usage": {
+          "mode": "perDay",
+          "uses": 1
+        },
+        "refId": "spl-speak-with-animals",
+        "grantMode": "cast",
+        "text": "1/day, burrowing mammals only (rock gnome / gnome)."
+      },
+      {
+        "id": "pw-gnome-dancing-lights",
+        "kind": "attached",
+        "name": "Dancing Lights",
+        "action": "Standard",
+        "usage": {
+          "mode": "perDay",
+          "uses": 1
+        },
+        "refId": "spl-dancing-lights",
+        "grantMode": "cast",
+        "text": "Requires Charisma 10 or higher."
+      },
+      {
+        "id": "pw-gnome-ghost-sound",
+        "kind": "attached",
+        "name": "Ghost Sound",
+        "action": "Standard",
+        "usage": {
+          "mode": "perDay",
+          "uses": 1
+        },
+        "refId": "spl-ghost-sound",
+        "grantMode": "cast",
+        "dcFormula": "10 + @spellLevel + Cha",
+        "save": {
+          "type": "Will",
+          "effect": "Negates"
+        },
+        "text": "Requires Charisma 10 or higher."
+      },
+      {
+        "id": "pw-gnome-prestidigitation",
+        "kind": "attached",
+        "name": "Prestidigitation",
+        "action": "Standard",
+        "usage": {
+          "mode": "perDay",
+          "uses": 1
+        },
+        "refId": "spl-prestidigitation",
+        "grantMode": "cast",
+        "text": "Requires Charisma 10 or higher."
+      }
+    ]
   },
   {
     "schemaVersion": 3,

@@ -2363,6 +2363,7 @@
     const o = { id: pw.id, kind: pw.kind, name: pw.kind === 'attached' && pw.ref ? pw.ref.name : pw.name, action: pw.action, usage: exportUse(pw.use) };
     if (pw.kind === 'attached') { o.refId = pw.ref ? pw.ref.id : null; o.grantMode = pw.grantMode; }
     if (num(pw.cl)) o.casterLevel = num(pw.cl);
+    else if (pw.clFormula) o.casterLevelFormula = String(pw.clFormula); // kept on round trip; no UI field yet
     // Save DC: a plain number exports as saveDC, anything else as dcFormula ("10 + 1/2 HD + Con").
     const dcRaw = String(pw.dcFormula || '').trim() || (num(pw.dc) ? String(num(pw.dc)) : '');
     if (/^\d+$/.test(dcRaw)) o.saveDC = Number(dcRaw);
@@ -3130,6 +3131,7 @@
           action: pw.action || 'Standard',
           use: parseUseObj(pw.usage || pw.use),
           cl: pw.casterLevel != null ? num(pw.casterLevel) : (pw.cl != null ? num(pw.cl) : 0),
+          clFormula: typeof pw.casterLevelFormula === 'string' ? pw.casterLevelFormula : '',
           dc: num(pw.saveDC != null ? pw.saveDC : pw.dc, 0),
           dcFormula: String(pw.dcFormula || (num(pw.saveDC != null ? pw.saveDC : pw.dc, 0) ? num(pw.saveDC != null ? pw.saveDC : pw.dc, 0) : '')),
           spellLevel: pw.spellLevel != null ? pw.spellLevel : '',
