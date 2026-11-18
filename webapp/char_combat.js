@@ -7251,6 +7251,12 @@
       if (acNormal) acNormal.textContent = bd.total || 21;
       if (acTouch) acTouch.textContent = bd.touch || 16;
       if (acFlat) acFlat.textContent = bd.flat || 18;
+      const incorpRowP = document.getElementById('cockpit-ac-incorporeal-row');
+      const incorpValP = document.getElementById('cockpit-ac-incorporeal');
+      if (incorpRowP && incorpValP) {
+        incorpRowP.classList.toggle('hidden', !(Number(bd.incorporealTouchBonus) > 0));
+        incorpValP.textContent = bd.incorporealTouch ?? bd.touch ?? 10;
+      }
 
       const defSummary = document.getElementById('combat-defense-collapsed-summary');
       if (defSummary && acNormal && acTouch && acFlat) {
@@ -10028,6 +10034,12 @@
       if (acNormal) acNormal.textContent = bd.total || 21;
       if (acTouch) acTouch.textContent = bd.touch || 16;
       if (acFlat) acFlat.textContent = bd.flat || 18;
+      const incorpRow = document.getElementById('cockpit-ac-incorporeal-row');
+      const incorpVal = document.getElementById('cockpit-ac-incorporeal');
+      if (incorpRow && incorpVal) {
+        incorpRow.classList.toggle('hidden', !(Number(bd.incorporealTouchBonus) > 0));
+        incorpVal.textContent = bd.incorporealTouch ?? bd.touch ?? 10;
+      }
 
       // Collapsed Bar Summaries
       const defSummary = document.getElementById('combat-defense-collapsed-summary');
