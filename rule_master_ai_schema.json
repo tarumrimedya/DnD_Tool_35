@@ -814,8 +814,14 @@
           "type": "string",
           "enum": [
             "primary",
-            "secondary"
-          ]
+            "secondary",
+            "primary2h"
+          ],
+          "description": "primary: full BAB, Str x1.0 (x1.5 when it is the creature's only natural attack); secondary: -5 (-2 with Multiattack), Str x0.5; primary2h: single primary, Str x1.5."
+        },
+        "usesHands": {
+          "type": "boolean",
+          "description": "attackMode natural: the attack uses a limb that also wields manufactured weapons (claw, slam, arm spine). It then takes part in a full attack only while no manufactured weapon is wielded; limbless attacks (bite, gore, tail) always join it as secondary attacks next to a wielded weapon."
         },
         "count": {
           "type": "number"

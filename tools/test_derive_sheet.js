@@ -5768,6 +5768,51 @@ function runDeriveSheetTests() {
     );
   }
 
+  // Natural weapons (Rule Crafter `attack` block, `attackMode: 'natural'`): Warforged Slam (1d4, primary, uses hands).
+  {
+    const probe = (raceName, size, str) => {
+      const c = {
+        name: 'Natural Probe', race: raceName, classes: 'Wizard 1', level: 1, bab: 0, size: size || 'Medium',
+        abilities: { str: str || 18, dex: 12, con: 12, int: 14, wis: 10, cha: 10 },
+        baseAbilities: { str: str || 18, dex: 12, con: 12, int: 14, wis: 10, cha: 10 },
+        levelProgression: [{ level: 1, className: 'Wizard', hd: 'd4', hpGain: 4, active: true, feats: [] }],
+        feats: [], bodySlots: {}, weapons: [], gearPool: []
+      };
+      RuleEngine.recalculateCharacter(c, []);
+      return c;
+    };
+    const wf = probe('Warforged');
+    const nat = RuleEngine.getNaturalWeapons(wf);
+    check(
+      'Natural weapon: Warforged derives exactly one virtual Slam (1d4 Bludgeoning, primary, uses hands); a Human has none; the old inline slam sub-power is gone',
+      nat.length === 1 && nat[0].name === 'Slam' && nat[0].dice === '1d4' && nat[0].dmgType === 'Bludgeoning' && nat[0].attackKind === 'primary' && nat[0].usesHands === true &&
+      RuleEngine.getNaturalWeapons(probe('Human')).length === 0 &&
+      !(RuleEngine.deriveSheet(wf).combat?.powers || []).some(p => p && p.id === 'pw-warforged-slam'),
+      JSON.stringify(nat)
+    );
+    check(
+      'Natural weapon: damage dice step one die per size category from Medium (Small 1d3, Large 1d6)',
+      RuleEngine.getNaturalWeapons(probe('Warforged', 'Small'))[0].dice === '1d3' && RuleEngine.getNaturalWeapons(probe('Warforged', 'Large'))[0].dice === '1d6',
+      JSON.stringify([RuleEngine.getNaturalWeapons(probe('Warforged', 'Small'))[0], RuleEngine.getNaturalWeapons(probe('Warforged', 'Large'))[0]].map(w => w && w.dice))
+    );
+    const slam = nat[0];
+    const evSole = RuleEngine.evaluateWeaponAttack(wf, slam, { grip: '1-Hand', naturalRole: 'sole' });
+    const evPrim = RuleEngine.evaluateWeaponAttack(wf, slam, { grip: '1-Hand', naturalRole: 'primary' });
+    const evSec = RuleEngine.evaluateWeaponAttack(wf, slam, { grip: '1-Hand', naturalRole: 'secondary' });
+    check(
+      'Natural weapon: Str 18 damage is x1.5 as a sole natural attack (+6), x1 primary (+4), x0.5 secondary (+2); a wizard is proficient (no -4)',
+      evSole.netFlatDamage === 6 && evPrim.netFlatDamage === 4 && evSec.netFlatDamage === 2 &&
+      RuleEngine.isProficientWithWeapon(wf, slam) === true && evSole.netAttackBonus === evPrim.netAttackBonus,
+      JSON.stringify({ s: evSole.netFlatDamage, p: evPrim.netFlatDamage, c: evSec.netFlatDamage, atk: evSole.netAttackBonus })
+    );
+    const skarn = RuleEngine.getNaturalWeapons(probe('Skarn'));
+    check(
+      'Natural weapon: Skarn Arm Spines (existing Crafter natural attack block) becomes a 1d6 Piercing virtual weapon that uses hands',
+      skarn.length === 1 && skarn[0].name === 'Arm Spines' && skarn[0].dice === '1d6' && skarn[0].dmgType === 'Piercing' && skarn[0].usesHands === true,
+      JSON.stringify(skarn)
+    );
+  }
+
   CharStore.clearHistory();
 
   return { passed, elapsedMs: Date.now() - startMs };

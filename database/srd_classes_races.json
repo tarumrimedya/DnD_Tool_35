@@ -27604,6 +27604,18 @@
         "mode": "flat",
         "value": 5,
         "btype": "Untyped"
+      },
+      {
+        "id": "ef-race-natural-slam",
+        "type": "attack",
+        "attackMode": "natural",
+        "natKind": "primary",
+        "count": 1,
+        "weaponName": "Slam",
+        "dice": "1d4",
+        "dmgType": "Bludgeoning",
+        "usesHands": true,
+        "summary": "Slam 1d4 bludgeoning natural weapon (primary)."
       }
     ],
     "shortDescription": "+2 Constitution, -2 Wisdom, -2 Charisma. Living construct, +2 composite plating armor bonus, light fortification, immune to poison/sleep/paralysis/disease, slam 1d4.",
@@ -27614,32 +27626,7 @@
       "construct",
       "living-construct"
     ],
-    "bonusFeats": 0,
-    "powers": [
-      {
-        "id": "pw-warforged-slam",
-        "kind": "inline",
-        "name": "Slam (Natural Weapon)",
-        "action": "Standard",
-        "usage": {
-          "mode": "atWill"
-        },
-        "attack": "weapon",
-        "effects": [
-          {
-            "type": "roll",
-            "kind": "Damage",
-            "count": 1,
-            "die": "d4",
-            "dmgType": "Bludgeoning",
-            "scaling": "formula",
-            "dice": "1d4 + Str",
-            "crit": "normal"
-          }
-        ],
-        "text": "Slam attack, 1d4 plus Strength modifier."
-      }
-    ]
+    "bonusFeats": 0
   },
   {
     "schemaVersion": 3,

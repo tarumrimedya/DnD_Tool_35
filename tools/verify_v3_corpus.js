@@ -231,6 +231,12 @@ function runCorpusAudit() {
               }
               if (!ok) report.badProficiencyGrants.push((e.id || '?') + ' -> ' + ef.effectKind + ' ' + tok);
             }
+            if (ef.type === 'attack' && ef.attackMode === 'natural') {
+              const okNat = typeof ef.weaponName === 'string' && ef.weaponName.trim() && /^\d+d\d+$/.test(String(ef.dice || '').trim())
+                && (ef.count === undefined || (Number.isInteger(ef.count) && ef.count >= 1)) && (ef.natKind === undefined || ['primary', 'secondary', 'primary2h'].includes(ef.natKind))
+                && (ef.usesHands === undefined || typeof ef.usesHands === 'boolean');
+              if (!okNat) report.badProficiencyGrants.push((e.id || '?') + ' -> natural attack ' + JSON.stringify(ef.weaponName));
+            }
             if (ef.type === 'effect' && ef.effectKind === 'feat') {
               const fid = String(ef.targetId || '');
               if (!/^feat-/.test(fid) || (FEAT_IDS.size > 0 && !FEAT_IDS.has(fid))) report.badProficiencyGrants.push((e.id || '?') + ' -> feat ' + fid);

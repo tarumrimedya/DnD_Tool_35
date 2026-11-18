@@ -2199,6 +2199,36 @@ const RuleEngine = {
             }
             return;
           }
+          if (bType === 'attack' && b.attackMode === 'natural') {
+            // Natural weapon (Rule Crafter "Natural Attack": weaponName, dice = Medium damage, dmgType, count, natKind). The grant becomes
+            // `grantedCapabilities.naturalWeapons`; RuleEngine.getNaturalWeapons derives the virtual weapon entries the Full Attack uses.
+            const nwName = String(b.weaponName || '').trim();
+            if (nwName && /^\d+d\d+$/.test(String(b.dice || '').trim())) {
+              const abbr = { b: 'Bludgeoning', p: 'Piercing', s: 'Slashing' };
+              const dmgTypeRaw = String(b.dmgType || 'Bludgeoning').trim();
+              const dmgType = /^[bps](\s*(\/|&|,|and)\s*[bps])*$/i.test(dmgTypeRaw)
+                ? dmgTypeRaw.toLowerCase().split(/[^bps]+/).filter(Boolean).map(c => abbr[c]).join(' and ')
+                : dmgTypeRaw.charAt(0).toUpperCase() + dmgTypeRaw.slice(1);
+              grants.push({
+                grantType: 'naturalWeapon',
+                targetId: nwName,
+                value: {
+                  name: nwName,
+                  dice: String(b.dice).trim(),
+                  damageBySize: (b.damageBySize && typeof b.damageBySize === 'object') ? b.damageBySize : null,
+                  dmgType,
+                  count: Math.max(1, Math.floor(Number(b.count) || 1)),
+                  attackKind: b.natKind === 'secondary' ? 'secondary' : (b.natKind === 'primary2h' ? 'primary2h' : 'primary'),
+                  usesHands: b.usesHands === true,
+                  reach: b.reach !== undefined ? Number(b.reach) : null,
+                  critMin: Number(b.critMin) || 20,
+                  critMult: Number(b.critMult) || 2
+                }
+              });
+              addBadge(`Natural Weapon: ${Math.max(1, Math.floor(Number(b.count) || 1))}x ${nwName} (${String(b.dice).trim()})`);
+            }
+            return;
+          }
           const rollKind = String(b.rollType || b.rollKind || ((b.kind && !['roll', 'attack'].includes(String(b.kind).toLowerCase())) ? b.kind : 'Damage')).trim();
           if (rollKind === 'Temp HP') {
             if (b.tempHpFormula !== undefined && b.tempHpFormula !== null && String(b.tempHpFormula).trim() !== '') {
@@ -3384,7 +3414,7 @@ const RuleEngine = {
     const ctx = this.buildFormulaContext(ch, { ownedIds });
 
     // STAGE 1: Synergy & Grant Resolution (auto-unlocks entries from candidatePool or embedded grants when requires predicate passes)
-    const grantedCapabilities = { spellsAtWill: [], proficiencies: [], familiarities: [], senses: [], movements: [], unlockedEntities: [], grantedFeats: [] };
+    const grantedCapabilities = { spellsAtWill: [], proficiencies: [], familiarities: [], naturalWeapons: [], senses: [], movements: [], unlockedEntities: [], grantedFeats: [] };
     const poolNormalized = Array.isArray(candidatePool) ? candidatePool.map(p => this.normalizeLegoEntry(p)) : [];
 
     // Bonus feats granted by data (`effect` block `effectKind: 'feat'`, `targetId` = immutable feat id). The feat becomes a
@@ -3456,6 +3486,8 @@ const RuleEngine = {
         } else if (g.grantType === 'familiarity') {
           // Weapon familiarity (PHB racial trait): `targetId` is an immutable weapon id (wpn-*), `value` the category it counts as.
           if (g.targetId) grantedCapabilities.familiarities.push({ source: e.id, targetId: String(g.targetId), treatAs: String(g.value || 'martial').toLowerCase() });
+        } else if (g.grantType === 'naturalWeapon') {
+          if (g.value && typeof g.value === 'object') grantedCapabilities.naturalWeapons.push(Object.assign({ source: e.id }, g.value));
         } else if (g.grantType === 'sense') {
           grantedCapabilities.senses.push({ type: g.targetId, range: g.value });
         } else if (g.grantType === 'movement') {
@@ -5277,6 +5309,8 @@ const RuleEngine = {
     if (!name || name === '-' || name === 'none') return true;
 
     const baseWepName = name.replace(/\+\d+/g, '').replace(/\(.*?\)/g, '').trim();
+    // Natural weapons: a creature is always proficient with its own natural attacks (PHB p.140 / MM Glossary).
+    if (typeof weapon === 'object' && (weapon.isNaturalWeapon || weapon.isNatural)) return true;
     const prof = this.getCharacterProficiencies(character, targetLevelIdx);
 
     // 1. Specific weapon proficiencies always qualify
@@ -9707,6 +9741,11 @@ const RuleEngine = {
       if (strMod < 0) {
         baseStrDmg = strMod;
         strDesc = `STR Penalty (${strMod})`;
+      } else if (weapon.isNaturalWeapon && options.naturalRole) {
+        // MM Glossary (Natural Attacks): sole natural attack Str x1.5, secondary natural attack Str x0.5, otherwise x1.
+        if (options.naturalRole === 'sole') { baseStrDmg = Math.floor(strMod * 1.5); strDesc = 'STR (Sole Natural Attack 1.5x)'; }
+        else if (options.naturalRole === 'secondary') { baseStrDmg = Math.floor(strMod * 0.5); strDesc = 'STR (Secondary Natural Attack 0.5x)'; }
+        else { baseStrDmg = strMod; strDesc = 'STR (Primary Natural Attack 1.0x)'; }
       } else if (isRapier) {
         baseStrDmg = (grip === 'Off-Hand') ? Math.floor(strMod * 0.5) : strMod;
         strDesc = (grip === 'Off-Hand') ? 'STR (Off-Hand 0.5x)' : 'STR (Rapier 1.0x)';
@@ -10198,6 +10237,46 @@ const RuleEngine = {
     if (!key) return 0;
     const shifts = character?.effectiveSizeScopes || character?.legoEvaluation?.effectiveSizeScopes || {};
     return this.GRAPPLE_SIZE_MODIFIERS[this.shiftSizeKey(key, shifts[scope])] || 0;
+  },
+
+  // Virtual weapon entries for the character's natural weapons (V3 `effect` blocks `effectKind: 'naturalWeapon'`).
+  // Damage is the block's `damageBySize[sizeKey]` or the Medium `dice` stepped one die per size category (MM natural attack table).
+  getNaturalWeapons(character) {
+    const gc = character && (character.grantedCapabilities || character.legoEvaluation?.grantedCapabilities);
+    const list = gc && Array.isArray(gc.naturalWeapons) ? gc.naturalWeapons : [];
+    if (list.length === 0) return [];
+    const sizeKey = this.getSizeCategoryKey(character) || 'medium';
+    const seen = new Set();
+    const out = [];
+    list.forEach(nw => {
+      const key = String(nw.name || '').toLowerCase();
+      if (!key || seen.has(key)) return;
+      seen.add(key);
+      let dice = nw.damageBySize && nw.damageBySize[sizeKey] ? String(nw.damageBySize[sizeKey]) : null;
+      if (!dice) dice = this.stepDamageDice(nw.dice, this.SIZE_ORDER.indexOf(sizeKey) - this.SIZE_ORDER.indexOf('medium'));
+      out.push({
+        id: 'natural::' + key.replace(/[^a-z0-9]+/g, '-'),
+        name: nw.name,
+        type: 'Natural Weapon',
+        category: 'natural',
+        isNaturalWeapon: true,
+        isNatural: true,
+        isLight: true,
+        proficiency: 'Natural',
+        dice,
+        damageParts: [{ dice, bonus: 0, type: nw.dmgType, multiplyOnCrit: true, onCritOnly: false, source: 'Base Weapon' }],
+        dmgType: nw.dmgType,
+        critMin: nw.critMin || 20,
+        critMult: nw.critMult || 2,
+        critRange: nw.critMin || 20,
+        count: nw.count || 1,
+        attackKind: nw.attackKind || 'primary',
+        usesHands: nw.usesHands === true,
+        reach: nw.reach,
+        source: nw.source
+      });
+    });
+    return out;
   },
 
   // Size category key ('small', 'large', ...) from character.size, or null when it names no PHB size

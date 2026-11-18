@@ -1233,6 +1233,21 @@ function compileRaceBonusFeats(crData) {
   return n;
 }
 
+// Natural weapons (Rule Crafter `attack` block, `attackMode: 'natural'`; consumed by RuleEngine.getNaturalWeapons into Full Attack).
+// Warforged (Eberron Campaign Setting): Slam 1d4, a hand-limb attack. Idempotent; also drops the old inline slam sub-power.
+function compileRaceNaturalWeapons(crData) {
+  const rec = crData.find((e) => e && e.id === 'race-warforged');
+  if (!rec) return 0;
+  if (!Array.isArray(rec.effects)) rec.effects = [];
+  rec.effects = rec.effects.filter((b) => !(b && b.id === 'ef-race-natural-slam'));
+  rec.effects.push({ id: 'ef-race-natural-slam', type: 'attack', attackMode: 'natural', natKind: 'primary', count: 1, weaponName: 'Slam', dice: '1d4', dmgType: 'Bludgeoning', usesHands: true, summary: 'Slam 1d4 bludgeoning natural weapon (primary).' });
+  if (Array.isArray(rec.powers)) {
+    rec.powers = rec.powers.filter((p) => !(p && p.id === 'pw-warforged-slam'));
+    if (rec.powers.length === 0) delete rec.powers;
+  }
+  return 1;
+}
+
 function compileFeatPatches(featsCore, featsSplat) {
   // Ensure Hidden Talent (XPH p.67) exists in srd_feats_splat.json
   const hiddenTalent = {
@@ -2379,6 +2394,7 @@ function main() {
   const raceProfCount = compileRaceProficiencies(cr.data);
   compileRaceManeuvers(cr.data);
   compileRaceBonusFeats(cr.data);
+  compileRaceNaturalWeapons(cr.data);
 
   const cabLookup = new Map();
   for (const e of cr.data) {

@@ -7972,6 +7972,49 @@
         return true;
       });
 
+      // Natural weapons (V3 `naturalWeapon` effect blocks). With no manufactured weapon in hand they ARE the attack routine;
+      // with one, the non-hand natural attacks join the full attack as secondary attacks (MM Glossary, Natural Attacks).
+      const naturalWeapons = (RuleEngine && typeof RuleEngine.getNaturalWeapons === 'function') ? RuleEngine.getNaturalWeapons(character) : [];
+      const isUnarmedMain = /^(unarmed strike|none|-)?$/i.test(String(wep.name || '').trim());
+      const natEvalBase = { grip: '1-Hand', powerAttack: paVal, flanking, charge, higherGround: hg, activeStance: character.activeStance || 'None', customModifiers: nonChainMods };
+      const hasMultiattack = naturalWeapons.length > 1 && characterHasFeat(character, 'Multiattack');
+      const natSecondaryPenalty = hasMultiattack ? -2 : -5;
+      const buildNaturalEntries = (list, forcedRole) => {
+        const out = [];
+        list.forEach(nw => {
+          for (let n = 0; n < (nw.count || 1); n++) out.push({ nw, n });
+        });
+        const totalCount = out.length;
+        return out.map(({ nw, n }) => {
+          const role = forcedRole || ((totalCount === 1 || nw.attackKind === 'primary2h') ? 'sole' : (nw.attackKind === 'secondary' ? 'secondary' : 'primary'));
+          const ev = RuleEngine.evaluateWeaponAttack(character, nw, Object.assign({}, natEvalBase, { naturalRole: role }));
+          return {
+            id: 'natural-' + nw.id + '-' + n,
+            label: (nw.count || 1) > 1 ? (nw.name + ' ' + (n + 1)) : nw.name,
+            hand: 'natural',
+            handLabel: role === 'secondary' ? 'Natural (Secondary)' : 'Natural',
+            weapon: nw,
+            bonus: ev.netAttackBonus + (role === 'secondary' ? natSecondaryPenalty : 0),
+            evalResult: ev,
+            badgeColor: role === 'secondary' ? 'cyan' : 'amber',
+            _naturalRole: role
+          };
+        });
+      };
+
+      if (isUnarmedMain && naturalWeapons.length > 0) {
+        const natChain = buildNaturalEntries(naturalWeapons, null);
+        if (natChain.length === 1) {
+          // A sole natural attack iterates like any single attack form (BAB 6/11/16 extra attacks at -5 steps).
+          const base = natChain[0];
+          const babNat = Number(character.bab) || 0;
+          for (let k = 1; k <= 3; k++) {
+            if (babNat >= 1 + 5 * k) natChain.push(Object.assign({}, base, { id: base.id + '-it' + k, label: base.label + ' ' + (k + 1), bonus: base.bonus - 5 * k }));
+          }
+        }
+        return natChain;
+      }
+
       const mainEval = RuleEngine.evaluateWeaponAttack(character, wep, {
         grip,
         powerAttack: paVal,
@@ -8193,6 +8236,10 @@
           badgeColor: 'amber'
         });
       }
+
+      // Natural attacks that do not use the limbs holding the manufactured weapon join the full attack as secondary attacks.
+      const freeNaturals = naturalWeapons.filter(nw => !nw.usesHands);
+      if (freeNaturals.length > 0) attackChain.push(...buildNaturalEntries(freeNaturals, 'secondary'));
 
       return attackChain;
     }
@@ -8651,7 +8698,7 @@
         });
 
         // Weapon Elemental Mods (Flaming, Frost, Shock, Holy, Unholy)
-        const wepElementalMods = atk.weapon?.elementalMods || (atk.hand === 'offHand' ? getResolvedOffHandWeapon(character)?.elementalMods : (character.weapons || []).find(w => w.name === (character.activeWeapon || character.tactical?.weaponSets?.set1?.mainWeapon))?.elementalMods) || [];
+        const wepElementalMods = atk.weapon?.elementalMods || (atk.hand === 'natural' ? [] : atk.hand === 'offHand' ? getResolvedOffHandWeapon(character)?.elementalMods : (character.weapons || []).find(w => w.name === (character.activeWeapon || character.tactical?.weaponSets?.set1?.mainWeapon))?.elementalMods) || [];
         if (Array.isArray(wepElementalMods) && wepElementalMods.length > 0) {
           wepElementalMods.forEach(em => {
             if (em.dice) {

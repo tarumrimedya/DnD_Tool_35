@@ -4617,6 +4617,7 @@
             F('Natural Weapon', inp(p + '.weaponName', b.weaponName, { list: 'fs-natwpn-list', ph: 'Claw / Bite' })) +
             F('Base Die', inp(p + '.dice', b.dice, { list: 'fs-dice-list' })) +
             F('Damage Type', sel(p + '.dmgType', b.dmgType, ['B/P/S', 'B & S', 'B, P & S', 'Slashing', 'Piercing', 'Bludgeoning', 'B & P'], { narrow: true })) +
+            F('Limb', chk(p + '.usesHands', !!b.usesHands, 'Uses hands / arms (not with a wielded weapon)')) +
             F('Rider / Special', inp(p + '.rider', b.rider, { ph: 'Rend / +1d6 Fire' }), 'lego-span-full')
           );
         }
