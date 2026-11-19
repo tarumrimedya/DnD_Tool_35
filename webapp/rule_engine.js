@@ -4904,7 +4904,7 @@ const RuleEngine = {
             b.effectKind = 'rule';
             delete b.flag;
           }
-          if (!['ruleSwitch', 'rule', 'castSpell', 'linkedSpell', 'castEvolution', 'grant', 'grantFeat', 'proficiency', 'familiarity', 'feat', 'bonusSlot', 'trait', 'reroll'].includes(b.effectKind)) {
+          if (!['ruleSwitch', 'rule', 'castSpell', 'linkedSpell', 'castEvolution', 'recoverSlot', 'stealStore', 'grant', 'grantFeat', 'proficiency', 'familiarity', 'feat', 'bonusSlot', 'trait', 'reroll', 'greater_turning', 'flag', 'sense', 'movement', 'condition', 'summon'].includes(b.effectKind)) {
             b.effectKind = 'rule';
           }
           out.push(b);

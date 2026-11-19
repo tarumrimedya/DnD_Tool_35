@@ -559,6 +559,144 @@ function runAiV3ContractTests() {
       'Wand of Cure Light Wounds must cost 750 gp with 50 charges');
   }
 
+  // 6. Rule Crafter 8-Finding UX, Data-Preservation & Clean-Export Invariants -----------------
+  {
+    globalThis.RuleEngine = RuleEngine;
+
+    // #6 Neutral defaults (ADR-001: zero Bloodrage / Arcane Pool / CL >= 15 dummy data)
+    const nb = Forge.neutralBlock || {};
+    check(Object.keys(Forge.blockTypes).every((t) => isObj(nb[t])), 'NEUTRAL_BLOCK must define clean defaults for all 9 block types');
+    Forge.setBlueprint('feat');
+    Forge.state.entry.effects = [];
+    Forge.addPaletteBlock('effects', 'when', null);
+    Forge.addPaletteBlock('effects', 'resource', null);
+    const neutralWhen = Forge.state.entry.effects[0];
+    const neutralRes = Forge.state.entry.effects[1];
+    check(neutralWhen.branches[0].condText === '' && neutralWhen.branches[0].poolName === '' && neutralWhen.branches[0].oathRule === '',
+      'new When block from palette must start empty (no Bloodrage / Arcane Pool / Oath dummy text)');
+    check(neutralRes.name === '' && neutralRes.varKey === '',
+      'new Resource block from palette must start with empty name and varKey (no Arcane Pool dummy text)');
+    Forge.act('add-branch', { p: 'effects.0.branches' });
+    check(neutralWhen.branches[1].condText === '', 'add-branch must create an empty branch condition (no CL >= 15 dummy text)');
+
+    // #1 Collapsible blocks (`cardOpen['blk:' + id]`): collapsed on load, open on add
+    Forge.loadPreset(Forge.presets[0]);
+    const loadedHtml = Forge.renderScratch();
+    check(loadedHtml.includes('is-collapsed') || Forge.state.entry.effects.length === 0,
+      'loaded preset blocks must render collapsed one-line summaries by default');
+    Forge.setBlueprint('feat');
+    Forge.state.entry.effects = [];
+    Forge.addPaletteBlock('effects', 'stat', { targets: ['ac.deflection'], value: 2, btype: 'Deflection' });
+    const addedBlk = Forge.state.entry.effects[0];
+    check(Boolean(Forge.state.ui.cardOpen['blk:' + addedBlk.id]), 'newly added block must start expanded');
+    Forge.act('collapse-all-blocks', {});
+    check(!Forge.state.ui.cardOpen['blk:' + addedBlk.id] && Forge.renderScratch().includes('is-collapsed'),
+      'collapse-all-blocks must collapse open blocks into 1-line summary cards');
+
+    // #2 Reorder, Duplicate, Wrap in When, Move Between Branches, Lift Out, Unwrap & Undo/Redo
+    Forge.setBlueprint('feat');
+    Forge.state.entry.effects = [];
+    Forge.state.history.past = [];
+    Forge.state.history.future = [];
+    Forge.addPaletteBlock('effects', 'stat', { targets: ['atk.melee'], value: 2, btype: 'Morale', condition: 'charging' });
+    Forge.addPaletteBlock('effects', 'defense', { mode: 'Immunity', what: 'Fear' });
+    const firstId = Forge.state.entry.effects[0].id;
+    Forge.act('move-block', { p: 'effects', i: 0, d: 1 });
+    check(Forge.state.entry.effects[1].id === firstId, 'move-block must swap block order');
+    Forge.act('dup-block', { p: 'effects', i: 1 });
+    check(Forge.state.entry.effects.length === 3 && Forge.state.entry.effects[2].id !== firstId,
+      'dup-block must clone block with a fresh unique id');
+    // Wrap in When migrates recognized `charging` condition onto the When branch
+    Forge.act('wrap-block-when', { p: 'effects', i: 1 });
+    const wrapped = Forge.state.entry.effects[1];
+    check(wrapped.type === 'when' && wrapped.branches[0].condKind === 'state' && wrapped.branches[0].condText === 'charging' && !wrapped.branches[0].kids[0].condition,
+      'wrap-block-when must wrap block in When and migrate inline auto condition');
+    Forge.act('add-branch', { p: 'effects.1.branches' });
+    Forge.act('move-kid-branch', { wp: 'effects.1', bi: 0, to: 1, i: 0 });
+    check(wrapped.branches[0].kids.length === 0 && wrapped.branches[1].kids.length === 1,
+      'move-kid-branch must transfer block between sibling When branches');
+    Forge.act('lift-block-out', { p: 'effects.1.branches.1.kids', i: 0 });
+    check(wrapped.branches[1].kids.length === 0 && Forge.state.entry.effects[2].type === 'stat',
+      'lift-block-out must lift child block back to parent list');
+    const preUndoLen = Forge.state.entry.effects.length;
+    check(Forge.undoEntry() === true && Forge.state.entry.effects.length === preUndoLen - 1, 'undoEntry must restore prior block state');
+    check(Forge.redoEntry() === true && Forge.state.entry.effects.length === preUndoLen, 'redoEntry must reapply undone state');
+
+    // #3 Intent catalog: all intents produce schema-valid, round-trip idempotent V3 blocks; no duplicate statSwap in effect
+    check(Array.isArray(Forge.intentCatalog) && Forge.intentCatalog.length >= 35, 'INTENT_CATALOG must expose curated rule intents');
+    Forge.intentCatalog.forEach((it) => {
+      Forge.setBlueprint('feat');
+      Forge.state.entry.name = 'Intent Probe ' + it.id;
+      Forge.state.entry.effects = [];
+      Forge.addPaletteBlock('effects', it.type, it.preset);
+      if (it.type === 'when' && Forge.state.entry.effects[0].branches[0].kids.length === 0) {
+        Forge.addPaletteBlock('effects.0.branches.0.kids', 'stat', { targets: ['atk.melee'], value: 2, btype: 'Morale' });
+      }
+      const ex1 = Forge.exportEntry(Forge.state.entry);
+      const vErrs = validate('RuleMasterEntryV3', ex1, 'intent:' + it.id);
+      check(vErrs.length === 0, `intent ${it.id} must export valid RuleMasterEntryV3: ${vErrs.join('; ')}`);
+      const ex2 = Forge.exportEntry(Forge.fromCanonicalV3(JSON.parse(JSON.stringify(ex1))));
+      check(deepEqual(ex1, ex2), `intent ${it.id} must be round-trip idempotent`);
+    });
+
+    // #4 Condition vocabulary & status classification
+    check(Forge.classifyConditionStatus('', 'stat', '').kind === 'always', 'empty stat condition must classify as always-on');
+    check(Forge.classifyConditionStatus('charging', 'stat', '').kind === 'auto', '"charging" stat condition must classify as auto-evaluated');
+    check(Forge.classifyConditionStatus('wieldingChosenWeapon', 'stat', '').kind === 'context', '"wieldingChosenWeapon" must classify as context qualifier');
+    check(Forge.classifyConditionStatus('vs. Fear', 'stat', '').kind === 'situational', '"vs. Fear" must classify as situational note');
+    const typoSt = Forge.classifyConditionStatus('chargng', 'stat', '');
+    check(typoSt.kind === 'unrecognized' && typoSt.label.includes('charging'), 'typo "chargng" must suggest "charging"');
+    const rollAutoSt = Forge.classifyConditionStatus('charging', 'roll', '');
+    check(rollAutoSt.wrapHint === true, 'auto condition on Roll block must surface Wrap in When hint');
+
+    // #5 Unstructured badge, mechanical coverage counter & lossless preserved corpus effectKinds
+    const mixed = Forge.fromCanonicalV3({
+      schemaVersion: 3, id: 'probe-mixed', blueprint: 'feat', name: 'Mixed Probe',
+      effects: [
+        { type: 'stat', targets: ['ac.deflection'], mode: 'flat', value: 2, btype: 'Deflection' },
+        { type: 'effect', effectKind: 'rule', text: 'You glow faintly in darkness.' },
+        { type: 'effect', effectKind: 'bonusSlot', slotLevel: 7, count: 'double', text: 'Doubles base lvl 7 slots.' },
+        { type: 'effect', effectKind: 'greater_turning', text: 'Destroy turned undead 1/day.' },
+        { type: 'effect', effectKind: 'linkedSpell', castMode: 'linkedSpell', spellName: 'Freedom of Movement', text: 'Continuous FoM.' }
+      ]
+    });
+    const cov = Forge.entryCoverageStats(mixed);
+    check(cov.total === 5 && cov.mech === 4, `expected 4/5 mechanical coverage, got ${cov.mech}/${cov.total}`);
+    check(Forge.isUnstructuredBlock(mixed.effects[1]) === true, 'rule block must be flagged unstructured');
+    check(Forge.isPreservedEffectBlock(mixed.effects[2]) && Forge.isPreservedEffectBlock(mixed.effects[3]) && Forge.isPreservedEffectBlock(mixed.effects[4]),
+      'bonusSlot, greater_turning, and linkedSpell must be preserved read-only engine blocks');
+    const mixedEx = Forge.exportEntry(mixed);
+    check(mixedEx.effects[2].effectKind === 'bonusSlot' && mixedEx.effects[2].slotLevel === 7 && mixedEx.effects[2].count === 'double',
+      'preserved bonusSlot block must retain slotLevel and count on export');
+    const sanMixed = RuleEngine.sanitizeV3Entry(JSON.parse(JSON.stringify(mixedEx)));
+    check(sanMixed.effects[3].effectKind === 'greater_turning', 'RuleEngine.sanitizeV3Entry must preserve greater_turning effectKind');
+
+    // #7 Live deriveSheet character diff preview
+    const diffAc = Forge.computeEntrySheetDiff({
+      schemaVersion: 3, id: 'probe-ac', blueprint: 'feat', name: 'Ward',
+      effects: [{ type: 'stat', targets: ['ac.deflection'], mode: 'flat', value: 2, btype: 'Deflection' }]
+    }, 'fighter', 5);
+    check(diffAc.ready && diffAc.diffs.some((d) => d.label === 'AC' && d.delta === '+2'),
+      'computeEntrySheetDiff must report live +2 AC delta from RuleEngine.deriveSheet');
+
+    // #8 Clean allowlist exportBlock (zero foreign subtype key bleed)
+    Forge.setBlueprint('feat');
+    Forge.state.entry.effects = [];
+    Forge.addPaletteBlock('effects', 'stat', { targets: ['str'], mode: 'flat', value: 2, btype: 'Enhancement' });
+    Forge.addPaletteBlock('effects', 'effect', { effectKind: 'rule', text: 'Pure note.' });
+    Forge.addPaletteBlock('effects', 'when', null);
+    const cleanOut = Forge.exportEntry(Forge.state.entry);
+    const flatStatOut = cleanOut.effects[0];
+    const ruleEffOut = cleanOut.effects[1];
+    const whenBrOut = cleanOut.effects[2].branches[0];
+    check(flatStatOut.swapTarget === undefined && flatStatOut.fromStat === undefined && flatStatOut.toStat === undefined && flatStatOut.per === undefined && flatStatOut.stat === undefined,
+      `flat stat export must not leak foreign subtype keys (got ${Object.keys(flatStatOut).join(', ')})`);
+    check(ruleEffOut.spellName === undefined && ruleEffOut.targetPoolOrClass === undefined && ruleEffOut.bufferVar === undefined && ruleEffOut.featOrPool === undefined,
+      `rule effect export must not leak foreign subtype keys (got ${Object.keys(ruleEffOut).join(', ')})`);
+    check(whenBrOut.oathRule === undefined && whenBrOut.poolName === undefined && whenBrOut.checkFormula === undefined,
+      `when state branch export must not leak foreign branch keys (got ${Object.keys(whenBrOut).join(', ')})`);
+  }
+
   const elapsedMs = Date.now() - startMs;
   if (failures.length > 0) {
     throw new Error(`AI V3 Contract Gate failed (${failures.length} failure(s)):\n  - ${failures.join('\n  - ')}`);
