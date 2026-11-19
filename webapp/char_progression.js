@@ -11149,7 +11149,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         }
       });
       Actions.register('progression:fetch-class-ai', (el, data, event) => {
-        if (data.className !== undefined) fetchClassFromRuleMasterAi(data.className);
+        fetchClassFromRuleMasterAi((data && data.className !== undefined) ? data.className : '');
       });
       Actions.register('progression:toggle-class-prog', (el, data, event) => {
         if (data.className) toggleClassProgression(data.className);

@@ -3814,7 +3814,9 @@ ITEM / EQUIPMENT V3 RULES:
 1. Consult SRD 3.5e, Magic Item Compendium, DMG, PHB, Arms & Equipment Guide, or splatbooks. Correct misspellings to official D&D 3.5e English names.
 2. Weapon ("blueprint": "weapon"): populate "weapon": {"category": "Simple"|"Martial"|"Exotic", "handedness": "Unarmed"|"Light"|"One-Handed"|"Two-Handed"|"Ranged", "damageDice": "1d8", "dmgType": "Slashing", "baseCritRange": 19, "critMultiplier": 2, "rangeIncrement": null} plus "weaponMeta" for legacy display; put extra magic riders in "effects" / "powers".
 3. Armor / Shield ("blueprint": "armor"): populate "armor": {"armorType": "Light"|"Medium"|"Heavy"|"Shield", "armorBonus": 4, "maxDex": 4, "acp": -2, "arcaneSpellFailure": 20, "speed30": 30, "speed20": 20}; put special magic properties in "effects" / "powers".
-4. Wondrous Items / Rings / Crystals: put all continuous bonuses and defenses in "effects" and activated abilities in "powers". NEVER emit "modifiers" or "damageParts".
+4. Wondrous Items / Rings / Crystals / Scrolls / Wands / Potions:
+   - Put all continuous bonuses and defenses in "effects" and activated abilities in "powers". NEVER emit "modifiers" or "damageParts".
+   - Scrolls, Wands, Potions & Oils (DMG Table 7-17 / 7-23 / p.285): ALWAYS craft official spell-completion / spell-trigger items (e.g. "Scroll of Fireball", "Wand of Cure Light Wounds", "Potion of Haste") using exact DMG 3.5e RAW formulas: Scroll priceGp = (spellLevel || 0.5) * minCasterLevel * 25, Wand priceGp = (spellLevel || 0.5) * minCasterLevel * 750 (50 charges), Potion priceGp = (spellLevel || 0.5) * minCasterLevel * 50. Set "type": "Scroll"|"Wand"|"Potion", "slot": "Consumable", and attach the spell in "powers": [{"id": "pw-item-cast", "kind": "attached", "name": "<Spell Name>", "refId": "spl-<slug>", "action": "Standard", "casterLevel": 5, "saveDC": 14, "usage": {"mode": "charges", "uses": 1}}].
 
 OUTPUT JSON SCHEMA (Pure Canonical V3):
 {
@@ -4236,7 +4238,83 @@ OUTPUT JSON SCHEMA (Pure Canonical V3):
       }
     }
 
-    // 4. Check Canonical Dictionary (ToB / Splatbook staples like Shock Trooper, Mountain Hammer, Shadow Blade)
+    // 3b. DMG 3.5e RAW Scroll / Wand / Potion / Oil Synthesizer (0 Tokens, O(1) SrdCompendium spell lookup)
+    const spellItemMatch = cleanKey.match(/^(arcane\s+scroll|divine\s+scroll|scroll|wand|potion|oil)\s+of\s+(.+?)(?:\s*\(\s*cl\s*(\d+)\s*\))?$/i);
+    if (spellItemMatch && typeof window !== 'undefined' && window.SrdCompendium && window.SrdCompendium._ready) {
+      const itemKindRaw = spellItemMatch[1].toLowerCase().replace(/\s+/g, ' ');
+      const spellQuery = spellItemMatch[2].trim();
+      const customCl = spellItemMatch[3] ? Math.max(1, parseInt(spellItemMatch[3], 10)) : null;
+      const spSlug = spellQuery.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      const spEntry = window.SrdCompendium.getById('spl-' + spSlug) || window.SrdCompendium.getByName(spellQuery);
+      if (spEntry && (spEntry.blueprint === 'spell' || String(spEntry.type || '').toLowerCase() === 'spell')) {
+        const clsLvls = Array.isArray(spEntry.spell && spEntry.spell.classLevels) ? spEntry.spell.classLevels : [];
+        let sl = Number(spEntry.level ?? (spEntry.lifecycle && spEntry.lifecycle.usage && spEntry.lifecycle.usage.slotLevel));
+        let minCl = 1;
+        if (clsLvls.length > 0) {
+          const candidates = clsLvls.map((clObj) => {
+            const cName = String(clObj.class || '').toLowerCase();
+            const lv = Math.max(0, Number(clObj.level) || 0);
+            let reqCl = Math.max(1, 2 * lv - 1);
+            if (/sorcerer/.test(cName)) reqCl = lv <= 1 ? 1 : 2 * lv;
+            else if (/bard/.test(cName)) reqCl = lv === 0 ? 1 : (lv === 1 ? 2 : (3 * lv - 2));
+            else if (/paladin|ranger/.test(cName)) reqCl = lv === 1 ? 2 : (lv === 2 ? 4 : (lv === 3 ? 5 : 7));
+            return { lv, reqCl, costFactor: (lv === 0 ? 0.5 : lv) * reqCl };
+          }).sort((a, b) => a.costFactor - b.costFactor);
+          sl = candidates[0].lv;
+          minCl = candidates[0].reqCl;
+        } else if (Number.isFinite(sl)) {
+          minCl = Math.max(1, 2 * sl - 1);
+        } else {
+          sl = 1;
+          minCl = 1;
+        }
+        const effCl = customCl ? Math.max(minCl, customCl) : minCl;
+        const effSl = sl === 0 ? 0.5 : sl;
+        const isWand = itemKindRaw === 'wand';
+        const isPot = itemKindRaw === 'potion' || itemKindRaw === 'oil';
+        const unitMult = isWand ? 750 : (isPot ? 50 : 25);
+        const priceGp = Math.round(effSl * effCl * unitMult * 100) / 100;
+        const minSaveDc = 10 + sl + Math.floor(sl / 2);
+        const kindTitle = itemKindRaw.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+        const displayType = isWand ? 'Wand' : (isPot ? 'Potion' : 'Scroll');
+        const fullTitle = `${kindTitle} of ${spEntry.name}${customCl ? ` (CL ${effCl})` : ''}`;
+        const itemId = `mi-${itemKindRaw.replace(/\s+/g, '-')}-of-${spSlug}${customCl ? '-cl' + effCl : ''}`;
+        const charges = isWand ? 50 : 1;
+        const rawSummary = String(spEntry.shortDescription || spEntry.benefit || spEntry.text || spEntry.description || '').replace(/\s+/g, ' ').trim();
+        const dmgRef = isWand ? 'DMG p.245' : (isPot ? 'DMG p.229' : 'DMG p.238');
+        return [this.normalizeEntry({
+          schemaVersion: 3,
+          id: itemId,
+          blueprint: 'wondrous',
+          name: fullTitle,
+          type: displayType,
+          category: 'Consumable',
+          slot: 'Consumable',
+          priceGp,
+          cost: priceGp,
+          weightLb: isPot ? 0.1 : 0,
+          weight: isPot ? 0.1 : 0,
+          casterLevel: effCl,
+          source: `${dmgRef} (${spEntry.source || 'SRD 3.5e'})`,
+          item: { subtype: displayType, slot: 'Consumable', consumable: true, price: priceGp, casterLevel: effCl },
+          benefit: `${kindTitle} of ${spEntry.name} (Spell Level ${sl}, CL ${effCl}, Save DC ${minSaveDc}${isWand ? ', 50 charges' : ', single-use'}): ${rawSummary.slice(0, 180)}`,
+          text: `${kindTitle} of ${spEntry.name} (Spell Level ${sl}, Caster Level ${effCl}, Save DC ${minSaveDc}). ${rawSummary}`,
+          description: `${kindTitle} of ${spEntry.name} (Spell Level ${sl}, Caster Level ${effCl}, Save DC ${minSaveDc}). ${rawSummary}`,
+          effects: [],
+          powers: [{
+            id: `pw-${itemId}`,
+            kind: 'attached',
+            name: spEntry.name,
+            refId: spEntry.id,
+            action: 'Standard',
+            casterLevel: effCl,
+            saveDC: minSaveDc,
+            spellLevel: sl,
+            usage: { mode: 'charges', uses: charges }
+          }]
+        })];
+      }
+    }
     if (this.canonicalDictionary[cleanKey] && typeof this.canonicalDictionary[cleanKey] === 'object') {
       return [markSiteDb(this.canonicalDictionary[cleanKey], 'Site V2 Core Library')];
     }

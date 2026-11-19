@@ -6560,6 +6560,27 @@
           }
         } catch (e) { reportError('char_inventory:executePoolMasterDbSearch', e); }
       }
+      if (!synthesizedLegoItem && /^(arcane\s+scroll|divine\s+scroll|scroll|wand|potion|oil)\s+of\s+.{2,}/i.test(cleanQuery)) {
+        if (typeof SrdCompendium !== 'undefined' && typeof SrdCompendium.ensureTypesLoaded === 'function' && ! executePoolMasterDbSearch._spellLoaded) {
+          executePoolMasterDbSearch._spellLoaded = true;
+          SrdCompendium.ensureTypesLoaded(['Spell']).then(() => {
+            const curVal = document.getElementById('pool-modal-search')?.value || '';
+            if (curVal.trim()) executePoolMasterDbSearch(curVal);
+          }).catch(e => reportError('char_inventory:ensureSpellChunk', e));
+        }
+        if (typeof RuleMaster !== 'undefined' && typeof RuleMaster.resolveLocalZeroTokenQuery === 'function') {
+          try {
+            const syn = RuleMaster.resolveLocalZeroTokenQuery(cleanQuery);
+            if (Array.isArray(syn) && syn.length > 0 && syn[0] && String(syn[0].id || '').startsWith('mi-')) {
+              const itemObj = RuleMaster.convertRowsToEntries(syn)[0];
+              if (itemObj) {
+                itemObj._isSynthesizedLego = true;
+                synthesizedLegoItem = itemObj;
+              }
+            }
+          } catch (e) { reportError('char_inventory:synthesizeSpellItem', e); }
+        }
+      }
 
       // Score and filter SRD + Custom DB items via unified SrdCompendium.fuzzyScore
       const scored = [];
@@ -6674,7 +6695,10 @@
       const inp = document.getElementById('pool-modal-search');
       const val = inp?.value?.trim() || '';
       if (!val) return;
-      if (!window._poolCurrentMatches || window._poolCurrentMatches.length === 0) {
+      const hasExactMatch = Array.isArray(window._poolCurrentMatches) && window._poolCurrentMatches.some(
+        m => m && String(m.name || '').trim().toLowerCase() === val.toLowerCase()
+      );
+      if (!hasExactMatch) {
         searchAiForPoolItem(val);
       }
     }
@@ -6690,6 +6714,38 @@
 
       const resultsBox = document.getElementById('pool-search-results-box');
       if (!resultsBox) return;
+
+      if (typeof SrdCompendium !== 'undefined' && typeof SrdCompendium.ensureTypesLoaded === 'function') {
+        try { await SrdCompendium.ensureTypesLoaded(['Spell', 'Weapon', 'Armor', 'Equipment']); } catch (e) { reportError('char_inventory:ensureTypesLoaded', e); }
+      }
+
+      const persistAndRenderAiPoolEntries = (entries) => {
+        window._poolCurrentAiEntries = entries;
+        let newEntriesAdded = 0;
+        entries.forEach(entry => {
+          const exists = masterDb.some(m => (m.name || '').toLowerCase() === (entry.name || '').toLowerCase());
+          if (!exists) {
+            masterDb.push(entry);
+            newEntriesAdded++;
+          }
+        });
+        if (newEntriesAdded > 0) {
+          saveStateToStorage();
+          if (typeof RuleMaster !== 'undefined' && typeof RuleMaster.renderTable === 'function') {
+            RuleMaster.renderTable();
+          }
+        }
+        renderAiPoolResultCards(entries, q);
+      };
+
+      // Try 0-Token deterministic Rule Master resolution first (e.g. "Scroll of Fireball", "+2 Keen Mithral Scimitar")
+      if (typeof RuleMaster !== 'undefined' && typeof RuleMaster.resolveLocalZeroTokenQuery === 'function') {
+        const localCrafted = RuleMaster.resolveLocalZeroTokenQuery(q);
+        if (Array.isArray(localCrafted) && localCrafted.length > 0) {
+          persistAndRenderAiPoolEntries(RuleMaster.convertRowsToEntries(localCrafted));
+          return;
+        }
+      }
 
       const apiKey = typeof RuleMaster !== 'undefined' ? RuleMaster.getApiKey() : (localStorage.getItem('gemini_api_key') || '');
       if (!apiKey) {
@@ -6724,27 +6780,7 @@
           throw new Error(`No official rule entry found for "${q}".`);
         }
 
-        const entries = RuleMaster.convertRowsToEntries(rows);
-        window._poolCurrentAiEntries = entries;
-
-        // Automatically store new entries in masterDb if not already present
-        let newEntriesAdded = 0;
-        entries.forEach(entry => {
-          const exists = masterDb.some(m => (m.name || '').toLowerCase() === (entry.name || '').toLowerCase());
-          if (!exists) {
-            masterDb.push(entry);
-            newEntriesAdded++;
-          }
-        });
-
-        if (newEntriesAdded > 0) {
-          saveStateToStorage();
-          if (typeof RuleMaster !== 'undefined' && typeof RuleMaster.renderTable === 'function') {
-            RuleMaster.renderTable();
-          }
-        }
-
-        renderAiPoolResultCards(entries, q);
+        persistAndRenderAiPoolEntries(RuleMaster.convertRowsToEntries(rows));
       } catch (err) {
         resultsBox.innerHTML = `
           <div class="p-4 bg-rose-950/50 border border-rose-800 rounded-xl space-y-2 text-rose-300">
@@ -6783,9 +6819,9 @@
         const cat = mapEntryToGearCategory(item);
         const icon = getGearCategoryIcon(cat);
         const source = item.source || 'Official 3.5e';
-        const weight = Number(item.weight) || 0;
-        const cost = Number(item.cost) || 0;
-        const desc = item.benefit || item.description || '';
+        const weight = Number(item.weightLb ?? item.weight) || 0;
+        const cost = Number(item.priceGp ?? (item.item && item.item.price) ?? item.cost) || 0;
+        const desc = item.benefit || (typeof item.text === 'string' ? item.text : '') || item.description || '';
 
         html += `
           <div class="bg-slate-950/90 border border-purple-800/80 p-2.5 rounded-xl space-y-1.5">
@@ -6795,22 +6831,23 @@
                 <div>
                   <h4 class="text-xs font-bold text-white truncate">${UI.escapeHtml(item.name)}</h4>
                   <div class="flex flex-wrap items-center gap-1.5 text-[10px] mt-0.5">
-                    <span class="bg-purple-500/20 text-purple-300 border border-purple-500/40 px-1.5 rounded font-semibold">${cat}</span>
-                    <span class="bg-slate-800 text-slate-300 px-1.5 rounded">${item.slot || 'Slotless'}</span>
+                    <span class="bg-purple-500/20 text-purple-300 border border-purple-500/40 px-1.5 rounded font-semibold">${UI.escapeHtml(cat)}</span>
+                    <span class="bg-slate-800 text-slate-300 px-1.5 rounded">${UI.escapeHtml(item.slot || 'Slotless')}</span>
                     <span class="text-slate-400 font-mono">${weight} lbs</span>
                     <span class="text-amber-400 font-mono">${cost} gp</span>
-                    <span class="text-purple-300 font-serif italic">📚 ${source}</span>
+                    <span class="text-purple-300 font-serif italic">📚 ${UI.escapeHtml(source)}</span>
                   </div>
                 </div>
               </div>
               <div class="flex items-center gap-1.5 shrink-0">
-                <button type="button" data-action="inventory:add-ai-pool-item" data-index="${idx}" class="bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs py-1.5 px-3 rounded-lg shadow transition flex items-center gap-1">
+                <button type="button" data-action="inventory:forge-spotlight-item" data-index="${idx}" data-is-ai="true" class="bg-amber-950/90 hover:bg-amber-800 border border-amber-500/70 text-amber-200 hover:text-white p-1.5 rounded-lg text-xs font-bold transition cursor-pointer" title="Customize in Rule Crafter">⚒️</button>
+                <button type="button" data-action="inventory:add-ai-pool-item" data-index="${idx}" class="bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs py-1.5 px-3 rounded-lg shadow transition flex items-center gap-1 cursor-pointer">
                   <span>➕</span>
                   <span>Add to Inventory</span>
                 </button>
               </div>
             </div>
-            ${desc ? `<p class="text-[11px] text-slate-300 leading-relaxed bg-slate-900/80 p-2 rounded border border-slate-800">${desc}</p>` : ''}
+            ${desc ? `<p class="text-[11px] text-slate-300 leading-relaxed bg-slate-900/80 p-2 rounded border border-slate-800">${UI.escapeHtml(desc)}</p>` : ''}
           </div>
         `;
       });
@@ -8877,9 +8914,22 @@
         addMasterDbItemDirectlyToPool(Number(data?.index) || 0, el);
       });
       actionsApi.register('inventory:search-ai-pool-item', (el, data, event) => {
-        if (data && data.query !== undefined) {
-          searchAiForPoolItem(data.query);
+        const q = (data && data.query !== undefined)
+          ? data.query
+          : (document.getElementById('pool-modal-search')?.value || '').trim();
+        searchAiForPoolItem(q);
+      });
+      actionsApi.register('inventory:clear-pool-search', (el, data, event) => {
+        clearPoolModalSearch();
+      });
+      actionsApi.register('inventory:pool-search-keydown', (el, data, event) => {
+        if (event && event.key === 'Enter') {
+          event.preventDefault();
+          triggerPoolAiSearchIfNoMatches();
         }
+      });
+      actionsApi.register('inventory:query-buff-rm', (el, data, event) => {
+        queryRuleMasterForBuff();
       });
       actionsApi.register('inventory:open-item-forge', (el, data, event) => {
         const qName = String((data && data.query) || document.getElementById('pool-modal-search')?.value || '').trim();

@@ -523,6 +523,40 @@ function runAiV3ContractTests() {
       const p = rmCtx.RuleMaster.buildTargetedAiPrompt('Probe Query', cat);
       check(/"schemaVersion":\s*3/.test(p) && !/"schemaVersion":\s*2/.test(p), `RuleMaster.buildTargetedAiPrompt("${cat}") must request schemaVersion: 3 only`);
     });
+
+    // 0-Token DMG Scroll / Wand / Potion synthesizer contract + ForgeSandbox idempotence
+    const mockSpells = {
+      'spl-fireball': {
+        schemaVersion: 3, id: 'spl-fireball', blueprint: 'spell', name: 'Fireball', type: 'Spell',
+        source: 'PHB p.231', shortDescription: '1d6 damage per level, 20-ft. radius.',
+        spell: { school: 'Evocation', classLevels: [{ class: 'Sorcerer', level: 3 }, { class: 'Wizard', level: 3 }] }
+      },
+      'spl-cure-light-wounds': {
+        schemaVersion: 3, id: 'spl-cure-light-wounds', blueprint: 'spell', name: 'Cure Light Wounds', type: 'Spell',
+        source: 'PHB p.215', shortDescription: 'Cures 1d8 damage +1/level (max +5).',
+        spell: { school: 'Conjuration', classLevels: [{ class: 'Cleric', level: 1 }, { class: 'Paladin', level: 1 }] }
+      }
+    };
+    rmCtx.SrdCompendium = {
+      _ready: true,
+      getById: (id) => mockSpells[id] || null,
+      getByName: (nm) => Object.values(mockSpells).find((s) => s.name.toLowerCase() === String(nm || '').toLowerCase()) || null,
+      search: () => []
+    };
+    const scrollRes = rmCtx.RuleMaster.resolveLocalZeroTokenQuery('scroll of fireball');
+    check(Array.isArray(scrollRes) && scrollRes.length === 1, 'resolveLocalZeroTokenQuery("scroll of fireball") must return 1 synthesized V3 scroll');
+    if (Array.isArray(scrollRes) && scrollRes[0]) {
+      const sc = scrollRes[0];
+      check(sc.name === 'Scroll of Fireball' && sc.priceGp === 375 && sc.casterLevel === 5, `Scroll of Fireball must cost 375 gp at CL 5 (got ${sc.priceGp} gp, CL ${sc.casterLevel})`);
+      check(Array.isArray(sc.powers) && sc.powers[0] && sc.powers[0].refId === 'spl-fireball' && sc.powers[0].saveDC === 14, 'Scroll of Fireball must attach spl-fireball at Save DC 14');
+      check(validate('RuleMasterEntryV3', sc, 'scrollOfFireball').length === 0, 'Scroll of Fireball must validate against RuleMasterEntryV3');
+      const se1 = Forge.exportEntry(Forge.fromCanonicalV3(JSON.parse(JSON.stringify(sc))));
+      const se2 = Forge.exportEntry(Forge.fromCanonicalV3(JSON.parse(JSON.stringify(se1))));
+      check(deepEqual(se1, se2), 'Scroll of Fireball must be ForgeSandbox round-trip idempotent');
+    }
+    const wandRes = rmCtx.RuleMaster.resolveLocalZeroTokenQuery('wand of cure light wounds');
+    check(Array.isArray(wandRes) && wandRes[0] && wandRes[0].priceGp === 750 && wandRes[0].powers[0].usage.uses === 50,
+      'Wand of Cure Light Wounds must cost 750 gp with 50 charges');
   }
 
   const elapsedMs = Date.now() - startMs;

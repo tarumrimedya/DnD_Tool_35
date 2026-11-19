@@ -12318,6 +12318,11 @@
           openManeuverPickerModal((data && data.type) || 'Maneuver');
         }
       });
+      Actions.register('spells:trigger-picker-rm', (el, data, event) => {
+        if (typeof triggerSpellPickerAiSearch === 'function') {
+          triggerSpellPickerAiSearch();
+        }
+      });
     })();
 
 
