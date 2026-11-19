@@ -6887,7 +6887,7 @@
           <div class="p-6 text-center text-slate-400 space-y-2">
             <div class="text-3xl">&#x1F50D;</div>
             <p class="text-xs">No matching ${type === 'Spell' ? 'spell' : (type === 'Maneuver' ? 'maneuver' : 'stance')} found in Master DB.</p>
-            <p class="text-[11px] text-slate-500">Click the <strong>Rule Master AI</strong> button below to fetch it directly from the 3.5e rulebooks.</p>
+            <p class="text-[11px] text-slate-500">Click the <strong>Craft with Rule Master</strong> button below to fetch it directly from the 3.5e rulebooks.</p>
           </div>
         `;
         return matches;
@@ -7472,7 +7472,7 @@
       }
     }
 
-    // A record just fetched by Rule Master AI must be visible. The picker is often filtered (the slot's level when
+    // A record just fetched by Rule Master must be visible. The picker is often filtered (the slot's level when
     // opened from an empty slot, the class source, the record type), and the fetched record can fall outside it,
     // e.g. a 3rd-level spell fetched from a level 0 slot. Widen only the filters that hide it, redraw, and return a
     // note saying what changed ('' when it was visible).
@@ -7526,7 +7526,7 @@
 
       const apiKey = typeof RuleMaster !== 'undefined' ? RuleMaster.getApiKey() : (localStorage.getItem('gemini_api_key') || '');
       if (!apiKey) {
-        showToast('Please configure a valid Google Gemini API key in Settings ⚙️ (top right) to search via Rule Master AI.', 'error', { wrap: true });
+        showToast('Please configure a valid Google Gemini API key in Settings ⚙️ (top right) to search with Rule Master.', 'error', { wrap: true });
         if (typeof openSettingsModal === 'function') openSettingsModal();
         return;
       }
@@ -7534,7 +7534,7 @@
       resultsBox.innerHTML = `
         <div class="p-5 bg-slate-950/90 border border-purple-500/50 rounded-xl text-center space-y-2.5 shadow-2xl">
           <div class="inline-block w-7 h-7 border-2 border-purple-400 border-t-transparent rounded-full animate-spin"></div>
-          <div class="text-xs font-bold text-purple-200">🔮 Rule Master AI fetching D&D 3.5e RAW data...</div>
+          <div class="text-xs font-bold text-purple-200">✨ Rule Master crafting D&D 3.5e RAW data...</div>
           <div id="spell-picker-ai-status" class="text-[11px] text-slate-400 font-mono">
             "${q}" (${type}) ➔ Scanning official D&D 3.5e sourcebooks...
           </div>

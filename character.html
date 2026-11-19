@@ -2294,7 +2294,7 @@
                 <option value="Consumable">Consumable</option>
                 <option value="Other">Other</option>
               </select>
-              <button type="button" data-action="inventory:open-compendium-drawer" class="h-8 bg-amber-600 hover:bg-amber-500 active:scale-95 text-white font-bold text-xs px-3.5 rounded-lg transition shadow inline-flex items-center justify-center gap-1.5 cursor-pointer shrink-0" title="Add Item: Spotlight Search (SRD 3.5e, Custom DB & Rule Master AI) • V3 Rule Crafter">
+              <button type="button" data-action="inventory:open-compendium-drawer" class="h-8 bg-amber-600 hover:bg-amber-500 active:scale-95 text-white font-bold text-xs px-3.5 rounded-lg transition shadow inline-flex items-center justify-center gap-1.5 cursor-pointer shrink-0" title="Add Item: Spotlight Search (SRD 3.5e, Custom DB & Rule Master) • V3 Rule Crafter">
                 <span>➕</span>
                 <span>Add Item</span>
               </button>
@@ -2400,7 +2400,7 @@
               <div class="flex items-center gap-2.5 min-w-0">
                 <span class="text-xl shrink-0">🧙‍♂️</span>
                 <div class="min-w-0">
-                  <h4 class="text-xs md:text-sm font-extrabold text-white truncate" id="inline-panel-header-title">Rule Master AI &amp; Rule Crafter</h4>
+                  <h4 class="text-xs md:text-sm font-extrabold text-white truncate" id="inline-panel-header-title">Rule Master &amp; Rule Crafter</h4>
                   <p class="text-[10px] text-slate-400 truncate">Instant V3 Compendium Search, PDF/Book Text Parser &amp; Rule Crafter</p>
                 </div>
               </div>
@@ -2451,7 +2451,7 @@
                   </select>
                   <button id="btn-inline-ai-search" type="button" data-action="mdb:query-inline-ai-rule" class="h-8 bg-purple-600 hover:bg-purple-500 text-white border border-purple-400/60 font-bold text-xs px-3 sm:px-3.5 rounded-lg shadow transition flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer shrink-0">
                     <span>🔮</span>
-                    <span>Rule Master AI</span>
+                    <span>Craft with Rule Master</span>
                   </button>
                 </div>
               </div>
@@ -2483,7 +2483,7 @@
                 </button>
                 <button id="btn-inline-freetext-ai" type="button" data-action="mdb:query-inline-ai-free-text" class="w-full h-10 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs px-4 rounded-lg shadow transition flex items-center justify-center gap-1.5 cursor-pointer">
                   <span>🔮</span>
-                  <span>Parse via Rule Master AI</span>
+                  <span>Parse with Rule Master</span>
                 </button>
               </div>
             </div>
@@ -2819,7 +2819,7 @@
                 <span class="text-2xl">🧙‍♂️🤖</span>
                 <div>
                   <h3 class="text-xs md:text-sm font-bold text-white flex items-center gap-1.5">
-                    <span>🧙‍♂️🤖 Rule Master AI Assistant</span>
+                    <span>🧙‍♂️🤖 Rule Master Assistant</span>
                     <span class="badge bg-purple-950 text-purple-300 border border-purple-800 text-[10px]">RAW 3.5e</span>
                   </h3>
                   <p class="text-[11px] text-slate-400">Scans D&D 3.5e Core SRD, Splatbooks, and parametric rule knowledge into V2 schema.</p>
@@ -2880,7 +2880,7 @@
             <div class="flex flex-wrap items-center justify-between gap-2">
               <h3 class="text-xs md:text-sm font-bold text-purple-300 flex items-center gap-1.5">
                 <span>🧙‍♂️🤖</span>
-                <span>Search Rules, Spells, Feats, or Items with Rule Master AI</span>
+                <span>Search Rules, Spells, Feats, or Items with Rule Master</span>
               </h3>
               <!-- Category Filter Hint -->
               <div class="flex items-center gap-2">
@@ -2905,7 +2905,7 @@
               <input type="text" id="ai-rule-query" data-keydown-action="mdb:ai-rule-keydown" placeholder="e.g., Shock Trooper, Flametongue, Belt of Battle, Boots of Speed, Ring of Protection +2, Mountain Hammer..." class="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500">
               <button id="btn-ai-search" data-action="mdb:query-ai-rule" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs px-5 py-2.5 rounded-lg shadow-lg transition flex items-center justify-center gap-2 shrink-0">
                 <span>🧙‍♂️🤖</span>
-                <span>Fetch Rule with Rule Master AI (RAW 3.5e)</span>
+                <span>Craft Rule with Rule Master (RAW 3.5e)</span>
               </button>
             </div>
 
@@ -2927,7 +2927,7 @@
               <div class="flex items-center justify-between">
                 <span class="text-xs font-bold text-amber-300 flex items-center gap-1">
                   <span>🧙‍♂️🤖</span>
-                  <span>Rule Master AI Batch Rule Importer</span>
+                  <span>Rule Master Batch Rule Importer</span>
                 </span>
                 <span class="text-[10px] text-slate-400">Enter multiple rules (one per line) to batch-import at once</span>
               </div>
@@ -2949,7 +2949,7 @@
           <div id="ai-loading-indicator" class="hidden bg-slate-900/80 border border-purple-500/40 rounded-xl p-6 text-center space-y-3">
             <div class="inline-block w-8 h-8 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
             <div class="text-xs font-bold text-purple-300" id="ai-loading-status-text">Scanning rule compendiums... Local Catalog -> Core SRD -> Splatbooks...</div>
-            <div class="text-[11px] text-slate-400">Rule Master AI is converting the rule into RAW 3.5e V2 schema...</div>
+            <div class="text-[11px] text-slate-400">Rule Master is converting the rule into RAW 3.5e V2 schema...</div>
           </div>
 
           <!-- 4. AI RESULTS CONTAINER -->
@@ -2964,10 +2964,10 @@
                 <span class="text-xl">🧙‍♂️🤖</span>
                 <div>
                   <h4 class="text-xs md:text-sm font-bold text-white flex items-center gap-2">
-                    <span>🧙‍♂️🤖 Rule Master AI Free-Text Rule Parser</span>
+                    <span>🧙‍♂️🤖 Rule Master Free-Text Rule Parser</span>
                     <span class="badge bg-indigo-950 text-indigo-300 border border-indigo-700 text-[10px]">PDF / OCR / Rulebook Text</span>
                   </h4>
-                  <p class="text-[10px] text-slate-400">Paste raw rule text copied from a book or PDF; Rule Master AI will parse it into the V2 schema.</p>
+                  <p class="text-[10px] text-slate-400">Paste raw rule text copied from a book or PDF; Rule Master will parse it into the V2 schema.</p>
                 </div>
               </div>
               <div class="flex items-center gap-1.5 text-[10px]">
@@ -2981,14 +2981,14 @@
             <textarea id="raw-rule-input" rows="4" placeholder="Paste rule text here... (e.g., Feat name, Prerequisites, Benefit; or Magic Item/Maneuver statblock)" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-xs text-white font-mono focus:outline-none focus:border-purple-500"></textarea>
 
             <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
-              <span class="text-[11px] text-slate-400">Rule Master AI automatically detects prerequisites, body slot, bonus types, dice formulas, and action types.</span>
+              <span class="text-[11px] text-slate-400">Rule Master automatically detects prerequisites, body slot, bonus types, dice formulas, and action types.</span>
               <div class="flex gap-2">
                 <button data-action="mdb:parse-raw-text" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs px-3 py-1.5 rounded-lg border border-slate-700 transition">
                   ⚡ Parse via Regex (Offline)
                 </button>
                 <button id="btn-full-freetext-ai" data-action="mdb:query-full-ai-free-text" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs px-4 py-1.5 rounded-lg shadow transition flex items-center gap-1.5">
                   <span>🧙‍♂️🤖</span>
-                  <span>Parse & Preview with Rule Master AI</span>
+                  <span>Craft & Preview with Rule Master</span>
                 </button>
               </div>
             </div>
@@ -3476,7 +3476,7 @@
 
   <!-- Deferred Modals Root (Mounted on Demand / Idle via char_modals.js) -->
   <div id="deferred-modals-root"></div>
-  <script defer src="char_modals.js?v=36586098a5"></script>
+  <script defer src="char_modals.js?v=8cc285a72d"></script>
 
   <!-- SCRIPT LOGIC (deferred: runs in document order after parsing, before DOMContentLoaded) -->
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -3490,16 +3490,16 @@
        listeners the deferred scripts register. Deferring it would bind the router first. -->
   <script src="ui_components.js?v=3428989c09"></script>
   <script defer src="rule_master.js?v=200773266b"></script>
-  <script defer src="ui_shared.js?v=8c6454a6cc"></script>
+  <script defer src="ui_shared.js?v=d131f19175"></script>
   <script defer src="campaign_db.js?v=1e45440d78"></script>
   <script defer src="hub_notes.js?v=a275652b58"></script>
   <script defer src="dice3d.js?v=aa07002406"></script>
 
   <script defer src="char_hud.js?v=6a54d1dba7"></script>
   <script defer src="char_combat.js?v=4b4045937b"></script>
-  <script defer src="char_spells.js?v=6f3fad153e"></script>
-  <script defer src="char_progression.js?v=83d2942fee"></script>
-  <script defer src="char_inventory.js?v=23d3a8ad2d"></script>
+  <script defer src="char_spells.js?v=5aa4e916ab"></script>
+  <script defer src="char_progression.js?v=6c96ac0417"></script>
+  <script defer src="char_inventory.js?v=a2eac9050c"></script>
   <!-- Floating Tooltip for Combat Spells Hover (Tap or click to dismiss) -->
   <div id="combat-spell-hover-tooltip" data-action="combat:hide-spell-tooltip" class="hidden fixed z-[200] pointer-events-auto bg-slate-950/95 border border-purple-500/80 rounded-xl p-3 shadow-2xl w-[340px] max-w-[92vw] text-xs space-y-2 backdrop-blur-md transition-opacity duration-150 text-slate-200 cursor-pointer select-none">
     

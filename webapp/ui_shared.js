@@ -1271,7 +1271,7 @@
       if (subFiltersBar) subFiltersBar.classList.remove('hidden');
       if (iconEl) iconEl.textContent = '🎒';
       if (titleEl) titleEl.textContent = 'Add Item to Inventory';
-      if (subEl) subEl.textContent = 'Spotlight Search (SRD 3.5e, Custom DB & AI) • Rule Crafter';
+      if (subEl) subEl.textContent = 'Spotlight Search (SRD 3.5e & Custom DB) • Rule Crafter';
       if (input) input.placeholder = 'Search 3,522 SRD entries (e.g. Longsword, Full Plate, Ring, Cloak)...';
     }
 
@@ -1592,7 +1592,7 @@
           ${hasCustomTab ? `
             <button type="button" data-action="ui:jump-custom-ai" data-query="${safeQ}" class="px-3 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs shadow transition cursor-pointer inline-flex items-center gap-1.5">
               <span>🔍</span>
-              <span>Search in Spotlight / Rule Master AI ➔</span>
+              <span>Search in Spotlight / Rule Master ➔</span>
             </button>
           ` : ''}
         </div>

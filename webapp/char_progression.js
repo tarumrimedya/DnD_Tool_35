@@ -508,7 +508,7 @@
       });
 
       if (filtered.length === 0) {
-        listEl.innerHTML = `<div class="p-4 text-center text-slate-400 italic bg-slate-950/60 rounded-xl border border-slate-800">No feats matched your search. You can define a custom feat below or fetch via Rule Master AI.</div>`;
+        listEl.innerHTML = `<div class="p-4 text-center text-slate-400 italic bg-slate-950/60 rounded-xl border border-slate-800">No feats matched your search. You can define a custom feat below or fetch with Rule Master.</div>`;
         return;
       }
 
@@ -1292,7 +1292,7 @@
       const titleEl = document.getElementById('quick-feat-modal-title');
       if (titleEl) titleEl.textContent = `Add Feat for Level ${lvlNum} (${className})`;
       const subtitleEl = document.getElementById('quick-feat-modal-subtitle');
-      if (subtitleEl) subtitleEl.textContent = `Spotlight Search, RAW Prerequisite Validation & Rule Master AI`;
+      if (subtitleEl) subtitleEl.textContent = `Spotlight Search, RAW Prerequisite Validation & Rule Master`;
 
       // Update Warlock category state for this level
       if (typeof updateQuickFeatCategoryWarlockState === 'function') {
@@ -1945,13 +1945,13 @@
           ${listHtml}
         </div>
 
-        <!-- Rule Master AI Fallback -->
+        <!-- Rule Master Fallback -->
         <div class="pt-2 border-t border-slate-800/80 space-y-1.5">
           <button type="button"
                   data-action="progression:trigger-rm-quick-feat"
                   class="w-full py-2 px-3 rounded-lg bg-gradient-to-r from-purple-700 via-indigo-700 to-purple-800 hover:from-purple-600 hover:to-indigo-600 text-white font-bold text-xs flex items-center justify-center gap-2 border border-purple-400/40 shadow transition cursor-pointer">
             <span>⚡</span>
-            <span>Fetch via Rule Master AI: "${query || 'New 3.5e Feat'}" (3.5e Compendium)</span>
+            <span>Craft with Rule Master: "${query || 'New 3.5e Feat'}" (3.5e Compendium)</span>
           </button>
           <div id="quick-feat-ai-status" class="hidden text-xs p-2 rounded-lg"></div>
         </div>
@@ -2962,7 +2962,7 @@
         return;
       }
 
-      // 2. Rule Master AI sorgusu
+      // 2. Rule Master sorgusu
       const apiKey = (typeof RuleMaster !== 'undefined' && RuleMaster.getApiKey)
         ? RuleMaster.getApiKey()
         : (localStorage.getItem('gemini_api_key') || '');
@@ -3056,7 +3056,7 @@
           const refreshedStatusEl = document.getElementById('quick-feat-ai-status') || statusEl;
           if (refreshedStatusEl) {
             refreshedStatusEl.className = 'mt-1.5 text-[11px] p-2 rounded-lg bg-emerald-950/80 border border-emerald-600/60 text-emerald-200 block';
-            refreshedStatusEl.innerHTML = `<span>✨</span> Standardized &amp; Fetched <b>${featName}</b> [${featSource}] via Rule Master AI!`;
+            refreshedStatusEl.innerHTML = `<span>✨</span> Standardized &amp; Fetched <b>${featName}</b> [${featSource}] with Rule Master!`;
           }
         } else {
           if (statusEl) {
@@ -3244,7 +3244,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
                   ref: parsed.ref === 'good' ? 'good' : 'poor',
                   will: parsed.will === 'good' ? 'good' : 'poor',
                   skills: Number(parsed.skills) || 2,
-                  source: parsed.source || 'Rule Master AI',
+                  source: parsed.source || 'Rule Master',
                   role: parsed.role || '',
                   bonusFeatLevels: Array.isArray(parsed.bonusFeatLevels) ? parsed.bonusFeatLevels : [],
                   isCustom: true,
@@ -3295,7 +3295,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
                 const babDisplay = newClassDef.bab === 1.0 ? 'Full BAB (+1/lvl)' : (newClassDef.bab === 0.75 ? '3/4 BAB (+0.75/lvl)' : '1/2 BAB (+0.5/lvl)');
                 if (statusEl) {
                   statusEl.className = 'text-[11px] p-2.5 rounded-lg bg-emerald-950/80 border border-emerald-600/60 text-emerald-200 block';
-                  statusEl.innerHTML = `<span>✨</span> Fetched and added <b>${cName}</b> via Rule Master AI with D&D 3.5e RAW stats! (HD: d${newClassDef.hd} • ${babDisplay} • Source: ${UI.escapeHtml(newClassDef.source)})`;
+                  statusEl.innerHTML = `<span>✨</span> Fetched and added <b>${cName}</b> with Rule Master with D&D 3.5e RAW stats! (HD: d${newClassDef.hd} • ${babDisplay} • Source: ${UI.escapeHtml(newClassDef.source)})`;
                 }
                 return;
               }
@@ -4407,7 +4407,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
             <!-- Full-Width Spotlight & AI Feat Search Bar -->
             <div>
               <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 flex items-center justify-between">
-                <span>🔮 Spotlight &amp; Rule Master AI</span>
+                <span>🔮 Spotlight &amp; Rule Master</span>
                 <span class="text-[10px] text-purple-300 font-normal">Compendium + 3.5e RAW Validation</span>
               </label>
               <div class="ui-spotlight-well ui-spotlight-purple rounded-xl p-1.5 flex flex-wrap sm:flex-nowrap items-center gap-1.5 sm:gap-2 border border-purple-400/75">
@@ -4426,9 +4426,9 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
                   <button type="button"
                           data-action="progression:trigger-rm-lvlup-slot" data-slot-idx="${idx}"
                           class="flex-1 sm:flex-initial justify-center h-8 px-2.5 sm:px-3 rounded-lg bg-purple-600 hover:bg-purple-500 text-white border border-purple-400/60 text-xs font-bold transition flex items-center gap-1.5 shrink-0 shadow cursor-pointer"
-                          title="Search Compendium or Fetch via Rule Master AI">
+                          title="Search Compendium or Fetch with Rule Master">
                     <span>🔮</span>
-                    <span>Rule Master AI</span>
+                    <span>Craft with Rule Master</span>
                   </button>
                   <button type="button"
                           data-action="progression:toggle-lvlup-feat-console" data-slot-idx="${idx}"
@@ -4485,7 +4485,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
                      class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-purple-500">
             </div>
 
-            <!-- Expandable Spotlight & Rule Master AI Search Console -->
+            <!-- Expandable Spotlight & Rule Master Search Console -->
             <div id="lvlup-feat-search-console-${idx}" class="${isOpen ? '' : 'hidden'} bg-slate-900/95 border border-purple-500/50 rounded-xl p-3 space-y-2.5 shadow-xl transition">
               <!-- Dynamically populated by renderLevelUpFeatSearchResults -->
             </div>
@@ -4803,7 +4803,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
             ${listHtml}
           </div>
 
-          <!-- Rule Master AI Fallback -->
+          <!-- Rule Master Fallback -->
           <div class="pt-2 border-t border-slate-800/80 space-y-1.5">
             <button type="button"
                     data-action="progression:trigger-rm-lvlup-slot" data-slot-idx="${slotIdx}"
@@ -4952,7 +4952,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
         if (!apiKey) {
           if (statusEl) {
             statusEl.className = 'text-xs p-2.5 rounded-lg bg-amber-950/90 border border-amber-500/80 text-amber-200 block';
-            statusEl.innerHTML = `<span>⚠️</span> Not found in local compendium. Please configure your Gemini API key in Settings to search via Rule Master AI.`;
+            statusEl.innerHTML = `<span>⚠️</span> Not found in local compendium. Please configure your Gemini API key in Settings to search with Rule Master.`;
           }
           if (typeof openSettingsModal === 'function') openSettingsModal();
           return;
@@ -5690,7 +5690,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
 
             <div class="flex items-center gap-1.5">
               ${!hasFeatures ? `
-                <button type="button" data-action="progression:fetch-class-ai" data-class-name="${String(className || '').replace(/"/g, '&quot;')}" class="text-[10px] text-purple-300 hover:text-white bg-purple-950/80 hover:bg-purple-900 border border-purple-500/50 font-bold px-2 py-1 rounded-lg flex items-center gap-1 transition cursor-pointer" title="Fetch full progression details from sourcebooks via Rule Master AI">
+                <button type="button" data-action="progression:fetch-class-ai" data-class-name="${String(className || '').replace(/"/g, '&quot;')}" class="text-[10px] text-purple-300 hover:text-white bg-purple-950/80 hover:bg-purple-900 border border-purple-500/50 font-bold px-2 py-1 rounded-lg flex items-center gap-1 transition cursor-pointer" title="Fetch full progression details from sourcebooks with Rule Master">
                   <span>✨</span>
                   <span>Fetch Features</span>
                 </button>
@@ -5858,7 +5858,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
               <div class="pt-1 flex items-center justify-center gap-2">
                 <button type="button" data-action="progression:fetch-class-ai" data-class-name="${String(q || '').replace(/"/g, '&quot;')}" id="btn-fetch-class-ai" class="bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-lg flex items-center gap-1.5 transition active:scale-95 cursor-pointer border border-purple-400/40">
                   <span>🔮</span>
-                  <span>Fetch "${safeQuery}" via Rule Master AI</span>
+                  <span>Fetch "${safeQuery}" with Rule Master</span>
                 </button>
               </div>
             </div>
@@ -6088,7 +6088,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
 
       const apiKey = typeof RuleMaster !== 'undefined' ? RuleMaster.getApiKey() : (localStorage.getItem('gemini_api_key') || '');
       if (!apiKey) {
-        showToast('🔮 Please save a valid Google Gemini API key in Settings (⚙️) to search classes via Rule Master AI.', 'error', { wrap: true });
+        showToast('🔮 Please save a valid Google Gemini API key in Settings (⚙️) to search classes with Rule Master.', 'error', { wrap: true });
         if (typeof openSettingsModal === 'function') openSettingsModal();
         return;
       }
@@ -6104,7 +6104,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
         fetchBtn.classList.add('opacity-50', 'cursor-not-allowed');
       }
 
-      const systemPrompt = `You are Rule Master AI, the supreme D&D 3.5e RAW (Rules As Written) & Variant Class encyclopedia and character building engine.
+      const systemPrompt = `You are Rule Master, the supreme D&D 3.5e RAW (Rules As Written) & Variant Class encyclopedia and character building engine.
 D&D 3.5E RAW + UNEARTHED ARCANA VARIANTS + SPLATBOOKS + ACFs:
 1. BROAD D&D 3.5E SOURCES (CORE + SPLATBOOKS + UNEARTHED ARCANA + DRAGON MAGAZINE):
    You must consult official D&D 3.5e sourcebooks, variant rules, and canonical indexes:
@@ -7459,7 +7459,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
               <div class="pt-1 flex items-center justify-center gap-2">
                 <button type="button" data-action="progression:search-or-add-class-rm" class="bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-lg flex items-center gap-1.5 transition active:scale-95 cursor-pointer border border-purple-400/40">
                   <span>🔮</span>
-                  <span>Fetch "${UI.escapeHtml(q)}" via Rule Master AI</span>
+                  <span>Fetch "${UI.escapeHtml(q)}" with Rule Master</span>
                 </button>
               </div>
             </div>
@@ -9936,7 +9936,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
             </div>
             <button type="button" data-action="progression:open-custom-domain-editor" class="text-xs bg-purple-950/80 hover:bg-purple-900 text-purple-300 hover:text-white border border-purple-600/70 font-bold px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 cursor-pointer">
               <span>⚜️</span>
-              <span>+ Create / Rule Master AI Domain</span>
+              <span>+ Create / Rule Master Domain</span>
             </button>
             <label class="inline-flex items-center gap-1.5 text-[11px] text-slate-300 cursor-pointer select-none bg-slate-900 px-2.5 py-1 rounded-lg border border-slate-700 hover:border-yellow-600/60" title="Allow selecting domains outside your Deity's portfolio or Alignment restrictions (House Rule / DM Override)">
               <input id="cleric-domain-dm-override" type="checkbox" data-change-action="progression:cleric-domain-dm-override" class="accent-amber-500 rounded cursor-pointer">
@@ -10098,7 +10098,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
             <p class="text-xs text-slate-300">No domain matching "<strong>${UI.escapeHtml(query)}</strong>" found in compendium.</p>
             <button type="button" data-action="progression:open-custom-domain-editor" data-domain-name="${safeQ}" class="px-4 py-2 bg-gradient-to-r from-purple-700 to-indigo-700 hover:from-purple-600 hover:to-indigo-600 text-white font-extrabold text-xs rounded-xl shadow-lg transition inline-flex items-center gap-2 cursor-pointer active:scale-95">
               <span>🔮</span>
-              <span>Create / Rule Master AI "${UI.escapeHtml(query)}" Domain</span>
+              <span>Create / Rule Master "${UI.escapeHtml(query)}" Domain</span>
             </button>
           </div>
         `;
@@ -10689,7 +10689,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
             <div class="flex items-center justify-between mb-1">
               <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wide">Select Creature / Animal</label>
               <button type="button" data-action="progression:toggle-companion-spotlight" data-open="true" class="text-[10px] text-amber-300 hover:text-amber-200 font-bold flex items-center gap-1 cursor-pointer">
-                <span>🔮 Spotlight &amp; Rule Master AI</span>
+                <span>🔮 Spotlight &amp; Rule Master</span>
               </button>
             </div>
             <select id="companion-select-animal" data-change-action="progression:companion-animal" class="ui-input-md w-full h-9 bg-slate-950 text-amber-200 border border-slate-700 rounded-lg px-2.5 text-xs font-bold cursor-pointer">
@@ -10921,7 +10921,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
                 <span>${typeLabel} Spotlight</span>
                 <span class="text-[10px] text-amber-300 font-mono font-normal">Canonical RAW 3.5e</span>
               </h3>
-              <p class="text-[10px] text-slate-400">Search SRD creatures or fetch custom splatbook beasts via Rule Master AI</p>
+              <p class="text-[10px] text-slate-400">Search SRD creatures or fetch custom splatbook beasts with Rule Master</p>
             </div>
           </div>
           <button type="button" data-action="progression:toggle-companion-spotlight" data-open="false" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 text-sm cursor-pointer">✕</button>
@@ -10973,7 +10973,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
           <div class="pt-2 mt-2 border-t border-slate-800 text-center">
             <button type="button" data-action="progression:fetch-companion-ai" data-query="${safeEscapeHtml(query)}" class="w-full py-2 px-3 bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs rounded-xl shadow-lg flex items-center justify-center gap-2 transition active:scale-95 cursor-pointer border border-purple-400/40">
               <span>🔮</span>
-              <span>Fetch "${safeEscapeHtml(query)}" via Rule Master AI</span>
+              <span>Fetch "${safeEscapeHtml(query)}" with Rule Master</span>
             </button>
           </div>
         `;
@@ -10996,7 +10996,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
 
       const apiKey = typeof RuleMaster !== 'undefined' ? RuleMaster.getApiKey() : (localStorage.getItem('gemini_api_key') || '');
       if (!apiKey) {
-        showToast('🔮 Please configure a valid Google Gemini API key in Settings ⚙️ (top right) to search via Rule Master AI.', 'error', { wrap: true });
+        showToast('🔮 Please configure a valid Google Gemini API key in Settings ⚙️ (top right) to search with Rule Master.', 'error', { wrap: true });
         if (typeof openSettingsModal === 'function') openSettingsModal();
         return;
       }
@@ -11005,7 +11005,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       overlay.innerHTML = `
         <div class="p-8 text-center space-y-3">
           <div class="inline-block w-8 h-8 border-2 border-amber-400 border-t-transparent rounded-full animate-spin"></div>
-          <div class="text-xs font-bold text-amber-300">🔮 Rule Master AI fetching D&D 3.5e RAW data for "${safeEscapeHtml(q)}"...</div>
+          <div class="text-xs font-bold text-amber-300">✨ Rule Master crafting D&D 3.5e RAW data for "${safeEscapeHtml(q)}"...</div>
           <p class="text-[11px] text-slate-400">Scanning official D&D 3.5e Monster Manual, Frostburn, Sandstorm, Stormwrack, and Eberron sourcebooks...</p>
         </div>
       `;
@@ -11028,7 +11028,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
           type: 'Monster',
           category: _activeCompanionModalType,
           description: creature.benefit || creature.description || '',
-          source: creature.source || 'Rule Master AI',
+          source: creature.source || 'Rule Master',
           masterBonusText: creature.masterBonusText || null,
           minLevel: 1
         };
@@ -11049,12 +11049,12 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
           showDiceTopToast({
             icon: '🐾',
             title: `${creature.name} Fetched!`,
-            breakdown: `D&D 3.5e creature added via 🔮 Rule Master AI.`,
+            breakdown: `D&D 3.5e creature added with Rule Master.`,
             total: '+1 Creature'
           });
         }
       } catch (err) {
-        showToast(`Rule Master AI Error: ${err.message || 'Could not fetch creature.'}`, 'error', { wrap: true });
+        showToast(`Rule Master Error: ${err.message || 'Could not fetch creature.'}`, 'error', { wrap: true });
         renderCompanionSpotlightContent(q);
       }
     }
