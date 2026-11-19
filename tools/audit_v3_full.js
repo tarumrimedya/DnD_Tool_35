@@ -385,8 +385,10 @@ function runDeadBlocks(RE, cur, canonTarget) {
   const probes = makeProbes().slice(1);
   const origCond = RE.evaluateV3BranchCondition;
   const origPred = RE.evaluatePredicate;
+  const origResolve = RE.resolveV3WhenCondition;
   RE.evaluateV3BranchCondition = function () { return true; };
   RE.evaluatePredicate = function () { return true; };
+  RE.resolveV3WhenCondition = function () { return true; };
   const errors = [];
   const dead = [];
   let scanned = 0;
@@ -437,6 +439,7 @@ function runDeadBlocks(RE, cur, canonTarget) {
   } finally {
     RE.evaluateV3BranchCondition = origCond;
     RE.evaluatePredicate = origPred;
+    RE.resolveV3WhenCondition = origResolve;
   }
   return { scanned, dead, errors };
 }
