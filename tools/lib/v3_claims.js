@@ -60,12 +60,17 @@ function extractClaims(rawText) {
   const push = (c) => { if (!claims.some((x) => x.family === c.family && x.target === c.target && x.value === c.value && x.qualifier === c.qualifier)) claims.push(c); };
 
   // 1. "+2 racial bonus on Will saves against spells" / "-4 penalty on attack rolls"
-  const reBonus = new RegExp('([+\\-–−]\\s?\\d+)\\s+(?:(' + BONUS_TYPES + ')\\s+)?(bonus|penalty)\\s+(?:on|to)\\s+([^.;:()]{3,120})', 'gi');
+  // Stop tail before any subsequent signed "+N/-N [type] bonus/penalty" clause so compound sentences emit all claims.
+  const reBonus = new RegExp(
+    '([+\\-–−]\\s?\\d+)\\s+(?:(' + BONUS_TYPES + ')\\s+)?(bonus|penalty)\\s+(?:on|to)\\s+' +
+    '([^.;:()]{3,140}?)(?=\\s*(?:[,;]|\\band\\b|\\bplus\\b|\\bor\\b|\\bwith\\b)?\\s*(?:a\\s+|an\\s+|another\\s+)?[+\\-–−]\\s?\\d+\\s+(?:(?:' + BONUS_TYPES + ')\\s+)?(?:bonus|penalty)\\b|[.;:()]|$)',
+    'gi'
+  );
   let m;
   while ((m = reBonus.exec(text))) {
     const n = Number(m[1].replace(/[–−]/, '-').replace(/\s/g, ''));
     if (!Number.isFinite(n) || n === 0) continue;
-    const tail = m[4];
+    const tail = m[4].replace(/\s*,?\s*\b(?:and|or|plus)\s*$/i, '').trim();
     const cut = tail.split(/\s+(?:against|vs\.?|versus|when|while|if|made|for|to resist|during)\b/i);
     const t = classifyBonusTarget(cut[0]);
     if (!t) continue;
@@ -80,8 +85,11 @@ function extractClaims(rawText) {
     push({ family: 'sense', target: kind, value: Number(m[2] || m[3]) || null, qualifier: '', phrase: m[0].trim() });
   }
   // 3. damage reduction, spell resistance, energy resistance, immunity
-  const reDr = /\b(?:damage reduction|DR)\s+(\d+)\s*\/\s*([a-z+\- ]+?)(?=[\s.,;)]|$)/gi;
-  while ((m = reDr.exec(text))) push({ family: 'dr', target: m[2].trim().toLowerCase(), value: Number(m[1]), qualifier: '', phrase: m[0].trim() });
+  const reDr = /\b(?:damage reduction|DR)\s+(\d+)\s*\/\s*([a-z—\-][a-z+\- ]*?)(?=[.,;:)]|\s+(?:and\s+(?:spell|damage|SR\b|DR\b|immun|resist|darkvision|low-light|fast|a\s+|an\s+)|when\b|while\b|if\b|in\b|at\b|from\b)|$)/gi;
+  while ((m = reDr.exec(text))) {
+    const bypass = m[2].replace(/\s+\b(?:and|or)\s*$/i, '').trim().toLowerCase();
+    push({ family: 'dr', target: bypass, value: Number(m[1]), qualifier: '', phrase: m[0].trim() });
+  }
   const reSr = /\bspell resistance\s+(?:of\s+|equal to\s+)?(\d+)\b|\bSR\s+(\d+)\b/gi;
   while ((m = reSr.exec(text))) push({ family: 'sr', target: 'sr', value: Number(m[1] || m[2]), qualifier: '', phrase: m[0].trim() });
   const reRes = new RegExp('\\b(?:resistance\\s+(?:to\\s+)?(' + ENERGIES.join('|') + ')\\s+(\\d+)|(' + ENERGIES.join('|') + ')\\s+resistance\\s+(\\d+))', 'gi');

@@ -1679,7 +1679,8 @@
     spot: null,
     ui: {
       liveOpenMobile: false, liveWasScrolled: false, liveUserOverride: null, progHideEmpty: false, facetOpen: {}, cardOpen: {}, jsonOpen: false, importOpen: false, importText: '', tplSaveOpen: false, newTplName: '', houseOpen: false,
-      customSkillOpen: false, customSkill: { name: '', ability: 'cha', trainedOnly: true, acp: false }
+      customSkillOpen: false, customSkill: { name: '', ability: 'cha', trainedOnly: true, acp: false },
+      craftOpen: false, craftText: '', craftBusy: false, craftStatus: '', craftNeedKey: false, craftApiKey: '', guideOpen: false
     }
   };
 
@@ -3876,9 +3877,16 @@
         if (sNorm) srdBuckets.sort((a, b) => b.best - a.best);
         const out = pre.slice();
         srdBuckets.forEach((b) => b.items.forEach((it) => out.push(it)));
+        if (sNorm.length >= 3 && out.length === 0) {
+          const rawQ = String(q || '').trim();
+          out.push(SI('✨ Craft with Rule Master', '__scribe__', '📜 Scribe "' + short(rawQ, 44) + '" from Text', '0 Tokens', 'Scribe pasted D&D 3.5e rule text directly into V3 Rule Blocks locally.', { scribeText: rawQ }));
+          out.push(SI('✨ Craft with Rule Master', '__craft__', '✨ Craft "' + short(rawQ, 44) + '" with Rule Master', 'Rule Master', 'Consult Rule Master to craft a Pure Canonical V3 entry onto the canvas.', { craftQuery: rawQ }));
+        }
         return out;
       },
       pick(it) {
+        if (it.data.scribeText) { S.ui.craftText = it.data.scribeText; ACT['run-scribe-text'](); return; }
+        if (it.data.craftQuery) { S.ui.craftOpen = true; S.ui.craftText = it.data.craftQuery; renderTopbar(); renderCraftDrawer(); ACT['run-craft-rm'](); return; }
         if (it.data.preset) { ACT['load-preset']({ dataset: { id: it.data.preset } }); return; }
         if (it.data.tpl) { setBlueprint(it.data.tpl); return; }
         const raw = it.data.srd.raw || it.data.srd;
@@ -4132,6 +4140,8 @@
     const curTpl = S.entry.templateId || '';
     const catSel = '<select class="fs-sel" data-topcat="1" style="width:auto;min-width:170px" title="Category / Template"><optgroup label="Category">' + opts(BLUEPRINTS.map((b) => [b.id, b.icon + ' ' + b.name]), curTpl ? '' : S.entry.blueprint) + '</optgroup>' +
       (S.templates.length ? '<optgroup label="📌 Saved Templates">' + opts(S.templates.map((t) => [t.id, t.name]), curTpl) + '</optgroup>' : '') + '</select>';
+    const craftBtn = btn('toggle-craft-rm', '✨ Craft with Rule Master', 'fs-xs ' + (S.ui.craftOpen ? 'fs-on' : 'fs-primary'));
+    const guideBtn = btn('toggle-guide', '❓ Guide', 'fs-xs' + (S.ui.guideOpen ? ' fs-on' : ''));
     if (IS_EMBED) {
       const ctx = S.embed && S.embed.context ? S.embed.context : {};
       const allowChar = ctx.allowCharacterScope !== false;
@@ -4140,7 +4150,7 @@
         (allowChar ? '<option value="character"' + (scope === 'character' ? ' selected' : '') + '>This Character Only</option>' : '') +
         '<option value="campaign"' + (scope === 'campaign' ? ' selected' : '') + '>Campaign Rule Crafter Library</option></select>';
       $('#fs-topbar').innerHTML = '<div class="fs-topbar-row"><div class="fs-title">⚒️ Rule Crafter</div>' + scopeSel +
-        '<span class="fs-grow-gap"></span>' + btn('embed-save', '💾 Save & Apply', 'fs-xs fs-emerald') + btn('embed-cancel', '✕ Cancel', 'fs-xs fs-ghost') + '</div>' +
+        '<span class="fs-grow-gap"></span>' + craftBtn + guideBtn + btn('embed-save', '💾 Save & Apply', 'fs-xs fs-emerald') + btn('embed-cancel', '✕ Cancel', 'fs-xs fs-ghost') + '</div>' +
         '<div class="fs-topbar-row fs-topbar-spot-row">' + catSel + '<div class="fs-top-spot" style="flex:1 1 200px">' + spotHtml('load', 'top') + '</div></div>';
       return;
     }
@@ -4149,8 +4159,34 @@
     const importBtn = btn('toggle-import-json', '📥 Import JSON', 'fs-xs' + (S.ui.importOpen ? ' fs-on' : ''));
     const status = CAT.srdLoaded ? '<span class="fs-pill emerald" title="SrdCompendium V3 Corpus">📚 SRD ' + CAT.srdCount.toLocaleString('en-US') + (CAT.customCount ? ' + ' + CAT.customCount + ' custom' : '') + '</span>' : '<span class="fs-pill dim" title="Serve over http:// to load srd_compendium.js data">📚 Offline seed</span>';
     $('#fs-topbar').innerHTML = '<div class="fs-topbar-row"><div class="fs-title">' + DICE_SVG + ' Rule Crafter</div>' + catSel +
-      '<span class="fs-grow-gap"></span>' + save + skillPop + importBtn + btn('new-entry', '✨ Blank', 'fs-xs') + status + '</div>' +
+      '<span class="fs-grow-gap"></span>' + craftBtn + guideBtn + save + skillPop + importBtn + btn('new-entry', '✨ Blank', 'fs-xs') + status + '</div>' +
       '<div class="fs-topbar-row fs-topbar-spot-row"><div class="fs-top-spot">' + spotHtml('load', 'top') + '</div></div>';
+  }
+  function renderCraftDrawer() {
+    const wrap = document.getElementById('fs-craft-drawer');
+    if (!wrap) return;
+    if (!S.ui.craftOpen) { wrap.innerHTML = ''; return; }
+    const keyRow = S.ui.craftNeedKey
+      ? '<div class="fs-row" style="margin-top:6px;padding:6px 8px;border-radius:8px;background:rgba(30,27,75,.55);border:1px solid rgba(99,102,241,.45)">' +
+        '<span class="fs-hint" style="color:#c7d2fe">🔑 Enter Gemini API Key to consult Rule Master:</span>' +
+        '<input type="password" class="fs-in" data-uibind="craftApiKey" placeholder="AIza…" style="flex:1 1 180px;width:auto">' +
+        btn('save-craft-apikey', 'Save Key & Craft', 'fs-xs fs-primary') +
+        '</div>'
+      : '';
+    const statusSpan = S.ui.craftStatus ? '<span class="fs-hint" style="color:#a5b4fc">' + esc(S.ui.craftStatus) + '</span>' : '';
+    wrap.innerHTML = '<div class="fs-glass fs-import-box" style="border-radius:14px;margin-bottom:10px;border:1px solid rgba(99,102,241,.45)">' +
+      '<div class="fs-row" style="justify-content:space-between;margin-bottom:4px">' +
+      '<span class="fs-label-mini" style="color:#c7d2fe">✨ Craft with Rule Master</span>' +
+      '<span class="fs-hint">Inscribe D&amp;D 3.5e rule text to scribe blocks instantly, or name a lore/splatbook rule to craft</span>' +
+      '</div>' +
+      '<textarea class="fs-in" data-uibind="craftText" placeholder="e.g. &quot;Alertness: You get a +2 bonus on all Listen checks and Spot checks.&quot; or &quot;Zen Archery&quot; or &quot;Planning Domain&quot;…">' + esc(S.ui.craftText) + '</textarea>' +
+      keyRow +
+      '<div class="fs-row" style="margin-top:6px">' +
+      btn('run-scribe-text', '📜 Scribe from Text', 'fs-xs fs-emerald') +
+      btn('run-craft-rm', S.ui.craftBusy ? '⏳ Crafting…' : '✨ Craft with Rule Master', 'fs-xs fs-primary') +
+      btn('toggle-craft-rm', 'Cancel', 'fs-xs fs-ghost') +
+      statusSpan +
+      '</div></div>';
   }
   const liveMetrics = { y0: 96, moreH: 0, pillsCount: 0 };
   function measureLiveMetrics() {
@@ -4777,10 +4813,117 @@
   const fxRefBtn = (kind, path) => '<button type="button" class="fs-btn fs-xs fs-ghost" data-fx-keep="1" data-action="toggle-fxref" data-kind="' + esc(kind || 'value') + '"' +
     (path ? ' data-fxpath="' + esc(path) + '"' : '') + ' title="Formula help: examples and terms you can use" aria-label="Formula help" style="margin-top:4px">' +
     '<b style="display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;border:1px solid currentColor;font-size:10px;margin-right:4px">!</b>Formula help</button>';
+  const GUIDE_RECIPES = [
+    {
+      title: '1. Flat & CL-Scaling Bonus (Shield of Faith)',
+      sub: 'Use Stat Modifier with plural targets and RAW bonus types (Deflection, Sacred, Enhancement). For base + caster-level caps, use Formula mode.',
+      code: 'mode: "formula" • 2 + min(3, floor(@cl / 6))',
+      entry: {
+        schemaVersion: 3, id: 'spl-guide-shield-of-faith', blueprint: 'spell', name: 'Shield of Faith', type: 'Spell', source: 'Player\'s Handbook p.278',
+        text: '+2 deflection bonus to AC, with an additional +1 to the bonus for every six caster levels you have (maximum +5 deflection bonus at 18th level).',
+        effects: [{ type: 'stat', targets: ['ac.deflection'], mode: 'formula', formula: '2 + min(3, floor(@cl / 6))', btype: 'Deflection' }]
+      }
+    },
+    {
+      title: '2. Player @Choice Binding (Weapon Focus)',
+      sub: 'Attach a Choice (Weapon, Skill, Spell School, or Energy) and pair it with a closed when branch (wieldingChosenWeapon / castingChosenSchool).',
+      code: 'choices[] + when: wieldingChosenWeapon -> atk.weapon +1',
+      entry: {
+        schemaVersion: 3, id: 'feat-guide-weapon-focus', blueprint: 'feat', name: 'Weapon Focus', type: 'Feat', source: 'Player\'s Handbook p.102',
+        text: 'Choose one type of weapon. You gain a +1 bonus on all attack rolls you make using the selected weapon.',
+        choices: [{ id: 'ch-weapon', key: 'weapon', label: 'Chosen Weapon', count: 1 }],
+        effects: [{ type: 'when', flow: 'while', branches: [{ condKind: 'wieldingChosenWeapon', condText: '', effects: [{ type: 'stat', targets: ['atk.weapon'], mode: 'flat', value: 1, btype: 'Untyped' }] }] }]
+      }
+    },
+    {
+      title: '3. A -> B Ability Substitution (Zen Archery)',
+      sub: 'Swap or add ability modifiers cleanly via Stat / Formula Swap (mode: "replaceStat") with a deterministic swapScope.',
+      code: 'atk.ranged.abilityMod: max(DEX, WIS) • swapScope: "all"',
+      entry: {
+        schemaVersion: 3, id: 'feat-guide-zen-archery', blueprint: 'feat', name: 'Zen Archery', type: 'Feat', source: 'Complete Warrior p.106',
+        text: 'You can use your Wisdom modifier instead of your Dexterity modifier on ranged attack rolls.',
+        effects: [{ type: 'stat', mode: 'replaceStat', swapTarget: 'atk.ranged.abilityMod', targets: ['atk.ranged.abilityMod'], subOp: 'max', fromStat: 'dex', toStat: 'wis', swapScope: 'all', btype: 'Untyped' }]
+      }
+    },
+    {
+      title: '4. Closed when & Combat modes[] (Battle Fury)',
+      sub: 'Use modes[] for mutually exclusive Combat toggle chips on the sheet, and when ("state" for charging/flanking, "situational" for target notes).',
+      code: 'modes[] chip + when(state: "charging" | situational)',
+      entry: {
+        schemaVersion: 3, id: 'feat-guide-battle-fury', blueprint: 'feat', name: 'Battle Fury', type: 'Feat', source: 'Homebrew Guide',
+        text: 'Toggleable combat stance granting +2 morale to melee damage, plus +2 melee attack while charging.',
+        effects: [{ type: 'when', flow: 'while', branches: [{ condKind: 'state', condText: 'charging', effects: [{ type: 'stat', targets: ['atk.melee'], mode: 'flat', value: 2, btype: 'Morale' }] }] }],
+        modes: [
+          { id: 'mode-fury-off', name: 'Inactive', label: 'Inactive', effects: [] },
+          { id: 'mode-fury-on', name: 'Battle Fury', label: 'Battle Fury (+2 melee dmg, -2 AC)', combatScope: 'melee', effects: [{ type: 'stat', targets: ['dmg.melee'], mode: 'flat', value: 2, btype: 'Morale' }, { type: 'stat', targets: ['ac.total'], mode: 'flat', value: -2, btype: 'Penalty' }] }
+        ]
+      }
+    },
+    {
+      title: '5. Activated powers[] & Daily Pool (Dragon Breath)',
+      sub: 'Pair a Resource Pool (perDay or cooldown) with a Sub-Power carrying action economy, scaling dcFormula, save, and Damage roll.',
+      code: 'resource(perDay) + powers[]: 6d8 Fire, DC 10 + 1/2 HD + Con',
+      entry: {
+        schemaVersion: 3, id: 'race-guide-half-dragon', blueprint: 'race', name: 'Half-Dragon (Red)', type: 'Template', source: 'Monster Manual p.146',
+        text: '+8 Str, +2 Con, +4 natural armor, fire immunity, darkvision 60 ft., and 1/day 30-ft. cone of fire (6d8, Reflex DC 10 + 1/2 HD + Con half).',
+        race: { kind: 'template', size: 'Medium', speed: 30, favoredClass: 'Any', levelAdjustment: 3 },
+        effects: [
+          { type: 'stat', targets: ['str'], mode: 'flat', value: 8, btype: 'Racial' },
+          { type: 'stat', targets: ['ac.natural'], mode: 'flat', value: 4, btype: 'Natural Armor' },
+          { type: 'defense', mode: 'Immunity', what: 'Fire' },
+          { type: 'resource', name: 'Breath Weapon', varKey: 'breath_weapon', resMode: 'spend', scaling: 'flat', max: 1, reset: 'perDay' }
+        ],
+        powers: [{
+          id: 'pw-guide-breath', kind: 'inline', name: 'Breath Weapon (Su)', action: 'Standard',
+          usage: { mode: 'resourcePool', pool: 'Breath Weapon', cost: 1 }, area: '30-ft. Cone', dcFormula: '10 + 1/2 HD + Con',
+          save: { type: 'Reflex', effect: 'Half' },
+          effects: [{ type: 'roll', kind: 'Damage', count: 6, die: 'd8', flat: 0, dmgType: 'Fire', scaling: 'flat', save: 'Reflex half' }]
+        }]
+      }
+    },
+    {
+      title: '6. Cleric Domain & Spell Ladder (Sun Domain)',
+      sub: 'Craft Cleric Domains with a 1st–9th Spell Ladder and granted power resource blocks so Cleric sheets auto-populate domain slots.',
+      code: 'blueprint: "domain" • grants.spellLadder (1st–9th)',
+      entry: {
+        schemaVersion: 3, id: 'dom-guide-sun', blueprint: 'domain', name: 'Sun', type: 'Domain', category: 'Cleric Domain', source: 'Player\'s Handbook p.188',
+        text: 'Once per day, perform a greater turning against undead in place of a regular turning.',
+        grants: {
+          grantedPower: { name: 'Sun Domain Power', text: 'Once per day, perform a greater turning against undead.', usage: { mode: 'passive' } },
+          spellLadder: [
+            { level: 1, spell: 'Endure Elements', refId: 'spl-endure-elements' }, { level: 2, spell: 'Heat Metal', refId: 'spl-heat-metal' },
+            { level: 3, spell: 'Searing Light', refId: 'spl-searing-light' }, { level: 4, spell: 'Fire Shield', refId: 'spl-fire-shield' },
+            { level: 5, spell: 'Flame Strike', refId: 'spl-flame-strike' }, { level: 6, spell: 'Fire Seeds', refId: 'spl-fire-seeds' },
+            { level: 7, spell: 'Sunbeam', refId: 'spl-sunbeam' }, { level: 8, spell: 'Sunburst', refId: 'spl-sunburst' },
+            { level: 9, spell: 'Prismatic Sphere', refId: 'spl-prismatic-sphere' }
+          ]
+        },
+        effects: [{ type: 'resource', name: 'Greater Turning', varKey: 'greater_turning', resMode: 'spend', scaling: 'flat', max: 1, reset: 'perDay' }]
+      }
+    }
+  ];
+
   function renderFxRef() {
     const el = document.getElementById('fs-fxref');
     if (!el) return;
+    if (S.ui.guideOpen) {
+      el.style.display = 'flex';
+      el.setAttribute('aria-label', 'Rule Crafter Quick Guide');
+      const cards = GUIDE_RECIPES.map((g, i) =>
+        '<div class="fs-fxrow" style="gap:4px;margin-bottom:6px">' +
+        '<b>' + esc(g.title) + '</b>' +
+        '<span>' + esc(g.sub) + '</span>' +
+        '<code>' + esc(g.code) + '</code>' +
+        '<div class="fs-row" style="margin-top:3px">' + btn('load-guide-example', '⚡ Load Example onto Canvas', 'fs-xs fs-emerald', { idx: i }) + '</div>' +
+        '</div>'
+      ).join('');
+      el.innerHTML = '<div class="fs-fxhead"><span>❓ Rule Crafter Quick Guide</span><button type="button" class="fs-btn fs-xs fs-ghost" data-action="toggle-guide">Close</button></div>' +
+        '<div class="fs-hint" style="padding:0 10px 6px">Rule Crafter builds Pure Canonical V3 entries from modular blocks. Use <b>✨ Craft with Rule Master</b> in the top bar to scribe RAW text instantly, or load any archetype below to explore:</div>' +
+        '<div class="fs-fxbody">' + cards + '</div>';
+      return;
+    }
     if (!S.ui.fxRefOpen) { el.style.display = 'none'; el.innerHTML = ''; return; }
+    el.setAttribute('aria-label', 'Formula Reference');
     const vars = fxVars(), funcs = fxFuncs(), groups = {};
     vars.forEach((v) => { (groups[v.group || 'Variables'] = groups[v.group || 'Variables'] || []).push(v); });
     const item = (ins, title, sub, ex) => '<button type="button" class="fs-fxitem" data-fx-keep="1" data-action="fx-insert" data-ins="' + esc(ins) + '"><b>' + esc(title) + '</b>' + (sub ? '<span>' + esc(sub) + '</span>' : '') + (ex ? '<code>' + esc(ex) + '</code>' : '') + '</button>';
@@ -5541,7 +5684,7 @@
     renderLiveHeader(); refreshSlots();
     if (S.ui.jsonOpen) { const pre = $('#fs-json-pre'); if (pre) pre.textContent = JSON.stringify(exportEntry(S.entry), null, 2); }
   }
-  function renderAll() { S.spot = null; renderTopbar(); renderLiveHeader(); renderFacets(); renderJson(); renderFxRef(); }
+  function renderAll() { S.spot = null; renderTopbar(); renderCraftDrawer(); renderLiveHeader(); renderFacets(); renderJson(); renderFxRef(); }
   function toast(msg, kind) {
     const wrap = $('#fs-toasts'); if (!wrap) return;
     while (wrap.children.length >= 2) wrap.firstElementChild.remove();
@@ -5752,8 +5895,156 @@
       if (el && el.dataset && el.dataset.fxpath) S.fxPath = el.dataset.fxpath;
       // A "!" button for another field switches the examples instead of closing the panel.
       S.ui.fxRefOpen = kind && S.ui.fxRefOpen && S.ui.fxKind !== kind ? true : !S.ui.fxRefOpen;
+      if (S.ui.fxRefOpen) S.ui.guideOpen = false;
       if (kind) S.ui.fxKind = kind;
+      renderTopbar();
       renderFxRef();
+    },
+    'toggle-guide': () => {
+      S.ui.guideOpen = !S.ui.guideOpen;
+      if (S.ui.guideOpen) S.ui.fxRefOpen = false;
+      renderTopbar();
+      renderFxRef();
+    },
+    'load-guide-example': (el) => {
+      const g = GUIDE_RECIPES[num(el && el.dataset ? el.dataset.idx : -1, -1)];
+      if (!g || !g.entry) return;
+      loadEntry(fromCanonicalV3(clone(g.entry)), '');
+      toast('📖 Guide example loaded: ' + g.entry.name);
+      renderAll();
+    },
+    'toggle-craft-rm': () => {
+      S.ui.craftOpen = !S.ui.craftOpen;
+      S.ui.craftStatus = '';
+      S.ui.craftNeedKey = false;
+      renderTopbar();
+      renderCraftDrawer();
+      if (S.ui.craftOpen) {
+        const ta = document.querySelector('[data-uibind="craftText"]');
+        if (ta) ta.focus();
+      }
+    },
+    'run-scribe-text': () => {
+      const raw = String(S.ui.craftText || '').trim();
+      if (!raw) { toast('Please inscribe D&D 3.5e rule text first.', 'warn'); return; }
+      const RE = typeof window !== 'undefined' ? window.RuleEngine : null;
+      if (!RE || typeof RE.parseRuleTextToV3 !== 'function') { toast('RuleEngine text scriber is unavailable.', 'err'); return; }
+      try {
+        const curName = String(S.entry.name || '').trim();
+        const hasDefaultBlank = !curName || /^New\s+/i.test(curName);
+        const v3 = RE.parseRuleTextToV3(raw, {
+          blueprint: S.entry.blueprint || 'feat',
+          name: hasDefaultBlank ? '' : curName,
+          id: S.entry.id || undefined,
+          source: S.entry.source || undefined
+        });
+        if (!v3) { toast('Could not scribe rule blocks from that text.', 'warn'); return; }
+        const loaded = fromCanonicalV3(v3);
+        loadEntry(loaded, '');
+        S.ui.craftOpen = false;
+        S.ui.craftStatus = '';
+        renderAll();
+        const totalBlocks = (v3.effects ? v3.effects.length : 0) + (v3.powers ? v3.powers.length : 0) + (v3.choices ? v3.choices.length : 0);
+        toast('📜 Scribed "' + v3.name + '" (' + totalBlocks + ' block' + (totalBlocks === 1 ? '' : 's') + ') onto the canvas');
+      } catch (err) {
+        toast('Scribe error: ' + ((err && err.message) || 'invalid text'), 'err');
+      }
+    },
+    'save-craft-apikey': () => {
+      const key = String(S.ui.craftApiKey || '').trim();
+      if (!key) { toast('Please enter a valid Gemini API key.', 'warn'); return; }
+      try {
+        window.localStorage.setItem('dnd35_gemini_api_key', key);
+        const parentRm = (typeof window !== 'undefined' && window.parent && window.parent !== window && window.parent.RuleMaster) ? window.parent.RuleMaster : null;
+        if (parentRm && typeof parentRm.setApiKey === 'function') parentRm.setApiKey(key);
+      } catch (e) { /* ignore storage error */ }
+      S.ui.craftApiKey = '';
+      S.ui.craftNeedKey = false;
+      ACT['run-craft-rm']();
+    },
+    'run-craft-rm': async () => {
+      if (S.ui.craftBusy) return;
+      const raw = String(S.ui.craftText || '').trim();
+      if (!raw) { toast('Enter a rule name or concept to craft with Rule Master.', 'warn'); return; }
+      const BP_TO_CAT = {
+        weapon: 'Weapon', armor: 'Armor', wondrous: 'Wondrous Item', spell: 'Spell', feat: 'Feat',
+        buff: 'Condition', class: 'Class', item_mod: 'Augment Crystal', race: 'Race', deity: 'Deity', domain: 'Domain', monster: 'Feat'
+      };
+      const catHint = BP_TO_CAT[S.entry.blueprint] || 'Feat';
+      let parentRm = null;
+      try {
+        if (typeof window !== 'undefined' && window.parent && window.parent !== window && window.parent.RuleMaster) parentRm = window.parent.RuleMaster;
+      } catch (e) { parentRm = null; }
+      let apiKey = '';
+      try {
+        apiKey = (parentRm && typeof parentRm.getApiKey === 'function' && parentRm.getApiKey()) || window.localStorage.getItem('dnd35_gemini_api_key') || '';
+      } catch (e) { apiKey = ''; }
+      if (!apiKey) {
+        S.ui.craftNeedKey = true;
+        renderCraftDrawer();
+        const ki = document.querySelector('[data-uibind="craftApiKey"]');
+        if (ki) ki.focus();
+        return;
+      }
+      S.ui.craftBusy = true;
+      S.ui.craftStatus = 'Consulting Rule Master (' + catHint + ')…';
+      renderCraftDrawer();
+      try {
+        let entries = null;
+        if (parentRm) {
+          const isLongProse = raw.length > 100 && /\s/.test(raw) && !/^(spell|feat|race|deity|domain|weapon|armor|shield|item|class|maneuver|stance|condition):/i.test(raw);
+          entries = (isLongProse && typeof parentRm.queryAiFreeTextRows === 'function')
+            ? await parentRm.queryAiFreeTextRows(raw, apiKey, null)
+            : await parentRm.fetchSingleAiRuleObjects(raw, catHint, apiKey, null);
+        } else {
+          const RE = typeof window !== 'undefined' ? window.RuleEngine : null;
+          const prompt = (RE && typeof RE.buildLegoAssemblyPrompt === 'function')
+            ? RE.buildLegoAssemblyPrompt(raw + '\nTarget Blueprint: "' + (S.entry.blueprint || 'feat') + '" (Category: "' + catHint + '")', [])
+            : raw;
+          let parsed = null, lastErr = null;
+          const models = ['gemini-2.5-flash', 'gemini-2.5-pro'];
+          for (let mi = 0; mi < models.length; mi++) {
+            const mName = models[mi];
+            try {
+              const url = 'https://generativelanguage.googleapis.com/v1beta/models/' + mName + ':generateContent?key=' + encodeURIComponent(apiKey);
+              const genCfg = { temperature: 0.1, responseMimeType: 'application/json' };
+              if (mName.indexOf('2.5') >= 0) genCfg.thinkingConfig = { thinkingBudget: 0 };
+              const resp = await fetch(url, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: genCfg })
+              });
+              if (!resp.ok) {
+                const ej = await resp.json().catch(() => ({}));
+                throw new Error((ej.error && ej.error.message) || ('HTTP ' + resp.status));
+              }
+              const data = await resp.json();
+              const txt = data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0] && data.candidates[0].content.parts[0].text;
+              if (txt) {
+                const mJson = txt.match(/\{[\s\S]*\}/);
+                parsed = JSON.parse(mJson ? mJson[0] : txt);
+                break;
+              }
+            } catch (e) { lastErr = e; }
+          }
+          if (!parsed) throw (lastErr || new Error('Rule Master could not craft a response.'));
+          const rawList = Array.isArray(parsed.entries) ? parsed.entries : (Array.isArray(parsed) ? parsed : [parsed]);
+          entries = rawList.map((it) => (RE && typeof RE.sanitizeV3Entry === 'function') ? RE.sanitizeV3Entry(it, { defaultBlueprint: S.entry.blueprint || 'feat' }) : it).filter(Boolean);
+        }
+        if (!entries || !entries.length) throw new Error('No matching D&D 3.5e rule returned for "' + raw + '".');
+        const RE2 = typeof window !== 'undefined' ? window.RuleEngine : null;
+        const crafted = (RE2 && typeof RE2.sanitizeV3Entry === 'function') ? RE2.sanitizeV3Entry(entries[0], { defaultBlueprint: S.entry.blueprint || 'feat' }) : entries[0];
+        loadEntry(fromCanonicalV3(crafted), '');
+        S.ui.craftBusy = false;
+        S.ui.craftOpen = false;
+        S.ui.craftStatus = '';
+        renderAll();
+        toast('✨ Crafted "' + crafted.name + '" onto the Rule Crafter canvas');
+      } catch (err) {
+        S.ui.craftBusy = false;
+        S.ui.craftStatus = '';
+        renderCraftDrawer();
+        toast('Rule Master Error: ' + ((err && err.message) || 'failed to craft'), 'err');
+      }
     },
     'fx-apply': (el) => {
       const t = fxTarget();
@@ -6047,7 +6338,7 @@
     exportEntry: exportEntry, fromCanonicalV3: fromCanonicalV3, fromCanonicalV25: fromCanonicalV3,
     statBlocksFromSrd: statBlocksFromSrd,
     importFromJson: importFromJson, rawHeaderLine: rawHeaderLine, damageAtCL: rollAtCL,
-    presets: PRESETS.map((p) => p.id), presetList: PRESETS, blueprints: BLUEPRINTS, blockTypes: BLOCK_TYPES,
+    presets: PRESETS.map((p) => p.id), presetList: PRESETS, blueprints: BLUEPRINTS, blockTypes: BLOCK_TYPES, guideRecipes: GUIDE_RECIPES,
     setBlueprint: setBlueprint, renderAll: renderAll,
     loadPreset: (id) => ACT['load-preset']({ dataset: { id: id } }),
     act: (name, data) => { const el = document.createElement('div'); Object.keys(data || {}).forEach((k) => { el.dataset[k] = data[k]; }); ACT[name](el, { target: el }); }

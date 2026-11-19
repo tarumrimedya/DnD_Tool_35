@@ -4808,8 +4808,8 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
             <button type="button"
                     data-action="progression:trigger-rm-lvlup-slot" data-slot-idx="${slotIdx}"
                     class="w-full py-2 px-3 rounded-lg bg-gradient-to-r from-purple-700 via-indigo-700 to-purple-800 hover:from-purple-600 hover:to-indigo-600 text-white font-bold text-xs flex items-center justify-center gap-2 border border-purple-400/40 shadow transition cursor-pointer">
-              <span>⚡</span>
-              <span>Fetch via Rule Master AI: "${query || 'New 3.5e Feat'}" (3.5e Compendium)</span>
+              <span>✨</span>
+              <span>Craft with Rule Master: "${query || 'New 3.5e Feat'}" (3.5e Compendium)</span>
             </button>
             <div id="lvlup-feat-ai-status-${slotIdx}" class="hidden text-xs p-2 rounded-lg"></div>
           </div>
@@ -6050,8 +6050,8 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
                 <span>Clone / Edit Class Template</span>
               </button>
               <button type="button" data-action="progression:fetch-class-ai" data-class-name="${String(q || '').replace(/"/g, '&quot;')}" class="bg-purple-700 hover:bg-purple-600 text-white font-bold text-[10px] px-2.5 py-1 rounded-lg flex items-center gap-1 transition cursor-pointer border border-purple-400/40">
-                <span>🔮</span>
-                <span>Fetch "${safeQuery}" via AI</span>
+                <span>✨</span>
+                <span>Craft "${safeQuery}" with Rule Master</span>
               </button>
             </div>
           </div>

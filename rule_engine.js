@@ -4521,16 +4521,1000 @@ const RuleEngine = {
 
   // Build AI Lego Assembly Prompt using matched structural templates from lego_patterns.json
   buildLegoAssemblyPrompt(userQuery, matchedPatterns = []) {
-    const templatesJson = JSON.stringify(matchedPatterns.map(p => p.template), null, 2);
+    const templatesJson = JSON.stringify((matchedPatterns || []).map(p => p.template || p), null, 2);
     return [
-      'You are the D&D 3.5e Rule Master Lego Assembler.',
-      'Clone and combine the provided Pure Canonical V3 Lego templates (`schemaVersion: 3`) and adapt only the domain parameters to match the user request. Output complete V3 entries that validate against `rule_master_ai_schema.json` (`RuleMasterEntryV3`).',
-      'Mechanics live only in `effects[]` blocks (`stat`, `roll`, `attack`, `defense`, `effect`, `resource`, `when`, `table`, `carrier`), `choices[]` (@Choice inputs) and `powers[]` (activated abilities with `action`, `usage`, `save`, `effects[]`). Never emit legacy `modifiers`, `damageParts`, `defenses`, `resources` or `modes` arrays.',
-      '`stat` blocks use plural `targets: string[]` with canonical keys (e.g. `ac.deflection`, `atk.all`, `save.will`) plus `btype` and `mode` (`flat`, `stat`, `perCL`, `formula`, `replaceStat`); ability swaps use `mode: "replaceStat"` with `swapTarget`, `subOp`, `fromStat`, `toStat`, `swapScope`. Toggled or situational benefits go inside `when` branches (`flow: "while"`, `condText: "toggle:<key>"`, `"stance:<name>"` or `"@level >= N"`).',
+      'You are the D&D 3.5e Rule Master Architect.',
+      'Clone and combine Pure Canonical V3 templates (`schemaVersion: 3`) and adapt only the domain parameters to match the request. Output complete V3 entries inside `{"entries": [...]}` that validate against `rule_master_ai_schema.json` (`RuleMasterEntryV3`).',
+      'Mechanics live ONLY in `effects[]` blocks (`stat`, `roll`, `attack`, `defense`, `effect`, `resource`, `when`, `table`, `carrier`), `choices[]` (@Choice inputs), `powers[]` (activated abilities with `id`, `kind`, `name`, `action`, `usage`, `save`, `effects[]`), and `modes[]` (mutually exclusive selectable Combat sheet modes with `id`, `name`, `effects[]`). Never emit legacy `modifiers`, `damageParts`, `defenses`, or `resources` arrays.',
+      '`stat` blocks use plural `targets: string[]` with canonical keys (e.g. `ac.deflection`, `atk.all`, `save.will`, `str`, `skill.move-silently`) plus `btype` and `mode` (`flat`, `stat`, `perCL`, `formula`, `replaceStat`); ability swaps use `mode: "replaceStat"` with `swapTarget`, `subOp`, `fromStat`, `toStat`, `swapScope`.',
+      'CLOSED `when` VOCABULARY: Use `condKind: "state"` ONLY with closed engine conditions (`"charging"`, `"flanking"`, `"fightingDefensively"`, `"totalDefense"`, `"powerAttack"`, `"combatExpertise"`, `"higherGround"`, `"pointBlankShot"`, `"toggle:<key>"`, `"stance:<name>"`, `"@level >= N"`, `"alignment:evil"`), or named kinds (`"wieldingChosenWeapon"`, `"wieldingChosenShield"`, `"castingChosenSchool"`, `"notFlatFooted"`). Any descriptive or target-specific condition ("vs. poison", "against giants") MUST use `condKind: "situational"`.',
       'For multi-benefit Homebrew, write each benefit as its own `effects[]` or `powers[]` element and describe it in `label`/`text`; all benefits stay active simultaneously.',
-      `Matched Structural Lego Templates:\n${templatesJson}`,
+      matchedPatterns && matchedPatterns.length ? `Matched Structural V3 Templates:\n${templatesJson}` : '',
       `User Rule / Ability Request:\n${userQuery}`
-    ].join('\n\n');
+    ].filter(Boolean).join('\n\n');
+  },
+
+  // Canonical V3 target normalizer (0-token parity with tools/verify_v3_corpus.js)
+  _V3_CANONICAL_SKILLS: [
+    'appraise', 'autohypnosis', 'balance', 'bluff', 'climb', 'concentration', 'craft',
+    'decipher-script', 'diplomacy', 'disable-device', 'disguise', 'escape-artist', 'forgery',
+    'gather-information', 'handle-animal', 'heal', 'hide', 'intimidate', 'jump', 'knowledge',
+    'knowledge-psionics', 'listen', 'move-silently', 'open-lock', 'perform', 'profession',
+    'psicraft', 'ride', 'search', 'sense-motive', 'sleight-of-hand', 'speak-language',
+    'spellcraft', 'spot', 'survival', 'swim', 'truespeak', 'tumble', 'use-magic-device',
+    'use-psionic-device', 'use-rope'
+  ],
+
+  _V3_TARGET_ALIAS_MAP: {
+    'ability.str': 'str', 'ability.dex': 'dex', 'ability.con': 'con',
+    'ability.int': 'int', 'ability.wis': 'wis', 'ability.cha': 'cha',
+    'ac': 'ac.total', 'ac.all': 'ac.total', 'ac.flat': 'ac.flatFooted',
+    'init': 'initiative',
+    'attack': 'atk.all', 'attack.all': 'atk.all', 'attack.melee': 'atk.melee',
+    'attack.ranged': 'atk.ranged', 'attack.weapon': 'atk.weapon', 'attack.touch': 'atk.touch',
+    'damage': 'dmg.all', 'damage.all': 'dmg.all', 'damage.melee': 'dmg.melee',
+    'damage.ranged': 'dmg.ranged', 'damage.weapon': 'dmg.weapon', 'damage.sneakAttack': 'dmg.sneakAttack',
+    'speed': 'speed.land',
+    'psionic.powerPoints': 'resource.pp', 'powerpoints': 'resource.pp', 'psionic': 'resource.pp',
+    'incarnum.essentia': 'resource.essentia',
+    'carryingCapacity.strBonus': 'carryingCapacity',
+    'skill.spt': 'skill.spot', 'skill.lsn': 'skill.listen', 'skill.hid': 'skill.hide',
+    'skill.ms': 'skill.move-silently', 'skill.jmp': 'skill.jump', 'skill.swm': 'skill.swim',
+    'skill.bal': 'skill.balance', 'skill.clm': 'skill.climb', 'skill.tum': 'skill.tumble',
+    'skill.int': 'skill.intimidate', 'skill.dip': 'skill.diplomacy', 'skill.blf': 'skill.bluff',
+    'skill.sm': 'skill.sense-motive', 'skill.src': 'skill.search', 'skill.sur': 'skill.survival',
+    'skill.con': 'skill.concentration', 'skill.spl': 'skill.spellcraft', 'skill.umd': 'skill.use-magic-device',
+    'skill.upd': 'skill.use-psionic-device', 'skill.psi': 'skill.psicraft', 'skill.tru': 'skill.truespeak',
+    'skill.lis': 'skill.listen', 'skill.han': 'skill.handle-animal', 'skill.soh': 'skill.sleight-of-hand',
+    'skill.wilderness_lore': 'skill.survival', 'skill.wilderness-lore': 'skill.survival',
+    'will': 'save.will', 'fort': 'save.fort', 'ref': 'save.ref',
+    'cmb': 'grapple', 'turnUndead': 'turnLevel',
+    'check.str': 'ability.str.check', 'skill.strength': 'ability.str.check',
+    'hp': 'hp.max'
+  },
+
+  _stripBannedDieGlyph(str) {
+    const glyph = String.fromCodePoint(0x1F3B0 + 2);
+    return String(str || '').split(glyph).join('');
+  },
+
+  resolveCanonicalV3Target(rawTarget) {
+    if (!rawTarget || typeof rawTarget !== 'string') return { ok: false, canonical: null, raw: rawTarget };
+    if (!this._v3CanonicalTargetSet) {
+      const s = new Set([
+        'str', 'dex', 'con', 'int', 'wis', 'cha',
+        'choice.ability.1', 'choice.ability.2', 'choice.ability.3', 'choice.ability.4',
+        'choice.skill.1', 'choice.save.1', 'choice.school.1',
+        'ac.total', 'ac.touch', 'ac.flatFooted', 'ac.armor', 'ac.shield', 'ac.shieldBonus', 'ac.natural', 'ac.deflection', 'ac.dodge', 'ac.size', 'ac.luck', 'ac.insight', 'ac.sacred', 'ac.profane', 'ac.cover',
+        'save.all', 'save.fort', 'save.ref', 'save.will',
+        'atk.all', 'atk.melee', 'atk.ranged', 'atk.weapon', 'atk.touch', 'atk.grapple', 'atk.natural', 'atk.critConfirm',
+        'dmg.all', 'dmg.melee', 'dmg.ranged', 'dmg.weapon', 'dmg.sneakAttack', 'dmg.natural', 'dmg.unarmed',
+        'initiative', 'grapple',
+        'cmd.stability', 'size.effective', 'healing.receivedMultiplier', 'spell.asf', 'cmd.bullRush', 'cmd.trip', 'cmd.overrun', 'cmd.bullRushTripDisarmOverrun',
+        'speed.land', 'speed.fly', 'speed.swim', 'speed.climb', 'speed.burrow', 'speed.all',
+        'hp.temp', 'hp.max', 'hp.perLevel', 'fastHealing',
+        'casterLevel', 'spell.dc', 'spell.effectiveLevel', 'spell.damage', 'sr.penetration', 'caster.spellPenetration',
+        'sr', 'dr', 'fortification', 'turnLevel', 'turning.check', 'turning.damageDice', 'wildEmpathy', 'carryingCapacity',
+        'resource.pp', 'resource.essentia', 'psionics.powerPoints', 'incarnum.essentiaPool', 'incarnum.capacityBonus',
+        'skill.all',
+        'ability.str.check', 'ability.dex.check', 'ability.con.check',
+        'ability.int.check', 'ability.wis.check', 'ability.cha.check',
+        'bab',
+        'atk.melee.abilityMod', 'atk.ranged.abilityMod', 'atk.thrown.abilityMod', 'atk.touch.abilityMod', 'grapple.abilityMod',
+        'dmg.melee.abilityMod', 'dmg.ranged.abilityMod',
+        'save.fort.abilityMod', 'save.ref.abilityMod', 'save.will.abilityMod',
+        'ac.abilityMod', 'initiative.abilityMod', 'hp.abilityMod', 'concentration.abilityMod',
+        'choice.skill.1.abilityMod', 'spell.dc.abilityMod', 'spell.bonusSlots.abilityMod'
+      ]);
+      this._V3_CANONICAL_SKILLS.forEach((sk) => {
+        s.add('skill.' + sk);
+        s.add('skill.' + sk + '.abilityMod');
+      });
+      this._v3CanonicalTargetSet = s;
+    }
+    const trimmed = rawTarget.trim();
+    if (this._v3CanonicalTargetSet.has(trimmed)) return { ok: true, canonical: trimmed, aliased: false };
+    if (this._V3_TARGET_ALIAS_MAP[trimmed]) return { ok: true, canonical: this._V3_TARGET_ALIAS_MAP[trimmed], aliased: true };
+    const low = trimmed.toLowerCase();
+    if (this._V3_TARGET_ALIAS_MAP[low]) return { ok: true, canonical: this._V3_TARGET_ALIAS_MAP[low], aliased: true };
+    if (low.startsWith('skill.')) {
+      const isAbMod = low.endsWith('.abilitymod');
+      const base = isAbMod ? low.slice(6, -11) : low.slice(6);
+      const sub = base.replace(/[\s_]+/g, '-').replace(/[^a-z0-9-]/g, '');
+      const cand = 'skill.' + sub + (isAbMod ? '.abilityMod' : '');
+      if (this._v3CanonicalTargetSet.has(cand)) return { ok: true, canonical: cand, aliased: cand !== trimmed };
+      if (!isAbMod && /^(craft|perform|profession|knowledge)-/.test(sub)) {
+        return { ok: true, canonical: 'skill.' + sub, aliased: trimmed !== ('skill.' + sub) };
+      }
+    }
+    if (/^casterlevel\./i.test(trimmed)) return { ok: true, canonical: 'casterLevel', aliased: true };
+    if (/^ability\.[a-z]{3}_check$/i.test(trimmed)) return { ok: true, canonical: low.replace('_', '.'), aliased: true };
+    return { ok: false, canonical: null, raw: rawTarget };
+  },
+
+  _canonicalizeV3BonusType(rawType, numericVal = 1) {
+    if (Number(numericVal) < 0 && (!rawType || /^untyped|penalty$/i.test(String(rawType).trim()))) return 'Penalty';
+    if (!rawType) return 'Untyped';
+    const rs = (this.rulesets && this.rulesets.dnd35) || {};
+    const valid = Array.isArray(rs.bonusTypes) ? rs.bonusTypes.map(x => x.id) : [
+      'Untyped', 'Dodge', 'Circumstance', 'Penalty', 'Racial', 'Synergy', 'Enhancement', 'Luck', 'Morale',
+      'Sacred', 'Profane', 'Insight', 'Competence', 'Resistance', 'Deflection', 'Alchemical', 'Inherent',
+      'Armor', 'Armor Enhancement', 'Shield', 'Shield Enhancement', 'Natural Armor', 'Natural Armor Enhancement',
+      'Size', 'Exalted', 'Perfection'
+    ];
+    const clean = String(rawType).trim();
+    const exact = valid.find(v => v.toLowerCase() === clean.toLowerCase());
+    if (exact) return exact;
+    if (/^natural$/i.test(clean)) return 'Natural Armor';
+    return 'Untyped';
+  },
+
+  // Layer 2 Shield (~17 µs, 0 API calls): Sanitizes any AI / external entry into Pure Canonical V3 (RuleMasterEntryV3)
+  sanitizeV3Entry(raw, opts = {}) {
+    if (!raw || typeof raw !== 'object') return null;
+    const warnings = [];
+    const e = JSON.parse(JSON.stringify(raw));
+    const slugify = (s, fb = 'custom-entry') => String(s || fb).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || fb;
+
+    const VALID_BLUEPRINTS = new Set(['weapon', 'armor', 'wondrous', 'spell', 'feat', 'buff', 'class', 'item_mod', 'race', 'deity', 'domain', 'monster']);
+    const inferBlueprint = (obj) => {
+      if (obj.blueprint && VALID_BLUEPRINTS.has(obj.blueprint)) return obj.blueprint;
+      const t = String(obj.type || obj.category || '').trim().toLowerCase();
+      if (t === 'weapon') return 'weapon';
+      if (t === 'armor' || t === 'shield' || t === 'armor / shield') return 'armor';
+      if (t === 'deity' || t === 'god' || t === 'patron') return 'deity';
+      if (t === 'domain' || t.includes('cleric domain')) return 'domain';
+      if (t === 'spell' || t === 'power') return 'spell';
+      if (t === 'class' || t === 'prestige class') return 'class';
+      if (t === 'race' || t === 'template') return 'race';
+      if (t === 'monster' || t === 'creature') return 'monster';
+      if (t === 'condition' || t === 'buff') return 'buff';
+      if (t === 'enhancement' || t === 'material' || t === 'augment crystal' || t === 'item_mod') return 'item_mod';
+      if (['wondrous item', 'ring', 'magic item', 'item', 'equipment', 'potion', 'scroll', 'wand', 'consumable', 'rod', 'staff'].includes(t)) return 'wondrous';
+      return opts.defaultBlueprint && VALID_BLUEPRINTS.has(opts.defaultBlueprint) ? opts.defaultBlueprint : 'feat';
+    };
+
+    e.schemaVersion = 3;
+    e.blueprint = inferBlueprint(e);
+    if (!e.name || typeof e.name !== 'string' || !e.name.trim()) {
+      e.name = opts.fallbackName || 'Custom Rule';
+    } else {
+      e.name = this._stripBannedDieGlyph(e.name).trim();
+    }
+    const prefixByBp = { weapon: 'wpn', armor: 'arm', wondrous: 'mi', spell: 'spl', feat: 'feat', buff: 'cond', class: 'cls', item_mod: 'enh', race: 'race', deity: 'deity', domain: 'dom', monster: 'mon' };
+    if (!e.id || typeof e.id !== 'string' || !e.id.trim() || /^entry_/.test(e.id)) {
+      e.id = `${prefixByBp[e.blueprint] || 'feat'}-${slugify(e.name)}`;
+    } else {
+      e.id = String(e.id).trim();
+    }
+
+    if (!Array.isArray(e.effects)) e.effects = [];
+
+    // Rescue & purge any leaked V2 arrays (modifiers, damageParts, defenses, resources)
+    if (Array.isArray(e.modifiers)) {
+      e.modifiers.forEach((m) => {
+        if (!m || typeof m !== 'object') return;
+        const rawT = m.target || (Array.isArray(m.targets) ? m.targets[0] : '');
+        const c = this.resolveCanonicalV3Target(rawT);
+        if (!c.ok) return;
+        const val = Number(m.value) || 0;
+        const st = m.formula
+          ? { type: 'stat', targets: [c.canonical], mode: 'formula', formula: String(m.formula), btype: this._canonicalizeV3BonusType(m.type || m.btype, 1) }
+          : { type: 'stat', targets: [c.canonical], mode: 'flat', value: val, btype: this._canonicalizeV3BonusType(m.type || m.btype, val) };
+        if (m.condition && typeof m.condition === 'string' && m.condition.trim()) {
+          e.effects.push({ type: 'when', flow: 'while', branches: [{ condKind: 'situational', condText: m.condition.trim(), effects: [st] }] });
+        } else {
+          e.effects.push(st);
+        }
+      });
+      warnings.push('Converted legacy modifiers[] to V3 stat blocks.');
+      delete e.modifiers;
+    }
+    if (Array.isArray(e.damageParts)) {
+      e.damageParts.forEach((dp) => {
+        if (!dp || typeof dp !== 'object') return;
+        const dm = String(dp.dice || '').trim().match(/^(\d+)d(\d+)(?:\s*([+-]\s*\d+))?$/i);
+        if (dm) {
+          e.effects.push({
+            type: 'roll',
+            kind: 'Damage',
+            count: Number(dm[1]) || 1,
+            die: 'd' + dm[2],
+            flat: Number(dp.bonus || (dm[3] ? dm[3].replace(/\s+/g, '') : 0)) || 0,
+            dmgType: dp.type ? String(dp.type) : 'Untyped',
+            scaling: 'flat'
+          });
+        }
+      });
+      warnings.push('Converted legacy damageParts[] to V3 roll blocks.');
+      delete e.damageParts;
+    }
+    if (e.defenses !== undefined) delete e.defenses;
+    if (e.resources !== undefined) delete e.resources;
+
+    // Domain V3 grants.grantedPower + grants.spellLadder bridge
+    if (e.blueprint === 'domain') {
+      if (!e.type) e.type = 'Domain';
+      if (!e.category) e.category = 'Cleric Domain';
+      if (!e.grants || typeof e.grants !== 'object') e.grants = {};
+      if (!e.grants.grantedPower) {
+        const gpTxt = typeof e.grantedPower === 'string'
+          ? e.grantedPower
+          : (e.grantedPower && e.grantedPower.description) || (typeof e.text === 'string' ? e.text : '') || e.description || e.benefit || '';
+        e.grants.grantedPower = {
+          name: `${e.name.replace(/\s+Domain$/i, '')} Domain Power`,
+          text: gpTxt,
+          usage: { mode: 'passive' }
+        };
+        if (e.grantedPower && typeof e.grantedPower === 'object') {
+          if (Array.isArray(e.grantedPower.classSkills) && e.grantedPower.classSkills.length) e.grants.grantedPower.classSkills = e.grantedPower.classSkills.slice();
+          if (Array.isArray(e.grantedPower.grantedFeats) && e.grantedPower.grantedFeats.length) e.grants.grantedPower.grantedFeats = e.grantedPower.grantedFeats.slice();
+          if (Array.isArray(e.grantedPower.spellLikeAbilities) && e.grantedPower.spellLikeAbilities.length) e.grants.grantedPower.spellLikeAbilities = e.grantedPower.spellLikeAbilities.slice();
+        }
+      }
+      if (!Array.isArray(e.grants.spellLadder) || e.grants.spellLadder.length === 0) {
+        const rawSpells = Array.isArray(e.spells) ? e.spells : (Array.isArray(e.domainSpells) ? e.domainSpells : []);
+        if (rawSpells.length > 0) {
+          e.grants.spellLadder = rawSpells.map((s, idx) => {
+            const lvl = Number(s && s.level) || (idx + 1);
+            const spName = typeof s === 'string' ? s : String((s && (s.spell || s.name)) || '').trim();
+            return { level: lvl, spell: spName, refId: (s && (s.refId || s.id)) || `spl-${slugify(spName, 'spell-' + lvl)}` };
+          });
+        }
+      }
+      if (!Array.isArray(e.spells) && Array.isArray(e.grants.spellLadder)) {
+        e.spells = e.grants.spellLadder.map((sl, idx) => ({
+          level: Number(sl.level) || (idx + 1),
+          id: sl.refId || `spl-${slugify(sl.spell || sl.name, 'spell-' + (idx + 1))}`,
+          name: sl.spell || sl.name || ''
+        }));
+      }
+    }
+
+    // Deity V3 grants.domains <-> domains bridge
+    if (e.blueprint === 'deity') {
+      if (!e.type) e.type = 'Deity';
+      if (e.grants && Array.isArray(e.grants.domains) && !Array.isArray(e.domains)) {
+        e.domains = e.grants.domains.map(d => typeof d === 'string' ? d : (d && d.name) || '').filter(Boolean);
+      } else if (Array.isArray(e.domains) && (!e.grants || !Array.isArray(e.grants.domains))) {
+        e.grants = Object.assign({}, e.grants || {}, {
+          domains: e.domains.map(d => typeof d === 'string' ? { kind: 'ref', name: d, refId: 'dom-' + slugify(d) } : d)
+        });
+      }
+      if (e.favoredWeapon && !e.weapon) e.weapon = e.favoredWeapon;
+      else if (e.weapon && !e.favoredWeapon) e.favoredWeapon = e.weapon;
+    }
+
+    // Race V3 race chassis <-> top-level convenience bridge
+    if (e.blueprint === 'race') {
+      if (!e.type) e.type = (e.race && e.race.kind === 'template') ? 'Template' : 'Race';
+      if (e.race && typeof e.race === 'object') {
+        if (!e.size && e.race.size) e.size = e.race.size;
+        if (!e.baseSpeed && e.race.speed) e.baseSpeed = e.race.speed;
+        if (e.levelAdjustment === undefined && e.race.levelAdjustment !== undefined) e.levelAdjustment = e.race.levelAdjustment;
+        if (!e.favoredClass && e.race.favoredClass) e.favoredClass = e.race.favoredClass;
+      } else {
+        e.race = {
+          kind: String(e.type).toLowerCase() === 'template' ? 'template' : 'race',
+          size: e.size || 'Medium',
+          speed: Number(e.baseSpeed) || 30,
+          favoredClass: e.favoredClass || 'Any',
+          levelAdjustment: Number(e.levelAdjustment) || 0
+        };
+      }
+    }
+
+    const rs = (this.rulesets && this.rulesets.dnd35) || {};
+    const validSwapTargets = new Set();
+    (rs.statSwapTargetGroups || []).forEach(g => (g[1] || []).forEach(t => validSwapTargets.add(t[0])));
+    const validSwapSources = new Set((rs.statSwapSources || []).map(x => x[0]));
+    const validSwapOps = new Set((rs.statSwapOps || []).map(x => x[0]));
+    const validSwapScopes = new Set((rs.statSwapScopes || []).map(x => x[0]));
+    const validRuleFlags = new Set((rs.ruleSwitchFlags || []).map(x => x[0]));
+    const validBranchKinds = new Set([
+      'state', 'bound', 'levelTier', 'choicePath', 'synergy', 'situational', 'activation',
+      'notFlatFooted', 'wieldingChosenShield', 'wieldingChosenWeapon', 'wieldingTwoWeapons',
+      'vsAoOFromMovement', 'castingChosenSchool', 'oath', 'else'
+    ]);
+    const validDefModes = new Set([
+      'Immunity', 'Condition Immunity', 'DR', 'Energy Resistance', 'Spell Resistance',
+      'Concealment %', 'Sense / Movement', 'Vulnerability', 'Size Change', 'State Flag'
+    ]);
+    const defModeMap = {
+      'damage reduction': 'DR', 'dr': 'DR',
+      'sr': 'Spell Resistance', 'spell resistance': 'Spell Resistance',
+      'energy resistance': 'Energy Resistance', 'resistance': 'Energy Resistance',
+      'immunity': 'Immunity', 'condition immunity': 'Condition Immunity',
+      'sense': 'Sense / Movement', 'sense / movement': 'Sense / Movement', 'movement': 'Sense / Movement',
+      'concealment': 'Concealment %', 'concealment %': 'Concealment %',
+      'vulnerability': 'Vulnerability', 'size change': 'Size Change', 'state flag': 'State Flag'
+    };
+
+    const sanitizeBlockList = (list) => {
+      if (!Array.isArray(list)) return [];
+      const out = [];
+      for (const b of list) {
+        if (!b || typeof b !== 'object') continue;
+        delete b.modifiers;
+        delete b.damageParts;
+        delete b.defenses;
+        delete b.resources;
+
+        if (b.type === 'stat') {
+          if (!Array.isArray(b.targets) && b.target) { b.targets = [b.target]; delete b.target; }
+          if (!b.btype && b.bonusType) { b.btype = b.bonusType; delete b.bonusType; }
+          if (b.mode === 'replaceStat') {
+            if (b.scope !== undefined && b.swapScope === undefined) b.swapScope = b.scope;
+            delete b.scope;
+            if (!b.swapTarget && Array.isArray(b.targets) && b.targets[0]) b.swapTarget = b.targets[0];
+            const ct = this.resolveCanonicalV3Target(b.swapTarget);
+            if (ct.ok) b.swapTarget = ct.canonical;
+            if (!validSwapTargets.has(b.swapTarget)) continue;
+            b.targets = [b.swapTarget];
+            if (!validSwapOps.has(b.subOp)) b.subOp = 'max';
+            if (!validSwapSources.has(b.fromStat)) b.fromStat = 'dex';
+            if (!validSwapSources.has(b.toStat)) b.toStat = 'wis';
+            if (!validSwapScopes.has(b.swapScope)) b.swapScope = 'all';
+            b.btype = this._canonicalizeV3BonusType(b.btype || 'Untyped', 1);
+            out.push(b);
+            continue;
+          }
+          const canonTargets = (Array.isArray(b.targets) ? b.targets : [])
+            .map(t => this.resolveCanonicalV3Target(t))
+            .filter(c => c.ok && c.canonical)
+            .map(c => c.canonical);
+          if (canonTargets.length === 0) continue;
+          b.targets = [...new Set(canonTargets)];
+          if (!['flat', 'stat', 'perCL', 'formula', 'replaceStat'].includes(b.mode)) {
+            b.mode = b.formula ? 'formula' : 'flat';
+          }
+          if (b.mode === 'flat') b.value = Number(b.value) || 0;
+          if (b.mode === 'perCL') {
+            b.value = Number(b.value) || 1;
+            b.per = Math.max(1, Number(b.per) || 1);
+            b.min = Number.isFinite(Number(b.min)) ? Number(b.min) : 0;
+            b.max = Number.isFinite(Number(b.max)) ? Number(b.max) : 20;
+          }
+          if (b.mode === 'formula') b.formula = String(b.formula || '0');
+          b.btype = this._canonicalizeV3BonusType(b.btype, b.mode === 'flat' ? b.value : 1);
+          out.push(b);
+        } else if (b.type === 'roll') {
+          if (!['Damage', 'Healing', 'Temp HP', 'Ongoing / Round', 'Fast Healing'].includes(b.kind)) b.kind = 'Damage';
+          if (!['flat', 'perCL', 'perVar', 'formula'].includes(b.scaling)) b.scaling = b.dice && !/^\d+d\d+$/i.test(String(b.dice).trim()) ? 'formula' : 'flat';
+          if (b.scaling === 'flat' && b.dice && !b.die) {
+            const dm = String(b.dice).trim().match(/^(\d+)d(\d+)(?:\s*([+-]\s*\d+))?$/i);
+            if (dm) {
+              b.count = Number(dm[1]) || 1;
+              b.die = 'd' + dm[2];
+              if (dm[3] && b.flat === undefined) b.flat = Number(dm[3].replace(/\s+/g, '')) || 0;
+              delete b.dice;
+            }
+          }
+          if (b.count !== undefined) b.count = Number(b.count) || 1;
+          if (b.flat !== undefined) b.flat = Number(b.flat) || 0;
+          out.push(b);
+        } else if (b.type === 'defense') {
+          const mKey = String(b.mode || '').trim().toLowerCase();
+          if (!validDefModes.has(b.mode)) b.mode = defModeMap[mKey] || 'Immunity';
+          if (b.mode === 'Spell Resistance' && !b.srMode) b.srMode = 'flat';
+          if (b.value !== undefined) b.value = Number(b.value) || 0;
+          out.push(b);
+        } else if (b.type === 'effect') {
+          if (b.effectKind === 'ruleSwitch' && (!b.flag || !validRuleFlags.has(b.flag))) {
+            b.effectKind = 'rule';
+            delete b.flag;
+          }
+          if (!['ruleSwitch', 'rule', 'castSpell', 'linkedSpell', 'castEvolution', 'grant', 'grantFeat', 'proficiency', 'familiarity', 'feat', 'bonusSlot', 'trait', 'reroll'].includes(b.effectKind)) {
+            b.effectKind = 'rule';
+          }
+          out.push(b);
+        } else if (b.type === 'resource') {
+          if (!b.name) b.name = e.name || 'Uses';
+          if (!b.varKey) b.varKey = slugify(b.name, 'pool').replace(/-/g, '_');
+          if (!['spend', 'invest', 'dial', 'choice', 'focus', 'buffer'].includes(b.resMode)) b.resMode = 'spend';
+          if (b.reset && !['atWill', 'cooldown', 'perEncounter', 'perDay'].includes(b.reset)) b.reset = 'perDay';
+          if (b.max !== undefined) b.max = Number(b.max) || 1;
+          out.push(b);
+        } else if (b.type === 'when') {
+          b.flow = b.flow === 'if' ? 'if' : 'while';
+          if (!Array.isArray(b.branches)) {
+            const singleKind = b.condKind || 'situational';
+            const singleText = String(b.condText ?? b.condition ?? b.when ?? b.while ?? '').trim();
+            b.branches = [{ condKind: singleKind, condText: singleText, effects: Array.isArray(b.effects) ? b.effects : [] }];
+            delete b.condKind; delete b.condText; delete b.condition; delete b.when; delete b.while; delete b.effects;
+          }
+          b.branches = b.branches.map((br) => {
+            if (!br || typeof br !== 'object') return null;
+            let k = String(br.condKind || 'state').trim();
+            let t = br.condText !== undefined ? String(br.condText).trim() : (br.condition !== undefined ? String(br.condition).trim() : '');
+            delete br.condition;
+            if (this.V3_NAMED_WHEN_CONDS && this.V3_NAMED_WHEN_CONDS.has(t.toLowerCase()) && validBranchKinds.has(t)) {
+              k = t; t = '';
+            }
+            if (!validBranchKinds.has(k)) {
+              const checkAsState = this.resolveV3WhenCondition('state', k, 'when', {}, {}, e, { useNamedKind: true, strict: true });
+              if (checkAsState !== 'unrecognized') {
+                t = k; k = 'state';
+              } else {
+                if (!t) t = k;
+                k = 'situational';
+              }
+            }
+            if (k !== 'else' && k !== 'situational' && k !== 'activation') {
+              const res = this.resolveV3WhenCondition(k, t, 'when', {}, {}, e, { useNamedKind: true, strict: true });
+              if (res === 'unrecognized') {
+                warnings.push(`Converted unrecognized condition "${k}|${t}" to situational.`);
+                if (!t) t = k;
+                k = 'situational';
+              }
+            }
+            return {
+              ...(br.id ? { id: String(br.id) } : {}),
+              condKind: k,
+              condText: t,
+              effects: sanitizeBlockList(br.effects || [])
+            };
+          }).filter(br => br && br.effects.length > 0);
+          if (b.branches.length > 0) out.push(b);
+        } else if (b.type === 'table') {
+          if (Array.isArray(b.rows)) {
+            b.rows = b.rows.map(r => r && typeof r === 'object' ? Object.assign({}, r, { effects: sanitizeBlockList(r.effects || []) }) : null).filter(Boolean);
+            if (b.rows.length > 0) out.push(b);
+          }
+        } else if (b.type === 'carrier') {
+          if (!b.carrierMode) b.carrierMode = 'metamagic';
+          out.push(b);
+        } else if (b.type === 'attack') {
+          if (!b.attackMode) b.attackMode = 'natural';
+          out.push(b);
+        }
+      }
+      return out;
+    };
+
+    e.effects = sanitizeBlockList(e.effects);
+
+    if (Array.isArray(e.powers)) {
+      const validActions = new Set(['Standard', 'Move', 'Swift', 'Immediate', 'Free', 'Full-Round', 'Full Round', 'Reaction']);
+      const actionCanon = {
+        'standard': 'Standard', 'standard action': 'Standard',
+        'move': 'Move', 'move action': 'Move',
+        'swift': 'Swift', 'swift action': 'Swift',
+        'immediate': 'Immediate', 'immediate action': 'Immediate',
+        'free': 'Free', 'free action': 'Free',
+        'full-round': 'Full-Round', 'full_round': 'Full-Round', 'full round': 'Full-Round', 'full-round action': 'Full-Round', 'full': 'Full-Round',
+        'reaction': 'Reaction'
+      };
+      e.powers = e.powers.map((pw, idx) => {
+        if (!pw || typeof pw !== 'object') return null;
+        delete pw.modifiers; delete pw.damageParts;
+        const p = Object.assign({}, pw);
+        if (!p.id) p.id = `pw-${slugify(e.id)}-${idx + 1}`;
+        p.kind = p.kind === 'attached' ? 'attached' : 'inline';
+        if (!p.name) p.name = `${e.name} Power ${idx + 1}`;
+        if (!validActions.has(p.action)) {
+          p.action = actionCanon[String(p.action || '').trim().toLowerCase()] || 'Standard';
+        }
+        if (!p.usage || typeof p.usage !== 'object') p.usage = { mode: 'atwill' };
+        if (!['passive', 'atwill', 'perDay', 'perEncounter', 'charges', 'spellSlot', 'resourcePool', 'cooldown'].includes(p.usage.mode)) {
+          p.usage.mode = 'perDay';
+          if (!p.usage.uses) p.usage.uses = 1;
+        }
+        if (p.save && typeof p.save === 'string') {
+          const sm = p.save.match(/(Fortitude|Reflex|Will|None)(?:\s+(half|negates|partial))?/i);
+          p.save = sm ? { type: sm[1][0].toUpperCase() + sm[1].slice(1).toLowerCase(), ...(sm[2] ? { effect: sm[2][0].toUpperCase() + sm[2].slice(1).toLowerCase() } : {}) } : { type: 'None' };
+        }
+        if (Array.isArray(p.effects)) p.effects = sanitizeBlockList(p.effects);
+        return p;
+      }).filter(Boolean);
+    }
+
+    if (Array.isArray(e.choices)) {
+      const validChoiceKeys = new Set(['weapon', 'skill', 'ability', 'school', 'energy', 'custom']);
+      const choiceKeyAlias = { spellschool: 'school', spell_school: 'school', spell: 'school', feat: 'custom' };
+      e.choices = e.choices.map((ch, idx) => {
+        if (!ch || typeof ch !== 'object') return null;
+        const c = Object.assign({}, ch);
+        const rawKey = String(c.key || c.kind || 'custom').trim().toLowerCase();
+        c.key = validChoiceKeys.has(rawKey) ? rawKey : (choiceKeyAlias[rawKey] || 'custom');
+        delete c.kind;
+        if (!c.id) c.id = `ch-${c.key}-${idx + 1}`;
+        if (!c.label) c.label = `Chosen ${c.key.charAt(0).toUpperCase() + c.key.slice(1)}`;
+        if (c.count !== undefined) c.count = Math.max(1, Number(c.count) || 1);
+        return c;
+      }).filter(Boolean);
+    }
+
+    if (Array.isArray(e.modes)) {
+      const seenModeIds = new Set();
+      e.modes = e.modes.map((m, idx) => {
+        if (!m || typeof m !== 'object') return null;
+        const mc = Object.assign({}, m);
+        let mid = slugify(mc.id || mc.name || mc.label, `mode-${idx + 1}`);
+        while (seenModeIds.has(mid)) mid = `${mid}-${idx + 1}`;
+        seenModeIds.add(mid);
+        mc.id = mid;
+        if (!mc.name) mc.name = mc.label || `Mode ${idx + 1}`;
+        if (!mc.label) mc.label = mc.name;
+        if (Array.isArray(mc.blocks) && !Array.isArray(mc.effects)) mc.effects = mc.blocks;
+        delete mc.blocks;
+        if (Array.isArray(mc.modifiers)) {
+          const sub = this.sanitizeV3Entry({ id: mc.id, name: mc.name, blueprint: 'feat', modifiers: mc.modifiers, damageParts: mc.damageParts });
+          mc.effects = (mc.effects || []).concat(sub ? sub.effects : []);
+        }
+        delete mc.modifiers;
+        delete mc.damageParts;
+        if (Array.isArray(mc.effects)) mc.effects = sanitizeBlockList(mc.effects);
+        return mc;
+      }).filter(Boolean);
+    }
+
+    if (opts.returnWarnings) return { entry: e, warnings };
+    return e;
+  },
+
+  // Layer 1 Deterministic Parser (<0.2 ms, 0 Tokens): "Scribe from Text" RAW English -> Pure Canonical V3 Entry
+  parseRuleTextToV3(rawText, opts = {}) {
+    const fullInput = this._stripBannedDieGlyph(rawText).trim();
+    if (!fullInput) return null;
+
+    const slugify = (s, fb = 'scribed-rule') => String(s || fb).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || fb;
+    let inferredName = String(opts.name || '').trim();
+    let bodyText = fullInput;
+
+    // Extract leading title from "Title: rule text" or first short line before Benefit:/stat-block
+    const lines = fullInput.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+    if (!inferredName) {
+      if (lines.length >= 2 && lines[0].length <= 64 && !/[.;]/.test(lines[0]) && !/^[+\-–−]\d/.test(lines[0])) {
+        inferredName = lines[0].replace(/:$/, '').trim();
+        bodyText = lines.slice(1).join(' ');
+      } else {
+        const colonHead = fullInput.match(/^([A-Z][A-Za-z0-9'’\-\s()]{2,48}):\s+(.+)$/s);
+        if (colonHead && !/^(Benefit|Normal|Special|Prerequisite|Prerequisites|Save|Range|Duration|Effect|Target|Casting Time)$/i.test(colonHead[1].trim())) {
+          inferredName = colonHead[1].trim();
+          bodyText = colonHead[2].trim();
+        }
+      }
+    }
+
+    const cleanProse = bodyText
+      .replace(/<[^>]+>/g, ' ')
+      .split(/(?<=[.!?])\s+|\r?\n+/)
+      .filter(s => !/^\s*(normal|prerequisites?|prereq)\s*:/i.test(s))
+      .map(s => s.replace(/^\s*benefit\s*:\s*/i, ''))
+      .join(' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    const bp = opts.blueprint || 'feat';
+    const effects = [];
+    const choices = [];
+    const powers = [];
+
+    const SKILL_MAP = {
+      'appraise': 'appraise', 'autohypnosis': 'autohypnosis', 'balance': 'balance', 'bluff': 'bluff',
+      'climb': 'climb', 'concentration': 'concentration', 'craft': 'craft', 'decipher script': 'decipher-script',
+      'diplomacy': 'diplomacy', 'disable device': 'disable-device', 'disguise': 'disguise',
+      'escape artist': 'escape-artist', 'forgery': 'forgery', 'gather information': 'gather-information',
+      'handle animal': 'handle-animal', 'heal': 'heal', 'hide': 'hide', 'intimidate': 'intimidate',
+      'jump': 'jump', 'knowledge': 'knowledge', 'listen': 'listen', 'move silently': 'move-silently',
+      'open lock': 'open-lock', 'perform': 'perform', 'profession': 'profession', 'psicraft': 'psicraft',
+      'ride': 'ride', 'search': 'search', 'sense motive': 'sense-motive', 'sleight of hand': 'sleight-of-hand',
+      'speak language': 'speak-language', 'spellcraft': 'spellcraft', 'spot': 'spot', 'survival': 'survival',
+      'swim': 'swim', 'truespeak': 'truespeak', 'tumble': 'tumble', 'use magic device': 'use-magic-device',
+      'use psionic device': 'use-psionic-device', 'use rope': 'use-rope'
+    };
+    const AB_MAP = { strength: 'str', str: 'str', dexterity: 'dex', dex: 'dex', constitution: 'con', con: 'con', intelligence: 'int', int: 'int', wisdom: 'wis', wis: 'wis', charisma: 'cha', cha: 'cha' };
+    const NUM_WORDS = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10, once: 1, twice: 2, 'three times': 3, 'four times': 4, 'five times': 5 };
+    const parseWordNum = (w) => {
+      if (!w) return 1;
+      const k = String(w).trim().toLowerCase();
+      return NUM_WORDS[k] !== undefined ? NUM_WORDS[k] : (parseInt(k, 10) || 1);
+    };
+
+    const wrapQualifier = (block, rawQual) => {
+      if (!rawQual) return block;
+      const q = String(rawQual).trim().replace(/^(?:against|vs\.?|versus)\s+/i, 'vs. ');
+      const rawStripped = String(rawQual).trim().replace(/^(?:when|while|if|during)\s+/i, '').trim();
+      if (/^(?:charging|on a charge)$/i.test(rawStripped)) {
+        return { type: 'when', flow: 'while', branches: [{ condKind: 'state', condText: 'charging', effects: [block] }] };
+      }
+      if (/^flanking$/i.test(rawStripped)) {
+        return { type: 'when', flow: 'while', branches: [{ condKind: 'state', condText: 'flanking', effects: [block] }] };
+      }
+      if (/^fighting defensively$/i.test(rawStripped)) {
+        return { type: 'when', flow: 'while', branches: [{ condKind: 'state', condText: 'fightingDefensively', effects: [block] }] };
+      }
+      if (/creatures?\s+of\s+evil\s+alignment|^vs\.\s*evil\b/i.test(q)) {
+        return { type: 'when', flow: 'while', branches: [{ condKind: 'state', condText: 'alignment:evil', effects: [block] }] };
+      }
+      return { type: 'when', flow: 'while', branches: [{ condKind: 'situational', condText: q, effects: [block] }] };
+    };
+
+    const resolveTargetsFromPhrase = (phrase, btypeCanon) => {
+      const p = String(phrase || '').toLowerCase();
+      if (/\b(?:difficulty\s+class|save\s+dcs?|saving\s+throw\s+dcs?)\b/.test(p)) return ['spell.dc'];
+      if (/overcome\s+spell\s+resistance|spell\s+penetration/.test(p)) return ['caster.spellPenetration'];
+      if (/\bcaster\s+level\b/.test(p)) return ['casterLevel'];
+      if (/saving\s+throws?|\bsaves?\b|\bfortitude\b|\breflex\b|\bwill\b/.test(p)) {
+        if (/fortitude/.test(p)) return ['save.fort'];
+        if (/reflex/.test(p)) return ['save.ref'];
+        if (/\bwill\b/.test(p)) return ['save.will'];
+        return ['save.all'];
+      }
+      if (/armor\s+class|\bac\b/.test(p)) {
+        const acByType = {
+          'Deflection': 'ac.deflection', 'Natural Armor': 'ac.natural', 'Dodge': 'ac.dodge',
+          'Armor': 'ac.armor', 'Shield': 'ac.shield', 'Sacred': 'ac.sacred',
+          'Profane': 'ac.profane', 'Insight': 'ac.insight', 'Luck': 'ac.luck', 'Size': 'ac.size'
+        };
+        if (/touch\s+(?:ac|armor\s+class)/.test(p)) return ['ac.touch'];
+        return [acByType[btypeCanon] || 'ac.total'];
+      }
+      if (/\binitiative\b/.test(p)) return ['initiative'];
+      if (/resist\s+(?:being\s+)?(?:bull\s+rush|trip)/.test(p)) return ['cmd.stability'];
+      if (/\bgrapple\b/.test(p)) return ['grapple'];
+      if (/attack\s+(?:and\s+(?:weapon\s+)?damage|rolls?\s+and\s+(?:weapon\s+)?damage)/.test(p)) {
+        return /melee/.test(p) ? ['atk.melee', 'dmg.melee'] : (/ranged/.test(p) ? ['atk.ranged', 'dmg.ranged'] : ['atk.all', 'dmg.all']);
+      }
+      if (/attack\s+rolls?/.test(p)) {
+        return /melee/.test(p) ? ['atk.melee'] : (/ranged|thrown/.test(p) ? ['atk.ranged'] : ['atk.all']);
+      }
+      if (/damage\s+rolls?/.test(p)) {
+        return /melee/.test(p) ? ['dmg.melee'] : (/ranged/.test(p) ? ['dmg.ranged'] : ['dmg.all']);
+      }
+      const matchedSkills = Object.keys(SKILL_MAP).filter(sk => new RegExp('\\b' + sk + '\\b', 'i').test(p));
+      if (matchedSkills.length > 0) return matchedSkills.map(sk => 'skill.' + SKILL_MAP[sk]);
+      for (const [word, key] of Object.entries(AB_MAP)) {
+        if (word.length >= 4 && new RegExp('\\b' + word + '\\b', 'i').test(p) && !/check/.test(p)) return [key];
+      }
+      return [];
+    };
+
+    // 1. Structured Breath Weapon / Activated Damaging SLA Stat-Block (DC / Recharge / Cone-Line-Burst + NdX)
+    const hasDcOrRecharge = /\bdc\s*[:=]?\s*(?:\d+|10\s*\+)/i.test(cleanProse) || /\b(?:recharge|cooldown)\s*[:=]?\s*\d/i.test(cleanProse);
+    const breathDiceM = cleanProse.match(/\b(\d+)d(\d+)(?:\s*([+-]\s*\d+))?\s*(acid|fire|cold|electricity|electric|lightning|sonic|force|positive|negative|holy|unholy|divine|slashing|piercing|bludgeoning)?(?:\s*(?:damage|points?\s+of))?/i);
+    if (hasDcOrRecharge && breathDiceM) {
+      const recM = cleanProse.match(/\b(?:recharge|cooldown)\s*[:=]?\s*(\d+d\d+(?:[+-]\d+)?|\d+)/i);
+      const dayM = cleanProse.match(/\b(\d+|once|twice|three\s+times)\s*(?:\/|\s*per\s+|\s*times\s+per\s*)day\b/i);
+      const saveM = cleanProse.match(/\b(?:save\s*[:=]?\s*)?(Fortitude|Reflex|Will)(?:\s+save)?(?:\s+(half|negates|partial))?/i);
+      const dcM = cleanProse.match(/\bdc\s*[:=]?\s*([0-9a-zA-Z_@+\-*/().\s]+?)(?=\s*(?:[,;|•]|\b(?:recharge|cooldown|standard|move|swift|free|full-round|half|negates|\d+\s*ft)\b|$))/i);
+      const areaM = cleanProse.match(/\b(\d+)\s*-?\s*(?:ft\.?|feet)\s*(cone|line|burst|emanation|spread|radius)?\b/i);
+      const actM = cleanProse.match(/\b(Standard|Move|Swift|Immediate|Free|Full-Round)\s*Action\b/i);
+
+      const dmgMap = { acid: 'Acid', fire: 'Fire', cold: 'Cold', electricity: 'Electricity', electric: 'Electricity', lightning: 'Electricity', sonic: 'Sonic', force: 'Force', holy: 'Holy', unholy: 'Unholy', divine: 'Divine', slashing: 'Slashing', piercing: 'Piercing', bludgeoning: 'Bludgeoning' };
+      const dmgType = breathDiceM[4] ? (dmgMap[breathDiceM[4].toLowerCase()] || 'Untyped') : 'Untyped';
+      const usage = recM
+        ? { mode: 'cooldown', recharge: recM[1].replace(/\s+/g, '') }
+        : (dayM ? { mode: 'perDay', uses: parseWordNum(dayM[1]) } : { mode: 'atwill' });
+
+      let dcVal = null, dcForm = null;
+      if (dcM) {
+        const rawDc = dcM[1].trim();
+        if (/^\d+$/.test(rawDc)) dcVal = Number(rawDc);
+        else {
+          dcForm = rawDc
+            .replace(/\b(?:1\/2|half)\s*(?:lvl|level|hd)\b/gi, '1/2 HD')
+            .replace(/\bcon(?:stitution)?(?:\s*mod(?:ifier)?)?\b/gi, 'Con')
+            .replace(/\bcha(?:risma)?(?:\s*mod(?:ifier)?)?\b/gi, 'Cha')
+            .replace(/\bwis(?:dom)?(?:\s*mod(?:ifier)?)?\b/gi, 'Wis')
+            .replace(/\bint(?:elligence)?(?:\s*mod(?:ifier)?)?\b/gi, 'Int')
+            .replace(/\s+/g, ' ').trim();
+        }
+      }
+      const pwName = inferredName || 'Special Attack';
+      powers.push({
+        id: 'pw-' + slugify(pwName),
+        kind: 'inline',
+        name: pwName,
+        action: actM ? (actM[1][0].toUpperCase() + actM[1].slice(1)) : 'Standard',
+        usage,
+        ...(areaM ? { area: `${areaM[1]}-ft.${areaM[2] ? ' ' + areaM[2][0].toUpperCase() + areaM[2].slice(1).toLowerCase() : ''}` } : {}),
+        ...(dcVal !== null ? { saveDC: dcVal } : {}),
+        ...(dcForm ? { dcFormula: dcForm } : {}),
+        ...(saveM ? { save: { type: saveM[1][0].toUpperCase() + saveM[1].slice(1).toLowerCase(), effect: saveM[2] ? (saveM[2][0].toUpperCase() + saveM[2].slice(1).toLowerCase()) : 'Half' } } : {}),
+        effects: [{
+          type: 'roll',
+          kind: 'Damage',
+          count: Number(breathDiceM[1]) || 1,
+          die: 'd' + breathDiceM[2],
+          flat: breathDiceM[3] ? (Number(breathDiceM[3].replace(/\s+/g, '')) || 0) : 0,
+          dmgType,
+          scaling: 'flat',
+          ...(saveM ? { save: `${saveM[1][0].toUpperCase() + saveM[1].slice(1).toLowerCase()} ${saveM[2] ? saveM[2].toLowerCase() : 'half'}` } : {})
+        }],
+        text: cleanProse
+      });
+    }
+
+    // 2. A -> B Stat / Formula Substitution ("use your Wisdom modifier instead of your Dexterity modifier on ranged attack rolls")
+    const swapM = cleanProse.match(/\b(may\s+use|can\s+use|use|apply|add)\s+(?:your\s+)?(Strength|Dexterity|Constitution|Intelligence|Wisdom|Charisma|STR|DEX|CON|INT|WIS|CHA)\s+modifier\s+(instead\s+of|in\s+place\s+of|rather\s+than|in\s+addition\s+to|to)\s+(?:your\s+)?(?:(Strength|Dexterity|Constitution|Intelligence|Wisdom|Charisma|STR|DEX|CON|INT|WIS|CHA)\s+modifier\s+)?(?:on|to|for)\s+([^.;]+)/i);
+    if (swapM) {
+      const verb = swapM[1].toLowerCase();
+      const toStat = AB_MAP[swapM[2].toLowerCase()] || 'wis';
+      const rel = swapM[3].toLowerCase();
+      const explicitFrom = swapM[4] ? AB_MAP[swapM[4].toLowerCase()] : null;
+      const tail = swapM[5].toLowerCase();
+      const subOp = /in\s+addition|^to$/.test(rel) && verb === 'add' ? 'add' : (/^(?:may|can)\b/.test(verb) ? 'max' : 'max');
+      let swapTarget = null, defaultFrom = 'dex', swapScope = 'all';
+      if (/thrown.*attack|attack.*thrown/.test(tail)) { swapTarget = 'atk.thrown.abilityMod'; defaultFrom = 'dex'; swapScope = 'thrown'; }
+      else if (/ranged\s+attack/.test(tail)) { swapTarget = 'atk.ranged.abilityMod'; defaultFrom = 'dex'; }
+      else if (/melee\s+attack|attack\s+rolls/.test(tail)) {
+        swapTarget = 'atk.melee.abilityMod'; defaultFrom = 'str';
+        if (/simple|natural/.test(tail)) swapScope = 'simple_or_natural';
+        else if (/light|finesse|rapier/.test(tail)) swapScope = 'finessable';
+      } else if (/melee\s+damage/.test(tail)) { swapTarget = 'dmg.melee.abilityMod'; defaultFrom = 'str'; }
+      else if (/will\s+sav/.test(tail)) { swapTarget = 'save.will.abilityMod'; defaultFrom = 'wis'; if (/mind[-\s]affecting/.test(tail)) swapScope = 'mind_affecting'; }
+      else if (/reflex\s+sav/.test(tail)) { swapTarget = 'save.ref.abilityMod'; defaultFrom = 'dex'; }
+      else if (/fortitude\s+sav/.test(tail)) { swapTarget = 'save.fort.abilityMod'; defaultFrom = 'con'; }
+      else if (/initiative/.test(tail)) { swapTarget = 'initiative.abilityMod'; defaultFrom = 'dex'; }
+      else if (/armor\s+class|\bac\b/.test(tail)) { swapTarget = 'ac.abilityMod'; defaultFrom = 'dex'; if (/light\s+or\s+no\s+armor/.test(tail)) swapScope = 'light_or_no_armor'; }
+      else if (/grapple/.test(tail)) { swapTarget = 'grapple.abilityMod'; defaultFrom = 'str'; }
+      else if (/hit\s+points/.test(tail)) { swapTarget = 'hp.abilityMod'; defaultFrom = 'con'; }
+      else {
+        const skHit = Object.keys(SKILL_MAP).find(sk => new RegExp('\\b' + sk + '\\b', 'i').test(tail));
+        if (skHit) { swapTarget = `skill.${SKILL_MAP[skHit]}.abilityMod`; defaultFrom = 'str'; }
+      }
+      if (swapTarget) {
+        effects.push({
+          type: 'stat',
+          mode: 'replaceStat',
+          swapTarget,
+          targets: [swapTarget],
+          subOp,
+          fromStat: explicitFrom || defaultFrom,
+          toStat,
+          swapScope,
+          btype: 'Untyped'
+        });
+      }
+    }
+
+    // 3. @Choice Player Bindings (Weapon Focus / Skill Focus / Spell Focus)
+    let handledChoiceBonus = false;
+    if (/\bchoose\s+(?:one\s+type\s+of\s+|a\s+)?weapon\b/i.test(cleanProse) && /\+?\s*(\d+)\s+bonus\s+on\s+(?:all\s+)?attack\s+rolls/i.test(cleanProse)) {
+      const val = Number(cleanProse.match(/\+?\s*(\d+)\s+bonus\s+on\s+(?:all\s+)?attack\s+rolls/i)[1]) || 1;
+      choices.push({ id: 'ch-weapon', key: 'weapon', label: 'Chosen Weapon', count: 1 });
+      effects.push({
+        type: 'when',
+        flow: 'while',
+        branches: [{
+          condKind: 'wieldingChosenWeapon',
+          condText: '',
+          effects: [{ type: 'stat', targets: ['atk.weapon'], mode: 'flat', value: val, btype: 'Untyped' }]
+        }]
+      });
+      handledChoiceBonus = true;
+    } else if (/\bchoose\s+a\s+skill\b/i.test(cleanProse) && /\+(\d+)\s+bonus\s+on\s+all\s+checks/i.test(cleanProse)) {
+      const val = Number(cleanProse.match(/\+(\d+)\s+bonus\s+on\s+all\s+checks/i)[1]) || 3;
+      choices.push({ id: 'ch-skill', key: 'skill', label: 'Chosen Skill', count: 1 });
+      effects.push({ type: 'stat', targets: ['choice.skill.1'], mode: 'flat', value: val, btype: 'Untyped' });
+      handledChoiceBonus = true;
+    } else if (/school\s+of\s+magic\s+you\s+select/i.test(cleanProse) && /\+(\d+)\s+to\s+the\s+(?:Difficulty\s+Class|DC)/i.test(cleanProse)) {
+      const val = Number(cleanProse.match(/\+(\d+)\s+to\s+the\s+(?:Difficulty\s+Class|DC)/i)[1]) || 1;
+      choices.push({ id: 'ch-school', key: 'school', label: 'Chosen Spell School', count: 1 });
+      effects.push({
+        type: 'when',
+        flow: 'while',
+        branches: [{
+          condKind: 'castingChosenSchool',
+          condText: '',
+          effects: [{ type: 'stat', targets: ['spell.dc'], mode: 'flat', value: val, btype: 'Untyped' }]
+        }]
+      });
+      handledChoiceBonus = true;
+    }
+
+    // 4. Base + CL-Capped Scaling Bonus ("+2 deflection bonus to AC, with an additional +1 ... for every six caster levels ... maximum +5")
+    let handledClScale = false;
+    const baseCapScaleM = cleanProse.match(/\+(\d+)\s+([a-z ]+?)?\s*bonus\s+(?:to|on)\s+([^,.;()]+?),\s*(?:with\s+)?an\s+additional\s+\+(\d+)(?:\s+to\s+the\s+bonus)?\s+for\s+every\s+(\d+|two|three|four|five|six)\s+caster\s+levels[^.;()]*?\((?:maximum|max)\s+\+?(\d+)/i);
+    if (baseCapScaleM) {
+      const base = Number(baseCapScaleM[1]) || 2;
+      const btype = this._canonicalizeV3BonusType(baseCapScaleM[2], base);
+      const tgs = resolveTargetsFromPhrase(baseCapScaleM[3], btype);
+      const stepVal = Number(baseCapScaleM[4]) || 1;
+      const perCl = parseWordNum(baseCapScaleM[5]);
+      const maxTotal = Number(baseCapScaleM[6]) || (base + 3);
+      const maxExtra = Math.max(1, maxTotal - base);
+      if (tgs.length > 0) {
+        const stepExpr = stepVal === 1 ? `floor(@cl / ${perCl})` : `${stepVal} * floor(@cl / ${perCl})`;
+        effects.push({
+          type: 'stat',
+          targets: tgs,
+          mode: 'formula',
+          formula: `${base} + min(${maxExtra}, ${stepExpr})`,
+          btype
+        });
+        handledClScale = true;
+      }
+    } else {
+      // Pure perCL clamped ("+1 luck bonus on attack and weapon damage rolls for every three caster levels ... maximum +3")
+      const perClM = cleanProse.match(/\+(\d+)\s+([a-z ]+?)?\s*bonus\s+(?:to|on)\s+([^,.;()]+?)\s+for\s+every\s+(\d+|two|three|four|five|six)\s+caster\s+levels[^.;]*?(?:\((?:at\s+least\s+\+?(\d+),?\s*)?(?:maximum|max)\s+\+?(\d+)\))?/i);
+      if (perClM) {
+        const stepVal = Number(perClM[1]) || 1;
+        const btype = this._canonicalizeV3BonusType(perClM[2], stepVal);
+        const tgs = resolveTargetsFromPhrase(perClM[3], btype);
+        const per = parseWordNum(perClM[4]);
+        const minV = perClM[5] ? Number(perClM[5]) : stepVal;
+        const maxV = perClM[6] ? Number(perClM[6]) : stepVal * 5;
+        if (tgs.length > 0) {
+          effects.push({ type: 'stat', targets: tgs, mode: 'perCL', value: stepVal, per, min: minV, max: maxV, btype });
+          handledClScale = true;
+        }
+      }
+    }
+
+    // 5. Flat & Conditional Bonuses / Penalties (handles compound "and a +2..." clauses cleanly)
+    if (!handledChoiceBonus && !handledClScale) {
+      const bTypes = 'racial|competence|insight|luck|morale|sacred|profane|enhancement|deflection|dodge|natural armor|circumstance|resistance|untyped|alchemical|armor|shield|size|inherent|exalted|perfection';
+      const reBonus = new RegExp(
+        '([+\\-–−]\\s?\\d+)\\s+(?:(' + bTypes + ')\\s+)?(bonus|penalty)\\s+(?:on|to)\\s+' +
+        '([^.;:()]{3,140}?)(?=\\s*(?:[,;]|\\band\\b|\\bplus\\b|\\bor\\b|\\bwith\\b)?\\s*(?:a\\s+|an\\s+|another\\s+)?[+\\-–−]\\s?\\d+\\s+(?:(?:' + bTypes + ')\\s+)?(?:bonus|penalty)\\b|[.;:()]|$)',
+        'gi'
+      );
+      let bm;
+      while ((bm = reBonus.exec(cleanProse))) {
+        const rawNum = Number(bm[1].replace(/[–−]/, '-').replace(/\s+/g, ''));
+        if (!Number.isFinite(rawNum) || rawNum === 0) continue;
+        const signedVal = bm[3].toLowerCase() === 'penalty' ? -Math.abs(rawNum) : rawNum;
+        const btype = this._canonicalizeV3BonusType(bm[2], signedVal);
+        const tail = bm[4].replace(/\s*,?\s*\b(?:and|or|plus)\s*$/i, '').trim();
+        const cut = tail.split(/\s+(?:against|vs\.?|versus|when|while|if|during)\b/i);
+        const tgs = resolveTargetsFromPhrase(cut[0], btype);
+        if (tgs.length === 0) continue;
+        const qual = cut.length > 1 ? tail.slice(cut[0].length).trim() : '';
+        const stBlock = { type: 'stat', targets: tgs, mode: 'flat', value: signedVal, btype };
+        effects.push(wrapQualifier(stBlock, qual));
+      }
+
+      const addDcM = cleanProse.match(/\bAdd\s+\+(\d+)\s+to\s+the\s+(?:Difficulty\s+Class|DC)\b/i);
+      if (addDcM && !effects.some(x => x.type === 'stat' && (x.targets || []).includes('spell.dc'))) {
+        effects.push({ type: 'stat', targets: ['spell.dc'], mode: 'flat', value: Number(addDcM[1]) || 1, btype: 'Untyped' });
+      }
+    }
+
+    // 6. Defenses & Senses (DR, SR, Energy Resistance, Immunity, Darkvision / Low-Light / Blindsense)
+    const reDr = /\b(?:damage reduction|DR)\s+(\d+)\s*\/\s*([a-z—\-][a-z+\- ]*?)(?=[.,;:)]|\s+(?:and\s+(?:spell|damage|SR\b|DR\b|immun|resist|darkvision|low-light|fast|a\s+|an\s+)|when\b|while\b|if\b)|$)/gi;
+    let dm;
+    while ((dm = reDr.exec(cleanProse))) {
+      const bypass = dm[2].replace(/\s+\b(?:and|or)\s*$/i, '').trim();
+      effects.push({ type: 'defense', mode: 'DR', value: Number(dm[1]) || 5, what: bypass });
+    }
+    const reSr = /\bspell resistance\s+(?:of\s+|equal to\s+)?(\d+)\b|\bSR\s+(\d+)\b/gi;
+    while ((dm = reSr.exec(cleanProse))) {
+      effects.push({ type: 'defense', mode: 'Spell Resistance', srMode: 'flat', value: Number(dm[1] || dm[2]) || 10, what: 'Magic' });
+    }
+    const reRes = /\b(?:resistance\s+(?:to\s+)?(acid|cold|electricity|fire|sonic)\s+(\d+)|(acid|cold|electricity|fire|sonic)\s+resistance\s+(\d+))\b/gi;
+    while ((dm = reRes.exec(cleanProse))) {
+      const en = (dm[1] || dm[3]);
+      const val = Number(dm[2] || dm[4]) || 5;
+      effects.push({ type: 'defense', mode: 'Energy Resistance', what: en[0].toUpperCase() + en.slice(1).toLowerCase(), value: val });
+    }
+    const reImm = /\bimmun(?:e|ity)\s+to\s+([a-z ,\-]+?)(?=[.;:()]|\s+(?:and\s+(?:a\s+|\+\d|gains?|has\b)|but\b)|$)/gi;
+    while ((dm = reImm.exec(cleanProse))) {
+      const rawItems = dm[1].replace(/\beffects?\b/gi, '').split(/\s*(?:,|\band\b)\s*/).map(s => s.trim()).filter(Boolean);
+      rawItems.forEach((it) => {
+        const titleIt = it.charAt(0).toUpperCase() + it.slice(1);
+        effects.push({ type: 'defense', mode: 'Immunity', what: titleIt });
+      });
+    }
+    const reSense = /\b(darkvision|low-light vision|blindsense|blindsight|tremorsense)\b(?:\s+(?:out\s+to|to\s+a\s+range\s+of|with\s+a\s+range\s+of|of)?\s*(\d+)\s*(?:ft\.?|feet))?|(\d+)[- ](?:ft\.?|foot|feet)\s+(darkvision|blindsense|blindsight|tremorsense)/gi;
+    while ((dm = reSense.exec(cleanProse))) {
+      if (/\b(?:no|lacks?|without|loses?)\s*$/i.test(cleanProse.slice(Math.max(0, dm.index - 20), dm.index))) continue;
+      const kindRaw = (dm[1] || dm[4]).toLowerCase();
+      const dist = dm[2] || dm[3];
+      const titleKind = kindRaw.split(/([- ])/).map(w => /^[a-z]/.test(w) ? w[0].toUpperCase() + w.slice(1) : w).join('');
+      effects.push({ type: 'defense', mode: 'Sense / Movement', what: dist ? `${titleKind} ${dist} ft.` : titleKind });
+    }
+
+    // 7. Extra Weapon / Attack Dice ("deals an extra 2d6 points of holy damage against creatures of evil alignment")
+    if (!hasDcOrRecharge) {
+      const extraDiceRx = /\b(?:deals?\s+(?:an\s+)?)?(?:extra|additional)\s+(\d+)d(\d+)(?:\s*([+-]\s*\d+))?\s+(?:points?\s+of\s+)?(acid|fire|cold|electricity|electric|sonic|force|holy|unholy|divine|precision|sneak|negative|positive|slashing|piercing|bludgeoning|untyped)?\s*damage(?:\s+(against\s+[^.;,()]+|vs\.?\s+[^.;,()]+|when\s+[^.;,()]+|while\s+[^.;,()]+))?/gi;
+      while ((dm = extraDiceRx.exec(cleanProse))) {
+        const dtRaw = (dm[4] || 'untyped').toLowerCase();
+        const dtCanon = dtRaw === 'electric' ? 'Electricity' : (dtRaw === 'sneak' ? 'Precision' : dtRaw.charAt(0).toUpperCase() + dtRaw.slice(1));
+        const rBlk = {
+          type: 'roll',
+          kind: 'Damage',
+          count: Number(dm[1]) || 1,
+          die: 'd' + dm[2],
+          flat: dm[3] ? (Number(dm[3].replace(/\s+/g, '')) || 0) : 0,
+          dmgType: dtCanon,
+          scaling: 'flat'
+        };
+        effects.push(wrapQualifier(rBlk, dm[5] || ''));
+      }
+    }
+
+    // 8. Metamagic Carrier ("uses up a spell slot two levels higher" / "Sudden Empower")
+    const slotHigherM = cleanProse.match(/uses?\s+up\s+a\s+spell\s+slot\s+(\d+|one|two|three|four|five|six)\s+levels?\s+higher/i);
+    const suddenMetaM = (inferredName || cleanProse).match(/\bSudden\s+(Empower|Enlarge|Extend|Maximize|Quicken|Silent|Still|Widen)\b/i);
+    if (slotHigherM || suddenMetaM) {
+      const slotAdj = suddenMetaM ? 0 : parseWordNum(slotHigherM[1]);
+      const combinedMeta = `${inferredName} ${cleanProse}`;
+      const transform = /one-half|1\.5|empower/i.test(combinedMeta) ? 'empower'
+        : (/maximize|maximum/i.test(combinedMeta) ? 'maximize'
+        : (/double.*duration|extend/i.test(combinedMeta) ? 'extend'
+        : (/swift\s+action|quicken/i.test(combinedMeta) ? 'quicken'
+        : (/double.*range|enlarge/i.test(combinedMeta) ? 'enlarge'
+        : (/double.*area|widen/i.test(combinedMeta) ? 'widen' : 'custom')))));
+      effects.push({
+        type: 'carrier',
+        carrierMode: 'metamagic',
+        maxSpellLvl: slotAdj,
+        costMode: suddenMetaM ? 'sudden' : 'slot',
+        transform
+      });
+    }
+
+    // 9. Daily / Encounter Resource & SLA ("3/day—scorching ray" or "three times per day")
+    if (powers.length === 0) {
+      const slaM = cleanProse.match(/\b(\d+|once|twice|three\s+times)\s*(?:\/|\s*per\s+|\s*times\s+per\s*)day\s*[—–\-:]\s*([A-Za-z][A-Za-z'\s]{2,40}?)(?=[.,;()]|$)/i);
+      if (slaM) {
+        const uses = parseWordNum(slaM[1]);
+        const spName = slaM[2].trim().replace(/\b\w/g, c => c.toUpperCase());
+        const poolName = `${spName} (SLA)`;
+        effects.push({
+          type: 'resource',
+          name: poolName,
+          varKey: slugify(spName, 'sla').replace(/-/g, '_'),
+          resMode: 'spend',
+          scaling: 'flat',
+          max: uses,
+          reset: 'perDay'
+        });
+        powers.push({
+          id: 'pw-sla-' + slugify(spName),
+          kind: 'attached',
+          name: spName,
+          refId: 'spl-' + slugify(spName),
+          action: 'Standard',
+          usage: { mode: 'resourcePool', pool: poolName, cost: 1 }
+        });
+      } else {
+        const dayPoolM = cleanProse.match(/\b(\d+|once|twice|three\s+times|four\s+times|five\s+times)\s*(?:times\s*)?(?:per\s+day|\/day|a\s+day)\b/i);
+        const encPoolM = !dayPoolM ? cleanProse.match(/\b(\d+|once|twice)\s*(?:times\s*)?per\s+encounter\b/i) : null;
+        if (dayPoolM || encPoolM) {
+          const uses = parseWordNum((dayPoolM || encPoolM)[1]);
+          const reset = encPoolM ? 'perEncounter' : 'perDay';
+          const pName = inferredName ? `${inferredName} Uses` : 'Uses';
+          effects.push({
+            type: 'resource',
+            name: pName,
+            varKey: slugify(pName, 'uses').replace(/-/g, '_'),
+            resMode: 'spend',
+            scaling: 'flat',
+            max: uses,
+            reset
+          });
+        }
+      }
+    }
+
+    // Fallback descriptive rule block when prose has rule text but no numeric block matched
+    if (effects.length === 0 && powers.length === 0 && choices.length === 0) {
+      effects.push({
+        type: 'effect',
+        effectKind: 'rule',
+        label: inferredName || 'Rule Summary',
+        text: cleanProse.slice(0, 280)
+      });
+    }
+
+    const finalName = inferredName || 'Scribed Rule';
+    return this.sanitizeV3Entry({
+      schemaVersion: 3,
+      id: opts.id || `${bp === 'spell' ? 'spl' : (bp === 'race' ? 'race' : (bp === 'domain' ? 'dom' : 'feat'))}-${slugify(finalName)}`,
+      blueprint: bp,
+      name: finalName,
+      source: opts.source || 'Homebrew / Scribed',
+      text: cleanProse,
+      benefit: cleanProse.slice(0, 240),
+      description: fullInput,
+      ...(choices.length ? { choices } : {}),
+      effects,
+      ...(powers.length ? { powers } : {})
+    }, { defaultBlueprint: bp, fallbackName: finalName });
   },
 
   // Feat-list rows that are not feats: UA character traits (UA p.86) and Complete Scoundrel skill tricks

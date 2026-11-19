@@ -410,7 +410,9 @@ const RuleMaster = {
       'unreactive', 'vulnerable'
     ]);
     let v2 = entry;
-    if (typeof window !== 'undefined' && window.SchemaMigrator && typeof window.SchemaMigrator.migrateEntryToV3 === 'function') {
+    if (typeof RuleEngine !== 'undefined' && typeof RuleEngine.sanitizeV3Entry === 'function' && (entry.schemaVersion === 3 || Array.isArray(entry.effects))) {
+      v2 = RuleEngine.sanitizeV3Entry(entry);
+    } else if (typeof window !== 'undefined' && window.SchemaMigrator && typeof window.SchemaMigrator.migrateEntryToV3 === 'function') {
       v2 = window.SchemaMigrator.migrateEntryToV3(entry);
     } else if (entry.schemaVersion !== 3) {
       v2 = Object.assign({}, entry, { schemaVersion: 3 });
@@ -2673,24 +2675,42 @@ const RuleMaster = {
 
   DND35_RAW_GUARDRAIL: `D&D 3.5E RAW + SPLATBOOK / VARIANT / ACF / HOMEBREW ENGINE RULES:
 1. BROAD D&D 3.5E SOURCES (CORE + SPLATBOOKS + UNEARTHED ARCANA + DRAGON MAGAZINE):
-   - Because standard core rules are already in the local compendium, queries sent to Rule Master AI often target extended D&D 3.5e sources, variants, or Homebrew:
-     a) Official System Reference Document (SRD v3.5 as archived on d20srd.org) & Unearthed Arcana (Class Variants like Adventurer/Martial Rogue, Cloistered Cleric, Thug Fighter, Domain Wizard, Urban Ranger, Whirling Frenzy, Flaws, Traits, Bloodlines)
+   - Because standard core rules are already in the local compendium, queries sent to Rule Master often target extended D&D 3.5e sources, variants, or Homebrew:
+     a) Official System Reference Document (SRD v3.5) & Unearthed Arcana (Class Variants like Adventurer/Martial Rogue, Cloistered Cleric, Thug Fighter, Domain Wizard, Urban Ranger, Whirling Frenzy, Flaws, Traits, Bloodlines)
      b) Official D&D 3.5e Rulebooks & Splatbooks (Player's Handbook I & II, DMG I & II, Monster Manual I-V, Complete Warrior/Arcane/Divine/Adventurer/Mage/Scoundrel/Champion, Spell Compendium, Magic Item Compendium, Tome of Battle, Tome of Magic, Frostburn, Sandstorm, Stormwrack, Libris Mortis, Lords of Madness, Heroes of Horror/Battle, Book of Exalted Deeds, Book of Vile Darkness, Expanded Psionics Handbook, Complete Psionic, Magic of Incarnum, Races of Stone/Destiny/the Wild/the Dragon, Dungeonscape, Cityscape, Planar Handbook, Dragon Magic, Draconomicon, Fiendish Codex I & II, Champions of Valor/Ruin, Forgotten Realms / Eberron 3.5e books)
      c) Official Alternate Class Features (ACFs), Racial Substitution Levels, Tactical/Reserve/Regional/Heritage Feats, and Dragon Magazine Compendium / Dragon Magazine 3.5e issues.
 2. HOMEBREW, SKILL/STAT GRANTS & CAMPAIGN CUSTOMIZATIONS:
    - If the query asks for a Homebrew, Skill Bonus, Ability/Save/Attack/AC Grant, or Campaign Feature (e.g., "boon, skill: +ride", "Homebrew: +4 Ride", "+2 Initiative", "Boon: CL +1"), DO NOT reject it and NEVER force-map it to an unrelated PHB feat (such as mapping a Ride skill boon to "Mounted Combat").
-   - Instead, synthesize a clean, accurate Canonical V2 D&D 3.5e entry with exact "modifiers" (e.g. [{"target": "skill.ride", "value": 4, "type": "Untyped", "condition": null}]) and source "Homebrew / Campaign Grant".
+   - Instead, synthesize a clean Pure Canonical V3 (schemaVersion: 3) entry with exact "effects" blocks (e.g. [{"type": "stat", "targets": ["skill.ride"], "mode": "flat", "value": 4, "btype": "Untyped"}]) and source "Homebrew / Campaign Grant".
 3. ZERO 5E / 4E / PATHFINDER MECHANICS:
    - Absolutely NO 5e mechanics (No Advantage/Disadvantage, No Bonus Action, No Finesse adding Dex to damage, No -5/+10 GWM, No Short Rest, No Concentration slots).
    - Absolutely NO Pathfinder / PF1e / Starfinder rules or DandWiki forum inventions unless explicitly requested as a Homebrew/Custom rule.
 4. OFFICIAL 3.5E ENGLISH, NAME STANDARDIZATION & NO DICE EMOJI (U+1F3B2):
    - Output 100% official D&D 3.5e RAW English terminology in all fields.
-   - STANDARDIZE ALL NAMES ("name" field): Always convert messy user input (lowercase, ALL CAPS, stray dashes '-', ellipses '...', colons) into clean, canonical D&D 3.5e Title Case:
-     * Homebrew / Grants -> "Homebrew: Ride (+4)", "Homebrew: Initiative (+2)", "Homebrew: CL = Level 1"
-     * Targetable Feats -> "Weapon Focus (Longsword)", "Skill Focus (Spot)"
+   - STANDARDIZE ALL NAMES ("name" field): Always convert messy user input into clean, canonical D&D 3.5e Title Case:
+     * Homebrew / Grants -> "Homebrew: Ride (+4)", "Homebrew: Initiative (+2)"
+     * Targetable Feats -> "Weapon Focus", "Skill Focus" (use choices[] for player selection)
      * Class Variants -> "Rogue (Adventurer Variant)", "Cleric (Cloistered Cleric)"
    - NEVER output placeholder names like "Non-Existent Class" or "Unknown".
    - NEVER include the 6-sided die emoji (U+1F3B2) anywhere in any string.`,
+
+  V3_MECHANICS_CONTRACT: `PURE CANONICAL V3 MECHANICS CONTRACT (schemaVersion: 3 — STRICT):
+- BANNED V2 KEYS: NEVER emit "modifiers", "damageParts", "defenses", or "resources" anywhere! All mechanics live ONLY in "effects", "choices", "powers", and "modes".
+- "effects" block types:
+  1. Stat bonus/penalty: {"type": "stat", "targets": ["ac.deflection"|"ac.natural"|"ac.dodge"|"ac.armor"|"ac.shield"|"ac.sacred"|"ac.insight"|"ac.total"|"atk.all"|"atk.melee"|"atk.ranged"|"atk.weapon"|"dmg.all"|"dmg.melee"|"dmg.ranged"|"save.fort"|"save.ref"|"save.will"|"save.all"|"str"|"dex"|"con"|"int"|"wis"|"cha"|"initiative"|"grapple"|"cmd.stability"|"speed.land"|"casterLevel"|"caster.spellPenetration"|"spell.dc"|"hp.max"|"skill.spot"|"skill.move-silently"|"skill.use-magic-device"|...], "mode": "flat", "value": 2, "btype": "Untyped"|"Enhancement"|"Deflection"|"Natural Armor"|"Dodge"|"Resistance"|"Morale"|"Luck"|"Insight"|"Sacred"|"Profane"|"Competence"|"Circumstance"|"Alchemical"|"Racial"|"Size"|"Armor"|"Shield"|"Inherent"|"Penalty"}
+     * CLamped per-CL scaling: {"type": "stat", "targets": ["atk.all", "dmg.all"], "mode": "perCL", "value": 1, "per": 3, "min": 1, "max": 3, "btype": "Luck"}
+     * Base + capped formula (Shield of Faith style): {"type": "stat", "targets": ["ac.deflection"], "mode": "formula", "formula": "2 + min(3, floor(@cl / 6))", "btype": "Deflection"}
+     * Ability / Stat Swap (A -> B): {"type": "stat", "mode": "replaceStat", "swapTarget": "atk.ranged.abilityMod"|"atk.melee.abilityMod"|"atk.thrown.abilityMod"|"dmg.melee.abilityMod"|"save.will.abilityMod"|"save.ref.abilityMod"|"save.fort.abilityMod"|"ac.abilityMod"|"initiative.abilityMod"|"hp.abilityMod"|"grapple.abilityMod"|"skill.<slug>.abilityMod", "targets": ["<same as swapTarget>"], "subOp": "max"|"replace"|"add", "fromStat": "str"|"dex"|"con"|"int"|"wis"|"cha", "toStat": "str"|"dex"|"con"|"int"|"wis"|"cha"|"@level"|"@classLevel"|"@cl", "swapScope": "all"|"finessable"|"simple_or_natural"|"thrown"|"bow_or_crossbow"|"chosen_weapon"|"discipline_weapons"|"light_or_no_armor"|"not_flat_footed"|"mind_affecting", "btype": "Untyped"}
+  2. Dice / Damage / Healing / Fast Healing: {"type": "roll", "kind": "Damage"|"Healing"|"Temp HP"|"Fast Healing", "count": 2, "die": "d6", "flat": 0, "dmgType": "Fire"|"Cold"|"Acid"|"Electricity"|"Sonic"|"Force"|"Holy"|"Unholy"|"Precision"|"Slashing"|"Piercing"|"Bludgeoning"|"Untyped", "scaling": "flat"|"perCL", "per": 1, "max": 10}
+  3. Defenses & Senses: {"type": "defense", "mode": "DR"|"Spell Resistance"|"Energy Resistance"|"Immunity"|"Condition Immunity"|"Sense / Movement"|"Concealment %", "what": "cold iron"|"Fire"|"Sleep"|"Darkvision 60 ft.", "value": 10}
+  4. Pool / Daily Resource: {"type": "resource", "name": "Ability Uses", "varKey": "ability_uses", "resMode": "spend", "scaling": "flat", "max": 3, "reset": "perDay"|"perEncounter"|"cooldown"}
+  5. Metamagic / Spell Carrier: {"type": "carrier", "carrierMode": "metamagic", "maxSpellLvl": 2, "costMode": "slot"|"sudden"|"passive", "transform": "empower"|"maximize"|"extend"|"quicken"|"enlarge"|"widen"|"custom"}
+  6. Rule Switch / Narrative Rule: {"type": "effect", "effectKind": "ruleSwitch", "flag": "noAutoFailFortSaveOnNat1"|"shieldToTouchAc"|"monkeyGrip"|"naturalSpell"|"uncannyDodge"|"ignoreArmorSpeedPenalty"|"oneHandedOffHandAsLight"} OR {"type": "effect", "effectKind": "rule", "label": "Rule Summary", "text": "..."}
+  7. Conditional "when" (CLOSED VOCABULARY!): {"type": "when", "flow": "while", "branches": [{"condKind": "state"|"situational"|"wieldingChosenWeapon"|"wieldingChosenShield"|"castingChosenSchool"|"notFlatFooted", "condText": "...", "effects": [...]}]}
+     * CRITICAL: Use condKind "state" ONLY when condText is in the closed vocabulary ("charging", "flanking", "fightingDefensively", "totalDefense", "powerAttack", "combatExpertise", "higherGround", "pointBlankShot", "toggle:<key>", "stance:<name>", "@level >= N", "alignment:evil", "unarmored & noShield"). For ANY other condition ("vs. poison", "against giants", "in shadowy illumination"), you MUST set "condKind": "situational"!
+- "choices": [{"id": "ch-weapon", "key": "weapon"|"skill"|"ability"|"energy"|"school"|"custom", "label": "Chosen Weapon", "count": 1}]
+- "powers": [{"id": "pw-slug", "kind": "inline"|"attached", "name": "Breath Weapon (Su)", "action": "Standard"|"Move"|"Swift"|"Immediate"|"Free"|"Full-Round", "usage": {"mode": "perDay"|"perEncounter"|"atwill"|"cooldown"|"resourcePool", "uses": 3, "recharge": "1d4"}, "area": "30-ft. Cone", "dcFormula": "10 + 1/2 HD + Con", "save": {"type": "Reflex", "effect": "Half"}, "effects": [...]}]
+- "modes": [{"id": "mode-off", "name": "Inactive", "label": "Inactive", "effects": []}, {"id": "mode-slug", "name": "Mode Label", "label": "Mode Label", "effects": [...]}] (for mutually exclusive selectable combat sheet modes).`,
 
   getAiModelMode() {
     return localStorage.getItem('dnd35_ai_model_mode') || 'auto';
@@ -3480,84 +3500,10 @@ Schema:
   normalizeEntry(raw, isRowArray = false) {
     if (!raw) return null;
 
-    if (typeof window !== 'undefined' && window.SchemaMigrator) {
-      if (isRowArray && Array.isArray(raw) && typeof window.SchemaMigrator.convertRowArrayToV2 === 'function') {
-        return window.SchemaMigrator.convertRowArrayToV2(raw);
-      }
-      if (!Array.isArray(raw) && typeof raw === 'object' && typeof window.SchemaMigrator.upgradeEntryToV2 === 'function') {
-        const cloned = JSON.parse(JSON.stringify(raw));
-        if (cloned.name) cloned.name = this.standardizeName(this.cleanArrow(cloned.name), cloned.category || cloned.type || '');
-        const res = window.SchemaMigrator.upgradeEntryToV2(cloned);
-        if (res && res.name) res.name = this.standardizeName(this.cleanArrow(res.name), res.category || res.type || '');
-        if (cloned.type === 'Deity' || cloned.domains || cloned.portfolio || cloned.rank) {
-          if (cloned.favoredWeapon && !res.favoredWeapon) res.favoredWeapon = cloned.favoredWeapon;
-          if (cloned.weapon && !res.weapon) res.weapon = cloned.weapon;
-          if (!res.favoredWeapon && res.weapon) res.favoredWeapon = res.weapon;
-          if (!res.weapon && res.favoredWeapon) res.weapon = res.favoredWeapon;
-          if (cloned.domains && !res.domains) res.domains = cloned.domains;
-          if (cloned.alignment && !res.alignment) res.alignment = cloned.alignment;
-          if (cloned.rank && !res.rank) res.rank = cloned.rank;
-          if (cloned.portfolio && !res.portfolio) res.portfolio = cloned.portfolio;
-          if (cloned.title && !res.title) res.title = cloned.title;
-          if (cloned.icon && !res.icon) res.icon = cloned.icon;
-          if (cloned.symbol && !res.symbol) res.symbol = cloned.symbol;
-          if (cloned.category && !res.category) res.category = cloned.category;
-          if (cloned.source && !res.source) res.source = cloned.source;
-          if (cloned.description && !res.description) res.description = cloned.description;
-        }
-        if (cloned.type === 'Domain' || (cloned.category && String(cloned.category).toLowerCase().includes('domain'))) {
-          res.type = 'Domain';
-          res.category = cloned.category || res.category || 'Cleric Domain';
-          res.source = cloned.source || res.source || 'Spell Compendium';
-
-          if (cloned.grantedPower) {
-            if (typeof cloned.grantedPower === 'string') {
-              res.grantedPower = {
-                description: cloned.grantedPower,
-                classSkills: [],
-                grantedFeats: [],
-                spellLikeAbilities: []
-              };
-            } else if (typeof cloned.grantedPower === 'object') {
-              res.grantedPower = {
-                description: cloned.grantedPower.description || cloned.description || '',
-                classSkills: Array.isArray(cloned.grantedPower.classSkills) ? cloned.grantedPower.classSkills : [],
-                grantedFeats: Array.isArray(cloned.grantedPower.grantedFeats) ? cloned.grantedPower.grantedFeats : [],
-                spellLikeAbilities: Array.isArray(cloned.grantedPower.spellLikeAbilities) ? cloned.grantedPower.spellLikeAbilities : []
-              };
-            }
-          } else {
-            res.grantedPower = {
-              description: cloned.description || '',
-              classSkills: [],
-              grantedFeats: [],
-              spellLikeAbilities: []
-            };
-          }
-
-          const rawSpells = Array.isArray(cloned.spells) ? cloned.spells : (Array.isArray(cloned.domainSpells) ? cloned.domainSpells : (Array.isArray(res.spells) ? res.spells : []));
-          res.spells = rawSpells.map((s, idx) => {
-            const lvl = Number(s.level) || (idx + 1);
-            const name = String(s.name || '').trim();
-            const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-            const splId = s.id || (slug ? `spl-${slug}` : `spl-unknown-${lvl}`);
-            return { level: lvl, id: splId, name: name };
-          });
-
-          res.requiredAlignment = Array.isArray(cloned.requiredAlignment) ? cloned.requiredAlignment : [];
-          if (!Array.isArray(res.modifiers)) res.modifiers = Array.isArray(cloned.modifiers) ? cloned.modifiers : [];
-          if (cloned.description && !res.description) res.description = cloned.description;
-          if (!res.id || res.id.startsWith('entry_')) {
-            const domSlug = (cloned.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-            res.id = `dom-${domSlug}`;
-          }
-        }
-        return res;
-      }
-    }
-
-    // Fallback when SchemaMigrator is not yet initialized
     if (isRowArray && Array.isArray(raw)) {
+      if (typeof window !== 'undefined' && window.SchemaMigrator && typeof window.SchemaMigrator.convertRowArrayToV2 === 'function') {
+        return this.ensureV2(window.SchemaMigrator.convertRowArrayToV2(raw));
+      }
       const cleanName = this.capitalizeTitle(this.cleanArrow(String(raw[0] || '').trim()));
       const normType = this.capitalizeIdentifier(String(raw[1] || 'Feat').trim());
       const diceStr = String(raw[24] || '').trim();
@@ -3581,39 +3527,102 @@ Schema:
       });
     }
 
-    const cloned = Object.assign({}, raw);
-    if (cloned.name) cloned.name = this.capitalizeTitle(this.cleanArrow(cloned.name));
-    if (cloned.type === 'Deity' || cloned.domains || cloned.portfolio || cloned.rank) {
-      if (cloned.favoredWeapon && !cloned.weapon) cloned.weapon = cloned.favoredWeapon;
-      if (cloned.weapon && !cloned.favoredWeapon) cloned.favoredWeapon = cloned.weapon;
-      if (!cloned.alignment) cloned.alignment = 'Any';
-      if (!Array.isArray(cloned.domains)) cloned.domains = [];
+    const cloned = JSON.parse(JSON.stringify(raw));
+    if (cloned.name) {
+      cloned.name = this.standardizeName(this.cleanArrow(cloned.name), cloned.category || cloned.type || '');
     }
-    if (cloned.type === 'Domain' || (cloned.category && String(cloned.category).toLowerCase().includes('domain'))) {
-      cloned.type = 'Domain';
-      cloned.category = cloned.category || 'Cleric Domain';
-      if (!cloned.grantedPower) {
-        cloned.grantedPower = { description: cloned.description || '', classSkills: [], grantedFeats: [], spellLikeAbilities: [] };
-      } else if (typeof cloned.grantedPower === 'string') {
-        cloned.grantedPower = { description: cloned.grantedPower, classSkills: [], grantedFeats: [], spellLikeAbilities: [] };
+
+    let res = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.sanitizeV3Entry === 'function')
+      ? RuleEngine.sanitizeV3Entry(cloned)
+      : this.ensureV2(cloned);
+
+    if (res && res.name) {
+      res.name = this.standardizeName(this.cleanArrow(res.name), res.category || res.type || '');
+    }
+
+    if (cloned.type === 'Deity' || res.blueprint === 'deity' || cloned.domains || cloned.portfolio || cloned.rank) {
+      res.type = 'Deity';
+      res.blueprint = 'deity';
+      if (cloned.favoredWeapon && !res.favoredWeapon) res.favoredWeapon = cloned.favoredWeapon;
+      if (cloned.weapon && !res.weapon) res.weapon = cloned.weapon;
+      if (!res.favoredWeapon && res.weapon) res.favoredWeapon = res.weapon;
+      if (!res.weapon && res.favoredWeapon) res.weapon = res.favoredWeapon;
+      if (cloned.domains && !res.domains) res.domains = cloned.domains;
+      if (!Array.isArray(res.domains) && res.grants && Array.isArray(res.grants.domains)) {
+        res.domains = res.grants.domains.map(d => typeof d === 'string' ? d : (d && d.name) || '').filter(Boolean);
       }
-      const rawSpells = Array.isArray(cloned.spells) ? cloned.spells : (Array.isArray(cloned.domainSpells) ? cloned.domainSpells : []);
-      cloned.spells = rawSpells.map((s, idx) => {
-        const lvl = Number(s.level) || (idx + 1);
-        const name = String(s.name || '').trim();
+      if (!Array.isArray(res.domains)) res.domains = [];
+      res.alignment = res.alignment || cloned.alignment || 'Any';
+      if (cloned.rank && !res.rank) res.rank = cloned.rank;
+      if (cloned.portfolio && !res.portfolio) res.portfolio = cloned.portfolio;
+      if (cloned.title && !res.title) res.title = cloned.title;
+      if (cloned.icon && !res.icon) res.icon = cloned.icon;
+      if (cloned.symbol && !res.symbol) res.symbol = cloned.symbol;
+      if (cloned.category && !res.category) res.category = cloned.category;
+      if (cloned.source && !res.source) res.source = cloned.source;
+      if (cloned.description && !res.description) res.description = cloned.description;
+    }
+
+    if (cloned.type === 'Domain' || res.blueprint === 'domain' || (cloned.category && String(cloned.category).toLowerCase().includes('domain'))) {
+      res.type = 'Domain';
+      res.blueprint = 'domain';
+      res.category = cloned.category || res.category || 'Cleric Domain';
+      res.source = cloned.source || res.source || 'Spell Compendium';
+
+      const gpFromV3 = res.grants && res.grants.grantedPower;
+      if (cloned.grantedPower && typeof cloned.grantedPower === 'object') {
+        res.grantedPower = {
+          description: cloned.grantedPower.description || (gpFromV3 && gpFromV3.text) || cloned.description || '',
+          classSkills: Array.isArray(cloned.grantedPower.classSkills) ? cloned.grantedPower.classSkills : ((gpFromV3 && gpFromV3.classSkills) || []),
+          grantedFeats: Array.isArray(cloned.grantedPower.grantedFeats) ? cloned.grantedPower.grantedFeats : ((gpFromV3 && gpFromV3.grantedFeats) || []),
+          spellLikeAbilities: Array.isArray(cloned.grantedPower.spellLikeAbilities) ? cloned.grantedPower.spellLikeAbilities : ((gpFromV3 && gpFromV3.spellLikeAbilities) || [])
+        };
+      } else {
+        const descStr = typeof cloned.grantedPower === 'string'
+          ? cloned.grantedPower
+          : ((gpFromV3 && gpFromV3.text) || cloned.description || (typeof res.text === 'string' ? res.text : '') || '');
+        res.grantedPower = {
+          description: descStr,
+          classSkills: (gpFromV3 && Array.isArray(gpFromV3.classSkills)) ? gpFromV3.classSkills : [],
+          grantedFeats: (gpFromV3 && Array.isArray(gpFromV3.grantedFeats)) ? gpFromV3.grantedFeats : [],
+          spellLikeAbilities: (gpFromV3 && Array.isArray(gpFromV3.spellLikeAbilities)) ? gpFromV3.spellLikeAbilities : []
+        };
+      }
+
+      const ladder = (res.grants && Array.isArray(res.grants.spellLadder) && res.grants.spellLadder.length)
+        ? res.grants.spellLadder
+        : (Array.isArray(cloned.spells) ? cloned.spells : (Array.isArray(cloned.domainSpells) ? cloned.domainSpells : []));
+      res.spells = ladder.map((s, idx) => {
+        const lvl = Number(s && s.level) || (idx + 1);
+        const name = String((s && (s.spell || s.name)) || '').trim();
         const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-        return { level: lvl, id: s.id || `spl-${slug}`, name: name };
+        return { level: lvl, id: (s && (s.refId || s.id)) || (slug ? `spl-${slug}` : `spl-unknown-${lvl}`), name };
       });
-      if (!Array.isArray(cloned.requiredAlignment)) cloned.requiredAlignment = [];
-      if (!cloned.id) {
-        const domSlug = (cloned.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-        cloned.id = `dom-${domSlug}`;
+      if (!res.grants || typeof res.grants !== 'object') res.grants = {};
+      if (!Array.isArray(res.grants.spellLadder) || res.grants.spellLadder.length === 0) {
+        res.grants.spellLadder = res.spells.map(s => ({ level: s.level, spell: s.name, refId: s.id }));
       }
+      if (!res.grants.grantedPower) {
+        res.grants.grantedPower = {
+          name: `${res.name.replace(/\s+Domain$/i, '')} Domain Power`,
+          text: res.grantedPower.description || '',
+          usage: { mode: 'passive' }
+        };
+      }
+      res.requiredAlignment = Array.isArray(cloned.requiredAlignment) ? cloned.requiredAlignment : [];
+      if (cloned.description && !res.description) res.description = cloned.description;
+      if (!res.id || res.id.startsWith('entry_')) {
+        const domSlug = (res.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        res.id = `dom-${domSlug}`;
+      }
+      delete res.modifiers;
+      delete res.damageParts;
     }
-    return this.ensureV2(cloned);
+
+    return res;
   },
 
-  // Dynamic Targeted AI Prompt Builder (Category-Specific Micro-Prompts & Minimal V2 JSON Schema)
+  // Dynamic Targeted AI Prompt Builder (Category-Specific Micro-Prompts & Pure Canonical V3 Schema)
   buildTargetedAiPrompt(cleanQuery, effectiveCategory) {
     const cat = String(effectiveCategory || 'ALL').trim().toLowerCase();
 
@@ -3622,39 +3631,35 @@ Schema:
       return `You are an expert D&D 3.5e Lore & Faith Architect (Deities & Demigods, Faiths and Pantheons, Dragons of Faerûn, Wyrms of the North, Champions of Ruin, Fiendish Codex).
 Target query: "${cleanQuery}" (Category: "Deity / Patron").
 
-CRITICAL RULE: NEVER return an empty entries array! Whether the query is an official D&D 3.5e Deity, a Forgotten Realms / Eberron / Greyhawk lore figure (such as an Ancient Dragon like Khazmil / Urshula the Black, an Archfiend, or Undead Lord), or a custom campaign Patron, you MUST ALWAYS return 1 complete Deity/Patron object in the 'entries' array. If the figure is a Dragon, Patron, or Cult Power without a standard PHB deity block, infer their exact Alignment (e.g. 'Chaotic Evil' for Black Dragons), Favored Weapon (e.g. 'Bite' or 'Claw'), Rank ('Dragon Patron / Cult Power'), Icon ('🐉'), Title, Portfolio, and 3 to 5 fitting D&D 3.5e Cleric Domains (e.g. ['Chaos', 'Destruction', 'Dragon', 'Evil', 'Water']) from D&D 3.5e lore and the query text.
+CRITICAL RULE: NEVER return an empty entries array! Always return 1 complete Pure Canonical V3 Deity/Patron entry in "entries". Infer exact D&D 3.5e Alignment, Favored Weapon, Rank, Icon, Portfolio, and 3 to 5 official Cleric Domains if the figure is a Dragon, Archfiend, or campaign Patron.
+NEVER include the 6-sided die emoji (U+1F3B2) anywhere. NEVER emit "modifiers" or "damageParts".
 
-DEITY / PATRON / CULT POWER RULES:
-1. MANDATORY TYPO / FUZZY CORRECTION: Correct misspellings to official 3.5e English names.
-2. OUTPUT 100% ENGLISH D&D 3.5E RAW FIELDS:
-   - "alignment": full 3.5e alignment (e.g. "Lawful Good", "Chaotic Evil", "Neutral Good", "Lawful Evil", "True Neutral", or "Any").
-   - "rank": one of "Greater Deity", "Intermediate Deity", "Lesser Deity", "Demigod", "Hero-Deity", "Dragon Patron / Cult Power", "Philosophy / Cosmic Force".
-   - "icon": exactly 1 thematic emoji from: ☀️, ⚡, 🥊, 🏹, 🔨, 🦄, 🌾, 🐲, 📖, 🥾, 🍂, 🪓, 🕯️, 🎭, 💎, ⛓️, 💀, 👁️‍🗨️, 🩸, 👁️, 🐉, 🌀, 🔮, ✨ (NEVER use dice emoji).
-   - "favoredWeapon": official D&D 3.5e weapon name (e.g. "Longsword", "Heavy Mace", "Bite", "Claw", "Scimitar", "Dagger", "Quarterstaff", "Greatsword").
-   - "domains": array of 3 to 5 official D&D 3.5e Cleric domain names (e.g. ["Chaos", "Destruction", "Dragon", "Evil", "Water"]).
-   - "portfolio": summary of divine/patron portfolio (e.g. "Chromatic dragons, conquest, evil, greed").
-   - "symbol": description of holy or unholy symbol or heraldry.
-   - "category": pantheon or classification (e.g. "Forgotten Realms • Draconic Patrons", "Core Pantheon", "Faerûnian Pantheon", "Greyhawk Pantheon", "Draconic Pantheon").
-
-OUTPUT JSON SCHEMA:
-Return valid JSON only matching:
+OUTPUT JSON SCHEMA (Pure Canonical V3):
 {
   "entries": [
     {
-      "schemaVersion": 2,
-      "id": "deity_unique_slug",
+      "schemaVersion": 3,
+      "id": "deity-unique-slug",
+      "blueprint": "deity",
       "name": "Official 3.5e Name",
       "type": "Deity",
       "title": "Official Epithets / Aliases",
       "category": "Pantheon / Classification",
       "icon": "🐉",
-      "rank": "Dragon Patron / Cult Power",
-      "alignment": "Chaotic Evil",
-      "favoredWeapon": "Bite",
+      "rank": "Greater Deity | Intermediate Deity | Lesser Deity | Demigod | Dragon Patron / Cult Power",
+      "alignment": "Lawful Good | Chaotic Evil | Neutral Good | Lawful Evil | True Neutral | Any",
+      "favoredWeapon": "Longsword",
       "domains": ["Chaos", "Destruction", "Dragon", "Evil", "Water"],
+      "grants": {
+        "favoredWeapon": "Longsword",
+        "domains": [
+          { "kind": "ref", "name": "Chaos", "refId": "dom-chaos" }
+        ]
+      },
       "portfolio": "Summary of portfolio",
       "symbol": "Holy or unholy symbol description",
       "source": "Official 3.5e publication and page",
+      "effects": [],
       "description": "Full official lore and description in English"
     }
   ]
@@ -3666,57 +3671,46 @@ Return valid JSON only matching:
       return `You are an expert D&D 3.5e Domain & Divine Magic Arbiter (Spell Compendium, Player's Handbook, Complete Divine).
 Target query: "${cleanQuery}" (Category: "Domain").
 
-CRITICAL RULE: NEVER return an empty entries array! You MUST ALWAYS return 1 complete Cleric Domain object in the 'entries' array matching the query. If the domain is from a splatbook, campaign setting, or thematic cult, accurately determine or infer its full 1st to 9th level spell progression and granted power from official D&D 3.5e RAW rules.
+CRITICAL RULE: NEVER return an empty entries array! Return 1 complete Pure Canonical V3 Cleric Domain entry in "entries" with its full 1st–9th spell ladder and granted power mechanics.
 
-CLERIC DOMAIN RULES:
-1. STRICT REAL RAW 3.5E INTEGRATION:
-   - Consult official D&D 3.5e sources (Spell Compendium, Player's Handbook, Complete Divine, Frostburn, Sandstorm, Stormwrack, Book of Exalted Deeds, Fiendish Codex, etc.).
-2. MANDATORY TYPO / FUZZY CORRECTION: Correct misspellings to official 3.5e English name.
-3. DOMAIN V2 SCHEMA:
-   - "type": "Domain"
-   - "category": "Cleric Domain"
-   - "source": Official 3.5e publication and page (e.g. "Spell Compendium p.272" or "Player's Handbook p.186")
-   - "description": Full RAW description of the granted power
-   - "grantedPower": structured object with:
-     * "description": full RAW granted power text
-     * "classSkills": array of skill names granted as class skills (e.g. ["Spot", "Listen"] or empty [])
-     * "grantedFeats": array of bonus feat names granted (e.g. ["Blind-Fight"] or empty [])
-     * "spellLikeAbilities": array of granted SLAs (e.g. [{"name": "Rebuke Air Creatures", "uses": "3+Cha/day", "casterLevel": "clericLevel"}] or empty [])
-   - "requiredAlignment": array of alignment restrictions (e.g. ["Good"] or empty [])
-   - "spells": exactly 9 domain spells from 1st to 9th level in order: [{"level": 1, "name": "Exact 1st-level Spell Name"}, ..., {"level": 9, "name": "Exact 9th-level Spell Name"}]
-   - "modifiers": Canonical V2 modifiers for any numerical bonuses granted by the domain (e.g. initiative, saving throws, skill bonuses): [{"target": "initiative"|"save.fort"|"skill.spot"|..., "value": 2, "type": "Untyped"|"Competence"|"Sacred"|"Profane", "condition": null}]. Leave [] if no passive flat bonus.
+${this.V3_MECHANICS_CONTRACT}
 
-OUTPUT JSON SCHEMA:
-Return valid JSON only matching:
+OUTPUT JSON SCHEMA (Pure Canonical V3):
 {
   "entries": [
     {
-      "schemaVersion": 2,
-      "id": "dom_unique_slug",
+      "schemaVersion": 3,
+      "id": "dom-unique-slug",
+      "blueprint": "domain",
       "name": "Official 3.5e Domain Name",
       "type": "Domain",
       "category": "Cleric Domain",
       "source": "Official 3.5e book and page",
+      "text": "Full RAW granted power description in English",
       "description": "Full RAW granted power description in English",
-      "grantedPower": {
-        "description": "Full RAW granted power text in English",
-        "classSkills": [],
-        "grantedFeats": [],
-        "spellLikeAbilities": []
-      },
       "requiredAlignment": [],
-      "spells": [
-        { "level": 1, "name": "1st-level domain spell" },
-        { "level": 2, "name": "2nd-level domain spell" },
-        { "level": 3, "name": "3rd-level domain spell" },
-        { "level": 4, "name": "4th-level domain spell" },
-        { "level": 5, "name": "5th-level domain spell" },
-        { "level": 6, "name": "6th-level domain spell" },
-        { "level": 7, "name": "7th-level domain spell" },
-        { "level": 8, "name": "8th-level domain spell" },
-        { "level": 9, "name": "9th-level domain spell" }
-      ],
-      "modifiers": []
+      "grants": {
+        "grantedPower": {
+          "name": "Domain Power Name",
+          "text": "Full RAW granted power text in English",
+          "classSkills": [],
+          "grantedFeats": [],
+          "spellLikeAbilities": [],
+          "usage": { "mode": "passive" }
+        },
+        "spellLadder": [
+          { "level": 1, "spell": "1st-level domain spell", "refId": "spl-1st-spell" },
+          { "level": 2, "spell": "2nd-level domain spell", "refId": "spl-2nd-spell" },
+          { "level": 3, "spell": "3rd-level domain spell", "refId": "spl-3rd-spell" },
+          { "level": 4, "spell": "4th-level domain spell", "refId": "spl-4th-spell" },
+          { "level": 5, "spell": "5th-level domain spell", "refId": "spl-5th-spell" },
+          { "level": 6, "spell": "6th-level domain spell", "refId": "spl-6th-spell" },
+          { "level": 7, "spell": "7th-level domain spell", "refId": "spl-7th-spell" },
+          { "level": 8, "spell": "8th-level domain spell", "refId": "spl-8th-spell" },
+          { "level": 9, "spell": "9th-level domain spell", "refId": "spl-9th-spell" }
+        ]
+      },
+      "effects": []
     }
   ]
 }`;
@@ -3729,22 +3723,19 @@ Target query: "${cleanQuery}" (Category: "Spell").
 
 ${this.DND35_RAW_GUARDRAIL}
 
-SPELL SPECIFIC CANONICAL V2 RULES:
-1. STRICT REAL RAW 3.5E ONLY: Consult d20srd.org, dndtools.net, Spell Compendium, PHB, or official WotC 3.5e publications. If entity does not exist in official 3.5e, return {"entries": []}.
-2. MANDATORY TYPO / FUZZY CORRECTION: Correct misspellings to official D&D 3.5e English name.
-3. CANONICAL V2 FIELDS:
-   - "spellStats": {"castingTime": "1 standard action", "range": "Close (25 ft. + 5 ft./2 levels)", "target": "One creature", "duration": "1 round/level", "savingThrow": "Will negates", "spellResistance": "Yes"}
-   - "modifiers": put any stat, roll, or speed bonuses here: [{"target": "ac.dodge"|"attack.all"|"speed.land"|..., "value": 1, "type": "Dodge"|"Morale"|"Enhancement"|..., "condition": null}]. Leave [] if spell deals direct damage or has special effects.
-   - "damageParts": put spell damage dice here: [{"dice": "1d6", "bonus": 0, "type": "Fire"|"Cold"|"Force"|..., "multiplyOnCrit": false, "onCritOnly": false, "source": "Base"}].
-   - "modes": embed variable modes or sub-choices if applicable: [{"id": "vs_undead", "name": "Undead (1d6/CL)", "actionType": "standard", "benefit": "...", "damageParts": [...], "modifiers": [...]}].
+${this.V3_MECHANICS_CONTRACT}
 
-OUTPUT JSON SCHEMA:
-Return valid JSON only matching:
+SPELL V3 RULES:
+1. Consult d20srd.org, Spell Compendium, PHB, XPH, or official WotC 3.5e publications. Correct misspellings to official D&D 3.5e English names.
+2. Put buff/debuff bonuses, defenses, or direct spell dice inside "effects" (and selectable cast variants inside "modes" or energy pickers inside "choices"). Purely narrative utility spells (like Teleport) keep "effects": [].
+
+OUTPUT JSON SCHEMA (Pure Canonical V3):
 {
   "entries": [
     {
-      "schemaVersion": 2,
-      "id": "spell_unique_slug",
+      "schemaVersion": 3,
+      "id": "spl-unique-slug",
+      "blueprint": "spell",
       "name": "Official 3.5e Name",
       "type": "Spell",
       "school": "Evocation",
@@ -3757,102 +3748,81 @@ Return valid JSON only matching:
         "savingThrow": "Reflex half",
         "spellResistance": "Yes"
       },
-      "modifiers": [],
-      "damageParts": [],
+      "choices": [],
+      "effects": [],
       "modes": [],
       "source": "Official 3.5e book and page",
       "benefit": "Concise mechanical summary in English",
+      "text": "Full official RAW description in English",
       "description": "Full official RAW description in English"
     }
   ]
 }`;
     }
 
-    // 3. FEAT / HOMEBREW / SPECIAL ABILITY / RACIAL TRAIT / FLAW
+    // 4. FEAT / HOMEBREW / SPECIAL ABILITY / RACIAL TRAIT / FLAW
     if (['feat', 'homebrew', 'boon', 'special ability', 'ability', 'racial trait', 'flaw', 'class bonus feat', 'warlock invocation'].includes(cat)) {
       const isBoonQuery = cat === 'homebrew' || cat === 'boon' || /\b(boon|grant|custom)\b/i.test(cleanQuery) || /\bskill\s*:/i.test(cleanQuery) || /^[+-]\d+\s+[a-z]/i.test(cleanQuery);
-      return `You are a master D&D 3.5e Rule Arbiter & Canonical V2 Architect.
+      return `You are a master D&D 3.5e Rule Arbiter & Pure Canonical V3 Architect.
 Target query: "${cleanQuery}" (Category: "${effectiveCategory || 'Feat'}").
 
 ${this.DND35_RAW_GUARDRAIL}
 
-FEAT / ABILITY / HOMEBREW CANONICAL V2 RULES:
-1. OFFICIAL 3.5E FEATS, ACFs, FLAWS, TRAITS & SPLATBOOKS:
-   - Consult Player's Handbook I & II, Complete Series, Tome of Battle, Unearthed Arcana (Flaws, Traits, Variant Class Features), Dragon Magazine Compendium, Races of Stone/Destiny/the Wild/the Dragon, Frostburn, Sandstorm, Stormwrack, Libris Mortis, Book of Exalted Deeds/Vile Darkness, etc.
-2. HOMEBREW & CUSTOM BONUS SYNTHESIS (CRITICAL — DO NOT MAP TO UNRELATED PHB FEATS!):
-   - ${isBoonQuery ? 'THIS QUERY IS A HOMEBREW / SKILL OR STAT BONUS REQUEST!' : 'If the query describes a Homebrew, Skill Bonus (e.g. "boon, skill: +ride", "+4 Ride"), Stat/Save/Attack/AC Bonus, or Campaign Grant:'}
-   - NEVER substitute an unrelated official feat like "Mounted Combat" or "Skill Focus" when the user asks for a direct skill/stat boon (such as "boon, skill: +ride" or "+4 Ride").
-   - Instead, create a dedicated Canonical V2 entry named clearly (e.g. "Homebrew: Ride Bonus (+4)" or "Homebrew: +4 Ride") with exact numerical "modifiers" (e.g. [{"target": "skill.ride", "value": 4, "type": "Untyped", "condition": null}]), "prereq": "-", "source": "Homebrew / Campaign Grant", and a concise English "benefit" describing the bonus. (If a skill bonus query like "boon, skill: +ride" omits the number, default to +2 or +4).
-3. CANONICAL V2 FIELDS:
-   - "prereq": exact prerequisites or "-"
-   - "benefit": concise mechanical summary in English
-   - "normal": what a character without this feat can do, or "-"
-   - "special": special notes, fighter bonus feat qualification, or "-"
-   - "modifiers": put all numerical modifiers here:
-     * Skill bonus: {"target": "skill.ride"|"skill.spot"|"skill.hide"|"skill.tumble"|"skill.diplomacy"|"skill.all"|..., "value": 4, "type": "Untyped"|"Competence"|"Insight"|"Sacred"|"Morale"|"Circumstance", "condition": null}
-     * Ability / Save / Combat: {"target": "ability.str"|"save.fort"|"save.ref"|"save.will"|"save.all"|"attack.melee"|"attack.all"|"damage.all"|"ac.natural"|"ac.deflection"|"ac.dodge"|"initiative"|"speed.land", "value": 2, "type": "Untyped"|..., "condition": null}
-   - "damageParts": put extra damage dice here if applicable: [{"dice": "...", "bonus": 0, "type": "Untyped", "multiplyOnCrit": false, "onCritOnly": false, "source": "..."}].
+${this.V3_MECHANICS_CONTRACT}
 
-    - "save": saving throw type if applicable ("Fortitude" | "Reflex" | "Will" | "None")
-    - "dcFormula": dynamic Save DC formula using Canonical V2 tokens ("10 + @level + @conMod", "10 + floor(@level / 2) + @chaMod", etc.)
-    - "range": range or area if applicable (e.g. "60 ft.")
-    - "recharge": cooldown/recharge text if applicable (e.g. "1d4+1 rounds") — NEVER put Recharge/Cooldown dice into "damageParts"!
-    - "rechargeDice": rollable cooldown dice expression if applicable (e.g. "1d4+1")
+FEAT / ABILITY / HOMEBREW V3 RULES:
+1. Consult PHB I & II, Complete Series, Tome of Battle, Unearthed Arcana (Flaws, Traits, ACFs), Races series, Frostburn, Sandstorm, Stormwrack, Libris Mortis, BoED/BoVD, Dragon Magazine Compendium.
+2. ${isBoonQuery ? 'THIS IS A HOMEBREW / CUSTOM GRANT REQUEST:' : 'If the query describes a Homebrew, Skill/Stat Grant, or custom feature:'} NEVER map it to an unrelated PHB feat. Build exact V3 "effects" / "powers" / "choices" / "modes" blocks for every benefit described.
+3. For weapon/skill/school choice feats (e.g. Weapon Focus), emit "choices" + a "when" block using "wieldingChosenWeapon" or "castingChosenSchool". For ability substitutions (e.g. Zen Archery, Force of Personality, Intuitive Attack), emit a "stat" block with "mode": "replaceStat" and "swapScope". For activated breath weapons or per-day SLAs, emit "powers" (with "dcFormula", "save", "usage", and "effects").
 
-OUTPUT JSON SCHEMA:
-Return valid JSON only matching:
+OUTPUT JSON SCHEMA (Pure Canonical V3):
 {
   "entries": [
     {
-      "schemaVersion": 2,
-      "id": "feat_unique_slug",
+      "schemaVersion": 3,
+      "id": "feat-unique-slug",
+      "blueprint": "feat",
       "name": "Official 3.5e Name or Homebrew Title",
-      "type": "${cat === 'special ability' || cat === 'ability' ? 'Special Ability' : (cat === 'flaw' ? 'Flaw' : 'Feat')}",
+      "type": "${cat === 'special ability' || cat === 'ability' ? 'Special Ability' : (cat === 'flaw' ? 'Flaw' : (isBoonQuery ? 'Homebrew' : 'Feat'))}",
       "prereq": "Prerequisites or '-'",
       "benefit": "Concise mechanical summary in English",
       "normal": "What a character without this feat can do, or '-'",
       "special": "Special rules or '-'",
-      "range": "60 ft.",
-      "save": "Reflex",
-      "dcFormula": "10 + @level + @conMod",
-      "recharge": "1d4+1 rounds",
-      "rechargeDice": "1d4+1",
-      "modifiers": [],
-      "damageParts": [],
+      "choices": [],
+      "effects": [],
+      "powers": [],
+      "modes": [],
       "source": "Official 3.5e book and page or 'Homebrew / Campaign Grant'",
+      "text": "Full official RAW or Homebrew description in English",
       "description": "Full official RAW or Homebrew description in English"
     }
   ]
 }`;
     }
 
-    // 4. WEAPON / ARMOR / SHIELD / WONDROUS ITEM / RING / MAGIC ITEM / AUGMENT CRYSTAL / EQUIPMENT
+    // 5. WEAPON / ARMOR / SHIELD / WONDROUS ITEM / RING / MAGIC ITEM / AUGMENT CRYSTAL / EQUIPMENT
     if (['weapon', 'armor', 'shield', 'armor / shield', 'wondrous item', 'ring', 'magic item', 'item', 'equipment', 'augment crystal', 'potion', 'scroll', 'wand', 'consumable'].includes(cat)) {
+      const bp = cat === 'weapon' ? 'weapon' : ((cat === 'armor' || cat === 'shield' || cat === 'armor / shield') ? 'armor' : (cat === 'augment crystal' ? 'item_mod' : 'wondrous'));
       return `You are a master D&D 3.5e Rule Arbiter.
 Target query: "${cleanQuery}" (Category: "${effectiveCategory}").
 
 ${this.DND35_RAW_GUARDRAIL}
 
-ITEM / EQUIPMENT SPECIFIC CANONICAL V2 RULES:
-1. STRICT REAL RAW 3.5E ONLY: Consult d20srd.org, dndtools.net, Magic Item Compendium, DMG, PHB, or official WotC 3.5e publications. If item does not exist in official 3.5e, return {"entries": []}.
-2. MANDATORY TYPO / FUZZY CORRECTION: Correct misspellings to official 3.5e name.
-3. ITEM / EQUIPMENT V2 SCHEMA:
-   - "type": "Weapon" | "Armor" | "Shield" | "Wondrous Item" | "Ring" | "Augment Crystal" | "Potion" | "Scroll" | "Wand" | "Consumable"
-   - "slot": "None" | "Main Hand" | "Two Hands" | "Off-Hand/Shield" | "Armor" | "Head" | "Face" | "Throat" | "Shoulders" | "Body" | "Torso" | "Waist" | "Ring" | "Feet" | "Hands" | "Arms"
-   - "priceGp": market price in GP (number, e.g. 15 or 8300)
-   - "weightLb": weight in lbs (number, e.g. 4 or 0.5)
-   - Weapon: populate "weaponMeta": {"proficiency": "Simple"|"Martial"|"Exotic", "handedness": "Unarmed"|"Light"|"One-Handed"|"Two-Handed"|"Ranged", "damageDice": "1d8", "critMin": 19, "critMult": 2, "damageType": "Slashing", "rangeIncrement": 0, "isDoubleWeapon": false, "isFinessable": false}. Set weapon damage in "damageParts": [{"dice": "1d8", "bonus": 0, "type": "Slashing", "multiplyOnCrit": true, "onCritOnly": false, "source": "Base"}].
-   - Armor / Shield: populate "armorMeta": {"category": "Light"|"Medium"|"Heavy"|"Shield", "armorBonus": 4, "maxDex": 4, "acp": -2, "asf": 20, "speed30": 30, "speed20": 20}. Set AC in "modifiers": [{"target": "ac.armor"|"ac.shield", "value": 4, "type": "Armor"|"Shield", "condition": null}].
-   - Augment Crystal (MIC): set "type": "Augment Crystal", "crystalTier": "Least"|"Lesser"|"Greater", "crystalSlot": "Weapon"|"Armor"|"Shield".
-   - Wondrous Items / Rings: put all stat bonuses in "modifiers": [{"target": "ac.deflection"|"ability.str"|"save.all"|..., "value": 2, "type": "Deflection"|"Enhancement"|"Resistance"|..., "condition": null}].
+${this.V3_MECHANICS_CONTRACT}
 
-OUTPUT JSON SCHEMA:
-Return valid JSON only matching:
+ITEM / EQUIPMENT V3 RULES:
+1. Consult SRD 3.5e, Magic Item Compendium, DMG, PHB, Arms & Equipment Guide, or splatbooks. Correct misspellings to official D&D 3.5e English names.
+2. Weapon ("blueprint": "weapon"): populate "weapon": {"category": "Simple"|"Martial"|"Exotic", "handedness": "Unarmed"|"Light"|"One-Handed"|"Two-Handed"|"Ranged", "damageDice": "1d8", "dmgType": "Slashing", "baseCritRange": 19, "critMultiplier": 2, "rangeIncrement": null} plus "weaponMeta" for legacy display; put extra magic riders in "effects" / "powers".
+3. Armor / Shield ("blueprint": "armor"): populate "armor": {"armorType": "Light"|"Medium"|"Heavy"|"Shield", "armorBonus": 4, "maxDex": 4, "acp": -2, "arcaneSpellFailure": 20, "speed30": 30, "speed20": 20}; put special magic properties in "effects" / "powers".
+4. Wondrous Items / Rings / Crystals: put all continuous bonuses and defenses in "effects" and activated abilities in "powers". NEVER emit "modifiers" or "damageParts".
+
+OUTPUT JSON SCHEMA (Pure Canonical V3):
 {
   "entries": [
     {
-      "schemaVersion": 2,
-      "id": "item_unique_slug",
+      "schemaVersion": 3,
+      "id": "item-unique-slug",
+      "blueprint": "${bp}",
       "name": "Official 3.5e Name",
       "type": "${['weapon', 'armor', 'shield', 'ring', 'augment crystal'].includes(cat) ? (cat === 'armor / shield' ? 'Armor' : effectiveCategory) : 'Wondrous Item'}",
       "slot": "None",
@@ -3860,86 +3830,87 @@ Return valid JSON only matching:
       "weightLb": 0,
       "crystalTier": null,
       "crystalSlot": null,
-      "weaponMeta": null,
-      "armorMeta": null,
-      "modifiers": [],
-      "damageParts": [],
+      "weapon": null,
+      "armor": null,
+      "choices": [],
+      "effects": [],
+      "powers": [],
+      "modes": [],
       "source": "Official 3.5e book and page",
       "benefit": "Concise mechanical summary in English",
+      "text": "Full official RAW description in English",
       "description": "Full official RAW description in English"
     }
   ]
 }`;
     }
 
-    // 5. RACE
-    if (cat === 'race') {
+    // 6. RACE / TEMPLATE
+    if (cat === 'race' || cat === 'template') {
       return `You are a master D&D 3.5e Rule Arbiter.
 Target query: "${cleanQuery}" (Category: "Race").
 
 ${this.DND35_RAW_GUARDRAIL}
 
-RACE SPECIFIC CANONICAL V2 RULES:
-1. STRICT REAL RAW 3.5E ONLY: Consult d20srd.org, dndtools.net, Monster Manual, Races of Destiny/Stone/Wild/Dragon, or official WotC 3.5e publications. If race does not exist in official 3.5e, return {"entries": []}.
-2. MANDATORY TYPO / FUZZY CORRECTION: Correct misspellings to official 3.5e name.
-3. RACE V2 SCHEMA:
-   - "size": "Fine" | "Diminutive" | "Tiny" | "Small" | "Medium" | "Large" | "Huge" | "Gargantuan" | "Colossal"
-   - "baseSpeed": base land speed in feet (number, e.g. 30)
-   - "vision": "Normal", "Low-Light Vision", "Darkvision 60 ft.", etc.
-   - "favoredClass": e.g. "Wizard", "Rogue", "Fighter", "Any"
-   - "levelAdjustment": LA number (e.g. 0, 1, 2)
-   - "modifiers": racial ability adjustments and bonuses: [{"target": "ability.dex"|"ability.con"|"save.fort"|"skill.listen"|..., "value": 2, "type": "Racial", "condition": null}].
+${this.V3_MECHANICS_CONTRACT}
 
-OUTPUT JSON SCHEMA:
-Return valid JSON only matching:
+RACE / TEMPLATE V3 RULES:
+1. Consult Monster Manual, PHB, Races of Stone/Destiny/the Wild/the Dragon, Frostburn, Sandstorm, Stormwrack, Planar Handbook, or Forgotten Realms/Eberron 3.5e books.
+2. Put racial ability adjustments ("targets": ["dex"], "btype": "Racial"), skill bonuses, natural armor, Darkvision/Low-Light ("defense" mode "Sense / Movement"), immunities, resistances, and SLA resource pools inside "effects", and activated breath weapons / SLAs inside "powers".
+
+OUTPUT JSON SCHEMA (Pure Canonical V3):
 {
   "entries": [
     {
-      "schemaVersion": 2,
-      "id": "race_unique_slug",
+      "schemaVersion": 3,
+      "id": "race-unique-slug",
+      "blueprint": "race",
       "name": "Official 3.5e Name",
-      "type": "Race",
+      "type": "${cat === 'template' ? 'Template' : 'Race'}",
       "size": "Medium",
       "baseSpeed": 30,
       "vision": "Normal",
       "favoredClass": "Any",
       "levelAdjustment": 0,
-      "modifiers": [],
+      "race": {
+        "kind": "${cat === 'template' ? 'template' : 'race'}",
+        "size": "Medium",
+        "speed": 30,
+        "favoredClass": "Any",
+        "levelAdjustment": 0
+      },
+      "choices": [],
+      "effects": [],
+      "powers": [],
       "source": "Official 3.5e book and page",
       "benefit": "Concise summary of racial traits and ability modifiers",
+      "text": "Full official RAW description and racial lore in English",
       "description": "Full official RAW description and racial lore in English"
     }
   ]
 }`;
     }
 
-    // 6. MANEUVER / STANCE
+    // 7. MANEUVER / STANCE
     if (cat === 'maneuver' || cat === 'stance') {
       return `You are a master D&D 3.5e Rule Arbiter.
 Target query: "${cleanQuery}" (Category: "Maneuver / Stance").
 
 ${this.DND35_RAW_GUARDRAIL}
 
-MANEUVER / STANCE SPECIFIC RULES:
-1. STRICT REAL RAW 3.5E TOME OF BATTLE ONLY: Consult Tome of Battle: The Book of Nine Swords. If maneuver/stance does not exist in official 3.5e ToB, return {"entries": []}.
-2. MANDATORY TYPO / FUZZY CORRECTION: Correct misspellings to official 3.5e name.
-3. MANEUVER / STANCE V2 SCHEMA:
-   - "discipline": "Desert Wind" | "Devoted Spirit" | "Diamond Mind" | "Iron Heart" | "Setting Sun" | "Shadow Hand" | "Stone Dragon" | "Tiger Claw" | "White Raven"
-   - "level": initiator level (1 to 9)
-   - "prereq": prerequisites or "None"
-   - "action": "Standard Action" | "Swift Action" | "Immediate Action" | "Full-Round Action"
-   - "actionType": "standard" | "swift" | "immediate" | "full_round"
-   - "duration": "Instantaneous" | "Stance" | "1 round"
-   - "modifiers": stance or maneuver numerical bonuses
-   - "damageParts": strike damage dice: [{"dice": "2d6", "bonus": 0, "type": "Untyped", "multiplyOnCrit": false, "onCritOnly": false, "source": "Base"}]
+${this.V3_MECHANICS_CONTRACT}
 
-OUTPUT JSON SCHEMA:
-Return valid JSON only matching:
+MANEUVER / STANCE V3 RULES:
+1. Consult Tome of Battle: The Book of Nine Swords. Correct misspellings to official D&D 3.5e English names.
+2. Put stance bonuses or strike extra damage dice ("roll" block) inside "effects". NEVER emit "modifiers" or "damageParts".
+
+OUTPUT JSON SCHEMA (Pure Canonical V3):
 {
   "entries": [
     {
-      "schemaVersion": 2,
-      "id": "man_unique_slug",
+      "schemaVersion": 3,
+      "id": "man-unique-slug",
+      "blueprint": "spell",
       "name": "Official 3.5e Name",
       "type": "${cat === 'stance' ? 'Stance' : 'Maneuver'}",
       "discipline": "Stone Dragon",
@@ -3947,76 +3918,72 @@ Return valid JSON only matching:
       "prereq": "None",
       "action": "Standard Action",
       "actionType": "standard",
-      "duration": "Instantaneous",
-      "modifiers": [],
-      "damageParts": [],
+      "duration": "${cat === 'stance' ? 'Stance' : 'Instantaneous'}",
+      "effects": [],
+      "modes": [],
       "source": "Tome of Battle p.XX",
       "benefit": "Concise mechanical summary in English",
+      "text": "Full official RAW description in English",
       "description": "Full official RAW description in English"
     }
   ]
 }`;
     }
 
-    // 7. CONDITION
+    // 8. CONDITION / BUFF
     if (cat === 'condition') {
       return `You are a master D&D 3.5e Rule Arbiter.
 Target query: "${cleanQuery}" (Category: "Condition").
 
 ${this.DND35_RAW_GUARDRAIL}
 
-CONDITION SPECIFIC RULES:
-1. STRICT REAL RAW 3.5E ONLY: Consult official 3.5e SRD or DMG conditions. If condition does not exist in official 3.5e, return {"entries": []}.
-2. Output standard D&D 3.5e condition penalties in "modifiers" (e.g. Blinded, Shaken, Frightened, Stunned, Fatigued, Exhausted, Entangled, Prone, Grappled, Pinned, Dazed, Sickened, Nauseated, Helpless).
+${this.V3_MECHANICS_CONTRACT}
 
-OUTPUT JSON SCHEMA:
-Return valid JSON only matching:
+CONDITION V3 RULES:
+1. Consult official D&D 3.5e SRD or DMG conditions (Blinded, Shaken, Frightened, Stunned, Fatigued, Exhausted, Entangled, Prone, Grappled, Sickened, Nauseated, etc.).
+2. Express all numerical penalties as V3 "stat" blocks in "effects" with "btype": "Penalty" and negative "value". NEVER emit "modifiers".
+
+OUTPUT JSON SCHEMA (Pure Canonical V3):
 {
   "entries": [
     {
-      "schemaVersion": 2,
-      "id": "cond_unique_slug",
+      "schemaVersion": 3,
+      "id": "cond-unique-slug",
+      "blueprint": "buff",
       "name": "Official 3.5e Name",
       "type": "Condition",
-      "modifiers": [
-        { "target": "attack.all", "value": -2, "type": "Penalty", "condition": null }
+      "effects": [
+        { "type": "stat", "targets": ["atk.all"], "mode": "flat", "value": -2, "btype": "Penalty" }
       ],
       "source": "DMG / SRD 3.5e",
       "benefit": "Concise mechanical summary of penalties and restrictions",
+      "text": "Full official RAW description in English",
       "description": "Full official RAW description in English"
     }
   ]
 }`;
     }
 
-    // 8. CLASS (Base Classes, Prestige Classes, Unearthed Arcana Variants & ACFs)
+    // 9. CLASS (Base Classes, Prestige Classes, Unearthed Arcana Variants & ACFs)
     if (cat === 'class') {
       return `You are a master D&D 3.5e Rule Arbiter.
 Target query: "${cleanQuery}" (Category: "Class").
 
 ${this.DND35_RAW_GUARDRAIL}
 
-CLASS & VARIANT CLASS SPECIFIC RULES:
-1. BASE CLASSES, PRESTIGE CLASSES & UNEARTHED ARCANA / SPLATBOOK VARIANTS:
-   - Consult PHB I & II, DMG, Complete Series, Tome of Battle, Unearthed Arcana (Variant Character Classes p.47-70, such as "Rogue (Adventurer Variant)" / Martial Feat Rogue which trades Sneak Attack at levels 1, 3, 5..19 for Fighter Bonus Feats, "Fighter (Thug Variant)", "Cleric (Cloistered Cleric)", "Wizard (Domain Wizard)", "Ranger (Urban Ranger)", "Barbarian (Whirling Frenzy)"), Dragon Magazine Compendium, and Racial Substitution Levels.
-   - Correct typos automatically (e.g. "rogue, Adventuerer" -> "Rogue (Adventurer Variant)").
-   - NEVER return a placeholder name like "Non-Existent Class".
-2. CLASS V2 SCHEMA:
-   - "hitDie": "d4" | "d6" | "d8" | "d10" | "d12"
-   - "bab": "Good" (+1/lvl) | "Medium" (+3/4 lvl) | "Poor" (+1/2 lvl)
-   - "fort": "Good" | "Poor"
-   - "ref": "Good" | "Poor"
-   - "will": "Good" | "Poor"
-   - "skillPoints": number of skill points per level (e.g. 2, 4, 6, 8)
-   - "classSkills": array of class skill names
+${this.V3_MECHANICS_CONTRACT}
 
-OUTPUT JSON SCHEMA:
-Return valid JSON only matching:
+CLASS & VARIANT CLASS V3 RULES:
+1. Consult PHB I & II, DMG, Complete Series, Tome of Battle, Unearthed Arcana (Variant Character Classes p.47-70), and official 3.5e splatbooks.
+2. Correct typos automatically and populate chassis fields ("hitDie", "bab", "fort", "ref", "will", "skillPoints", "classSkills") plus any passive V3 "effects".
+
+OUTPUT JSON SCHEMA (Pure Canonical V3):
 {
   "entries": [
     {
-      "schemaVersion": 2,
-      "id": "class_unique_slug",
+      "schemaVersion": 3,
+      "id": "cls-unique-slug",
+      "blueprint": "class",
       "name": "Official 3.5e Class or Variant Name",
       "type": "Class",
       "hitDie": "d8",
@@ -4024,10 +3991,12 @@ Return valid JSON only matching:
       "fort": "Good",
       "ref": "Poor",
       "will": "Poor",
-      "skillPoints": 2,
+      "skillPoints": 4,
       "classSkills": ["Climb", "Jump", "Swim"],
+      "effects": [],
       "source": "Official 3.5e book and page (e.g. Unearthed Arcana p.58)",
       "benefit": "Class summary and role in English",
+      "text": "Full official RAW description in English",
       "description": "Full official RAW description in English"
     }
   ]
@@ -4278,6 +4247,21 @@ Return valid JSON only matching:
       return [markSiteDb(this.normalizeEntry(baseMatch), 'SRD V3 Compendium')];
     }
 
+    // 6. Layer 1 Deterministic Text Scriber (0 Tokens, <0.2 ms) — only when input carries concrete D&D 3.5e mechanics
+    if (typeof RuleEngine !== 'undefined' && typeof RuleEngine.parseRuleTextToV3 === 'function' && rawQuery.trim().length >= 8) {
+      const catHint = prefixMatch ? prefixMatch[1].toLowerCase() : 'feat';
+      const bpHint = catHint === 'spell' ? 'spell' : (catHint === 'race' ? 'race' : (catHint === 'domain' ? 'domain' : (catHint === 'weapon' ? 'weapon' : (catHint === 'armor' || catHint === 'shield' ? 'armor' : 'feat'))));
+      const scribed = RuleEngine.parseRuleTextToV3(rawQuery, { blueprint: bpHint });
+      const hasRealMech = scribed && (
+        (Array.isArray(scribed.powers) && scribed.powers.length > 0) ||
+        (Array.isArray(scribed.choices) && scribed.choices.length > 0) ||
+        (Array.isArray(scribed.effects) && scribed.effects.some(b => b && !(b.type === 'effect' && b.effectKind === 'rule')))
+      );
+      if (hasRealMech) {
+        return [this.normalizeEntry(scribed)];
+      }
+    }
+
     return [];
   },
 
@@ -4377,20 +4361,15 @@ Return valid JSON only matching:
                 rawList = [parsed];
               }
 
-              if (typeof window !== 'undefined' && window.SchemaMigrator && typeof window.SchemaMigrator.upgradeArrayToV2 === 'function') {
-                const v2List = window.SchemaMigrator.upgradeArrayToV2(rawList);
-                if (v2List.length > 0) return v2List.map(item => this.normalizeEntry(item));
-              } else {
-                const normalizedEntries = [];
-                rawList.forEach(rawItem => {
-                  const isArrayRow = Array.isArray(rawItem);
-                  const norm = this.normalizeEntry(rawItem, isArrayRow);
-                  if (norm && norm.name) {
-                    normalizedEntries.push(norm);
-                  }
-                });
-                if (normalizedEntries.length > 0) return normalizedEntries;
-              }
+              const normalizedEntries = [];
+              rawList.forEach(rawItem => {
+                const isArrayRow = Array.isArray(rawItem);
+                const norm = this.normalizeEntry(rawItem, isArrayRow);
+                if (norm && norm.name) {
+                  normalizedEntries.push(norm);
+                }
+              });
+              if (normalizedEntries.length > 0) return normalizedEntries;
             } catch (pErr) {
               lastError = `JSON Parse Error (${model}): ${pErr.message}`;
               attemptErrors.push({ model, message: lastError, retired: false });
@@ -4602,9 +4581,6 @@ Return valid JSON only matching:
 
   convertRowsToEntries(rows) {
     if (!Array.isArray(rows)) return [];
-    if (typeof window !== 'undefined' && window.SchemaMigrator && typeof window.SchemaMigrator.upgradeArrayToV2 === 'function') {
-      return window.SchemaMigrator.upgradeArrayToV2(rows);
-    }
     return rows.map(r => {
       if (r && typeof r === 'object' && !Array.isArray(r)) {
         return this.normalizeEntry(r, false);
@@ -4613,7 +4589,7 @@ Return valid JSON only matching:
         return this.normalizeEntry(r, !r.type && !r.benefit);
       }
       return r;
-    });
+    }).filter(Boolean);
   },
 
   queryAiBatch() {
@@ -4634,13 +4610,13 @@ Return valid JSON only matching:
     // Check if the entire input is a single multi-line Structured Ability Stat Block (e.g. Breath Weapon / 4d8 Acid / Save Reflex, DC:10+lvl+Con / 60ft, Recharge 1d4+1 turn)
     const singleStatBlock = this.parseStructuredAbilityStatBlock(input.value);
     if (singleStatBlock && singleStatBlock.name) {
-      const v2 = this.ensureV2(singleStatBlock);
-      const existsIdx = masterDb.findIndex(m => (m.id && m.id === v2.id) || (m.name || '').toLowerCase() === (v2.name || '').toLowerCase());
-      if (existsIdx >= 0) masterDb[existsIdx] = v2;
-      else masterDb.push(v2);
+      const v3 = this.normalizeEntry(singleStatBlock);
+      const existsIdx = masterDb.findIndex(m => (m.id && m.id === v3.id) || (m.name || '').toLowerCase() === (v3.name || '').toLowerCase());
+      if (existsIdx >= 0) masterDb[existsIdx] = v3;
+      else masterDb.push(v3);
       if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
       this.renderTable();
-      notify(`🎉 Structured Ability Parsed & Imported (0ms)!\n"${v2.name}" (${v2.benefit}) has been added to Master_DB in Canonical V2 format.`, 'success');
+      notify(`🎉 Structured Ability Scribed & Imported (0ms)!\n"${v3.name}" (${v3.benefit}) has been added to Master DB in Pure Canonical V3 format.`, 'success');
       return;
     }
 
@@ -4648,7 +4624,7 @@ Return valid JSON only matching:
     if (!rawQueries.length) return;
 
     const items = [...new Set(rawQueries)];
-    if (!(await DnDUI.confirm(`A total of ${items.length} rule(s) will be parsed into Canonical V2 format and added to Master DB. Proceed?`))) {
+    if (!(await DnDUI.confirm(`A total of ${items.length} rule(s) will be crafted into Pure Canonical V3 format and added to Master DB. Proceed?`))) {
       return;
     }
 
@@ -4664,10 +4640,10 @@ Return valid JSON only matching:
         const entries = await this.fetchSingleAiRuleEntries(itemQuery, 'Feat', apiKey, statusText);
         if (entries && entries.length) {
           entries.forEach(entry => {
-            const v2 = this.ensureV2(entry);
-            const existsIdx = masterDb.findIndex(m => (m.id && m.id === v2.id) || (m.name || '').toLowerCase() === (v2.name || '').toLowerCase());
-            if (existsIdx >= 0) masterDb[existsIdx] = v2;
-            else masterDb.push(v2);
+            const v3 = this.normalizeEntry(entry);
+            const existsIdx = masterDb.findIndex(m => (m.id && m.id === v3.id) || (m.name || '').toLowerCase() === (v3.name || '').toLowerCase());
+            if (existsIdx >= 0) masterDb[existsIdx] = v3;
+            else masterDb.push(v3);
             totalImported++;
           });
         }
@@ -4680,7 +4656,7 @@ Return valid JSON only matching:
     if (statusBox) statusBox.classList.add('hidden');
     if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
     this.renderTable();
-    notify(`🎉 Batch Import Complete!\n${totalImported} Canonical V2 rule(s) successfully added to Master_DB.`, 'success');
+    notify(`🎉 Batch Import Complete!\n${totalImported} Pure Canonical V3 rule(s) successfully added to Master DB.`, 'success');
   },
 
   getChildrenForEntry(item) {
@@ -4704,8 +4680,8 @@ Return valid JSON only matching:
       <div class="flex items-center justify-between bg-slate-900 border ${newEntriesCount === 0 ? 'border-amber-500/50' : 'border-slate-800'} p-3 rounded-xl mb-3 shadow">
         <div>
           <span class="text-xs font-bold ${newEntriesCount === 0 ? 'text-amber-300' : 'text-amber-300'}">${newEntriesCount === 0 ? '📌 Already in Site Database:' : 'D&D 3.5e RAW Verified:'}</span>
-          <span class="text-xs text-slate-200 ml-1 font-semibold">${newEntriesCount === 0 ? (firstDbInfo.sourceLabel || 'Site V2 Compendium') : `${this.lastAiResults.length} Result(s) Found`}</span>
-          <span class="text-[11px] text-slate-400 block sm:inline sm:ml-2">${newEntriesCount === 0 ? 'Direct duplicate addition is disabled — use "Change & Add" to customize first' : '100% Canonical V2 JSON Schema Compliant'}</span>
+          <span class="text-xs text-slate-200 ml-1 font-semibold">${newEntriesCount === 0 ? (firstDbInfo.sourceLabel || 'Site V3 Compendium') : `${this.lastAiResults.length} Result(s) Found`}</span>
+          <span class="text-[11px] text-slate-400 block sm:inline sm:ml-2">${newEntriesCount === 0 ? 'Direct duplicate addition is disabled — use "Change & Add" to customize first' : '100% Pure Canonical V3 Schema Compliant'}</span>
         </div>
         ${newEntriesCount > 0 ? `
           <button data-action="rm:add-all-ai" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs px-3.5 py-1.5 rounded-lg shadow transition flex items-center gap-1.5 cursor-pointer">
@@ -7835,14 +7811,14 @@ Return valid JSON only matching:
   },
 
   async queryAiFreeTextRows(rawText, apiKey, statusTextEl = null) {
-    // 0ms Deterministic V2 Resolution for Structured Ability / Breath Weapon Stat Blocks
+    // 0ms Deterministic V3 Resolution for Structured Ability / Breath Weapon Stat Blocks
     const structuredHit = this.parseStructuredAbilityStatBlock(rawText);
     if (structuredHit && structuredHit.name) {
-      return [this.ensureV2(structuredHit)];
+      return [this.normalizeEntry(structuredHit)];
     }
 
-    const promptText = `You are a master D&D 3.5e Rule Arbiter and Canonical V2 Database Architect.
-The user has provided a raw, free-form text block copied from a D&D 3.5e sourcebook, PDF, SRD, or adventure:
+    const promptText = `You are a master D&D 3.5e Rule Arbiter and Pure Canonical V3 Architect.
+The user has provided a raw, free-form text block copied from a D&D 3.5e sourcebook, PDF, SRD, or homebrew note:
 
 RAW TEXT:
 '''
@@ -7851,58 +7827,35 @@ ${rawText}
 
 ${this.DND35_RAW_GUARDRAIL}
 
+${this.V3_MECHANICS_CONTRACT}
+
 TASK:
-Analyze and parse this free-form text completely into Canonical V2 JSON entries (schemaVersion: 2).
+Analyze and craft this free-form text completely into Pure Canonical V3 JSON entries (schemaVersion: 3).
 CRITICAL RULES:
 1. STRICT REAL RAW 3.5E RULES ONLY (100% official English terminology, zero U+1F3B2 dice emoji).
-2. EMBEDDED MODES (NO SEPARATE '↳' CHILD ROWS):
-   If the item or spell has multiple distinct powers or sub-modes (e.g. Flametongue 1/day 4d6 fire ray, or Searing Light vs Undead), embed them inside the parent entry's "modes" array.
-3. UNIVERSAL MODIFIERS, DAMAGE PARTS & PARAMETERIZED ABILITIES:
-   - Stat/roll bonuses go into "modifiers": [{"target": "ac.dodge"|"attack.all"|"ability.str"|"save.ref"|"speed.land", "value": 1, "type": "Dodge"|"Enhancement"|"Untyped", "condition": null}].
-   - Attack/Breath/Ability damage dice go into "damageParts": [{"dice": "4d8", "bonus": 0, "type": "Acid", "multiplyOnCrit": false, "onCritOnly": false, "source": "Breath Weapon"}].
-   - NEVER put Recharge/Cooldown dice (such as "Recharge 1d4+1 turn") into "damageParts"! Instead, set "recharge": "1d4+1 rounds" and "rechargeDice": "1d4+1".
-   - If the ability has a Saving Throw or DC formula (e.g. "Save Reflex, DC:10+lvl+Con"), set "save": "Reflex" and normalize "dcFormula" using Canonical V2 tokens ("10 + @level + @conMod").
-   - Weapons MUST include "weaponMeta" (with "proficiency": "Simple"|"Martial"|"Exotic", "handedness", "damageDice", "critMin", "critMult", "damageType", "isDoubleWeapon", "isFinessable") and Armors/Shields MUST include "armorMeta" ("category", "armorBonus", "maxDex", "acp", "asf").
+2. NEVER emit "modifiers", "damageParts", "defenses", or "resources"! Put passive bonuses, formulas, and stat swaps in "effects", activated abilities / breath weapons / SLAs in "powers", player choices in "choices", and mutually exclusive selectable modes in "modes".
+3. Weapons ("blueprint": "weapon") populate "weapon", Armors/Shields ("blueprint": "armor") populate "armor", Domains ("blueprint": "domain") populate "grants.grantedPower" + "grants.spellLadder", Races ("blueprint": "race") populate "race".
 
 OUTPUT REQUIREMENT:
 Return valid JSON only matching:
 {
   "entries": [
     {
-      "schemaVersion": 2,
-      "id": "unique_slug_id",
+      "schemaVersion": 3,
+      "id": "feat-unique-slug",
+      "blueprint": "feat",
       "name": "Entry Name",
-      "type": "Feat|Special Ability|Racial Trait|Class Feature|Homebrew|Weapon|Armor|Shield|Ring|Wondrous Item|Augment Crystal|Spell|Power|Potion|Scroll|Wand|Consumable|Maneuver|Stance|Template|Race|Deity|Domain",
-      "slot": "None|Main Hand|Two Hands|Armor|Off-Hand/Shield|Ring|Belt|Waist|Shoulders|Neck|Throat|Head|Face|Body|Torso|Feet|Hands|Arms",
+      "type": "Feat|Special Ability|Racial Trait|Class Feature|Homebrew|Weapon|Armor|Shield|Ring|Wondrous Item|Augment Crystal|Spell|Power|Potion|Scroll|Wand|Consumable|Maneuver|Stance|Template|Race|Deity|Domain|Condition",
+      "slot": "None",
       "source": "PHB p.92 / DMG p.224",
       "prereq": "-",
       "benefit": "Concise mechanical summary in English",
+      "text": "Full RAW text in English",
       "description": "Full RAW text in English",
-      "action": "Passive|Standard Action|Move Action|Swift Action|Immediate Action|Full-Round Action|Free Action",
-      "actionType": "passive|standard|move|swift|immediate|full_round|free",
-      "duration": "Continuous|Instantaneous|1 round/level",
-      "range": "60 ft.",
-      "save": "Reflex",
-      "dcFormula": "10 + @level + @conMod",
-      "recharge": "1d4+1 rounds",
-      "rechargeDice": "1d4+1",
-      "weight": 0,
-      "cost": 0,
-      "isFighterBonusFeat": false,
-      "requiresEnergyChoice": false,
-      "dailyCharges": null,
-      "crystalTier": null,
-      "crystalSlot": null,
-      "modifiers": [],
-      "damageParts": [],
-      "modes": [],
-      "weaponMeta": null,
-      "armorMeta": null,
-      "weaponStats": null,
-      "armorStats": null,
-      "spellStats": null,
-      "ruleFlags": {},
-      "tacticalBadges": []
+      "choices": [],
+      "effects": [],
+      "powers": [],
+      "modes": []
     }
   ]
 }`;

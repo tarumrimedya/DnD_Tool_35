@@ -6634,8 +6634,8 @@
             </div>
             <div class="flex flex-wrap gap-2 pt-1 border-t border-slate-800">
               <button type="button" data-action="inventory:search-ai-pool-item" data-query="${escapedQ}" class="flex-1 bg-amber-600 hover:bg-amber-500 text-white font-extrabold text-xs py-2 px-3 rounded-lg shadow-md transition flex items-center justify-center gap-2 cursor-pointer">
-                <span>🔮</span>
-                <span>Fetch "${escapedQ}" via Rule Master AI</span>
+                <span>✨</span>
+                <span>Craft "${escapedQ}" with Rule Master</span>
               </button>
               <button type="button" data-action="inventory:open-item-forge" data-query="${escapedQ}" class="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold text-xs py-2 px-3 rounded-lg transition flex items-center justify-center gap-1.5 cursor-pointer">
                 <span>⚒️</span>
@@ -6661,8 +6661,8 @@
         </div>
         <div class="text-center pt-1">
           <button type="button" data-action="inventory:search-ai-pool-item" data-query="${escapedQ}" class="text-xs text-amber-300 hover:text-amber-200 bg-slate-900 hover:bg-slate-800 border border-amber-500/40 rounded-lg px-3 py-1.5 transition inline-flex items-center gap-1.5 shadow">
-            <span>🔮</span>
-            <span>Not what you're looking for? <strong>Fetch "${escapedQ}" via Rule Master AI</strong></span>
+            <span>✨</span>
+            <span>Not what you're looking for? <strong>Craft "${escapedQ}" with Rule Master</strong></span>
           </button>
         </div>
       `;

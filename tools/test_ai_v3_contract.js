@@ -430,6 +430,101 @@ function runAiV3ContractTests() {
       return acid === 20 ? null : `expected acid resistance 20, got ${JSON.stringify(res)}`;
     });
 
+  // 6. Sprint D2 — Hybrid Layer 1 (parseRuleTextToV3 + v3_claims), Layer 2 (sanitizeV3Entry),
+  //    RuleMaster 9-Category V3 Prompts & Rule Crafter Quick Guide Recipes ---------------------
+  {
+    const { extractClaims } = require('./lib/v3_claims.js');
+    const cAcSave = extractClaims('Grants a +2 deflection bonus to Armor Class and a +2 resistance bonus on all saving throws.');
+    check(cAcSave.length === 2 && cAcSave.some((c) => c.family === 'ac' && c.value === 2) && cAcSave.some((c) => c.family === 'save' && c.value === 2),
+      `v3_claims compound AC+Save regression: got ${JSON.stringify(cAcSave)}`);
+    const cDr = extractClaims('Darkvision out to 60 feet and damage reduction 10/cold iron.');
+    check(cDr.some((c) => c.family === 'dr' && c.target === 'cold iron' && c.value === 10),
+      `v3_claims multi-word DR regression: got ${JSON.stringify(cDr)}`);
+    const cDwarf = extractClaims('+2 racial bonus on saving throws against poison and +2 racial bonus on saving throws against spells.');
+    check(cDwarf.length === 2 && cDwarf[0].qualifier.includes('poison') && cDwarf[1].qualifier.includes('spells'),
+      `v3_claims dual conditional save regression: got ${JSON.stringify(cDwarf)}`);
+
+    const scribeCases = [
+      ['Alertness: You get a +2 bonus on all Listen checks and Spot checks.', 'feat'],
+      ['Dwarven Resilience: +2 racial bonus on saving throws against poison and +2 racial bonus on saving throws against spells.', 'feat'],
+      ['Cloak of Ward: Grants a +2 deflection bonus to Armor Class and a +2 resistance bonus on all saving throws.', 'wondrous'],
+      ['Fiendish Hide: Darkvision out to 60 feet, damage reduction 10/cold iron, spell resistance 18, and resistance to fire 10.', 'feat'],
+      ['Fey Blood: 3/day—scorching ray. Immunity to sleep effects and paralysis.', 'race'],
+      ['Dragon Breath: 6d8 Fire, 30 ft. cone, Save: Reflex half, DC: 10 + 1/2 lvl + Con, Recharge 1d4 rounds, Standard Action', 'feat'],
+      ['Shield of Faith: This spell grants the subject a +2 deflection bonus to AC, with an additional +1 to the bonus for every six caster levels you have (maximum +5 deflection bonus at 18th level).', 'spell'],
+      ['Zen Archery: You can use your Wisdom modifier instead of your Dexterity modifier on ranged attack rolls.', 'feat'],
+      ['Weapon Focus: Choose one type of weapon. You gain a +1 bonus on all attack rolls you make using the selected weapon.', 'feat'],
+      ['Divine Favor: +1 luck bonus on attack and weapon damage rolls for every three caster levels you have (at least +1, maximum +3).', 'spell'],
+      ['Empower Spell: All variable, numeric effects of an empowered spell are increased by one-half. An empowered spell uses up a spell slot two levels higher than the spell’s actual level.', 'feat'],
+      ['Holy Surge: Deals an extra 2d6 points of holy damage against creatures of evil alignment.', 'feat']
+    ];
+    scribeCases.forEach(([rawTxt, bp], idx) => {
+      const v3 = RuleEngine.parseRuleTextToV3(rawTxt, { blueprint: bp });
+      const lbl = `scribe[${idx}]`;
+      check(isObj(v3) && v3.schemaVersion === 3 && v3.blueprint === bp, `${lbl}: invalid V3 header`);
+      check(findKeysDeep(v3, BANNED_ANYWHERE, lbl).length === 0, `${lbl}: emitted banned V2 keys`);
+      const vErrs = validate('RuleMasterEntryV3', v3, lbl);
+      check(vErrs.length === 0, `${lbl}: schema error ${vErrs.join('; ')}`);
+      condWalk(v3, lbl, '');
+      const e1 = Forge.exportEntry(Forge.fromCanonicalV3(JSON.parse(JSON.stringify(v3))));
+      const e2 = Forge.exportEntry(Forge.fromCanonicalV3(JSON.parse(JSON.stringify(e1))));
+      check(deepEqual(e1, e2), `${lbl}: Scribe -> Rule Crafter round-trip not idempotent`);
+    });
+
+    // Dirty AI response sanitizer checks (leaked V2 modifiers/damageParts, legacy scope, unknown when condition, Domain ladder)
+    const dirtyRes = RuleEngine.sanitizeV3Entry({
+      schemaVersion: 2,
+      name: 'Dirty Probe Feat',
+      type: 'Feat',
+      modifiers: [{ target: 'ability.str', value: 2, type: 'Enhancement' }, { target: 'skill.move_silently', value: 4, type: 'Competence', condition: 'in shadowy illumination' }],
+      damageParts: [{ dice: '1d6', bonus: 0, type: 'Fire' }],
+      effects: [
+        { type: 'stat', mode: 'replaceStat', swapTarget: 'atk.melee.abilityMod', targets: ['atk.melee.abilityMod'], subOp: 'max', fromStat: 'str', toStat: 'wis', scope: 'simple_or_natural' },
+        { type: 'when', flow: 'while', branches: [{ condKind: 'state', condText: 'under a blood moon', effects: [{ type: 'stat', targets: ['save.will'], mode: 'flat', value: 2, btype: 'Morale' }] }] }
+      ]
+    }, { returnWarnings: true });
+    const sanitized = dirtyRes.entry;
+    check(sanitized.schemaVersion === 3 && sanitized.modifiers === undefined && sanitized.damageParts === undefined, 'sanitizeV3Entry must strip legacy V2 arrays');
+    check(validate('RuleMasterEntryV3', sanitized, 'dirtyProbe').length === 0, 'sanitizeV3Entry output must validate against RuleMasterEntryV3');
+    condWalk(sanitized, 'dirtyProbe', '');
+    const swapBlk = sanitized.effects.find((b) => b.mode === 'replaceStat');
+    check(Boolean(swapBlk) && swapBlk.swapScope === 'simple_or_natural' && swapBlk.scope === undefined, 'sanitizeV3Entry must migrate replaceStat scope -> swapScope');
+    check(dirtyRes.warnings.length >= 2, 'sanitizeV3Entry must record conversion warnings');
+
+    const dirtyDom = RuleEngine.sanitizeV3Entry({
+      schemaVersion: 2,
+      name: 'Planning',
+      type: 'Domain',
+      grantedPower: 'Gain Extend Spell as a bonus feat.',
+      spells: [{ level: 1, name: 'Deathwatch' }, { level: 9, name: 'Time Stop' }]
+    });
+    check(dirtyDom.blueprint === 'domain' && Array.isArray(dirtyDom.grants && dirtyDom.grants.spellLadder) && dirtyDom.grants.spellLadder.length === 2,
+      'sanitizeV3Entry must build Domain grants.spellLadder');
+
+    // Quick Guide recipes in ForgeSandbox
+    const guideRecipes = Array.isArray(Forge.guideRecipes) ? Forge.guideRecipes : [];
+    check(guideRecipes.length === 6, `expected 6 Rule Crafter Quick Guide recipes, found ${guideRecipes.length}`);
+    guideRecipes.forEach((g, idx) => {
+      const lbl = `guideRecipe[${idx}] ${g.title || ''}`;
+      check(validate('RuleMasterEntryV3', g.entry, lbl).length === 0, `${lbl}: schema violation`);
+      condWalk(g.entry, lbl, '');
+      const e1 = Forge.exportEntry(Forge.fromCanonicalV3(JSON.parse(JSON.stringify(g.entry))));
+      const e2 = Forge.exportEntry(Forge.fromCanonicalV3(JSON.parse(JSON.stringify(e1))));
+      check(deepEqual(e1, e2), `${lbl}: round-trip not idempotent`);
+    });
+
+    // RuleMaster 9-category prompts must be 100% Pure Canonical V3 (zero schemaVersion: 2)
+    const vm = require('vm');
+    const rmCtx = { window: {}, globalThis: {}, URLSearchParams, console, RuleEngine, localStorage: { getItem: () => null, setItem: () => {}, removeItem: () => {} }, document: { readyState: 'loading', getElementById: () => null, querySelectorAll: () => [], addEventListener: () => {} } };
+    rmCtx.window = rmCtx; rmCtx.self = rmCtx;
+    vm.createContext(rmCtx);
+    vm.runInContext(fs.readFileSync(path.join(ROOT, 'rule_master.js'), 'utf8'), rmCtx);
+    ['Deity', 'Domain', 'Spell', 'Feat', 'Homebrew', 'Weapon', 'Armor', 'Wondrous Item', 'Race', 'Maneuver', 'Condition', 'Class'].forEach((cat) => {
+      const p = rmCtx.RuleMaster.buildTargetedAiPrompt('Probe Query', cat);
+      check(/"schemaVersion":\s*3/.test(p) && !/"schemaVersion":\s*2/.test(p), `RuleMaster.buildTargetedAiPrompt("${cat}") must request schemaVersion: 3 only`);
+    });
+  }
+
   const elapsedMs = Date.now() - startMs;
   if (failures.length > 0) {
     throw new Error(`AI V3 Contract Gate failed (${failures.length} failure(s)):\n  - ${failures.join('\n  - ')}`);

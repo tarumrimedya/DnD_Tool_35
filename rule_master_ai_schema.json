@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "RuleMasterAiResponseSchemaV3",
-  "description": "Pure Canonical V3 (schemaVersion: 3) response schema for the D&D 3.5e Rule Master AI and Rule Crafter. Return every result inside `entries` using V3 effects[] blocks, choices[], powers[] and blueprint sub-objects. Legacy V2 modifiers[], damageParts[], defenses[], resources[] and modes[] are banned.",
+  "description": "Pure Canonical V3 (schemaVersion: 3) response schema for the D&D 3.5e Rule Master AI and Rule Crafter. Return every result inside `entries` using V3 effects[] blocks, choices[], powers[], modes[] and blueprint sub-objects. Legacy V2 modifiers[], damageParts[], defenses[] and resources[] are banned.",
   "type": "object",
   "required": [
     "entries"
