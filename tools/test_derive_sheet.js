@@ -3845,6 +3845,30 @@ function runDeriveSheetTests() {
       !/steadfast determination/i.test(ruleEngineSrc)
     );
 
+    // 5b. Id/name shadowing (handoff leftover): inline `effects[]` on a feat/buff win over an SRD record with the same id or name
+    {
+      const dodgeFx = [{ kind: 'stat', target: 'ac.dodge', op: 'add', value: 5, bonusType: 'dodge' }];
+      const deflFx = [{ kind: 'stat', target: 'ac.deflection', op: 'add', value: 7, bonusType: 'deflection' }];
+      const shadowAc = (feats, buffs) => {
+        const c = JSON.parse(JSON.stringify(f01Raw));
+        c.feats = feats; c.buffs = buffs;
+        return RuleEngine.deriveSheet(c, []).ac;
+      };
+      const featSameId = shadowAc([{ id: 'feat-dodge', name: 'Dodge', type: 'Feat', active: true, effects: dodgeFx }], []);
+      const featSameName = shadowAc([{ id: 'hb-dodge-x', name: 'Dodge', type: 'Feat', active: true, effects: dodgeFx }], []);
+      const featSrdThenHb = shadowAc([
+        { id: 'feat-dodge', name: 'Dodge', type: 'Feat', active: true },
+        { id: 'hb-dodge-x', name: 'Dodge', type: 'Feat', active: true, effects: dodgeFx }
+      ], []);
+      const buffSameId = shadowAc([], [{ id: 'spl-bulls-strength', name: "Bull's Strength", type: 'Buff', active: true, effects: deflFx }]);
+      const buffSameName = shadowAc([], [{ id: 'my-buff-1', name: "Bull's Strength", type: 'Buff', active: true, effects: deflFx }]);
+      check(
+        'Id/name shadowing: inline effects[] win over an SRD record with the same id or name (feat same id / same name / SRD listed first; buff same id / same name)',
+        featSameId.dodge === 5 && featSameName.dodge === 5 && featSrdThenHb.dodge === 5 &&
+        buffSameId.deflection === 7 && buffSameName.deflection === 7
+      );
+    }
+
     // 6. Sprint B.1: House-Rule Dead DOM Reads Removal
     const charCombatSrc = fs.readFileSync(path.join(__dirname, '..', 'char_combat.js'), 'utf8');
     const charHudSrc = fs.readFileSync(path.join(__dirname, '..', 'char_hud.js'), 'utf8');
