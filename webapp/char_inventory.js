@@ -6719,22 +6719,8 @@
         try { await SrdCompendium.ensureTypesLoaded(['Spell', 'Weapon', 'Armor', 'Equipment']); } catch (e) { reportError('char_inventory:ensureTypesLoaded', e); }
       }
 
-      const persistAndRenderAiPoolEntries = (entries) => {
+      const stageAndRenderAiPoolEntries = (entries) => {
         window._poolCurrentAiEntries = entries;
-        let newEntriesAdded = 0;
-        entries.forEach(entry => {
-          const exists = masterDb.some(m => (m.name || '').toLowerCase() === (entry.name || '').toLowerCase());
-          if (!exists) {
-            masterDb.push(entry);
-            newEntriesAdded++;
-          }
-        });
-        if (newEntriesAdded > 0) {
-          saveStateToStorage();
-          if (typeof RuleMaster !== 'undefined' && typeof RuleMaster.renderTable === 'function') {
-            RuleMaster.renderTable();
-          }
-        }
         renderAiPoolResultCards(entries, q);
       };
 
@@ -6742,7 +6728,7 @@
       if (typeof RuleMaster !== 'undefined' && typeof RuleMaster.resolveLocalZeroTokenQuery === 'function') {
         const localCrafted = RuleMaster.resolveLocalZeroTokenQuery(q);
         if (Array.isArray(localCrafted) && localCrafted.length > 0) {
-          persistAndRenderAiPoolEntries(RuleMaster.convertRowsToEntries(localCrafted));
+          stageAndRenderAiPoolEntries(RuleMaster.convertRowsToEntries(localCrafted));
           return;
         }
       }
@@ -6780,7 +6766,7 @@
           throw new Error(`No official rule entry found for "${q}".`);
         }
 
-        persistAndRenderAiPoolEntries(RuleMaster.convertRowsToEntries(rows));
+        stageAndRenderAiPoolEntries(RuleMaster.convertRowsToEntries(rows));
       } catch (err) {
         resultsBox.innerHTML = `
           <div class="p-4 bg-rose-950/50 border border-rose-800 rounded-xl space-y-2 text-rose-300">
@@ -6810,7 +6796,7 @@
               <span>✨</span>
               <span>🔮 Found in 3.5e Compendium with Rule Master (${entries.length} entries)</span>
             </span>
-            <span class="text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded-full">Added to Master DB</span>
+            <span class="text-[10px] font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2 py-0.5 rounded-full">Preview • Click Add to Save</span>
           </div>
           <div class="space-y-2">
       `;
@@ -6864,6 +6850,24 @@
       const item = window._poolCurrentMatches?.[idx];
       if (!item) return;
 
+      // Persist synthesized non-baseItem custom entries (e.g. DMG Scroll/Wand/Potion) to char.customDb ONLY when added to Inventory
+      if (item._isSynthesizedLego && !item.baseItemId && Array.isArray(masterDb)) {
+        const inSrd = typeof SrdCompendium !== 'undefined' && SrdCompendium._ready && Boolean(SrdCompendium.getById(item.id) || SrdCompendium.getByName(item.name));
+        const inMaster = masterDb.some(m => m && (m.name || '').toLowerCase().trim() === (item.name || '').toLowerCase().trim());
+        if (!inSrd && !inMaster) {
+          const cleanDbCopy = JSON.parse(JSON.stringify(item));
+          delete cleanDbCopy._isSynthesizedLego;
+          delete cleanDbCopy._cleanDescCache;
+          delete cleanDbCopy._badgesHtmlCache;
+          delete cleanDbCopy._parseWarnings;
+          cleanDbCopy.schemaVersion = 3;
+          masterDb.push(cleanDbCopy);
+          if (typeof RuleMaster !== 'undefined' && typeof RuleMaster.renderTable === 'function') {
+            RuleMaster.renderTable();
+          }
+        }
+      }
+
       if (!character.gearPool) character.gearPool = [];
       const cat = mapEntryToGearCategory(item);
       const isBeltItem = (item.slot || '').toLowerCase().includes('belt') || cat === 'Consumable';
@@ -6898,6 +6902,8 @@
         enhancementBonus: Number(item.enhancementBonus) || 0,
         enhancements: Array.isArray(item.enhancements) ? item.enhancements : [],
         effects: Array.isArray(item.effects) ? JSON.parse(JSON.stringify(item.effects)) : [],
+        ...(Array.isArray(item.powers) && item.powers.length > 0 ? { powers: JSON.parse(JSON.stringify(item.powers)) } : {}),
+        ...(item.casterLevel ? { casterLevel: item.casterLevel } : {}),
         ...(Array.isArray(item.choices) && item.choices.length > 0 ? {
           choices: JSON.parse(JSON.stringify(item.choices)),
           choice: item.chosenOption || item.choice || item.choices[0]?.options?.[0] || '',
@@ -7070,8 +7076,9 @@
       if (v3Item && typeof v3Item === 'object') v3Item.schemaVersion = 3;
 
       let dbAdded = 0;
+      const inSrd = typeof SrdCompendium !== 'undefined' && SrdCompendium._ready && Boolean(SrdCompendium.getById(v3Item.id) || SrdCompendium.getByName(v3Item.name));
       const exists = masterDb.some(m => (m.name || '').toLowerCase().trim() === (v3Item.name || '').toLowerCase().trim());
-      if (!exists) {
+      if (!exists && !inSrd) {
         masterDb.push(v3Item);
         dbAdded++;
       }
@@ -7098,10 +7105,12 @@
         category: cat,
         slot: v3Item.slot && v3Item.slot !== 'None' ? v3Item.slot : cat,
         qty: 1,
-        weight: Number(v3Item.weight) || 0,
-        cost: Number(v3Item.cost) || 0,
-        desc: v3Item.benefit || v3Item.description || '',
+        weight: Number(v3Item.weightLb ?? v3Item.weight) || 0,
+        cost: Number(v3Item.priceGp ?? (v3Item.item && v3Item.item.price) ?? v3Item.cost) || 0,
+        desc: v3Item.benefit || (typeof v3Item.text === 'string' ? v3Item.text : '') || v3Item.description || '',
+        ...(v3Item.casterLevel || (v3Item.item && v3Item.item.casterLevel) ? { casterLevel: v3Item.casterLevel || v3Item.item.casterLevel } : {}),
         effects: Array.isArray(v3Item.effects) ? JSON.parse(JSON.stringify(v3Item.effects)) : [],
+        ...(Array.isArray(v3Item.powers) && v3Item.powers.length > 0 ? { powers: JSON.parse(JSON.stringify(v3Item.powers)) } : {}),
         ...(v3Item.weapon ? { weapon: JSON.parse(JSON.stringify(v3Item.weapon)) } : {}),
         ...(v3Item.armor ? { armor: JSON.parse(JSON.stringify(v3Item.armor)) } : {}),
         modes: Array.isArray(v3Item.modes) ? JSON.parse(JSON.stringify(v3Item.modes)) : [],
