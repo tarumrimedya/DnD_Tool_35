@@ -1973,6 +1973,12 @@ const RuleEngine = {
         if (!b || typeof b !== 'object') return;
         // "Gained at Level / HD" (race and template progression): the block applies from that character level on.
         if (!this.isLevelGainUnlocked(b, curCtx)) return;
+        // Recipient: only `self` blocks enter the bearer's totals. Allies / target / area blocks are surfaced as a badge.
+        const bRecipient = String(b.recipient || 'self').toLowerCase().trim();
+        if (bRecipient && bRecipient !== 'self') {
+          addBadge(`Grants to ${bRecipient}: ${b.summary || b.text || (b.type || 'effect') + ' block'}`);
+          return;
+        }
         const rawBType = b.type || (['when', 'while', 'table', 'carrier', 'stat', 'roll', 'attack', 'defense', 'effect', 'resource'].includes(String(b.kind || '').toLowerCase().trim()) ? b.kind : 'stat');
         const bType = String(rawBType || 'stat').toLowerCase().trim();
 
@@ -2179,7 +2185,7 @@ const RuleEngine = {
                 if (skSlug) canonT = `skill.${skSlug}.abilityMod`;
               }
               const toLow = String(b.toStat || '').toLowerCase().trim();
-              const scLow = String(b.scope || 'all').toLowerCase().trim();
+              const scLow = String(b.swapScope || b.scope || 'all').toLowerCase().trim();
               if (canonT === 'save.will.abilityMod' && toLow === 'con' && scLow === 'all') ruleFlags.conToWillSave = true;
               if (canonT === 'atk.melee.abilityMod' && toLow === 'dex' && scLow === 'finessable') ruleFlags.weaponFinesse = true;
               if (canonT === 'bab' && toLow === '@level') ruleFlags.babEqualsLevel = true;
@@ -2299,7 +2305,7 @@ const RuleEngine = {
               sourceLabel: effNote,
               source: b.source || out.name || out.id || 'V3 Entry',
               ...(isReplaceStatMode ? {
-                scope: b.scope || 'all',
+                swapScope: b.swapScope || b.scope || 'all',
                 fromStat: b.fromStat || null,
                 toStat: b.toStat || null
               } : {}),
@@ -3886,7 +3892,7 @@ const RuleEngine = {
           source: sourceEntry.name,
           sourceId: sourceEntry.id || null,
           affects: mod.affects || null,
-          scope: mod.scope || 'all',
+          swapScope: mod.swapScope || mod.scope || 'all',
           fromStat: mod.fromStat || null,
           toStat: mod.toStat || null,
           condition: mod.condition || null,
@@ -3902,7 +3908,7 @@ const RuleEngine = {
           source: sourceEntry.name,
           sourceId: sourceEntry.id || null,
           affects: mod.affects || null,
-          scope: mod.scope || 'all',
+          swapScope: mod.swapScope || mod.scope || 'all',
           fromStat: mod.fromStat || null,
           toStat: mod.toStat || null,
           condition: mod.condition || null,
@@ -3939,7 +3945,7 @@ const RuleEngine = {
 
     // Resolve Sub-Component Ability Modifiers (e.g. save.will.abilityMod, save.ref.abilityMod, ac.abilityMod)
     const resolveSubComponentMod = (slotKey, defaultMod) => {
-      const cands = (replacements[slotKey] || []).filter(c => !c.scope || c.scope === 'all' || c.scope === 'not_flat_footed' || c.scope === 'light_or_no_armor');
+      const cands = (replacements[slotKey] || []).filter(c => !c.swapScope || c.swapScope === 'all' || c.swapScope === 'not_flat_footed' || c.swapScope === 'light_or_no_armor');
       const addSum = cands.filter(c => c.op === 'add').reduce((acc, c) => acc + c.value, 0);
       const nonAdd = cands.filter(c => c.op !== 'add');
       let baseVal = defaultMod;
@@ -4495,7 +4501,7 @@ const RuleEngine = {
       'You are the D&D 3.5e Rule Master Lego Assembler.',
       'Clone and combine the provided Pure Canonical V3 Lego templates (`schemaVersion: 3`) and adapt only the domain parameters to match the user request. Output complete V3 entries that validate against `rule_master_ai_schema.json` (`RuleMasterEntryV3`).',
       'Mechanics live only in `effects[]` blocks (`stat`, `roll`, `attack`, `defense`, `effect`, `resource`, `when`, `table`, `carrier`), `choices[]` (@Choice inputs) and `powers[]` (activated abilities with `action`, `usage`, `save`, `effects[]`). Never emit legacy `modifiers`, `damageParts`, `defenses`, `resources` or `modes` arrays.',
-      '`stat` blocks use plural `targets: string[]` with canonical keys (e.g. `ac.deflection`, `atk.all`, `save.will`) plus `btype` and `mode` (`flat`, `stat`, `perCL`, `formula`, `replaceStat`); ability swaps use `mode: "replaceStat"` with `swapTarget`, `subOp`, `fromStat`, `toStat`, `scope`. Toggled or situational benefits go inside `when` branches (`flow: "while"`, `condText: "toggle:<key>"`, `"stance:<name>"` or `"@level >= N"`).',
+      '`stat` blocks use plural `targets: string[]` with canonical keys (e.g. `ac.deflection`, `atk.all`, `save.will`) plus `btype` and `mode` (`flat`, `stat`, `perCL`, `formula`, `replaceStat`); ability swaps use `mode: "replaceStat"` with `swapTarget`, `subOp`, `fromStat`, `toStat`, `swapScope`. Toggled or situational benefits go inside `when` branches (`flow: "while"`, `condText: "toggle:<key>"`, `"stance:<name>"` or `"@level >= N"`).',
       'For multi-benefit Homebrew, write each benefit as its own `effects[]` or `powers[]` element and describe it in `label`/`text`; all benefits stay active simultaneously.',
       `Matched Structural Lego Templates:\n${templatesJson}`,
       `User Rule / Ability Request:\n${userQuery}`
@@ -5023,7 +5029,7 @@ const RuleEngine = {
   // Resolve a V3 `replacements[slotKey]` list against a baseline value
   resolveSwapSlot(replacementsMap, slotKey, defaultVal, defaultLabel = '', scopeCtx = {}) {
     const rawList = (replacementsMap && Array.isArray(replacementsMap[slotKey])) ? replacementsMap[slotKey] : [];
-    const cands = rawList.filter(c => c && this.matchesSwapScope(c.scope, scopeCtx.weapon || null, Object.assign({}, scopeCtx, { entryChoice: c.entryChoice })));
+    const cands = rawList.filter(c => c && this.matchesSwapScope(c.swapScope, scopeCtx.weapon || null, Object.assign({}, scopeCtx, { entryChoice: c.entryChoice })));
     if (cands.length === 0) return { value: defaultVal, label: defaultLabel, addItems: [], changed: false, winningToStat: null };
     const addCands = cands.filter(c => c.op === 'add');
     const nonAdd = cands.filter(c => c.op !== 'add');
@@ -8721,10 +8727,10 @@ const RuleEngine = {
 
     const hasLegoSaveAbiMod = (saveKey) => (legoEval.entries || []).some(e =>
       (e.modifiers || []).concat((e.modes || []).filter(m => m && (m.actionType === 'passive' || m.isPassive)).flatMap(m => m.modifiers || []))
-        .some(m => m && String(m.target || '').toLowerCase() === `save.${saveKey}.abilitymod` && (!m.scope || m.scope === 'all' || m.scope === 'not_flat_footed' || m.scope === 'light_or_no_armor'))
+        .some(m => m && String(m.target || '').toLowerCase() === `save.${saveKey}.abilitymod` && (!m.swapScope || m.swapScope === 'all' || m.swapScope === 'not_flat_footed' || m.swapScope === 'light_or_no_armor'))
     );
 
-    const mindAffectingWillSwaps = ((legoEval?.replacements && legoEval.replacements['save.will.abilityMod']) || []).filter(c => c && c.scope === 'mind_affecting');
+    const mindAffectingWillSwaps = ((legoEval?.replacements && legoEval.replacements['save.will.abilityMod']) || []).filter(c => c && c.swapScope === 'mind_affecting');
     mindAffectingWillSwaps.forEach(c => {
       const delta = c.op === 'add' ? c.value : (c.op === 'replace' ? (c.value - wisMod) : Math.max(0, c.value - wisMod));
       if (delta !== 0) {

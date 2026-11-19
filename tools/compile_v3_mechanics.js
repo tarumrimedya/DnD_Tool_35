@@ -1397,7 +1397,7 @@ function compileFeatPatches(featsCore, featsSplat) {
     },
     'feat-weapon-finesse': {
       effects: [
-        { id: 'ef-wf', type: 'stat', mode: 'replaceStat', swapTarget: 'atk.melee.abilityMod', targets: ['atk.melee.abilityMod'], subOp: 'max', fromStat: 'str', toStat: 'dex', scope: 'finessable', formula: '@dexMod' }
+        { id: 'ef-wf', type: 'stat', mode: 'replaceStat', swapTarget: 'atk.melee.abilityMod', targets: ['atk.melee.abilityMod'], subOp: 'max', fromStat: 'str', toStat: 'dex', swapScope: 'finessable', formula: '@dexMod' }
       ]
     },
     'feat-power-attack': {
@@ -1422,12 +1422,12 @@ function compileFeatPatches(featsCore, featsSplat) {
     },
     'feat-shadow-blade': {
       effects: [
-        { id: 'ef-sb', type: 'stat', mode: 'replaceStat', swapTarget: 'dmg.melee.abilityMod', targets: ['dmg.melee.abilityMod'], subOp: 'add', fromStat: 'str', toStat: 'dex', scope: 'discipline_weapons', formula: '@dexMod' }
+        { id: 'ef-sb', type: 'stat', mode: 'replaceStat', swapTarget: 'dmg.melee.abilityMod', targets: ['dmg.melee.abilityMod'], subOp: 'add', fromStat: 'str', toStat: 'dex', swapScope: 'discipline_weapons', formula: '@dexMod' }
       ]
     },
     'feat-steadfast-determination': {
       effects: [
-        { id: 'ef-sd-swap', type: 'stat', mode: 'replaceStat', swapTarget: 'save.will.abilityMod', targets: ['save.will.abilityMod'], subOp: 'replace', fromStat: 'wis', toStat: 'con', scope: 'all', formula: '@conMod' },
+        { id: 'ef-sd-swap', type: 'stat', mode: 'replaceStat', swapTarget: 'save.will.abilityMod', targets: ['save.will.abilityMod'], subOp: 'replace', fromStat: 'wis', toStat: 'con', swapScope: 'all', formula: '@conMod' },
         switchBlock('ef-sd-nat1', 'noAutoFailFortSaveOnNat1', 'Do not automatically fail Fortitude saves on a natural 1', 'No Auto-Fail Fortitude Save on Natural 1')
       ]
     },

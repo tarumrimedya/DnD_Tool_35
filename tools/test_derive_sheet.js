@@ -6137,6 +6137,37 @@ function runDeriveSheetTests() {
     );
   }
 
+  // --- swapScope rename + recipient ---
+  {
+    const swCh = {
+      abilities: { str: 10, dex: 18, con: 10, int: 10, wis: 10, cha: 10 }, baseAbilities: { str: 10, dex: 18, con: 10, int: 10, wis: 10, cha: 10 },
+      levelProgression: [], bodySlots: {}, classes: 'Fighter 1', level: 1
+    };
+    const swapEntry = (field) => ({
+      id: 'swap-probe-' + field, name: 'Swap Probe ' + field, type: 'Feat',
+      effects: [Object.assign({ type: 'stat', mode: 'replaceStat', swapTarget: 'save.will.abilityMod', targets: ['save.will.abilityMod'], subOp: 'replace', fromStat: 'wis', toStat: 'dex', formula: '@dexMod' }, { [field]: 'all' })]
+    });
+    const swapFlag = (field) => { const c = JSON.parse(JSON.stringify(swCh)); c.feats = [swapEntry(field)]; RuleEngine.recalculateCharacter(c, []); return c.evaluatedSaves ? c.evaluatedSaves.will : null; };
+    const willNew = swapFlag('swapScope');
+    const willLegacy = swapFlag('scope');
+    check(
+      'swapScope: a replaceStat block reads `swapScope`, and the legacy `scope` key is still understood at the import boundary',
+      willNew !== null && willNew === willLegacy,
+      JSON.stringify({ willNew, willLegacy })
+    );
+    const recProbe = (recipient) => {
+      const o = RuleEngine.evaluateV3Entry({ id: 'rec-probe', name: 'Rec Probe', type: 'Feat', effects: [{ type: 'stat', targets: ['ac.total'], mode: 'flat', value: 2, btype: 'Morale', recipient, summary: '+2 morale to AC' }] }, { character: swCh });
+      return { mods: (o.modifiers || []).length, badges: (o.tacticalBadges || []).filter(x => /Grants to/.test(String(x))) };
+    };
+    const rSelf = recProbe(undefined);
+    const rAllies = recProbe('allies');
+    check(
+      'recipient: a `self` (default) block enters the totals; an `allies` block never does and is listed as "Grants to allies"',
+      rSelf.mods === 1 && rAllies.mods === 0 && rAllies.badges.length === 1 && /Grants to allies/.test(String(rAllies.badges[0])),
+      JSON.stringify({ rSelf, rAllies })
+    );
+  }
+
   CharStore.clearHistory();
 
   return { passed, elapsedMs: Date.now() - startMs };

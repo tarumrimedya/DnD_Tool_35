@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
   "version": "3.0.0",
-  "compendiumHash": "ee3b8baf44b165d9",
+  "compendiumHash": "dc9c6754c6525b81",
   "generatedAt": "2026-11-15T19:43:51.694Z",
   "totalEntries": 7987,
   "chunks": {
@@ -14,7 +14,7 @@
     "srd_feats.json": {
       "count": 468,
       "bytes": 859917,
-      "hash": "adbc004ba6bf362c",
+      "hash": "7145434e1874d453",
       "eagerLoad": true
     },
     "srd_classes_races.json": {
@@ -32,7 +32,7 @@
     "srd_spells.json": {
       "count": 695,
       "bytes": 1940779,
-      "hash": "3981b02cf676579c",
+      "hash": "cbb7709608b1b8e6",
       "eagerLoad": true
     },
     "srd_monsters.json": {
@@ -80,7 +80,7 @@
     "srd_feats_splat.json": {
       "count": 1767,
       "bytes": 2330390,
-      "hash": "b2f06ba7ec73de76",
+      "hash": "0e2f6cc190cf94f7",
       "eagerLoad": false
     },
     "srd_feats_epic.json": {

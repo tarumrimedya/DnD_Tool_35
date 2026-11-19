@@ -282,6 +282,11 @@
             "carrier"
           ]
         },
+        "recipient": {
+          "type": "string",
+          "enum": ["self", "allies", "target", "area"],
+          "description": "Who receives this block. Default `self`. Only `self` blocks enter the bearer's totals; any other recipient is listed as a badge (\"Grants to allies: ...\") and never changes the bearer's sheet. Values are evaluated at the source; the receiver applies them as a buff with a source."
+        },
         "condition": {
           "type": [
             "string",
@@ -640,7 +645,7 @@
             "@cl"
           ]
         },
-        "scope": {
+        "swapScope": {
           "type": "string",
           "enum": [
             "all",
@@ -675,7 +680,7 @@
               "subOp",
               "fromStat",
               "toStat",
-              "scope"
+              "swapScope"
             ]
           }
         },
@@ -1659,7 +1664,7 @@
             "subOp": "max",
             "fromStat": "dex",
             "toStat": "wis",
-            "scope": "all",
+            "swapScope": "all",
             "formula": "@wisMod",
             "condition": "within 30 ft."
           }

@@ -459,16 +459,16 @@
   const SWAP_SCOPE_LABEL = {}; SWAP_SCOPES.forEach((x) => { SWAP_SCOPE_LABEL[x[0]] = x[1]; });
 
   const LEGACY_SWITCH_TO_SWAP = {
-    weaponFinesse: { swapTarget: 'atk.melee.abilityMod', subOp: 'max', fromStat: 'str', toStat: 'dex', scope: 'finessable' },
-    conToWillSave: { swapTarget: 'save.will.abilityMod', subOp: 'replace', fromStat: 'wis', toStat: 'con', scope: 'all' },
-    babEqualsLevel: { swapTarget: 'bab', subOp: 'max', fromStat: 'bab', toStat: '@level', scope: 'all' },
-    shadowBlade: { swapTarget: 'dmg.melee.abilityMod', subOp: 'add', fromStat: 'str', toStat: 'dex', scope: 'discipline_weapons' },
-    'zen-archery': { swapTarget: 'atk.ranged.abilityMod', subOp: 'max', fromStat: 'dex', toStat: 'wis', scope: 'all' },
-    'intuitive-attack': { swapTarget: 'atk.melee.abilityMod', subOp: 'max', fromStat: 'str', toStat: 'wis', scope: 'simple_or_natural' },
-    'brutal-throw': { swapTarget: 'atk.thrown.abilityMod', subOp: 'max', fromStat: 'dex', toStat: 'str', scope: 'thrown' },
-    'force-of-personality': { swapTarget: 'save.will.abilityMod', subOp: 'max', fromStat: 'wis', toStat: 'cha', scope: 'mind_affecting' },
-    'insightful-reflexes': { swapTarget: 'save.ref.abilityMod', subOp: 'max', fromStat: 'dex', toStat: 'int', scope: 'all' },
-    'charming-the-arrow': { swapTarget: 'atk.ranged.abilityMod', subOp: 'max', fromStat: 'dex', toStat: 'cha', scope: 'bow_or_crossbow' }
+    weaponFinesse: { swapTarget: 'atk.melee.abilityMod', subOp: 'max', fromStat: 'str', toStat: 'dex', swapScope: 'finessable' },
+    conToWillSave: { swapTarget: 'save.will.abilityMod', subOp: 'replace', fromStat: 'wis', toStat: 'con', swapScope: 'all' },
+    babEqualsLevel: { swapTarget: 'bab', subOp: 'max', fromStat: 'bab', toStat: '@level', swapScope: 'all' },
+    shadowBlade: { swapTarget: 'dmg.melee.abilityMod', subOp: 'add', fromStat: 'str', toStat: 'dex', swapScope: 'discipline_weapons' },
+    'zen-archery': { swapTarget: 'atk.ranged.abilityMod', subOp: 'max', fromStat: 'dex', toStat: 'wis', swapScope: 'all' },
+    'intuitive-attack': { swapTarget: 'atk.melee.abilityMod', subOp: 'max', fromStat: 'str', toStat: 'wis', swapScope: 'simple_or_natural' },
+    'brutal-throw': { swapTarget: 'atk.thrown.abilityMod', subOp: 'max', fromStat: 'dex', toStat: 'str', swapScope: 'thrown' },
+    'force-of-personality': { swapTarget: 'save.will.abilityMod', subOp: 'max', fromStat: 'wis', toStat: 'cha', swapScope: 'mind_affecting' },
+    'insightful-reflexes': { swapTarget: 'save.ref.abilityMod', subOp: 'max', fromStat: 'dex', toStat: 'int', swapScope: 'all' },
+    'charming-the-arrow': { swapTarget: 'atk.ranged.abilityMod', subOp: 'max', fromStat: 'dex', toStat: 'cha', swapScope: 'bow_or_crossbow' }
   };
 
   function normalizeSwapTargetKey(raw) {
@@ -554,7 +554,7 @@
       stat: {
         targets: ['atk.all'], mode: 'flat', value: 1, btype: 'Morale',
         stat: 'chaMod', mult: 1, cap: 'none', capVal: 5,
-        swapTarget: 'atk.melee.abilityMod', subOp: 'max', fromStat: 'str', toStat: 'wis', scope: 'all',
+        swapTarget: 'atk.melee.abilityMod', subOp: 'max', fromStat: 'str', toStat: 'wis', swapScope: 'all',
         per: 3, min: 0, max: 5, formula: '', condition: ''
       },
       roll: {
@@ -647,7 +647,7 @@
     const from = String(m.fromStat || SWAP_DEFAULT_FROM[swapTgt] || 'str').toUpperCase();
     const toRaw = String(m.toStat || 'wis');
     const toLbl = (SWAP_SOURCE_LABEL[toRaw] || toRaw.toUpperCase()).replace(/\s*\(@.*?\)$/, '');
-    const sc = m.scope && m.scope !== 'all' ? ' [' + (SWAP_SCOPE_LABEL[m.scope] || m.scope).replace(/\s*\(.*?\)$/, '') + ']' : '';
+    const sc = m.swapScope && m.swapScope !== 'all' ? ' [' + (SWAP_SCOPE_LABEL[m.swapScope] || m.swapScope).replace(/\s*\(.*?\)$/, '') + ']' : '';
     const capTxt = m.subOp === 'add' && m.cap === 'classLevel' ? ' (cap @classLevel)' : (m.subOp === 'add' && m.cap === 'flat' ? ' (cap +' + num(m.capVal, 5) + ')' : '');
     const core = m.subOp === 'add'
       ? '+' + toLbl + capTxt + ' alongside ' + from + ' on ' + lbl
@@ -2324,7 +2324,8 @@
         o.subOp = b.subOp || 'max';
         o.fromStat = b.fromStat || SWAP_DEFAULT_FROM[swapTgt] || 'str';
         o.toStat = b.toStat || 'wis';
-        o.scope = b.scope || 'all';
+        o.swapScope = b.swapScope || b.scope || 'all';
+        delete o.scope;
         o.formula = swapSourceFormula(o.toStat);
         o.cap = o.subOp === 'add' ? exportModCap(b) : null;
       } else if (mode === 'stat') { o.formula = exportModFormula(b); o.cap = exportModCap(b); }
@@ -2625,7 +2626,7 @@
           subOp: sw.subOp,
           fromStat: sw.fromStat,
           toStat: sw.toStat,
-          scope: sw.scope || 'all',
+          swapScope: sw.swapScope || 'all',
           condition: ef.condition || ''
         });
       }
@@ -2640,7 +2641,8 @@
         normalized.subOp = normalized.subOp || normalized.op || 'max';
         normalized.fromStat = normalized.fromStat || SWAP_DEFAULT_FROM[swapTgt] || 'str';
         normalized.toStat = normalized.toStat || 'wis';
-        normalized.scope = normalized.scope || 'all';
+        normalized.swapScope = normalized.swapScope || normalized.scope || 'all';
+        delete normalized.scope;
       } else if (Array.isArray(normalized.targets)) {
         normalized.targets = normalized.targets.map(normTargetKey);
       } else if (normalized.target) {
@@ -4276,7 +4278,7 @@
         F('Component to Swap (A)', selGroups(p + '.swapTarget', swapTgt, SWAP_TARGET_GROUPS), 'lego-span-2') +
         F('Swap Rule', sel(p + '.subOp', m.subOp || 'max', SWAP_OPS, { narrow: true })) +
         F('With Source (B)', sel(p + '.toStat', m.toStat || 'wis', SWAP_SOURCES, { narrow: true })) +
-        F('Weapon / Roll Scope', sel(p + '.scope', m.scope || 'all', SWAP_SCOPES, { narrow: true })) +
+        F('Weapon / Roll Scope', sel(p + '.swapScope', m.swapScope || 'all', SWAP_SCOPES, { narrow: true })) +
         (isAdd ? F('Cap Mode', sel(p + '.cap', m.cap || 'none', [['none', 'No Cap'], ['classLevel', 'Cap @Class Lvl'], ['flat', 'Cap Max N']], { narrow: true })) : '') +
         (hasFlatCap ? F('Max Cap', inp(p + '.capVal', m.capVal == null ? 5 : m.capVal, { num: true })) : '') +
         F('Condition / Note (Optional)', inp(p + '.condition', m.condition || '', { ph: 'Optional situational note…' }), isAdd ? (hasFlatCap ? '' : 'lego-span-2') : 'lego-span-full')
@@ -5531,7 +5533,7 @@
         Object.assign(blk, {
           type: 'stat', mode: 'replaceStat', swapTarget: 'atk.ranged.abilityMod',
           targets: ['atk.ranged.abilityMod'], subOp: 'max', fromStat: 'dex', toStat: 'wis',
-          scope: 'all', cap: 'none', capVal: 5, condition: blk.condition || ''
+          swapScope: 'all', cap: 'none', capVal: 5, condition: blk.condition || ''
         });
         S.ui.cardOpen['b:' + blk.id] = true;
       }
@@ -5546,7 +5548,7 @@
         blk.subOp = blk.subOp || 'max';
         blk.fromStat = SWAP_DEFAULT_FROM[swapTgt] || blk.fromStat || 'str';
         blk.toStat = blk.toStat || 'wis';
-        blk.scope = blk.scope || 'all';
+        blk.swapScope = blk.swapScope || blk.scope || 'all'; delete blk.scope;
       }
     }
     if (/\.swapTarget$/.test(path)) {

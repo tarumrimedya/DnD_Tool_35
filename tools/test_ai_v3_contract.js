@@ -255,7 +255,7 @@ function runAiV3ContractTests() {
           check(swapTargets.has(b.swapTarget) && deepEqual(b.targets, [b.swapTarget]), `${label} ${at}: replaceStat swapTarget/targets mismatch`);
           check(swapOps.has(b.subOp), `${label} ${at}: unknown subOp "${b.subOp}"`);
           check(swapSources.has(b.fromStat) && swapSources.has(b.toStat), `${label} ${at}: unknown fromStat/toStat`);
-          check(swapScopes.has(b.scope), `${label} ${at}: unknown scope "${b.scope}"`);
+          check(swapScopes.has(b.swapScope), `${label} ${at}: unknown swapScope "${b.swapScope}"`);
         }
       }
       if (b.type === 'effect' && b.effectKind === 'ruleSwitch') {
