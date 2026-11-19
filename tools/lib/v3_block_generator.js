@@ -197,7 +197,7 @@ function checkFalsePositiveGuard(claim, entry, fullText, allMissingClaims) {
 
   // Reject temporary/activated duration clauses embedded inside passive bonus text unless entry is a Spell/Power
   const isPassiveContainer = !['Spell', 'Power', 'Consumable', 'Maneuver', 'Stance', 'Mystery', 'Utterance'].includes(entry.type);
-  if (isPassiveContainer && /\b(?:for\s+\d+\s+(?:rounds?|minutes?|hours?)|until\s+the\s+(?:start|end)\s+of\s+your\s+next\s+turn|before\s+the\s+start\s+of\s+your\s+next\s+turn)\b/i.test(phrase)) {
+  if (isPassiveContainer && /\b(?:for\s+\d+\s+(?:rounds?|minutes?|hours?)|until\s+the\s+(?:start|end|beginning)\s+of\s+(?:your|her|his)\s+next\s+(?:turn|action)|before\s+the\s+start\s+of\s+your\s+next\s+turn)\b/i.test(phrase)) {
     return 'timed-activated-clause';
   }
 

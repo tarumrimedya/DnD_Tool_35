@@ -1242,7 +1242,17 @@
     "save": "None; see text",
     "sr": true,
     "powerPointsCost": 15,
-    "effects": [],
+    "effects": [
+      {
+        "type": "stat",
+        "targets": [
+          "save.all"
+        ],
+        "mode": "flat",
+        "value": -8,
+        "btype": "Penalty"
+      }
+    ],
     "shortDescription": "Alters reality within power limits.",
     "text": "Bend reality lets you create nearly any type of effect. For example, bend reality can do any of the following:\nDuplicate any psion power of 6th level or lower, provided the power is not of a discipline prohibited to you.\nDuplicate any other power (but not a spell) of 5th level or lower, provided the power is not of a discipline prohibited to you.\nDuplicate any psion power of 5th level or lower, even if it’s of a prohibited discipline.\nDuplicate any other power (but not a spell) of 4th level or lower, even if it’s of a prohibited discipline.\nUndo the harmful effects of many powers, such as psionic dominate, geas/quest, or insanity.\nProduce any other effect whose power level is in line with the above effects, such as a single creature automatically hitting on its next attack or taking a -8 penalty on its next saving throw.\nA duplicated power allows saving throws and power resistance as normal (but the save DC is for a 8th-level power).\nWhen bend reality duplicates a power that has an XP cost, you must pay that cost or 300 XP, whichever is more. When bend reality duplicates a spell with a material component, you must pay additional XP equal to the value of the material component divided by 5.\nXP Cost: 300 XP or more (see above).",
     "tags": [
@@ -10188,7 +10198,17 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": 9,
-    "effects": [],
+    "effects": [
+      {
+        "type": "stat",
+        "targets": [
+          "save.will"
+        ],
+        "mode": "flat",
+        "value": 1,
+        "btype": "Untyped"
+      }
+    ],
     "shortDescription": "Cheat death by discorporating into nearby fire for one day.",
     "text": "You use your mastery of energy to cheat death. If you are within 30 feet of an open flame, you can use this power. Any damage that would reduce you to 0 hit points or lower instead has a chance to discorporate you. You attempt a Will save (DC 5 + damage dealt); if it succeeds, you simply break apart into dozens of flitting tongues of flame and vanish, along with all your gear and anything you are holding or carrying.\nOne day later, you reappear adjacent to an open flame nearest to the place where you discorporated, seeming to materialize from the fire (you choose where you appear along the perimeter of that open flame). While discorporated, you do not exist - you can do nothing, nor can any of your enemies do anything to you.\nAugment: For every 3 additional power points you spend, you gain a +1 bonus on your Will save to determine whether you discorporate.",
     "tags": [
@@ -17423,7 +17443,17 @@
     "save": "Will negates",
     "sr": true,
     "powerPointsCost": 7,
-    "effects": [],
+    "effects": [
+      {
+        "type": "stat",
+        "targets": [
+          "save.will"
+        ],
+        "mode": "flat",
+        "value": 5,
+        "btype": "Untyped"
+      }
+    ],
     "shortDescription": "See, hear, and potentially interact with subjects at a distance.",
     "text": "You send your mind across space and dimensions, forming it into a quasireal viewpoint from which you can see and hear some creature located at any distance from you, even if planar boundaries separate you. If the subject succeeds on a Will save, the remote viewing attempt fails, and you can’t attempt to view that creature again for at least 24 hours. The difficulty of the save depends on how well you know the subject and what sort of physical connection (if any) you have to that creature. Furthermore, if the subject is on another plane, it gets a +5 bonus on its Will save.\nIf the subject fails its Will save, your mind coalesces a quasi-real viewpoint near enough to the subject to see and hear the subject and its immediate surroundings (up 30 feet in all directions away from the subject).\nWhile the remote viewing lasts, your real body remains unmoving and unaware of your actual surroundings. On the other hand, your quasi-real viewpoint is treated in some ways as if it were an invisible ectoplasmic form of yourself, except as follows. This power is of the Scrying subdiscipline, but use the following information in place of the standard scrying sensor. As a quasi-real viewpoint, you can speak (though your voice is whispery).\nYou may potentially be sensed by the subject of your viewing (subjects who can see or sense invisible or hidden creatures automatically sense you; otherwise you make a Hide check with a +40 bonus to escape detection if immobile, or a +20 bonus if moving). You could be attacked (although if you become subject to dispel psionics, the remote viewing simply ends). If the subject moves, you can attempt to follow it at a speed of 20 feet, though if it gets farther than 30 feet from you (or you move farther than 30 feet from it), the power ends.\nYou can attempt to manifest one power through your quasi-real viewpoint, but you must make a Concentration check (DC 20 + level of the power you wish to manifest) to succeed. Manifesting (or attempting and failing to manifest) a power immediately ends the remote viewing.\nFurthermore, all powers from your quasi-real viewpoint cost twice the usual number of power points (you can’t exceed the power point limit set by your manifester level, so you are restricted to manifesting lower-level powers than you otherwise could). Power points you spend as a quasireal viewpoint are drained from your real body.\nXP Cost: 20 XP.",
     "tags": [

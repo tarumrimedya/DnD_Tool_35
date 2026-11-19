@@ -12871,7 +12871,17 @@
       "price": 10000,
       "casterLevel": 0
     },
-    "effects": [],
+    "effects": [
+      {
+        "type": "stat",
+        "targets": [
+          "save.will"
+        ],
+        "mode": "flat",
+        "value": 4,
+        "btype": "Insight"
+      }
+    ],
     "shortDescription": "Crystal Masks: Each of the various types of crystal masks fits over the face of any Medium or Small humanoid, with slits for eyes and nostrils. The mask is transparent, although it distorts the wearer's features. Leathe…",
     "text": "Crystal Masks: Each of the various types of crystal masks fits over the face of any Medium or Small humanoid, with slits for eyes and nostrils. The mask is transparent, although it distorts the wearer's features. Leather straps attached to small holes on the sides of a mask enable the owner to affix the mask to his face.\nCrystal masks confer special abilities or improved skills on their wearers.\nA crystal mask is treated as eyewear or goggles for the purpose of determining which items can be worn on the body.\nCrystal Mask of Detection: The wearer of a crystal mask of detection can make Search checks with a +10 competence bonus.\nModerate clairsentience; ML 7th; Craft Universal Item, creator must have 10 ranks in Search; Price 10,000 gp; Weight 1/2 lb.\nCrystal Mask of Discernment: The wearer of a crystal mask of discernment can make Sense Motive checks with a +10 insight bonus.\nModerate clairsentience; ML 7th; Craft Universal Item, creator must have 10 ranks in Sense Motive; Price 10,000 gp; Weight 1/2 lb.\nCrystal Mask of Dread: The wearer of a crystal mask of dread can attempt to frighten other beings to her will. The wearer makes all Intimidate checks with a +10 competence bonus.\nModerate clairsentience; ML 7th; Craft Universal Item, creator must have 10 ranks in Intimidate; Price 10,000 gp; Weight 1/2 lb.\nCrystal Mask of Insightful Detection: The wearer of a crystal mask of insightful detection can make Search checks and Spot checks checks with a +9 insight bonus.\nModerate clairsentience; ML 7th; Craft Universal Item, creator must have 9 ranks in both Search and Spot; Price 20,250 gp; Weight 1/2 lb.\nCrystal Mask of Knowledge: Each of the various crystal masks of knowledge grants the wearer a +5 competence bonus on a specific type of Knowledge check.\nFaint clairsentience; ML 3rd; Craft Universal Item, creator must have 5 ranks in the Knowledge skill of the appropriate type; Price 2,500 gp; Weight 1/2 lb.\nCrystal Mask of Languages: Each of the various crystal masks of language grants the wearer the ability to speak and write five different languages.\nFaint clairsentience; ML 3rd; Craft Universal Item, creator must have the Speak Language skill for each of five languages; Price 2,500 gp; Weight 1/2 lb.\nCrystal Mask of Mindarmor: A crystal mask of mindarmor grants the wearer a +4 insight bonus on all Will saving throws.\nFaint telepathy; ML 5th; Craft Universal Item, conceal thoughts; Price 10,667 gp; Weight 1/2 lb.\nCrystal Mask of Psionic Craft: The wearer of a crystal mask of psionic craft makes all Psicraft checks with a +10 competence bonus.\nModerate clairsentience; ML 7th; Craft Universal Item, creator must have 10 ranks in Psicraft; Price 10,000 gp; Weight 1/2 lb.",
     "tags": [
@@ -16979,7 +16989,29 @@
       "price": 8400,
       "casterLevel": 17
     },
-    "effects": [],
+    "effects": [
+      {
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "condKind": "situational",
+            "condText": "while within 30 feet of the flame",
+            "effects": [
+              {
+                "type": "stat",
+                "targets": [
+                  "save.all"
+                ],
+                "mode": "flat",
+                "value": 2,
+                "btype": "Morale"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "Candle of Invocation: Each of these special tapers is dedicated to one of the nine alignments. Simply burning the candle generates a favorable aura for the individual so doing if the candle's alignment matches that of t…",
     "text": "Candle of Invocation: Each of these special tapers is dedicated to one of the nine alignments. Simply burning the candle generates a favorable aura for the individual so doing if the candle's alignment matches that of the character. Characters of the same alignment as the burning candle add a +2 morale bonus on attack rolls, saving throws, and skill checks while within 30 feet of the flame.\nA cleric whose alignment matches the candle's operates as if two levels higher for purposes of determining spells per day if he burns the candle during or just prior to his spell preparation time. He can even cast spells normally unavailable to him, as if he were of that higher level, but only so long as the candle continues to burn. Except in special cases (see below), a candle burns for 4 hours.\nIn addition, burning a candle also allows the owner to cast a gate spell, the respondent being of the same alignment as the candle, but the taper is immediately consumed in the process. It is possible to extinguish the candle simply by blowing it out, so users often place it in a lantern to protect it from drafts and the like. Doing this doesn't interfere with its magical properties.\nStrong conjuration; CL 17th; Craft Wondrous Item, gate, creator must be same alignment as candle created; Price 8,400 gp; Weight 1/2 lb.",
     "tags": [
@@ -18626,7 +18658,26 @@
       "price": 0,
       "casterLevel": 0
     },
-    "effects": [],
+    "effects": [
+      {
+        "type": "stat",
+        "targets": [
+          "save.ref"
+        ],
+        "mode": "flat",
+        "value": 4,
+        "btype": "Untyped"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "save.all"
+        ],
+        "mode": "flat",
+        "value": -2,
+        "btype": "Penalty"
+      }
+    ],
     "shortDescription": "The Shadowstaff: This artifact was crafted centuries ago, weaving together the wispy strands of shadow itself into a twisted black staff. The Shadowstaff makes the wielder slightly shadowy and incorporeal, granting him…",
     "text": "The Shadowstaff: This artifact was crafted centuries ago, weaving together the wispy strands of shadow itself into a twisted black staff. The Shadowstaff makes the wielder slightly shadowy and incorporeal, granting him a +4 bonus to AC and Reflex saves (which stacks with any other bonuses). However, in bright light (such as that of the sun, but not a torch) or in absolute darkness, the wielder takes a -2 penalty on all attack rolls, saves, and checks.\nThe Shadowstaff also has these powers.\n\n• Summon Shadows: Three times per day the staff may summon 2d4 shadows. Immune to turning, they serve the wielder as if called by a summon monster V spell cast at 20th level.\n\n• Summon Nightshade: Once per month, the staff can summon a nightcrawler nightshade that serves the wielder as if called by a summon monster IX spell cast at 20th level.\n\n• Shadow Form: Three times per day the wielder can become a living shadow, with all the movement powers granted by the\n\ngaseous form spell.\n\n• Shadow Bolt: Three times per day the staff can project a ray attack that deals 10d6 points of cold damage to a single target. The shadow bolt has a range of 100 feet.\n\nThe Shield of the Sun: This +5 large shield, emblazoned with the symbol of the sun, allows the wielder to cast spells as if she were a 20th-level paladin with a Wisdom score of 20. The spells gained are cumulative with any existing spells per day that the character might have, even if she's already a paladin. The Shield of the Sun also grants spell resistance 15 to its wielder. It absorbs the first 10 points of damage from any energy attack (fire, cold, acid, electricity, or sonic). In return for all this, once per year the shield's owner must undertake a quest (no saving throw to avoid) at the behest of a lawful good deity.\nA character who is evil or chaotic (LE, NE, CE, CN, CG) gains four negative levels if she attempts to use this artifact. Although these negative levels never results in actual level loss, they remain as long as the shield is in hand and cannot be overcome in any way (including restoration spells). The negative levels disappear when the shield is stowed or leaves the wearer's possession.",
     "tags": [
@@ -19864,6 +19915,15 @@
         "mode": "flat",
         "value": 6,
         "btype": "Competence"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "save.all"
+        ],
+        "mode": "flat",
+        "value": -1,
+        "btype": "Penalty"
       }
     ],
     "shortDescription": "Deck of Many Things: A deck of many things (both beneficial and baneful) is usually found in a box or leather pouch. Each deck contains a number of cards or plaques made of ivory or vellum. Each is engraved with glyphs,…",
@@ -20355,6 +20415,15 @@
         "mode": "Spell Resistance",
         "what": "SR 32",
         "value": 32
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "save.all"
+        ],
+        "mode": "flat",
+        "value": 5,
+        "btype": "Resistance"
       }
     ],
     "shortDescription": "Invulnerability: When held, this rod grants its wielder the following powers. +5 enhancement bonus to natural armor. +5 resistance bonus on saving throws. Damage reduction 15/adamantine. Immunity to critical hits. Spell…",
@@ -23444,6 +23513,27 @@
         "source": "Holy",
         "count": 2,
         "die": "d6"
+      },
+      {
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "condKind": "situational",
+            "condText": "vs. spells with the evil descriptor or spells cast by evil characters",
+            "effects": [
+              {
+                "type": "stat",
+                "targets": [
+                  "save.all"
+                ],
+                "mode": "flat",
+                "value": 5,
+                "btype": "Sacred"
+              }
+            ]
+          }
+        ]
       }
     ],
     "ruleFlags": {
@@ -24455,6 +24545,27 @@
         "source": "Unholy",
         "count": 2,
         "die": "d6"
+      },
+      {
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "condKind": "situational",
+            "condText": "vs. spells with the good descriptor or spells cast by good characters",
+            "effects": [
+              {
+                "type": "stat",
+                "targets": [
+                  "save.all"
+                ],
+                "mode": "flat",
+                "value": 5,
+                "btype": "Profane"
+              }
+            ]
+          }
+        ]
       }
     ],
     "ruleFlags": {
@@ -24796,7 +24907,29 @@
       "price": 1000,
       "casterLevel": 10
     },
-    "effects": [],
+    "effects": [
+      {
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "condKind": "situational",
+            "condText": "vs. divination spells",
+            "effects": [
+              {
+                "type": "stat",
+                "targets": [
+                  "save.all"
+                ],
+                "mode": "flat",
+                "value": -10,
+                "btype": "Penalty"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "Amulet of Inescapable Location: This device is typically worn on a chain or as a brooch. It appears, to magical analysis, to prevent location, scrying or detection or influence by Detect Thoughts or telepathy. It seems…",
     "text": "Amulet of Inescapable Location: This device is typically worn on a chain or as a brooch. It appears, to magical analysis, to prevent location, scrying or detection or influence by Detect Thoughts or telepathy. It seems to be an amulet of proof against detection and location. Actually, the amulet gives the wearer a -10 penalty on all saves against divination spells.\n\nApplying the saving throw modifier must be manually done by GM as this is cursed item.\n\nModerate abjuration; CL 10th; Create Wondrous Item, Bestow Curse; Price 1,000 gp.",
     "tags": [
@@ -32013,6 +32146,27 @@
         "type": "defense",
         "mode": "Sense / Movement",
         "what": "Darkvision 60 ft."
+      },
+      {
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "condKind": "situational",
+            "condText": "vs. poison, spells, or spell-like effects",
+            "effects": [
+              {
+                "type": "stat",
+                "targets": [
+                  "save.all"
+                ],
+                "mode": "flat",
+                "value": 2,
+                "btype": "Resistance"
+              }
+            ]
+          }
+        ]
       }
     ],
     "shortDescription": "Belt of Dwarvenkind: This belt gives the wearer a +4 competence bonus on Charisma checks and Charisma-based skill checks as they relate to dealing with dwarves, a +2 competence bonus on similar checks when dealing with…",
@@ -32870,7 +33024,29 @@
       "price": 14000,
       "casterLevel": 6
     },
-    "effects": [],
+    "effects": [
+      {
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "condKind": "situational",
+            "condText": "vs. poison from spiders",
+            "effects": [
+              {
+                "type": "stat",
+                "targets": [
+                  "save.fort"
+                ],
+                "mode": "flat",
+                "value": 2,
+                "btype": "Luck"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "Cloak of Arachnida: This black garment, embroidered with a weblike pattern in silk, gives the wearer the ability to climb as if a spider climb spell had been placed upon her. In addition, the cloak grants her immunity t…",
     "text": "Cloak of Arachnida: This black garment, embroidered with a weblike pattern in silk, gives the wearer the ability to climb as if a spider climb spell had been placed upon her. In addition, the cloak grants her immunity to entrapment by web spells or webs of any sort-she can actually move in webs at half her normal speed. Once per day, the wearer of this cloak can cast web. She also gains a +2 luck bonus on all Fortitude saves against poison from spiders.\nFaint conjuration and transmutation; CL 6th; Craft Wondrous Item, spider climb, web; Price 14,000 gp; Weight 1 lb.",
     "tags": [
@@ -44429,6 +44605,27 @@
         "die": "d8",
         "scaling": "formula",
         "tempHpFormula": "1d8+3"
+      },
+      {
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "condKind": "situational",
+            "condText": "vs. fear effects, plus 1d8+3 temporary hit points for 3 minutes",
+            "effects": [
+              {
+                "type": "stat",
+                "targets": [
+                  "save.all"
+                ],
+                "mode": "flat",
+                "value": 1,
+                "btype": "Morale"
+              }
+            ]
+          }
+        ]
       }
     ],
     "ruleFlags": {

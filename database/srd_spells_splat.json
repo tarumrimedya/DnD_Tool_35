@@ -1264,7 +1264,29 @@
     "duration": "Instantaneous",
     "save": "Will negates",
     "sr": true,
-    "effects": [],
+    "effects": [
+      {
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "condKind": "situational",
+            "condText": "vs. mind-affecting effects you create",
+            "effects": [
+              {
+                "type": "stat",
+                "targets": [
+                  "save.all"
+                ],
+                "mode": "flat",
+                "value": -2,
+                "btype": "Penalty"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "Fascinate one creature for 3 rounds; it takes -2 on saves against your mind-affecting effects.",
     "text": "The target is fascinated for 3 rounds and takes a -2 penalty on saves against mind-affecting effects you create.",
     "tags": [
@@ -1352,7 +1374,29 @@
     "duration": "Permanent",
     "save": "None",
     "sr": false,
-    "effects": [],
+    "effects": [
+      {
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "condKind": "situational",
+            "condText": "vs. scrying by other dragonblooded creatures",
+            "effects": [
+              {
+                "type": "stat",
+                "targets": [
+                  "save.all"
+                ],
+                "mode": "flat",
+                "value": 2,
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "Place an invisible personal mark you can scry on and locate.",
     "text": "Works like arcane mark with two additions: the marked object or creature counts as familiar to you for divination (scrying), and three times per day as a swift action you learn its direction and distance (nothing if it is dead or on another plane). Dragonblood subtype: the mark grants a +2 bonus on saves against scrying by other dragonblooded creatures.",
     "tags": [
