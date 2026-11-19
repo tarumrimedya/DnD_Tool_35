@@ -1534,6 +1534,11 @@
         "flag": "drow-eyes",
         "label": "Drow Eyes",
         "text": "You gain darkvision 120 ft."
+      },
+      {
+        "type": "defense",
+        "mode": "Sense / Movement",
+        "what": "Darkvision 120 ft."
       }
     ],
     "text": "You gain darkvision 120 ft.",

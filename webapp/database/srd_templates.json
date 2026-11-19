@@ -1646,6 +1646,12 @@
         "type": "defense",
         "mode": "Sense / Movement",
         "what": "Darkvision 60 ft."
+      },
+      {
+        "type": "defense",
+        "mode": "Energy Resistance",
+        "what": "Electricity",
+        "value": 10
       }
     ],
     "ruleFlags": {
@@ -1789,6 +1795,12 @@
         "dmgType": "Slashing",
         "usesHands": true,
         "summary": "2 Claw 1d4 slashing natural weapon (primary)."
+      },
+      {
+        "type": "defense",
+        "mode": "Energy Resistance",
+        "what": "Fire",
+        "value": 10
       }
     ],
     "ruleFlags": {
@@ -2303,6 +2315,12 @@
         "dmgType": "Bludgeoning",
         "usesHands": true,
         "summary": "Slam 1d6 bludgeoning natural weapon (primary)."
+      },
+      {
+        "type": "defense",
+        "mode": "Energy Resistance",
+        "what": "Electricity",
+        "value": 10
       }
     ],
     "ruleFlags": {
@@ -2596,6 +2614,12 @@
         "type": "effect",
         "effectKind": "feat",
         "targetId": "feat-automatic-quicken-spell"
+      },
+      {
+        "type": "defense",
+        "mode": "Energy Resistance",
+        "what": "Sonic",
+        "value": 20
       }
     ],
     "ruleFlags": {
@@ -4533,6 +4557,12 @@
         "type": "defense",
         "mode": "Sense / Movement",
         "what": "Low-Light Vision"
+      },
+      {
+        "type": "defense",
+        "mode": "Energy Resistance",
+        "what": "Cold",
+        "value": 5
       }
     ],
     "ruleFlags": {
@@ -4696,6 +4726,12 @@
         "kind": "Fast Healing",
         "count": 20,
         "die": "flat"
+      },
+      {
+        "type": "defense",
+        "mode": "Energy Resistance",
+        "what": "Fire",
+        "value": 10
       }
     ],
     "ruleFlags": {
@@ -4831,6 +4867,12 @@
         "type": "defense",
         "mode": "Sense / Movement",
         "what": "Darkvision 60 ft."
+      },
+      {
+        "type": "defense",
+        "mode": "Energy Resistance",
+        "what": "Electricity",
+        "value": 25
       }
     ],
     "ruleFlags": {
@@ -4931,6 +4973,11 @@
       {
         "type": "defense",
         "sr": "10 + @level"
+      },
+      {
+        "type": "defense",
+        "mode": "Sense / Movement",
+        "what": "Blindsight 300 ft."
       }
     ],
     "ruleFlags": {
@@ -5112,6 +5159,12 @@
         "type": "defense",
         "mode": "Sense / Movement",
         "what": "Darkvision 60 ft."
+      },
+      {
+        "type": "defense",
+        "mode": "Energy Resistance",
+        "what": "Fire",
+        "value": 5
       }
     ],
     "ruleFlags": {
@@ -5251,6 +5304,12 @@
         "type": "defense",
         "mode": "Sense / Movement",
         "what": "Darkvision 60 ft."
+      },
+      {
+        "type": "defense",
+        "mode": "Energy Resistance",
+        "what": "Fire",
+        "value": 6
       }
     ],
     "ruleFlags": {

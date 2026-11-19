@@ -1579,6 +1579,12 @@
         "die": "d6",
         "scaling": "flat",
         "source": "Haze of Smoldering Stone"
+      },
+      {
+        "type": "defense",
+        "mode": "Energy Resistance",
+        "what": "Fire",
+        "value": 3
       }
     ],
     "shortDescription": "4d6 bludgeoning and 8d6 fire in a 60-ft. cone.",
@@ -1796,6 +1802,12 @@
         "max": 25,
         "dice": "(min(25, @cl))d6",
         "source": "Burst of Glacial Wrath"
+      },
+      {
+        "type": "defense",
+        "mode": "Energy Resistance",
+        "what": "Cold",
+        "value": 5
       }
     ],
     "shortDescription": "1d6 cold per caster level (max 25d6) in a 30-ft. cone; creatures reduced below 0 hp freeze solid.",
@@ -2504,7 +2516,26 @@
     "save": "None",
     "sr": false,
     "buffTargetMode": "self",
-    "effects": [],
+    "effects": [
+      {
+        "type": "defense",
+        "mode": "Energy Resistance",
+        "what": "Fire",
+        "value": 30
+      },
+      {
+        "type": "defense",
+        "mode": "Energy Resistance",
+        "what": "Cold",
+        "value": 30
+      },
+      {
+        "type": "defense",
+        "mode": "Energy Resistance",
+        "what": "Acid",
+        "value": 30
+      }
+    ],
     "shortDescription": "Gain a breath weapon and a defense based on your favored element.",
     "text": "You gain a 15-ft. cone breath weapon (standard action, usable every 1d4 rounds, no SR) and a defense by favored element: Earth: slow 1d6 rounds (Will negates), DR 5/adamantine. Fire: 7d6 fire (Reflex half), fire resistance 30. Metal: paralysis 1 round (Will negates), DR 5/adamantine. Water: 7d6 cold (Reflex half), cold resistance 30. Wood: 7d6 acid (Reflex half), acid resistance 30.",
     "tags": [

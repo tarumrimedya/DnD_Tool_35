@@ -18027,7 +18027,19 @@
       "price": 0,
       "casterLevel": 0
     },
-    "effects": [],
+    "effects": [
+      {
+        "type": "defense",
+        "mode": "Sense / Movement",
+        "what": "Low-Light Vision"
+      },
+      {
+        "type": "defense",
+        "mode": "Energy Resistance",
+        "what": "Cold",
+        "value": 30
+      }
+    ],
     "shortDescription": "Ring of Nine Facets: This ring is set with a gem of nine facets, each one in-scribed with a different incomprehensible rune. Each day at sunrise, the gem turns to display a different facet. The active facet determines t…",
     "text": "Ring of Nine Facets: This ring is set with a gem of nine facets, each one in-scribed with a different incomprehensible rune. Each day at sunrise, the gem turns to display a different facet. The active facet determines the Ring's power for that day. Each day, roll 1d10 to determine which facet (and thus which power) is active.\n\n1d10\n|\nActive Facet Power\n|\n\n1\n|\nWearer is immune to disease\n|\n\n2\n|\nWearer needs no air to survive\n|\n\n3\n|\nWearer gains +5 natural armor bonus\n|\n\n4\n|\nWearer gains low-light vision\n|\n\n5\n|\nWearer gains fast healing 1\n|\n\n6\n|\nWearer can fly at will\n|\n\n7\n|\nWearer gains cold resistance 30\n|\n\n8\n|\nWearer gains freedom of movement\n|\n\n9\n|\nWearer gains +5 resistance bonus on saving throws\n|\n\n10\n|\nWearer may select which facet is active\n|\n\nThe wearer of the Ring can, with a great deal of mental exertion, attempt to change the active facet away from one he or she does not desire. This requires a full-round action and a Concentration check (DC 50), and deals 2d6 points of nonlethal damage regardless of success. If the save is successful, the new facet is determined randomly. If the Ring is removed, the former wearer takes 2d6 points of nonlethal damage each minute until it is replaced or until his or her nonlethal damage exceeds his or her current hit points (though the nonlethal damage resumes again immediately when the former wearer regains consciousness).",
     "tags": [
@@ -23696,7 +23708,14 @@
       "price": 125000,
       "casterLevel": 13
     },
-    "effects": [],
+    "effects": [
+      {
+        "type": "defense",
+        "mode": "Energy Resistance",
+        "what": "Fire",
+        "value": 30
+      }
+    ],
     "shortDescription": "Helm of Brilliance: This normal-looking helm takes its true form and manifests its powers when the user dons it and speaks the command word. Made of brilliant silver and polished steel, a newly created helm is set with…",
     "text": "Helm of Brilliance: This normal-looking helm takes its true form and manifests its powers when the user dons it and speaks the command word. Made of brilliant silver and polished steel, a newly created helm is set with large magic gems: ten diamonds, twenty rubies, thirty fire opals, and forty opals. When struck by bright light, the helm scintillates and sends forth reflective rays in all directions from its crownlike, gem-tipped spikes. The jewels' functions are as follows:\n\n• Diamond: Prismatic spray (save DC 20)\n\n• Ruby: Wall of fire\n\n• Fire opal: fireball (10d6, Reflex DC 20 half )\n\n• Opal: Daylight\n\nThe helm may be used once per round, but each gem can perform its spell-like power just once. Until all its jewels are depleted, a helm of brilliance also has the following magical properties when activated.\n\n• It emanates a bluish light when undead are within 30 feet. This light causes 1d6 points of damage per round to all such creatures within that range.\n\n• The wearer may command any weapon he wields to become a flaming weapon. This is in addition to whatever abilities the weapon may already have (unless the weapon already is a flaming weapon). The command takes 1 round to take effect.\n\n• The helm provides fire resistance 30. This protection does not stack with similar protection from other sources.\n\nOnce all its jewels have lost their magic, the helm loses its powers and the gems turn to worthless powder. Removing a jewel destroys it.\nIf a creature wearing the helm is damaged by magical fire (after the fire protection is taken into account) and fails an additional DC 15 Will save, the remaining gems on the helm overload and detonate. Remaining diamonds become prismatic sprays that each randomly target a creature within range (possibly the wearer), rubies become straight-line walls of fire extending outward in a random direction from the helm wearer, and fire opals become fireballs centered on the helm wearer. The opals and the helm itself are destroyed.\nStrong varied; CL 13th; Craft Wondrous Item, detect undead, fireball, flame blade, light, prismatic spray, protection from energy, wall of fire; Price 125,000 gp; Weight 3 lb.",
     "tags": [
@@ -26537,6 +26556,11 @@
         "mode": "flat",
         "value": 10,
         "btype": "Competence"
+      },
+      {
+        "type": "defense",
+        "mode": "Sense / Movement",
+        "what": "Darkvision 120 ft."
       }
     ],
     "shortDescription": "Robe of Eyes: This valuable garment appears to be a normal robe until it is put on. Its wearer is able to see in all directions at the same moment due to scores of visible, magical eyelike patterns that adorn the robe.…",
@@ -30593,7 +30617,13 @@
       "price": 3800,
       "casterLevel": 11
     },
-    "effects": [],
+    "effects": [
+      {
+        "type": "defense",
+        "mode": "Sense / Movement",
+        "what": "Darkvision 60 ft."
+      }
+    ],
     "shortDescription": "Figurines of Wondrous Power: Each of the several kinds of figurines of wondrous power appears to be a miniature statuette of a creature an inch or so high (with one exception). When the figurine is tossed down and the c…",
     "text": "Figurines of Wondrous Power: Each of the several kinds of figurines of wondrous power appears to be a miniature statuette of a creature an inch or so high (with one exception). When the figurine is tossed down and the correct command word spoken, it becomes a living creature of normal size (except when noted otherwise below). The creature obeys and serves its owner. Unless stated otherwise, the creature understands Common but does not speak.\nIf a figurine of wondrous power is broken or destroyed in its statuette form, it is forever ruined. All magic is lost, its power departed. If slain in animal form, the figurine simply reverts to a statuette that can be used again at a later time.\nBronze Griffon: When animated, a bronze griffon acts in all ways like a normal griffon under the command of its possessor. The item can be used twice per week for up to 6 hours per use. When 6 hours have passed or when the command word is spoken, the bronze griffon once again becomes a tiny statuette.\nModerate transmutation; CL 11th; Craft Wondrous Item, animate objects; Price 10,000 gp.\nEbony Fly: When animated, an ebony fly is the size of a pony and has all the statistics of a hippogriff but can make no attacks. The item can be used three times per week for up to 12 hours per use. When 12 hours have passed or when the command word is spoken, the ebony fly again becomes a tiny statuette.\nModerate transmutation; CL 11th; Craft Wondrous Item, animate objects; Price 10,000 gp.\nGolden Lions: These figurines come in pairs. They become normal adult male lions. If slain in combat, the lions cannot be brought back from statuette form for one full week. Otherwise, they can be used once per day for up to 1 hour. They enlarge and shrink upon speaking the command word.\nModerate transmutation; CL 11th; Craft Wondrous Item, animate objects; Price 16,500 gp.\nIvory Goats: These figurines come in threes. Each goat of this trio looks slightly different from the others, and each has a different function:\n\n• The Goat of Traveling: This statuette provides a speedy and enduring mount equal to that of a heavy horse in every way except appearance. The goat can travel for a maximum of one day each week-continuously or in any combination of periods totaling 24 hours. At this point, or when the command word is uttered, it returns to its statuette form for not less than one day before it can again be used.\n\n• The Goat of Travail: This statuette becomes an enormous creature, larger than a bull, with the statistics of a nightmare except for the addition of a pair of wicked horns of exceptional size (damage 1d8+4 for each horn). If it is charging to attack, it may only use its horns (but add 6 points of damage to each successful attack in that round). It can be called to life just once per month for up to 12 hours at a time.\n\n• The Goat of Terror: When called upon with the proper command word, this statuette becomes a destrier-like mount, with the statistics of a light warhorse. However, its rider can employ the goat's horns as weapons (one horn as a +3 heavy lance, the other as a +5 longsword). When ridden in an attack against an opponent, the goat of terror radiates fear as the spell in a 30-foot radius (Will DC 16 partial). It can be used once every two weeks for up to 3 hours per use.\n\nModerate transmutation; CL 11th; Craft Wondrous Item, animate objects; Price 21,000 gp.\nMarble Elephant: This is the largest of the figurines, the statuette being about the size of a human hand. Upon utterance of the command word, a marble elephant grows to the size and specifications of a true elephant. The animal created from the statuette is fully obedient to the figurine's owner, serving as a beast of burden, a mount, or a combatant. The statuette can be used four times per month for up to 24 hours at a time.\nModerate transmutation; CL 11th; Craft Wondrous Item, animate objects; Price 17,000 gp.\nObsidian Steed: This figurine appears to be a small, shapeless lump of black stone. Only careful inspection reveals that it vaguely resembles some form of quadruped. On command, the near-formless piece of obsidian becomes a fantastic mount. Treat it as a heavy warhorse with the following additional powers usable once per round at will: overland flight, plane shift, and ethereal jaunt. The steed allows itself to be ridden, but if the rider is of good alignment, the steed is 10% likely per use to carry him to the lower planes and then return to its statuette form. The statuette can be used once per week for one continuous period of up to 24 hours. Note that when an obsidian steed becomes ethereal or plane shifts, its rider and his gear follow suit.\nThus, the user can travel to other planes via this means.\nStrong conjuration and transmutation; CL 15th; Craft Wondrous Item, animate objects, etherealness, fly, plane shift; Price 28,500 gp.\nOnyx Dog: When commanded, this statuette changes into a creature with the same properties as a riding dog except that it is endowed with an Intelligence of 8, can communicate in Common, and has exceptional olfactory and visual abilities. (It has the scent ability and adds +4 to its Spot and Search checks.) It has 60-foot darkvision, and it can see invisibility. An onyx dog can be used once per week for up to 6 hours. It obeys only its owner.\nModerate transmutation; CL 11th; Craft Wondrous Item, animate objects; Price 15,500 gp.\nSerpentine Owl: This figurine becomes either a normal-sized horned owl or a giant owl according to the command word used. The transformation can take place once per day, with a maximum duration of 8 continuous hours. However, after three transformations into giant owl form, the statuette loses all its magical properties. The owl communicates with its owner by telepathic means, informing her of all it sees and hears. (Remember the limitations of its Intelligence.)\nModerate transmutation; CL 11th; Craft Wondrous Item, animate objects; Price 9,100 gp.\nSilver Raven: This silver figurine turns into a raven on command (but it retains its metallic consistency, which gives it hardness 10). Another command sends it off into the air, bearing a message just like a creature affected by an animal messenger spell. If not commanded to carry a message, the raven obeys the commands of its owner, although it has no special powers or telepathic abilities. It can maintain its nonfigurine status for only 24 hours per week, but the duration need not be continuous.\nFaint enchantment and transmutation; CL 6th; Craft Wondrous Item, animal messenger, animate objects; Price 3,800 gp.",
     "tags": [
@@ -31978,6 +32008,11 @@
         "mode": "flat",
         "value": 2,
         "btype": "Enhancement"
+      },
+      {
+        "type": "defense",
+        "mode": "Sense / Movement",
+        "what": "Darkvision 60 ft."
       }
     ],
     "shortDescription": "Belt of Dwarvenkind: This belt gives the wearer a +4 competence bonus on Charisma checks and Charisma-based skill checks as they relate to dealing with dwarves, a +2 competence bonus on similar checks when dealing with…",
@@ -32359,6 +32394,12 @@
         "source": "Flaming",
         "count": 1,
         "die": "d6"
+      },
+      {
+        "type": "defense",
+        "mode": "Energy Resistance",
+        "what": "Fire",
+        "value": 30
       }
     ],
     "ruleFlags": {
@@ -35999,6 +36040,18 @@
         "source": "Shock",
         "count": 1,
         "die": "d6"
+      },
+      {
+        "type": "defense",
+        "mode": "Energy Resistance",
+        "what": "Electricity",
+        "value": 30
+      },
+      {
+        "type": "defense",
+        "mode": "Energy Resistance",
+        "what": "Sonic",
+        "value": 30
       }
     ],
     "ruleFlags": {
