@@ -442,7 +442,29 @@
     "save": "Fortitude half",
     "sr": true,
     "powerPointsCost": 17,
-    "effects": [],
+    "effects": [
+      {
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "condKind": "situational",
+            "condText": "made to appear as that creature during that time",
+            "effects": [
+              {
+                "type": "stat",
+                "targets": [
+                  "skill.disguise"
+                ],
+                "mode": "flat",
+                "value": 10,
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "Incorporate creature into your own body.",
     "text": "Your pointing finger turns black as obsidian. A creature touched by you is partially assimilated into your form and takes 20d6 points of damage. Any creature reduced to 0 or fewer hit points by this power is killed, entirely assimilated into your form, leaving behind only a trace of fine dust. An assimilated creature’s equipment is unaffected.\nA creature that is partially assimilated into your form (that is, a creature that has at least 1 hit point following your use of this power) grants you a number of temporary hit points equal to half the damage you dealt for 1 hour.\nA creature that is completely assimilated grants you a number of temporary hit points equal to the damage you dealt and a +4 bonus to each of your ability scores for 1 hour. If the assimilated creature knows psionic powers, you gain knowledge of one of its powers for 1 hour. You gain some semblance of a creature you completely assimilate for 1 hour, granting you a +10 bonus on Disguise checks made to appear as that creature during that time.",
     "tags": [
@@ -3157,7 +3179,29 @@
     "save": "Will negates (harmless)",
     "sr": true,
     "powerPointsCost": 1,
-    "effects": [],
+    "effects": [
+      {
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "condKind": "situational",
+            "condText": "vs. those attempting to discern its true intentions with sense motive",
+            "effects": [
+              {
+                "type": "stat",
+                "targets": [
+                  "skill.bluff"
+                ],
+                "mode": "flat",
+                "value": 10,
+                "btype": "Circumstance"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "You conceal your motives.",
     "text": "You protect the subject’s thoughts from analysis. While the duration lasts, the subject gains a +10 circumstance bonus on Bluff checks against those attempting to discern its true intentions with Sense Motive. It also gains a +4 bonus on its saving throw against any power or spell used to read its mind (such as read thoughts or mind probe).",
     "tags": [
@@ -3743,7 +3787,17 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": 1,
-    "effects": [],
+    "effects": [
+      {
+        "type": "stat",
+        "targets": [
+          "skill.hide"
+        ],
+        "mode": "flat",
+        "value": 1,
+        "btype": "Circumstance"
+      }
+    ],
     "shortDescription": "Adjust ambient light levels.",
     "text": "By manipulating the ambient light level, you can decrease or increase the illumination of an area. The change in illumination can be gradual (taking as long as 1 minute) or sudden (occurring immediately when you manifest this power). You can alter the level of illumination from its original level at any time during the power’s duration.\nDecrease: You can decrease the illumination of an area by as little as 5% (barely perceptible) or as much as 100% (total darkness). If you decrease the light by 50% or more, the visual ability of creatures that depend on light to see declines accordingly.If you decrease the ambient light in an area by 100%, even those with lowlight vision are unable to see within the affected area. For each 25% decrease in ambient light, characters in the area gain a cumulative +1 circumstance bonus on Hide checks (to a maximum of +4 when all the light is gone).\nIncrease: You can increase the illumination of an area by as little as 5% (barely perceptible) or as much as 100%. If you increase the light by 50% or more, the visual ability of creatures that depend on light to see improves accordingly.\nYou can use this power to increase the illumination of an area by 200%� (improving visual abilities accordingly), but in such a case the power’s duration is only 1 round.",
     "tags": [
@@ -3880,7 +3934,18 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": 3,
-    "effects": [],
+    "effects": [
+      {
+        "type": "stat",
+        "targets": [
+          "skill.listen",
+          "skill.move-silently"
+        ],
+        "mode": "flat",
+        "value": 4,
+        "btype": "Circumstance"
+      }
+    ],
     "shortDescription": "Create very specific sounds.",
     "text": "You shape and alter existing sounds. You can target one sound, such as a person speaking or singing, or a group of related sounds, such as the patter of many raindrops or the tramp of soldiers passing by. A sound as quiet as a snapping finger can be controlled. You can substitute any sound you have heard for the target sound. If you attempt to exactly duplicate the voice of a specific individual, or an inherently terrifying sound (such as a dragon’s roar), you must succeed on a Bluff check with a +5 circumstance bonus opposed by the intended listener’s Sense Motive check to avoid arousing suspicion.\nYou can entirely muffle a noise or magnify a sound to such loudness that it drowns out all other conversation in the immediate area. In this way, you can provide yourself or any with a +4 circumstance bonus on Move Silently and Listen checks.\nAlternatively, you can use up the power in an instant. You do this by modulating a sound into a one-time destructive impetus that shatters nonmagical/nonpsionic, unattended objects of crystal, glass, ceramics, or porcelain (vials, bottles, flasks, jugs, mirrors, and so forth) in the area.",
     "tags": [
@@ -7055,7 +7120,14 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": 5,
-    "effects": [],
+    "effects": [
+      {
+        "type": "defense",
+        "mode": "DR",
+        "value": 10,
+        "what": "psionics"
+      }
+    ],
     "shortDescription": "You gain benefits of being insubstantial and can fly slowly.",
     "text": "You and all your gear become a partially translucent mass of rippling ectoplasm that generally conforms to your normal shape. You gain damage reduction 10/psionics, and you gain immunity to poison and critical hits. Your material armor becomes meaningless, although your size, Dexterity, deflection bonuses, and armor bonuses from force effects still apply to your Armor Class.\nYou can manifest powers while in ectoplasmic form, but you must make a Concentration check (DC 20 + power level) for each power you attempt to manifest.\nYou cannot physically attack, you lose supernatural abilities (if any), and you can’t speak while in ectoplasmic form. You can’t run, but you can fly at a speed of 20 feet (perfect). You can pass through small holes or narrow openings, even mere cracks, with all you were wearing or holding in your hands. You are subject to the effects of wind, and you can’t enter water or other liquid. You also can’t manipulate objects or activate items, even those carried along with you. Continuously active items remain active, though in some cases their effects may be moot (such as items that provide armor or natural armor bonuses).",
     "tags": [
@@ -7588,7 +7660,32 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": 1,
-    "effects": [],
+    "effects": [
+      {
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "condKind": "situational",
+            "condText": "when you cease concentrating on this power",
+            "effects": [
+              {
+                "type": "stat",
+                "targets": [
+                  "skill.bluff",
+                  "skill.diplomacy",
+                  "skill.intimidate",
+                  "skill.sense-motive"
+                ],
+                "mode": "flat",
+                "value": 2,
+                "btype": "Insight"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "You know the subject’s surface emotions.",
     "text": "You detect the surface emotions of any creature you can see that is in the power’s area. You can sense basic needs, drives, and emotions. Thirst, hunger, fear, fatigue, pain, rage, hatred, uncertainty, curiosity, friendliness, and many other kinds of sensations and moods can all be perceived.\nYou gain a +2 insight bonus on any Bluff, Diplomacy, Intimidate, or Sense Motive checks that you make in the round when you cease concentrating on this power.\nAugment: You can augment this power in one or both of the following ways.\n1. For every additional power point you spend, this power’s range and the radius of its area increases by 5 feet.\n2. If you spend 2 additional power points, this power’s maximum duration increases to 1 hour/level.",
     "tags": [
@@ -10573,7 +10670,33 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": 11,
-    "effects": [],
+    "effects": [
+      {
+        "type": "stat",
+        "targets": [
+          "skill.disguise"
+        ],
+        "mode": "flat",
+        "value": 10,
+        "btype": "Untyped"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.climb",
+          "skill.jump"
+        ],
+        "mode": "flat",
+        "value": 10,
+        "btype": "Untyped"
+      },
+      {
+        "type": "defense",
+        "mode": "DR",
+        "value": 5,
+        "what": "-"
+      }
+    ],
     "shortDescription": "You transform into a frightening tentacled beast.",
     "text": "You wrench from your subconscious a terrifying visage of deadly hunger and become one with it. You are transformed into a nightmarish version of yourself, complete with an ooze-sleek skin coating, lashing tentacles, and a fright-inducing countenance. You effectively gain a +10 bonus on Disguise checks, though you retain your basic shape and can continue to use your equipment. This power cannot be used to impersonate someone; while horrible, your form is recognizably your own.\nYou gain the frightful presence extraordinary ability, which takes effect automatically when you charge a foe. Opponents within 30 feet of you that have fewer Hit Dice or levels than you and that witness your charge become shaken for 5d6 rounds if they fail a Will save (DC 16 + your Cha modifier). An opponent that succeeds on the saving throw is immune to your frightful presence for 24 hours. Frightful presence is a mind-affecting fear effect.\nYour horrific form grants you a natural armor bonus of +5, damage reduction 5/-, and a +4 bonus to your Strength score. In addition, you gain +10 feet to your land speed as well as a +10 bonus on Climb and Jump checks.\nA nest of violently flailing black tentacles sprout from your hair and back. You can make up to four additional attacks with these tentacles in addition to your regular melee attacks in each round that you take a full attack action. You can make tentacle attacks within the space you normally threaten. If you make your tentacle attacks in addition to you regular melee attacks, each tentacle attacks at your highest base attack bonus with a -5 penalty. If you forgo all your other attacks, making only tentacle attacks, you make your tentacle attacks at your highest base attack bonus with no penalty. These tentacles deal 2d8 points of damage plus one-half your Strength bonus on each successful strike.\nThis power functions only while you inhabit your base form (for instance, you can’t be metamorphed or polymorphed into another form, though you can use, claws of the beast, and bite of the wolf in conjunction with this power for your regular attacks), and while your mind resides within your own body.\nAugment: For every additional power point you spend, this power’s duration increases by 2 rounds.",
     "tags": [
@@ -13079,7 +13202,17 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": 7,
-    "effects": [],
+    "effects": [
+      {
+        "type": "stat",
+        "targets": [
+          "skill.disguise"
+        ],
+        "mode": "flat",
+        "value": 10,
+        "btype": "Untyped"
+      }
+    ],
     "shortDescription": "Assume shape of creature or object.",
     "text": "You assume the form of a creature of the same type as your normal form, or any other type except construct, elemental, outsider, and undead. The assumed form can have as many Hit Dice as your manifester level, to a maximum of 15.\nYou can’t assume a form smaller than Fine, nor can you assume an incorporeal, ectoplasmic, or gaseous form. You cannot take the form of any creature that has a template. Your type and subtype (if applicable) change to match the new form.\nUpon changing, you regain lost hit points as if you had rested for a night (though this healing does not restore ability damage and provide other benefits of resting; and changing back does not heal you further). If you are slain while under the effect of this power, you revert to your original form, though you remain dead. You gain the Strength, Dexterity, and Constitution scores of the new form but retain your own Intelligence, Wisdom, and Charisma scores. You also gain all extraordinary special attacks possessed by the form (such as constrict, improved grab, and poison) but do not gain the extraordinary special qualities possessed by the new form (such as blindsense, fast healing, regeneration, and scent) or any supernatural, psionic, or spell-like abilities.\nYou retain all supernatural and spell-like special attacks and special qualities of your normal form, except for those requiring a body part that the new form does not have, if any. You keep all extraordinary special attacks and special qualities derived from class levels, but you lose any benefits of the racial traits of your normal form. If you have a template, special abilities it provides are likewise not retained. If the assumed form is capable of speech, you can communicate normally. You retain any manifesting ability you had in your original form.\nYou acquire the physical qualities of the new form while retaining your own mind. Physical qualities include natural size, mundane movement capabilities (such as burrowing, climbing, walking, swimming, and flight with wings, to a maximum speed of 120 feet for flying or 60 feet for nonflying movement), natural armor bonus, natural weapons (such as claws or a bite), racial bonuses on skill checks, racial bonus feats, and any anatomical qualities (presence or absence of wings, number of extremities, and so forth). A body with extra limbs does not allow you to make more attacks (or more advantageous two-weapon attacks) than normal.\nYou can freely designate the new form’s minor physical qualities (such as hair color, hair texture, and skin color) within the normal ranges for a creature of that type. The new form’s significant physical qualities (such as height, weight, and gender) are also under your control, but they must fall within the norms for the new form’s species. You are effectively disguised as an average member of the new form’s race. If you use this power to create a disguise, you get a +10 bonus on your Disguise check.\nWhen the change occurs, your equipment either remains worn or held by the new form (if it is capable of wearing or holding the item in question) or melds into the new form and becomes nonfunctional. When you revert to your normal form, any objects previously melded into the new form reappear in the same location on your body they previously occupied and are once again functional. Any new items you wore in the assumed form and can’t wear in your normal form fall off and land at your feet; any that you could wear in either form or carry in a body part common to both forms (mouth, hands, or the like) at the time of reversion are still held in the same way. Any part of the body or piece of equipment that is separated from the whole reverts to its normal form.\nYou can also use this power to assume the form of an inanimate object. You gain the object’s hardness and retain your own hit points. You can take the shape of almost any simple object you can think of. If you attempt to take the form of a complex object, you must make an appropriate skill check.. If you fail the check, your manifestation of the power does not succeed. Likewise, you cannot take the form of a complex mechanical mechanism unless you have some sort of skill associated with the object. You cannot use this power to assume the form of a psionic item or a magic item, or any object with a hardness of 15 or higher. You also cannot take the form of a psionically animated mechanism or any object formed of ectoplasm.\nAs an inanimate object, you lose all mobility. You retain your normal senses and your ability to speak. You can manifest a power if you make a Concentration check (DC 20 + power level); however, doing so ends the duration of this power. If you take damage while in the form of an object, your actual body also takes damage (but the object’s hardness, if any, protects you).",
     "tags": [
@@ -13146,7 +13279,17 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": 17,
-    "effects": [],
+    "effects": [
+      {
+        "type": "stat",
+        "targets": [
+          "skill.disguise"
+        ],
+        "mode": "flat",
+        "value": 10,
+        "btype": "Untyped"
+      }
+    ],
     "shortDescription": "Assume shape of any nonunique creature or object each round.",
     "text": "As metamorphosis, except that this power enables you to assume the form of any single nonunique object or creature (of any type) from Fine to Colossal size. The assumed form cannot have more Hit Dice than your manifester level (to a maximum of 25 HD). Unlike metamorphosis, this power allows incorporeal, ectoplasmic, or gaseous forms to be assumed.\nYou gain all extraordinary and supernatural abilities (both special attacks and special qualities) of the assumed form, but you lose your own supernatural abilities. You also gain the type of the new form (for example, dragon or magical beast) in place of your own. The new form does not disorient you. Parts of your body or pieces of equipment that are separated from you do not revert to their original form.\nYou can become just about anything you are familiar with. You can change form once each round as a swift action.\nThe change takes place either immediately before your regular action or immediately after it, but not during the action.\nIf you use this power to create a disguise, you get a +10 bonus on your Disguise check.\nAs an inanimate object, you lose all mobility; however, you retain your ability to manifest powers normally.\nXP Cost: 200 XP.",
     "tags": [
@@ -18167,6 +18310,21 @@
         "type": "defense",
         "mode": "Sense / Movement",
         "what": "Darkvision 60 ft."
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.hide"
+        ],
+        "mode": "flat",
+        "value": 15,
+        "btype": "Untyped"
+      },
+      {
+        "type": "defense",
+        "mode": "DR",
+        "value": 10,
+        "what": "magic"
       }
     ],
     "shortDescription": "You become a living shadow (not the creature).",
@@ -19119,7 +19277,27 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": 1,
-    "effects": [],
+    "effects": [
+      {
+        "type": "stat",
+        "targets": [
+          "skill.search",
+          "skill.spot"
+        ],
+        "mode": "flat",
+        "value": 4,
+        "btype": "Circumstance"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.listen"
+        ],
+        "mode": "flat",
+        "value": 4,
+        "btype": "Circumstance"
+      }
+    ],
     "shortDescription": "You receive one kind of sense when another sense is stimulated.",
     "text": "You receive one kind of sensory input when a different sense is stimulated. In particular, you can either feel light or feel sound. You can shift your stimulated sense between these two options once per round as a swift action. Your senses continue to work normally as well, unless they are impaired for some reason.\nYour face must be uncovered to use this power, because it is the skin of your face that acts as the sensory receiver.\nIf you are feeling light by absorbing ambient light onto your skin, you have your normal visual abilities (except for darkvision), even if your eyes are closed or you are blinded. If your eyes are working normally, you gain a +4 circumstance bonus on all Spot and Search checks. While feeling light, you are immune to gaze attacks.\nIf you are feeling sound by absorbing sound onto your skin and your ears are working normally, the expanded audio input provides you with a +4 circumstance bonus on Listen checks.\nPsionic or magical displacement effects, invisibility effects, illusions, and other similar effects confuse your synesthete senses just as they would your normal senses.\nYou can also use this power to see sound if you are deafened, or hear light if you are blinded, thus removing all penalties associated with either condition (though you gain no bonuses for using the power in this way if you are not deafened or blinded).",
     "tags": [

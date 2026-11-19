@@ -573,6 +573,15 @@
         "flag": "sacrificial-mastery",
         "label": "Sacrificial Mastery",
         "text": "The character gains a +4 profane bonus on Knowledge (religion) checks made when performing a sacrifice."
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.knowledge"
+        ],
+        "mode": "flat",
+        "value": 4,
+        "btype": "Profane"
       }
     ],
     "text": "The character gains a +4 profane bonus on Knowledge (religion) checks made when performing a sacrifice.",
@@ -1360,6 +1369,18 @@
             ]
           }
         ]
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.hide",
+          "skill.move-silently",
+          "skill.search",
+          "skill.spot"
+        ],
+        "mode": "flat",
+        "value": 1,
+        "btype": "Untyped"
       }
     ],
     "text": "You receive a +4 bonus on saving throws against cold effects. You also gain a +1 bonus on all Hide, Move Silently, Search, and Spot checks on the ice and snow.",
@@ -1419,6 +1440,15 @@
             ]
           }
         ]
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.craft"
+        ],
+        "mode": "flat",
+        "value": 1,
+        "btype": "Untyped"
       }
     ],
     "text": "You receive a +4 bonus on saving throws against fire effects. You also receive a +1 bonus on Craft (armorsmithing, blacksmithing, and weaponsmithing) checks.",
@@ -1782,6 +1812,16 @@
         "flag": "harem-trained",
         "label": "Harem Trained",
         "text": "You receive a +2 bonus on Diplomacy and Perform cheeks."
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.diplomacy",
+          "skill.perform"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Untyped"
       }
     ],
     "text": "You receive a +2 bonus on Diplomacy and Perform cheeks.",
@@ -1993,6 +2033,15 @@
         "flag": "metallurgy",
         "label": "Metallurgy",
         "text": "You receive a +3 bonus on all Craft (armorsmithing, blacksmithing, or weaponsmithing) checks."
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.craft"
+        ],
+        "mode": "flat",
+        "value": 3,
+        "btype": "Untyped"
       }
     ],
     "text": "You receive a +3 bonus on all Craft (armorsmithing, blacksmithing, or weaponsmithing) checks.",
@@ -2079,6 +2128,15 @@
         "type": "stat",
         "targets": [
           "skill.perform"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Untyped"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.knowledge"
         ],
         "mode": "flat",
         "value": 2,
@@ -2380,6 +2438,15 @@
         "flag": "stoneshaper",
         "label": "Stoneshaper",
         "text": "You receive a +2 bonus on Craft (stonemasonry) checks and a +2 bonus on Stonecunning checks."
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.craft"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Untyped"
       }
     ],
     "text": "You receive a +2 bonus on Craft (stonemasonry) checks and a +2 bonus on Stonecunning checks.",
@@ -5203,6 +5270,15 @@
         "flag": "education-aom",
         "label": "Education",
         "text": "+1 bonus on all skill checks with any 2 Knowledge skills."
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.knowledge"
+        ],
+        "mode": "flat",
+        "value": 1,
+        "btype": "Untyped"
       }
     ],
     "text": "+1 bonus on all skill checks with any 2 Knowledge skills.",
@@ -6329,6 +6405,16 @@
         "flag": "attention-to-detail",
         "label": "Attention to Detail",
         "text": "You gain a +2 bonus to Sense Motive and Spot checks."
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.sense-motive",
+          "skill.spot"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Untyped"
       }
     ],
     "text": "You gain a +2 bonus to Sense Motive and Spot checks.",
@@ -6458,6 +6544,15 @@
         "flag": "cool-head-oa",
         "label": "Cool Head",
         "text": "You gain a +3 bonus to Diplomacy checks."
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.diplomacy"
+        ],
+        "mode": "flat",
+        "value": 3,
+        "btype": "Untyped"
       }
     ],
     "text": "You gain a +3 bonus to Diplomacy checks.",
@@ -6510,6 +6605,15 @@
         ],
         "mode": "flat",
         "value": 1,
+        "btype": "Untyped"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.concentration"
+        ],
+        "mode": "flat",
+        "value": 2,
         "btype": "Untyped"
       }
     ],
@@ -6670,6 +6774,15 @@
         "flag": "great-crafter",
         "label": "Great Crafter",
         "text": "You gain a +3 bonus to Craft checks."
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.craft"
+        ],
+        "mode": "flat",
+        "value": 3,
+        "btype": "Untyped"
       }
     ],
     "text": "You gain a +3 bonus to Craft checks.",
@@ -6985,6 +7098,27 @@
         "flag": "kamis-intuition",
         "label": "Kami's Intuition",
         "text": "You gain a +2 bonus on Sense Motive checks and on Intelligence checks made to figure something out."
+      },
+      {
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "condKind": "situational",
+            "condText": "made to figure something out",
+            "effects": [
+              {
+                "type": "stat",
+                "targets": [
+                  "skill.sense-motive"
+                ],
+                "mode": "flat",
+                "value": 2,
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
       }
     ],
     "text": "You gain a +2 bonus on Sense Motive checks and on Intelligence checks made to figure something out.",
@@ -7071,6 +7205,16 @@
         "flag": "keen-intellect",
         "label": "Keen Intellect",
         "text": "You gain a +1 bonus on Intelligence checks and on Knowledge and Search checks."
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.knowledge",
+          "skill.search"
+        ],
+        "mode": "flat",
+        "value": 1,
+        "btype": "Untyped"
       }
     ],
     "text": "You gain a +1 bonus on Intelligence checks and on Knowledge and Search checks.",
@@ -7214,6 +7358,15 @@
         "mode": "flat",
         "value": 2,
         "btype": "Untyped"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.craft"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Untyped"
       }
     ],
     "text": "You gain a +2 bonus on Craft (alchemy) and Spellcraft checks.",
@@ -7300,6 +7453,15 @@
         "flag": "magistrates-mind",
         "label": "Magistrate's Mind",
         "text": "You gain a +2 bonus to Knowledge (history) and Knowledge (nobility and royalty) checks."
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.knowledge"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Untyped"
       }
     ],
     "text": "You gain a +2 bonus to Knowledge (history) and Knowledge (nobility and royalty) checks.",
@@ -7343,6 +7505,16 @@
         "flag": "many-masks",
         "label": "Many Masks",
         "text": "You gain a +2 bonus to Disguise and Perform checks."
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.disguise",
+          "skill.perform"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Untyped"
       }
     ],
     "text": "You gain a +2 bonus to Disguise and Perform checks.",
@@ -7386,6 +7558,15 @@
         "flag": "onis-bane",
         "label": "Oni's Bane",
         "text": "You gain a +3 bonus on caster level checks to overcome an outsider's SR. You suffer a -2 penalty on Diplomacy checks."
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.diplomacy"
+        ],
+        "mode": "flat",
+        "value": -2,
+        "btype": "Penalty"
       }
     ],
     "text": "You gain a +3 bonus on caster level checks to overcome an outsider's SR. You suffer a -2 penalty on Diplomacy checks.",
@@ -7515,6 +7696,16 @@
         "flag": "powerful-voice",
         "label": "Powerful Voice",
         "text": "You gain a +2 bonus on Diplomacy, Perform (oratory), and Perform (sing) checks."
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.diplomacy",
+          "skill.perform"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Untyped"
       }
     ],
     "text": "You gain a +2 bonus on Diplomacy, Perform (oratory), and Perform (sing) checks.",
@@ -7729,6 +7920,15 @@
         "type": "stat",
         "targets": [
           "skill.heal"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Untyped"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.craft"
         ],
         "mode": "flat",
         "value": 2,
@@ -8023,6 +8223,15 @@
         "mode": "flat",
         "value": 4,
         "btype": "Untyped"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.bluff"
+        ],
+        "mode": "flat",
+        "value": -2,
+        "btype": "Penalty"
       }
     ],
     "text": "You gain a +4 bonus on Sense Motive checks and a -2 penalty on Bluff checks.",
@@ -9855,6 +10064,15 @@
         "flag": "swamp-stalker",
         "label": "Swamp Stalker",
         "text": "You move easily through the sucking bogs and stagnant water of the swamps. You gain a +2 competence bonus on Swim checks and on Strength checks to break free of nets, webs, entangl"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.swim"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Competence"
       }
     ],
     "text": "You move easily through the sucking bogs and stagnant water of the swamps. You gain a +2 competence bonus on Swim checks and on Strength checks to break free of nets, webs, entangle spells, and similar hindrances.",
@@ -9898,6 +10116,16 @@
         "flag": "treefriend",
         "label": "Treefriend",
         "text": "You are completely at home in the forest. You gain a +2 competence bonus on Climb checks and on Survival checks to avoid becoming lost in the forest."
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.climb",
+          "skill.survival"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Competence"
       }
     ],
     "text": "You are completely at home in the forest. You gain a +2 competence bonus on Climb checks and on Survival checks to avoid becoming lost in the forest.",
@@ -12981,6 +13209,15 @@
         "flag": "feral-rearing",
         "label": "Feral Rearing",
         "text": "You have the animal type rather than the normal creature type for your race, Animal Empathy is a class skill, +4 racial bonus to Animal empathy and Handle Animal and you may commun"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.handle-animal"
+        ],
+        "mode": "flat",
+        "value": 4,
+        "btype": "Racial"
       }
     ],
     "text": "You have the animal type rather than the normal creature type for your race, Animal Empathy is a class skill, +4 racial bonus to Animal empathy and Handle Animal and you may communicate with one normal animal listing in the MM",
@@ -13110,6 +13347,17 @@
         "flag": "machiavellian",
         "label": "Machiavellian",
         "text": "+2 competence bonus on Diplomacy, Gather Information, Innuendo and Sense Motive checks"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.diplomacy",
+          "skill.gather-information",
+          "skill.sense-motive"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Competence"
       }
     ],
     "text": "+2 competence bonus on Diplomacy, Gather Information, Innuendo and Sense Motive checks",
@@ -13153,6 +13401,15 @@
         "flag": "mechanical-aptitude",
         "label": "Mechanical Aptitude",
         "text": "+2 competence bonus to any Craft check that relates to moving parts."
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.craft"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Competence"
       }
     ],
     "text": "+2 competence bonus to any Craft check that relates to moving parts.",
@@ -13196,6 +13453,15 @@
         "flag": "mesmerizing",
         "label": "Mesmerizing",
         "text": "+2 competence bonus to Diplomacy and Hypnotism checks"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.diplomacy"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Competence"
       }
     ],
     "text": "+2 competence bonus to Diplomacy and Hypnotism checks",
@@ -13239,6 +13505,27 @@
         "flag": "mimicry",
         "label": "Mimicry",
         "text": "+2 competence bonus to Disguise checks while attempting to speak as someone other than yourself or while imitating a particular person."
+      },
+      {
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "condKind": "situational",
+            "condText": "while attempting to speak as someone other than yourself or while imitating a particular person",
+            "effects": [
+              {
+                "type": "stat",
+                "targets": [
+                  "skill.disguise"
+                ],
+                "mode": "flat",
+                "value": 2,
+                "btype": "Competence"
+              }
+            ]
+          }
+        ]
       }
     ],
     "text": "+2 competence bonus to Disguise checks while attempting to speak as someone other than yourself or while imitating a particular person.",
@@ -13282,6 +13569,27 @@
         "flag": "piercing-gaze-cod",
         "label": "Piercing Gaze",
         "text": "When caught in the Mists, you have a +3 bonus to Spot checks when looking for a Mistway. Any spells you cast that req victims to look at you have a +2 DC to their save"
+      },
+      {
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "condKind": "situational",
+            "condText": "when looking for a mistway",
+            "effects": [
+              {
+                "type": "stat",
+                "targets": [
+                  "skill.spot"
+                ],
+                "mode": "flat",
+                "value": 3,
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
       }
     ],
     "text": "When caught in the Mists, you have a +3 bonus to Spot checks when looking for a Mistway. Any spells you cast that req victims to look at you have a +2 DC to their save",
@@ -13454,6 +13762,28 @@
         "flag": "tantric-ability",
         "label": "Tantric Ability",
         "text": "You gain a +2 competence bonus to all Diplomacy, Innuendo, Read Lips, and Sense Motive checks involving the partner for an hour per Charisma bonus"
+      },
+      {
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "condKind": "situational",
+            "condText": "for an hour per charisma bonus",
+            "effects": [
+              {
+                "type": "stat",
+                "targets": [
+                  "skill.diplomacy",
+                  "skill.sense-motive"
+                ],
+                "mode": "flat",
+                "value": 2,
+                "btype": "Competence"
+              }
+            ]
+          }
+        ]
       }
     ],
     "text": "You gain a +2 competence bonus to all Diplomacy, Innuendo, Read Lips, and Sense Motive checks involving the partner for an hour per Charisma bonus",
@@ -14833,6 +15163,28 @@
         "flag": "indomitable",
         "label": "Indomitable",
         "text": "Whenever you fail a Horror or Madness save prompted by a creature's presence or actions, you gain a +1 morale bonus on attacks, Gather Info, Knowledge and Sense Motive when you are"
+      },
+      {
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "condKind": "situational",
+            "condText": "when you are pursuing that creature's destruction",
+            "effects": [
+              {
+                "type": "stat",
+                "targets": [
+                  "skill.knowledge",
+                  "skill.sense-motive"
+                ],
+                "mode": "flat",
+                "value": 1,
+                "btype": "Morale"
+              }
+            ]
+          }
+        ]
       }
     ],
     "text": "Whenever you fail a Horror or Madness save prompted by a creature's presence or actions, you gain a +1 morale bonus on attacks, Gather Info, Knowledge and Sense Motive when you are pursuing that creature's destruction.",
@@ -15994,6 +16346,16 @@
         "flag": "mechanical-mindedness",
         "label": "Mechanical Mindedness",
         "text": "This provides a +3 bonus to Disable Device and Open Lock checks."
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.disable-device",
+          "skill.open-lock"
+        ],
+        "mode": "flat",
+        "value": 3,
+        "btype": "Untyped"
       }
     ],
     "text": "This provides a +3 bonus to Disable Device and Open Lock checks.",

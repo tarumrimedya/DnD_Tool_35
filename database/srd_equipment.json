@@ -18676,6 +18676,13 @@
         "mode": "flat",
         "value": -2,
         "btype": "Penalty"
+      },
+      {
+        "type": "defense",
+        "mode": "Spell Resistance",
+        "srMode": "flat",
+        "value": 15,
+        "what": "Magic"
       }
     ],
     "shortDescription": "The Shadowstaff: This artifact was crafted centuries ago, weaving together the wispy strands of shadow itself into a twisted black staff. The Shadowstaff makes the wielder slightly shadowy and incorporeal, granting him…",
@@ -19351,6 +19358,13 @@
         "mode": "flat",
         "value": 10,
         "btype": "Competence"
+      },
+      {
+        "type": "defense",
+        "mode": "Spell Resistance",
+        "srMode": "flat",
+        "value": 32,
+        "what": "Magic"
       }
     ],
     "shortDescription": "Horseshoes of the Peerless Steed: These horseshoes magically adhere to the feet of any hoofed creature. Anyone riding the creature gains a +10 competence bonus on Ride checks and is treated as having ranks in the approp…",
@@ -19830,6 +19844,15 @@
         "mode": "flat",
         "value": 6,
         "btype": "Enhancement"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "skill.craft"
+        ],
+        "mode": "flat",
+        "value": 10,
+        "btype": "Untyped"
       }
     ],
     "ruleFlags": {
@@ -21555,7 +21578,14 @@
     "maxDex": 1,
     "checkPenalty": -5,
     "spellFailure": 35,
-    "effects": [],
+    "effects": [
+      {
+        "type": "defense",
+        "mode": "DR",
+        "value": 15,
+        "what": "adamantine"
+      }
+    ],
     "shortDescription": "Golem Armor: This enormous suit of black iron + 10 full plate armor increases the wearer's size by one category (to a maximum of Colossal). The wearer gains a +10 enhancement bonus to Strength and is rendered immune to…",
     "text": "Golem Armor: This enormous suit of black iron +10 full plate armor increases the wearer's size by one category (to a maximum of Colossal). The wearer gains a +10 enhancement bonus to Strength and is rendered immune to mind-affecting effects, poison, disease, and similar effects. He or she is not subject to critical hits, subdual damage, ability damage, energy drain, or death from massive damage. Golem Armor is immune to rust attacks. The wearer of Golem Armor gains damage reduction 15/adamantine. He or she also cannot regain hit points by any means (mundane or magical) while the armor is worn. It requires 1 hour to don or extract oneself from Golem Armor.",
     "tags": [
@@ -28865,6 +28895,13 @@
         "type": "effect",
         "effectKind": "rule",
         "text": "Staff of the Magi: A long wooden staff, shod in iron and inscribed with sigils and runes of all types, this potent artifact contains many spell powers and other functions. Some of its powers use charg"
+      },
+      {
+        "type": "defense",
+        "mode": "Spell Resistance",
+        "srMode": "flat",
+        "value": 23,
+        "what": "Magic"
       }
     ],
     "shortDescription": "Staff of the Magi: A long wooden staff, shod in iron and inscribed with sigils and runes of all types, this potent artifact contains many spell powers and other functions. Some of its powers use charges, while others do…",
@@ -35519,7 +35556,38 @@
     "maxDex": 1,
     "checkPenalty": -5,
     "spellFailure": 35,
-    "effects": [],
+    "effects": [
+      {
+        "type": "stat",
+        "targets": [
+          "skill.diplomacy"
+        ],
+        "mode": "flat",
+        "value": -4,
+        "btype": "Circumstance"
+      },
+      {
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "condKind": "situational",
+            "condText": "vs. dragons",
+            "effects": [
+              {
+                "type": "stat",
+                "targets": [
+                  "skill.intimidate"
+                ],
+                "mode": "flat",
+                "value": 4,
+                "btype": "Circumstance"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "Dragonskin Armor: This+ 5 full plate armor is crafted from the hide of a great wyrm dragon. At the wearer's command, the armor sprouts enormous dragon wings, allowing the wearer to fly at a speed of 90 feet (clumsy) for…",
     "text": "Dragonskin Armor: This+5 full plate armor is crafted from the hide of a great wyrm dragon. At the wearer's command, the armor sprouts enormous dragon wings, allowing the wearer to fly at a speed of 90 feet (clumsy) for a total of 4 hours each day. The armor also grants immunity to a specific type of energy, based on the color of dragon that supplied the armor. Roll d% on the following table to determine the color and immunity.\n\nd% |\nColor |\nImmunity |\n\n01-10 |\nBlack |\nAcid |\n\n11-20 |\nBlue |\nLightning |\n\n21-30 |\nBrass |\nFire |\n\n31-40 |\nBronze |\nLightning |\n\n41-50 |\nCopper |\nAcid |\n\n51-60 |\nGold |\nFire |\n\n61-70 |\nGreen |\nAcid |\n\n71-80 |\nRed |\nFire |\n\n81-90 |\nSilver |\nCold |\n\n91-100 |\nWhite |\nCold |\n\nThe wearer of the armor takes a -4 circumstance penalty on Diplomacy checks with dragons, but gains a +4 circumstance bonus on Intimidate checks against dragons.\n\nCaster Level: 24th; Prerequisites: Craft Magic Arms and Armor, Craft Epic Magic Arms and Armor, protection from energy, shapechange; Market Price: 564,550 gp; Cost to Create: 283,250 gp + 15,629 XP.",
     "tags": [
@@ -39616,7 +39684,17 @@
       "price": 5,
       "casterLevel": 0
     },
-    "effects": [],
+    "effects": [
+      {
+        "type": "stat",
+        "targets": [
+          "skill.perform"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Circumstance"
+      }
+    ],
     "shortDescription": "Standard instrument of typical manufacture for bardic music or performances.",
     "text": "Popular instruments include the fife, recorder, lute, mandolin, and shawm. A masterwork instrument grants a +2 circumstance bonus on Perform checks involving its use.",
     "tags": [

@@ -207,11 +207,19 @@ function checkFalsePositiveGuard(claim, entry, fullText, allMissingClaims) {
   }
 
   // Reject opponent/enemy/target debuffs & cursed items that apply to OTHER creatures or curses, not bearer buffs
-  if (/\b(?:they\s+flee|their\s+(?:will|fortitude|reflex|saving|saves?|attack)|its\s+saving\s+throw|makes\s+it\s+hostile|remove\s+curse|opponents?|enemies|foes?|creatures?\s+within|victim|all\s+adjacent\s+enemies|against\s+(?:her|him|you|the\s+wearer|the\s+wielder))\b/i.test(phrase)) {
+  if (/\b(?:they\s+flee|their\s+(?:will|fortitude|reflex|saving|saves?|attack)|its\s+(?:saving\s+throw|hide\s+checks?|attack|ac|checks?)|makes\s+it\s+hostile|remove\s+curse|opponents?|enemies|foes?|creatures?\s+within|victim|all\s+adjacent\s+enemies|against\s+(?:her|him|you|the\s+wearer|the\s+wielder))\b/i.test(phrase)) {
     return 'target-or-curse-clause';
   }
   if (claim.value < 0 && /\b(?:enemies|opponents?|foes?|creatures?\s+within|aura\s+of|targets?\s+(?:take|suffer)|subjects?\s+(?:take|suffer)|without\s+(?:these|such|artisan|proper)\s+tools?|improvised\s+tools?)\b/i.test(lowText)) {
     return 'enemy-aura-or-missing-tool-penalty';
+  }
+  // Reject negated/ignored penalties ("ignore the -5 penalty", "does not take the -5 penalty", "no -5 penalty", truncated "…")
+  if (claim.value < 0 && (/[…]$|\.\.\.$/.test(phrase.trim()) || /\b(?:ignore|ignores|ignored|negate|negates|do\s+not\s+take|does\s+not\s+take|don't\s+take|without\s+(?:taking|suffering|incurring|a|the)|no\s+longer\s+(?:take|suffer)|reduces?\s+the|taking\s+no|suffer\s+no|no)\s+[^.;]{0,35}(?:penalty|-\s?\d+|–\s?\d+)/i.test(lowText))) {
+    return 'negated-or-ignored-penalty';
+  }
+  // Reject Small/Tiny Race size Hide bonus (described in "Small size" trait text)
+  if (claim.family === 'skill' && claim.target === 'hide' && entry.type === 'Race' && (claim.bonusType === 'untyped' || claim.bonusType === 'size') && (/\bsmall\s+size\b|\btiny\s+size\b|\bsmaller\s+weapon\s+dice\b|\bcarrying\s+capacity\b/i.test(lowText) || (entry.race && ['Small', 'Tiny', 'Diminutive', 'Fine'].includes(entry.race.size)))) {
+    return 'race-size-hide-already-computed';
   }
 
   // Reject "worst save" / "lowest save" / "a specific type of" / "one chosen" phrases that require dynamic/choice logic

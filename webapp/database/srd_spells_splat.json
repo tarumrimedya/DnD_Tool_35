@@ -259,7 +259,17 @@
     "duration": "1 round/level",
     "save": "None",
     "sr": false,
-    "effects": [],
+    "effects": [
+      {
+        "type": "stat",
+        "targets": [
+          "skill.knowledge"
+        ],
+        "mode": "flat",
+        "value": 1,
+        "btype": "Competence"
+      }
+    ],
     "shortDescription": "Summon a twilight guardian that fights for you and can sacrifice itself to heal you.",
     "text": "Works like summon nature's ally, but summons one twilight guardian. As a standard action the guardian can touch you to destroy itself, healing you for half of its remaining hit points. Learning this spell grants a +1 competence bonus on Knowledge (nature) checks.",
     "tags": [
@@ -1077,7 +1087,17 @@
     "duration": "1 minute/level",
     "save": "Will negates",
     "sr": true,
-    "effects": [],
+    "effects": [
+      {
+        "type": "stat",
+        "targets": [
+          "skill.diplomacy"
+        ],
+        "mode": "flat",
+        "value": 1,
+        "btype": "Competence"
+      }
+    ],
     "shortDescription": "Shaken, frightened, or panicked creatures near you become friendly.",
     "text": "Any creature in the emanation that is shaken, frightened, or panicked has its attitude toward you set to friendly. The effect ends for a creature when its fear ends or when you or an ally act against it. Learning this spell grants a +1 competence bonus on Diplomacy checks.",
     "tags": [
@@ -1166,7 +1186,17 @@
     "save": "None; see text",
     "sr": false,
     "buffTargetMode": "self",
-    "effects": [],
+    "effects": [
+      {
+        "type": "stat",
+        "targets": [
+          "skill.bluff"
+        ],
+        "mode": "flat",
+        "value": 1,
+        "btype": "Competence"
+      }
+    ],
     "shortDescription": "Enemies who target your mind are confused; you can dominate one of them.",
     "text": "An enemy that targets you with a mind-affecting spell or ability is confused for 1 round (Will DC 18 + your Int modifier negates and grants immunity to this casting). As an immediate action you can dominate person (1 hour) one humanoid that cast a mind-affecting spell on you, which ends this spell. Learning this spell grants a +1 competence bonus on Bluff checks.",
     "tags": [
@@ -2578,6 +2608,12 @@
         "mode": "Energy Resistance",
         "what": "Acid",
         "value": 30
+      },
+      {
+        "type": "defense",
+        "mode": "DR",
+        "value": 5,
+        "what": "adamantine"
       }
     ],
     "shortDescription": "Gain a breath weapon and a defense based on your favored element.",
@@ -3753,6 +3789,18 @@
         "mode": "flat",
         "value": 5,
         "btype": "Competence"
+      },
+      {
+        "type": "defense",
+        "mode": "DR",
+        "value": 3,
+        "what": "evil or lawful"
+      },
+      {
+        "type": "defense",
+        "mode": "DR",
+        "value": 3,
+        "what": "good or lawful"
       }
     ],
     "shortDescription": "+5 on Escape Artist and to resist grapples; natural weapons and you count as chaotic.",
@@ -3842,7 +3890,20 @@
     "save": "None",
     "sr": false,
     "buffTargetMode": "self",
-    "effects": [],
+    "effects": [
+      {
+        "type": "defense",
+        "mode": "DR",
+        "value": 3,
+        "what": "evil or lawful"
+      },
+      {
+        "type": "defense",
+        "mode": "DR",
+        "value": 3,
+        "what": "chaotic or evil"
+      }
+    ],
     "shortDescription": "Conjuration (healing) spells cast by or on you heal +2 per spell level.",
     "text": "Healing spells you cast or receive can heal extra points equal to twice the spell's level; one that heals 10 or more also removes fatigue (or reduces exhaustion to fatigue). With soul of anarchy: DR 3/evil or lawful; with soul of order: DR 3/chaotic or evil. Counters and dispels soul of shadow.",
     "tags": [
@@ -3945,6 +4006,18 @@
         "value": 2,
         "btype": "Morale",
         "condition": "vs. enchantment effects"
+      },
+      {
+        "type": "defense",
+        "mode": "DR",
+        "value": 3,
+        "what": "chaotic or evil"
+      },
+      {
+        "type": "defense",
+        "mode": "DR",
+        "value": 3,
+        "what": "chaotic or good"
       }
     ],
     "shortDescription": "+2 morale bonus on Will saves against enchantments; natural weapons and you count as lawful.",
@@ -4034,7 +4107,20 @@
     "save": "None",
     "sr": false,
     "buffTargetMode": "self",
-    "effects": [],
+    "effects": [
+      {
+        "type": "defense",
+        "mode": "DR",
+        "value": 3,
+        "what": "good or lawful"
+      },
+      {
+        "type": "defense",
+        "mode": "DR",
+        "value": 3,
+        "what": "chaotic or good"
+      }
+    ],
     "shortDescription": "Inflict spells cast by or on you deal +2 per spell level.",
     "text": "Inflict spells you cast or receive can deal extra damage equal to twice the spell's level; casting one that deals 10 or more to a target also removes your fatigue (or reduces exhaustion to fatigue). With soul of anarchy: DR 3/good or lawful; with soul of order: DR 3/chaotic or good. Counters and dispels soul of light.",
     "tags": [

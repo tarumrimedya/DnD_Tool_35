@@ -5213,7 +5213,29 @@
     "spellFailure": 10,
     "speed30": "30 ft.",
     "speed20": "20 ft.",
-    "effects": [],
+    "effects": [
+      {
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "condKind": "situational",
+            "condText": "vs. rope or similar easily cut bindings",
+            "effects": [
+              {
+                "type": "stat",
+                "targets": [
+                  "skill.escape-artist"
+                ],
+                "mode": "flat",
+                "value": 6,
+                "btype": "Circumstance"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "Light armor (+3 armor bonus, max Dex +6, armor check penalty -1, arcane spell failure 10%). Shark teeth along the forearms, shoulders, and legs count as armor spikes; +6 circumstance bonus on Escape Artist checks against rope or similar easily cut bindings.",
     "text": "Light armor (+3 armor bonus, max Dex +6, armor check penalty -1, arcane spell failure 10%). Shark teeth along the forearms, shoulders, and legs count as armor spikes; +6 circumstance bonus on Escape Artist checks against rope or similar easily cut bindings.",
     "tags": [

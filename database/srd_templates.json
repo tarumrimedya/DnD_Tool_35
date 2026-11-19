@@ -1884,6 +1884,12 @@
         "type": "defense",
         "mode": "Sense / Movement",
         "what": "Darkvision 60 ft."
+      },
+      {
+        "type": "defense",
+        "mode": "DR",
+        "value": 5,
+        "what": "magic"
       }
     ],
     "ruleFlags": {
@@ -1964,6 +1970,12 @@
         "type": "defense",
         "mode": "Sense / Movement",
         "what": "Darkvision 60 ft."
+      },
+      {
+        "type": "defense",
+        "mode": "DR",
+        "value": 5,
+        "what": "magic"
       }
     ],
     "ruleFlags": {
