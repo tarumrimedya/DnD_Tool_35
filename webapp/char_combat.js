@@ -290,6 +290,24 @@
       return list;
     }
 
+    // Save DC from RuleEngine.deriveSpellsView (single source): the casting discipline's key ability,
+    // ruleFlags.spellDcBonus and V3 `spell.dc` feats (Spell Focus). RAW: metamagic does not raise the
+    // Save DC; only Heighten Spell does, via the modifier's dcBonus.
+    function getCombatSpellSaveDc(spell, dcBonus = 0) {
+      const lvl = Number(spell?.level) || 0;
+      const src = spell?._spellSource || getSpellSlotSource(spell);
+      const view = typeof getSpellsView === 'function' ? getSpellsView() : null;
+      const listKey = src === 'prepared' ? 'preparedSpells' : (src === 'divine' ? 'divineSpells' : 'knownSpells');
+      const nameKey = String(spell?.name || '').toLowerCase().trim();
+      const enriched = (view?.spellsByLevelView?.[listKey] || []).find(s => s
+        && Number(s.level) === lvl
+        && String(s.name || '').toLowerCase().trim() === nameKey);
+      const extra = Number(dcBonus) || 0;
+      if (enriched && Number.isFinite(Number(enriched.saveDc))) return Number(enriched.saveDc) + extra;
+      const base = Number(view?.casterStatsView?.[src]?.baseSaveDc);
+      return (Number.isFinite(base) ? base : 10) + lvl + extra;
+    }
+
     function getSpellSlotSource(spell) {
       if (!spell) return 'spontaneous';
       if (spell._spellSource) return spell._spellSource;
@@ -1071,28 +1089,7 @@
       let formattedSave = 'None';
       const isSaveNone = !saveText || /^(none|no|harmless)$/i.test(saveText.trim());
       if (!isSaveNone) {
-        const baseLvl = Number(spell.level) || 0;
-        const src = spell._spellSource || (typeof getSpellSlotSource === 'function' ? getSpellSlotSource(spell) : 'spontaneous');
-        let statMod = 0;
-        if (src === 'divine') {
-          statMod = RuleEngine ? RuleEngine.getAbilityMod(character?.abilities?.wis || 10) : 0;
-        } else if (src === 'prepared') {
-          statMod = RuleEngine ? RuleEngine.getAbilityMod(character?.abilities?.int || 10) : 0;
-        } else {
-          statMod = RuleEngine ? RuleEngine.getAbilityMod(character?.abilities?.cha || 10) : 0;
-        }
-
-        // Spell Focus Feat Check
-        const schoolLower = (spell.school || masterSpell.school || '').toLowerCase();
-        let featDcBonus = 0;
-        const featsList = character?.feats || [];
-        if (featsList.some(f => (f.name || '').toLowerCase().includes('greater spell focus') && (f.name || '').toLowerCase().includes(schoolLower))) {
-          featDcBonus = 2;
-        } else if (featsList.some(f => (f.name || '').toLowerCase().includes('spell focus') && (f.name || '').toLowerCase().includes(schoolLower))) {
-          featDcBonus = 1;
-        }
-
-        saveDC = 10 + baseLvl + statMod + featDcBonus;
+        saveDC = getCombatSpellSaveDc(spell);
         let cleanSaveLabel = saveText;
         if (/reflex/i.test(saveText)) cleanSaveLabel = /half/i.test(saveText) ? 'Reflex Half' : (/negates/i.test(saveText) ? 'Reflex Negates' : 'Reflex');
         else if (/will/i.test(saveText)) cleanSaveLabel = /half/i.test(saveText) ? 'Will Half' : (/negates/i.test(saveText) ? 'Will Negates' : 'Will');
@@ -2815,7 +2812,6 @@
       const bab = Number(character?.bab) || 0;
       const dexMod = RuleEngine ? RuleEngine.getAbilityMod(character?.abilities?.dex || 10) : 0;
       const strMod = RuleEngine ? RuleEngine.getAbilityMod(character?.abilities?.str || 10) : 0;
-      const chaMod = RuleEngine ? RuleEngine.getAbilityMod(character?.abilities?.cha || 10) : 0;
 
       // Same attack pipeline as weapons: buffs, conditions, Point Blank Shot, Weapon Focus (ray), RAW stacking.
       const touchAtkOf = (kind) => ((typeof RuleEngine !== 'undefined' && typeof RuleEngine.evaluateTouchAttack === 'function')
@@ -2823,7 +2819,7 @@
         : (bab + (kind === 'ranged-touch' ? dexMod : strMod)));
       const rangedTouchAtk = touchAtkOf('ranged-touch');
       const meleeTouchAtk = touchAtkOf('melee-touch');
-      const saveDc = 10 + finalLvl + chaMod + dcBonus;
+      const saveDc = getCombatSpellSaveDc(spell, dcBonus);
 
       const dcEl = document.getElementById('combat-spell-dc-display');
       if (dcEl) {
@@ -3281,6 +3277,7 @@
         if (mod.key === 'extend' || mod.id === 'meta_extend') isExtend = true;
         if (mod.key === 'quicken' || mod.id === 'meta_quicken') isQuicken = true;
         if (Number(mod.slotDiff)) slotDiff += Number(mod.slotDiff);
+        if (Number(mod.dcBonus)) dcBonus += Number(mod.dcBonus);
       });
 
       // Fallback check on checkboxes if present
@@ -3481,8 +3478,7 @@
       }
 
       // 3. Save DC Check
-      const chaMod = RuleEngine ? RuleEngine.getAbilityMod(character?.abilities?.cha || 10) : 0;
-      const saveDc = 10 + finalLvl + chaMod + dcBonus;
+      const saveDc = getCombatSpellSaveDc(spell, dcBonus);
 
       // 4. Damage Dice / Effect
       const hasDamageDice = (scaling && scaling.diceCount > 0) || !!spell.dice || (spell.benefit && /\d+d\d+/i.test(spell.benefit));
