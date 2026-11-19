@@ -5720,24 +5720,25 @@
     if (a && a.dataset && a.dataset.fx) return a;
     return S.fxPath ? document.querySelector('[data-fx][data-bind="' + S.fxPath + '"]') : null;
   }
-  function blockTypeMenu(listPath, types) {
-    const rows = types.map((t) =>
-      '<button type="button" class="fs-btn fs-xs fs-ghost" style="justify-content:flex-start;text-align:left;white-space:nowrap" data-action="add-block" data-p="' + esc(listPath) + '" data-t="' + t + '">+ ' + BLOCK_TYPES[t].icon + ' ' + esc(BLOCK_TYPES[t].label) + '</button>'
-    ).join('');
-    return '<details class="lego-qp" style="position:relative;display:inline-block"><summary class="fs-btn fs-xs fs-dashed" style="cursor:pointer;list-style:none">+ Block Type ▾</summary>' +
-      '<div class="fs-glass" style="position:absolute;z-index:60;top:calc(100% + 4px);left:0;display:flex;flex-direction:column;gap:3px;padding:6px;min-width:220px;border-radius:10px">' + rows + '</div></details>';
-  }
   function blockPalette(listPath, allowContainers, compact, extraHtml) {
-    const types = allowContainers ? BLOCK_ORDER : ['stat', 'roll', 'attack', 'defense', 'effect', 'carrier'];
+    const types = allowContainers
+      ? ['stat', 'roll', 'attack', 'defense', 'effect', 'resource', 'when', 'table', 'carrier']
+      : ['stat', 'roll', 'attack', 'defense', 'effect', 'carrier'];
     const intentSpot = spotHtml('intent', listPath + '|' + (allowContainers ? '1' : '0'), {
       cls: 'fs-spot-add',
-      style: compact ? 'flex:1 1 210px;max-width:340px' : 'flex:1 1 270px;max-width:440px',
+      style: compact ? 'flex:1 1 210px;max-width:340px' : 'flex:0 1 440px;width:440px;max-width:100%',
       ph: compact ? '+ Add Mechanic / Effect… (darkvision, +2 save…)' : '+ Add Mechanic / Effect… (darkvision, immune fear, +2 save, weapon finesse…)'
     });
-    return '<div class="lego-palette' + (compact ? ' compact' : '') + '">' +
-      intentSpot +
-      blockTypeMenu(listPath, types) +
-      (extraHtml || '') +
+    const btns = types.map((t) =>
+      '<button type="button" class="lego-add ' + BLOCK_TYPES[t].color + '" data-action="add-block" data-p="' + esc(listPath) + '" data-t="' + t + '">+ ' + BLOCK_TYPES[t].icon + ' ' + esc(BLOCK_TYPES[t].shortLabel) + '</button>'
+    ).join('');
+    if (compact) {
+      return '<div class="lego-palette compact">' + intentSpot + btns + (extraHtml || '') + '</div>';
+    }
+    return '<div class="lego-palette">' +
+      '<div class="lego-pal-row"><span class="lego-pal-tag">SEARCH</span>' + intentSpot + '</div>' +
+      '<div class="lego-pal-row"><span class="lego-pal-tag">BLOCKS</span>' + btns + '</div>' +
+      (extraHtml ? '<div class="lego-pal-row"><span class="lego-pal-tag">EXTRAS</span>' + extraHtml + '</div>' : '') +
       '</div>';
   }
 

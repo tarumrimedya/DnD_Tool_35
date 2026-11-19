@@ -703,8 +703,8 @@ function runAiV3ContractTests() {
     check(exampleHits.filter((it) => it.group === '📖 Step-by-Step Archetype Examples').length === 6,
       'SPOT.load Examples layer must include all 6 Guide archetype recipes');
     const scratchMarkup = Forge.renderScratch();
-    check(scratchMarkup.includes('fs-spot-add') && scratchMarkup.includes('+ Add Mechanic / Effect…') && scratchMarkup.includes('+ Block Type ▾') && !scratchMarkup.includes('Quick Presets'),
-      'blockPalette must render emerald "+ Add Mechanic / Effect…" + "+ Block Type ▾" without Quick Presets');
+    check(scratchMarkup.includes('fs-spot-add') && scratchMarkup.includes('+ Add Mechanic / Effect…') && scratchMarkup.includes('lego-pal-tag') && scratchMarkup.includes('SEARCH') && scratchMarkup.includes('BLOCKS') && scratchMarkup.includes('data-action="add-block"') && !scratchMarkup.includes('Quick Presets'),
+      'blockPalette must render labeled SEARCH / BLOCKS / EXTRAS rows with open 1-click block buttons and no Quick Presets');
   }
 
   const elapsedMs = Date.now() - startMs;
