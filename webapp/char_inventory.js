@@ -7503,38 +7503,29 @@
       if (!character || !Array.isArray(character.weapons)) return;
       const wep = character.weapons.find(w => w.name === character.activeWeapon) || character.weapons[0];
       if (!wep) return;
-      wep.activeModeId = (wep.activeModeId === modeId) ? null : modeId;
-      character.activeModes = character.activeModes || {};
-      character.activeModes[wep.id || wep.name] = wep.activeModeId;
+      const nextModeId = (wep.activeModeId === modeId) ? null : modeId;
       const dbWep = typeof findMasterItem === 'function'
         ? findMasterItem(wep.name)
         : (window.SrdCompendium && typeof window.SrdCompendium.getByName === 'function' ? window.SrdCompendium.getByName(wep.name) : null);
       const modesList = (Array.isArray(wep.modes) && wep.modes.length > 0) ? wep.modes : (Array.isArray(dbWep?.modes) ? dbWep.modes : []);
-      const chosenMode = modesList.find(m => (m.id || m.name) === wep.activeModeId);
+      const chosenMode = nextModeId ? modesList.find(m => (m.id || m.name) === nextModeId) : null;
       const chosenRoll = chosenMode && Array.isArray(chosenMode.effects)
         ? chosenMode.effects.find(e => e && e.type === 'roll' && (!e.kind || e.kind === 'Damage'))
         : null;
       const modeDice = (chosenRoll && chosenRoll.dice) || chosenMode?.dice || '';
-      const modeDmgType = (chosenRoll && chosenRoll.dmgType) || 'Energy';
-      if (chosenMode && modeDice) {
-        if (!Array.isArray(character.tacticalRiders)) character.tacticalRiders = [];
-        const modName = `${wep.name}: ${chosenMode.name || chosenMode.label}`;
-        let existingRider = character.tacticalRiders.find(m => m.name === modName);
-        if (!existingRider) {
-          existingRider = {
-            schemaVersion: 3,
-            id: chosenMode.id || ('rider_' + modName.toLowerCase().replace(/[^a-z0-9]+/g, '_')),
-            name: modName,
-            source: wep.name,
-            active: true,
-            effects: [{ type: 'roll', kind: 'Damage', dice: modeDice, dmgType: modeDmgType }]
-          };
-          character.tacticalRiders.push(existingRider);
-        } else {
-          existingRider.active = true;
-        }
-      }
-      saveStateToStorage(false);
+      const rider = (chosenMode && modeDice) ? {
+        id: chosenMode.id || '',
+        name: `${wep.name}: ${chosenMode.name || chosenMode.label}`,
+        dice: modeDice,
+        dmgType: (chosenRoll && chosenRoll.dmgType) || 'Energy'
+      } : null;
+      // Store reducer: weapon.activeModeId, doc.activeModes[weaponId|name] and the damage rider (see combat/selectWeaponMode)
+      CharStore.dispatch({
+        type: 'combat/selectWeaponMode',
+        payload: { weaponName: wep.name, modeId, rider },
+        label: `Weapon Mode: ${wep.name}`,
+        meta: { label: `Weapon Mode: ${wep.name}`, cloudSync: false }
+      });
       recalculateOffense();
     }
 

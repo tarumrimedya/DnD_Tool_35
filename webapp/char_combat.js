@@ -6408,6 +6408,32 @@
         });
       }
 
+      // Mode chips: one per selectable `modes[]` entry of the character's own class features / feats (Rage, Bardic Music, Smite ...).
+      // The chip is only a switch: `active` mirrors `character.activeModes[entryId]` and the bonuses come from the entry's own
+      // V3 blocks (effects stays empty so nothing is counted twice).
+      if (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getActivationModes === 'function') {
+        RuleEngine.getActivationModes(character).forEach(am => {
+          am.modes.forEach(m => {
+            if (m.isOff) return;
+            const lbl = m.label || '';
+            const paren = lbl.indexOf('(') >= 0 ? lbl.slice(lbl.indexOf('(') + 1, lbl.lastIndexOf(')') > lbl.indexOf('(') ? lbl.lastIndexOf(')') : undefined) : '';
+            qualifiedPool.push({
+              id: 'rider-mode-' + am.entryId + '-' + m.id,
+              schemaVersion: 3,
+              name: m.name,
+              source: am.name,
+              combatScope: 'melee',
+              riderType: 'Mode',
+              modeEntryId: am.entryId,
+              modeId: m.id,
+              active: am.activeIdx === m.idx,
+              notes: paren || (lbl !== m.name ? lbl : ''),
+              effects: []
+            });
+          });
+        });
+      }
+
       // CLEANUP: Strictly remove unowned modifiers, spell attacks, skills, and non-melee items lingering from prior storage/dummy data
       const isSkillItemName = (rawName) => {
         const clean = String(rawName || '').toLowerCase().trim();
@@ -6427,6 +6453,7 @@
 
       character.tacticalRiders = character.tacticalRiders.filter(m => {
         if (!m || !m.name) return false;
+        if (m.modeEntryId) return qualifiedPool.some(q => q.modeEntryId === m.modeEntryId && q.modeId === m.modeId);
         const n = m.name.toLowerCase().trim();
         // Exclude standalone special attack cards (e.g. Breath Weapon) from melee weapon modifier toggles
         if (specialAttackNamesSet.has(n) || n.includes('breath weapon')) return false;
@@ -6488,6 +6515,12 @@
 
       // Synchronize qualified items into character.tacticalRiders
       qualifiedPool.forEach(def => {
+        if (def.modeEntryId) {
+          const modeRider = character.tacticalRiders.find(m => m && m.modeEntryId === def.modeEntryId && m.modeId === def.modeId);
+          if (!modeRider) character.tacticalRiders.push({ ...def, effects: [] });
+          else Object.assign(modeRider, { schemaVersion: 3, id: def.id, name: def.name, source: def.source, active: def.active, notes: def.notes, effects: [] });
+          return;
+        }
         const existing = character.tacticalRiders.find(m => m && m.name && m.name.toLowerCase() === def.name.toLowerCase());
         if (!existing) {
           character.tacticalRiders.push({ ...def, effects: JSON.parse(JSON.stringify(def.effects || [])) });
@@ -6591,6 +6624,9 @@
           bonusStr = '+1 Attack';
           bonusColor = 'text-rose-300';
         }
+        if (mod.modeEntryId) {
+          bonusStr = UI.escapeHtml(String(mod.notes || 'Toggle').split(';')[0].trim() || 'Toggle');
+        }
 
         const actualIdx = (character.tacticalRiders || []).indexOf(mod);
 
@@ -6616,7 +6652,7 @@
 
           <div class="flex-1 flex flex-col justify-center items-center px-0.5 my-auto">
             <div class="text-[10px] font-bold ${mod.active ? 'text-white font-extrabold' : 'text-slate-200'} leading-tight truncate w-full">${UI.escapeHtml(mod.name)}</div>
-            <div class="text-[10px] ${mod.active ? 'text-amber-300 font-bold' : bonusColor} font-mono mt-1">${bonusStr}</div>
+            <div class="text-[10px] ${mod.active ? 'text-amber-300 font-bold' : bonusColor} font-mono mt-1${mod.modeEntryId ? ' truncate w-full' : ''}"${mod.modeEntryId ? ` title="${UI.escapeAttr(mod.notes || '')}"` : ''}>${bonusStr}</div>
           </div>
         </div>
         `;
@@ -8442,6 +8478,18 @@
     function toggleModifier(idx) {
       if (!character.tacticalRiders || !character.tacticalRiders[idx]) return;
       const modLbl = `Toggle Modifier: ${character.tacticalRiders[idx].name || idx}`;
+      const modeRider = character.tacticalRiders[idx];
+      if (modeRider.modeEntryId) {
+        // Mode chip (Rage, Bardic Music ...): picking the active chip again switches the entry off; picking another switches modes.
+        CharStore.dispatch({
+          type: 'combat/setActiveMode',
+          payload: { entryId: modeRider.modeEntryId, modeId: modeRider.active ? null : modeRider.modeId },
+          label: modLbl,
+          meta: { label: modLbl, cloudSync: false }
+        });
+        patchCockpitDOM();
+        return;
+      }
       CharStore.dispatch({
         type: 'combat/toggleTacticalMod',
         payload: { globalIdx: idx },

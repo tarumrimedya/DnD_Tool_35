@@ -1642,6 +1642,57 @@
     return doc;
   });
 
+  // Select the active `modes[]` entry of a class feature / feat (Rage, Bardic Music ...): `doc.activeModes[entryId] = modeId`.
+  // `modeId: null` switches the entry off (read by RuleEngine.evaluateV3Entry via `character.activeModes`).
+  CharStore.registerReducer('combat/setActiveMode', (doc, action, stateObj) => {
+    const payload = (action && action.payload) || {};
+    const entryId = String(payload.entryId || '').trim();
+    if (!entryId) {
+      setStoreOutcome(stateObj, { status: 'invalid_payload' });
+      return doc;
+    }
+    if (!doc.activeModes || typeof doc.activeModes !== 'object') doc.activeModes = {};
+    if (payload.modeId === null || payload.modeId === undefined || payload.modeId === '') {
+      delete doc.activeModes[entryId];
+    } else {
+      doc.activeModes[entryId] = String(payload.modeId);
+    }
+    setStoreOutcome(stateObj, { status: 'mode_set', entryId, modeId: doc.activeModes[entryId] || null });
+    return doc;
+  });
+
+  // Weapon mode selector (Flaming Burst, Energy Assault ...): picking the active mode again switches it off.
+  // Writes the weapon's `activeModeId`, `doc.activeModes[weaponId|name]` and, when the mode adds damage dice, its tactical rider.
+  CharStore.registerReducer('combat/selectWeaponMode', (doc, action, stateObj) => {
+    const payload = (action && action.payload) || {};
+    const wep = Array.isArray(doc.weapons) ? doc.weapons.find(w => w && w.name === payload.weaponName) : null;
+    if (!wep) {
+      setStoreOutcome(stateObj, { status: 'not_found' });
+      return doc;
+    }
+    wep.activeModeId = (wep.activeModeId === payload.modeId) ? null : payload.modeId;
+    if (!doc.activeModes || typeof doc.activeModes !== 'object') doc.activeModes = {};
+    doc.activeModes[wep.id || wep.name] = wep.activeModeId;
+    const r = payload.rider;
+    if (wep.activeModeId && r && r.name && r.dice) {
+      if (!Array.isArray(doc.tacticalRiders)) doc.tacticalRiders = [];
+      const existing = doc.tacticalRiders.find(m => m && m.name === r.name);
+      if (existing) existing.active = true;
+      else {
+        doc.tacticalRiders.push({
+          schemaVersion: 3,
+          id: r.id || ('rider_' + String(r.name).toLowerCase().replace(/[^a-z0-9]+/g, '_')),
+          name: r.name,
+          source: wep.name,
+          active: true,
+          effects: [{ type: 'roll', kind: 'Damage', dice: r.dice, dmgType: r.dmgType || 'Energy' }]
+        });
+      }
+    }
+    setStoreOutcome(stateObj, { status: 'weapon_mode_set', weapon: wep.name, modeId: wep.activeModeId });
+    return doc;
+  });
+
   CharStore.registerReducer('combat/adjustPowerAttack', (doc, action, stateObj) => {
     ensureCombatActionStructures(doc);
     const payload = (action && action.payload) || {};

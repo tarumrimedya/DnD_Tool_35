@@ -10424,6 +10424,51 @@ const RuleEngine = {
     return this.GRAPPLE_SIZE_MODIFIERS[this.shiftSizeKey(key, shifts[scope])] || 0;
   },
 
+  // Sheet-selectable `modes[]` (Rage, Bardic Music, Smite, Defensive Stance ...) of the character's own Lego entries.
+  // Weapon modes keep their own selector (`selectActiveWeaponMode`). A mode without any block is the "off" state (Calm, Inactive).
+  // The selection lives in `character.activeModes[entryId]` (mode id, name, label or index; read by `evaluateV3Entry`).
+  getActivationModes(character) {
+    const entries = (character && character.legoEvaluation && Array.isArray(character.legoEvaluation.entries))
+      ? character.legoEvaluation.entries : [];
+    const map = (character && character.activeModes) || {};
+    const hasEffects = m => ['blocks', 'effects', 'modifiers', 'damageParts'].some(k => Array.isArray(m && m[k]) && m[k].length > 0);
+    const out = [];
+    const seen = new Set();
+    entries.forEach(e => {
+      if (!e || !Array.isArray(e.modes) || e.modes.length === 0) return;
+      const kind = String(e.category || e.kind || e.type || '').toLowerCase();
+      if (kind === 'weapon' || e._legoSource === 'weapon') return;
+      const entryId = String(e.id || e.baseEntryId || e.baseItemId || '').trim();
+      if (!entryId || seen.has(entryId)) return;
+      seen.add(entryId);
+      const modes = e.modes.map((m, idx) => ({
+        idx,
+        id: String((m && (m.id || m.name || m.label)) || idx),
+        name: String((m && (m.name || m.label || m.id)) || ('Mode ' + (idx + 1))),
+        label: String((m && (m.label || m.name)) || ''),
+        isOff: !hasEffects(m)
+      }));
+      if (!modes.some(m => !m.isOff)) return;
+      const raw = map[entryId];
+      let activeIdx = -1;
+      if (raw !== undefined && raw !== null && raw !== '') {
+        const asIdx = Number(raw);
+        if (Number.isInteger(asIdx) && asIdx >= 0 && asIdx < modes.length) activeIdx = asIdx;
+        else {
+          const sel = String(raw).trim().toLowerCase();
+          activeIdx = modes.findIndex(m => m.id.toLowerCase() === sel || m.name.toLowerCase() === sel || m.label.toLowerCase() === sel);
+        }
+      }
+      out.push({
+        entryId,
+        name: String(e.name || entryId),
+        modes,
+        activeIdx: activeIdx >= 0 && !modes[activeIdx].isOff ? activeIdx : -1
+      });
+    });
+    return out;
+  },
+
   // Virtual weapon entries for the character's natural weapons (V3 `effect` blocks `effectKind: 'naturalWeapon'`).
   // Damage is the block's `damageBySize[sizeKey]` or the Medium `dice` stepped one die per size category (MM natural attack table).
   getNaturalWeapons(character) {

@@ -6071,6 +6071,45 @@ function runDeriveSheetTests() {
       bardGreat.evaluatedSaves.fort === cls([['Bard', 9]]).evaluatedSaves.fort + 1 && cls([['Bard', 8]], { activeModes: { 'cab-bardic-music': 2 } }).evaluatedSaves.fort === cls([['Bard', 8]]).evaluatedSaves.fort,
       JSON.stringify([bardGreat.evaluatedSaves.fort, cls([['Bard', 9]]).evaluatedSaves.fort])
     );
+    // Sheet mode selector source: getActivationModes lists the character's own modes[] entries (Rage, Bardic Music ...)
+    const amBarb = RuleEngine.getActivationModes(cls([['Barbarian', 3]]));
+    const amRage = amBarb.find(m => m.entryId === 'cab-rage');
+    const amRaging = RuleEngine.getActivationModes(cls([['Barbarian', 3]], { activeModes: { 'cab-rage': 'mode-rage-active' } })).find(m => m.entryId === 'cab-rage');
+    const amBard = RuleEngine.getActivationModes(cls([['Bard', 9]], { activeModes: { 'cab-bardic-music': 2 } })).find(m => m.entryId === 'cab-bardic-music');
+    check(
+      'Mode selector: getActivationModes lists Rage with a Calm (off) and a Raging mode; selection by id or index; non-casters list nothing',
+      !!amRage && amRage.activeIdx === -1 && amRage.modes.some(m => m.isOff) && !!amRaging && amRaging.modes[amRaging.activeIdx].name === 'Raging' &&
+        !!amBard && amBard.modes[amBard.activeIdx].name === 'Inspire Greatness' &&
+        RuleEngine.getActivationModes(cls([['Wizard', 3]])).every(m => m.entryId !== 'cab-rage'),
+      JSON.stringify([amBarb.map(m => m.entryId), amRaging && amRaging.activeIdx, amBard && amBard.activeIdx])
+    );
+    // activation branches became modes[] (tools/compile_activation_modes.js): the mode applies its blocks only when selected
+    const pdRows = [{ level: 1, className: 'Fighter', hd: 'd10', hpGain: 10, active: true, feats: [] }];
+    const pdChar = extra => {
+      const c = Object.assign({
+        name: 'Mode Probe', race: 'Human', classes: 'Fighter 1', level: 1, size: 'Medium',
+        abilities: { str: 14, dex: 14, con: 14, int: 14, wis: 14, cha: 14 }, baseAbilities: { str: 14, dex: 14, con: 14, int: 14, wis: 14, cha: 14 },
+        levelProgression: pdRows, feats: [{ id: 'feat-psionic-dodge', name: 'Psionic Dodge', type: 'Feat', active: true }], bodySlots: {}, weapons: [], gearPool: [], hp: { max: 10, current: 10 }
+      }, extra || {});
+      RuleEngine.recalculateCharacter(c, []);
+      return c;
+    };
+    const pdOff = pdChar();
+    const pdOn = pdChar({ activeModes: { 'feat-psionic-dodge': 'mode-psionically-focused' } });
+    const pdMode = RuleEngine.getActivationModes(pdOff).find(m => m.entryId === 'feat-psionic-dodge');
+    check(
+      'Activation modes: Psionic Dodge lists a Psionically Focused mode and its +1 Dodge AC applies only when the mode is selected',
+      !!pdMode && pdMode.modes.some(m => m.name === 'Psionically Focused') && pdOn.acBreakdown.total === pdOff.acBreakdown.total + 1,
+      JSON.stringify([pdMode && pdMode.modes.map(m => m.name), pdOff.acBreakdown && pdOff.acBreakdown.total, pdOn.acBreakdown && pdOn.acBreakdown.total])
+    );
+    const berz = global.SrdCompendium.getById('enh-berserker');
+    const utt = global.SrdCompendium.getById('utt-defensive-edge');
+    check(
+      'Activation modes: Berserker reads the Rage mode, utterances keep Normal / Reverse as modes, no activation when-branch left outside class records / stances',
+      !!berz && JSON.stringify(berz.effects).includes('mode:mode-rage-active') && !JSON.stringify(berz.effects).includes('"activation"') &&
+        !!utt && utt.modes.map(m => m.name).join('|') === 'Inactive|Normal Utterance|Reverse Utterance' && !JSON.stringify(utt.effects).includes('"condKind":"activation"'),
+      JSON.stringify([berz && berz.effects, utt && utt.modes && utt.modes.map(m => m.name)]).slice(0, 300)
+    );
   }
 
   // --- Closed condition vocabulary: an unrecognized condition is never silently always-on ---

@@ -2558,6 +2558,10 @@ function main() {
     }
   }
 
+  // C2. `whenBlock(..., 'activation', ...)` blocks emitted above become selectable `modes[]` (idempotent; rewrites chunks on disk,
+  // the index rebuild below re-hashes every chunk from disk).
+  const activationModes = require('./compile_activation_modes').run();
+
   // D. Rebuild srd_index.json
   const idxRes = rebuildSrdIndex(metaUpdates);
   const elapsedMs = Date.now() - t0;
@@ -2570,6 +2574,7 @@ function main() {
     existingClassAbilitiesEnriched: cabExistingEnriched,
     classFeatureLinksAdded: { core: linkedCore, splat: linkedSplat },
     classBlocks: classBlockStats,
+    activationModes,
     featsPatched,
     domainsPatched: domainsPatched + extraDom,
     spellsPatched: spellsPatched + extraSpells,
