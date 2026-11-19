@@ -5368,6 +5368,15 @@
         "flag": "heroic-surge",
         "label": "Heroic Surge",
         "text": "Take an extra Move or Attack action 1/day per 4 character levels."
+      },
+      {
+        "type": "resource",
+        "name": "Heroic Surge Uses",
+        "varKey": "feat_heroic_surge_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 1,
+        "reset": "perDay"
       }
     ],
     "text": "Take an extra Move or Attack action 1/day per 4 character levels.",
@@ -12118,6 +12127,15 @@
         "flag": "hope",
         "label": "Hope",
         "text": "1/day you can grant another good character a +4 sacred bonus to any one skill."
+      },
+      {
+        "type": "resource",
+        "name": "Hope Uses",
+        "varKey": "feat_hope_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 1,
+        "reset": "perDay"
       }
     ],
     "text": "1/day you can grant another good character a +4 sacred bonus to any one skill.",

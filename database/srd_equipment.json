@@ -13204,6 +13204,15 @@
         "mode": "flat",
         "value": 2,
         "btype": "Enhancement"
+      },
+      {
+        "type": "resource",
+        "name": "Mace of Terror Uses",
+        "varKey": "mi_mace_of_terror_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 3,
+        "reset": "perDay"
       }
     ],
     "ruleFlags": {
@@ -13276,7 +13285,17 @@
       "price": 0,
       "casterLevel": 0
     },
-    "effects": [],
+    "effects": [
+      {
+        "type": "resource",
+        "name": "The Moaning Diamond Uses",
+        "varKey": "mi_the_moaning_diamond_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 3,
+        "reset": "perDay"
+      }
+    ],
     "shortDescription": "The Moaning Diamond: The Moaning Diamond appears to be an uncut diamond the size of a human fist. At all times, it gives forth a baleful moaning sound, as if in pain. Despite the noise, the Moaning Diamond is not evil.…",
     "text": "The Moaning Diamond: The Moaning Diamond appears to be an uncut diamond the size of a human fist. At all times, it gives forth a baleful moaning sound, as if in pain. Despite the noise, the Moaning Diamond is not evil. The wielder of the stone can, three times per day, call upon it to reshape earth and stone as if by the spell stone shape, affecting 5,000 cubic feet of material. The Moaning Diamond can summon an elder earth elemental with maximum hit points that serves the caster until it is slain. Only one such elemental can be summoned at a time; if it is slain, a new creature cannot be summoned for 24 hours.",
     "tags": [
@@ -13761,6 +13780,15 @@
         "die": "d6",
         "scaling": "flat",
         "source": "Lion's Shield"
+      },
+      {
+        "type": "resource",
+        "name": "Lion's Shield Uses",
+        "varKey": "mi_lions_shield_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 3,
+        "reset": "perDay"
       }
     ],
     "shortDescription": "Lion's Shield: This +2 heavy steel shield is fashioned to appear to be a roaring lion's head. Three times per day as a free action, the lion's head can be commanded to attack (independently of the shield wearer), biting…",
@@ -14492,7 +14520,17 @@
       "price": 50335,
       "casterLevel": 10
     },
-    "effects": [],
+    "effects": [
+      {
+        "type": "resource",
+        "name": "Sun Blade Uses",
+        "varKey": "mi_sun_blade_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 1,
+        "reset": "perDay"
+      }
+    ],
     "shortDescription": "Sun Blade: This sword is the size of a bastard sword. However, a sun blade is wielded as if it were a short sword with respect to weight and ease of use. (In other words, the weapon appears to all viewers to be a bastar…",
     "text": "Sun Blade: This sword is the size of a bastard sword. However, a sun blade is wielded as if it were a short sword with respect to weight and ease of use. (In other words, the weapon appears to all viewers to be a bastard sword, and deals bastard sword damage, but the wielder feels and reacts as if the weapon were a short sword.) Any individual able to use either a bastard sword or a short sword with proficiency is proficient in the use of a sun blade. Likewise, Weapon Focus and Weapon Specialization in short sword and bastard sword apply equally, but the benefits of those feats do not stack.\n\nIn normal combat, the glowing golden blade of the weapon is equal to a +2 bastard sword. Against evil creatures, its enhancement bonus is +4. Against Negative Energy Plane creatures or undead creatures, the sword deals double damage (and x3 on a critical hit instead of the usual x2).\n\nThe blade also has a special sunlight power. Once per day, the wielder can swing the blade vigorously above her head while speaking a command word. The sunblade then sheds a bright yellow radiance that is like full daylight. The radiance begins shining in a 10-foot radius around the sword wielder and extends outward at 5 feet per round for 10 rounds thereafter, to create a globe of light with a 60-foot radius. When the wielder stops swinging, the radiance fades to a dim glow that persists for another minute before disappearing entirely. All sun blades are of good alignment, and any evil creature attempting to wield one gains one negative level. The negative level remains as long as the sword is in hand and disappears when the sword is no longer wielded. This negative level never results in actual level loss, but it cannot be overcome in any way (including restoration spells) while the sword is wielded.\n\nModerate evocation; CL 10th; Craft Magic Arms and Armor, daylight, creator must be good; Price 50,335 gp; Cost 25,335 gp + 2,000 XP.",
     "tags": [
@@ -14662,7 +14700,17 @@
       "price": 4293432,
       "casterLevel": 0
     },
-    "effects": [],
+    "effects": [
+      {
+        "type": "resource",
+        "name": "Rod of Epic Might Uses",
+        "varKey": "mi_rod_of_epic_might_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 1,
+        "reset": "perDay"
+      }
+    ],
     "shortDescription": "Epic Might: This rod is similar to a rod of lordly might , although it is far more powerful. It is larger than its normal counterpart, and it is constructed of adamantine rather than normal metal. It has six buttons, se…",
     "text": "Epic Might: This rod is similar to a rod of lordly might, although it is far more powerful. It is larger than its normal counterpart, and it is constructed of adamantine rather than normal metal. It has six buttons, several spell-like functions, and several mundane uses, and it can also be used as a magic weapon of various sorts.\nThe following spell-like functions of the rod can each be used once per day.\n\n• Dominate Person: Touched foe is recipient of a dominate person spell, if the wielder so commands (Will save DC 24). The wielder must choose to use this power and then succeed with a melee touch attack to activate the power. If the attack fails, the effect is lost.\n\n• Stun: Upon command, all enemies viewing the rod are stunned, as per the power word, stun spell (10-foot maximum range, Will save DC 24). Invoking this power is a standard action.\n\n• Damage: Upon command, the rod deals 10d8 points of damage to an opponent on a successful touch attack and cures the wielder of a like amount of damage (Will save DC 26). The wielder must choose to use this power before attacking, as with dominate person.\n\nThe following weapon uses of the rod have no limits on their use.\n\n• In its normal form, the rod can be used as a +6 heavy mace.\n\n• When button 1 is pushed, the rod becomes a +3 longsword of fiery blasting.\n\n• When button 2 is pushed, the rod becomes a +8 battleaxe.\n\n• When button 3 is pushed, the rod becomes a +10 shortspear or +10 longspear.\n\nThe following mundane uses of the rod also have no limits on their use.\n\n• Climbing pole/ladder: When button 4 is pushed, a spike that can anchor in granite is extruded from the ball, while the other end sprouts three sharp hooks. The rod lengthens to anywhere between 5 and 150 feet in a single round, stopping when button 4 is pushed again. Horizontal bars 3 inches long fold out from the sides, 1 foot apart, in staggered progression. The rod is firmly held by the spike and hooks and can bear up to 10,000 pounds. The wielder can retract the pole by pushing button 5.\n\n• The ladder function can be used to force open doors. The wielder plants the rod's base 30 feet or less from the portal to be forced and in line with it, then pushes button 4. The force exerted has a Strength bonus of+24.\n\n• When button 6 is pushed, the rod indicates magnetic north and gives the wielder a knowledge of his or her approximate depth beneath the surface or height above it.\n\nCaster Level: 30th; Prerequisites: Craft Rod, Craft Epic Rod, Craft Magic Arms and Armor, Craft Epic Magic Arms and Armor, cure critical wounds, inflict critical wounds, bull's strength, fireball, dominate person, power word stun; Market Price: 4,293,432 gp; Cost to Create: 2,151,372 gp + 52,841 XP.",
     "tags": [
@@ -17067,7 +17115,17 @@
       "price": 16000,
       "casterLevel": 5
     },
-    "effects": [],
+    "effects": [
+      {
+        "type": "resource",
+        "name": "Scabbard of Keen Edges Uses",
+        "varKey": "mi_scabbard_of_keen_edges_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 3,
+        "reset": "perDay"
+      }
+    ],
     "shortDescription": "Scabbard of Keen Edges: This scabbard is fashioned from cured leather and fine silver. It can shrink or enlarge to accommodate any knife, dagger, sword, or similar weapon up to and including a greatsword. Up to three ti…",
     "text": "Scabbard of Keen Edges: This scabbard is fashioned from cured leather and fine silver. It can shrink or enlarge to accommodate any knife, dagger, sword, or similar weapon up to and including a greatsword. Up to three times per day on command, the scabbard casts keen edge on any blade placed within it.\nFaint transmutation; CL 5th; Craft Wondrous Item, keen edge; Price 16,000 gp; Weight 1 lb.",
     "tags": [
@@ -17299,7 +17357,17 @@
       "price": 288000,
       "casterLevel": 0
     },
-    "effects": [],
+    "effects": [
+      {
+        "type": "resource",
+        "name": "Cabinet of Feasting Uses",
+        "varKey": "mi_cabinet_of_feasting_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 3,
+        "reset": "perDay"
+      }
+    ],
     "shortDescription": "Cabinet of Feasting: This cabinet has the ability to produce a feast for up to forty people, three times per day. Merely opening the doors of the cabinet reveals platters of food of all types and flavors of the very fre…",
     "text": "Cabinet of Feasting: This cabinet has the ability to produce a feast for up to forty people, three times per day. Merely opening the doors of the cabinet reveals platters of food of all types and flavors of the very freshest sort. The meal has all the qualities and benefits of that produced by a heroes' feast spell.\nCaster Level: 40th; Prerequisites: Craft Wondrous Item, Craft Epic Wondrous Item, heroes' feast; Market Price: 288,000 gp; Weight: 20 lb.",
     "tags": [
@@ -18175,6 +18243,15 @@
         "mode": "flat",
         "value": 3,
         "btype": "Resistance"
+      },
+      {
+        "type": "resource",
+        "name": "Psychoactive Skins Uses",
+        "varKey": "mi_psychoactive_skins_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 3,
+        "reset": "perDay"
       }
     ],
     "shortDescription": "Psychoactive Skins: Psychoactive skins (also sometimes called ectoshells) are fistsized globs of psionically charged ectoplasm. As a standard action, a psychoactive skin spreads over and covers a Medium or smaller creat…",
@@ -18299,7 +18376,17 @@
       "price": 0,
       "casterLevel": 0
     },
-    "effects": [],
+    "effects": [
+      {
+        "type": "resource",
+        "name": "Codex of the Infinite Planes Uses",
+        "varKey": "mi_codex_of_the_infinite_planes_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 1,
+        "reset": "perDay"
+      }
+    ],
     "shortDescription": "Codex of the Infinite Planes: The Codex is enormous-supposedly, it requires two strong men to lift it. No matter how many pages are turned, another always remains. Anyone opening the Codex for the first time is utterly…",
     "text": "Codex of the Infinite Planes: The Codex is enormous-supposedly, it requires two strong men to lift it. No matter how many pages are turned, another always remains. Anyone opening the Codex for the first time is utterly annihilated, as with a destruction spell (Fortitude DC 30 for only 10d6 damage). Those who survive can peruse its pages and learn its powers, though not without risk. Each day spent studying the Codex allows the reader to make a Spellcraft check (DC 50) to learn one of its powers (choose the power learned randomly; add a +1 circumstance bonus on the check per additional day spent reading until a power is learned). However, each day of study also forces the reader to make a Will save (DC 30 + 1 per day of study) to avoid being driven insane (as the insanity spell). The powers of the Codex of the Infinite Planes are as follows: astral projection, banishment, elemental swarm, gate, greater planar ally, greater planar binding, plane shift, and soul bind. Each is usable at will by the owner of the Codex (assuming that he or she has learned how to access the power). The Codex of the Infinite Planes has a caster level of 30th for the purposes of all powers and catastrophes, and all saving throw DCs are 20 + spell level. Activating any power requires both a Concentration check and a Spellcraft check (DC 40 + twice the spell level of the power; the character can't take 10 on this check). Any failure on either check indicates a catastrophe befalls the user (roll on the table below for the effect). A character can only incur one catastrophe per power use, even if he or she fails both checks.\n\nd%\n| Catastrophe\n|\n\n01-25\n|\nNatural Fury: An earthquake spell centered on the reader strikes every round for 1 minute, and an intensified storm of vengeance spell is centered and targeted on the reader.\n|\n\n26-50\n|\nFiendish Vengeance: A Gate opens and 1d3+1 balor demons, pit fiends, or similar evil outsiders immediately step through and attempt to destroy the owner of the Codex.\n|\n\n51-75\n|\nUltimate Imprisonment: Reader's soul is captured (as trap the soul; no save allowed) in a random gem somewhere on the plane while his or her body is entombed beneath the earth (as imprisonment).\n|\n\n76-100\n|\nDeath: The reader utters a wail of the banshee and then is subject to a destruction spell. This repeats every round for 10 rounds until the reader is dead.\n|",
     "tags": [
@@ -18683,6 +18770,15 @@
         "srMode": "flat",
         "value": 15,
         "what": "Magic"
+      },
+      {
+        "type": "resource",
+        "name": "The Shadowstaff Uses",
+        "varKey": "mi_the_shadowstaff_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 3,
+        "reset": "perDay"
       }
     ],
     "shortDescription": "The Shadowstaff: This artifact was crafted centuries ago, weaving together the wispy strands of shadow itself into a twisted black staff. The Shadowstaff makes the wielder slightly shadowy and incorporeal, granting him…",
@@ -19067,7 +19163,17 @@
       "price": 13000,
       "casterLevel": 6
     },
-    "effects": [],
+    "effects": [
+      {
+        "type": "resource",
+        "name": "Lyre of Building Uses",
+        "varKey": "mi_lyre_of_building_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 1,
+        "reset": "perDay"
+      }
+    ],
     "shortDescription": "Lyre of Building: If the proper chords are struck, a single use of this lyre negates any attacks made against all inanimate construction (walls, roof, floor, and so on) within 300 feet. This includes the effects of a ho…",
     "text": "Lyre of Building: If the proper chords are struck, a single use of this lyre negates any attacks made against all inanimate construction (walls, roof, floor, and so on) within 300 feet. This includes the effects of a horn of blasting, a disintegrate spell, or an attack from a ram or similar siege weapon. The lyre can be used in this way once per day, with the protection lasting for 30 minutes.\nThe lyre is also useful with respect to building. Once a week its strings can be strummed so as to produce chords that magically construct buildings, mines, tunnels, ditches, or whatever. The effect produced in but 30 minutes of playing is equal to the work of 100 humans laboring for three days. Each hour after the first, a character playing the lyre must make a DC 18 Perform (string instruments) check. If it fails, she must stop and cannot play the lyre again for this purpose until a week has passed.\nFaint transmutation; CL 6th; Craft Wondrous Item, fabricate; Price 13,000 gp; Weight 5 lb.",
     "tags": [
@@ -19212,6 +19318,15 @@
         "mode": "flat",
         "value": 8,
         "btype": "Enhancement"
+      },
+      {
+        "type": "resource",
+        "name": "Iron Gauntlet of War Uses",
+        "varKey": "mi_iron_gauntlet_of_war_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 1,
+        "reset": "perDay"
       }
     ],
     "shortDescription": "Iron Gauntlet of War: The Gauntlet grants a +8 enhancement bonus to Strength. The wearer doubles the damage bonus on any smite attacks he or she makes. If the wearer has the Leadership feat, the wearer's Leadership scor…",
@@ -19538,6 +19653,15 @@
         "mode": "flat",
         "value": 1,
         "btype": "Enhancement"
+      },
+      {
+        "type": "resource",
+        "name": "Rod of Flailing Uses",
+        "varKey": "mi_rod_of_flailing_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 1,
+        "reset": "perDay"
       }
     ],
     "ruleFlags": {
@@ -20296,7 +20420,17 @@
       "price": 145000,
       "casterLevel": 14
     },
-    "effects": [],
+    "effects": [
+      {
+        "type": "resource",
+        "name": "Efreeti Bottle Uses",
+        "varKey": "mi_efreeti_bottle_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 1,
+        "reset": "perDay"
+      }
+    ],
     "shortDescription": "Efreeti Bottle: This item is typically fashioned of brass or bronze, with a lead stopper bearing special seals. A thin stream of smoke is often seen issuing from it. The bottle can be opened once per day. When opened, t…",
     "text": "Efreeti Bottle: This item is typically fashioned of brass or bronze, with a lead stopper bearing special seals. A thin stream of smoke is often seen issuing from it. The bottle can be opened once per day. When opened, the efreeti imprisoned within issues from the bottle instantly. There is a 10% chance (01-10 on d%) that the efreeti is insane and attacks immediately upon being released. There is also a 10% chance (91-100) that the efreeti of the bottle grants three wishes. In either case, the efreeti afterward disappears forever. The other 80% of the time (11-90), the inhabitant of the bottle loyally serves the character for up to 10 minutes per day (or until the efreeti's death), doing as she commands. Roll each day the bottle is opened for that day's effect.\nStrong conjuration; CL 14th; Craft Wondrous Item, summon monster VII; Price 145,000 gp; Weight 1 lb.",
     "tags": [
@@ -22560,7 +22694,17 @@
       "price": 26000,
       "casterLevel": 13
     },
-    "effects": [],
+    "effects": [
+      {
+        "type": "resource",
+        "name": "Iron Bands of Binding Uses",
+        "varKey": "mi_iron_bands_of_binding_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 1,
+        "reset": "perDay"
+      }
+    ],
     "shortDescription": "Iron Bands of Binding: When initially discovered, this very potent item appears to be a 3-inch-diameter rusty iron sphere with bandings on the globe. When the proper command word is spoken and the spherical iron device…",
     "text": "Iron Bands of Binding: When initially discovered, this very potent item appears to be a 3-inch-diameter rusty iron sphere with bandings on the globe.\nWhen the proper command word is spoken and the spherical iron device is hurled at an opponent, the bands expand and then contract to bind the target creature on a successful ranged touch attack. A single Large or smaller creature can be captured thus and held immobile until the command word is spoken to bring the bands into spherical form again. The creature can break (and ruin) the bands with a DC 30 Strength check or escape them with a DC 30 Escape Artist check. Iron bands of binding are usable once per day.\nStrong evocation; CL 13th; Craft Wondrous Item, grasping hand; Price 26,000 gp; Weight 1 lb.",
     "tags": [
@@ -22907,7 +23051,17 @@
       "price": 5500,
       "casterLevel": 5
     },
-    "effects": [],
+    "effects": [
+      {
+        "type": "resource",
+        "name": "Wind Fan Uses",
+        "varKey": "mi_wind_fan_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 1,
+        "reset": "perDay"
+      }
+    ],
     "shortDescription": "Wind Fan: A wind fan appears to be nothing more than a wood and papyrus or cloth instrument with which to create a cooling breeze. By uttering the command word, its possessor causes the fan to generate air movement dupl…",
     "text": "Wind Fan: A wind fan appears to be nothing more than a wood and papyrus or cloth instrument with which to create a cooling breeze. By uttering the command word, its possessor causes the fan to generate air movement duplicating a Gust of Wind spell. The fan can be used once per day with no risk. If it is used more frequently, there is a 20% cumulative chance per usage during that day that the device tears into useless, nonmagical tatters.\n\nFaint evocation; CL 5th; Craft Wondrous Item, gust of wind; Price 5,500 gp.",
     "tags": [
@@ -23397,6 +23551,15 @@
         "mode": "flat",
         "value": 2,
         "btype": "Enhancement"
+      },
+      {
+        "type": "resource",
+        "name": "Oathbow Uses",
+        "varKey": "mi_oathbow_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 1,
+        "reset": "perDay"
       }
     ],
     "ruleFlags": {
@@ -24143,7 +24306,17 @@
       "price": 170000,
       "casterLevel": 20
     },
-    "effects": [],
+    "effects": [
+      {
+        "type": "resource",
+        "name": "Iron Flask Uses",
+        "varKey": "mi_iron_flask_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 1,
+        "reset": "perDay"
+      }
+    ],
     "shortDescription": "Iron Flask: These special containers are typically inlaid with runes of silver and stoppered by a brass plug bearing a seal engraved with sigils, glyphs, and special symbols. When the user speaks the command word, he ca…",
     "text": "Iron Flask: These special containers are typically inlaid with runes of silver and stoppered by a brass plug bearing a seal engraved with sigils, glyphs, and special symbols. When the user speaks the command word, he can force any creature from another plane into the container, provided that creature fails a DC 19 Will save. The range of this effect is 60 feet. Only one creature at a time can be so contained. Loosing the stopper frees the captured creature.\nThe command word can be given only once per day.\nIf the individual freeing the captured creature speaks the command word, the creature can be forced to serve for 1 hour. If freed without the command word, the creature acts according to its natural inclinations. (It usually attacks the user, unless it perceives a good reason not to.) Any attempt to force the same creature into the flask a second time provides it a +2 bonus on its saving throw and makes it hostile. A newly discovered bottle might contain any of the following:\n\nd%\n|\nContents\n|\nd%\n|\nContents\n|\n\n01-50\n|\nEmpty\n|\n89\n|\nDemon (glabrezu)\n|\n\n51-54\n|\nLarge air elemental\n|\n90\n|\nDemon (succubus)\n|\n\n55-58\n|\nArrowhawk\n|\n91\n|\nDevil (osyluth)\n|\n\n59-62\n|\nLarge earth elemental\n|\n92\n|\nDevil (barbazu)\n|\n\n63-66\n|\nXorn\n|\n93\n|\nDevil (erinyes)\n|\n\n67-70\n|\nLarge fire elemental\n|\n94\n|\nDevil (cornugon)\n|\n\n71-74\n|\nSalamander\n|\n95\n|\nCelestial (avoral)\n|\n\n75-78\n|\nLarge water elemental\n|\n96\n|\nCelestial (ghaele)\n|\n\n79-82\n|\nAdult tojanida\n|\n97\n|\nFormian myrmarch\n|\n\n83-84\n|\nChaos Beast\n|\n98\n|\nArrowhawk, elder\n|\n\n85-86\n|\nFormian taskmaster\n|\n99\n|\nRakshasa\n|\n\n87\n|\nDemon (vrock)\n|\n100\n|\nDemon (balor) or devil (pit fiend)-equal chance for either\n|\n\n88\n|\nDemon (hezrou)\n|\n\nStrong conjuration; CL 20th; Craft Wondrous Item, trap the soul; Price 170,000 gp (empty); Weight 1 lb.",
     "tags": [
@@ -24310,7 +24483,17 @@
       "price": 30000,
       "casterLevel": 7
     },
-    "effects": [],
+    "effects": [
+      {
+        "type": "resource",
+        "name": "Drums of Panic Uses",
+        "varKey": "mi_drums_of_panic_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 1,
+        "reset": "perDay"
+      }
+    ],
     "shortDescription": "Drums of Panic: These drums are kettle drums (hemispheres about 1-1/2 feet in diameter on stands). They come in pairs and are unremarkable in appearance. If both of the pair are sounded, all creatures within 120 feet (w…",
     "text": "Drums of Panic: These drums are kettle drums (hemispheres about 1-1/2 feet in diameter on stands). They come in pairs and are unremarkable in appearance. If both of the pair are sounded, all creatures within 120 feet (with the exception of those within a 20-foot-radius safe zone around the drums) are affected as by a fear spell (Will DC 16 partial). Drums of panic can be used once per day.\nModerate necromancy; CL 7th; Craft Wondrous Item, fear; Price 30,000 gp; Weight 10 lb. for the pair.",
     "tags": [
@@ -25080,6 +25263,15 @@
         "mode": "flat",
         "value": 4,
         "btype": "Enhancement"
+      },
+      {
+        "type": "resource",
+        "name": "Rod of Splendor Uses",
+        "varKey": "mi_rod_of_splendor_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 1,
+        "reset": "perDay"
       }
     ],
     "shortDescription": "Splendor: The possessor of this rod gains a +4 enhancement bonus to her Charisma score for as long as she holds or carries the item. Once per day, the rod creates and garbs her in clothing of the finest fabrics, plus ad…",
@@ -26423,7 +26615,17 @@
       "price": 25800,
       "casterLevel": 1
     },
-    "effects": [],
+    "effects": [
+      {
+        "type": "resource",
+        "name": "Strand of Prayer Beads, Standard Uses",
+        "varKey": "mi_strand_of_prayer_beads_standard_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 1,
+        "reset": "perDay"
+      }
+    ],
     "shortDescription": "Strand of Prayer Beads: This item appears to be a normal string of prayer beads until the owner casts a divine spell. Once that occurs, the owner instantly knows the powers of the prayer beads and how to activate them.…",
     "text": "Strand of Prayer Beads: This item appears to be a normal string of prayer beads until the owner casts a divine spell. Once that occurs, the owner instantly knows the powers of the prayer beads and how to activate them. Each strand includes two or more special beads, each with a different magic power.\n\nSpecial Bead Type\n|\nSpecial Bead Ability\n|\n\nBead of blessing\n|\nWearer can cast bless.\n|\n\nBead of healing\n|\nWearer can cast his choice of cure serious wounds, remove blindness/deafness, or remove disease.\n|\n\nBead of karma\n|\nWearer casts his spells at +4 caster level. Effect lasts 10 minutes.\n|\n\nBead of smiting\n|\nWearer can cast chaos hammer, holy smite, order's wrath, or unholy blight (Will DC 17 partial).\n|\n\nBead of summons\n|\nSummons a powerful creature of appropriate alignment from the Outer Planes (an angel, devil, etc.) to aid the wearer for one day. (If the wearer uses the bead of summons to summon a deity's emissary frivolously, the deity takes that character's items and places a geas upon him as punishment in the very least.)\n|\n\nBead of wind walking\n|\nWearer can cast wind walk.\n|\n\nA lesser strand of prayer beads has a bead of blessing and a bead of healing. A strand of prayer beads has a bead of healing, a bead of karma, and a bead of smiting. A greater strand of prayer beads has a bead of healing, a bead of karma, a bead of summons, and a bead of wind walking.\nEach special bead can be used once per day, except for the bead of summons, which works only once and then becomes nonmagical. The beads of blessing, smiting, and wind walking function as spell trigger items; the beads of karma and summons can be activated by any character capable of casting divine spells. The owner need not hold or wear the strand of prayer beads in any specific location, as long as he carries it somewhere on his person.\nThe power of a special bead is lost if it is removed from the strand. Reduce the price of a strand of prayer beads that is missing one or more beads by the following amounts: bead of blessing -600 gp, bead of healing -9,000 gp, bead of karma -20,000 gp, bead of smiting -16,800 gp, bead of summons -20,000 gp, bead of wind walking -46,800 gp.\nFaint, moderate or strong (many schools); CL 1st (blessing), 5th (healing), 7th (smiting), 9th (karma), 11th (wind walking), 17th (summons); Craft Wondrous Items and one of the following spells per bead, as appropriate: bless (blessing), cure serious wounds, remove blindness/ deafness, or remove disease (healing), righteous might (karma), gate (summons), chaos hammer, holy smite, order's wrath, or unholy blight (smiting), wind walk (wind walking); Price 9,600 gp (lesser), 25,800 gp (standard), 95,800 gp (greater).",
     "tags": [
@@ -27177,6 +27379,15 @@
         "die": "d6",
         "scaling": "flat",
         "source": "Bulwark of the Great Dragon"
+      },
+      {
+        "type": "resource",
+        "name": "Bulwark of the Great Dragon Uses",
+        "varKey": "mi_bulwark_of_the_great_dragon_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 3,
+        "reset": "perDay"
       }
     ],
     "shortDescription": "Bulwark of the Great Dragon: This + 6 heavy shield bears the image of a dragon's head. Three times per day, the bearer of the shield can command it to belch forth a breath weapon of the appropriate type. The range of th…",
@@ -27286,6 +27497,15 @@
         "mode": "flat",
         "value": 8,
         "btype": "Enhancement"
+      },
+      {
+        "type": "resource",
+        "name": "Rod of Epic Splendor Uses",
+        "varKey": "mi_rod_of_epic_splendor_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 3,
+        "reset": "perDay"
       }
     ],
     "shortDescription": "Epic Splendor: This rod grants its wielder a +8 enhancement bonus to Charisma for as long as he or she holds or carries the item. Three times per day, the rod creates and garbs him or her in clothing of the finest fabri…",
@@ -27405,6 +27625,15 @@
         "die": "d6",
         "scaling": "formula",
         "source": "Spined Shield"
+      },
+      {
+        "type": "resource",
+        "name": "Spined Shield Uses",
+        "varKey": "mi_spined_shield_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 3,
+        "reset": "perDay"
       }
     ],
     "shortDescription": "Spined Shield: This +1 heavy steel shield is covered in spines. It acts as a normal spiked shield. On command up to three times per day, the shield's wearer can fire one of the shield's spines. A fired spine has a +1 en…",
@@ -27524,7 +27753,17 @@
       "price": 284000,
       "casterLevel": 0
     },
-    "effects": [],
+    "effects": [
+      {
+        "type": "resource",
+        "name": "Rod of Nightmares Uses",
+        "varKey": "mi_rod_of_nightmares_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 3,
+        "reset": "perDay"
+      }
+    ],
     "shortDescription": "Nightmares: Anyone who comes within 20 feet of the wielder of this rod feels a grave sense of unease. Each person so affected must make a Will save (DC 17) or suffer the effects of a nightmare spell the next time he or…",
     "text": "Nightmares: Anyone who comes within 20 feet of the wielder of this rod feels a grave sense of unease. Each person so affected must make a Will save (DC 17) or suffer the effects of a nightmare spell the next time he or she falls asleep. The wielder is immune to this effect. Three times per day, the wielder can utter a command word that causes the rod to emit a horrid, inhuman scream. Up to twenty of the closest creatures within a 30-foot radius who hear this terrible wail believe that their worst nightmares have become reality and suffer the effects of a wail of the banshee spell (DC 23).\nCaster Level: 21st; Prerequisites: Craft Rod, Craft Epic Rod, nightmare, permanency, wail of the banshee; Market Price: 284,000 gp.",
     "tags": [
@@ -27608,7 +27847,17 @@
       "price": 95800,
       "casterLevel": 1
     },
-    "effects": [],
+    "effects": [
+      {
+        "type": "resource",
+        "name": "Strand of Prayer Beads, Greater Uses",
+        "varKey": "mi_strand_of_prayer_beads_greater_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 1,
+        "reset": "perDay"
+      }
+    ],
     "shortDescription": "Strand of Prayer Beads: This item appears to be a normal string of prayer beads until the owner casts a divine spell. Once that occurs, the owner instantly knows the powers of the prayer beads and how to activate them.…",
     "text": "Strand of Prayer Beads: This item appears to be a normal string of prayer beads until the owner casts a divine spell. Once that occurs, the owner instantly knows the powers of the prayer beads and how to activate them. Each strand includes two or more special beads, each with a different magic power.\n\nSpecial Bead Type\n|\nSpecial Bead Ability\n|\n\nBead of blessing\n|\nWearer can cast bless.\n|\n\nBead of healing\n|\nWearer can cast his choice of cure serious wounds, remove blindness/deafness, or remove disease.\n|\n\nBead of karma\n|\nWearer casts his spells at +4 caster level. Effect lasts 10 minutes.\n|\n\nBead of smiting\n|\nWearer can cast chaos hammer, holy smite, order's wrath, or unholy blight (Will DC 17 partial).\n|\n\nBead of summons\n|\nSummons a powerful creature of appropriate alignment from the Outer Planes (an angel, devil, etc.) to aid the wearer for one day. (If the wearer uses the bead of summons to summon a deity's emissary frivolously, the deity takes that character's items and places a geas upon him as punishment in the very least.)\n|\n\nBead of wind walking\n|\nWearer can cast wind walk.\n|\n\nA lesser strand of prayer beads has a bead of blessing and a bead of healing. A strand of prayer beads has a bead of healing, a bead of karma, and a bead of smiting. A greater strand of prayer beads has a bead of healing, a bead of karma, a bead of summons, and a bead of wind walking.\nEach special bead can be used once per day, except for the bead of summons, which works only once and then becomes nonmagical. The beads of blessing, smiting, and wind walking function as spell trigger items; the beads of karma and summons can be activated by any character capable of casting divine spells. The owner need not hold or wear the strand of prayer beads in any specific location, as long as he carries it somewhere on his person.\nThe power of a special bead is lost if it is removed from the strand. Reduce the price of a strand of prayer beads that is missing one or more beads by the following amounts: bead of blessing -600 gp, bead of healing -9,000 gp, bead of karma -20,000 gp, bead of smiting -16,800 gp, bead of summons -20,000 gp, bead of wind walking -46,800 gp.\nFaint, moderate or strong (many schools); CL 1st (blessing), 5th (healing), 7th (smiting), 9th (karma), 11th (wind walking), 17th (summons); Craft Wondrous Items and one of the following spells per bead, as appropriate: bless (blessing), cure serious wounds, remove blindness/ deafness, or remove disease (healing), righteous might (karma), gate (summons), chaos hammer, holy smite, order's wrath, or unholy blight (smiting), wind walk (wind walking); Price 9,600 gp (lesser), 25,800 gp (standard), 95,800 gp (greater).",
     "tags": [
@@ -27892,7 +28141,17 @@
       "price": 6500,
       "casterLevel": 6
     },
-    "effects": [],
+    "effects": [
+      {
+        "type": "resource",
+        "name": "Horn of Goodness/Evil Uses",
+        "varKey": "mi_horn_of_goodness_evil_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 1,
+        "reset": "perDay"
+      }
+    ],
     "shortDescription": "Horn of Goodness/Evil: This trumpet adapts itself to its owner, so it produces either a good or an evil effect depending on the owner's alignment. If the owner is neither good nor evil, the horn has no power whatsoever.…",
     "text": "Horn of Goodness/Evil: This trumpet adapts itself to its owner, so it produces either a good or an evil effect depending on the owner's alignment. If the owner is neither good nor evil, the horn has no power whatsoever. If he is good, then blowing the horn has the effect of a magic circle against evil. If he is evil, then blowing the horn has the effect of a magic circle against good. In either case, this ward lasts for 1 hour. The horn can be blown once per day.\nFaint abjuration; CL 6th; Craft Wondrous Item, magic circle against good, magic circle against evil; Price 6,500 gp; Weight 1 lb.",
     "tags": [
@@ -28335,6 +28594,15 @@
         "mode": "flat",
         "value": 20,
         "btype": "Competence"
+      },
+      {
+        "type": "resource",
+        "name": "Boots of Swiftness Uses",
+        "varKey": "mi_boots_of_swiftness_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 3,
+        "reset": "perDay"
       }
     ],
     "shortDescription": "Boots of Swiftness: These shoes grant their wearer a +6 enhancement bonus to Dexterity. The wearer's speed doubles (this does not stack with any magical or supernatural enhancement to speed), he or she gains the evasion…",
@@ -28850,6 +29118,15 @@
         "mode": "flat",
         "value": 1,
         "btype": "Luck"
+      },
+      {
+        "type": "resource",
+        "name": "Luck Blade Uses",
+        "varKey": "mi_luck_blade_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 1,
+        "reset": "perDay"
       }
     ],
     "shortDescription": "Luck Blade: This +2 short sword gives its possessor a +1 luck bonus on all saving throws. Its possessor also gains the power of good fortune, usable once per day. This extraordinary ability allows its possessor to rerol…",
@@ -29906,7 +30183,17 @@
       "price": 9600,
       "casterLevel": 1
     },
-    "effects": [],
+    "effects": [
+      {
+        "type": "resource",
+        "name": "Strand of Prayer Beads, Lesser Uses",
+        "varKey": "mi_strand_of_prayer_beads_lesser_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 1,
+        "reset": "perDay"
+      }
+    ],
     "shortDescription": "Strand of Prayer Beads: This item appears to be a normal string of prayer beads until the owner casts a divine spell. Once that occurs, the owner instantly knows the powers of the prayer beads and how to activate them.…",
     "text": "Strand of Prayer Beads: This item appears to be a normal string of prayer beads until the owner casts a divine spell. Once that occurs, the owner instantly knows the powers of the prayer beads and how to activate them. Each strand includes two or more special beads, each with a different magic power.\n\nSpecial Bead Type\n|\nSpecial Bead Ability\n|\n\nBead of blessing\n|\nWearer can cast bless.\n|\n\nBead of healing\n|\nWearer can cast his choice of cure serious wounds, remove blindness/deafness, or remove disease.\n|\n\nBead of karma\n|\nWearer casts his spells at +4 caster level. Effect lasts 10 minutes.\n|\n\nBead of smiting\n|\nWearer can cast chaos hammer, holy smite, order's wrath, or unholy blight (Will DC 17 partial).\n|\n\nBead of summons\n|\nSummons a powerful creature of appropriate alignment from the Outer Planes (an angel, devil, etc.) to aid the wearer for one day. (If the wearer uses the bead of summons to summon a deity's emissary frivolously, the deity takes that character's items and places a geas upon him as punishment in the very least.)\n|\n\nBead of wind walking\n|\nWearer can cast wind walk.\n|\n\nA lesser strand of prayer beads has a bead of blessing and a bead of healing. A strand of prayer beads has a bead of healing, a bead of karma, and a bead of smiting. A greater strand of prayer beads has a bead of healing, a bead of karma, a bead of summons, and a bead of wind walking.\nEach special bead can be used once per day, except for the bead of summons, which works only once and then becomes nonmagical. The beads of blessing, smiting, and wind walking function as spell trigger items; the beads of karma and summons can be activated by any character capable of casting divine spells. The owner need not hold or wear the strand of prayer beads in any specific location, as long as he carries it somewhere on his person.\nThe power of a special bead is lost if it is removed from the strand. Reduce the price of a strand of prayer beads that is missing one or more beads by the following amounts: bead of blessing -600 gp, bead of healing -9,000 gp, bead of karma -20,000 gp, bead of smiting -16,800 gp, bead of summons -20,000 gp, bead of wind walking -46,800 gp.\nFaint, moderate or strong (many schools); CL 1st (blessing), 5th (healing), 7th (smiting), 9th (karma), 11th (wind walking), 17th (summons); Craft Wondrous Items and one of the following spells per bead, as appropriate: bless (blessing), cure serious wounds, remove blindness/ deafness, or remove disease (healing), righteous might (karma), gate (summons), chaos hammer, holy smite, order's wrath, or unholy blight (smiting), wind walk (wind walking); Price 9,600 gp (lesser), 25,800 gp (standard), 95,800 gp (greater).",
     "tags": [
@@ -30312,7 +30599,17 @@
       "price": 23500,
       "casterLevel": 10
     },
-    "effects": [],
+    "effects": [
+      {
+        "type": "resource",
+        "name": "Rod of Enemy Detection Uses",
+        "varKey": "mi_rod_of_enemy_detection_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 3,
+        "reset": "perDay"
+      }
+    ],
     "shortDescription": "Enemy Detection: This device pulses in the wielder's hand and points in the direction of any creature or creatures hostile to the bearer of the device (nearest ones first). These creatures can be invisible, ethereal, hi…",
     "text": "Enemy Detection: This device pulses in the wielder's hand and points in the direction of any creature or creatures hostile to the bearer of the device (nearest ones first). These creatures can be invisible, ethereal, hidden, disguised, or in plain sight. Detection range is 60 feet. If the bearer of the rod concentrates for a full round, the rod pinpoints the location of the nearest enemy and indicates how many enemies are within range. The rod can be used three times each day, each use lasting up to 10 minutes. Activating the rod is a standard action.\nModerate divination; CL 10th; Craft Rod, true seeing; Price 23,500 gp.",
     "tags": [
@@ -30792,6 +31089,15 @@
         "type": "defense",
         "mode": "Sense / Movement",
         "what": "Darkvision 60 ft."
+      },
+      {
+        "type": "resource",
+        "name": "Figurines of Wondrous Power Uses",
+        "varKey": "mi_figurines_of_wondrous_power_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 1,
+        "reset": "perDay"
       }
     ],
     "shortDescription": "Figurines of Wondrous Power: Each of the several kinds of figurines of wondrous power appears to be a miniature statuette of a creature an inch or so high (with one exception). When the figurine is tossed down and the c…",
@@ -31194,7 +31500,17 @@
       "price": 92000,
       "casterLevel": 15
     },
-    "effects": [],
+    "effects": [
+      {
+        "type": "resource",
+        "name": "Mirror of Opposition Uses",
+        "varKey": "mi_mirror_of_opposition_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 4,
+        "reset": "perDay"
+      }
+    ],
     "shortDescription": "Mirror of Opposition: This item resembles a normal mirror about 4 feet long and 3 feet wide. It can be hung or placed on a surface and then activated by speaking a command word. The same command word deactivates the mir…",
     "text": "Mirror of Opposition: This item resembles a normal mirror about 4 feet long and 3 feet wide. It can be hung or placed on a surface and then activated by speaking a command word. The same command word deactivates the mirror. If a creature sees its reflection in the mirror's surface, an exact duplicate of that creature comes into being. This opposite immediately attacks the original. The duplicate has all the possessions and powers of its original (including magic). Upon the defeat or destruction of either the duplicate or the original, the duplicate and her items disappear completely. The mirror functions up to four times per day.\nStrong necromancy; CL 15th; Craft Wondrous Item, clone; Price 92,000 gp; Weight 45 lb.",
     "tags": [
@@ -31342,6 +31658,15 @@
         "mode": "flat",
         "value": 2,
         "btype": "Enhancement"
+      },
+      {
+        "type": "resource",
+        "name": "Rapier of Puncturing Uses",
+        "varKey": "mi_rapier_of_puncturing_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 3,
+        "reset": "perDay"
       }
     ],
     "ruleFlags": {
@@ -31728,6 +32053,15 @@
         "mode": "flat",
         "value": 1,
         "btype": "Enhancement"
+      },
+      {
+        "type": "resource",
+        "name": "Trident of Fish Command Uses",
+        "varKey": "mi_trident_of_fish_command_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 3,
+        "reset": "perDay"
       }
     ],
     "ruleFlags": {
@@ -31821,7 +32155,17 @@
       "price": 37000,
       "casterLevel": 15
     },
-    "effects": [],
+    "effects": [
+      {
+        "type": "resource",
+        "name": "Rod of Negation Uses",
+        "varKey": "mi_rod_of_negation_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 3,
+        "reset": "perDay"
+      }
+    ],
     "shortDescription": "Negation: This device negates the spell or spell-like function or functions of magic items. The wielder points the rod at the magic item, and a pale gray beam shoots forth to touch the target device, attacking as a ray…",
     "text": "Negation: This device negates the spell or spell-like function or functions of magic items. The wielder points the rod at the magic item, and a pale gray beam shoots forth to touch the target device, attacking as a ray (a ranged touch attack). The ray functions as a greater dispel magic spell, except it only affects magic items. To negate instantaneous effects from an item, the rod wielder needs to have used a ready action. The dispel check uses the rod's caster level (15th). The target item gets no saving throw, although the rod can't negate artifacts (even minor artifacts). The rod can function three times per day.\nStrong varied; CL 15th; Craft Rod, dispel magic, and limited wish or miracle; Price 37,000 gp.",
     "tags": [
@@ -32018,6 +32362,15 @@
         "mode": "flat",
         "value": 10,
         "btype": "Competence"
+      },
+      {
+        "type": "resource",
+        "name": "Third Eyes Uses",
+        "varKey": "mi_third_eyes_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 1,
+        "reset": "perDay"
       }
     ],
     "shortDescription": "Third Eyes: These objects appear as small crystals, always with at least one wide, flat facet, and contain a variety of powers. When the owner uses the proper command thought, the crystal adheres to the center of his fo…",
@@ -32047,7 +32400,17 @@
       "price": 446000,
       "casterLevel": 0
     },
-    "effects": [],
+    "effects": [
+      {
+        "type": "resource",
+        "name": "Rod of Epic Negation Uses",
+        "varKey": "mi_rod_of_epic_negation_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 3,
+        "reset": "perDay"
+      }
+    ],
     "shortDescription": "Epic Negation: This rod negates the spell or spell-like function or functions of magic items, including epic magic items (but not artifacts). The wielder points the rod at the magic item, and a beam shoots forth to touc…",
     "text": "Epic Negation: This rod negates the spell or spell-like function or functions of magic items, including epic magic items (but not artifacts). The wielder points the rod at the magic item, and a beam shoots forth to touch the target device, attacking as a ray (a ranged touch attack). The ray negates any currently active item function and has a 75% chance to negate any other spell or spell-like functions of that device, regardless of the level or power of the functions, for 2d4 rounds. To negate instantaneous effects, the rod wielder needs to have readied an action. The target item gets no saving throw or means to resist this effect. The rod can function three times per day.\nCaster Level: 24th; Prerequisites: Craft Rod, Craft Epic Rod, dispel magic, limited wish or miracle; Market Price: 446,000 gp.",
     "tags": [
@@ -32075,7 +32438,17 @@
       "price": 0,
       "casterLevel": 10
     },
-    "effects": [],
+    "effects": [
+      {
+        "type": "resource",
+        "name": "Crystal Ball Uses",
+        "varKey": "mi_crystal_ball_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 1,
+        "reset": "perDay"
+      }
+    ],
     "shortDescription": "Crystal Ball: This is the most common form of scrying device, a crystal sphere about 6 inches in diameter. A character can use the device to see over virtually any distance or into other planes of existence, as with the…",
     "text": "Crystal Ball: This is the most common form of scrying device, a crystal sphere about 6 inches in diameter. A character can use the device to see over virtually any distance or into other planes of existence, as with the spell scrying (Will DC 16 negates).\nCertain crystal balls have additional powers that can be used through the Crystal ball on the target viewed.\n\nCrystal Ball Type\n|\nMarket Price\n|\n\nCrystal ball\n|\n42,000 gp\n|\n\nCrystal ball with see invisibility\n|\n50,000 gp\n|\n\nCrystal ball with detect thoughts (Will DC 13 negates)\n|\n51,000 gp\n|\n\nCrystal ball with telepathy*\n|\n70,000 gp\n|\n\nCrystal ball with true seeing\n|\n80,000 gp\n|\n\n* The viewer is able to send and receive silent mental messages with the person appearing in the crystal ball. Once per day the character may attempt to implant a suggestion (as the spell, Will DC 14 negates) as well.\n|\n\nModerate divination; CL 10th; Craft Wondrous Item, scrying (plus any additional spells put into item); Weight 7 lb.",
     "tags": [
@@ -32141,7 +32514,17 @@
       "price": 0,
       "casterLevel": 0
     },
-    "effects": [],
+    "effects": [
+      {
+        "type": "resource",
+        "name": "Eye of the Orc Uses",
+        "varKey": "mi_eye_of_the_orc_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 1,
+        "reset": "perDay"
+      }
+    ],
     "shortDescription": "Eye of the Orc: This lump of rock has a marquis-cut black sapphire set in its center, making it appear similar to a large eye. If possessed by an orc, it grants a +6 enhancement bonus to Strength and Charisma, and the o…",
     "text": "Eye of the Orc: This lump of rock has a marquis-cut black sapphire set in its center, making it appear similar to a large eye. If possessed by an orc, it grants a +6 enhancement bonus to Strength and Charisma, and the orc's darkvision range is doubled. Nonorcs who possess the Eye gain a +2 enhancement bonus to Strength but take a -2 penalty to Intelligence and Charisma. Regardless of the owner's race, any weapon wielded by the owner of the Eye is considered an elf bane weapon. Furthermore, by holding the Eye before the character, he or she can perceive things as if he or she had True seeing cast upon him or her. This can be activated only once per day but lasts as long as the character concentrates on it (requiring a standard action each round).",
     "tags": [
@@ -32521,7 +32904,17 @@
       "price": 70000,
       "casterLevel": 19
     },
-    "effects": [],
+    "effects": [
+      {
+        "type": "resource",
+        "name": "Rod of Lordly Might Uses",
+        "varKey": "mi_rod_of_lordly_might_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 1,
+        "reset": "perDay"
+      }
+    ],
     "shortDescription": "Lordly Might: This rod has functions that are spell-like, and it can also be used as a magic weapon of various sorts. It also has several more mundane uses. The rod of lordly might is metal, thicker than other rods, wit…",
     "text": "Lordly Might: This rod has functions that are spell-like, and it can also be used as a magic weapon of various sorts. It also has several more mundane uses. The rod of lordly might is metal, thicker than other rods, with a flanged ball at one end and six studlike buttons along its length. (Pushing any of the rod's buttons is equivalent to drawing a weapon.) It weighs 10 pounds.\nThe following spell-like functions of the rod can each be used once per day.\n\n• Hold person upon touch, if the wielder so commands (Will DC 14 negates). The wielder must choose to use this power and then succeed on a melee touch attack to activate the power. If the attack fails, the effect is lost.\n\n• Fear upon all enemies viewing it, if the wielder so desires (10-foot maximum range, Will DC 16 partial). Invoking this power is a standard action.\n\n• Deal 2d4 hit points of damage to an opponent on a successful touch attack (Will DC 17 half ) and cure the wielder of a like amount of damage. The wielder must choose to use this power before attacking, as with hold person.\n\nThe following weapon functions of the rod have no limit on the number of times they can be employed.\n\n• In its normal form, the rod can be used as a +2 light mace.\n\n• When button 1 is pushed, the rod becomes a +1 flaming longsword. A blade springs from the ball, with the ball itself becoming the sword's hilt. The weapon lengthens to an overall length of 4 feet.\n\n• When button 2 is pushed, the rod becomes a +4 battleaxe. A wide blade springs forth at the ball, and the whole lengthens to 4 feet.\n\n• When button 3 is pushed, the rod becomes a +3 shortspear or +3 longspear. The spear blade springs forth, and the handle can be lengthened up to 12 feet (wielder's choice), for an overall length of from 6 feet to 15 feet. At its 15-foot length, the rod is suitable for use as a lance.\n\nThe following other functions of the rod also have no limit on the number of times they can be employed.\n\n• Climbing pole/ladder. When button 4 is pushed, a spike that can anchor in granite is extruded from the ball, while the other end sprouts three sharp hooks. The rod lengthens to anywhere between 5 and 50 feet in a single round, stopping when button 4 is pushed again. Horizontal bars three inches long fold out from the sides, 1 foot apart, in staggered progression. The rod is firmly held by the spike and hooks and can bear up to 4,000 pounds. The wielder can retract the pole by pushing button 5.\n\n• The ladder function can be used to force open doors. The wielder plants the rod's base 30 feet or less from the portal to be forced and in line with it, then pushes button 4. The force exerted has a Strength modifier of +12.\n\n• When button 6 is pushed, the rod indicates magnetic north and gives the wielder a knowledge of his approximate depth beneath the surface or height above it.\n\nStrong enchantment, evocation, necromancy, and transmutation; CL 19th; Craft Rod, Craft Magic Arms and Armor, inflict light wounds, bull's strength, flame blade, hold person, fear; Price 70,000 gp.",
     "tags": [
@@ -33082,6 +33475,15 @@
             ]
           }
         ]
+      },
+      {
+        "type": "resource",
+        "name": "Cloak of Arachnida Uses",
+        "varKey": "mi_cloak_of_arachnida_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 1,
+        "reset": "perDay"
       }
     ],
     "shortDescription": "Cloak of Arachnida: This black garment, embroidered with a weblike pattern in silk, gives the wearer the ability to climb as if a spider climb spell had been placed upon her. In addition, the cloak grants her immunity t…",
@@ -33179,7 +33581,17 @@
       "price": 24000,
       "casterLevel": 0
     },
-    "effects": [],
+    "effects": [
+      {
+        "type": "resource",
+        "name": "Crystal Anchor Uses",
+        "varKey": "mi_crystal_anchor_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 5,
+        "reset": "perDay"
+      }
+    ],
     "shortDescription": "Crystal Anchor: A crystal anchor is a shaft of transparent crystal 4 to 5 feet in length, with a sharpened, spearlike head on one end. It ensnares the minds of those within range who manifest powers of a specified psion…",
     "text": "Crystal Anchor: A crystal anchor is a shaft of transparent crystal 4 to 5 feet in length, with a sharpened, spearlike head on one end. It ensnares the minds of those within range who manifest powers of a specified psionic discipline. The triggering discipline is specified at the time of creation.\nA crystal anchor is activated by plunging the sharp head into the ground, leaving the shaft freestanding. It projects an invisible, 30-foot-radius field. If a power from the speci- fied discipline is manifested within this range, the manifester must succeed on a Will save (DC 15 + power level) or become subject to an effect similar to brain lock, except that the effect is permanent until dispelled or dismissed by the individual who initially drove the crystal anchor into the earth. Any anchor can be pulled out of the ground and reused at a later time.\nWhen a crystal anchor successfully ensnares a target, a slender filament of insubstantial ectoplasm connects the victim to the shaft, even one outside the original area of the field.\nA crystal anchor can attempt to ensnare a victim only five times per day. Previously caught targets can remain caught day after day and do not count against this daily limit on attempts.\nAn anchor's owner can designate certain creatures to be unaffected by the anchor; such creatures need not make a saving throw and do not count against the daily limit on attempts. One crystal anchor can ensnare multiple targets simultaneously, and multiple crystal anchors can share overlapping fields.\nAnchors that activate when a specific power is manifested in range are also possible, but are rarer.\nA crystal anchor has AC 7, 15 hit points, a hardness of 8, and a break DC of 20.\nBody Crystal Anchor: Those who manifest psychometabolism powers are affected as described above.\nFaint psychometabolism; ML 5th; Craft Universal Item, brain lock, psionic contingency, any psychometabolism power; Price 24,000 gp; Weight 3 lb.\nComprehension Crystal Anchor: Those who manifest clairsentience powers are affected as described above.\nFaint clairsentience; ML 5th; Craft Universal Item, brain lock, psionic contingency, any clairsentience power; Price 24,000 gp; Weight 3 lb.\nCreation Crystal Anchor: Those who manifest metacreativity powers are affected as described above.\nFaint metacreativity; ML 5th; Craft Universal Item, brain lock, psionic contingency, any metacreativity power; Price 24,000 gp; Weight 3 lb.\nEnergy Crystal Anchor: Those who manifest psychokinesis powers are affected as described above.\nFaint psychokinesis; ML 5th; Craft Universal Item, brain lock, psionic contingency, any psychokinesis power; Price 24,000 gp; Weight 3 lb.\nGhost Crystal Anchor: Those who manifest remote viewing are affected as described above.\nFaint clairsentience; ML 5th; Craft Universal Item, brain lock, psionic contingency, remote viewing; Price 24,000 gp; Weight 3 lb.\nMind Crystal Anchor: Those who manifest telepathy powers are affected as described above.\nFaint telepathy; ML 5th; Craft Universal Item, brain lock, psionic contingency, any telepathy power; Price 24,000 gp; Weight 3 lb.\nTravel Crystal Anchor: Those who manifest psychoportation powers are affected as described above.\nFaint psychoportation; ML 5th; Craft Universal Item, brain lock, psionic contingency, any psychoportation power; Price 24,000 gp; Weight 3 lb.",
     "tags": [
@@ -34121,7 +34533,17 @@
       "price": 8000,
       "casterLevel": 5
     },
-    "effects": [],
+    "effects": [
+      {
+        "type": "resource",
+        "name": "Hand of Glory Uses",
+        "varKey": "mi_hand_of_glory_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 1,
+        "reset": "perDay"
+      }
+    ],
     "shortDescription": "Hand of Glory: This mummified human hand hangs by a leather cord around a character's neck (taking up space as a magic necklace would). If a magic ring is placed on one of the fingers of the hand, the wearer benefits fr…",
     "text": "Hand of Glory: This mummified human hand hangs by a leather cord around a character's neck (taking up space as a magic necklace would). If a magic ring is placed on one of the fingers of the hand, the wearer benefits from the ring as if wearing it herself, and it does not count against her two-ring limit. The hand can wear only one ring at a time. Even without a ring, the hand itself allows its wearer to use daylight and see invisibility each once per day.\nFaint varied; CL 5th; Craft Wondrous Item, animate dead, daylight, detect invisibility; Price 8,000 gp; Weight 2 lb.",
     "tags": [
@@ -34271,6 +34693,15 @@
         "mode": "flat",
         "value": 1,
         "btype": "Insight"
+      },
+      {
+        "type": "resource",
+        "name": "Rod of Alertness Uses",
+        "varKey": "mi_rod_of_alertness_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 1,
+        "reset": "perDay"
       }
     ],
     "shortDescription": "Alertness: This rod is indistinguishable from a +1 light mace . It has eight flanges on its macelike head. The rod bestows a +1 insight bonus on initiative checks. If grasped firmly, the rod enables the holder to use de…",
@@ -35615,7 +36046,17 @@
       "price": 6000,
       "casterLevel": 4
     },
-    "effects": [],
+    "effects": [
+      {
+        "type": "resource",
+        "name": "Pipes of Haunting Uses",
+        "varKey": "mi_pipes_of_haunting_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 2,
+        "reset": "perDay"
+      }
+    ],
     "shortDescription": "Pipes of Haunting: This magic item appears to be a small set of pan pipes. When played by a person who succeeds on a DC 15 Perform (wind instruments) check, the pipes create an eerie, spellbinding tune. Those within 30…",
     "text": "Pipes of Haunting: This magic item appears to be a small set of pan pipes. When played by a person who succeeds on a DC 15 Perform (wind instruments) check, the pipes create an eerie, spellbinding tune. Those within 30 feet who hear the tune must succeed on a DC 13 Will save or become frightened for 4 rounds. Creatures with 6 or more Hit Dice are unaffected. Pipes of haunting can be sounded twice a day.\nFaint necromancy; CL 4th; Craft Wondrous Item, scare; Price 6,000 gp; Weight 3 lb.",
     "tags": [
@@ -36025,6 +36466,15 @@
         "mode": "flat",
         "value": 1,
         "btype": "Enhancement"
+      },
+      {
+        "type": "resource",
+        "name": "Dagger of Venom Uses",
+        "varKey": "mi_dagger_of_venom_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 1,
+        "reset": "perDay"
       }
     ],
     "ruleFlags": {

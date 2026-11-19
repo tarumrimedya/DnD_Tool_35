@@ -28,7 +28,7 @@ function cleanText(t) {
   return String(t || '')
     .replace(/<[^>]+>/g, ' ')
     .split(/(?<=[.!?])\s+|\n+/)
-    .filter((s) => !/^\s*(normal|prerequisites?|prereq)\s*:/i.test(s))
+    .filter((s) => !/^\s*(normal|prerequisites?|prereq)(?:\s*:|\s+[A-Z0-9])/i.test(s))
     .join(' ');
 }
 

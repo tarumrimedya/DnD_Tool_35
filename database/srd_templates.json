@@ -129,6 +129,15 @@
         "dmgType": "Slashing",
         "usesHands": true,
         "summary": "2 Claw 1d4 slashing natural weapon (primary)."
+      },
+      {
+        "type": "resource",
+        "name": "Half-Dragon (Red) Uses",
+        "varKey": "tmpl_half_dragon_red_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 1,
+        "reset": "perDay"
       }
     ],
     "ruleFlags": {
@@ -283,6 +292,15 @@
         "dmgType": "Slashing",
         "usesHands": true,
         "summary": "2 Claw 1d4 slashing natural weapon (primary)."
+      },
+      {
+        "type": "resource",
+        "name": "Half-Dragon (Gold) Uses",
+        "varKey": "tmpl_half_dragon_gold_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 1,
+        "reset": "perDay"
       }
     ],
     "ruleFlags": {
@@ -437,6 +455,15 @@
         "dmgType": "Slashing",
         "usesHands": true,
         "summary": "2 Claw 1d4 slashing natural weapon (primary)."
+      },
+      {
+        "type": "resource",
+        "name": "Half-Dragon (Silver) Uses",
+        "varKey": "tmpl_half_dragon_silver_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 1,
+        "reset": "perDay"
       }
     ],
     "ruleFlags": {
@@ -591,6 +618,15 @@
         "dmgType": "Slashing",
         "usesHands": true,
         "summary": "2 Claw 1d4 slashing natural weapon (primary)."
+      },
+      {
+        "type": "resource",
+        "name": "Half-Dragon (Blue) Uses",
+        "varKey": "tmpl_half_dragon_blue_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 1,
+        "reset": "perDay"
       }
     ],
     "ruleFlags": {
@@ -745,6 +781,15 @@
         "dmgType": "Slashing",
         "usesHands": true,
         "summary": "2 Claw 1d4 slashing natural weapon (primary)."
+      },
+      {
+        "type": "resource",
+        "name": "Half-Dragon (Black) Uses",
+        "varKey": "tmpl_half_dragon_black_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 1,
+        "reset": "perDay"
       }
     ],
     "ruleFlags": {
@@ -899,6 +944,15 @@
         "dmgType": "Slashing",
         "usesHands": true,
         "summary": "2 Claw 1d4 slashing natural weapon (primary)."
+      },
+      {
+        "type": "resource",
+        "name": "Half-Dragon (Green) Uses",
+        "varKey": "tmpl_half_dragon_green_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 1,
+        "reset": "perDay"
       }
     ],
     "ruleFlags": {
@@ -1053,6 +1107,15 @@
         "dmgType": "Slashing",
         "usesHands": true,
         "summary": "2 Claw 1d4 slashing natural weapon (primary)."
+      },
+      {
+        "type": "resource",
+        "name": "Half-Dragon (White) Uses",
+        "varKey": "tmpl_half_dragon_white_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 1,
+        "reset": "perDay"
       }
     ],
     "ruleFlags": {
@@ -1207,6 +1270,15 @@
         "dmgType": "Slashing",
         "usesHands": true,
         "summary": "2 Claw 1d4 slashing natural weapon (primary)."
+      },
+      {
+        "type": "resource",
+        "name": "Half-Dragon (Brass) Uses",
+        "varKey": "tmpl_half_dragon_brass_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 1,
+        "reset": "perDay"
       }
     ],
     "ruleFlags": {
@@ -1361,6 +1433,15 @@
         "dmgType": "Slashing",
         "usesHands": true,
         "summary": "2 Claw 1d4 slashing natural weapon (primary)."
+      },
+      {
+        "type": "resource",
+        "name": "Half-Dragon (Bronze) Uses",
+        "varKey": "tmpl_half_dragon_bronze_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 1,
+        "reset": "perDay"
       }
     ],
     "ruleFlags": {
@@ -1515,6 +1596,15 @@
         "dmgType": "Slashing",
         "usesHands": true,
         "summary": "2 Claw 1d4 slashing natural weapon (primary)."
+      },
+      {
+        "type": "resource",
+        "name": "Half-Dragon (Copper) Uses",
+        "varKey": "tmpl_half_dragon_copper_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 1,
+        "reset": "perDay"
       }
     ],
     "ruleFlags": {
@@ -1652,6 +1742,15 @@
         "mode": "Energy Resistance",
         "what": "Electricity",
         "value": 10
+      },
+      {
+        "type": "resource",
+        "name": "Half-Celestial Uses",
+        "varKey": "tmpl_half_celestial_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 1,
+        "reset": "perDay"
       }
     ],
     "ruleFlags": {
@@ -1801,6 +1900,15 @@
         "mode": "Energy Resistance",
         "what": "Fire",
         "value": 10
+      },
+      {
+        "type": "resource",
+        "name": "Half-Fiend Uses",
+        "varKey": "tmpl_half_fiend_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 1,
+        "reset": "perDay"
       }
     ],
     "ruleFlags": {
@@ -1890,6 +1998,15 @@
         "mode": "DR",
         "value": 5,
         "what": "magic"
+      },
+      {
+        "type": "resource",
+        "name": "Celestial Creature Uses",
+        "varKey": "tmpl_celestial_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 1,
+        "reset": "perDay"
       }
     ],
     "ruleFlags": {
@@ -1976,6 +2093,15 @@
         "mode": "DR",
         "value": 5,
         "what": "magic"
+      },
+      {
+        "type": "resource",
+        "name": "Fiendish Creature Uses",
+        "varKey": "tmpl_fiendish_uses",
+        "resMode": "spend",
+        "scaling": "flat",
+        "max": 1,
+        "reset": "perDay"
       }
     ],
     "ruleFlags": {

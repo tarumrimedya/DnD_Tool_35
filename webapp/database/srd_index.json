@@ -1,14 +1,14 @@
 {
   "schemaVersion": 3,
   "version": "3.0.0",
-  "compendiumHash": "bdfa5088e2c89d80",
+  "compendiumHash": "551b00a85870bf41",
   "generatedAt": "2026-11-15T19:43:51.694Z",
   "totalEntries": 7987,
   "chunks": {
     "srd_equipment.json": {
       "count": 1143,
       "bytes": 1873880,
-      "hash": "c1fe072c53a18a43",
+      "hash": "e209967e7072315a",
       "eagerLoad": true
     },
     "srd_feats.json": {
@@ -20,7 +20,7 @@
     "srd_classes_races.json": {
       "count": 326,
       "bytes": 1611663,
-      "hash": "14aea2605abe5ebe",
+      "hash": "61b696c317e3c25d",
       "eagerLoad": true
     },
     "srd_combat_rules.json": {
@@ -50,13 +50,13 @@
     "mic_compendium.json": {
       "count": 953,
       "bytes": 1898703,
-      "hash": "bc650fd335b5bdd1",
+      "hash": "bd5c7892251d4e24",
       "eagerLoad": true
     },
     "srd_domains.json": {
       "count": 37,
       "bytes": 143062,
-      "hash": "753305df175894c5",
+      "hash": "cedef2497d24f283",
       "eagerLoad": true
     },
     "srd_companions.json": {
@@ -68,7 +68,7 @@
     "srd_templates.json": {
       "count": 39,
       "description": "D&D 3.5e Character & Creature Templates (Half-Dragon, Half-Celestial, Half-Fiend, Lich, Vampire, Ghost, Lycanthrope, Phrenic, Shadow, Paragon)",
-      "hash": "03d790ea81e619e1",
+      "hash": "c13f50b997cb619f",
       "bytes": 151100
     },
     "srd_equipment_splat.json": {
@@ -80,7 +80,7 @@
     "srd_feats_splat.json": {
       "count": 1767,
       "bytes": 2330390,
-      "hash": "7736725cd55f2343",
+      "hash": "7190667fa3343a1d",
       "eagerLoad": false
     },
     "srd_feats_epic.json": {
@@ -91,7 +91,7 @@
     },
     "srd_feats_legacy.json": {
       "count": 357,
-      "hash": "d57a25c1b81b7a58",
+      "hash": "52d48f0c1be8e70f",
       "bytes": 476120,
       "eagerLoad": false,
       "optIn": true
@@ -124,7 +124,7 @@
     "srd_vestiges_splat.json": {
       "count": 32,
       "bytes": 125341,
-      "hash": "4e9b7ea6b6adae40",
+      "hash": "74e6fb6103ddc24c",
       "eagerLoad": false
     },
     "srd_mysteries_splat.json": {
