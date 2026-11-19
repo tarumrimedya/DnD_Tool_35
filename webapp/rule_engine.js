@@ -1315,11 +1315,46 @@ const RuleEngine = {
   V3_NAMED_WHEN_CONDS: new Set([
     'notflatfooted', 'wieldingchosenshield', 'wieldingchosenweapon',
     'wieldingtwoweapons', 'vsaoofrommovement', 'castingchosenschool',
-    'notheavyarmororheavyload', 'lightornoarmorandlightload'
+    'notheavyarmororheavyload', 'lightornoarmorandlightload',
+    // tactical toggles: the kind alone is the condition (condText optional)
+    'charging', 'flanking', 'fightingdefensively', 'totaldefense', 'powerattack', 'combatexpertise',
+    'higherground', 'pointblankshot', 'rapidshot', 'manyshot', 'sneakattack'
   ]),
 
-  // Evaluate V3 `when` / `while` branch condition against character combat state, HP thresholds, buffs, activeModes, or chakra binds
+  // Condition kinds that are DECLARED descriptive: they are never part of the totals, the engine lists their blocks as
+  // situational. `situational` = free-text combat / equipment note (text that IS a known atom is still evaluated),
+  // `activation` = "while this ability is activated / in use" (the text is only the ability's name; no sheet UI flips it yet).
+  V3_DESCRIPTIVE_COND_KINDS: new Set(['situational', 'activation']),
+
+  // Closed condition vocabulary entry point for `when` / `while` branches and flat blocks.
+  //   kind / text: raw `condKind` and `condText` (or the flat block's condition).
+  //   opts.useNamedKind: branches only; a kind in V3_NAMED_WHEN_CONDS IS the condition and condText is ignored.
+  //   opts.strict: return 'unrecognized' for text the engine does not understand (silent-failure gate). Otherwise such a
+  //   condition is a descriptive note: 'situational' (never silently always-on).
+  // Result: true | false | 'situational' | 'qualifier' (context-only atoms that need a weapon / spell) | 'unrecognized' (strict only).
+  resolveV3WhenCondition(kindRaw, textRaw, branchType, evalCtx = {}, character = null, entry = null, opts = {}) {
+    const kind = String(kindRaw || '').trim();
+    const kLow = kind.toLowerCase();
+    if (kLow === 'activation') return 'situational';
+    const isObj = textRaw !== undefined && textRaw !== null && typeof textRaw === 'object';
+    const text = isObj ? textRaw : (textRaw === undefined || textRaw === null ? '' : String(textRaw).trim());
+    const descriptive = this.V3_DESCRIPTIVE_COND_KINDS.has(kLow);
+    const cond = (opts.useNamedKind && this.V3_NAMED_WHEN_CONDS.has(kLow)) ? kind : text;
+    if (descriptive && !cond) return 'situational';
+    const res = this._evalV3Condition(cond, branchType, evalCtx, character, entry);
+    if (res === 'unrecognized') return opts.strict && !descriptive ? 'unrecognized' : 'situational';
+    return res;
+  },
+
+  // Public single-string form: an unrecognized condition is a situational note, never always-on.
   evaluateV3BranchCondition(rawCond, branchType, evalCtx = {}, character = null, entry = null) {
+    const res = this._evalV3Condition(rawCond, branchType, evalCtx, character, entry);
+    return res === 'unrecognized' ? 'situational' : res;
+  },
+
+  // Evaluate V3 `when` / `while` branch condition against character combat state, HP thresholds, buffs, activeModes, or chakra binds.
+  // Internal: returns 'unrecognized' (instead of a silent pass) for text outside the vocabulary; use the public wrappers above.
+  _evalV3Condition(rawCond, branchType, evalCtx = {}, character = null, entry = null) {
     if (!rawCond) return true;
     const ch = character || evalCtx.character || this._activeCharacter || {};
     if (typeof rawCond === 'object') {
@@ -1557,7 +1592,21 @@ const RuleEngine = {
     if (/^(?:vs\.?\b|against\b|to\s+oppose\b|on\s+saves?\s+against\b)/i.test(cond)) {
       return 'situational';
     }
-    return 'qualifier';
+
+    // 8. Alignment atoms ("Chaotic Alignment", "alignment:evil"): read the character's alignment string.
+    {
+      const alMatch = low.match(/^(lawful|chaotic|good|evil|neutral)\s+alignment$/) || low.match(/^alignment\s*:\s*(lawful|chaotic|good|evil|neutral)$/);
+      if (alMatch) {
+        const al = String(ch.alignment || 'Neutral').toLowerCase();
+        const want = alMatch[1];
+        return want === 'neutral' ? /neutral/.test(al) : al.includes(want);
+      }
+    }
+    // 9. Vestige pact ("Vestige Pact (Naberius)"): the vestige record is bound while it is an active entry of the character.
+    if (/^vestige\s+pact\s*\([^)]+\)$/.test(low)) {
+      return !entry || entry.active !== false;
+    }
+    return 'unrecognized';
   },
 
   /**
@@ -1937,16 +1986,18 @@ const RuleEngine = {
               const brKind = brKindRaw.toLowerCase();
               const rawBrText = br.condText !== undefined ? String(br.condText).trim() : (br.condition !== undefined ? String(br.condition).trim() : '');
               const brCond = NAMED_WHEN_CONDS.has(brKind) ? brKindRaw : rawBrText;
+              const brIsActivation = brKind === 'activation';
               const brChildren = Array.isArray(br.effects) ? br.effects : (Array.isArray(br.blocks) ? br.blocks : (Array.isArray(br.then) ? br.then : (Array.isArray(br.children) ? br.children : [])));
               if (brKind === 'else') {
                 matchedAny = true;
                 walkBlocks(brChildren, branchMeta);
                 return;
               }
-              const brRes = this.evaluateV3BranchCondition(brCond, bType, curCtx, ch, out);
+              const brRes = this.resolveV3WhenCondition(brKindRaw, rawBrText, bType, curCtx, ch, out, { useNamedKind: true });
               if (brRes !== false) {
-                matchedAny = true;
-                const nextSituational = resolveBranchSituational(brCond, brRes, situationalCond, brKind === 'note');
+                // A situational branch never decides the `when`: sibling branches (Normal / Reverse Utterance, ...) stay listed too.
+                if (brRes !== 'situational' || brKind === 'note') matchedAny = true;
+                const nextSituational = resolveBranchSituational((brIsActivation ? rawBrText : brCond) || brKindRaw, brRes, situationalCond, brKind === 'note');
                 const nextLabel = ((brRes === true || brRes === 'qualifier') && brCond && typeof brCond === 'string' && brKind !== 'note') ? brCond : sourceLabel;
                 walkBlocks(brChildren, { ctx: curCtx, situationalCond: nextSituational, sourceLabel: nextLabel });
               }
@@ -1955,14 +2006,14 @@ const RuleEngine = {
           }
           const flatIsNote = String(b.condKind || '').toLowerCase() === 'note';
           const condExpr = b.condition || b.when || b.while || (b.condText !== undefined ? String(b.condText).trim() : undefined);
-          const condRes = this.evaluateV3BranchCondition(condExpr, bType, curCtx, ch, out);
+          const condRes = this.resolveV3WhenCondition(b.condKind, condExpr, bType, curCtx, ch, out);
           if (condRes === false && !flatIsNote) {
             if (Array.isArray(b.else) && b.else.length > 0) {
               walkBlocks(b.else, branchMeta);
             }
             return;
           }
-          const nextSituational = resolveBranchSituational(condExpr, condRes, situationalCond, flatIsNote);
+          const nextSituational = resolveBranchSituational(condExpr || b.condKind, condRes, situationalCond, flatIsNote);
           const nextLabel = ((condRes === true || condRes === 'qualifier') && condExpr && typeof condExpr === 'string' && !flatIsNote) ? condExpr : sourceLabel;
           const children = Array.isArray(b.then) ? b.then : (Array.isArray(b.blocks) ? b.blocks : (Array.isArray(b.effects) ? b.effects : (Array.isArray(b.children) ? b.children : [])));
           walkBlocks(children, { ctx: curCtx, situationalCond: nextSituational, sourceLabel: nextLabel });

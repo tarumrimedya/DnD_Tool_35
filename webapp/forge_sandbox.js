@@ -517,7 +517,7 @@
   function blankBranch(o) {
     return Object.assign({
       id: uid('br'),
-      condKind: 'state', condText: 'Bloodrage',
+      condKind: 'activation', condText: 'Bloodrage',
       choiceVar: 'combat_path', choiceVal: 'Offense', minLvl: 5,
       oathRule: 'Zero Magic Items & Wealth Cap', onBreak: 'irrevocable',
       trigger: 'activate', action: 'Swift', targetText: '',
@@ -723,7 +723,7 @@
       if (WHEN_COND_LABELS[br.condText]) {
         return WHEN_COND_LABELS[br.condText];
       }
-      const kindLbl = { state: 'While State', bound: 'While Bound', levelTier: 'Tier', synergy: 'Synergy', situational: 'When' }[br.condKind || 'state'] || 'While';
+      const kindLbl = { state: 'While State', activation: 'While Activated', bound: 'While Bound', levelTier: 'Tier', synergy: 'Synergy', situational: 'When' }[br.condKind || 'state'] || 'While';
       return kindLbl + ': ' + (br.condText || 'Active');
     }
     const trigLbl = {
@@ -1239,7 +1239,7 @@
           ] })
         ] }),
         BLK('when', { flow: 'while', branches: [
-          blankBranch({ condKind: 'state', condText: 'Bloodrage', kids: [
+          blankBranch({ condKind: 'activation', condText: 'Bloodrage', kids: [
             BLK('stat', { targets: ['str', 'con'], value: 4, btype: 'Morale' }),
             BLK('stat', { targets: ['save.will'], value: 2, btype: 'Morale' }),
             BLK('stat', { targets: ['ac.total'], value: -2, btype: 'Penalty' }),
@@ -4342,6 +4342,7 @@
       const ck = br.condKind || 'state';
       const kindSel = sel(bp + '.condKind', ck, [
         ['state', 'While State Active'],
+        ['activation', 'While Ability Activated (Note)'],
         ['bound', 'While Bound to Chakra / Pact'],
         ['levelTier', 'CL / Class / HD Tier'],
         ['choicePath', '🔀 Chosen Path (@Choice)'],

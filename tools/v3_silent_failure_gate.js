@@ -6,7 +6,9 @@
  * Ratcheted against tools/v3_silent_failure_baseline.json: anything NOT in the baseline is an error,
  * existing problems may only shrink (a fixed entry is reported as "baseline can be tightened").
  *
- *   (a) condition strings the engine does not understand. `evaluateV3BranchCondition` falls through to
+ *   (a) condition strings outside the CLOSED vocabulary (RuleEngine.resolveV3WhenCondition, strict). At run time such text is a
+ *       situational note (never always-on); in data it is an error. Declared kinds `situational` / `activation` are accepted.
+ *       (history: `evaluateV3BranchCondition` used to fall through to
  *       'qualifier' and the branch is then applied unconditionally; an empty condText is always true too.
  *       Branches whose `condKind` is not in RuleEngine.V3_NAMED_WHEN_CONDS ignore their kind entirely, so a
  *       kind-only branch (`charging`, `flanking`, empty text) is always true.
@@ -70,10 +72,12 @@ function runSilentFailureGate() {
     const text = textRaw === undefined || textRaw === null ? '' : String(textRaw).trim();
     const cond = (!isFlat && NAMED.has(kLow)) ? kind : text;
     if (CONTEXT_ONLY_CONDS.has(String(cond).toLowerCase())) return null;
+    // Declared descriptive kinds (`situational`, `activation`) are deterministic notes: never in the totals, no error.
+    if (RuleEngine.V3_DESCRIPTIVE_COND_KINDS.has(kLow)) return null;
     if (!cond) return { key: kind + '|(empty)' };
     let res;
-    try { res = RuleEngine.evaluateV3BranchCondition(cond, 'when', {}, {}, {}); } catch (_) { res = 'qualifier'; }
-    return res === 'qualifier' ? { key: kind + '|' + text } : null;
+    try { res = RuleEngine.resolveV3WhenCondition(kind, text, 'when', {}, {}, {}, { useNamedKind: !isFlat, strict: true }); } catch (_) { res = 'unrecognized'; }
+    return res === 'unrecognized' ? { key: kind + '|' + text } : null;
   };
   all.forEach((e) => {
     deepVisit(e, (o) => {

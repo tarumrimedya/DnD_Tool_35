@@ -1470,7 +1470,7 @@ function compileFeatPatches(featsCore, featsSplat) {
     // ~55+ Remaining Mechanical Core Feats in `srd_feats.json`
     'feat-psionic-dodge': {
       effects: [
-        whenBlock('ef-pdodge', 'state', 'Psionically Focused', [
+        whenBlock('ef-pdodge', 'activation', 'Psionically Focused', [
           statBlock('ef-pdodge-ac', ['ac.dodge'], 1, 'Dodge')
         ])
       ]
@@ -1833,28 +1833,28 @@ function compileFeatPatches(featsCore, featsSplat) {
     },
     'feat-power-penetration': {
       effects: [
-        whenBlock('ef-powpen', 'state', 'Expending Psionic Focus', [
+        whenBlock('ef-powpen', 'activation', 'Expending Psionic Focus', [
           statBlock('ef-powpen-s', ['sr.penetration'], 4, 'Untyped')
         ])
       ]
     },
     'feat-greater-power-penetration': {
       effects: [
-        whenBlock('ef-gpowpen', 'state', 'Expending Psionic Focus', [
+        whenBlock('ef-gpowpen', 'activation', 'Expending Psionic Focus', [
           statBlock('ef-gpowpen-s', ['sr.penetration'], 4, 'Untyped')
         ])
       ]
     },
     'feat-inquisitor': {
       effects: [
-        whenBlock('ef-inq', 'state', 'Expending Psionic Focus', [
+        whenBlock('ef-inq', 'activation', 'Expending Psionic Focus', [
           statBlock('ef-inq-s', ['skill.sense-motive'], 10, 'Untyped')
         ])
       ]
     },
     'feat-mental-leap': {
       effects: [
-        whenBlock('ef-mleap', 'state', 'Expending Psionic Focus', [
+        whenBlock('ef-mleap', 'activation', 'Expending Psionic Focus', [
           statBlock('ef-mleap-s', ['skill.jump'], 10, 'Untyped')
         ])
       ]

@@ -6073,6 +6073,70 @@ function runDeriveSheetTests() {
     );
   }
 
+  // --- Closed condition vocabulary: an unrecognized condition is never silently always-on ---
+  {
+    const condCh = {
+      abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 }, alignment: 'Chaotic Evil',
+      levelProgression: [], bodySlots: {}, classes: 'Fighter 1', level: 1
+    };
+    const acStat = v => [{ type: 'stat', targets: ['ac.total'], mode: 'flat', value: v, btype: 'Untyped' }];
+    const probe = (branches, flow) => {
+      const o = RuleEngine.evaluateV3Entry({ id: 'cond-probe', name: 'Probe', type: 'Feat', effects: [{ type: 'when', flow: flow || 'while', branches }] }, { character: condCh });
+      return (o.modifiers || []).map(m => ({ v: m.value ?? m.val, c: m.condition || null }));
+    };
+    const utt = probe([
+      { condKind: 'activation', condText: 'Normal Utterance', effects: acStat(1) },
+      { condKind: 'activation', condText: 'Reverse Utterance', effects: acStat(-1) }
+    ], 'when');
+    check(
+      'Condition vocabulary: activation branches are situational notes and both Normal and Reverse Utterance stay listed (the first one no longer swallows the second)',
+      utt.length === 2 && utt[0].c === 'Normal Utterance' && utt[1].c === 'Reverse Utterance',
+      JSON.stringify(utt)
+    );
+    const unk = probe([{ condKind: 'state', condText: 'Totally Unknown State', effects: acStat(2) }]);
+    check(
+      'Condition vocabulary: an unrecognized `state` text falls back to a situational note (carries its condition), never an unconditional bonus',
+      unk.length === 1 && unk[0].c === 'Totally Unknown State',
+      JSON.stringify(unk)
+    );
+    const sit = probe([{ condKind: 'situational', condText: 'After Running Start', effects: acStat(4) }]);
+    check(
+      'Condition vocabulary: free-text `situational` kind is declared descriptive (carries its condition)',
+      sit.length === 1 && sit[0].c === 'After Running Start',
+      JSON.stringify(sit)
+    );
+    const evil = probe([{ condKind: 'state', condText: 'Evil Alignment', effects: acStat(3) }]);
+    const good = probe([{ condKind: 'state', condText: 'Good Alignment', effects: acStat(5) }]);
+    check(
+      'Condition vocabulary: alignment atoms read the character alignment (Chaotic Evil: Evil applies, Good does not)',
+      evil.length === 1 && evil[0].v === 3 && evil[0].c === null && good.length === 0,
+      JSON.stringify({ evil, good })
+    );
+    const vest = probe([{ condKind: 'bound', condText: 'Vestige Pact (Naberius)', effects: acStat(6) }]);
+    check(
+      'Condition vocabulary: Vestige Pact atom is on while the vestige entry is active',
+      vest.length === 1 && vest[0].v === 6 && vest[0].c === null,
+      JSON.stringify(vest)
+    );
+    const chg = probe([{ condKind: 'charging', condText: '', effects: acStat(7) }]);
+    const chgOn = (() => {
+      const o = RuleEngine.evaluateV3Entry({ id: 'cond-probe2', name: 'Probe', type: 'Feat', effects: [{ type: 'when', flow: 'while', branches: [{ condKind: 'charging', condText: '', effects: acStat(7) }] }] }, { character: Object.assign({}, condCh, { tactical: { charge: true } }) });
+      return (o.modifiers || []).length;
+    })();
+    check(
+      'Condition vocabulary: a tactical kind alone is the condition (charging is off without a charge, on during one)',
+      chg.length === 0 && chgOn === 1,
+      JSON.stringify({ chg, chgOn })
+    );
+    const strictRes = RuleEngine.resolveV3WhenCondition('state', 'Bloodrage', 'while', {}, {}, {}, { strict: true });
+    const strictAct = RuleEngine.resolveV3WhenCondition('activation', 'Bloodrage', 'while', {}, {}, {}, { strict: true });
+    check(
+      'Condition vocabulary: strict mode (silent-failure gate) reports unknown text as unrecognized but accepts declared activation / situational kinds',
+      strictRes === 'unrecognized' && strictAct === 'situational',
+      JSON.stringify({ strictRes, strictAct })
+    );
+  }
+
   CharStore.clearHistory();
 
   return { passed, elapsedMs: Date.now() - startMs };

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
   "version": "3.0.0",
-  "compendiumHash": "788f8ce80fa86e97",
+  "compendiumHash": "ee3b8baf44b165d9",
   "generatedAt": "2026-11-15T19:43:51.694Z",
   "totalEntries": 7987,
   "chunks": {
@@ -14,13 +14,13 @@
     "srd_feats.json": {
       "count": 468,
       "bytes": 859917,
-      "hash": "aff8440070a13f92",
+      "hash": "adbc004ba6bf362c",
       "eagerLoad": true
     },
     "srd_classes_races.json": {
       "count": 326,
       "bytes": 1611663,
-      "hash": "5dc91e906e867920",
+      "hash": "7be1592e8de6ceb2",
       "eagerLoad": true
     },
     "srd_combat_rules.json": {
@@ -44,25 +44,25 @@
     "srd_maneuvers.json": {
       "count": 209,
       "bytes": 379099,
-      "hash": "cc1bf0c9f8f503c1",
+      "hash": "a135c01fb0997a26",
       "eagerLoad": true
     },
     "mic_compendium.json": {
       "count": 953,
       "bytes": 1898703,
-      "hash": "d4ddf324f670bbcc",
+      "hash": "5078b931dee5d445",
       "eagerLoad": true
     },
     "srd_domains.json": {
       "count": 37,
       "bytes": 143062,
-      "hash": "ad20390dffa67ea0",
+      "hash": "6ff922094d0d773c",
       "eagerLoad": true
     },
     "srd_companions.json": {
       "count": 1,
       "bytes": 13196,
-      "hash": "7b64f20bd504b924",
+      "hash": "54f4a56866928974",
       "eagerLoad": true
     },
     "srd_templates.json": {
@@ -80,12 +80,12 @@
     "srd_feats_splat.json": {
       "count": 1767,
       "bytes": 2330390,
-      "hash": "e9b53434c588d893",
+      "hash": "b2f06ba7ec73de76",
       "eagerLoad": false
     },
     "srd_feats_epic.json": {
       "count": 23,
-      "hash": "74cd2af78db44d99",
+      "hash": "a1ffe502d3d0adac",
       "bytes": 34605,
       "eagerLoad": false
     },
@@ -98,7 +98,7 @@
     },
     "srd_classes_splat.json": {
       "count": 416,
-      "hash": "59de67187d33531e",
+      "hash": "6c772b1242638b5c",
       "bytes": 1214495,
       "eagerLoad": false
     },
@@ -124,7 +124,7 @@
     "srd_vestiges_splat.json": {
       "count": 32,
       "bytes": 125341,
-      "hash": "78b0236466cbbb2a",
+      "hash": "3e4d77ec0b44cb24",
       "eagerLoad": false
     },
     "srd_mysteries_splat.json": {
@@ -136,7 +136,7 @@
     "srd_utterances_splat.json": {
       "count": 65,
       "bytes": 163998,
-      "hash": "3c6fd5a21270509b",
+      "hash": "2170677da3035f0c",
       "eagerLoad": false
     },
     "srd_soulmelds_splat.json": {

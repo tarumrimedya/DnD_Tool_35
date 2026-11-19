@@ -1042,7 +1042,7 @@
         "branches"
       ],
       "additionalProperties": true,
-      "description": "Conditional container. Branches are evaluated in order; the first matching branch applies (condKind \"else\" is the fallback). condText accepts \"toggle:<key>\", \"stance:<name>\", \"buff:<id>\", \"@level >= 7\", \"@cl >= 11\", or named states (wieldingChosenWeapon, notFlatFooted, ...).",
+      "description": "Conditional container. Branches are evaluated in order; the first matching branch applies (condKind \"else\" is the fallback). condText accepts \"toggle:<key>\", \"stance:<name>\", \"buff:<id>\", \"@level >= 7\", \"@cl >= 11\", or named states (wieldingChosenWeapon, notFlatFooted, ...). The condition vocabulary is CLOSED: besides those, the engine understands gear atoms joined with \"&\" (unarmored, lightArmor, lightOrNoArmor, notHeavyArmor, noShield, unarmoredNoShield, lightOrNoArmorNoShield, unencumbered, notHeavyLoad, wieldingMeleeWeapon), tactical kinds (charging, flanking, fightingDefensively, totalDefense, powerAttack, combatExpertise, higherGround, pointBlankShot, rapidShot, manyshot, sneakAttack), alignment atoms (\"Chaotic Alignment\", \"alignment:evil\"), \"Vestige Pact (<Name>)\" and \"hp <= 50%\". Free text the engine does not know is NEVER applied to the totals: use condKind \"situational\" for a combat / equipment note (listed as situational) or condKind \"activation\" for \"while this ability is activated\" (condText = the ability name; listed as situational). A `state` / `toggle` branch with unknown text fails the silent-failure gate.",
       "properties": {
         "flow": {
           "type": "string",
@@ -1077,6 +1077,7 @@
             "choicePath",
             "synergy",
             "situational",
+            "activation",
             "notFlatFooted",
             "wieldingChosenShield",
             "wieldingChosenWeapon",

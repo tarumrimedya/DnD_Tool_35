@@ -294,6 +294,27 @@ function runAiV3ContractTests() {
         `${label} powers[${i}].dcFormula "${pw.dcFormula}" does not evaluate to a Save DC (got ${res ? res.dc : 'null'})`);
     });
   });
+  // 4c. Closed condition vocabulary: every `when` / `while` branch in the AI-facing corpus (schema examples + patterns)
+  // must be understood by the engine (declared `situational` / `activation` kinds are fine; unknown text is not).
+  const condWalk = (node, label, path) => {
+    if (Array.isArray(node)) { node.forEach((x, i) => condWalk(x, label, `${path}[${i}]`)); return; }
+    if (!isObj(node)) return;
+    if (node.type === 'when' || node.type === 'while') {
+      const flat = !Array.isArray(node.branches);
+      const items = flat
+        ? [[node.condKind, node.condition !== undefined ? node.condition : (node.when !== undefined ? node.when : (node.while !== undefined ? node.while : node.condText)), true]]
+        : node.branches.map((b) => [b.condKind || 'toggle', b.condText !== undefined ? b.condText : b.condition, false]);
+      items.forEach(([k, t, isFlat]) => {
+        if (k === 'note' || k === 'else' || (t && typeof t === 'object') || t === undefined) return;
+        const r = RuleEngine.resolveV3WhenCondition(k || 'toggle', t, 'when', {}, {}, {}, { useNamedKind: !isFlat, strict: true });
+        check(r !== 'unrecognized', `${label} ${path}: condition "${k}|${t}" is outside the closed condition vocabulary`);
+      });
+    }
+    Object.keys(node).forEach((key) => condWalk(node[key], label, `${path}.${key}`));
+  };
+  corpus.forEach(({ label, entry }) => condWalk(entry, label, ''));
+  patterns.forEach((p) => condWalk(p.template, `pattern ${p.patternId}`, ''));
+
   // Probes get a unique id + name so the engine cannot resolve them to an SRD/seed entry (by id or by name)
   // and must evaluate the template's own effects[] blocks.
   const tpl = (id) => Object.assign(JSON.parse(JSON.stringify((patterns.find((p) => p.patternId === id) || {}).template || {})),
