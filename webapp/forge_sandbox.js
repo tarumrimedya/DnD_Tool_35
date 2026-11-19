@@ -4703,9 +4703,9 @@
       const scopeSel = '<select class="fs-sel fs-embed-scope" data-embed-scope="1" title="Save Target">' +
         (allowChar ? '<option value="character"' + (scope === 'character' ? ' selected' : '') + '>This Character Only</option>' : '') +
         '<option value="campaign"' + (scope === 'campaign' ? ' selected' : '') + '>Campaign Rule Crafter Library</option></select>';
-      $('#fs-topbar').innerHTML = '<div class="fs-topbar-row"><div class="fs-title">⚒️ Rule Crafter</div>' + scopeSel +
+      $('#fs-topbar').innerHTML = '<div class="fs-topbar-row"><div class="fs-title">⚒️ Rule Crafter</div>' + scopeSel + catSel +
         '<span class="fs-grow-gap"></span>' + histBtns + craftBtn + btn('embed-save', '💾 Save & Apply', 'fs-xs fs-emerald') + btn('embed-cancel', '✕ Cancel', 'fs-xs fs-ghost') + '</div>' +
-        '<div class="fs-topbar-row fs-topbar-spot-row">' + catSel + '<div class="fs-top-spot" style="flex:1 1 200px">' + spotHtml('load', 'top') + '</div></div>';
+        '<div class="fs-topbar-row fs-topbar-spot-row"><div class="fs-top-spot">' + spotHtml('load', 'top') + '</div></div>';
       return;
     }
     const save = S.ui.tplSaveOpen ? '<span class="fs-row" style="gap:4px">' + inp('newTplName', S.ui.newTplName, { scope: 'ui', ph: 'Template name…', style: 'width:150px', enter: 'save-template' }) + btn('save-template', 'Save', 'fs-xs fs-emerald') + btn('toggle-tpl-save', '✕', 'fs-xs fs-ghost') + '</span>' : btn('toggle-tpl-save', '📌 Save Template', 'fs-xs');

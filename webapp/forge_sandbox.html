@@ -15,16 +15,17 @@
   .z-30 { z-index: 30; }
 
   /* Compact 2-row top bar */
-  .fs-topbar { position: relative; z-index: 40; background: rgba(5, 8, 17, 0.94); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border-subtle); padding: 8px 12px; }
+  .fs-topbar { position: relative; z-index: 40; background: rgba(5, 8, 17, 0.94); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border-subtle); padding: 8px 14px; }
   .fs-topbar-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; max-width: 1200px; margin: 0 auto; }
   .fs-topbar-spot-row { margin-top: 6px; }
   .fs-title { color: var(--text-primary); font-weight: 800; font-size: 14px; letter-spacing: .02em; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
-  .fs-top-spot { flex: 1 1 100%; width: 100%; min-width: 0; }
+  .fs-top-spot { flex: 0 1 360px; width: 360px; max-width: 100%; min-width: 220px; }
+  .fs-top-spot .fs-spot-dd { right: auto; width: min(540px, calc(100vw - 28px)); }
   .fs-rel { position: relative; display: inline-flex; }
   .fs-pop { position: absolute; top: calc(100% + 6px); right: 0; z-index: 60; width: 320px; padding: 12px; border-radius: 12px; background: #0b1224; border: 1px solid var(--border-default); box-shadow: 0 16px 40px rgba(0,0,0,.6); }
 
   /* Single breathing column */
-  .fs-main { max-width: 960px; margin: 0 auto; padding: 14px 12px 60px; }
+  .fs-main { max-width: 1200px; margin: 0 auto; padding: 12px 14px 60px; }
   .fs-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
   .fs-label-mini { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: var(--text-dim); font-weight: 700; margin-right: 2px; display: inline-flex; align-items: center; gap: 4px; }
 
@@ -271,7 +272,7 @@
     .lego-cols-2, .lego-cols-3, .lego-cols-4 { grid-template-columns: minmax(0, 1fr); }
     .fs-main { padding: 10px 8px 60px; }
     .fs-topbar { padding: 8px; }
-    .fs-top-spot { min-width: 0; flex-basis: 100%; }
+    .fs-top-spot { min-width: 0; flex: 1 1 100%; width: 100%; }
     .fs-topbar-row .fs-sel { min-width: 0 !important; flex: 1 1 160px; }
     .fs-pop { position: fixed; left: 10px; right: 10px; top: 56px; width: auto; max-width: 360px; margin: 0 auto; }
     .lego-canvas { padding: 8px; }
@@ -284,14 +285,15 @@
     .lego-field { padding: 6px 8px; }
     .lego-lbl, .lego-field-lbl { white-space: normal; }
     .fs-scroll-x { overflow-x: auto; }
-    .fs-spot-dd { position: fixed; left: 10px !important; right: 10px !important; top: 12vh; min-width: 0; max-width: 440px; margin: 0 auto; max-height: 70vh; z-index: 95; }
+    .fs-spot-dd, .fs-top-spot .fs-spot-dd { position: fixed; left: 10px !important; right: 10px !important; width: auto; top: 12vh; min-width: 0; max-width: 440px; margin: 0 auto; max-height: 70vh; z-index: 95; }
     .fs-live { padding: 8px 10px; }
     .fs-live-name { font-size: 14px; }
     .fs-embed-scope { flex: 1 1 140px; max-width: 100%; }
   }
   .fs-embed-scope { width: auto; min-width: 140px; max-width: 240px; }
-  body.is-embed .fs-topbar { padding: 8px 10px; }
-  body.is-embed .fs-main { padding: 10px 10px 44px; }
+  body.is-embed .fs-topbar { padding: 8px 14px; }
+  body.is-embed .fs-topbar-row, body.is-embed .fs-main { max-width: 100%; }
+  body.is-embed .fs-main { padding: 10px 14px 44px; }
   .fs-fxref { position: fixed; top: 72px; right: 12px; bottom: 12px; width: min(340px, calc(100vw - 24px)); z-index: 85; flex-direction: column; border-radius: 12px; background: rgba(11,18,36,.98); border: 1px solid var(--border-default); box-shadow: 0 18px 44px rgba(0,0,0,.65); }
   .fs-fxhead { display: flex; align-items: center; justify-content: space-between; padding: 10px; font-weight: 800; font-size: 12px; color: var(--text-primary); }
   .fs-fxbody { flex: 1; overflow-y: auto; padding: 0 10px 10px; }
@@ -331,6 +333,6 @@
   <script src="./srd_compendium.js?v=4652bc4668"></script>
   <script src="./rulesets/dnd35.js?v=efbdcde12f"></script>
   <script src="./rule_engine.js?v=6ce5b87cd8"></script>
-  <script src="./forge_sandbox.js?v=0e07126027"></script>
+  <script src="./forge_sandbox.js?v=32d149747f"></script>
 </body>
 </html>
