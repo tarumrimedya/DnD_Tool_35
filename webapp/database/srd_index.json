@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
   "version": "3.0.0",
-  "compendiumHash": "30e069276e23ea03",
+  "compendiumHash": "eb1032cf4116ca40",
   "generatedAt": "2026-11-15T19:43:51.694Z",
   "totalEntries": 7987,
   "chunks": {
@@ -20,7 +20,7 @@
     "srd_classes_races.json": {
       "count": 326,
       "bytes": 1611663,
-      "hash": "7d7dc2deb2cb0232",
+      "hash": "30d06c7305b34509",
       "eagerLoad": true
     },
     "srd_combat_rules.json": {
@@ -56,7 +56,7 @@
     "srd_domains.json": {
       "count": 37,
       "bytes": 143062,
-      "hash": "0caf4ffd4ed3669c",
+      "hash": "753305df175894c5",
       "eagerLoad": true
     },
     "srd_companions.json": {
@@ -124,7 +124,7 @@
     "srd_vestiges_splat.json": {
       "count": 32,
       "bytes": 125341,
-      "hash": "fda0556537ad0e2e",
+      "hash": "4e9b7ea6b6adae40",
       "eagerLoad": false
     },
     "srd_mysteries_splat.json": {
@@ -136,7 +136,7 @@
     "srd_utterances_splat.json": {
       "count": 65,
       "bytes": 163998,
-      "hash": "3cd6c7492cfb767f",
+      "hash": "d72c3c34ab45c5ea",
       "eagerLoad": false
     },
     "srd_soulmelds_splat.json": {

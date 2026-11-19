@@ -19,6 +19,9 @@
  *     block situational); its text becomes the mode label. Other condition text stays (a real situational note).
  *   - Branch metadata (trigger, action, cost, check, cooldown, oath) moves to `mode.activation`.
  *
+ *   - `combatScope` (melee / ranged / both) is inferred from the attack / damage stat targets (`inferModeScope`); modes with
+ *     no attack / damage target get none (AC, saves, abilities, castSpell, rule ...).
+ *
  *   node tools/compile_activation_modes.js           apply
  *   node tools/compile_activation_modes.js --check   report only (exit 1 when something would change)
  */
@@ -75,6 +78,41 @@ function buildMode(br, usedIds) {
   return mode;
 }
 
+/**
+ * combatScope for an activation mode, from the attack / damage targets of its stat blocks (nested `when` branches included).
+ *   only melee targets -> 'melee'; only ranged targets -> 'ranged'; generic attack / damage targets (atk.all, dmg.weapon ...)
+ *   or a mix -> 'both'; no attack / damage target (AC, saves, abilities, castSpell, rule ...) -> null (no scope written).
+ */
+function inferModeScope(mode) {
+  let melee = false, ranged = false, generic = false;
+  visit(mode.effects || [], (o) => {
+    if (o.type !== 'stat' || !Array.isArray(o.targets)) return;
+    o.targets.forEach((t) => {
+      const m = /^(atk|attack|dmg|damage)\.(.+)$/.exec(String(t));
+      if (!m) return;
+      if (m[2] === 'melee') melee = true;
+      else if (m[2] === 'ranged') ranged = true;
+      else generic = true;
+    });
+  });
+  if (generic || (melee && ranged)) return 'both';
+  if (melee) return 'melee';
+  if (ranged) return 'ranged';
+  return null;
+}
+
+/** Writes `combatScope` on modes that have none and an attack / damage target; returns how many were written. */
+function scopeRecord(e) {
+  if (!e || typeof e !== 'object' || !Array.isArray(e.modes)) return 0;
+  let n = 0;
+  e.modes.forEach((m) => {
+    if (!m || typeof m !== 'object' || m.combatScope || !Array.isArray(m.effects) || !m.effects.length) return;
+    const scope = inferModeScope(m);
+    if (scope) { m.combatScope = scope; n++; }
+  });
+  return n;
+}
+
 /** Converts one record in place; returns the number of branches handled. */
 function convertRecord(e) {
   if (!e || typeof e !== 'object' || !Array.isArray(e.effects)) return 0;
@@ -122,6 +160,7 @@ function run(opts) {
   const idx = JSON.parse(fs.readFileSync(path.join(DB_DIR, 'srd_index.json'), 'utf8'));
   let total = 0;
   let recs = 0;
+  let scoped = 0;
   Object.keys(idx.chunks || {}).forEach((chunk) => {
     const fp = path.join(DB_DIR, chunk);
     if (!fs.existsSync(fp)) return;
@@ -130,7 +169,9 @@ function run(opts) {
     let touched = 0;
     records(data).forEach((e) => {
       const n = convertRecord(e);
+      const sc = scopeRecord(e);
       if (n) { touched += n; recs++; }
+      if (sc) { touched += sc; scoped += sc; }
     });
     if (!touched) return;
     total += touched;
@@ -141,11 +182,11 @@ function run(opts) {
     }
     console.log(`  ${chunk}: ${touched} activation branch(es)`);
   });
-  console.log(`${check ? 'would convert' : 'converted'} ${total} activation branch(es) in ${recs} record(s).`);
+  console.log(`${check ? 'would convert' : 'converted'} ${total - scoped} activation branch(es) in ${recs} record(s); ${check ? 'would write' : 'wrote'} ${scoped} mode combatScope value(s).`);
   return { branches: total, records: recs };
 }
 
-module.exports = { run, convertRecord };
+module.exports = { run, convertRecord, inferModeScope, scopeRecord };
 
 if (require.main === module) {
   const res = run({ check: process.argv.includes('--check') });
