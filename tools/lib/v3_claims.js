@@ -41,7 +41,7 @@ function classifyBonusTarget(phrase) {
   }
   if (/armor class|\bac\b/.test(p)) return { family: 'ac', target: 'ac' };
   if (/initiative/.test(p)) return { family: 'init', target: 'init' };
-  if (/grapple/.test(p)) return { family: 'grapple', target: 'grapple' };
+  if (/\bgrapple\s+(?:checks?|rolls?|attempts?)\b|\b(?:on|to)\s+grapple\b/.test(p) && !/escape artist|attack and damage/.test(p)) return { family: 'grapple', target: 'grapple' };
   if (/attack rolls?/.test(p) && /damage rolls?/.test(p)) return { family: 'attackDamage', target: 'both' };
   if (/attack rolls?/.test(p)) return { family: 'attack', target: 'attack' };
   if (/damage( rolls?)?/.test(p)) return { family: 'damage', target: 'damage' };

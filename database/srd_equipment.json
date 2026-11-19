@@ -15665,7 +15665,17 @@
       "price": 450,
       "casterLevel": 12
     },
-    "effects": [],
+    "effects": [
+      {
+        "type": "stat",
+        "targets": [
+          "dmg.all"
+        ],
+        "mode": "flat",
+        "value": 1,
+        "btype": "Enhancement"
+      }
+    ],
     "shortDescription": "Feather Token: Each of these items is a small feather that has a power to suit a special need. The kinds of tokens are described below. Each token is usable once. Anchor: A token useful to moor a craft in water so as to…",
     "text": "Feather Token: Each of these items is a small feather that has a power to suit a special need. The kinds of tokens are described below. Each token is usable once.\nAnchor: A token useful to moor a craft in water so as to render it immobile for up to one day.\nBird: A token that can be used to deliver a small written message unerringly to a designated target as would a carrier pigeon. The token lasts as long as it takes to carry the message.\nFan: A token that forms a huge flapping fan, causing a breeze of sufficient strength to propel one ship (about 25 mph). This wind is not cumulative with existing wind speed. The token can, however, be used to lessen existing winds, creating an area of relative calm or lighter winds (but wave size in a storm is not affected). The fan can be used for up to 8 hours. It does not function on land.\nSwan Boat: A token that forms a swanlike boat capable of moving on water at a speed of 60 feet. It can carry eight horses and gear or thirty-two Medium characters or any equivalent combination. The boat lasts for one day.\nTree: A token that causes a great oak to spring into being (5-foot diameter trunk, 60-foot height, 40-foot top diameter). This is an instantaneous effect.\nWhip: A token that forms into a huge leather whip and wields itself against any opponent desired just like a dancing weapon. The weapon has a +10 base attack bonus, does 1d6+1 points of damage, has a +1 enhancement bonus on attack and damage rolls, and a makes a free grapple attack (with a +15 attack bonus) if it hits. The whip lasts no longer than 1 hour.\nModerate conjuration; CL 12th; Craft Wondrous Item, major creation; Price 50 gp (anchor), 300 gp (bird), 200 gp (fan), 450 gp (swan boat), 400 gp (tree), 500 gp (whip).",
     "tags": [
@@ -17009,7 +17019,29 @@
       "price": 500,
       "casterLevel": 15
     },
-    "effects": [],
+    "effects": [
+      {
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "condKind": "situational",
+            "condText": "when trying to cast any arcane spell that has a somatic component",
+            "effects": [
+              {
+                "type": "stat",
+                "targets": [
+                  "dex"
+                ],
+                "mode": "flat",
+                "value": -4,
+                "btype": "Penalty"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "Ring of Clumsiness: This ring operates exactly like a ring of feather falling . However, it also makes the wearer clumsy. She takes a -4 penalty to Dexterity and has a 20% chance of spell failure when trying to cast any…",
     "text": "Ring of Clumsiness: This ring operates exactly like a ring of feather falling. However, it also makes the wearer clumsy. She takes a -4 penalty to Dexterity and has a 20% chance of spell failure when trying to cast any arcane spell that has a somatic component. (This chance of spell failure stacks with other arcane spell failure chances.)\nStrong transmutation; CL 15th; Forge Ring, feather fall, bestow curse; Price 500 gp.",
     "tags": [
@@ -17153,7 +17185,17 @@
       "price": 500,
       "casterLevel": 12
     },
-    "effects": [],
+    "effects": [
+      {
+        "type": "stat",
+        "targets": [
+          "dmg.all"
+        ],
+        "mode": "flat",
+        "value": 1,
+        "btype": "Enhancement"
+      }
+    ],
     "shortDescription": "Feather Token: Each of these items is a small feather that has a power to suit a special need. The kinds of tokens are described below. Each token is usable once. Anchor: A token useful to moor a craft in water so as to…",
     "text": "Feather Token: Each of these items is a small feather that has a power to suit a special need. The kinds of tokens are described below. Each token is usable once.\nAnchor: A token useful to moor a craft in water so as to render it immobile for up to one day.\nBird: A token that can be used to deliver a small written message unerringly to a designated target as would a carrier pigeon. The token lasts as long as it takes to carry the message.\nFan: A token that forms a huge flapping fan, causing a breeze of sufficient strength to propel one ship (about 25 mph). This wind is not cumulative with existing wind speed. The token can, however, be used to lessen existing winds, creating an area of relative calm or lighter winds (but wave size in a storm is not affected). The fan can be used for up to 8 hours. It does not function on land.\nSwan Boat: A token that forms a swanlike boat capable of moving on water at a speed of 60 feet. It can carry eight horses and gear or thirty-two Medium characters or any equivalent combination. The boat lasts for one day.\nTree: A token that causes a great oak to spring into being (5-foot diameter trunk, 60-foot height, 40-foot top diameter). This is an instantaneous effect.\nWhip: A token that forms into a huge leather whip and wields itself against any opponent desired just like a dancing weapon. The weapon has a +10 base attack bonus, does 1d6+1 points of damage, has a +1 enhancement bonus on attack and damage rolls, and a makes a free grapple attack (with a +15 attack bonus) if it hits. The whip lasts no longer than 1 hour.\nModerate conjuration; CL 12th; Craft Wondrous Item, major creation; Price 50 gp (anchor), 300 gp (bird), 200 gp (fan), 450 gp (swan boat), 400 gp (tree), 500 gp (whip).",
     "tags": [
@@ -17623,7 +17665,17 @@
       "price": 5500,
       "casterLevel": 13
     },
-    "effects": [],
+    "effects": [
+      {
+        "type": "stat",
+        "targets": [
+          "str"
+        ],
+        "mode": "flat",
+        "value": -10,
+        "btype": "Penalty"
+      }
+    ],
     "shortDescription": "Robe of Powerlessness: A Robe of powerlessness appears to be a magic robe of another sort. As soon as a character dons this garment, she takes a -10 penalty to Strength and Intelligence, forgetting spells and magic know…",
     "text": "Robe of Powerlessness: A Robe of powerlessness appears to be a magic robe of another sort. As soon as a character dons this garment, she takes a -10 penalty to Strength and Intelligence, forgetting spells and magic knowledge accordingly. The robe can be removed easily, but in order to restore mind and body, the character must receive a remove curse spell followed by heal.\nModerate transmutation; CL 13th; Create Wondrous Item, bestow curse, permanency; Price 5,500 gp.",
     "tags": [
@@ -17999,6 +18051,11 @@
         "mode": "flat",
         "value": 5,
         "btype": "Enhancement"
+      },
+      {
+        "type": "defense",
+        "mode": "Immunity",
+        "what": "Energy Drain Attacks"
       }
     ],
     "ruleFlags": {
@@ -18252,6 +18309,24 @@
         "scaling": "flat",
         "max": 3,
         "reset": "perDay"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "ac.deflection"
+        ],
+        "mode": "flat",
+        "value": 3,
+        "btype": "Deflection"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "atk.all"
+        ],
+        "mode": "flat",
+        "value": 3,
+        "btype": "Enhancement"
       }
     ],
     "shortDescription": "Psychoactive Skins: Psychoactive skins (also sometimes called ectoshells) are fistsized globs of psionically charged ectoplasm. As a standard action, a psychoactive skin spreads over and covers a Medium or smaller creat…",
@@ -19662,6 +19737,15 @@
         "scaling": "flat",
         "max": 1,
         "reset": "perDay"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "ac.deflection"
+        ],
+        "mode": "flat",
+        "value": 4,
+        "btype": "Deflection"
       }
     ],
     "ruleFlags": {
@@ -20581,6 +20665,11 @@
         "mode": "flat",
         "value": 5,
         "btype": "Resistance"
+      },
+      {
+        "type": "defense",
+        "mode": "Immunity",
+        "what": "Critical Hits"
       }
     ],
     "shortDescription": "Invulnerability: When held, this rod grants its wielder the following powers. +5 enhancement bonus to natural armor. +5 resistance bonus on saving throws. Damage reduction 15/adamantine. Immunity to critical hits. Spell…",
@@ -20785,7 +20874,13 @@
       "price": 9000,
       "casterLevel": 7
     },
-    "effects": [],
+    "effects": [
+      {
+        "type": "defense",
+        "mode": "Immunity",
+        "what": "All Harmful Vapors"
+      }
+    ],
     "shortDescription": "Necklace of Adaptation: This necklace is a heavy chain with a platinum medallion. The magic of the necklace wraps the wearer in a shell of fresh air, making him immune to all harmful vapors and gases (such as cloudkill…",
     "text": "Necklace of Adaptation: This necklace is a heavy chain with a platinum medallion. The magic of the necklace wraps the wearer in a shell of fresh air, making him immune to all harmful vapors and gases (such as cloudkill and stinking cloud effects, as well as inhaled poisons) and allowing him to breathe, even underwater or in a vacuum.\nModerate transmutation; CL 7th; Craft Wondrous Item, alter self; Price 9,000 gp.",
     "tags": [
@@ -21718,6 +21813,25 @@
         "mode": "DR",
         "value": 15,
         "what": "adamantine"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "str"
+        ],
+        "mode": "flat",
+        "value": 10,
+        "btype": "Enhancement"
+      },
+      {
+        "type": "defense",
+        "mode": "Immunity",
+        "what": "Mind-Affecting"
+      },
+      {
+        "type": "defense",
+        "mode": "Immunity",
+        "what": "Rust Attacks"
       }
     ],
     "shortDescription": "Golem Armor: This enormous suit of black iron + 10 full plate armor increases the wearer's size by one category (to a maximum of Colossal). The wearer gains a +10 enhancement bonus to Strength and is rendered immune to…",
@@ -22400,7 +22514,17 @@
       "price": 200,
       "casterLevel": 12
     },
-    "effects": [],
+    "effects": [
+      {
+        "type": "stat",
+        "targets": [
+          "dmg.all"
+        ],
+        "mode": "flat",
+        "value": 1,
+        "btype": "Enhancement"
+      }
+    ],
     "shortDescription": "Feather Token: Each of these items is a small feather that has a power to suit a special need. The kinds of tokens are described below. Each token is usable once. Anchor: A token useful to moor a craft in water so as to…",
     "text": "Feather Token: Each of these items is a small feather that has a power to suit a special need. The kinds of tokens are described below. Each token is usable once.\nAnchor: A token useful to moor a craft in water so as to render it immobile for up to one day.\nBird: A token that can be used to deliver a small written message unerringly to a designated target as would a carrier pigeon. The token lasts as long as it takes to carry the message.\nFan: A token that forms a huge flapping fan, causing a breeze of sufficient strength to propel one ship (about 25 mph). This wind is not cumulative with existing wind speed. The token can, however, be used to lessen existing winds, creating an area of relative calm or lighter winds (but wave size in a storm is not affected). The fan can be used for up to 8 hours. It does not function on land.\nSwan Boat: A token that forms a swanlike boat capable of moving on water at a speed of 60 feet. It can carry eight horses and gear or thirty-two Medium characters or any equivalent combination. The boat lasts for one day.\nTree: A token that causes a great oak to spring into being (5-foot diameter trunk, 60-foot height, 40-foot top diameter). This is an instantaneous effect.\nWhip: A token that forms into a huge leather whip and wields itself against any opponent desired just like a dancing weapon. The weapon has a +10 base attack bonus, does 1d6+1 points of damage, has a +1 enhancement bonus on attack and damage rolls, and a makes a free grapple attack (with a +15 attack bonus) if it hits. The whip lasts no longer than 1 hour.\nModerate conjuration; CL 12th; Craft Wondrous Item, major creation; Price 50 gp (anchor), 300 gp (bird), 200 gp (fan), 450 gp (swan boat), 400 gp (tree), 500 gp (whip).",
     "tags": [
@@ -22815,7 +22939,17 @@
       "price": 50,
       "casterLevel": 12
     },
-    "effects": [],
+    "effects": [
+      {
+        "type": "stat",
+        "targets": [
+          "dmg.all"
+        ],
+        "mode": "flat",
+        "value": 1,
+        "btype": "Enhancement"
+      }
+    ],
     "shortDescription": "Feather Token: Each of these items is a small feather that has a power to suit a special need. The kinds of tokens are described below. Each token is usable once. Anchor: A token useful to moor a craft in water so as to…",
     "text": "Feather Token: Each of these items is a small feather that has a power to suit a special need. The kinds of tokens are described below. Each token is usable once.\nAnchor: A token useful to moor a craft in water so as to render it immobile for up to one day.\nBird: A token that can be used to deliver a small written message unerringly to a designated target as would a carrier pigeon. The token lasts as long as it takes to carry the message.\nFan: A token that forms a huge flapping fan, causing a breeze of sufficient strength to propel one ship (about 25 mph). This wind is not cumulative with existing wind speed. The token can, however, be used to lessen existing winds, creating an area of relative calm or lighter winds (but wave size in a storm is not affected). The fan can be used for up to 8 hours. It does not function on land.\nSwan Boat: A token that forms a swanlike boat capable of moving on water at a speed of 60 feet. It can carry eight horses and gear or thirty-two Medium characters or any equivalent combination. The boat lasts for one day.\nTree: A token that causes a great oak to spring into being (5-foot diameter trunk, 60-foot height, 40-foot top diameter). This is an instantaneous effect.\nWhip: A token that forms into a huge leather whip and wields itself against any opponent desired just like a dancing weapon. The weapon has a +10 base attack bonus, does 1d6+1 points of damage, has a +1 enhancement bonus on attack and damage rolls, and a makes a free grapple attack (with a +15 attack bonus) if it hits. The whip lasts no longer than 1 hour.\nModerate conjuration; CL 12th; Craft Wondrous Item, major creation; Price 50 gp (anchor), 300 gp (bird), 200 gp (fan), 450 gp (swan boat), 400 gp (tree), 500 gp (whip).",
     "tags": [
@@ -23407,7 +23541,17 @@
       "price": 10000,
       "casterLevel": 8
     },
-    "effects": [],
+    "effects": [
+      {
+        "type": "stat",
+        "targets": [
+          "atk.all"
+        ],
+        "mode": "flat",
+        "value": 3,
+        "btype": "Untyped"
+      }
+    ],
     "shortDescription": "Net of Snaring: This net provides a +3 bonus on attack rolls but can only be used underwater, thus making it a somewhat useful item rather than what most would really call a cursed item. Underwater, it can be commanded…",
     "text": "Net of Snaring: This net provides a +3 bonus on attack rolls but can only be used underwater, thus making it a somewhat useful item rather than what most would really call a cursed item. Underwater, it can be commanded to shoot forth up to 30 feet to trap a creature.\nModerate evocation; CL 8th; Craft Magic Arms and Armor, freedom of movement; Price 10,000 gp.",
     "tags": [
@@ -26464,7 +26608,29 @@
     "maxDex": 5,
     "checkPenalty": -1,
     "spellFailure": 15,
-    "effects": [],
+    "effects": [
+      {
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "condKind": "situational",
+            "condText": "if he or she had the leadership feat",
+            "effects": [
+              {
+                "type": "stat",
+                "targets": [
+                  "cha"
+                ],
+                "mode": "flat",
+                "value": 4,
+                "btype": "Enhancement"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "Warlord's Breastplate: This + 6 mithral breastplate has an armor check penalty of -1, a maximum Dexterity bonus of +5, and an arcane spell failure chance of 15%. It is considered light armor and weighs 15 pounds. It gra…",
     "text": "Warlord's Breastplate: This +6 mithral breastplate has an armor check penalty of -1, a maximum Dexterity bonus of +5, and an arcane spell failure chance of 15%. It is considered light armor and weighs 15 pounds. It grants the wearer a +4 enhancement bonus to Charisma and allows the wearer to attract and lead a number of followers as if he or she had the Leadership feat (though this power doesn't allow the wearer to attract a cohort). If the wearer already has the Leadership feat, this armor has no cumulative effect on his or her followers.\n\nCaster Level: 21st; Prerequisites: Craft Magic Arms and Armor, Craft Epic Magic Arms and Armor, charm monster, sympathy; Market Price: 416,200 gp; Cost to Create: 210,200 gp + 14,120 XP.",
     "tags": [
@@ -28441,7 +28607,17 @@
       "price": 5200,
       "casterLevel": 10
     },
-    "effects": [],
+    "effects": [
+      {
+        "type": "stat",
+        "targets": [
+          "atk.all"
+        ],
+        "mode": "flat",
+        "value": 5,
+        "btype": "Untyped"
+      }
+    ],
     "shortDescription": "Broom of Animated Attack: This item is indistinguishable in appearance from a normal broom. It is identical to a broom of flying by all tests short of attempted use. If a command is spoken, the broom does a loop-the-loo…",
     "text": "Broom of Animated Attack: This item is indistinguishable in appearance from a normal broom. It is identical to a broom of flying by all tests short of attempted use.\nIf a command is spoken, the broom does a loop-the-loop with its hopeful rider, dumping him on his head from 1d4+5 feet off the ground (no falling damage, since the fall is less than 10 feet). The broom then attacks the victim, swatting the face with the straw or twig end and beating him with the handle end.\nThe broom gets two attacks per round with each end (two swats with the straw and two with the handle, for a total of four attacks per round). It attacks with a +5 bonus on each attack roll. The straw end causes a victim to be blinded for 1 round when it hits. The handle deals 1d6 points of damage when it hits. The broom has AC 13, 18 hit points, and hardness 4.\nModerate transmutation; CL 10th; Create Wondrous Item, fly, animate objects; Price 5,200 gp.",
     "tags": [
@@ -28685,7 +28861,17 @@
       "price": 25305,
       "casterLevel": 15
     },
-    "effects": [],
+    "effects": [
+      {
+        "type": "stat",
+        "targets": [
+          "atk.all"
+        ],
+        "mode": "flat",
+        "value": -4,
+        "btype": "Penalty"
+      }
+    ],
     "shortDescription": "Maul of the Titans: This mallet is 8 feet long. If used as a weapon, it is the equivalent of a +3 greatclub and deals triple damage against inanimate objects. However, the wielder must have a Strength of at least 18 to…",
     "text": "Maul of the Titans: This mallet is 8 feet long. If used as a weapon, it is the equivalent of a +3 greatclub and deals triple damage against inanimate objects. However, the wielder must have a Strength of at least 18 to wield it properly. Otherwise, she takes a –4 penalty on attack rolls.\n\nStrong evocation; CL 15th; Craft Wondrous Item, Craft Magic Arms and Armor, clenched fist; Price 25,305 gp; Cost 12,305 gp + 480 XP; Weight 160 lb.",
     "tags": [
@@ -28976,7 +29162,17 @@
       "price": 300,
       "casterLevel": 12
     },
-    "effects": [],
+    "effects": [
+      {
+        "type": "stat",
+        "targets": [
+          "dmg.all"
+        ],
+        "mode": "flat",
+        "value": 1,
+        "btype": "Enhancement"
+      }
+    ],
     "shortDescription": "Feather Token: Each of these items is a small feather that has a power to suit a special need. The kinds of tokens are described below. Each token is usable once. Anchor: A token useful to moor a craft in water so as to…",
     "text": "Feather Token: Each of these items is a small feather that has a power to suit a special need. The kinds of tokens are described below. Each token is usable once.\nAnchor: A token useful to moor a craft in water so as to render it immobile for up to one day.\nBird: A token that can be used to deliver a small written message unerringly to a designated target as would a carrier pigeon. The token lasts as long as it takes to carry the message.\nFan: A token that forms a huge flapping fan, causing a breeze of sufficient strength to propel one ship (about 25 mph). This wind is not cumulative with existing wind speed. The token can, however, be used to lessen existing winds, creating an area of relative calm or lighter winds (but wave size in a storm is not affected). The fan can be used for up to 8 hours. It does not function on land.\nSwan Boat: A token that forms a swanlike boat capable of moving on water at a speed of 60 feet. It can carry eight horses and gear or thirty-two Medium characters or any equivalent combination. The boat lasts for one day.\nTree: A token that causes a great oak to spring into being (5-foot diameter trunk, 60-foot height, 40-foot top diameter). This is an instantaneous effect.\nWhip: A token that forms into a huge leather whip and wields itself against any opponent desired just like a dancing weapon. The weapon has a +10 base attack bonus, does 1d6+1 points of damage, has a +1 enhancement bonus on attack and damage rolls, and a makes a free grapple attack (with a +15 attack bonus) if it hits. The whip lasts no longer than 1 hour.\nModerate conjuration; CL 12th; Craft Wondrous Item, major creation; Price 50 gp (anchor), 300 gp (bird), 200 gp (fan), 450 gp (swan boat), 400 gp (tree), 500 gp (whip).",
     "tags": [
@@ -29581,7 +29777,17 @@
       "price": 400,
       "casterLevel": 12
     },
-    "effects": [],
+    "effects": [
+      {
+        "type": "stat",
+        "targets": [
+          "dmg.all"
+        ],
+        "mode": "flat",
+        "value": 1,
+        "btype": "Enhancement"
+      }
+    ],
     "shortDescription": "Feather Token: Each of these items is a small feather that has a power to suit a special need. The kinds of tokens are described below. Each token is usable once. Anchor: A token useful to moor a craft in water so as to…",
     "text": "Feather Token: Each of these items is a small feather that has a power to suit a special need. The kinds of tokens are described below. Each token is usable once.\nAnchor: A token useful to moor a craft in water so as to render it immobile for up to one day.\nBird: A token that can be used to deliver a small written message unerringly to a designated target as would a carrier pigeon. The token lasts as long as it takes to carry the message.\nFan: A token that forms a huge flapping fan, causing a breeze of sufficient strength to propel one ship (about 25 mph). This wind is not cumulative with existing wind speed. The token can, however, be used to lessen existing winds, creating an area of relative calm or lighter winds (but wave size in a storm is not affected). The fan can be used for up to 8 hours. It does not function on land.\nSwan Boat: A token that forms a swanlike boat capable of moving on water at a speed of 60 feet. It can carry eight horses and gear or thirty-two Medium characters or any equivalent combination. The boat lasts for one day.\nTree: A token that causes a great oak to spring into being (5-foot diameter trunk, 60-foot height, 40-foot top diameter). This is an instantaneous effect.\nWhip: A token that forms into a huge leather whip and wields itself against any opponent desired just like a dancing weapon. The weapon has a +10 base attack bonus, does 1d6+1 points of damage, has a +1 enhancement bonus on attack and damage rolls, and a makes a free grapple attack (with a +15 attack bonus) if it hits. The whip lasts no longer than 1 hour.\nModerate conjuration; CL 12th; Craft Wondrous Item, major creation; Price 50 gp (anchor), 300 gp (bird), 200 gp (fan), 450 gp (swan boat), 400 gp (tree), 500 gp (whip).",
     "tags": [
@@ -32523,6 +32729,15 @@
         "scaling": "flat",
         "max": 1,
         "reset": "perDay"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "int"
+        ],
+        "mode": "flat",
+        "value": -2,
+        "btype": "Penalty"
       }
     ],
     "shortDescription": "Eye of the Orc: This lump of rock has a marquis-cut black sapphire set in its center, making it appear similar to a large eye. If possessed by an orc, it grants a +6 enhancement bonus to Strength and Charisma, and the o…",
@@ -35339,6 +35554,11 @@
         "type": "effect",
         "effectKind": "rule",
         "text": "Mind Shielding: This ring is usually of fine workmanship and wrought from heavy gold. The wearer is continually immune to detect thoughts , discern lies , and any attempt to magica"
+      },
+      {
+        "type": "defense",
+        "mode": "Immunity",
+        "what": "Detect Thoughts, Discern Lies"
       }
     ],
     "shortDescription": "Mind Shielding: This ring is usually of fine workmanship and wrought from heavy gold. The wearer is continually immune to detect thoughts , discern lies , and any attempt to magically discern her alignment. Faint aburat…",
@@ -46123,6 +46343,11 @@
         "mode": "DR",
         "value": 10,
         "what": "Magic"
+      },
+      {
+        "type": "defense",
+        "mode": "Immunity",
+        "what": "Poison"
       }
     ],
     "ruleFlags": {

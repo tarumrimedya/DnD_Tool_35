@@ -1882,6 +1882,11 @@
         "mode": "Energy Resistance",
         "what": "Cold",
         "value": 5
+      },
+      {
+        "type": "defense",
+        "mode": "Immunity",
+        "what": "Cold"
       }
     ],
     "shortDescription": "1d6 cold per caster level (max 25d6) in a 30-ft. cone; creatures reduced below 0 hp freeze solid.",

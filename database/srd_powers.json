@@ -133,7 +133,13 @@
     "save": "Fortitude negates (potentially harmless)",
     "sr": true,
     "powerPointsCost": 17,
-    "effects": [],
+    "effects": [
+      {
+        "type": "defense",
+        "mode": "Immunity",
+        "what": "A Particular"
+      }
+    ],
     "shortDescription": "Effects that affect you also affect others.",
     "text": "You create an affinity feedback loop with all creatures within the area. While the duration lasts, affected creatures take all damage (including ability damage) as you do and heal all wounds as you do. Hit points gained or lost persist after this power ends.\nCreatures in range are also subject to magical and psionic effects of 3rd level or lower. Creatures that have an affinity to you gain a saving throw against each new power transferred through the affinity field as if the power were manifested upon them normally. All magical and psionic effects transferred to subjects fade at the end of this power’s duration, although instantaneous effects remain. If you suddenly become immune to a particular effect or power, the effect or power to which you are immune cannot be transferred to creatures that have affinity to you.",
     "tags": [
@@ -1039,7 +1045,17 @@
     "save": "Will negates",
     "sr": true,
     "powerPointsCost": 3,
-    "effects": [],
+    "effects": [
+      {
+        "type": "stat",
+        "targets": [
+          "atk.all"
+        ],
+        "mode": "flat",
+        "value": -2,
+        "btype": "Penalty"
+      }
+    ],
     "shortDescription": "Subject has aversion you specify.",
     "text": "You plant a powerful aversion in the mind of the subject. If the object of the implanted aversion is an individual or a physical object, she will prefer not to approach within 30 feet of it. If it is a word, she will try not to utter it; if it is an action, she will not willingly attempt to perform it; and if it is an event, she will not willingly attend it. The subject will take reasonable steps to avoid the object of its aversion, but will not put herself in jeopardy by doing so.\nIf the subject is forced into taking an action she has an aversion to, she takes a -2 penalty on any attack rolls, ability checks, or skill checks involved.\nAugment: For every 2 additional power points you spend, this power’s save DC increases by 1 and the duration increases by 1 hour.",
     "tags": [
@@ -1498,6 +1514,15 @@
         "weaponName": "Bite",
         "dice": "1d8",
         "dmgType": "B/P/S"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "atk.all"
+        ],
+        "mode": "flat",
+        "value": -4,
+        "btype": "Penalty"
       }
     ],
     "shortDescription": "Gain bite attack for 1d8 damage.",
@@ -1799,7 +1824,18 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": 1,
-    "effects": [],
+    "effects": [
+      {
+        "type": "stat",
+        "targets": [
+          "atk.all",
+          "dmg.all"
+        ],
+        "mode": "flat",
+        "value": 1,
+        "btype": "Enhancement"
+      }
+    ],
     "shortDescription": "You create a few enhanced short-lived bolts, arrows, or bullets.",
     "text": "You create 2d4 ectoplasmic crossbow bolts, arrows, or sling bullets, appropriate to your size, which dissipate into their constituent ectoplasmic particles when the duration ends or after being fired. Ammunition you create has a +1 enhancement bonus on attack rolls and damage rolls.\nAugment: For every 3 additional power points you spend, this power improves the ammunition’s enhancement bonus on attack rolls and damage rolls by 1.",
     "tags": [
@@ -2779,6 +2815,15 @@
         "weaponName": "Claw",
         "dice": "1d4",
         "dmgType": "B/S"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "atk.all"
+        ],
+        "mode": "flat",
+        "value": -4,
+        "btype": "Penalty"
       }
     ],
     "shortDescription": "Your hands become deadly claws.",
@@ -6311,6 +6356,11 @@
         "dmgType": "Acid",
         "scaling": "flat",
         "crit": "normal"
+      },
+      {
+        "type": "defense",
+        "mode": "Immunity",
+        "what": "Your Own Acid"
       }
     ],
     "shortDescription": "Your touch deals 4d6 acid damage.",
@@ -7126,6 +7176,11 @@
         "mode": "DR",
         "value": 10,
         "what": "psionics"
+      },
+      {
+        "type": "defense",
+        "mode": "Immunity",
+        "what": "Poison"
       }
     ],
     "shortDescription": "You gain benefits of being insubstantial and can fly slowly.",
@@ -8767,6 +8822,27 @@
         "scaling": "flat",
         "crit": "normal",
         "touch": true
+      },
+      {
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "condKind": "situational",
+            "condText": "if the target is wearing metal armor",
+            "effects": [
+              {
+                "type": "stat",
+                "targets": [
+                  "atk.all"
+                ],
+                "mode": "flat",
+                "value": 3,
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
       }
     ],
     "shortDescription": "Deal 1d6 energy (cold, electricity, fire, or sonic) damage.",
@@ -10695,6 +10771,15 @@
         "mode": "DR",
         "value": 5,
         "what": "-"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "str"
+        ],
+        "mode": "flat",
+        "value": 4,
+        "btype": "Untyped"
       }
     ],
     "shortDescription": "You transform into a frightening tentacled beast.",
@@ -10850,7 +10935,13 @@
     "save": "Fortitude negates and Fortitude partial; see text",
     "sr": true,
     "powerPointsCost": 11,
-    "effects": [],
+    "effects": [
+      {
+        "type": "defense",
+        "mode": "Immunity",
+        "what": "Fuse Flesh"
+      }
+    ],
     "shortDescription": "Fuse subject’s flesh, creating a helpless mass.",
     "text": "You cause the touched subject’s flesh to ripple, grow together, and fuse into a nearly seamless whole. The subject is forced into a fetal position (if humanoid), with only the vaguest outline of its folded arms and legs visible below the all-encompassing wave of flesh. The subject retains the ability to breathe, eat, and excrete, but may lose the use of its senses (see below). If the sudden transformation would prove fatal to the creature (such as fusing a swimming airbreathing subject, or a flying subject), the subject gets a +4 bonus on the save. Unless it loses the use of its senses (see below), the creature can still perform purely mental actions, such as manifesting powers.\nIf the target fails its Fortitude save to avoid the power’s effect, the subject must immediately attempt a second Fortitude save. If this second save is failed, the creature’s eyes and ears fuse over, effectively blinding and deafening it. Moreover, it loses its extraordinary, supernatural, and spell-like abilities, as well as its ability to manifest powers (if any), and is generally in sorry shape.\nIncorporeal or gaseous creatures and creatures not composed of flesh are immune to fuse flesh, and a shapechanger can revert to its unfused form as a standard action.\nAugment: For every 2 additional power points you spend, this power’s save DC increases by 1.",
     "tags": [
@@ -11051,7 +11142,29 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": 5,
-    "effects": [],
+    "effects": [
+      {
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "condKind": "situational",
+            "condText": "while using the weapon",
+            "effects": [
+              {
+                "type": "stat",
+                "targets": [
+                  "dmg.all"
+                ],
+                "mode": "flat",
+                "value": 1,
+                "btype": "Competence"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "Your hand is replaced seamlessly by your weapon.",
     "text": "You attach any melee weapon you can use in one hand - mundane, psionic, or magical - onto the end of one of your arms. The weapon becomes a natural extension of your arm, and that hand blends seamlessly into the shaft, hilt, or head of the weapon. Now that the weapon and you are one, you gain a +1 competence bonus on all attack and damage rolls while using the weapon.\nThe grafted weapon is considered both a standard weapon and a natural weapon for the purpose of effects that distinguish between either weapon type. For instance, the grafted weapon is treated as a natural weapon for the purpose of delivering a touch attack with a power in conjunction with the weapon attack. As with any power (or spell) melee touch attack made in conjunction with a natural weapon attack, the touch attack effect is not delivered unless the natural weapon strikes normally; on a failed attack, the touch power (or spell) is wasted.\nFor a psychic warrior under the effect of the claws of the beast power, grafting a weapon means that attacks with this hand deal the base damage of the weapon, instead of the claw upon which a psychic warrior normally relies.\nWhile your hand is grafted to a weapon, you lose the use of that hand and take a -2 penalty on all skill checks requiring the use of hands. Powers that temporarily polymorph or metamorph you can ignore the grafted weapon or alter it normally, at your discretion. If the weapon takes damage, you take damage as well. If you are healed, so is your grafted weapon. If your weapon is destroyed, you permanently lose 2 points of Constitution; the ability drain persists until you can restore your natural anatomy (by means of regenerate or a similar effect).\nWhen this power’s duration expires, the grafted weapon falls to the ground and your hand returns.",
     "tags": [
@@ -19296,6 +19409,11 @@
         "mode": "flat",
         "value": 4,
         "btype": "Circumstance"
+      },
+      {
+        "type": "defense",
+        "mode": "Immunity",
+        "what": "Gaze Attacks"
       }
     ],
     "shortDescription": "You receive one kind of sense when another sense is stimulated.",

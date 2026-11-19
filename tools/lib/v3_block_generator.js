@@ -207,11 +207,19 @@ function checkFalsePositiveGuard(claim, entry, fullText, allMissingClaims) {
   }
 
   // Reject opponent/enemy/target debuffs & cursed items that apply to OTHER creatures or curses, not bearer buffs
-  if (/\b(?:they\s+flee|their\s+(?:will|fortitude|reflex|saving|saves?|attack)|its\s+(?:saving\s+throw|hide\s+checks?|attack|ac|checks?)|makes\s+it\s+hostile|remove\s+curse|opponents?|enemies|foes?|creatures?\s+within|victim|all\s+adjacent\s+enemies|against\s+(?:her|him|you|the\s+wearer|the\s+wielder))\b/i.test(phrase)) {
+  if (/\b(?:they\s+flee|their\s+(?:will|fortitude|reflex|saving|saves?|attack)|its\s+(?:saving\s+throw|hide\s+checks?|attack|ac|checks?)|makes\s+it\s+hostile|remove\s+curse|opponents?|enemies|foes?|creatures?\s+within|victim|all\s+adjacent\s+enemies|against\s+(?:her|him|you|the\s+wearer|the\s+wielder)|due\s+to\s+cover|this\s+attack\s+roll|pull\s+someone\s+in)\b/i.test(phrase)) {
     return 'target-or-curse-clause';
   }
-  if (claim.value < 0 && /\b(?:enemies|opponents?|foes?|creatures?\s+within|aura\s+of|targets?\s+(?:take|suffer)|subjects?\s+(?:take|suffer)|without\s+(?:these|such|artisan|proper)\s+tools?|improvised\s+tools?)\b/i.test(lowText)) {
+  if (claim.value < 0 && /\b(?:enemies|opponents?|foes?|creatures?\s+within|aura\s+of|targets?\s+(?:take|suffer)|subjects?\s+(?:take|suffer)|without\s+(?:these|such|artisan|proper)\s+tools?|improvised\s+tools?|not\s+proficient|unless\s+the\s+wielder|entangled)\b/i.test(lowText)) {
     return 'enemy-aura-or-missing-tool-penalty';
+  }
+  // Reject Material entries for flat combat/AC stats (masterwork/material rules are handled by Item Forge)
+  if (entry.type === 'Material' && ['attack', 'damage', 'attackDamage', 'ac'].includes(claim.family)) {
+    return 'material-handled-by-forge';
+  }
+  // Reject Augment Summoning / summoned-creature buffs from applying to the caster
+  if (claim.family === 'ability' && /\b(?:each\s+creature\s+you\s+conjure|summoned\s+creatures?|creatures?\s+summoned)\b/i.test(lowText)) {
+    return 'summoned-creature-buff';
   }
   // Reject negated/ignored penalties ("ignore the -5 penalty", "does not take the -5 penalty", "no -5 penalty", truncated "…")
   if (claim.value < 0 && (/[…]$|\.\.\.$/.test(phrase.trim()) || /\b(?:ignore|ignores|ignored|negate|negates|do\s+not\s+take|does\s+not\s+take|don't\s+take|without\s+(?:taking|suffering|incurring|a|the)|no\s+longer\s+(?:take|suffer)|reduces?\s+the|taking\s+no|suffer\s+no|no)\s+[^.;]{0,35}(?:penalty|-\s?\d+|–\s?\d+)/i.test(lowText))) {
@@ -275,15 +283,16 @@ function checkFalsePositiveGuard(claim, entry, fullText, allMissingClaims) {
   }
 
   if (claim.family === 'immunity') {
-    const t = String(claim.target || '').trim();
+    if (entry.type === 'Gear') return 'immunity-gear-non-bearer';
+    const t = String(claim.target || '').replace(/[,;.\s]+$/, '').trim();
     if (!t || t.length < 3 || t.length > 36) return 'immunity-noisy-length';
-    if (/\b(?:if|when|while|unless|because|she|he|they|you|can|may|actually|only|but|cannot|unaffected|affected|until|next\s+turn|this\s+spell|this\s+weapon|this\s+effect|this\s+ability|for\s+\d+)\b/i.test(t)) {
+    if (/\b(?:if|when|while|unless|because|she|he|they|you|can|may|actually|only|but|cannot|unaffected|affected|until|next\s+turn|this\s+spell|this\s+weapon|this\s+effect|this\s+ability|for\s+\d+|caltrops|psychic\s+strike)\b/i.test(t)) {
       return 'immunity-prose-fragment';
     }
     if (/^(?:it|this|that|them|the|a|an|all|any|such|other|normal|the\s+\w+)$/i.test(t)) return 'immunity-vague-noun';
-    // Reject target/creature immunity clauses ("creatures immune to critical hits are unaffected")
+    // Reject target/creature immunity clauses ("creatures immune to critical hits are unaffected", "normally immune to")
     const escImm = t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    if (new RegExp('(?:creatures?|targets?|foes?|opponents?|beings?|undead|constructs?)\\s+(?:that\\s+are\\s+)?immune\\s+to\\s+' + escImm, 'i').test(lowText)) {
+    if (new RegExp('(?:creatures?|targets?|foes?|opponents?|beings?|undead|constructs?|normally)\\s+(?:that\\s+are\\s+)?immune\\s+to\\s+' + escImm, 'i').test(lowText)) {
       return 'immunity-target-not-bearer';
     }
     if (['Spell', 'Enhancement', 'Weapon', 'ClassAbility'].includes(entry.type) && /\b(?:unaffected|cannot\s+be\s+affected|no\s+effect\s+on)\b/i.test(lowText)) {
@@ -398,7 +407,7 @@ function claimToV3Block(RE, claim, entry) {
     case 'resist':
       return { type: 'defense', mode: 'Energy Resistance', what: titleCase(claim.target), value: claim.value };
     case 'immunity':
-      return { type: 'defense', mode: 'Immunity', what: titleCase(claim.target) };
+      return { type: 'defense', mode: 'Immunity', what: titleCase(String(claim.target || '').replace(/[,;.\s]+$/, '').trim()) };
     case 'perDay': {
       const name = (entry && entry.name ? `${entry.name} Uses` : 'Daily Uses');
       const varKey = slugify(entry && (entry.id || entry.name) || 'daily', 'daily').replace(/-/g, '_') + '_uses';

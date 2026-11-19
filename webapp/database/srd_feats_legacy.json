@@ -1584,6 +1584,15 @@
         "mode": "flat",
         "value": 2,
         "btype": "Untyped"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "grapple"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Untyped"
       }
     ],
     "text": "You receive a +2 bonus on all Escape Artist checks and a +2 bonus on opposed grapple checks.",
@@ -3831,6 +3840,27 @@
         "flag": "reckless-offensive",
         "label": "Reckless Offensive",
         "text": "Before making attack rolls for a round, you may choose to take a -4 penalty to your AC during the round to gain a +2 competence bonus on all melee attacks in the same round. The pe"
+      },
+      {
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "condKind": "situational",
+            "condText": "during the round to gain",
+            "effects": [
+              {
+                "type": "stat",
+                "targets": [
+                  "ac.total"
+                ],
+                "mode": "flat",
+                "value": -4,
+                "btype": "Penalty"
+              }
+            ]
+          }
+        ]
       }
     ],
     "text": "Before making attack rolls for a round, you may choose to take a -4 penalty to your AC during the round to gain a +2 competence bonus on all melee attacks in the same round. The penalty to AC and bonus on melee attacks apply until your next action.",
@@ -5604,6 +5634,15 @@
         "flag": "quick-thinking",
         "label": "Quick-Thinking",
         "text": "+2 bonus on Initiative and all Spot checks."
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "initiative"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Untyped"
       }
     ],
     "text": "+2 bonus on Initiative and all Spot checks.",
@@ -6740,6 +6779,15 @@
         "mode": "flat",
         "value": 1,
         "btype": "Untyped"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "initiative"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Untyped"
       }
     ],
     "text": "You gain a +2 bonus to Initiative and a +1 bonus on Fortitude saves.",
@@ -6923,6 +6971,15 @@
         "flag": "great-teamwork",
         "label": "Great Teamwork",
         "text": "When flanking, you gain a +4 bonus to your attack roll instead of +2."
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "atk.all"
+        ],
+        "mode": "flat",
+        "value": 4,
+        "btype": "Untyped"
       }
     ],
     "text": "When flanking, you gain a +4 bonus to your attack roll instead of +2.",
@@ -8550,6 +8607,15 @@
         "mode": "flat",
         "value": 2,
         "btype": "Untyped"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "initiative"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Untyped"
       }
     ],
     "text": "You gain a +2 bonus on Initiative and Spot checks.",
@@ -8994,6 +9060,27 @@
         "flag": "cumbrous-dodge",
         "label": "Cumbrous Dodge",
         "text": "You may activate this feat as a free action. You gain a +2 bonus to your Armor Class for the rest of the current encounter. At the end of the encounter, you are fatigued."
+      },
+      {
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "condKind": "situational",
+            "condText": "for the rest of the current encounter",
+            "effects": [
+              {
+                "type": "stat",
+                "targets": [
+                  "ac.total"
+                ],
+                "mode": "flat",
+                "value": 2,
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
       }
     ],
     "text": "You may activate this feat as a free action. You gain a +2 bonus to your Armor Class for the rest of the current encounter. At the end of the encounter, you are fatigued.",
@@ -11030,6 +11117,11 @@
             ]
           }
         ]
+      },
+      {
+        "type": "defense",
+        "mode": "Immunity",
+        "what": "The Poison Of Your Own Kind"
       }
     ],
     "text": "You gain a +2 competence bonus on your Fortitude saves to resist the effects of poison. If a creature of the same kind as you produces the poison, this bonus is +4 instead, assuming that you are not already immune to the poison of your own kind.",
@@ -11073,6 +11165,11 @@
         "flag": "poison-immunity-sv",
         "label": "Poison Immunity",
         "text": "Your poisonous nature grants you immunity to poison attacks."
+      },
+      {
+        "type": "defense",
+        "mode": "Immunity",
+        "what": "Poison Attacks"
       }
     ],
     "text": "Your poisonous nature grants you immunity to poison attacks.",
@@ -11420,6 +11517,27 @@
         "flag": "back-to-the-wall",
         "label": "Back to the Wall",
         "text": "You gain a +2 bonus to attack and AC when you are at one quarter or less of your max hp"
+      },
+      {
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "condKind": "situational",
+            "condText": "when you are at one quarter or less of your max hp",
+            "effects": [
+              {
+                "type": "stat",
+                "targets": [
+                  "ac.total"
+                ],
+                "mode": "flat",
+                "value": 2,
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
       }
     ],
     "text": "You gain a +2 bonus to attack and AC when you are at one quarter or less of your max hp",
@@ -13322,6 +13440,11 @@
         "flag": "hollow",
         "label": "Hollow",
         "text": "You are immune to energy draining, magic jar, and trap the soul; the malevolence ability of ghosts; and all forms of possession."
+      },
+      {
+        "type": "defense",
+        "mode": "Immunity",
+        "what": "Energy Draining, Magic Jar"
       }
     ],
     "text": "You are immune to energy draining, magic jar, and trap the soul; the malevolence ability of ghosts; and all forms of possession.",
@@ -15556,6 +15679,27 @@
         "flag": "sworn-enemy",
         "label": "Sworn Enemy",
         "text": "Select a creature type as your enemy, you receive a +1 morale bonus to your attack rolls against that creature"
+      },
+      {
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "condKind": "situational",
+            "condText": "vs. that creature",
+            "effects": [
+              {
+                "type": "stat",
+                "targets": [
+                  "atk.all"
+                ],
+                "mode": "flat",
+                "value": 1,
+                "btype": "Morale"
+              }
+            ]
+          }
+        ]
       }
     ],
     "text": "Select a creature type as your enemy, you receive a +1 morale bonus to your attack rolls against that creature",
