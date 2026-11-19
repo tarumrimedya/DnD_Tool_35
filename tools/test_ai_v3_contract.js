@@ -283,7 +283,7 @@ function runAiV3ContractTests() {
       const e2 = Forge.exportEntry(Forge.fromCanonicalV3(JSON.parse(JSON.stringify(e1))));
       check(deepEqual(e1, e2), `${label}: round-trip not idempotent (E1 != E2)`);
       check(e1.id === entry.id && e1.blueprint === entry.blueprint && e1.schemaVersion === 3, `${label}: identity lost in round-trip`);
-      ['effects', 'choices', 'powers'].forEach((k) => {
+      ['effects', 'choices', 'powers', 'modes'].forEach((k) => {
         if (entry[k] === undefined) return;
         const errs2 = semanticSubset(entry[k], e1[k], `${label}.${k}`, []);
         check(errs2.length === 0, `${label}: ${k} not preserved by Rule Crafter round-trip\n    ${errs2.slice(0, 8).join('\n    ')}`);
@@ -292,6 +292,37 @@ function runAiV3ContractTests() {
       check(false, `${label}: round-trip threw ${err && err.message}`);
     }
   });
+
+  // 4a. modes[] round trip over the whole database: every mode keeps its id and `activation`, Off and weapon-grip modes
+  //     come back untouched, and a second pass changes nothing (opening an SRD record in the Crafter must not lose data).
+  {
+    const dbDir = path.join(ROOT, 'database');
+    let modeEntries = 0;
+    fs.readdirSync(dbDir).filter((f) => f.endsWith('.json')).forEach((f) => {
+      let raw; try { raw = readJson(path.join(dbDir, f)); } catch (_) { return; }
+      (Array.isArray(raw) ? raw : (raw.entries || [])).forEach((rec) => {
+        if (!isObj(rec) || !Array.isArray(rec.modes) || rec.modes.length === 0) return;
+        modeEntries++;
+        try {
+          const e1 = Forge.exportEntry(Forge.fromCanonicalV3(JSON.parse(JSON.stringify(rec))));
+          const e2 = Forge.exportEntry(Forge.fromCanonicalV3(JSON.parse(JSON.stringify(e1))));
+          const out = e1.modes || [];
+          check(out.length === rec.modes.length, `${f} ${rec.id}: modes[] length changed in the Rule Crafter round trip (${rec.modes.length} -> ${out.length})`);
+          check(deepEqual(e1.modes, e2.modes), `${f} ${rec.id}: modes[] round trip not idempotent`);
+          rec.modes.forEach((m) => {
+            const o = out.find((x) => x.id === m.id);
+            check(!!o, `${f} ${rec.id}: mode "${m.id}" lost in the Rule Crafter round trip`);
+            if (!o) return;
+            check(deepEqual(m.activation, o.activation), `${f} ${rec.id} ${m.id}: mode.activation changed in the round trip`);
+            if (m.effects === undefined || (m.effects || []).length === 0) check(deepEqual(m, o), `${f} ${rec.id} ${m.id}: Off / weapon-grip mode not written back untouched`);
+          });
+        } catch (err) {
+          check(false, `${f} ${rec.id}: modes round trip threw ${err && err.message}`);
+        }
+      });
+    });
+    check(modeEntries >= 285, `expected >= 285 database entries with modes[], found ${modeEntries}`);
+  }
 
   // 5. RuleEngine.deriveSheet smoke on replaceStat / perCL / defense templates ----------------
   const RuleEngine = require('../rule_engine.js');

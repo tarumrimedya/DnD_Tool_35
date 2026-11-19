@@ -315,6 +315,8 @@
       prereqs: [],
       chassis: blankChassis(bp.id === 'armor' ? 'armor' : 'weapon'),
       powers: [], effects: [], buffKind: 'Buff',
+      // modes[]: `modes` = editable activation modes; Off and weapon-grip modes are kept aside and written back untouched.
+      modes: [], _modesOff: [], _modesWeapon: [],
       delivery: { action: 'Standard', range: 'Close (25 ft. + 5 ft./2 levels)', area: '', target: '', attack: 'none', attackOn: false, save: { type: 'None', effect: 'Half', dcMode: 'spell', stat: 'int', flat: 15 }, sr: 'Yes', extras: [] },
       lifecycle: { use: blankUse('atwill'), duration: 'instant', durValue: 1, durText: '', dismissible: false, stackable: false, maxStacks: 5 },
       progression: {
@@ -2389,11 +2391,44 @@
     if (pw.exportStandalone) o.exportStandalone = true;
     return o;
   }
+  // modes[] (ADR-056, schema ModeV3). Three kinds of mode share the array:
+  //  - weapon-grip modes (handedness / damageDice / ...): never edited here, written back untouched;
+  //  - Off modes (no blocks, "Inactive"): hidden, kept as authored, auto-created when an entry has active modes;
+  //  - activation modes (Rage, Smite, Bardic ...): edited as Mode cards; id and every key the card does not edit
+  //    (`activation`, ...) ride along in `_extra` so a round trip never loses them.
+  const WEAPON_MODE_KEYS = ['handedness', 'damageDice', 'dmgType', 'critRange', 'critMult', 'strMult', 'rangeIncrement', 'weapon', 'proficiency'];
+  const MODE_EDITED_KEYS = ['id', 'name', 'label', 'combatScope', 'effects', 'blocks'];
+  function splitModesV3(raw) {
+    const res = { modes: [], off: [], weapon: [] };
+    (Array.isArray(raw) ? raw : []).forEach((m) => {
+      if (!m || typeof m !== 'object' || Array.isArray(m)) return;
+      if (WEAPON_MODE_KEYS.some((k) => m[k] !== undefined)) { res.weapon.push(clone(m)); return; }
+      const kids = Array.isArray(m.effects) ? m.effects : (Array.isArray(m.blocks) ? m.blocks : []);
+      if (!kids.length) { res.off.push(clone(m)); return; }
+      const extra = clone(m);
+      MODE_EDITED_KEYS.forEach((k) => { delete extra[k]; });
+      res.modes.push({ id: m.id || ('mode-' + uid('m').slice(2)), name: m.name || '', label: m.label || '', combatScope: m.combatScope || '', effects: kids.map(parseBlockV3).filter(Boolean), _extra: extra });
+    });
+    return res;
+  }
+  function exportModesV3(en) {
+    const edited = (en.modes || []).filter((m) => (m.effects || []).length > 0).map((m, i) => {
+      const o = { id: m.id, name: m.name || m.label || ('Mode ' + (i + 1)), label: m.label || m.name || ('Mode ' + (i + 1)) };
+      if (m.combatScope) o.combatScope = m.combatScope;
+      Object.assign(o, clone(m._extra || {}));
+      o.effects = m.effects.map(exportBlock);
+      return o;
+    });
+    const weapon = clone(en._modesWeapon || []);
+    if (!edited.length) return weapon; // no active mode left: the Off state goes with it
+    const off = (en._modesOff && en._modesOff.length) ? clone(en._modesOff) : [{ id: 'mode-off', name: 'Inactive', label: 'Inactive', effects: [] }];
+    return off.concat(edited, weapon);
+  }
   const PASSTHROUGH_V3_KEYS = [
     'type', 'category', 'subCategory', 'role', 'edition', 'contentLevel', 'verification', 'provenance',
     'bonusFeatContract', 'bonusFeatContracts', 'spellcasting', 'spellcastingProgression', 'castingProgression', 'dualProgression',
     'variantOf', 'replaces', 'proficiencies', 'meldshaping', 'pactProgression', 'mysteryProgression', 'utteranceProgression',
-    'abilityType', 'associations', 'modes', 'isFighterBonusFeat', 'bonusFeatFor', 'featTypes', 'slotDiff', 'drawback',
+    'abilityType', 'associations', 'isFighterBonusFeat', 'bonusFeatFor', 'featTypes', 'slotDiff', 'drawback',
     'chakraBinds', 'shapedEffect', 'essentiaEffect', 'augment', 'title', 'weight', 'charges', 'maxCharges',
     'crIncrease', 'hitDieOverride', 'templateAcquisition', 'specialAttacks', 'specialQualities',
     'vision', 'immunities', 'resistances', 'fastHealing', 'turnResistance', 'requiredAlignment',
@@ -2535,6 +2570,8 @@
     }
     out.effects = (en.effects || []).map(exportBlock);
     if (has('powers') || (en.powers && en.powers.length)) out.powers = en.powers.map(exportPower);
+    const modesOut = exportModesV3(en);
+    if (modesOut.length) out.modes = modesOut;
     if (has('progression')) {
       const p = en.progression;
       if (p.mode === 'hd' || p.mode === 'legacy') {
@@ -3157,6 +3194,10 @@
           exportStandalone: !!pw.exportStandalone
         });
       });
+    }
+    if (Array.isArray(obj.modes)) {
+      const sm = splitModesV3(obj.modes);
+      en.modes = sm.modes; en._modesOff = sm.off; en._modesWeapon = sm.weapon;
     }
     if (obj.progression && typeof obj.progression === 'object') {
       const pr = obj.progression;
@@ -4985,12 +5026,32 @@
     return cBlock('c-amber', head, kids);
   }
 
+  // Activation mode (Rage, Smite, Bardic ...): its blocks apply only while the mode chip is selected on the sheet.
+  // The Off state and weapon-grip modes are not shown; they are kept and written back automatically.
+  function modeCBlock(m, i) {
+    const p = 'modes.' + i, act = m._extra && m._extra.activation;
+    const actText = act ? [act.action, act.costKind && act.costKind !== 'none' ? act.costKind : ''].filter(Boolean).join(' · ') : '';
+    const head = H(
+      L('🎚️ Mode') + (actText ? '<span class="fs-pill dim">' + esc(actText) + '</span>' : ''),
+      '<span class="fs-row" style="margin-left:auto;gap:4px">' + btn('move-mode', '↑', 'fs-xs fs-ghost', { i: i, d: -1 }) + delBtn('remove-mode', { i: i }) + '</span>'
+    ) + G(3,
+      F('Mode Name', inp(p + '.name', m.name, { ph: 'e.g. Battle Stance' })) +
+      F('Chip Label', inp(p + '.label', m.label, { ph: 'Text shown on the sheet chip' })) +
+      F('Combat Scope', sel(p + '.combatScope', m.combatScope || '', [['', 'Auto'], ['melee', 'Melee'], ['ranged', 'Ranged'], ['both', 'Both']], { narrow: true }))
+    );
+    let kids = scratchBlocks(m.effects || [], p + '.effects');
+    if (!(m.effects || []).length) kids += '<div class="fs-warn" style="font-size:12px">⚠️ No blocks: a mode without blocks acts as Off and is not exported.</div>';
+    kids += blockPalette(p + '.effects', false, true);
+    return cBlock('c-teal', head, kids);
+  }
+
   function universalExtraStacks(en, o) {
     o = o || {};
     let h = '';
     if (!o.skipPrereqs && hasFacet(en, 'prereqs')) h += prereqCBlock(en, 'Prerequisites');
     h += scratchBlocks(en.effects, 'effects', (b) => !inLevelRow(b));
     h += en.powers.map((pw, i) => (inLevelRow(pw) ? '' : powerCBlock(pw, i))).join('');
+    h += (en.modes || []).map(modeCBlock).join('');
     if (!o.skipProgression && hasFacet(en, 'progression')) h += progressionCBlock(en);
     return h;
   }
@@ -5002,6 +5063,7 @@
       : '';
     const extra = spellAttackToggle +
       '<button type="button" class="lego-add c-amber" data-action="add-power-inline">+ ⚡ Sub-Power</button>' +
+      '<button type="button" class="lego-add c-teal" data-action="add-mode">+ 🎚️ Mode</button>' +
       spotHtml('power', 'powers', { style: 'width:210px', ph: '🔍 + Attach Spell / SLA' }) +
       (hasFacet(en, 'progression') ? '' : '<button type="button" class="lego-add c-teal" data-action="attach-progression">+ 📊 Level / HD Table</button>') +
       (hasFacet(en, 'prereqs') ? '' : '<button type="button" class="lego-add c-amber" data-action="attach-prereqs">+ 🏛️ Prerequisites</button>');
@@ -5794,6 +5856,14 @@
     'add-power-inline': () => { ensureFacet('powers'); const pw = blankPower('inline', { name: 'New Power ' + (S.entry.powers.length + 1) }); S.entry.powers.push(pw); S.ui.cardOpen['pw:' + pw.id] = true; renderAll(); },
     'remove-power': (el) => { S.entry.powers.splice(num(el.dataset.i), 1); renderAll(); },
     'move-power': (el) => { const a = S.entry.powers, i = num(el.dataset.i), j = i + num(el.dataset.d); if (j < 0 || j >= a.length) return; const t = a[i]; a[i] = a[j]; a[j] = t; renderAll(); },
+    'add-mode': () => {
+      const en = S.entry; en.modes = en.modes || [];
+      const n = en.modes.length + 1;
+      const m = { id: 'mode-' + uid('m').slice(2), name: 'New Mode ' + n, label: 'New Mode ' + n, combatScope: '', effects: [], _extra: {} };
+      en.modes.push(m); S.ui.cardOpen['md:' + m.id] = true; renderAll();
+    },
+    'remove-mode': (el) => { S.entry.modes.splice(num(el.dataset.i), 1); renderAll(); },
+    'move-mode': (el) => { const a = S.entry.modes, i = num(el.dataset.i), j = i + num(el.dataset.d); if (j < 0 || j >= a.length) return; const t = a[i]; a[i] = a[j]; a[j] = t; renderAll(); },
     'gen-pattern': () => { const p = S.entry.progression; if (!String(p.pattern.name || '').trim()) { toast('Name the repeating feature first', 'warn'); return; } applyPattern(p, p.pattern); toast('Generated "' + p.pattern.name + '" rows'); renderAll(); },
     'add-feature-inline': (el) => { const mode = S.entry.progression.mode; const lbl = mode === 'hd' ? 'New Trait / SLA' : mode === 'legacy' ? 'New Legacy Ability' : 'New Class Feature'; const f = FEATURE(lbl, { kind: 'inline', abilityType: 'Ex' }); S.entry.progression.levels[num(el.dataset.l)].features.push(f); S.ui.cardOpen['ft:' + f.id] = true; renderAll(); },
     'remove-feature': (el) => { S.entry.progression.levels[num(el.dataset.l)].features.splice(num(el.dataset.f), 1); renderAll(); },
