@@ -5736,9 +5736,9 @@
       return '<div class="lego-palette compact">' + intentSpot + btns + (extraHtml || '') + '</div>';
     }
     return '<div class="lego-palette">' +
-      '<div class="lego-pal-row"><span class="lego-pal-tag">SEARCH</span>' + intentSpot + '</div>' +
-      '<div class="lego-pal-row"><span class="lego-pal-tag">BLOCKS</span>' + btns + '</div>' +
-      (extraHtml ? '<div class="lego-pal-row"><span class="lego-pal-tag">EXTRAS</span>' + extraHtml + '</div>' : '') +
+      '<div class="lego-pal-row"><span class="lego-pal-tag">SEARCH</span><div class="lego-pal-items">' + intentSpot + '</div></div>' +
+      '<div class="lego-pal-row"><span class="lego-pal-tag">BLOCKS</span><div class="lego-pal-items">' + btns + '</div></div>' +
+      (extraHtml ? '<div class="lego-pal-row"><span class="lego-pal-tag">EXTRAS</span><div class="lego-pal-items">' + extraHtml + '</div></div>' : '') +
       '</div>';
   }
 
