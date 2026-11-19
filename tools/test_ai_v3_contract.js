@@ -695,6 +695,16 @@ function runAiV3ContractTests() {
       `rule effect export must not leak foreign subtype keys (got ${Object.keys(ruleEffOut).join(', ')})`);
     check(whenBrOut.oathRule === undefined && whenBrOut.poolName === undefined && whenBrOut.checkFormula === undefined,
       `when state branch export must not leak foreign branch keys (got ${Object.keys(whenBrOut).join(', ')})`);
+
+    // Consolidated Entry Loader vs Block-Level Mechanic Palette UX contract
+    check(Forge.spotConfigs && Forge.spotConfigs.load && Forge.spotConfigs.load.ph === '🔍 Open Existing SRD / Example Entry…',
+      'SPOT.load placeholder must clearly distinguish whole-entry opening');
+    const exampleHits = Forge.spotConfigs.load.search('', 'top', 'Examples');
+    check(exampleHits.filter((it) => it.group === '📖 Step-by-Step Archetype Examples').length === 6,
+      'SPOT.load Examples layer must include all 6 Guide archetype recipes');
+    const scratchMarkup = Forge.renderScratch();
+    check(scratchMarkup.includes('fs-spot-add') && scratchMarkup.includes('+ Add Mechanic / Effect…') && scratchMarkup.includes('+ Block Type ▾') && !scratchMarkup.includes('Quick Presets'),
+      'blockPalette must render emerald "+ Add Mechanic / Effect…" + "+ Block Type ▾" without Quick Presets');
   }
 
   const elapsedMs = Date.now() - startMs;

@@ -4318,13 +4318,19 @@
 
   const SPOT = {
     load: {
-      ph: '🔍 Load Example or Existing SRD / MIC / Custom Entry…',
-      layers: ['All', 'Presets', 'SRD', 'MIC', 'Saved'],
+      ph: '🔍 Open Existing SRD / Example Entry…',
+      layers: ['All', 'Examples', 'SRD', 'MIC', 'Saved'],
       search(q, ctx, layer) {
         layer = layer || 'All';
         if (layer === 'Saved') return rank(S.templates, q, (t) => t.name, (t) => (t.facets || []).join(' '), 30).map((t) => SI('📌 Saved Templates', t.id, t.name, (BP_BY_ID[t.base] || {}).name || 'Template', 'Saved custom layout (' + t.facets.length + ' sections: ' + t.facets.join(', ') + '). Click to start a new entry from this template.', { tpl: t.id }));
-        const pre = layer === 'All' || layer === 'Presets' ? rank(PRESETS, q, (p) => p.label, (p) => presetSpotMeta(p).desc, layer === 'Presets' ? 50 : 40).map((p) => { const m = presetSpotMeta(p); return SI('⭐ Curated Presets', p.id, m.title, 'Preset', m.desc, { preset: p.id }); }) : [];
-        if (layer === 'Presets' || (!String(q || '').trim() && layer === 'All')) return pre;
+        const guides = (layer === 'All' || layer === 'Examples')
+          ? rank(GUIDE_RECIPES.map((g, gi) => ({ g: g, gi: gi })), q, (x) => x.g.title + ' ' + (x.g.entry && x.g.entry.name || ''), (x) => x.g.sub + ' ' + x.g.code, 10)
+              .map((x) => SI('📖 Step-by-Step Archetype Examples', 'guide-' + x.gi, '📖 ' + x.g.title, 'Guide', x.g.sub + ' • ' + x.g.code, { guideIdx: x.gi }))
+          : [];
+        const pre = (layer === 'All' || layer === 'Examples')
+          ? rank(PRESETS, q, (p) => p.label, (p) => presetSpotMeta(p).desc, layer === 'Examples' ? 50 : 36).map((p) => { const m = presetSpotMeta(p); return SI('⭐ Curated Example Entries', p.id, m.title, 'Example', m.desc, { preset: p.id }); })
+          : [];
+        if (layer === 'Examples' || (!String(q || '').trim() && layer === 'All')) return guides.concat(pre);
         const sNorm = String(q || '').trim().toLowerCase();
         const scoreName = (nm) => { const n = String(nm || '').toLowerCase(); return !sNorm ? 50 : n === sNorm ? 100 : n.indexOf(sNorm) === 0 ? 80 : n.indexOf(' ' + sNorm) >= 0 ? 60 : n.indexOf(sNorm) >= 0 ? 45 : 15; };
         const srdBuckets = [];
@@ -4345,7 +4351,7 @@
         add('✨ Domains', CAT.domains, () => 'Domain', (x) => ['Granted Power: ' + stripHtml(x.grantedPower || ''), x.spells && x.spells.length ? 'Spells: ' + x.spells.join(', ') : '', x.src].filter(Boolean).join(' • '), 'Domain', 4);
         add('👹 Monsters & Bestiary', CAT.monsters || [], (x) => 'CR ' + (x.cr || '1'), (x) => [(x.size || 'Medium') + ' ' + (x.category || (x.monster && x.monster.creatureType) || 'Monster'), x.hitDice ? 'HD ' + x.hitDice : '', x.hp ? 'HP ' + x.hp : '', stripHtml(x.shortDescription || x.text || ''), x.source || 'SRD'].filter(Boolean).join(' • '), 'Monster', 6);
         if (sNorm) srdBuckets.sort((a, b) => b.best - a.best);
-        const out = pre.slice();
+        const out = guides.concat(pre);
         srdBuckets.forEach((b) => b.items.forEach((it) => out.push(it)));
         if (sNorm.length >= 3 && out.length === 0) {
           const rawQ = String(q || '').trim();
@@ -4355,6 +4361,7 @@
       },
       pick(it) {
         if (it.data.craftQuery) { S.ui.craftOpen = true; S.ui.craftText = it.data.craftQuery; renderTopbar(); renderCraftDrawer(); ACT['run-craft-rm'](); return; }
+        if (it.data.guideIdx !== undefined) { ACT['load-guide-example']({ dataset: { idx: it.data.guideIdx } }); return; }
         if (it.data.preset) { ACT['load-preset']({ dataset: { id: it.data.preset } }); return; }
         if (it.data.tpl) { setBlueprint(it.data.tpl); return; }
         const raw = it.data.srd.raw || it.data.srd;
@@ -4495,7 +4502,7 @@
       pick(it) { S.entry.grants.favoredWeapon = it.data.name; renderAll(); }
     },
     intent: {
-      ph: '🔍 Add rule… (darkvision, immune fear, +2 save, weapon finesse, extra attack…)',
+      ph: '+ Add Mechanic / Effect… (darkvision, immune fear, +2 save, weapon finesse…)',
       layers: ['All', 'Bonuses', 'Defenses', 'Attacks & Dice', 'Switches & Grants'],
       search(q, ctx, layer) {
         const parts = String(ctx || 'effects|1').split('|');
@@ -4564,7 +4571,7 @@
   function spotHtml(key, ctx, o) {
     o = o || {};
     const open = S.spot && S.spot.key === key && S.spot.ctx === String(ctx || '');
-    return '<div class="fs-spot" style="' + (o.style || '') + '"><input class="fs-in fs-spot-in" type="text" autocomplete="off" spellcheck="false" data-spot-input="' + key + '" data-ctx="' + esc(ctx || '') + '" placeholder="' + esc(o.ph || SPOT[key].ph) + '" value="' + esc(open ? S.spot.q : '') + '">' +
+    return '<div class="fs-spot' + (o.cls ? ' ' + o.cls : '') + '" style="' + (o.style || '') + '"><input class="fs-in fs-spot-in" type="text" autocomplete="off" spellcheck="false" data-spot-input="' + key + '" data-ctx="' + esc(ctx || '') + '" placeholder="' + esc(o.ph || SPOT[key].ph) + '" value="' + esc(open ? S.spot.q : '') + '">' +
       '<div class="fs-spot-dd" data-spot-dd="' + esc(key + '|' + (ctx || '')) + '"></div></div>';
   }
   function renderSpotDD() {
@@ -4686,7 +4693,6 @@
     const catSel = '<select class="fs-sel" data-topcat="1" style="width:auto;min-width:170px" title="Category / Template"><optgroup label="Category">' + opts(BLUEPRINTS.map((b) => [b.id, b.icon + ' ' + b.name]), curTpl ? '' : S.entry.blueprint) + '</optgroup>' +
       (S.templates.length ? '<optgroup label="📌 Saved Templates">' + opts(S.templates.map((t) => [t.id, t.name]), curTpl) + '</optgroup>' : '') + '</select>';
     const craftBtn = btn('toggle-craft-rm', '✨ Craft with Rule Master', 'fs-xs ' + (S.ui.craftOpen ? 'fs-on' : 'fs-primary'));
-    const guideBtn = btn('toggle-guide', '❓ Guide', 'fs-xs' + (S.ui.guideOpen ? ' fs-on' : ''));
     const canUndo = S.history.past.length > 0, canRedo = S.history.future.length > 0;
     const histBtns = '<button type="button" class="fs-btn fs-xs fs-ghost" data-action="undo"' + (canUndo ? '' : ' disabled style="opacity:.4;cursor:default"') + ' title="Undo (Ctrl+Z)">↶ Undo</button>' +
       '<button type="button" class="fs-btn fs-xs fs-ghost" data-action="redo"' + (canRedo ? '' : ' disabled style="opacity:.4;cursor:default"') + ' title="Redo (Ctrl+Y)">↷</button>';
@@ -4698,7 +4704,7 @@
         (allowChar ? '<option value="character"' + (scope === 'character' ? ' selected' : '') + '>This Character Only</option>' : '') +
         '<option value="campaign"' + (scope === 'campaign' ? ' selected' : '') + '>Campaign Rule Crafter Library</option></select>';
       $('#fs-topbar').innerHTML = '<div class="fs-topbar-row"><div class="fs-title">⚒️ Rule Crafter</div>' + scopeSel +
-        '<span class="fs-grow-gap"></span>' + histBtns + craftBtn + guideBtn + btn('embed-save', '💾 Save & Apply', 'fs-xs fs-emerald') + btn('embed-cancel', '✕ Cancel', 'fs-xs fs-ghost') + '</div>' +
+        '<span class="fs-grow-gap"></span>' + histBtns + craftBtn + btn('embed-save', '💾 Save & Apply', 'fs-xs fs-emerald') + btn('embed-cancel', '✕ Cancel', 'fs-xs fs-ghost') + '</div>' +
         '<div class="fs-topbar-row fs-topbar-spot-row">' + catSel + '<div class="fs-top-spot" style="flex:1 1 200px">' + spotHtml('load', 'top') + '</div></div>';
       return;
     }
@@ -4707,7 +4713,7 @@
     const importBtn = btn('toggle-import-json', '📥 Import JSON', 'fs-xs' + (S.ui.importOpen ? ' fs-on' : ''));
     const status = CAT.srdLoaded ? '<span class="fs-pill emerald" title="SrdCompendium V3 Corpus">📚 SRD ' + CAT.srdCount.toLocaleString('en-US') + (CAT.customCount ? ' + ' + CAT.customCount + ' custom' : '') + '</span>' : '<span class="fs-pill dim" title="Serve over http:// to load srd_compendium.js data">📚 Offline seed</span>';
     $('#fs-topbar').innerHTML = '<div class="fs-topbar-row"><div class="fs-title">' + DICE_SVG + ' Rule Crafter</div>' + catSel +
-      '<span class="fs-grow-gap"></span>' + histBtns + craftBtn + guideBtn + save + skillPop + importBtn + btn('new-entry', '✨ Blank', 'fs-xs') + status + '</div>' +
+      '<span class="fs-grow-gap"></span>' + histBtns + craftBtn + save + skillPop + importBtn + btn('new-entry', '✨ Blank', 'fs-xs') + status + '</div>' +
       '<div class="fs-topbar-row fs-topbar-spot-row"><div class="fs-top-spot">' + spotHtml('load', 'top') + '</div></div>';
   }
   function renderCraftDrawer() {
@@ -5714,25 +5720,23 @@
     if (a && a.dataset && a.dataset.fx) return a;
     return S.fxPath ? document.querySelector('[data-fx][data-bind="' + S.fxPath + '"]') : null;
   }
-  function quickPresetMenu(listPath, types) {
-    const items = [];
-    types.forEach((t) => (QUICK_PRESETS[t] || []).forEach((q, k) => {
-      items.push('<button type="button" class="fs-btn fs-xs fs-ghost" style="justify-content:flex-start;text-align:left;white-space:nowrap" data-action="add-block-preset" data-p="' + esc(listPath) + '" data-t="' + t + '" data-k="' + k + '">' + BLOCK_TYPES[t].icon + ' ' + esc(BLOCK_TYPES[t].shortLabel) + ': ' + esc(q.label) + '</button>');
-    }));
-    if (!items.length) return '';
-    return '<details class="lego-qp" style="position:relative;display:inline-block"><summary class="fs-btn fs-xs fs-dashed" style="cursor:pointer;list-style:none">⭐ Quick Presets</summary>' +
-      '<div class="fs-glass" style="position:absolute;z-index:60;top:calc(100% + 4px);left:0;display:flex;flex-direction:column;gap:3px;padding:6px;min-width:260px;max-width:min(360px,86vw);max-height:300px;overflow-y:auto;border-radius:10px">' + items.join('') + '</div></details>';
+  function blockTypeMenu(listPath, types) {
+    const rows = types.map((t) =>
+      '<button type="button" class="fs-btn fs-xs fs-ghost" style="justify-content:flex-start;text-align:left;white-space:nowrap" data-action="add-block" data-p="' + esc(listPath) + '" data-t="' + t + '">+ ' + BLOCK_TYPES[t].icon + ' ' + esc(BLOCK_TYPES[t].label) + '</button>'
+    ).join('');
+    return '<details class="lego-qp" style="position:relative;display:inline-block"><summary class="fs-btn fs-xs fs-dashed" style="cursor:pointer;list-style:none">+ Block Type ▾</summary>' +
+      '<div class="fs-glass" style="position:absolute;z-index:60;top:calc(100% + 4px);left:0;display:flex;flex-direction:column;gap:3px;padding:6px;min-width:220px;border-radius:10px">' + rows + '</div></details>';
   }
   function blockPalette(listPath, allowContainers, compact, extraHtml) {
     const types = allowContainers ? BLOCK_ORDER : ['stat', 'roll', 'attack', 'defense', 'effect', 'carrier'];
     const intentSpot = spotHtml('intent', listPath + '|' + (allowContainers ? '1' : '0'), {
-      style: compact ? 'flex:1 1 200px;max-width:310px' : 'flex:1 1 250px;max-width:380px',
-      ph: compact ? '🔍 Add rule… (darkvision, +2 save…)' : '🔍 Add rule… (darkvision, immune fear, +2 save, weapon finesse…)'
+      cls: 'fs-spot-add',
+      style: compact ? 'flex:1 1 210px;max-width:340px' : 'flex:1 1 270px;max-width:440px',
+      ph: compact ? '+ Add Mechanic / Effect… (darkvision, +2 save…)' : '+ Add Mechanic / Effect… (darkvision, immune fear, +2 save, weapon finesse…)'
     });
     return '<div class="lego-palette' + (compact ? ' compact' : '') + '">' +
       intentSpot +
-      types.map((t) => '<button type="button" class="lego-add ' + BLOCK_TYPES[t].color + '" data-action="add-block" data-p="' + listPath + '" data-t="' + t + '">+ ' + BLOCK_TYPES[t].icon + ' ' + esc(BLOCK_TYPES[t].shortLabel) + '</button>').join('') +
-      quickPresetMenu(listPath, types) +
+      blockTypeMenu(listPath, types) +
       (extraHtml || '') +
       '</div>';
   }
@@ -7338,7 +7342,7 @@
     isPreservedEffectBlock: isPreservedEffectBlock, isUnstructuredBlock: isUnstructuredBlock,
     undoEntry: undoEntry, redoEntry: redoEntry, addPaletteBlock: addPaletteBlock, setEntry: setEntry,
     importFromJson: importFromJson, rawHeaderLine: rawHeaderLine, damageAtCL: rollAtCL,
-    presets: PRESETS.map((p) => p.id), presetList: PRESETS, blueprints: BLUEPRINTS, blockTypes: BLOCK_TYPES, guideRecipes: GUIDE_RECIPES,
+    presets: PRESETS.map((p) => p.id), presetList: PRESETS, blueprints: BLUEPRINTS, blockTypes: BLOCK_TYPES, guideRecipes: GUIDE_RECIPES, spotConfigs: SPOT,
     setBlueprint: setBlueprint, renderAll: renderAll, renderScratch: renderScratch,
     loadPreset: (id) => ACT['load-preset']({ dataset: { id: id } }),
     act: (name, data) => {
