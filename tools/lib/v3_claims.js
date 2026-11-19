@@ -35,8 +35,8 @@ function cleanText(t) {
 function classifyBonusTarget(phrase) {
   const p = phrase.toLowerCase();
   if (/\b(save|saving throw)\s+dcs?\b|\bdcs?\b|manifester level checks?|caster level checks?/.test(p)) return null; // DC / level-check riders, not save bonuses
-  if (/saving throws?|\bsaves?\b|fortitude|reflex|\bwill\b/.test(p)) {
-    const which = /fortitude/.test(p) ? 'fort' : /reflex/.test(p) ? 'ref' : /\bwill\b/.test(p) ? 'will' : 'all';
+  if (/saving throws?|\bsaves?\b|fortitude|reflex|(?<!\bat\s)\bwill\b/.test(p)) {
+    const which = /fortitude/.test(p) ? 'fort' : /reflex/.test(p) ? 'ref' : /(?<!\bat\s)\bwill\b/.test(p) ? 'will' : 'all';
     return { family: 'save', target: which };
   }
   if (/armor class|\bac\b/.test(p)) return { family: 'ac', target: 'ac' };
@@ -47,7 +47,7 @@ function classifyBonusTarget(phrase) {
   if (/damage( rolls?)?/.test(p)) return { family: 'damage', target: 'damage' };
   if (/caster level/.test(p)) return { family: 'casterLevel', target: 'cl' };
   for (const [name, key] of Object.entries(ABILITIES)) {
-    if (new RegExp('\\b' + name + '\\b').test(p) && !/checks?/.test(p.replace(new RegExp(name + '[- ]based'), ''))) return { family: 'ability', target: key };
+    if (new RegExp('\\b' + name + '\\b').test(p) && !/checks?|insufficient|attacks?\s+with/.test(p.replace(new RegExp(name + '[- ]based'), ''))) return { family: 'ability', target: key };
   }
   const skills = SKILLS.filter((s) => new RegExp('\\b' + s + '\\b').test(p));
   if (skills.length && /checks?|\band\b|,/.test(p + ' checks')) return { family: 'skill', target: skills.map(slug).join(',') };
@@ -81,7 +81,7 @@ function extractClaims(rawText) {
   const reSense = /\b(darkvision|low-light vision|blindsense|blindsight|tremorsense)\b(?:\s+(?:out\s+to|to\s+a\s+range\s+of|with\s+a\s+range\s+of|of)?\s*(\d+)\s*(?:ft\.?|feet))?|(\d+)[- ](?:ft\.?|foot|feet)\s+(darkvision|blindsense|blindsight|tremorsense)/gi;
   while ((m = reSense.exec(text))) {
     const kind = (m[1] || m[4]).toLowerCase();
-    if (/\b(no|lacks?|without|loses?)\s+(?:\w+\s+){0,2}$/i.test(text.slice(Math.max(0, m.index - 25), m.index))) continue;
+    if (/\b(no|not|lacks?|without|loses?|do\s+not\s+have|does\s+not\s+have|don't\s+have)\s+(?:\w+\s+){0,3}$/i.test(text.slice(Math.max(0, m.index - 35), m.index))) continue;
     push({ family: 'sense', target: kind, value: Number(m[2] || m[3]) || null, qualifier: '', phrase: m[0].trim() });
   }
   // 3. damage reduction, spell resistance, energy resistance, immunity
