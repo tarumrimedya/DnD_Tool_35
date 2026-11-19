@@ -3879,13 +3879,11 @@
         srdBuckets.forEach((b) => b.items.forEach((it) => out.push(it)));
         if (sNorm.length >= 3 && out.length === 0) {
           const rawQ = String(q || '').trim();
-          out.push(SI('✨ Craft with Rule Master', '__scribe__', '📜 Scribe "' + short(rawQ, 44) + '" from Text', '0 Tokens', 'Scribe pasted D&D 3.5e rule text directly into V3 Rule Blocks locally.', { scribeText: rawQ }));
-          out.push(SI('✨ Craft with Rule Master', '__craft__', '✨ Craft "' + short(rawQ, 44) + '" with Rule Master', 'Rule Master', 'Consult Rule Master to craft a Pure Canonical V3 entry onto the canvas.', { craftQuery: rawQ }));
+          out.push(SI('✨ Craft with Rule Master', '__craft__', '✨ Craft "' + short(rawQ, 44) + '" with Rule Master', 'Rule Master', 'Automatically scribes pasted D&D 3.5e rule text or crafts the rule via Rule Master.', { craftQuery: rawQ }));
         }
         return out;
       },
       pick(it) {
-        if (it.data.scribeText) { S.ui.craftText = it.data.scribeText; ACT['run-scribe-text'](); return; }
         if (it.data.craftQuery) { S.ui.craftOpen = true; S.ui.craftText = it.data.craftQuery; renderTopbar(); renderCraftDrawer(); ACT['run-craft-rm'](); return; }
         if (it.data.preset) { ACT['load-preset']({ dataset: { id: it.data.preset } }); return; }
         if (it.data.tpl) { setBlueprint(it.data.tpl); return; }
@@ -4177,12 +4175,11 @@
     wrap.innerHTML = '<div class="fs-glass fs-import-box" style="border-radius:14px;margin-bottom:10px;border:1px solid rgba(99,102,241,.45)">' +
       '<div class="fs-row" style="justify-content:space-between;margin-bottom:4px">' +
       '<span class="fs-label-mini" style="color:#c7d2fe">✨ Craft with Rule Master</span>' +
-      '<span class="fs-hint">Inscribe D&amp;D 3.5e rule text to scribe blocks instantly, or name a lore/splatbook rule to craft</span>' +
+      '<span class="fs-hint">Paste D&amp;D 3.5e rule text (instant local craft) or name any splatbook/homebrew rule</span>' +
       '</div>' +
       '<textarea class="fs-in" data-uibind="craftText" placeholder="e.g. &quot;Alertness: You get a +2 bonus on all Listen checks and Spot checks.&quot; or &quot;Zen Archery&quot; or &quot;Planning Domain&quot;…">' + esc(S.ui.craftText) + '</textarea>' +
       keyRow +
       '<div class="fs-row" style="margin-top:6px">' +
-      btn('run-scribe-text', '📜 Scribe from Text', 'fs-xs fs-emerald') +
       btn('run-craft-rm', S.ui.craftBusy ? '⏳ Crafting…' : '✨ Craft with Rule Master', 'fs-xs fs-primary') +
       btn('toggle-craft-rm', 'Cancel', 'fs-xs fs-ghost') +
       statusSpan +
@@ -5924,32 +5921,6 @@
         if (ta) ta.focus();
       }
     },
-    'run-scribe-text': () => {
-      const raw = String(S.ui.craftText || '').trim();
-      if (!raw) { toast('Please inscribe D&D 3.5e rule text first.', 'warn'); return; }
-      const RE = typeof window !== 'undefined' ? window.RuleEngine : null;
-      if (!RE || typeof RE.parseRuleTextToV3 !== 'function') { toast('RuleEngine text scriber is unavailable.', 'err'); return; }
-      try {
-        const curName = String(S.entry.name || '').trim();
-        const hasDefaultBlank = !curName || /^New\s+/i.test(curName);
-        const v3 = RE.parseRuleTextToV3(raw, {
-          blueprint: S.entry.blueprint || 'feat',
-          name: hasDefaultBlank ? '' : curName,
-          id: S.entry.id || undefined,
-          source: S.entry.source || undefined
-        });
-        if (!v3) { toast('Could not scribe rule blocks from that text.', 'warn'); return; }
-        const loaded = fromCanonicalV3(v3);
-        loadEntry(loaded, '');
-        S.ui.craftOpen = false;
-        S.ui.craftStatus = '';
-        renderAll();
-        const totalBlocks = (v3.effects ? v3.effects.length : 0) + (v3.powers ? v3.powers.length : 0) + (v3.choices ? v3.choices.length : 0);
-        toast('📜 Scribed "' + v3.name + '" (' + totalBlocks + ' block' + (totalBlocks === 1 ? '' : 's') + ') onto the canvas');
-      } catch (err) {
-        toast('Scribe error: ' + ((err && err.message) || 'invalid text'), 'err');
-      }
-    },
     'save-craft-apikey': () => {
       const key = String(S.ui.craftApiKey || '').trim();
       if (!key) { toast('Please enter a valid Gemini API key.', 'warn'); return; }
@@ -5965,7 +5936,38 @@
     'run-craft-rm': async () => {
       if (S.ui.craftBusy) return;
       const raw = String(S.ui.craftText || '').trim();
-      if (!raw) { toast('Enter a rule name or concept to craft with Rule Master.', 'warn'); return; }
+      if (!raw) { toast('Paste D&D 3.5e rule text or enter a rule name to craft.', 'warn'); return; }
+
+      // Layer 1 (0-Token, <0.2ms): try deterministic text crafting first whenever rule prose contains real mechanics
+      const RE0 = typeof window !== 'undefined' ? window.RuleEngine : null;
+      if (RE0 && typeof RE0.parseRuleTextToV3 === 'function') {
+        try {
+          const curName = String(S.entry.name || '').trim();
+          const hasDefaultBlank = !curName || /^New\s+/i.test(curName);
+          const scribed = RE0.parseRuleTextToV3(raw, {
+            blueprint: S.entry.blueprint || 'feat',
+            name: hasDefaultBlank ? '' : curName,
+            id: S.entry.id || undefined,
+            source: S.entry.source || undefined
+          });
+          const hasRealMech = scribed && (
+            (Array.isArray(scribed.powers) && scribed.powers.length > 0) ||
+            (Array.isArray(scribed.choices) && scribed.choices.length > 0) ||
+            (Array.isArray(scribed.effects) && scribed.effects.some(b => b && !(b.type === 'effect' && b.effectKind === 'rule')))
+          );
+          if (hasRealMech) {
+            loadEntry(fromCanonicalV3(scribed), '');
+            S.ui.craftOpen = false;
+            S.ui.craftStatus = '';
+            S.ui.craftNeedKey = false;
+            renderAll();
+            const totalBlocks = (scribed.effects ? scribed.effects.length : 0) + (scribed.powers ? scribed.powers.length : 0) + (scribed.choices ? scribed.choices.length : 0);
+            toast('✨ Crafted "' + scribed.name + '" (' + totalBlocks + ' block' + (totalBlocks === 1 ? '' : 's') + ') onto the canvas');
+            return;
+          }
+        } catch (e) { /* fall through to Rule Master API */ }
+      }
+
       const BP_TO_CAT = {
         weapon: 'Weapon', armor: 'Armor', wondrous: 'Wondrous Item', spell: 'Spell', feat: 'Feat',
         buff: 'Condition', class: 'Class', item_mod: 'Augment Crystal', race: 'Race', deity: 'Deity', domain: 'Domain', monster: 'Feat'
