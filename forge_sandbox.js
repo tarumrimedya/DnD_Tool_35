@@ -3308,11 +3308,9 @@
     if ((m = f.match(/^min\(\s*(\d+)\s*,\s*max\(\s*(\d+)\s*,\s*floor\(\s*@cl\s*\/\s*(\d+)\s*\)\s*(?:\*\s*(\d+))?\s*\)\s*\)$/i))) {
       return { mode: 'perCL', value: m[4] ? num(m[4], 1) : 1, per: num(m[3], 1), min: num(m[2], 0), max: num(m[1], 5) };
     }
-    // e.g. 2 + min(3, floor(@cl / 6)) (Shield of Faith) or 2 + min(3, max(0, floor((@cl - 3) / 3))) (Barkskin)
-    if ((m = f.match(/^(\d+)\s*\+\s*min\(\s*(\d+)\s*,\s*(?:max\(\s*\d+\s*,\s*)?floor\(\s*(?:\(\s*@cl\s*-\s*\d+\s*\)|@cl)\s*\/\s*(\d+)\s*\)\s*\)?\s*\)$/i))) {
-      const base = num(m[1], 2), addMax = num(m[2], 3), per = num(m[3], 3);
-      return { mode: 'perCL', value: 1, per: per, min: base, max: base + addMax };
-    }
+    // `2 + min(3, floor(@cl / 6))` (Shield of Faith) and `2 + min(3, max(0, floor((@cl - 3) / 3)))` (Barkskin) are NOT
+    // `perCL`: perCL is clamp(floor(@cl / per) * value, min, max), where `min` is a floor, not an additive base.
+    // Returning null keeps the exact text as a `formula` block (see statBlocksFromSrd / normalizeBlock).
     // e.g. floor(@cl / 2)
     if ((m = f.match(/^floor\(\s*@cl\s*\/\s*(\d+)\s*\)$/i))) {
       return { mode: 'perCL', value: 1, per: num(m[1], 2), min: 0, max: 20 };
@@ -3345,6 +3343,7 @@
       if (hasDynamicFormula) {
         const parsed = parseStatFormulaSrd(fStr, m.value);
         if (parsed) spec = Object.assign({ btype: btype, condition: cond }, parsed);
+        else spec = { mode: 'formula', value: 0, formula: fStr, btype: btype, condition: cond };
       } else {
         const v = Number.isFinite(Number(m.value)) && Number(m.value) !== 0
           ? num(m.value)
@@ -3352,7 +3351,7 @@
         if (v !== 0) spec = { mode: 'flat', value: v, btype: btype, condition: cond };
       }
       if (!spec) return;
-      const gKey = [spec.mode, spec.value, spec.btype, spec.stat || '', spec.mult || '', spec.per || '', spec.min || '', spec.max || '', spec.condition || ''].join('|');
+      const gKey = [spec.mode, spec.value, spec.btype, spec.stat || '', spec.mult || '', spec.per || '', spec.min || '', spec.max || '', spec.formula || '', spec.condition || ''].join('|');
       if (groups.has(gKey)) {
         const existing = groups.get(gKey);
         if (existing.targets.indexOf(tgt) < 0) existing.targets.push(tgt);
@@ -6046,6 +6045,7 @@
   const forgeApi = {
     state: S, catalog: CAT, chassisView: chassisView, hydrate: hydrate,
     exportEntry: exportEntry, fromCanonicalV3: fromCanonicalV3, fromCanonicalV25: fromCanonicalV3,
+    statBlocksFromSrd: statBlocksFromSrd,
     importFromJson: importFromJson, rawHeaderLine: rawHeaderLine, damageAtCL: rollAtCL,
     presets: PRESETS.map((p) => p.id), presetList: PRESETS, blueprints: BLUEPRINTS, blockTypes: BLOCK_TYPES,
     setBlueprint: setBlueprint, renderAll: renderAll,

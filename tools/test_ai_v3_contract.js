@@ -328,6 +328,25 @@ function runAiV3ContractTests() {
   const RuleEngine = require('../rule_engine.js');
   require('../char_store.js');
 
+  // 4a-2. SRD formula import: base + capped scaling (Shield of Faith, Barkskin) is not representable as perCL
+  // (perCL `min` is a floor, not an additive base), so the Crafter must keep the exact formula.
+  {
+    const cases = [
+      ['2 + min(3, floor(@cl / 6))', [[1, 2], [5, 2], [6, 3], [12, 4], [18, 5], [30, 5]]],
+      ['2 + min(3, max(0, floor((@cl - 3) / 3)))', [[1, 2], [3, 2], [6, 3], [9, 4], [12, 5], [30, 5]]]
+    ];
+    cases.forEach(([formula, expected]) => {
+      const blocks = Forge.statBlocksFromSrd([{ target: 'ac.deflection', type: 'deflection', formula, value: 0 }]);
+      const e = Forge.exportEntry(Forge.fromCanonicalV3({ id: 'probe-srd-formula', blueprint: 'spell', schemaVersion: 3, name: 'Probe', effects: blocks }));
+      const out = (e.effects || [])[0] || {};
+      check(out.mode === 'formula' && out.formula === formula, `SRD formula import "${formula}" must stay a formula block (got mode ${out.mode}, formula "${out.formula}")`);
+      expected.forEach(([cl, want]) => {
+        const got = Number(RuleEngine.evaluateFormula(out.formula, { cl, casterLevel: cl }));
+        check(got === want, `SRD formula "${formula}" at CL ${cl}: expected ${want}, got ${got}`);
+      });
+    });
+  }
+
   // 4b. Every power dcFormula must evaluate to a real Save DC on a live character (fixture 02, level 9).
   const dcProbeChar = readJson(path.join(FIXTURES_DIR, '02_cleric_radiant_lvl9.json'));
   RuleEngine.recalculateCharacter(dcProbeChar, []);
