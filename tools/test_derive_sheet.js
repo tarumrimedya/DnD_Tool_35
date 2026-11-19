@@ -911,7 +911,7 @@ function runDeriveSheetTests() {
   });
   check(
     'Phase R3 QA: combat/toggleTacticalMod accepts all 22 melee, defense, and ranged tactical modifier keys (including rangePenalty, enhanceArrow, trueStrike, sneakAttack, bootsHaste, witchlightSpeed)',
-    allTacticalKeysAccepted && Array.isArray(RuleEngine.TACTICAL_MOD_KEYS) && RuleEngine.TACTICAL_MOD_KEYS.length === 21
+    allTacticalKeysAccepted && Array.isArray(RuleEngine.TACTICAL_MOD_KEYS) && RuleEngine.TACTICAL_MOD_KEYS.length === 22
   );
 
   // Verify BAB 0 Combat Expertise Cap === 0
@@ -6355,6 +6355,37 @@ function runDeriveSheetTests() {
       'recipient: a `self` (default) block enters the totals; an `allies` block never does and is listed as "Grants to allies"',
       rSelf.mods === 1 && rAllies.mods === 0 && rAllies.badges.length === 1 && /Grants to allies/.test(String(rAllies.badges[0])),
       JSON.stringify({ rSelf, rAllies })
+    );
+  }
+
+  // Improved Shield Bash (PHB p.96 / p.125): bashing loses the shield's AC bonus until the next turn unless the feat is owned.
+  {
+    const shield = {
+      id: 'shd-plus5', baseItemId: 'shd-heavy-steel-shield', name: '+5 Heavy Steel Shield', category: 'Shield', slot: 'Off-Hand/Shield',
+      schemaVersion: 3, enhancementBonus: 5, active: true,
+      armor: { armorType: 'Shield', armorBonus: 2, enhancementBonus: 5, maxDex: null, armorCheckPenalty: -1, arcaneSpellFailure: 15 },
+      weapon: { category: 'Shield', handedness: '1h', damageDice: '1d4', dmgType: 'Bludgeoning', baseCritRange: 20, critMultiplier: 2 },
+      effects: []
+    };
+    const basher = (feats) => ({
+      name: 'Shield Basher', race: 'Human', size: 'Medium', level: 4, bab: 4, baseSpeed: 30,
+      baseAbilities: { str: 17, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+      abilities: { str: 17, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+      baseSaves: { fort: 4, ref: 1, will: 1 },
+      feats: feats.map(n => ({ name: n, active: true })),
+      bodySlots: { offHand: JSON.parse(JSON.stringify(shield)) },
+      gearPool: [], buffs: [], tactical: {}
+    });
+    const acOf = (ch) => RuleEngine.deriveSheet(ch, []).ac.total;
+    const idleAc = acOf(basher([]));
+    const bashedPlain = basher([]); bashedPlain.tactical.shieldBashed = true;
+    const isb = basher(['Improved Shield Bash']); isb.tactical.shieldBashed = true;
+    const bashedAc = acOf(bashedPlain);
+    const isbAc = acOf(isb);
+    check(
+      'Shield Bash AC: without Improved Shield Bash the shield bonus is lost until next turn; with the feat it is kept',
+      bashedAc < idleAc && isbAc === idleAc && idleAc - bashedAc === 7,
+      `idle=${idleAc}, bashed=${bashedAc}, withISB=${isbAc}`
     );
   }
 

@@ -8675,6 +8675,19 @@ const RuleEngine = {
         shieldBonuses.push({ val: (fightingDefensively || totalDefense) ? 2 : 1, source: 'Two-Weapon Defense', type: 'Shield' });
       }
     }
+    // PHB p.125 Shield Bash: using the shield as a weapon loses its shield bonus to AC until your next action, unless you
+    // have Improved Shield Bash (PHB p.96). The shield's own bonus (source = the equipped shield) and the untyped
+    // increases to it (Shield Specialization) go; other shield bonuses (Shield spell, Two-Weapon Defense) remain.
+    const bashedShieldName = String(character.bodySlots?.offHand?.name || '').toLowerCase();
+    if (Boolean(readTactical('shieldBashed')) && bashedShieldName && !this.evaluateRuleFlags(character).improvedShieldBash) {
+      for (let i = shieldBonuses.length - 1; i >= 0; i--) {
+        const b = shieldBonuses[i];
+        const src = String((b && b.source) || '').toLowerCase();
+        if (src === bashedShieldName || src.startsWith(bashedShieldName + ' (') || String((b && b.type) || '').toLowerCase() === 'untyped') {
+          shieldBonuses.splice(i, 1);
+        }
+      }
+    }
     const effectiveShield = this.resolveBonusStacking(shieldBonuses, character);
 
     // D&D 3.5e RAW (PHB p. 84, Tumble): 5+ ranks in Tumble increases Fighting Defensively dodge bonus to +3 and Total Defense to +6
@@ -15827,7 +15840,7 @@ const RuleEngine = {
 
   TACTICAL_MOD_KEYS: Object.freeze([
     'flanking', 'charge', 'higherGround',
-    'fightingDefensively', 'totalDefense', 'shieldBlockActive',
+    'fightingDefensively', 'totalDefense', 'shieldBlockActive', 'shieldBashed',
     'powerAttackActive', 'combatExpertiseActive',
     'rapidShot', 'manyshot', 'pointBlankShot', 'deadlyAim',
     'targetInMelee', 'coverPenalty', 'defensiveCastingActive',

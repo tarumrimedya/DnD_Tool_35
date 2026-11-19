@@ -1398,6 +1398,10 @@
       doc.tactical.charge = false;
       notes.push('Charge AC penalty cleared');
     }
+    if (doc.tactical.shieldBashed) {
+      doc.tactical.shieldBashed = false;
+      notes.push('Shield AC restored after Shield Bash');
+    }
 
     const engine = resolveRuleEngine();
     if (engine && typeof engine.tickRoundResources === 'function') {
@@ -1587,7 +1591,7 @@
 
   const DEFAULT_TACTICAL_MOD_KEYS = [
     'flanking', 'charge', 'higherGround',
-    'fightingDefensively', 'totalDefense', 'shieldBlockActive',
+    'fightingDefensively', 'totalDefense', 'shieldBlockActive', 'shieldBashed',
     'powerAttackActive', 'combatExpertiseActive',
     'rapidShot', 'manyshot', 'pointBlankShot', 'deadlyAim',
     'targetInMelee', 'coverPenalty', 'defensiveCastingActive',

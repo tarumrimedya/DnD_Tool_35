@@ -5418,7 +5418,54 @@
       }
       if (!editor.classList.contains('hidden')) {
         populateWeaponSetsEditorDropdowns();
+        positionWeaponSetsEditor();
+        bindWeaponSetsEditorDismiss();
       }
+    }
+
+    // Floating popover next to the Edit Sets button: below it when there is room, otherwise above; clamped to the viewport.
+    function positionWeaponSetsEditor() {
+      const editor = document.getElementById('weapon-sets-editor');
+      const trigger = document.getElementById('btn-toggle-weapon-sets-edit');
+      if (!editor || editor.classList.contains('hidden')) return;
+      const gap = 6;
+      const margin = 8;
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const rect = trigger ? trigger.getBoundingClientRect() : { top: vh / 2, bottom: vh / 2, left: vw / 2, right: vw / 2 };
+      editor.style.maxHeight = '';
+      const width = editor.offsetWidth;
+      const natural = editor.scrollHeight;
+      const below = vh - rect.bottom - gap - margin;
+      const above = rect.top - gap - margin;
+      const placeBelow = below >= Math.min(natural, 320) || below >= above;
+      const maxH = Math.max(160, placeBelow ? below : above);
+      editor.style.maxHeight = `${maxH}px`;
+      const height = Math.min(natural, maxH);
+      editor.style.top = `${placeBelow ? rect.bottom + gap : Math.max(margin, rect.top - gap - height)}px`;
+      editor.style.left = `${Math.min(Math.max(margin, rect.right - width), Math.max(margin, vw - width - margin))}px`;
+    }
+
+    let weaponSetsEditorDismissBound = false;
+    function bindWeaponSetsEditorDismiss() {
+      if (weaponSetsEditorDismissBound) return;
+      weaponSetsEditorDismissBound = true;
+      const isOpen = () => {
+        const ed = document.getElementById('weapon-sets-editor');
+        return Boolean(ed && !ed.classList.contains('hidden'));
+      };
+      document.addEventListener('pointerdown', (ev) => {
+        if (!isOpen()) return;
+        const ed = document.getElementById('weapon-sets-editor');
+        const trigger = document.getElementById('btn-toggle-weapon-sets-edit');
+        if (ed.contains(ev.target) || (trigger && trigger.contains(ev.target))) return;
+        toggleWeaponSetsEditor(false);
+      }, true);
+      document.addEventListener('keydown', (ev) => {
+        if (ev.key === 'Escape' && isOpen()) toggleWeaponSetsEditor(false);
+      });
+      window.addEventListener('resize', () => { if (isOpen()) positionWeaponSetsEditor(); });
+      window.addEventListener('scroll', () => { if (isOpen()) positionWeaponSetsEditor(); }, { passive: true, capture: true });
     }
 
     function syncWeaponSetToBodySlot(slotKey, itemName) {
@@ -8657,9 +8704,16 @@
     }
 
     // [d20] 3D TACTICAL ROLL ATTACK (Full Attack Sequence)
+    // PHB p.125: bashing loses the shield's AC bonus until your next action (the engine keeps it with Improved Shield Bash).
+    function markShieldBashed() {
+      if (character.tactical && character.tactical.shieldBashed) return;
+      window.CharStore.dispatch({ type: 'combat/toggleTacticalMod', payload: { key: 'shieldBashed', value: true }, meta: { label: 'Shield Bash' } });
+    }
+
     function rollFullAttackWith3D() {
       const chain = computeCombatAttackChain(character);
       if (!chain || chain.length === 0) return;
+      if (chain.some(it => it && it.weapon && it.weapon.isShieldBash)) markShieldBashed();
 
       if (window._combatOffenseMode === 'ranged') {
         const canShoot = consumeEquippedAmmunition(chain.length);
@@ -10768,13 +10822,11 @@
           const icon = isPotion ? '🧪' : (isWand ? '✨' : '📜');
           const btnColor = isPotion ? 'from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500' : 'from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500';
 
-          let actionLabel = 'Use';
-          if (item.name.includes('Cure Serious')) actionLabel = 'Drink (+3d8+5 HP)';
-          else if (item.name.includes('Cure')) actionLabel = 'Drink (Heal)';
-          else if (item.name.includes('Bull')) actionLabel = 'Drink (+4 STR)';
-          else if (isWand) actionLabel = 'Activate (2d4+2)';
-          else if (isPotion) actionLabel = 'Drink';
-          else if (isScroll) actionLabel = 'Read';
+          const plan = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.parseConsumablePlan === 'function')
+            ? RuleEngine.parseConsumablePlan(item, item.effect || item.desc)
+            : null;
+          const verb = isPotion ? 'Drink' : (isWand ? 'Activate' : (isScroll ? 'Read' : 'Use'));
+          const actionLabel = plan && plan.badgeText ? `${verb} (${plan.badgeText})` : verb;
 
           return `
             <div class="bg-slate-900/80 border border-slate-800 rounded-lg p-2 flex items-center justify-between gap-2 shadow-sm">
@@ -10823,79 +10875,17 @@
         return;
       }
 
-      const item = (character.gearPool || []).find(g => g.name === name);
-      if (!item || (item.qty || 1) <= 0) {
+      // One code path with the Inventory page: the store's 'consumable/use' reducer (via consumeItem3D)
+      // applies the item's V3 plan (healing, condition cures, damage) and decrements the quantity.
+      const item = (character.gearPool || []).find(g => g && g.name === name);
+      if (!item || (item.qty !== undefined && item.qty !== null && Number(item.qty) <= 0)) {
         showDiceTopToast({ icon: '⚠️', title: 'Depleted', breakdown: `No ${name} remaining in inventory.`, total: '0 Left' });
         return;
       }
-
-      item.qty = (item.qty || 1) - 1;
       if (typeof consumeActionEconomy === 'function') {
         consumeActionEconomy('standard', name);
       }
-
-      // Healing Potion
-      if (name.toLowerCase().includes('cure serious')) {
-        let sum = 0;
-        const rolls = [];
-        for (let i = 0; i < 3; i++) {
-          const r = Math.floor(Math.random() * 8) + 1;
-          rolls.push(r);
-          sum += r;
-        }
-        const totalHeal = sum + 5;
-        const prevHp = character.hp.current || 0;
-        character.hp.current = Math.min(character.hp.max || 44, prevHp + totalHeal);
-        const actualGain = character.hp.current - prevHp;
-
-        showDiceTopToast({
-          icon: '💚',
-          title: `Drank ${name}!`,
-          breakdown: `3d8+5 [${rolls.join('+')}]+5 = +${totalHeal} HP • HP: ${prevHp} ➔ ${character.hp.current}/${character.hp.max} (Remaining: ${item.qty})`,
-          total: `+${actualGain} HP`
-        });
-        addDiceHistoryEntry({
-          icon: '💚',
-          title: `Consumed ${name}`,
-          formula: '3d8+5',
-          breakdown: `[${rolls.join('+')}]+5 = ${totalHeal} HP Healed`,
-          total: `+${totalHeal} HP`
-        });
-      } else if (name.toLowerCase().includes('bull')) {
-        showDiceTopToast({
-          icon: '🧪',
-          title: `Drank ${name}!`,
-          breakdown: `+4 Enhancement STR (Active for 30 rounds) • Remaining: ${item.qty}`,
-          total: '+4 STR'
-        });
-      } else if (name.toLowerCase().includes('wand of magic missile')) {
-        const r1 = Math.floor(Math.random() * 4) + 1;
-        const r2 = Math.floor(Math.random() * 4) + 1;
-        const dmg = r1 + r2 + 2;
-        showDiceTopToast({
-          icon: '✨',
-          title: `Activated ${name}!`,
-          breakdown: `2 Missiles [${r1}+1, ${r2}+1] = ${dmg} Force Damage • Charges Left: ${item.qty}`,
-          total: `${dmg} Damage`
-        });
-        addDiceHistoryEntry({
-          icon: '✨',
-          title: 'Wand of Magic Missile',
-          formula: '2d4+2',
-          breakdown: `2 Missiles [${r1}+1, ${r2}+1] = ${dmg} Force Damage`,
-          total: `${dmg} Damage`
-        });
-      } else {
-        showDiceTopToast({
-          icon: '🧪',
-          title: `Used ${name}!`,
-          breakdown: `1 consumed. Remaining: ${item.qty}`,
-          total: 'Used'
-        });
-      }
-
-      saveStateToStorage(true);
-      renderAll();
+      consumeItem3D('pool', item.id);
     }
 
     // ====================================================
