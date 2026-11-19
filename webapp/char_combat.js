@@ -308,6 +308,36 @@
       return (Number.isFinite(base) ? base : 10) + lvl + extra;
     }
 
+    function getCombatSpellLevelHeaderDcText(lvl, lvlSpells = [], sources = []) {
+      const levelNum = Number(lvl) || 0;
+      const view = typeof getSpellsView === 'function' ? getSpellsView() : null;
+      const discOrder = [];
+      (Array.isArray(lvlSpells) ? lvlSpells : []).forEach(sp => {
+        const sk = sp?._spellSource || (typeof getSpellSlotSource === 'function' ? getSpellSlotSource(sp) : 'spontaneous');
+        if ((sk === 'spontaneous' || sk === 'prepared' || sk === 'divine') && !discOrder.includes(sk)) {
+          discOrder.push(sk);
+        }
+      });
+      if (discOrder.length === 0 && Array.isArray(sources)) {
+        sources.forEach(src => {
+          const sk = src?.key;
+          if ((sk === 'spontaneous' || sk === 'prepared' || sk === 'divine') && !discOrder.includes(sk)) {
+            discOrder.push(sk);
+          }
+        });
+      }
+      if (discOrder.length === 0) discOrder.push('spontaneous');
+      const dcs = [];
+      discOrder.forEach(sk => {
+        const base = Number(view?.casterStatsView?.[sk]?.baseSaveDc);
+        const val = Number.isFinite(base)
+          ? (base + levelNum)
+          : (typeof getSpellDc === 'function' ? getSpellDc(levelNum, sk) : (10 + levelNum));
+        if (!dcs.includes(val)) dcs.push(val);
+      });
+      return `DC ${dcs.join('/')}`;
+    }
+
     function getSpellSlotSource(spell) {
       if (!spell) return 'spontaneous';
       if (spell._spellSource) return spell._spellSource;
@@ -1881,7 +1911,7 @@
         const lvlSpells = spellsByLevel[lvl];
         const lvlTitle = lvl === 0 ? 'Level 0 (Cantrips)' : `Level ${lvl} Spells`;
         const theme = typeof getSpellLevelTheme === 'function' ? getSpellLevelTheme(lvl) : null;
-        const dc = typeof getSpellDc === 'function' ? getSpellDc(lvl) : (10 + lvl);
+        const dcText = getCombatSpellLevelHeaderDcText(lvl, lvlSpells, sources);
 
         // Multi-source slot breakdown for this level: e.g. Spont. 4/4 • Prep. 3/5 • Divine 1/3
         const sourceBadges = [];
@@ -2010,7 +2040,7 @@
               <div class="flex items-center gap-2 min-w-0">
                 <span class="w-2.5 h-2.5 rounded-full ${theme ? theme.dot : 'bg-purple-400'} shrink-0"></span>
                 <span class="${theme ? theme.text : 'text-slate-200'} uppercase tracking-wider font-extrabold text-[10px] truncate">${lvlTitle}</span>
-                <span class="text-[10px] text-slate-400 font-normal shrink-0">DC ${dc}</span>
+                <span class="text-[10px] text-slate-400 font-normal shrink-0">${dcText}</span>
               </div>
               <div class="shrink-0 ml-1.5">
                 ${slotBadgeHtml}

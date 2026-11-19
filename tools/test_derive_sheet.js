@@ -6389,6 +6389,61 @@ function runDeriveSheetTests() {
     );
   }
 
+  // Spell Save DC discipline isolation & Chimera Mask / Ghost Touch Weapon corpus cleanup
+  {
+    const theurge = {
+      name: 'Mystic Theurge Probe', race: 'Human', size: 'Medium', level: 3, bab: 1, baseSpeed: 30,
+      baseAbilities: { str: 10, dex: 10, con: 10, int: 18, wis: 16, cha: 8 },
+      abilities: { str: 10, dex: 10, con: 10, int: 18, wis: 16, cha: 8 },
+      levelProgression: [
+        { level: 1, className: 'Wizard', active: true, feats: [{ id: 'feat-spell-focus', name: 'Spell Focus', choice: 'Evocation', active: true }] },
+        { level: 2, className: 'Cleric', active: true, feats: [] },
+        { level: 3, className: 'Sorcerer', active: true, feats: [] }
+      ],
+      spellcasting: {
+        preparedSlots: [{ level: 1, daily: 2, used: 0 }],
+        preparedSpells: [{ name: 'Burning Hands', level: 1, school: 'Evocation' }, { name: 'Grease', level: 1, school: 'Conjuration' }],
+        divineSlots: [{ level: 1, daily: 2, used: 0 }],
+        divineSpells: [{ name: 'Bane', level: 1, school: 'Enchantment' }],
+        slots: [{ level: 1, daily: 3, used: 0 }],
+        knownSpells: [{ name: 'Magic Missile', level: 1, school: 'Evocation' }]
+      },
+      feats: [], buffs: [], gearPool: []
+    };
+    const sv = RuleEngine.deriveSheet(theurge, []).spells;
+    const prepBurn = (sv.spellsByLevelView.preparedSpells || []).find(s => s.name === 'Burning Hands');
+    const prepGrease = (sv.spellsByLevelView.preparedSpells || []).find(s => s.name === 'Grease');
+    const divBane = (sv.spellsByLevelView.divineSpells || []).find(s => s.name === 'Bane');
+    check(
+      'Save DC discipline isolation: Prepared uses INT (base 14 -> L1 DC 15, +1 Spell Focus Evocation = 16), Divine uses WIS (base 13 -> L1 DC 14), Spontaneous uses CHA (base 9)',
+      sv.casterStatsView.prepared.baseSaveDc === 14 &&
+      sv.casterStatsView.divine.baseSaveDc === 13 &&
+      sv.casterStatsView.spontaneous.baseSaveDc === 9 &&
+      prepGrease?.saveDc === 15 &&
+      prepBurn?.saveDc === 16 &&
+      divBane?.saveDc === 14,
+      JSON.stringify({ prep: sv.casterStatsView.prepared.baseSaveDc, div: sv.casterStatsView.divine.baseSaveDc, spont: sv.casterStatsView.spontaneous.baseSaveDc, prepBurn: prepBurn?.saveDc, prepGrease: prepGrease?.saveDc, divBane: divBane?.saveDc })
+    );
+
+    const eqDb = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'database', 'srd_equipment.json'), 'utf8'));
+    const gtWpn = eqDb.find(e => e.id === 'enh-ghost-touch-weapon');
+    check(
+      'Ghost Touch Weapon enhancement carries RAW CL 9th and plane shift prerequisite',
+      gtWpn && gtWpn.casterLevel === 9 && /plane shift/i.test(String(gtWpn.requirements || '')),
+      JSON.stringify({ cl: gtWpn?.casterLevel, req: gtWpn?.requirements })
+    );
+
+    const smDb = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'database', 'srd_soulmelds_splat.json'), 'utf8'));
+    const chimera = smDb.find(e => e.id === 'sm-threefold-mask-of-the-chimera');
+    const chimeraEv = RuleEngine.evaluateV3Entry(Object.assign({}, chimera, { boundChakra: 'Totem Chakra' }), { character: theurge });
+    const chimeraNats = (chimeraEv.grants || []).filter(g => g.grantType === 'naturalWeapon');
+    check(
+      'Threefold Mask of the Chimera (Totem Chakra) carries 3 canonical rollable natural attack blocks',
+      Boolean(chimera) && chimera.effects.some(ef => ef.type === 'when' && ef.branches.some(br => br.condText === 'Totem Chakra' && br.effects.length === 3 && br.effects.every(a => /^\d+d\d+$/.test(a.dice)))),
+      `totemAttacks=${chimeraNats.length}`
+    );
+  }
+
   CharStore.clearHistory();
 
   return { passed, elapsedMs: Date.now() - startMs };

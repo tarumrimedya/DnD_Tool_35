@@ -1113,7 +1113,7 @@
         const s = slots.find(item => Number(item.level) === lvl);
         const isUnlocked = Boolean(s && s.daily > 0);
         const remaining = isUnlocked ? (s.daily - s.used) : 0;
-        const dc = 10 + lvl + statMod;
+        const dc = getSpellDc(lvl, 'prepared');
         const lvlLabel = lvl === 0 ? '0 (Cantrip)' : (lvl >= 10 ? `Level ${lvl} (Epic)` : `Level ${lvl}`);
 
         if (isUnlocked) {
@@ -1175,7 +1175,7 @@
         spells.forEach((s, idx) => {
           if (Number(s.level || 0) === lvl) spellsAtLvl.push({ s, idx });
         });
-        const dc = 10 + lvl + statMod;
+        const dc = getSpellDc(lvl, 'prepared');
         const slotObj = slots.find(sl => Number(sl.level) === lvl);
         const remainingSlots = slotObj ? Math.max(0, (slotObj.daily || 0) - (slotObj.used || 0)) : 0;
         const totalDaily = slotObj ? (slotObj.daily || 0) : 0;
@@ -1230,7 +1230,8 @@
         }
       });
 
-      function buildPreparedRowHtml(s, originalIdx, lvl, dc) {
+      function buildPreparedRowHtml(s, originalIdx, lvl, baseDc) {
+        const dc = getSpellRowSaveDc(s, lvl, 'prepared') || baseDc;
         const slotObj = slots.find(sl => Number(sl.level) === lvl);
         const remainingSlots = slotObj ? Math.max(0, (slotObj.daily || 0) - (slotObj.used || 0)) : 0;
         const hasActiveSlot = remainingSlots > 0;
@@ -2143,7 +2144,7 @@
         const s = slots.find(item => Number(item.level) === lvl);
         const isUnlocked = Boolean(s && s.daily > 0);
         const remaining = isUnlocked ? (s.daily - s.used) : 0;
-        const dc = 10 + lvl + statMod;
+        const dc = getSpellDc(lvl, 'divine');
         const lvlLabel = lvl === 0 ? '0 (Orison)' : (lvl >= 10 ? `Level ${lvl} (Epic)` : `Level ${lvl}`);
 
         if (isUnlocked) {
@@ -2210,7 +2211,7 @@
         spells.forEach((s, idx) => {
           if (Number(s.level || 0) === lvl) spellsAtLvl.push({ s, idx });
         });
-        const dc = 10 + lvl + statMod;
+        const dc = getSpellDc(lvl, 'divine');
         const slotObj = slots.find(sl => Number(sl.level) === lvl);
         const remainingSlots = slotObj ? Math.max(0, (slotObj.daily || 0) - (slotObj.used || 0)) : 0;
         const totalDaily = slotObj ? (slotObj.daily || 0) : 0;
@@ -2283,7 +2284,8 @@
         }
       });
 
-      function buildDivineRowHtml(s, originalIdx, lvl, dc) {
+      function buildDivineRowHtml(s, originalIdx, lvl, baseDc) {
+        const dc = getSpellRowSaveDc(s, lvl, 'divine') || baseDc;
         const slotObj = slots.find(sl => Number(sl.level) === lvl);
         const isDom = Boolean(s.isDomainSpell);
         const domDaily = slotObj ? (Number(slotObj.domainDaily) || 0) : 0;
@@ -3102,9 +3104,31 @@
       return { primaryClass, statKey, statVal, statMod, cl, clMode, hasClass, sorcLvls, isSpontBoon };
     }
 
-    function getSpellDc(spellLevel) {
-      const { statMod } = getCasterInfo();
-      return 10 + (Number(spellLevel) || 0) + statMod;
+    function getSpellDc(spellLevel, discipline = 'spontaneous') {
+      const lvl = Number(spellLevel) || 0;
+      const disc = (discipline === 'prepared' || discipline === 'divine') ? discipline : 'spontaneous';
+      const view = typeof getSpellsView === 'function' ? getSpellsView() : null;
+      const base = Number(view?.casterStatsView?.[disc]?.baseSaveDc);
+      if (Number.isFinite(base)) return base + lvl;
+      const info = disc === 'prepared'
+        ? (typeof getPreparedCasterInfo === 'function' ? getPreparedCasterInfo() : { statMod: 0 })
+        : (disc === 'divine'
+          ? (typeof getDivineCasterInfo === 'function' ? getDivineCasterInfo() : { statMod: 0 })
+          : getCasterInfo());
+      return 10 + lvl + (Number(info?.statMod) || 0);
+    }
+
+    function getSpellRowSaveDc(spell, spellLevel, discipline = 'spontaneous') {
+      const lvl = Number(spell?.level !== undefined ? spell.level : spellLevel) || 0;
+      const disc = (discipline === 'prepared' || discipline === 'divine') ? discipline : 'spontaneous';
+      const view = typeof getSpellsView === 'function' ? getSpellsView() : null;
+      const listKey = disc === 'prepared' ? 'preparedSpells' : (disc === 'divine' ? 'divineSpells' : 'knownSpells');
+      const nameKey = String(spell?.name || '').toLowerCase().trim();
+      const enriched = (view?.spellsByLevelView?.[listKey] || []).find(s => s
+        && Number(s.level) === lvl
+        && String(s.name || '').toLowerCase().trim() === nameKey);
+      if (enriched && Number.isFinite(Number(enriched.saveDc))) return Number(enriched.saveDc);
+      return getSpellDc(lvl, disc);
     }
 
     function getSpellLevelTheme(spellLevel) {
@@ -3919,7 +3943,7 @@
         const used = s ? (Number(s.used) || 0) : 0;
         const remaining = Math.max(0, daily - used);
         const isUnlocked = daily > 0;
-        const dc = 10 + lvl + statMod;
+        const dc = getSpellDc(lvl, activeSource.key);
         const lvlLabel = lvl === 0 ? '0 (Cantrip)' : (lvl >= 10 ? `Level ${lvl} (Epic)` : `Level ${lvl}`);
         const div = document.createElement('div');
 
@@ -5813,7 +5837,7 @@
       }
 
       function renderSpellRow(s, originalIdx, lvl) {
-        const dc = getSpellDc(s.level !== undefined ? s.level : lvl);
+        const dc = getSpellRowSaveDc(s, lvl, 'spontaneous');
         const spellCl = getSpellEffectiveCl(s, spontCl);
         const dmgExpr = resolveSpellEffectiveFormula(s, spellCl);
         const slotObj = spontSlotsArr.find(sl => Number(sl.level) === lvl);

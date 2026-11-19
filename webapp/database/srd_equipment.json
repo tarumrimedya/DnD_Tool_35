@@ -10442,8 +10442,8 @@
     "cost": 0,
     "enhIncrease": 1,
     "flatCost": 0,
-    "casterLevel": 0,
-    "requirements": [],
+    "casterLevel": 9,
+    "requirements": "CL 9th; Craft Magic Arms and Armor, plane shift",
     "itemModifier": {
       "kind": "enchantment",
       "appliesTo": "weapon",

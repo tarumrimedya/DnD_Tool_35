@@ -1,14 +1,14 @@
 {
   "schemaVersion": 3,
   "version": "3.0.0",
-  "compendiumHash": "57dbda4f1a82b4a7",
+  "compendiumHash": "51ec715a11203257",
   "generatedAt": "2026-11-15T19:43:51.694Z",
   "totalEntries": 7987,
   "chunks": {
     "srd_equipment.json": {
       "count": 1143,
       "bytes": 1873880,
-      "hash": "5498842feaa24ac6",
+      "hash": "483d5a461ae47c2d",
       "eagerLoad": true
     },
     "srd_feats.json": {
@@ -142,7 +142,7 @@
     "srd_soulmelds_splat.json": {
       "count": 94,
       "bytes": 278182,
-      "hash": "722ae1d3f59f5283",
+      "hash": "70c48e714d8149b5",
       "eagerLoad": false
     },
     "srd_powers_splat.json": {
