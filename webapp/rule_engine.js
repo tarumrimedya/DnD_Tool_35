@@ -10446,6 +10446,7 @@ const RuleEngine = {
         id: String((m && (m.id || m.name || m.label)) || idx),
         name: String((m && (m.name || m.label || m.id)) || ('Mode ' + (idx + 1))),
         label: String((m && (m.label || m.name)) || ''),
+        combatScope: m && ['melee', 'ranged', 'both'].includes(m.combatScope) ? m.combatScope : '',
         isOff: !hasEffects(m)
       }));
       if (!modes.some(m => !m.isOff)) return;

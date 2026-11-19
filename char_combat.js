@@ -6422,7 +6422,7 @@
               schemaVersion: 3,
               name: m.name,
               source: am.name,
-              combatScope: 'melee',
+              combatScope: m.combatScope || 'melee', // unscoped modes (AC / save / spell ...) stay in the melee grid
               riderType: 'Mode',
               modeEntryId: am.entryId,
               modeId: m.id,
@@ -6518,7 +6518,7 @@
         if (def.modeEntryId) {
           const modeRider = character.tacticalRiders.find(m => m && m.modeEntryId === def.modeEntryId && m.modeId === def.modeId);
           if (!modeRider) character.tacticalRiders.push({ ...def, effects: [] });
-          else Object.assign(modeRider, { schemaVersion: 3, id: def.id, name: def.name, source: def.source, active: def.active, notes: def.notes, effects: [] });
+          else Object.assign(modeRider, { schemaVersion: 3, id: def.id, name: def.name, source: def.source, combatScope: def.combatScope, active: def.active, notes: def.notes, effects: [] });
           return;
         }
         const existing = character.tacticalRiders.find(m => m && m.name && m.name.toLowerCase() === def.name.toLowerCase());
@@ -7247,6 +7247,20 @@
     function onRangedModifierToggle(modKey) {
       if (!character.tactical) character.tactical = {};
       let usedStore = false;
+      if (modKey.startsWith('mode|')) {
+        const [, entryId, modeId] = modKey.split('|');
+        const am = RuleEngine.getActivationModes(character).find(x => x.entryId === entryId);
+        const cur = am && am.activeIdx >= 0 ? am.modes[am.activeIdx].id : null;
+        CharStore.dispatch({
+          type: 'combat/setActiveMode',
+          payload: { entryId, modeId: cur === modeId ? null : modeId },
+          label: `Toggle Mode: ${modeId}`,
+          meta: { label: `Toggle Mode: ${modeId}`, cloudSync: false }
+        });
+        patchCockpitDOM();
+        renderRangedModifiersGrid();
+        return;
+      }
       if (modKey.startsWith('pin_')) {
         const pinName = modKey.replace('pin_', '');
         const allPins = getAllCombatPins();
@@ -7692,6 +7706,27 @@
             combatScope: 'ranged',
             active: Boolean(pin.active),
             activeClass: 'border-sky-500 bg-sky-950/40 text-sky-200 shadow-sm'
+          });
+        });
+      }
+
+      // Mode chips scoped `ranged` / `both` (same switch as the melee grid: character.activeModes[entryId]).
+      if (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getActivationModes === 'function') {
+        RuleEngine.getActivationModes(character).forEach(am => {
+          am.modes.forEach(m => {
+            if (m.isOff || (m.combatScope !== 'ranged' && m.combatScope !== 'both')) return;
+            const lbl = m.label || '';
+            const paren = lbl.indexOf('(') >= 0 ? lbl.slice(lbl.indexOf('(') + 1, lbl.lastIndexOf(')') > lbl.indexOf('(') ? lbl.lastIndexOf(')') : undefined) : '';
+            qualifiedRangedList.push({
+              id: 'mode|' + am.entryId + '|' + m.id,
+              name: m.name,
+              source: am.name,
+              bonusStr: UI.escapeHtml(String(paren || (lbl !== m.name ? lbl : '') || 'Toggle').split(';')[0].trim()),
+              combatScope: m.combatScope,
+              modeEntryId: am.entryId,
+              modeId: m.id,
+              active: am.activeIdx === m.idx
+            });
           });
         });
       }
