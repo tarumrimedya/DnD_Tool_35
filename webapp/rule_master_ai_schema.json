@@ -186,6 +186,13 @@
             "$ref": "#/definitions/PowerV3"
           }
         },
+        "modes": {
+          "type": "array",
+          "description": "Sheet-selectable modes (Rage, Bardic Music, Smite, Defensive Stance; weapon grips on weapon entries). One mode is active at a time; its effects[] apply only while it is selected. A mode without effects is the Off state.",
+          "items": {
+            "$ref": "#/definitions/ModeV3"
+          }
+        },
         "spell": {
           "$ref": "#/definitions/SpellV3"
         },
@@ -218,6 +225,96 @@
         },
         "monster": {
           "$ref": "#/definitions/MonsterV3"
+        }
+      }
+    },
+    "ModeV3": {
+      "type": "object",
+      "required": [
+        "id",
+        "label"
+      ],
+      "additionalProperties": true,
+      "description": "One selectable mode of an entry (modes[]). Activation modes (Rage, Bardic Music, Smite, Utterance) carry effects[] and optional activation metadata; an empty effects[] is the Off state (\"Inactive\"). Weapon modes (grips) carry the weapon fields (handedness, damageDice, dmgType, critRange, critMult, strMult, proficiency, rangeIncrement, weapon) instead of effects[]. Mode blocks live ONLY in effects[] (never blocks[], modifiers[] or damageParts[]). Mode ids are unique within the entry.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Stable mode id, unique within the entry (e.g. \"mode-rage-on\")."
+        },
+        "name": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string",
+          "description": "Chip text shown on the sheet."
+        },
+        "effects": {
+          "type": "array",
+          "description": "Atomic V3 effect blocks applied only while this mode is selected.",
+          "items": {
+            "$ref": "#/definitions/EffectBlockV3"
+          }
+        },
+        "activation": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "How the mode is entered (same fields as a when-branch activation): trigger, action, targetText, costKind, costVal, costFormula, cooldownText, checkFormula."
+        },
+        "combatScope": {
+          "type": "string",
+          "enum": [
+            "melee",
+            "ranged",
+            "both"
+          ],
+          "description": "Which combat card the mode chip belongs to."
+        },
+        "handedness": {
+          "type": "string",
+          "enum": [
+            "light",
+            "1h",
+            "2h",
+            "ranged"
+          ]
+        },
+        "proficiency": {
+          "type": "string"
+        },
+        "damageDice": {
+          "type": "string"
+        },
+        "dmgType": {
+          "type": "string"
+        },
+        "critRange": {
+          "type": [
+            "string",
+            "number"
+          ]
+        },
+        "critMult": {
+          "type": [
+            "string",
+            "number"
+          ]
+        },
+        "strMult": {
+          "type": "number"
+        },
+        "rangeIncrement": {
+          "type": [
+            "string",
+            "number"
+          ]
+        },
+        "weapon": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "ruleFlags": {
+          "type": "object",
+          "additionalProperties": true
         }
       }
     },
@@ -1182,7 +1279,7 @@
         "usage"
       ],
       "additionalProperties": true,
-      "description": "Activated ability (replaces V2 modes[]). kind \"inline\" carries its own effects[]; kind \"attached\" references a spell by refId.",
+      "description": "Activated ability with its own action and usage (a sub-power), distinct from the selectable modes[] of an entry. kind \"inline\" carries its own effects[]; kind \"attached\" references a spell by refId.",
       "properties": {
         "id": {
           "type": "string"
@@ -1630,6 +1727,62 @@
                     "btype": "Untyped"
                   }
                 ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "title": "Selectable Modes (stance feat: modes[] with an Off state and one active mode)",
+      "entry": {
+        "schemaVersion": 3,
+        "id": "feat-example-battle-stance",
+        "blueprint": "feat",
+        "name": "Battle Stance",
+        "type": "Feat",
+        "source": "Homebrew",
+        "featKind": "feat",
+        "tags": [
+          "feat",
+          "stance"
+        ],
+        "text": "As a swift action you may enter a stance: +2 Competence bonus on melee damage rolls, -2 AC.",
+        "effects": [],
+        "modes": [
+          {
+            "id": "mode-stance-off",
+            "name": "Inactive",
+            "label": "Inactive",
+            "effects": []
+          },
+          {
+            "id": "mode-stance-on",
+            "name": "Battle Stance",
+            "label": "Battle Stance (+2 melee damage, -2 AC)",
+            "activation": {
+              "trigger": "activate",
+              "action": "Swift"
+            },
+            "combatScope": "melee",
+            "effects": [
+              {
+                "type": "stat",
+                "targets": [
+                  "dmg.melee"
+                ],
+                "mode": "flat",
+                "value": 2,
+                "btype": "Competence"
+              },
+              {
+                "type": "stat",
+                "targets": [
+                  "ac.total"
+                ],
+                "mode": "flat",
+                "value": -2,
+                "btype": "Untyped"
               }
             ]
           }

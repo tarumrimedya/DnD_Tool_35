@@ -7,7 +7,7 @@
  * library (`database/lego_patterns.json`) are Pure Canonical V3 (schemaVersion: 3):
  *   1. Schema parses, every `$ref` resolves, no legacy `*V2` definitions remain.
  *   2. canonicalExamples + pattern templates: schemaVersion 3, 0 `modifiers` / `damageParts`, no V2 top-level
- *      `defenses` / `resources` / `modes` arrays, and each validates against `RuleMasterEntryV3`.
+ *      `defenses` / `resources` arrays (`modes[]` is canonical, see ModeV3), and each validates against `RuleMasterEntryV3`.
  *   3. Every stat `targets[]` key is canonical in tools/verify_v3_corpus.js; replaceStat / bonus types / rule
  *      switch flags match rulesets/dnd35.js.
  *   4. Rule Crafter round-trip idempotence: E1 = exportEntry(fromCanonicalV3(x)), E2 = exportEntry(fromCanonicalV3(E1)),
@@ -30,7 +30,8 @@ const REQUIRED_PATTERN_IDS = [
   'pat_choice_weapon_focus', 'pat_choice_energy_resistance', 'pat_clamped_per_cl_buff', 'pat_conditional_stance_rider_dice'
 ];
 const BANNED_ANYWHERE = ['modifiers', 'damageParts'];
-const BANNED_TOP_LEVEL = ['defenses', 'resources', 'modes'];
+// `modes[]` is canonical V3 (ADR-056): selectable modes whose blocks live in `modes[].effects` (see ModeV3).
+const BANNED_TOP_LEVEL = ['defenses', 'resources'];
 const IGNORED_ROUNDTRIP_KEYS = new Set(['id', 'summary']);
 
 const readJson = (p) => JSON.parse(fs.readFileSync(p, 'utf8'));
@@ -123,6 +124,7 @@ function walkBlocks(entry, visit) {
   });
   walk(entry.effects, 'effects');
   (entry.powers || []).forEach((pw, i) => walk(pw.effects, `powers[${i}].effects`));
+  (entry.modes || []).forEach((m, i) => { if (isObj(m)) walk(m.effects, `modes[${i}].effects`); });
 }
 
 // Every key the author wrote must survive (by value) in the Forge export; Forge may add UI defaults.
@@ -183,7 +185,7 @@ function runAiV3ContractTests() {
   patterns.forEach((p) => check(Array.isArray(p.keywords) && p.keywords.length > 0 && isObj(p.template), `${p.patternId}: keywords[] + template required`));
 
   const examples = Array.isArray(schema.canonicalExamples) ? schema.canonicalExamples : [];
-  check(examples.length === 6, `expected 6 canonicalExamples, found ${examples.length}`);
+  check(examples.length === 7, `expected 7 canonicalExamples, found ${examples.length}`);
   const corpus = [
     ...examples.map((ex, i) => ({ label: `canonicalExamples[${i}] ${ex.title || ''}`.trim(), entry: ex.entry })),
     ...patterns.map((p) => ({ label: `lego:${p.patternId}`, entry: p.template }))
@@ -241,6 +243,18 @@ function runAiV3ContractTests() {
     check(bannedTop.length === 0, `${label}: legacy V2 top-level ${bannedTop.join(', ')}`);
     const errs = validate('RuleMasterEntryV3', entry, label);
     check(errs.length === 0, `${label}: schema violations\n    ${errs.join('\n    ')}`);
+
+    // modes[]: unique ids, blocks only in effects[] (never blocks[]), closed combatScope vocabulary
+    if (entry.modes !== undefined) {
+      check(Array.isArray(entry.modes), `${label}: modes must be an array`);
+      const modeIds = new Set();
+      (Array.isArray(entry.modes) ? entry.modes : []).forEach((m, i) => {
+        if (!isObj(m)) return;
+        check(!modeIds.has(m.id), `${label} modes[${i}]: duplicate mode id "${m.id}"`);
+        modeIds.add(m.id);
+        check(m.blocks === undefined && m.modifiers === undefined, `${label} modes[${i}]: mode blocks live in effects[] only`);
+      });
+    }
 
     // 3. Target / ruleset vocabulary ----------------------------------------------------------
     walkBlocks(entry, (b, at) => {

@@ -157,6 +157,7 @@ function runCorpusAudit() {
     unmappedV3BlockTypes: {},
     badProficiencyGrants: [],
     badSizeScopes: [],
+    badModes: [],
     structuredSubsystems: {
       v2ModesEntries: 0,
       xphAugmentPowers: 0,
@@ -267,11 +268,23 @@ function runCorpusAudit() {
           }
         };
         walk(e.effects);
-        if (Array.isArray(e.modes)) {
-          e.modes.forEach((m) => {
-            if (m && Array.isArray(m.effects)) walk(m.effects);
-            if (m && Array.isArray(m.blocks)) walk(m.blocks);
-          });
+        if (e.modes !== undefined) {
+          // modes[] contract (ADR-056, schema ModeV3): array of { id, label, effects[] }, unique ids, blocks only in effects[]
+          if (!Array.isArray(e.modes)) report.badModes.push(`${e.id}: modes is not an array`);
+          else {
+            const modeIds = new Set();
+            e.modes.forEach((m, mi) => {
+              if (!m || typeof m !== 'object' || Array.isArray(m)) { report.badModes.push(`${e.id} modes[${mi}]: not an object`); return; }
+              if (typeof m.id !== 'string' || !m.id) report.badModes.push(`${e.id} modes[${mi}]: missing id`);
+              else if (modeIds.has(m.id)) report.badModes.push(`${e.id} modes[${mi}]: duplicate id "${m.id}"`);
+              else modeIds.add(m.id);
+              if (typeof m.label !== 'string' || !m.label) report.badModes.push(`${e.id} modes[${mi}]: missing label`);
+              if (m.blocks !== undefined || m.modifiers !== undefined) report.badModes.push(`${e.id} modes[${mi}]: blocks must live in effects[]`);
+              if (m.effects !== undefined && !Array.isArray(m.effects)) report.badModes.push(`${e.id} modes[${mi}]: effects is not an array`);
+              if (m.combatScope !== undefined && !['melee', 'ranged', 'both'].includes(m.combatScope)) report.badModes.push(`${e.id} modes[${mi}]: combatScope "${m.combatScope}"`);
+              if (Array.isArray(m.effects)) walk(m.effects);
+            });
+          }
         }
         if (e.chakraBinds && typeof e.chakraBinds === 'object') {
           Object.values(e.chakraBinds).forEach((cb) => {
@@ -344,6 +357,7 @@ if (require.main === module) {
   if (unmappedBlockList.length > 0) console.error('   ❌ Unmapped block types:', unmappedBlockList);
   if (rep.badSizeScopes.length > 0) console.error('   ❌ Invalid size.effective blocks:', rep.badSizeScopes.slice(0, 20));
   if (rep.badProficiencyGrants.length > 0) console.error('   ❌ Invalid proficiency/familiarity grants:', rep.badProficiencyGrants.slice(0, 20));
+  if (rep.badModes.length > 0) console.error('   ❌ Invalid modes[] (ModeV3 contract):', rep.badModes.slice(0, 20));
 
   const failed =
     rep.v2Entries > 0 ||
@@ -357,6 +371,7 @@ if (require.main === module) {
     unmappedTargetList.length > 0 ||
     unmappedBlockList.length > 0 ||
     rep.badProficiencyGrants.length > 0 ||
+    rep.badModes.length > 0 ||
     rep.badSizeScopes.length > 0;
   if (failed) {
     console.error('❌ FAIL: Pure V3 Corpus Gate failed.');
