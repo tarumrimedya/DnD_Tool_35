@@ -894,64 +894,252 @@
         position: fixed; right: 18px; bottom: 18px; z-index: 45;
         width: 52px; height: 52px; border-radius: 9999px;
         display: flex; align-items: center; justify-content: center;
-        border: 1.5px solid rgba(99, 102, 241, 0.85);
-        background: radial-gradient(circle at 30% 25%, #312e81 0%, #0f172a 75%);
-        color: #e0e7ff; font-size: 24px; cursor: pointer;
-        box-shadow: 0 10px 28px rgba(15, 23, 42, 0.72), 0 0 18px rgba(99, 102, 241, 0.42);
-        transition: transform 0.18s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+        border: 1.8px solid rgba(129, 140, 248, 0.88);
+        background: radial-gradient(circle at 35% 25%, #3730a3 0%, #1e1b4b 58%, #090d1f 100%);
+        color: #e0e7ff; font-size: 24px; cursor: pointer; overflow: visible;
+        box-shadow: 0 12px 28px rgba(2, 6, 23, 0.82), 0 0 20px rgba(99, 102, 241, 0.42), inset 0 1px 2px rgba(255, 255, 255, 0.22);
+        transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.22s ease, border-color 0.22s ease;
         user-select: none;
+        --rm-gx: 0px; --rm-gy: 0px;
       }
       .rm-assist-fab.is-hidden { display: none; }
-      .rm-assist-fab:hover { transform: translateY(-2px) scale(1.05); }
+      .rm-assist-fab:hover { transform: translateY(-3px) scale(1.06); }
       .rm-assist-fab:active { transform: scale(0.95); }
       .rm-assist-fab.is-chronicler {
-        border-color: rgba(245, 158, 11, 0.9);
-        background: radial-gradient(circle at 30% 25%, #78350f 0%, #0f172a 75%);
-        box-shadow: 0 10px 28px rgba(15, 23, 42, 0.72), 0 0 18px rgba(245, 158, 11, 0.45);
+        border-color: rgba(251, 191, 36, 0.9);
+        background: radial-gradient(circle at 35% 25%, #92400e 0%, #451a03 58%, #0c0a09 100%);
+        box-shadow: 0 12px 28px rgba(2, 6, 23, 0.82), 0 0 20px rgba(245, 158, 11, 0.45), inset 0 1px 2px rgba(255, 255, 255, 0.22);
       }
       .rm-assist-fab.is-working {
-        animation: rmAssistPulse 1.1s ease-in-out infinite;
+        animation: rmAssistPulse 1.15s ease-in-out infinite;
       }
-      .rm-assist-svg { width: 34px; height: 34px; display: block; overflow: visible; }
-      .rm-svg-eyes { transform-origin: 18px 19px; animation: rmSvgBlink 5.2s infinite; }
-      .rm-svg-orb { transform-origin: 29px 14px; transition: transform 0.25s ease; }
-      .rm-assist-fab:hover .rm-svg-hat { transform: translateY(-1px) rotate(-3deg); }
-      .rm-svg-hat { transform-origin: 18px 14px; transition: transform 0.25s ease; }
-      .rm-assist-fab.is-working .rm-svg-orb { animation: rmSvgOrbSpin 1.1s linear infinite; }
-      .rm-svg-owl-head { transform-origin: 18px 16px; animation: rmOwlTilt 6.4s ease-in-out infinite; }
-      .rm-svg-owl-wings { transform-origin: 18px 23px; transition: transform 0.22s ease; }
-      .rm-assist-fab:hover .rm-svg-owl-wings { transform: scaleX(1.09); }
-      .rm-assist-fab.is-working .rm-svg-owl-wings { animation: rmOwlFlutter 0.7s ease-in-out infinite; }
-      @keyframes rmSvgBlink {
-        0%, 92%, 100% { transform: scaleY(1); }
-        95% { transform: scaleY(0.12); }
+      .rm-assist-fab.is-working.is-chronicler {
+        animation: rmAssistPulseAmber 1.15s ease-in-out infinite;
       }
-      @keyframes rmSvgOrbSpin {
-        0% { transform: scale(1); opacity: 0.85; }
-        50% { transform: scale(1.28); opacity: 1; }
-        100% { transform: scale(1); opacity: 0.85; }
+      .rm-assist-fab-icon {
+        display: flex; align-items: center; justify-content: center;
+        pointer-events: none; overflow: visible;
       }
-      @keyframes rmOwlTilt {
-        0%, 72%, 100% { transform: rotate(0deg); }
-        80%, 88% { transform: rotate(-11deg); }
+      .rm-assist-fab-icon svg {
+        width: 64px; height: 64px; display: block; overflow: visible;
+        transform: translateY(-5px);
       }
-      @keyframes rmOwlFlutter {
-        0%, 100% { transform: scaleX(1); }
-        50% { transform: scaleX(1.14) translateY(-1px); }
+      .rm-assist-hdr-medallion {
+        width: 34px; height: 34px; border-radius: 9999px; flex-shrink: 0;
+        display: flex; align-items: center; justify-content: center; overflow: visible;
+        border: 1.2px solid rgba(129, 140, 248, 0.82);
+        background: radial-gradient(circle at 35% 25%, #3730a3 0%, #1e1b4b 60%, #090d1f 100%);
       }
+      .rm-assist-panel.is-chronicler .rm-assist-hdr-medallion {
+        border-color: rgba(251, 191, 36, 0.85);
+        background: radial-gradient(circle at 35% 25%, #92400e 0%, #451a03 60%, #0c0a09 100%);
+      }
+      .rm-assist-hdr-medallion svg {
+        width: 42px; height: 42px; display: block; overflow: visible;
+        transform: translateY(-3px);
+      }
+
+      /* 3D Clay Articulated Persona Rigs (100% GPU transform + opacity, 0 SVG filters) */
+      .rm-gaze { transform: translate(var(--rm-gx, 0px), var(--rm-gy, 0px)); transition: transform 0.14s ease-out; }
+      .wiz-whole { transform-origin: 104px 176px; animation: rmClayBreathe 4.2s ease-in-out infinite; }
+      .wiz-head-group { transform-origin: 104px 104px; animation: rmWizHeadSway 6.2s ease-in-out infinite; }
+      .wiz-hat-group { transform-origin: 104px 74px; animation: rmWizHatFollow 6.2s ease-in-out infinite; transition: transform 0.26s ease; }
+      .wiz-brows { transform-origin: 104px 87px; transition: transform 0.24s ease; }
+      .wiz-eyelids { transform-origin: 104px 96px; animation: rmNaturalBlink 5.4s infinite; }
+      .wiz-mustache { transform-origin: 104px 111px; animation: rmMustacheTwitch 5.6s ease-in-out infinite; }
+      .wiz-beard-group { transform-origin: 104px 114px; animation: rmBeardSoftSway 4.8s ease-in-out infinite; }
+      .wiz-staff-rig { transform-origin: 54px 150px; animation: rmStaffIdle 4.4s ease-in-out infinite; }
+      .wiz-crook-gem { transform-origin: 42px 82px; animation: rmGemBreath 2.8s ease-in-out infinite; }
+      .wiz-left-hand { transform-origin: 148px 156px; animation: rmLeftHandIdle 4.6s ease-in-out infinite; }
+      .wiz-face-glow { opacity: 0; transition: opacity 0.26s ease; pointer-events: none; }
+      .sp-fx { opacity: 0; pointer-events: none; transition: opacity 0.22s ease; }
+      .sp-astrolabe { transform-origin: 41px 78px; }
+      .sp-d20 { transform-origin: 158px 94px; }
+      .sp-fire { transform-origin: 158px 94px; }
+      .sp-bolt { transform-origin: 98px 76px; }
+      .sp-scroll { transform-origin: 104px 128px; }
+      .sp-ward { transform-origin: 104px 116px; }
+
+      .rm-assist-fab:hover .wiz-hat-group { transform: translateY(-3px) rotate(-4deg); }
+      .rm-assist-fab:hover .wiz-staff-rig { animation: rmStaffGreet 0.9s ease-in-out infinite; }
+
+      .wiz-svg[data-wiz="astrolabe"] .wiz-staff-rig { animation: rmStaffRaiseHigh 1.6s ease-in-out infinite; }
+      .wiz-svg[data-wiz="astrolabe"] .wiz-brows { transform: translateY(-2.5px); }
+      .wiz-svg[data-wiz="astrolabe"] .wiz-crook-gem { animation: rmGemBlaze 0.65s ease-in-out infinite; }
+      .wiz-svg[data-wiz="astrolabe"] .wiz-face-glow { opacity: 0.55; }
+      .wiz-svg[data-wiz="astrolabe"] .sp-astrolabe { opacity: 1; animation: rmSpin360 3.2s linear infinite; }
+
+      .wiz-svg[data-wiz="d20"] .wiz-staff-rig { animation: rmStaffChannel 1.5s ease-in-out infinite; }
+      .wiz-svg[data-wiz="d20"] .wiz-left-hand { animation: rmHandLevitate 1.5s ease-in-out infinite; }
+      .wiz-svg[data-wiz="d20"] .wiz-brows { transform: translateY(-2.5px); }
+      .wiz-svg[data-wiz="d20"] .wiz-crook-gem { animation: rmGemBlaze 0.7s ease-in-out infinite; }
+      .wiz-svg[data-wiz="d20"] .wiz-face-glow { opacity: 0.5; }
+      .wiz-svg[data-wiz="d20"] .sp-d20 { opacity: 1; animation: rmD20Float 2.2s ease-in-out infinite; }
+
+      .wiz-svg[data-wiz="fireball"] .wiz-staff-rig { animation: rmStaffBrace 1.2s ease-in-out infinite; }
+      .wiz-svg[data-wiz="fireball"] .wiz-left-hand { animation: rmHandConjure 1.1s ease-in-out infinite; }
+      .wiz-svg[data-wiz="fireball"] .wiz-brows { transform: translateY(2px) scaleY(0.92); }
+      .wiz-svg[data-wiz="fireball"] .wiz-beard-group { animation: rmBeardWind 0.75s ease-in-out infinite; }
+      .wiz-svg[data-wiz="fireball"] .sp-fire { opacity: 1; animation: rmFirePulse 0.95s ease-in-out infinite; }
+
+      .wiz-svg[data-wiz="lightning"] .wiz-staff-rig { animation: rmStaffSwing 0.85s ease-in-out infinite; }
+      .wiz-svg[data-wiz="lightning"] .wiz-left-hand { animation: rmHandConjure 0.85s ease-in-out infinite; }
+      .wiz-svg[data-wiz="lightning"] .wiz-brows { transform: translateY(2.5px); }
+      .wiz-svg[data-wiz="lightning"] .wiz-crook-gem { animation: rmGemBlaze 0.35s ease-in-out infinite; }
+      .wiz-svg[data-wiz="lightning"] .wiz-face-glow { opacity: 0.82; }
+      .wiz-svg[data-wiz="lightning"] .sp-bolt { opacity: 1; animation: rmBoltFlicker 0.42s steps(2, end) infinite; }
+
+      .wiz-svg[data-wiz="scroll"] .wiz-head-group { animation: rmHeadPonder 2.4s ease-in-out infinite; }
+      .wiz-svg[data-wiz="scroll"] .wiz-left-hand { animation: rmHandStrokeBeard 1.8s ease-in-out infinite; }
+      .wiz-svg[data-wiz="scroll"] .wiz-brows { transform: translateY(-1.5px) rotate(-2deg); }
+      .wiz-svg[data-wiz="scroll"] .sp-scroll { opacity: 1; animation: rmRunesDrift 2.2s ease-in-out infinite; }
+
+      .wiz-svg[data-wiz="ward"] .wiz-staff-rig { animation: rmStaffSlam 1.4s cubic-bezier(0.34, 1.5, 0.64, 1) infinite; }
+      .wiz-svg[data-wiz="ward"] .wiz-whole { animation: rmBodySlam 1.4s ease-in-out infinite; }
+      .wiz-svg[data-wiz="ward"] .wiz-crook-gem { animation: rmGemBlaze 0.7s ease-in-out infinite; }
+      .wiz-svg[data-wiz="ward"] .sp-ward { opacity: 1; animation: rmSpin360 5s linear infinite; }
+
+      /* Owl Familiar (Chronicler) 3D Clay Rig */
+      .owl-whole { transform-origin: 100px 158px; animation: rmClayBreathe 4.3s ease-in-out infinite; }
+      .owl-head-3d { transform-origin: 100px 86px; animation: rmOwlTilt 6.4s ease-in-out infinite; }
+      .owl-tuft-l { transform-origin: 64px 58px; animation: rmTuftL 5.2s ease-in-out infinite; }
+      .owl-tuft-r { transform-origin: 136px 58px; animation: rmTuftR 5.2s ease-in-out infinite; }
+      .owl-lids { transform-origin: 100px 86px; animation: rmNaturalBlink 5.6s infinite; }
+      .owl-wing-l3d { transform-origin: 60px 118px; animation: rmWingSoftL 4.6s ease-in-out infinite; }
+      .owl-wing-r3d { transform-origin: 140px 118px; animation: rmWingSoftR 4.6s ease-in-out infinite; }
+      .owl-quill-3d { transform-origin: 148px 148px; animation: rmQuillHover 3.6s ease-in-out infinite; }
+      .owl-face-yaw { transform-origin: 100px 84px; }
+      .owl-nape-back { transform-origin: 100px 84px; opacity: 0; pointer-events: none; }
+      .owl-fx { opacity: 0; pointer-events: none; transition: opacity 0.22s ease; }
+
+      .rm-assist-fab:hover .owl-wing-l3d { animation: rmWingFlapL 0.6s ease-in-out infinite; }
+      .rm-assist-fab:hover .owl-wing-r3d { animation: rmWingFlapR 0.6s ease-in-out infinite; }
+
+      .owl-svg[data-owl="write"] .owl-head-3d { animation: rmOwlWatchQuill 1.2s ease-in-out infinite; }
+      .owl-svg[data-owl="write"] .owl-quill-3d { animation: rmQuillWrite 0.58s ease-in-out infinite; }
+      .owl-svg[data-owl="write"] .owl-fx-ink { opacity: 1; animation: rmInkSparkles 1.5s ease-out infinite; }
+
+      .owl-svg[data-owl="hoot"] .owl-whole { animation: rmOwlHop 0.78s ease-in-out infinite; }
+      .owl-svg[data-owl="hoot"] .owl-wing-l3d { animation: rmWingFlapL 0.44s ease-in-out infinite; }
+      .owl-svg[data-owl="hoot"] .owl-wing-r3d { animation: rmWingFlapR 0.44s ease-in-out infinite; }
+      .owl-svg[data-owl="hoot"] .owl-head-3d { animation: rmOwlHootNod 0.78s ease-in-out infinite; }
+      .owl-svg[data-owl="hoot"] .owl-fx-chime { opacity: 1; animation: rmChimeExpand 1.1s ease-out infinite; transform-origin: 100px 76px; }
+
+      .owl-svg[data-owl="search"] .owl-head-3d { animation: rmOwlScan 1.6s ease-in-out infinite; }
+      .owl-svg[data-owl="search"] .owl-wing-l3d { animation: rmWingFlapL 0.9s ease-in-out infinite; }
+      .owl-svg[data-owl="search"] .owl-wing-r3d { animation: rmWingFlapR 0.9s ease-in-out infinite; }
+      .owl-svg[data-owl="search"] .owl-fx-pages { opacity: 1; animation: rmPagesOrbit 2.2s ease-in-out infinite; transform-origin: 100px 148px; }
+
+      .owl-svg[data-owl="found"] .owl-whole { animation: rmOwlHop 0.62s ease-in-out infinite; }
+      .owl-svg[data-owl="found"] .owl-tuft-l { transform: rotate(12deg) scaleY(1.15); }
+      .owl-svg[data-owl="found"] .owl-tuft-r { transform: rotate(-12deg) scaleY(1.15); }
+      .owl-svg[data-owl="found"] .owl-fx-ink { opacity: 1; animation: rmInkSparkles 1s ease-out infinite; }
+      .owl-svg[data-owl="found"] .owl-fx-eureka { opacity: 1; animation: rmD20Float 1.6s ease-in-out infinite; transform-origin: 100px 28px; }
+
+      .owl-svg[data-owl="spin180"] .owl-head-3d { animation: rmOwlNeckBob180 2.8s ease-in-out infinite; }
+      .owl-svg[data-owl="spin180"] .owl-face-yaw { animation: rmOwlFace180 2.8s ease-in-out infinite; }
+      .owl-svg[data-owl="spin180"] .owl-nape-back { animation: rmOwlNape180 2.8s ease-in-out infinite; }
+      .owl-svg[data-owl="spin180"] .owl-tuft-l { animation: rmOwlTuftSwapL 2.8s ease-in-out infinite; }
+      .owl-svg[data-owl="spin180"] .owl-tuft-r { animation: rmOwlTuftSwapR 2.8s ease-in-out infinite; }
+
+      .owl-svg[data-owl="flip180"] .owl-head-3d {
+        transform-origin: 100px 84px;
+        animation: rmOwlRoll180 2.9s cubic-bezier(0.34, 1.28, 0.64, 1) infinite;
+      }
+
+      @keyframes rmClayBreathe { 0%, 100% { transform: translateY(0) scaleY(1); } 50% { transform: translateY(-3px) scaleY(1.015); } }
+      @keyframes rmWizHeadSway { 0%, 100% { transform: rotate(0deg); } 35% { transform: rotate(-2.2deg) translateY(-1px); } 72% { transform: rotate(2deg); } }
+      @keyframes rmWizHatFollow { 0%, 100% { transform: rotate(0deg); } 40% { transform: rotate(-3deg) translateY(-1.5px); } 78% { transform: rotate(2.2deg); } }
+      @keyframes rmNaturalBlink { 0%, 44%, 48%, 92%, 100% { transform: scaleY(1); } 46%, 95% { transform: scaleY(0.06); } }
+      @keyframes rmMustacheTwitch { 0%, 80%, 100% { transform: rotate(0deg); } 86% { transform: rotate(-1.8deg) scaleX(1.02); } 92% { transform: rotate(1.6deg); } }
+      @keyframes rmBeardSoftSway { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-1.4deg) skewX(1.2deg); } }
+      @keyframes rmBeardWind { 0%, 100% { transform: skewX(-3deg) scaleY(1); } 50% { transform: skewX(4deg) scaleY(1.03); } }
+      @keyframes rmStaffIdle { 0%, 100% { transform: rotate(0deg) translateY(0); } 50% { transform: rotate(-3deg) translateY(-2.5px); } }
+      @keyframes rmStaffGreet { 0%, 100% { transform: rotate(-5deg) translateY(-3px); } 50% { transform: rotate(-14deg) translateY(-8px); } }
+      @keyframes rmStaffRaiseHigh { 0%, 100% { transform: rotate(-6deg) translateY(-4px); } 50% { transform: rotate(-18deg) translateY(-14px); } }
+      @keyframes rmStaffChannel { 0%, 100% { transform: rotate(-8deg) translateY(-4px); } 50% { transform: rotate(-16deg) translateY(-10px); } }
+      @keyframes rmStaffBrace { 0%, 100% { transform: rotate(4deg); } 50% { transform: rotate(-4deg) translateY(-3px); } }
+      @keyframes rmStaffSwing { 0%, 100% { transform: rotate(-10deg) translateY(-4px); } 50% { transform: rotate(12deg) translateY(-9px); } }
+      @keyframes rmStaffSlam { 0%, 100% { transform: translateY(0) rotate(0deg); } 38% { transform: translateY(-20px) rotate(-10deg); } 58% { transform: translateY(5px) rotate(3deg); } }
+      @keyframes rmBodySlam { 0%, 52%, 100% { transform: translateY(0); } 60% { transform: translateY(4px) scaleY(0.98); } }
+      @keyframes rmLeftHandIdle { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-2.5px) rotate(-3deg); } }
+      @keyframes rmHandLevitate { 0%, 100% { transform: translate(4px, -24px) rotate(-18deg); } 50% { transform: translate(6px, -32px) rotate(-26deg); } }
+      @keyframes rmHandConjure { 0%, 100% { transform: translate(6px, -28px) rotate(-22deg); } 50% { transform: translate(8px, -36px) rotate(-32deg); } }
+      @keyframes rmHandStrokeBeard { 0%, 100% { transform: translate(-30px, -26px) rotate(24deg); } 50% { transform: translate(-32px, -16px) rotate(18deg); } }
+      @keyframes rmHeadPonder { 0%, 100% { transform: rotate(-4deg) translateY(0); } 50% { transform: rotate(3deg) translateY(2px); } }
+      @keyframes rmGemBreath { 0%, 100% { transform: scale(1); opacity: 0.85; } 50% { transform: scale(1.18); opacity: 1; } }
+      @keyframes rmGemBlaze { 0%, 100% { transform: scale(0.96); opacity: 0.9; } 50% { transform: scale(1.38); opacity: 1; } }
+      @keyframes rmD20Float { 0%, 100% { transform: translateY(0) rotate(-6deg) scale(1); } 50% { transform: translateY(-10px) rotate(10deg) scale(1.08); } }
+      @keyframes rmFirePulse { 0%, 100% { transform: scale(0.9) translateY(2px); } 50% { transform: scale(1.16) translateY(-6px); } }
+      @keyframes rmBoltFlicker { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.55; transform: scale(1.04) translate(1px, -2px); } 100% { opacity: 1; transform: scale(0.98); } }
+      @keyframes rmSpin360 { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+      @keyframes rmRunesDrift { 0%, 100% { transform: translateY(0); opacity: 0.92; } 50% { transform: translateY(-6px); opacity: 1; } }
+
+      @keyframes rmOwlTilt { 0%, 64%, 100% { transform: rotate(0deg); } 74%, 86% { transform: rotate(-10deg) translateY(-1px); } 93% { transform: rotate(5deg); } }
+      @keyframes rmTuftL { 0%, 84%, 100% { transform: rotate(0deg); } 90% { transform: rotate(-8deg); } }
+      @keyframes rmTuftR { 0%, 84%, 100% { transform: rotate(0deg); } 90% { transform: rotate(8deg); } }
+      @keyframes rmWingSoftL { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(3.5deg); } }
+      @keyframes rmWingSoftR { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-3.5deg); } }
+      @keyframes rmWingFlapL { 0%, 100% { transform: rotate(2deg); } 50% { transform: rotate(28deg) translateY(-4px); } }
+      @keyframes rmWingFlapR { 0%, 100% { transform: rotate(-2deg); } 50% { transform: rotate(-28deg) translateY(-4px); } }
+      @keyframes rmOwlHop { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+      @keyframes rmOwlWatchQuill { 0%, 100% { transform: rotate(4deg) translateY(2px); } 50% { transform: rotate(9deg) translateY(4px); } }
+      @keyframes rmOwlHootNod { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(7deg) translateY(-3px); } }
+      @keyframes rmOwlScan { 0%, 100% { transform: rotate(-11deg) translateY(2px); } 50% { transform: rotate(11deg) translateY(2px); } }
+      @keyframes rmQuillHover { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-4px) rotate(5deg); } }
+      @keyframes rmQuillWrite {
+        0% { transform: translate(0, 0) rotate(-8deg); }
+        25% { transform: translate(-12px, 3px) rotate(9deg); }
+        50% { transform: translate(-5px, -3px) rotate(-12deg); }
+        75% { transform: translate(-15px, 2px) rotate(11deg); }
+        100% { transform: translate(0, 0) rotate(-8deg); }
+      }
+      @keyframes rmInkSparkles { 0% { transform: translateY(6px) scale(0.75); opacity: 0; } 35% { opacity: 1; } 100% { transform: translateY(-24px) scale(1.15); opacity: 0; } }
+      @keyframes rmChimeExpand { 0% { transform: scale(0.65); opacity: 0.95; } 100% { transform: scale(1.38) translateY(-8px); opacity: 0; } }
+      @keyframes rmPagesOrbit { 0%, 100% { transform: translateY(0) scale(0.96); } 50% { transform: translateY(-8px) scale(1.05); } }
+      @keyframes rmOwlNeckBob180 { 0%, 100% { transform: translateY(0) rotate(0deg); } 22% { transform: translateY(-2px) rotate(3deg); } 48% { transform: translateY(-1px) rotate(0deg); } 74% { transform: translateY(-2px) rotate(3deg); } }
+      @keyframes rmOwlFace180 {
+        0%, 8%   { transform: translateX(0) scaleX(1); opacity: 1; }
+        24%      { transform: translateX(48px) scaleX(0.18); opacity: 0; }
+        66%      { transform: translateX(48px) scaleX(0.18); opacity: 0; }
+        84%, 100%{ transform: translateX(0) scaleX(1); opacity: 1; }
+      }
+      @keyframes rmOwlNape180 {
+        0%, 12%  { transform: translateX(-48px) scaleX(0.25); opacity: 0; }
+        28%, 62% { transform: translateX(0) scaleX(1); opacity: 1; }
+        78%, 100%{ transform: translateX(-48px) scaleX(0.25); opacity: 0; }
+      }
+      @keyframes rmOwlTuftSwapL { 0%, 10%, 88%, 100% { transform: translateX(0) rotate(0deg); } 30%, 62% { transform: translateX(10px) rotate(8deg) scaleX(0.92); } }
+      @keyframes rmOwlTuftSwapR { 0%, 10%, 88%, 100% { transform: translateX(0) rotate(0deg); } 30%, 62% { transform: translateX(-10px) rotate(-8deg) scaleX(0.92); } }
+      @keyframes rmOwlRoll180 {
+        0%, 8%   { transform: rotate(0deg) translateY(0); }
+        20%, 30% { transform: rotate(-45deg) translateY(1px); }
+        48%, 70% { transform: rotate(-155deg) translateY(2px); }
+        84%      { transform: rotate(-65deg) translateY(1px); }
+        95%, 100%{ transform: rotate(0deg) translateY(0); }
+      }
+
       @media (prefers-reduced-motion: reduce) {
-        .rm-svg-eyes, .rm-svg-orb, .rm-svg-owl-head, .rm-svg-owl-wings, .rm-assist-fab.is-working { animation: none !important; }
+        .rm-assist-fab *, .rm-assist-hdr-medallion *, .rm-assist-fab.is-working { animation: none !important; transition: none !important; }
       }
       @keyframes rmAssistPulse {
-        0%, 100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.65), 0 10px 26px rgba(15, 23, 42, 0.75); }
-        50% { box-shadow: 0 0 0 10px rgba(56, 189, 248, 0), 0 10px 26px rgba(15, 23, 42, 0.75); }
+        0%, 100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.65), 0 12px 28px rgba(2, 6, 23, 0.82); }
+        50% { box-shadow: 0 0 0 10px rgba(56, 189, 248, 0), 0 12px 28px rgba(2, 6, 23, 0.82); }
+      }
+      @keyframes rmAssistPulseAmber {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.65), 0 12px 28px rgba(2, 6, 23, 0.82); }
+        50% { box-shadow: 0 0 0 10px rgba(251, 191, 36, 0), 0 12px 28px rgba(2, 6, 23, 0.82); }
       }
       .rm-assist-kbd {
-        position: absolute; bottom: -5px; right: -4px;
+        position: absolute; bottom: -4px; right: -4px; z-index: 3;
         font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
         font-size: 9px; font-weight: 800; line-height: 1;
         padding: 2px 4px; border-radius: 5px;
-        background: #020617; color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.55);
+        background: #020617; color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.58);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+      }
+      .rm-assist-fab.is-chronicler .rm-assist-kbd {
+        color: #fcd34d; border-color: rgba(245, 158, 11, 0.58);
       }
       .rm-assist-bubble {
         position: fixed; right: 78px; bottom: 26px; z-index: 46;
@@ -983,7 +1171,7 @@
         padding: 10px 12px; background: rgba(15, 23, 42, 0.95);
         border-bottom: 1px solid rgba(51, 65, 85, 0.75);
       }
-      .rm-assist-title { display: flex; align-items: center; gap: 8px; min-width: 0; }
+      .rm-assist-title { display: flex; align-items: center; gap: 9px; min-width: 0; }
       .rm-assist-name { font-size: 13px; font-weight: 800; color: #ffffff; }
       .rm-assist-sub { font-size: 10px; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
       .rm-assist-hdr-btns { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
@@ -1111,6 +1299,7 @@
 
       @media (max-width: 767px) {
         .rm-assist-fab { right: 12px; bottom: 74px; width: 46px; height: 46px; font-size: 21px; }
+        .rm-assist-fab-icon svg { width: 56px; height: 56px; transform: translateY(-4px); }
         .rm-assist-bubble { right: 64px; bottom: 80px; max-width: 210px; }
         .rm-assist-panel { right: 8px; left: 8px; bottom: 72px; width: auto; max-width: none; max-height: 70vh; max-height: 70dvh; }
         .rm-assist-log { max-height: 44vh; max-height: 44dvh; }
@@ -1120,11 +1309,24 @@
   }
 
   // ---------------------------------------------------------------------------
-  // 7. DOM Rendering & Reactive Bubble
+  // 7. 3D Clay Persona Rigs (Zero-Filter Pure Vector AO) & Choreography Engine
   // ---------------------------------------------------------------------------
   let _fabEl = null;
   let _bubbleEl = null;
   let _panelEl = null;
+  let _svgUid = 0;
+  let _poseTimer = null;
+  let _ambientInterval = null;
+  let _mountedFabPersona = '';
+  let _mountedHdrPersona = '';
+
+  function _withUniqueSvgIds(svg) {
+    _svgUid += 1;
+    const p = 'rma' + _svgUid + '_';
+    return svg
+      .replace(/id="([a-zA-Z0-9_-]+)"/g, 'id="' + p + '$1"')
+      .replace(/url\(#([a-zA-Z0-9_-]+)\)/g, 'url(#' + p + '$1)');
+  }
 
   function showReactionBubble(message, persona, durationMs = 3800) {
     if (!_bubbleEl || !message) return;
@@ -1137,45 +1339,364 @@
     }, durationMs);
   }
 
-  const WIZARD_SVG = '<svg class="rm-assist-svg" viewBox="0 0 36 36" fill="none" aria-hidden="true">'
-    + '<g class="rm-svg-hat"><path d="M7 15 L18 3 L27 15 Z" fill="#4f46e5" stroke="#a5b4fc" stroke-width="1.3" stroke-linejoin="round"/>'
-    + '<ellipse cx="18" cy="15.2" rx="11.5" ry="2.7" fill="#312e81" stroke="#818cf8" stroke-width="1.2"/>'
-    + '<path d="M13 11.5 L22.5 11.5" stroke="#38bdf8" stroke-width="1.4" stroke-linecap="round"/></g>'
-    + '<circle cx="18" cy="20.5" r="6.2" fill="#e2e8f0"/>'
-    + '<path d="M12.5 22.5 Q18 32 23.5 22.5 Z" fill="#cbd5e1" stroke="#94a3b8" stroke-width="0.9"/>'
-    + '<g class="rm-svg-eyes"><circle cx="15.8" cy="19.5" r="1.15" fill="#0f172a"/><circle cx="20.2" cy="19.5" r="1.15" fill="#0f172a"/></g>'
-    + '<path d="M29 15 L29 31" stroke="#a16207" stroke-width="1.8" stroke-linecap="round"/>'
-    + '<g class="rm-svg-orb"><circle cx="29" cy="13.5" r="3.1" fill="#38bdf8" stroke="#e0f2fe" stroke-width="1"/></g></svg>';
+  // Zero-filter 3D Clay Archmage (pure radial/linear gradients + vector AO shadow cushions)
+  const WIZARD_SVG = `<svg class="wiz-svg" data-wiz="idle" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <defs>
+      <linearGradient id="hatCone" x1="74" y1="14" x2="144" y2="74" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stop-color="#6b66a8"/><stop offset="36%" stop-color="#433e6e"/><stop offset="78%" stop-color="#282545"/><stop offset="100%" stop-color="#18162b"/>
+      </linearGradient>
+      <linearGradient id="hatCollar" x1="70" y1="52" x2="138" y2="74" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stop-color="#5a558c"/><stop offset="55%" stop-color="#353159"/><stop offset="100%" stop-color="#1f1c38"/>
+      </linearGradient>
+      <radialGradient id="brimTop" cx="42%" cy="30%" r="70%">
+        <stop offset="0%" stop-color="#65609c"/><stop offset="52%" stop-color="#38345e"/><stop offset="100%" stop-color="#1d1a33"/>
+      </radialGradient>
+      <linearGradient id="brimUnder" x1="46" y1="74" x2="162" y2="92" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stop-color="#1e1b36"/><stop offset="50%" stop-color="#0e0c1c"/><stop offset="100%" stop-color="#1e1b36"/>
+      </linearGradient>
+      <radialGradient id="skin3d" cx="44%" cy="38%" r="62%">
+        <stop offset="0%" stop-color="#ffe2bd"/><stop offset="58%" stop-color="#f3bd88"/><stop offset="100%" stop-color="#ca8853"/>
+      </radialGradient>
+      <radialGradient id="nose3d" cx="38%" cy="30%" r="66%">
+        <stop offset="0%" stop-color="#ffebd2"/><stop offset="50%" stop-color="#f5b47b"/><stop offset="100%" stop-color="#c87b44"/>
+      </radialGradient>
+      <linearGradient id="beard3d" x1="104" y1="104" x2="104" y2="170" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stop-color="#ffffff"/><stop offset="52%" stop-color="#e5e9f0"/><stop offset="86%" stop-color="#cbd5e1"/><stop offset="100%" stop-color="#94a3b8"/>
+      </linearGradient>
+      <linearGradient id="must3d" x1="72" y1="102" x2="136" y2="118" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stop-color="#dde3ec"/><stop offset="50%" stop-color="#ffffff"/><stop offset="100%" stop-color="#cbd5e1"/>
+      </linearGradient>
+      <linearGradient id="cloak3d" x1="56" y1="122" x2="152" y2="190" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stop-color="#494473"/><stop offset="48%" stop-color="#2c294a"/><stop offset="100%" stop-color="#151326"/>
+      </linearGradient>
+      <linearGradient id="gold3d" x1="92" y1="156" x2="116" y2="176" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stop-color="#fef08a"/><stop offset="50%" stop-color="#eab308"/><stop offset="100%" stop-color="#9a5b06"/>
+      </linearGradient>
+      <linearGradient id="wood3d" x1="26" y1="50" x2="66" y2="190" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stop-color="#dfb88c"/><stop offset="32%" stop-color="#a87244"/><stop offset="72%" stop-color="#754926"/><stop offset="100%" stop-color="#472a13"/>
+      </linearGradient>
+      <radialGradient id="orb3d" cx="36%" cy="32%" r="64%">
+        <stop offset="0%" stop-color="#ffffff"/><stop offset="38%" stop-color="#7dd3fc"/><stop offset="78%" stop-color="#0284c7"/><stop offset="100%" stop-color="#1e3a8a"/>
+      </radialGradient>
+      <radialGradient id="fire3d" cx="50%" cy="58%" r="54%">
+        <stop offset="0%" stop-color="#ffffff"/><stop offset="32%" stop-color="#fef08a"/><stop offset="68%" stop-color="#f97316"/><stop offset="100%" stop-color="#dc2626" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+    <ellipse cx="104" cy="188" rx="56" ry="8.5" fill="#020617" fill-opacity="0.55"/>
+    <g class="wiz-whole">
+      <path d="M52 186 C55 144 70 124 104 124 C138 124 153 144 156 186 C138 192 70 192 52 186 Z" fill="url(#cloak3d)"/>
+      <path d="M80 136 L128 136 L132 188 C116 191 92 191 76 188 Z" fill="#17152b"/>
+      <path d="M76 161 Q104 165 132 161 L133 171 Q104 175 75 171 Z" fill="#5c3419"/>
+      <rect x="93" y="158.5" width="22" height="19" rx="4.5" fill="#090814" fill-opacity="0.45"/>
+      <rect x="93" y="156" width="22" height="19" rx="4.5" fill="url(#gold3d)"/>
+      <rect x="98" y="160.5" width="12" height="10" rx="2.2" fill="#2b180b"/>
+      <path d="M104 165.5 L112 165.5" stroke="url(#gold3d)" stroke-width="3.2" stroke-linecap="round"/>
+      <path d="M52 186 C55 146 68 126 88 126 L83 188 C70 188 60 187 52 186 Z" fill="url(#cloak3d)"/>
+      <path d="M156 186 C153 146 140 126 120 126 L125 188 C138 188 148 187 156 186 Z" fill="url(#cloak3d)"/>
 
-  const OWL_SVG = '<svg class="rm-assist-svg" viewBox="0 0 36 36" fill="none" aria-hidden="true">'
-    + '<g class="rm-svg-owl-wings"><ellipse cx="18" cy="24" rx="9.5" ry="7.8" fill="#92400e" stroke="#fbbf24" stroke-width="1.2"/>'
-    + '<ellipse cx="18" cy="25.2" rx="5.5" ry="5.2" fill="#fef3c7" opacity="0.9"/></g>'
-    + '<g class="rm-svg-owl-head"><path d="M11 11 L13.5 6.5 L16 10.5 M25 11 L22.5 6.5 L20 10.5" stroke="#fbbf24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>'
-    + '<circle cx="18" cy="15.5" r="7.2" fill="#b45309" stroke="#fcd34d" stroke-width="1.2"/>'
-    + '<circle cx="15" cy="15.2" r="2.7" fill="#fef3c7"/><circle cx="21" cy="15.2" r="2.7" fill="#fef3c7"/>'
-    + '<g class="rm-svg-eyes"><circle cx="15.2" cy="15.2" r="1.25" fill="#0f172a"/><circle cx="20.8" cy="15.2" r="1.25" fill="#0f172a"/></g>'
-    + '<path d="M16.8 17.5 L18 19.8 L19.2 17.5 Z" fill="#f59e0b"/></g></svg>';
+      <g class="wiz-left-hand">
+        <path d="M138 134 C152 140 161 154 159 170 C151 174 140 172 135 164 Z" fill="#272445"/>
+        <ellipse cx="148" cy="168" rx="11" ry="5.5" fill="#100e21"/>
+        <circle cx="148" cy="173.5" r="9.8" fill="#090814" fill-opacity="0.38"/>
+        <circle cx="148" cy="171" r="9.8" fill="url(#skin3d)"/>
+        <ellipse cx="141" cy="169" rx="4.6" ry="3.5" transform="rotate(-22 141 169)" fill="#ffe4c4"/>
+        <path d="M145 175 C145 177.5 147.5 178.5 149.5 178.5" stroke="#b57241" stroke-width="1.5" stroke-linecap="round"/>
+      </g>
 
-  function setPersonaVisual(persona, working = false) {
+      <g class="wiz-head-group">
+        <path d="M68 84 C59 102 60 126 69 140 C76 134 79 116 79 92 Z" fill="#d8dee9"/>
+        <path d="M140 84 C149 102 148 126 139 140 C132 134 129 116 129 92 Z" fill="#cbd5e1"/>
+        <path d="M68 92 C64 106 65 120 71 131" stroke="#ffffff" stroke-width="3.2" stroke-linecap="round"/>
+        <rect x="74" y="76" width="60" height="45" rx="25" fill="url(#skin3d)"/>
+        <ellipse cx="83" cy="103" rx="7" ry="4.2" fill="#e11d48" fill-opacity="0.15"/>
+        <ellipse cx="125" cy="103" rx="7" ry="4.2" fill="#e11d48" fill-opacity="0.15"/>
+
+        <g class="wiz-eyelids">
+          <ellipse cx="92" cy="95.5" rx="6.6" ry="6.6" fill="#9c5b2e" fill-opacity="0.38"/>
+          <ellipse cx="116" cy="95.5" rx="6.6" ry="6.6" fill="#9c5b2e" fill-opacity="0.38"/>
+          <ellipse cx="92" cy="95.5" rx="5.8" ry="5.6" fill="#fffaf5"/>
+          <ellipse cx="116" cy="95.5" rx="5.8" ry="5.6" fill="#fffaf5"/>
+          <g class="rm-gaze">
+            <circle cx="92.2" cy="95.6" r="4.9" fill="#1c1412"/>
+            <circle cx="92.2" cy="95.6" r="3.6" fill="#090707"/>
+            <path d="M89.2 98 A3.8 3.8 0 0 0 95.2 98" stroke="#60a5fa" stroke-opacity="0.65" stroke-width="1.2" stroke-linecap="round"/>
+            <circle cx="90.3" cy="93.5" r="1.85" fill="#ffffff"/>
+            <circle cx="94" cy="97.2" r="0.8" fill="#ffffff" fill-opacity="0.85"/>
+            <circle cx="116.2" cy="95.6" r="4.9" fill="#1c1412"/>
+            <circle cx="116.2" cy="95.6" r="3.6" fill="#090707"/>
+            <path d="M113.2 98 A3.8 3.8 0 0 0 119.2 98" stroke="#60a5fa" stroke-opacity="0.65" stroke-width="1.2" stroke-linecap="round"/>
+            <circle cx="114.3" cy="93.5" r="1.85" fill="#ffffff"/>
+            <circle cx="118" cy="97.2" r="0.8" fill="#ffffff" fill-opacity="0.85"/>
+          </g>
+        </g>
+
+        <g class="wiz-brows">
+          <path d="M81 90.2 Q89 85.2 97 89.2" stroke="#6b3f1d" stroke-opacity="0.32" stroke-width="6.2" stroke-linecap="round"/>
+          <path d="M127 90.2 Q119 85.2 111 89.2" stroke="#6b3f1d" stroke-opacity="0.32" stroke-width="6.2" stroke-linecap="round"/>
+          <path d="M81 88.5 Q89 83.5 97 87.5" stroke="#f8fafc" stroke-width="6.2" stroke-linecap="round"/>
+          <path d="M127 88.5 Q119 83.5 111 87.5" stroke="#f8fafc" stroke-width="6.2" stroke-linecap="round"/>
+        </g>
+
+        <g class="wiz-beard-group">
+          <path d="M70 113 C66 139 80 161 104 172 C128 161 142 139 138 113 Z" fill="#090814" fill-opacity="0.44"/>
+          <path d="M69 107 C64 134 78 157 94 166 L98 159 L104 169 L110 159 L114 166 C130 157 144 134 139 107 C126 113 82 113 69 107 Z" fill="url(#beard3d)"/>
+          <path d="M83 118 C81 135 86 150 94 160" stroke="#94a3b8" stroke-opacity="0.45" stroke-width="2.8" stroke-linecap="round"/>
+          <path d="M96 120 C96 137 99 151 103 163" stroke="#94a3b8" stroke-opacity="0.38" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M112 120 C112 137 109 151 105 163" stroke="#94a3b8" stroke-opacity="0.38" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M125 118 C127 135 122 150 114 160" stroke="#94a3b8" stroke-opacity="0.45" stroke-width="2.8" stroke-linecap="round"/>
+          <ellipse cx="104" cy="115" rx="8.5" ry="3.8" fill="#1e293b" fill-opacity="0.78"/>
+          <g class="wiz-mustache">
+            <path d="M104 106.5 C92 103.5 79 109.5 69 117.5 C82 120 95 116.5 104 113 C113 116.5 126 120 139 117.5 C129 109.5 116 103.5 104 106.5 Z" fill="#64748b" fill-opacity="0.42"/>
+            <path d="M104 104 C92 101 79 107 69 115 C82 118 95 114 104 110.5 C113 114 126 118 139 115 C129 107 116 101 104 104 Z" fill="url(#must3d)"/>
+          </g>
+        </g>
+
+        <ellipse cx="104" cy="104.5" rx="10.2" ry="7.2" fill="#5c3114" fill-opacity="0.32"/>
+        <ellipse cx="104" cy="102.5" rx="10" ry="7.2" fill="url(#nose3d)"/>
+        <ellipse cx="100.8" cy="100" rx="3.6" ry="1.9" fill="#ffffff" fill-opacity="0.52"/>
+        <path d="M74 88 C86 80 122 80 134 88 C134 79 120 74 104 74 C88 74 74 79 74 88 Z" fill="#140c08" fill-opacity="0.38"/>
+        <ellipse class="wiz-face-glow" cx="104" cy="112" rx="38" ry="40" fill="#38bdf8" fill-opacity="0.24"/>
+
+        <g class="wiz-hat-group">
+          <ellipse cx="104" cy="83" rx="54" ry="15" fill="#070612" fill-opacity="0.42"/>
+          <ellipse cx="104" cy="80" rx="55" ry="15.5" fill="url(#brimUnder)"/>
+          <path d="M46 78 C50 61 158 61 162 78 C158 90 50 90 46 78 Z" fill="url(#brimTop)"/>
+          <path d="M52 75.5 C68 64.5 140 64.5 156 75.5" stroke="#a5b4fc" stroke-opacity="0.32" stroke-width="2.2" stroke-linecap="round"/>
+          <path d="M68 68 C74 42 90 14 114 14 C132 14 144 30 153 47 C156 52 160 55 164 54 C159 60 150 60 142 53 C135 47 129 39 125 40 C122 41 130 55 138 68 Z" fill="url(#hatCone)"/>
+          <path d="M67 69 C75 54 133 54 141 69 C126 74 82 74 67 69 Z" fill="url(#hatCollar)"/>
+          <path d="M70 69.5 Q104 62.5 138 69.5" stroke="#6b3e20" stroke-width="5.2" stroke-linecap="round"/>
+          <path d="M72 69 Q104 62.2 136 69" stroke="#d97706" stroke-opacity="0.45" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M97 43 L98.8 47 L103 47.4 L99.8 50.2 L100.8 54.4 L97 52 L93.2 54.4 L94.2 50.2 L91 47.4 L95.2 47 Z" fill="#fde047" fill-opacity="0.9"/>
+        </g>
+      </g>
+
+      <g class="wiz-staff-rig">
+        <path d="M70 134 C56 138 47 146 45 158 C52 164 63 162 71 151 Z" fill="#2c294a"/>
+        <path d="M61 190 L46 112 C44 100 54 92 53 77 C52 60 35 55 34 67" stroke="url(#wood3d)" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="34" cy="66" r="7.5" fill="url(#wood3d)"/>
+        <ellipse cx="32" cy="63.5" rx="3" ry="2" fill="#f5d5ae" fill-opacity="0.45"/>
+        <path d="M58 185 L44 112 C42 100 52 92 51 77 C50 64 39 59 36 65" stroke="#f5d5ae" stroke-opacity="0.36" stroke-width="2.4" stroke-linecap="round"/>
+        <g class="wiz-crook-gem">
+          <circle cx="42" cy="82" r="13" fill="#38bdf8" fill-opacity="0.24"/>
+          <circle cx="42" cy="82" r="5.8" fill="url(#orb3d)"/>
+          <circle cx="40.2" cy="80" r="1.9" fill="#ffffff" fill-opacity="0.92"/>
+        </g>
+        <rect x="41" y="137" width="16" height="6.5" rx="3.25" transform="rotate(-8 41 137)" fill="url(#skin3d)"/>
+        <rect x="42" y="142.8" width="16.5" height="6.5" rx="3.25" transform="rotate(-8 42 142.8)" fill="url(#skin3d)"/>
+        <rect x="43" y="148.6" width="16" height="6.5" rx="3.25" transform="rotate(-8 43 148.6)" fill="url(#skin3d)"/>
+        <rect x="44.5" y="154.4" width="14" height="6" rx="3" transform="rotate(-8 44.5 154.4)" fill="url(#skin3d)"/>
+        <ellipse cx="57.5" cy="142" rx="5" ry="3.6" transform="rotate(24 57.5 142)" fill="#ffe6c7"/>
+      </g>
+    </g>
+
+    <g class="sp-fx sp-astrolabe">
+      <circle cx="41" cy="78" r="28" stroke="#7dd3fc" stroke-width="2" stroke-dasharray="6 4"/>
+      <circle cx="41" cy="78" r="19" stroke="#fde047" stroke-width="1.5" stroke-dasharray="3 5"/>
+      <polygon points="41,46 45,54 53,58 45,62 41,70 37,62 29,58 37,54" fill="#e0f2fe"/>
+      <circle cx="16" cy="64" r="2.8" fill="#fde047"/><circle cx="66" cy="62" r="2.5" fill="#38bdf8"/>
+    </g>
+    <g class="sp-fx sp-d20">
+      <circle cx="158" cy="94" r="25" fill="#38bdf8" fill-opacity="0.22"/>
+      <ellipse cx="158" cy="94" rx="23" ry="8.5" transform="rotate(-22 158 94)" stroke="#7dd3fc" stroke-width="1.6" stroke-dasharray="4 3"/>
+      <polygon points="158,73 176,83 176,105 158,115 140,105 140,83" fill="#0284c7"/>
+      <polygon points="158,73 176,83 158,94" fill="#7dd3fc"/><polygon points="158,73 140,83 158,94" fill="#38bdf8"/>
+      <polygon points="140,83 158,94 149,110" fill="#0ea5e9"/><polygon points="176,83 158,94 167,110" fill="#0369a1"/>
+      <path d="M158 73 L158 94 M140 83 L176 83 M158 94 L149 110 M158 94 L167 110" stroke="#e0f2fe" stroke-width="1.2"/>
+    </g>
+    <g class="sp-fx sp-fire">
+      <circle cx="158" cy="92" r="29" fill="url(#fire3d)"/>
+      <path d="M158 60 C169 72 177 82 175 96 C173 108 165 113 158 113 C149 113 141 106 141 95 C141 82 150 75 158 60 Z" fill="url(#fire3d)"/>
+      <path d="M158 75 C163 83 167 88 166 97 C165 103 161 106 158 106 C154 106 150 102 150 96 C150 88 155 83 158 75 Z" fill="#fef9c3"/>
+    </g>
+    <g class="sp-fx sp-bolt">
+      <path d="M43 80 L74 58 L96 74 L124 52 L144 76 L158 108" stroke="#38bdf8" stroke-width="9.5" stroke-opacity="0.36" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M43 80 L74 58 L96 74 L124 52 L144 76 L158 108" stroke="#f0f9ff" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+    <g class="sp-fx sp-scroll">
+      <path d="M128 112 Q154 106 178 114 L174 142 Q150 134 124 140 Z" fill="#fef3c7"/>
+      <rect x="122" y="109" width="6" height="34" rx="3" transform="rotate(8 125 126)" fill="#d97706"/>
+      <rect x="173" y="111" width="6" height="34" rx="3" transform="rotate(8 176 128)" fill="#d97706"/>
+      <path d="M134 120 L166 122 M133 127 L162 129 M132 134 L154 135" stroke="#b45309" stroke-width="2.2" stroke-linecap="round"/>
+    </g>
+    <g class="sp-fx sp-ward">
+      <circle cx="104" cy="116" r="76" stroke="#fbbf24" stroke-opacity="0.68" stroke-width="2.5" stroke-dasharray="12 8"/>
+      <circle cx="104" cy="116" r="66" stroke="#38bdf8" stroke-opacity="0.52" stroke-width="1.7" stroke-dasharray="5 6"/>
+    </g>
+  </svg>`;
+
+  // Zero-filter 3D Clay Owl Familiar (Chronicler) with 180° Neck Swivel & Curious Roll
+  const OWL_SVG = `<svg class="owl-svg" data-owl="idle" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <defs>
+      <radialGradient id="oPlume" cx="42%" cy="28%" r="72%">
+        <stop offset="0%" stop-color="#e08214"/><stop offset="52%" stop-color="#9a480d"/><stop offset="100%" stop-color="#471d04"/>
+      </radialGradient>
+      <radialGradient id="oDown" cx="46%" cy="32%" r="68%">
+        <stop offset="0%" stop-color="#fffdf5"/><stop offset="58%" stop-color="#fde68a"/><stop offset="100%" stop-color="#d97706"/>
+      </radialGradient>
+      <radialGradient id="oDisc" cx="50%" cy="42%" r="58%">
+        <stop offset="0%" stop-color="#ffffff"/><stop offset="72%" stop-color="#fef3c7"/><stop offset="100%" stop-color="#d97706"/>
+      </radialGradient>
+      <radialGradient id="oAmber" cx="42%" cy="38%" r="60%">
+        <stop offset="0%" stop-color="#fef08a"/><stop offset="55%" stop-color="#f59e0b"/><stop offset="100%" stop-color="#92400e"/>
+      </radialGradient>
+      <linearGradient id="oWing" x1="40" y1="98" x2="70" y2="162" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stop-color="#bd5b11"/><stop offset="60%" stop-color="#7c3208"/><stop offset="100%" stop-color="#3d1603"/>
+      </linearGradient>
+      <linearGradient id="oTome" x1="36" y1="154" x2="164" y2="184" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stop-color="#7c2d12"/><stop offset="50%" stop-color="#451a03"/><stop offset="100%" stop-color="#270e02"/>
+      </linearGradient>
+      <linearGradient id="oQuill" x1="146" y1="86" x2="176" y2="156" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stop-color="#ffffff"/><stop offset="45%" stop-color="#fde68a"/><stop offset="100%" stop-color="#d97706"/>
+      </linearGradient>
+      <clipPath id="oHeadClip"><rect x="53" y="49" width="94" height="68" rx="34"/></clipPath>
+    </defs>
+    <ellipse cx="100" cy="188" rx="56" ry="8.5" fill="#020617" fill-opacity="0.55"/>
+    <path d="M36 165 L100 151 L164 165 L158 183 L100 171 L42 183 Z" fill="url(#oTome)"/>
+    <path d="M43 163 L100 151.5 L157 163 L154 174 L100 163 L46 174 Z" fill="#fef3c7"/>
+    <rect x="95" y="151" width="10" height="21" rx="3" fill="#f59e0b"/>
+
+    <g class="owl-whole">
+      <g class="owl-wing-l3d">
+        <path d="M62 104 C38 112 34 140 48 158 C58 156 66 142 68 122 Z" fill="url(#oWing)"/>
+        <path d="M54 118 C45 128 45 140 51 150" stroke="#fbbf24" stroke-opacity="0.35" stroke-width="2.4" stroke-linecap="round"/>
+      </g>
+      <g class="owl-wing-r3d">
+        <path d="M138 104 C162 112 166 140 152 158 C142 156 134 142 132 122 Z" fill="url(#oWing)"/>
+        <path d="M146 118 C155 128 155 140 149 150" stroke="#fbbf24" stroke-opacity="0.35" stroke-width="2.4" stroke-linecap="round"/>
+      </g>
+      <ellipse cx="100" cy="131" rx="40" ry="36" fill="url(#oPlume)"/>
+      <ellipse cx="100" cy="136" rx="28" ry="27" fill="url(#oDown)"/>
+      <path d="M83 123 Q89 129 95 123 M97 123 Q103 129 109 123 M111 123 Q117 129 123 123" stroke="#b45309" stroke-opacity="0.4" stroke-width="2.6" stroke-linecap="round"/>
+      <path d="M86 136 Q93 142 100 136 M102 136 Q109 142 116 136" stroke="#b45309" stroke-opacity="0.36" stroke-width="2.6" stroke-linecap="round"/>
+
+      <rect x="76" y="157" width="6.8" height="12.5" rx="3.4" fill="#fbbf24"/>
+      <rect x="83" y="158" width="6.8" height="13" rx="3.4" fill="#f59e0b"/>
+      <rect x="90" y="157" width="6.2" height="12" rx="3.1" fill="#d97706"/>
+      <rect x="104" y="157" width="6.2" height="12" rx="3.1" fill="#d97706"/>
+      <rect x="110.5" y="158" width="6.8" height="13" rx="3.4" fill="#f59e0b"/>
+      <rect x="117.5" y="157" width="6.8" height="12.5" rx="3.4" fill="#fbbf24"/>
+
+      <ellipse cx="100" cy="115" rx="32" ry="9" fill="#1c0a02" fill-opacity="0.38"/>
+      <g class="owl-head-3d">
+        <g class="owl-tuft-l"><path d="M56 72 C52 50 58 34 73 30 C77 43 77 56 72 66 Z" fill="url(#oPlume)"/></g>
+        <g class="owl-tuft-r"><path d="M144 72 C148 50 142 34 127 30 C123 43 123 56 128 66 Z" fill="url(#oPlume)"/></g>
+        <rect x="53" y="49" width="94" height="68" rx="34" fill="url(#oPlume)"/>
+        <g clip-path="url(#oHeadClip)">
+          <g class="owl-nape-back">
+            <path d="M54 83 Q100 89 146 83" stroke="#d97706" stroke-width="3.2" stroke-linecap="round"/>
+            <path d="M74 68 Q82 75 90 68 M92 68 Q100 75 108 68 M110 68 Q118 75 126 68" stroke="#fde68a" stroke-opacity="0.32" stroke-width="2.6" stroke-linecap="round"/>
+            <path d="M70 84 Q80 92 90 84 M92 84 Q100 92 108 84 M110 84 Q120 92 130 84" stroke="#451a03" stroke-opacity="0.45" stroke-width="2.8" stroke-linecap="round"/>
+            <rect x="93" y="81" width="14" height="6" rx="2.5" fill="#fbbf24"/>
+          </g>
+          <g class="owl-face-yaw">
+            <circle cx="81" cy="84" r="19.8" fill="url(#oDisc)"/>
+            <circle cx="119" cy="84" r="19.8" fill="url(#oDisc)"/>
+            <path d="M83 55 L100 78 L117 55 Z" fill="#853a0a" fill-opacity="0.72"/>
+            <g class="owl-lids">
+              <circle cx="81" cy="84" r="13.8" fill="url(#oAmber)"/>
+              <circle cx="119" cy="84" r="13.8" fill="url(#oAmber)"/>
+              <g class="rm-gaze">
+                <circle cx="81" cy="84" r="9.8" fill="#0b0807"/>
+                <circle cx="77.2" cy="79.5" r="3.5" fill="#ffffff"/>
+                <circle cx="85" cy="88" r="1.5" fill="#fde047" fill-opacity="0.9"/>
+                <circle cx="119" cy="84" r="9.8" fill="#0b0807"/>
+                <circle cx="115.2" cy="79.5" r="3.5" fill="#ffffff"/>
+                <circle cx="123" cy="88" r="1.5" fill="#fde047" fill-opacity="0.9"/>
+              </g>
+            </g>
+            <circle cx="81" cy="84" r="16.4" stroke="#fde047" stroke-width="2.6"/>
+            <circle cx="119" cy="84" r="16.4" stroke="#fde047" stroke-width="2.6"/>
+            <path d="M97 84 Q100 80 103 84" stroke="#fde047" stroke-width="3" stroke-linecap="round"/>
+            <path d="M92.5 93 C96 88.5 104 88.5 107.5 93 L100 108 Z" fill="#f59e0b"/>
+            <path d="M96 93 L100 103.5 L100 91 Z" fill="#fef08a" fill-opacity="0.58"/>
+          </g>
+        </g>
+      </g>
+    </g>
+
+    <g class="owl-quill-3d">
+      <path d="M146 157 C150 124 162 98 179 86 C177 112 167 137 146 157 Z" fill="url(#oQuill)"/>
+      <path d="M144 160 L174 94" stroke="#b45309" stroke-width="2.2" stroke-linecap="round"/>
+      <circle cx="144" cy="160" r="3" fill="#fde047"/>
+    </g>
+    <g class="owl-fx owl-fx-ink">
+      <path d="M140 132 L143 138 L149 140 L143 142 L140 148 L137 142 L131 140 L137 138 Z" fill="#fde047"/>
+      <circle cx="126" cy="122" r="3" fill="#fef3c7"/><circle cx="156" cy="118" r="2.5" fill="#fbbf24"/>
+    </g>
+    <g class="owl-fx owl-fx-chime">
+      <path d="M44 64 Q32 50 44 36" stroke="#fde047" stroke-width="3" stroke-linecap="round"/>
+      <path d="M156 64 Q168 50 156 36" stroke="#fde047" stroke-width="3" stroke-linecap="round"/>
+    </g>
+    <g class="owl-fx owl-fx-pages">
+      <rect x="46" y="128" width="22" height="28" rx="3" transform="rotate(-24 57 142)" fill="#fef3c7" fill-opacity="0.9"/>
+      <rect x="132" y="126" width="22" height="28" rx="3" transform="rotate(22 143 140)" fill="#fde68a" fill-opacity="0.9"/>
+    </g>
+    <g class="owl-fx owl-fx-eureka">
+      <path d="M100 12 L104 22 L114 26 L104 30 L100 40 L96 30 L86 26 L96 22 Z" fill="#fde047"/>
+    </g>
+  </svg>`;
+
+  const WIZ_AMBIENT_POSES = ['astrolabe', 'd20', 'fireball', 'lightning', 'scroll', 'ward'];
+  const OWL_AMBIENT_POSES = ['spin180', 'flip180', 'write', 'hoot', 'search', 'found'];
+
+  function _applyRigPose(persona, pose) {
+    const attr = persona === 'chronicler' ? 'data-owl' : 'data-wiz';
+    const sel = persona === 'chronicler' ? '.owl-svg' : '.wiz-svg';
+    if (_fabEl) {
+      const s = _fabEl.querySelector(sel);
+      if (s) s.setAttribute(attr, pose || 'idle');
+    }
+    if (_panelEl) {
+      const s = _panelEl.querySelector('#rm-assist-hdr-icon ' + sel);
+      if (s) s.setAttribute(attr, pose || 'idle');
+    }
+  }
+
+  function triggerPersonaPose(persona, pose, durationMs = 2800) {
+    const p = persona === 'chronicler' ? 'chronicler' : 'rulemaster';
+    _applyRigPose(p, pose);
+    clearTimeout(_poseTimer);
+    if (pose && pose !== 'idle' && durationMs > 0) {
+      _poseTimer = setTimeout(() => {
+        if (!_isBusy) _applyRigPose(_persona, 'idle');
+      }, durationMs);
+    }
+  }
+
+  function setPersonaVisual(persona, working = false, poseHint = '') {
     _persona = persona === 'chronicler' ? 'chronicler' : 'rulemaster';
     if (_fabEl) {
       _fabEl.classList.toggle('is-chronicler', _persona === 'chronicler');
       _fabEl.classList.toggle('is-working', Boolean(working));
       const iconSpan = _fabEl.querySelector('.rm-assist-fab-icon');
-      if (iconSpan) iconSpan.innerHTML = _persona === 'chronicler' ? OWL_SVG : WIZARD_SVG;
+      if (iconSpan && _mountedFabPersona !== _persona) {
+        iconSpan.innerHTML = _withUniqueSvgIds(_persona === 'chronicler' ? OWL_SVG : WIZARD_SVG);
+        _mountedFabPersona = _persona;
+      }
     }
     if (_panelEl) {
       _panelEl.classList.toggle('is-chronicler', _persona === 'chronicler');
       const hdrIcon = _panelEl.querySelector('#rm-assist-hdr-icon');
       const hdrName = _panelEl.querySelector('#rm-assist-hdr-name');
       const hdrSub = _panelEl.querySelector('#rm-assist-hdr-sub');
-      if (hdrIcon) hdrIcon.textContent = _persona === 'chronicler' ? '🦉' : '🧙‍♂️';
+      if (hdrIcon && _mountedHdrPersona !== _persona) {
+        hdrIcon.innerHTML = _withUniqueSvgIds(_persona === 'chronicler' ? OWL_SVG : WIZARD_SVG);
+        _mountedHdrPersona = _persona;
+      }
       if (hdrName) hdrName.textContent = _persona === 'chronicler' ? 'Chronicler (Owl Familiar)' : 'Rule Master';
       if (hdrSub) {
         hdrSub.textContent = _persona === 'chronicler'
           ? 'Campaign Notes • Lore Q&A • Note Taker'
           : '3.5e RAW • Live App Guide • Sheet Commands';
       }
+    }
+    if (working) {
+      const workPose = poseHint || (_persona === 'chronicler' ? 'search' : 'scroll');
+      triggerPersonaPose(_persona, workPose, 0);
+    } else if (poseHint) {
+      triggerPersonaPose(_persona, poseHint, 2800);
+    } else {
+      _applyRigPose(_persona, 'idle');
     }
   }
 
@@ -1276,7 +1797,11 @@
       if (sendBtn) sendBtn.disabled = true;
       try {
         const targetPersona = instant.command === 'add_note' ? 'chronicler' : 'rulemaster';
-        setPersonaVisual(targetPersona, false);
+        const cmdPose = instant.command === 'add_note' ? 'write'
+          : (instant.command === 'cast_spell' ? 'fireball'
+          : (instant.command === 'toggle_buff' ? 'ward'
+          : (instant.command === 'open_crafter' ? 'astrolabe' : 'd20')));
+        setPersonaVisual(targetPersona, false, cmdPose);
         _messages.push({ role: 'user', text });
         const res = await COMMANDS[instant.command](instant.args);
         _messages.push({
@@ -1312,7 +1837,7 @@
     const guessedPersona = _personaLock !== 'auto'
       ? _personaLock
       : (/(not al|notlara|kampanya|npc|session|quest log|chronicler|hatırlıyor|kimdi|neredeydi)/i.test(text) ? 'chronicler' : 'rulemaster');
-    setPersonaVisual(guessedPersona, true);
+    setPersonaVisual(guessedPersona, true, guessedPersona === 'chronicler' ? 'search' : 'scroll');
 
     try {
       const liveCtx = getLivePageContext();
@@ -1344,7 +1869,8 @@
       const activePersona = _personaLock !== 'auto'
         ? _personaLock
         : (parsed.persona === 'chronicler' ? 'chronicler' : 'rulemaster');
-      setPersonaVisual(activePersona, false);
+      const donePose = activePersona === 'chronicler' ? 'found' : 'astrolabe';
+      setPersonaVisual(activePersona, false, donePose);
 
       const execResults = await executeStructuredActions(parsed.actions || [], activePersona);
       const validNoteIds = new Set(relevantNotes.map(n => n.id));
@@ -1410,7 +1936,8 @@
     fab.className = 'rm-assist-fab';
     fab.title = 'Rule Master & Owl Chronicler (Alt+M / Ctrl+K)';
     fab.setAttribute('aria-label', 'Open Rule Master AI Assistant');
-    fab.innerHTML = `<span class="rm-assist-fab-icon">${WIZARD_SVG}</span><span class="rm-assist-kbd">M</span>`;
+    fab.innerHTML = `<span class="rm-assist-fab-icon">${_withUniqueSvgIds(WIZARD_SVG)}</span><span class="rm-assist-kbd">M</span>`;
+    _mountedFabPersona = 'rulemaster';
 
     const bubble = document.createElement('div');
     bubble.id = 'rm-assist-bubble';
@@ -1425,7 +1952,7 @@
     panel.innerHTML = `
       <div class="rm-assist-hdr">
         <div class="rm-assist-title">
-          <span id="rm-assist-hdr-icon" style="font-size:18px;">🧙‍♂️</span>
+          <span id="rm-assist-hdr-icon" class="rm-assist-hdr-medallion">${_withUniqueSvgIds(WIZARD_SVG)}</span>
           <div style="min-width:0;">
             <div id="rm-assist-hdr-name" class="rm-assist-name">Rule Master</div>
             <div id="rm-assist-hdr-sub" class="rm-assist-sub">3.5e RAW • Live App Guide • Sheet Commands</div>
@@ -1452,6 +1979,7 @@
         <button id="rm-assist-send" class="rm-assist-send" type="submit">Run</button>
       </form>
     `;
+    _mountedHdrPersona = 'rulemaster';
 
     document.body.appendChild(fab);
     document.body.appendChild(bubble);
@@ -1482,8 +2010,8 @@
       if (lockBtn) {
         _personaLock = lockBtn.getAttribute('data-rm-lock') || 'auto';
         renderPersonaLockPills();
-        if (_personaLock === 'chronicler') setPersonaVisual('chronicler', _isBusy);
-        else if (_personaLock === 'rulemaster') setPersonaVisual('rulemaster', _isBusy);
+        if (_personaLock === 'chronicler') setPersonaVisual('chronicler', _isBusy, _isBusy ? 'search' : 'hoot');
+        else if (_personaLock === 'rulemaster') setPersonaVisual('rulemaster', _isBusy, _isBusy ? 'scroll' : 'astrolabe');
         return;
       }
       const cmdBtn = ev.target.closest('[data-rm-cmd-idx]');
@@ -1542,9 +2070,41 @@
       const d = ev?.detail || {};
       const persona = d.persona === 'chronicler' ? 'chronicler' : 'rulemaster';
       const working = d.state === 'thinking' || d.state === 'working';
-      setPersonaVisual(persona, working);
+      const pose = d.pose || (working ? (persona === 'chronicler' ? 'search' : 'astrolabe') : (persona === 'chronicler' ? 'write' : 'd20'));
+      setPersonaVisual(persona, working, d.state === 'idle' && !d.message ? '' : pose);
       if (d.message) showReactionBubble(d.message, persona, working ? 6000 : 3500);
     });
+
+    // Smart Fine-Pointer Cursor Gaze Tracking (sleeps when panel open, hidden tab, reduced motion, or touch)
+    const reducedMotionMQ = root.matchMedia ? root.matchMedia('(prefers-reduced-motion: reduce)') : null;
+    const finePointerMQ = root.matchMedia ? root.matchMedia('(pointer: fine)') : null;
+    if (!finePointerMQ || finePointerMQ.matches) {
+      let gazeRaf = false;
+      window.addEventListener('pointermove', (ev) => {
+        if (gazeRaf || _isOpen || document.hidden || (reducedMotionMQ && reducedMotionMQ.matches) || !_fabEl) return;
+        gazeRaf = true;
+        requestAnimationFrame(() => {
+          gazeRaf = false;
+          if (!_fabEl) return;
+          const rect = _fabEl.getBoundingClientRect();
+          const cx = rect.left + rect.width * 0.5;
+          const cy = rect.top + rect.height * 0.5;
+          const dx = Math.max(-1, Math.min(1, (ev.clientX - cx) / 280));
+          const dy = Math.max(-1, Math.min(1, (ev.clientY - cy) / 280));
+          _fabEl.style.setProperty('--rm-gx', (dx * 2.5).toFixed(2) + 'px');
+          _fabEl.style.setProperty('--rm-gy', (dy * 1.9).toFixed(2) + 'px');
+        });
+      }, { passive: true });
+    }
+
+    // Autonomous Living Choreography (sleeps when panel open, busy, hidden tab, or reduced motion)
+    clearInterval(_ambientInterval);
+    _ambientInterval = setInterval(() => {
+      if (_isOpen || _isBusy || document.hidden || !_fabEl || (reducedMotionMQ && reducedMotionMQ.matches)) return;
+      const pool = _persona === 'chronicler' ? OWL_AMBIENT_POSES : WIZ_AMBIENT_POSES;
+      const pick = pool[Math.floor(Math.random() * pool.length)];
+      triggerPersonaPose(_persona, pick, 2900);
+    }, 9500);
 
     renderSavedCommands();
     renderMessages();
@@ -1564,6 +2124,7 @@
     guide: showUiGuideTarget,
     clearGuide: clearGuideSpotlight,
     getLivePageContext,
+    triggerPose: triggerPersonaPose,
     commands: COMMANDS
   };
 })(typeof window !== 'undefined' ? window : globalThis);
