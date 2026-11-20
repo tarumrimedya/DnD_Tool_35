@@ -24,3 +24,6 @@ __pycache__/
 
 # UI smoke suite deps
 tools/ui_smoke/node_modules/
+
+# Generated audit reports
+audit_v3_full_report.md

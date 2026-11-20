@@ -1,15 +1,15 @@
 ---
 name: claude-bridge
 description: >-
-  Communicates directly with the local Claude Code CLI (Claude Opus 5.5) installed via
-  Claude Desktop on Windows. Use whenever the user asks to talk to Claude, ask Claude's
-  opinion, cross-check D&D 3.5e RAW rules or architecture with Claude, or collaborate
-  with Claude on Joyful-Fermi or any workspace task.
+  Communicates directly with the local Claude Code CLI (claude.exe via Claude Desktop on
+  Windows). Trigger ONLY when the user explicitly names "Claude Code" (e.g. "Claude Code'a sor",
+  "Claude Code ile konuş"). For general "Claude'a sor" / cross-audit requests without "Claude Code",
+  use Antigravity's native separate-quota Swarm models (claude-opus-5-5-high / claude-sonnet-5-5-medium).
 ---
 
 # Claude Bridge Skill (`claude-bridge`)
 
-Enables direct CLI communication between **Antigravity (Gemini 4 Argon)** and **Claude Code (`claude-opus-5-5`)** on the local machine.
+Enables direct CLI communication between **Antigravity** and the local **Claude Code CLI (`claude.exe`)** when the user explicitly says **"Claude Code"**. *(If the user asks for "Claude" generically without saying "Claude Code", prefer Antigravity's built-in `claude-opus-5-5-high` / `claude-sonnet-5-5-medium` via `swarm` instead of spawning `claude.exe`.)*
 
 ## 1. Executable Resolution (Update-Resilient)
 

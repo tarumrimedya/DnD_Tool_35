@@ -1,45 +1,44 @@
 ---
 name: ceo-orchestrator
 description: >-
-  Operational playbook for Joyful-Fermi's Single-Cell Lean Agile CEO workflow (governed by GEMINI.md):
-  local Playwright Node / Docker gate execution, 3-step zero-bloat read/edit protocol, exact Swarm model
-  pinning (Hydrogen / Carbon / Argon / 3.8-Flash), tailwind_compiled.css + 3-format UI smoke gates,
-  0-token verify_and_sync.js, and live task_board.md Kanban tracking.
+  Operational command & checklist reference for Joyful-Fermi's Single-Cell Lean Agile CEO workflow
+  (governed by GEMINI.md): Windows local Node path, fast verify_and_sync iteration vs. pre-main
+  Docker release gates (check_all / ui_smoke), 3-step zero-bloat indexing, and Neon / Carbon /
+  Hydrogen / Sonnet 5.5 model pinning.
 ---
 
-# Lean Agile CEO Operational Playbook
+# Lean Agile CEO Operational Checklist
 
-`GEMINI.md` is the single source of truth for all Joyful-Fermi architectural, V3 data, and RAW rules. This skill provides the concise execution checklist so rules are applied on the first try without duplicating `GEMINI.md`.
+`GEMINI.md` is the **single source of truth** for all Joyful-Fermi rules, Pure V3 contracts, model routing, and verification policies. Do not duplicate rule prose here; use this file solely for exact Windows execution commands.
 
-## 1. Execution & Verification Commands (Windows)
+## 1. Fast Daily / `preview` Verification (`0` Tokens, `<1s`)
 
-- **Local Node (`0` Tokens, `<3s`):** Bare `node` is not in Windows `PATH`. Always invoke:
-  ```powershell
-  $node = "C:\Users\tarum\AppData\Local\ms-playwright-go\1.57.0\node.exe"
-  & $node tools/verify_and_sync.js
-  & $node tools/verify_v3_corpus.js
-  ```
-- **UI Smoke & Full CI Gate (Docker):**
-  ```powershell
-  powershell -File tools/ui_smoke/run.ps1
-  powershell -ExecutionPolicy Bypass -File tools/check_all.ps1
-  ```
+Bare `node` is not in Windows `PATH`. Run after every code/data edit:
 
-## 2. 3-Step Zero-Bloat Read/Edit Sequence
+```powershell
+$node = "C:\Users\tarum\AppData\Local\ms-playwright-go\1.57.0\node.exe"
+& $node tools/verify_and_sync.js
+git diff --stat
+```
 
-1. **Index (`1×` `& $node -e`):** Print exact function/symbol line numbers across target root files (never scan `char_modals.js`, `hero_silhouette_data.js`, or `webapp/*`). Check `git branch` / `git worktree list` first if branches/worktrees differ.
-2. **Read (`1×` Parallel `read_file` Batch):** Read all 4–8 target slices (`60–120` lines each) in one parallel turn.
-3. **Edit & Gate (`1×` Parallel `edit_file` Batch + Verify):** Apply surgical edits in parallel, then run `& $node tools/verify_and_sync.js` (plus `tools/ui_smoke/run.ps1` for layout/UI changes) + `git diff`.
+## 2. Pre-`main` Merge / `main push` Release Gates (Mandatory Before `main`)
 
-## 3. Swarm Model Pinning Matrix (Only for `2+` Heavy Disjoint Slices)
+Do **not** spin up Docker smoke gates on routine `preview` tweaks. Run the full suite once before merging or pushing to `main` (requires explicit user approval to merge/push `main`):
 
-Never spawn `monitor` workers, Waterfall/PDCA loops, or workers for `<100`-line edits. When parallel Swarm workers are justified, pre-supply exact line numbers in the `brief`, `kill` workers immediately upon slice verification, and pin exact model IDs:
+```powershell
+$node = "C:\Users\tarum\AppData\Local\ms-playwright-go\1.57.0\node.exe"
+powershell -ExecutionPolicy Bypass -File tools/check_all.ps1
+& $node tools/verify_v3_corpus.js
+& $node tools/audit_v3_full.js
+```
 
-- **Default Spec Implementation:** `gemini-4-hydrogen-high`, `gemini-4-carbon-medium`, or `gemini-4-argon-medium`
-- **Lightweight Audit / Scan:** `gemini-4-hydrogen-medium` or `gemini-3.8-flash-medium` (`gemini-3.8-flash-low` for trivial scans)
-- **Novel Hard Core Architecture Only:** `gemini-4-carbon-high` or `gemini-4-argon-high`
+*(Standalone 3-format viewport check if needed: `powershell -File tools/ui_smoke/run.ps1`)*
 
-## 4. Live Kanban (`task_board.md`) & Chat Discipline
+## 3. Quick Pinning Reference (Full Policy in `GEMINI.md` §1.3)
 
-- Maintain `task_board.md` in the conversation artifact directory (`⏳ Görev`, `💡 Fikir`, `✅ Tamamlandı`) for detailed technical logs, gate outputs, and `file://` links.
-- Keep user-facing chat responses to **1–3 concise sentences**.
+- **Main Seat (Everyday Isolated):** `gemini-4-neon-medium` *(quota-balance alternate: `claude-sonnet-5-5-medium`)*
+- **Main Seat (Sheet-Wide / Engine / User-Flagged):** `gemini-4-carbon-medium` / `gemini-4-carbon-high` *(deep algorithmic edge: `gemini-4-neon-xhigh`)*
+- **Swarm Workers (`2+` Heavy Disjoint Slices Only, Line Numbers in `brief`):**
+  - Routine specified slice: `gemini-4-hydrogen-high` or `gemini-4-hydrogen-medium`
+  - Complex logic/module slice: `gemini-4-neon-medium` or `claude-sonnet-5-5-medium`
+  - Read-only scan / browser: `gemini-4-hydrogen-medium`, `gemini-3.8-flash-medium`/`low`, `gpt-oss-120b-medium`; `browser` on `flash`
