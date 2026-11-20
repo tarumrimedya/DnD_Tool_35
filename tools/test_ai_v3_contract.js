@@ -706,6 +706,24 @@ function runAiV3ContractTests() {
     check(scratchMarkup.includes('fs-spot-add') && scratchMarkup.includes('+ Add Mechanic / Effect…') && scratchMarkup.includes('lego-pal-tag') && scratchMarkup.includes('SEARCH') && scratchMarkup.includes('BLOCKS') && scratchMarkup.includes('data-action="add-block"') && !scratchMarkup.includes('Quick Presets'),
       'blockPalette must render labeled SEARCH / BLOCKS / EXTRAS rows with open 1-click block buttons and no Quick Presets');
 
+    // #9 Sprint E1.1 Unified Entities V3 Contract (`effectKind: 'entity'` & `entity.animal_companion.levelBonus`)
+    const entEntry = {
+      schemaVersion: 3, id: 'test-entity-grant', blueprint: 'feat', name: 'Animal Companion',
+      effects: [
+        { id: 'e1', type: 'effect', effectKind: 'entity', entityKind: 'animal_companion', levelFormula: '@classes.druid.level + (@classes.ranger.level >= 4 ? floor(@classes.ranger.level / 2) : 0)', progressionKey: 'druidProgression', label: 'Animal Companion' },
+        { id: 'e2', type: 'stat', targets: ['entity.animal_companion.levelBonus'], mode: 'flat', value: 3, btype: 'Untyped', label: 'Natural Bond' }
+      ]
+    };
+    const entSchemaErrs = validate('RuleMasterEntryV3', entEntry, 'test-entity-grant');
+    check(entSchemaErrs.length === 0, `entity V3 entry must pass JSON schema (${entSchemaErrs.join('; ')})`);
+    const entRt = Forge.exportEntry(Forge.fromCanonicalV3(JSON.parse(JSON.stringify(entEntry))));
+    check(entRt.effects[0].effectKind === 'entity' && entRt.effects[0].entityKind === 'animal_companion' && entRt.effects[0].progressionKey === 'druidProgression',
+      'Rule Crafter round-trip must preserve effectKind: "entity" fields losslessly');
+    check(Array.isArray(entRt.effects[1].targets) && entRt.effects[1].targets[0] === 'entity.animal_companion.levelBonus',
+      'Rule Crafter round-trip must preserve entity.animal_companion.levelBonus target');
+    const entSan = RuleEngine.sanitizeV3Entry(JSON.parse(JSON.stringify(entEntry)));
+    check(entSan.effects[0].effectKind === 'entity', 'RuleEngine.sanitizeV3Entry must preserve effectKind: "entity"');
+
     // #10 Sprint D3 — Unified 16-Family V3 Scriber, False-Positive Guards, Partial-Coverage Envelope & Pure V3 RuleMaster
     // (a) False-positive guards: "at will" != Will save, colon-less Prerequisites stripped, negated penalty ignored, no-darkvision ignored
     const fpAtWill = RuleEngine.scribeRuleText('Fey Trick: Usable at will. You gain a +2 bonus on Bluff checks.', { blueprint: 'feat' });

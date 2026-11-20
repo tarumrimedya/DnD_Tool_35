@@ -1,0 +1,6095 @@
+{
+  "schemaVersion": 1,
+  "scope": "Phase 1a (Animal, Magical Beast, Elemental, Plant, Vermin + Companion/Familiar/Mount/Fiendish Servant)",
+  "count": 227,
+  "entries": {
+    "mst-monstrous-centipede-gargantuan": {
+      "id": "mst-monstrous-centipede-gargantuan",
+      "name": "Monstrous Centipede, Gargantuan",
+      "creatureType": "",
+      "size": "Gargantuan",
+      "bab": 9,
+      "strMod": 6,
+      "dexMod": 2,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "2d8",
+          "attackBonus": 11,
+          "damageBonus": 9
+        }
+      ]
+    },
+    "mst-triceratops": {
+      "id": "mst-triceratops",
+      "name": "Triceratops",
+      "creatureType": "",
+      "size": "Huge",
+      "bab": 12,
+      "strMod": 10,
+      "dexMod": -1,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Gore",
+          "count": 1,
+          "primary": true,
+          "dmgType": "P",
+          "dice": "2d8",
+          "attackBonus": 20,
+          "damageBonus": 15
+        },
+        {
+          "name": "Trample",
+          "count": 1,
+          "primary": "misc",
+          "dmgType": "B",
+          "dice": "2d12",
+          "attackBonus": 0,
+          "damageBonus": 0
+        }
+      ]
+    },
+    "mst-baboon": {
+      "id": "mst-baboon",
+      "name": "Baboon",
+      "creatureType": "",
+      "size": "Medium",
+      "bab": 0,
+      "strMod": 2,
+      "dexMod": 2,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d6",
+          "attackBonus": 2,
+          "damageBonus": 3
+        }
+      ]
+    },
+    "mst-dire-ape": {
+      "id": "mst-dire-ape",
+      "name": "Dire Ape",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 3,
+      "strMod": 6,
+      "dexMod": 2,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Claw",
+          "count": 2,
+          "primary": true,
+          "dmgType": "P/S",
+          "dice": "1d6",
+          "attackBonus": 8,
+          "damageBonus": 6
+        },
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": false,
+          "dmgType": "B/P/S",
+          "dice": "1d8",
+          "attackBonus": 3,
+          "damageBonus": 3
+        },
+        {
+          "name": "Rend",
+          "count": 1,
+          "primary": "misc",
+          "dmgType": "P/S",
+          "dice": "2d6",
+          "attackBonus": 0,
+          "damageBonus": 0
+        }
+      ]
+    },
+    "mst-lizard": {
+      "id": "mst-lizard",
+      "name": "Lizard",
+      "creatureType": "",
+      "size": "Tiny",
+      "bab": 0,
+      "strMod": -4,
+      "dexMod": 2,
+      "hasFinesse": true,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d4",
+          "attackBonus": 4,
+          "damageBonus": -4
+        }
+      ]
+    },
+    "mst-bat": {
+      "id": "mst-bat",
+      "name": "Bat",
+      "attacks": []
+    },
+    "mst-phantom-fungus": {
+      "id": "mst-phantom-fungus",
+      "name": "Phantom Fungus",
+      "creatureType": "",
+      "size": "Medium",
+      "bab": 1,
+      "strMod": 2,
+      "dexMod": 0,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d6",
+          "attackBonus": 3,
+          "damageBonus": 3
+        }
+      ]
+    },
+    "mst-water-elemental-medium": {
+      "id": "mst-water-elemental-medium",
+      "name": "Water Elemental, Medium",
+      "creatureType": "",
+      "size": "Medium",
+      "bab": 3,
+      "strMod": 3,
+      "dexMod": 1,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Slam",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B",
+          "dice": "1d8",
+          "attackBonus": 6,
+          "damageBonus": 4
+        }
+      ]
+    },
+    "mst-wolf": {
+      "id": "mst-wolf",
+      "name": "Wolf",
+      "creatureType": "",
+      "size": "Medium",
+      "bab": 1,
+      "strMod": 1,
+      "dexMod": 2,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d6",
+          "attackBonus": 3,
+          "damageBonus": 1
+        }
+      ]
+    },
+    "mst-monstrous-spider-tiny": {
+      "id": "mst-monstrous-spider-tiny",
+      "name": "Monstrous Spider, Tiny",
+      "creatureType": "",
+      "size": "Tiny",
+      "bab": 0,
+      "strMod": -4,
+      "dexMod": 3,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d3",
+          "attackBonus": -2,
+          "damageBonus": -4
+        }
+      ]
+    },
+    "mst-ankheg": {
+      "id": "mst-ankheg",
+      "name": "Ankheg",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 3,
+      "strMod": 5,
+      "dexMod": 0,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "2d6",
+          "attackBonus": 7,
+          "damageBonus": 7
+        }
+      ]
+    },
+    "mst-remorhaz": {
+      "id": "mst-remorhaz",
+      "name": "Remorhaz",
+      "creatureType": "",
+      "size": "Huge",
+      "bab": 7,
+      "strMod": 8,
+      "dexMod": 1,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "2d8",
+          "attackBonus": 13,
+          "damageBonus": 12
+        }
+      ]
+    },
+    "mst-violet-fungus": {
+      "id": "mst-violet-fungus",
+      "name": "Violet Fungus",
+      "creatureType": "",
+      "size": "Medium",
+      "bab": 1,
+      "strMod": 2,
+      "dexMod": -1,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Tentacle",
+          "count": 2,
+          "primary": true,
+          "dmgType": "B",
+          "dice": "1d6",
+          "attackBonus": 3,
+          "damageBonus": 2
+        }
+      ]
+    },
+    "mst-seven-headed-hydra": {
+      "id": "mst-seven-headed-hydra",
+      "name": "Seven-Headed Hydra",
+      "creatureType": "",
+      "size": "Huge",
+      "bab": 7,
+      "strMod": 4,
+      "dexMod": 1,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 7,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d10",
+          "attackBonus": 10,
+          "damageBonus": 4
+        }
+      ]
+    },
+    "mst-elasmosaurus": {
+      "id": "mst-elasmosaurus",
+      "name": "Elasmosaurus",
+      "creatureType": "",
+      "size": "Huge",
+      "bab": 7,
+      "strMod": 8,
+      "dexMod": 2,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "2d8",
+          "attackBonus": 13,
+          "damageBonus": 12
+        }
+      ]
+    },
+    "mst-giant-stag-beetle": {
+      "id": "mst-giant-stag-beetle",
+      "name": "Giant Stag Beetle",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 5,
+      "strMod": 6,
+      "dexMod": 0,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "4d6",
+          "attackBonus": 10,
+          "damageBonus": 9
+        },
+        {
+          "name": "Trample",
+          "count": 1,
+          "primary": "misc",
+          "dmgType": "B",
+          "dice": "2d8",
+          "attackBonus": 0,
+          "damageBonus": 0
+        }
+      ]
+    },
+    "mst-dire-tiger": {
+      "id": "mst-dire-tiger",
+      "name": "Dire Tiger",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 12,
+      "strMod": 8,
+      "dexMod": 2,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Claw",
+          "count": 2,
+          "primary": true,
+          "dmgType": "P/S",
+          "dice": "2d4",
+          "attackBonus": 20,
+          "damageBonus": 8
+        },
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": false,
+          "dmgType": "B/P/S",
+          "dice": "2d6",
+          "attackBonus": 14,
+          "damageBonus": 4
+        },
+        {
+          "name": "Rake",
+          "count": 2,
+          "primary": "special_rake",
+          "dmgType": "P/S",
+          "dice": "2d4",
+          "attackBonus": 19,
+          "damageBonus": 4
+        }
+      ]
+    },
+    "mst-warhorse-heavy": {
+      "id": "mst-warhorse-heavy",
+      "name": "Warhorse, Heavy",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 3,
+      "strMod": 4,
+      "dexMod": 1,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Hoof",
+          "count": 2,
+          "primary": true,
+          "dmgType": "B",
+          "dice": "1d6",
+          "attackBonus": 6,
+          "damageBonus": 4
+        },
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": false,
+          "dmgType": "B/P/S",
+          "dice": "1d4",
+          "attackBonus": 1,
+          "damageBonus": 2
+        }
+      ]
+    },
+    "mst-air-elemental-greater": {
+      "id": "mst-air-elemental-greater",
+      "name": "Air Elemental, Greater",
+      "creatureType": "",
+      "size": "Huge",
+      "bab": 15,
+      "strMod": 5,
+      "dexMod": 10,
+      "hasFinesse": true,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Slam",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B",
+          "dice": "2d8",
+          "attackBonus": 23,
+          "damageBonus": 7
+        }
+      ]
+    },
+    "mst-monstrous-scorpion-huge": {
+      "id": "mst-monstrous-scorpion-huge",
+      "name": "Monstrous Scorpion, Huge",
+      "creatureType": "",
+      "size": "Huge",
+      "bab": 7,
+      "strMod": 6,
+      "dexMod": 0,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Claw",
+          "count": 2,
+          "primary": true,
+          "dmgType": "P/S",
+          "dice": "1d8",
+          "attackBonus": 11,
+          "damageBonus": 6
+        },
+        {
+          "name": "Sting",
+          "count": 1,
+          "primary": false,
+          "dmgType": "P",
+          "dice": "2d4",
+          "attackBonus": 6,
+          "damageBonus": 3
+        },
+        {
+          "name": "Constrict",
+          "count": 1,
+          "primary": "misc",
+          "dmgType": "B",
+          "dice": "1d8",
+          "attackBonus": 0,
+          "damageBonus": 0
+        }
+      ]
+    },
+    "mst-weasel": {
+      "id": "mst-weasel",
+      "name": "Weasel",
+      "creatureType": "",
+      "size": "Tiny",
+      "bab": 0,
+      "strMod": -4,
+      "dexMod": 2,
+      "hasFinesse": true,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d3",
+          "attackBonus": 4,
+          "damageBonus": -4
+        }
+      ]
+    },
+    "mst-warhorse-light": {
+      "id": "mst-warhorse-light",
+      "name": "Warhorse, Light",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 2,
+      "strMod": 3,
+      "dexMod": 1,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Hoof",
+          "count": 2,
+          "primary": true,
+          "dmgType": "B",
+          "dice": "1d4",
+          "attackBonus": 4,
+          "damageBonus": 3
+        },
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": false,
+          "dmgType": "B/P/S",
+          "dice": "1d3",
+          "attackBonus": -1,
+          "damageBonus": 1
+        }
+      ]
+    },
+    "mst-earth-elemental-elder": {
+      "id": "mst-earth-elemental-elder",
+      "name": "Earth Elemental, Elder",
+      "creatureType": "",
+      "size": "Huge",
+      "bab": 18,
+      "strMod": 11,
+      "dexMod": -1,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Slam",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B",
+          "dice": "2d10",
+          "attackBonus": 27,
+          "damageBonus": 16
+        }
+      ]
+    },
+    "mst-purple-worm": {
+      "id": "mst-purple-worm",
+      "name": "Purple Worm",
+      "creatureType": "",
+      "size": "Gargantuan",
+      "bab": 16,
+      "strMod": 12,
+      "dexMod": -2,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "2d8",
+          "attackBonus": 25,
+          "damageBonus": 12
+        },
+        {
+          "name": "Sting",
+          "count": 1,
+          "primary": false,
+          "dmgType": "P",
+          "dice": "2d6",
+          "attackBonus": 20,
+          "damageBonus": 6
+        }
+      ]
+    },
+    "mst-griffon": {
+      "id": "mst-griffon",
+      "name": "Griffon",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 7,
+      "strMod": 4,
+      "dexMod": 2,
+      "hasFinesse": false,
+      "hasMultiattack": true,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "2d6",
+          "attackBonus": 11,
+          "damageBonus": 4
+        },
+        {
+          "name": "Claw",
+          "count": 2,
+          "primary": false,
+          "dmgType": "P/S",
+          "dice": "1d4",
+          "attackBonus": 8,
+          "damageBonus": 2
+        },
+        {
+          "name": "Rake",
+          "count": 2,
+          "primary": "special_rake",
+          "dmgType": "P/S",
+          "dice": "1d6",
+          "attackBonus": 10,
+          "damageBonus": 2
+        }
+      ]
+    },
+    "mst-fire-elemental-primal": {
+      "id": "mst-fire-elemental-primal",
+      "name": "Fire Elemental, Primal",
+      "creatureType": "",
+      "size": "Colossal",
+      "bab": 48,
+      "strMod": 11,
+      "dexMod": 14,
+      "hasFinesse": true,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Slam",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B",
+          "dice": "4d8",
+          "attackBonus": 55,
+          "damageBonus": 16
+        }
+      ]
+    },
+    "mst-dog": {
+      "id": "mst-dog",
+      "name": "Dog",
+      "creatureType": "",
+      "size": "Small",
+      "bab": 0,
+      "strMod": 1,
+      "dexMod": 3,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d4",
+          "attackBonus": 2,
+          "damageBonus": 1
+        }
+      ]
+    },
+    "mst-gray-glutton": {
+      "id": "mst-gray-glutton",
+      "name": "Gray Glutton",
+      "creatureType": "",
+      "size": "Huge",
+      "bab": 9,
+      "strMod": 8,
+      "dexMod": -1,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "2d8",
+          "attackBonus": 15,
+          "damageBonus": 8
+        },
+        {
+          "name": "Claw",
+          "count": 2,
+          "primary": false,
+          "dmgType": "P/S",
+          "dice": "2d6",
+          "attackBonus": 10,
+          "damageBonus": 4
+        }
+      ]
+    },
+    "mst-lammasu": {
+      "id": "mst-lammasu",
+      "name": "Lammasu",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 7,
+      "strMod": 6,
+      "dexMod": 1,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Claw",
+          "count": 2,
+          "primary": true,
+          "dmgType": "P/S",
+          "dice": "1d6",
+          "attackBonus": 12,
+          "damageBonus": 6
+        },
+        {
+          "name": "Rake",
+          "count": 2,
+          "primary": "special_rake",
+          "dmgType": "P/S",
+          "dice": "1d6",
+          "attackBonus": 12,
+          "damageBonus": 3
+        }
+      ]
+    },
+    "mst-ethereal-marauder": {
+      "id": "mst-ethereal-marauder",
+      "name": "Ethereal Marauder",
+      "creatureType": "",
+      "size": "Medium",
+      "bab": 2,
+      "strMod": 2,
+      "dexMod": 1,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d6",
+          "attackBonus": 4,
+          "damageBonus": 3
+        }
+      ]
+    },
+    "mst-cat": {
+      "id": "mst-cat",
+      "name": "Cat",
+      "creatureType": "",
+      "size": "Tiny",
+      "bab": 0,
+      "strMod": -4,
+      "dexMod": 2,
+      "hasFinesse": true,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Claw",
+          "count": 2,
+          "primary": true,
+          "dmgType": "P/S",
+          "dice": "1d2",
+          "attackBonus": 4,
+          "damageBonus": -4
+        },
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": false,
+          "dmgType": "B/P/S",
+          "dice": "1d3",
+          "attackBonus": -1,
+          "damageBonus": -4
+        }
+      ]
+    },
+    "mst-gray-render": {
+      "id": "mst-gray-render",
+      "name": "Gray Render",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 10,
+      "strMod": 6,
+      "dexMod": 0,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "2d6",
+          "attackBonus": 15,
+          "damageBonus": 6
+        },
+        {
+          "name": "Claw",
+          "count": 2,
+          "primary": false,
+          "dmgType": "P/S",
+          "dice": "1d6",
+          "attackBonus": 10,
+          "damageBonus": 3
+        },
+        {
+          "name": "Rend",
+          "count": 1,
+          "primary": "misc",
+          "dmgType": "P/S",
+          "dice": "2d6",
+          "attackBonus": 0,
+          "damageBonus": 0
+        }
+      ]
+    },
+    "mst-air-elemental-elder": {
+      "id": "mst-air-elemental-elder",
+      "name": "Air Elemental, Elder",
+      "creatureType": "",
+      "size": "Huge",
+      "bab": 18,
+      "strMod": 6,
+      "dexMod": 11,
+      "hasFinesse": true,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Slam",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B",
+          "dice": "2d8",
+          "attackBonus": 27,
+          "damageBonus": 9
+        }
+      ]
+    },
+    "mst-dire-wolverine": {
+      "id": "mst-dire-wolverine",
+      "name": "Dire Wolverine",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 3,
+      "strMod": 6,
+      "dexMod": 3,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Claw",
+          "count": 2,
+          "primary": true,
+          "dmgType": "P/S",
+          "dice": "1d6",
+          "attackBonus": 8,
+          "damageBonus": 6
+        },
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": false,
+          "dmgType": "B/P/S",
+          "dice": "1d8",
+          "attackBonus": 3,
+          "damageBonus": 3
+        }
+      ]
+    },
+    "mst-fire-elemental-huge": {
+      "id": "mst-fire-elemental-huge",
+      "name": "Fire Elemental, Huge",
+      "creatureType": "",
+      "size": "Huge",
+      "bab": 12,
+      "strMod": 4,
+      "dexMod": 7,
+      "hasFinesse": true,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Slam",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B",
+          "dice": "2d8",
+          "attackBonus": 17,
+          "damageBonus": 6
+        }
+      ]
+    },
+    "mst-monstrous-centipede-large": {
+      "id": "mst-monstrous-centipede-large",
+      "name": "Monstrous Centipede, Large",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 2,
+      "strMod": 1,
+      "dexMod": 2,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d8",
+          "attackBonus": 2,
+          "damageBonus": 1
+        }
+      ]
+    },
+    "mst-monstrous-scorpion-colossal": {
+      "id": "mst-monstrous-scorpion-colossal",
+      "name": "Monstrous Scorpion, Colossal",
+      "creatureType": "",
+      "size": "Colossal",
+      "bab": 30,
+      "strMod": 12,
+      "dexMod": -1,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Claw",
+          "count": 2,
+          "primary": true,
+          "dmgType": "P/S",
+          "dice": "2d8",
+          "attackBonus": 34,
+          "damageBonus": 12
+        },
+        {
+          "name": "Sting",
+          "count": 1,
+          "primary": false,
+          "dmgType": "P",
+          "dice": "2d8",
+          "attackBonus": 29,
+          "damageBonus": 6
+        },
+        {
+          "name": "Constrict",
+          "count": 1,
+          "primary": "misc",
+          "dmgType": "B",
+          "dice": "2d8",
+          "attackBonus": 0,
+          "damageBonus": 0
+        }
+      ]
+    },
+    "mst-bat-swarm": {
+      "id": "mst-bat-swarm",
+      "name": "Bat Swarm",
+      "creatureType": "",
+      "size": "Diminutive",
+      "bab": 2,
+      "strMod": -4,
+      "dexMod": 2,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Swarm",
+          "count": 1,
+          "primary": "misc",
+          "dmgType": "Swarm",
+          "dice": "1d6",
+          "attackBonus": 0,
+          "damageBonus": 0
+        }
+      ]
+    },
+    "mst-spider-eater": {
+      "id": "mst-spider-eater",
+      "name": "Spider Eater",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 4,
+      "strMod": 5,
+      "dexMod": 1,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d8",
+          "attackBonus": 8,
+          "damageBonus": 5
+        },
+        {
+          "name": "Sting",
+          "count": 1,
+          "primary": false,
+          "dmgType": "P",
+          "dice": "1d8",
+          "attackBonus": 3,
+          "damageBonus": 2
+        }
+      ]
+    },
+    "mst-yrthak": {
+      "id": "mst-yrthak",
+      "name": "Yrthak",
+      "creatureType": "",
+      "size": "Huge",
+      "bab": 12,
+      "strMod": 5,
+      "dexMod": 2,
+      "hasFinesse": false,
+      "hasMultiattack": true,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "2d8",
+          "attackBonus": 15,
+          "damageBonus": 5
+        },
+        {
+          "name": "Claw",
+          "count": 2,
+          "primary": false,
+          "dmgType": "P/S",
+          "dice": "1d6",
+          "attackBonus": 13,
+          "damageBonus": 2
+        }
+      ]
+    },
+    "mst-shark-huge": {
+      "id": "mst-shark-huge",
+      "name": "Shark, Huge",
+      "creatureType": "",
+      "size": "Huge",
+      "bab": 7,
+      "strMod": 5,
+      "dexMod": 2,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "2d6",
+          "attackBonus": 10,
+          "damageBonus": 7
+        }
+      ]
+    },
+    "mst-krenshar": {
+      "id": "mst-krenshar",
+      "name": "Krenshar",
+      "creatureType": "",
+      "size": "Medium",
+      "bab": 2,
+      "strMod": 0,
+      "dexMod": 2,
+      "hasFinesse": false,
+      "hasMultiattack": true,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d6",
+          "attackBonus": 2,
+          "damageBonus": 0
+        },
+        {
+          "name": "Claw",
+          "count": 2,
+          "primary": false,
+          "dmgType": "P/S",
+          "dice": "1d4",
+          "attackBonus": 0,
+          "damageBonus": 0
+        }
+      ]
+    },
+    "mst-fire-elemental-elder": {
+      "id": "mst-fire-elemental-elder",
+      "name": "Fire Elemental, Elder",
+      "creatureType": "",
+      "size": "Huge",
+      "bab": 18,
+      "strMod": 6,
+      "dexMod": 9,
+      "hasFinesse": true,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Slam",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B",
+          "dice": "2d8",
+          "attackBonus": 26,
+          "damageBonus": 9
+        }
+      ]
+    },
+    "mst-dire-boar": {
+      "id": "mst-dire-boar",
+      "name": "Dire Boar",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 5,
+      "strMod": 8,
+      "dexMod": 0,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Gore",
+          "count": 1,
+          "primary": true,
+          "dmgType": "P",
+          "dice": "1d8",
+          "attackBonus": 12,
+          "damageBonus": 12
+        }
+      ]
+    },
+    "mst-leopard": {
+      "id": "mst-leopard",
+      "name": "Leopard",
+      "creatureType": "",
+      "size": "Medium",
+      "bab": 2,
+      "strMod": 3,
+      "dexMod": 4,
+      "hasFinesse": true,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d6",
+          "attackBonus": 6,
+          "damageBonus": 3
+        },
+        {
+          "name": "Claw",
+          "count": 2,
+          "primary": false,
+          "dmgType": "P/S",
+          "dice": "1d3",
+          "attackBonus": 1,
+          "damageBonus": 1
+        },
+        {
+          "name": "Rake",
+          "count": 2,
+          "primary": "special_rake",
+          "dmgType": "P/S",
+          "dice": "1d3",
+          "attackBonus": 6,
+          "damageBonus": 1
+        }
+      ]
+    },
+    "mst-bear-brown": {
+      "id": "mst-bear-brown",
+      "name": "Bear, Brown",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 4,
+      "strMod": 8,
+      "dexMod": 1,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Claw",
+          "count": 2,
+          "primary": true,
+          "dmgType": "P/S",
+          "dice": "1d8",
+          "attackBonus": 11,
+          "damageBonus": 8
+        },
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": false,
+          "dmgType": "B/P/S",
+          "dice": "2d6",
+          "attackBonus": 6,
+          "damageBonus": 4
+        }
+      ]
+    },
+    "mst-octopus": {
+      "id": "mst-octopus",
+      "name": "Octopus",
+      "creatureType": "",
+      "size": "Small",
+      "bab": 1,
+      "strMod": 1,
+      "dexMod": 3,
+      "hasFinesse": true,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d3",
+          "attackBonus": 5,
+          "damageBonus": 1
+        }
+      ]
+    },
+    "mst-invisible-stalker": {
+      "id": "mst-invisible-stalker",
+      "name": "Invisible Stalker",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 6,
+      "strMod": 4,
+      "dexMod": 4,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Slam",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B",
+          "dice": "2d6",
+          "attackBonus": 10,
+          "damageBonus": 6
+        }
+      ]
+    },
+    "mst-water-elemental-elder": {
+      "id": "mst-water-elemental-elder",
+      "name": "Water Elemental, Elder",
+      "creatureType": "",
+      "size": "Huge",
+      "bab": 18,
+      "strMod": 9,
+      "dexMod": 6,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Slam",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B",
+          "dice": "2d10",
+          "attackBonus": 25,
+          "damageBonus": 13
+        }
+      ]
+    },
+    "mst-dire-wolf": {
+      "id": "mst-dire-wolf",
+      "name": "Dire Wolf",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 4,
+      "strMod": 7,
+      "dexMod": 2,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d8",
+          "attackBonus": 11,
+          "damageBonus": 10
+        }
+      ]
+    },
+    "mst-giant-ant-worker": {
+      "id": "mst-giant-ant-worker",
+      "name": "Giant Ant, Worker",
+      "creatureType": "",
+      "size": "Medium",
+      "bab": 1,
+      "strMod": 0,
+      "dexMod": 0,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d6",
+          "attackBonus": 1,
+          "damageBonus": 0
+        }
+      ]
+    },
+    "mst-megaraptor": {
+      "id": "mst-megaraptor",
+      "name": "Megaraptor",
+      "creatureType": "",
+      "size": "Huge",
+      "bab": 6,
+      "strMod": 5,
+      "dexMod": 2,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Talon",
+          "count": 2,
+          "primary": true,
+          "dmgType": "P/S",
+          "dice": "2d8",
+          "attackBonus": 9,
+          "damageBonus": 5
+        },
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": false,
+          "dmgType": "B/P/S",
+          "dice": "2d6",
+          "attackBonus": 4,
+          "damageBonus": 2
+        }
+      ]
+    },
+    "mst-androsphinx": {
+      "id": "mst-androsphinx",
+      "name": "Androsphinx",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 12,
+      "strMod": 7,
+      "dexMod": 0,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Claw",
+          "count": 2,
+          "primary": true,
+          "dmgType": "P/S",
+          "dice": "2d4",
+          "attackBonus": 18,
+          "damageBonus": 7
+        },
+        {
+          "name": "Rake",
+          "count": 2,
+          "primary": "special_rake",
+          "dmgType": "P/S",
+          "dice": "2d4",
+          "attackBonus": 18,
+          "damageBonus": 3
+        }
+      ]
+    },
+    "mst-manticore": {
+      "id": "mst-manticore",
+      "name": "Manticore",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 6,
+      "strMod": 5,
+      "dexMod": 2,
+      "hasFinesse": false,
+      "hasMultiattack": true,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d8",
+          "attackBonus": 10,
+          "damageBonus": 5
+        },
+        {
+          "name": "Claw",
+          "count": 2,
+          "primary": false,
+          "dmgType": "P/S",
+          "dice": "2d4",
+          "attackBonus": 8,
+          "damageBonus": 2
+        }
+      ]
+    },
+    "mst-snake-tiny-viper": {
+      "id": "mst-snake-tiny-viper",
+      "name": "Snake, Tiny Viper",
+      "creatureType": "",
+      "size": "Tiny",
+      "bab": 0,
+      "strMod": -3,
+      "dexMod": 3,
+      "hasFinesse": true,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1",
+          "attackBonus": 5,
+          "damageBonus": -3
+        },
+        {
+          "name": "Poison",
+          "count": 1,
+          "primary": "misc",
+          "dmgType": "B",
+          "dice": "1d6",
+          "attackBonus": 0,
+          "damageBonus": 0
+        }
+      ]
+    },
+    "mst-water-elemental-primal": {
+      "id": "mst-water-elemental-primal",
+      "name": "Water Elemental, Primal",
+      "creatureType": "",
+      "size": "Colossal",
+      "bab": 48,
+      "strMod": 16,
+      "dexMod": 14,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Slam",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B",
+          "dice": "4d10",
+          "attackBonus": 57,
+          "damageBonus": 24
+        }
+      ]
+    },
+    "mst-air-elemental-primal": {
+      "id": "mst-air-elemental-primal",
+      "name": "Air Elemental, Primal",
+      "creatureType": "",
+      "size": "Colossal",
+      "bab": 48,
+      "strMod": 11,
+      "dexMod": 16,
+      "hasFinesse": true,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Slam",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B",
+          "dice": "4d8",
+          "attackBonus": 57,
+          "damageBonus": 16
+        }
+      ]
+    },
+    "mst-monstrous-spider-colossal": {
+      "id": "mst-monstrous-spider-colossal",
+      "name": "Monstrous Spider, Colossal",
+      "creatureType": "",
+      "size": "Colossal",
+      "bab": 24,
+      "strMod": 10,
+      "dexMod": 2,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "4d6",
+          "attackBonus": 26,
+          "damageBonus": 15
+        }
+      ]
+    },
+    "mst-ape": {
+      "id": "mst-ape",
+      "name": "Ape",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 3,
+      "strMod": 5,
+      "dexMod": 2,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Claw",
+          "count": 2,
+          "primary": true,
+          "dmgType": "P/S",
+          "dice": "1d6",
+          "attackBonus": 7,
+          "damageBonus": 5
+        },
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": false,
+          "dmgType": "B/P/S",
+          "dice": "1d6",
+          "attackBonus": 2,
+          "damageBonus": 2
+        }
+      ]
+    },
+    "mst-girallon": {
+      "id": "mst-girallon",
+      "name": "Girallon",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 7,
+      "strMod": 6,
+      "dexMod": 3,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d8",
+          "attackBonus": 12,
+          "damageBonus": 6
+        },
+        {
+          "name": "Claw",
+          "count": 2,
+          "primary": false,
+          "dmgType": "P/S",
+          "dice": "1d4",
+          "attackBonus": 7,
+          "damageBonus": 3
+        },
+        {
+          "name": "Rend",
+          "count": 1,
+          "primary": "misc",
+          "dmgType": "P/S",
+          "dice": "2d4",
+          "attackBonus": 0,
+          "damageBonus": 0
+        }
+      ]
+    },
+    "mst-water-elemental-small": {
+      "id": "mst-water-elemental-small",
+      "name": "Water Elemental, Small",
+      "creatureType": "",
+      "size": "Small",
+      "bab": 1,
+      "strMod": 2,
+      "dexMod": 0,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Slam",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B",
+          "dice": "1d6",
+          "attackBonus": 4,
+          "damageBonus": 3
+        }
+      ]
+    },
+    "mst-six-headed-hydra": {
+      "id": "mst-six-headed-hydra",
+      "name": "Six-Headed Hydra",
+      "creatureType": "",
+      "size": "Huge",
+      "bab": 6,
+      "strMod": 3,
+      "dexMod": 1,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 6,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d10",
+          "attackBonus": 8,
+          "damageBonus": 3
+        }
+      ]
+    },
+    "mst-octopus-giant": {
+      "id": "mst-octopus-giant",
+      "name": "Octopus, Giant",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 6,
+      "strMod": 5,
+      "dexMod": 2,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d8",
+          "attackBonus": 10,
+          "damageBonus": 5
+        },
+        {
+          "name": "Tentacle",
+          "count": 8,
+          "primary": false,
+          "dmgType": "B",
+          "dice": "1d4",
+          "attackBonus": 5,
+          "damageBonus": 2
+        }
+      ]
+    },
+    "mst-monstrous-centipede-small": {
+      "id": "mst-monstrous-centipede-small",
+      "name": "Monstrous Centipede, Small",
+      "creatureType": "",
+      "size": "Small",
+      "bab": 0,
+      "strMod": -3,
+      "dexMod": 2,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d4",
+          "attackBonus": -2,
+          "damageBonus": -3
+        }
+      ]
+    },
+    "mst-treant": {
+      "id": "mst-treant",
+      "name": "Treant",
+      "creatureType": "",
+      "size": "Huge",
+      "bab": 5,
+      "strMod": 9,
+      "dexMod": -1,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Slam",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B",
+          "dice": "2d6",
+          "attackBonus": 12,
+          "damageBonus": 13
+        },
+        {
+          "name": "Trample",
+          "count": 1,
+          "primary": "misc",
+          "dmgType": "B",
+          "dice": "2d6",
+          "attackBonus": 0,
+          "damageBonus": 0
+        }
+      ]
+    },
+    "mst-fire-elemental-greater": {
+      "id": "mst-fire-elemental-greater",
+      "name": "Fire Elemental, Greater",
+      "creatureType": "",
+      "size": "Huge",
+      "bab": 15,
+      "strMod": 5,
+      "dexMod": 8,
+      "hasFinesse": true,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Slam",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B",
+          "dice": "2d8",
+          "attackBonus": 22,
+          "damageBonus": 7
+        }
+      ]
+    },
+    "mst-gynosphinx": {
+      "id": "mst-gynosphinx",
+      "name": "Gynosphinx",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 8,
+      "strMod": 4,
+      "dexMod": 1,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Claw",
+          "count": 2,
+          "primary": true,
+          "dmgType": "P/S",
+          "dice": "1d6",
+          "attackBonus": 11,
+          "damageBonus": 4
+        },
+        {
+          "name": "Rake",
+          "count": 2,
+          "primary": "special_rake",
+          "dmgType": "P/S",
+          "dice": "1d6",
+          "attackBonus": 11,
+          "damageBonus": 2
+        }
+      ]
+    },
+    "mst-dire-weasel": {
+      "id": "mst-dire-weasel",
+      "name": "Dire Weasel",
+      "creatureType": "",
+      "size": "Medium",
+      "bab": 2,
+      "strMod": 2,
+      "dexMod": 4,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d6",
+          "attackBonus": 4,
+          "damageBonus": 3
+        }
+      ]
+    },
+    "mst-shark-medium": {
+      "id": "mst-shark-medium",
+      "name": "Shark, Medium",
+      "creatureType": "",
+      "size": "Medium",
+      "bab": 2,
+      "strMod": 1,
+      "dexMod": 2,
+      "hasFinesse": true,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d6",
+          "attackBonus": 4,
+          "damageBonus": 1
+        }
+      ]
+    },
+    "mst-basilisk": {
+      "id": "mst-basilisk",
+      "name": "Basilisk",
+      "creatureType": "",
+      "size": "Medium",
+      "bab": 6,
+      "strMod": 2,
+      "dexMod": -1,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d8",
+          "attackBonus": 8,
+          "damageBonus": 3
+        }
+      ]
+    },
+    "mst-dog-riding": {
+      "id": "mst-dog-riding",
+      "name": "Dog, Riding",
+      "creatureType": "",
+      "size": "Medium",
+      "bab": 1,
+      "strMod": 2,
+      "dexMod": 2,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d6",
+          "attackBonus": 3,
+          "damageBonus": 3
+        }
+      ]
+    },
+    "mst-tendriculos": {
+      "id": "mst-tendriculos",
+      "name": "Tendriculos",
+      "creatureType": "",
+      "size": "Huge",
+      "bab": 6,
+      "strMod": 9,
+      "dexMod": -1,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "2d8",
+          "attackBonus": 13,
+          "damageBonus": 13
+        }
+      ]
+    },
+    "mst-horse-light": {
+      "id": "mst-horse-light",
+      "name": "Horse, Light",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 2,
+      "strMod": 2,
+      "dexMod": 1,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Hoof",
+          "count": 2,
+          "primary": true,
+          "dmgType": "B",
+          "dice": "1d4",
+          "attackBonus": 3,
+          "damageBonus": 2
+        }
+      ]
+    },
+    "mst-giant-ant-queen": {
+      "id": "mst-giant-ant-queen",
+      "name": "Giant Ant, Queen",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 3,
+      "strMod": 3,
+      "dexMod": -1,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "2d6",
+          "attackBonus": 5,
+          "damageBonus": 4
+        }
+      ]
+    },
+    "mst-legendary-bear": {
+      "id": "mst-legendary-bear",
+      "name": "Legendary Bear",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 15,
+      "strMod": 13,
+      "dexMod": 2,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Claw",
+          "count": 2,
+          "primary": true,
+          "dmgType": "P/S",
+          "dice": "2d6",
+          "attackBonus": 27,
+          "damageBonus": 13
+        },
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": false,
+          "dmgType": "B/P/S",
+          "dice": "4d6",
+          "attackBonus": 22,
+          "damageBonus": 6
+        }
+      ]
+    },
+    "mst-lion": {
+      "id": "mst-lion",
+      "name": "Lion",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 3,
+      "strMod": 5,
+      "dexMod": 3,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Claw",
+          "count": 2,
+          "primary": true,
+          "dmgType": "P/S",
+          "dice": "1d4",
+          "attackBonus": 7,
+          "damageBonus": 5
+        },
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": false,
+          "dmgType": "B/P/S",
+          "dice": "1d8",
+          "attackBonus": 2,
+          "damageBonus": 2
+        },
+        {
+          "name": "Rake",
+          "count": 2,
+          "primary": "special_rake",
+          "dmgType": "P/S",
+          "dice": "1d4",
+          "attackBonus": 7,
+          "damageBonus": 2
+        }
+      ]
+    },
+    "mst-chimera": {
+      "id": "mst-chimera",
+      "name": "Chimera",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 9,
+      "strMod": 4,
+      "dexMod": 1,
+      "hasFinesse": false,
+      "hasMultiattack": true,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "2d6",
+          "attackBonus": 12,
+          "damageBonus": 4
+        },
+        {
+          "name": "Claw",
+          "count": 2,
+          "primary": false,
+          "dmgType": "P/S",
+          "dice": "1d6",
+          "attackBonus": 10,
+          "damageBonus": 2
+        },
+        {
+          "name": "Gore",
+          "count": 1,
+          "primary": false,
+          "dmgType": "P",
+          "dice": "1d8",
+          "attackBonus": 10,
+          "damageBonus": 2
+        },
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": false,
+          "dmgType": "B/P/S",
+          "dice": "1d8",
+          "attackBonus": 10,
+          "damageBonus": 2
+        },
+        {
+          "name": "Breath Weapon (40 ft. Line of Acid 3d8, DC 17)",
+          "count": 1,
+          "primary": "misc",
+          "dmgType": "B",
+          "dice": "3d8",
+          "attackBonus": 0,
+          "damageBonus": 0
+        },
+        {
+          "name": "Breath Weapon (40 ft. Line of Lightning 3d8, DC 17)",
+          "count": 1,
+          "primary": "misc",
+          "dmgType": "B",
+          "dice": "3d8",
+          "attackBonus": 0,
+          "damageBonus": 0
+        },
+        {
+          "name": "Breath Weapon (20 ft. Cone of Gas 3d8, DC 17)",
+          "count": 1,
+          "primary": "misc",
+          "dmgType": "B",
+          "dice": "3d8",
+          "attackBonus": 0,
+          "damageBonus": 0
+        },
+        {
+          "name": "Breath Weapon (20 ft. Cone of Fire 3d8, DC 17)",
+          "count": 1,
+          "primary": "misc",
+          "dmgType": "B",
+          "dice": "3d8",
+          "attackBonus": 0,
+          "damageBonus": 0
+        },
+        {
+          "name": "Breath Weapon (40 ft. Line of Cold 3d8, DC 17)",
+          "count": 1,
+          "primary": "misc",
+          "dmgType": "B",
+          "dice": "3d8",
+          "attackBonus": 0,
+          "damageBonus": 0
+        }
+      ]
+    },
+    "mst-owl-giant": {
+      "id": "mst-owl-giant",
+      "name": "Owl, Giant",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 4,
+      "strMod": 4,
+      "dexMod": 3,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d8",
+          "attackBonus": 7,
+          "damageBonus": 4
+        },
+        {
+          "name": "Claw",
+          "count": 2,
+          "primary": false,
+          "dmgType": "P/S",
+          "dice": "1d6",
+          "attackBonus": 2,
+          "damageBonus": 2
+        }
+      ]
+    },
+    "mst-pony-war": {
+      "id": "mst-pony-war",
+      "name": "Pony, War",
+      "creatureType": "",
+      "size": "Medium",
+      "bab": 1,
+      "strMod": 2,
+      "dexMod": 1,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Hoof",
+          "count": 2,
+          "primary": true,
+          "dmgType": "B",
+          "dice": "1d3",
+          "attackBonus": 3,
+          "damageBonus": 2
+        }
+      ]
+    },
+    "mst-udoroot": {
+      "id": "mst-udoroot",
+      "name": "Udoroot",
+      "attacks": []
+    },
+    "mst-aranea": {
+      "id": "mst-aranea",
+      "name": "Aranea",
+      "creatureType": "",
+      "size": "Medium",
+      "bab": 3,
+      "strMod": 0,
+      "dexMod": 2,
+      "hasFinesse": true,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d6",
+          "attackBonus": 5,
+          "damageBonus": 0
+        }
+      ]
+    },
+    "mst-belker": {
+      "id": "mst-belker",
+      "name": "Belker",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 5,
+      "strMod": 2,
+      "dexMod": 5,
+      "hasFinesse": true,
+      "hasMultiattack": true,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d4",
+          "attackBonus": 9,
+          "damageBonus": 2
+        },
+        {
+          "name": "Claw",
+          "count": 2,
+          "primary": false,
+          "dmgType": "P/S",
+          "dice": "1d3",
+          "attackBonus": 7,
+          "damageBonus": 1
+        },
+        {
+          "name": "Wing",
+          "count": 2,
+          "primary": false,
+          "dmgType": "B",
+          "dice": "1d6",
+          "attackBonus": 7,
+          "damageBonus": 1
+        }
+      ]
+    },
+    "mst-eagle-giant": {
+      "id": "mst-eagle-giant",
+      "name": "Eagle, Giant",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 4,
+      "strMod": 4,
+      "dexMod": 3,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d8",
+          "attackBonus": 7,
+          "damageBonus": 4
+        },
+        {
+          "name": "Claw",
+          "count": 2,
+          "primary": false,
+          "dmgType": "P/S",
+          "dice": "1d6",
+          "attackBonus": 2,
+          "damageBonus": 2
+        }
+      ]
+    },
+    "mst-tiger": {
+      "id": "mst-tiger",
+      "name": "Tiger",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 4,
+      "strMod": 6,
+      "dexMod": 2,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Claw",
+          "count": 2,
+          "primary": true,
+          "dmgType": "P/S",
+          "dice": "1d8",
+          "attackBonus": 9,
+          "damageBonus": 6
+        },
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": false,
+          "dmgType": "B/P/S",
+          "dice": "2d6",
+          "attackBonus": 4,
+          "damageBonus": 3
+        },
+        {
+          "name": "Rake",
+          "count": 2,
+          "primary": "special_rake",
+          "dmgType": "P/S",
+          "dice": "1d8",
+          "attackBonus": 9,
+          "damageBonus": 3
+        }
+      ]
+    },
+    "mst-bear-polar": {
+      "id": "mst-bear-polar",
+      "name": "Bear, Polar",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 6,
+      "strMod": 8,
+      "dexMod": 1,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Claw",
+          "count": 2,
+          "primary": true,
+          "dmgType": "P/S",
+          "dice": "1d8",
+          "attackBonus": 13,
+          "damageBonus": 8
+        },
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": false,
+          "dmgType": "B/P/S",
+          "dice": "2d6",
+          "attackBonus": 8,
+          "damageBonus": 4
+        }
+      ]
+    },
+    "mst-tayellah": {
+      "id": "mst-tayellah",
+      "name": "Tayellah",
+      "creatureType": "",
+      "size": "Gargantuan",
+      "bab": 34,
+      "strMod": 11,
+      "dexMod": 19,
+      "hasFinesse": true,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "2d6",
+          "attackBonus": 50,
+          "damageBonus": 11
+        },
+        {
+          "name": "Claw",
+          "count": 2,
+          "primary": false,
+          "dmgType": "P/S",
+          "dice": "2d8",
+          "attackBonus": 45,
+          "damageBonus": 5
+        },
+        {
+          "name": "Sting",
+          "count": 1,
+          "primary": false,
+          "dmgType": "P",
+          "dice": "3d6",
+          "attackBonus": 44,
+          "damageBonus": 5
+        },
+        {
+          "name": "Rake",
+          "count": 2,
+          "primary": "special_rake",
+          "dmgType": "P/S",
+          "dice": "4d6",
+          "attackBonus": 49,
+          "damageBonus": 5
+        }
+      ]
+    },
+    "mst-sea-cat": {
+      "id": "mst-sea-cat",
+      "name": "Sea Cat",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 6,
+      "strMod": 4,
+      "dexMod": 1,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d8",
+          "attackBonus": 9,
+          "damageBonus": 4
+        },
+        {
+          "name": "Claw",
+          "count": 2,
+          "primary": false,
+          "dmgType": "P/S",
+          "dice": "1d6",
+          "attackBonus": 4,
+          "damageBonus": 2
+        },
+        {
+          "name": "Rend",
+          "count": 1,
+          "primary": "misc",
+          "dmgType": "P/S",
+          "dice": "2d6",
+          "attackBonus": 0,
+          "damageBonus": 0
+        }
+      ]
+    },
+    "mst-eleven-headed-hydra": {
+      "id": "mst-eleven-headed-hydra",
+      "name": "Eleven-Headed Hydra",
+      "creatureType": "",
+      "size": "Huge",
+      "bab": 11,
+      "strMod": 6,
+      "dexMod": 1,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 11,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d10",
+          "attackBonus": 16,
+          "damageBonus": 6
+        }
+      ]
+    },
+    "mst-porpoise": {
+      "id": "mst-porpoise",
+      "name": "Porpoise",
+      "creatureType": "",
+      "size": "Medium",
+      "bab": 1,
+      "strMod": 0,
+      "dexMod": 3,
+      "hasFinesse": true,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Slam",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B",
+          "dice": "2d4",
+          "attackBonus": 4,
+          "damageBonus": 0
+        }
+      ]
+    },
+    "mst-magmin": {
+      "id": "mst-magmin",
+      "name": "Magmin",
+      "creatureType": "",
+      "size": "Small",
+      "bab": 1,
+      "strMod": 2,
+      "dexMod": 0,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Slam",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B",
+          "dice": "1d3",
+          "attackBonus": 4,
+          "damageBonus": 3
+        }
+      ]
+    },
+    "mst-fire-elemental-small": {
+      "id": "mst-fire-elemental-small",
+      "name": "Fire Elemental, Small",
+      "creatureType": "",
+      "size": "Small",
+      "bab": 1,
+      "strMod": 0,
+      "dexMod": 1,
+      "hasFinesse": true,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Slam",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B",
+          "dice": "1d4",
+          "attackBonus": 3,
+          "damageBonus": 0
+        }
+      ]
+    },
+    "mst-twelve-headed-hydra": {
+      "id": "mst-twelve-headed-hydra",
+      "name": "Twelve-Headed Hydra",
+      "creatureType": "",
+      "size": "Huge",
+      "bab": 12,
+      "strMod": 6,
+      "dexMod": 1,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 12,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d10",
+          "attackBonus": 17,
+          "damageBonus": 6
+        }
+      ]
+    },
+    "mst-ruin-swarm": {
+      "id": "mst-ruin-swarm",
+      "name": "Ruin Swarm",
+      "creatureType": "",
+      "size": "Tiny",
+      "bab": 37,
+      "strMod": -4,
+      "dexMod": 16,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Swarm",
+          "count": 1,
+          "primary": "misc",
+          "dmgType": "Swarm",
+          "dice": "5d6",
+          "attackBonus": 0,
+          "damageBonus": 0
+        }
+      ]
+    },
+    "mst-dire-shark": {
+      "id": "mst-dire-shark",
+      "name": "Dire Shark",
+      "creatureType": "",
+      "size": "Huge",
+      "bab": 13,
+      "strMod": 6,
+      "dexMod": 2,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "2d8",
+          "attackBonus": 18,
+          "damageBonus": 9
+        }
+      ]
+    },
+    "mst-dire-badger": {
+      "id": "mst-dire-badger",
+      "name": "Dire Badger",
+      "creatureType": "",
+      "size": "Medium",
+      "bab": 2,
+      "strMod": 2,
+      "dexMod": 3,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Claw",
+          "count": 2,
+          "primary": true,
+          "dmgType": "P/S",
+          "dice": "1d4",
+          "attackBonus": 4,
+          "damageBonus": 2
+        },
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": false,
+          "dmgType": "B/P/S",
+          "dice": "1d6",
+          "attackBonus": -1,
+          "damageBonus": 1
+        }
+      ]
+    },
+    "mst-hippogriff": {
+      "id": "mst-hippogriff",
+      "name": "Hippogriff",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 3,
+      "strMod": 4,
+      "dexMod": 2,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d8",
+          "attackBonus": 6,
+          "damageBonus": 4
+        },
+        {
+          "name": "Claw",
+          "count": 2,
+          "primary": false,
+          "dmgType": "P/S",
+          "dice": "1d4",
+          "attackBonus": 1,
+          "damageBonus": 2
+        }
+      ]
+    },
+    "mst-monstrous-scorpion-large": {
+      "id": "mst-monstrous-scorpion-large",
+      "name": "Monstrous Scorpion, Large",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 3,
+      "strMod": 4,
+      "dexMod": 0,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Claw",
+          "count": 2,
+          "primary": true,
+          "dmgType": "P/S",
+          "dice": "1d6",
+          "attackBonus": 6,
+          "damageBonus": 4
+        },
+        {
+          "name": "Sting",
+          "count": 1,
+          "primary": false,
+          "dmgType": "P",
+          "dice": "1d6",
+          "attackBonus": 1,
+          "damageBonus": 2
+        },
+        {
+          "name": "Constrict",
+          "count": 1,
+          "primary": "misc",
+          "dmgType": "B",
+          "dice": "1d6",
+          "attackBonus": 0,
+          "damageBonus": 0
+        }
+      ]
+    },
+    "mst-shocker-lizard": {
+      "id": "mst-shocker-lizard",
+      "name": "Shocker Lizard",
+      "creatureType": "",
+      "size": "Small",
+      "bab": 2,
+      "strMod": 0,
+      "dexMod": 2,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d4",
+          "attackBonus": 3,
+          "damageBonus": 0
+        }
+      ]
+    },
+    "mst-brachyurus": {
+      "id": "mst-brachyurus",
+      "name": "Brachyurus",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 38,
+      "strMod": 10,
+      "dexMod": 14,
+      "hasFinesse": false,
+      "hasMultiattack": true,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "3d6",
+          "attackBonus": 48,
+          "damageBonus": 10
+        },
+        {
+          "name": "Claw",
+          "count": 2,
+          "primary": false,
+          "dmgType": "P/S",
+          "dice": "2d6",
+          "attackBonus": 46,
+          "damageBonus": 5
+        }
+      ]
+    },
+    "mst-dragonne": {
+      "id": "mst-dragonne",
+      "name": "Dragonne",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 9,
+      "strMod": 4,
+      "dexMod": 2,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "2d6",
+          "attackBonus": 12,
+          "damageBonus": 4
+        },
+        {
+          "name": "Claw",
+          "count": 2,
+          "primary": false,
+          "dmgType": "P/S",
+          "dice": "2d4",
+          "attackBonus": 7,
+          "damageBonus": 2
+        }
+      ]
+    },
+    "mst-eight-headed-hydra": {
+      "id": "mst-eight-headed-hydra",
+      "name": "Eight-Headed Hydra",
+      "creatureType": "",
+      "size": "Huge",
+      "bab": 8,
+      "strMod": 4,
+      "dexMod": 1,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 8,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d10",
+          "attackBonus": 11,
+          "damageBonus": 4
+        }
+      ]
+    },
+    "mst-air-elemental-medium": {
+      "id": "mst-air-elemental-medium",
+      "name": "Air Elemental, Medium",
+      "creatureType": "",
+      "size": "Medium",
+      "bab": 3,
+      "strMod": 1,
+      "dexMod": 5,
+      "hasFinesse": true,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Slam",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B",
+          "dice": "1d6",
+          "attackBonus": 8,
+          "damageBonus": 1
+        }
+      ]
+    },
+    "mst-pegasus": {
+      "id": "mst-pegasus",
+      "name": "Pegasus",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 4,
+      "strMod": 4,
+      "dexMod": 2,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d3",
+          "attackBonus": 7,
+          "damageBonus": 4
+        },
+        {
+          "name": "Hoof",
+          "count": 2,
+          "primary": false,
+          "dmgType": "B",
+          "dice": "1d6",
+          "attackBonus": 2,
+          "damageBonus": 2
+        }
+      ]
+    },
+    "mst-cockatrice": {
+      "id": "mst-cockatrice",
+      "name": "Cockatrice",
+      "creatureType": "",
+      "size": "Small",
+      "bab": 5,
+      "strMod": -2,
+      "dexMod": 3,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d4",
+          "attackBonus": 4,
+          "damageBonus": -2
+        }
+      ]
+    },
+    "mst-snake-large-viper": {
+      "id": "mst-snake-large-viper",
+      "name": "Snake, Large Viper",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 2,
+      "strMod": 0,
+      "dexMod": 3,
+      "hasFinesse": true,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d4",
+          "attackBonus": 4,
+          "damageBonus": 0
+        },
+        {
+          "name": "Poison",
+          "count": 1,
+          "primary": "misc",
+          "dmgType": "B",
+          "dice": "1d6",
+          "attackBonus": 0,
+          "damageBonus": 0
+        }
+      ]
+    },
+    "mst-devastation-scorpion": {
+      "id": "mst-devastation-scorpion",
+      "name": "Devastation Scorpion",
+      "creatureType": "",
+      "size": "Colossal",
+      "bab": 96,
+      "strMod": 14,
+      "dexMod": 12,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Claw",
+          "count": 2,
+          "primary": true,
+          "dmgType": "P/S",
+          "dice": "10d10",
+          "attackBonus": 102,
+          "damageBonus": 14
+        },
+        {
+          "name": "Sting",
+          "count": 1,
+          "primary": false,
+          "dmgType": "P",
+          "dice": "8d10",
+          "attackBonus": 97,
+          "damageBonus": 7
+        }
+      ]
+    },
+    "mst-wolverine": {
+      "id": "mst-wolverine",
+      "name": "Wolverine",
+      "creatureType": "",
+      "size": "Medium",
+      "bab": 2,
+      "strMod": 2,
+      "dexMod": 2,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Claw",
+          "count": 2,
+          "primary": true,
+          "dmgType": "P/S",
+          "dice": "1d4",
+          "attackBonus": 4,
+          "damageBonus": 2
+        },
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": false,
+          "dmgType": "B/P/S",
+          "dice": "1d6",
+          "attackBonus": -1,
+          "damageBonus": 1
+        }
+      ]
+    },
+    "mst-gorgon": {
+      "id": "mst-gorgon",
+      "name": "Gorgon",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 8,
+      "strMod": 5,
+      "dexMod": 0,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Gore",
+          "count": 1,
+          "primary": true,
+          "dmgType": "P",
+          "dice": "1d8",
+          "attackBonus": 12,
+          "damageBonus": 7
+        },
+        {
+          "name": "Trample",
+          "count": 1,
+          "primary": "misc",
+          "dmgType": "B",
+          "dice": "1d8",
+          "attackBonus": 0,
+          "damageBonus": 0
+        }
+      ]
+    },
+    "mst-criosphinx": {
+      "id": "mst-criosphinx",
+      "name": "Criosphinx",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 10,
+      "strMod": 6,
+      "dexMod": 0,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Claw",
+          "count": 2,
+          "primary": true,
+          "dmgType": "P/S",
+          "dice": "1d6",
+          "attackBonus": 15,
+          "damageBonus": 6
+        },
+        {
+          "name": "Gore",
+          "count": 1,
+          "primary": false,
+          "dmgType": "P",
+          "dice": "2d6",
+          "attackBonus": 10,
+          "damageBonus": 3
+        },
+        {
+          "name": "Rake",
+          "count": 2,
+          "primary": "special_rake",
+          "dmgType": "P/S",
+          "dice": "1d6",
+          "attackBonus": 15,
+          "damageBonus": 3
+        }
+      ]
+    },
+    "mst-dire-bat": {
+      "id": "mst-dire-bat",
+      "name": "Dire Bat",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 3,
+      "strMod": 3,
+      "dexMod": 6,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d8",
+          "attackBonus": 5,
+          "damageBonus": 4
+        }
+      ]
+    },
+    "mst-earth-elemental-small": {
+      "id": "mst-earth-elemental-small",
+      "name": "Earth Elemental, Small",
+      "creatureType": "",
+      "size": "Small",
+      "bab": 1,
+      "strMod": 3,
+      "dexMod": -1,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Slam",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B",
+          "dice": "1d6",
+          "attackBonus": 5,
+          "damageBonus": 4
+        }
+      ]
+    },
+    "mst-constrictor-snake": {
+      "id": "mst-constrictor-snake",
+      "name": "Constrictor Snake",
+      "creatureType": "",
+      "size": "Medium",
+      "bab": 2,
+      "strMod": 3,
+      "dexMod": 3,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d3",
+          "attackBonus": 5,
+          "damageBonus": 4
+        },
+        {
+          "name": "Constrict",
+          "count": 1,
+          "primary": "misc",
+          "dmgType": "B",
+          "dice": "1d3",
+          "attackBonus": 0,
+          "damageBonus": 0
+        }
+      ]
+    },
+    "mst-snake-small-viper": {
+      "id": "mst-snake-small-viper",
+      "name": "Snake, Small Viper",
+      "creatureType": "",
+      "size": "Small",
+      "bab": 0,
+      "strMod": -2,
+      "dexMod": 3,
+      "hasFinesse": true,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d2",
+          "attackBonus": 4,
+          "damageBonus": -2
+        },
+        {
+          "name": "Poison",
+          "count": 1,
+          "primary": "misc",
+          "dmgType": "B",
+          "dice": "1d6",
+          "attackBonus": 0,
+          "damageBonus": 0
+        }
+      ]
+    },
+    "mst-bear-black": {
+      "id": "mst-bear-black",
+      "name": "Bear, Black",
+      "creatureType": "",
+      "size": "Medium",
+      "bab": 2,
+      "strMod": 4,
+      "dexMod": 1,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Claw",
+          "count": 2,
+          "primary": true,
+          "dmgType": "P/S",
+          "dice": "1d4",
+          "attackBonus": 6,
+          "damageBonus": 4
+        },
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": false,
+          "dmgType": "B/P/S",
+          "dice": "1d6",
+          "attackBonus": 1,
+          "damageBonus": 2
+        }
+      ]
+    },
+    "mst-air-elemental-small": {
+      "id": "mst-air-elemental-small",
+      "name": "Air Elemental, Small",
+      "creatureType": "",
+      "size": "Small",
+      "bab": 1,
+      "strMod": 0,
+      "dexMod": 3,
+      "hasFinesse": true,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Slam",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B",
+          "dice": "1d4",
+          "attackBonus": 5,
+          "damageBonus": 0
+        }
+      ]
+    },
+    "mst-giant-bee": {
+      "id": "mst-giant-bee",
+      "name": "Giant Bee",
+      "creatureType": "",
+      "size": "Medium",
+      "bab": 2,
+      "strMod": 0,
+      "dexMod": 2,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Sting",
+          "count": 1,
+          "primary": true,
+          "dmgType": "P",
+          "dice": "1d4",
+          "attackBonus": 2,
+          "damageBonus": 0
+        }
+      ]
+    },
+    "mst-roper": {
+      "id": "mst-roper",
+      "name": "Roper",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 10,
+      "strMod": 4,
+      "dexMod": 1,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "2d6",
+          "attackBonus": 13,
+          "damageBonus": 6
+        }
+      ]
+    },
+    "mst-horse-heavy": {
+      "id": "mst-horse-heavy",
+      "name": "Horse, Heavy",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 2,
+      "strMod": 3,
+      "dexMod": 1,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Hoof",
+          "count": 2,
+          "primary": true,
+          "dmgType": "B",
+          "dice": "1d6",
+          "attackBonus": 4,
+          "damageBonus": 3
+        }
+      ]
+    },
+    "mst-tyrannosaurus": {
+      "id": "mst-tyrannosaurus",
+      "name": "Tyrannosaurus",
+      "creatureType": "",
+      "size": "Huge",
+      "bab": 13,
+      "strMod": 9,
+      "dexMod": 1,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "3d6",
+          "attackBonus": 20,
+          "damageBonus": 13
+        }
+      ]
+    },
+    "mst-crocodile-giant": {
+      "id": "mst-crocodile-giant",
+      "name": "Crocodile, Giant",
+      "creatureType": "",
+      "size": "Huge",
+      "bab": 5,
+      "strMod": 8,
+      "dexMod": 1,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "2d8",
+          "attackBonus": 11,
+          "damageBonus": 8
+        },
+        {
+          "name": "Tail",
+          "count": 1,
+          "primary": false,
+          "dmgType": "B",
+          "dice": "1d12",
+          "attackBonus": 6,
+          "damageBonus": 4
+        }
+      ]
+    },
+    "mst-monstrous-spider-small": {
+      "id": "mst-monstrous-spider-small",
+      "name": "Monstrous Spider, Small",
+      "creatureType": "",
+      "size": "Small",
+      "bab": 0,
+      "strMod": -2,
+      "dexMod": 3,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d4",
+          "attackBonus": -1,
+          "damageBonus": -2
+        }
+      ]
+    },
+    "mst-locust-swarm": {
+      "id": "mst-locust-swarm",
+      "name": "Locust Swarm",
+      "creatureType": "",
+      "size": "Diminutive",
+      "bab": 4,
+      "strMod": -5,
+      "dexMod": 4,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Swarm",
+          "count": 1,
+          "primary": "misc",
+          "dmgType": "Swarm",
+          "dice": "2d6",
+          "attackBonus": 0,
+          "damageBonus": 0
+        }
+      ]
+    },
+    "mst-mule": {
+      "id": "mst-mule",
+      "name": "Mule",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 2,
+      "strMod": 3,
+      "dexMod": 1,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Hoof",
+          "count": 2,
+          "primary": true,
+          "dmgType": "B",
+          "dice": "1d4",
+          "attackBonus": 4,
+          "damageBonus": 3
+        }
+      ]
+    },
+    "mst-water-elemental-greater": {
+      "id": "mst-water-elemental-greater",
+      "name": "Water Elemental, Greater",
+      "creatureType": "",
+      "size": "Huge",
+      "bab": 15,
+      "strMod": 8,
+      "dexMod": 5,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Slam",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B",
+          "dice": "2d10",
+          "attackBonus": 21,
+          "damageBonus": 12
+        }
+      ]
+    },
+    "mst-centipede-swarm": {
+      "id": "mst-centipede-swarm",
+      "name": "Centipede Swarm",
+      "creatureType": "",
+      "size": "Diminutive",
+      "bab": 6,
+      "strMod": -5,
+      "dexMod": 4,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Swarm",
+          "count": 1,
+          "primary": "misc",
+          "dmgType": "Swarm",
+          "dice": "2d6",
+          "attackBonus": 0,
+          "damageBonus": 0
+        }
+      ]
+    },
+    "mst-lamia": {
+      "id": "mst-lamia",
+      "name": "Lamia",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 9,
+      "strMod": 4,
+      "dexMod": 2,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Dagger",
+          "count": 1,
+          "primary": false,
+          "dmgType": "P/S",
+          "dice": "1d4",
+          "attackBonus": 7,
+          "damageBonus": 2
+        },
+        {
+          "name": "Dagger",
+          "count": 1,
+          "primary": false,
+          "dmgType": "P/S",
+          "dice": "1d4",
+          "attackBonus": 7,
+          "damageBonus": 2
+        },
+        {
+          "name": "Claw",
+          "count": 1,
+          "primary": "misc",
+          "dmgType": "P/S",
+          "dice": "1d4",
+          "attackBonus": 12,
+          "damageBonus": 4
+        }
+      ]
+    },
+    "mst-snake-huge-viper": {
+      "id": "mst-snake-huge-viper",
+      "name": "Snake, Huge Viper",
+      "creatureType": "",
+      "size": "Huge",
+      "bab": 4,
+      "strMod": 3,
+      "dexMod": 2,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d6",
+          "attackBonus": 6,
+          "damageBonus": 4
+        },
+        {
+          "name": "Poison",
+          "count": 1,
+          "primary": "misc",
+          "dmgType": "B",
+          "dice": "1d6",
+          "attackBonus": 0,
+          "damageBonus": 0
+        }
+      ]
+    },
+    "mst-bison": {
+      "id": "mst-bison",
+      "name": "Bison",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 3,
+      "strMod": 6,
+      "dexMod": 0,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Gore",
+          "count": 1,
+          "primary": true,
+          "dmgType": "P",
+          "dice": "1d8",
+          "attackBonus": 8,
+          "damageBonus": 9
+        }
+      ]
+    },
+    "mst-monstrous-spider-gargantuan": {
+      "id": "mst-monstrous-spider-gargantuan",
+      "name": "Monstrous Spider, Gargantuan",
+      "creatureType": "",
+      "size": "Gargantuan",
+      "bab": 12,
+      "strMod": 7,
+      "dexMod": 3,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "2d8",
+          "attackBonus": 15,
+          "damageBonus": 10
+        }
+      ]
+    },
+    "mst-water-elemental-large": {
+      "id": "mst-water-elemental-large",
+      "name": "Water Elemental, Large",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 6,
+      "strMod": 5,
+      "dexMod": 2,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Slam",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B",
+          "dice": "2d8",
+          "attackBonus": 10,
+          "damageBonus": 7
+        }
+      ]
+    },
+    "mst-cachalot-whale": {
+      "id": "mst-cachalot-whale",
+      "name": "Cachalot Whale",
+      "creatureType": "",
+      "size": "Gargantuan",
+      "bab": 9,
+      "strMod": 12,
+      "dexMod": 1,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Tail",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B",
+          "dice": "1d8",
+          "attackBonus": 17,
+          "damageBonus": 12
+        },
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": false,
+          "dmgType": "B/P/S",
+          "dice": "4d6",
+          "attackBonus": 12,
+          "damageBonus": 6
+        }
+      ]
+    },
+    "mst-phase-spider": {
+      "id": "mst-phase-spider",
+      "name": "Phase Spider",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 5,
+      "strMod": 3,
+      "dexMod": 3,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d6",
+          "attackBonus": 7,
+          "damageBonus": 4
+        }
+      ]
+    },
+    "mst-unicorn": {
+      "id": "mst-unicorn",
+      "name": "Unicorn",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 4,
+      "strMod": 5,
+      "dexMod": 3,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Hoof",
+          "count": 2,
+          "primary": true,
+          "dmgType": "B",
+          "dice": "1d4",
+          "attackBonus": 8,
+          "damageBonus": 5
+        }
+      ]
+    },
+    "mst-shambling-mound": {
+      "id": "mst-shambling-mound",
+      "name": "Shambling Mound",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 6,
+      "strMod": 5,
+      "dexMod": 0,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Slam",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B",
+          "dice": "2d6",
+          "attackBonus": 11,
+          "damageBonus": 7
+        },
+        {
+          "name": "Constrict",
+          "count": 1,
+          "primary": "misc",
+          "dmgType": "B",
+          "dice": "2d6",
+          "attackBonus": 0,
+          "damageBonus": 0
+        }
+      ]
+    },
+    "mst-rhinoceros": {
+      "id": "mst-rhinoceros",
+      "name": "Rhinoceros",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 6,
+      "strMod": 8,
+      "dexMod": 0,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Gore",
+          "count": 1,
+          "primary": true,
+          "dmgType": "P",
+          "dice": "2d6",
+          "attackBonus": 13,
+          "damageBonus": 12
+        }
+      ]
+    },
+    "mst-monstrous-spider-huge": {
+      "id": "mst-monstrous-spider-huge",
+      "name": "Monstrous Spider, Huge",
+      "creatureType": "",
+      "size": "Huge",
+      "bab": 6,
+      "strMod": 4,
+      "dexMod": 3,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "2d6",
+          "attackBonus": 8,
+          "damageBonus": 6
+        }
+      ]
+    },
+    "mst-blink-dog": {
+      "id": "mst-blink-dog",
+      "name": "Blink Dog",
+      "creatureType": "",
+      "size": "Medium",
+      "bab": 4,
+      "strMod": 0,
+      "dexMod": 3,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d6",
+          "attackBonus": 4,
+          "damageBonus": 0
+        }
+      ]
+    },
+    "mst-prismasaurus": {
+      "id": "mst-prismasaurus",
+      "name": "Prismasaurus",
+      "creatureType": "",
+      "size": "Huge",
+      "bab": 60,
+      "strMod": 11,
+      "dexMod": 7,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "8d10",
+          "attackBonus": 70,
+          "damageBonus": 11
+        },
+        {
+          "name": "Tail",
+          "count": 1,
+          "primary": false,
+          "dmgType": "B",
+          "dice": "10d6",
+          "attackBonus": 65,
+          "damageBonus": 5
+        }
+      ]
+    },
+    "mst-shark-large": {
+      "id": "mst-shark-large",
+      "name": "Shark, Large",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 5,
+      "strMod": 3,
+      "dexMod": 2,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d8",
+          "attackBonus": 7,
+          "damageBonus": 4
+        }
+      ]
+    },
+    "mst-orca": {
+      "id": "mst-orca",
+      "name": "Orca",
+      "creatureType": "",
+      "size": "Huge",
+      "bab": 6,
+      "strMod": 8,
+      "dexMod": 2,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "2d6",
+          "attackBonus": 12,
+          "damageBonus": 12
+        }
+      ]
+    },
+    "mst-monkey": {
+      "id": "mst-monkey",
+      "name": "Monkey",
+      "creatureType": "",
+      "size": "Tiny",
+      "bab": 0,
+      "strMod": -4,
+      "dexMod": 2,
+      "hasFinesse": true,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d3",
+          "attackBonus": 4,
+          "damageBonus": -4
+        }
+      ]
+    },
+    "mst-devastation-beetle": {
+      "id": "mst-devastation-beetle",
+      "name": "Devastation Beetle",
+      "creatureType": "",
+      "size": "Colossal",
+      "bab": 96,
+      "strMod": 16,
+      "dexMod": 10,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "25d10",
+          "attackBonus": 104,
+          "damageBonus": 24
+        },
+        {
+          "name": "Trample",
+          "count": 1,
+          "primary": "misc",
+          "dmgType": "B",
+          "dice": "30d10",
+          "attackBonus": 0,
+          "damageBonus": 0
+        }
+      ]
+    },
+    "mst-constrictor-snake-giant": {
+      "id": "mst-constrictor-snake-giant",
+      "name": "Constrictor Snake, Giant",
+      "creatureType": "",
+      "size": "Huge",
+      "bab": 8,
+      "strMod": 7,
+      "dexMod": 3,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d8",
+          "attackBonus": 13,
+          "damageBonus": 10
+        },
+        {
+          "name": "Constrict",
+          "count": 1,
+          "primary": "misc",
+          "dmgType": "B",
+          "dice": "1d8",
+          "attackBonus": 0,
+          "damageBonus": 0
+        }
+      ]
+    },
+    "mst-treant-elder": {
+      "id": "mst-treant-elder",
+      "name": "Treant, Elder",
+      "creatureType": "",
+      "size": "Colossal",
+      "bab": 37,
+      "strMod": 19,
+      "dexMod": -1,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Slam",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B",
+          "dice": "10d6",
+          "attackBonus": 49,
+          "damageBonus": 28
+        }
+      ]
+    },
+    "mst-monstrous-spider-medium": {
+      "id": "mst-monstrous-spider-medium",
+      "name": "Monstrous Spider, Medium",
+      "creatureType": "",
+      "size": "Medium",
+      "bab": 1,
+      "strMod": 0,
+      "dexMod": 3,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d6",
+          "attackBonus": 1,
+          "damageBonus": 0
+        }
+      ]
+    },
+    "mst-baleen-whale": {
+      "id": "mst-baleen-whale",
+      "name": "Baleen Whale",
+      "creatureType": "",
+      "size": "Gargantuan",
+      "bab": 9,
+      "strMod": 12,
+      "dexMod": 1,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Tail",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B",
+          "dice": "1d8",
+          "attackBonus": 17,
+          "damageBonus": 18
+        }
+      ]
+    },
+    "mst-sirrush": {
+      "id": "mst-sirrush",
+      "name": "Sirrush",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 40,
+      "strMod": 16,
+      "dexMod": 15,
+      "hasFinesse": false,
+      "hasMultiattack": true,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "4d6",
+          "attackBonus": 56,
+          "damageBonus": 16
+        },
+        {
+          "name": "Claw",
+          "count": 2,
+          "primary": false,
+          "dmgType": "P/S",
+          "dice": "2d6",
+          "attackBonus": 54,
+          "damageBonus": 8
+        }
+      ]
+    },
+    "mst-earth-elemental-primal": {
+      "id": "mst-earth-elemental-primal",
+      "name": "Earth Elemental, Primal",
+      "creatureType": "",
+      "size": "Colossal",
+      "bab": 48,
+      "strMod": 16,
+      "dexMod": -1,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Slam",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B",
+          "dice": "4d10",
+          "attackBonus": 57,
+          "damageBonus": 24
+        }
+      ]
+    },
+    "mst-frost-worm": {
+      "id": "mst-frost-worm",
+      "name": "Frost Worm",
+      "creatureType": "",
+      "size": "Huge",
+      "bab": 14,
+      "strMod": 8,
+      "dexMod": 0,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "2d8",
+          "attackBonus": 21,
+          "damageBonus": 12
+        }
+      ]
+    },
+    "mst-toad": {
+      "id": "mst-toad",
+      "name": "Toad",
+      "attacks": []
+    },
+    "mst-squid-giant": {
+      "id": "mst-squid-giant",
+      "name": "Squid, Giant",
+      "creatureType": "",
+      "size": "Huge",
+      "bab": 9,
+      "strMod": 8,
+      "dexMod": 3,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "2d8",
+          "attackBonus": 15,
+          "damageBonus": 8
+        },
+        {
+          "name": "Tentacle",
+          "count": 8,
+          "primary": false,
+          "dmgType": "B",
+          "dice": "1d6",
+          "attackBonus": 10,
+          "damageBonus": 4
+        },
+        {
+          "name": "Constrict",
+          "count": 1,
+          "primary": "misc",
+          "dmgType": "B",
+          "dice": "1d6",
+          "attackBonus": 0,
+          "damageBonus": 0
+        }
+      ]
+    },
+    "mst-monstrous-centipede-huge": {
+      "id": "mst-monstrous-centipede-huge",
+      "name": "Monstrous Centipede, Huge",
+      "creatureType": "",
+      "size": "Huge",
+      "bab": 4,
+      "strMod": 3,
+      "dexMod": 2,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "2d6",
+          "attackBonus": 5,
+          "damageBonus": 4
+        }
+      ]
+    },
+    "mst-kraken": {
+      "id": "mst-kraken",
+      "name": "Kraken",
+      "creatureType": "",
+      "size": "Gargantuan",
+      "bab": 20,
+      "strMod": 12,
+      "dexMod": 0,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "4d6",
+          "attackBonus": 28,
+          "damageBonus": 12
+        },
+        {
+          "name": "Tentacle",
+          "count": 8,
+          "primary": false,
+          "dmgType": "B",
+          "dice": "2d8",
+          "attackBonus": 23,
+          "damageBonus": 6
+        },
+        {
+          "name": "Constrict",
+          "count": 1,
+          "primary": "misc",
+          "dmgType": "B",
+          "dice": "2d8",
+          "attackBonus": 0,
+          "damageBonus": 0
+        }
+      ]
+    },
+    "mst-rat": {
+      "id": "mst-rat",
+      "name": "Rat",
+      "creatureType": "",
+      "size": "Tiny",
+      "bab": 0,
+      "strMod": -4,
+      "dexMod": 2,
+      "hasFinesse": true,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d3",
+          "attackBonus": 4,
+          "damageBonus": -4
+        }
+      ]
+    },
+    "mst-tarrasque": {
+      "id": "mst-tarrasque",
+      "name": "Tarrasque",
+      "creatureType": "",
+      "size": "Colossal",
+      "bab": 48,
+      "strMod": 17,
+      "dexMod": 3,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Tail",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B",
+          "dice": "3d8",
+          "attackBonus": 57,
+          "damageBonus": 17
+        },
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": false,
+          "dmgType": "B/P/S",
+          "dice": "4d8",
+          "attackBonus": 52,
+          "damageBonus": 8
+        },
+        {
+          "name": "Claw",
+          "count": 2,
+          "primary": false,
+          "dmgType": "P/S",
+          "dice": "1d12",
+          "attackBonus": 52,
+          "damageBonus": 8
+        },
+        {
+          "name": "Poison",
+          "count": 1,
+          "primary": "misc",
+          "dmgType": "B",
+          "dice": "1d6",
+          "attackBonus": 0,
+          "damageBonus": 0
+        }
+      ]
+    },
+    "mst-monstrous-scorpion-small": {
+      "id": "mst-monstrous-scorpion-small",
+      "name": "Monstrous Scorpion, Small",
+      "creatureType": "",
+      "size": "Small",
+      "bab": 0,
+      "strMod": -1,
+      "dexMod": 0,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Claw",
+          "count": 2,
+          "primary": true,
+          "dmgType": "P/S",
+          "dice": "1d3",
+          "attackBonus": 0,
+          "damageBonus": -1
+        },
+        {
+          "name": "Sting",
+          "count": 1,
+          "primary": false,
+          "dmgType": "P",
+          "dice": "1d3",
+          "attackBonus": -5,
+          "damageBonus": -1
+        },
+        {
+          "name": "Constrict",
+          "count": 1,
+          "primary": "misc",
+          "dmgType": "B",
+          "dice": "1d3",
+          "attackBonus": 0,
+          "damageBonus": 0
+        }
+      ]
+    },
+    "mst-water-elemental-huge": {
+      "id": "mst-water-elemental-huge",
+      "name": "Water Elemental, Huge",
+      "creatureType": "",
+      "size": "Huge",
+      "bab": 12,
+      "strMod": 7,
+      "dexMod": 4,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Slam",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B",
+          "dice": "2d10",
+          "attackBonus": 17,
+          "damageBonus": 10
+        }
+      ]
+    },
+    "mst-puppeteer-flesh-harrower": {
+      "id": "mst-puppeteer-flesh-harrower",
+      "name": "Puppeteer, Flesh Harrower",
+      "creatureType": "",
+      "size": "Small",
+      "bab": 3,
+      "strMod": 2,
+      "dexMod": 3,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d6",
+          "attackBonus": 6,
+          "damageBonus": 2
+        },
+        {
+          "name": "Tail",
+          "count": 1,
+          "primary": false,
+          "dmgType": "B",
+          "dice": "1d4",
+          "attackBonus": 1,
+          "damageBonus": 1
+        }
+      ]
+    },
+    "mst-manta-ray": {
+      "id": "mst-manta-ray",
+      "name": "Manta Ray",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 3,
+      "strMod": 2,
+      "dexMod": 0,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Ram",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B",
+          "dice": "1d6",
+          "attackBonus": 4,
+          "damageBonus": 3
+        }
+      ]
+    },
+    "mst-lizard-monitor": {
+      "id": "mst-lizard-monitor",
+      "name": "Lizard, Monitor",
+      "creatureType": "",
+      "size": "Medium",
+      "bab": 2,
+      "strMod": 3,
+      "dexMod": 2,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d8",
+          "attackBonus": 5,
+          "damageBonus": 4
+        }
+      ]
+    },
+    "mst-monstrous-scorpion-tiny": {
+      "id": "mst-monstrous-scorpion-tiny",
+      "name": "Monstrous Scorpion, Tiny",
+      "creatureType": "",
+      "size": "Tiny",
+      "bab": 0,
+      "strMod": -4,
+      "dexMod": 0,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Claw",
+          "count": 2,
+          "primary": true,
+          "dmgType": "P/S",
+          "dice": "1d2",
+          "attackBonus": -2,
+          "damageBonus": -4
+        },
+        {
+          "name": "Sting",
+          "count": 1,
+          "primary": false,
+          "dmgType": "P",
+          "dice": "1d2",
+          "attackBonus": -7,
+          "damageBonus": -4
+        },
+        {
+          "name": "Constrict",
+          "count": 1,
+          "primary": "misc",
+          "dmgType": "B",
+          "dice": "1d2",
+          "attackBonus": 0,
+          "damageBonus": 0
+        }
+      ]
+    },
+    "mst-devastation-centipede": {
+      "id": "mst-devastation-centipede",
+      "name": "Devastation Centipede",
+      "creatureType": "",
+      "size": "Colossal",
+      "bab": 96,
+      "strMod": 11,
+      "dexMod": 13,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "20d10",
+          "attackBonus": 99,
+          "damageBonus": 16
+        }
+      ]
+    },
+    "mst-dire-lion": {
+      "id": "mst-dire-lion",
+      "name": "Dire Lion",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 6,
+      "strMod": 7,
+      "dexMod": 2,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Claw",
+          "count": 2,
+          "primary": true,
+          "dmgType": "P/S",
+          "dice": "1d6",
+          "attackBonus": 13,
+          "damageBonus": 7
+        },
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": false,
+          "dmgType": "B/P/S",
+          "dice": "1d8",
+          "attackBonus": 7,
+          "damageBonus": 3
+        },
+        {
+          "name": "Rake",
+          "count": 2,
+          "primary": "special_rake",
+          "dmgType": "P/S",
+          "dice": "1d6",
+          "attackBonus": 12,
+          "damageBonus": 3
+        }
+      ]
+    },
+    "mst-crysmal": {
+      "id": "mst-crysmal",
+      "name": "Crysmal",
+      "creatureType": "",
+      "size": "Small",
+      "bab": 4,
+      "strMod": 2,
+      "dexMod": 2,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Sting",
+          "count": 1,
+          "primary": true,
+          "dmgType": "P",
+          "dice": "1d3",
+          "attackBonus": 7,
+          "damageBonus": 3
+        }
+      ]
+    },
+    "mst-hellwasp-swarm": {
+      "id": "mst-hellwasp-swarm",
+      "name": "Hellwasp Swarm",
+      "creatureType": "",
+      "size": "Diminutive",
+      "bab": 12,
+      "strMod": -5,
+      "dexMod": 6,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Swarm",
+          "count": 1,
+          "primary": "misc",
+          "dmgType": "Swarm",
+          "dice": "3d6",
+          "attackBonus": 0,
+          "damageBonus": 0
+        }
+      ]
+    },
+    "mst-monstrous-scorpion-gargantuan": {
+      "id": "mst-monstrous-scorpion-gargantuan",
+      "name": "Monstrous Scorpion, Gargantuan",
+      "creatureType": "",
+      "size": "Gargantuan",
+      "bab": 15,
+      "strMod": 10,
+      "dexMod": 0,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Claw",
+          "count": 2,
+          "primary": true,
+          "dmgType": "P/S",
+          "dice": "2d6",
+          "attackBonus": 21,
+          "damageBonus": 10
+        },
+        {
+          "name": "Sting",
+          "count": 1,
+          "primary": false,
+          "dmgType": "P",
+          "dice": "2d6",
+          "attackBonus": 16,
+          "damageBonus": 5
+        },
+        {
+          "name": "Constrict",
+          "count": 1,
+          "primary": "misc",
+          "dmgType": "B",
+          "dice": "2d6",
+          "attackBonus": 0,
+          "damageBonus": 0
+        }
+      ]
+    },
+    "mst-camel": {
+      "id": "mst-camel",
+      "name": "Camel",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 2,
+      "strMod": 4,
+      "dexMod": 3,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d4",
+          "attackBonus": 5,
+          "damageBonus": 6
+        }
+      ]
+    },
+    "mst-giant-bombardier-beetle": {
+      "id": "mst-giant-bombardier-beetle",
+      "name": "Giant Bombardier Beetle",
+      "creatureType": "",
+      "size": "Medium",
+      "bab": 1,
+      "strMod": 1,
+      "dexMod": 0,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d4",
+          "attackBonus": 2,
+          "damageBonus": 1
+        }
+      ]
+    },
+    "mst-earth-elemental-medium": {
+      "id": "mst-earth-elemental-medium",
+      "name": "Earth Elemental, Medium",
+      "creatureType": "",
+      "size": "Medium",
+      "bab": 3,
+      "strMod": 5,
+      "dexMod": -1,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Slam",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B",
+          "dice": "1d8",
+          "attackBonus": 8,
+          "damageBonus": 7
+        }
+      ]
+    },
+    "mst-bulette": {
+      "id": "mst-bulette",
+      "name": "Bulette",
+      "creatureType": "",
+      "size": "Huge",
+      "bab": 9,
+      "strMod": 8,
+      "dexMod": 2,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "2d8",
+          "attackBonus": 16,
+          "damageBonus": 8
+        },
+        {
+          "name": "Claw",
+          "count": 2,
+          "primary": false,
+          "dmgType": "P/S",
+          "dice": "2d6",
+          "attackBonus": 10,
+          "damageBonus": 4
+        }
+      ]
+    },
+    "mst-legendary-tiger": {
+      "id": "mst-legendary-tiger",
+      "name": "Legendary Tiger",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 19,
+      "strMod": 11,
+      "dexMod": 4,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Claw",
+          "count": 2,
+          "primary": true,
+          "dmgType": "P/S",
+          "dice": "2d6",
+          "attackBonus": 29,
+          "damageBonus": 11
+        },
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": false,
+          "dmgType": "B/P/S",
+          "dice": "2d8",
+          "attackBonus": 24,
+          "damageBonus": 5
+        },
+        {
+          "name": "Rake",
+          "count": 2,
+          "primary": "special_rake",
+          "dmgType": "P/S",
+          "dice": "2d6",
+          "attackBonus": 29,
+          "damageBonus": 5
+        }
+      ]
+    },
+    "mst-monstrous-scorpion-medium": {
+      "id": "mst-monstrous-scorpion-medium",
+      "name": "Monstrous Scorpion, Medium",
+      "creatureType": "",
+      "size": "Medium",
+      "bab": 1,
+      "strMod": 1,
+      "dexMod": 0,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Claw",
+          "count": 2,
+          "primary": true,
+          "dmgType": "P/S",
+          "dice": "1d4",
+          "attackBonus": 2,
+          "damageBonus": 1
+        },
+        {
+          "name": "Sting",
+          "count": 1,
+          "primary": false,
+          "dmgType": "P",
+          "dice": "1d4",
+          "attackBonus": -3,
+          "damageBonus": 0
+        },
+        {
+          "name": "Constrict",
+          "count": 1,
+          "primary": "misc",
+          "dmgType": "B",
+          "dice": "1d4",
+          "attackBonus": 0,
+          "damageBonus": 0
+        }
+      ]
+    },
+    "mst-puppeteer": {
+      "id": "mst-puppeteer",
+      "name": "Puppeteer",
+      "creatureType": "",
+      "size": "Fine",
+      "bab": 1,
+      "strMod": -5,
+      "dexMod": 2,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d2",
+          "attackBonus": 4,
+          "damageBonus": -5
+        }
+      ]
+    },
+    "mst-nine-headed-hydra": {
+      "id": "mst-nine-headed-hydra",
+      "name": "Nine-Headed Hydra",
+      "creatureType": "",
+      "size": "Huge",
+      "bab": 9,
+      "strMod": 5,
+      "dexMod": 1,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 9,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d10",
+          "attackBonus": 13,
+          "damageBonus": 5
+        }
+      ]
+    },
+    "mst-spider-swarm": {
+      "id": "mst-spider-swarm",
+      "name": "Spider Swarm",
+      "creatureType": "",
+      "size": "Diminutive",
+      "bab": 1,
+      "strMod": -5,
+      "dexMod": 3,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Swarm",
+          "count": 1,
+          "primary": "misc",
+          "dmgType": "Swarm",
+          "dice": "1d6",
+          "attackBonus": 0,
+          "damageBonus": 0
+        }
+      ]
+    },
+    "mst-mu-spore": {
+      "id": "mst-mu-spore",
+      "name": "Mu Spore",
+      "creatureType": "",
+      "size": "Colossal",
+      "bab": 0,
+      "strMod": 13,
+      "dexMod": -3,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "4d6",
+          "attackBonus": 5,
+          "damageBonus": 19
+        }
+      ]
+    },
+    "mst-earth-elemental-huge": {
+      "id": "mst-earth-elemental-huge",
+      "name": "Earth Elemental, Huge",
+      "creatureType": "",
+      "size": "Huge",
+      "bab": 12,
+      "strMod": 9,
+      "dexMod": -1,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Slam",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B",
+          "dice": "2d10",
+          "attackBonus": 19,
+          "damageBonus": 13
+        }
+      ]
+    },
+    "mst-brain-mole": {
+      "id": "mst-brain-mole",
+      "name": "Brain Mole",
+      "creatureType": "",
+      "size": "Tiny",
+      "bab": 1,
+      "strMod": -4,
+      "dexMod": 2,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d3",
+          "attackBonus": -1,
+          "damageBonus": -4
+        }
+      ]
+    },
+    "mst-squid": {
+      "id": "mst-squid",
+      "name": "Squid",
+      "creatureType": "",
+      "size": "Medium",
+      "bab": 2,
+      "strMod": 2,
+      "dexMod": 3,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d6",
+          "attackBonus": 4,
+          "damageBonus": 3
+        }
+      ]
+    },
+    "mst-giant-wasp": {
+      "id": "mst-giant-wasp",
+      "name": "Giant Wasp",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 3,
+      "strMod": 4,
+      "dexMod": 1,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Sting",
+          "count": 1,
+          "primary": true,
+          "dmgType": "P",
+          "dice": "1d3",
+          "attackBonus": 6,
+          "damageBonus": 6
+        }
+      ]
+    },
+    "mst-giant-ant-soldier": {
+      "id": "mst-giant-ant-soldier",
+      "name": "Giant Ant, Soldier",
+      "creatureType": "",
+      "size": "Medium",
+      "bab": 1,
+      "strMod": 2,
+      "dexMod": 0,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "2d4",
+          "attackBonus": 3,
+          "damageBonus": 3
+        },
+        {
+          "name": "Acid Sting",
+          "count": 1,
+          "primary": "misc",
+          "dmgType": "P",
+          "dice": "1d4+1",
+          "attackBonus": 2,
+          "damageBonus": 2
+        }
+      ]
+    },
+    "mst-air-elemental-huge": {
+      "id": "mst-air-elemental-huge",
+      "name": "Air Elemental, Huge",
+      "creatureType": "",
+      "size": "Huge",
+      "bab": 12,
+      "strMod": 4,
+      "dexMod": 9,
+      "hasFinesse": true,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Slam",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B",
+          "dice": "2d8",
+          "attackBonus": 19,
+          "damageBonus": 6
+        }
+      ]
+    },
+    "mst-giant-fire-beetle": {
+      "id": "mst-giant-fire-beetle",
+      "name": "Giant Fire Beetle",
+      "creatureType": "",
+      "size": "Small",
+      "bab": 0,
+      "strMod": 0,
+      "dexMod": 0,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "2d4",
+          "attackBonus": 1,
+          "damageBonus": 0
+        }
+      ]
+    },
+    "mst-eagle": {
+      "id": "mst-eagle",
+      "name": "Eagle",
+      "creatureType": "",
+      "size": "Small",
+      "bab": 0,
+      "strMod": 0,
+      "dexMod": 2,
+      "hasFinesse": true,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Talon",
+          "count": 2,
+          "primary": true,
+          "dmgType": "P/S",
+          "dice": "1d4",
+          "attackBonus": 3,
+          "damageBonus": 0
+        },
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": false,
+          "dmgType": "B/P/S",
+          "dice": "1d4",
+          "attackBonus": -2,
+          "damageBonus": 0
+        }
+      ]
+    },
+    "mst-stirge": {
+      "id": "mst-stirge",
+      "name": "Stirge",
+      "attacks": []
+    },
+    "mst-snake-medium-viper": {
+      "id": "mst-snake-medium-viper",
+      "name": "Snake, Medium Viper",
+      "creatureType": "",
+      "size": "Medium",
+      "bab": 1,
+      "strMod": -1,
+      "dexMod": 3,
+      "hasFinesse": true,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d4",
+          "attackBonus": 4,
+          "damageBonus": -1
+        },
+        {
+          "name": "Poison",
+          "count": 1,
+          "primary": "misc",
+          "dmgType": "B",
+          "dice": "1d6",
+          "attackBonus": 0,
+          "damageBonus": 0
+        }
+      ]
+    },
+    "mst-crocodile": {
+      "id": "mst-crocodile",
+      "name": "Crocodile",
+      "creatureType": "",
+      "size": "Medium",
+      "bab": 2,
+      "strMod": 4,
+      "dexMod": 1,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d8",
+          "attackBonus": 6,
+          "damageBonus": 4
+        },
+        {
+          "name": "Tail",
+          "count": 1,
+          "primary": false,
+          "dmgType": "B",
+          "dice": "1d12",
+          "attackBonus": 1,
+          "damageBonus": 2
+        }
+      ]
+    },
+    "mst-elephant": {
+      "id": "mst-elephant",
+      "name": "Elephant",
+      "creatureType": "",
+      "size": "Huge",
+      "bab": 8,
+      "strMod": 10,
+      "dexMod": 0,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Gore",
+          "count": 1,
+          "primary": true,
+          "dmgType": "P",
+          "dice": "2d8",
+          "attackBonus": 16,
+          "damageBonus": 10
+        },
+        {
+          "name": "Slam",
+          "count": 1,
+          "primary": false,
+          "dmgType": "B",
+          "dice": "2d6",
+          "attackBonus": 11,
+          "damageBonus": 5
+        },
+        {
+          "name": "Stomp",
+          "count": 1,
+          "primary": false,
+          "dmgType": "B",
+          "dice": "2d6",
+          "attackBonus": 11,
+          "damageBonus": 5
+        },
+        {
+          "name": "Trample",
+          "count": 1,
+          "primary": "misc",
+          "dmgType": "B",
+          "dice": "2d8",
+          "attackBonus": 0,
+          "damageBonus": 0
+        }
+      ]
+    },
+    "mst-monstrous-centipede-medium": {
+      "id": "mst-monstrous-centipede-medium",
+      "name": "Monstrous Centipede, Medium",
+      "creatureType": "",
+      "size": "Medium",
+      "bab": 0,
+      "strMod": -1,
+      "dexMod": 2,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d6",
+          "attackBonus": -1,
+          "damageBonus": -1
+        }
+      ]
+    },
+    "mst-hieracosphinx": {
+      "id": "mst-hieracosphinx",
+      "name": "Hieracosphinx",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 9,
+      "strMod": 5,
+      "dexMod": 2,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d10",
+          "attackBonus": 13,
+          "damageBonus": 5
+        },
+        {
+          "name": "Claw",
+          "count": 2,
+          "primary": false,
+          "dmgType": "P/S",
+          "dice": "1d6",
+          "attackBonus": 8,
+          "damageBonus": 2
+        },
+        {
+          "name": "Rake",
+          "count": 2,
+          "primary": "special_rake",
+          "dmgType": "P/S",
+          "dice": "1d6",
+          "attackBonus": 13,
+          "damageBonus": 2
+        }
+      ]
+    },
+    "mst-donkey": {
+      "id": "mst-donkey",
+      "name": "Donkey",
+      "creatureType": "",
+      "size": "Medium",
+      "bab": 1,
+      "strMod": 0,
+      "dexMod": 1,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d2",
+          "attackBonus": 1,
+          "damageBonus": 0
+        }
+      ]
+    },
+    "mst-fire-elemental-medium": {
+      "id": "mst-fire-elemental-medium",
+      "name": "Fire Elemental, Medium",
+      "creatureType": "",
+      "size": "Medium",
+      "bab": 3,
+      "strMod": 1,
+      "dexMod": 3,
+      "hasFinesse": true,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Slam",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B",
+          "dice": "1d6",
+          "attackBonus": 6,
+          "damageBonus": 1
+        }
+      ]
+    },
+    "mst-giant-praying-mantis": {
+      "id": "mst-giant-praying-mantis",
+      "name": "Giant Praying Mantis",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 3,
+      "strMod": 4,
+      "dexMod": -1,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d6",
+          "attackBonus": 6,
+          "damageBonus": 4
+        },
+        {
+          "name": "Claw",
+          "count": 2,
+          "primary": false,
+          "dmgType": "P/S",
+          "dice": "1d8",
+          "attackBonus": 1,
+          "damageBonus": 2
+        }
+      ]
+    },
+    "mst-monstrous-centipede-tiny": {
+      "id": "mst-monstrous-centipede-tiny",
+      "name": "Monstrous Centipede, Tiny",
+      "creatureType": "",
+      "size": "Tiny",
+      "bab": 0,
+      "strMod": -5,
+      "dexMod": 2,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d3",
+          "attackBonus": -3,
+          "damageBonus": -5
+        }
+      ]
+    },
+    "mst-badger": {
+      "id": "mst-badger",
+      "name": "Badger",
+      "creatureType": "",
+      "size": "Small",
+      "bab": 0,
+      "strMod": -1,
+      "dexMod": 3,
+      "hasFinesse": true,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Claw",
+          "count": 2,
+          "primary": true,
+          "dmgType": "P/S",
+          "dice": "1d2",
+          "attackBonus": 4,
+          "damageBonus": -1
+        },
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": false,
+          "dmgType": "B/P/S",
+          "dice": "1d3",
+          "attackBonus": -1,
+          "damageBonus": -1
+        }
+      ]
+    },
+    "mst-worg": {
+      "id": "mst-worg",
+      "name": "Worg",
+      "creatureType": "",
+      "size": "Medium",
+      "bab": 4,
+      "strMod": 3,
+      "dexMod": 2,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d6",
+          "attackBonus": 7,
+          "damageBonus": 4
+        }
+      ]
+    },
+    "mst-hoary-steed": {
+      "id": "mst-hoary-steed",
+      "name": "Hoary Steed",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 12,
+      "strMod": 6,
+      "dexMod": 4,
+      "hasFinesse": false,
+      "hasMultiattack": true,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "5d8",
+          "attackBonus": 17,
+          "damageBonus": 6
+        },
+        {
+          "name": "Hoof",
+          "count": 2,
+          "primary": false,
+          "dmgType": "B",
+          "dice": "3d6",
+          "attackBonus": 15,
+          "damageBonus": 3
+        }
+      ]
+    },
+    "mst-owl": {
+      "id": "mst-owl",
+      "name": "Owl",
+      "creatureType": "",
+      "size": "Tiny",
+      "bab": 0,
+      "strMod": -3,
+      "dexMod": 3,
+      "hasFinesse": true,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Talon",
+          "count": 1,
+          "primary": true,
+          "dmgType": "P/S",
+          "dice": "1d4",
+          "attackBonus": 5,
+          "damageBonus": -3
+        }
+      ]
+    },
+    "mst-monstrous-spider-large": {
+      "id": "mst-monstrous-spider-large",
+      "name": "Monstrous Spider, Large",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 3,
+      "strMod": 2,
+      "dexMod": 3,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d8",
+          "attackBonus": 4,
+          "damageBonus": 3
+        }
+      ]
+    },
+    "mst-dire-rat": {
+      "id": "mst-dire-rat",
+      "name": "Dire Rat",
+      "creatureType": "",
+      "size": "Small",
+      "bab": 0,
+      "strMod": 0,
+      "dexMod": 3,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d4",
+          "attackBonus": 1,
+          "damageBonus": 0
+        }
+      ]
+    },
+    "mst-deinonychus": {
+      "id": "mst-deinonychus",
+      "name": "Deinonychus",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 3,
+      "strMod": 4,
+      "dexMod": 2,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Talon",
+          "count": 2,
+          "primary": true,
+          "dmgType": "P/S",
+          "dice": "2d6",
+          "attackBonus": 6,
+          "damageBonus": 4
+        },
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": false,
+          "dmgType": "B/P/S",
+          "dice": "2d4",
+          "attackBonus": 1,
+          "damageBonus": 2
+        }
+      ]
+    },
+    "mst-winter-wolf": {
+      "id": "mst-winter-wolf",
+      "name": "Winter Wolf",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 6,
+      "strMod": 4,
+      "dexMod": 1,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d8",
+          "attackBonus": 9,
+          "damageBonus": 6
+        }
+      ]
+    },
+    "mst-ten-headed-hydra": {
+      "id": "mst-ten-headed-hydra",
+      "name": "Ten-Headed Hydra",
+      "creatureType": "",
+      "size": "Huge",
+      "bab": 10,
+      "strMod": 5,
+      "dexMod": 1,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 10,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d10",
+          "attackBonus": 14,
+          "damageBonus": 5
+        }
+      ]
+    },
+    "mst-rat-swarm": {
+      "id": "mst-rat-swarm",
+      "name": "Rat Swarm",
+      "creatureType": "",
+      "size": "Tiny",
+      "bab": 3,
+      "strMod": -4,
+      "dexMod": 2,
+      "hasFinesse": true,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Swarm",
+          "count": 1,
+          "primary": "misc",
+          "dmgType": "Swarm",
+          "dice": "1d6",
+          "attackBonus": 0,
+          "damageBonus": 0
+        }
+      ]
+    },
+    "mst-owlbear": {
+      "id": "mst-owlbear",
+      "name": "Owlbear",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 5,
+      "strMod": 5,
+      "dexMod": 1,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d8",
+          "attackBonus": 9,
+          "damageBonus": 5
+        },
+        {
+          "name": "Claw",
+          "count": 2,
+          "primary": false,
+          "dmgType": "P/S",
+          "dice": "1d6",
+          "attackBonus": 4,
+          "damageBonus": 2
+        }
+      ]
+    },
+    "mst-devastation-spider": {
+      "id": "mst-devastation-spider",
+      "name": "Devastation Spider",
+      "creatureType": "",
+      "size": "Colossal",
+      "bab": 96,
+      "strMod": 13,
+      "dexMod": 14,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "18d10",
+          "attackBonus": 101,
+          "damageBonus": 19
+        }
+      ]
+    },
+    "mst-fire-elemental-large": {
+      "id": "mst-fire-elemental-large",
+      "name": "Fire Elemental, Large",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 6,
+      "strMod": 2,
+      "dexMod": 5,
+      "hasFinesse": true,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Slam",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B",
+          "dice": "2d6",
+          "attackBonus": 10,
+          "damageBonus": 3
+        }
+      ]
+    },
+    "mst-hawk": {
+      "id": "mst-hawk",
+      "name": "Hawk",
+      "creatureType": "",
+      "size": "Tiny",
+      "bab": 0,
+      "strMod": -2,
+      "dexMod": 3,
+      "hasFinesse": true,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Talon",
+          "count": 1,
+          "primary": true,
+          "dmgType": "P/S",
+          "dice": "1d4",
+          "attackBonus": 5,
+          "damageBonus": -2
+        }
+      ]
+    },
+    "mst-boar": {
+      "id": "mst-boar",
+      "name": "Boar",
+      "creatureType": "",
+      "size": "Medium",
+      "bab": 2,
+      "strMod": 2,
+      "dexMod": 0,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Gore",
+          "count": 1,
+          "primary": true,
+          "dmgType": "P",
+          "dice": "1d8",
+          "attackBonus": 4,
+          "damageBonus": 3
+        }
+      ]
+    },
+    "mst-roc": {
+      "id": "mst-roc",
+      "name": "Roc",
+      "creatureType": "",
+      "size": "Gargantuan",
+      "bab": 13,
+      "strMod": 12,
+      "dexMod": 2,
+      "hasFinesse": false,
+      "hasMultiattack": true,
+      "attacks": [
+        {
+          "name": "Talon",
+          "count": 2,
+          "primary": true,
+          "dmgType": "P/S",
+          "dice": "2d6",
+          "attackBonus": 21,
+          "damageBonus": 12
+        },
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": false,
+          "dmgType": "B/P/S",
+          "dice": "2d8",
+          "attackBonus": 19,
+          "damageBonus": 6
+        }
+      ]
+    },
+    "mst-five-headed-hydra": {
+      "id": "mst-five-headed-hydra",
+      "name": "Five-Headed Hydra",
+      "creatureType": "",
+      "size": "Huge",
+      "bab": 5,
+      "strMod": 3,
+      "dexMod": 1,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 5,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d10",
+          "attackBonus": 6,
+          "damageBonus": 3
+        }
+      ]
+    },
+    "mst-dire-bear": {
+      "id": "mst-dire-bear",
+      "name": "Dire Bear",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 9,
+      "strMod": 10,
+      "dexMod": 1,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Claw",
+          "count": 2,
+          "primary": true,
+          "dmgType": "P/S",
+          "dice": "2d4",
+          "attackBonus": 19,
+          "damageBonus": 10
+        },
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": false,
+          "dmgType": "B/P/S",
+          "dice": "2d8",
+          "attackBonus": 13,
+          "damageBonus": 5
+        }
+      ]
+    },
+    "mst-air-elemental-large": {
+      "id": "mst-air-elemental-large",
+      "name": "Air Elemental, Large",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 6,
+      "strMod": 2,
+      "dexMod": 7,
+      "hasFinesse": true,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Slam",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B",
+          "dice": "2d6",
+          "attackBonus": 12,
+          "damageBonus": 3
+        }
+      ]
+    },
+    "mst-behir": {
+      "id": "mst-behir",
+      "name": "Behir",
+      "creatureType": "",
+      "size": "Huge",
+      "bab": 9,
+      "strMod": 8,
+      "dexMod": 1,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "2d4",
+          "attackBonus": 15,
+          "damageBonus": 12
+        },
+        {
+          "name": "Rake",
+          "count": 2,
+          "primary": "special_rake",
+          "dmgType": "P/S",
+          "dice": "1d4",
+          "attackBonus": 15,
+          "damageBonus": 4
+        },
+        {
+          "name": "Constrict",
+          "count": 1,
+          "primary": "misc",
+          "dmgType": "B",
+          "dice": "2d8",
+          "attackBonus": 0,
+          "damageBonus": 0
+        },
+        {
+          "name": "Swallow Whole",
+          "count": 1,
+          "primary": "misc",
+          "dmgType": "B",
+          "dice": "2d8+8",
+          "attackBonus": 0,
+          "damageBonus": 0
+        },
+        {
+          "name": "Breath Weapon",
+          "count": 1,
+          "primary": "misc",
+          "dmgType": "B",
+          "dice": "7d6",
+          "attackBonus": 0,
+          "damageBonus": 0
+        }
+      ]
+    },
+    "mst-darkmantle": {
+      "id": "mst-darkmantle",
+      "name": "Darkmantle",
+      "creatureType": "",
+      "size": "Small",
+      "bab": 1,
+      "strMod": 3,
+      "dexMod": 0,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Slam",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B",
+          "dice": "1d4",
+          "attackBonus": 5,
+          "damageBonus": 4
+        },
+        {
+          "name": "Constrict",
+          "count": 1,
+          "primary": "misc",
+          "dmgType": "B",
+          "dice": "1d4",
+          "attackBonus": 0,
+          "damageBonus": 0
+        }
+      ]
+    },
+    "mst-assassin-vine": {
+      "id": "mst-assassin-vine",
+      "name": "Assassin Vine",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 3,
+      "strMod": 5,
+      "dexMod": 0,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Slam",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B",
+          "dice": "1d6",
+          "attackBonus": 7,
+          "damageBonus": 7
+        },
+        {
+          "name": "Constrict",
+          "count": 1,
+          "primary": "misc",
+          "dmgType": "B",
+          "dice": "1d6",
+          "attackBonus": 0,
+          "damageBonus": 0
+        }
+      ]
+    },
+    "mst-earth-elemental-greater": {
+      "id": "mst-earth-elemental-greater",
+      "name": "Earth Elemental, Greater",
+      "creatureType": "",
+      "size": "Huge",
+      "bab": 15,
+      "strMod": 10,
+      "dexMod": -1,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Slam",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B",
+          "dice": "2d10",
+          "attackBonus": 23,
+          "damageBonus": 15
+        }
+      ]
+    },
+    "mst-thoqqua": {
+      "id": "mst-thoqqua",
+      "name": "Thoqqua",
+      "creatureType": "",
+      "size": "Medium",
+      "bab": 2,
+      "strMod": 2,
+      "dexMod": 1,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Slam",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B",
+          "dice": "1d6",
+          "attackBonus": 4,
+          "damageBonus": 3
+        }
+      ]
+    },
+    "mst-shrieker": {
+      "id": "mst-shrieker",
+      "name": "Shrieker",
+      "attacks": []
+    },
+    "mst-monstrous-centipede-colossal": {
+      "id": "mst-monstrous-centipede-colossal",
+      "name": "Monstrous Centipede, Colossal",
+      "creatureType": "",
+      "size": "Colossal",
+      "bab": 18,
+      "strMod": 8,
+      "dexMod": 1,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "4d6",
+          "attackBonus": 18,
+          "damageBonus": 12
+        }
+      ]
+    },
+    "mst-raven": {
+      "id": "mst-raven",
+      "name": "Raven",
+      "creatureType": "",
+      "size": "Tiny",
+      "bab": 0,
+      "strMod": -5,
+      "dexMod": 2,
+      "hasFinesse": true,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Claw",
+          "count": 2,
+          "primary": true,
+          "dmgType": "P/S",
+          "dice": "1d2",
+          "attackBonus": 4,
+          "damageBonus": -5
+        }
+      ]
+    },
+    "mst-earth-elemental-large": {
+      "id": "mst-earth-elemental-large",
+      "name": "Earth Elemental, Large",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 6,
+      "strMod": 7,
+      "dexMod": -1,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Slam",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B",
+          "dice": "2d8",
+          "attackBonus": 12,
+          "damageBonus": 10
+        }
+      ]
+    },
+    "mst-digester": {
+      "id": "mst-digester",
+      "name": "Digester",
+      "creatureType": "",
+      "size": "Medium",
+      "bab": 8,
+      "strMod": 3,
+      "dexMod": 2,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Claw",
+          "count": 2,
+          "primary": true,
+          "dmgType": "P/S",
+          "dice": "1d8",
+          "attackBonus": 11,
+          "damageBonus": 3
+        }
+      ]
+    },
+    "mst-pony": {
+      "id": "mst-pony",
+      "name": "Pony",
+      "creatureType": "",
+      "size": "Medium",
+      "bab": 1,
+      "strMod": 1,
+      "dexMod": 1,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Hoof",
+          "count": 2,
+          "primary": true,
+          "dmgType": "B",
+          "dice": "1d3",
+          "attackBonus": 2,
+          "damageBonus": 1
+        }
+      ]
+    },
+    "mst-three-headed-sirrush": {
+      "id": "mst-three-headed-sirrush",
+      "name": "Three-Headed Sirrush",
+      "creatureType": "",
+      "size": "Large",
+      "bab": 45,
+      "strMod": 18,
+      "dexMod": 17,
+      "hasFinesse": false,
+      "hasMultiattack": true,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "4d6",
+          "attackBonus": 63,
+          "damageBonus": 18
+        },
+        {
+          "name": "Claw",
+          "count": 2,
+          "primary": false,
+          "dmgType": "P/S",
+          "dice": "3d6",
+          "attackBonus": 61,
+          "damageBonus": 9
+        }
+      ]
+    },
+    "mst-cheetah": {
+      "id": "mst-cheetah",
+      "name": "Cheetah",
+      "creatureType": "",
+      "size": "Medium",
+      "bab": 2,
+      "strMod": 3,
+      "dexMod": 4,
+      "hasFinesse": true,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d6",
+          "attackBonus": 6,
+          "damageBonus": 3
+        },
+        {
+          "name": "Claw",
+          "count": 2,
+          "primary": false,
+          "dmgType": "P/S",
+          "dice": "1d2",
+          "attackBonus": 1,
+          "damageBonus": 1
+        }
+      ]
+    },
+    "mst-hyena": {
+      "id": "mst-hyena",
+      "name": "Hyena",
+      "creatureType": "",
+      "size": "Medium",
+      "bab": 1,
+      "strMod": 2,
+      "dexMod": 2,
+      "hasFinesse": false,
+      "hasMultiattack": false,
+      "attacks": [
+        {
+          "name": "Bite",
+          "count": 1,
+          "primary": true,
+          "dmgType": "B/P/S",
+          "dice": "1d6",
+          "attackBonus": 3,
+          "damageBonus": 3
+        }
+      ]
+    }
+  }
+}

@@ -298,6 +298,16 @@
     ['tacticalSlider', 'Enable Tactical Combat Slider (Power Attack / Expertise / Manyshot)']
   ];
 
+  // Canonical V3 Companion / Entity kinds (ADR-058)
+  const ENTITY_KINDS = ['animal_companion', 'familiar', 'special_mount', 'fiendish_servant'];
+
+  // Official 3.5e arcane SPELL-casting classes (Complete Arcane p.81: excludes invocation/SLA classes like Warlock)
+  const ARCANE_SPELLCASTING_CLASSES = [
+    'wizard', 'sorcerer', 'bard', 'assassin', 'beguiler', 'duskblade', 'warmage',
+    'dread necromancer', 'wu jen', 'hexblade', 'spellthief', 'sublime chord',
+    'savage bard', 'battle sorcerer', 'death master', 'sha\'ir', 'red wizard'
+  ];
+
   const DnD35Ruleset = {
     id: 'dnd35',
     name: 'D&D 3.5e Official RAW',
@@ -322,6 +332,8 @@
     statSwapOps: STAT_SWAP_OPS,
     statSwapScopes: STAT_SWAP_SCOPES,
     ruleSwitchFlags: RULE_SWITCH_FLAGS,
+    entityKinds: ENTITY_KINDS,
+    arcaneSpellcastingClasses: ARCANE_SPELLCASTING_CLASSES,
 
     calcAbilityMod(score) {
       return Math.floor(((Number(score) || 10) - 10) / 2);

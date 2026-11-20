@@ -1017,9 +1017,24 @@
             "feat",
             "bonusSlot",
             "trait",
-            "reroll"
+            "reroll",
+            "entity"
           ],
-          "description": "Primary kinds: ruleSwitch (engine flag), rule (narrative/manual rule), castSpell (spell-like cast). The rest mirror engine-supported corpus kinds."
+          "description": "Primary kinds: ruleSwitch (engine flag), rule (narrative/manual rule), castSpell (spell-like cast), entity (companion/familiar/mount/servant grant). The rest mirror engine-supported corpus kinds."
+        },
+        "entityKind": {
+          "type": "string",
+          "enum": ["animal_companion", "familiar", "special_mount", "fiendish_servant"],
+          "description": "entity only: canonical companion/entity kind (ADR-058)."
+        },
+        "levelFormula": {
+          "type": "string",
+          "description": "entity only: formula computing effective entity level (e.g. '@classes.druid.level + (@classes.ranger.level >= 4 ? floor(@classes.ranger.level / 2) : 0)' or '@arcaneCasterClassLevels')."
+        },
+        "progressionKey": {
+          "type": "string",
+          "enum": ["druidProgression", "familiarProgression", "paladinMountProgression", "fiendishServantProgression"],
+          "description": "entity only: progression table key in database/srd_companions.json."
         },
         "flag": {
           "type": "string",
@@ -1056,6 +1071,25 @@
           "then": {
             "required": [
               "flag"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "effectKind": {
+                "const": "entity"
+              }
+            },
+            "required": [
+              "effectKind"
+            ]
+          },
+          "then": {
+            "required": [
+              "entityKind",
+              "levelFormula",
+              "progressionKey"
             ]
           }
         }

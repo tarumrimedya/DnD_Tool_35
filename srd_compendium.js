@@ -2149,8 +2149,16 @@
     getPaladinMountProgression(paladinLevel = 5) {
       const data = this.getCompanionsData();
       if (!data || !Array.isArray(data.paladinMountProgression)) return null;
-      const lvl = Math.max(5, parseInt(paladinLevel, 10) || 5);
-      return data.paladinMountProgression.find(p => lvl >= p.minLevel && lvl <= p.maxLevel) || data.paladinMountProgression[0];
+      const lvl = parseInt(paladinLevel, 10) || 0;
+      if (lvl < 5) return null;
+      return data.paladinMountProgression.find(p => lvl >= p.minLevel && lvl <= p.maxLevel) || data.paladinMountProgression[data.paladinMountProgression.length - 1];
+    },
+
+    getFiendishServantProgression(characterLevel = 5) {
+      const data = this.getCompanionsData();
+      if (!data || !Array.isArray(data.fiendishServantProgression)) return null;
+      const lvl = Math.max(1, parseInt(characterLevel, 10) || 1);
+      return data.fiendishServantProgression.find(p => lvl >= p.minLevel && lvl <= p.maxLevel) || data.fiendishServantProgression[data.fiendishServantProgression.length - 1];
     },
 
     getAllowedAnimals(type = 'animal_companion') {
@@ -2158,232 +2166,28 @@
       if (!data) return [];
       if (type === 'familiar') return data.familiarAllowedAnimals || [];
       if (type === 'special_mount') return data.paladinAllowedMounts || [];
+      if (type === 'fiendish_servant') return data.fiendishAllowedServants || [];
       return data.druidAllowedAnimals || [];
     },
 
     calculateCompanionStats(char, companionConfig) {
       if (!companionConfig || !companionConfig.baseMonsterId) return null;
-      let baseMonster = this.getById(companionConfig.baseMonsterId);
-      if (!baseMonster && typeof require !== 'undefined') {
+      let engine = (typeof window !== 'undefined' && window.RuleEngine)
+        || (typeof globalThis !== 'undefined' && globalThis.RuleEngine)
+        || null;
+      if (!engine && typeof require !== 'undefined') {
         try {
-          const fs = require('fs');
-          const path = require('path');
-          const p = path.resolve(__dirname, 'database/srd_monsters.json');
-          if (fs.existsSync(p)) {
-            const list = JSON.parse(fs.readFileSync(p, 'utf8'));
-            baseMonster = list.find(m => m.id === companionConfig.baseMonsterId) || null;
-          }
+          engine = require('./rule_engine.js');
         } catch (_) {}
       }
-      if (!baseMonster) return null;
-
-      const compData = this.getCompanionsData() || {};
-      const type = companionConfig.type || 'animal_companion';
-      const customName = companionConfig.name || baseMonster.name;
-
-      // 1. Effective Level Calculation
-      let effectiveLevel = 1;
-      const classesStr = (char && char.classes) ? String(char.classes) : '';
-      const druidMatch = classesStr.match(/druid\s*(\d+)/i);
-      const rangerMatch = classesStr.match(/ranger\s*(\d+)/i);
-      const wizardMatch = classesStr.match(/wizard\s*(\d+)/i);
-      const sorcererMatch = classesStr.match(/sorcerer\s*(\d+)/i);
-      const paladinMatch = classesStr.match(/paladin\s*(\d+)/i);
-
-      if (type === 'animal_companion') {
-        let lvl = 0;
-        if (druidMatch) lvl += parseInt(druidMatch[1], 10);
-        if (rangerMatch) {
-          const rLvl = parseInt(rangerMatch[1], 10);
-          if (rLvl >= 4) lvl += Math.floor(rLvl / 2);
-        }
-        if (lvl === 0 && char && char.level) lvl = parseInt(char.level, 10);
-        const allowedList = compData.druidAllowedAnimals || [];
-        const allowedEntry = allowedList.find(a => a.id === companionConfig.baseMonsterId);
-        const adj = (allowedEntry && allowedEntry.levelAdj) ? allowedEntry.levelAdj : 0;
-        effectiveLevel = Math.max(1, (lvl || 1) + adj);
-      } else if (type === 'familiar') {
-        let lvl = 0;
-        if (wizardMatch) lvl += parseInt(wizardMatch[1], 10);
-        if (sorcererMatch) lvl += parseInt(sorcererMatch[1], 10);
-        if (lvl === 0 && char && char.level) lvl = parseInt(char.level, 10);
-        effectiveLevel = Math.max(1, lvl || 1);
-      } else if (type === 'special_mount') {
-        let lvl = 0;
-        if (paladinMatch) lvl += parseInt(paladinMatch[1], 10);
-        if (lvl === 0 && char && char.level) lvl = parseInt(char.level, 10);
-        effectiveLevel = Math.max(5, lvl || 5);
+      if (engine && typeof engine.calculateCompanionStats === 'function') {
+        const baseMonster = this.getById(companionConfig.baseMonsterId) || null;
+        return engine.calculateCompanionStats(char, companionConfig, {
+          baseMonster: baseMonster || undefined,
+          companionsData: this.getCompanionsData() || undefined
+        });
       }
-
-      // 2. Progression Bracket Lookup
-      let bonusHd = 0;
-      let natArmorAdj = 0;
-      let strDexAdj = 0;
-      let bonusTricks = 0;
-      let specialAbilities = [];
-      let companionInt = baseMonster.abilities?.int ?? 2;
-      let masterBonusText = null;
-
-      if (type === 'animal_companion') {
-        const prog = this.getDruidCompanionProgression(effectiveLevel);
-        if (prog) {
-          bonusHd = prog.bonusHd || 0;
-          natArmorAdj = prog.natArmorAdj || 0;
-          strDexAdj = prog.strDexAdj || 0;
-          bonusTricks = prog.bonusTricks || 0;
-          specialAbilities = Array.isArray(prog.special) ? [...prog.special] : [];
-        }
-      } else if (type === 'familiar') {
-        const prog = this.getFamiliarProgression(effectiveLevel);
-        if (prog) {
-          natArmorAdj = prog.natArmorAdj || 0;
-          companionInt = prog.intScore || prog.int || 6;
-          specialAbilities = Array.isArray(prog.special) ? [...prog.special] : [];
-        }
-        const famAllowed = (compData.familiarAllowedAnimals || []).find(f => f.id === companionConfig.baseMonsterId);
-        if (famAllowed) masterBonusText = famAllowed.masterBonusText;
-      } else if (type === 'special_mount') {
-        const prog = this.getPaladinMountProgression(effectiveLevel);
-        if (prog) {
-          bonusHd = prog.bonusHd || 0;
-          natArmorAdj = prog.natArmorAdj || 0;
-          strDexAdj = prog.strAdj || 0;
-          companionInt = prog.intScore || prog.int || 6;
-          specialAbilities = Array.isArray(prog.special) ? [...prog.special] : [];
-        }
-      }
-
-      // 3. Ability Scores (supports pure V3 `monster` chassis + legacy fallback)
-      const mChassis = (baseMonster && baseMonster.monster) ? baseMonster.monster : baseMonster;
-      const mAbil = (mChassis && mChassis.abilities) ? mChassis.abilities : (baseMonster.abilities || {});
-      const baseStr = mAbil.str ?? 10;
-      const baseDex = mAbil.dex ?? 10;
-      const baseCon = mAbil.con ?? 10;
-      const baseWis = mAbil.wis ?? 10;
-      const baseCha = mAbil.cha ?? 10;
-
-      const totalStr = baseStr + strDexAdj;
-      const totalDex = baseDex + (type === 'special_mount' ? 0 : strDexAdj);
-      const totalCon = baseCon;
-      const totalInt = companionInt;
-      const totalWis = baseWis;
-      const totalCha = baseCha;
-
-      const strMod = Math.floor((totalStr - 10) / 2);
-      const dexMod = Math.floor((totalDex - 10) / 2);
-      const conMod = Math.floor((totalCon - 10) / 2);
-      const intMod = Math.floor((totalInt - 10) / 2);
-      const wisMod = Math.floor((totalWis - 10) / 2);
-      const chaMod = Math.floor((totalCha - 10) / 2);
-
-      // 4. Hit Dice & Hit Points
-      const baseHdNum = Number(mChassis?.hitDice?.count) || parseInt(String(mChassis?.hitDice?.formula || baseMonster.hitDice || '1').match(/\d+/)?.[0] || '1', 10);
-      const totalHd = (type === 'familiar') ? (char?.level || 1) : (baseHdNum + bonusHd);
-
-      let maxHp = 0;
-      if (type === 'familiar') {
-        maxHp = Math.max(1, Math.floor((char?.hp?.max || 10) / 2));
-      } else {
-        // D&D 3.5e RAW average HP: 4.5 per d8 + Con mod per HD
-        maxHp = Math.max(1, Math.round(totalHd * 4.5 + totalHd * conMod));
-      }
-      const currentHp = (companionConfig.currentHp !== undefined) ? companionConfig.currentHp : maxHp;
-
-      // 5. Base Attack Bonus
-      const bab = (type === 'familiar') ? (char?.bab || 0) : Math.floor(totalHd * 0.75);
-
-      // 6. Natural Armor, Gear & AC
-      const baseTotalAC = Number(mChassis?.ac?.total ?? baseMonster.ac?.total) || 14;
-      const baseDexMod = Math.floor((baseDex - 10) / 2);
-      const baseNatArmor = Math.max(0, baseTotalAC - 10 - baseDexMod);
-      const totalNatArmor = Math.max(0, baseNatArmor + natArmorAdj);
-
-      const gear = companionConfig.gear || {};
-      let armorACBonus = 0;
-      let armorCheckPenalty = 0;
-      let attackEnhancement = 0;
-      let damageEnhancement = 0;
-      let speedBonus = 0;
-
-      if (gear.armor) {
-        const ga = gear.armor.armor || gear.armor;
-        armorACBonus += (Number(ga.armorBonus || gear.armor.armorBonus) || 0) + (Number(ga.enhancementBonus ?? gear.armor.enhancementBonus) || 0);
-        armorCheckPenalty += Number(ga.armorCheckPenalty ?? gear.armor.armorCheckPenalty ?? 0) || 0;
-      }
-      if (gear.neck && gear.neck.enhancementBonus) {
-        attackEnhancement += gear.neck.enhancementBonus;
-        damageEnhancement += gear.neck.enhancementBonus;
-      }
-      if (gear.feet) {
-        if (gear.feet.speedBonus) speedBonus += gear.feet.speedBonus;
-        else if (String(gear.feet.name || '').toLowerCase().includes('speed')) speedBonus += 30;
-      }
-      if (type === 'special_mount' && effectiveLevel >= 8) {
-        speedBonus += 10; // RAW Paladin Mount 8th level Improved Speed
-      }
-
-      const acTotal = 10 + dexMod + totalNatArmor + armorACBonus;
-      const acTouch = 10 + dexMod;
-      const acFlatFooted = 10 + totalNatArmor + armorACBonus;
-
-      // 7. Saving Throws
-      let fortSave = 0;
-      let refSave = 0;
-      let willSave = 0;
-      if (type === 'familiar') {
-        fortSave = (char?.saves?.fort?.total || 2);
-        refSave = (char?.saves?.ref?.total || 2);
-        willSave = (char?.saves?.will?.total || 0);
-      } else {
-        fortSave = 2 + Math.floor(totalHd / 2) + conMod;
-        refSave = 2 + Math.floor(totalHd / 2) + dexMod;
-        willSave = Math.floor(totalHd / 3) + wisMod;
-      }
-
-      // 8. Natural Attacks & Rotations
-      const monsterFeats = Array.isArray(baseMonster.feats) ? baseMonster.feats : (Array.isArray(mChassis?.feats) ? mChassis.feats : []);
-      const hasWeaponFocus = monsterFeats.some(f => /weapon\s*focus/i.test(f));
-      const rawAttacks = Array.isArray(baseMonster.attacks) ? baseMonster.attacks : (Array.isArray(mChassis?.attacks) ? mChassis.attacks : []);
-      const attacks = rawAttacks.map(atk => {
-        const isMelee = (atk.actionType === 'mwak' || atk.attackType === 'natural' || !atk.actionType);
-        const abilityMod = isMelee ? strMod : dexMod;
-        const totalBonus = bab + abilityMod + attackEnhancement + (hasWeaponFocus ? 1 : 0);
-        const baseDice = atk.weapon?.damageDice || atk.damageDice || '1d6';
-        const totalDmgBonus = (atk.weapon?.damageBonus ?? atk.damageBonus ?? 0) + strMod + damageEnhancement;
-        return {
-          name: atk.name,
-          attackBonus: totalBonus,
-          damageDice: baseDice,
-          damageBonus: totalDmgBonus,
-          formattedAttack: (totalBonus >= 0 ? '+' + totalBonus : String(totalBonus)),
-          formattedDamage: baseDice + (totalDmgBonus >= 0 ? '+' + totalDmgBonus : String(totalDmgBonus)),
-          source: atk.name
-        };
-      });
-
-      const baseSpeeds = mChassis?.speeds || baseMonster.speed || {};
-      return {
-        type,
-        customName,
-        baseName: baseMonster.name,
-        baseMonsterId: companionConfig.baseMonsterId,
-        size: mChassis?.size || baseMonster.size || 'Medium',
-        effectiveLevel,
-        totalHd,
-        hp: { current: currentHp, max: maxHp },
-        ac: { total: acTotal, touch: acTouch, flatFooted: acFlatFooted, naturalArmor: totalNatArmor, armorBonus: armorACBonus },
-        abilities: { str: totalStr, dex: totalDex, con: totalCon, int: totalInt, wis: totalWis, cha: totalCha },
-        abilityMods: { str: strMod, dex: dexMod, con: conMod, int: intMod, wis: wisMod, cha: chaMod },
-        saves: { fort: fortSave, ref: refSave, will: willSave },
-        bab,
-        speed: { land: (baseSpeeds.land ?? 30) + speedBonus, fly: baseSpeeds.fly || 0 },
-        attacks,
-        bonusTricks,
-        specialAbilities,
-        monsterFeats,
-        masterBonusText,
-        gear
-      };
+      return null;
     }
   };
 

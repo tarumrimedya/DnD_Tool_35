@@ -127,10 +127,12 @@ const RuleEngine = {
     const bab = Number(ch.bab) || 0;
 
     const classLevels = {};
+    const canonicalClassLevels = {};
     const addClassLvl = (rawName, count) => {
       const rawC = String(rawName || '').toLowerCase().trim();
       const cnt = Number(count) || 0;
       if (!rawC || cnt <= 0) return;
+      canonicalClassLevels[rawC] = (canonicalClassLevels[rawC] || 0) + cnt;
       classLevels[rawC] = (classLevels[rawC] || 0) + cnt;
       const cKey = rawC.replace(/[\s-]+/g, '_');
       if (cKey !== rawC) classLevels[cKey] = classLevels[rawC];
@@ -175,6 +177,31 @@ const RuleEngine = {
       if (typeof classLevels[uKey] === 'number') return classLevels[uKey];
       return 0;
     };
+
+    // Complete Arcane p.81 (Obtain Familiar): sum of levels in all arcane SPELL-casting classes (excludes SLA/invocation classes like Warlock)
+    const rsForArcane = (this.rulesets && this.rulesets[this.activeRulesetId || 'dnd35']) || (typeof window !== 'undefined' && window.DnD35Ruleset) || null;
+    const arcaneClassSet = new Set(
+      (rsForArcane && Array.isArray(rsForArcane.arcaneSpellcastingClasses)
+        ? rsForArcane.arcaneSpellcastingClasses
+        : ['wizard', 'sorcerer', 'bard', 'assassin', 'beguiler', 'duskblade', 'warmage', 'dread necromancer', 'wu jen', 'hexblade', 'spellthief', 'sublime chord', 'savage bard', 'battle sorcerer', 'death master', "sha'ir", 'red wizard']
+      ).map(x => String(x).toLowerCase())
+    );
+    const compForArcane = (typeof window !== 'undefined' && window.SrdCompendium) || (typeof SrdCompendium !== 'undefined' ? SrdCompendium : null);
+    let arcaneCasterClassLevels = 0;
+    Object.entries(canonicalClassLevels).forEach(([rawC, cnt]) => {
+      const stripped = rawC.replace(/\s*\([^)]+\)\s*/g, '').trim();
+      if (arcaneClassSet.has(rawC) || arcaneClassSet.has(stripped)) {
+        arcaneCasterClassLevels += cnt;
+        return;
+      }
+      if (compForArcane && typeof compForArcane.getClass === 'function') {
+        const cDef = compForArcane.getClass(rawC) || compForArcane.getClass(stripped);
+        const sp = cDef && cDef.spellcasting;
+        if (sp && typeof sp === 'object' && /arcane/i.test(String(sp.type || sp.tradition || '')) && !/invocation|none/i.test(String(sp.mode || ''))) {
+          arcaneCasterClassLevels += cnt;
+        }
+      }
+    });
 
     const nonabSet = new Set(
       []
@@ -255,6 +282,7 @@ const RuleEngine = {
       ecl,
       cl,
       casterLevel: cl,
+      arcaneCasterClassLevels,
       ml,
       manifesterLevel: ml,
       il,
@@ -377,6 +405,7 @@ const RuleEngine = {
     { token: '@<class>Level', pattern: true, label: 'Class Level (named class)', group: 'Levels', desc: 'Level in a named class, e.g. @paladinLevel, @warbladeLevel; 0 when the character has none.', example: '@paladinLevel' },
     { token: '@classes.<id>.level', pattern: true, label: 'Class Level (by class id)', group: 'Levels', desc: 'Level in any class by its id or name slug.', example: '@classes.warblade.level' },
     { token: '@cl', aliases: ['@casterLevel', '@item.level'], key: 'cl', label: 'Caster Level', group: 'Spellcasting', desc: 'Caster level of the entry or the character.', example: 'min(10, @cl)d6' },
+    { token: '@arcaneCasterClassLevels', key: 'arcaneCasterClassLevels', label: 'Arcane Spellcasting Class Levels', group: 'Spellcasting', desc: 'Sum of levels in all arcane spell-casting classes (excludes SLA/invocation classes; Complete Arcane p.81).', example: '@arcaneCasterClassLevels' },
     { token: '@spellLevel', aliases: ['@spell_level'], key: 'spellLevel', label: 'Spell Level', group: 'Spellcasting', desc: 'Level of the spell or spell-like ability: the power\'s Spell Level field, its attached spell, or the spell entry itself.', example: '10 + @spellLevel + @chaMod' },
     { token: '@baseSlots', key: 'baseSlots', label: 'Base Spell Slots', group: 'Spellcasting', desc: 'Base spell slots of the referenced spell level.', example: '@baseSlots + 1' },
     { token: '@spells.maxUnspentLevel', pattern: true, label: 'Highest Unspent Spell Level', group: 'Spellcasting', desc: 'Highest prepared, unexpended spell level; optional descriptor filter in parentheses.', example: '@spells.maxUnspentLevel(fire)' },
@@ -462,6 +491,7 @@ const RuleEngine = {
     const level = Number(context.level ?? cl) || 1;
     return {
       cl,
+      arcaneCasterClassLevels: Number(context.arcaneCasterClassLevels ?? 0) || 0,
       level,
       halfLevel: Math.floor(level / 2),
       hd: Number(context.hd ?? level) || level,
@@ -2708,6 +2738,19 @@ const RuleEngine = {
               ...(b.filter ? { filter: b.filter } : {}),
               ...(b.params ? { params: b.params } : {})
             });
+          } else if (effKind === 'entity') {
+            const eKind = String(b.entityKind || 'animal_companion').trim();
+            const lvlF = String(b.levelFormula || '@level').trim();
+            const progKey = String(b.progressionKey || '').trim();
+            grants.push({
+              grantType: 'companion_entity',
+              sourceId: out.id || null,
+              sourceName: out.name || b.label || eKind,
+              entityKind: eKind,
+              levelFormula: lvlF,
+              progressionKey: progKey
+            });
+            addBadge(`${b.label || out.name || eKind}`);
           } else if (effKind === 'summon') {
             addBadge(`Summon: ${b.creature || b.target || 'Companion'}`);
           }
@@ -3513,6 +3556,31 @@ const RuleEngine = {
       if (u && typeof u === 'object' && u.active === true) addEntry(u, 'Utterance', 'utterances');
     });
 
+    // Active Familiar Master Bonus V3 effects[] (ADR-058: e.g. Toad +3 hp.max, Cat +3 Move Silently, Rat +2 Fort)
+    const rawCompanions = [];
+    if (Array.isArray(ch.companions) && ch.companions.length > 0) {
+      ch.companions.forEach(c => { if (c && typeof c === 'object') rawCompanions.push(c); });
+    } else if (ch.companion && typeof ch.companion === 'object' && ch.companion.baseMonsterId) {
+      rawCompanions.push(ch.companion);
+    }
+    const activeFamiliars = rawCompanions.filter(c => (c.entityKind || c.type) === 'familiar' && c.baseMonsterId && c.active !== false);
+    if (activeFamiliars.length > 0) {
+      const compData = this._getCompanionsDataSync();
+      const famAllowed = Array.isArray(compData?.familiarAllowedAnimals) ? compData.familiarAllowedAnimals : [];
+      activeFamiliars.forEach(fam => {
+        const fDef = famAllowed.find(f => f && f.id === fam.baseMonsterId);
+        if (fDef && Array.isArray(fDef.effects) && fDef.effects.length > 0) {
+          addEntry({
+            schemaVersion: 3,
+            id: `familiar-master-bonus:${fam.baseMonsterId}`,
+            name: `Familiar (${fam.name || fDef.name || fam.baseMonsterId})`,
+            type: 'Buff',
+            effects: fDef.effects
+          }, 'Buff', 'familiarMasterBonus');
+        }
+      });
+    }
+
     return collected;
   },
 
@@ -3590,7 +3658,8 @@ const RuleEngine = {
     const ctx = this.buildFormulaContext(ch, { ownedIds });
 
     // STAGE 1: Synergy & Grant Resolution (auto-unlocks entries from candidatePool or embedded grants when requires predicate passes)
-    const grantedCapabilities = { spellsAtWill: [], proficiencies: [], familiarities: [], naturalWeapons: [], senses: [], movements: [], unlockedEntities: [], grantedFeats: [] };
+    const grantedCapabilities = { spellsAtWill: [], proficiencies: [], familiarities: [], naturalWeapons: [], senses: [], movements: [], unlockedEntities: [], grantedFeats: [], companionEntities: [] };
+    const seenCompanionEntitySources = new Set();
     const poolNormalized = Array.isArray(candidatePool) ? candidatePool.map(p => this.normalizeLegoEntry(p)) : [];
 
     // Bonus feats granted by data (`effect` block `effectKind: 'feat'`, `targetId` = immutable feat id). The feat becomes a
@@ -3668,6 +3737,18 @@ const RuleEngine = {
           grantedCapabilities.senses.push({ type: g.targetId, range: g.value });
         } else if (g.grantType === 'movement') {
           grantedCapabilities.movements.push({ mode: g.targetId, speed: g.value });
+        } else if (g.grantType === 'companion_entity') {
+          const dedupKey = String(g.sourceId || e.id || `${g.entityKind}|${g.levelFormula}`).toLowerCase();
+          if (!seenCompanionEntitySources.has(dedupKey)) {
+            seenCompanionEntitySources.add(dedupKey);
+            grantedCapabilities.companionEntities.push({
+              sourceId: g.sourceId || e.id || null,
+              sourceName: g.sourceName || e.name || g.entityKind,
+              entityKind: g.entityKind || 'animal_companion',
+              levelFormula: g.levelFormula || '@level',
+              progressionKey: g.progressionKey || ''
+            });
+          }
         }
       });
     });
@@ -3721,7 +3802,8 @@ const RuleEngine = {
     });
 
     // STAGE 2: Selector Modifiers (Entity-to-Entity & Category-Wide Mutations)
-    const selectorMods = allModifiers.filter(item => item.mod.selector || String(item.mod.target || '').startsWith('entity.'));
+    const isCompanionEntityStatTarget = (t) => /^entity\.(animal_companion|familiar|special_mount|fiendish_servant)\./i.test(String(t || ''));
+    const selectorMods = allModifiers.filter(item => item.mod.selector || (String(item.mod.target || '').startsWith('entity.') && !isCompanionEntityStatTarget(item.mod.target)));
 
     selectorMods.forEach(({ mod, selfCtx }) => {
       const val = mod.formula !== undefined && mod.formula !== null
@@ -3784,7 +3866,7 @@ const RuleEngine = {
         self: { stacks: getStacks(e), invested: getInvested(e) }
       });
       (e.modifiers || []).forEach(m => {
-        if (m.selector || String(m.target || '').startsWith('entity.')) return;
+        if (m.selector || (String(m.target || '').startsWith('entity.') && !isCompanionEntityStatTarget(m.target))) return;
         if (this.evaluatePredicate(m.when || m.condition, ch, selfCtx)) {
           refreshedStatMods.push({ mod: m, sourceEntry: e, selfCtx });
         }
@@ -3792,7 +3874,7 @@ const RuleEngine = {
       (e.modes || []).forEach(mode => {
         if (mode && (String(mode.actionType || '').toLowerCase() === 'passive' || mode.isPassive)) {
           (mode.modifiers || []).forEach(m => {
-            if (m.selector || String(m.target || '').startsWith('entity.')) return;
+            if (m.selector || (String(m.target || '').startsWith('entity.') && !isCompanionEntityStatTarget(m.target))) return;
             if (this.evaluatePredicate(m.when || m.condition, ch, selfCtx)) {
               refreshedStatMods.push({ mod: m, sourceEntry: e, selfCtx });
             }
@@ -4157,7 +4239,7 @@ const RuleEngine = {
       abilities: evaluatedAbilities,
       saves,
       ac: { normal: normalAc, touch: touchAc, flatFooted: flatFootedAc, naturalArmor: natArmorBonus, abilityMod: acAbiMod, replacements: acReplaces },
-      hpBonus: sumBucket('hp'),
+      hpBonus: sumBucket('hp') + sumBucket('hp.max'),
       speedLandBonus: sumBucket('speed.land'),
       defenses: {
         dr: defenses.dr,
@@ -4183,6 +4265,12 @@ const RuleEngine = {
       replacements,
       resources,
       grantedCapabilities,
+      entityBonuses: {
+        animal_companion: { levelBonus: sumBucket('entity.animal_companion.levelBonus') },
+        familiar: { levelBonus: sumBucket('entity.familiar.levelBonus') },
+        special_mount: { levelBonus: sumBucket('entity.special_mount.levelBonus') },
+        fiendish_servant: { levelBonus: sumBucket('entity.fiendish_servant.levelBonus') }
+      },
       modes: evaluatedModes,
       entries: workingEntries
     };
@@ -4596,6 +4684,7 @@ const RuleEngine = {
         'casterLevel', 'spell.dc', 'spell.effectiveLevel', 'spell.damage', 'sr.penetration', 'caster.spellPenetration',
         'sr', 'dr', 'fortification', 'turnLevel', 'turning.check', 'turning.damageDice', 'wildEmpathy', 'carryingCapacity',
         'resource.pp', 'resource.essentia', 'psionics.powerPoints', 'incarnum.essentiaPool', 'incarnum.capacityBonus',
+        'entity.animal_companion.levelBonus', 'entity.familiar.levelBonus', 'entity.special_mount.levelBonus', 'entity.fiendish_servant.levelBonus',
         'skill.all',
         'ability.str.check', 'ability.dex.check', 'ability.con.check',
         'ability.int.check', 'ability.wis.check', 'ability.cha.check',
@@ -4904,7 +4993,7 @@ const RuleEngine = {
             b.effectKind = 'rule';
             delete b.flag;
           }
-          if (!['ruleSwitch', 'rule', 'castSpell', 'linkedSpell', 'castEvolution', 'recoverSlot', 'stealStore', 'grant', 'grantFeat', 'proficiency', 'familiarity', 'feat', 'bonusSlot', 'trait', 'reroll', 'greater_turning', 'flag', 'sense', 'movement', 'condition', 'summon'].includes(b.effectKind)) {
+          if (!['ruleSwitch', 'rule', 'castSpell', 'linkedSpell', 'castEvolution', 'recoverSlot', 'stealStore', 'grant', 'grantFeat', 'proficiency', 'familiarity', 'feat', 'bonusSlot', 'trait', 'reroll', 'greater_turning', 'flag', 'sense', 'movement', 'condition', 'summon', 'entity'].includes(b.effectKind)) {
             b.effectKind = 'rule';
           }
           out.push(b);
@@ -9881,21 +9970,27 @@ const RuleEngine = {
         character.hp.conBonusHp = newConBonusHp;
       }
 
+      const familiarMasterHpBonus = (legoEval?.entries || [])
+        .filter(e => e && String(e.id || '').startsWith('familiar-master-bonus:'))
+        .reduce((sum, e) => sum + (e.modifiers || [])
+          .filter(m => m && (m.target === 'hp.max' || m.target === 'hp'))
+          .reduce((s, m) => s + (Number(m.value) || 0), 0), 0);
+      const totalBonusHp = draconicToughnessHp + familiarMasterHpBonus;
       const prevConBonusHp = Number(character.hp.conBonusHp) || 0;
       const prevDebuffHp = Number(character.hp.debuffHpPenalty) || 0;
       const prevBonusHp = Number(character.hp.bonusFeatHp) || 0;
       const prevFlawPenalty = Number(character.hp.flawHpPenalty) || 0;
       const conHpDiff = newConBonusHp - prevConBonusHp;
       const debuffHpDiff = debuffHpPenalty - prevDebuffHp;
-      const bonusHpDiff = draconicToughnessHp - prevBonusHp;
+      const bonusHpDiff = totalBonusHp - prevBonusHp;
       const flawHpDiff = flawHpPenalty - prevFlawPenalty;
-      const expectedMax = Math.max(1, Number(character.hp.baseMax) + newConBonusHp + draconicToughnessHp - flawHpPenalty - debuffHpPenalty);
+      const expectedMax = Math.max(1, Number(character.hp.baseMax) + newConBonusHp + totalBonusHp - flawHpPenalty - debuffHpPenalty);
 
       if (conHpDiff !== 0 || debuffHpDiff !== 0 || bonusHpDiff !== 0 || flawHpDiff !== 0 || character.hp._appliedFrail !== hasFrail || character.hp.max !== expectedMax) {
         const wasAtFullHp = (character.hp.max !== undefined && Number(character.hp.current) >= Number(character.hp.max));
         character.hp.conBonusHp = newConBonusHp;
         character.hp.debuffHpPenalty = debuffHpPenalty;
-        character.hp.bonusFeatHp = draconicToughnessHp;
+        character.hp.bonusFeatHp = totalBonusHp;
         character.hp.flawHpPenalty = flawHpPenalty;
         character.hp._appliedFrail = hasFrail;
         character.hp.max = expectedMax;
@@ -17065,6 +17160,7 @@ const RuleEngine = {
       },
       subsystems: subsystemsView,
       progression: progressionView,
+      companions: this.deriveCompanions(working, { masterDb: workingDb }),
       skillsBonusMap,
       session: workingSession,
       warnings: working.activeConditionWarnings || [],
@@ -17123,6 +17219,457 @@ const RuleEngine = {
       clean.customDb = charDoc.customDb.slice();
     }
     return clean;
+  },
+
+  // ============================================================================
+  // UNIFIED ENTITIES & MONSTER CHASSIS ADAPTER (ADR-058 — Sprint E1.1)
+  // ============================================================================
+  _getCompanionsDataSync() {
+    const comp = (typeof window !== 'undefined' && window.SrdCompendium)
+      || (typeof SrdCompendium !== 'undefined' ? SrdCompendium : null);
+    if (comp && typeof comp.getCompanionsData === 'function') {
+      const d = comp.getCompanionsData();
+      if (d) return d;
+    }
+    if (!this._cachedCompanionsData && typeof require !== 'undefined') {
+      try {
+        const fs = require('fs');
+        const path = require('path');
+        const p = path.resolve(__dirname, 'database/srd_companions.json');
+        if (fs.existsSync(p)) {
+          this._cachedCompanionsData = JSON.parse(fs.readFileSync(p, 'utf8'));
+        }
+      } catch (_) {}
+    }
+    return this._cachedCompanionsData || null;
+  },
+
+  _resolveMonsterByIdSync(monsterId, masterDb = null) {
+    if (!monsterId) return null;
+    if (Array.isArray(masterDb)) {
+      const hit = masterDb.find(m => m && m.id === monsterId);
+      if (hit) return hit;
+    }
+    const comp = (typeof window !== 'undefined' && window.SrdCompendium)
+      || (typeof SrdCompendium !== 'undefined' ? SrdCompendium : null);
+    if (comp && typeof comp.getById === 'function') {
+      const hit = comp.getById(monsterId);
+      if (hit) return hit;
+    }
+    if (!this._cachedMonstersById && typeof require !== 'undefined') {
+      try {
+        const fs = require('fs');
+        const path = require('path');
+        const p = path.resolve(__dirname, 'database/srd_monsters.json');
+        if (fs.existsSync(p)) {
+          const list = JSON.parse(fs.readFileSync(p, 'utf8'));
+          this._cachedMonstersById = new Map();
+          list.forEach(m => { if (m && m.id) this._cachedMonstersById.set(m.id, m); });
+        }
+      } catch (_) {}
+    }
+    return (this._cachedMonstersById && this._cachedMonstersById.get(monsterId)) || null;
+  },
+
+  /**
+   * MonsterChassisAdapter (ADR-058):
+   * Shared chassis extractor & natural attack calculator for Companions, Familiars,
+   * Special Mounts, Fiendish Servants, and (in Faz 2) Wild Shape Alternate Forms.
+   */
+  buildMonsterChassis(baseMonster, opts = {}) {
+    if (!baseMonster || typeof baseMonster !== 'object') return null;
+    const rs = (this.rulesets && this.rulesets[this.activeRulesetId || 'dnd35'])
+      || (typeof window !== 'undefined' && window.DnD35Ruleset)
+      || null;
+    const sizeMods = (rs && rs.sizeAcAttackModifiers) || {
+      Fine: 8, Diminutive: 4, Tiny: 2, Small: 1, Medium: 0, Large: -1, Huge: -2, Gargantuan: -4, Colossal: -8
+    };
+    const mChassis = baseMonster.monster && typeof baseMonster.monster === 'object' ? baseMonster.monster : baseMonster;
+    const mAbil = (mChassis && mChassis.abilities) ? mChassis.abilities : (baseMonster.abilities || {});
+    const size = mChassis.size || baseMonster.size || 'Medium';
+    const sizeMod = Number(sizeMods[size] ?? 0);
+
+    const baseStr = Number(mAbil.str ?? 10);
+    const baseDex = Number(mAbil.dex ?? 10);
+    const baseCon = Number(mAbil.con ?? 10);
+    const baseInt = Number(mAbil.int ?? 2);
+    const baseWis = Number(mAbil.wis ?? 10);
+    const baseCha = Number(mAbil.cha ?? 10);
+
+    const baseDexMod = this.getAbilityMod(baseDex);
+    const explicitNat = Number(mChassis?.ac?.naturalArmor ?? baseMonster?.ac?.naturalArmor);
+    const baseTotalAC = Number(mChassis?.ac?.total ?? baseMonster?.ac?.total);
+    const baseNaturalArmor = Number.isFinite(explicitNat)
+      ? Math.max(0, explicitNat)
+      : (Number.isFinite(baseTotalAC) ? Math.max(0, baseTotalAC - 10 - baseDexMod - sizeMod) : 0);
+
+    const baseHd = Number(mChassis?.hitDice?.count)
+      || parseInt(String(mChassis?.hitDice?.formula || baseMonster.hitDice || '1').match(/\d+/)?.[0] || '1', 10)
+      || 1;
+
+    const feats = Array.isArray(baseMonster.feats)
+      ? baseMonster.feats.slice()
+      : (Array.isArray(mChassis?.feats) ? mChassis.feats.slice() : []);
+
+    const str = opts.str !== undefined ? Number(opts.str) : baseStr;
+    const dex = opts.dex !== undefined ? Number(opts.dex) : baseDex;
+    const bab = opts.bab !== undefined ? Number(opts.bab) : (Number(mChassis.bab ?? baseMonster.bab) || 0);
+    const attackEnhancement = Number(opts.attackEnhancement) || 0;
+    const damageEnhancement = Number(opts.damageEnhancement) || 0;
+    const strMod = this.getAbilityMod(str);
+    const dexMod = this.getAbilityMod(dex);
+    const hasFinesse = Boolean(opts.hasFinesse) || feats.some(f => /weapon\s*finesse/i.test(String(f)));
+    const hasMultiattack = Boolean(opts.hasMultiattack) || feats.some(f => /\bmultiattack\b/i.test(String(f)));
+    const secondaryPenalty = hasMultiattack ? -2 : -5;
+
+    const wfBonusFor = (atkName) => {
+      const low = String(atkName || '').toLowerCase();
+      return feats.some(f => {
+        const mw = String(f).match(/weapon\s*focus\s*\(([^)]+)\)/i);
+        return mw && low.includes(mw[1].toLowerCase().replace(/s$/, ''));
+      }) ? 1 : 0;
+    };
+
+    const rawAttacks = Array.isArray(baseMonster.attacks)
+      ? baseMonster.attacks
+      : (Array.isArray(mChassis?.attacks) ? mChassis.attacks : []);
+
+    const totalNaturalCount = rawAttacks.reduce((sum, a) => {
+      if (!a) return sum;
+      if (a.primary === true || a.primary === false) return sum + (Number(a.count) || 1);
+      if (a.primary === undefined && (a.attackType === 'natural' || !a.attackType) && !/rake/i.test(a.name || '')) {
+        return sum + (Number(a.count) || 1);
+      }
+      return sum;
+    }, 0);
+
+    const attacks = rawAttacks
+      .filter(a => a && typeof a === 'object')
+      .map((atk, idx) => {
+        const isRake = atk.primary === 'special_rake' || /rake/i.test(String(atk.name || ''));
+        const isNatural = isRake || atk.primary === true || atk.primary === false || atk.attackType === 'natural' || !atk.attackType;
+        const isPrimary = isRake ? 'special_rake' : (atk.primary !== undefined ? Boolean(atk.primary) : idx === 0);
+        const count = Math.max(1, Number(atk.count) || 1);
+        const isMelee = atk.actionType !== 'rwak';
+        const atkAbilityMod = isMelee ? (hasFinesse ? Math.max(strMod, dexMod) : strMod) : dexMod;
+        const wf = wfBonusFor(atk.name);
+        const secPen = (!isPrimary && isNatural && isMelee) ? secondaryPenalty : 0;
+        const totalBonus = bab + atkAbilityMod + sizeMod + wf + attackEnhancement + secPen;
+        const baseDice = atk.weapon?.damageDice || atk.damageDice || '1d4';
+        const dmgType = atk.dmgType || atk.weapon?.dmgType || 'B';
+
+        let natDmgBonus = 0;
+        if (isMelee && isNatural) {
+          if (isRake) {
+            natDmgBonus = strMod > 0 ? Math.floor(strMod * 0.5) : strMod;
+          } else if (isPrimary === true) {
+            natDmgBonus = (totalNaturalCount === 1 && strMod > 0) ? Math.floor(strMod * 1.5) : strMod;
+          } else {
+            natDmgBonus = strMod > 0 ? Math.floor(strMod * 0.5) : strMod;
+          }
+        } else if (isMelee) {
+          natDmgBonus = strMod;
+        }
+        const totalDmgBonus = natDmgBonus + damageEnhancement;
+        const dmgSuffix = totalDmgBonus > 0 ? `+${totalDmgBonus}` : (totalDmgBonus < 0 ? String(totalDmgBonus) : '');
+        return {
+          name: atk.name,
+          count,
+          primary: isPrimary,
+          dmgType,
+          attackBonus: totalBonus,
+          damageDice: baseDice,
+          damageBonus: totalDmgBonus,
+          formattedAttack: (totalBonus >= 0 ? '+' + totalBonus : String(totalBonus)),
+          formattedDamage: baseDice + dmgSuffix,
+          source: atk.name
+        };
+      });
+
+    const baseSpeeds = mChassis?.speeds || baseMonster.speed || { land: 30 };
+    return {
+      id: baseMonster.id,
+      name: baseMonster.name,
+      creatureType: baseMonster.creatureType || mChassis.creatureType || '',
+      size,
+      sizeMod,
+      baseHd,
+      baseNaturalArmor,
+      abilities: { str: baseStr, dex: baseDex, con: baseCon, int: baseInt, wis: baseWis, cha: baseCha },
+      speeds: Object.assign({ land: 30 }, baseSpeeds),
+      feats,
+      specialAttacks: Array.isArray(baseMonster.specialAttacks) ? baseMonster.specialAttacks.slice() : [],
+      specialQualities: Array.isArray(baseMonster.specialQualities) ? baseMonster.specialQualities.slice() : [],
+      attacks
+    };
+  },
+
+  /**
+   * Pure Canonical V3 Companion / Entity Stats Engine (ADR-058).
+   * Replaces regex class parsing and fixes the 3 legacy bugs:
+   *   1. No `lvl === 0` fallback to character level
+   *   2. No double-STR damage addition
+   *   3. Correct AC `sizeMod` in both base natural armor extraction and total/touch/FF AC
+   */
+  calculateCompanionStats(char, companionConfig, options = {}) {
+    if (!companionConfig || !companionConfig.baseMonsterId) return null;
+    const baseMonster = options.baseMonster || this._resolveMonsterByIdSync(companionConfig.baseMonsterId, options.masterDb);
+    if (!baseMonster) return null;
+
+    const compData = options.companionsData || this._getCompanionsDataSync() || {};
+    const type = String(companionConfig.entityKind || companionConfig.type || 'animal_companion');
+    const customName = companionConfig.name || baseMonster.name;
+    const ctx = this.buildFormulaContext(char || {});
+
+    // 1. Resolve Effective Level from V3 entity grants (deduplicated by sourceId) + fallback canonical formula
+    const defaultFormulas = {
+      animal_companion: '@classes.druid.level + (@classes.ranger.level >= 4 ? floor(@classes.ranger.level / 2) : 0)',
+      familiar: '@classes.wizard.level + @classes.sorcerer.level',
+      special_mount: '@classes.paladin.level',
+      fiendish_servant: '@level'
+    };
+    const grants = Array.isArray(char?.legoEvaluation?.grantedCapabilities?.companionEntities)
+      ? char.legoEvaluation.grantedCapabilities.companionEntities.filter(g => g && g.entityKind === type)
+      : [];
+
+    let rawLevel = 0;
+    if (grants.length > 0) {
+      // Take highest effective level across distinct entity grants of the same kind (e.g. Obtain Familiar supersedes Wizard/Sorcerer)
+      grants.forEach(g => {
+        const val = Math.floor(Number(this.evaluateFormula(g.levelFormula, ctx)) || 0);
+        if (val > rawLevel) rawLevel = val;
+      });
+    } else {
+      rawLevel = Math.floor(Number(this.evaluateFormula(defaultFormulas[type] || '0', ctx)) || 0);
+    }
+
+    const levelBonus = Number(
+      options.levelBonus
+      ?? char?.legoEvaluation?.entityBonuses?.[type]?.levelBonus
+      ?? 0
+    ) || 0;
+
+    let levelAdj = 0;
+    let effectiveLevel = 0;
+    if (type === 'animal_companion') {
+      const allowedList = compData.druidAllowedAnimals || [];
+      const allowedEntry = allowedList.find(a => a && a.id === companionConfig.baseMonsterId);
+      levelAdj = (allowedEntry && Number(allowedEntry.levelAdj)) ? Number(allowedEntry.levelAdj) : 0;
+      if (rawLevel > 0) {
+        // Complete Adventurer p.111 (Natural Bond): eff = min(@level, raw + levelAdj + bonus)
+        const adjusted = rawLevel + levelAdj + levelBonus;
+        effectiveLevel = levelBonus > 0
+          ? Math.max(1, Math.min(ctx.level, adjusted))
+          : Math.max(1, adjusted);
+      }
+    } else if (type === 'familiar') {
+      if (rawLevel > 0) effectiveLevel = Math.max(1, rawLevel + levelBonus);
+    } else if (type === 'special_mount') {
+      // No buggy Math.max(5, ...) clamp (ADR-058)
+      if (rawLevel > 0) effectiveLevel = Math.max(1, rawLevel + levelBonus);
+    } else if (type === 'fiendish_servant') {
+      // DMG p.183: scales with Character Level (@level), requires Blackguard level >= 5 or explicit grant
+      if (rawLevel > 0) effectiveLevel = Math.max(1, rawLevel + levelBonus);
+    }
+
+    // 2. Progression Bracket Lookup (with cumulative special abilities)
+    let bonusHd = 0;
+    let natArmorAdj = 0;
+    let strAdj = 0;
+    let dexAdj = 0;
+    let bonusTricks = 0;
+    let specialAbilities = [];
+    let companionInt = null;
+    let masterBonusText = null;
+    let spellResistance = 0;
+
+    const lookupTable = (rows, effLvl) => {
+      if (!Array.isArray(rows) || effLvl <= 0) return { row: null, cumulativeSpecial: [] };
+      const matched = rows.find(r => effLvl >= r.minLevel && effLvl <= r.maxLevel)
+        || (effLvl > rows[rows.length - 1].maxLevel ? rows[rows.length - 1] : null);
+      const cumSpec = [];
+      rows.forEach(r => {
+        if (effLvl >= r.minLevel && Array.isArray(r.special)) {
+          r.special.forEach(s => { if (s && !cumSpec.includes(s)) cumSpec.push(s); });
+        }
+      });
+      return { row: matched, cumulativeSpecial: cumSpec };
+    };
+
+    if (type === 'animal_companion') {
+      const { row, cumulativeSpecial } = lookupTable(compData.druidProgression, effectiveLevel);
+      if (row) {
+        bonusHd = row.bonusHd || 0;
+        natArmorAdj = row.natArmorAdj || 0;
+        strAdj = row.strDexAdj || 0;
+        dexAdj = row.strDexAdj || 0;
+        bonusTricks = row.bonusTricks || 0;
+        specialAbilities = cumulativeSpecial;
+      }
+    } else if (type === 'familiar') {
+      const { row, cumulativeSpecial } = lookupTable(compData.familiarProgression, effectiveLevel);
+      if (row) {
+        natArmorAdj = row.natArmorAdj || 0;
+        companionInt = row.intScore || row.int || 6;
+        specialAbilities = cumulativeSpecial;
+        if (effectiveLevel >= 11) spellResistance = effectiveLevel + 5;
+      }
+      const famAllowed = (compData.familiarAllowedAnimals || []).find(f => f && f.id === companionConfig.baseMonsterId);
+      if (famAllowed) masterBonusText = famAllowed.masterBonusText || null;
+    } else if (type === 'special_mount') {
+      const { row, cumulativeSpecial } = lookupTable(compData.paladinMountProgression, effectiveLevel);
+      if (row) {
+        bonusHd = row.bonusHd || 0;
+        natArmorAdj = row.natArmorAdj || 0;
+        strAdj = row.strAdj || 0;
+        companionInt = row.intScore || row.int || 6;
+        specialAbilities = cumulativeSpecial;
+        if (effectiveLevel >= 15) spellResistance = effectiveLevel + 5;
+      }
+    } else if (type === 'fiendish_servant') {
+      const { row, cumulativeSpecial } = lookupTable(compData.fiendishServantProgression, effectiveLevel);
+      if (row) {
+        bonusHd = row.bonusHd || 0;
+        natArmorAdj = row.natArmorAdj || 0;
+        strAdj = row.strAdj || 0;
+        companionInt = row.intScore || row.int || 6;
+        specialAbilities = cumulativeSpecial;
+        if (row.srFormula) {
+          spellResistance = Math.max(0, Math.floor(Number(this.evaluateFormula(row.srFormula, ctx)) || 0));
+        }
+      }
+    }
+
+    // 3. Base Chassis & Derived Abilities
+    const prelimChassis = this.buildMonsterChassis(baseMonster);
+    const totalStr = prelimChassis.abilities.str + strAdj;
+    const totalDex = prelimChassis.abilities.dex + dexAdj;
+    const totalCon = prelimChassis.abilities.con;
+    const totalInt = companionInt !== null ? Math.max(prelimChassis.abilities.int, companionInt) : prelimChassis.abilities.int;
+    const totalWis = prelimChassis.abilities.wis;
+    const totalCha = prelimChassis.abilities.cha;
+
+    const strMod = this.getAbilityMod(totalStr);
+    const dexMod = this.getAbilityMod(totalDex);
+    const conMod = this.getAbilityMod(totalCon);
+    const intMod = this.getAbilityMod(totalInt);
+    const wisMod = this.getAbilityMod(totalWis);
+    const chaMod = this.getAbilityMod(totalCha);
+
+    // 4. Hit Dice & Hit Points
+    const totalHd = (type === 'familiar') ? Math.max(1, ctx.level) : (prelimChassis.baseHd + bonusHd);
+    const maxHp = (type === 'familiar')
+      ? Math.max(1, Math.floor((Number(char?.hp?.max) || 10) / 2))
+      : Math.max(1, Math.round(totalHd * 4.5 + totalHd * conMod));
+    const currentHp = companionConfig.currentHp !== undefined ? companionConfig.currentHp : maxHp;
+
+    // 5. Base Attack Bonus
+    const bab = (type === 'familiar') ? (Number(char?.bab) || 0) : Math.floor(totalHd * 0.75);
+
+    // 6. Natural Armor, Gear & AC (with sizeMod properly applied!)
+    const totalNatArmor = Math.max(0, prelimChassis.baseNaturalArmor + natArmorAdj);
+    const gear = companionConfig.gear || {};
+    let armorACBonus = 0;
+    let attackEnhancement = 0;
+    let damageEnhancement = 0;
+    let speedBonus = 0;
+
+    if (gear.armor) {
+      const ga = gear.armor.armor || gear.armor;
+      armorACBonus += (Number(ga.armorBonus || gear.armor.armorBonus) || 0) + (Number(ga.enhancementBonus ?? gear.armor.enhancementBonus) || 0);
+    }
+    if (gear.neck && gear.neck.enhancementBonus) {
+      attackEnhancement += Number(gear.neck.enhancementBonus) || 0;
+      damageEnhancement += Number(gear.neck.enhancementBonus) || 0;
+    }
+    if (gear.feet) {
+      if (gear.feet.speedBonus) speedBonus += Number(gear.feet.speedBonus) || 0;
+      else if (String(gear.feet.name || '').toLowerCase().includes('speed')) speedBonus += 30;
+    }
+    if (type === 'special_mount' && effectiveLevel >= 8) {
+      speedBonus += 10;
+    }
+
+    const sizeMod = prelimChassis.sizeMod;
+    const acTotal = 10 + dexMod + sizeMod + totalNatArmor + armorACBonus;
+    const acTouch = 10 + dexMod + sizeMod;
+    const acFlatFooted = 10 + sizeMod + totalNatArmor + armorACBonus;
+
+    // 7. Saving Throws
+    let fortSave = 0;
+    let refSave = 0;
+    let willSave = 0;
+    if (type === 'familiar') {
+      const baseFort = Number(char?.saves?.fort?.base ?? char?.saves?.fort?.total ?? 0);
+      const baseRef = Number(char?.saves?.ref?.base ?? char?.saves?.ref?.total ?? 0);
+      const baseWill = Number(char?.saves?.will?.base ?? char?.saves?.will?.total ?? 0);
+      fortSave = Math.max(2 + Math.floor(prelimChassis.baseHd / 2), baseFort) + conMod;
+      refSave = Math.max(2 + Math.floor(prelimChassis.baseHd / 2), baseRef) + dexMod;
+      willSave = Math.max(Math.floor(prelimChassis.baseHd / 3), baseWill) + wisMod;
+    } else {
+      fortSave = 2 + Math.floor(totalHd / 2) + conMod;
+      refSave = 2 + Math.floor(totalHd / 2) + dexMod;
+      willSave = Math.floor(totalHd / 3) + wisMod;
+    }
+
+    // 8. Natural Attacks via MonsterChassisAdapter (zero double-STR bug!)
+    const hasMultiattack = specialAbilities.some(s => /\bmultiattack\b/i.test(String(s)));
+    const finalChassis = this.buildMonsterChassis(baseMonster, {
+      str: totalStr,
+      dex: totalDex,
+      bab,
+      attackEnhancement,
+      damageEnhancement,
+      hasMultiattack
+    });
+
+    return {
+      id: companionConfig.id || `${type}:${companionConfig.baseMonsterId}`,
+      type,
+      entityKind: type,
+      customName,
+      baseName: baseMonster.name,
+      baseMonsterId: companionConfig.baseMonsterId,
+      size: prelimChassis.size,
+      sizeMod,
+      effectiveLevel,
+      rawLevel,
+      levelAdj,
+      levelBonus,
+      totalHd,
+      hp: { current: currentHp, max: maxHp },
+      ac: { total: acTotal, touch: acTouch, flatFooted: acFlatFooted, naturalArmor: totalNatArmor, armorBonus: armorACBonus, sizeMod },
+      abilities: { str: totalStr, dex: totalDex, con: totalCon, int: totalInt, wis: totalWis, cha: totalCha },
+      abilityMods: { str: strMod, dex: dexMod, con: conMod, int: intMod, wis: wisMod, cha: chaMod },
+      saves: { fort: fortSave, ref: refSave, will: willSave },
+      bab,
+      spellResistance,
+      speed: Object.assign({}, prelimChassis.speeds, { land: (prelimChassis.speeds.land ?? 30) + speedBonus }),
+      attacks: finalChassis.attacks,
+      bonusTricks,
+      specialAbilities,
+      monsterFeats: prelimChassis.feats,
+      masterBonusText,
+      gear
+    };
+  },
+
+  deriveCompanions(character, options = {}) {
+    const ch = character || {};
+    const grants = Array.isArray(ch.legoEvaluation?.grantedCapabilities?.companionEntities)
+      ? ch.legoEvaluation.grantedCapabilities.companionEntities
+      : [];
+    const list = [];
+    if (Array.isArray(ch.companions) && ch.companions.length > 0) {
+      ch.companions.forEach(c => {
+        const res = this.calculateCompanionStats(ch, c, options);
+        if (res) list.push(res);
+      });
+    } else if (ch.companion && typeof ch.companion === 'object' && ch.companion.baseMonsterId) {
+      const res = this.calculateCompanionStats(ch, ch.companion, options);
+      if (res) list.push(res);
+    }
+    return { grants, list };
   }
 };
 

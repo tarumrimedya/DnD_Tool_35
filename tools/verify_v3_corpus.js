@@ -34,6 +34,7 @@ const CANONICAL_V3_TARGETS = new Set([
   'casterLevel', 'spell.dc', 'spell.effectiveLevel', 'spell.damage', 'sr.penetration', 'caster.spellPenetration',
   'sr', 'dr', 'fortification', 'turnLevel', 'turning.check', 'turning.damageDice', 'wildEmpathy', 'carryingCapacity',
   'resource.pp', 'resource.essentia', 'psionics.powerPoints', 'incarnum.essentiaPool', 'incarnum.capacityBonus',
+  'entity.animal_companion.levelBonus', 'entity.familiar.levelBonus', 'entity.special_mount.levelBonus', 'entity.fiendish_servant.levelBonus',
   'skill.all'
 ]);
 
@@ -241,6 +242,12 @@ function runCorpusAudit() {
             if (ef.type === 'effect' && ef.effectKind === 'feat') {
               const fid = String(ef.targetId || '');
               if (!/^feat-/.test(fid) || (FEAT_IDS.size > 0 && !FEAT_IDS.has(fid))) report.badProficiencyGrants.push((e.id || '?') + ' -> feat ' + fid);
+            }
+            if (ef.type === 'effect' && ef.effectKind === 'entity') {
+              const okEnt = ['animal_companion', 'familiar', 'special_mount', 'fiendish_servant'].includes(ef.entityKind)
+                && typeof ef.levelFormula === 'string' && ef.levelFormula.trim().length > 0
+                && ['druidProgression', 'familiarProgression', 'paladinMountProgression', 'fiendishServantProgression'].includes(ef.progressionKey);
+              if (!okEnt) report.badProficiencyGrants.push((e.id || '?') + ' -> entity ' + JSON.stringify({ entityKind: ef.entityKind, levelFormula: ef.levelFormula, progressionKey: ef.progressionKey }));
             }
             if (ef.type === 'stat') {
               if (ef.mode === 'perVar') {

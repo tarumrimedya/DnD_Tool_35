@@ -1,9 +1,9 @@
 {
   "schemaVersion": 3,
   "version": "3.0.0",
-  "compendiumHash": "355e499c8e3937e0",
+  "compendiumHash": "cc9a0792a4c72176",
   "generatedAt": "2026-11-15T19:43:51.694Z",
-  "totalEntries": 7987,
+  "totalEntries": 7988,
   "chunks": {
     "srd_equipment.json": {
       "count": 1143,
@@ -18,9 +18,9 @@
       "eagerLoad": true
     },
     "srd_classes_races.json": {
-      "count": 326,
+      "count": 327,
       "bytes": 1611663,
-      "hash": "4ce7aa88cdda3347",
+      "hash": "0931e06cda2e733d",
       "eagerLoad": true
     },
     "srd_combat_rules.json": {
@@ -38,7 +38,7 @@
     "srd_monsters.json": {
       "count": 649,
       "bytes": 5289035,
-      "hash": "b93e9a9cfe0ac879",
+      "hash": "d6131a457409f006",
       "eagerLoad": false
     },
     "srd_maneuvers.json": {
@@ -62,7 +62,7 @@
     "srd_companions.json": {
       "count": 1,
       "bytes": 13196,
-      "hash": "54f4a56866928974",
+      "hash": "5737ccb20c900c1b",
       "eagerLoad": true
     },
     "srd_templates.json": {
@@ -80,7 +80,7 @@
     "srd_feats_splat.json": {
       "count": 1767,
       "bytes": 2330390,
-      "hash": "49711fa6a0dfcdf2",
+      "hash": "303a5905f83e552a",
       "eagerLoad": false
     },
     "srd_feats_epic.json": {
@@ -66053,6 +66053,14 @@
     {
       "id": "cab-loremaster-lore",
       "n": "Lore (Ex)",
+      "t": "ClassAbility",
+      "c": "Class Feature",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cab-fiendish-servant",
+      "n": "Fiendish Servant",
       "t": "ClassAbility",
       "c": "Class Feature",
       "s": "None",

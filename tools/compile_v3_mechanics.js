@@ -1071,6 +1071,7 @@ function linkClassFeatureIds(classList, cabLookup) {
     [/^special\s+mount\b/i, 'cab-special-mount'],
     [/^animal\s+companion\b/i, 'cab-animal-companion'],
     [/^summon\s+familiar\b/i, 'cab-summon-familiar'],
+    [/^fiendish\s+servant\b/i, 'cab-fiendish-servant'],
     [/^detect\s+evil\b/i, 'cab-detect-evil'],
     [/^weapon\s+finesse\b/i, 'feat-weapon-finesse']
   ];

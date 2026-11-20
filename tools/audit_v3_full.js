@@ -162,7 +162,7 @@ function atomsOf(ev, canonTarget, fctx) {
   });
   (ev.defenses || []).forEach((d) => { if (d) put('def|' + String(d.kind || d.type || '').toLowerCase(), stableStr(d)); });
   (ev.resources || []).forEach((r) => { if (r) put('res|' + String(r.name || r.id || '').toLowerCase(), String(r.max ?? r.maxFormula ?? '')); });
-  (ev.grants || []).forEach((g) => { if (g) put('grant|' + String(g.kind || g.effectKind || g.type || '').toLowerCase(), stableStr(g)); });
+  (ev.grants || []).forEach((g) => { if (g) put('grant|' + String(g.kind || g.effectKind || g.grantType || g.type || '').toLowerCase(), stableStr(g)); });
   const rf = ev.ruleFlags || {};
   Object.keys(rf).forEach((k) => {
     const v = rf[k];

@@ -6445,6 +6445,167 @@ function runDeriveSheetTests() {
     );
   }
 
+  // --- Sprint E1.1 (ADR-058): Unified Entities Engine, MonsterChassisAdapter & Natural Attack Normalization ---
+  {
+    const crDb = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'database', 'srd_classes_races.json'), 'utf8'));
+    const splatFeats = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'database', 'srd_feats_splat.json'), 'utf8'));
+    const monstersDb = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'database', 'srd_monsters.json'), 'utf8'));
+    const cabAC = crDb.find(e => e.id === 'cab-animal-companion');
+    const cabFam = crDb.find(e => e.id === 'cab-summon-familiar');
+    const cabMount = crDb.find(e => e.id === 'cab-special-mount');
+    const cabFiend = crDb.find(e => e.id === 'cab-fiendish-servant');
+    const featNB = splatFeats.find(e => e.id === 'feat-natural-bond');
+    const featOF = splatFeats.find(e => e.id === 'feat-obtain-familiar');
+
+    // 1. Druid 5 / Ranger 6 deduplication (shared cab-animal-companion -> eff = 5 + floor(6/2) = 8)
+    const drdRgr = {
+      name: 'Sylvan', level: 11, classLevels: { druid: 5, ranger: 6 },
+      abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 16, cha: 10 },
+      classFeatures: [cabAC, Object.assign({}, cabAC)], // intentional duplicate from Druid + Ranger
+      companions: [{ id: 'c1', entityKind: 'animal_companion', baseMonsterId: 'mst-wolf', name: 'Fang' }],
+      feats: [], buffs: [], gearPool: []
+    };
+    const drdRgrView = RuleEngine.deriveSheet(drdRgr, []);
+    const wolfStats = drdRgrView.companions.list[0];
+    check(
+      'E1.1 Druid 5 + Ranger 6 deduplicates cab-animal-companion -> effectiveLevel 8 (5 + floor(6/2))',
+      drdRgrView.companions.grants.length === 1 && wolfStats && wolfStats.effectiveLevel === 8 && wolfStats.totalHd === 6,
+      JSON.stringify({ grants: drdRgrView.companions.grants.length, eff: wolfStats?.effectiveLevel, hd: wolfStats?.totalHd })
+    );
+
+    // 2. No lvl===0 fallback to character level
+    const pureFighter = {
+      name: 'Krusk', level: 10, classLevels: { fighter: 10 },
+      abilities: { str: 16, dex: 12, con: 14, int: 10, wis: 10, cha: 8 },
+      companions: [{ id: 'c2', entityKind: 'animal_companion', baseMonsterId: 'mst-wolf' }],
+      feats: [], buffs: [], gearPool: []
+    };
+    const ftrComp = RuleEngine.deriveSheet(pureFighter, []).companions.list[0];
+    check(
+      'E1.1 No lvl===0 fallback: Fighter 10 without Druid/Ranger gets effectiveLevel 0 (not 10)',
+      ftrComp && ftrComp.effectiveLevel === 0 && ftrComp.totalHd === 2,
+      JSON.stringify({ eff: ftrComp?.effectiveLevel, hd: ftrComp?.totalHd })
+    );
+
+    // 3. Natural Bond (Complete Adventurer p.111): eff = min(@level, raw + levelAdj + bonus)
+    const drd10Bear = {
+      name: 'Bramble', level: 10, classLevels: { druid: 10 },
+      abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 16, cha: 10 },
+      classFeatures: [cabAC], feats: [featNB],
+      companions: [{ id: 'c3', entityKind: 'animal_companion', baseMonsterId: 'mst-bear-black' }],
+      buffs: [], gearPool: []
+    };
+    const drd5Wolf = {
+      name: 'Twig', level: 5, classLevels: { druid: 5 },
+      abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 16, cha: 10 },
+      classFeatures: [cabAC], feats: [featNB],
+      companions: [{ id: 'c4', entityKind: 'animal_companion', baseMonsterId: 'mst-wolf' }],
+      buffs: [], gearPool: []
+    };
+    const drd5Ftr5Wolf = {
+      name: 'Oak', level: 10, classLevels: { druid: 5, fighter: 5 },
+      abilities: { str: 14, dex: 10, con: 12, int: 10, wis: 14, cha: 10 },
+      classFeatures: [cabAC], feats: [featNB],
+      companions: [{ id: 'c5', entityKind: 'animal_companion', baseMonsterId: 'mst-wolf' }],
+      buffs: [], gearPool: []
+    };
+    const bearEff = RuleEngine.deriveSheet(drd10Bear, []).companions.list[0]?.effectiveLevel;
+    const twigEff = RuleEngine.deriveSheet(drd5Wolf, []).companions.list[0]?.effectiveLevel;
+    const oakEff = RuleEngine.deriveSheet(drd5Ftr5Wolf, []).companions.list[0]?.effectiveLevel;
+    check(
+      'E1.1 Natural Bond (CAdv p.111): Druid 10 + Black Bear (-3) = 10, Druid 5 + Wolf = 5 (capped at @level), Druid 5/Fighter 5 + Wolf = 8',
+      bearEff === 10 && twigEff === 5 && oakEff === 8,
+      JSON.stringify({ bearEff, twigEff, oakEff })
+    );
+
+    // 4. Familiar master bonus binding (Toad +3 hp.max) & Obtain Familiar (@arcaneCasterClassLevels excludes Warlock)
+    const wizNoFam = {
+      name: 'Mialee', level: 4, classLevels: { wizard: 4 },
+      abilities: { str: 8, dex: 14, con: 12, int: 18, wis: 10, cha: 10 },
+      hp: { max: 20, current: 20 },
+      classFeatures: [cabFam], feats: [], buffs: [], gearPool: []
+    };
+    const wizToad = Object.assign({}, wizNoFam, {
+      companions: [{ id: 'f1', entityKind: 'familiar', baseMonsterId: 'mst-toad', name: 'Wart' }]
+    });
+    const hpBase = RuleEngine.deriveSheet(wizNoFam, []).hp.max;
+    const hpWithToad = RuleEngine.deriveSheet(wizToad, []).hp.max;
+    const obtainChar = {
+      name: 'Arcanist', level: 10, classLevels: { wizard: 3, bard: 4, warlock: 3 },
+      abilities: { str: 8, dex: 12, con: 12, int: 16, wis: 10, cha: 14 },
+      classFeatures: [cabFam], feats: [featOF],
+      companions: [{ id: 'f2', entityKind: 'familiar', baseMonsterId: 'mst-cat', name: 'Shadow' }],
+      buffs: [], gearPool: []
+    };
+    const obtainView = RuleEngine.deriveSheet(obtainChar, []);
+    const obtainFam = obtainView.companions.list[0];
+    check(
+      'E1.1 Familiar V3 master bonus (Toad +3 hp.max) & Obtain Familiar (Wizard 3 + Bard 4 = 7, Warlock excluded)',
+      (hpWithToad - hpBase) === 3 && obtainFam && obtainFam.effectiveLevel === 7,
+      JSON.stringify({ hpDelta: hpWithToad - hpBase, obtainEff: obtainFam?.effectiveLevel })
+    );
+
+    // 5. Special Mount: no -1 dmg.all penalty, no Math.max(5) clamp, Large sizeMod -1 in AC
+    const pal3 = {
+      name: 'Squire', level: 3, classLevels: { paladin: 3 },
+      abilities: { str: 16, dex: 10, con: 14, int: 10, wis: 12, cha: 14 },
+      classFeatures: [cabMount],
+      companions: [{ id: 'm1', entityKind: 'special_mount', baseMonsterId: 'mst-warhorse-heavy' }],
+      feats: [], buffs: [], gearPool: []
+    };
+    const pal8 = {
+      name: 'Sir Roland', level: 8, classLevels: { paladin: 8 },
+      abilities: { str: 16, dex: 10, con: 14, int: 10, wis: 12, cha: 14 },
+      classFeatures: [cabMount],
+      companions: [{ id: 'm2', entityKind: 'special_mount', baseMonsterId: 'mst-warhorse-heavy' }],
+      feats: [], buffs: [], gearPool: []
+    };
+    const pal3View = RuleEngine.deriveSheet(pal3, []);
+    const pal8View = RuleEngine.deriveSheet(pal8, []);
+    const m3 = pal3View.companions.list[0];
+    const m8 = pal8View.companions.list[0];
+    check(
+      'E1.1 Special Mount: cab-special-mount has no -1 dmg.all bug, Paladin 3 gets eff 3 (0 bonusHd), Paladin 8 gets eff 8 (+4 HD, Large sizeMod -1 in AC)',
+      !cabMount.effects.some(ef => ef.type === 'stat' && ef.value === -1) &&
+      m3 && m3.effectiveLevel === 3 && m3.totalHd === 4 &&
+      m8 && m8.effectiveLevel === 8 && m8.totalHd === 8 && m8.ac.sizeMod === -1 && m8.ac.total === (10 + m8.abilityMods.dex - 1 + m8.ac.naturalArmor),
+      JSON.stringify({ m3Eff: m3?.effectiveLevel, m3Hd: m3?.totalHd, m8Eff: m8?.effectiveLevel, m8Hd: m8?.totalHd, m8Ac: m8?.ac })
+    );
+
+    // 6. Fiendish Servant (DMG p.183): scales by @level (19-20 bracket), SR = @classes.blackguard.level + 5
+    const bg19 = {
+      name: 'Malakor', level: 19, classLevels: { fighter: 10, blackguard: 9 },
+      abilities: { str: 18, dex: 10, con: 14, int: 10, wis: 12, cha: 16 },
+      classFeatures: [cabFiend],
+      companions: [{ id: 'fs1', entityKind: 'fiendish_servant', baseMonsterId: 'mst-dire-rat' }],
+      feats: [], buffs: [], gearPool: []
+    };
+    const fsStats = RuleEngine.deriveSheet(bg19, []).companions.list[0];
+    check(
+      'E1.1 Fiendish Servant (DMG p.183): scales by @level (19 -> +8 HD, +7 NA, +4 STR, INT 9) and SR = @classes.blackguard.level + 5 (14)',
+      Boolean(cabFiend) && fsStats && fsStats.effectiveLevel === 19 && fsStats.totalHd === 9 && fsStats.abilities.int === 9 && fsStats.spellResistance === 14,
+      JSON.stringify({ eff: fsStats?.effectiveLevel, hd: fsStats?.totalHd, int: fsStats?.abilities?.int, sr: fsStats?.spellResistance })
+    );
+
+    // 7. MonsterChassisAdapter: Dire Bear (no double-STR bug, 2 Claws primary +19 / 2d4+10, Bite secondary +13 / 2d8+5) & Tiger Rake
+    const direBear = monstersDb.find(m => m.id === 'mst-dire-bear');
+    const tiger = monstersDb.find(m => m.id === 'mst-tiger');
+    const bearChassis = RuleEngine.buildMonsterChassis(direBear);
+    const tigerChassis = RuleEngine.buildMonsterChassis(tiger);
+    const bearClaw = bearChassis.attacks.find(a => /claw/i.test(a.name));
+    const bearBite = bearChassis.attacks.find(a => /bite/i.test(a.name));
+    const tigerRake = tigerChassis.attacks.find(a => /rake/i.test(a.name));
+    const viaComp = SrdCompendium.calculateCompanionStats(drdRgr, { type: 'animal_companion', baseMonsterId: 'mst-wolf' });
+    check(
+      'E1.1 MonsterChassisAdapter: Dire Bear 2 Claws primary (+19, 2d4+10, no double-STR) & Bite secondary (+13, 2d8+5), Tiger Rake special_rake, SrdCompendium delegates cleanly',
+      bearClaw && bearClaw.primary === true && bearClaw.count === 2 && bearClaw.attackBonus === 19 && bearClaw.damageBonus === 10 &&
+      bearBite && bearBite.primary === false && bearBite.count === 1 && bearBite.attackBonus === 13 && bearBite.damageBonus === 5 &&
+      tigerRake && tigerRake.primary === 'special_rake' && tigerRake.count === 2 &&
+      viaComp && viaComp.effectiveLevel === 8,
+      JSON.stringify({ bearClaw, bearBite, tigerRake, viaCompEff: viaComp?.effectiveLevel })
+    );
+  }
+
   CharStore.clearHistory();
 
   return { passed, elapsedMs: Date.now() - startMs };
