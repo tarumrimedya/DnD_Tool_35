@@ -1066,6 +1066,236 @@ async function main() {
     }
   }
 
+  // ---- L. Sprint E E2E (Wild Shape + Meld Gate, Unified Companions, Rider Pills, Rule Crafter recipient)
+  {
+    await check('L1. Sprint E1: Druid Wild Shape (Bear, Brown), Meld Gate, Wilding Clasp & Revert', async () => {
+      const page = await newSheetPage({ viewport: { width: 1440, height: 900 } });
+      try {
+        const pre = await page.evaluate(async () => {
+          await SrdCompendium.ensureTypesLoaded(['Class', 'ClassAbility', 'Race', 'Equipment', 'Feat', 'Monster']);
+          const doc = {
+            schemaVersion: 3, id: 'smoke-druid-8', name: 'Sylvan Smoke Druid', race: 'Human', size: 'Medium',
+            alignment: 'Neutral Good', level: 8, baseSpeed: 30,
+            baseAbilities: { str: 10, dex: 12, con: 14, int: 10, wis: 18, cha: 10 },
+            abilities: { str: 10, dex: 12, con: 14, int: 10, wis: 18, cha: 10 },
+            classLevels: { druid: 8 },
+            levelProgression: Array.from({ length: 8 }, (_, i) => ({
+              level: i + 1, classId: 'cls-druid', className: 'Druid', hpRoll: i === 0 ? 8 : 5, active: true
+            })),
+            feats: [{ id: 'feat-natural-spell', name: 'Natural Spell' }],
+            specialAbilities: [],
+            hp: { current: 59, max: 59, temp: 0, nonlethal: 0 },
+            bodySlots: {
+              armor: {
+                id: 'smoke-wild-hide', name: '+1 Wild Hide Armor', type: 'Armor', category: 'Medium',
+                armorBonus: 3, enhancementBonus: 1, maxDex: 4, acp: -3, spellFailure: 20,
+                enhancements: [{ id: 'enh-wild', name: 'Wild' }], equipped: true, schemaVersion: 3,
+                armor: { armorType: 'Medium', armorBonus: 3, enhancementBonus: 1, maxDex: 4, armorCheckPenalty: -3, arcaneSpellFailure: 20 },
+                effects: []
+              },
+              neck: {
+                id: 'smoke-amulet-health', name: 'Amulet of Health +2', type: 'Wondrous Item', slot: 'neck',
+                equipped: true, schemaVersion: 3,
+                effects: [{ type: 'stat', targets: ['ability.con'], mode: 'flat', value: 2, btype: 'Enhancement', source: 'Amulet of Health +2' }]
+              },
+              shoulders: {
+                id: 'smoke-cloak-res', name: 'Cloak of Resistance +1', type: 'Wondrous Item', slot: 'shoulders',
+                equipped: true, schemaVersion: 3,
+                effects: [{ type: 'stat', targets: ['save.all'], mode: 'flat', value: 1, btype: 'Resistance', source: 'Cloak of Resistance +1' }]
+              }
+            },
+            weapons: [], gearPool: [], consumables: [], buffs: [], skills: [], customDb: [], customEntries: {}, companions: []
+          };
+          CharStore.replaceDoc(doc);
+          window.character = CharStore.getDoc();
+          try { character = CharStore.getDoc(); } catch (e) {}
+          switchTab('tab-combat');
+          renderAll();
+          const s = CharStore.getSheet();
+          return {
+            hasRuleset: Boolean(window.DnD35Ruleset && typeof window.DnD35Ruleset.getWildShapeProfile === 'function'),
+            maxHp: s.hp.max, str: s.abilities.str, eligible: s.activeForm?.eligible,
+            maxHd: s.activeForm?.maxHd, allowedSizes: s.activeForm?.allowedSizes
+          };
+        });
+        assert(pre.hasRuleset, 'rulesets/dnd35.js must be loaded on index.html');
+        assert(pre.eligible && pre.maxHd === 8 && (pre.allowedSizes || []).includes('Large'), 'Druid 8 must unlock Large Wild Shape: ' + JSON.stringify(pre));
+
+        await page.waitForSelector('#cockpit-wild-shape-bar [data-action="combat:open-wild-shape-modal"]', { timeout: 5000 });
+        await page.click('#cockpit-wild-shape-bar [data-action="combat:open-wild-shape-modal"]');
+        await page.waitForSelector('#wild-shape-picker-modal:not(.hidden)', { timeout: 5000 });
+        await page.fill('#wild-shape-search-input', 'Brown Bear');
+        await page.waitForFunction(() => /Bear, Brown/i.test(document.getElementById('wild-shape-picker-list')?.textContent || ''), null, { timeout: 5000 });
+        await page.locator('#wild-shape-picker-list button').first().click();
+        await page.waitForTimeout(150);
+
+        const during = await page.evaluate(() => {
+          const s = CharStore.getSheet();
+          return {
+            active: !!s.activeForm?.active, name: s.activeForm?.name, size: s.activeForm?.size,
+            str: s.abilities.str, dex: s.abilities.dex, con: s.abilities.con, maxHp: s.hp.max,
+            natAtks: document.querySelectorAll('#cockpit-wild-shape-bar [data-action="combat:roll-form-attack"]').length
+          };
+        });
+        assert(during.active && during.str === 27 && during.dex === 13 && during.con === 19 && during.size === 'Large', 'Wild Shape stats mismatch: ' + JSON.stringify(during));
+        assert(during.maxHp === pre.maxHp - 8, `Expected melded Amulet HP ${pre.maxHp - 8}, got ${during.maxHp}`);
+        assert(during.natAtks >= 2, `Expected >=2 natural attack buttons, got ${during.natAtks}`);
+        await page.click('#cockpit-wild-shape-bar [data-action="combat:roll-form-attack"]');
+
+        await page.evaluate(() => switchTab('tab-inventory'));
+        await page.waitForTimeout(150);
+        const inv = await page.evaluate(() => {
+          const t = document.getElementById('tab-inventory')?.textContent || '';
+          return { melded: /MELDED/i.test(t), wildAc: /WILD AC/i.test(t) };
+        });
+        assert(inv.melded && inv.wildAc, 'Expected MELDED and WILD AC badges in Inventory');
+        await page.click('[data-action="inventory:toggle-wilding-clasp"][data-slot-key="neck"]');
+        await page.waitForTimeout(150);
+        const hpClasp = await page.evaluate(() => CharStore.getSheet().hp.max);
+        assert(hpClasp === pre.maxHp, `Expected Wilding Clasp to restore HP ${pre.maxHp}, got ${hpClasp}`);
+
+        await page.evaluate(() => switchTab('tab-combat'));
+        await page.waitForTimeout(100);
+        await page.click('[data-action="combat:revert-wild-shape"]');
+        await page.waitForTimeout(150);
+        const after = await page.evaluate(() => ({ active: !!CharStore.getSheet().activeForm?.active, str: CharStore.getSheet().abilities.str, size: CharStore.getDoc().size }));
+        assert(!after.active && after.str === pre.str && after.size === 'Medium', 'Revert failed: ' + JSON.stringify(after));
+        assertNoErrors(page);
+        return `Bear, Brown 27/13/19 Large, HP ${pre.maxHp}->${during.maxHp}->${hpClasp}, ${during.natAtks} nat-atks, revert clean`;
+      } finally {
+        await closeSheet(page);
+      }
+    });
+
+    await check('L2. Sprint E1: Unified Companions (doc.companions[] multi-entity & Toad +3 HP)', async () => {
+      const page = await newSheetPage({ viewport: { width: 1440, height: 900 } });
+      try {
+        const res = await page.evaluate(async () => {
+          await SrdCompendium.ensureTypesLoaded(['Class', 'ClassAbility', 'Race', 'Feat', 'Monster']);
+          const doc = {
+            schemaVersion: 3, id: 'smoke-comp', name: 'Companion Smoke', race: 'Human', size: 'Medium',
+            level: 2, baseSpeed: 30,
+            baseAbilities: { str: 10, dex: 12, con: 12, int: 16, wis: 16, cha: 10 },
+            abilities: { str: 10, dex: 12, con: 12, int: 16, wis: 16, cha: 10 },
+            classLevels: { druid: 1, wizard: 1 },
+            levelProgression: [
+              { level: 1, classId: 'cls-druid', className: 'Druid', hpRoll: 8, active: true },
+              { level: 2, classId: 'cls-wizard', className: 'Wizard', hpRoll: 4, active: true }
+            ],
+            feats: [], specialAbilities: [], hp: { current: 14, max: 14, temp: 0, nonlethal: 0 },
+            bodySlots: {}, weapons: [], gearPool: [], consumables: [], buffs: [], skills: [], customDb: [], customEntries: {}, companions: []
+          };
+          CharStore.replaceDoc(doc);
+          window.character = CharStore.getDoc();
+          try { character = CharStore.getDoc(); } catch (e) {}
+          const hpBefore = CharStore.getSheet().hp.max;
+          const wolf = SrdCompendium.getById('mst-wolf') || SrdCompendium.getByType('Monster').find(m => /^Wolf$/i.test(m.name));
+          const toad = SrdCompendium.getById('mst-toad') || SrdCompendium.getByType('Monster').find(m => /^Toad$/i.test(m.name));
+          CharStore.dispatch({ type: 'companion/bind', payload: { entityKind: 'animal_companion', baseMonsterId: wolf.id, name: 'Fang', isNew: true }, meta: { label: 'Bind Wolf' } });
+          CharStore.dispatch({ type: 'companion/bind', payload: { entityKind: 'familiar', baseMonsterId: toad.id, name: 'Wart', isNew: true }, meta: { label: 'Bind Toad' } });
+          switchTab('tab-combat');
+          renderAll();
+          return {
+            count: (CharStore.getDoc().companions || []).length,
+            hpBefore,
+            hpAfter: CharStore.getSheet().hp.max,
+            pills: document.querySelectorAll('[data-action="combat:select-companion"]').length
+          };
+        });
+        assert(res.count === 2 && res.pills >= 2 && res.hpAfter === res.hpBefore + 3, 'Companion mismatch: ' + JSON.stringify(res));
+        await page.locator('[data-action="combat:select-companion"]').nth(1).click();
+        assertNoErrors(page);
+        return `2 entities, ${res.pills} pills, Toad +3 HP (${res.hpBefore}->${res.hpAfter})`;
+      } finally {
+        await closeSheet(page);
+      }
+    });
+
+    await check('L3. Sprint E3/E3c: Combat situational weapon rider pills & toggle', async () => {
+      const page = await newSheetPage({ viewport: { width: 1440, height: 900 } });
+      try {
+        const count = await page.evaluate(async () => {
+          await SrdCompendium.ensureTypesLoaded(['Class', 'ClassAbility', 'Race', 'Equipment']);
+          const wep = {
+            id: 'smoke-sword-rider', name: '+1 Flaming Bane (Undead) Longsword', type: 'Weapon',
+            category: 'Martial', handedness: 'One-Handed', grip: '1-Hand', dice: '1d8', crit: '19-20/x2',
+            critMin: 19, critMult: 2, dmgType: 'Slashing', enhancementBonus: 1, equipped: true, _statsHydrated: true, schemaVersion: 3,
+            weapon: { category: 'Martial', handedness: 'One-Handed', damageDice: '1d8', dmgType: 'Slashing', baseCritRange: 19, critMultiplier: 2, enhancementBonus: 1 },
+            effects: [
+              { id: 'ef-flaming', type: 'roll', kind: 'Damage', dice: '1d6', dmgType: 'Fire', source: 'Flaming', multiplyOnCrit: false },
+              {
+                id: 'ef-bane-when', type: 'when', flow: 'while',
+                branches: [{
+                  id: 'br-bane', condKind: 'situational', condText: 'vs. Undead',
+                  effects: [
+                    { id: 'ef-bane-dmg', type: 'roll', kind: 'Damage', dice: '2d6', dmgType: 'Untyped', source: 'Bane', multiplyOnCrit: false },
+                    { id: 'ef-bane-burst', type: 'roll', kind: 'Damage', dice: '1d10', dmgType: 'Fire', source: 'Undead Burst', crit: 'onCritOnly' }
+                  ]
+                }]
+              }
+            ]
+          };
+          const doc = {
+            schemaVersion: 3, id: 'smoke-rider', name: 'Rider Smoke', race: 'Human', size: 'Medium',
+            level: 5, baseSpeed: 30,
+            baseAbilities: { str: 16, dex: 16, con: 12, int: 12, wis: 10, cha: 10 },
+            abilities: { str: 16, dex: 16, con: 12, int: 12, wis: 10, cha: 10 },
+            classLevels: { rogue: 3, assassin: 2 },
+            levelProgression: [
+              { level: 1, classId: 'cls-rogue', className: 'Rogue', hpRoll: 6, active: true },
+              { level: 2, classId: 'cls-rogue', className: 'Rogue', hpRoll: 4, active: true },
+              { level: 3, classId: 'cls-rogue', className: 'Rogue', hpRoll: 4, active: true },
+              { level: 4, classId: 'cls-assassin', className: 'Assassin', hpRoll: 4, active: true },
+              { level: 5, classId: 'cls-assassin', className: 'Assassin', hpRoll: 4, active: true }
+            ],
+            feats: [], specialAbilities: [], hp: { current: 27, max: 27, temp: 0, nonlethal: 0 },
+            bodySlots: { mainHand: wep }, weapons: [wep],
+            gearPool: [], consumables: [], buffs: [], skills: [], customDb: [], customEntries: {}, companions: []
+          };
+          CharStore.replaceDoc(doc);
+          window.character = CharStore.getDoc();
+          try { character = CharStore.getDoc(); } catch (e) {}
+          switchTab('tab-combat');
+          renderAll();
+          return document.querySelectorAll('[data-action="combat:toggle-situational-rider"]').length;
+        });
+        assert(count >= 2, `Expected >=2 rider pills, got ${count}`);
+        await page.locator('[data-action="combat:toggle-situational-rider"]').first().click();
+        await page.waitForTimeout(100);
+        const isOn = await page.evaluate(() => document.querySelector('[data-action="combat:toggle-situational-rider"]')?.className.includes('bg-amber-500'));
+        assert(isOn === true, 'Expected rider pill to toggle active');
+        assertNoErrors(page);
+        return `${count} rider pills rendered & toggled active`;
+      } finally {
+        await closeSheet(page);
+      }
+    });
+
+    await check('L4. Sprint E3b: Rule Crafter recipient selector (forge_sandbox.html)', async () => {
+      const context = await newContext({ viewport: { width: 1440, height: 900 } });
+      try {
+        const page = await openPage(context, '/forge_sandbox.html');
+        await waitSandboxReady(page);
+        await page.locator('button', { hasText: /Stat Mod/i }).first().click();
+        await page.waitForTimeout(150);
+        const out = await page.evaluate(() => {
+          const sel = Array.from(document.querySelectorAll('select')).find(s =>
+            Array.from(s.options).some(o => o.value === 'allies') && Array.from(s.options).some(o => o.value === 'self')
+          );
+          if (!sel) return { found: false };
+          sel.value = 'allies';
+          sel.dispatchEvent(new Event('change', { bubbles: true }));
+          return { found: true, val: sel.value };
+        });
+        assert(out.found && out.val === 'allies', 'Recipient selector check failed: ' + JSON.stringify(out));
+        assertNoErrors(page);
+        return 'recipient selector updated to allies';
+      } finally {
+        await context.close();
+      }
+    });
+  }
+
   await browser.close();
   server.close();
 

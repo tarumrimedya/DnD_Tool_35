@@ -11208,7 +11208,10 @@
         }
         const hd = Number(mBlock.hitDice?.count || 1);
         if (hd > maxHd) return false;
-        if (q && !m.name.toLowerCase().includes(q) && !cType.includes(q) && !sz.includes(q)) return false;
+        if (q) {
+          const hay = `${m.name} ${cType} ${sz}`.toLowerCase();
+          if (!q.split(/\s+/).every(tok => hay.includes(tok))) return false;
+        }
         return true;
       }).sort((a, b) => {
         const hdA = Number(a.monster?.hitDice?.count || 1);
