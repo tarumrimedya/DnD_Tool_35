@@ -54,7 +54,62 @@
     ],
     "casterLevel": 7,
     "priceText": "2,800 gp (7th)",
-    "costToCreate": "1,400 gp, 112 XP, 3 days."
+    "costToCreate": "1,400 gp, 112 XP, 3 days.",
+    "modes": [
+      {
+        "id": "off",
+        "label": "Inactive",
+        "effects": []
+      },
+      {
+        "id": "mode-as-1",
+        "label": "1 Charge (-1 Will)",
+        "effects": [
+          {
+            "type": "stat",
+            "targets": [
+              "save.will"
+            ],
+            "mode": "flat",
+            "value": -1,
+            "btype": "Untyped",
+            "recipient": "target"
+          }
+        ]
+      },
+      {
+        "id": "mode-as-2",
+        "label": "2 Charges (-2 Will)",
+        "effects": [
+          {
+            "type": "stat",
+            "targets": [
+              "save.will"
+            ],
+            "mode": "flat",
+            "value": -2,
+            "btype": "Untyped",
+            "recipient": "target"
+          }
+        ]
+      },
+      {
+        "id": "mode-as-3",
+        "label": "3 Charges (-3 Will)",
+        "effects": [
+          {
+            "type": "stat",
+            "targets": [
+              "save.will"
+            ],
+            "mode": "flat",
+            "value": -3,
+            "btype": "Untyped",
+            "recipient": "target"
+          }
+        ]
+      }
+    ]
   },
   {
     "schemaVersion": 3,
@@ -11614,6 +11669,16 @@
         "die": "d6",
         "scaling": "flat",
         "source": "Crystal of Energy Assault (Acid, Greater)"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "ac.armor"
+        ],
+        "mode": "flat",
+        "value": -1,
+        "btype": "Untyped",
+        "recipient": "target"
       }
     ],
     "ruleFlags": {
@@ -11668,6 +11733,16 @@
         "scaling": "formula",
         "bonus": 1,
         "source": "Crystal of Energy Assault (Acid, Least)"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "ac.armor"
+        ],
+        "mode": "flat",
+        "value": -1,
+        "btype": "Untyped",
+        "recipient": "target"
       }
     ],
     "shortDescription": "A crystal of energy assault adds a particular type of energy damage to a weapon's attacks: acid, cold, electricity, or fire. This bonus damage doesn't stack with any energy damage of the same type dealt by the weapon.",
@@ -11717,6 +11792,16 @@
         "die": "d6",
         "scaling": "flat",
         "source": "Crystal of Energy Assault (Acid, Lesser)"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "ac.armor"
+        ],
+        "mode": "flat",
+        "value": -1,
+        "btype": "Untyped",
+        "recipient": "target"
       }
     ],
     "shortDescription": "A crystal of energy assault adds a particular type of energy damage to a weapon's attacks: acid, cold, electricity, or fire. This bonus damage doesn't stack with any energy damage of the same type dealt by the weapon.",
@@ -13183,6 +13268,17 @@
         "flag": "cursespewing",
         "label": "Cursespewing",
         "text": "Whenever this weapon scores a critical hit against a target, it bestows a curse that imposes a -4 penalty on attack rolls, saving throws, skill checks, and ability checks for 1 min"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "save.all",
+          "atk.all"
+        ],
+        "mode": "flat",
+        "value": -4,
+        "btype": "Untyped",
+        "recipient": "target"
       }
     ],
     "shortDescription": "Whenever this weapon scores a critical hit against a target, it bestows a curse that imposes a -4 penalty on attack rolls, saving throws, skill checks, and ability checks for 1 minute. Multiple strikes aren't...",
@@ -13947,6 +14043,27 @@
         "flag": "defensive-surge",
         "label": "Defensive Surge",
         "text": "After a successful melee attack with a defensive surge weapon in any round in which you use the Combat Expertise feat or fight defensively, you can activate the weapon and gain an "
+      },
+      {
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "condKind": "situational",
+            "condText": "activated (1 round)",
+            "effects": [
+              {
+                "type": "stat",
+                "targets": [
+                  "ac.dodge"
+                ],
+                "mode": "flat",
+                "value": 2,
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
       }
     ],
     "shortDescription": "After a successful melee attack with a defensive surge weapon in any round in which you use the Combat Expertise feat or fight defensively, you can activate the weapon and gain an additional +2 bonus to Armor Class...",
@@ -14372,6 +14489,49 @@
     "costToCreate": "2,500 gp, 200 XP, 5 days.",
     "errata": [
       "Official errata (MIC Errata p.292): \"1 draught\" entry: missing word \"or\" restored."
+    ],
+    "modes": [
+      {
+        "id": "off",
+        "label": "Inactive",
+        "effects": []
+      },
+      {
+        "id": "mode-ds-1",
+        "label": "1 Charge (DR 2/adamantine)",
+        "effects": [
+          {
+            "type": "defense",
+            "defKind": "dr",
+            "value": 2,
+            "bypass": "adamantine"
+          }
+        ]
+      },
+      {
+        "id": "mode-ds-2",
+        "label": "2 Charges (DR 3/adamantine)",
+        "effects": [
+          {
+            "type": "defense",
+            "defKind": "dr",
+            "value": 3,
+            "bypass": "adamantine"
+          }
+        ]
+      },
+      {
+        "id": "mode-ds-3",
+        "label": "3 Charges (DR 4/adamantine)",
+        "effects": [
+          {
+            "type": "defense",
+            "defKind": "dr",
+            "value": 4,
+            "bypass": "adamantine"
+          }
+        ]
+      }
     ]
   },
   {
@@ -16546,7 +16706,50 @@
     ],
     "casterLevel": 3,
     "priceText": "1,500 gp (5th)",
-    "costToCreate": "750 gp, 60 XP, 2 days."
+    "costToCreate": "750 gp, 60 XP, 2 days.",
+    "modes": [
+      {
+        "id": "off",
+        "label": "Inactive",
+        "effects": []
+      },
+      {
+        "id": "mode-ea-1",
+        "label": "1 Charge (Resist Cold 10)",
+        "effects": [
+          {
+            "type": "defense",
+            "defKind": "resistance",
+            "energy": "cold",
+            "value": 10
+          }
+        ]
+      },
+      {
+        "id": "mode-ea-2",
+        "label": "2 Charges (Resist Cold 15)",
+        "effects": [
+          {
+            "type": "defense",
+            "defKind": "resistance",
+            "energy": "cold",
+            "value": 15
+          }
+        ]
+      },
+      {
+        "id": "mode-ea-3",
+        "label": "3 Charges (Resist Cold 20)",
+        "effects": [
+          {
+            "type": "defense",
+            "defKind": "resistance",
+            "energy": "cold",
+            "value": 20
+          }
+        ]
+      }
+    ]
   },
   {
     "schemaVersion": 3,
@@ -29368,6 +29571,24 @@
         "type": "effect",
         "effectKind": "rule",
         "text": "A platinum helm imbues you with the essence of Bahamut, lord of the good dragons. While wearing it, you are immune to the frightful presence of evil dragons if you are lawful good,"
+      },
+      {
+        "type": "effect",
+        "effectKind": "grant",
+        "grantType": "sense",
+        "value": "Blindsense",
+        "range": 30
+      },
+      {
+        "type": "defense",
+        "defKind": "immunity",
+        "value": "Evil Dragon Frightful Presence"
+      },
+      {
+        "type": "resource",
+        "name": "Platinum Helm",
+        "max": 3,
+        "per": "day"
       }
     ],
     "ruleFlags": {
@@ -30899,6 +31120,12 @@
         "mode": "flat",
         "value": 1,
         "btype": "Enhancement"
+      },
+      {
+        "type": "resource",
+        "name": "Quarterstaff of Battle",
+        "max": 3,
+        "per": "day"
       }
     ],
     "ruleFlags": {
@@ -31764,6 +31991,27 @@
         "type": "effect",
         "effectKind": "rule",
         "text": "These reins allow your mount to briefly break the bonds of gravity. Reins of ascension have 3 charges, which are renewed each day at dawn. Spending 1 or more charges grants your mo"
+      },
+      {
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "condKind": "situational",
+            "condText": "activated (10 rounds)",
+            "effects": [
+              {
+                "type": "stat",
+                "targets": [
+                  "skill.jump"
+                ],
+                "mode": "flat",
+                "value": 10,
+                "btype": "Competence"
+              }
+            ]
+          }
+        ]
       }
     ],
     "ruleFlags": {
@@ -31980,6 +32228,28 @@
         "flag": "resounding",
         "label": "Resounding",
         "text": "A resounding weapon emits a deep, ringing chime each time it successfully hits a target. The sound carries over the din of battle, encouraging your allies. When you strike a foe wi"
+      },
+      {
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "condKind": "situational",
+            "condText": "vs. Fear",
+            "effects": [
+              {
+                "type": "stat",
+                "targets": [
+                  "save.all",
+                  "atk.all"
+                ],
+                "mode": "flat",
+                "value": 1,
+                "btype": "Morale"
+              }
+            ]
+          }
+        ]
       }
     ],
     "shortDescription": "A resounding weapon emits a deep, ringing chime each time it successfully hits a target. The sound carries over the din of battle, encouraging your allies. When you strike a foe with a resounding weapon, allies...",
@@ -34728,6 +34998,12 @@
         "source": "Holy",
         "count": 2,
         "die": "d6"
+      },
+      {
+        "type": "resource",
+        "name": "Rod of Celestial Might",
+        "max": 3,
+        "per": "day"
       }
     ],
     "ruleFlags": {
@@ -41650,7 +41926,27 @@
     "activation": "--",
     "aura": "Moderate; (DC 20) transmutation",
     "requirements": "Craft Wondrous Item.",
-    "effects": [],
+    "effects": [
+      {
+        "type": "stat",
+        "targets": [
+          "skill.climb",
+          "skill.escape-artist"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Competence"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "atk.grapple"
+        ],
+        "mode": "flat",
+        "value": 2,
+        "btype": "Competence"
+      }
+    ],
     "shortDescription": "As its most basic function, a spare hand can grasp or carry any object you could normally carry in one hand, freeing your normal hands for other tasks. A spare hand can hold magic items such as wands and rods for...",
     "text": "This strange item consists of an animated arm and three-fingered claw attached to a heavy leather belt reinforced with strips of metal.\n\nAs its most basic function, a spare hand can grasp or carry any object you could normally carry in one hand, freeing your normal hands for other tasks. A spare hand can hold magic items such as wands and rods for easy access, but you cannot activate those items while they are so held. Transferring an item to or from a spare hand is a free action.\n\nWhenever your spare hand is not carrying an item, you gain a +2 competence bonus on Climb, Escape Artist, and grapple checks.\n\nWithout further augmentation from an infusion (see below), a spare hand cannot do anything other than hold an item--it cannot wield a weapon, retrieve a stored item, or perform any other task.\n\nIf you power a spare hand with a 1st-level infusion (see the EBERRON Campaign Setting), it gains additional qualities. Once per round, you can command the hand to stow an item or retrieve a stowed item (including a weapon) as a free action.\n\nIf you instead expend a 2nd-level infusion, the spare hand gains the above ability and can also hold a buckler or light shield, freeing your normal hand while still providing a bonus to AC from the shield. You still incur any armor check penalty or other drawbacks of holding the shield, and are subject to normal penalties if you are not proficient with the shield.\n\nIf you expend a 3rd-level infusion, a spare hand gains all the above abilities and becomes capable of wielding a light weapon. You can command a spare hand to make off-hand attacks with this weapon as if you were wielding it. A spare hand attacks using your normal attack modifier plus any appropriate penalties for an off-hand attack.\n\nUsing an infusion to power a spare hand requires 10 minutes and the expenditure of an infusion of the appropriate level. An infusion powers a spare hand for 24 hours.",
     "tags": [
@@ -45136,7 +45432,15 @@
     "activation": "Standard (mental)",
     "aura": "Faint; (DC 16) divination",
     "requirements": "Craft Wondrous Item, scrying or clairvoyant sense (EPH 83).",
-    "effects": [],
+    "effects": [
+      {
+        "type": "effect",
+        "effectKind": "grant",
+        "grantType": "sense",
+        "value": "Darkvision",
+        "range": 60
+      }
+    ],
     "shortDescription": "At will, you can activate this crystal to see and hear a distant location. Line of sight or line of effect is not necessary, but the locale must be a place familiar to you or an obvious one, such as behind a door...",
     "text": "This bright orange crystal emits a steady inner glow.\n\nAt will, you can activate this crystal to see and hear a distant location. Line of sight or line of effect is not necessary, but the locale must be a place familiar to you or an obvious one, such as behind a door, around a corner, or in a grove of trees. Once the locale has been selected, the focus of your sight does not move, but can be rotated in all directions to view the area as desired. Psionically, magically, or supernaturally enhanced senses cannot be used through this item. If the chosen locale is shrouded in magical or psionic darkness, you see nothing. If it is naturally pitch black, you can see in a 10-foot radius around the center of the effect or out to the extent of your darkvision. This effect does not work across planes.",
     "tags": [
@@ -48533,6 +48837,16 @@
         "dmgType": "Fire/Electricity",
         "scaling": "flat",
         "crit": "normal"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "save.will"
+        ],
+        "mode": "flat",
+        "value": -2,
+        "btype": "Untyped",
+        "recipient": "target"
       }
     ],
     "shortDescription": "As its name suggests, a witchlight reservoir can hold a small quantity of magical power, which can be used to enhance the power of a melee weapon. To imbue this augment crystal with power, you must directly expose it...",

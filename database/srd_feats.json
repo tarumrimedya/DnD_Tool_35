@@ -3857,6 +3857,27 @@
         "id": "ef-imp-sunder",
         "type": "effect",
         "text": "Improved Sunder: +4 on Sunder opposed attack rolls; no AoO"
+      },
+      {
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "condKind": "situational",
+            "condText": "Sunder attempt",
+            "effects": [
+              {
+                "type": "stat",
+                "targets": [
+                  "atk.melee"
+                ],
+                "mode": "flat",
+                "value": 4,
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
       }
     ],
     "ruleFlags": {
@@ -4348,6 +4369,16 @@
         "id": "ef-iaod",
         "type": "effect",
         "text": "Improved Aura of Despair: Aura imposes -4 morale penalty on enemy saving throws"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "save.all"
+        ],
+        "mode": "flat",
+        "value": -4,
+        "btype": "Morale",
+        "recipient": "target"
       }
     ],
     "shortDescription": "Prerequisite Cha 25, aura of despair class ability. Benefit The character’s aura of despair causes a –4 morale penalty on all saving throws.",
@@ -11487,6 +11518,27 @@
         "flag": "spellcasting-harrier",
         "label": "Spellcasting Harrier",
         "text": "Prerequisite Combat Reflexes. Benefit Any spellcaster the character threatens in melee provokes an attack of opportunity if he or she tries to cast defensively. The character gets "
+      },
+      {
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "condKind": "situational",
+            "condText": "AoO vs. spellcaster",
+            "effects": [
+              {
+                "type": "stat",
+                "targets": [
+                  "atk.melee"
+                ],
+                "mode": "flat",
+                "value": 4,
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
       }
     ],
     "shortDescription": "Prerequisite Combat Reflexes. Benefit Any spellcaster the character threatens in melee provokes an attack of opportunity if he or she tries to cast defensively. The character gets a +4 bonus on this attack roll.",
@@ -16592,6 +16644,16 @@
         "carrierMode": "weaponRider",
         "riderEffect": "Eldritch Essence: Cold Damage + -4 Dex Penalty (10 min)",
         "saveType": "Fortitude"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "dex"
+        ],
+        "mode": "flat",
+        "value": -4,
+        "btype": "Untyped",
+        "recipient": "target"
       }
     ],
     "shortDescription": "Eldritch Essence (Lesser; 4th): Changes your Eldritch Blast into cold damage; any target struck must succeed on a Fortitude save or take a -4 penalty to Dexterity for 10 minutes.",
@@ -16787,6 +16849,16 @@
         "castMode": "linkedSpell",
         "spellName": "Bestow Curse",
         "text": "Touch Bestow Curse (-1 attack rolls for 1 min even on successful save)."
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "atk.all"
+        ],
+        "mode": "flat",
+        "value": -1,
+        "btype": "Untyped",
+        "recipient": "target"
       }
     ],
     "shortDescription": "Lesser Invocation (4th): Curse one touched creature as Bestow Curse (Will negates; permanent), even if it saves, the target takes a -1 penalty on attack rolls for 1 minute.",

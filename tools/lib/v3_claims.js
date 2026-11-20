@@ -70,6 +70,13 @@ function extractClaims(rawText) {
   while ((m = reBonus.exec(text))) {
     const n = Number(m[1].replace(/[–−]/, '-').replace(/\s/g, ''));
     if (!Number.isFinite(n) || n === 0) continue;
+    const preCtx = text.slice(Math.max(0, m.index - 55), m.index);
+    const postCtx = text.slice(m.index, Math.min(text.length, m.index + m[0].length + 45));
+    // Skip negated/ignored penalties ("ignore the -4 penalty", "without taking a -2 penalty", "reduces the -4 penalty")
+    if (m[3].toLowerCase() === 'penalty' && /\b(?:ignore|ignores|ignored|negate|negates|do\s+not\s+take|does\s+not\s+take|don't\s+take|without\s+(?:taking|suffering|incurring|a|the)|no\s+longer\s+(?:take|suffer)|reduces?\s+the|taking\s+no|suffer\s+no|no)\s+[^.;]{0,30}$/i.test(preCtx)) continue;
+    // Skip improvised weapon/tool penalties and target-cover / enemy-debuff clauses
+    if (/\b(?:improvised\s+(?:weapon|melee|tools?)|without\s+(?:these|such|artisan|proper)\s+tools?|due\s+to\s+cover|target'?s\s+cover)\b/i.test(preCtx + ' ' + postCtx)) continue;
+    if (/\b(?:against\s+(?:her|him|you|the\s+wearer|the\s+wielder)|their\s+(?:saving|saves?|will|fortitude|reflex|attack)|its\s+(?:saving\s+throw|hide\s+checks?|attack|ac))\b/i.test(m[0])) continue;
     const tail = m[4].replace(/\s*,?\s*\b(?:and|or|plus)\s*$/i, '').trim();
     const cut = tail.split(/\s+(?:against|vs\.?|versus|when|while|if|made|for|to resist|during)\b/i);
     const t = classifyBonusTarget(cut[0]);
@@ -81,12 +88,17 @@ function extractClaims(rawText) {
   const reSense = /\b(darkvision|low-light vision|blindsense|blindsight|tremorsense)\b(?:\s+(?:out\s+to|to\s+a\s+range\s+of|with\s+a\s+range\s+of|of)?\s*(\d+)\s*(?:ft\.?|feet))?|(\d+)[- ](?:ft\.?|foot|feet)\s+(darkvision|blindsense|blindsight|tremorsense)/gi;
   while ((m = reSense.exec(text))) {
     const kind = (m[1] || m[4]).toLowerCase();
-    if (/\b(no|not|lacks?|without|loses?|do\s+not\s+have|does\s+not\s+have|don't\s+have)\s+(?:\w+\s+){0,3}$/i.test(text.slice(Math.max(0, m.index - 35), m.index))) continue;
+    const sensePre = text.slice(Math.max(0, m.index - 65), m.index);
+    const sensePost = text.slice(m.index + m[0].length, Math.min(text.length, m.index + m[0].length + 55));
+    if (/\b(no|not|lacks?|without|loses?|do\s+not\s+have|does\s+not\s+have|don't\s+have|even\s+(?:with|against|from)|hide|hidden|conceal|invisible|undetectable|imperceptible|defeat|foil|fool|cannot\s+detect|can't\s+detect|blocks?|negates?|prevents?|creatures?\s+with|foes?\s+with|foiled\s+by|not\s+fooled\s+by|such\s+as|improves?\s+your|extends?\s+your|increases?\s+the\s+range\s+of)\s+[^.;]{0,45}$/i.test(sensePre)) continue;
+    if (/^\s*(?:cannot|can't|does\s+not|do\s+not|is\s+ineffective|are\s+ineffective|still\s+detect|still\s+allows?|reveals?|penetrates?|pierces?|functions?\s+normally|is\s+not\s+fooled|are\s+not\s+fooled)/i.test(sensePost)) continue;
     push({ family: 'sense', target: kind, value: Number(m[2] || m[3]) || null, qualifier: '', phrase: m[0].trim() });
   }
   // 3. damage reduction, spell resistance, energy resistance, immunity
   const reDr = /\b(?:damage reduction|DR)\s+(\d+)\s*\/\s*([a-z—\-][a-z+\- ]*?)(?=[.,;:)]|\s+(?:and\s+(?:spell|damage|SR\b|DR\b|immun|resist|darkvision|low-light|fast|a\s+|an\s+)|when\b|while\b|if\b|in\b|at\b|from\b)|$)/gi;
   while ((m = reDr.exec(text))) {
+    const drPre = text.slice(Math.max(0, m.index - 40), m.index);
+    if (/\b(?:overcome|overcomes|bypass|bypasses|penetrate|penetrates|ignore|ignores|cuts?\s+through)\s+[^.;]{0,25}$/i.test(drPre)) continue;
     const bypass = m[2].replace(/\s+\b(?:and|or)\s*$/i, '').trim().toLowerCase();
     push({ family: 'dr', target: bypass, value: Number(m[1]), qualifier: '', phrase: m[0].trim() });
   }
@@ -95,13 +107,30 @@ function extractClaims(rawText) {
   const reRes = new RegExp('\\b(?:resistance\\s+(?:to\\s+)?(' + ENERGIES.join('|') + ')\\s+(\\d+)|(' + ENERGIES.join('|') + ')\\s+resistance\\s+(\\d+))', 'gi');
   while ((m = reRes.exec(text))) push({ family: 'resist', target: (m[1] || m[3]).toLowerCase(), value: Number(m[2] || m[4]), qualifier: '', phrase: m[0].trim() });
   const reImm = /\bimmun(?:e|ity)\s+to\s+([a-z ,\-]+?)(?=[.;:(]|\s+(?:and|but|effects?)\b|$)/gi;
-  while ((m = reImm.exec(text))) push({ family: 'immunity', target: m[1].trim().toLowerCase(), value: null, qualifier: '', phrase: m[0].trim() });
+  while ((m = reImm.exec(text))) {
+    const immTarget = m[1].trim().toLowerCase();
+    const immPre = text.slice(Math.max(0, m.index - 55), m.index);
+    const immPost = text.slice(m.index + m[0].length, Math.min(text.length, m.index + m[0].length + 45));
+    // Skip target-caveat immunities ("creatures immune to critical hits are unaffected") and vague pronoun targets ("immune to this spell/its/the")
+    if (/^(?:it|its|this|that|them|the|a|an|all|any|such|other|normal|this\s+\w+|its\s+\w+|the\s+\w+)$/i.test(immTarget)) continue;
+    if (/\b(?:creatures?|targets?|foes?|opponents?|beings?|undead|constructs?|plants?|oozes?|elementals?|normally)\s+(?:that\s+are\s+|who\s+are\s+)?$/i.test(immPre)) continue;
+    if (/^\s*(?:are\s+unaffected|is\s+unaffected|cannot\s+be\s+affected|do\s+not\s+take|does\s+not\s+take|take\s+no|takes\s+no|are\s+not\s+affected|is\s+not\s+affected)/i.test(immPost)) continue;
+    if (/\b(?:this\s+spell|this\s+weapon|this\s+effect|this\s+ability|caltrops|psychic\s+strike|dealt\s+by\s+this)\b/i.test(immTarget)) continue;
+    push({ family: 'immunity', target: immTarget, value: null, qualifier: '', phrase: m[0].trim() });
+  }
   // 4. per-day uses
   const reDay = /\b(\d+|once|twice|three times|four times|five times)\s*(?:times\s*)?(?:per day|\/day|a day|each day)\b/gi;
-  while ((m = reDay.exec(text))) push({ family: 'perDay', target: 'uses', value: WORD_NUM[m[1].toLowerCase()] || Number(m[1]), qualifier: '', phrase: m[0].trim() });
+  while ((m = reDay.exec(text))) {
+    const cnt = WORD_NUM[m[1].toLowerCase()] || Number(m[1]);
+    if (!Number.isFinite(cnt) || cnt < 1) continue;
+    const dayPre = text.slice(Math.max(0, m.index - 45), m.index);
+    if (/\b(?:heal|heals|recovers?|regains?|naturally|at\s+a\s+rate\s+of|more\s+than|no\s+more\s+than)\s+[^.;]{0,25}$/i.test(dayPre)) continue;
+    push({ family: 'perDay', target: 'uses', value: cnt, qualifier: '', phrase: m[0].trim() });
+  }
   // 5. bonus feat
-  if (/\b(gains?|receives?|gets?)\s+(?:a|an|one|the)?\s*(?:[A-Z][\w' ]+\s+)?(?:as\s+a\s+)?bonus feat\b|\bbonus feat\b/i.test(text)) {
-    push({ family: 'bonusFeat', target: 'feat', value: null, qualifier: '', phrase: (text.match(/[^.]*bonus feat[^.]*/i) || [''])[0].trim().slice(0, 120) });
+  const bfMatch = text.match(/[^.]*bonus feat[^.]*/i);
+  if (bfMatch && /\b(gains?|receives?|gets?|grants?)\s+(?:a|an|one|1|the|extra)?\s*(?:[A-Z0-9][\w' ]+\s+)?(?:as\s+a\s+)?bonus feat\b/i.test(bfMatch[0]) && !/\b(?:fighter\s+bonus\s+feat\s+list|select\s+this\s+feat\s+as\s+a|qualifies\s+as\s+a\s+bonus\s+feat|counts?\s+as\s+a\s+bonus\s+feat)\b/i.test(bfMatch[0])) {
+    push({ family: 'bonusFeat', target: 'feat', value: null, qualifier: '', phrase: bfMatch[0].trim().slice(0, 120) });
   }
   // 6. speed
   const reSpd = /\b(?:base\s+land\s+speed|land\s+speed|base\s+speed|(fly|swim|climb|burrow)\s+speed)\s+(?:is\s+|of\s+)?(\d+)\s*(?:ft\.?|feet)/gi;
@@ -153,7 +182,7 @@ function coverage(claims, atoms, entry) {
     let fam = keys.filter((x) => (FAMILY_MATCH[c.family] || (() => false))(x.k, c.target));
     // structural coverage outside effects[]
     if (c.family === 'perDay' && powers.some((p) => p && p.usage && /perday|per_day|day/i.test(String(p.usage.mode || p.usage.per || '')))) fam = fam.concat([{ k: 'powers', v: '' }]);
-    if (c.family === 'bonusFeat' && (Array.isArray(entry.bonusFeatLevels) || (entry.race && entry.race.bonusFeatAt1st))) fam = fam.concat([{ k: 'structural', v: '' }]);
+    if (c.family === 'bonusFeat' && (entry.type === 'Flaw' || Array.isArray(entry.bonusFeatLevels) || (entry.race && entry.race.bonusFeatAt1st))) fam = fam.concat([{ k: 'structural', v: '' }]);
     if (c.family === 'speed' && entry.race && Number(entry.race.speed) === c.value) fam = fam.concat([{ k: 'race.speed', v: String(c.value) }]);
     if (c.family === 'sense' && entry.race && JSON.stringify(entry.race).toLowerCase().includes(c.target.split(' ')[0])) fam = fam.concat([{ k: 'race', v: '' }]);
     if (!fam.length) return Object.assign({}, c, { status: 'missing' });

@@ -10795,6 +10795,27 @@
         "flag": "multigrab",
         "label": "Multigrab",
         "text": "When grappling an opponent with the part of your body that made the attack, you take only a -10 penalty on grapple checks to maintain the hold."
+      },
+      {
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "condKind": "situational",
+            "condText": "maintaining grapple with single limb",
+            "effects": [
+              {
+                "type": "stat",
+                "targets": [
+                  "atk.grapple"
+                ],
+                "mode": "flat",
+                "value": -10,
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
       }
     ],
     "text": "When grappling an opponent with the part of your body that made the attack, you take only a -10 penalty on grapple checks to maintain the hold.",

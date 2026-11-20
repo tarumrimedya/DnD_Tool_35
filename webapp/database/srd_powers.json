@@ -4678,6 +4678,13 @@
         "mode": "Sense",
         "what": "Darkvision 60 ft.",
         "value": 60
+      },
+      {
+        "type": "effect",
+        "effectKind": "grant",
+        "grantType": "sense",
+        "value": "Darkvision",
+        "range": 60
       }
     ],
     "shortDescription": "See 60 ft. in total darkness.",
@@ -21372,7 +21379,29 @@
     "save": "None",
     "sr": false,
     "powerPointsCost": 5,
-    "effects": [],
+    "effects": [
+      {
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "condKind": "situational",
+            "condText": "vs. gaze attacks",
+            "effects": [
+              {
+                "type": "stat",
+                "targets": [
+                  "save.all"
+                ],
+                "mode": "flat",
+                "value": -4,
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "You have all-around vision.",
     "text": "You have metaphoric “eyes in the back of your head,” and on the sides and top as well, granting you benefits in specific situations. In effect, you have a 360-degree sphere of sight, allowing you a perfect view of creatures that might otherwise flank you. Thus, flanking opponents gain no bonus on their attack rolls, and rogues are denied their sneak attack ability because you do not lose your Dexterity bonus (but they may still sneak attack you if you are caught flat-footed). Your Spot and Search checks gain a +4 enhancement bonus. Concurrently, you take a -4 penalty on saves against all gaze attacks during the power’s duration.",
     "tags": [

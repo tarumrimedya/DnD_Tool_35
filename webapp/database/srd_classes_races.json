@@ -18455,6 +18455,12 @@
         "die": "d6",
         "scaling": "formula",
         "source": "Unarmed Strike (Monk)"
+      },
+      {
+        "type": "effect",
+        "effectKind": "grant",
+        "grantType": "feat",
+        "value": "Improved Unarmed Strike"
       }
     ],
     "shortDescription": "At 1st level, a monk gains Improved Unarmed Strike as a bonus feat. A monk’s attacks may be with either fist interchangeably or even from elbows, knees, and feet. This means that a monk may even make unarmed strikes wit…",
@@ -20430,6 +20436,16 @@
         "flag": "enemiesWithin10FtMinus2Saves",
         "label": "Enemies Within 10 ft. Take -2 Penalty on All Saving Throws",
         "text": "Enemies Within 10 ft. Take -2 Penalty on All Saving Throws"
+      },
+      {
+        "type": "stat",
+        "targets": [
+          "save.all"
+        ],
+        "mode": "flat",
+        "value": -2,
+        "btype": "Untyped",
+        "recipient": "target"
       }
     ],
     "shortDescription": "Beginning at 3rd level, the blackguard radiates a malign aura that causes enemies within 10 feet of him to take a -2 penalty on all saving throws.",
@@ -30664,6 +30680,13 @@
         "flag": "gaseous-form",
         "label": "Gaseous Form",
         "text": "As a standard action, a vampire can assume gaseous form at will as the spell Gaseous Form (caster level 5th), but it can remain gaseous indefinitely and has a fly speed of 20 feet "
+      },
+      {
+        "type": "effect",
+        "effectKind": "grant",
+        "grantType": "movement",
+        "mode": "fly",
+        "value": 20
       }
     ],
     "shortDescription": "As a standard action, a vampire can assume gaseous form at will as the spell Gaseous Form (caster level 5th), but it can remain gaseous indefinitely and has a fly speed of 20 feet with perfect maneuverability.",
