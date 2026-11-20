@@ -13626,7 +13626,7 @@
           "category": "Special Ability",
           "type": "Ex",
           "summary": "+1 bonus on Reflex saves and AC against traps.",
-          "id": "cab-dwarven-defender-trap-sense"
+          "id": "cab-trap-sense"
         }
       ],
       "5": [
@@ -13682,7 +13682,7 @@
           "category": "Special Ability",
           "type": "Ex",
           "summary": "Trap Sense bonus increases to +2.",
-          "id": "cab-dwarven-defender-trap-sense"
+          "id": "cab-trap-sense"
         }
       ],
       "9": [
@@ -19268,34 +19268,7 @@
         4
       ]
     ],
-    "effects": [
-      {
-        "id": "ef-se-when",
-        "type": "when",
-        "flow": "while",
-        "branches": [
-          {
-            "id": "ef-se-when-br",
-            "condKind": "situational",
-            "condText": "after Wild Surge",
-            "effects": [
-              {
-                "id": "ef-se-stat",
-                "type": "stat",
-                "targets": [
-                  "atk.all",
-                  "dmg.all",
-                  "save.all"
-                ],
-                "mode": "formula",
-                "formula": "@featureRank",
-                "btype": "Morale"
-              }
-            ]
-          }
-        ]
-      }
-    ],
+    "effects": [],
     "shortDescription": "Starting at 4th level, when a wilder uses her wild surge ability, she gains a +1 morale bonus on attack rolls, damage rolls, and saving throws for a number of rounds equal to the intensity of her wild surge. If a wilder…",
     "text": "Starting at 4th level, when a wilder uses her wild surge ability, she gains a +1 morale bonus on attack rolls, damage rolls, and saving throws for a number of rounds equal to the intensity of her wild surge.\n\nIf a wilder is overcome by psychic enervation following her wild surge, she does not gain the morale bonus for this use of her wild surge ability.\n\nAt 12th level, the morale bonus on a wilder’s attack rolls, damage rolls, and saving throws increases to +2. At 20th level, the bonus increases to +3.",
     "tags": [
@@ -19303,18 +19276,16 @@
     ],
     "modes": [
       {
-        "id": "mode-off",
-        "name": "Inactive",
+        "id": "off",
         "label": "Inactive",
         "effects": []
       },
       {
         "id": "mode-after-wild-surge",
-        "name": "After Wild Surge",
-        "label": "After Wild Surge",
+        "label": "After Wild Surge (+1/+2/+3 Morale)",
         "effects": [
           {
-            "id": "ef-seuph-b",
+            "id": "ef-se-stat",
             "type": "stat",
             "targets": [
               "atk.all",
@@ -19322,11 +19293,10 @@
               "save.all"
             ],
             "mode": "formula",
-            "formula": "1 + floor((@level - 4) / 8)",
+            "formula": "@featureRank",
             "btype": "Morale"
           }
-        ],
-        "combatScope": "both"
+        ]
       }
     ],
     "rankFrom": "levelTable"
@@ -54916,7 +54886,7 @@
           {
             "id": "ef-ud-when-br",
             "condKind": "situational",
-            "condText": "unarmored and unencumbered",
+            "condText": "unarmored and no shield",
             "effects": [
               {
                 "id": "ef-ud-ac",

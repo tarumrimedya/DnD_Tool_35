@@ -1,9 +1,9 @@
 {
   "schemaVersion": 3,
   "version": "3.0.0",
-  "compendiumHash": "e23f4b524367a49f",
+  "compendiumHash": "dd210cb5375756e7",
   "generatedAt": "2026-11-15T19:43:51.694Z",
-  "totalEntries": 7998,
+  "totalEntries": 7997,
   "chunks": {
     "srd_equipment.json": {
       "count": 1143,
@@ -19,8 +19,8 @@
     },
     "srd_classes_races.json": {
       "count": 336,
-      "bytes": 1678174,
-      "hash": "ca44f3bc35fbe913",
+      "bytes": 1677382,
+      "hash": "51a8a0f983aa22ff",
       "eagerLoad": true
     },
     "srd_combat_rules.json": {
@@ -60,7 +60,7 @@
       "eagerLoad": true
     },
     "srd_companions.json": {
-      "count": 0,
+      "count": 1,
       "bytes": 9446,
       "hash": "5737ccb20c900c1b",
       "eagerLoad": true
@@ -66043,14 +66043,6 @@
       "f": "srd_classes_races.json"
     },
     {
-      "id": "cab-dwarven-defender-trap-sense",
-      "n": "Trap Sense (Ex)",
-      "t": "ClassAbility",
-      "c": "Class Feature",
-      "s": "None",
-      "f": "srd_classes_races.json"
-    },
-    {
       "id": "cab-loremaster-lore",
       "n": "Lore (Ex)",
       "t": "ClassAbility",
@@ -66070,7 +66062,7 @@
       "id": "cab-eldritch-blast",
       "n": "Eldritch Blast (Sp)",
       "t": "ClassAbility",
-      "c": "",
+      "c": "Class Ability",
       "s": "None",
       "f": "srd_classes_races.json"
     },
@@ -66078,7 +66070,7 @@
       "id": "cab-warlock-dr",
       "n": "Damage Reduction (Cold Iron) (Su)",
       "t": "ClassAbility",
-      "c": "",
+      "c": "Class Ability",
       "s": "None",
       "f": "srd_classes_races.json"
     },
@@ -66086,7 +66078,7 @@
       "id": "cab-frenzy",
       "n": "Frenzy (Ex)",
       "t": "ClassAbility",
-      "c": "",
+      "c": "Class Ability",
       "s": "None",
       "f": "srd_classes_races.json"
     },
@@ -66094,7 +66086,7 @@
       "id": "cab-dagger-sneak-attack",
       "n": "Dagger Sneak Attack (Ex)",
       "t": "ClassAbility",
-      "c": "",
+      "c": "Class Ability",
       "s": "None",
       "f": "srd_classes_races.json"
     },
@@ -66102,7 +66094,7 @@
       "id": "cab-unfettered-defense",
       "n": "Unfettered Defense (Ex)",
       "t": "ClassAbility",
-      "c": "",
+      "c": "Class Ability",
       "s": "None",
       "f": "srd_classes_races.json"
     },
@@ -66110,7 +66102,7 @@
       "id": "cab-shield-block",
       "n": "Shield Block (Ex)",
       "t": "ClassAbility",
-      "c": "",
+      "c": "Class Ability",
       "s": "None",
       "f": "srd_classes_races.json"
     },
@@ -66118,7 +66110,7 @@
       "id": "cab-fighting-challenge",
       "n": "Fighting Challenge (Ex)",
       "t": "ClassAbility",
-      "c": "",
+      "c": "Class Ability",
       "s": "None",
       "f": "srd_classes_races.json"
     },
