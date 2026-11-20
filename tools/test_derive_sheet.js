@@ -6657,6 +6657,129 @@ function runDeriveSheetTests() {
       'E1.2 companion/dismiss: removes targeted companion and shifts activeCompanionId to remaining companion',
       afterDismiss.companions.length === 1 && afterDismiss.companions[0].id === wartComp.id && afterDismiss.activeCompanionId === wartComp.id
     );
+
+    // 9. Sprint E1.3 (Faz 2): Wild Shape / Alternate Form Overlay, Meld Gate (Wilding Clasp vs Wild Armor), & Store Reducers
+    const classesRacesDb = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'database', 'srd_classes_races.json'), 'utf8'));
+    const druidCls = classesRacesDb.find(e => e.id === 'cls-druid');
+    const cabWs = classesRacesDb.find(e => e.id === 'cab-wild-shape');
+    const cabWse = classesRacesDb.find(e => e.id === 'cab-wild-shape-elemental');
+    const druidL5Link = druidCls?.features?.['5']?.some(f => f && f.id === 'cab-wild-shape');
+    const druidL16Link = druidCls?.features?.['16']?.some(f => f && f.id === 'cab-wild-shape-elemental');
+    check(
+      'E1.3 Data Links: cls-druid L5-15 linked to cab-wild-shape & L16-20 linked to cab-wild-shape-elemental with V3 daily resource pools',
+      Boolean(druidL5Link && druidL16Link) &&
+      Array.isArray(cabWs?.effects) && cabWs.effects.some(ef => ef.type === 'resource' && ef.varKey === 'wild_shape_uses') &&
+      Array.isArray(cabWse?.effects) && cabWse.effects.some(ef => ef.type === 'resource' && ef.varKey === 'wild_shape_elemental_uses')
+    );
+
+    const wsDruidDoc = {
+      name: 'Sylva', level: 12, bab: 9, size: 'Medium', baseSpeed: 30,
+      classLevels: { druid: 12 },
+      baseAbilities: { str: 10, dex: 14, con: 12, int: 10, wis: 18, cha: 10 },
+      abilities: { str: 10, dex: 14, con: 12, int: 10, wis: 18, cha: 10 },
+      baseSaves: { fort: 8, ref: 4, will: 8 },
+      hp: { max: 72, current: 72, baseMax: 60, conBonusHp: 12 },
+      classFeatures: [cabWs],
+      feats: [], buffs: [], gearPool: [],
+      bodySlots: {
+        shoulders: {
+          id: 'ws_cloak', name: 'Cloak of Resistance +2', category: 'Shoulders', active: true, weight: 1,
+          schemaVersion: 3, effects: [{ type: 'stat', targets: ['saves.all'], mode: 'flat', value: 2, btype: 'Resistance' }]
+        },
+        neck: {
+          id: 'ws_periapt', name: 'Periapt of Wisdom +4', category: 'Neck', active: true, weight: 0.5,
+          attachments: ['mi-mic-wilding-clasp'], usableInForm: true,
+          schemaVersion: 3, effects: [{ type: 'stat', targets: ['ability.wis'], mode: 'flat', value: 4, btype: 'Enhancement' }]
+        },
+        armor: {
+          id: 'ws_wild_armor', name: '+1 Wild Breastplate', category: 'Armor', active: true, weight: 30,
+          enhancements: ['enh-wild'],
+          armor: { category: 'Medium', acBonus: 5, enhancement: 1, maxDex: 3, acp: -4, arcaneSpellFailure: 25 },
+          schemaVersion: 3, effects: [{ type: 'stat', targets: ['ac.armor'], mode: 'flat', value: 6, btype: 'Armor' }]
+        },
+        belt: {
+          id: 'ws_str_belt', name: 'Belt of Giant Strength +2', category: 'Belt', active: true, weight: 1,
+          schemaVersion: 3, effects: [{ type: 'stat', targets: ['ability.str'], mode: 'flat', value: 2, btype: 'Enhancement' }]
+        }
+      }
+    };
+
+    CharStore.replaceDoc(wsDruidDoc, { skipHistory: true });
+    CharStore.clearHistory();
+    const trueSheet = CharStore.getSheet();
+    const trueMaxHp = trueSheet.hp.max;
+    const trueWis = trueSheet.abilities.wis; // 18 + 4 = 22
+    const trueFort = trueSheet.saves.fort;   // 8 + 1 (CON 12) + 2 (Cloak) = 11
+
+    // Activate Dire Bear Wild Shape (12 HD, Large, STR 31, DEX 13, CON 19, NA +7, 40 ft)
+    CharStore.dispatch({
+      type: 'form/activate',
+      payload: { baseMonsterId: 'mst-dire-bear', kind: 'wild_shape', name: 'Dire Bear' }
+    });
+    const bearSheet = CharStore.getSheet();
+    const bearAf = bearSheet.activeForm;
+    const bearClawAtk = bearAf.naturalAttacks.find(a => /claw/i.test(a.name));
+    const bearBiteAtk = bearAf.naturalAttacks.find(a => /bite/i.test(a.name));
+    check(
+      'E1.3 Alternate Form (Dire Bear): STR 31, DEX 13, CON 19, Large, NA +7, Speed 40, Max HP UNCHANGED (PHB Errata), Fort uses Bear CON +4 (no melded Cloak), Natural Attacks scale with Druid BAB 9',
+      bearAf.active === true &&
+      bearSheet.abilities.str === 31 &&
+      bearSheet.abilities.dex === 13 &&
+      bearSheet.abilities.con === 19 &&
+      bearSheet.meta.size === 'Large' &&
+      bearSheet.combat.speed.land === 40 &&
+      bearSheet.hp.max === trueMaxHp &&
+      bearSheet.saves.fort === (8 + 4) && // 8 base + 4 Bear CON; Cloak +2 is melded!
+      bearClawAtk && bearClawAtk.attackBonus === 18 && bearClawAtk.damageFormula === '2d4+10' &&
+      bearBiteAtk && bearBiteAtk.attackBonus === 13 && bearBiteAtk.damageFormula === '2d8+5',
+      JSON.stringify({
+        abi: bearSheet.abilities, size: bearSheet.meta.size, spd: bearSheet.combat.speed.land,
+        hp: [trueMaxHp, bearSheet.hp.max], fort: [trueFort, bearSheet.saves.fort],
+        claw: bearClawAtk, bite: bearBiteAtk
+      })
+    );
+
+    check(
+      'E1.3 Meld Gate: Cloak melded, Wilding Clasp Periapt (+4 WIS = 22) active, +1 Wild Breastplate keeps +6 AC with 0 ACP / null armorMaxDex / 0 speed penalty',
+      bearSheet.abilities.wis === trueWis &&
+      bearSheet.inventory.bodySlotsView.slotsByKey.shoulders.meldState === 'melded' &&
+      bearSheet.inventory.bodySlotsView.slotsByKey.neck.meldState === 'clasp' &&
+      bearSheet.inventory.bodySlotsView.slotsByKey.armor.meldState === 'wild_ac' &&
+      bearSheet.ac.armor === 6 &&
+      bearSheet.ac.natural === 7 &&
+      bearSheet.ac.armorAcp === 0 &&
+      bearSheet.ac.armorMaxDex === null,
+      JSON.stringify({
+        wis: bearSheet.abilities.wis,
+        meld: {
+          shoulders: bearSheet.inventory.bodySlotsView.slotsByKey.shoulders.meldState,
+          neck: bearSheet.inventory.bodySlotsView.slotsByKey.neck.meldState,
+          armor: bearSheet.inventory.bodySlotsView.slotsByKey.armor.meldState
+        },
+        ac: { armor: bearSheet.ac.armor, natural: bearSheet.ac.natural, acp: bearSheet.ac.armorAcp, maxDex: bearSheet.ac.armorMaxDex }
+      })
+    );
+
+    // Attach Wilding Clasp to Belt of Giant Strength +2 while shifted -> STR jumps 31 -> 33!
+    CharStore.dispatch({ type: 'inventory/toggleWildingClasp', payload: { slotKey: 'belt' } });
+    const bearClaspBeltSheet = CharStore.getSheet();
+    check(
+      'E1.3 inventory/toggleWildingClasp: attaching Clasp to Belt of Giant Strength +2 unmelds it (Bear STR 31 -> 33)',
+      bearClaspBeltSheet.abilities.str === 33 &&
+      bearClaspBeltSheet.inventory.bodySlotsView.slotsByKey.belt.meldState === 'clasp'
+    );
+
+    // Revert Wild Shape -> restores Medium size, base STR 12 (10 + Belt +2), Fort 11 (with Cloak +2)
+    CharStore.dispatch({ type: 'form/revert', payload: {} });
+    const revertedSheet = CharStore.getSheet();
+    check(
+      'E1.3 form/revert: restores true form (Medium, STR 12, Fort 11, activeForm.active=false)',
+      revertedSheet.activeForm.active === false &&
+      revertedSheet.meta.size === 'Medium' &&
+      revertedSheet.abilities.str === 12 &&
+      revertedSheet.saves.fort === trueFort,
+      JSON.stringify({ active: revertedSheet.activeForm.active, size: revertedSheet.meta.size, str: revertedSheet.abilities.str, fort: revertedSheet.saves.fort })
+    );
   }
 
   CharStore.clearHistory();

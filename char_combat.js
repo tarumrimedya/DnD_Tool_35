@@ -10293,8 +10293,9 @@
       try { renderOffenseModifiersGrid(); } catch (e) { console.error('renderOffenseModifiersGrid error:', e); }
       try { recalculateOffense(); } catch (e) { console.error('recalculateOffense error:', e); }
 
-      // 4. Utility Column: Quick Consumables & Companion Combat
+      // 4. Utility Column: Quick Consumables, Wild Shape & Companion Combat
       try { renderCockpitConsumables(); } catch (e) { console.error('renderCockpitConsumables error:', e); }
+      try { renderCockpitWildShapeBar(); } catch (e) { console.error('renderCockpitWildShapeBar error:', e); }
       try { renderCockpitCompanionCard(); } catch (e) { console.error('renderCockpitCompanionCard error:', e); }
 
       // 5. Pin Drawers (Spell, Defense, and Ranged Ammunition Drawers)
@@ -10943,6 +10944,246 @@
         return window.RuleEngine.calculateCompanionStats(character, activeComp);
       }
       return null;
+    }
+
+    // =========================================================================
+    // ADR-058 Faz 2: Wild Shape / Alternate Form Cockpit Bar & Picker Modal
+    // =========================================================================
+    function getCombatActiveFormView() {
+      if (window.CharStore && typeof window.CharStore.getSheet === 'function') {
+        const s = window.CharStore.getSheet();
+        if (s && s.activeForm) return s.activeForm;
+      }
+      if (typeof RuleEngine !== 'undefined' && typeof RuleEngine.deriveActiveFormView === 'function') {
+        return RuleEngine.deriveActiveFormView(character);
+      }
+      return { active: false, eligible: false };
+    }
+
+    function renderCockpitWildShapeBar() {
+      const grid = document.getElementById('combat-modifiers-3x3-grid');
+      if (!grid || !grid.parentElement) return;
+      const af = getCombatActiveFormView();
+      let bar = document.getElementById('cockpit-wild-shape-bar');
+      if (!af || (!af.eligible && !af.active)) {
+        if (bar) {
+          bar.classList.add('hidden');
+          bar.innerHTML = '';
+        }
+        return;
+      }
+      if (!bar) {
+        bar = document.createElement('div');
+        bar.id = 'cockpit-wild-shape-bar';
+        bar.className = 'mb-2';
+        grid.parentElement.insertBefore(bar, grid);
+      }
+      bar.classList.remove('hidden');
+
+      if (!af.active) {
+        const typesStr = Array.isArray(af.allowedTypes) ? af.allowedTypes.join('/') : 'Animal';
+        bar.innerHTML = `
+          <div class="px-2.5 py-1.5 rounded-xl bg-slate-900/90 border border-emerald-700/50 flex flex-wrap items-center justify-between gap-2 text-xs">
+            <div class="flex items-center gap-1.5 min-w-0">
+              <span class="text-emerald-400 font-black text-sm">🐾</span>
+              <span class="font-bold text-emerald-300">Wild Shape</span>
+              <span class="text-[10px] font-mono text-slate-400">(${af.dailyUses || 1}/day • ≤${af.maxHd || 5} HD • ${UI.escapeHtml(typesStr)} • ${af.durationHours || 5}h)</span>
+            </div>
+            <button type="button" data-action="combat:open-wild-shape-modal" class="px-2.5 py-1 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-[11px] shadow-sm transition cursor-pointer">Assume Form</button>
+          </div>
+        `;
+        return;
+      }
+
+      const natBtns = (af.naturalAttacks || []).map((atk, idx) => {
+        const sign = atk.attackBonus >= 0 ? '+' : '';
+        const cnt = atk.count > 1 ? `${atk.count}× ` : '';
+        return `
+          <button type="button" data-action="combat:roll-form-attack" data-atk-idx="${idx}"
+                  class="px-2 py-1 rounded-lg bg-slate-950 hover:bg-emerald-950 border border-emerald-600/60 text-[11px] font-mono text-emerald-200 hover:text-white transition cursor-pointer inline-flex items-center gap-1">
+            <span>⚔️</span>
+            <span class="font-bold">${UI.escapeHtml(cnt + atk.name)}</span>
+            <span class="text-amber-300">${sign}${atk.attackBonus}</span>
+            <span class="text-slate-400">(${UI.escapeHtml(atk.damageFormula)})</span>
+          </button>
+        `;
+      }).join('');
+
+      bar.innerHTML = `
+        <div class="p-2.5 rounded-xl bg-emerald-950/60 border border-emerald-500/70 space-y-2 text-xs shadow-sm">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="flex flex-wrap items-center gap-1.5 min-w-0">
+              <span class="font-black text-emerald-300">🐾 ${UI.escapeHtml(af.name)}</span>
+              <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-950 text-emerald-300 border border-emerald-700/60">${UI.escapeHtml(af.size || 'Medium')} • ${Number(af.hd) || 1} HD • NA +${Number(af.naturalArmor) || 0}</span>
+              ${af.canCastSpells ? '<span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-sky-950 text-sky-300 border border-sky-700/60">✨ Natural Spell</span>' : '<span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-950 text-slate-400 border border-slate-700">🔇 No Speech</span>'}
+            </div>
+            <div class="flex items-center gap-1.5">
+              <button type="button" data-action="combat:open-wild-shape-modal" class="px-2 py-0.5 rounded bg-slate-900 hover:bg-slate-800 text-emerald-300 border border-emerald-700/60 text-[10px] font-bold cursor-pointer transition">Change Form</button>
+              <button type="button" data-action="combat:revert-wild-shape" class="px-2 py-0.5 rounded bg-rose-950/80 hover:bg-rose-800 text-rose-200 border border-rose-600/60 text-[10px] font-bold cursor-pointer transition">Revert</button>
+            </div>
+          </div>
+          ${natBtns ? `<div class="flex flex-wrap items-center gap-1.5">${natBtns}</div>` : ''}
+        </div>
+      `;
+    }
+
+    function openWildShapeModal() {
+      let modal = document.getElementById('wild-shape-picker-modal');
+      if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'wild-shape-picker-modal';
+        modal.className = 'fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-3';
+        modal.innerHTML = `
+          <div class="bg-slate-900 border border-emerald-600/60 rounded-2xl w-full max-w-2xl flex flex-col shadow-2xl overflow-hidden" style="max-height:85vh">
+            <div class="px-4 py-3 border-b border-slate-800 flex items-center justify-between gap-2 bg-slate-950/60">
+              <div>
+                <h3 class="text-sm font-black text-emerald-300">🐾 Assume Wild Shape Form (Alternate Form)</h3>
+                <p id="wild-shape-modal-subtitle" class="text-[11px] text-slate-400"></p>
+              </div>
+              <button type="button" data-action="combat:close-wild-shape-modal" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold cursor-pointer">✕</button>
+            </div>
+            <div class="p-3 border-b border-slate-800">
+              <input id="wild-shape-search-input" type="text" data-input-action="combat:filter-wild-shape" placeholder="Search eligible forms (e.g. Dire Bear, Leopard, Eagle, Air Elemental)..."
+                     class="w-full px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500" />
+            </div>
+            <div id="wild-shape-picker-list" class="p-3 overflow-y-auto space-y-2 flex-1"></div>
+          </div>
+        `;
+        document.body.appendChild(modal);
+      }
+      modal.classList.remove('hidden');
+      const input = document.getElementById('wild-shape-search-input');
+      if (input) input.value = '';
+      renderWildShapePickerList('');
+    }
+
+    function renderWildShapePickerList(query) {
+      const listEl = document.getElementById('wild-shape-picker-list');
+      const subEl = document.getElementById('wild-shape-modal-subtitle');
+      if (!listEl) return;
+      const af = getCombatActiveFormView();
+      const maxHd = Math.max(1, Number(af.maxHd) || 5);
+      const allowedTypes = new Set((af.allowedTypes || ['Animal']).map(t => String(t).toLowerCase()));
+      const allowedSizes = new Set((af.allowedSizes || ['Small', 'Medium']).map(s => String(s).toLowerCase()));
+      const elemSizes = new Set((af.elementalAllowedSizes || []).map(s => String(s).toLowerCase()));
+
+      if (subEl) {
+        subEl.textContent = `Effective Druid Level ${af.effectiveLevel || 5} • Max ${maxHd} HD • Types: ${(af.allowedTypes || ['Animal']).join(', ')} • Sizes: ${(af.allowedSizes || ['Small', 'Medium']).join(', ')}`;
+      }
+
+      const comp = window.SrdCompendium;
+      let allMonsters = [];
+      if (comp && typeof comp.getByType === 'function') {
+        allMonsters = comp.getByType('Monster') || [];
+      } else if (comp && typeof comp.getAll === 'function') {
+        allMonsters = (comp.getAll() || []).filter(m => m && m.type === 'Monster');
+      } else if (comp && Array.isArray(comp.monsters)) {
+        allMonsters = comp.monsters;
+      }
+      if (allMonsters.length === 0 && comp && typeof comp.ensureChunkLoaded === 'function') {
+        listEl.innerHTML = '<div class="p-4 text-center text-xs text-slate-400">Loading Bestiary forms...</div>';
+        comp.ensureChunkLoaded('srd_monsters.json').then(() => renderWildShapePickerList(query));
+        return;
+      }
+      const q = String(query || '').toLowerCase().trim();
+
+      const eligibleForms = allMonsters.filter(m => {
+        if (!m || !m.id || !m.name) return false;
+        const mBlock = (m.monster && typeof m.monster === 'object') ? m.monster : m;
+        const cType = String(mBlock.creatureType || m.category || '').toLowerCase().trim();
+        if (!allowedTypes.has(cType)) return false;
+        const sz = String(mBlock.size || m.size || 'Medium').toLowerCase().trim();
+        if (cType === 'elemental') {
+          if (!elemSizes.has(sz)) return false;
+        } else if (!allowedSizes.has(sz)) {
+          return false;
+        }
+        const hd = Number(mBlock.hitDice?.count || 1);
+        if (hd > maxHd) return false;
+        if (q && !m.name.toLowerCase().includes(q) && !cType.includes(q) && !sz.includes(q)) return false;
+        return true;
+      }).sort((a, b) => {
+        const hdA = Number(a.monster?.hitDice?.count || 1);
+        const hdB = Number(b.monster?.hitDice?.count || 1);
+        if (hdB !== hdA) return hdB - hdA;
+        return String(a.name).localeCompare(String(b.name));
+      });
+
+      if (eligibleForms.length === 0) {
+        listEl.innerHTML = '<div class="p-4 text-center text-xs text-slate-400">No eligible Wild Shape forms match your filter.</div>';
+        return;
+      }
+
+      listEl.innerHTML = eligibleForms.slice(0, 60).map(m => {
+        const ch = (typeof RuleEngine !== 'undefined' && RuleEngine.buildMonsterChassis) ? RuleEngine.buildMonsterChassis(m) : null;
+        const mBlock = (m.monster && typeof m.monster === 'object') ? m.monster : m;
+        const hd = Number(mBlock.hitDice?.count || ch?.baseHd || 1);
+        const sz = mBlock.size || ch?.size || 'Medium';
+        const cType = mBlock.creatureType || m.category || 'Animal';
+        const abi = ch?.abilities || mBlock.abilities || {};
+        const na = Number(ch?.naturalArmor ?? mBlock.ac?.naturalArmor ?? 0);
+        const spd = ch?.speeds?.land || mBlock.speeds?.land || 30;
+        const isCurrent = af.active && af.baseMonsterId === m.id;
+        return `
+          <div class="p-2.5 rounded-xl bg-slate-950/80 border ${isCurrent ? 'border-emerald-400 ring-1 ring-emerald-500/40' : 'border-slate-800 hover:border-emerald-600/60'} flex flex-wrap items-center justify-between gap-2 transition">
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="font-bold text-xs text-white">${UI.escapeHtml(m.name)}</span>
+                <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-900 text-emerald-300 border border-slate-700">${UI.escapeHtml(sz)} ${UI.escapeHtml(cType)} • ${hd} HD</span>
+                <span class="text-[10px] font-mono text-slate-400">NA +${na} • ${spd} ft</span>
+              </div>
+              <div class="text-[10px] font-mono text-slate-400 mt-1">STR ${abi.str || 10} · DEX ${abi.dex || 10} · CON ${abi.con || 10}</div>
+            </div>
+            <button type="button" data-action="combat:assume-wild-shape" data-monster-id="${UI.escapeAttr(m.id)}" data-monster-name="${UI.escapeAttr(m.name)}"
+                    class="px-2.5 py-1 rounded-lg ${isCurrent ? 'bg-emerald-800 text-emerald-200' : 'bg-emerald-600 hover:bg-emerald-500 text-white'} font-bold text-[11px] cursor-pointer transition">
+              ${isCurrent ? 'Active' : 'Assume'}
+            </button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function assumeWildShapeForm(monsterId, monsterName) {
+      if (!monsterId) return;
+      if (window.CharStore && typeof window.CharStore.dispatch === 'function') {
+        if (!window.CharStore.getDoc()) window.CharStore._syncExternalCharacterRef(character);
+        window.CharStore.dispatch({
+          type: 'form/activate',
+          payload: { baseMonsterId: monsterId, kind: 'wild_shape', name: monsterName || monsterId },
+          meta: { label: `Wild Shape: ${monsterName || monsterId}` }
+        });
+      } else if (character) {
+        character.activeForm = { active: true, kind: 'wild_shape', baseMonsterId: monsterId, name: monsterName || monsterId };
+      }
+      const modal = document.getElementById('wild-shape-picker-modal');
+      if (modal) modal.classList.add('hidden');
+      if (typeof renderAll === 'function') renderAll();
+      if (typeof showToast === 'function') showToast(`Assumed Wild Shape: ${monsterName || monsterId}.`, 'success');
+    }
+
+    function revertWildShapeForm() {
+      if (window.CharStore && typeof window.CharStore.dispatch === 'function') {
+        if (!window.CharStore.getDoc()) window.CharStore._syncExternalCharacterRef(character);
+        window.CharStore.dispatch({ type: 'form/revert', payload: {}, meta: { label: 'Revert Wild Shape' } });
+      } else if (character) {
+        character.activeForm = null;
+      }
+      if (typeof renderAll === 'function') renderAll();
+      if (typeof showToast === 'function') showToast('Reverted to true form.', 'info');
+    }
+
+    function rollWildShapeNaturalAttack(atkIdx) {
+      const af = getCombatActiveFormView();
+      if (!af || !af.active || !Array.isArray(af.naturalAttacks) || !af.naturalAttacks[atkIdx]) return;
+      const atk = af.naturalAttacks[atkIdx];
+      const d20 = Math.floor(Math.random() * 20) + 1;
+      const totalAtk = d20 + (Number(atk.attackBonus) || 0);
+      const dmgRes = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.rollDiceFormula === 'function')
+        ? RuleEngine.rollDiceFormula(atk.damageFormula || '1d4')
+        : { total: Math.max(1, Number(atk.damageBonus) || 1) };
+      const msg = `🐾 ${af.name} — ${atk.name}: Attack ${totalAtk} (d20:${d20} ${atk.attackBonus >= 0 ? '+' : ''}${atk.attackBonus}) | Damage: ${dmgRes.total} (${atk.damageFormula} ${atk.dmgType || ''})`;
+      if (typeof showToast === 'function') showToast(msg, 'info');
+      if (typeof appendToCombatLog === 'function') appendToCombatLog(msg);
     }
 
     function renderCockpitCompanionCard() {
@@ -15297,6 +15538,25 @@
       });
       Actions.register('combat:roll-companion-tactical', (el, data, event) => {
         if (data.tactical) rollCompanionTactical(data.tactical);
+      });
+      Actions.register('combat:open-wild-shape-modal', (el, data, event) => {
+        openWildShapeModal();
+      });
+      Actions.register('combat:close-wild-shape-modal', (el, data, event) => {
+        const modal = document.getElementById('wild-shape-picker-modal');
+        if (modal) modal.classList.add('hidden');
+      });
+      Actions.register('combat:filter-wild-shape', (el, data, event) => {
+        renderWildShapePickerList(el ? el.value : '');
+      });
+      Actions.register('combat:assume-wild-shape', (el, data, event) => {
+        if (data && data.monsterId) assumeWildShapeForm(data.monsterId, data.monsterName || data.monsterId);
+      });
+      Actions.register('combat:revert-wild-shape', (el, data, event) => {
+        revertWildShapeForm();
+      });
+      Actions.register('combat:roll-form-attack', (el, data, event) => {
+        if (data && data.atkIdx !== undefined) rollWildShapeNaturalAttack(Number(data.atkIdx));
       });
       Actions.register('combat:apply-saved-profile', (el, data, event) => {
         if (data.profileId) applySavedProfile(data.profileId);

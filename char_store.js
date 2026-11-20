@@ -2971,6 +2971,87 @@
     return doc;
   });
 
+  // 9f. 'form/activate' ({ baseMonsterId, kind, name, monsterSnapshot }) — ADR-058 Faz 2 Wild Shape / Alternate Form
+  CharStore.registerReducer('form/activate', (doc, action, stateObj) => {
+    const payload = (action && action.payload) || {};
+    if (!payload.baseMonsterId) {
+      setStoreOutcome(stateObj, { status: 'invalid_form' });
+      return doc;
+    }
+    const prevBaseSize = (doc.activeForm && doc.activeForm.baseSize) || doc.size || 'Medium';
+    doc.activeForm = {
+      active: true,
+      kind: String(payload.kind || 'wild_shape'),
+      baseMonsterId: String(payload.baseMonsterId),
+      name: String(payload.name || payload.baseMonsterId),
+      baseSize: prevBaseSize,
+      ...(payload.monsterSnapshot ? { monsterSnapshot: payload.monsterSnapshot } : {})
+    };
+    setStoreOutcome(stateObj, {
+      status: 'form_activated',
+      baseMonsterId: doc.activeForm.baseMonsterId,
+      formName: doc.activeForm.name
+    });
+    return doc;
+  });
+
+  // 9g. 'form/revert' ({}) — Revert from Wild Shape / Alternate Form to true form
+  CharStore.registerReducer('form/revert', (doc, action, stateObj) => {
+    if (!doc.activeForm || doc.activeForm.active === false) {
+      setStoreOutcome(stateObj, { status: 'not_shifted' });
+      return doc;
+    }
+    const prevName = doc.activeForm.name || 'Assumed Form';
+    if (doc.activeForm.baseSize) {
+      doc.size = doc.activeForm.baseSize;
+    }
+    doc.activeForm = null;
+    setStoreOutcome(stateObj, { status: 'form_reverted', formName: prevName });
+    return doc;
+  });
+
+  // 9h. 'inventory/toggleWildingClasp' ({ slotKey }) — Attach/detach Wilding Clasp (MIC p.190) on worn bodySlot item
+  CharStore.registerReducer('inventory/toggleWildingClasp', (doc, action, stateObj) => {
+    ensureInventoryDocStructures(doc);
+    const payload = (action && action.payload) || {};
+    const slotKey = payload.slotKey;
+    const slotItem = slotKey && doc.bodySlots ? doc.bodySlots[slotKey] : null;
+    if (!slotItem || !slotItem.name || slotItem.name === '-') {
+      setStoreOutcome(stateObj, { status: 'empty_slot' });
+      return doc;
+    }
+    const CLASP_ID = 'mi-mic-wilding-clasp';
+    const curAtts = Array.isArray(slotItem.attachments) ? slotItem.attachments.slice() : [];
+    const hasClasp = curAtts.some(a => {
+      const id = typeof a === 'string' ? a : (a?.id || a?.baseItemId || '');
+      return String(id).toLowerCase() === CLASP_ID;
+    });
+    let nextAtts;
+    if (hasClasp) {
+      nextAtts = curAtts.filter(a => {
+        const id = typeof a === 'string' ? a : (a?.id || a?.baseItemId || '');
+        return String(id).toLowerCase() !== CLASP_ID;
+      });
+    } else {
+      nextAtts = curAtts.concat([CLASP_ID]);
+      slotItem.usableInForm = true;
+    }
+    slotItem.attachments = nextAtts;
+    // Mirror attachments to linked gearPool row if present
+    const poolRow = (doc.gearPool || []).find(g => g && ((slotItem.poolItemId && g.id === slotItem.poolItemId) || (g.name === slotItem.name && g.isEquipped)));
+    if (poolRow) {
+      poolRow.attachments = nextAtts.slice();
+      if (!hasClasp) poolRow.usableInForm = true;
+    }
+    setStoreOutcome(stateObj, {
+      status: hasClasp ? 'wilding_clasp_removed' : 'wilding_clasp_attached',
+      slotKey,
+      itemName: slotItem.name,
+      hasClasp: !hasClasp
+    });
+    return doc;
+  });
+
   // 10. 'inventory/updateWealth' ({ pp, gp, sp, cp } or { field, value })
   CharStore.registerReducer('inventory/updateWealth', (doc, action, stateObj) => {
     ensureInventoryDocStructures(doc);

@@ -4318,6 +4318,18 @@
                     <span class="text-[10px] sm:text-[10px] font-extrabold uppercase tracking-wider text-sky-400">${UI.escapeHtml(def.trName || def.name)}</span>
                     ${slotData.active ? '<span class="px-1.5 rounded text-[10px] font-bold bg-sky-950 text-sky-300 border border-sky-600/40">ACTIVE</span>' : '<span class="px-1.5 rounded text-[10px] font-bold bg-slate-800 text-slate-400 border border-slate-700">INACTIVE</span>'}
                     ${(() => {
+                      const invSheet = (window.CharStore && typeof window.CharStore.getSheet === 'function') ? window.CharStore.getSheet() : null;
+                      const slotView = invSheet?.inventory?.bodySlotsView?.slotsByKey?.[slotKey] || null;
+                      const afView = invSheet?.activeForm || null;
+                      const hasClasp = Boolean(slotView?.hasWildingClasp || (typeof RuleEngine !== 'undefined' && RuleEngine.itemHasWildingClasp && RuleEngine.itemHasWildingClasp(slotData)));
+                      const mState = slotView?.meldState || ((afView && afView.active && slotData.active && typeof RuleEngine !== 'undefined' && RuleEngine.evaluateFormSlotMeldState) ? RuleEngine.evaluateFormSlotMeldState(slotKey, slotData) : 'active');
+                      let html = '';
+                      if (hasClasp) html += '<span class="px-1.5 rounded text-[10px] font-bold bg-amber-950 text-amber-300 border border-amber-500/60" title="Wilding Clasp (MIC p.190): Remains worn &amp; functional in Wild Shape">🔗 CLASP</span>';
+                      if (mState === 'melded') html += '<span class="px-1.5 rounded text-[10px] font-bold bg-slate-800 text-slate-400 border border-slate-600" title="Melded into Wild Shape form (nonfunctional while shifted)">MELDED</span>';
+                      else if (mState === 'wild_ac') html += '<span class="px-1.5 rounded text-[10px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-500/60" title="Wild Armor/Shield (DMG p.219): Melded; AC preserved, 0 ACP/ASF/MaxDex">🌿 WILD AC</span>';
+                      return html;
+                    })()}
+                    ${(() => {
                       const dailyC = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.normalizeItemDailyCharges === 'function')
                         ? RuleEngine.normalizeItemDailyCharges(slotData)
                         : slotData.dailyCharges;
@@ -4355,6 +4367,13 @@
               </div>
 
               <div class="flex items-center gap-1.5 shrink-0">
+                ${(() => {
+                  const invSheet = (window.CharStore && typeof window.CharStore.getSheet === 'function') ? window.CharStore.getSheet() : null;
+                  const afView = invSheet?.activeForm || null;
+                  const hasClasp = Boolean(typeof RuleEngine !== 'undefined' && RuleEngine.itemHasWildingClasp && RuleEngine.itemHasWildingClasp(slotData));
+                  if (!hasClasp && !(afView && (afView.eligible || afView.active))) return '';
+                  return `<button type="button" data-action="inventory:toggle-wilding-clasp" data-slot-key="${slotKey}" title="${hasClasp ? 'Detach Wilding Clasp (MIC p.190)' : 'Attach Wilding Clasp (MIC p.190) — Prevents melding in Wild Shape'}" class="w-6 h-6 rounded ${hasClasp ? 'bg-amber-600 text-white border border-amber-400' : 'bg-slate-900 hover:bg-amber-950 text-slate-400 hover:text-amber-300 border border-slate-700'} transition text-xs inline-flex items-center justify-center cursor-pointer">🔗</button>`;
+                })()}
                 ${isForgeEditableItem(slotData) ? `
                   <button data-action="inventory:forge-slot-item" data-slot-key="${slotKey}" title="Customize in Rule Crafter" class="w-6 h-6 rounded bg-amber-950/80 hover:bg-amber-800 text-amber-300 hover:text-white border border-amber-600/60 transition text-xs inline-flex items-center justify-center cursor-pointer">
                     ⚒️
@@ -8918,6 +8937,21 @@
         renderCompanionGearView();
         if (typeof renderCockpitCompanionCard === 'function') renderCockpitCompanionCard();
         if (typeof renderCoreFeatsAndSpecialAbilities === 'function') renderCoreFeatsAndSpecialAbilities();
+      });
+      actionsApi.register('inventory:toggle-wilding-clasp', (el, data, event) => {
+        if (event) event.stopPropagation();
+        if (!data || !data.slotKey) return;
+        syncInventoryStore();
+        window.CharStore.dispatch({
+          type: 'inventory/toggleWildingClasp',
+          payload: { slotKey: data.slotKey },
+          meta: { label: 'Toggle Wilding Clasp' }
+        });
+        const out = window.CharStore.getLastOutcome ? window.CharStore.getLastOutcome() : null;
+        if (typeof renderAll === 'function') renderAll();
+        if (out && typeof showToast === 'function') {
+          showToast(out.hasClasp ? `Wilding Clasp attached to ${out.itemName}.` : `Wilding Clasp removed from ${out.itemName}.`, 'info');
+        }
       });
       actionsApi.register('inventory:open-companion-equip', (el, data, event) => {
         if (data && data.slotKey) openCompanionEquipModal(data.slotKey);

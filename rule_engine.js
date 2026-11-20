@@ -9293,10 +9293,27 @@ const RuleEngine = {
       });
     };
 
-    // 2.5. Collect Equipment Bonuses from active bodySlots
+    // 2.5. Collect Equipment Bonuses from active bodySlots (with Wild Shape / Alternate Form Meld Gate)
     let twoHandedConflict = null;
     let offHandSuppressed = false;
     let equippedArmorCategory = 'None';
+
+    const activeFormOverlay = this.resolveActiveFormOverlay(character);
+    character._activeFormOverlay = activeFormOverlay;
+    const activeFormMeldMap = {};
+    character._activeFormMeldMap = activeFormMeldMap;
+    if (activeFormOverlay && activeFormOverlay.active && activeFormOverlay.chassis) {
+      const fChassis = activeFormOverlay.chassis;
+      if (fChassis.size) character.size = fChassis.size;
+      const formNa = Number(fChassis.baseNaturalArmor ?? fChassis.naturalArmor) || 0;
+      if (formNa > 0) {
+        naturalBonuses.push({
+          val: formNa,
+          source: `${activeFormOverlay.name} (Form)`,
+          type: 'Natural'
+        });
+      }
+    }
 
     if (character.bodySlots && typeof character.bodySlots === 'object') {
       const mh = character.bodySlots.mainHand;
@@ -9305,7 +9322,7 @@ const RuleEngine = {
       const isMhTwoHand = mh && mh.name && mh.name !== '-' && this.isTwoHandedWeapon(mh) && !isDoubleValidPair;
       const isOhOccupied = oh && oh.active !== false && oh.name && oh.name !== '-';
 
-      if (isMhTwoHand && isOhOccupied) {
+      if (isMhTwoHand && isOhOccupied && !(activeFormOverlay && activeFormOverlay.active)) {
         offHandSuppressed = true;
         twoHandedConflict = {
           mainHand: mh.name,
@@ -9319,8 +9336,26 @@ const RuleEngine = {
         if (!slotData || slotData.active === false || !slotData.name || slotData.name === '-') return;
         if (slotKey === 'offHand' && offHandSuppressed) return;
 
+        // ADR-058 Meld Gate (Wild Shape / Alternate Form):
+        // Priority 1: Wilding Clasp (MIC p.190) -> item does NOT meld, all effects remain active.
+        // Priority 2: Wild Armor/Shield (DMG p.219) -> item melds, preserving ONLY Base + Enhancement AC (0 ACP, no Max Dex, 0 ASF, 0 speed penalty).
+        // Default: item melds completely (nonfunctional while shifted).
+        let meldState = 'active';
+        if (activeFormOverlay && activeFormOverlay.active) {
+          meldState = this.evaluateFormSlotMeldState(slotKey, slotData);
+          activeFormMeldMap[slotKey] = meldState;
+          if (meldState === 'melded') return;
+        }
+
         const mods = this.parseItemModifiers(slotData, masterDb, evalContext);
         if (!mods) return;
+
+        if (meldState === 'wild_ac') {
+          const slotIncorp = this.itemHasEnhancementFlag(slotData, 'ghostTouchArmor') || this.isForceAcSource(slotData.name);
+          if (mods.armor > 0) armorBonuses.push({ val: mods.armor, source: `${mods.armorSourceLabel || slotData.name} (Wild)`, type: 'Armor', incorporeal: slotIncorp });
+          if (mods.shield > 0) shieldBonuses.push({ val: mods.shield, source: `${mods.shieldSourceLabel || slotData.name} (Wild)`, type: 'Shield', incorporeal: slotIncorp });
+          return;
+        }
 
         if (slotKey === 'armor' || (mods.armor > 0 && mods.effectiveArmorCategory)) {
           equippedArmorCategory = mods.effectiveArmorCategory || 'Light';
@@ -9902,14 +9937,24 @@ const RuleEngine = {
     });
 
     // 4. Resolve Stacking for Abilities (RAW: Same types take Math.max, untyped/dodge/racial stack)
+    // ADR-058 Alternate Form / Wild Shape (PHB Errata / RC p.18):
+    // Physical base scores (STR, DEX, CON) are replaced by the assumed form's base scores;
+    // active buffs & Wilding Clasp items still stack normally on top. Max HP uses true-form CON.
     if (!character.abilities) character.abilities = {};
     character.abilitySources = abilityBuckets;
+    const formAbi = (activeFormOverlay && activeFormOverlay.active && activeFormOverlay.chassis?.abilities)
+      ? activeFormOverlay.chassis.abilities
+      : null;
     ['str', 'dex', 'con', 'int', 'wis', 'cha'].forEach(stat => {
-      const base = character.baseAbilities[stat] || 10;
+      const isPhysical = stat === 'str' || stat === 'dex' || stat === 'con';
+      const base = (formAbi && isPhysical && Number(formAbi[stat]) > 0)
+        ? Number(formAbi[stat])
+        : (character.baseAbilities[stat] || 10);
       const bonusItems = abilityBuckets[stat];
       const netBonus = this.resolveBonusStacking(bonusItems);
       character.abilities[stat] = base + netBonus;
     });
+    const trueConScoreForHp = (character.baseAbilities.con || 10) + this.resolveBonusStacking(abilityBuckets.con);
 
     // BL2: Re-evaluate V2.5 Lego pipeline with post-Step-4 final abilities so abilityMod substitutions (Force of Personality, Canny Defense, etc.) use item/buff-modified ability scores
     const prevEvalDefenses = character.evaluatedDefenses || {};
@@ -9958,7 +10003,8 @@ const RuleEngine = {
           character.hp.temp = stackedTempHp;
         }
       }
-      const rawConModForHp = this.getAbilityMod(character.abilities?.con || 10);
+      const conScoreForHp = (activeFormOverlay && activeFormOverlay.active) ? trueConScoreForHp : (character.abilities?.con || 10);
+      const rawConModForHp = this.getAbilityMod(conScoreForHp);
       const hpSwapRes = this.resolveSwapSlot(legoEval?.replacements, 'hp.abilityMod', rawConModForHp, 'CON', { character });
       const effectiveConMod = hpSwapRes.value + hpSwapRes.addItems.reduce((s, x) => s + x.val, 0);
       const newConBonusHp = effectiveConMod * totalHD;
@@ -10304,8 +10350,17 @@ const RuleEngine = {
       if (character.saves.will?.total !== undefined) character.evaluatedSaves.will = character.saves.will.total;
     }
 
-    // 7. Resolve Effective Speed (RAW D&D 3.5e Table 8-2: Armor and Speed + Condition Half-Speed)
-    const baseSpeed = character.baseSpeed || 30;
+    // 7. Resolve Effective Speed (RAW D&D 3.5e Table 8-2: Armor and Speed + Condition Half-Speed + Active Form Speeds)
+    const formSpeeds = (activeFormOverlay && activeFormOverlay.active && activeFormOverlay.chassis?.speeds)
+      ? activeFormOverlay.chassis.speeds
+      : null;
+    const baseSpeed = (formSpeeds && Number(formSpeeds.land) > 0) ? Number(formSpeeds.land) : (character.baseSpeed || 30);
+    if (formSpeeds) {
+      if (Number(formSpeeds.swim) > swimSpeed) swimSpeed = Number(formSpeeds.swim);
+      if (Number(formSpeeds.climb) > climbSpeed) climbSpeed = Number(formSpeeds.climb);
+      if (Number(formSpeeds.fly) > flySpeed) flySpeed = Number(formSpeeds.fly);
+      if (Number(formSpeeds.burrow) > burrowSpeed) burrowSpeed = Number(formSpeeds.burrow);
+    }
     // Steady Speed (dwarves, duergar) is the `ignoreArmorSpeedPenalty` rule switch on the Race record.
     const preRuleFlagsForSpeed = this.evaluateRuleFlags(character);
     let armorSpeedPenalty = 0;
@@ -11893,23 +11948,28 @@ const RuleEngine = {
     const rawSlots = src.bodySlots || {};
     const equippedNames = new Set();
     let equippedWeight = 0;
+    const formActive = Boolean(src._activeFormOverlay && src._activeFormOverlay.active);
+    const meldMap = (src._activeFormMeldMap && typeof src._activeFormMeldMap === 'object') ? src._activeFormMeldMap : {};
     this.INVENTORY_SLOT_DEFS.forEach((def) => {
       const slot = rawSlots[def.key] || (def.alias ? rawSlots[def.alias] : null) || null;
       if (!slot || !slot.name || slot.name === '-') return;
-      if (slot.active !== false) {
+      const mState = formActive ? (meldMap[def.key] || this.evaluateFormSlotMeldState(def.key, slot)) : 'active';
+      if (slot.active !== false && (!formActive || mState === 'clasp')) {
         equippedWeight += Number(slot.weight ?? slot.weightLb) || 0;
       }
       const cleanSlotName = String(slot.name).toLowerCase().trim();
       if (cleanSlotName) equippedNames.add(cleanSlotName);
     });
     let poolWeight = 0;
-    (Array.isArray(src.gearPool) ? src.gearPool : []).forEach((item) => {
-      if (!item) return;
-      const isEquipped = Boolean(item.isEquipped || equippedNames.has(String(item.name || '').toLowerCase().trim()));
-      if (isEquipped) return;
-      const qty = (item.qty !== undefined && item.qty !== null) ? Math.max(0, Number(item.qty)) : 1;
-      poolWeight += (Number(item.weight ?? item.weightLb) || 0) * qty;
-    });
+    if (!formActive) {
+      (Array.isArray(src.gearPool) ? src.gearPool : []).forEach((item) => {
+        if (!item) return;
+        const isEquipped = Boolean(item.isEquipped || equippedNames.has(String(item.name || '').toLowerCase().trim()));
+        if (isEquipped) return;
+        const qty = (item.qty !== undefined && item.qty !== null) ? Math.max(0, Number(item.qty)) : 1;
+        poolWeight += (Number(item.weight ?? item.weightLb) || 0) * qty;
+      });
+    }
     const totalWeight = Math.round((equippedWeight + poolWeight) * 10) / 10;
     return {
       equippedWeight: Math.round(equippedWeight * 10) / 10,
@@ -14888,6 +14948,12 @@ const RuleEngine = {
           equippedNameToSlotKey.set(cleanSlotName, def.key);
         }
       }
+      const hasWildingClasp = isOccupied ? this.itemHasWildingClasp(cloned) : false;
+      const hasWildEnhancement = isOccupied ? this.itemHasWildEnhancement(cloned) : false;
+      const formActiveForSlot = Boolean(w._activeFormOverlay && w._activeFormOverlay.active);
+      const meldState = (isOccupied && isActive && formActiveForSlot)
+        ? ((w._activeFormMeldMap && w._activeFormMeldMap[def.key]) || this.evaluateFormSlotMeldState(def.key, cloned))
+        : 'active';
       const slotEntry = Object.assign({}, cloned, {
         slotKey: def.key,
         aliasKey: def.alias,
@@ -14897,7 +14963,10 @@ const RuleEngine = {
         isActive,
         weight: weightVal,
         cost: costVal,
-        dailyCharges: normDc
+        dailyCharges: normDc,
+        hasWildingClasp,
+        hasWildEnhancement,
+        meldState
       });
       slotsByKey[def.key] = slotEntry;
       if (def.alias) {
@@ -17161,6 +17230,7 @@ const RuleEngine = {
       subsystems: subsystemsView,
       progression: progressionView,
       companions: this.deriveCompanions(working, { masterDb: workingDb }),
+      activeForm: this.deriveActiveFormView(working, { masterDb: workingDb }),
       skillsBonusMap,
       session: workingSession,
       warnings: working.activeConditionWarnings || [],
@@ -17183,6 +17253,7 @@ const RuleEngine = {
     for (let i = 0; i < snapKeys.length; i++) {
       const k = snapKeys[i];
       if (preserveRefs[k] && targetChar[k] !== undefined) continue;
+      if (k === 'size' && snap._activeFormOverlay && snap._activeFormOverlay.active && targetChar.size !== undefined) continue;
       targetChar[k] = this._fastClonePlain(snap[k]);
     }
     if (targetChar.hp && typeof targetChar.hp === 'object') {
@@ -17670,6 +17741,232 @@ const RuleEngine = {
       if (res) list.push(res);
     }
     return { grants, list };
+  },
+
+  // ============================================================================
+  // ADR-058 Faz 2: Wild Shape / Alternate Form Overlay & Meld Gate
+  // ============================================================================
+
+  itemHasWildingClasp(slotData) {
+    if (!slotData || typeof slotData !== 'object') return false;
+    if (slotData.usableInForm === false) return false;
+    const atts = Array.isArray(slotData.attachments) ? slotData.attachments : [];
+    return atts.some(a => {
+      if (!a) return false;
+      const id = typeof a === 'string' ? a : (a.id || a.baseItemId || a.name || '');
+      const low = String(id).toLowerCase().trim();
+      return low === 'mi-mic-wilding-clasp' || low === 'wilding clasp';
+    });
+  },
+
+  itemHasWildEnhancement(slotData) {
+    if (!slotData || typeof slotData !== 'object') return false;
+    if (typeof this.itemHasEnhancementFlag === 'function' && this.itemHasEnhancementFlag(slotData, 'wild')) {
+      return true;
+    }
+    const enhs = Array.isArray(slotData.enhancements) ? slotData.enhancements : [];
+    if (enhs.some(e => {
+      if (!e) return false;
+      const val = typeof e === 'string' ? e : (e.id || e.baseItemId || e.name || '');
+      const low = String(val).toLowerCase().trim();
+      return low === 'enh-wild' || low === 'wild';
+    })) {
+      return true;
+    }
+    if (Array.isArray(slotData.effects) && slotData.effects.some(ef => ef && ef.effectKind === 'ruleSwitch' && String(ef.flag || '').toLowerCase() === 'wild')) {
+      return true;
+    }
+    return false;
+  },
+
+  evaluateFormSlotMeldState(slotKey, slotData) {
+    if (!slotData || slotData.active === false || !slotData.name || slotData.name === '-') return 'active';
+    // Priority 1: Wilding Clasp (MIC p.190) — item does not meld, full effects active
+    if (this.itemHasWildingClasp(slotData)) return 'clasp';
+    // Priority 2: Wild Armor/Shield (DMG p.219) — melds, preserving Base + Enhancement AC only
+    const isArmorOrShieldSlot = slotKey === 'armor' || slotKey === 'offHand'
+      || /armor|shield/i.test(String(slotData.category || slotData.type || ''));
+    if (isArmorOrShieldSlot && this.itemHasWildEnhancement(slotData)) return 'wild_ac';
+    // Default: item melds completely and becomes nonfunctional
+    return 'melded';
+  },
+
+  resolveActiveFormOverlay(character) {
+    const ch = character || {};
+    const af = ch.activeForm;
+    if (!af || typeof af !== 'object' || af.active === false || !af.baseMonsterId) {
+      return { active: false };
+    }
+    let baseMonster = this._resolveMonsterByIdSync(af.baseMonsterId);
+    if (!baseMonster && af.monsterSnapshot && typeof af.monsterSnapshot === 'object') {
+      baseMonster = af.monsterSnapshot;
+    }
+    if (!baseMonster) return { active: false };
+
+    const chassis = this.buildMonsterChassis(baseMonster);
+    const mBlock = (baseMonster.monster && typeof baseMonster.monster === 'object') ? baseMonster.monster : baseMonster;
+    const creatureType = String(mBlock.creatureType || baseMonster.category || 'Animal').trim();
+    const hdCount = Number(mBlock.hitDice?.count || chassis.baseHd || 1);
+    return {
+      active: true,
+      kind: String(af.kind || 'wild_shape'),
+      baseMonsterId: String(af.baseMonsterId),
+      name: String(af.name || baseMonster.name || 'Assumed Form'),
+      creatureType,
+      hd: hdCount,
+      chassis,
+      monster: baseMonster
+    };
+  },
+
+  deriveActiveFormView(character, options = {}) {
+    const ch = character || {};
+    const ctx = this.buildFormulaContext(ch, {});
+    const druidLevel = Number(ctx.classes?.druid?.level || ctx.druidLevel || 0);
+    const ruleFlags = ch.ruleFlags || {};
+    const entries = Array.isArray(ch.legoEvaluation?.entries) ? ch.legoEvaluation.entries : [];
+    const hasWildShapeEntry = Boolean(
+      ruleFlags.wildShape || ruleFlags['wild-shape']
+      || entries.some(e => e && (String(e.id || '').toLowerCase() === 'cab-wild-shape' || /^wild shape\b/i.test(String(e.name || ''))))
+      || (Array.isArray(ch.classFeatures) && ch.classFeatures.some(f => f && (String(f.id || '').toLowerCase() === 'cab-wild-shape' || /^wild shape\b/i.test(String(f.name || f || '')))))
+      || (Array.isArray(ch.specialAbilities) && ch.specialAbilities.some(a => /^wild shape\b/i.test(String(typeof a === 'string' ? a : (a?.name || '')))))
+    );
+    const hasElementalEntry = Boolean(
+      ruleFlags.wildShapeElemental || ruleFlags['wild-shape-elemental']
+      || druidLevel >= 16
+      || entries.some(e => e && String(e.id || '').toLowerCase() === 'cab-wild-shape-elemental')
+    );
+    const effectiveLevel = druidLevel > 0 ? druidLevel : (hasWildShapeEntry ? (Number(ch.level) || 5) : 0);
+    const overlay = ch._activeFormOverlay || this.resolveActiveFormOverlay(ch);
+    const eligible = Boolean(effectiveLevel >= 5 || hasWildShapeEntry || overlay.active);
+
+    const dailyUses = effectiveLevel >= 18 ? 6
+      : (effectiveLevel >= 14 ? 5
+        : (effectiveLevel >= 10 ? 4
+          : (effectiveLevel >= 7 ? 3
+            : (effectiveLevel >= 6 ? 2
+              : (effectiveLevel >= 5 ? 1 : 0)))));
+    const elementalDailyUses = effectiveLevel >= 20 ? 3
+      : (effectiveLevel >= 18 ? 2
+        : (effectiveLevel >= 16 ? 1 : 0));
+
+    const allowedTypes = ['Animal'];
+    if (effectiveLevel >= 12) allowedTypes.push('Plant');
+    if (effectiveLevel >= 16 || hasElementalEntry) allowedTypes.push('Elemental');
+
+    const allowedSizes = ['Small', 'Medium'];
+    if (effectiveLevel >= 8) allowedSizes.push('Large');
+    if (effectiveLevel >= 11) allowedSizes.push('Tiny');
+    if (effectiveLevel >= 15) allowedSizes.push('Huge');
+
+    const elementalAllowedSizes = effectiveLevel >= 20
+      ? ['Small', 'Medium', 'Large', 'Huge']
+      : (effectiveLevel >= 16 ? ['Small', 'Medium', 'Large'] : []);
+
+    const meldMap = (ch._activeFormMeldMap && typeof ch._activeFormMeldMap === 'object') ? ch._activeFormMeldMap : {};
+    const meldedSlotKeys = [];
+    const claspSlotKeys = [];
+    const wildArmorSlotKeys = [];
+    Object.entries(meldMap).forEach(([sk, st]) => {
+      if (st === 'melded') meldedSlotKeys.push(sk);
+      else if (st === 'clasp') claspSlotKeys.push(sk);
+      else if (st === 'wild_ac') wildArmorSlotKeys.push(sk);
+    });
+
+    const canCastSpells = Boolean(ruleFlags.naturalSpell || ruleFlags.castInWildShape);
+
+    if (!overlay || !overlay.active || !overlay.chassis) {
+      return {
+        active: false,
+        eligible,
+        effectiveLevel,
+        maxHd: effectiveLevel,
+        durationHours: effectiveLevel,
+        dailyUses,
+        elementalDailyUses,
+        allowedTypes,
+        allowedSizes,
+        elementalAllowedSizes,
+        canCastSpells,
+        meldedSlotKeys: [],
+        claspSlotKeys: [],
+        wildArmorSlotKeys: [],
+        naturalAttacks: []
+      };
+    }
+
+    const chassis = overlay.chassis;
+    const formSizeKey = String(chassis.size || 'Medium').toLowerCase();
+    const sizeMod = this.SIZE_MODIFIERS[formSizeKey] ?? 0;
+    const bab = Number(ch.bab) || 0;
+    const strMod = this.getAbilityMod(ch.abilities?.str || chassis.abilities?.str || 10);
+    const hasMultiattack = (Array.isArray(ch.feats) ? ch.feats : []).some(f => /multiattack/i.test(String(typeof f === 'string' ? f : (f?.name || ''))));
+    const secPenalty = hasMultiattack ? -2 : -5;
+    const rawAttacks = Array.isArray(chassis.attacks) ? chassis.attacks : [];
+    const totalPhysicalAttacks = rawAttacks
+      .filter(a => a && a.primary !== 'special_rake')
+      .reduce((sum, a) => sum + (Number(a.count) || 1), 0);
+    const isSingleNaturalWeapon = totalPhysicalAttacks === 1;
+
+    const naturalAttacks = rawAttacks.map(atk => {
+      const isPrimary = atk.primary === true || atk.primary === 'special_rake';
+      const atkBonus = bab + strMod + sizeMod + (isPrimary ? 0 : secPenalty);
+      const dmgBonus = isPrimary
+        ? (isSingleNaturalWeapon ? Math.floor(strMod * 1.5) : strMod)
+        : Math.floor(strMod * 0.5);
+      const dice = String(atk.damageDice || '1d4');
+      const damageFormula = dmgBonus === 0 ? dice : `${dice}${dmgBonus > 0 ? '+' : ''}${dmgBonus}`;
+      return {
+        name: atk.name,
+        count: Number(atk.count) || 1,
+        primary: atk.primary,
+        dmgType: atk.dmgType || 'B',
+        attackBonus: atkBonus,
+        damageDice: dice,
+        damageBonus: dmgBonus,
+        damageFormula,
+        special: atk.special || null
+      };
+    });
+
+    const isElementalForm = String(overlay.creatureType || '').toLowerCase() === 'elemental' && effectiveLevel >= 16;
+    const mObj = overlay.monster || {};
+    const exSpecialAttacks = Array.isArray(mObj.specialAttacks) ? mObj.specialAttacks : [];
+    const elementalQualities = isElementalForm
+      ? (Array.isArray(mObj.specialQualities) ? mObj.specialQualities : [])
+      : [];
+    const elementalFeats = isElementalForm
+      ? (Array.isArray(mObj.feats) ? mObj.feats : [])
+      : [];
+
+    return {
+      active: true,
+      eligible: true,
+      kind: overlay.kind,
+      baseMonsterId: overlay.baseMonsterId,
+      name: overlay.name,
+      creatureType: overlay.creatureType,
+      size: chassis.size,
+      hd: overlay.hd,
+      naturalArmor: Number(chassis.baseNaturalArmor ?? chassis.naturalArmor) || 0,
+      speeds: chassis.speeds || { land: 30, swim: 0, climb: 0, fly: 0, burrow: 0 },
+      effectiveLevel,
+      maxHd: effectiveLevel,
+      durationHours: effectiveLevel,
+      dailyUses,
+      elementalDailyUses,
+      allowedTypes,
+      allowedSizes,
+      elementalAllowedSizes,
+      canCastSpells,
+      naturalAttacks,
+      exSpecialAttacks,
+      elementalQualities,
+      elementalFeats,
+      meldedSlotKeys,
+      claspSlotKeys,
+      wildArmorSlotKeys
+    };
   }
 };
 

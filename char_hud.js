@@ -3842,6 +3842,38 @@
           tmplSummaryBar.classList.add('hidden');
           tmplSummaryBar.innerHTML = '';
         }
+
+        // ADR-058 Faz 2: Compact Active Wild Shape / Alternate Form HUD Badge (zero DOM footprint when inactive)
+        const afView = (window.CharStore && typeof window.CharStore.getSheet === 'function' ? window.CharStore.getSheet()?.activeForm : null)
+          || (typeof RuleEngine !== 'undefined' && typeof RuleEngine.deriveActiveFormView === 'function' ? RuleEngine.deriveActiveFormView(character) : null);
+        let formHudBar = document.getElementById('hud-active-form-banner');
+        if (afView && afView.active) {
+          if (!formHudBar && tmplSummaryBar.parentElement) {
+            formHudBar = document.createElement('div');
+            formHudBar.id = 'hud-active-form-banner';
+            formHudBar.className = 'mt-1.5 px-2.5 py-1.5 rounded-xl bg-emerald-950/70 border border-emerald-500/60 flex flex-wrap items-center justify-between gap-2 text-xs shadow-sm';
+            tmplSummaryBar.parentElement.insertBefore(formHudBar, tmplSummaryBar);
+          }
+          if (formHudBar) {
+            const meldedCount = Array.isArray(afView.meldedSlotKeys) ? afView.meldedSlotKeys.length : 0;
+            const claspCount = Array.isArray(afView.claspSlotKeys) ? afView.claspSlotKeys.length : 0;
+            const wildCount = Array.isArray(afView.wildArmorSlotKeys) ? afView.wildArmorSlotKeys.length : 0;
+            formHudBar.innerHTML = `
+              <div class="flex flex-wrap items-center gap-1.5">
+                <span class="text-[10px] font-black uppercase tracking-wider text-emerald-300">🐾 Wild Shape:</span>
+                <span class="font-bold text-white">${escapeRaceHtml(afView.name)}</span>
+                <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-900 text-emerald-300 border border-emerald-700/60">${escapeRaceHtml(afView.size || 'Medium')} • ${Number(afView.hd) || 1} HD • NA +${Number(afView.naturalArmor) || 0}</span>
+                ${afView.canCastSpells ? '<span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-sky-950 text-sky-300 border border-sky-700/60">✨ Natural Spell</span>' : '<span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-900 text-slate-400 border border-slate-700">🔇 No Speech</span>'}
+                <span class="text-[10px] font-mono text-slate-400">${meldedCount} Melded${claspCount > 0 ? ` • ${claspCount} Clasp` : ''}${wildCount > 0 ? ` • ${wildCount} Wild AC` : ''}</span>
+              </div>
+              <button type="button" data-action="hud:revert-wild-shape" class="px-2 py-0.5 rounded bg-rose-950/80 hover:bg-rose-800 text-rose-200 border border-rose-600/60 text-[10px] font-bold cursor-pointer transition">Revert Form</button>
+            `;
+            formHudBar.classList.remove('hidden');
+          }
+        } else if (formHudBar) {
+          formHudBar.classList.add('hidden');
+          formHudBar.innerHTML = '';
+        }
       }
 
       const classesEl = document.getElementById('core-profile-classes');
@@ -9894,6 +9926,16 @@ function renderManualStatsPanel() {
       });
       window.Actions.register('hud:quick-remove-template', (el, data, event) => {
         quickRemoveCharacterTemplate(data.templateId || '');
+      });
+      window.Actions.register('hud:revert-wild-shape', (el, data, event) => {
+        if (window.CharStore && typeof window.CharStore.dispatch === 'function') {
+          if (!window.CharStore.getDoc()) window.CharStore._syncExternalCharacterRef(character);
+          window.CharStore.dispatch({ type: 'form/revert', payload: {}, meta: { label: 'Revert Wild Shape' } });
+        } else if (character) {
+          character.activeForm = null;
+        }
+        if (typeof renderAll === 'function') renderAll();
+        if (typeof showToast === 'function') showToast('Reverted to true form.', 'info');
       });
       window.Actions.register('hud:open-profile-modal', (el, data, event) => {
         openProfileEditModal(data.section || 'identity');
