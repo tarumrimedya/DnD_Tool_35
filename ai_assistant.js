@@ -921,7 +921,7 @@
         pointer-events: none; overflow: visible;
       }
       .rm-assist-fab-icon svg {
-        width: 64px; height: 64px; display: block; overflow: visible;
+        width: 66px; height: 63px; display: block; overflow: visible;
         transform: translateY(-5px);
       }
       .rm-assist-hdr-medallion {
@@ -935,114 +935,132 @@
         background: radial-gradient(circle at 35% 25%, #92400e 0%, #451a03 60%, #0c0a09 100%);
       }
       .rm-assist-hdr-medallion svg {
-        width: 42px; height: 42px; display: block; overflow: visible;
+        width: 44px; height: 42px; display: block; overflow: visible;
         transform: translateY(-3px);
       }
 
-      /* 3D Clay Articulated Persona Rigs (100% GPU transform + opacity, 0 SVG filters) */
+      /* Unified 3D Diorama — STRICT SINGLE-ACTOR TURN CHOREOGRAPHY (Never both at once!) */
       .rm-gaze { transform: translate(var(--rm-gx, 0px), var(--rm-gy, 0px)); transition: transform 0.14s ease-out; }
-      .wiz-whole { transform-origin: 104px 176px; animation: rmClayBreathe 4.2s ease-in-out infinite; }
-      .wiz-head-group { transform-origin: 104px 104px; animation: rmWizHeadSway 6.2s ease-in-out infinite; }
-      .wiz-hat-group { transform-origin: 104px 74px; animation: rmWizHatFollow 6.2s ease-in-out infinite; transition: transform 0.26s ease; }
+      .wiz-whole { transform-origin: 104px 176px; }
+      .wiz-head-group { transform-origin: 104px 104px; }
+      .wiz-hat-group { transform-origin: 104px 74px; transition: transform 0.26s ease; }
       .wiz-brows { transform-origin: 104px 87px; transition: transform 0.24s ease; }
-      .wiz-eyelids { transform-origin: 104px 96px; animation: rmNaturalBlink 5.4s infinite; }
-      .wiz-mustache { transform-origin: 104px 111px; animation: rmMustacheTwitch 5.6s ease-in-out infinite; }
-      .wiz-beard-group { transform-origin: 104px 114px; animation: rmBeardSoftSway 4.8s ease-in-out infinite; }
-      .wiz-staff-rig { transform-origin: 54px 150px; animation: rmStaffIdle 4.4s ease-in-out infinite; }
-      .wiz-crook-gem { transform-origin: 42px 82px; animation: rmGemBreath 2.8s ease-in-out infinite; }
-      .wiz-left-hand { transform-origin: 148px 156px; animation: rmLeftHandIdle 4.6s ease-in-out infinite; }
+      .wiz-eyelids { transform-origin: 104px 96px; }
+      .wiz-mustache { transform-origin: 104px 111px; }
+      .wiz-beard-group { transform-origin: 104px 114px; }
+      .wiz-staff-rig { transform-origin: 54px 150px; }
+      .wiz-crook-gem { transform-origin: 42px 82px; }
+      .wiz-left-hand { transform-origin: 148px 156px; }
       .wiz-face-glow { opacity: 0; transition: opacity 0.26s ease; pointer-events: none; }
       .sp-fx { opacity: 0; pointer-events: none; transition: opacity 0.22s ease; }
       .sp-astrolabe { transform-origin: 41px 78px; }
-      .sp-d20 { transform-origin: 158px 94px; }
-      .sp-fire { transform-origin: 158px 94px; }
-      .sp-bolt { transform-origin: 98px 76px; }
-      .sp-scroll { transform-origin: 104px 128px; }
+      .sp-d20 { transform-origin: 156px 118px; }
+      .sp-fire { transform-origin: 156px 116px; }
+      .sp-bolt { transform-origin: 98px 86px; }
+      .sp-scroll { transform-origin: 104px 132px; }
       .sp-ward { transform-origin: 104px 116px; }
 
-      .rm-assist-fab:hover .wiz-hat-group { transform: translateY(-3px) rotate(-4deg); }
-      .rm-assist-fab:hover .wiz-staff-rig { animation: rmStaffGreet 0.9s ease-in-out infinite; }
+      .diorama-svg[data-active="wiz"] .wiz-whole { animation: rmClayBreathe 4.2s ease-in-out infinite; }
+      .diorama-svg[data-active="wiz"] .wiz-head-group { animation: rmWizHeadSway 6.2s ease-in-out infinite; }
+      .diorama-svg[data-active="wiz"] .wiz-hat-group { animation: rmWizHatFollow 6.2s ease-in-out infinite; }
+      .diorama-svg[data-active="wiz"] .wiz-eyelids { animation: rmNaturalBlink 5.4s infinite; }
+      .diorama-svg[data-active="wiz"] .wiz-mustache { animation: rmMustacheTwitch 5.6s ease-in-out infinite; }
+      .diorama-svg[data-active="wiz"] .wiz-beard-group { animation: rmBeardSoftSway 4.8s ease-in-out infinite; }
+      .diorama-svg[data-active="wiz"] .wiz-staff-rig { animation: rmStaffIdle 4.4s ease-in-out infinite; }
+      .diorama-svg[data-active="wiz"] .wiz-crook-gem { animation: rmGemBreath 2.8s ease-in-out infinite; }
+      .diorama-svg[data-active="wiz"] .wiz-left-hand { animation: rmLeftHandIdle 4.6s ease-in-out infinite; }
 
-      .wiz-svg[data-wiz="astrolabe"] .wiz-staff-rig { animation: rmStaffRaiseHigh 1.6s ease-in-out infinite; }
-      .wiz-svg[data-wiz="astrolabe"] .wiz-brows { transform: translateY(-2.5px); }
-      .wiz-svg[data-wiz="astrolabe"] .wiz-crook-gem { animation: rmGemBlaze 0.65s ease-in-out infinite; }
-      .wiz-svg[data-wiz="astrolabe"] .wiz-face-glow { opacity: 0.55; }
-      .wiz-svg[data-wiz="astrolabe"] .sp-astrolabe { opacity: 1; animation: rmSpin360 3.2s linear infinite; }
+      .rm-assist-fab:not(.is-chronicler):hover .wiz-hat-group { transform: translateY(-3px) rotate(-4deg); }
+      .rm-assist-fab:not(.is-chronicler):hover .wiz-staff-rig { animation: rmStaffGreet 0.9s ease-in-out infinite; }
 
-      .wiz-svg[data-wiz="d20"] .wiz-staff-rig { animation: rmStaffChannel 1.5s ease-in-out infinite; }
-      .wiz-svg[data-wiz="d20"] .wiz-left-hand { animation: rmHandLevitate 1.5s ease-in-out infinite; }
-      .wiz-svg[data-wiz="d20"] .wiz-brows { transform: translateY(-2.5px); }
-      .wiz-svg[data-wiz="d20"] .wiz-crook-gem { animation: rmGemBlaze 0.7s ease-in-out infinite; }
-      .wiz-svg[data-wiz="d20"] .wiz-face-glow { opacity: 0.5; }
-      .wiz-svg[data-wiz="d20"] .sp-d20 { opacity: 1; animation: rmD20Float 2.2s ease-in-out infinite; }
+      .diorama-svg[data-active="wiz"][data-wiz="astrolabe"] .wiz-staff-rig { animation: rmStaffRaiseHigh 1.6s ease-in-out infinite; }
+      .diorama-svg[data-active="wiz"][data-wiz="astrolabe"] .wiz-brows { transform: translateY(-2.5px); }
+      .diorama-svg[data-active="wiz"][data-wiz="astrolabe"] .wiz-crook-gem { animation: rmGemBlaze 0.65s ease-in-out infinite; }
+      .diorama-svg[data-active="wiz"][data-wiz="astrolabe"] .wiz-face-glow { opacity: 0.55; }
+      .diorama-svg[data-active="wiz"][data-wiz="astrolabe"] .sp-astrolabe { opacity: 1; animation: rmSpin360 3.2s linear infinite; }
 
-      .wiz-svg[data-wiz="fireball"] .wiz-staff-rig { animation: rmStaffBrace 1.2s ease-in-out infinite; }
-      .wiz-svg[data-wiz="fireball"] .wiz-left-hand { animation: rmHandConjure 1.1s ease-in-out infinite; }
-      .wiz-svg[data-wiz="fireball"] .wiz-brows { transform: translateY(2px) scaleY(0.92); }
-      .wiz-svg[data-wiz="fireball"] .wiz-beard-group { animation: rmBeardWind 0.75s ease-in-out infinite; }
-      .wiz-svg[data-wiz="fireball"] .sp-fire { opacity: 1; animation: rmFirePulse 0.95s ease-in-out infinite; }
+      .diorama-svg[data-active="wiz"][data-wiz="d20"] .wiz-staff-rig { animation: rmStaffChannel 1.5s ease-in-out infinite; }
+      .diorama-svg[data-active="wiz"][data-wiz="d20"] .wiz-left-hand { animation: rmHandLevitate 1.5s ease-in-out infinite; }
+      .diorama-svg[data-active="wiz"][data-wiz="d20"] .wiz-brows { transform: translateY(-2.5px); }
+      .diorama-svg[data-active="wiz"][data-wiz="d20"] .wiz-crook-gem { animation: rmGemBlaze 0.7s ease-in-out infinite; }
+      .diorama-svg[data-active="wiz"][data-wiz="d20"] .wiz-face-glow { opacity: 0.5; }
+      .diorama-svg[data-active="wiz"][data-wiz="d20"] .sp-d20 { opacity: 1; animation: rmD20Float 2.2s ease-in-out infinite; }
 
-      .wiz-svg[data-wiz="lightning"] .wiz-staff-rig { animation: rmStaffSwing 0.85s ease-in-out infinite; }
-      .wiz-svg[data-wiz="lightning"] .wiz-left-hand { animation: rmHandConjure 0.85s ease-in-out infinite; }
-      .wiz-svg[data-wiz="lightning"] .wiz-brows { transform: translateY(2.5px); }
-      .wiz-svg[data-wiz="lightning"] .wiz-crook-gem { animation: rmGemBlaze 0.35s ease-in-out infinite; }
-      .wiz-svg[data-wiz="lightning"] .wiz-face-glow { opacity: 0.82; }
-      .wiz-svg[data-wiz="lightning"] .sp-bolt { opacity: 1; animation: rmBoltFlicker 0.42s steps(2, end) infinite; }
+      .diorama-svg[data-active="wiz"][data-wiz="fireball"] .wiz-staff-rig { animation: rmStaffBrace 1.2s ease-in-out infinite; }
+      .diorama-svg[data-active="wiz"][data-wiz="fireball"] .wiz-left-hand { animation: rmHandConjure 1.1s ease-in-out infinite; }
+      .diorama-svg[data-active="wiz"][data-wiz="fireball"] .wiz-brows { transform: translateY(2px) scaleY(0.92); }
+      .diorama-svg[data-active="wiz"][data-wiz="fireball"] .wiz-beard-group { animation: rmBeardWind 0.75s ease-in-out infinite; }
+      .diorama-svg[data-active="wiz"][data-wiz="fireball"] .sp-fire { opacity: 1; animation: rmFirePulse 0.95s ease-in-out infinite; }
 
-      .wiz-svg[data-wiz="scroll"] .wiz-head-group { animation: rmHeadPonder 2.4s ease-in-out infinite; }
-      .wiz-svg[data-wiz="scroll"] .wiz-left-hand { animation: rmHandStrokeBeard 1.8s ease-in-out infinite; }
-      .wiz-svg[data-wiz="scroll"] .wiz-brows { transform: translateY(-1.5px) rotate(-2deg); }
-      .wiz-svg[data-wiz="scroll"] .sp-scroll { opacity: 1; animation: rmRunesDrift 2.2s ease-in-out infinite; }
+      .diorama-svg[data-active="wiz"][data-wiz="lightning"] .wiz-staff-rig { animation: rmStaffSwing 0.85s ease-in-out infinite; }
+      .diorama-svg[data-active="wiz"][data-wiz="lightning"] .wiz-left-hand { animation: rmHandConjure 0.85s ease-in-out infinite; }
+      .diorama-svg[data-active="wiz"][data-wiz="lightning"] .wiz-brows { transform: translateY(2.5px); }
+      .diorama-svg[data-active="wiz"][data-wiz="lightning"] .wiz-crook-gem { animation: rmGemBlaze 0.35s ease-in-out infinite; }
+      .diorama-svg[data-active="wiz"][data-wiz="lightning"] .wiz-face-glow { opacity: 0.82; }
+      .diorama-svg[data-active="wiz"][data-wiz="lightning"] .sp-bolt { opacity: 1; animation: rmBoltFlicker 0.42s steps(2, end) infinite; }
 
-      .wiz-svg[data-wiz="ward"] .wiz-staff-rig { animation: rmStaffSlam 1.4s cubic-bezier(0.34, 1.5, 0.64, 1) infinite; }
-      .wiz-svg[data-wiz="ward"] .wiz-whole { animation: rmBodySlam 1.4s ease-in-out infinite; }
-      .wiz-svg[data-wiz="ward"] .wiz-crook-gem { animation: rmGemBlaze 0.7s ease-in-out infinite; }
-      .wiz-svg[data-wiz="ward"] .sp-ward { opacity: 1; animation: rmSpin360 5s linear infinite; }
+      .diorama-svg[data-active="wiz"][data-wiz="scroll"] .wiz-head-group { animation: rmHeadPonder 2.4s ease-in-out infinite; }
+      .diorama-svg[data-active="wiz"][data-wiz="scroll"] .wiz-left-hand { animation: rmHandStrokeBeard 1.8s ease-in-out infinite; }
+      .diorama-svg[data-active="wiz"][data-wiz="scroll"] .wiz-brows { transform: translateY(-1.5px) rotate(-2deg); }
+      .diorama-svg[data-active="wiz"][data-wiz="scroll"] .sp-scroll { opacity: 1; animation: rmRunesDrift 2.2s ease-in-out infinite; }
 
-      /* Owl Familiar (Chronicler) 3D Clay Rig */
-      .owl-whole { transform-origin: 100px 158px; animation: rmClayBreathe 4.3s ease-in-out infinite; }
-      .owl-head-3d { transform-origin: 100px 86px; animation: rmOwlTilt 6.4s ease-in-out infinite; }
-      .owl-tuft-l { transform-origin: 64px 58px; animation: rmTuftL 5.2s ease-in-out infinite; }
-      .owl-tuft-r { transform-origin: 136px 58px; animation: rmTuftR 5.2s ease-in-out infinite; }
-      .owl-lids { transform-origin: 100px 86px; animation: rmNaturalBlink 5.6s infinite; }
-      .owl-wing-l3d { transform-origin: 60px 118px; animation: rmWingSoftL 4.6s ease-in-out infinite; }
-      .owl-wing-r3d { transform-origin: 140px 118px; animation: rmWingSoftR 4.6s ease-in-out infinite; }
-      .owl-quill-3d { transform-origin: 148px 148px; animation: rmQuillHover 3.6s ease-in-out infinite; }
+      .diorama-svg[data-active="wiz"][data-wiz="ward"] .wiz-staff-rig { animation: rmStaffSlam 1.4s cubic-bezier(0.34, 1.5, 0.64, 1) infinite; }
+      .diorama-svg[data-active="wiz"][data-wiz="ward"] .wiz-whole { animation: rmBodySlam 1.4s ease-in-out infinite; }
+      .diorama-svg[data-active="wiz"][data-wiz="ward"] .wiz-crook-gem { animation: rmGemBlaze 0.7s ease-in-out infinite; }
+      .diorama-svg[data-active="wiz"][data-wiz="ward"] .sp-ward { opacity: 1; animation: rmSpin360 5s linear infinite; }
+
+      /* Perched Owl Familiar on Branch (DEFAULT STILL when Wizard has the turn!) */
+      .owl-whole { transform-origin: 100px 158px; }
+      .owl-head-3d { transform-origin: 100px 86px; }
+      .owl-tuft-l { transform-origin: 64px 58px; }
+      .owl-tuft-r { transform-origin: 136px 58px; }
+      .owl-lids { transform-origin: 100px 86px; }
+      .owl-wing-l3d { transform-origin: 60px 118px; }
+      .owl-wing-r3d { transform-origin: 140px 118px; }
+      .owl-quill-3d { transform-origin: 148px 148px; opacity: 0; transition: opacity 0.2s ease; }
       .owl-face-yaw { transform-origin: 100px 84px; }
       .owl-nape-back { transform-origin: 100px 84px; opacity: 0; pointer-events: none; }
       .owl-fx { opacity: 0; pointer-events: none; transition: opacity 0.22s ease; }
 
-      .rm-assist-fab:hover .owl-wing-l3d { animation: rmWingFlapL 0.6s ease-in-out infinite; }
-      .rm-assist-fab:hover .owl-wing-r3d { animation: rmWingFlapR 0.6s ease-in-out infinite; }
+      .diorama-svg[data-active="owl"] .owl-whole { animation: rmClayBreathe 4.3s ease-in-out infinite; }
+      .diorama-svg[data-active="owl"] .owl-head-3d { animation: rmOwlTilt 6.4s ease-in-out infinite; }
+      .diorama-svg[data-active="owl"] .owl-tuft-l { animation: rmTuftL 5.2s ease-in-out infinite; }
+      .diorama-svg[data-active="owl"] .owl-tuft-r { animation: rmTuftR 5.2s ease-in-out infinite; }
+      .diorama-svg[data-active="owl"] .owl-lids { animation: rmNaturalBlink 5.6s infinite; }
+      .diorama-svg[data-active="owl"] .owl-wing-l3d { animation: rmWingSoftL 4.6s ease-in-out infinite; }
+      .diorama-svg[data-active="owl"] .owl-wing-r3d { animation: rmWingSoftR 4.6s ease-in-out infinite; }
 
-      .owl-svg[data-owl="write"] .owl-head-3d { animation: rmOwlWatchQuill 1.2s ease-in-out infinite; }
-      .owl-svg[data-owl="write"] .owl-quill-3d { animation: rmQuillWrite 0.58s ease-in-out infinite; }
-      .owl-svg[data-owl="write"] .owl-fx-ink { opacity: 1; animation: rmInkSparkles 1.5s ease-out infinite; }
+      .rm-assist-fab.is-chronicler:hover .owl-wing-l3d { animation: rmWingFlapL 0.6s ease-in-out infinite; }
+      .rm-assist-fab.is-chronicler:hover .owl-wing-r3d { animation: rmWingFlapR 0.6s ease-in-out infinite; }
 
-      .owl-svg[data-owl="hoot"] .owl-whole { animation: rmOwlHop 0.78s ease-in-out infinite; }
-      .owl-svg[data-owl="hoot"] .owl-wing-l3d { animation: rmWingFlapL 0.44s ease-in-out infinite; }
-      .owl-svg[data-owl="hoot"] .owl-wing-r3d { animation: rmWingFlapR 0.44s ease-in-out infinite; }
-      .owl-svg[data-owl="hoot"] .owl-head-3d { animation: rmOwlHootNod 0.78s ease-in-out infinite; }
-      .owl-svg[data-owl="hoot"] .owl-fx-chime { opacity: 1; animation: rmChimeExpand 1.1s ease-out infinite; transform-origin: 100px 76px; }
+      .diorama-svg[data-active="owl"][data-owl="write"] .owl-head-3d { animation: rmOwlWatchQuill 1.2s ease-in-out infinite; }
+      .diorama-svg[data-active="owl"][data-owl="write"] .owl-quill-3d { opacity: 1; animation: rmQuillWrite 0.58s ease-in-out infinite; }
+      .diorama-svg[data-active="owl"][data-owl="write"] .owl-fx-ink { opacity: 1; animation: rmInkSparkles 1.5s ease-out infinite; }
 
-      .owl-svg[data-owl="search"] .owl-head-3d { animation: rmOwlScan 1.6s ease-in-out infinite; }
-      .owl-svg[data-owl="search"] .owl-wing-l3d { animation: rmWingFlapL 0.9s ease-in-out infinite; }
-      .owl-svg[data-owl="search"] .owl-wing-r3d { animation: rmWingFlapR 0.9s ease-in-out infinite; }
-      .owl-svg[data-owl="search"] .owl-fx-pages { opacity: 1; animation: rmPagesOrbit 2.2s ease-in-out infinite; transform-origin: 100px 148px; }
+      .diorama-svg[data-active="owl"][data-owl="hoot"] .owl-whole { animation: rmOwlHop 0.78s ease-in-out infinite; }
+      .diorama-svg[data-active="owl"][data-owl="hoot"] .owl-wing-l3d { animation: rmWingFlapL 0.44s ease-in-out infinite; }
+      .diorama-svg[data-active="owl"][data-owl="hoot"] .owl-wing-r3d { animation: rmWingFlapR 0.44s ease-in-out infinite; }
+      .diorama-svg[data-active="owl"][data-owl="hoot"] .owl-head-3d { animation: rmOwlHootNod 0.78s ease-in-out infinite; }
+      .diorama-svg[data-active="owl"][data-owl="hoot"] .owl-fx-chime { opacity: 1; animation: rmChimeExpand 1.1s ease-out infinite; transform-origin: 100px 76px; }
 
-      .owl-svg[data-owl="found"] .owl-whole { animation: rmOwlHop 0.62s ease-in-out infinite; }
-      .owl-svg[data-owl="found"] .owl-tuft-l { transform: rotate(12deg) scaleY(1.15); }
-      .owl-svg[data-owl="found"] .owl-tuft-r { transform: rotate(-12deg) scaleY(1.15); }
-      .owl-svg[data-owl="found"] .owl-fx-ink { opacity: 1; animation: rmInkSparkles 1s ease-out infinite; }
-      .owl-svg[data-owl="found"] .owl-fx-eureka { opacity: 1; animation: rmD20Float 1.6s ease-in-out infinite; transform-origin: 100px 28px; }
+      .diorama-svg[data-active="owl"][data-owl="search"] .owl-head-3d { animation: rmOwlScan 1.6s ease-in-out infinite; }
+      .diorama-svg[data-active="owl"][data-owl="search"] .owl-wing-l3d { animation: rmWingFlapL 0.9s ease-in-out infinite; }
+      .diorama-svg[data-active="owl"][data-owl="search"] .owl-wing-r3d { animation: rmWingFlapR 0.9s ease-in-out infinite; }
+      .diorama-svg[data-active="owl"][data-owl="search"] .owl-fx-pages { opacity: 1; animation: rmPagesOrbit 2.2s ease-in-out infinite; transform-origin: 100px 148px; }
 
-      .owl-svg[data-owl="spin180"] .owl-head-3d { animation: rmOwlNeckBob180 2.8s ease-in-out infinite; }
-      .owl-svg[data-owl="spin180"] .owl-face-yaw { animation: rmOwlFace180 2.8s ease-in-out infinite; }
-      .owl-svg[data-owl="spin180"] .owl-nape-back { animation: rmOwlNape180 2.8s ease-in-out infinite; }
-      .owl-svg[data-owl="spin180"] .owl-tuft-l { animation: rmOwlTuftSwapL 2.8s ease-in-out infinite; }
-      .owl-svg[data-owl="spin180"] .owl-tuft-r { animation: rmOwlTuftSwapR 2.8s ease-in-out infinite; }
+      .diorama-svg[data-active="owl"][data-owl="found"] .owl-whole { animation: rmOwlHop 0.62s ease-in-out infinite; }
+      .diorama-svg[data-active="owl"][data-owl="found"] .owl-tuft-l { transform: rotate(12deg) scaleY(1.15); }
+      .diorama-svg[data-active="owl"][data-owl="found"] .owl-tuft-r { transform: rotate(-12deg) scaleY(1.15); }
+      .diorama-svg[data-active="owl"][data-owl="found"] .owl-fx-ink { opacity: 1; animation: rmInkSparkles 1s ease-out infinite; }
+      .diorama-svg[data-active="owl"][data-owl="found"] .owl-fx-eureka { opacity: 1; animation: rmD20Float 1.6s ease-in-out infinite; transform-origin: 100px 28px; }
 
-      .owl-svg[data-owl="flip180"] .owl-head-3d {
+      .diorama-svg[data-active="owl"][data-owl="spin180"] .owl-head-3d { animation: rmOwlNeckBob180 2.8s ease-in-out infinite; }
+      .diorama-svg[data-active="owl"][data-owl="spin180"] .owl-face-yaw { animation: rmOwlFace180 2.8s ease-in-out infinite; }
+      .diorama-svg[data-active="owl"][data-owl="spin180"] .owl-nape-back { animation: rmOwlNape180 2.8s ease-in-out infinite; }
+      .diorama-svg[data-active="owl"][data-owl="spin180"] .owl-tuft-l { animation: rmOwlTuftSwapL 2.8s ease-in-out infinite; }
+      .diorama-svg[data-active="owl"][data-owl="spin180"] .owl-tuft-r { animation: rmOwlTuftSwapR 2.8s ease-in-out infinite; }
+
+      .diorama-svg[data-active="owl"][data-owl="flip180"] .owl-head-3d {
         transform-origin: 100px 84px;
         animation: rmOwlRoll180 2.9s cubic-bezier(0.34, 1.28, 0.64, 1) infinite;
       }
@@ -1299,7 +1317,7 @@
 
       @media (max-width: 767px) {
         .rm-assist-fab { right: 12px; bottom: 74px; width: 46px; height: 46px; font-size: 21px; }
-        .rm-assist-fab-icon svg { width: 56px; height: 56px; transform: translateY(-4px); }
+        .rm-assist-fab-icon svg { width: 58px; height: 55px; transform: translateY(-4px); }
         .rm-assist-bubble { right: 64px; bottom: 80px; max-width: 210px; }
         .rm-assist-panel { right: 8px; left: 8px; bottom: 72px; width: auto; max-width: none; max-height: 70vh; max-height: 70dvh; }
         .rm-assist-log { max-height: 44vh; max-height: 44dvh; }
@@ -1317,8 +1335,6 @@
   let _svgUid = 0;
   let _poseTimer = null;
   let _ambientInterval = null;
-  let _mountedFabPersona = '';
-  let _mountedHdrPersona = '';
 
   function _withUniqueSvgIds(svg) {
     _svgUid += 1;
@@ -1339,10 +1355,10 @@
     }, durationMs);
   }
 
-  // Zero-filter 3D Clay Archmage (pure radial/linear gradients + vector AO shadow cushions)
-  const WIZARD_SVG = `<svg class="wiz-svg" data-wiz="idle" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  // Unified Zero-Filter 3D Diorama: Rule Master (Foreground) + Perched Chronicler on Branch (Behind)
+  const DIORAMA_SVG = `<svg class="diorama-svg" data-active="wiz" data-wiz="idle" data-owl="idle" viewBox="0 0 225 210" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
     <defs>
-      <linearGradient id="hatCone" x1="74" y1="14" x2="144" y2="74" gradientUnits="userSpaceOnUse">
+      <linearGradient id="hatCone" x1="126" y1="14" x2="58" y2="74" gradientUnits="userSpaceOnUse">
         <stop offset="0%" stop-color="#6b66a8"/><stop offset="36%" stop-color="#433e6e"/><stop offset="78%" stop-color="#282545"/><stop offset="100%" stop-color="#18162b"/>
       </linearGradient>
       <linearGradient id="hatCollar" x1="70" y1="52" x2="138" y2="74" gradientUnits="userSpaceOnUse">
@@ -1375,158 +1391,15 @@
       <linearGradient id="wood3d" x1="26" y1="50" x2="66" y2="190" gradientUnits="userSpaceOnUse">
         <stop offset="0%" stop-color="#dfb88c"/><stop offset="32%" stop-color="#a87244"/><stop offset="72%" stop-color="#754926"/><stop offset="100%" stop-color="#472a13"/>
       </linearGradient>
+      <linearGradient id="branch3d" x1="104" y1="78" x2="216" y2="96" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stop-color="#5c3618"/><stop offset="55%" stop-color="#854d24"/><stop offset="100%" stop-color="#45240d"/>
+      </linearGradient>
       <radialGradient id="orb3d" cx="36%" cy="32%" r="64%">
         <stop offset="0%" stop-color="#ffffff"/><stop offset="38%" stop-color="#7dd3fc"/><stop offset="78%" stop-color="#0284c7"/><stop offset="100%" stop-color="#1e3a8a"/>
       </radialGradient>
       <radialGradient id="fire3d" cx="50%" cy="58%" r="54%">
         <stop offset="0%" stop-color="#ffffff"/><stop offset="32%" stop-color="#fef08a"/><stop offset="68%" stop-color="#f97316"/><stop offset="100%" stop-color="#dc2626" stop-opacity="0"/>
       </radialGradient>
-    </defs>
-    <ellipse cx="104" cy="188" rx="56" ry="8.5" fill="#020617" fill-opacity="0.55"/>
-    <g class="wiz-whole">
-      <path d="M52 186 C55 144 70 124 104 124 C138 124 153 144 156 186 C138 192 70 192 52 186 Z" fill="url(#cloak3d)"/>
-      <path d="M80 136 L128 136 L132 188 C116 191 92 191 76 188 Z" fill="#17152b"/>
-      <path d="M76 161 Q104 165 132 161 L133 171 Q104 175 75 171 Z" fill="#5c3419"/>
-      <rect x="93" y="158.5" width="22" height="19" rx="4.5" fill="#090814" fill-opacity="0.45"/>
-      <rect x="93" y="156" width="22" height="19" rx="4.5" fill="url(#gold3d)"/>
-      <rect x="98" y="160.5" width="12" height="10" rx="2.2" fill="#2b180b"/>
-      <path d="M104 165.5 L112 165.5" stroke="url(#gold3d)" stroke-width="3.2" stroke-linecap="round"/>
-      <path d="M52 186 C55 146 68 126 88 126 L83 188 C70 188 60 187 52 186 Z" fill="url(#cloak3d)"/>
-      <path d="M156 186 C153 146 140 126 120 126 L125 188 C138 188 148 187 156 186 Z" fill="url(#cloak3d)"/>
-
-      <g class="wiz-left-hand">
-        <path d="M138 134 C152 140 161 154 159 170 C151 174 140 172 135 164 Z" fill="#272445"/>
-        <ellipse cx="148" cy="168" rx="11" ry="5.5" fill="#100e21"/>
-        <circle cx="148" cy="173.5" r="9.8" fill="#090814" fill-opacity="0.38"/>
-        <circle cx="148" cy="171" r="9.8" fill="url(#skin3d)"/>
-        <ellipse cx="141" cy="169" rx="4.6" ry="3.5" transform="rotate(-22 141 169)" fill="#ffe4c4"/>
-        <path d="M145 175 C145 177.5 147.5 178.5 149.5 178.5" stroke="#b57241" stroke-width="1.5" stroke-linecap="round"/>
-      </g>
-
-      <g class="wiz-head-group">
-        <path d="M68 84 C59 102 60 126 69 140 C76 134 79 116 79 92 Z" fill="#d8dee9"/>
-        <path d="M140 84 C149 102 148 126 139 140 C132 134 129 116 129 92 Z" fill="#cbd5e1"/>
-        <path d="M68 92 C64 106 65 120 71 131" stroke="#ffffff" stroke-width="3.2" stroke-linecap="round"/>
-        <rect x="74" y="76" width="60" height="45" rx="25" fill="url(#skin3d)"/>
-        <ellipse cx="83" cy="103" rx="7" ry="4.2" fill="#e11d48" fill-opacity="0.15"/>
-        <ellipse cx="125" cy="103" rx="7" ry="4.2" fill="#e11d48" fill-opacity="0.15"/>
-
-        <g class="wiz-eyelids">
-          <ellipse cx="92" cy="95.5" rx="6.6" ry="6.6" fill="#9c5b2e" fill-opacity="0.38"/>
-          <ellipse cx="116" cy="95.5" rx="6.6" ry="6.6" fill="#9c5b2e" fill-opacity="0.38"/>
-          <ellipse cx="92" cy="95.5" rx="5.8" ry="5.6" fill="#fffaf5"/>
-          <ellipse cx="116" cy="95.5" rx="5.8" ry="5.6" fill="#fffaf5"/>
-          <g class="rm-gaze">
-            <circle cx="92.2" cy="95.6" r="4.9" fill="#1c1412"/>
-            <circle cx="92.2" cy="95.6" r="3.6" fill="#090707"/>
-            <path d="M89.2 98 A3.8 3.8 0 0 0 95.2 98" stroke="#60a5fa" stroke-opacity="0.65" stroke-width="1.2" stroke-linecap="round"/>
-            <circle cx="90.3" cy="93.5" r="1.85" fill="#ffffff"/>
-            <circle cx="94" cy="97.2" r="0.8" fill="#ffffff" fill-opacity="0.85"/>
-            <circle cx="116.2" cy="95.6" r="4.9" fill="#1c1412"/>
-            <circle cx="116.2" cy="95.6" r="3.6" fill="#090707"/>
-            <path d="M113.2 98 A3.8 3.8 0 0 0 119.2 98" stroke="#60a5fa" stroke-opacity="0.65" stroke-width="1.2" stroke-linecap="round"/>
-            <circle cx="114.3" cy="93.5" r="1.85" fill="#ffffff"/>
-            <circle cx="118" cy="97.2" r="0.8" fill="#ffffff" fill-opacity="0.85"/>
-          </g>
-        </g>
-
-        <g class="wiz-brows">
-          <path d="M81 90.2 Q89 85.2 97 89.2" stroke="#6b3f1d" stroke-opacity="0.32" stroke-width="6.2" stroke-linecap="round"/>
-          <path d="M127 90.2 Q119 85.2 111 89.2" stroke="#6b3f1d" stroke-opacity="0.32" stroke-width="6.2" stroke-linecap="round"/>
-          <path d="M81 88.5 Q89 83.5 97 87.5" stroke="#f8fafc" stroke-width="6.2" stroke-linecap="round"/>
-          <path d="M127 88.5 Q119 83.5 111 87.5" stroke="#f8fafc" stroke-width="6.2" stroke-linecap="round"/>
-        </g>
-
-        <g class="wiz-beard-group">
-          <path d="M70 113 C66 139 80 161 104 172 C128 161 142 139 138 113 Z" fill="#090814" fill-opacity="0.44"/>
-          <path d="M69 107 C64 134 78 157 94 166 L98 159 L104 169 L110 159 L114 166 C130 157 144 134 139 107 C126 113 82 113 69 107 Z" fill="url(#beard3d)"/>
-          <path d="M83 118 C81 135 86 150 94 160" stroke="#94a3b8" stroke-opacity="0.45" stroke-width="2.8" stroke-linecap="round"/>
-          <path d="M96 120 C96 137 99 151 103 163" stroke="#94a3b8" stroke-opacity="0.38" stroke-width="2.5" stroke-linecap="round"/>
-          <path d="M112 120 C112 137 109 151 105 163" stroke="#94a3b8" stroke-opacity="0.38" stroke-width="2.5" stroke-linecap="round"/>
-          <path d="M125 118 C127 135 122 150 114 160" stroke="#94a3b8" stroke-opacity="0.45" stroke-width="2.8" stroke-linecap="round"/>
-          <ellipse cx="104" cy="115" rx="8.5" ry="3.8" fill="#1e293b" fill-opacity="0.78"/>
-          <g class="wiz-mustache">
-            <path d="M104 106.5 C92 103.5 79 109.5 69 117.5 C82 120 95 116.5 104 113 C113 116.5 126 120 139 117.5 C129 109.5 116 103.5 104 106.5 Z" fill="#64748b" fill-opacity="0.42"/>
-            <path d="M104 104 C92 101 79 107 69 115 C82 118 95 114 104 110.5 C113 114 126 118 139 115 C129 107 116 101 104 104 Z" fill="url(#must3d)"/>
-          </g>
-        </g>
-
-        <ellipse cx="104" cy="104.5" rx="10.2" ry="7.2" fill="#5c3114" fill-opacity="0.32"/>
-        <ellipse cx="104" cy="102.5" rx="10" ry="7.2" fill="url(#nose3d)"/>
-        <ellipse cx="100.8" cy="100" rx="3.6" ry="1.9" fill="#ffffff" fill-opacity="0.52"/>
-        <path d="M74 88 C86 80 122 80 134 88 C134 79 120 74 104 74 C88 74 74 79 74 88 Z" fill="#140c08" fill-opacity="0.38"/>
-        <ellipse class="wiz-face-glow" cx="104" cy="112" rx="38" ry="40" fill="#38bdf8" fill-opacity="0.24"/>
-
-        <g class="wiz-hat-group">
-          <ellipse cx="104" cy="83" rx="54" ry="15" fill="#070612" fill-opacity="0.42"/>
-          <ellipse cx="104" cy="80" rx="55" ry="15.5" fill="url(#brimUnder)"/>
-          <path d="M46 78 C50 61 158 61 162 78 C158 90 50 90 46 78 Z" fill="url(#brimTop)"/>
-          <path d="M52 75.5 C68 64.5 140 64.5 156 75.5" stroke="#a5b4fc" stroke-opacity="0.32" stroke-width="2.2" stroke-linecap="round"/>
-          <path d="M68 68 C74 42 90 14 114 14 C132 14 144 30 153 47 C156 52 160 55 164 54 C159 60 150 60 142 53 C135 47 129 39 125 40 C122 41 130 55 138 68 Z" fill="url(#hatCone)"/>
-          <path d="M67 69 C75 54 133 54 141 69 C126 74 82 74 67 69 Z" fill="url(#hatCollar)"/>
-          <path d="M70 69.5 Q104 62.5 138 69.5" stroke="#6b3e20" stroke-width="5.2" stroke-linecap="round"/>
-          <path d="M72 69 Q104 62.2 136 69" stroke="#d97706" stroke-opacity="0.45" stroke-width="1.5" stroke-linecap="round"/>
-          <path d="M97 43 L98.8 47 L103 47.4 L99.8 50.2 L100.8 54.4 L97 52 L93.2 54.4 L94.2 50.2 L91 47.4 L95.2 47 Z" fill="#fde047" fill-opacity="0.9"/>
-        </g>
-      </g>
-
-      <g class="wiz-staff-rig">
-        <path d="M70 134 C56 138 47 146 45 158 C52 164 63 162 71 151 Z" fill="#2c294a"/>
-        <path d="M61 190 L46 112 C44 100 54 92 53 77 C52 60 35 55 34 67" stroke="url(#wood3d)" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
-        <circle cx="34" cy="66" r="7.5" fill="url(#wood3d)"/>
-        <ellipse cx="32" cy="63.5" rx="3" ry="2" fill="#f5d5ae" fill-opacity="0.45"/>
-        <path d="M58 185 L44 112 C42 100 52 92 51 77 C50 64 39 59 36 65" stroke="#f5d5ae" stroke-opacity="0.36" stroke-width="2.4" stroke-linecap="round"/>
-        <g class="wiz-crook-gem">
-          <circle cx="42" cy="82" r="13" fill="#38bdf8" fill-opacity="0.24"/>
-          <circle cx="42" cy="82" r="5.8" fill="url(#orb3d)"/>
-          <circle cx="40.2" cy="80" r="1.9" fill="#ffffff" fill-opacity="0.92"/>
-        </g>
-        <rect x="41" y="137" width="16" height="6.5" rx="3.25" transform="rotate(-8 41 137)" fill="url(#skin3d)"/>
-        <rect x="42" y="142.8" width="16.5" height="6.5" rx="3.25" transform="rotate(-8 42 142.8)" fill="url(#skin3d)"/>
-        <rect x="43" y="148.6" width="16" height="6.5" rx="3.25" transform="rotate(-8 43 148.6)" fill="url(#skin3d)"/>
-        <rect x="44.5" y="154.4" width="14" height="6" rx="3" transform="rotate(-8 44.5 154.4)" fill="url(#skin3d)"/>
-        <ellipse cx="57.5" cy="142" rx="5" ry="3.6" transform="rotate(24 57.5 142)" fill="#ffe6c7"/>
-      </g>
-    </g>
-
-    <g class="sp-fx sp-astrolabe">
-      <circle cx="41" cy="78" r="28" stroke="#7dd3fc" stroke-width="2" stroke-dasharray="6 4"/>
-      <circle cx="41" cy="78" r="19" stroke="#fde047" stroke-width="1.5" stroke-dasharray="3 5"/>
-      <polygon points="41,46 45,54 53,58 45,62 41,70 37,62 29,58 37,54" fill="#e0f2fe"/>
-      <circle cx="16" cy="64" r="2.8" fill="#fde047"/><circle cx="66" cy="62" r="2.5" fill="#38bdf8"/>
-    </g>
-    <g class="sp-fx sp-d20">
-      <circle cx="158" cy="94" r="25" fill="#38bdf8" fill-opacity="0.22"/>
-      <ellipse cx="158" cy="94" rx="23" ry="8.5" transform="rotate(-22 158 94)" stroke="#7dd3fc" stroke-width="1.6" stroke-dasharray="4 3"/>
-      <polygon points="158,73 176,83 176,105 158,115 140,105 140,83" fill="#0284c7"/>
-      <polygon points="158,73 176,83 158,94" fill="#7dd3fc"/><polygon points="158,73 140,83 158,94" fill="#38bdf8"/>
-      <polygon points="140,83 158,94 149,110" fill="#0ea5e9"/><polygon points="176,83 158,94 167,110" fill="#0369a1"/>
-      <path d="M158 73 L158 94 M140 83 L176 83 M158 94 L149 110 M158 94 L167 110" stroke="#e0f2fe" stroke-width="1.2"/>
-    </g>
-    <g class="sp-fx sp-fire">
-      <circle cx="158" cy="92" r="29" fill="url(#fire3d)"/>
-      <path d="M158 60 C169 72 177 82 175 96 C173 108 165 113 158 113 C149 113 141 106 141 95 C141 82 150 75 158 60 Z" fill="url(#fire3d)"/>
-      <path d="M158 75 C163 83 167 88 166 97 C165 103 161 106 158 106 C154 106 150 102 150 96 C150 88 155 83 158 75 Z" fill="#fef9c3"/>
-    </g>
-    <g class="sp-fx sp-bolt">
-      <path d="M43 80 L74 58 L96 74 L124 52 L144 76 L158 108" stroke="#38bdf8" stroke-width="9.5" stroke-opacity="0.36" stroke-linecap="round" stroke-linejoin="round"/>
-      <path d="M43 80 L74 58 L96 74 L124 52 L144 76 L158 108" stroke="#f0f9ff" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round"/>
-    </g>
-    <g class="sp-fx sp-scroll">
-      <path d="M128 112 Q154 106 178 114 L174 142 Q150 134 124 140 Z" fill="#fef3c7"/>
-      <rect x="122" y="109" width="6" height="34" rx="3" transform="rotate(8 125 126)" fill="#d97706"/>
-      <rect x="173" y="111" width="6" height="34" rx="3" transform="rotate(8 176 128)" fill="#d97706"/>
-      <path d="M134 120 L166 122 M133 127 L162 129 M132 134 L154 135" stroke="#b45309" stroke-width="2.2" stroke-linecap="round"/>
-    </g>
-    <g class="sp-fx sp-ward">
-      <circle cx="104" cy="116" r="76" stroke="#fbbf24" stroke-opacity="0.68" stroke-width="2.5" stroke-dasharray="12 8"/>
-      <circle cx="104" cy="116" r="66" stroke="#38bdf8" stroke-opacity="0.52" stroke-width="1.7" stroke-dasharray="5 6"/>
-    </g>
-  </svg>`;
-
-  // Zero-filter 3D Clay Owl Familiar (Chronicler) with 180° Neck Swivel & Curious Roll
-  const OWL_SVG = `<svg class="owl-svg" data-owl="idle" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-    <defs>
       <radialGradient id="oPlume" cx="42%" cy="28%" r="72%">
         <stop offset="0%" stop-color="#e08214"/><stop offset="52%" stop-color="#9a480d"/><stop offset="100%" stop-color="#471d04"/>
       </radialGradient>
@@ -1542,114 +1415,247 @@
       <linearGradient id="oWing" x1="40" y1="98" x2="70" y2="162" gradientUnits="userSpaceOnUse">
         <stop offset="0%" stop-color="#bd5b11"/><stop offset="60%" stop-color="#7c3208"/><stop offset="100%" stop-color="#3d1603"/>
       </linearGradient>
-      <linearGradient id="oTome" x1="36" y1="154" x2="164" y2="184" gradientUnits="userSpaceOnUse">
-        <stop offset="0%" stop-color="#7c2d12"/><stop offset="50%" stop-color="#451a03"/><stop offset="100%" stop-color="#270e02"/>
-      </linearGradient>
       <linearGradient id="oQuill" x1="146" y1="86" x2="176" y2="156" gradientUnits="userSpaceOnUse">
         <stop offset="0%" stop-color="#ffffff"/><stop offset="45%" stop-color="#fde68a"/><stop offset="100%" stop-color="#d97706"/>
       </linearGradient>
       <clipPath id="oHeadClip"><rect x="53" y="49" width="94" height="68" rx="34"/></clipPath>
     </defs>
-    <ellipse cx="100" cy="188" rx="56" ry="8.5" fill="#020617" fill-opacity="0.55"/>
-    <path d="M36 165 L100 151 L164 165 L158 183 L100 171 L42 183 Z" fill="url(#oTome)"/>
-    <path d="M43 163 L100 151.5 L157 163 L154 174 L100 163 L46 174 Z" fill="#fef3c7"/>
-    <rect x="95" y="151" width="10" height="21" rx="3" fill="#f59e0b"/>
 
-    <g class="owl-whole">
-      <g class="owl-wing-l3d">
-        <path d="M62 104 C38 112 34 140 48 158 C58 156 66 142 68 122 Z" fill="url(#oWing)"/>
-        <path d="M54 118 C45 128 45 140 51 150" stroke="#fbbf24" stroke-opacity="0.35" stroke-width="2.4" stroke-linecap="round"/>
-      </g>
-      <g class="owl-wing-r3d">
-        <path d="M138 104 C162 112 166 140 152 158 C142 156 134 142 132 122 Z" fill="url(#oWing)"/>
-        <path d="M146 118 C155 128 155 140 149 150" stroke="#fbbf24" stroke-opacity="0.35" stroke-width="2.4" stroke-linecap="round"/>
-      </g>
-      <ellipse cx="100" cy="131" rx="40" ry="36" fill="url(#oPlume)"/>
-      <ellipse cx="100" cy="136" rx="28" ry="27" fill="url(#oDown)"/>
-      <path d="M83 123 Q89 129 95 123 M97 123 Q103 129 109 123 M111 123 Q117 129 123 123" stroke="#b45309" stroke-opacity="0.4" stroke-width="2.6" stroke-linecap="round"/>
-      <path d="M86 136 Q93 142 100 136 M102 136 Q109 142 116 136" stroke="#b45309" stroke-opacity="0.36" stroke-width="2.6" stroke-linecap="round"/>
+    <g class="back-perch-scene">
+      <path d="M92 104 C126 98 156 85 214 88" stroke="#1c0d04" stroke-opacity="0.45" stroke-width="11" stroke-linecap="round"/>
+      <path d="M92 101 C126 95 156 82 214 85" stroke="url(#branch3d)" stroke-width="9.5" stroke-linecap="round"/>
+      <path d="M100 98 C132 92 160 80 208 83" stroke="#d69e66" stroke-opacity="0.35" stroke-width="2" stroke-linecap="round"/>
+      <path d="M192 84 C198 76 205 71 213 69" stroke="url(#branch3d)" stroke-width="4.2" stroke-linecap="round"/>
+      <path d="M208 68 C213 60 222 61 220 70 C216 74 210 73 208 68 Z" fill="#10b981"/>
+      <path d="M212 85 C220 82 224 89 218 94 C213 94 210 90 212 85 Z" fill="#059669"/>
 
-      <rect x="76" y="157" width="6.8" height="12.5" rx="3.4" fill="#fbbf24"/>
-      <rect x="83" y="158" width="6.8" height="13" rx="3.4" fill="#f59e0b"/>
-      <rect x="90" y="157" width="6.2" height="12" rx="3.1" fill="#d97706"/>
-      <rect x="104" y="157" width="6.2" height="12" rx="3.1" fill="#d97706"/>
-      <rect x="110.5" y="158" width="6.8" height="13" rx="3.4" fill="#f59e0b"/>
-      <rect x="117.5" y="157" width="6.8" height="12.5" rx="3.4" fill="#fbbf24"/>
-
-      <ellipse cx="100" cy="115" rx="32" ry="9" fill="#1c0a02" fill-opacity="0.38"/>
-      <g class="owl-head-3d">
-        <g class="owl-tuft-l"><path d="M56 72 C52 50 58 34 73 30 C77 43 77 56 72 66 Z" fill="url(#oPlume)"/></g>
-        <g class="owl-tuft-r"><path d="M144 72 C148 50 142 34 127 30 C123 43 123 56 128 66 Z" fill="url(#oPlume)"/></g>
-        <rect x="53" y="49" width="94" height="68" rx="34" fill="url(#oPlume)"/>
-        <g clip-path="url(#oHeadClip)">
-          <g class="owl-nape-back">
-            <path d="M54 83 Q100 89 146 83" stroke="#d97706" stroke-width="3.2" stroke-linecap="round"/>
-            <path d="M74 68 Q82 75 90 68 M92 68 Q100 75 108 68 M110 68 Q118 75 126 68" stroke="#fde68a" stroke-opacity="0.32" stroke-width="2.6" stroke-linecap="round"/>
-            <path d="M70 84 Q80 92 90 84 M92 84 Q100 92 108 84 M110 84 Q120 92 130 84" stroke="#451a03" stroke-opacity="0.45" stroke-width="2.8" stroke-linecap="round"/>
-            <rect x="93" y="81" width="14" height="6" rx="2.5" fill="#fbbf24"/>
+      <g class="owl-perch-root" transform="translate(112, -16) scale(0.61)">
+        <g class="owl-whole">
+          <g class="owl-wing-l3d">
+            <path d="M62 104 C38 112 34 140 48 158 C58 156 66 142 68 122 Z" fill="url(#oWing)"/>
+            <path d="M54 118 C45 128 45 140 51 150" stroke="#fbbf24" stroke-opacity="0.35" stroke-width="2.4" stroke-linecap="round"/>
           </g>
-          <g class="owl-face-yaw">
-            <circle cx="81" cy="84" r="19.8" fill="url(#oDisc)"/>
-            <circle cx="119" cy="84" r="19.8" fill="url(#oDisc)"/>
-            <path d="M83 55 L100 78 L117 55 Z" fill="#853a0a" fill-opacity="0.72"/>
-            <g class="owl-lids">
-              <circle cx="81" cy="84" r="13.8" fill="url(#oAmber)"/>
-              <circle cx="119" cy="84" r="13.8" fill="url(#oAmber)"/>
-              <g class="rm-gaze">
-                <circle cx="81" cy="84" r="9.8" fill="#0b0807"/>
-                <circle cx="77.2" cy="79.5" r="3.5" fill="#ffffff"/>
-                <circle cx="85" cy="88" r="1.5" fill="#fde047" fill-opacity="0.9"/>
-                <circle cx="119" cy="84" r="9.8" fill="#0b0807"/>
-                <circle cx="115.2" cy="79.5" r="3.5" fill="#ffffff"/>
-                <circle cx="123" cy="88" r="1.5" fill="#fde047" fill-opacity="0.9"/>
+          <g class="owl-wing-r3d">
+            <path d="M138 104 C162 112 166 140 152 158 C142 156 134 142 132 122 Z" fill="url(#oWing)"/>
+            <path d="M146 118 C155 128 155 140 149 150" stroke="#fbbf24" stroke-opacity="0.35" stroke-width="2.4" stroke-linecap="round"/>
+          </g>
+          <ellipse cx="100" cy="131" rx="40" ry="36" fill="url(#oPlume)"/>
+          <ellipse cx="100" cy="136" rx="28" ry="27" fill="url(#oDown)"/>
+          <path d="M83 123 Q89 129 95 123 M97 123 Q103 129 109 123 M111 123 Q117 129 123 123" stroke="#b45309" stroke-opacity="0.42" stroke-width="2.6" stroke-linecap="round"/>
+          <path d="M86 136 Q93 142 100 136 M102 136 Q109 142 116 136" stroke="#b45309" stroke-opacity="0.38" stroke-width="2.6" stroke-linecap="round"/>
+          <rect x="76" y="157" width="7" height="13.5" rx="3.5" fill="#fbbf24"/>
+          <rect x="83.5" y="158" width="7" height="14" rx="3.5" fill="#f59e0b"/>
+          <rect x="91" y="157" width="6.5" height="13" rx="3.2" fill="#d97706"/>
+          <rect x="103.5" y="157" width="6.5" height="13" rx="3.2" fill="#d97706"/>
+          <rect x="110.5" y="158" width="7" height="14" rx="3.5" fill="#f59e0b"/>
+          <rect x="118" y="157" width="7" height="13.5" rx="3.5" fill="#fbbf24"/>
+          <ellipse cx="100" cy="115" rx="32" ry="9" fill="#1c0a02" fill-opacity="0.38"/>
+          <g class="owl-head-3d">
+            <g class="owl-tuft-l"><path d="M56 72 C52 50 58 34 73 30 C77 43 77 56 72 66 Z" fill="url(#oPlume)"/></g>
+            <g class="owl-tuft-r"><path d="M144 72 C148 50 142 34 127 30 C123 43 123 56 128 66 Z" fill="url(#oPlume)"/></g>
+            <rect x="53" y="49" width="94" height="68" rx="34" fill="url(#oPlume)"/>
+            <g clip-path="url(#oHeadClip)">
+              <g class="owl-nape-back">
+                <path d="M54 83 Q100 89 146 83" stroke="#d97706" stroke-width="3.4" stroke-linecap="round"/>
+                <path d="M74 68 Q82 75 90 68 M92 68 Q100 75 108 68 M110 68 Q118 75 126 68" stroke="#fde68a" stroke-opacity="0.34" stroke-width="2.8" stroke-linecap="round"/>
+                <path d="M70 84 Q80 92 90 84 M92 84 Q100 92 108 84 M110 84 Q120 92 130 84" stroke="#451a03" stroke-opacity="0.48" stroke-width="3" stroke-linecap="round"/>
+                <rect x="93" y="81" width="14" height="6" rx="2.5" fill="#fbbf24"/>
+              </g>
+              <g class="owl-face-yaw">
+                <circle cx="81" cy="84" r="19.8" fill="url(#oDisc)"/>
+                <circle cx="119" cy="84" r="19.8" fill="url(#oDisc)"/>
+                <path d="M83 55 L100 78 L117 55 Z" fill="#853a0a" fill-opacity="0.72"/>
+                <g class="owl-lids">
+                  <circle cx="81" cy="84" r="13.8" fill="url(#oAmber)"/>
+                  <circle cx="119" cy="84" r="13.8" fill="url(#oAmber)"/>
+                  <g class="rm-gaze">
+                    <circle cx="81" cy="84" r="9.8" fill="#0b0807"/><circle cx="77.2" cy="79.5" r="3.6" fill="#ffffff"/><circle cx="85" cy="88" r="1.5" fill="#fde047"/>
+                    <circle cx="119" cy="84" r="9.8" fill="#0b0807"/><circle cx="115.2" cy="79.5" r="3.6" fill="#ffffff"/><circle cx="123" cy="88" r="1.5" fill="#fde047"/>
+                  </g>
+                </g>
+                <circle cx="81" cy="84" r="16.4" stroke="#fde047" stroke-width="2.8"/>
+                <circle cx="119" cy="84" r="16.4" stroke="#fde047" stroke-width="2.8"/>
+                <path d="M97 84 Q100 80 103 84" stroke="#fde047" stroke-width="3.2" stroke-linecap="round"/>
+                <path d="M92.5 93 C96 88.5 104 88.5 107.5 93 L100 108 Z" fill="#f59e0b"/>
+                <path d="M96 93 L100 103.5 L100 91 Z" fill="#fef08a" fill-opacity="0.58"/>
               </g>
             </g>
-            <circle cx="81" cy="84" r="16.4" stroke="#fde047" stroke-width="2.6"/>
-            <circle cx="119" cy="84" r="16.4" stroke="#fde047" stroke-width="2.6"/>
-            <path d="M97 84 Q100 80 103 84" stroke="#fde047" stroke-width="3" stroke-linecap="round"/>
-            <path d="M92.5 93 C96 88.5 104 88.5 107.5 93 L100 108 Z" fill="#f59e0b"/>
-            <path d="M96 93 L100 103.5 L100 91 Z" fill="#fef08a" fill-opacity="0.58"/>
           </g>
+        </g>
+        <g class="owl-quill-3d">
+          <path d="M146 157 C150 124 162 98 179 86 C177 112 167 137 146 157 Z" fill="url(#oQuill)"/>
+          <path d="M144 160 L174 94" stroke="#b45309" stroke-width="2.4" stroke-linecap="round"/>
+        </g>
+        <g class="owl-fx owl-fx-ink">
+          <path d="M140 132 L144 139 L151 141 L144 143 L140 150 L136 143 L129 141 L136 139 Z" fill="#fde047"/>
+          <circle cx="126" cy="122" r="3.5" fill="#fef3c7"/><circle cx="158" cy="118" r="3" fill="#fbbf24"/>
+        </g>
+        <g class="owl-fx owl-fx-chime">
+          <path d="M42 64 Q28 50 42 36" stroke="#fde047" stroke-width="3.4" stroke-linecap="round"/>
+          <path d="M158 64 Q172 50 158 36" stroke="#fde047" stroke-width="3.4" stroke-linecap="round"/>
+        </g>
+        <g class="owl-fx owl-fx-pages">
+          <rect x="40" y="124" width="24" height="30" rx="3" transform="rotate(-24 52 139)" fill="#fef3c7" fill-opacity="0.92"/>
+          <rect x="136" y="122" width="24" height="30" rx="3" transform="rotate(22 148 137)" fill="#fde68a" fill-opacity="0.92"/>
+        </g>
+        <g class="owl-fx owl-fx-eureka">
+          <path d="M100 8 L105 20 L117 25 L105 30 L100 42 L95 30 L83 25 L95 20 Z" fill="#fde047"/>
         </g>
       </g>
     </g>
 
-    <g class="owl-quill-3d">
-      <path d="M146 157 C150 124 162 98 179 86 C177 112 167 137 146 157 Z" fill="url(#oQuill)"/>
-      <path d="M144 160 L174 94" stroke="#b45309" stroke-width="2.2" stroke-linecap="round"/>
-      <circle cx="144" cy="160" r="3" fill="#fde047"/>
-    </g>
-    <g class="owl-fx owl-fx-ink">
-      <path d="M140 132 L143 138 L149 140 L143 142 L140 148 L137 142 L131 140 L137 138 Z" fill="#fde047"/>
-      <circle cx="126" cy="122" r="3" fill="#fef3c7"/><circle cx="156" cy="118" r="2.5" fill="#fbbf24"/>
-    </g>
-    <g class="owl-fx owl-fx-chime">
-      <path d="M44 64 Q32 50 44 36" stroke="#fde047" stroke-width="3" stroke-linecap="round"/>
-      <path d="M156 64 Q168 50 156 36" stroke="#fde047" stroke-width="3" stroke-linecap="round"/>
-    </g>
-    <g class="owl-fx owl-fx-pages">
-      <rect x="46" y="128" width="22" height="28" rx="3" transform="rotate(-24 57 142)" fill="#fef3c7" fill-opacity="0.9"/>
-      <rect x="132" y="126" width="22" height="28" rx="3" transform="rotate(22 143 140)" fill="#fde68a" fill-opacity="0.9"/>
-    </g>
-    <g class="owl-fx owl-fx-eureka">
-      <path d="M100 12 L104 22 L114 26 L104 30 L100 40 L96 30 L86 26 L96 22 Z" fill="#fde047"/>
+    <g class="wiz-stage-root" transform="translate(-14, 12) scale(0.95)">
+      <ellipse cx="104" cy="188" rx="56" ry="8.5" fill="#020617" fill-opacity="0.55"/>
+      <g class="wiz-whole">
+        <path d="M52 186 C55 144 70 124 104 124 C138 124 153 144 156 186 C138 192 70 192 52 186 Z" fill="url(#cloak3d)"/>
+        <path d="M80 136 L128 136 L132 188 C116 191 92 191 76 188 Z" fill="#17152b"/>
+        <path d="M76 161 Q104 165 132 161 L133 171 Q104 175 75 171 Z" fill="#5c3419"/>
+        <rect x="93" y="158.5" width="22" height="19" rx="4.5" fill="#090814" fill-opacity="0.45"/>
+        <rect x="93" y="156" width="22" height="19" rx="4.5" fill="url(#gold3d)"/>
+        <rect x="98" y="160.5" width="12" height="10" rx="2.2" fill="#2b180b"/>
+        <path d="M104 165.5 L112 165.5" stroke="url(#gold3d)" stroke-width="3.2" stroke-linecap="round"/>
+        <path d="M52 186 C55 146 68 126 88 126 L83 188 C70 188 60 187 52 186 Z" fill="url(#cloak3d)"/>
+        <path d="M156 186 C153 146 140 126 120 126 L125 188 C138 188 148 187 156 186 Z" fill="url(#cloak3d)"/>
+
+        <g class="wiz-left-hand">
+          <path d="M138 134 C152 140 161 154 159 170 C151 174 140 172 135 164 Z" fill="#272445"/>
+          <ellipse cx="148" cy="168" rx="11" ry="5.5" fill="#100e21"/>
+          <circle cx="148" cy="173.5" r="9.8" fill="#090814" fill-opacity="0.38"/>
+          <circle cx="148" cy="171" r="9.8" fill="url(#skin3d)"/>
+          <ellipse cx="141" cy="169" rx="4.6" ry="3.5" transform="rotate(-22 141 169)" fill="#ffe4c4"/>
+          <path d="M145 175 C145 177.5 147.5 178.5 149.5 178.5" stroke="#b57241" stroke-width="1.5" stroke-linecap="round"/>
+        </g>
+
+        <g class="wiz-head-group">
+          <path d="M68 84 C59 102 60 126 69 140 C76 134 79 116 79 92 Z" fill="#d8dee9"/>
+          <path d="M140 84 C149 102 148 126 139 140 C132 134 129 116 129 92 Z" fill="#cbd5e1"/>
+          <path d="M68 92 C64 106 65 120 71 131" stroke="#ffffff" stroke-width="3.2" stroke-linecap="round"/>
+          <rect x="74" y="76" width="60" height="45" rx="25" fill="url(#skin3d)"/>
+          <ellipse cx="83" cy="103" rx="7" ry="4.2" fill="#e11d48" fill-opacity="0.15"/>
+          <ellipse cx="125" cy="103" rx="7" ry="4.2" fill="#e11d48" fill-opacity="0.15"/>
+
+          <g class="wiz-eyelids">
+            <ellipse cx="92" cy="95.5" rx="6.6" ry="6.6" fill="#9c5b2e" fill-opacity="0.38"/>
+            <ellipse cx="116" cy="95.5" rx="6.6" ry="6.6" fill="#9c5b2e" fill-opacity="0.38"/>
+            <ellipse cx="92" cy="95.5" rx="5.8" ry="5.6" fill="#fffaf5"/>
+            <ellipse cx="116" cy="95.5" rx="5.8" ry="5.6" fill="#fffaf5"/>
+            <g class="rm-gaze">
+              <circle cx="92.2" cy="95.6" r="4.9" fill="#1c1412"/><circle cx="92.2" cy="95.6" r="3.6" fill="#090707"/>
+              <path d="M89.2 98 A3.8 3.8 0 0 0 95.2 98" stroke="#60a5fa" stroke-opacity="0.65" stroke-width="1.2" stroke-linecap="round"/>
+              <circle cx="90.3" cy="93.5" r="1.85" fill="#ffffff"/><circle cx="94" cy="97.2" r="0.8" fill="#ffffff" fill-opacity="0.85"/>
+              <circle cx="116.2" cy="95.6" r="4.9" fill="#1c1412"/><circle cx="116.2" cy="95.6" r="3.6" fill="#090707"/>
+              <path d="M113.2 98 A3.8 3.8 0 0 0 119.2 98" stroke="#60a5fa" stroke-opacity="0.65" stroke-width="1.2" stroke-linecap="round"/>
+              <circle cx="114.3" cy="93.5" r="1.85" fill="#ffffff"/><circle cx="118" cy="97.2" r="0.8" fill="#ffffff" fill-opacity="0.85"/>
+            </g>
+          </g>
+
+          <g class="wiz-brows">
+            <path d="M81 90.2 Q89 85.2 97 89.2" stroke="#6b3f1d" stroke-opacity="0.32" stroke-width="6.2" stroke-linecap="round"/>
+            <path d="M127 90.2 Q119 85.2 111 89.2" stroke="#6b3f1d" stroke-opacity="0.32" stroke-width="6.2" stroke-linecap="round"/>
+            <path d="M81 88.5 Q89 83.5 97 87.5" stroke="#f8fafc" stroke-width="6.2" stroke-linecap="round"/>
+            <path d="M127 88.5 Q119 83.5 111 87.5" stroke="#f8fafc" stroke-width="6.2" stroke-linecap="round"/>
+          </g>
+
+          <g class="wiz-beard-group">
+            <path d="M70 113 C66 139 80 161 104 172 C128 161 142 139 138 113 Z" fill="#090814" fill-opacity="0.44"/>
+            <path d="M69 107 C64 134 78 157 94 166 L98 159 L104 169 L110 159 L114 166 C130 157 144 134 139 107 C126 113 82 113 69 107 Z" fill="url(#beard3d)"/>
+            <path d="M83 118 C81 135 86 150 94 160" stroke="#94a3b8" stroke-opacity="0.45" stroke-width="2.8" stroke-linecap="round"/>
+            <path d="M96 120 C96 137 99 151 103 163" stroke="#94a3b8" stroke-opacity="0.38" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M112 120 C112 137 109 151 105 163" stroke="#94a3b8" stroke-opacity="0.38" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M125 118 C127 135 122 150 114 160" stroke="#94a3b8" stroke-opacity="0.45" stroke-width="2.8" stroke-linecap="round"/>
+            <ellipse cx="104" cy="115" rx="8.5" ry="3.8" fill="#1e293b" fill-opacity="0.78"/>
+            <g class="wiz-mustache">
+              <path d="M104 106.5 C92 103.5 79 109.5 69 117.5 C82 120 95 116.5 104 113 C113 116.5 126 120 139 117.5 C129 109.5 116 103.5 104 106.5 Z" fill="#64748b" fill-opacity="0.42"/>
+              <path d="M104 104 C92 101 79 107 69 115 C82 118 95 114 104 110.5 C113 114 126 118 139 115 C129 107 116 101 104 104 Z" fill="url(#must3d)"/>
+            </g>
+          </g>
+
+          <ellipse cx="104" cy="104.5" rx="10.2" ry="7.2" fill="#5c3114" fill-opacity="0.32"/>
+          <ellipse cx="104" cy="102.5" rx="10" ry="7.2" fill="url(#nose3d)"/>
+          <ellipse cx="100.8" cy="100" rx="3.6" ry="1.9" fill="#ffffff" fill-opacity="0.52"/>
+          <path d="M74 88 C86 80 122 80 134 88 C134 79 120 74 104 74 C88 74 74 79 74 88 Z" fill="#140c08" fill-opacity="0.38"/>
+          <ellipse class="wiz-face-glow" cx="104" cy="112" rx="38" ry="40" fill="#38bdf8" fill-opacity="0.24"/>
+
+          <g class="wiz-hat-group">
+            <ellipse cx="104" cy="83" rx="52" ry="14.5" fill="#070612" fill-opacity="0.42"/>
+            <ellipse cx="104" cy="80" rx="53" ry="15" fill="url(#brimUnder)"/>
+            <path d="M49 78 C53 61 155 61 159 78 C155 90 53 90 49 78 Z" fill="url(#brimTop)"/>
+            <path d="M55 75.5 C70 64.5 138 64.5 153 75.5" stroke="#a5b4fc" stroke-opacity="0.32" stroke-width="2.2" stroke-linecap="round"/>
+            <path d="M139 68 C133 42 117 14 93 14 C75 14 63 30 54 47 C51 52 47 55 43 54 C48 60 57 60 65 53 C72 47 78 39 82 40 C85 41 77 55 69 68 Z" fill="url(#hatCone)"/>
+            <path d="M67 69 C75 54 133 54 141 69 C126 74 82 74 67 69 Z" fill="url(#hatCollar)"/>
+            <path d="M70 69.5 Q104 62.5 138 69.5" stroke="#6b3e20" stroke-width="5.2" stroke-linecap="round"/>
+            <path d="M72 69 Q104 62.2 136 69" stroke="#d97706" stroke-opacity="0.45" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M108 43 L109.8 47 L114 47.4 L110.8 50.2 L111.8 54.4 L108 52 L104.2 54.4 L105.2 50.2 L102 47.4 L106.2 47 Z" fill="#fde047" fill-opacity="0.9"/>
+          </g>
+        </g>
+
+        <g class="wiz-staff-rig">
+          <path d="M70 134 C56 138 47 146 45 158 C52 164 63 162 71 151 Z" fill="#2c294a"/>
+          <path d="M61 190 L46 112 C44 100 54 92 53 77 C52 60 35 55 34 67" stroke="url(#wood3d)" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="34" cy="66" r="7.5" fill="url(#wood3d)"/>
+          <ellipse cx="32" cy="63.5" rx="3" ry="2" fill="#f5d5ae" fill-opacity="0.45"/>
+          <path d="M58 185 L44 112 C42 100 52 92 51 77 C50 64 39 59 36 65" stroke="#f5d5ae" stroke-opacity="0.36" stroke-width="2.4" stroke-linecap="round"/>
+          <g class="wiz-crook-gem">
+            <circle cx="42" cy="82" r="13" fill="#38bdf8" fill-opacity="0.24"/>
+            <circle cx="42" cy="82" r="5.8" fill="url(#orb3d)"/>
+            <circle cx="40.2" cy="80" r="1.9" fill="#ffffff" fill-opacity="0.92"/>
+          </g>
+          <rect x="41" y="137" width="16" height="6.5" rx="3.25" transform="rotate(-8 41 137)" fill="url(#skin3d)"/>
+          <rect x="42" y="142.8" width="16.5" height="6.5" rx="3.25" transform="rotate(-8 42 142.8)" fill="url(#skin3d)"/>
+          <rect x="43" y="148.6" width="16" height="6.5" rx="3.25" transform="rotate(-8 43 148.6)" fill="url(#skin3d)"/>
+          <rect x="44.5" y="154.4" width="14" height="6" rx="3" transform="rotate(-8 44.5 154.4)" fill="url(#skin3d)"/>
+          <ellipse cx="57.5" cy="142" rx="5" ry="3.6" transform="rotate(24 57.5 142)" fill="#ffe6c7"/>
+        </g>
+      </g>
+
+      <g class="sp-fx sp-astrolabe">
+        <circle cx="41" cy="78" r="28" stroke="#7dd3fc" stroke-width="2" stroke-dasharray="6 4"/>
+        <circle cx="41" cy="78" r="19" stroke="#fde047" stroke-width="1.5" stroke-dasharray="3 5"/>
+        <polygon points="41,46 45,54 53,58 45,62 41,70 37,62 29,58 37,54" fill="#e0f2fe"/>
+      </g>
+      <g class="sp-fx sp-d20">
+        <circle cx="156" cy="118" r="23" fill="#38bdf8" fill-opacity="0.22"/>
+        <polygon points="156,99 172,108 172,128 156,137 140,128 140,108" fill="#0284c7"/>
+        <polygon points="156,99 172,108 156,118" fill="#7dd3fc"/><polygon points="156,99 140,108 156,118" fill="#38bdf8"/>
+        <path d="M156 99 L156 118 M140 108 L172 108 M156 118 L148 133 M156 118 L164 133" stroke="#e0f2fe" stroke-width="1.2"/>
+      </g>
+      <g class="sp-fx sp-fire">
+        <circle cx="156" cy="116" r="26" fill="url(#fire3d)"/>
+        <path d="M156 88 C166 99 173 108 171 120 C169 130 162 135 156 135 C148 135 141 129 141 119 C141 108 149 101 156 88 Z" fill="url(#fire3d)"/>
+        <path d="M156 101 C160 108 164 113 163 121 C162 126 159 129 156 129 C152 129 149 125 149 120 C149 113 153 108 156 101 Z" fill="#fef9c3"/>
+      </g>
+      <g class="sp-fx sp-bolt">
+        <path d="M43 80 L74 66 L96 82 L124 68 L144 96 L156 122" stroke="#38bdf8" stroke-width="9" stroke-opacity="0.36" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M43 80 L74 66 L96 82 L124 68 L144 96 L156 122" stroke="#f0f9ff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </g>
+      <g class="sp-fx sp-scroll">
+        <path d="M126 122 Q152 116 176 124 L172 152 Q148 144 122 150 Z" fill="#fef3c7"/>
+        <rect x="120" y="119" width="6" height="34" rx="3" transform="rotate(8 123 136)" fill="#d97706"/>
+        <rect x="171" y="121" width="6" height="34" rx="3" transform="rotate(8 174 138)" fill="#d97706"/>
+        <path d="M132 130 L164 132 M131 137 L160 139 M130 144 L152 145" stroke="#b45309" stroke-width="2.2" stroke-linecap="round"/>
+      </g>
+      <g class="sp-fx sp-ward">
+        <circle cx="104" cy="116" r="74" stroke="#fbbf24" stroke-opacity="0.68" stroke-width="2.5" stroke-dasharray="12 8"/>
+        <circle cx="104" cy="116" r="64" stroke="#38bdf8" stroke-opacity="0.52" stroke-width="1.7" stroke-dasharray="5 6"/>
+      </g>
     </g>
   </svg>`;
 
   const WIZ_AMBIENT_POSES = ['astrolabe', 'd20', 'fireball', 'lightning', 'scroll', 'ward'];
   const OWL_AMBIENT_POSES = ['spin180', 'flip180', 'write', 'hoot', 'search', 'found'];
+  let _ambientTurnFlip = false;
 
+  // Atomically activates ONLY ONE actor ('wiz' OR 'owl') and freezes the other
   function _applyRigPose(persona, pose) {
-    const attr = persona === 'chronicler' ? 'data-owl' : 'data-wiz';
-    const sel = persona === 'chronicler' ? '.owl-svg' : '.wiz-svg';
-    if (_fabEl) {
-      const s = _fabEl.querySelector(sel);
-      if (s) s.setAttribute(attr, pose || 'idle');
-    }
-    if (_panelEl) {
-      const s = _panelEl.querySelector('#rm-assist-hdr-icon ' + sel);
-      if (s) s.setAttribute(attr, pose || 'idle');
-    }
+    const isOwl = persona === 'chronicler';
+    const activeKey = isOwl ? 'owl' : 'wiz';
+    const cleanPose = pose || 'idle';
+    [_fabEl?.querySelector('.diorama-svg'), _panelEl?.querySelector('#rm-assist-hdr-icon .diorama-svg')].forEach((svg) => {
+      if (!svg) return;
+      svg.setAttribute('data-active', activeKey);
+      svg.setAttribute('data-wiz', isOwl ? 'idle' : cleanPose);
+      svg.setAttribute('data-owl', isOwl ? cleanPose : 'idle');
+    });
   }
 
   function triggerPersonaPose(persona, pose, durationMs = 2800) {
@@ -1668,21 +1674,11 @@
     if (_fabEl) {
       _fabEl.classList.toggle('is-chronicler', _persona === 'chronicler');
       _fabEl.classList.toggle('is-working', Boolean(working));
-      const iconSpan = _fabEl.querySelector('.rm-assist-fab-icon');
-      if (iconSpan && _mountedFabPersona !== _persona) {
-        iconSpan.innerHTML = _withUniqueSvgIds(_persona === 'chronicler' ? OWL_SVG : WIZARD_SVG);
-        _mountedFabPersona = _persona;
-      }
     }
     if (_panelEl) {
       _panelEl.classList.toggle('is-chronicler', _persona === 'chronicler');
-      const hdrIcon = _panelEl.querySelector('#rm-assist-hdr-icon');
       const hdrName = _panelEl.querySelector('#rm-assist-hdr-name');
       const hdrSub = _panelEl.querySelector('#rm-assist-hdr-sub');
-      if (hdrIcon && _mountedHdrPersona !== _persona) {
-        hdrIcon.innerHTML = _withUniqueSvgIds(_persona === 'chronicler' ? OWL_SVG : WIZARD_SVG);
-        _mountedHdrPersona = _persona;
-      }
       if (hdrName) hdrName.textContent = _persona === 'chronicler' ? 'Chronicler (Owl Familiar)' : 'Rule Master';
       if (hdrSub) {
         hdrSub.textContent = _persona === 'chronicler'
@@ -1936,8 +1932,7 @@
     fab.className = 'rm-assist-fab';
     fab.title = 'Rule Master & Owl Chronicler (Alt+M / Ctrl+K)';
     fab.setAttribute('aria-label', 'Open Rule Master AI Assistant');
-    fab.innerHTML = `<span class="rm-assist-fab-icon">${_withUniqueSvgIds(WIZARD_SVG)}</span><span class="rm-assist-kbd">M</span>`;
-    _mountedFabPersona = 'rulemaster';
+    fab.innerHTML = `<span class="rm-assist-fab-icon">${_withUniqueSvgIds(DIORAMA_SVG)}</span><span class="rm-assist-kbd">M</span>`;
 
     const bubble = document.createElement('div');
     bubble.id = 'rm-assist-bubble';
@@ -1952,7 +1947,7 @@
     panel.innerHTML = `
       <div class="rm-assist-hdr">
         <div class="rm-assist-title">
-          <span id="rm-assist-hdr-icon" class="rm-assist-hdr-medallion">${_withUniqueSvgIds(WIZARD_SVG)}</span>
+          <span id="rm-assist-hdr-icon" class="rm-assist-hdr-medallion">${_withUniqueSvgIds(DIORAMA_SVG)}</span>
           <div style="min-width:0;">
             <div id="rm-assist-hdr-name" class="rm-assist-name">Rule Master</div>
             <div id="rm-assist-hdr-sub" class="rm-assist-sub">3.5e RAW • Live App Guide • Sheet Commands</div>
@@ -2097,14 +2092,21 @@
       }, { passive: true });
     }
 
-    // Autonomous Living Choreography (sleeps when panel open, busy, hidden tab, or reduced motion)
+    // Strict Alternating Single-Actor Autonomous Choreography (never both at once!)
     clearInterval(_ambientInterval);
     _ambientInterval = setInterval(() => {
       if (_isOpen || _isBusy || document.hidden || !_fabEl || (reducedMotionMQ && reducedMotionMQ.matches)) return;
-      const pool = _persona === 'chronicler' ? OWL_AMBIENT_POSES : WIZ_AMBIENT_POSES;
+      let turnPersona = _persona;
+      if (_personaLock === 'auto') {
+        _ambientTurnFlip = !_ambientTurnFlip;
+        turnPersona = _ambientTurnFlip ? 'chronicler' : 'rulemaster';
+      } else {
+        turnPersona = _personaLock;
+      }
+      const pool = turnPersona === 'chronicler' ? OWL_AMBIENT_POSES : WIZ_AMBIENT_POSES;
       const pick = pool[Math.floor(Math.random() * pool.length)];
-      triggerPersonaPose(_persona, pick, 2900);
-    }, 9500);
+      triggerPersonaPose(turnPersona, pick, 2900);
+    }, 9000);
 
     renderSavedCommands();
     renderMessages();
