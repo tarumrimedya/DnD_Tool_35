@@ -156,6 +156,7 @@ function runCorpusAudit() {
     splatV3DialectFixesNeeded: 0,
     badRecipients: [],
     badRankParity: [],
+    badFeatureRankEntries: [],
     splatV3PerVarCount: 0,
     unmappedTargets: {},
     unmappedV3BlockTypes: {},
@@ -381,6 +382,22 @@ function runCorpusAudit() {
     }
   }
 
+  // Gate: every entry whose V3 effects/modes/powers reference `@featureRank` MUST declare `rankFrom: 'levelTable'`
+  for (const packFile of Object.keys(idx.chunks || {})) {
+    const p = path.join(DB_DIR, packFile);
+    if (!fs.existsSync(p)) continue;
+    let raw;
+    try { raw = JSON.parse(fs.readFileSync(p, 'utf8')); } catch { continue; }
+    const list = Array.isArray(raw) ? raw : (raw.entries || []);
+    for (const e of list) {
+      if (!e || typeof e !== 'object') continue;
+      const blob = JSON.stringify({ effects: e.effects || [], modes: e.modes || [], powers: e.powers || [] });
+      if (/@featureRank\b/i.test(blob) && e.rankFrom !== 'levelTable') {
+        report.badFeatureRankEntries.push(`${packFile}:${e.id || e.name} uses @featureRank without rankFrom: 'levelTable'`);
+      }
+    }
+  }
+
   report.elapsedMs = Date.now() - startMs;
   return report;
 }
@@ -405,6 +422,7 @@ if (require.main === module) {
   if (rep.badModes.length > 0) console.error('   ❌ Invalid modes[] (ModeV3 contract):', rep.badModes.slice(0, 20));
   if (rep.badRecipients.length > 0) console.error('   ❌ Invalid recipient values:', rep.badRecipients.slice(0, 20));
   if (rep.badRankParity.length > 0) console.error('   ❌ Rank-vs-label parity mismatches:', rep.badRankParity.slice(0, 20));
+  if (rep.badFeatureRankEntries.length > 0) console.error('   ❌ @featureRank missing rankFrom:"levelTable":', rep.badFeatureRankEntries.slice(0, 20));
 
   const failed =
     rep.v2Entries > 0 ||
@@ -421,6 +439,7 @@ if (require.main === module) {
     rep.badModes.length > 0 ||
     rep.badRecipients.length > 0 ||
     rep.badRankParity.length > 0 ||
+    rep.badFeatureRankEntries.length > 0 ||
     rep.badSizeScopes.length > 0;
   if (failed) {
     console.error('❌ FAIL: Pure V3 Corpus Gate failed.');

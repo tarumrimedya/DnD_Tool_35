@@ -7032,7 +7032,6 @@
             isLight: Boolean(item.isLight || (baseHanded && String(baseHanded).toLowerCase().includes('light')) || (typeof RuleEngine !== 'undefined' && RuleEngine.isLightWeapon && RuleEngine.isLightWeapon(item))),
             bonusType: 'enhancement',
             tags: item.tags || [],
-            elementalMods: extraRolls.map(sp => ({ name: sp.source || sp.dmgType || 'Elemental', dice: sp.dice, type: sp.dmgType || 'Energy', condition: sp.condition || '' })),
             keen: Boolean(item.ruleFlags && item.ruleFlags.keen)
           });
         }

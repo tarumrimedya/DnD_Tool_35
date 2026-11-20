@@ -13798,7 +13798,7 @@
               "kind": "ref",
               "name": "Trap Sense +1 (Ex)",
               "abilityType": "Ex",
-              "refId": "cab-dwarven-defender-trap-sense",
+              "refId": "cab-trap-sense",
               "text": "+1 bonus on Reflex saves and AC against traps.",
               "category": "Special Ability"
             }
@@ -13893,7 +13893,7 @@
               "kind": "ref",
               "name": "Trap Sense +2 (Ex)",
               "abilityType": "Ex",
-              "refId": "cab-dwarven-defender-trap-sense",
+              "refId": "cab-trap-sense",
               "text": "Trap Sense bonus increases to +2.",
               "category": "Special Ability"
             }
@@ -54524,66 +54524,6 @@
     ],
     "shortDescription": "Enhancement bonus to land speed: +10 ft. at 3rd level, +10 ft. more every three levels (+60 ft. at 18th). Lost when wearing any armor or carrying a medium or heavy load.",
     "text": "Enhancement bonus to land speed: +10 ft. at 3rd level, +10 ft. more every three levels (+60 ft. at 18th). Lost when wearing any armor or carrying a medium or heavy load.",
-    "tags": [
-      "class-ability"
-    ]
-  },
-  {
-    "schemaVersion": 3,
-    "id": "cab-dwarven-defender-trap-sense",
-    "blueprint": "feat",
-    "name": "Trap Sense (Ex)",
-    "type": "ClassAbility",
-    "category": "Class Feature",
-    "source": "SRD / DMG",
-    "featKind": "classAbility",
-    "abilityType": "ex",
-    "associations": [
-      [
-        "Dwarven Defender",
-        4
-      ]
-    ],
-    "effects": [
-      {
-        "id": "ef-ddts",
-        "type": "when",
-        "flow": "while",
-        "branches": [
-          {
-            "id": "ef-ddts-br",
-            "condKind": "situational",
-            "condText": "vs. Traps",
-            "effects": [
-              {
-                "id": "ef-ddts-ref",
-                "type": "stat",
-                "targets": [
-                  "save.ref"
-                ],
-                "mode": "formula",
-                "value": 0,
-                "formula": "@classes.dwarven_defender.level >= 8 ? 2 : 1",
-                "btype": "Untyped"
-              },
-              {
-                "id": "ef-ddts-ac",
-                "type": "stat",
-                "targets": [
-                  "ac.dodge"
-                ],
-                "mode": "formula",
-                "value": 0,
-                "formula": "@classes.dwarven_defender.level >= 8 ? 2 : 1",
-                "btype": "Dodge"
-              }
-            ]
-          }
-        ]
-      }
-    ],
-    "shortDescription": "+1 bonus on Reflex saves made to avoid traps and a +1 dodge bonus to AC against attacks made by traps at 4th level; +2 at 8th level. Stacks with Trap Sense from other classes.",
-    "text": "+1 bonus on Reflex saves made to avoid traps and a +1 dodge bonus to AC against attacks made by traps at 4th level; +2 at 8th level. Stacks with Trap Sense from other classes.",
     "tags": [
       "class-ability"
     ]

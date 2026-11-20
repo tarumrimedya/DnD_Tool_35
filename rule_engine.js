@@ -4139,6 +4139,7 @@ const RuleEngine = {
         if (stepVal !== 0) {
           weaponDieSteps.push({
             value: stepVal,
+            appliesTo: mod.appliesTo || null,
             weaponFilter: mod.weaponFilter || null,
             entryChoice: this.extractEntryChoice(sourceEntry) || null,
             source: sourceEntry.name || sourceEntry.id || 'Die Step',
@@ -11020,7 +11021,7 @@ const RuleEngine = {
         ...(Array.isArray(activeMode.tacticalBadges) ? activeMode.tacticalBadges : []),
         ...(activeModeV3 && Array.isArray(activeModeV3.tacticalBadges) ? activeModeV3.tacticalBadges : [])
       ]
-    } : v2Weapon;
+    } : (mergedV2DamageParts !== v2Weapon.damageParts ? { ...v2Weapon, damageParts: mergedV2DamageParts } : v2Weapon);
 
     const isTwoHand = this.isTwoHandedWeapon(weapon);
     let resolvedGrip = options.grip || weapon.grip || (isTwoHand ? '2-Hand' : '1-Hand');
@@ -11848,9 +11849,14 @@ const RuleEngine = {
     const chargeMultiplier = chargeData.multiplier || 1;
     const chargeFlatDamage = netFlatDamage * chargeMultiplier;
 
-    // 3. Weapon Size Steps (Enlarge Person, Lead Blades, Greater Mighty Wallop, etc.)
-    let effectiveSteps = Number(options.sizeSteps || weapon.sizeSteps || 0);
-    const sizeBuffSources = [];
+    // 3. Weapon Size Steps (Enlarge Person, Lead Blades, Greater Mighty Wallop, Improved Natural Attack, etc.)
+    // D&D 3.5e RAW: Actual creature size changes stack with at most one effective/virtual size increase;
+    // multiple effective die-step increases do not stack with each other (resolved via ruleset.resolveWeaponDamageDieSteps).
+    const baseSizeStepOpt = Number(options.sizeSteps || weapon.sizeSteps || 0);
+    const dieStepEntries = [];
+    if (baseSizeStepOpt !== 0) {
+      dieStepEntries.push({ category: 'effective', value: baseSizeStepOpt, source: `Weapon Size Step (${baseSizeStepOpt > 0 ? '+' : ''}${baseSizeStepOpt})` });
+    }
 
     if (Array.isArray(character?.buffs)) {
       character.buffs.forEach(b => {
@@ -11876,42 +11882,81 @@ const RuleEngine = {
         const isCreatureSizeBuff = (b.targetType === 'creature' || b.scope === 'creature' || sm?.targetType === 'creature' || (b.name && /enlarge person|righteous might|expansion/i.test(b.name))) && buffSteps !== 0;
 
         if (matchesWeapon && buffSteps !== 0) {
-          effectiveSteps += buffSteps;
-          sizeBuffSources.push(`${b.name} (${buffSteps > 0 ? '+' : ''}${buffSteps} size step${Math.abs(buffSteps) === 1 ? '' : 's'})`);
+          dieStepEntries.push({
+            category: 'effective',
+            value: buffSteps,
+            source: `${b.name} (${buffSteps > 0 ? '+' : ''}${buffSteps} size step${Math.abs(buffSteps) === 1 ? '' : 's'})`
+          });
         } else if (isCreatureSizeBuff) {
-          effectiveSteps += buffSteps;
-          sizeBuffSources.push(`${b.name} (${buffSteps > 0 ? '+' : ''}${buffSteps} size category)`);
+          dieStepEntries.push({
+            category: 'actual',
+            value: buffSteps,
+            source: `${b.name} (${buffSteps > 0 ? '+' : ''}${buffSteps} size category)`
+          });
         }
       });
     }
 
-    // 3b. Data-driven V3 `weapon.damageDieStep` (e.g. Improved Natural Attack — strictly natural weapons only, never manufactured/unarmed)
-    const isNaturalForDieStep = Boolean(weapon.isNaturalWeapon || weapon.isNatural || String(weapon.category || '').toLowerCase() === 'natural');
+    // 3b. Data-driven V3 `weapon.damageDieStep` (weapon scope comes from entry's `appliesTo` + `weaponFilter`, never hardcoded in engine)
+    const wepIdLow = String(weapon.id || '').trim().toLowerCase();
+    const wepNameSlug = String(weapon.name || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const isUnarmedForDieStep = wepIdLow === 'unarmed-strike' || wepIdLow === 'natural::unarmed-strike' || wepNameSlug === 'unarmed-strike';
+    const isNaturalForDieStep = Boolean(weapon.isNaturalWeapon || weapon.isNatural || String(weapon.category || '').toLowerCase() === 'natural') && !isUnarmedForDieStep;
     const dieStepList = Array.isArray(character?.legoEvaluation?.weaponDieSteps)
       ? character.legoEvaluation.weaponDieSteps
       : (Array.isArray(character?.weaponDieSteps) ? character.weaponDieSteps : []);
-    if (isNaturalForDieStep && dieStepList.length > 0) {
-      const wepIdLow = String(weapon.id || '').trim().toLowerCase();
-      const wepNameSlug = String(weapon.name || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    if (dieStepList.length > 0) {
       dieStepList.forEach(ds => {
         if (!ds || !ds.value) return;
+        const rawScopes = Array.isArray(ds.appliesTo) ? ds.appliesTo
+          : (typeof ds.appliesTo === 'string' ? ds.appliesTo.split(',') : []);
+        const scopes = rawScopes.map(s => String(s || '').trim().toLowerCase()).filter(Boolean);
+        if (scopes.length > 0 && !scopes.includes('all')) {
+          const scopeMatched = scopes.some(sc => {
+            if (sc === 'natural') return isNaturalForDieStep;
+            if (sc === 'unarmed') return isUnarmedForDieStep;
+            if (sc === 'manufactured') return !isNaturalForDieStep && !isUnarmedForDieStep;
+            if (sc === 'melee') return !isRangedWep;
+            if (sc === 'ranged') return isRangedWep;
+            return false;
+          });
+          if (!scopeMatched) return;
+        }
         const rawFilter = String(ds.weaponFilter || '').trim();
-        const resolvedFilter = /^@choice$/i.test(rawFilter)
-          ? String(ds.entryChoice || '').trim()
-          : rawFilter;
-        if (!resolvedFilter) return;
-        const filtLow = resolvedFilter.toLowerCase();
-        if (filtLow === 'unarmed strike' || filtLow === 'unarmed-strike' || filtLow === 'natural::unarmed-strike') return;
-        const filtSlug = filtLow.replace(/^natural::/, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-        const canonicalNatId = 'natural::' + filtSlug;
-        const matchesNat = (wepIdLow && (wepIdLow === filtLow || wepIdLow === canonicalNatId))
-          || (wepNameSlug && filtSlug && wepNameSlug === filtSlug);
-        if (matchesNat) {
-          effectiveSteps += ds.value;
-          sizeBuffSources.push(`${ds.source} (${ds.value > 0 ? '+' : ''}${ds.value} die step)`);
+        let matchesWeaponFilter = true;
+        if (rawFilter) {
+          const resolvedFilter = /^@choice$/i.test(rawFilter)
+            ? String(ds.entryChoice || '').trim()
+            : rawFilter;
+          if (!resolvedFilter) {
+            matchesWeaponFilter = false;
+          } else {
+            const filtLow = resolvedFilter.toLowerCase();
+            const filtSlug = filtLow.replace(/^natural::/, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+            const canonicalNatId = 'natural::' + filtSlug;
+            matchesWeaponFilter = (wepIdLow && (wepIdLow === filtLow || wepIdLow === canonicalNatId))
+              || (wepNameSlug && filtSlug && wepNameSlug === filtSlug);
+          }
+        }
+        if (matchesWeaponFilter) {
+          dieStepEntries.push({
+            category: String(ds.btype || '').toLowerCase() === 'size' ? 'actual' : 'effective',
+            value: ds.value,
+            source: `${ds.source} (${ds.value > 0 ? '+' : ''}${ds.value} die step)`
+          });
         }
       });
     }
+
+    const activeRulesetForSteps = typeof this.getActiveRuleset === 'function' ? this.getActiveRuleset() : null;
+    const resolvedDieSteps = (activeRulesetForSteps && typeof activeRulesetForSteps.resolveWeaponDamageDieSteps === 'function')
+      ? activeRulesetForSteps.resolveWeaponDamageDieSteps(dieStepEntries)
+      : (() => {
+        const sum = dieStepEntries.reduce((acc, e) => acc + (Math.floor(Number(e.value) || 0)), 0);
+        return { total: sum, actual: 0, effective: sum, sources: dieStepEntries.map(e => e.source).filter(Boolean) };
+      })();
+    const effectiveSteps = resolvedDieSteps.total;
+    const sizeBuffSources = resolvedDieSteps.sources;
 
     // 4. Structured V2 damageParts Evaluation (Base Weapon + Enhancements + Active Buff DamageParts)
     let rawParts = (Array.isArray(weapon.damageParts) && weapon.damageParts.length > 0)
@@ -11986,7 +12031,7 @@ const RuleEngine = {
         : (Number(this.evaluateFormula(part.bonus || 0, evalCtx)) || 0);
       const condStr = (!isPrimary && part.condition) ? String(part.condition) : '';
       const srcStr = part.source || (isPrimary ? (weapon.name || 'Base Weapon') : 'Extra');
-      const riderId = condStr ? `rider::${slugRider(srcStr)}::${slugRider(condStr)}::${slugRider(steppedDice)}` : null;
+      const riderId = condStr ? `rider::${slugRider(srcStr)}::${slugRider(condStr)}::${slugRider(part.type || '')}${part.onCritOnly ? '::crit' : ''}` : null;
       return {
         dice: steppedDice,
         rawDice: rawDiceStr,
@@ -12004,12 +12049,14 @@ const RuleEngine = {
 
     const primaryPart = evaluatedDamageParts[0] || { dice: '1d8', rawDice: '1d8', bonus: netFlatDamage, type: 'Slashing' };
     // Conditional riders (condition text such as "vs. undead") are situational: kept out of always-on totals
-    // unless explicitly toggled in `options.activeRiders` (session-only UI toggle; `onCritOnly` stays excluded).
-    const situationalDamageParts = evaluatedDamageParts.filter(p => p.condition && !p.onCritOnly);
-    const activeSituationalDamageParts = situationalDamageParts.filter(p => p.active);
+    // unless explicitly toggled in `options.activeRiders` (session-only UI toggle).
+    // Conditional `onCritOnly` riders stay out of normal hits and join `critTerms` only when toggled active.
+    const situationalDamageParts = evaluatedDamageParts.filter(p => Boolean(p.condition));
+    const activeSituationalDamageParts = situationalDamageParts.filter(p => p.active && !p.onCritOnly);
+    const activeSituationalCritParts = situationalDamageParts.filter(p => p.active && p.onCritOnly);
     const normalDamageParts = evaluatedDamageParts.filter(p => !p.onCritOnly && !p.condition);
     const extraDamageParts = normalDamageParts.slice(1);
-    const critOnlyDamageParts = evaluatedDamageParts.filter(p => p.onCritOnly && !p.condition);
+    const critOnlyDamageParts = [...evaluatedDamageParts.filter(p => p.onCritOnly && !p.condition), ...activeSituationalCritParts];
 
     // Build ready-to-roll 3D Dice Engine formulas (normal & critical), including toggled situational riders
     const primaryFormula = `${primaryPart.dice}${netFlatDamage !== 0 ? (netFlatDamage > 0 ? `+${netFlatDamage}` : `${netFlatDamage}`) : ''}`;

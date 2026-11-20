@@ -420,6 +420,30 @@
         if (v < minNeg) minNeg = v;
       });
       return maxPos + minNeg;
+    },
+    // Official D&D 3.5e RAW (FAQ / Rules Compendium p. 151):
+    // One actual creature size change (e.g. Enlarge Person, Righteous Might) stacks with at most
+    // one effective/virtual weapon size increase (e.g. Improved Natural Attack, Lead Blades, Greater Mighty Wallop).
+    // Multiple effective size/die-step increases do not stack with each other (take highest positive + lowest negative).
+    resolveWeaponDamageDieSteps(entries) {
+      if (!Array.isArray(entries) || entries.length === 0) {
+        return { total: 0, actual: 0, effective: 0, sources: [] };
+      }
+      const actualVals = [];
+      const effectiveVals = [];
+      const sources = [];
+      entries.forEach((entry) => {
+        if (!entry) return;
+        const val = Math.floor(Number(entry.value) || 0);
+        if (val === 0) return;
+        const cat = entry.category === 'actual' ? 'actual' : 'effective';
+        if (cat === 'actual') actualVals.push(val);
+        else effectiveVals.push(val);
+        if (entry.source) sources.push(entry.source);
+      });
+      const actual = this.resolveEffectiveSizeScope(actualVals);
+      const effective = this.resolveEffectiveSizeScope(effectiveVals);
+      return { total: actual + effective, actual, effective, sources };
     }
   };
 

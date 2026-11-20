@@ -7046,6 +7046,121 @@ function runDeriveSheetTests() {
     } finally {
       RuleEngine.computeFeatureRankMap = origComputeRankMap;
     }
+
+    // 13. Sprint E3c (M3): weapon.damageDieStep data-driven appliesTo + RAW stacking (actual + max effective)
+    const inaStepFeat = {
+      id: 'feat-improved-natural-attack-no-weapon-set',
+      type: 'Feat',
+      name: 'Improved Natural Attack (Claw)',
+      choice: 'Claw',
+      effects: [{ id: 'ef-ina', type: 'stat', targets: ['weapon.damageDieStep'], mode: 'flat', value: 1, btype: 'Untyped', appliesTo: ['natural'], weaponFilter: '@Choice' }]
+    };
+    const mfgStepFeat = {
+      id: 'feat-custom-mfg-step',
+      type: 'Feat',
+      name: 'Heavy Blade Mastery',
+      effects: [{ id: 'ef-mfg', type: 'stat', targets: ['weapon.damageDieStep'], mode: 'flat', value: 1, btype: 'Untyped', appliesTo: ['manufactured'], weaponFilter: 'Longsword' }]
+    };
+    const secondEffStepFeat = {
+      id: 'feat-second-eff-step',
+      type: 'Feat',
+      name: 'Greater Claw Step',
+      effects: [{ id: 'ef-eff2', type: 'stat', targets: ['weapon.damageDieStep'], mode: 'flat', value: 2, btype: 'Untyped', appliesTo: ['natural'], weaponFilter: 'Claw' }]
+    };
+    const e3cChar = {
+      name: 'E3c Stacking Tester',
+      level: 6,
+      bab: 6,
+      size: 'Medium',
+      abilities: { str: 14, dex: 14, con: 12, int: 10, wis: 10, cha: 10 },
+      feats: [inaStepFeat, mfgStepFeat, secondEffStepFeat],
+      buffs: [
+        { id: 'buff-enlarge', name: 'Enlarge Person', active: true, targetType: 'creature', sizeSteps: 1 }
+      ]
+    };
+    RuleEngine.recalculateCharacter(e3cChar);
+    const clawWep = { id: 'natural::claw', name: 'Claw', category: 'Natural', isNaturalWeapon: true, dice: '1d6', dmgType: 'Slashing' };
+    const unarmedWep = { id: 'natural::unarmed-strike', name: 'Unarmed Strike', category: 'Natural', isNaturalWeapon: true, dice: '1d3', dmgType: 'Bludgeoning' };
+    const longswordWep = { id: 'wep-longsword', name: 'Longsword', category: 'Martial', dice: '1d8', dmgType: 'Slashing' };
+    // Enlarge Person (actual +1) + max(INA +1, Greater Claw Step +2) = +3 steps: 1d6 -> 1d8 -> 2d6 -> 3d6
+    const clawEval = RuleEngine.evaluateWeaponAttack(e3cChar, clawWep, { grip: '1-Hand' });
+    // Unarmed Strike gets Enlarge Person (+1: 1d3 -> 1d4), NOT INA (appliesTo:['natural'] excludes unarmed)
+    const unarmedEval = RuleEngine.evaluateWeaponAttack(e3cChar, unarmedWep, { grip: '1-Hand' });
+    // Longsword gets Enlarge Person (+1) + Heavy Blade Mastery (appliesTo:['manufactured'] +1) = +2 steps: 1d8 -> 2d6 -> 3d6
+    const lsEval = RuleEngine.evaluateWeaponAttack(e3cChar, longswordWep, { grip: '1-Hand' });
+    check(
+      'E3c.1 M3: weapon.damageDieStep data-driven appliesTo + RAW stacking (actual + max effective, no double effective)',
+      clawEval.baseDice === '3d6' && unarmedEval.baseDice === '1d4' && lsEval.baseDice === '3d6',
+      JSON.stringify({ claw: clawEval.baseDice, unarmed: unarmedEval.baseDice, longsword: lsEval.baseDice })
+    );
+
+    // 14. Sprint E3c (M4 + Rider Cleanups): formula-independent riderId, ranged extra+situational riders, conditional onCritOnly
+    const rangedBaneBow = {
+      id: 'wep-longbow-flaming-bane',
+      schemaVersion: 3,
+      name: 'Flaming Undead-Bane Longbow',
+      grip: 'Ranged',
+      isRanged: true,
+      dice: '1d8',
+      critMin: 20,
+      critMult: 3,
+      dmgType: 'Piercing',
+      effects: [
+        { id: 'ef-flaming', type: 'roll', kind: 'Damage', dice: '1d6', dmgType: 'Fire', source: 'Flaming', multiplyOnCrit: false },
+        {
+          id: 'ef-bane-when', type: 'when', flow: 'while',
+          branches: [
+            {
+              id: 'br-bane', condKind: 'situational', condText: 'vs. Undead',
+              effects: [
+                { id: 'ef-bane-dmg', type: 'roll', kind: 'Damage', dice: '2d6', dmgType: 'Untyped', source: 'Bane', multiplyOnCrit: false },
+                { id: 'ef-bane-burst', type: 'roll', kind: 'Damage', dice: '1d10', dmgType: 'Fire', source: 'Undead Burst', crit: 'onCritOnly' }
+              ]
+            }
+          ]
+        }
+      ]
+    };
+    const bowOff = RuleEngine.evaluateWeaponAttack(e3cChar, rangedBaneBow, { grip: 'Ranged', activeRiders: [] });
+    const baneRider = (bowOff.situationalDamageParts || []).find(p => p.source === 'Bane');
+    const burstRider = (bowOff.situationalDamageParts || []).find(p => p.source === 'Undead Burst' && p.onCritOnly);
+    const bowOn = RuleEngine.evaluateWeaponAttack(e3cChar, rangedBaneBow, {
+      grip: 'Ranged',
+      activeRiders: [baneRider?.riderId, burstRider?.riderId].filter(Boolean)
+    });
+    check(
+      'E3c.2 M4 & Riders: ranged extraDamageParts + situational toggle + conditional onCritOnly + formula-independent riderId',
+      Boolean(baneRider && !baneRider.riderId.includes('2d6')) &&
+      Boolean(burstRider && burstRider.onCritOnly) &&
+      bowOff.extraDamageParts.length === 1 &&
+      bowOff.activeSituationalDamageParts.length === 0 &&
+      bowOff.diceFormula === '2d6 + 1d6' &&
+      bowOn.activeSituationalDamageParts.length === 1 &&
+      bowOn.diceFormula === '2d6 + 1d6 + 2d6' &&
+      !bowOn.diceFormula.includes('1d10') &&
+      bowOn.critDiceFormula.includes('1d10'),
+      JSON.stringify({
+        baneId: baneRider?.riderId,
+        burstId: burstRider?.riderId,
+        offDmg: bowOff.diceFormula,
+        onDmg: bowOn.diceFormula,
+        onCrit: bowOn.critDiceFormula
+      })
+    );
+
+    // 15. Sprint E3c: Dwarven Defender Trap Sense pools with Rogue Trap Sense via cab-trap-sense
+    const ddPoolChar = {
+      name: 'Rogue 3 / Dwarven Defender 4',
+      level: 7,
+      classLevels: { Rogue: 3, 'Dwarven Defender': 4 },
+      abilities: { str: 14, dex: 14, con: 16, int: 10, wis: 10, cha: 10 }
+    };
+    const ddRankMap = RuleEngine.computeFeatureRankMap(ddPoolChar);
+    check(
+      'E3c.3 Trap Sense pooling: Rogue 3 (+1) + Dwarven Defender 4 (+1) -> cab-trap-sense rank 2',
+      ddRankMap['cab-trap-sense'] === 2,
+      JSON.stringify(ddRankMap)
+    );
   }
 
   CharStore.clearHistory();

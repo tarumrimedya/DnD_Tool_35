@@ -4308,17 +4308,26 @@
       renderWeaponSetsUI();
       if (typeof renderAttackActionButtons === 'function') renderAttackActionButtons();
     }
+    function getRiderWeaponKey(wep, fallbackName, isOffHand) {
+      const base = String((wep && (wep.id || wep.name)) || fallbackName || '').trim();
+      if (!base) return '';
+      const isDouble = Boolean(wep && typeof RuleEngine !== 'undefined' && RuleEngine.isDoubleWeapon && RuleEngine.isDoubleWeapon(wep));
+      return (isDouble && isOffHand) ? `${base}::off` : base;
+    }
     function renderSituationalRiderPillsHtml(stats) {
       const list = stats && Array.isArray(stats.situationalDamageParts) ? stats.situationalDamageParts : [];
       if (list.length === 0) return '';
       const wKeyAttr = UI.escapeAttr(stats.riderWeaponKey || '');
       const pills = list.map(p => {
         const isOn = !!p.active;
-        const lbl = `+${p.dice} ${p.condition || p.source || ''}`.trim();
+        const critSuffix = p.onCritOnly ? ' (on crit)' : '';
+        const lbl = `+${p.dice} ${p.condition || p.source || ''}${critSuffix}`.trim();
         const cls = isOn
           ? 'text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-500 text-slate-950 border border-amber-400 transition cursor-pointer'
           : 'text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-slate-800/80 text-slate-300 border border-slate-600/70 hover:border-amber-400/70 hover:text-amber-200 transition cursor-pointer';
-        const critNote = p.multiplyOnCrit ? 'multiplies on critical hit' : 'does not multiply on critical hit';
+        const critNote = p.onCritOnly
+          ? 'applies only on critical hit'
+          : (p.multiplyOnCrit ? 'multiplies on critical hit' : 'does not multiply on critical hit');
         return `<button type="button" data-action="combat:toggle-situational-rider" data-weapon-key="${wKeyAttr}" data-rider-id="${UI.escapeAttr(p.riderId || '')}" class="${cls}" title="${UI.escapeAttr((p.source || 'Situational Rider') + ' — toggleable (' + critNote + ')')}">${isOn ? '✓ ' : '+ '}${UI.escapeHtml(lbl)}</button>`;
       }).join('');
       return `<div class="flex items-center gap-1 flex-wrap mt-1">${pills}</div>`;
@@ -4463,16 +4472,25 @@
 
         if (typeof RuleEngine !== 'undefined' && RuleEngine.evaluateWeaponAttack) {
           try {
+            const riderWepKey = getRiderWeaponKey(wep, wepName, isOffHand);
             const evalRes = RuleEngine.evaluateWeaponAttack(character, wep, {
               grip: isOffHand ? 'Off-Hand' : 'Ranged',
               customModifiers: activeRangedMods,
-              manyshot: !!t.manyshot
+              manyshot: !!t.manyshot,
+              activeRiders: getSessionActiveRiders(riderWepKey)
             });
 
             const activeDiceMods = activeRangedMods.filter(m => m.dice);
             let extraDiceStr = '';
             if (activeDiceMods.length > 0) {
               extraDiceStr = ' + ' + activeDiceMods.map(m => m.dice).join(' + ');
+            }
+            const rolledExtra = [
+              ...(Array.isArray(evalRes.extraDamageParts) ? evalRes.extraDamageParts : []),
+              ...(Array.isArray(evalRes.activeSituationalDamageParts) ? evalRes.activeSituationalDamageParts : [])
+            ];
+            if (rolledExtra.length > 0) {
+              extraDiceStr += ' + ' + rolledExtra.map(ep => `${ep.dice} (${ep.source || ep.type || 'Extra'})`).join(' + ');
             }
 
             const flatDmg = evalRes.netFlatDamage;
@@ -4490,7 +4508,11 @@
               finesseMod: evalRes.attackStatMod,
               isFinesse: false,
               isWeapon: true,
-              hasExtraMods: flatDmg !== 0 || extraDiceStr !== '' || activeRangedMods.length > 0
+              hasExtraMods: flatDmg !== 0 || extraDiceStr !== '' || activeRangedMods.length > 0 || rolledExtra.length > 0,
+              situationalDamageParts: evalRes.situationalDamageParts || [],
+              riderWeaponKey: riderWepKey,
+              keen: !!wep.keen,
+              enhancementBonus: Number(wep.enhancementBonus) || 0
             };
           } catch (e) {
             console.warn('Ranged evaluateWeaponAttack error:', e);
@@ -4513,7 +4535,7 @@
         return true;
       });
 
-          const riderWepKey = wep.id || wep.name || wepName;
+          const riderWepKey = getRiderWeaponKey(wep, wepName, isOffHand);
           const evalRes = RuleEngine.evaluateWeaponAttack(character, wep, {
             grip: isOffHand ? 'Off-Hand' : grip,
             powerAttack: isOffHand ? 0 : paVal,
@@ -4560,7 +4582,6 @@
             isFinesse: evalRes.attackStatName && evalRes.attackStatName.includes('Weapon Finesse'),
             isWeapon: true,
             hasExtraMods,
-            elementalMods: wep.elementalMods || [],
             situationalDamageParts: evalRes.situationalDamageParts || [],
             riderWeaponKey: riderWepKey,
             keen: !!wep.keen,
@@ -6138,7 +6159,6 @@
         dmgType: wepDmgType,
         bonusType: 'enhancement',
         tags: item.tags || [],
-        elementalMods: rollEffects.filter((sp, idx) => idx > 0 || (item.weapon?.damageDice && sp.dice !== item.weapon.damageDice)).map(sp => ({ name: sp.source || sp.dmgType, dice: sp.dice, type: sp.dmgType, condition: sp.condition || '' })),
         keen: Boolean((item.ruleFlags && item.ruleFlags.keen) || (Array.isArray(item.enhancements) && item.enhancements.some(e => (typeof e === 'string' && e.toLowerCase().includes('keen')) || (e && e.name && e.name.toLowerCase().includes('keen')))))
       };
 
@@ -8052,6 +8072,20 @@
           critMult = 2;
         }
 
+        let engineRangedEval = null;
+        if (typeof RuleEngine !== 'undefined' && RuleEngine.evaluateWeaponAttack) {
+          try {
+            const rangedRiderKey = getRiderWeaponKey(activeRangedWep, activeRangedWep.name, false);
+            engineRangedEval = RuleEngine.evaluateWeaponAttack(character, activeRangedWep, {
+              grip: 'Ranged',
+              manyshot: !!(t.manyshot && hasMany),
+              activeRiders: getSessionActiveRiders(rangedRiderKey)
+            });
+          } catch (e) {
+            if (typeof reportError === 'function') reportError('char_combat.getAttackChain.rangedEval', e);
+          }
+        }
+
         const rangedEval = {
           critMin: critMin,
           critMult: critMult,
@@ -8060,7 +8094,11 @@
           netFlatDamage: flatDmg,
           chargeFlatDamage: flatDmg,
           damageType: arrowType,
-          extraDice: arrowExtraDice
+          extraDice: arrowExtraDice,
+          extraDamageParts: Array.isArray(engineRangedEval?.extraDamageParts) ? engineRangedEval.extraDamageParts : [],
+          activeSituationalDamageParts: Array.isArray(engineRangedEval?.activeSituationalDamageParts) ? engineRangedEval.activeSituationalDamageParts : [],
+          situationalDamageParts: Array.isArray(engineRangedEval?.situationalDamageParts) ? engineRangedEval.situationalDamageParts : [],
+          critOnlyDamageParts: Array.isArray(engineRangedEval?.critOnlyDamageParts) ? engineRangedEval.critOnlyDamageParts : []
         };
 
         const firstAtk = bab + dexMod + arrowAtk + netRangedMod;
@@ -8238,7 +8276,7 @@
         higherGround: hg,
         activeStance: character.activeStance || 'None',
         customModifiers: nonChainMods,
-        activeRiders: getSessionActiveRiders(wep.id || wep.name)
+        activeRiders: getSessionActiveRiders(getRiderWeaponKey(wep, wep.name, false))
       });
 
       const stripFeatPrefix = (rawStr) => String(rawStr || '')
@@ -8332,7 +8370,7 @@
           higherGround: hg,
           activeStance: character.activeStance || 'None',
           customModifiers: nonChainMods,
-          activeRiders: getSessionActiveRiders(offHandWep.id || offHandWep.name)
+          activeRiders: getSessionActiveRiders(getRiderWeaponKey(offHandWep, offHandWep.name, true))
         });
       }
 

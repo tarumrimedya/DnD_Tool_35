@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
   "version": "3.0.0",
-  "compendiumHash": "5436173741da3485",
+  "compendiumHash": "6033f6de6c4f244d",
   "generatedAt": "2026-11-15T19:43:51.694Z",
   "totalEntries": 7988,
   "chunks": {
@@ -14,13 +14,13 @@
     "srd_feats.json": {
       "count": 468,
       "bytes": 859917,
-      "hash": "77ea1d2d02a23dd1",
+      "hash": "aecf443cbf2ef85f",
       "eagerLoad": true
     },
     "srd_classes_races.json": {
-      "count": 327,
+      "count": 326,
       "bytes": 1611663,
-      "hash": "b62e50111b61b750",
+      "hash": "146a5f4fc74e5f5a",
       "eagerLoad": true
     },
     "srd_combat_rules.json": {
