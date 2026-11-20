@@ -56,6 +56,7 @@ const CORE_FILES = [
   'login.html',
   'forge_sandbox.html',
   'forge_sandbox.js',
+  'persona_studio.html',
   'rulesets/dnd35.js',
   'rule_engine.js',
   'char_store.js',
@@ -490,7 +491,8 @@ function main() {
     'ai_assistant.js':    { inlineEvents: 0,   windowAssigns: 0 },
     'dice3d.js':          { inlineEvents: 0,   windowAssigns: 1 },
     'forge_sandbox.html': { inlineEvents: 0,   windowAssigns: 0 },
-    'forge_sandbox.js':   { inlineEvents: 0,   windowAssigns: 1 }
+    'forge_sandbox.js':   { inlineEvents: 0,   windowAssigns: 1 },
+    'persona_studio.html':{ inlineEvents: 0,   windowAssigns: 0 }
   };
   const DEFAULT_NEW_FILE_CAP = { inlineEvents: 0, windowAssigns: 2 };
   const inlineEventRatchetRegex = /\bon(click|dblclick|change|input|keydown|keyup|keypress|submit|focus|blur|mousedown|mouseup|mouseover|mouseout|mouseenter|mouseleave|pointerdown|pointerup|touchstart|touchend|dragstart|dragover|dragleave|drop|wheel|scroll|contextmenu)\s*=/gi;
