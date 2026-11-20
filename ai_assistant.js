@@ -1391,9 +1391,15 @@
       <linearGradient id="wood3d" x1="26" y1="50" x2="66" y2="190" gradientUnits="userSpaceOnUse">
         <stop offset="0%" stop-color="#dfb88c"/><stop offset="32%" stop-color="#a87244"/><stop offset="72%" stop-color="#754926"/><stop offset="100%" stop-color="#472a13"/>
       </linearGradient>
-      <linearGradient id="branch3d" x1="104" y1="78" x2="216" y2="96" gradientUnits="userSpaceOnUse">
-        <stop offset="0%" stop-color="#5c3618"/><stop offset="55%" stop-color="#854d24"/><stop offset="100%" stop-color="#45240d"/>
+      <linearGradient id="branch3d" x1="112" y1="55" x2="176" y2="65" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stop-color="#6e401d"/><stop offset="50%" stop-color="#9a5c2d"/><stop offset="100%" stop-color="#4d2910"/>
       </linearGradient>
+      <linearGradient id="perchPole3d" x1="141" y1="64" x2="147" y2="64" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stop-color="#475569"/><stop offset="45%" stop-color="#1e293b"/><stop offset="100%" stop-color="#090d16"/>
+      </linearGradient>
+      <radialGradient id="perchBase3d" cx="42%" cy="35%" r="65%">
+        <stop offset="0%" stop-color="#64748b"/><stop offset="55%" stop-color="#334155"/><stop offset="100%" stop-color="#0f172a"/>
+      </radialGradient>
       <radialGradient id="orb3d" cx="36%" cy="32%" r="64%">
         <stop offset="0%" stop-color="#ffffff"/><stop offset="38%" stop-color="#7dd3fc"/><stop offset="78%" stop-color="#0284c7"/><stop offset="100%" stop-color="#1e3a8a"/>
       </radialGradient>
@@ -1421,13 +1427,23 @@
       <clipPath id="oHeadClip"><rect x="53" y="49" width="94" height="68" rx="34"/></clipPath>
     </defs>
 
-    <g class="back-perch-scene" opacity="0.96">
-      <path d="M98 73 C122 66 150 60 194 59" stroke="#140903" stroke-opacity="0.45" stroke-width="8.8" stroke-linecap="round"/>
-      <path d="M98 70.5 C122 63.5 150 57.5 194 56.5" stroke="url(#branch3d)" stroke-width="7.5" stroke-linecap="round"/>
-      <path d="M104 68.5 C126 62 152 56.2 189 55.2" stroke="#d69e66" stroke-opacity="0.32" stroke-width="1.6" stroke-linecap="round"/>
-      <path d="M178 57 C184 50 190 46 198 44" stroke="url(#branch3d)" stroke-width="3.4" stroke-linecap="round"/>
-      <path d="M194 43 C198 36 206 37 204 45 C201 48 196 47 194 43 Z" fill="#10b981"/>
-      <path d="M192 56.5 C199 54 203 60 198 64 C194 64 191 61 192 56.5 Z" fill="#059669"/>
+    <g class="back-perch-scene" opacity="0.97">
+      <ellipse cx="144" cy="185.5" rx="27" ry="5.2" fill="#020617" fill-opacity="0.52"/>
+      <ellipse cx="144" cy="183.8" rx="24" ry="4.5" fill="#0f172a"/>
+      <ellipse cx="144" cy="182.4" rx="24" ry="4.2" fill="url(#perchBase3d)"/>
+      <rect x="140.6" y="172" width="6.8" height="10.8" rx="1.8" fill="#0f172a"/>
+      <ellipse cx="144" cy="172.3" rx="4" ry="1.2" fill="#d97706"/>
+      <rect x="141.9" y="63" width="4.2" height="110" fill="url(#perchPole3d)"/>
+      <line x1="143" y1="65" x2="143" y2="171" stroke="#cbd5e1" stroke-opacity="0.28" stroke-width="1"/>
+      <rect x="140.9" y="99" width="6.2" height="2.4" rx="1.1" fill="#b45309"/>
+      <rect x="140.9" y="136" width="6.2" height="2.4" rx="1.1" fill="#b45309"/>
+      <rect x="139.6" y="62.2" width="8.8" height="5.8" rx="1.6" fill="#1e293b"/>
+      <rect x="134.8" y="64" width="5.2" height="2.2" rx="1" fill="#334155"/>
+      <rect x="133.2" y="62.9" width="2.4" height="4.4" rx="1" fill="#f59e0b"/>
+      <path d="M114 61.6 C125 61 135 62 144 61.6 C154 61.1 164 61.9 174 61.4" stroke="#140903" stroke-opacity="0.46" stroke-width="8.6" stroke-linecap="round"/>
+      <path d="M114 59.6 C125 59 135 60.1 144 59.6 C154 59 164 60 174 59.4" stroke="url(#branch3d)" stroke-width="8.2" stroke-linecap="round"/>
+      <path d="M116 57.5 C126 57 136 57.9 144 57.5 C154 57 163 57.8 172 57.3" stroke="#eab68a" stroke-opacity="0.38" stroke-width="1.7" stroke-linecap="round"/>
+      <ellipse cx="174.5" cy="59.4" rx="2" ry="3.7" fill="#a87244"/>
 
       <g class="owl-perch-root" transform="translate(95, -21) scale(0.49)">
         <g class="owl-whole">
