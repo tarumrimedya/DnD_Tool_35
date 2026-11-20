@@ -10919,15 +10919,40 @@
     }
 
     // ====================================================
-    // 🐾 COMPANION & MOUNT COMBAT (Madde D)
+    // 🐾 COMPANION & MOUNT COMBAT (ADR-058 Faz 1b)
     // ====================================================
+    function getActiveCombatCompanion() {
+      if (!character) return null;
+      if (window.CharStore && typeof window.CharStore.getActiveCompanion === 'function') {
+        return window.CharStore.getActiveCompanion(character);
+      }
+      const list = Array.isArray(character.companions) ? character.companions.filter(c => c && c.baseMonsterId) : [];
+      if (list.length === 0) return null;
+      return list.find(c => String(c.id) === String(character.activeCompanionId)) || list[0];
+    }
+
+    function getActiveCombatCompanionStats() {
+      const activeComp = getActiveCombatCompanion();
+      if (!activeComp) return null;
+      const sheetList = window.CharStore?.getSheet?.()?.companions?.list;
+      if (Array.isArray(sheetList)) {
+        const hit = sheetList.find(s => String(s.id) === String(activeComp.id));
+        if (hit) return hit;
+      }
+      if (window.RuleEngine && typeof window.RuleEngine.calculateCompanionStats === 'function') {
+        return window.RuleEngine.calculateCompanionStats(character, activeComp);
+      }
+      return null;
+    }
+
     function renderCockpitCompanionCard() {
       const contentEl = document.getElementById('cockpit-companion-content');
       const badgeEl = document.getElementById('combat-companion-hp-badge');
       const summaryEl = document.getElementById('combat-companion-collapsed-summary');
       if (!contentEl) return;
 
-      if (!character || !character.companion || !character.companion.baseMonsterId) {
+      const activeComp = getActiveCombatCompanion();
+      if (!character || !activeComp || !activeComp.baseMonsterId) {
         const isEligible = typeof window.isCharacterCompanionEligible === 'function'
           ? window.isCharacterCompanionEligible(character)
           : false;
@@ -10941,7 +10966,7 @@
                 <span>🔒</span>
                 <span>Companion &amp; Mount Locked (Prerequisites Not Met)</span>
               </div>
-              <p class="text-[11px] text-slate-500">Add a required feat or class feature (<strong class="text-amber-400/90">Animal Companion</strong>, <strong class="text-purple-400/90">Summon Familiar</strong>, <strong class="text-sky-400/90">Special Mount</strong>, <strong class="text-amber-300/90">Obtain Familiar</strong>, or <strong class="text-emerald-400/90">Wild Cohort</strong>) in the <strong class="text-slate-300">Character</strong> tab before binding a companion.</p>
+              <p class="text-[11px] text-slate-500">Add a required feat or class feature (<strong class="text-amber-400/90">Animal Companion</strong>, <strong class="text-purple-400/90">Summon Familiar</strong>, <strong class="text-sky-400/90">Special Mount</strong>, <strong class="text-rose-400">Fiendish Servant</strong>, <strong class="text-amber-300/90">Obtain Familiar</strong>, or <strong class="text-emerald-400/90">Wild Cohort</strong>) in the <strong class="text-slate-300">Character</strong> tab before binding a companion.</p>
             </div>
           `;
         } else {
@@ -10951,7 +10976,7 @@
                 <span>🐾</span>
                 <span>No Active Companion or Mount</span>
               </div>
-              <p class="text-[11px] text-slate-500">Bind or summon an Animal Companion, Familiar, or Special Mount to manage attacks &amp; health in combat.</p>
+              <p class="text-[11px] text-slate-500">Bind or summon an Animal Companion, Familiar, Special Mount, or Fiendish Servant to manage attacks &amp; health in combat.</p>
               <button type="button" data-action="combat:open-companion-modal" class="ui-btn-sm h-7 px-3 bg-amber-600 hover:bg-amber-500 text-white rounded-lg font-bold text-xs shadow transition cursor-pointer inline-flex items-center gap-1.5 mx-auto">
                 <span>➕</span>
                 <span>Select / Summon Companion</span>
@@ -10962,9 +10987,7 @@
         return;
       }
 
-      const stats = (window.SrdCompendium && typeof window.SrdCompendium.calculateCompanionStats === 'function')
-        ? window.SrdCompendium.calculateCompanionStats(character, character.companion)
-        : null;
+      const stats = getActiveCombatCompanionStats();
 
       if (!stats) {
         contentEl.innerHTML = `
@@ -10989,10 +11012,27 @@
       if (hpPercent <= 25) hpBarColor = 'bg-rose-600';
       else if (hpPercent <= 50) hpBarColor = 'bg-amber-500';
 
-      const typeLabel = stats.type === 'familiar' ? 'Familiar' : (stats.type === 'special_mount' ? 'Special Mount' : 'Animal Companion');
-      const icon = stats.type === 'familiar' ? '🦉' : (stats.type === 'special_mount' ? '🐎' : '🐺');
+      const typeLabel = stats.type === 'familiar' ? 'Familiar'
+        : (stats.type === 'special_mount' ? 'Special Mount'
+          : (stats.type === 'fiendish_servant' ? 'Fiendish Servant' : 'Animal Companion'));
+      const icon = stats.type === 'familiar' ? '🦉'
+        : (stats.type === 'special_mount' ? '🐎'
+          : (stats.type === 'fiendish_servant' ? '🦇' : '🐺'));
+      const allComps = Array.isArray(character.companions) ? character.companions.filter(c => c && c.baseMonsterId) : [];
+      const switcherHtml = allComps.length > 1 ? `
+        <div class="flex items-center gap-1 flex-wrap">
+          ${allComps.map(c => {
+            const isAct = String(c.id) === String(activeComp.id);
+            const cIcon = (c.entityKind || c.type) === 'familiar' ? '🦉'
+              : ((c.entityKind || c.type) === 'special_mount' ? '🐎'
+                : ((c.entityKind || c.type) === 'fiendish_servant' ? '🦇' : '🐺'));
+            return `<button type="button" data-action="combat:select-companion" data-comp-id="${UI.escapeAttr(c.id)}" class="ui-btn-xs h-5 px-2 rounded-full text-[10px] font-bold border transition cursor-pointer ${isAct ? 'bg-amber-600 text-white border-amber-400 shadow' : 'bg-slate-900 text-slate-300 border-slate-700 hover:border-amber-500/60'}">${cIcon} ${safeEscapeHtml(c.name || c.baseMonsterId)}</button>`;
+          }).join('')}
+        </div>
+      ` : '';
 
       contentEl.innerHTML = `
+        ${switcherHtml}
         <!-- Top Title & Level Bar -->
         <div class="flex items-center justify-between gap-2 bg-slate-950/70 p-2 rounded-lg border border-slate-800">
           <div class="flex items-center gap-2 min-w-0">
@@ -11109,34 +11149,45 @@
     }
 
     function adjustCompanionHp(delta) {
-      if (!character || !character.companion) return;
-      const stats = (window.SrdCompendium && typeof window.SrdCompendium.calculateCompanionStats === 'function')
-        ? window.SrdCompendium.calculateCompanionStats(character, character.companion)
-        : null;
+      const activeComp = getActiveCombatCompanion();
+      if (!character || !activeComp) return;
+      const stats = getActiveCombatCompanionStats();
       const maxHp = stats ? stats.hp.max : 20;
-      const cur = character.companion.currentHp !== undefined ? character.companion.currentHp : maxHp;
-      const next = Math.max(0, Math.min(maxHp, cur + delta));
-      character.companion.currentHp = next;
+      if (window.CharStore && typeof window.CharStore.dispatch === 'function') {
+        if (!window.CharStore.getDoc()) window.CharStore._syncExternalCharacterRef(character);
+        window.CharStore.dispatch({
+          type: 'companion/adjustHp',
+          payload: { compId: activeComp.id, delta, maxHp },
+          meta: { label: `Companion HP (${delta >= 0 ? '+' : ''}${delta})` }
+        });
+      } else {
+        const cur = activeComp.currentHp !== undefined ? activeComp.currentHp : maxHp;
+        activeComp.currentHp = Math.max(0, Math.min(maxHp, cur + delta));
+      }
+      const out = window.CharStore?.getLastOutcome?.();
+      const next = out?.currentHp ?? activeComp.currentHp ?? maxHp;
 
       saveStateToStorage(false);
       renderCockpitCompanionCard();
       if (typeof renderCoreFeatsAndSpecialAbilities === 'function') {
         renderCoreFeatsAndSpecialAbilities();
       }
+      if (typeof renderCompanionGearView === 'function') {
+        renderCompanionGearView();
+      }
 
       showDiceTopToast({
         icon: delta >= 0 ? '💚' : '🩸',
-        title: `${character.companion.name || 'Companion'} HP`,
+        title: `${activeComp.name || 'Companion'} HP`,
         breakdown: `Current HP: ${next} / ${maxHp}`,
         total: (delta >= 0 ? '+' : '') + delta
       });
     }
 
     function rollCompanionAttack(attackIdx) {
-      if (!character || !character.companion) return;
-      const stats = (window.SrdCompendium && typeof window.SrdCompendium.calculateCompanionStats === 'function')
-        ? window.SrdCompendium.calculateCompanionStats(character, character.companion)
-        : null;
+      const activeComp = getActiveCombatCompanion();
+      if (!character || !activeComp) return;
+      const stats = getActiveCombatCompanionStats();
       if (!stats || !stats.attacks[attackIdx]) return;
 
       const atk = stats.attacks[attackIdx];
@@ -11200,10 +11251,9 @@
     }
 
     function rollCompanionTactical(actionType) {
-      if (!character || !character.companion) return;
-      const stats = (window.SrdCompendium && typeof window.SrdCompendium.calculateCompanionStats === 'function')
-        ? window.SrdCompendium.calculateCompanionStats(character, character.companion)
-        : null;
+      const activeComp = getActiveCombatCompanion();
+      if (!character || !activeComp) return;
+      const stats = getActiveCombatCompanionStats();
       if (!stats) return;
 
       const d20 = Math.floor(Math.random() * 20) + 1;
@@ -15226,6 +15276,18 @@
       });
       Actions.register('combat:open-companion-modal', (el, data, event) => {
         if (typeof openCompanionModal === 'function') openCompanionModal();
+      });
+      Actions.register('combat:select-companion', (el, data, event) => {
+        if (!data || !data.compId) return;
+        if (window.CharStore && typeof window.CharStore.dispatch === 'function') {
+          if (!window.CharStore.getDoc()) window.CharStore._syncExternalCharacterRef(character);
+          window.CharStore.dispatch({ type: 'companion/setActive', payload: { compId: data.compId } });
+        } else if (character) {
+          character.activeCompanionId = data.compId;
+        }
+        renderCockpitCompanionCard();
+        if (typeof renderCoreFeatsAndSpecialAbilities === 'function') renderCoreFeatsAndSpecialAbilities();
+        if (typeof renderCompanionGearView === 'function') renderCompanionGearView();
       });
       Actions.register('combat:adjust-companion-hp', (el, data, event) => {
         if (data.delta !== undefined) adjustCompanionHp(Number(data.delta) || 0);

@@ -1633,8 +1633,9 @@ function runDeriveSheetTests() {
     meta: { label: 'Equip Companion Item (neck)' }
   });
   check(
-    'Phase R4 QA: inventory/equipCompanionItem equips item into doc.companion.gear.neck and records Undo history',
-    Boolean(CharStore.getDoc().companion?.gear?.neck && CharStore.getDoc().companion.gear.neck.name === 'Cloak of Resistance +2') &&
+    'Phase R4 QA: inventory/equipCompanionItem equips item into canonical doc.companions[0].gear.neck (migrated from legacy doc.companion) and records Undo history',
+    CharStore.getDoc().companion === undefined &&
+    Boolean(CharStore.getDoc().companions?.[0]?.gear?.neck && CharStore.getDoc().companions[0].gear.neck.name === 'Cloak of Resistance +2') &&
     CharStore.getHistoryCounts().undo === 1
   );
   CharStore.dispatch({
@@ -1643,15 +1644,15 @@ function runDeriveSheetTests() {
     meta: { label: 'Unequip Companion Slot (neck)' }
   });
   check(
-    'Phase R4 QA: inventory/unequipCompanionSlot returns item from doc.companion.gear.neck back to doc.gearPool',
-    !CharStore.getDoc().companion?.gear?.neck &&
+    'Phase R4 QA: inventory/unequipCompanionSlot returns item from doc.companions[0].gear.neck back to doc.gearPool',
+    !CharStore.getDoc().companions?.[0]?.gear?.neck &&
     CharStore.getDoc().gearPool.some(i => i && i.name === 'Cloak of Resistance +2') &&
     CharStore.getHistoryCounts().undo === 2
   );
   CharStore.undo();
   check(
-    'Phase R4 QA: CharStore.undo() restores companion equipped item in doc.companion.gear.neck',
-    Boolean(CharStore.getDoc().companion?.gear?.neck && CharStore.getDoc().companion.gear.neck.name === 'Cloak of Resistance +2')
+    'Phase R4 QA: CharStore.undo() restores companion equipped item in doc.companions[0].gear.neck',
+    Boolean(CharStore.getDoc().companions?.[0]?.gear?.neck && CharStore.getDoc().companions[0].gear.neck.name === 'Cloak of Resistance +2')
   );
   CharStore.clearHistory();
 
@@ -6603,6 +6604,58 @@ function runDeriveSheetTests() {
       tigerRake && tigerRake.primary === 'special_rake' && tigerRake.count === 2 &&
       viaComp && viaComp.effectiveLevel === 8,
       JSON.stringify({ bearClaw, bearBite, tigerRake, viaCompEff: viaComp?.effectiveLevel })
+    );
+
+    // 8. Sprint E1.2: Canonical doc.companions[] boundary migration & CharStore multi-companion reducers
+    const e12Doc = {
+      name: 'Lyra', level: 8, classLevels: { druid: 4, wizard: 4 },
+      abilities: { str: 10, dex: 14, con: 12, int: 16, wis: 16, cha: 10 },
+      hp: { max: 40, current: 40 },
+      classFeatures: [cabAC, cabFam],
+      feats: [], buffs: [],
+      gearPool: [{ id: 'pool_collar_1', name: 'Amulet of Natural Armor +1', category: 'Wondrous', slot: 'neck', weight: 0.2, qty: 1 }],
+      companion: { type: 'animal_companion', baseMonsterId: 'mst-wolf', name: 'Fang', gearSlots: { body: { id: 'barding_1', name: 'Leather Barding' } } }
+    };
+    CharStore.replaceDoc(e12Doc, { skipHistory: true });
+    CharStore.clearHistory();
+    const migratedDoc = CharStore.getDoc();
+    check(
+      'E1.2 Boundary Migration: legacy doc.companion + gearSlots migrates cleanly to doc.companions[0].gear and deletes doc.companion / gearSlots',
+      migratedDoc.companion === undefined &&
+      Array.isArray(migratedDoc.companions) && migratedDoc.companions.length === 1 &&
+      migratedDoc.companions[0].baseMonsterId === 'mst-wolf' &&
+      migratedDoc.companions[0].gearSlots === undefined &&
+      migratedDoc.companions[0].gear?.body?.name === 'Leather Barding' &&
+      migratedDoc.activeCompanionId === migratedDoc.companions[0].id
+    );
+    CharStore.dispatch({
+      type: 'companion/bind',
+      payload: { entityKind: 'familiar', baseMonsterId: 'mst-toad', name: 'Wart' }
+    });
+    const afterBind = CharStore.getDoc();
+    const wartComp = afterBind.companions.find(c => c.baseMonsterId === 'mst-toad');
+    const fangComp = afterBind.companions.find(c => c.baseMonsterId === 'mst-wolf');
+    check(
+      'E1.2 companion/bind: binds second companion (Familiar) alongside Animal Companion and selects it as activeCompanionId',
+      afterBind.companions.length === 2 && Boolean(wartComp) && Boolean(fangComp) && afterBind.activeCompanionId === wartComp.id
+    );
+    CharStore.dispatch({ type: 'companion/setActive', payload: { compId: fangComp.id } });
+    CharStore.dispatch({ type: 'companion/adjustHp', payload: { compId: fangComp.id, delta: -5, maxHp: 30 } });
+    CharStore.dispatch({ type: 'inventory/equipCompanionItem', payload: { compId: wartComp.id, poolItemId: 'pool_collar_1', slotKey: 'neck' } });
+    const afterOps = CharStore.getDoc();
+    const fangAfter = afterOps.companions.find(c => c.id === fangComp.id);
+    const wartAfter = afterOps.companions.find(c => c.id === wartComp.id);
+    check(
+      'E1.2 Multi-Companion Reducers: setActive, adjustHp (25/30), and targeted equipCompanionItem on second companion work cleanly',
+      afterOps.activeCompanionId === fangComp.id &&
+      fangAfter.currentHp === 25 &&
+      wartAfter.gear?.neck?.name === 'Amulet of Natural Armor +1'
+    );
+    CharStore.dispatch({ type: 'companion/dismiss', payload: { compId: fangComp.id } });
+    const afterDismiss = CharStore.getDoc();
+    check(
+      'E1.2 companion/dismiss: removes targeted companion and shifts activeCompanionId to remaining companion',
+      afterDismiss.companions.length === 1 && afterDismiss.companions[0].id === wartComp.id && afterDismiss.activeCompanionId === wartComp.id
     );
   }
 

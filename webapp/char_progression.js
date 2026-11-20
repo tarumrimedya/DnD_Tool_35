@@ -8110,24 +8110,46 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       const abilitiesList = Array.from(abilityMap.values());
       const isOpen = _coreFeatsAccordionOpen === true;
 
-      // Check for Companion Capability or Existing Companion (Madde D)
+      // Check for Companion Capability or Existing Companion (ADR-058 Faz 1b)
       let companionCardHtml = '';
-      const hasCompanion = Boolean(character.companion && character.companion.baseMonsterId);
+      const activeProgComp = (window.CharStore && typeof window.CharStore.getActiveCompanion === 'function')
+        ? window.CharStore.getActiveCompanion(character)
+        : (Array.isArray(character.companions) ? character.companions.find(c => c && c.baseMonsterId) : null);
+      const hasCompanion = Boolean(activeProgComp && activeProgComp.baseMonsterId);
       const isEligible = typeof window.isCharacterCompanionEligible === 'function'
         ? window.isCharacterCompanionEligible(character)
         : false;
 
       if (hasCompanion) {
-        const stats = (window.SrdCompendium && typeof window.SrdCompendium.calculateCompanionStats === 'function')
-          ? window.SrdCompendium.calculateCompanionStats(character, character.companion)
-          : null;
+        const sheetCompList = window.CharStore?.getSheet?.()?.companions?.list;
+        const stats = (Array.isArray(sheetCompList) && sheetCompList.find(s => String(s.id) === String(activeProgComp.id)))
+          || (window.RuleEngine && typeof window.RuleEngine.calculateCompanionStats === 'function'
+            ? window.RuleEngine.calculateCompanionStats(character, activeProgComp)
+            : null);
 
         if (stats) {
-          const typeLabel = stats.type === 'familiar' ? 'Familiar' : (stats.type === 'special_mount' ? 'Special Mount' : 'Animal Companion');
-          const icon = stats.type === 'familiar' ? '🦉' : (stats.type === 'special_mount' ? '🐎' : '🐺');
+          const typeLabel = stats.type === 'familiar' ? 'Familiar'
+            : (stats.type === 'special_mount' ? 'Special Mount'
+              : (stats.type === 'fiendish_servant' ? 'Fiendish Servant' : 'Animal Companion'));
+          const icon = stats.type === 'familiar' ? '🦉'
+            : (stats.type === 'special_mount' ? '🐎'
+              : (stats.type === 'fiendish_servant' ? '🦇' : '🐺'));
+          const allProgComps = Array.isArray(character.companions) ? character.companions.filter(c => c && c.baseMonsterId) : [];
+          const progSwitcherHtml = allProgComps.length > 1 ? `
+            <div class="flex items-center gap-1 flex-wrap pb-1">
+              ${allProgComps.map(c => {
+                const isAct = String(c.id) === String(activeProgComp.id);
+                const cIcon = (c.entityKind || c.type) === 'familiar' ? '🦉'
+                  : ((c.entityKind || c.type) === 'special_mount' ? '🐎'
+                    : ((c.entityKind || c.type) === 'fiendish_servant' ? '🦇' : '🐺'));
+                return `<button type="button" data-action="progression:select-companion" data-comp-id="${UI.escapeAttr(c.id)}" class="ui-btn-xs h-5 px-2 rounded-full text-[10px] font-bold border transition cursor-pointer ${isAct ? 'bg-amber-600 text-white border-amber-400 shadow' : 'bg-slate-950 text-slate-300 border-slate-700 hover:border-amber-500/60'}">${cIcon} ${safeEscapeHtml(c.name || c.baseMonsterId)}</button>`;
+              }).join('')}
+            </div>
+          ` : '';
 
           companionCardHtml = `
             <div class="mt-3.5 border border-amber-500/40 rounded-xl bg-slate-900/90 p-3 shadow-md space-y-2">
+              ${progSwitcherHtml}
               <!-- Header: 🐾 Name & Animal (Type) - [Manage] [Dismiss] -->
               <div class="flex items-center justify-between border-b border-slate-800 pb-2 gap-2">
                 <div class="flex items-center gap-2 min-w-0">
@@ -10435,13 +10457,28 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
     // ====================================================
     let _activeCompanionModalType = 'animal_companion';
     let _activeCompanionModalAnimalId = null;
+    let _activeCompanionModalEditId = null;
+
+    function getActiveProgressionCompanion(charObj) {
+      const c = charObj || character;
+      if (!c) return null;
+      if (window.CharStore && typeof window.CharStore.getActiveCompanion === 'function') {
+        return window.CharStore.getActiveCompanion(c);
+      }
+      const list = Array.isArray(c.companions) ? c.companions.filter(x => x && x.baseMonsterId) : [];
+      if (list.length === 0) return null;
+      return list.find(x => String(x.id) === String(c.activeCompanionId)) || list[0];
+    }
 
     function isCharacterCompanionEligible(charObj) {
       const c = charObj || character;
       if (!c) return false;
-      if (c.companion && c.companion.baseMonsterId) return true;
+      if (Array.isArray(c.companions) && c.companions.some(x => x && x.baseMonsterId)) return true;
+      const v3Grants = window.CharStore?.getSheet?.()?.companions?.grants
+        || c.legoEvaluation?.grantedCapabilities?.companionEntities;
+      if (Array.isArray(v3Grants) && v3Grants.length > 0) return true;
 
-      const companionRegex = /animal companion|summon familiar|familiar|special mount|wild cohort|obtain familiar|improved familiar|draconic familiar|celestial familiar|dragonfamiliar|bonded mount/i;
+      const companionRegex = /animal companion|summon familiar|familiar|special mount|fiendish servant|wild cohort|obtain familiar|improved familiar|draconic familiar|celestial familiar|dragonfamiliar|bonded mount/i;
 
       // Check feats
       const feats = Array.isArray(c.feats) ? c.feats : [];
@@ -10536,18 +10573,29 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         return;
       }
       const modal = ensureCompanionModalDom();
-      if (character && character.companion) {
-        _activeCompanionModalType = character.companion.type || 'animal_companion';
-        _activeCompanionModalAnimalId = character.companion.baseMonsterId || null;
+      const activeComp = getActiveProgressionCompanion(character);
+      if (activeComp) {
+        _activeCompanionModalEditId = activeComp.id || null;
+        _activeCompanionModalType = activeComp.entityKind || activeComp.type || 'animal_companion';
+        _activeCompanionModalAnimalId = activeComp.baseMonsterId || null;
       } else {
-        // Auto-select based on classes
-        const classesLower = String(character?.classes || '').toLowerCase();
-        if (/wizard|sorcerer/.test(classesLower) && !/druid|ranger/.test(classesLower)) {
-          _activeCompanionModalType = 'familiar';
-        } else if (/paladin/.test(classesLower) && !/druid|ranger/.test(classesLower)) {
-          _activeCompanionModalType = 'special_mount';
+        _activeCompanionModalEditId = null;
+        // Auto-select from V3 entity grants first, then class keys
+        const v3Grants = window.CharStore?.getSheet?.()?.companions?.grants
+          || character?.legoEvaluation?.grantedCapabilities?.companionEntities || [];
+        if (v3Grants.length > 0 && v3Grants[0].entityKind) {
+          _activeCompanionModalType = v3Grants[0].entityKind;
         } else {
-          _activeCompanionModalType = 'animal_companion';
+          const classesLower = String(character?.classes || '').toLowerCase();
+          if (/blackguard/.test(classesLower)) {
+            _activeCompanionModalType = 'fiendish_servant';
+          } else if (/wizard|sorcerer/.test(classesLower) && !/druid|ranger/.test(classesLower)) {
+            _activeCompanionModalType = 'familiar';
+          } else if (/paladin/.test(classesLower) && !/druid|ranger/.test(classesLower)) {
+            _activeCompanionModalType = 'special_mount';
+          } else {
+            _activeCompanionModalType = 'animal_companion';
+          }
         }
       }
 
@@ -10597,67 +10645,50 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         _activeCompanionModalAnimalId = allowedAnimals[0].id;
       }
 
-      // Calculate Effective Level
-      const classesStr = String(character.classes || '');
-      let effectiveLevel = 1;
-      let levelNote = '';
-      if (_activeCompanionModalType === 'animal_companion') {
-        let lvl = 0;
-        const dM = classesStr.match(/druid\s*(\d+)/i);
-        const rM = classesStr.match(/ranger\s*(\d+)/i);
-        if (dM) lvl += parseInt(dM[1], 10);
-        if (rM) {
-          const rLvl = parseInt(rM[1], 10);
-          if (rLvl >= 4) lvl += Math.floor(rLvl / 2);
-        }
-        if (lvl === 0) lvl = parseInt(character.level || 1, 10);
-        const curAnimal = allowedAnimals.find(a => a.id === _activeCompanionModalAnimalId);
-        const adj = (curAnimal && curAnimal.levelAdj) ? curAnimal.levelAdj : 0;
-        effectiveLevel = Math.max(1, lvl + adj);
-        levelNote = `Class Level: ${lvl}${adj !== 0 ? ` • Animal Level Adj: ${adj}` : ''} ➔ Effective Druid Level: ${effectiveLevel}`;
-      } else if (_activeCompanionModalType === 'familiar') {
-        let lvl = 0;
-        const wM = classesStr.match(/wizard\s*(\d+)/i);
-        const sM = classesStr.match(/sorcerer\s*(\d+)/i);
-        if (wM) lvl += parseInt(wM[1], 10);
-        if (sM) lvl += parseInt(sM[1], 10);
-        if (lvl === 0) lvl = parseInt(character.level || 1, 10);
-        effectiveLevel = Math.max(1, lvl);
-        levelNote = `Master Caster Level: ${effectiveLevel}`;
-      } else if (_activeCompanionModalType === 'special_mount') {
-        let lvl = 0;
-        const pM = classesStr.match(/paladin\s*(\d+)/i);
-        if (pM) lvl += parseInt(pM[1], 10);
-        if (lvl === 0) lvl = parseInt(character.level || 5, 10);
-        effectiveLevel = Math.max(5, lvl);
-        levelNote = `Paladin Level: ${effectiveLevel}`;
-      }
+      const editingComp = _activeCompanionModalEditId
+        ? (character.companions || []).find(c => c && String(c.id) === String(_activeCompanionModalEditId))
+        : getActiveProgressionCompanion(character);
 
       // Existing Companion Name fallback
-      const existingName = (character.companion && character.companion.name)
-        ? character.companion.name
+      const existingName = (editingComp && editingComp.name)
+        ? editingComp.name
         : (allowedAnimals.find(a => a.id === _activeCompanionModalAnimalId)?.name || 'Companion');
 
       // Dismiss button visibility
       const dismissBtn = document.getElementById('btn-companion-modal-dismiss');
       if (dismissBtn) {
-        dismissBtn.classList.toggle('hidden', !(character.companion && character.companion.baseMonsterId));
+        dismissBtn.classList.toggle('hidden', !(editingComp && editingComp.baseMonsterId));
       }
 
-      // Calculate preview stats
+      // Calculate preview stats directly via V3 RuleEngine (zero regex class parsing!)
       const previewConfig = {
+        id: editingComp?.id || null,
+        entityKind: _activeCompanionModalType,
         type: _activeCompanionModalType,
         baseMonsterId: _activeCompanionModalAnimalId,
         name: existingName,
-        gear: character.companion?.gear || {}
+        gear: editingComp?.gear || {}
       };
-      const stats = (window.SrdCompendium && typeof window.SrdCompendium.calculateCompanionStats === 'function')
-        ? window.SrdCompendium.calculateCompanionStats(character, previewConfig)
-        : null;
+      const stats = (window.RuleEngine && typeof window.RuleEngine.calculateCompanionStats === 'function')
+        ? window.RuleEngine.calculateCompanionStats(character, previewConfig)
+        : ((window.SrdCompendium && typeof window.SrdCompendium.calculateCompanionStats === 'function')
+          ? window.SrdCompendium.calculateCompanionStats(character, previewConfig)
+          : null);
+
+      const effectiveLevel = stats ? stats.effectiveLevel : 0;
+      const levelNote = stats
+        ? (_activeCompanionModalType === 'animal_companion'
+          ? `Raw Level: ${stats.rawLevel}${stats.levelAdj ? ` • Adj: ${stats.levelAdj}` : ''}${stats.levelBonus ? ` • Bonus: +${stats.levelBonus}` : ''} ➔ Effective Druid Level: ${effectiveLevel}`
+          : (_activeCompanionModalType === 'familiar'
+            ? `Effective Familiar Level: ${effectiveLevel}`
+            : (_activeCompanionModalType === 'fiendish_servant'
+              ? `Character Level Bracket: ${effectiveLevel}${stats.spellResistance ? ` • SR ${stats.spellResistance}` : ''}`
+              : `Paladin Level: ${effectiveLevel}`)))
+        : `Effective Level: ${effectiveLevel}`;
 
       bodyEl.innerHTML = `
         <!-- Type Selection Tabs -->
-        <div class="grid grid-cols-3 gap-1.5 p-1 bg-slate-950 rounded-xl border border-slate-800">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 p-1 bg-slate-950 rounded-xl border border-slate-800">
           <button type="button" data-action="progression:companion-type" data-type="animal_companion" class="py-2 px-2 rounded-lg font-bold transition flex items-center justify-center gap-1.5 cursor-pointer text-xs ${_activeCompanionModalType === 'animal_companion' ? 'bg-amber-600 text-white shadow' : 'text-slate-400 hover:text-white hover:bg-slate-900'}">
             <span>🐺</span>
             <span>Animal Companion</span>
@@ -10669,6 +10700,10 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
           <button type="button" data-action="progression:companion-type" data-type="special_mount" class="py-2 px-2 rounded-lg font-bold transition flex items-center justify-center gap-1.5 cursor-pointer text-xs ${_activeCompanionModalType === 'special_mount' ? 'bg-sky-600 text-white shadow' : 'text-slate-400 hover:text-white hover:bg-slate-900'}">
             <span>🐎</span>
             <span>Special Mount</span>
+          </button>
+          <button type="button" data-action="progression:companion-type" data-type="fiendish_servant" class="py-2 px-2 rounded-lg font-bold transition flex items-center justify-center gap-1.5 cursor-pointer text-xs ${_activeCompanionModalType === 'fiendish_servant' ? 'bg-rose-700 text-white shadow' : 'text-slate-400 hover:text-white hover:bg-slate-900'}">
+            <span>🦇</span>
+            <span>Fiendish Servant</span>
           </button>
         </div>
 
@@ -10777,36 +10812,28 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         return;
       }
 
-      const prevGear = character.companion?.gear || {};
-      character.companion = {
-        type: _activeCompanionModalType,
-        baseMonsterId: animalId,
-        name: nameVal,
-        gear: prevGear
-      };
-
-      // Calculate initial HP
-      const stats = (window.SrdCompendium && typeof window.SrdCompendium.calculateCompanionStats === 'function')
-        ? window.SrdCompendium.calculateCompanionStats(character, character.companion)
-        : null;
-      if (stats) {
-        character.companion.currentHp = stats.hp.max;
+      if (window.CharStore && typeof window.CharStore.dispatch === 'function') {
+        if (!window.CharStore.getDoc()) window.CharStore._syncExternalCharacterRef(character);
+        window.CharStore.dispatch({
+          type: 'companion/bind',
+          payload: {
+            id: _activeCompanionModalEditId || undefined,
+            entityKind: _activeCompanionModalType,
+            baseMonsterId: animalId,
+            name: nameVal
+          },
+          meta: { label: `Bind Companion (${nameVal})` }
+        });
       }
+      const out = window.CharStore?.getLastOutcome?.();
+      const stats = out?.stats || null;
 
-      // Sync into specialAbilities array
-      if (!Array.isArray(character.specialAbilities)) character.specialAbilities = [];
-      character.specialAbilities = character.specialAbilities.filter(a => {
-        const n = typeof a === 'string' ? a : (a?.name || '');
-        return !/^🐾\s*(Animal Companion|Familiar|Special Mount)/i.test(n);
-      });
-
-      const typeLabel = _activeCompanionModalType === 'familiar' ? 'Familiar' : (_activeCompanionModalType === 'special_mount' ? 'Special Mount' : 'Animal Companion');
-      const icon = _activeCompanionModalType === 'familiar' ? '🦉' : (_activeCompanionModalType === 'special_mount' ? '🐎' : '🐺');
-      character.specialAbilities.push({
-        name: `🐾 ${typeLabel}: ${nameVal} (${stats?.baseName || animalId})`,
-        source: typeLabel,
-        benefit: `${stats ? `${stats.totalHd} HD, HP ${stats.hp.max}, AC ${stats.ac.total}, Attacks: ${stats.attacks.map(a => a.name).join('/')}` : 'Bound Companion'}`
-      });
+      const typeLabel = _activeCompanionModalType === 'familiar' ? 'Familiar'
+        : (_activeCompanionModalType === 'special_mount' ? 'Special Mount'
+          : (_activeCompanionModalType === 'fiendish_servant' ? 'Fiendish Servant' : 'Animal Companion'));
+      const icon = _activeCompanionModalType === 'familiar' ? '🦉'
+        : (_activeCompanionModalType === 'special_mount' ? '🐎'
+          : (_activeCompanionModalType === 'fiendish_servant' ? '🦇' : '🐺'));
 
       saveStateToStorage(true);
       closeCompanionModal();
@@ -10820,15 +10847,19 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       });
     }
 
-    async function dismissCompanion() {
-      if (!character || !character.companion) return;
-      if (!(await DnDUI.confirm(`Are you sure you want to dismiss ${character.companion.name || 'your companion'}?`, { tone: 'danger' }))) return;
+    async function dismissCompanion(compId) {
+      const target = compId
+        ? (character?.companions || []).find(c => c && String(c.id) === String(compId))
+        : getActiveProgressionCompanion(character);
+      if (!character || !target) return;
+      if (!(await DnDUI.confirm(`Are you sure you want to dismiss ${target.name || 'your companion'}?`, { tone: 'danger' }))) return;
 
-      character.companion = null;
-      if (Array.isArray(character.specialAbilities)) {
-        character.specialAbilities = character.specialAbilities.filter(a => {
-          const n = typeof a === 'string' ? a : (a?.name || '');
-          return !/^🐾\s*(Animal Companion|Familiar|Special Mount)/i.test(n);
+      if (window.CharStore && typeof window.CharStore.dispatch === 'function') {
+        if (!window.CharStore.getDoc()) window.CharStore._syncExternalCharacterRef(character);
+        window.CharStore.dispatch({
+          type: 'companion/dismiss',
+          payload: { compId: target.id },
+          meta: { label: `Dismiss Companion (${target.name || 'Companion'})` }
         });
       }
 
@@ -11182,6 +11213,18 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       });
       Actions.register('progression:open-companion-modal', (el, data, event) => {
         openCompanionModal();
+      });
+      Actions.register('progression:select-companion', (el, data, event) => {
+        if (!data || !data.compId) return;
+        if (window.CharStore && typeof window.CharStore.dispatch === 'function') {
+          if (!window.CharStore.getDoc()) window.CharStore._syncExternalCharacterRef(character);
+          window.CharStore.dispatch({ type: 'companion/setActive', payload: { compId: data.compId } });
+        } else if (character) {
+          character.activeCompanionId = data.compId;
+        }
+        renderCoreFeatsAndSpecialAbilities();
+        if (typeof renderCockpitCompanionCard === 'function') renderCockpitCompanionCard();
+        if (typeof renderCompanionGearView === 'function') renderCompanionGearView();
       });
       Actions.register('progression:dismiss-companion', (el, data, event) => {
         dismissCompanion();

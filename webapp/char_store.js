@@ -249,6 +249,7 @@
       if (!Array.isArray(newChar.customDb)) {
         newChar.customDb = [];
       }
+      normalizeCompanionsDoc(newChar);
       if (typeof root !== 'undefined') {
         root.masterDb = newChar.customDb;
       }
@@ -622,6 +623,7 @@
           _state.doc.customDb = [];
         }
         if (_state.doc) {
+          normalizeCompanionsDoc(_state.doc);
           const initialMode = String(_state.doc.uiMode || (_state.doc.settings && _state.doc.settings.sheetViewMode) || (_state.ui && _state.ui.mode) || 'both').toLowerCase().trim();
           _state.ui = Object.assign({}, _state.ui, { mode: ['both', 'play', 'build'].includes(initialMode) ? initialMode : 'both' });
         }
@@ -2701,18 +2703,203 @@
     return doc;
   });
 
-  // 9a. 'inventory/equipCompanionItem' ({ compId, slotKey, poolItemId })
+  // 9. Canonical Companion & Entity Normalization + Reducers (ADR-058 Faz 1b)
+  function normalizeCompanionsDoc(doc) {
+    if (!doc || typeof doc !== 'object') return [];
+    if (!Array.isArray(doc.companions)) doc.companions = [];
+    // One-time boundary migration: legacy singular `doc.companion` -> `doc.companions[0]`
+    if (doc.companion && typeof doc.companion === 'object' && (doc.companion.baseMonsterId || doc.companion.name)) {
+      const legacy = doc.companion;
+      const eKind = String(legacy.entityKind || legacy.type || 'animal_companion');
+      const cid = String(legacy.id || `${eKind}:${legacy.baseMonsterId || legacy.name}`);
+      const exists = doc.companions.some(c => c && (String(c.id) === cid || (legacy.baseMonsterId && c.baseMonsterId === legacy.baseMonsterId && (c.entityKind || c.type) === eKind)));
+      if (!exists) {
+        doc.companions.unshift({
+          id: cid,
+          entityKind: eKind,
+          type: eKind,
+          baseMonsterId: legacy.baseMonsterId || null,
+          name: legacy.name || 'Companion',
+          currentHp: legacy.currentHp,
+          gear: (legacy.gear && typeof legacy.gear === 'object')
+            ? legacy.gear
+            : ((legacy.gearSlots && typeof legacy.gearSlots === 'object') ? legacy.gearSlots : {})
+        });
+      }
+    }
+    if (Object.prototype.hasOwnProperty.call(doc, 'companion')) {
+      delete doc.companion;
+    }
+    doc.companions = doc.companions
+      .filter(c => c && typeof c === 'object' && (c.baseMonsterId || c.name))
+      .map(c => {
+        const eKind = String(c.entityKind || c.type || 'animal_companion');
+        c.entityKind = eKind;
+        c.type = eKind;
+        if (!c.id) c.id = `${eKind}:${c.baseMonsterId || c.name}`;
+        if (!c.gear || typeof c.gear !== 'object') {
+          c.gear = (c.gearSlots && typeof c.gearSlots === 'object') ? c.gearSlots : {};
+        }
+        if (Object.prototype.hasOwnProperty.call(c, 'gearSlots')) {
+          delete c.gearSlots;
+        }
+        return c;
+      });
+    if (doc.companions.length === 0) {
+      doc.activeCompanionId = null;
+    } else if (!doc.activeCompanionId || !doc.companions.some(c => String(c.id) === String(doc.activeCompanionId))) {
+      doc.activeCompanionId = doc.companions[0].id;
+    }
+    return doc.companions;
+  }
+
+  function resolveTargetCompanion(doc, compId) {
+    const list = normalizeCompanionsDoc(doc);
+    if (list.length === 0) return null;
+    if (compId) {
+      const hit = list.find(c => String(c.id) === String(compId) || c.name === compId);
+      if (hit) return hit;
+    }
+    if (doc.activeCompanionId) {
+      const active = list.find(c => String(c.id) === String(doc.activeCompanionId));
+      if (active) return active;
+    }
+    return list[0];
+  }
+
+  function syncCompanionSpecialAbilities(doc) {
+    if (!Array.isArray(doc.specialAbilities)) doc.specialAbilities = [];
+    doc.specialAbilities = doc.specialAbilities.filter(a => {
+      const n = typeof a === 'string' ? a : (a?.name || '');
+      return !/^🐾\s*(Animal Companion|Familiar|Special Mount|Fiendish Servant)/i.test(n);
+    });
+    const engine = resolveRuleEngine();
+    (doc.companions || []).forEach(comp => {
+      const eKind = comp.entityKind || comp.type || 'animal_companion';
+      const typeLabel = eKind === 'familiar' ? 'Familiar'
+        : (eKind === 'special_mount' ? 'Special Mount'
+          : (eKind === 'fiendish_servant' ? 'Fiendish Servant' : 'Animal Companion'));
+      const stats = (engine && typeof engine.calculateCompanionStats === 'function')
+        ? engine.calculateCompanionStats(doc, comp)
+        : null;
+      doc.specialAbilities.push({
+        name: `🐾 ${typeLabel}: ${comp.name || 'Companion'} (${stats?.baseName || comp.baseMonsterId})`,
+        source: typeLabel,
+        benefit: stats
+          ? `${stats.totalHd} HD, HP ${stats.hp.max}, AC ${stats.ac.total}, Attacks: ${stats.attacks.map(a => a.name).join('/')}`
+          : 'Bound Companion'
+      });
+    });
+  }
+
+  CharStore.normalizeCompanionsDoc = normalizeCompanionsDoc;
+  CharStore.getActiveCompanion = function (doc) {
+    return resolveTargetCompanion(doc || _state.doc, null);
+  };
+
+  // 9a. 'companion/bind' ({ id, entityKind, baseMonsterId, name, currentHp, gear, isNew })
+  CharStore.registerReducer('companion/bind', (doc, action, stateObj) => {
+    normalizeCompanionsDoc(doc);
+    const payload = (action && action.payload) || {};
+    const baseMonsterId = payload.baseMonsterId;
+    if (!baseMonsterId) {
+      setStoreOutcome(stateObj, { status: 'invalid' });
+      return doc;
+    }
+    const eKind = String(payload.entityKind || payload.type || 'animal_companion');
+    const existingIdx = payload.isNew
+      ? -1
+      : doc.companions.findIndex(c => (payload.id && String(c.id) === String(payload.id)) || (!payload.id && c.entityKind === eKind));
+    const prevComp = existingIdx >= 0 ? doc.companions[existingIdx] : null;
+    const compId = (prevComp && prevComp.id) || payload.id || `${eKind}:${baseMonsterId}:${Date.now().toString(36)}`;
+    const nextComp = {
+      id: compId,
+      entityKind: eKind,
+      type: eKind,
+      baseMonsterId,
+      name: String(payload.name || 'Companion').trim() || 'Companion',
+      gear: (payload.gear && typeof payload.gear === 'object') ? payload.gear : (prevComp?.gear || {})
+    };
+    const engine = resolveRuleEngine();
+    const stats = (engine && typeof engine.calculateCompanionStats === 'function')
+      ? engine.calculateCompanionStats(doc, nextComp)
+      : null;
+    nextComp.currentHp = payload.currentHp !== undefined
+      ? Number(payload.currentHp)
+      : (stats ? stats.hp.max : (prevComp?.currentHp ?? 10));
+
+    if (existingIdx >= 0) {
+      doc.companions[existingIdx] = nextComp;
+    } else {
+      doc.companions.push(nextComp);
+    }
+    doc.activeCompanionId = nextComp.id;
+    syncCompanionSpecialAbilities(doc);
+    setStoreOutcome(stateObj, { status: 'companion_bound', compId: nextComp.id, comp: nextComp, stats });
+    return doc;
+  });
+
+  // 9b. 'companion/dismiss' ({ compId })
+  CharStore.registerReducer('companion/dismiss', (doc, action, stateObj) => {
+    normalizeCompanionsDoc(doc);
+    const payload = (action && action.payload) || {};
+    const target = resolveTargetCompanion(doc, payload.compId);
+    if (!target) {
+      setStoreOutcome(stateObj, { status: 'not_found' });
+      return doc;
+    }
+    doc.companions = doc.companions.filter(c => String(c.id) !== String(target.id));
+    doc.activeCompanionId = doc.companions.length > 0 ? doc.companions[0].id : null;
+    syncCompanionSpecialAbilities(doc);
+    setStoreOutcome(stateObj, { status: 'companion_dismissed', compId: target.id, compName: target.name });
+    return doc;
+  });
+
+  // 9c. 'companion/adjustHp' ({ compId, delta, maxHp })
+  CharStore.registerReducer('companion/adjustHp', (doc, action, stateObj) => {
+    normalizeCompanionsDoc(doc);
+    const payload = (action && action.payload) || {};
+    const target = resolveTargetCompanion(doc, payload.compId);
+    if (!target) {
+      setStoreOutcome(stateObj, { status: 'not_found' });
+      return doc;
+    }
+    const engine = resolveRuleEngine();
+    const stats = (engine && typeof engine.calculateCompanionStats === 'function')
+      ? engine.calculateCompanionStats(doc, target)
+      : null;
+    const maxHp = Number(payload.maxHp ?? stats?.hp?.max ?? 20) || 20;
+    const cur = target.currentHp !== undefined ? Number(target.currentHp) : maxHp;
+    const delta = Number(payload.delta) || 0;
+    const next = Math.max(0, Math.min(maxHp, cur + delta));
+    target.currentHp = next;
+    setStoreOutcome(stateObj, { status: 'companion_hp_adjusted', compId: target.id, compName: target.name, currentHp: next, maxHp, delta });
+    return doc;
+  });
+
+  // 9d. 'companion/setActive' ({ compId })
+  CharStore.registerReducer('companion/setActive', (doc, action, stateObj) => {
+    normalizeCompanionsDoc(doc);
+    const payload = (action && action.payload) || {};
+    const target = resolveTargetCompanion(doc, payload.compId);
+    if (!target) {
+      setStoreOutcome(stateObj, { status: 'not_found' });
+      return doc;
+    }
+    doc.activeCompanionId = target.id;
+    setStoreOutcome(stateObj, { status: 'companion_selected', compId: target.id, compName: target.name });
+    return doc;
+  });
+
+  // 9e. 'inventory/equipCompanionItem' ({ compId, slotKey, poolItemId })
   CharStore.registerReducer('inventory/equipCompanionItem', (doc, action, stateObj) => {
     ensureInventoryDocStructures(doc);
     const payload = (action && action.payload) || {};
     const compId = payload.compId;
     const slotKey = payload.slotKey;
     const poolItemId = payload.poolItemId !== undefined ? payload.poolItemId : payload.itemId;
-    const comp = compId
-      ? (doc.companions || []).find(c => c && (String(c.id) === String(compId) || c.name === compId))
-      : null;
-    const useSingleComp = !comp && doc.companion && typeof doc.companion === 'object';
-    if ((!comp && !useSingleComp) || !slotKey) {
+    const comp = resolveTargetCompanion(doc, compId);
+    if (!comp || !slotKey) {
       setStoreOutcome(stateObj, { status: 'not_found' });
       return doc;
     }
@@ -2722,9 +2909,7 @@
       return doc;
     }
     const poolItem = doc.gearPool[poolIdx];
-    const gearMap = comp
-      ? (comp.gearSlots && typeof comp.gearSlots === 'object' ? comp.gearSlots : (comp.gearSlots = {}))
-      : (doc.companion.gear && typeof doc.companion.gear === 'object' ? doc.companion.gear : (doc.companion.gear = {}));
+    const gearMap = (comp.gear && typeof comp.gear === 'object') ? comp.gear : (comp.gear = {});
 
     const prevItem = gearMap[slotKey];
     if (prevItem && prevItem.name && prevItem.name !== '-') {
@@ -2748,24 +2933,22 @@
 
     setStoreOutcome(stateObj, {
       status: 'companion_item_equipped',
-      compId: comp ? (comp.id || comp.name) : (doc.companion.name || 'companion'),
-      compName: comp ? comp.name : (doc.companion.name || 'Companion'),
+      compId: comp.id,
+      compName: comp.name || 'Companion',
       slotKey,
       itemName: equippedCopy.name
     });
     return doc;
   });
 
-  // 9b. 'inventory/unequipCompanionSlot' ({ compId, slotKey })
+  // 9f. 'inventory/unequipCompanionSlot' ({ compId, slotKey })
   CharStore.registerReducer('inventory/unequipCompanionSlot', (doc, action, stateObj) => {
     ensureInventoryDocStructures(doc);
     const payload = (action && action.payload) || {};
     const compId = payload.compId;
     const slotKey = payload.slotKey;
-    const comp = compId
-      ? (doc.companions || []).find(c => c && (String(c.id) === String(compId) || c.name === compId))
-      : null;
-    const gearMap = comp ? comp.gearSlots : (doc.companion && doc.companion.gear ? doc.companion.gear : null);
+    const comp = resolveTargetCompanion(doc, compId);
+    const gearMap = comp && comp.gear ? comp.gear : null;
     if (!gearMap || !gearMap[slotKey] || !gearMap[slotKey].name || gearMap[slotKey].name === '-') {
       setStoreOutcome(stateObj, { status: 'empty_slot' });
       return doc;
@@ -2780,8 +2963,8 @@
     delete gearMap[slotKey];
     setStoreOutcome(stateObj, {
       status: 'companion_slot_unequipped',
-      compId: comp ? (comp.id || comp.name) : (doc.companion?.name || 'companion'),
-      compName: comp ? comp.name : (doc.companion?.name || 'Companion'),
+      compId: comp.id,
+      compName: comp.name || 'Companion',
       slotKey,
       itemName: prevItem.name
     });
