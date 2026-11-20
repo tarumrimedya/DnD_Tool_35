@@ -350,31 +350,36 @@ function runCorpusAudit() {
   }
 
   // Rank-vs-label parity gate for all entries with `rankFrom: 'levelTable'`
-  try {
-    const crRaw = JSON.parse(fs.readFileSync(path.join(DB_DIR, 'srd_classes_races.json'), 'utf8'));
-    const crList = Array.isArray(crRaw) ? crRaw : (crRaw.entries || []);
-    const rankedIds = new Set(crList.filter(e => e && e.rankFrom === 'levelTable' && e.id).map(e => String(e.id).toLowerCase()));
-    if (rankedIds.size > 0) {
-      crList.forEach(cls => {
-        if (!cls || cls.type !== 'Class' || !cls.progression || !Array.isArray(cls.progression.levels)) return;
-        const perIdCount = Object.create(null);
-        cls.progression.levels.forEach(lvlRow => {
-          (lvlRow.features || []).forEach(f => {
-            const rid = String(f?.refId || f?.id || '').trim().toLowerCase();
-            if (!rid || !rankedIds.has(rid)) return;
-            perIdCount[rid] = (perIdCount[rid] || 0) + 1;
-            const m = String(f?.name || '').match(/\+(\d+)(?:d\d+)?\b/i);
-            if (m) {
-              const labeledRank = parseInt(m[1], 10);
-              if (labeledRank !== perIdCount[rid]) {
-                report.badRankParity.push(`${cls.id} L${lvlRow.level} ${rid}: label "+${labeledRank}" != rank ${perIdCount[rid]}`);
+  const crPath = path.join(DB_DIR, 'srd_classes_races.json');
+  if (fs.existsSync(crPath)) {
+    try {
+      const crRaw = JSON.parse(fs.readFileSync(crPath, 'utf8'));
+      const crList = Array.isArray(crRaw) ? crRaw : (crRaw.entries || []);
+      const rankedIds = new Set(crList.filter(e => e && e.rankFrom === 'levelTable' && e.id).map(e => String(e.id).toLowerCase()));
+      if (rankedIds.size > 0) {
+        crList.forEach(cls => {
+          if (!cls || cls.type !== 'Class' || !cls.progression || !Array.isArray(cls.progression.levels)) return;
+          const perIdCount = Object.create(null);
+          cls.progression.levels.forEach(lvlRow => {
+            (lvlRow.features || []).forEach(f => {
+              const rid = String(f?.refId || f?.id || '').trim().toLowerCase();
+              if (!rid || !rankedIds.has(rid)) return;
+              perIdCount[rid] = (perIdCount[rid] || 0) + 1;
+              const m = String(f?.name || '').match(/\+(\d+)(?:d\d+)?\b/i);
+              if (m) {
+                const labeledRank = parseInt(m[1], 10);
+                if (labeledRank !== perIdCount[rid]) {
+                  report.badRankParity.push(`${cls.id} L${lvlRow.level} ${rid}: label "+${labeledRank}" != rank ${perIdCount[rid]}`);
+                }
               }
-            }
+            });
           });
         });
-      });
+      }
+    } catch (err) {
+      report.badRankParity.push(`srd_classes_races.json read/parse error: ${err && err.message ? err.message : String(err)}`);
     }
-  } catch (_) { /* skip if srd_classes_races.json missing */ }
+  }
 
   report.elapsedMs = Date.now() - startMs;
   return report;

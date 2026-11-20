@@ -4318,7 +4318,8 @@
         const cls = isOn
           ? 'text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-500 text-slate-950 border border-amber-400 transition cursor-pointer'
           : 'text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-slate-800/80 text-slate-300 border border-slate-600/70 hover:border-amber-400/70 hover:text-amber-200 transition cursor-pointer';
-        return `<button type="button" data-action="combat:toggle-situational-rider" data-weapon-key="${wKeyAttr}" data-rider-id="${UI.escapeAttr(p.riderId || '')}" class="${cls}" title="${UI.escapeAttr((p.source || 'Situational Rider') + ' (session toggle, multiplyOnCrit: false)')}">${isOn ? '✓ ' : '+ '}${UI.escapeHtml(lbl)}</button>`;
+        const critNote = p.multiplyOnCrit ? 'multiplies on critical hit' : 'does not multiply on critical hit';
+        return `<button type="button" data-action="combat:toggle-situational-rider" data-weapon-key="${wKeyAttr}" data-rider-id="${UI.escapeAttr(p.riderId || '')}" class="${cls}" title="${UI.escapeAttr((p.source || 'Situational Rider') + ' — toggleable (' + critNote + ')')}">${isOn ? '✓ ' : '+ '}${UI.escapeHtml(lbl)}</button>`;
       }).join('');
       return `<div class="flex items-center gap-1 flex-wrap mt-1">${pills}</div>`;
     }
@@ -4535,7 +4536,7 @@
             ...(Array.isArray(evalRes.activeSituationalDamageParts) ? evalRes.activeSituationalDamageParts : [])
           ];
           if (rolledExtra.length > 0) {
-            extraDiceStr += ' + ' + rolledExtra.map(ep => `${UI.escapeHtml(ep.dice)} (${UI.escapeHtml(ep.source || ep.type || 'Extra')})`).join(' + ');
+            extraDiceStr += ' + ' + rolledExtra.map(ep => `${ep.dice} (${ep.source || ep.type || 'Extra'})`).join(' + ');
           }
 
           const flatDmg = evalRes.netFlatDamage;
@@ -5136,7 +5137,7 @@
                 ${s1MainStats?.isWeapon ? `<span class="text-slate-600">•</span><span class="text-slate-400 font-sans text-[10px] uppercase tracking-wider">Shield Bash:</span><span class="font-bold text-amber-300">${UI.escapeHtml(s1MainStats.dmgStr)}</span>` : ''}
               ` : `
                 <span class="text-slate-400 font-sans text-[10px] uppercase tracking-wider">Damage:</span>
-                <span class="font-bold ${is1 ? 'text-amber-300' : 'text-slate-300'}">${s1MainStats?.dmgStr || '1d6+3'}</span>
+                <span class="font-bold ${is1 ? 'text-amber-300' : 'text-slate-300'}">${UI.escapeHtml(s1MainStats?.dmgStr || '1d6+3')}</span>
                 ${s1MainStats?.hasExtraMods ? `<span class="text-[10px] font-bold px-1.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40">⚡ Modified</span>` : ''}
                 ${s1MainStats?.isFinesse ? `<span class="text-emerald-400 text-[10px] font-sans font-bold">• DEX (+${s1MainStats.finesseMod}) Finesse</span>` : ''}
               `}
@@ -5212,7 +5213,7 @@
             <!-- Row 1: Weapon Damage -->
             <div class="text-[10px] font-mono mt-0.5 flex items-center gap-1.5 flex-wrap">
               <span class="text-slate-400 font-sans text-[10px] uppercase tracking-wider">Damage:</span>
-              <span class="font-bold ${is2 ? 'text-sky-300' : 'text-slate-300'}">${s2OffStats?.dmgStr || '1d8'}</span>
+              <span class="font-bold ${is2 ? 'text-sky-300' : 'text-slate-300'}">${UI.escapeHtml(s2OffStats?.dmgStr || '1d8')}</span>
               ${s2OffStats?.hasExtraMods ? `<span class="text-[10px] font-bold px-1.5 rounded bg-sky-500/20 text-sky-300 border border-sky-500/40">⚡ Modified</span>` : ''}
             </div>
             <!-- Row 2: Critical & Damage Type -->
@@ -5256,7 +5257,7 @@
                 ${s2OffStats?.isWeapon ? `<span class="text-slate-600">•</span><span class="text-slate-400 font-sans text-[10px] uppercase tracking-wider">Shield Bash:</span><span class="font-bold text-sky-300">${UI.escapeHtml(s2OffStats.dmgStr)}</span>` : ''}
               ` : `
                 <span class="text-slate-400 font-sans text-[10px] uppercase tracking-wider">Damage:</span>
-                <span class="font-bold ${is2 ? 'text-sky-300' : 'text-slate-300'}">${s2OffStats?.dmgStr || '1d4'}</span>
+                <span class="font-bold ${is2 ? 'text-sky-300' : 'text-slate-300'}">${UI.escapeHtml(s2OffStats?.dmgStr || '1d4')}</span>
                 ${s2OffStats?.hasExtraMods ? `<span class="text-[10px] font-bold px-1.5 rounded bg-sky-500/20 text-sky-300 border border-sky-500/40">⚡ Modified</span>` : ''}
               `}
             </div>

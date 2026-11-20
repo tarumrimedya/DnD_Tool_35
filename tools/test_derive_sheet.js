@@ -7000,6 +7000,52 @@ function runDeriveSheetTests() {
       rOn.activeSituationalDamageParts.length === 1,
       JSON.stringify({ offDmg: rOff.diceFormula, onDmg: rOn.diceFormula, onCrit: rOn.critDiceFormula, sitLen: rOff.situationalDamageParts.length })
     );
+
+    // 11. M1 remediation: object-shaped classLevels ({ Rogue: 5 }), isNpc with classLevels, and grantsFeatureRank
+    const objClsDoc = {
+      name: 'Object ClassLevels Rogue',
+      level: 5,
+      classLevels: { Rogue: 5 },
+      abilities: { str: 10, dex: 16, con: 12, int: 12, wis: 10, cha: 10 },
+      feats: [{ id: 'feat-extra-sa', name: 'Bonus SA', grantsFeatureRank: { refId: 'cab-sneak-attack', amount: 1 } }]
+    };
+    const objRankMap = RuleEngine.computeFeatureRankMap(objClsDoc);
+    const objSaEv = RuleEngine.evaluateV3Entry(saCab, { character: objClsDoc, tactical: { sneakAttack: true } });
+    const objSaDice = (objSaEv.damageParts || []).find(p => p.source === 'Sneak Attack')?.dice;
+    const npcClsDoc = {
+      name: 'NPC Rogue 5',
+      isNpc: true,
+      level: 5,
+      classLevels: { Rogue: 5 },
+      abilities: { str: 10, dex: 16, con: 12, int: 12, wis: 10, cha: 10 }
+    };
+    const npcRankMap = RuleEngine.computeFeatureRankMap(npcClsDoc);
+    check(
+      'E3a.11 M1 remediation: object-shaped classLevels ({Rogue:5}) + grantsFeatureRank (+1) -> 4d6, and isNpc Rogue 5 -> rank 3',
+      objRankMap['cab-sneak-attack'] === 4 && objSaDice === '4d6' && npcRankMap['cab-sneak-attack'] === 3,
+      JSON.stringify({ objRank: objRankMap['cab-sneak-attack'], objSaDice, npcRank: npcRankMap['cab-sneak-attack'] })
+    );
+
+    // 12. M2 remediation: buildV3FormulaContext only computes featureRankMap for rankFrom === 'levelTable'
+    let rankMapCalls = 0;
+    const origComputeRankMap = RuleEngine.computeFeatureRankMap;
+    try {
+      RuleEngine.computeFeatureRankMap = function (c) {
+        rankMapCalls++;
+        return origComputeRankMap.call(this, c);
+      };
+      RuleEngine.buildV3FormulaContext(objClsDoc, { id: 'wep-longsword', type: 'Weapon', name: 'Longsword' });
+      const callsAfterNonRanked = rankMapCalls;
+      RuleEngine.buildV3FormulaContext(objClsDoc, saCab);
+      const callsAfterRanked = rankMapCalls;
+      check(
+        'E3a.12 M2 remediation: buildV3FormulaContext skips computeFeatureRankMap for non-levelTable entries (0 calls) and invokes it for rankFrom=levelTable (1 call)',
+        callsAfterNonRanked === 0 && callsAfterRanked === 1,
+        JSON.stringify({ callsAfterNonRanked, callsAfterRanked })
+      );
+    } finally {
+      RuleEngine.computeFeatureRankMap = origComputeRankMap;
+    }
   }
 
   CharStore.clearHistory();

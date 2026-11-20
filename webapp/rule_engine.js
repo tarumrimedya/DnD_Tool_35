@@ -333,8 +333,56 @@ const RuleEngine = {
     }, extra);
   },
 
+  // Shared canonical active class-level extractor supporting all character shapes
+  // (levelProgression, object/array classLevels, array/string classes, single class string).
+  getActiveClassLevels(character, opts = {}) {
+    const ch = character || {};
+    const includeNpc = opts.includeNpc !== false;
+    const includeObjectClassLevels = opts.includeObjectClassLevels !== false;
+    const activeClasses = {};
+    const addClass = (rawName, rawLvl) => {
+      const cName = String(rawName || '').trim();
+      const cLvl = Math.max(0, Number(rawLvl) || 0);
+      if (cName && cLvl > 0) activeClasses[cName] = (activeClasses[cName] || 0) + cLvl;
+    };
+
+    if (Array.isArray(ch.levelProgression) && ch.levelProgression.length > 0) {
+      ch.levelProgression.forEach(row => {
+        if (!row || row.active === false) return;
+        addClass(row.className || row.class || '', 1);
+      });
+    } else if (includeNpc || !ch.isNpc) {
+      if (includeObjectClassLevels && ch.classLevels && typeof ch.classLevels === 'object' && !Array.isArray(ch.classLevels)) {
+        Object.entries(ch.classLevels).forEach(([k, v]) => addClass(k, Number(v) || 0));
+      } else if (Array.isArray(ch.classLevels) && ch.classLevels.length > 0) {
+        ch.classLevels.forEach(cl => {
+          if (!cl || cl.active === false) return;
+          addClass(cl.className || cl.name || cl.class || '', Number(cl.level) || 0);
+        });
+      } else if (includeObjectClassLevels && Array.isArray(ch.classes) && ch.classes.length > 0) {
+        ch.classes.forEach(c => {
+          if (typeof c === 'string') addClass(c, Number(ch.level) || 1);
+          else if (c && typeof c === 'object' && c.active !== false) {
+            addClass(c.name || c.className || c.class || '', Number(c.level) || 1);
+          }
+        });
+      } else if (typeof ch.classes === 'string' && ch.classes.trim()) {
+        const parts = ch.classes.split(/[\/,]/).map(s => s.trim()).filter(Boolean);
+        parts.forEach(part => {
+          const numMatch = part.match(/(\d+)/);
+          const lvl = numMatch ? (parseInt(numMatch[1], 10) || 1) : (parts.length === 1 ? (Number(ch.level) || 1) : 1);
+          const cName = part.replace(/\d+/g, '').replace(/\b(?:lvl|level)\b/gi, '').trim();
+          if (cName) addClass(cName, lvl);
+        });
+      } else if (includeObjectClassLevels && typeof ch.class === 'string' && ch.class.trim()) {
+        addClass(ch.class, Number(ch.level) || 1);
+      }
+    }
+    return activeClasses;
+  },
+
   // Count non-replaced progression-table occurrences (+ non-class extra grants) per canonical feature refId.
-  // Reuses the same class progression & replaces[] resolution as collectLegoEntries (zero duplicate resolver).
+  // Shares getActiveClassLevels with collectLegoEntries (zero duplicate resolver).
   computeFeatureRankMap(character) {
     const ch = character || {};
     const counts = Object.create(null);
@@ -346,39 +394,14 @@ const RuleEngine = {
       .replace(/[^a-z0-9]+/g, ' ')
       .trim();
 
-    const activeClasses = {};
-    if (Array.isArray(ch.levelProgression) && ch.levelProgression.length > 0) {
-      ch.levelProgression.forEach(row => {
-        if (!row || row.active === false) return;
-        const cName = String(row.className || row.class || '').trim();
-        if (cName) activeClasses[cName] = (activeClasses[cName] || 0) + 1;
-      });
-    } else if (!ch.isNpc) {
-      if (Array.isArray(ch.classLevels) && ch.classLevels.length > 0) {
-        ch.classLevels.forEach(cl => {
-          if (!cl || cl.active === false) return;
-          const cName = String(cl.className || cl.name || '').trim();
-          const cLvl = Math.max(0, Number(cl.level) || 0);
-          if (cName && cLvl > 0) activeClasses[cName] = (activeClasses[cName] || 0) + cLvl;
-        });
-      } else if (ch.classes && typeof ch.classes === 'string') {
-        String(ch.classes).split('/').forEach(part => {
-          const m = part.trim().match(/^(.+?)\s+(\d+)$/);
-          if (m) {
-            const cName = m[1].trim();
-            const cLvl = Math.max(0, parseInt(m[2], 10) || 0);
-            if (cName && cLvl > 0) activeClasses[cName] = (activeClasses[cName] || 0) + cLvl;
-          }
-        });
-      }
-    }
+    const activeClasses = this.getActiveClassLevels(ch, { includeNpc: true });
 
     const comp = (typeof window !== 'undefined' && window.SrdCompendium)
       || (typeof SrdCompendium !== 'undefined' ? SrdCompendium : null);
 
     Object.entries(activeClasses).forEach(([clsName, clsLvl]) => {
       if (!clsName || clsLvl <= 0 || typeof this.getClassDef !== 'function') return;
-      const clsDef = this.getClassDef(clsName, ch);
+      const clsDef = this.getClassDef(clsName, ch, { allowLazyLoad: false });
       if (!clsDef || !clsDef.features || typeof clsDef.features !== 'object') return;
       const replacedSet = new Set();
       if (Array.isArray(clsDef.replaces)) {
@@ -402,7 +425,8 @@ const RuleEngine = {
           if ((fId && replacedSet.has(fId)) || (fNameLow && replacedSet.has(fNameLow)) || (fBase && replacedSet.has(fBase))) return;
           if (!fId && fName && comp && typeof comp.getByName === 'function') {
             const resolved = comp.getByName(fName, 'ClassAbility')
-              || comp.getByName(fName.replace(/\s*\((?:ex|su|sp|na)\)\s*$/i, '').trim(), 'ClassAbility');
+              || comp.getByName(fName.replace(/\s*\((?:ex|su|sp|na)\)\s*$/i, '').trim(), 'ClassAbility')
+              || (fBase ? comp.getByName(fBase, 'ClassAbility') : null);
             if (resolved && resolved.id) fId = String(resolved.id).trim().toLowerCase();
           }
           if (!fId || replacedSet.has(fId)) return;
@@ -466,11 +490,15 @@ const RuleEngine = {
     }
     if (options?.featureRank !== undefined) {
       baseCtx.featureRank = Math.max(1, Math.floor(Number(options.featureRank) || 1));
-    } else if (entry && typeof entry === 'object' && (entry.rankFrom === 'levelTable' || entry.id)) {
+    } else if (entry && typeof entry === 'object' && entry.rankFrom === 'levelTable') {
       const rankMap = options?.featureRankMap || this.computeFeatureRankMap(character);
       const idLow = String(entry.id || '').trim().toLowerCase();
       const rawRank = Number(rankMap[idLow] || 0);
       baseCtx.featureRank = rawRank > 0 ? rawRank : 1;
+    } else if (options?.featureRankMap && entry && typeof entry === 'object' && entry.id) {
+      const idLow = String(entry.id || '').trim().toLowerCase();
+      const rawRank = Number(options.featureRankMap[idLow] || 0);
+      if (rawRank > 0) baseCtx.featureRank = rawRank;
     }
     return baseCtx;
   },
@@ -3485,38 +3513,13 @@ const RuleEngine = {
     (Array.isArray(ch.classFeatures) ? ch.classFeatures : []).forEach(cf => addEntry(cf, 'Class Feature', 'classFeatures'));
 
     // Auto-collect active V3 Class Abilities (`cab-*`) from active classes up to active class level
-    const activeClasses = {};
-    if (Array.isArray(ch.levelProgression) && ch.levelProgression.length > 0) {
-      ch.levelProgression.forEach(row => {
-        if (!row || row.active === false) return;
-        const cName = String(row.className || row.class || '').trim();
-        if (cName) activeClasses[cName] = (activeClasses[cName] || 0) + 1;
-      });
-    } else if (!ch.isNpc) {
-      if (Array.isArray(ch.classLevels) && ch.classLevels.length > 0) {
-        ch.classLevels.forEach(cl => {
-          if (!cl || cl.active === false) return;
-          const cName = String(cl.className || cl.name || '').trim();
-          const cLvl = Math.max(0, Number(cl.level) || 0);
-          if (cName && cLvl > 0) activeClasses[cName] = (activeClasses[cName] || 0) + cLvl;
-        });
-      } else if (ch.classes && typeof ch.classes === 'string') {
-        String(ch.classes).split('/').forEach(part => {
-          const m = part.trim().match(/^(.+?)\s+(\d+)$/);
-          if (m) {
-            const cName = m[1].trim();
-            const cLvl = Math.max(0, parseInt(m[2], 10) || 0);
-            if (cName && cLvl > 0) activeClasses[cName] = (activeClasses[cName] || 0) + cLvl;
-          }
-        });
-      }
-    }
+    const activeClasses = this.getActiveClassLevels(ch, { includeNpc: false, includeObjectClassLevels: false });
 
     const comp = (typeof window !== 'undefined' && window.SrdCompendium)
       || (typeof SrdCompendium !== 'undefined' ? SrdCompendium : null);
     Object.entries(activeClasses).forEach(([clsName, clsLvl]) => {
       if (!clsName || clsLvl <= 0 || typeof this.getClassDef !== 'function') return;
-      const clsDef = this.getClassDef(clsName, ch);
+      const clsDef = this.getClassDef(clsName, ch, { allowLazyLoad: false });
       if (!clsDef || !clsDef.features || typeof clsDef.features !== 'object') return;
       const replacedSet = new Set();
       if (Array.isArray(clsDef.replaces)) {
@@ -13056,7 +13059,7 @@ const RuleEngine = {
   // D&D 3.5e Class Definitions Cache (Hydrated on-demand from database/srd_classes_races.json via SrdCompendium)
   DND35_CLASS_DEFS: {},
 
-  getClassDef(className, character = null) {
+  getClassDef(className, character = null, options = null) {
     if (!className) return null;
     const lowerKey = String(className).toLowerCase().trim();
     const customClassOverride = this.resolveCustomEntryOverride(className, character, { family: 'class' });
@@ -13081,7 +13084,7 @@ const RuleEngine = {
         : null;
     }
     // Check lazy splat class chunk (`srd_classes_splat.json`) exact match if indexed in SrdCompendium
-    if (!srdClass && comp && typeof comp.findIndexEntry === 'function' && typeof comp.ensureChunkLoaded === 'function') {
+    if (!srdClass && (!options || options.allowLazyLoad !== false) && comp && typeof comp.findIndexEntry === 'function' && typeof comp.ensureChunkLoaded === 'function') {
       const idxHit = comp.findIndexEntry(className, 'Class');
       if (idxHit && idxHit.f === 'srd_classes_splat.json') {
         comp.ensureChunkLoaded(idxHit.f);
