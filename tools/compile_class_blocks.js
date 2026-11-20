@@ -259,17 +259,8 @@ const NEW_CABS = [
     effects: [whenState('ef-mfm', 'state', 'unarmored & unencumbered', [stat('ef-mfm-s', 'speed.land', `floor(${lvl('monk')} / 3) * 10`, 'Enhancement')])],
     link: [['cls-monk', /^Fast Movement/i, true]]
   },
-  // Dwarven Defender (SRD / DMG): Trap Sense +1 at 4th, +2 at 8th (the shared Rogue / Barbarian record counts every three levels).
-  {
-    id: 'cab-dwarven-defender-trap-sense', name: 'Trap Sense (Ex)', source: 'SRD / DMG', abilityType: 'ex',
-    associations: [['Dwarven Defender', 4]],
-    shortDescription: '+1 bonus on Reflex saves made to avoid traps and a +1 dodge bonus to AC against attacks made by traps at 4th level; +2 at 8th level. Stacks with Trap Sense from other classes.',
-    effects: [whenState('ef-ddts', 'situational', 'vs. Traps', [
-      stat('ef-ddts-ref', 'save.ref', `${lvl('dwarven_defender')} >= 8 ? 2 : 1`, 'Untyped'),
-      stat('ef-ddts-ac', 'ac.dodge', `${lvl('dwarven_defender')} >= 8 ? 2 : 1`, 'Dodge')
-    ])],
-    link: [['cls-dwarven-defender', /^Trap Sense/i, true]]
-  },
+  // Dwarven Defender (SRD / DMG): Trap Sense +1 at 4th, +2 at 8th — unified with shared `cab-trap-sense` (`rankFrom: 'levelTable'`).
+  // (Pooled across Barbarian, Rogue, and Dwarven Defender via @featureRank.)
   // Loremaster (SRD / DMG): the shared `cab-lore` record is the Cloistered Cleric (UA) one and counts Cleric level.
   {
     id: 'cab-loremaster-lore', name: 'Lore (Ex)', source: 'SRD / DMG', abilityType: 'ex',

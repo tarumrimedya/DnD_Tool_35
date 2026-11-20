@@ -429,21 +429,30 @@
       if (!Array.isArray(entries) || entries.length === 0) {
         return { total: 0, actual: 0, effective: 0, sources: [] };
       }
-      const actualVals = [];
-      const effectiveVals = [];
-      const sources = [];
-      entries.forEach((entry) => {
-        if (!entry) return;
-        const val = Math.floor(Number(entry.value) || 0);
-        if (val === 0) return;
-        const cat = entry.category === 'actual' ? 'actual' : 'effective';
-        if (cat === 'actual') actualVals.push(val);
-        else effectiveVals.push(val);
-        if (entry.source) sources.push(entry.source);
-      });
-      const actual = this.resolveEffectiveSizeScope(actualVals);
-      const effective = this.resolveEffectiveSizeScope(effectiveVals);
-      return { total: actual + effective, actual, effective, sources };
+      const pickWinners = (list) => {
+        let bestPos = null;
+        let bestNeg = null;
+        list.forEach((entry) => {
+          const val = Math.floor(Number(entry.value) || 0);
+          if (val > 0 && (!bestPos || val > bestPos.val)) bestPos = { val, source: entry.source };
+          if (val < 0 && (!bestNeg || val < bestNeg.val)) bestNeg = { val, source: entry.source };
+        });
+        const total = (bestPos ? bestPos.val : 0) + (bestNeg ? bestNeg.val : 0);
+        const srcs = [];
+        if (bestPos && bestPos.source) srcs.push(bestPos.source);
+        if (bestNeg && bestNeg.source) srcs.push(bestNeg.source);
+        return { total, srcs };
+      };
+      const actualList = entries.filter(e => e && e.category === 'actual');
+      const effectiveList = entries.filter(e => e && e.category !== 'actual');
+      const act = pickWinners(actualList);
+      const eff = pickWinners(effectiveList);
+      return {
+        total: act.total + eff.total,
+        actual: act.total,
+        effective: eff.total,
+        sources: [...act.srcs, ...eff.srcs]
+      };
     }
   };
 

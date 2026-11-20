@@ -21381,14 +21381,34 @@
     "powerPointsCost": 5,
     "effects": [
       {
+        "id": "ef-uv-skills",
+        "type": "stat",
+        "targets": [
+          "skill.spot",
+          "skill.search"
+        ],
+        "mode": "flat",
+        "value": 4,
+        "btype": "Enhancement"
+      },
+      {
+        "id": "ef-uv-flank",
+        "type": "defense",
+        "defKind": "immunity",
+        "value": "Flanking"
+      },
+      {
+        "id": "ef-uv-gaze",
         "type": "when",
         "flow": "while",
         "branches": [
           {
+            "id": "ef-uv-gaze-br",
             "condKind": "situational",
             "condText": "vs. gaze attacks",
             "effects": [
               {
+                "id": "ef-uv-save",
                 "type": "stat",
                 "targets": [
                   "save.all"

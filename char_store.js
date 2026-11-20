@@ -2395,7 +2395,6 @@
           dmgType: newEntry.dmgType || 'Slashing',
           bonusType: 'enhancement',
           tags: srcItem.tags || [],
-          elementalMods: rollEffects.filter((sp, idx) => idx > 0 || (wepObj && wepObj.damageDice && sp.dice !== wepObj.damageDice)).map(sp => ({ name: sp.source || sp.dmgType, dice: sp.dice, type: sp.dmgType, condition: sp.condition || '' })),
           keen: Boolean(srcItem.ruleFlags && srcItem.ruleFlags.keen)
         });
       }
@@ -2652,7 +2651,6 @@
         dmgType: wepDmgType,
         bonusType: 'enhancement',
         tags: forgedItem.tags || [],
-        elementalMods: rollEffects.filter((sp, idx) => idx > 0 || (clonedWeapon && clonedWeapon.damageDice && sp.dice !== clonedWeapon.damageDice)).map(sp => ({ name: sp.source || sp.dmgType, dice: sp.dice, type: sp.dmgType, condition: sp.condition || '' })),
         keen: Boolean(clonedRuleFlags && clonedRuleFlags.keen)
       };
       if (wepIdx >= 0) {

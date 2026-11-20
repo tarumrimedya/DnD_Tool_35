@@ -383,18 +383,39 @@ function runCorpusAudit() {
   }
 
   // Gate: every entry whose V3 effects/modes/powers reference `@featureRank` MUST declare `rankFrom: 'levelTable'`
+  // Gate: every `weapon.damageDieStep` stat block MUST declare explicit `appliesTo` weapon scope
   for (const packFile of Object.keys(idx.chunks || {})) {
     const p = path.join(DB_DIR, packFile);
     if (!fs.existsSync(p)) continue;
     let raw;
-    try { raw = JSON.parse(fs.readFileSync(p, 'utf8')); } catch { continue; }
+    try {
+      raw = JSON.parse(fs.readFileSync(p, 'utf8'));
+    } catch (err) {
+      report.badFeatureRankEntries.push(`${packFile}: JSON read/parse error: ${err && err.message ? err.message : String(err)}`);
+      continue;
+    }
     const list = Array.isArray(raw) ? raw : (raw.entries || []);
+    const visitDieStep = (blocks, entryRef) => {
+      if (!Array.isArray(blocks)) return;
+      for (const b of blocks) {
+        if (!b || typeof b !== 'object') continue;
+        if (b.type === 'stat' && Array.isArray(b.targets) && b.targets.includes('weapon.damageDieStep')) {
+          const hasScope = (Array.isArray(b.appliesTo) && b.appliesTo.length > 0) || (typeof b.appliesTo === 'string' && b.appliesTo.trim().length > 0);
+          if (!hasScope) report.badFeatureRankEntries.push(`${entryRef} uses weapon.damageDieStep without appliesTo`);
+        }
+        if (Array.isArray(b.effects)) visitDieStep(b.effects, entryRef);
+        if (Array.isArray(b.branches)) b.branches.forEach(br => visitDieStep(br?.effects, entryRef));
+      }
+    };
     for (const e of list) {
       if (!e || typeof e !== 'object') continue;
+      const entryRef = `${packFile}:${e.id || e.name}`;
       const blob = JSON.stringify({ effects: e.effects || [], modes: e.modes || [], powers: e.powers || [] });
       if (/@featureRank\b/i.test(blob) && e.rankFrom !== 'levelTable') {
-        report.badFeatureRankEntries.push(`${packFile}:${e.id || e.name} uses @featureRank without rankFrom: 'levelTable'`);
+        report.badFeatureRankEntries.push(`${entryRef} uses @featureRank without rankFrom: 'levelTable'`);
       }
+      visitDieStep(e.effects, entryRef);
+      if (Array.isArray(e.modes)) e.modes.forEach(m => visitDieStep(m?.effects, entryRef));
     }
   }
 

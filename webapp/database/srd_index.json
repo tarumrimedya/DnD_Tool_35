@@ -1,26 +1,26 @@
 {
   "schemaVersion": 3,
   "version": "3.0.0",
-  "compendiumHash": "0097e2cc85cafad4",
+  "compendiumHash": "e23f4b524367a49f",
   "generatedAt": "2026-11-15T19:43:51.694Z",
-  "totalEntries": 7995,
+  "totalEntries": 7998,
   "chunks": {
     "srd_equipment.json": {
       "count": 1143,
-      "bytes": 1873880,
+      "bytes": 1902366,
       "hash": "93c8a50c681d0156",
       "eagerLoad": true
     },
     "srd_feats.json": {
       "count": 468,
-      "bytes": 859917,
-      "hash": "82f9758d2c279726",
+      "bytes": 726023,
+      "hash": "887851b53b5a1333",
       "eagerLoad": true
     },
     "srd_classes_races.json": {
-      "count": 333,
-      "bytes": 1611663,
-      "hash": "6cfd4b83a381a69e",
+      "count": 336,
+      "bytes": 1678174,
+      "hash": "ca44f3bc35fbe913",
       "eagerLoad": true
     },
     "srd_combat_rules.json": {
@@ -31,37 +31,37 @@
     },
     "srd_spells.json": {
       "count": 695,
-      "bytes": 1940779,
-      "hash": "b54e343c0733e1cb",
+      "bytes": 1493972,
+      "hash": "9ce309e324b93723",
       "eagerLoad": true
     },
     "srd_monsters.json": {
       "count": 649,
-      "bytes": 5289035,
+      "bytes": 3928217,
       "hash": "42ab1883c456d4e8",
       "eagerLoad": false
     },
     "srd_maneuvers.json": {
       "count": 209,
-      "bytes": 379099,
-      "hash": "2ec6638d5afe953c",
+      "bytes": 283034,
+      "hash": "2e3be9a627453be8",
       "eagerLoad": true
     },
     "mic_compendium.json": {
       "count": 953,
-      "bytes": 1898703,
+      "bytes": 2005068,
       "hash": "06828775c07c1d1f",
       "eagerLoad": true
     },
     "srd_domains.json": {
       "count": 37,
-      "bytes": 143062,
+      "bytes": 93157,
       "hash": "fb810edbcc7632b5",
       "eagerLoad": true
     },
     "srd_companions.json": {
-      "count": 1,
-      "bytes": 13196,
+      "count": 0,
+      "bytes": 9446,
       "hash": "5737ccb20c900c1b",
       "eagerLoad": true
     },
@@ -69,37 +69,37 @@
       "count": 39,
       "description": "D&D 3.5e Character & Creature Templates (Half-Dragon, Half-Celestial, Half-Fiend, Lich, Vampire, Ghost, Lycanthrope, Phrenic, Shadow, Paragon)",
       "hash": "d671255089c6ca8b",
-      "bytes": 151100
+      "bytes": 156276
     },
     "srd_equipment_splat.json": {
       "count": 76,
-      "bytes": 163292,
+      "bytes": 163815,
       "hash": "837fa0e2c86e1e32",
       "eagerLoad": false
     },
     "srd_feats_splat.json": {
       "count": 1767,
-      "bytes": 2330390,
-      "hash": "15c6d5b4841d5ee7",
+      "bytes": 1809207,
+      "hash": "6d9a33f26477e10b",
       "eagerLoad": false
     },
     "srd_feats_epic.json": {
       "count": 23,
       "hash": "7f5e4ac67cec1037",
-      "bytes": 34605,
+      "bytes": 25880,
       "eagerLoad": false
     },
     "srd_feats_legacy.json": {
       "count": 357,
       "hash": "a2cf1d86019c1056",
-      "bytes": 476120,
+      "bytes": 497792,
       "eagerLoad": false,
       "optIn": true
     },
     "srd_classes_splat.json": {
       "count": 416,
       "hash": "0cb70f9eccd26e0d",
-      "bytes": 1214495,
+      "bytes": 1214878,
       "eagerLoad": false
     },
     "srd_classes_legacy.json": {
@@ -111,20 +111,20 @@
     },
     "srd_powers.json": {
       "count": 287,
-      "hash": "cde58a3b5f874c6a",
-      "bytes": 767597,
+      "hash": "05dd865a0cf33c9e",
+      "bytes": 775483,
       "eagerLoad": false
     },
     "srd_spells_splat.json": {
       "count": 42,
       "hash": "3230195004351166",
-      "bytes": 106780,
+      "bytes": 110132,
       "eagerLoad": false
     },
     "srd_vestiges_splat.json": {
       "count": 32,
-      "bytes": 125341,
-      "hash": "4b4d653803b70606",
+      "bytes": 122363,
+      "hash": "c718eaf1d3be63fd",
       "eagerLoad": false
     },
     "srd_mysteries_splat.json": {
@@ -135,20 +135,20 @@
     },
     "srd_utterances_splat.json": {
       "count": 65,
-      "bytes": 163998,
+      "bytes": 160964,
       "hash": "d72c3c34ab45c5ea",
       "eagerLoad": false
     },
     "srd_soulmelds_splat.json": {
       "count": 94,
-      "bytes": 278182,
-      "hash": "78812048eff58140",
+      "bytes": 280420,
+      "hash": "119d2f9391fbbffe",
       "eagerLoad": false
     },
     "srd_powers_splat.json": {
       "count": 127,
-      "bytes": 283710,
-      "hash": "be719157c703577d",
+      "bytes": 283864,
+      "hash": "0c272cdba7dfced8",
       "eagerLoad": false
     }
   },
@@ -66119,6 +66119,30 @@
       "n": "Fighting Challenge (Ex)",
       "t": "ClassAbility",
       "c": "",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cab-duskblade-spell-power",
+      "n": "Spell Power (Duskblade) (Ex)",
+      "t": "ClassAbility",
+      "c": "Class Ability",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cab-red-wizard-spell-power",
+      "n": "Spell Power (Red Wizard) (Ex)",
+      "t": "ClassAbility",
+      "c": "Class Ability",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cab-mind-blade-enhancement",
+      "n": "Mind Blade Enhancement (Su)",
+      "t": "ClassAbility",
+      "c": "Class Ability",
       "s": "None",
       "f": "srd_classes_races.json"
     }

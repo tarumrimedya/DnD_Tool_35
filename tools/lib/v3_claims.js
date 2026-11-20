@@ -73,7 +73,7 @@ function extractClaims(rawText) {
     const preCtx = text.slice(Math.max(0, m.index - 55), m.index);
     const postCtx = text.slice(m.index, Math.min(text.length, m.index + m[0].length + 45));
     // Skip negated/ignored penalties ("ignore the -4 penalty", "without taking a -2 penalty", "reduces the -4 penalty")
-    if (m[3].toLowerCase() === 'penalty' && /\b(?:ignore|ignores|ignored|negate|negates|do\s+not\s+take|does\s+not\s+take|don't\s+take|without\s+(?:taking|suffering|incurring|a|the)|no\s+longer\s+(?:take|suffer)|reduces?\s+the|taking\s+no|suffer\s+no|no)\s+[^.;]{0,30}$/i.test(preCtx)) continue;
+    if (m[3].toLowerCase() === 'penalty' && /\b(?:ignore|ignores|ignored|negate|negates|do\s+not\s+take|does\s+not\s+take|don't\s+take|without\s+(?:taking|suffering|incurring|a|the)|no\s+longer\s+(?:take|suffer)|reduces?\s+the|taking\s+no|suffer\s+no|takes?\s+no)\s+[^.;]{0,30}$/i.test(preCtx)) continue;
     // Skip improvised weapon/tool penalties and target-cover / enemy-debuff clauses
     if (/\b(?:improvised\s+(?:weapon|melee|tools?)|without\s+(?:these|such|artisan|proper)\s+tools?|due\s+to\s+cover|target'?s\s+cover)\b/i.test(preCtx + ' ' + postCtx)) continue;
     if (/\b(?:against\s+(?:her|him|you|the\s+wearer|the\s+wielder)|their\s+(?:saving|saves?|will|fortitude|reflex|attack)|its\s+(?:saving\s+throw|hide\s+checks?|attack|ac))\b/i.test(m[0])) continue;
@@ -90,7 +90,7 @@ function extractClaims(rawText) {
     const kind = (m[1] || m[4]).toLowerCase();
     const sensePre = text.slice(Math.max(0, m.index - 65), m.index);
     const sensePost = text.slice(m.index + m[0].length, Math.min(text.length, m.index + m[0].length + 55));
-    if (/\b(no|not|lacks?|without|loses?|do\s+not\s+have|does\s+not\s+have|don't\s+have|even\s+(?:with|against|from)|hide|hidden|conceal|invisible|undetectable|imperceptible|defeat|foil|fool|cannot\s+detect|can't\s+detect|blocks?|negates?|prevents?|creatures?\s+with|foes?\s+with|foiled\s+by|not\s+fooled\s+by|such\s+as|improves?\s+your|extends?\s+your|increases?\s+the\s+range\s+of)\s+[^.;]{0,45}$/i.test(sensePre)) continue;
+    if (/\b(no|not|lacks?|without|loses?|do\s+not\s+have|does\s+not\s+have|don't\s+have|even\s+(?:with|against|from)|hide|hidden|conceal|invisible|undetectable|imperceptible|defeat|foil|fool|cannot\s+detect|can't\s+detect|blocks?|negates?|prevents?|creatures?\s+with|foes?\s+with|foiled\s+by|not\s+fooled\s+by|such\s+as)\s+[^.;]{0,45}$/i.test(sensePre)) continue;
     if (/^\s*(?:cannot|can't|does\s+not|do\s+not|is\s+ineffective|are\s+ineffective|still\s+detect|still\s+allows?|reveals?|penetrates?|pierces?|functions?\s+normally|is\s+not\s+fooled|are\s+not\s+fooled)/i.test(sensePost)) continue;
     push({ family: 'sense', target: kind, value: Number(m[2] || m[3]) || null, qualifier: '', phrase: m[0].trim() });
   }
@@ -124,12 +124,12 @@ function extractClaims(rawText) {
     const cnt = WORD_NUM[m[1].toLowerCase()] || Number(m[1]);
     if (!Number.isFinite(cnt) || cnt < 1) continue;
     const dayPre = text.slice(Math.max(0, m.index - 45), m.index);
-    if (/\b(?:heal|heals|recovers?|regains?|naturally|at\s+a\s+rate\s+of|more\s+than|no\s+more\s+than)\s+[^.;]{0,25}$/i.test(dayPre)) continue;
+    if (/\b(?:heal|heals|recovers?|regains?|naturally|at\s+a\s+rate\s+of)\s+[^.;]{0,25}$/i.test(dayPre)) continue;
     push({ family: 'perDay', target: 'uses', value: cnt, qualifier: '', phrase: m[0].trim() });
   }
   // 5. bonus feat
   const bfMatch = text.match(/[^.]*bonus feat[^.]*/i);
-  if (bfMatch && /\b(gains?|receives?|gets?|grants?)\s+(?:a|an|one|1|the|extra)?\s*(?:[A-Z0-9][\w' ]+\s+)?(?:as\s+a\s+)?bonus feat\b/i.test(bfMatch[0]) && !/\b(?:fighter\s+bonus\s+feat\s+list|select\s+this\s+feat\s+as\s+a|qualifies\s+as\s+a\s+bonus\s+feat|counts?\s+as\s+a\s+bonus\s+feat)\b/i.test(bfMatch[0])) {
+  if (bfMatch && /\b(gains?|receives?|gets?|grants?|may\s+select|may\s+choose)\s+(?:a|an|one|1|the|extra|either)?\s*(?:[A-Z0-9][\w' ]+\s+)?(?:as\s+a\s+)?bonus feat\b/i.test(bfMatch[0]) && !/\b(?:fighter\s+bonus\s+feat\s+list|select\s+this\s+feat\s+as\s+a|qualifies\s+as\s+a\s+bonus\s+feat|counts?\s+as\s+a\s+bonus\s+feat)\b/i.test(bfMatch[0])) {
     push({ family: 'bonusFeat', target: 'feat', value: null, qualifier: '', phrase: bfMatch[0].trim().slice(0, 120) });
   }
   // 6. speed

@@ -17515,7 +17515,7 @@
               "abilityType": "Su",
               "text": "Your mind blade gains a +1 enhancement bonus on attack and damage rolls.",
               "category": "Class Feature",
-              "refId": "cab-mind-blade"
+              "refId": "cab-mind-blade-enhancement"
             }
           ],
           "spellcasting": null
@@ -17600,7 +17600,7 @@
               "abilityType": "Su",
               "text": "Your mind blade enhancement bonus increases to +2.",
               "category": "Class Feature",
-              "refId": "cab-mind-blade"
+              "refId": "cab-mind-blade-enhancement"
             }
           ],
           "spellcasting": null
@@ -17679,7 +17679,7 @@
               "abilityType": "Su",
               "text": "Your mind blade enhancement bonus increases to +3.",
               "category": "Class Feature",
-              "refId": "cab-mind-blade"
+              "refId": "cab-mind-blade-enhancement"
             }
           ],
           "spellcasting": null
@@ -17750,7 +17750,7 @@
               "abilityType": "Su",
               "text": "Your mind blade enhancement bonus increases to +4.",
               "category": "Class Feature",
-              "refId": "cab-mind-blade"
+              "refId": "cab-mind-blade-enhancement"
             }
           ],
           "spellcasting": null
@@ -17820,7 +17820,7 @@
               "abilityType": "Su",
               "text": "Your mind blade enhancement bonus increases to +5.",
               "category": "Class Feature",
-              "refId": "cab-mind-blade"
+              "refId": "cab-mind-blade-enhancement"
             }
           ],
           "spellcasting": null
@@ -17971,22 +17971,37 @@
     ],
     "effects": [
       {
-        "id": "ef-enh-arr",
-        "type": "stat",
-        "targets": [
-          "atk.ranged",
-          "dmg.ranged"
-        ],
-        "mode": "formula",
-        "formula": "1 + floor((@level - 1) / 2)",
-        "btype": "Enhancement"
+        "id": "ef-ea-when",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-ea-when-br",
+            "condKind": "situational",
+            "condText": "arrows fired from bow",
+            "effects": [
+              {
+                "id": "ef-ea-stat",
+                "type": "stat",
+                "targets": [
+                  "atk.ranged",
+                  "dmg.ranged"
+                ],
+                "mode": "formula",
+                "formula": "@featureRank",
+                "btype": "Enhancement"
+              }
+            ]
+          }
+        ]
       }
     ],
     "shortDescription": "At 1st level, every nonmagical arrow an arcane archer nocks and lets fly becomes magical, gaining a +1 enhancement bonus. Unlike magic weapons created by normal means, the archer need not spend experience points or gold…",
     "text": "At 1st level, every nonmagical arrow an arcane archer nocks and lets fly becomes magical, gaining a +1 enhancement bonus. Unlike magic weapons created by normal means, the archer need not spend experience points or gold pieces to accomplish this task. However, an archer’s magic arrows only function for her. For every two levels the character advances past 1st level in the prestige class, the magic arrows she creates gain +1 greater potency (+1 at 1st level, +2 at 3rd level, +3 at 5th level, +4 at 7th level, and +5 at 9th level).",
     "tags": [
       "class-ability"
-    ]
+    ],
+    "rankFrom": "levelTable"
   },
   {
     "schemaVersion": 3,
@@ -18652,6 +18667,10 @@
       [
         "Rogue",
         3
+      ],
+      [
+        "Dwarven Defender",
+        4
       ]
     ],
     "effects": [
@@ -19249,7 +19268,34 @@
         4
       ]
     ],
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-se-when",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-se-when-br",
+            "condKind": "situational",
+            "condText": "after Wild Surge",
+            "effects": [
+              {
+                "id": "ef-se-stat",
+                "type": "stat",
+                "targets": [
+                  "atk.all",
+                  "dmg.all",
+                  "save.all"
+                ],
+                "mode": "formula",
+                "formula": "@featureRank",
+                "btype": "Morale"
+              }
+            ]
+          }
+        ]
+      }
+    ],
     "shortDescription": "Starting at 4th level, when a wilder uses her wild surge ability, she gains a +1 morale bonus on attack rolls, damage rolls, and saving throws for a number of rounds equal to the intensity of her wild surge. If a wilder…",
     "text": "Starting at 4th level, when a wilder uses her wild surge ability, she gains a +1 morale bonus on attack rolls, damage rolls, and saving throws for a number of rounds equal to the intensity of her wild surge.\n\nIf a wilder is overcome by psychic enervation following her wild surge, she does not gain the morale bonus for this use of her wild surge ability.\n\nAt 12th level, the morale bonus on a wilder’s attack rolls, damage rolls, and saving throws increases to +2. At 20th level, the bonus increases to +3.",
     "tags": [
@@ -19282,7 +19328,8 @@
         ],
         "combatScope": "both"
       }
-    ]
+    ],
+    "rankFrom": "levelTable"
   },
   {
     "schemaVersion": 3,
@@ -20744,26 +20791,7 @@
         1
       ]
     ],
-    "effects": [
-      {
-        "id": "cab-mind-blade-sw",
-        "type": "effect",
-        "effectKind": "ruleSwitch",
-        "flag": "mind-blade",
-        "label": "Mind Blade",
-        "text": "As a move action, a soulknife can create a semisolid blade composed of psychic energy distilled from his own mind. The blade is identical in all ways (except visually) to a short s"
-      },
-      {
-        "type": "stat",
-        "targets": [
-          "atk.all",
-          "dmg.all"
-        ],
-        "mode": "flat",
-        "value": 1,
-        "btype": "Enhancement"
-      }
-    ],
+    "effects": [],
     "shortDescription": "As a move action, a soulknife can create a semisolid blade composed of psychic energy distilled from his own mind. The blade is identical in all ways (except visually) to a short sword of a size appropriate for its wiel…",
     "text": "As a move action, a soulknife can create a semisolid blade composed of psychic energy distilled from his own mind. The blade is identical in all ways (except visually) to a short sword of a size appropriate for its wielder. For instance, a Medium soulknife materializes a Medium mind blade that he can wield as a light weapon, and the blade deals 1d6 points of damage (crit 19–20/x2). Soulknives who are smaller or larger than Medium create mind blades identical to short swords appropriate for their size, with a corresponding change to the blade’s damage. The wielder of a mind blade gains the usual benefits to his attack roll and damage roll from a high Strength bonus.\n\nThe blade can be broken (it has hardness 10 and 10 hit points); however, a soulknife can simply create another on his next move action. The moment he relinquishes his grip on his blade, it dissipates (unless he intends to throw it; see below). A mind blade is considered a magic weapon for the purpose of overcoming damage reduction.\n\nA soulknife can use feats such as Power Attack or Combat Expertise in conjunction with the mind blade just as if it were a normal weapon. He can also choose mind blade for feats requiring a specific weapon choice, such as Weapon Specialization. Powers or spells that upgrade weapons can be used on a mind blade.\n\nA soulknife’s mind blade improves as the character gains higher levels. At 4th level and every four levels thereafter, the mind blade gains a cumulative +1 enhancement bonus on attack rolls and damage rolls (+2 at 8th level, +3 at 12th level, +4 at 16th level, and +5 at 20th level).\n\nEven in places where psionic effects do not normally function (such as within a null psionics field), a soulknife can attempt to sustain his mind blade by making a DC 20 Will save. On a successful save, the soulknife maintains his mind blade for a number of rounds equal to his class level before he needs to check again. On an unsuccessful attempt, the mind blade vanishes. As a move action on his turn, the soulknife can attempt a new Will save to rematerialize his mind blade while he remains within the psionics negating effect.",
     "tags": [
@@ -30704,27 +30732,32 @@
     "category": "Racial Ability",
     "source": "SRD 3.5e",
     "featKind": "racialTrait",
-    "effects": [
-      {
-        "id": "rab-gaseous-form-sw",
-        "type": "effect",
-        "effectKind": "ruleSwitch",
-        "flag": "gaseous-form",
-        "label": "Gaseous Form",
-        "text": "As a standard action, a vampire can assume gaseous form at will as the spell Gaseous Form (caster level 5th), but it can remain gaseous indefinitely and has a fly speed of 20 feet "
-      },
-      {
-        "type": "effect",
-        "effectKind": "grant",
-        "grantType": "movement",
-        "mode": "fly",
-        "value": 20
-      }
-    ],
+    "effects": [],
     "shortDescription": "As a standard action, a vampire can assume gaseous form at will as the spell Gaseous Form (caster level 5th), but it can remain gaseous indefinitely and has a fly speed of 20 feet with perfect maneuverability.",
     "text": "As a standard action, a vampire can assume gaseous form at will as the spell Gaseous Form (caster level 5th), but it can remain gaseous indefinitely and has a fly speed of 20 feet with perfect maneuverability.",
     "tags": [
       "racial-trait"
+    ],
+    "modes": [
+      {
+        "id": "off",
+        "label": "Normal Form",
+        "effects": []
+      },
+      {
+        "id": "mode-gaseous",
+        "label": "Gaseous Form (Fly 20 ft.)",
+        "effects": [
+          {
+            "id": "ef-gf-fly",
+            "type": "effect",
+            "effectKind": "grant",
+            "grantType": "movement",
+            "mode": "fly",
+            "value": 20
+          }
+        ]
+      }
     ]
   },
   {
@@ -33666,7 +33699,8 @@
           "name": "Spell Power +1 (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "+1 effective caster level and +1 Save DC for spells from your specialist school."
+          "summary": "+1 effective caster level and +1 Save DC for spells from your specialist school.",
+          "refId": "cab-red-wizard-spell-power"
         },
         {
           "name": "+1 Level of Existing Arcane Spellcasting Class",
@@ -33695,7 +33729,8 @@
           "name": "Spell Power +2 (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Spell Power bonus for specialist school increases to +2."
+          "summary": "Spell Power bonus for specialist school increases to +2.",
+          "refId": "cab-red-wizard-spell-power"
         },
         {
           "name": "+1 Level of Existing Arcane Spellcasting Class",
@@ -33723,7 +33758,8 @@
           "name": "Spell Power +3 (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Spell Power bonus increases to +3."
+          "summary": "Spell Power bonus increases to +3.",
+          "refId": "cab-red-wizard-spell-power"
         },
         {
           "name": "Scribe Tattoo (Ex)",
@@ -33764,7 +33800,8 @@
           "name": "Spell Power +4 (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Spell Power bonus increases to +4."
+          "summary": "Spell Power bonus increases to +4.",
+          "refId": "cab-red-wizard-spell-power"
         },
         {
           "name": "+1 Level of Existing Arcane Spellcasting Class",
@@ -33793,7 +33830,8 @@
           "name": "Spell Power +5 (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Spell Power bonus increases to +5."
+          "summary": "Spell Power bonus increases to +5.",
+          "refId": "cab-red-wizard-spell-power"
         },
         {
           "name": "Great Circle Leader (Su)",
@@ -33886,7 +33924,7 @@
               "abilityType": "Ex",
               "text": "+1 effective caster level and +1 Save DC for spells from your specialist school.",
               "category": "Special Ability",
-              "refId": "cab-spell-power"
+              "refId": "cab-red-wizard-spell-power"
             },
             {
               "kind": "inline",
@@ -33936,7 +33974,7 @@
               "abilityType": "Ex",
               "text": "Spell Power bonus for specialist school increases to +2.",
               "category": "Special Ability",
-              "refId": "cab-spell-power"
+              "refId": "cab-red-wizard-spell-power"
             },
             {
               "kind": "inline",
@@ -33985,7 +34023,7 @@
               "abilityType": "Ex",
               "text": "Spell Power bonus increases to +3.",
               "category": "Special Ability",
-              "refId": "cab-spell-power"
+              "refId": "cab-red-wizard-spell-power"
             },
             {
               "kind": "inline",
@@ -34049,7 +34087,7 @@
               "abilityType": "Ex",
               "text": "Spell Power bonus increases to +4.",
               "category": "Special Ability",
-              "refId": "cab-spell-power"
+              "refId": "cab-red-wizard-spell-power"
             },
             {
               "kind": "inline",
@@ -34099,7 +34137,7 @@
               "abilityType": "Ex",
               "text": "Spell Power bonus increases to +5.",
               "category": "Special Ability",
-              "refId": "cab-spell-power"
+              "refId": "cab-red-wizard-spell-power"
             },
             {
               "kind": "inline",
@@ -39669,7 +39707,8 @@
           "name": "Spell Power +2 (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "If you injure a foe with a melee attack, gain a +2 bonus on caster level checks to overcome that foe's spell resistance for the rest of the encounter."
+          "summary": "If you injure a foe with a melee attack, gain a +2 bonus on caster level checks to overcome that foe's spell resistance for the rest of the encounter.",
+          "refId": "cab-duskblade-spell-power"
         }
       ],
       "7": [
@@ -39693,7 +39732,8 @@
           "name": "Spell Power +3 (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Spell Power bonus to overcome spell resistance increases to +3."
+          "summary": "Spell Power bonus to overcome spell resistance increases to +3.",
+          "refId": "cab-duskblade-spell-power"
         }
       ],
       "13": [
@@ -39717,7 +39757,8 @@
           "name": "Spell Power +4 (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Spell Power bonus to overcome spell resistance increases to +4."
+          "summary": "Spell Power bonus to overcome spell resistance increases to +4.",
+          "refId": "cab-duskblade-spell-power"
         }
       ],
       "18": [
@@ -39725,7 +39766,8 @@
           "name": "Spell Power +5 (Ex)",
           "category": "Class Feature",
           "type": "Ex",
-          "summary": "Spell Power bonus to overcome spell resistance increases to +5."
+          "summary": "Spell Power bonus to overcome spell resistance increases to +5.",
+          "refId": "cab-duskblade-spell-power"
         }
       ],
       "20": [
@@ -39878,7 +39920,7 @@
               "abilityType": "Ex",
               "text": "If you injure a foe with a melee attack, gain a +2 bonus on caster level checks to overcome that foe's spell resistance for the rest of the encounter.",
               "category": "Class Feature",
-              "refId": "cab-spell-power"
+              "refId": "cab-duskblade-spell-power"
             }
           ],
           "spellcasting": null
@@ -39948,7 +39990,7 @@
               "abilityType": "Ex",
               "text": "Spell Power bonus to overcome spell resistance increases to +3.",
               "category": "Class Feature",
-              "refId": "cab-spell-power"
+              "refId": "cab-duskblade-spell-power"
             }
           ],
           "spellcasting": null
@@ -40018,7 +40060,7 @@
               "abilityType": "Ex",
               "text": "Spell Power bonus to overcome spell resistance increases to +4.",
               "category": "Class Feature",
-              "refId": "cab-spell-power"
+              "refId": "cab-duskblade-spell-power"
             }
           ],
           "spellcasting": null
@@ -40045,7 +40087,7 @@
               "abilityType": "Ex",
               "text": "Spell Power bonus to overcome spell resistance increases to +5.",
               "category": "Class Feature",
-              "refId": "cab-spell-power"
+              "refId": "cab-duskblade-spell-power"
             }
           ],
           "spellcasting": null
@@ -54675,7 +54717,22 @@
         "touchAttack": true,
         "multiplyOnCrit": true
       }
-    ]
+    ],
+    "blueprint": "classAbility",
+    "category": "Class Ability",
+    "abilityType": "Sp",
+    "associations": [
+      [
+        "Warlock",
+        1
+      ]
+    ],
+    "tags": [
+      "class-ability",
+      "warlock",
+      "eldritch-blast"
+    ],
+    "shortDescription": "Ranged touch attack (60 ft.) dealing 1d6 damage per Eldritch Blast rank (up to 9d6 at Warlock 20)."
   },
   {
     "id": "cab-warlock-dr",
@@ -54693,7 +54750,22 @@
         "value": "@featureRank",
         "bypass": "cold iron"
       }
-    ]
+    ],
+    "blueprint": "classAbility",
+    "category": "Class Ability",
+    "abilityType": "Su",
+    "associations": [
+      [
+        "Warlock",
+        3
+      ]
+    ],
+    "tags": [
+      "class-ability",
+      "warlock",
+      "dr"
+    ],
+    "shortDescription": "Warlock gains DR 1/cold iron at 3rd level, increasing by +1 at 7th, 11th, 15th, and 19th level."
   },
   {
     "id": "cab-frenzy",
@@ -54761,7 +54833,22 @@
           }
         ]
       }
-    ]
+    ],
+    "blueprint": "classAbility",
+    "category": "Class Ability",
+    "abilityType": "Ex",
+    "associations": [
+      [
+        "Frenzied Berserker",
+        1
+      ]
+    ],
+    "tags": [
+      "class-ability",
+      "frenzied-berserker",
+      "frenzy"
+    ],
+    "shortDescription": "Enter a frenzy gaining +6 Strength (+10 with Greater Frenzy at 8th level), -4 AC, and an extra melee attack."
   },
   {
     "id": "cab-dagger-sneak-attack",
@@ -54779,8 +54866,8 @@
         "branches": [
           {
             "id": "br-dsa",
-            "condKind": "state",
-            "condText": "sneakAttack",
+            "condKind": "situational",
+            "condText": "sneak attack with dagger, kukri, or punching dagger",
             "effects": [
               {
                 "id": "ef-dsa-roll",
@@ -54796,7 +54883,22 @@
           }
         ]
       }
-    ]
+    ],
+    "blueprint": "classAbility",
+    "category": "Class Ability",
+    "abilityType": "Ex",
+    "associations": [
+      [
+        "Invisible Blade",
+        1
+      ]
+    ],
+    "tags": [
+      "class-ability",
+      "invisible-blade",
+      "sneak-attack"
+    ],
+    "shortDescription": "Deals +1d6 sneak attack damage per rank with daggers, kukris, or punching daggers."
   },
   {
     "id": "cab-unfettered-defense",
@@ -54812,7 +54914,7 @@
         "flow": "while",
         "branches": [
           {
-            "id": "br-ud",
+            "id": "ef-ud-when-br",
             "condKind": "situational",
             "condText": "unarmored and unencumbered",
             "effects": [
@@ -54823,14 +54925,29 @@
                   "ac.dodge"
                 ],
                 "mode": "formula",
-                "formula": "min(@abilities.int.mod, @classes.invisible_blade.level)",
-                "btype": "Untyped"
+                "formula": "max(0, min(@abilities.int.mod, @classes.invisible_blade.level))",
+                "btype": "Dodge"
               }
             ]
           }
         ]
       }
-    ]
+    ],
+    "blueprint": "classAbility",
+    "category": "Class Ability",
+    "abilityType": "Ex",
+    "associations": [
+      [
+        "Invisible Blade",
+        1
+      ]
+    ],
+    "tags": [
+      "class-ability",
+      "invisible-blade",
+      "ac"
+    ],
+    "shortDescription": "While unarmored, add positive Intelligence modifier (up to Invisible Blade level) as a dodge bonus to AC."
   },
   {
     "id": "cab-shield-block",
@@ -54847,7 +54964,7 @@
         "flow": "while",
         "branches": [
           {
-            "id": "br-sb",
+            "id": "ef-sb-when-br",
             "condKind": "situational",
             "condText": "vs. designated opponent with shield",
             "effects": [
@@ -54855,17 +54972,32 @@
                 "id": "ef-sb-ac",
                 "type": "stat",
                 "targets": [
-                  "ac.shield"
+                  "ac.shieldBonus"
                 ],
                 "mode": "formula",
                 "formula": "@featureRank",
-                "btype": "Shield"
+                "btype": "Untyped"
               }
             ]
           }
         ]
       }
-    ]
+    ],
+    "blueprint": "classAbility",
+    "category": "Class Ability",
+    "abilityType": "Ex",
+    "associations": [
+      [
+        "Knight",
+        1
+      ]
+    ],
+    "tags": [
+      "class-ability",
+      "knight",
+      "shield"
+    ],
+    "shortDescription": "Shield bonus to AC against designated opponent increases by +1 per Shield Block rank (stacks with shield)."
   },
   {
     "id": "cab-fighting-challenge",
@@ -54897,6 +55029,173 @@
             "mode": "formula",
             "formula": "@featureRank",
             "btype": "Morale"
+          }
+        ]
+      }
+    ],
+    "blueprint": "classAbility",
+    "category": "Class Ability",
+    "abilityType": "Ex",
+    "associations": [
+      [
+        "Knight",
+        1
+      ]
+    ],
+    "tags": [
+      "class-ability",
+      "knight",
+      "challenge"
+    ],
+    "shortDescription": "Gain +1 per rank morale bonus on Will saves, attack rolls, and damage rolls against a challenged foe."
+  },
+  {
+    "id": "cab-duskblade-spell-power",
+    "schemaVersion": 3,
+    "blueprint": "classAbility",
+    "type": "ClassAbility",
+    "category": "Class Ability",
+    "abilityType": "Ex",
+    "name": "Spell Power (Duskblade) (Ex)",
+    "source": "Player's Handbook II",
+    "associations": [
+      [
+        "Duskblade",
+        6
+      ]
+    ],
+    "tags": [
+      "class-ability",
+      "duskblade",
+      "spell-penetration"
+    ],
+    "shortDescription": "After injuring an opponent with a melee attack, gain +2 (+1 per rank above 1) on caster level checks to overcome that foe's spell resistance until the end of the encounter.",
+    "text": "Starting at 6th level, if you injure an opponent with a melee attack, you gain a +2 bonus on your caster level check to overcome that opponent's spell resistance for the rest of the encounter (increases to +3 at 11th, +4 at 16th, +5 at 18th).",
+    "effects": [
+      {
+        "id": "ef-dsp-when",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-dsp-when-br",
+            "condKind": "situational",
+            "condText": "vs. SR of foe wounded in melee",
+            "effects": [
+              {
+                "id": "ef-dsp-sr",
+                "type": "stat",
+                "targets": [
+                  "sr.penetration"
+                ],
+                "mode": "formula",
+                "formula": "@classes.duskblade.level >= 18 ? 5 : (@classes.duskblade.level >= 16 ? 4 : (@classes.duskblade.level >= 11 ? 3 : 2))",
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cab-red-wizard-spell-power",
+    "schemaVersion": 3,
+    "blueprint": "classAbility",
+    "type": "ClassAbility",
+    "category": "Class Ability",
+    "abilityType": "Ex",
+    "name": "Spell Power (Red Wizard) (Ex)",
+    "source": "Dungeon Master's Guide",
+    "associations": [
+      [
+        "Red Wizard",
+        2
+      ]
+    ],
+    "tags": [
+      "class-ability",
+      "red-wizard",
+      "caster-level",
+      "spell-dc"
+    ],
+    "rankFrom": "levelTable",
+    "shortDescription": "+1 per rank to effective caster level and save DCs for spells of your specialist school (+1 at 2nd, +2 at 4th, +3 at 6th, +4 at 8th, +5 at 10th).",
+    "text": "At 2nd level, a Red Wizard's effective caster level and save DCs for spells of his specialist school increase by +1, rising by +1 every two levels thereafter (+5 at 10th level).",
+    "effects": [
+      {
+        "id": "ef-rwsp-when",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-rwsp-when-br",
+            "condKind": "situational",
+            "condText": "specialist school spells",
+            "effects": [
+              {
+                "id": "ef-rwsp-cl",
+                "type": "stat",
+                "targets": [
+                  "casterLevel",
+                  "spell.dc"
+                ],
+                "mode": "formula",
+                "formula": "@featureRank",
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cab-mind-blade-enhancement",
+    "schemaVersion": 3,
+    "blueprint": "classAbility",
+    "type": "ClassAbility",
+    "category": "Class Ability",
+    "abilityType": "Su",
+    "name": "Mind Blade Enhancement (Su)",
+    "source": "Expanded Psionics Handbook",
+    "associations": [
+      [
+        "Soulknife",
+        4
+      ]
+    ],
+    "tags": [
+      "class-ability",
+      "soulknife",
+      "mind-blade"
+    ],
+    "rankFrom": "levelTable",
+    "shortDescription": "Your mind blade gains a +1 enhancement bonus on attack and damage rolls per rank (+1 at 4th, +2 at 8th, +3 at 12th, +4 at 16th, +5 at 20th).",
+    "text": "At 4th level, a soulknife gains the ability to enhance his mind blade (+1 at 4th, +2 at 8th, +3 at 12th, +4 at 16th, +5 at 20th).",
+    "effects": [
+      {
+        "id": "ef-mbe-when",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-mbe-br",
+            "condKind": "situational",
+            "condText": "with mind blade",
+            "effects": [
+              {
+                "id": "ef-mbe-stat",
+                "type": "stat",
+                "targets": [
+                  "atk.weapon",
+                  "dmg.weapon"
+                ],
+                "mode": "formula",
+                "formula": "@featureRank",
+                "btype": "Enhancement"
+              }
+            ]
           }
         ]
       }

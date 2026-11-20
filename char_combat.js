@@ -8971,23 +8971,26 @@
           }
         });
 
-        // Engine-derived Weapon Extra & Toggled Situational Riders (replaces legacy elementalMods text pipeline)
+        // Engine-derived Weapon Extra, Toggled Situational Riders & Critical-Only Riders (e.g. Flaming Burst, conditional onCritOnly)
         const engineExtraParts = [
           ...(Array.isArray(atk.evalResult?.extraDamageParts) ? atk.evalResult.extraDamageParts : []),
-          ...(Array.isArray(atk.evalResult?.activeSituationalDamageParts) ? atk.evalResult.activeSituationalDamageParts : [])
+          ...(Array.isArray(atk.evalResult?.activeSituationalDamageParts) ? atk.evalResult.activeSituationalDamageParts : []),
+          ...(atk.isCrit && Array.isArray(atk.evalResult?.critOnlyDamageParts) ? atk.evalResult.critOnlyDamageParts : [])
         ];
         engineExtraParts.forEach(ep => {
           if (!ep || !ep.dice) return;
           const eMatch = String(ep.dice).match(/(\d+)d(\d+)/i);
           if (eMatch) {
-            const count = parseInt(eMatch[1], 10) || 1;
+            const multFactor = (atk.isCrit && ep.multiplyOnCrit && !ep.onCritOnly) ? Math.max(1, Number(atk.mult) || 1) : 1;
+            const count = (parseInt(eMatch[1], 10) || 1) * multFactor;
             const sides = parseInt(eMatch[2], 10) || 6;
-            let eSum = Number(ep.bonus) || 0;
+            let eSum = (Number(ep.bonus) || 0) * multFactor;
             for (let k = 0; k < count; k++) {
               eSum += Math.floor(Math.random() * sides) + 1;
             }
             extraDiceSum += eSum;
-            const lbl = ep.condition ? `${ep.source || 'Rider'} (${ep.condition})` : (ep.source || 'Element');
+            const critTag = ep.onCritOnly ? ' [Crit]' : '';
+            const lbl = ep.condition ? `${ep.source || 'Rider'} (${ep.condition})${critTag}` : `${ep.source || 'Element'}${critTag}`;
             extraDetails.push(`${lbl}: +${eSum} ${ep.type || ''}`.trim());
           }
         });
