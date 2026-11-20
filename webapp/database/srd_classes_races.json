@@ -1260,11 +1260,12 @@
           "will": 4,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Wild Shape (1/day) (Su)",
               "abilityType": "Su",
               "text": "Turn into any Small or Medium animal and back again once per day (up to 1 hour/level).",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-wild-shape"
             }
           ],
           "spellcasting": null
@@ -1277,11 +1278,12 @@
           "will": 5,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Wild Shape (2/day) (Su)",
               "abilityType": "Su",
               "text": "Use Wild Shape up to 2 times per day.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-wild-shape"
             }
           ],
           "spellcasting": null
@@ -1294,11 +1296,12 @@
           "will": 5,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Wild Shape (3/day) (Su)",
               "abilityType": "Su",
               "text": "Use Wild Shape up to 3 times per day.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-wild-shape"
             }
           ],
           "spellcasting": null
@@ -1346,11 +1349,12 @@
           "will": 7,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Wild Shape (4/day) (Su)",
               "abilityType": "Su",
               "text": "Use Wild Shape up to 4 times per day.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-wild-shape"
             }
           ],
           "spellcasting": null
@@ -1414,11 +1418,12 @@
           "will": 9,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Wild Shape (5/day) (Su)",
               "abilityType": "Su",
               "text": "Use Wild Shape up to 5 times per day.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-wild-shape"
             }
           ],
           "spellcasting": null
@@ -1455,11 +1460,12 @@
           "will": 10,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Wild Shape (Elemental 1/day) (Su)",
               "abilityType": "Su",
               "text": "Turn into a Small, Medium, or Large elemental (air, earth, fire, or water) once per day.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-wild-shape-elemental"
             }
           ],
           "spellcasting": null
@@ -1481,18 +1487,20 @@
           "will": 11,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Wild Shape (6/day) (Su)",
               "abilityType": "Su",
               "text": "Use Wild Shape up to 6 times per day.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-wild-shape"
             },
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Wild Shape (Elemental 2/day) (Su)",
               "abilityType": "Su",
               "text": "Use Elemental Wild Shape up to 2 times per day.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-wild-shape-elemental"
             }
           ],
           "spellcasting": null
@@ -7169,11 +7177,12 @@
           "will": 0,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Enhance Arrow +1 (Su)",
               "abilityType": "Su",
               "text": "Every nonmagical arrow you nock and let fly becomes magical, gaining a +1 enhancement bonus.",
-              "category": "Special Ability"
+              "category": "Special Ability",
+              "refId": "cab-enhance-arrow"
             }
           ],
           "spellcasting": null
@@ -7204,11 +7213,12 @@
           "will": 1,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Enhance Arrow +2 (Su)",
               "abilityType": "Su",
               "text": "Nonmagical arrows you fire gain a +2 enhancement bonus.",
-              "category": "Special Ability"
+              "category": "Special Ability",
+              "refId": "cab-enhance-arrow"
             }
           ],
           "spellcasting": null
@@ -7239,11 +7249,12 @@
           "will": 1,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Enhance Arrow +3 (Su)",
               "abilityType": "Su",
               "text": "Nonmagical arrows you fire gain a +3 enhancement bonus.",
-              "category": "Special Ability"
+              "category": "Special Ability",
+              "refId": "cab-enhance-arrow"
             }
           ],
           "spellcasting": null
@@ -7274,11 +7285,12 @@
           "will": 2,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Enhance Arrow +4 (Su)",
               "abilityType": "Su",
               "text": "Nonmagical arrows you fire gain a +4 enhancement bonus.",
-              "category": "Special Ability"
+              "category": "Special Ability",
+              "refId": "cab-enhance-arrow"
             }
           ],
           "spellcasting": null
@@ -7309,11 +7321,12 @@
           "will": 3,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Enhance Arrow +5 (Su)",
               "abilityType": "Su",
               "text": "Nonmagical arrows you fire gain a +5 enhancement bonus.",
-              "category": "Special Ability"
+              "category": "Special Ability",
+              "refId": "cab-enhance-arrow"
             }
           ],
           "spellcasting": null
@@ -11513,11 +11526,12 @@
           "will": 2,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Wild Surge +1 (Su)",
               "abilityType": "Su",
               "text": "Let passion and emotion rise to gain +1 to manifester level and 1 free power point when manifesting a power.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-wild-surge"
             },
             {
               "kind": "inline",
@@ -11555,11 +11569,12 @@
           "will": 3,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Wild Surge +2 (Su)",
               "abilityType": "Su",
               "text": "Wild Surge manifester level boost increases to +2.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-wild-surge"
             }
           ],
           "spellcasting": null
@@ -11572,11 +11587,12 @@
           "will": 4,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Surging Euphoria +1 (Ex)",
               "abilityType": "Ex",
               "text": "When you successfully use Wild Surge without triggering Psychic Enervation, gain a +1 morale bonus on attack rolls, damage rolls, and saves for rounds equal to the Wild Surge intensity.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-surging-euphoria"
             }
           ],
           "spellcasting": null
@@ -11615,11 +11631,12 @@
           "will": 5,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Wild Surge +3 (Su)",
               "abilityType": "Su",
               "text": "Wild Surge manifester level boost increases to +3.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-wild-surge"
             }
           ],
           "spellcasting": null
@@ -11667,11 +11684,12 @@
           "will": 7,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Wild Surge +4 (Su)",
               "abilityType": "Su",
               "text": "Wild Surge manifester level boost increases to +4.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-wild-surge"
             }
           ],
           "spellcasting": null
@@ -11684,11 +11702,12 @@
           "will": 8,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Surging Euphoria +2 (Ex)",
               "abilityType": "Ex",
               "text": "Surging Euphoria morale bonus increases to +2.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-surging-euphoria"
             }
           ],
           "spellcasting": null
@@ -11727,11 +11746,12 @@
           "will": 9,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Wild Surge +5 (Su)",
               "abilityType": "Su",
               "text": "Wild Surge manifester level boost increases to +5.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-wild-surge"
             }
           ],
           "spellcasting": null
@@ -11779,11 +11799,12 @@
           "will": 11,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Wild Surge +6 (Su)",
               "abilityType": "Su",
               "text": "Wild Surge manifester level boost increases to +6.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-wild-surge"
             }
           ],
           "spellcasting": null
@@ -11796,11 +11817,12 @@
           "will": 12,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Surging Euphoria +3 (Ex)",
               "abilityType": "Ex",
               "text": "Surging Euphoria morale bonus increases to +3.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-surging-euphoria"
             }
           ],
           "spellcasting": null
@@ -17470,11 +17492,12 @@
           "will": 3,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Psychic Strike +1d8 (Su)",
               "abilityType": "Su",
               "text": "Imbue your mind blade as a move action to deal +1d8 extra damage to the next living, non-mindless target you hit.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-psychic-strike"
             }
           ],
           "spellcasting": null
@@ -17487,11 +17510,12 @@
           "will": 4,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "+1 Mind Blade (Su)",
               "abilityType": "Su",
               "text": "Your mind blade gains a +1 enhancement bonus on attack and damage rolls.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-mind-blade"
             }
           ],
           "spellcasting": null
@@ -17553,11 +17577,12 @@
           "will": 5,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Psychic Strike +2d8 (Su)",
               "abilityType": "Su",
               "text": "Psychic Strike extra damage increases to +2d8.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-psychic-strike"
             }
           ],
           "spellcasting": null
@@ -17570,11 +17595,12 @@
           "will": 6,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "+2 Mind Blade (Su)",
               "abilityType": "Su",
               "text": "Your mind blade enhancement bonus increases to +2.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-mind-blade"
             }
           ],
           "spellcasting": null
@@ -17630,11 +17656,12 @@
           "will": 7,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Psychic Strike +3d8 (Su)",
               "abilityType": "Su",
               "text": "Psychic Strike extra damage increases to +3d8.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-psychic-strike"
             }
           ],
           "spellcasting": null
@@ -17647,11 +17674,12 @@
           "will": 8,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "+3 Mind Blade (Su)",
               "abilityType": "Su",
               "text": "Your mind blade enhancement bonus increases to +3.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-mind-blade"
             }
           ],
           "spellcasting": null
@@ -17699,11 +17727,12 @@
           "will": 9,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Psychic Strike +4d8 (Su)",
               "abilityType": "Su",
               "text": "Psychic Strike extra damage increases to +4d8.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-psychic-strike"
             }
           ],
           "spellcasting": null
@@ -17716,11 +17745,12 @@
           "will": 10,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "+4 Mind Blade (Su)",
               "abilityType": "Su",
               "text": "Your mind blade enhancement bonus increases to +4.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-mind-blade"
             }
           ],
           "spellcasting": null
@@ -17767,11 +17797,12 @@
           "will": 11,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Psychic Strike +5d8 (Su)",
               "abilityType": "Su",
               "text": "Psychic Strike extra damage increases to +5d8.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-psychic-strike"
             }
           ],
           "spellcasting": null
@@ -17784,11 +17815,12 @@
           "will": 12,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "+5 Mind Blade (Su)",
               "abilityType": "Su",
               "text": "Your mind blade enhancement bonus increases to +5.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-mind-blade"
             }
           ],
           "spellcasting": null
@@ -33849,11 +33881,12 @@
           "will": 3,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Spell Power +1 (Ex)",
               "abilityType": "Ex",
               "text": "+1 effective caster level and +1 Save DC for spells from your specialist school.",
-              "category": "Special Ability"
+              "category": "Special Ability",
+              "refId": "cab-spell-power"
             },
             {
               "kind": "inline",
@@ -33898,11 +33931,12 @@
           "will": 4,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Spell Power +2 (Ex)",
               "abilityType": "Ex",
               "text": "Spell Power bonus for specialist school increases to +2.",
-              "category": "Special Ability"
+              "category": "Special Ability",
+              "refId": "cab-spell-power"
             },
             {
               "kind": "inline",
@@ -33946,11 +33980,12 @@
           "will": 5,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Spell Power +3 (Ex)",
               "abilityType": "Ex",
               "text": "Spell Power bonus increases to +3.",
-              "category": "Special Ability"
+              "category": "Special Ability",
+              "refId": "cab-spell-power"
             },
             {
               "kind": "inline",
@@ -34009,11 +34044,12 @@
           "will": 6,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Spell Power +4 (Ex)",
               "abilityType": "Ex",
               "text": "Spell Power bonus increases to +4.",
-              "category": "Special Ability"
+              "category": "Special Ability",
+              "refId": "cab-spell-power"
             },
             {
               "kind": "inline",
@@ -34058,11 +34094,12 @@
           "will": 7,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Spell Power +5 (Ex)",
               "abilityType": "Ex",
               "text": "Spell Power bonus increases to +5.",
-              "category": "Special Ability"
+              "category": "Special Ability",
+              "refId": "cab-spell-power"
             },
             {
               "kind": "inline",
@@ -39836,11 +39873,12 @@
           "will": 5,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Spell Power +2 (Ex)",
               "abilityType": "Ex",
               "text": "If you injure a foe with a melee attack, gain a +2 bonus on caster level checks to overcome that foe's spell resistance for the rest of the encounter.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-spell-power"
             }
           ],
           "spellcasting": null
@@ -39905,11 +39943,12 @@
           "will": 7,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Spell Power +3 (Ex)",
               "abilityType": "Ex",
               "text": "Spell Power bonus to overcome spell resistance increases to +3.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-spell-power"
             }
           ],
           "spellcasting": null
@@ -39974,11 +40013,12 @@
           "will": 10,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Spell Power +4 (Ex)",
               "abilityType": "Ex",
               "text": "Spell Power bonus to overcome spell resistance increases to +4.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-spell-power"
             }
           ],
           "spellcasting": null
@@ -40000,11 +40040,12 @@
           "will": 11,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Spell Power +5 (Ex)",
               "abilityType": "Ex",
               "text": "Spell Power bonus to overcome spell resistance increases to +5.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-spell-power"
             }
           ],
           "spellcasting": null
@@ -42294,11 +42335,12 @@
           "will": 2,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Eldritch Blast 1d6 (Sp)",
               "abilityType": "Sp",
               "text": "Ranged touch attack (60 ft. range) dealing 1d6 arcane damage at will.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-eldritch-blast"
             },
             {
               "kind": "inline",
@@ -42335,18 +42377,20 @@
           "will": 3,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Damage Reduction 1/cold iron (Su)",
               "abilityType": "Su",
               "text": "Gain DR 1/cold iron.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-warlock-dr"
             },
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Eldritch Blast 2d6 (Sp)",
               "abilityType": "Sp",
               "text": "Eldritch Blast damage increases to 2d6.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-eldritch-blast"
             }
           ],
           "spellcasting": null
@@ -42376,11 +42420,12 @@
           "will": 4,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Eldritch Blast 3d6 (Sp)",
               "abilityType": "Sp",
               "text": "Eldritch Blast damage increases to 3d6.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-eldritch-blast"
             }
           ],
           "spellcasting": null
@@ -42410,18 +42455,20 @@
           "will": 5,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Damage Reduction 2/cold iron (Su)",
               "abilityType": "Su",
               "text": "Damage reduction increases to 2/cold iron.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-warlock-dr"
             },
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Eldritch Blast 4d6 (Sp)",
               "abilityType": "Sp",
               "text": "Eldritch Blast damage increases to 4d6.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-eldritch-blast"
             }
           ],
           "spellcasting": null
@@ -42451,11 +42498,12 @@
           "will": 6,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Eldritch Blast 5d6 (Sp)",
               "abilityType": "Sp",
               "text": "Eldritch Blast damage increases to 5d6.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-eldritch-blast"
             }
           ],
           "spellcasting": null
@@ -42485,18 +42533,20 @@
           "will": 7,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Damage Reduction 3/cold iron (Su)",
               "abilityType": "Su",
               "text": "Damage reduction increases to 3/cold iron.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-warlock-dr"
             },
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Eldritch Blast 6d6 (Sp)",
               "abilityType": "Sp",
               "text": "Eldritch Blast damage increases to 6d6.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-eldritch-blast"
             },
             {
               "kind": "inline",
@@ -42550,11 +42600,12 @@
           "will": 9,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Eldritch Blast 7d6 (Sp)",
               "abilityType": "Sp",
               "text": "Eldritch Blast damage increases to 7d6.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-eldritch-blast"
             }
           ],
           "spellcasting": null
@@ -42567,11 +42618,12 @@
           "will": 9,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Damage Reduction 4/cold iron (Su)",
               "abilityType": "Su",
               "text": "Damage reduction increases to 4/cold iron.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-warlock-dr"
             }
           ],
           "spellcasting": null
@@ -42601,11 +42653,12 @@
           "will": 10,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Eldritch Blast 8d6 (Sp)",
               "abilityType": "Sp",
               "text": "Eldritch Blast damage increases to 8d6.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-eldritch-blast"
             }
           ],
           "spellcasting": null
@@ -42635,11 +42688,12 @@
           "will": 11,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Damage Reduction 5/cold iron (Su)",
               "abilityType": "Su",
               "text": "Damage reduction increases to 5/cold iron.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-warlock-dr"
             }
           ],
           "spellcasting": null
@@ -42652,11 +42706,12 @@
           "will": 12,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Eldritch Blast 9d6 (Sp)",
               "abilityType": "Sp",
               "text": "Eldritch Blast damage increases to 9d6.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-eldritch-blast"
             },
             {
               "kind": "inline",
@@ -48789,11 +48844,12 @@
           "will": 2,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Fighting Challenge +1 (Ex)",
               "abilityType": "Ex",
               "text": "Issue a challenge to a single foe (Int 5+, CR >= level - 2) as a swift action to gain +1 morale bonus on Will saves, attack rolls, and damage rolls against that foe.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-fighting-challenge"
             },
             {
               "kind": "inline",
@@ -48803,11 +48859,12 @@
               "category": "Class Feature"
             },
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Shield Block +1 (Ex)",
               "abilityType": "Ex",
               "text": "Designate a single opponent during your turn to increase your shield's AC bonus against that foe by +1.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-shield-block"
             }
           ],
           "spellcasting": null
@@ -48919,11 +48976,12 @@
           "will": 5,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Fighting Challenge +2 (Ex)",
               "abilityType": "Ex",
               "text": "Fighting Challenge morale bonus increases to +2.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-fighting-challenge"
             }
           ],
           "spellcasting": null
@@ -48987,11 +49045,12 @@
           "will": 7,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Shield Block +2 (Ex)",
               "abilityType": "Ex",
               "text": "Shield Block AC bonus against your designated foe increases to +2.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-shield-block"
             }
           ],
           "spellcasting": null
@@ -49021,11 +49080,12 @@
           "will": 8,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Fighting Challenge +3 (Ex)",
               "abilityType": "Ex",
               "text": "Fighting Challenge morale bonus increases to +3.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-fighting-challenge"
             }
           ],
           "spellcasting": null
@@ -49115,11 +49175,12 @@
           "will": 11,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Fighting Challenge +4 (Ex)",
               "abilityType": "Ex",
               "text": "Fighting Challenge morale bonus increases to +4.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-fighting-challenge"
             }
           ],
           "spellcasting": null
@@ -49139,11 +49200,12 @@
               "category": "Class Feature"
             },
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Shield Block +3 (Ex)",
               "abilityType": "Ex",
               "text": "Shield Block AC bonus against your designated foe increases to +3.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-shield-block"
             }
           ],
           "spellcasting": null
@@ -50175,11 +50237,12 @@
           "will": 0,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Frenzy 1/day (Ex)",
               "abilityType": "Ex",
               "text": "Enter a savage frenzy (+6 Str, +1 extra melee attack at highest BAB, -4 AC, 2 nonlethal damage/round; stacks with Rage).",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-frenzy"
             },
             {
               "kind": "inline",
@@ -50216,11 +50279,12 @@
           "will": 1,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Frenzy 2/day (Ex)",
               "abilityType": "Ex",
               "text": "Enter a Frenzy up to 2 times per day.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-frenzy"
             }
           ],
           "spellcasting": null
@@ -50250,11 +50314,12 @@
           "will": 1,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Frenzy 3/day (Ex)",
               "abilityType": "Ex",
               "text": "Enter a Frenzy up to 3 times per day.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-frenzy"
             },
             {
               "kind": "inline",
@@ -50291,11 +50356,12 @@
           "will": 2,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Frenzy 4/day (Ex)",
               "abilityType": "Ex",
               "text": "Enter a Frenzy up to 4 times per day.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-frenzy"
             }
           ],
           "spellcasting": null
@@ -50308,11 +50374,12 @@
           "will": 2,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Greater Frenzy (Ex)",
               "abilityType": "Ex",
               "text": "Strength bonus during a frenzy increases to +10.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-frenzy"
             },
             {
               "kind": "inline",
@@ -50332,11 +50399,12 @@
           "will": 3,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Frenzy 5/day (Ex)",
               "abilityType": "Ex",
               "text": "Enter a Frenzy up to 5 times per day.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-frenzy"
             }
           ],
           "spellcasting": null
@@ -50554,18 +50622,20 @@
           "will": 0,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Dagger Sneak Attack +1d6 (Ex)",
               "abilityType": "Ex",
               "text": "Deal +1d6 sneak attack damage when attacking with a dagger, kukri, or punching dagger (stacks with other sneak attack).",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-dagger-sneak-attack"
             },
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Unfettered Defense (Ex)",
               "abilityType": "Ex",
               "text": "Add your Intelligence bonus (max Invisible Blade level) to AC when unarmored and wielding daggers.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-unfettered-defense"
             }
           ],
           "spellcasting": null
@@ -50595,11 +50665,12 @@
           "will": 1,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Dagger Sneak Attack +2d6 (Ex)",
               "abilityType": "Ex",
               "text": "Dagger Sneak Attack extra damage increases to +2d6.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-dagger-sneak-attack"
             },
             {
               "kind": "inline",
@@ -50636,11 +50707,12 @@
           "will": 1,
           "features": [
             {
-              "kind": "inline",
+              "kind": "ref",
               "name": "Dagger Sneak Attack +3d6 (Ex)",
               "abilityType": "Ex",
               "text": "Dagger Sneak Attack extra damage increases to +3d6.",
-              "category": "Class Feature"
+              "category": "Class Feature",
+              "refId": "cab-dagger-sneak-attack"
             },
             {
               "kind": "inline",
@@ -54581,6 +54653,253 @@
     "text": "A loremaster gains the ability to know legends or information (1d20 + Loremaster level + Intelligence modifier), functioning like Bardic Knowledge.",
     "tags": [
       "class-ability"
+    ]
+  },
+  {
+    "id": "cab-eldritch-blast",
+    "schemaVersion": 3,
+    "type": "ClassAbility",
+    "name": "Eldritch Blast (Sp)",
+    "source": "Complete Arcane",
+    "rankFrom": "levelTable",
+    "text": "Ranged touch attack (60 ft.) dealing 1d6 damage per Eldritch Blast rank (up to 9d6 at Warlock 20).",
+    "effects": [
+      {
+        "id": "ef-eb-roll",
+        "type": "roll",
+        "kind": "Damage",
+        "dice": "(@featureRank)d6",
+        "dmgType": "Untyped",
+        "source": "Eldritch Blast",
+        "scaling": "formula",
+        "touchAttack": true,
+        "multiplyOnCrit": true
+      }
+    ]
+  },
+  {
+    "id": "cab-warlock-dr",
+    "schemaVersion": 3,
+    "type": "ClassAbility",
+    "name": "Damage Reduction (Cold Iron) (Su)",
+    "source": "Complete Arcane",
+    "rankFrom": "levelTable",
+    "text": "Warlock gains DR 1/cold iron at 3rd level, increasing by +1 at 7th, 11th, 15th, and 19th level.",
+    "effects": [
+      {
+        "id": "ef-wlk-dr",
+        "type": "defense",
+        "defKind": "dr",
+        "value": "@featureRank",
+        "bypass": "cold iron"
+      }
+    ]
+  },
+  {
+    "id": "cab-frenzy",
+    "schemaVersion": 3,
+    "type": "ClassAbility",
+    "name": "Frenzy (Ex)",
+    "source": "Complete Warrior",
+    "text": "Enter a frenzy gaining +6 Strength (+10 with Greater Frenzy at 8th level), -4 AC, and an extra melee attack at highest BAB.",
+    "effects": [],
+    "modes": [
+      {
+        "id": "off",
+        "label": "Inactive",
+        "effects": []
+      },
+      {
+        "id": "mode-frenzy",
+        "label": "Frenzy (+6 STR, -4 AC)",
+        "effects": [
+          {
+            "id": "ef-fr-str",
+            "type": "stat",
+            "targets": [
+              "str"
+            ],
+            "mode": "flat",
+            "value": 6,
+            "btype": "Untyped"
+          },
+          {
+            "id": "ef-fr-ac",
+            "type": "stat",
+            "targets": [
+              "ac.all"
+            ],
+            "mode": "flat",
+            "value": -4,
+            "btype": "Untyped"
+          }
+        ]
+      },
+      {
+        "id": "mode-greater-frenzy",
+        "label": "Greater Frenzy (+10 STR, -4 AC)",
+        "effects": [
+          {
+            "id": "ef-gfr-str",
+            "type": "stat",
+            "targets": [
+              "str"
+            ],
+            "mode": "flat",
+            "value": 10,
+            "btype": "Untyped"
+          },
+          {
+            "id": "ef-gfr-ac",
+            "type": "stat",
+            "targets": [
+              "ac.all"
+            ],
+            "mode": "flat",
+            "value": -4,
+            "btype": "Untyped"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cab-dagger-sneak-attack",
+    "schemaVersion": 3,
+    "type": "ClassAbility",
+    "name": "Dagger Sneak Attack (Ex)",
+    "source": "Complete Warrior",
+    "rankFrom": "levelTable",
+    "text": "Deals +1d6 sneak attack damage per rank with daggers, kukris, or punching daggers.",
+    "effects": [
+      {
+        "id": "ef-dsa-when",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "br-dsa",
+            "condKind": "state",
+            "condText": "sneakAttack",
+            "effects": [
+              {
+                "id": "ef-dsa-roll",
+                "type": "roll",
+                "kind": "Damage",
+                "dice": "(@featureRank)d6",
+                "dmgType": "Precision",
+                "source": "Dagger Sneak Attack",
+                "multiplyOnCrit": false,
+                "scaling": "formula"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cab-unfettered-defense",
+    "schemaVersion": 3,
+    "type": "ClassAbility",
+    "name": "Unfettered Defense (Ex)",
+    "source": "Complete Warrior",
+    "text": "While unarmored, add Intelligence bonus (up to Invisible Blade class level) as a bonus to AC.",
+    "effects": [
+      {
+        "id": "ef-ud-when",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "br-ud",
+            "condKind": "situational",
+            "condText": "unarmored and unencumbered",
+            "effects": [
+              {
+                "id": "ef-ud-ac",
+                "type": "stat",
+                "targets": [
+                  "ac.dodge"
+                ],
+                "mode": "formula",
+                "formula": "min(@abilities.int.mod, @classes.invisible_blade.level)",
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cab-shield-block",
+    "schemaVersion": 3,
+    "type": "ClassAbility",
+    "name": "Shield Block (Ex)",
+    "source": "Player's Handbook II",
+    "rankFrom": "levelTable",
+    "text": "Designate one opponent; shield bonus to AC against that opponent increases by +1 per Shield Block rank.",
+    "effects": [
+      {
+        "id": "ef-sb-when",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "br-sb",
+            "condKind": "situational",
+            "condText": "vs. designated opponent with shield",
+            "effects": [
+              {
+                "id": "ef-sb-ac",
+                "type": "stat",
+                "targets": [
+                  "ac.shield"
+                ],
+                "mode": "formula",
+                "formula": "@featureRank",
+                "btype": "Shield"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cab-fighting-challenge",
+    "schemaVersion": 3,
+    "type": "ClassAbility",
+    "name": "Fighting Challenge (Ex)",
+    "source": "Player's Handbook II",
+    "rankFrom": "levelTable",
+    "text": "Gain a morale bonus on Will saves, attack rolls, and damage rolls against a single challenged foe equal to +1 per rank.",
+    "effects": [],
+    "modes": [
+      {
+        "id": "off",
+        "label": "Inactive",
+        "effects": []
+      },
+      {
+        "id": "mode-fc",
+        "label": "Fighting Challenge Active",
+        "effects": [
+          {
+            "id": "ef-fc-stat",
+            "type": "stat",
+            "targets": [
+              "atk.all",
+              "dmg.all",
+              "save.will"
+            ],
+            "mode": "formula",
+            "formula": "@featureRank",
+            "btype": "Morale"
+          }
+        ]
+      }
     ]
   }
 ]

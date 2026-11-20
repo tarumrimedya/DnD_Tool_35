@@ -1,9 +1,9 @@
 {
   "schemaVersion": 3,
   "version": "3.0.0",
-  "compendiumHash": "9bec5310b582ab72",
+  "compendiumHash": "0097e2cc85cafad4",
   "generatedAt": "2026-11-15T19:43:51.694Z",
-  "totalEntries": 7988,
+  "totalEntries": 7995,
   "chunks": {
     "srd_equipment.json": {
       "count": 1143,
@@ -18,9 +18,9 @@
       "eagerLoad": true
     },
     "srd_classes_races.json": {
-      "count": 326,
+      "count": 333,
       "bytes": 1611663,
-      "hash": "5550a7b93d4d061d",
+      "hash": "6cfd4b83a381a69e",
       "eagerLoad": true
     },
     "srd_combat_rules.json": {
@@ -66063,6 +66063,62 @@
       "n": "Fiendish Servant",
       "t": "ClassAbility",
       "c": "Class Feature",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cab-eldritch-blast",
+      "n": "Eldritch Blast (Sp)",
+      "t": "ClassAbility",
+      "c": "",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cab-warlock-dr",
+      "n": "Damage Reduction (Cold Iron) (Su)",
+      "t": "ClassAbility",
+      "c": "",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cab-frenzy",
+      "n": "Frenzy (Ex)",
+      "t": "ClassAbility",
+      "c": "",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cab-dagger-sneak-attack",
+      "n": "Dagger Sneak Attack (Ex)",
+      "t": "ClassAbility",
+      "c": "",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cab-unfettered-defense",
+      "n": "Unfettered Defense (Ex)",
+      "t": "ClassAbility",
+      "c": "",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cab-shield-block",
+      "n": "Shield Block (Ex)",
+      "t": "ClassAbility",
+      "c": "",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cab-fighting-challenge",
+      "n": "Fighting Challenge (Ex)",
+      "t": "ClassAbility",
+      "c": "",
       "s": "None",
       "f": "srd_classes_races.json"
     }
