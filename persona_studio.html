@@ -352,6 +352,21 @@
     .owl-svg[data-owl="found"] .owl-fx-ink { opacity: 1; animation: inkSparkles 1s ease-out infinite; }
     .owl-svg[data-owl="found"] .owl-fx-eureka { opacity: 1; animation: d20FloatSpin 1.6s ease-in-out infinite; transform-origin: 100px 28px; }
 
+    /* OWL: 180° 3D HORIZONTAL NECK SWIVEL (Front -> 180° Back -> Front) */
+    .owl-face-yaw { transform-origin: 100px 84px; }
+    .owl-nape-back { transform-origin: 100px 84px; opacity: 0; pointer-events: none; }
+    .owl-svg[data-owl="spin180"] .owl-head-3d { animation: owlNeckBob180 2.8s ease-in-out infinite; }
+    .owl-svg[data-owl="spin180"] .owl-face-yaw { animation: owlFaceSwivel180 2.8s ease-in-out infinite; }
+    .owl-svg[data-owl="spin180"] .owl-nape-back { animation: owlNapeSwivel180 2.8s ease-in-out infinite; }
+    .owl-svg[data-owl="spin180"] .owl-tuft-l { animation: owlTuftSwapL 2.8s ease-in-out infinite; }
+    .owl-svg[data-owl="spin180"] .owl-tuft-r { animation: owlTuftSwapR 2.8s ease-in-out infinite; }
+
+    /* OWL: 180° CURIOUS UPSIDE-DOWN HEAD ROLL */
+    .owl-svg[data-owl="flip180"] .owl-head-3d {
+      transform-origin: 100px 84px;
+      animation: owlUpsideDown180 2.9s cubic-bezier(0.34, 1.28, 0.64, 1) infinite;
+    }
+
     body.is-reduced-motion *,
     body.is-reduced-motion *::before,
     body.is-reduced-motion *::after {
@@ -509,6 +524,37 @@
       0%, 100% { transform: translateY(0) scale(0.96); }
       50% { transform: translateY(-8px) scale(1.05); }
     }
+    @keyframes owlNeckBob180 {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      25% { transform: translateY(-2px) rotate(3deg); }
+      50% { transform: translateY(-1px) rotate(0deg); }
+      75% { transform: translateY(-2px) rotate(-3deg); }
+    }
+    @keyframes owlFaceSwivel180 {
+      0%, 8% { transform: translateX(0) scaleX(1); opacity: 1; }
+      24% { transform: translateX(52px) scaleX(0.2); opacity: 0; }
+      25%, 68% { transform: translateX(-52px) scaleX(0.2); opacity: 0; }
+      86%, 100% { transform: translateX(0) scaleX(1); opacity: 1; }
+    }
+    @keyframes owlNapeSwivel180 {
+      0%, 14% { transform: translateX(-48px) scaleX(0.35); opacity: 0; }
+      30%, 60% { transform: translateX(0) scaleX(1); opacity: 1; }
+      78%, 100% { transform: translateX(48px) scaleX(0.35); opacity: 0; }
+    }
+    @keyframes owlTuftSwapL {
+      0%, 10%, 90%, 100% { transform: translateX(0) rotate(0deg); }
+      32%, 60% { transform: translateX(8px) rotate(8deg) scaleX(0.92); }
+    }
+    @keyframes owlTuftSwapR {
+      0%, 10%, 90%, 100% { transform: translateX(0) rotate(0deg); }
+      32%, 60% { transform: translateX(-8px) rotate(-8deg) scaleX(0.92); }
+    }
+    @keyframes owlUpsideDown180 {
+      0%, 8% { transform: rotate(0deg); }
+      22%, 30% { transform: rotate(-38deg); }
+      50%, 74% { transform: rotate(-180deg); }
+      92%, 100% { transform: rotate(0deg); }
+    }
   </style>
 </head>
 <body>
@@ -590,10 +636,12 @@
         <div class="action-bar" id="owl-actions">
           <span class="ctrl-label">Familiar Pose:</span>
           <button type="button" class="pill-btn is-amber is-active" data-owl-cmd="idle">Idle</button>
+          <button type="button" class="pill-btn is-amber" data-owl-cmd="spin180">🔄 180° Neck Swivel</button>
+          <button type="button" class="pill-btn is-amber" data-owl-cmd="flip180">🙃 180° Upside-Down</button>
           <button type="button" class="pill-btn is-amber" data-owl-cmd="write">🪶 Quill Chronicle</button>
           <button type="button" class="pill-btn is-amber" data-owl-cmd="hoot">🦉 Flutter &amp; Hoot</button>
           <button type="button" class="pill-btn is-amber" data-owl-cmd="search">📖 Riffle Pages</button>
-          <button type="button" class="pill-btn is-amber" data-owl-cmd="found">✨ Eureka! Found</button>
+          <button type="button" class="pill-btn is-amber" data-owl-cmd="found">✨ Eureka!</button>
         </div>
 
         <div class="scale-strip">
@@ -1003,6 +1051,9 @@
             <stop offset="45%" stop-color="#fde68a"/>
             <stop offset="100%" stop-color="#d97706"/>
           </linearGradient>
+          <clipPath id="oHeadClip">
+            <rect x="53" y="49" width="94" height="68" rx="34"/>
+          </clipPath>
         </defs>
 
         <!-- GROUND SHADOW -->
@@ -1052,33 +1103,47 @@
             </g>
 
             <rect x="53" y="49" width="94" height="68" rx="34" fill="url(#oPlume)"/>
-            <circle cx="81" cy="84" r="19.8" fill="url(#oDisc)"/>
-            <circle cx="119" cy="84" r="19.8" fill="url(#oDisc)"/>
-            <path d="M83 55 L100 78 L117 55 Z" fill="#853a0a" fill-opacity="0.72"/>
+            <g clip-path="url(#oHeadClip)">
+              <!-- BACK OF HEAD (Visible at 180° Neck Swivel!) -->
+              <g class="owl-nape-back">
+                <path d="M54 83 Q100 89 146 83" stroke="#d97706" stroke-width="3.2" stroke-linecap="round"/>
+                <path d="M74 68 Q82 75 90 68 M92 68 Q100 75 108 68 M110 68 Q118 75 126 68" stroke="#fde68a" stroke-opacity="0.32" stroke-width="2.6" stroke-linecap="round"/>
+                <path d="M70 84 Q80 92 90 84 M92 84 Q100 92 108 84 M110 84 Q120 92 130 84" stroke="#451a03" stroke-opacity="0.45" stroke-width="2.8" stroke-linecap="round"/>
+                <path d="M78 99 Q89 106 100 99 M102 99 Q113 106 124 99" stroke="#fde68a" stroke-opacity="0.26" stroke-width="2.6" stroke-linecap="round"/>
+                <rect x="93" y="81" width="14" height="6" rx="2.5" fill="#fbbf24"/>
+              </g>
 
-            <!-- HUGE GLOSSY 3D MARBLE EYES WITH LIVE CURSOR GAZE -->
-            <g class="owl-lids">
-              <circle cx="81" cy="84" r="13.8" fill="url(#oAmber)"/>
-              <circle cx="119" cy="84" r="13.8" fill="url(#oAmber)"/>
-              <g class="gaze-track">
-                <circle cx="81" cy="84" r="9.8" fill="#0b0807"/>
-                <circle cx="77.2" cy="79.5" r="3.5" fill="#ffffff"/>
-                <circle cx="85" cy="88" r="1.5" fill="#fde047" fill-opacity="0.9"/>
+              <!-- FRONT OF FACE (Swivels out of view during 180° turn!) -->
+              <g class="owl-face-yaw">
+                <circle cx="81" cy="84" r="19.8" fill="url(#oDisc)"/>
+                <circle cx="119" cy="84" r="19.8" fill="url(#oDisc)"/>
+                <path d="M83 55 L100 78 L117 55 Z" fill="#853a0a" fill-opacity="0.72"/>
 
-                <circle cx="119" cy="84" r="9.8" fill="#0b0807"/>
-                <circle cx="115.2" cy="79.5" r="3.5" fill="#ffffff"/>
-                <circle cx="123" cy="88" r="1.5" fill="#fde047" fill-opacity="0.9"/>
+                <!-- HUGE GLOSSY 3D MARBLE EYES WITH LIVE CURSOR GAZE -->
+                <g class="owl-lids">
+                  <circle cx="81" cy="84" r="13.8" fill="url(#oAmber)"/>
+                  <circle cx="119" cy="84" r="13.8" fill="url(#oAmber)"/>
+                  <g class="gaze-track">
+                    <circle cx="81" cy="84" r="9.8" fill="#0b0807"/>
+                    <circle cx="77.2" cy="79.5" r="3.5" fill="#ffffff"/>
+                    <circle cx="85" cy="88" r="1.5" fill="#fde047" fill-opacity="0.9"/>
+
+                    <circle cx="119" cy="84" r="9.8" fill="#0b0807"/>
+                    <circle cx="115.2" cy="79.5" r="3.5" fill="#ffffff"/>
+                    <circle cx="123" cy="88" r="1.5" fill="#fde047" fill-opacity="0.9"/>
+                  </g>
+                </g>
+
+                <!-- 3D Brass Scholar Spectacles -->
+                <circle cx="81" cy="84" r="16.4" stroke="#fde047" stroke-width="2.6"/>
+                <circle cx="119" cy="84" r="16.4" stroke="#fde047" stroke-width="2.6"/>
+                <path d="M97 84 Q100 80 103 84" stroke="#fde047" stroke-width="3" stroke-linecap="round"/>
+
+                <!-- Sculpted 3D Beak -->
+                <path d="M92.5 93 C96 88.5 104 88.5 107.5 93 L100 108 Z" fill="#f59e0b"/>
+                <path d="M96 93 L100 103.5 L100 91 Z" fill="#fef08a" fill-opacity="0.58"/>
               </g>
             </g>
-
-            <!-- 3D Brass Scholar Spectacles -->
-            <circle cx="81" cy="84" r="16.4" stroke="#fde047" stroke-width="2.6"/>
-            <circle cx="119" cy="84" r="16.4" stroke="#fde047" stroke-width="2.6"/>
-            <path d="M97 84 Q100 80 103 84" stroke="#fde047" stroke-width="3" stroke-linecap="round"/>
-
-            <!-- Sculpted 3D Beak -->
-            <path d="M92.5 93 C96 88.5 104 88.5 107.5 93 L100 108 Z" fill="#f59e0b"/>
-            <path d="M96 93 L100 103.5 L100 91 Z" fill="#fef08a" fill-opacity="0.58"/>
           </g>
         </g>
 
@@ -1143,6 +1208,8 @@
       };
       const OWL_LABELS = {
         idle: 'Idle (Perched)',
+        spin180: '180° Neck Swivel (Looking Back!)',
+        flip180: '180° Curious Upside-Down Tilt!',
         write: 'Scribbling Chronicle',
         hoot: 'Flutter & Golden Hoot',
         search: 'Riffling Quest Logs',
@@ -1199,7 +1266,7 @@
       });
 
       const WIZ_POOL = ['astrolabe', 'd20', 'fireball', 'lightning', 'scroll', 'ward'];
-      const OWL_POOL = ['write', 'hoot', 'search', 'found'];
+      const OWL_POOL = ['spin180', 'flip180', 'write', 'hoot', 'search', 'found'];
 
       document.getElementById('wiz-hero').addEventListener('click', () => {
         wizCurrent = WIZ_POOL[(WIZ_POOL.indexOf(wizCurrent) + 1) % WIZ_POOL.length];
