@@ -3,15 +3,20 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Joyful-Fermi — Living Persona Studio (Rule Master &amp; Chronicler)</title>
+  <title>Joyful-Fermi — 3D Clay Persona Studio (Rule Master &amp; Chronicler)</title>
   <link rel="stylesheet" href="design_tokens.css?v=e36252e504" />
   <style>
     *, *::before, *::after { box-sizing: border-box; }
+    :root {
+      --gx: 0px;
+      --gy: 0px;
+      --tilt-x: 0deg;
+    }
     html, body {
       margin: 0; padding: 0; min-height: 100%;
       background:
-        radial-gradient(circle at 20% 10%, rgba(67, 56, 202, 0.25), transparent 44%),
-        radial-gradient(circle at 82% 14%, rgba(180, 83, 9, 0.22), transparent 42%),
+        radial-gradient(circle at 20% 10%, rgba(79, 70, 229, 0.22), transparent 45%),
+        radial-gradient(circle at 82% 14%, rgba(217, 119, 6, 0.18), transparent 44%),
         var(--bg-page, #080e1e);
       color: var(--text-primary, #f8fafc);
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -19,9 +24,9 @@
     }
 
     .studio-shell {
-      max-width: 1340px;
+      max-width: 1360px;
       margin: 0 auto;
-      padding: 20px 20px 110px;
+      padding: 20px 20px 124px;
     }
 
     /* Top Header */
@@ -75,32 +80,32 @@
       gap: 18px;
       margin-bottom: 18px;
     }
-    @media (max-width: 940px) {
+    @media (max-width: 960px) {
       .stage-grid { grid-template-columns: 1fr; }
     }
 
     .persona-card {
       position: relative;
-      border-radius: 18px;
+      border-radius: 20px;
       background: rgba(15, 23, 42, 0.94);
-      border: 1.5px solid rgba(99, 102, 241, 0.48);
-      box-shadow: 0 18px 44px rgba(0, 0, 0, 0.5);
+      border: 1.5px solid rgba(99, 102, 241, 0.45);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55);
       overflow: hidden;
       display: flex; flex-direction: column;
     }
-    .persona-card.is-chronicler { border-color: rgba(245, 158, 11, 0.48); }
+    .persona-card.is-chronicler { border-color: rgba(245, 158, 11, 0.45); }
 
     .persona-card-hdr {
       display: flex; align-items: center; justify-content: space-between; gap: 10px;
       padding: 14px 18px;
-      background: rgba(2, 6, 23, 0.78);
+      background: rgba(2, 6, 23, 0.8);
       border-bottom: 1px solid rgba(51, 65, 85, 0.7);
     }
     .persona-card-title { margin: 0; font-size: 16px; font-weight: 800; color: #ffffff; display: flex; align-items: center; gap: 8px; }
     .persona-card-role { font-size: 11px; color: #94a3b8; margin-top: 2px; }
     .state-tag {
       font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-      font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 9999px;
+      font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 9999px;
       background: rgba(56, 189, 248, 0.14); color: #7dd3fc; border: 1px solid rgba(56, 189, 248, 0.45);
       white-space: nowrap;
     }
@@ -108,119 +113,114 @@
       background: rgba(245, 158, 11, 0.16); color: #fcd34d; border-color: rgba(245, 158, 11, 0.45);
     }
 
-    /* Hero Stage */
+    /* 3D Showcase Pedestal Stage */
     .hero-stage {
       position: relative;
-      height: 310px;
+      height: 370px;
       display: flex; align-items: center; justify-content: center;
       background:
-        radial-gradient(circle at 50% 52%, rgba(99, 102, 241, 0.24) 0%, rgba(15, 23, 42, 0.15) 56%, rgba(2, 6, 23, 0.9) 100%),
-        repeating-linear-gradient(0deg, rgba(148, 163, 184, 0.03) 0 1px, transparent 1px 24px),
-        repeating-linear-gradient(90deg, rgba(148, 163, 184, 0.03) 0 1px, transparent 1px 24px);
+        radial-gradient(circle at 50% 45%, rgba(99, 102, 241, 0.30) 0%, rgba(30, 27, 75, 0.2) 44%, rgba(2, 6, 23, 0.95) 100%);
       overflow: hidden;
     }
     .persona-card.is-chronicler .hero-stage {
       background:
-        radial-gradient(circle at 50% 52%, rgba(245, 158, 11, 0.24) 0%, rgba(15, 23, 42, 0.15) 56%, rgba(2, 6, 23, 0.9) 100%),
-        repeating-linear-gradient(0deg, rgba(251, 191, 36, 0.03) 0 1px, transparent 1px 24px),
-        repeating-linear-gradient(90deg, rgba(251, 191, 36, 0.03) 0 1px, transparent 1px 24px);
+        radial-gradient(circle at 50% 45%, rgba(245, 158, 11, 0.28) 0%, rgba(69, 26, 3, 0.2) 44%, rgba(2, 6, 23, 0.95) 100%);
     }
 
-    .hero-medallion {
-      width: 248px; height: 248px; border-radius: 9999px;
+    .hero-pedestal {
+      width: 320px; height: 320px;
       display: flex; align-items: center; justify-content: center;
-      background: radial-gradient(circle at 32% 24%, #1e1b4b 0%, #090d1f 74%);
-      border: 2px solid rgba(129, 140, 248, 0.65);
-      box-shadow: 0 22px 54px rgba(0, 0, 0, 0.68), 0 0 42px rgba(99, 102, 241, 0.3);
       cursor: pointer;
       position: relative;
-      transition: transform 0.2s ease, box-shadow 0.25s ease;
+      transition: transform 0.24s cubic-bezier(0.22, 1, 0.36, 1);
     }
-    .persona-card.is-chronicler .hero-medallion {
-      background: radial-gradient(circle at 32% 24%, #451a03 0%, #0c0a09 74%);
-      border-color: rgba(251, 191, 36, 0.7);
-      box-shadow: 0 22px 54px rgba(0, 0, 0, 0.68), 0 0 42px rgba(245, 158, 11, 0.3);
-    }
-    .hero-medallion:hover { transform: translateY(-3px) scale(1.02); }
-    .hero-medallion svg { width: 214px; height: 214px; display: block; overflow: visible; }
+    .hero-pedestal:hover { transform: translateY(-4px) scale(1.03); }
+    .hero-pedestal svg { width: 316px; height: 316px; display: block; overflow: visible; }
 
-    /* Spell / Action Trigger Bar inside card */
+    /* Action Trigger Bar */
     .action-bar {
       display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
       padding: 12px 16px;
-      background: rgba(2, 6, 23, 0.7);
+      background: rgba(2, 6, 23, 0.72);
       border-top: 1px solid rgba(51, 65, 85, 0.65);
     }
 
-    /* Scale Strip */
+    /* Real-Scale FAB Pop-Out Strip */
     .scale-strip {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 10px;
-      padding: 12px 16px 14px;
-      background: rgba(2, 6, 23, 0.45);
+      padding: 18px 16px 14px;
+      background: rgba(2, 6, 23, 0.48);
       border-top: 1px solid rgba(30, 41, 59, 0.85);
     }
     .scale-box {
-      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px;
-      padding: 10px 6px; border-radius: 12px;
+      display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 9px;
+      padding: 16px 6px 10px; border-radius: 12px;
       background: rgba(15, 23, 42, 0.85);
       border: 1px solid rgba(51, 65, 85, 0.65);
+      min-height: 108px;
     }
     .scale-caption { font-size: 10px; font-weight: 700; color: #94a3b8; text-align: center; }
 
-    /* Simulated FAB */
+    /* 3D Pop-Out Medallion FAB */
     .sim-fab {
       position: relative;
       border-radius: 9999px;
       display: flex; align-items: center; justify-content: center;
-      border: 1.5px solid rgba(99, 102, 241, 0.9);
-      background: radial-gradient(circle at 30% 25%, #312e81 0%, #0f172a 75%);
-      box-shadow: 0 10px 26px rgba(2, 6, 23, 0.78), 0 0 18px rgba(99, 102, 241, 0.42);
+      border: 1.8px solid rgba(129, 140, 248, 0.85);
+      background: radial-gradient(circle at 35% 25%, #3730a3 0%, #1e1b4b 58%, #090d1f 100%);
+      box-shadow: 0 12px 28px rgba(2, 6, 23, 0.85), 0 0 22px rgba(99, 102, 241, 0.42), inset 0 1px 2px rgba(255, 255, 255, 0.25);
       cursor: pointer;
-      transition: transform 0.18s ease, box-shadow 0.22s ease;
+      overflow: visible;
+      transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.22s ease;
     }
-    .sim-fab:hover { transform: translateY(-2px) scale(1.06); }
+    .sim-fab:hover { transform: translateY(-3px) scale(1.06); }
     .sim-fab.is-chronicler {
-      border-color: rgba(245, 158, 11, 0.92);
-      background: radial-gradient(circle at 30% 25%, #78350f 0%, #0f172a 75%);
-      box-shadow: 0 10px 26px rgba(2, 6, 23, 0.78), 0 0 18px rgba(245, 158, 11, 0.45);
+      border-color: rgba(251, 191, 36, 0.88);
+      background: radial-gradient(circle at 35% 25%, #92400e 0%, #451a03 58%, #0c0a09 100%);
+      box-shadow: 0 12px 28px rgba(2, 6, 23, 0.85), 0 0 22px rgba(245, 158, 11, 0.42), inset 0 1px 2px rgba(255, 255, 255, 0.25);
     }
-    .sim-fab.size-60 { width: 60px; height: 60px; }
-    .sim-fab.size-60 svg { width: 52px; height: 52px; overflow: visible; }
+    .sim-fab .slot {
+      display: flex; align-items: center; justify-content: center;
+      pointer-events: none;
+    }
+    .sim-fab.size-64 { width: 64px; height: 64px; }
+    .sim-fab.size-64 svg { width: 82px; height: 82px; transform: translateY(-7px); overflow: visible; }
     .sim-fab.size-52 { width: 52px; height: 52px; }
-    .sim-fab.size-52 svg { width: 45px; height: 45px; overflow: visible; }
+    .sim-fab.size-52 svg { width: 67px; height: 67px; transform: translateY(-6px); overflow: visible; }
     .sim-fab.size-46 { width: 46px; height: 46px; }
-    .sim-fab.size-46 svg { width: 40px; height: 40px; overflow: visible; }
-    .sim-fab.size-32 { width: 32px; height: 32px; border-width: 1px; }
-    .sim-fab.size-32 svg { width: 27px; height: 27px; overflow: visible; }
+    .sim-fab.size-46 svg { width: 59px; height: 59px; transform: translateY(-5px); overflow: visible; }
+    .sim-fab.size-34 { width: 34px; height: 34px; border-width: 1.2px; }
+    .sim-fab.size-34 svg { width: 43px; height: 43px; transform: translateY(-3px); overflow: visible; }
+
     .sim-kbd {
-      position: absolute; bottom: -5px; right: -4px;
+      position: absolute; bottom: -4px; right: -4px; z-index: 3;
       font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
       font-size: 9px; font-weight: 800; line-height: 1;
-      padding: 2px 4px; border-radius: 5px;
-      background: #020617; color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.55);
+      padding: 2px 4.5px; border-radius: 5px;
+      background: #020617; color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.6);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
     }
-    .sim-fab.is-chronicler .sim-kbd { color: #fcd34d; border-color: rgba(245, 158, 11, 0.55); }
+    .sim-fab.is-chronicler .sim-kbd { color: #fcd34d; border-color: rgba(245, 158, 11, 0.6); }
 
-    /* Live Floating Corner Widget on this page */
+    /* Live Floating Corner Widget */
     .live-corner-wrap {
-      position: fixed; right: 20px; bottom: 20px; z-index: 60;
-      display: flex; align-items: flex-end; gap: 12px;
+      position: fixed; right: 22px; bottom: 22px; z-index: 60;
+      display: flex; align-items: center; gap: 14px;
     }
     .live-corner-bubble {
-      max-width: 260px; padding: 8px 12px; border-radius: 12px;
+      max-width: 275px; padding: 9px 13px; border-radius: 14px;
       background: rgba(15, 23, 42, 0.96);
-      border: 1px solid rgba(99, 102, 241, 0.78);
-      color: #e2e8f0; font-size: 11.5px; line-height: 1.35;
-      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.62);
-      transition: opacity 0.25s ease, transform 0.25s ease, border-color 0.25s ease;
+      border: 1px solid rgba(129, 140, 248, 0.72);
+      color: #e2e8f0; font-size: 12px; line-height: 1.38;
+      box-shadow: 0 14px 32px rgba(0, 0, 0, 0.65);
+      transition: all 0.25s ease;
     }
     .live-corner-bubble.is-chronicler {
-      border-color: rgba(245, 158, 11, 0.85); color: #fef3c7;
+      border-color: rgba(251, 191, 36, 0.8); color: #fef3c7;
     }
 
-    /* Info / Telemetry Panel */
     .notes-panel {
       border-radius: 16px;
       background: rgba(15, 23, 42, 0.86);
@@ -237,123 +237,121 @@
     .note-item p { margin: 0; line-height: 1.45; color: #94a3b8; }
 
     /* =========================================================================
-       WIZARD (RULE MASTER) ARTICULATED ANIMATION RIG (GPU transform + opacity)
+       3D VINYL / CLAY RIGS — CURSOR GAZE + MULTI-BEAT SPELL CHOREOGRAPHY
        ========================================================================= */
-    .wiz-body { transform-origin: 64px 96px; animation: wizBreathe 4.2s ease-in-out infinite; }
-    .wiz-head { transform-origin: 64px 62px; animation: wizHeadIdle 5.8s ease-in-out infinite; }
-    .wiz-hat { transform-origin: 64px 44px; animation: wizHatBob 4.2s ease-in-out infinite; transition: transform 0.25s ease; }
-    .wiz-beard { transform-origin: 64px 68px; animation: wizBeardSway 4.6s ease-in-out infinite; }
-    .wiz-eyes { transform-origin: 64px 55px; animation: eyeBlink 4.8s infinite; }
-    .wiz-pupils { transform-origin: 64px 55px; animation: wizGlance 7.5s ease-in-out infinite; }
-    .wiz-brows { transform-origin: 64px 50px; transition: transform 0.22s ease; }
+    .gaze-track {
+      transform: translate(var(--gx, 0px), var(--gy, 0px));
+      transition: transform 0.12s ease-out;
+    }
 
-    .wiz-staff-arm { transform-origin: 84px 86px; animation: staffIdle 4.4s ease-in-out infinite; }
-    .wiz-orb-core { transform-origin: 102px 32px; animation: orbGlow 2.4s ease-in-out infinite; }
-    .wiz-orb-halo { transform-origin: 102px 32px; animation: spinSlow 9s linear infinite; }
+    .wiz-whole { transform-origin: 104px 176px; animation: clayBreathe 4.2s ease-in-out infinite; }
+    .wiz-head-group { transform-origin: 104px 104px; animation: wizHeadSway 6.2s ease-in-out infinite; }
+    .wiz-hat-group { transform-origin: 104px 74px; animation: wizHatFollow 6.2s ease-in-out infinite; transition: transform 0.28s ease; }
+    .wiz-brows { transform-origin: 104px 87px; transition: transform 0.24s ease; }
+    .wiz-eyelids { transform-origin: 104px 96px; animation: naturalBlink 5.4s infinite; }
+    .wiz-mustache { transform-origin: 104px 111px; animation: mustacheTwitch 5.6s ease-in-out infinite; }
+    .wiz-beard-group { transform-origin: 104px 114px; animation: beardSoftSway 4.8s ease-in-out infinite; }
 
-    .wiz-cast-arm { transform-origin: 42px 86px; animation: castArmIdle 4.6s ease-in-out infinite; }
+    .wiz-staff-rig { transform-origin: 54px 150px; animation: staffOrganicIdle 4.4s ease-in-out infinite; }
+    .wiz-crook-gem { transform-origin: 41px 81px; animation: gemBreath 2.8s ease-in-out infinite; }
+    .wiz-left-hand { transform-origin: 148px 156px; animation: leftHandIdle 4.6s ease-in-out infinite; }
 
-    /* Spell FX Layers (hidden by default, activated by state classes!) */
-    .fx-layer { opacity: 0; pointer-events: none; transition: opacity 0.22s ease; }
-    .fx-arcane { transform-origin: 102px 32px; }
-    .fx-fireball { transform-origin: 26px 56px; }
-    .fx-lightning { transform-origin: 64px 40px; }
-    .fx-shield { transform-origin: 64px 66px; }
-    .fx-crit { transform-origin: 64px 54px; }
+    .wiz-face-glow { opacity: 0; transition: opacity 0.28s ease; pointer-events: none; }
+    .sp-fx { opacity: 0; pointer-events: none; transition: opacity 0.24s ease; }
+    .sp-astrolabe { transform-origin: 41px 78px; }
+    .sp-d20 { transform-origin: 158px 94px; }
+    .sp-fire { transform-origin: 158px 94px; }
+    .sp-bolt { transform-origin: 98px 76px; }
+    .sp-scroll { transform-origin: 104px 128px; }
+    .sp-ward { transform-origin: 104px 116px; }
 
-    /* Hover reaction */
-    .hero-medallion:hover .wiz-hat,
-    .sim-fab:hover .wiz-hat { transform: translateY(-2px) rotate(-5deg); }
-    .hero-medallion:hover .wiz-staff-arm,
-    .sim-fab:hover .wiz-staff-arm { animation: staffSalute 0.7s ease-in-out infinite; }
+    /* Hover micro-reactions */
+    .hero-pedestal:hover .wiz-hat-group,
+    .sim-fab:hover .wiz-hat-group { transform: translateY(-3px) rotate(-4deg); }
+    .hero-pedestal:hover .wiz-staff-rig,
+    .sim-fab:hover .wiz-staff-rig { animation: staffGreet 0.9s ease-in-out infinite; }
 
-    /* WIZARD STATE: ARCANE BURST */
-    .wiz-rig[data-wiz="arcane"] .wiz-staff-arm { animation: staffCastSwing 1.4s cubic-bezier(0.34, 1.4, 0.64, 1) infinite; }
-    .wiz-rig[data-wiz="arcane"] .wiz-cast-arm { animation: castArmWeave 1.2s ease-in-out infinite; }
-    .wiz-rig[data-wiz="arcane"] .wiz-brows { transform: translateY(-1.5px); }
-    .wiz-rig[data-wiz="arcane"] .wiz-beard { animation: wizBeardBillow 0.8s ease-in-out infinite; }
-    .wiz-rig[data-wiz="arcane"] .wiz-orb-core { animation: orbSurge 0.65s ease-in-out infinite; }
-    .wiz-rig[data-wiz="arcane"] .fx-arcane { opacity: 1; animation: arcaneBurst 1.4s ease-out infinite; }
+    /* 1. ASTROLABE STAFF SPELL */
+    .wiz-svg[data-wiz="astrolabe"] .wiz-staff-rig { animation: staffRaiseHigh 1.6s ease-in-out infinite; }
+    .wiz-svg[data-wiz="astrolabe"] .wiz-brows { transform: translateY(-2.5px); }
+    .wiz-svg[data-wiz="astrolabe"] .wiz-crook-gem { animation: gemBlaze 0.65s ease-in-out infinite; }
+    .wiz-svg[data-wiz="astrolabe"] .wiz-face-glow { opacity: 0.55; }
+    .wiz-svg[data-wiz="astrolabe"] .sp-astrolabe { opacity: 1; animation: wardRotate3D 3.2s linear infinite; }
 
-    /* WIZARD STATE: FIREBALL */
-    .wiz-rig[data-wiz="fireball"] .wiz-staff-arm { animation: staffBrace 1.2s ease-in-out infinite; }
-    .wiz-rig[data-wiz="fireball"] .wiz-cast-arm { animation: castArmFire 1.1s ease-in-out infinite; }
-    .wiz-rig[data-wiz="fireball"] .wiz-brows { transform: translateY(1.4px) scaleY(0.9); }
-    .wiz-rig[data-wiz="fireball"] .wiz-beard { animation: wizBeardBillow 0.65s ease-in-out infinite; }
-    .wiz-rig[data-wiz="fireball"] .fx-fireball { opacity: 1; animation: fireballFlare 1.1s ease-in-out infinite; }
+    /* 2. TELEKINETIC D20 */
+    .wiz-svg[data-wiz="d20"] .wiz-staff-rig { animation: staffChannel 1.5s ease-in-out infinite; }
+    .wiz-svg[data-wiz="d20"] .wiz-left-hand { animation: handLevitate 1.5s ease-in-out infinite; }
+    .wiz-svg[data-wiz="d20"] .wiz-brows { transform: translateY(-2.5px); }
+    .wiz-svg[data-wiz="d20"] .wiz-crook-gem { animation: gemBlaze 0.7s ease-in-out infinite; }
+    .wiz-svg[data-wiz="d20"] .wiz-face-glow { opacity: 0.5; }
+    .wiz-svg[data-wiz="d20"] .sp-d20 { opacity: 1; animation: d20FloatSpin 2.2s ease-in-out infinite; }
 
-    /* WIZARD STATE: LIGHTNING */
-    .wiz-rig[data-wiz="lightning"] .wiz-staff-arm { animation: staffThrust 0.9s ease-in-out infinite; }
-    .wiz-rig[data-wiz="lightning"] .wiz-cast-arm { animation: castArmWeave 0.75s ease-in-out infinite; }
-    .wiz-rig[data-wiz="lightning"] .wiz-brows { transform: translateY(1.8px); }
-    .wiz-rig[data-wiz="lightning"] .wiz-orb-core { animation: orbSurge 0.35s ease-in-out infinite; }
-    .wiz-rig[data-wiz="lightning"] .fx-lightning { opacity: 1; animation: lightningCrackle 0.48s steps(2, end) infinite; }
+    /* 3. PHOENIX FIREBALL */
+    .wiz-svg[data-wiz="fireball"] .wiz-staff-rig { animation: staffBraceBack 1.2s ease-in-out infinite; }
+    .wiz-svg[data-wiz="fireball"] .wiz-left-hand { animation: handConjureHigh 1.1s ease-in-out infinite; }
+    .wiz-svg[data-wiz="fireball"] .wiz-brows { transform: translateY(2px) scaleY(0.92); }
+    .wiz-svg[data-wiz="fireball"] .wiz-beard-group { animation: beardWind 0.75s ease-in-out infinite; }
+    .wiz-svg[data-wiz="fireball"] .sp-fire { opacity: 1; animation: firePulse3D 0.95s ease-in-out infinite; }
 
-    /* WIZARD STATE: RUNE SHIELD */
-    .wiz-rig[data-wiz="shield"] .wiz-staff-arm { animation: staffPlant 1.8s ease-in-out infinite; }
-    .wiz-rig[data-wiz="shield"] .wiz-cast-arm { animation: castArmWard 1.8s ease-in-out infinite; }
-    .wiz-rig[data-wiz="shield"] .fx-shield { opacity: 1; animation: shieldSpin 4.5s linear infinite; }
+    /* 4. CHAIN LIGHTNING */
+    .wiz-svg[data-wiz="lightning"] .wiz-staff-rig { animation: staffSwingArc 0.85s ease-in-out infinite; }
+    .wiz-svg[data-wiz="lightning"] .wiz-left-hand { animation: handConjureHigh 0.85s ease-in-out infinite; }
+    .wiz-svg[data-wiz="lightning"] .wiz-brows { transform: translateY(2.5px); }
+    .wiz-svg[data-wiz="lightning"] .wiz-crook-gem { animation: gemBlaze 0.35s ease-in-out infinite; }
+    .wiz-svg[data-wiz="lightning"] .wiz-face-glow { opacity: 0.82; }
+    .wiz-svg[data-wiz="lightning"] .sp-bolt { opacity: 1; animation: boltFlicker 0.42s steps(2, end) infinite; }
 
-    /* WIZARD STATE: THINKING */
-    .wiz-rig[data-wiz="thinking"] .wiz-head { animation: wizHeadThink 2.2s ease-in-out infinite; }
-    .wiz-rig[data-wiz="thinking"] .wiz-brows { transform: translateY(1.5px); }
-    .wiz-rig[data-wiz="thinking"] .wiz-orb-halo { animation: spinSlow 2.2s linear infinite; }
-    .wiz-rig[data-wiz="thinking"] .wiz-staff-arm { animation: staffTap 1.6s ease-in-out infinite; }
+    /* 5. FLOATING SPELL SCROLL & BEARD STROKE */
+    .wiz-svg[data-wiz="scroll"] .wiz-head-group { animation: headPonder 2.4s ease-in-out infinite; }
+    .wiz-svg[data-wiz="scroll"] .wiz-left-hand { animation: handStrokeBeard 1.8s ease-in-out infinite; }
+    .wiz-svg[data-wiz="scroll"] .wiz-brows { transform: translateY(-1.5px) rotate(-2deg); }
+    .wiz-svg[data-wiz="scroll"] .sp-scroll { opacity: 1; animation: runesDrift 2.2s ease-in-out infinite; }
 
-    /* WIZARD STATE: CELEBRATE / CRIT */
-    .wiz-rig[data-wiz="crit"] .wiz-body { animation: wizJump 0.75s ease-in-out infinite; }
-    .wiz-rig[data-wiz="crit"] .wiz-staff-arm { animation: staffCheer 0.75s ease-in-out infinite; }
-    .wiz-rig[data-wiz="crit"] .wiz-cast-arm { animation: castArmFire 0.75s ease-in-out infinite; }
-    .wiz-rig[data-wiz="crit"] .fx-crit { opacity: 1; animation: arcaneBurst 1.1s ease-out infinite; }
+    /* 6. STAFF SLAM AEGIS */
+    .wiz-svg[data-wiz="ward"] .wiz-staff-rig { animation: staffSlamBeat 1.4s cubic-bezier(0.34, 1.5, 0.64, 1) infinite; }
+    .wiz-svg[data-wiz="ward"] .wiz-whole { animation: bodySlamBounce 1.4s ease-in-out infinite; }
+    .wiz-svg[data-wiz="ward"] .wiz-crook-gem { animation: gemBlaze 0.7s ease-in-out infinite; }
+    .wiz-svg[data-wiz="ward"] .sp-ward { opacity: 1; animation: wardRotate3D 5s linear infinite; }
 
     /* =========================================================================
-       OWL (CHRONICLER) ARTICULATED ANIMATION RIG (GPU transform + opacity)
+       3D CLAY OWL FAMILIAR (CHRONICLER) RIG
        ========================================================================= */
-    .owl-body { transform-origin: 64px 86px; animation: owlBreathe 4.4s ease-in-out infinite; }
-    .owl-head { transform-origin: 64px 48px; animation: owlHeadIdle 6.2s ease-in-out infinite; }
-    .owl-tufts { transform-origin: 64px 32px; animation: owlTuftTwitch 5.2s ease-in-out infinite; }
-    .owl-eyes { transform-origin: 64px 46px; animation: eyeBlink 5.3s infinite; }
-    .owl-pupils { transform-origin: 64px 46px; animation: owlGlance 6.8s ease-in-out infinite; }
-    .owl-wing-l { transform-origin: 39px 66px; animation: wingLIdle 4.8s ease-in-out infinite; }
-    .owl-wing-r { transform-origin: 89px 66px; animation: wingRIdle 4.8s ease-in-out infinite; }
-    .owl-quill { transform-origin: 96px 86px; animation: quillFloat 3.6s ease-in-out infinite; }
-    .owl-tome-glow { opacity: 0.35; animation: orbGlow 3.2s ease-in-out infinite; }
-    .owl-fx-notes { opacity: 0; pointer-events: none; transition: opacity 0.22s ease; }
-    .owl-fx-hoot { opacity: 0; pointer-events: none; transition: opacity 0.22s ease; }
-    .owl-fx-search { opacity: 0; pointer-events: none; transition: opacity 0.22s ease; }
+    .owl-whole { transform-origin: 100px 158px; animation: clayBreathe 4.3s ease-in-out infinite; }
+    .owl-head-3d { transform-origin: 100px 88px; animation: owlCuriousTilt 6.4s ease-in-out infinite; }
+    .owl-tuft-l { transform-origin: 64px 58px; animation: tuftL 5.2s ease-in-out infinite; }
+    .owl-tuft-r { transform-origin: 136px 58px; animation: tuftR 5.2s ease-in-out infinite; }
+    .owl-lids { transform-origin: 100px 86px; animation: naturalBlink 5.6s infinite; }
+    .owl-wing-l3d { transform-origin: 60px 118px; animation: wingSoftL 4.6s ease-in-out infinite; }
+    .owl-wing-r3d { transform-origin: 140px 118px; animation: wingSoftR 4.6s ease-in-out infinite; }
+    .owl-quill-3d { transform-origin: 148px 148px; animation: quillHover 3.6s ease-in-out infinite; }
+    .owl-fx { opacity: 0; pointer-events: none; transition: opacity 0.24s ease; }
 
-    .hero-medallion:hover .owl-wing-l,
-    .sim-fab:hover .owl-wing-l { animation: wingLFlap 0.65s ease-in-out infinite; }
-    .hero-medallion:hover .owl-wing-r,
-    .sim-fab:hover .owl-wing-r { animation: wingRFlap 0.65s ease-in-out infinite; }
+    .hero-pedestal:hover .owl-wing-l3d,
+    .sim-fab:hover .owl-wing-l3d { animation: wingFlapL 0.6s ease-in-out infinite; }
+    .hero-pedestal:hover .owl-wing-r3d,
+    .sim-fab:hover .owl-wing-r3d { animation: wingFlapR 0.6s ease-in-out infinite; }
 
-    /* OWL STATE: WRITE NOTE */
-    .owl-rig[data-owl="write"] .owl-head { animation: owlReadNod 1.1s ease-in-out infinite; }
-    .owl-rig[data-owl="write"] .owl-quill { animation: quillScribble 0.55s ease-in-out infinite; }
-    .owl-rig[data-owl="write"] .owl-tome-glow { opacity: 1; animation: orbSurge 0.9s ease-in-out infinite; }
-    .owl-rig[data-owl="write"] .owl-fx-notes { opacity: 1; animation: notesRise 1.6s ease-out infinite; }
+    .owl-svg[data-owl="write"] .owl-head-3d { animation: owlWatchQuill 1.2s ease-in-out infinite; }
+    .owl-svg[data-owl="write"] .owl-quill-3d { animation: quillWriteFast 0.58s ease-in-out infinite; }
+    .owl-svg[data-owl="write"] .owl-fx-ink { opacity: 1; animation: inkSparkles 1.5s ease-out infinite; }
 
-    /* OWL STATE: FLAP & HOOT */
-    .owl-rig[data-owl="hoot"] .owl-body { animation: wizJump 0.8s ease-in-out infinite; }
-    .owl-rig[data-owl="hoot"] .owl-wing-l { animation: wingLFlap 0.45s ease-in-out infinite; }
-    .owl-rig[data-owl="hoot"] .owl-wing-r { animation: wingRFlap 0.45s ease-in-out infinite; }
-    .owl-rig[data-owl="hoot"] .owl-head { animation: owlHootTilt 0.8s ease-in-out infinite; }
-    .owl-rig[data-owl="hoot"] .owl-fx-hoot { opacity: 1; animation: hootWave 1s ease-out infinite; }
+    .owl-svg[data-owl="hoot"] .owl-whole { animation: owlHop 0.78s ease-in-out infinite; }
+    .owl-svg[data-owl="hoot"] .owl-wing-l3d { animation: wingFlapL 0.44s ease-in-out infinite; }
+    .owl-svg[data-owl="hoot"] .owl-wing-r3d { animation: wingFlapR 0.44s ease-in-out infinite; }
+    .owl-svg[data-owl="hoot"] .owl-head-3d { animation: owlHootNod 0.78s ease-in-out infinite; }
+    .owl-svg[data-owl="hoot"] .owl-fx-chime { opacity: 1; animation: chimeExpand 1.1s ease-out infinite; transform-origin: 100px 76px; }
 
-    /* OWL STATE: SEARCH LORE */
-    .owl-rig[data-owl="search"] .owl-head { animation: owlScan 1.8s ease-in-out infinite; }
-    .owl-rig[data-owl="search"] .owl-wing-l { animation: wingLFlap 0.95s ease-in-out infinite; }
-    .owl-rig[data-owl="search"] .owl-wing-r { animation: wingRFlap 0.95s ease-in-out infinite; }
-    .owl-rig[data-owl="search"] .owl-tome-glow { opacity: 1; }
-    .owl-rig[data-owl="search"] .owl-fx-search { opacity: 1; animation: spinSlow 4s linear infinite; transform-origin: 64px 58px; }
+    .owl-svg[data-owl="search"] .owl-head-3d { animation: owlScanPages 1.6s ease-in-out infinite; }
+    .owl-svg[data-owl="search"] .owl-wing-l3d { animation: wingFlapL 0.9s ease-in-out infinite; }
+    .owl-svg[data-owl="search"] .owl-wing-r3d { animation: wingFlapR 0.9s ease-in-out infinite; }
+    .owl-svg[data-owl="search"] .owl-fx-pages { opacity: 1; animation: pagesOrbit 2.2s ease-in-out infinite; transform-origin: 100px 148px; }
 
-    /* OWL STATE: FOUND IT / ALERT */
-    .owl-rig[data-owl="found"] .owl-body { animation: wizJump 0.65s ease-in-out infinite; }
-    .owl-rig[data-owl="found"] .owl-wing-l { animation: wingLFlap 0.38s ease-in-out infinite; }
-    .owl-rig[data-owl="found"] .owl-wing-r { animation: wingRFlap 0.38s ease-in-out infinite; }
-    .owl-rig[data-owl="found"] .owl-fx-notes { opacity: 1; animation: notesRise 1.1s ease-out infinite; }
+    .owl-svg[data-owl="found"] .owl-whole { animation: owlHop 0.62s ease-in-out infinite; }
+    .owl-svg[data-owl="found"] .owl-tuft-l { transform: rotate(12deg) scaleY(1.15); }
+    .owl-svg[data-owl="found"] .owl-tuft-r { transform: rotate(-12deg) scaleY(1.15); }
+    .owl-svg[data-owl="found"] .owl-fx-ink { opacity: 1; animation: inkSparkles 1s ease-out infinite; }
+    .owl-svg[data-owl="found"] .owl-fx-eureka { opacity: 1; animation: d20FloatSpin 1.6s ease-in-out infinite; transform-origin: 100px 28px; }
 
-    /* Reduced Motion */
     body.is-reduced-motion *,
     body.is-reduced-motion *::before,
     body.is-reduced-motion *::after {
@@ -362,87 +360,154 @@
     }
 
     /* KEYFRAMES */
-    @keyframes wizBreathe { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2.4px); } }
-    @keyframes wizHeadIdle { 0%, 100% { transform: rotate(0deg); } 35% { transform: rotate(-2.5deg); } 75% { transform: rotate(2deg); } }
-    @keyframes wizHeadThink { 0%, 100% { transform: rotate(-5deg) translateY(0); } 50% { transform: rotate(4deg) translateY(-1.5px); } }
-    @keyframes wizHatBob { 0%, 100% { transform: rotate(0deg) translateY(0); } 50% { transform: rotate(-1.8deg) translateY(-1.2px); } }
-    @keyframes wizBeardSway { 0%, 100% { transform: skewX(0deg); } 50% { transform: skewX(2.2deg); } }
-    @keyframes wizBeardBillow { 0%, 100% { transform: skewX(-4deg) scaleY(1); } 50% { transform: skewX(5deg) scaleY(1.04); } }
-    @keyframes eyeBlink { 0%, 91%, 100% { transform: scaleY(1); } 94.5% { transform: scaleY(0.08); } }
-    @keyframes wizGlance { 0%, 60%, 100% { transform: translateX(0); } 68%, 82% { transform: translateX(1.6px); } }
-    @keyframes owlGlance { 0%, 50%, 100% { transform: translate(0, 0); } 58%, 70% { transform: translate(2px, -0.8px); } 78%, 90% { transform: translate(-2px, 0.5px); } }
-
-    @keyframes staffIdle { 0%, 100% { transform: rotate(0deg) translateY(0); } 50% { transform: rotate(-3.5deg) translateY(-2px); } }
-    @keyframes staffSalute { 0%, 100% { transform: rotate(-6deg) translateY(-2px); } 50% { transform: rotate(-14deg) translateY(-5px); } }
-    @keyframes staffCastSwing {
-      0% { transform: rotate(0deg) translateY(0); }
-      28% { transform: rotate(10deg) translateY(2px); }
-      62% { transform: rotate(-22deg) translateY(-7px); }
-      100% { transform: rotate(0deg) translateY(0); }
+    @keyframes clayBreathe {
+      0%, 100% { transform: translateY(0) scaleY(1); }
+      50% { transform: translateY(-3px) scaleY(1.015); }
     }
-    @keyframes staffBrace { 0%, 100% { transform: rotate(4deg); } 50% { transform: rotate(-4deg) translateY(-2px); } }
-    @keyframes staffThrust { 0%, 100% { transform: rotate(-14deg) translateY(-4px); } 50% { transform: rotate(-26deg) translateY(-9px); } }
-    @keyframes staffPlant { 0%, 100% { transform: rotate(-5deg) translateY(-1px); } 50% { transform: rotate(-9deg) translateY(-3px); } }
-    @keyframes staffTap { 0%, 100% { transform: rotate(0deg) translateY(0); } 50% { transform: rotate(-6deg) translateY(-3px); } }
-    @keyframes staffCheer { 0%, 100% { transform: rotate(-10deg) translateY(-2px); } 50% { transform: rotate(-25deg) translateY(-9px); } }
-
-    @keyframes castArmIdle { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(4deg) translateY(-1.5px); } }
-    @keyframes castArmWeave { 0%, 100% { transform: rotate(12deg) translateY(-3px); } 50% { transform: rotate(32deg) translateY(-8px); } }
-    @keyframes castArmFire { 0%, 100% { transform: rotate(22deg) translateY(-6px); } 50% { transform: rotate(38deg) translateY(-11px); } }
-    @keyframes castArmWard { 0%, 100% { transform: rotate(18deg) translateY(-5px); } 50% { transform: rotate(26deg) translateY(-8px); } }
-
-    @keyframes orbGlow { 0%, 100% { transform: scale(1); opacity: 0.92; } 50% { transform: scale(1.14); opacity: 1; } }
-    @keyframes orbSurge { 0%, 100% { transform: scale(0.95); opacity: 0.85; } 50% { transform: scale(1.32); opacity: 1; } }
-    @keyframes spinSlow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-    @keyframes wizJump { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
-
-    @keyframes arcaneBurst {
-      0% { transform: scale(0.45) rotate(0deg); opacity: 0.2; }
-      45% { transform: scale(1.08) rotate(35deg); opacity: 1; }
-      100% { transform: scale(1.38) rotate(75deg); opacity: 0; }
+    @keyframes wizHeadSway {
+      0%, 100% { transform: rotate(0deg); }
+      35% { transform: rotate(-2.2deg) translateY(-1px); }
+      72% { transform: rotate(2deg); }
     }
-    @keyframes fireballFlare {
-      0%, 100% { transform: scale(0.86) translateY(1px); opacity: 0.88; }
-      50% { transform: scale(1.18) translateY(-5px); opacity: 1; }
+    @keyframes wizHatFollow {
+      0%, 100% { transform: rotate(0deg); }
+      40% { transform: rotate(-3deg) translateY(-1.5px); }
+      78% { transform: rotate(2.2deg); }
     }
-    @keyframes lightningCrackle {
-      0% { opacity: 1; transform: translate(0, 0) scale(1); }
-      50% { opacity: 0.45; transform: translate(1.5px, -1.5px) scale(1.05); }
-      100% { opacity: 1; transform: translate(-1px, 1px) scale(0.97); }
+    @keyframes naturalBlink {
+      0%, 44%, 48%, 92%, 100% { transform: scaleY(1); }
+      46%, 95% { transform: scaleY(0.06); }
     }
-    @keyframes shieldSpin {
-      from { transform: rotate(0deg) scale(0.98); }
-      to { transform: rotate(360deg) scale(1.02); }
+    @keyframes mustacheTwitch {
+      0%, 80%, 100% { transform: rotate(0deg); }
+      86% { transform: rotate(-1.8deg) scaleX(1.02); }
+      92% { transform: rotate(1.6deg); }
     }
-
-    @keyframes owlBreathe { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
-    @keyframes owlHeadIdle { 0%, 66%, 100% { transform: rotate(0deg); } 74%, 86% { transform: rotate(-11deg); } 92% { transform: rotate(4deg); } }
-    @keyframes owlReadNod { 0%, 100% { transform: rotate(-5deg) translateY(0); } 50% { transform: rotate(6deg) translateY(2px); } }
-    @keyframes owlHootTilt { 0%, 100% { transform: rotate(-8deg) translateY(0); } 50% { transform: rotate(8deg) translateY(-3px); } }
-    @keyframes owlScan { 0%, 100% { transform: rotate(-12deg); } 50% { transform: rotate(12deg); } }
-    @keyframes owlTuftTwitch { 0%, 82%, 100% { transform: scaleY(1); } 88% { transform: scaleY(1.14); } }
-
-    @keyframes wingLIdle { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(4deg); } }
-    @keyframes wingRIdle { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-4deg); } }
-    @keyframes wingLFlap { 0%, 100% { transform: rotate(2deg); } 50% { transform: rotate(26deg) translateY(-3px); } }
-    @keyframes wingRFlap { 0%, 100% { transform: rotate(-2deg); } 50% { transform: rotate(-26deg) translateY(-3px); } }
-
-    @keyframes quillFloat { 0%, 100% { transform: rotate(0deg) translateY(0); } 50% { transform: rotate(6deg) translateY(-3px); } }
-    @keyframes quillScribble {
+    @keyframes beardSoftSway {
+      0%, 100% { transform: rotate(0deg); }
+      50% { transform: rotate(-1.4deg) skewX(1.2deg); }
+    }
+    @keyframes beardWind {
+      0%, 100% { transform: skewX(-3deg) scaleY(1); }
+      50% { transform: skewX(4deg) scaleY(1.03); }
+    }
+    @keyframes staffOrganicIdle {
+      0%, 100% { transform: rotate(0deg) translateY(0); }
+      50% { transform: rotate(-3deg) translateY(-2.5px); }
+    }
+    @keyframes staffGreet {
+      0%, 100% { transform: rotate(-5deg) translateY(-3px); }
+      50% { transform: rotate(-14deg) translateY(-8px); }
+    }
+    @keyframes staffRaiseHigh {
+      0%, 100% { transform: rotate(-6deg) translateY(-4px); }
+      50% { transform: rotate(-18deg) translateY(-14px); }
+    }
+    @keyframes staffChannel {
+      0%, 100% { transform: rotate(-8deg) translateY(-4px); }
+      50% { transform: rotate(-16deg) translateY(-10px); }
+    }
+    @keyframes staffBraceBack {
+      0%, 100% { transform: rotate(4deg); }
+      50% { transform: rotate(-4deg) translateY(-3px); }
+    }
+    @keyframes staffSwingArc {
+      0%, 100% { transform: rotate(-10deg) translateY(-4px); }
+      50% { transform: rotate(12deg) translateY(-9px); }
+    }
+    @keyframes staffSlamBeat {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      38% { transform: translateY(-20px) rotate(-10deg); }
+      58% { transform: translateY(5px) rotate(3deg); }
+    }
+    @keyframes bodySlamBounce {
+      0%, 52%, 100% { transform: translateY(0); }
+      60% { transform: translateY(4px) scaleY(0.98); }
+    }
+    @keyframes leftHandIdle {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-2.5px) rotate(-3deg); }
+    }
+    @keyframes handLevitate {
+      0%, 100% { transform: translate(4px, -24px) rotate(-18deg); }
+      50% { transform: translate(6px, -32px) rotate(-26deg); }
+    }
+    @keyframes handConjureHigh {
+      0%, 100% { transform: translate(6px, -28px) rotate(-22deg); }
+      50% { transform: translate(8px, -36px) rotate(-32deg); }
+    }
+    @keyframes handStrokeBeard {
+      0%, 100% { transform: translate(-30px, -26px) rotate(24deg); }
+      50% { transform: translate(-32px, -16px) rotate(18deg); }
+    }
+    @keyframes headPonder {
+      0%, 100% { transform: rotate(-4deg) translateY(0); }
+      50% { transform: rotate(3deg) translateY(2px); }
+    }
+    @keyframes gemBreath {
+      0%, 100% { transform: scale(1); opacity: 0.85; }
+      50% { transform: scale(1.18); opacity: 1; }
+    }
+    @keyframes gemBlaze {
+      0%, 100% { transform: scale(0.96); opacity: 0.9; }
+      50% { transform: scale(1.38); opacity: 1; }
+    }
+    @keyframes d20FloatSpin {
+      0%, 100% { transform: translateY(0) rotate(-6deg) scale(1); }
+      50% { transform: translateY(-10px) rotate(10deg) scale(1.08); }
+    }
+    @keyframes firePulse3D {
+      0%, 100% { transform: scale(0.9) translateY(2px); }
+      50% { transform: scale(1.16) translateY(-6px); }
+    }
+    @keyframes boltFlicker {
+      0% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.55; transform: scale(1.04) translate(1px, -2px); }
+      100% { opacity: 1; transform: scale(0.98); }
+    }
+    @keyframes wardRotate3D {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    @keyframes runesDrift {
+      0%, 100% { transform: translateY(0); opacity: 0.92; }
+      50% { transform: translateY(-6px); opacity: 1; }
+    }
+    @keyframes owlCuriousTilt {
+      0%, 64%, 100% { transform: rotate(0deg); }
+      74%, 86% { transform: rotate(-10deg) translateY(-1px); }
+      93% { transform: rotate(5deg); }
+    }
+    @keyframes tuftL { 0%, 84%, 100% { transform: rotate(0deg); } 90% { transform: rotate(-8deg); } }
+    @keyframes tuftR { 0%, 84%, 100% { transform: rotate(0deg); } 90% { transform: rotate(8deg); } }
+    @keyframes wingSoftL { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(3.5deg); } }
+    @keyframes wingSoftR { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-3.5deg); } }
+    @keyframes wingFlapL { 0%, 100% { transform: rotate(2deg); } 50% { transform: rotate(28deg) translateY(-4px); } }
+    @keyframes wingFlapR { 0%, 100% { transform: rotate(-2deg); } 50% { transform: rotate(-28deg) translateY(-4px); } }
+    @keyframes owlHop { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+    @keyframes owlWatchQuill { 0%, 100% { transform: rotate(4deg) translateY(2px); } 50% { transform: rotate(9deg) translateY(4px); } }
+    @keyframes owlHootNod { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(7deg) translateY(-3px); } }
+    @keyframes owlScanPages { 0%, 100% { transform: rotate(-11deg) translateY(2px); } 50% { transform: rotate(11deg) translateY(2px); } }
+    @keyframes quillHover { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-4px) rotate(5deg); } }
+    @keyframes quillWriteFast {
       0% { transform: translate(0, 0) rotate(-8deg); }
-      25% { transform: translate(-7px, 2px) rotate(8deg); }
-      50% { transform: translate(-3px, -2px) rotate(-12deg); }
-      75% { transform: translate(-9px, 1px) rotate(10deg); }
+      25% { transform: translate(-12px, 3px) rotate(9deg); }
+      50% { transform: translate(-5px, -3px) rotate(-12deg); }
+      75% { transform: translate(-15px, 2px) rotate(11deg); }
       100% { transform: translate(0, 0) rotate(-8deg); }
     }
-    @keyframes notesRise {
-      0% { transform: translateY(6px) scale(0.8); opacity: 0; }
+    @keyframes inkSparkles {
+      0% { transform: translateY(6px) scale(0.75); opacity: 0; }
       35% { opacity: 1; }
-      100% { transform: translateY(-18px) scale(1.12); opacity: 0; }
+      100% { transform: translateY(-24px) scale(1.15); opacity: 0; }
     }
-    @keyframes hootWave {
-      0% { transform: scale(0.6); opacity: 0.95; }
-      100% { transform: scale(1.35) translateY(-6px); opacity: 0; }
+    @keyframes chimeExpand {
+      0% { transform: scale(0.65); opacity: 0.95; }
+      100% { transform: scale(1.38) translateY(-8px); opacity: 0; }
+    }
+    @keyframes pagesOrbit {
+      0%, 100% { transform: translateY(0) scale(0.96); }
+      50% { transform: translateY(-8px) scale(1.05); }
     }
   </style>
 </head>
@@ -450,48 +515,48 @@
   <div class="studio-shell">
     <header class="studio-topbar">
       <div class="studio-brand">
-        <span class="studio-badge">Sprint E4 • Living Personas v2</span>
+        <span class="studio-badge">Sprint E4 • 3D Clay Sculpt v3.5</span>
         <div>
-          <h1 class="studio-title">Rule Master (Archmage) &amp; Chronicler (Owl Familiar)</h1>
-          <p class="studio-subtitle">High-detail articulated rigs with autonomous spellcasting, moving staff &amp; hands, expressive eyes/brows, and quill note-taking.</p>
+          <h1 class="studio-title">Rule Master &amp; Chronicler — 3D Vinyl / Clay Persona Studio</h1>
+          <p class="studio-subtitle">Soft 3D ambient-occlusion shadows, glossy marble eyes with live cursor gaze tracking, crooked wooden staff, and 11 autonomous spells &amp; familiar actions.</p>
         </div>
       </div>
       <div class="ctrl-group">
-        <button type="button" class="pill-btn is-emerald is-active" id="btn-auto-life">Autonomous Cast: ON</button>
+        <button type="button" class="pill-btn is-emerald is-active" id="btn-auto-life">Autonomous Life: ON</button>
         <button type="button" class="pill-btn" id="btn-toggle-motion">Motion: On</button>
       </div>
     </header>
 
     <main class="stage-grid">
-      <!-- ==================== RULE MASTER ==================== -->
+      <!-- ==================== 3D RULE MASTER ==================== -->
       <article class="persona-card" id="card-rulemaster">
         <div class="persona-card-hdr">
           <div>
-            <h2 class="persona-card-title">Rule Master <span style="font-size:12px;color:#818cf8;font-weight:700;">(Archmage)</span></h2>
+            <h2 class="persona-card-title">Rule Master <span style="font-size:12px;color:#a5b4fc;font-weight:700;">(3D Clay Archmage)</span></h2>
             <div class="persona-card-role">3.5e RAW Rules Expert • Live App Guide • Sheet Command Operator</div>
           </div>
-          <span class="state-tag" id="wiz-state-label">State: Idle</span>
+          <span class="state-tag" id="wiz-state-label">Idle (Watching Cursor)</span>
         </div>
 
         <div class="hero-stage">
-          <div class="hero-medallion" id="wiz-hero" title="Click to cast a random spell!"></div>
+          <div class="hero-pedestal" id="wiz-hero" title="Click to cycle spells!"></div>
         </div>
 
         <div class="action-bar" id="wiz-actions">
-          <span class="ctrl-label">Cast / Action:</span>
+          <span class="ctrl-label">Cast / Pose:</span>
           <button type="button" class="pill-btn is-active" data-wiz-cmd="idle">Idle</button>
-          <button type="button" class="pill-btn" data-wiz-cmd="arcane">✨ Arcane Burst</button>
+          <button type="button" class="pill-btn" data-wiz-cmd="astrolabe">✨ Staff Astrolabe</button>
+          <button type="button" class="pill-btn" data-wiz-cmd="d20">🔮 Levitate d20</button>
           <button type="button" class="pill-btn" data-wiz-cmd="fireball">🔥 Fireball</button>
-          <button type="button" class="pill-btn" data-wiz-cmd="lightning">⚡ Lightning</button>
-          <button type="button" class="pill-btn" data-wiz-cmd="shield">🛡️ Rune Shield</button>
-          <button type="button" class="pill-btn" data-wiz-cmd="thinking">🔮 Thinking</button>
-          <button type="button" class="pill-btn" data-wiz-cmd="crit">🌟 Crit / Cheer</button>
+          <button type="button" class="pill-btn" data-wiz-cmd="lightning">⚡ Chain Lightning</button>
+          <button type="button" class="pill-btn" data-wiz-cmd="scroll">📜 Read Scroll</button>
+          <button type="button" class="pill-btn" data-wiz-cmd="ward">🛡️ Staff Slam</button>
         </div>
 
         <div class="scale-strip">
           <div class="scale-box">
-            <div class="sim-fab size-60" id="wiz-fab-60"><span class="slot"></span><span class="sim-kbd">M</span></div>
-            <span class="scale-caption">Hero FAB (60px)</span>
+            <div class="sim-fab size-64" id="wiz-fab-64"><span class="slot"></span><span class="sim-kbd">M</span></div>
+            <span class="scale-caption">Pop-Out Hero (64px)</span>
           </div>
           <div class="scale-box">
             <div class="sim-fab size-52" id="wiz-fab-52"><span class="slot"></span><span class="sim-kbd">M</span></div>
@@ -502,39 +567,39 @@
             <span class="scale-caption">Mobile FAB (46px)</span>
           </div>
           <div class="scale-box">
-            <div class="sim-fab size-32" id="wiz-hdr-32"><span class="slot"></span></div>
-            <span class="scale-caption">Panel Header (32px)</span>
+            <div class="sim-fab size-34" id="wiz-hdr-34"><span class="slot"></span></div>
+            <span class="scale-caption">Panel Avatar (34px)</span>
           </div>
         </div>
       </article>
 
-      <!-- ==================== CHRONICLER ==================== -->
+      <!-- ==================== 3D CHRONICLER ==================== -->
       <article class="persona-card is-chronicler" id="card-chronicler">
         <div class="persona-card-hdr">
           <div>
-            <h2 class="persona-card-title">Chronicler <span style="font-size:12px;color:#fbbf24;font-weight:700;">(Owl Familiar)</span></h2>
+            <h2 class="persona-card-title">Chronicler <span style="font-size:12px;color:#fcd34d;font-weight:700;">(3D Clay Owl Familiar)</span></h2>
             <div class="persona-card-role">Campaign Memory • Lore Q&amp;A • Session Note Taker</div>
           </div>
-          <span class="state-tag" id="owl-state-label">State: Idle</span>
+          <span class="state-tag" id="owl-state-label">Idle (Perched)</span>
         </div>
 
         <div class="hero-stage">
-          <div class="hero-medallion" id="owl-hero" title="Click to trigger a familiar action!"></div>
+          <div class="hero-pedestal" id="owl-hero" title="Click to cycle familiar actions!"></div>
         </div>
 
         <div class="action-bar" id="owl-actions">
-          <span class="ctrl-label">Familiar Action:</span>
+          <span class="ctrl-label">Familiar Pose:</span>
           <button type="button" class="pill-btn is-amber is-active" data-owl-cmd="idle">Idle</button>
-          <button type="button" class="pill-btn is-amber" data-owl-cmd="write">🪶 Scribble Note</button>
-          <button type="button" class="pill-btn is-amber" data-owl-cmd="hoot">🦉 Wing Flap &amp; Hoot</button>
-          <button type="button" class="pill-btn is-amber" data-owl-cmd="search">📖 Search Lore</button>
-          <button type="button" class="pill-btn is-amber" data-owl-cmd="found">✨ Found Citation!</button>
+          <button type="button" class="pill-btn is-amber" data-owl-cmd="write">🪶 Quill Chronicle</button>
+          <button type="button" class="pill-btn is-amber" data-owl-cmd="hoot">🦉 Flutter &amp; Hoot</button>
+          <button type="button" class="pill-btn is-amber" data-owl-cmd="search">📖 Riffle Pages</button>
+          <button type="button" class="pill-btn is-amber" data-owl-cmd="found">✨ Eureka! Found</button>
         </div>
 
         <div class="scale-strip">
           <div class="scale-box">
-            <div class="sim-fab is-chronicler size-60" id="owl-fab-60"><span class="slot"></span><span class="sim-kbd">M</span></div>
-            <span class="scale-caption">Hero FAB (60px)</span>
+            <div class="sim-fab is-chronicler size-64" id="owl-fab-64"><span class="slot"></span><span class="sim-kbd">M</span></div>
+            <span class="scale-caption">Pop-Out Hero (64px)</span>
           </div>
           <div class="scale-box">
             <div class="sim-fab is-chronicler size-52" id="owl-fab-52"><span class="slot"></span><span class="sim-kbd">M</span></div>
@@ -545,8 +610,8 @@
             <span class="scale-caption">Mobile FAB (46px)</span>
           </div>
           <div class="scale-box">
-            <div class="sim-fab is-chronicler size-32" id="owl-hdr-32"><span class="slot"></span></div>
-            <span class="scale-caption">Panel Header (32px)</span>
+            <div class="sim-fab is-chronicler size-34" id="owl-hdr-34"><span class="slot"></span></div>
+            <span class="scale-caption">Panel Avatar (34px)</span>
           </div>
         </div>
       </article>
@@ -554,26 +619,26 @@
 
     <section class="notes-panel">
       <div class="note-item">
-        <h3>Autonomous Living Behavior</h3>
-        <p>When <strong>Autonomous Cast: ON</strong> is active, Rule Master periodically raises his gnarled staff on his own to weave Arcane Burst, Fireball, Lightning, or Rune Shield, while Chronicler tilts its head, flaps, and jots glowing golden runes into its tome.</p>
+        <h3>3D Vinyl/Clay Sculpting &amp; Soft AO</h3>
+        <p>Sculpted with real contact drop-shadows under the plush hat brim, chunky silver eyebrows, rounded bulbous nose, sweeping mustache, plush 3-tuft beard, gold buckle, and S-crook wooden staff.</p>
       </div>
       <div class="note-item">
-        <h3>Zero-Overhead GPU Rig</h3>
-        <p>100% pure vector SVG with multi-stop shading, articulated joints (head, hat, brows, pupils, beard, staff arm, casting hand, owl wings, quill), and GPU-only <code>transform</code> + <code>opacity</code> animations.</p>
+        <h3>Glossy Marble Eyes &amp; Cursor Gaze</h3>
+        <p>Move your mouse around the screen: both personas softly follow your cursor with their glossy 3D obsidian-amber eyes while blinking naturally.</p>
       </div>
       <div class="note-item">
-        <h3>Live Corner Test (Bottom-Right)</h3>
-        <p>Look at the bottom-right corner of this page! Click the live floating FAB to toggle between <strong>Rule Master</strong> and <strong>Chronicler</strong> while watching their autonomous spells and reaction bubbles in real size.</p>
+        <h3>Autonomous Spells &amp; Pop-Out FAB</h3>
+        <p>Every few seconds they cast spells on their own (Astrolabe, levitating <code>d20</code>, Fireball, Chain Lightning, Floating Scroll, Staff Slam, Quill Chronicle) — and pop cleanly out of the corner medallion!</p>
       </div>
     </section>
   </div>
 
-  <!-- LIVE FLOATING CORNER PREVIEW -->
+  <!-- LIVE FLOATING CORNER WIDGET -->
   <div class="live-corner-wrap">
     <div class="live-corner-bubble" id="live-corner-bubble">
-      Rule Master is ready. Click me to swap with Chronicler!
+      Rule Master is watching your sheet. Click me to swap with Chronicler!
     </div>
-    <div class="sim-fab size-60" id="live-corner-fab" title="Click to swap persona">
+    <div class="sim-fab size-64" id="live-corner-fab" title="Click to swap persona">
       <span class="slot"></span>
       <span class="sim-kbd">M</span>
     </div>
@@ -584,352 +649,483 @@
       let _uid = 0;
       function withUniqueIds(svg) {
         _uid += 1;
-        const p = 'rig' + _uid + '_';
+        const p = 'c3d_' + _uid + '_';
         return svg
           .replace(/id="([a-zA-Z0-9_-]+)"/g, 'id="' + p + '$1"')
           .replace(/url\(#([a-zA-Z0-9_-]+)\)/g, 'url(#' + p + '$1)');
       }
 
       // =========================================================================
-      // HIGH-DETAIL ARTICULATED ARCHMAGE (RULE MASTER — Classic 🧙‍♂️ Inspired)
-      // viewBox="0 0 128 128"
+      // 3D TACTILE CLAY ARCHMAGE (RULE MASTER) — Inspired by 3D Vinyl Reference
+      // Soft contact shadows, glossy marble eyes, bulbous nose, S-crook staff
       // =========================================================================
-      const WIZARD_RIG_SVG = `<svg class="wiz-rig" data-wiz="idle" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      const WIZARD_3D_SVG = `<svg class="wiz-svg" data-wiz="idle" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <defs>
-          <linearGradient id="wHat" x1="34" y1="8" x2="94" y2="54" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stop-color="#6366f1"/>
-            <stop offset="50%" stop-color="#3730a3"/>
-            <stop offset="100%" stop-color="#1e1b4b"/>
+          <!-- Soft 3D Contact Shadow Filter -->
+          <filter id="ao" x="-18%" y="-15%" width="136%" height="140%">
+            <feDropShadow dx="0" dy="3.2" stdDeviation="2.4" flood-color="#070612" flood-opacity="0.46"/>
+          </filter>
+          <filter id="aoSoft" x="-18%" y="-15%" width="136%" height="140%">
+            <feDropShadow dx="0" dy="2" stdDeviation="1.6" flood-color="#472810" flood-opacity="0.34"/>
+          </filter>
+
+          <!-- Plush Charcoal-Indigo Velvet Hat Gradients -->
+          <linearGradient id="hatCone" x1="74" y1="14" x2="144" y2="74" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#6b66a8"/>
+            <stop offset="36%" stop-color="#433e6e"/>
+            <stop offset="78%" stop-color="#282545"/>
+            <stop offset="100%" stop-color="#18162b"/>
           </linearGradient>
-          <linearGradient id="wBrim" x1="20" y1="42" x2="106" y2="54" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stop-color="#312e81"/>
-            <stop offset="50%" stop-color="#4338ca"/>
-            <stop offset="100%" stop-color="#1e1b4b"/>
+          <linearGradient id="hatCollar" x1="70" y1="52" x2="138" y2="74" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#5a558c"/>
+            <stop offset="55%" stop-color="#353159"/>
+            <stop offset="100%" stop-color="#1f1c38"/>
           </linearGradient>
-          <linearGradient id="wRobe" x1="32" y1="74" x2="96" y2="122" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stop-color="#4338ca"/>
-            <stop offset="55%" stop-color="#1e1b4b"/>
-            <stop offset="100%" stop-color="#0f172a"/>
+          <radialGradient id="brimTop" cx="42%" cy="30%" r="70%">
+            <stop offset="0%" stop-color="#65609c"/>
+            <stop offset="52%" stop-color="#38345e"/>
+            <stop offset="100%" stop-color="#1d1a33"/>
+          </radialGradient>
+          <linearGradient id="brimUnder" x1="46" y1="74" x2="162" y2="92" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#1e1b36"/>
+            <stop offset="50%" stop-color="#0e0c1c"/>
+            <stop offset="100%" stop-color="#1e1b36"/>
           </linearGradient>
-          <linearGradient id="wSkin" x1="64" y1="44" x2="64" y2="70" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stop-color="#fde6c8"/>
-            <stop offset="100%" stop-color="#eab68a"/>
-          </linearGradient>
-          <linearGradient id="wBeard" x1="64" y1="60" x2="64" y2="108" gradientUnits="userSpaceOnUse">
+
+          <!-- Warm 3D Clay Skin, Nose & Chubby Hands -->
+          <radialGradient id="skin3d" cx="44%" cy="38%" r="62%">
+            <stop offset="0%" stop-color="#ffe2bd"/>
+            <stop offset="58%" stop-color="#f3bd88"/>
+            <stop offset="100%" stop-color="#ca8853"/>
+          </radialGradient>
+          <radialGradient id="nose3d" cx="38%" cy="30%" r="66%">
+            <stop offset="0%" stop-color="#ffebd2"/>
+            <stop offset="50%" stop-color="#f5b47b"/>
+            <stop offset="100%" stop-color="#c87b44"/>
+          </radialGradient>
+
+          <!-- Plush Silver-White Beard, Mustache & Brows -->
+          <linearGradient id="beard3d" x1="104" y1="104" x2="104" y2="170" gradientUnits="userSpaceOnUse">
             <stop offset="0%" stop-color="#ffffff"/>
-            <stop offset="60%" stop-color="#e2e8f0"/>
+            <stop offset="52%" stop-color="#e5e9f0"/>
+            <stop offset="86%" stop-color="#cbd5e1"/>
             <stop offset="100%" stop-color="#94a3b8"/>
           </linearGradient>
-          <linearGradient id="wWood" x1="94" y1="36" x2="102" y2="118" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stop-color="#b45309"/>
-            <stop offset="50%" stop-color="#78350f"/>
-            <stop offset="100%" stop-color="#451a03"/>
+          <linearGradient id="must3d" x1="72" y1="102" x2="136" y2="118" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#dde3ec"/>
+            <stop offset="50%" stop-color="#ffffff"/>
+            <stop offset="100%" stop-color="#cbd5e1"/>
           </linearGradient>
-          <radialGradient id="wOrb" cx="38%" cy="34%" r="65%">
+
+          <!-- Velvet Cloak & Gold Belt Buckle -->
+          <linearGradient id="cloak3d" x1="56" y1="122" x2="152" y2="190" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#494473"/>
+            <stop offset="48%" stop-color="#2c294a"/>
+            <stop offset="100%" stop-color="#151326"/>
+          </linearGradient>
+          <linearGradient id="gold3d" x1="92" y1="156" x2="116" y2="176" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#fef08a"/>
+            <stop offset="50%" stop-color="#eab308"/>
+            <stop offset="100%" stop-color="#9a5b06"/>
+          </linearGradient>
+
+          <!-- Carved S-Crook Wooden Staff -->
+          <linearGradient id="wood3d" x1="26" y1="50" x2="66" y2="190" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#dfb88c"/>
+            <stop offset="32%" stop-color="#a87244"/>
+            <stop offset="72%" stop-color="#754926"/>
+            <stop offset="100%" stop-color="#472a13"/>
+          </linearGradient>
+          <radialGradient id="orb3d" cx="36%" cy="32%" r="64%">
             <stop offset="0%" stop-color="#ffffff"/>
-            <stop offset="35%" stop-color="#7dd3fc"/>
-            <stop offset="72%" stop-color="#0ea5e9"/>
-            <stop offset="100%" stop-color="#1d4ed8"/>
+            <stop offset="38%" stop-color="#7dd3fc"/>
+            <stop offset="78%" stop-color="#0284c7"/>
+            <stop offset="100%" stop-color="#1e3a8a"/>
           </radialGradient>
-          <radialGradient id="wFire" cx="50%" cy="60%" r="55%">
-            <stop offset="0%" stop-color="#fef9c3"/>
-            <stop offset="45%" stop-color="#fb923c"/>
-            <stop offset="100%" stop-color="#dc2626"/>
+          <radialGradient id="fire3d" cx="50%" cy="58%" r="54%">
+            <stop offset="0%" stop-color="#ffffff"/>
+            <stop offset="32%" stop-color="#fef08a"/>
+            <stop offset="68%" stop-color="#f97316"/>
+            <stop offset="100%" stop-color="#dc2626" stop-opacity="0"/>
           </radialGradient>
         </defs>
 
-        <!-- BACK RUNE AURA -->
-        <circle cx="64" cy="66" r="56" stroke="#6366f1" stroke-opacity="0.22" stroke-width="1.4" stroke-dasharray="4 6"/>
+        <!-- GROUND AMBIENT SHADOW -->
+        <ellipse cx="104" cy="188" rx="58" ry="9" fill="#020617" fill-opacity="0.58"/>
 
-        <!-- MAIN BODY GROUP -->
-        <g class="wiz-body">
-          <!-- Flowing Arcane Cloak Back -->
-          <path d="M26 116 C28 88 40 76 64 76 C88 76 100 88 102 116 C88 122 40 122 26 116 Z" fill="url(#wRobe)" stroke="#818cf8" stroke-width="2" stroke-linejoin="round"/>
-          <!-- Gold Robe Trim & Stole -->
-          <path d="M46 79 L64 114 L82 79" fill="#1e1b4b" stroke="#fbbf24" stroke-width="2" stroke-linejoin="round"/>
-          <path d="M51 82 L64 106 L77 82" stroke="#38bdf8" stroke-width="1.4" stroke-opacity="0.75" stroke-linejoin="round"/>
-          <!-- Shoulder Mantle -->
-          <path d="M32 88 C42 75 86 75 96 88 C86 95 42 95 32 88 Z" fill="#312e81" stroke="#a5b4fc" stroke-width="1.6"/>
-          <circle cx="64" cy="84" r="3.6" fill="#38bdf8" stroke="#fde047" stroke-width="1.4"/>
+        <g class="wiz-whole">
+          <!-- ==================== 3D VELVET CLOAK, TUNIC & GOLD BUCKLE ==================== -->
+          <path d="M52 186 C55 144 70 124 104 124 C138 124 153 144 156 186 C138 192 70 192 52 186 Z" fill="url(#cloak3d)" filter="url(#ao)"/>
+          <!-- Inner Dark Tunic -->
+          <path d="M80 136 L128 136 L132 188 C116 191 92 191 76 188 Z" fill="#17152b"/>
+          <!-- Brown Leather Belt + Sculpted 3D Gold Buckle -->
+          <path d="M76 161 Q104 165 132 161 L133 171 Q104 175 75 171 Z" fill="#5c3419"/>
+          <g filter="url(#ao)">
+            <rect x="93" y="156" width="22" height="19" rx="4.5" fill="url(#gold3d)"/>
+            <rect x="98" y="160.5" width="12" height="10" rx="2.2" fill="#2b180b"/>
+            <path d="M104 165.5 L112 165.5" stroke="url(#gold3d)" stroke-width="3.2" stroke-linecap="round"/>
+          </g>
+          <!-- Molded Front Cloak Lapels -->
+          <path d="M52 186 C55 146 68 126 88 126 L83 188 C70 188 60 187 52 186 Z" fill="url(#cloak3d)"/>
+          <path d="M156 186 C153 146 140 126 120 126 L125 188 C138 188 148 187 156 186 Z" fill="url(#cloak3d)"/>
 
-          <!-- LEFT SPELLCASTING ARM & HAND -->
-          <g class="wiz-cast-arm">
-            <path d="M38 86 C26 84 22 74 26 64 C30 62 36 66 39 74 Z" fill="#3730a3" stroke="#818cf8" stroke-width="1.8" stroke-linejoin="round"/>
-            <path d="M25 66 C28 64 33 65 36 70" stroke="#fbbf24" stroke-width="1.8" stroke-linecap="round"/>
-            <!-- Hand weaving spell -->
-            <circle cx="27" cy="62" r="5.2" fill="url(#wSkin)" stroke="#c28e64" stroke-width="1.1"/>
-            <path d="M23 60 L21 56 M26 58 L25.5 53.5 M29 58.5 L30.5 54.5" stroke="#fde6c8" stroke-width="1.7" stroke-linecap="round"/>
+          <!-- ==================== VIEWER'S RIGHT SLEEVE & CHUBBY 3D SPELL HAND ==================== -->
+          <g class="wiz-left-hand" filter="url(#ao)">
+            <path d="M138 134 C152 140 161 154 159 170 C151 174 140 172 135 164 Z" fill="#272445"/>
+            <ellipse cx="148" cy="168" rx="11" ry="5.5" fill="#100e21"/>
+            <!-- Soft Chubby Clay Hand & Curling Thumb -->
+            <circle cx="148" cy="171" r="9.8" fill="url(#skin3d)"/>
+            <ellipse cx="141" cy="169" rx="4.6" ry="3.5" transform="rotate(-22 141 169)" fill="#ffe4c4"/>
+            <path d="M145 175 C145 177.5 147.5 178.5 149.5 178.5" stroke="#b57241" stroke-width="1.5" stroke-linecap="round"/>
           </g>
 
-          <!-- ARTICULATED HEAD & FACE -->
-          <g class="wiz-head">
-            <!-- Flowing Silver Hair Behind Ears -->
-            <path d="M42 54 C38 66 40 78 46 84 L82 84 C88 78 90 66 86 54 Z" fill="#cbd5e1" stroke="#94a3b8" stroke-width="1.2"/>
-            <!-- Ears -->
-            <ellipse cx="44" cy="58" rx="3.2" ry="4.6" fill="#eab68a" stroke="#b9835b" stroke-width="1"/>
-            <ellipse cx="84" cy="58" rx="3.2" ry="4.6" fill="#eab68a" stroke="#b9835b" stroke-width="1"/>
-            <!-- Face -->
-            <path d="M46 53 C46 42 82 42 82 53 C82 67 74 74 64 74 C54 74 46 67 46 53 Z" fill="url(#wSkin)" stroke="#c9956b" stroke-width="1.2"/>
-            <!-- Warm Cheek Tint & Nose -->
-            <ellipse cx="52.5" cy="60.5" rx="3.4" ry="1.8" fill="#f87171" fill-opacity="0.22"/>
-            <ellipse cx="75.5" cy="60.5" rx="3.4" ry="1.8" fill="#f87171" fill-opacity="0.22"/>
-            <path d="M64 55 C62.5 59 62.2 61 64 62 C65.8 61 65.5 59 64 55 Z" fill="#dda174"/>
+          <!-- ==================== ARTICULATED 3D HEAD, FACE, BEARD & HAT ==================== -->
+          <g class="wiz-head-group">
+            <!-- Lush Side Hair Sweeps Under Hat -->
+            <path d="M68 84 C59 102 60 126 69 140 C76 134 79 116 79 92 Z" fill="#d8dee9" filter="url(#ao)"/>
+            <path d="M140 84 C149 102 148 126 139 140 C132 134 129 116 129 92 Z" fill="#cbd5e1" filter="url(#ao)"/>
+            <path d="M68 92 C64 106 65 120 71 131" stroke="#ffffff" stroke-width="3.2" stroke-linecap="round"/>
 
-            <!-- Expressive Eyes & Glancing Pupils -->
-            <g class="wiz-eyes">
-              <ellipse cx="55.5" cy="55.5" rx="4.2" ry="3.4" fill="#ffffff" stroke="#64748b" stroke-width="0.9"/>
-              <ellipse cx="72.5" cy="55.5" rx="4.2" ry="3.4" fill="#ffffff" stroke="#64748b" stroke-width="0.9"/>
-              <g class="wiz-pupils">
-                <circle cx="56" cy="55.5" r="2.2" fill="#0284c7"/>
-                <circle cx="56" cy="55.5" r="1.15" fill="#0f172a"/>
-                <circle cx="56.8" cy="54.6" r="0.65" fill="#ffffff"/>
-                <circle cx="73" cy="55.5" r="2.2" fill="#0284c7"/>
-                <circle cx="73" cy="55.5" r="1.15" fill="#0f172a"/>
-                <circle cx="73.8" cy="54.6" r="0.65" fill="#ffffff"/>
+            <!-- Warm 3D Clay Face -->
+            <rect x="74" y="76" width="60" height="45" rx="25" fill="url(#skin3d)"/>
+            <!-- Soft Rosy Cheek Warmth -->
+            <ellipse cx="83" cy="103" rx="7" ry="4.2" fill="#e11d48" fill-opacity="0.15"/>
+            <ellipse cx="125" cy="103" rx="7" ry="4.2" fill="#e11d48" fill-opacity="0.15"/>
+
+            <!-- TRUE 3D GLOSSY MARBLE EYES (Pixar / Vinyl Toy Proportions + Live Gaze!) -->
+            <g class="wiz-eyelids">
+              <!-- Warm Recessed Eye Sockets -->
+              <ellipse cx="92" cy="95.5" rx="6.6" ry="6.6" fill="#9c5b2e" fill-opacity="0.38"/>
+              <ellipse cx="116" cy="95.5" rx="6.6" ry="6.6" fill="#9c5b2e" fill-opacity="0.38"/>
+              <!-- Subtle Cream Sclera Rim -->
+              <ellipse cx="92" cy="95.5" rx="5.8" ry="5.6" fill="#fffaf5"/>
+              <ellipse cx="116" cy="95.5" rx="5.8" ry="5.6" fill="#fffaf5"/>
+              <!-- Large Glossy Dark Marble Irises (85% fill!) Tracking Cursor -->
+              <g class="gaze-track">
+                <circle cx="92.2" cy="95.6" r="4.9" fill="#1c1412"/>
+                <circle cx="92.2" cy="95.6" r="3.6" fill="#090707"/>
+                <path d="M89.2 98 A3.8 3.8 0 0 0 95.2 98" stroke="#60a5fa" stroke-opacity="0.65" stroke-width="1.2" stroke-linecap="round"/>
+                <circle cx="90.3" cy="93.5" r="1.85" fill="#ffffff"/>
+                <circle cx="94" cy="97.2" r="0.8" fill="#ffffff" fill-opacity="0.85"/>
+
+                <circle cx="116.2" cy="95.6" r="4.9" fill="#1c1412"/>
+                <circle cx="116.2" cy="95.6" r="3.6" fill="#090707"/>
+                <path d="M113.2 98 A3.8 3.8 0 0 0 119.2 98" stroke="#60a5fa" stroke-opacity="0.65" stroke-width="1.2" stroke-linecap="round"/>
+                <circle cx="114.3" cy="93.5" r="1.85" fill="#ffffff"/>
+                <circle cx="118" cy="97.2" r="0.8" fill="#ffffff" fill-opacity="0.85"/>
               </g>
             </g>
 
-            <!-- Bushy Expressive Silver Eyebrows -->
-            <g class="wiz-brows">
-              <path d="M49.5 50.2 Q55.5 47.4 60.5 50.6" stroke="#f8fafc" stroke-width="3.2" stroke-linecap="round"/>
-              <path d="M67.5 50.6 Q72.5 47.4 78.5 50.2" stroke="#f8fafc" stroke-width="3.2" stroke-linecap="round"/>
+            <!-- Chunky Molded 3D Silver Eyebrows -->
+            <g class="wiz-brows" filter="url(#aoSoft)">
+              <path d="M81 88.5 Q89 83.5 97 87.5" stroke="#f8fafc" stroke-width="6.2" stroke-linecap="round"/>
+              <path d="M127 88.5 Q119 83.5 111 87.5" stroke="#f8fafc" stroke-width="6.2" stroke-linecap="round"/>
             </g>
 
-            <!-- Long Flowing Layered Wizard Beard & Mustache -->
-            <g class="wiz-beard">
-              <path d="M46.5 62 C46 82 54 102 64 108 C74 102 82 82 81.5 62 C76 68 70 70 64 70 C58 70 52 68 46.5 62 Z" fill="url(#wBeard)" stroke="#94a3b8" stroke-width="1.3" stroke-linejoin="round"/>
-              <path d="M54 74 C55 86 59 95 64 102 M74 74 C73 86 69 95 64 102" stroke="#cbd5e1" stroke-width="1.3" stroke-linecap="round"/>
-              <!-- Sculpted Mustache -->
-              <path d="M64 64 C59 61 52 62.5 47.5 67.5 C53 69 59 68 64 66 C69 68 75 69 80.5 67.5 C76 62.5 69 61 64 64 Z" fill="#ffffff" stroke="#cbd5e1" stroke-width="1" stroke-linejoin="round"/>
+            <!-- ==================== PLUSH 3-TUFT BEARD & SWEEPING MUSTACHE ==================== -->
+            <g class="wiz-beard-group" filter="url(#ao)">
+              <!-- Full Rounded Cheek-to-Point Sculpted Beard -->
+              <path d="M69 107 C64 134 78 157 94 166 L98 159 L104 169 L110 159 L114 166 C130 157 144 134 139 107 C126 113 82 113 69 107 Z" fill="url(#beard3d)"/>
+              <!-- Soft Sculpted Vertical Beard Grooves -->
+              <path d="M83 118 C81 135 86 150 94 160" stroke="#94a3b8" stroke-opacity="0.45" stroke-width="2.8" stroke-linecap="round"/>
+              <path d="M96 120 C96 137 99 151 103 163" stroke="#94a3b8" stroke-opacity="0.38" stroke-width="2.5" stroke-linecap="round"/>
+              <path d="M112 120 C112 137 109 151 105 163" stroke="#94a3b8" stroke-opacity="0.38" stroke-width="2.5" stroke-linecap="round"/>
+              <path d="M125 118 C127 135 122 150 114 160" stroke="#94a3b8" stroke-opacity="0.45" stroke-width="2.8" stroke-linecap="round"/>
+              <!-- Cozy Mouth Hollow Under Mustache -->
+              <ellipse cx="104" cy="115" rx="8.5" ry="3.8" fill="#1e293b" fill-opacity="0.78"/>
+
+              <!-- Plush Sweeping 3D Mustache with Soft Drop Shadow -->
+              <g class="wiz-mustache" filter="url(#aoSoft)">
+                <path d="M104 104 C92 101 79 107 69 115 C82 118 95 114 104 110.5 C113 114 126 118 139 115 C129 107 116 101 104 104 Z" fill="url(#must3d)"/>
+              </g>
             </g>
 
-            <!-- TALL SLOUCHY POINTED WIZARD HAT (Classic 🧙‍♂️ Silhouette) -->
-            <g class="wiz-hat">
-              <!-- Wide Curved Brim -->
-              <ellipse cx="64" cy="45.5" rx="34" ry="8.5" fill="url(#wBrim)" stroke="#818cf8" stroke-width="1.8"/>
-              <!-- Tall Curved Cone -->
-              <path d="M39 44 C42 29 52 15 63 8 C67 5.8 73 7.5 76 12 C72 12 69.5 14 70.5 18 C75 26 84 35 89 44 Z" fill="url(#wHat)" stroke="#a5b4fc" stroke-width="1.8" stroke-linejoin="round"/>
-              <!-- Gold Hatband & Buckle -->
-              <path d="M41.5 41.5 Q64 36.5 86.5 41.5" stroke="#fbbf24" stroke-width="4.2" stroke-linecap="round"/>
-              <rect x="59.5" y="36.2" width="9" height="6.8" rx="1.5" fill="#1e1b4b" stroke="#fde047" stroke-width="1.6"/>
-              <!-- Constellation Stars & Crescent on Hat -->
-              <path d="M55 24 L56.4 27.2 L59.8 27.5 L57.2 29.7 L58 33 L55 31.2 L52 33 L52.8 29.7 L50.2 27.5 L53.6 27.2 Z" fill="#fde047"/>
-              <circle cx="68.5" cy="21" r="1.7" fill="#7dd3fc"/>
-              <circle cx="75" cy="30" r="1.4" fill="#fde047"/>
+            <!-- PROMINENT CUTE 3D BULBOUS NOSE (With soft AO shadow onto mustache!) -->
+            <g filter="url(#aoSoft)">
+              <ellipse cx="104" cy="102.5" rx="10" ry="7.2" fill="url(#nose3d)"/>
+              <ellipse cx="100.8" cy="100" rx="3.6" ry="1.9" fill="#ffffff" fill-opacity="0.52"/>
+            </g>
+
+            <!-- Forehead Shadow Cast by Hat Brim -->
+            <path d="M74 88 C86 80 122 80 134 88 C134 79 120 74 104 74 C88 74 74 79 74 88 Z" fill="#140c08" fill-opacity="0.38"/>
+
+            <!-- Magical Cast Glow Reflected on Face -->
+            <ellipse class="wiz-face-glow" cx="104" cy="112" rx="38" ry="40" fill="#38bdf8" fill-opacity="0.24"/>
+
+            <!-- ==================== ORGANIC SLOUCHY 3D WIZARD HAT ==================== -->
+            <g class="wiz-hat-group" filter="url(#ao)">
+              <!-- Dark Recessed Brim Underside -->
+              <ellipse cx="104" cy="80" rx="55" ry="15.5" fill="url(#brimUnder)"/>
+              <!-- Thick Rounded 3D Brim Cushion -->
+              <path d="M46 78 C50 61 158 61 162 78 C158 90 50 90 46 78 Z" fill="url(#brimTop)"/>
+              <path d="M52 75.5 C68 64.5 140 64.5 156 75.5" stroke="#a5b4fc" stroke-opacity="0.32" stroke-width="2.2" stroke-linecap="round"/>
+
+              <!-- Smooth Full-Bodied Slouchy Cone + Graceful Right Droop (Reference Proportions!) -->
+              <path d="M68 68 C74 42 90 14 114 14 C132 14 144 30 153 47 C156 52 160 55 164 54 C159 60 150 60 142 53 C135 47 129 39 125 40 C122 41 130 55 138 68 Z" fill="url(#hatCone)"/>
+              <!-- Plush Rolled Torus Fold at Hat Base -->
+              <path d="M67 69 C75 54 133 54 141 69 C126 74 82 74 67 69 Z" fill="url(#hatCollar)"/>
+              <!-- Warm Leather Hatband -->
+              <path d="M70 69.5 Q104 62.5 138 69.5" stroke="#6b3e20" stroke-width="5.2" stroke-linecap="round"/>
+              <path d="M72 69 Q104 62.2 136 69" stroke="#d97706" stroke-opacity="0.45" stroke-width="1.5" stroke-linecap="round"/>
+              <!-- Subtle Golden Star Pin -->
+              <path d="M97 43 L98.8 47 L103 47.4 L99.8 50.2 L100.8 54.4 L97 52 L93.2 54.4 L94.2 50.2 L91 47.4 L95.2 47 Z" fill="#fde047" fill-opacity="0.9"/>
             </g>
           </g>
 
-          <!-- RIGHT STAFF ARM & GNARLED ARCANE STAFF -->
-          <g class="wiz-staff-arm">
-            <!-- Sleeve -->
-            <path d="M88 85 C98 83 102 74 99 66 C94 64 89 69 87 76 Z" fill="#3730a3" stroke="#818cf8" stroke-width="1.8" stroke-linejoin="round"/>
-            <!-- Gnarled Wooden Staff Shaft -->
-            <path d="M101 38 C100 58 97 86 94 118" stroke="url(#wWood)" stroke-width="5.2" stroke-linecap="round"/>
-            <path d="M101 38 C100 58 97 86 94 118" stroke="#d97706" stroke-opacity="0.45" stroke-width="1.4" stroke-linecap="round"/>
-            <!-- Gold Cradle Claws Holding Orb -->
-            <path d="M93.5 34 C94 41 108 41 108.5 34" stroke="#fbbf24" stroke-width="2.4" stroke-linecap="round"/>
-            <path d="M96 39 L101 44 L106 39" stroke="#fde047" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-            <!-- Hand Gripping Staff -->
-            <circle cx="97.5" cy="70" r="5.5" fill="url(#wSkin)" stroke="#c28e64" stroke-width="1.2"/>
-            <!-- Luminous Crystal Orb & Orbiting Ring -->
-            <g class="wiz-orb-halo">
-              <ellipse cx="102" cy="31" rx="12.5" ry="5.5" transform="rotate(-24 102 31)" stroke="#7dd3fc" stroke-opacity="0.7" stroke-width="1.3" stroke-dasharray="4 3"/>
+          <!-- ==================== VIEWER'S LEFT ARM + AUTHENTIC S-CROOK WOODEN STAFF ==================== -->
+          <g class="wiz-staff-rig" filter="url(#ao)">
+            <!-- Wizard Sleeve Reaching Out -->
+            <path d="M70 134 C56 138 47 146 45 158 C52 164 63 162 71 151 Z" fill="#2c294a"/>
+
+            <!-- Authentic Curved Shepherd/Wizard S-Crook Wooden Staff (Bulbous Tip!) -->
+            <path d="M61 190 L46 112 C44 100 54 92 53 77 C52 60 35 55 34 67" stroke="url(#wood3d)" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+            <!-- Bulbous Carved Wooden Crook Knob (Just like Reference!) -->
+            <circle cx="34" cy="66" r="7.5" fill="url(#wood3d)"/>
+            <ellipse cx="32" cy="63.5" rx="3" ry="2" fill="#f5d5ae" fill-opacity="0.45"/>
+            <!-- Soft Carved Wood Highlight -->
+            <path d="M58 185 L44 112 C42 100 52 92 51 77 C50 64 39 59 36 65" stroke="#f5d5ae" stroke-opacity="0.36" stroke-width="2.4" stroke-linecap="round"/>
+
+            <!-- Weightlessly Levitating Arcane Crystal Nestled Inside the Crook -->
+            <g class="wiz-crook-gem">
+              <circle cx="42" cy="82" r="13" fill="#38bdf8" fill-opacity="0.24"/>
+              <circle cx="42" cy="82" r="5.8" fill="url(#orb3d)"/>
+              <circle cx="40.2" cy="80" r="1.9" fill="#ffffff" fill-opacity="0.92"/>
             </g>
-            <g class="wiz-orb-core">
-              <circle cx="102" cy="31" r="12" fill="#38bdf8" fill-opacity="0.22"/>
-              <circle cx="102" cy="31" r="7.4" fill="url(#wOrb)" stroke="#e0f2fe" stroke-width="1.4"/>
-              <circle cx="99.6" cy="28.4" r="2.1" fill="#ffffff" fill-opacity="0.88"/>
+
+            <!-- 4 Sculpted Chubby 3D Fingers + Thumb Gripping the Staff -->
+            <g filter="url(#aoSoft)">
+              <rect x="41" y="137" width="16" height="6.5" rx="3.25" transform="rotate(-8 41 137)" fill="url(#skin3d)"/>
+              <rect x="42" y="142.8" width="16.5" height="6.5" rx="3.25" transform="rotate(-8 42 142.8)" fill="url(#skin3d)"/>
+              <rect x="43" y="148.6" width="16" height="6.5" rx="3.25" transform="rotate(-8 43 148.6)" fill="url(#skin3d)"/>
+              <rect x="44.5" y="154.4" width="14" height="6" rx="3" transform="rotate(-8 44.5 154.4)" fill="url(#skin3d)"/>
+              <ellipse cx="57.5" cy="142" rx="5" ry="3.6" transform="rotate(24 57.5 142)" fill="#ffe6c7"/>
             </g>
           </g>
         </g>
 
-        <!-- ==================== SPELL FX OVERLAY LAYERS ==================== -->
-        <!-- 1. ARCANE BURST -->
-        <g class="fx-layer fx-arcane">
-          <circle cx="102" cy="31" r="17" stroke="#38bdf8" stroke-width="2" stroke-dasharray="6 4"/>
-          <path d="M102 8 L104 15 L111 17 L104 19 L102 26 L100 19 L93 17 L100 15 Z" fill="#e0f2fe"/>
-          <path d="M84 22 L86 26 L90 27 L86 28 L84 32 L82 28 L78 27 L82 26 Z" fill="#fde047"/>
-          <circle cx="118" cy="24" r="2.6" fill="#7dd3fc"/>
-          <circle cx="115" cy="44" r="2.1" fill="#c4b5fd"/>
+        <!-- ==================== 6 AUTONOMOUS SPELL VFX LAYERS ==================== -->
+        <!-- 1. STAFF ASTROLABE -->
+        <g class="sp-fx sp-astrolabe">
+          <circle cx="41" cy="78" r="28" stroke="#7dd3fc" stroke-width="2" stroke-dasharray="6 4"/>
+          <circle cx="41" cy="78" r="19" stroke="#fde047" stroke-width="1.5" stroke-dasharray="3 5"/>
+          <polygon points="41,46 45,54 53,58 45,62 41,70 37,62 29,58 37,54" fill="#e0f2fe"/>
+          <circle cx="16" cy="64" r="2.8" fill="#fde047"/>
+          <circle cx="66" cy="62" r="2.5" fill="#38bdf8"/>
         </g>
 
-        <!-- 2. FIREBALL CONJURED OVER LEFT HAND -->
-        <g class="fx-layer fx-fireball">
-          <circle cx="26" cy="49" r="16" fill="#f97316" fill-opacity="0.28"/>
-          <path d="M26 30 C32 37 37 42 36 50 C35 57 31 60 26 60 C21 60 16 56 16 49 C16 42 22 39 26 30 Z" fill="url(#wFire)" stroke="#fef08a" stroke-width="1.3"/>
-          <path d="M26 39 C29 44 31 47 30 52 C29 55 27.5 56.5 26 56.5 C24.5 56.5 22.5 55 22.5 51.5 C22.5 47 24.5 44 26 39 Z" fill="#fef9c3"/>
-          <circle cx="16" cy="36" r="2" fill="#fde047"/>
-          <circle cx="37" cy="34" r="1.7" fill="#fb923c"/>
+        <!-- 2. TELEKINETIC 3D D20 -->
+        <g class="sp-fx sp-d20">
+          <circle cx="158" cy="94" r="25" fill="#38bdf8" fill-opacity="0.22"/>
+          <ellipse cx="158" cy="94" rx="23" ry="8.5" transform="rotate(-22 158 94)" stroke="#7dd3fc" stroke-width="1.6" stroke-dasharray="4 3"/>
+          <polygon points="158,73 176,83 176,105 158,115 140,105 140,83" fill="#0284c7"/>
+          <polygon points="158,73 176,83 158,94" fill="#7dd3fc"/>
+          <polygon points="158,73 140,83 158,94" fill="#38bdf8"/>
+          <polygon points="140,83 158,94 149,110" fill="#0ea5e9"/>
+          <polygon points="176,83 158,94 167,110" fill="#0369a1"/>
+          <path d="M158 73 L158 94 M140 83 L176 83 M158 94 L149 110 M158 94 L167 110" stroke="#e0f2fe" stroke-width="1.2"/>
+          <circle cx="143" cy="68" r="2.6" fill="#fde047"/>
+          <circle cx="176" cy="72" r="2.2" fill="#e0f2fe"/>
         </g>
 
-        <!-- 3. LIGHTNING ARC (Staff Tip -> Casting Hand) -->
-        <g class="fx-layer fx-lightning">
-          <path d="M96 31 L78 25 L68 38 L52 33 L42 48 L28 54" stroke="#e0f2fe" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M96 31 L78 25 L68 38 L52 33 L42 48 L28 54" stroke="#38bdf8" stroke-width="6.5" stroke-opacity="0.4" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M68 38 L74 49 L65 55" stroke="#7dd3fc" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        <!-- 3. PHOENIX FIREBALL -->
+        <g class="sp-fx sp-fire">
+          <circle cx="158" cy="92" r="29" fill="url(#fire3d)"/>
+          <path d="M158 60 C169 72 177 82 175 96 C173 108 165 113 158 113 C149 113 141 106 141 95 C141 82 150 75 158 60 Z" fill="url(#fire3d)"/>
+          <path d="M158 75 C163 83 167 88 166 97 C165 103 161 106 158 106 C154 106 150 102 150 96 C150 88 155 83 158 75 Z" fill="#fef9c3"/>
+          <circle cx="143" cy="68" r="3" fill="#fde047"/>
+          <circle cx="174" cy="70" r="2.4" fill="#fb923c"/>
         </g>
 
-        <!-- 4. RUNE SHIELD WARD -->
-        <g class="fx-layer fx-shield">
-          <circle cx="64" cy="66" r="52" stroke="#38bdf8" stroke-width="2.2" stroke-dasharray="10 6"/>
-          <polygon points="64,18 105,42 105,90 64,114 23,90 23,42" stroke="#818cf8" stroke-width="1.8" fill="#38bdf8" fill-opacity="0.08"/>
-          <circle cx="64" cy="18" r="3" fill="#e0f2fe"/>
-          <circle cx="105" cy="90" r="3" fill="#e0f2fe"/>
-          <circle cx="23" cy="90" r="3" fill="#e0f2fe"/>
+        <!-- 4. CHAIN LIGHTNING -->
+        <g class="sp-fx sp-bolt">
+          <path d="M43 80 L74 58 L96 74 L124 52 L144 76 L158 108" stroke="#38bdf8" stroke-width="9.5" stroke-opacity="0.36" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M43 80 L74 58 L96 74 L124 52 L144 76 L158 108" stroke="#f0f9ff" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M96 74 L105 95 L96 108" stroke="#7dd3fc" stroke-width="2.4" stroke-linecap="round"/>
         </g>
 
-        <!-- 5. CRIT / CELEBRATE SPARKLES -->
-        <g class="fx-layer fx-crit">
-          <path d="M26 24 L28.5 30 L34.5 32.5 L28.5 35 L26 41 L23.5 35 L17.5 32.5 L23.5 30 Z" fill="#fde047"/>
-          <path d="M102 12 L104 17 L109 19 L104 21 L102 26 L100 21 L95 19 L100 17 Z" fill="#38bdf8"/>
-          <circle cx="64" cy="14" r="3" fill="#34d399"/>
-          <circle cx="112" cy="52" r="2.6" fill="#fde047"/>
-          <circle cx="18" cy="58" r="2.4" fill="#c084fc"/>
+        <!-- 5. FLOATING UNFURLING SPELL SCROLL -->
+        <g class="sp-fx sp-scroll" filter="url(#ao)">
+          <path d="M128 112 Q154 106 178 114 L174 142 Q150 134 124 140 Z" fill="#fef3c7"/>
+          <rect x="122" y="109" width="6" height="34" rx="3" transform="rotate(8 125 126)" fill="#d97706"/>
+          <rect x="173" y="111" width="6" height="34" rx="3" transform="rotate(8 176 128)" fill="#d97706"/>
+          <path d="M134 120 L166 122 M133 127 L162 129 M132 134 L154 135" stroke="#b45309" stroke-width="2.2" stroke-linecap="round"/>
+          <circle cx="154" cy="98" r="2.5" fill="#fde047"/>
+        </g>
+
+        <!-- 6. STAFF SLAM GOLDEN WARD -->
+        <g class="sp-fx sp-ward">
+          <circle cx="104" cy="116" r="76" stroke="#fbbf24" stroke-opacity="0.68" stroke-width="2.5" stroke-dasharray="12 8"/>
+          <circle cx="104" cy="116" r="66" stroke="#38bdf8" stroke-opacity="0.52" stroke-width="1.7" stroke-dasharray="5 6"/>
+          <polygon points="104,40 170,78 170,154 104,192 38,154 38,78" stroke="#818cf8" stroke-opacity="0.48" stroke-width="1.8" fill="#38bdf8" fill-opacity="0.06"/>
         </g>
       </svg>`;
 
       // =========================================================================
-      // HIGH-DETAIL ARTICULATED OWL FAMILIAR (CHRONICLER)
-      // viewBox="0 0 128 128"
+      // 3D TACTILE CLAY OWL FAMILIAR (CHRONICLER) — Matching Soft Vinyl Aesthetic
       // =========================================================================
-      const OWL_RIG_SVG = `<svg class="owl-rig" data-owl="idle" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      const OWL_3D_SVG = `<svg class="owl-svg" data-owl="idle" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <defs>
-          <linearGradient id="oPlume" x1="64" y1="22" x2="64" y2="104" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stop-color="#d97706"/>
-            <stop offset="55%" stop-color="#92400e"/>
-            <stop offset="100%" stop-color="#451a03"/>
+          <filter id="oAo" x="-18%" y="-15%" width="136%" height="140%">
+            <feDropShadow dx="0" dy="3.2" stdDeviation="2.4" flood-color="#090502" flood-opacity="0.48"/>
+          </filter>
+          <radialGradient id="oPlume" cx="42%" cy="28%" r="72%">
+            <stop offset="0%" stop-color="#e08214"/>
+            <stop offset="52%" stop-color="#9a480d"/>
+            <stop offset="100%" stop-color="#471d04"/>
+          </radialGradient>
+          <radialGradient id="oDown" cx="46%" cy="32%" r="68%">
+            <stop offset="0%" stop-color="#fffdf5"/>
+            <stop offset="58%" stop-color="#fde68a"/>
+            <stop offset="100%" stop-color="#d97706"/>
+          </radialGradient>
+          <radialGradient id="oDisc" cx="50%" cy="42%" r="58%">
+            <stop offset="0%" stop-color="#ffffff"/>
+            <stop offset="72%" stop-color="#fef3c7"/>
+            <stop offset="100%" stop-color="#d97706"/>
+          </radialGradient>
+          <radialGradient id="oAmber" cx="42%" cy="38%" r="60%">
+            <stop offset="0%" stop-color="#fef08a"/>
+            <stop offset="55%" stop-color="#f59e0b"/>
+            <stop offset="100%" stop-color="#92400e"/>
+          </radialGradient>
+          <linearGradient id="oWing" x1="40" y1="98" x2="70" y2="162" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#bd5b11"/>
+            <stop offset="60%" stop-color="#7c3208"/>
+            <stop offset="100%" stop-color="#3d1603"/>
           </linearGradient>
-          <linearGradient id="oChest" x1="64" y1="58" x2="64" y2="102" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stop-color="#fffbeb"/>
-            <stop offset="65%" stop-color="#fde68a"/>
+          <linearGradient id="oTome" x1="36" y1="154" x2="164" y2="184" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#7c2d12"/>
+            <stop offset="50%" stop-color="#451a03"/>
+            <stop offset="100%" stop-color="#270e02"/>
+          </linearGradient>
+          <linearGradient id="oQuill" x1="146" y1="86" x2="176" y2="156" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#ffffff"/>
+            <stop offset="45%" stop-color="#fde68a"/>
             <stop offset="100%" stop-color="#d97706"/>
           </linearGradient>
-          <radialGradient id="oIris" cx="45%" cy="40%" r="60%">
-            <stop offset="0%" stop-color="#fef08a"/>
-            <stop offset="60%" stop-color="#f59e0b"/>
-            <stop offset="100%" stop-color="#b45309"/>
-          </radialGradient>
-          <linearGradient id="oTome" x1="20" y1="96" x2="108" y2="116" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stop-color="#78350f"/>
-            <stop offset="100%" stop-color="#451a03"/>
-          </linearGradient>
         </defs>
 
-        <!-- BACK AURA -->
-        <circle cx="64" cy="64" r="56" stroke="#f59e0b" stroke-opacity="0.22" stroke-width="1.4" stroke-dasharray="3 6"/>
+        <!-- GROUND SHADOW -->
+        <ellipse cx="100" cy="188" rx="58" ry="9" fill="#020617" fill-opacity="0.58"/>
 
-        <!-- OPEN CHRONICLE TOME PERCH -->
-        <g>
-          <ellipse class="owl-tome-glow" cx="64" cy="96" rx="34" ry="11" fill="#fbbf24" fill-opacity="0.28"/>
-          <path d="M22 104 L64 95 L106 104 L102 115 L64 107 L26 115 Z" fill="url(#oTome)" stroke="#fbbf24" stroke-width="2" stroke-linejoin="round"/>
-          <path d="M27 103 L64 95.5 L101 103 L99 109 L64 102 L29 109 Z" fill="#fef3c7" stroke="#d97706" stroke-width="1.2" stroke-linejoin="round"/>
-          <path d="M64 95.5 L64 107" stroke="#b45309" stroke-width="1.6"/>
+        <!-- 3D LEATHERBOUND GRIMOIRE PERCH -->
+        <g filter="url(#oAo)">
+          <path d="M36 165 L100 151 L164 165 L158 183 L100 171 L42 183 Z" fill="url(#oTome)"/>
+          <path d="M43 163 L100 151.5 L157 163 L154 174 L100 163 L46 174 Z" fill="#fef3c7"/>
+          <rect x="95" y="151" width="10" height="21" rx="3" fill="#f59e0b"/>
         </g>
 
-        <!-- OWL BODY -->
-        <g class="owl-body">
-          <!-- Articulated Left Wing -->
-          <g class="owl-wing-l">
-            <path d="M40 60 C22 66 18 86 30 98 C38 96 44 86 46 72 Z" fill="#78350f" stroke="#fbbf24" stroke-width="1.8" stroke-linejoin="round"/>
-            <path d="M35 70 C28 76 27 85 32 92" stroke="#f59e0b" stroke-width="1.4" stroke-linecap="round"/>
+        <g class="owl-whole">
+          <!-- SCULPTED 3D WINGS -->
+          <g class="owl-wing-l3d" filter="url(#oAo)">
+            <path d="M62 104 C38 112 34 140 48 158 C58 156 66 142 68 122 Z" fill="url(#oWing)"/>
+            <path d="M54 118 C45 128 45 140 51 150" stroke="#fbbf24" stroke-opacity="0.35" stroke-width="2.4" stroke-linecap="round"/>
           </g>
-          <!-- Articulated Right Wing -->
-          <g class="owl-wing-r">
-            <path d="M88 60 C106 66 110 86 98 98 C90 96 84 86 82 72 Z" fill="#78350f" stroke="#fbbf24" stroke-width="1.8" stroke-linejoin="round"/>
-            <path d="M93 70 C100 76 101 85 96 92" stroke="#f59e0b" stroke-width="1.4" stroke-linecap="round"/>
+          <g class="owl-wing-r3d" filter="url(#oAo)">
+            <path d="M138 104 C162 112 166 140 152 158 C142 156 134 142 132 122 Z" fill="url(#oWing)"/>
+            <path d="M146 118 C155 128 155 140 149 150" stroke="#fbbf24" stroke-opacity="0.35" stroke-width="2.4" stroke-linecap="round"/>
           </g>
 
-          <!-- Plump Feathered Torso -->
-          <ellipse cx="64" cy="78" rx="25" ry="24" fill="url(#oPlume)" stroke="#fbbf24" stroke-width="1.8"/>
-          <ellipse cx="64" cy="81" rx="16.5" ry="17.5" fill="url(#oChest)"/>
-          <!-- Layered Chest Feather Scallops -->
-          <path d="M53 72 Q56.5 76 60 72 M61 72 Q64 76 67 72 M68 72 Q71.5 76 75 72" stroke="#b45309" stroke-width="1.5" stroke-linecap="round"/>
-          <path d="M55 81 Q59 85 63 81 M65 81 Q69 85 73 81" stroke="#b45309" stroke-width="1.5" stroke-linecap="round"/>
-          <path d="M59 89 Q64 93 69 89" stroke="#b45309" stroke-width="1.5" stroke-linecap="round"/>
+          <!-- PLUMP 3D TORSO & SCALLOPED CHEST -->
+          <ellipse cx="100" cy="131" rx="40" ry="36" fill="url(#oPlume)" filter="url(#oAo)"/>
+          <ellipse cx="100" cy="136" rx="28" ry="27" fill="url(#oDown)"/>
+          <path d="M83 123 Q89 129 95 123 M97 123 Q103 129 109 123 M111 123 Q117 129 123 123" stroke="#b45309" stroke-opacity="0.4" stroke-width="2.6" stroke-linecap="round"/>
+          <path d="M86 136 Q93 142 100 136 M102 136 Q109 142 116 136" stroke="#b45309" stroke-opacity="0.36" stroke-width="2.6" stroke-linecap="round"/>
 
-          <!-- Talons Gripping Tome -->
-          <path d="M51 98 L49 104 M55 98.5 L55 104.5 M59 98 L60 103.5" stroke="#fbbf24" stroke-width="2.4" stroke-linecap="round"/>
-          <path d="M69 98 L68 103.5 M73 98.5 L73 104.5 M77 98 L79 104" stroke="#fbbf24" stroke-width="2.4" stroke-linecap="round"/>
+          <!-- CHUBBY 3D TALONS -->
+          <g filter="url(#oAo)">
+            <rect x="76" y="157" width="6.8" height="12.5" rx="3.4" fill="#fbbf24"/>
+            <rect x="83" y="158" width="6.8" height="13" rx="3.4" fill="#f59e0b"/>
+            <rect x="90" y="157" width="6.2" height="12" rx="3.1" fill="#d97706"/>
+            <rect x="104" y="157" width="6.2" height="12" rx="3.1" fill="#d97706"/>
+            <rect x="110.5" y="158" width="6.8" height="13" rx="3.4" fill="#f59e0b"/>
+            <rect x="117.5" y="157" width="6.8" height="12.5" rx="3.4" fill="#fbbf24"/>
+          </g>
 
-          <!-- ARTICULATED OWL HEAD -->
-          <g class="owl-head">
-            <!-- Expressive Horn / Ear Tufts -->
-            <g class="owl-tufts">
-              <path d="M38 38 L42 17 L55 30 Z" fill="#92400e" stroke="#fbbf24" stroke-width="1.8" stroke-linejoin="round"/>
-              <path d="M90 38 L86 17 L73 30 Z" fill="#92400e" stroke="#fbbf24" stroke-width="1.8" stroke-linejoin="round"/>
+          <!-- ARTICULATED 3D OWL HEAD -->
+          <g class="owl-head-3d" filter="url(#oAo)">
+            <g class="owl-tuft-l">
+              <path d="M56 72 C52 50 58 34 73 30 C77 43 77 56 72 66 Z" fill="url(#oPlume)"/>
             </g>
-            <!-- Head Contour -->
-            <ellipse cx="64" cy="46" rx="26" ry="20.5" fill="#b45309" stroke="#fcd34d" stroke-width="1.8"/>
-            <!-- Facial Discs -->
-            <circle cx="52.5" cy="46.5" r="10.8" fill="#fffbeb" stroke="#f59e0b" stroke-width="1.6"/>
-            <circle cx="75.5" cy="46.5" r="10.8" fill="#fffbeb" stroke="#f59e0b" stroke-width="1.6"/>
-            <!-- Brass Scholar Spectacles -->
-            <circle cx="52.5" cy="46.5" r="10.2" stroke="#fde047" stroke-width="1.6"/>
-            <circle cx="75.5" cy="46.5" r="10.2" stroke="#fde047" stroke-width="1.6"/>
-            <path d="M62.5 46.5 L65.5 46.5" stroke="#fde047" stroke-width="2"/>
+            <g class="owl-tuft-r">
+              <path d="M144 72 C148 50 142 34 127 30 C123 43 123 56 128 66 Z" fill="url(#oPlume)"/>
+            </g>
 
-            <!-- Large Luminous Golden Eyes -->
-            <g class="owl-eyes">
-              <circle cx="52.5" cy="46.5" r="6.5" fill="url(#oIris)"/>
-              <circle cx="75.5" cy="46.5" r="6.5" fill="url(#oIris)"/>
-              <g class="owl-pupils">
-                <circle cx="52.5" cy="46.5" r="3.4" fill="#0f172a"/>
-                <circle cx="54.2" cy="44.8" r="1.4" fill="#ffffff"/>
-                <circle cx="75.5" cy="46.5" r="3.4" fill="#0f172a"/>
-                <circle cx="77.2" cy="44.8" r="1.4" fill="#ffffff"/>
+            <rect x="53" y="49" width="94" height="68" rx="34" fill="url(#oPlume)"/>
+            <circle cx="81" cy="84" r="19.8" fill="url(#oDisc)"/>
+            <circle cx="119" cy="84" r="19.8" fill="url(#oDisc)"/>
+            <path d="M83 55 L100 78 L117 55 Z" fill="#853a0a" fill-opacity="0.72"/>
+
+            <!-- HUGE GLOSSY 3D MARBLE EYES WITH LIVE CURSOR GAZE -->
+            <g class="owl-lids">
+              <circle cx="81" cy="84" r="13.8" fill="url(#oAmber)"/>
+              <circle cx="119" cy="84" r="13.8" fill="url(#oAmber)"/>
+              <g class="gaze-track">
+                <circle cx="81" cy="84" r="9.8" fill="#0b0807"/>
+                <circle cx="77.2" cy="79.5" r="3.5" fill="#ffffff"/>
+                <circle cx="85" cy="88" r="1.5" fill="#fde047" fill-opacity="0.9"/>
+
+                <circle cx="119" cy="84" r="9.8" fill="#0b0807"/>
+                <circle cx="115.2" cy="79.5" r="3.5" fill="#ffffff"/>
+                <circle cx="123" cy="88" r="1.5" fill="#fde047" fill-opacity="0.9"/>
               </g>
             </g>
 
-            <!-- Curved Hooked Beak -->
-            <path d="M60.5 52.5 L64 61.5 L67.5 52.5 Q64 50.5 60.5 52.5 Z" fill="#f59e0b" stroke="#fef3c7" stroke-width="1.1" stroke-linejoin="round"/>
+            <!-- 3D Brass Scholar Spectacles -->
+            <circle cx="81" cy="84" r="16.4" stroke="#fde047" stroke-width="2.6"/>
+            <circle cx="119" cy="84" r="16.4" stroke="#fde047" stroke-width="2.6"/>
+            <path d="M97 84 Q100 80 103 84" stroke="#fde047" stroke-width="3" stroke-linecap="round"/>
+
+            <!-- Sculpted 3D Beak -->
+            <path d="M92.5 93 C96 88.5 104 88.5 107.5 93 L100 108 Z" fill="#f59e0b"/>
+            <path d="M96 93 L100 103.5 L100 91 Z" fill="#fef08a" fill-opacity="0.58"/>
           </g>
         </g>
 
-        <!-- FLOATING GOLDEN QUILL -->
-        <g class="owl-quill">
-          <path d="M95 96 L112 52 C102 56 95 69 95 96 Z" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.6" stroke-linejoin="round"/>
-          <path d="M95 96 L108 60" stroke="#d97706" stroke-width="1.3" stroke-linecap="round"/>
-          <circle cx="95" cy="96" r="2.2" fill="#fde047"/>
+        <!-- FLOATING 3D FEATHER QUILL -->
+        <g class="owl-quill-3d" filter="url(#oAo)">
+          <path d="M146 157 C150 124 162 98 179 86 C177 112 167 137 146 157 Z" fill="url(#oQuill)"/>
+          <path d="M144 160 L174 94" stroke="#b45309" stroke-width="2.2" stroke-linecap="round"/>
+          <circle cx="144" cy="160" r="3" fill="#fde047"/>
         </g>
 
-        <!-- ==================== OWL FX OVERLAYS ==================== -->
-        <!-- Floating Golden Lore Notes / Sparkles -->
-        <g class="owl-fx-notes">
-          <path d="M84 82 L86 86 L90 87 L86 88 L84 92 L82 88 L78 87 L82 86 Z" fill="#fde047"/>
-          <circle cx="74" cy="76" r="2.2" fill="#fef3c7"/>
-          <path d="M98 70 L99.5 73.5 L103 74.5 L99.5 75.5 L98 79 L96.5 75.5 L93 74.5 L96.5 73.5 Z" fill="#fbbf24"/>
+        <!-- OWL FX -->
+        <g class="owl-fx owl-fx-ink">
+          <path d="M140 132 L143 138 L149 140 L143 142 L140 148 L137 142 L131 140 L137 138 Z" fill="#fde047"/>
+          <circle cx="126" cy="122" r="3" fill="#fef3c7"/>
+          <circle cx="156" cy="118" r="2.5" fill="#fbbf24"/>
         </g>
-        <!-- Hoot Sound Waves -->
-        <g class="owl-fx-hoot">
-          <path d="M36 32 Q28 24 36 16" stroke="#fde047" stroke-width="2.2" stroke-linecap="round"/>
-          <path d="M29 36 Q18 24 29 12" stroke="#f59e0b" stroke-width="1.8" stroke-opacity="0.75" stroke-linecap="round"/>
-          <path d="M92 32 Q100 24 92 16" stroke="#fde047" stroke-width="2.2" stroke-linecap="round"/>
+        <g class="owl-fx owl-fx-chime">
+          <path d="M44 64 Q32 50 44 36" stroke="#fde047" stroke-width="3" stroke-linecap="round"/>
+          <path d="M34 70 Q18 50 34 30" stroke="#f59e0b" stroke-opacity="0.7" stroke-width="2.2" stroke-linecap="round"/>
+          <path d="M156 64 Q168 50 156 36" stroke="#fde047" stroke-width="3" stroke-linecap="round"/>
         </g>
-        <!-- Orbiting Lore Search Ring -->
-        <g class="owl-fx-search">
-          <circle cx="64" cy="58" r="46" stroke="#fbbf24" stroke-width="2" stroke-dasharray="8 6"/>
-          <circle cx="64" cy="12" r="3.2" fill="#fef08a"/>
-          <circle cx="64" cy="104" r="3.2" fill="#fbbf24"/>
+        <g class="owl-fx owl-fx-pages">
+          <rect x="46" y="128" width="22" height="28" rx="3" transform="rotate(-24 57 142)" fill="#fef3c7" fill-opacity="0.9"/>
+          <rect x="132" y="126" width="22" height="28" rx="3" transform="rotate(22 143 140)" fill="#fde68a" fill-opacity="0.9"/>
+        </g>
+        <g class="owl-fx owl-fx-eureka">
+          <path d="M100 12 L104 22 L114 26 L104 30 L100 40 L96 30 L86 26 L96 22 Z" fill="#fde047"/>
+          <circle cx="100" cy="26" r="14" stroke="#fbbf24" stroke-opacity="0.55" stroke-width="1.8" stroke-dasharray="4 4"/>
         </g>
       </svg>`;
 
-      // Mount all SVG slots
       function mountSlot(selector, markup) {
         const el = document.querySelector(selector);
         if (el) el.innerHTML = withUniqueIds(markup);
       }
 
-      mountSlot('#wiz-hero', WIZARD_RIG_SVG);
-      mountSlot('#wiz-fab-60 .slot', WIZARD_RIG_SVG);
-      mountSlot('#wiz-fab-52 .slot', WIZARD_RIG_SVG);
-      mountSlot('#wiz-fab-46 .slot', WIZARD_RIG_SVG);
-      mountSlot('#wiz-hdr-32 .slot', WIZARD_RIG_SVG);
+      mountSlot('#wiz-hero', WIZARD_3D_SVG);
+      mountSlot('#wiz-fab-64 .slot', WIZARD_3D_SVG);
+      mountSlot('#wiz-fab-52 .slot', WIZARD_3D_SVG);
+      mountSlot('#wiz-fab-46 .slot', WIZARD_3D_SVG);
+      mountSlot('#wiz-hdr-34 .slot', WIZARD_3D_SVG);
 
-      mountSlot('#owl-hero', OWL_RIG_SVG);
-      mountSlot('#owl-fab-60 .slot', OWL_RIG_SVG);
-      mountSlot('#owl-fab-52 .slot', OWL_RIG_SVG);
-      mountSlot('#owl-fab-46 .slot', OWL_RIG_SVG);
-      mountSlot('#owl-hdr-32 .slot', OWL_RIG_SVG);
+      mountSlot('#owl-hero', OWL_3D_SVG);
+      mountSlot('#owl-fab-64 .slot', OWL_3D_SVG);
+      mountSlot('#owl-fab-52 .slot', OWL_3D_SVG);
+      mountSlot('#owl-fab-46 .slot', OWL_3D_SVG);
+      mountSlot('#owl-hdr-34 .slot', OWL_3D_SVG);
 
       let cornerPersona = 'rulemaster';
       let autoLifeEnabled = true;
@@ -937,20 +1133,20 @@
       let owlCurrent = 'idle';
 
       const WIZ_LABELS = {
-        idle: 'Idle (Breathing)',
-        arcane: 'Casting: Arcane Burst',
-        fireball: 'Casting: Fireball',
-        lightning: 'Casting: Lightning Arc',
-        shield: 'Casting: Rune Shield',
-        thinking: 'Consulting 3.5e RAW...',
-        crit: 'Natural 20! Cheer'
+        idle: 'Idle (Watching Cursor)',
+        astrolabe: 'Casting: Staff Astrolabe',
+        d20: 'Levitating Arcane d20',
+        fireball: 'Conjuring Fireball',
+        lightning: 'Chain Lightning',
+        scroll: 'Reading RAW Scroll',
+        ward: 'Staff Slam Aegis'
       };
       const OWL_LABELS = {
         idle: 'Idle (Perched)',
-        write: 'Scribbling Campaign Note',
-        hoot: 'Wing Flap & Hoot',
-        search: 'Scanning Quest Logs...',
-        found: 'Found Lore Citation!'
+        write: 'Scribbling Chronicle',
+        hoot: 'Flutter & Golden Hoot',
+        search: 'Riffling Quest Logs',
+        found: 'Eureka! Found Lore'
       };
 
       function renderCornerFab() {
@@ -959,13 +1155,13 @@
         const isOwl = cornerPersona === 'chronicler';
         fab.classList.toggle('is-chronicler', isOwl);
         bubble.classList.toggle('is-chronicler', isOwl);
-        mountSlot('#live-corner-fab .slot', isOwl ? OWL_RIG_SVG : WIZARD_RIG_SVG);
-        applyRigStates();
+        mountSlot('#live-corner-fab .slot', isOwl ? OWL_3D_SVG : WIZARD_3D_SVG);
+        applyStates();
       }
 
-      function applyRigStates() {
-        document.querySelectorAll('.wiz-rig').forEach((svg) => svg.setAttribute('data-wiz', wizCurrent));
-        document.querySelectorAll('.owl-rig').forEach((svg) => svg.setAttribute('data-owl', owlCurrent));
+      function applyStates() {
+        document.querySelectorAll('.wiz-svg').forEach((s) => s.setAttribute('data-wiz', wizCurrent));
+        document.querySelectorAll('.owl-svg').forEach((s) => s.setAttribute('data-owl', owlCurrent));
         document.getElementById('wiz-state-label').textContent = WIZ_LABELS[wizCurrent] || wizCurrent;
         document.getElementById('owl-state-label').textContent = OWL_LABELS[owlCurrent] || owlCurrent;
 
@@ -979,96 +1175,102 @@
         const bubble = document.getElementById('live-corner-bubble');
         if (cornerPersona === 'rulemaster') {
           bubble.textContent = wizCurrent === 'idle'
-            ? 'Rule Master is ready. Click me to swap with Chronicler!'
+            ? 'Rule Master is watching your sheet. Click me to swap with Chronicler!'
             : 'Rule Master — ' + (WIZ_LABELS[wizCurrent] || wizCurrent) + '!';
         } else {
           bubble.textContent = owlCurrent === 'idle'
-            ? 'Chronicler is perched & listening. Click to swap back!'
+            ? 'Chronicler is perched on the grimoire. Click to swap back!'
             : 'Chronicler — ' + (OWL_LABELS[owlCurrent] || owlCurrent) + '!';
         }
       }
 
-      // Manual Wizard Action Buttons
       document.getElementById('wiz-actions').addEventListener('click', (ev) => {
         const btn = ev.target.closest('[data-wiz-cmd]');
         if (!btn) return;
         wizCurrent = btn.getAttribute('data-wiz-cmd');
-        applyRigStates();
+        applyStates();
       });
 
-      // Manual Owl Action Buttons
       document.getElementById('owl-actions').addEventListener('click', (ev) => {
         const btn = ev.target.closest('[data-owl-cmd]');
         if (!btn) return;
         owlCurrent = btn.getAttribute('data-owl-cmd');
-        applyRigStates();
+        applyStates();
       });
 
-      // Click Hero Medallions to cast a random spell / familiar action
-      const WIZ_SPELLS = ['arcane', 'fireball', 'lightning', 'shield', 'crit'];
-      const OWL_MOVES = ['write', 'hoot', 'search', 'found'];
+      const WIZ_POOL = ['astrolabe', 'd20', 'fireball', 'lightning', 'scroll', 'ward'];
+      const OWL_POOL = ['write', 'hoot', 'search', 'found'];
 
       document.getElementById('wiz-hero').addEventListener('click', () => {
-        const next = WIZ_SPELLS[Math.floor(Math.random() * WIZ_SPELLS.length)];
-        wizCurrent = next;
-        applyRigStates();
+        wizCurrent = WIZ_POOL[(WIZ_POOL.indexOf(wizCurrent) + 1) % WIZ_POOL.length];
+        applyStates();
       });
       document.getElementById('owl-hero').addEventListener('click', () => {
-        const next = OWL_MOVES[Math.floor(Math.random() * OWL_MOVES.length)];
-        owlCurrent = next;
-        applyRigStates();
+        owlCurrent = OWL_POOL[(OWL_POOL.indexOf(owlCurrent) + 1) % OWL_POOL.length];
+        applyStates();
       });
 
-      // Click Live Corner FAB to swap personas
       document.getElementById('live-corner-fab').addEventListener('click', () => {
         cornerPersona = cornerPersona === 'rulemaster' ? 'chronicler' : 'rulemaster';
         renderCornerFab();
       });
 
-      // Autonomous Cast Toggle
       document.getElementById('btn-auto-life').addEventListener('click', (ev) => {
         autoLifeEnabled = !autoLifeEnabled;
-        ev.currentTarget.textContent = autoLifeEnabled ? 'Autonomous Cast: ON' : 'Autonomous Cast: OFF';
+        ev.currentTarget.textContent = autoLifeEnabled ? 'Autonomous Life: ON' : 'Autonomous Life: OFF';
         ev.currentTarget.classList.toggle('is-active', autoLifeEnabled);
       });
 
-      // Reduced Motion Toggle
       document.getElementById('btn-toggle-motion').addEventListener('click', (ev) => {
         const reduced = document.body.classList.toggle('is-reduced-motion');
         ev.currentTarget.textContent = reduced ? 'Motion: Reduced' : 'Motion: On';
         ev.currentTarget.classList.toggle('is-active', reduced);
       });
 
-      // Autonomous Ambient Choreography Scheduler (self-casting spells & familiar actions!)
+      // Live Cursor Gaze Tracking (60fps rAF throttled)
+      let _rafPending = false;
+      window.addEventListener('pointermove', (ev) => {
+        if (_rafPending || document.body.classList.contains('is-reduced-motion')) return;
+        _rafPending = true;
+        requestAnimationFrame(() => {
+          _rafPending = false;
+          const nx = (ev.clientX / Math.max(1, window.innerWidth)) * 2 - 1;
+          const ny = (ev.clientY / Math.max(1, window.innerHeight)) * 2 - 1;
+          document.documentElement.style.setProperty('--gx', (nx * 2.4).toFixed(2) + 'px');
+          document.documentElement.style.setProperty('--gy', (ny * 1.8).toFixed(2) + 'px');
+        });
+      }, { passive: true });
+
+      // Autonomous Ambient Spell & Familiar Choreography
       setInterval(() => {
         if (!autoLifeEnabled || document.body.classList.contains('is-reduced-motion')) return;
         if (wizCurrent === 'idle') {
-          const spell = WIZ_SPELLS[Math.floor(Math.random() * WIZ_SPELLS.length)];
-          wizCurrent = spell;
-          applyRigStates();
+          const pick = WIZ_POOL[Math.floor(Math.random() * WIZ_POOL.length)];
+          wizCurrent = pick;
+          applyStates();
           setTimeout(() => {
-            if (autoLifeEnabled && wizCurrent === spell) {
+            if (autoLifeEnabled && wizCurrent === pick) {
               wizCurrent = 'idle';
-              applyRigStates();
+              applyStates();
             }
-          }, 2600);
+          }, 3000);
         }
-      }, 6200);
+      }, 5800);
 
       setInterval(() => {
         if (!autoLifeEnabled || document.body.classList.contains('is-reduced-motion')) return;
         if (owlCurrent === 'idle') {
-          const move = OWL_MOVES[Math.floor(Math.random() * OWL_MOVES.length)];
-          owlCurrent = move;
-          applyRigStates();
+          const pick = OWL_POOL[Math.floor(Math.random() * OWL_POOL.length)];
+          owlCurrent = pick;
+          applyStates();
           setTimeout(() => {
-            if (autoLifeEnabled && owlCurrent === move) {
+            if (autoLifeEnabled && owlCurrent === pick) {
               owlCurrent = 'idle';
-              applyRigStates();
+              applyStates();
             }
-          }, 2400);
+          }, 2700);
         }
-      }, 7600);
+      }, 7000);
 
       renderCornerFab();
     })();
