@@ -18634,7 +18634,7 @@
                   "save.ref"
                 ],
                 "mode": "formula",
-                "formula": "max(1, floor(@classLevel / 3))",
+                "formula": "@featureRank",
                 "btype": "Untyped"
               },
               {
@@ -18644,7 +18644,7 @@
                   "ac.dodge"
                 ],
                 "mode": "formula",
-                "formula": "max(1, floor(@classLevel / 3))",
+                "formula": "@featureRank",
                 "btype": "Dodge"
               }
             ]
@@ -18656,7 +18656,8 @@
     "text": "+1 bonus on Reflex saves made to avoid traps and a +1 dodge bonus to AC against attacks made by traps. These bonuses rise by +1 every three levels thereafter (6th, 9th, 12th, 15th, and 18th level). Trap sense bonuses gained from multiple classes stack.",
     "tags": [
       "class-ability"
-    ]
+    ],
+    "rankFrom": "levelTable"
   },
   {
     "schemaVersion": 3,
@@ -20386,7 +20387,7 @@
                 "id": "ef-sa-roll",
                 "type": "roll",
                 "kind": "Damage",
-                "dice": "ceil(@rogueLevel / 2)d6",
+                "dice": "(@featureRank)d6",
                 "dmgType": "Precision",
                 "crit": "normal",
                 "multiplyOnCrit": false,
@@ -20402,7 +20403,8 @@
     "text": "If rogue can catch an opponent when he is unable to defend himself effectively from her attack, she can strike a vital spot for extra damage.\n\nThe rogue's attack deals extra damage any time her target would be denied a Dexterity bonus to AC (whether the target actually has a Dexterity bonus or not), or when the rogue flanks her target. This extra damage is 1d6 at 1st level, and it increases by 1d6 every two rogue levels thereafter. Should the rogue score a critical hit with a sneak attack, this extra damage is not multiplied.\n\nRanged attacks can count as sneak attacks only if the target is within 30 feet.",
     "tags": [
       "class-ability"
-    ]
+    ],
+    "rankFrom": "levelTable"
   },
   {
     "schemaVersion": 3,

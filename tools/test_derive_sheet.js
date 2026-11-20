@@ -6838,6 +6838,170 @@ function runDeriveSheetTests() {
     );
   }
 
+  // ═══════════════════════════════════════════════════════════════════════════
+  // SPRINT E3a: Pooled-Sum (@featureRank), Tuple-Association Fix, Strongarm
+  //             Bracers (size.effective max), Improved Natural Attack (dieStep),
+  //             and Engine-Side Situational Damage Rider Toggle (activeRiders)
+  // ═══════════════════════════════════════════════════════════════════════════
+  {
+    const mkClsDoc = (pairs, extra = {}) => {
+      const levelProgression = [];
+      let totalLvl = 0;
+      pairs.forEach(([c, l]) => {
+        for (let i = 1; i <= l; i++) {
+          totalLvl++;
+          levelProgression.push({ level: totalLvl, className: c, active: true });
+        }
+      });
+      return Object.assign({
+        name: 'E3a Tester',
+        size: 'Medium',
+        level: totalLvl || 1,
+        abilities: { str: 14, dex: 14, con: 12, int: 12, wis: 10, cha: 10 },
+        levelProgression,
+        classLevels: pairs.map(([c, l]) => ({ className: c, level: l })),
+        feats: [],
+        buffs: [],
+        inventory: []
+      }, extra);
+    };
+
+    const saCab = SrdCompendium.getById('cab-sneak-attack');
+    const tsCab = SrdCompendium.getById('cab-trap-sense');
+    const bracers = SrdCompendium.getById('mi-mic-strongarm-bracers');
+    const inaFeat = SrdCompendium.getById('feat-improved-natural-attack-no-weapon-set');
+
+    // 1. Multiclass Sneak Attack: Rogue 3 (2d6) + Assassin 3 (2d6) + Arcane Trickster 2 (1d6) = 5d6
+    const mcSaDoc = mkClsDoc([['Rogue', 3], ['Assassin', 3], ['Arcane Trickster', 2]], { tactical: { sneakAttack: true } });
+    const mcSaEv = RuleEngine.evaluateV3Entry(saCab, { character: mcSaDoc, tactical: { sneakAttack: true } });
+    const mcSaDice = (mcSaEv.damageParts || []).find(p => p.source === 'Sneak Attack')?.dice;
+    check(
+      'E3a.1 Multiclass Sneak Attack: Rogue 3 + Assassin 3 + Arcane Trickster 2 -> 5d6 Precision',
+      mcSaDice === '5d6' && RuleEngine.computeFeatureRankMap(mcSaDoc)['cab-sneak-attack'] === 5,
+      JSON.stringify({ mcSaDice, rank: RuleEngine.computeFeatureRankMap(mcSaDoc)['cab-sneak-attack'] })
+    );
+
+    // 2. Assassin 3 (no Rogue levels) -> 2d6 (regression for hardcoded @rogueLevel = 0d6 bug)
+    const asnDoc = mkClsDoc([['Assassin', 3]], { tactical: { sneakAttack: true } });
+    const asnEv = RuleEngine.evaluateV3Entry(saCab, { character: asnDoc, tactical: { sneakAttack: true } });
+    const asnDice = (asnEv.damageParts || []).find(p => p.source === 'Sneak Attack')?.dice;
+    check(
+      'E3a.2 Assassin 3 (no Rogue levels) Sneak Attack -> 2d6 (regression for 0d6 bug)',
+      asnDice === '2d6',
+      JSON.stringify({ asnDice })
+    );
+
+    // 3. Isolated preview fallback -> 1d6 (never 0d6)
+    const isoEv = RuleEngine.evaluateV3Entry(saCab, { character: {}, tactical: { sneakAttack: true } });
+    const isoDice = (isoEv.damageParts || []).find(p => p.source === 'Sneak Attack')?.dice;
+    check(
+      'E3a.3 Isolated preview fallback: cab-sneak-attack with no class levels -> 1d6',
+      isoDice === '1d6',
+      JSON.stringify({ isoDice })
+    );
+
+    // 4. replaces[] exclusion: UA Feat Rogue variant replacing cab-sneak-attack does not count SA rows
+    const featRogueDoc = mkClsDoc([['Rogue (Feat Variant)', 5]], {
+      customDb: [{
+        schemaVersion: 3, id: 'cls-rogue-feat-var', type: 'Class', name: 'Rogue (Feat Variant)',
+        variantOf: 'cls-rogue', replaces: ['cab-sneak-attack'],
+        features: { 1: [{ id: 'cab-sneak-attack', name: 'Sneak Attack +1d6' }], 3: [{ id: 'cab-sneak-attack', name: 'Sneak Attack +2d6' }] }
+      }]
+    });
+    const featRogueRank = RuleEngine.computeFeatureRankMap(featRogueDoc)['cab-sneak-attack'] || 0;
+    check(
+      'E3a.4 replaces[] exclusion: class replacing cab-sneak-attack contributes 0 ranks',
+      featRogueRank === 0,
+      JSON.stringify({ featRogueRank })
+    );
+
+    // 5. Tuple-association parse bug fix: Rogue 3 / Fighter 6 -> @classLevel = 3 (not 9) and Trap Sense = +1
+    const rfDoc = mkClsDoc([['Rogue', 3], ['Fighter', 6]]);
+    const tupleCtx = RuleEngine.buildV3FormulaContext(rfDoc, { id: 'test-tuple', associations: [['Rogue', 3]] });
+    const rfDerived = RuleEngine.deriveSheet(rfDoc);
+    const rfTrapVal = (rfDerived.saves?.conditionalBonuses || rfDerived.conditionalSaveBonuses || []).find(x => /trap/i.test(x.source || ''))?.val;
+    check(
+      'E3a.5 Tuple-association fix: Rogue 3 / Fighter 6 -> @classLevel=3 and Trap Sense=+1 (not +3)',
+      tupleCtx.classLevel === 3 && rfTrapVal === 1,
+      JSON.stringify({ classLevel: tupleCtx.classLevel, rfTrapVal })
+    );
+
+    // 6. Multiclass Trap Sense: Barbarian 3 (+1) + Rogue 3 (+1) = +2
+    const brDoc = mkClsDoc([['Barbarian', 3], ['Rogue', 3]]);
+    const brDerived = RuleEngine.deriveSheet(brDoc);
+    const brTrapVal = (brDerived.saves?.conditionalBonuses || brDerived.conditionalSaveBonuses || []).find(x => /trap/i.test(x.source || ''))?.val;
+    check(
+      'E3a.6 Multiclass Trap Sense: Barbarian 3 + Rogue 3 -> +2 vs. Traps',
+      brTrapVal === 2 && RuleEngine.computeFeatureRankMap(brDoc)['cab-trap-sense'] === 2,
+      JSON.stringify({ brTrapVal, rank: RuleEngine.computeFeatureRankMap(brDoc)['cab-trap-sense'] })
+    );
+
+    // 7 & 8. Strongarm Bracers + Powerful Build non-stacking; Bracers grapple=0; unequipped weaponSize=0
+    const bracersEq = Object.assign({}, bracers, { equipped: true });
+    const gDer = mkClsDoc([['Fighter', 4]], { race: 'Goliath', inventory: [bracersEq] });
+    const hDer = mkClsDoc([['Fighter', 4]], { race: 'Human', inventory: [bracersEq] });
+    const uDer = mkClsDoc([['Fighter', 4]], { race: 'Human', inventory: [Object.assign({}, bracers, { equipped: false })] });
+    RuleEngine.recalculateCharacter(gDer);
+    RuleEngine.recalculateCharacter(hDer);
+    RuleEngine.recalculateCharacter(uDer);
+    check(
+      'E3a.7/8 Strongarm Bracers: Powerful Build+Bracers weaponSize=1 (non-stacking), Bracers-only grapple=0, unequipped weaponSize=0',
+      RuleEngine.getEffectiveSizeShift(gDer, 'weaponSize') === 1 &&
+      RuleEngine.getEffectiveSizeShift(hDer, 'weaponSize') === 1 &&
+      RuleEngine.getEffectiveSizeShift(hDer, 'grapple') === 0 &&
+      RuleEngine.getEffectiveSizeShift(uDer, 'weaponSize') === 0,
+      JSON.stringify({
+        gWep: RuleEngine.getEffectiveSizeShift(gDer, 'weaponSize'),
+        hWep: RuleEngine.getEffectiveSizeShift(hDer, 'weaponSize'),
+        hGrap: RuleEngine.getEffectiveSizeShift(hDer, 'grapple'),
+        uWep: RuleEngine.getEffectiveSizeShift(uDer, 'weaponSize')
+      })
+    );
+
+    // 9. Improved Natural Attack (Claw): steps Claw 1d4->1d6, leaves Bite 1d6 and Longsword 1d8 untouched
+    const inaDer = mkClsDoc([['Fighter', 4]], {
+      feats: [Object.assign({}, inaFeat, { choice: 'Claw' })]
+    });
+    RuleEngine.recalculateCharacter(inaDer);
+    const clawRes = RuleEngine.evaluateWeaponAttack(inaDer, { id: 'natural::claw', name: 'Claw', category: 'natural', isNaturalWeapon: true, dice: '1d4', dmgType: 'Slashing', critMin: 20, critMult: 2 });
+    const biteRes = RuleEngine.evaluateWeaponAttack(inaDer, { id: 'natural::bite', name: 'Bite', category: 'natural', isNaturalWeapon: true, dice: '1d6', dmgType: 'Piercing', critMin: 20, critMult: 2 });
+    const swordRes = RuleEngine.evaluateWeaponAttack(inaDer, { id: 'wpn-longsword', name: 'Longsword', category: 'martial', dice: '1d8', dmgType: 'Slashing', critMin: 19, critMult: 2 });
+    check(
+      'E3a.9 Improved Natural Attack (Claw): Claw 1d4->1d6, Bite unchanged 1d6, manufactured Longsword unchanged 1d8',
+      clawRes.baseDice === '1d6' && biteRes.baseDice === '1d6' && swordRes.baseDice === '1d8',
+      JSON.stringify({ claw: clawRes.baseDice, bite: biteRes.baseDice, sword: swordRes.baseDice })
+    );
+
+    // 10. Engine-side Situational Damage Rider Toggle (options.activeRiders): Pure V3 weapon with when->roll + onCritOnly
+    const riderWep = {
+      schemaVersion: 3,
+      id: 'wpn-holy-truedeath', name: '+1 Longsword', dice: '1d8', dmgType: 'Slashing', critMin: 19, critMult: 2, enhancementBonus: 1,
+      effects: [
+        {
+          id: 'ef-td-when', type: 'when', flow: 'while',
+          branches: [{
+            id: 'br-td-undead', condKind: 'situational', condText: 'vs. undead',
+            effects: [{ id: 'ef-td-roll', type: 'roll', kind: 'Damage', dice: '1d6', dmgType: 'Positive', multiplyOnCrit: false, source: 'Truedeath Crystal' }]
+          }]
+        },
+        { id: 'ef-fb-crit', type: 'roll', kind: 'Damage', dice: '1d10', dmgType: 'Fire', onCritOnly: true, source: 'Flaming Burst' }
+      ]
+    };
+    const rOff = RuleEngine.evaluateWeaponAttack(inaDer, riderWep, { activeRiders: [] });
+    const truedeathRider = (rOff.situationalDamageParts || []).find(p => p.condition === 'vs. undead');
+    const rOn = RuleEngine.evaluateWeaponAttack(inaDer, riderWep, { activeRiders: truedeathRider ? [truedeathRider.riderId] : [] });
+    check(
+      'E3a.10 Situational Rider Toggle: Pure V3 when->roll OFF excludes +1d6, ON adds +1d6 once to diceFormula & critDiceFormula (multiplyOnCrit:false), onCritOnly excluded from toggle list',
+      Boolean(truedeathRider && truedeathRider.riderId) &&
+      rOff.situationalDamageParts.length === 1 &&
+      !rOff.diceFormula.includes('1d6') &&
+      rOn.diceFormula.includes('1d6') &&
+      (rOn.critDiceFormula.match(/1d6/g) || []).length === 1 &&
+      rOn.activeSituationalDamageParts.length === 1,
+      JSON.stringify({ offDmg: rOff.diceFormula, onDmg: rOn.diceFormula, onCrit: rOn.critDiceFormula, sitLen: rOff.situationalDamageParts.length })
+    );
+  }
+
   CharStore.clearHistory();
 
   return { passed, elapsedMs: Date.now() - startMs };

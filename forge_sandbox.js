@@ -50,7 +50,7 @@
     ])],
     ['Armor Class', [['ac.total', 'AC (All)'], ['ac.touch', 'Touch AC only'], ['ac.flatFooted', 'Flat-Footed AC only'], ['ac.armor', 'Armor Bonus'], ['ac.shield', 'Shield Bonus'], ['ac.shieldBonus', 'Shield AC Bonus (Stacks w/ Base Shield)'], ['ac.natural', 'Natural Armor'], ['ac.deflection', 'Deflection'], ['ac.dodge', 'Dodge']]],
     ['Saving Throws', [['save.all', 'All Saving Throws'], ['save.fort', 'Fortitude'], ['save.ref', 'Reflex'], ['save.will', 'Will'], ['choice.save.1', 'Chosen Save (@Choice)']]],
-    ['Combat', [['atk.all', 'Attack Rolls (All)'], ['atk.melee', 'Melee Attack'], ['atk.ranged', 'Ranged Attack'], ['atk.weapon', 'Chosen Weapon Attack (@Choice)'], ['dmg.all', 'Damage (All)'], ['dmg.melee', 'Melee Damage'], ['dmg.ranged', 'Ranged Damage'], ['dmg.weapon', 'Chosen Weapon Damage (@Choice)'], ['atk.critConfirm', 'Critical Confirmation'], ['initiative', 'Initiative'], ['speed.land', 'Land Speed (ft.)'], ['hp.max', 'Max Hit Points'], ['hp.temp', 'Temporary Hit Points'], ['hp.perLevel', 'HP per Level / HD'], ['grapple', 'Grapple'], ['cmd.stability', 'Stability (resist Bull Rush / Trip)'], ['size.effective', 'Effective Size (Powerful Build, scoped)'], ['healing.receivedMultiplier', 'Healing Received (multiplier: -0.5 = half effect)'], ['spell.asf', 'Arcane Spell Failure (+%, non-armor)']]],
+    ['Combat', [['atk.all', 'Attack Rolls (All)'], ['atk.melee', 'Melee Attack'], ['atk.ranged', 'Ranged Attack'], ['atk.weapon', 'Chosen Weapon Attack (@Choice)'], ['dmg.all', 'Damage (All)'], ['dmg.melee', 'Melee Damage'], ['dmg.ranged', 'Ranged Damage'], ['dmg.weapon', 'Chosen Weapon Damage (@Choice)'], ['weapon.damageDieStep', 'Weapon Damage Die Step (Natural / Scoped)'], ['atk.critConfirm', 'Critical Confirmation'], ['initiative', 'Initiative'], ['speed.land', 'Land Speed (ft.)'], ['hp.max', 'Max Hit Points'], ['hp.temp', 'Temporary Hit Points'], ['hp.perLevel', 'HP per Level / HD'], ['grapple', 'Grapple'], ['cmd.stability', 'Stability (resist Bull Rush / Trip)'], ['size.effective', 'Effective Size (Powerful Build, scoped)'], ['healing.receivedMultiplier', 'Healing Received (multiplier: -0.5 = half effect)'], ['spell.asf', 'Arcane Spell Failure (+%, non-armor)']]],
     ['Spellcasting', [['casterLevel', 'Caster Level'], ['spell.dc', 'Spell Save DC'], ['spell.effectiveLevel', 'Effective Spell Level'], ['sr.penetration', 'Spell Penetration (vs SR)'], ['resource.pp', 'Bonus Power Points'], ['resource.essentia', 'Bonus Essentia']]],
     ['Companions & Entities', [['entity.animal_companion.levelBonus', 'Animal Companion Effective Level Bonus'], ['entity.familiar.levelBonus', 'Familiar Effective Level Bonus'], ['entity.special_mount.levelBonus', 'Special Mount Effective Level Bonus'], ['entity.fiendish_servant.levelBonus', 'Fiendish Servant Effective Level Bonus']]],
     ['Skills (36)', [['skill.all', 'All Skills'], ['choice.skill.1', 'Chosen Skill (@Choice)'], ['skill.knowledge', 'All Knowledge Skills']].concat(SKILLS.map((s) => [skillKey(s[0]), s[0]]))]
@@ -2537,6 +2537,7 @@
           const ap = Array.isArray(b.appliesTo) ? b.appliesTo.slice() : String(b.appliesTo || '').split(',').map((x) => x.trim()).filter(Boolean);
           if (ap.length) o.appliesTo = ap;
         }
+        if (b.weaponFilter) o.weaponFilter = String(b.weaponFilter).trim();
         if (mode === 'flat') {
           o.value = num(b.value, 0);
         } else if (mode === 'stat') {
@@ -2749,7 +2750,7 @@
     'chakraBinds', 'shapedEffect', 'essentiaEffect', 'augment', 'title', 'weight', 'charges', 'maxCharges',
     'crIncrease', 'hitDieOverride', 'templateAcquisition', 'specialAttacks', 'specialQualities',
     'vision', 'immunities', 'resistances', 'fastHealing', 'turnResistance', 'requiredAlignment',
-    'ruleFlags', 'shortDescription', 'aliases'
+    'ruleFlags', 'shortDescription', 'aliases', 'rankFrom'
   ];
   function exportFeature(f) { const o = { kind: f.kind, name: f.name }; if (f.refId) o.refId = f.refId; if (f.branchPath) o.branchPath = f.branchPath; o.abilityType = f.abilityType || 'Ex'; if (f.text) o.text = f.text; if (f.category) o.category = f.category; return o; }
 

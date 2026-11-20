@@ -406,6 +406,20 @@
       const lvl = Math.max(0, Math.floor(Number(level) || 0));
       if (lvl === 0) return 0;
       return progression === 'good' ? (2 + Math.floor(lvl / 2)) : Math.floor(lvl / 3);
+    },
+    // Official D&D 3.5e RAW (MIC p.139 Strongarm Bracers vs. XPH Powerful Build):
+    // Effective-size category shifts in the same scope do not stack with each other;
+    // take the single highest positive shift plus the most negative penalty.
+    resolveEffectiveSizeScope(values) {
+      if (!Array.isArray(values) || values.length === 0) return 0;
+      let maxPos = 0;
+      let minNeg = 0;
+      values.forEach((raw) => {
+        const v = Math.floor(Number(raw) || 0);
+        if (v > maxPos) maxPos = v;
+        if (v < minNeg) minNeg = v;
+      });
+      return maxPos + minNeg;
     }
   };
 

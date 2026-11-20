@@ -19,6 +19,7 @@ const CANONICAL_V3_BLOCK_TYPES = new Set([
 ]);
 
 const SIZE_SCOPES = new Set(['grapple', 'bullRush', 'trip', 'overrun', 'sunder', 'weaponSize', 'opposedSize']);
+const VALID_RECIPIENTS = new Set(['self', 'allies', 'target', 'area']);
 const CANONICAL_V3_TARGETS = new Set([
   'str', 'dex', 'con', 'int', 'wis', 'cha',
   'choice.ability.1', 'choice.ability.2', 'choice.ability.3', 'choice.ability.4',
@@ -26,7 +27,7 @@ const CANONICAL_V3_TARGETS = new Set([
   'ac.total', 'ac.touch', 'ac.flatFooted', 'ac.armor', 'ac.shield', 'ac.shieldBonus', 'ac.natural', 'ac.deflection', 'ac.dodge', 'ac.size', 'ac.luck', 'ac.insight', 'ac.sacred', 'ac.profane', 'ac.cover',
   'save.all', 'save.fort', 'save.ref', 'save.will',
   'atk.all', 'atk.melee', 'atk.ranged', 'atk.weapon', 'atk.touch', 'atk.grapple', 'atk.natural', 'atk.critConfirm',
-  'dmg.all', 'dmg.melee', 'dmg.ranged', 'dmg.weapon', 'dmg.sneakAttack', 'dmg.natural', 'dmg.unarmed',
+  'dmg.all', 'dmg.melee', 'dmg.ranged', 'dmg.weapon', 'dmg.sneakAttack', 'dmg.natural', 'dmg.unarmed', 'weapon.damageDieStep',
   'initiative', 'grapple',
   'cmd.stability', 'size.effective', 'healing.receivedMultiplier', 'spell.asf', 'cmd.bullRush', 'cmd.trip', 'cmd.overrun', 'cmd.bullRushTripDisarmOverrun',
   'speed.land', 'speed.fly', 'speed.swim', 'speed.climb', 'speed.burrow', 'speed.all',
@@ -153,6 +154,8 @@ function runCorpusAudit() {
     aliasedModifiersResolved: 0,
     dynamicFormulasBridged: 0,
     splatV3DialectFixesNeeded: 0,
+    badRecipients: [],
+    badRankParity: [],
     splatV3PerVarCount: 0,
     unmappedTargets: {},
     unmappedV3BlockTypes: {},
@@ -207,6 +210,9 @@ function runCorpusAudit() {
         const walk = (list) => {
           for (const ef of (list || [])) {
             if (!ef || typeof ef !== 'object') continue;
+            if (ef.recipient !== undefined && !VALID_RECIPIENTS.has(String(ef.recipient).trim())) {
+              report.badRecipients.push((e.id || '?') + ' -> ' + JSON.stringify(ef.recipient));
+            }
             if (!CANONICAL_V3_BLOCK_TYPES.has(ef.type)) {
               report.unmappedV3BlockTypes[ef.type || 'MISSING'] = (report.unmappedV3BlockTypes[ef.type || 'MISSING'] || 0) + 1;
               hasUnmapped = true;
@@ -343,6 +349,33 @@ function runCorpusAudit() {
     else report.ruleFlagsSummary.engineIgnoredKeys.push({ key: k, count: cnt });
   }
 
+  // Rank-vs-label parity gate for all entries with `rankFrom: 'levelTable'`
+  try {
+    const crRaw = JSON.parse(fs.readFileSync(path.join(DB_DIR, 'srd_classes_races.json'), 'utf8'));
+    const crList = Array.isArray(crRaw) ? crRaw : (crRaw.entries || []);
+    const rankedIds = new Set(crList.filter(e => e && e.rankFrom === 'levelTable' && e.id).map(e => String(e.id).toLowerCase()));
+    if (rankedIds.size > 0) {
+      crList.forEach(cls => {
+        if (!cls || cls.type !== 'Class' || !cls.progression || !Array.isArray(cls.progression.levels)) return;
+        const perIdCount = Object.create(null);
+        cls.progression.levels.forEach(lvlRow => {
+          (lvlRow.features || []).forEach(f => {
+            const rid = String(f?.refId || f?.id || '').trim().toLowerCase();
+            if (!rid || !rankedIds.has(rid)) return;
+            perIdCount[rid] = (perIdCount[rid] || 0) + 1;
+            const m = String(f?.name || '').match(/\+(\d+)(?:d\d+)?\b/i);
+            if (m) {
+              const labeledRank = parseInt(m[1], 10);
+              if (labeledRank !== perIdCount[rid]) {
+                report.badRankParity.push(`${cls.id} L${lvlRow.level} ${rid}: label "+${labeledRank}" != rank ${perIdCount[rid]}`);
+              }
+            }
+          });
+        });
+      });
+    }
+  } catch (_) { /* skip if srd_classes_races.json missing */ }
+
   report.elapsedMs = Date.now() - startMs;
   return report;
 }
@@ -365,6 +398,8 @@ if (require.main === module) {
   if (rep.badSizeScopes.length > 0) console.error('   ❌ Invalid size.effective blocks:', rep.badSizeScopes.slice(0, 20));
   if (rep.badProficiencyGrants.length > 0) console.error('   ❌ Invalid proficiency/familiarity grants:', rep.badProficiencyGrants.slice(0, 20));
   if (rep.badModes.length > 0) console.error('   ❌ Invalid modes[] (ModeV3 contract):', rep.badModes.slice(0, 20));
+  if (rep.badRecipients.length > 0) console.error('   ❌ Invalid recipient values:', rep.badRecipients.slice(0, 20));
+  if (rep.badRankParity.length > 0) console.error('   ❌ Rank-vs-label parity mismatches:', rep.badRankParity.slice(0, 20));
 
   const failed =
     rep.v2Entries > 0 ||
@@ -379,6 +414,8 @@ if (require.main === module) {
     unmappedBlockList.length > 0 ||
     rep.badProficiencyGrants.length > 0 ||
     rep.badModes.length > 0 ||
+    rep.badRecipients.length > 0 ||
+    rep.badRankParity.length > 0 ||
     rep.badSizeScopes.length > 0;
   if (failed) {
     console.error('❌ FAIL: Pure V3 Corpus Gate failed.');

@@ -42959,7 +42959,21 @@
     "activation": "--",
     "aura": "Faint; (DC 16) transmutation",
     "requirements": "Craft Wondrous Item, enlarge person.",
-    "effects": [],
+    "effects": [
+      {
+        "id": "ef-strongarm-bracers-wep-size",
+        "type": "stat",
+        "targets": [
+          "size.effective"
+        ],
+        "mode": "flat",
+        "value": 1,
+        "btype": "Size",
+        "appliesTo": [
+          "weaponSize"
+        ]
+      }
+    ],
     "shortDescription": "When wearing strongarm bracers, you can wield weapons as if you were one size category larger than normal. (You don't take any penalty when using weapons as normal for your size.) For example, a human wearing these...",
     "text": "These flexible, blue-green leather armbands are covered with gold studs.\n\nWhen wearing strongarm bracers, you can wield weapons as if you were one size category larger than normal. (You don't take any penalty when using weapons as normal for your size.) For example, a human wearing these bracers could wield Large or Medium weapons without penalty.\n\nThe effect of these bracers doesn't stack with the powerful build trait (such as that possessed by the half-giant and goliath races).",
     "tags": [

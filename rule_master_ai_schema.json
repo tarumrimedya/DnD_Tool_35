@@ -120,6 +120,13 @@
           ],
           "description": "Rules text (string) or { summary }."
         },
+        "rankFrom": {
+          "type": "string",
+          "enum": [
+            "levelTable"
+          ],
+          "description": "When set to `levelTable`, `@featureRank` counts non-replaced progression-table occurrences (+ extra grants) of this entry's id across all character classes (fallback 1 in isolated preview)."
+        },
         "featKind": {
           "type": "string",
           "enum": [
@@ -553,6 +560,10 @@
             "enum": ["grapple", "bullRush", "trip", "overrun", "sunder", "weaponSize", "opposedSize"]
           },
           "description": "Only for target `size.effective` (Powerful Build: value 1): scopes in which the creature counts as that many size categories larger (opposed-check special size modifier, weapon size). AC, attack size modifier, space and reach never change. Target `cmd.stability` = defender-side bonus on ability checks to resist bull rush / trip."
+        },
+        "weaponFilter": {
+          "type": "string",
+          "description": "Only for weapon-scoped targets such as `weapon.damageDieStep` (e.g. `@Choice` or immutable natural weapon id `natural::claw`). Limits the effect strictly to matching natural weapons."
         },
         "targets": {
           "type": "array",

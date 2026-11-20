@@ -151,6 +151,12 @@ const RuleEngine = {
     } else {
       if (ch.classLevels && typeof ch.classLevels === 'object' && !Array.isArray(ch.classLevels)) {
         Object.entries(ch.classLevels).forEach(([k, v]) => addClassLvl(k, Number(v) || 0));
+      } else if (Array.isArray(ch.classLevels)) {
+        ch.classLevels.forEach(c => {
+          if (c && typeof c === 'object' && c.active !== false) {
+            addClassLvl(c.className || c.name || c.class || '', Number(c.level) || 0);
+          }
+        });
       } else if (Array.isArray(ch.classes)) {
         ch.classes.forEach(c => {
           if (typeof c === 'string') addClassLvl(c, Number(ch.level) || 1);
@@ -327,6 +333,105 @@ const RuleEngine = {
     }, extra);
   },
 
+  // Count non-replaced progression-table occurrences (+ non-class extra grants) per canonical feature refId.
+  // Reuses the same class progression & replaces[] resolution as collectLegoEntries (zero duplicate resolver).
+  computeFeatureRankMap(character) {
+    const ch = character || {};
+    const counts = Object.create(null);
+    const normBase = (s) => String(s || '')
+      .toLowerCase()
+      .replace(/\s*\((?:ex|su|sp|na)\)\s*/gi, ' ')
+      .replace(/\s*\+\d+(?:d\d+)?.*$/i, '')
+      .replace(/\s+\d+\/\w+.*$/i, '')
+      .replace(/[^a-z0-9]+/g, ' ')
+      .trim();
+
+    const activeClasses = {};
+    if (Array.isArray(ch.levelProgression) && ch.levelProgression.length > 0) {
+      ch.levelProgression.forEach(row => {
+        if (!row || row.active === false) return;
+        const cName = String(row.className || row.class || '').trim();
+        if (cName) activeClasses[cName] = (activeClasses[cName] || 0) + 1;
+      });
+    } else if (!ch.isNpc) {
+      if (Array.isArray(ch.classLevels) && ch.classLevels.length > 0) {
+        ch.classLevels.forEach(cl => {
+          if (!cl || cl.active === false) return;
+          const cName = String(cl.className || cl.name || '').trim();
+          const cLvl = Math.max(0, Number(cl.level) || 0);
+          if (cName && cLvl > 0) activeClasses[cName] = (activeClasses[cName] || 0) + cLvl;
+        });
+      } else if (ch.classes && typeof ch.classes === 'string') {
+        String(ch.classes).split('/').forEach(part => {
+          const m = part.trim().match(/^(.+?)\s+(\d+)$/);
+          if (m) {
+            const cName = m[1].trim();
+            const cLvl = Math.max(0, parseInt(m[2], 10) || 0);
+            if (cName && cLvl > 0) activeClasses[cName] = (activeClasses[cName] || 0) + cLvl;
+          }
+        });
+      }
+    }
+
+    const comp = (typeof window !== 'undefined' && window.SrdCompendium)
+      || (typeof SrdCompendium !== 'undefined' ? SrdCompendium : null);
+
+    Object.entries(activeClasses).forEach(([clsName, clsLvl]) => {
+      if (!clsName || clsLvl <= 0 || typeof this.getClassDef !== 'function') return;
+      const clsDef = this.getClassDef(clsName, ch);
+      if (!clsDef || !clsDef.features || typeof clsDef.features !== 'object') return;
+      const replacedSet = new Set();
+      if (Array.isArray(clsDef.replaces)) {
+        clsDef.replaces.forEach(r => {
+          const rStr = String(r || '').trim().toLowerCase();
+          if (rStr) {
+            replacedSet.add(rStr);
+            replacedSet.add(normBase(rStr));
+          }
+        });
+      }
+      for (let lvl = 1; lvl <= clsLvl; lvl++) {
+        const lvlFeats = clsDef.features[lvl] || clsDef.features[String(lvl)] || [];
+        if (!Array.isArray(lvlFeats)) continue;
+        lvlFeats.forEach(featRef => {
+          if (!featRef) return;
+          let fId = typeof featRef === 'object' ? String(featRef.refId || featRef.id || '').trim().toLowerCase() : '';
+          const fName = typeof featRef === 'object' ? String(featRef.name || '').trim() : String(featRef || '').trim();
+          const fNameLow = fName.toLowerCase();
+          const fBase = normBase(fName);
+          if ((fId && replacedSet.has(fId)) || (fNameLow && replacedSet.has(fNameLow)) || (fBase && replacedSet.has(fBase))) return;
+          if (!fId && fName && comp && typeof comp.getByName === 'function') {
+            const resolved = comp.getByName(fName, 'ClassAbility')
+              || comp.getByName(fName.replace(/\s*\((?:ex|su|sp|na)\)\s*$/i, '').trim(), 'ClassAbility');
+            if (resolved && resolved.id) fId = String(resolved.id).trim().toLowerCase();
+          }
+          if (!fId || replacedSet.has(fId)) return;
+          counts[fId] = (counts[fId] || 0) + 1;
+        });
+      }
+    });
+
+    // Extra grants from non-class sources (feats, equipped items, templates, customEntries) that explicitly grant a rank
+    const extraPools = [
+      ...(Array.isArray(ch.feats) ? ch.feats : []),
+      ...(Array.isArray(ch.specialAbilities) ? ch.specialAbilities : []),
+      ...(Array.isArray(ch.legoEntries) ? ch.legoEntries : []),
+      ...(Array.isArray(ch.inventory) ? ch.inventory.filter(i => i && i.equipped) : [])
+    ];
+    extraPools.forEach(src => {
+      if (!src || typeof src !== 'object') return;
+      const gList = Array.isArray(src.grantsFeatureRank) ? src.grantsFeatureRank
+        : (src.grantsFeatureRank ? [src.grantsFeatureRank] : []);
+      gList.forEach(g => {
+        const gId = typeof g === 'string' ? g.trim().toLowerCase() : String(g?.refId || g?.id || '').trim().toLowerCase();
+        const gAmt = typeof g === 'object' ? Math.max(1, Number(g.amount ?? g.ranks ?? 1) || 1) : 1;
+        if (gId) counts[gId] = (counts[gId] || 0) + gAmt;
+      });
+    });
+
+    return counts;
+  },
+
   // Build V3 formula evaluation context with active class levels (@warbladeLevel, @paladinLevel, etc.) and entry-associated @classLevel
   buildV3FormulaContext(character, entry = null, options = {}) {
     const baseCtx = this.buildFormulaContext(character, options || {});
@@ -344,7 +449,9 @@ const RuleEngine = {
         const firstAssoc = entry.associations[0];
         assocClass = typeof firstAssoc === 'string'
           ? firstAssoc.trim()
-          : String(firstAssoc?.className || firstAssoc?.class || firstAssoc?.name || '').trim();
+          : (Array.isArray(firstAssoc)
+            ? String(firstAssoc[0] || '').trim()
+            : String(firstAssoc?.className || firstAssoc?.class || firstAssoc?.name || '').trim());
       } else if (entry.associations && typeof entry.associations === 'object') {
         assocClass = String(entry.associations.className || entry.associations.class || entry.associations.name || '').trim();
       }
@@ -356,6 +463,14 @@ const RuleEngine = {
           baseCtx.classLevel = resolvedClsLvl;
         }
       }
+    }
+    if (options?.featureRank !== undefined) {
+      baseCtx.featureRank = Math.max(1, Math.floor(Number(options.featureRank) || 1));
+    } else if (entry && typeof entry === 'object' && (entry.rankFrom === 'levelTable' || entry.id)) {
+      const rankMap = options?.featureRankMap || this.computeFeatureRankMap(character);
+      const idLow = String(entry.id || '').trim().toLowerCase();
+      const rawRank = Number(rankMap[idLow] || 0);
+      baseCtx.featureRank = rawRank > 0 ? rawRank : 1;
     }
     return baseCtx;
   },
@@ -430,7 +545,8 @@ const RuleEngine = {
     { token: '@castsToday', aliases: ['@uses_today', '@usesToday', '@casts_today'], key: 'castsToday', label: 'Uses Today', group: 'Resources', desc: 'Times this ability has been used today.', example: '@castsToday + 1' },
     { token: '@input.<key>', pattern: true, label: 'Activation Input', group: 'Runtime State', desc: 'Value entered when the ability is activated.', example: '@input.rounds' },
     { token: '@self.<key>', pattern: true, label: 'Entry State', group: 'Runtime State', desc: 'State of this entry (e.g. stacks, invested).', example: '@self.stacks' },
-    { token: '@state.<key>', pattern: true, label: 'Character State', group: 'Runtime State', desc: 'Character-wide runtime state variable.', example: '@state.rage_rounds' }
+    { token: '@state.<key>', pattern: true, label: 'Character State', group: 'Runtime State', desc: 'Character-wide runtime state variable.', example: '@state.rage_rounds' },
+    { token: '@featureRank', key: 'featureRank', label: 'Feature Progression Rank', group: 'Progression', desc: 'Count of non-replaced progression-table occurrences (+ extra grants) for this feature across all classes (fallback 1 in isolated preview).', example: '(@featureRank)d6' }
   ],
 
   FORMULA_FUNCS: [
@@ -515,7 +631,8 @@ const RuleEngine = {
       intMod: Number(context.intMod) || 0,
       wisMod: Number(context.wisMod) || 0,
       chaMod: Number(context.chaMod) || 0,
-      spellLevel: Number(context.spellLevel ?? 0) || 0
+      spellLevel: Number(context.spellLevel ?? 0) || 0,
+      featureRank: Math.max(1, Math.floor(Number(context.featureRank ?? 1) || 1))
     };
   },
 
@@ -2342,6 +2459,7 @@ const RuleEngine = {
               ...(b.selector ? { selector: b.selector } : {}),
               ...(b.when ? { when: b.when } : {}),
               ...(b.appliesTo ? { appliesTo: b.appliesTo } : {}),
+              ...(b.weaponFilter ? { weaponFilter: b.weaponFilter } : {}),
               ...(b.affects ? { affects: b.affects } : {})
             });
           });
@@ -2419,6 +2537,10 @@ const RuleEngine = {
           let diceStr = b.dice
             ? String(b.dice).trim()
             : (b.die === 'flat' ? null : ((b.count || b.die) ? `${b.count || 1}${String(b.die || 'd6').replace(/^\d+/, '')}` : ((b.n || b.d) ? `${b.n || 1}d${b.d || 6}` : '1d6')));
+          // `@featureRank` is entry-scoped (`out.id`): resolve it while `out` is in scope so downstream weapon/roll consumers receive concrete dice (e.g. `5d6`).
+          if (diceStr && /@featureRank\b/i.test(diceStr)) {
+            diceStr = String(this.evaluateFormula(diceStr, curCtx) || diceStr).trim();
+          }
           let flatBonus = b.bonus !== undefined
             ? Number(this.evaluateFormula(b.bonus, curCtx)) || 0
             : (b.die === 'flat' ? (Number(b.count) || 0) : (Number(b.flat || 0) || 0));
@@ -3860,9 +3982,17 @@ const RuleEngine = {
     });
 
     // Re-collect stat modifiers in case a selector mutated an entry's modifier values (e.g. Arcane Shield mutating Absorb Magic from +2 to +4)
+    const featureRankMap = this.computeFeatureRankMap(ch);
     const refreshedStatMods = [];
     workingEntries.forEach(e => {
-      const selfCtx = Object.assign({}, ctx, {
+      const eIdLow = String(e.id || '').trim().toLowerCase();
+      const rawRank = Number(featureRankMap[eIdLow] || 0);
+      const entryFeatureRank = rawRank > 0 ? rawRank : 1;
+      const entryClassCtx = (e && (e.sourceClass || e.associations))
+        ? this.buildV3FormulaContext(ch, e, { featureRankMap })
+        : null;
+      const selfCtx = Object.assign({}, ctx, entryClassCtx ? { classLevel: entryClassCtx.classLevel } : {}, {
+        featureRank: entryFeatureRank,
         self: { stacks: getStacks(e), invested: getInvested(e) }
       });
       (e.modifiers || []).forEach(m => {
@@ -3893,7 +4023,9 @@ const RuleEngine = {
     const statBuckets = {};
     const replacements = {};
     const multipliers = { carryingCapacity: [], spellDamage: 0, healingReceived: 0 };
+    const effectiveSizeScopeValues = {};
     const effectiveSizeScopes = {};
+    const weaponDieSteps = [];
 
     const resolveModValue = (mod, selfCtx) => {
       let v = (mod.formula !== undefined && mod.formula !== null && mod.formula !== '')
@@ -3985,9 +4117,32 @@ const RuleEngine = {
         const scopes = scopeList.length > 0
           ? scopeList
           : ['grapple', 'bullRush', 'trip', 'overrun', 'sunder', 'weaponSize', 'opposedSize'];
+        const ruleset = typeof this.getActiveRuleset === 'function' ? this.getActiveRuleset() : null;
         scopes.forEach(sc => {
-          effectiveSizeScopes[sc] = (effectiveSizeScopes[sc] || 0) + Math.floor(v);
+          if (!effectiveSizeScopeValues[sc]) effectiveSizeScopeValues[sc] = [];
+          effectiveSizeScopeValues[sc].push(Math.floor(v));
+          effectiveSizeScopes[sc] = (ruleset && typeof ruleset.resolveEffectiveSizeScope === 'function')
+            ? ruleset.resolveEffectiveSizeScope(effectiveSizeScopeValues[sc])
+            : (() => {
+              let maxP = 0, minN = 0;
+              effectiveSizeScopeValues[sc].forEach(x => { if (x > maxP) maxP = x; if (x < minN) minN = x; });
+              return maxP + minN;
+            })();
         });
+        return;
+      }
+      if (t === 'weapon.damageDieStep') {
+        const stepVal = Math.floor(v);
+        if (stepVal !== 0) {
+          weaponDieSteps.push({
+            value: stepVal,
+            weaponFilter: mod.weaponFilter || null,
+            entryChoice: this.extractEntryChoice(sourceEntry) || null,
+            source: sourceEntry.name || sourceEntry.id || 'Die Step',
+            sourceId: sourceEntry.id || null,
+            btype: mod.type || 'Untyped'
+          });
+        }
         return;
       }
 
@@ -4258,6 +4413,7 @@ const RuleEngine = {
         healingReceived: 1 + multipliers.healingReceived
       },
       effectiveSizeScopes,
+      weaponDieSteps,
       // Defender-side maneuver checks (Stability: bonus on ability checks to resist bull rush / trip while standing on the ground)
       maneuverDefense: { stability: sumBucket('cmd.stability') },
       // Non-armor arcane spell failure (e.g. Warforged composite plating: 5%); armor/shield ASF is summed separately in recalculateCharacter
@@ -4676,7 +4832,7 @@ const RuleEngine = {
         'ac.total', 'ac.touch', 'ac.flatFooted', 'ac.armor', 'ac.shield', 'ac.shieldBonus', 'ac.natural', 'ac.deflection', 'ac.dodge', 'ac.size', 'ac.luck', 'ac.insight', 'ac.sacred', 'ac.profane', 'ac.cover',
         'save.all', 'save.fort', 'save.ref', 'save.will',
         'atk.all', 'atk.melee', 'atk.ranged', 'atk.weapon', 'atk.touch', 'atk.grapple', 'atk.natural', 'atk.critConfirm',
-        'dmg.all', 'dmg.melee', 'dmg.ranged', 'dmg.weapon', 'dmg.sneakAttack', 'dmg.natural', 'dmg.unarmed',
+        'dmg.all', 'dmg.melee', 'dmg.ranged', 'dmg.weapon', 'dmg.sneakAttack', 'dmg.natural', 'dmg.unarmed', 'weapon.damageDieStep',
         'initiative', 'grapple',
         'cmd.stability', 'size.effective', 'healing.receivedMultiplier', 'spell.asf', 'cmd.bullRush', 'cmd.trip', 'cmd.overrun', 'cmd.bullRushTripDisarmOverrun',
         'speed.land', 'speed.fly', 'speed.swim', 'speed.climb', 'speed.burrow', 'speed.all',
@@ -9761,7 +9917,15 @@ const RuleEngine = {
       const leStacks = (le.stacks !== undefined && le.stacks !== null && le.stacks !== '' && !Number.isNaN(Number(le.stacks))) ? Number(le.stacks) : 1;
       const rawInv = le.essentia !== undefined ? le.essentia : le.invested;
       const leInvested = (rawInv !== undefined && rawInv !== null && rawInv !== '' && !Number.isNaN(Number(rawInv))) ? Number(rawInv) : 0;
-      const leCtx = { ...evalContext, essentia: leInvested, self: { stacks: leStacks, invested: leInvested } };
+      const leRankMap = evalContext.featureRankMap || (evalContext.featureRankMap = this.computeFeatureRankMap(character));
+      const leRankRaw = Number(leRankMap[leId] || 0);
+      const leCtx = {
+        ...evalContext,
+        featureRank: leRankRaw > 0 ? leRankRaw : 1,
+        featureRankMap: leRankMap,
+        essentia: leInvested,
+        self: { stacks: leStacks, invested: leInvested }
+      };
       let leToApply = le;
       if (!le._mutated && ((Array.isArray(le.effects) && le.effects.length > 0) || (Array.isArray(le.blocks) && le.blocks.length > 0))) {
         leToApply = this.evaluateV3Entry(Object.assign({}, le, { _v3Evaluated: false, modifiers: [] }), leCtx);
@@ -11718,14 +11882,62 @@ const RuleEngine = {
       });
     }
 
+    // 3b. Data-driven V3 `weapon.damageDieStep` (e.g. Improved Natural Attack — strictly natural weapons only, never manufactured/unarmed)
+    const isNaturalForDieStep = Boolean(weapon.isNaturalWeapon || weapon.isNatural || String(weapon.category || '').toLowerCase() === 'natural');
+    const dieStepList = Array.isArray(character?.legoEvaluation?.weaponDieSteps)
+      ? character.legoEvaluation.weaponDieSteps
+      : (Array.isArray(character?.weaponDieSteps) ? character.weaponDieSteps : []);
+    if (isNaturalForDieStep && dieStepList.length > 0) {
+      const wepIdLow = String(weapon.id || '').trim().toLowerCase();
+      const wepNameSlug = String(weapon.name || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      dieStepList.forEach(ds => {
+        if (!ds || !ds.value) return;
+        const rawFilter = String(ds.weaponFilter || '').trim();
+        const resolvedFilter = /^@choice$/i.test(rawFilter)
+          ? String(ds.entryChoice || '').trim()
+          : rawFilter;
+        if (!resolvedFilter) return;
+        const filtLow = resolvedFilter.toLowerCase();
+        if (filtLow === 'unarmed strike' || filtLow === 'unarmed-strike' || filtLow === 'natural::unarmed-strike') return;
+        const filtSlug = filtLow.replace(/^natural::/, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        const canonicalNatId = 'natural::' + filtSlug;
+        const matchesNat = (wepIdLow && (wepIdLow === filtLow || wepIdLow === canonicalNatId))
+          || (wepNameSlug && filtSlug && wepNameSlug === filtSlug);
+        if (matchesNat) {
+          effectiveSteps += ds.value;
+          sizeBuffSources.push(`${ds.source} (${ds.value > 0 ? '+' : ''}${ds.value} die step)`);
+        }
+      });
+    }
+
     // 4. Structured V2 damageParts Evaluation (Base Weapon + Enhancements + Active Buff DamageParts)
-    const rawParts = (Array.isArray(weapon.damageParts) && weapon.damageParts.length > 0)
+    let rawParts = (Array.isArray(weapon.damageParts) && weapon.damageParts.length > 0)
       ? weapon.damageParts
       : (dbWeapon && Array.isArray(dbWeapon.damageParts) && dbWeapon.damageParts.length > 0
           ? dbWeapon.damageParts
           : [{ dice: weapon.dice || '1d8', bonus: 0, type: weapon.dmgType || weapon.type || 'Slashing', multiplyOnCrit: true, onCritOnly: false, source: 'Base Weapon' }]);
+    // If V3 effects[] only produced extra/conditional/onCritOnly riders without a base weapon part at index 0, prepend the base weapon dice.
+    if (rawParts.length > 0 && (rawParts[0].condition || rawParts[0].onCritOnly)) {
+      rawParts = [{ dice: weapon.dice || weapon.weapon?.damageDice || '1d8', bonus: 0, type: weapon.dmgType || weapon.weapon?.damageType || weapon.type || 'Slashing', multiplyOnCrit: true, onCritOnly: false, source: 'Base Weapon' }, ...rawParts];
+    }
 
     const combinedRawParts = [...rawParts];
+
+    // Route conditional item/enhancement/crystal `when -> roll` blocks from weapon.effects into combinedRawParts
+    if (Array.isArray(weapon.effects) && weapon.effects.length > 0 && typeof this.evaluateV3Entry === 'function') {
+      const evWep = this.evaluateV3Entry(weapon, evalCtx);
+      if (evWep && Array.isArray(evWep.damageParts) && evWep.damageParts.length > 0) {
+        const seenPartKeys = new Set(combinedRawParts.map(p => `${p.dice || ''}|${p.type || ''}|${p.condition || ''}|${p.source || ''}`.toLowerCase()));
+        evWep.damageParts.forEach(wp => {
+          if (!wp || !wp.dice || !wp.condition) return;
+          const pk = `${wp.dice || ''}|${wp.type || ''}|${wp.condition || ''}|${wp.source || ''}`.toLowerCase();
+          if (!seenPartKeys.has(pk)) {
+            seenPartKeys.add(pk);
+            combinedRawParts.push(wp);
+          }
+        });
+      }
+    }
 
     // Append damageParts from active buffs & subsystems (e.g. Sneak Attack, Hunter's Mercy, Arcane Wrath, Soulmelds)
     if (Array.isArray(character.buffs)) {
@@ -11757,6 +11969,9 @@ const RuleEngine = {
       }
     });
 
+    const slugRider = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const activeRiderSet = new Set(Array.isArray(options.activeRiders) ? options.activeRiders.map(String) : []);
+
     const evaluatedDamageParts = combinedRawParts.map((part, idx) => {
       const isPrimary = idx === 0;
       const rawDiceStr = String(this.evaluateFormula(part.dice || '1d8', evalCtx) || part.dice || '1d8').trim();
@@ -11766,6 +11981,9 @@ const RuleEngine = {
       const partBonus = isPrimary
         ? netFlatDamage
         : (Number(this.evaluateFormula(part.bonus || 0, evalCtx)) || 0);
+      const condStr = (!isPrimary && part.condition) ? String(part.condition) : '';
+      const srcStr = part.source || (isPrimary ? (weapon.name || 'Base Weapon') : 'Extra');
+      const riderId = condStr ? `rider::${slugRider(srcStr)}::${slugRider(condStr)}::${slugRider(steppedDice)}` : null;
       return {
         dice: steppedDice,
         rawDice: rawDiceStr,
@@ -11773,22 +11991,27 @@ const RuleEngine = {
         type: part.type || 'Slashing',
         multiplyOnCrit: part.multiplyOnCrit !== undefined ? !!part.multiplyOnCrit : isPrimary,
         onCritOnly: !!part.onCritOnly,
-        source: part.source || (isPrimary ? (weapon.name || 'Base Weapon') : 'Extra'),
-        condition: (!isPrimary && part.condition) ? String(part.condition) : '',
+        source: srcStr,
+        condition: condStr,
+        riderId,
+        active: Boolean(riderId && activeRiderSet.has(riderId)),
         isPrimary
       };
     });
 
     const primaryPart = evaluatedDamageParts[0] || { dice: '1d8', rawDice: '1d8', bonus: netFlatDamage, type: 'Slashing' };
-    // Conditional riders (condition text such as "vs. undead") are situational: kept out of the always-on totals.
-    const situationalDamageParts = evaluatedDamageParts.filter(p => p.condition);
+    // Conditional riders (condition text such as "vs. undead") are situational: kept out of always-on totals
+    // unless explicitly toggled in `options.activeRiders` (session-only UI toggle; `onCritOnly` stays excluded).
+    const situationalDamageParts = evaluatedDamageParts.filter(p => p.condition && !p.onCritOnly);
+    const activeSituationalDamageParts = situationalDamageParts.filter(p => p.active);
     const normalDamageParts = evaluatedDamageParts.filter(p => !p.onCritOnly && !p.condition);
     const extraDamageParts = normalDamageParts.slice(1);
     const critOnlyDamageParts = evaluatedDamageParts.filter(p => p.onCritOnly && !p.condition);
 
-    // Build ready-to-roll 3D Dice Engine formulas (normal & critical)
+    // Build ready-to-roll 3D Dice Engine formulas (normal & critical), including toggled situational riders
     const primaryFormula = `${primaryPart.dice}${netFlatDamage !== 0 ? (netFlatDamage > 0 ? `+${netFlatDamage}` : `${netFlatDamage}`) : ''}`;
-    const extraDiceTerms = extraDamageParts.map(p => `${p.dice}${p.bonus ? (p.bonus > 0 ? `+${p.bonus}` : `${p.bonus}`) : ''}`);
+    const rolledExtraParts = [...extraDamageParts, ...activeSituationalDamageParts];
+    const extraDiceTerms = rolledExtraParts.map(p => `${p.dice}${p.bonus ? (p.bonus > 0 ? `+${p.bonus}` : `${p.bonus}`) : ''}`);
     const diceFormula = [primaryFormula, ...extraDiceTerms].join(' + ');
 
     const critMult = Math.max(2, Number(critData.critMult) || 2);
@@ -11796,7 +12019,7 @@ const RuleEngine = {
     for (let i = 0; i < critMult; i++) {
       critTerms.push(primaryFormula);
     }
-    extraDamageParts.forEach(p => {
+    rolledExtraParts.forEach(p => {
       const term = `${p.dice}${p.bonus ? (p.bonus > 0 ? `+${p.bonus}` : `${p.bonus}`) : ''}`;
       if (p.multiplyOnCrit) {
         for (let i = 0; i < critMult; i++) critTerms.push(term);
@@ -11837,6 +12060,7 @@ const RuleEngine = {
       normalDamageParts,
       extraDamageParts,
       situationalDamageParts,
+      activeSituationalDamageParts,
       critOnlyDamageParts,
       diceFormula,
       critDiceFormula,
