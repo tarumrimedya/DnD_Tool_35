@@ -2,16 +2,15 @@
 'use strict';
 
 /**
- * Phase 1a Monster Natural Attack Compiler & Deterministic -5/-2 Validator (ADR-058)
+ * Full Bestiary Monster Natural Attack Compiler & Deterministic -5/-2 Validator (ADR-058 Faz 1a + Faz 3)
  *
- * Scope: ~227 monsters (Animal, Magical Beast, Elemental, Plant, Vermin + all allowed
- * Companion, Familiar, Special Mount, and Fiendish Servant entries).
+ * Scope: ALL 649 Bestiary monsters in `database/srd_monsters.json`.
  *
  * Generates `tools/data/srd_monster_natural_attacks.json` as the compiler map and writes
- * canonical `count`, `primary` (`true | false | 'special_rake'`), and `dmgType`
- * (`B | P | S | B/P | P/S | B/P/S`) into `database/srd_monsters.json`, fixing known
- * SRD/Foundry import defects (inverted Bear/Cat primary/secondary, `sizeNaturalRoll`
- * garbage dice, duplicate Eagle talon).
+ * canonical `count`, `primary` (`true | false | 'special_rake' | 'weapon' | 'misc'`), and `dmgType`
+ * (`B | P | S | B/P | P/S | B/P/S`) into `database/srd_monsters.json`, resolving all Foundry
+ * `sizeRoll` / `sizeNaturalRoll` expressions to exact D&D 3.5e dice (DMG Table 2-2 / MM p.291)
+ * and validating every multi-attack primary/secondary `-5/-2` delta deterministically.
  */
 
 const fs = require('fs');
@@ -26,12 +25,84 @@ const SIZE_ATK_MOD = {
   Fine: 8, Diminutive: 4, Tiny: 2, Small: 1, Medium: 0, Large: -1, Huge: -2, Gargantuan: -4, Colossal: -8
 };
 
-// Official 3.5e SRD / Monster Manual v3.5 natural weapon damage types (MM p.312)
+const SIZE_INDEX = {
+  Fine: 0, Diminutive: 1, Tiny: 2, Small: 3, Medium: 4, Large: 5, Huge: 6, Gargantuan: 7, Colossal: 8
+};
+
+// Official D&D 3.5e DMG Table 2-2 / MM p.291 weapon & natural attack size-scaling ladder
+const WEAPON_SIZE_LADDER = [
+  '1', '1d2', '1d3', '1d4', '1d6', '1d8', '2d6', '3d6', '4d6', '6d6', '8d6', '12d6', '16d6'
+];
+const WEAPON_D10_LADDER = [
+  '1d2', '1d3', '1d4', '1d6', '1d8', '1d10', '2d8', '3d8', '4d8', '6d8', '8d8', '12d8'
+];
+const WEAPON_D12_LADDER = [
+  '1d3', '1d4', '1d6', '1d8', '1d10', '1d12', '3d6', '4d6', '6d6', '8d6', '12d6'
+];
+
+function scaleDiceBySizeDelta(baseDice, delta) {
+  const clean = String(baseDice || '1d6').toLowerCase().trim();
+  if (delta === 0) return clean;
+  // Exact 3.5e step progressions for common base dice
+  const ladders = {
+    '1d4': { arr: ['1', '1', '1d2', '1d3', '1d4', '1d6', '1d8', '2d6', '3d6'], medIdx: 4 },
+    '1d6': { arr: ['1', '1d2', '1d3', '1d4', '1d6', '1d8', '2d6', '3d6', '4d6'], medIdx: 4 },
+    '1d8': { arr: ['1d2', '1d3', '1d4', '1d6', '1d8', '2d6', '3d6', '4d6', '6d6'], medIdx: 4 },
+    '1d10': { arr: ['1d3', '1d4', '1d6', '1d8', '1d10', '2d8', '3d8', '4d8', '6d8'], medIdx: 4 },
+    '1d12': { arr: ['1d4', '1d6', '1d8', '1d10', '1d12', '3d6', '4d6', '6d6', '8d6'], medIdx: 4 },
+    '2d4': { arr: ['1d2', '1d3', '1d4', '1d6', '2d4', '2d6', '3d6', '4d6', '6d6'], medIdx: 4 },
+    '2d6': { arr: ['1d3', '1d4', '1d6', '1d10', '2d6', '3d6', '4d6', '6d6', '8d6'], medIdx: 4 },
+    '1d3': { arr: ['1', '1', '1', '1d2', '1d3', '1d4', '1d6', '1d8', '2d6'], medIdx: 4 }
+  };
+  const entry = ladders[clean];
+  if (entry) {
+    const idx = Math.max(0, Math.min(entry.arr.length - 1, entry.medIdx + delta));
+    return entry.arr[idx];
+  }
+  return clean;
+}
+
+function resolveFoundrySizeDice(expr, monsterSize) {
+  const raw = String(expr || '').trim();
+  if (!raw || !/sizeRoll|sizeNaturalRoll|@/i.test(raw)) return raw;
+  const mSizeIdx = SIZE_INDEX[monsterSize || 'Medium'] ?? 4;
+
+  // Pattern 1: sizeRoll(num, die, @size|N, ...)
+  const srMatch = raw.match(/sizeRoll\(\s*(\d+)\s*,\s*(\d+)\s*,\s*([^,)\s]+)/i);
+  if (srMatch) {
+    const baseDice = `${srMatch[1]}d${srMatch[2]}`;
+    const sizeArg = srMatch[3].trim();
+    const targetIdx = /^\d+$/.test(sizeArg) ? Number(sizeArg) : mSizeIdx;
+    return scaleDiceBySizeDelta(baseDice, targetIdx - 4);
+  }
+
+  // Pattern 2: sizeNaturalRoll(step, @size|N, ...) where step 1=1d3, 2=1d4, 3=1d6 at Medium
+  const snrMatch = raw.match(/sizeNaturalRoll\(\s*(\d+)\s*,\s*([^,)\s]+)/i);
+  if (snrMatch) {
+    const step = Number(snrMatch[1]);
+    const baseByStep = { 1: '1d3', 2: '1d4', 3: '1d6', 4: '1d8', 5: '2d6' };
+    const baseDice = baseByStep[step] || '1d4';
+    const sizeArg = snrMatch[2].trim();
+    const targetIdx = /^\d+$/.test(sizeArg) ? Number(sizeArg) : mSizeIdx;
+    return scaleDiceBySizeDelta(baseDice, targetIdx - 4);
+  }
+
+  // Pattern 3: 2d6+(@critMult - 1)d6-6 -> base 2d6
+  const leadDice = raw.match(/^(\d+d\d+)/i);
+  if (leadDice) return leadDice[1];
+
+  return '1d6';
+}
+
+// Official 3.5e SRD / Monster Manual v3.5 natural & manufactured weapon damage types (MM p.312 / PHB p.116)
 function inferNaturalDmgType(name) {
   const n = String(name || '').toLowerCase();
   if (/bite|jaw|mandible|beak|maw/.test(n)) return 'B/P/S';
   if (/claw|talon|rake|rend|razor/.test(n)) return 'P/S';
   if (/gore|sting|horn|quill|spike|tusk|antler|proboscis|barb|dart|needle|thorn/.test(n)) return 'P';
+  if (/longsword|greatsword|bastard sword|scimitar|falchion|battleaxe|greataxe|handaxe|kukri|glaive|guisarme|halberd|scythe|kamas?|whip|blade|axe|sword/.test(n)) return 'S';
+  if (/short sword|shortsword|rapier|dagger|spear|lance|javelin|bow|crossbow|arrow|bolt|trident|pick|ranseur|morningstar/.test(n)) return 'P';
+  if (/club|greatclub|mace|flail|hammer|warhammer|quarterstaff|staff|sling|rock|boulder|sap|gauntlet|unarmed/.test(n)) return 'B';
   if (/slam|hoof|hooves|tail|wing|tentacle|arm|stamp|stomp|ram|trample|constrict|pincer|tendril|buffet|vine|root|strand|pseudopod|crush|smash|slap|kick|foreleg/.test(n)) return 'B';
   if (/swarm/.test(n)) return 'B/P/S';
   return 'B';
@@ -96,7 +167,7 @@ const MM35_OVERRIDES = {
 
 function isSpecialNonIterativeAttack(atk) {
   const n = String(atk.name || '').toLowerCase();
-  return /constrict|trample|rend|poison|breath|swallow|web|acid|spit|gaze|roar|stink|spore|pollen|disease|energy drain|blood drain|attach|swarm/.test(n)
+  return /constrict|trample|rend|poison|breath|swallow|web|acid|spit|gaze|roar|stink|spore|pollen|disease|energy drain|blood drain|attach|swarm|crush|tail sweep|frightful presence/.test(n)
     || (atk.attackType && atk.attackType !== 'natural' && !/rake/i.test(n));
 }
 
@@ -177,6 +248,8 @@ function normalizeMonster(m) {
     }
     if (!isSpecialNonIterativeAttack(a)) {
       natIndices.push(idx);
+    } else {
+      a.primary = (a.attackType === 'weapon') ? 'weapon' : 'misc';
     }
   });
 
@@ -195,13 +268,18 @@ function normalizeMonster(m) {
       }
     });
   } else {
-    // Infer primary from highest existing attackBonus among natural attacks (tie -> first)
+    // Infer primary: True Dragons (MM p.69) always use Bite as their primary natural weapon;
+    // otherwise pick highest existing attackBonus among natural attacks (tie -> first).
+    const isDragon = /dragon/i.test(String(m.creatureType || m.monster?.creatureType || m.category || ''));
+    const dragonBiteIdx = isDragon ? natIndices.find(idx => /^bite\b/i.test(String(working[idx].name || '').trim())) : undefined;
     let bestBonus = -999;
-    let bestIdx = natIndices[0] ?? -1;
-    natIndices.forEach(idx => {
-      const b = Number(working[idx].attackBonus ?? -999);
-      if (b > bestBonus) { bestBonus = b; bestIdx = idx; }
-    });
+    let bestIdx = dragonBiteIdx !== undefined ? dragonBiteIdx : (natIndices[0] ?? -1);
+    if (dragonBiteIdx === undefined) {
+      natIndices.forEach(idx => {
+        const b = Number(working[idx].attackBonus ?? -999);
+        if (b > bestBonus) { bestBonus = b; bestIdx = idx; }
+      });
+    }
     natIndices.forEach(idx => {
       const a = working[idx];
       a.count = inferDefaultCount(m, a.name);
@@ -217,9 +295,21 @@ function normalizeMonster(m) {
   }, 0);
 
   working.forEach(a => {
+    // Resolve any Foundry sizeRoll / sizeNaturalRoll / @critMult dice formulas cleanly
+    if (a.damageDice && /sizeRoll|sizeNaturalRoll|@/i.test(String(a.damageDice))) {
+      a.damageDice = resolveFoundrySizeDice(a.damageDice, m.size || m.monster?.size || 'Medium');
+      if (a.weapon) a.weapon.damageDice = a.damageDice;
+    }
+    if (a.weapon && a.weapon.damageDice && /sizeRoll|sizeNaturalRoll|@/i.test(String(a.weapon.damageDice))) {
+      a.weapon.damageDice = resolveFoundrySizeDice(a.weapon.damageDice, m.size || m.monster?.size || 'Medium');
+    }
+
     if (a.primary !== true && a.primary !== false && a.primary !== 'special_rake') {
-      // Special/misc attack (Constrict, Trample, Breath, etc.) — still ensure dmgType if missing
+      // Special/misc or manufactured weapon attack — ensure canonical count, primary, dmgType
+      if (!a.count) a.count = 1;
+      a.primary = (a.attackType === 'weapon') ? 'weapon' : 'misc';
       if (!a.dmgType || a.dmgType === 'Physical') a.dmgType = inferNaturalDmgType(a.name);
+      if (a.weapon && (!a.weapon.dmgType || a.weapon.dmgType === 'Physical')) a.weapon.dmgType = a.dmgType;
       return;
     }
     if (!a.count) a.count = inferDefaultCount(m, a.name);
@@ -293,9 +383,6 @@ function run() {
   const errors = [];
 
   for (const m of mons) {
-    const ct = String(m.creatureType || m.subCategory || m.category || '').trim();
-    const inScope = allowedIds.has(m.id) || /^(Animal|Magical Beast|Elemental|Plant|Vermin)$/i.test(ct);
-    if (!inScope) continue;
     scopeCount++;
     const summary = normalizeMonster(m);
     mapOut[m.id] = summary;
@@ -331,14 +418,14 @@ function run() {
   fs.mkdirSync(path.dirname(DATA_OUT_PATH), { recursive: true });
   fs.writeFileSync(DATA_OUT_PATH, JSON.stringify({
     schemaVersion: 1,
-    scope: 'Phase 1a (Animal, Magical Beast, Elemental, Plant, Vermin + Companion/Familiar/Mount/Fiendish Servant)',
+    scope: 'Full Bestiary (All 649 SRD 3.5e Monsters — ADR-058 Phase 1a + Phase 3)',
     count: scopeCount,
     entries: mapOut
   }, null, 2), 'utf8');
 
   fs.writeFileSync(MONSTERS_PATH, JSON.stringify(mons), 'utf8');
 
-  console.log(`Normalized ${scopeCount} Phase 1a monsters (${validatedMulti} multi-attack primary/secondary pairs validated).`);
+  console.log(`Normalized ${scopeCount} Bestiary monsters (${validatedMulti} multi-attack primary/secondary pairs validated).`);
   if (errors.length > 0) {
     console.error(`VALIDATION FAILED (${errors.length} errors):`);
     errors.forEach(e => console.error('  -', e));
