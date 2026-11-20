@@ -705,6 +705,68 @@ function runAiV3ContractTests() {
     const scratchMarkup = Forge.renderScratch();
     check(scratchMarkup.includes('fs-spot-add') && scratchMarkup.includes('+ Add Mechanic / Effect…') && scratchMarkup.includes('lego-pal-tag') && scratchMarkup.includes('SEARCH') && scratchMarkup.includes('BLOCKS') && scratchMarkup.includes('data-action="add-block"') && !scratchMarkup.includes('Quick Presets'),
       'blockPalette must render labeled SEARCH / BLOCKS / EXTRAS rows with open 1-click block buttons and no Quick Presets');
+
+    // #10 Sprint D3 — Unified 16-Family V3 Scriber, False-Positive Guards, Partial-Coverage Envelope & Pure V3 RuleMaster
+    // (a) False-positive guards: "at will" != Will save, colon-less Prerequisites stripped, negated penalty ignored, no-darkvision ignored
+    const fpAtWill = RuleEngine.scribeRuleText('Fey Trick: Usable at will. You gain a +2 bonus on Bluff checks.', { blueprint: 'feat' });
+    check(fpAtWill.coverage === 'full' && fpAtWill.entry.effects.length === 1 && fpAtWill.entry.effects[0].targets[0] === 'skill.bluff',
+      '"usable at will" must not create a false Will save block');
+    const fpPrereq = RuleEngine.scribeRuleText('Chaotic Rage\nPrerequisites Chaotic alignment, rage ability.\nBenefit: You gain a +2 morale bonus on Will saves.', { blueprint: 'feat' });
+    check(fpPrereq.coverage === 'full' && fpPrereq.entry.effects.length === 1 && fpPrereq.entry.effects[0].targets[0] === 'save.will',
+      'colon-less Prerequisites sentence must be stripped cleanly');
+    const fpIgnorePen = RuleEngine.scribeRuleText('Legendary Climber: You ignore the -5 penalty on accelerated Climb checks and gain a +2 competence bonus on Climb checks.', { blueprint: 'feat' });
+    check(fpIgnorePen.entry.effects.every((b) => !(b.type === 'stat' && b.value === -5)) && fpIgnorePen.entry.effects.some((b) => b.type === 'stat' && b.value === 2),
+      'negated/ignored -5 penalty must not emit a -5 stat penalty block');
+    const fpNoDv = RuleEngine.scribeRuleText('Dayborn: Creatures that do not have darkvision gain low-light vision.', { blueprint: 'race' });
+    check(fpNoDv.entry.effects.some((b) => b.type === 'defense' && /low-light/i.test(b.what || '')) && !fpNoDv.entry.effects.some((b) => b.type === 'defense' && /darkvision/i.test(b.what || '')),
+      '"do not have darkvision gain low-light vision" must emit Low-Light Vision without a Darkvision sense block');
+
+    // (b) Closed `when` vocabulary: "total defense" & "against chaotic creatures" map to closed state atoms
+    const closedTd = RuleEngine.parseRuleTextToV3('Mobile Bulwark: +2 dodge bonus to AC when taking total defense and +2 sacred bonus on saving throws against chaotic creatures.', { blueprint: 'feat' });
+    condWalk(closedTd, 'closedTd', '');
+    check(JSON.stringify(closedTd.effects).includes('"totalDefense"') && JSON.stringify(closedTd.effects).includes('"alignment:chaotic"'),
+      'total defense and vs. chaotic must map to closed state atoms totalDefense & alignment:chaotic');
+
+    // (c) Inverted speed bonus ("an enhancement bonus to speed of +30 feet")
+    const hasteScribe = RuleEngine.scribeRuleText('Fleet Step: Grants a +1 dodge bonus to AC and Reflex saves, and an enhancement bonus to speed of +30 feet.', { blueprint: 'spell' });
+    check(hasteScribe.entry.effects.some((b) => b.type === 'stat' && (b.targets || []).includes('speed.land') && b.value === 30 && b.btype === 'Enhancement'),
+      'inverted speed phrasing ("enhancement bonus to speed of +30 feet") must emit speed.land +30 Enhancement');
+
+    // (d) Partial coverage detection: multi-clause rule with both deterministic stat + complex timed swift-action trance
+    const partialText = 'Battle Vigil: You gain a +2 competence bonus on Listen checks and Spot checks. As a swift action, you can expend a spell slot to reroll one missed melee attack roll before the end of your turn.';
+    const partialRes = RuleEngine.scribeRuleText(partialText, { blueprint: 'feat', preserveUnparsedAsRuleBlocks: true });
+    check(partialRes.hasRealMech === true && partialRes.coverage === 'partial' && partialRes.mechanicalUnparsedClauses.length === 1,
+      `multi-clause rule must report coverage === "partial" with 1 unparsed mechanical clause (got ${partialRes.coverage}, ${partialRes.mechanicalUnparsedClauses.length})`);
+    check(partialRes.entry.effects.some((b) => b.type === 'effect' && b.effectKind === 'rule' && b.text.includes('reroll')),
+      'preserveUnparsedAsRuleBlocks must retain unparsed clause as an unstructured rule block instead of dropping it');
+
+    // (e) 4-Gate `validateV3Entry` raw-check + auto-sanitization
+    const badRaw = {
+      schemaVersion: 2, id: 'bad-probe', blueprint: 'feat', name: 'Bad Probe',
+      modifiers: [{ target: 'str', value: 2 }],
+      effects: [{ type: 'when', flow: 'while', branches: [{ condKind: 'state', condText: 'under full moon', effects: [{ type: 'stat', targets: ['ac.total'], mode: 'flat', value: 1, btype: 'Dodge' }] }] }]
+    };
+    const vGate = RuleEngine.validateV3Entry(badRaw, { checkRawFirst: true });
+    check(vGate.rawOk === false && vGate.rawErrors.length >= 2 && vGate.ok === true && vGate.entry.schemaVersion === 3,
+      'validateV3Entry must flag raw V2/condition errors for 1-step repair while producing a valid sanitized V3 fallback');
+
+    // (f) RuleMaster Pure V3 hygiene: zero native alert/confirm, createEmptyEntry is schemaVersion 3 with 0 modifiers/damageParts
+    const rmSrc = fs.readFileSync(path.join(ROOT, 'rule_master.js'), 'utf8');
+    check(!/(?<![.\w])(?:alert|confirm|prompt)\s*\(/.test(rmSrc), 'rule_master.js must contain zero native alert()/confirm()/prompt() calls');
+    const vm2 = require('vm');
+    const rmCtx2 = { window: {}, globalThis: {}, URLSearchParams, console, RuleEngine, localStorage: { getItem: () => null, setItem: () => {}, removeItem: () => {} }, document: { readyState: 'loading', getElementById: () => null, querySelectorAll: () => [], addEventListener: () => {} } };
+    rmCtx2.window = rmCtx2; rmCtx2.self = rmCtx2;
+    vm2.createContext(rmCtx2);
+    vm2.runInContext(rmSrc, rmCtx2);
+    ['Weapon', 'Armor', 'Shield', 'Feat', 'Spell', 'Wondrous Item'].forEach((tp) => {
+      const emp = rmCtx2.RuleMaster.createEmptyEntry(tp);
+      check(emp.schemaVersion === 3 && emp.modifiers === undefined && emp.damageParts === undefined && Array.isArray(emp.effects),
+        `RuleMaster.createEmptyEntry("${tp}") must return Pure Canonical V3 without modifiers/damageParts`);
+    });
+    // Partial prose must NOT short-circuit resolveLocalZeroTokenQuery when complex clauses remain unparsed
+    const partialZeroHit = rmCtx2.RuleMaster.resolveLocalZeroTokenQuery(partialText);
+    check(Array.isArray(partialZeroHit) && partialZeroHit.length === 0,
+      'resolveLocalZeroTokenQuery must not prematurely swallow partial multi-clause rules before Hybrid AI Refine');
   }
 
   const elapsedMs = Date.now() - startMs;

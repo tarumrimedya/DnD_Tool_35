@@ -5053,8 +5053,99 @@ const RuleEngine = {
     return e;
   },
 
-  // Layer 1 Deterministic Parser (<0.2 ms, 0 Tokens): "Scribe from Text" RAW English -> Pure Canonical V3 Entry
-  parseRuleTextToV3(rawText, opts = {}) {
+  // 4-Gate V3 Validator (Schema invariants + Canonical Targets + replaceStat Ruleset + Closed `when` Vocabulary)
+  validateV3Entry(rawEntry, opts = {}) {
+    const rawErrors = [];
+    const checkBlockTree = (blocks, at, errOut) => {
+      if (!Array.isArray(blocks)) return;
+      const validTypes = new Set(['stat', 'roll', 'attack', 'defense', 'effect', 'resource', 'when', 'table', 'carrier']);
+      const rs = (this.rulesets && this.rulesets.dnd35) || {};
+      const swapScopes = new Set(Array.isArray(rs.statSwapScopes) ? rs.statSwapScopes.map(x => x[0]) : ['all', 'finessable', 'simple_or_natural', 'thrown', 'bow_or_crossbow', 'chosen_weapon', 'discipline_weapons', 'light_or_no_armor', 'not_flat_footed', 'mind_affecting']);
+      blocks.forEach((b, idx) => {
+        const here = `${at}[${idx}]`;
+        if (!b || typeof b !== 'object') { errOut.push(`${here}: block is not an object`); return; }
+        if (b.modifiers !== undefined || b.damageParts !== undefined) errOut.push(`${here}: banned V2 keys (modifiers/damageParts)`);
+        if (!validTypes.has(b.type)) errOut.push(`${here}: invalid block type "${b.type}"`);
+        if (b.type === 'stat') {
+          if (!Array.isArray(b.targets) || b.targets.length === 0) errOut.push(`${here}: stat block requires non-empty targets[]`);
+          else b.targets.forEach((t) => {
+            const res = this.resolveCanonicalV3Target(String(t || ''));
+            if (!res.ok) errOut.push(`${here}: unknown stat target "${t}"`);
+          });
+          if (b.mode === 'replaceStat') {
+            if (!b.swapTarget || !b.fromStat || !b.toStat) errOut.push(`${here}: replaceStat requires swapTarget, fromStat, toStat`);
+            if (b.scope !== undefined) errOut.push(`${here}: replaceStat uses "swapScope", not legacy "scope"`);
+            if (b.swapScope !== undefined && !swapScopes.has(b.swapScope)) errOut.push(`${here}: invalid swapScope "${b.swapScope}"`);
+          }
+        }
+        if (b.type === 'when') {
+          const branches = Array.isArray(b.branches) ? b.branches : [];
+          branches.forEach((br, bi) => {
+            if (!br || typeof br !== 'object') return;
+            const k = String(br.condKind || 'toggle').trim();
+            const t = br.condText !== undefined ? String(br.condText).trim() : '';
+            if (k !== 'note' && k !== 'else') {
+              const r = this.resolveV3WhenCondition(k, t, 'when', {}, {}, {}, { useNamedKind: true, strict: true });
+              if (r === 'unrecognized') errOut.push(`${here}.branches[${bi}]: condition "${k}|${t}" is outside closed when vocabulary (use condKind:"situational" for descriptive conditions)`);
+            }
+            checkBlockTree(br.effects || br.kids, `${here}.branches[${bi}].effects`, errOut);
+          });
+        }
+        if (b.type === 'table' && Array.isArray(b.rows)) {
+          b.rows.forEach((row, ri) => { if (row) checkBlockTree(row.effects || row.kids, `${here}.rows[${ri}].effects`, errOut); });
+        }
+      });
+    };
+
+    if (!rawEntry || typeof rawEntry !== 'object' || Array.isArray(rawEntry)) {
+      return { ok: false, rawOk: false, entry: null, errors: ['entry must be a JSON object'], rawErrors: ['entry must be a JSON object'], warnings: [] };
+    }
+    if (opts.checkRawFirst) {
+      if (rawEntry.schemaVersion !== 3) rawErrors.push(`schemaVersion must be 3 (got ${rawEntry.schemaVersion})`);
+      ['modifiers', 'damageParts', 'defenses', 'resources'].forEach((bk) => {
+        if (rawEntry[bk] !== undefined) rawErrors.push(`banned legacy V2 top-level array "${bk}"`);
+      });
+      checkBlockTree(rawEntry.effects, 'effects', rawErrors);
+      if (Array.isArray(rawEntry.powers)) {
+        rawEntry.powers.forEach((pw, pi) => { if (pw && typeof pw === 'object') checkBlockTree(pw.effects, `powers[${pi}].effects`, rawErrors); });
+      }
+      if (Array.isArray(rawEntry.modes)) {
+        rawEntry.modes.forEach((m, mi) => {
+          if (!m || typeof m !== 'object') return;
+          if (m.blocks !== undefined || m.modifiers !== undefined) rawErrors.push(`modes[${mi}]: mode blocks must live in effects[] only`);
+          checkBlockTree(m.effects, `modes[${mi}].effects`, rawErrors);
+        });
+      }
+    }
+
+    const sanRes = this.sanitizeV3Entry(rawEntry, Object.assign({}, opts, { returnWarnings: true }));
+    const entry = sanRes ? sanRes.entry : null;
+    const warnings = sanRes ? sanRes.warnings : [];
+    const errors = [];
+    if (!entry) {
+      errors.push('sanitizeV3Entry returned null');
+    } else {
+      checkBlockTree(entry.effects, 'effects', errors);
+      if (Array.isArray(entry.powers)) {
+        entry.powers.forEach((pw, pi) => { if (pw && typeof pw === 'object') checkBlockTree(pw.effects, `powers[${pi}].effects`, errors); });
+      }
+      if (Array.isArray(entry.modes)) {
+        entry.modes.forEach((m, mi) => { if (m && typeof m === 'object') checkBlockTree(m.effects, `modes[${mi}].effects`, errors); });
+      }
+    }
+    return {
+      ok: errors.length === 0,
+      rawOk: rawErrors.length === 0,
+      entry,
+      errors,
+      rawErrors,
+      warnings
+    };
+  },
+
+  // Unified Layer 1 Deterministic V3 Scriber (<0.3 ms, 0 Tokens):
+  // Combines 16-family claim extraction + false-positive guards + closed `when` vocabulary + clause coverage diagnostics.
+  scribeRuleText(rawText, opts = {}) {
     const fullInput = this._stripBannedDieGlyph(rawText).trim();
     if (!fullInput) return null;
 
@@ -5066,7 +5157,7 @@ const RuleEngine = {
     const lines = fullInput.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
     if (!inferredName) {
       if (lines.length >= 2 && lines[0].length <= 64 && !/[.;]/.test(lines[0]) && !/^[+\-–−]\d/.test(lines[0])) {
-        inferredName = lines[0].replace(/:$/, '').trim();
+        inferredName = lines[0].replace(/\s*\[[^\]]+\]\s*$/, '').replace(/:$/, '').trim();
         bodyText = lines.slice(1).join(' ');
       } else {
         const colonHead = fullInput.match(/^([A-Z][A-Za-z0-9'’\-\s()]{2,48}):\s+(.+)$/s);
@@ -5077,19 +5168,28 @@ const RuleEngine = {
       }
     }
 
-    const cleanProse = bodyText
+    // Split sentences & strip Prerequisite (colon and colon-less) + Normal sentences (parity with tools/lib/v3_claims.js)
+    const rawClauses = bodyText
       .replace(/<[^>]+>/g, ' ')
       .split(/(?<=[.!?])\s+|\r?\n+/)
-      .filter(s => !/^\s*(normal|prerequisites?|prereq)\s*:/i.test(s))
-      .map(s => s.replace(/^\s*benefit\s*:\s*/i, ''))
-      .join(' ')
-      .replace(/\s+/g, ' ')
-      .trim();
+      .map(s => s.trim())
+      .filter(Boolean)
+      .filter(s => !/^\s*(normal|prerequisites?|prereq)(?:\s*:|\s+[A-Z0-9])/i.test(s))
+      .map(s => s.replace(/^\s*benefit\s*:\s*/i, '').trim())
+      .filter(Boolean);
+
+    const cleanProse = rawClauses.join(' ').replace(/\s+/g, ' ').trim();
+    const lowProse = cleanProse.toLowerCase();
 
     const bp = opts.blueprint || 'feat';
+    const isPassiveContainer = !['spell', 'buff'].includes(bp);
     const effects = [];
     const choices = [];
     const powers = [];
+    const matchedSpans = [];
+    const recordSpan = (start, len) => {
+      if (Number.isFinite(start) && len > 0) matchedSpans.push([start, start + len]);
+    };
 
     const SKILL_MAP = {
       'appraise': 'appraise', 'autohypnosis': 'autohypnosis', 'balance': 'balance', 'bluff': 'bluff',
@@ -5112,10 +5212,12 @@ const RuleEngine = {
       return NUM_WORDS[k] !== undefined ? NUM_WORDS[k] : (parseInt(k, 10) || 1);
     };
 
+    // Closed-vocabulary `when` wrapper (parity with tools/lib/v3_block_generator.js `wrapQualifierClosed`)
     const wrapQualifier = (block, rawQual) => {
       if (!rawQual) return block;
-      const q = String(rawQual).trim().replace(/^(?:against|vs\.?|versus)\s+/i, 'vs. ');
-      const rawStripped = String(rawQual).trim().replace(/^(?:when|while|if|during)\s+/i, '').trim();
+      const cleaned = String(rawQual).trim().replace(/[.,;:\s]+$/, '').trim();
+      if (!cleaned) return block;
+      const rawStripped = cleaned.replace(/^(?:when|while|if|during)\s+/i, '').trim();
       if (/^(?:charging|on a charge)$/i.test(rawStripped)) {
         return { type: 'when', flow: 'while', branches: [{ condKind: 'state', condText: 'charging', effects: [block] }] };
       }
@@ -5125,21 +5227,37 @@ const RuleEngine = {
       if (/^fighting defensively$/i.test(rawStripped)) {
         return { type: 'when', flow: 'while', branches: [{ condKind: 'state', condText: 'fightingDefensively', effects: [block] }] };
       }
-      if (/creatures?\s+of\s+evil\s+alignment|^vs\.\s*evil\b/i.test(q)) {
+      if (/^(?:taking\s+)?total\s+defense$/i.test(rawStripped)) {
+        return { type: 'when', flow: 'while', branches: [{ condKind: 'state', condText: 'totalDefense', effects: [block] }] };
+      }
+      if (/^(?:against|vs\.?|versus)\s+(?:creatures?\s+of\s+)?evil(?:\s+alignment|\s+creatures?)?$/i.test(cleaned) || /creatures?\s+of\s+evil\s+alignment/i.test(cleaned)) {
         return { type: 'when', flow: 'while', branches: [{ condKind: 'state', condText: 'alignment:evil', effects: [block] }] };
       }
-      return { type: 'when', flow: 'while', branches: [{ condKind: 'situational', condText: q, effects: [block] }] };
+      if (/^(?:against|vs\.?|versus)\s+(?:creatures?\s+of\s+)?good(?:\s+alignment|\s+creatures?)?$/i.test(cleaned) || /creatures?\s+of\s+good\s+alignment/i.test(cleaned)) {
+        return { type: 'when', flow: 'while', branches: [{ condKind: 'state', condText: 'alignment:good', effects: [block] }] };
+      }
+      if (/^(?:against|vs\.?|versus)\s+(?:creatures?\s+of\s+)?lawful(?:\s+alignment|\s+creatures?)?$/i.test(cleaned) || /creatures?\s+of\s+lawful\s+alignment/i.test(cleaned)) {
+        return { type: 'when', flow: 'while', branches: [{ condKind: 'state', condText: 'alignment:lawful', effects: [block] }] };
+      }
+      if (/^(?:against|vs\.?|versus)\s+(?:creatures?\s+of\s+)?chaotic(?:\s+alignment|\s+creatures?)?$/i.test(cleaned) || /creatures?\s+of\s+chaotic\s+alignment/i.test(cleaned)) {
+        return { type: 'when', flow: 'while', branches: [{ condKind: 'state', condText: 'alignment:chaotic', effects: [block] }] };
+      }
+      const normSit = cleaned.replace(/^(?:against|vs\.?|versus)\s+/i, 'vs. ').slice(0, 96);
+      return { type: 'when', flow: 'while', branches: [{ condKind: 'situational', condText: normSit, effects: [block] }] };
     };
 
     const resolveTargetsFromPhrase = (phrase, btypeCanon) => {
       const p = String(phrase || '').toLowerCase();
       if (/\b(?:difficulty\s+class|save\s+dcs?|saving\s+throw\s+dcs?)\b/.test(p)) return ['spell.dc'];
       if (/overcome\s+spell\s+resistance|spell\s+penetration/.test(p)) return ['caster.spellPenetration'];
+      if (/manifester\s+level\s+checks?|caster\s+level\s+checks?/.test(p)) return [];
       if (/\bcaster\s+level\b/.test(p)) return ['casterLevel'];
-      if (/saving\s+throws?|\bsaves?\b|\bfortitude\b|\breflex\b|\bwill\b/.test(p)) {
+      // Negative lookbehind `(?<!\bat\s)\bwill\b` prevents "usable at will" from becoming save.will
+      if (/saving\s+throws?|\bsaves?\b|\bfortitude\b|\breflex\b|(?<!\bat\s)\bwill\b/.test(p)) {
+        if (/\bon\s+the\s+save\b/.test(p) && !/\b(?:fortitude|reflex|will)\b/.test(p)) return [];
         if (/fortitude/.test(p)) return ['save.fort'];
         if (/reflex/.test(p)) return ['save.ref'];
-        if (/\bwill\b/.test(p)) return ['save.will'];
+        if (/(?<!\bat\s)\bwill\b/.test(p)) return ['save.will'];
         return ['save.all'];
       }
       if (/armor\s+class|\bac\b/.test(p)) {
@@ -5153,20 +5271,29 @@ const RuleEngine = {
       }
       if (/\binitiative\b/.test(p)) return ['initiative'];
       if (/resist\s+(?:being\s+)?(?:bull\s+rush|trip)/.test(p)) return ['cmd.stability'];
-      if (/\bgrapple\b/.test(p)) return ['grapple'];
+      if ((/\bgrapple\s+(?:checks?|rolls?|attempts?)\b|\b(?:on|to)\s+grapple\b/.test(p) || /^grapple$/.test(p.trim())) && !/escape\s+artist|attack\s+and\s+damage/.test(p)) return ['grapple'];
+      if (/\b(?:fly\s+speed|swim\s+speed|climb\s+speed|burrow\s+speed|(?:base\s+)?(?:land\s+)?speed)\b/.test(p)) {
+        if (/fly\s+speed/.test(p)) return ['speed.fly'];
+        if (/swim\s+speed/.test(p)) return ['speed.swim'];
+        if (/climb\s+speed/.test(p)) return ['speed.climb'];
+        if (/burrow\s+speed/.test(p)) return ['speed.burrow'];
+        return ['speed.land'];
+      }
       if (/attack\s+(?:and\s+(?:weapon\s+)?damage|rolls?\s+and\s+(?:weapon\s+)?damage)/.test(p)) {
         return /melee/.test(p) ? ['atk.melee', 'dmg.melee'] : (/ranged/.test(p) ? ['atk.ranged', 'dmg.ranged'] : ['atk.all', 'dmg.all']);
       }
       if (/attack\s+rolls?/.test(p)) {
         return /melee/.test(p) ? ['atk.melee'] : (/ranged|thrown/.test(p) ? ['atk.ranged'] : ['atk.all']);
       }
-      if (/damage\s+rolls?/.test(p)) {
-        return /melee/.test(p) ? ['dmg.melee'] : (/ranged/.test(p) ? ['dmg.ranged'] : ['dmg.all']);
+      if (/damage(?:\s+rolls?)?/.test(p) && !/damage\s+reduction/.test(p)) {
+        return /melee/.test(p) ? ['dmg.melee'] : (/ranged|thrown/.test(p) ? ['dmg.ranged'] : ['dmg.all']);
       }
       const matchedSkills = Object.keys(SKILL_MAP).filter(sk => new RegExp('\\b' + sk + '\\b', 'i').test(p));
       if (matchedSkills.length > 0) return matchedSkills.map(sk => 'skill.' + SKILL_MAP[sk]);
       for (const [word, key] of Object.entries(AB_MAP)) {
-        if (word.length >= 4 && new RegExp('\\b' + word + '\\b', 'i').test(p) && !/check/.test(p)) return [key];
+        if (word.length >= 4 && new RegExp('\\b' + word + '\\b', 'i').test(p) && !/checks?|insufficient|attacks?\s+with/.test(p.replace(new RegExp(word + '[- ]based', 'ig'), ''))) {
+          return [key];
+        }
       }
       return [];
     };
@@ -5225,6 +5352,7 @@ const RuleEngine = {
         }],
         text: cleanProse
       });
+      recordSpan(0, cleanProse.length);
     }
 
     // 2. A -> B Stat / Formula Substitution ("use your Wisdom modifier instead of your Dexterity modifier on ranged attack rolls")
@@ -5235,15 +5363,15 @@ const RuleEngine = {
       const rel = swapM[3].toLowerCase();
       const explicitFrom = swapM[4] ? AB_MAP[swapM[4].toLowerCase()] : null;
       const tail = swapM[5].toLowerCase();
-      const subOp = /in\s+addition|^to$/.test(rel) && verb === 'add' ? 'add' : (/^(?:may|can)\b/.test(verb) ? 'max' : 'max');
+      const subOp = /in\s+addition|^to$/.test(rel) && verb === 'add' ? 'add' : 'max';
       let swapTarget = null, defaultFrom = 'dex', swapScope = 'all';
       if (/thrown.*attack|attack.*thrown/.test(tail)) { swapTarget = 'atk.thrown.abilityMod'; defaultFrom = 'dex'; swapScope = 'thrown'; }
-      else if (/ranged\s+attack/.test(tail)) { swapTarget = 'atk.ranged.abilityMod'; defaultFrom = 'dex'; }
+      else if (/ranged\s+attack/.test(tail)) { swapTarget = 'atk.ranged.abilityMod'; defaultFrom = 'dex'; if (/bow|crossbow/.test(tail)) swapScope = 'bow_or_crossbow'; }
       else if (/melee\s+attack|attack\s+rolls/.test(tail)) {
         swapTarget = 'atk.melee.abilityMod'; defaultFrom = 'str';
         if (/simple|natural/.test(tail)) swapScope = 'simple_or_natural';
         else if (/light|finesse|rapier/.test(tail)) swapScope = 'finessable';
-      } else if (/melee\s+damage/.test(tail)) { swapTarget = 'dmg.melee.abilityMod'; defaultFrom = 'str'; }
+      } else if (/melee\s+damage/.test(tail)) { swapTarget = 'dmg.melee.abilityMod'; defaultFrom = 'str'; if (/shadow\s+hand|discipline/.test(tail)) swapScope = 'discipline_weapons'; }
       else if (/will\s+sav/.test(tail)) { swapTarget = 'save.will.abilityMod'; defaultFrom = 'wis'; if (/mind[-\s]affecting/.test(tail)) swapScope = 'mind_affecting'; }
       else if (/reflex\s+sav/.test(tail)) { swapTarget = 'save.ref.abilityMod'; defaultFrom = 'dex'; }
       else if (/fortitude\s+sav/.test(tail)) { swapTarget = 'save.fort.abilityMod'; defaultFrom = 'con'; }
@@ -5267,13 +5395,16 @@ const RuleEngine = {
           swapScope,
           btype: 'Untyped'
         });
+        recordSpan(swapM.index, swapM[0].length);
       }
     }
 
     // 3. @Choice Player Bindings (Weapon Focus / Skill Focus / Spell Focus)
     let handledChoiceBonus = false;
-    if (/\bchoose\s+(?:one\s+type\s+of\s+|a\s+)?weapon\b/i.test(cleanProse) && /\+?\s*(\d+)\s+bonus\s+on\s+(?:all\s+)?attack\s+rolls/i.test(cleanProse)) {
-      const val = Number(cleanProse.match(/\+?\s*(\d+)\s+bonus\s+on\s+(?:all\s+)?attack\s+rolls/i)[1]) || 1;
+    const wfChooseM = cleanProse.match(/\bchoose\s+(?:one\s+type\s+of\s+|a\s+)?weapon\b/i);
+    const wfBonusM = cleanProse.match(/\+?\s*(\d+)\s+bonus\s+on\s+(?:all\s+)?attack\s+rolls[^.]*/i);
+    if (wfChooseM && wfBonusM) {
+      const val = Number(wfBonusM[1]) || 1;
       choices.push({ id: 'ch-weapon', key: 'weapon', label: 'Chosen Weapon', count: 1 });
       effects.push({
         type: 'when',
@@ -5284,13 +5415,20 @@ const RuleEngine = {
           effects: [{ type: 'stat', targets: ['atk.weapon'], mode: 'flat', value: val, btype: 'Untyped' }]
         }]
       });
+      recordSpan(wfChooseM.index, wfChooseM[0].length);
+      recordSpan(wfBonusM.index, wfBonusM[0].length);
       handledChoiceBonus = true;
     } else if (/\bchoose\s+a\s+skill\b/i.test(cleanProse) && /\+(\d+)\s+bonus\s+on\s+all\s+checks/i.test(cleanProse)) {
-      const val = Number(cleanProse.match(/\+(\d+)\s+bonus\s+on\s+all\s+checks/i)[1]) || 3;
+      const chM = cleanProse.match(/\bchoose\s+a\s+skill\b/i);
+      const bnM = cleanProse.match(/\+(\d+)\s+bonus\s+on\s+all\s+checks[^.]*/i);
+      const val = Number(bnM[1]) || 3;
       choices.push({ id: 'ch-skill', key: 'skill', label: 'Chosen Skill', count: 1 });
       effects.push({ type: 'stat', targets: ['choice.skill.1'], mode: 'flat', value: val, btype: 'Untyped' });
+      recordSpan(chM.index, chM[0].length);
+      recordSpan(bnM.index, bnM[0].length);
       handledChoiceBonus = true;
     } else if (/school\s+of\s+magic\s+you\s+select/i.test(cleanProse) && /\+(\d+)\s+to\s+the\s+(?:Difficulty\s+Class|DC)/i.test(cleanProse)) {
+      const scM = cleanProse.match(/[^.]*school\s+of\s+magic\s+you\s+select[^.]*/i);
       const val = Number(cleanProse.match(/\+(\d+)\s+to\s+the\s+(?:Difficulty\s+Class|DC)/i)[1]) || 1;
       choices.push({ id: 'ch-school', key: 'school', label: 'Chosen Spell School', count: 1 });
       effects.push({
@@ -5302,12 +5440,13 @@ const RuleEngine = {
           effects: [{ type: 'stat', targets: ['spell.dc'], mode: 'flat', value: val, btype: 'Untyped' }]
         }]
       });
+      if (scM) recordSpan(scM.index, scM[0].length);
       handledChoiceBonus = true;
     }
 
     // 4. Base + CL-Capped Scaling Bonus ("+2 deflection bonus to AC, with an additional +1 ... for every six caster levels ... maximum +5")
     let handledClScale = false;
-    const baseCapScaleM = cleanProse.match(/\+(\d+)\s+([a-z ]+?)?\s*bonus\s+(?:to|on)\s+([^,.;()]+?),\s*(?:with\s+)?an\s+additional\s+\+(\d+)(?:\s+to\s+the\s+bonus)?\s+for\s+every\s+(\d+|two|three|four|five|six)\s+caster\s+levels[^.;()]*?\((?:maximum|max)\s+\+?(\d+)/i);
+    const baseCapScaleM = cleanProse.match(/\+(\d+)\s+([a-z ]+?)?\s*bonus\s+(?:to|on)\s+([^,.;()]+?),\s*(?:with\s+)?an\s+additional\s+\+(\d+)(?:\s+to\s+the\s+bonus)?\s+for\s+every\s+(\d+|two|three|four|five|six)\s+caster\s+levels[^.;()]*?\((?:maximum|max)\s+\+?(\d+)[^)]*\)/i);
     if (baseCapScaleM) {
       const base = Number(baseCapScaleM[1]) || 2;
       const btype = this._canonicalizeV3BonusType(baseCapScaleM[2], base);
@@ -5325,6 +5464,7 @@ const RuleEngine = {
           formula: `${base} + min(${maxExtra}, ${stepExpr})`,
           btype
         });
+        recordSpan(baseCapScaleM.index, baseCapScaleM[0].length);
         handledClScale = true;
       }
     } else {
@@ -5339,12 +5479,43 @@ const RuleEngine = {
         const maxV = perClM[6] ? Number(perClM[6]) : stepVal * 5;
         if (tgs.length > 0) {
           effects.push({ type: 'stat', targets: tgs, mode: 'perCL', value: stepVal, per, min: minV, max: maxV, btype });
+          recordSpan(perClM.index, perClM[0].length);
           handledClScale = true;
         }
       }
     }
 
-    // 5. Flat & Conditional Bonuses / Penalties (handles compound "and a +2..." clauses cleanly)
+    // False-positive guard for bonus/penalty phrases (parity with tools/lib/v3_block_generator.js `checkFalsePositiveGuard`)
+    const isRejectedBonusPhrase = (phrase, signedVal, tgs, btypeCanon) => {
+      if (phrase.includes('|')) return true;
+      if (isPassiveContainer && /\b(?:for\s+\d+\s+(?:rounds?|minutes?|hours?)|until\s+the\s+(?:start|end|beginning)\s+of\s+(?:your|her|his)\s+next\s+(?:turn|action)|before\s+the\s+start\s+of\s+your\s+next\s+turn)\b/i.test(phrase)) {
+        return true;
+      }
+      if (/\b(?:they\s+flee|their\s+(?:will|fortitude|reflex|saving|saves?|attack)|its\s+(?:saving\s+throw|hide\s+checks?|attack|ac|checks?)|makes\s+it\s+hostile|remove\s+curse|opponents?|enemies|foes?|creatures?\s+within|victim|all\s+adjacent\s+enemies|against\s+(?:her|him|you|the\s+wearer|the\s+wielder)|due\s+to\s+cover|this\s+attack\s+roll|pull\s+someone\s+in)\b/i.test(phrase)) {
+        return true;
+      }
+      if (signedVal < 0 && (/[…]$|\.\.\.$/.test(phrase.trim()) || /\b(?:ignore|ignores|ignored|negate|negates|do\s+not\s+take|does\s+not\s+take|don't\s+take|without\s+(?:taking|suffering|incurring|a|the)|no\s+longer\s+(?:take|suffer)|reduces?\s+the|taking\s+no|suffer\s+no|no)\s+[^.;]{0,35}(?:penalty|-\s?\d+|–\s?\d+)/i.test(lowProse))) {
+        return true;
+      }
+      if (signedVal < 0 && /\b(?:enemies|opponents?|foes?|creatures?\s+within|aura\s+of|targets?\s+(?:take|suffer)|subjects?\s+(?:take|suffer)|without\s+(?:these|such|artisan|proper)\s+tools?|improvised\s+tools?|not\s+proficient|unless\s+the\s+wielder)\b/i.test(lowProse) && bp !== 'buff') {
+        return true;
+      }
+      if (/\b(?:worst\s+save|lowest\s+save|specific\s+type\s+of|chosen\s+skill|selected\s+skill)\b/i.test(phrase)) {
+        return true;
+      }
+      if (tgs.some(t => t.startsWith('atk.') || t.startsWith('dmg.')) && /\b(?:opposed\s+attack|disarm|trip|sunder|bull\s+rush|overrun|improvised|nonproficient|insufficient)\b/i.test(phrase)) {
+        return true;
+      }
+      if (bp === 'race' && tgs.length === 1 && tgs[0] === 'skill.hide' && (btypeCanon === 'Untyped' || btypeCanon === 'Size') && /\b(?:small\s+size|tiny\s+size|smaller\s+weapon\s+dice|carrying\s+capacity)\b/i.test(lowProse)) {
+        return true;
+      }
+      if (tgs.some(t => ['str', 'dex', 'con', 'int', 'wis', 'cha'].includes(t)) && /\b(?:each\s+creature\s+you\s+conjure|summoned\s+creatures?|creatures?\s+summoned)\b/i.test(lowProse)) {
+        return true;
+      }
+      return false;
+    };
+
+    // 5. Flat & Conditional Bonuses / Penalties (handles compound "and a +2..." + inverted "bonus to speed of +30 feet")
     if (!handledChoiceBonus && !handledClScale) {
       const bTypes = 'racial|competence|insight|luck|morale|sacred|profane|enhancement|deflection|dodge|natural armor|circumstance|resistance|untyped|alchemical|armor|shield|size|inherent|exalted|perfection';
       const reBonus = new RegExp(
@@ -5352,60 +5523,115 @@ const RuleEngine = {
         '([^.;:()]{3,140}?)(?=\\s*(?:[,;]|\\band\\b|\\bplus\\b|\\bor\\b|\\bwith\\b)?\\s*(?:a\\s+|an\\s+|another\\s+)?[+\\-–−]\\s?\\d+\\s+(?:(?:' + bTypes + ')\\s+)?(?:bonus|penalty)\\b|[.;:()]|$)',
         'gi'
       );
+      const rawBonusHits = [];
       let bm;
       while ((bm = reBonus.exec(cleanProse))) {
+        const fullPhrase = bm[0];
         const rawNum = Number(bm[1].replace(/[–−]/, '-').replace(/\s+/g, ''));
         if (!Number.isFinite(rawNum) || rawNum === 0) continue;
         const signedVal = bm[3].toLowerCase() === 'penalty' ? -Math.abs(rawNum) : rawNum;
         const btype = this._canonicalizeV3BonusType(bm[2], signedVal);
         const tail = bm[4].replace(/\s*,?\s*\b(?:and|or|plus)\s*$/i, '').trim();
-        const cut = tail.split(/\s+(?:against|vs\.?|versus|when|while|if|during)\b/i);
+        const cut = tail.split(/\s+(?:against|vs\.?|versus|when|while|if|during|made|to\s+resist)\b/i);
         const tgs = resolveTargetsFromPhrase(cut[0], btype);
         if (tgs.length === 0) continue;
         const qual = cut.length > 1 ? tail.slice(cut[0].length).trim() : '';
-        const stBlock = { type: 'stat', targets: tgs, mode: 'flat', value: signedVal, btype };
-        effects.push(wrapQualifier(stBlock, qual));
+        // Context check for timed activation in the surrounding sentence
+        const sentCtx = cleanProse.slice(Math.max(0, bm.index - 60), Math.min(cleanProse.length, bm.index + fullPhrase.length + 60));
+        if (isRejectedBonusPhrase(sentCtx, signedVal, tgs, btype)) continue;
+        rawBonusHits.push({ tgs, signedVal, btype, qual, index: bm.index, len: fullPhrase.length });
+      }
+      // Multi-tier ambiguity guard: skip if multiple distinct values target the exact same target + qualifier
+      rawBonusHits.forEach((h) => {
+        const key = h.tgs.join(',') + '|' + h.qual.toLowerCase();
+        const distinctVals = new Set(rawBonusHits.filter(x => (x.tgs.join(',') + '|' + x.qual.toLowerCase()) === key).map(x => x.signedVal));
+        if (distinctVals.size > 1) return;
+        const stBlock = { type: 'stat', targets: h.tgs, mode: 'flat', value: h.signedVal, btype: h.btype };
+        effects.push(wrapQualifier(stBlock, h.qual));
+        recordSpan(h.index, h.len);
+      });
+
+      // Inverted speed phrasing ("an enhancement bonus to speed of +30 feet")
+      const invSpeedM = cleanProse.match(/\b(?:an?\s+)?(enhancement|alchemical|untyped|morale|insight)?\s*bonus\s+to\s+(?:(?:base\s+)?(?:land\s+)?|(fly|swim|climb|burrow)\s+)speed\s+of\s+\+?(\d+)\s*(?:ft\.?|feet)/i);
+      if (invSpeedM) {
+        const spTarget = invSpeedM[2] ? `speed.${invSpeedM[2].toLowerCase()}` : 'speed.land';
+        if (!effects.some(b => b.type === 'stat' && Array.isArray(b.targets) && b.targets.includes(spTarget))) {
+          const spVal = Number(invSpeedM[3]) || 10;
+          effects.push({ type: 'stat', targets: [spTarget], mode: 'flat', value: spVal, btype: this._canonicalizeV3BonusType(invSpeedM[1], spVal) });
+          recordSpan(invSpeedM.index, invSpeedM[0].length);
+        }
       }
 
-      const addDcM = cleanProse.match(/\bAdd\s+\+(\d+)\s+to\s+the\s+(?:Difficulty\s+Class|DC)\b/i);
+      const addDcM = cleanProse.match(/\bAdd\s+\+(\d+)\s+to\s+the\s+(?:Difficulty\s+Class|DC)[^.]*/i);
       if (addDcM && !effects.some(x => x.type === 'stat' && (x.targets || []).includes('spell.dc'))) {
         effects.push({ type: 'stat', targets: ['spell.dc'], mode: 'flat', value: Number(addDcM[1]) || 1, btype: 'Untyped' });
+        recordSpan(addDcM.index, addDcM[0].length);
       }
     }
 
-    // 6. Defenses & Senses (DR, SR, Energy Resistance, Immunity, Darkvision / Low-Light / Blindsense)
-    const reDr = /\b(?:damage reduction|DR)\s+(\d+)\s*\/\s*([a-z—\-][a-z+\- ]*?)(?=[.,;:)]|\s+(?:and\s+(?:spell|damage|SR\b|DR\b|immun|resist|darkvision|low-light|fast|a\s+|an\s+)|when\b|while\b|if\b)|$)/gi;
+    // 6. Defenses & Senses (DR, SR, Energy Resistance, Immunity, Darkvision / Low-Light / Blindsense) with false-positive guards
+    const validDrBypass = /^(?:—|-|magic|silver|cold\s+iron|adamantine|good|evil|lawful|chaotic|epic|bludgeoning|piercing|slashing|psionics)(?:\s+(?:and|or)\s+(?:magic|silver|cold\s+iron|adamantine|good|evil|lawful|chaotic|epic|bludgeoning|piercing|slashing|psionics))*$/i;
+    const reDr = /\b(?:damage reduction|DR)\s+(\d+)\s*\/\s*([a-z—\-][a-z+\- ]*?)(?=[.,;:)]|\s+(?:and\s+(?:spell|damage|SR\b|DR\b|immun|resist|darkvision|low-light|fast|a\s+|an\s+)|when\b|while\b|if\b|in\b|at\b|from\b)|$)/gi;
     let dm;
-    while ((dm = reDr.exec(cleanProse))) {
-      const bypass = dm[2].replace(/\s+\b(?:and|or)\s*$/i, '').trim();
-      effects.push({ type: 'defense', mode: 'DR', value: Number(dm[1]) || 5, what: bypass });
+    if (!/\b(?:overcome|overcomes|bypass|bypasses|penetrate|penetrates|ignore|ignores|cuts?\s+through)\s+[^.;]{0,30}(?:damage\s+reduction|dr)\b/i.test(lowProse)) {
+      while ((dm = reDr.exec(cleanProse))) {
+        const bypass = dm[2].replace(/\s+\b(?:and|or|as\s+well)\s*$/i, '').trim();
+        if (!validDrBypass.test(bypass)) continue;
+        effects.push({ type: 'defense', mode: 'DR', value: Number(dm[1]) || 5, what: bypass });
+        recordSpan(dm.index, dm[0].length);
+      }
     }
     const reSr = /\bspell resistance\s+(?:of\s+|equal to\s+)?(\d+)\b|\bSR\s+(\d+)\b/gi;
     while ((dm = reSr.exec(cleanProse))) {
-      effects.push({ type: 'defense', mode: 'Spell Resistance', srMode: 'flat', value: Number(dm[1] || dm[2]) || 10, what: 'Magic' });
+      const srVal = Number(dm[1] || dm[2]) || 10;
+      const afterSr = cleanProse.slice(dm.index + dm[0].length, dm.index + dm[0].length + 10);
+      if (/^\s*\+/.test(afterSr)) continue; // Skip truncated "10 + level" formula in flat SR matcher
+      if (/\b(?:magic\s+items?|objects?|targets?)\s+(?:have|get|receive)\s+spell\s+resistance\b/i.test(lowProse)) continue;
+      effects.push({ type: 'defense', mode: 'Spell Resistance', srMode: 'flat', value: srVal, what: 'Magic' });
+      recordSpan(dm.index, dm[0].length);
     }
     const reRes = /\b(?:resistance\s+(?:to\s+)?(acid|cold|electricity|fire|sonic)\s+(\d+)|(acid|cold|electricity|fire|sonic)\s+resistance\s+(\d+))\b/gi;
     while ((dm = reRes.exec(cleanProse))) {
       const en = (dm[1] || dm[3]);
       const val = Number(dm[2] || dm[4]) || 5;
       effects.push({ type: 'defense', mode: 'Energy Resistance', what: en[0].toUpperCase() + en.slice(1).toLowerCase(), value: val });
+      recordSpan(dm.index, dm[0].length);
     }
     const reImm = /\bimmun(?:e|ity)\s+to\s+([a-z ,\-]+?)(?=[.;:()]|\s+(?:and\s+(?:a\s+|\+\d|gains?|has\b)|but\b)|$)/gi;
     while ((dm = reImm.exec(cleanProse))) {
+      if (/\b(?:unaffected|cannot\s+be\s+affected|no\s+effect\s+on)\b/i.test(lowProse) && ['spell', 'weapon'].includes(bp)) continue;
       const rawItems = dm[1].replace(/\beffects?\b/gi, '').split(/\s*(?:,|\band\b)\s*/).map(s => s.trim()).filter(Boolean);
+      let anyImm = false;
       rawItems.forEach((it) => {
+        if (it.length < 3 || it.length > 36) return;
+        if (/\b(?:if|when|while|unless|because|she|he|they|you|can|may|actually|only|but|cannot|unaffected|affected|until|next\s+turn|this\s+spell|this\s+weapon|this\s+effect|this\s+ability|for\s+\d+)\b/i.test(it)) return;
+        if (/^(?:it|this|that|them|the|a|an|all|any|such|other|normal|the\s+\w+)$/i.test(it)) return;
+        const escImm = it.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        if (new RegExp('(?:creatures?|targets?|foes?|opponents?|beings?|undead|constructs?|normally)\\s+(?:that\\s+are\\s+)?immune\\s+to\\s+' + escImm, 'i').test(lowProse)) return;
         const titleIt = it.charAt(0).toUpperCase() + it.slice(1);
         effects.push({ type: 'defense', mode: 'Immunity', what: titleIt });
+        anyImm = true;
       });
+      if (anyImm) recordSpan(dm.index, dm[0].length);
     }
     const reSense = /\b(darkvision|low-light vision|blindsense|blindsight|tremorsense)\b(?:\s+(?:out\s+to|to\s+a\s+range\s+of|with\s+a\s+range\s+of|of)?\s*(\d+)\s*(?:ft\.?|feet))?|(\d+)[- ](?:ft\.?|foot|feet)\s+(darkvision|blindsense|blindsight|tremorsense)/gi;
+    const rawSenses = [];
     while ((dm = reSense.exec(cleanProse))) {
-      if (/\b(?:no|lacks?|without|loses?)\s*$/i.test(cleanProse.slice(Math.max(0, dm.index - 20), dm.index))) continue;
+      const before = cleanProse.slice(Math.max(0, dm.index - 36), dm.index);
+      if (/\b(?:no|not|lacks?|without|loses?|do\s+not\s+have|does\s+not\s+have|don't\s+have)\s+(?:(?:a|an|the|any|natural|normal|racial)\s+){0,2}$/i.test(before)) continue;
       const kindRaw = (dm[1] || dm[4]).toLowerCase();
-      const dist = dm[2] || dm[3];
-      const titleKind = kindRaw.split(/([- ])/).map(w => /^[a-z]/.test(w) ? w[0].toUpperCase() + w.slice(1) : w).join('');
-      effects.push({ type: 'defense', mode: 'Sense / Movement', what: dist ? `${titleKind} ${dist} ft.` : titleKind });
+      const escS = kindRaw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      if (new RegExp('(?:hide|hidden|conceal|invisible|undetectable|imperceptible|defeat|foil|fool|cannot\\s+detect|can\'t\\s+detect|immune\\s+to|blocks?|negates?|prevents?|creatures?\\s+with|foes?\\s+with|such\\s+as)\\s+[^.;]{0,50}' + escS, 'i').test(lowProse)) continue;
+      const dist = dm[2] || dm[3] ? Number(dm[2] || dm[3]) : null;
+      if (kindRaw !== 'low-light vision' && !dist) continue;
+      rawSenses.push({ kindRaw, dist, index: dm.index, len: dm[0].length });
     }
+    rawSenses.forEach((sn) => {
+      if (!sn.dist && rawSenses.some(o => o !== sn && o.kindRaw === sn.kindRaw && o.dist)) return;
+      const titleKind = sn.kindRaw.split(/([- ])/).map(w => /^[a-z]/.test(w) ? w[0].toUpperCase() + w.slice(1) : w).join('');
+      effects.push({ type: 'defense', mode: 'Sense / Movement', what: sn.dist ? `${titleKind} ${sn.dist} ft.` : titleKind });
+      recordSpan(sn.index, sn.len);
+    });
 
     // 7. Extra Weapon / Attack Dice ("deals an extra 2d6 points of holy damage against creatures of evil alignment")
     if (!hasDcOrRecharge) {
@@ -5423,6 +5649,7 @@ const RuleEngine = {
           scaling: 'flat'
         };
         effects.push(wrapQualifier(rBlk, dm[5] || ''));
+        recordSpan(dm.index, dm[0].length);
       }
     }
 
@@ -5445,6 +5672,7 @@ const RuleEngine = {
         costMode: suddenMetaM ? 'sudden' : 'slot',
         transform
       });
+      recordSpan(0, cleanProse.length);
     }
 
     // 9. Daily / Encounter Resource & SLA ("3/day—scorching ray" or "three times per day")
@@ -5471,24 +5699,61 @@ const RuleEngine = {
           action: 'Standard',
           usage: { mode: 'resourcePool', pool: poolName, cost: 1 }
         });
-      } else {
-        const dayPoolM = cleanProse.match(/\b(\d+|once|twice|three\s+times|four\s+times|five\s+times)\s*(?:times\s*)?(?:per\s+day|\/day|a\s+day)\b/i);
+        recordSpan(slaM.index, slaM[0].length);
+      } else if (!['spell', 'buff'].includes(bp)) {
+        const dayPoolM = cleanProse.match(/\b(\d+|once|twice|three\s+times|four\s+times|five\s+times)\s*(?:times\s*)?(?:per\s+day|\/day|a\s+day|each\s+day)\b/i);
         const encPoolM = !dayPoolM ? cleanProse.match(/\b(\d+|once|twice)\s*(?:times\s*)?per\s+encounter\b/i) : null;
-        if (dayPoolM || encPoolM) {
-          const uses = parseWordNum((dayPoolM || encPoolM)[1]);
-          const reset = encPoolM ? 'perEncounter' : 'perDay';
-          const pName = inferredName ? `${inferredName} Uses` : 'Uses';
-          effects.push({
-            type: 'resource',
-            name: pName,
-            varKey: slugify(pName, 'uses').replace(/-/g, '_'),
-            resMode: 'spend',
-            scaling: 'flat',
-            max: uses,
-            reset
-          });
+        if ((dayPoolM || encPoolM) && !/\b(?:more\s+than|at\s+most|no\s+more\s+than)\s+(?:once|twice|\d+\s+times?)\s+per\s+day\b/i.test(lowProse)) {
+          const hitM = dayPoolM || encPoolM;
+          const uses = parseWordNum(hitM[1]);
+          if (uses >= 1 && uses <= 20) {
+            const reset = encPoolM ? 'perEncounter' : 'perDay';
+            const pName = inferredName ? `${inferredName} Uses` : 'Uses';
+            effects.push({
+              type: 'resource',
+              name: pName,
+              varKey: slugify(pName, 'uses').replace(/-/g, '_'),
+              resMode: 'spend',
+              scaling: 'flat',
+              max: uses,
+              reset
+            });
+            recordSpan(hitM.index, hitM[0].length);
+          }
         }
       }
+    }
+
+    // Clause-level coverage diagnostics (prevents swallowing complex trailing clauses in multi-sentence rules)
+    const matchedClauses = [];
+    const unparsedClauses = [];
+    let searchCursor = 0;
+    rawClauses.forEach((cl) => {
+      const idx = cleanProse.indexOf(cl, searchCursor);
+      const cStart = idx >= 0 ? idx : searchCursor;
+      const cEnd = cStart + cl.length;
+      if (idx >= 0) searchCursor = cEnd;
+      const hit = matchedSpans.some(([s, e]) => s < cEnd && e > cStart);
+      if (hit) matchedClauses.push(cl);
+      else unparsedClauses.push(cl);
+    });
+
+    const MECH_SIGNAL_RX = /\b(?:bonus|penalty|\d+d\d+|[+\-–−]\d+|swift\s+action|immediate\s+action|move\s+action|standard\s+action|full-round\s+action|free\s+action|extra\s+(?:melee\s+|ranged\s+)?attack|additional\s+attack|saving\s+throw|fortitude|reflex|(?<!\bat\s)will\s+save|armor\s+class|\bac\b|reroll|immun(?:e|ity)|resistance|damage\s+reduction|spell\s+resistance|instead\s+of|in\s+place\s+of|temporary\s+hit\s+points?|fast\s+healing|regeneration|touch\s+attack|ray\s+of)\b/i;
+    const mechanicalUnparsedClauses = unparsedClauses.filter(cl => MECH_SIGNAL_RX.test(cl));
+
+    const hasRealMech = (
+      powers.length > 0 ||
+      choices.length > 0 ||
+      effects.some(b => b && !(b.type === 'effect' && b.effectKind === 'rule'))
+    );
+
+    if (opts.preserveUnparsedAsRuleBlocks && hasRealMech && mechanicalUnparsedClauses.length > 0) {
+      effects.push({
+        type: 'effect',
+        effectKind: 'rule',
+        label: 'Additional Rule Clause',
+        text: mechanicalUnparsedClauses.join(' ').slice(0, 280)
+      });
     }
 
     // Fallback descriptive rule block when prose has rule text but no numeric block matched
@@ -5502,7 +5767,7 @@ const RuleEngine = {
     }
 
     const finalName = inferredName || 'Scribed Rule';
-    return this.sanitizeV3Entry({
+    const entry = this.sanitizeV3Entry({
       schemaVersion: 3,
       id: opts.id || `${bp === 'spell' ? 'spl' : (bp === 'race' ? 'race' : (bp === 'domain' ? 'dom' : 'feat'))}-${slugify(finalName)}`,
       blueprint: bp,
@@ -5515,6 +5780,22 @@ const RuleEngine = {
       effects,
       ...(powers.length ? { powers } : {})
     }, { defaultBlueprint: bp, fallbackName: finalName });
+
+    const coverage = !hasRealMech ? 'none' : (mechanicalUnparsedClauses.length > 0 ? 'partial' : 'full');
+    return {
+      entry,
+      hasRealMech,
+      coverage,
+      matchedClauses,
+      unparsedClauses,
+      mechanicalUnparsedClauses
+    };
+  },
+
+  // Layer 1 Deterministic Parser (<0.3 ms, 0 Tokens): "Scribe from Text" RAW English -> Pure Canonical V3 Entry
+  parseRuleTextToV3(rawText, opts = {}) {
+    const res = this.scribeRuleText(rawText, opts);
+    return res ? res.entry : null;
   },
 
   // Feat-list rows that are not feats: UA character traits (UA p.86) and Complete Scoundrel skill tricks

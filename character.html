@@ -2559,7 +2559,7 @@
                 <option value="Deity">Deities &amp; Patrons</option>
                 <option value="Domain">Cleric Domains</option>
                 <option value="Race">Races</option>
-                <option value="Homebrew">Homebrew (V2.5)</option>
+                <option value="Homebrew">Homebrew</option>
                 <option value="DM Grant">DM Grants / Boons</option>
               </select>
               <select id="mdb-eligibility-filter" data-change-action="mdb:render-table" class="h-8 flex-1 sm:flex-none min-w-0 bg-slate-950/95 border border-emerald-500/40 rounded-lg px-2 text-xs text-emerald-200 font-semibold focus:outline-none cursor-pointer truncate" title="Filter entries by active character eligibility and synergy prerequisites">
@@ -2822,7 +2822,7 @@
                     <span>🧙‍♂️🤖 Rule Master Assistant</span>
                     <span class="badge bg-purple-950 text-purple-300 border border-purple-800 text-[10px]">RAW 3.5e</span>
                   </h3>
-                  <p class="text-[11px] text-slate-400">Scans D&D 3.5e Core SRD, Splatbooks, and parametric rule knowledge into V2 schema.</p>
+                  <p class="text-[11px] text-slate-400">Scans D&D 3.5e Core SRD, Splatbooks, and parametric rule knowledge into Pure Canonical V3 schema.</p>
                 </div>
               </div>
 
@@ -2949,7 +2949,7 @@
           <div id="ai-loading-indicator" class="hidden bg-slate-900/80 border border-purple-500/40 rounded-xl p-6 text-center space-y-3">
             <div class="inline-block w-8 h-8 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
             <div class="text-xs font-bold text-purple-300" id="ai-loading-status-text">Scanning rule compendiums... Local Catalog -> Core SRD -> Splatbooks...</div>
-            <div class="text-[11px] text-slate-400">Rule Master is converting the rule into RAW 3.5e V2 schema...</div>
+            <div class="text-[11px] text-slate-400">Rule Master is converting the rule into RAW 3.5e Pure Canonical V3 schema...</div>
           </div>
 
           <!-- 4. AI RESULTS CONTAINER -->
@@ -2967,7 +2967,7 @@
                     <span>🧙‍♂️🤖 Rule Master Free-Text Rule Parser</span>
                     <span class="badge bg-indigo-950 text-indigo-300 border border-indigo-700 text-[10px]">PDF / OCR / Rulebook Text</span>
                   </h4>
-                  <p class="text-[10px] text-slate-400">Paste raw rule text copied from a book or PDF; Rule Master will parse it into the V2 schema.</p>
+                  <p class="text-[10px] text-slate-400">Paste raw rule text copied from a book or PDF; Rule Master will parse it into Pure Canonical V3 schema.</p>
                 </div>
               </div>
               <div class="flex items-center gap-1.5 text-[10px]">
@@ -3483,13 +3483,13 @@
   <script defer src="supabase_auth.js?v=47247ea179"></script>
   <!-- data-srd-autoinit: srd_compendium.js starts SrdCompendium.init() as soon as it runs. -->
   <script defer src="srd_compendium.js?v=4652bc4668" data-srd-autoinit></script>
-  <script defer src="rule_engine.js?v=6ce5b87cd8"></script>
+  <script defer src="rule_engine.js?v=77ab139978"></script>
   <script defer src="char_store.js?v=85b55fc3f1"></script>
   <!-- ui_components.js stays blocking on purpose: it has no dependencies, and while the document is
        still loading it binds the data-action router on DOMContentLoaded, after the outside-click
        listeners the deferred scripts register. Deferring it would bind the router first. -->
   <script src="ui_components.js?v=3428989c09"></script>
-  <script defer src="rule_master.js?v=3c72e19c1d"></script>
+  <script defer src="rule_master.js?v=46f5c286d8"></script>
   <script defer src="ui_shared.js?v=d131f19175"></script>
   <script defer src="campaign_db.js?v=1e45440d78"></script>
   <script defer src="hub_notes.js?v=a275652b58"></script>
@@ -3612,7 +3612,7 @@
           <span id="modal-mdb-editor-icon" class="text-xl shrink-0">🎖️</span>
           <div class="min-w-0">
             <h3 id="modal-mdb-editor-title" class="text-sm md:text-base font-extrabold text-white truncate">Master DB Entry Editor • D&amp;D 3.5e RAW</h3>
-            <p id="modal-mdb-editor-subtitle" class="text-[10px] text-purple-300 font-mono truncate">Canonical V2 Schema • Modifiers, Combat Effects &amp; Description</p>
+            <p id="modal-mdb-editor-subtitle" class="text-[10px] text-purple-300 font-mono truncate">Pure Canonical V3 Schema • Rule Blocks, Combat Effects &amp; Description</p>
           </div>
         </div>
         <button type="button" data-action="mdb:close-editor-modal" class="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-2.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer shrink-0">&times; Close</button>

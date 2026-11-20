@@ -2659,10 +2659,11 @@ function runDeriveSheetTests() {
     promptMatches.length === 0
   );
 
-  const skillOptionMatches = rmSrc.match(/\bv:\s*'skill\.[a-z_]+'/g) || [];
+  const canonicalSkillsCount = (Array.isArray(RuleEngine._V3_CANONICAL_SKILLS) ? RuleEngine._V3_CANONICAL_SKILLS.length : 0)
+    + (RuleEngine.resolveCanonicalV3Target('skill.all').ok ? 1 : 0);
   check(
-    `Phase R8.1: RuleMaster modifier target selector includes all 36 official D&D 3.5e skills + skill.all (actual=${skillOptionMatches.length})`,
-    skillOptionMatches.length >= 37
+    `Phase R8.1: Pure V3 modifier target catalog includes all official D&D 3.5e skills + skill.all (actual=${canonicalSkillsCount})`,
+    canonicalSkillsCount >= 37 && /DND35_CANONICAL_SKILLS:\s*\[/.test(rmSrc)
   );
 
   // R8.2: Multi-damageParts[] weapon assembly & combat evaluation

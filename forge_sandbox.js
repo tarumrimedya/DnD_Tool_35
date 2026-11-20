@@ -6833,32 +6833,52 @@
       const raw = String(S.ui.craftText || '').trim();
       if (!raw) { toast('Paste D&D 3.5e rule text or enter a rule name to craft.', 'warn'); return; }
 
-      // Layer 1 (0-Token, <0.2ms): try deterministic text crafting first whenever rule prose contains real mechanics
+      let parentRm = null;
+      try {
+        if (typeof window !== 'undefined' && window.parent && window.parent !== window && window.parent.RuleMaster) parentRm = window.parent.RuleMaster;
+      } catch (e) { parentRm = null; }
+      let apiKey = '';
+      try {
+        apiKey = (parentRm && typeof parentRm.getApiKey === 'function' && parentRm.getApiKey()) || window.localStorage.getItem('dnd35_gemini_api_key') || window.localStorage.getItem('gemini_api_key') || '';
+      } catch (e) { apiKey = ''; }
+
+      // Layer 1 (0-Token, <0.3ms): Unified deterministic V3 Scriber with clause-level coverage check
       const RE0 = typeof window !== 'undefined' ? window.RuleEngine : null;
-      if (RE0 && typeof RE0.parseRuleTextToV3 === 'function') {
+      let partialScribe = null;
+      if (RE0 && (typeof RE0.scribeRuleText === 'function' || typeof RE0.parseRuleTextToV3 === 'function')) {
         try {
           const curName = String(S.entry.name || '').trim();
           const hasDefaultBlank = !curName || /^New\s+/i.test(curName);
-          const scribed = RE0.parseRuleTextToV3(raw, {
+          const scribeOpts = {
             blueprint: S.entry.blueprint || 'feat',
             name: hasDefaultBlank ? '' : curName,
             id: S.entry.id || undefined,
-            source: S.entry.source || undefined
-          });
-          const hasRealMech = scribed && (
-            (Array.isArray(scribed.powers) && scribed.powers.length > 0) ||
-            (Array.isArray(scribed.choices) && scribed.choices.length > 0) ||
-            (Array.isArray(scribed.effects) && scribed.effects.some(b => b && !(b.type === 'effect' && b.effectKind === 'rule')))
-          );
-          if (hasRealMech) {
-            loadEntry(fromCanonicalV3(scribed), '');
-            S.ui.craftOpen = false;
-            S.ui.craftStatus = '';
-            S.ui.craftNeedKey = false;
-            renderAll();
-            const totalBlocks = (scribed.effects ? scribed.effects.length : 0) + (scribed.powers ? scribed.powers.length : 0) + (scribed.choices ? scribed.choices.length : 0);
-            toast('✨ Crafted "' + scribed.name + '" (' + totalBlocks + ' block' + (totalBlocks === 1 ? '' : 's') + ') onto the canvas');
-            return;
+            source: S.entry.source || undefined,
+            preserveUnparsedAsRuleBlocks: !apiKey
+          };
+          const sRes = typeof RE0.scribeRuleText === 'function'
+            ? RE0.scribeRuleText(raw, scribeOpts)
+            : (() => {
+                const e = RE0.parseRuleTextToV3(raw, scribeOpts);
+                const hasMech = e && ((Array.isArray(e.powers) && e.powers.length > 0) || (Array.isArray(e.choices) && e.choices.length > 0) || (Array.isArray(e.effects) && e.effects.some(b => b && !(b.type === 'effect' && b.effectKind === 'rule'))));
+                return { entry: e, hasRealMech: Boolean(hasMech), coverage: hasMech ? 'full' : 'none', mechanicalUnparsedClauses: [] };
+              })();
+          if (sRes && sRes.hasRealMech) {
+            if (sRes.coverage === 'full' || !apiKey) {
+              const scribed = sRes.entry;
+              loadEntry(fromCanonicalV3(scribed), '');
+              S.ui.craftOpen = false;
+              S.ui.craftStatus = '';
+              S.ui.craftNeedKey = false;
+              renderAll();
+              const totalBlocks = (scribed.effects ? scribed.effects.length : 0) + (scribed.powers ? scribed.powers.length : 0) + (scribed.choices ? scribed.choices.length : 0);
+              const partialHint = sRes.coverage === 'partial'
+                ? ' • ' + sRes.mechanicalUnparsedClauses.length + ' complex clause(s) kept as rule text'
+                : '';
+              toast('✨ Crafted "' + scribed.name + '" (' + totalBlocks + ' block' + (totalBlocks === 1 ? '' : 's') + ')' + partialHint);
+              return;
+            }
+            partialScribe = sRes;
           }
         } catch (e) { /* fall through to Rule Master API */ }
       }
@@ -6868,14 +6888,6 @@
         buff: 'Condition', class: 'Class', item_mod: 'Augment Crystal', race: 'Race', deity: 'Deity', domain: 'Domain', monster: 'Feat'
       };
       const catHint = BP_TO_CAT[S.entry.blueprint] || 'Feat';
-      let parentRm = null;
-      try {
-        if (typeof window !== 'undefined' && window.parent && window.parent !== window && window.parent.RuleMaster) parentRm = window.parent.RuleMaster;
-      } catch (e) { parentRm = null; }
-      let apiKey = '';
-      try {
-        apiKey = (parentRm && typeof parentRm.getApiKey === 'function' && parentRm.getApiKey()) || window.localStorage.getItem('dnd35_gemini_api_key') || '';
-      } catch (e) { apiKey = ''; }
       if (!apiKey) {
         S.ui.craftNeedKey = true;
         renderCraftDrawer();
@@ -6884,48 +6896,129 @@
         return;
       }
       S.ui.craftBusy = true;
-      S.ui.craftStatus = 'Consulting Rule Master (' + catHint + ')…';
+      S.ui.craftStatus = partialScribe
+        ? 'Refining remaining clause(s) with Rule Master (' + catHint + ')…'
+        : 'Consulting Rule Master (' + catHint + ')…';
       renderCraftDrawer();
+
+      // Standalone dynamic Gemini model discovery + retired model shield
+      const discoverStandaloneModels = async (key) => {
+        let retired = {};
+        try { retired = JSON.parse(window.localStorage.getItem('dnd35_retired_gemini_models') || '{}') || {}; } catch (_) { retired = {}; }
+        const isUsable = (id) => {
+          if (!id || retired[id]) return false;
+          if (/^(gemini-1\.|gemini-pro|gemini-2\.0-flash-exp|.*-(vision|embedding|tts|image|audio|live|aqa))/i.test(id)) return false;
+          return /^gemini-(2\.5|3|4)/i.test(id);
+        };
+        try {
+          const cached = JSON.parse(window.localStorage.getItem('dnd35_standalone_models_v1') || 'null');
+          if (cached && cached.ts && (Date.now() - cached.ts < 3600000) && Array.isArray(cached.models)) {
+            const valid = cached.models.filter(isUsable);
+            if (valid.length) return valid;
+          }
+        } catch (_) { /* ignore cache parse error */ }
+        try {
+          const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models?key=' + encodeURIComponent(key));
+          if (r.ok) {
+            const j = await r.json();
+            const found = (j.models || [])
+              .filter(m => Array.isArray(m.supportedGenerationMethods) && m.supportedGenerationMethods.indexOf('generateContent') >= 0)
+              .map(m => String(m.name || '').replace(/^models\//, ''))
+              .filter(isUsable)
+              .sort((a, b) => (/flash/i.test(b) - /flash/i.test(a)) || b.localeCompare(a));
+            if (found.length) {
+              try { window.localStorage.setItem('dnd35_standalone_models_v1', JSON.stringify({ ts: Date.now(), models: found.slice(0, 6) })); } catch (_) { /* ignore */ }
+              return found.slice(0, 4);
+            }
+          }
+        } catch (_) { /* fallback below */ }
+        return ['gemini-2.5-flash', 'gemini-2.5-pro'].filter(isUsable);
+      };
+
+      const callStandaloneGeminiJson = async (promptText, models, key) => {
+        let lastErr = null;
+        for (let mi = 0; mi < models.length; mi++) {
+          const mName = models[mi];
+          try {
+            const url = 'https://generativelanguage.googleapis.com/v1beta/models/' + mName + ':generateContent?key=' + encodeURIComponent(key);
+            const genCfg = { temperature: 0.1, responseMimeType: 'application/json' };
+            if (mName.indexOf('2.5') >= 0) genCfg.thinkingConfig = { thinkingBudget: 0 };
+            const resp = await fetch(url, {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }], generationConfig: genCfg })
+            });
+            if (!resp.ok) {
+              const ej = await resp.json().catch(() => ({}));
+              const msg = (ej.error && ej.error.message) || ('HTTP ' + resp.status);
+              if (resp.status === 404 || /not\s+found|deprecated|retired/i.test(msg)) {
+                try {
+                  const ret = JSON.parse(window.localStorage.getItem('dnd35_retired_gemini_models') || '{}') || {};
+                  ret[mName] = Date.now();
+                  window.localStorage.setItem('dnd35_retired_gemini_models', JSON.stringify(ret));
+                } catch (_) { /* ignore */ }
+              }
+              throw new Error(msg);
+            }
+            const data = await resp.json();
+            const txt = data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0] && data.candidates[0].content.parts[0].text;
+            if (txt) {
+              const mJson = txt.match(/\{[\s\S]*\}/);
+              return { parsed: JSON.parse(mJson ? mJson[0] : txt), model: mName };
+            }
+          } catch (e) { lastErr = e; }
+        }
+        throw (lastErr || new Error('Rule Master could not craft a response.'));
+      };
+
       try {
         let entries = null;
         if (parentRm) {
-          const isLongProse = raw.length > 100 && /\s/.test(raw) && !/^(spell|feat|race|deity|domain|weapon|armor|shield|item|class|maneuver|stance|condition):/i.test(raw);
-          entries = (isLongProse && typeof parentRm.queryAiFreeTextRows === 'function')
-            ? await parentRm.queryAiFreeTextRows(raw, apiKey, null)
-            : await parentRm.fetchSingleAiRuleObjects(raw, catHint, apiKey, null);
+          if (partialScribe && typeof parentRm.refinePartialScribeWithAi === 'function') {
+            entries = await parentRm.refinePartialScribeWithAi(raw, partialScribe, catHint, apiKey, null);
+          } else {
+            const isLongProse = raw.length > 100 && /\s/.test(raw) && !/^(spell|feat|race|deity|domain|weapon|armor|shield|item|class|maneuver|stance|condition):/i.test(raw);
+            entries = (isLongProse && typeof parentRm.queryAiFreeTextRows === 'function')
+              ? await parentRm.queryAiFreeTextRows(raw, apiKey, null)
+              : await parentRm.fetchSingleAiRuleObjects(raw, catHint, apiKey, null);
+          }
         } else {
           const RE = typeof window !== 'undefined' ? window.RuleEngine : null;
+          const lockedJson = partialScribe ? JSON.stringify({
+            effects: partialScribe.entry.effects || [],
+            powers: partialScribe.entry.powers || [],
+            choices: partialScribe.entry.choices || []
+          }) : '';
+          const reqBody = partialScribe
+            ? (raw + '\n\nTarget Blueprint: "' + (S.entry.blueprint || 'feat') + '" (Category: "' + catHint + '")\nLocked 0-Token V3 Blocks (KEEP INTACT): ' + lockedJson + '\nRemaining Unparsed Clauses to Translate into V3 `effects[]` / `powers[]` / `modes[]`: ' + JSON.stringify(partialScribe.mechanicalUnparsedClauses))
+            : (raw + '\nTarget Blueprint: "' + (S.entry.blueprint || 'feat') + '" (Category: "' + catHint + '")');
           const prompt = (RE && typeof RE.buildLegoAssemblyPrompt === 'function')
-            ? RE.buildLegoAssemblyPrompt(raw + '\nTarget Blueprint: "' + (S.entry.blueprint || 'feat') + '" (Category: "' + catHint + '")', [])
-            : raw;
-          let parsed = null, lastErr = null;
-          const models = ['gemini-2.5-flash', 'gemini-2.5-pro'];
-          for (let mi = 0; mi < models.length; mi++) {
-            const mName = models[mi];
-            try {
-              const url = 'https://generativelanguage.googleapis.com/v1beta/models/' + mName + ':generateContent?key=' + encodeURIComponent(apiKey);
-              const genCfg = { temperature: 0.1, responseMimeType: 'application/json' };
-              if (mName.indexOf('2.5') >= 0) genCfg.thinkingConfig = { thinkingBudget: 0 };
-              const resp = await fetch(url, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: genCfg })
-              });
-              if (!resp.ok) {
-                const ej = await resp.json().catch(() => ({}));
-                throw new Error((ej.error && ej.error.message) || ('HTTP ' + resp.status));
-              }
-              const data = await resp.json();
-              const txt = data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0] && data.candidates[0].content.parts[0].text;
-              if (txt) {
-                const mJson = txt.match(/\{[\s\S]*\}/);
-                parsed = JSON.parse(mJson ? mJson[0] : txt);
-                break;
-              }
-            } catch (e) { lastErr = e; }
+            ? RE.buildLegoAssemblyPrompt(reqBody, [])
+            : reqBody;
+          const models = await discoverStandaloneModels(apiKey);
+          let callRes = await callStandaloneGeminiJson(prompt, models, apiKey);
+          let parsed = callRes.parsed;
+          let rawList = Array.isArray(parsed.entries) ? parsed.entries : (Array.isArray(parsed) ? parsed : [parsed]);
+          if (RE && typeof RE.validateV3Entry === 'function' && rawList[0]) {
+            const vCheck = RE.validateV3Entry(rawList[0], { checkRawFirst: true, defaultBlueprint: S.entry.blueprint || 'feat' });
+            if (!vCheck.rawOk && vCheck.rawErrors.length > 0) {
+              try {
+                const repairPrompt = 'Fix the following Pure Canonical V3 validation errors in your JSON response and return ONLY valid `{"entries":[...]}` (schemaVersion: 3, zero modifiers/damageParts, closed `when` conditions or condKind:"situational"):\nErrors:\n- ' + vCheck.rawErrors.join('\n- ') + '\n\nOriginal JSON:\n' + JSON.stringify(rawList[0]);
+                const repaired = await callStandaloneGeminiJson(repairPrompt, [callRes.model].concat(models), apiKey);
+                const repList = Array.isArray(repaired.parsed.entries) ? repaired.parsed.entries : (Array.isArray(repaired.parsed) ? repaired.parsed : [repaired.parsed]);
+                if (repList[0]) rawList = repList;
+              } catch (_) { /* sanitizeV3Entry fallback below */ }
+            }
           }
-          if (!parsed) throw (lastErr || new Error('Rule Master could not craft a response.'));
-          const rawList = Array.isArray(parsed.entries) ? parsed.entries : (Array.isArray(parsed) ? parsed : [parsed]);
-          entries = rawList.map((it) => (RE && typeof RE.sanitizeV3Entry === 'function') ? RE.sanitizeV3Entry(it, { defaultBlueprint: S.entry.blueprint || 'feat' }) : it).filter(Boolean);
+          entries = rawList.map((it) => {
+            const san = (RE && typeof RE.sanitizeV3Entry === 'function') ? RE.sanitizeV3Entry(it, { defaultBlueprint: S.entry.blueprint || 'feat' }) : it;
+            if (partialScribe && san) {
+              const seen = new Set((partialScribe.entry.effects || []).map(b => JSON.stringify(b)));
+              san.effects = (partialScribe.entry.effects || []).concat((san.effects || []).filter(b => !seen.has(JSON.stringify(b))));
+              if ((partialScribe.entry.powers || []).length && !(san.powers || []).length) san.powers = partialScribe.entry.powers;
+              if ((partialScribe.entry.choices || []).length && !(san.choices || []).length) san.choices = partialScribe.entry.choices;
+            }
+            return san;
+          }).filter(Boolean);
         }
         if (!entries || !entries.length) throw new Error('No matching D&D 3.5e rule returned for "' + raw + '".');
         const RE2 = typeof window !== 'undefined' ? window.RuleEngine : null;
@@ -6937,6 +7030,19 @@
         renderAll();
         toast('✨ Crafted "' + crafted.name + '" onto the Rule Crafter canvas');
       } catch (err) {
+        if (partialScribe && partialScribe.entry) {
+          const fallback = JSON.parse(JSON.stringify(partialScribe.entry));
+          if (partialScribe.mechanicalUnparsedClauses.length) {
+            fallback.effects = (fallback.effects || []).concat([{ type: 'effect', effectKind: 'rule', label: 'Additional Rule Clause', text: partialScribe.mechanicalUnparsedClauses.join(' ').slice(0, 280) }]);
+          }
+          loadEntry(fromCanonicalV3(fallback), '');
+          S.ui.craftBusy = false;
+          S.ui.craftOpen = false;
+          S.ui.craftStatus = '';
+          renderAll();
+          toast('✨ Loaded local V3 blocks (Rule Master API unavailable: ' + ((err && err.message) || 'offline') + ')', 'warn');
+          return;
+        }
         S.ui.craftBusy = false;
         S.ui.craftStatus = '';
         renderCraftDrawer();
