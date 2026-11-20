@@ -9299,9 +9299,9 @@ const RuleEngine = {
     let equippedArmorCategory = 'None';
 
     const activeFormOverlay = this.resolveActiveFormOverlay(character);
-    character._activeFormOverlay = activeFormOverlay;
     const activeFormMeldMap = {};
-    character._activeFormMeldMap = activeFormMeldMap;
+    Object.defineProperty(character, '_activeFormOverlay', { value: activeFormOverlay, writable: true, configurable: true, enumerable: false });
+    Object.defineProperty(character, '_activeFormMeldMap', { value: activeFormMeldMap, writable: true, configurable: true, enumerable: false });
     if (activeFormOverlay && activeFormOverlay.active && activeFormOverlay.chassis) {
       const fChassis = activeFormOverlay.chassis;
       if (fChassis.size) character.size = fChassis.size;
@@ -9741,7 +9741,7 @@ const RuleEngine = {
         if (s.name) processedLegoSourceNames.add(String(s.name).toLowerCase().trim());
       }
     });
-    const validExtraLegoSources = new Set(['legoEntries', 'classFeatures', 'soulmelds', 'vestiges', 'powers', 'mysteries', 'utterances', 'race']);
+    const validExtraLegoSources = new Set(['legoEntries', 'classFeatures', 'soulmelds', 'vestiges', 'powers', 'mysteries', 'utterances', 'race', 'familiarMasterBonus']);
     (legoEval.entries || []).forEach(le => {
       if (!le) return;
       if (!validExtraLegoSources.has(le._legoSource) && le._autoUnlocked !== true) {
@@ -10016,12 +10016,7 @@ const RuleEngine = {
         character.hp.conBonusHp = newConBonusHp;
       }
 
-      const familiarMasterHpBonus = (legoEval?.entries || [])
-        .filter(e => e && String(e.id || '').startsWith('familiar-master-bonus:'))
-        .reduce((sum, e) => sum + (e.modifiers || [])
-          .filter(m => m && (m.target === 'hp.max' || m.target === 'hp'))
-          .reduce((s, m) => s + (Number(m.value) || 0), 0), 0);
-      const totalBonusHp = draconicToughnessHp + familiarMasterHpBonus;
+      const totalBonusHp = draconicToughnessHp;
       const prevConBonusHp = Number(character.hp.conBonusHp) || 0;
       const prevDebuffHp = Number(character.hp.debuffHpPenalty) || 0;
       const prevBonusHp = Number(character.hp.bonusFeatHp) || 0;
@@ -17007,7 +17002,7 @@ const RuleEngine = {
       legoEvaluation: true, evaluatedDefenses: true, evaluatedResources: true,
       evaluatedModes: true, grantedCapabilities: true, abilitySources: true,
       initiativeBreakdown: true, activeConditionWarnings: true, twoHandedConflict: true,
-      _workingSnapshot: true
+      _workingSnapshot: true, _activeFormOverlay: true, _activeFormMeldMap: true
     };
     const out = {};
     const keys = Object.keys(inputChar);
@@ -17249,11 +17244,13 @@ const RuleEngine = {
     const prevDmTs = targetChar.hp?._lastDmUpdateTs;
     const snap = sheetView._workingSnapshot;
     const preserveRefs = { customDb: true, portrait: true, wallpaper: true, smartNotes: true, journal: true, diceHistory: true };
+    const transientWriteBackSkip = { _activeFormOverlay: true, _activeFormMeldMap: true };
     const snapKeys = Object.keys(snap);
     for (let i = 0; i < snapKeys.length; i++) {
       const k = snapKeys[i];
+      if (transientWriteBackSkip[k]) continue;
       if (preserveRefs[k] && targetChar[k] !== undefined) continue;
-      if (k === 'size' && snap._activeFormOverlay && snap._activeFormOverlay.active && targetChar.size !== undefined) continue;
+      if (k === 'size' && snap._activeFormOverlay && snap._activeFormOverlay.active) continue;
       targetChar[k] = this._fastClonePlain(snap[k]);
     }
     if (targetChar.hp && typeof targetChar.hp === 'object') {
@@ -17492,8 +17489,11 @@ const RuleEngine = {
     const customName = companionConfig.name || baseMonster.name;
     const ctx = this.buildFormulaContext(char || {});
 
-    // 1. Resolve Effective Level from V3 entity grants (deduplicated by sourceId) + fallback canonical formula
-    const defaultFormulas = {
+    // 1. Resolve Effective Level from V3 entity grants (deduplicated by sourceId) + ruleset fallback formula
+    const activeRs = (this.rulesets && this.rulesets[this.activeRulesetId || 'dnd35'])
+      || (typeof window !== 'undefined' && window.DnD35Ruleset)
+      || null;
+    const defaultFormulas = (activeRs && activeRs.defaultEntityLevelFormulas) || {
       animal_companion: '@classes.druid.level + (@classes.ranger.level >= 4 ? floor(@classes.ranger.level / 2) : 0)',
       familiar: '@classes.wizard.level + @classes.sorcerer.level',
       special_mount: '@classes.paladin.level',
@@ -17791,6 +17791,69 @@ const RuleEngine = {
     return 'melded';
   },
 
+  getWildShapeCapability(character) {
+    const ch = character || {};
+    const ctx = this.buildFormulaContext(ch, {});
+    const druidLevel = Number(ctx.classes?.druid?.level || ctx.druidLevel || 0);
+    const ruleFlags = ch.ruleFlags || {};
+    const entries = Array.isArray(ch.legoEvaluation?.entries) ? ch.legoEvaluation.entries : [];
+    const hasWildShapeEntry = Boolean(
+      ruleFlags.wildShape || ruleFlags['wild-shape']
+      || entries.some(e => e && String(e.id || '').toLowerCase() === 'cab-wild-shape')
+      || (Array.isArray(ch.classFeatures) && ch.classFeatures.some(f => f && String(f.id || '').toLowerCase() === 'cab-wild-shape'))
+    );
+    const hasElementalEntry = Boolean(
+      ruleFlags.wildShapeElemental || ruleFlags['wild-shape-elemental']
+      || druidLevel >= 16
+      || entries.some(e => e && String(e.id || '').toLowerCase() === 'cab-wild-shape-elemental')
+      || (Array.isArray(ch.classFeatures) && ch.classFeatures.some(f => f && String(f.id || '').toLowerCase() === 'cab-wild-shape-elemental'))
+    );
+    const effectiveLevel = druidLevel > 0 ? druidLevel : (hasWildShapeEntry ? (Number(ch.level) || 5) : 0);
+    const rs = (this.rulesets && this.rulesets[this.activeRulesetId || 'dnd35'])
+      || (typeof window !== 'undefined' && window.DnD35Ruleset)
+      || null;
+    const profile = (rs && typeof rs.getWildShapeProfile === 'function')
+      ? rs.getWildShapeProfile(effectiveLevel, hasElementalEntry)
+      : {
+          effectiveLevel, maxHd: effectiveLevel, durationHours: effectiveLevel,
+          dailyUses: effectiveLevel >= 5 ? 1 : 0, elementalDailyUses: effectiveLevel >= 16 ? 1 : 0,
+          allowedTypes: ['Animal'], allowedSizes: ['Small', 'Medium'], elementalAllowedSizes: []
+        };
+    return {
+      ...profile,
+      eligible: Boolean(effectiveLevel >= 5 || hasWildShapeEntry),
+      hasElementalEntry
+    };
+  },
+
+  validateWildShapeForm(character, baseMonster, opts = {}) {
+    if (!baseMonster || typeof baseMonster !== 'object') {
+      return { valid: false, reason: 'Monster form not found.' };
+    }
+    if (opts.bypassValidation) return { valid: true };
+    const cap = this.getWildShapeCapability(character);
+    if (!cap.eligible) {
+      return { valid: false, reason: 'Character does not have Wild Shape (requires Druid 5+ or cab-wild-shape).' };
+    }
+    const mBlock = (baseMonster.monster && typeof baseMonster.monster === 'object') ? baseMonster.monster : baseMonster;
+    const creatureType = String(mBlock.creatureType || baseMonster.category || 'Animal').trim();
+    const size = String(mBlock.size || baseMonster.size || 'Medium').trim();
+    const hd = Number(mBlock.hitDice?.count || 1);
+    const allowedTypes = new Set((cap.allowedTypes || []).map(t => String(t).toLowerCase()));
+    if (!allowedTypes.has(creatureType.toLowerCase())) {
+      return { valid: false, reason: `Form type "${creatureType}" is not allowed at Druid level ${cap.effectiveLevel}.` };
+    }
+    const sizePool = creatureType.toLowerCase() === 'elemental' ? (cap.elementalAllowedSizes || []) : (cap.allowedSizes || []);
+    const allowedSizes = new Set(sizePool.map(s => String(s).toLowerCase()));
+    if (!allowedSizes.has(size.toLowerCase())) {
+      return { valid: false, reason: `Form size "${size}" is not allowed at Druid level ${cap.effectiveLevel}.` };
+    }
+    if (hd > cap.maxHd) {
+      return { valid: false, reason: `Form HD (${hd}) exceeds max Wild Shape HD (${cap.maxHd}).` };
+    }
+    return { valid: true, cap, creatureType, size, hd };
+  },
+
   resolveActiveFormOverlay(character) {
     const ch = character || {};
     const af = ch.activeForm;
@@ -17803,13 +17866,19 @@ const RuleEngine = {
     }
     if (!baseMonster) return { active: false };
 
+    const kind = String(af.kind || 'wild_shape');
+    if (kind === 'wild_shape' && af.bypassValidation !== true) {
+      const checkRes = this.validateWildShapeForm(ch, baseMonster);
+      if (!checkRes.valid) return { active: false, rejectedReason: checkRes.reason };
+    }
+
     const chassis = this.buildMonsterChassis(baseMonster);
     const mBlock = (baseMonster.monster && typeof baseMonster.monster === 'object') ? baseMonster.monster : baseMonster;
     const creatureType = String(mBlock.creatureType || baseMonster.category || 'Animal').trim();
     const hdCount = Number(mBlock.hitDice?.count || chassis.baseHd || 1);
     return {
       active: true,
-      kind: String(af.kind || 'wild_shape'),
+      kind,
       baseMonsterId: String(af.baseMonsterId),
       name: String(af.name || baseMonster.name || 'Assumed Form'),
       creatureType,
@@ -17821,47 +17890,16 @@ const RuleEngine = {
 
   deriveActiveFormView(character, options = {}) {
     const ch = character || {};
-    const ctx = this.buildFormulaContext(ch, {});
-    const druidLevel = Number(ctx.classes?.druid?.level || ctx.druidLevel || 0);
+    const cap = this.getWildShapeCapability(ch);
     const ruleFlags = ch.ruleFlags || {};
-    const entries = Array.isArray(ch.legoEvaluation?.entries) ? ch.legoEvaluation.entries : [];
-    const hasWildShapeEntry = Boolean(
-      ruleFlags.wildShape || ruleFlags['wild-shape']
-      || entries.some(e => e && (String(e.id || '').toLowerCase() === 'cab-wild-shape' || /^wild shape\b/i.test(String(e.name || ''))))
-      || (Array.isArray(ch.classFeatures) && ch.classFeatures.some(f => f && (String(f.id || '').toLowerCase() === 'cab-wild-shape' || /^wild shape\b/i.test(String(f.name || f || '')))))
-      || (Array.isArray(ch.specialAbilities) && ch.specialAbilities.some(a => /^wild shape\b/i.test(String(typeof a === 'string' ? a : (a?.name || '')))))
-    );
-    const hasElementalEntry = Boolean(
-      ruleFlags.wildShapeElemental || ruleFlags['wild-shape-elemental']
-      || druidLevel >= 16
-      || entries.some(e => e && String(e.id || '').toLowerCase() === 'cab-wild-shape-elemental')
-    );
-    const effectiveLevel = druidLevel > 0 ? druidLevel : (hasWildShapeEntry ? (Number(ch.level) || 5) : 0);
+    const effectiveLevel = cap.effectiveLevel;
     const overlay = ch._activeFormOverlay || this.resolveActiveFormOverlay(ch);
-    const eligible = Boolean(effectiveLevel >= 5 || hasWildShapeEntry || overlay.active);
-
-    const dailyUses = effectiveLevel >= 18 ? 6
-      : (effectiveLevel >= 14 ? 5
-        : (effectiveLevel >= 10 ? 4
-          : (effectiveLevel >= 7 ? 3
-            : (effectiveLevel >= 6 ? 2
-              : (effectiveLevel >= 5 ? 1 : 0)))));
-    const elementalDailyUses = effectiveLevel >= 20 ? 3
-      : (effectiveLevel >= 18 ? 2
-        : (effectiveLevel >= 16 ? 1 : 0));
-
-    const allowedTypes = ['Animal'];
-    if (effectiveLevel >= 12) allowedTypes.push('Plant');
-    if (effectiveLevel >= 16 || hasElementalEntry) allowedTypes.push('Elemental');
-
-    const allowedSizes = ['Small', 'Medium'];
-    if (effectiveLevel >= 8) allowedSizes.push('Large');
-    if (effectiveLevel >= 11) allowedSizes.push('Tiny');
-    if (effectiveLevel >= 15) allowedSizes.push('Huge');
-
-    const elementalAllowedSizes = effectiveLevel >= 20
-      ? ['Small', 'Medium', 'Large', 'Huge']
-      : (effectiveLevel >= 16 ? ['Small', 'Medium', 'Large'] : []);
+    const eligible = Boolean(cap.eligible || overlay.active);
+    const dailyUses = cap.dailyUses;
+    const elementalDailyUses = cap.elementalDailyUses;
+    const allowedTypes = cap.allowedTypes;
+    const allowedSizes = cap.allowedSizes;
+    const elementalAllowedSizes = cap.elementalAllowedSizes;
 
     const meldMap = (ch._activeFormMeldMap && typeof ch._activeFormMeldMap === 'object') ? ch._activeFormMeldMap : {};
     const meldedSlotKeys = [];
@@ -17900,34 +17938,46 @@ const RuleEngine = {
     const sizeMod = this.SIZE_MODIFIERS[formSizeKey] ?? 0;
     const bab = Number(ch.bab) || 0;
     const strMod = this.getAbilityMod(ch.abilities?.str || chassis.abilities?.str || 10);
-    const hasMultiattack = (Array.isArray(ch.feats) ? ch.feats : []).some(f => /multiattack/i.test(String(typeof f === 'string' ? f : (f?.name || ''))));
+    const dexMod = this.getAbilityMod(ch.abilities?.dex || chassis.abilities?.dex || 10);
+    const charFeats = Array.isArray(ch.feats) ? ch.feats : [];
+    const hasMultiattack = charFeats.some(f => /multiattack/i.test(String(typeof f === 'string' ? f : (f?.name || ''))));
+    const hasWeaponFinesse = charFeats.some(f => /weapon\s*finesse/i.test(String(typeof f === 'string' ? f : (f?.name || ''))));
+    const atkStatMod = hasWeaponFinesse ? Math.max(strMod, dexMod) : strMod;
     const secPenalty = hasMultiattack ? -2 : -5;
     const rawAttacks = Array.isArray(chassis.attacks) ? chassis.attacks : [];
     const totalPhysicalAttacks = rawAttacks
-      .filter(a => a && a.primary !== 'special_rake')
+      .filter(a => a && (a.primary === true || a.primary === false))
       .reduce((sum, a) => sum + (Number(a.count) || 1), 0);
     const isSingleNaturalWeapon = totalPhysicalAttacks === 1;
 
-    const naturalAttacks = rawAttacks.map(atk => {
-      const isPrimary = atk.primary === true || atk.primary === 'special_rake';
-      const atkBonus = bab + strMod + sizeMod + (isPrimary ? 0 : secPenalty);
-      const dmgBonus = isPrimary
-        ? (isSingleNaturalWeapon ? Math.floor(strMod * 1.5) : strMod)
-        : Math.floor(strMod * 0.5);
-      const dice = String(atk.damageDice || '1d4');
-      const damageFormula = dmgBonus === 0 ? dice : `${dice}${dmgBonus > 0 ? '+' : ''}${dmgBonus}`;
-      return {
-        name: atk.name,
-        count: Number(atk.count) || 1,
-        primary: atk.primary,
-        dmgType: atk.dmgType || 'B',
-        attackBonus: atkBonus,
-        damageDice: dice,
-        damageBonus: dmgBonus,
-        damageFormula,
-        special: atk.special || null
-      };
-    });
+    const naturalAttacks = rawAttacks
+      .filter(atk => atk && (atk.primary === true || atk.primary === false || atk.primary === 'special_rake'))
+      .map(atk => {
+        const isRake = atk.primary === 'special_rake';
+        const isPrimary = atk.primary === true;
+        const atkBonus = bab + atkStatMod + sizeMod + ((isPrimary || isRake) ? 0 : secPenalty);
+        let dmgBonus = strMod;
+        if (isRake) {
+          dmgBonus = strMod > 0 ? Math.floor(strMod * 0.5) : strMod;
+        } else if (isPrimary) {
+          dmgBonus = (isSingleNaturalWeapon && strMod > 0) ? Math.floor(strMod * 1.5) : strMod;
+        } else {
+          dmgBonus = strMod > 0 ? Math.floor(strMod * 0.5) : strMod;
+        }
+        const dice = String(atk.damageDice || '1d4');
+        const damageFormula = dmgBonus === 0 ? dice : `${dice}${dmgBonus > 0 ? '+' : ''}${dmgBonus}`;
+        return {
+          name: atk.name,
+          count: Number(atk.count) || 1,
+          primary: atk.primary,
+          dmgType: atk.dmgType || 'B',
+          attackBonus: atkBonus,
+          damageDice: dice,
+          damageBonus: dmgBonus,
+          damageFormula,
+          special: atk.special || null
+        };
+      });
 
     const isElementalForm = String(overlay.creatureType || '').toLowerCase() === 'elemental' && effectiveLevel >= 16;
     const mObj = overlay.monster || {};

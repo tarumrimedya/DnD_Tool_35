@@ -2971,20 +2971,45 @@
     return doc;
   });
 
-  // 9f. 'form/activate' ({ baseMonsterId, kind, name, monsterSnapshot }) — ADR-058 Faz 2 Wild Shape / Alternate Form
+  // 9f. 'form/activate' ({ baseMonsterId, kind, name, monsterSnapshot, spendDailyUse, bypassValidation }) — ADR-058 Faz 2
   CharStore.registerReducer('form/activate', (doc, action, stateObj) => {
     const payload = (action && action.payload) || {};
     if (!payload.baseMonsterId) {
       setStoreOutcome(stateObj, { status: 'invalid_form' });
       return doc;
     }
+    const kind = String(payload.kind || 'wild_shape');
+    const engine = resolveRuleEngine();
+    if (kind === 'wild_shape' && payload.bypassValidation !== true && engine && typeof engine.validateWildShapeForm === 'function') {
+      const baseMon = (typeof engine._resolveMonsterByIdSync === 'function' ? engine._resolveMonsterByIdSync(payload.baseMonsterId) : null)
+        || payload.monsterSnapshot || null;
+      const vRes = engine.validateWildShapeForm(doc, baseMon);
+      if (!vRes.valid) {
+        setStoreOutcome(stateObj, { status: 'form_not_eligible', reason: vRes.reason });
+        return doc;
+      }
+      // Track daily Wild Shape usage (unless caller explicitly sets spendDailyUse: false)
+      if (payload.spendDailyUse !== false) {
+        const isElem = String(vRes.creatureType || '').toLowerCase() === 'elemental';
+        const resKey = isElem ? 'wild_shape_elemental_uses' : 'wild_shape_uses';
+        const maxUses = isElem ? Number(vRes.cap?.elementalDailyUses || 0) : Number(vRes.cap?.dailyUses || 0);
+        if (!doc.resourceUsage || typeof doc.resourceUsage !== 'object') doc.resourceUsage = {};
+        const spent = Number(doc.resourceUsage[resKey]) || 0;
+        if (maxUses > 0 && spent >= maxUses) {
+          setStoreOutcome(stateObj, { status: 'daily_uses_exhausted', resourceKey: resKey, spent, maxUses });
+          return doc;
+        }
+        doc.resourceUsage[resKey] = spent + 1;
+      }
+    }
     const prevBaseSize = (doc.activeForm && doc.activeForm.baseSize) || doc.size || 'Medium';
     doc.activeForm = {
       active: true,
-      kind: String(payload.kind || 'wild_shape'),
+      kind,
       baseMonsterId: String(payload.baseMonsterId),
       name: String(payload.name || payload.baseMonsterId),
       baseSize: prevBaseSize,
+      ...(payload.bypassValidation ? { bypassValidation: true } : {}),
       ...(payload.monsterSnapshot ? { monsterSnapshot: payload.monsterSnapshot } : {})
     };
     setStoreOutcome(stateObj, {

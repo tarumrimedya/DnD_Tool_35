@@ -308,6 +308,48 @@
     'savage bard', 'battle sorcerer', 'death master', 'sha\'ir', 'red wizard'
   ];
 
+  // Canonical D&D 3.5e default effective-level formulas for Companion / Entity kinds (ADR-058)
+  const DEFAULT_ENTITY_LEVEL_FORMULAS = {
+    animal_companion: '@classes.druid.level + (@classes.ranger.level >= 4 ? floor(@classes.ranger.level / 2) : 0)',
+    familiar: '@classes.wizard.level + @classes.sorcerer.level',
+    special_mount: '@classes.paladin.level',
+    fiendish_servant: '@level'
+  };
+
+  // Official D&D 3.5e Druid Wild Shape progression (PHB p.37, Table 3-8)
+  function getWildShapeProfile(druidLevel, hasElementalFlag) {
+    const lvl = Math.max(0, Math.floor(Number(druidLevel) || 0));
+    const dailyUses = lvl >= 18 ? 6
+      : (lvl >= 14 ? 5
+        : (lvl >= 10 ? 4
+          : (lvl >= 7 ? 3
+            : (lvl >= 6 ? 2
+              : (lvl >= 5 ? 1 : 0)))));
+    const elementalDailyUses = lvl >= 20 ? 3
+      : (lvl >= 18 ? 2
+        : (lvl >= 16 ? 1 : 0));
+    const allowedTypes = ['Animal'];
+    if (lvl >= 12) allowedTypes.push('Plant');
+    if (lvl >= 16 || hasElementalFlag) allowedTypes.push('Elemental');
+    const allowedSizes = ['Small', 'Medium'];
+    if (lvl >= 8) allowedSizes.push('Large');
+    if (lvl >= 11) allowedSizes.push('Tiny');
+    if (lvl >= 15) allowedSizes.push('Huge');
+    const elementalAllowedSizes = lvl >= 20
+      ? ['Small', 'Medium', 'Large', 'Huge']
+      : (lvl >= 16 ? ['Small', 'Medium', 'Large'] : []);
+    return {
+      effectiveLevel: lvl,
+      maxHd: lvl,
+      durationHours: lvl,
+      dailyUses,
+      elementalDailyUses,
+      allowedTypes,
+      allowedSizes,
+      elementalAllowedSizes
+    };
+  }
+
   const DnD35Ruleset = {
     id: 'dnd35',
     name: 'D&D 3.5e Official RAW',
@@ -334,6 +376,8 @@
     ruleSwitchFlags: RULE_SWITCH_FLAGS,
     entityKinds: ENTITY_KINDS,
     arcaneSpellcastingClasses: ARCANE_SPELLCASTING_CLASSES,
+    defaultEntityLevelFormulas: DEFAULT_ENTITY_LEVEL_FORMULAS,
+    getWildShapeProfile,
 
     calcAbilityMod(score) {
       return Math.floor(((Number(score) || 10) - 10) / 2);

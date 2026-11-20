@@ -109,65 +109,72 @@ function inferNaturalDmgType(name) {
 }
 
 // Curated 3.5e Monster Manual v3.5 overrides for Foundry-imported defects, multi-count attacks,
-// and primary/secondary ordering.
+// and primary/secondary ordering. Only entries with `recalc: true` recalculate attackBonus/damageBonus
+// to fix verified Foundry primary/secondary inversions (e.g. Dire Bear, Big Cats, Eagle).
 const MM35_OVERRIDES = {
-  // Bears (MM p.63, 269): 2 claws primary, bite secondary
-  'mst-bear-black': { attacks: [{ name: 'Claw', count: 2, primary: true, dmgType: 'P/S' }, { name: 'Bite', count: 1, primary: false, dmgType: 'B/P/S' }] },
-  'mst-bear-brown': { attacks: [{ name: 'Claw', count: 2, primary: true, dmgType: 'P/S' }, { name: 'Bite', count: 1, primary: false, dmgType: 'B/P/S' }] },
-  'mst-bear-polar': { attacks: [{ name: 'Claw', count: 2, primary: true, dmgType: 'P/S' }, { name: 'Bite', count: 1, primary: false, dmgType: 'B/P/S' }] },
-  'mst-dire-bear': { attacks: [{ name: 'Claw', count: 2, primary: true, dmgType: 'P/S', dice: '2d4' }, { name: 'Bite', count: 1, primary: false, dmgType: 'B/P/S', dice: '2d8' }] },
-  'mst-legendary-bear': { attacks: [{ name: 'Claw', count: 2, primary: true, dmgType: 'P/S' }, { name: 'Bite', count: 1, primary: false, dmgType: 'B/P/S' }] },
+  // Bears (MM p.63, 269): 2 claws primary, bite secondary (Foundry had inverted Bite/Claw)
+  'mst-bear-black': { recalc: true, attacks: [{ name: 'Claw', count: 2, primary: true, dmgType: 'P/S' }, { name: 'Bite', count: 1, primary: false, dmgType: 'B/P/S' }] },
+  'mst-bear-brown': { recalc: true, attacks: [{ name: 'Claw', count: 2, primary: true, dmgType: 'P/S' }, { name: 'Bite', count: 1, primary: false, dmgType: 'B/P/S' }] },
+  'mst-bear-polar': { recalc: true, attacks: [{ name: 'Claw', count: 2, primary: true, dmgType: 'P/S' }, { name: 'Bite', count: 1, primary: false, dmgType: 'B/P/S' }] },
+  'mst-dire-bear': { recalc: true, attacks: [{ name: 'Claw', count: 2, primary: true, dmgType: 'P/S', dice: '2d4' }, { name: 'Bite', count: 1, primary: false, dmgType: 'B/P/S', dice: '2d8' }] },
+  'mst-legendary-bear': { recalc: true, attacks: [{ name: 'Claw', count: 2, primary: true, dmgType: 'P/S' }, { name: 'Bite', count: 1, primary: false, dmgType: 'B/P/S' }] },
 
   // Big Cats (MM p.64-65, 275, 281): 2 claws primary, bite secondary, 2 rakes special_rake
-  'mst-lion': { attacks: [{ name: 'Claw', count: 2, primary: true, dmgType: 'P/S', dice: '1d4' }, { name: 'Bite', count: 1, primary: false, dmgType: 'B/P/S', dice: '1d8' }, { name: 'Rake', count: 2, primary: 'special_rake', dmgType: 'P/S', dice: '1d4' }] },
-  'mst-tiger': { attacks: [{ name: 'Claw', count: 2, primary: true, dmgType: 'P/S', dice: '1d8' }, { name: 'Bite', count: 1, primary: false, dmgType: 'B/P/S', dice: '2d6' }, { name: 'Rake', count: 2, primary: 'special_rake', dmgType: 'P/S', dice: '1d8' }] },
-  'mst-dire-lion': { attacks: [{ name: 'Claw', count: 2, primary: true, dmgType: 'P/S' }, { name: 'Bite', count: 1, primary: false, dmgType: 'B/P/S' }, { name: 'Rake', count: 2, primary: 'special_rake', dmgType: 'P/S' }] },
-  'mst-dire-tiger': { attacks: [{ name: 'Claw', count: 2, primary: true, dmgType: 'P/S' }, { name: 'Bite', count: 1, primary: false, dmgType: 'B/P/S' }, { name: 'Rake', count: 2, primary: 'special_rake', dmgType: 'P/S' }] },
-  'mst-legendary-tiger': { attacks: [{ name: 'Claw', count: 2, primary: true, dmgType: 'P/S' }, { name: 'Bite', count: 1, primary: false, dmgType: 'B/P/S' }, { name: 'Rake', count: 2, primary: 'special_rake', dmgType: 'P/S' }] },
+  'mst-lion': { recalc: true, attacks: [{ name: 'Claw', count: 2, primary: true, dmgType: 'P/S', dice: '1d4' }, { name: 'Bite', count: 1, primary: false, dmgType: 'B/P/S', dice: '1d8' }, { name: 'Rake', count: 2, primary: 'special_rake', dmgType: 'P/S', dice: '1d4' }] },
+  'mst-tiger': { recalc: true, attacks: [{ name: 'Claw', count: 2, primary: true, dmgType: 'P/S', dice: '1d8' }, { name: 'Bite', count: 1, primary: false, dmgType: 'B/P/S', dice: '2d6' }, { name: 'Rake', count: 2, primary: 'special_rake', dmgType: 'P/S', dice: '1d8' }] },
+  'mst-dire-lion': { recalc: true, attacks: [{ name: 'Claw', count: 2, primary: true, dmgType: 'P/S' }, { name: 'Bite', count: 1, primary: false, dmgType: 'B/P/S' }, { name: 'Rake', count: 2, primary: 'special_rake', dmgType: 'P/S' }] },
+  'mst-dire-tiger': { recalc: true, attacks: [{ name: 'Claw', count: 2, primary: true, dmgType: 'P/S' }, { name: 'Bite', count: 1, primary: false, dmgType: 'B/P/S' }, { name: 'Rake', count: 2, primary: 'special_rake', dmgType: 'P/S' }] },
+  'mst-legendary-tiger': { recalc: true, attacks: [{ name: 'Claw', count: 2, primary: true, dmgType: 'P/S' }, { name: 'Bite', count: 1, primary: false, dmgType: 'B/P/S' }, { name: 'Rake', count: 2, primary: 'special_rake', dmgType: 'P/S' }] },
 
-  // Small / Medium Cats (MM p.270-274): Leopard = bite primary, 2 claws secondary, 2 rakes; Cat = 2 claws primary, bite secondary; Cheetah = bite primary, 2 claws secondary
+  // Small / Medium Cats (MM p.270-274)
   'mst-cat': { attacks: [{ name: 'Claw', count: 2, primary: true, dmgType: 'P/S' }, { name: 'Bite', count: 1, primary: false, dmgType: 'B/P/S' }] },
   'mst-leopard': { attacks: [{ name: 'Bite', count: 1, primary: true, dmgType: 'B/P/S', dice: '1d6' }, { name: 'Claw', count: 2, primary: false, dmgType: 'P/S', dice: '1d3' }, { name: 'Rake', count: 2, primary: 'special_rake', dmgType: 'P/S', dice: '1d3' }] },
   'mst-cheetah': { attacks: [{ name: 'Bite', count: 1, primary: true, dmgType: 'B/P/S' }, { name: 'Claw', count: 2, primary: false, dmgType: 'P/S' }] },
 
   // Apes & Badgers & Wolverines (MM p.62, 268, 283): 2 claws primary, bite secondary
-  'mst-ape': { attacks: [{ name: 'Claw', count: 2, primary: true, dmgType: 'P/S' }, { name: 'Bite', count: 1, primary: false, dmgType: 'B/P/S' }] },
-  'mst-dire-ape': { attacks: [{ name: 'Claw', count: 2, primary: true, dmgType: 'P/S' }, { name: 'Bite', count: 1, primary: false, dmgType: 'B/P/S' }] },
-  'mst-badger': { attacks: [{ name: 'Claw', count: 2, primary: true, dmgType: 'P/S' }, { name: 'Bite', count: 1, primary: false, dmgType: 'B/P/S' }] },
-  'mst-dire-badger': { attacks: [{ name: 'Claw', count: 2, primary: true, dmgType: 'P/S' }, { name: 'Bite', count: 1, primary: false, dmgType: 'B/P/S' }] },
-  'mst-wolverine': { attacks: [{ name: 'Claw', count: 2, primary: true, dmgType: 'P/S' }, { name: 'Bite', count: 1, primary: false, dmgType: 'B/P/S' }] },
-  'mst-dire-wolverine': { attacks: [{ name: 'Claw', count: 2, primary: true, dmgType: 'P/S' }, { name: 'Bite', count: 1, primary: false, dmgType: 'B/P/S' }] },
+  'mst-ape': { recalc: true, attacks: [{ name: 'Claw', count: 2, primary: true, dmgType: 'P/S' }, { name: 'Bite', count: 1, primary: false, dmgType: 'B/P/S' }] },
+  'mst-dire-ape': { recalc: true, attacks: [{ name: 'Claw', count: 2, primary: true, dmgType: 'P/S' }, { name: 'Bite', count: 1, primary: false, dmgType: 'B/P/S' }] },
+  'mst-badger': { recalc: true, attacks: [{ name: 'Claw', count: 2, primary: true, dmgType: 'P/S' }, { name: 'Bite', count: 1, primary: false, dmgType: 'B/P/S' }] },
+  'mst-dire-badger': { recalc: true, attacks: [{ name: 'Claw', count: 2, primary: true, dmgType: 'P/S' }, { name: 'Bite', count: 1, primary: false, dmgType: 'B/P/S' }] },
+  'mst-wolverine': { recalc: true, attacks: [{ name: 'Claw', count: 2, primary: true, dmgType: 'P/S' }, { name: 'Bite', count: 1, primary: false, dmgType: 'B/P/S' }] },
+  'mst-dire-wolverine': { recalc: true, attacks: [{ name: 'Claw', count: 2, primary: true, dmgType: 'P/S' }, { name: 'Bite', count: 1, primary: false, dmgType: 'B/P/S' }] },
 
-  // Birds of Prey (MM p.272-277): 2 talons primary, bite secondary; Raven = claws primary
-  'mst-eagle': { deduplicate: true, attacks: [{ name: 'Talon', count: 2, primary: true, dmgType: 'P/S', dice: '1d4' }, { name: 'Bite', count: 1, primary: false, dmgType: 'B/P/S', dice: '1d4' }] },
-  'mst-giant-eagle': { attacks: [{ name: 'Talon', count: 2, primary: true, dmgType: 'P/S' }, { name: 'Bite', count: 1, primary: false, dmgType: 'B/P/S' }] },
+  // Birds of Prey (MM p.272-277): 2 talons primary, bite secondary
+  'mst-eagle': { deduplicate: true, recalc: true, attacks: [{ name: 'Talon', count: 2, primary: true, dmgType: 'P/S', dice: '1d4' }, { name: 'Bite', count: 1, primary: false, dmgType: 'B/P/S', dice: '1d4' }] },
+  'mst-giant-eagle': { recalc: true, attacks: [{ name: 'Talon', count: 2, primary: true, dmgType: 'P/S' }, { name: 'Bite', count: 1, primary: false, dmgType: 'B/P/S' }] },
   'mst-hawk': { attacks: [{ name: 'Talon', count: 1, primary: true, dmgType: 'P/S' }] },
   'mst-owl': { attacks: [{ name: 'Talon', count: 1, primary: true, dmgType: 'P/S' }] },
-  'mst-giant-owl': { attacks: [{ name: 'Talon', count: 2, primary: true, dmgType: 'P/S' }, { name: 'Bite', count: 1, primary: false, dmgType: 'B/P/S' }] },
-  'mst-roc': { attacks: [{ name: 'Talon', count: 2, primary: true, dmgType: 'P/S' }, { name: 'Bite', count: 1, primary: false, dmgType: 'B/P/S' }] },
+  'mst-giant-owl': { recalc: true, attacks: [{ name: 'Talon', count: 2, primary: true, dmgType: 'P/S' }, { name: 'Bite', count: 1, primary: false, dmgType: 'B/P/S' }] },
+  'mst-roc': { recalc: true, attacks: [{ name: 'Talon', count: 2, primary: true, dmgType: 'P/S' }, { name: 'Bite', count: 1, primary: false, dmgType: 'B/P/S' }] },
 
-  // Horses & Ponies (MM p.273-277): 2 hooves primary, bite secondary (warhorse)
-  'mst-horse-heavy': { attacks: [{ name: 'Hoof', count: 2, primary: true, dmgType: 'B' }] },
-  'mst-horse-light': { attacks: [{ name: 'Hoof', count: 2, primary: true, dmgType: 'B' }] },
-  'mst-pony': { attacks: [{ name: 'Hoof', count: 2, primary: true, dmgType: 'B' }] },
-  'mst-pony-war': { attacks: [{ name: 'Hoof', count: 2, primary: true, dmgType: 'B' }] },
-  'mst-warhorse-light': { attacks: [{ name: 'Hoof', count: 2, primary: true, dmgType: 'B' }, { name: 'Bite', count: 1, primary: false, dmgType: 'B/P/S' }] },
-  'mst-warhorse-heavy': { attacks: [{ name: 'Hoof', count: 2, primary: true, dmgType: 'B' }, { name: 'Bite', count: 1, primary: false, dmgType: 'B/P/S' }] },
+  // Non-warhorses & Ponies (MM p.273-277): 2 hooves are SECONDARY (-5, 1/2 STR); Warhorses: 2 hooves primary, bite secondary
+  'mst-horse-heavy': { recalc: true, attacks: [{ name: 'Hoof', count: 2, primary: false, dmgType: 'B' }] },
+  'mst-horse-light': { recalc: true, attacks: [{ name: 'Hoof', count: 2, primary: false, dmgType: 'B' }] },
+  'mst-pony': { recalc: true, attacks: [{ name: 'Hoof', count: 2, primary: false, dmgType: 'B' }] },
+  'mst-pony-war': { recalc: true, attacks: [{ name: 'Hoof', count: 2, primary: true, dmgType: 'B' }] },
+  'mst-warhorse-light': { recalc: true, attacks: [{ name: 'Hoof', count: 2, primary: true, dmgType: 'B' }, { name: 'Bite', count: 1, primary: false, dmgType: 'B/P/S' }] },
+  'mst-warhorse-heavy': { recalc: true, attacks: [{ name: 'Hoof', count: 2, primary: true, dmgType: 'B' }, { name: 'Bite', count: 1, primary: false, dmgType: 'B/P/S' }] },
 
   // Foundry sizeNaturalRoll fixes
-  'mst-griffon': { attacks: [{ name: 'Bite', count: 1, primary: true, dmgType: 'B/P/S', dice: '2d6' }, { name: 'Claw', count: 2, primary: false, dmgType: 'P/S', dice: '1d4' }, { name: 'Rake', count: 2, primary: 'special_rake', dmgType: 'P/S', dice: '1d6' }] },
+  'mst-griffon': { recalc: true, attacks: [{ name: 'Bite', count: 1, primary: true, dmgType: 'B/P/S', dice: '2d6' }, { name: 'Claw', count: 2, primary: false, dmgType: 'P/S', dice: '1d4' }, { name: 'Rake', count: 2, primary: 'special_rake', dmgType: 'P/S', dice: '1d6' }] },
   'mst-snake-tiny-viper': { attacks: [{ name: 'Bite', count: 1, primary: true, dmgType: 'B/P/S', dice: '1' }] },
   'mst-twelve-headed-hydra': { attacks: [{ name: 'Bite', count: 12, primary: true, dmgType: 'B/P/S', dice: '1d10' }] },
-  'mst-lamia': { attacks: [{ name: 'Touch', count: 1, primary: true, dmgType: 'B' }, { name: 'Dagger', count: 1, primary: false, dmgType: 'P/S', dice: '1d4' }] },
+  'mst-lamia': { attacks: [{ name: 'Touch', count: 1, primary: true, dmgType: 'B' }, { name: 'Dagger', count: 1, primary: 'weapon', dmgType: 'P/S', dice: '1d4' }] },
 
-  // Crocodiles (MM p.271): Bite primary OR tail slap primary (not both in same round; bite is primary)
-  'mst-crocodile': { attacks: [{ name: 'Bite', count: 1, primary: true, dmgType: 'B/P/S' }, { name: 'Tail', count: 1, primary: false, dmgType: 'B' }] },
-  'mst-crocodile-giant': { attacks: [{ name: 'Bite', count: 1, primary: true, dmgType: 'B/P/S' }, { name: 'Tail', count: 1, primary: false, dmgType: 'B' }] }
+  // Crocodiles (MM p.271): Bite +6 (1d8+6) OR Tail Slap +6 (1d12+6) — mutually exclusive single primary attacks (1.5x STR)
+  'mst-crocodile': { recalc: true, singlePrimaryEach: true, attacks: [{ name: 'Bite', count: 1, primary: true, dmgType: 'B/P/S' }, { name: 'Tail', count: 1, primary: true, dmgType: 'B' }] },
+  'mst-crocodile-giant': { recalc: true, singlePrimaryEach: true, attacks: [{ name: 'Bite', count: 1, primary: true, dmgType: 'B/P/S' }, { name: 'Tail', count: 1, primary: true, dmgType: 'B' }] }
 };
+
+function isManufacturedWeaponName(name) {
+  const n = String(name || '').toLowerCase();
+  return /\b(longsword|shortsword|short sword|greatsword|bastard sword|scimitar|falchion|battleaxe|greataxe|handaxe|throwing axe|kukri|glaive|guisarme|halberd|scythe|kama|whip|rapier|dagger|spear|longspear|shortspear|lance|javelin|longbow|shortbow|crossbow|trident|pick|ranseur|morningstar|club|greatclub|mace|flail|warhammer|hammer|quarterstaff|sling|sap|gauntlet|net|shuriken|bolas|spiked chain|trident)\b/.test(n);
+}
 
 function isSpecialNonIterativeAttack(atk) {
   const n = String(atk.name || '').toLowerCase();
   return /constrict|trample|rend|poison|breath|swallow|web|acid|spit|gaze|roar|stink|spore|pollen|disease|energy drain|blood drain|attach|swarm|crush|tail sweep|frightful presence/.test(n)
+    || isManufacturedWeaponName(n)
     || (atk.attackType && atk.attackType !== 'natural' && !/rake/i.test(n));
 }
 
@@ -182,9 +189,11 @@ function inferDefaultCount(monster, atkName) {
     if (mName.includes(word + '-headed') && /bite/.test(n)) return cnt;
   }
 
-  // Elementals: Small = 1 slam, Medium+ = 2 slams (MM p.95-101)
-  if (/elemental/i.test(monster.creatureType || '') && /slam/.test(n)) {
-    return (size === 'Small' || size === 'Tiny' || size === 'Fine' || size === 'Diminutive') ? 1 : 2;
+  // Elementals: Small & Medium = 1 slam, Large+ = 2 slams (MM p.95-101)
+  const cType = String(monster.monster?.creatureType || monster.creatureType || monster.category || '');
+  if (/elemental/i.test(cType) && /slam/.test(n)) {
+    const mSz = String(monster.monster?.size || size || 'Medium');
+    return (mSz === 'Small' || mSz === 'Medium' || mSz === 'Tiny' || mSz === 'Fine' || mSz === 'Diminutive') ? 1 : 2;
   }
 
   // Bilateral natural weapons
@@ -249,7 +258,7 @@ function normalizeMonster(m) {
     if (!isSpecialNonIterativeAttack(a)) {
       natIndices.push(idx);
     } else {
-      a.primary = (a.attackType === 'weapon') ? 'weapon' : 'misc';
+      a.primary = (a.attackType === 'weapon' || isManufacturedWeaponName(a.name)) ? 'weapon' : 'misc';
     }
   });
 
@@ -315,28 +324,41 @@ function normalizeMonster(m) {
     if (!a.count) a.count = inferDefaultCount(m, a.name);
     if (!a.dmgType || a.dmgType === 'Physical') a.dmgType = inferNaturalDmgType(a.name);
 
-    const wf = wfBonusFor(a.name);
-    const isPrim = a.primary === true;
-    const isRake = a.primary === 'special_rake';
-    const rawAtk = bab + atkAbilityMod + sizeMod + wf + (isPrim || isRake ? 0 : secondaryPen);
-    let rawDmg = 0;
-    if (isRake) {
-      rawDmg = strMod > 0 ? Math.floor(strMod * 0.5) : strMod;
-    } else if (isPrim) {
-      // 3.5e MM p.312: A creature's sole natural weapon adds 1.5x STR (if positive)
-      rawDmg = (totalNatWeapons === 1 && strMod > 0) ? Math.floor(strMod * 1.5) : strMod;
-    } else {
-      rawDmg = strMod > 0 ? Math.floor(strMod * 0.5) : strMod;
-    }
-
-    // Only normalize melee natural attacks (leave ranged attacks like Manticore spikes alone)
-    if (a.actionType !== 'rwak') {
+    // Fix Foundry incorporeal touch bug (Foundry applied STR 0 = -5 instead of DEX; MM p.310 uses DEX, 0 STR dmg)
+    const isIncorpTouch = /incorporeal\s+touch/i.test(String(a.name || ''));
+    const isDragonEntry = /dragon/i.test(String(m.monster?.creatureType || m.creatureType || m.category || ''))
+      && working.some(w => w.primary === true && /^bite\b/i.test(String(w.name || '')));
+    if (isIncorpTouch) {
+      const wf = wfBonusFor(a.name);
+      a.attackBonus = bab + dexMod + sizeMod + wf;
+      a.damageBonus = 0;
+      if (a.weapon) {
+        a.weapon.damageBonus = 0;
+        a.weapon.dmgType = a.dmgType;
+      }
+    } else if (((ov && ov.recalc === true) || isDragonEntry) && a.actionType !== 'rwak') {
+      // Recalculate ONLY for verified Foundry primary/secondary inversions (True Dragons, Bears, Big Cats, Apes, Horses, Crocodiles, Eagle)
+      const wf = wfBonusFor(a.name);
+      const isPrim = a.primary === true;
+      const isRake = a.primary === 'special_rake';
+      const rawAtk = bab + atkAbilityMod + sizeMod + wf + (isPrim || isRake ? 0 : secondaryPen);
+      let rawDmg = 0;
+      if (isRake) {
+        rawDmg = strMod > 0 ? Math.floor(strMod * 0.5) : strMod;
+      } else if (isPrim) {
+        const use15x = (totalNatWeapons === 1 || Boolean(ov && ov.singlePrimaryEach)) && strMod > 0;
+        rawDmg = use15x ? Math.floor(strMod * 1.5) : strMod;
+      } else {
+        rawDmg = strMod > 0 ? Math.floor(strMod * 0.5) : strMod;
+      }
       a.attackBonus = rawAtk;
       a.damageBonus = rawDmg;
       if (a.weapon) {
         a.weapon.damageBonus = rawDmg;
         a.weapon.dmgType = a.dmgType;
       }
+    } else if (a.weapon) {
+      a.weapon.dmgType = a.dmgType;
     }
   });
 
@@ -348,8 +370,8 @@ function normalizeMonster(m) {
   return {
     id: m.id,
     name: m.name,
-    creatureType: m.creatureType || '',
-    size: m.size || 'Medium',
+    creatureType: m.monster?.creatureType || m.creatureType || m.category || '',
+    size: m.monster?.size || m.size || 'Medium',
     bab,
     strMod,
     dexMod,
@@ -387,11 +409,13 @@ function run() {
     const summary = normalizeMonster(m);
     mapOut[m.id] = summary;
 
-    // Deterministic -5 / -2 validator
+    // Deterministic -5 / -2 validator on recalculated multi-attack monsters + canonical schema & dice hygiene on ALL 649
+    const ov = MM35_OVERRIDES[m.id] || null;
+    const isDragonEntry = /dragon/i.test(String(m.monster?.creatureType || m.creatureType || m.category || ''));
     const meleeNats = (m.attacks || []).filter(a => (a.primary === true || a.primary === false) && a.actionType !== 'rwak');
     const prim = meleeNats.find(a => a.primary === true);
     const secs = meleeNats.filter(a => a.primary === false);
-    if (prim && secs.length > 0) {
+    if (prim && secs.length > 0 && ((ov && ov.recalc === true) || isDragonEntry)) {
       validatedMulti++;
       const expectedDelta = summary.hasMultiattack ? -2 : -5;
       const feats = Array.isArray(m.feats) ? m.feats : [];
@@ -411,6 +435,9 @@ function run() {
     for (const a of (m.attacks || [])) {
       if (/sizeNaturalRoll|sizeRoll|@/i.test(String(a.damageDice || ''))) {
         errors.push(`${m.id} (${m.name}): unnormalized Foundry dice "${a.damageDice}" on ${a.name}`);
+      }
+      if (a.count === undefined || a.primary === undefined || !a.dmgType) {
+        errors.push(`${m.id} (${m.name}): missing canonical count/primary/dmgType on ${a.name}`);
       }
     }
   }

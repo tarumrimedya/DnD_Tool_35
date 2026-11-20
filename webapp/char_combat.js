@@ -11121,7 +11121,7 @@
         const sz = mBlock.size || ch?.size || 'Medium';
         const cType = mBlock.creatureType || m.category || 'Animal';
         const abi = ch?.abilities || mBlock.abilities || {};
-        const na = Number(ch?.naturalArmor ?? mBlock.ac?.naturalArmor ?? 0);
+        const na = Number(ch?.baseNaturalArmor ?? ch?.naturalArmor ?? mBlock.ac?.naturalArmor ?? 0);
         const spd = ch?.speeds?.land || mBlock.speeds?.land || 30;
         const isCurrent = af.active && af.baseMonsterId === m.id;
         return `

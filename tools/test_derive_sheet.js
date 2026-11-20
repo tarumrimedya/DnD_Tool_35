@@ -6780,6 +6780,62 @@ function runDeriveSheetTests() {
       revertedSheet.saves.fort === trueFort,
       JSON.stringify({ active: revertedSheet.activeForm.active, size: revertedSheet.meta.size, str: revertedSheet.abilities.str, fort: revertedSheet.saves.fort })
     );
+
+    // 10. Claude Code Audit Remediation Suite (B1, M2, M3, M4/M5)
+    // B1: Incorporeal touch (Wraith +5 / 1d4), Light Horse secondary hooves (-2 / 1d4+1), Crocodile mutually exclusive primary (+6 / 1d8+6 & 1d12+6)
+    const wraith = monstersDb.find(m => m.id === 'mst-wraith');
+    const lightHorse = monstersDb.find(m => m.id === 'mst-horse-light');
+    const croc = monstersDb.find(m => m.id === 'mst-crocodile');
+    check(
+      'E1.4 Audit B1: Wraith Incorporeal Touch (+5, 1d4+0), Light Horse secondary Hooves (-2, 1d4+1), Crocodile dual-primary Bite & Tail (+6, +6 dmg)',
+      wraith?.attacks?.[0]?.attackBonus === 5 && wraith?.attacks?.[0]?.damageBonus === 0 &&
+      lightHorse?.attacks?.[0]?.primary === false && lightHorse?.attacks?.[0]?.attackBonus === -2 && lightHorse?.attacks?.[0]?.damageBonus === 1 &&
+      croc?.attacks?.every(a => a.primary === true && a.attackBonus === 6 && a.damageBonus === 6),
+      JSON.stringify({ wraith: wraith?.attacks?.[0], lightHorse: lightHorse?.attacks?.[0], croc: croc?.attacks })
+    );
+
+    // M2: Familiar master save bonuses (Rat +2 Fort, Weasel +2 Ref) flow through validExtraLegoSources
+    const wizRat = {
+      name: 'Vex', level: 4, classLevels: { wizard: 4 },
+      abilities: { str: 8, dex: 14, con: 12, int: 18, wis: 10, cha: 10 },
+      baseSaves: { fort: 1, ref: 1, will: 4 },
+      classFeatures: [cabFam], feats: [], buffs: [], gearPool: [],
+      companions: [{ id: 'f_rat', entityKind: 'familiar', baseMonsterId: 'mst-rat', name: 'Squeak' }]
+    };
+    const wizWeasel = Object.assign({}, wizRat, {
+      companions: [{ id: 'f_weasel', entityKind: 'familiar', baseMonsterId: 'mst-weasel', name: 'Zip' }]
+    });
+    const wizRatSheet = RuleEngine.deriveSheet(wizRat, []);
+    const wizWeaselSheet = RuleEngine.deriveSheet(wizWeasel, []);
+    check(
+      'E1.4 Audit M2: Rat Familiar grants +2 Fortitude (1+1+2=4) and Weasel Familiar grants +2 Reflex (1+2+2=5) via unified V3 pipeline',
+      wizRatSheet.saves.fort === 4 && wizWeaselSheet.saves.ref === 5,
+      JSON.stringify({ ratFort: wizRatSheet.saves.fort, weaselRef: wizWeaselSheet.saves.ref })
+    );
+
+    // M3 & M4: Transient _activeFormOverlay/_activeFormMeldMap never leak into doc; non-Druid & over-HD Wild Shape rejected
+    const strippedDoc = RuleEngine.stripDerivedFields(CharStore.getDoc());
+    const ftrDoc = {
+      name: 'Bram', level: 5, classLevels: { fighter: 5 },
+      abilities: { str: 16, dex: 12, con: 14, int: 10, wis: 10, cha: 10 },
+      feats: [], buffs: [], gearPool: []
+    };
+    CharStore.replaceDoc(ftrDoc, { skipHistory: true });
+    CharStore.dispatch({ type: 'form/activate', payload: { baseMonsterId: 'mst-wolf', kind: 'wild_shape', name: 'Wolf' } });
+    const ftrOutcome = CharStore.getLastOutcome();
+    const ftrFormRejected = ftrOutcome?.status === 'form_not_eligible' && !CharStore.getDoc().activeForm;
+    // Also check daily use decrement on Druid 12
+    CharStore.replaceDoc(wsDruidDoc, { skipHistory: true });
+    CharStore.dispatch({ type: 'form/activate', payload: { baseMonsterId: 'mst-dire-bear', kind: 'wild_shape', name: 'Dire Bear' } });
+    const druidDocAfterShift = CharStore.getDoc();
+    check(
+      'E1.4 Audit M3/M4: transient _activeFormOverlay/_activeFormMeldMap stripped from doc, non-Druid Wild Shape rejected, Druid daily use decremented (1)',
+      strippedDoc._activeFormOverlay === undefined && strippedDoc._activeFormMeldMap === undefined &&
+      druidDocAfterShift._activeFormOverlay === undefined && druidDocAfterShift._activeFormMeldMap === undefined &&
+      ftrFormRejected &&
+      druidDocAfterShift.resourceUsage?.wild_shape_uses === 1,
+      JSON.stringify({ ftrOutcome, uses: druidDocAfterShift.resourceUsage?.wild_shape_uses, hasTransient: Boolean(druidDocAfterShift._activeFormOverlay) })
+    );
   }
 
   CharStore.clearHistory();

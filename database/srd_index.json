@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
   "version": "3.0.0",
-  "compendiumHash": "b55a639fa1f729e3",
+  "compendiumHash": "cdec94c6cb5a20bc",
   "generatedAt": "2026-11-15T19:43:51.694Z",
   "totalEntries": 7988,
   "chunks": {
@@ -38,7 +38,7 @@
     "srd_monsters.json": {
       "count": 649,
       "bytes": 5289035,
-      "hash": "d6131a457409f006",
+      "hash": "42ab1883c456d4e8",
       "eagerLoad": false
     },
     "srd_maneuvers.json": {
