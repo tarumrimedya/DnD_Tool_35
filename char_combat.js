@@ -4289,6 +4289,40 @@
     }
 
     // Helper function to calculate combat display stats for a weapon / shield
+    // Session-only in-memory toggle state for weapon situational damage riders (e.g. "+1d6 vs. undead").
+    // Resets on page reload so forgotten encounter-specific riders never leak across sessions or mutate save schema.
+    const _sessionActiveRidersByWeapon = new Map();
+    function getSessionActiveRiders(wepKey) {
+      const k = String(wepKey || '').trim().toLowerCase();
+      if (!k) return [];
+      const set = _sessionActiveRidersByWeapon.get(k);
+      return set ? Array.from(set) : [];
+    }
+    function toggleSessionSituationalRider(wepKey, riderId) {
+      const k = String(wepKey || '').trim().toLowerCase();
+      const r = String(riderId || '').trim();
+      if (!k || !r) return;
+      let set = _sessionActiveRidersByWeapon.get(k);
+      if (!set) { set = new Set(); _sessionActiveRidersByWeapon.set(k, set); }
+      if (set.has(r)) set.delete(r); else set.add(r);
+      renderWeaponSetsUI();
+      if (typeof renderAttackActionButtons === 'function') renderAttackActionButtons();
+    }
+    function renderSituationalRiderPillsHtml(stats) {
+      const list = stats && Array.isArray(stats.situationalDamageParts) ? stats.situationalDamageParts : [];
+      if (list.length === 0) return '';
+      const wKeyAttr = UI.escapeAttr(stats.riderWeaponKey || '');
+      const pills = list.map(p => {
+        const isOn = !!p.active;
+        const lbl = `+${p.dice} ${p.condition || p.source || ''}`.trim();
+        const cls = isOn
+          ? 'text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-500 text-slate-950 border border-amber-400 transition cursor-pointer'
+          : 'text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-slate-800/80 text-slate-300 border border-slate-600/70 hover:border-amber-400/70 hover:text-amber-200 transition cursor-pointer';
+        return `<button type="button" data-action="combat:toggle-situational-rider" data-weapon-key="${wKeyAttr}" data-rider-id="${UI.escapeAttr(p.riderId || '')}" class="${cls}" title="${UI.escapeAttr((p.source || 'Situational Rider') + ' (session toggle, multiplyOnCrit: false)')}">${isOn ? '✓ ' : '+ '}${UI.escapeHtml(lbl)}</button>`;
+      }).join('');
+      return `<div class="flex items-center gap-1 flex-wrap mt-1">${pills}</div>`;
+    }
+
     function getWeaponCombatDisplayStats(wepName, grip = '1-Hand', isOffHand = false) {
       if (!character || !wepName || wepName === 'None' || wepName === '-') {
         if (isOffHand) {
@@ -4478,6 +4512,7 @@
         return true;
       });
 
+          const riderWepKey = wep.id || wep.name || wepName;
           const evalRes = RuleEngine.evaluateWeaponAttack(character, wep, {
             grip: isOffHand ? 'Off-Hand' : grip,
             powerAttack: isOffHand ? 0 : paVal,
@@ -4485,7 +4520,8 @@
             charge,
             higherGround: hg,
             activeStance: character.activeStance || 'None',
-            customModifiers: nonChainMods
+            customModifiers: nonChainMods,
+            activeRiders: getSessionActiveRiders(riderWepKey)
           });
 
           const activeDiceMods = activeMods.map(m => ({ m, roll: getRiderRollBlock(m) })).filter(x => x.roll && x.roll.dice);
@@ -4493,12 +4529,13 @@
           if (activeDiceMods.length > 0) {
             extraDiceStr = ' + ' + activeDiceMods.map(x => x.roll.dice).join(' + ');
           }
-          if (Array.isArray(wep.elementalMods) && wep.elementalMods.length > 0) {
-            // Conditional riders (e.g. "vs. undead") are not part of the always-on total; shown after the total instead.
-            const alwaysOnMods = wep.elementalMods.filter(em => !em.condition);
-            const situationalMods = wep.elementalMods.filter(em => em.condition);
-            if (alwaysOnMods.length > 0) extraDiceStr += ' + ' + alwaysOnMods.map(em => `${em.dice} (${em.name || em.type})`).join(' + ');
-            if (situationalMods.length > 0) extraDiceStr += ' [' + situationalMods.map(em => UI.escapeHtml(`+${em.dice} ${em.condition}`)).join(', ') + ']';
+          // Single-source engine pipeline: always-on extraDamageParts + toggled activeSituationalDamageParts
+          const rolledExtra = [
+            ...(Array.isArray(evalRes.extraDamageParts) ? evalRes.extraDamageParts : []),
+            ...(Array.isArray(evalRes.activeSituationalDamageParts) ? evalRes.activeSituationalDamageParts : [])
+          ];
+          if (rolledExtra.length > 0) {
+            extraDiceStr += ' + ' + rolledExtra.map(ep => `${UI.escapeHtml(ep.dice)} (${UI.escapeHtml(ep.source || ep.type || 'Extra')})`).join(' + ');
           }
 
           const flatDmg = evalRes.netFlatDamage;
@@ -4512,7 +4549,7 @@
 
           let dmgType = evalRes.damageType || 'Piercing';
 
-          const hasExtraMods = (paVal > 0 && !isOffHand) || activeDiceMods.length > 0 || (Array.isArray(wep.elementalMods) && wep.elementalMods.length > 0) || nonChainMods.some(m => getRiderStatBonus(m, 'damage') !== 0);
+          const hasExtraMods = (paVal > 0 && !isOffHand) || activeDiceMods.length > 0 || rolledExtra.length > 0 || nonChainMods.some(m => getRiderStatBonus(m, 'damage') !== 0);
 
           return {
             dmgStr,
@@ -4523,6 +4560,8 @@
             isWeapon: true,
             hasExtraMods,
             elementalMods: wep.elementalMods || [],
+            situationalDamageParts: evalRes.situationalDamageParts || [],
+            riderWeaponKey: riderWepKey,
             keen: !!wep.keen,
             enhancementBonus: Number(wep.enhancementBonus) || 0
           };
@@ -4668,8 +4707,8 @@
               </button>
             ` : '')}
             <button type="button" data-action="combat:special-attack-roll" data-ability-key="${safeKeyAttr}" class="text-[10px] font-black px-2.5 py-1.5 rounded-lg ${isOnCooldown ? 'bg-purple-600 hover:bg-purple-500 text-white' : 'bg-emerald-500 text-slate-950'} shadow transition active:scale-95 cursor-pointer flex items-center gap-1">
-              <span>${isUtility ? '✨' : (isHealing ? '💚' : '🔥')}</span>
-              <span>${isUtility ? 'Use' : (isHealing ? `Roll ${esc(healFormula)} Healing` : `Roll ${esc(dmgFormula)}`)}</span>
+              <span>${(ab.category === 'spell' || ab.attachedSpellId) ? '🔮' : (isUtility ? '✨' : (isHealing ? '💚' : '🔥'))}</span>
+              <span>${(ab.category === 'spell' || ab.attachedSpellId) ? 'Cast' : (isUtility ? 'Use' : (isHealing ? `Roll ${esc(healFormula)} Healing` : `Roll ${esc(dmgFormula)}`))}</span>
             </button>
           </div>
         </div>
@@ -4709,7 +4748,30 @@
       if (typeof updateActionEconomyUI === 'function') updateActionEconomyUI();
       renderWeaponSetsUI();
       const usesNote = ab.usesMax ? `${Math.max(0, (ab.usesLeft || 0) - 1)}/${ab.usesMax} left` : '';
-      const breakdown = [ab.summary, ab.action, rechargeNote, usesNote].filter(Boolean).join(' • ');
+      // Slotless attached-spell (SLA / Psi-like) cast flow: reuse existing touch attack & Save DC pipelines (zero slot accounting)
+      let slaTouchNote = '';
+      let slaDcNote = '';
+      const isAttachedSpell = Boolean(ab.category === 'spell' || ab.attachedSpellId);
+      if (isAttachedSpell) {
+        const dv = ab.delivery || {};
+        if (dv.attackKind && typeof RuleEngine !== 'undefined' && typeof RuleEngine.evaluateTouchAttack === 'function') {
+          const touchEval = RuleEngine.evaluateTouchAttack(character, { attackKind: dv.attackKind, name: ab.name });
+          if (touchEval && Number.isFinite(Number(touchEval.total))) {
+            const d20 = Math.floor(Math.random() * 20) + 1;
+            const tot = d20 + Number(touchEval.total);
+            const sg = Number(touchEval.total) >= 0 ? '+' : '-';
+            slaTouchNote = `🎯 ${dv.attackLabel || 'Touch Attack'}: d20 [${d20}] ${sg} ${Math.abs(Number(touchEval.total))} = ${tot} vs ${dv.vsAc || 'Touch AC'}`;
+          }
+        }
+        if (ab.save || ab.dcFormula) {
+          const dcEval = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.evaluateAbilitySaveDc === 'function')
+            ? RuleEngine.evaluateAbilitySaveDc({ dcFormula: ab.dcFormula, benefit: ab.benefit, spellLevel: ab.spellLevel }, character)
+            : null;
+          if (dcEval) slaDcNote = `🛡️ ${ab.save || 'Save'} DC ${dcEval.dc} [${dcEval.breakdown}]`;
+          else if (ab.save) slaDcNote = `🛡️ ${ab.save}`;
+        }
+      }
+      const breakdown = [slaTouchNote, slaDcNote, ab.summary, ab.action, rechargeNote, usesNote].filter(Boolean).join(' • ');
       // Healing powers also roll their heal dice (no attack roll, no save).
       let healTotal = null;
       let healNote = '';
@@ -4723,14 +4785,15 @@
         }
       }
       const fullBreakdown = [healNote, breakdown].filter(Boolean).join(' • ');
-      const icon = healTotal !== null ? '💚' : '✨';
+      const icon = isAttachedSpell ? '🔮' : (healTotal !== null ? '💚' : '✨');
+      const actionBadge = isAttachedSpell ? 'Cast' : 'Used';
       if (typeof addDiceHistoryEntry === 'function') {
         addDiceHistoryEntry(healTotal !== null
           ? { title: `${icon} ${ab.name} (Healing)`, formula: ab.healFormula, total: healTotal, breakdown: fullBreakdown }
-          : { title: `${icon} ${ab.name}`, formula: 'Use', total: 'Used', breakdown: fullBreakdown });
+          : { title: `${icon} ${ab.name}${isAttachedSpell ? ' (SLA)' : ''}`, formula: actionBadge, total: actionBadge, breakdown: fullBreakdown });
       }
       if (typeof showDiceTopToast === 'function') {
-        showDiceTopToast({ icon, title: ab.name, breakdown: fullBreakdown, total: healTotal !== null ? `${healTotal} HP` : 'Used' }, { stack: true });
+        showDiceTopToast({ icon, title: ab.name, breakdown: fullBreakdown, total: healTotal !== null ? `${healTotal} HP` : actionBadge }, { stack: true });
       }
     }
 
@@ -5090,6 +5153,7 @@
                 <span class="${is1 ? 'text-amber-200/90' : 'text-slate-400'}">${s1MainStats?.dmgType || 'Piercing'}</span>
               `}
             </div>
+            ${renderSituationalRiderPillsHtml(s1MainStats)}
           </div>
           <div class="shrink-0 text-right">
             <span class="text-[10px] font-bold px-2.5 py-1 rounded-lg ${is1 ? 'bg-amber-500 text-slate-950 font-black shadow' : 'bg-slate-800 text-slate-400 hover:text-slate-200'}">
@@ -5158,6 +5222,7 @@
               <span class="text-slate-600">•</span>
               <span class="${is2 ? 'text-sky-200/90' : 'text-slate-400'}">${s2OffStats?.dmgType || 'Bludgeoning'}</span>
             </div>
+            ${renderSituationalRiderPillsHtml(s2OffStats)}
           </div>
           <div class="shrink-0 text-right">
             <span class="text-[10px] font-bold px-2.5 py-1 rounded-lg ${is2 ? 'bg-sky-500 text-slate-950 font-black shadow' : 'bg-slate-800 text-amber-300 border border-amber-500/40 hover:bg-sky-950 hover:text-sky-200'}">
@@ -5207,6 +5272,7 @@
                 <span class="${is2 ? 'text-sky-200/90' : 'text-slate-400'}">${s2OffStats?.dmgType || 'Piercing'}</span>
               `}
             </div>
+            ${renderSituationalRiderPillsHtml(s2OffStats)}
           </div>
           <div class="shrink-0 text-right">
             <span class="text-[10px] font-bold px-2.5 py-1 rounded-lg ${is2 ? 'bg-sky-500 text-slate-950 font-black shadow' : 'bg-slate-800 text-slate-400 hover:text-slate-200'}">
@@ -8135,7 +8201,7 @@
         const totalCount = out.length;
         return out.map(({ nw, n }) => {
           const role = forcedRole || ((totalCount === 1 || nw.attackKind === 'primary2h') ? 'sole' : (nw.attackKind === 'secondary' ? 'secondary' : 'primary'));
-          const ev = RuleEngine.evaluateWeaponAttack(character, nw, Object.assign({}, natEvalBase, { naturalRole: role }));
+          const ev = RuleEngine.evaluateWeaponAttack(character, nw, Object.assign({}, natEvalBase, { naturalRole: role, activeRiders: getSessionActiveRiders(nw.id || nw.name || '') }));
           return {
             id: 'natural-' + nw.id + '-' + n,
             label: (nw.count || 1) > 1 ? (nw.name + ' ' + (n + 1)) : nw.name,
@@ -8170,7 +8236,8 @@
         charge,
         higherGround: hg,
         activeStance: character.activeStance || 'None',
-        customModifiers: nonChainMods
+        customModifiers: nonChainMods,
+        activeRiders: getSessionActiveRiders(wep.id || wep.name)
       });
 
       const stripFeatPrefix = (rawStr) => String(rawStr || '')
@@ -8263,7 +8330,8 @@
           charge,
           higherGround: hg,
           activeStance: character.activeStance || 'None',
-          customModifiers: nonChainMods
+          customModifiers: nonChainMods,
+          activeRiders: getSessionActiveRiders(offHandWep.id || offHandWep.name)
         });
       }
 
@@ -8864,28 +8932,26 @@
           }
         });
 
-        // Weapon Elemental Mods (Flaming, Frost, Shock, Holy, Unholy)
-        const wepElementalMods = atk.weapon?.elementalMods || (atk.hand === 'natural' ? [] : atk.hand === 'offHand' ? getResolvedOffHandWeapon(character)?.elementalMods : (character.weapons || []).find(w => w.name === (character.activeWeapon || character.tactical?.weaponSets?.set1?.mainWeapon))?.elementalMods) || [];
-        if (Array.isArray(wepElementalMods) && wepElementalMods.length > 0) {
-          wepElementalMods.forEach(em => {
-            if (em.dice && em.condition) {
-              // Situational rider: not rolled into the total, listed so the player can add it when it applies.
-              extraDetails.push(`${em.name || 'Rider'}: ${em.dice} ${em.condition} (situational, not included)`);
-            } else if (em.dice) {
-              const eMatch = em.dice.match(/(\d+)d(\d+)/i);
-              if (eMatch) {
-                const count = parseInt(eMatch[1]) || 1;
-                const sides = parseInt(eMatch[2]) || 6;
-                let eSum = 0;
-                for (let k = 0; k < count; k++) {
-                  eSum += Math.floor(Math.random() * sides) + 1;
-                }
-                extraDiceSum += eSum;
-                extraDetails.push(`${em.name || 'Element'}: +${eSum} ${em.type || ''}`);
-              }
+        // Engine-derived Weapon Extra & Toggled Situational Riders (replaces legacy elementalMods text pipeline)
+        const engineExtraParts = [
+          ...(Array.isArray(atk.evalResult?.extraDamageParts) ? atk.evalResult.extraDamageParts : []),
+          ...(Array.isArray(atk.evalResult?.activeSituationalDamageParts) ? atk.evalResult.activeSituationalDamageParts : [])
+        ];
+        engineExtraParts.forEach(ep => {
+          if (!ep || !ep.dice) return;
+          const eMatch = String(ep.dice).match(/(\d+)d(\d+)/i);
+          if (eMatch) {
+            const count = parseInt(eMatch[1], 10) || 1;
+            const sides = parseInt(eMatch[2], 10) || 6;
+            let eSum = Number(ep.bonus) || 0;
+            for (let k = 0; k < count; k++) {
+              eSum += Math.floor(Math.random() * sides) + 1;
             }
-          });
-        }
+            extraDiceSum += eSum;
+            const lbl = ep.condition ? `${ep.source || 'Rider'} (${ep.condition})` : (ep.source || 'Element');
+            extraDetails.push(`${lbl}: +${eSum} ${ep.type || ''}`.trim());
+          }
+        });
 
         const totalAttackDmg = atk.weaponRollSum + atk.flatDmg + extraDiceSum;
         grandTotalDmg += totalAttackDmg;
@@ -15289,6 +15355,10 @@
       Actions.register('combat:weapon-set-activate', (el, data, _event) => {
         const setNum = Number(data.setNum);
         if (setNum === 1 || setNum === 2) activateWeaponSet(setNum);
+      });
+      Actions.register('combat:toggle-situational-rider', (el, data, event) => {
+        if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+        if (data.weaponKey && data.riderId) toggleSessionSituationalRider(data.weaponKey, data.riderId);
       });
       Actions.register('combat:melee-fixed-toggle', (el, data, _event) => {
         if (data.modKey) toggleFixedMeleeModifier(data.modKey);

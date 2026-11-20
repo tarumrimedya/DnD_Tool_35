@@ -5852,14 +5852,25 @@
           : '<span class="lego-sum">' + esc(sumTxt) + '</span>') +
         '</button>';
       const headHtml = H(toggleBtn + blockStatusPills(b, p, open) + levelGainChip(b, p, listPath), blockActionBar(b, listPath, i, arr.length));
+      const recipHtml = (open && ['stat', 'roll', 'defense', 'effect', 'carrier'].indexOf(b.type) >= 0)
+        ? '<div class="fs-row" style="margin-top:6px;gap:8px;align-items:center">' +
+            '<span class="fs-muted" style="font-size:11px;font-weight:600">Recipient</span>' +
+            sel(p + '.recipient', b.recipient || 'self', [
+              ['self', 'Self (default)'],
+              ['allies', 'Allies'],
+              ['target', 'Target'],
+              ['area', 'Area']
+            ], { narrow: true }) +
+          '</div>'
+        : '';
       if (!T.container) {
         const cls = 'lego-block lego-tab ' + T.color + (open ? '' : ' is-collapsed') + (isUnstructuredBlock(b) ? ' is-unstructured' : '');
-        return '<div class="' + cls + '">' + headHtml + (open ? blockControls(b, p) : '') + '</div>';
+        return '<div class="' + cls + '">' + headHtml + (open ? blockControls(b, p) + recipHtml : '') + '</div>';
       }
       if (!open) {
         return '<div class="lego-c ' + T.color + ' is-collapsed"><div class="c-top">' + headHtml + '</div></div>';
       }
-      const head = headHtml + blockControls(b, p);
+      const head = headHtml + blockControls(b, p) + recipHtml;
       let inner = '';
       if (T.container === 'branches') {
         const flow = b.flow || 'while';

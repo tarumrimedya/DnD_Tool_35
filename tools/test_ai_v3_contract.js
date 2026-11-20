@@ -785,6 +785,26 @@ function runAiV3ContractTests() {
     const partialZeroHit = rmCtx2.RuleMaster.resolveLocalZeroTokenQuery(partialText);
     check(Array.isArray(partialZeroHit) && partialZeroHit.length === 0,
       'resolveLocalZeroTokenQuery must not prematurely swallow partial multi-clause rules before Hybrid AI Refine');
+
+    // (g) Sprint E3b: recipient ('allies' | 'target' | 'area' | default 'self') round-trip through ForgeSandbox
+    const recipEntry = {
+      id: 'test-e3b-recipient-roundtrip',
+      name: 'Recipient Roundtrip Aura',
+      type: 'ClassAbility',
+      schemaVersion: 3,
+      effects: [
+        { type: 'stat', targets: ['ac.total'], mode: 'flat', value: 2, btype: 'Sacred', recipient: 'allies' },
+        { type: 'stat', targets: ['save.all'], mode: 'flat', value: -2, btype: 'Untyped', recipient: 'target' },
+        { type: 'roll', rollKind: 'damage', dice: '3d6', dmgType: 'Fire', recipient: 'area' },
+        { type: 'stat', targets: ['atk.all'], mode: 'flat', value: 1, btype: 'Morale' }
+      ]
+    };
+    const recipImported = Forge.fromCanonicalV3(recipEntry);
+    const recipExported = Forge.exportEntry(recipImported);
+    check(recipExported.effects[0].recipient === 'allies', 'ForgeSandbox round-trip must preserve recipient="allies"');
+    check(recipExported.effects[1].recipient === 'target', 'ForgeSandbox round-trip must preserve recipient="target"');
+    check(recipExported.effects[2].recipient === 'area', 'ForgeSandbox round-trip must preserve recipient="area"');
+    check(recipExported.effects[3].recipient === undefined, 'ForgeSandbox round-trip must omit default recipient="self" unless explicitly authored');
   }
 
   const elapsedMs = Date.now() - startMs;
