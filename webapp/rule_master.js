@@ -4111,104 +4111,109 @@ Return 1 complete Pure Canonical V3 entry inside {"entries": [...]} (blueprint: 
     }
 
     const promptText = this.buildTargetedAiPrompt(cleanQuery, effectiveCategory);
-    const taskModels = this._sanitizeModelList(await this.getAvailableGeminiModels(apiKey, false, 'QUICK_SEARCH'));
-    const availableModels = this._expandGeminiCandidates(taskModels);
-    let lastError = null;
-    const attemptErrors = [];
+    this.emitPersonaEvent({ persona: 'rulemaster', state: 'thinking', message: `Crafting "${cleanQuery}"...` });
+    try {
+      const taskModels = this._sanitizeModelList(await this.getAvailableGeminiModels(apiKey, false, 'QUICK_SEARCH'));
+      const availableModels = this._expandGeminiCandidates(taskModels);
+      let lastError = null;
+      const attemptErrors = [];
 
-    for (const model of availableModels) {
-      if (this._isDeprecatedGeminiModel(model)) continue;
-      if (statusTextEl) {
-        statusTextEl.textContent = `Querying "${cleanQuery}" ➔ ${model}...`;
-      }
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
+      for (const model of availableModels) {
+        if (this._isDeprecatedGeminiModel(model)) continue;
+        if (statusTextEl) {
+          statusTextEl.textContent = `Querying "${cleanQuery}" ➔ ${model}...`;
+        }
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
 
-      const genConfig = {
-        temperature: 0.1,
-        responseMimeType: "application/json"
-      };
-      if (model.includes('2.5')) {
-        genConfig.thinkingConfig = { thinkingBudget: 0 };
-      }
+        const genConfig = {
+          temperature: 0.1,
+          responseMimeType: "application/json"
+        };
+        if (model.includes('2.5')) {
+          genConfig.thinkingConfig = { thinkingBudget: 0 };
+        }
 
-      const payload = {
-        contents: [{ parts: [{ text: promptText }] }],
-        generationConfig: genConfig
-      };
+        const payload = {
+          contents: [{ parts: [{ text: promptText }] }],
+          generationConfig: genConfig
+        };
 
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 12000);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 12000);
 
-      try {
-        const response = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-          signal: controller.signal
-        });
-        clearTimeout(timeoutId);
+        try {
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+            signal: controller.signal
+          });
+          clearTimeout(timeoutId);
 
-        if (response.ok) {
-          const data = await response.json();
-          const rawAiText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (rawAiText) {
-            try {
-              let parsed = null;
+          if (response.ok) {
+            const data = await response.json();
+            const rawAiText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (rawAiText) {
               try {
-                parsed = JSON.parse(rawAiText);
-              } catch (e) {
-                const match = rawAiText.match(/\{[\s\S]*\}/);
-                if (match) {
-                  parsed = JSON.parse(match[0]);
-                } else {
-                  throw new Error('AI response is not in valid JSON format.');
+                let parsed = null;
+                try {
+                  parsed = JSON.parse(rawAiText);
+                } catch (e) {
+                  const match = rawAiText.match(/\{[\s\S]*\}/);
+                  if (match) {
+                    parsed = JSON.parse(match[0]);
+                  } else {
+                    throw new Error('AI response is not in valid JSON format.');
+                  }
                 }
-              }
 
-              let rawList = [];
-              if (parsed && Array.isArray(parsed.entries)) {
-                rawList = parsed.entries;
-              } else if (Array.isArray(parsed)) {
-                rawList = parsed;
-              } else if (parsed && typeof parsed === 'object') {
-                rawList = [parsed];
-              }
-
-              rawList = await this._validateAndRepairAiItems(rawList, bpHint, model, availableModels, apiKey, statusTextEl);
-
-              const normalizedEntries = [];
-              rawList.forEach(rawItem => {
-                const isArrayRow = Array.isArray(rawItem);
-                const norm = this.normalizeEntry(rawItem, isArrayRow);
-                if (norm && norm.name) {
-                  normalizedEntries.push(norm);
+                let rawList = [];
+                if (parsed && Array.isArray(parsed.entries)) {
+                  rawList = parsed.entries;
+                } else if (Array.isArray(parsed)) {
+                  rawList = parsed;
+                } else if (parsed && typeof parsed === 'object') {
+                  rawList = [parsed];
                 }
-              });
-              if (normalizedEntries.length > 0) return normalizedEntries;
-            } catch (pErr) {
-              lastError = `JSON Parse Error (${model}): ${pErr.message}`;
-              attemptErrors.push({ model, message: lastError, retired: false });
+
+                rawList = await this._validateAndRepairAiItems(rawList, bpHint, model, availableModels, apiKey, statusTextEl);
+
+                const normalizedEntries = [];
+                rawList.forEach(rawItem => {
+                  const isArrayRow = Array.isArray(rawItem);
+                  const norm = this.normalizeEntry(rawItem, isArrayRow);
+                  if (norm && norm.name) {
+                    normalizedEntries.push(norm);
+                  }
+                });
+                if (normalizedEntries.length > 0) return normalizedEntries;
+              } catch (pErr) {
+                lastError = `JSON Parse Error (${model}): ${pErr.message}`;
+                attemptErrors.push({ model, message: lastError, retired: false });
+              }
             }
+          } else {
+            const errJson = await response.json().catch(() => ({}));
+            lastError = errJson.error?.message || `HTTP ${response.status} (${model})`;
+            const retired = this.isGeminiModelRetiredError(response.status, lastError);
+            attemptErrors.push({ model, message: lastError, retired });
+            if (retired) this.markGeminiModelRetired(model);
           }
-        } else {
-          const errJson = await response.json().catch(() => ({}));
-          lastError = errJson.error?.message || `HTTP ${response.status} (${model})`;
-          const retired = this.isGeminiModelRetiredError(response.status, lastError);
-          attemptErrors.push({ model, message: lastError, retired });
-          if (retired) this.markGeminiModelRetired(model);
+        } catch (netErr) {
+          clearTimeout(timeoutId);
+          if (netErr && netErr.name === 'AbortError') {
+            lastError = `Timeout (12s) - ${model} did not respond.`;
+          } else {
+            lastError = `${netErr.message} (${model})`;
+          }
+          attemptErrors.push({ model, message: lastError, retired: false });
         }
-      } catch (netErr) {
-        clearTimeout(timeoutId);
-        if (netErr && netErr.name === 'AbortError') {
-          lastError = `Timeout (12s) - ${model} did not respond.`;
-        } else {
-          lastError = `${netErr.message} (${model})`;
-        }
-        attemptErrors.push({ model, message: lastError, retired: false });
       }
-    }
 
-    throw new Error(this._summarizeGeminiErrors(attemptErrors) || lastError || `No official D&D 3.5e rule or item found for "${query}".`);
+      throw new Error(this._summarizeGeminiErrors(attemptErrors) || lastError || `No official D&D 3.5e rule or item found for "${query}".`);
+    } finally {
+      this.emitPersonaEvent({ persona: 'rulemaster', state: 'idle', message: '' });
+    }
   },
 
   async queryAiRule() {
@@ -6965,9 +6970,110 @@ Allowed recommendedAction values: "KEEP" | "MODIFY" | "REMOVE".`;
     } catch (err) {
       const contentEl = document.getElementById('rule-master-audit-content');
       if (contentEl) {
-        contentEl.innerHTML = `<div class="p-3 text-rose-300 bg-rose-950/40 rounded border border-rose-800">Error: ${err.message}</div>`;
+        contentEl.innerHTML = `<div class="p-3 text-rose-300 bg-rose-950/40 rounded border border-rose-800">Error: ${RuleMaster.escapeHtml(err.message)}</div>`;
       }
     }
+  },
+
+  /**
+   * Emit a reactive persona lifecycle event so the corner Rule Master / Chronicler
+   * companion visibly reacts when Craft with Rule Master or AI tasks run.
+   */
+  emitPersonaEvent(detail) {
+    if (typeof window === 'undefined' || typeof window.dispatchEvent !== 'function') return;
+    try {
+      window.dispatchEvent(new CustomEvent('rulemaster:persona', {
+        detail: Object.assign({ persona: 'rulemaster', state: 'idle', message: '' }, detail || {})
+      }));
+    } catch (e) {
+      reportError('rule_master:emitPersonaEvent', e);
+    }
+  },
+
+  /**
+   * Shared dynamic-router Gemini chat/text caller for the Corner Assistant
+   * (Rule Master & Chronicler) and Hub Notes AI synthesis.
+   * Uses the user's BYOK key and 9-slot failover routing matrix.
+   */
+  async askAssistantChat({ systemPrompt = '', messages = [], userPrompt = '', temperature = 0.2, taskType = 'QUICK_SEARCH', responseMimeType = 'application/json', timeoutMs = 20000, totalTimeoutMs = 25000, onProgress = null } = {}) {
+    const apiKey = (this.getApiKey() || '').trim();
+    if (!apiKey) {
+      throw new Error('NO_API_KEY');
+    }
+
+    const deadline = Date.now() + Math.max(1000, Number(totalTimeoutMs) || 25000);
+    const taskModels = this._sanitizeModelList(await this.getAvailableGeminiModels(apiKey, false, taskType));
+    const candidates = this._expandGeminiCandidates(taskModels);
+    const contents = Array.isArray(messages) && messages.length > 0
+      ? messages.map(m => ({
+          role: m.role === 'model' ? 'model' : 'user',
+          parts: [{ text: String(m.text || '') }]
+        }))
+      : [{ role: 'user', parts: [{ text: String(userPrompt || '') }] }];
+
+    let lastErr = null;
+    const attemptErrors = [];
+
+    for (const model of candidates) {
+      if (this._isDeprecatedGeminiModel(model)) continue;
+      const remainingMs = deadline - Date.now();
+      if (remainingMs <= 500) {
+        attemptErrors.push(`total timeout (${Math.round(totalTimeoutMs / 1000)}s) reached`);
+        break;
+      }
+      if (typeof onProgress === 'function') {
+        try { onProgress(model); } catch (e) { reportError('rule_master:askAssistantChat:onProgress', e); }
+      }
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
+      const genConfig = { temperature };
+      if (responseMimeType) genConfig.responseMimeType = responseMimeType;
+      if (model.includes('2.5')) {
+        genConfig.thinkingConfig = { thinkingBudget: 0 };
+      }
+
+      const payload = { contents, generationConfig: genConfig };
+      if (systemPrompt) {
+        payload.systemInstruction = { parts: [{ text: String(systemPrompt) }] };
+      }
+
+      const controller = new AbortController();
+      const attemptTimeout = Math.min(timeoutMs, remainingMs);
+      const timer = setTimeout(() => controller.abort(), attemptTimeout);
+      try {
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-goog-api-key': apiKey
+          },
+          body: JSON.stringify(payload),
+          signal: controller.signal
+        });
+        clearTimeout(timer);
+
+        if (res.ok) {
+          const data = await res.json();
+          const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+          if (rawText.trim()) {
+            return { text: rawText.trim(), model };
+          }
+          attemptErrors.push(`${model}: empty response`);
+        } else {
+          const errJson = await res.json().catch(() => ({}));
+          const msg = errJson?.error?.message || `HTTP ${res.status}`;
+          attemptErrors.push(`${model}: ${msg}`);
+          lastErr = new Error(msg);
+          if (res.status === 401 || res.status === 403) break;
+        }
+      } catch (err) {
+        clearTimeout(timer);
+        const msg = err?.name === 'AbortError' ? 'timeout' : (err?.message || 'network error');
+        attemptErrors.push(`${model}: ${msg}`);
+        lastErr = err;
+      }
+    }
+
+    throw new Error(this._summarizeGeminiErrors(attemptErrors) || lastErr?.message || 'Gemini API did not respond.');
   }
 };
 

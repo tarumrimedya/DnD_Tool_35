@@ -69,6 +69,7 @@ const CORE_FILES = [
   'hub_dice.js',
   'hub_notes.js',
   'hub_ai.js',
+  'ai_assistant.js',
   'dice3d.js'
 ];
 
@@ -486,6 +487,7 @@ function main() {
     'hub_dice.js':        { inlineEvents: 0,   windowAssigns: 34 },
     'hub_notes.js':       { inlineEvents: 0,   windowAssigns: 1 },
     'hub_ai.js':          { inlineEvents: 0,   windowAssigns: 0 },
+    'ai_assistant.js':    { inlineEvents: 0,   windowAssigns: 0 },
     'dice3d.js':          { inlineEvents: 0,   windowAssigns: 1 },
     'forge_sandbox.html': { inlineEvents: 0,   windowAssigns: 0 },
     'forge_sandbox.js':   { inlineEvents: 0,   windowAssigns: 1 }

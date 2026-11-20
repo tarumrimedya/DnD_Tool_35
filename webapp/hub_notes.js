@@ -748,6 +748,95 @@
     if (countEl) countEl.textContent = String(target.notesList.length);
   }
 
+  /**
+   * Programmatic note creation for Owl Chronicler (Sprint E4.2).
+   * Writes through the exact same target/save/render pipeline as addQuickNote().
+   */
+  function addNoteProgrammatic({ title = '', body = '', tags = [] } = {}) {
+    let cleanTitle = String(title || '').trim();
+    let cleanBody = String(body || '').trim();
+    if (!cleanTitle && !cleanBody) return { ok: false, reason: 'Empty note.' };
+
+    const target = getActiveNotesTarget();
+    if (!target) return { ok: false, reason: 'No active campaign or character.' };
+
+    const tagSuffix = Array.isArray(tags) && tags.length > 0
+      ? ' ' + tags.map(t => String(t || '').trim()).filter(Boolean).map(t => t.startsWith('#') ? t : `#${t}`).join(' ')
+      : '';
+    if (tagSuffix && !cleanBody.includes(tagSuffix.trim())) {
+      cleanBody = (cleanBody + tagSuffix).trim();
+    }
+    if (!cleanTitle && cleanBody) {
+      cleanTitle = cleanBody.split('\n')[0].slice(0, 56).trim();
+    }
+
+    const fullContent = (cleanTitle ? cleanTitle + ' ' : '') + cleanBody;
+    const newNote = {
+      id: 'note_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+      title: cleanTitle,
+      text: cleanBody,
+      pinned: false,
+      completed: false,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      tags: extractTags(fullContent)
+    };
+
+    target.notesList.unshift(newNote);
+    saveNotesChanges(target);
+    renderInlineNotes();
+    renderFullNotesModalList();
+    const countEl = document.getElementById('hub-notes-tab-count');
+    if (countEl) countEl.textContent = String(target.notesList.length);
+    return { ok: true, id: newNote.id, title: newNote.title || cleanBody.slice(0, 40) };
+  }
+
+  /**
+   * Client-side keyword + tag pre-filter over campaign/character notes
+   * for zero-hallucination Owl Chronicler Q&A (Sprint E4.2).
+   */
+  function searchRelevantNotes(query, limit = 8) {
+    const target = getActiveNotesTarget();
+    if (!target || !Array.isArray(target.notesList) || target.notesList.length === 0) return [];
+    const tokens = String(query || '').toLowerCase()
+      .replace(/[^\p{L}\p{N}#_-]+/gu, ' ')
+      .split(/\s+/)
+      .filter(t => t.length >= 2);
+
+    const scored = target.notesList.map((n, idx) => {
+      const title = String(n.title || '');
+      const text = String(n.text || '');
+      const tags = Array.isArray(n.tags) ? n.tags : [];
+      const hay = `${title} ${text} ${tags.join(' ')}`.toLowerCase();
+      let score = n.pinned ? 1.5 : 0;
+      for (const tok of tokens) {
+        if (title.toLowerCase().includes(tok)) score += 4;
+        else if (tags.some(tg => String(tg).toLowerCase().includes(tok))) score += 3.5;
+        else if (hay.includes(tok)) score += 2;
+      }
+      // Small recency bonus so general "summarize recent session" queries pick newest notes
+      score += Math.max(0, 1 - idx * 0.05);
+      return { n, score };
+    });
+
+    scored.sort((a, b) => b.score - a.score);
+    return scored.slice(0, limit).map(({ n }) => ({
+      id: n.id,
+      title: n.title || String(n.text || '').split('\n')[0].slice(0, 50) || 'Untitled Note',
+      tags: Array.isArray(n.tags) ? n.tags : [],
+      pinned: Boolean(n.pinned),
+      completed: Boolean(n.completed),
+      date: n.updatedAt || n.createdAt ? new Date(n.updatedAt || n.createdAt).toISOString().slice(0, 10) : '',
+      text: String(n.text || '').slice(0, 600)
+    }));
+  }
+
+  function openNoteById(noteId) {
+    if (!noteId) return false;
+    openFullNotesModal(noteId, 'editor');
+    return true;
+  }
+
   function insertTagIntoQuickInput(tag) {
     const titleInput = document.getElementById('hub-quick-note-title');
     const bodyInput = document.getElementById('hub-quick-note-input');
@@ -1983,11 +2072,35 @@
     let apiKey = localStorage.getItem('gemini_api_key') || (window.RuleMaster && typeof window.RuleMaster.getApiKey === 'function' ? window.RuleMaster.getApiKey() : '');
     if (!apiKey) {
       apiKey = await DnDUI.prompt('⚡ Enter your Google AI Studio Gemini API Key for the AI Note Synthesizer:\n(Stored locally in your browser only)', '', { inputType: 'password' });
-      if (!apiKey || !apiKey.trim()) throw new Error('No API key entered.');
+      if (!apiKey || !apiKey.trim()) throw new Error('Gemini API key is required for AI Note Synthesis. Enter your Google AI Studio key in Settings or when prompted.');
       apiKey = apiKey.trim();
       localStorage.setItem('gemini_api_key', apiKey);
       if (window.RuleMaster && typeof window.RuleMaster.setApiKey === 'function') {
         window.RuleMaster.setApiKey(apiKey);
+      }
+    }
+
+    if (window.RuleMaster && typeof window.RuleMaster.askAssistantChat === 'function') {
+      window.RuleMaster.emitPersonaEvent?.({ persona: 'chronicler', state: 'working', message: 'Owl Chronicler is reading campaign notes...' });
+      try {
+        const out = await window.RuleMaster.askAssistantChat({
+          systemPrompt,
+          userPrompt,
+          temperature: 0.3,
+          taskType: 'QUICK_SEARCH',
+          responseMimeType: null,
+          onProgress: (model) => {
+            if (typeof onProgress === 'function') onProgress(`Connecting to Owl Chronicler (${model})...`);
+          }
+        });
+        window.RuleMaster.emitPersonaEvent?.({ persona: 'chronicler', state: 'idle', message: 'Synthesis complete.' });
+        return out.text;
+      } catch (err) {
+        window.RuleMaster.emitPersonaEvent?.({ persona: 'chronicler', state: 'idle', message: '' });
+        if (err && String(err.message) === 'NO_API_KEY') {
+          throw new Error('No Gemini API key configured. Open Settings to enter your Google AI Studio key before running AI Note Synthesis.');
+        }
+        throw err;
       }
     }
 
@@ -1997,10 +2110,13 @@
     for (const model of models) {
       try {
         if (typeof onProgress === 'function') onProgress(`Connecting to Rule Master AI (${model})...`);
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
         const res = await fetch(url, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'x-goog-api-key': apiKey
+          },
           body: JSON.stringify({
             contents: [{ parts: [{ text: userPrompt }] }],
             systemInstruction: { parts: [{ text: systemPrompt }] },
@@ -3083,7 +3199,11 @@ RULES:
     openAiChroniclerWithActiveNote,
     runAiChronicler,
     saveAiSynthesisAsNote,
-    copyAiSynthesisToClipboard
+    copyAiSynthesisToClipboard,
+    getActiveNotesTarget,
+    addNoteProgrammatic,
+    searchRelevantNotes,
+    openNoteById
   };
 
   document.addEventListener('blur', (e) => {

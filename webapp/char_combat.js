@@ -14380,6 +14380,10 @@
     }
 
     function toggleSpotlightTerminal(forceState = null) {
+      if (typeof window !== 'undefined' && window.AiAssistant && typeof window.AiAssistant.toggle === 'function') {
+        window.AiAssistant.toggle(forceState === null ? undefined : Boolean(forceState));
+        return;
+      }
       const modal = document.getElementById('modal-spotlight-terminal');
       const input = document.getElementById('spotlight-terminal-input');
       if (!modal) return;
@@ -15349,6 +15353,7 @@
       window._spotlightTerminalKeyListenerBound = true;
       document.addEventListener('keydown', (e) => {
         if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+          if (window.AiAssistant) return;
           e.preventDefault();
           toggleSpotlightTerminal();
           return;
