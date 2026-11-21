@@ -283,8 +283,9 @@
   };
 
   let _activeGuideCleanup = null;
+  let _preGuideViewState = null;
 
-  function clearGuideSpotlight() {
+  function clearGuideSpotlight(restoreChat = false) {
     if (typeof _activeGuideCleanup === 'function') {
       try { _activeGuideCleanup(); } catch (e) { /* noop */ }
       _activeGuideCleanup = null;
@@ -293,16 +294,30 @@
     const tip = document.getElementById('rm-guide-tip');
     if (ring) ring.remove();
     if (tip) tip.remove();
+    if (_guidePillEl) _guidePillEl.classList.add('is-hidden');
+    if (restoreChat && _viewState === 'minimized') {
+      const target = _preGuideViewState || 'quick';
+      _preGuideViewState = null;
+      setViewState(target);
+    } else if (_viewState === 'minimized') {
+      _preGuideViewState = null;
+      setViewState('closed');
+    }
   }
 
   function showUiGuideTarget(targetKey, customLabel) {
-    clearGuideSpotlight();
+    clearGuideSpotlight(false);
     const spec = UI_GUIDE_TARGETS[targetKey];
     if (!spec) return { ok: false, reason: `Unknown UI guide target "${targetKey}".` };
 
     const curPage = detectPageType();
     if (spec.page && spec.page !== curPage) {
       return { ok: false, reason: `This control lives on the ${spec.page} page.` };
+    }
+
+    if (_viewState === 'quick' || _viewState === 'panel') {
+      _preGuideViewState = _viewState;
+      setViewState('minimized');
     }
 
     if (spec.tab && typeof root.switchTab === 'function') {
@@ -316,6 +331,8 @@
         if (typeof reportError === 'function') reportError('ai_assistant:guideBeforeHighlight', e);
       }
     }
+
+    const displayLabel = customLabel || spec.label;
 
     const locateAndHighlight = () => {
       let targetEl = null;
@@ -332,7 +349,10 @@
           if (el) { targetEl = el; break; }
         }
       }
-      if (!targetEl) return false;
+      if (!targetEl) {
+        clearGuideSpotlight(true);
+        return false;
+      }
 
       try {
         targetEl.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
@@ -345,10 +365,16 @@
       const tip = document.createElement('div');
       tip.id = 'rm-guide-tip';
       tip.className = 'rm-guide-tip';
-      tip.innerHTML = `<span class="rm-guide-tip-dot"></span><span>${_esc(customLabel || spec.label)}</span><button type="button" class="rm-guide-tip-close" aria-label="Dismiss">&times;</button>`;
+      tip.innerHTML = `<span class="rm-guide-tip-dot"></span><span>${_esc(displayLabel)}</span><button type="button" class="rm-guide-tip-close" aria-label="Dismiss">&times;</button>`;
 
       document.body.appendChild(ring);
       document.body.appendChild(tip);
+
+      if (_guidePillEl) {
+        const txt = _guidePillEl.querySelector('#rm-assist-guide-pill-text');
+        if (txt) txt.textContent = `📍 Showing: ${displayLabel}`;
+        _guidePillEl.classList.remove('is-hidden');
+      }
 
       const positionOverlay = () => {
         const rect = targetEl.getBoundingClientRect();
@@ -367,16 +393,16 @@
       positionOverlay();
       const rafTimer = setTimeout(positionOverlay, 320);
       const onScrollOrResize = () => positionOverlay();
-      const onTargetClick = () => clearGuideSpotlight();
-      const onKey = (ev) => { if (ev.key === 'Escape') clearGuideSpotlight(); };
+      const onTargetClick = () => clearGuideSpotlight(false);
+      const onKey = (ev) => { if (ev.key === 'Escape') clearGuideSpotlight(true); };
       const closeBtn = tip.querySelector('.rm-guide-tip-close');
-      if (closeBtn) closeBtn.addEventListener('click', clearGuideSpotlight);
+      if (closeBtn) closeBtn.addEventListener('click', () => clearGuideSpotlight(true));
 
       window.addEventListener('scroll', onScrollOrResize, true);
       window.addEventListener('resize', onScrollOrResize);
       targetEl.addEventListener('click', onTargetClick, { once: true });
       document.addEventListener('keydown', onKey);
-      const autoTimer = setTimeout(clearGuideSpotlight, 12000);
+      const autoTimer = setTimeout(() => clearGuideSpotlight(false), 14000);
 
       _activeGuideCleanup = () => {
         clearTimeout(rafTimer);
@@ -391,7 +417,7 @@
 
     // Wait one micro-frame after tab switch so layout settles
     setTimeout(locateAndHighlight, 45);
-    return { ok: true, label: customLabel || spec.label };
+    return { ok: true, label: displayLabel, targetKey };
   }
 
   // ---------------------------------------------------------------------------
@@ -1172,8 +1198,8 @@
       .rm-assist-bubble.is-chronicler { border-color: rgba(245, 158, 11, 0.8); color: #fef3c7; }
 
       .rm-assist-panel {
-        position: fixed; right: 18px; bottom: 80px; z-index: 48;
-        width: 400px; max-width: calc(100vw - 24px); max-height: 76vh; max-height: 76dvh;
+        position: fixed; right: 18px; bottom: 84px; z-index: 48;
+        width: 400px; max-width: calc(100vw - 24px); max-height: 70vh; max-height: 70dvh;
         display: flex; flex-direction: column; overflow: hidden;
         border-radius: 16px; background: rgba(2, 6, 23, 0.97);
         border: 1.5px solid rgba(99, 102, 241, 0.75);
@@ -1183,6 +1209,75 @@
       }
       .rm-assist-panel.is-hidden { display: none; }
       .rm-assist-panel.is-chronicler { border-color: rgba(245, 158, 11, 0.85); }
+
+      /* Option B Stage 1: Quick Command Bar + Speech Bubble beside live diorama */
+      .rm-assist-quickbar {
+        position: fixed; right: 82px; bottom: 18px; z-index: 48;
+        width: min(430px, calc(100vw - 100px));
+        display: flex; flex-direction: column; gap: 7px;
+        font-family: system-ui, -apple-system, sans-serif;
+      }
+      .rm-assist-quickbar.is-hidden { display: none; }
+      .rm-assist-quick-reply {
+        padding: 9px 12px; border-radius: 14px;
+        background: rgba(15, 23, 42, 0.97); color: #e2e8f0;
+        border: 1.5px solid rgba(99, 102, 241, 0.72);
+        font-size: 12px; line-height: 1.42; max-height: 36dvh; overflow-y: auto;
+        box-shadow: 0 16px 36px rgba(0, 0, 0, 0.7); backdrop-filter: blur(10px);
+      }
+      .rm-assist-quick-reply.is-hidden { display: none; }
+      .rm-assist-quick-reply.is-chronicler { border-color: rgba(245, 158, 11, 0.85); color: #fef3c7; }
+      .rm-assist-quick-form {
+        display: flex; align-items: center; gap: 5px; padding: 6px 8px;
+        border-radius: 14px; background: rgba(2, 6, 23, 0.96);
+        border: 1.5px solid rgba(99, 102, 241, 0.82);
+        box-shadow: 0 16px 38px rgba(0, 0, 0, 0.75); backdrop-filter: blur(10px);
+      }
+      .rm-assist-quickbar.is-chronicler .rm-assist-quick-form { border-color: rgba(245, 158, 11, 0.85); }
+
+      /* 0-Token Instant Typeahead Suggestions (UI Locators + Commands) */
+      .rm-assist-suggest {
+        display: flex; flex-direction: column; gap: 3px;
+        padding: 6px 8px; background: rgba(15, 23, 42, 0.98);
+        border: 1px solid rgba(56, 189, 248, 0.38); border-radius: 12px;
+        max-height: 156px; overflow-y: auto;
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.65);
+      }
+      .rm-assist-panel .rm-assist-suggest {
+        border-radius: 0; border-left: none; border-right: none; border-bottom: none;
+        box-shadow: none;
+      }
+      .rm-assist-suggest.is-hidden { display: none; }
+      .rm-assist-suggest-item {
+        display: flex; align-items: center; justify-content: space-between; gap: 8px;
+        padding: 6px 8px; border-radius: 8px; border: 1px solid transparent;
+        background: rgba(2, 6, 23, 0.7); color: #e2e8f0;
+        font-size: 11.5px; text-align: left; cursor: pointer;
+      }
+      .rm-assist-suggest-item:hover { border-color: #38bdf8; background: rgba(30, 41, 59, 0.95); }
+      .rm-assist-suggest-kind {
+        font-size: 9.5px; font-weight: 800; padding: 2px 6px; border-radius: 5px; flex-shrink: 0;
+        background: rgba(56, 189, 248, 0.16); color: #7dd3fc;
+      }
+      .rm-assist-suggest-kind.is-cmd { background: rgba(16, 185, 129, 0.16); color: #6ee7b7; }
+      .rm-assist-rehighlight {
+        font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 6px;
+        background: rgba(56, 189, 248, 0.16); color: #7dd3fc;
+        border: 1px solid rgba(56, 189, 248, 0.45); cursor: pointer;
+      }
+      .rm-assist-rehighlight:hover { background: rgba(56, 189, 248, 0.3); color: #ffffff; }
+
+      /* Auto-Minimized Guide Pill when guide_ui highlights a page target */
+      .rm-assist-guide-pill {
+        position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); z-index: 10045;
+        display: inline-flex; align-items: center; gap: 8px;
+        padding: 7px 12px; border-radius: 9999px;
+        background: rgba(2, 6, 23, 0.96); border: 1.5px solid #38bdf8;
+        color: #f8fafc; font-size: 11.5px; font-weight: 700;
+        box-shadow: 0 14px 34px rgba(0, 0, 0, 0.78), 0 0 22px rgba(56, 189, 248, 0.32);
+        max-width: calc(100vw - 24px); font-family: system-ui, -apple-system, sans-serif;
+      }
+      .rm-assist-guide-pill.is-hidden { display: none; }
 
       .rm-assist-hdr {
         display: flex; align-items: center; justify-content: space-between; gap: 8px;
@@ -1319,8 +1414,10 @@
         .rm-assist-fab { right: 12px; bottom: 74px; width: 46px; height: 46px; font-size: 21px; }
         .rm-assist-fab-icon svg { width: 58px; height: 55px; transform: translateY(-4px); }
         .rm-assist-bubble { right: 64px; bottom: 80px; max-width: 210px; }
-        .rm-assist-panel { right: 8px; left: 8px; bottom: 72px; width: auto; max-width: none; max-height: 70vh; max-height: 70dvh; }
-        .rm-assist-log { max-height: 44vh; max-height: 44dvh; }
+        .rm-assist-quickbar { right: 8px; left: 8px; bottom: 128px; width: auto; }
+        .rm-assist-panel { right: 8px; left: 8px; bottom: 128px; width: auto; max-width: none; max-height: 62vh; max-height: 62dvh; }
+        .rm-assist-log { max-height: 36vh; max-height: 36dvh; }
+        .rm-assist-guide-pill { bottom: 78px; }
       }
     `;
     document.head.appendChild(style);
@@ -1331,7 +1428,10 @@
   // ---------------------------------------------------------------------------
   let _fabEl = null;
   let _bubbleEl = null;
+  let _quickEl = null;
+  let _guidePillEl = null;
   let _panelEl = null;
+  let _viewState = 'closed'; // 'closed' | 'quick' | 'panel' | 'minimized'
   let _svgUid = 0;
   let _poseTimer = null;
   let _ambientInterval = null;
@@ -1690,23 +1790,29 @@
 
   function setPersonaVisual(persona, working = false, poseHint = '') {
     _persona = persona === 'chronicler' ? 'chronicler' : 'rulemaster';
+    const isOwl = _persona === 'chronicler';
     if (_fabEl) {
-      _fabEl.classList.toggle('is-chronicler', _persona === 'chronicler');
+      _fabEl.classList.toggle('is-chronicler', isOwl);
       _fabEl.classList.toggle('is-working', Boolean(working));
     }
+    if (_quickEl) {
+      _quickEl.classList.toggle('is-chronicler', isOwl);
+      const qReply = _quickEl.querySelector('#rm-assist-quick-reply');
+      if (qReply) qReply.classList.toggle('is-chronicler', isOwl);
+    }
     if (_panelEl) {
-      _panelEl.classList.toggle('is-chronicler', _persona === 'chronicler');
+      _panelEl.classList.toggle('is-chronicler', isOwl);
       const hdrName = _panelEl.querySelector('#rm-assist-hdr-name');
       const hdrSub = _panelEl.querySelector('#rm-assist-hdr-sub');
-      if (hdrName) hdrName.textContent = _persona === 'chronicler' ? 'Chronicler (Owl Familiar)' : 'Rule Master';
+      if (hdrName) hdrName.textContent = isOwl ? 'Chronicler (Owl Familiar)' : 'Rule Master';
       if (hdrSub) {
-        hdrSub.textContent = _persona === 'chronicler'
+        hdrSub.textContent = isOwl
           ? 'Campaign Notes • Lore Q&A • Note Taker'
           : '3.5e RAW • Live App Guide • Sheet Commands';
       }
     }
     if (working) {
-      const workPose = poseHint || (_persona === 'chronicler' ? 'search' : 'scroll');
+      const workPose = poseHint || (isOwl ? 'search' : 'scroll');
       triggerPersonaPose(_persona, workPose, 0);
     } else if (poseHint) {
       triggerPersonaPose(_persona, poseHint, 2800);
@@ -1724,6 +1830,39 @@
     ).join('') + `<button type="button" class="rm-assist-cmd-chip" data-rm-save-cmd="1" title="Save current input as a quick command">+ Save</button>`;
   }
 
+  function _renderMsgMetaRow(m) {
+    const badges = Array.isArray(m.execResults) && m.execResults.length > 0
+      ? m.execResults.map(r => {
+          const badge = `<span class="rm-assist-exec-badge${r.ok ? '' : ' is-err'}">${r.ok ? '✓' : '!'} ${_esc(r.summary)}</span>`;
+          const rehl = r.ok && r.targetKey
+            ? `<button type="button" class="rm-assist-rehighlight" data-rm-rehighlight="${_esc(r.targetKey)}">📍 Show again</button>`
+            : '';
+          return badge + rehl;
+        }).join('')
+      : '';
+    const cites = Array.isArray(m.citations) && m.citations.length > 0
+      ? m.citations.filter(c => c && c.noteId).map(c => `<button type="button" class="rm-assist-cite-btn" data-rm-cite-id="${_esc(c.noteId)}">📖 ${_esc(c.title || 'Open Note')}</button>`).join('')
+      : '';
+    const combined = badges + cites;
+    return combined ? `<div class="rm-assist-badge-row">${combined}</div>` : '';
+  }
+
+  function renderQuickReply() {
+    if (!_quickEl) return;
+    const box = _quickEl.querySelector('#rm-assist-quick-reply');
+    if (!box) return;
+    const lastModel = [..._messages].reverse().find(m => m && m.role !== 'user');
+    if (!lastModel) {
+      box.classList.add('is-hidden');
+      box.innerHTML = '';
+      return;
+    }
+    const isOwl = lastModel.persona === 'chronicler';
+    box.classList.toggle('is-chronicler', isOwl);
+    box.innerHTML = `<div class="rm-assist-msg-hdr"><span>${isOwl ? '🦉' : '🧙‍♂️'}</span><span>${isOwl ? 'Chronicler' : 'Rule Master'}</span></div><div>${_formatReplyHtml(lastModel.text)}</div>${_renderMsgMetaRow(lastModel)}`;
+    box.classList.remove('is-hidden');
+  }
+
   function renderMessages() {
     if (!_panelEl) return;
     const log = _panelEl.querySelector('#rm-assist-log');
@@ -1733,9 +1872,10 @@
       log.innerHTML = `
         <div class="rm-assist-msg is-rulemaster">
           <div class="rm-assist-msg-hdr"><span>🧙‍♂️</span><span>Rule Master &amp; 🦉 Chronicler</span></div>
-          <div>Ask how any feature works, run commands directly (<code>nr</code>, <code>hp -15</code>, <code>cast: Haste</code>, <code>buff: Haste</code>, <code>feat: Power Attack</code>), craft V3 homebrew, or ask my Owl Familiar about your campaign notes.</div>
+          <div>Ask how any feature works, type a keyword (<code>buffs</code>, <code>offhand</code>, <code>hp</code>, <code>spells</code>) to locate it instantly with 0 tokens, run commands (<code>nr</code>, <code>hp -15</code>, <code>buff: Haste</code>), or ask my Owl Familiar about your campaign notes.</div>
         </div>
       `;
+      renderQuickReply();
       return;
     }
 
@@ -1746,15 +1886,50 @@
       const hdr = m.role === 'user'
         ? ''
         : `<div class="rm-assist-msg-hdr"><span>${m.persona === 'chronicler' ? '🦉' : '🧙‍♂️'}</span><span>${m.persona === 'chronicler' ? 'Chronicler' : 'Rule Master'}</span></div>`;
-      const badges = Array.isArray(m.execResults) && m.execResults.length > 0
-        ? `<div class="rm-assist-badge-row">${m.execResults.map(r => `<span class="rm-assist-exec-badge${r.ok ? '' : ' is-err'}">${r.ok ? '✓' : '!'} ${_esc(r.summary)}</span>`).join('')}</div>`
-        : '';
-      const cites = Array.isArray(m.citations) && m.citations.length > 0
-        ? `<div class="rm-assist-badge-row">${m.citations.filter(c => c && c.noteId).map(c => `<button type="button" class="rm-assist-cite-btn" data-rm-cite-id="${_esc(c.noteId)}">📖 ${_esc(c.title || 'Open Note')}</button>`).join('')}</div>`
-        : '';
-      return `<div class="rm-assist-msg ${cls}">${hdr}<div>${_formatReplyHtml(m.text)}</div>${badges}${cites}</div>`;
+      return `<div class="rm-assist-msg ${cls}">${hdr}<div>${_formatReplyHtml(m.text)}</div>${_renderMsgMetaRow(m)}</div>`;
     }).join('');
     log.scrollTop = log.scrollHeight;
+    renderQuickReply();
+  }
+
+  function _getInstantSuggestions(rawQuery) {
+    const q = String(rawQuery || '').trim().toLowerCase();
+    if (q.length < 2) return [];
+    const curPage = detectPageType();
+    const out = [];
+
+    for (const [key, spec] of Object.entries(UI_GUIDE_TARGETS)) {
+      if (spec.page && spec.page !== curPage) continue;
+      const hay = `${key} ${spec.label || ''}`.toLowerCase();
+      if (hay.includes(q)) {
+        out.push({ kind: 'locate', key, label: `Locate: ${spec.label}` });
+      }
+    }
+
+    for (const item of _savedCommands) {
+      const hay = `${item.label || ''} ${item.cmd || ''}`.toLowerCase();
+      if (hay.includes(q)) {
+        out.push({ kind: 'cmd', cmd: item.cmd, label: `Run: ${item.cmd}` });
+      }
+    }
+    return out.slice(0, 5);
+  }
+
+  function renderInstantSuggestions(inputEl, suggestEl) {
+    if (!inputEl || !suggestEl) return;
+    const matches = _getInstantSuggestions(inputEl.value);
+    if (!matches.length) {
+      suggestEl.classList.add('is-hidden');
+      suggestEl.innerHTML = '';
+      return;
+    }
+    suggestEl.innerHTML = matches.map(m =>
+      `<button type="button" class="rm-assist-suggest-item" data-rm-sug-kind="${_esc(m.kind)}" data-rm-sug-key="${_esc(m.key || '')}" data-rm-sug-cmd="${_esc(m.cmd || '')}">` +
+      `<span>${_esc(m.label)}</span>` +
+      `<span class="rm-assist-suggest-kind${m.kind === 'cmd' ? ' is-cmd' : ''}">${m.kind === 'cmd' ? '0-Token Cmd' : '0-Token Locate'}</span>` +
+      `</button>`
+    ).join('');
+    suggestEl.classList.remove('is-hidden');
   }
 
   function renderPersonaLockPills() {
@@ -1784,7 +1959,7 @@
         results.push(res);
       } else if (act.type === 'guide_ui' && act.target) {
         const res = showUiGuideTarget(act.target, act.label);
-        results.push({ ok: res.ok, summary: res.ok ? `Highlighted: ${res.label}` : res.reason });
+        results.push({ ok: res.ok, summary: res.ok ? `Highlighted: ${res.label}` : res.reason, targetKey: res.ok ? act.target : '' });
       } else if (act.type === 'open_crafter') {
         if (isChronicler) {
           results.push({ ok: false, summary: 'Blocked "open_crafter" in Chronicler mode.' });
@@ -1800,16 +1975,29 @@
     return results;
   }
 
+  function _setBusyUi(busy) {
+    _isBusy = Boolean(busy);
+    const sendBtn = _panelEl?.querySelector('#rm-assist-send');
+    const quickSend = _quickEl?.querySelector('#rm-assist-quick-send');
+    if (sendBtn) sendBtn.disabled = _isBusy;
+    if (quickSend) quickSend.disabled = _isBusy;
+  }
+
+  function _hideAllSuggestions() {
+    [_quickEl?.querySelector('#rm-assist-quick-suggest'), _panelEl?.querySelector('#rm-assist-panel-suggest')].forEach((el) => {
+      if (el) { el.classList.add('is-hidden'); el.innerHTML = ''; }
+    });
+  }
+
   async function handleSubmit(rawText) {
     const text = String(rawText || '').trim();
     if (!text || _isBusy) return;
+    _hideAllSuggestions();
 
     // 1. 0ms / 0-token Instant Registered Command Check
     const instant = tryParseInstantCommand(text);
     if (instant && _hasCommand(instant.command)) {
-      _isBusy = true;
-      const sendBtn = _panelEl?.querySelector('#rm-assist-send');
-      if (sendBtn) sendBtn.disabled = true;
+      _setBusyUi(true);
       try {
         const targetPersona = instant.command === 'add_note' ? 'chronicler' : 'rulemaster';
         const cmdPose = instant.command === 'add_note' ? 'write'
@@ -1829,8 +2017,7 @@
         renderMessages();
         if (!_isOpen) showReactionBubble(res.summary, targetPersona);
       } finally {
-        _isBusy = false;
-        if (sendBtn) sendBtn.disabled = false;
+        _setBusyUi(false);
       }
       return;
     }
@@ -1845,9 +2032,7 @@
     _saveSessionHistory();
     renderMessages();
 
-    _isBusy = true;
-    const sendBtn = _panelEl?.querySelector('#rm-assist-send');
-    if (sendBtn) sendBtn.disabled = true;
+    _setBusyUi(true);
 
     const guessedPersona = _personaLock !== 'auto'
       ? _personaLock
@@ -1916,26 +2101,65 @@
       _saveSessionHistory();
       renderMessages();
     } finally {
-      _isBusy = false;
-      if (sendBtn) sendBtn.disabled = false;
+      _setBusyUi(false);
     }
   }
 
   // ---------------------------------------------------------------------------
-  // 9. Mount & Global Shortcuts (Alt+M, Ctrl+K, Reactive Events)
+  // 9. Mount & Global Shortcuts (Option B: Quick Bar -> Expandable Full Chat)
   // ---------------------------------------------------------------------------
-  function toggle(forceState) {
+  function _hasForeignOpenModal() {
+    const dialogs = document.querySelectorAll('[role="dialog"]:not(#rm-assist-panel)');
+    for (const d of dialogs) {
+      if (!d.classList.contains('hidden') && !d.classList.contains('is-hidden') && d.offsetParent !== null) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function setViewState(nextState) {
     if (!_panelEl) mount();
     if (!_panelEl) return;
-    _isOpen = typeof forceState === 'boolean' ? forceState : !_isOpen;
-    _panelEl.classList.toggle('is-hidden', !_isOpen);
-    if (_fabEl) _fabEl.classList.toggle('is-hidden', _isOpen);
+    _viewState = nextState || 'closed';
+    _isOpen = (_viewState === 'quick' || _viewState === 'panel');
+
+    // Keep live 3D Clay Diorama FAB visible at all times so both personas animate while talking!
+    if (_fabEl) _fabEl.classList.remove('is-hidden');
+    if (_quickEl) _quickEl.classList.toggle('is-hidden', _viewState !== 'quick');
+    if (_panelEl) _panelEl.classList.toggle('is-hidden', _viewState !== 'panel');
+
     if (_isOpen) {
       if (_bubbleEl) _bubbleEl.classList.remove('is-visible');
       renderSavedCommands();
       renderMessages();
-      const input = _panelEl.querySelector('#rm-assist-input');
-      if (input) setTimeout(() => input.focus(), 20);
+      const inp = _viewState === 'quick'
+        ? _quickEl?.querySelector('#rm-assist-quick-input')
+        : _panelEl?.querySelector('#rm-assist-input');
+      if (inp) setTimeout(() => inp.focus(), 20);
+    } else {
+      _hideAllSuggestions();
+    }
+  }
+
+  function toggle(forceState) {
+    if (!_panelEl) mount();
+    if (!_panelEl) return;
+    if (typeof forceState === 'boolean') {
+      if (forceState) {
+        if (!_isOpen) setViewState('quick');
+      } else {
+        clearGuideSpotlight(false);
+        setViewState('closed');
+      }
+      return;
+    }
+    if (_viewState === 'closed' || _viewState === 'minimized') {
+      clearGuideSpotlight(false);
+      setViewState('quick');
+    } else {
+      clearGuideSpotlight(false);
+      setViewState('closed');
     }
   }
 
@@ -1958,6 +2182,23 @@
     bubble.className = 'rm-assist-bubble';
     bubble.setAttribute('role', 'status');
 
+    // Stage 1: Quick Command Bar + Speech Bubble beside live diorama
+    const quick = document.createElement('div');
+    quick.id = 'rm-assist-quickbar';
+    quick.className = 'rm-assist-quickbar is-hidden';
+    quick.innerHTML = `
+      <div id="rm-assist-quick-reply" class="rm-assist-quick-reply is-hidden"></div>
+      <div id="rm-assist-quick-suggest" class="rm-assist-suggest is-hidden"></div>
+      <form id="rm-assist-quick-form" class="rm-assist-quick-form">
+        <input id="rm-assist-quick-input" class="rm-assist-input" type="text" autocomplete="off" spellcheck="false"
+               placeholder="Ask a rule, locate UI (buffs, offhand, hp), or run: nr, hp -15..." />
+        <button id="rm-assist-quick-send" class="rm-assist-send" type="submit">Run</button>
+        <button type="button" id="rm-assist-expand" class="rm-assist-iconbtn" title="Expand full chat">⤢ Chat</button>
+        <button type="button" id="rm-assist-quick-close" class="rm-assist-iconbtn" title="Close (Esc)">✕</button>
+      </form>
+    `;
+
+    // Stage 2: Expandable Full Chat Panel above live diorama
     const panel = document.createElement('div');
     panel.id = 'rm-assist-panel';
     panel.className = 'rm-assist-panel is-hidden';
@@ -1973,6 +2214,7 @@
           </div>
         </div>
         <div class="rm-assist-hdr-btns">
+          <button type="button" id="rm-assist-to-quick" class="rm-assist-iconbtn" title="Collapse to Quick Bar">⊟ Quick</button>
           <button type="button" id="rm-assist-clear" class="rm-assist-iconbtn" title="Clear session chat">Clear</button>
           <button type="button" id="rm-assist-close" class="rm-assist-iconbtn" title="Close (Esc)">✕</button>
         </div>
@@ -1987,23 +2229,42 @@
       </div>
       <div id="rm-assist-cmds" class="rm-assist-cmds"></div>
       <div id="rm-assist-log" class="rm-assist-log"></div>
+      <div id="rm-assist-panel-suggest" class="rm-assist-suggest is-hidden"></div>
       <form id="rm-assist-form" class="rm-assist-form">
         <input id="rm-assist-input" class="rm-assist-input" type="text" autocomplete="off" spellcheck="false"
-               placeholder="Ask a rule/how-to, or run: nr, hp -15, cast: Haste..." />
+               placeholder="Ask a rule, locate UI (buffs, hp), or run: nr, hp -15, cast: Haste..." />
         <button id="rm-assist-send" class="rm-assist-send" type="submit">Run</button>
       </form>
     `;
+
+    // Auto-Minimized Guide Pill (when guide_ui highlights a target)
+    const guidePill = document.createElement('div');
+    guidePill.id = 'rm-assist-guide-pill';
+    guidePill.className = 'rm-assist-guide-pill is-hidden';
+    guidePill.innerHTML = `
+      <span id="rm-assist-guide-pill-text">📍 Showing target</span>
+      <button type="button" id="rm-assist-guide-restore" class="rm-assist-send" style="padding:3px 9px;font-size:11px;">Restore</button>
+      <button type="button" id="rm-assist-guide-dismiss" class="rm-assist-iconbtn" title="Dismiss spotlight">✕</button>
+    `;
+
     _mountedHdrPersona = 'rulemaster';
 
     document.body.appendChild(fab);
     document.body.appendChild(bubble);
+    document.body.appendChild(quick);
     document.body.appendChild(panel);
+    document.body.appendChild(guidePill);
 
     _fabEl = fab;
     _bubbleEl = bubble;
+    _quickEl = quick;
     _panelEl = panel;
+    _guidePillEl = guidePill;
 
     fab.addEventListener('click', () => toggle());
+    quick.querySelector('#rm-assist-expand').addEventListener('click', () => setViewState('panel'));
+    quick.querySelector('#rm-assist-quick-close').addEventListener('click', () => toggle(false));
+    panel.querySelector('#rm-assist-to-quick').addEventListener('click', () => setViewState('quick'));
     panel.querySelector('#rm-assist-close').addEventListener('click', () => toggle(false));
     panel.querySelector('#rm-assist-clear').addEventListener('click', () => {
       _messages = [];
@@ -2011,15 +2272,51 @@
       renderMessages();
     });
 
-    panel.addEventListener('click', (ev) => {
+    guidePill.querySelector('#rm-assist-guide-restore').addEventListener('click', () => clearGuideSpotlight(true));
+    guidePill.querySelector('#rm-assist-guide-dismiss').addEventListener('click', () => clearGuideSpotlight(false));
+
+    const handleSharedClick = (ev) => {
+      const sugBtn = ev.target.closest('[data-rm-sug-kind]');
+      if (sugBtn) {
+        const kind = sugBtn.getAttribute('data-rm-sug-kind');
+        const qInp = quick.querySelector('#rm-assist-quick-input');
+        const pInp = panel.querySelector('#rm-assist-input');
+        if (qInp) qInp.value = '';
+        if (pInp) pInp.value = '';
+        _hideAllSuggestions();
+        if (kind === 'locate') {
+          const key = sugBtn.getAttribute('data-rm-sug-key');
+          if (key) {
+            setPersonaVisual(key === 'hub.notes' ? 'chronicler' : 'rulemaster', false, key === 'hub.notes' ? 'search' : 'scroll');
+            showUiGuideTarget(key);
+          }
+        } else {
+          const cmd = sugBtn.getAttribute('data-rm-sug-cmd');
+          if (cmd) handleSubmit(cmd);
+        }
+        return true;
+      }
+      const rehlBtn = ev.target.closest('[data-rm-rehighlight]');
+      if (rehlBtn) {
+        const key = rehlBtn.getAttribute('data-rm-rehighlight');
+        if (key) showUiGuideTarget(key);
+        return true;
+      }
       const citeBtn = ev.target.closest('[data-rm-cite-id]');
       if (citeBtn) {
         const noteId = citeBtn.getAttribute('data-rm-cite-id');
         if (noteId && root.HubNotes && typeof root.HubNotes.openNoteById === 'function') {
           root.HubNotes.openNoteById(noteId);
         }
-        return;
+        return true;
       }
+      return false;
+    };
+
+    quick.addEventListener('click', (ev) => { handleSharedClick(ev); });
+
+    panel.addEventListener('click', (ev) => {
+      if (handleSharedClick(ev)) return;
       const lockBtn = ev.target.closest('[data-rm-lock]');
       if (lockBtn) {
         _personaLock = lockBtn.getAttribute('data-rm-lock') || 'auto';
@@ -2053,16 +2350,29 @@
       }
     });
 
-    panel.querySelector('#rm-assist-form').addEventListener('submit', (ev) => {
+    const quickInput = quick.querySelector('#rm-assist-quick-input');
+    const quickSuggest = quick.querySelector('#rm-assist-quick-suggest');
+    const panelInput = panel.querySelector('#rm-assist-input');
+    const panelSuggest = panel.querySelector('#rm-assist-panel-suggest');
+
+    quickInput.addEventListener('input', () => renderInstantSuggestions(quickInput, quickSuggest));
+    panelInput.addEventListener('input', () => renderInstantSuggestions(panelInput, panelSuggest));
+
+    quick.querySelector('#rm-assist-quick-form').addEventListener('submit', (ev) => {
       ev.preventDefault();
-      const inp = panel.querySelector('#rm-assist-input');
-      if (!inp) return;
-      const val = inp.value;
-      inp.value = '';
+      const val = quickInput.value;
+      quickInput.value = '';
       handleSubmit(val);
     });
 
-    // Global Keyboard Shortcuts: Alt+M, Ctrl+K, Esc
+    panel.querySelector('#rm-assist-form').addEventListener('submit', (ev) => {
+      ev.preventDefault();
+      const val = panelInput.value;
+      panelInput.value = '';
+      handleSubmit(val);
+    });
+
+    // Global Keyboard Shortcuts: Alt+M, Ctrl+K, Esc (respects higher-priority modals)
     document.addEventListener('keydown', (ev) => {
       if (ev.altKey && !ev.ctrlKey && !ev.metaKey && (ev.code === 'KeyM' || String(ev.key || '').toLowerCase() === 'm')) {
         ev.preventDefault();
@@ -2074,7 +2384,7 @@
         toggle();
         return;
       }
-      if (ev.key === 'Escape' && _isOpen) {
+      if (ev.key === 'Escape' && _isOpen && !_hasForeignOpenModal()) {
         toggle(false);
       }
     });
@@ -2086,16 +2396,16 @@
       const working = d.state === 'thinking' || d.state === 'working';
       const pose = d.pose || (working ? (persona === 'chronicler' ? 'search' : 'astrolabe') : (persona === 'chronicler' ? 'write' : 'd20'));
       setPersonaVisual(persona, working, d.state === 'idle' && !d.message ? '' : pose);
-      if (d.message) showReactionBubble(d.message, persona, working ? 6000 : 3500);
+      if (d.message && !_isOpen) showReactionBubble(d.message, persona, working ? 6000 : 3500);
     });
 
-    // Smart Fine-Pointer Cursor Gaze Tracking (sleeps when panel open, hidden tab, reduced motion, or touch)
+    // Smart Fine-Pointer Cursor Gaze Tracking (sleeps when hidden tab, reduced motion, or touch)
     const reducedMotionMQ = root.matchMedia ? root.matchMedia('(prefers-reduced-motion: reduce)') : null;
     const finePointerMQ = root.matchMedia ? root.matchMedia('(pointer: fine)') : null;
     if (!finePointerMQ || finePointerMQ.matches) {
       let gazeRaf = false;
       window.addEventListener('pointermove', (ev) => {
-        if (gazeRaf || _isOpen || document.hidden || (reducedMotionMQ && reducedMotionMQ.matches) || !_fabEl) return;
+        if (gazeRaf || document.hidden || (reducedMotionMQ && reducedMotionMQ.matches) || !_fabEl) return;
         gazeRaf = true;
         requestAnimationFrame(() => {
           gazeRaf = false;
@@ -2114,7 +2424,7 @@
     // Strict Alternating Single-Actor Autonomous Choreography (never both at once!)
     clearInterval(_ambientInterval);
     _ambientInterval = setInterval(() => {
-      if (_isOpen || _isBusy || document.hidden || !_fabEl || (reducedMotionMQ && reducedMotionMQ.matches)) return;
+      if (_viewState === 'panel' || _isBusy || document.hidden || !_fabEl || (reducedMotionMQ && reducedMotionMQ.matches)) return;
       let turnPersona = _persona;
       if (_personaLock === 'auto') {
         _ambientTurnFlip = !_ambientTurnFlip;
@@ -2139,7 +2449,8 @@
 
   root.AiAssistant = {
     toggle,
-    open: () => toggle(true),
+    open: () => setViewState('quick'),
+    openChat: () => setViewState('panel'),
     close: () => toggle(false),
     send: handleSubmit,
     guide: showUiGuideTarget,
