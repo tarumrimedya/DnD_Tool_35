@@ -735,8 +735,13 @@
     },
 
     async open_level_up() {
-      const btn = document.getElementById('btn-header-level-up') || document.querySelector('[data-action="hud:open-level-up-modal"]');
+      if (typeof root.openLevelUpModal === 'function') {
+        root.openLevelUpModal();
+        return { ok: true, summary: 'Opened Level Up modal.' };
+      }
+      const btn = document.querySelector('[data-action="prog:add-level-row"]');
       if (btn) {
+        if (typeof root.switchTab === 'function') root.switchTab('tab-core', false);
         btn.click();
         return { ok: true, summary: 'Opened Level Up modal.' };
       }

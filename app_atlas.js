@@ -110,17 +110,17 @@
     {
       key: 'hud.level_up',
       page: 'sheet',
-      tab: null,
-      category: 'HUD & Vitals',
-      label: 'Level Up / Character Progression',
+      tab: 'tab-core',
+      category: 'Character & Core',
+      label: 'Level Up / Add Class Level',
       summary: 'Add a new class level (Base, Prestige, UA Variant, or Custom Class), roll HP, pick ability increases, and assign feats.',
       steps: [
-        'Click the green Level Up button in the top header.',
-        'Search for your class, choose HP roll/average, and pick any new feats or domains.'
+        'Open the Character & Logs tab.',
+        'Click Add Level in the Level Progression table to choose your class, HP, and feats.'
       ],
       keywords: ['level up', 'level', 'class', 'prestige class', 'multiclass', 'progression', 'gain level'],
       aliases: ['add a level', 'how to level up', 'change class'],
-      selectors: ['#btn-header-level-up', '[data-action="hud:open-level-up-modal"]'],
+      selectors: ['[data-action="prog:add-level-row"]', '#tab-btn-core'],
       runCommand: { command: 'open_level_up', label: 'Open Level Up' }
     },
     {
@@ -137,20 +137,6 @@
       keywords: ['race', 'template', 'alignment', 'deity', 'faith', 'god', 'size', 'gender', 'profile', 'identity', 'name', 'la', 'ecl'],
       aliases: ['change race', 'add template', 'pick deity', 'edit profile'],
       selectors: ['[data-action="hud:open-profile-edit"]', '#core-race']
-    },
-    {
-      key: 'hud.mode_toggle',
-      page: 'sheet',
-      tab: null,
-      category: 'HUD & Vitals',
-      label: 'Play / Build / Both View Mode',
-      summary: 'Switch between Play (clean table cockpit), Build (editing controls), or Both views at any time.',
-      steps: [
-        'Use the Play / Build / Both segmented switcher in the top header.'
-      ],
-      keywords: ['play mode', 'build mode', 'both mode', 'view mode', 'edit mode', 'layout toggle'],
-      aliases: ['switch to play mode', 'switch to build mode'],
-      selectors: ['#sheet-mode-toggle-group', '#btn-sheet-mode-play', '#btn-sheet-mode-build']
     },
     {
       key: 'hud.quest_notebook',
