@@ -15609,7 +15609,40 @@ const RuleEngine = {
       return out;
     };
 
-    const boonDisciplines = getBoonDisciplines();
+    const collectEntryCasterBoonDisciplines = () => {
+      const found = [];
+      const mapChassisToDisc = (sc) => {
+        if (!sc || !sc.mode || sc.mode === 'none') return null;
+        const m = String(sc.mode || '').toLowerCase();
+        const tr = String(sc.tradition || '').toLowerCase();
+        if (tr === 'martial' || m.includes('maneuver') || m.includes('martial')) return 'martial';
+        if (m.includes('invocation') || m.includes('warlock')) return 'warlock';
+        if (tr === 'divine') return 'divine';
+        if (m.includes('prepared')) return 'prepared';
+        return 'spontaneous';
+      };
+      const inspectRec = (rec) => {
+        const sc = rec && rec.progression && (rec.progression.spellcastingChassis || rec.progression.caster);
+        const disc = mapChassisToDisc(sc);
+        if (disc && !found.includes(disc)) found.push(disc);
+      };
+      const customDb = Array.isArray(w.customDb) ? w.customDb : [];
+      const customEntries = (w.customEntries && typeof w.customEntries === 'object') ? Object.values(w.customEntries) : [];
+      const pool = customDb.concat(customEntries);
+      const findByNameOrId = (ref) => {
+        if (!ref) return null;
+        if (typeof ref === 'object' && ref.progression && (ref.progression.spellcastingChassis || ref.progression.caster)) return ref;
+        const id = typeof ref === 'object' ? String(ref.id || '').toLowerCase() : '';
+        const nm = String(typeof ref === 'object' ? (ref.name || '') : ref).replace(/^[^A-Za-z0-9]+(\[.*?\])?\s*/, '').trim().toLowerCase();
+        return pool.find((r) => r && ((id && String(r.id || '').toLowerCase() === id) || (nm && String(r.name || '').toLowerCase() === nm))) || null;
+      };
+      if (w.race) inspectRec(findByNameOrId(w.race));
+      if (Array.isArray(w.templates)) w.templates.forEach((t) => inspectRec(findByNameOrId(t)));
+      if (Array.isArray(w.feats)) w.feats.forEach((f) => inspectRec(findByNameOrId(f)));
+      return found;
+    };
+
+    const boonDisciplines = Array.from(new Set(getBoonDisciplines().concat(collectEntryCasterBoonDisciplines())));
     const isDiscBoon = (disc) => {
       const target = String(disc || '').toLowerCase().trim();
       if (target === 'spontaneous') return boonDisciplines.includes('spontaneous') || boonDisciplines.includes('warlock');

@@ -4192,6 +4192,25 @@
     if (_guideModalEl) _guideModalEl.classList.add('is-hidden');
   }
 
+  const GUIDE_SPECIAL_COMMANDS = [
+    { cmd: '#npc', desc: 'Filter campaign notes by tag via Owl Chronicler (0 tokens; e.g. #npc, #quest, #loot)', mode: 'fill', pages: ['sheet', 'hub', 'crafter'] },
+    { cmd: '?', desc: '0-Token UI Locator mode — type ? followed by a feature name to spotlight it on screen', mode: 'fill', pages: ['sheet', 'hub', 'crafter'] },
+    { cmd: '/thp ', desc: 'Grant Temporary Hit Points (non-stacking max per PHB p.146; e.g. /thp 12)', mode: 'fill', pages: ['sheet'] },
+    { cmd: 'charge, pa 3, attack', desc: 'Single-Undo Command Chaining — separate multiple commands with "," or ";" (1 Undo reverts all)', mode: 'fill', pages: ['sheet'] },
+    { cmd: 'add dr 5/magic at hd 5', desc: 'Assign a V3 block to a Level / HD Table row (auto-attaches progression facet)', mode: 'fill', pages: ['crafter'] },
+    { cmd: 'add dr 10/magic if hd >= 12', desc: 'Wrap a V3 block in a live numeric levelTier or closed when/while condition (e.g. while charging)', mode: 'fill', pages: ['crafter'] }
+  ];
+
+  function _getGuideCommandItems(curPage, scope, query) {
+    const low = String(query || '').trim().toLowerCase();
+    const allCmds = SLASH_PALETTE.concat(GUIDE_SPECIAL_COMMANDS);
+    return allCmds.filter((it) => {
+      if (scope === 'current' && !it.pages.includes(curPage)) return false;
+      if (!low) return true;
+      return `${it.cmd} ${it.desc} ${it.pages.join(' ')} commands slash hash`.toLowerCase().includes(low);
+    });
+  }
+
   function renderUserGuideList(query = '') {
     if (!_guideModalEl) return;
     const body = _guideModalEl.querySelector('#rm-guide-modal-body');
@@ -4200,14 +4219,17 @@
     const q = String(query || '').trim();
 
     let entries = [];
-    if (q.length >= 2 && root.AppAtlas && typeof root.AppAtlas.matchQuery === 'function') {
-      entries = root.AppAtlas.matchQuery(q, _guideScope === 'all' ? 'all' : curPage, 30).map(h => h.entry);
-    } else {
-      entries = _getAtlasEntries(_guideScope === 'all' ? 'all' : curPage);
+    if (_guideScope !== 'commands') {
+      if (q.length >= 2 && root.AppAtlas && typeof root.AppAtlas.matchQuery === 'function') {
+        entries = root.AppAtlas.matchQuery(q, _guideScope === 'all' ? 'all' : curPage, 30).map(h => h.entry);
+      } else {
+        entries = _getAtlasEntries(_guideScope === 'all' ? 'all' : curPage);
+      }
     }
+    const cmdItems = _getGuideCommandItems(curPage, _guideScope === 'commands' ? 'all' : _guideScope, q);
 
-    if (!entries.length) {
-      body.innerHTML = `<div style="text-align:center;padding:24px;color:#94a3b8;font-size:12px;">No matching features found. Try keywords like <code>long rest</code>, <code>offhand</code>, <code>buff</code>, <code>dice</code>, or <code>notes</code>.</div>`;
+    if (!entries.length && !cmdItems.length) {
+      body.innerHTML = `<div style="text-align:center;padding:24px;color:#94a3b8;font-size:12px;">No matching features or commands found. Try keywords like <code>long rest</code>, <code>/pa</code>, <code>#npc</code>, <code>buff</code>, or <code>notes</code>.</div>`;
       return;
     }
 
@@ -4219,6 +4241,25 @@
     }
 
     let html = '';
+    if (cmdItems.length > 0) {
+      html += `<div><div class="rm-guide-cat-title">⌨️ Commands (/ Slash &amp; # Chronicler)</div><div class="rm-guide-list">`;
+      for (const c of cmdItems) {
+        const samePage = c.pages.includes(curPage);
+        const tryBtn = samePage
+          ? `<button type="button" class="rm-assist-run-btn" data-rm-guide-try="${_esc(c.cmd)}" data-rm-guide-try-mode="${_esc(c.mode || 'fill')}">⚡ ${c.mode === 'cmd' ? 'Run' : 'Try'}</button>`
+          : `<span class="rm-assist-exec-badge" style="opacity:0.7;">Page: ${_esc(c.pages.join(', '))}</span>`;
+        html += `
+          <div class="rm-guide-item">
+            <div class="rm-guide-item-top">
+              <span class="rm-guide-item-title"><code>${_esc(c.cmd.trim())}</code></span>
+              <div class="rm-guide-item-actions">${tryBtn}</div>
+            </div>
+            <div class="rm-guide-item-desc">${_esc(c.desc)}</div>
+          </div>
+        `;
+      }
+      html += `</div></div>`;
+    }
     for (const [cat, list] of byCat.entries()) {
       html += `<div><div class="rm-guide-cat-title">${_esc(cat)}</div><div class="rm-guide-list">`;
       for (const e of list) {
@@ -4379,6 +4420,7 @@
                  placeholder="Search features (e.g. long rest, offhand, wild shape, buffs, dice, notes)..." />
           <div class="rm-assist-pills">
             <button type="button" class="rm-assist-pill is-active" data-rm-guide-scope="current">This Page</button>
+            <button type="button" class="rm-assist-pill" data-rm-guide-scope="commands">⌨️ Commands</button>
             <button type="button" class="rm-assist-pill" data-rm-guide-scope="all">All Pages</button>
           </div>
         </div>
@@ -4435,6 +4477,27 @@
         if (key) {
           setPersonaVisual(key === 'hub.notes' || key === 'hud.quest_notebook' ? 'chronicler' : 'rulemaster', false, 'scroll');
           showUiGuideTarget(key);
+        }
+        return;
+      }
+      const tryBtn = ev.target.closest('[data-rm-guide-try]');
+      if (tryBtn) {
+        const cmd = tryBtn.getAttribute('data-rm-guide-try') || '';
+        const mode = tryBtn.getAttribute('data-rm-guide-try-mode') || 'fill';
+        closeUserGuideModal();
+        if (cmd) {
+          if (!_isOpen) setViewState('quick');
+          if (mode === 'cmd') {
+            handleSubmit(cmd);
+          } else {
+            const activeInp = (_viewState === 'panel' ? panel.querySelector('#rm-assist-input') : quick.querySelector('#rm-assist-quick-input'));
+            const activeSug = (_viewState === 'panel' ? panel.querySelector('#rm-assist-panel-suggest') : quick.querySelector('#rm-assist-quick-suggest'));
+            if (activeInp) {
+              activeInp.value = cmd;
+              activeInp.focus();
+              renderInstantSuggestions(activeInp, activeSug);
+            }
+          }
         }
         return;
       }

@@ -950,6 +950,36 @@ function runAiV3ContractTests() {
     const p4E1 = Forge.exportEntry(Forge.state.entry);
     const p4E2 = Forge.exportEntry(Forge.fromCanonicalV3(JSON.parse(JSON.stringify(p4E1))));
     check(deepEqual(p4E1, p4E2), 'entry with gainedAt + when(levelTier) must be E1===E2 round-trip idempotent');
+
+    // (l) Race / Template / Feat optional Spellcasting / Caster Boon round-trip (progression.spellcastingChassis)
+    const raceCasterRaw = {
+      id: 'test-race-caster-boon',
+      name: 'Draconic Spellblood',
+      blueprint: 'race',
+      schemaVersion: 3,
+      progression: {
+        spellcastingChassis: {
+          mode: 'spontaneous',
+          clFormula: 'full',
+          clCustom: null,
+          tradition: 'Arcane',
+          keyAbility: 'cha',
+          spellList: 'Sor/Wiz',
+          ignoreAsf: 'none',
+          ignoreShieldAsf: false,
+          castInRage: false
+        }
+      },
+      effects: []
+    };
+    const rcImp = Forge.fromCanonicalV3(raceCasterRaw);
+    check(rcImp.facets.includes('caster') && rcImp.progression.caster.mode === 'spontaneous',
+      'fromCanonicalV3 must attach caster facet when non-class entry carries progression.spellcastingChassis');
+    const rcE1 = Forge.exportEntry(rcImp);
+    const rcE2 = Forge.exportEntry(Forge.fromCanonicalV3(JSON.parse(JSON.stringify(rcE1))));
+    check(deepEqual(rcE1, rcE2), 'race with Spellcasting / Caster Boon must be E1===E2 round-trip idempotent');
+    check(rcE1.progression && rcE1.progression.spellcastingChassis && rcE1.progression.spellcastingChassis.keyAbility === 'cha',
+      'race exportEntry must emit progression.spellcastingChassis even without Level/HD table facet');
   }
 
   const elapsedMs = Date.now() - startMs;

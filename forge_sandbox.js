@@ -2925,6 +2925,21 @@
           castInRage: !!p.caster.castInRage
         };
       }
+    } else if (en.progression && en.progression.caster && en.progression.caster.mode && en.progression.caster.mode !== 'none') {
+      const c = en.progression.caster;
+      out.progression = {
+        spellcastingChassis: {
+          mode: c.mode,
+          clFormula: c.clFormula || 'full',
+          clCustom: c.clFormula === 'custom' ? (c.clCustom || '') : null,
+          tradition: c.tradition || 'Arcane',
+          keyAbility: c.ability || 'int',
+          spellList: c.spellList || 'Sor/Wiz',
+          ignoreAsf: c.ignoreAsf || 'none',
+          ignoreShieldAsf: !!c.ignoreShieldAsf,
+          castInRage: !!c.castInRage
+        }
+      };
     }
     if (has('grants')) {
       const g = en.grants, o = {};
@@ -3581,6 +3596,9 @@
           castInRage: !!sc.castInRage
         }) : en.progression.caster
       });
+      if (sc && sc.mode && sc.mode !== 'none' && en.blueprint !== 'class' && en.facets.indexOf('caster') < 0) {
+        en.facets.push('caster');
+      }
     }
     return en;
   }
@@ -6071,6 +6089,32 @@
     return cBlock('c-teal', head, kids);
   }
 
+  function casterChassisCard(en, opts) {
+    const o = opts || {};
+    const p = en.progression || {};
+    const c = p.caster || { mode: 'none', clFormula: 'full', clCustom: '', tradition: 'Arcane', ability: 'int', spellList: '', ignoreAsf: 'none', ignoreShieldAsf: false, castInRage: false };
+    const casterModeF = F('Casting Mode', sel('progression.caster.mode', c.mode, CASTER_MODES, { narrow: true }));
+    const detachBtn = o.detachable
+      ? '<button type="button" class="fs-btn fs-xs fs-ghost" style="margin-left:auto" data-action="detach-caster" title="Remove Spellcasting / Caster Boon">✕</button>'
+      : '';
+    const title = o.detachable ? '🔮 Spellcasting / Caster Boon' : '🔮 Spellcasting / Subsystem';
+    return stack('b-purple',
+      H(L(title), detachBtn) +
+      (c.mode === 'none'
+        ? G(1, casterModeF)
+        : G(3,
+            casterModeF +
+            F('Tradition', sel('progression.caster.tradition', c.tradition || 'Arcane', ['Arcane', 'Divine', 'Psionic', 'Incarnum', 'Pact', 'Truename', 'Shadow', 'Martial'], { narrow: true })) +
+            F('Key Ability', sel('progression.caster.ability', c.ability || 'int', ABIL_KEYS.map((k) => [k, k.toUpperCase()]), { narrow: true })) +
+            F('Spell / Power List', '<input class="fs-in" data-bind="progression.caster.spellList" list="fs-spellcls-list" placeholder="Cleric / Sorcerer" value="' + esc(c.spellList) + '">') +
+            F('Caster Level Progression', sel('progression.caster.clFormula', c.clFormula || 'full', CL_FORMULAS, { narrow: true })) +
+            (c.clFormula === 'custom' ? F('Custom CL Formula', inp('progression.caster.clCustom', c.clCustom || '', { ph: '@level', fx: true }) + fxRefBtn('cl', 'progression.caster.clCustom')) : '') +
+            F('Armored Casting (Ignore ASF)', sel('progression.caster.ignoreAsf', c.ignoreAsf || 'none', [['none', 'Normal ASF'], ['light', 'Light Armor'], ['medium', 'Up to Medium'], ['heavy', 'Up to Heavy']], { narrow: true })) +
+            F('Shield ASF', chk('progression.caster.ignoreShieldAsf', !!c.ignoreShieldAsf, 'Ignore Shield ASF')) +
+            F('Rage Casting', chk('progression.caster.castInRage', !!c.castInRage, '🩸 Cast in Rage'))
+          )));
+  }
+
   function universalExtraStacks(en, o) {
     o = o || {};
     let h = '';
@@ -6078,6 +6122,9 @@
     h += scratchBlocks(en.effects, 'effects', (b) => !inLevelRow(b));
     h += en.powers.map((pw, i) => (inLevelRow(pw) ? '' : powerCBlock(pw, i))).join('');
     h += (en.modes || []).map(modeCBlock).join('');
+    if (!o.skipCaster && (hasFacet(en, 'caster') || (en.blueprint !== 'class' && en.progression && en.progression.caster && en.progression.caster.mode && en.progression.caster.mode !== 'none'))) {
+      h += casterChassisCard(en, { detachable: true });
+    }
     if (!o.skipProgression && hasFacet(en, 'progression')) h += progressionCBlock(en);
     return h;
   }
@@ -6087,10 +6134,12 @@
     const spellAttackToggle = en.blueprint === 'spell' && !d.attackOn
       ? '<button type="button" class="lego-add b-red" data-action="toggle-flag" data-p="delivery.attackOn">+ 🎯 Attack Roll</button>'
       : '';
+    const hasCasterCard = en.blueprint === 'class' || hasFacet(en, 'caster') || (en.progression && en.progression.caster && en.progression.caster.mode && en.progression.caster.mode !== 'none');
     const extra = spellAttackToggle +
       '<button type="button" class="lego-add c-amber" data-action="add-power-inline">+ ⚡ Sub-Power</button>' +
       '<button type="button" class="lego-add c-teal" data-action="add-mode">+ 🎚️ Mode</button>' +
       spotHtml('power', 'powers', { style: 'width:210px', ph: '🔍 + Attach Spell / SLA' }) +
+      (hasCasterCard ? '' : '<button type="button" class="lego-add b-purple" data-action="attach-caster">+ 🔮 Spellcasting / Caster Boon</button>') +
       (hasFacet(en, 'progression') ? '' : '<button type="button" class="lego-add c-teal" data-action="attach-progression">+ 📊 Level / HD Table</button>') +
       (hasFacet(en, 'prereqs') ? '' : '<button type="button" class="lego-add c-amber" data-action="attach-prereqs">+ 🏛️ Prerequisites</button>');
     return blockPalette('effects', true, false, extra);
@@ -6323,24 +6372,8 @@
     h += stack('b-purple',
       H(L('🎯 Bonus Feat Grants'), btn('add-grant', '+ Grant', 'fs-xs fs-dashed')) +
       G(1, F('Level & Pool Grants', en.grants.featGrants.map((x, i) => '<span class="fs-pill indigo">' + sel('grants.featGrants.' + i + '.level', x.level, range(1, 20).map((n) => [n, 'L' + n]), { num: true, style: 'width:56px' }) + ' ×' + x.count + ' from ' + sel('grants.featGrants.' + i + '.pool', x.pool, allTags(), { style: 'width:130px' }) + '<span class="fs-x" data-action="remove-grant" data-i="' + i + '">×</span></span>').join('') || '<span class="fs-hint">No bonus feat grants configured</span>')));
-    const c = p.caster || { mode: 'none', clFormula: 'full', clCustom: '', tradition: 'Arcane', ability: 'int', spellList: '', ignoreAsf: 'none', ignoreShieldAsf: false, castInRage: false };
-    const casterModeF = F('Casting Mode', sel('progression.caster.mode', c.mode, CASTER_MODES, { narrow: true }));
-    h += stack('b-purple',
-      H(L('🔮 Spellcasting / Subsystem')) +
-      (c.mode === 'none'
-        ? G(1, casterModeF)
-        : G(3,
-            casterModeF +
-            F('Tradition', sel('progression.caster.tradition', c.tradition || 'Arcane', ['Arcane', 'Divine', 'Psionic', 'Incarnum', 'Pact', 'Truename', 'Shadow', 'Martial'], { narrow: true })) +
-            F('Key Ability', sel('progression.caster.ability', c.ability || 'int', ABIL_KEYS.map((k) => [k, k.toUpperCase()]), { narrow: true })) +
-            F('Spell / Power List', '<input class="fs-in" data-bind="progression.caster.spellList" list="fs-spellcls-list" placeholder="Cleric / Magus" value="' + esc(c.spellList) + '">') +
-            F('Caster Level Progression', sel('progression.caster.clFormula', c.clFormula || 'full', CL_FORMULAS, { narrow: true })) +
-            (c.clFormula === 'custom' ? F('Custom CL Formula', inp('progression.caster.clCustom', c.clCustom || '', { ph: '@classLevel + 2', fx: true }) + fxRefBtn('cl', 'progression.caster.clCustom')) : '') +
-            F('Armored Casting (Ignore ASF)', sel('progression.caster.ignoreAsf', c.ignoreAsf || 'none', [['none', 'Normal ASF'], ['light', 'Light Armor'], ['medium', 'Up to Medium'], ['heavy', 'Up to Heavy']], { narrow: true })) +
-            F('Shield ASF', chk('progression.caster.ignoreShieldAsf', !!c.ignoreShieldAsf, 'Ignore Shield ASF')) +
-            F('Rage Casting', chk('progression.caster.castInRage', !!c.castInRage, '🩸 Cast in Rage'))
-          )));
-    return h + universalExtraStacks(en, { skipPrereqs: true, skipProgression: true }) + universalSnapPalette(en);
+    h += casterChassisCard(en, { detachable: false });
+    return h + universalExtraStacks(en, { skipPrereqs: true, skipProgression: true, skipCaster: true }) + universalSnapPalette(en);
   }
 
   function scratchItemMod(en) {
@@ -6983,6 +7016,23 @@
     'toggle-prog-pattern': () => { S.ui.progPatternOpen = !S.ui.progPatternOpen; renderFacets(); },
     'attach-prereqs': () => { ensureFacet('prereqs'); toast('Attached: Prerequisites'); renderAll(); },
     'detach-prereqs': () => { if (S.entry.blueprint === 'feat' || S.entry.blueprint === 'class') return; S.entry.facets = S.entry.facets.filter((f) => f !== 'prereqs'); toast('Detached: Prerequisites', 'warn'); renderAll(); },
+    'attach-caster': () => {
+      pushUndo();
+      ensureFacet('caster');
+      if (!S.entry.progression) S.entry.progression = blankEntry('class').progression;
+      if (!S.entry.progression.caster) S.entry.progression.caster = { mode: 'spontaneous', clFormula: 'full', clCustom: '', tradition: 'Arcane', ability: 'cha', spellList: 'Sor/Wiz', ignoreAsf: 'none', ignoreShieldAsf: false, castInRage: false };
+      else if (!S.entry.progression.caster.mode || S.entry.progression.caster.mode === 'none') S.entry.progression.caster.mode = 'spontaneous';
+      toast('Attached: Spellcasting / Caster Boon');
+      renderAll();
+    },
+    'detach-caster': () => {
+      if (S.entry.blueprint === 'class') return;
+      pushUndo();
+      S.entry.facets = S.entry.facets.filter((f) => f !== 'caster');
+      if (S.entry.progression && S.entry.progression.caster) S.entry.progression.caster.mode = 'none';
+      toast('Detached: Spellcasting / Caster Boon', 'warn');
+      renderAll();
+    },
     'toggle-json': (el, ev) => { if (ev && ev.target && ev.target.closest && ev.target.closest('[data-action="copy-json"],[data-action="toggle-import-json"]')) return; S.ui.jsonOpen = !S.ui.jsonOpen; renderJson(); },
     'toggle-import-json': () => { S.ui.importOpen = !S.ui.importOpen; renderTopbar(); renderJson(); if (S.ui.importOpen) { const ta = document.querySelector('[data-uibind="importText"]'); if (ta) ta.focus(); } },
     'run-import-json': () => { try { importFromJson(S.ui.importText); renderAll(); } catch (e) { toast((e && e.message) || 'Invalid Canonical V3 JSON', 'err'); } },
