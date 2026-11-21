@@ -2046,16 +2046,29 @@
       : (/(not al|notlara|kampanya|npc|session|quest log|chronicler|hatırlıyor|kimdi|neredeydi)/i.test(text) ? 'chronicler' : 'rulemaster');
     setPersonaVisual(guessedPersona, true, guessedPersona === 'chronicler' ? 'search' : 'scroll');
 
+    if (_quickEl && _viewState === 'quick') {
+      const qBox = _quickEl.querySelector('#rm-assist-quick-reply');
+      if (qBox) {
+        const isOwl = guessedPersona === 'chronicler';
+        qBox.classList.toggle('is-chronicler', isOwl);
+        qBox.innerHTML = `<div class="rm-assist-msg-hdr"><span>${isOwl ? '🦉' : '🧙‍♂️'}</span><span>${isOwl ? 'Chronicler' : 'Rule Master'}</span></div><div style="opacity:0.85;">${isOwl ? 'Searching campaign chronicles…' : 'Consulting 3.5e rules…'}</div>`;
+        qBox.classList.remove('is-hidden');
+      }
+    }
+
     try {
       const liveCtx = getLivePageContext();
       const relevantNotes = (root.HubNotes && typeof root.HubNotes.searchRelevantNotes === 'function')
         ? root.HubNotes.searchRelevantNotes(text, 8)
         : [];
       const systemPrompt = buildAssistantSystemPrompt(_personaLock, liveCtx, relevantNotes);
-      const recentMsgs = _messages.slice(-8).map(m => ({
-        role: m.role === 'user' ? 'user' : 'model',
-        text: m.text
-      }));
+      const recentMsgs = _messages
+        .filter(m => m && !m.isError && String(m.text || '').trim())
+        .slice(-8)
+        .map(m => ({
+          role: m.role === 'user' ? 'user' : 'model',
+          text: m.text
+        }));
 
       const { text: rawReply } = await root.RuleMaster.askAssistantChat({
         systemPrompt,
@@ -2103,6 +2116,7 @@
         role: 'model',
         persona: _persona,
         text: errText,
+        isError: true,
         execResults: [{ ok: false, summary: isNoKey ? 'API Key Needed' : 'AI Request Failed' }]
       });
       _saveSessionHistory();

@@ -2343,14 +2343,18 @@ const RuleMaster = {
   _summarizeGeminiErrors(attempts) {
     const list = Array.isArray(attempts) ? attempts : [];
     if (list.length === 0) return '';
-    const retired = list.filter(a => a.retired).map(a => a.model);
-    const other = list.filter(a => !a.retired);
+    const norm = list.map(a => (typeof a === 'string'
+      ? { model: '', message: a, retired: false }
+      : { model: a?.model || '', message: a?.message || String(a || ''), retired: Boolean(a?.retired) }
+    ));
+    const retired = norm.filter(a => a.retired).map(a => a.model).filter(Boolean);
+    const other = norm.filter(a => !a.retired);
     if (other.length === 0) {
       return `Every model that was tried is retired for this API key (${retired.join(', ')}). Open Settings and refresh the Gemini model list.`;
     }
     const last = other[other.length - 1];
     const note = retired.length > 0 ? ` Skipped retired models: ${retired.join(', ')}.` : '';
-    return `${last.message}${note}`;
+    return `${last.message || 'Unknown Gemini API error'}${note}`;
   },
 
   _isDeprecatedGeminiModel(m) {
@@ -7004,12 +7008,25 @@ Allowed recommendedAction values: "KEEP" | "MODIFY" | "REMOVE".`;
     const deadline = Date.now() + Math.max(1000, Number(totalTimeoutMs) || 25000);
     const taskModels = this._sanitizeModelList(await this.getAvailableGeminiModels(apiKey, false, taskType));
     const candidates = this._expandGeminiCandidates(taskModels);
-    const contents = Array.isArray(messages) && messages.length > 0
-      ? messages.map(m => ({
-          role: m.role === 'model' ? 'model' : 'user',
-          parts: [{ text: String(m.text || '') }]
-        }))
-      : [{ role: 'user', parts: [{ text: String(userPrompt || '') }] }];
+    const rawTurns = Array.isArray(messages) && messages.length > 0
+      ? messages
+          .map(m => ({ role: m.role === 'model' ? 'model' : 'user', text: String(m.text || '').trim() }))
+          .filter(m => m.text.length > 0)
+      : [{ role: 'user', text: String(userPrompt || '').trim() }].filter(m => m.text.length > 0);
+    // Gemini API requires contents to start with 'user' and strictly alternate user/model turns
+    while (rawTurns.length > 0 && rawTurns[0].role !== 'user') rawTurns.shift();
+    const contents = [];
+    for (const turn of rawTurns) {
+      const prev = contents[contents.length - 1];
+      if (prev && prev.role === turn.role) {
+        prev.parts[0].text += '\n' + turn.text;
+      } else {
+        contents.push({ role: turn.role, parts: [{ text: turn.text }] });
+      }
+    }
+    if (contents.length === 0) {
+      throw new Error('Empty prompt.');
+    }
 
     let lastErr = null;
     const attemptErrors = [];
@@ -7018,7 +7035,7 @@ Allowed recommendedAction values: "KEEP" | "MODIFY" | "REMOVE".`;
       if (this._isDeprecatedGeminiModel(model)) continue;
       const remainingMs = deadline - Date.now();
       if (remainingMs <= 500) {
-        attemptErrors.push(`total timeout (${Math.round(totalTimeoutMs / 1000)}s) reached`);
+        attemptErrors.push({ model, message: `Total timeout (${Math.round(totalTimeoutMs / 1000)}s) reached`, retired: false });
         break;
       }
       if (typeof onProgress === 'function') {
@@ -7027,7 +7044,7 @@ Allowed recommendedAction values: "KEEP" | "MODIFY" | "REMOVE".`;
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
       const genConfig = { temperature };
       if (responseMimeType) genConfig.responseMimeType = responseMimeType;
-      if (model.includes('2.5')) {
+      if (model.includes('2.5-flash')) {
         genConfig.thinkingConfig = { thinkingBudget: 0 };
       }
 
@@ -7057,18 +7074,23 @@ Allowed recommendedAction values: "KEEP" | "MODIFY" | "REMOVE".`;
           if (rawText.trim()) {
             return { text: rawText.trim(), model };
           }
-          attemptErrors.push(`${model}: empty response`);
+          attemptErrors.push({ model, message: `${model}: empty response`, retired: false });
         } else {
           const errJson = await res.json().catch(() => ({}));
           const msg = errJson?.error?.message || `HTTP ${res.status}`;
-          attemptErrors.push(`${model}: ${msg}`);
+          const isRetired = typeof this.isGeminiModelRetiredError === 'function'
+            && this.isGeminiModelRetiredError(res.status, msg);
+          if (isRetired && typeof this.markGeminiModelRetired === 'function') {
+            this.markGeminiModelRetired(model);
+          }
+          attemptErrors.push({ model, message: `${model}: ${msg}`, retired: isRetired });
           lastErr = new Error(msg);
           if (res.status === 401 || res.status === 403) break;
         }
       } catch (err) {
         clearTimeout(timer);
         const msg = err?.name === 'AbortError' ? 'timeout' : (err?.message || 'network error');
-        attemptErrors.push(`${model}: ${msg}`);
+        attemptErrors.push({ model, message: `${model}: ${msg}`, retired: false });
         lastErr = err;
       }
     }
