@@ -2410,8 +2410,11 @@
       }
     }
 
-    // 2. LLM Dual-Persona Call (Rule Master <-> Chronicler)
-    if (!root.RuleMaster || typeof root.RuleMaster.askAssistantChat !== 'function') {
+    // 3. LLM Dual-Persona Call (Rule Master <-> Chronicler)
+    const rmEngine = (root.RuleMaster && typeof root.RuleMaster.askAssistantChat === 'function')
+      ? root.RuleMaster
+      : ((() => { try { return root.parent && root.parent !== root && root.parent.RuleMaster && typeof root.parent.RuleMaster.askAssistantChat === 'function' ? root.parent.RuleMaster : null; } catch (e) { return null; } })());
+    if (!rmEngine) {
       _notify('Rule Master AI engine is not loaded on this page.', 'error');
       return;
     }
@@ -2451,7 +2454,7 @@
           text: m.text
         }));
 
-      const { text: rawReply } = await root.RuleMaster.askAssistantChat({
+      const { text: rawReply } = await rmEngine.askAssistantChat({
         systemPrompt,
         messages: recentMsgs,
         temperature: 0.2,
@@ -2461,7 +2464,7 @@
 
       let parsed = null;
       try {
-        const cleaned = root.RuleMaster.cleanJsonText(rawReply);
+        const cleaned = rmEngine.cleanJsonText(rawReply);
         parsed = JSON.parse(cleaned);
       } catch (parseErr) {
         parsed = { persona: guessedPersona, reply: rawReply, actions: [], citations: [] };
