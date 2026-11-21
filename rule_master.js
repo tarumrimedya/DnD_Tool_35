@@ -2388,6 +2388,105 @@ const RuleMaster = {
 - "powers": [{"id": "pw-slug", "kind": "inline"|"attached", "name": "Breath Weapon (Su)", "action": "Standard"|"Move"|"Swift"|"Immediate"|"Free"|"Full-Round", "usage": {"mode": "perDay"|"perEncounter"|"atwill"|"cooldown"|"resourcePool", "uses": 3, "recharge": "1d4"}, "area": "30-ft. Cone", "dcFormula": "10 + 1/2 HD + Con", "save": {"type": "Reflex", "effect": "Half"}, "effects": [...]}]
 - "modes": [{"id": "mode-off", "name": "Inactive", "label": "Inactive", "effects": []}, {"id": "mode-slug", "name": "Mode Label", "label": "Mode Label", "effects": [...]}] (for mutually exclusive selectable combat sheet modes).`,
 
+  // Constant systemInstruction prefix (auto-cached by Gemini 2.5+ Implicit Context Caching)
+  getV3SystemInstruction() {
+    if (!this._cachedV3SystemInstruction) {
+      this._cachedV3SystemInstruction = `You are the D&D 3.5e Rule Master & Pure Canonical V3 Architect.\n\n${this.DND35_RAW_GUARDRAIL}\n\n${this.V3_MECHANICS_CONTRACT}`;
+    }
+    return this._cachedV3SystemInstruction;
+  },
+
+  // Compact Gemini-compatible JSON Schema for Pure Canonical V3 {"entries": [...]} Structured Outputs
+  V3_ENTRIES_JSON_SCHEMA: {
+    type: 'object',
+    properties: {
+      entries: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            schemaVersion: { type: 'integer', enum: [3] },
+            id: { type: 'string' },
+            blueprint: { type: 'string', enum: ['feat', 'spell', 'weapon', 'armor', 'wondrous', 'buff', 'class', 'item_mod', 'race', 'deity', 'domain', 'monster'] },
+            name: { type: 'string' },
+            type: { type: 'string' },
+            source: { type: 'string' },
+            prereq: { type: 'string' },
+            benefit: { type: 'string' },
+            text: { type: 'string' },
+            description: { type: 'string' },
+            effects: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  type: { type: 'string', enum: ['stat', 'roll', 'attack', 'defense', 'effect', 'resource', 'when', 'carrier', 'table'] }
+                },
+                required: ['type'],
+                additionalProperties: true
+              }
+            },
+            powers: { type: 'array', items: { type: 'object', additionalProperties: true } },
+            choices: { type: 'array', items: { type: 'object', additionalProperties: true } },
+            modes: { type: 'array', items: { type: 'object', additionalProperties: true } }
+          },
+          required: ['schemaVersion', 'id', 'blueprint', 'name', 'type', 'effects'],
+          additionalProperties: true
+        }
+      }
+    },
+    required: ['entries']
+  },
+
+  // Shared Gemini V3 JSON caller: constant systemInstruction (implicit cache) + responseJsonSchema + HTTP 400 schema fallback + busy cooldown
+  async _postGeminiV3Json(model, apiKey, userPrompt, { temperature = 0.1, timeoutMs = 12000, useSchema = true } = {}) {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
+    const runOnce = async (attachSchema) => {
+      const genConfig = { temperature, responseMimeType: 'application/json' };
+      if (attachSchema && this.V3_ENTRIES_JSON_SCHEMA) {
+        genConfig.responseJsonSchema = this.V3_ENTRIES_JSON_SCHEMA;
+      }
+      if (model.includes('2.5')) genConfig.thinkingConfig = { thinkingBudget: 0 };
+      const payload = {
+        systemInstruction: { parts: [{ text: this.getV3SystemInstruction() }] },
+        contents: [{ parts: [{ text: userPrompt }] }],
+        generationConfig: genConfig
+      };
+      const controller = new AbortController();
+      const tId = setTimeout(() => controller.abort(), timeoutMs);
+      try {
+        const resp = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
+          body: JSON.stringify(payload),
+          signal: controller.signal
+        });
+        clearTimeout(tId);
+        return resp;
+      } catch (err) {
+        clearTimeout(tId);
+        if (err && err.name === 'AbortError') this.markGeminiModelBusy(model);
+        throw err;
+      }
+    };
+
+    let resp = await runOnce(useSchema);
+    if (!resp.ok && useSchema && resp.status === 400) {
+      const errPeek = await resp.clone().json().catch(() => ({}));
+      const em = String(errPeek?.error?.message || '').toLowerCase();
+      if (em.includes('schema') || em.includes('additionalproperties') || em.includes('responsejsonschema')) {
+        resp = await runOnce(false);
+      }
+    }
+    if (!resp.ok) {
+      const ej = await resp.clone().json().catch(() => ({}));
+      const msg = ej?.error?.message || `HTTP ${resp.status}`;
+      if (this.isGeminiModelRetiredError(resp.status, msg)) this.markGeminiModelRetired(model);
+      else if (this.isGeminiModelBusyError(resp.status, msg)) this.markGeminiModelBusy(model);
+    }
+    return resp;
+  },
+
   getAiModelMode() {
     return localStorage.getItem('dnd35_ai_model_mode') || 'auto';
   },
@@ -4138,19 +4237,8 @@ OUTPUT JSON SCHEMA (Pure Canonical V3):
     for (const rModel of repairModels) {
       if (!rModel) continue;
       if (statusTextEl) statusTextEl.textContent = `Repairing V3 schema (${rModel})...`;
-      const controller = new AbortController();
-      const tId = setTimeout(() => controller.abort(), 9000);
       try {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${rModel}:generateContent?key=${encodeURIComponent(apiKey)}`;
-        const genConfig = { temperature: 0.0, responseMimeType: 'application/json' };
-        if (rModel.includes('2.5')) genConfig.thinkingConfig = { thinkingBudget: 0 };
-        const resp = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ contents: [{ parts: [{ text: repairPrompt }] }], generationConfig: genConfig }),
-          signal: controller.signal
-        });
-        clearTimeout(tId);
+        const resp = await this._postGeminiV3Json(rModel, apiKey, repairPrompt, { temperature: 0.0, timeoutMs: 9000, useSchema: true });
         if (resp.ok) {
           const d = await resp.json();
           const txt = d.candidates?.[0]?.content?.parts?.[0]?.text;
@@ -4167,7 +4255,7 @@ OUTPUT JSON SCHEMA (Pure Canonical V3):
           }
         }
       } catch (_) {
-        clearTimeout(tId);
+        // try next repair model
       }
     }
     return rawItems;
@@ -4194,8 +4282,7 @@ OUTPUT JSON SCHEMA (Pure Canonical V3):
       powers: baseEntry.powers || [],
       choices: baseEntry.choices || []
     };
-    const promptText = `You are a master D&D 3.5e Rule Arbiter & Pure Canonical V3 Architect.
-Our deterministic 0-token V3 Scriber already extracted verified blocks from part of this rule text, leaving ${partialScribe.mechanicalUnparsedClauses.length} complex clause(s) unparsed.
+    const promptText = `Our deterministic 0-token V3 Scriber already extracted verified blocks from part of this rule text, leaving ${partialScribe.mechanicalUnparsedClauses.length} complex clause(s) unparsed.
 
 FULL RULE TEXT:
 '''
@@ -4208,10 +4295,6 @@ ${JSON.stringify(lockedBlocks)}
 REMAINING UNPARSED COMPLEX CLAUSE(S) TO TRANSLATE:
 ${JSON.stringify(partialScribe.mechanicalUnparsedClauses)}
 
-${this.DND35_RAW_GUARDRAIL}
-
-${this.V3_MECHANICS_CONTRACT}
-
 TASK:
 Return 1 complete Pure Canonical V3 entry inside {"entries": [...]} (blueprint: "${baseEntry.blueprint || 'feat'}", category: "${categoryHint}") that retains the locked blocks AND translates the remaining unparsed clause(s) into canonical V3 "effects", "powers", "choices", or "modes" (with proper "swapScope", "recipient", and closed "when" conditions).`;
 
@@ -4219,19 +4302,8 @@ Return 1 complete Pure Canonical V3 entry inside {"entries": [...]} (blueprint: 
     for (const model of modelsToTry) {
       if (this._isDeprecatedGeminiModel(model)) continue;
       if (statusTextEl) statusTextEl.textContent = `Refining complex clause(s) ➔ ${model}...`;
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 11000);
       try {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
-        const genConfig = { temperature: 0.1, responseMimeType: 'application/json' };
-        if (model.includes('2.5')) genConfig.thinkingConfig = { thinkingBudget: 0 };
-        const resp = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }], generationConfig: genConfig }),
-          signal: controller.signal
-        });
-        clearTimeout(timeoutId);
+        const resp = await this._postGeminiV3Json(model, apiKey, promptText, { temperature: 0.1, timeoutMs: 11000, useSchema: true });
         if (resp.ok) {
           const data = await resp.json();
           const txt = data.candidates?.[0]?.content?.parts?.[0]?.text;
@@ -4254,12 +4326,9 @@ Return 1 complete Pure Canonical V3 entry inside {"entries": [...]} (blueprint: 
               return [this.ensureV2(norm)];
             }
           }
-        } else {
-          const ej = await resp.json().catch(() => ({}));
-          if (this.isGeminiModelRetiredError(resp.status, ej.error?.message || '')) this.markGeminiModelRetired(model);
         }
       } catch (_) {
-        clearTimeout(timeoutId);
+        // try next model
       }
     }
     // Graceful fallback: return deterministic blocks + rule note if API is unreachable
@@ -4335,32 +4404,9 @@ Return 1 complete Pure Canonical V3 entry inside {"entries": [...]} (blueprint: 
         if (statusTextEl) {
           statusTextEl.textContent = `Querying "${cleanQuery}" ➔ ${model}...`;
         }
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
-
-        const genConfig = {
-          temperature: 0.1,
-          responseMimeType: "application/json"
-        };
-        if (model.includes('2.5')) {
-          genConfig.thinkingConfig = { thinkingBudget: 0 };
-        }
-
-        const payload = {
-          contents: [{ parts: [{ text: promptText }] }],
-          generationConfig: genConfig
-        };
-
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 12000);
 
         try {
-          const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-            signal: controller.signal
-          });
-          clearTimeout(timeoutId);
+          const response = await this._postGeminiV3Json(model, apiKey, promptText, { temperature: 0.1, timeoutMs: 12000, useSchema: true });
 
           if (response.ok) {
             const data = await response.json();
@@ -4412,7 +4458,6 @@ Return 1 complete Pure Canonical V3 entry inside {"entries": [...]} (blueprint: 
             if (retired) this.markGeminiModelRetired(model);
           }
         } catch (netErr) {
-          clearTimeout(timeoutId);
           if (netErr && netErr.name === 'AbortError') {
             lastError = `Timeout (12s) - ${model} did not respond.`;
           } else {
@@ -6400,17 +6445,12 @@ Return 1 complete Pure Canonical V3 entry inside {"entries": [...]} (blueprint: 
       throw new Error('Please configure a Google Gemini API Key to parse unstructured free-text rules.');
     }
 
-    const promptText = `You are a master D&D 3.5e Rule Arbiter and Pure Canonical V3 Architect.
-The user has provided a raw, free-form text block copied from a D&D 3.5e sourcebook, PDF, SRD, or homebrew note:
+    const promptText = `The user has provided a raw, free-form text block copied from a D&D 3.5e sourcebook, PDF, SRD, or homebrew note:
 
 RAW TEXT:
 '''
 ${rawText}
 '''
-
-${this.DND35_RAW_GUARDRAIL}
-
-${this.V3_MECHANICS_CONTRACT}
 
 TASK:
 Analyze and craft this free-form text completely into Pure Canonical V3 JSON entries (schemaVersion: 3).
@@ -6453,31 +6493,13 @@ Return valid JSON only matching:
       if (statusTextEl) {
         statusTextEl.textContent = `Analyzing free text (Model: ${model})...`;
       }
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 11000);
 
       try {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
-        const genConfig = {
-          responseMimeType: 'application/json',
-          temperature: 0.0
-        };
-        if (model.includes('2.5')) genConfig.thinkingConfig = { thinkingBudget: 0 };
-        const response = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: promptText }] }],
-            generationConfig: genConfig
-          }),
-          signal: controller.signal
-        });
-        clearTimeout(timeoutId);
+        const response = await this._postGeminiV3Json(model, apiKey, promptText, { temperature: 0.0, timeoutMs: 11000, useSchema: true });
 
         if (!response.ok) {
           const errData = await response.json().catch(() => ({}));
           const msg = errData.error?.message || `HTTP ${response.status}`;
-          if (this.isGeminiModelRetiredError(response.status, msg)) this.markGeminiModelRetired(model);
           throw new Error(msg);
         }
 
@@ -6490,7 +6512,6 @@ Return valid JSON only matching:
           break;
         }
       } catch (err) {
-        clearTimeout(timeoutId);
         const errMsg = err && err.name === 'AbortError' ? `Timeout (11s) - ${model} did not respond.` : err.message;
         console.warn(`Model ${model} free-text parse failed:`, errMsg);
         lastError = new Error(errMsg);

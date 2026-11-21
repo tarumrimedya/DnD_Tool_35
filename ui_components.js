@@ -691,7 +691,7 @@
 
     const iframe = document.createElement('iframe');
     iframe.id = 'rule-crafter-iframe';
-    iframe.src = 'forge_sandbox.html?embed=1';
+    iframe.src = 'forge_sandbox.html?embed=1&v=' + Date.now();
     iframe.title = 'Rule Crafter';
     iframe.setAttribute('style', 'width:100%;height:100%;border:0;background:#0a0f1d;display:block;flex:1 1 auto;');
     panel.appendChild(iframe);

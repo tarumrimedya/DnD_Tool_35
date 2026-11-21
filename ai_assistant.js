@@ -3782,7 +3782,7 @@
   // ---------------------------------------------------------------------------
   // 8. Input Submission (0ms Instant Commands -> LLM Dual-Persona Orchestration)
   // ---------------------------------------------------------------------------
-  async function executeStructuredActions(actions, activePersona) {
+  async function executeStructuredActions(actions, activePersona, userText = '') {
     const results = [];
     if (!Array.isArray(actions)) return results;
     const isChronicler = activePersona === 'chronicler';
@@ -3804,7 +3804,11 @@
           results.push({ ok: false, summary: 'Blocked "open_crafter" in Chronicler mode.' });
           continue;
         }
-        const res = await COMMANDS.open_crafter({ blueprint: act.blueprint || 'feat', prompt: act.prompt || '' });
+        const actPrompt = String(act.prompt || '').trim();
+        const rawUser = String(userText || '').trim();
+        const userHasRichRule = rawUser.length > actPrompt.length && (/[+-]\d|\b\d+d\d+\b|\bDC\b|\bbonus\b/i.test(rawUser) || !actPrompt);
+        const finalPrompt = userHasRichRule ? rawUser : (actPrompt || rawUser);
+        const res = await COMMANDS.open_crafter({ blueprint: act.blueprint || 'feat', prompt: finalPrompt });
         results.push(res);
       } else if (act.type === 'apply_v3_patch' && act.patch && typeof act.patch === 'object') {
         if (isChronicler) {
@@ -4110,7 +4114,7 @@
       const donePose = activePersona === 'chronicler' ? 'found' : 'astrolabe';
       setPersonaVisual(activePersona, false, donePose);
 
-      const execResults = await executeStructuredActions(parsed.actions || [], activePersona);
+      const execResults = await executeStructuredActions(parsed.actions || [], activePersona, text);
       const validNoteIds = new Set(relevantNotes.map(n => n.id));
       const citations = Array.isArray(parsed.citations)
         ? parsed.citations.filter(c => c && c.noteId && validNoteIds.has(c.noteId)).slice(0, 5)
