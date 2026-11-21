@@ -401,6 +401,143 @@
     return typeof name === 'string' && Object.prototype.hasOwnProperty.call(COMMANDS, name);
   }
 
+  let _evalCacheVer = -1;
+  let _evalCacheRes = null;
+
+  function _getCachedLegoEval(ch) {
+    if (!ch || !root.RuleEngine || typeof root.RuleEngine.evaluateLegoCharacter !== 'function') return null;
+    const ver = (root.CharStore && typeof root.CharStore.getDocVersion === 'function')
+      ? root.CharStore.getDocVersion()
+      : -2;
+    if (ver >= 0 && _evalCacheVer === ver && _evalCacheRes) return _evalCacheRes;
+    const res = root.RuleEngine.evaluateLegoCharacter(ch);
+    if (ver >= 0) {
+      _evalCacheVer = ver;
+      _evalCacheRes = res;
+    }
+    return res;
+  }
+
+  function _findSpellMatch(ch, query) {
+    const sc = ch && ch.spellcasting;
+    if (!sc) return null;
+    const prepHit = _matchBestName(sc.preparedSpells || [], query, s => s.name);
+    if (prepHit) return { discipline: 'prepared', actionKey: 'spells:cast-prepared', idx: prepHit.idx, item: prepHit.item };
+    const knownHit = _matchBestName(sc.knownSpells || [], query, s => s.name);
+    if (knownHit) return { discipline: 'spontaneous', actionKey: 'spells:cast-spontaneous', idx: knownHit.idx, item: knownHit.item };
+    const divHit = _matchBestName(sc.divineSpells || [], query, s => s.name);
+    if (divHit) return { discipline: 'divine', actionKey: 'spells:cast-divine', idx: divHit.idx, item: divHit.item };
+    return null;
+  }
+
+  // Pure Sheet Command Planner (Single Source of Truth for Preview + Execution)
+  function planSheetCommand(parsed, doc) {
+    if (!parsed || !doc) return null;
+    const cmd = parsed.command;
+    const args = parsed.args;
+
+    if (cmd === 'hp') {
+      const raw = typeof args === 'string' ? args.trim() : String(args?.delta ?? args?.value ?? '').trim();
+      const tempM = raw.match(/^(?:temp\s+)?([+-]?\d+)\s+temp$/i) || (args && args.mode === 'temp' ? [raw, String(args.amount ?? args.value ?? 0)] : null);
+      if (tempM) {
+        const amt = Math.abs(parseInt(tempM[1], 10) || 0);
+        if (amt <= 0) return { ok: false, summary: 'Temp HP amount must be positive (e.g., thp 12 or hp +12 temp).' };
+        return {
+          ok: true,
+          actions: [{ type: 'hud/adjustHp', payload: { mode: 'temp', amount: amt, source: 'Rule Master' }, meta: { label: `Temp HP +${amt}` } }],
+          label: `Temp HP +${amt}`,
+          isTemp: true,
+          amount: amt
+        };
+      }
+      const m = raw.match(/^([+-]?\d+)(?:\s+([a-zA-Z]+))?$/);
+      if (!m) return { ok: false, summary: 'Invalid HP delta. Example: hp -15, hp +12, or thp 10.' };
+      let delta = parseInt(m[1], 10);
+      if (!Number.isFinite(delta) || delta === 0) return { ok: false, summary: 'HP change must be a non-zero number.' };
+      const dmgType = (m[2] || (typeof args === 'object' && args?.damageType) || '').trim();
+      let note = '';
+      if (delta < 0 && dmgType && root.RuleEngine && typeof root.RuleEngine.applyIncomingDamage === 'function') {
+        const evalRes = _getCachedLegoEval(doc);
+        if (evalRes) {
+          const dmgOut = root.RuleEngine.applyIncomingDamage(evalRes, Math.abs(delta), dmgType);
+          delta = dmgOut.finalDelta;
+          note = dmgOut.note || '';
+        }
+      }
+      const mode = delta < 0 ? 'damage' : 'heal';
+      const amt = Math.abs(delta);
+      return {
+        ok: true,
+        actions: [{ type: 'hud/adjustHp', payload: { mode, amount: amt, source: note || 'Rule Master' }, meta: { label: `HP ${delta >= 0 ? '+' : ''}${delta}${dmgType ? ' ' + dmgType : ''}` } }],
+        label: `HP ${delta >= 0 ? '+' : ''}${delta}`,
+        delta,
+        note
+      };
+    }
+
+    if (cmd === 'stat_adjust') {
+      const raw = typeof args === 'string' ? args : `${args?.ability || ''} ${args?.delta ?? args?.value ?? ''}`;
+      const sm = raw.trim().match(/^(str|dex|con|int|wis|cha)\s*([+-=]?\s*\d+)$/i);
+      if (!sm) return { ok: false, summary: 'Syntax: stat str +2 or stat cha = 18.' };
+      const statKey = sm[1].toLowerCase();
+      const rawNum = sm[2].replace(/\s+/g, '');
+      const isSet = rawNum.startsWith('=') || (!rawNum.startsWith('+') && !rawNum.startsWith('-'));
+      const val = parseInt(rawNum.replace(/^=/, ''), 10) || 0;
+      const payload = isSet ? { statKey, score: val } : { statKey, delta: val };
+      return {
+        ok: true,
+        actions: [{ type: 'progression/adjustAbility', payload, meta: { label: `Stat ${statKey.toUpperCase()} ${rawNum}` } }],
+        label: `Stat ${statKey.toUpperCase()} ${rawNum}`,
+        statKey
+      };
+    }
+
+    if (cmd === 'toggle_buff') {
+      const query = typeof args === 'string' ? args.trim() : String(args?.name || args?.buff || '').trim();
+      if (!query) return { ok: false, summary: 'Specify a buff name (e.g., buff Haste).' };
+      const existing = _matchBestName(doc.buffs || [], query, b => b.name);
+      if (existing) {
+        return {
+          ok: true,
+          actions: [{ type: 'combat/toggleBuff', payload: { index: existing.idx }, meta: { label: `Toggle Buff ${existing.item.name}` } }],
+          label: `Toggle ${existing.item.name}`,
+          buffName: existing.item.name
+        };
+      }
+      return { ok: true, needsAsyncCatalog: true, query, label: `Buff ${query}` };
+    }
+
+    if (cmd === 'cast_spell') {
+      const query = typeof args === 'string' ? args.trim() : String(args?.name || args?.spell || '').trim();
+      if (!query) return { ok: false, summary: 'Specify a spell name (e.g., cast Fireball).' };
+      const match = _findSpellMatch(doc, query);
+      if (!match) return { ok: false, summary: `Spell "${query}" was not found in prepared, known, or divine spell lists.` };
+      const peek = (root.CharStore && typeof root.CharStore.peekSpellCast === 'function')
+        ? root.CharStore.peekSpellCast(match.discipline, match.idx)
+        : null;
+      if (peek && peek.slotsLeft <= 0) {
+        return { ok: false, summary: `No Level ${peek.level} spell slots remaining for ${match.item.name}.`, peek };
+      }
+      return {
+        ok: true,
+        match,
+        peek,
+        interactive: Boolean(peek && peek.needsChoice),
+        label: `Cast ${match.item.name}`
+      };
+    }
+
+    if (cmd === 'next_round') {
+      return {
+        ok: true,
+        actions: [{ type: 'combat/advanceRound', payload: {}, meta: { label: 'Next Round' } }],
+        label: 'Next Round'
+      };
+    }
+
+    return null;
+  }
+
   const COMMANDS = {
     async next_round() {
       if (root.Actions && typeof root.Actions.has === 'function' && root.Actions.has('combat:next-round')) {
@@ -419,102 +556,75 @@
     async hp(args) {
       const ch = _getChar();
       if (!ch || !ch.hp) return { ok: false, summary: 'No active character loaded.' };
-      const raw = typeof args === 'string' ? args : String(args?.delta ?? args?.value ?? '');
-      const m = raw.trim().match(/^([+-]?\d+)(?:\s+([a-zA-Z]+))?$/);
-      if (!m) return { ok: false, summary: 'Invalid HP delta. Example: hp -15 or hp +12.' };
-      let delta = parseInt(m[1], 10);
-      if (!Number.isFinite(delta) || delta === 0) return { ok: false, summary: 'HP change must be a non-zero number.' };
-      const dmgType = (m[2] || args?.damageType || '').trim();
+      const plan = planSheetCommand({ command: 'hp', args }, ch);
+      if (!plan || !plan.ok) return { ok: false, summary: (plan && plan.summary) || 'Invalid HP delta.' };
 
-      _pushUndo(`HP ${delta >= 0 ? '+' : ''}${delta}${dmgType ? ' ' + dmgType : ''}`);
-      let note = '';
-      if (delta < 0 && dmgType && root.RuleEngine && typeof root.RuleEngine.evaluateLegoCharacter === 'function' && typeof root.RuleEngine.applyIncomingDamage === 'function') {
-        const evalRes = root.RuleEngine.evaluateLegoCharacter(ch);
-        const dmgOut = root.RuleEngine.applyIncomingDamage(evalRes, Math.abs(delta), dmgType);
-        delta = dmgOut.finalDelta;
-        note = dmgOut.note || '';
-      }
-      let absorbedTemp = 0;
-      if (delta < 0) {
-        let dmgLeft = Math.abs(delta);
-        const prevTemp = Math.max(0, Number(ch.hp.temp) || 0);
-        if (prevTemp > 0) {
-          absorbedTemp = Math.min(prevTemp, dmgLeft);
-          ch.hp.temp = prevTemp - absorbedTemp;
-          dmgLeft -= absorbedTemp;
+      if (root.CharStore && typeof root.CharStore.dispatch === 'function') {
+        root.CharStore.dispatch(plan.actions[0]);
+        const out = typeof root.CharStore.getLastOutcome === 'function' ? root.CharStore.getLastOutcome() : null;
+        if (root.CharStore.isAbortedOutcome && root.CharStore.isAbortedOutcome(out)) {
+          return { ok: false, summary: 'Could not adjust HP.' };
         }
-        if (dmgLeft > 0) {
-          ch.hp.current = Math.max(-10, (Number(ch.hp.current) || 0) - dmgLeft);
+        const doc = _getChar() || ch;
+        if (typeof root.renderAll === 'function') root.renderAll({ skipRecompute: true });
+        const remTemp = Math.max(0, Number(doc.hp?.temp) || 0);
+        const tempSuffix = remTemp > 0 ? ` (+${remTemp} Temp)` : '';
+        if (plan.isTemp) {
+          return { ok: true, summary: `Temp HP set to ${remTemp} (non-stacking max).` };
         }
-      } else {
-        const maxHp = Number(ch.hp.max) || 999;
-        ch.hp.current = Math.min(maxHp, (Number(ch.hp.current) || 0) + delta);
+        const absorbedTemp = Number(out && out.absorbedTemp) || 0;
+        const absorbedSuffix = absorbedTemp > 0 ? ` [${absorbedTemp} absorbed by Temp HP]` : '';
+        if (typeof root.showDiceTopToast === 'function') {
+          root.showDiceTopToast({
+            icon: plan.delta >= 0 ? '💚' : '🩸',
+            title: plan.note || (plan.delta >= 0 ? `Healed +${plan.delta} HP` : `Took ${Math.abs(plan.delta)} Damage`),
+            breakdown: `Current HP: ${doc.hp.current} / ${doc.hp.max}${tempSuffix}${absorbedSuffix}`,
+            total: `${plan.delta >= 0 ? '+' : ''}${plan.delta} HP`
+          });
+        }
+        return { ok: true, summary: `HP updated (${plan.delta >= 0 ? '+' : ''}${plan.delta}) → ${doc.hp.current}/${doc.hp.max}${tempSuffix}${absorbedSuffix}.` };
       }
-      const remTemp = Math.max(0, Number(ch.hp.temp) || 0);
-      const tempSuffix = remTemp > 0 ? ` (+${remTemp} Temp)` : '';
-      const absorbedSuffix = absorbedTemp > 0 ? ` [${absorbedTemp} absorbed by Temp HP]` : '';
-      if (typeof root.saveStateToStorage === 'function') root.saveStateToStorage(true);
-      if (typeof root.renderAll === 'function') root.renderAll();
-      if (typeof root.showDiceTopToast === 'function') {
-        root.showDiceTopToast({
-          icon: delta >= 0 ? '💚' : '🩸',
-          title: note || (delta >= 0 ? `Healed +${delta} HP` : `Took ${Math.abs(delta)} Damage`),
-          breakdown: `Current HP: ${ch.hp.current} / ${ch.hp.max}${tempSuffix}${absorbedSuffix}`,
-          total: `${delta >= 0 ? '+' : ''}${delta} HP`
-        });
-      }
-      return { ok: true, summary: `HP updated (${delta >= 0 ? '+' : ''}${delta}) → ${ch.hp.current}/${ch.hp.max}${tempSuffix}${absorbedSuffix}.` };
+      return { ok: false, summary: 'CharStore is unavailable on this page.' };
     },
 
     async cast_spell(args) {
       const ch = _getChar();
       if (!ch || !ch.spellcasting) return { ok: false, summary: 'No active character spellcasting found.' };
-      const query = typeof args === 'string' ? args : String(args?.name || args?.spell || '');
-      if (!query.trim()) return { ok: false, summary: 'Specify a spell name to cast (e.g., cast: Fireball).' };
-
-      // 1. Check Prepared Spells
-      const prepHit = _matchBestName(ch.spellcasting.preparedSpells || [], query, s => s.name);
-      if (prepHit && root.Actions && root.Actions.has('spells:cast-prepared')) {
-        _pushUndo(`Cast ${prepHit.item.name}`);
-        root.Actions.invoke('spells:cast-prepared', { idx: String(prepHit.idx) });
-        return { ok: true, summary: `Cast prepared spell: ${prepHit.item.name}.` };
+      const plan = planSheetCommand({ command: 'cast_spell', args }, ch);
+      if (!plan || !plan.ok) return { ok: false, summary: (plan && plan.summary) || 'Specify a spell name to cast (e.g., cast Fireball).' };
+      const { match, peek } = plan;
+      if (!root.Actions || !root.Actions.has(match.actionKey)) {
+        return { ok: false, summary: `Spell action "${match.actionKey}" is unavailable on this page.` };
       }
-
-      // 2. Check Spontaneous Known Spells
-      const knownHit = _matchBestName(ch.spellcasting.knownSpells || [], query, s => s.name);
-      if (knownHit && root.Actions && root.Actions.has('spells:cast-spontaneous')) {
-        _pushUndo(`Cast ${knownHit.item.name}`);
-        root.Actions.invoke('spells:cast-spontaneous', { idx: String(knownHit.idx) });
-        return { ok: true, summary: `Cast spontaneous spell: ${knownHit.item.name}.` };
+      root.Actions.invoke(match.actionKey, { idx: String(match.idx) });
+      if (peek && peek.needsChoice) {
+        return { ok: true, summary: `${match.item.name} requires a casting choice — pick an option in the toast.` };
       }
-
-      // 3. Check Divine / Domain Spells
-      const divHit = _matchBestName(ch.spellcasting.divineSpells || [], query, s => s.name);
-      if (divHit && root.Actions && root.Actions.has('spells:cast-divine')) {
-        _pushUndo(`Cast ${divHit.item.name}`);
-        root.Actions.invoke('spells:cast-divine', { idx: String(divHit.idx) });
-        return { ok: true, summary: `Cast divine spell: ${divHit.item.name}.` };
+      const out = (root.CharStore && typeof root.CharStore.getLastOutcome === 'function') ? root.CharStore.getLastOutcome() : null;
+      if (out && root.CharStore.isAbortedOutcome && root.CharStore.isAbortedOutcome(out)) {
+        return { ok: false, summary: `Could not cast ${match.item.name} (${out.status}).` };
       }
-
-      return { ok: false, summary: `Spell "${query}" was not found in prepared, known, or divine spell lists.` };
+      return { ok: true, summary: `Cast ${match.discipline} spell: ${match.item.name}.` };
     },
 
     async toggle_buff(args) {
       const ch = _getChar();
       if (!ch) return { ok: false, summary: 'No active character loaded.' };
-      const query = typeof args === 'string' ? args : String(args?.name || args?.buff || '');
-      if (!query.trim()) return { ok: false, summary: 'Specify a buff name (e.g., buff: Haste).' };
+      const plan = planSheetCommand({ command: 'toggle_buff', args }, ch);
+      if (!plan || !plan.ok) return { ok: false, summary: (plan && plan.summary) || 'Specify a buff name (e.g., buff Haste).' };
 
-      if (!Array.isArray(ch.buffs)) ch.buffs = [];
-      const existing = _matchBestName(ch.buffs, query, b => b.name);
-      if (existing) {
-        _pushUndo(`Toggle Buff ${existing.item.name}`);
-        existing.item.active = !existing.item.active;
-        if (typeof root.saveStateToStorage === 'function') root.saveStateToStorage(true);
-        if (typeof root.renderAll === 'function') root.renderAll();
-        return { ok: true, summary: `${existing.item.name} is now ${existing.item.active ? 'ACTIVE' : 'OFF'}.` };
+      if (!plan.needsAsyncCatalog && Array.isArray(plan.actions) && plan.actions.length) {
+        if (root.CharStore && typeof root.CharStore.dispatch === 'function') {
+          root.CharStore.dispatch(plan.actions[0]);
+          const out = typeof root.CharStore.getLastOutcome === 'function' ? root.CharStore.getLastOutcome() : null;
+          if (typeof root.renderAll === 'function') root.renderAll({ skipRecompute: true });
+          const isNowActive = out ? Boolean(out.active) : true;
+          return { ok: true, summary: `${plan.buffName} is now ${isNowActive ? 'ACTIVE' : 'OFF'}.` };
+        }
+        return { ok: false, summary: 'CharStore is unavailable on this page.' };
       }
 
+      const query = plan.query;
       // Search default buffs, customDb, and SRD Spell/Buff catalog
       let template = null;
       if (root.RuleEngine && typeof root.RuleEngine.getDefaultBuffs === 'function') {
@@ -546,10 +656,9 @@
         return { ok: false, summary: `Buff "${query}" not found in active buffs or SRD.` };
       }
 
-      _pushUndo(`Activate Buff ${template.name}`);
       const clone = JSON.parse(JSON.stringify(template));
       const baseId = clone.id || 'buff';
-      const hasCollision = ch.buffs.some(b => b && b.id === baseId);
+      const hasCollision = (ch.buffs || []).some(b => b && b.id === baseId);
       clone.id = (!clone.id || hasCollision)
         ? `${baseId}_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`
         : clone.id;
@@ -559,10 +668,12 @@
         clone.roundsLeft = Number.isFinite(parsedRounds) && parsedRounds > 0 ? parsedRounds : null;
       }
       clone.active = true;
-      ch.buffs.push(clone);
-      if (typeof root.saveStateToStorage === 'function') root.saveStateToStorage(true);
-      if (typeof root.renderAll === 'function') root.renderAll();
-      return { ok: true, summary: `Activated buff: ${clone.name}.` };
+      if (root.CharStore && typeof root.CharStore.dispatch === 'function') {
+        root.CharStore.dispatch({ type: 'combat/addBuff', payload: { buff: clone }, meta: { label: `Activate Buff ${clone.name}` } });
+        if (typeof root.renderAll === 'function') root.renderAll({ skipRecompute: true });
+        return { ok: true, summary: `Activated buff: ${clone.name}.` };
+      }
+      return { ok: false, summary: 'CharStore is unavailable on this page.' };
     },
 
     async add_feat(args) {
@@ -644,23 +755,17 @@
     async stat_adjust(args) {
       const ch = _getChar();
       if (!ch) return { ok: false, summary: 'No active character loaded.' };
-      const raw = typeof args === 'string' ? args : `${args?.ability || ''} ${args?.delta ?? args?.value ?? ''}`;
-      const sm = raw.trim().match(/^(str|dex|con|int|wis|cha)\s*([+-=]?\s*\d+)$/i);
-      if (!sm) return { ok: false, summary: 'Syntax: stat: str +2 or stat: cha = 18.' };
-      const k = sm[1].toLowerCase();
-      const rawNum = sm[2].replace(/\s+/g, '');
-      const isSet = rawNum.startsWith('=') || (!rawNum.startsWith('+') && !rawNum.startsWith('-'));
-      const val = parseInt(rawNum.replace(/^=/, ''), 10) || 0;
-      _pushUndo(`Stat ${k.toUpperCase()} ${rawNum}`);
-      if (!ch.baseAbilities) ch.baseAbilities = Object.assign({ str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 }, ch.abilities || {});
-      if (!ch.abilities) ch.abilities = Object.assign({}, ch.baseAbilities);
-      const cur = Number(ch.baseAbilities[k] ?? ch.abilities[k] ?? 10);
-      const next = isSet ? val : (cur + val);
-      ch.baseAbilities[k] = next;
-      ch.abilities[k] = next;
-      if (typeof root.saveStateToStorage === 'function') root.saveStateToStorage(true);
-      if (typeof root.renderAll === 'function') root.renderAll();
-      return { ok: true, summary: `Base ${k.toUpperCase()} updated: ${cur} → ${next}.` };
+      const plan = planSheetCommand({ command: 'stat_adjust', args }, ch);
+      if (!plan || !plan.ok) return { ok: false, summary: (plan && plan.summary) || 'Syntax: stat str +2 or stat cha = 18.' };
+      if (root.CharStore && typeof root.CharStore.dispatch === 'function') {
+        root.CharStore.dispatch(plan.actions[0]);
+        const out = typeof root.CharStore.getLastOutcome === 'function' ? root.CharStore.getLastOutcome() : null;
+        if (typeof root.renderAll === 'function') root.renderAll({ skipRecompute: true });
+        const cur = out ? out.previousScore : '?';
+        const next = out ? out.baseScore : '?';
+        return { ok: true, summary: `Base ${plan.statKey.toUpperCase()} updated: ${cur} → ${next}.` };
+      }
+      return { ok: false, summary: 'CharStore is unavailable on this page.' };
     },
 
     async switch_tab(args) {
@@ -1444,25 +1549,28 @@
     const rollM = q.match(/^\/?(?:roll|r)\s*:?\s+(\d*d\d+[^\s]*(?:\s*[+-]\s*[\dd]+)*)$/i);
     if (rollM) return { command: 'roll_dice', args: rollM[1].replace(/\s+/g, '') };
 
-    const hpM = q.match(/^\/?hp\s*:?\s*([+-]\d+(?:\s+[a-zA-Z]+)?)$/i);
+    const thpM = q.match(/^\/?thp\s*:?\s*([+-]?\d+)$/i);
+    if (thpM) return { command: 'hp', args: `${Math.abs(parseInt(thpM[1], 10) || 0)} temp` };
+
+    const hpM = q.match(/^\/?hp\s*:?\s*([+-]?\d+(?:\s+[a-zA-Z]+)?)$/i);
     if (hpM) return { command: 'hp', args: hpM[1] };
 
     const castM = q.match(/^\/?cast\s*:?\s+(.+)$/i);
     if (castM) return { command: 'cast_spell', args: castM[1].trim() };
 
-    const buffM = q.match(/^\/?buff\s*:\s*(.+)$/i);
+    const buffM = q.match(/^\/?buff\s*:?\s+(.+)$/i);
     if (buffM) return { command: 'toggle_buff', args: buffM[1].trim() };
 
-    const featM = q.match(/^\/?feat\s*:\s*(.+)$/i);
+    const featM = q.match(/^\/?feat\s*:?\s+(.+)$/i);
     if (featM) return { command: 'add_feat', args: featM[1].trim() };
 
-    const itemM = q.match(/^\/?item\s*:\s*(.+)$/i);
+    const itemM = q.match(/^\/?item\s*:?\s+(.+)$/i);
     if (itemM) return { command: 'add_item', args: itemM[1].trim() };
 
-    const useM = q.match(/^\/?use\s*:\s*(.+)$/i);
+    const useM = q.match(/^\/?use\s*:?\s+(.+)$/i);
     if (useM) return { command: 'use_ability', args: useM[1].trim() };
 
-    const statM = q.match(/^\/?stat\s*:\s*(.+)$/i);
+    const statM = q.match(/^\/?stat\s*:?\s+(.+)$/i);
     if (statM) return { command: 'stat_adjust', args: statM[1].trim() };
 
     const tabM = q.match(/^\/?tab\s*:?\s+([a-z]+)$/i);
@@ -3172,6 +3280,33 @@
 
   async function executeChainedCommands(steps, rawLabel) {
     const isCrafter = detectPageType() === 'crafter';
+    if (!isCrafter && root.CharStore && typeof root.CharStore.runTransaction === 'function') {
+      const ch = _getChar();
+      // Reject interactive modal-opening steps inside chains (no modals in chains!)
+      for (const step of steps) {
+        if (step.command === 'cast_spell' && ch) {
+          const p = planSheetCommand(step, ch);
+          if (p && p.interactive) {
+            return [{
+              ok: false,
+              summary: `${p.match.item.name} requires a casting choice — run it alone.`,
+              quickChips: [{ kind: 'cmd', label: `🔮 Cast ${p.match.item.name}`, cmd: `cast ${p.match.item.name}` }]
+            }];
+          }
+        }
+      }
+      const results = [];
+      await root.CharStore.runTransaction(`Chain: ${rawLabel}`, async () => {
+        for (const step of steps) {
+          const res = await COMMANDS[step.command](step.args);
+          const item = res || { ok: false, summary: `Failed: ${step.command}` };
+          results.push(item);
+          if (!item.ok) break; // stop chain on first failure, commit prior steps into 1 undo frame
+        }
+      });
+      return results;
+    }
+
     const hasForge = isCrafter && root.ForgeSandbox && root.ForgeSandbox.state && root.ForgeSandbox.state.history;
     const preForgeEntry = hasForge && root.ForgeSandbox.state.entry
       ? JSON.parse(JSON.stringify(root.ForgeSandbox.state.entry))
@@ -3185,7 +3320,9 @@
     try {
       for (const step of steps) {
         const res = await COMMANDS[step.command](step.args);
-        results.push(res || { ok: false, summary: `Failed: ${step.command}` });
+        const item = res || { ok: false, summary: `Failed: ${step.command}` };
+        results.push(item);
+        if (!item.ok) break;
       }
     } finally {
       _suppressUndoDepth = Math.max(0, _suppressUndoDepth - 1);
@@ -4071,6 +4208,7 @@
     getLivePageContext,
     triggerPose: triggerPersonaPose,
     commands: COMMANDS,
+    planSheetCommand,
     tryParseChainedCommands,
     executeChainedCommands,
     executeStructuredActions

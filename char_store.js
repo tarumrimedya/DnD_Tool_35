@@ -160,13 +160,148 @@
   let _isRestoringHistory = false;
   let _lastTacticalOptions = {};
   let _lastOutcome = null;
+  let _txDepth = 0;
+  let _tx = null;
+  let _docVersion = 0;
   const _undoStack = [];
   const _redoStack = [];
   const _regions = new Map();
   const _customReducers = new Map();
 
+  const ABORTED_OUTCOME_STATUSES = new Set([
+    'not_found',
+    'exhausted_daily',
+    'exhausted_qty',
+    'exhausted_slot',
+    'exhausted_pool',
+    'invalid_payload',
+    'empty_slot',
+    'no_target_slot',
+    'no_daily_charges',
+    'charges_exhausted',
+    'no_slots_remaining',
+    'already_cast',
+    'already_exists',
+    'max_readied_reached',
+    'quota_full',
+    'locked_mode',
+    'max_rank_cap',
+    'min_level_reached',
+    'level_1_locked',
+    'sequential_activation_required',
+    'sequential_deactivation_required'
+  ]);
+
+  const PREVIEWABLE_ACTIONS = new Set([
+    'combat/toggleTacticalMod',
+    'combat/adjustPowerAttack',
+    'combat/adjustCombatExpertise',
+    'combat/setActiveMode',
+    'combat/selectWeaponMode',
+    'combat/switchWeaponSet',
+    'combat/setOffHand',
+    'combat/toggleBuff',
+    'combat/addBuff',
+    'combat/advanceRound',
+    'hud/adjustHp',
+    'spells/castSpell',
+    'progression/adjustAbility'
+  ]);
+
+  function isAbortedOutcome(outcome) {
+    return Boolean(outcome && outcome.status && ABORTED_OUTCOME_STATUSES.has(outcome.status));
+  }
+
+  function _projectPreviewState(doc, sheet) {
+    const hp = (doc && doc.hp) || {};
+    const ac = (sheet && sheet.ac) || {};
+    const saves = (sheet && sheet.saves) || {};
+    const tac = (doc && doc.tactical) || {};
+    const ab = (doc && doc.abilities) || {};
+    const activeBuffs = Array.isArray(doc && doc.buffs)
+      ? doc.buffs.filter((b) => b && b.active !== false).map((b) => String(b.name || b.id || 'Buff'))
+      : [];
+    return {
+      hpCurrent: Number(hp.current) || 0,
+      hpTemp: Math.max(0, Number(hp.temp) || 0),
+      hpMax: Math.max(1, Number(hp.max) || 1),
+      acTotal: Number(ac.total ?? (doc && doc.ac) ?? 10) || 10,
+      acTouch: Number(ac.touch ?? 10) || 10,
+      acFlatFooted: Number(ac.flatFooted ?? 10) || 10,
+      fort: Number(saves.fort?.total ?? saves.fort ?? 0) || 0,
+      ref: Number(saves.ref?.total ?? saves.ref ?? 0) || 0,
+      will: Number(saves.will?.total ?? saves.will ?? 0) || 0,
+      init: Number(sheet?.initiative?.total ?? sheet?.init ?? 0) || 0,
+      speed: Number(sheet?.speed?.land ?? sheet?.speed ?? 30) || 30,
+      round: Number(doc?.combatRound ?? doc?.round ?? 1) || 1,
+      powerAttack: Math.max(0, Number(tac.powerAttack) || 0),
+      combatExpertise: Math.max(0, Number(tac.combatExpertise) || 0),
+      charge: Boolean(tac.charge),
+      flanking: Boolean(tac.flanking),
+      fightingDefensively: Boolean(tac.fightingDefensively),
+      totalDefense: Boolean(tac.totalDefense),
+      activeWeaponSet: Number(doc?.activeWeaponSet || (tac.weaponSets?.activeSet === 2 ? 2 : 1)),
+      activeBuffsKey: activeBuffs.join('|'),
+      activeBuffCount: activeBuffs.length,
+      str: Number(doc?.baseAbilities?.str ?? ab.str?.base ?? ab.str ?? 10) || 10,
+      dex: Number(doc?.baseAbilities?.dex ?? ab.dex?.base ?? ab.dex ?? 10) || 10,
+      con: Number(doc?.baseAbilities?.con ?? ab.con?.base ?? ab.con ?? 10) || 10,
+      int: Number(doc?.baseAbilities?.int ?? ab.int?.base ?? ab.int ?? 10) || 10,
+      wis: Number(doc?.baseAbilities?.wis ?? ab.wis?.base ?? ab.wis ?? 10) || 10,
+      cha: Number(doc?.baseAbilities?.cha ?? ab.cha?.base ?? ab.cha ?? 10) || 10
+    };
+  }
+
+  function _diffPreviewProjections(before, after) {
+    const FIELDS = [
+      ['hpCurrent', 'HP'],
+      ['hpTemp', 'Temp HP'],
+      ['hpMax', 'Max HP'],
+      ['acTotal', 'AC'],
+      ['acTouch', 'Touch AC'],
+      ['acFlatFooted', 'Flat-Footed AC'],
+      ['fort', 'Fortitude'],
+      ['ref', 'Reflex'],
+      ['will', 'Will'],
+      ['init', 'Initiative'],
+      ['speed', 'Speed'],
+      ['round', 'Round'],
+      ['powerAttack', 'Power Attack'],
+      ['combatExpertise', 'Combat Expertise'],
+      ['charge', 'Charging'],
+      ['flanking', 'Flanking'],
+      ['fightingDefensively', 'Fighting Defensively'],
+      ['totalDefense', 'Total Defense'],
+      ['activeWeaponSet', 'Weapon Set'],
+      ['activeBuffCount', 'Active Buffs'],
+      ['str', 'STR'],
+      ['dex', 'DEX'],
+      ['con', 'CON'],
+      ['int', 'INT'],
+      ['wis', 'WIS'],
+      ['cha', 'CHA']
+    ];
+    const diffs = [];
+    for (const [key, label] of FIELDS) {
+      if (before[key] !== after[key]) {
+        diffs.push({ key, label, from: before[key], to: after[key] });
+      }
+    }
+    return diffs;
+  }
+
   const CharStore = {
     MAX_HISTORY_STEPS,
+    PREVIEWABLE_ACTIONS,
+    isAbortedOutcome,
+
+    getDocVersion() {
+      return _docVersion;
+    },
+
+    isInTransaction() {
+      return _txDepth > 0;
+    },
 
     getState() {
       return {
@@ -330,12 +465,19 @@
       if (comp && typeof comp.snapshotLazyRefs === 'function') {
         collectSrdRefGroups(_state.doc).forEach(g => comp.snapshotLazyRefs(db, g.names, g.t));
       }
+      const baseTac = (typeof engine.tacticalOptionsFromDoc === 'function')
+        ? engine.tacticalOptionsFromDoc(_state.doc)
+        : {};
+      const effectiveTac = (tacticalOptions && typeof tacticalOptions === 'object')
+        ? Object.assign({}, baseTac, tacticalOptions)
+        : baseTac;
+      _lastTacticalOptions = effectiveTac;
       const sheetView = engine.deriveSheet(_state.doc, {
         masterDb: db,
         customDb: db,
         session: _state.session,
-        tactical: _lastTacticalOptions
-      }, _lastTacticalOptions);
+        tactical: effectiveTac
+      }, effectiveTac);
 
       _state.sheet = sheetView;
       _sheetDirty = false;
@@ -425,23 +567,86 @@
       return entryA.docJson === entryB.docJson && entryA.sessionJson === entryB.sessionJson;
     },
 
-    /**
-     * Records a snapshot of `{ doc, session }` onto the 20-step Undo stack (zero-stringify structural sharing).
-     */
-    recordHistory(label = 'Sheet Edit') {
-      if (_isRestoringHistory || !_state.doc) return false;
-      const entry = this._createHistoryEntry(label, _state.doc, _state.session);
+    _pushHistoryEntry(entry) {
+      if (!entry || _isRestoringHistory || _txDepth > 0) return false;
       const top = _undoStack[_undoStack.length - 1];
       if (top && this._isSameHistoryState(top, entry)) {
         return false;
       }
-
       _undoStack.push(entry);
       if (_undoStack.length > MAX_HISTORY_STEPS) {
         _undoStack.shift();
       }
       _redoStack.length = 0;
       return true;
+    },
+
+    /**
+     * Records a snapshot of `{ doc, session }` onto the 20-step Undo stack (zero-stringify structural sharing).
+     */
+    recordHistory(label = 'Sheet Edit') {
+      if (_isRestoringHistory || !_state.doc || _txDepth > 0) return false;
+      const entry = this._createHistoryEntry(label, _state.doc, _state.session);
+      return this._pushHistoryEntry(entry);
+    },
+
+    beginTransaction(label = 'Transaction') {
+      _txDepth++;
+      if (_txDepth === 1) {
+        _tx = {
+          label: String(label || 'Transaction'),
+          entry: _state.doc ? this._createHistoryEntry(label || 'Transaction', _state.doc, _state.session) : null,
+          persistDeferred: false,
+          cloudSync: false
+        };
+      }
+      return _txDepth;
+    },
+
+    endTransaction(opts = {}) {
+      if (_txDepth <= 0) {
+        return { committed: false, changed: false, label: '' };
+      }
+      const rollback = Boolean(opts && opts.rollback);
+      _txDepth--;
+      if (_txDepth > 0) {
+        if (rollback && _tx) _tx.forceRollback = true;
+        return { committed: false, changed: false, label: (_tx && _tx.label) || '' };
+      }
+      const tx = _tx;
+      _tx = null;
+      if (!tx) return { committed: false, changed: false, label: '' };
+
+      const doRollback = rollback || Boolean(tx.forceRollback);
+      if (doRollback) {
+        if (tx.entry) {
+          this._applyHistorySnapshot(tx.entry, 'Rollback', { silent: true });
+        }
+        return { committed: false, changed: false, rolledBack: true, label: tx.label };
+      }
+
+      const nowEntry = _state.doc ? this._createHistoryEntry(tx.label, _state.doc, _state.session) : null;
+      const changed = Boolean(tx.entry && nowEntry && !this._isSameHistoryState(tx.entry, nowEntry));
+      if (changed) {
+        this._pushHistoryEntry(tx.entry);
+      }
+      if (tx.persistDeferred && typeof root !== 'undefined' && typeof root.saveStateToStorage === 'function') {
+        root.saveStateToStorage(Boolean(tx.cloudSync));
+      }
+      return { committed: true, changed, rolledBack: false, label: tx.label };
+    },
+
+    async runTransaction(label, fn) {
+      if (typeof fn !== 'function') return { committed: false, changed: false, label: '' };
+      this.beginTransaction(label);
+      try {
+        const result = await fn();
+        const txRes = this.endTransaction({ rollback: false });
+        return Object.assign({ result }, txRes);
+      } catch (err) {
+        this.endTransaction({ rollback: true });
+        throw err;
+      }
     },
 
     canUndo() {
@@ -496,8 +701,9 @@
       return snap;
     },
 
-    _applyHistorySnapshot(snap, directionLabel) {
+    _applyHistorySnapshot(snap, directionLabel, opts = {}) {
       if (!snap) return;
+      const silent = Boolean(opts && opts.silent);
       _isRestoringHistory = true;
       try {
         const engine = resolveRuleEngine();
@@ -514,6 +720,7 @@
         }
         _state.doc = restoredDoc;
         _state.session = restoredSession;
+        _docVersion++;
         if (restoredDoc) {
           const restoredMode = String(restoredDoc.uiMode || (restoredDoc.settings && restoredDoc.settings.sheetViewMode) || (_state.ui && _state.ui.mode) || 'both').toLowerCase().trim();
           _state.ui = Object.assign({}, _state.ui, { mode: ['both', 'play', 'build'].includes(restoredMode) ? restoredMode : 'both' });
@@ -527,9 +734,9 @@
             root.character = _state.doc;
           }
         }
-        this.recompute(_lastTacticalOptions);
+        this.recompute();
 
-        if (typeof root !== 'undefined') {
+        if (!silent && typeof root !== 'undefined') {
           if (typeof root.saveStateToStorage === 'function') {
             root.saveStateToStorage(true);
           }
@@ -567,10 +774,12 @@
       const meta = action.meta || {};
 
       if (type === 'history/undo') {
+        if (_txDepth > 0) return _state.sheet;
         this.undo();
         return _state.sheet;
       }
       if (type === 'history/redo') {
+        if (_txDepth > 0) return _state.sheet;
         this.redo();
         return _state.sheet;
       }
@@ -667,41 +876,10 @@
         const reducerFn = _customReducers.get(type);
         const nextDoc = reducerFn(_state.doc, action, _state);
         const outcome = _lastOutcome || null;
-        const isAborted = Boolean(
-          outcome && (
-            outcome.status === 'not_found' ||
-            outcome.status === 'exhausted_daily' ||
-            outcome.status === 'exhausted_qty' ||
-            outcome.status === 'exhausted_slot' ||
-            outcome.status === 'exhausted_pool' ||
-            outcome.status === 'invalid_payload' ||
-            outcome.status === 'empty_slot' ||
-            outcome.status === 'no_target_slot' ||
-            outcome.status === 'no_daily_charges' ||
-            outcome.status === 'charges_exhausted' ||
-            outcome.status === 'no_slots_remaining' ||
-            outcome.status === 'already_cast' ||
-            outcome.status === 'already_exists' ||
-            outcome.status === 'max_readied_reached' ||
-            outcome.status === 'quota_full' ||
-            outcome.status === 'locked_mode' ||
-            outcome.status === 'max_rank_cap' ||
-            outcome.status === 'min_level_reached' ||
-            outcome.status === 'level_1_locked' ||
-            outcome.status === 'sequential_activation_required' ||
-            outcome.status === 'sequential_deactivation_required'
-          )
-        );
+        const isAborted = isAbortedOutcome(outcome);
         if (!isAborted) {
           if (preEntry && !meta.skipHistory && !_isRestoringHistory) {
-            const top = _undoStack[_undoStack.length - 1];
-            if (!top || !this._isSameHistoryState(top, preEntry)) {
-              _undoStack.push(preEntry);
-              if (_undoStack.length > MAX_HISTORY_STEPS) {
-                _undoStack.shift();
-              }
-              _redoStack.length = 0;
-            }
+            this._pushHistoryEntry(preEntry);
           }
           if (nextDoc && typeof nextDoc === 'object' && nextDoc !== _state.doc && (nextDoc.abilities || nextDoc.hp || nextDoc.name)) {
             _state.doc = nextDoc;
@@ -716,14 +894,102 @@
       }
 
       if (docChanged || sessionChanged) {
+        _docVersion++;
         this.recompute(meta.tactical);
         if (docChanged && typeof root !== 'undefined' && typeof root.saveStateToStorage === 'function' && meta.persist !== false) {
-          root.saveStateToStorage(meta.cloudSync !== false);
+          if (_txDepth > 0 && _tx) {
+            _tx.persistDeferred = true;
+            if (meta.cloudSync !== false) _tx.cloudSync = true;
+          } else {
+            root.saveStateToStorage(meta.cloudSync !== false);
+          }
         }
         if (type === 'doc/replace') this.reconcileSrdSnapshots();
       }
 
       return _state.sheet;
+    },
+
+    /**
+     * Pure non-mutating preview of one or more whitelisted store actions.
+     * Never mutates `_state.doc`, `_undoStack`, `_lastOutcome`, or storage.
+     */
+    previewDispatch(actionOrActions) {
+      if (!_state.doc) {
+        return { ok: false, aborted: 'no_character', outcome: null, diffs: [], warnings: ['No active character.'] };
+      }
+      const actions = Array.isArray(actionOrActions) ? actionOrActions : [actionOrActions];
+      if (!actions.length) {
+        return { ok: false, aborted: 'invalid_payload', outcome: null, diffs: [], warnings: ['No actions to preview.'] };
+      }
+      for (const act of actions) {
+        if (!act || !act.type || !PREVIEWABLE_ACTIONS.has(String(act.type)) || !_customReducers.has(String(act.type))) {
+          return { ok: false, aborted: 'not_previewable', outcome: null, diffs: [], warnings: [`Action "${act && act.type}" is not previewable.`] };
+        }
+      }
+      const engine = resolveRuleEngine();
+      if (!engine || typeof engine.deriveSheet !== 'function') {
+        return { ok: false, aborted: 'no_engine', outcome: null, diffs: [], warnings: ['RuleEngine unavailable.'] };
+      }
+
+      const savedOutcome = _lastOutcome;
+      try {
+        const cloneDoc = typeof engine.stripDerivedFields === 'function'
+          ? engine.stripDerivedFields(_state.doc)
+          : this._fastCloneHistoryVal(_state.doc);
+        // Deep-clone mutable slices that stripDerivedFields may share or keep shallow
+        if (cloneDoc.hp) cloneDoc.hp = this._fastCloneHistoryVal(cloneDoc.hp);
+        if (cloneDoc.tactical) cloneDoc.tactical = this._fastCloneHistoryVal(cloneDoc.tactical);
+        if (cloneDoc.abilities) cloneDoc.abilities = this._fastCloneHistoryVal(cloneDoc.abilities);
+        if (cloneDoc.baseAbilities) cloneDoc.baseAbilities = this._fastCloneHistoryVal(cloneDoc.baseAbilities);
+        if (Array.isArray(cloneDoc.buffs)) cloneDoc.buffs = this._fastCloneHistoryVal(cloneDoc.buffs);
+        if (cloneDoc.spellSlots) cloneDoc.spellSlots = this._fastCloneHistoryVal(cloneDoc.spellSlots);
+        const cloneSession = this._fastCloneHistoryVal(_state.session);
+        const fakeState = { doc: cloneDoc, session: cloneSession, ui: _state.ui, sheet: _state.sheet };
+
+        let curDoc = cloneDoc;
+        let lastOut = null;
+        const warnings = [];
+        for (const act of actions) {
+          _lastOutcome = null;
+          const fn = _customReducers.get(String(act.type));
+          const resDoc = fn(curDoc, act, fakeState);
+          lastOut = _lastOutcome || null;
+          if (isAbortedOutcome(lastOut)) {
+            return { ok: false, aborted: lastOut.status, outcome: lastOut, diffs: [], warnings: [`Aborted: ${lastOut.status}`] };
+          }
+          if (resDoc && typeof resDoc === 'object') {
+            curDoc = resDoc;
+            fakeState.doc = curDoc;
+          }
+          if (act.type === 'combat/adjustPowerAttack' && act.payload && act.payload.value !== undefined && lastOut && typeof lastOut.value === 'number' && lastOut.value < Number(act.payload.value)) {
+            warnings.push(`Capped at BAB +${lastOut.value}`);
+          }
+        }
+
+        const beforeSheet = _state.sheet || engine.deriveSheet(_state.doc, {
+          masterDb: _state.doc.customDb || [],
+          customDb: _state.doc.customDb || [],
+          session: _state.session,
+          tactical: engine.tacticalOptionsFromDoc ? engine.tacticalOptionsFromDoc(_state.doc) : {}
+        }, engine.tacticalOptionsFromDoc ? engine.tacticalOptionsFromDoc(_state.doc) : {});
+
+        const afterTac = engine.tacticalOptionsFromDoc ? engine.tacticalOptionsFromDoc(curDoc) : {};
+        const afterSheet = engine.deriveSheet(curDoc, {
+          masterDb: curDoc.customDb || [],
+          customDb: curDoc.customDb || [],
+          session: cloneSession,
+          tactical: afterTac
+        }, afterTac);
+
+        const diffs = _diffPreviewProjections(
+          _projectPreviewState(_state.doc, beforeSheet),
+          _projectPreviewState(curDoc, afterSheet)
+        );
+        return { ok: true, aborted: null, outcome: lastOut, diffs, warnings, afterDoc: curDoc, afterSheet };
+      } finally {
+        _lastOutcome = savedOutcome;
+      }
     },
 
     /**
@@ -1897,6 +2163,18 @@
     }
     doc.buffs.splice(idx, 1);
     setStoreOutcome(stateObj, { status: 'buff_removed', index: idx });
+    return doc;
+  });
+
+  CharStore.registerReducer('combat/addBuff', (doc, action, stateObj) => {
+    const payload = (action && action.payload) || {};
+    const buffEntry = payload.buff || payload;
+    if (!buffEntry || typeof buffEntry !== 'object' || !buffEntry.name) {
+      setStoreOutcome(stateObj, { status: 'invalid_payload' });
+      return doc;
+    }
+    const res = upsertBuffEntryOnDoc(doc, buffEntry);
+    setStoreOutcome(stateObj, { status: 'buff_added', name: buffEntry.name, updated: Boolean(res && res.updated) });
     return doc;
   });
 

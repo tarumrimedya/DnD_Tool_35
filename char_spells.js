@@ -2029,7 +2029,7 @@
           breakdown: `No Level ${lvl} prepared spell slots remaining!`,
           total: '0 Slots'
         });
-        return;
+        return 'no_slots';
       }
 
       const mutSlot = character.spellcasting?.preparedSlots?.find(sl => Number(sl.level) === lvl) || slot;
@@ -2041,7 +2041,7 @@
       });
       if (preCast && Array.isArray(preCast.options) && preCast.options.length > 0) {
         showSpellPreCastChoiceToast(preCast);
-        return;
+        return 'precast_choice';
       }
 
       if (slot && slot.used < slot.daily) {
@@ -2740,7 +2740,7 @@
           breakdown: `No Level ${lvl} ${isDom ? 'Domain' : 'regular Divine'} spell slots remaining!`,
           total: '0 Slots'
         });
-        return;
+        return 'no_slots';
       }
 
       const mutSlot = character.spellcasting?.divineSlots?.find(sl => Number(sl.level) === lvl) || slot;
@@ -2752,7 +2752,7 @@
       });
       if (preCast && Array.isArray(preCast.options) && preCast.options.length > 0) {
         showSpellPreCastChoiceToast(preCast);
-        return;
+        return 'precast_choice';
       }
 
       if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
@@ -5995,9 +5995,61 @@
       });
     }
 
+    function peekSpellCast(discipline, spellIdx) {
+      const sc = character && character.spellcasting;
+      if (!sc) return null;
+      const disc = String(discipline || 'spontaneous').toLowerCase();
+      const list = disc === 'prepared' ? sc.preparedSpells : (disc === 'divine' ? sc.divineSpells : sc.knownSpells);
+      const s = Array.isArray(list) ? list[spellIdx] : null;
+      if (!s) return null;
+      const lvl = Number(s.level) || 0;
+      const isDom = disc === 'divine' && Boolean(s.isDomainSpell);
+      const info = disc === 'prepared' ? getPreparedCasterInfo() : (disc === 'divine' ? getDivineCasterInfo() : getCasterInfo());
+      const cl = getSpellEffectiveCl(s, info && info.cl);
+      const spellsView = getSpellsView();
+      const slot = spellsView?.slotsByLevelView?.[disc]?.[lvl]
+        || (disc === 'prepared' ? sc.preparedSlots : (disc === 'divine' ? sc.divineSlots : sc.slots))?.find(sl => Number(sl.level) === lvl);
+      let slotsLeft = 0;
+      let daily = 0;
+      if (slot) {
+        daily = Number(slot.daily) || 0;
+        if (disc === 'divine') {
+          const domDaily = Number(slot.domainDaily) || 0;
+          const domUsed = Number(slot.domainUsed) || 0;
+          const regDaily = slot.regularDaily !== undefined ? Number(slot.regularDaily) : Math.max(0, daily - domDaily);
+          const regUsed = Math.max(0, (Number(slot.used) || 0) - domUsed);
+          slotsLeft = isDom ? Math.max(0, domDaily - domUsed) : Math.max(0, regDaily - regUsed);
+        } else {
+          slotsLeft = Math.max(0, daily - (Number(slot.used) || 0));
+        }
+      }
+      const dcRow = spellsView?.saveDcByDiscipline?.[disc]?.[lvl] ?? spellsView?.dcByLevel?.[lvl] ?? null;
+      const dc = typeof dcRow === 'number' ? dcRow : (info && info.baseDc ? info.baseDc + lvl : null);
+      const preCast = slot && slotsLeft > 0
+        ? getSpellPreCastOptions(s, cl, slot, lvl, { discipline: disc, spellIdx, level: lvl, isDomain: isDom })
+        : null;
+      const options = preCast && Array.isArray(preCast.options) ? preCast.options : [];
+      return {
+        ok: true,
+        discipline: disc,
+        spellIdx,
+        name: s.name,
+        level: lvl,
+        cl,
+        dc,
+        slotsLeft,
+        daily,
+        needsChoice: options.length > 0,
+        options
+      };
+    }
+    if (typeof CharStore !== 'undefined' && CharStore) {
+      CharStore.peekSpellCast = peekSpellCast;
+    }
+
     function castSpellDirectly(spellIdx) {
       const s = character?.spellcasting?.knownSpells?.[spellIdx];
-      if (!s) return;
+      if (!s) return 'not_found';
       const name = s.name;
       const lvl = Number(s.level) || 0;
       const { cl: baseCl } = getCasterInfo();
@@ -6013,7 +6065,7 @@
           breakdown: `No Level ${lvl} spell slots remaining!`,
           total: '0 Slots'
         });
-        return;
+        return 'no_slots';
       }
 
       const mutSlot = character.spellcasting?.slots?.find(sl => Number(sl.level) === lvl) || slot;
@@ -6025,7 +6077,7 @@
       });
       if (preCast && Array.isArray(preCast.options) && preCast.options.length > 0) {
         showSpellPreCastChoiceToast(preCast);
-        return;
+        return 'precast_choice';
       }
 
       if (slot && slot.used < slot.daily) {

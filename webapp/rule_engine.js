@@ -1507,6 +1507,27 @@ const RuleEngine = {
   //   opts.strict: return 'unrecognized' for text the engine does not understand (silent-failure gate). Otherwise such a
   //   condition is a descriptive note: 'situational' (never silently always-on).
   // Result: true | false | 'situational' | 'qualifier' (context-only atoms that need a weapon / spell) | 'unrecognized' (strict only).
+  /**
+   * Pure Store-First tactical options builder derived strictly from `doc.tactical` (zero DOM reads).
+   */
+  tacticalOptionsFromDoc(doc) {
+    const t = (doc && doc.tactical && typeof doc.tactical === 'object') ? doc.tactical : {};
+    return {
+      powerAttack: Math.max(0, Number(t.powerAttack) || 0),
+      combatExpertise: Math.max(0, Number(t.combatExpertise) || 0),
+      fightingDefensively: Boolean(t.fightingDefensively),
+      totalDefense: Boolean(t.totalDefense),
+      shieldBlockActive: Boolean(t.shieldBlockActive),
+      charge: Boolean(t.charge),
+      flanking: Boolean(t.flanking),
+      higherGround: Boolean(t.higherGround),
+      pointBlankShot: Boolean(t.pointBlankShot),
+      rapidShot: Boolean(t.rapidShot),
+      manyshot: Boolean(t.manyshot),
+      sneakAttack: Boolean(t.sneakAttack)
+    };
+  },
+
   resolveV3WhenCondition(kindRaw, textRaw, branchType, evalCtx = {}, character = null, entry = null, opts = {}) {
     const kind = String(kindRaw || '').trim();
     const kLow = kind.toLowerCase();

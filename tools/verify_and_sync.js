@@ -21,6 +21,7 @@ const vm = require('vm');
 const { runRuleEngineTests } = require('./test_rule_engine');
 const { runDeriveSheetTests } = require('./test_derive_sheet');
 const { runAiV3ContractTests } = require('./test_ai_v3_contract');
+const { runCharStoreTests } = require('./test_char_store');
 
 const ROOT = path.resolve(__dirname, '..');
 
@@ -687,6 +688,13 @@ function main() {
     console.error(`[FAIL] ${aiErr.message}`);
     errors++;
   }
+  let charStoreRes = { passed: 0, elapsedMs: 0 };
+  try {
+    charStoreRes = runCharStoreTests();
+  } catch (csErr) {
+    console.error(`[FAIL] ${csErr.message}`);
+    errors++;
+  }
 
   // 7c. Silent-failure gate (unrecognized V3 conditions, orphan cab-* records, unconsumed class effects[]; ratcheted baseline)
   try {
@@ -705,7 +713,7 @@ function main() {
     console.error(`\n❌ VERIFICATION FAILED with ${errors} error(s) (${elapsed}ms).`);
     process.exit(1);
   } else {
-    console.log(`✅ ALL CHECKS PASSED (${CORE_FILES.length} core files synced & verified, ${ruleTestRes.passed}/${ruleTestRes.passed} RAW math tests + ${deriveTestRes.passed}/${deriveTestRes.passed} golden fixture tests + ${aiContractRes.passed}/${aiContractRes.passed} AI V3 contract checks passed, 0 U+1F3B2, 100% JS/HTML/Event/JSON valid) in ${elapsed}ms.`);
+    console.log(`✅ ALL CHECKS PASSED (${CORE_FILES.length} core files synced & verified, ${ruleTestRes.passed}/${ruleTestRes.passed} RAW math tests + ${deriveTestRes.passed}/${deriveTestRes.passed} golden fixture tests + ${aiContractRes.passed}/${aiContractRes.passed} AI V3 contract checks + ${charStoreRes.passed}/${charStoreRes.passed} CharStore tests passed, 0 U+1F3B2, 100% JS/HTML/Event/JSON valid) in ${elapsed}ms.`);
     console.log(`📉 Strangler Ratchet Gate: ${totalInline}/${maxInline} inline events, ${totalWin}/${maxWin} window.* globals.`);
     console.log(`📊 Active TR/Mojibake Lines Remaining: ${totalActiveTrLines} [${trSummary.join(', ') || '0 — 100% PURE ENGLISH!'}]`);
   }
