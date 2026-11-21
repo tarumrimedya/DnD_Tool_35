@@ -22,14 +22,6 @@
 
   if (typeof document === 'undefined' || typeof window === 'undefined') return;
 
-  // Never mount inside embedded Rule Crafter modal iframe (?embed=1)
-  try {
-    const params = new URLSearchParams(window.location.search || '');
-    if (params.get('embed') === '1') return;
-  } catch (e) {
-    if (typeof reportError === 'function') reportError('ai_assistant:embedCheck', e);
-  }
-
   const STORAGE_HISTORY_KEY = 'dnd35_rm_assistant_session_v1';
   const STORAGE_SAVED_CMDS_KEY = 'dnd35_rm_saved_commands_v1';
   const MAX_HISTORY = 14;
