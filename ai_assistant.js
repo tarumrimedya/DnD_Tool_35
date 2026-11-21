@@ -401,6 +401,276 @@
     return typeof name === 'string' && Object.prototype.hasOwnProperty.call(COMMANDS, name);
   }
 
+  const MRU_PREFIX = 'rm_sheet_mru_v1:';
+  const MAX_MRU_PER_BUCKET = 12;
+
+  function _getMruCharId() {
+    const ch = _getChar();
+    return (ch && ch.id) ? String(ch.id) : 'default';
+  }
+
+  function _loadSheetMru() {
+    const empty = { skills: {}, spells: {}, buffs: {}, abilities: {} };
+    try {
+      const raw = localStorage.getItem(MRU_PREFIX + _getMruCharId());
+      if (!raw) return empty;
+      const obj = JSON.parse(raw);
+      return {
+        skills: (obj && obj.skills && typeof obj.skills === 'object') ? obj.skills : {},
+        spells: (obj && obj.spells && typeof obj.spells === 'object') ? obj.spells : {},
+        buffs: (obj && obj.buffs && typeof obj.buffs === 'object') ? obj.buffs : {},
+        abilities: (obj && obj.abilities && typeof obj.abilities === 'object') ? obj.abilities : {}
+      };
+    } catch (e) {
+      return empty;
+    }
+  }
+
+  function _recordSheetMru(bucket, name) {
+    if (!bucket || !name) return;
+    try {
+      const mru = _loadSheetMru();
+      if (!mru[bucket]) mru[bucket] = {};
+      mru[bucket][String(name).toLowerCase()] = Date.now();
+      const entries = Object.entries(mru[bucket]).sort((a, b) => b[1] - a[1]).slice(0, MAX_MRU_PER_BUCKET);
+      mru[bucket] = Object.fromEntries(entries);
+      localStorage.setItem(MRU_PREFIX + _getMruCharId(), JSON.stringify(mru));
+    } catch (e) {}
+  }
+
+  function _getDerivedSheet() {
+    if (root.CharStore && typeof root.CharStore.getState === 'function') {
+      const st = root.CharStore.getState();
+      if (st && st.sheet) return st.sheet;
+    }
+    return null;
+  }
+
+  function _fmtSigned(n) {
+    const v = Number(n) || 0;
+    return v >= 0 ? `+${v}` : String(v);
+  }
+
+  function _getSheetPickerChips(kind, filterText = '') {
+    const ch = _getChar();
+    if (!ch) return [];
+    const q = String(filterText || '').trim().toLowerCase();
+    const mru = _loadSheetMru();
+    const sheet = _getDerivedSheet();
+
+    if (kind === 'hp') {
+      return [
+        { kind: 'cmd', label: '🩸 -5', cmd: 'hp -5' },
+        { kind: 'cmd', label: '🩸 -10', cmd: 'hp -10' },
+        { kind: 'cmd', label: '🩸 -20', cmd: 'hp -20' },
+        { kind: 'cmd', label: '💚 +10', cmd: 'hp +10' },
+        { kind: 'cmd', label: '🛡️ +10 Temp', cmd: 'thp 10' }
+      ];
+    }
+
+    if (kind === 'save') {
+      const saves = (sheet && sheet.saves) || {};
+      const f = saves.fort?.total ?? saves.fort;
+      const r = saves.ref?.total ?? saves.ref;
+      const w = saves.will?.total ?? saves.will;
+      return [
+        { kind: 'cmd', label: `🛡️ Fortitude${typeof f === 'number' ? ' ' + _fmtSigned(f) : ''}`, cmd: 'save fort' },
+        { kind: 'cmd', label: `⚡ Reflex${typeof r === 'number' ? ' ' + _fmtSigned(r) : ''}`, cmd: 'save ref' },
+        { kind: 'cmd', label: `🧠 Will${typeof w === 'number' ? ' ' + _fmtSigned(w) : ''}`, cmd: 'save will' }
+      ];
+    }
+
+    if (kind === 'skill') {
+      const rawSkills = (sheet && Array.isArray(sheet.skills) ? sheet.skills : null) || (Array.isArray(ch.skills) ? ch.skills : []);
+      const list = rawSkills
+        .filter((s) => s && s.name)
+        .filter((s) => !(s.trainedOnly && (Number(s.ranks) || 0) <= 0))
+        .filter((s) => !q || String(s.name).toLowerCase().includes(q))
+        .map((s) => {
+          const total = Number(s.total ?? s.bonus ?? s.ranks ?? 0) || 0;
+          const ts = mru.skills[String(s.name).toLowerCase()] || 0;
+          return { name: s.name, total, ts };
+        });
+      list.sort((a, b) => (b.ts - a.ts) || (b.total - a.total) || a.name.localeCompare(b.name));
+      return list.slice(0, 4).map((s) => ({
+        kind: 'cmd',
+        label: `🎯 ${s.name} ${_fmtSigned(s.total)}`,
+        cmd: `skill ${s.name}`
+      }));
+    }
+
+    if (kind === 'cast') {
+      const sc = ch.spellcasting || {};
+      const candidates = [];
+      const addList = (arr, disc) => {
+        (Array.isArray(arr) ? arr : []).forEach((s, idx) => {
+          if (!s || !s.name) return;
+          if (q && !String(s.name).toLowerCase().includes(q)) return;
+          const peek = (root.CharStore && typeof root.CharStore.peekSpellCast === 'function')
+            ? root.CharStore.peekSpellCast(disc, idx)
+            : null;
+          if (peek && peek.slotsLeft <= 0) return;
+          const ts = mru.spells[String(s.name).toLowerCase()] || 0;
+          candidates.push({
+            name: s.name,
+            level: Number(s.level) || 0,
+            slotsLeft: peek ? peek.slotsLeft : null,
+            ts
+          });
+        });
+      };
+      addList(sc.preparedSpells, 'prepared');
+      addList(sc.knownSpells, 'spontaneous');
+      addList(sc.divineSpells, 'divine');
+      const seen = new Set();
+      const deduped = candidates.filter((c) => {
+        const k = c.name.toLowerCase();
+        if (seen.has(k)) return false;
+        seen.add(k);
+        return true;
+      });
+      deduped.sort((a, b) => (b.ts - a.ts) || (b.level - a.level) || a.name.localeCompare(b.name));
+      return deduped.slice(0, 4).map((c) => ({
+        kind: 'cmd',
+        label: `🔮 ${c.name}${c.slotsLeft !== null ? ` (${c.slotsLeft})` : ''}`,
+        cmd: `cast ${c.name}`
+      }));
+    }
+
+    if (kind === 'buff') {
+      const own = (Array.isArray(ch.buffs) ? ch.buffs : [])
+        .filter((b) => b && b.name && (!q || String(b.name).toLowerCase().includes(q)))
+        .map((b) => ({
+          name: b.name,
+          active: b.active !== false,
+          ts: mru.buffs[String(b.name).toLowerCase()] || 0
+        }));
+      const seen = new Set(own.map((b) => b.name.toLowerCase()));
+      const defaults = (root.RuleEngine && typeof root.RuleEngine.getDefaultBuffs === 'function' ? root.RuleEngine.getDefaultBuffs() : [])
+        .filter((b) => b && b.name && !seen.has(b.name.toLowerCase()) && (!q || String(b.name).toLowerCase().includes(q)))
+        .map((b) => ({
+          name: b.name,
+          active: false,
+          ts: mru.buffs[String(b.name).toLowerCase()] || 0
+        }));
+      const combined = own.concat(defaults);
+      combined.sort((a, b) => (Number(b.active) - Number(a.active)) || (b.ts - a.ts) || a.name.localeCompare(b.name));
+      return combined.slice(0, 4).map((b) => ({
+        kind: 'cmd',
+        label: `${b.active ? '✓' : '+'} ${b.name}`,
+        cmd: `buff ${b.name}`
+      }));
+    }
+
+    if (kind === 'use') {
+      const list = (root.RuleEngine && typeof root.RuleEngine.deriveSpecialAttacks === 'function')
+        ? (root.RuleEngine.deriveSpecialAttacks(ch) || [])
+        : [];
+      const avail = list
+        .filter((a) => a && a.name && (!q || String(a.name).toLowerCase().includes(q)))
+        .filter((a) => (a.usesRemaining === undefined || a.usesRemaining === null || Number(a.usesRemaining) > 0) && !(Number(a.cooldownLeft) > 0))
+        .map((a) => ({
+          name: a.name,
+          rem: a.usesRemaining,
+          max: a.usesMax,
+          ts: mru.abilities[String(a.name).toLowerCase()] || 0
+        }));
+      avail.sort((a, b) => (b.ts - a.ts) || a.name.localeCompare(b.name));
+      return avail.slice(0, 4).map((a) => ({
+        kind: 'cmd',
+        label: `⚡ ${a.name}${a.rem != null && a.max ? ` (${a.rem}/${a.max})` : ''}`,
+        cmd: `use ${a.name}`
+      }));
+    }
+
+    return [];
+  }
+
+  let _sheetPreviewCacheKey = '';
+  let _sheetPreviewCacheHtml = '';
+  let _sheetPreviewDebounceTimer = null;
+
+  function _buildSheetLivePreview(rawVal) {
+    if (detectPageType() !== 'sheet') return '';
+    const ch = _getChar();
+    if (!ch || !rawVal) return '';
+    const ver = (root.CharStore && typeof root.CharStore.getDocVersion === 'function') ? root.CharStore.getDocVersion() : 0;
+    const cacheKey = `${ver}|${rawVal}`;
+    if (cacheKey === _sheetPreviewCacheKey) return _sheetPreviewCacheHtml;
+
+    const parsed = tryParseInstantCommand(rawVal);
+    if (!parsed) {
+      _sheetPreviewCacheKey = cacheKey;
+      _sheetPreviewCacheHtml = '';
+      return '';
+    }
+    const sheet = _getDerivedSheet();
+    let text = '';
+    let badge = 'Run';
+
+    if (parsed.command === 'roll_save') {
+      const key = parsed.args.startsWith('f') ? 'fort' : (parsed.args.startsWith('r') ? 'ref' : 'will');
+      const lbl = key === 'fort' ? 'Fortitude' : (key === 'ref' ? 'Reflex' : 'Will');
+      const bonus = sheet?.saves?.[key]?.total ?? sheet?.saves?.[key];
+      text = `${lbl} Save (1d20${typeof bonus === 'number' ? ' ' + _fmtSigned(bonus) : ''})`;
+      badge = 'Roll';
+    } else if (parsed.command === 'roll_skill') {
+      const skills = (sheet && Array.isArray(sheet.skills) ? sheet.skills : null) || (Array.isArray(ch.skills) ? ch.skills : []);
+      const hit = _matchBestName(skills, parsed.args, s => s.name);
+      if (hit && hit.item) {
+        const s = hit.item;
+        const tot = Number(s.total ?? s.bonus ?? s.ranks ?? 0) || 0;
+        const warn = (s.trainedOnly && (Number(s.ranks) || 0) <= 0) ? ' • Trained Only!' : '';
+        text = `${s.name} Check (1d20 ${_fmtSigned(tot)})${warn}`;
+        badge = 'Roll';
+      }
+    } else if (parsed.command === 'cast_spell') {
+      const plan = planSheetCommand(parsed, ch);
+      if (plan && plan.ok && plan.match) {
+        const pk = plan.peek;
+        const slotPart = pk ? ` • ${pk.slotsLeft}/${pk.daily} slots` : '';
+        const dcPart = pk && pk.dc ? ` • DC ${pk.dc}` : '';
+        const chPart = pk && pk.needsChoice ? ' • choice' : '';
+        text = `Cast ${plan.match.item.name} (Lvl ${plan.match.item.level ?? 0}${slotPart}${dcPart}${chPart})`;
+        badge = 'Cast';
+      } else if (plan && !plan.ok && plan.summary) {
+        text = `⚠️ ${plan.summary}`;
+        badge = 'Blocked';
+      }
+    } else if (['hp', 'toggle_buff', 'stat_adjust', 'next_round'].includes(parsed.command)) {
+      const plan = planSheetCommand(parsed, ch);
+      if (plan && plan.ok && Array.isArray(plan.actions) && plan.actions.length && root.CharStore && typeof root.CharStore.previewDispatch === 'function') {
+        const pv = root.CharStore.previewDispatch(plan.actions);
+        if (pv && pv.ok) {
+          const parts = pv.diffs.slice(0, 4).map((d) => `${d.label} ${d.from} → ${d.to}`);
+          if (parsed.command === 'hp' && pv.afterDoc && pv.afterDoc.hp) {
+            const cur = Number(pv.afterDoc.hp.current);
+            if (cur <= -10) parts.push('Dead');
+            else if (cur < 0) parts.push('Dying');
+            else if (cur === 0) parts.push('Disabled');
+          }
+          if (parsed.command === 'next_round') {
+            const expiring = (ch.buffs || []).filter((b) => b && b.active !== false && Number(b.roundsLeft) === 1).map((b) => b.name);
+            if (expiring.length) parts.push(`Expires: ${expiring.slice(0, 2).join(', ')}`);
+          }
+          if (plan.note) parts.push(plan.note);
+          text = parts.length ? parts.join(' • ') : plan.label;
+          badge = 'Apply';
+        }
+      }
+    }
+
+    const html = text
+      ? `<button type="button" class="rm-assist-live-preview" data-rm-sug-kind="cmd" data-rm-sug-cmd="${_esc(rawVal)}">` +
+        `<span>⚡ Preview: ${_esc(text)}</span>` +
+        `<span class="rm-assist-suggest-kind is-cmd">${_esc(badge)}</span>` +
+        `</button>`
+      : '';
+    _sheetPreviewCacheKey = cacheKey;
+    _sheetPreviewCacheHtml = html;
+    return html;
+  }
+
   let _evalCacheVer = -1;
   let _evalCacheRes = null;
 
@@ -810,11 +1080,27 @@
       return {
         ok: true,
         summary: 'Choose a Saving Throw to roll:',
-        quickChips: [
-          { kind: 'cmd', label: '🛡️ Fortitude', cmd: 'save fort' },
-          { kind: 'cmd', label: '⚡ Reflex', cmd: 'save ref' },
-          { kind: 'cmd', label: '🧠 Will', cmd: 'save will' }
-        ]
+        quickChips: _getSheetPickerChips('save')
+      };
+    },
+
+    async prompt_sheet_picker(kind) {
+      const k = String(kind || '').toLowerCase();
+      const titles = {
+        hp: 'Quick HP adjustment:',
+        skill: 'Choose a Skill Check to roll:',
+        cast: 'Choose a ready Spell to cast:',
+        buff: 'Toggle or activate a Buff:',
+        use: 'Choose an available Ability to use:'
+      };
+      const chips = _getSheetPickerChips(k);
+      if (!chips.length) {
+        return { ok: true, summary: `No available ${k} options found on this character.` };
+      }
+      return {
+        ok: true,
+        summary: titles[k] || 'Choose an option:',
+        quickChips: chips
       };
     },
 
@@ -1539,6 +1825,11 @@
       return { command: 'aoo', args: '' };
     }
     if (/^\/?save$/i.test(q)) return { command: 'prompt_save', args: '' };
+    if (/^\/?(hp|thp)$/i.test(q)) return { command: 'prompt_sheet_picker', args: 'hp' };
+    if (/^\/?(skill|check)$/i.test(q)) return { command: 'prompt_sheet_picker', args: 'skill' };
+    if (/^\/?cast$/i.test(q)) return { command: 'prompt_sheet_picker', args: 'cast' };
+    if (/^\/?buff$/i.test(q)) return { command: 'prompt_sheet_picker', args: 'buff' };
+    if (/^\/?use$/i.test(q)) return { command: 'prompt_sheet_picker', args: 'use' };
 
     const saveM = q.match(/^\/?(?:save\s*:?\s*|roll\s+)?(fort(?:itude)?|ref(?:lex)?|will)(?:\s+save)?$/i);
     if (saveM) return { command: 'roll_save', args: saveM[1].toLowerCase() };
@@ -2000,10 +2291,10 @@
       .rm-assist-panel.is-hidden { display: none; }
       .rm-assist-panel.is-chronicler { border-color: rgba(245, 158, 11, 0.85); }
 
-      /* Option B Stage 1: Quick Command Bar + Speech Bubble beside live diorama */
+      /* Option B Stage 1: Quick Command Bar + Speech Bubble above live diorama */
       .rm-assist-quickbar {
-        position: fixed; right: 142px; bottom: 24px; z-index: 48;
-        width: min(440px, calc(100vw - 160px));
+        position: fixed; right: 18px; bottom: 144px; z-index: 48;
+        width: min(440px, calc(100vw - 36px));
         display: flex; flex-direction: column; gap: 7px;
         font-family: system-ui, -apple-system, sans-serif;
       }
@@ -2096,9 +2387,10 @@
       .rm-assist-live-preview:hover { background: rgba(14, 116, 144, 0.38); color: #ffffff; }
       .rm-assist-chip-rail {
         display: flex; flex-wrap: nowrap; align-items: center; gap: 5px;
-        padding: 5px 8px; overflow: hidden;
+        padding: 5px 8px; overflow-x: auto; overflow-y: hidden; scrollbar-width: none;
         background: rgba(15, 23, 42, 0.92); border-top: 1px solid rgba(51, 65, 85, 0.72);
       }
+      .rm-assist-chip-rail::-webkit-scrollbar { display: none; }
       .rm-assist-chip-rail.is-hidden { display: none; }
       .rm-assist-rail-chip {
         flex: 0 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
@@ -2336,7 +2628,7 @@
         .rm-assist-fab { right: 16px; bottom: 16px; width: 72px; height: 72px; }
         .rm-assist-fab-icon svg { width: 90px; height: 89px; margin-top: -8px; }
         .rm-assist-bubble { right: 102px; bottom: 32px; }
-        .rm-assist-quickbar { right: 102px; bottom: 18px; width: min(400px, calc(100vw - 118px)); }
+        .rm-assist-quickbar { right: 16px; bottom: 104px; width: min(400px, calc(100vw - 32px)); }
         .rm-assist-panel { right: 16px; bottom: 104px; max-height: 64dvh; }
       }
       @media (max-width: 767px) {
@@ -3085,6 +3377,25 @@
       railEl.classList.remove('is-hidden');
       return;
     }
+    if (detectPageType() === 'sheet') {
+      const m = raw.match(/^\/?(hp|thp|save|skill|check|cast|buff|use)\b(?:\s*:?\s*(.*))?$/i);
+      if (m) {
+        const rawKind = m[1].toLowerCase();
+        const kind = rawKind === 'check' ? 'skill' : (rawKind === 'thp' ? 'hp' : rawKind);
+        const filter = (m[2] || '').trim();
+        const chips = _getSheetPickerChips(kind, filter);
+        if (chips.length) {
+          railEl.innerHTML = chips.map((ch) =>
+            `<button type="button" class="rm-assist-rail-chip" data-rm-sug-kind="${_esc(ch.kind)}" data-rm-sug-cmd="${_esc(ch.cmd)}">${_esc(ch.label)}</button>`
+          ).join('');
+          railEl.classList.remove('is-hidden');
+          return;
+        }
+      }
+      railEl.classList.add('is-hidden');
+      railEl.innerHTML = '';
+      return;
+    }
     if (detectPageType() !== 'crafter') {
       railEl.classList.add('is-hidden');
       railEl.innerHTML = '';
@@ -3162,6 +3473,8 @@
           }
         }
       }
+    } else if (detectPageType() === 'sheet' && rawVal.length >= 2) {
+      previewHtml = _buildSheetLivePreview(rawVal);
     }
     const matches = _getInstantSuggestions(inputEl.value);
     if (!matches.length && !previewHtml) {
@@ -3384,6 +3697,12 @@
         setPersonaVisual(targetPersona, false, cmdPose);
         _messages.push({ role: 'user', text });
         const res = await COMMANDS[instant.command](instant.args);
+        if (res && res.ok) {
+          if (instant.command === 'roll_skill' && typeof instant.args === 'string') _recordSheetMru('skills', instant.args);
+          else if (instant.command === 'cast_spell' && typeof instant.args === 'string') _recordSheetMru('spells', instant.args);
+          else if (instant.command === 'toggle_buff' && typeof instant.args === 'string') _recordSheetMru('buffs', instant.args);
+          else if (instant.command === 'use_ability' && typeof instant.args === 'string') _recordSheetMru('abilities', instant.args);
+        }
         _messages.push({
           role: 'model',
           persona: targetPersona,
@@ -4082,8 +4401,19 @@
     const panelInput = panel.querySelector('#rm-assist-input');
     const panelSuggest = panel.querySelector('#rm-assist-panel-suggest');
 
-    quickInput.addEventListener('input', () => renderInstantSuggestions(quickInput, quickSuggest));
-    panelInput.addEventListener('input', () => renderInstantSuggestions(panelInput, panelSuggest));
+    const onDebouncedInput = (inp, sug) => {
+      if (detectPageType() === 'sheet') {
+        if (_sheetPreviewDebounceTimer) clearTimeout(_sheetPreviewDebounceTimer);
+        _sheetPreviewDebounceTimer = setTimeout(() => {
+          _sheetPreviewDebounceTimer = null;
+          renderInstantSuggestions(inp, sug);
+        }, 80);
+      } else {
+        renderInstantSuggestions(inp, sug);
+      }
+    };
+    quickInput.addEventListener('input', () => onDebouncedInput(quickInput, quickSuggest));
+    panelInput.addEventListener('input', () => onDebouncedInput(panelInput, panelSuggest));
 
     const bindGhostTab = (inp, sug) => {
       inp.addEventListener('keydown', (ev) => {
@@ -4209,6 +4539,8 @@
     triggerPose: triggerPersonaPose,
     commands: COMMANDS,
     planSheetCommand,
+    getSheetPickerChips: _getSheetPickerChips,
+    buildSheetLivePreview: _buildSheetLivePreview,
     tryParseChainedCommands,
     executeChainedCommands,
     executeStructuredActions
