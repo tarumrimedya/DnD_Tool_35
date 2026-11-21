@@ -71,6 +71,7 @@ const CORE_FILES = [
   'hub_notes.js',
   'hub_ai.js',
   'ai_assistant.js',
+  'app_atlas.js',
   'dice3d.js'
 ];
 
@@ -489,6 +490,7 @@ function main() {
     'hub_notes.js':       { inlineEvents: 0,   windowAssigns: 1 },
     'hub_ai.js':          { inlineEvents: 0,   windowAssigns: 0 },
     'ai_assistant.js':    { inlineEvents: 0,   windowAssigns: 0 },
+    'app_atlas.js':       { inlineEvents: 0,   windowAssigns: 0 },
     'dice3d.js':          { inlineEvents: 0,   windowAssigns: 1 },
     'forge_sandbox.html': { inlineEvents: 0,   windowAssigns: 0 },
     'forge_sandbox.js':   { inlineEvents: 0,   windowAssigns: 1 },
@@ -592,6 +594,73 @@ function main() {
     }
   } catch (uiErr) {
     console.error(`[FAIL] Unescaped interpolation gate crashed: ${uiErr.message}`);
+    errors++;
+  }
+
+  // 6f. AppAtlas Selector & Integrity Gate (0-token English-only UI guide contract)
+  try {
+    const atlas = require(path.join(ROOT, 'app_atlas.js'));
+    const validPages = new Set(['sheet', 'hub', 'crafter']);
+    const validSheetTabs = new Set(['tab-combat', 'tab-defense', 'tab-spells', 'tab-inventory', 'tab-core', 'tab-dice', 'tab-database']);
+    const pageSources = {
+      sheet: ['index.html', 'char_hud.js', 'char_combat.js', 'char_spells.js', 'char_inventory.js', 'char_progression.js'],
+      hub: ['hub.html', 'hub_notes.js'],
+      crafter: ['forge_sandbox.html', 'forge_sandbox.js']
+    };
+    const pageCorpus = {};
+    for (const [pg, files] of Object.entries(pageSources)) {
+      pageCorpus[pg] = files.map(f => fs.existsSync(path.join(ROOT, f)) ? fs.readFileSync(path.join(ROOT, f), 'utf8') : '').join('\n');
+    }
+    const seenKeys = new Set();
+    for (const entry of (atlas.ENTRIES || [])) {
+      if (!entry.key || seenKeys.has(entry.key)) {
+        console.error(`[FAIL] AppAtlas duplicate/missing key: "${entry.key}"`);
+        errors++;
+      }
+      seenKeys.add(entry.key);
+      if (!validPages.has(entry.page)) {
+        console.error(`[FAIL] AppAtlas invalid page "${entry.page}" on "${entry.key}"`);
+        errors++;
+      }
+      if (entry.page === 'sheet' && entry.tab && !validSheetTabs.has(entry.tab)) {
+        console.error(`[FAIL] AppAtlas invalid sheet tab "${entry.tab}" on "${entry.key}"`);
+        errors++;
+      }
+      const corpus = pageCorpus[entry.page] || '';
+      if (!Array.isArray(entry.selectors) || entry.selectors.length === 0) {
+        console.error(`[FAIL] AppAtlas entry "${entry.key}" has no selectors.`);
+        errors++;
+      }
+      for (const sel of (entry.selectors || [])) {
+        if (sel.includes('*=') || sel.includes('^=')) {
+          console.error(`[FAIL] AppAtlas wildcard selector banned on "${entry.key}": "${sel}"`);
+          errors++;
+          continue;
+        }
+        const idM = sel.match(/^#([a-zA-Z0-9_-]+)$/);
+        const actM = sel.match(/^\[data-action="([^"]+)"\]$/);
+        if (idM) {
+          const id = idM[1];
+          const re = new RegExp(`(?:id=["']${id}["']|\\.id\\s*=\\s*['"]${id}['"])`);
+          if (!re.test(corpus)) {
+            console.error(`[FAIL] AppAtlas dead #id selector on "${entry.key}" (${entry.page}): "${sel}"`);
+            errors++;
+          }
+        } else if (actM) {
+          const act = actM[1];
+          const re = new RegExp(`data-action=["']${act.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}["']`);
+          if (!re.test(corpus)) {
+            console.error(`[FAIL] AppAtlas dead [data-action] selector on "${entry.key}" (${entry.page}): "${sel}"`);
+            errors++;
+          }
+        } else {
+          console.error(`[FAIL] AppAtlas unsupported selector format on "${entry.key}": "${sel}" (use #id or [data-action="..."])`);
+          errors++;
+        }
+      }
+    }
+  } catch (atlasErr) {
+    console.error(`[FAIL] AppAtlas gate crashed: ${atlasErr.message}`);
     errors++;
   }
 
