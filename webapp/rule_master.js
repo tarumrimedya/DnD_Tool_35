@@ -2438,17 +2438,74 @@ const RuleMaster = {
     required: ['entries']
   },
 
+  V3_AUDIT_JSON_SCHEMA: {
+    type: 'object',
+    properties: {
+      results: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            name: { type: 'string' },
+            status: { type: 'string', enum: ['APPROVED', 'WARNING', 'HOMEBREW'] },
+            issues: { type: 'array', items: { type: 'string' } },
+            recommendedAction: { type: 'string', enum: ['KEEP', 'MODIFY', 'REMOVE'] }
+          },
+          required: ['name', 'status', 'issues', 'recommendedAction']
+        }
+      }
+    },
+    required: ['results']
+  },
+
+  V3_CLASS_JSON_SCHEMA: {
+    type: 'object',
+    properties: {
+      name: { type: 'string' },
+      type: { type: 'string', enum: ['Base Class', 'Prestige Class'] },
+      maxLevel: { type: 'integer' },
+      hd: { type: 'integer', enum: [4, 6, 8, 10, 12] },
+      bab: { type: 'number', enum: [1.0, 0.75, 0.5] },
+      fort: { type: 'string', enum: ['good', 'poor'] },
+      ref: { type: 'string', enum: ['good', 'poor'] },
+      will: { type: 'string', enum: ['good', 'poor'] },
+      skills: { type: 'integer' },
+      classSkills: { type: 'array', items: { type: 'string' } },
+      source: { type: 'string' },
+      role: { type: 'string' },
+      description: { type: 'string' },
+      featuresSummary: { type: 'string' },
+      bonusFeatLevels: { type: 'array', items: { type: 'integer' } },
+      prerequisites: { type: 'array', items: { type: 'object', additionalProperties: true } },
+      features: { type: 'object', additionalProperties: true },
+      effects: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            type: { type: 'string', enum: ['stat', 'roll', 'attack', 'defense', 'effect', 'resource', 'when', 'carrier', 'table'] }
+          },
+          required: ['type'],
+          additionalProperties: true
+        }
+      }
+    },
+    required: ['name', 'type', 'hd', 'bab', 'fort', 'ref', 'will', 'skills']
+  },
+
   // Shared Gemini V3 JSON caller: constant systemInstruction (implicit cache) + responseJsonSchema + HTTP 400 schema fallback + busy cooldown
-  async _postGeminiV3Json(model, apiKey, userPrompt, { temperature = 0.1, timeoutMs = 12000, useSchema = true } = {}) {
+  async _postGeminiV3Json(model, apiKey, userPrompt, { temperature = 0.1, timeoutMs = 12000, useSchema = true, schema = null, systemInstruction = null } = {}) {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
+    const activeSchema = schema || this.V3_ENTRIES_JSON_SCHEMA;
+    const sysText = systemInstruction || this.getV3SystemInstruction();
     const runOnce = async (attachSchema) => {
       const genConfig = { temperature, responseMimeType: 'application/json' };
-      if (attachSchema && this.V3_ENTRIES_JSON_SCHEMA) {
-        genConfig.responseJsonSchema = this.V3_ENTRIES_JSON_SCHEMA;
+      if (attachSchema && activeSchema) {
+        genConfig.responseJsonSchema = activeSchema;
       }
       if (model.includes('2.5')) genConfig.thinkingConfig = { thinkingBudget: 0 };
       const payload = {
-        systemInstruction: { parts: [{ text: this.getV3SystemInstruction() }] },
+        systemInstruction: { parts: [{ text: sysText }] },
         contents: [{ parts: [{ text: userPrompt }] }],
         generationConfig: genConfig
       };
@@ -7145,19 +7202,18 @@ Return valid JSON strictly matching:
 Allowed status values: "APPROVED" | "WARNING" | "HOMEBREW".
 Allowed recommendedAction values: "KEEP" | "MODIFY" | "REMOVE".`;
 
-      const models = await this.getAvailableGeminiModels(apiKey, false, 'RULE_AUDIT');
+      const models = this._expandGeminiCandidates(this._sanitizeModelList(await this.getAvailableGeminiModels(apiKey, false, 'RULE_AUDIT')));
       let auditJson = null;
 
       for (const model of models) {
+        if (this._isDeprecatedGeminiModel(model)) continue;
         try {
-          const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
-          const resp = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{ parts: [{ text: auditPrompt }] }],
-              generationConfig: { responseMimeType: "application/json", temperature: 0.1 }
-            })
+          const resp = await this._postGeminiV3Json(model, apiKey, auditPrompt, {
+            temperature: 0.1,
+            timeoutMs: 20000,
+            useSchema: true,
+            schema: this.V3_AUDIT_JSON_SCHEMA,
+            systemInstruction: `You are an uncompromising D&D 3.5e RAW & Pure Canonical V3 Compendium Auditor.\n\n${this.DND35_RAW_GUARDRAIL}`
           });
           if (resp.ok) {
             const data = await resp.json();

@@ -3185,7 +3185,10 @@
 
       if (apiKey && typeof RuleMaster !== 'undefined' && typeof RuleMaster.getAvailableGeminiModels === 'function') {
         try {
-          const availableModels = await RuleMaster.getAvailableGeminiModels(apiKey);
+          const rawModels = await RuleMaster.getAvailableGeminiModels(apiKey, false, 'QUICK_SEARCH');
+          const availableModels = typeof RuleMaster._expandGeminiCandidates === 'function'
+            ? RuleMaster._expandGeminiCandidates(RuleMaster._sanitizeModelList(rawModels))
+            : rawModels;
           const prompt = `You are a D&D 3.5e RAW & Variant Class expert and database builder.
 D&D 3.5E RAW + UNEARTHED ARCANA VARIANTS + SPLATBOOKS + ACFs:
 - Consult official D&D 3.5e publications (PHB I & II, DMG, Complete Series, Tome of Battle, Unearthed Arcana Variant Classes p.47-70 such as "Rogue (Adventurer Variant)" / Martial Feat Rogue which trades Sneak Attack at levels 1, 3, 5..19 for Fighter Bonus Feats, "Fighter (Thug Variant)", "Cleric (Cloistered Cleric)", "Wizard (Domain Wizard)", "Ranger (Urban Ranger)", "Barbarian (Whirling Frenzy)", Dragon Magazine Compendium, Racial Substitution Levels).
@@ -3214,18 +3217,21 @@ Output ONLY a single valid JSON object strictly matching this schema:
 Output raw JSON only. Do not wrap in markdown quotes.`;
 
           for (const model of availableModels) {
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
-            const resp = await fetch(url, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                contents: [{ parts: [{ text: prompt }] }],
-                generationConfig: {
-                  response_mime_type: 'application/json',
-                  temperature: 0.1
-                }
-              })
-            });
+            const resp = (typeof RuleMaster._postGeminiV3Json === 'function')
+              ? await RuleMaster._postGeminiV3Json(model, apiKey, prompt, {
+                  temperature: 0.1,
+                  timeoutMs: 12000,
+                  useSchema: true,
+                  schema: RuleMaster.V3_CLASS_JSON_SCHEMA
+                })
+              : await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    contents: [{ parts: [{ text: prompt }] }],
+                    generationConfig: { responseMimeType: 'application/json', temperature: 0.1 }
+                  })
+                });
 
             if (resp.ok) {
               const json = await resp.json();
@@ -6169,7 +6175,10 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       let modelsToTry = [];
       if (typeof RuleMaster !== 'undefined' && typeof RuleMaster.getAvailableGeminiModels === 'function') {
         try {
-          modelsToTry = await RuleMaster.getAvailableGeminiModels(apiKey);
+          const rawModels = await RuleMaster.getAvailableGeminiModels(apiKey, false, 'QUICK_SEARCH');
+          modelsToTry = typeof RuleMaster._expandGeminiCandidates === 'function'
+            ? RuleMaster._expandGeminiCandidates(RuleMaster._sanitizeModelList(rawModels))
+            : rawModels;
         } catch (e) {
           console.warn('getAvailableGeminiModels failed:', e);
         }
@@ -6191,21 +6200,23 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         const cleanModel = String(model).replace(/^models\//, '');
         if (statusText) statusText.textContent = `Scanning D&D 3.5e compendiums (${cleanModel}): "${q}"...`;
         try {
-          const url = `https://generativelanguage.googleapis.com/v1beta/models/${cleanModel}:generateContent?key=${encodeURIComponent(apiKey)}`;
-          const payload = {
-            contents: [{ parts: [{ text: userPrompt }] }],
-            systemInstruction: { parts: [{ text: systemPrompt }] },
-            generationConfig: {
-              temperature: 0.0,
-              response_mime_type: 'application/json'
-            }
-          };
-
-          const resp = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
+          const resp = (typeof RuleMaster !== 'undefined' && typeof RuleMaster._postGeminiV3Json === 'function')
+            ? await RuleMaster._postGeminiV3Json(cleanModel, apiKey, userPrompt, {
+                temperature: 0.0,
+                timeoutMs: 12000,
+                useSchema: true,
+                schema: RuleMaster.V3_CLASS_JSON_SCHEMA,
+                systemInstruction: systemPrompt
+              })
+            : await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${cleanModel}:generateContent?key=${encodeURIComponent(apiKey)}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  contents: [{ parts: [{ text: userPrompt }] }],
+                  systemInstruction: { parts: [{ text: systemPrompt }] },
+                  generationConfig: { temperature: 0.0, responseMimeType: 'application/json' }
+                })
+              });
 
           if (!resp.ok) {
             const errJson = await resp.json().catch(() => ({}));

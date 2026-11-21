@@ -7224,18 +7224,82 @@
         return ['gemini-2.5-flash', 'gemini-2.5-pro'].filter(isUsable);
       };
 
+      const standaloneBusy = (window._fsBusyModels = window._fsBusyModels || new Map());
+      const isStandaloneBusy = (id) => {
+        const exp = standaloneBusy.get(id);
+        if (!exp) return false;
+        if (Date.now() >= exp) { standaloneBusy.delete(id); return false; }
+        return true;
+      };
+      const STANDALONE_V3_SCHEMA = {
+        type: 'object',
+        properties: {
+          entries: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                schemaVersion: { type: 'integer', enum: [3] },
+                id: { type: 'string' },
+                blueprint: { type: 'string', enum: ['feat', 'spell', 'weapon', 'armor', 'wondrous', 'buff', 'class', 'item_mod', 'race', 'deity', 'domain', 'monster'] },
+                name: { type: 'string' },
+                type: { type: 'string' },
+                effects: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: { type: { type: 'string', enum: ['stat', 'roll', 'attack', 'defense', 'effect', 'resource', 'when', 'carrier', 'table'] } },
+                    required: ['type'],
+                    additionalProperties: true
+                  }
+                }
+              },
+              required: ['schemaVersion', 'id', 'blueprint', 'name', 'effects'],
+              additionalProperties: true
+            }
+          }
+        },
+        required: ['entries']
+      };
       const callStandaloneGeminiJson = async (promptText, models, key) => {
+        const ordered = models.filter(m => !isStandaloneBusy(m)).concat(models.filter(m => isStandaloneBusy(m)));
         let lastErr = null;
-        for (let mi = 0; mi < models.length; mi++) {
-          const mName = models[mi];
-          try {
-            const url = 'https://generativelanguage.googleapis.com/v1beta/models/' + mName + ':generateContent?key=' + encodeURIComponent(key);
+        for (let mi = 0; mi < ordered.length; mi++) {
+          const mName = ordered[mi];
+          const runOnce = async (useSchema) => {
+            const url = 'https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(mName) + ':generateContent';
             const genCfg = { temperature: 0.1, responseMimeType: 'application/json' };
+            if (useSchema) genCfg.responseJsonSchema = STANDALONE_V3_SCHEMA;
             if (mName.indexOf('2.5') >= 0) genCfg.thinkingConfig = { thinkingBudget: 0 };
-            const resp = await fetch(url, {
-              method: 'POST', headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }], generationConfig: genCfg })
-            });
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), 11000);
+            try {
+              const r = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
+                body: JSON.stringify({
+                  systemInstruction: { parts: [{ text: 'You are a D&D 3.5e Rule Master & Pure Canonical V3 Architect. Output strict Pure Canonical V3 JSON (schemaVersion: 3, zero modifiers/damageParts).' }] },
+                  contents: [{ parts: [{ text: promptText }] }],
+                  generationConfig: genCfg
+                }),
+                signal: controller.signal
+              });
+              clearTimeout(timer);
+              return r;
+            } catch (err) {
+              clearTimeout(timer);
+              if (err && err.name === 'AbortError') standaloneBusy.set(mName, Date.now() + 180000);
+              throw err;
+            }
+          };
+          try {
+            let resp = await runOnce(true);
+            if (!resp.ok && resp.status === 400) {
+              const ej0 = await resp.clone().json().catch(() => ({}));
+              if (/schema|additionalproperties|responsejsonschema/i.test(String(ej0.error && ej0.error.message || ''))) {
+                resp = await runOnce(false);
+              }
+            }
             if (!resp.ok) {
               const ej = await resp.json().catch(() => ({}));
               const msg = (ej.error && ej.error.message) || ('HTTP ' + resp.status);
@@ -7245,6 +7309,8 @@
                   ret[mName] = Date.now();
                   window.localStorage.setItem('dnd35_retired_gemini_models', JSON.stringify(ret));
                 } catch (_) { /* ignore */ }
+              } else if (resp.status === 503 || resp.status === 429 || /high demand|overloaded|resource_exhausted/i.test(msg)) {
+                standaloneBusy.set(mName, Date.now() + 180000);
               }
               throw new Error(msg);
             }
