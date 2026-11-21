@@ -1450,7 +1450,7 @@ const RuleMaster = {
         (item.name && item.name.toLowerCase().includes(query)) ||
         haystack.includes(query);
       const matchCat = cat === 'ALL' || item.type === cat || (cat === 'DM Grant' && item.type === 'Homebrew') || (cat === 'Class' && (item.category === 'Class' || item.type === 'Base Class' || item.type === 'Prestige Class' || item.type === 'Custom Class'));
-      const itemBonusType = item.modifiers?.[0]?.type || (item.type === 'Weapon' && item.enhancementBonus ? 'Enhancement' : 'Untyped');
+      const itemBonusType = this._getPrimaryBonusType(item, 'Untyped');
       const matchBonus = bonusFilter === 'ALL' || itemBonusType === bonusFilter;
       const matchScope = scopeFilter === 'ALL' || (item.scope || 'None / General') === scopeFilter;
       const elig = this.evaluateEntryEligibilityForCharacter(item);
@@ -2056,7 +2056,7 @@ const RuleMaster = {
       const matchQ = !query || fuzzySc > 0 || (item.name && item.name.toLowerCase().includes(query)) || haystack.includes(query);
 
       const matchCat = cat === 'ALL' || item.type === cat || (cat === 'DM Grant' && item.type === 'Homebrew') || (cat === 'Class' && (item.category === 'Class' || item.type === 'Base Class' || item.type === 'Prestige Class' || item.type === 'Custom Class'));
-      const itemBonusType = item.modifiers?.[0]?.type || (item.type === 'Weapon' && item.enhancementBonus ? 'Enhancement' : 'Untyped');
+      const itemBonusType = this._getPrimaryBonusType(item, 'Untyped');
       const matchBonus = bonusFilter === 'ALL' || itemBonusType === bonusFilter;
       const matchScope = scopeFilter === 'ALL' || (item.scope || 'None / General') === scopeFilter;
       const elig = this.evaluateEntryEligibilityForCharacter(item);
@@ -2120,7 +2120,7 @@ const RuleMaster = {
       const isDomain = lowType === 'domain' || lowType === 'cleric domain' || String(item.id || '').startsWith('dom-');
       const isRace = lowType === 'race';
       const isClass = lowType === 'class' || lowType === 'base class' || lowType === 'prestige class' || lowType === 'custom class' || String(item.category || '').toLowerCase() === 'class';
-      const primaryBonusType = item.modifiers?.[0]?.type || (item.type === 'Weapon' && item.enhancementBonus ? 'Enhancement' : (item.type === 'Armor' ? 'Armor' : (item.type === 'Shield' ? 'Shield' : 'Untyped')));
+      const primaryBonusType = this._getPrimaryBonusType(item, 'Untyped');
 
       let slotCellHtml = `
         <div>${item.slot ? this.capitalizeIdentifier(item.slot) : 'None'}</div>
@@ -4710,7 +4710,7 @@ Return 1 complete Pure Canonical V3 entry inside {"entries": [...]} (blueprint: 
       const modes = Array.isArray(item.modes) ? item.modes : [];
       const badgeClass = this.getTypeBadgeClass(item.type);
       const statPills = this.getEntrySummaryPills(item);
-      const primaryBonusType = item.modifiers?.[0]?.type || (item.type === 'Weapon' && item.enhancementBonus ? 'Enhancement' : 'Untyped');
+      const primaryBonusType = this._getPrimaryBonusType(item, 'Untyped');
 
       const specificBadges = [];
       if (dbInfo.exists) {
@@ -4852,7 +4852,7 @@ Return 1 complete Pure Canonical V3 entry inside {"entries": [...]} (blueprint: 
     }
     if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
     this.renderTable();
-    notify(`✅ ${addedCount} Canonical V2 rule(s) successfully added to Master_DB!`, 'success');
+    notify(`✅ ${addedCount} Canonical V3 rule(s) successfully added to Master_DB!`, 'success');
   },
 
   changeAndAddAiResult(index) {
@@ -5425,10 +5425,11 @@ Return 1 complete Pure Canonical V3 entry inside {"entries": [...]} (blueprint: 
       const isWeapon = item.type === 'Weapon';
       const wStats = this.resolveWeaponStats(item);
       const aStats = item.armorStats || {};
-      const primaryDice = item.damageParts?.[0]?.dice || wStats.baseDamage || '1d8';
+      const rollSum = this._getPrimaryRollSummary(item);
+      const primaryDice = rollSum.dice || wStats.baseDamage || '1d8';
       const critMin = wStats.critMin || 20;
       const critMult = wStats.critMult || 2;
-      const dmgType = item.damageParts?.[0]?.type || (Array.isArray(wStats.damageTypes) ? wStats.damageTypes.join('/') : 'Slashing');
+      const dmgType = rollSum.dmgType || (Array.isArray(wStats.damageTypes) ? wStats.damageTypes.join('/') : 'Slashing');
       const acVal = (Number(aStats.baseAc) || 0) + (Number(item.enhancementBonus) || 0);
       const statPills = this.getEntrySummaryPills(item);
 
@@ -5512,7 +5513,7 @@ Return 1 complete Pure Canonical V3 entry inside {"entries": [...]} (blueprint: 
       const item = this.ensureV2(rawItem);
       const isSpell = item.type === 'Spell';
       const isManeuver = item.type === 'Maneuver';
-      const primaryDice = item.damageParts?.[0]?.dice || '';
+      const primaryDice = this._getPrimaryRollSummary(item).dice || '';
 
       html += `
         <div class="bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl p-4 space-y-2.5 transition shadow">
@@ -5659,7 +5660,7 @@ Return 1 complete Pure Canonical V3 entry inside {"entries": [...]} (blueprint: 
       const item = this.ensureV2(rawItem);
       const isPotion = item.type === 'Potion';
       const statPills = this.getEntrySummaryPills(item);
-      const primaryBonusType = item.modifiers?.[0]?.type || 'Untyped';
+      const primaryBonusType = this._getPrimaryBonusType(item, 'Untyped');
 
       html += `
         <div class="bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl p-4 space-y-2.5 transition shadow">
@@ -5738,7 +5739,7 @@ Return 1 complete Pure Canonical V3 entry inside {"entries": [...]} (blueprint: 
 
             <div class="space-y-2 pl-4 border-l-2 border-purple-500/50">
               ${modes.map(mode => {
-                const modeDice = mode.damageParts?.[0]?.dice || '';
+                const modeDice = this._getPrimaryRollSummary(mode).dice || '';
                 return `
                   <div class="bg-slate-950/60 border border-slate-800 rounded-lg p-3 space-y-1.5 hover:border-purple-500/40 transition">
                     <div class="flex items-center justify-between">
@@ -7048,25 +7049,27 @@ ${customQuery ? `User Question: ${customQuery}` : 'Provide the optimal D&D 3.5e 
       const sampleItems = items.slice(0, 20).map(i => ({
         id: i.id,
         schemaVersion: i.schemaVersion,
+        blueprint: i.blueprint,
         name: i.name,
         type: i.type,
         source: i.source,
         prereq: i.prereq,
         benefit: i.benefit || i.description,
-        modifiers: i.modifiers,
-        damageParts: i.damageParts,
-        modes: i.modes,
+        effects: Array.isArray(i.effects) ? i.effects : [],
+        powers: Array.isArray(i.powers) ? i.powers : [],
+        choices: Array.isArray(i.choices) ? i.choices : [],
+        modes: Array.isArray(i.modes) ? i.modes : [],
         isFighterBonusFeat: i.isFighterBonusFeat
       }));
 
-      const auditPrompt = `You are an uncompromising D&D 3.5e RAW Auditor.
+      const auditPrompt = `You are an uncompromising D&D 3.5e RAW & Pure Canonical V3 Auditor.
 Audit these user-added custom records from their master_db:
 ${JSON.stringify(sampleItems, null, 2)}
 
 TASK:
 1. Verify if each item exists in official 3.5e WotC books or is unofficial homebrew.
 2. Detect any 5e mechanics (Advantage/Disadvantage, Bonus Action, Finesse adding Dex to damage, etc.).
-3. Check if prerequisites, modifiers, damageParts, and fighter bonus feat flags match RAW 3.5e.
+3. Check if prerequisites, V3 effects[], powers[], choices[], modes[], and fighter bonus feat flags match RAW 3.5e and Pure Canonical V3 (schemaVersion: 3, zero legacy modifiers/damageParts).
 
 Return valid JSON strictly matching:
 {
@@ -7127,15 +7130,19 @@ Allowed recommendedAction values: "KEEP" | "MODIFY" | "REMOVE".`;
           badgeColor = 'bg-rose-950 text-rose-300 border-rose-700';
           badgeIcon = '🚫';
         }
+        const safeStatus = RuleMaster.escapeHtml(r.status || 'APPROVED');
+        const safeIssuesHtml = Array.isArray(r.issues) && r.issues.length
+          ? `<p class="text-[10px] text-amber-200">${r.issues.map(iss => RuleMaster.escapeHtml(iss)).join(' | ')}</p>`
+          : `<p class="text-[10px] text-emerald-400">100% compliant with official D&D 3.5e RAW and Pure Canonical V3 standards.</p>`;
         return `
           <div class="p-2.5 rounded-lg bg-slate-950 border border-slate-800 space-y-1">
             <div class="flex items-center justify-between">
               <span class="font-bold text-white">${RuleMaster.escapeHtml(r.name)}</span>
               <span class="px-2 py-0.5 rounded text-[10px] font-bold border ${badgeColor}">
-                ${badgeIcon} ${r.status}
+                ${badgeIcon} ${safeStatus}
               </span>
             </div>
-            ${r.issues && r.issues.length ? `<p class="text-[10px] text-amber-200">${r.issues.join(' | ')}</p>` : `<p class="text-[10px] text-emerald-400">100% compliant with official D&D 3.5e RAW and Canonical V2 standards.</p>`}
+            ${safeIssuesHtml}
           </div>
         `;
       }).join('');

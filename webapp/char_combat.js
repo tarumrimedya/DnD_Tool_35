@@ -15081,7 +15081,7 @@
             <div data-action="combat:exec-spotlight-item" data-item-idx="${idx}" class="p-2.5 rounded-xl border transition cursor-pointer flex items-center justify-between gap-2 ${idx === 0 ? 'bg-slate-900 border-pink-500/80' : 'bg-slate-900/50 border-slate-800'}">
               <div>
                 <div class="text-xs font-bold text-white">✨ Add &amp; Activate Buff: ${_escTermHtml(tpl.name)}</div>
-                <div class="text-[11px] text-slate-400 line-clamp-1">${_escTermHtml(tpl.summary || 'Canonical V2 Buff')}</div>
+                <div class="text-[11px] text-slate-400 line-clamp-1">${_escTermHtml(tpl.summary || 'Canonical V3 Buff')}</div>
               </div>
               <span class="px-2 py-1 rounded text-pink-300 border border-pink-700 font-mono text-[10px] font-bold">Activate ↵</span>
             </div>

@@ -7287,14 +7287,28 @@
           let callRes = await callStandaloneGeminiJson(prompt, models, apiKey);
           let parsed = callRes.parsed;
           let rawList = Array.isArray(parsed.entries) ? parsed.entries : (Array.isArray(parsed) ? parsed : [parsed]);
-          if (RE && typeof RE.validateV3Entry === 'function' && rawList[0]) {
-            const vCheck = RE.validateV3Entry(rawList[0], { checkRawFirst: true, defaultBlueprint: S.entry.blueprint || 'feat' });
-            if (!vCheck.rawOk && vCheck.rawErrors.length > 0) {
+          if (RE && typeof RE.validateV3Entry === 'function' && rawList.length > 0) {
+            const collectForgeErrors = (list) => {
+              const errs = [];
+              list.forEach((item, idx) => {
+                if (!item || typeof item !== 'object' || Array.isArray(item)) return;
+                const vCheck = RE.validateV3Entry(item, { checkRawFirst: true, defaultBlueprint: S.entry.blueprint || 'feat' });
+                if (!vCheck.rawOk && vCheck.rawErrors.length > 0) {
+                  vCheck.rawErrors.forEach(e => errs.push('[entry ' + idx + '] ' + e));
+                }
+              });
+              return errs;
+            };
+            const initErrs = collectForgeErrors(rawList);
+            if (initErrs.length > 0) {
               try {
-                const repairPrompt = 'Fix the following Pure Canonical V3 validation errors in your JSON response and return ONLY valid `{"entries":[...]}` (schemaVersion: 3, zero modifiers/damageParts, closed `when` conditions or condKind:"situational"):\nErrors:\n- ' + vCheck.rawErrors.join('\n- ') + '\n\nOriginal JSON:\n' + JSON.stringify(rawList[0]);
+                const repairPrompt = 'Fix the following Pure Canonical V3 validation errors in your JSON response and return ONLY valid `{"entries":[...]}` (schemaVersion: 3, zero modifiers/damageParts, closed `when` conditions or condKind:"situational"):\nErrors:\n- ' + initErrs.join('\n- ') + '\n\nOriginal JSON:\n' + JSON.stringify({ entries: rawList });
                 const repaired = await callStandaloneGeminiJson(repairPrompt, [callRes.model].concat(models), apiKey);
                 const repList = Array.isArray(repaired.parsed.entries) ? repaired.parsed.entries : (Array.isArray(repaired.parsed) ? repaired.parsed : [repaired.parsed]);
-                if (repList[0]) rawList = repList;
+                if (repList.length > 0) {
+                  const repErrs = collectForgeErrors(repList);
+                  if (repErrs.length === 0 || repErrs.length < initErrs.length) rawList = repList;
+                }
               } catch (_) { /* sanitizeV3Entry fallback below */ }
             }
           }

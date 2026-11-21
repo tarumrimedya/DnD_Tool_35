@@ -2808,7 +2808,7 @@
           selectBuffSpotlightCandidate(exactLocal);
           if (statusEl) {
             statusEl.className = 'text-xs text-emerald-300 bg-emerald-950/60 border border-emerald-800/60 p-2 rounded-lg block';
-            statusEl.textContent = `✓ Found "${exactLocal.name}" in ${exactLocal._spotlightKind || 'Compendium'} (0 tokens) and populated Canonical V2 mechanics!`;
+            statusEl.textContent = `✓ Found "${exactLocal.name}" in ${exactLocal._spotlightKind || 'Compendium'} (0 tokens) and populated Canonical V3 mechanics!`;
           }
           return;
         }
@@ -2838,7 +2838,7 @@
 
             if (statusEl) {
               statusEl.className = 'text-xs text-emerald-300 bg-emerald-950/60 border border-emerald-800/60 p-2 rounded-lg block';
-              statusEl.textContent = `✓ 🔮 Rule Master fetched "${v2Entry.name || q}" from D&D 3.5e sourcebooks and populated Canonical V2 mechanics!`;
+              statusEl.textContent = `✓ 🔮 Rule Master fetched "${v2Entry.name || q}" from D&D 3.5e sourcebooks and populated Canonical V3 mechanics!`;
             }
             return;
           }

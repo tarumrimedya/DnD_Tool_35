@@ -2922,7 +2922,7 @@
               ? RuleMaster.getEntrySummaryPills(instantBoon)
               : [];
             refreshedStatusEl.className = 'mt-1.5 text-[11px] p-2 rounded-lg bg-emerald-950/80 border border-emerald-600/60 text-emerald-200 block';
-            refreshedStatusEl.innerHTML = `<span>✨</span> Parsed Canonical V2 Ability (0ms): <b>${UI.escapeHtml(instantBoon.name)}</b> <span class="font-mono text-amber-300">[${UI.escapeHtml(pills.join(' • ') || instantBoon.benefit)}]</span>`;
+            refreshedStatusEl.innerHTML = `<span>✨</span> Parsed Canonical V3 Ability (0ms): <b>${UI.escapeHtml(instantBoon.name)}</b> <span class="font-mono text-amber-300">[${UI.escapeHtml(pills.join(' • ') || instantBoon.benefit)}]</span>`;
           } else {
             const modSummary = (instantBoon.effects || []).filter(e => e && e.type === 'stat').map(e => {
               const tgt = Array.isArray(e.targets) ? e.targets.join(', ') : (e.target || '');
@@ -3204,10 +3204,12 @@ Output ONLY a single valid JSON object strictly matching this schema:
   "ref": "good", // "good" or "poor"
   "will": "poor", // "good" or "poor"
   "skills": 8, // integer: 2, 4, 6, or 8 (base skill points per level)
+  "classSkills": ["Spot", "Listen", "Tumble"],
   "source": "Book Name and page (e.g. Unearthed Arcana p.58, Complete Warrior p.10)",
   "role": "Role summary in English",
   "bonusFeatLevels": [1, 3, 5, 7, 9, 11, 13, 15, 17, 19],
-  "featuresSummary": "Key features e.g. Trapfinding, Evasion, Fighter Bonus Feats (in place of Sneak Attack)"
+  "featuresSummary": "Key features e.g. Trapfinding, Evasion, Fighter Bonus Feats (in place of Sneak Attack)",
+  "effects": [] // Optional Pure Canonical V3 effects[] blocks (NEVER emit modifiers or damageParts)
 }
 Output raw JSON only. Do not wrap in markdown quotes.`;
 
@@ -3263,27 +3265,37 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
                   const inDb = masterDb.find(m => m && (m.name || '').toLowerCase() === cName.toLowerCase() && (m.type === 'Class' || m.category === 'Class'));
                   if (!inDb) {
                     const summaryText = parsed.featuresSummary || `${cName} (${newClassDef.source})`;
-                    masterDb.push({
+                    const rawV3Class = {
                       schemaVersion: 3,
                       blueprint: 'class',
-                      id: 'cls_' + cName.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, ''),
+                      id: 'cls-' + cName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
                       name: cName,
                       type: 'Class',
                       category: 'Class',
                       slot: 'None',
+                      hitDie: `d${newClassDef.hd}`,
                       hd: newClassDef.hd,
                       bab: newClassDef.bab,
                       fort: newClassDef.fort,
                       ref: newClassDef.ref,
                       will: newClassDef.will,
+                      skillPoints: newClassDef.skills,
                       skills: newClassDef.skills,
+                      classSkills: Array.isArray(parsed.classSkills) ? parsed.classSkills : [],
                       source: newClassDef.source,
                       benefit: summaryText,
                       description: summaryText,
+                      text: summaryText,
                       desc: summaryText,
-                      effects: [],
+                      effects: Array.isArray(parsed.effects) ? parsed.effects : [],
+                      powers: [],
+                      choices: [],
                       modes: []
-                    });
+                    };
+                    const cleanV3Class = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.sanitizeV3Entry === 'function')
+                      ? RuleEngine.sanitizeV3Entry(rawV3Class, { defaultBlueprint: 'class' })
+                      : rawV3Class;
+                    masterDb.push(cleanV3Class);
                   }
                 }
 
@@ -3295,7 +3307,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
                 const babDisplay = newClassDef.bab === 1.0 ? 'Full BAB (+1/lvl)' : (newClassDef.bab === 0.75 ? '3/4 BAB (+0.75/lvl)' : '1/2 BAB (+0.5/lvl)');
                 if (statusEl) {
                   statusEl.className = 'text-[11px] p-2.5 rounded-lg bg-emerald-950/80 border border-emerald-600/60 text-emerald-200 block';
-                  statusEl.innerHTML = `<span>✨</span> Fetched and added <b>${cName}</b> with Rule Master with D&D 3.5e RAW stats! (HD: d${newClassDef.hd} • ${babDisplay} • Source: ${UI.escapeHtml(newClassDef.source)})`;
+                  statusEl.innerHTML = `<span>✨</span> Fetched and added <b>${UI.escapeHtml(cName)}</b> with Rule Master with D&D 3.5e RAW stats! (HD: d${newClassDef.hd} • ${babDisplay} • Source: ${UI.escapeHtml(newClassDef.source)})`;
                 }
                 return;
               }
@@ -6137,6 +6149,7 @@ Format:
   "ref": "good" or "poor",
   "will": "good" or "poor",
   "skills": 2 or 4 or 6 or 8,
+  "classSkills": ["Climb", "Jump", "Swim"],
   "bonusFeatLevels": [1, 3, 5, 7, 9, 11, 13, 15, 17, 19],
   "description": "Short informative English description explaining what the class or variant specializes in and its playstyle.",
   "prerequisites": [
@@ -6145,9 +6158,10 @@ Format:
   "features": {
     "1": [{ "name": "Feature Name (Ex/Su/Sp)", "summary": "Concise mechanical summary in English" }],
     "2": [{ "name": "Feature Name (Ex/Su/Sp)", "summary": "Concise mechanical summary in English" }]
-  }
+  },
+  "effects": []
 }
-STRICT RULE: Do NOT include standard 6-sided dice emoji (U+1F3B2) anywhere in any field. Use plain notation like "d10 HD", "1d6", "2d8".`;
+STRICT RULE: Do NOT include standard 6-sided dice emoji (U+1F3B2) anywhere in any field, and NEVER emit legacy "modifiers" or "damageParts" (use Pure Canonical V3 "effects" blocks if passive bonuses apply). Use plain notation like "d10 HD", "1d6", "2d8".`;
 
       const userPrompt = `Extract the exact official D&D 3.5e RAW class or class variant parameters for: "${q}". (If the query contains typos or variant keywords such as "rogue, Adventuerer" for "Rogue (Adventurer Variant)" from Unearthed Arcana p.58, or "bloodstarm blade" for "Bloodstorm Blade", automatically resolve to the canonical D&D 3.5e class or variant name).
 Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant), hit die, bab, fort, ref, will, skill points per level, bonusFeatLevels array (levels that grant a selectable bonus feat), prerequisites, description in English, and level-by-level features for every level from 1 up to maxLevel (keys "1", "2", ...).`;
@@ -6222,7 +6236,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       }
 
       if (!classData || !classData.name || /^(null|none|unknown|non-existent|nonexistent|invalid|n\/a)/i.test(String(classData.name).trim())) {
-        alert(`⚠️ Rule Master could not find class "${q}" in official D&D 3.5e sourcebooks.\n${lastErr ? lastErr.message : ''}\n\nTip: You can clone an existing class template (e.g. Rogue) and customize its features using the "+ Add Custom Class" (Class Template Studio) button!`);
+        showToast(`⚠️ Rule Master could not find class "${q}" in official D&D 3.5e sourcebooks.${lastErr ? ' ' + lastErr.message : ''} Tip: Clone an existing class template using "+ Add Custom Class".`, 'error', { wrap: true });
         return;
       }
 
@@ -6236,27 +6250,57 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       const validSkills = Number(classData.skills) || 2;
       const classType = (classData.type || '').toLowerCase().includes('base') ? 'Base Class' : 'Prestige Class';
       const validMaxLevel = Number(classData.maxLevel) || (classType === 'Prestige Class' ? 10 : 20);
+      const classSlug = cleanName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || String(Date.now());
+      const descText = classData.description || `${cleanName} (${classData.source || 'D&D 3.5e'})`;
 
-      const newEntry = {
-        id: 'class_' + Date.now(),
+      const rawEntry = {
+        schemaVersion: 3,
+        blueprint: 'class',
+        id: 'cls-' + classSlug,
         name: cleanName,
         type: classType,
         maxLevel: validMaxLevel,
         category: 'Class',
+        slot: 'None',
         source: classData.source || 'Official D&D 3.5e',
         role: classData.role || '',
+        hitDie: `d${validHd}`,
         hd: validHd,
         bab: validBab,
         fort: validFort,
         ref: validRef,
         will: validWill,
+        skillPoints: validSkills,
         skills: validSkills,
-        description: classData.description || `${cleanName} (${classData.source || 'D&D 3.5e'})`,
+        classSkills: Array.isArray(classData.classSkills) ? classData.classSkills : [],
+        benefit: descText,
+        description: descText,
+        text: descText,
         prerequisites: Array.isArray(classData.prerequisites) ? classData.prerequisites : [],
         features: (classData.features && typeof classData.features === 'object') ? classData.features : {},
         bonusFeatLevels: Array.isArray(classData.bonusFeatLevels) ? classData.bonusFeatLevels : [],
+        effects: Array.isArray(classData.effects) ? classData.effects : [],
+        powers: [],
+        choices: [],
+        modes: [],
         isCustom: true
       };
+      const newEntry = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.sanitizeV3Entry === 'function')
+        ? Object.assign(RuleEngine.sanitizeV3Entry(rawEntry, { defaultBlueprint: 'class' }), {
+            type: classType,
+            maxLevel: validMaxLevel,
+            hd: validHd,
+            bab: validBab,
+            fort: validFort,
+            ref: validRef,
+            will: validWill,
+            skills: validSkills,
+            prerequisites: rawEntry.prerequisites,
+            features: rawEntry.features,
+            bonusFeatLevels: rawEntry.bonusFeatLevels,
+            isCustom: true
+          })
+        : rawEntry;
 
       // 1. Add to masterDb
       if (Array.isArray(masterDb)) {
