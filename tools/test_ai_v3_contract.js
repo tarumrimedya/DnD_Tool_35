@@ -928,6 +928,28 @@ function runAiV3ContractTests() {
     // Synchronous microtask-free verification for Chronicler guard & apply_v3_patch preview via applyV3Patch dryRun
     const dryPreview = Forge.applyV3Patch({ effects: [{ type: 'roll', kind: 'Damage', dice: '2d6', dmgType: 'Cold' }] }, { dryRun: true });
     check(dryPreview.ok === true && dryPreview.summary.includes('2d6 Cold'), 'apply_v3_patch dryRun preview must summarize without mutating');
+
+    // (k) Sprint E4 P4: RuleEngine numeric levelTier evaluation + applyV3Patch gainedAt & when(levelTier) round-trip
+    check(RuleEngine.resolveV3WhenCondition('levelTier', 'HD >= 12', 'when', { hd: 12 }, {}, {}) === true, 'levelTier "HD >= 12" must be true at HD 12');
+    check(RuleEngine.resolveV3WhenCondition('levelTier', 'HD >= 12', 'when', { hd: 11 }, {}, {}) === false, 'levelTier "HD >= 12" must be false at HD 11');
+    check(RuleEngine.resolveV3WhenCondition('levelTier', 'HD 1-11', 'when', { hd: 11 }, {}, {}) === true, 'levelTier "HD 1-11" must be true at HD 11');
+    check(RuleEngine.resolveV3WhenCondition('levelTier', 'HD 1-11', 'when', { hd: 12 }, {}, {}) === false, 'levelTier "HD 1-11" must be false at HD 12');
+    check(RuleEngine.resolveV3WhenCondition('levelTier', 'CL <= 11', 'when', { cl: 11 }, {}, {}) === true, 'levelTier "CL <= 11" must be true at CL 11');
+    check(RuleEngine.resolveV3WhenCondition('levelTier', 'CL <= 11', 'when', { cl: 12 }, {}, {}) === false, 'levelTier "CL <= 11" must be false at CL 12');
+    check(RuleEngine.resolveV3WhenCondition('levelTier', 'Lvl 5+', 'when', { level: 5 }, {}, {}) === true, 'levelTier "Lvl 5+" must be true at Level 5');
+
+    Forge.state.entry = Forge.fromCanonicalV3({ id: 'test-p4-hd', name: 'HD Tier Test', blueprint: 'feat', schemaVersion: 3, effects: [] });
+    Forge.state.history = { past: [], future: [], lastPath: '', lastTs: 0 };
+    const rAtHd = Forge.applyV3Patch({ effects: [{ type: 'defense', mode: 'DR', value: 5, what: 'Magic' }] }, { gainedAt: 5 });
+    check(rAtHd.ok === true && Forge.state.entry.effects[0].gainedAt === 5 && Forge.state.entry.facets.includes('progression'),
+      'applyV3Patch({ gainedAt: 5 }) must set gainedAt=5 and auto-attach progression facet');
+    const rWhenTier = Forge.applyV3Patch({
+      effects: [{ type: 'when', flow: 'if', branches: [{ condKind: 'levelTier', condText: 'HD >= 12', effects: [{ type: 'defense', mode: 'DR', value: 10, what: 'Magic' }] }] }]
+    });
+    check(rWhenTier.ok === true && rWhenTier.summary.includes('HD >= 12'), 'applyV3Patch when(levelTier) must summarize cleanly');
+    const p4E1 = Forge.exportEntry(Forge.state.entry);
+    const p4E2 = Forge.exportEntry(Forge.fromCanonicalV3(JSON.parse(JSON.stringify(p4E1))));
+    check(deepEqual(p4E1, p4E2), 'entry with gainedAt + when(levelTier) must be E1===E2 round-trip idempotent');
   }
 
   const elapsedMs = Date.now() - startMs;

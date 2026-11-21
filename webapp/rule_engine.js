@@ -1561,6 +1561,40 @@ const RuleEngine = {
       return actualTier === tierMatch[1].toLowerCase();
     }
 
+    // 2b. Numeric HD / Level / Class Level / Caster Level Tier check (e.g. "HD >= 12", "HD 1-11", "CL <= 11", "Lvl 5+")
+    const resolveTierActual = (unitRaw) => {
+      const u = String(unitRaw || '').toLowerCase().replace(/\s+/g, '');
+      const fallbackLvl = Array.isArray(ch.levels) ? ch.levels.length : 0;
+      if (u === 'cl' || u === 'casterlevel') {
+        return Number(evalCtx.cl ?? evalCtx.casterLevel ?? evalCtx.level ?? fallbackLvl) || 0;
+      }
+      if (u === 'classlvl' || u === 'classlevel') {
+        return Number(evalCtx.classLevel ?? evalCtx.level ?? fallbackLvl) || 0;
+      }
+      return Number(evalCtx.hd ?? evalCtx.level ?? evalCtx.totalLevel ?? fallbackLvl) || 0;
+    };
+    const tierRangeM = low.match(/^(?:[a-z]+\s+)?(hd|hit\s*dice|cl|caster\s*level|class\s*lv(?:l|el)?|lv(?:l|el)?)\s*(\d+)\s*[-–—]\s*(\d+)$/i);
+    if (tierRangeM) {
+      const val = resolveTierActual(tierRangeM[1]);
+      return val >= Number(tierRangeM[2]) && val <= Number(tierRangeM[3]);
+    }
+    const tierPlusM = low.match(/^(?:[a-z]+\s+)?(hd|hit\s*dice|cl|caster\s*level|class\s*lv(?:l|el)?|lv(?:l|el)?)\s*(\d+)\+$/i);
+    if (tierPlusM) {
+      const val = resolveTierActual(tierPlusM[1]);
+      return val >= Number(tierPlusM[2]);
+    }
+    const tierCmpM = low.match(/^(?:[a-z]+\s+)?(hd|hit\s*dice|cl|caster\s*level|class\s*lv(?:l|el)?|lv(?:l|el)?)\s*(>=|<=|>|<|===?|≥|≤)\s*(\d+)$/i);
+    if (tierCmpM) {
+      const val = resolveTierActual(tierCmpM[1]);
+      const op = tierCmpM[2];
+      const rhs = Number(tierCmpM[3]);
+      if (op === '>=' || op === '≥') return val >= rhs;
+      if (op === '<=' || op === '≤') return val <= rhs;
+      if (op === '>') return val > rhs;
+      if (op === '<') return val < rhs;
+      return val === rhs;
+    }
+
     // 3. Combat Toggles (`charging`, `fightingDefensively`, `totalDefense`, `powerAttack`, `combatExpertise`, `flanking`, `higherGround`, etc.)
     const tac = Object.assign({}, ch.tactical || {}, evalCtx.tactical || {});
     const toggleAliases = {

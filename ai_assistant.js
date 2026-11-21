@@ -777,7 +777,12 @@
           summary: `Could not parse "${raw}". Try: "add +2 deflection ac", "add fire damage", "add 1d6 fire", "add dr 5/magic", or "add 3/day".`
         };
       }
-      const res = root.ForgeSandbox.applyV3Patch(parsed.patch, { dryRun: false, mode: 'append', neutral: Boolean(parsed.isBlank) });
+      const res = root.ForgeSandbox.applyV3Patch(parsed.patch, {
+        dryRun: false,
+        mode: 'append',
+        neutral: Boolean(parsed.isBlank),
+        gainedAt: parsed.gainedAt || 0
+      });
       if (!res || !res.ok) {
         return { ok: false, summary: (res && res.summary) || 'Could not apply V3 block patch.' };
       }
@@ -1027,7 +1032,81 @@
   };
   const _capWord = (s) => String(s || '').replace(/\b[a-z]/g, (c) => c.toUpperCase());
 
+  const CRAFTER_WHEN_COND_MAP = {
+    'charging': { condKind: 'charging', condText: '' },
+    'on a charge': { condKind: 'charging', condText: '' },
+    'flanking': { condKind: 'flanking', condText: '' },
+    'fighting defensively': { condKind: 'fightingDefensively', condText: '' },
+    'total defense': { condKind: 'totalDefense', condText: '' },
+    'power attack': { condKind: 'powerAttack', condText: '' },
+    'combat expertise': { condKind: 'combatExpertise', condText: '' },
+    'higher ground': { condKind: 'higherGround', condText: '' },
+    'wielding two weapons': { condKind: 'wieldingTwoWeapons', condText: '' },
+    'two weapons': { condKind: 'wieldingTwoWeapons', condText: '' },
+    'twf': { condKind: 'wieldingTwoWeapons', condText: '' },
+    'unarmored': { condKind: 'unarmored', condText: '' },
+    'not flat-footed': { condKind: 'notFlatFooted', condText: '' },
+    'raging': { condKind: 'state', condText: 'raging' }
+  };
+
   function parseCrafterAddSpec(rawInput) {
+    let raw = String(rawInput || '').trim();
+    if (!raw) return null;
+
+    // P4 Suffix A: Level / HD Table row assignment ("at hd 5", "at level 8", "@ hd 12")
+    let gainedAt = 0;
+    const atM = raw.match(/\s+(?:at|@)\s+(?:hd|hit\s*dice|lv(?:l|el)?)\s*(\d+)\s*$/i);
+    if (atM) {
+      gainedAt = Math.max(1, Math.min(20, parseInt(atM[1], 10) || 1));
+      raw = raw.slice(0, atM.index).trim();
+    }
+
+    // P4 Suffix B: when / if / while condition wrapper ("if hd >= 12", "if hd 1-11", "if cl <= 11", "while charging")
+    let whenWrap = null;
+    const tierCondM = raw.match(/\s+(?:if|when|while)\s+((?:hd|hit\s*dice|cl|caster\s*level|class\s*lv(?:l|el)?|lv(?:l|el)?)\s*(?:(?:>=|<=|>|<|==|≥|≤)\s*\d+|\d+\s*[-–—]\s*\d+|\d+\+))\s*$/i);
+    if (tierCondM) {
+      const normCond = tierCondM[1].trim()
+        .replace(/^hd\b/i, 'HD')
+        .replace(/^cl\b/i, 'CL')
+        .replace(/^lv(?:l|el)?\b/i, 'Lvl');
+      whenWrap = { flow: 'if', condKind: 'levelTier', condText: normCond };
+      raw = raw.slice(0, tierCondM.index).trim();
+    } else {
+      const stateCondM = raw.match(/\s+(?:while|when|if)\s+([a-z][a-z\s-]+?)\s*$/i);
+      if (stateCondM) {
+        const key = stateCondM[1].trim().toLowerCase();
+        const mapped = CRAFTER_WHEN_COND_MAP[key];
+        if (mapped) {
+          whenWrap = { flow: 'while', condKind: mapped.condKind, condText: mapped.condText };
+          raw = raw.slice(0, stateCondM.index).trim();
+        }
+      }
+    }
+
+    const inner = _parseCrafterBaseSpec(raw);
+    if (!inner) return null;
+    if (whenWrap && inner.patch && Array.isArray(inner.patch.effects)) {
+      return Object.assign({}, inner, {
+        gainedAt,
+        tweakKind: '', // wrapped inside when container
+        tweakOptions: [],
+        patch: {
+          effects: [{
+            type: 'when',
+            flow: whenWrap.flow,
+            branches: [{
+              condKind: whenWrap.condKind,
+              condText: whenWrap.condText,
+              effects: inner.patch.effects
+            }]
+          }]
+        }
+      });
+    }
+    return gainedAt ? Object.assign({}, inner, { gainedAt }) : inner;
+  }
+
+  function _parseCrafterBaseSpec(rawInput) {
     const raw = String(rawInput || '').trim();
     if (!raw) return null;
     const low = raw.toLowerCase();
@@ -2960,7 +3039,11 @@
         if (addM) {
           const parsed = parseCrafterAddSpec(addM[1].trim());
           if (parsed) {
-            const dry = root.ForgeSandbox.applyV3Patch(parsed.patch, { dryRun: true, neutral: Boolean(parsed.isBlank) });
+            const dry = root.ForgeSandbox.applyV3Patch(parsed.patch, {
+              dryRun: true,
+              neutral: Boolean(parsed.isBlank),
+              gainedAt: parsed.gainedAt || 0
+            });
             if (dry && dry.ok) {
               const defNote = parsed.usedDefault && parsed.defaultNote ? ` (${parsed.defaultNote})` : '';
               previewHtml = `<button type="button" class="rm-assist-live-preview" data-rm-sug-kind="cmd" data-rm-sug-cmd="${_esc(rawVal)}">` +

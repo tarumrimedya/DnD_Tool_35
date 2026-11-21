@@ -5832,9 +5832,12 @@
   function scratchBlocks(list, listPath, keep) {
     const arr = list || [];
     const visibleCount = keep ? arr.filter((b, i) => keep(b, i)).length : arr.length;
-    const bulkBar = (listPath === 'effects' && visibleCount >= 2)
+    const totalCardCount = listPath === 'effects'
+      ? visibleCount + (S.entry.powers || []).filter((pw) => !inLevelRow(pw)).length + (S.entry.modes || []).length
+      : visibleCount;
+    const bulkBar = (listPath === 'effects' && totalCardCount >= 2)
       ? '<div class="fs-row" style="justify-content:flex-end;gap:4px;margin-top:6px">' +
-          '<button type="button" class="fs-btn fs-xs fs-ghost" data-action="expand-all-blocks">▾ Expand All (' + visibleCount + ')</button>' +
+          '<button type="button" class="fs-btn fs-xs fs-ghost" data-action="expand-all-blocks">▾ Expand All (' + totalCardCount + ')</button>' +
           '<button type="button" class="fs-btn fs-xs fs-ghost" data-action="collapse-all-blocks">▸ Collapse All</button>' +
         '</div>'
       : '';
@@ -5976,10 +5979,25 @@
 
   function powerCBlock(pw, i) {
     const p = 'powers.' + i;
-    const head = H(
-      L('⚡ Sub-Power') + levelMoveSel(p, pw),
+    const key = 'pw:' + pw.id;
+    const open = !!S.ui.cardOpen[key];
+    const pwName = pw.kind === 'attached' ? (pw.ref ? pw.ref.name : pw.name) : pw.name;
+    const sumTxt = powerSummary(pw) || pwName || 'Sub-Power';
+    const toggleBtn = '<button type="button" class="lego-head-toggle" data-action="toggle-card" data-key="' + esc(key) + '" aria-expanded="' + (open ? 'true' : 'false') + '">' +
+      '<span class="lego-chev">' + (open ? '▾' : '▸') + '</span>' +
+      '<span>⚡</span>' +
+      (open
+        ? '<span class="lego-lbl" style="color:#fde68a;font-weight:700">Sub-Power</span>' + (pwName ? '<span class="lego-sum" style="color:#94a3b8;font-weight:500">— ' + esc(pwName) + '</span>' : '')
+        : '<span class="lego-sum">' + esc(sumTxt) + '</span>') +
+      '</button>';
+    const headTop = H(
+      toggleBtn + levelMoveSel(p, pw),
       '<span class="fs-row" style="margin-left:auto;gap:4px">' + btn('move-power', '↑', 'fs-xs fs-ghost', { i: i, d: -1 }) + delBtn('remove-power', { i: i }) + '</span>'
-    ) + G(3,
+    );
+    if (!open) {
+      return '<div class="lego-c c-amber is-collapsed"><div class="c-top">' + headTop + '</div></div>';
+    }
+    const head = headTop + G(3,
       F('Power Name', pw.kind === 'inline' ? inp(p + '.name', pw.name, { ph: 'Sub-power name' }) : '<span class="fs-pill purple">🔮 ' + esc(pw.ref ? pw.ref.name : pw.name) + '</span>') +
       F('Action', sel(p + '.action', pw.action, ACTIONS, { narrow: true })) +
       F('Caster Level', inp(p + '.cl', num(pw.cl) || '', { num: true, ph: 'Character CL' })) +
@@ -6022,11 +6040,27 @@
   // The Off state and weapon-grip modes are not shown; they are kept and written back automatically.
   function modeCBlock(m, i) {
     const p = 'modes.' + i, act = m._extra && m._extra.activation;
+    const key = 'md:' + m.id;
+    const open = !!S.ui.cardOpen[key];
     const actText = act ? [act.action, act.costKind && act.costKind !== 'none' ? act.costKind : ''].filter(Boolean).join(' · ') : '';
-    const head = H(
-      L('🎚️ Mode') + (actText ? '<span class="fs-pill dim">' + esc(actText) + '</span>' : ''),
+    const modeLabel = m.name || m.label || 'Mode';
+    const fxCnt = (m.effects || []).length;
+    const sumTxt = modeLabel + (actText ? ' (' + actText + ')' : '') + (fxCnt ? ' · ' + fxCnt + ' block' + (fxCnt > 1 ? 's' : '') : '');
+    const toggleBtn = '<button type="button" class="lego-head-toggle" data-action="toggle-card" data-key="' + esc(key) + '" aria-expanded="' + (open ? 'true' : 'false') + '">' +
+      '<span class="lego-chev">' + (open ? '▾' : '▸') + '</span>' +
+      '<span>🎚️</span>' +
+      (open
+        ? '<span class="lego-lbl" style="color:#99f6e4;font-weight:700">Mode</span>' + (modeLabel ? '<span class="lego-sum" style="color:#94a3b8;font-weight:500">— ' + esc(modeLabel) + '</span>' : '')
+        : '<span class="lego-sum">' + esc(sumTxt) + '</span>') +
+      '</button>';
+    const headTop = H(
+      toggleBtn + (actText ? '<span class="fs-pill dim">' + esc(actText) + '</span>' : ''),
       '<span class="fs-row" style="margin-left:auto;gap:4px">' + btn('move-mode', '↑', 'fs-xs fs-ghost', { i: i, d: -1 }) + delBtn('remove-mode', { i: i }) + '</span>'
-    ) + G(3,
+    );
+    if (!open) {
+      return '<div class="lego-c c-teal is-collapsed"><div class="c-top">' + headTop + '</div></div>';
+    }
+    const head = headTop + G(3,
       F('Mode Name', inp(p + '.name', m.name, { ph: 'e.g. Battle Stance' })) +
       F('Chip Label', inp(p + '.label', m.label, { ph: 'Text shown on the sheet chip' })) +
       F('Combat Scope', sel(p + '.combatScope', m.combatScope || '', [['', 'Auto'], ['melee', 'Melee'], ['ranged', 'Ranged'], ['both', 'Both']], { narrow: true }))
@@ -6595,8 +6629,14 @@
       if (b.rows) b.rows.forEach((r) => walk(r.kids));
     });
     walk(S.entry.effects);
-    (S.entry.powers || []).forEach((pw) => walk(pw.effects));
-    (S.entry.modes || []).forEach((m) => walk(m.effects));
+    (S.entry.powers || []).forEach((pw) => {
+      if (pw && pw.id) { if (flag) S.ui.cardOpen['pw:' + pw.id] = true; else delete S.ui.cardOpen['pw:' + pw.id]; }
+      walk(pw && pw.effects);
+    });
+    (S.entry.modes || []).forEach((m) => {
+      if (m && m.id) { if (flag) S.ui.cardOpen['md:' + m.id] = true; else delete S.ui.cardOpen['md:' + m.id]; }
+      walk(m && m.effects);
+    });
   }
   function loadEntry(en, presetId) {
     en.source = normSource(en.source);
@@ -6645,6 +6685,12 @@
       const resetMap = { perDay: '/day', perEncounter: '/encounter', perWeek: '/week', cooldown: ' cooldown' };
       return `resource: ${b.max || 0}${resetMap[b.reset] || '/day'}${b.name ? ' ' + b.name : ''}`;
     }
+    if (b.type === 'when' && Array.isArray(b.branches) && b.branches.length) {
+      const br = b.branches[0];
+      const condLbl = (br.condText || br.condKind || 'condition').trim();
+      const kidSum = (br.kids || []).map(summarizeV3Block).join(', ');
+      return `${b.flow === 'if' ? 'if' : 'while'} (${condLbl}): ${kidSum || 'block'}`;
+    }
     return `${b.type || 'effect'} block`;
   }
   function applyV3Patch(patch, opts) {
@@ -6676,6 +6722,10 @@
     };
     const imported = fromCanonicalV3(wrapper);
     const newEffects = (imported.effects || []).map(rekeyBlockIds);
+    const gainedAtLv = (o.gainedAt != null && num(o.gainedAt) >= 1) ? Math.min(20, Math.floor(num(o.gainedAt))) : 0;
+    if (gainedAtLv > 1) {
+      newEffects.forEach((b) => { if (b) b.gainedAt = gainedAtLv; });
+    }
     // Avoid resource varKey collisions when appending multiple unnamed/default pools
     if (mode === 'append' && S.entry && Array.isArray(S.entry.effects)) {
       const usedKeys = new Set(S.entry.effects.filter((b) => b && b.type === 'resource' && b.varKey).map((b) => String(b.varKey)));
@@ -6691,6 +6741,7 @@
     }
     const newPowers = (imported.powers || []).map((pw) => Object.assign({}, clone(pw), {
       id: uid('pw'),
+      gainedAt: gainedAtLv > 1 ? gainedAtLv : pw.gainedAt,
       effects: (pw.effects || []).map(rekeyBlockIds)
     }));
     const newModes = (imported.modes || []).map((m) => Object.assign({}, clone(m), {
@@ -6712,9 +6763,10 @@
       .filter((ch) => !(ch && ch.id && existingChoiceIds.has(ch.id)));
 
     const items = [];
-    newEffects.forEach((b) => items.push(`+1 ${summarizeV3Block(b)}`));
+    const atSuffix = gainedAtLv > 1 ? ` @ HD ${gainedAtLv}` : '';
+    newEffects.forEach((b) => items.push(`+1 ${summarizeV3Block(b)}${atSuffix}`));
     newModes.concat(newModesOff, newModesWeapon).forEach((m) => items.push(`+1 mode: ${m.name || m.label || 'Mode'}`));
-    newPowers.forEach((pw) => items.push(`+1 power: ${pw.name || (pw.ref && pw.ref.name) || 'Power'}`));
+    newPowers.forEach((pw) => items.push(`+1 power: ${pw.name || (pw.ref && pw.ref.name) || 'Power'}${atSuffix}`));
     newChoices.forEach((ch) => items.push(`+1 choice: ${ch.label || ch.kind || ch.id || 'Choice'}`));
 
     const counts = {
@@ -6757,6 +6809,9 @@
       newChoices.forEach((ch) => {
         if (!S.entry.choices.some((x) => x && ch && x.id && x.id === ch.id)) S.entry.choices.push(ch);
       });
+    }
+    if (gainedAtLv > 1) {
+      attachProgression(S.entry);
     }
     if (typeof document !== 'undefined') {
       if (counts.effects > 0) ensureFacet('effects');
