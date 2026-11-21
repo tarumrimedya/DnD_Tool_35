@@ -226,7 +226,9 @@
       setViewState('minimized');
     }
 
-    if (spec.tab && typeof root.switchTab === 'function') {
+    const tabEl = spec.tab ? document.getElementById(spec.tab) : null;
+    const needsTabSwitch = Boolean(spec.tab && typeof root.switchTab === 'function' && (!tabEl || tabEl.classList.contains('hidden')));
+    if (needsTabSwitch) {
       try { root.switchTab(spec.tab, false); } catch (e) {
         if (typeof reportError === 'function') reportError('ai_assistant:guideSwitchTab', e);
       }
@@ -263,9 +265,13 @@
         return false;
       }
 
-      try {
-        targetEl.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
-      } catch (e) { /* older browsers */ }
+      const initialRect = targetEl.getBoundingClientRect();
+      const inView = initialRect.top >= 64 && initialRect.bottom <= (window.innerHeight - 84);
+      if (!inView) {
+        try {
+          targetEl.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+        } catch (e) { /* older browsers */ }
+      }
 
       const ring = document.createElement('div');
       ring.id = 'rm-guide-spotlight';
@@ -299,9 +305,43 @@
         tip.style.left = `${tipLeft}px`;
       };
 
-      positionOverlay();
-      const rafTimer = setTimeout(positionOverlay, 320);
-      const onScrollOrResize = () => positionOverlay();
+      const reveal = () => {
+        positionOverlay();
+        ring.classList.add('is-ready');
+        tip.classList.add('is-ready');
+      };
+
+      let settleRafId = 0;
+      if (inView) {
+        settleRafId = requestAnimationFrame(reveal);
+      } else {
+        // Wait for smooth scroll to settle (up to ~380ms) before revealing ring so it never chases/jumps
+        let lastTop = initialRect.top;
+        let stableFrames = 0;
+        const startTs = performance.now ? performance.now() : Date.now();
+        const waitSettle = () => {
+          const curTop = targetEl.getBoundingClientRect().top;
+          const elapsed = (performance.now ? performance.now() : Date.now()) - startTs;
+          if (Math.abs(curTop - lastTop) < 0.8) stableFrames += 1;
+          else stableFrames = 0;
+          lastTop = curTop;
+          if ((stableFrames >= 3 && elapsed >= 120) || elapsed >= 420) {
+            reveal();
+          } else {
+            settleRafId = requestAnimationFrame(waitSettle);
+          }
+        };
+        settleRafId = requestAnimationFrame(waitSettle);
+      }
+
+      let scrollRaf = 0;
+      const onScrollOrResize = () => {
+        if (scrollRaf) return;
+        scrollRaf = requestAnimationFrame(() => {
+          scrollRaf = 0;
+          positionOverlay();
+        });
+      };
       const onTargetClick = () => clearGuideSpotlight(false);
       const onKey = (ev) => { if (ev.key === 'Escape') clearGuideSpotlight(true); };
       const closeBtn = tip.querySelector('.rm-guide-tip-close');
@@ -314,7 +354,8 @@
       const autoTimer = setTimeout(() => clearGuideSpotlight(false), 14000);
 
       _activeGuideCleanup = () => {
-        clearTimeout(rafTimer);
+        if (settleRafId) cancelAnimationFrame(settleRafId);
+        if (scrollRaf) cancelAnimationFrame(scrollRaf);
         clearTimeout(autoTimer);
         window.removeEventListener('scroll', onScrollOrResize, true);
         window.removeEventListener('resize', onScrollOrResize);
@@ -324,8 +365,9 @@
       return true;
     };
 
-    // Wait one micro-frame after tab switch so layout settles
-    setTimeout(locateAndHighlight, 45);
+    // Immediate if already on target tab; tiny micro-frame only when switching tabs
+    if (needsTabSwitch || hookFn) setTimeout(locateAndHighlight, 36);
+    else locateAndHighlight();
     return { ok: true, label: displayLabel, targetKey };
   }
 
@@ -1431,8 +1473,12 @@
         position: fixed; z-index: 10040; pointer-events: none;
         border-radius: 10px; border: 2.5px solid #38bdf8;
         box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.25), 0 0 24px rgba(56, 189, 248, 0.75);
-        animation: rmGuidePulse 1.2s ease-in-out infinite;
-        transition: top 0.2s ease, left 0.2s ease, width 0.2s ease, height 0.2s ease;
+        opacity: 0; transform: scale(1.07);
+        transition: opacity 0.2s ease, transform 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+      }
+      .rm-guide-spotlight.is-ready {
+        opacity: 1; transform: scale(1);
+        animation: rmGuidePulse 1.25s ease-in-out 0.24s infinite;
       }
       @keyframes rmGuidePulse {
         0%, 100% { box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.35), 0 0 22px rgba(56, 189, 248, 0.85); }
@@ -1445,7 +1491,10 @@
         background: #0f172a; color: #f8fafc;
         border: 1.5px solid #38bdf8; font-size: 11px; font-weight: 800;
         box-shadow: 0 10px 26px rgba(0, 0, 0, 0.65);
+        opacity: 0; transform: translateY(6px);
+        transition: opacity 0.2s ease, transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
       }
+      .rm-guide-tip.is-ready { opacity: 1; transform: translateY(0); }
       .rm-guide-tip-dot {
         width: 8px; height: 8px; border-radius: 9999px; background: #38bdf8; flex-shrink: 0;
       }
