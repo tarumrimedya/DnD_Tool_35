@@ -3271,6 +3271,13 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
                   const inDb = masterDb.find(m => m && (m.name || '').toLowerCase() === cName.toLowerCase() && (m.type === 'Class' || m.category === 'Class'));
                   if (!inDb) {
                     const summaryText = parsed.featuresSummary || `${cName} (${newClassDef.source})`;
+                    const babCanon = newClassDef.bab >= 1 ? 'full' : (newClassDef.bab >= 0.7 ? '3/4' : '1/2');
+                    const goodSaves = [
+                      newClassDef.fort === 'good' ? 'fort' : '',
+                      newClassDef.ref === 'good' ? 'ref' : '',
+                      newClassDef.will === 'good' ? 'will' : ''
+                    ].filter(Boolean);
+                    const classSkillsArr = Array.isArray(parsed.classSkills) ? parsed.classSkills : [];
                     const rawV3Class = {
                       schemaVersion: 3,
                       blueprint: 'class',
@@ -3287,7 +3294,16 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
                       will: newClassDef.will,
                       skillPoints: newClassDef.skills,
                       skills: newClassDef.skills,
-                      classSkills: Array.isArray(parsed.classSkills) ? parsed.classSkills : [],
+                      classSkills: classSkillsArr,
+                      progression: {
+                        mode: newClassDef.type === 'Prestige Class' ? 'prestige' : 'base',
+                        maxLevel: newClassDef.maxLevel || 20,
+                        hitDie: `d${newClassDef.hd}`,
+                        bab: babCanon,
+                        goodSaves,
+                        skillPointsPerLevel: newClassDef.skills,
+                        classSkills: classSkillsArr
+                      },
                       source: newClassDef.source,
                       benefit: summaryText,
                       description: summaryText,
@@ -6263,6 +6279,22 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       const validMaxLevel = Number(classData.maxLevel) || (classType === 'Prestige Class' ? 10 : 20);
       const classSlug = cleanName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || String(Date.now());
       const descText = classData.description || `${cleanName} (${classData.source || 'D&D 3.5e'})`;
+      const babCanon = validBab >= 1 ? 'full' : (validBab >= 0.7 ? '3/4' : '1/2');
+      const goodSaves = [
+        validFort === 'good' ? 'fort' : '',
+        validRef === 'good' ? 'ref' : '',
+        validWill === 'good' ? 'will' : ''
+      ].filter(Boolean);
+      const classSkillsArr = Array.isArray(classData.classSkills) ? classData.classSkills : [];
+      const progressionObj = {
+        mode: classType === 'Prestige Class' ? 'prestige' : 'base',
+        maxLevel: validMaxLevel,
+        hitDie: `d${validHd}`,
+        bab: babCanon,
+        goodSaves,
+        skillPointsPerLevel: validSkills,
+        classSkills: classSkillsArr
+      };
 
       const rawEntry = {
         schemaVersion: 3,
@@ -6283,7 +6315,8 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         will: validWill,
         skillPoints: validSkills,
         skills: validSkills,
-        classSkills: Array.isArray(classData.classSkills) ? classData.classSkills : [],
+        classSkills: classSkillsArr,
+        progression: progressionObj,
         benefit: descText,
         description: descText,
         text: descText,

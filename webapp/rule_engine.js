@@ -5749,7 +5749,7 @@ const RuleEngine = {
     }
 
     // 2. A -> B Stat / Formula Substitution ("use your Wisdom modifier instead of your Dexterity modifier on ranged attack rolls")
-    const swapM = cleanProse.match(/\b(may\s+use|can\s+use|use|apply|add)\s+(?:your\s+)?(Strength|Dexterity|Constitution|Intelligence|Wisdom|Charisma|STR|DEX|CON|INT|WIS|CHA)\s+modifier\s+(instead\s+of|in\s+place\s+of|rather\s+than|in\s+addition\s+to|to)\s+(?:your\s+)?(?:(Strength|Dexterity|Constitution|Intelligence|Wisdom|Charisma|STR|DEX|CON|INT|WIS|CHA)\s+modifier\s+)?(?:on|to|for)\s+([^.;]+)/i);
+    const swapM = cleanProse.match(/\b(may\s+use|can\s+use|use|apply|add)\s+(?:your\s+)?(Strength|Dexterity|Constitution|Intelligence|Wisdom|Charisma|STR|DEX|CON|INT|WIS|CHA)\s+modifier\s+(instead\s+of|in\s+place\s+of|rather\s+than|in\s+addition\s+to|to)\s+(?:your\s+)?(?:(Strength|Dexterity|Constitution|Intelligence|Wisdom|Charisma|STR|DEX|CON|INT|WIS|CHA)(?:\s+modifier)?\s+)?(?:on|to|for)\s+([^.;]+)/i);
     if (swapM) {
       const verb = swapM[1].toLowerCase();
       const toStat = AB_MAP[swapM[2].toLowerCase()] || 'wis';
@@ -6048,6 +6048,19 @@ const RuleEngine = {
       }
     }
 
+    // 7b. Flat Temporary HP ("gain 15 temporary HP" / "15 temporary hit points")
+    {
+      const tempHpRx = /\b(?:gains?|grants?|receives?)\s+(\d+)\s+temporary\s+(?:hp|hit\s+points?)\b/gi;
+      let thm;
+      while ((thm = tempHpRx.exec(cleanProse))) {
+        const val = Number(thm[1]) || 0;
+        if (val > 0) {
+          effects.push({ type: 'roll', kind: 'Temp HP', count: 0, die: 'd1', flat: val, scaling: 'flat' });
+          recordSpan(thm.index, thm[0].length);
+        }
+      }
+    }
+
     // 8. Metamagic Carrier ("uses up a spell slot two levels higher" / "Sudden Empower")
     const slotHigherM = cleanProse.match(/uses?\s+up\s+a\s+spell\s+slot\s+(\d+|one|two|three|four|five|six)\s+levels?\s+higher/i);
     const suddenMetaM = (inferredName || cleanProse).match(/\bSudden\s+(Empower|Enlarge|Extend|Maximize|Quicken|Silent|Still|Widen)\b/i);
@@ -6162,17 +6175,45 @@ const RuleEngine = {
     }
 
     const finalName = inferredName || 'Scribed Rule';
+    const BP_DEFAULT_TYPE = {
+      feat: 'Feat', spell: 'Spell', weapon: 'Weapon', armor: 'Armor', wondrous: 'Wondrous Item',
+      buff: 'Condition', class: 'Class', item_mod: 'Augment Crystal', race: 'Race', deity: 'Deity', domain: 'Domain', monster: 'Monster'
+    };
+    // Wrap leading sentence-level state condition ("While fighting defensively, ...") around stat/swap effects if not already wrapped
+    const leadCondM = cleanProse.match(/^\s*while\s+(fighting\s+defensively|charging|flanking|using\s+power\s+attack|using\s+combat\s+expertise|in\s+total\s+defense)\b/i);
+    let finalEffects = effects;
+    if (leadCondM && effects.some(b => b && b.type === 'stat')) {
+      const stateKeyMap = {
+        'fighting defensively': 'fightingDefensively',
+        'charging': 'charging',
+        'flanking': 'flanking',
+        'using power attack': 'powerAttack',
+        'using combat expertise': 'combatExpertise',
+        'in total defense': 'totalDefense'
+      };
+      const condState = stateKeyMap[leadCondM[1].toLowerCase().replace(/\s+/g, ' ')];
+      if (condState) {
+        const statBlocks = effects.filter(b => b && b.type === 'stat');
+        const otherBlocks = effects.filter(b => !b || b.type !== 'stat');
+        finalEffects = [{
+          type: 'when',
+          flow: 'while',
+          branches: [{ condKind: 'state', condText: condState, effects: statBlocks }]
+        }].concat(otherBlocks);
+      }
+    }
     const entry = this.sanitizeV3Entry({
       schemaVersion: 3,
       id: opts.id || `${bp === 'spell' ? 'spl' : (bp === 'race' ? 'race' : (bp === 'domain' ? 'dom' : 'feat'))}-${slugify(finalName)}`,
       blueprint: bp,
       name: finalName,
+      type: opts.type || BP_DEFAULT_TYPE[bp] || 'Feat',
       source: opts.source || 'Homebrew / Scribed',
       text: cleanProse,
       benefit: cleanProse.slice(0, 240),
       description: fullInput,
       ...(choices.length ? { choices } : {}),
-      effects,
+      effects: finalEffects,
       ...(powers.length ? { powers } : {})
     }, { defaultBlueprint: bp, fallbackName: finalName });
 

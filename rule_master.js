@@ -2559,7 +2559,7 @@ const RuleMaster = {
   _failedGeminiModels: new Set(),
   _busyGeminiModels: new Map(),
   _BUSY_GEMINI_MODEL_TTL_MS: 3 * 60 * 1000,
-  _ROUTING_MATRIX_VERSION: 2,
+  _ROUTING_MATRIX_VERSION: 3,
   _retiredGeminiModelsLoaded: false,
   _RETIRED_GEMINI_MODELS_KEY: 'dnd35_gemini_retired_models',
   _RETIRED_GEMINI_MODEL_TTL_MS: 7 * 24 * 60 * 60 * 1000,
@@ -2744,10 +2744,10 @@ const RuleMaster = {
     const flashModels = sorted.filter(m => m.toLowerCase().includes('flash') && !m.toLowerCase().includes('lite'));
     const proModels = sorted.filter(m => m.toLowerCase().includes('pro'));
 
-    // Newest generation first in every family.
-    // Within one generation: QUICK_SEARCH prefers flash-lite -> flash; IMPORT_BATCH prefers flash -> flash-lite.
+    // QUICK_SEARCH prioritizes newest flash-lite -> newest flash (high RPM, low latency, avoids 429 on heavy flash previews);
+    // IMPORT_BATCH prioritizes newest flash -> flash-lite.
     const isLite = (m) => (m.toLowerCase().includes('lite') ? 1 : 0);
-    const quickModels = [...liteModels, ...flashModels].sort((a, b) => (parseVer(b) - parseVer(a)) || (isLite(b) - isLite(a)));
+    const quickModels = [...liteModels, ...flashModels].sort((a, b) => (isLite(b) - isLite(a)) || (parseVer(b) - parseVer(a)));
     const batchModels = [...flashModels, ...liteModels].sort((a, b) => (parseVer(b) - parseVer(a)) || (isLite(a) - isLite(b)));
     const proNewest = proModels[0] || batchModels[0] || sorted[0];
 
@@ -4849,7 +4849,8 @@ Return 1 complete Pure Canonical V3 entry inside {"entries": [...]} (blueprint: 
       const item = this.ensureV2(rawItem);
       const dbInfo = this.getExistingSiteDbInfo(item);
       const modes = Array.isArray(item.modes) ? item.modes : [];
-      const badgeClass = this.getTypeBadgeClass(item.type);
+      const displayType = item.type || (item.blueprint ? this.capitalizeTitle(item.blueprint) : 'Feat');
+      const badgeClass = this.getTypeBadgeClass(displayType);
       const statPills = this.getEntrySummaryPills(item);
       const primaryBonusType = this._getPrimaryBonusType(item, 'Untyped');
 
@@ -4876,7 +4877,7 @@ Return 1 complete Pure Canonical V3 entry inside {"entries": [...]} (blueprint: 
             <div>
               <div class="flex items-center gap-2 flex-wrap">
                 <span class="text-sm font-extrabold text-white">${RuleMaster.escapeHtml(item.name)}</span>
-                <span class="badge ${badgeClass}">${item.type}</span>
+                <span class="badge ${badgeClass}">${RuleMaster.escapeHtml(displayType)}</span>
                 ${specificBadges.join(' ')}
               </div>
               <div class="flex items-center gap-2 text-[11px] text-slate-400 mt-1 flex-wrap">
@@ -6253,7 +6254,8 @@ Return 1 complete Pure Canonical V3 entry inside {"entries": [...]} (blueprint: 
     entries.forEach((item, idx) => {
       const dbInfo = this.getExistingSiteDbInfo(item);
       const modes = Array.isArray(item.modes) ? item.modes : [];
-      const badgeClass = this.getTypeBadgeClass(item.type);
+      const displayType = item.type || (item.blueprint ? this.capitalizeTitle(item.blueprint) : 'Feat');
+      const badgeClass = this.getTypeBadgeClass(displayType);
       const statPills = this.getEntrySummaryPills(item);
 
       html += `
