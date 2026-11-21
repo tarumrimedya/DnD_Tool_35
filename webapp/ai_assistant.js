@@ -2247,8 +2247,6 @@
       <button type="button" id="rm-assist-guide-dismiss" class="rm-assist-iconbtn" title="Dismiss spotlight">✕</button>
     `;
 
-    _mountedHdrPersona = 'rulemaster';
-
     document.body.appendChild(fab);
     document.body.appendChild(bubble);
     document.body.appendChild(quick);
