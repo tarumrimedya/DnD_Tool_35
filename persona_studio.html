@@ -367,6 +367,225 @@
       84%      { transform: rotate(-65deg) translateY(1px); }
       95%, 100%{ transform: rotate(0deg) translateY(0); }
     }
+
+    /* =========================================================================
+       CONVERSATION & UI-GUIDE PROTOTYPE LAB (OPTIONS A / B / C)
+       ========================================================================= */
+    .lab-section {
+      border-radius: 22px; background: rgba(15, 23, 42, 0.94);
+      border: 1.5px solid rgba(56, 189, 248, 0.42);
+      box-shadow: 0 22px 54px rgba(0, 0, 0, 0.55); overflow: hidden; margin-bottom: 18px;
+    }
+    .lab-hdr {
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px;
+      padding: 14px 20px; background: rgba(2, 6, 23, 0.85);
+      border-bottom: 1px solid rgba(51, 65, 85, 0.75);
+    }
+    .lab-body { padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; }
+    .lab-mode-grid {
+      display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px;
+    }
+    @media (max-width: 820px) { .lab-mode-grid { grid-template-columns: 1fr; } }
+    .lab-mode-card {
+      text-align: left; padding: 12px 14px; border-radius: 14px; cursor: pointer;
+      background: rgba(2, 6, 23, 0.72); border: 1.5px solid rgba(51, 65, 85, 0.8);
+      color: #cbd5e1; transition: all 0.18s ease; display: flex; flex-direction: column; gap: 4px;
+    }
+    .lab-mode-card:hover { border-color: #64748b; background: rgba(15, 23, 42, 0.95); }
+    .lab-mode-card.is-active {
+      border-color: #38bdf8; background: rgba(30, 27, 75, 0.65);
+      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.35), 0 10px 24px rgba(2, 6, 23, 0.6);
+    }
+    .lab-mode-title { font-size: 13px; font-weight: 800; color: #f8fafc; display: flex; align-items: center; gap: 6px; }
+    .lab-mode-tag {
+      font-size: 9.5px; font-weight: 800; padding: 2px 6px; border-radius: 9999px;
+      background: rgba(16, 185, 129, 0.18); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.45);
+    }
+    .lab-mode-desc { font-size: 11.5px; color: #94a3b8; line-height: 1.38; }
+
+    .lab-scenarios {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 7px;
+      padding: 10px 12px; border-radius: 12px;
+      background: rgba(2, 6, 23, 0.6); border: 1px solid rgba(51, 65, 85, 0.65);
+    }
+
+    /* Mock Character Sheet Sandbox (Left & Right targets to test guide_ui overlap!) */
+    .mock-sheet {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+      padding: 14px; border-radius: 16px;
+      background: rgba(2, 6, 23, 0.78); border: 1px dashed rgba(71, 85, 105, 0.8);
+    }
+    @media (max-width: 720px) { .mock-sheet { grid-template-columns: 1fr; } }
+    .mock-card {
+      padding: 12px 14px; border-radius: 12px;
+      background: rgba(15, 23, 42, 0.92); border: 1px solid rgba(51, 65, 85, 0.85);
+      display: flex; flex-direction: column; gap: 6px; cursor: pointer;
+      transition: border-color 0.2s ease, transform 0.15s ease;
+    }
+    .mock-card:hover { border-color: #64748b; }
+    .mock-card.is-full { grid-column: 1 / -1; }
+    .mock-card-hdr { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .mock-card-title { font-size: 12.5px; font-weight: 800; color: #f8fafc; }
+    .mock-badge {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 6px;
+      background: rgba(56, 189, 248, 0.14); color: #7dd3fc; border: 1px solid rgba(56, 189, 248, 0.35);
+    }
+    .mock-badge.is-amber { background: rgba(245, 158, 11, 0.14); color: #fcd34d; border-color: rgba(245, 158, 11, 0.38); }
+    .mock-badge.is-rose { background: rgba(244, 63, 94, 0.15); color: #fda4af; border-color: rgba(244, 63, 94, 0.4); }
+    .mock-sub { font-size: 11px; color: #94a3b8; line-height: 1.35; }
+
+    /* Prototype Conversation Containers */
+    .proto-hidden { display: none !important; }
+
+    /* Mode B Stage 1: Quick Command Capsule beside live diorama */
+    .proto-quickbar {
+      position: fixed; right: 100px; bottom: 24px; z-index: 62;
+      width: min(440px, calc(100vw - 116px));
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .proto-quick-reply {
+      padding: 10px 13px; border-radius: 14px;
+      background: rgba(15, 23, 42, 0.97); border: 1.5px solid rgba(99, 102, 241, 0.72);
+      color: #e2e8f0; font-size: 12px; line-height: 1.42;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.72); backdrop-filter: blur(10px);
+    }
+    .proto-quick-reply.is-chronicler { border-color: rgba(245, 158, 11, 0.82); color: #fef3c7; }
+    .proto-quick-input-wrap {
+      display: flex; align-items: center; gap: 6px; padding: 6px 8px;
+      border-radius: 14px; background: rgba(2, 6, 23, 0.96);
+      border: 1.5px solid rgba(99, 102, 241, 0.8);
+      box-shadow: 0 16px 38px rgba(0, 0, 0, 0.78);
+    }
+    .proto-quick-input-wrap.is-chronicler { border-color: rgba(245, 158, 11, 0.85); }
+
+    /* Mode A (Popover above live diorama) & Mode C (Right Side Drawer) */
+    .proto-panel {
+      position: fixed; z-index: 62;
+      display: flex; flex-direction: column; overflow: hidden;
+      background: rgba(2, 6, 23, 0.97); color: #e2e8f0;
+      border: 1.5px solid rgba(99, 102, 241, 0.78);
+      box-shadow: 0 24px 56px rgba(0, 0, 0, 0.8); backdrop-filter: blur(12px);
+      transition: transform 0.2s ease, opacity 0.2s ease, border-color 0.2s ease;
+    }
+    .proto-panel.is-chronicler { border-color: rgba(245, 158, 11, 0.85); }
+    .proto-panel.mode-a {
+      right: 22px; bottom: 98px; width: 410px; max-width: calc(100vw - 24px);
+      max-height: 68dvh; border-radius: 18px;
+    }
+    .proto-panel.mode-c {
+      top: 0; right: 0; bottom: 0; width: 390px; max-width: 100vw;
+      border-radius: 18px 0 0 18px; border-right: none; border-top: none; border-bottom: none;
+    }
+
+    .proto-hdr {
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+      padding: 10px 12px; background: rgba(15, 23, 42, 0.95);
+      border-bottom: 1px solid rgba(51, 65, 85, 0.75);
+    }
+    .proto-drawer-stage {
+      display: none; align-items: center; justify-content: center; gap: 12px;
+      padding: 8px 12px; background: radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.2), transparent 68%), rgba(2, 6, 23, 0.85);
+      border-bottom: 1px solid rgba(51, 65, 85, 0.65);
+    }
+    .proto-panel.mode-c .proto-drawer-stage { display: flex; }
+    .proto-drawer-stage svg { width: 108px; height: 102px; overflow: visible; }
+
+    .proto-log {
+      flex: 1; overflow-y: auto; padding: 10px 12px;
+      display: flex; flex-direction: column; gap: 8px;
+      min-height: 180px; font-size: 12px; line-height: 1.44;
+    }
+    .proto-msg { padding: 8px 10px; border-radius: 12px; max-width: 92%; word-break: break-word; }
+    .proto-msg.is-user { align-self: flex-end; background: #1e293b; color: #f8fafc; border: 1px solid #334155; }
+    .proto-msg.is-wiz { align-self: flex-start; background: rgba(30, 27, 75, 0.74); color: #e0e7ff; border: 1px solid rgba(99, 102, 241, 0.45); }
+    .proto-msg.is-owl { align-self: flex-start; background: rgba(69, 26, 3, 0.68); color: #fef3c7; border: 1px solid rgba(245, 158, 11, 0.5); }
+    .proto-msg-hdr { font-size: 10px; font-weight: 800; opacity: 0.86; margin-bottom: 3px; display: flex; align-items: center; gap: 5px; }
+    .proto-rehighlight {
+      margin-top: 6px; display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 8px; border-radius: 7px; font-size: 10.5px; font-weight: 700; cursor: pointer;
+      background: rgba(56, 189, 248, 0.16); color: #7dd3fc; border: 1px solid rgba(56, 189, 248, 0.45);
+    }
+    .proto-rehighlight:hover { background: rgba(56, 189, 248, 0.3); color: #ffffff; }
+
+    /* 0-Token Instant Typeahead Suggestions (UI Locators + Commands) */
+    .proto-suggest {
+      display: flex; flex-direction: column; gap: 3px;
+      padding: 6px 8px; background: rgba(15, 23, 42, 0.98);
+      border-top: 1px solid rgba(56, 189, 248, 0.35);
+      max-height: 150px; overflow-y: auto;
+    }
+    .proto-suggest-item {
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+      padding: 6px 8px; border-radius: 8px; border: 1px solid transparent;
+      background: rgba(2, 6, 23, 0.65); color: #e2e8f0;
+      font-size: 11.5px; text-align: left; cursor: pointer;
+    }
+    .proto-suggest-item:hover { border-color: #38bdf8; background: rgba(30, 41, 59, 0.95); }
+    .proto-suggest-kind {
+      font-size: 9.5px; font-weight: 800; padding: 2px 6px; border-radius: 5px; flex-shrink: 0;
+      background: rgba(56, 189, 248, 0.16); color: #7dd3fc;
+    }
+    .proto-suggest-kind.is-cmd { background: rgba(16, 185, 129, 0.16); color: #6ee7b7; }
+
+    .proto-form {
+      display: flex; align-items: center; gap: 6px; padding: 8px 10px;
+      background: rgba(15, 23, 42, 0.96); border-top: 1px solid rgba(51, 65, 85, 0.8);
+    }
+    .proto-input {
+      flex: 1; min-width: 0; background: #020617; color: #ffffff;
+      border: 1px solid #334155; border-radius: 10px; padding: 7px 10px; font-size: 12px; outline: none;
+    }
+    .proto-input:focus { border-color: #38bdf8; }
+    .proto-btn {
+      padding: 6px 10px; border-radius: 9px; border: 1px solid #475569;
+      background: #1e293b; color: #e2e8f0; font-size: 11px; font-weight: 800; cursor: pointer; flex-shrink: 0;
+    }
+    .proto-btn:hover { background: #334155; color: #ffffff; }
+    .proto-btn.is-primary { background: #4f46e5; border-color: #6366f1; color: #ffffff; }
+    .proto-btn.is-primary:hover { background: #6366f1; }
+
+    /* Auto-Minimized Guide Pill (when guide_ui highlights a target!) */
+    .proto-guide-pill {
+      position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); z-index: 10045;
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 8px 14px; border-radius: 9999px;
+      background: rgba(2, 6, 23, 0.96); border: 1.5px solid #38bdf8;
+      color: #f8fafc; font-size: 12px; font-weight: 700;
+      box-shadow: 0 14px 34px rgba(0, 0, 0, 0.78), 0 0 22px rgba(56, 189, 248, 0.35);
+      max-width: calc(100vw - 24px);
+    }
+
+    /* Live UI Guide Spotlight Overlay */
+    .rm-guide-spotlight {
+      position: fixed; z-index: 10040; pointer-events: none;
+      border-radius: 12px; border: 2.5px solid #38bdf8;
+      box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.26), 0 0 26px rgba(56, 189, 248, 0.8);
+      animation: rmGuidePulse 1.2s ease-in-out infinite;
+      transition: top 0.2s ease, left 0.2s ease, width 0.2s ease, height 0.2s ease;
+    }
+    @keyframes rmGuidePulse {
+      0%, 100% { box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.35), 0 0 22px rgba(56, 189, 248, 0.85); }
+      50% { box-shadow: 0 0 0 9px rgba(56, 189, 248, 0.08), 0 0 32px rgba(99, 102, 241, 0.95); }
+    }
+    .rm-guide-tip {
+      position: fixed; z-index: 10041;
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 6px 11px; border-radius: 10px;
+      background: #0f172a; color: #f8fafc; border: 1.5px solid #38bdf8;
+      font-size: 11.5px; font-weight: 800; box-shadow: 0 10px 26px rgba(0, 0, 0, 0.7);
+    }
+
+    @media (max-width: 767px) {
+      .live-corner-wrap { right: 12px; bottom: 14px; }
+      .live-corner-bubble { display: none; }
+      .proto-quickbar { right: 10px; left: 10px; bottom: 86px; width: auto; }
+      .proto-panel.mode-a { right: 8px; left: 8px; bottom: 86px; width: auto; max-width: none; max-height: 66dvh; }
+      .proto-panel.mode-c {
+        top: auto; left: 0; right: 0; bottom: 0; width: 100vw; max-height: 74dvh;
+        border-radius: 18px 18px 0 0; border-right: 1.5px solid rgba(99, 102, 241, 0.78);
+      }
+    }
   </style>
 </head>
 <body>
@@ -445,14 +664,150 @@
         </div>
       </div>
     </article>
+
+    <!-- =======================================================================
+         INTERACTIVE CONVERSATION & UI-GUIDE PROTOTYPE LAB
+         ======================================================================= -->
+    <section class="lab-section" id="ux-lab-card">
+      <div class="lab-hdr">
+        <div>
+          <strong style="font-size:15px;color:#fff;">💬 Conversation UX &amp; UI Locator Prototype Lab</strong>
+          <span style="font-size:12px;color:#94a3b8;margin-left:8px;">Pick a layout below, then click the bottom-right diorama (or test a scenario) to compare!</span>
+        </div>
+        <button type="button" class="pill-btn is-emerald" id="btn-proto-open">Open Selected Prototype</button>
+      </div>
+
+      <div class="lab-body">
+        <div class="lab-mode-grid" id="proto-mode-grid">
+          <button type="button" class="lab-mode-card" data-proto-mode="a">
+            <span class="lab-mode-title">Option A — Live Diorama Popover</span>
+            <span class="lab-mode-desc">Chat opens above the bottom-right diorama without hiding it. Both characters stay alive and react to every message.</span>
+          </button>
+          <button type="button" class="lab-mode-card is-active" data-proto-mode="b">
+            <span class="lab-mode-title">Option B — Quick Bar ➔ Full Chat <span class="lab-mode-tag">Recommended</span></span>
+            <span class="lab-mode-desc">Stage 1: slim command/search bar + speech bubble beside the diorama. Stage 2: one click (⤢) expands into full chat.</span>
+          </button>
+          <button type="button" class="lab-mode-card" data-proto-mode="c">
+            <span class="lab-mode-title">Option C — Right Side Drawer</span>
+            <span class="lab-mode-desc">Full-height side drawer on desktop (bottom sheet on mobile) with a dedicated large diorama stage at the top.</span>
+          </button>
+        </div>
+
+        <div class="lab-scenarios">
+          <span class="ctrl-label">Test Scenarios:</span>
+          <button type="button" class="pill-btn" data-demo="locate-buffs">📍 "Where are Active Buffs?" (Right side — tests auto-minimize!)</button>
+          <button type="button" class="pill-btn" data-demo="locate-hp">📍 "Show HP &amp; Rest" (Behind chat zone!)</button>
+          <button type="button" class="pill-btn" data-demo="locate-weapons">📍 "Where is Off-Hand / TWF?"</button>
+          <button type="button" class="pill-btn" data-demo="cmd-haste">⚡ Run: buff: Haste</button>
+          <button type="button" class="pill-btn is-amber" data-demo="ask-owl">🦉 Ask Chronicler about Iron Keep</button>
+        </div>
+
+        <div class="mock-sheet" id="mock-sheet-sandbox">
+          <div class="mock-card" id="mock-weapons" data-mock-target="weapons">
+            <div class="mock-card-hdr">
+              <span class="mock-card-title">⚔️ Weapon Sets &amp; Off-Hand Grip</span>
+              <span class="mock-badge">Combat • Left</span>
+            </div>
+            <span class="mock-sub">+2 Keen Scimitar (+14/+9, 1d6+6, 15-20/×2) • Two-Weapon Fighting toggle</span>
+          </div>
+          <div class="mock-card" id="mock-buffs" data-mock-target="buffs">
+            <div class="mock-card-hdr">
+              <span class="mock-card-title">🛡️ Active Buffs &amp; Defense Strip</span>
+              <span class="mock-badge">Combat • Right</span>
+            </div>
+            <span class="mock-sub" id="mock-buffs-list">Active: Mage Armor (+4 AC), Shield of Faith (+3 Deflection)</span>
+          </div>
+          <div class="mock-card" id="mock-spells" data-mock-target="spells">
+            <div class="mock-card-hdr">
+              <span class="mock-card-title">🔮 Spell Command Center</span>
+              <span class="mock-badge">Spells • Left</span>
+            </div>
+            <span class="mock-sub">Prepared: Fireball (DC 18), Haste (3rd), Mirror Image (2nd)</span>
+          </div>
+          <div class="mock-card" id="mock-hp" data-mock-target="hp">
+            <div class="mock-card-hdr">
+              <span class="mock-card-title">❤️ HP, Temp HP &amp; Rest Controls</span>
+              <span class="mock-badge is-rose" id="mock-hp-val">HP 68 / 68</span>
+            </div>
+            <span class="mock-sub">Short Rest • Long Rest • Next Round (advances buff durations)</span>
+          </div>
+          <div class="mock-card is-full" id="mock-notes" data-mock-target="notes">
+            <div class="mock-card-hdr">
+              <span class="mock-card-title">🦉 Campaign Notes &amp; Quest Logs (Chronicler Archive)</span>
+              <span class="mock-badge is-amber">Hub Notes</span>
+            </div>
+            <span class="mock-sub">Session 14 — Iron Keep Vault: Baroness Vael gave the party the Obsidian Signet; northern gate is guarded by 2 Stone Golems.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- MODE B (STAGE 1): QUICK COMMAND CAPSULE + SPEECH BUBBLE -->
+  <div class="proto-quickbar proto-hidden" id="proto-quickbar">
+    <div class="proto-quick-reply proto-hidden" id="proto-quick-reply"></div>
+    <div class="proto-suggest proto-hidden" id="proto-quick-suggest"></div>
+    <form class="proto-quick-input-wrap" id="proto-quick-form">
+      <input type="text" class="proto-input" id="proto-quick-input" autocomplete="off"
+             placeholder="Type a rule, command (hp -15, buff: Haste), or find UI (buffs, weapons)..." />
+      <button type="submit" class="proto-btn is-primary">Run</button>
+      <button type="button" class="proto-btn" id="btn-proto-expand" title="Expand to full chat">⤢ Chat</button>
+      <button type="button" class="proto-btn" id="btn-proto-quick-close" title="Close">✕</button>
+    </form>
+  </div>
+
+  <!-- MODE A (LIVE POPOVER) & MODE C (SIDE DRAWER) FULL CHAT PANEL -->
+  <div class="proto-panel mode-a proto-hidden" id="proto-panel" role="dialog" aria-label="Rule Master Conversation Prototype">
+    <div class="proto-hdr">
+      <div style="display:flex;align-items:center;gap:8px;min-width:0;">
+        <span style="font-size:15px;" id="proto-hdr-emoji">🧙‍♂️</span>
+        <div style="min-width:0;">
+          <div style="font-size:13px;font-weight:800;color:#fff;" id="proto-hdr-name">Rule Master</div>
+          <div style="font-size:10px;color:#94a3b8;" id="proto-hdr-sub">Live Diorama Mode • Auto-minimizes on UI Locate</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:4px;">
+        <button type="button" class="proto-btn" id="btn-proto-to-quick" title="Collapse to Quick Bar">⊟ Quick</button>
+        <button type="button" class="proto-btn" id="btn-proto-close" title="Close (Esc)">✕</button>
+      </div>
+    </div>
+    <div class="proto-drawer-stage" id="proto-drawer-stage">
+      <span class="slot"></span>
+      <div style="font-size:11px;color:#94a3b8;max-width:200px;line-height:1.35;">
+        <strong style="color:#f8fafc;display:block;margin-bottom:2px;">Side Drawer Stage</strong>
+        Live 3D Diorama animates here while you chat.
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:rgba(15,23,42,0.75);border-bottom:1px solid rgba(30,41,59,0.9);gap:6px;">
+      <div style="display:flex;gap:4px;">
+        <button type="button" class="pill-btn is-active" style="padding:3px 8px;font-size:10.5px;" data-proto-lock="auto">Auto</button>
+        <button type="button" class="pill-btn" style="padding:3px 8px;font-size:10.5px;" data-proto-lock="wiz">🧙‍♂️ Rules</button>
+        <button type="button" class="pill-btn is-amber" style="padding:3px 8px;font-size:10.5px;" data-proto-lock="owl">🦉 Familiar</button>
+      </div>
+      <span style="font-size:10px;color:#64748b;font-family:ui-monospace,monospace;" id="proto-mode-badge">Mode A</span>
+    </div>
+    <div class="proto-log" id="proto-log"></div>
+    <div class="proto-suggest proto-hidden" id="proto-panel-suggest"></div>
+    <form class="proto-form" id="proto-panel-form">
+      <input type="text" class="proto-input" id="proto-panel-input" autocomplete="off"
+             placeholder="Ask a rule, locate UI (type 'buffs', 'hp'), or run 'buff: Haste'..." />
+      <button type="submit" class="proto-btn is-primary">Send</button>
+    </form>
+  </div>
+
+  <!-- AUTO-MINIMIZED GUIDE PILL (SHOWN WHEN guide_ui SPOTLIGHTS A TARGET) -->
+  <div class="proto-guide-pill proto-hidden" id="proto-guide-pill">
+    <span id="proto-guide-pill-text">📍 Highlighting target...</span>
+    <button type="button" class="proto-btn is-primary" id="btn-guide-restore">Restore Chat</button>
+    <button type="button" class="proto-btn" id="btn-guide-clear">✕</button>
   </div>
 
   <!-- LIVE CORNER PREVIEW -->
   <div class="live-corner-wrap">
     <div class="live-corner-bubble" id="live-corner-bubble">
-      Rule Master &amp; perched Chronicler taking turns!
+      Click diorama to test selected conversation UX!
     </div>
-    <div class="sim-fab size-64" id="live-corner-fab" title="Click to pass turn between Rule Master & Chronicler">
+    <div class="sim-fab size-64" id="live-corner-fab" title="Click to open selected conversation prototype">
       <span class="slot"></span>
       <span class="sim-kbd">M</span>
     </div>
@@ -812,6 +1167,7 @@
       mountSlot('#fab-46 .slot');
       mountSlot('#fab-34 .slot');
       mountSlot('#live-corner-fab .slot');
+      mountSlot('#proto-drawer-stage .slot');
 
       let activeActor = 'wiz'; // STRICTLY 'wiz' OR 'owl' — never both!
       let wizPose = 'idle';
@@ -891,13 +1247,403 @@
       }
 
       document.getElementById('diorama-hero').addEventListener('click', triggerNextTurn);
-      document.getElementById('live-corner-fab').addEventListener('click', triggerNextTurn);
 
       document.getElementById('btn-auto-life').addEventListener('click', (ev) => {
         autoLife = !autoLife;
         ev.currentTarget.textContent = autoLife ? 'Alternating Auto-Turns: ON' : 'Alternating Auto-Turns: OFF';
         ev.currentTarget.classList.toggle('is-active', autoLife);
       });
+
+      // =========================================================================
+      // CONVERSATION & UI-GUIDE PROTOTYPE ENGINE (OPTIONS A / B / C)
+      // =========================================================================
+      function esc(str) {
+        return String(str || '')
+          .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+      }
+
+      let protoMode = 'b';     // 'a' | 'b' | 'c'
+      let protoState = 'closed'; // 'closed' | 'quick' | 'panel' | 'minimized'
+      let protoLock = 'auto';  // 'auto' | 'wiz' | 'owl'
+      let mockHp = 68;
+      let mockHasteOn = false;
+      let activeSpotlightCleanup = null;
+
+      const protoQuickbar = document.getElementById('proto-quickbar');
+      const protoQuickReply = document.getElementById('proto-quick-reply');
+      const protoQuickSuggest = document.getElementById('proto-quick-suggest');
+      const protoQuickInput = document.getElementById('proto-quick-input');
+      const protoQuickForm = document.getElementById('proto-quick-form');
+      const protoPanel = document.getElementById('proto-panel');
+      const protoLog = document.getElementById('proto-log');
+      const protoPanelSuggest = document.getElementById('proto-panel-suggest');
+      const protoPanelInput = document.getElementById('proto-panel-input');
+      const protoPanelForm = document.getElementById('proto-panel-form');
+      const protoGuidePill = document.getElementById('proto-guide-pill');
+      const protoGuidePillText = document.getElementById('proto-guide-pill-text');
+      const cornerBubble = document.getElementById('live-corner-bubble');
+      const cornerFab = document.getElementById('live-corner-fab');
+
+      const protoMessages = [
+        {
+          role: 'bot',
+          actor: 'wiz',
+          text: 'Welcome! Try typing "buffs", "hp", or "weapons" for 0-token instant UI locating, or run "buff: Haste" / "hp -12".'
+        }
+      ];
+
+      const INSTANT_ITEMS = [
+        { kind: 'locate', key: 'weapons', label: 'Locate: Weapon Sets & Off-Hand Grip', keywords: ['weapon', 'offhand', 'twf', 'scimitar', 'grip', 'silah'] },
+        { kind: 'locate', key: 'buffs', label: 'Locate: Active Buffs & Defense Strip', keywords: ['buff', 'defense', 'ac', 'armor', 'kalkan'] },
+        { kind: 'locate', key: 'spells', label: 'Locate: Spell Command Center', keywords: ['spell', 'fireball', 'dc', 'cast', 'buyu', 'büyü'] },
+        { kind: 'locate', key: 'hp', label: 'Locate: HP, Temp HP & Rest Controls', keywords: ['hp', 'rest', 'heal', 'round', 'can', 'dinlen'] },
+        { kind: 'locate', key: 'notes', label: 'Locate: Campaign Notes (Chronicler)', keywords: ['note', 'lore', 'iron keep', 'quest', 'not', 'chronicler'] },
+        { kind: 'cmd', cmd: 'buff: Haste', label: 'Command: buff: Haste (+1 Atk/AC/Ref, +30 ft)', keywords: ['haste', 'buff', 'speed'] },
+        { kind: 'cmd', cmd: 'hp -12', label: 'Command: hp -12 (Apply 12 damage)', keywords: ['hp', 'damage', 'hit', '-12'] }
+      ];
+
+      function triggerActorPose(actor, pose) {
+        activeActor = actor === 'owl' ? 'owl' : 'wiz';
+        wizPose = activeActor === 'wiz' ? (pose || 'astrolabe') : 'idle';
+        owlPose = activeActor === 'owl' ? (pose || 'found') : 'idle';
+        syncScene();
+      }
+
+      function clearMockSpotlight() {
+        if (typeof activeSpotlightCleanup === 'function') {
+          activeSpotlightCleanup();
+          activeSpotlightCleanup = null;
+        }
+        protoGuidePill.classList.add('proto-hidden');
+      }
+
+      function renderProtoUi() {
+        const isOwl = activeActor === 'owl';
+        document.querySelectorAll('[data-proto-mode]').forEach((card) => {
+          card.classList.toggle('is-active', card.getAttribute('data-proto-mode') === protoMode);
+        });
+
+        protoQuickbar.classList.toggle('proto-hidden', protoState !== 'quick');
+        protoPanel.classList.toggle('proto-hidden', protoState !== 'panel');
+        protoPanel.classList.toggle('mode-a', protoMode !== 'c');
+        protoPanel.classList.toggle('mode-c', protoMode === 'c');
+        protoPanel.classList.toggle('is-chronicler', isOwl);
+        protoQuickForm.classList.toggle('is-chronicler', isOwl);
+        protoQuickReply.classList.toggle('is-chronicler', isOwl);
+
+        // Option C hides the corner FAB while the full-height drawer is open (since drawer has its own large diorama stage)
+        // Options A & B KEEP the corner diorama LIVE and VISIBLE while talking!
+        const hideCornerFab = (protoMode === 'c' && protoState === 'panel');
+        cornerFab.classList.toggle('proto-hidden', hideCornerFab);
+        cornerBubble.classList.toggle('proto-hidden', protoState !== 'closed');
+
+        document.getElementById('btn-proto-to-quick').classList.toggle('proto-hidden', protoMode !== 'b');
+        document.getElementById('proto-mode-badge').textContent =
+          protoMode === 'a' ? 'Option A • Live Popover' : (protoMode === 'b' ? 'Option B • Expanded Chat' : 'Option C • Side Drawer');
+        document.getElementById('proto-hdr-emoji').textContent = isOwl ? '🦉' : '🧙‍♂️';
+        document.getElementById('proto-hdr-name').textContent = isOwl ? 'Chronicler (Owl Familiar)' : 'Rule Master';
+
+        document.querySelectorAll('[data-proto-lock]').forEach((b) => {
+          b.classList.toggle('is-active', b.getAttribute('data-proto-lock') === protoLock);
+        });
+
+        protoLog.innerHTML = protoMessages.map((m) => {
+          if (m.role === 'user') {
+            return '<div class="proto-msg is-user">' + esc(m.text) + '</div>';
+          }
+          const cls = m.actor === 'owl' ? 'is-owl' : 'is-wiz';
+          const who = m.actor === 'owl' ? '🦉 Chronicler' : '🧙‍♂️ Rule Master';
+          const btn = m.locateKey
+            ? '<div><button type="button" class="proto-rehighlight" data-rehighlight="' + esc(m.locateKey) + '">📍 Show again on sheet</button></div>'
+            : '';
+          return '<div class="proto-msg ' + cls + '"><div class="proto-msg-hdr">' + who + '</div><div>' + esc(m.text) + '</div>' + btn + '</div>';
+        }).join('');
+        protoLog.scrollTop = protoLog.scrollHeight;
+      }
+
+      function openPrototype() {
+        clearMockSpotlight();
+        protoState = (protoMode === 'b') ? 'quick' : 'panel';
+        renderProtoUi();
+        setTimeout(() => {
+          const inp = protoState === 'quick' ? protoQuickInput : protoPanelInput;
+          if (inp) inp.focus();
+        }, 40);
+      }
+
+      function closePrototype() {
+        clearMockSpotlight();
+        protoState = 'closed';
+        protoQuickSuggest.classList.add('proto-hidden');
+        protoPanelSuggest.classList.add('proto-hidden');
+        renderProtoUi();
+      }
+
+      function highlightMockTarget(targetKey, label) {
+        clearMockSpotlight();
+        const el = document.getElementById('mock-' + targetKey);
+        if (!el) return;
+
+        // Auto-minimize chat so the highlighted area (especially right-side Buffs / HP) is 100% unobstructed!
+        const prevState = protoState === 'closed' ? (protoMode === 'b' ? 'quick' : 'panel') : protoState;
+        protoState = 'minimized';
+        renderProtoUi();
+
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+        const ring = document.createElement('div');
+        ring.className = 'rm-guide-spotlight';
+        const tip = document.createElement('div');
+        tip.className = 'rm-guide-tip';
+        tip.innerHTML = '<span>📍 ' + esc(label) + ' — Click card or Esc</span>';
+        document.body.appendChild(ring);
+        document.body.appendChild(tip);
+
+        const position = () => {
+          const r = el.getBoundingClientRect();
+          const pad = 6;
+          ring.style.top = (r.top - pad) + 'px';
+          ring.style.left = (r.left - pad) + 'px';
+          ring.style.width = (r.width + pad * 2) + 'px';
+          ring.style.height = (r.height + pad * 2) + 'px';
+          const tipTop = r.top > 52 ? r.top - 40 : r.bottom + 10;
+          const tipLeft = Math.min(Math.max(12, r.left), Math.max(12, window.innerWidth - 280));
+          tip.style.top = tipTop + 'px';
+          tip.style.left = tipLeft + 'px';
+        };
+        position();
+        const t1 = setTimeout(position, 320);
+
+        const onTargetClick = () => {
+          clearMockSpotlight();
+          protoState = prevState;
+          renderProtoUi();
+        };
+        const onKey = (ev) => {
+          if (ev.key === 'Escape') {
+            clearMockSpotlight();
+            protoState = prevState;
+            renderProtoUi();
+          }
+        };
+
+        window.addEventListener('scroll', position, true);
+        window.addEventListener('resize', position);
+        el.addEventListener('click', onTargetClick);
+        window.addEventListener('keydown', onKey);
+
+        protoGuidePillText.textContent = '📍 Showing: ' + label;
+        protoGuidePill.classList.remove('proto-hidden');
+        protoGuidePill.dataset.restoreState = prevState;
+
+        activeSpotlightCleanup = () => {
+          clearTimeout(t1);
+          ring.remove();
+          tip.remove();
+          window.removeEventListener('scroll', position, true);
+          window.removeEventListener('resize', position);
+          el.removeEventListener('click', onTargetClick);
+          window.removeEventListener('keydown', onKey);
+        };
+      }
+
+      function pushReply(actor, pose, text, locateKey) {
+        triggerActorPose(actor, pose);
+        protoMessages.push({ role: 'bot', actor, text, locateKey: locateKey || '' });
+        if (protoState === 'quick') {
+          const who = actor === 'owl' ? '🦉 Chronicler: ' : '🧙‍♂️ Rule Master: ';
+          protoQuickReply.textContent = who + text;
+          protoQuickReply.classList.remove('proto-hidden');
+        }
+        renderProtoUi();
+      }
+
+      function runProtoQuery(raw) {
+        const q = String(raw || '').trim();
+        if (!q) return;
+        const low = q.toLowerCase();
+        protoMessages.push({ role: 'user', text: q });
+        protoQuickSuggest.classList.add('proto-hidden');
+        protoPanelSuggest.classList.add('proto-hidden');
+
+        if (low.includes('buff: haste') || low === 'haste') {
+          mockHasteOn = !mockHasteOn;
+          document.getElementById('mock-buffs-list').textContent = mockHasteOn
+            ? 'Active: Mage Armor (+4 AC), Shield of Faith (+3), Haste (+1 Atk/AC/Ref, +30 ft)'
+            : 'Active: Mage Armor (+4 AC), Shield of Faith (+3 Deflection)';
+          pushReply('wiz', 'ward', mockHasteOn ? 'Haste toggled ON (+1 Atk, +1 Dodge AC, +1 Reflex, +30 ft speed).' : 'Haste toggled OFF.', 'buffs');
+          return;
+        }
+        if (low.startsWith('hp ')) {
+          const delta = parseInt(low.replace(/[^-\d]/g, ''), 10) || -12;
+          mockHp = Math.max(0, Math.min(68, mockHp + delta));
+          document.getElementById('mock-hp-val').textContent = 'HP ' + mockHp + ' / 68';
+          pushReply('wiz', 'fireball', 'Applied ' + delta + ' HP. Current HP is now ' + mockHp + ' / 68.', 'hp');
+          return;
+        }
+        if (protoLock === 'owl' || /iron keep|note|lore|chronicler|vault|baroness|not/.test(low)) {
+          pushReply('owl', 'found', 'From Session 14 (Iron Keep Vault): Baroness Vael gave the party the Obsidian Signet, and the northern gate is guarded by 2 Stone Golems.', 'notes');
+          return;
+        }
+        if (/buff|defense|ac/.test(low)) {
+          pushReply('wiz', 'scroll', 'Your Active Buffs & Defense Strip is on the right side of Combat. Watch how the chat auto-minimizes so nothing blocks it!', 'buffs');
+          highlightMockTarget('buffs', 'Active Buffs & Defense Strip');
+          return;
+        }
+        if (/hp|rest|heal|round/.test(low)) {
+          pushReply('wiz', 'scroll', 'HP & Rest Controls sit in the bottom-right card. Chat folds into a slim pill so you can click it cleanly.', 'hp');
+          highlightMockTarget('hp', 'HP, Temp HP & Rest Controls');
+          return;
+        }
+        if (/weapon|offhand|twf|scimitar/.test(low)) {
+          pushReply('wiz', 'd20', 'Weapon Sets & Off-Hand Grip is highlighted on the left.', 'weapons');
+          highlightMockTarget('weapons', 'Weapon Sets & Off-Hand Grip');
+          return;
+        }
+        if (/spell|fireball|dc|cast/.test(low)) {
+          pushReply('wiz', 'astrolabe', 'Spell Command Center is highlighted below.', 'spells');
+          highlightMockTarget('spells', 'Spell Command Center');
+          return;
+        }
+        pushReply('wiz', 'astrolabe', '3.5e RAW: Ask me any rule, or type "buffs", "hp", "weapons", or "Iron Keep" to test live spotlight locating and Chronicler lore!');
+      }
+
+      function updateTypeahead(inputEl, suggestEl) {
+        const q = String(inputEl.value || '').trim().toLowerCase();
+        if (q.length < 2) {
+          suggestEl.classList.add('proto-hidden');
+          suggestEl.innerHTML = '';
+          return;
+        }
+        const matches = INSTANT_ITEMS.filter((item) =>
+          item.label.toLowerCase().includes(q) || item.keywords.some((k) => k.includes(q) || q.includes(k))
+        ).slice(0, 4);
+        if (!matches.length) {
+          suggestEl.classList.add('proto-hidden');
+          return;
+        }
+        suggestEl.innerHTML = matches.map((m, i) =>
+          '<button type="button" class="proto-suggest-item" data-suggest-kind="' + esc(m.kind) +
+          '" data-suggest-key="' + esc(m.key || '') + '" data-suggest-cmd="' + esc(m.cmd || '') +
+          '" data-suggest-label="' + esc(m.label) + '">' +
+          '<span>' + esc(m.label) + '</span>' +
+          '<span class="proto-suggest-kind' + (m.kind === 'cmd' ? ' is-cmd' : '') + '">' + (m.kind === 'cmd' ? '0-Token Cmd' : '0-Token Locate') + '</span>' +
+          '</button>'
+        ).join('');
+        suggestEl.classList.remove('proto-hidden');
+      }
+
+      // Event Wiring (0 inline events)
+      cornerFab.addEventListener('click', () => {
+        if (protoState === 'closed') openPrototype();
+        else closePrototype();
+      });
+
+      document.getElementById('btn-proto-open').addEventListener('click', openPrototype);
+      document.getElementById('btn-proto-close').addEventListener('click', closePrototype);
+      document.getElementById('btn-proto-quick-close').addEventListener('click', closePrototype);
+
+      document.getElementById('btn-proto-expand').addEventListener('click', () => {
+        protoState = 'panel';
+        renderProtoUi();
+        setTimeout(() => protoPanelInput.focus(), 30);
+      });
+      document.getElementById('btn-proto-to-quick').addEventListener('click', () => {
+        protoState = 'quick';
+        renderProtoUi();
+        setTimeout(() => protoQuickInput.focus(), 30);
+      });
+
+      document.getElementById('btn-guide-restore').addEventListener('click', () => {
+        const back = protoGuidePill.dataset.restoreState || (protoMode === 'b' ? 'quick' : 'panel');
+        clearMockSpotlight();
+        protoState = back;
+        renderProtoUi();
+      });
+      document.getElementById('btn-guide-clear').addEventListener('click', () => {
+        clearMockSpotlight();
+        protoState = 'closed';
+        renderProtoUi();
+      });
+
+      protoQuickInput.addEventListener('input', () => updateTypeahead(protoQuickInput, protoQuickSuggest));
+      protoPanelInput.addEventListener('input', () => updateTypeahead(protoPanelInput, protoPanelSuggest));
+
+      protoQuickForm.addEventListener('submit', (ev) => {
+        ev.preventDefault();
+        const v = protoQuickInput.value;
+        protoQuickInput.value = '';
+        runProtoQuery(v);
+      });
+      protoPanelForm.addEventListener('submit', (ev) => {
+        ev.preventDefault();
+        const v = protoPanelInput.value;
+        protoPanelInput.value = '';
+        runProtoQuery(v);
+      });
+
+      document.addEventListener('click', (ev) => {
+        const modeCard = ev.target.closest('[data-proto-mode]');
+        if (modeCard) {
+          protoMode = modeCard.getAttribute('data-proto-mode');
+          if (protoState !== 'closed') {
+            protoState = (protoMode === 'b') ? 'quick' : 'panel';
+          }
+          renderProtoUi();
+          return;
+        }
+        const lockBtn = ev.target.closest('[data-proto-lock]');
+        if (lockBtn) {
+          protoLock = lockBtn.getAttribute('data-proto-lock');
+          if (protoLock === 'owl') triggerActorPose('owl', 'hoot');
+          else if (protoLock === 'wiz') triggerActorPose('wiz', 'astrolabe');
+          renderProtoUi();
+          return;
+        }
+        const sug = ev.target.closest('[data-suggest-kind]');
+        if (sug) {
+          const kind = sug.getAttribute('data-suggest-kind');
+          protoQuickInput.value = '';
+          protoPanelInput.value = '';
+          protoQuickSuggest.classList.add('proto-hidden');
+          protoPanelSuggest.classList.add('proto-hidden');
+          if (kind === 'locate') {
+            const key = sug.getAttribute('data-suggest-key');
+            const lbl = sug.getAttribute('data-suggest-label').replace(/^Locate:\s*/i, '');
+            triggerActorPose(key === 'notes' ? 'owl' : 'wiz', key === 'notes' ? 'search' : 'scroll');
+            highlightMockTarget(key, lbl);
+          } else {
+            runProtoQuery(sug.getAttribute('data-suggest-cmd'));
+          }
+          return;
+        }
+        const rehl = ev.target.closest('[data-rehighlight]');
+        if (rehl) {
+          const key = rehl.getAttribute('data-rehighlight');
+          const item = INSTANT_ITEMS.find((i) => i.key === key);
+          highlightMockTarget(key, item ? item.label.replace(/^Locate:\s*/i, '') : key);
+          return;
+        }
+        const demo = ev.target.closest('[data-demo]');
+        if (demo) {
+          const d = demo.getAttribute('data-demo');
+          if (protoState === 'closed') openPrototype();
+          if (d === 'locate-buffs') runProtoQuery('Where are Active Buffs?');
+          else if (d === 'locate-hp') runProtoQuery('Show HP & Rest');
+          else if (d === 'locate-weapons') runProtoQuery('Where is Off-Hand / TWF?');
+          else if (d === 'cmd-haste') runProtoQuery('buff: Haste');
+          else if (d === 'ask-owl') runProtoQuery('Tell me about Iron Keep notes');
+        }
+      });
+
+      document.addEventListener('keydown', (ev) => {
+        if (ev.key === 'Escape' && protoState !== 'closed' && !activeSpotlightCleanup) {
+          closePrototype();
+        }
+      });
+
+      renderProtoUi();
 
       document.getElementById('btn-toggle-motion').addEventListener('click', (ev) => {
         const r = document.body.classList.toggle('is-reduced-motion');
