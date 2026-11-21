@@ -9461,7 +9461,10 @@
       const hdInput = document.getElementById('custom-class-hd');
       if (hdInput) hdInput.value = String(def.hd || 8);
       const babInput = document.getElementById('custom-class-bab');
-      if (babInput) babInput.value = String(def.bab || 0.75);
+      if (babInput) {
+        const bNum = Number(def.bab);
+        babInput.value = bNum >= 1 ? '1.0' : (bNum >= 0.7 ? '0.75' : (bNum > 0 ? '0.5' : '0.75'));
+      }
       const fortInput = document.getElementById('custom-class-good-fort');
       if (fortInput) fortInput.checked = (def.fort === 'good');
       const refInput = document.getElementById('custom-class-good-ref');
@@ -9508,9 +9511,9 @@
         const hdNum = Number(String(rawEntryObj.hd || rawEntryObj.hitDie || 8).replace(/\D/g, '')) || 8;
         const hdInput = document.getElementById('custom-class-hd');
         if (hdInput) hdInput.value = String(hdNum);
-        const babVal = Number(rawEntryObj.bab) || (String(rawEntryObj.bab || '').toLowerCase() === 'good' ? 1.0 : (String(rawEntryObj.bab || '').toLowerCase() === 'poor' ? 0.5 : 0.75));
+        const babVal = Number(rawEntryObj.bab) || (String(rawEntryObj.bab || '').toLowerCase() === 'good' || String(rawEntryObj.bab || '').toLowerCase() === 'full' ? 1.0 : (String(rawEntryObj.bab || '').toLowerCase() === 'poor' ? 0.5 : 0.75));
         const babInput = document.getElementById('custom-class-bab');
-        if (babInput) babInput.value = String(babVal);
+        if (babInput) babInput.value = babVal >= 1 ? '1.0' : (babVal >= 0.7 ? '0.75' : '0.5');
         const fortInput = document.getElementById('custom-class-good-fort');
         if (fortInput) fortInput.checked = String(rawEntryObj.fort || '').toLowerCase() === 'good';
         const refInput = document.getElementById('custom-class-good-ref');
