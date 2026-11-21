@@ -539,6 +539,8 @@
       const docSnap = (engine && typeof engine.stripDerivedFields === 'function')
         ? engine.stripDerivedFields(doc)
         : this._fastCloneHistoryVal(doc);
+      if (docSnap && Array.isArray(docSnap.weapons)) docSnap.weapons = this._fastCloneHistoryVal(docSnap.weapons);
+      if (docSnap && docSnap.activeModes && typeof docSnap.activeModes === 'object') docSnap.activeModes = this._fastCloneHistoryVal(docSnap.activeModes);
       const sessionSnap = this._fastCloneHistoryVal(session || createDefaultSession());
       let cachedDocJson = null;
       let cachedSessionJson = null;
@@ -943,6 +945,8 @@
         if (cloneDoc.abilities) cloneDoc.abilities = this._fastCloneHistoryVal(cloneDoc.abilities);
         if (cloneDoc.baseAbilities) cloneDoc.baseAbilities = this._fastCloneHistoryVal(cloneDoc.baseAbilities);
         if (Array.isArray(cloneDoc.buffs)) cloneDoc.buffs = this._fastCloneHistoryVal(cloneDoc.buffs);
+        if (Array.isArray(cloneDoc.weapons)) cloneDoc.weapons = this._fastCloneHistoryVal(cloneDoc.weapons);
+        if (cloneDoc.activeModes && typeof cloneDoc.activeModes === 'object') cloneDoc.activeModes = this._fastCloneHistoryVal(cloneDoc.activeModes);
         if (cloneDoc.spellSlots) cloneDoc.spellSlots = this._fastCloneHistoryVal(cloneDoc.spellSlots);
         const cloneSession = this._fastCloneHistoryVal(_state.session);
         const fakeState = { doc: cloneDoc, session: cloneSession, ui: _state.ui, sheet: _state.sheet };
@@ -962,17 +966,23 @@
             curDoc = resDoc;
             fakeState.doc = curDoc;
           }
-          if (act.type === 'combat/adjustPowerAttack' && act.payload && act.payload.value !== undefined && lastOut && typeof lastOut.value === 'number' && lastOut.value < Number(act.payload.value)) {
-            warnings.push(`Capped at BAB +${lastOut.value}`);
+          if (act.type === 'combat/adjustPowerAttack' && act.payload && act.payload.value !== undefined && lastOut && typeof lastOut.value === 'number') {
+            if (lastOut.featRequired) warnings.push(`${lastOut.featRequired} feat required`);
+            else if (lastOut.value < Number(act.payload.value)) warnings.push(`Capped at BAB +${lastOut.value}`);
+          }
+          if (act.type === 'combat/adjustCombatExpertise' && act.payload && act.payload.value !== undefined && lastOut && typeof lastOut.value === 'number') {
+            if (lastOut.featRequired) warnings.push(`${lastOut.featRequired} feat required`);
+            else if (lastOut.value < Number(act.payload.value)) warnings.push(`Capped at +${lastOut.value}`);
           }
         }
 
+        const beforeTac = engine.tacticalOptionsFromDoc ? engine.tacticalOptionsFromDoc(_state.doc) : {};
         const beforeSheet = _state.sheet || engine.deriveSheet(_state.doc, {
           masterDb: _state.doc.customDb || [],
           customDb: _state.doc.customDb || [],
           session: _state.session,
-          tactical: engine.tacticalOptionsFromDoc ? engine.tacticalOptionsFromDoc(_state.doc) : {}
-        }, engine.tacticalOptionsFromDoc ? engine.tacticalOptionsFromDoc(_state.doc) : {});
+          tactical: beforeTac
+        }, beforeTac);
 
         const afterTac = engine.tacticalOptionsFromDoc ? engine.tacticalOptionsFromDoc(curDoc) : {};
         const afterSheet = engine.deriveSheet(curDoc, {
@@ -986,6 +996,27 @@
           _projectPreviewState(_state.doc, beforeSheet),
           _projectPreviewState(curDoc, afterSheet)
         );
+        // Offense projector: diff active weapon attack & damage when weapon & evaluator exist
+        if (typeof engine.evaluateWeaponAttack === 'function' && Array.isArray(_state.doc.weapons) && _state.doc.weapons.length) {
+          const wBefore = _state.doc.weapons.find((w) => w && w.name === _state.doc.activeWeapon) || _state.doc.weapons[0];
+          const wAfter = (curDoc.weapons || []).find((w) => w && w.name === curDoc.activeWeapon) || (curDoc.weapons || [])[0];
+          if (wBefore && wAfter) {
+            try {
+              const evB = engine.evaluateWeaponAttack(_state.doc, wBefore, beforeTac);
+              const evA = engine.evaluateWeaponAttack(curDoc, wAfter, afterTac);
+              const atkB = evB && Array.isArray(evB.iteratives) ? evB.iteratives[0] : null;
+              const atkA = evA && Array.isArray(evA.iteratives) ? evA.iteratives[0] : null;
+              if (typeof atkB === 'number' && typeof atkA === 'number' && atkB !== atkA) {
+                diffs.push({ key: 'offense.attack', label: 'Attack', from: (atkB >= 0 ? '+' : '') + atkB, to: (atkA >= 0 ? '+' : '') + atkA });
+              }
+              const dmgB = evB && (evB.damageDisplay || evB.damageFormula || '');
+              const dmgA = evA && (evA.damageDisplay || evA.damageFormula || '');
+              if (dmgB && dmgA && dmgB !== dmgA) {
+                diffs.push({ key: 'offense.damage', label: 'Damage', from: dmgB, to: dmgA });
+              }
+            } catch (_) {}
+          }
+        }
         return { ok: true, aborted: null, outcome: lastOut, diffs, warnings, afterDoc: curDoc, afterSheet };
       } finally {
         _lastOutcome = savedOutcome;
@@ -1937,7 +1968,10 @@
   // Writes the weapon's `activeModeId`, `doc.activeModes[weaponId|name]` and, when the mode adds damage dice, its tactical rider.
   CharStore.registerReducer('combat/selectWeaponMode', (doc, action, stateObj) => {
     const payload = (action && action.payload) || {};
-    const wep = Array.isArray(doc.weapons) ? doc.weapons.find(w => w && w.name === payload.weaponName) : null;
+    const wep = Array.isArray(doc.weapons)
+      ? ((payload.weaponId ? doc.weapons.find(w => w && w.id === payload.weaponId) : null)
+        || doc.weapons.find(w => w && w.name === payload.weaponName))
+      : null;
     if (!wep) {
       setStoreOutcome(stateObj, { status: 'not_found' });
       return doc;
@@ -1961,37 +1995,56 @@
         });
       }
     }
-    setStoreOutcome(stateObj, { status: 'weapon_mode_set', weapon: wep.name, modeId: wep.activeModeId });
+    setStoreOutcome(stateObj, { status: 'weapon_mode_set', weapon: wep.name, weaponId: wep.id || '', modeId: wep.activeModeId });
     return doc;
   });
+
+  function _resolveTacticalLimits(doc) {
+    const rs = (typeof root !== 'undefined' && (root.DnD35Ruleset || root.RuleEngine?.rulesets?.dnd35)) || null;
+    if (rs && typeof rs.getTacticalLimits === 'function') return rs.getTacticalLimits(doc);
+    const bab = Math.max(0, Number(doc && doc.bab) || 0);
+    return { bab, hasPowerAttack: true, hasCombatExpertise: true, powerAttackMax: bab, combatExpertiseMax: Math.min(5, bab) };
+  }
 
   CharStore.registerReducer('combat/adjustPowerAttack', (doc, action, stateObj) => {
     ensureCombatActionStructures(doc);
     const payload = (action && action.payload) || {};
-    const bab = Math.max(0, Number(doc.bab) || 0);
+    const limits = _resolveTacticalLimits(doc);
     const cur = Number(doc.tactical.powerAttack) || 0;
-    const next = payload.value !== undefined
+    const requested = payload.value !== undefined
       ? Number(payload.value)
       : (cur + (Number(payload.delta) || 0));
-    doc.tactical.powerAttack = Math.max(0, Math.min(bab, next));
+    const maxCap = limits.powerAttackMax;
+    doc.tactical.powerAttack = Math.max(0, Math.min(maxCap, requested));
     // Power Attack is declared when attacking (PHB p.98); Total Defense forbids attacking (PHB p.142).
     if (doc.tactical.powerAttack > 0) doc.tactical.totalDefense = false;
-    setStoreOutcome(stateObj, { status: 'power_attack_adjusted', value: doc.tactical.powerAttack });
+    setStoreOutcome(stateObj, {
+      status: 'power_attack_adjusted',
+      value: doc.tactical.powerAttack,
+      max: maxCap,
+      featRequired: (!limits.hasPowerAttack && requested > 0) ? 'Power Attack' : ''
+    });
     return doc;
   });
 
   CharStore.registerReducer('combat/adjustCombatExpertise', (doc, action, stateObj) => {
     ensureCombatActionStructures(doc);
     const payload = (action && action.payload) || {};
-    const maxCap = Math.min(5, Math.max(0, Number(doc.bab) || 0));
+    const limits = _resolveTacticalLimits(doc);
     const cur = Number(doc.tactical.combatExpertise) || 0;
-    const next = payload.value !== undefined
+    const requested = payload.value !== undefined
       ? Number(payload.value)
       : (cur + (Number(payload.delta) || 0));
-    doc.tactical.combatExpertise = Math.max(0, Math.min(maxCap, next));
+    const maxCap = limits.combatExpertiseMax;
+    doc.tactical.combatExpertise = Math.max(0, Math.min(maxCap, requested));
     // Combat Expertise applies only when attacking in melee (PHB p.92); Total Defense forbids attacking (PHB p.142).
     if (doc.tactical.combatExpertise > 0) doc.tactical.totalDefense = false;
-    setStoreOutcome(stateObj, { status: 'combat_expertise_adjusted', value: doc.tactical.combatExpertise });
+    setStoreOutcome(stateObj, {
+      status: 'combat_expertise_adjusted',
+      value: doc.tactical.combatExpertise,
+      max: maxCap,
+      featRequired: (!limits.hasCombatExpertise && requested > 0) ? 'Combat Expertise' : ''
+    });
     return doc;
   });
 

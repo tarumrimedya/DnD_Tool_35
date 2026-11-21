@@ -1528,6 +1528,73 @@ const RuleEngine = {
     };
   },
 
+  /**
+   * Returns V3 weapon modes for a single weapon (from weapon.modes or compendium lookup).
+   */
+  getWeaponModes(character, weapon) {
+    if (!weapon || typeof weapon !== 'object') return [];
+    let modesList = Array.isArray(weapon.modes) && weapon.modes.length > 0 ? weapon.modes : [];
+    if (!modesList.length && typeof window !== 'undefined' && window.SrdCompendium && typeof window.SrdCompendium.getByName === 'function') {
+      const dbWep = window.SrdCompendium.getByName(weapon.name);
+      if (dbWep && Array.isArray(dbWep.modes)) modesList = dbWep.modes;
+    }
+    const activeId = weapon.activeModeId || (character && character.activeModes && character.activeModes[weapon.id || weapon.name]) || null;
+    return modesList.filter((m) => m && (m.id || m.name)).map((m) => {
+      const modeId = m.id || m.name;
+      const rollEf = Array.isArray(m.effects) ? m.effects.find((e) => e && e.type === 'roll' && (!e.kind || e.kind === 'Damage')) : null;
+      const dice = (rollEf && rollEf.dice) || m.dice || '';
+      const rider = dice ? {
+        id: modeId,
+        name: `${weapon.name}: ${m.name || m.label || modeId}`,
+        dice,
+        dmgType: (rollEf && rollEf.dmgType) || 'Energy'
+      } : null;
+      return {
+        scope: 'weapon',
+        ownerId: weapon.id || weapon.name,
+        ownerName: weapon.name,
+        modeId,
+        modeName: m.name || m.label || modeId,
+        active: activeId === modeId,
+        rider
+      };
+    });
+  },
+
+  /**
+   * Unified list of activatable modes (entry sheet modes + currently equipped weapon modes).
+   */
+  listActivatableModes(character) {
+    if (!character || typeof character !== 'object') return [];
+    const out = [];
+    if (typeof this.getActivationModes === 'function') {
+      const groups = this.getActivationModes(character) || [];
+      groups.forEach((g) => {
+        if (!g || !Array.isArray(g.modes)) return;
+        const activeId = (character.activeModes && character.activeModes[g.entryId]) || null;
+        g.modes.forEach((m) => {
+          if (!m || !m.id || m.id === 'off') return;
+          out.push({
+            scope: 'entry',
+            ownerId: g.entryId,
+            ownerName: g.entryName || g.entryId,
+            modeId: m.id,
+            modeName: m.label || m.name || m.id,
+            active: activeId === m.id
+          });
+        });
+      });
+    }
+    const weapons = Array.isArray(character.weapons) ? character.weapons : [];
+    const equippedNames = new Set([character.activeWeapon, character.activeOffHand].filter((n) => n && n !== 'None'));
+    weapons.forEach((w) => {
+      if (!w || !w.name) return;
+      if (equippedNames.size > 0 && !equippedNames.has(w.name)) return;
+      this.getWeaponModes(character, w).forEach((wm) => out.push(wm));
+    });
+    return out;
+  },
+
   resolveV3WhenCondition(kindRaw, textRaw, branchType, evalCtx = {}, character = null, entry = null, opts = {}) {
     const kind = String(kindRaw || '').trim();
     const kLow = kind.toLowerCase();

@@ -60,8 +60,22 @@ function makeTestChar() {
       { id: 'buff-haste', name: 'Haste', active: false, duration: 5, effects: [{ type: 'stat', mode: 'flat', targets: ['ac.dodge'], value: 1, btype: 'Dodge' }] }
     ],
     customDb: [{ id: 'custom-sentinel', name: 'Sentinel Entry', schemaVersion: 3, effects: [] }],
+    activeWeapon: 'Longsword',
+    weapons: [
+      {
+        id: 'wep-longsword-1',
+        name: 'Longsword',
+        damage: '1d8',
+        damageDice: '1d8',
+        handedness: 'One-Handed',
+        modes: [{ id: 'mode-flaming', name: 'Flaming', effects: [{ type: 'roll', kind: 'Damage', dice: '1d6', dmgType: 'Fire' }] }]
+      }
+    ],
     inventory: [],
-    feats: [],
+    feats: [
+      { id: 'feat-power-attack', name: 'Power Attack' },
+      { id: 'feat-combat-expertise', name: 'Combat Expertise' }
+    ],
     levels: [{ className: 'Fighter' }, { className: 'Fighter' }, { className: 'Fighter' }, { className: 'Fighter' }, { className: 'Fighter' }]
   };
 }
@@ -176,6 +190,25 @@ function runCharStoreTests() {
   check(Store.getHistoryCounts().undo === undoBefore, 'previewDispatch must NEVER mutate undo stack');
   check(ctx.getSaveCount() === 0, 'previewDispatch must NEVER call saveStateToStorage');
   check(deepEqual(Store.getLastOutcome(), sentinelOutcome), 'previewDispatch must preserve getLastOutcome()');
+
+  // 5. S2-pre/S2: getTacticalLimits (PA/CE feat gating), weaponId selectWeaponMode, offense projector
+  const noFeatChar = makeTestChar();
+  noFeatChar.feats = [];
+  Store.replaceDoc(noFeatChar, { skipHistory: true, persist: false });
+  const limitsNoFeat = ctx.DnD35Ruleset.getTacticalLimits(Store.getDoc());
+  check(limitsNoFeat.powerAttackMax === 0 && limitsNoFeat.combatExpertiseMax === 0,
+    'getTacticalLimits must lock PA & CE to 0 when character lacks the feats');
+  Store.dispatch({ type: 'combat/adjustPowerAttack', payload: { value: 3 } });
+  check(Store.getDoc().tactical.powerAttack === 0 && Store.getLastOutcome().featRequired === 'Power Attack',
+    'combat/adjustPowerAttack must clamp to 0 and report featRequired when Power Attack feat is absent');
+  const pvNoFeat = Store.previewDispatch({ type: 'combat/adjustCombatExpertise', payload: { value: 2 } });
+  check(pvNoFeat.warnings.some((w) => /Combat Expertise feat required/i.test(w)),
+    'previewDispatch must warn when Combat Expertise feat is absent');
+
+  // weaponId match on combat/selectWeaponMode
+  Store.dispatch({ type: 'combat/selectWeaponMode', payload: { weaponId: 'wep-longsword-1', weaponName: 'WrongName', modeId: 'mode-flaming' } });
+  check(Store.getDoc().weapons[0].activeModeId === 'mode-flaming' && Store.getDoc().activeModes['wep-longsword-1'] === 'mode-flaming',
+    'combat/selectWeaponMode must resolve weapon by immutable weaponId before weaponName');
 
   const elapsedMs = Date.now() - startMs;
   if (failures.length > 0) {

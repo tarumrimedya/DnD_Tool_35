@@ -637,9 +637,15 @@
         text = `⚠️ ${plan.summary}`;
         badge = 'Blocked';
       }
-    } else if (['hp', 'toggle_buff', 'stat_adjust', 'next_round'].includes(parsed.command)) {
+    } else if (['hp', 'toggle_buff', 'stat_adjust', 'next_round', 'tactical_pa', 'tactical_ce', 'tactical_toggle', 'switch_weapon_set', 'toggle_mode'].includes(parsed.command)) {
       const plan = planSheetCommand(parsed, ch);
-      if (plan && plan.ok && Array.isArray(plan.actions) && plan.actions.length && root.CharStore && typeof root.CharStore.previewDispatch === 'function') {
+      if (plan && plan.ok && plan.ambiguous) {
+        text = plan.summary;
+        badge = 'Choose';
+      } else if (plan && plan.ok && plan.noop) {
+        text = plan.summary;
+        badge = 'No-op';
+      } else if (plan && plan.ok && Array.isArray(plan.actions) && plan.actions.length && root.CharStore && typeof root.CharStore.previewDispatch === 'function') {
         const pv = root.CharStore.previewDispatch(plan.actions);
         if (pv && pv.ok) {
           const parts = pv.diffs.slice(0, 4).map((d) => `${d.label} ${d.from} → ${d.to}`);
@@ -653,6 +659,7 @@
             const expiring = (ch.buffs || []).filter((b) => b && b.active !== false && Number(b.roundsLeft) === 1).map((b) => b.name);
             if (expiring.length) parts.push(`Expires: ${expiring.slice(0, 2).join(', ')}`);
           }
+          if (Array.isArray(pv.warnings) && pv.warnings.length) parts.push(`⚠️ ${pv.warnings[0]}`);
           if (plan.note) parts.push(plan.note);
           text = parts.length ? parts.join(' • ') : plan.label;
           badge = 'Apply';
@@ -802,6 +809,138 @@
         ok: true,
         actions: [{ type: 'combat/advanceRound', payload: {}, meta: { label: 'Next Round' } }],
         label: 'Next Round'
+      };
+    }
+
+    if (cmd === 'tactical_pa') {
+      const val = Math.max(0, parseInt(String(args ?? 0), 10) || 0);
+      return {
+        ok: true,
+        actions: [{ type: 'combat/adjustPowerAttack', payload: { value: val }, meta: { label: `Power Attack ${val}` } }],
+        label: `Power Attack ${val}`,
+        requested: val
+      };
+    }
+
+    if (cmd === 'tactical_ce') {
+      const val = Math.max(0, parseInt(String(args ?? 0), 10) || 0);
+      return {
+        ok: true,
+        actions: [{ type: 'combat/adjustCombatExpertise', payload: { value: val }, meta: { label: `Combat Expertise ${val}` } }],
+        label: `Combat Expertise ${val}`,
+        requested: val
+      };
+    }
+
+    if (cmd === 'tactical_toggle') {
+      const key = String(args || '').trim();
+      if (!['charge', 'flanking', 'fightingDefensively', 'totalDefense'].includes(key)) {
+        return { ok: false, summary: `Unknown tactical toggle "${key}".` };
+      }
+      const names = { charge: 'Charge', flanking: 'Flanking', fightingDefensively: 'Fighting Defensively', totalDefense: 'Total Defense' };
+      return {
+        ok: true,
+        actions: [{ type: 'combat/toggleTacticalMod', payload: { key }, meta: { label: `Toggle ${names[key]}` } }],
+        label: `Toggle ${names[key]}`,
+        tacticalKey: key,
+        tacticalName: names[key]
+      };
+    }
+
+    if (cmd === 'switch_weapon_set') {
+      const raw = String(args || '').trim();
+      const numM = raw.match(/^(\d+)$/);
+      let setNum = numM ? parseInt(numM[1], 10) : 0;
+      if (!setNum && raw) {
+        const low = raw.toLowerCase();
+        const sets = doc.tactical && doc.tactical.weaponSets;
+        const s1 = String(sets?.set1?.mainWeapon || doc.activeWeapon || '').toLowerCase();
+        const s2 = String(sets?.set2?.mainWeapon || '').toLowerCase();
+        if (s2 && s2.includes(low) && !s1.includes(low)) setNum = 2;
+        else if (s1 && s1.includes(low)) setNum = 1;
+      }
+      if (setNum !== 1 && setNum !== 2) {
+        return { ok: false, summary: `Specify weapon set 1 or 2 (or weapon name, e.g. "set 2").` };
+      }
+      return {
+        ok: true,
+        actions: [{ type: 'combat/switchWeaponSet', payload: { setNum, activeSets: [setNum] }, meta: { label: `Weapon Set ${setNum}` } }],
+        label: `Weapon Set ${setNum}`,
+        setNum
+      };
+    }
+
+    if (cmd === 'toggle_mode') {
+      const raw = String(args || '').trim();
+      if (!raw) return { ok: false, summary: 'Specify a mode name (e.g., mode Rage, mode Rage off).' };
+      const forceOff = /\s+off$/i.test(raw);
+      const clean = raw.replace(/\s+off$/i, '').trim();
+      const slashIdx = clean.indexOf('/');
+      const ownerFilter = slashIdx > 0 ? clean.slice(0, slashIdx).trim().toLowerCase() : '';
+      const modeQuery = (slashIdx > 0 ? clean.slice(slashIdx + 1) : clean).trim().toLowerCase();
+      const candidates = (root.RuleEngine && typeof root.RuleEngine.listActivatableModes === 'function')
+        ? root.RuleEngine.listActivatableModes(doc)
+        : [];
+      const scoped = ownerFilter
+        ? candidates.filter((c) => String(c.ownerName || '').toLowerCase().includes(ownerFilter))
+        : candidates;
+      const scored = scoped.map((c) => {
+        const mLow = String(c.modeName || '').toLowerCase();
+        const oLow = String(c.ownerName || '').toLowerCase();
+        let score = 0;
+        if (mLow === modeQuery) score = 300;
+        else if (mLow.startsWith(modeQuery)) score = 200;
+        else if (mLow.includes(modeQuery)) score = 120;
+        else if (oLow === modeQuery) score = 150;
+        else if (oLow.includes(modeQuery)) score = 80;
+        return { c, score };
+      }).filter((x) => x.score > 0).sort((a, b) => b.score - a.score);
+
+      if (!scored.length) {
+        return { ok: false, summary: `No active/available mode matched "${clean}".` };
+      }
+      const topScore = scored[0].score;
+      const tied = scored.filter((x) => x.score === topScore);
+      if (tied.length > 1) {
+        return {
+          ok: true,
+          ambiguous: true,
+          summary: `Multiple modes matched "${clean}" — pick one:`,
+          chips: tied.slice(0, 4).map((x) => ({
+            kind: 'cmd',
+            label: `${x.c.modeName} (${x.c.ownerName})`,
+            cmd: `mode ${x.c.ownerName}/${x.c.modeName}${forceOff ? ' off' : ''}`
+          }))
+        };
+      }
+      const pick = scored[0].c;
+      if (pick.scope === 'weapon') {
+        if (forceOff && !pick.active) {
+          return { ok: true, noop: true, summary: `${pick.modeName} (${pick.ownerName}) is already OFF.` };
+        }
+        return {
+          ok: true,
+          actions: [{
+            type: 'combat/selectWeaponMode',
+            payload: { weaponId: pick.ownerId, weaponName: pick.ownerName, modeId: pick.modeId, rider: pick.rider || null },
+            meta: { label: `Weapon Mode: ${pick.modeName}` }
+          }],
+          label: `${pick.modeName} (${pick.ownerName})`,
+          modePick: pick,
+          forceOff
+        };
+      }
+      const nextModeId = (forceOff || pick.active) ? null : pick.modeId;
+      return {
+        ok: true,
+        actions: [{
+          type: 'combat/setActiveMode',
+          payload: { entryId: pick.ownerId, modeId: nextModeId },
+          meta: { label: `Mode: ${pick.modeName}` }
+        }],
+        label: `${pick.modeName} (${nextModeId ? 'ON' : 'OFF'})`,
+        modePick: pick,
+        forceOff
       };
     }
 
@@ -1074,6 +1213,72 @@
         return { ok: true, summary: 'Undid last character action.' };
       }
       return { ok: false, summary: 'Nothing to undo.' };
+    },
+
+    async tactical_pa(args) {
+      const ch = _getChar();
+      if (!ch || !root.CharStore || typeof root.CharStore.dispatch !== 'function') return { ok: false, summary: 'No active character loaded.' };
+      const plan = planSheetCommand({ command: 'tactical_pa', args }, ch);
+      if (!plan || !plan.ok) return { ok: false, summary: (plan && plan.summary) || 'Invalid Power Attack value.' };
+      root.CharStore.dispatch(plan.actions[0]);
+      const out = root.CharStore.getLastOutcome ? root.CharStore.getLastOutcome() : null;
+      if (typeof root.patchCockpitDOM === 'function') root.patchCockpitDOM();
+      else if (typeof root.renderAll === 'function') root.renderAll({ skipRecompute: true });
+      if (out && out.featRequired) return { ok: false, summary: `Power Attack feat required (locked at 0).` };
+      const val = out ? out.value : plan.requested;
+      const capNote = val < plan.requested ? ` (capped at BAB +${val})` : '';
+      return { ok: true, summary: `Power Attack set to ${val}${capNote}.` };
+    },
+
+    async tactical_ce(args) {
+      const ch = _getChar();
+      if (!ch || !root.CharStore || typeof root.CharStore.dispatch !== 'function') return { ok: false, summary: 'No active character loaded.' };
+      const plan = planSheetCommand({ command: 'tactical_ce', args }, ch);
+      if (!plan || !plan.ok) return { ok: false, summary: (plan && plan.summary) || 'Invalid Combat Expertise value.' };
+      root.CharStore.dispatch(plan.actions[0]);
+      const out = root.CharStore.getLastOutcome ? root.CharStore.getLastOutcome() : null;
+      if (typeof root.patchCockpitDOM === 'function') root.patchCockpitDOM();
+      else if (typeof root.renderAll === 'function') root.renderAll({ skipRecompute: true });
+      if (out && out.featRequired) return { ok: false, summary: `Combat Expertise feat required (locked at 0).` };
+      const val = out ? out.value : plan.requested;
+      const capNote = val < plan.requested ? ` (capped at +${val})` : '';
+      return { ok: true, summary: `Combat Expertise set to ${val}${capNote}.` };
+    },
+
+    async tactical_toggle(args) {
+      const ch = _getChar();
+      if (!ch || !root.CharStore || typeof root.CharStore.dispatch !== 'function') return { ok: false, summary: 'No active character loaded.' };
+      const plan = planSheetCommand({ command: 'tactical_toggle', args }, ch);
+      if (!plan || !plan.ok) return { ok: false, summary: (plan && plan.summary) || 'Unknown tactical toggle.' };
+      root.CharStore.dispatch(plan.actions[0]);
+      const active = Boolean((_getChar() || ch).tactical?.[plan.tacticalKey]);
+      if (typeof root.patchCockpitDOM === 'function') root.patchCockpitDOM();
+      else if (typeof root.renderAll === 'function') root.renderAll({ skipRecompute: true });
+      return { ok: true, summary: `${plan.tacticalName} is now ${active ? 'ON' : 'OFF'}.` };
+    },
+
+    async switch_weapon_set(args) {
+      const ch = _getChar();
+      if (!ch || !root.CharStore || typeof root.CharStore.dispatch !== 'function') return { ok: false, summary: 'No active character loaded.' };
+      const plan = planSheetCommand({ command: 'switch_weapon_set', args }, ch);
+      if (!plan || !plan.ok) return { ok: false, summary: (plan && plan.summary) || 'Specify weapon set 1 or 2.' };
+      root.CharStore.dispatch(plan.actions[0]);
+      if (typeof root.patchCockpitDOM === 'function') root.patchCockpitDOM();
+      else if (typeof root.renderAll === 'function') root.renderAll({ skipRecompute: true });
+      return { ok: true, summary: `Switched to Weapon Set ${plan.setNum}.` };
+    },
+
+    async toggle_mode(args) {
+      const ch = _getChar();
+      if (!ch || !root.CharStore || typeof root.CharStore.dispatch !== 'function') return { ok: false, summary: 'No active character loaded.' };
+      const plan = planSheetCommand({ command: 'toggle_mode', args }, ch);
+      if (!plan || !plan.ok) return { ok: false, summary: (plan && plan.summary) || 'No matching mode found.' };
+      if (plan.ambiguous) return { ok: true, summary: plan.summary, quickChips: plan.chips };
+      if (plan.noop) return { ok: true, summary: plan.summary };
+      root.CharStore.dispatch(plan.actions[0]);
+      if (typeof root.patchCockpitDOM === 'function') root.patchCockpitDOM();
+      else if (typeof root.renderAll === 'function') root.renderAll({ skipRecompute: true });
+      return { ok: true, summary: `Mode updated: ${plan.label}.` };
     },
 
     async prompt_save() {
@@ -1864,6 +2069,23 @@
     const statM = q.match(/^\/?stat\s*:?\s+(.+)$/i);
     if (statM) return { command: 'stat_adjust', args: statM[1].trim() };
 
+    const paM = q.match(/^\/?(?:pa|power\s*attack)\s*:?\s*(\d+)$/i);
+    if (paM) return { command: 'tactical_pa', args: paM[1] };
+
+    const ceM = q.match(/^\/?(?:ce|combat\s*expertise)\s*:?\s*(\d+)$/i);
+    if (ceM) return { command: 'tactical_ce', args: ceM[1] };
+
+    if (/^\/?charge$/i.test(q)) return { command: 'tactical_toggle', args: 'charge' };
+    if (/^\/?flank(?:ing)?$/i.test(q)) return { command: 'tactical_toggle', args: 'flanking' };
+    if (/^\/?(?:fd|fighting\s+defensively)$/i.test(q)) return { command: 'tactical_toggle', args: 'fightingDefensively' };
+    if (/^\/?(?:td|total\s+defense)$/i.test(q)) return { command: 'tactical_toggle', args: 'totalDefense' };
+
+    const setM = q.match(/^\/?set\s*:?\s+(.+)$/i);
+    if (setM) return { command: 'switch_weapon_set', args: setM[1].trim() };
+
+    const modeM = q.match(/^\/?mode\s*:?\s+(.+)$/i);
+    if (modeM) return { command: 'toggle_mode', args: modeM[1].trim() };
+
     const tabM = q.match(/^\/?tab\s*:?\s+([a-z]+)$/i);
     if (tabM) return { command: 'switch_tab', args: tabM[1].trim() };
 
@@ -2293,8 +2515,8 @@
 
       /* Option B Stage 1: Quick Command Bar + Speech Bubble above live diorama */
       .rm-assist-quickbar {
-        position: fixed; right: 18px; bottom: 144px; z-index: 48;
-        width: min(440px, calc(100vw - 36px));
+        position: fixed; right: 14px; bottom: 144px; z-index: 48;
+        width: min(268px, calc(100vw - 24px));
         display: flex; flex-direction: column; gap: 7px;
         font-family: system-ui, -apple-system, sans-serif;
       }
@@ -2309,11 +2531,15 @@
       .rm-assist-quick-reply.is-hidden { display: none; }
       .rm-assist-quick-reply.is-chronicler { border-color: rgba(245, 158, 11, 0.85); color: #fef3c7; }
       .rm-assist-quick-form {
-        display: flex; align-items: center; gap: 5px; padding: 6px 8px;
+        display: flex; flex-direction: column; align-items: stretch; gap: 6px; padding: 7px 8px;
         border-radius: 14px; background: rgba(2, 6, 23, 0.96);
         border: 1.5px solid rgba(99, 102, 241, 0.82);
         box-shadow: 0 16px 38px rgba(0, 0, 0, 0.75); backdrop-filter: blur(10px);
       }
+      .rm-assist-quick-actions {
+        display: flex; align-items: center; gap: 5px;
+      }
+      .rm-assist-quick-actions .rm-assist-send { flex: 1; text-align: center; }
       .rm-assist-quickbar.is-chronicler .rm-assist-quick-form { border-color: rgba(245, 158, 11, 0.85); }
 
       /* 0-Token Instant Typeahead Suggestions (UI Locators + Commands) */
@@ -2628,7 +2854,7 @@
         .rm-assist-fab { right: 16px; bottom: 16px; width: 72px; height: 72px; }
         .rm-assist-fab-icon svg { width: 90px; height: 89px; margin-top: -8px; }
         .rm-assist-bubble { right: 102px; bottom: 32px; }
-        .rm-assist-quickbar { right: 16px; bottom: 104px; width: min(400px, calc(100vw - 32px)); }
+        .rm-assist-quickbar { right: 14px; bottom: 104px; width: min(268px, calc(100vw - 24px)); }
         .rm-assist-panel { right: 16px; bottom: 104px; max-height: 64dvh; }
       }
       @media (max-width: 767px) {
@@ -3160,7 +3386,15 @@
     { cmd: '/long rest', desc: 'Complete 8-hour rest (HP, spell slots, daily uses)', mode: 'cmd', pages: ['sheet'] },
     { cmd: '/short rest', desc: 'Encounter recovery (maneuvers & short cooldowns)', mode: 'cmd', pages: ['sheet'] },
     { cmd: '/roll init', desc: 'Roll Initiative (1d20 + Initiative modifier)', mode: 'cmd', pages: ['sheet'] },
-    { cmd: '/hp ', desc: 'Adjust HP (e.g. /hp -15, /hp +10, /hp +12 temp)', mode: 'fill', pages: ['sheet'] },
+    { cmd: '/hp ', desc: 'Adjust HP (e.g. /hp -15, /hp +10, /thp 12)', mode: 'fill', pages: ['sheet'] },
+    { cmd: '/pa ', desc: 'Set Power Attack penalty (e.g. /pa 3, /pa 0)', mode: 'fill', pages: ['sheet'] },
+    { cmd: '/ce ', desc: 'Set Combat Expertise penalty (e.g. /ce 2, /ce 0)', mode: 'fill', pages: ['sheet'] },
+    { cmd: '/charge', desc: 'Toggle Charge (+2 atk, -2 AC)', mode: 'cmd', pages: ['sheet'] },
+    { cmd: '/flank', desc: 'Toggle Flanking (+2 melee atk)', mode: 'cmd', pages: ['sheet'] },
+    { cmd: '/fd', desc: 'Toggle Fighting Defensively (-4 atk, +2/+3 dodge AC)', mode: 'cmd', pages: ['sheet'] },
+    { cmd: '/td', desc: 'Toggle Total Defense (+4 dodge AC, no attacks)', mode: 'cmd', pages: ['sheet'] },
+    { cmd: '/mode ', desc: 'Toggle Sheet or Weapon Mode (e.g. /mode Rage, /mode Rage off)', mode: 'fill', pages: ['sheet'] },
+    { cmd: '/set ', desc: 'Switch Weapon Set (e.g. /set 1, /set 2)', mode: 'fill', pages: ['sheet'] },
     { cmd: '/buff: ', desc: 'Toggle or add a buff (e.g. /buff: Haste)', mode: 'fill', pages: ['sheet'] },
     { cmd: '/cast: ', desc: 'Cast a spell (e.g. /cast: Fireball)', mode: 'fill', pages: ['sheet'] },
     { cmd: '/feat: ', desc: 'Add a feat (e.g. /feat: Power Attack)', mode: 'fill', pages: ['sheet'] },
@@ -3294,6 +3528,34 @@
         if (tpl.toLowerCase().startsWith(low) && tpl.length > raw.length) return tpl;
       }
     }
+    if (curPage === 'sheet') {
+      const sheetArgM = raw.match(/^(\/?(skill|check|cast|buff|use)\s*:?\s+)(.+)$/i);
+      if (sheetArgM) {
+        const prefix = sheetArgM[1];
+        const kind = sheetArgM[2].toLowerCase() === 'check' ? 'skill' : sheetArgM[2].toLowerCase();
+        const term = sheetArgM[3];
+        const chips = _getSheetPickerChips(kind, term);
+        const top = chips[0];
+        if (top && top.cmd) {
+          const targetName = top.cmd.replace(/^(?:skill|cast|buff|use)\s+/i, '');
+          if (targetName.toLowerCase().startsWith(term.toLowerCase()) && targetName.length > term.length) {
+            return prefix + targetName;
+          }
+        }
+      }
+      const modeGhostM = raw.match(/^(\/?mode\s*:?\s+)(.+)$/i);
+      if (modeGhostM && root.RuleEngine && typeof root.RuleEngine.listActivatableModes === 'function') {
+        const prefix = modeGhostM[1];
+        const term = modeGhostM[2];
+        const modes = root.RuleEngine.listActivatableModes(_getChar());
+        const hit = modes.find((m) => String(m.modeName || '').toLowerCase().startsWith(term.toLowerCase()) && m.modeName.length > term.length);
+        if (hit) return prefix + hit.modeName;
+      }
+      const sheetQuick = ['full attack', 'long rest', 'short rest', 'charge', 'flank'];
+      for (const tpl of sheetQuick) {
+        if (tpl.startsWith(low) && tpl.length > raw.length) return tpl;
+      }
+    }
     if (low.startsWith('/')) {
       const hit = SLASH_PALETTE.find((it) => it.pages.includes(curPage) && it.cmd.toLowerCase().startsWith(low) && it.cmd.length > raw.length);
       if (hit) return hit.cmd;
@@ -3365,16 +3627,8 @@
     if (!railEl) return;
     const raw = String(inputEl ? inputEl.value : '').trim();
     if (!raw) {
-      const emptyChips = _getContextualEmptyChips();
-      if (!emptyChips.length) {
-        railEl.classList.add('is-hidden');
-        railEl.innerHTML = '';
-        return;
-      }
-      railEl.innerHTML = emptyChips.map((ch) =>
-        `<button type="button" class="rm-assist-rail-chip" data-rm-sug-kind="${_esc(ch.kind)}" data-rm-sug-cmd="${_esc(ch.cmd)}">${_esc(ch.label)}</button>`
-      ).join('');
-      railEl.classList.remove('is-hidden');
+      railEl.classList.add('is-hidden');
+      railEl.innerHTML = '';
       return;
     }
     if (detectPageType() === 'sheet') {
@@ -4041,10 +4295,12 @@
           <input id="rm-assist-quick-input" class="rm-assist-input" type="text" autocomplete="off" spellcheck="false"
                  placeholder="Ask how-to, or type / commands, # notes, ? guide..." />
         </div>
-        <button id="rm-assist-quick-send" class="rm-assist-send" type="submit">Run</button>
-        <button type="button" id="rm-assist-quick-guide" class="rm-assist-iconbtn" title="Interactive User Guide (0 tokens)">❓</button>
-        <button type="button" id="rm-assist-expand" class="rm-assist-iconbtn" title="Expand full chat">⤢ Chat</button>
-        <button type="button" id="rm-assist-quick-close" class="rm-assist-iconbtn" title="Close (Esc)">✕</button>
+        <div class="rm-assist-quick-actions">
+          <button id="rm-assist-quick-send" class="rm-assist-send" type="submit">Run</button>
+          <button type="button" id="rm-assist-quick-guide" class="rm-assist-iconbtn" title="Interactive User Guide (0 tokens)">❓</button>
+          <button type="button" id="rm-assist-expand" class="rm-assist-iconbtn" title="Expand full chat">⤢ Chat</button>
+          <button type="button" id="rm-assist-quick-close" class="rm-assist-iconbtn" title="Close (Esc)">✕</button>
+        </div>
       </form>
     `;
 

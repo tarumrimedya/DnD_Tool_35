@@ -986,6 +986,7 @@ function runDeriveSheetTests() {
 
   // Combat Expertise through the store (02_cleric_radiant_lvl9, BAB 6): -2 attack, +2 dodge AC
   const ceDoc = JSON.parse(JSON.stringify(f02Raw));
+  ceDoc.feats = (Array.isArray(ceDoc.feats) ? ceDoc.feats : []).concat([{ id: 'feat-combat-expertise', name: 'Combat Expertise' }]);
   ceDoc.tactical = Object.assign({}, ceDoc.tactical || {}, { combatExpertise: 0, fightingDefensively: false, totalDefense: false, charge: false });
   CharStore.replaceDoc(ceDoc, { skipHistory: true });
   CharStore.recompute({ combatExpertise: 0, fightingDefensively: false, totalDefense: false, charge: false });
@@ -1158,6 +1159,10 @@ function runDeriveSheetTests() {
   // Total Defense (PHB p.142) is a standard action with no attacks: it clears Combat Expertise and Power Attack,
   // and raising either one ends Total Defense (02_cleric_radiant_lvl9).
   const tdDoc = JSON.parse(JSON.stringify(f02Raw));
+  tdDoc.feats = (Array.isArray(tdDoc.feats) ? tdDoc.feats : []).concat([
+    { id: 'feat-power-attack', name: 'Power Attack' },
+    { id: 'feat-combat-expertise', name: 'Combat Expertise' }
+  ]);
   tdDoc.tactical = Object.assign({}, tdDoc.tactical || {}, { combatExpertise: 0, powerAttack: 0, fightingDefensively: false, totalDefense: false, charge: false });
   CharStore.replaceDoc(tdDoc, { skipHistory: true });
   CharStore.recompute({ combatExpertise: 0, fightingDefensively: false, totalDefense: false, charge: false });

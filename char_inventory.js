@@ -7726,7 +7726,7 @@
       // Store reducer: weapon.activeModeId, doc.activeModes[weaponId|name] and the damage rider (see combat/selectWeaponMode)
       CharStore.dispatch({
         type: 'combat/selectWeaponMode',
-        payload: { weaponName: wep.name, modeId, rider },
+        payload: { weaponId: wep.id || '', weaponName: wep.name, modeId, rider },
         label: `Weapon Mode: ${wep.name}`,
         meta: { label: `Weapon Mode: ${wep.name}`, cloudSync: false }
       });

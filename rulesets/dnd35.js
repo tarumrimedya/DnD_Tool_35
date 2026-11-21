@@ -453,6 +453,51 @@
         effective: eff.total,
         sources: [...act.srcs, ...eff.srcs]
       };
+    },
+    /**
+     * D&D 3.5e RAW tactical limits (PHB p.98 Power Attack, PHB p.92 Combat Expertise).
+     * Single source of truth for Store reducers, UI steppers, and Rule Master terminal.
+     */
+    getTacticalLimits(doc) {
+      const bab = Math.max(0, Number(doc && doc.bab) || 0);
+      if (!doc || typeof doc !== 'object') {
+        return { bab: 0, hasPowerAttack: false, hasCombatExpertise: false, powerAttackMax: 0, combatExpertiseMax: 0 };
+      }
+      const norm = (s) => String(s || '').replace(/^[^A-Za-z0-9]+(\[.*?\])?\s*/, '').trim().toLowerCase();
+      let hasPowerAttack = false;
+      let hasCombatExpertise = false;
+      const checkFeat = (f) => {
+        if (!f) return;
+        if (typeof f === 'object') {
+          const id = String(f.id || '').toLowerCase();
+          if (id === 'feat-power-attack') hasPowerAttack = true;
+          if (id === 'feat-combat-expertise') hasCombatExpertise = true;
+          const nm = norm(f.name || f.featName || '');
+          if (nm === 'power attack') hasPowerAttack = true;
+          if (nm === 'combat expertise') hasCombatExpertise = true;
+          if (Array.isArray(f.grantedCapabilities)) {
+            if (f.grantedCapabilities.includes('powerAttack')) hasPowerAttack = true;
+            if (f.grantedCapabilities.includes('combatExpertise')) hasCombatExpertise = true;
+          }
+        } else {
+          const nm = norm(f);
+          if (nm === 'power attack') hasPowerAttack = true;
+          if (nm === 'combat expertise') hasCombatExpertise = true;
+        }
+      };
+      if (Array.isArray(doc.feats)) doc.feats.forEach(checkFeat);
+      if (Array.isArray(doc.levelProgression)) {
+        doc.levelProgression.forEach((row) => {
+          if (row && Array.isArray(row.feats)) row.feats.forEach(checkFeat);
+        });
+      }
+      return {
+        bab,
+        hasPowerAttack,
+        hasCombatExpertise,
+        powerAttackMax: hasPowerAttack ? bab : 0,
+        combatExpertiseMax: hasCombatExpertise ? Math.min(5, bab) : 0
+      };
     }
   };
 

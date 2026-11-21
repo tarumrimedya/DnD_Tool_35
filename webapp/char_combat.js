@@ -4529,8 +4529,7 @@
 
       if (typeof RuleEngine !== 'undefined' && RuleEngine.evaluateWeaponAttack) {
         try {
-          const paEl = document.getElementById('power-attack-val');
-          const paVal = paEl ? (parseInt(paEl.value) || 0) : (Number(character.tactical?.powerAttack) || 0);
+          const paVal = Number(character.tactical?.powerAttack) || 0;
           const flanking = !!(character.tactical?.flanking);
           const charge = !!(character.tactical?.charge);
           const hg = character.tactical?.higherGround ?? false;
@@ -7448,11 +7447,21 @@
         physSummary.textContent = `${character.activeWeapon || 'No Weapon'}`;
       }
 
+      const tacLimits = (typeof DnD35Ruleset !== 'undefined' && typeof DnD35Ruleset.getTacticalLimits === 'function')
+        ? DnD35Ruleset.getTacticalLimits(character)
+        : null;
       const ceValEl = document.getElementById('combat-expertise-val');
       if (ceValEl) ceValEl.textContent = character.tactical?.combatExpertise || 0;
       const paInput = document.getElementById('power-attack-val');
-      if (paInput && document.activeElement !== paInput) {
-        paInput.value = Number(character.tactical?.powerAttack) || 0;
+      if (paInput) {
+        if (tacLimits) {
+          paInput.max = String(tacLimits.powerAttackMax);
+          paInput.disabled = tacLimits.powerAttackMax === 0;
+          paInput.title = tacLimits.hasPowerAttack ? `Power Attack (0–${tacLimits.powerAttackMax})` : 'Power Attack feat required';
+        }
+        if (document.activeElement !== paInput) {
+          paInput.value = Number(character.tactical?.powerAttack) || 0;
+        }
       }
 
       const aooBadge = document.getElementById('aoo-bonus-badge');
@@ -8168,8 +8177,7 @@
       const isDoubleWep = RuleEngine && RuleEngine.isDoubleWeapon ? RuleEngine.isDoubleWeapon(wep) : false;
       const isTwoHand = RuleEngine.isTwoHandedWeapon(wep);
       const hasOversizedWeaponFeat = RuleEngine ? RuleEngine.hasOversizedWeaponFeat(character) : false;
-      const paEl = document.getElementById('power-attack-val');
-      const paVal = paEl ? (parseInt(paEl.value) || 0) : (Number(character.tactical?.powerAttack) || 0);
+      const paVal = Number(character.tactical?.powerAttack) || 0;
       const flanking = !!(character.tactical?.flanking);
       const charge = !!(character.tactical?.charge);
       const hg = character.tactical?.higherGround ?? false;
@@ -10513,19 +10521,15 @@
     }
 
     function adjustPowerAttack(delta) {
-      const input = document.getElementById('power-attack-val');
-      if (!input) return;
-      const bab = Math.max(0, Number(character.bab) || 0);
-      const cur = parseInt(input.value) || 0;
-      const nextVal = Math.max(0, Math.min(bab, cur + delta));
-      input.value = nextVal;
       const wasTotalDefense = Boolean(character.tactical?.totalDefense);
       CharStore.dispatch({
         type: 'combat/adjustPowerAttack',
-        payload: { value: nextVal },
+        payload: { delta },
         label: 'Adjust Power Attack',
         meta: { label: 'Adjust Power Attack', cloudSync: false }
       });
+      const input = document.getElementById('power-attack-val');
+      if (input) input.value = Number(character.tactical?.powerAttack) || 0;
       if (wasTotalDefense && !character.tactical?.totalDefense) {
         patchCockpitDOM();
       } else {
@@ -11738,7 +11742,7 @@
       const previewEl = document.getElementById('save-profile-summary-preview');
       if (previewEl) {
         if (!isRanged) {
-          const pa = parseInt(document.getElementById('power-attack-val')?.value) || 0;
+          const pa = Number(character.tactical?.powerAttack) || 0;
           const fl = !!(character.tactical?.flanking);
           const ch = !!(character.tactical?.charge);
           const hg = character.tactical?.higherGround ?? false;
@@ -11798,7 +11802,7 @@
       };
 
       if (!isRanged) {
-        const pa = parseInt(document.getElementById('power-attack-val')?.value) || 0;
+        const pa = Number(character.tactical?.powerAttack) || 0;
         const fl = !!(character.tactical?.flanking);
         const ch = !!(character.tactical?.charge);
         const hg = character.tactical?.higherGround ?? false;
@@ -11857,8 +11861,14 @@
       }
 
       if (!isRanged) {
+        CharStore.dispatch({
+          type: 'combat/adjustPowerAttack',
+          payload: { value: Number(prof.powerAttack) || 0 },
+          label: 'Apply Saved Profile PA',
+          meta: { label: 'Apply Saved Profile PA', cloudSync: false }
+        });
         const paInput = document.getElementById('power-attack-val');
-        if (paInput) paInput.value = prof.powerAttack || 0;
+        if (paInput) paInput.value = Number(character.tactical?.powerAttack) || 0;
 
         (character.tacticalRiders || []).forEach(m => {
           m.active = (prof.tacticalRiders || []).includes(m.name);
@@ -15846,6 +15856,15 @@
         if (typeof onWeaponChange === 'function') onWeaponChange();
       });
       Actions.register('combat:recalc-offense', (el, data, event) => {
+        if (el && el.id === 'power-attack-val' && typeof CharStore !== 'undefined' && CharStore.dispatch) {
+          CharStore.dispatch({
+            type: 'combat/adjustPowerAttack',
+            payload: { value: parseInt(el.value, 10) || 0 },
+            label: 'Set Power Attack',
+            meta: { label: 'Set Power Attack', cloudSync: false }
+          });
+          el.value = Number(character.tactical?.powerAttack) || 0;
+        }
         if (typeof recalculateOffense === 'function') recalculateOffense();
       });
       Actions.register('combat:offhand-change', (el, data, event) => {
