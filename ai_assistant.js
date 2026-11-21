@@ -1246,6 +1246,8 @@
         background: rgba(56, 189, 248, 0.16); color: #7dd3fc;
       }
       .rm-assist-suggest-kind.is-cmd { background: rgba(16, 185, 129, 0.16); color: #6ee7b7; }
+      .rm-assist-suggest-kind.is-note { background: rgba(245, 158, 11, 0.18); color: #fcd34d; }
+      .rm-assist-suggest-sub { display: block; font-size: 10px; color: #94a3b8; font-weight: 500; }
       .rm-assist-rehighlight {
         font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 6px;
         background: rgba(56, 189, 248, 0.16); color: #7dd3fc;
@@ -1958,24 +1960,108 @@
     renderQuickReply();
   }
 
+  const SLASH_PALETTE = [
+    { cmd: '/long rest', desc: 'Complete 8-hour rest (HP, spell slots, daily uses)', mode: 'cmd', pages: ['sheet'] },
+    { cmd: '/short rest', desc: 'Encounter recovery (maneuvers & short cooldowns)', mode: 'cmd', pages: ['sheet'] },
+    { cmd: '/next round', desc: 'Advance 1 combat round (ticks buffs; alias: nr)', mode: 'cmd', pages: ['sheet'] },
+    { cmd: '/roll init', desc: 'Roll Initiative (1d20 + Initiative modifier)', mode: 'cmd', pages: ['sheet'] },
+    { cmd: '/hp ', desc: 'Adjust HP (e.g. /hp -15, /hp +10, /hp +12 temp)', mode: 'fill', pages: ['sheet'] },
+    { cmd: '/buff: ', desc: 'Toggle or add a buff (e.g. /buff: Haste)', mode: 'fill', pages: ['sheet'] },
+    { cmd: '/cast: ', desc: 'Cast a spell (e.g. /cast: Fireball)', mode: 'fill', pages: ['sheet'] },
+    { cmd: '/feat: ', desc: 'Add a feat (e.g. /feat: Power Attack)', mode: 'fill', pages: ['sheet'] },
+    { cmd: '/item: ', desc: 'Add gear from Compendium (e.g. /item: Longsword)', mode: 'fill', pages: ['sheet'] },
+    { cmd: '/craft: ', desc: 'Open Rule Crafter for custom V3 homebrew', mode: 'fill', pages: ['sheet', 'hub'] },
+    { cmd: '/note: ', desc: 'Save a campaign note via Owl Chronicler', mode: 'fill', pages: ['sheet', 'hub'] },
+    { cmd: '/guide', desc: 'Open the 0-Token Interactive User Guide', mode: 'cmd', pages: ['sheet', 'hub', 'crafter'] },
+    { cmd: '/undo', desc: 'Undo last character sheet change', mode: 'cmd', pages: ['sheet'] }
+  ];
+
+  function _getChroniclerTagMatches(rawTagQuery) {
+    const q = String(rawTagQuery || '').trim().toLowerCase();
+    const out = [];
+    const target = (root.HubNotes && typeof root.HubNotes.getActiveNotesTarget === 'function')
+      ? root.HubNotes.getActiveNotesTarget()
+      : null;
+    const notes = Array.isArray(target?.notesList) ? target.notesList : [];
+
+    // 1. Collect matching notes (0 tokens)
+    const needle = q.startsWith('#') ? q : ('#' + q);
+    const matchingNotes = notes.filter(n => {
+      if (!n) return false;
+      const hay = `${n.title || ''} ${n.body || n.content || ''} ${(n.tags || []).join(' ')}`.toLowerCase();
+      return q === '#' || hay.includes(needle) || hay.includes(q.replace(/^#/, ''));
+    }).slice(0, 5);
+
+    for (const n of matchingNotes) {
+      const title = String(n.title || (n.body || n.content || '').slice(0, 42) || 'Untitled Log').trim();
+      out.push({
+        kind: 'note',
+        noteId: n.id,
+        label: `📖 ${title}`,
+        sub: (n.tags && n.tags.length ? n.tags.slice(0, 3).join(' ') : 'Campaign Note')
+      });
+    }
+
+    // 2. Tag chips when typing just '#' or partial tag
+    const tagSet = new Set(['#quest', '#npc', '#location', '#loot']);
+    notes.forEach(n => (n.tags || []).forEach(t => { if (t) tagSet.add(String(t).toLowerCase()); }));
+    for (const tag of tagSet) {
+      if (q === '#' || tag.includes(q)) {
+        out.push({ kind: 'fill', cmd: tag + ' ', label: `🦉 Filter notes by ${tag}`, sub: '0-token Chronicler tag filter' });
+      }
+    }
+    return out.slice(0, 6);
+  }
+
   function _getInstantSuggestions(rawQuery) {
-    const q = String(rawQuery || '').trim().toLowerCase();
-    if (q.length < 2) return [];
+    const raw = String(rawQuery || '').trim();
+    const q = raw.toLowerCase();
     const curPage = detectPageType();
+
+    // Optional '/' Command Palette (works from the very first '/' character!)
+    if (q.startsWith('/')) {
+      const term = q.slice(1).trim();
+      return SLASH_PALETTE
+        .filter(item => item.pages.includes(curPage))
+        .filter(item => !term || item.cmd.toLowerCase().includes(term) || item.desc.toLowerCase().includes(term))
+        .slice(0, 7)
+        .map(item => ({
+          kind: item.mode,
+          cmd: item.cmd,
+          label: item.cmd.trim(),
+          sub: item.desc
+        }));
+    }
+
+    // Optional '#' Chronicler 0-Token Note Tag Filter
+    if (q.startsWith('#')) {
+      return _getChroniclerTagMatches(q);
+    }
+
+    // Optional '?' Pure UI Locator Mode (AppAtlas only)
+    if (q.startsWith('?')) {
+      const term = q.slice(1).trim();
+      const list = term.length >= 2 && root.AppAtlas && typeof root.AppAtlas.matchQuery === 'function'
+        ? root.AppAtlas.matchQuery(term, curPage, 6).filter(h => h.samePage).map(h => h.entry)
+        : _getAtlasEntries(curPage).slice(0, 6);
+      return list.map(e => ({ kind: 'locate', key: e.key, label: `Locate: ${e.label}`, sub: e.category }));
+    }
+
+    if (q.length < 2) return [];
     const out = [];
 
     if (root.AppAtlas && typeof root.AppAtlas.matchQuery === 'function') {
       const hits = root.AppAtlas.matchQuery(q, curPage, 4);
       for (const h of hits) {
         if (!h.samePage) continue;
-        out.push({ kind: 'locate', key: h.entry.key, label: `Locate: ${h.entry.label}` });
+        out.push({ kind: 'locate', key: h.entry.key, label: `Locate: ${h.entry.label}`, sub: h.entry.category });
       }
     }
 
     for (const item of _savedCommands) {
       const hay = `${item.label || ''} ${item.cmd || ''}`.toLowerCase();
       if (hay.includes(q)) {
-        out.push({ kind: 'cmd', cmd: item.cmd, label: `Run: ${item.cmd}` });
+        out.push({ kind: 'cmd', cmd: item.cmd, label: `Run: ${item.cmd}`, sub: item.label });
       }
     }
     return out.slice(0, 5);
@@ -1989,12 +2075,16 @@
       suggestEl.innerHTML = '';
       return;
     }
-    suggestEl.innerHTML = matches.map(m =>
-      `<button type="button" class="rm-assist-suggest-item" data-rm-sug-kind="${_esc(m.kind)}" data-rm-sug-key="${_esc(m.key || '')}" data-rm-sug-cmd="${_esc(m.cmd || '')}">` +
-      `<span>${_esc(m.label)}</span>` +
-      `<span class="rm-assist-suggest-kind${m.kind === 'cmd' ? ' is-cmd' : ''}">${m.kind === 'cmd' ? '0-Token Cmd' : '0-Token Locate'}</span>` +
-      `</button>`
-    ).join('');
+    suggestEl.innerHTML = matches.map(m => {
+      const badgeCls = m.kind === 'cmd' || m.kind === 'fill' ? ' is-cmd' : (m.kind === 'note' ? ' is-note' : '');
+      const badgeTxt = m.kind === 'cmd' ? 'Run'
+        : (m.kind === 'fill' ? 'Fill' : (m.kind === 'note' ? 'Chronicler' : 'Locate'));
+      const subHtml = m.sub ? `<span class="rm-assist-suggest-sub">${_esc(m.sub)}</span>` : '';
+      return `<button type="button" class="rm-assist-suggest-item" data-rm-sug-kind="${_esc(m.kind)}" data-rm-sug-key="${_esc(m.key || '')}" data-rm-sug-cmd="${_esc(m.cmd || '')}" data-rm-sug-note="${_esc(m.noteId || '')}">` +
+        `<span>${_esc(m.label)}${subHtml}</span>` +
+        `<span class="rm-assist-suggest-kind${badgeCls}">${badgeTxt}</span>` +
+        `</button>`;
+    }).join('');
     suggestEl.classList.remove('is-hidden');
   }
 
@@ -2089,11 +2179,31 @@
       return;
     }
 
-    // 2. 0ms / 0-token AppAtlas Natural-Language UI Guide Resolution
+    // 2. 0ms / 0-token '#' Chronicler Tag Search or '?' / Natural-Language AppAtlas Match
+    if (!opts.forceAi && text.startsWith('#')) {
+      const noteMatches = _getChroniclerTagMatches(text).filter(m => m.kind === 'note');
+      setPersonaVisual('chronicler', false, noteMatches.length ? 'found' : 'hoot');
+      _messages.push({ role: 'user', text });
+      _messages.push({
+        role: 'model',
+        persona: 'chronicler',
+        text: noteMatches.length
+          ? `Found ${noteMatches.length} campaign note(s) matching \`${text}\`:`
+          : `No campaign notes matched \`${text}\`. Save one with \`note: ... ${text}\`.`,
+        citations: noteMatches.map(m => ({ noteId: m.noteId, title: m.label.replace(/^📖\s*/, '') })),
+        askAiQuery: text
+      });
+      _saveSessionHistory();
+      renderMessages();
+      return;
+    }
+
     if (!opts.forceAi && _personaLock !== 'chronicler' && root.AppAtlas && typeof root.AppAtlas.matchQuery === 'function') {
-      const atlasHits = root.AppAtlas.matchQuery(text, detectPageType(), 2);
+      const isForcedGuide = text.startsWith('?');
+      const lookupText = isForcedGuide ? text.slice(1).trim() : text;
+      const atlasHits = root.AppAtlas.matchQuery(lookupText, detectPageType(), 2);
       const top = atlasHits[0];
-      if (top && top.confident) {
+      if (top && (top.confident || (isForcedGuide && top.samePage))) {
         const e = top.entry;
         const targetPersona = e.key === 'hub.notes' || e.key === 'hud.quest_notebook' ? 'chronicler' : 'rulemaster';
         setPersonaVisual(targetPersona, false, targetPersona === 'chronicler' ? 'found' : 'scroll');
@@ -2379,7 +2489,7 @@
       <div id="rm-assist-quick-suggest" class="rm-assist-suggest is-hidden"></div>
       <form id="rm-assist-quick-form" class="rm-assist-quick-form">
         <input id="rm-assist-quick-input" class="rm-assist-input" type="text" autocomplete="off" spellcheck="false"
-               placeholder="Ask how-to (long rest, offhand, buffs) or run: nr, hp -15..." />
+               placeholder="Ask how-to, or type / commands, # notes, ? guide..." />
         <button id="rm-assist-quick-send" class="rm-assist-send" type="submit">Run</button>
         <button type="button" id="rm-assist-quick-guide" class="rm-assist-iconbtn" title="Interactive User Guide (0 tokens)">❓</button>
         <button type="button" id="rm-assist-expand" class="rm-assist-iconbtn" title="Expand full chat">⤢ Chat</button>
@@ -2422,7 +2532,7 @@
       <div id="rm-assist-panel-suggest" class="rm-assist-suggest is-hidden"></div>
       <form id="rm-assist-form" class="rm-assist-form">
         <input id="rm-assist-input" class="rm-assist-input" type="text" autocomplete="off" spellcheck="false"
-               placeholder="Ask how-to (long rest, offhand, buffs) or run: nr, hp -15..." />
+               placeholder="Ask how-to, or type / commands, # notes, ? guide..." />
         <button id="rm-assist-send" class="rm-assist-send" type="submit">Run</button>
       </form>
     `;
@@ -2537,7 +2647,21 @@
         if (qInp) qInp.value = '';
         if (pInp) pInp.value = '';
         _hideAllSuggestions();
-        if (kind === 'locate') {
+        if (kind === 'fill') {
+          const cmd = sugBtn.getAttribute('data-rm-sug-cmd') || '';
+          const activeInp = (_viewState === 'panel' ? pInp : qInp) || qInp || pInp;
+          if (activeInp) {
+            activeInp.value = cmd;
+            activeInp.focus();
+            renderInstantSuggestions(activeInp, _viewState === 'panel' ? panel.querySelector('#rm-assist-panel-suggest') : quick.querySelector('#rm-assist-quick-suggest'));
+          }
+        } else if (kind === 'note') {
+          const noteId = sugBtn.getAttribute('data-rm-sug-note');
+          setPersonaVisual('chronicler', false, 'found');
+          if (noteId && root.HubNotes && typeof root.HubNotes.openNoteById === 'function') {
+            root.HubNotes.openNoteById(noteId);
+          }
+        } else if (kind === 'locate') {
           const key = sugBtn.getAttribute('data-rm-sug-key');
           if (key) {
             setPersonaVisual(key === 'hub.notes' ? 'chronicler' : 'rulemaster', false, key === 'hub.notes' ? 'search' : 'scroll');
