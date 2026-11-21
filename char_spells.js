@@ -225,8 +225,12 @@
     }
 
     function getCharacterBoonDisciplines(char = character) {
-      if (!char || !char.settings) return [];
+      if (!char) return [];
       const valid = ['spontaneous', 'prepared', 'divine', 'martial', 'warlock'];
+      const entryBoons = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getEntryCasterBoonDisciplines === 'function')
+        ? RuleEngine.getEntryCasterBoonDisciplines(char)
+        : [];
+      if (!char.settings) return Array.from(new Set(entryBoons));
       if (Array.isArray(char.settings.boonDisciplines)) {
         const list = char.settings.boonDisciplines
           .map(d => String(d || '').toLowerCase().trim())
@@ -234,12 +238,12 @@
         if ((char.settings.warlockBoon === true || String(char.settings.clMode || '').includes('Warlock Boon')) && !list.includes('warlock')) {
           list.push('warlock');
         }
-        return Array.from(new Set(list));
+        return Array.from(new Set(list.concat(entryBoons)));
       }
       const clMode = char.settings.clMode || 'Class Level';
       const isWarlockBoon = clMode.includes('Warlock Boon') || char.settings.warlockBoon === true;
       const isHomebrewActive = (clMode === 'Character Level (Homebrew)') || isWarlockBoon;
-      if (!isHomebrewActive) return [];
+      if (!isHomebrewActive) return Array.from(new Set(entryBoons));
 
       const out = [];
       if (isWarlockBoon) out.push('warlock');
@@ -260,7 +264,7 @@
         const fallback = valid.includes(rawCasterType) ? rawCasterType : (bestDisc || 'spontaneous');
         if (!out.includes(fallback)) out.push(fallback);
       }
-      return out;
+      return Array.from(new Set(out.concat(entryBoons)));
     }
 
     function isDisciplineHomebrew(disc, char = character) {

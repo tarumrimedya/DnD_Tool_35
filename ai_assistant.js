@@ -473,11 +473,21 @@
       const f = saves.fort?.total ?? saves.fort;
       const r = saves.ref?.total ?? saves.ref;
       const w = saves.will?.total ?? saves.will;
-      return [
-        { kind: 'cmd', label: `🛡️ Fortitude${typeof f === 'number' ? ' ' + _fmtSigned(f) : ''}`, cmd: 'save fort' },
-        { kind: 'cmd', label: `⚡ Reflex${typeof r === 'number' ? ' ' + _fmtSigned(r) : ''}`, cmd: 'save ref' },
-        { kind: 'cmd', label: `🧠 Will${typeof w === 'number' ? ' ' + _fmtSigned(w) : ''}`, cmd: 'save will' }
+      const all = [
+        { name: 'fortitude', label: `🛡️ Fortitude${typeof f === 'number' ? ' ' + _fmtSigned(f) : ''}`, cmd: 'save fort' },
+        { name: 'reflex', label: `⚡ Reflex${typeof r === 'number' ? ' ' + _fmtSigned(r) : ''}`, cmd: 'save ref' },
+        { name: 'will', label: `🧠 Will${typeof w === 'number' ? ' ' + _fmtSigned(w) : ''}`, cmd: 'save will' }
       ];
+      return all.filter((s) => !q || s.name.startsWith(q) || s.cmd.toLowerCase().includes(q)).map(({ label, cmd }) => ({ kind: 'cmd', label, cmd }));
+    }
+
+    if (kind === 'roll') {
+      const initB = sheet?.initiative?.total ?? sheet?.init;
+      const saves = _getSheetPickerChips('save', q);
+      const initChip = { name: 'initiative', kind: 'cmd', label: `⚡ Initiative${typeof initB === 'number' ? ' ' + _fmtSigned(initB) : ''}`, cmd: 'roll init' };
+      const out = saves.slice();
+      if (!q || 'initiative'.startsWith(q) || 'init'.startsWith(q)) out.push({ kind: 'cmd', label: initChip.label, cmd: initChip.cmd });
+      return out.slice(0, 4);
     }
 
     if (kind === 'skill') {
@@ -3529,6 +3539,18 @@
       }
     }
     if (curPage === 'sheet') {
+      const saveRollM = raw.match(/^(\/?(save|roll)\s*:?\s+)(.+)$/i);
+      if (saveRollM) {
+        const prefix = saveRollM[1];
+        const verb = saveRollM[2].toLowerCase();
+        const term = saveRollM[3];
+        const termLow = term.toLowerCase();
+        const targets = verb === 'roll'
+          ? ['fortitude', 'reflex', 'will', 'initiative']
+          : ['fortitude', 'reflex', 'will'];
+        const hit = targets.find((t) => t.startsWith(termLow) && t.length > term.length);
+        if (hit) return prefix + hit;
+      }
       const sheetArgM = raw.match(/^(\/?(skill|check|cast|buff|use)\s*:?\s+)(.+)$/i);
       if (sheetArgM) {
         const prefix = sheetArgM[1];
@@ -3632,7 +3654,7 @@
       return;
     }
     if (detectPageType() === 'sheet') {
-      const m = raw.match(/^\/?(hp|thp|save|skill|check|cast|buff|use)\b(?:\s*:?\s*(.*))?$/i);
+      const m = raw.match(/^\/?(hp|thp|save|roll|skill|check|cast|buff|use)\b(?:\s*:?\s*(.*))?$/i);
       if (m) {
         const rawKind = m[1].toLowerCase();
         const kind = rawKind === 'check' ? 'skill' : (rawKind === 'thp' ? 'hp' : rawKind);
@@ -4722,6 +4744,7 @@
 
     const onDebouncedInput = (inp, sug) => {
       if (detectPageType() === 'sheet') {
+        _renderGhost(inp);
         if (_sheetPreviewDebounceTimer) clearTimeout(_sheetPreviewDebounceTimer);
         _sheetPreviewDebounceTimer = setTimeout(() => {
           _sheetPreviewDebounceTimer = null;

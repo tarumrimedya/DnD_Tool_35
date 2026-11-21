@@ -15489,6 +15489,63 @@ const RuleEngine = {
    * Computes `casterStatsView`, `slotsByLevelView`, `spellsByLevelView`, and `maneuversView`
    * without mutating `w.spellcasting` or `w.tomeOfBattle`.
    */
+  /**
+   * Single source of truth: collects Spellcasting / Caster Boon disciplines granted by
+   * a character's active Race, Templates, Feats/Boons, or active Buffs via `progression.spellcastingChassis`.
+   */
+  getEntryCasterBoonDisciplines(char) {
+    const found = [];
+    if (!char || typeof char !== 'object') return found;
+    const mapChassisToDisc = (sc) => {
+      if (!sc || !sc.mode || sc.mode === 'none') return null;
+      const m = String(sc.mode || '').toLowerCase();
+      const tr = String(sc.tradition || '').toLowerCase();
+      if (tr === 'martial' || m.includes('maneuver') || m.includes('martial')) return 'martial';
+      if (m.includes('invocation') || m.includes('warlock')) return 'warlock';
+      if (tr === 'divine') return 'divine';
+      if (m.includes('prepared')) return 'prepared';
+      return 'spontaneous';
+    };
+    const inspectRec = (rec) => {
+      const sc = rec && rec.progression && (rec.progression.spellcastingChassis || rec.progression.caster);
+      const disc = mapChassisToDisc(sc);
+      if (disc && !found.includes(disc)) found.push(disc);
+    };
+    const customDb = Array.isArray(char.customDb) ? char.customDb : [];
+    const customEntries = (char.customEntries && typeof char.customEntries === 'object') ? Object.values(char.customEntries) : [];
+    const pool = customDb.concat(customEntries);
+    const comp = (typeof window !== 'undefined' && window.SrdCompendium) ? window.SrdCompendium : null;
+    const findByNameOrId = (ref) => {
+      if (!ref) return null;
+      if (typeof ref === 'object' && ref.progression && (ref.progression.spellcastingChassis || ref.progression.caster)) return ref;
+      const id = typeof ref === 'object' ? String(ref.id || '').toLowerCase() : '';
+      const nm = String(typeof ref === 'object' ? (ref.name || ref.featName || '') : ref).replace(/^[^A-Za-z0-9]+(\[.*?\])?\s*/, '').trim().toLowerCase();
+      const hit = pool.find((r) => r && ((id && String(r.id || '').toLowerCase() === id) || (nm && String(r.name || '').toLowerCase() === nm)));
+      if (hit) return hit;
+      if (comp && id && typeof comp.getById === 'function') {
+        const byId = comp.getById(id);
+        if (byId) return byId;
+      }
+      if (comp && nm && typeof comp.getByName === 'function') {
+        const byNm = comp.getByName(nm);
+        if (byNm) return byNm;
+      }
+      return null;
+    };
+    if (char.race) inspectRec(findByNameOrId(char.race));
+    if (Array.isArray(char.templates)) char.templates.forEach((t) => inspectRec(findByNameOrId(t)));
+    if (Array.isArray(char.feats)) char.feats.forEach((f) => inspectRec(findByNameOrId(f)));
+    if (Array.isArray(char.levelProgression)) {
+      char.levelProgression.forEach((row) => {
+        if (row && Array.isArray(row.feats)) row.feats.forEach((f) => inspectRec(findByNameOrId(f)));
+      });
+    }
+    if (Array.isArray(char.buffs)) {
+      char.buffs.forEach((b) => { if (b && b.active !== false) inspectRec(findByNameOrId(b)); });
+    }
+    return found;
+  },
+
   deriveSpellsView(w, workingDb = []) {
     if (!w || typeof w !== 'object') {
       return {
@@ -15609,40 +15666,7 @@ const RuleEngine = {
       return out;
     };
 
-    const collectEntryCasterBoonDisciplines = () => {
-      const found = [];
-      const mapChassisToDisc = (sc) => {
-        if (!sc || !sc.mode || sc.mode === 'none') return null;
-        const m = String(sc.mode || '').toLowerCase();
-        const tr = String(sc.tradition || '').toLowerCase();
-        if (tr === 'martial' || m.includes('maneuver') || m.includes('martial')) return 'martial';
-        if (m.includes('invocation') || m.includes('warlock')) return 'warlock';
-        if (tr === 'divine') return 'divine';
-        if (m.includes('prepared')) return 'prepared';
-        return 'spontaneous';
-      };
-      const inspectRec = (rec) => {
-        const sc = rec && rec.progression && (rec.progression.spellcastingChassis || rec.progression.caster);
-        const disc = mapChassisToDisc(sc);
-        if (disc && !found.includes(disc)) found.push(disc);
-      };
-      const customDb = Array.isArray(w.customDb) ? w.customDb : [];
-      const customEntries = (w.customEntries && typeof w.customEntries === 'object') ? Object.values(w.customEntries) : [];
-      const pool = customDb.concat(customEntries);
-      const findByNameOrId = (ref) => {
-        if (!ref) return null;
-        if (typeof ref === 'object' && ref.progression && (ref.progression.spellcastingChassis || ref.progression.caster)) return ref;
-        const id = typeof ref === 'object' ? String(ref.id || '').toLowerCase() : '';
-        const nm = String(typeof ref === 'object' ? (ref.name || '') : ref).replace(/^[^A-Za-z0-9]+(\[.*?\])?\s*/, '').trim().toLowerCase();
-        return pool.find((r) => r && ((id && String(r.id || '').toLowerCase() === id) || (nm && String(r.name || '').toLowerCase() === nm))) || null;
-      };
-      if (w.race) inspectRec(findByNameOrId(w.race));
-      if (Array.isArray(w.templates)) w.templates.forEach((t) => inspectRec(findByNameOrId(t)));
-      if (Array.isArray(w.feats)) w.feats.forEach((f) => inspectRec(findByNameOrId(f)));
-      return found;
-    };
-
-    const boonDisciplines = Array.from(new Set(getBoonDisciplines().concat(collectEntryCasterBoonDisciplines())));
+    const boonDisciplines = Array.from(new Set(getBoonDisciplines().concat(this.getEntryCasterBoonDisciplines(w))));
     const isDiscBoon = (disc) => {
       const target = String(disc || '').toLowerCase().trim();
       if (target === 'spontaneous') return boonDisciplines.includes('spontaneous') || boonDisciplines.includes('warlock');
