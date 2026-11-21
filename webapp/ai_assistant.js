@@ -685,6 +685,10 @@
     },
 
     async undo() {
+      if (detectPageType() === 'crafter' && root.ForgeSandbox && typeof root.ForgeSandbox.undoEntry === 'function') {
+        root.ForgeSandbox.undoEntry();
+        return { ok: true, summary: 'Undid last Rule Crafter edit.' };
+      }
       if (root.CharStore && typeof root.CharStore.canUndo === 'function' && root.CharStore.canUndo()) {
         root.CharStore.undo();
         if (typeof root.saveStateToStorage === 'function') root.saveStateToStorage(true);
@@ -692,6 +696,101 @@
         return { ok: true, summary: 'Undid last character action.' };
       }
       return { ok: false, summary: 'Nothing to undo.' };
+    },
+
+    async add_block(args) {
+      if (!root.ForgeSandbox || typeof root.ForgeSandbox.addPaletteBlock !== 'function') {
+        return { ok: false, summary: 'Rule Crafter is not active on this page.' };
+      }
+      const raw = String(typeof args === 'string' ? args : (args?.spec || args?.text || '')).trim();
+      const low = raw.toLowerCase();
+
+      // 1. Roll / Damage / Healing block (e.g. "1d6 fire damage", "2d8 healing")
+      const rollM = low.match(/\b(\d+d\d+(?:\s*[+-]\s*\d+)?)\s*(fire|cold|acid|electricity|sonic|force|positive|negative|slashing|piercing|bludgeoning|untyped)?\s*(damage|dmg|heal(?:ing)?)?\b/);
+      if (rollM) {
+        const dice = rollM[1].replace(/\s+/g, '');
+        const dmgType = rollM[2] || 'untyped';
+        const isHeal = Boolean(rollM[3] && rollM[3].startsWith('heal'));
+        root.ForgeSandbox.addPaletteBlock('effects', 'roll', {
+          role: isHeal ? 'heal' : 'damage',
+          dice,
+          dmgType: isHeal ? 'positive' : dmgType
+        });
+        return { ok: true, summary: `Added Roll block (${dice}${isHeal ? ' healing' : ` ${dmgType} damage`}).` };
+      }
+
+      // 2. Defense block: DR, SR, Energy Resistance, Immunity
+      const drM = low.match(/\bdr\s+(\d+)\s*\/\s*([a-z\s-]+)\b/);
+      if (drM) {
+        root.ForgeSandbox.addPaletteBlock('effects', 'defense', { defKind: 'dr', value: Number(drM[1]), bypass: drM[2].trim() });
+        return { ok: true, summary: `Added Defense block (DR ${drM[1]}/${drM[2].trim()}).` };
+      }
+      const srM = low.match(/\bsr\s+(\d+)\b/);
+      if (srM) {
+        root.ForgeSandbox.addPaletteBlock('effects', 'defense', { defKind: 'sr', value: Number(srM[1]) });
+        return { ok: true, summary: `Added Defense block (SR ${srM[1]}).` };
+      }
+      const resM = low.match(/\b(fire|cold|acid|electricity|sonic)\s+resist(?:ance)?\s+(\d+)\b/) || low.match(/\bresist(?:ance)?\s+(?:to\s+)?(fire|cold|acid|electricity|sonic)\s+(\d+)\b/);
+      if (resM) {
+        root.ForgeSandbox.addPaletteBlock('effects', 'defense', { defKind: 'resist', energy: resM[1], value: Number(resM[2]) });
+        return { ok: true, summary: `Added Defense block (${resM[1]} resistance ${resM[2]}).` };
+      }
+      const immM = low.match(/\bimmun(?:e|ity)\s+(?:to\s+)?([a-z\s]+?)(?:\s+block)?$/);
+      if (immM) {
+        root.ForgeSandbox.addPaletteBlock('effects', 'defense', { defKind: 'immunity', immunity: immM[1].trim() });
+        return { ok: true, summary: `Added Defense block (Immunity: ${immM[1].trim()}).` };
+      }
+
+      // 3. Resource block (e.g. "3/day", "5/encounter")
+      const resUseM = low.match(/\b(\d+)\s*\/\s*(day|encounter|week)\b/);
+      if (resUseM) {
+        const reset = resUseM[2] === 'encounter' ? 'encounter' : 'daily';
+        root.ForgeSandbox.addPaletteBlock('effects', 'resource', { max: Number(resUseM[1]), reset });
+        return { ok: true, summary: `Added Resource block (${resUseM[1]}/${resUseM[2]}).` };
+      }
+
+      // 4. Stat Modifier block (e.g. "+2 ac", "+2 deflection ac", "+4 enhancement str", "+2 fort save", "+1 attack")
+      const statM = low.match(/([+-]?\d+)\s+(?:(enhancement|deflection|dodge|natural|armor|shield|morale|luck|sacred|profane|insight|competence|resistance|circumstance|alchemical|size|racial|untyped)\s+)?(.+?)(?:\s+block)?$/);
+      if (statM) {
+        const value = Number(statM[1]);
+        const bonusType = statM[2] || 'untyped';
+        const tgtRaw = statM[3].replace(/\b(bonus|penalty|modifier|mod|block)\b/g, '').trim();
+        const TARGET_MAP = {
+          'ac': 'ac', 'armor class': 'ac',
+          'attack': 'atk.all', 'atk': 'atk.all', 'to hit': 'atk.all',
+          'melee': 'atk.melee', 'melee attack': 'atk.melee',
+          'ranged': 'atk.ranged', 'ranged attack': 'atk.ranged',
+          'damage': 'dmg.all', 'dmg': 'dmg.all',
+          'fort': 'save.fort', 'fortitude': 'save.fort', 'fort save': 'save.fort', 'fortitude save': 'save.fort',
+          'ref': 'save.ref', 'reflex': 'save.ref', 'ref save': 'save.ref', 'reflex save': 'save.ref',
+          'will': 'save.will', 'will save': 'save.will',
+          'saves': 'save.all', 'all saves': 'save.all', 'saving throws': 'save.all',
+          'init': 'init', 'initiative': 'init',
+          'hp': 'hp.max', 'max hp': 'hp.max', 'hit points': 'hp.max',
+          'speed': 'speed.land', 'land speed': 'speed.land',
+          'grapple': 'grapple', 'cl': 'casterLevel', 'caster level': 'casterLevel',
+          'str': 'ability.str', 'strength': 'ability.str',
+          'dex': 'ability.dex', 'dexterity': 'ability.dex',
+          'con': 'ability.con', 'constitution': 'ability.con',
+          'int': 'ability.int', 'intelligence': 'ability.int',
+          'wis': 'ability.wis', 'wisdom': 'ability.wis',
+          'cha': 'ability.cha', 'charisma': 'ability.cha'
+        };
+        const target = TARGET_MAP[tgtRaw];
+        if (target) {
+          root.ForgeSandbox.addPaletteBlock('effects', 'stat', { mode: 'flat', targets: [target], value, bonusType });
+          const sign = value >= 0 ? `+${value}` : `${value}`;
+          return { ok: true, summary: `Added Stat block (${sign}${bonusType !== 'untyped' ? ` ${bonusType}` : ''} to ${target}).` };
+        }
+      }
+
+      // 5. Generic blank block by type (e.g. "stat", "roll", "defense", "when", "resource", "attack")
+      const blankM = low.match(/\b(stat|roll|attack|defense|resource|when|effect|table|carrier)\b/);
+      if (blankM) {
+        root.ForgeSandbox.addPaletteBlock('effects', blankM[1]);
+        return { ok: true, summary: `Added blank ${blankM[1]} block.` };
+      }
+      return { ok: false, summary: `Could not parse block "${raw}". Try: "add +2 ac block", "add +4 str", "add 1d6 fire", or "add dr 5/magic".` };
     },
 
     async open_crafter(args) {
@@ -969,6 +1068,11 @@
 
     const noteM = q.match(/^\/?note\s*:?\s+(.+)$/i);
     if (noteM) return { command: 'add_note', args: noteM[1].trim() };
+
+    if (detectPageType() === 'crafter') {
+      const addBlkM = q.match(/^\/?(?:add|block)\s*:?\s+(.+)$/i);
+      if (addBlkM) return { command: 'add_block', args: addBlkM[1].trim() };
+    }
 
     return null;
   }
@@ -2158,7 +2262,8 @@
     { cmd: '/craft: ', desc: 'Open Rule Crafter for custom V3 homebrew', mode: 'fill', pages: ['sheet', 'hub'] },
     { cmd: '/note: ', desc: 'Save a campaign note via Owl Chronicler', mode: 'fill', pages: ['sheet', 'hub'] },
     { cmd: '/guide', desc: 'Open the 0-Token Interactive User Guide', mode: 'cmd', pages: ['sheet', 'hub', 'crafter'] },
-    { cmd: '/undo', desc: 'Undo last character sheet change', mode: 'cmd', pages: ['sheet'] }
+    { cmd: '/add ', desc: 'Add V3 block (e.g. /add +2 ac, /add 1d6 fire, /add dr 5/magic)', mode: 'fill', pages: ['crafter'] },
+    { cmd: '/undo', desc: 'Undo last change', mode: 'cmd', pages: ['sheet', 'crafter'] }
   ];
 
   function _getChroniclerTagMatches(rawTagQuery) {
