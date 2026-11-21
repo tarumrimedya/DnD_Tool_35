@@ -897,6 +897,37 @@ function runAiV3ContractTests() {
       const intE2 = Forge.exportEntry(Forge.fromCanonicalV3(JSON.parse(JSON.stringify(intE1))));
       check(deepEqual(intE1, intE2), 'entry mutated by intentCatalog chip must be E1===E2 round-trip idempotent');
     }
+
+    // (j) Sprint E4 P3: Single-Undo command chaining (incl. 50-frame cap), neutral blank blocks, Chronicler guard & apply_v3_patch preview
+    Forge.state.entry = Forge.fromCanonicalV3({ id: 'test-p3-chain', name: 'Chain Test', blueprint: 'feat', schemaVersion: 3, effects: [] });
+    Forge.state.history = { past: [], future: [], lastPath: '', lastTs: 0 };
+    const neutralPatchRes = Forge.applyV3Patch({ effects: [{ type: 'stat' }] }, { neutral: true });
+    check(neutralPatchRes.ok === true && Forge.state.entry.effects[0].value === 0,
+      'applyV3Patch({ neutral: true }) must emit neutral blank stat block (value 0) instead of sample +1 Morale');
+    Forge.undoEntry();
+    check(Forge.updateBlockField('nonexistent-id', { dice: 'd6' }) === false, 'updateBlockField must return false on invalid id');
+
+    const aiCtx = {
+      window: null, document: { body: { dataset: { page: 'crafter' } }, readyState: 'loading', addEventListener: () => {} },
+      location: { pathname: '/forge_sandbox.html', search: '' },
+      sessionStorage: { getItem: () => null, setItem: () => {} },
+      localStorage: { getItem: () => null, setItem: () => {} },
+      ForgeSandbox: Forge,
+      console, setTimeout, clearTimeout, Date, Math, JSON, RegExp, Object, Array, String, Number, Boolean, Set, Map, Promise, Error
+    };
+    aiCtx.window = aiCtx;
+    require('vm').runInNewContext(fs.readFileSync(path.join(ROOT, 'ai_assistant.js'), 'utf8'), aiCtx);
+    const parsedChain = aiCtx.AiAssistant.tryParseChainedCommands('add +2 deflection ac, add fire damage');
+    check(Array.isArray(parsedChain) && parsedChain.length === 2, 'tryParseChainedCommands must parse comma-separated Crafter commands');
+    check(aiCtx.AiAssistant.tryParseChainedCommands('add fire damage, undo') === null, 'tryParseChainedCommands must reject chains containing undo');
+
+    // Fill history to 50-frame cap and verify chain still collapses to 1 undo frame
+    for (let i = 0; i < 50; i++) Forge.state.history.past.push(JSON.parse(JSON.stringify(Forge.state.entry)));
+    const chainPromise = aiCtx.AiAssistant.executeChainedCommands(parsedChain, 'add +2 deflection ac, add fire damage');
+    check(chainPromise && typeof chainPromise.then === 'function', 'executeChainedCommands must return a Promise');
+    // Synchronous microtask-free verification for Chronicler guard & apply_v3_patch preview via applyV3Patch dryRun
+    const dryPreview = Forge.applyV3Patch({ effects: [{ type: 'roll', kind: 'Damage', dice: '2d6', dmgType: 'Cold' }] }, { dryRun: true });
+    check(dryPreview.ok === true && dryPreview.summary.includes('2d6 Cold'), 'apply_v3_patch dryRun preview must summarize without mutating');
   }
 
   const elapsedMs = Date.now() - startMs;

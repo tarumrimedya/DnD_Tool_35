@@ -6658,16 +6658,37 @@
       ? { effects: [patch] }
       : patch;
     const curBp = (S.entry && S.entry.blueprint) || 'feat';
+    const rawEffects = Array.isArray(normPatch.effects) ? normPatch.effects : [];
+    const preparedEffects = o.neutral
+      ? rawEffects.map((ef) => {
+          if (!ef || typeof ef !== 'object' || !ef.type || !NEUTRAL_BLOCK[ef.type]) return ef;
+          const wondrousCarrier = ef.type === 'carrier' && curBp === 'wondrous' ? { carrierMode: 'metamagic', costMode: 'rod', transform: 'quicken' } : null;
+          return Object.assign({}, clone(NEUTRAL_BLOCK[ef.type]), wondrousCarrier, ef);
+        })
+      : rawEffects;
     const wrapper = {
       schemaVersion: 3,
       blueprint: normPatch.blueprint || curBp,
-      effects: Array.isArray(normPatch.effects) ? normPatch.effects : [],
+      effects: preparedEffects,
       modes: Array.isArray(normPatch.modes) ? normPatch.modes : [],
       powers: Array.isArray(normPatch.powers) ? normPatch.powers : [],
       choices: Array.isArray(normPatch.choices) ? normPatch.choices : []
     };
     const imported = fromCanonicalV3(wrapper);
     const newEffects = (imported.effects || []).map(rekeyBlockIds);
+    // Avoid resource varKey collisions when appending multiple unnamed/default pools
+    if (mode === 'append' && S.entry && Array.isArray(S.entry.effects)) {
+      const usedKeys = new Set(S.entry.effects.filter((b) => b && b.type === 'resource' && b.varKey).map((b) => String(b.varKey)));
+      newEffects.forEach((b) => {
+        if (b && b.type === 'resource' && b.varKey && usedKeys.has(String(b.varKey))) {
+          const base = String(b.varKey).replace(/_\d+$/, '');
+          let n = 2;
+          while (usedKeys.has(`${base}_${n}`)) n++;
+          b.varKey = `${base}_${n}`;
+        }
+        if (b && b.type === 'resource' && b.varKey) usedKeys.add(String(b.varKey));
+      });
+    }
     const newPowers = (imported.powers || []).map((pw) => Object.assign({}, clone(pw), {
       id: uid('pw'),
       effects: (pw.effects || []).map(rekeyBlockIds)
@@ -6684,7 +6705,11 @@
       id: 'mode-' + uid('m').slice(2),
       effects: (m.effects || []).map(rekeyBlockIds)
     }));
-    const newChoices = Array.isArray(imported.choices) ? clone(imported.choices) : [];
+    const existingChoiceIds = (mode === 'append' && S.entry && Array.isArray(S.entry.choices))
+      ? new Set(S.entry.choices.filter((x) => x && x.id).map((x) => x.id))
+      : new Set();
+    const newChoices = (Array.isArray(imported.choices) ? clone(imported.choices) : [])
+      .filter((ch) => !(ch && ch.id && existingChoiceIds.has(ch.id)));
 
     const items = [];
     newEffects.forEach((b) => items.push(`+1 ${summarizeV3Block(b)}`));
@@ -6747,17 +6772,17 @@
     if (!S.entry || !blockId || !patchFields || typeof patchFields !== 'object') return false;
     const blk = (S.entry.effects || []).find((b) => b && b.id === blockId);
     if (!blk) return false;
-    pushUndo('chip:' + blockId);
     if (blk.type === 'roll' && typeof patchFields.dice === 'string') {
       const m = patchFields.dice.trim().match(/^(\d+)\s*d(\d+)(?:\s*([+-]\s*\d+))?$/i);
-      if (m) {
-        blk.count = parseInt(m[1], 10) || 1;
-        blk.die = 'd' + m[2];
-        blk.flat = m[3] ? (parseInt(m[3].replace(/\s+/g, ''), 10) || 0) : 0;
-        blk.scaling = 'flat';
-        delete blk.dice;
-      }
+      if (!m) return false;
+      pushUndo('chip:' + blockId);
+      blk.count = parseInt(m[1], 10) || 1;
+      blk.die = 'd' + m[2];
+      blk.flat = m[3] ? (parseInt(m[3].replace(/\s+/g, ''), 10) || 0) : 0;
+      if (!blk.scaling || blk.scaling === 'formula') blk.scaling = 'flat';
+      delete blk.dice;
     } else {
+      pushUndo('chip:' + blockId);
       Object.assign(blk, patchFields);
     }
     delete blk._src;
@@ -6879,7 +6904,6 @@
   }
   function scaffold(en) {
     if (en.blueprint === 'wondrous' && !en.powers.length) en.powers.push(blankPower('inline', { name: '', use: Object.assign(blankUse('perDay'), { n: 1 }) }));
-    if ((en.blueprint === 'feat' || en.blueprint === 'class') && !en.prereqs.length) en.prereqs.push({ id: uid('p'), alts: [ALT({ kind: en.blueprint === 'class' ? 'bab' : 'ability', min: en.blueprint === 'class' ? 5 : 13 })] });
     if (en.blueprint === 'race' && !en.effects.length) en.effects.push(BLK('stat', { targets: ['dex'], value: 0, btype: 'Racial' }));
     return en;
   }

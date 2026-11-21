@@ -70,7 +70,10 @@
     return typeof root.character !== 'undefined' ? root.character : null;
   }
 
+  let _suppressUndoDepth = 0;
+
   function _pushUndo(label) {
+    if (_suppressUndoDepth > 0) return;
     const ch = _getChar();
     if (!ch) return;
     try {
@@ -774,7 +777,7 @@
           summary: `Could not parse "${raw}". Try: "add +2 deflection ac", "add fire damage", "add 1d6 fire", "add dr 5/magic", or "add 3/day".`
         };
       }
-      const res = root.ForgeSandbox.applyV3Patch(parsed.patch, { dryRun: false, mode: 'append' });
+      const res = root.ForgeSandbox.applyV3Patch(parsed.patch, { dryRun: false, mode: 'append', neutral: Boolean(parsed.isBlank) });
       if (!res || !res.ok) {
         return { ok: false, summary: (res && res.summary) || 'Could not apply V3 block patch.' };
       }
@@ -1203,7 +1206,8 @@
     if (blankM) {
       return {
         patch: { effects: [{ type: blankM[1] }] },
-        usedDefault: false
+        usedDefault: false,
+        isBlank: true
       };
     }
     return null;
@@ -1429,11 +1433,13 @@
       `REGISTERED COMMANDS (execute directly like user click — no confirmation needed): ${cmdList}`,
       `UI GUIDE TARGET KEYS (for "how do I ...?" questions — switches tab & highlights the clickable UI control): ${guideKeys}`,
       'RESPONSE CONTRACT: Return STRICT valid JSON only (no markdown fences):',
-      '{"persona":"rulemaster"|"chronicler","reply":"concise helpful text","actions":[{"type":"exec_command","command":"cast_spell","args":{"name":"Fireball"}},{"type":"guide_ui","target":"combat.offhand","label":"Off-Hand Selector"},{"type":"open_crafter","blueprint":"weapon","prompt":"English 3.5e spec"},{"type":"add_note","title":"Short title","body":"Note content","tags":["#npc"]}],"citations":[{"noteId":"note_123","title":"Note Title"}]}',
+      '{"persona":"rulemaster"|"chronicler","reply":"concise helpful text","actions":[{"type":"exec_command","command":"cast_spell","args":{"name":"Fireball"}},{"type":"guide_ui","target":"combat.offhand","label":"Off-Hand Selector"},{"type":"open_crafter","blueprint":"weapon","prompt":"English 3.5e spec"},{"type":"apply_v3_patch","mode":"append","patch":{"effects":[{"type":"roll","kind":"Damage","dice":"1d6","dmgType":"Fire"}]}},{"type":"add_note","title":"Short title","body":"Note content","tags":["#npc"]}],"citations":[{"noteId":"note_123","title":"Note Title"}]}',
       'RULES:',
       '- When user asks HOW to do something in the app, include a "guide_ui" action with the best matching target key AND explain briefly in "reply".',
       '- When user commands an action (cast spell, take damage, heal, next round, toggle buff, add feat/item, take a note), include the exact "exec_command" or "add_note" action so it executes immediately.',
-      '- When user asks to create/forge a custom homebrew rule/item/spell/boon/monster, include an "open_crafter" action with an English 3.5e prompt.',
+      liveCtx.page === 'crafter'
+        ? '- When on Rule Crafter and user asks to add/build multi-block V3 mechanics on the current entry, emit an "apply_v3_patch" action with Pure Canonical V3 blocks (effects/modes/powers/choices). It is shown as a preview card with an [Apply] button before modifying the entry.'
+        : '- When user asks to create/forge a custom homebrew rule/item/spell/boon/monster, include an "open_crafter" action with an English 3.5e prompt.',
       '- Never invent character stats or campaign notes not present in context. Keep "reply" crisp (1-4 sentences).'
     ].join('\n');
   }
@@ -1448,6 +1454,8 @@
   let _messages = [];
   let _savedCommands = [];
   let _bubbleTimer = null;
+  const _pendingV3Patches = new Map();
+  let _pendingPatchSeq = 0;
 
   function _isErrorMessage(m) {
     if (!m) return false;
@@ -1472,7 +1480,20 @@
 
   function _saveSessionHistory() {
     try {
-      const clean = _messages.filter(m => m && !_isErrorMessage(m)).slice(-MAX_HISTORY);
+      const clean = _messages
+        .filter(m => m && !_isErrorMessage(m))
+        .slice(-MAX_HISTORY)
+        .map(m => {
+          if (!Array.isArray(m.execResults)) return m;
+          const stripped = m.execResults.map(r => {
+            if (!r || !r.pendingPatchId) return r;
+            const copy = Object.assign({}, r);
+            delete copy.pendingPatchId;
+            delete copy.pendingPatchMode;
+            return copy;
+          });
+          return Object.assign({}, m, { execResults: stripped });
+        });
       sessionStorage.setItem(STORAGE_HISTORY_KEY, JSON.stringify(clean));
     } catch (e) { /* quota ignore */ }
   }
@@ -1907,7 +1928,10 @@
       .rm-assist-input-wrap {
         position: relative; flex: 1; min-width: 0; display: flex; align-items: center;
       }
-      .rm-assist-input-wrap > .rm-assist-input { width: 100%; background: transparent; position: relative; z-index: 2; }
+      .rm-assist-input-wrap > .rm-assist-input { width: 100%; position: relative; z-index: 2; }
+      @media (min-width: 769px) {
+        .rm-assist-input-wrap > .rm-assist-input { background: transparent; }
+      }
       .rm-assist-ghost {
         position: absolute; inset: 0; z-index: 1; pointer-events: none;
         display: flex; align-items: center; overflow: hidden; white-space: pre;
@@ -2555,7 +2579,10 @@
           const rehl = r.ok && r.targetKey
             ? `<button type="button" class="rm-assist-rehighlight" data-rm-rehighlight="${_esc(r.targetKey)}">📍 Show on Page</button>`
             : '';
-          return badge + rehl;
+          const applyBtn = r.ok && r.pendingPatchId && _pendingV3Patches.has(r.pendingPatchId)
+            ? `<button type="button" class="rm-assist-run-btn" data-rm-apply-patch="${_esc(r.pendingPatchId)}">✓ Apply${r.pendingPatchMode === 'replace' ? ' (Replace)' : ''}</button>`
+            : '';
+          return badge + rehl + applyBtn;
         }).join('')
       : '';
     const chipsHtml = Array.isArray(m.quickChips) && m.quickChips.length > 0
@@ -2767,7 +2794,7 @@
     'add sr 15'
   ];
 
-  function _computeGhostCompletion(rawVal) {
+  function _computeGhostCompletion(rawVal, preLikeHits) {
     const raw = String(rawVal || '');
     if (!raw || raw.length > 48) return '';
     const low = raw.toLowerCase();
@@ -2778,7 +2805,7 @@
       if (likeM && likeM[2].trim().length >= 2) {
         const prefix = likeM[1];
         const term = likeM[2];
-        const hits = _searchLikeSync(term);
+        const hits = Array.isArray(preLikeHits) ? preLikeHits : _searchLikeSync(term);
         const top = hits.find((h) => h.hasV3 && String(h.entry.name || '').toLowerCase().startsWith(term.toLowerCase()));
         if (top && top.entry.name.length > term.length) {
           return prefix + top.entry.name;
@@ -2795,12 +2822,21 @@
     return '';
   }
 
-  function _renderGhost(inputEl) {
+  function _isGhostDesktopViewport() {
+    return typeof window !== 'undefined' && window.innerWidth > 768;
+  }
+
+  function _renderGhost(inputEl, preLikeHits) {
     if (!inputEl) return;
     const ghostEl = inputEl.parentElement && inputEl.parentElement.querySelector('.rm-assist-ghost');
     if (!ghostEl) return;
+    if (!_isGhostDesktopViewport()) {
+      inputEl.dataset.rmGhostFull = '';
+      ghostEl.innerHTML = '';
+      return;
+    }
     const raw = String(inputEl.value || '');
-    const full = _computeGhostCompletion(raw);
+    const full = _computeGhostCompletion(raw, preLikeHits);
     inputEl.dataset.rmGhostFull = full || '';
     if (!full || full.length <= raw.length) {
       ghostEl.innerHTML = '';
@@ -2810,15 +2846,64 @@
     ghostEl.innerHTML = `<span class="rm-assist-ghost-prefix">${_esc(raw)}</span><span class="rm-assist-ghost-suffix">${_esc(suffix)}</span><span class="rm-assist-ghost-tab">Tab</span>`;
   }
 
+  function _getContextualEmptyChips() {
+    const page = detectPageType();
+    if (page === 'crafter') {
+      const hasFx = Boolean(root.ForgeSandbox && root.ForgeSandbox.state && root.ForgeSandbox.state.entry && (root.ForgeSandbox.state.entry.effects || []).length > 0);
+      return hasFx
+        ? [
+            { kind: 'cmd', label: '📋 add like Dodge', cmd: 'add like Dodge' },
+            { kind: 'cmd', label: '🔋 add 3/day', cmd: 'add 3/day' },
+            { kind: 'cmd', label: '↩ undo', cmd: 'undo' }
+          ]
+        : [
+            { kind: 'cmd', label: '🔥 add fire damage', cmd: 'add fire damage' },
+            { kind: 'cmd', label: '📋 add like Flaming', cmd: 'add like Flaming' },
+            { kind: 'cmd', label: '🛡️ add +2 deflection ac', cmd: 'add +2 deflection ac' }
+          ];
+    }
+    if (page === 'hub') {
+      return [
+        { kind: 'fill', label: '📝 Quick Note', cmd: 'note: ' },
+        { kind: 'cmd', label: '📖 #npc Notes', cmd: '#npc' },
+        { kind: 'cmd', label: '❓ User Guide', cmd: '/guide' }
+      ];
+    }
+    const ch = _getChar();
+    const curHp = ch && ch.hp && typeof ch.hp === 'object' ? Number(ch.hp.current) : (ch && typeof ch.hp === 'number' ? ch.hp : null);
+    const maxHp = ch && ch.hp && typeof ch.hp === 'object' ? Number(ch.hp.max) : (ch && typeof ch.maxHp === 'number' ? ch.maxHp : null);
+    const lowHp = curHp !== null && maxHp !== null && !isNaN(curHp) && !isNaN(maxHp) && maxHp > 0 && (curHp / maxHp) < 0.7;
+    return [
+      { kind: 'cmd', label: '⚔️ Full Attack', cmd: 'full attack' },
+      { kind: 'cmd', label: '🛡️ Roll Save…', cmd: 'save' },
+      lowHp
+        ? { kind: 'cmd', label: '🏕️ Long Rest', cmd: 'long rest' }
+        : { kind: 'cmd', label: '⏭️ Next Round', cmd: 'nr' }
+    ];
+  }
+
   function _renderIntentChipRail(inputEl, railEl, showAll) {
     if (!railEl) return;
+    const raw = String(inputEl ? inputEl.value : '').trim();
+    if (!raw) {
+      const emptyChips = _getContextualEmptyChips();
+      if (!emptyChips.length) {
+        railEl.classList.add('is-hidden');
+        railEl.innerHTML = '';
+        return;
+      }
+      railEl.innerHTML = emptyChips.map((ch) =>
+        `<button type="button" class="rm-assist-rail-chip" data-rm-sug-kind="${_esc(ch.kind)}" data-rm-sug-cmd="${_esc(ch.cmd)}">${_esc(ch.label)}</button>`
+      ).join('');
+      railEl.classList.remove('is-hidden');
+      return;
+    }
     if (detectPageType() !== 'crafter') {
       railEl.classList.add('is-hidden');
       railEl.innerHTML = '';
       return;
     }
-    const raw = String(inputEl ? inputEl.value : '').trim();
-    if (!raw || /^\/?(?:add\s+like|like|copy)\s+/i.test(raw)) {
+    if (/^\/?(?:add\s+like|like|copy)\s+/i.test(raw)) {
       railEl.classList.add('is-hidden');
       railEl.innerHTML = '';
       return;
@@ -2829,7 +2914,7 @@
       railEl.innerHTML = '';
       return;
     }
-    const allHits = _matchIntents(raw, 12);
+    const allHits = _matchIntents(raw, 10);
     if (!allHits.length) {
       railEl.classList.add('is-hidden');
       railEl.innerHTML = '';
@@ -2845,25 +2930,27 @@
 
   function renderInstantSuggestions(inputEl, suggestEl) {
     if (!inputEl || !suggestEl) return;
-    _renderGhost(inputEl);
+    const rawVal = String(inputEl.value || '').trim();
+    const isCrafter = detectPageType() === 'crafter';
+    const likeM = isCrafter ? rawVal.match(/^\/?(?:add\s+like|like|copy)\s*:?\s+(.+)$/i) : null;
+    const likeHits = (likeM && likeM[1].trim().length >= 2) ? _searchLikeSync(likeM[1].trim()) : null;
+
+    _renderGhost(inputEl, likeHits);
     const railEl = inputEl.id === 'rm-assist-quick-input'
       ? _quickEl?.querySelector('#rm-assist-quick-rail')
       : _panelEl?.querySelector('#rm-assist-panel-rail');
     _renderIntentChipRail(inputEl, railEl, false);
 
-    const rawVal = String(inputEl.value || '').trim();
     let previewHtml = '';
-    if (detectPageType() === 'crafter' && root.ForgeSandbox && typeof root.ForgeSandbox.applyV3Patch === 'function') {
-      const likeM = rawVal.match(/^\/?(?:add\s+like|like|copy)\s*:?\s+(.+)$/i);
-      if (likeM && likeM[1].trim().length >= 2) {
-        const hits = _searchLikeSync(likeM[1].trim());
-        const top = hits.find((h) => h.hasV3);
+    if (isCrafter && root.ForgeSandbox && typeof root.ForgeSandbox.applyV3Patch === 'function') {
+      if (likeHits) {
+        const top = likeHits.find((h) => h.hasV3);
         if (top) {
           const patch = extractV3PatchFromEntry(top.entry);
           const dry = patch && root.ForgeSandbox.applyV3Patch(patch, { dryRun: true });
           if (dry && dry.ok) {
             previewHtml = `<button type="button" class="rm-assist-live-preview" data-rm-sug-kind="cmd" data-rm-sug-cmd="${_esc(`add like ${top.entry.name}`)}">` +
-              `<span>⚡ Copy ${top.entry.name}: ${_esc(dry.summary)}</span>` +
+              `<span>⚡ Copy ${_esc(top.entry.name)}: ${_esc(dry.summary)}</span>` +
               `<span class="rm-assist-suggest-kind is-cmd">Copy</span>` +
               `</button>`;
           }
@@ -2873,7 +2960,7 @@
         if (addM) {
           const parsed = parseCrafterAddSpec(addM[1].trim());
           if (parsed) {
-            const dry = root.ForgeSandbox.applyV3Patch(parsed.patch, { dryRun: true });
+            const dry = root.ForgeSandbox.applyV3Patch(parsed.patch, { dryRun: true, neutral: Boolean(parsed.isBlank) });
             if (dry && dry.ok) {
               const defNote = parsed.usedDefault && parsed.defaultNote ? ` (${parsed.defaultNote})` : '';
               previewHtml = `<button type="button" class="rm-assist-live-preview" data-rm-sug-kind="cmd" data-rm-sug-cmd="${_esc(rawVal)}">` +
@@ -2939,6 +3026,24 @@
         }
         const res = await COMMANDS.open_crafter({ blueprint: act.blueprint || 'feat', prompt: act.prompt || '' });
         results.push(res);
+      } else if (act.type === 'apply_v3_patch' && act.patch && typeof act.patch === 'object') {
+        if (isChronicler) {
+          results.push({ ok: false, summary: 'Blocked "apply_v3_patch" in Chronicler mode.' });
+          continue;
+        }
+        if (!root.ForgeSandbox || typeof root.ForgeSandbox.applyV3Patch !== 'function') {
+          results.push({ ok: false, summary: 'Rule Crafter is not active on this page.' });
+          continue;
+        }
+        const mode = act.mode === 'replace' ? 'replace' : 'append';
+        const dry = root.ForgeSandbox.applyV3Patch(act.patch, { dryRun: true, mode });
+        if (!dry || !dry.ok) {
+          results.push({ ok: false, summary: (dry && dry.summary) || 'Invalid V3 patch preview.' });
+          continue;
+        }
+        const patchId = `p3_${Date.now().toString(36)}_${++_pendingPatchSeq}_${Math.random().toString(36).slice(2, 6)}`;
+        _pendingV3Patches.set(patchId, { patch: act.patch, mode, summary: dry.summary });
+        results.push({ ok: true, summary: `Preview: ${dry.summary}`, pendingPatchId: patchId, pendingPatchMode: mode });
       } else if (act.type === 'add_note') {
         const res = await COMMANDS.add_note(act);
         results.push(res);
@@ -2967,11 +3072,84 @@
     [_quickEl?.querySelector('#rm-assist-quick-input'), _panelEl?.querySelector('#rm-assist-input')].forEach(_renderGhost);
   }
 
+  function tryParseChainedCommands(rawInput) {
+    const q = String(rawInput || '').trim();
+    if (!q || /^\/?(?:note|craft)\s*:?/i.test(q)) return null;
+    if (!/(?:,|;|\s+&&\s+)/.test(q)) return null;
+    const parts = q.split(/\s*(?:,|;|&&)\s*/).map((s) => s.trim()).filter(Boolean);
+    if (parts.length < 2 || parts.length > 6) return null;
+    const parsed = [];
+    for (const part of parts) {
+      const cmd = tryParseInstantCommand(part);
+      if (!cmd || !_hasCommand(cmd.command) || cmd.command === 'undo') return null;
+      parsed.push(cmd);
+    }
+    return parsed;
+  }
+
+  async function executeChainedCommands(steps, rawLabel) {
+    const isCrafter = detectPageType() === 'crafter';
+    const hasForge = isCrafter && root.ForgeSandbox && root.ForgeSandbox.state && root.ForgeSandbox.state.history;
+    const preForgeEntry = hasForge && root.ForgeSandbox.state.entry
+      ? JSON.parse(JSON.stringify(root.ForgeSandbox.state.entry))
+      : null;
+    const preForgeJson = preForgeEntry ? JSON.stringify(preForgeEntry) : '';
+    const preForgePastSnapshot = hasForge ? root.ForgeSandbox.state.history.past.slice() : null;
+
+    if (!isCrafter) _pushUndo(`Chain: ${rawLabel}`);
+    _suppressUndoDepth++;
+    const results = [];
+    try {
+      for (const step of steps) {
+        const res = await COMMANDS[step.command](step.args);
+        results.push(res || { ok: false, summary: `Failed: ${step.command}` });
+      }
+    } finally {
+      _suppressUndoDepth = Math.max(0, _suppressUndoDepth - 1);
+      if (hasForge && preForgeEntry && preForgePastSnapshot) {
+        const postJson = JSON.stringify(root.ForgeSandbox.state.entry);
+        if (postJson !== preForgeJson) {
+          const nextPast = preForgePastSnapshot.slice();
+          nextPast.push(preForgeEntry);
+          if (nextPast.length > 50) nextPast.shift();
+          root.ForgeSandbox.state.history.past = nextPast;
+          root.ForgeSandbox.state.history.future = [];
+        }
+      }
+    }
+    return results;
+  }
+
   async function handleSubmit(rawText, opts = {}) {
     const text = String(rawText || '').trim();
     if (!text || _isBusy) return;
     _hideAllSuggestions();
     _showQuickReply = true;
+
+    // 0. 0ms / 0-token Single-Undo Command Chaining (e.g. "move, full attack" or "add +2 ac, add fire damage")
+    const chain = !opts.forceAi ? tryParseChainedCommands(text) : null;
+    if (chain) {
+      _setBusyUi(true);
+      try {
+        setPersonaVisual('rulemaster', false, 'd20');
+        _messages.push({ role: 'user', text });
+        const results = await executeChainedCommands(chain, text);
+        const summary = results.map((r) => r.summary).filter(Boolean).join(' • ');
+        _messages.push({
+          role: 'model',
+          persona: 'rulemaster',
+          text: summary || `Ran ${chain.length} commands.`,
+          execResults: results,
+          quickChips: [{ kind: 'cmd', label: '↩ Undo Chain', cmd: 'undo' }]
+        });
+        _saveSessionHistory();
+        renderMessages();
+        if (!_isOpen) showReactionBubble(summary, 'rulemaster');
+      } finally {
+        _setBusyUi(false);
+      }
+      return;
+    }
 
     // 1. 0ms / 0-token Instant Registered Command Check
     const instant = !opts.forceAi ? tryParseInstantCommand(text) : null;
@@ -3179,6 +3357,10 @@
       const inp = _viewState === 'quick'
         ? _quickEl?.querySelector('#rm-assist-quick-input')
         : _panelEl?.querySelector('#rm-assist-input');
+      const rail = _viewState === 'quick'
+        ? _quickEl?.querySelector('#rm-assist-quick-rail')
+        : _panelEl?.querySelector('#rm-assist-panel-rail');
+      if (inp && rail) _renderIntentChipRail(inp, rail, false);
       if (inp) setTimeout(() => inp.focus(), 20);
     } else {
       if (_viewState === 'closed') _showQuickReply = false;
@@ -3521,12 +3703,18 @@
         if (qInp) qInp.value = '';
         if (pInp) pInp.value = '';
         _hideAllSuggestions();
-        if (intentId && _hasCommand('add_intent')) {
+        if (intentId && _hasCommand('add_intent') && !_isBusy) {
           _showQuickReply = true;
+          _setBusyUi(true);
           COMMANDS.add_intent(intentId).then((res) => {
             _messages.push({ role: 'model', persona: 'rulemaster', text: res.summary, execResults: [res], quickChips: res.quickChips });
             _saveSessionHistory();
             renderMessages();
+          }).catch((err) => {
+            if (typeof reportError === 'function') reportError('ai_assistant:add_intent', err);
+            _notify('Could not apply intent block.', 'error');
+          }).finally(() => {
+            _setBusyUi(false);
           });
         }
         return true;
@@ -3549,6 +3737,23 @@
             `</button>`
           ).join('');
           activeSug.classList.remove('is-hidden');
+        }
+        return true;
+      }
+      const applyPatchBtn = ev.target.closest('[data-rm-apply-patch]');
+      if (applyPatchBtn) {
+        const patchId = applyPatchBtn.getAttribute('data-rm-apply-patch');
+        const pending = patchId && _pendingV3Patches.get(patchId);
+        if (pending && root.ForgeSandbox && typeof root.ForgeSandbox.applyV3Patch === 'function') {
+          const res = root.ForgeSandbox.applyV3Patch(pending.patch, { dryRun: false, mode: pending.mode });
+          if (res && res.ok) {
+            _pendingV3Patches.delete(patchId);
+            applyPatchBtn.textContent = '✓ Applied';
+            applyPatchBtn.disabled = true;
+            _notify(`Applied: ${res.summary}`, 'success');
+          } else {
+            _notify((res && res.summary) || 'Could not apply patch.', 'error');
+          }
         }
         return true;
       }
@@ -3662,6 +3867,7 @@
 
     const bindGhostTab = (inp, sug) => {
       inp.addEventListener('keydown', (ev) => {
+        if (!_isGhostDesktopViewport()) return;
         const full = inp.dataset.rmGhostFull || '';
         if (!full || full.length <= inp.value.length) return;
         const atEnd = inp.selectionStart === inp.value.length && inp.selectionEnd === inp.value.length;
@@ -3781,6 +3987,9 @@
     clearGuide: clearGuideSpotlight,
     getLivePageContext,
     triggerPose: triggerPersonaPose,
-    commands: COMMANDS
+    commands: COMMANDS,
+    tryParseChainedCommands,
+    executeChainedCommands,
+    executeStructuredActions
   };
 })(typeof window !== 'undefined' ? window : globalThis);
