@@ -1145,16 +1145,94 @@
     listEl.innerHTML = html;
   }
 
+  let _prevHtmlOverflow = '';
+  let _prevBodyOverflow = '';
+  let _bodyScrollLocked = false;
+
+  function ensureNotesModalScrollStyles() {
+    if (document.getElementById('hub-notes-mobile-scroll-styles')) return;
+    const st = document.createElement('style');
+    st.id = 'hub-notes-mobile-scroll-styles';
+    st.textContent = `
+      #hub-full-notes-modal {
+        overscroll-behavior: contain;
+        touch-action: pan-y;
+      }
+      #hub-full-notes-modal > div {
+        max-height: 92vh;
+        max-height: 92dvh;
+      }
+      #hub-modal-notes-list,
+      #hub-modal-view-editor > div:last-child,
+      #hub-modal-view-ai > div > div {
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+      }
+      @media (max-width: 639px) {
+        #hub-full-notes-modal > div {
+          height: 94vh;
+          height: 94dvh;
+          max-height: 94vh;
+          max-height: 94dvh;
+        }
+        #hub-modal-view-editor,
+        #hub-modal-view-ai > div {
+          overflow-y: auto !important;
+          -webkit-overflow-scrolling: touch;
+          overscroll-behavior: contain;
+        }
+        #hub-modal-view-editor > div:first-child {
+          max-height: 36dvh;
+          flex-shrink: 0;
+        }
+        #hub-modal-notes-list {
+          max-height: 20dvh;
+          overflow-y: auto;
+          overscroll-behavior: contain;
+        }
+        #hub-modal-view-editor > div:last-child {
+          flex: 1 0 auto;
+          overflow: visible !important;
+        }
+        #hub-modal-view-ai > div > div {
+          flex: 0 0 auto;
+          overflow: visible !important;
+        }
+        #hub-modal-view-ai > div > div:last-child {
+          min-height: 280px;
+        }
+      }
+    `;
+    document.head.appendChild(st);
+  }
+
+  function _lockPageScrollForNotesModal(lock) {
+    if (lock) {
+      if (_bodyScrollLocked) return;
+      _prevHtmlOverflow = document.documentElement.style.overflow || '';
+      _prevBodyOverflow = document.body.style.overflow || '';
+      document.documentElement.style.overflow = 'hidden';
+      document.body.style.overflow = 'hidden';
+      _bodyScrollLocked = true;
+    } else if (_bodyScrollLocked) {
+      document.documentElement.style.overflow = _prevHtmlOverflow;
+      document.body.style.overflow = _prevBodyOverflow;
+      _bodyScrollLocked = false;
+    }
+  }
+
   /**
    * Open Full Notes Modal
    */
   function openFullNotesModal(selectNoteId = null, initialView = 'editor') {
     ensureModalDom();
+    ensureNotesModalScrollStyles();
     const modal = document.getElementById('hub-full-notes-modal');
     if (!modal) return;
 
     modal.classList.remove('hidden');
     modal.classList.add('flex');
+    _lockPageScrollForNotesModal(true);
 
     const target = getActiveNotesTarget();
     if (target && target.notesList.length > 0) {
@@ -1180,6 +1258,7 @@
   function closeFullNotesModal() {
     saveModalNote(false);
     hideAutocompletePopover();
+    _lockPageScrollForNotesModal(false);
     const modal = document.getElementById('hub-full-notes-modal');
     if (!modal) return;
     modal.classList.add('hidden');
