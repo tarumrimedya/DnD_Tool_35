@@ -1430,13 +1430,12 @@
         renderActionEconomy();
       }
       if (typeof renderHUD === 'function') {
-        try { renderHUD(); } catch (e) { console.warn('renderHUD immediate rest error:', e); }
+        try { renderHUD({ skipRecompute: true }); } catch (e) { console.warn('renderHUD immediate rest error:', e); }
       }
       try { updateRoundDisplays(); } catch (e) { console.warn('updateRoundDisplays error in rest:', e); }
-      try { saveStateToStorage(true); } catch (e) { console.warn('saveStateToStorage error in rest:', e); }
       try { if (typeof renderManeuvers === 'function') renderManeuvers(); } catch (e) { console.warn('renderManeuvers error in rest:', e); }
       try { if (typeof renderSpellSlots === 'function') renderSpellSlots(); } catch (e) { console.warn('renderSpellSlots error in rest:', e); }
-      try { renderAll(); } catch (e) { console.warn('renderAll error in rest:', e); }
+      try { renderAll({ skipRecompute: true }); } catch (e) { console.warn('renderAll error in rest:', e); }
 
       const maxHp = Number(out.maxHp ?? character.hp?.max) || (Number(character.level || 1) * 10) || 10;
       const curHp = Number(out.currentHp ?? character.hp?.current) || maxHp;
@@ -1509,12 +1508,11 @@
         renderActionEconomy();
       }
       if (typeof renderHUD === 'function') {
-        try { renderHUD(); } catch (e) { console.warn('renderHUD immediate short rest error:', e); }
+        try { renderHUD({ skipRecompute: true }); } catch (e) { console.warn('renderHUD immediate short rest error:', e); }
       }
       try { updateRoundDisplays(); } catch (e) { console.warn('updateRoundDisplays error in short rest:', e); }
-      try { saveStateToStorage(true); } catch (e) { console.warn('saveStateToStorage error in short rest:', e); }
       try { if (typeof renderManeuvers === 'function') renderManeuvers(); } catch (e) { console.warn('renderManeuvers error in short rest:', e); }
-      try { renderAll(); } catch (e) { console.warn('renderAll error in short rest:', e); }
+      try { renderAll({ skipRecompute: true }); } catch (e) { console.warn('renderAll error in short rest:', e); }
 
       const refreshedManeuvers = Number(out.refreshedManeuvers) || 0;
       const reReadiedCount = Number(out.reReadiedCount) || 0;
@@ -3181,10 +3179,6 @@
         if (window.RuleMaster && typeof RuleMaster.renderTable === 'function') {
           RuleMaster.renderTable();
         }
-      }
-
-      if (typeof RuleEngine !== 'undefined' && RuleEngine.recalculateCharacter) {
-        RuleEngine.recalculateCharacter(character, typeof masterDb !== 'undefined' ? masterDb : []);
       }
 
       closeAddBuffModal();
@@ -5084,7 +5078,7 @@
         return;
       }
       closeCompanionEquipModal();
-      renderAll();
+      renderAll({ skipRecompute: true });
       showDiceTopToast({
         icon: '🐾',
         title: 'Companion Item Equipped',
@@ -5104,7 +5098,7 @@
       });
       const out = window.CharStore.getLastOutcome();
       if (!out || out.status === 'empty_slot') return;
-      renderAll();
+      renderAll({ skipRecompute: true });
       showDiceTopToast({
         icon: '🐾',
         title: 'Companion Item Unequipped',
@@ -5146,7 +5140,7 @@
           payload: { slotKey },
           meta: { label: `Toggle Body Slot (${slotKey})` }
         });
-        renderAll();
+        renderAll({ skipRecompute: true });
       }
     }
 
@@ -5162,7 +5156,7 @@
       });
       try { renderWeaponSetsUI(); } catch (e) { reportError('char_inventory:unequipSlot', e); }
       try { recalculateOffense(); } catch (e) { reportError('char_inventory:unequipSlot', e); }
-      renderAll();
+      renderAll({ skipRecompute: true });
       if (!silent && typeof showDiceTopToast === 'function') {
         const slotDef = BODY_SLOT_DEFS.find(d => d.key === slotKey);
         showDiceTopToast({
@@ -5772,7 +5766,7 @@
         meta: { label: 'Toggle Belt Quick-Access' }
       });
       if (typeof syncAutomatedCombatPins === 'function') syncAutomatedCombatPins(character);
-      renderAll();
+      renderAll({ skipRecompute: true });
     }
 
     function adjustPoolQty(itemId, delta) {
@@ -5782,7 +5776,7 @@
         payload: { itemId, delta },
         meta: { label: `Adjust Item Qty (${delta > 0 ? '+' : ''}${delta})` }
       });
-      renderAll();
+      renderAll({ skipRecompute: true });
     }
 
     async function deletePoolItem(itemId) {
@@ -5793,7 +5787,7 @@
           payload: { itemId },
           meta: { label: 'Delete Inventory Item' }
         });
-        renderAll();
+        renderAll({ skipRecompute: true });
       }
     }
 
@@ -5954,7 +5948,7 @@
       }
       try { renderWeaponSetsUI(); } catch (e) { reportError('char_inventory:equipPoolItem', e); }
       try { recalculateOffense(); } catch (e) { reportError('char_inventory:equipPoolItem', e); }
-      renderAll();
+      renderAll({ skipRecompute: true });
       const slotDef = BODY_SLOT_DEFS.find(d => d.key === targetSlotKey);
       const slotLabel = slotDef?.trName || targetSlotKey;
       let toastIcon = '⚔️';
@@ -7295,7 +7289,7 @@
       if (!v2Item || !character) return;
       syncInventoryStore();
       window.CharStore.dispatch({ type: 'inventory/addPoolItem', payload: { item: v2Item } });
-      renderAll();
+      renderAll({ skipRecompute: true });
       if (typeof showDiceTopToast === 'function') {
         showDiceTopToast({
           icon: '⚒️',
@@ -7331,7 +7325,7 @@
           itemData: forgedV2Item
         }
       });
-      renderAll();
+      renderAll({ skipRecompute: true });
       if (typeof showDiceTopToast === 'function') {
         showDiceTopToast({
           icon: '⚒️',
@@ -7876,7 +7870,7 @@
         });
         return;
       }
-      renderAll();
+      renderAll({ skipRecompute: true });
       const dcNow = character.bodySlots?.[slotKey]?.dailyCharges || out?.dailyCharges;
       if (dcNow) {
         showDiceTopToast({
@@ -7893,7 +7887,7 @@
       if (!item) return;
       syncInventoryStore();
       window.CharStore.dispatch({ type: 'inventory/adjustSlotCharge', payload: { slotKey, delta: Math.abs(Number(amount) || 1) } });
-      renderAll();
+      renderAll({ skipRecompute: true });
     }
 
     function isItemBuffActive(item) {
@@ -8537,7 +8531,7 @@
         if (typeof window.CharStore.getLastOutcome === 'function') {
           outcome = window.CharStore.getLastOutcome();
         }
-        renderAll();
+        renderAll({ skipRecompute: true });
         if (outcome) {
           emitConsumableUseFeedback(outcome);
         }
@@ -8947,7 +8941,7 @@
           meta: { label: 'Toggle Wilding Clasp' }
         });
         const out = window.CharStore.getLastOutcome ? window.CharStore.getLastOutcome() : null;
-        if (typeof renderAll === 'function') renderAll();
+        if (typeof renderAll === 'function') renderAll({ skipRecompute: true });
         if (out && typeof showToast === 'function') {
           showToast(out.hasClasp ? `Wilding Clasp attached to ${out.itemName}.` : `Wilding Clasp removed from ${out.itemName}.`, 'info');
         }
@@ -9164,7 +9158,7 @@
           window.CharStore.recompute();
         }
         if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
-        if (typeof renderAll === 'function') renderAll();
+        if (typeof renderAll === 'function') renderAll({ skipRecompute: Boolean(window.CharStore && typeof window.CharStore.recompute === 'function') });
       });
       actionsApi.register('inventory:noop-stop', (el, data, event) => {
         if (event && typeof event.stopPropagation === 'function') event.stopPropagation();

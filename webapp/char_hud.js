@@ -192,12 +192,11 @@
       // Yerel hafızaya kaydet (tekrar buluta fırlatıp döngü oluşturmamak için triggerCloudSync = false)
       saveStateToStorage(false);
 
-      // DOM'u güncelle
-      if (typeof renderCombatCockpit === 'function') {
-        try { renderCombatCockpit(); } catch (e) { reportError('char_hud:window.handleIncomingDmHpEvent', e); }
-      }
+      // DOM'u güncelle (renderAll zaten aktif sekme Combat ise renderCombatCockpit'i çağırır)
       if (typeof renderAll === 'function') {
         try { renderAll(); } catch (e) { reportError('char_hud:window.handleIncomingDmHpEvent', e); }
+      } else if (typeof renderCombatCockpit === 'function') {
+        try { renderCombatCockpit(); } catch (e) { reportError('char_hud:window.handleIncomingDmHpEvent', e); }
       }
 
       // 1. Ekran Kırmızı / Yeşil Parlama Efekti
@@ -1346,11 +1345,10 @@
     }
 
     function _hpLiveRenderHp() {
-      if (typeof renderCombatCockpit === 'function') {
-        try { renderCombatCockpit(); } catch (e) { reportError('char_hud:hpLiveRender', e); }
-      }
       if (typeof renderAll === 'function') {
         try { renderAll(); } catch (e) { reportError('char_hud:hpLiveRender', e); }
+      } else if (typeof renderCombatCockpit === 'function') {
+        try { renderCombatCockpit(); } catch (e) { reportError('char_hud:hpLiveRender', e); }
       }
     }
 
@@ -2618,33 +2616,43 @@
       }
     }
 
+    let _dmModeCache = { raw: null, key: '', value: false };
     function isCurrentCampaignDmMode() {
       if (!character) return false;
       try {
         const hubRaw = localStorage.getItem('dnd35_hub_db');
-        if (!hubRaw) return false;
+        if (!hubRaw) {
+          _dmModeCache = { raw: null, key: '', value: false };
+          return false;
+        }
+        const cacheKey = `${character._hubId || character.id || ''}|${character.campaignId || ''}|${character.cloudCampaignId || ''}`;
+        if (_dmModeCache.raw === hubRaw && _dmModeCache.key === cacheKey) {
+          return _dmModeCache.value;
+        }
         const hubDb = JSON.parse(hubRaw);
-        if (!hubDb || !Array.isArray(hubDb.campaigns)) return false;
-
-        let campId = character.campaignId || character.cloudCampaignId || null;
-        if (Array.isArray(hubDb.characters)) {
-          const charId = character._hubId || character.id;
-          const hubChar = charId ? hubDb.characters.find(c => c.id === charId) : null;
-          if (hubChar && hubChar.campaignId !== undefined) {
-            campId = hubChar.campaignId;
+        let result = false;
+        if (hubDb && Array.isArray(hubDb.campaigns)) {
+          let campId = character.campaignId || character.cloudCampaignId || null;
+          if (Array.isArray(hubDb.characters)) {
+            const charId = character._hubId || character.id;
+            const hubChar = charId ? hubDb.characters.find(c => c.id === charId) : null;
+            if (hubChar && hubChar.campaignId !== undefined) {
+              campId = hubChar.campaignId;
+            }
+          }
+          if (campId && campId !== 'all' && campId !== 'unassigned') {
+            const camp = hubDb.campaigns.find(cp => cp.id === campId || (cp.cloudCampaignId && cp.cloudCampaignId === campId));
+            if (camp) {
+              if (camp.isDmMode) result = true;
+              else if (camp.parentId) {
+                const parentCamp = hubDb.campaigns.find(cp => cp.id === camp.parentId || (cp.cloudCampaignId && cp.cloudCampaignId === camp.parentId));
+                if (parentCamp && parentCamp.isDmMode) result = true;
+              }
+            }
           }
         }
-        if (!campId || campId === 'all' || campId === 'unassigned') return false;
-
-        const camp = hubDb.campaigns.find(cp => cp.id === campId || (cp.cloudCampaignId && cp.cloudCampaignId === campId));
-        if (!camp) return false;
-        if (camp.isDmMode) return true;
-
-        if (camp.parentId) {
-          const parentCamp = hubDb.campaigns.find(cp => cp.id === camp.parentId || (cp.cloudCampaignId && cp.cloudCampaignId === camp.parentId));
-          if (parentCamp && parentCamp.isDmMode) return true;
-        }
-        return false;
+        _dmModeCache = { raw: hubRaw, key: cacheKey, value: result };
+        return result;
       } catch (e) {
         return false;
       }
@@ -9683,13 +9691,11 @@ function renderManualStatsPanel() {
         if (profileBtn) profileBtn.classList.remove('hidden');
         ensureWeaponSetsData();
         applyWeaponSetsConfiguration();
-        renderWeaponSetsUI();
         if (typeof populateWeaponSetsEditorDropdowns === 'function') populateWeaponSetsEditorDropdowns();
         if (typeof populateRangedWeaponAndAmmoUI === 'function') populateRangedWeaponAndAmmoUI();
         if (typeof renderRangedModifiersGrid === 'function') renderRangedModifiersGrid();
         if (typeof renderCombatPins === 'function') renderCombatPins('offense_ranged');
         if (typeof renderSavedProfiles === 'function') renderSavedProfiles();
-        recalculateOffense();
       } else {
         // default: melee (Yakın)
         if (meleePanel) meleePanel.classList.remove('hidden');
@@ -9726,11 +9732,7 @@ function renderManualStatsPanel() {
         if (profileBtn) profileBtn.classList.remove('hidden');
         ensureWeaponSetsData();
         applyWeaponSetsConfiguration();
-        renderWeaponSetsUI();
         if (typeof populateWeaponSetsEditorDropdowns === 'function') populateWeaponSetsEditorDropdowns();
-        if (typeof renderOffenseModifiersGrid === 'function') renderOffenseModifiersGrid();
-        if (typeof renderSavedProfiles === 'function') renderSavedProfiles();
-        recalculateOffense();
       }
     }
 
@@ -9928,13 +9930,15 @@ function renderManualStatsPanel() {
         quickRemoveCharacterTemplate(data.templateId || '');
       });
       window.Actions.register('hud:revert-wild-shape', (el, data, event) => {
+        let usedStore = false;
         if (window.CharStore && typeof window.CharStore.dispatch === 'function') {
           if (!window.CharStore.getDoc()) window.CharStore._syncExternalCharacterRef(character);
           window.CharStore.dispatch({ type: 'form/revert', payload: {}, meta: { label: 'Revert Wild Shape' } });
+          usedStore = true;
         } else if (character) {
           character.activeForm = null;
         }
-        if (typeof renderAll === 'function') renderAll();
+        if (typeof renderAll === 'function') renderAll({ skipRecompute: usedStore });
         if (typeof showToast === 'function') showToast('Reverted to true form.', 'info');
       });
       window.Actions.register('hud:open-profile-modal', (el, data, event) => {

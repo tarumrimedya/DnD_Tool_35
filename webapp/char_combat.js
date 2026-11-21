@@ -2395,7 +2395,6 @@
       const existingBuff = character.buffs.find(b => b && b.id === buffId);
       if (existingBuff && existingBuff.active) {
         existingBuff.active = false;
-        if (RuleEngine.recalculateCharacter) RuleEngine.recalculateCharacter(character, typeof masterDb !== 'undefined' ? masterDb : []);
         saveStateToStorage(true);
         renderAll();
         showDiceTopToast({
@@ -2483,7 +2482,6 @@
         if (idx !== -1) character.buffs[idx] = buffObj;
         else character.buffs.push(buffObj);
 
-        if (RuleEngine.recalculateCharacter) RuleEngine.recalculateCharacter(character, typeof masterDb !== 'undefined' ? masterDb : []);
         saveStateToStorage(true);
         renderAll();
         showDiceTopToast({
@@ -3451,11 +3449,14 @@
 
       // 0A. Universal V2 Buff Spell Cast Flow (No fake d20 roll; opens Self/Ally/Energy/Weapon prompt or auto-applies Self buff)
       if (!targetWeaponName && typeof window.handleBuffSpellCast === 'function' && window.handleBuffSpellCast(spell, cl, `Level ${finalLvl} ${sourceLabels[slotSource] || 'Spell'} Slot`, '🔮')) {
-        if (typeof renderAll === 'function') renderAll();
-        if (typeof recalculateOffense === 'function') recalculateOffense();
-        recalculateCombatSpell();
-        renderSpellSlotsStrip();
-        renderCombatCategorySpells();
+        if (typeof renderAll === 'function') {
+          renderAll();
+        } else {
+          if (typeof recalculateOffense === 'function') recalculateOffense();
+          recalculateCombatSpell();
+          renderSpellSlotsStrip();
+          renderCombatCategorySpells();
+        }
         return;
       }
 
@@ -3465,11 +3466,14 @@
         const effFormula = resolveSpellEffectiveFormula(spell, cl);
         if ((effType === 'heal' || effType === 'temp_hp') && effFormula) {
           rollSpellOrManeuverFormula(effFormula, `${spell.name} (Level ${finalLvl} • -1 Slot)`, spell);
-          if (typeof renderAll === 'function') renderAll();
-          if (typeof recalculateOffense === 'function') recalculateOffense();
-          recalculateCombatSpell();
-          renderSpellSlotsStrip();
-          renderCombatCategorySpells();
+          if (typeof renderAll === 'function') {
+            renderAll();
+          } else {
+            if (typeof recalculateOffense === 'function') recalculateOffense();
+            recalculateCombatSpell();
+            renderSpellSlotsStrip();
+            renderCombatCategorySpells();
+          }
           return;
         }
       }
@@ -3767,11 +3771,14 @@
           });
         }
 
-        if (typeof renderAll === 'function') renderAll();
-        if (typeof recalculateOffense === 'function') recalculateOffense();
-        recalculateCombatSpell();
-        renderSpellSlotsStrip();
-        renderCombatCategorySpells();
+        if (typeof renderAll === 'function') {
+          renderAll();
+        } else {
+          if (typeof recalculateOffense === 'function') recalculateOffense();
+          recalculateCombatSpell();
+          renderSpellSlotsStrip();
+          renderCombatCategorySpells();
+        }
       };
 
       if (window.Dice3D && typeof Dice3D.roll === 'function' && diceToRoll3D.length > 0) {
@@ -5093,7 +5100,7 @@
       const res = out && out.result ? out.result : null;
       if (typeof updateActionEconomyUI === 'function') updateActionEconomyUI();
       if (!res) return;
-      if (typeof renderAll === 'function') renderAll();
+      if (typeof renderAll === 'function') renderAll({ skipRecompute: true });
       if (typeof showDiceTopToast === 'function') {
         showDiceTopToast({
           icon: '⚡',
@@ -5348,18 +5355,18 @@
         return;
       }
 
+      function resolveIsOffWeapon(offName, isDouble) {
+        if (isDouble) return true;
+        if (!offName || offName === 'None') return false;
+        const offItemStats = getWeaponCombatDisplayStats(offName, 'Off-Hand', true);
+        return !!(offItemStats && !offItemStats.isBuckler && offItemStats.dmgType !== 'Shield');
+      }
+
       // Double Weapon special toggle: Card 1 is always active; clicking Card 2 toggles TWF (activeSets [1] <-> [1, 2])
       if (mainIsDouble) {
-        if (setNum === 2) {
-          if (sets.activeSets.includes(2)) {
-            sets.activeSets = [1];
-          } else {
-            sets.activeSets = [1, 2];
-          }
-        } else {
-          sets.activeSets = [1];
-        }
-        sets.activeSet = (sets.activeSets.includes(1) && sets.activeSets.includes(2)) ? 'both' : 1;
+        const nextActiveSets = (setNum === 2)
+          ? (sets.activeSets.includes(2) ? [1] : [1, 2])
+          : [1];
         if (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.dispatch === 'function') {
           if (!window.CharStore.getDoc() && typeof character !== 'undefined') {
             window.CharStore._syncExternalCharacterRef(character);
@@ -5367,19 +5374,24 @@
           window.CharStore.dispatch({
             type: 'combat/switchWeaponSet',
             label: `Switch Weapon Set ${setNum}`,
-            payload: { setNum, activeSets: sets.activeSets.slice() },
+            payload: { setNum, activeSets: nextActiveSets, isOffWeapon: true },
             meta: { label: `Switch Weapon Set ${setNum}`, cloudSync: false }
           });
+          applyWeaponSetsConfiguration({ skipDispatch: true });
+        } else {
+          sets.activeSets = nextActiveSets;
+          sets.activeSet = nextActiveSets.includes(2) ? 'both' : 1;
+          applyWeaponSetsConfiguration();
         }
-        applyWeaponSetsConfiguration();
         return;
       }
 
-      const idx = sets.activeSets.indexOf(setNum);
+      const nextActiveSets = sets.activeSets.slice();
+      const idx = nextActiveSets.indexOf(setNum);
       if (idx >= 0) {
-        if (sets.activeSets.length > 1) {
+        if (nextActiveSets.length > 1) {
           // If both were active, toggle off this set
-          sets.activeSets.splice(idx, 1);
+          nextActiveSets.splice(idx, 1);
         } else {
           if (typeof showToast === 'function') {
             showToast(setNum === 1 ? 'Main Hand active. Click the Off-Hand card to enable Two-Weapon Fighting (TWF) or equip a shield.' : 'Off-Hand active solo.', 'info');
@@ -5387,10 +5399,12 @@
         }
       } else {
         // Toggle on: both are now active!
-        sets.activeSets.push(setNum);
+        nextActiveSets.push(setNum);
       }
 
-      sets.activeSet = (sets.activeSets.includes(1) && sets.activeSets.includes(2)) ? 'both' : (sets.activeSets.includes(2) ? 2 : 1);
+      const nextIsDual = nextActiveSets.includes(1) && nextActiveSets.includes(2);
+      const nextIsOffWeapon = nextIsDual ? resolveIsOffWeapon(sets.set2?.mainWeapon, false) : false;
+
       if (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.dispatch === 'function') {
         if (!window.CharStore.getDoc() && typeof character !== 'undefined') {
           window.CharStore._syncExternalCharacterRef(character);
@@ -5398,118 +5412,68 @@
         window.CharStore.dispatch({
           type: 'combat/switchWeaponSet',
           label: `Switch Weapon Set ${setNum}`,
-          payload: { setNum, activeSets: sets.activeSets.slice() },
+          payload: { setNum, activeSets: nextActiveSets, isOffWeapon: nextIsOffWeapon },
           meta: { label: `Switch Weapon Set ${setNum}`, cloudSync: false }
         });
+        applyWeaponSetsConfiguration({ skipDispatch: true });
+      } else {
+        sets.activeSets = nextActiveSets;
+        sets.activeSet = nextIsDual ? 'both' : (nextActiveSets.includes(2) ? 2 : 1);
+        applyWeaponSetsConfiguration();
       }
-      applyWeaponSetsConfiguration();
     }
 
     function activateWeaponSet(setNum) {
       toggleWeaponSet(setNum);
     }
 
-    function applyWeaponSetsConfiguration() {
+    function applyWeaponSetsConfiguration(options = {}) {
       ensureWeaponSetsData();
       const sets = character.tactical.weaponSets;
 
-      const s1Main = sets.set1?.mainWeapon;
-      const mainIsDouble = typeof RuleEngine !== 'undefined' && RuleEngine.isDoubleWeapon ? RuleEngine.isDoubleWeapon(s1Main) : false;
-      const mainIsTwoHand = typeof RuleEngine !== 'undefined' ? RuleEngine.isTwoHandedWeapon(s1Main) : false;
-      const hasOversized = typeof RuleEngine !== 'undefined' ? RuleEngine.hasOversizedWeaponFeat(character) : false;
-      const isTwoHandLocked = mainIsTwoHand && !mainIsDouble && !hasOversized;
+      if (!options.skipDispatch) {
+        const s1Main = sets.set1?.mainWeapon;
+        const mainIsDouble = typeof RuleEngine !== 'undefined' && RuleEngine.isDoubleWeapon ? RuleEngine.isDoubleWeapon(s1Main) : false;
+        const isDual = Array.isArray(sets.activeSets) && sets.activeSets.includes(1) && sets.activeSets.includes(2);
+        const offName = mainIsDouble ? s1Main : (sets.set2?.mainWeapon || 'None');
+        let isOffWeapon = false;
+        if (isDual) {
+          if (mainIsDouble) {
+            isOffWeapon = true;
+          } else if (offName && offName !== 'None') {
+            const offItemStats = getWeaponCombatDisplayStats(offName, 'Off-Hand', true);
+            isOffWeapon = !!(offItemStats && !offItemStats.isBuckler && offItemStats.dmgType !== 'Shield');
+          }
+        }
 
-      if (!Array.isArray(character.tacticalRiders)) character.tacticalRiders = [];
-      let twfMod = character.tacticalRiders.find(m => m && m.name && (m.name.includes('TWF') || m.name.includes('Two-Weapon')));
-      if (!twfMod) {
-        twfMod = {
-          id: 'rider-twf',
-          schemaVersion: 3,
-          name: 'Two-Weapon Fighting (TWF)',
-          source: 'Combat',
-          combatScope: 'melee',
-          riderType: 'TWF',
-          active: false,
-          notes: 'Extra Off-Hand Attack (RAW TWF)',
-          effects: []
-        };
-        character.tacticalRiders.push(twfMod);
+        if (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.dispatch === 'function') {
+          if (!window.CharStore.getDoc() && typeof character !== 'undefined') {
+            window.CharStore._syncExternalCharacterRef(character);
+          }
+          window.CharStore.dispatch({
+            type: 'combat/switchWeaponSet',
+            label: 'Apply Weapon Sets',
+            payload: {
+              setNum: Number(character.activeWeaponSet) || 1,
+              activeSets: Array.isArray(sets.activeSets) ? sets.activeSets.slice() : [1],
+              isOffWeapon
+            },
+            meta: { label: 'Apply Weapon Sets', cloudSync: false }
+          });
+        } else {
+          saveStateToStorage(false);
+        }
       }
 
-      // Rule 1, 2, 3: Two-handed weapon enforcement
-      if (isTwoHandLocked) {
-        sets.set1.grip = '2-Hand';
-        sets.set2.mainWeapon = 'None';
-        sets.set2.grip = 'Off-Hand';
-        sets.activeSets = [1];
-        sets.activeSet = 1;
+      const activeSets = character.tactical?.weaponSets;
+      const is1 = Array.isArray(activeSets?.activeSets) && activeSets.activeSets.includes(1);
+      const is2 = Array.isArray(activeSets?.activeSets) && activeSets.activeSets.includes(2);
+      const desiredGrip = (is1 && is2)
+        ? '1-Hand'
+        : (is1 ? (activeSets?.set1?.grip || '1-Hand') : (activeSets?.set2?.grip || '1-Hand'));
 
-        character.activeWeapon = sets.set1.mainWeapon;
-        character.activeOffHand = 'None';
-        twfMod.active = false;
-
-        const gripSelect = document.getElementById('active-grip-select');
-        if (gripSelect) gripSelect.value = '2-Hand';
-
-        const wepSelect = document.getElementById('active-weapon-select');
-        if (wepSelect) wepSelect.value = character.activeWeapon;
-
-        const offSelect = document.getElementById('active-offhand-select');
-        if (offSelect) offSelect.value = 'None';
-
-        saveStateToStorage(false);
-        renderWeaponSetsUI();
-        recalculateOffense();
-        if (typeof renderOffenseModifiersGrid === 'function') renderOffenseModifiersGrid();
-        renderHUD();
-        if (typeof renderCombatCockpit === 'function') renderCombatCockpit();
-        return;
-      }
-
-      const is1 = sets.activeSets.includes(1);
-      const is2 = sets.activeSets.includes(2);
-      const isDual = is1 && is2;
-
-      if (mainIsDouble) {
-        sets.set2.mainWeapon = sets.set1.mainWeapon;
-        sets.set2.grip = 'Off-Hand';
-      }
-
-      if (isDual) {
-        // BOTH ACTIVE: Main Hand (Card 1) + Off Hand (Card 2)
-        character.activeWeapon = sets.set1.mainWeapon;
-        character.activeOffHand = mainIsDouble ? sets.set1.mainWeapon : sets.set2.mainWeapon;
-
-        const gripSelect = document.getElementById('active-grip-select');
-        if (gripSelect) gripSelect.value = '1-Hand';
-        if (sets.set1) sets.set1.grip = '1-Hand';
-
-        // Check if Card 2 is a weapon (not pure shield)
-        const offItemStats = getWeaponCombatDisplayStats(character.activeOffHand, 'Off-Hand', true);
-        const isOffWeapon = mainIsDouble || (offItemStats && !offItemStats.isBuckler && offItemStats.dmgType !== 'Shield');
-
-        twfMod.active = isOffWeapon;
-      } else if (is1) {
-        // ONLY CARD 1 ACTIVE: Single weapon combat, Off-Hand is None
-        character.activeWeapon = sets.set1.mainWeapon;
-        character.activeOffHand = 'None';
-
-        const singleGrip = mainIsDouble ? '2-Hand' : (sets.set1.grip || '1-Hand');
-        if (sets.set1) sets.set1.grip = singleGrip;
-        const gripSelect = document.getElementById('active-grip-select');
-        if (gripSelect) gripSelect.value = singleGrip;
-
-        twfMod.active = false;
-      } else if (is2) {
-        // ONLY CARD 2 ACTIVE AS PRIMARY WEAPON
-        character.activeWeapon = sets.set2.mainWeapon;
-        character.activeOffHand = 'None';
-
-        const gripSelect = document.getElementById('active-grip-select');
-        if (gripSelect) gripSelect.value = sets.set2.grip || '1-Hand';
-
-        twfMod.active = false;
-      }
+      const gripSelect = document.getElementById('active-grip-select');
+      if (gripSelect) gripSelect.value = desiredGrip;
 
       const wepSelect = document.getElementById('active-weapon-select');
       if (wepSelect) wepSelect.value = character.activeWeapon;
@@ -5517,12 +5481,15 @@
       const offSelect = document.getElementById('active-offhand-select');
       if (offSelect) offSelect.value = character.activeOffHand;
 
-      saveStateToStorage(false);
-      renderWeaponSetsUI();
-      recalculateOffense();
-      if (typeof renderOffenseModifiersGrid === 'function') renderOffenseModifiersGrid();
-      renderHUD();
-      if (typeof renderCombatCockpit === 'function') renderCombatCockpit();
+      if (typeof renderOffHandSelector === 'function') renderOffHandSelector();
+      if (typeof patchCockpitDOM === 'function') {
+        patchCockpitDOM();
+      } else {
+        renderWeaponSetsUI();
+        recalculateOffense();
+        if (typeof renderOffenseModifiersGrid === 'function') renderOffenseModifiersGrid();
+        renderHUD({ skipRecompute: true });
+      }
     }
 
     function toggleWeaponSetsEditor(forceState) {
@@ -7475,6 +7442,10 @@
       const defSummary = document.getElementById('combat-defense-collapsed-summary');
       if (defSummary && acNormal && acTouch && acFlat) {
         defSummary.textContent = `AC: ${acNormal.textContent} | Touch: ${acTouch.textContent} | Flat: ${acFlat.textContent}`;
+      }
+      const physSummary = document.getElementById('combat-physical-collapsed-summary');
+      if (physSummary) {
+        physSummary.textContent = `${character.activeWeapon || 'No Weapon'}`;
       }
 
       const ceValEl = document.getElementById('combat-expertise-val');
@@ -10394,10 +10365,11 @@
         }
       }
 
-      // 3. Offense Column: Weapon Sets, Off-Hand Selector & TWF
-      try { renderWeaponSetsUI(); } catch (e) { console.error('renderWeaponSetsUI error:', e); }
+      // 3. Offense Column: Off-Hand Selector, Modifiers & Attack Chain (recalculateOffense updates Weapon Sets & Saved Profiles)
       try { renderOffHandSelector(); } catch (e) { console.error('renderOffHandSelector error:', e); }
-      try { renderSavedProfiles(); } catch (e) { console.error('renderSavedProfiles error:', e); }
+      if (window._combatOffenseMode === 'ranged') {
+        try { renderSavedProfiles(); } catch (e) { console.error('renderSavedProfiles error:', e); }
+      }
       try { renderOffenseModifiersGrid(); } catch (e) { console.error('renderOffenseModifiersGrid error:', e); }
       try { recalculateOffense(); } catch (e) { console.error('recalculateOffense error:', e); }
 
@@ -10438,7 +10410,6 @@
         select.innerHTML = '<option value="None" selected>None / Empty (Main Hand 2H Weapon)</option>';
         select.value = 'None';
         select.disabled = true;
-        character.activeOffHand = 'None';
         return;
       }
 
@@ -10488,10 +10459,26 @@
         return;
       }
 
-      character.activeOffHand = select.value;
-      saveStateToStorage(false);
-      renderCombatCockpit();
-      recalculateOffense();
+      if (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.dispatch === 'function') {
+        if (!window.CharStore.getDoc() && typeof character !== 'undefined') {
+          window.CharStore._syncExternalCharacterRef(character);
+        }
+        window.CharStore.dispatch({
+          type: 'combat/setOffHand',
+          label: 'Change Off-Hand',
+          payload: { activeOffHand: select.value },
+          meta: { label: 'Change Off-Hand', cloudSync: false }
+        });
+      } else {
+        character.activeOffHand = select.value;
+        saveStateToStorage(false);
+      }
+      renderOffHandSelector();
+      if (typeof patchCockpitDOM === 'function') {
+        patchCockpitDOM();
+      } else {
+        recalculateOffense();
+      }
     }
 
     // --- TACTICAL DEFENSE CONTROLS ---
@@ -11256,6 +11243,7 @@
 
     function assumeWildShapeForm(monsterId, monsterName) {
       if (!monsterId) return;
+      let usedStore = false;
       if (window.CharStore && typeof window.CharStore.dispatch === 'function') {
         if (!window.CharStore.getDoc()) window.CharStore._syncExternalCharacterRef(character);
         window.CharStore.dispatch({
@@ -11263,23 +11251,26 @@
           payload: { baseMonsterId: monsterId, kind: 'wild_shape', name: monsterName || monsterId },
           meta: { label: `Wild Shape: ${monsterName || monsterId}` }
         });
+        usedStore = true;
       } else if (character) {
         character.activeForm = { active: true, kind: 'wild_shape', baseMonsterId: monsterId, name: monsterName || monsterId };
       }
       const modal = document.getElementById('wild-shape-picker-modal');
       if (modal) modal.classList.add('hidden');
-      if (typeof renderAll === 'function') renderAll();
+      if (typeof renderAll === 'function') renderAll({ skipRecompute: usedStore });
       if (typeof showToast === 'function') showToast(`Assumed Wild Shape: ${monsterName || monsterId}.`, 'success');
     }
 
     function revertWildShapeForm() {
+      let usedStore = false;
       if (window.CharStore && typeof window.CharStore.dispatch === 'function') {
         if (!window.CharStore.getDoc()) window.CharStore._syncExternalCharacterRef(character);
         window.CharStore.dispatch({ type: 'form/revert', payload: {}, meta: { label: 'Revert Wild Shape' } });
+        usedStore = true;
       } else if (character) {
         character.activeForm = null;
       }
-      if (typeof renderAll === 'function') renderAll();
+      if (typeof renderAll === 'function') renderAll({ skipRecompute: usedStore });
       if (typeof showToast === 'function') showToast('Reverted to true form.', 'info');
     }
 
@@ -11644,7 +11635,7 @@
         }
         nextRound = Number(outcome?.round || character?.tactical?.round || 1);
         if (typeof updateActionEconomyUI === 'function') updateActionEconomyUI();
-        renderAll();
+        renderAll({ skipRecompute: true });
       } else {
         if (!character.tactical) character.tactical = {};
         character.tactical.round = (character.tactical.round || 1) + 1;

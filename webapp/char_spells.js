@@ -1462,11 +1462,12 @@
           payload: { discipline: 'prepared', index: idx },
           meta: { label: `Unprepare Spell (${s.name})` }
         });
+        renderAll({ skipRecompute: true });
       } else {
         character.spellcasting.preparedSpells.splice(idx, 1);
         saveStateToStorage(true);
+        renderAll();
       }
-      renderAll();
       showDiceTopToast({
         icon: '🗑️',
         title: 'Spell Unprepared',
@@ -1663,9 +1664,6 @@
         character.buffs.push(buffObj);
       }
 
-      if (typeof RuleEngine !== 'undefined' && RuleEngine.recalculateCharacter) {
-        RuleEngine.recalculateCharacter(character, typeof masterDb !== 'undefined' ? masterDb : []);
-      }
       syncSpellsStore();
       renderAll();
 
@@ -2064,12 +2062,14 @@
           });
           const out = CharStore.getLastOutcome();
           if (!out || out.status !== 'spell_cast') return;
+          if (typeof consumeActionEconomy === 'function') consumeActionEconomy(s, name);
+          renderAll({ skipRecompute: true });
         } else {
           if (mutSlot) mutSlot.used++;
           saveStateToStorage(true);
+          if (typeof consumeActionEconomy === 'function') consumeActionEconomy(s, name);
+          renderAll();
         }
-        if (typeof consumeActionEconomy === 'function') consumeActionEconomy(s, name);
-        renderAll();
         if (handleBuffSpellCast(s, cl, `Level ${lvl} Prepared Slot Expended`, '📖')) {
           return;
         }
@@ -2100,11 +2100,12 @@
           payload: { discipline: 'prepared' },
           meta: { label: 'Restore Prepared Slots' }
         });
+        renderAll({ skipRecompute: true });
       } else {
         (character?.spellcasting?.preparedSlots || []).forEach(s => s.used = 0);
         saveStateToStorage();
+        renderAll();
       }
-      renderAll();
       showDiceTopToast({
         icon: '✨',
         title: 'Prepared Spell Slots',
@@ -2701,11 +2702,12 @@
           payload: { discipline: 'divine', index: idx },
           meta: { label: `Unprepare Divine Spell (${s.name})` }
         });
+        renderAll({ skipRecompute: true });
       } else {
         character.spellcasting.divineSpells.splice(idx, 1);
         saveStateToStorage(true);
+        renderAll();
       }
-      renderAll();
       showDiceTopToast({
         icon: '🗑️',
         title: 'Divine Spell Unprepared',
@@ -2803,6 +2805,7 @@
           payload: { discipline: 'divine' },
           meta: { label: 'Restore Divine Slots & Powers' }
         });
+        renderAll({ skipRecompute: true });
       } else {
         (character?.spellcasting?.divineSlots || []).forEach(s => {
           s.used = 0;
@@ -2813,8 +2816,8 @@
           character.spellcasting.domainPowerUses = {};
         }
         saveStateToStorage();
+        renderAll();
       }
-      renderAll();
       showDiceTopToast({
         icon: '✨',
         title: 'Divine Slots & Domain Powers Restored',
@@ -3014,12 +3017,9 @@
           const existingIdx = character.buffs.findIndex(b => b && (b.id === pw.id || b.name === buffObj.name));
           if (existingIdx !== -1) character.buffs[existingIdx] = buffObj;
           else character.buffs.push(buffObj);
-          if (typeof RuleEngine !== 'undefined' && RuleEngine.recalculateCharacter) {
-            RuleEngine.recalculateCharacter(character, typeof masterDb !== 'undefined' ? masterDb : []);
-          }
           saveStateToStorage(true);
         }
-        renderAll();
+        renderAll({ skipRecompute: Boolean(typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') });
         showDiceTopToast({
           icon: pw.icon || '⚜️',
           title: `${pw.name} (${pw.domain} Domain) Activated`,
@@ -3037,13 +3037,14 @@
         });
         const out = CharStore.getLastOutcome();
         if (!out || out.status !== 'power_used') return;
+        renderAll({ skipRecompute: true });
       } else {
         if (!character.spellcasting) character.spellcasting = {};
         if (!character.spellcasting.domainPowerUses) character.spellcasting.domainPowerUses = {};
         character.spellcasting.domainPowerUses[pw.id] = used + 1;
         saveStateToStorage(true);
+        renderAll();
       }
-      renderAll();
 
       if (pw.kind === 'roll' && pw.formula) {
         rollSpellOrManeuverFormula(
@@ -5980,11 +5981,12 @@
           payload: { discipline: 'spontaneous', index: idx },
           meta: { label: `Remove Known Spell (${s.name})` }
         });
+        renderAll({ skipRecompute: true });
       } else {
         character.spellcasting.knownSpells.splice(idx, 1);
         saveStateToStorage(true);
+        renderAll();
       }
-      renderAll();
       showDiceTopToast({
         icon: '🗑️',
         title: 'Spell Removed',
@@ -6043,12 +6045,14 @@
           });
           const out = CharStore.getLastOutcome();
           if (!out || out.status !== 'spell_cast') return;
+          if (typeof consumeActionEconomy === 'function') consumeActionEconomy(s, name);
+          renderAll({ skipRecompute: true });
         } else {
           if (mutSlot) mutSlot.used++;
           saveStateToStorage(true);
+          if (typeof consumeActionEconomy === 'function') consumeActionEconomy(s, name);
+          renderAll();
         }
-        if (typeof consumeActionEconomy === 'function') consumeActionEconomy(s, name);
-        renderAll();
 
         if (handleBuffSpellCast(s, cl, `Level ${lvl} Spontaneous Slot Expended`, '🔮')) {
           return;
@@ -7226,11 +7230,12 @@
             payload: { pool: targetPool, spellEntry: newSpellEntry, isDomainSpell: isDomainAdded },
             meta: { label: isDomainAdded ? `Prepare Domain Spell: ${item.name}` : `Add Spell: ${item.name}` }
           });
+          renderAll({ skipRecompute: true });
         } else {
           character.spellcasting[poolKey].push(newSpellEntry);
           saveStateToStorage(true);
+          renderAll();
         }
-        renderAll();
         renderSpellPickerResults();
         showDiceTopToast({
           icon: isDomainAdded ? '⚜️' : (targetPool === 'prepared' ? '📖' : (targetPool === 'divine' ? '✨' : '🔮')),
@@ -7345,11 +7350,12 @@
             payload: { itemType: 'Maneuver', entry: newManeuver },
             meta: { label: `Learn Maneuver: ${item.name}` }
           });
+          renderAll({ skipRecompute: true });
         } else {
           character.tomeOfBattle.maneuversKnown.push(newManeuver);
           saveStateToStorage(true);
+          renderAll();
         }
-        renderAll();
         renderSpellPickerResults();
         showDiceTopToast({
           icon: '⚔️',
@@ -7457,11 +7463,12 @@
             payload: { itemType: 'Stance', entry: newStance },
             meta: { label: `Learn Stance: ${item.name}` }
           });
+          renderAll({ skipRecompute: true });
         } else {
           character.tomeOfBattle.stancesKnown.push(newStance);
           saveStateToStorage(true);
+          renderAll();
         }
-        renderAll();
         renderSpellPickerResults();
         showDiceTopToast({
           icon: '🥋',

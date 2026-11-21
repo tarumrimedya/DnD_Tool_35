@@ -1729,18 +1729,123 @@
     return doc;
   });
 
-  CharStore.registerReducer('combat/switchWeaponSet', (doc, action, stateObj) => {
+  function applyWeaponSetStateToDoc(doc, payload) {
     ensureCombatActionStructures(doc);
-    const payload = (action && action.payload) || {};
+    const sets = doc.tactical.weaponSets;
     const setNum = Number(payload.setNum) || 1;
     doc.activeWeaponSet = setNum;
-    if (Array.isArray(payload.activeSets) && doc.tactical.weaponSets) {
-      doc.tactical.weaponSets.activeSets = payload.activeSets.slice();
-      doc.tactical.weaponSets.activeSet = (payload.activeSets.includes(1) && payload.activeSets.includes(2))
-        ? 'both'
-        : (payload.activeSets.includes(2) ? 2 : 1);
+
+    if (Array.isArray(payload.activeSets)) {
+      sets.activeSets = payload.activeSets.slice();
+    } else if (!Array.isArray(sets.activeSets) || sets.activeSets.length === 0) {
+      sets.activeSets = [1];
     }
-    setStoreOutcome(stateObj, { status: 'weapon_set_switched', setNum });
+
+    const engine = (typeof root !== 'undefined' && root.RuleEngine) ? root.RuleEngine : null;
+    const s1Main = sets.set1?.mainWeapon;
+    const mainIsDouble = engine && typeof engine.isDoubleWeapon === 'function' ? engine.isDoubleWeapon(s1Main) : false;
+    const mainIsTwoHand = engine && typeof engine.isTwoHandedWeapon === 'function' ? engine.isTwoHandedWeapon(s1Main) : false;
+    const hasOversized = engine && typeof engine.hasOversizedWeaponFeat === 'function' ? engine.hasOversizedWeaponFeat(doc) : false;
+    const isTwoHandLocked = mainIsTwoHand && !mainIsDouble && !hasOversized;
+
+    if (!Array.isArray(doc.tacticalRiders)) doc.tacticalRiders = [];
+    let twfMod = doc.tacticalRiders.find(m => m && m.name && (m.name.includes('TWF') || m.name.includes('Two-Weapon')));
+    if (!twfMod) {
+      twfMod = {
+        id: 'rider-twf',
+        schemaVersion: 3,
+        name: 'Two-Weapon Fighting (TWF)',
+        source: 'Combat',
+        combatScope: 'melee',
+        riderType: 'TWF',
+        active: false,
+        notes: 'Extra Off-Hand Attack (RAW TWF)',
+        effects: []
+      };
+      doc.tacticalRiders.push(twfMod);
+    }
+
+    if (isTwoHandLocked) {
+      if (!sets.set1) sets.set1 = { mainWeapon: s1Main || 'Unarmed Strike', grip: '2-Hand' };
+      if (!sets.set2) sets.set2 = { mainWeapon: 'None', grip: 'Off-Hand' };
+      sets.set1.grip = '2-Hand';
+      sets.set2.mainWeapon = 'None';
+      sets.set2.grip = 'Off-Hand';
+      sets.activeSets = [1];
+      sets.activeSet = 1;
+      doc.activeWeapon = sets.set1.mainWeapon;
+      doc.activeOffHand = 'None';
+      twfMod.active = false;
+      return { setNum: 1, isTwoHandLocked: true };
+    }
+
+    sets.activeSet = (sets.activeSets.includes(1) && sets.activeSets.includes(2))
+      ? 'both'
+      : (sets.activeSets.includes(2) ? 2 : 1);
+
+    const is1 = sets.activeSets.includes(1);
+    const is2 = sets.activeSets.includes(2);
+    const isDual = is1 && is2;
+
+    if (mainIsDouble && sets.set2) {
+      sets.set2.mainWeapon = sets.set1.mainWeapon;
+      sets.set2.grip = 'Off-Hand';
+    }
+
+    if (isDual) {
+      doc.activeWeapon = sets.set1.mainWeapon;
+      doc.activeOffHand = mainIsDouble ? sets.set1.mainWeapon : (sets.set2?.mainWeapon || 'None');
+      if (sets.set1) sets.set1.grip = '1-Hand';
+
+      let isOffWeapon;
+      if (typeof payload.isOffWeapon === 'boolean') {
+        isOffWeapon = payload.isOffWeapon;
+      } else if (mainIsDouble) {
+        isOffWeapon = true;
+      } else {
+        const offName = String(doc.activeOffHand || '').trim();
+        const offLower = offName.toLowerCase();
+        const offSlot = doc.bodySlots?.offHand;
+        const isPureShield = !offName || offName === 'None' || offLower.includes('buckler') ||
+          (offSlot && offSlot.name === offName && (offSlot.category === 'Shield' || String(offSlot.dmgType || '').toLowerCase() === 'shield'));
+        isOffWeapon = !isPureShield;
+      }
+      twfMod.active = isOffWeapon;
+    } else if (is1) {
+      doc.activeWeapon = sets.set1.mainWeapon;
+      doc.activeOffHand = 'None';
+      const singleGrip = mainIsDouble ? '2-Hand' : (sets.set1.grip || '1-Hand');
+      if (sets.set1) sets.set1.grip = singleGrip;
+      twfMod.active = false;
+    } else if (is2) {
+      doc.activeWeapon = sets.set2?.mainWeapon || 'None';
+      doc.activeOffHand = 'None';
+      twfMod.active = false;
+    }
+
+    return { setNum, isTwoHandLocked: false };
+  }
+
+  CharStore.registerReducer('combat/switchWeaponSet', (doc, action, stateObj) => {
+    const payload = (action && action.payload) || {};
+    const res = applyWeaponSetStateToDoc(doc, payload);
+    setStoreOutcome(stateObj, { status: 'weapon_set_switched', setNum: res.setNum, isTwoHandLocked: res.isTwoHandLocked });
+    return doc;
+  });
+
+  CharStore.registerReducer('combat/setOffHand', (doc, action, stateObj) => {
+    ensureCombatActionStructures(doc);
+    const payload = (action && action.payload) || {};
+    const engine = (typeof root !== 'undefined' && root.RuleEngine) ? root.RuleEngine : null;
+    const currentMainWep = doc.activeWeapon || doc.tactical?.weaponSets?.set1?.mainWeapon;
+    const mainIsDouble = engine && typeof engine.isDoubleWeapon === 'function' ? engine.isDoubleWeapon(currentMainWep) : false;
+    const mainIsTwoHand = engine && typeof engine.isTwoHandedWeapon === 'function' ? engine.isTwoHandedWeapon(currentMainWep) : false;
+    const hasOversized = engine && typeof engine.hasOversizedWeaponFeat === 'function' ? engine.hasOversizedWeaponFeat(doc) : false;
+    const isTwoHandLocked = mainIsTwoHand && !mainIsDouble && !hasOversized;
+
+    const requested = String(payload.activeOffHand || 'None');
+    doc.activeOffHand = isTwoHandLocked ? 'None' : requested;
+    setStoreOutcome(stateObj, { status: 'offhand_set', activeOffHand: doc.activeOffHand, isTwoHandLocked });
     return doc;
   });
 
@@ -6065,7 +6170,7 @@
           root.saveStateToStorage(true);
         }
         if (typeof root !== 'undefined' && typeof root.renderAll === 'function') {
-          root.renderAll();
+          root.renderAll({ skipRecompute: true });
         }
         _showCrafterToast('Applied Crafted Rules to Character');
         return { ok: true, saveScope: 'character', id: targetId, entry: copy };
@@ -6108,7 +6213,7 @@
           root.saveStateToStorage(true);
         }
         if (typeof root !== 'undefined' && typeof root.renderAll === 'function') {
-          root.renderAll();
+          root.renderAll({ skipRecompute: true });
         }
       }
       _showCrafterToast('Saved to Campaign Rule Crafter Library');
@@ -6154,7 +6259,7 @@
         root.saveStateToStorage(true);
       }
       if (typeof root !== 'undefined' && typeof root.renderAll === 'function') {
-        root.renderAll();
+        root.renderAll({ skipRecompute: true });
       }
       if (!resetOpts.silent) {
         _showCrafterToast(resetOpts.homebrew ? 'Homebrew entry deleted' : 'Restored Official SRD Rules', 'reset');

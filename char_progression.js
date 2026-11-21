@@ -9514,7 +9514,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       }
       if (!usedStore) saveStateToStorage(true);
       renderSkills();
-      if (typeof renderAll === 'function') renderAll();
+      if (typeof renderAll === 'function') renderAll({ skipRecompute: usedStore });
     }
 
     // Interactive Rank Adjustment with strict Skill Points Pool limit
@@ -9597,7 +9597,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       }
       if (!usedStore) saveStateToStorage(true);
       renderSkills();
-      if (typeof renderAll === 'function') renderAll();
+      if (typeof renderAll === 'function') renderAll({ skipRecompute: usedStore });
     }
 
     // Open/Close/Save Skill Consolidation Modal (Master DB linked)
@@ -10854,6 +10854,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       if (!character || !target) return;
       if (!(await DnDUI.confirm(`Are you sure you want to dismiss ${target.name || 'your companion'}?`, { tone: 'danger' }))) return;
 
+      let usedStore = false;
       if (window.CharStore && typeof window.CharStore.dispatch === 'function') {
         if (!window.CharStore.getDoc()) window.CharStore._syncExternalCharacterRef(character);
         window.CharStore.dispatch({
@@ -10861,11 +10862,12 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
           payload: { compId: target.id },
           meta: { label: `Dismiss Companion (${target.name || 'Companion'})` }
         });
+        usedStore = true;
       }
 
-      saveStateToStorage(true);
+      if (!usedStore) saveStateToStorage(true);
       closeCompanionModal();
-      renderAll();
+      renderAll({ skipRecompute: usedStore });
 
       showDiceTopToast({
         icon: '🐾',
