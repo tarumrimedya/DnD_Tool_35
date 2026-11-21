@@ -7708,6 +7708,16 @@
             const en = scaffold(blankEntry(bp));
             S.embed.originalId = '';
             loadEntry(en, '');
+            const initPrompt = String(ctx.initialPrompt || '').trim();
+            if (initPrompt) {
+              S.ui.craftOpen = true;
+              S.ui.craftText = initPrompt;
+              renderAll();
+              if (ACT && typeof ACT['run-craft-rm'] === 'function') {
+                setTimeout(() => { ACT['run-craft-rm'](); }, 0);
+              }
+              return;
+            }
           }
           renderAll();
         }

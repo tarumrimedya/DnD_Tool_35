@@ -719,6 +719,8 @@
             homebrew: collectCrafterHomebrew(),
             context: Object.assign({
               kind: kindStr || null,
+              blueprint: options.blueprint || (options.context && options.context.blueprint) || null,
+              initialPrompt: options.initialPrompt || (options.context && options.context.initialPrompt) || '',
               allowCharacterScope: options.allowCharacterScope !== false,
               originalId: options.originalId || (payloadEntry && payloadEntry.id) || null
             }, options.context || {})
