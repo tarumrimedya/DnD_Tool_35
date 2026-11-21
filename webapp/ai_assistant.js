@@ -879,11 +879,22 @@
   let _savedCommands = [];
   let _bubbleTimer = null;
 
+  function _isErrorMessage(m) {
+    if (!m) return false;
+    if (m.isError) return true;
+    const t = String(m.text || '');
+    if (t.startsWith('Could not reach Gemini AI')) return true;
+    if (Array.isArray(m.execResults) && m.execResults.some(r => r && r.ok === false && /AI Request Failed|API Key Needed/i.test(String(r.summary || '')))) {
+      return true;
+    }
+    return false;
+  }
+
   function _loadSessionHistory() {
     try {
       const raw = sessionStorage.getItem(STORAGE_HISTORY_KEY);
       const arr = raw ? JSON.parse(raw) : [];
-      _messages = Array.isArray(arr) ? arr.slice(-MAX_HISTORY) : [];
+      _messages = Array.isArray(arr) ? arr.filter(m => m && !_isErrorMessage(m)).slice(-MAX_HISTORY) : [];
     } catch (e) {
       _messages = [];
     }
@@ -891,7 +902,8 @@
 
   function _saveSessionHistory() {
     try {
-      sessionStorage.setItem(STORAGE_HISTORY_KEY, JSON.stringify(_messages.slice(-MAX_HISTORY)));
+      const clean = _messages.filter(m => m && !_isErrorMessage(m)).slice(-MAX_HISTORY);
+      sessionStorage.setItem(STORAGE_HISTORY_KEY, JSON.stringify(clean));
     } catch (e) { /* quota ignore */ }
   }
 
@@ -1854,10 +1866,17 @@
     return combined ? `<div class="rm-assist-badge-row">${combined}</div>` : '';
   }
 
+  let _showQuickReply = false;
+
   function renderQuickReply() {
     if (!_quickEl) return;
     const box = _quickEl.querySelector('#rm-assist-quick-reply');
     if (!box) return;
+    if (!_showQuickReply) {
+      box.classList.add('is-hidden');
+      box.innerHTML = '';
+      return;
+    }
     const lastModel = [..._messages].reverse().find(m => m && m.role !== 'user');
     if (!lastModel) {
       box.classList.add('is-hidden');
@@ -2000,6 +2019,7 @@
     const text = String(rawText || '').trim();
     if (!text || _isBusy) return;
     _hideAllSuggestions();
+    _showQuickReply = true;
 
     // 1. 0ms / 0-token Instant Registered Command Check
     const instant = tryParseInstantCommand(text);
@@ -2159,6 +2179,7 @@
         : _panelEl?.querySelector('#rm-assist-input');
       if (inp) setTimeout(() => inp.focus(), 20);
     } else {
+      if (_viewState === 'closed') _showQuickReply = false;
       _hideAllSuggestions();
     }
   }
