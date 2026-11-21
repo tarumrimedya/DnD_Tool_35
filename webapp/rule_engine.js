@@ -5670,60 +5670,82 @@ const RuleEngine = {
     };
 
     // 1. Structured Breath Weapon / Activated Damaging SLA Stat-Block (DC / Recharge / Cone-Line-Burst + NdX)
+    // Scope extraction to the sentence containing DC/recharge so multi-sentence rules keep passive attack dice separate from active cone/line/burst dice!
+    let activePowerSpan = null;
     const hasDcOrRecharge = /\bdc\s*[:=]?\s*(?:\d+|10\s*\+)/i.test(cleanProse) || /\b(?:recharge|cooldown)\s*[:=]?\s*\d/i.test(cleanProse);
-    const breathDiceM = cleanProse.match(/\b(\d+)d(\d+)(?:\s*([+-]\s*\d+))?\s*(acid|fire|cold|electricity|electric|lightning|sonic|force|positive|negative|holy|unholy|divine|slashing|piercing|bludgeoning)?(?:\s*(?:damage|points?\s+of))?/i);
-    if (hasDcOrRecharge && breathDiceM) {
-      const recM = cleanProse.match(/\b(?:recharge|cooldown)\s*[:=]?\s*(\d+d\d+(?:[+-]\d+)?|\d+)/i);
-      const dayM = cleanProse.match(/\b(\d+|once|twice|three\s+times)\s*(?:\/|\s*per\s+|\s*times\s+per\s*)day\b/i);
-      const saveM = cleanProse.match(/\b(?:save\s*[:=]?\s*)?(Fortitude|Reflex|Will)(?:\s+save)?(?:\s+(half|negates|partial))?/i);
-      const dcM = cleanProse.match(/\bdc\s*[:=]?\s*([0-9a-zA-Z_@+\-*/().\s]+?)(?=\s*(?:[,;|•]|\b(?:recharge|cooldown|standard|move|swift|free|full-round|half|negates|\d+\s*ft)\b|$))/i);
-      const areaM = cleanProse.match(/\b(\d+)\s*-?\s*(?:ft\.?|feet)\s*(cone|line|burst|emanation|spread|radius)?\b/i);
-      const actM = cleanProse.match(/\b(Standard|Move|Swift|Immediate|Free|Full-Round)\s*Action\b/i);
-
-      const dmgMap = { acid: 'Acid', fire: 'Fire', cold: 'Cold', electricity: 'Electricity', electric: 'Electricity', lightning: 'Electricity', sonic: 'Sonic', force: 'Force', holy: 'Holy', unholy: 'Unholy', divine: 'Divine', slashing: 'Slashing', piercing: 'Piercing', bludgeoning: 'Bludgeoning' };
-      const dmgType = breathDiceM[4] ? (dmgMap[breathDiceM[4].toLowerCase()] || 'Untyped') : 'Untyped';
-      const usage = recM
-        ? { mode: 'cooldown', recharge: recM[1].replace(/\s+/g, '') }
-        : (dayM ? { mode: 'perDay', uses: parseWordNum(dayM[1]) } : { mode: 'atwill' });
-
-      let dcVal = null, dcForm = null;
-      if (dcM) {
-        const rawDc = dcM[1].trim();
-        if (/^\d+$/.test(rawDc)) dcVal = Number(rawDc);
-        else {
-          dcForm = rawDc
-            .replace(/\b(?:1\/2|half)\s*(?:lvl|level|hd)\b/gi, '1/2 HD')
-            .replace(/\bcon(?:stitution)?(?:\s*mod(?:ifier)?)?\b/gi, 'Con')
-            .replace(/\bcha(?:risma)?(?:\s*mod(?:ifier)?)?\b/gi, 'Cha')
-            .replace(/\bwis(?:dom)?(?:\s*mod(?:ifier)?)?\b/gi, 'Wis')
-            .replace(/\bint(?:elligence)?(?:\s*mod(?:ifier)?)?\b/gi, 'Int')
-            .replace(/\s+/g, ' ').trim();
-        }
+    if (hasDcOrRecharge) {
+      const sentences = [];
+      const splitRx = /(?<!\b(?:ft|vs|dr|sr|hp|ac|dc|no|lv|st|p|e\.g|i\.e))[.!?]+(?=\s+[A-Z0-9]|$)/gi;
+      let lastIdx = 0;
+      let sm;
+      while ((sm = splitRx.exec(cleanProse))) {
+        const endIdx = sm.index + sm[0].length;
+        const sTxt = cleanProse.slice(lastIdx, endIdx).trim();
+        if (sTxt) sentences.push({ text: sTxt, start: lastIdx, len: endIdx - lastIdx });
+        lastIdx = endIdx;
       }
-      const pwName = inferredName || 'Special Attack';
-      powers.push({
-        id: 'pw-' + slugify(pwName),
-        kind: 'inline',
-        name: pwName,
-        action: actM ? (actM[1][0].toUpperCase() + actM[1].slice(1)) : 'Standard',
-        usage,
-        ...(areaM ? { area: `${areaM[1]}-ft.${areaM[2] ? ' ' + areaM[2][0].toUpperCase() + areaM[2].slice(1).toLowerCase() : ''}` } : {}),
-        ...(dcVal !== null ? { saveDC: dcVal } : {}),
-        ...(dcForm ? { dcFormula: dcForm } : {}),
-        ...(saveM ? { save: { type: saveM[1][0].toUpperCase() + saveM[1].slice(1).toLowerCase(), effect: saveM[2] ? (saveM[2][0].toUpperCase() + saveM[2].slice(1).toLowerCase()) : 'Half' } } : {}),
-        effects: [{
-          type: 'roll',
-          kind: 'Damage',
-          count: Number(breathDiceM[1]) || 1,
-          die: 'd' + breathDiceM[2],
-          flat: breathDiceM[3] ? (Number(breathDiceM[3].replace(/\s+/g, '')) || 0) : 0,
-          dmgType,
-          scaling: 'flat',
-          ...(saveM ? { save: `${saveM[1][0].toUpperCase() + saveM[1].slice(1).toLowerCase()} ${saveM[2] ? saveM[2].toLowerCase() : 'half'}` } : {})
-        }],
-        text: cleanProse
-      });
-      recordSpan(0, cleanProse.length);
+      if (lastIdx < cleanProse.length) {
+        const tailTxt = cleanProse.slice(lastIdx).trim();
+        if (tailTxt) sentences.push({ text: tailTxt, start: lastIdx, len: cleanProse.length - lastIdx });
+      }
+      const targetSent = sentences.find(s => /\bdc\s*[:=]?\s*(?:\d+|10\s*\+)/i.test(s.text) || /\b(?:recharge|cooldown)\s*[:=]?\s*\d/i.test(s.text))
+        || { text: cleanProse, start: 0, len: cleanProse.length };
+      const powerText = targetSent.text;
+      const breathDiceM = powerText.match(/\b(\d+)d(\d+)(?:\s*([+-]\s*\d+))?\s*(acid|fire|cold|electricity|electric|lightning|sonic|force|positive|negative|holy|unholy|divine|slashing|piercing|bludgeoning)?(?:\s*(?:damage|points?\s+of))?/i);
+      if (breathDiceM) {
+        const recM = powerText.match(/\b(?:recharge|cooldown)\s*[:=]?\s*(\d+d\d+(?:[+-]\d+)?|\d+)/i);
+        const dayM = powerText.match(/\b(\d+|once|twice|three\s+times)\s*(?:\/|\s*per\s+|\s*times\s+per\s*)day\b/i);
+        const saveM = powerText.match(/\b(?:save\s*[:=]?\s*)?(Fortitude|Reflex|Will)(?:\s+save)?(?:\s+(half|negates|partial))?/i);
+        const dcM = powerText.match(/\bdc\s*[:=]?\s*([0-9a-zA-Z_@+\-*/().\s]+?)(?=\s*(?:[,;|•]|\b(?:recharge|cooldown|standard|move|swift|free|full-round|half|negates|\d+\s*ft)\b|$))/i);
+        const areaM = powerText.match(/\b(\d+)\s*-?\s*(?:ft\.?|feet)\s*(cone|line|burst|emanation|spread|radius)?\b/i);
+        const actM = powerText.match(/\b(Standard|Move|Swift|Immediate|Free|Full-Round)\s*Action\b/i);
+
+        const dmgMap = { acid: 'Acid', fire: 'Fire', cold: 'Cold', electricity: 'Electricity', electric: 'Electricity', lightning: 'Electricity', sonic: 'Sonic', force: 'Force', holy: 'Holy', unholy: 'Unholy', divine: 'Divine', slashing: 'Slashing', piercing: 'Piercing', bludgeoning: 'Bludgeoning' };
+        const dmgType = breathDiceM[4] ? (dmgMap[breathDiceM[4].toLowerCase()] || 'Untyped') : 'Untyped';
+        const usage = recM
+          ? { mode: 'cooldown', recharge: recM[1].replace(/\s+/g, '') }
+          : (dayM ? { mode: 'perDay', uses: parseWordNum(dayM[1]) } : { mode: 'atwill' });
+
+        let dcVal = null, dcForm = null;
+        if (dcM) {
+          const rawDc = dcM[1].trim();
+          if (/^\d+$/.test(rawDc)) dcVal = Number(rawDc);
+          else {
+            dcForm = rawDc
+              .replace(/\b(?:1\/2|half)\s*(?:lvl|level|hd)\b/gi, '1/2 HD')
+              .replace(/\bcon(?:stitution)?(?:\s*mod(?:ifier)?)?\b/gi, 'Con')
+              .replace(/\bcha(?:risma)?(?:\s*mod(?:ifier)?)?\b/gi, 'Cha')
+              .replace(/\bwis(?:dom)?(?:\s*mod(?:ifier)?)?\b/gi, 'Wis')
+              .replace(/\bint(?:elligence)?(?:\s*mod(?:ifier)?)?\b/gi, 'Int')
+              .replace(/\s+/g, ' ').trim();
+          }
+        }
+        const pwName = inferredName || 'Special Attack';
+        powers.push({
+          id: 'pw-' + slugify(pwName),
+          kind: 'inline',
+          name: pwName,
+          action: actM ? (actM[1][0].toUpperCase() + actM[1].slice(1)) : 'Standard',
+          usage,
+          ...(areaM ? { area: `${areaM[1]}-ft.${areaM[2] ? ' ' + areaM[2][0].toUpperCase() + areaM[2].slice(1).toLowerCase() : ''}` } : {}),
+          ...(dcVal !== null ? { saveDC: dcVal } : {}),
+          ...(dcForm ? { dcFormula: dcForm } : {}),
+          ...(saveM ? { save: { type: saveM[1][0].toUpperCase() + saveM[1].slice(1).toLowerCase(), effect: saveM[2] ? (saveM[2][0].toUpperCase() + saveM[2].slice(1).toLowerCase()) : 'Half' } } : {}),
+          effects: [{
+            type: 'roll',
+            kind: 'Damage',
+            count: Number(breathDiceM[1]) || 1,
+            die: 'd' + breathDiceM[2],
+            flat: breathDiceM[3] ? (Number(breathDiceM[3].replace(/\s+/g, '')) || 0) : 0,
+            dmgType,
+            scaling: 'flat',
+            ...(saveM ? { save: `${saveM[1][0].toUpperCase() + saveM[1].slice(1).toLowerCase()} ${saveM[2] ? saveM[2].toLowerCase() : 'half'}` } : {})
+          }],
+          text: powerText
+        });
+        activePowerSpan = [targetSent.start, targetSent.start + targetSent.len];
+        recordSpan(targetSent.start, targetSent.len);
+      }
     }
 
     // 2. A -> B Stat / Formula Substitution ("use your Wisdom modifier instead of your Dexterity modifier on ranged attack rolls")
@@ -6004,12 +6026,14 @@ const RuleEngine = {
       recordSpan(sn.index, sn.len);
     });
 
-    // 7. Extra Weapon / Attack Dice ("deals an extra 2d6 points of holy damage against creatures of evil alignment")
-    if (!hasDcOrRecharge) {
-      const extraDiceRx = /\b(?:deals?\s+(?:an\s+)?)?(?:extra|additional)\s+(\d+)d(\d+)(?:\s*([+-]\s*\d+))?\s+(?:points?\s+of\s+)?(acid|fire|cold|electricity|electric|sonic|force|holy|unholy|divine|precision|sneak|negative|positive|slashing|piercing|bludgeoning|untyped)?\s*damage(?:\s+(against\s+[^.;,()]+|vs\.?\s+[^.;,()]+|when\s+[^.;,()]+|while\s+[^.;,()]+))?/gi;
+    // 7. Extra Weapon / Attack Dice ("deals an extra 2d6 points of holy damage..." or "+1d6 Fire damage on melee attacks")
+    {
+      const extraDiceRx = /(?:(?:\b(?:deals?\s+(?:an\s+)?)?(?:extra|additional)\s+)|\+)(\d+)d(\d+)(?:\s*([+-]\s*\d+))?\s+(?:points?\s+of\s+)?(acid|fire|cold|electricity|electric|sonic|force|holy|unholy|divine|precision|sneak|negative|positive|slashing|piercing|bludgeoning|untyped)?\s*damage(?:\s+(?:on\s+(?:melee|ranged|weapon)\s+attacks?|against\s+[^.;,()]+|vs\.?\s+[^.;,()]+|when\s+[^.;,()]+|while\s+[^.;,()]+))?/gi;
       while ((dm = extraDiceRx.exec(cleanProse))) {
+        if (activePowerSpan && dm.index >= activePowerSpan[0] && dm.index < activePowerSpan[1]) continue;
         const dtRaw = (dm[4] || 'untyped').toLowerCase();
         const dtCanon = dtRaw === 'electric' ? 'Electricity' : (dtRaw === 'sneak' ? 'Precision' : dtRaw.charAt(0).toUpperCase() + dtRaw.slice(1));
+        const tailQual = (dm[0].match(/\b(?:against\s+[^.;,()]+|vs\.?\s+[^.;,()]+|when\s+[^.;,()]+|while\s+[^.;,()]+)$/i) || [])[0] || '';
         const rBlk = {
           type: 'roll',
           kind: 'Damage',
@@ -6019,7 +6043,7 @@ const RuleEngine = {
           dmgType: dtCanon,
           scaling: 'flat'
         };
-        effects.push(wrapQualifier(rBlk, dm[5] || ''));
+        effects.push(wrapQualifier(rBlk, tailQual));
         recordSpan(dm.index, dm[0].length);
       }
     }
