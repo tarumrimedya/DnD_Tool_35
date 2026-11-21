@@ -917,13 +917,13 @@
     style.id = 'ai-assistant-styles';
     style.textContent = `
       .rm-assist-fab {
-        position: fixed; right: 18px; bottom: 18px; z-index: 45;
-        width: 52px; height: 52px; border-radius: 9999px;
+        position: fixed; right: 22px; bottom: 20px; z-index: 45;
+        width: 104px; height: 104px; border-radius: 9999px;
         display: flex; align-items: center; justify-content: center;
-        border: 1.8px solid rgba(129, 140, 248, 0.88);
+        border: 2.2px solid rgba(129, 140, 248, 0.88);
         background: radial-gradient(circle at 35% 25%, #3730a3 0%, #1e1b4b 58%, #090d1f 100%);
         color: #e0e7ff; font-size: 24px; cursor: pointer; overflow: visible;
-        box-shadow: 0 12px 28px rgba(2, 6, 23, 0.82), 0 0 20px rgba(99, 102, 241, 0.42), inset 0 1px 2px rgba(255, 255, 255, 0.22);
+        box-shadow: 0 16px 36px rgba(2, 6, 23, 0.85), 0 0 28px rgba(99, 102, 241, 0.45), inset 0 1px 2px rgba(255, 255, 255, 0.25);
         transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.22s ease, border-color 0.22s ease;
         user-select: none;
         --rm-gx: 0px; --rm-gy: 0px;
@@ -947,8 +947,8 @@
         pointer-events: none; overflow: visible;
       }
       .rm-assist-fab-icon svg {
-        width: 66px; height: 63px; display: block; overflow: visible;
-        transform: translateY(-5px);
+        width: 132px; height: 126px; display: block; overflow: visible;
+        transform: translateY(-10px);
       }
       .rm-assist-hdr-medallion {
         width: 34px; height: 34px; border-radius: 9999px; flex-shrink: 0;
@@ -1186,11 +1186,11 @@
         color: #fcd34d; border-color: rgba(245, 158, 11, 0.58);
       }
       .rm-assist-bubble {
-        position: fixed; right: 78px; bottom: 26px; z-index: 46;
-        max-width: 260px; padding: 7px 11px; border-radius: 12px;
+        position: fixed; right: 142px; bottom: 44px; z-index: 46;
+        max-width: 280px; padding: 8px 12px; border-radius: 12px;
         background: rgba(15, 23, 42, 0.96); color: #e2e8f0;
         border: 1px solid rgba(99, 102, 241, 0.7);
-        font-size: 11px; line-height: 1.35; box-shadow: 0 10px 24px rgba(0,0,0,0.55);
+        font-size: 11.5px; line-height: 1.38; box-shadow: 0 10px 24px rgba(0,0,0,0.55);
         pointer-events: none; opacity: 0; transform: translateY(6px);
         transition: opacity 0.2s ease, transform 0.2s ease;
       }
@@ -1198,8 +1198,8 @@
       .rm-assist-bubble.is-chronicler { border-color: rgba(245, 158, 11, 0.8); color: #fef3c7; }
 
       .rm-assist-panel {
-        position: fixed; right: 18px; bottom: 84px; z-index: 48;
-        width: 400px; max-width: calc(100vw - 24px); max-height: 70vh; max-height: 70dvh;
+        position: fixed; right: 22px; bottom: 138px; z-index: 48;
+        width: 410px; max-width: calc(100vw - 24px); max-height: 66vh; max-height: 66dvh;
         display: flex; flex-direction: column; overflow: hidden;
         border-radius: 16px; background: rgba(2, 6, 23, 0.97);
         border: 1.5px solid rgba(99, 102, 241, 0.75);
@@ -1212,8 +1212,8 @@
 
       /* Option B Stage 1: Quick Command Bar + Speech Bubble beside live diorama */
       .rm-assist-quickbar {
-        position: fixed; right: 82px; bottom: 18px; z-index: 48;
-        width: min(430px, calc(100vw - 100px));
+        position: fixed; right: 142px; bottom: 24px; z-index: 48;
+        width: min(440px, calc(100vw - 160px));
         display: flex; flex-direction: column; gap: 7px;
         font-family: system-ui, -apple-system, sans-serif;
       }
@@ -1410,6 +1410,13 @@
       }
       .rm-guide-tip-close:hover { color: #ffffff; }
 
+      @media (max-width: 1024px) and (min-width: 768px) {
+        .rm-assist-fab { right: 16px; bottom: 16px; width: 72px; height: 72px; }
+        .rm-assist-fab-icon svg { width: 92px; height: 88px; transform: translateY(-7px); }
+        .rm-assist-bubble { right: 102px; bottom: 32px; }
+        .rm-assist-quickbar { right: 102px; bottom: 18px; width: min(400px, calc(100vw - 118px)); }
+        .rm-assist-panel { right: 16px; bottom: 104px; max-height: 64dvh; }
+      }
       @media (max-width: 767px) {
         .rm-assist-fab { right: 12px; bottom: 74px; width: 46px; height: 46px; font-size: 21px; }
         .rm-assist-fab-icon svg { width: 58px; height: 55px; transform: translateY(-4px); }
