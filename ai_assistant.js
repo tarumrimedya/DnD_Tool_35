@@ -4090,8 +4090,10 @@
         systemPrompt,
         messages: recentMsgs,
         temperature: 0.2,
-        taskType: 'QUICK_SEARCH',
-        responseMimeType: 'application/json'
+        taskType: liveCtx.page === 'crafter' ? 'IMPORT_BATCH' : 'QUICK_SEARCH',
+        responseMimeType: 'application/json',
+        timeoutMs: 9000,
+        totalTimeoutMs: 22000
       });
 
       let parsed = null;

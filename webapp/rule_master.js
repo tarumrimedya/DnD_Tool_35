@@ -2401,11 +2401,42 @@ const RuleMaster = {
   },
 
   _failedGeminiModels: new Set(),
+  _busyGeminiModels: new Map(),
+  _BUSY_GEMINI_MODEL_TTL_MS: 3 * 60 * 1000,
+  _ROUTING_MATRIX_VERSION: 2,
   _retiredGeminiModelsLoaded: false,
   _RETIRED_GEMINI_MODELS_KEY: 'dnd35_gemini_retired_models',
   _RETIRED_GEMINI_MODEL_TTL_MS: 7 * 24 * 60 * 60 * 1000,
   // Used only when the live model list cannot be fetched.
-  _fallbackGeminiModels: ['gemini-3.5-flash', 'gemini-3.5-flash-lite', 'gemini-3.8-flash'],
+  _fallbackGeminiModels: ['gemini-3.5-flash-lite', 'gemini-3.5-flash', 'gemini-3.8-flash'],
+
+  markGeminiModelBusy(model) {
+    const lower = String(model || '').toLowerCase().trim();
+    if (!lower) return;
+    this._busyGeminiModels.set(lower, Date.now() + this._BUSY_GEMINI_MODEL_TTL_MS);
+  },
+
+  isGeminiModelBusy(model) {
+    const lower = String(model || '').toLowerCase().trim();
+    if (!lower || !this._busyGeminiModels.has(lower)) return false;
+    const exp = this._busyGeminiModels.get(lower);
+    if (Date.now() >= exp) {
+      this._busyGeminiModels.delete(lower);
+      return false;
+    }
+    return true;
+  },
+
+  isGeminiModelBusyError(status, message) {
+    const lower = String(message || '').toLowerCase();
+    return status === 503 || status === 429 ||
+      lower.includes('high demand') ||
+      lower.includes('overloaded') ||
+      lower.includes('resource_exhausted') ||
+      lower.includes('unavailable') ||
+      lower.includes('timeout') ||
+      lower.includes('aborterror');
+  },
 
   // Models the API refused as retired are remembered for a week, so they are not tried first again
   // after every reload. The API can still list a model it no longer serves to this key.
@@ -2450,13 +2481,20 @@ const RuleMaster = {
       lower.includes('is not supported');
   },
 
-  // Task models first, then the other usable models of the live list (newest first), so a query
-  // does not stop after three models when some of them have just been retired.
+  // Task models first, then the other usable models of the live list (flash/lite before unknown families, newest first),
+  // pushing temporarily busy/overloaded models to the back without deleting them.
   _expandGeminiCandidates(taskModels, maxModels = 6) {
     const verOf = (name) => {
       const match = String(name || '').match(/gemini-(\d+(?:\.\d+)?)-/i);
       return match ? parseFloat(match[1]) : 0;
     };
+    const familyRank = (name) => {
+      const l = String(name || '').toLowerCase();
+      if (l.includes('flash')) return 2;
+      if (l.includes('pro')) return 1;
+      return 0;
+    };
+    const isLite = (name) => (String(name || '').toLowerCase().includes('lite') ? 1 : 0);
     const out = [];
     (taskModels || []).forEach(m => { if (m && !this._isDeprecatedGeminiModel(m) && !out.includes(m)) out.push(m); });
     let discovered = Array.isArray(this._discoveredApiModels) ? this._discoveredApiModels : null;
@@ -2470,9 +2508,15 @@ const RuleMaster = {
     }
     (discovered || [])
       .filter(m => m && !this._isDeprecatedGeminiModel(m) && !out.includes(m))
-      .sort((a, b) => verOf(b) - verOf(a))
+      .sort((a, b) => (familyRank(b) - familyRank(a)) || (verOf(b) - verOf(a)) || (isLite(b) - isLite(a)))
       .forEach(m => out.push(m));
-    return out.slice(0, maxModels);
+    const fresh = [];
+    const busy = [];
+    out.forEach(m => {
+      if (this.isGeminiModelBusy(m)) busy.push(m);
+      else fresh.push(m);
+    });
+    return fresh.concat(busy).slice(0, maxModels);
   },
 
   // One readable message for a failed query: the real failure first, retired models as a note.
@@ -2525,16 +2569,7 @@ const RuleMaster = {
       const inDiscovered = validInput.filter(m => cleanDiscovered.includes(m));
       validInput = inDiscovered.length > 0 ? inDiscovered : cleanDiscovered;
     }
-    let models = [...new Set(validInput.length > 0 ? validInput : fallbackList.filter(m => !this._isDeprecatedGeminiModel(m)))];
-    // If gemini-3.1-flash-lite is at index 0, move a full flash model to index 0 so it doesn't hang
-    if (models[0] && models[0].includes('3.1-flash-lite')) {
-      const betterIdx = models.findIndex(m => m.includes('flash') && !m.includes('lite'));
-      if (betterIdx > 0) {
-        const [better] = models.splice(betterIdx, 1);
-        models.unshift(better);
-      }
-    }
-    return models;
+    return [...new Set(validInput.length > 0 ? validInput : fallbackList.filter(m => !this._isDeprecatedGeminiModel(m)))];
   },
 
   // Dynamically builds the 3-tier / 9-slot routing matrix strictly from live discovered API models (falls back to static list only if apiModels is empty)
@@ -2544,9 +2579,8 @@ const RuleMaster = {
       return match ? parseFloat(match[1]) : 0.0;
     }
     const fallbackList = this._fallbackGeminiModels;
-    // Filter out hanging, experimental, or deprecated models (e.g. 2.0-flash, 2.5-pro, 3.1-flash-lite)
     const cleanedModels = (Array.isArray(apiModels) ? apiModels.slice() : [])
-      .filter(m => m && !m.toLowerCase().includes('3.1-flash-lite') && !this._isDeprecatedGeminiModel(m));
+      .filter(m => m && !this._isDeprecatedGeminiModel(m));
     const sourceModels = cleanedModels.length > 0 ? cleanedModels : fallbackList;
     const sorted = sourceModels.slice().sort((a, b) => parseVer(b) - parseVer(a));
 
@@ -2554,15 +2588,15 @@ const RuleMaster = {
     const flashModels = sorted.filter(m => m.toLowerCase().includes('flash') && !m.toLowerCase().includes('lite'));
     const proModels = sorted.filter(m => m.toLowerCase().includes('pro'));
 
-    // Newest version first in every family. No version is pinned: a pinned 2.5 family kept being
-    // tried after Google retired it.
-    // A newer generation comes before an older one; within one generation, flash before lite.
+    // Newest generation first in every family.
+    // Within one generation: QUICK_SEARCH prefers flash-lite -> flash; IMPORT_BATCH prefers flash -> flash-lite.
     const isLite = (m) => (m.toLowerCase().includes('lite') ? 1 : 0);
-    const fastModels = [...flashModels, ...liteModels].sort((a, b) => (parseVer(b) - parseVer(a)) || (isLite(a) - isLite(b)));
-    const proNewest = proModels[0] || fastModels[0] || sorted[0];
+    const quickModels = [...liteModels, ...flashModels].sort((a, b) => (parseVer(b) - parseVer(a)) || (isLite(b) - isLite(a)));
+    const batchModels = [...flashModels, ...liteModels].sort((a, b) => (parseVer(b) - parseVer(a)) || (isLite(a) - isLite(b)));
+    const proNewest = proModels[0] || batchModels[0] || sorted[0];
 
     const pick3 = (candidates) => {
-      const pool = [...candidates, ...flashModels, ...liteModels, ...proModels, ...sorted];
+      const pool = [...candidates, ...liteModels, ...flashModels, ...proModels, ...sorted];
       const uniq = [];
       pool.forEach(m => {
         if (m && !this._isDeprecatedGeminiModel(m) && !uniq.includes(m)) uniq.push(m);
@@ -2575,9 +2609,10 @@ const RuleMaster = {
     };
 
     return {
-      QUICK_SEARCH: pick3(fastModels),
-      RULE_AUDIT: pick3([proNewest, ...fastModels.slice(0, 2), proModels[1], ...fastModels.slice(2)]),
-      IMPORT_BATCH: pick3([...fastModels.slice(0, 3), proNewest])
+      routingVersion: this._ROUTING_MATRIX_VERSION,
+      QUICK_SEARCH: pick3(quickModels),
+      RULE_AUDIT: pick3([proNewest, ...batchModels.slice(0, 2), proModels[1], ...batchModels.slice(2)]),
+      IMPORT_BATCH: pick3([...batchModels.slice(0, 3), proNewest])
     };
   },
 
@@ -2589,7 +2624,7 @@ const RuleMaster = {
       const saved = localStorage.getItem('dnd35_gemini_routing_matrix');
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (parsed && typeof parsed === 'object' && parsed.QUICK_SEARCH && parsed.RULE_AUDIT && parsed.IMPORT_BATCH) {
+        if (parsed && typeof parsed === 'object' && parsed.routingVersion === this._ROUTING_MATRIX_VERSION && parsed.QUICK_SEARCH && parsed.RULE_AUDIT && parsed.IMPORT_BATCH) {
           const allModels = [
             parsed.QUICK_SEARCH.primary, parsed.QUICK_SEARCH.fallback, parsed.QUICK_SEARCH.tertiary,
             parsed.RULE_AUDIT.primary, parsed.RULE_AUDIT.fallback, parsed.RULE_AUDIT.tertiary,
@@ -2759,6 +2794,10 @@ Schema:
       if (!isValid) {
         throw new Error('AI model selections failed whitelist validation');
       }
+
+      // Enforce deterministic flash-lite -> flash ordering for QUICK_SEARCH & stamp routingVersion
+      validatedMatrix.routingVersion = this._ROUTING_MATRIX_VERSION;
+      validatedMatrix.QUICK_SEARCH = this.buildDynamicRoutingFromModels(apiModels).QUICK_SEARCH;
 
       try {
         localStorage.setItem('dnd35_gemini_routing_matrix', JSON.stringify(validatedMatrix));
@@ -7258,6 +7297,8 @@ Allowed recommendedAction values: "KEEP" | "MODIFY" | "REMOVE".`;
             && this.isGeminiModelRetiredError(res.status, msg);
           if (isRetired && typeof this.markGeminiModelRetired === 'function') {
             this.markGeminiModelRetired(model);
+          } else if (typeof this.isGeminiModelBusyError === 'function' && this.isGeminiModelBusyError(res.status, msg)) {
+            this.markGeminiModelBusy(model);
           }
           attemptErrors.push({ model, message: `${model}: ${msg}`, retired: isRetired });
           lastErr = new Error(msg);
@@ -7266,6 +7307,9 @@ Allowed recommendedAction values: "KEEP" | "MODIFY" | "REMOVE".`;
       } catch (err) {
         clearTimeout(timer);
         const msg = err?.name === 'AbortError' ? 'timeout' : (err?.message || 'network error');
+        if (err?.name === 'AbortError' || (typeof this.isGeminiModelBusyError === 'function' && this.isGeminiModelBusyError(0, msg))) {
+          this.markGeminiModelBusy(model);
+        }
         attemptErrors.push({ model, message: `${model}: ${msg}`, retired: false });
         lastErr = err;
       }
