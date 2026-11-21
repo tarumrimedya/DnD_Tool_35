@@ -920,8 +920,8 @@
         --rm-gx: 0px; --rm-gy: 0px;
       }
       .rm-assist-fab.is-hidden { display: none; }
-      .rm-assist-fab:hover { transform: translateY(-3px) scale(1.06); }
-      .rm-assist-fab:active { transform: scale(0.95); }
+      .rm-assist-fab:hover { transform: translateY(-3px); box-shadow: 0 20px 42px rgba(2, 6, 23, 0.9), 0 0 34px rgba(129, 140, 248, 0.62), inset 0 1px 2px rgba(255, 255, 255, 0.3); }
+      .rm-assist-fab:active { transform: translateY(-1px); }
       .rm-assist-fab.is-chronicler {
         border-color: rgba(251, 191, 36, 0.9);
         background: radial-gradient(circle at 35% 25%, #92400e 0%, #451a03 58%, #0c0a09 100%);
@@ -938,8 +938,8 @@
         pointer-events: none; overflow: visible;
       }
       .rm-assist-fab-icon svg {
-        width: 132px; height: 126px; display: block; overflow: visible;
-        transform: translateY(-10px);
+        width: 130px; height: 128px; display: block; overflow: visible;
+        margin-top: -12px; shape-rendering: geometricPrecision;
       }
       .rm-assist-hdr-medallion {
         width: 34px; height: 34px; border-radius: 9999px; flex-shrink: 0;
@@ -1465,14 +1465,14 @@
 
       @media (max-width: 1024px) and (min-width: 768px) {
         .rm-assist-fab { right: 16px; bottom: 16px; width: 72px; height: 72px; }
-        .rm-assist-fab-icon svg { width: 92px; height: 88px; transform: translateY(-7px); }
+        .rm-assist-fab-icon svg { width: 90px; height: 89px; margin-top: -8px; }
         .rm-assist-bubble { right: 102px; bottom: 32px; }
         .rm-assist-quickbar { right: 102px; bottom: 18px; width: min(400px, calc(100vw - 118px)); }
         .rm-assist-panel { right: 16px; bottom: 104px; max-height: 64dvh; }
       }
       @media (max-width: 767px) {
         .rm-assist-fab { right: 12px; bottom: 74px; width: 46px; height: 46px; font-size: 21px; }
-        .rm-assist-fab-icon svg { width: 58px; height: 55px; transform: translateY(-4px); }
+        .rm-assist-fab-icon svg { width: 58px; height: 57px; margin-top: -5px; }
         .rm-assist-bubble { right: 64px; bottom: 80px; max-width: 210px; }
         .rm-assist-quickbar { right: 8px; left: 8px; bottom: 128px; width: auto; }
         .rm-assist-panel { right: 8px; left: 8px; bottom: 128px; width: auto; max-width: none; max-height: 62vh; max-height: 62dvh; }
@@ -1516,7 +1516,7 @@
   }
 
   // Unified Zero-Filter 3D Diorama: Rule Master (Foreground) + Perched Chronicler on Branch (Behind)
-  const DIORAMA_SVG = `<svg class="diorama-svg" data-active="wiz" data-wiz="idle" data-owl="idle" viewBox="0 -12 225 222" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  const DIORAMA_SVG = `<svg class="diorama-svg" data-active="wiz" data-wiz="idle" data-owl="idle" width="225" height="222" viewBox="0 -12 225 222" preserveAspectRatio="xMidYMid meet" shape-rendering="geometricPrecision" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
     <defs>
       <linearGradient id="hatCone" x1="126" y1="14" x2="58" y2="74" gradientUnits="userSpaceOnUse">
         <stop offset="0%" stop-color="#6b66a8"/><stop offset="36%" stop-color="#433e6e"/><stop offset="78%" stop-color="#282545"/><stop offset="100%" stop-color="#18162b"/>
