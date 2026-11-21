@@ -4014,12 +4014,13 @@
       return;
     }
 
-    if (!opts.forceAi && _personaLock !== 'chronicler' && root.AppAtlas && typeof root.AppAtlas.matchQuery === 'function') {
+    if (!opts.forceAi && root.AppAtlas && typeof root.AppAtlas.matchQuery === 'function') {
       const isForcedGuide = text.startsWith('?');
       const lookupText = isForcedGuide ? text.slice(1).trim() : text;
       const atlasHits = root.AppAtlas.matchQuery(lookupText, detectPageType(), 2);
       const top = atlasHits[0];
-      if (top && (top.confident || (isForcedGuide && top.samePage))) {
+      const allowedUnderLock = _personaLock !== 'chronicler' || (top && (top.entry.key === 'hub.notes' || top.entry.key === 'hud.quest_notebook'));
+      if (top && allowedUnderLock && (top.confident || (isForcedGuide && top.samePage))) {
         const e = top.entry;
         const targetPersona = e.key === 'hub.notes' || e.key === 'hud.quest_notebook' ? 'chronicler' : 'rulemaster';
         setPersonaVisual(targetPersona, false, targetPersona === 'chronicler' ? 'found' : 'scroll');

@@ -108,6 +108,21 @@
       selectors: ['[data-action="hud:roll-save"]']
     },
     {
+      key: 'hud.armor_class',
+      page: 'sheet',
+      tab: 'tab-defense',
+      category: 'HUD & Vitals',
+      label: 'Armor Class (AC, Touch, Flat-Footed) Breakdown',
+      summary: 'Inspect your Total AC, Touch AC, and Flat-Footed AC in the top HUD, or open the Defense tab for the itemized 3.5e AC bonus breakdown.',
+      steps: [
+        'Check Total, Touch, and Flat-Footed AC in the top HUD bar.',
+        'Click Defense or open the Defense & Buffs tab to inspect the full AC Breakdown list.'
+      ],
+      keywords: ['ac', 'armor class', 'ac breakdown', 'touch ac', 'flat-footed', 'flat footed', 'flat footed ac', 'defense breakdown'],
+      aliases: ['check armor class', 'show ac breakdown', 'where is ac', 'touch and flat footed ac'],
+      selectors: ['#ac-total-display', '#defense-ac-total-badge', '#defense-ac-breakdown-list']
+    },
+    {
       key: 'hud.level_up',
       page: 'sheet',
       tab: 'tab-core',
@@ -329,9 +344,38 @@
         'Open the Defense & Buffs tab (or click Add Buff).',
         'Pick a spell buff from Spotlight or type "buff: Haste" in Rule Master.'
       ],
-      keywords: ['buff', 'buffs', 'add buff', 'haste', 'mage armor', 'shield of faith', 'resist energy', 'defense', 'ac', 'armor class', 'dr', 'sr'],
-      aliases: ['how to add a buff', 'where are buffs', 'toggle buff', 'check armor class'],
+      keywords: ['buff', 'buffs', 'add buff', 'haste', 'mage armor', 'shield of faith', 'resist energy', 'defense', 'dr', 'sr'],
+      aliases: ['how to add a buff', 'where are buffs', 'toggle buff'],
       selectors: ['[data-action="combat:open-add-buff"]', '#buffs-view-grid-btn', '#tab-btn-defense']
+    },
+    {
+      key: 'combat.turn_undead',
+      page: 'sheet',
+      tab: 'tab-combat',
+      category: 'Combat Cockpit',
+      label: 'Turn / Rebuke Undead & Channeling',
+      summary: 'Roll a 3.5e Turning Check (1d20 + Cha) and Turning Damage (2d6 + Cleric level + Cha) and track daily Turn/Rebuke Undead or Elemental Turning uses.',
+      steps: [
+        'In Combat Cockpit (Defense & Channeling strip) or the Spells tab, click Turn Undead / Rebuke Undead.',
+        'Daily uses automatically decrement and reset on Long Rest.'
+      ],
+      keywords: ['turn undead', 'rebuke undead', 'channeling', 'turning check', 'turning damage', 'bolster undead', 'turn elemental'],
+      aliases: ['how to turn undead', 'roll turn undead', 'use turn undead', 'channel positive energy'],
+      selectors: ['[data-action="combat:roll-turn-undead"]', '[data-action="spells:roll-turn-undead"]']
+    },
+    {
+      key: 'combat.metamagic',
+      page: 'sheet',
+      tab: 'tab-combat',
+      category: 'Combat Cockpit',
+      label: 'Metamagic & Caster Tactical Modifiers',
+      summary: 'Toggle Metamagic feats (Empower, Maximize, Quicken, Extend, Still, Silent) and caster modifiers before casting spells in Combat Cockpit.',
+      steps: [
+        'In Combat Cockpit (Spell Strip), toggle Metamagic chips under Caster Tactical Modifiers before clicking CAST.'
+      ],
+      keywords: ['metamagic', 'empower spell', 'maximize spell', 'quicken spell', 'extend spell', 'still spell', 'silent spell', 'metamagic rod', 'caster modifiers'],
+      aliases: ['use metamagic', 'apply metamagic', 'apply empower spell', 'metamagic feats'],
+      selectors: ['#combat-spell-modifiers-dynamic-grid', '#metamagic-action-note']
     },
     {
       key: 'combat.shield_block',
@@ -503,6 +547,20 @@
       keywords: ['add item', 'buy item', 'magic item', 'item forge', 'potion', 'scroll', 'wand', 'mithral', 'adamantine', 'crystal', 'enhancement', 'consumable'],
       aliases: ['how to add an item', 'forge magic weapon', 'add potion', 'add crystal'],
       selectors: ['[data-action="inventory:open-compendium-drawer"]', '#tab-btn-inventory']
+    },
+    {
+      key: 'inventory.encumbrance',
+      page: 'sheet',
+      tab: 'tab-inventory',
+      category: 'Inventory & Gear',
+      label: 'Encumbrance & Carrying Capacity',
+      summary: 'Track total carried weight, Light / Medium / Heavy load thresholds, Max Dexterity bonus, Check Penalty, and movement speed adjustments.',
+      steps: [
+        'Open the Inventory & Gear tab and inspect the Carrying Capacity bar and weight summary.'
+      ],
+      keywords: ['encumbrance', 'carrying capacity', 'carry weight', 'total weight', 'weight', 'light load', 'medium load', 'heavy load', 'overloaded'],
+      aliases: ['check encumbrance', 'carrying limit', 'how much can i carry', 'weight limit'],
+      selectors: ['#carrying-status-badge', '#inv-total-weight', '#inv-weight-bar']
     },
 
     // =========================================================================
@@ -720,17 +778,13 @@
     'shapeshift': 'wild shape',
     'pet': 'companion',
     'animal': 'companion',
-    'ac': 'buff',
-    'armor': 'inventory',
     'gear': 'inventory',
     'bag': 'inventory',
     'backpack': 'inventory',
     'homebrew': 'rule crafter',
-    'custom': 'rule crafter',
     'journal': 'notes',
     'diary': 'notes',
     'lore': 'notes',
-    'roll': 'dice',
     'god': 'deity',
     'faith': 'deity',
     'multiclass': 'level up',
@@ -746,34 +800,45 @@
     return w;
   }
 
+  function _cleanWords(text) {
+    return String(text || '')
+      .toLowerCase()
+      .replace(/[^a-z0-9+#\s]/g, ' ')
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean);
+  }
+
   function _tokenize(text) {
-    const clean = String(text || '').toLowerCase().replace(/[^a-z0-9+#\-\s]/g, ' ').trim();
-    if (!clean) return { raw: '', tokens: [], expanded: [] };
-    const rawTokens = clean.split(/\s+/).filter(Boolean);
+    const cleanRaw = String(text || '').toLowerCase().replace(/[^a-z0-9+#\-\s]/g, ' ').replace(/\s+/g, ' ').trim();
+    const allTokens = _cleanWords(text);
+    if (allTokens.length === 0) {
+      return { raw: '', allTokens: [], allStems: [], tokens: [], stems: [], isRuleQuestion: false };
+    }
     const tokens = [];
-    for (const t of rawTokens) {
+    const stems = [];
+    for (const t of allTokens) {
       if (STOPWORDS.has(t)) continue;
       tokens.push(t);
+      stems.push(_stem(t));
     }
-    const expanded = new Set();
-    for (const t of tokens) {
-      expanded.add(t);
-      const st = _stem(t);
-      if (st.length >= 2) expanded.add(st);
-      if (SYNONYM_MAP[t]) {
-        SYNONYM_MAP[t].split(/\s+/).forEach(x => expanded.add(x));
-      } else if (SYNONYM_MAP[st]) {
-        SYNONYM_MAP[st].split(/\s+/).forEach(x => expanded.add(x));
-      }
-    }
-    return { raw: clean, tokens, expanded: [...expanded] };
+    const isRuleQuestion = /^(how does|how do .+\bwork\b|does\b|do .+\bstack\b|will .+\bstack\b|can i\b|can you\b|what is the rule|what happens (when|if)|when does|is .+ allowed|are .+ allowed)/i.test(cleanRaw)
+      && !/\b(where|button|tab|menu|panel|sheet|open|click|find|show me|how do i (add|open|roll|use|toggle|edit|change|save|equip|cast|prepare|rest|level|create|delete|check|apply|take|spend))\b/i.test(cleanRaw);
+    return {
+      raw: allTokens.join(' '),
+      allTokens,
+      allStems: allTokens.map(_stem),
+      tokens,
+      stems,
+      isRuleQuestion
+    };
   }
 
   function _editDist1(a, b) {
     if (a === b) return true;
     const la = a.length;
     const lb = b.length;
-    if (Math.abs(la - lb) > 1 || Math.min(la, lb) < 4) return false;
+    if (Math.abs(la - lb) > 1 || Math.min(la, lb) < 5) return false;
     let i = 0, j = 0, diff = 0;
     while (i < la && j < lb) {
       if (a[i] === b[j]) { i++; j++; }
@@ -788,6 +853,82 @@
     return true;
   }
 
+  function _findContiguousPhraseIndices(hayTokens, hayStems, phraseTokens, phraseStems) {
+    const plen = phraseTokens.length;
+    if (plen === 0 || plen > hayTokens.length) return null;
+    for (let i = 0; i <= hayTokens.length - plen; i++) {
+      let ok = true;
+      for (let j = 0; j < plen; j++) {
+        if (hayTokens[i + j] !== phraseTokens[j] && hayStems[i + j] !== phraseStems[j]) {
+          ok = false;
+          break;
+        }
+      }
+      if (ok) {
+        const idxs = [];
+        for (let j = 0; j < plen; j++) idxs.push(i + j);
+        return idxs;
+      }
+    }
+    return null;
+  }
+
+  // Pre-index all entries once at load time for O(1) word/stem lookups and zero substring false positives
+  const INDEXED_ENTRIES = ENTRIES.map(entry => {
+    const labelWords = _cleanWords(entry.label);
+    const labelSet = new Set();
+    for (const w of labelWords) { labelSet.add(w); labelSet.add(_stem(w)); }
+
+    const summaryWords = _cleanWords(entry.summary).filter(w => !STOPWORDS.has(w) && w.length >= 3);
+    const summarySet = new Set();
+    for (const w of summaryWords) { summarySet.add(w); summarySet.add(_stem(w)); }
+
+    const keyWords = _cleanWords(String(entry.key || '').replace(/[._]/g, ' '));
+    const keySet = new Set();
+    for (const w of keyWords) { keySet.add(w); keySet.add(_stem(w)); }
+
+    const kwSingleSet = new Set();
+    const kwSingleList = [];
+    const kwPhrases = [];
+    const kwPhraseParts = new Set();
+    for (const rawKw of (entry.keywords || [])) {
+      const ws = _cleanWords(rawKw);
+      if (ws.length === 1) {
+        kwSingleSet.add(ws[0]);
+        kwSingleSet.add(_stem(ws[0]));
+        kwSingleList.push(ws[0]);
+      } else if (ws.length >= 2) {
+        const st = ws.map(_stem);
+        kwPhrases.push({ raw: ws.join(' '), tokens: ws, stems: st });
+        for (let i = 0; i < ws.length; i++) {
+          kwPhraseParts.add(ws[i]);
+          kwPhraseParts.add(st[i]);
+        }
+      }
+    }
+
+    const aliasPhrases = [];
+    for (const rawAl of (entry.aliases || [])) {
+      const ws = _cleanWords(rawAl);
+      if (ws.length > 0) {
+        aliasPhrases.push({ raw: ws.join(' '), tokens: ws, stems: ws.map(_stem) });
+      }
+    }
+
+    return {
+      entry,
+      labelWords,
+      labelSet,
+      summarySet,
+      keySet,
+      kwSingleSet,
+      kwSingleList,
+      kwPhrases,
+      kwPhraseParts,
+      aliasPhrases
+    };
+  });
+
   function getByKey(key) {
     return ENTRIES.find(e => e.key === key) || null;
   }
@@ -798,56 +939,146 @@
   }
 
   function matchQuery(rawQuery, pageType, limit = 5) {
-    const { raw, tokens, expanded } = _tokenize(rawQuery);
-    if (!raw || expanded.length === 0) return [];
+    const { raw, allTokens, allStems, tokens, stems, isRuleQuestion } = _tokenize(rawQuery);
+    if (!raw || tokens.length === 0) return [];
+
+    // Map each allTokens index to its content token index (-1 if stopword)
+    const allToContentIdx = [];
+    let cIdx = 0;
+    for (const t of allTokens) {
+      if (STOPWORDS.has(t)) allToContentIdx.push(-1);
+      else allToContentIdx.push(cIdx++);
+    }
 
     const scored = [];
-    for (const entry of ENTRIES) {
+    for (const idx of INDEXED_ENTRIES) {
+      const { entry, labelWords, labelSet, summarySet, keySet, kwSingleSet, kwSingleList, kwPhrases, kwPhraseParts, aliasPhrases } = idx;
       const samePage = !pageType || pageType === 'all' || entry.page === pageType;
-      const labelLow = entry.label.toLowerCase();
-      const summaryLow = entry.summary.toLowerCase();
-      const keyLow = entry.key.toLowerCase();
-      const kws = (entry.keywords || []).map(k => k.toLowerCase());
-      const als = (entry.aliases || []).map(a => a.toLowerCase());
 
       let score = 0;
+      let hasStrongSignal = false;
+      const explainedContent = new Set();
 
-      // Exact phrase boosts
-      if (als.some(a => raw.includes(a) || a.includes(raw))) score += 42;
-      if (kws.some(k => k.includes(' ') && raw.includes(k))) score += 36;
-      if (labelLow.includes(raw) && raw.length >= 3) score += 30;
-      if (keyLow.includes(raw) && raw.length >= 3) score += 24;
+      // 1. Forward alias phrase matching (exact full query or contiguous phrase inside query — NEVER reverse a.includes(raw))
+      let aliasBoost = 0;
+      for (const a of aliasPhrases) {
+        if (a.raw === raw) {
+          aliasBoost = Math.max(aliasBoost, 48);
+          hasStrongSignal = true;
+          for (let i = 0; i < tokens.length; i++) explainedContent.add(i);
+          break;
+        }
+        const matchedAll = _findContiguousPhraseIndices(allTokens, allStems, a.tokens, a.stems);
+        if (matchedAll) {
+          aliasBoost = Math.max(aliasBoost, 42);
+          hasStrongSignal = true;
+          for (const ai of matchedAll) {
+            if (allToContentIdx[ai] >= 0) explainedContent.add(allToContentIdx[ai]);
+          }
+        }
+      }
+      score += aliasBoost;
 
-      // Token-level weighted matching
-      let matchedTokens = 0;
-      for (const tok of expanded) {
+      // 2. Contiguous multi-word keyword phrase matching
+      let phraseBoost = 0;
+      for (const p of kwPhrases) {
+        const matchedAll = _findContiguousPhraseIndices(allTokens, allStems, p.tokens, p.stems);
+        if (matchedAll) {
+          phraseBoost += 36;
+          hasStrongSignal = true;
+          for (const ai of matchedAll) {
+            if (allToContentIdx[ai] >= 0) explainedContent.add(allToContentIdx[ai]);
+          }
+        } else {
+          const matchedContent = _findContiguousPhraseIndices(tokens, stems, p.tokens, p.stems);
+          if (matchedContent) {
+            phraseBoost += 34;
+            hasStrongSignal = true;
+            for (const ci of matchedContent) explainedContent.add(ci);
+          }
+        }
+      }
+      score += Math.min(phraseBoost, 72);
+
+      // 3. Per-token exact / stem / synonym matching (zero substring false positives on confident path)
+      for (let i = 0; i < tokens.length; i++) {
+        const tok = tokens[i];
+        const st = stems[i];
         if (tok.length < 2) continue;
-        let tokBest = 0;
-        for (const k of kws) {
-          if (k === tok) tokBest = Math.max(tokBest, 22);
-          else if (k.split(/\s+/).some(p => p === tok || _stem(p) === tok)) tokBest = Math.max(tokBest, 18);
-          else if (k.includes(tok) && tok.length >= 3) tokBest = Math.max(tokBest, 12);
-          else if (_editDist1(k, tok)) tokBest = Math.max(tokBest, 10);
-        }
-        if (labelLow.includes(tok)) tokBest = Math.max(tokBest, 14);
-        else if (summaryLow.includes(tok) && tok.length >= 3) tokBest = Math.max(tokBest, 6);
 
-        if (tokBest > 0) {
-          score += tokBest;
-          matchedTokens++;
+        let tokBest = 0;
+        if (kwSingleSet.has(tok) || kwSingleSet.has(st)) {
+          tokBest = 22;
+          hasStrongSignal = true;
+          explainedContent.add(i);
+        } else if (labelSet.has(tok) || labelSet.has(st)) {
+          tokBest = 14;
+          explainedContent.add(i);
+        } else if (keySet.has(tok) || keySet.has(st)) {
+          tokBest = 12;
+          explainedContent.add(i);
+        } else if (kwPhraseParts.has(tok) || kwPhraseParts.has(st)) {
+          // Partial match of a multi-word keyword: small ranking hint, NEVER explains the token for confident routing
+          tokBest = 5;
+        } else if (tok.length >= 3 && (summarySet.has(tok) || summarySet.has(st))) {
+          tokBest = 4;
         }
+
+        // Half-weight synonym expansion (never outscores direct matches, still explains natural synonyms like sleep -> long rest)
+        const synTarget = SYNONYM_MAP[tok] || SYNONYM_MAP[st];
+        if (synTarget) {
+          const synWords = _cleanWords(synTarget);
+          const synStems = synWords.map(_stem);
+          if (synWords.length >= 2 && kwPhrases.some(p => p.raw === synWords.join(' '))) {
+            if (18 > tokBest) tokBest = 18;
+            hasStrongSignal = true;
+            explainedContent.add(i);
+          } else if (synWords.some((sw, si) => kwSingleSet.has(sw) || kwSingleSet.has(synStems[si]) || labelSet.has(sw) || labelSet.has(synStems[si]))) {
+            if (11 > tokBest) tokBest = 11;
+            hasStrongSignal = true;
+            explainedContent.add(i);
+          }
+        }
+
+        // Autocomplete prefix / fuzzy fallback (ranking only — NEVER counts toward explainedContent or confident)
+        if (tokBest === 0) {
+          if (tok.length >= 3 && (kwSingleList.some(k => k.startsWith(tok)) || labelWords.some(w => w.startsWith(tok)))) {
+            tokBest = 8;
+          } else if (tok.length >= 5 && kwSingleList.some(k => _editDist1(k, tok))) {
+            tokBest = 8;
+          }
+        }
+
+        score += tokBest;
       }
 
       if (score <= 0) continue;
       if (samePage) score += 6;
       else score = Math.max(1, score - 12);
 
-      // High-confidence threshold: resolves naturally without spending LLM tokens
-      const confident = samePage && (score >= 28 || (score >= 22 && matchedTokens >= 1 && tokens.length <= 4));
+      const explainedCount = explainedContent.size;
+      const hasFullCoverage = tokens.length <= 3
+        ? explainedCount === tokens.length
+        : (explainedCount / tokens.length) >= 0.75;
+
+      const confident = samePage && !isRuleQuestion && hasStrongSignal && hasFullCoverage && score >= 22;
       scored.push({ entry, score, confident, samePage });
     }
 
-    scored.sort((a, b) => b.score - a.score);
+    scored.sort((a, b) => {
+      if (pageType && pageType !== 'all' && a.samePage !== b.samePage) {
+        return a.samePage ? -1 : 1;
+      }
+      return b.score - a.score;
+    });
+
+    // Margin rule: if top 2 same-page candidates are nearly tied, do not auto-resolve by array order
+    if (scored.length >= 2 && scored[0].samePage && scored[1].samePage && scored[0].confident) {
+      if (scored[0].score - scored[1].score < 6) {
+        scored[0].confident = false;
+      }
+    }
+
     return scored.slice(0, limit);
   }
 

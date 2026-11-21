@@ -2143,7 +2143,7 @@
       `REGISTERED COMMANDS (execute directly like user click — no confirmation needed): ${cmdList}`,
       `UI GUIDE TARGET KEYS (for "how do I ...?" questions — switches tab & highlights the clickable UI control): ${guideKeys}`,
       'RESPONSE CONTRACT: Return STRICT valid JSON only (no markdown fences):',
-      '{"persona":"rulemaster"|"chronicler","reply":"concise helpful text","actions":[{"type":"exec_command","command":"cast_spell","args":{"name":"Fireball"}},{"type":"guide_ui","target":"combat.offhand","label":"Off-Hand Selector"},{"type":"open_crafter","blueprint":"weapon","prompt":"English 3.5e spec"},{"type":"apply_v3_patch","mode":"append","patch":{"effects":[{"type":"roll","kind":"Damage","dice":"1d6","dmgType":"Fire"}]}},{"type":"add_note","title":"Short title","body":"Note content","tags":["#npc"]}],"citations":[{"noteId":"note_123","title":"Note Title"}]}',
+      '{"persona":"rulemaster"|"chronicler","reply":"concise helpful text","actions":[{"type":"exec_command","command":"cast_spell","args":{"name":"Fireball"}},{"type":"guide_ui","target":"combat.offhand","label":"Off-Hand Selector"},{"type":"open_crafter","blueprint":"weapon","prompt":"English 3.5e spec"},{"type":"apply_v3_patch","mode":"append","patch":{"effects":[{"type":"roll","kind":"Damage","count":1,"die":"d6","dmgType":"Fire"}]}},{"type":"add_note","title":"Short title","body":"Note content","tags":["#npc"]}],"citations":[{"noteId":"note_123","title":"Note Title"}]}',
       'RULES:',
       '- When user asks HOW to do something in the app, include a "guide_ui" action with the best matching target key AND explain briefly in "reply".',
       '- When user commands an action (cast spell, take damage, heal, next round, toggle buff, add feat/item, take a note), include the exact "exec_command" or "add_note" action so it executes immediately.',
@@ -4014,12 +4014,13 @@
       return;
     }
 
-    if (!opts.forceAi && _personaLock !== 'chronicler' && root.AppAtlas && typeof root.AppAtlas.matchQuery === 'function') {
+    if (!opts.forceAi && root.AppAtlas && typeof root.AppAtlas.matchQuery === 'function') {
       const isForcedGuide = text.startsWith('?');
       const lookupText = isForcedGuide ? text.slice(1).trim() : text;
       const atlasHits = root.AppAtlas.matchQuery(lookupText, detectPageType(), 2);
       const top = atlasHits[0];
-      if (top && (top.confident || (isForcedGuide && top.samePage))) {
+      const allowedUnderLock = _personaLock !== 'chronicler' || (top && (top.entry.key === 'hub.notes' || top.entry.key === 'hud.quest_notebook'));
+      if (top && allowedUnderLock && (top.confident || (isForcedGuide && top.samePage))) {
         const e = top.entry;
         const targetPersona = e.key === 'hub.notes' || e.key === 'hud.quest_notebook' ? 'chronicler' : 'rulemaster';
         setPersonaVisual(targetPersona, false, targetPersona === 'chronicler' ? 'found' : 'scroll');

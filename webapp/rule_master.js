@@ -530,13 +530,91 @@ const RuleMaster = {
     return String(val).replace(/[^A-Za-z0-9 _.,:;!?()\[\]@#%^*+=|~\/-]/g, ch => '\\u' + ch.charCodeAt(0).toString(16).padStart(4, '0'));
   },
 
+  _cloneV3Mechanics(src) {
+    const v3 = this.ensureV2(src) || {};
+    const deep = (val, fallback) => {
+      if (val === undefined || val === null) return fallback;
+      try { return JSON.parse(JSON.stringify(val)); } catch (_) { return fallback; }
+    };
+    return {
+      schemaVersion: 3,
+      effects: Array.isArray(v3.effects) ? deep(v3.effects, []) : [],
+      powers: Array.isArray(v3.powers) ? deep(v3.powers, []) : [],
+      choices: Array.isArray(v3.choices) ? deep(v3.choices, []) : [],
+      modes: Array.isArray(v3.modes) ? deep(v3.modes, []) : [],
+      ruleFlags: (v3.ruleFlags && typeof v3.ruleFlags === 'object') ? deep(v3.ruleFlags, {}) : {}
+    };
+  },
+
+  _collectV3Blocks(entry, out = []) {
+    if (!entry || typeof entry !== 'object') return out;
+    const walk = (arr) => {
+      if (!Array.isArray(arr)) return;
+      for (const b of arr) {
+        if (!b || typeof b !== 'object') continue;
+        if (b.type === 'when' && Array.isArray(b.branches)) {
+          for (const br of b.branches) {
+            if (br && Array.isArray(br.effects)) walk(br.effects);
+          }
+        } else {
+          out.push(b);
+        }
+      }
+    };
+    walk(entry.effects);
+    if (Array.isArray(entry.powers)) {
+      for (const p of entry.powers) {
+        if (p && Array.isArray(p.effects)) walk(p.effects);
+      }
+    }
+    return out;
+  },
+
+  _getPrimaryBonusType(item, fallback = 'Untyped') {
+    if (!item || typeof item !== 'object') return fallback;
+    const blocks = this._collectV3Blocks(item);
+    const statBlk = blocks.find(b => b.type === 'stat' && b.btype);
+    if (statBlk && statBlk.btype) return statBlk.btype;
+    if (item.type === 'Weapon' && item.enhancementBonus) return 'Enhancement';
+    if (item.type === 'Armor') return 'Armor';
+    if (item.type === 'Shield') return 'Shield';
+    return fallback;
+  },
+
+  _getPrimaryRollSummary(item) {
+    if (!item || typeof item !== 'object') return { dice: '', dmgType: '' };
+    const blocks = this._collectV3Blocks(item);
+    const rollBlk = blocks.find(b => b.type === 'roll' && (b.count || b.die || b.dice || b.formula));
+    if (rollBlk) {
+      let dice = '';
+      if (rollBlk.formula) {
+        dice = String(rollBlk.formula);
+      } else if (rollBlk.dice) {
+        dice = String(rollBlk.dice);
+      } else if (rollBlk.count && rollBlk.die) {
+        const dieStr = String(rollBlk.die).startsWith('d') ? String(rollBlk.die) : `d${rollBlk.die}`;
+        const flatNum = Number(rollBlk.flat) || 0;
+        const flatStr = flatNum ? (flatNum > 0 ? `+${flatNum}` : `${flatNum}`) : '';
+        dice = `${rollBlk.count}${dieStr}${flatStr}`;
+      }
+      return { dice, dmgType: rollBlk.dmgType || rollBlk.type || 'Untyped' };
+    }
+    const wObj = item.weapon || item.weaponStats || {};
+    const baseDmg = wObj.damage || wObj.baseDamage || '';
+    const dTypes = Array.isArray(wObj.damageType) ? wObj.damageType.join('/')
+      : (Array.isArray(wObj.damageTypes) ? wObj.damageTypes.join('/') : (wObj.damageType || ''));
+    return { dice: baseDmg, dmgType: dTypes };
+  },
+
   getEntrySummaryPills(entry) {
     if (!entry || typeof entry !== 'object') return [];
-    const v2 = this.ensureV2(entry);
+    const v3 = this.ensureV2(entry);
     const pills = [];
-    const mods = Array.isArray(v2.modifiers) ? v2.modifiers : [];
-    const dmgParts = Array.isArray(v2.damageParts) ? v2.damageParts : [];
-    const modes = Array.isArray(v2.modes) ? v2.modes : [];
+    const blocks = this._collectV3Blocks(v3);
+    const statBlocks = blocks.filter(b => b.type === 'stat');
+    const rollBlocks = blocks.filter(b => b.type === 'roll');
+    const defBlocks = blocks.filter(b => b.type === 'defense');
+    const modes = Array.isArray(v3.modes) ? v3.modes : [];
 
     const targetLabelMap = {
       'ability.str': 'STR', 'str': 'STR',
@@ -545,48 +623,74 @@ const RuleMaster = {
       'ability.int': 'INT', 'int': 'INT',
       'ability.wis': 'WIS', 'wis': 'WIS',
       'ability.cha': 'CHA', 'cha': 'CHA',
-      'ac': 'AC', 'ac.armor': 'Armor AC', 'ac.shield': 'Shield AC', 'ac.deflection': 'Defl AC', 'ac.natural': 'Nat AC', 'ac.dodge': 'Dodge AC',
-      'attack.all': 'Atk', 'attack.melee': 'Melee Atk', 'attack.ranged': 'Ranged Atk', 'atk': 'Atk',
-      'damage.all': 'Dmg', 'damage.melee': 'Melee Dmg', 'damage.ranged': 'Ranged Dmg', 'dmg': 'Dmg',
+      'ac': 'AC', 'ac.total': 'AC', 'ac.armor': 'Armor AC', 'ac.shield': 'Shield AC', 'ac.deflection': 'Defl AC', 'ac.natural': 'Nat AC', 'ac.dodge': 'Dodge AC', 'ac.insight': 'Insight AC', 'ac.sacred': 'Sacred AC',
+      'attack.all': 'Atk', 'atk.all': 'Atk', 'attack.melee': 'Melee Atk', 'atk.melee': 'Melee Atk', 'attack.ranged': 'Ranged Atk', 'atk.ranged': 'Ranged Atk', 'atk.weapon': 'Weapon Atk', 'atk': 'Atk',
+      'damage.all': 'Dmg', 'dmg.all': 'Dmg', 'damage.melee': 'Melee Dmg', 'dmg.melee': 'Melee Dmg', 'damage.ranged': 'Ranged Dmg', 'dmg.ranged': 'Ranged Dmg', 'dmg': 'Dmg',
       'save.all': 'All Saves', 'save.fort': 'Fort', 'save.ref': 'Ref', 'save.will': 'Will', 'fort': 'Fort', 'ref': 'Ref', 'will': 'Will',
-      'init': 'Init', 'speed.land': 'ft Speed', 'speed': 'ft Speed', 'hp': 'HP', 'casterlevel': 'CL', 'casterLevel': 'CL', 'skill.all': 'Skills'
+      'init': 'Init', 'initiative': 'Init', 'speed.land': 'ft Speed', 'speed': 'ft Speed', 'hp': 'HP', 'hp.max': 'Max HP', 'casterlevel': 'CL', 'casterLevel': 'CL', 'skill.all': 'Skills', 'grapple': 'Grapple'
     };
 
-    if (v2.armorStats && Number(v2.armorStats.baseAc) > 0) {
-      const enh = Number(v2.enhancementBonus) || 0;
-      const totalAc = Number(v2.armorStats.baseAc) + enh;
-      const hasAcMod = mods.some(m => String(m.target || '').toLowerCase().startsWith('ac'));
+    const armorBaseAc = Number((v3.armor && v3.armor.ac) || (v3.armorStats && v3.armorStats.baseAc)) || 0;
+    if (armorBaseAc > 0) {
+      const enh = Number(v3.enhancementBonus) || 0;
+      const totalAc = armorBaseAc + enh;
+      const hasAcMod = statBlocks.some(b => (Array.isArray(b.targets) ? b.targets : [b.target]).some(t => String(t || '').toLowerCase().startsWith('ac')));
       if (!hasAcMod) {
-        pills.push(`+${totalAc} ${v2.type === 'Shield' ? 'Shield' : 'Armor'} AC`);
+        pills.push(`+${totalAc} ${v3.type === 'Shield' ? 'Shield' : 'Armor'} AC`);
       }
     }
 
-    mods.forEach(m => {
-      if (!m) return;
-      const rawTarget = String(m.target || '').trim();
-      let label = targetLabelMap[rawTarget] || targetLabelMap[rawTarget.toLowerCase()];
-      if (!label) {
-        if (rawTarget.toLowerCase().startsWith('skill.')) {
-          label = this.capitalizeTitle(rawTarget.slice(6).replace(/_/g, ' '));
-        } else {
-          label = this.capitalizeTitle(rawTarget);
+    statBlocks.forEach(b => {
+      const targets = Array.isArray(b.targets) && b.targets.length ? b.targets : (b.target ? [b.target] : []);
+      if (b.mode === 'replaceStat' && b.toStat) {
+        const tgt = targets[0] || b.swapTarget || 'Stat';
+        const lbl = targetLabelMap[tgt] || targetLabelMap[String(tgt).toLowerCase()] || this.capitalizeTitle(String(tgt).replace(/\.abilityMod$/i, ''));
+        pills.push(`${String(b.toStat).toUpperCase()} ➔ ${lbl}`);
+        return;
+      }
+      targets.forEach(rawT => {
+        const rawTarget = String(rawT || '').trim();
+        if (!rawTarget) return;
+        let label = targetLabelMap[rawTarget] || targetLabelMap[rawTarget.toLowerCase()];
+        if (!label) {
+          if (rawTarget.toLowerCase().startsWith('skill.')) {
+            label = this.capitalizeTitle(rawTarget.slice(6).replace(/[_-]/g, ' '));
+          } else {
+            label = this.capitalizeTitle(rawTarget);
+          }
         }
-      }
-      if (m.formula) {
-        pills.push(`${label}: ${m.formula}`);
-      } else if (m.value !== undefined && m.value !== null && Number(m.value) !== 0) {
-        const v = Number(m.value);
-        const sign = v > 0 ? '+' : '';
-        pills.push(`${sign}${v} ${label}`);
-      }
+        if (b.mode === 'formula' && b.formula) {
+          pills.push(`${label}: ${b.formula}`);
+        } else if (b.mode === 'perCL' && b.value) {
+          pills.push(`+${b.value}/${b.per || 1} CL ${label}`);
+        } else if (b.value !== undefined && b.value !== null && Number(b.value) !== 0) {
+          const v = Number(b.value);
+          const sign = v > 0 ? '+' : '';
+          pills.push(`${sign}${v} ${label}`);
+        }
+      });
     });
 
-    dmgParts.forEach(dp => {
-      if (!dp || !dp.dice) return;
-      const bonusStr = dp.bonus ? (dp.bonus > 0 ? `+${dp.bonus}` : `${dp.bonus}`) : '';
-      const typeStr = dp.type && dp.type !== 'Untyped' ? ` ${dp.type}` : '';
-      pills.push(`⚔️ ${dp.dice}${bonusStr}${typeStr}`);
+    rollBlocks.forEach(rb => {
+      const diePart = rb.formula
+        ? String(rb.formula)
+        : (rb.count && rb.die ? `${rb.count}${String(rb.die).startsWith('d') ? rb.die : 'd' + rb.die}` : (rb.dice || ''));
+      if (!diePart) return;
+      const flatNum = Number(rb.flat) || 0;
+      const bonusStr = flatNum ? (flatNum > 0 ? `+${flatNum}` : `${flatNum}`) : '';
+      const typeStr = rb.dmgType && rb.dmgType !== 'Untyped' ? ` ${rb.dmgType}` : '';
+      const kindIcon = rb.kind === 'Healing' || rb.kind === 'Fast Healing' ? '💚' : '⚔️';
+      pills.push(`${kindIcon} ${diePart}${bonusStr}${typeStr}`);
     });
+
+    defBlocks.forEach(db => {
+      if (!db.mode) return;
+      const valStr = db.value ? ` ${db.value}` : '';
+      const whatStr = db.what ? ` (${db.what})` : '';
+      pills.push(`🛡️ ${db.mode}${valStr}${whatStr}`);
+    });
+
+    const v2 = v3;
 
     if (v2.save || v2.dcFormula) {
       const saveLabel = v2.save && v2.save !== 'None' ? v2.save : 'Save';
@@ -903,9 +1007,32 @@ const RuleMaster = {
       });
     }
 
+    const v3Effects = damageParts.map(dp => {
+      const m = String(dp.dice || '').match(/^(\d+)d(\d+)$/i);
+      if (m) {
+        return {
+          type: 'roll',
+          kind: 'Damage',
+          count: parseInt(m[1], 10) || 1,
+          die: `d${parseInt(m[2], 10) || 6}`,
+          flat: Number(dp.bonus) || 0,
+          dmgType: dp.type || 'Untyped',
+          scaling: 'flat'
+        };
+      }
+      return {
+        type: 'roll',
+        kind: 'Damage',
+        formula: dp.dice + (dp.bonus ? (dp.bonus > 0 ? `+${dp.bonus}` : `${dp.bonus}`) : ''),
+        dmgType: dp.type || 'Untyped',
+        scaling: 'flat'
+      };
+    });
+
     const slug = cleanName.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '') || 'special_ability';
     return this.ensureV2({
       schemaVersion: 3,
+      blueprint: 'feat',
       id: `ability_${slug}`,
       name: cleanName,
       type: effectiveCat === 'Homebrew' ? 'Homebrew' : (effectiveCat === 'Racial Trait' ? 'Racial Trait' : 'Special Ability'),
@@ -915,6 +1042,7 @@ const RuleMaster = {
       source: effectiveCat === 'Homebrew' ? 'Homebrew / Campaign Grant' : 'D&D 3.5e Special Ability',
       benefit: benefitSummary,
       description: benefitSummary,
+      text: benefitSummary,
       action: parsedActionLabel,
       actionType: parsedActionType,
       duration: 'Instantaneous',
@@ -926,8 +1054,9 @@ const RuleMaster = {
       weight: 0,
       cost: 0,
       role: 'Offense / Special Ability',
-      modifiers: [],
-      damageParts: damageParts,
+      effects: v3Effects,
+      powers: [],
+      choices: [],
       modes: [],
       ruleFlags: {
         isStructuredAbility: true
@@ -963,14 +1092,16 @@ const RuleMaster = {
       if (parentIdx >= 0) {
         const parentObj = this.ensureV2(masterDb[parentIdx]);
         if (!Array.isArray(parentObj.modes)) parentObj.modes = [];
+        const modeMech = this._cloneV3Mechanics(v2Entry);
         const modeObj = {
           id: `mode_${v2Entry.name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '')}`,
           name: entryData._modeButtonLabel || v2Entry.name,
+          label: entryData._modeButtonLabel || v2Entry.name,
           actionType: v2Entry.actionType || 'standard',
           benefit: v2Entry.benefit || v2Entry.description || '',
-          damageParts: Array.isArray(v2Entry.damageParts) ? v2Entry.damageParts : [],
-          modifiers: Array.isArray(v2Entry.modifiers) ? v2Entry.modifiers : []
+          effects: modeMech.effects
         };
+        if (modeMech.powers.length) modeObj.powers = modeMech.powers;
         const existingModeIdx = parentObj.modes.findIndex(m => m.id === modeObj.id || (m.name || '').toLowerCase() === modeObj.name.toLowerCase());
         if (existingModeIdx >= 0) parentObj.modes[existingModeIdx] = modeObj;
         else parentObj.modes.push(modeObj);
@@ -1018,44 +1149,54 @@ const RuleMaster = {
     return true;
   },
 
-  // Synchronize Master DB edits into character inventory and equipped items (Canonical V2)
+  // Synchronize Master DB edits into character inventory and equipped items (Pure Canonical V3)
   syncMasterDbEditToCharacter(oldName, updatedEntry) {
     if (!oldName || !updatedEntry || typeof character === 'undefined' || !character) return 0;
-    const v2 = this.ensureV2(updatedEntry);
+    const v3 = this.ensureV2(updatedEntry);
+    const applyV3Fields = (target) => {
+      const mech = this._cloneV3Mechanics(v3);
+      target.schemaVersion = 3;
+      if (v3.blueprint) target.blueprint = v3.blueprint;
+      target.effects = mech.effects;
+      target.powers = mech.powers;
+      target.choices = mech.choices;
+      target.modes = mech.modes;
+      target.ruleFlags = mech.ruleFlags;
+      delete target.modifiers;
+      delete target.damageParts;
+    };
     let changesCount = 0;
     const cleanOld = oldName.toLowerCase().trim();
-    const cleanNew = (v2.name || '').toLowerCase().trim();
+    const cleanNew = (v3.name || '').toLowerCase().trim();
 
     // 1. Sync character.gearPool
     if (Array.isArray(character.gearPool)) {
       character.gearPool.forEach(item => {
         const itemClean = (item.name || '').toLowerCase().trim();
         const masterDbRef = (item.masterDbName || '').toLowerCase().trim();
-        if (item.id === v2.id || itemClean === cleanOld || masterDbRef === cleanOld || itemClean === cleanNew) {
-          item.schemaVersion = 2;
-          item.id = v2.id || item.id;
-          item.baseItemId = v2.baseItemId || item.baseItemId || null;
-          item.name = v2.name;
-          item.masterDbName = v2.name;
+        if (item.id === v3.id || itemClean === cleanOld || masterDbRef === cleanOld || itemClean === cleanNew) {
+          applyV3Fields(item);
+          item.id = v3.id || item.id;
+          item.baseItemId = v3.baseItemId || item.baseItemId || null;
+          item.name = v3.name;
+          item.masterDbName = v3.name;
           if (typeof mapEntryToGearCategory === 'function') {
-            item.category = mapEntryToGearCategory(v2);
-          } else if (v2.type) {
-            item.category = v2.type;
+            item.category = mapEntryToGearCategory(v3);
+          } else if (v3.type) {
+            item.category = v3.type;
           }
-          if (v2.slot && v2.slot !== 'None' && v2.slot !== '-') {
-            item.slot = v2.slot;
+          if (v3.slot && v3.slot !== 'None' && v3.slot !== '-') {
+            item.slot = v3.slot;
           }
-          item.tags = Array.isArray(v2.tags) ? [...v2.tags] : [];
-          item.weight = Number(v2.weight) || 0;
-          item.cost = Number(v2.cost) || 0;
-          item.desc = v2.benefit || v2.description || '';
-          item.modifiers = Array.isArray(v2.modifiers) ? JSON.parse(JSON.stringify(v2.modifiers)) : [];
-          item.damageParts = Array.isArray(v2.damageParts) ? JSON.parse(JSON.stringify(v2.damageParts)) : [];
-          item.modes = Array.isArray(v2.modes) ? JSON.parse(JSON.stringify(v2.modes)) : [];
-          item.ruleFlags = v2.ruleFlags ? JSON.parse(JSON.stringify(v2.ruleFlags)) : {};
-          item.tacticalBadges = Array.isArray(v2.tacticalBadges) ? [...v2.tacticalBadges] : [];
-          if (v2.weaponStats) item.weaponStats = JSON.parse(JSON.stringify(v2.weaponStats));
-          if (v2.armorStats) item.armorStats = JSON.parse(JSON.stringify(v2.armorStats));
+          item.tags = Array.isArray(v3.tags) ? [...v3.tags] : [];
+          item.weight = Number(v3.weight) || 0;
+          item.cost = Number(v3.cost) || 0;
+          item.desc = v3.benefit || v3.description || '';
+          item.tacticalBadges = Array.isArray(v3.tacticalBadges) ? [...v3.tacticalBadges] : [];
+          if (v3.weapon) item.weapon = JSON.parse(JSON.stringify(v3.weapon));
+          if (v3.armor) item.armor = JSON.parse(JSON.stringify(v3.armor));
+          if (v3.weaponStats) item.weaponStats = JSON.parse(JSON.stringify(v3.weaponStats));
+          if (v3.armorStats) item.armorStats = JSON.parse(JSON.stringify(v3.armorStats));
           changesCount++;
         }
       });
@@ -1067,22 +1208,19 @@ const RuleMaster = {
         const slotObj = character.bodySlots[slotKey];
         if (slotObj && slotObj.name) {
           const slotClean = slotObj.name.toLowerCase().trim();
-          if (slotObj.id === v2.id || slotClean === cleanOld || slotClean === cleanNew) {
-            slotObj.schemaVersion = 2;
-            slotObj.id = v2.id || slotObj.id;
-            slotObj.baseItemId = v2.baseItemId || slotObj.baseItemId || null;
-            slotObj.name = v2.name;
-            slotObj.masterDbName = v2.name;
-            slotObj.weight = Number(v2.weight) || 0;
-            slotObj.cost = Number(v2.cost) || 0;
-            slotObj.desc = v2.benefit || v2.description || '';
-            slotObj.actionType = v2.actionType || slotObj.actionType;
-            slotObj.modifiers = Array.isArray(v2.modifiers) ? JSON.parse(JSON.stringify(v2.modifiers)) : [];
-            slotObj.damageParts = Array.isArray(v2.damageParts) ? JSON.parse(JSON.stringify(v2.damageParts)) : [];
-            slotObj.modes = Array.isArray(v2.modes) ? JSON.parse(JSON.stringify(v2.modes)) : [];
-            slotObj.ruleFlags = v2.ruleFlags ? JSON.parse(JSON.stringify(v2.ruleFlags)) : {};
-            slotObj.tacticalBadges = Array.isArray(v2.tacticalBadges) ? [...v2.tacticalBadges] : [];
-            if (v2.armorStats) slotObj.armorStats = JSON.parse(JSON.stringify(v2.armorStats));
+          if (slotObj.id === v3.id || slotClean === cleanOld || slotClean === cleanNew) {
+            applyV3Fields(slotObj);
+            slotObj.id = v3.id || slotObj.id;
+            slotObj.baseItemId = v3.baseItemId || slotObj.baseItemId || null;
+            slotObj.name = v3.name;
+            slotObj.masterDbName = v3.name;
+            slotObj.weight = Number(v3.weight) || 0;
+            slotObj.cost = Number(v3.cost) || 0;
+            slotObj.desc = v3.benefit || v3.description || '';
+            slotObj.actionType = v3.actionType || slotObj.actionType;
+            slotObj.tacticalBadges = Array.isArray(v3.tacticalBadges) ? [...v3.tacticalBadges] : [];
+            if (v3.armor) slotObj.armor = JSON.parse(JSON.stringify(v3.armor));
+            if (v3.armorStats) slotObj.armorStats = JSON.parse(JSON.stringify(v3.armorStats));
             changesCount++;
           }
         }
@@ -1093,25 +1231,22 @@ const RuleMaster = {
     if (Array.isArray(character.weapons)) {
       character.weapons.forEach(w => {
         const wepClean = (w.name || '').toLowerCase().trim();
-        if (w.id === v2.id || wepClean === cleanOld || wepClean === cleanNew) {
-          w.schemaVersion = 2;
-          w.id = v2.id || w.id;
-          w.baseItemId = v2.baseItemId || w.baseItemId || null;
-          w.name = v2.name;
-          if (v2.slot) w.slot = v2.slot;
-          if (v2.tags) w.tags = Array.isArray(v2.tags) ? [...v2.tags] : [];
-          w.enhancementBonus = Number(v2.enhancementBonus) || w.enhancementBonus || 0;
-          w.modifiers = Array.isArray(v2.modifiers) ? JSON.parse(JSON.stringify(v2.modifiers)) : [];
-          w.damageParts = Array.isArray(v2.damageParts) ? JSON.parse(JSON.stringify(v2.damageParts)) : [];
-          w.modes = Array.isArray(v2.modes) ? JSON.parse(JSON.stringify(v2.modes)) : [];
-          w.weaponStats = v2.weaponStats ? JSON.parse(JSON.stringify(v2.weaponStats)) : w.weaponStats;
-          w.ruleFlags = v2.ruleFlags ? JSON.parse(JSON.stringify(v2.ruleFlags)) : {};
-          w.tacticalBadges = Array.isArray(v2.tacticalBadges) ? [...v2.tacticalBadges] : [];
+        if (w.id === v3.id || wepClean === cleanOld || wepClean === cleanNew) {
+          applyV3Fields(w);
+          w.id = v3.id || w.id;
+          w.baseItemId = v3.baseItemId || w.baseItemId || null;
+          w.name = v3.name;
+          if (v3.slot) w.slot = v3.slot;
+          if (v3.tags) w.tags = Array.isArray(v3.tags) ? [...v3.tags] : [];
+          w.enhancementBonus = Number(v3.enhancementBonus) || w.enhancementBonus || 0;
+          if (v3.weapon) w.weapon = JSON.parse(JSON.stringify(v3.weapon));
+          w.weaponStats = v3.weaponStats ? JSON.parse(JSON.stringify(v3.weaponStats)) : w.weaponStats;
+          w.tacticalBadges = Array.isArray(v3.tacticalBadges) ? [...v3.tacticalBadges] : [];
           changesCount++;
         }
       });
       if (character.activeWeapon && (character.activeWeapon.toLowerCase().trim() === cleanOld || character.activeWeapon.toLowerCase().trim() === cleanNew)) {
-        character.activeWeapon = v2.name;
+        character.activeWeapon = v3.name;
       }
     }
 
@@ -1120,8 +1255,8 @@ const RuleMaster = {
       character.consumables.forEach(c => {
         const cClean = (c.name || '').toLowerCase().trim();
         if (cClean === cleanOld || cClean === cleanNew) {
-          c.name = v2.name;
-          c.effect = v2.benefit || v2.description || c.effect;
+          c.name = v3.name;
+          c.effect = v3.benefit || v3.description || c.effect;
           changesCount++;
         }
       });
@@ -1134,25 +1269,23 @@ const RuleMaster = {
         if (typeof f === 'string') {
           if (stripTag(f) === cleanOld || stripTag(f) === cleanNew) {
             changesCount++;
-            return v2.name;
+            return v3.name;
           }
           return f;
         } else if (f && f.name) {
           const fClean = stripTag(f.name);
-          if (f.id === v2.id || fClean === cleanOld || fClean === cleanNew) {
-            f.id = v2.id || f.id;
-            f.name = v2.name;
-            f.benefit = v2.benefit || f.benefit;
-            if (v2.action) f.action = v2.action;
-            if (v2.actionType) f.actionType = v2.actionType;
-            if (Array.isArray(v2.damageParts) && v2.damageParts.length > 0) f.damageParts = JSON.parse(JSON.stringify(v2.damageParts));
-            if (v2.save) f.save = v2.save;
-            if (v2.dcFormula) f.dcFormula = v2.dcFormula;
-            if (v2.range) f.range = v2.range;
-            if (v2.recharge) f.recharge = v2.recharge;
-            if (v2.rechargeDice) f.rechargeDice = v2.rechargeDice;
-            f.modifiers = Array.isArray(v2.modifiers) ? JSON.parse(JSON.stringify(v2.modifiers)) : (f.modifiers || []);
-            f.ruleFlags = v2.ruleFlags ? JSON.parse(JSON.stringify(v2.ruleFlags)) : (f.ruleFlags || {});
+          if (f.id === v3.id || fClean === cleanOld || fClean === cleanNew) {
+            applyV3Fields(f);
+            f.id = v3.id || f.id;
+            f.name = v3.name;
+            f.benefit = v3.benefit || f.benefit;
+            if (v3.action) f.action = v3.action;
+            if (v3.actionType) f.actionType = v3.actionType;
+            if (v3.save) f.save = v3.save;
+            if (v3.dcFormula) f.dcFormula = v3.dcFormula;
+            if (v3.range) f.range = v3.range;
+            if (v3.recharge) f.recharge = v3.recharge;
+            if (v3.rechargeDice) f.rechargeDice = v3.rechargeDice;
             changesCount++;
           }
           return f;
@@ -1165,38 +1298,43 @@ const RuleMaster = {
         if (typeof a === 'string') {
           if (stripTag(a) === cleanOld || stripTag(a) === cleanNew) {
             changesCount++;
+            const mech = this._cloneV3Mechanics(v3);
             return {
-              id: v2.id,
-              name: v2.name,
-              type: v2.type || 'Special Ability',
-              benefit: v2.benefit || v2.description || '',
-              action: v2.action || 'Standard Action',
-              actionType: v2.actionType || 'standard',
-              damageParts: Array.isArray(v2.damageParts) ? JSON.parse(JSON.stringify(v2.damageParts)) : [],
-              save: v2.save || '',
-              dcFormula: v2.dcFormula || '',
-              range: v2.range || '',
-              recharge: v2.recharge || '',
-              rechargeDice: v2.rechargeDice || ''
+              schemaVersion: 3,
+              blueprint: v3.blueprint || 'feat',
+              id: v3.id,
+              name: v3.name,
+              type: v3.type || 'Special Ability',
+              benefit: v3.benefit || v3.description || '',
+              action: v3.action || 'Standard Action',
+              actionType: v3.actionType || 'standard',
+              effects: mech.effects,
+              powers: mech.powers,
+              choices: mech.choices,
+              modes: mech.modes,
+              ruleFlags: mech.ruleFlags,
+              save: v3.save || '',
+              dcFormula: v3.dcFormula || '',
+              range: v3.range || '',
+              recharge: v3.recharge || '',
+              rechargeDice: v3.rechargeDice || ''
             };
           }
           return a;
         } else if (a && a.name) {
           const aClean = stripTag(a.name);
-          if (a.id === v2.id || aClean === cleanOld || aClean === cleanNew) {
-            a.id = v2.id || a.id;
-            a.name = v2.name;
-            a.benefit = v2.benefit || a.benefit;
-            if (v2.action) a.action = v2.action;
-            if (v2.actionType) a.actionType = v2.actionType;
-            if (Array.isArray(v2.damageParts) && v2.damageParts.length > 0) a.damageParts = JSON.parse(JSON.stringify(v2.damageParts));
-            if (v2.save) a.save = v2.save;
-            if (v2.dcFormula) a.dcFormula = v2.dcFormula;
-            if (v2.range) a.range = v2.range;
-            if (v2.recharge) a.recharge = v2.recharge;
-            if (v2.rechargeDice) a.rechargeDice = v2.rechargeDice;
-            a.modifiers = Array.isArray(v2.modifiers) ? JSON.parse(JSON.stringify(v2.modifiers)) : (a.modifiers || []);
-            a.ruleFlags = v2.ruleFlags ? JSON.parse(JSON.stringify(v2.ruleFlags)) : (a.ruleFlags || {});
+          if (a.id === v3.id || aClean === cleanOld || aClean === cleanNew) {
+            applyV3Fields(a);
+            a.id = v3.id || a.id;
+            a.name = v3.name;
+            a.benefit = v3.benefit || a.benefit;
+            if (v3.action) a.action = v3.action;
+            if (v3.actionType) a.actionType = v3.actionType;
+            if (v3.save) a.save = v3.save;
+            if (v3.dcFormula) a.dcFormula = v3.dcFormula;
+            if (v3.range) a.range = v3.range;
+            if (v3.recharge) a.recharge = v3.recharge;
+            if (v3.rechargeDice) a.rechargeDice = v3.rechargeDice;
             changesCount++;
           }
           return a;
@@ -1208,13 +1346,12 @@ const RuleMaster = {
     // 6. Sync character.spellcasting.knownSpells
     if (character.spellcasting && Array.isArray(character.spellcasting.knownSpells)) {
       character.spellcasting.knownSpells.forEach(s => {
-        if (s.id === v2.id || (s.name || '').toLowerCase().trim() === cleanOld || (s.name || '').toLowerCase().trim() === cleanNew) {
-          s.id = v2.id || s.id;
-          s.name = v2.name;
-          s.benefit = v2.benefit || s.benefit;
-          if (v2.school) s.school = v2.school;
-          s.damageParts = Array.isArray(v2.damageParts) ? JSON.parse(JSON.stringify(v2.damageParts)) : (s.damageParts || []);
-          s.modes = Array.isArray(v2.modes) ? JSON.parse(JSON.stringify(v2.modes)) : (s.modes || []);
+        if (s.id === v3.id || (s.name || '').toLowerCase().trim() === cleanOld || (s.name || '').toLowerCase().trim() === cleanNew) {
+          applyV3Fields(s);
+          s.id = v3.id || s.id;
+          s.name = v3.name;
+          s.benefit = v3.benefit || s.benefit;
+          if (v3.school) s.school = v3.school;
           changesCount++;
         }
       });
@@ -1225,10 +1362,9 @@ const RuleMaster = {
       if (Array.isArray(character.tomeOfBattle.readiedManeuvers)) {
         character.tomeOfBattle.readiedManeuvers.forEach(m => {
           if ((m.name || '').toLowerCase().trim() === cleanOld || (m.name || '').toLowerCase().trim() === cleanNew) {
-            m.name = v2.name;
-            m.notes = v2.benefit || m.notes;
-            m.damageParts = Array.isArray(v2.damageParts) ? JSON.parse(JSON.stringify(v2.damageParts)) : (m.damageParts || []);
-            m.modes = Array.isArray(v2.modes) ? JSON.parse(JSON.stringify(v2.modes)) : (m.modes || []);
+            applyV3Fields(m);
+            m.name = v3.name;
+            m.notes = v3.benefit || m.notes;
             changesCount++;
           }
         });
@@ -1236,15 +1372,15 @@ const RuleMaster = {
       if (Array.isArray(character.tomeOfBattle.stancesKnown)) {
         character.tomeOfBattle.stancesKnown.forEach(st => {
           if ((st.name || '').toLowerCase().trim() === cleanOld || (st.name || '').toLowerCase().trim() === cleanNew) {
-            st.name = v2.name;
-            st.benefit = v2.benefit || st.benefit;
-            st.modifiers = Array.isArray(v2.modifiers) ? JSON.parse(JSON.stringify(v2.modifiers)) : (st.modifiers || []);
+            applyV3Fields(st);
+            st.name = v3.name;
+            st.benefit = v3.benefit || st.benefit;
             changesCount++;
           }
         });
       }
       if (character.activeStance && (character.activeStance.toLowerCase().trim() === cleanOld || character.activeStance.toLowerCase().trim() === cleanNew)) {
-        character.activeStance = v2.name;
+        character.activeStance = v3.name;
       }
     }
 
@@ -3073,22 +3209,41 @@ Schema:
       const cleanName = this.capitalizeTitle(this.cleanArrow(String(raw[0] || '').trim()));
       const normType = this.capitalizeIdentifier(String(raw[1] || 'Feat').trim());
       const diceStr = String(raw[24] || '').trim();
+      const rowEffects = [];
+      if (diceStr) {
+        const dm = diceStr.match(/^(\d+)d(\d+)(?:\s*([+-]\s*\d+))?$/i);
+        if (dm) {
+          rowEffects.push({
+            type: 'roll',
+            kind: 'Damage',
+            count: parseInt(dm[1], 10) || 1,
+            die: `d${parseInt(dm[2], 10) || 6}`,
+            flat: dm[3] ? parseInt(dm[3].replace(/\s+/g, ''), 10) || 0 : 0,
+            dmgType: 'Untyped',
+            scaling: 'flat'
+          });
+        } else {
+          rowEffects.push({ type: 'roll', kind: 'Damage', formula: diceStr, dmgType: 'Untyped', scaling: 'flat' });
+        }
+      }
       return this.ensureV2({
-        schemaVersion: 2,
+        schemaVersion: 3,
         name: cleanName,
         type: normType,
         slot: this.capitalizeIdentifier(String(raw[2] || 'None').trim()),
         source: String(raw[4] || 'Core 3.5e').trim(),
         benefit: String(raw[5] || '').trim(),
         description: String(raw[5] || '').trim(),
+        text: String(raw[5] || '').trim(),
         scope: this.capitalizeIdentifier(String(raw[7] || 'None / General').trim()),
         action: String(raw[25] || 'Passive').trim(),
         actionType: this.deriveActionType(raw[25], normType).toLowerCase(),
         duration: String(raw[26] || 'Continuous').trim(),
         weight: Number(raw[27]) || 0,
         cost: Number(raw[28]) || 0,
-        modifiers: [],
-        damageParts: diceStr ? [{ dice: diceStr, bonus: 0, type: 'Untyped', multiplyOnCrit: normType === 'Weapon', onCritOnly: false, source: cleanName }] : [],
+        effects: rowEffects,
+        powers: [],
+        choices: [],
         modes: []
       });
     }
@@ -3919,19 +4074,28 @@ OUTPUT JSON SCHEMA (Pure Canonical V3):
     return [];
   },
 
-  // Shared 1-Step V3 Validation & Repair Helper for LLM JSON outputs
+  // Shared 1-Step V3 Validation & Repair Helper for LLM JSON outputs (validates ALL items & re-checks repaired output)
   async _validateAndRepairAiItems(rawItems, defaultBp, modelUsed, fallbackModels, apiKey, statusTextEl = null) {
     if (!Array.isArray(rawItems) || rawItems.length === 0) return [];
     if (typeof RuleEngine === 'undefined' || typeof RuleEngine.validateV3Entry !== 'function') {
       return rawItems;
     }
-    const checkFirst = rawItems[0];
-    if (!checkFirst || typeof checkFirst !== 'object' || Array.isArray(checkFirst)) return rawItems;
-    const vCheck = RuleEngine.validateV3Entry(checkFirst, { checkRawFirst: true, defaultBlueprint: defaultBp || 'feat' });
-    if (vCheck.rawOk || !vCheck.rawErrors.length || !apiKey) return rawItems;
+    const collectErrors = (list) => {
+      const errs = [];
+      list.forEach((item, idx) => {
+        if (!item || typeof item !== 'object' || Array.isArray(item)) return;
+        const vCheck = RuleEngine.validateV3Entry(item, { checkRawFirst: true, defaultBlueprint: defaultBp || 'feat' });
+        if (!vCheck.rawOk && vCheck.rawErrors.length) {
+          vCheck.rawErrors.forEach(e => errs.push(`[entry ${idx}] ${e}`));
+        }
+      });
+      return errs;
+    };
+    const initialErrors = collectErrors(rawItems);
+    if (!initialErrors.length || !apiKey) return rawItems;
 
     const repairModels = [modelUsed].concat((fallbackModels || []).filter(m => m && m !== modelUsed && !this._isDeprecatedGeminiModel(m))).slice(0, 2);
-    const repairPrompt = `You returned a D&D 3.5e JSON entry that violated the Pure Canonical V3 contract (schemaVersion: 3).\nFix ONLY the following errors and return valid JSON matching {"entries": [...]} (NEVER emit modifiers/damageParts/defenses/resources; use condKind:"situational" for any non-closed when condition):\n\nValidation Errors:\n- ${vCheck.rawErrors.join('\n- ')}\n\nOriginal JSON:\n${JSON.stringify({ entries: rawItems })}`;
+    const repairPrompt = `You returned D&D 3.5e JSON entries that violated the Pure Canonical V3 contract (schemaVersion: 3).\nFix ONLY the following errors and return valid JSON matching {"entries": [...]} (NEVER emit modifiers/damageParts/defenses/resources; use condKind:"situational" for any non-closed when condition):\n\nValidation Errors:\n- ${initialErrors.join('\n- ')}\n\nOriginal JSON:\n${JSON.stringify({ entries: rawItems })}`;
     for (const rModel of repairModels) {
       if (!rModel) continue;
       if (statusTextEl) statusTextEl.textContent = `Repairing V3 schema (${rModel})...`;
@@ -3955,7 +4119,12 @@ OUTPUT JSON SCHEMA (Pure Canonical V3):
             const cleaned = this.cleanJsonText(txt);
             const parsed = JSON.parse(cleaned);
             const repList = Array.isArray(parsed.entries) ? parsed.entries : (Array.isArray(parsed) ? parsed : [parsed]);
-            if (repList.length > 0) return repList;
+            if (repList.length > 0) {
+              const repErrors = collectErrors(repList);
+              if (repErrors.length === 0 || repErrors.length < initialErrors.length) {
+                return repList;
+              }
+            }
           }
         }
       } catch (_) {

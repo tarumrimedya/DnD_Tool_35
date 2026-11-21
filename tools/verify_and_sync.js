@@ -22,6 +22,7 @@ const { runRuleEngineTests } = require('./test_rule_engine');
 const { runDeriveSheetTests } = require('./test_derive_sheet');
 const { runAiV3ContractTests } = require('./test_ai_v3_contract');
 const { runCharStoreTests } = require('./test_char_store');
+const { runAppAtlasRecognitionTests } = require('./test_app_atlas_recognition');
 
 const ROOT = path.resolve(__dirname, '..');
 
@@ -659,6 +660,14 @@ function main() {
           errors++;
         }
       }
+    }
+    const atlasRecRes = runAppAtlasRecognitionTests();
+    if (atlasRecRes.failures.length > 0) {
+      console.error(`[FAIL] AppAtlas 0-token recognition regression (${atlasRecRes.passed}/${atlasRecRes.total}):`);
+      atlasRecRes.failures.forEach(f => console.error(`  - ${f}`));
+      errors++;
+    } else {
+      console.log(`[OK] AppAtlas 0-token recognition: ${atlasRecRes.passed}/${atlasRecRes.total} golden queries passed.`);
     }
   } catch (atlasErr) {
     console.error(`[FAIL] AppAtlas gate crashed: ${atlasErr.message}`);
