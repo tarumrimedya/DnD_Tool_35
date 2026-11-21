@@ -7224,7 +7224,7 @@
         return ['gemini-2.5-flash', 'gemini-2.5-pro'].filter(isUsable);
       };
 
-      const standaloneBusy = (window._fsBusyModels = window._fsBusyModels || new Map());
+      const standaloneBusy = (S.ui._busyModels = S.ui._busyModels || new Map());
       const isStandaloneBusy = (id) => {
         const exp = standaloneBusy.get(id);
         if (!exp) return false;
