@@ -710,6 +710,58 @@
       };
     },
 
+    async add_like(args) {
+      if (!root.ForgeSandbox || typeof root.ForgeSandbox.applyV3Patch !== 'function') {
+        return { ok: false, summary: 'Rule Crafter is not active on this page.' };
+      }
+      const query = String(typeof args === 'string' ? args : (args?.query || args?.name || '')).trim();
+      if (!query) {
+        return { ok: false, summary: 'Specify an SRD entry name, e.g. "add like Flaming" or "add like Steadfast Determination".' };
+      }
+      const found = await resolveSrdEntryForLike(query);
+      if (!found || !found.entry) {
+        return { ok: false, summary: `No SRD entry matched "${query}".` };
+      }
+      const entry = found.entry;
+      const patch = extractV3PatchFromEntry(entry);
+      if (!patch) {
+        return { ok: false, summary: `"${entry.name}" (${entry.type || 'Entry'}) is narrative-only (no V3 mechanical blocks to copy).` };
+      }
+      const res = root.ForgeSandbox.applyV3Patch(patch, { dryRun: false, mode: 'append' });
+      if (!res || !res.ok) {
+        return { ok: false, summary: (res && res.summary) || `Could not copy blocks from "${entry.name}".` };
+      }
+      const quickChips = [{ kind: 'cmd', label: '↩ Undo', cmd: 'undo' }];
+      if (Array.isArray(found.alternates)) {
+        found.alternates.slice(0, 2).forEach((alt) => {
+          quickChips.push({ kind: 'cmd', label: `Try: ${alt.name}`, cmd: `add like ${alt.name}` });
+        });
+      }
+      return {
+        ok: true,
+        summary: `Copied from ${entry.name}${entry.type ? ` (${entry.type})` : ''}: ${res.summary}.`,
+        quickChips
+      };
+    },
+
+    async add_intent(args) {
+      if (!root.ForgeSandbox || typeof root.ForgeSandbox.applyV3Patch !== 'function') {
+        return { ok: false, summary: 'Rule Crafter is not active on this page.' };
+      }
+      const id = String(typeof args === 'string' ? args : (args?.id || '')).trim();
+      const list = Array.isArray(root.ForgeSandbox.intentCatalog) ? root.ForgeSandbox.intentCatalog : [];
+      const spec = list.find((it) => it && it.id === id);
+      if (!spec) return { ok: false, summary: `Unknown V3 intent "${id}".` };
+      const block = Object.assign({ type: spec.type }, spec.preset || {});
+      const res = root.ForgeSandbox.applyV3Patch({ effects: [block] }, { dryRun: false, mode: 'append' });
+      if (!res || !res.ok) return { ok: false, summary: (res && res.summary) || 'Could not apply intent block.' };
+      return {
+        ok: true,
+        summary: `Applied ${spec.icon || '🧩'} ${spec.title.split('(')[0].trim()}: ${res.summary}.`,
+        quickChips: [{ kind: 'cmd', label: '↩ Undo', cmd: 'undo' }]
+      };
+    },
+
     async add_block(args) {
       if (!root.ForgeSandbox || typeof root.ForgeSandbox.applyV3Patch !== 'function') {
         return { ok: false, summary: 'Rule Crafter is not active on this page.' };
@@ -1157,6 +1209,112 @@
     return null;
   }
 
+  function _getCompendium() {
+    if (root.SrdCompendium && typeof root.SrdCompendium.search === 'function') return root.SrdCompendium;
+    try {
+      if (root.parent && root.parent !== root && root.parent.SrdCompendium && typeof root.parent.SrdCompendium.search === 'function') {
+        return root.parent.SrdCompendium;
+      }
+    } catch (e) {}
+    return null;
+  }
+
+  function extractV3PatchFromEntry(entry) {
+    if (!entry || typeof entry !== 'object') return null;
+    const effects = Array.isArray(entry.effects) ? entry.effects : [];
+    const modes = Array.isArray(entry.modes) ? entry.modes : [];
+    const powers = Array.isArray(entry.powers) ? entry.powers : [];
+    const choices = Array.isArray(entry.choices) ? entry.choices : [];
+    if (!effects.length && !modes.length && !powers.length && !choices.length) return null;
+    return { effects, modes, powers, choices };
+  }
+
+  function _searchLikeSync(query) {
+    const q = String(query || '').trim();
+    if (!q) return [];
+    const low = q.toLowerCase();
+    const out = [];
+    const seen = new Set();
+    const C = _getCompendium();
+    if (C && typeof C.search === 'function') {
+      const hits = C.search(q, { limit: 12, resolveFull: true }) || [];
+      for (const h of hits) {
+        const rec = h && (h.sourceObj || (typeof C.getById === 'function' ? C.getById(h.id) : null) || h);
+        if (!rec || !rec.name) continue;
+        const key = String(rec.id || rec.name).toLowerCase();
+        if (seen.has(key)) continue;
+        seen.add(key);
+        const hasV3 = Boolean(extractV3PatchFromEntry(rec));
+        const nmLow = String(rec.name).toLowerCase();
+        const exactBonus = nmLow === low ? 1000 : (nmLow.startsWith(low) ? 300 : 0);
+        out.push({ entry: rec, hasV3, rank: (h.score || 0) + exactBonus + (hasV3 ? 250 : 0) });
+      }
+    }
+    const presets = root.ForgeSandbox && Array.isArray(root.ForgeSandbox.presetList) ? root.ForgeSandbox.presetList : [];
+    for (const p of presets) {
+      if (!p || !p.entry || !p.entry.name) continue;
+      const nmLow = String(p.entry.name).toLowerCase();
+      if (!nmLow.includes(low) && !String(p.label || '').toLowerCase().includes(low)) continue;
+      const key = String(p.entry.id || p.entry.name).toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      const hasV3 = Boolean(extractV3PatchFromEntry(p.entry));
+      const exactBonus = nmLow === low ? 900 : (nmLow.startsWith(low) ? 250 : 0);
+      out.push({ entry: p.entry, hasV3, rank: 100 + exactBonus + (hasV3 ? 250 : 0) });
+    }
+    out.sort((a, b) => b.rank - a.rank);
+    return out;
+  }
+
+  async function resolveSrdEntryForLike(query) {
+    let ranked = _searchLikeSync(query);
+    const C = _getCompendium();
+    if ((!ranked.length || !ranked.some((r) => r.hasV3)) && C && typeof C.ensureAllLoaded === 'function') {
+      try {
+        await C.ensureAllLoaded();
+        ranked = _searchLikeSync(query);
+      } catch (e) {}
+    }
+    if (!ranked.length) return null;
+    const mech = ranked.filter((r) => r.hasV3);
+    const primary = mech[0] || ranked[0];
+    const isExact = String(primary.entry.name || '').toLowerCase() === String(query || '').trim().toLowerCase();
+    const alternates = isExact ? [] : mech.slice(1, 3).map((r) => r.entry);
+    return { entry: primary.entry, alternates };
+  }
+
+  function _matchIntents(rawQuery, limit = 10) {
+    const list = root.ForgeSandbox && Array.isArray(root.ForgeSandbox.intentCatalog) ? root.ForgeSandbox.intentCatalog : [];
+    if (!list.length) return [];
+    const q = String(rawQuery || '').trim().toLowerCase().replace(/^\/?(?:add|block)\s*:?\s*/i, '').trim();
+    if (!q) {
+      // Top 4 high-frequency intents when starting "add "
+      const defaults = ['int-ac-def', 'int-dmg-dice', 'int-dr', 'int-swap-finesse', 'int-save', 'int-resource'];
+      return defaults.map((id) => list.find((it) => it && it.id === id)).filter(Boolean).slice(0, limit);
+    }
+    const tokens = q.split(/\s+/).filter(Boolean);
+    const scored = [];
+    for (const it of list) {
+      if (!it || !it.id) continue;
+      const hay = `${it.title || ''} ${it.kw || ''} ${it.cat || ''} ${it.type || ''}`.toLowerCase();
+      let score = 0;
+      for (const tok of tokens) {
+        if (String(it.title || '').toLowerCase().includes(tok)) score += 12;
+        else if (hay.includes(tok)) score += 6;
+      }
+      if (score > 0) scored.push({ it, score });
+    }
+    scored.sort((a, b) => b.score - a.score);
+    return scored.slice(0, limit).map((s) => s.it);
+  }
+
+  function _shortIntentLabel(it) {
+    if (!it || !it.title) return 'Block';
+    const base = it.title.split('(')[0].replace(/\s*\/\s*.*$/, '').trim();
+    const label = base.length > 20 ? base.slice(0, 19) + '…' : base;
+    return `${it.icon || '🧩'} ${label}`;
+  }
+
   // 0ms Deterministic Command Parser (runs with 0 tokens before calling AI)
   function tryParseInstantCommand(rawInput) {
     const q = String(rawInput || '').trim();
@@ -1234,6 +1392,8 @@
     if (noteM) return { command: 'add_note', args: noteM[1].trim() };
 
     if (detectPageType() === 'crafter') {
+      const likeM = q.match(/^\/?(?:add\s+like|like|copy)\s*:?\s+(.+)$/i);
+      if (likeM) return { command: 'add_like', args: likeM[1].trim() };
       const addBlkM = q.match(/^\/?(?:add|block)\s*:?\s+(.+)$/i);
       if (addBlkM) return { command: 'add_block', args: addBlkM[1].trim() };
     }
@@ -1726,6 +1886,42 @@
         font-size: 11px; font-weight: 700; cursor: pointer;
       }
       .rm-assist-live-preview:hover { background: rgba(14, 116, 144, 0.38); color: #ffffff; }
+      .rm-assist-chip-rail {
+        display: flex; flex-wrap: nowrap; align-items: center; gap: 5px;
+        padding: 5px 8px; overflow: hidden;
+        background: rgba(15, 23, 42, 0.92); border-top: 1px solid rgba(51, 65, 85, 0.72);
+      }
+      .rm-assist-chip-rail.is-hidden { display: none; }
+      .rm-assist-rail-chip {
+        flex: 0 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        font-size: 10.5px; font-weight: 700; padding: 3px 8px; border-radius: 9999px;
+        background: rgba(30, 41, 59, 0.95); color: #e2e8f0;
+        border: 1px solid rgba(99, 102, 241, 0.42); cursor: pointer;
+      }
+      .rm-assist-rail-chip:hover { background: rgba(99, 102, 241, 0.32); color: #ffffff; border-color: #818cf8; }
+      .rm-assist-rail-more {
+        flex: 0 0 auto; font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 9999px;
+        background: rgba(51, 65, 85, 0.85); color: #cbd5e1; border: 1px solid rgba(100, 116, 139, 0.55); cursor: pointer;
+      }
+      .rm-assist-rail-more:hover { background: rgba(100, 116, 139, 0.9); color: #ffffff; }
+      .rm-assist-input-wrap {
+        position: relative; flex: 1; min-width: 0; display: flex; align-items: center;
+      }
+      .rm-assist-input-wrap > .rm-assist-input { width: 100%; background: transparent; position: relative; z-index: 2; }
+      .rm-assist-ghost {
+        position: absolute; inset: 0; z-index: 1; pointer-events: none;
+        display: flex; align-items: center; overflow: hidden; white-space: pre;
+        padding: 7px 10px; font-size: 12px; font-family: inherit;
+        background: #020617; border: 1px solid transparent; border-radius: 9px;
+      }
+      .rm-assist-ghost-prefix { visibility: hidden; }
+      .rm-assist-ghost-suffix { color: rgba(148, 163, 184, 0.52); }
+      .rm-assist-ghost-tab {
+        margin-left: 6px; padding: 0 4px; border-radius: 4px;
+        font-size: 9px; font-weight: 800; color: #94a3b8;
+        border: 1px solid rgba(100, 116, 139, 0.5); background: rgba(30, 41, 59, 0.7);
+      }
+      @media (max-width: 768px) { .rm-assist-ghost { display: none !important; } }
 
       /* Interactive User Guide Modal (0-Token App Atlas) */
       .rm-guide-modal-backdrop {
@@ -2466,7 +2662,8 @@
     { cmd: '/craft: ', desc: 'Open Rule Crafter for custom V3 homebrew', mode: 'fill', pages: ['sheet', 'hub'] },
     { cmd: '/note: ', desc: 'Save a campaign note via Owl Chronicler', mode: 'fill', pages: ['sheet', 'hub'] },
     { cmd: '/guide', desc: 'Open the 0-Token Interactive User Guide', mode: 'cmd', pages: ['sheet', 'hub', 'crafter'] },
-    { cmd: '/add ', desc: 'Add V3 block (e.g. /add +2 ac, /add 1d6 fire, /add dr 5/magic)', mode: 'fill', pages: ['crafter'] },
+    { cmd: '/add ', desc: 'Add V3 block (e.g. /add +2 ac, /add fire damage, /add dr 5/magic)', mode: 'fill', pages: ['crafter'] },
+    { cmd: '/add like ', desc: 'Copy real V3 blocks from SRD (e.g. /add like Flaming, /add like Dodge)', mode: 'fill', pages: ['crafter'] },
     { cmd: '/undo', desc: 'Undo last change', mode: 'cmd', pages: ['sheet', 'crafter'] }
   ];
 
@@ -2561,22 +2758,129 @@
     return out.slice(0, 5);
   }
 
+  const GHOST_TEMPLATES_CRAFTER = [
+    'add like Flaming',
+    'add fire damage',
+    'add +2 deflection ac',
+    'add dr 5/magic',
+    'add 3/day',
+    'add sr 15'
+  ];
+
+  function _computeGhostCompletion(rawVal) {
+    const raw = String(rawVal || '');
+    if (!raw || raw.length > 48) return '';
+    const low = raw.toLowerCase();
+    const curPage = detectPageType();
+
+    if (curPage === 'crafter') {
+      const likeM = raw.match(/^(\/?(?:add\s+like|like|copy)\s*:?\s+)(.+)$/i);
+      if (likeM && likeM[2].trim().length >= 2) {
+        const prefix = likeM[1];
+        const term = likeM[2];
+        const hits = _searchLikeSync(term);
+        const top = hits.find((h) => h.hasV3 && String(h.entry.name || '').toLowerCase().startsWith(term.toLowerCase()));
+        if (top && top.entry.name.length > term.length) {
+          return prefix + top.entry.name;
+        }
+      }
+      for (const tpl of GHOST_TEMPLATES_CRAFTER) {
+        if (tpl.toLowerCase().startsWith(low) && tpl.length > raw.length) return tpl;
+      }
+    }
+    if (low.startsWith('/')) {
+      const hit = SLASH_PALETTE.find((it) => it.pages.includes(curPage) && it.cmd.toLowerCase().startsWith(low) && it.cmd.length > raw.length);
+      if (hit) return hit.cmd;
+    }
+    return '';
+  }
+
+  function _renderGhost(inputEl) {
+    if (!inputEl) return;
+    const ghostEl = inputEl.parentElement && inputEl.parentElement.querySelector('.rm-assist-ghost');
+    if (!ghostEl) return;
+    const raw = String(inputEl.value || '');
+    const full = _computeGhostCompletion(raw);
+    inputEl.dataset.rmGhostFull = full || '';
+    if (!full || full.length <= raw.length) {
+      ghostEl.innerHTML = '';
+      return;
+    }
+    const suffix = full.slice(raw.length);
+    ghostEl.innerHTML = `<span class="rm-assist-ghost-prefix">${_esc(raw)}</span><span class="rm-assist-ghost-suffix">${_esc(suffix)}</span><span class="rm-assist-ghost-tab">Tab</span>`;
+  }
+
+  function _renderIntentChipRail(inputEl, railEl, showAll) {
+    if (!railEl) return;
+    if (detectPageType() !== 'crafter') {
+      railEl.classList.add('is-hidden');
+      railEl.innerHTML = '';
+      return;
+    }
+    const raw = String(inputEl ? inputEl.value : '').trim();
+    if (!raw || /^\/?(?:add\s+like|like|copy)\s+/i.test(raw)) {
+      railEl.classList.add('is-hidden');
+      railEl.innerHTML = '';
+      return;
+    }
+    const wantsIntents = /^\/?(?:add|block)\b/i.test(raw) || raw.length >= 2;
+    if (!wantsIntents) {
+      railEl.classList.add('is-hidden');
+      railEl.innerHTML = '';
+      return;
+    }
+    const allHits = _matchIntents(raw, 12);
+    if (!allHits.length) {
+      railEl.classList.add('is-hidden');
+      railEl.innerHTML = '';
+      return;
+    }
+    const visible = showAll ? allHits.slice(0, 8) : allHits.slice(0, 4);
+    const hasMore = !showAll && allHits.length > 4;
+    railEl.innerHTML = visible.map((it) =>
+      `<button type="button" class="rm-assist-rail-chip" data-rm-intent-id="${_esc(it.id)}" title="${_esc(it.title)}">${_esc(_shortIntentLabel(it))}</button>`
+    ).join('') + (hasMore ? `<button type="button" class="rm-assist-rail-more" data-rm-rail-more="1" title="Show more V3 block intents">…</button>` : '');
+    railEl.classList.remove('is-hidden');
+  }
+
   function renderInstantSuggestions(inputEl, suggestEl) {
     if (!inputEl || !suggestEl) return;
+    _renderGhost(inputEl);
+    const railEl = inputEl.id === 'rm-assist-quick-input'
+      ? _quickEl?.querySelector('#rm-assist-quick-rail')
+      : _panelEl?.querySelector('#rm-assist-panel-rail');
+    _renderIntentChipRail(inputEl, railEl, false);
+
     const rawVal = String(inputEl.value || '').trim();
     let previewHtml = '';
     if (detectPageType() === 'crafter' && root.ForgeSandbox && typeof root.ForgeSandbox.applyV3Patch === 'function') {
-      const addM = rawVal.match(/^\/?(?:add|block)\s*:?\s+(.+)$/i);
-      if (addM) {
-        const parsed = parseCrafterAddSpec(addM[1].trim());
-        if (parsed) {
-          const dry = root.ForgeSandbox.applyV3Patch(parsed.patch, { dryRun: true });
+      const likeM = rawVal.match(/^\/?(?:add\s+like|like|copy)\s*:?\s+(.+)$/i);
+      if (likeM && likeM[1].trim().length >= 2) {
+        const hits = _searchLikeSync(likeM[1].trim());
+        const top = hits.find((h) => h.hasV3);
+        if (top) {
+          const patch = extractV3PatchFromEntry(top.entry);
+          const dry = patch && root.ForgeSandbox.applyV3Patch(patch, { dryRun: true });
           if (dry && dry.ok) {
-            const defNote = parsed.usedDefault && parsed.defaultNote ? ` (${parsed.defaultNote})` : '';
-            previewHtml = `<button type="button" class="rm-assist-live-preview" data-rm-sug-kind="cmd" data-rm-sug-cmd="${_esc(rawVal)}">` +
-              `<span>⚡ Preview: ${_esc(dry.summary)}${_esc(defNote)}</span>` +
-              `<span class="rm-assist-suggest-kind is-cmd">Apply</span>` +
+            previewHtml = `<button type="button" class="rm-assist-live-preview" data-rm-sug-kind="cmd" data-rm-sug-cmd="${_esc(`add like ${top.entry.name}`)}">` +
+              `<span>⚡ Copy ${top.entry.name}: ${_esc(dry.summary)}</span>` +
+              `<span class="rm-assist-suggest-kind is-cmd">Copy</span>` +
               `</button>`;
+          }
+        }
+      } else {
+        const addM = rawVal.match(/^\/?(?:add|block)\s*:?\s+(.+)$/i);
+        if (addM) {
+          const parsed = parseCrafterAddSpec(addM[1].trim());
+          if (parsed) {
+            const dry = root.ForgeSandbox.applyV3Patch(parsed.patch, { dryRun: true });
+            if (dry && dry.ok) {
+              const defNote = parsed.usedDefault && parsed.defaultNote ? ` (${parsed.defaultNote})` : '';
+              previewHtml = `<button type="button" class="rm-assist-live-preview" data-rm-sug-kind="cmd" data-rm-sug-cmd="${_esc(rawVal)}">` +
+                `<span>⚡ Preview: ${_esc(dry.summary)}${_esc(defNote)}</span>` +
+                `<span class="rm-assist-suggest-kind is-cmd">Apply</span>` +
+                `</button>`;
+            }
           }
         }
       }
@@ -2652,9 +2956,15 @@
   }
 
   function _hideAllSuggestions() {
-    [_quickEl?.querySelector('#rm-assist-quick-suggest'), _panelEl?.querySelector('#rm-assist-panel-suggest')].forEach((el) => {
+    [
+      _quickEl?.querySelector('#rm-assist-quick-suggest'),
+      _panelEl?.querySelector('#rm-assist-panel-suggest'),
+      _quickEl?.querySelector('#rm-assist-quick-rail'),
+      _panelEl?.querySelector('#rm-assist-panel-rail')
+    ].forEach((el) => {
       if (el) { el.classList.add('is-hidden'); el.innerHTML = ''; }
     });
+    [_quickEl?.querySelector('#rm-assist-quick-input'), _panelEl?.querySelector('#rm-assist-input')].forEach(_renderGhost);
   }
 
   async function handleSubmit(rawText, opts = {}) {
@@ -3003,9 +3313,13 @@
     quick.innerHTML = `
       <div id="rm-assist-quick-reply" class="rm-assist-quick-reply is-hidden"></div>
       <div id="rm-assist-quick-suggest" class="rm-assist-suggest is-hidden"></div>
+      <div id="rm-assist-quick-rail" class="rm-assist-chip-rail is-hidden"></div>
       <form id="rm-assist-quick-form" class="rm-assist-quick-form">
-        <input id="rm-assist-quick-input" class="rm-assist-input" type="text" autocomplete="off" spellcheck="false"
-               placeholder="Ask how-to, or type / commands, # notes, ? guide..." />
+        <div class="rm-assist-input-wrap">
+          <span class="rm-assist-ghost" aria-hidden="true"></span>
+          <input id="rm-assist-quick-input" class="rm-assist-input" type="text" autocomplete="off" spellcheck="false"
+                 placeholder="Ask how-to, or type / commands, # notes, ? guide..." />
+        </div>
         <button id="rm-assist-quick-send" class="rm-assist-send" type="submit">Run</button>
         <button type="button" id="rm-assist-quick-guide" class="rm-assist-iconbtn" title="Interactive User Guide (0 tokens)">❓</button>
         <button type="button" id="rm-assist-expand" class="rm-assist-iconbtn" title="Expand full chat">⤢ Chat</button>
@@ -3046,9 +3360,13 @@
       <div id="rm-assist-cmds" class="rm-assist-cmds"></div>
       <div id="rm-assist-log" class="rm-assist-log"></div>
       <div id="rm-assist-panel-suggest" class="rm-assist-suggest is-hidden"></div>
+      <div id="rm-assist-panel-rail" class="rm-assist-chip-rail is-hidden"></div>
       <form id="rm-assist-form" class="rm-assist-form">
-        <input id="rm-assist-input" class="rm-assist-input" type="text" autocomplete="off" spellcheck="false"
-               placeholder="Ask how-to, or type / commands, # notes, ? guide..." />
+        <div class="rm-assist-input-wrap">
+          <span class="rm-assist-ghost" aria-hidden="true"></span>
+          <input id="rm-assist-input" class="rm-assist-input" type="text" autocomplete="off" spellcheck="false"
+                 placeholder="Ask how-to, or type / commands, # notes, ? guide..." />
+        </div>
         <button id="rm-assist-send" class="rm-assist-send" type="submit">Run</button>
       </form>
     `;
@@ -3195,6 +3513,45 @@
         if (key) showUiGuideTarget(key);
         return true;
       }
+      const intentChip = ev.target.closest('[data-rm-intent-id]');
+      if (intentChip) {
+        const intentId = intentChip.getAttribute('data-rm-intent-id');
+        const qInp = quick.querySelector('#rm-assist-quick-input');
+        const pInp = panel.querySelector('#rm-assist-input');
+        if (qInp) qInp.value = '';
+        if (pInp) pInp.value = '';
+        _hideAllSuggestions();
+        if (intentId && _hasCommand('add_intent')) {
+          _showQuickReply = true;
+          COMMANDS.add_intent(intentId).then((res) => {
+            _messages.push({ role: 'model', persona: 'rulemaster', text: res.summary, execResults: [res], quickChips: res.quickChips });
+            _saveSessionHistory();
+            renderMessages();
+          });
+        }
+        return true;
+      }
+      const railMoreBtn = ev.target.closest('[data-rm-rail-more]');
+      if (railMoreBtn) {
+        const rail = railMoreBtn.closest('.rm-assist-chip-rail');
+        const activeInp = rail && rail.id === 'rm-assist-quick-rail'
+          ? quick.querySelector('#rm-assist-quick-input')
+          : panel.querySelector('#rm-assist-input');
+        const activeSug = rail && rail.id === 'rm-assist-quick-rail'
+          ? quick.querySelector('#rm-assist-quick-suggest')
+          : panel.querySelector('#rm-assist-panel-suggest');
+        if (activeInp && activeSug) {
+          const allHits = _matchIntents(activeInp.value, 10);
+          activeSug.innerHTML = allHits.map((it) =>
+            `<button type="button" class="rm-assist-suggest-item" data-rm-intent-id="${_esc(it.id)}">` +
+            `<span>${_esc(it.icon || '🧩')} ${_esc(it.title)}</span>` +
+            `<span class="rm-assist-suggest-kind is-cmd">Add</span>` +
+            `</button>`
+          ).join('');
+          activeSug.classList.remove('is-hidden');
+        }
+        return true;
+      }
       const chipCmdBtn = ev.target.closest('[data-rm-chip-cmd]');
       if (chipCmdBtn) {
         const cmd = chipCmdBtn.getAttribute('data-rm-chip-cmd');
@@ -3302,6 +3659,21 @@
 
     quickInput.addEventListener('input', () => renderInstantSuggestions(quickInput, quickSuggest));
     panelInput.addEventListener('input', () => renderInstantSuggestions(panelInput, panelSuggest));
+
+    const bindGhostTab = (inp, sug) => {
+      inp.addEventListener('keydown', (ev) => {
+        const full = inp.dataset.rmGhostFull || '';
+        if (!full || full.length <= inp.value.length) return;
+        const atEnd = inp.selectionStart === inp.value.length && inp.selectionEnd === inp.value.length;
+        if (ev.key === 'Tab' || (ev.key === 'ArrowRight' && atEnd)) {
+          ev.preventDefault();
+          inp.value = full;
+          renderInstantSuggestions(inp, sug);
+        }
+      });
+    };
+    bindGhostTab(quickInput, quickSuggest);
+    bindGhostTab(panelInput, panelSuggest);
 
     quick.querySelector('#rm-assist-quick-form').addEventListener('submit', (ev) => {
       ev.preventDefault();

@@ -858,6 +858,45 @@ function runAiV3ContractTests() {
     const repRes = Forge.applyV3Patch({ effects: [{ type: 'defense', mode: 'Spell Resistance', srMode: 'flat', value: 18 }] }, { mode: 'replace' });
     check(repRes.ok === true && Forge.state.entry.effects.length === 1 && Forge.state.entry.effects[0].mode === 'Spell Resistance',
       'applyV3Patch mode="replace" must replace effects cleanly');
+
+    // (i) Sprint E4 P2: add like <SRD> & intentCatalog copy via applyV3Patch (E1 === E2 + single undo)
+    let flamingRec = null, steadfastRec = null;
+    for (const f of fs.readdirSync(path.join(ROOT, 'database'))) {
+      if (!f.endsWith('.json') || f === 'srd_index.json' || f === 'lego_patterns.json') continue;
+      const d = JSON.parse(fs.readFileSync(path.join(ROOT, 'database', f), 'utf8'));
+      const arr = Array.isArray(d) ? d : (d.entries || d.records || []);
+      for (const r of arr) {
+        if (!flamingRec && r && r.id === 'enh-flaming') flamingRec = r;
+        if (!steadfastRec && r && r.id === 'feat-steadfast-determination') steadfastRec = r;
+      }
+      if (flamingRec && steadfastRec) break;
+    }
+    check(Boolean(flamingRec) && Boolean(steadfastRec), 'database must contain enh-flaming and feat-steadfast-determination for P2 add-like test');
+    if (flamingRec && steadfastRec) {
+      Forge.state.entry = Forge.fromCanonicalV3({ id: 'test-like-base', name: 'Like Test', blueprint: 'feat', schemaVersion: 3, effects: [] });
+      Forge.state.history = { past: [], future: [], lastPath: '', lastTs: 0 };
+      const rFlaming = Forge.applyV3Patch({
+        effects: flamingRec.effects || [], modes: flamingRec.modes || [], powers: flamingRec.powers || [], choices: flamingRec.choices || []
+      });
+      const rSteadfast = Forge.applyV3Patch({
+        effects: steadfastRec.effects || [], modes: steadfastRec.modes || [], powers: steadfastRec.powers || [], choices: steadfastRec.choices || []
+      });
+      check(rFlaming.ok === true && rSteadfast.ok === true, 'add like SRD (Flaming + Steadfast Determination) must succeed via applyV3Patch');
+      const likeE1 = Forge.exportEntry(Forge.state.entry);
+      const likeE2 = Forge.exportEntry(Forge.fromCanonicalV3(JSON.parse(JSON.stringify(likeE1))));
+      check(deepEqual(likeE1, likeE2), 'entry composed via add like SRD must be E1===E2 round-trip idempotent');
+      Forge.undoEntry();
+      check(Forge.state.entry.effects.length === (flamingRec.effects || []).length, 'undo after add like Steadfast must leave only Flaming blocks');
+    }
+    const intentSwap = (Forge.intentCatalog || []).find((it) => it && it.id === 'int-swap-finesse');
+    check(Boolean(intentSwap), 'ForgeSandbox.intentCatalog must include int-swap-finesse');
+    if (intentSwap) {
+      const rInt = Forge.applyV3Patch({ effects: [Object.assign({ type: intentSwap.type }, intentSwap.preset)] });
+      check(rInt.ok === true, 'applying intentCatalog preset via applyV3Patch must succeed');
+      const intE1 = Forge.exportEntry(Forge.state.entry);
+      const intE2 = Forge.exportEntry(Forge.fromCanonicalV3(JSON.parse(JSON.stringify(intE1))));
+      check(deepEqual(intE1, intE2), 'entry mutated by intentCatalog chip must be E1===E2 round-trip idempotent');
+    }
   }
 
   const elapsedMs = Date.now() - startMs;
