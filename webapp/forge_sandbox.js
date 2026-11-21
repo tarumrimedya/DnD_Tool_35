@@ -6619,6 +6619,152 @@
     S.ui.cardOpen['blk:' + b.id] = true;
     renderAll();
   }
+  function summarizeV3Block(b) {
+    if (!b || typeof b !== 'object') return 'block';
+    if (b.type === 'roll') {
+      const expr = b.scaling === 'formula' && b.dice ? String(b.dice) : (b.die === 'flat' ? String(num(b.count, 0)) : `${num(b.count, 1)}${b.die || 'd6'}${num(b.flat, 0) ? (num(b.flat, 0) > 0 ? `+${num(b.flat, 0)}` : String(num(b.flat, 0))) : ''}`);
+      const kind = b.kind || 'Damage';
+      return kind === 'Healing' ? `roll: ${expr} Healing` : `roll: ${expr}${b.dmgType ? ' ' + b.dmgType : ''} ${kind}`.trim();
+    }
+    if (b.type === 'stat') {
+      const tgt = Array.isArray(b.targets) && b.targets.length ? b.targets.join(', ') : (b.swapTarget || 'stat');
+      if (b.mode === 'replaceStat') return `stat swap: ${b.fromStat || '?'} -> ${b.toStat || '?'} (${tgt})`;
+      const val = b.mode === 'formula' ? (b.formula || 'formula') : (num(b.value, 0) >= 0 ? `+${num(b.value, 0)}` : String(num(b.value, 0)));
+      const bt = b.btype && b.btype !== 'Untyped' ? ` ${b.btype}` : '';
+      return `stat: ${val}${bt} ${tgt}`;
+    }
+    if (b.type === 'defense') {
+      const dm = b.mode || 'Immunity';
+      if (dm === 'DR') return `defense: DR ${b.value || 0}/${b.what || '—'}`;
+      if (dm === 'Spell Resistance') return `defense: SR ${b.srMode === 'level' ? 'Level-based' : (b.value || 10)}`;
+      if (dm === 'Energy Resistance') return `defense: ${b.what || 'Energy'} Resistance ${b.value || 0}`;
+      if (dm === 'Concealment %') return `defense: Concealment ${b.value || 20}%`;
+      return `defense: ${dm}${b.what ? ' (' + b.what + ')' : ''}`;
+    }
+    if (b.type === 'resource') {
+      const resetMap = { perDay: '/day', perEncounter: '/encounter', perWeek: '/week', cooldown: ' cooldown' };
+      return `resource: ${b.max || 0}${resetMap[b.reset] || '/day'}${b.name ? ' ' + b.name : ''}`;
+    }
+    return `${b.type || 'effect'} block`;
+  }
+  function applyV3Patch(patch, opts) {
+    const o = opts && typeof opts === 'object' ? opts : {};
+    const dryRun = !!o.dryRun;
+    const mode = o.mode === 'replace' ? 'replace' : 'append';
+    if (!patch || typeof patch !== 'object') {
+      return { ok: false, dryRun, mode, addedIds: [], counts: { effects: 0, modes: 0, powers: 0, choices: 0 }, items: [], summary: 'Invalid V3 patch.' };
+    }
+    const normPatch = (patch.type && BLOCK_TYPES[patch.type] && !Array.isArray(patch.effects))
+      ? { effects: [patch] }
+      : patch;
+    const curBp = (S.entry && S.entry.blueprint) || 'feat';
+    const wrapper = {
+      schemaVersion: 3,
+      blueprint: normPatch.blueprint || curBp,
+      effects: Array.isArray(normPatch.effects) ? normPatch.effects : [],
+      modes: Array.isArray(normPatch.modes) ? normPatch.modes : [],
+      powers: Array.isArray(normPatch.powers) ? normPatch.powers : [],
+      choices: Array.isArray(normPatch.choices) ? normPatch.choices : []
+    };
+    const imported = fromCanonicalV3(wrapper);
+    const newEffects = (imported.effects || []).map(rekeyBlockIds);
+    const newPowers = (imported.powers || []).map((pw) => Object.assign({}, clone(pw), {
+      id: uid('pw'),
+      effects: (pw.effects || []).map(rekeyBlockIds)
+    }));
+    const newModes = (imported.modes || []).map((m) => Object.assign({}, clone(m), {
+      id: 'mode-' + uid('m').slice(2),
+      effects: (m.effects || []).map(rekeyBlockIds)
+    }));
+    const newModesOff = (imported._modesOff || []).map((m) => Object.assign({}, clone(m), {
+      id: 'mode-' + uid('m').slice(2),
+      effects: (m.effects || []).map(rekeyBlockIds)
+    }));
+    const newModesWeapon = (imported._modesWeapon || []).map((m) => Object.assign({}, clone(m), {
+      id: 'mode-' + uid('m').slice(2),
+      effects: (m.effects || []).map(rekeyBlockIds)
+    }));
+    const newChoices = Array.isArray(imported.choices) ? clone(imported.choices) : [];
+
+    const items = [];
+    newEffects.forEach((b) => items.push(`+1 ${summarizeV3Block(b)}`));
+    newModes.concat(newModesOff, newModesWeapon).forEach((m) => items.push(`+1 mode: ${m.name || m.label || 'Mode'}`));
+    newPowers.forEach((pw) => items.push(`+1 power: ${pw.name || (pw.ref && pw.ref.name) || 'Power'}`));
+    newChoices.forEach((ch) => items.push(`+1 choice: ${ch.label || ch.kind || ch.id || 'Choice'}`));
+
+    const counts = {
+      effects: newEffects.length,
+      modes: newModes.length + newModesOff.length + newModesWeapon.length,
+      powers: newPowers.length,
+      choices: newChoices.length
+    };
+    const total = counts.effects + counts.modes + counts.powers + counts.choices;
+    if (total === 0) {
+      return { ok: false, dryRun, mode, addedIds: [], counts, items: [], summary: 'No V3 blocks in patch.' };
+    }
+    const summary = items.join(', ');
+    if (dryRun) {
+      return { ok: true, dryRun: true, mode, addedIds: [], counts, items, summary };
+    }
+    if (!S.entry) loadEntry(scaffold(blankEntry(curBp)), '');
+    pushUndo();
+    if (mode === 'replace') {
+      if (Array.isArray(normPatch.effects)) S.entry.effects = newEffects;
+      if (Array.isArray(normPatch.powers)) S.entry.powers = newPowers;
+      if (Array.isArray(normPatch.modes)) {
+        S.entry.modes = newModes;
+        S.entry._modesOff = newModesOff;
+        S.entry._modesWeapon = newModesWeapon;
+      }
+      if (Array.isArray(normPatch.choices)) S.entry.choices = newChoices;
+    } else {
+      if (!Array.isArray(S.entry.effects)) S.entry.effects = [];
+      if (!Array.isArray(S.entry.powers)) S.entry.powers = [];
+      if (!Array.isArray(S.entry.modes)) S.entry.modes = [];
+      if (!Array.isArray(S.entry._modesOff)) S.entry._modesOff = [];
+      if (!Array.isArray(S.entry._modesWeapon)) S.entry._modesWeapon = [];
+      if (!Array.isArray(S.entry.choices)) S.entry.choices = [];
+      newEffects.forEach((b) => S.entry.effects.push(b));
+      newPowers.forEach((pw) => S.entry.powers.push(pw));
+      newModes.forEach((m) => S.entry.modes.push(m));
+      newModesOff.forEach((m) => S.entry._modesOff.push(m));
+      newModesWeapon.forEach((m) => S.entry._modesWeapon.push(m));
+      newChoices.forEach((ch) => {
+        if (!S.entry.choices.some((x) => x && ch && x.id && x.id === ch.id)) S.entry.choices.push(ch);
+      });
+    }
+    if (typeof document !== 'undefined') {
+      if (counts.effects > 0) ensureFacet('effects');
+      if (counts.powers > 0) ensureFacet('powers');
+    }
+    if (o.openAdded !== false) {
+      newEffects.forEach((b) => { if (b && b.id) S.ui.cardOpen['blk:' + b.id] = true; });
+    }
+    renderAll();
+    return { ok: true, dryRun: false, mode, addedIds: newEffects.map((b) => b.id), counts, items, summary };
+  }
+  function updateBlockField(blockId, patchFields) {
+    if (!S.entry || !blockId || !patchFields || typeof patchFields !== 'object') return false;
+    const blk = (S.entry.effects || []).find((b) => b && b.id === blockId);
+    if (!blk) return false;
+    pushUndo('chip:' + blockId);
+    if (blk.type === 'roll' && typeof patchFields.dice === 'string') {
+      const m = patchFields.dice.trim().match(/^(\d+)\s*d(\d+)(?:\s*([+-]\s*\d+))?$/i);
+      if (m) {
+        blk.count = parseInt(m[1], 10) || 1;
+        blk.die = 'd' + m[2];
+        blk.flat = m[3] ? (parseInt(m[3].replace(/\s+/g, ''), 10) || 0) : 0;
+        blk.scaling = 'flat';
+        delete blk.dice;
+      }
+    } else {
+      Object.assign(blk, patchFields);
+    }
+    delete blk._src;
+    delete blk._srcSub;
+    renderAll();
+    return true;
+  }
   function setEntry(path, v) { const prev = getPath(S.entry, path); if (prev === v) return; pushUndo(path); setPath(S.entry, path, v); onSet(path, v, prev); }
   function onSet(path, v, prev) {
     const en = S.entry;
@@ -7462,6 +7608,7 @@
     classifyConditionStatus: classifyConditionStatus, computeEntrySheetDiff: computeEntrySheetDiff, entryCoverageStats: entryCoverageStats,
     isPreservedEffectBlock: isPreservedEffectBlock, isUnstructuredBlock: isUnstructuredBlock,
     undoEntry: undoEntry, redoEntry: redoEntry, addPaletteBlock: addPaletteBlock, setEntry: setEntry,
+    applyV3Patch: applyV3Patch, updateBlockField: updateBlockField,
     importFromJson: importFromJson, rawHeaderLine: rawHeaderLine, damageAtCL: rollAtCL,
     presets: PRESETS.map((p) => p.id), presetList: PRESETS, blueprints: BLUEPRINTS, blockTypes: BLOCK_TYPES, guideRecipes: GUIDE_RECIPES, spotConfigs: SPOT,
     setBlueprint: setBlueprint, renderAll: renderAll, renderScratch: renderScratch,

@@ -805,6 +805,59 @@ function runAiV3ContractTests() {
     check(recipExported.effects[1].recipient === 'target', 'ForgeSandbox round-trip must preserve recipient="target"');
     check(recipExported.effects[2].recipient === 'area', 'ForgeSandbox round-trip must preserve recipient="area"');
     check(recipExported.effects[3].recipient === undefined, 'ForgeSandbox round-trip must omit default recipient="self" unless explicitly authored');
+
+    // (h) Sprint E4 P1: ForgeSandbox.applyV3Patch (dryRun, append, rekeyBlockIds, single undo, replace, updateBlockField, E1===E2)
+    check(typeof Forge.applyV3Patch === 'function', 'ForgeSandbox.applyV3Patch must be exported');
+    check(typeof Forge.updateBlockField === 'function', 'ForgeSandbox.updateBlockField must be exported');
+    Forge.state.entry = Forge.fromCanonicalV3({ id: 'test-patch-base', name: 'Patch Test', blueprint: 'feat', schemaVersion: 3, effects: [] });
+    Forge.state.history = { past: [], future: [], lastPath: '', lastTs: 0 };
+    const patchPayload = {
+      effects: [
+        { type: 'roll', kind: 'Damage', dice: '1d6', dmgType: 'Fire' },
+        { type: 'stat', mode: 'flat', targets: ['ac.total'], value: 2, btype: 'Deflection' },
+        { type: 'defense', mode: 'DR', value: 5, what: 'Magic' },
+        { type: 'resource', name: 'Uses', resMode: 'spend', max: 3, scaling: 'flat', reset: 'perDay' }
+      ],
+      choices: [{ id: 'ch-wep', kind: 'weapon', label: 'Weapon' }]
+    };
+    const dryRes = Forge.applyV3Patch(patchPayload, { dryRun: true });
+    check(dryRes.ok === true && dryRes.dryRun === true && dryRes.counts.effects === 4 && dryRes.counts.choices === 1,
+      'applyV3Patch dryRun must report accurate counts without mutating state');
+    check(Forge.state.entry.effects.length === 0 && Forge.state.history.past.length === 0,
+      'applyV3Patch dryRun must not mutate S.entry or S.history');
+    check(dryRes.summary.includes('1d6 Fire') && dryRes.summary.includes('DR 5/Magic'),
+      `applyV3Patch dryRun summary should be human-readable (got "${dryRes.summary}")`);
+
+    const appRes = Forge.applyV3Patch(patchPayload, { dryRun: false, mode: 'append' });
+    check(appRes.ok === true && appRes.addedIds.length === 4, 'applyV3Patch append must add 4 effect blocks');
+    check(Forge.state.entry.effects.length === 4 && Forge.state.entry.choices.length === 1,
+      'applyV3Patch append must populate S.entry.effects and S.entry.choices');
+    check(Forge.state.history.past.length === 1, 'applyV3Patch multi-block append must create exactly 1 undo frame');
+
+    const appRes2 = Forge.applyV3Patch({ effects: [{ type: 'roll', kind: 'Damage', dice: '1d6', dmgType: 'Fire' }] }, { mode: 'append' });
+    check(appRes2.ok === true && appRes2.addedIds[0] !== appRes.addedIds[0],
+      'applyV3Patch must rekey block IDs so repeated patches never collide');
+    check(Forge.state.entry.effects.length === 5, 'second append should bring effects to 5');
+
+    const tweaked = Forge.updateBlockField(appRes2.addedIds[0], { dice: '3d6' });
+    check(tweaked === true, 'updateBlockField must return true for valid blockId');
+    const exportedAfterPatch = Forge.exportEntry(Forge.state.entry);
+    const rtPatch = Forge.exportEntry(Forge.fromCanonicalV3(JSON.parse(JSON.stringify(exportedAfterPatch))));
+    check(deepEqual(exportedAfterPatch, rtPatch), 'entry mutated by applyV3Patch + updateBlockField must be E1===E2 round-trip idempotent');
+    check(exportedAfterPatch.effects[4].count === 3 && exportedAfterPatch.effects[4].die === 'd6',
+      'updateBlockField({ dice: "3d6" }) must update roll block count/die canonically');
+
+    // Undo back to 4, then undo back to 0 (single frame for the 4-block patch)
+    Forge.undoEntry(); // undoes tweak
+    Forge.undoEntry(); // undoes 2nd append
+    Forge.undoEntry(); // undoes 1st 4-block append in 1 step
+    check(Forge.state.entry.effects.length === 0, 'single undoEntry() must revert entire multi-block applyV3Patch frame');
+
+    // Replace mode test
+    Forge.applyV3Patch(patchPayload, { mode: 'append' });
+    const repRes = Forge.applyV3Patch({ effects: [{ type: 'defense', mode: 'Spell Resistance', srMode: 'flat', value: 18 }] }, { mode: 'replace' });
+    check(repRes.ok === true && Forge.state.entry.effects.length === 1 && Forge.state.entry.effects[0].mode === 'Spell Resistance',
+      'applyV3Patch mode="replace" must replace effects cleanly');
   }
 
   const elapsedMs = Date.now() - startMs;

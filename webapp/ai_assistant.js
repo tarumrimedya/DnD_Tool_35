@@ -698,99 +698,52 @@
       return { ok: false, summary: 'Nothing to undo.' };
     },
 
+    async prompt_save() {
+      return {
+        ok: true,
+        summary: 'Choose a Saving Throw to roll:',
+        quickChips: [
+          { kind: 'cmd', label: '🛡️ Fortitude', cmd: 'save fort' },
+          { kind: 'cmd', label: '⚡ Reflex', cmd: 'save ref' },
+          { kind: 'cmd', label: '🧠 Will', cmd: 'save will' }
+        ]
+      };
+    },
+
     async add_block(args) {
-      if (!root.ForgeSandbox || typeof root.ForgeSandbox.addPaletteBlock !== 'function') {
+      if (!root.ForgeSandbox || typeof root.ForgeSandbox.applyV3Patch !== 'function') {
         return { ok: false, summary: 'Rule Crafter is not active on this page.' };
       }
       const raw = String(typeof args === 'string' ? args : (args?.spec || args?.text || '')).trim();
-      const low = raw.toLowerCase();
-
-      // 1. Roll / Damage / Healing block (e.g. "1d6 fire damage", "2d8 healing")
-      const rollM = low.match(/\b(\d+d\d+(?:\s*[+-]\s*\d+)?)\s*(fire|cold|acid|electricity|sonic|force|positive|negative|slashing|piercing|bludgeoning|untyped)?\s*(damage|dmg|heal(?:ing)?)?\b/);
-      if (rollM) {
-        const dice = rollM[1].replace(/\s+/g, '');
-        const dmgType = rollM[2] || 'untyped';
-        const isHeal = Boolean(rollM[3] && rollM[3].startsWith('heal'));
-        root.ForgeSandbox.addPaletteBlock('effects', 'roll', {
-          role: isHeal ? 'heal' : 'damage',
-          dice,
-          dmgType: isHeal ? 'positive' : dmgType
-        });
-        return { ok: true, summary: `Added Roll block (${dice}${isHeal ? ' healing' : ` ${dmgType} damage`}).` };
-      }
-
-      // 2. Defense block: DR, SR, Energy Resistance, Immunity
-      const drM = low.match(/\bdr\s+(\d+)\s*\/\s*([a-z\s-]+)\b/);
-      if (drM) {
-        root.ForgeSandbox.addPaletteBlock('effects', 'defense', { defKind: 'dr', value: Number(drM[1]), bypass: drM[2].trim() });
-        return { ok: true, summary: `Added Defense block (DR ${drM[1]}/${drM[2].trim()}).` };
-      }
-      const srM = low.match(/\bsr\s+(\d+)\b/);
-      if (srM) {
-        root.ForgeSandbox.addPaletteBlock('effects', 'defense', { defKind: 'sr', value: Number(srM[1]) });
-        return { ok: true, summary: `Added Defense block (SR ${srM[1]}).` };
-      }
-      const resM = low.match(/\b(fire|cold|acid|electricity|sonic)\s+resist(?:ance)?\s+(\d+)\b/) || low.match(/\bresist(?:ance)?\s+(?:to\s+)?(fire|cold|acid|electricity|sonic)\s+(\d+)\b/);
-      if (resM) {
-        root.ForgeSandbox.addPaletteBlock('effects', 'defense', { defKind: 'resist', energy: resM[1], value: Number(resM[2]) });
-        return { ok: true, summary: `Added Defense block (${resM[1]} resistance ${resM[2]}).` };
-      }
-      const immM = low.match(/\bimmun(?:e|ity)\s+(?:to\s+)?([a-z\s]+?)(?:\s+block)?$/);
-      if (immM) {
-        root.ForgeSandbox.addPaletteBlock('effects', 'defense', { defKind: 'immunity', immunity: immM[1].trim() });
-        return { ok: true, summary: `Added Defense block (Immunity: ${immM[1].trim()}).` };
-      }
-
-      // 3. Resource block (e.g. "3/day", "5/encounter")
-      const resUseM = low.match(/\b(\d+)\s*\/\s*(day|encounter|week)\b/);
-      if (resUseM) {
-        const reset = resUseM[2] === 'encounter' ? 'encounter' : 'daily';
-        root.ForgeSandbox.addPaletteBlock('effects', 'resource', { max: Number(resUseM[1]), reset });
-        return { ok: true, summary: `Added Resource block (${resUseM[1]}/${resUseM[2]}).` };
-      }
-
-      // 4. Stat Modifier block (e.g. "+2 ac", "+2 deflection ac", "+4 enhancement str", "+2 fort save", "+1 attack")
-      const statM = low.match(/([+-]?\d+)\s+(?:(enhancement|deflection|dodge|natural|armor|shield|morale|luck|sacred|profane|insight|competence|resistance|circumstance|alchemical|size|racial|untyped)\s+)?(.+?)(?:\s+block)?$/);
-      if (statM) {
-        const value = Number(statM[1]);
-        const bonusType = statM[2] || 'untyped';
-        const tgtRaw = statM[3].replace(/\b(bonus|penalty|modifier|mod|block)\b/g, '').trim();
-        const TARGET_MAP = {
-          'ac': 'ac', 'armor class': 'ac',
-          'attack': 'atk.all', 'atk': 'atk.all', 'to hit': 'atk.all',
-          'melee': 'atk.melee', 'melee attack': 'atk.melee',
-          'ranged': 'atk.ranged', 'ranged attack': 'atk.ranged',
-          'damage': 'dmg.all', 'dmg': 'dmg.all',
-          'fort': 'save.fort', 'fortitude': 'save.fort', 'fort save': 'save.fort', 'fortitude save': 'save.fort',
-          'ref': 'save.ref', 'reflex': 'save.ref', 'ref save': 'save.ref', 'reflex save': 'save.ref',
-          'will': 'save.will', 'will save': 'save.will',
-          'saves': 'save.all', 'all saves': 'save.all', 'saving throws': 'save.all',
-          'init': 'init', 'initiative': 'init',
-          'hp': 'hp.max', 'max hp': 'hp.max', 'hit points': 'hp.max',
-          'speed': 'speed.land', 'land speed': 'speed.land',
-          'grapple': 'grapple', 'cl': 'casterLevel', 'caster level': 'casterLevel',
-          'str': 'ability.str', 'strength': 'ability.str',
-          'dex': 'ability.dex', 'dexterity': 'ability.dex',
-          'con': 'ability.con', 'constitution': 'ability.con',
-          'int': 'ability.int', 'intelligence': 'ability.int',
-          'wis': 'ability.wis', 'wisdom': 'ability.wis',
-          'cha': 'ability.cha', 'charisma': 'ability.cha'
+      const parsed = parseCrafterAddSpec(raw);
+      if (!parsed) {
+        return {
+          ok: false,
+          summary: `Could not parse "${raw}". Try: "add +2 deflection ac", "add fire damage", "add 1d6 fire", "add dr 5/magic", or "add 3/day".`
         };
-        const target = TARGET_MAP[tgtRaw];
-        if (target) {
-          root.ForgeSandbox.addPaletteBlock('effects', 'stat', { mode: 'flat', targets: [target], value, bonusType });
-          const sign = value >= 0 ? `+${value}` : `${value}`;
-          return { ok: true, summary: `Added Stat block (${sign}${bonusType !== 'untyped' ? ` ${bonusType}` : ''} to ${target}).` };
-        }
       }
-
-      // 5. Generic blank block by type (e.g. "stat", "roll", "defense", "when", "resource", "attack")
-      const blankM = low.match(/\b(stat|roll|attack|defense|resource|when|effect|table|carrier)\b/);
-      if (blankM) {
-        root.ForgeSandbox.addPaletteBlock('effects', blankM[1]);
-        return { ok: true, summary: `Added blank ${blankM[1]} block.` };
+      const res = root.ForgeSandbox.applyV3Patch(parsed.patch, { dryRun: false, mode: 'append' });
+      if (!res || !res.ok) {
+        return { ok: false, summary: (res && res.summary) || 'Could not apply V3 block patch.' };
       }
-      return { ok: false, summary: `Could not parse block "${raw}". Try: "add +2 ac block", "add +4 str", "add 1d6 fire", or "add dr 5/magic".` };
+      const quickChips = [];
+      const addedId = res.addedIds && res.addedIds[0];
+      if (addedId && parsed.tweakKind && Array.isArray(parsed.tweakOptions) && parsed.tweakOptions.length) {
+        quickChips.push({
+          kind: 'tweak',
+          blockId: addedId,
+          tweakKind: parsed.tweakKind,
+          label: `${parsed.tweakLabel} ▾`,
+          options: parsed.tweakOptions
+        });
+      }
+      quickChips.push({ kind: 'cmd', label: '↩ Undo', cmd: 'undo' });
+      const note = parsed.usedDefault && parsed.defaultNote ? ` (${parsed.defaultNote})` : '';
+      return {
+        ok: true,
+        summary: `Applied ${res.summary}${note}.`,
+        quickChips
+      };
     },
 
     async open_crafter(args) {
@@ -995,6 +948,215 @@
     }
   };
 
+  // 0-Token Canonical V3 Crafter Command Parser (feeds both live preview dryRun and applyV3Patch)
+  const CRAFTER_TARGET_MAP = {
+    'ac': 'ac.total', 'armor class': 'ac.total',
+    'attack': 'atk.all', 'atk': 'atk.all', 'to hit': 'atk.all',
+    'melee': 'atk.melee', 'melee attack': 'atk.melee',
+    'ranged': 'atk.ranged', 'ranged attack': 'atk.ranged',
+    'damage': 'dmg.all', 'dmg': 'dmg.all',
+    'fort': 'save.fort', 'fortitude': 'save.fort', 'fort save': 'save.fort', 'fortitude save': 'save.fort',
+    'ref': 'save.ref', 'reflex': 'save.ref', 'ref save': 'save.ref', 'reflex save': 'save.ref',
+    'will': 'save.will', 'will save': 'save.will',
+    'saves': 'save.all', 'all saves': 'save.all', 'saving throws': 'save.all',
+    'init': 'init', 'initiative': 'init',
+    'hp': 'hp.max', 'max hp': 'hp.max', 'hit points': 'hp.max',
+    'speed': 'speed.land', 'land speed': 'speed.land',
+    'grapple': 'grapple', 'cl': 'casterLevel', 'caster level': 'casterLevel',
+    'str': 'ability.str', 'strength': 'ability.str',
+    'dex': 'ability.dex', 'dexterity': 'ability.dex',
+    'con': 'ability.con', 'constitution': 'ability.con',
+    'int': 'ability.int', 'intelligence': 'ability.int',
+    'wis': 'ability.wis', 'wisdom': 'ability.wis',
+    'cha': 'ability.cha', 'charisma': 'ability.cha'
+  };
+  const _capWord = (s) => String(s || '').replace(/\b[a-z]/g, (c) => c.toUpperCase());
+
+  function parseCrafterAddSpec(rawInput) {
+    const raw = String(rawInput || '').trim();
+    if (!raw) return null;
+    const low = raw.toLowerCase();
+
+    // 1. Explicit Roll / Damage / Healing block (e.g. "1d6 fire damage", "2d8+4 healing")
+    const rollM = low.match(/\b(\d+d\d+(?:\s*[+-]\s*\d+)?)\s*(fire|cold|acid|electricity|sonic|force|positive|negative|slashing|piercing|bludgeoning|untyped)?\s*(damage|dmg|heal(?:ing)?)?\b/);
+    if (rollM) {
+      const dice = rollM[1].replace(/\s+/g, '');
+      const isHeal = Boolean(rollM[3] && rollM[3].startsWith('heal'));
+      const dmgType = _capWord(rollM[2] || 'untyped');
+      const block = isHeal
+        ? { type: 'roll', kind: 'Healing', dice }
+        : { type: 'roll', kind: 'Damage', dice, dmgType };
+      return {
+        patch: { effects: [block] },
+        usedDefault: false,
+        tweakKind: 'dice',
+        tweakLabel: dice,
+        tweakOptions: ['1d4', '1d6', '1d8', '2d6', '3d6', '4d6']
+      };
+    }
+
+    // 2. Defense blocks (DR, SR, Energy Resistance, Immunity, Concealment)
+    const drM = low.match(/\bdr\s+(\d+)\s*\/\s*([a-z\s-]+)\b/);
+    if (drM) {
+      const val = Number(drM[1]);
+      return {
+        patch: { effects: [{ type: 'defense', mode: 'DR', value: val, what: _capWord(drM[2].trim()) }] },
+        usedDefault: false,
+        tweakKind: 'value',
+        tweakLabel: `DR ${val}`,
+        tweakOptions: ['5', '10', '15', '20']
+      };
+    }
+    const drDefM = low.match(/^dr(?:\s+(?:\/\s*)?([a-z\s-]+))?(?:\s+block)?$/);
+    if (drDefM) {
+      const bypass = _capWord((drDefM[1] || 'magic').trim());
+      return {
+        patch: { effects: [{ type: 'defense', mode: 'DR', value: 5, what: bypass }] },
+        usedDefault: true,
+        defaultNote: `defaulted to DR 5/${bypass}`,
+        tweakKind: 'value',
+        tweakLabel: 'DR 5',
+        tweakOptions: ['5', '10', '15', '20']
+      };
+    }
+    const srM = low.match(/\bsr(?:\s+(\d+))?(?:\s+block)?$/);
+    if (srM) {
+      const hasVal = Boolean(srM[1]);
+      const val = hasVal ? Number(srM[1]) : 15;
+      return {
+        patch: { effects: [{ type: 'defense', mode: 'Spell Resistance', srMode: 'flat', value: val }] },
+        usedDefault: !hasVal,
+        defaultNote: hasVal ? '' : 'defaulted to SR 15',
+        tweakKind: 'value',
+        tweakLabel: `SR ${val}`,
+        tweakOptions: ['11', '15', '20', '25']
+      };
+    }
+    const resM = low.match(/\b(fire|cold|acid|electricity|sonic)\s+resist(?:ance)?(?:\s+(\d+))?\b/)
+      || low.match(/\bresist(?:ance)?\s+(?:to\s+)?(fire|cold|acid|electricity|sonic)(?:\s+(\d+))?\b/);
+    if (resM) {
+      const hasVal = Boolean(resM[2]);
+      const val = hasVal ? Number(resM[2]) : 10;
+      const energy = _capWord(resM[1]);
+      return {
+        patch: { effects: [{ type: 'defense', mode: 'Energy Resistance', value: val, what: energy }] },
+        usedDefault: !hasVal,
+        defaultNote: hasVal ? '' : `defaulted to ${energy} Resist 10`,
+        tweakKind: 'value',
+        tweakLabel: `${val}`,
+        tweakOptions: ['5', '10', '20', '30']
+      };
+    }
+    const immM = low.match(/\bimmun(?:e|ity)\s+(?:to\s+)?([a-z\s]+?)(?:\s+block)?$/);
+    if (immM) {
+      return {
+        patch: { effects: [{ type: 'defense', mode: 'Immunity', what: _capWord(immM[1].trim()) }] },
+        usedDefault: false
+      };
+    }
+    const concM = low.match(/\bconcealment(?:\s+(\d+)%?)?\b/);
+    if (concM) {
+      const hasVal = Boolean(concM[1]);
+      const val = hasVal ? Number(concM[1]) : 20;
+      return {
+        patch: { effects: [{ type: 'defense', mode: 'Concealment %', value: val }] },
+        usedDefault: !hasVal,
+        defaultNote: hasVal ? '' : 'defaulted to 20%',
+        tweakKind: 'value',
+        tweakLabel: `${val}%`,
+        tweakOptions: ['20', '50']
+      };
+    }
+
+    // 3. Resource block (e.g. "3/day", "2/encounter", or smart default "daily uses")
+    const resUseM = low.match(/\b(\d+)\s*\/\s*(day|encounter|week)\b/);
+    if (resUseM) {
+      const max = Number(resUseM[1]);
+      const reset = resUseM[2] === 'encounter' ? 'perEncounter' : (resUseM[2] === 'week' ? 'perWeek' : 'perDay');
+      return {
+        patch: { effects: [{ type: 'resource', name: 'Uses', resMode: 'spend', max, scaling: 'flat', reset }] },
+        usedDefault: false,
+        tweakKind: 'max',
+        tweakLabel: `${max}/${resUseM[2]}`,
+        tweakOptions: ['1', '2', '3', '5']
+      };
+    }
+    if (/^(?:daily\s+uses?|uses?\s+per\s+day|per\s+day)$/i.test(low)) {
+      return {
+        patch: { effects: [{ type: 'resource', name: 'Uses', resMode: 'spend', max: 3, scaling: 'flat', reset: 'perDay' }] },
+        usedDefault: true,
+        defaultNote: 'defaulted to 3/day',
+        tweakKind: 'max',
+        tweakLabel: '3/day',
+        tweakOptions: ['1', '2', '3', '5']
+      };
+    }
+
+    // 4. Smart-default diceless Damage / Healing (e.g. "fire damage", "cold dmg", "healing")
+    const defRollM = low.match(/^(?:(fire|cold|acid|electricity|sonic|force|positive|negative|slashing|piercing|bludgeoning)\s*(damage|dmg)?|(heal(?:ing)?))(?:\s+block)?$/);
+    if (defRollM) {
+      const isHeal = Boolean(defRollM[3]);
+      const dice = isHeal ? '1d8' : '1d6';
+      const dmgType = _capWord(defRollM[1] || 'fire');
+      const block = isHeal
+        ? { type: 'roll', kind: 'Healing', dice }
+        : { type: 'roll', kind: 'Damage', dice, dmgType };
+      return {
+        patch: { effects: [block] },
+        usedDefault: true,
+        defaultNote: `defaulted to ${dice}`,
+        tweakKind: 'dice',
+        tweakLabel: dice,
+        tweakOptions: ['1d4', '1d6', '1d8', '2d6', '3d6', '4d6']
+      };
+    }
+
+    // 5. Stat Modifier block (explicit "+2 deflection ac" or smart-default "deflection ac" / "str")
+    const statM = low.match(/^([+-]?\d+)\s+(?:(enhancement|deflection|dodge|natural|armor|shield|morale|luck|sacred|profane|insight|competence|resistance|circumstance|alchemical|size|racial|untyped)\s+)?(.+?)(?:\s+block)?$/);
+    if (statM) {
+      const value = Number(statM[1]);
+      const btype = _capWord(statM[2] || 'untyped');
+      const tgtRaw = statM[3].replace(/\b(bonus|penalty|modifier|mod|block)\b/g, '').trim();
+      const target = CRAFTER_TARGET_MAP[tgtRaw];
+      if (target) {
+        const sign = value >= 0 ? `+${value}` : `${value}`;
+        return {
+          patch: { effects: [{ type: 'stat', mode: 'flat', targets: [target], value, btype }] },
+          usedDefault: false,
+          tweakKind: 'statValue',
+          tweakLabel: sign,
+          tweakOptions: ['+1', '+2', '+3', '+4', '+6']
+        };
+      }
+    }
+    const defStatM = low.match(/^(?:(enhancement|deflection|dodge|natural|armor|shield|morale|luck|sacred|profane|insight|competence|resistance|circumstance|alchemical|size|racial|untyped)\s+)?(.+?)(?:\s+block)?$/);
+    if (defStatM) {
+      const btype = _capWord(defStatM[1] || 'untyped');
+      const tgtRaw = defStatM[2].replace(/\b(bonus|penalty|modifier|mod|block)\b/g, '').trim();
+      const target = CRAFTER_TARGET_MAP[tgtRaw];
+      if (target) {
+        return {
+          patch: { effects: [{ type: 'stat', mode: 'flat', targets: [target], value: 2, btype }] },
+          usedDefault: true,
+          defaultNote: 'defaulted to +2',
+          tweakKind: 'statValue',
+          tweakLabel: '+2',
+          tweakOptions: ['+1', '+2', '+3', '+4', '+6']
+        };
+      }
+    }
+
+    // 6. Generic blank block by type
+    const blankM = low.match(/^(stat|roll|attack|defense|resource|when|effect|table|carrier)(?:\s+block)?$/);
+    if (blankM) {
+      return {
+        patch: { effects: [{ type: blankM[1] }] },
+        usedDefault: false
+      };
+    }
+    return null;
+  }
+
   // 0ms Deterministic Command Parser (runs with 0 tokens before calling AI)
   function tryParseInstantCommand(rawInput) {
     const q = String(rawInput || '').trim();
@@ -1030,6 +1192,8 @@
     if (/^\/?(aoo|attack\s+of\s+opportunity)$/i.test(q)) {
       return { command: 'aoo', args: '' };
     }
+    if (/^\/?save$/i.test(q)) return { command: 'prompt_save', args: '' };
+
     const saveM = q.match(/^\/?(?:save\s*:?\s*|roll\s+)?(fort(?:itude)?|ref(?:lex)?|will)(?:\s+save)?$/i);
     if (saveM) return { command: 'roll_save', args: saveM[1].toLowerCase() };
 
@@ -1538,6 +1702,30 @@
         border: 1px solid rgba(99, 102, 241, 0.45); cursor: pointer;
       }
       .rm-assist-askai-btn:hover { background: rgba(99, 102, 241, 0.34); color: #ffffff; }
+      .rm-assist-chip-btn {
+        font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 6px;
+        background: rgba(245, 158, 11, 0.16); color: #fcd34d;
+        border: 1px solid rgba(245, 158, 11, 0.48); cursor: pointer;
+      }
+      .rm-assist-chip-btn:hover { background: rgba(245, 158, 11, 0.34); color: #ffffff; }
+      .rm-assist-chip-menu {
+        display: inline-flex; flex-wrap: wrap; gap: 3px; align-items: center;
+      }
+      .rm-assist-chip-menu.is-hidden { display: none; }
+      .rm-assist-chip-opt {
+        font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 5px;
+        background: rgba(15, 23, 42, 0.92); color: #e2e8f0;
+        border: 1px solid rgba(148, 163, 184, 0.45); cursor: pointer;
+      }
+      .rm-assist-chip-opt:hover { background: #38bdf8; color: #020617; border-color: #38bdf8; }
+      .rm-assist-live-preview {
+        display: flex; align-items: center; justify-content: space-between; gap: 8px;
+        width: 100%; text-align: left; padding: 6px 10px; border: none;
+        border-bottom: 1px solid rgba(56, 189, 248, 0.28);
+        background: rgba(14, 116, 144, 0.22); color: #bae6fd;
+        font-size: 11px; font-weight: 700; cursor: pointer;
+      }
+      .rm-assist-live-preview:hover { background: rgba(14, 116, 144, 0.38); color: #ffffff; }
 
       /* Interactive User Guide Modal (0-Token App Atlas) */
       .rm-guide-modal-backdrop {
@@ -2174,6 +2362,22 @@
           return badge + rehl;
         }).join('')
       : '';
+    const chipsHtml = Array.isArray(m.quickChips) && m.quickChips.length > 0
+      ? m.quickChips.map((ch, idx) => {
+          if (!ch) return '';
+          if (ch.kind === 'tweak' && ch.blockId && Array.isArray(ch.options)) {
+            const optsHtml = ch.options.map((opt) =>
+              `<button type="button" class="rm-assist-chip-opt" data-rm-tweak-apply="${_esc(opt)}" data-rm-tweak-id="${_esc(ch.blockId)}" data-rm-tweak-kind="${_esc(ch.tweakKind || '')}">${_esc(opt)}</button>`
+            ).join('');
+            return `<button type="button" class="rm-assist-chip-btn" data-rm-tweak-toggle="${idx}">${_esc(ch.label || 'Edit ▾')}</button>` +
+              `<span class="rm-assist-chip-menu is-hidden" data-rm-tweak-menu="${idx}">${optsHtml}</span>`;
+          }
+          if (ch.cmd) {
+            return `<button type="button" class="rm-assist-chip-btn" data-rm-chip-cmd="${_esc(ch.cmd)}">${_esc(ch.label || ch.cmd)}</button>`;
+          }
+          return '';
+        }).join('')
+      : '';
     const runBtn = m.runCommand && m.runCommand.command
       ? `<button type="button" class="rm-assist-run-btn" data-rm-run-cmd="${_esc(m.runCommand.command)}">⚡ ${_esc(m.runCommand.label || 'Run Now')}</button>`
       : '';
@@ -2183,7 +2387,7 @@
     const cites = Array.isArray(m.citations) && m.citations.length > 0
       ? m.citations.filter(c => c && c.noteId).map(c => `<button type="button" class="rm-assist-cite-btn" data-rm-cite-id="${_esc(c.noteId)}">📖 ${_esc(c.title || 'Open Note')}</button>`).join('')
       : '';
-    const combined = badges + runBtn + askAiBtn + cites;
+    const combined = badges + chipsHtml + runBtn + askAiBtn + cites;
     return combined ? `<div class="rm-assist-badge-row">${combined}</div>` : '';
   }
 
@@ -2359,13 +2563,31 @@
 
   function renderInstantSuggestions(inputEl, suggestEl) {
     if (!inputEl || !suggestEl) return;
+    const rawVal = String(inputEl.value || '').trim();
+    let previewHtml = '';
+    if (detectPageType() === 'crafter' && root.ForgeSandbox && typeof root.ForgeSandbox.applyV3Patch === 'function') {
+      const addM = rawVal.match(/^\/?(?:add|block)\s*:?\s+(.+)$/i);
+      if (addM) {
+        const parsed = parseCrafterAddSpec(addM[1].trim());
+        if (parsed) {
+          const dry = root.ForgeSandbox.applyV3Patch(parsed.patch, { dryRun: true });
+          if (dry && dry.ok) {
+            const defNote = parsed.usedDefault && parsed.defaultNote ? ` (${parsed.defaultNote})` : '';
+            previewHtml = `<button type="button" class="rm-assist-live-preview" data-rm-sug-kind="cmd" data-rm-sug-cmd="${_esc(rawVal)}">` +
+              `<span>⚡ Preview: ${_esc(dry.summary)}${_esc(defNote)}</span>` +
+              `<span class="rm-assist-suggest-kind is-cmd">Apply</span>` +
+              `</button>`;
+          }
+        }
+      }
+    }
     const matches = _getInstantSuggestions(inputEl.value);
-    if (!matches.length) {
+    if (!matches.length && !previewHtml) {
       suggestEl.classList.add('is-hidden');
       suggestEl.innerHTML = '';
       return;
     }
-    suggestEl.innerHTML = matches.map(m => {
+    suggestEl.innerHTML = previewHtml + matches.map(m => {
       const badgeCls = m.kind === 'cmd' || m.kind === 'fill' ? ' is-cmd' : (m.kind === 'note' ? ' is-note' : '');
       const badgeTxt = m.kind === 'cmd' ? 'Run'
         : (m.kind === 'fill' ? 'Fill' : (m.kind === 'note' ? 'Chronicler' : 'Locate'));
@@ -2458,7 +2680,8 @@
           role: 'model',
           persona: targetPersona,
           text: res.summary,
-          execResults: [res]
+          execResults: [res],
+          quickChips: Array.isArray(res.quickChips) ? res.quickChips : undefined
         });
         _saveSessionHistory();
         renderMessages();
@@ -2970,6 +3193,42 @@
       if (rehlBtn) {
         const key = rehlBtn.getAttribute('data-rm-rehighlight');
         if (key) showUiGuideTarget(key);
+        return true;
+      }
+      const chipCmdBtn = ev.target.closest('[data-rm-chip-cmd]');
+      if (chipCmdBtn) {
+        const cmd = chipCmdBtn.getAttribute('data-rm-chip-cmd');
+        if (cmd) handleSubmit(cmd);
+        return true;
+      }
+      const tweakToggle = ev.target.closest('[data-rm-tweak-toggle]');
+      if (tweakToggle) {
+        const idx = tweakToggle.getAttribute('data-rm-tweak-toggle');
+        const row = tweakToggle.closest('.rm-assist-badge-row');
+        const menu = row && row.querySelector(`[data-rm-tweak-menu="${idx}"]`);
+        if (menu) menu.classList.toggle('is-hidden');
+        return true;
+      }
+      const tweakApply = ev.target.closest('[data-rm-tweak-apply]');
+      if (tweakApply) {
+        const val = tweakApply.getAttribute('data-rm-tweak-apply') || '';
+        const blockId = tweakApply.getAttribute('data-rm-tweak-id') || '';
+        const tKind = tweakApply.getAttribute('data-rm-tweak-kind') || '';
+        if (blockId && root.ForgeSandbox && typeof root.ForgeSandbox.updateBlockField === 'function') {
+          let fields = null;
+          if (tKind === 'dice') fields = { dice: val };
+          else if (tKind === 'statValue' || tKind === 'value') fields = { value: Number(val) };
+          else if (tKind === 'max') fields = { max: Number(val) };
+          if (fields && root.ForgeSandbox.updateBlockField(blockId, fields)) {
+            const menu = tweakApply.closest('.rm-assist-chip-menu');
+            const idx = menu && menu.getAttribute('data-rm-tweak-menu');
+            const row = tweakApply.closest('.rm-assist-badge-row');
+            const toggleBtn = row && row.querySelector(`[data-rm-tweak-toggle="${idx}"]`);
+            if (toggleBtn) toggleBtn.textContent = `${val} ▾`;
+            if (menu) menu.classList.add('is-hidden');
+            _notify(`Updated block to ${val}.`, 'success');
+          }
+        }
         return true;
       }
       const runBtn = ev.target.closest('[data-rm-run-cmd]');
