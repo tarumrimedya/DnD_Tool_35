@@ -1406,6 +1406,19 @@ function compileFeatPatches(featsCore, featsSplat) {
         switchBlock('ef-pa', 'tacticalSlider', 'Enable Power Attack tactical combat slider', 'Tactical Slider: Power Attack', { slider: 'powerAttack' })
       ]
     },
+    'feat-shock-trooper': {
+      effects: [
+        switchBlock(
+          'ef-heedless-charge',
+          'powerAttackPenaltyToAc',
+          'Heedless Charge: When charging with a Power Attack penalty of -5 or more, shift the attack roll penalty to Armor Class instead.',
+          'Heedless Charge (Power Attack >= 5 -> AC Penalty on Charge)',
+          { params: { when: 'charging', minPowerAttack: 5 } }
+        ),
+        noteBlock('ef-directed-bull-rush', 'Directed Bull Rush: Push a foe diagonally (1 square left or right per square pushed back) on a charging Bull Rush.'),
+        noteBlock('ef-domino-rush', 'Domino Rush: If a bull rushed foe is pushed into another foe, make a free trip attempt against both.')
+      ]
+    },
     'feat-combat-expertise': {
       effects: [
         switchBlock('ef-ce', 'tacticalSlider', 'Enable Combat Expertise tactical combat slider', 'Tactical Slider: Combat Expertise', { slider: 'combatExpertise' })
@@ -1769,28 +1782,28 @@ function compileFeatPatches(featsCore, featsSplat) {
       ]
     },
     'feat-empower-spell': {
-      effects: [{ id: 'ef-mm-empower', type: 'carrier', carrierMode: 'metamagic', slotDelta: 2, metaTransform: 'empower', costMode: 'slot', label: 'Empower Spell (+2 Slot Level: +50% Variable Numeric Spell Effects)' }]
+      effects: [{ id: 'ef-mm-empower', type: 'carrier', carrierMode: 'metamagic', slotAdj: 2, transform: 'empower', costMode: 'slot', label: 'Empower Spell (+2 Slot Level: +50% Variable Numeric Spell Effects)' }]
     },
     'feat-maximize-spell': {
-      effects: [{ id: 'ef-mm-max', type: 'carrier', carrierMode: 'metamagic', slotDelta: 3, metaTransform: 'maximize', costMode: 'slot', label: 'Maximize Spell (+3 Slot Level: Maximize Variable Numeric Spell Effects)' }]
+      effects: [{ id: 'ef-mm-max', type: 'carrier', carrierMode: 'metamagic', slotAdj: 3, transform: 'maximize', costMode: 'slot', label: 'Maximize Spell (+3 Slot Level: Maximize Variable Numeric Spell Effects)' }]
     },
     'feat-quicken-spell': {
-      effects: [{ id: 'ef-mm-quick', type: 'carrier', carrierMode: 'metamagic', slotDelta: 4, metaTransform: 'quicken', costMode: 'slot', label: 'Quicken Spell (+4 Slot Level: Cast as a Swift Action)' }]
+      effects: [{ id: 'ef-mm-quick', type: 'carrier', carrierMode: 'metamagic', slotAdj: 4, transform: 'quicken', costMode: 'slot', label: 'Quicken Spell (+4 Slot Level: Cast as a Swift Action)' }]
     },
     'feat-extend-spell': {
-      effects: [{ id: 'ef-mm-extend', type: 'carrier', carrierMode: 'metamagic', slotDelta: 1, metaTransform: 'extend', costMode: 'slot', label: 'Extend Spell (+1 Slot Level: Double Spell Duration)' }]
+      effects: [{ id: 'ef-mm-extend', type: 'carrier', carrierMode: 'metamagic', slotAdj: 1, transform: 'extend', costMode: 'slot', label: 'Extend Spell (+1 Slot Level: Double Spell Duration)' }]
     },
     'feat-silent-spell': {
-      effects: [{ id: 'ef-mm-silent', type: 'carrier', carrierMode: 'metamagic', slotDelta: 1, metaTransform: 'silent', costMode: 'slot', label: 'Silent Spell (+1 Slot Level: Cast Without Verbal Components)' }]
+      effects: [{ id: 'ef-mm-silent', type: 'carrier', carrierMode: 'metamagic', slotAdj: 1, transform: 'silent', costMode: 'slot', label: 'Silent Spell (+1 Slot Level: Cast Without Verbal Components)' }]
     },
     'feat-still-spell': {
-      effects: [{ id: 'ef-mm-still', type: 'carrier', carrierMode: 'metamagic', slotDelta: 1, metaTransform: 'still', costMode: 'slot', label: 'Still Spell (+1 Slot Level: Cast Without Somatic Components)' }]
+      effects: [{ id: 'ef-mm-still', type: 'carrier', carrierMode: 'metamagic', slotAdj: 1, transform: 'still', costMode: 'slot', label: 'Still Spell (+1 Slot Level: Cast Without Somatic Components)' }]
     },
     'feat-heighten-spell': {
-      effects: [{ id: 'ef-mm-heighten', type: 'carrier', carrierMode: 'metamagic', slotDelta: 1, metaTransform: 'heighten', costMode: 'slot', label: 'Heighten Spell (Variable Slot Level: Increase Effective Spell Level & Save DC)' }]
+      effects: [{ id: 'ef-mm-heighten', type: 'carrier', carrierMode: 'metamagic', slotAdj: 'variable', transform: 'heighten', costMode: 'slot', label: 'Heighten Spell (Variable Slot Level: Increase Effective Spell Level & Save DC)' }]
     },
     'feat-widen-spell': {
-      effects: [{ id: 'ef-mm-widen', type: 'carrier', carrierMode: 'metamagic', slotDelta: 3, metaTransform: 'widen', costMode: 'slot', label: 'Widen Spell (+3 Slot Level: Double Burst, Emanation, Line, or Spread Area)' }]
+      effects: [{ id: 'ef-mm-widen', type: 'carrier', carrierMode: 'metamagic', slotAdj: 3, transform: 'widen', costMode: 'slot', label: 'Widen Spell (+3 Slot Level: Double Burst, Emanation, Line, or Spread Area)' }]
     },
     'feat-practiced-spellcaster': {
       effects: [noteBlock('ef-prac-cast', 'Practiced Spellcaster: +4 Caster Level (capped at Character Level / HD)')]

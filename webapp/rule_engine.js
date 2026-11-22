@@ -1523,6 +1523,24 @@ const RuleEngine = {
   /**
    * Pure Store-First tactical options builder derived strictly from `doc.tactical` (zero DOM reads).
    */
+  /**
+   * Single-source effective BAB resolver (base BAB + Divine Power / Transformation `babEqualsLevel`).
+   * Shared by AC tactical resolution (Heedless Charge) and weapon attack resolution so BAB buffs never desync AC & Attack.
+   */
+  resolveEffectiveBab(character, baseBabOverride) {
+    if (!character || typeof character !== 'object') return 0;
+    const charLvl = Number(character.level) || 1;
+    const rawBab = Number(baseBabOverride !== undefined ? baseBabOverride : character.bab) || 0;
+    const hasBabEqualsLevel = Boolean(Array.isArray(character.buffs) && character.buffs.some(b =>
+      b && b.active && (
+        b.ruleFlags?.babEqualsLevel ||
+        (Array.isArray(b.effects) && b.effects.some(ef => ef && ef.effectKind === 'ruleSwitch' && ef.flag === 'babEqualsLevel')) ||
+        /^(divine power|transformation)$/i.test(String(b.name || '').trim())
+      )
+    ));
+    return hasBabEqualsLevel ? Math.max(rawBab, charLvl) : rawBab;
+  },
+
   tacticalOptionsFromDoc(doc) {
     const t = (doc && doc.tactical && typeof doc.tactical === 'object') ? doc.tactical : {};
     return {
@@ -1532,6 +1550,7 @@ const RuleEngine = {
       totalDefense: Boolean(t.totalDefense),
       shieldBlockActive: Boolean(t.shieldBlockActive),
       charge: Boolean(t.charge),
+      heedlessCharge: Boolean(t.heedlessCharge),
       flanking: Boolean(t.flanking),
       higherGround: Boolean(t.higherGround),
       pointBlankShot: Boolean(t.pointBlankShot),
@@ -2394,14 +2413,13 @@ const RuleEngine = {
         // 3. Carrier / Metamagic / Cast Mod Block (`carrier`)
         if (bType === 'carrier') {
           if (b.carrierMode === 'metamagic') {
-            const txNames = {
-              empower: 'Empower (x1.5 Variable)', maximize: 'Maximize Dice', quicken: 'Quicken (Swift Action)',
-              extend: 'Extend (x2 Duration)', persistent: 'Persistent (24h)', enlarge: 'Enlarge (x2 Range)',
-              widen: 'Widen (x2 Area)', twin: 'Twin Spell', splitRay: 'Split Ray (+1 Ray)', chain: 'Chain Secondary Targets',
-              heighten: 'Heighten (+Save DC / Level)', energySub: `Energy Substitution (${b.energy || 'Chosen'})`,
-              pierceRes: 'Pierce Energy Resistance', silent: 'Silent (No Verbal)', still: 'Still (No Somatic)'
-            };
-            const txLbl = b.riderText || txNames[b.transform] || out.name || 'Metamagic';
+            const rsMeta = (this.rulesets && this.rulesets.dnd35 && this.rulesets.dnd35.metamagicTransforms) || {};
+            const txKey = b.transform || '';
+            const txDef = rsMeta[txKey] || null;
+            const txLbl = b.riderText
+              || (txKey === 'energySub' ? `Energy Substitution (${b.energy || 'Chosen'})` : (txDef ? txDef.label : ''))
+              || out.name
+              || 'Metamagic';
             if (b.costMode === 'rod' || b.costMode === 'sudden') {
               const usesVal = Math.max(1, Number(b.uses ?? 3) || 3);
               const maxSpLvl = b.maxSpellLvl ? `, up to ${b.maxSpellLvl}th-lvl` : '';
@@ -2417,8 +2435,10 @@ const RuleEngine = {
               });
             } else if (b.costMode === 'passive') {
               addBadge(`Metamagic: ${txLbl} (+0 Slot)`);
+            } else if (b.slotAdj === 'variable' || (txDef && txDef.variableSlot)) {
+              addBadge(`Metamagic: ${txLbl} (Variable Slot)`);
             } else {
-              const adj = Number(b.slotAdj ?? 1);
+              const adj = Number(b.slotAdj ?? (txDef ? txDef.defaultSlotAdj : 1));
               addBadge(`Metamagic: ${txLbl} (${adj >= 0 ? '+' : ''}${adj} Slot)`);
             }
           } else if (b.carrierMode === 'meleeChannel') {
@@ -2931,20 +2951,13 @@ const RuleEngine = {
           else if (b.effectKind === 'castEvolution' && b.castNature) addBadge(`Cast as: ${String(b.castNature).trim()}`);
           if (b.flag) {
             const flagKey = String(b.flag).trim();
-            if (flagKey === 'babEqualsLevel') ruleFlags.babEqualsLevel = true;
-            else if (flagKey === 'shieldToTouchAc') ruleFlags.shieldToTouchAc = true;
-            else if (flagKey === 'conToWillSave') ruleFlags.conToWillSave = true;
-            else if (flagKey === 'weaponFinesse') ruleFlags.weaponFinesse = true;
-            else if (flagKey === 'shadowBlade') ruleFlags.shadowBlade = true;
-            else if (flagKey === 'monkeyGrip') ruleFlags.monkeyGrip = true;
-            else if (flagKey === 'twoWeaponDefense') ruleFlags.twoWeaponDefense = true;
-            else if (flagKey === 'tacticalSlider') ruleFlags.tacticalSlider = b.slider || true;
-            else if (flagKey === 'naturalSpell') ruleFlags.naturalSpell = true;
-            else if (flagKey === 'noAutoFailFortSaveOnNat1') ruleFlags.noAutoFailFortSaveOnNat1 = true;
-            else if (flagKey === 'uncannyDodge') ruleFlags.uncannyDodge = true;
-            else if (flagKey === 'ignoreArmorSpeedPenalty') ruleFlags.ignoreArmorSpeedPenalty = true;
-            else if (flagKey === 'oneHandedOffHandAsLight') ruleFlags.oneHandedOffHandAsLight = true;
-            else ruleFlags[flagKey] = b.slider !== undefined ? b.slider : true;
+            if (b.params && typeof b.params === 'object') {
+              ruleFlags[flagKey] = Object.assign({}, b.params);
+            } else if (b.slider !== undefined) {
+              ruleFlags[flagKey] = b.slider || true;
+            } else {
+              ruleFlags[flagKey] = true;
+            }
             if (flagKey === 'energyChoice' || ruleFlags.energyChoice) {
               const rawChosenElem = String(out.chosenEnergy || this.extractEntryChoice(out) || '').trim().toLowerCase();
               if (['acid', 'cold', 'electricity', 'fire', 'sonic'].includes(rawChosenElem)) {
@@ -10573,10 +10586,33 @@ const RuleEngine = {
       effectiveDodge = 0; // RAW D&D 3.5e: Any condition that makes you lose Dex bonus to AC also makes you lose Dodge bonuses
     }
 
+    // Single-source tactical combat resolution (Power Attack, Charge, Heedless Charge — Epic #29)
+    // Use effective BAB (including Divine Power / Transformation `babEqualsLevel`) and `readTactical` (doc wins over stale options).
+    const rsDnd35 = (this.rulesets && this.rulesets.dnd35) || null;
+    const effectiveBabForTac = this.resolveEffectiveBab(character, bab);
+    const freshRuleFlagsForTac = this.evaluateRuleFlags(character);
+    const tacCombat = (rsDnd35 && typeof rsDnd35.resolveTacticalCombat === 'function')
+      ? rsDnd35.resolveTacticalCombat(character, {
+        bab: effectiveBabForTac,
+        legoEval,
+        ruleFlags: freshRuleFlagsForTac,
+        tactical: {
+          powerAttack: Number(readTactical('powerAttack')) || 0,
+          charge,
+          heedlessCharge: Boolean(readTactical('heedlessCharge'))
+        }
+      })
+      : { paAmount: 0, paAttackPenalty: 0, paAcPenalty: 0, chargeAcPenalty: charge ? 2 : 0, heedlessChargeAvailable: false, heedlessChargeEligible: false, heedlessChargeActive: false };
+
     // AC Penalties (untyped; they apply to normal, touch and flat-footed AC alike).
     // Charge (PHB p.154): -2 AC until the start of your next turn.
+    // Heedless Charge (Complete Warrior p.112): shifts Power Attack penalty (>= 5) from attack rolls to AC.
     let totalPenalty = buffAcPenalty;
     if (charge) totalPenalty += 2;
+    if (tacCombat.paAcPenalty > 0) {
+      totalPenalty += tacCombat.paAcPenalty;
+      acPenaltySources.push(`Heedless Charge (-${tacCombat.paAcPenalty} AC)`);
+    }
     // Vulnerable flaw (UA p.92, -1 AC): the compendium entry carries the penalty as a modifier; the name check only
     // covers legacy feat strings that resolve to no compendium entry, so the -1 is never applied twice.
     if (charFeatNames.some(f => f.includes('flaw: vulnerable') || f === 'vulnerable') && !acPenaltySources.some(s => s.includes('vulnerable'))) {
@@ -10659,6 +10695,7 @@ const RuleEngine = {
       armorAcp: totalAcp,
       loadCheckPenalty,
       penalty: totalPenalty,
+      heedlessChargeAcPenalty: tacCombat.paAcPenalty,
       total: totalAC,
       touch: touchAC,
       incorporealTouch: incorporealTouchAC,
@@ -11325,9 +11362,7 @@ const RuleEngine = {
     } = options;
 
     const charLvl = Number(character.level) || 1;
-    const rawBab = Number(character.bab) || 0;
-    const hasBabEqualsLevel = Boolean(Array.isArray(character.buffs) && character.buffs.some(b => b && b.active && (b.ruleFlags?.babEqualsLevel || /^(divine power|transformation)$/i.test(String(b.name || '').trim()))));
-    const bab = hasBabEqualsLevel ? Math.max(rawBab, charLvl) : rawBab;
+    const bab = this.resolveEffectiveBab(character);
     const strMod = this.getAbilityMod(character.abilities?.str || 10);
     const dexMod = this.getAbilityMod(character.abilities?.dex || 10);
     const conMod = this.getAbilityMod(character.abilities?.con || 10);
@@ -11494,13 +11529,27 @@ const RuleEngine = {
       swRes.addItems.forEach(it => atkSwapAddItems.push(it));
     });
 
-    // Power attack penalty: cannot exceed BAB
-    const effectivePA = Math.min(bab, Math.max(0, Number(powerAttack) || 0));
+    // Power attack penalty: single-source resolution (Heedless Charge shifts attack penalty to AC on charge when PA >= 5)
+    const rsAtk = (this.rulesets && this.rulesets.dnd35) || null;
+    const wepTacCombat = (!isRangedWep && rsAtk && typeof rsAtk.resolveTacticalCombat === 'function')
+      ? rsAtk.resolveTacticalCombat(character, {
+        bab,
+        ruleFlags,
+        legoEval: character.legoEvaluation,
+        tactical: Object.assign({}, character.tactical || {}, {
+          powerAttack: Number(powerAttack) || 0,
+          charge: Boolean(charge),
+          heedlessCharge: options.heedlessCharge !== undefined ? Boolean(options.heedlessCharge) : Boolean(character.tactical?.heedlessCharge)
+        })
+      })
+      : null;
+    const effectivePA = isRangedWep ? 0 : (wepTacCombat ? wepTacCombat.paAmount : Math.min(bab, Math.max(0, Number(powerAttack) || 0)));
+    const paAttackPenalty = isRangedWep ? 0 : (wepTacCombat ? wepTacCombat.paAttackPenalty : effectivePA);
 
     const attackBonusItems = [
       { type: 'untyped', val: bab, source: 'BAB' },
       { type: 'untyped', val: attackStatMod, source: attackStatName },
-      { type: 'untyped', val: -effectivePA, source: 'Power Attack Penalty' }
+      { type: 'untyped', val: -paAttackPenalty, source: (effectivePA > 0 && paAttackPenalty === 0) ? 'Power Attack (Shifted to AC — Heedless Charge)' : 'Power Attack Penalty' }
     ];
     atkSwapAddItems.forEach(it => {
       attackBonusItems.push({ type: 'untyped', val: it.val, source: it.source });
@@ -15831,6 +15880,234 @@ const RuleEngine = {
     return null;
   },
 
+  /**
+   * Returns all metamagic feats owned by `character` (from `feats[]` and active `levelProgression[].feats[]`),
+   * resolved against the compendium / customDb by immutable `id` (with name fallback for legacy string refs).
+   */
+  getOwnedMetamagicFeats(character) {
+    if (!character || typeof character !== 'object') return [];
+    const rs = (this.rulesets && this.rulesets.dnd35) || {};
+    const txMap = rs.metamagicTransforms || {};
+    const rawRefs = [];
+    if (Array.isArray(character.feats)) rawRefs.push(...character.feats);
+    if (Array.isArray(character.levelProgression)) {
+      character.levelProgression.forEach(p => {
+        if (p && p.active !== false && Array.isArray(p.feats)) rawRefs.push(...p.feats);
+      });
+    }
+    const seen = new Set();
+    const out = [];
+    rawRefs.forEach(ref => {
+      if (!ref) return;
+      const refObj = typeof ref === 'object' ? ref : null;
+      const rawName = String(refObj ? (refObj.name || refObj.featName || refObj.id || '') : ref)
+        .replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️\s]+(\[.*?\])?\s*/, '').trim();
+      const dbEntry = this.getMasterDbEntry(refObj || rawName, 'Feat');
+      const merged = Object.assign({}, dbEntry || {}, refObj || {});
+      const id = String(merged.id || dbEntry?.id || '').trim();
+      const mmBlock = Array.isArray(merged.effects)
+        ? merged.effects.find(ef => ef && ef.type === 'carrier' && ef.carrierMode === 'metamagic' && (ef.costMode || 'slot') === 'slot')
+        : null;
+      if (!mmBlock) return;
+      const dedupKey = id || rawName.toLowerCase();
+      if (!dedupKey || seen.has(dedupKey)) return;
+      seen.add(dedupKey);
+      const txKey = String(mmBlock.transform || '').trim();
+      const txDef = txMap[txKey] || null;
+      const isVariable = mmBlock.slotAdj === 'variable' || Boolean(txDef && txDef.variableSlot);
+      const slotAdj = isVariable ? 'variable' : Number(mmBlock.slotAdj ?? (txDef ? txDef.defaultSlotAdj : 1));
+      out.push({
+        featId: id || dedupKey,
+        name: merged.name || rawName,
+        transform: txKey,
+        slotAdj,
+        variableSlot: isVariable,
+        raisesSaveDc: Boolean(txDef && txDef.raisesSaveDc),
+        shortLabel: (txDef && txDef.shortLabel) || merged.name || rawName,
+        label: mmBlock.label || (txDef && txDef.label) || merged.name || rawName
+      });
+    });
+    return out;
+  },
+
+  /**
+   * Pure single-source D&D 3.5e RAW per-spell Metamagic resolver (Epic #12).
+   * Never mutates `spellInst` or `character`.
+   * Computes `effectiveSlotLevel`, `effectiveSpellLevel` (Save DC — only Heighten raises it per PHB p.88),
+   * `castAction`, `damageMode`, `badges[]`, and validity flags.
+   */
+  resolveMetamagic(spellInst, character, options = {}) {
+    const rs = (this.rulesets && this.rulesets.dnd35) || {};
+    const txMap = rs.metamagicTransforms || {};
+    const rules = rs.metamagicRules || { maxSpellLevel: 9, quickenAction: 'Swift Action' };
+    const maxSpellLevel = Number(options.maxSpellLevel ?? rules.maxSpellLevel ?? 9);
+    const baseLevel = Math.max(0, Number(spellInst?.level ?? 0) || 0);
+    const mmList = Array.isArray(options.metamagicOverride)
+      ? options.metamagicOverride
+      : (Array.isArray(spellInst?.metamagic) ? spellInst.metamagic : []);
+
+    if (mmList.length === 0) {
+      return {
+        baseLevel,
+        effectiveSlotLevel: baseLevel,
+        effectiveSpellLevel: baseLevel,
+        totalSlotAdj: 0,
+        saveDcDelta: 0,
+        castAction: spellInst?.action || 'Standard Action',
+        damageMode: 'normal',
+        durationMultiplier: 1,
+        rangeMultiplier: 1,
+        areaMultiplier: 1,
+        badges: [],
+        transforms: [],
+        exceedsMaxLevel: baseLevel > maxSpellLevel,
+        hasDuplicateFeat: false,
+        invalidReasons: [],
+        isValid: baseLevel <= maxSpellLevel
+      };
+    }
+
+    const ownedList = this.getOwnedMetamagicFeats(character);
+    const ownedById = new Map(ownedList.map(f => [f.featId, f]));
+    const seenIds = new Set();
+    let hasDuplicateFeat = false;
+    let totalSlotAdj = 0;
+    let heightenTo = null;
+    let castAction = spellInst?.action || 'Standard Action';
+    let durationMultiplier = 1;
+    let rangeMultiplier = 1;
+    let areaMultiplier = 1;
+    const transforms = [];
+    const badges = [];
+    const invalidReasons = [];
+
+    // Future hook for cost reducers (Arcane Thesis, Easy Metamagic, etc.):
+    const slotAdjReduction = Math.max(0, Number(options.slotAdjReduction || 0));
+
+    mmList.forEach(item => {
+      if (!item || typeof item !== 'object') return;
+      const featId = String(item.featId || item.id || '').trim();
+      if (!featId) return;
+      if (seenIds.has(featId)) {
+        hasDuplicateFeat = true;
+        invalidReasons.push(`Duplicate metamagic feat: ${featId}`);
+        return;
+      }
+      seenIds.add(featId);
+
+      const owned = ownedById.get(featId) || null;
+      let dbFeat = owned;
+      if (!dbFeat) {
+        const dbEntry = this.getMasterDbEntry({ id: featId }, 'Feat');
+        const mmBlock = Array.isArray(dbEntry?.effects)
+          ? dbEntry.effects.find(ef => ef && ef.type === 'carrier' && ef.carrierMode === 'metamagic')
+          : null;
+        if (dbEntry && mmBlock) {
+          const txKey = String(mmBlock.transform || '').trim();
+          const txDef = txMap[txKey] || null;
+          const isVar = mmBlock.slotAdj === 'variable' || Boolean(txDef && txDef.variableSlot);
+          dbFeat = {
+            featId,
+            name: dbEntry.name || featId,
+            transform: txKey,
+            slotAdj: isVar ? 'variable' : Number(mmBlock.slotAdj ?? (txDef ? txDef.defaultSlotAdj : 1)),
+            variableSlot: isVar,
+            raisesSaveDc: Boolean(txDef && txDef.raisesSaveDc),
+            shortLabel: (txDef && txDef.shortLabel) || dbEntry.name || featId
+          };
+        }
+      }
+
+      const missingFeat = !owned;
+      if (missingFeat) {
+        invalidReasons.push(`Missing metamagic feat: ${dbFeat ? dbFeat.name : featId}`);
+      }
+
+      const txKey = dbFeat ? dbFeat.transform : '';
+      const txDef = txMap[txKey] || null;
+      if (txKey) transforms.push(txKey);
+
+      let adj = 0;
+      let resolvedHeightenTo = null;
+      if (dbFeat && dbFeat.variableSlot) {
+        const targetLvl = Number(item.heightenTo);
+        if (Number.isFinite(targetLvl) && targetLvl > baseLevel) {
+          resolvedHeightenTo = Math.floor(targetLvl);
+          adj = resolvedHeightenTo - baseLevel;
+          heightenTo = Math.max(heightenTo ?? baseLevel, resolvedHeightenTo);
+        } else {
+          invalidReasons.push(`Heighten target level must exceed base level (${baseLevel})`);
+          resolvedHeightenTo = baseLevel + 1;
+          adj = 1;
+          heightenTo = Math.max(heightenTo ?? baseLevel, resolvedHeightenTo);
+        }
+      } else {
+        adj = Math.max(0, Number(dbFeat ? dbFeat.slotAdj : 1) || 0);
+      }
+
+      totalSlotAdj += adj;
+
+      if (txDef) {
+        if (txDef.actionOverride) castAction = txDef.actionOverride;
+        if (txDef.durationMultiplier > 1) durationMultiplier *= txDef.durationMultiplier;
+        if (txDef.rangeMultiplier > 1) rangeMultiplier *= txDef.rangeMultiplier;
+        if (txDef.areaMultiplier > 1) areaMultiplier *= txDef.areaMultiplier;
+      }
+
+      const shortLbl = (dbFeat && dbFeat.shortLabel) || (txDef && txDef.shortLabel) || featId;
+      badges.push({
+        featId,
+        transform: txKey,
+        shortLabel: shortLbl,
+        badgeText: resolvedHeightenTo !== null ? `${shortLbl} (L${resolvedHeightenTo})` : `${shortLbl} (+${adj})`,
+        slotAdj: adj,
+        heightenTo: resolvedHeightenTo,
+        invalid: missingFeat
+      });
+    });
+
+    if (slotAdjReduction > 0 && totalSlotAdj > 0) {
+      totalSlotAdj = Math.max(0, totalSlotAdj - slotAdjReduction);
+    }
+
+    const effectiveSlotLevel = baseLevel + totalSlotAdj;
+    const effectiveSpellLevel = heightenTo !== null ? heightenTo : baseLevel;
+    const exceedsMaxLevel = effectiveSlotLevel > maxSpellLevel;
+    if (exceedsMaxLevel) {
+      invalidReasons.push(`Effective slot level ${effectiveSlotLevel} exceeds maximum (${maxSpellLevel})`);
+    }
+
+    // PHB p.88: Spontaneous casting with metamagic takes a full-round action (except Quicken; 1-round+ spells add a full-round)
+    if (options.isSpontaneous && rules.spontaneousCastingTimeFullRound && !transforms.includes('quicken')) {
+      if (!/swift|immediate|free|1\s*round|minute|hour/i.test(String(castAction || ''))) {
+        castAction = 'Full-Round Action';
+      }
+    }
+
+    const damageMode = typeof rs.resolveMetamagicDamageMode === 'function'
+      ? rs.resolveMetamagicDamageMode(transforms)
+      : 'normal';
+
+    return {
+      baseLevel,
+      effectiveSlotLevel,
+      effectiveSpellLevel,
+      totalSlotAdj,
+      saveDcDelta: effectiveSpellLevel - baseLevel,
+      castAction,
+      damageMode,
+      durationMultiplier,
+      rangeMultiplier,
+      areaMultiplier,
+      badges,
+      transforms,
+      exceedsMaxLevel,
+      hasDuplicateFeat,
+      invalidReasons,
+      isValid: invalidReasons.length === 0 && !exceedsMaxLevel && !hasDuplicateFeat
+    };
+  },
+
   deriveSpellsView(w, workingDb = []) {
     if (!w || typeof w !== 'object') {
       return {
@@ -16771,6 +17048,7 @@ const RuleEngine = {
 
     const enrichSpellList = (list, baseDc) => list.map((s, idx) => {
       const lvl = Number(s?.level) || 0;
+      const mm = this.resolveMetamagic(s, w);
       let schoolBonus = 0;
       if (schoolDcEntries.length > 0 && (s?.school || s?.spell?.school)) {
         schoolDcEntries.forEach(fe => {
@@ -16789,9 +17067,17 @@ const RuleEngine = {
         ...(s || {}),
         originalIdx: idx,
         level: lvl,
+        baseLevel: lvl,
+        effectiveSlotLevel: mm.effectiveSlotLevel,
+        effectiveSpellLevel: mm.effectiveSpellLevel,
+        castAction: mm.castAction,
+        damageMode: mm.damageMode,
+        metamagicResolved: mm,
+        metamagicBadges: mm.badges,
+        metamagicInvalid: !mm.isValid,
         isCast: Boolean(s?.isCast || s?.cast),
         isDomainSpell: Boolean(s?.isDomainSpell),
-        saveDc: baseDc + lvl + schoolBonus,
+        saveDc: baseDc + mm.effectiveSpellLevel + schoolBonus,
         srText: String(s?.sr || s?.spellResistance || 'No')
       };
     });
@@ -17844,7 +18130,7 @@ const RuleEngine = {
       legoEvaluation: true, evaluatedDefenses: true, evaluatedResources: true,
       evaluatedModes: true, grantedCapabilities: true, abilitySources: true,
       initiativeBreakdown: true, activeConditionWarnings: true, twoHandedConflict: true,
-      _workingSnapshot: true, _activeFormOverlay: true, _activeFormMeldMap: true
+      _workingSnapshot: true, _activeFormOverlay: true, _activeFormMeldMap: true, _tacticalCombat: true
     };
     const out = {};
     const keys = Object.keys(inputChar);
@@ -17954,6 +18240,15 @@ const RuleEngine = {
       swift: isActionAvailable(ae.swift, spent.swift),
       immediate: isActionAvailable(ae.immediate, spent.immediate)
     };
+    const rsDeriveTac = (this.rulesets && this.rulesets.dnd35) || null;
+    const derivedTacCombat = (rsDeriveTac && typeof rsDeriveTac.resolveTacticalCombat === 'function')
+      ? rsDeriveTac.resolveTacticalCombat(working, {
+        bab: this.resolveEffectiveBab(working),
+        legoEval: working.legoEvaluation,
+        ruleFlags: working.ruleFlags,
+        tactical: Object.assign({}, resolvedTactical, working.tactical || {})
+      })
+      : null;
     const derivedTactical = {
       powerAttack: Number(working.tactical?.powerAttack || 0),
       combatExpertise: Number(working.tactical?.combatExpertise || 0),
@@ -17962,9 +18257,11 @@ const RuleEngine = {
       shieldBlockActive: Boolean(working.tactical?.shieldBlockActive),
       flanking: Boolean(working.tactical?.flanking),
       charge: Boolean(working.tactical?.charge),
+      heedlessCharge: Boolean(working.tactical?.heedlessCharge),
       higherGround: Boolean(working.tactical?.higherGround),
       activeWeaponSet: Number(working.activeWeaponSet || (working.tactical?.weaponSets?.activeSet === 2 ? 2 : 1)),
-      maxBabCap: Math.min(5, Number(working.bab || 0))
+      maxBabCap: Math.min(5, Number(working.bab || 0)),
+      combat: derivedTacCombat
     };
 
     return {
@@ -18086,7 +18383,7 @@ const RuleEngine = {
     const prevDmTs = targetChar.hp?._lastDmUpdateTs;
     const snap = sheetView._workingSnapshot;
     const preserveRefs = { customDb: true, portrait: true, wallpaper: true, smartNotes: true, journal: true, diceHistory: true };
-    const transientWriteBackSkip = { _activeFormOverlay: true, _activeFormMeldMap: true };
+    const transientWriteBackSkip = { _activeFormOverlay: true, _activeFormMeldMap: true, _tacticalCombat: true };
     const snapKeys = Object.keys(snap);
     for (let i = 0; i < snapKeys.length; i++) {
       const k = snapKeys[i];
@@ -18110,7 +18407,7 @@ const RuleEngine = {
   },
 
   TACTICAL_MOD_KEYS: Object.freeze([
-    'flanking', 'charge', 'higherGround',
+    'flanking', 'charge', 'higherGround', 'heedlessCharge',
     'fightingDefensively', 'totalDefense', 'shieldBlockActive', 'shieldBashed',
     'powerAttackActive', 'combatExpertiseActive',
     'rapidShot', 'manyshot', 'pointBlankShot', 'deadlyAim',

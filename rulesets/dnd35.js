@@ -295,8 +295,55 @@
     ['uncannyDodge', 'Retain DEX Bonus to AC When Flat-Footed (Uncanny Dodge)'],
     ['ignoreArmorSpeedPenalty', 'Ignore Medium/Heavy Armor Speed Reduction'],
     ['oneHandedOffHandAsLight', 'Treat One-Handed Off-Hand Weapon as Light (Oversized TWF)'],
-    ['tacticalSlider', 'Enable Tactical Combat Slider (Power Attack / Expertise / Manyshot)']
+    ['tacticalSlider', 'Enable Tactical Combat Slider (Power Attack / Expertise / Manyshot)'],
+    ['powerAttackPenaltyToAc', 'Shift Power Attack Penalty to AC on Charge (Heedless Charge)']
   ];
+
+  const RULE_SWITCH_PARAMS_SCHEMA = {
+    powerAttackPenaltyToAc: {
+      when: { type: 'string', enum: ['charging'], default: 'charging' },
+      minPowerAttack: { type: 'number', min: 1, default: 5 }
+    }
+  };
+
+  // Canonical D&D 3.5e Metamagic Transforms (PHB p.88-102, Rules Compendium)
+  const METAMAGIC_TRANSFORMS = {
+    empower:    { id: 'empower',    label: 'Empower (x1.5 Variable)',       shortLabel: 'Empowered',   defaultSlotAdj: 2, variableSlot: false, raisesSaveDc: false, actionOverride: null,           damageMode: 'empower',  durationMultiplier: 1, rangeMultiplier: 1, areaMultiplier: 1 },
+    maximize:   { id: 'maximize',   label: 'Maximize Dice',                 shortLabel: 'Maximized',   defaultSlotAdj: 3, variableSlot: false, raisesSaveDc: false, actionOverride: null,           damageMode: 'maximize', durationMultiplier: 1, rangeMultiplier: 1, areaMultiplier: 1 },
+    quicken:    { id: 'quicken',    label: 'Quicken (Swift Action)',        shortLabel: 'Quickened',   defaultSlotAdj: 4, variableSlot: false, raisesSaveDc: false, actionOverride: 'Swift Action', damageMode: null,       durationMultiplier: 1, rangeMultiplier: 1, areaMultiplier: 1, notes: 'PHB p.98 Free Action (1/round), errata Swift Action (Rules Compendium)' },
+    extend:     { id: 'extend',     label: 'Extend (x2 Duration)',          shortLabel: 'Extended',    defaultSlotAdj: 1, variableSlot: false, raisesSaveDc: false, actionOverride: null,           damageMode: null,       durationMultiplier: 2, rangeMultiplier: 1, areaMultiplier: 1 },
+    persistent: { id: 'persistent', label: 'Persistent (24h)',              shortLabel: 'Persistent',  defaultSlotAdj: 6, variableSlot: false, raisesSaveDc: false, actionOverride: null,           damageMode: null,       durationMultiplier: 1, durationOverride: '24 hours', rangeMultiplier: 1, areaMultiplier: 1 },
+    enlarge:    { id: 'enlarge',    label: 'Enlarge (x2 Range)',            shortLabel: 'Enlarged',    defaultSlotAdj: 1, variableSlot: false, raisesSaveDc: false, actionOverride: null,           damageMode: null,       durationMultiplier: 1, rangeMultiplier: 2, areaMultiplier: 1 },
+    widen:      { id: 'widen',      label: 'Widen (x2 Area)',               shortLabel: 'Widened',     defaultSlotAdj: 3, variableSlot: false, raisesSaveDc: false, actionOverride: null,           damageMode: null,       durationMultiplier: 1, rangeMultiplier: 1, areaMultiplier: 2 },
+    twin:       { id: 'twin',       label: 'Twin Spell',                    shortLabel: 'Twinned',     defaultSlotAdj: 4, variableSlot: false, raisesSaveDc: false, actionOverride: null,           damageMode: null,       durationMultiplier: 1, rangeMultiplier: 1, areaMultiplier: 1 },
+    splitRay:   { id: 'splitRay',   label: 'Split Ray (+1 Ray)',            shortLabel: 'Split Ray',   defaultSlotAdj: 2, variableSlot: false, raisesSaveDc: false, actionOverride: null,           damageMode: null,       durationMultiplier: 1, rangeMultiplier: 1, areaMultiplier: 1 },
+    chain:      { id: 'chain',      label: 'Chain Secondary Targets',       shortLabel: 'Chained',     defaultSlotAdj: 3, variableSlot: false, raisesSaveDc: false, actionOverride: null,           damageMode: null,       durationMultiplier: 1, rangeMultiplier: 1, areaMultiplier: 1 },
+    heighten:   { id: 'heighten',   label: 'Heighten (+Save DC / Level)',   shortLabel: 'Heightened',  defaultSlotAdj: 0, variableSlot: true,  raisesSaveDc: true,  actionOverride: null,           damageMode: null,       durationMultiplier: 1, rangeMultiplier: 1, areaMultiplier: 1 },
+    energySub:  { id: 'energySub',  label: 'Energy Substitution',           shortLabel: 'Energy Sub',  defaultSlotAdj: 0, variableSlot: false, raisesSaveDc: false, actionOverride: null,           damageMode: null,       durationMultiplier: 1, rangeMultiplier: 1, areaMultiplier: 1 },
+    pierceRes:  { id: 'pierceRes',  label: 'Pierce Energy Resistance',      shortLabel: 'Searing',     defaultSlotAdj: 1, variableSlot: false, raisesSaveDc: false, actionOverride: null,           damageMode: null,       durationMultiplier: 1, rangeMultiplier: 1, areaMultiplier: 1 },
+    silent:     { id: 'silent',     label: 'Silent (No Verbal)',            shortLabel: 'Silent',      defaultSlotAdj: 1, variableSlot: false, raisesSaveDc: false, actionOverride: null,           damageMode: null,       durationMultiplier: 1, rangeMultiplier: 1, areaMultiplier: 1 },
+    still:      { id: 'still',      label: 'Still (No Somatic)',            shortLabel: 'Still',       defaultSlotAdj: 1, variableSlot: false, raisesSaveDc: false, actionOverride: null,           damageMode: null,       durationMultiplier: 1, rangeMultiplier: 1, areaMultiplier: 1 }
+  };
+
+  const METAMAGIC_RULES = {
+    maxSpellLevel: 9,
+    domainUsesBaseLevelForEligibility: true,
+    spontaneousCastingTimeFullRound: true,
+    quickenExemptFromSpontaneousFullRound: true,
+    quickenAction: 'Swift Action'
+  };
+
+  // PHB p.93/97: An empowered, maximized spell gains the separate benefits of each feat:
+  // the maximum result plus one-half the normally rolled result.
+  function resolveMetamagicDamageMode(transforms) {
+    const set = new Set((Array.isArray(transforms) ? transforms : []).map(t => String(t || '').trim()));
+    const hasMax = set.has('maximize');
+    const hasEmp = set.has('empower');
+    if (hasMax && hasEmp) return 'maximize_and_empower';
+    if (hasMax) return 'maximize';
+    if (hasEmp) return 'empower';
+    return 'normal';
+  }
 
   // Canonical V3 Companion / Entity kinds (ADR-058)
   const ENTITY_KINDS = ['animal_companion', 'familiar', 'special_mount', 'fiendish_servant'];
@@ -374,6 +421,10 @@
     statSwapOps: STAT_SWAP_OPS,
     statSwapScopes: STAT_SWAP_SCOPES,
     ruleSwitchFlags: RULE_SWITCH_FLAGS,
+    ruleSwitchParamsSchema: RULE_SWITCH_PARAMS_SCHEMA,
+    metamagicTransforms: METAMAGIC_TRANSFORMS,
+    metamagicRules: METAMAGIC_RULES,
+    resolveMetamagicDamageMode,
     entityKinds: ENTITY_KINDS,
     arcaneSpellcastingClasses: ARCANE_SPELLCASTING_CLASSES,
     defaultEntityLevelFormulas: DEFAULT_ENTITY_LEVEL_FORMULAS,
@@ -526,6 +577,57 @@
         hasCombatExpertise,
         powerAttackMax: hasPowerAttack ? bab : 0,
         combatExpertiseMax: hasCombatExpertise ? Math.min(5, bab) : 0
+      };
+    },
+    /**
+     * Single-source D&D 3.5e RAW tactical combat resolver (Power Attack, Charge, Heedless Charge).
+     * Shared by AC derivation and weapon attack/damage derivation so BAB buffs never desync AC and attack rolls.
+     */
+    resolveTacticalCombat(doc, derived = {}) {
+      const bab = Math.max(0, Number(derived.bab ?? (doc && doc.bab) ?? 0) || 0);
+      const tac = Object.assign({}, (doc && doc.tactical) || {}, derived.tactical || {});
+      // Never read stale doc.ruleFlags (previous derive output); only read freshly derived ruleFlags or legoEval.entries.
+      let paToAcFlag = (derived.ruleFlags && derived.ruleFlags.powerAttackPenaltyToAc)
+        || (derived.legoEval && derived.legoEval.ruleFlags && derived.legoEval.ruleFlags.powerAttackPenaltyToAc)
+        || null;
+      if (!paToAcFlag && derived.legoEval && Array.isArray(derived.legoEval.entries)) {
+        for (let i = 0; i < derived.legoEval.entries.length; i++) {
+          const ent = derived.legoEval.entries[i];
+          if (ent && ent.ruleFlags && ent.ruleFlags.powerAttackPenaltyToAc) {
+            paToAcFlag = ent.ruleFlags.powerAttackPenaltyToAc;
+            break;
+          }
+        }
+      }
+      const paRaw = Math.max(0, Number(tac.powerAttack) || 0);
+      const paAmount = Math.min(bab, paRaw);
+      const charge = Boolean(tac.charge || tac.charging);
+      const chargeAcPenalty = charge ? 2 : 0;
+
+      const heedlessChargeAvailable = Boolean(paToAcFlag);
+      const minPa = (paToAcFlag && typeof paToAcFlag === 'object' && Number.isFinite(Number(paToAcFlag.minPowerAttack)))
+        ? Math.max(1, Number(paToAcFlag.minPowerAttack))
+        : 5;
+      const reqCond = (paToAcFlag && typeof paToAcFlag === 'object' && paToAcFlag.when !== undefined)
+        ? String(paToAcFlag.when).toLowerCase().trim()
+        : 'charging';
+      // Fail-closed closed enum check: unknown `when` values never auto-activate Heedless Charge.
+      const allowedWhen = RULE_SWITCH_PARAMS_SCHEMA.powerAttackPenaltyToAc.when.enum;
+      const condMet = allowedWhen.includes(reqCond) ? (reqCond === 'charging' ? charge : false) : false;
+      const heedlessChargeEligible = heedlessChargeAvailable && condMet && paAmount >= minPa;
+      const heedlessChargeActive = heedlessChargeEligible && Boolean(tac.heedlessCharge);
+
+      return {
+        bab,
+        paAmount,
+        paAttackPenalty: heedlessChargeActive ? 0 : paAmount,
+        paAcPenalty: heedlessChargeActive ? paAmount : 0,
+        charge,
+        chargeAcPenalty,
+        heedlessChargeAvailable,
+        heedlessChargeMinPa: minPa,
+        heedlessChargeEligible,
+        heedlessChargeActive
       };
     }
   };

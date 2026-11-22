@@ -1049,7 +1049,12 @@
         },
         "flag": {
           "type": "string",
-          "description": "ruleSwitch only: one of noAutoFailFortSaveOnNat1, shieldToTouchAc, monkeyGrip, naturalSpell, uncannyDodge, ignoreArmorSpeedPenalty, oneHandedOffHandAsLight, tacticalSlider, or a documented engine flag."
+          "description": "ruleSwitch only: one of noAutoFailFortSaveOnNat1, shieldToTouchAc, monkeyGrip, naturalSpell, uncannyDodge, ignoreArmorSpeedPenalty, oneHandedOffHandAsLight, tacticalSlider, powerAttackPenaltyToAc, or a documented engine flag."
+        },
+        "params": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "ruleSwitch optional generic parameter payload (e.g. for powerAttackPenaltyToAc: { when: 'charging', minPowerAttack: 5 })."
         },
         "label": {
           "type": "string"
@@ -1306,8 +1311,16 @@
         "costMode": {
           "type": "string"
         },
+        "slotAdj": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "string", "const": "variable" }
+          ],
+          "description": "Metamagic slot level adjustment (integer or 'variable' for Heighten Spell)."
+        },
         "transform": {
-          "type": "string"
+          "type": "string",
+          "description": "Canonical metamagic transform key from rulesets/dnd35.js METAMAGIC_TRANSFORMS (empower, maximize, quicken, extend, persistent, enlarge, widen, twin, splitRay, chain, heighten, energySub, pierceRes, silent, still)."
         },
         "energy": {
           "type": "string"

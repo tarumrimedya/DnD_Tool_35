@@ -361,13 +361,15 @@
   // 4. Lego Core V3 — 5 Orthogonal Primitives (9 Block Types)
   // --------------------------------------------------------------------------
   const META_COST_MODES = [['slot', '+Slot Level'], ['passive', 'Passive / Free (+0 Slot)'], ['rod', 'Metamagic Rod (Uses/Day)'], ['sudden', 'Sudden (Uses/Day, +0 Slot)'], ['pool', 'Pool Cost (Divine Metamagic)'], ['essenceShape', 'Invocation Essence / Blast Shape']];
-  const META_TRANSFORMS = [
-    ['empower', 'Damage / Variable ×1.5 (Empower)'], ['maximize', 'Maximize Variable Dice'], ['quicken', 'Cast as Swift Action (Quicken)'],
-    ['extend', 'Duration ×2 (Extend)'], ['persistent', 'Duration → 24 Hours (Persistent)'], ['enlarge', 'Range ×2 (Enlarge)'], ['widen', 'Area ×2 (Widen)'],
-    ['twin', 'Cast Spell Twice (Twin)'], ['splitRay', '+1 Extra Ray (Split Ray)'], ['chain', 'Arc Secondary Targets (Chain)'],
-    ['heighten', '+Save DC / Effective Level'], ['energySub', 'Substitute Energy Type'], ['pierceRes', 'Ignore Energy Resist / ½ Immunity'],
-    ['silent', 'Remove Verbal (V) Component'], ['still', 'Remove Somatic (S) Component'], ['rider', 'Add Rider / Custom Transform']
-  ];
+  const META_TRANSFORMS = (_RS && _RS.metamagicTransforms)
+    ? Object.values(_RS.metamagicTransforms).map((t) => [t.id, t.label]).concat([['rider', 'Add Rider / Custom Transform']])
+    : [
+      ['empower', 'Damage / Variable ×1.5 (Empower)'], ['maximize', 'Maximize Variable Dice'], ['quicken', 'Cast as Swift Action (Quicken)'],
+      ['extend', 'Duration ×2 (Extend)'], ['persistent', 'Duration → 24 Hours (Persistent)'], ['enlarge', 'Range ×2 (Enlarge)'], ['widen', 'Area ×2 (Widen)'],
+      ['twin', 'Cast Spell Twice (Twin)'], ['splitRay', '+1 Extra Ray (Split Ray)'], ['chain', 'Arc Secondary Targets (Chain)'],
+      ['heighten', '+Save DC / Effective Level'], ['energySub', 'Substitute Energy Type'], ['pierceRes', 'Ignore Energy Resist / ½ Immunity'],
+      ['silent', 'Remove Verbal (V) Component'], ['still', 'Remove Somatic (S) Component'], ['rider', 'Add Rider / Custom Transform']
+    ];
   const META_TX_LABEL = {}; META_TRANSFORMS.forEach((x) => { META_TX_LABEL[x[0]] = x[1]; });
   const SIZE_STEPS = { '-2': 'Shrink 2 categories', '-1': 'Shrink 1 category', '1': '+1 Size Category (e.g. Medium → Large)', '2': '+2 Size Categories' };
   const LOCK_LABEL = {
@@ -390,7 +392,8 @@
     ['uncannyDodge', 'Retain DEX Bonus to AC When Flat-Footed (Uncanny Dodge)'],
     ['ignoreArmorSpeedPenalty', 'Ignore Medium/Heavy Armor Speed Reduction'],
     ['oneHandedOffHandAsLight', 'Treat One-Handed Off-Hand Weapon as Light (Oversized TWF)'],
-    ['tacticalSlider', 'Enable Tactical Combat Slider (Power Attack / Expertise / Manyshot)']
+    ['tacticalSlider', 'Enable Tactical Combat Slider (Power Attack / Expertise / Manyshot)'],
+    ['powerAttackPenaltyToAc', 'Shift Power Attack Penalty to AC on Charge (Heedless Charge)']
   ];
   const RULE_SWITCH_LABEL = {}; RULE_SWITCH_FLAGS.forEach((x) => { RULE_SWITCH_LABEL[x[0]] = x[1]; });
 
@@ -746,6 +749,7 @@
     if (b.costMode === 'sudden') return num(b.uses, 1) + '/day Sudden (+0 Slot)';
     if (b.costMode === 'pool') return num(b.poolCost, 1) + ' ' + (b.pool || 'Turn Undead') + ' (+0 Slot)';
     if (b.costMode === 'essenceShape') return 'Eldritch Essence / Blast Shape (Eff. Lvl ' + num(b.maxSpellLvl, 1) + ')';
+    if (b.slotAdj === 'variable' || b.transform === 'heighten') return 'Variable Spell Slot';
     return '+' + num(b.slotAdj) + ' Spell Slot';
   }
   function metamagicTxText(b) {
@@ -2636,7 +2640,12 @@
       } else {
         const ek = b.effectKind || ((b.flag || b.ruleFlag) ? 'ruleSwitch' : 'rule');
         o.effectKind = ek;
-        if (ek === 'ruleSwitch') o.flag = b.flag || b.ruleFlag || 'noAutoFailFortSaveOnNat1';
+        if (ek === 'ruleSwitch') {
+          o.flag = b.flag || b.ruleFlag || 'noAutoFailFortSaveOnNat1';
+          if (b.params && typeof b.params === 'object' && Object.keys(b.params).length > 0) {
+            o.params = Object.assign({}, b.params);
+          }
+        }
         else if (ek === 'proficiency' || ek === 'feat') o.targetId = b.targetId || '';
         else if (ek === 'familiarity') { o.targetId = b.targetId || ''; o.treatAs = b.treatAs || 'martial'; }
         else if (ek === 'rule') o.text = b.text || '';
@@ -2669,6 +2678,9 @@
       } else if (cm === 'metamagic') {
         o.transform = b.transform || 'empower';
         o.costMode = b.costMode || 'slot';
+        if (b.costMode === 'slot') {
+          o.slotAdj = (b.slotAdj === 'variable' || b.transform === 'heighten') ? 'variable' : num(b.slotAdj, 1);
+        }
         if (b.transform === 'energySub' || b.transform === 'pierceRes') o.energy = b.energy || 'Fire';
         if (b.costMode === 'rod' || b.costMode === 'essenceShape') o.maxSpellLvl = num(b.maxSpellLvl, 3);
       }
@@ -5402,7 +5414,11 @@
         if (b.transform === 'energySub' || b.transform === 'pierceRes') cells.push(F('Energy Type', sel(p + '.energy', b.energy, ['Fire', 'Cold', 'Acid', 'Electricity', 'Sonic', 'Any'], { narrow: true })));
         if (b.transform === 'rider') cells.push(F('Rider Effect', inp(p + '.rider', b.rider, { ph: '+1 Negative Level (Fell Drain)' })));
         cells.push(F('Metamagic Cost', sel(p + '.costMode', b.costMode || 'slot', META_COST_MODES, { narrow: true })));
-        if (b.costMode === 'slot') cells.push(F('Slot Adjustment', sel(p + '.slotAdj', b.slotAdj, range(0, 6).map((n) => [n, '+' + n + ' Slot']), { narrow: true, num: true })));
+        if (b.costMode === 'slot') {
+          const slotOpts = [['variable', 'Variable (Heighten)']].concat(range(0, 6).map((n) => [n, '+' + n + ' Slot']));
+          const curSlotAdj = (b.slotAdj === 'variable' || b.transform === 'heighten') ? 'variable' : num(b.slotAdj, 1);
+          cells.push(F('Slot Adjustment', sel(p + '.slotAdj', curSlotAdj, slotOpts, { narrow: true })));
+        }
         else if (b.costMode === 'rod') {
           cells.push(F('Uses / Day', inp(p + '.uses', b.uses, { num: true })));
           cells.push(F('Rod Tier (Max Spell Lvl)', sel(p + '.maxSpellLvl', b.maxSpellLvl, [[3, 'Lvl 3 (Lesser)'], [6, 'Lvl 6 (Normal)'], [9, 'Lvl 9 (Greater)']], { narrow: true, num: true })));
@@ -5569,6 +5585,16 @@
         if (ek === 'ruleSwitch') {
           const curFlag = b.flag || b.ruleFlag || 'noAutoFailFortSaveOnNat1';
           const switchOpts = RULE_SWITCH_LABEL[curFlag] ? RULE_SWITCH_FLAGS : RULE_SWITCH_FLAGS.concat([[curFlag, curFlag + ' (Custom Switch)']]);
+          if (curFlag === 'powerAttackPenaltyToAc') {
+            const pObj = (b.params && typeof b.params === 'object') ? b.params : {};
+            const whenOpts = (_RS && _RS.ruleSwitchParamsSchema?.powerAttackPenaltyToAc?.when?.enum || ['charging']).map((w) => [w, 'While ' + w.charAt(0).toUpperCase() + w.slice(1) + ' (' + w + ')']);
+            return G(2,
+              F('Effect Kind', modeSel) +
+              F('Rule Switch Flag', sel(p + '.flag', curFlag, switchOpts, { narrow: true })) +
+              F('When Condition', sel(p + '.params.when', pObj.when || 'charging', whenOpts, { narrow: true })) +
+              F('Min Power Attack Penalty', inp(p + '.params.minPowerAttack', pObj.minPowerAttack ?? 5, { num: true, ph: '5' }))
+            );
+          }
           return G(2, F('Effect Kind', modeSel) + F('Rule Switch Flag', sel(p + '.flag', curFlag, switchOpts, { narrow: true })));
         }
         if (ek === 'castSpell') {

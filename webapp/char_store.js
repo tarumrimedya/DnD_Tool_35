@@ -189,7 +189,11 @@
     'min_level_reached',
     'level_1_locked',
     'sequential_activation_required',
-    'sequential_deactivation_required'
+    'sequential_deactivation_required',
+    'slot_level_exceeded',
+    'duplicate_metamagic',
+    'invalid_heighten',
+    'metamagic_feat_missing'
   ]);
 
   const PREVIEWABLE_ACTIONS = new Set([
@@ -1927,7 +1931,7 @@
   });
 
   const DEFAULT_TACTICAL_MOD_KEYS = [
-    'flanking', 'charge', 'higherGround',
+    'flanking', 'charge', 'higherGround', 'heedlessCharge',
     'fightingDefensively', 'totalDefense', 'shieldBlockActive', 'shieldBashed',
     'powerAttackActive', 'combatExpertiseActive',
     'rapidShot', 'manyshot', 'pointBlankShot', 'deadlyAim',
@@ -3673,18 +3677,48 @@
     const rawDisc = payload.isSpontaneousConversion ? 'clericconversion' : String(payload.discipline || payload.pool || 'spontaneous').toLowerCase();
     const disc = rawDisc === 'clericspontaneousconversion' ? 'clericconversion' : rawDisc;
     const rawIdx = payload.index ?? payload.spellIndex ?? payload.spellIdx;
-    const idx = rawIdx !== undefined && rawIdx !== null ? Number(rawIdx) : -1;
+    let idx = rawIdx !== undefined && rawIdx !== null ? Number(rawIdx) : -1;
+    const reqInstanceId = payload.instanceId ? String(payload.instanceId) : '';
 
     let spell = null;
-    if (disc === 'prepared' && idx >= 0) {
-      spell = doc.spellcasting.preparedSpells[idx] || null;
-    } else if ((disc === 'divine' || disc === 'clericconversion') && idx >= 0) {
-      spell = doc.spellcasting.divineSpells[idx] || null;
+    if (disc === 'prepared') {
+      if (reqInstanceId) {
+        const foundIdx = doc.spellcasting.preparedSpells.findIndex(s => s && s.instanceId === reqInstanceId);
+        if (foundIdx >= 0) idx = foundIdx;
+      }
+      if (idx >= 0) spell = doc.spellcasting.preparedSpells[idx] || null;
+    } else if (disc === 'divine' || disc === 'clericconversion') {
+      if (reqInstanceId) {
+        const foundIdx = doc.spellcasting.divineSpells.findIndex(s => s && s.instanceId === reqInstanceId);
+        if (foundIdx >= 0) idx = foundIdx;
+      }
+      if (idx >= 0) spell = doc.spellcasting.divineSpells[idx] || null;
     } else if (disc === 'spontaneous' && idx >= 0) {
       spell = doc.spellcasting.knownSpells[idx] || (Array.isArray(doc.spells) ? doc.spells[idx] : null) || null;
     }
 
-    const lvl = Math.max(0, Number(payload.spellLevel ?? payload.level ?? (spell ? spell.level : 0)) || 0);
+    const engineRef = (typeof root !== 'undefined' && root.RuleEngine) || (typeof RuleEngine !== 'undefined' ? RuleEngine : null);
+    const mmOverride = Array.isArray(payload.spontaneousMetamagic) ? payload.spontaneousMetamagic : null;
+    const mmResolved = (spell && engineRef && typeof engineRef.resolveMetamagic === 'function')
+      ? engineRef.resolveMetamagic(spell, doc, {
+        metamagicOverride: mmOverride || undefined,
+        isSpontaneous: disc === 'spontaneous' || disc === 'clericconversion'
+      })
+      : null;
+    if (mmResolved && mmResolved.hasDuplicateFeat) {
+      setStoreOutcome(stateObj, { status: 'duplicate_metamagic', discipline: disc, reasons: mmResolved.invalidReasons });
+      return doc;
+    }
+    if (mmResolved && mmResolved.exceedsMaxLevel) {
+      setStoreOutcome(stateObj, { status: 'slot_level_exceeded', discipline: disc, effectiveSlotLevel: mmResolved.effectiveSlotLevel });
+      return doc;
+    }
+
+    const lvl = Math.max(0, Number(
+      mmResolved && (mmOverride || (Array.isArray(spell?.metamagic) && spell.metamagic.length > 0))
+        ? mmResolved.effectiveSlotLevel
+        : (payload.spellLevel ?? payload.level ?? (spell ? spell.level : 0))
+    ) || 0);
     const isDom = Boolean(payload.isDomain ?? payload.isDomainSpell ?? (spell && spell.isDomainSpell));
     const isAtWill = Boolean(
       payload.isAtWill ||
@@ -3939,14 +3973,177 @@
 
     const entryCopy = JSON.parse(JSON.stringify(rawEntry));
     entryCopy.level = lvl;
+    if ((disc === 'prepared' || disc === 'divine') && !entryCopy.instanceId) {
+      entryCopy.instanceId = `sp_${disc}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
+    }
     arr.push(entryCopy);
 
     setStoreOutcome(stateObj, {
       status: 'spell_added',
       discipline: disc,
       spellName: entryCopy.name,
+      instanceId: entryCopy.instanceId || null,
       level: lvl,
       isDomainSpell: Boolean(entryCopy.isDomainSpell)
+    });
+    return doc;
+  });
+
+  function _normalizeAndValidateMetamagic(doc, disc, baseSpell, rawMetamagic) {
+    const cleanList = [];
+    const seen = new Set();
+    const baseLevel = Math.max(0, Number(baseSpell?.level ?? 0) || 0);
+    const rsMetaRules = (typeof root !== 'undefined' && (root.DnD35Ruleset?.metamagicRules || root.RuleEngine?.rulesets?.dnd35?.metamagicRules)) || { maxSpellLevel: 9 };
+    const absMaxSpellLvl = Number(rsMetaRules.maxSpellLevel) || 9;
+    for (const item of (Array.isArray(rawMetamagic) ? rawMetamagic : [])) {
+      if (!item || typeof item !== 'object') continue;
+      const featId = String(item.featId || item.id || '').trim();
+      if (!featId) continue;
+      if (seen.has(featId)) {
+        return { ok: false, status: 'duplicate_metamagic', reason: `Duplicate metamagic feat: ${featId}` };
+      }
+      seen.add(featId);
+      const cleanItem = { featId };
+      if (item.heightenTo !== undefined && item.heightenTo !== null && item.heightenTo !== '') {
+        const ht = Math.floor(Number(item.heightenTo));
+        if (!Number.isFinite(ht) || ht <= baseLevel || ht > absMaxSpellLvl) {
+          return { ok: false, status: 'invalid_heighten', reason: `Heighten target level (${item.heightenTo}) must be between ${baseLevel + 1} and ${absMaxSpellLvl}.` };
+        }
+        cleanItem.heightenTo = ht;
+      }
+      cleanList.push(cleanItem);
+    }
+
+    const engineRef = (typeof root !== 'undefined' && root.RuleEngine) || (typeof RuleEngine !== 'undefined' ? RuleEngine : null);
+    if (engineRef && typeof engineRef.resolveMetamagic === 'function' && cleanList.length > 0) {
+      // Determine highest available slot level for discipline (fallback 9 when slots not initialized yet)
+      let maxSlotLvl = 9;
+      if (typeof engineRef.deriveSpellsView === 'function') {
+        const view = engineRef.deriveSpellsView(doc);
+        const slotArr = disc === 'divine' ? view?.slotsByLevelView?.divineArray : view?.slotsByLevelView?.preparedArray;
+        if (Array.isArray(slotArr) && slotArr.length > 0) {
+          const maxReady = slotArr.reduce((acc, s) => ((Number(s?.daily) || 0) > 0 ? Math.max(acc, Number(s.level) || 0) : acc), 0);
+          if (maxReady > 0) maxSlotLvl = Math.min(9, maxReady);
+        }
+      }
+      const probe = Object.assign({}, baseSpell, { level: baseLevel, metamagic: cleanList });
+      const res = engineRef.resolveMetamagic(probe, doc, { maxSpellLevel: maxSlotLvl });
+      if (res.hasDuplicateFeat) {
+        return { ok: false, status: 'duplicate_metamagic', reason: res.invalidReasons[0] || 'Duplicate metamagic feat.' };
+      }
+      if (res.exceedsMaxLevel) {
+        return {
+          ok: false,
+          status: 'slot_level_exceeded',
+          effectiveSlotLevel: res.effectiveSlotLevel,
+          maxSlotLevel: maxSlotLvl,
+          reason: `Effective slot level ${res.effectiveSlotLevel} exceeds maximum available slot level (${maxSlotLvl}).`
+        };
+      }
+      if (res.invalidReasons.some(r => r.startsWith('Missing metamagic feat'))) {
+        return { ok: false, status: 'metamagic_feat_missing', reason: res.invalidReasons[0] };
+      }
+      return { ok: true, metamagic: cleanList, resolved: res };
+    }
+    return { ok: true, metamagic: cleanList, resolved: null };
+  }
+
+  // 4b. 'spells/prepareSpell' ({ discipline: 'prepared'|'divine', spellEntry, metamagic[] }) — atomic prepare + metamagic (1 Undo step)
+  CharStore.registerReducer('spells/prepareSpell', (doc, action, stateObj) => {
+    ensureSpellsDocStructures(doc);
+    const payload = (action && action.payload) || {};
+    const disc = String(payload.discipline || 'prepared').toLowerCase();
+    if (disc !== 'prepared' && disc !== 'divine') {
+      setStoreOutcome(stateObj, { status: 'invalid_payload', reason: 'prepareSpell requires prepared or divine discipline.' });
+      return doc;
+    }
+    const rawEntry = payload.spellEntry;
+    if (!rawEntry || !rawEntry.name) {
+      setStoreOutcome(stateObj, { status: 'invalid_payload' });
+      return doc;
+    }
+    const baseLevel = Math.max(0, Number(rawEntry.level) || 0);
+    const rawMeta = Array.isArray(payload.metamagic) ? payload.metamagic : (Array.isArray(rawEntry.metamagic) ? rawEntry.metamagic : []);
+    const check = _normalizeAndValidateMetamagic(doc, disc, { ...rawEntry, level: baseLevel }, rawMeta);
+    if (!check.ok) {
+      setStoreOutcome(stateObj, {
+        status: check.status,
+        discipline: disc,
+        reason: check.reason,
+        effectiveSlotLevel: check.effectiveSlotLevel,
+        maxSlotLevel: check.maxSlotLevel
+      });
+      return doc;
+    }
+    const listKey = disc === 'divine' ? 'divineSpells' : 'preparedSpells';
+    const entryCopy = JSON.parse(JSON.stringify(rawEntry));
+    entryCopy.level = baseLevel;
+    entryCopy.instanceId = entryCopy.instanceId || `sp_${disc}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
+    if (check.metamagic.length > 0) entryCopy.metamagic = check.metamagic;
+    else delete entryCopy.metamagic;
+
+    doc.spellcasting[listKey].push(entryCopy);
+    setStoreOutcome(stateObj, {
+      status: 'spell_prepared',
+      discipline: disc,
+      spellName: entryCopy.name,
+      instanceId: entryCopy.instanceId,
+      baseLevel,
+      effectiveSlotLevel: check.resolved ? check.resolved.effectiveSlotLevel : baseLevel,
+      metamagic: check.metamagic
+    });
+    return doc;
+  });
+
+  // 4c. 'spells/setPreparedMetamagic' ({ discipline: 'prepared'|'divine', instanceId, index, metamagic[] }) — atomic edit (1 Undo step)
+  CharStore.registerReducer('spells/setPreparedMetamagic', (doc, action, stateObj) => {
+    ensureSpellsDocStructures(doc);
+    const payload = (action && action.payload) || {};
+    const disc = String(payload.discipline || 'prepared').toLowerCase();
+    if (disc !== 'prepared' && disc !== 'divine') {
+      setStoreOutcome(stateObj, { status: 'invalid_payload' });
+      return doc;
+    }
+    const listKey = disc === 'divine' ? 'divineSpells' : 'preparedSpells';
+    const arr = doc.spellcasting[listKey];
+    let idx = -1;
+    if (payload.instanceId) {
+      idx = arr.findIndex(s => s && s.instanceId === String(payload.instanceId));
+    }
+    if (idx < 0 && payload.index !== undefined && payload.index !== null) {
+      const n = Number(payload.index);
+      if (Number.isInteger(n) && n >= 0 && n < arr.length) idx = n;
+    }
+    if (idx < 0 || !arr[idx]) {
+      setStoreOutcome(stateObj, { status: 'not_found', discipline: disc });
+      return doc;
+    }
+    const target = arr[idx];
+    const check = _normalizeAndValidateMetamagic(doc, disc, target, payload.metamagic || []);
+    if (!check.ok) {
+      setStoreOutcome(stateObj, {
+        status: check.status,
+        discipline: disc,
+        reason: check.reason,
+        effectiveSlotLevel: check.effectiveSlotLevel,
+        maxSlotLevel: check.maxSlotLevel
+      });
+      return doc;
+    }
+    if (!target.instanceId) {
+      target.instanceId = `sp_${disc}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
+    }
+    if (check.metamagic.length > 0) target.metamagic = check.metamagic;
+    else delete target.metamagic;
+
+    setStoreOutcome(stateObj, {
+      status: 'metamagic_updated',
+      discipline: disc,
+      spellName: target.name,
+      instanceId: target.instanceId,
+      baseLevel: Number(target.level) || 0,
+      effectiveSlotLevel: check.resolved ? check.resolved.effectiveSlotLevel : (Number(target.level) || 0),
+      metamagic: check.metamagic
     });
     return doc;
   });

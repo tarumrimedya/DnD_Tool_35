@@ -910,8 +910,8 @@ function runDeriveSheetTests() {
     return out && out.status === 'tactical_toggled' && CharStore.getDoc().tactical[resolved] === true;
   });
   check(
-    'Phase R3 QA: combat/toggleTacticalMod accepts all 22 melee, defense, and ranged tactical modifier keys (including rangePenalty, enhanceArrow, trueStrike, sneakAttack, bootsHaste, witchlightSpeed)',
-    allTacticalKeysAccepted && Array.isArray(RuleEngine.TACTICAL_MOD_KEYS) && RuleEngine.TACTICAL_MOD_KEYS.length === 22
+    'Phase R3 QA: combat/toggleTacticalMod accepts all 23 melee, defense, and ranged tactical modifier keys (including heedlessCharge, rangePenalty, enhanceArrow, trueStrike, sneakAttack, bootsHaste, witchlightSpeed)',
+    allTacticalKeysAccepted && Array.isArray(RuleEngine.TACTICAL_MOD_KEYS) && RuleEngine.TACTICAL_MOD_KEYS.length === 23 && RuleEngine.TACTICAL_MOD_KEYS.includes('heedlessCharge')
   );
 
   // Verify BAB 0 Combat Expertise Cap === 0
@@ -7470,6 +7470,310 @@ function runDeriveSheetTests() {
         scribePartial && scribePartial.coverage === 'partial' &&
         Array.isArray(deathAtkSummary) && deathAtkSummary.includes('Fort DC 19'),
         JSON.stringify({ castAtomic, castUndone, barkRounds, lvl1HumanFighterPts, scribeCov: scribePartial?.coverage, deathAtkSummary })
+      );
+    }
+
+    // Epic #12: Per-Spell Metamagic Preparation Schema (RAW Slot Level, Heighten Save DC, Empower+Maximize, Quicken, Atomic Store/Undo, >9 Rejection)
+    {
+      const mmWizard = {
+        name: 'Metamagic Golden Wizard',
+        level: 17,
+        classes: 'Wizard 17',
+        abilities: { str: 10, dex: 12, con: 12, int: 20, wis: 10, cha: 10 },
+        feats: [
+          { id: 'feat-empower-spell', name: 'Empower Spell', effects: [{ id: 'ef-mm-empower', type: 'carrier', carrierMode: 'metamagic', slotAdj: 2, transform: 'empower', costMode: 'slot' }] },
+          { id: 'feat-maximize-spell', name: 'Maximize Spell', effects: [{ id: 'ef-mm-max', type: 'carrier', carrierMode: 'metamagic', slotAdj: 3, transform: 'maximize', costMode: 'slot' }] },
+          { id: 'feat-quicken-spell', name: 'Quicken Spell', effects: [{ id: 'ef-mm-quick', type: 'carrier', carrierMode: 'metamagic', slotAdj: 4, transform: 'quicken', costMode: 'slot' }] },
+          { id: 'feat-heighten-spell', name: 'Heighten Spell', effects: [{ id: 'ef-mm-heighten', type: 'carrier', carrierMode: 'metamagic', slotAdj: 'variable', transform: 'heighten', costMode: 'slot' }] }
+        ],
+        spellcasting: {
+          primaryClass: 'Wizard',
+          cl: 17,
+          preparedSlots: Array.from({ length: 10 }, (_, l) => ({ level: l, daily: 4, total: 4, used: 0 })),
+          preparedSpells: []
+        },
+        tactical: {}
+      };
+      CharStore.replaceDoc(mmWizard, { skipHistory: true, persist: false });
+      CharStore.clearHistory();
+
+      // 1. Atomic prepareSpell: Empowered Fireball (L3 -> L5 slot, Save DC remains L3 = 10 + 5 INT + 3 = 18)
+      CharStore.dispatch({
+        type: 'spells/prepareSpell',
+        payload: {
+          discipline: 'prepared',
+          spellEntry: { id: 'spl-fireball', name: 'Fireball', level: 3, school: 'Evocation', action: 'Standard Action' },
+          metamagic: [{ featId: 'feat-empower-spell' }]
+        }
+      });
+      const outEmp = CharStore.getLastOutcome();
+      const sEmp = CharStore.getSheet()?.spells?.spellsByLevelView?.preparedSpells?.[0];
+      check(
+        'Epic #12a: Empowered Fireball occupies L5 slot while Save DC stays at Base L3 (DC 18)',
+        outEmp && outEmp.status === 'spell_prepared' && outEmp.effectiveSlotLevel === 5 &&
+        sEmp && sEmp.baseLevel === 3 && sEmp.effectiveSlotLevel === 5 && sEmp.effectiveSpellLevel === 3 &&
+        sEmp.saveDc === 18 && sEmp.damageMode === 'empower',
+        JSON.stringify({ outEmp, sEmp: sEmp ? { base: sEmp.baseLevel, slot: sEmp.effectiveSlotLevel, eff: sEmp.effectiveSpellLevel, dc: sEmp.saveDc, dmg: sEmp.damageMode } : null })
+      );
+
+      // 2. Heighten Spell (L3 -> L6): Save DC increases by +3 (DC 21)
+      CharStore.dispatch({
+        type: 'spells/prepareSpell',
+        payload: {
+          discipline: 'prepared',
+          spellEntry: { id: 'spl-fireball', name: 'Fireball', level: 3, school: 'Evocation', action: 'Standard Action' },
+          metamagic: [{ featId: 'feat-heighten-spell', heightenTo: 6 }]
+        }
+      });
+      const sHt = CharStore.getSheet()?.spells?.spellsByLevelView?.preparedSpells?.[1];
+      check(
+        'Epic #12b: Heightened Fireball (L3 -> L6) raises both effectiveSlotLevel (6) and Save DC (21)',
+        sHt && sHt.effectiveSlotLevel === 6 && sHt.effectiveSpellLevel === 6 && sHt.saveDc === 21,
+        JSON.stringify(sHt ? { slot: sHt.effectiveSlotLevel, eff: sHt.effectiveSpellLevel, dc: sHt.saveDc } : null)
+      );
+
+      // 3. Empower + Maximize combined (L3 + 2 + 3 = L8, maximize_and_empower) & Quicken (Swift Action)
+      CharStore.dispatch({
+        type: 'spells/prepareSpell',
+        payload: {
+          discipline: 'prepared',
+          spellEntry: { id: 'spl-fireball', name: 'Fireball', level: 3, school: 'Evocation', action: 'Standard Action' },
+          metamagic: [{ featId: 'feat-empower-spell' }, { featId: 'feat-maximize-spell' }]
+        }
+      });
+      const sEmpMax = CharStore.getSheet()?.spells?.spellsByLevelView?.preparedSpells?.[2];
+      CharStore.dispatch({
+        type: 'spells/prepareSpell',
+        payload: {
+          discipline: 'prepared',
+          spellEntry: { id: 'spl-magic-missile', name: 'Magic Missile', level: 1, school: 'Evocation', action: 'Standard Action' },
+          metamagic: [{ featId: 'feat-quicken-spell' }]
+        }
+      });
+      const sQuick = CharStore.getSheet()?.spells?.spellsByLevelView?.preparedSpells?.[3];
+      check(
+        'Epic #12c: Empower+Maximize => L8 maximize_and_empower; Quicken Magic Missile => L5 Swift Action',
+        sEmpMax && sEmpMax.effectiveSlotLevel === 8 && sEmpMax.damageMode === 'maximize_and_empower' &&
+        sQuick && sQuick.effectiveSlotLevel === 5 && sQuick.castAction === 'Swift Action',
+        JSON.stringify({ sEmpMax: sEmpMax?.damageMode, slotEM: sEmpMax?.effectiveSlotLevel, sQuickAct: sQuick?.castAction, slotQ: sQuick?.effectiveSlotLevel })
+      );
+
+      // 4. Reject > Level 9 (Fireball L3 + Quicken +4 + Maximize +3 = L10) & Reject duplicate feat without polluting Undo
+      const undoBeforeReject = CharStore.getHistoryCounts().undo;
+      CharStore.dispatch({
+        type: 'spells/prepareSpell',
+        payload: {
+          discipline: 'prepared',
+          spellEntry: { id: 'spl-fireball', name: 'Fireball', level: 3, school: 'Evocation' },
+          metamagic: [{ featId: 'feat-quicken-spell' }, { featId: 'feat-maximize-spell' }]
+        }
+      });
+      const outOver9 = CharStore.getLastOutcome();
+      CharStore.dispatch({
+        type: 'spells/prepareSpell',
+        payload: {
+          discipline: 'prepared',
+          spellEntry: { id: 'spl-fireball', name: 'Fireball', level: 3, school: 'Evocation' },
+          metamagic: [{ featId: 'feat-empower-spell' }, { featId: 'feat-empower-spell' }]
+        }
+      });
+      const outDup = CharStore.getLastOutcome();
+      const undoAfterReject = CharStore.getHistoryCounts().undo;
+      check(
+        'Epic #12d: Slot > 9 (L10) and duplicate metamagic feat rejected without polluting Undo history',
+        outOver9 && outOver9.status === 'slot_level_exceeded' &&
+        outDup && outDup.status === 'duplicate_metamagic' &&
+        undoBeforeReject === undoAfterReject,
+        JSON.stringify({ outOver9, outDup, undoBeforeReject, undoAfterReject })
+      );
+
+      // 5. Cast Empowered Fireball by instanceId spends L5 slot (not L3) and 1-step Undo restores it
+      const empInstId = CharStore.getDoc().spellcasting.preparedSpells[0].instanceId;
+      CharStore.dispatch({
+        type: 'spells/castSpell',
+        payload: { discipline: 'prepared', instanceId: empInstId, markPreparedCast: true }
+      });
+      const castSlot5Used = CharStore.getDoc().spellcasting.preparedSlots.find(s => s.level === 5).used;
+      const castSlot3Used = CharStore.getDoc().spellcasting.preparedSlots.find(s => s.level === 3).used;
+      CharStore.undo();
+      const undoSlot5Used = CharStore.getDoc().spellcasting.preparedSlots.find(s => s.level === 5).used;
+      check(
+        'Epic #12e: Casting Empowered Fireball by instanceId spends Level 5 slot (0 spent on Level 3) and 1-step Undo restores it',
+        castSlot5Used === 1 && castSlot3Used === 0 && undoSlot5Used === 0,
+        JSON.stringify({ castSlot5Used, castSlot3Used, undoSlot5Used })
+      );
+    }
+
+    // Epic #29: Shock Trooper — Heedless Charge (Pure Canonical V3 powerAttackPenaltyToAc, scenarios a–g)
+    {
+      const makeShockTrooperChar = (opts = {}) => ({
+        name: 'Shock Trooper Golden Fighter',
+        level: 6,
+        bab: 6,
+        classes: 'Fighter 6',
+        abilities: { str: 18, dex: 12, con: 14, int: 10, wis: 10, cha: 10 },
+        feats: opts.withoutShockTrooper
+          ? [{ id: 'feat-power-attack', name: 'Power Attack', effects: [{ id: 'ef-pa', type: 'effect', effectKind: 'ruleSwitch', flag: 'tacticalSlider', slider: 'powerAttack' }] }]
+          : [
+            { id: 'feat-power-attack', name: 'Power Attack', effects: [{ id: 'ef-pa', type: 'effect', effectKind: 'ruleSwitch', flag: 'tacticalSlider', slider: 'powerAttack' }] },
+            {
+              id: 'feat-shock-trooper',
+              name: 'Shock Trooper',
+              effects: [{
+                id: 'ef-heedless-charge',
+                type: 'effect',
+                effectKind: 'ruleSwitch',
+                flag: 'powerAttackPenaltyToAc',
+                params: { when: 'charging', minPowerAttack: 5 }
+              }]
+            }
+          ],
+        bodySlots: opts.withArmbands
+          ? { arms: { name: 'Armbands of Might', active: true, ruleFlags: { powerAttackMinPenalty: 2, powerAttackBonusDamage: 2 } } }
+          : {},
+        weapons: [
+          opts.lightWeapon
+            ? { id: 'wep-short-sword', name: 'Shortsword', dice: '1d6', handedness: 'Light', category: 'Light', damageType: 'Piercing' }
+            : { id: 'wep-greatsword', name: 'Greatsword', dice: '2d6', handedness: '2-Handed', category: 'Two-Handed', damageType: 'Slashing' }
+        ],
+        tactical: {
+          powerAttack: opts.pa ?? 5,
+          charge: opts.charge ?? true,
+          heedlessCharge: opts.heedless ?? true
+        }
+      });
+
+      const evalShockScenario = (opts = {}) => {
+        const ch = makeShockTrooperChar(opts);
+        const sheet = RuleEngine.deriveSheet(ch);
+        const wep = ch.weapons[0];
+        const grip = opts.lightWeapon ? 'Light' : '2-Hand';
+        const wepEval = RuleEngine.evaluateWeaponAttack(
+          Object.assign({}, ch, { ruleFlags: sheet.defenses.ruleFlags, legoEvaluation: ch.legoEvaluation }),
+          wep,
+          { grip, powerAttack: opts.pa ?? 5, charge: opts.charge ?? true, heedlessCharge: opts.heedless ?? true }
+        );
+        return { sheet, wepEval };
+      };
+
+      // Baseline (no charge, no PA, no heedless): AC = 10 + 1 DEX = 11; Greatsword Atk = 6 BAB + 4 STR = +10; Dmg = 6 (1.5x STR)
+      const baseRes = evalShockScenario({ pa: 0, charge: false, heedless: false });
+      const baseSheet = baseRes.sheet;
+      const baseAc = baseSheet.ac.total;
+      const baseAtk = baseRes.wepEval.iteratives[0];
+      const baseDmg = baseRes.wepEval.netFlatDamage;
+
+      // (a) BAB 6, PA 5, charge, heedless, Two-Handed: Atk = base +2 (charge, 0 PA penalty); AC = base - 7 (-2 charge, -5 PA) on normal/touch/flat; Dmg = base + 10
+      const rA = evalShockScenario({ pa: 5, charge: true, heedless: true });
+      check(
+        'Epic #29a: Heedless Charge (BAB 6, PA 5, Charge, 2H) shifts -5 PA to AC (-7 total on Normal/Touch/Flat), Attack +2 (no PA penalty), Damage +10',
+        rA.sheet.ac.total === baseAc - 7 &&
+        rA.sheet.ac.touch === baseSheet.ac.touch - 7 &&
+        rA.sheet.ac.flatFooted === baseSheet.ac.flatFooted - 7 &&
+        rA.sheet.ac.heedlessChargeAcPenalty === 5 &&
+        rA.wepEval.iteratives[0] === baseAtk + 2 &&
+        rA.wepEval.netFlatDamage === baseDmg + 10,
+        JSON.stringify({ baseAc, ac: rA.sheet.ac.total, touch: rA.sheet.ac.touch, flat: rA.sheet.ac.flatFooted, atk: rA.wepEval.iteratives[0], dmg: rA.wepEval.netFlatDamage })
+      );
+
+      // (b) PA 4 + heedless => inactive (RAW min 5): Atk = base +2 - 4 = base - 2; AC = base - 2
+      const rB = evalShockScenario({ pa: 4, charge: true, heedless: true });
+      check(
+        'Epic #29b: PA 4 < 5 keeps Heedless Charge inactive (Attack -4 PA +2 Charge, AC -2 Charge only)',
+        rB.sheet.ac.total === baseAc - 2 && rB.sheet.ac.heedlessChargeAcPenalty === 0 && rB.wepEval.iteratives[0] === baseAtk - 2,
+        JSON.stringify({ ac: rB.sheet.ac.total, hcAc: rB.sheet.ac.heedlessChargeAcPenalty, atk: rB.wepEval.iteratives[0] })
+      );
+
+      // (c) Charge false + heedless => inactive: Atk = base - 5; AC = base
+      const rC = evalShockScenario({ pa: 5, charge: false, heedless: true });
+      check(
+        'Epic #29c: Without Charge, Heedless Charge is inactive (Attack -5 PA, AC unchanged)',
+        rC.sheet.ac.total === baseAc && rC.sheet.ac.heedlessChargeAcPenalty === 0 && rC.wepEval.iteratives[0] === baseAtk - 5,
+        JSON.stringify({ ac: rC.sheet.ac.total, atk: rC.wepEval.iteratives[0] })
+      );
+
+      // (d) PA 8, BAB 6 => clamped to 6: Attack = base + 2, AC = base - 8 (-2 charge, -6 PA), Damage = base + 12
+      const rD = evalShockScenario({ pa: 8, charge: true, heedless: true });
+      check(
+        'Epic #29d: PA 8 clamped to BAB 6 transfers -6 to AC (-8 total) and +12 damage',
+        rD.sheet.ac.total === baseAc - 8 && rD.sheet.ac.heedlessChargeAcPenalty === 6 && rD.wepEval.iteratives[0] === baseAtk + 2 && rD.wepEval.netFlatDamage === baseDmg + 12,
+        JSON.stringify({ ac: rD.sheet.ac.total, hcAc: rD.sheet.ac.heedlessChargeAcPenalty, atk: rD.wepEval.iteratives[0], dmg: rD.wepEval.netFlatDamage })
+      );
+
+      // (e) Light weapon: AC -7, Attack +2 (no PA penalty), Damage bonus +0 from PA (PHB p.98)
+      const rEBase = evalShockScenario({ lightWeapon: true, pa: 0, charge: false, heedless: false });
+      const rE = evalShockScenario({ lightWeapon: true, pa: 5, charge: true, heedless: true });
+      check(
+        'Epic #29e: Light weapon still transfers -5 PA to AC (-7 total) while gaining +0 PA damage',
+        rE.sheet.ac.total === rEBase.sheet.ac.total - 7 && rE.wepEval.iteratives[0] === rEBase.wepEval.iteratives[0] + 2 && rE.wepEval.netFlatDamage === rEBase.wepEval.netFlatDamage,
+        JSON.stringify({ acDelta: rE.sheet.ac.total - rEBase.sheet.ac.total, dmgDelta: rE.wepEval.netFlatDamage - rEBase.wepEval.netFlatDamage })
+      );
+
+      // (f) PA-threshold item (Armbands of Might, minPa: 2) still triggers when Heedless Charge shifts penalty to AC
+      const rF = evalShockScenario({ pa: 5, charge: true, heedless: true, withArmbands: true });
+      check(
+        'Epic #29f: PA-threshold synergy item (+2 dmg at PA >= 2) triggers during Heedless Charge',
+        rF.wepEval.netFlatDamage === baseDmg + 12,
+        JSON.stringify({ expected: baseDmg + 12, got: rF.wepEval.netFlatDamage })
+      );
+
+      // (g) Without feat-shock-trooper, tactical.heedlessCharge: true has zero effect
+      const rG = evalShockScenario({ withoutShockTrooper: true, pa: 5, charge: true, heedless: true });
+      check(
+        'Epic #29g: Without feat-shock-trooper, tactical.heedlessCharge: true has zero effect (Attack -5 +2 = -3, AC -2)',
+        rG.sheet.ac.total === baseAc - 2 && rG.sheet.ac.heedlessChargeAcPenalty === 0 && rG.wepEval.iteratives[0] === baseAtk - 3,
+        JSON.stringify({ ac: rG.sheet.ac.total, hcAc: rG.sheet.ac.heedlessChargeAcPenalty, atk: rG.wepEval.iteratives[0] })
+      );
+
+      // (h) Effective BAB sync (Blocker #1): Cleric 8 (BAB 6) + Divine Power (babEqualsLevel -> BAB 8), PA 8, Charge, Heedless => AC -10 (-2 charge, -8 PA) & Attack +0 PA penalty
+      const dpChar = Object.assign(makeShockTrooperChar({ pa: 8, charge: true, heedless: true }), {
+        level: 8,
+        bab: 6,
+        classes: 'Cleric 8',
+        buffs: [{ name: 'Divine Power', active: true, ruleFlags: { babEqualsLevel: true } }]
+      });
+      const dpBaseChar = Object.assign({}, dpChar, { tactical: { powerAttack: 0, charge: false, heedlessCharge: false } });
+      const dpBaseSheet = RuleEngine.deriveSheet(dpBaseChar);
+      const dpSheet = RuleEngine.deriveSheet(dpChar);
+      const dpWepEval = RuleEngine.evaluateWeaponAttack(
+        Object.assign({}, dpChar, { ruleFlags: dpSheet.defenses.ruleFlags }),
+        dpChar.weapons[0],
+        { grip: '2-Hand', powerAttack: 8, charge: true, heedlessCharge: true }
+      );
+      const dpBaseWepEval = RuleEngine.evaluateWeaponAttack(
+        Object.assign({}, dpBaseChar, { ruleFlags: dpBaseSheet.defenses.ruleFlags }),
+        dpChar.weapons[0],
+        { grip: '2-Hand', powerAttack: 0, charge: false, heedlessCharge: false }
+      );
+      check(
+        'Epic #29h: Divine Power (BAB 6 -> 8) keeps AC (-8 PA, -10 total) and Attack (+2 charge, 0 PA penalty) 100% synced',
+        dpSheet.ac.total === dpBaseSheet.ac.total - 10 &&
+        dpSheet.ac.heedlessChargeAcPenalty === 8 &&
+        dpWepEval.iteratives[0] === dpBaseWepEval.iteratives[0] + 2 &&
+        dpWepEval.netFlatDamage === dpBaseWepEval.netFlatDamage + 16,
+        JSON.stringify({ acDelta: dpSheet.ac.total - dpBaseSheet.ac.total, hcAc: dpSheet.ac.heedlessChargeAcPenalty, atkDelta: dpWepEval.iteratives[0] - dpBaseWepEval.iteratives[0], dmgDelta: dpWepEval.netFlatDamage - dpBaseWepEval.netFlatDamage })
+      );
+
+      // (i) Stale tacticalOptions (Blocker #2): doc.tactical wins over stale tacticalOptions in AC calculation
+      const staleOptSheet = RuleEngine.deriveSheet(
+        makeShockTrooperChar({ pa: 5, charge: true, heedless: true }),
+        [],
+        { powerAttack: 0, charge: false, heedlessCharge: false }
+      );
+      check(
+        'Epic #29i: Live doc.tactical wins over stale tacticalOptions in AC Heedless Charge calculation',
+        staleOptSheet.ac.total === baseAc - 7 && staleOptSheet.ac.heedlessChargeAcPenalty === 5,
+        JSON.stringify({ ac: staleOptSheet.ac.total, hcAc: staleOptSheet.ac.heedlessChargeAcPenalty })
+      );
+
+      // (j) Fail-closed `when` enum (Blocker #3): typo `when: "charge"` never activates Heedless Charge
+      const badWhenChar = makeShockTrooperChar({ pa: 5, charge: false, heedless: true });
+      badWhenChar.feats[1].effects[0].params.when = 'charge';
+      const badWhenSheet = RuleEngine.deriveSheet(badWhenChar);
+      check(
+        'Epic #29j: Unknown `when` value ("charge") fails closed and never activates Heedless Charge',
+        badWhenSheet.ac.total === baseAc && badWhenSheet.ac.heedlessChargeAcPenalty === 0,
+        JSON.stringify({ ac: badWhenSheet.ac.total, hcAc: badWhenSheet.ac.heedlessChargeAcPenalty })
       );
     }
   }

@@ -6697,6 +6697,14 @@
       const flanking = !!character.tactical?.flanking;
       const charge = !!character.tactical?.charge;
       const hg = !!character.tactical?.higherGround;
+      const sheetTacCombat = (typeof CharStore !== 'undefined' && typeof CharStore.getSheet === 'function'
+        ? CharStore.getSheet()?.combat?.tactical?.combat
+        : null) || null;
+      const heedlessAvailable = Boolean(sheetTacCombat && sheetTacCombat.heedlessChargeAvailable);
+      const heedlessEligible = Boolean(sheetTacCombat && sheetTacCombat.heedlessChargeEligible);
+      const heedlessActive = Boolean(sheetTacCombat && sheetTacCombat.heedlessChargeActive);
+      const heedlessStored = Boolean(character.tactical?.heedlessCharge);
+      const heedlessMinPa = Number(sheetTacCombat?.heedlessChargeMinPa || 5);
       const twfMod = (character.tacticalRiders || []).find(m => m && m.name && (m.name.includes('TWF') || m.name.includes('Two-Weapon')));
       const isTWF = twfMod?.active ?? false;
 
@@ -6742,6 +6750,24 @@
         </div>
         `
       ];
+      if (heedlessAvailable) {
+        const hcTip = heedlessEligible
+          ? `Heedless Charge: Shift -${sheetTacCombat.paAmount} Power Attack penalty from Attack to AC`
+          : `Requires Charge + Power Attack ${heedlessMinPa}+`;
+        fixedCardsHtml.push(`
+        <div data-action="combat:melee-fixed-toggle" data-mod-key="heedlessCharge"
+             title="${UI.escapeAttr(hcTip)}"
+             class="relative ${heedlessActive ? 'border-2 border-purple-400 bg-purple-950 text-white ring-1 ring-purple-400/30' : (heedlessStored ? 'border border-purple-700/70 bg-slate-900/90 text-purple-200 opacity-75' : 'border border-slate-800 bg-slate-900 text-slate-300 hover:border-purple-500/60')} rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group ${heedlessEligible ? 'cursor-pointer' : 'opacity-60 cursor-pointer'}">
+          <div class="flex items-center justify-center px-0.5 text-[10px] leading-none shrink-0 w-full">
+            <span class="text-[10px] font-mono ${heedlessActive ? 'text-purple-300 font-bold' : 'text-slate-500'} truncate max-w-[75px]">Tactical</span>
+          </div>
+          <div class="flex-1 flex flex-col justify-center items-center px-0.5 my-auto">
+            <div class="text-[10px] ${heedlessActive ? 'font-black text-white' : 'font-bold text-purple-300'} leading-tight truncate w-full">Heedless Chg.</div>
+            <div class="text-[10px] ${heedlessActive ? 'text-purple-200 font-bold' : 'text-slate-400'} font-mono mt-1">${heedlessActive ? `-${sheetTacCombat.paAmount} AC` : `PA ${heedlessMinPa}+ -> AC`}</div>
+          </div>
+        </div>
+        `);
+      }
 
       // Rows 2+ : Dynamic modifiers (strictly melee & both modifiers, excluding TWF which is managed by weapon sets)
       const isExpanded = !!window.combatModifiersGridExpanded;

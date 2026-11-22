@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
   "version": "3.0.0",
-  "compendiumHash": "f5cc92cda89792de",
+  "compendiumHash": "d276eee62203722e",
   "generatedAt": "2026-11-15T19:43:51.694Z",
   "totalEntries": 8001,
   "chunks": {
@@ -14,7 +14,7 @@
     "srd_feats.json": {
       "count": 468,
       "bytes": 726023,
-      "hash": "887851b53b5a1333",
+      "hash": "6d57d2bf9c6b33bf",
       "eagerLoad": true
     },
     "srd_classes_races.json": {

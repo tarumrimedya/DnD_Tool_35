@@ -1166,7 +1166,7 @@
       }
 
       const unlockedLevels = slots.filter(s => s.daily > 0).map(s => Number(s.level));
-      const allLevels = Array.from(new Set([...unlockedLevels, ...spells.map(s => Number(s.level || 0))])).sort((a, b) => a - b);
+      const allLevels = Array.from(new Set([...unlockedLevels, ...spells.map(s => getPreparedSpellMetamagicInfo(s).effectiveSlotLevel)])).sort((a, b) => a - b);
       const pillsHtml = ['all', ...allLevels].map(lvl => {
         const isActive = String(lvlFilter) === String(lvl);
         const label = lvl === 'all' ? 'All' : (lvl === 0 ? 'Level 0' : `Level ${lvl}`);
@@ -1184,7 +1184,8 @@
       displayLevels.forEach(lvl => {
         const spellsAtLvl = [];
         spells.forEach((s, idx) => {
-          if (Number(s.level || 0) === lvl) spellsAtLvl.push({ s, idx });
+          const effLvl = getPreparedSpellMetamagicInfo(s).effectiveSlotLevel;
+          if (effLvl === lvl) spellsAtLvl.push({ s, idx });
         });
         const dc = getSpellDc(lvl, 'prepared');
         const slotObj = slots.find(sl => Number(sl.level) === lvl);
@@ -1242,13 +1243,17 @@
       });
 
       function buildPreparedRowHtml(s, originalIdx, lvl, baseDc) {
-        const dc = getSpellRowSaveDc(s, lvl, 'prepared') || baseDc;
+        const mm = getPreparedSpellMetamagicInfo(s);
+        const dc = getSpellRowSaveDc(s, mm.effectiveSpellLevel, 'prepared', originalIdx) || baseDc;
         const slotObj = slots.find(sl => Number(sl.level) === lvl);
         const remainingSlots = slotObj ? Math.max(0, (slotObj.daily || 0) - (slotObj.used || 0)) : 0;
         const hasActiveSlot = remainingSlots > 0;
         const theme = getSpellLevelTheme(lvl);
         const spellCl = getSpellEffectiveCl(s, cl);
         const dmgExpr = resolveSpellEffectiveFormula(s, spellCl);
+        const mmBadgesHtml = buildMetamagicBadgesHtml(mm);
+        const mmEditBtnHtml = buildMetamagicEditBtnHtml('prepared', s, originalIdx);
+        const displayAction = mm.castAction || s.action || 'Standard Action';
 
         return `
           <tr class="transition border-l-4 ${theme.borderLeft} ${
@@ -1258,17 +1263,18 @@
               <span class="badge ${theme.badge} text-[10px] font-bold font-mono px-2 py-0.5">${lvl}</span>
             </td>
             <td class="py-2.5 px-3 font-bold text-white align-middle">
-              <div class="flex items-center gap-2 whitespace-nowrap">
-                ${getUniversalPinButtonHtml({ name: s.name, type: 'Spell', action: s.action || 'Standard Action', desc: s.benefit || '', badge: dmgExpr || '', damageDice: dmgExpr || '' })}
+              <div class="flex items-center gap-2 whitespace-nowrap flex-wrap">
+                ${getUniversalPinButtonHtml({ name: s.name, type: 'Spell', action: displayAction, desc: s.benefit || '', badge: dmgExpr || '', damageDice: dmgExpr || '' })}
                 <span>📖</span>
                 <button type="button" data-action="entity:inspect" data-entity-kind="spell" data-entity-id="${UI.escapeAttr(s.id || s.baseEntryId || '')}" data-entity-name="${UI.escapeAttr(s.name || '')}" data-entity-index="${originalIdx}" data-discipline="prepared" class="text-left font-bold cursor-pointer hover:underline ${hasActiveSlot ? 'text-white hover:text-sky-200' : 'text-slate-400 hover:text-slate-200'}" title="Inspect / Edit in Rule Crafter">${UI.escapeHtml(s.name)}</button>
+                ${mmBadgesHtml}
                 ${!hasActiveSlot ? `<span class="text-[10px] font-mono px-1.5 rounded bg-rose-950/90 text-rose-300 border border-rose-800/80 font-bold shrink-0">0 Slot</span>` : ''}
               </div>
             </td>
             <td class="py-2.5 px-3 text-slate-300">
               <span class="badge bg-sky-950/60 text-sky-300 border border-sky-800/80 text-[10px] font-semibold">${UI.escapeHtml(s.school || 'Universal')}</span>
             </td>
-            <td class="py-2.5 px-3 text-center text-amber-300 text-[11px] whitespace-nowrap font-medium" title="${s.action || 'Standard Action'}">${formatActionShort(s.action)}</td>
+            <td class="py-2.5 px-3 text-center text-amber-300 text-[11px] whitespace-nowrap font-medium" title="${UI.escapeAttr(displayAction)}">${formatActionShort(displayAction)}</td>
             <td class="py-2.5 px-3 text-slate-300 text-[11px]">${UI.escapeHtml(s.range || '-')}</td>
             <td class="py-2.5 px-3 text-center">
               <span class="badge bg-slate-900 text-emerald-300 border border-emerald-700/60 font-mono text-[11px] font-bold">DC ${dc}</span>
@@ -1299,6 +1305,7 @@
                     <span>Cast</span>
                   </button>
                 `}
+                ${mmEditBtnHtml}
                 <button data-action="spells:delete-prepared" data-idx="${originalIdx}" class="w-6 h-6 inline-flex items-center justify-center text-slate-500 hover:text-rose-400 text-xs transition cursor-pointer shrink-0" title="Unprepare / Remove Spell (Leaves Empty Slot)">
                   🗑️
                 </button>
@@ -2024,10 +2031,12 @@
       const s = character?.spellcasting?.preparedSpells?.[spellIdx];
       if (!s) return;
       const name = s.name;
-      const lvl = Number(s.level) || 0;
+      const mm = getPreparedSpellMetamagicInfo(s);
+      const lvl = mm.effectiveSlotLevel;
       const { cl: baseCl } = getPreparedCasterInfo();
       const cl = getSpellEffectiveCl(s, baseCl);
       const dmgExpr = resolveSpellEffectiveFormula(s, cl);
+      const mmTag = mm.badges.length > 0 ? ` [${mm.badges.map(b => b.shortLabel).join(', ')}]` : '';
       const spellsView = getSpellsView();
       const slot = spellsView?.slotsByLevelView?.prepared?.[lvl] || character.spellcasting?.preparedSlots?.find(sl => Number(sl.level) === lvl);
       if (!slot || slot.used >= slot.daily) {
@@ -2060,15 +2069,16 @@
               discipline: 'prepared',
               index: spellIdx,
               spellIndex: spellIdx,
+              instanceId: s.instanceId || undefined,
               spellId: s.id,
               spellName: name,
               spellLevel: lvl,
               level: lvl,
               markPreparedCast: true,
-              actionType: s,
-              actionLabel: name
+              actionType: { ...s, action: mm.castAction || s.action },
+              actionLabel: `${name}${mmTag}`
             },
-            meta: { label: `Cast Prepared Spell (${name})` }
+            meta: { label: `Cast Prepared Spell (${name}${mmTag})` }
           });
           const out = CharStore.getLastOutcome();
           if (!out || out.status !== 'spell_cast') return;
@@ -2077,18 +2087,18 @@
         } else {
           if (mutSlot) mutSlot.used++;
           saveStateToStorage(true);
-          if (typeof consumeActionEconomy === 'function') consumeActionEconomy(s, name);
+          if (typeof consumeActionEconomy === 'function') consumeActionEconomy({ ...s, action: mm.castAction || s.action }, name);
           renderAll();
         }
-        if (handleBuffSpellCast(s, cl, `Level ${lvl} Prepared Slot Expended`, '📖')) {
+        if (handleBuffSpellCast(s, cl, `Level ${lvl} Prepared Slot Expended${mmTag}`, '📖')) {
           return;
         }
         if (dmgExpr) {
-          rollSpellOrManeuverFormula(dmgExpr, `${name} (Level ${lvl} • -1 Slot)`, s);
+          rollSpellOrManeuverFormula(dmgExpr, `${name}${mmTag} (Level ${lvl} • -1 Slot)`, s);
         } else {
           showDiceTopToast({
             icon: '📖',
-            title: name,
+            title: `${name}${mmTag}`,
             breakdown: `Level ${lvl} Prepared Spell Slot Expended`,
             total: '-1 Slot',
           });
@@ -2202,7 +2212,7 @@
       }
 
       const unlockedLevels = slots.filter(s => s.daily > 0).map(s => Number(s.level));
-      const allLevels = Array.from(new Set([...unlockedLevels, ...spells.map(s => Number(s.level || 0))])).sort((a, b) => a - b);
+      const allLevels = Array.from(new Set([...unlockedLevels, ...spells.map(s => getPreparedSpellMetamagicInfo(s).effectiveSlotLevel)])).sort((a, b) => a - b);
       const pillsHtml = ['all', ...allLevels].map(lvl => {
         const isActive = String(lvlFilter) === String(lvl);
         const label = lvl === 'all' ? 'All' : (lvl === 0 ? 'Level 0' : `Level ${lvl}`);
@@ -2220,7 +2230,8 @@
       displayLevels.forEach(lvl => {
         const spellsAtLvl = [];
         spells.forEach((s, idx) => {
-          if (Number(s.level || 0) === lvl) spellsAtLvl.push({ s, idx });
+          const effLvl = getPreparedSpellMetamagicInfo(s).effectiveSlotLevel;
+          if (effLvl === lvl) spellsAtLvl.push({ s, idx });
         });
         const dc = getSpellDc(lvl, 'divine');
         const slotObj = slots.find(sl => Number(sl.level) === lvl);
@@ -2296,7 +2307,11 @@
       });
 
       function buildDivineRowHtml(s, originalIdx, lvl, baseDc) {
-        const dc = getSpellRowSaveDc(s, lvl, 'divine') || baseDc;
+        const mm = getPreparedSpellMetamagicInfo(s);
+        const dc = getSpellRowSaveDc(s, mm.effectiveSpellLevel, 'divine', originalIdx) || baseDc;
+        const mmBadgesHtml = buildMetamagicBadgesHtml(mm);
+        const mmEditBtnHtml = buildMetamagicEditBtnHtml('divine', s, originalIdx);
+        const displayAction = mm.castAction || s.action || 'Standard Action';
         const slotObj = slots.find(sl => Number(sl.level) === lvl);
         const isDom = Boolean(s.isDomainSpell);
         const domDaily = slotObj ? (Number(slotObj.domainDaily) || 0) : 0;
@@ -2354,13 +2369,14 @@
                 <button type="button" data-action="entity:inspect" data-entity-kind="spell" data-entity-id="${UI.escapeAttr(s.id || s.baseEntryId || '')}" data-entity-name="${UI.escapeAttr(s.name || '')}" data-entity-index="${originalIdx}" data-discipline="divine" class="text-left font-bold cursor-pointer hover:underline ${hasActiveSlot ? 'text-white hover:text-amber-200' : 'text-slate-400 hover:text-slate-200'}" title="Inspect / Edit in Rule Crafter">${UI.escapeHtml(s.name)}</button>
                 ${domainBadgeHtml}
                 ${clBoostBadgeHtml}
+                ${mmBadgesHtml}
                 ${!hasActiveSlot ? `<span class="text-[10px] font-mono px-1.5 rounded bg-rose-950/90 text-rose-300 border border-rose-800/80 font-bold shrink-0">0 Slot</span>` : ''}
               </div>
             </td>
             <td class="py-2.5 px-3 text-slate-300">
               <span class="badge bg-amber-950/60 text-amber-300 border border-amber-800/80 text-[10px] font-semibold">${UI.escapeHtml(s.school || 'Conjuration')}</span>
             </td>
-            <td class="py-2.5 px-3 text-center text-amber-300 text-[11px] whitespace-nowrap font-medium" title="${s.action || 'Standard Action'}">${formatActionShort(s.action)}</td>
+            <td class="py-2.5 px-3 text-center text-amber-300 text-[11px] whitespace-nowrap font-medium" title="${UI.escapeAttr(displayAction)}">${formatActionShort(displayAction)}</td>
             <td class="py-2.5 px-3 text-slate-300 text-[11px]">${UI.escapeHtml(s.range || '-')}</td>
             <td class="py-2.5 px-3 text-center">
               <span class="badge bg-slate-900 text-emerald-300 border border-emerald-700/60 font-mono text-[11px] font-bold">DC ${dc}</span>
@@ -2392,6 +2408,7 @@
                     <span>Cast</span>
                   </button>
                 `}
+                ${mmEditBtnHtml}
                 <button data-action="spells:delete-divine" data-idx="${originalIdx}" class="w-6 h-6 inline-flex items-center justify-center text-slate-500 hover:text-rose-400 text-xs transition cursor-pointer shrink-0" title="Unprepare / Remove Spell (Leaves Empty Slot)">
                   🗑️
                 </button>
@@ -2746,7 +2763,9 @@
       const s = character?.spellcasting?.divineSpells?.[spellIdx];
       if (!s) return;
       const name = s.name;
-      const lvl = Number(s.level) || 0;
+      const mm = getPreparedSpellMetamagicInfo(s);
+      const lvl = mm.effectiveSlotLevel;
+      const mmTag = mm.badges.length > 0 ? ` [${mm.badges.map(b => b.shortLabel).join(', ')}]` : '';
       const isDom = Boolean(s.isDomainSpell);
       const { cl: baseCl } = getDivineCasterInfo();
       const cl = getSpellEffectiveCl(s, baseCl);
@@ -2788,6 +2807,7 @@
             discipline: 'divine',
             index: spellIdx,
             spellIndex: spellIdx,
+            instanceId: s.instanceId || undefined,
             spellId: s.id,
             spellName: name,
             spellLevel: lvl,
@@ -2795,10 +2815,10 @@
             isDomain: isDom,
             isDomainSpell: isDom,
             markPreparedCast: true,
-            actionType: s,
-            actionLabel: name
+            actionType: { ...s, action: mm.castAction || s.action },
+            actionLabel: `${name}${mmTag}`
           },
-          meta: { label: `Cast Divine Spell (${name})` }
+          meta: { label: `Cast Divine Spell (${name}${mmTag})` }
         });
         const out = CharStore.getLastOutcome();
         if (!out || out.status !== 'spell_cast') return;
@@ -3148,17 +3168,220 @@
       return 10 + lvl + (Number(info?.statMod) || 0);
     }
 
-    function getSpellRowSaveDc(spell, spellLevel, discipline = 'spontaneous') {
-      const lvl = Number(spell?.level !== undefined ? spell.level : spellLevel) || 0;
+    function getPreparedSpellMetamagicInfo(spell) {
+      if (typeof RuleEngine !== 'undefined' && typeof RuleEngine.resolveMetamagic === 'function') {
+        return RuleEngine.resolveMetamagic(spell, character);
+      }
+      const baseLevel = Math.max(0, Number(spell?.level ?? 0) || 0);
+      return {
+        baseLevel,
+        effectiveSlotLevel: baseLevel,
+        effectiveSpellLevel: baseLevel,
+        totalSlotAdj: 0,
+        saveDcDelta: 0,
+        castAction: spell?.action || 'Standard Action',
+        damageMode: 'normal',
+        badges: [],
+        transforms: [],
+        exceedsMaxLevel: false,
+        hasDuplicateFeat: false,
+        invalidReasons: [],
+        isValid: true
+      };
+    }
+
+    function buildMetamagicBadgesHtml(mm) {
+      if (!mm || !Array.isArray(mm.badges) || mm.badges.length === 0) return '';
+      const baseChip = mm.effectiveSlotLevel !== mm.baseLevel
+        ? `<span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-900/90 text-slate-400 border border-slate-700/80 shrink-0" title="Original Base Spell Level ${mm.baseLevel}">Base L${mm.baseLevel}</span>`
+        : '';
+      const chips = mm.badges.map(b => {
+        const cls = b.invalid
+          ? 'bg-rose-950/90 text-rose-300 border-rose-700/80'
+          : 'bg-purple-950/80 text-purple-200 border-purple-600/70';
+        const tip = b.invalid
+          ? `Invalid Metamagic: Character no longer owns ${b.shortLabel}`
+          : `${b.badgeText}${b.transform === 'heighten' ? ' (Raises Save DC)' : ''}`;
+        return `<span class="text-[10px] font-bold font-mono px-1.5 py-0.5 rounded border ${cls} shrink-0" title="${UI.escapeAttr(tip)}">✨ ${UI.escapeHtml(b.badgeText)}</span>`;
+      }).join('');
+      return `${baseChip}${chips}`;
+    }
+
+    function buildMetamagicEditBtnHtml(discipline, spell, idx) {
+      const owned = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getOwnedMetamagicFeats === 'function')
+        ? RuleEngine.getOwnedMetamagicFeats(character)
+        : [];
+      const hasAny = owned.length > 0 || (Array.isArray(spell?.metamagic) && spell.metamagic.length > 0);
+      if (!hasAny) return '';
+      const active = Array.isArray(spell?.metamagic) && spell.metamagic.length > 0;
+      const cls = active
+        ? 'text-purple-300 hover:text-purple-100 bg-purple-950/70 border-purple-600/70'
+        : 'text-slate-400 hover:text-purple-300 bg-slate-900/70 border-slate-700/70';
+      return `<button type="button" data-action="spells:edit-metamagic" data-discipline="${UI.escapeAttr(discipline)}" data-idx="${idx}" data-instance-id="${UI.escapeAttr(spell?.instanceId || '')}" class="w-6 h-6 inline-flex items-center justify-center rounded border text-xs transition cursor-pointer shrink-0 ${cls}" title="Configure Metamagic Feats">✨</button>`;
+    }
+
+    function openPreparedMetamagicModal(discipline, idx, instanceId = '') {
+      const disc = discipline === 'divine' ? 'divine' : 'prepared';
+      const list = disc === 'divine' ? (character?.spellcasting?.divineSpells || []) : (character?.spellcasting?.preparedSpells || []);
+      let resolvedIdx = Number(idx);
+      if (instanceId) {
+        const byId = list.findIndex(s => s && s.instanceId === instanceId);
+        if (byId >= 0) resolvedIdx = byId;
+      }
+      const spell = list[resolvedIdx];
+      if (!spell) return;
+
+      const ownedFeats = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getOwnedMetamagicFeats === 'function')
+        ? RuleEngine.getOwnedMetamagicFeats(character)
+        : [];
+      const existingMap = new Map((Array.isArray(spell.metamagic) ? spell.metamagic : []).map(m => [String(m.featId || m.id || ''), m]));
+      const baseLevel = Math.max(0, Number(spell.level) || 0);
+
+      const existing = document.getElementById('preparedMetamagicModal');
+      if (existing) existing.remove();
+
+      const overlay = document.createElement('div');
+      overlay.id = 'preparedMetamagicModal';
+      overlay.className = 'fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4';
+      overlay.dataset.discipline = disc;
+      overlay.dataset.idx = String(resolvedIdx);
+      overlay.dataset.instanceId = String(spell.instanceId || '');
+
+      const featRowsHtml = ownedFeats.length > 0
+        ? ownedFeats.map(f => {
+          const cur = existingMap.get(f.featId);
+          const checked = Boolean(cur);
+          const htVal = cur && cur.heightenTo ? Number(cur.heightenTo) : Math.min(9, baseLevel + 1);
+          let heightenSelectHtml = '';
+          if (f.variableSlot && baseLevel < 9) {
+            const opts = [];
+            for (let l = baseLevel + 1; l <= 9; l++) {
+              opts.push(`<option value="${l}"${l === htVal ? ' selected' : ''}>Level ${l} (+${l - baseLevel} Slot, +${l - baseLevel} DC)</option>`);
+            }
+            heightenSelectHtml = `<select data-mm-heighten="${UI.escapeAttr(f.featId)}" data-action="spells:metamagic-modal-refresh" class="ml-2 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs text-purple-200">${opts.join('')}</select>`;
+          }
+          const adjLabel = f.variableSlot ? 'Variable Slot' : `+${f.slotAdj} Slot`;
+          return `
+            <label class="flex items-center justify-between gap-2 p-2 rounded-lg bg-slate-900/80 border border-slate-800 hover:border-purple-500 cursor-pointer">
+              <div class="flex items-center gap-2 min-w-0">
+                <input type="checkbox" data-mm-feat="${UI.escapeAttr(f.featId)}" data-action="spells:metamagic-modal-refresh" ${checked ? 'checked' : ''} class="rounded border-slate-600 text-purple-300" />
+                <span class="text-xs font-bold text-white truncate">${UI.escapeHtml(f.name)}</span>
+                <span class="text-[10px] font-mono text-purple-300 shrink-0">(${UI.escapeHtml(adjLabel)})</span>
+              </div>
+              ${heightenSelectHtml}
+            </label>
+          `;
+        }).join('')
+        : `<p class="text-xs text-slate-400 py-3">No metamagic feats owned. Add metamagic feats (e.g. Empower Spell, Quicken Spell, Heighten Spell) in the Feats tab.</p>`;
+
+      overlay.innerHTML = `
+        <div class="bg-dndCard border border-purple-700/60 rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
+          <div class="px-4 py-3 border-b border-slate-800 flex items-center justify-between">
+            <div>
+              <h3 class="text-sm font-bold text-white">✨ Metamagic — ${UI.escapeHtml(spell.name)}</h3>
+              <p class="text-[11px] text-slate-400">Base Level ${baseLevel} • ${UI.escapeHtml(disc === 'divine' ? 'Divine' : 'Prepared')}</p>
+            </div>
+            <button type="button" data-action="spells:metamagic-modal-close" class="text-slate-400 hover:text-white text-sm px-2 py-1 cursor-pointer">✕</button>
+          </div>
+          <div class="p-4 space-y-2 max-h-72 overflow-y-auto">
+            ${featRowsHtml}
+          </div>
+          <div id="preparedMetamagicPreview" class="px-4 py-2.5 bg-slate-950/80 border-t border-slate-800 text-xs font-mono text-slate-300"></div>
+          <div class="px-4 py-3 border-t border-slate-800 flex items-center justify-end gap-2">
+            <button type="button" data-action="spells:metamagic-modal-close" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 cursor-pointer">Cancel</button>
+            <button type="button" data-action="spells:metamagic-modal-apply" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-purple-700 hover:bg-purple-600 text-white cursor-pointer">Apply Metamagic</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+      refreshPreparedMetamagicModalPreview();
+    }
+
+    function collectPreparedMetamagicModalSelection() {
+      const modal = document.getElementById('preparedMetamagicModal');
+      if (!modal) return [];
+      const selected = [];
+      modal.querySelectorAll('input[data-mm-feat]:checked').forEach(inp => {
+        const featId = inp.dataset.mmFeat;
+        if (!featId) return;
+        const item = { featId };
+        const htSel = modal.querySelector(`select[data-mm-heighten="${CSS.escape(featId)}"]`);
+        if (htSel) item.heightenTo = Number(htSel.value);
+        selected.push(item);
+      });
+      return selected;
+    }
+
+    function refreshPreparedMetamagicModalPreview() {
+      const modal = document.getElementById('preparedMetamagicModal');
+      const prevEl = document.getElementById('preparedMetamagicPreview');
+      if (!modal || !prevEl) return;
+      const disc = modal.dataset.discipline === 'divine' ? 'divine' : 'prepared';
+      const idx = Number(modal.dataset.idx);
+      const list = disc === 'divine' ? (character?.spellcasting?.divineSpells || []) : (character?.spellcasting?.preparedSpells || []);
+      const spell = list[idx];
+      if (!spell) return;
+      const sel = collectPreparedMetamagicModalSelection();
+      const mm = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.resolveMetamagic === 'function')
+        ? RuleEngine.resolveMetamagic(spell, character, { metamagicOverride: sel })
+        : null;
+      if (!mm) return;
+      const baseDc = getSpellDc(mm.baseLevel, disc);
+      const effDc = getSpellDc(mm.effectiveSpellLevel, disc);
+      const warn = mm.exceedsMaxLevel
+        ? `<div class="text-rose-400 font-bold mt-1">⚠️ Slot Level ${mm.effectiveSlotLevel} exceeds Level 9 maximum!</div>`
+        : '';
+      prevEl.innerHTML = `Slot: <strong class="text-purple-300">L${mm.baseLevel} → L${mm.effectiveSlotLevel}</strong> • Save DC: <strong class="text-emerald-300">${baseDc}${effDc !== baseDc ? ` → ${effDc}` : ''}</strong> • Action: <strong class="text-amber-300">${UI.escapeHtml(mm.castAction)}</strong>${warn}`;
+    }
+
+    function applyPreparedMetamagicModal() {
+      const modal = document.getElementById('preparedMetamagicModal');
+      if (!modal) return;
+      const disc = modal.dataset.discipline === 'divine' ? 'divine' : 'prepared';
+      const idx = Number(modal.dataset.idx);
+      const instanceId = modal.dataset.instanceId || undefined;
+      const metamagic = collectPreparedMetamagicModalSelection();
+      if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
+        CharStore.dispatch({
+          type: 'spells/setPreparedMetamagic',
+          payload: { discipline: disc, index: idx, instanceId, metamagic },
+          meta: { label: 'Update Prepared Spell Metamagic' }
+        });
+        const out = CharStore.getLastOutcome();
+        if (!out || out.status !== 'metamagic_updated') {
+          const msg = out?.reason || 'Cannot apply selected metamagic feats.';
+          if (typeof showDiceTopToast === 'function') {
+            showDiceTopToast({ icon: '⚠️', title: 'Metamagic Rejected', breakdown: msg, total: 'Blocked' });
+          }
+          return;
+        }
+        modal.remove();
+        renderAll({ skipRecompute: true });
+      }
+    }
+
+    function getSpellRowSaveDc(spell, spellLevel, discipline = 'spontaneous', spellIdx = -1) {
+      const mm = getPreparedSpellMetamagicInfo(spell);
+      const effSpellLvl = Number(mm?.effectiveSpellLevel ?? spell?.level ?? spellLevel) || 0;
       const disc = (discipline === 'prepared' || discipline === 'divine') ? discipline : 'spontaneous';
       const view = typeof getSpellsView === 'function' ? getSpellsView() : null;
       const listKey = disc === 'prepared' ? 'preparedSpells' : (disc === 'divine' ? 'divineSpells' : 'knownSpells');
-      const nameKey = String(spell?.name || '').toLowerCase().trim();
-      const enriched = (view?.spellsByLevelView?.[listKey] || []).find(s => s
-        && Number(s.level) === lvl
-        && String(s.name || '').toLowerCase().trim() === nameKey);
+      const viewList = view?.spellsByLevelView?.[listKey] || [];
+      let enriched = null;
+      if (spell?.instanceId) {
+        enriched = viewList.find(s => s && s.instanceId === spell.instanceId);
+      }
+      if (!enriched && spellIdx >= 0 && viewList[spellIdx]) {
+        enriched = viewList[spellIdx];
+      }
+      if (!enriched) {
+        const nameKey = String(spell?.name || '').toLowerCase().trim();
+        enriched = viewList.find(s => s
+          && Number(s.level) === (Number(spell?.level) || 0)
+          && String(s.name || '').toLowerCase().trim() === nameKey);
+      }
       if (enriched && Number.isFinite(Number(enriched.saveDc))) return Number(enriched.saveDc);
-      return getSpellDc(lvl, disc);
+      return getSpellDc(effSpellLvl, disc);
     }
 
     function getSpellLevelTheme(spellLevel) {
@@ -12241,6 +12464,19 @@
       });
       Actions.register('spells:delete-prepared', (el, data, event) => {
         deletePreparedSpell(Number(data.idx));
+      });
+      Actions.register('spells:edit-metamagic', (el, data, event) => {
+        openPreparedMetamagicModal(data.discipline || 'prepared', Number(data.idx), data.instanceId || '');
+      });
+      Actions.register('spells:metamagic-modal-refresh', (el, data, event) => {
+        refreshPreparedMetamagicModalPreview();
+      });
+      Actions.register('spells:metamagic-modal-apply', (el, data, event) => {
+        applyPreparedMetamagicModal();
+      });
+      Actions.register('spells:metamagic-modal-close', (el, data, event) => {
+        const m = document.getElementById('preparedMetamagicModal');
+        if (m) m.remove();
       });
       Actions.register('spells:open-prepared-picker', (el, data, event) => {
         openPreparedSpellPickerForLevel(Number(data.level));

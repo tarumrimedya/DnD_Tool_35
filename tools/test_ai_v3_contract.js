@@ -274,6 +274,15 @@ function runAiV3ContractTests() {
       }
       if (b.type === 'effect' && b.effectKind === 'ruleSwitch') {
         check(ruleSwitchFlags.has(b.flag), `${label} ${at}: unknown rule switch flag "${b.flag}"`);
+        if (b.flag === 'powerAttackPenaltyToAc' && b.params) {
+          check(Number.isFinite(Number(b.params.minPowerAttack)) && Number(b.params.minPowerAttack) >= 1,
+            `${label} ${at}: powerAttackPenaltyToAc params.minPowerAttack must be >= 1`);
+          const allowedWhen = (ruleset.ruleSwitchParamsSchema?.powerAttackPenaltyToAc?.when?.enum) || ['charging'];
+          if (b.params.when !== undefined) {
+            check(allowedWhen.includes(String(b.params.when).toLowerCase().trim()),
+              `${label} ${at}: powerAttackPenaltyToAc unknown params.when "${b.params.when}"`);
+          }
+        }
       }
     });
 

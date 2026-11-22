@@ -163,6 +163,8 @@ function runCorpusAudit() {
     badProficiencyGrants: [],
     badSizeScopes: [],
     badModes: [],
+    badMetamagicCarrier: [],
+    badRuleSwitchParams: [],
     structuredSubsystems: {
       v2ModesEntries: 0,
       xphAugmentPowers: 0,
@@ -249,6 +251,44 @@ function runCorpusAudit() {
             if (ef.type === 'effect' && ef.effectKind === 'feat') {
               const fid = String(ef.targetId || '');
               if (!/^feat-/.test(fid) || (FEAT_IDS.size > 0 && !FEAT_IDS.has(fid))) report.badProficiencyGrants.push((e.id || '?') + ' -> feat ' + fid);
+            }
+            if (ef.type === 'effect' && ef.effectKind === 'ruleSwitch') {
+              if (ef.flag === 'shock-trooper') {
+                report.badRuleSwitchParams.push((e.id || '?') + ' -> placeholder ruleSwitch flag "shock-trooper"');
+              }
+              if (ef.flag === 'powerAttackPenaltyToAc' && ef.params !== undefined) {
+                const dnd35Rs = require(path.join(ROOT, 'rulesets', 'dnd35.js'));
+                const pSchema = (dnd35Rs?.ruleSwitchParamsSchema?.powerAttackPenaltyToAc) || { when: { enum: ['charging'] }, minPowerAttack: { min: 1 } };
+                if (!ef.params || typeof ef.params !== 'object') {
+                  report.badRuleSwitchParams.push((e.id || '?') + ' -> powerAttackPenaltyToAc params must be an object');
+                } else {
+                  if (ef.params.minPowerAttack !== undefined) {
+                    const minPa = Number(ef.params.minPowerAttack);
+                    if (!Number.isFinite(minPa) || minPa < (pSchema.minPowerAttack?.min || 1)) {
+                      report.badRuleSwitchParams.push((e.id || '?') + ' -> powerAttackPenaltyToAc params.minPowerAttack must be >= 1');
+                    }
+                  }
+                  if (ef.params.when !== undefined) {
+                    const allowedWhen = pSchema.when?.enum || ['charging'];
+                    if (!allowedWhen.includes(String(ef.params.when).toLowerCase().trim())) {
+                      report.badRuleSwitchParams.push((e.id || '?') + ' -> powerAttackPenaltyToAc unknown params.when "' + ef.params.when + '"');
+                    }
+                  }
+                }
+              }
+            }
+            if (ef.type === 'carrier' && ef.carrierMode === 'metamagic') {
+              if (ef.slotDelta !== undefined || ef.metaTransform !== undefined) {
+                report.badMetamagicCarrier.push((e.id || '?') + ' -> legacy slotDelta/metaTransform (use slotAdj/transform)');
+              }
+              const dnd35Rs = require(path.join(ROOT, 'rulesets', 'dnd35.js'));
+              const validTx = dnd35Rs?.metamagicTransforms || null;
+              if (validTx && ef.transform !== undefined && !Object.prototype.hasOwnProperty.call(validTx, ef.transform)) {
+                report.badMetamagicCarrier.push((e.id || '?') + ' -> unknown metamagic transform "' + ef.transform + '"');
+              }
+              if (ef.slotAdj !== undefined && ef.slotAdj !== 'variable' && !Number.isFinite(Number(ef.slotAdj))) {
+                report.badMetamagicCarrier.push((e.id || '?') + ' -> invalid metamagic slotAdj ' + JSON.stringify(ef.slotAdj));
+              }
             }
             if (ef.type === 'effect' && ef.effectKind === 'entity') {
               const okEnt = ['animal_companion', 'familiar', 'special_mount', 'fiendish_servant'].includes(ef.entityKind)
@@ -444,6 +484,8 @@ if (require.main === module) {
   if (rep.badRecipients.length > 0) console.error('   ❌ Invalid recipient values:', rep.badRecipients.slice(0, 20));
   if (rep.badRankParity.length > 0) console.error('   ❌ Rank-vs-label parity mismatches:', rep.badRankParity.slice(0, 20));
   if (rep.badFeatureRankEntries.length > 0) console.error('   ❌ @featureRank missing rankFrom:"levelTable":', rep.badFeatureRankEntries.slice(0, 20));
+  if (rep.badMetamagicCarrier.length > 0) console.error('   ❌ Invalid metamagic carrier blocks:', rep.badMetamagicCarrier.slice(0, 20));
+  if (rep.badRuleSwitchParams.length > 0) console.error('   ❌ Invalid ruleSwitch params/flags:', rep.badRuleSwitchParams.slice(0, 20));
 
   const failed =
     rep.v2Entries > 0 ||
@@ -461,7 +503,9 @@ if (require.main === module) {
     rep.badRecipients.length > 0 ||
     rep.badRankParity.length > 0 ||
     rep.badFeatureRankEntries.length > 0 ||
-    rep.badSizeScopes.length > 0;
+    rep.badSizeScopes.length > 0 ||
+    rep.badMetamagicCarrier.length > 0 ||
+    rep.badRuleSwitchParams.length > 0;
   if (failed) {
     console.error('❌ FAIL: Pure V3 Corpus Gate failed.');
     process.exit(1);

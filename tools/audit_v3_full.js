@@ -465,17 +465,28 @@ function runRefIntegrity(cur) {
 
   // Armor / shield chassis: `armor.armorBonus` must be the BASE bonus; resolveArmorChassis adds enhancementBonus.
   const doubleEnh = [];
+  const legacyContractIssues = [];
   cur.forEach((e) => {
     const a = e.armor;
     const enh = Number(e.enhancementBonus || 0);
-    if (!a || typeof a !== 'object' || !(enh > 0) || !e.baseItemId) return;
-    const base = cur.get(e.baseItemId);
-    const baseBonus = base && base.armor ? Number(base.armor.armorBonus) : NaN;
-    if (Number.isFinite(baseBonus) && Number(a.armorBonus) === baseBonus + enh) {
-      doubleEnh.push({ id: e.id, name: e.name, armorBonus: a.armorBonus, base: e.baseItemId, baseBonus, enh, engineTotal: Number(a.armorBonus) + enh });
+    if (a && typeof a === 'object' && (enh > 0) && e.baseItemId) {
+      const base = cur.get(e.baseItemId);
+      const baseBonus = base && base.armor ? Number(base.armor.armorBonus) : NaN;
+      if (Number.isFinite(baseBonus) && Number(a.armorBonus) === baseBonus + enh) {
+        doubleEnh.push({ id: e.id, name: e.name, armorBonus: a.armorBonus, base: e.baseItemId, baseBonus, enh, engineTotal: Number(a.armorBonus) + enh });
+      }
     }
+    (e.effects || []).forEach((ef) => {
+      if (!ef || typeof ef !== 'object') return;
+      if (ef.type === 'carrier' && ef.carrierMode === 'metamagic' && (ef.slotDelta !== undefined || ef.metaTransform !== undefined)) {
+        legacyContractIssues.push({ id: e.id, issue: 'legacy slotDelta/metaTransform on metamagic carrier' });
+      }
+      if (ef.type === 'effect' && ef.effectKind === 'ruleSwitch' && ef.flag === 'shock-trooper') {
+        legacyContractIssues.push({ id: e.id, issue: 'placeholder ruleSwitch flag shock-trooper' });
+      }
+    });
   });
-  return { broken, doubleEnh };
+  return { broken, doubleEnh, legacyContractIssues };
 }
 
 // ---------------------------------------------------------------- layer 4: text coverage (heuristic)
@@ -695,7 +706,7 @@ function main() {
   deadBlocks.dead.forEach((x) => { dc[x.readElsewhere ? 'readElsewhere' : x.cls]++; });
   console.log('Dead blocks: ' + deadBlocks.dead.length + ' of ' + deadBlocks.scanned + ' blocks add no mechanical output: '
     + dc.none + ' none, ' + dc.badgeOnly + ' badge-only, ' + dc.redundant + ' redundant, ' + dc.readElsewhere + ' read by the sheet (errors ' + deadBlocks.errors.length + ')');
-  console.log('References: ' + refs.broken.length + ' unresolved ids; armor/shield double enhancement: ' + refs.doubleEnh.length);
+  console.log('References: ' + refs.broken.length + ' unresolved ids; armor/shield double enhancement: ' + refs.doubleEnh.length + '; legacy contract issues: ' + (refs.legacyContractIssues ? refs.legacyContractIssues.length : 0));
   const tv = {};
   text.rows.forEach((r) => { tv[r.verdict] = (tv[r.verdict] || 0) + 1; });
   console.log('Text coverage: ' + ['MISSING', 'PARTIAL', 'VALUE', 'OK', 'NOCLAIM'].map((k) => k + ' ' + (tv[k] || 0)).join(', '));
