@@ -8149,6 +8149,137 @@ function runDeriveSheetTests() {
         JSON.stringify({ status: batchOut?.status, added: batchOut?.addedCount, skipP: batchOut?.skippedProhibited, lenAfter: lenAfterBatch, lenUndo: lenAfterBatchUndo })
       );
     }
+
+    // ── Divine Spontaneous Casting Phase 1 RAW Gates (PHB p.32 Cleric, p.35 Druid) ──
+    {
+      // 1. Evil Druid: resolves SNA only, blocks Inflict & 0-level orisons, allows Level 1 SNA (1 Round / full action)
+      const evilDruid = {
+        id: 'test-evil-druid-spont',
+        name: 'Blight Druid',
+        alignment: 'Neutral Evil',
+        level: 5,
+        progression: Array.from({ length: 5 }, (_, i) => ({ hd: i + 1, classId: 'cls-druid', className: 'Druid' })),
+        baseAbilities: { str: 10, dex: 12, con: 14, int: 10, wis: 16, cha: 10 },
+        spellcasting: {
+          divineSlots: [
+            { level: 0, daily: 5, regularDaily: 5, domainDaily: 0, used: 0, domainUsed: 0 },
+            { level: 1, daily: 3, regularDaily: 3, domainDaily: 0, used: 0, domainUsed: 0 }
+          ],
+          divineSpells: [
+            { name: 'Cure Minor Wounds', level: 0, isCast: false },
+            { name: 'Entangle', level: 1, isCast: false }
+          ]
+        },
+        tactical: { round: 1, spentActions: { standard: false, move: false, swift: false, immediate: false } }
+      };
+      const druidProfile = RuleEngine.resolveDivineSpontaneousProfile(evilDruid);
+      const sna1 = RuleEngine.rulesets.dnd35.resolveDivineSpontaneousTarget('sna', 1, 5);
+      const sna0 = RuleEngine.rulesets.dnd35.resolveDivineSpontaneousTarget('sna', 0, 5);
+      CharStore.clearHistory();
+      CharStore.dispatch({ type: 'doc/replace', payload: evilDruid, meta: { skipHistory: true } });
+      CharStore.dispatch({
+        type: 'spells/castSpell',
+        payload: { discipline: 'divineConversion', index: 1, spellLevel: 1, conversionType: 'inflict', convName: 'Inflict Light Wounds' }
+      });
+      const inflictBlocked = CharStore.getLastOutcome();
+      CharStore.dispatch({
+        type: 'spells/castSpell',
+        payload: { discipline: 'divineConversion', index: 0, spellLevel: 0, conversionType: 'sna', convName: "Summon Nature's Ally I" }
+      });
+      const orisonBlocked = CharStore.getLastOutcome();
+      CharStore.dispatch({
+        type: 'spells/castSpell',
+        payload: { discipline: 'divineConversion', index: 1, spellLevel: 1, conversionType: 'sna', convName: "Summon Nature's Ally I", actionType: 'full', actionLabel: "Summon Nature's Ally I" }
+      });
+      const snaCast = CharStore.getLastOutcome();
+      const druidAfter = CharStore.getDoc();
+      check(
+        'Divine Spont RAW (Druid): Evil Druid resolves SNA only, blocks Inflict & 0-level SNA, casts SNA I (1 Round / full)',
+        Boolean(
+          druidProfile.canConvert === true &&
+          druidProfile.conversionType === 'sna' &&
+          druidProfile.allowedTypes.length === 1 &&
+          druidProfile.allowedTypes[0] === 'sna' &&
+          sna1 && sna1.id === 'spl-summon-natures-ally-i' && sna1.actionType === 'full' &&
+          sna0 === null &&
+          inflictBlocked?.status === 'invalid_payload' && inflictBlocked?.reason === 'conversion_type_not_allowed' &&
+          orisonBlocked?.status === 'invalid_payload' && orisonBlocked?.reason === 'orison_cannot_convert_to_sna' &&
+          snaCast?.status === 'spell_cast' &&
+          druidAfter.spellcasting.divineSlots[1].used === 1 &&
+          druidAfter.spellcasting.divineSpells[1].conversionType === 'sna'
+        ),
+        JSON.stringify({ druidProfile, inflictBlocked, orisonBlocked, snaCast })
+      );
+
+      // 2. Paladin: cannot spontaneously convert prepared spells
+      const paladinChar = {
+        id: 'test-paladin-spont',
+        name: 'Paladin 6',
+        alignment: 'Lawful Good',
+        level: 6,
+        progression: Array.from({ length: 6 }, (_, i) => ({ hd: i + 1, classId: 'cls-paladin', className: 'Paladin' })),
+        baseAbilities: { str: 16, dex: 10, con: 14, int: 10, wis: 14, cha: 14 },
+        spellcasting: {
+          divineSlots: [{ level: 1, daily: 2, regularDaily: 2, domainDaily: 0, used: 0, domainUsed: 0 }],
+          divineSpells: [{ name: 'Bless Weapon', level: 1, isCast: false }]
+        }
+      };
+      const palProfile = RuleEngine.resolveDivineSpontaneousProfile(paladinChar);
+      CharStore.dispatch({ type: 'doc/replace', payload: paladinChar, meta: { skipHistory: true } });
+      CharStore.dispatch({
+        type: 'spells/castSpell',
+        payload: { discipline: 'divineConversion', index: 0, spellLevel: 1, conversionType: 'cure', convName: 'Cure Light Wounds' }
+      });
+      const palBlocked = CharStore.getLastOutcome();
+      check(
+        'Divine Spont RAW (Paladin): Paladin has canConvert=false and reducer rejects spontaneous conversion',
+        Boolean(palProfile.canConvert === false && palProfile.conversionType === null && palBlocked?.status === 'invalid_payload' && palBlocked?.reason === 'no_spontaneous_conversion'),
+        JSON.stringify({ palProfile, palBlocked })
+      );
+
+      // 3. Neutral Cleric: default mode is 'cure' (not 'good'), Level 9 converts to 8th-level Mass Cure Critical,
+      //    and Empowered Level 1 Bless (Level 3 slot) spends Level 3 slot while dropping prepared metamagic
+      const neutralCleric = {
+        id: 'test-neutral-cleric-spont',
+        name: 'Neutral Cleric 17',
+        alignment: 'True Neutral',
+        level: 17,
+        progression: Array.from({ length: 17 }, (_, i) => ({ hd: i + 1, classId: 'cls-cleric', className: 'Cleric' })),
+        feats: [{ id: 'feat-empower-spell', name: 'Empower Spell' }],
+        baseAbilities: { str: 12, dex: 10, con: 14, int: 10, wis: 20, cha: 12 },
+        spellcasting: {
+          divineSlots: [
+            { level: 1, daily: 5, regularDaily: 5, domainDaily: 0, used: 0, domainUsed: 0 },
+            { level: 3, daily: 4, regularDaily: 4, domainDaily: 0, used: 0, domainUsed: 0 }
+          ],
+          divineSpells: [
+            { name: 'Bless', level: 1, metamagic: [{ featId: 'feat-empower-spell' }], isCast: false }
+          ]
+        }
+      };
+      const clericSpellsView = RuleEngine.deriveSpellsView(neutralCleric);
+      const clericDivView = clericSpellsView?.casterStatsView?.divine;
+      const lvl9Cure = RuleEngine.rulesets.dnd35.resolveDivineSpontaneousTarget('cure', 9, 17);
+      CharStore.dispatch({ type: 'doc/replace', payload: neutralCleric, meta: { skipHistory: true } });
+      CharStore.dispatch({
+        type: 'spells/castSpell',
+        payload: { discipline: 'divineConversion', index: 0, spellLevel: 3, conversionType: 'cure', convName: 'Cure Serious Wounds', actionType: 'standard' }
+      });
+      const mmConvOut = CharStore.getLastOutcome();
+      const clericAfter = CharStore.getDoc();
+      check(
+        'Divine Spont RAW (Cleric): Neutral default is cure (not good), Lvl 9 -> Mass Cure Critical (8th), Empowered Lvl 1 spell spends Lvl 3 slot',
+        Boolean(
+          clericDivView?.clericSpontaneousMode === 'cure' &&
+          clericDivView?.energyChannel === 'positive' &&
+          lvl9Cure && lvl9Cure.id === 'spl-mass-cure-critical-wounds' && lvl9Cure.targetLevel === 8 && lvl9Cure.slotLevel === 9 &&
+          mmConvOut?.status === 'spell_cast' &&
+          clericAfter.spellcasting.divineSlots[0].used === 0 &&
+          clericAfter.spellcasting.divineSlots[1].used === 1
+        ),
+        JSON.stringify({ mode: clericDivView?.clericSpontaneousMode, channel: clericDivView?.energyChannel, lvl9Cure, mmConvOut, slots: clericAfter.spellcasting.divineSlots })
+      );
+    }
   }
 
   CharStore.clearHistory();

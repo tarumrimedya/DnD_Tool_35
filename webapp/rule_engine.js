@@ -16164,7 +16164,7 @@ const RuleEngine = {
     const txMap = rs.metamagicTransforms || {};
     const rawDisc = String(options.discipline || 'spontaneous').toLowerCase().trim();
     const isPreparedDisc = rawDisc === 'prepared' || rawDisc === 'divine';
-    const isSpontDisc = rawDisc === 'spontaneous' || rawDisc === 'clericconversion';
+    const isSpontDisc = rawDisc === 'spontaneous' || rawDisc === 'clericconversion' || rawDisc === 'divineconversion';
     const includeIneligible = Boolean(options.includeIneligible);
     const spellLevel = (options.spellLevel !== undefined && options.spellLevel !== null && Number.isFinite(Number(options.spellLevel)))
       ? Math.max(0, Math.floor(Number(options.spellLevel)))
@@ -16675,6 +16675,110 @@ const RuleEngine = {
       hasDuplicateTransform,
       invalidReasons,
       isValid: invalidReasons.length === 0 && !exceedsMaxLevel && !exceedsMaxRods && !rodLevelExceeded && !chargesExhausted && !hasDuplicateFeat && !hasDuplicateTransform
+    };
+  },
+
+  /**
+   * Canonical D&D 3.5e Divine Spontaneous Casting & Energy Channel resolver (PHB p. 32 Cleric, p. 35 Druid).
+   * Decouples `energyChannel` ('positive'|'negative', driving Turn/Rebuke) from `conversionType` ('cure'|'inflict'|'sna'|null).
+   * Uses immutable class IDs (`cls-cleric`, `cls-cleric-cloistered-variant`, `cls-cloistered-cleric`, `cls-druid`)
+   * via `rulesets.dnd35.divineSpontaneousClassRules`, with exact word-boundary name fallback only when classId is absent.
+   */
+  resolveDivineSpontaneousProfile(character) {
+    const ch = character || {};
+    const rs = (this.rulesets && this.rulesets.dnd35) || {};
+    const classRules = rs.divineSpontaneousClassRules || {
+      'cls-cleric': { kind: 'cleric_energy', minLevel: 0, maxLevel: 9, allowDomainSlot: false },
+      'cls-cleric-cloistered-variant': { kind: 'cleric_energy', minLevel: 0, maxLevel: 9, allowDomainSlot: false },
+      'cls-cloistered-cleric': { kind: 'cleric_energy', minLevel: 0, maxLevel: 9, allowDomainSlot: false },
+      'cls-druid': { kind: 'druid_sna', minLevel: 1, maxLevel: 9, allowDomainSlot: false }
+    };
+
+    let clericLvl = 0;
+    let druidLvl = 0;
+    let hasKnownClasses = false;
+
+    const prog = Array.isArray(ch.progression) ? ch.progression : [];
+    const activeProg = prog.filter(p => p && !p.isDisabled);
+    if (activeProg.length > 0) {
+      hasKnownClasses = true;
+      activeProg.forEach(p => {
+        const cid = String(p.classId || p.id || '').toLowerCase().trim();
+        const rule = cid ? classRules[cid] : null;
+        if (rule) {
+          if (rule.kind === 'cleric_energy') clericLvl += 1;
+          else if (rule.kind === 'druid_sna') druidLvl += 1;
+          return;
+        }
+        const cname = String(p.className || p.name || '').toLowerCase().trim();
+        if (/\bcleric\b/.test(cname)) clericLvl += 1;
+        else if (/\bdruid\b/.test(cname)) druidLvl += 1;
+      });
+    } else {
+      const clsMap = (typeof this.getActiveClassLevels === 'function')
+        ? this.getActiveClassLevels(ch, { includeNpc: true })
+        : {};
+      const entries = Object.entries(clsMap || {}).filter(([, v]) => (Number(v) || 0) > 0);
+      if (entries.length > 0) {
+        hasKnownClasses = true;
+        entries.forEach(([k, v]) => {
+          const low = String(k || '').toLowerCase().trim();
+          const lvl = Number(v) || 0;
+          if (/\bcleric\b/.test(low)) clericLvl += lvl;
+          else if (/\bdruid\b/.test(low)) druidLvl += lvl;
+        });
+      }
+    }
+
+    const hasCleric = clericLvl > 0;
+    const hasDruid = druidLvl > 0;
+
+    // Resolve energy channel ('positive' | 'negative') — drives Turn/Rebuke Undead & Cleric Cure/Inflict
+    const rawAlign = String(ch.alignment || '').toLowerCase().trim();
+    const isGoodAlign = /\bgood\b|\b(lg|ng|cg)\b/.test(rawAlign);
+    const isEvilAlign = /\bevil\b|\b(le|ne|ce)\b/.test(rawAlign);
+    let forcedChannel = null;
+    if (isGoodAlign) forcedChannel = 'positive';
+    else if (isEvilAlign) forcedChannel = 'negative';
+
+    const storedChannel = String(ch.spellcasting?.energyChannel || '').toLowerCase().trim();
+    const storedMode = String(ch.spellcasting?.clericSpontaneousMode || '').toLowerCase().trim();
+    const energyChannel = forcedChannel
+      || (storedChannel === 'negative' || storedChannel === 'positive' ? storedChannel : null)
+      || (storedMode === 'inflict' ? 'negative' : 'positive');
+    const clericMode = energyChannel === 'negative' ? 'inflict' : 'cure';
+
+    const allowedTypes = [];
+    if (hasCleric) allowedTypes.push(clericMode);
+    if (hasDruid) allowedTypes.push('sna');
+
+    let conversionType = null;
+    if (hasCleric && hasDruid) {
+      const pref = String(ch.spellcasting?.divineSpontaneousChannel || '').toLowerCase().trim();
+      if (pref === 'sna') conversionType = 'sna';
+      else if (pref === 'cure' || pref === 'inflict') conversionType = clericMode;
+      else conversionType = druidLvl > clericLvl ? 'sna' : clericMode;
+    } else if (hasCleric) {
+      conversionType = clericMode;
+    } else if (hasDruid) {
+      conversionType = 'sna';
+    }
+
+    return {
+      hasKnownClasses,
+      hasCleric,
+      hasDruid,
+      clericLvl,
+      druidLvl,
+      energyChannel,
+      isRebuke: energyChannel === 'negative',
+      clericMode,
+      canConvert: allowedTypes.length > 0,
+      conversionType,
+      allowedTypes,
+      minLevel: conversionType === 'sna' ? 1 : 0,
+      maxLevel: 9,
+      allowDomainSlot: false
     };
   },
 
@@ -17657,6 +17761,7 @@ const RuleEngine = {
     const baseDivDc = 10 + wisMod + spellDcBonus;
 
     const effectiveCasterLevel = (Number(w.spellcasting?.cl || w.casterLevel || spontCl || prepCl || divCl || 1) + casterLevelBonus);
+    const divineSpontProfile = this.resolveDivineSpontaneousProfile(w);
 
     const canKeepManeuvers = initInfo.hasClass || Boolean(w.isNpc);
 
@@ -17709,7 +17814,9 @@ const RuleEngine = {
           divLvls,
           isDivBoon,
           hasClass: Boolean(hasDivine),
-          clericSpontaneousMode: w.spellcasting?.clericSpontaneousMode || 'good',
+          energyChannel: divineSpontProfile.energyChannel,
+          clericSpontaneousMode: divineSpontProfile.clericMode,
+          spontaneousProfile: divineSpontProfile,
           domains: chosenDomains
         },
         martial: {

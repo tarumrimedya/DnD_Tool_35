@@ -2046,38 +2046,67 @@
     }
     window.handleBuffSpellCast = handleBuffSpellCast;
 
-    function getClericSpontaneousSpellInfo(lvl, cl = 6, mode = 'cure') {
-      const numLvl = Number(lvl);
-      if (isNaN(numLvl) || numLvl < 0 || numLvl > 8) return null;
-      const isCure = mode !== 'inflict';
+    function getDivineSpontaneousProfile(char = character) {
+      const base = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.resolveDivineSpontaneousProfile === 'function')
+        ? RuleEngine.resolveDivineSpontaneousProfile(char)
+        : null;
+      const energyPolicy = (typeof resolveClericEnergyPolicy === 'function') ? resolveClericEnergyPolicy(char) : null;
+      if (base) {
+        // Sync alignment + deity policy (deity lookup lives in char_spells.js)
+        const forcedMode = energyPolicy && energyPolicy.forcedMode ? energyPolicy.forcedMode : null;
+        if (forcedMode) {
+          const energyChannel = forcedMode === 'inflict' ? 'negative' : 'positive';
+          const allowedTypes = [];
+          if (base.hasCleric) allowedTypes.push(forcedMode);
+          if (base.hasDruid) allowedTypes.push('sna');
+          const conversionType = base.conversionType === 'sna'
+            ? 'sna'
+            : (base.hasCleric ? forcedMode : base.conversionType);
+          return {
+            ...base,
+            energyChannel,
+            isRebuke: energyChannel === 'negative',
+            clericMode: forcedMode,
+            allowedTypes,
+            conversionType
+          };
+        }
+        return base;
+      }
+      const mode = (energyPolicy && energyPolicy.forcedMode) || (char?.spellcasting?.clericSpontaneousMode === 'inflict' ? 'inflict' : 'cure');
+      return {
+        hasKnownClasses: false,
+        hasCleric: false,
+        hasDruid: false,
+        energyChannel: mode === 'inflict' ? 'negative' : 'positive',
+        isRebuke: mode === 'inflict',
+        clericMode: mode,
+        canConvert: false,
+        conversionType: null,
+        allowedTypes: [],
+        minLevel: 0,
+        maxLevel: 9,
+        allowDomainSlot: false
+      };
+    }
+
+    function getDivineSpontaneousTargetInfo(lvl, cl = 6, conversionType = 'cure') {
+      const type = String(conversionType || '').toLowerCase().trim();
+      if (!type) return null;
       const baseCl = Math.max(1, Number(cl) || 6);
-      const effCl = isCure
+      const effCl = type === 'cure'
         ? getSpellEffectiveCl({ name: 'Cure Light Wounds', school: 'Conjuration', subschool: 'healing' }, baseCl)
         : baseCl;
-
-      if (numLvl === 0) {
-        return isCure
-          ? { name: 'Cure Minor Wounds', formula: '1', effectType: 'heal', shortLabel: 'Cure (1 HP)', icon: '💚' }
-          : { name: 'Inflict Minor Wounds', formula: '1', effectType: 'damage', shortLabel: 'Inflict (1)', icon: '💀' };
+      const rs = (typeof RuleEngine !== 'undefined' && RuleEngine.rulesets && RuleEngine.rulesets.dnd35) || null;
+      if (rs && typeof rs.resolveDivineSpontaneousTarget === 'function') {
+        return rs.resolveDivineSpontaneousTarget(type, lvl, effCl);
       }
+      return null;
+    }
 
-      const tierNames = ['', 'Light', 'Moderate', 'Serious', 'Critical'];
-      if (numLvl >= 1 && numLvl <= 4) {
-        const cap = Math.min(effCl, numLvl * 5);
-        const formula = `${numLvl}d8+${cap}`;
-        const tier = tierNames[numLvl];
-        return isCure
-          ? { name: `Cure ${tier} Wounds`, formula, effectType: 'heal', shortLabel: `Cure (${formula})`, icon: '💚' }
-          : { name: `Inflict ${tier} Wounds`, formula, effectType: 'damage', shortLabel: `Inflict (${formula})`, icon: '💀' };
-      }
-
-      const diceCount = numLvl - 4;
-      const cap = Math.min(effCl, numLvl * 5);
-      const formula = `${diceCount}d8+${cap}`;
-      const tier = tierNames[diceCount];
-      return isCure
-        ? { name: `Mass Cure ${tier} Wounds`, formula, effectType: 'heal', shortLabel: `M.Cure (${formula})`, icon: '💚' }
-        : { name: `Mass Inflict ${tier} Wounds`, formula, effectType: 'damage', shortLabel: `M.Inflict (${formula})`, icon: '💀' };
+    function getClericSpontaneousSpellInfo(lvl, cl = 6, mode = 'cure') {
+      const normalized = mode === 'inflict' ? 'inflict' : (mode === 'sna' ? 'sna' : 'cure');
+      return getDivineSpontaneousTargetInfo(lvl, cl, normalized);
     }
 
     function toggleClericSpontaneousMode() {
@@ -2166,9 +2195,27 @@
         ? getPreparedSpellMetamagicInfo(s).effectiveSlotLevel
         : (Number(s.level ?? fallbackLvl) || 0);
       const { cl } = getDivineCasterInfo();
-      const policy = (typeof resolveClericEnergyPolicy === 'function') ? resolveClericEnergyPolicy(character) : null;
-      const mode = (policy && policy.forcedMode) || character?.spellcasting?.clericSpontaneousMode || 'cure';
-      const spont = getClericSpontaneousSpellInfo(lvl, cl, mode);
+      const spontProfile = getDivineSpontaneousProfile(character);
+      if (!spontProfile || !spontProfile.canConvert || !spontProfile.conversionType) {
+        showDiceTopToast({
+          icon: '⚠️',
+          title: 'Spontaneous Conversion Unavailable',
+          breakdown: 'D&D 3.5e RAW: Only Clerics (Cure/Inflict) and Druids (Summon Nature\'s Ally) can spontaneously convert prepared divine spells.',
+          total: 'Not Allowed'
+        });
+        return;
+      }
+      const convType = spontProfile.conversionType;
+      if (convType === 'sna' && lvl < 1) {
+        showDiceTopToast({
+          icon: '🐺',
+          title: 'Orison Restriction',
+          breakdown: 'D&D 3.5e RAW (PHB p.35): Druids cannot convert 0-level orisons into Summon Nature\'s Ally (minimum Level 1 spell slot).',
+          total: 'Not Allowed'
+        });
+        return;
+      }
+      const spont = getDivineSpontaneousTargetInfo(lvl, cl, convType);
       if (!spont) return;
 
       const spellsView = getSpellsView();
@@ -2177,11 +2224,12 @@
       const regUsed = slot ? Math.max(0, (slot.used || 0) - (slot.domainUsed || 0)) : 0;
       if (slot && regUsed < regDaily && slot.used < slot.daily) {
         const resolvedIdx = typeof spellIdxOrName === 'number' ? spellIdxOrName : divList.indexOf(s);
+        const actionType = spont.actionType || 'standard';
         if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
           CharStore.dispatch({
             type: 'spells/castSpell',
             payload: {
-              discipline: 'clericConversion',
+              discipline: 'divineConversion',
               index: resolvedIdx,
               spellIndex: resolvedIdx,
               spellId: s.id,
@@ -2191,8 +2239,10 @@
               isDomain: Boolean(s.isDomainSpell),
               isDomainSpell: Boolean(s.isDomainSpell),
               isSpontaneousConversion: true,
+              conversionType: convType,
+              convSpellId: spont.id,
               convName: spont.name,
-              actionType: 'standard',
+              actionType,
               actionLabel: spont.name
             },
             meta: { label: `Spontaneous Conversion (${s.name} ➔ ${spont.name})` }
@@ -2204,14 +2254,23 @@
           const mutSlot = character.spellcasting?.divineSlots?.find(sl => Number(sl.level) === lvl);
           if (mutSlot) mutSlot.used++;
           saveStateToStorage(true);
-          if (typeof consumeActionEconomy === 'function') consumeActionEconomy('standard', spont.name);
+          if (typeof consumeActionEconomy === 'function') consumeActionEconomy(actionType, spont.name);
         }
         renderAll();
-        rollSpellOrManeuverFormula(
-          spont.formula,
-          `${s.name} ➔ ${spont.name} (Level ${lvl} • -1 Slot)`,
-          { name: spont.name, effectType: spont.effectType }
-        );
+        if (spont.effectType === 'summon' || !spont.formula) {
+          showDiceTopToast({
+            icon: spont.icon || '🐺',
+            title: spont.name,
+            breakdown: `${s.name} ➔ ${spont.name} (Level ${lvl} • -1 Slot • ${spont.castingTime || '1 Round'} • Duration: ${spont.durationText || `${cl} rounds`})`,
+            total: `CL ${cl}`
+          });
+        } else {
+          rollSpellOrManeuverFormula(
+            spont.formula,
+            `${s.name} ➔ ${spont.name} (Level ${lvl} • -1 Slot)`,
+            { name: spont.name, effectType: spont.effectType }
+          );
+        }
       } else {
         showDiceTopToast({
           icon: '⚠️',
@@ -2340,7 +2399,9 @@
       const spellsView = getSpellsView();
       const { statKey, statVal, statMod, cl, clMode, hasClass, divLvls } = getDivineCasterInfo();
       const energyPolicy = resolveClericEnergyPolicy(character);
-      const spontMode = energyPolicy.forcedMode || spellsView?.casterStatsView?.divine?.clericSpontaneousMode || character.spellcasting?.clericSpontaneousMode || 'cure';
+      const spontProfile = getDivineSpontaneousProfile(character);
+      const spontMode = spontProfile.clericMode;
+      const energyChannel = spontProfile.energyChannel;
       let slots = spellsView?.slotsByLevelView?.divineArray;
       if (!Array.isArray(slots)) {
         const rawSlots = Array.isArray(character.spellcasting?.divineSlots) ? character.spellcasting.divineSlots : [];
@@ -2527,24 +2588,37 @@
         const spellCl = getSpellEffectiveCl(s, cl);
         const clBonusInfo = getSpellCasterLevelBonusInfo(s);
         const dmgExpr = resolveSpellEffectiveFormula(s, spellCl);
-        const spontInfo = getClericSpontaneousSpellInfo(lvl, cl, spontMode);
-        const isAlreadyTarget = spontMode === 'inflict'
-          ? /^(inflict|mass inflict)\b/i.test((s.name || '').trim())
-          : /^(cure|mass cure)\b/i.test((s.name || '').trim());
-        // D&D 3.5e RAW (PHB p.32): Domain spells cannot be spontaneously converted to Cure/Inflict Wounds
-        const showSpontBtn = Boolean(spontInfo && !isAlreadyTarget && !isDom);
+        const convType = spontProfile.canConvert ? spontProfile.conversionType : null;
+        const spontSlotLvl = mm.effectiveSlotLevel;
+        const spontInfo = convType ? getDivineSpontaneousTargetInfo(spontSlotLvl, cl, convType) : null;
+        const isAlreadyTarget = convType === 'sna'
+          ? /^summon nature'?s ally\b/i.test((s.name || '').trim())
+          : (convType === 'inflict'
+            ? /^(inflict|mass inflict)\b/i.test((s.name || '').trim())
+            : /^(cure|mass cure)\b/i.test((s.name || '').trim()));
+        // D&D 3.5e RAW: Cleric (PHB p.32) Cure/Inflict (non-domain); Druid (PHB p.35) Summon Nature's Ally (lvl 1-9); Paladin/Ranger none
+        const showSpontBtn = Boolean(spontProfile.canConvert && spontInfo && !isAlreadyTarget && !isDom);
+        const spontColorCls = convType === 'inflict'
+          ? 'bg-rose-950/90 hover:bg-rose-800 text-rose-300 hover:text-white border-rose-600/80 cursor-pointer shadow'
+          : 'bg-emerald-950/90 hover:bg-emerald-800 text-emerald-300 hover:text-white border-emerald-600/80 cursor-pointer shadow';
+        const spontIconHtml = spontInfo && spontInfo.formula
+          ? getFormulaDiceIconSvg(spontInfo.formula, convType === 'inflict' ? 'w-3.5 h-3.5 text-rose-300 shrink-0' : 'w-3.5 h-3.5 text-emerald-300 shrink-0')
+          : `<span>${spontInfo ? spontInfo.icon : '🐺'}</span>`;
+        const spontTitle = spontInfo
+          ? (hasActiveSlot
+            ? (convType === 'sna'
+              ? `Druid Spontaneous Conversion (PHB p.35): Convert '${s.name}' (Level ${spontSlotLvl} slot) into '${spontInfo.name}' (${spontInfo.castingTime})`
+              : `Cleric Spontaneous Conversion (PHB p.32): Convert '${s.name}' (Level ${spontSlotLvl} slot) into '${spontInfo.name}' (${spontInfo.formula})`)
+            : '⚠️ No active spell slots remaining (0 Left)')
+          : '';
         const spontBtnHtml = showSpontBtn ? `
           <button data-action="spells:cast-cleric-spontaneous" data-idx="${originalIdx}" class="${
             hasActiveSlot
-              ? (spontMode === 'cure'
-                ? 'bg-emerald-950/90 hover:bg-emerald-800 text-emerald-300 hover:text-white border-emerald-600/80 cursor-pointer shadow'
-                : 'bg-rose-950/90 hover:bg-rose-800 text-rose-300 hover:text-white border-rose-600/80 cursor-pointer shadow')
+              ? spontColorCls
               : 'opacity-50 cursor-not-allowed bg-slate-900 border-slate-800 text-slate-500'
-          } h-7 text-[11px] font-bold font-mono px-2 rounded-lg border transition inline-flex items-center justify-center gap-1 whitespace-nowrap" title="${
-            hasActiveSlot ? `Cleric Spontaneous Conversion: Convert '${s.name}' slot into '${spontInfo.name}' (${spontInfo.formula})` : '⚠️ No active spell slots remaining (0 Left)'
-          }">
-            ${getFormulaDiceIconSvg(spontInfo.formula, spontMode === 'cure' ? 'w-3.5 h-3.5 text-emerald-300 shrink-0' : 'w-3.5 h-3.5 text-rose-300 shrink-0')}
-            <span>${spontInfo.shortLabel}</span>
+          } h-7 text-[11px] font-bold font-mono px-2 rounded-lg border transition inline-flex items-center justify-center gap-1 whitespace-nowrap" title="${UI.escapeAttr(spontTitle)}">
+            ${spontIconHtml}
+            <span>${UI.escapeHtml(spontInfo.shortLabel)}</span>
           </button>
         ` : '';
 
@@ -2718,7 +2792,7 @@
       const turnUsed = Math.max(0, Number(character.spellcasting?.turnUndeadUsed) || 0);
       const turnMax = turnDomainInfo.maxDailyTurns || 0;
       const turnRem = Math.max(0, turnMax - turnUsed);
-      const isRebuke = spontMode === 'inflict';
+      const isRebuke = energyChannel === 'negative';
       const turnTitle = isRebuke ? 'Rebuke / Command Undead' : 'Turn / Destroy Undead';
       const turnBonusTip = (turnDomainInfo.turningBonusSources || []).length > 0
         ? ` • Bonuses: ${turnDomainInfo.turningBonusSources.join(', ')}`
@@ -3080,7 +3154,9 @@
       if (!character || typeof RuleEngine === 'undefined' || typeof RuleEngine.getTurnUndeadAndDomainPowers !== 'function') return;
 
       const info = RuleEngine.getTurnUndeadAndDomainPowers(character);
-      const isRebuke = (character.spellcasting?.clericSpontaneousMode || 'cure') === 'inflict';
+      const isRebuke = (typeof getDivineSpontaneousProfile === 'function')
+        ? getDivineSpontaneousProfile(character).isRebuke
+        : ((character.spellcasting?.energyChannel === 'negative') || (character.spellcasting?.clericSpontaneousMode === 'inflict'));
       let label = isRebuke ? 'Rebuke Undead' : 'Turn Undead';
       let maxUses = info.maxDailyTurns || 1;
       let used = Math.max(0, Number(character.spellcasting?.turnUndeadUsed) || 0);

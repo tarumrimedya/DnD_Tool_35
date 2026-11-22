@@ -3850,7 +3850,7 @@
     ensureSpellsDocStructures(doc);
     const payload = (action && action.payload) || {};
     const rawDisc = payload.isSpontaneousConversion ? 'clericconversion' : String(payload.discipline || payload.pool || 'spontaneous').toLowerCase();
-    const disc = rawDisc === 'clericspontaneousconversion' ? 'clericconversion' : rawDisc;
+    const disc = (rawDisc === 'clericspontaneousconversion' || rawDisc === 'divineconversion') ? 'clericconversion' : rawDisc;
     const rawIdx = payload.index ?? payload.spellIndex ?? payload.spellIdx;
     let idx = rawIdx !== undefined && rawIdx !== null ? Number(rawIdx) : -1;
     const reqInstanceId = payload.instanceId ? String(payload.instanceId) : '';
@@ -3888,12 +3888,32 @@
       return true;
     });
 
-    const spellForMm = spell || {
-      level: Math.max(0, Number(payload.spellLevel ?? payload.level ?? 0) || 0),
-      name: String(payload.spellName || ''),
-      action: 'Standard Action'
-    };
-    const mmResolved = (engineRef && typeof engineRef.resolveMetamagic === 'function' && (spell || mmOverride || applicableArmed.length > 0))
+    // D&D 3.5e RAW (PHB p.32/35): Spontaneous conversion drops the prepared spell's metamagic;
+    // the occupied slot level determines the converted spell, and only NEW cast-time metamagic applies.
+    let preparedSlotLevel = Math.max(0, Number(payload.spellLevel ?? payload.level ?? (spell ? spell.level : 0)) || 0);
+    if (disc === 'clericconversion' && spell && Array.isArray(spell.metamagic) && spell.metamagic.length > 0 && engineRef && typeof engineRef.resolveMetamagic === 'function') {
+      const prepMm = engineRef.resolveMetamagic(spell, doc, { isSpontaneous: false, discipline: 'divine' });
+      if (prepMm && Number.isFinite(Number(prepMm.effectiveSlotLevel))) {
+        preparedSlotLevel = Math.max(0, Number(prepMm.effectiveSlotLevel));
+      }
+    }
+
+    const spellForMm = disc === 'clericconversion'
+      ? {
+        level: preparedSlotLevel,
+        name: String(payload.convName || payload.spellName || (spell ? spell.name : '')),
+        action: payload.actionType === 'full' ? '1 Round' : 'Standard Action',
+        metamagic: []
+      }
+      : (spell || {
+        level: Math.max(0, Number(payload.spellLevel ?? payload.level ?? 0) || 0),
+        name: String(payload.spellName || ''),
+        action: 'Standard Action'
+      });
+    const shouldResolveMm = disc === 'clericconversion'
+      ? Boolean(mmOverride || applicableArmed.length > 0)
+      : Boolean(spell || mmOverride || applicableArmed.length > 0);
+    const mmResolved = (engineRef && typeof engineRef.resolveMetamagic === 'function' && shouldResolveMm)
       ? engineRef.resolveMetamagic(spellForMm, doc, {
         metamagicOverride: mmOverride || undefined,
         armedMetamagic: applicableArmed.length > 0 ? applicableArmed : undefined,
@@ -3930,11 +3950,13 @@
       return doc;
     }
 
-    const lvl = Math.max(0, Number(
-      mmResolved && (mmOverride || applicableArmed.length > 0 || (Array.isArray(spell?.metamagic) && spell.metamagic.length > 0))
-        ? mmResolved.effectiveSlotLevel
-        : (payload.spellLevel ?? payload.level ?? (spell ? spell.level : 0))
-    ) || 0);
+    const lvl = disc === 'clericconversion'
+      ? Math.max(0, Number(mmResolved ? mmResolved.effectiveSlotLevel : preparedSlotLevel) || 0)
+      : Math.max(0, Number(
+        mmResolved && (mmOverride || applicableArmed.length > 0 || (Array.isArray(spell?.metamagic) && spell.metamagic.length > 0))
+          ? mmResolved.effectiveSlotLevel
+          : (payload.spellLevel ?? payload.level ?? (spell ? spell.level : 0))
+      ) || 0);
     const isDom = Boolean(payload.isDomain ?? payload.isDomainSpell ?? (spell && spell.isDomainSpell));
     const isAtWill = Boolean(
       payload.isAtWill ||
@@ -3994,6 +4016,36 @@
         setStoreOutcome(stateObj, { status: 'invalid_payload', reason: 'domain_cannot_convert' });
         return doc;
       }
+      const spontProfile = (engineRef && typeof engineRef.resolveDivineSpontaneousProfile === 'function')
+        ? engineRef.resolveDivineSpontaneousProfile(doc)
+        : null;
+      const reqConvType = String(payload.conversionType || '').toLowerCase().trim()
+        || (spontProfile ? spontProfile.conversionType : '')
+        || '';
+      if (spontProfile && spontProfile.hasKnownClasses) {
+        const hasSyntheticClericChannel = !spontProfile.hasDruid && !spontProfile.hasCleric
+          && !payload.conversionType
+          && Boolean(doc.spellcasting?.clericSpontaneousMode)
+          && Array.isArray(doc.spellcasting?.divineSlots)
+          && doc.spellcasting.divineSlots.some(sl => (Number(sl?.domainDaily) || 0) > 0);
+        if (!spontProfile.canConvert && !hasSyntheticClericChannel) {
+          setStoreOutcome(stateObj, { status: 'invalid_payload', reason: 'no_spontaneous_conversion' });
+          return doc;
+        }
+        if (spontProfile.canConvert && reqConvType && !spontProfile.allowedTypes.includes(reqConvType)) {
+          setStoreOutcome(stateObj, {
+            status: 'invalid_payload',
+            reason: 'conversion_type_not_allowed',
+            conversionType: reqConvType,
+            allowedTypes: spontProfile.allowedTypes
+          });
+          return doc;
+        }
+        if (reqConvType === 'sna' && lvl < 1) {
+          setStoreOutcome(stateObj, { status: 'invalid_payload', reason: 'orison_cannot_convert_to_sna' });
+          return doc;
+        }
+      }
       if (spell && (spell.isCast || spell.cast)) {
         setStoreOutcome(stateObj, { status: 'already_cast', discipline: 'clericConversion', spellLevel: lvl });
         return doc;
@@ -4017,6 +4069,7 @@
         spell.isCast = true;
         spell.cast = true;
         if (payload.convName) spell.convertedTo = payload.convName;
+        if (reqConvType) spell.conversionType = reqConvType;
       }
     } else {
       if (!isAtWill) {
@@ -4629,9 +4682,11 @@
       ? String(payload.mode).toLowerCase()
       : (cur === 'cure' || cur === 'good' ? 'inflict' : 'cure');
     doc.spellcasting.clericSpontaneousMode = nextMode;
+    doc.spellcasting.energyChannel = nextMode === 'inflict' ? 'negative' : 'positive';
     setStoreOutcome(stateObj, {
       status: 'cleric_spont_mode_updated',
-      mode: nextMode
+      mode: nextMode,
+      energyChannel: doc.spellcasting.energyChannel
     });
     return doc;
   });

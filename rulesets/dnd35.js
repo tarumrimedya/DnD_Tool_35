@@ -391,6 +391,107 @@
     return null;
   }
 
+  // Official D&D 3.5e Divine Spontaneous Casting Rules & Target Tables (PHB p. 32 Cleric, p. 35 Druid)
+  const DIVINE_SPONTANEOUS_CLASS_RULES = {
+    'cls-cleric': { kind: 'cleric_energy', minLevel: 0, maxLevel: 9, allowDomainSlot: false },
+    'cls-cleric-cloistered-variant': { kind: 'cleric_energy', minLevel: 0, maxLevel: 9, allowDomainSlot: false },
+    'cls-cloistered-cleric': { kind: 'cleric_energy', minLevel: 0, maxLevel: 9, allowDomainSlot: false },
+    'cls-druid': { kind: 'druid_sna', minLevel: 1, maxLevel: 9, allowDomainSlot: false }
+  };
+
+  const DIVINE_SPONTANEOUS_TABLES = {
+    cure: [
+      { level: 0, id: 'spl-cure-minor-wounds', name: 'Cure Minor Wounds', shortPrefix: 'Cure', diceCount: 0, capMult: 0, flat: 1, effectType: 'heal', icon: '💚', actionType: 'standard', castingTime: 'Standard Action' },
+      { level: 1, id: 'spl-cure-light-wounds', name: 'Cure Light Wounds', shortPrefix: 'Cure', diceCount: 1, capMult: 5, effectType: 'heal', icon: '💚', actionType: 'standard', castingTime: 'Standard Action' },
+      { level: 2, id: 'spl-cure-moderate-wounds', name: 'Cure Moderate Wounds', shortPrefix: 'Cure', diceCount: 2, capMult: 10, effectType: 'heal', icon: '💚', actionType: 'standard', castingTime: 'Standard Action' },
+      { level: 3, id: 'spl-cure-serious-wounds', name: 'Cure Serious Wounds', shortPrefix: 'Cure', diceCount: 3, capMult: 15, effectType: 'heal', icon: '💚', actionType: 'standard', castingTime: 'Standard Action' },
+      { level: 4, id: 'spl-cure-critical-wounds', name: 'Cure Critical Wounds', shortPrefix: 'Cure', diceCount: 4, capMult: 20, effectType: 'heal', icon: '💚', actionType: 'standard', castingTime: 'Standard Action' },
+      { level: 5, id: 'spl-mass-cure-light-wounds', name: 'Mass Cure Light Wounds', shortPrefix: 'M.Cure', diceCount: 1, capMult: 25, effectType: 'heal', icon: '💚', actionType: 'standard', castingTime: 'Standard Action' },
+      { level: 6, id: 'spl-mass-cure-moderate-wounds', name: 'Mass Cure Moderate Wounds', shortPrefix: 'M.Cure', diceCount: 2, capMult: 30, effectType: 'heal', icon: '💚', actionType: 'standard', castingTime: 'Standard Action' },
+      { level: 7, id: 'spl-mass-cure-serious-wounds', name: 'Mass Cure Serious Wounds', shortPrefix: 'M.Cure', diceCount: 3, capMult: 35, effectType: 'heal', icon: '💚', actionType: 'standard', castingTime: 'Standard Action' },
+      { level: 8, id: 'spl-mass-cure-critical-wounds', name: 'Mass Cure Critical Wounds', shortPrefix: 'M.Cure', diceCount: 4, capMult: 40, effectType: 'heal', icon: '💚', actionType: 'standard', castingTime: 'Standard Action' }
+    ],
+    inflict: [
+      { level: 0, id: 'spl-inflict-minor-wounds', name: 'Inflict Minor Wounds', shortPrefix: 'Inflict', diceCount: 0, capMult: 0, flat: 1, effectType: 'damage', icon: '💀', actionType: 'standard', castingTime: 'Standard Action' },
+      { level: 1, id: 'spl-inflict-light-wounds', name: 'Inflict Light Wounds', shortPrefix: 'Inflict', diceCount: 1, capMult: 5, effectType: 'damage', icon: '💀', actionType: 'standard', castingTime: 'Standard Action' },
+      { level: 2, id: 'spl-inflict-moderate-wounds', name: 'Inflict Moderate Wounds', shortPrefix: 'Inflict', diceCount: 2, capMult: 10, effectType: 'damage', icon: '💀', actionType: 'standard', castingTime: 'Standard Action' },
+      { level: 3, id: 'spl-inflict-serious-wounds', name: 'Inflict Serious Wounds', shortPrefix: 'Inflict', diceCount: 3, capMult: 15, effectType: 'damage', icon: '💀', actionType: 'standard', castingTime: 'Standard Action' },
+      { level: 4, id: 'spl-inflict-critical-wounds', name: 'Inflict Critical Wounds', shortPrefix: 'Inflict', diceCount: 4, capMult: 20, effectType: 'damage', icon: '💀', actionType: 'standard', castingTime: 'Standard Action' },
+      { level: 5, id: 'spl-mass-inflict-light-wounds', name: 'Mass Inflict Light Wounds', shortPrefix: 'M.Inflict', diceCount: 1, capMult: 25, effectType: 'damage', icon: '💀', actionType: 'standard', castingTime: 'Standard Action' },
+      { level: 6, id: 'spl-mass-inflict-moderate-wounds', name: 'Mass Inflict Moderate Wounds', shortPrefix: 'M.Inflict', diceCount: 2, capMult: 30, effectType: 'damage', icon: '💀', actionType: 'standard', castingTime: 'Standard Action' },
+      { level: 7, id: 'spl-mass-inflict-serious-wounds', name: 'Mass Inflict Serious Wounds', shortPrefix: 'M.Inflict', diceCount: 3, capMult: 35, effectType: 'damage', icon: '💀', actionType: 'standard', castingTime: 'Standard Action' },
+      { level: 8, id: 'spl-mass-inflict-critical-wounds', name: 'Mass Inflict Critical Wounds', shortPrefix: 'M.Inflict', diceCount: 4, capMult: 40, effectType: 'damage', icon: '💀', actionType: 'standard', castingTime: 'Standard Action' }
+    ],
+    sna: [
+      null,
+      { level: 1, id: 'spl-summon-natures-ally-i', name: "Summon Nature's Ally I", roman: 'I', effectType: 'summon', icon: '🐺', actionType: 'full', castingTime: '1 Round' },
+      { level: 2, id: 'spl-summon-natures-ally-ii', name: "Summon Nature's Ally II", roman: 'II', effectType: 'summon', icon: '🐺', actionType: 'full', castingTime: '1 Round' },
+      { level: 3, id: 'spl-summon-natures-ally-iii', name: "Summon Nature's Ally III", roman: 'III', effectType: 'summon', icon: '🐺', actionType: 'full', castingTime: '1 Round' },
+      { level: 4, id: 'spl-summon-natures-ally-iv', name: "Summon Nature's Ally IV", roman: 'IV', effectType: 'summon', icon: '🐺', actionType: 'full', castingTime: '1 Round' },
+      { level: 5, id: 'spl-summon-natures-ally-v', name: "Summon Nature's Ally V", roman: 'V', effectType: 'summon', icon: '🐺', actionType: 'full', castingTime: '1 Round' },
+      { level: 6, id: 'spl-summon-natures-ally-vi', name: "Summon Nature's Ally VI", roman: 'VI', effectType: 'summon', icon: '🐺', actionType: 'full', castingTime: '1 Round' },
+      { level: 7, id: 'spl-summon-natures-ally-vii', name: "Summon Nature's Ally VII", roman: 'VII', effectType: 'summon', icon: '🐺', actionType: 'full', castingTime: '1 Round' },
+      { level: 8, id: 'spl-summon-natures-ally-viii', name: "Summon Nature's Ally VIII", roman: 'VIII', effectType: 'summon', icon: '🐺', actionType: 'full', castingTime: '1 Round' },
+      { level: 9, id: 'spl-summon-natures-ally-ix', name: "Summon Nature's Ally IX", roman: 'IX', effectType: 'summon', icon: '🐺', actionType: 'full', castingTime: '1 Round' }
+    ]
+  };
+
+  function resolveDivineSpontaneousTarget(conversionType, slotLevel, effectiveCl = 1) {
+    const type = String(conversionType || '').toLowerCase().trim();
+    const numLvl = Number(slotLevel);
+    if (!Number.isFinite(numLvl) || numLvl < 0 || numLvl > 9) return null;
+    const cl = Math.max(1, Math.floor(Number(effectiveCl) || 1));
+
+    if (type === 'sna') {
+      if (numLvl < 1 || numLvl > 9) return null;
+      const entry = DIVINE_SPONTANEOUS_TABLES.sna[Math.floor(numLvl)];
+      if (!entry) return null;
+      return {
+        conversionType: 'sna',
+        id: entry.id,
+        name: entry.name,
+        targetLevel: entry.level,
+        slotLevel: Math.floor(numLvl),
+        formula: null,
+        effectType: 'summon',
+        shortLabel: `SNA ${entry.roman}`,
+        compactLabel: `SNA ${entry.roman}`,
+        icon: entry.icon,
+        actionType: entry.actionType,
+        castingTime: entry.castingTime,
+        durationText: `${cl} round${cl === 1 ? '' : 's'}`
+      };
+    }
+
+    if (type === 'cure' || type === 'inflict') {
+      // PHB p. 32: "of the same spell level or lower" -> 9th-level slot converts to 8th-level Mass Cure/Inflict Critical Wounds
+      const targetLvl = Math.min(8, Math.floor(numLvl));
+      const entry = DIVINE_SPONTANEOUS_TABLES[type][targetLvl];
+      if (!entry) return null;
+      const formula = entry.diceCount === 0
+        ? String(entry.flat || 1)
+        : `${entry.diceCount}d8+${Math.min(cl, entry.capMult)}`;
+      return {
+        conversionType: type,
+        id: entry.id,
+        name: entry.name,
+        targetLevel: entry.level,
+        slotLevel: Math.floor(numLvl),
+        formula,
+        effectType: entry.effectType,
+        shortLabel: entry.diceCount === 0
+          ? `${entry.shortPrefix} (${formula}${type === 'cure' ? ' HP' : ''})`
+          : `${entry.shortPrefix} (${formula})`,
+        compactLabel: type === 'inflict' ? `Inf ${formula}` : `Cure ${formula}`,
+        icon: entry.icon,
+        actionType: entry.actionType,
+        castingTime: entry.castingTime
+      };
+    }
+
+    return null;
+  }
+
   // Canonical V3 Companion / Entity kinds (ADR-058)
   const ENTITY_KINDS = ['animal_companion', 'familiar', 'special_mount', 'fiendish_servant'];
 
@@ -499,6 +600,9 @@
     spellbookSources: SPELLBOOK_SOURCES,
     defaultKnownSourceByClassId: DEFAULT_KNOWN_SOURCE_BY_CLASS_ID,
     resolveCastingKnownSource,
+    divineSpontaneousClassRules: DIVINE_SPONTANEOUS_CLASS_RULES,
+    divineSpontaneousTables: DIVINE_SPONTANEOUS_TABLES,
+    resolveDivineSpontaneousTarget,
     entityKinds: ENTITY_KINDS,
     arcaneSpellcastingClasses: ARCANE_SPELLCASTING_CLASSES,
     defaultEntityLevelFormulas: DEFAULT_ENTITY_LEVEL_FORMULAS,

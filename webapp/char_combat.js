@@ -1601,9 +1601,14 @@
         const info = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getTurnUndeadAndDomainPowers === 'function')
           ? RuleEngine.getTurnUndeadAndDomainPowers(character)
           : { maxDailyTurns: 3, effectiveTurningLevel: 1, turningCheckFormula: '1d20', turningDamageFormula: '2d6', turningBonusSources: [] };
-        const energyPolicy = typeof resolveClericEnergyPolicy === 'function' ? resolveClericEnergyPolicy(character) : null;
-        const spontMode = (energyPolicy && energyPolicy.forcedMode) || character?.spellcasting?.clericSpontaneousMode || 'cure';
-        const isRebuke = spontMode === 'inflict';
+        const spontProfile = (typeof getDivineSpontaneousProfile === 'function')
+          ? getDivineSpontaneousProfile(character)
+          : ((typeof RuleEngine !== 'undefined' && typeof RuleEngine.resolveDivineSpontaneousProfile === 'function')
+            ? RuleEngine.resolveDivineSpontaneousProfile(character)
+            : null);
+        const isRebuke = spontProfile
+          ? spontProfile.isRebuke
+          : (((typeof resolveClericEnergyPolicy === 'function' ? resolveClericEnergyPolicy(character)?.forcedMode : null) || character?.spellcasting?.clericSpontaneousMode || 'cure') === 'inflict');
         const used = Math.max(0, Number(character?.spellcasting?.turnUndeadUsed) || 0);
         const rem = Math.max(0, (info.maxDailyTurns || 0) - used);
         const bonusNote = (info.turningBonusSources || []).length > 0 ? ` (${info.turningBonusSources.join(', ')})` : '';
@@ -2071,25 +2076,34 @@
           if (reorderControls) {
             bottomRightHtml = reorderControls;
           } else {
+            const rawProfile = (srcKey === 'divine' && typeof RuleEngine !== 'undefined' && typeof RuleEngine.resolveDivineSpontaneousProfile === 'function')
+              ? RuleEngine.resolveDivineSpontaneousProfile(character)
+              : null;
             const energyPolicy = (srcKey === 'divine' && typeof resolveClericEnergyPolicy === 'function')
               ? resolveClericEnergyPolicy(character)
               : null;
-            const spontMode = (energyPolicy && energyPolicy.forcedMode) || character?.spellcasting?.clericSpontaneousMode || 'cure';
-            const isAlreadyTarget = spontMode === 'inflict'
-              ? /^(inflict|mass inflict)\b/i.test((sp.name || '').trim())
-              : /^(cure|mass cure)\b/i.test((sp.name || '').trim());
+            const convType = (rawProfile && rawProfile.canConvert)
+              ? (rawProfile.conversionType === 'sna'
+                ? 'sna'
+                : ((energyPolicy && energyPolicy.forcedMode) || rawProfile.conversionType))
+              : null;
+            const isAlreadyTarget = convType === 'sna'
+              ? /^summon nature'?s ally\b/i.test((sp.name || '').trim())
+              : (convType === 'inflict'
+                ? /^(inflict|mass inflict)\b/i.test((sp.name || '').trim())
+                : /^(cure|mass cure)\b/i.test((sp.name || '').trim()));
             const divCl = (typeof getDivineCasterInfo === 'function') ? (getDivineCasterInfo().cl || 5) : (Number(character?.spellcasting?.cl) || Number(character?.level) || 5);
-            const spontInfo = (srcKey === 'divine' && !sp.isDomainSpell && !isAlreadyTarget && typeof getClericSpontaneousSpellInfo === 'function')
-              ? getClericSpontaneousSpellInfo(lvl, divCl, spontMode)
+            const spontInfo = (srcKey === 'divine' && convType && !sp.isDomainSpell && !isAlreadyTarget && typeof getClericSpontaneousSpellInfo === 'function')
+              ? getClericSpontaneousSpellInfo(lvl, divCl, convType)
               : null;
 
             if (spontInfo) {
               hasSpontBtn = true;
-              const btnColorCls = spontMode === 'inflict'
+              const btnColorCls = convType === 'inflict'
                 ? 'bg-rose-950/90 hover:bg-rose-800 text-rose-300 hover:text-white border-rose-600/80'
                 : 'bg-emerald-950/90 hover:bg-emerald-800 text-emerald-300 hover:text-white border-emerald-600/80';
-              const shortText = spontMode === 'inflict' ? `Inf ${spontInfo.formula}` : `Cure ${spontInfo.formula}`;
-              bottomRightHtml = `<button type="button" data-action="combat:cast-cleric-spontaneous" data-spell-name="${attrName}" data-level="${lvl}" data-instance-id="${UI.escapeAttr(sp.instanceId || '')}" class="px-1.5 py-0.5 rounded border ${btnColorCls} font-mono font-bold text-[10px] leading-none inline-flex items-center justify-center gap-0.5 shrink-0 cursor-pointer transition shadow-sm" title="Cleric Spontaneous Conversion: Convert '${UI.escapeAttr(sp.name)}' into '${UI.escapeAttr(spontInfo.name)}' (${spontInfo.formula})"><span>${spontInfo.icon}</span><span>${shortText}</span></button>`;
+              const shortText = spontInfo.compactLabel || spontInfo.shortLabel;
+              bottomRightHtml = `<button type="button" data-action="combat:cast-cleric-spontaneous" data-spell-name="${attrName}" data-level="${lvl}" data-instance-id="${UI.escapeAttr(sp.instanceId || '')}" class="px-1.5 py-0.5 rounded border ${btnColorCls} font-mono font-bold text-[10px] leading-none inline-flex items-center justify-center gap-0.5 shrink-0 cursor-pointer transition shadow-sm" title="${convType === 'sna' ? 'Druid' : 'Cleric'} Spontaneous Conversion: Convert '${UI.escapeAttr(sp.name)}' into '${UI.escapeAttr(spontInfo.name)}' (${UI.escapeAttr(spontInfo.formula || spontInfo.castingTime || '1 Round')})"><span>${spontInfo.icon}</span><span>${UI.escapeHtml(shortText)}</span></button>`;
             } else if (params.save && params.save !== 'None') {
               bottomRightHtml = `<span class="truncate shrink-0 font-mono text-[10px] text-slate-500">${UI.escapeHtml(params.save)}</span>`;
             }
@@ -2658,9 +2672,14 @@
         const turnUsed = Math.max(0, Number(character?.spellcasting?.turnUndeadUsed) || 0);
         const turnMax = turnDomainInfo.maxDailyTurns || 0;
         const turnRem = Math.max(0, turnMax - turnUsed);
-        const energyPolicy = typeof resolveClericEnergyPolicy === 'function' ? resolveClericEnergyPolicy(character) : null;
-        const spontMode = (energyPolicy && energyPolicy.forcedMode) || character?.spellcasting?.clericSpontaneousMode || 'cure';
-        const isRebuke = spontMode === 'inflict';
+        const spontProfile = (typeof getDivineSpontaneousProfile === 'function')
+          ? getDivineSpontaneousProfile(character)
+          : ((typeof RuleEngine !== 'undefined' && typeof RuleEngine.resolveDivineSpontaneousProfile === 'function')
+            ? RuleEngine.resolveDivineSpontaneousProfile(character)
+            : null);
+        const isRebuke = spontProfile
+          ? spontProfile.isRebuke
+          : (((typeof resolveClericEnergyPolicy === 'function' ? resolveClericEnergyPolicy(character)?.forcedMode : null) || character?.spellcasting?.clericSpontaneousMode || 'cure') === 'inflict');
         const borderCls = turnRem > 0
           ? (isRebuke ? 'border-slate-800 bg-slate-900 text-slate-300 hover:border-rose-500/70' : 'border-slate-800 bg-slate-900 text-slate-300 hover:border-amber-500/70')
           : 'border-slate-800/60 bg-slate-950/60 text-slate-500 opacity-60';
