@@ -2129,16 +2129,28 @@
       });
     }
 
-    function castClericSpontaneousConversion(spellIdxOrName, fallbackLvl) {
+    function castClericSpontaneousConversion(spellIdxOrName, fallbackLvl, instanceId = '') {
       const divList = character?.spellcasting?.divineSpells || [];
       let s = null;
       if (typeof spellIdxOrName === 'number') {
         s = divList[spellIdxOrName];
       } else if (typeof spellIdxOrName === 'string') {
         const cleanName = spellIdxOrName.toLowerCase().trim();
-        s = divList.find(item => item && !item.isDomainSpell && (item.name || '').toLowerCase().trim() === cleanName && (fallbackLvl === undefined || Number(item.level || 0) === Number(fallbackLvl)))
-          || divList.find(item => item && (item.name || '').toLowerCase().trim() === cleanName)
-          || { name: spellIdxOrName, level: Number(fallbackLvl) || 0, isDomainSpell: false };
+        const effLvlOf = (item) => (typeof getPreparedSpellMetamagicInfo === 'function')
+          ? getPreparedSpellMetamagicInfo(item).effectiveSlotLevel
+          : (Number(item?.level || 0) || 0);
+        if (instanceId) {
+          s = divList.find(item => item && item.instanceId && String(item.instanceId) === String(instanceId)) || null;
+        }
+        if (!s) {
+          s = divList.find(item => item && !item.isDomainSpell && !item.isCast && !item.cast
+            && (item.name || '').toLowerCase().trim() === cleanName
+            && (fallbackLvl === undefined || effLvlOf(item) === Number(fallbackLvl) || Number(item.level || 0) === Number(fallbackLvl)))
+            || divList.find(item => item && !item.isDomainSpell
+              && (item.name || '').toLowerCase().trim() === cleanName
+              && (fallbackLvl === undefined || effLvlOf(item) === Number(fallbackLvl) || Number(item.level || 0) === Number(fallbackLvl)))
+            || { name: spellIdxOrName, level: Number(fallbackLvl) || 0, isDomainSpell: false };
+        }
       }
       if (!s) return;
       if (s.isDomainSpell) {
@@ -2150,7 +2162,9 @@
         });
         return;
       }
-      const lvl = Number(s.level ?? fallbackLvl) || 0;
+      const lvl = (typeof getPreparedSpellMetamagicInfo === 'function' && Array.isArray(s.metamagic) && s.metamagic.length > 0)
+        ? getPreparedSpellMetamagicInfo(s).effectiveSlotLevel
+        : (Number(s.level ?? fallbackLvl) || 0);
       const { cl } = getDivineCasterInfo();
       const policy = (typeof resolveClericEnergyPolicy === 'function') ? resolveClericEnergyPolicy(character) : null;
       const mode = (policy && policy.forcedMode) || character?.spellcasting?.clericSpontaneousMode || 'cure';

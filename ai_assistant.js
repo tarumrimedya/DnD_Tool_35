@@ -628,7 +628,7 @@
       if (list.length > 1) {
         const other = list.find(c => String(c.id) !== String(active.id));
         if (other) {
-          chips.push({ kind: 'cmd', label: `🔄 Switch: ${other.name || other.baseMonsterId}`, cmd: `comp switch ${other.name || other.baseMonsterId}` });
+          chips.push({ kind: 'cmd', label: `🔄 Switch: ${other.name || other.baseMonsterId}`, cmd: `comp switch #${other.id}` });
         }
       }
       return chips;
@@ -949,20 +949,30 @@
     if (cmd === 'comp_switch') {
       const list = Array.isArray(doc.companions) ? doc.companions.filter(c => c && c.baseMonsterId) : [];
       if (!list.length) return { ok: false, summary: 'No companions bound on this character.' };
-      const query = String(typeof args === 'string' ? args : (args?.name || args?.companion || '')).trim();
-      if (!query) return { ok: false, summary: 'Specify a companion name or kind (e.g., comp switch Wolf or comp switch Familiar).' };
+      const query = String(typeof args === 'string' ? args : (args?.id ? `#${args.id}` : (args?.name || args?.companion || ''))).trim();
+      if (!query) return { ok: false, summary: 'Specify a companion name, kind, or #id (e.g., comp switch Wolf or comp switch Familiar).' };
       const qLow = query.toLowerCase();
       let target = null;
-      const byName = _matchBestName(list, query, c => {
-        const st = _getCompanionStats(doc, c);
-        return `${c.name || ''} ${st?.baseName || ''} ${c.entityKind || ''}`;
-      });
-      if (byName && byName.item) target = byName.item;
+      if (query.startsWith('#')) {
+        const wantId = query.slice(1).trim();
+        target = list.find(c => String(c.id) === wantId) || null;
+      }
+      if (!target) {
+        const byName = _matchBestName(list, query, c => {
+          const st = _getCompanionStats(doc, c);
+          return `${c.name || ''} ${st?.baseName || ''} ${c.entityKind || ''}`;
+        });
+        if (byName && byName.item) target = byName.item;
+      }
       if (!target) {
         target = list.find(c => String(c.entityKind || c.type || '').toLowerCase().replace(/_/g, ' ').includes(qLow));
       }
       if (!target) return { ok: false, summary: `No bound companion matched "${query}".` };
+      const active = _resolveActiveCompanion(doc);
       const cname = target.name || target.baseMonsterId;
+      if (active && String(active.id) === String(target.id)) {
+        return { ok: false, summary: `${cname} is already the active companion.` };
+      }
       return {
         ok: true,
         actions: [{ type: 'companion/setActive', payload: { compId: target.id }, meta: { label: `Active Companion: ${cname}` } }],
@@ -1487,16 +1497,19 @@
       if (!root.CharStore || typeof root.CharStore.dispatch !== 'function') {
         return { ok: false, summary: 'CharStore is unavailable on this page.' };
       }
+      if (typeof root.CharStore.getDoc === 'function' && !root.CharStore.getDoc() && typeof root.CharStore._syncExternalCharacterRef === 'function') {
+        root.CharStore._syncExternalCharacterRef(ch);
+      }
       root.CharStore.dispatch(plan.actions[0]);
       const out = typeof root.CharStore.getLastOutcome === 'function' ? root.CharStore.getLastOutcome() : null;
-      if (root.CharStore.isAbortedOutcome && root.CharStore.isAbortedOutcome(out)) {
+      if (!out || out.status !== 'companion_hp_adjusted') {
         return { ok: false, summary: 'Could not adjust companion HP.' };
       }
       if (typeof root.saveStateToStorage === 'function') root.saveStateToStorage(false);
       if (typeof root.renderCockpitCompanionCard === 'function') root.renderCockpitCompanionCard();
       if (typeof root.renderCoreFeatsAndSpecialAbilities === 'function') root.renderCoreFeatsAndSpecialAbilities();
       if (typeof root.renderCompanionGearView === 'function') root.renderCompanionGearView();
-      const next = out?.currentHp ?? plan.maxHp;
+      const next = out.currentHp;
       if (typeof root.showDiceTopToast === 'function') {
         root.showDiceTopToast({
           icon: plan.delta >= 0 ? '💚' : '🩸',
@@ -1561,13 +1574,14 @@
       const bonus = Number(stats.saves[key]) || 0;
       const d20 = Math.floor(Math.random() * 20) + 1;
       const total = d20 + bonus;
+      const natTag = d20 === 20 ? ' • NAT 20 (Auto-Success)' : (d20 === 1 ? ' • NAT 1 (Auto-Fail)' : '');
       const cname = comp.name || stats.baseName || 'Companion';
       const onComplete = () => {
         if (typeof root.showDiceTopToast === 'function') {
           root.showDiceTopToast({
             icon: '🛡️',
             title: `${cname} ${label} Save`,
-            breakdown: `d20: ${d20} ${bonus >= 0 ? '+' : '-'} ${Math.abs(bonus)}`,
+            breakdown: `d20: ${d20} ${bonus >= 0 ? '+' : '-'} ${Math.abs(bonus)}${natTag}`,
             total
           });
         }
@@ -1577,7 +1591,7 @@
       } else {
         onComplete();
       }
-      return { ok: true, summary: `${cname} ${label} Save: ${total} (d20: ${d20} ${_fmtSigned(bonus)}).` };
+      return { ok: true, summary: `${cname} ${label} Save: ${total} (d20: ${d20} ${_fmtSigned(bonus)}${natTag}).` };
     },
 
     async comp_switch(args) {
@@ -1588,7 +1602,14 @@
       if (!root.CharStore || typeof root.CharStore.dispatch !== 'function') {
         return { ok: false, summary: 'CharStore is unavailable on this page.' };
       }
+      if (typeof root.CharStore.getDoc === 'function' && !root.CharStore.getDoc() && typeof root.CharStore._syncExternalCharacterRef === 'function') {
+        root.CharStore._syncExternalCharacterRef(ch);
+      }
       root.CharStore.dispatch(plan.actions[0]);
+      const out = typeof root.CharStore.getLastOutcome === 'function' ? root.CharStore.getLastOutcome() : null;
+      if (!out || out.status !== 'companion_selected') {
+        return { ok: false, summary: 'Could not switch active companion.' };
+      }
       if (typeof root.saveStateToStorage === 'function') root.saveStateToStorage(false);
       if (typeof root.renderCockpitCompanionCard === 'function') root.renderCockpitCompanionCard();
       if (typeof root.renderCoreFeatsAndSpecialAbilities === 'function') root.renderCoreFeatsAndSpecialAbilities();

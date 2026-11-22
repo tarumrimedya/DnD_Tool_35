@@ -272,15 +272,19 @@
         if (!sp) return;
         const name = typeof sp === 'string' ? sp : sp.name;
         if (!name) return;
-        const lvl = typeof sp === 'object' && sp.level !== undefined ? Number(sp.level) : 0;
-        const key = `${name.toLowerCase().trim()}__${lvl}__${srcKey}`;
+        const baseLvl = typeof sp === 'object' && sp.level !== undefined ? Number(sp.level) : 0;
+        const effSlotLvl = (typeof sp === 'object') ? getCombatSpellEffectiveSlotLevel(sp) : baseLvl;
+        const metaSig = (typeof sp === 'object' && Array.isArray(sp.metamagic) && sp.metamagic.length > 0)
+          ? sp.metamagic.map(m => `${m?.featId || m?.id || m?.name || ''}:${m?.heightenTo ?? ''}`).join(',')
+          : '';
+        const key = `${name.toLowerCase().trim()}__${effSlotLvl}__${srcKey}${metaSig ? `__${metaSig}` : ''}`;
         if (seen.has(key)) return;
 
-        // Check: Does this source (Spontaneous, Prepared, Divine) have an active daily spell slot for this level?
+        // Check: Does this source (Spontaneous, Prepared, Divine) have an active daily spell slot for the effective slot level?
         // If the level is locked (daily <= 0) or no remaining daily spell slots exist (remaining <= 0), hide it on the combat page
         const slotsArr = getDerivedSpellSlotsBySource(srcKey);
 
-        const slot = slotsArr.find(s => Number(s.level) === lvl);
+        const slot = slotsArr.find(s => Number(s.level) === effSlotLvl);
         const daily = slot ? (Number(slot.daily) || 0) : 0;
         if (daily <= 0) return; // Level locked / no slot at this level for this discipline
 
@@ -292,7 +296,7 @@
         const master = (typeof masterDb !== 'undefined' && Array.isArray(masterDb))
           ? masterDb.find(m => m && m.name && m.name.toLowerCase().trim() === name.toLowerCase().trim())
           : null;
-        const obj = Object.assign({}, master || {}, typeof sp === 'object' ? sp : { name: sp, level: lvl });
+        const obj = Object.assign({}, master || {}, typeof sp === 'object' ? sp : { name: sp, level: baseLvl });
         obj._spellSource = srcKey;
         list.push(obj);
       };
@@ -308,32 +312,44 @@
     // Save DC from RuleEngine.deriveSpellsView (single source): the casting discipline's key ability,
     // ruleFlags.spellDcBonus and V3 `spell.dc` feats (Spell Focus). RAW: metamagic does not raise the
     // Save DC; only Heighten Spell does, via the modifier's dcBonus.
-    function getCombatSpellSaveDc(spell, dcBonus = 0) {
+    function getCombatSpellSaveDc(spell, armedDcDelta = 0) {
       const lvl = Number(spell?.level) || 0;
       const src = spell?._spellSource || getSpellSlotSource(spell);
       const view = typeof getSpellsView === 'function' ? getSpellsView() : null;
       const listKey = src === 'prepared' ? 'preparedSpells' : (src === 'divine' ? 'divineSpells' : 'knownSpells');
       const nameKey = String(spell?.name || '').toLowerCase().trim();
-      const enriched = (view?.spellsByLevelView?.[listKey] || []).find(s => s
-        && Number(s.level) === lvl
-        && String(s.name || '').toLowerCase().trim() === nameKey);
-      const extra = Number(dcBonus) || 0;
+      const spellArr = view?.spellsByLevelView?.[listKey] || [];
+      const enriched = (spell?.instanceId
+        ? spellArr.find(s => s && s.instanceId && String(s.instanceId) === String(spell.instanceId))
+        : null)
+        || spellArr.find(s => s
+          && Number(s.level) === lvl
+          && String(s.name || '').toLowerCase().trim() === nameKey);
+      const extra = Number(armedDcDelta) || 0;
       if (enriched && Number.isFinite(Number(enriched.saveDc))) return Number(enriched.saveDc) + extra;
+      const prepDelta = (Array.isArray(spell?.metamagic) && spell.metamagic.length > 0 && typeof RuleEngine !== 'undefined' && typeof RuleEngine.resolveMetamagic === 'function')
+        ? (Number(RuleEngine.resolveMetamagic(spell, character)?.saveDcDelta) || 0)
+        : 0;
       const base = Number(view?.casterStatsView?.[src]?.baseSaveDc);
-      return (Number.isFinite(base) ? base : 10) + lvl + extra;
+      return (Number.isFinite(base) ? base : 10) + lvl + prepDelta + extra;
     }
 
     function getCombatSpellLevelHeaderDcText(lvl, lvlSpells = [], sources = []) {
+      const dcs = [];
+      if (Array.isArray(lvlSpells) && lvlSpells.length > 0) {
+        lvlSpells.forEach(sp => {
+          const val = getCombatSpellSaveDc(sp, 0);
+          if (Number.isFinite(val) && !dcs.includes(val)) dcs.push(val);
+        });
+        if (dcs.length > 0) {
+          dcs.sort((a, b) => a - b);
+          return `DC ${dcs.join('/')}`;
+        }
+      }
       const levelNum = Number(lvl) || 0;
       const view = typeof getSpellsView === 'function' ? getSpellsView() : null;
       const discOrder = [];
-      (Array.isArray(lvlSpells) ? lvlSpells : []).forEach(sp => {
-        const sk = sp?._spellSource || (typeof getSpellSlotSource === 'function' ? getSpellSlotSource(sp) : 'spontaneous');
-        if ((sk === 'spontaneous' || sk === 'prepared' || sk === 'divine') && !discOrder.includes(sk)) {
-          discOrder.push(sk);
-        }
-      });
-      if (discOrder.length === 0 && Array.isArray(sources)) {
+      if (Array.isArray(sources)) {
         sources.forEach(src => {
           const sk = src?.key;
           if ((sk === 'spontaneous' || sk === 'prepared' || sk === 'divine') && !discOrder.includes(sk)) {
@@ -342,7 +358,6 @@
         });
       }
       if (discOrder.length === 0) discOrder.push('spontaneous');
-      const dcs = [];
       discOrder.forEach(sk => {
         const base = Number(view?.casterStatsView?.[sk]?.baseSaveDc);
         const val = Number.isFinite(base)
@@ -1873,6 +1888,10 @@
       const allSpells = getAllCharacterCombatSpells();
       let categorySpells = allSpells.filter(sp => getSpellEffectiveCategory(sp) === activeCat);
 
+      // Precompute effective slot levels once (O(n)) for sorting & grouping
+      const effLvlMap = new Map();
+      categorySpells.forEach(sp => effLvlMap.set(sp, getCombatSpellEffectiveSlotLevel(sp)));
+
       // Apply custom order if defined
       const customOrder = character?.tactical?.spellOrder?.[activeCat];
       if (Array.isArray(customOrder)) {
@@ -1882,10 +1901,10 @@
           if (idxA !== -1 && idxB !== -1) return idxA - idxB;
           if (idxA !== -1) return -1;
           if (idxB !== -1) return 1;
-          return getCombatSpellEffectiveSlotLevel(a) - getCombatSpellEffectiveSlotLevel(b);
+          return (effLvlMap.get(a) || 0) - (effLvlMap.get(b) || 0);
         });
       } else {
-        categorySpells.sort((a, b) => getCombatSpellEffectiveSlotLevel(a) - getCombatSpellEffectiveSlotLevel(b));
+        categorySpells.sort((a, b) => (effLvlMap.get(a) || 0) - (effLvlMap.get(b) || 0));
       }
 
       // Update spell count badge
@@ -1909,7 +1928,7 @@
       // Group spells by effective prepared slot level (respects per-spell Metamagic slot adjustment)
       const spellsByLevel = {};
       categorySpells.forEach(sp => {
-        const lvl = getCombatSpellEffectiveSlotLevel(sp);
+        const lvl = effLvlMap.get(sp) || 0;
         if (!spellsByLevel[lvl]) spellsByLevel[lvl] = [];
         spellsByLevel[lvl].push(sp);
       });
@@ -2070,13 +2089,13 @@
                 ? 'bg-rose-950/90 hover:bg-rose-800 text-rose-300 hover:text-white border-rose-600/80'
                 : 'bg-emerald-950/90 hover:bg-emerald-800 text-emerald-300 hover:text-white border-emerald-600/80';
               const shortText = spontMode === 'inflict' ? `Inf ${spontInfo.formula}` : `Cure ${spontInfo.formula}`;
-              bottomRightHtml = `<button type="button" data-action="combat:cast-cleric-spontaneous" data-spell-name="${attrName}" data-level="${lvl}" class="px-1.5 py-0.5 rounded border ${btnColorCls} font-mono font-bold text-[10px] leading-none inline-flex items-center justify-center gap-0.5 shrink-0 cursor-pointer transition shadow-sm" title="Cleric Spontaneous Conversion: Convert '${UI.escapeAttr(sp.name)}' into '${UI.escapeAttr(spontInfo.name)}' (${spontInfo.formula})"><span>${spontInfo.icon}</span><span>${shortText}</span></button>`;
+              bottomRightHtml = `<button type="button" data-action="combat:cast-cleric-spontaneous" data-spell-name="${attrName}" data-level="${lvl}" data-instance-id="${UI.escapeAttr(sp.instanceId || '')}" class="px-1.5 py-0.5 rounded border ${btnColorCls} font-mono font-bold text-[10px] leading-none inline-flex items-center justify-center gap-0.5 shrink-0 cursor-pointer transition shadow-sm" title="Cleric Spontaneous Conversion: Convert '${UI.escapeAttr(sp.name)}' into '${UI.escapeAttr(spontInfo.name)}' (${spontInfo.formula})"><span>${spontInfo.icon}</span><span>${shortText}</span></button>`;
             } else if (params.save && params.save !== 'None') {
-              bottomRightHtml = `<span class="truncate shrink-0 font-mono text-[10px] text-slate-500">${params.save}</span>`;
+              bottomRightHtml = `<span class="truncate shrink-0 font-mono text-[10px] text-slate-500">${UI.escapeHtml(params.save)}</span>`;
             }
           }
 
-          const bottomActionText = String(cardMm && !mmBlockedReason ? UI.escapeHtml(cardMm.castAction || '') : (params.action || '')).trim();
+          const bottomActionText = String(cardMm && !mmBlockedReason ? UI.escapeHtml(cardMm.castAction || '') : UI.escapeHtml(params.action || '')).trim();
           const centerSpontRow = hasSpontBtn;
 
           return `
@@ -2881,7 +2900,10 @@
         : null;
 
       const finalLvl = mm ? mm.effectiveSlotLevel : baseLvl;
-      const dcBonus = mm ? mm.saveDcDelta : 0;
+      const prepDcDelta = (Array.isArray(spell.metamagic) && spell.metamagic.length > 0 && typeof RuleEngine !== 'undefined' && typeof RuleEngine.resolveMetamagic === 'function')
+        ? (Number(RuleEngine.resolveMetamagic(spell, character)?.saveDcDelta) || 0)
+        : 0;
+      const dcBonus = mm ? Math.max(0, (Number(mm.saveDcDelta) || 0) - prepDcDelta) : 0;
       const dmgMode = mm ? mm.damageMode : 'normal';
       const isEmpower = dmgMode === 'empower' || dmgMode === 'maximize_and_empower';
       const isMaximize = dmgMode === 'maximize' || dmgMode === 'maximize_and_empower';
@@ -3416,7 +3438,10 @@
       }
 
       const finalLvl = mm ? mm.effectiveSlotLevel : baseLvl;
-      const dcBonus = mm ? mm.saveDcDelta : 0;
+      const prepDcDelta = (Array.isArray(spell.metamagic) && spell.metamagic.length > 0 && typeof RuleEngine !== 'undefined' && typeof RuleEngine.resolveMetamagic === 'function')
+        ? (Number(RuleEngine.resolveMetamagic(spell, character)?.saveDcDelta) || 0)
+        : 0;
+      const dcBonus = mm ? Math.max(0, (Number(mm.saveDcDelta) || 0) - prepDcDelta) : 0;
       const dmgMode = mm ? mm.damageMode : 'normal';
       const isEmpower = dmgMode === 'empower' || dmgMode === 'maximize_and_empower';
       const isMaximize = dmgMode === 'maximize' || dmgMode === 'maximize_and_empower';
@@ -15865,7 +15890,7 @@
       Actions.register('combat:cast-cleric-spontaneous', (el, data, event) => {
         if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
         if (data.spellName !== undefined) {
-          castClericSpontaneousConversion(data.spellName, Number(data.level) || 0);
+          castClericSpontaneousConversion(data.spellName, Number(data.level) || 0, data.instanceId || '');
         }
       });
       Actions.register('combat:select-spell-direct', (el, data, event) => {
