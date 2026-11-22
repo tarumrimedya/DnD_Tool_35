@@ -8279,6 +8279,131 @@ function runDeriveSheetTests() {
         ),
         JSON.stringify({ mode: clericDivView?.clericSpontaneousMode, channel: clericDivView?.energyChannel, lvl9Cure, mmConvOut, slots: clericAfter.spellcasting.divineSlots })
       );
+
+      // 4. Phase 2 ACF: Cleric Spontaneous Domain Casting (PHB II p.37) — preserves Rebuke Undead, blocks orisons, supports same-or-lower
+      const evilDomCleric = {
+        id: 'test-cleric-spont-domain',
+        name: 'Storm Cleric 7',
+        alignment: 'Neutral Evil',
+        level: 7,
+        progression: Array.from({ length: 7 }, (_, i) => ({ hd: i + 1, classId: 'cls-cleric', className: 'Cleric' })),
+        baseAbilities: { str: 12, dex: 10, con: 14, int: 10, wis: 18, cha: 12 },
+        spellcasting: {
+          domains: ['Air', 'Destruction'],
+          divineSlots: [
+            { level: 0, daily: 6, regularDaily: 6, domainDaily: 0, used: 0, domainUsed: 0 },
+            { level: 3, daily: 3, regularDaily: 2, domainDaily: 1, used: 0, domainUsed: 0 }
+          ],
+          divineSpells: [
+            { name: 'Guidance', level: 0, isCast: false },
+            { name: 'Dispel Magic', level: 3, isCast: false }
+          ]
+        }
+      };
+      CharStore.clearHistory();
+      CharStore.dispatch({ type: 'doc/replace', payload: evilDomCleric, meta: { skipHistory: true } });
+      CharStore.dispatch({
+        type: 'spells/setDivineSpontaneousConfig',
+        payload: { acf: 'domain', spontaneousDomain: 'Air' }
+      });
+      const domProfile = RuleEngine.resolveDivineSpontaneousProfile(CharStore.getDoc());
+      const airSpells = [
+        { level: 1, id: 'spl-obscuring-mist', name: 'Obscuring Mist' },
+        { level: 2, id: 'spl-wind-wall', name: 'Wind Wall' },
+        { level: 3, id: 'spl-gaseous-form', name: 'Gaseous Form' }
+      ];
+      const domTarget3 = RuleEngine.rulesets.dnd35.resolveDivineSpontaneousTarget('domain', 3, 7, { domainName: 'Air', domainSpells: airSpells });
+      const domTargetLower = RuleEngine.rulesets.dnd35.resolveDivineSpontaneousTarget('domain', 3, 7, { domainName: 'Air', domainSpells: airSpells, targetLevel: 2 });
+      CharStore.dispatch({
+        type: 'spells/castSpell',
+        payload: { discipline: 'divineConversion', index: 0, spellLevel: 0, conversionType: 'domain', convName: 'Obscuring Mist' }
+      });
+      const domOrisonBlocked = CharStore.getLastOutcome();
+      CharStore.dispatch({
+        type: 'spells/castSpell',
+        payload: { discipline: 'divineConversion', index: 1, spellLevel: 3, conversionType: 'domain', convName: 'Gaseous Form', actionType: 'standard' }
+      });
+      const domCastOut = CharStore.getLastOutcome();
+      check(
+        'Divine Spont Phase 2 (Cleric Domain ACF): switches to domain while preserving Evil energyChannel/Rebuke, blocks orisons, supports same-or-lower',
+        Boolean(
+          domProfile.conversionType === 'domain' &&
+          domProfile.spontaneousDomain === 'Air' &&
+          domProfile.energyChannel === 'negative' &&
+          domProfile.isRebuke === true &&
+          domTarget3 && domTarget3.name === 'Gaseous Form' &&
+          domTargetLower && domTargetLower.name === 'Wind Wall' && domTargetLower.slotLevel === 3 && domTargetLower.targetLevel === 2 &&
+          domOrisonBlocked?.status === 'invalid_payload' && domOrisonBlocked?.reason === 'orison_cannot_convert_to_domain' &&
+          domCastOut?.status === 'spell_cast'
+        ),
+        JSON.stringify({ domProfile, domTarget3, domTargetLower, domOrisonBlocked, domCastOut })
+      );
+
+      // 5. Phase 2 ACF: Druid Spontaneous Rejuvenation (PHB II p.39) — replaces SNA, blocks orisons, applies atomic non-stacking Fast Healing buff
+      const rejuvDruid = {
+        id: 'test-druid-rejuv',
+        name: 'Grove Druid 7',
+        alignment: 'Neutral Good',
+        level: 7,
+        progression: Array.from({ length: 7 }, (_, i) => ({ hd: i + 1, classId: 'cls-druid', className: 'Druid' })),
+        baseAbilities: { str: 10, dex: 12, con: 14, int: 10, wis: 18, cha: 12 },
+        activeBuffs: [{ id: 'buff-minor-fh', name: 'Minor Regeneration', active: true, effects: [{ type: 'defense', fastHealing: 2 }] }],
+        spellcasting: {
+          divineSlots: [
+            { level: 0, daily: 6, regularDaily: 6, domainDaily: 0, used: 0, domainUsed: 0 },
+            { level: 4, daily: 2, regularDaily: 2, domainDaily: 0, used: 0, domainUsed: 0 }
+          ],
+          divineSpells: [
+            { name: 'Light', level: 0, isCast: false },
+            { name: 'Flame Strike', level: 4, isCast: false }
+          ]
+        }
+      };
+      CharStore.clearHistory();
+      CharStore.dispatch({ type: 'doc/replace', payload: rejuvDruid, meta: { skipHistory: true } });
+      CharStore.dispatch({
+        type: 'spells/setDivineSpontaneousConfig',
+        payload: { acf: 'rejuvenation' }
+      });
+      const rejuvProfile = RuleEngine.resolveDivineSpontaneousProfile(CharStore.getDoc());
+      const rejuvTarget4 = RuleEngine.rulesets.dnd35.resolveDivineSpontaneousTarget('rejuvenation', 4, 7);
+      CharStore.dispatch({
+        type: 'spells/castSpell',
+        payload: { discipline: 'divineConversion', index: 0, spellLevel: 0, conversionType: 'rejuvenation', convName: 'Spontaneous Rejuvenation' }
+      });
+      const rejuvOrisonBlocked = CharStore.getLastOutcome();
+      CharStore.dispatch({
+        type: 'spells/castSpell',
+        payload: {
+          discipline: 'divineConversion',
+          index: 1,
+          spellLevel: 4,
+          conversionType: 'rejuvenation',
+          convName: rejuvTarget4.name,
+          actionType: 'standard',
+          buffEntry: {
+            id: 'buff-spontaneous-rejuvenation',
+            name: 'Spontaneous Rejuvenation',
+            durationText: '3 rounds (30 ft. aura)',
+            active: true,
+            effects: [{ type: 'defense', fastHealing: 4 }]
+          }
+        }
+      });
+      const rejuvCastOut = CharStore.getLastOutcome();
+      const rejuvDerived = RuleEngine.deriveSheet(CharStore.getDoc());
+      const fhVal = Number(rejuvDerived?.defenses?.fastHealing ?? rejuvDerived?.evaluatedDefenses?.fastHealing) || 0;
+      check(
+        'Divine Spont Phase 2 (Druid Rejuvenation ACF): replaces SNA, blocks orisons, applies atomic non-stacking Fast Healing 4 (max(2,4)=4)',
+        Boolean(
+          rejuvProfile.conversionType === 'rejuvenation' &&
+          rejuvTarget4 && rejuvTarget4.fastHealing === 4 && rejuvTarget4.actionType === 'standard' &&
+          rejuvOrisonBlocked?.status === 'invalid_payload' && rejuvOrisonBlocked?.reason === 'orison_cannot_convert_to_rejuvenation' &&
+          rejuvCastOut?.status === 'spell_cast' && rejuvCastOut?.buffActivated === true &&
+          fhVal === 4
+        ),
+        JSON.stringify({ rejuvProfile, rejuvTarget4, rejuvOrisonBlocked, rejuvCastOut, fhVal })
+      );
     }
   }
 

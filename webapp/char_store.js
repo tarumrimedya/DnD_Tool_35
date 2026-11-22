@@ -4041,8 +4041,11 @@
           });
           return doc;
         }
-        if (reqConvType === 'sna' && lvl < 1) {
-          setStoreOutcome(stateObj, { status: 'invalid_payload', reason: 'orison_cannot_convert_to_sna' });
+        if ((reqConvType === 'sna' || reqConvType === 'domain' || reqConvType === 'rejuvenation') && lvl < 1) {
+          const reason = reqConvType === 'domain'
+            ? 'orison_cannot_convert_to_domain'
+            : (reqConvType === 'rejuvenation' ? 'orison_cannot_convert_to_rejuvenation' : 'orison_cannot_convert_to_sna');
+          setStoreOutcome(stateObj, { status: 'invalid_payload', reason });
           return doc;
         }
       }
@@ -4687,6 +4690,29 @@
       status: 'cleric_spont_mode_updated',
       mode: nextMode,
       energyChannel: doc.spellcasting.energyChannel
+    });
+    return doc;
+  });
+
+  // 6b. 'spells/setDivineSpontaneousConfig' ({ acf, spontaneousDomain, divineSpontaneousChannel })
+  CharStore.registerReducer('spells/setDivineSpontaneousConfig', (doc, action, stateObj) => {
+    ensureSpellsDocStructures(doc);
+    const payload = (action && action.payload) || {};
+    if (payload.acf !== undefined) {
+      const cleanAcf = String(payload.acf || 'default').toLowerCase().trim();
+      doc.spellcasting.divineSpontaneousAcf = ['default', 'domain', 'rejuvenation'].includes(cleanAcf) ? cleanAcf : 'default';
+    }
+    if (payload.spontaneousDomain !== undefined) {
+      doc.spellcasting.spontaneousDomain = payload.spontaneousDomain ? String(payload.spontaneousDomain).trim() : '';
+    }
+    if (payload.divineSpontaneousChannel !== undefined) {
+      doc.spellcasting.divineSpontaneousChannel = payload.divineSpontaneousChannel ? String(payload.divineSpontaneousChannel).toLowerCase().trim() : '';
+    }
+    setStoreOutcome(stateObj, {
+      status: 'divine_spont_config_updated',
+      acf: doc.spellcasting.divineSpontaneousAcf || 'default',
+      spontaneousDomain: doc.spellcasting.spontaneousDomain || '',
+      divineSpontaneousChannel: doc.spellcasting.divineSpontaneousChannel || ''
     });
     return doc;
   });

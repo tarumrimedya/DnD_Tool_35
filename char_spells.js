@@ -2052,21 +2052,24 @@
         : null;
       const energyPolicy = (typeof resolveClericEnergyPolicy === 'function') ? resolveClericEnergyPolicy(char) : null;
       if (base) {
-        // Sync alignment + deity policy (deity lookup lives in char_spells.js)
         const forcedMode = energyPolicy && energyPolicy.forcedMode ? energyPolicy.forcedMode : null;
         if (forcedMode) {
           const energyChannel = forcedMode === 'inflict' ? 'negative' : 'positive';
+          const clericConvType = base.hasDomainAcf ? 'domain' : forcedMode;
+          const druidConvType = base.hasRejuvAcf ? 'rejuvenation' : 'sna';
           const allowedTypes = [];
-          if (base.hasCleric) allowedTypes.push(forcedMode);
-          if (base.hasDruid) allowedTypes.push('sna');
-          const conversionType = base.conversionType === 'sna'
-            ? 'sna'
-            : (base.hasCleric ? forcedMode : base.conversionType);
+          if (base.hasCleric) allowedTypes.push(clericConvType);
+          if (base.hasDruid) allowedTypes.push(druidConvType);
+          const conversionType = (base.conversionType === 'sna' || base.conversionType === 'rejuvenation')
+            ? druidConvType
+            : (base.hasCleric ? clericConvType : base.conversionType);
           return {
             ...base,
             energyChannel,
             isRebuke: energyChannel === 'negative',
             clericMode: forcedMode,
+            clericConvType,
+            druidConvType,
             allowedTypes,
             conversionType
           };
@@ -2081,6 +2084,10 @@
         energyChannel: mode === 'inflict' ? 'negative' : 'positive',
         isRebuke: mode === 'inflict',
         clericMode: mode,
+        acf: 'default',
+        hasDomainAcf: false,
+        hasRejuvAcf: false,
+        spontaneousDomain: null,
         canConvert: false,
         conversionType: null,
         allowedTypes: [],
@@ -2090,23 +2097,153 @@
       };
     }
 
-    function getDivineSpontaneousTargetInfo(lvl, cl = 6, conversionType = 'cure') {
+    function getDivineSpontaneousTargetInfo(lvl, cl = 6, conversionType = 'cure', opts = {}) {
       const type = String(conversionType || '').toLowerCase().trim();
       if (!type) return null;
       const baseCl = Math.max(1, Number(cl) || 6);
       const effCl = type === 'cure'
         ? getSpellEffectiveCl({ name: 'Cure Light Wounds', school: 'Conjuration', subschool: 'healing' }, baseCl)
         : baseCl;
+      const resolvedOpts = { ...(opts || {}) };
+      if (type === 'domain' && (!resolvedOpts.domainName || !Array.isArray(resolvedOpts.domainSpells))) {
+        const profile = getDivineSpontaneousProfile(character);
+        const chosenDoms = (typeof getCharacterClericDomains === 'function') ? getCharacterClericDomains(character) : [];
+        const domName = resolvedOpts.domainName || profile.spontaneousDomain || chosenDoms[0] || '';
+        const catalog = (typeof getClericDomainsCatalog === 'function') ? getClericDomainsCatalog() : {};
+        const domObj = domName ? catalog[domName] : null;
+        if (domName) resolvedOpts.domainName = domName;
+        if (domObj && Array.isArray(domObj.spells)) resolvedOpts.domainSpells = domObj.spells;
+      }
       const rs = (typeof RuleEngine !== 'undefined' && RuleEngine.rulesets && RuleEngine.rulesets.dnd35) || null;
       if (rs && typeof rs.resolveDivineSpontaneousTarget === 'function') {
-        return rs.resolveDivineSpontaneousTarget(type, lvl, effCl);
+        return rs.resolveDivineSpontaneousTarget(type, lvl, effCl, resolvedOpts);
       }
       return null;
     }
 
-    function getClericSpontaneousSpellInfo(lvl, cl = 6, mode = 'cure') {
-      const normalized = mode === 'inflict' ? 'inflict' : (mode === 'sna' ? 'sna' : 'cure');
-      return getDivineSpontaneousTargetInfo(lvl, cl, normalized);
+    function getClericSpontaneousSpellInfo(lvl, cl = 6, mode = 'cure', opts = {}) {
+      const low = String(mode || 'cure').toLowerCase().trim();
+      const normalized = ['inflict', 'sna', 'domain', 'rejuvenation'].includes(low) ? low : 'cure';
+      return getDivineSpontaneousTargetInfo(lvl, cl, normalized, opts);
+    }
+
+    function openDivineSpontaneousConfigModal() {
+      const existing = document.getElementById('divineSpontaneousConfigModal');
+      if (existing) existing.remove();
+      const profile = getDivineSpontaneousProfile(character);
+      const energyPolicy = resolveClericEnergyPolicy(character);
+      const chosenDomains = (typeof getCharacterClericDomains === 'function') ? getCharacterClericDomains(character) : [];
+      const curAcf = profile.acf || 'default';
+      const curDom = profile.spontaneousDomain || chosenDomains[0] || '';
+      const curChannelPref = String(character?.spellcasting?.divineSpontaneousChannel || (profile.conversionType === 'sna' || profile.conversionType === 'rejuvenation' ? 'druid' : 'cleric')).toLowerCase();
+
+      const modal = document.createElement('div');
+      modal.id = 'divineSpontaneousConfigModal';
+      modal.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4';
+      modal.innerHTML = `
+        <div class="bg-slate-900 border border-amber-500/60 rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
+          <div class="px-4 py-3 bg-slate-950 border-b border-slate-800 flex items-center justify-between">
+            <h3 class="text-sm font-extrabold text-amber-300 flex items-center gap-2">
+              <span>✨</span>
+              <span>Divine Spontaneous Casting (3.5e RAW)</span>
+            </h3>
+            <button type="button" data-action="spells:close-spontaneous-config" class="text-slate-400 hover:text-white text-sm font-bold px-2 py-0.5 rounded cursor-pointer">✕</button>
+          </div>
+          <div class="p-4 space-y-3 text-xs text-slate-200">
+            ${profile.hasCleric ? `
+              <div class="space-y-2 p-3 rounded-lg bg-slate-950/80 border border-slate-800">
+                <div class="font-bold text-amber-300">Cleric Spontaneous Casting</div>
+                <label class="flex items-start gap-2 cursor-pointer">
+                  <input type="radio" name="divine-spont-acf" value="default" ${curAcf !== 'domain' ? 'checked' : ''} class="mt-0.5">
+                  <span><strong>Standard (PHB p. 32):</strong> Convert non-domain spells into <strong>${profile.clericMode === 'inflict' ? 'Inflict Wounds' : 'Cure Wounds'}</strong> (Level 0–9).</span>
+                </label>
+                ${!energyPolicy.locked ? `
+                  <div class="pl-4">
+                    <button type="button" data-action="spells:toggle-cleric-spontaneous" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 border border-slate-600 text-[11px] font-bold text-amber-200 cursor-pointer">
+                      Switch Positive / Negative Energy (${profile.clericMode === 'cure' ? '💚 Cure' : '💀 Inflict'})
+                    </button>
+                  </div>
+                ` : `<div class="pl-4 text-[11px] text-slate-400">🔒 ${UI.escapeHtml(energyPolicy.reason)}</div>`}
+                <label class="flex items-start gap-2 cursor-pointer pt-1">
+                  <input type="radio" name="divine-spont-acf" value="domain" ${curAcf === 'domain' ? 'checked' : ''} class="mt-0.5">
+                  <span><strong>Spontaneous Domain Casting (PHB II p. 37 ACF):</strong> Replaces Cure/Inflict conversion with your chosen Domain's spells (Level 1–9). Turn/Rebuke Undead is unchanged.</span>
+                </label>
+                <div class="pl-4">
+                  <label class="block text-[11px] text-slate-400 mb-1">Spontaneous Domain:</label>
+                  <select id="divine-spont-domain-select" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
+                    ${chosenDomains.length > 0
+                      ? chosenDomains.map(d => `<option value="${UI.escapeAttr(d)}" ${d === curDom ? 'selected' : ''}>${UI.escapeHtml(d)} Domain</option>`).join('')
+                      : '<option value="">Select Cleric Domains first</option>'
+                    }
+                  </select>
+                </div>
+              </div>
+            ` : ''}
+            ${profile.hasDruid ? `
+              <div class="space-y-2 p-3 rounded-lg bg-slate-950/80 border border-slate-800">
+                <div class="font-bold text-emerald-300">Druid Spontaneous Casting</div>
+                <label class="flex items-start gap-2 cursor-pointer">
+                  <input type="radio" name="divine-spont-druid-acf" value="default" ${curAcf !== 'rejuvenation' ? 'checked' : ''} class="mt-0.5">
+                  <span><strong>Summon Nature's Ally (PHB p. 35):</strong> Convert prepared spells (Level 1–9) into <strong>Summon Nature's Ally I–IX</strong> (1 Round casting time).</span>
+                </label>
+                <label class="flex items-start gap-2 cursor-pointer pt-1">
+                  <input type="radio" name="divine-spont-druid-acf" value="rejuvenation" ${curAcf === 'rejuvenation' ? 'checked' : ''} class="mt-0.5">
+                  <span><strong>Spontaneous Rejuvenation (PHB II p. 39 ACF):</strong> Replaces SNA; expend a Level 1–9 spell (Standard Action) to grant allies within 30 ft. <strong>Fast Healing = Spell Level</strong> for 3 rounds.</span>
+                </label>
+              </div>
+            ` : ''}
+            ${(profile.hasCleric && profile.hasDruid) ? `
+              <div class="space-y-1 p-3 rounded-lg bg-slate-950/80 border border-slate-800">
+                <div class="font-bold text-sky-300">Active Multiclass Conversion Channel</div>
+                <select id="divine-spont-channel-select" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
+                  <option value="cleric" ${curChannelPref === 'cleric' ? 'selected' : ''}>Cleric (${profile.hasDomainAcf ? 'Spontaneous Domain' : (profile.clericMode === 'inflict' ? 'Inflict Wounds' : 'Cure Wounds')})</option>
+                  <option value="druid" ${curChannelPref === 'druid' ? 'selected' : ''}>Druid (${profile.hasRejuvAcf ? 'Spontaneous Rejuvenation' : "Summon Nature's Ally"})</option>
+                </select>
+              </div>
+            ` : ''}
+          </div>
+          <div class="px-4 py-3 bg-slate-950 border-t border-slate-800 flex justify-end gap-2">
+            <button type="button" data-action="spells:close-spontaneous-config" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold cursor-pointer">Cancel</button>
+            <button type="button" data-action="spells:apply-spontaneous-config" class="px-3.5 py-1.5 rounded-lg bg-amber-700 hover:bg-amber-600 text-white text-xs font-bold cursor-pointer">Save</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+
+    function applyDivineSpontaneousConfigModal() {
+      const modal = document.getElementById('divineSpontaneousConfigModal');
+      if (!modal) return;
+      const profile = getDivineSpontaneousProfile(character);
+      const clericRadio = modal.querySelector('input[name="divine-spont-acf"]:checked');
+      const druidRadio = modal.querySelector('input[name="divine-spont-druid-acf"]:checked');
+      const domSel = modal.querySelector('#divine-spont-domain-select');
+      const chanSel = modal.querySelector('#divine-spont-channel-select');
+
+      let acf = 'default';
+      if (profile.hasCleric && clericRadio && clericRadio.value === 'domain') acf = 'domain';
+      else if (profile.hasDruid && druidRadio && druidRadio.value === 'rejuvenation') acf = 'rejuvenation';
+
+      const payload = {
+        acf,
+        spontaneousDomain: domSel ? domSel.value : undefined,
+        divineSpontaneousChannel: chanSel ? chanSel.value : undefined
+      };
+      if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
+        CharStore.dispatch({
+          type: 'spells/setDivineSpontaneousConfig',
+          payload,
+          meta: { label: `Update Divine Spontaneous Casting (${acf})` }
+        });
+      } else {
+        if (!character.spellcasting) character.spellcasting = {};
+        character.spellcasting.divineSpontaneousAcf = acf;
+        if (payload.spontaneousDomain !== undefined) character.spellcasting.spontaneousDomain = payload.spontaneousDomain;
+        if (payload.divineSpontaneousChannel !== undefined) character.spellcasting.divineSpontaneousChannel = payload.divineSpontaneousChannel;
+        saveStateToStorage(true);
+      }
+      modal.remove();
+      renderAll();
     }
 
     function toggleClericSpontaneousMode() {
@@ -2206,17 +2343,32 @@
         return;
       }
       const convType = spontProfile.conversionType;
-      if (convType === 'sna' && lvl < 1) {
+      if ((convType === 'sna' || convType === 'domain' || convType === 'rejuvenation') && lvl < 1) {
+        const msg = convType === 'domain'
+          ? 'D&D 3.5e RAW (PHB II p.37): 0-level orisons cannot be converted into Domain spells (minimum Level 1).'
+          : (convType === 'rejuvenation'
+            ? 'D&D 3.5e RAW (PHB II p.39): 0-level orisons cannot be expended for Spontaneous Rejuvenation (minimum Level 1).'
+            : 'D&D 3.5e RAW (PHB p.35): Druids cannot convert 0-level orisons into Summon Nature\'s Ally (minimum Level 1 spell slot).');
         showDiceTopToast({
-          icon: '🐺',
+          icon: convType === 'domain' ? '⚜️' : (convType === 'rejuvenation' ? '🌿' : '🐺'),
           title: 'Orison Restriction',
-          breakdown: 'D&D 3.5e RAW (PHB p.35): Druids cannot convert 0-level orisons into Summon Nature\'s Ally (minimum Level 1 spell slot).',
+          breakdown: msg,
           total: 'Not Allowed'
         });
         return;
       }
       const spont = getDivineSpontaneousTargetInfo(lvl, cl, convType);
-      if (!spont) return;
+      if (!spont) {
+        if (convType === 'domain') {
+          showDiceTopToast({
+            icon: '⚜️',
+            title: 'Select a Spontaneous Domain',
+            breakdown: 'Choose your Cleric Domains and select a Spontaneous Domain in the Spontaneous Casting settings.',
+            total: 'No Domain'
+          });
+        }
+        return;
+      }
 
       const spellsView = getSpellsView();
       const slot = spellsView?.slotsByLevelView?.divine?.[lvl] || character.spellcasting?.divineSlots?.find(sl => Number(sl.level) === lvl);
@@ -2225,6 +2377,17 @@
       if (slot && regUsed < regDaily && slot.used < slot.daily) {
         const resolvedIdx = typeof spellIdxOrName === 'number' ? spellIdxOrName : divList.indexOf(s);
         const actionType = spont.actionType || 'standard';
+        const rejuvBuffEntry = convType === 'rejuvenation'
+          ? {
+            id: 'buff-spontaneous-rejuvenation',
+            name: 'Spontaneous Rejuvenation',
+            source: 'Druid ACF (PHB II p.39)',
+            durationText: '3 rounds (30 ft. aura)',
+            roundsRemaining: 3,
+            active: true,
+            effects: [{ type: 'defense', fastHealing: spont.fastHealing || lvl }]
+          }
+          : null;
         if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
           CharStore.dispatch({
             type: 'spells/castSpell',
@@ -2243,7 +2406,8 @@
               convSpellId: spont.id,
               convName: spont.name,
               actionType,
-              actionLabel: spont.name
+              actionLabel: spont.name,
+              ...(rejuvBuffEntry ? { buffEntry: rejuvBuffEntry } : {})
             },
             meta: { label: `Spontaneous Conversion (${s.name} ➔ ${spont.name})` }
           });
@@ -2257,12 +2421,17 @@
           if (typeof consumeActionEconomy === 'function') consumeActionEconomy(actionType, spont.name);
         }
         renderAll();
-        if (spont.effectType === 'summon' || !spont.formula) {
+        if (spont.effectType === 'summon' || spont.effectType === 'buff' || spont.effectType === 'domain_spell' || !spont.formula) {
+          const detailSuffix = spont.effectType === 'buff'
+            ? `30 ft. Aura • Fast Healing ${spont.fastHealing || lvl} for 3 rounds`
+            : (spont.effectType === 'domain_spell'
+              ? `${spont.domainName || 'Domain'} Domain • ${spont.castingTime || 'Standard Action'}`
+              : `${spont.castingTime || '1 Round'} • Duration: ${spont.durationText || `${cl} rounds`}`);
           showDiceTopToast({
-            icon: spont.icon || '🐺',
+            icon: spont.icon || '✨',
             title: spont.name,
-            breakdown: `${s.name} ➔ ${spont.name} (Level ${lvl} • -1 Slot • ${spont.castingTime || '1 Round'} • Duration: ${spont.durationText || `${cl} rounds`})`,
-            total: `CL ${cl}`
+            breakdown: `${s.name} ➔ ${spont.name} (Level ${lvl} • -1 Slot • ${detailSuffix})`,
+            total: spont.effectType === 'buff' ? `FH +${spont.fastHealing || lvl}` : `CL ${cl}`
           });
         } else {
           rollSpellOrManeuverFormula(
@@ -2593,22 +2762,32 @@
         const spontInfo = convType ? getDivineSpontaneousTargetInfo(spontSlotLvl, cl, convType) : null;
         const isAlreadyTarget = convType === 'sna'
           ? /^summon nature'?s ally\b/i.test((s.name || '').trim())
-          : (convType === 'inflict'
-            ? /^(inflict|mass inflict)\b/i.test((s.name || '').trim())
-            : /^(cure|mass cure)\b/i.test((s.name || '').trim()));
-        // D&D 3.5e RAW: Cleric (PHB p.32) Cure/Inflict (non-domain); Druid (PHB p.35) Summon Nature's Ally (lvl 1-9); Paladin/Ranger none
+          : (convType === 'domain'
+            ? Boolean(spontInfo && (s.name || '').toLowerCase().trim() === (spontInfo.name || '').toLowerCase().trim())
+            : (convType === 'rejuvenation'
+              ? false
+              : (convType === 'inflict'
+                ? /^(inflict|mass inflict)\b/i.test((s.name || '').trim())
+                : /^(cure|mass cure)\b/i.test((s.name || '').trim()))));
+        // D&D 3.5e RAW: Cleric Cure/Inflict or Domain ACF; Druid SNA or Rejuvenation ACF; Paladin/Ranger none
         const showSpontBtn = Boolean(spontProfile.canConvert && spontInfo && !isAlreadyTarget && !isDom);
         const spontColorCls = convType === 'inflict'
           ? 'bg-rose-950/90 hover:bg-rose-800 text-rose-300 hover:text-white border-rose-600/80 cursor-pointer shadow'
-          : 'bg-emerald-950/90 hover:bg-emerald-800 text-emerald-300 hover:text-white border-emerald-600/80 cursor-pointer shadow';
+          : (convType === 'domain'
+            ? 'bg-amber-950/90 hover:bg-amber-800 text-amber-300 hover:text-white border-amber-500/80 cursor-pointer shadow'
+            : 'bg-emerald-950/90 hover:bg-emerald-800 text-emerald-300 hover:text-white border-emerald-600/80 cursor-pointer shadow');
         const spontIconHtml = spontInfo && spontInfo.formula
           ? getFormulaDiceIconSvg(spontInfo.formula, convType === 'inflict' ? 'w-3.5 h-3.5 text-rose-300 shrink-0' : 'w-3.5 h-3.5 text-emerald-300 shrink-0')
-          : `<span>${spontInfo ? spontInfo.icon : '🐺'}</span>`;
+          : `<span>${spontInfo ? spontInfo.icon : '✨'}</span>`;
         const spontTitle = spontInfo
           ? (hasActiveSlot
             ? (convType === 'sna'
               ? `Druid Spontaneous Conversion (PHB p.35): Convert '${s.name}' (Level ${spontSlotLvl} slot) into '${spontInfo.name}' (${spontInfo.castingTime})`
-              : `Cleric Spontaneous Conversion (PHB p.32): Convert '${s.name}' (Level ${spontSlotLvl} slot) into '${spontInfo.name}' (${spontInfo.formula})`)
+              : (convType === 'rejuvenation'
+                ? `Druid Spontaneous Rejuvenation (PHB II p.39): Expend '${s.name}' (Level ${spontSlotLvl} slot) for Fast Healing ${spontInfo.fastHealing} (3 rounds, 30 ft. aura)`
+                : (convType === 'domain'
+                  ? `Cleric Spontaneous Domain Casting (PHB II p.37): Convert '${s.name}' (Level ${spontSlotLvl} slot) into '${spontInfo.name}' (${spontInfo.domainName} Domain)`
+                  : `Cleric Spontaneous Conversion (PHB p.32): Convert '${s.name}' (Level ${spontSlotLvl} slot) into '${spontInfo.name}' (${spontInfo.formula})`)))
             : '⚠️ No active spell slots remaining (0 Left)')
           : '';
         const spontBtnHtml = showSpontBtn ? `
@@ -2889,28 +3068,41 @@
             </div>
             <div class="flex flex-wrap items-center gap-2">
               ${(() => {
-                const activeClsMap = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getActiveClassLevels === 'function')
-                  ? RuleEngine.getActiveClassLevels(character, { includeNpc: true })
-                  : {};
-                const hasClericCls = Object.keys(activeClsMap).some(k => /\bcleric\b/i.test(k));
-                const hasDruidCls = Object.keys(activeClsMap).some(k => /\bdruid\b/i.test(k));
-                if (hasClericCls) {
-                  return `<button type="button" data-action="spells:toggle-cleric-spontaneous" class="${
-                    spontMode === 'cure'
-                      ? 'bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border-emerald-500/80'
-                      : 'bg-rose-950 hover:bg-rose-900 text-rose-300 border-rose-500/80'
-                  } h-8 px-3 border text-xs font-bold rounded-lg shadow transition inline-flex items-center justify-center gap-1.5 cursor-pointer" title="${UI.escapeAttr(energyPolicy.reason)}">
-                    <span>${spontMode === 'cure' ? '💚' : '💀'}</span>
-                    <span>Spontaneous: ${spontMode === 'cure' ? 'Cure Wounds' : 'Inflict Wounds'}${energyPolicy.locked ? ' 🔒' : ''}</span>
-                  </button>`;
-                }
-                if (hasDruidCls) {
-                  return `<span class="h-8 px-3 rounded-lg bg-emerald-950 text-emerald-300 border border-emerald-500/80 text-xs font-bold inline-flex items-center gap-1.5" title="D&amp;D 3.5e RAW (PHB p.35): Druids can spontaneously convert any prepared spell into Summon Nature's Ally of the same level or lower.">
-                    <span>🐺</span>
-                    <span>Spontaneous: Summon Nature's Ally</span>
-                  </span>`;
-                }
-                return '';
+                if (!spontProfile || !spontProfile.canConvert) return '';
+                const ct = spontProfile.conversionType;
+                const badgeCfg = ct === 'domain'
+                  ? {
+                    cls: 'bg-amber-950 hover:bg-amber-900 text-amber-200 border-amber-500/80',
+                    icon: '⚜️',
+                    label: `Spontaneous: ${spontProfile.spontaneousDomain ? `${spontProfile.spontaneousDomain} Domain` : 'Domain (Select)'}`,
+                    tip: 'Spontaneous Domain Casting (PHB II p.37 ACF) — Click to configure'
+                  }
+                  : (ct === 'rejuvenation'
+                    ? {
+                      cls: 'bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border-emerald-500/80',
+                      icon: '🌿',
+                      label: 'Spontaneous: Rejuvenation',
+                      tip: 'Spontaneous Rejuvenation (PHB II p.39 ACF) — Click to configure'
+                    }
+                    : (ct === 'sna'
+                      ? {
+                        cls: 'bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border-emerald-500/80',
+                        icon: '🐺',
+                        label: "Spontaneous: Summon Nature's Ally",
+                        tip: "D&D 3.5e RAW (PHB p.35): Druids convert prepared spells into Summon Nature's Ally — Click to configure ACF"
+                      }
+                      : {
+                        cls: ct === 'inflict'
+                          ? 'bg-rose-950 hover:bg-rose-900 text-rose-300 border-rose-500/80'
+                          : 'bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border-emerald-500/80',
+                        icon: ct === 'inflict' ? '💀' : '💚',
+                        label: `Spontaneous: ${ct === 'inflict' ? 'Inflict Wounds' : 'Cure Wounds'}${energyPolicy.locked ? ' 🔒' : ''}`,
+                        tip: `${energyPolicy.reason} — Click to configure`
+                      }));
+                return `<button type="button" data-action="spells:open-spontaneous-config" class="${badgeCfg.cls} h-8 px-3 border text-xs font-bold rounded-lg shadow transition inline-flex items-center justify-center gap-1.5 cursor-pointer" title="${UI.escapeAttr(badgeCfg.tip)}">
+                  <span>${badgeCfg.icon}</span>
+                  <span>${UI.escapeHtml(badgeCfg.label)}</span>
+                </button>`;
               })()}
               <span class="h-8 px-2.5 rounded-lg bg-emerald-950 text-emerald-300 border border-emerald-600 text-xs font-bold inline-flex items-center">🛡️ ASF: 0%</span>
               <button data-action="spells:restore-all-divine" class="w-40 h-8 bg-amber-800 hover:bg-amber-700 text-white text-xs font-bold px-3 rounded-lg border border-amber-500/50 shadow transition inline-flex items-center justify-center gap-1.5 cursor-pointer">
@@ -13082,6 +13274,16 @@
           CharStore.dispatch({ type: 'spells/removeFromSpellbook', payload: { entryId: data.entryId }, meta: { label: 'Remove Spellbook Entry' } });
           renderAll({ skipRecompute: true });
         }
+      });
+      Actions.register('spells:open-spontaneous-config', (el, data, event) => {
+        openDivineSpontaneousConfigModal();
+      });
+      Actions.register('spells:apply-spontaneous-config', (el, data, event) => {
+        applyDivineSpontaneousConfigModal();
+      });
+      Actions.register('spells:close-spontaneous-config', (el, data, event) => {
+        const m = document.getElementById('divineSpontaneousConfigModal');
+        if (m) m.remove();
       });
       Actions.register('spells:restore-all-prepared', (el, data, event) => {
         restoreAllPreparedSlots();

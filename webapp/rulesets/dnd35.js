@@ -436,22 +436,26 @@
     ]
   };
 
-  function resolveDivineSpontaneousTarget(conversionType, slotLevel, effectiveCl = 1) {
+  function resolveDivineSpontaneousTarget(conversionType, slotLevel, effectiveCl = 1, opts = {}) {
     const type = String(conversionType || '').toLowerCase().trim();
     const numLvl = Number(slotLevel);
     if (!Number.isFinite(numLvl) || numLvl < 0 || numLvl > 9) return null;
+    const slotLvl = Math.floor(numLvl);
+    const reqTarget = (opts && opts.targetLevel !== undefined && opts.targetLevel !== null && Number.isFinite(Number(opts.targetLevel)))
+      ? Math.min(slotLvl, Math.max(0, Math.floor(Number(opts.targetLevel))))
+      : slotLvl;
     const cl = Math.max(1, Math.floor(Number(effectiveCl) || 1));
 
     if (type === 'sna') {
-      if (numLvl < 1 || numLvl > 9) return null;
-      const entry = DIVINE_SPONTANEOUS_TABLES.sna[Math.floor(numLvl)];
+      if (slotLvl < 1 || reqTarget < 1 || reqTarget > 9) return null;
+      const entry = DIVINE_SPONTANEOUS_TABLES.sna[reqTarget];
       if (!entry) return null;
       return {
         conversionType: 'sna',
         id: entry.id,
         name: entry.name,
         targetLevel: entry.level,
-        slotLevel: Math.floor(numLvl),
+        slotLevel: slotLvl,
         formula: null,
         effectType: 'summon',
         shortLabel: `SNA ${entry.roman}`,
@@ -463,9 +467,59 @@
       };
     }
 
+    if (type === 'rejuvenation') {
+      // PHB II p. 39 (Druid ACF: Spontaneous Rejuvenation): Level 1-9 slot -> Fast Healing = spell level for 3 rounds (30 ft. aura)
+      if (slotLvl < 1 || slotLvl > 9) return null;
+      return {
+        conversionType: 'rejuvenation',
+        id: 'acf-spontaneous-rejuvenation',
+        name: `Spontaneous Rejuvenation (+${slotLvl} Fast Healing)`,
+        targetLevel: slotLvl,
+        slotLevel: slotLvl,
+        formula: null,
+        effectType: 'buff',
+        fastHealing: slotLvl,
+        durationRounds: 3,
+        radiusFt: 30,
+        shortLabel: `Rejuv (+${slotLvl} FH)`,
+        compactLabel: `FH +${slotLvl}`,
+        icon: '🌿',
+        actionType: 'standard',
+        castingTime: 'Standard Action',
+        durationText: '3 rounds (30 ft. aura)'
+      };
+    }
+
+    if (type === 'domain') {
+      // PHB II p. 37 (Cleric ACF: Spontaneous Domain Casting): Level 1-9 slot -> chosen Domain spell of same level or lower
+      if (slotLvl < 1 || reqTarget < 1 || reqTarget > 9) return null;
+      const domainName = String(opts?.domainName || '').trim();
+      const domainSpells = Array.isArray(opts?.domainSpells) ? opts.domainSpells : [];
+      const domSpell = domainSpells.find(sp => sp && Number(sp.level) === reqTarget)
+        || domainSpells.filter(sp => sp && Number(sp.level) <= reqTarget).sort((a, b) => Number(b.level) - Number(a.level))[0]
+        || null;
+      if (!domSpell || !domSpell.name) return null;
+      const compactSpell = domSpell.name.length > 14 ? `${domSpell.name.slice(0, 13)}…` : domSpell.name;
+      return {
+        conversionType: 'domain',
+        id: domSpell.id || `dom-${domainName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${domSpell.level}`,
+        name: domSpell.name,
+        domainName,
+        targetLevel: Number(domSpell.level) || reqTarget,
+        slotLevel: slotLvl,
+        formula: null,
+        effectType: 'domain_spell',
+        shortLabel: domainName ? `${domainName}: ${domSpell.name}` : domSpell.name,
+        compactLabel: compactSpell,
+        icon: '⚜️',
+        actionType: 'standard',
+        castingTime: 'Standard Action'
+      };
+    }
+
     if (type === 'cure' || type === 'inflict') {
       // PHB p. 32: "of the same spell level or lower" -> 9th-level slot converts to 8th-level Mass Cure/Inflict Critical Wounds
-      const targetLvl = Math.min(8, Math.floor(numLvl));
+      const targetLvl = Math.min(8, reqTarget);
       const entry = DIVINE_SPONTANEOUS_TABLES[type][targetLvl];
       if (!entry) return null;
       const formula = entry.diceCount === 0
@@ -476,7 +530,7 @@
         id: entry.id,
         name: entry.name,
         targetLevel: entry.level,
-        slotLevel: Math.floor(numLvl),
+        slotLevel: slotLvl,
         formula,
         effectType: entry.effectType,
         shortLabel: entry.diceCount === 0

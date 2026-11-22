@@ -16748,20 +16748,49 @@ const RuleEngine = {
       || (storedMode === 'inflict' ? 'negative' : 'positive');
     const clericMode = energyChannel === 'negative' ? 'inflict' : 'cure';
 
+    // Detect PHB II ACFs (explicit spellcasting config OR V3 classAbility / feat / customEntry ID)
+    const rawAcf = String(ch.spellcasting?.divineSpontaneousAcf || 'default').toLowerCase().trim();
+    const featIds = new Set(
+      (Array.isArray(ch.feats) ? ch.feats : [])
+        .map(f => String(typeof f === 'string' ? f : (f?.id || f?.featId || '')).toLowerCase().trim())
+        .filter(Boolean)
+    );
+    const hasDomainAcf = hasCleric && (
+      rawAcf === 'domain' ||
+      featIds.has('cab-spontaneous-domain-casting') ||
+      featIds.has('acf-spontaneous-domain-casting')
+    );
+    const hasRejuvAcf = hasDruid && (
+      rawAcf === 'rejuvenation' ||
+      featIds.has('cab-spontaneous-rejuvenation') ||
+      featIds.has('acf-spontaneous-rejuvenation')
+    );
+
+    const chosenDomains = Array.isArray(ch.spellcasting?.domains)
+      ? ch.spellcasting.domains.filter(Boolean)
+      : [];
+    const prefDom = String(ch.spellcasting?.spontaneousDomain || '').trim();
+    const spontaneousDomain = hasDomainAcf
+      ? ((prefDom && (chosenDomains.length === 0 || chosenDomains.includes(prefDom))) ? prefDom : (chosenDomains[0] || prefDom || null))
+      : null;
+
+    const clericConvType = hasDomainAcf ? 'domain' : clericMode;
+    const druidConvType = hasRejuvAcf ? 'rejuvenation' : 'sna';
+
     const allowedTypes = [];
-    if (hasCleric) allowedTypes.push(clericMode);
-    if (hasDruid) allowedTypes.push('sna');
+    if (hasCleric) allowedTypes.push(clericConvType);
+    if (hasDruid) allowedTypes.push(druidConvType);
 
     let conversionType = null;
     if (hasCleric && hasDruid) {
       const pref = String(ch.spellcasting?.divineSpontaneousChannel || '').toLowerCase().trim();
-      if (pref === 'sna') conversionType = 'sna';
-      else if (pref === 'cure' || pref === 'inflict') conversionType = clericMode;
-      else conversionType = druidLvl > clericLvl ? 'sna' : clericMode;
+      if (pref === 'druid' || pref === 'sna' || pref === 'rejuvenation') conversionType = druidConvType;
+      else if (pref === 'cleric' || pref === 'cure' || pref === 'inflict' || pref === 'domain') conversionType = clericConvType;
+      else conversionType = druidLvl > clericLvl ? druidConvType : clericConvType;
     } else if (hasCleric) {
-      conversionType = clericMode;
+      conversionType = clericConvType;
     } else if (hasDruid) {
-      conversionType = 'sna';
+      conversionType = druidConvType;
     }
 
     return {
@@ -16773,10 +16802,16 @@ const RuleEngine = {
       energyChannel,
       isRebuke: energyChannel === 'negative',
       clericMode,
+      acf: hasDomainAcf ? 'domain' : (hasRejuvAcf ? 'rejuvenation' : 'default'),
+      hasDomainAcf,
+      hasRejuvAcf,
+      spontaneousDomain,
+      clericConvType,
+      druidConvType,
       canConvert: allowedTypes.length > 0,
       conversionType,
       allowedTypes,
-      minLevel: conversionType === 'sna' ? 1 : 0,
+      minLevel: (conversionType === 'sna' || conversionType === 'domain' || conversionType === 'rejuvenation') ? 1 : 0,
       maxLevel: 9,
       allowDomainSlot: false
     };

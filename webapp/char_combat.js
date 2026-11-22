@@ -2083,27 +2083,35 @@
               ? resolveClericEnergyPolicy(character)
               : null;
             const convType = (rawProfile && rawProfile.canConvert)
-              ? (rawProfile.conversionType === 'sna'
-                ? 'sna'
+              ? ((rawProfile.conversionType === 'sna' || rawProfile.conversionType === 'rejuvenation' || rawProfile.conversionType === 'domain')
+                ? rawProfile.conversionType
                 : ((energyPolicy && energyPolicy.forcedMode) || rawProfile.conversionType))
+              : null;
+            const divCl = (typeof getDivineCasterInfo === 'function') ? (getDivineCasterInfo().cl || 5) : (Number(character?.spellcasting?.cl) || Number(character?.level) || 5);
+            const spontCandidate = (srcKey === 'divine' && convType && !sp.isDomainSpell && typeof getClericSpontaneousSpellInfo === 'function')
+              ? getClericSpontaneousSpellInfo(lvl, divCl, convType)
               : null;
             const isAlreadyTarget = convType === 'sna'
               ? /^summon nature'?s ally\b/i.test((sp.name || '').trim())
-              : (convType === 'inflict'
-                ? /^(inflict|mass inflict)\b/i.test((sp.name || '').trim())
-                : /^(cure|mass cure)\b/i.test((sp.name || '').trim()));
-            const divCl = (typeof getDivineCasterInfo === 'function') ? (getDivineCasterInfo().cl || 5) : (Number(character?.spellcasting?.cl) || Number(character?.level) || 5);
-            const spontInfo = (srcKey === 'divine' && convType && !sp.isDomainSpell && !isAlreadyTarget && typeof getClericSpontaneousSpellInfo === 'function')
-              ? getClericSpontaneousSpellInfo(lvl, divCl, convType)
-              : null;
+              : (convType === 'domain'
+                ? Boolean(spontCandidate && (sp.name || '').toLowerCase().trim() === (spontCandidate.name || '').toLowerCase().trim())
+                : (convType === 'rejuvenation'
+                  ? false
+                  : (convType === 'inflict'
+                    ? /^(inflict|mass inflict)\b/i.test((sp.name || '').trim())
+                    : /^(cure|mass cure)\b/i.test((sp.name || '').trim()))));
+            const spontInfo = isAlreadyTarget ? null : spontCandidate;
 
             if (spontInfo) {
               hasSpontBtn = true;
               const btnColorCls = convType === 'inflict'
                 ? 'bg-rose-950/90 hover:bg-rose-800 text-rose-300 hover:text-white border-rose-600/80'
-                : 'bg-emerald-950/90 hover:bg-emerald-800 text-emerald-300 hover:text-white border-emerald-600/80';
+                : (convType === 'domain'
+                  ? 'bg-amber-950/90 hover:bg-amber-800 text-amber-300 hover:text-white border-amber-500/80'
+                  : 'bg-emerald-950/90 hover:bg-emerald-800 text-emerald-300 hover:text-white border-emerald-600/80');
               const shortText = spontInfo.compactLabel || spontInfo.shortLabel;
-              bottomRightHtml = `<button type="button" data-action="combat:cast-cleric-spontaneous" data-spell-name="${attrName}" data-level="${lvl}" data-instance-id="${UI.escapeAttr(sp.instanceId || '')}" class="px-1.5 py-0.5 rounded border ${btnColorCls} font-mono font-bold text-[10px] leading-none inline-flex items-center justify-center gap-0.5 shrink-0 cursor-pointer transition shadow-sm" title="${convType === 'sna' ? 'Druid' : 'Cleric'} Spontaneous Conversion: Convert '${UI.escapeAttr(sp.name)}' into '${UI.escapeAttr(spontInfo.name)}' (${UI.escapeAttr(spontInfo.formula || spontInfo.castingTime || '1 Round')})"><span>${spontInfo.icon}</span><span>${UI.escapeHtml(shortText)}</span></button>`;
+              const srcLabel = (convType === 'sna' || convType === 'rejuvenation') ? 'Druid' : 'Cleric';
+              bottomRightHtml = `<button type="button" data-action="combat:cast-cleric-spontaneous" data-spell-name="${attrName}" data-level="${lvl}" data-instance-id="${UI.escapeAttr(sp.instanceId || '')}" class="px-1.5 py-0.5 rounded border ${btnColorCls} font-mono font-bold text-[10px] leading-none inline-flex items-center justify-center gap-0.5 shrink-0 cursor-pointer transition shadow-sm" title="${srcLabel} Spontaneous Conversion: Convert '${UI.escapeAttr(sp.name)}' into '${UI.escapeAttr(spontInfo.name)}' (${UI.escapeAttr(spontInfo.formula || spontInfo.castingTime || 'Standard Action')})"><span>${spontInfo.icon}</span><span>${UI.escapeHtml(shortText)}</span></button>`;
             } else if (params.save && params.save !== 'None') {
               bottomRightHtml = `<span class="truncate shrink-0 font-mono text-[10px] text-slate-500">${UI.escapeHtml(params.save)}</span>`;
             }
