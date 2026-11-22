@@ -160,12 +160,17 @@ body[data-ui-skin="calm"] .calm-sticky-hud {
 .calm-sticky-inner {
   max-width: 80rem;
   margin: 0 auto;
-  padding: 6px 14px;
+  padding: 6px 24px;
   display: flex;
   align-items: center;
   gap: 8px;
   overflow-x: auto;
   scrollbar-width: none;
+}
+@media (min-width: 768px) {
+  .calm-sticky-inner {
+    padding: 6px 32px;
+  }
 }
 .calm-sticky-inner::-webkit-scrollbar { display: none; }
 .calm-sticky-chip {
