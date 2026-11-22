@@ -366,17 +366,54 @@ function updateDiceColorUI(hexColor) {
 }
 window.updateDiceColorUI = updateDiceColorUI;
 
+function syncDiceCustomPopoverUI() {
+  const cfg = (window.Dice3D && typeof window.Dice3D.getConfig === 'function')
+    ? window.Dice3D.getConfig()
+    : { material: 'obsidian', bodyColor: '#851316', swirlColor: '#072a36', edgeColor: '#f5a623', textColor: '#f5a623' };
+
+  const matSel = document.getElementById('dice-material-select');
+  if (matSel) matSel.value = cfg.material || 'obsidian';
+  const bodyIn = document.getElementById('dice-custom-color-input');
+  if (bodyIn && cfg.bodyColor) bodyIn.value = cfg.bodyColor;
+  const edgeIn = document.getElementById('dice-edge-color-input');
+  if (edgeIn && cfg.edgeColor) edgeIn.value = cfg.edgeColor;
+  const textIn = document.getElementById('dice-text-color-input');
+  if (textIn && cfg.textColor) textIn.value = cfg.textColor;
+  const swirlIn = document.getElementById('dice-swirl-color-input');
+  if (swirlIn && cfg.swirlColor) swirlIn.value = cfg.swirlColor;
+  const swirlWrap = document.getElementById('dice-swirl-color-wrap');
+  if (swirlWrap) {
+    swirlWrap.classList.toggle('hidden', cfg.material !== 'resin');
+    swirlWrap.classList.toggle('flex', cfg.material === 'resin');
+  }
+}
+
+function selectDiceMaterial(materialId) {
+  if (!materialId || !window.Dice3D || typeof window.Dice3D.setMaterial !== 'function') return;
+  window.Dice3D.setMaterial(materialId);
+  const matDef = window.DICE_V2_MATERIALS && window.DICE_V2_MATERIALS[materialId];
+  if (matDef) {
+    if (typeof window.Dice3D.setBodyColor === 'function') window.Dice3D.setBodyColor(matDef.defaultBody);
+    if (matDef.defaultSwirl && typeof window.Dice3D.setSwirlColor === 'function') window.Dice3D.setSwirlColor(matDef.defaultSwirl);
+    if (typeof window.Dice3D.setEdgeColor === 'function') window.Dice3D.setEdgeColor(matDef.defaultEdge);
+    if (typeof window.Dice3D.setTextColor === 'function') window.Dice3D.setTextColor(matDef.defaultText || matDef.defaultEdge);
+    updateDiceColorUI(matDef.defaultBody);
+  }
+  syncDiceCustomPopoverUI();
+}
+
 function initDiceColor() {
   let savedColor = '#851316';
   try {
     if (typeof localStorage !== 'undefined') {
-      savedColor = localStorage.getItem('dnd_dice_color') || '#851316';
+      savedColor = localStorage.getItem('dnd_dice_color') || (window.Dice3D && typeof window.Dice3D.getDiceColor === 'function' ? window.Dice3D.getDiceColor() : '#851316');
     }
   } catch (e) {}
   if (window.Dice3D && typeof window.Dice3D.setDiceColor === 'function') {
     window.Dice3D.setDiceColor(savedColor);
   }
   updateDiceColorUI(savedColor);
+  syncDiceCustomPopoverUI();
 }
 window.initDiceColor = initDiceColor;
 
@@ -1062,6 +1099,25 @@ if (window.Actions && typeof window.Actions.register === 'function') {
   actionsApi.register('dice:reset-pool', () => resetDicePool());
   actionsApi.register('dice:select-color', (el, data) => selectDiceColor(data.color, data.colorName));
   actionsApi.register('dice:custom-color', (el) => selectDiceColor(el.value, 'Custom Color'));
+  actionsApi.register('dice:select-material', (el) => selectDiceMaterial(el.value));
+  actionsApi.register('dice:edge-color', (el) => {
+    if (el && el.value && window.Dice3D && typeof window.Dice3D.setEdgeColor === 'function') {
+      window.Dice3D.setEdgeColor(el.value);
+      syncDiceCustomPopoverUI();
+    }
+  });
+  actionsApi.register('dice:text-color', (el) => {
+    if (el && el.value && window.Dice3D && typeof window.Dice3D.setTextColor === 'function') {
+      window.Dice3D.setTextColor(el.value);
+      syncDiceCustomPopoverUI();
+    }
+  });
+  actionsApi.register('dice:swirl-color', (el) => {
+    if (el && el.value && window.Dice3D && typeof window.Dice3D.setSwirlColor === 'function') {
+      window.Dice3D.setSwirlColor(el.value);
+      syncDiceCustomPopoverUI();
+    }
+  });
   actionsApi.register('dice:formula-keydown', (el, data, event) => {
     if (event && event.key === 'Enter') rollCustomFormula();
   });

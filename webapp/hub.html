@@ -18,7 +18,7 @@
   <link rel="prefetch" href="index.html">
   <link rel="prefetch" href="char_modals.js?v=184782dff4">
   <link rel="prefetch" href="char_hud.js?v=6692d02e2a">
-  <link rel="prefetch" href="char_combat.js?v=1bbd9a91a2">
+  <link rel="prefetch" href="char_combat.js?v=a46132777f">
   <link rel="prefetch" href="char_spells.js?v=9db1c2f780">
   <link rel="prefetch" href="char_progression.js?v=754d31e0a4">
   <link rel="prefetch" href="char_inventory.js?v=e05092e61d">
@@ -27,8 +27,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&display=swap" rel="stylesheet">
   <!-- Three.js (3D dice) is loaded on demand by dice3d.js on the first 3D roll. -->
-  <script src="dice3d.js?v=aa07002406"></script>
-  <script src="hub_dice.js?v=2eb42a28f9"></script>
+  <script src="dice3d.js?v=b61bf53faf"></script>
+  <script src="hub_dice.js?v=94e2b0553b"></script>
   <script src="hub_notes.js?v=0ab5c7e3cc"></script>
   <script defer src="app_atlas.js?v=3c4f2e8b19"></script>
   <script defer src="ai_assistant.js?v=c09f914eee"></script>
@@ -556,7 +556,7 @@
             </button>
             <!-- Zar Rengi Seçici & Sıfırla (popover bu kutunun sağ kenarına hizalı açılır) -->
             <div class="relative flex items-center gap-2 shrink-0">
-              <button id="dice-color-btn" type="button" data-action="dice:toggle-color-popover" class="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold text-sm shadow flex items-center justify-center gap-1.5 transition cursor-pointer" title="Choose Dice Color" aria-label="Choose Dice Color">
+              <button id="dice-color-btn" type="button" data-action="dice:toggle-color-popover" class="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold text-sm shadow flex items-center justify-center gap-1.5 transition cursor-pointer" title="Customize 3D Dice Material &amp; Colors" aria-label="Customize 3D Dice">
                 <span id="dice-color-preview-dot" class="w-4 h-4 rounded-full border border-white/70 shadow-sm inline-block shrink-0 transition-colors" style="background-color: #851316;"></span>
                 <span class="text-[10px] text-slate-400">▼</span>
               </button>
@@ -564,18 +564,31 @@
                 <span>🔄</span>
               </button>
 
-              <!-- Zar Rengi Seçim Popover Menüsü -->
-              <div id="dice-color-popover" class="hidden absolute right-0 bottom-full mb-2 w-64 bg-slate-900 border border-slate-700 rounded-xl p-3 shadow-2xl z-50">
+              <!-- Custom 3D Dice Popover Menu -->
+              <div id="dice-color-popover" class="hidden absolute right-0 bottom-full mb-2 w-64 bg-slate-900 border border-slate-700 rounded-xl p-3 shadow-2xl z-50" style="width:18.5rem;">
                 <div class="flex items-center justify-between border-b border-slate-700/80 pb-2 mb-2.5">
                   <span class="text-xs font-bold text-slate-200 flex items-center gap-1.5">
                     <span>🎨</span>
-                    <span>Choose Dice Color</span>
+                    <span>Custom 3D Dice</span>
                   </span>
-                  <span class="text-[10px] text-slate-400 font-medium">3D Dice &amp; Button</span>
+                  <span class="text-[10px] text-slate-400 font-medium">Material &amp; Colors</span>
                 </div>
 
-                  <!-- Hazır Zar Renkleri Grid -->
-                  <div class="grid grid-cols-4 gap-2 mb-3">
+                <!-- Material Selector -->
+                <div class="mb-2.5">
+                  <label for="dice-material-select" class="text-[10px] font-bold text-slate-400 block mb-1" style="text-transform:uppercase;letter-spacing:0.06em;">Material</label>
+                  <select id="dice-material-select" data-change-action="dice:select-material" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs font-semibold text-slate-200 cursor-pointer">
+                    <option value="obsidian">Polished Obsidian (Heavy · 18g)</option>
+                    <option value="metal">Forged Metal (Ultra Heavy · 28g)</option>
+                    <option value="wood">Carved Hardwood (Ultra Light · 3.5g)</option>
+                    <option value="crystal">Arcane Crystal (Med-Heavy · 14g)</option>
+                    <option value="bone">Ancient Ivory Bone (Medium · 10g)</option>
+                    <option value="resin">Sharp-Edge Liquid Resin (Light · 5g)</option>
+                  </select>
+                </div>
+
+                  <!-- Quick Body Color Presets -->
+                  <div class="grid grid-cols-4 gap-2 mb-2.5">
                     <button type="button" data-action="dice:select-color" data-color="#851316" data-color-name="Ruby Red" class="group flex flex-col items-center gap-1 p-1.5 rounded-lg hover:bg-slate-800/80 border border-transparent hover:border-slate-600 transition cursor-pointer" title="Ruby Red">
                       <span class="w-7 h-7 rounded-full shadow-md border border-white/40 block group-hover:scale-110 transition-transform" style="background-color: #851316;"></span>
                       <span class="text-[10px] text-slate-400 group-hover:text-slate-200 font-medium truncate w-full text-center">Ruby</span>
@@ -610,15 +623,24 @@
                     </button>
                   </div>
 
-                  <!-- Özel Renk Seçici -->
-                  <div class="flex items-center justify-between pt-2 border-t border-slate-800">
-                    <span class="text-xs text-slate-300 font-semibold flex items-center gap-1.5">
-                      <span>🌈</span>
-                      <span>Custom Color:</span>
-                    </span>
-                    <div class="flex items-center gap-2">
-                      <input type="color" id="dice-custom-color-input" data-change-action="dice:custom-color" class="w-7 h-7 rounded-lg cursor-pointer bg-transparent border-0 p-0">
-                    </div>
+                  <!-- Independent Body / Edge / Numeral (+ Resin Inner Ink) Color Pickers -->
+                  <div class="pt-2 border-t border-slate-800 grid grid-cols-2 gap-2">
+                    <label class="flex items-center justify-between gap-1.5 px-2 py-1 rounded-lg bg-slate-950 border border-slate-800 cursor-pointer">
+                      <span class="text-[10px] font-semibold text-slate-300">Body</span>
+                      <input type="color" id="dice-custom-color-input" data-change-action="dice:custom-color" class="w-6 h-6 rounded cursor-pointer bg-transparent border-0 p-0">
+                    </label>
+                    <label class="flex items-center justify-between gap-1.5 px-2 py-1 rounded-lg bg-slate-950 border border-slate-800 cursor-pointer">
+                      <span class="text-[10px] font-semibold text-slate-300">Edge</span>
+                      <input type="color" id="dice-edge-color-input" data-change-action="dice:edge-color" class="w-6 h-6 rounded cursor-pointer bg-transparent border-0 p-0">
+                    </label>
+                    <label class="flex items-center justify-between gap-1.5 px-2 py-1 rounded-lg bg-slate-950 border border-slate-800 cursor-pointer">
+                      <span class="text-[10px] font-semibold text-slate-300">Numeral</span>
+                      <input type="color" id="dice-text-color-input" data-change-action="dice:text-color" class="w-6 h-6 rounded cursor-pointer bg-transparent border-0 p-0">
+                    </label>
+                    <label id="dice-swirl-color-wrap" class="hidden items-center justify-between gap-1.5 px-2 py-1 rounded-lg bg-slate-950 border border-slate-800 cursor-pointer">
+                      <span class="text-[10px] font-semibold text-slate-300">Inner Ink</span>
+                      <input type="color" id="dice-swirl-color-input" data-change-action="dice:swirl-color" class="w-6 h-6 rounded cursor-pointer bg-transparent border-0 p-0">
+                    </label>
                   </div>
               </div>
             </div>
