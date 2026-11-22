@@ -7776,6 +7776,238 @@ function runDeriveSheetTests() {
         JSON.stringify({ ac: badWhenSheet.ac.total, hcAc: badWhenSheet.ac.heedlessChargeAcPenalty })
       );
     }
+
+    // -------------------------------------------------------------------------
+    // Sprint E5 — Epic A: CASTER TACTICAL MODIFIERS Unification
+    // -------------------------------------------------------------------------
+    {
+      const empowerFeat = { id: 'feat-empower-spell', name: 'Empower Spell', effects: [{ id: 'f-emp', type: 'carrier', carrierMode: 'metamagic', costMode: 'slot', slotAdj: 2, transform: 'empower' }] };
+      const quickenFeat = { id: 'feat-quicken-spell', name: 'Quicken Spell', effects: [{ id: 'f-qck', type: 'carrier', carrierMode: 'metamagic', costMode: 'slot', slotAdj: 4, transform: 'quicken' }] };
+      const heightenFeat = { id: 'feat-heighten-spell', name: 'Heighten Spell', effects: [{ id: 'f-hgt', type: 'carrier', carrierMode: 'metamagic', costMode: 'slot', slotAdj: 'variable', transform: 'heighten' }] };
+      const suddenMaxFeat = { id: 'feat-sudden-maximize', name: 'Sudden Maximize', effects: [{ id: 'f-smax', type: 'carrier', carrierMode: 'metamagic', costMode: 'sudden', slotAdj: 0, transform: 'maximize', uses: 1 }] };
+      const rapidMetaFeat = { id: 'feat-rapid-metamagic', name: 'Rapid Metamagic', effects: [{ id: 'f-rm', type: 'effect', effectKind: 'ruleSwitch', flag: 'rapid-metamagic', label: 'Rapid Metamagic' }] };
+      const lesserExtendRod = { id: 'mi-rod-of-metamagic-extend-lesser', name: 'Rod of Metamagic, Extend, Lesser', effects: [{ id: 'r-ext', type: 'carrier', carrierMode: 'metamagic', costMode: 'rod', slotAdj: 0, transform: 'extend', uses: 3, maxSpellLvl: 3 }], dailyCharges: { current: 3, max: 3, unit: 'uses', recharge: 'long_rest' } };
+      const normalEmpowerRod = { id: 'mi-rod-of-metamagic-empower-normal', name: 'Rod of Metamagic, Empower, Normal', effects: [{ id: 'r-emp', type: 'carrier', carrierMode: 'metamagic', costMode: 'rod', slotAdj: 0, transform: 'empower', uses: 3, maxSpellLvl: 6 }], dailyCharges: { current: 3, max: 3, unit: 'uses', recharge: 'long_rest' } };
+
+      const makeE5Caster = (extra = {}) => Object.assign({
+        id: 'e5_caster',
+        name: 'Lyra',
+        level: 10,
+        classes: 'Sorcerer 10',
+        abilities: { str: 10, dex: 14, con: 14, int: 12, wis: 10, cha: 20 },
+        feats: [empowerFeat, quickenFeat, heightenFeat, suddenMaxFeat],
+        inventory: [lesserExtendRod, normalEmpowerRod],
+        tactical: { armedMetamagic: [] },
+        powerUses: {},
+        spellcasting: {
+          cl: 10,
+          slots: [
+            { level: 1, daily: 6, used: 0 },
+            { level: 3, daily: 6, used: 0 },
+            { level: 5, daily: 4, used: 0 }
+          ],
+          knownSpells: [
+            { id: 'sp_fireball', name: 'Fireball', level: 3, school: 'Evocation', action: 'Standard Action' },
+            { id: 'sp_enervation', name: 'Enervation', level: 4, school: 'Necromancy', action: 'Standard Action' }
+          ],
+          preparedSlots: [{ level: 3, daily: 3, used: 0 }, { level: 5, daily: 2, used: 0 }],
+          preparedSpells: [
+            { id: 'sp_fireball', instanceId: 'prep_fb_1', name: 'Fireball', level: 3, school: 'Evocation', action: 'Standard Action', metamagic: [{ featId: 'feat-empower-spell' }], isCast: false }
+          ]
+        }
+      }, extra);
+
+      const spontChar = makeE5Caster();
+      const spontListL3 = RuleEngine.listCastTimeMetamagic(spontChar, { discipline: 'spontaneous', spellLevel: 3, includeIneligible: true });
+      const spontEmp = spontListL3.find(x => x.id === 'feat-empower-spell');
+      const spontQck = spontListL3.find(x => x.id === 'feat-quicken-spell');
+      const spontSud = spontListL3.find(x => x.id === 'feat-sudden-maximize');
+      const spontLesserRod = spontListL3.find(x => x.itemId === 'mi-rod-of-metamagic-extend-lesser');
+      check(
+        'Sprint E5A-1: Spontaneous listCastTimeMetamagic marks Empower/Sudden/LesserRod eligible for L3 and locks Quicken without Rapid Metamagic',
+        Boolean(spontEmp?.eligible === true && spontQck?.eligible === false && /Rapid Metamagic/i.test(spontQck?.ineligibleReason || '') && spontSud?.eligible === true && spontSud?.usesRemaining === 1 && spontLesserRod?.eligible === true),
+        JSON.stringify({ emp: spontEmp?.eligible, qck: spontQck?.ineligibleReason, sud: spontSud?.usesRemaining, rod: spontLesserRod?.eligible })
+      );
+
+      // With Rapid Metamagic: Quicken becomes eligible & spontaneous Empower stays Standard Action
+      const rapidChar = makeE5Caster({ feats: [empowerFeat, quickenFeat, rapidMetaFeat] });
+      const rapidList = RuleEngine.listCastTimeMetamagic(rapidChar, { discipline: 'spontaneous', spellLevel: 3, includeIneligible: true });
+      const rapidQck = rapidList.find(x => x.id === 'feat-quicken-spell');
+      const rapidEmpRes = RuleEngine.resolveMetamagic(rapidChar.spellcasting.knownSpells[0], rapidChar, {
+        armedMetamagic: [{ id: 'feat-empower-spell', kind: 'feat', featId: 'feat-empower-spell', transform: 'empower' }],
+        isSpontaneous: true
+      });
+      check(
+        'Sprint E5A-2: Rapid Metamagic unlocks Spontaneous Quicken and prevents Full-Round Action penalty on Empower',
+        Boolean(rapidQck?.eligible === true && rapidEmpRes.isValid && rapidEmpRes.castAction === 'Standard Action' && rapidEmpRes.effectiveSlotLevel === 5),
+        JSON.stringify({ rapidQck: rapidQck?.eligible, castAction: rapidEmpRes.castAction, effSlot: rapidEmpRes.effectiveSlotLevel })
+      );
+
+      // Prepared discipline: slot feats ineligible ('Apply at preparation'), Rods & Sudden eligible
+      const prepList = RuleEngine.listCastTimeMetamagic(spontChar, { discipline: 'prepared', spellLevel: 3, includeIneligible: true });
+      const prepEmp = prepList.find(x => x.id === 'feat-empower-spell');
+      const prepRod = prepList.find(x => x.itemId === 'mi-rod-of-metamagic-extend-lesser');
+      const prepSud = prepList.find(x => x.id === 'feat-sudden-maximize');
+      check(
+        'Sprint E5A-3: Prepared discipline marks slot-based Empower ineligible ("Apply at preparation") while allowing Rods and Sudden Metamagic',
+        Boolean(prepEmp?.eligible === false && /preparation/i.test(prepEmp?.ineligibleReason || '') && prepRod?.eligible === true && prepSud?.eligible === true),
+        JSON.stringify({ prepEmp: prepEmp?.ineligibleReason, prepRod: prepRod?.eligible, prepSud: prepSud?.eligible })
+      );
+
+      // Transform deduplication (Empower Feat + Empower Rod) & Max 1 Rod per spell (DMG p.236)
+      const dupTxRes = RuleEngine.resolveMetamagic(spontChar.spellcasting.knownSpells[0], spontChar, {
+        armedMetamagic: [
+          { id: 'feat-empower-spell', kind: 'feat', featId: 'feat-empower-spell', transform: 'empower' },
+          { id: 'rod:mi-rod-of-metamagic-empower-normal', kind: 'rod', itemId: 'mi-rod-of-metamagic-empower-normal', transform: 'empower' }
+        ],
+        isSpontaneous: true
+      });
+      const twoRodsRes = RuleEngine.resolveMetamagic(spontChar.spellcasting.knownSpells[0], spontChar, {
+        armedMetamagic: [
+          { id: 'rod:mi-rod-of-metamagic-extend-lesser', kind: 'rod', itemId: 'mi-rod-of-metamagic-extend-lesser', transform: 'extend' },
+          { id: 'rod:mi-rod-of-metamagic-empower-normal', kind: 'rod', itemId: 'mi-rod-of-metamagic-empower-normal', transform: 'empower' }
+        ],
+        isSpontaneous: true
+      });
+      check(
+        'Sprint E5A-4: resolveMetamagic blocks duplicate transform (Empower Feat + Rod) and >1 Rod per spell (DMG p.236)',
+        Boolean(dupTxRes.hasDuplicateTransform && !dupTxRes.isValid && twoRodsRes.exceedsMaxRods && !twoRodsRes.isValid),
+        JSON.stringify({ dupTx: dupTxRes.hasDuplicateTransform, twoRods: twoRodsRes.exceedsMaxRods })
+      );
+
+      // Rod maxSpellLvl (Lesser max 3 on L4 spell) & spontaneousRodFullRound=true (RAW DMG/SRD: Rod on Spontaneous takes Full-Round Action)
+      const rodLvlExceeded = RuleEngine.resolveMetamagic(spontChar.spellcasting.knownSpells[1], spontChar, {
+        armedMetamagic: [{ id: 'rod:mi-rod-of-metamagic-extend-lesser', kind: 'rod', itemId: 'mi-rod-of-metamagic-extend-lesser', transform: 'extend' }],
+        isSpontaneous: true
+      });
+      const rodOnSpontL3 = RuleEngine.resolveMetamagic(spontChar.spellcasting.knownSpells[0], spontChar, {
+        armedMetamagic: [{ id: 'rod:mi-rod-of-metamagic-extend-lesser', kind: 'rod', itemId: 'mi-rod-of-metamagic-extend-lesser', transform: 'extend' }],
+        isSpontaneous: true
+      });
+      check(
+        'Sprint E5A-5: Lesser Rod rejects L4 spell (rodLevelExceeded) and makes L3 spontaneous cast Full-Round Action (RAW spontaneousRodFullRound:true)',
+        Boolean(rodLvlExceeded.rodLevelExceeded && !rodLvlExceeded.isValid && rodOnSpontL3.isValid && rodOnSpontL3.castAction === 'Full-Round Action' && rodOnSpontL3.effectiveSlotLevel === 3),
+        JSON.stringify({ l4Blocked: rodLvlExceeded.rodLevelExceeded, l3Act: rodOnSpontL3.castAction, l3Slot: rodOnSpontL3.effectiveSlotLevel })
+      );
+
+      // Prepared Empowered Fireball + Sudden Maximize => maximize_and_empower, slot stays 5, no duplicate
+      const prepPlusSudden = RuleEngine.resolveMetamagic(spontChar.spellcasting.preparedSpells[0], spontChar, {
+        armedMetamagic: [{ id: 'feat-sudden-maximize', kind: 'sudden', featId: 'feat-sudden-maximize', transform: 'maximize' }],
+        isSpontaneous: false
+      });
+      check(
+        'Sprint E5A-6: Prepared Empowered Fireball + Sudden Maximize resolves to maximize_and_empower at slot L5',
+        Boolean(prepPlusSudden.isValid && prepPlusSudden.damageMode === 'maximize_and_empower' && prepPlusSudden.effectiveSlotLevel === 5),
+        JSON.stringify({ valid: prepPlusSudden.isValid, dmg: prepPlusSudden.damageMode, slot: prepPlusSudden.effectiveSlotLevel })
+      );
+
+      // Atomic CharStore: toggleArmedMetamagic + spells/castSpell (slot + Rod charge + Sudden use + armed clear) + 1-step Undo!
+      CharStore.replaceDoc(makeE5Caster(), { skipHistory: true });
+      CharStore.clearHistory();
+      CharStore.dispatch({ type: 'combat/toggleArmedMetamagic', payload: { id: 'rod:mi-rod-of-metamagic-extend-lesser', baseLevel: 3, discipline: 'spontaneous' } });
+      const arm1 = CharStore.getLastOutcome();
+      // Try arming 2nd Rod -> aborted
+      CharStore.dispatch({ type: 'combat/toggleArmedMetamagic', payload: { id: 'rod:mi-rod-of-metamagic-empower-normal', baseLevel: 3, discipline: 'spontaneous' } });
+      const arm2RodAbort = CharStore.getLastOutcome();
+      // Arm Sudden Maximize alongside Extend Rod -> allowed
+      CharStore.dispatch({ type: 'combat/toggleArmedMetamagic', payload: { id: 'feat-sudden-maximize', baseLevel: 3, discipline: 'spontaneous' } });
+      const armSudden = CharStore.getLastOutcome();
+      check(
+        'Sprint E5A-7: combat/toggleArmedMetamagic arms Rod + Sudden and aborts 2nd Rod (max_one_rod_per_spell)',
+        Boolean(arm1?.armed === true && arm2RodAbort?.status === 'max_one_rod_per_spell' && armSudden?.armed === true && CharStore.getDoc().tactical.armedMetamagic.length === 2),
+        JSON.stringify({ arm1: arm1?.status, arm2: arm2RodAbort?.status, len: CharStore.getDoc().tactical.armedMetamagic.length })
+      );
+
+      // Single atomic castSpell consumes L3 slot, Extend Rod charge (3->2), Sudden Maximize (0->1), and clears armedMetamagic
+      CharStore.dispatch({
+        type: 'spells/castSpell',
+        payload: { discipline: 'spontaneous', index: 0, spellName: 'Fireball', spellLevel: 3, useArmedMetamagic: true }
+      });
+      const castOut = CharStore.getLastOutcome();
+      const postCastDoc = CharStore.getDoc();
+      const rodAfter = postCastDoc.inventory.find(i => i.id === 'mi-rod-of-metamagic-extend-lesser');
+      check(
+        'Sprint E5A-8: Atomic spells/castSpell deducts L3 slot, Rod charge (3->2), Sudden use (0->1), and clears armedMetamagic',
+        Boolean(
+          castOut?.status === 'spell_cast' &&
+          postCastDoc.spellcasting.slots.find(s => s.level === 3)?.used === 1 &&
+          rodAfter?.dailyCharges?.current === 2 &&
+          postCastDoc.powerUses?.['sudden:feat-sudden-maximize']?.used === 1 &&
+          postCastDoc.tactical.armedMetamagic.length === 0
+        ),
+        JSON.stringify({ status: castOut?.status, slotUsed: postCastDoc.spellcasting.slots.find(s => s.level === 3)?.used, rodCh: rodAfter?.dailyCharges?.current, suddenUsed: postCastDoc.powerUses?.['sudden:feat-sudden-maximize']?.used, armed: postCastDoc.tactical.armedMetamagic.length })
+      );
+
+      // 1-step Undo restores ALL FOUR atomically!
+      CharStore.undo();
+      const undoDoc = CharStore.getDoc();
+      const rodUndo = undoDoc.inventory.find(i => i.id === 'mi-rod-of-metamagic-extend-lesser');
+      check(
+        'Sprint E5A-9: 1-step Undo restores slot (0), Rod charge (3), Sudden use (0), and armedMetamagic (2) atomically',
+        Boolean(
+          undoDoc.spellcasting.slots.find(s => s.level === 3)?.used === 0 &&
+          rodUndo?.dailyCharges?.current === 3 &&
+          !undoDoc.powerUses?.['sudden:feat-sudden-maximize'] &&
+          undoDoc.tactical.armedMetamagic.length === 2
+        ),
+        JSON.stringify({ slotUsed: undoDoc.spellcasting.slots.find(s => s.level === 3)?.used, rodCh: rodUndo?.dailyCharges?.current, sudden: undoDoc.powerUses?.['sudden:feat-sudden-maximize'], armed: undoDoc.tactical.armedMetamagic.length })
+      );
+
+      // M1: Two identical Rods with distinct instanceId track charges independently + Long Rest recharges both Rod & Sudden
+      const rodA = Object.assign({}, lesserExtendRod, { instanceId: 'rod_ext_a', dailyCharges: { current: 3, max: 3, unit: 'uses', recharge: 'long_rest' } });
+      const rodB = Object.assign({}, lesserExtendRod, { instanceId: 'rod_ext_b', dailyCharges: { current: 3, max: 3, unit: 'uses', recharge: 'long_rest' } });
+      CharStore.replaceDoc(makeE5Caster({ inventory: [rodA, rodB] }), { skipHistory: true });
+      CharStore.clearHistory();
+      CharStore.dispatch({ type: 'combat/toggleArmedMetamagic', payload: { id: 'rod:rod_ext_a', baseLevel: 3, discipline: 'spontaneous' } });
+      CharStore.dispatch({ type: 'combat/toggleArmedMetamagic', payload: { id: 'feat-sudden-maximize', baseLevel: 3, discipline: 'spontaneous' } });
+      CharStore.dispatch({ type: 'spells/castSpell', payload: { discipline: 'spontaneous', index: 0, spellName: 'Fireball', spellLevel: 3, useArmedMetamagic: true } });
+      const twoRodDoc = CharStore.getDoc();
+      const rA = twoRodDoc.inventory.find(i => i.instanceId === 'rod_ext_a');
+      const rB = twoRodDoc.inventory.find(i => i.instanceId === 'rod_ext_b');
+      check(
+        'Sprint E5A-10 (M1): Two identical Rods with distinct instanceId deduct only the armed Rod (2/3 vs 3/3)',
+        Boolean(rA?.dailyCharges?.current === 2 && rB?.dailyCharges?.current === 3),
+        JSON.stringify({ rA: rA?.dailyCharges?.current, rB: rB?.dailyCharges?.current })
+      );
+
+      CharStore.dispatch({ type: 'hud/longRest', payload: {} });
+      const restedDoc = CharStore.getDoc();
+      const rARested = restedDoc.inventory.find(i => i.instanceId === 'rod_ext_a');
+      check(
+        'Sprint E5A-11: hud/longRest recharges inventory Metamagic Rod (3/3) and clears Sudden Metamagic powerUses',
+        Boolean(rARested?.dailyCharges?.current === 3 && !restedDoc.powerUses?.['sudden:feat-sudden-maximize']),
+        JSON.stringify({ rA: rARested?.dailyCharges?.current, sudden: restedDoc.powerUses?.['sudden:feat-sudden-maximize'] })
+      );
+
+      // M2 & Minor #2: setArmedHeighten validates baseLevel bound & toggleArmedMetamagic rejects ineligible prepared slot feat
+      CharStore.replaceDoc(makeE5Caster(), { skipHistory: true });
+      CharStore.clearHistory();
+      CharStore.dispatch({ type: 'combat/toggleArmedMetamagic', payload: { id: 'feat-empower-spell', baseLevel: 3, discipline: 'prepared' } });
+      const prepArmAbort = CharStore.getLastOutcome();
+      CharStore.dispatch({ type: 'combat/toggleArmedMetamagic', payload: { id: 'feat-heighten-spell', baseLevel: 3, discipline: 'spontaneous' } });
+      CharStore.dispatch({ type: 'combat/setArmedHeighten', payload: { id: 'feat-heighten-spell', heightenTo: 3, baseLevel: 3 } });
+      const badHeightenOut = CharStore.getLastOutcome();
+      CharStore.dispatch({ type: 'combat/setArmedHeighten', payload: { id: 'feat-heighten-spell', heightenTo: 5, baseLevel: 3 } });
+      const goodHeightenOut = CharStore.getLastOutcome();
+      check(
+        'Sprint E5A-12 (M2/Minor#2): Reducer blocks prepared slot-feat arming (ineligible_metamagic) and validates Heighten > baseLevel',
+        Boolean(prepArmAbort?.status === 'ineligible_metamagic' && badHeightenOut?.status === 'invalid_heighten' && goodHeightenOut?.status === 'armed_heighten_set' && goodHeightenOut?.heightenTo === 5),
+        JSON.stringify({ prepArm: prepArmAbort?.status, badH: badHeightenOut?.status, goodH: goodHeightenOut?.status })
+      );
+
+      // M3: spells/castSpell with index:-1 (null spell) still enforces Rod maxSpellLvl & leaves doc + undo untouched
+      CharStore.replaceDoc(makeE5Caster(), { skipHistory: true });
+      CharStore.clearHistory();
+      CharStore.dispatch({ type: 'combat/toggleArmedMetamagic', payload: { id: 'rod:mi-rod-of-metamagic-extend-lesser', baseLevel: 3, discipline: 'spontaneous' } });
+      const undoBeforeAbort = CharStore.getHistoryCounts().undo;
+      CharStore.dispatch({ type: 'spells/castSpell', payload: { discipline: 'spontaneous', index: -1, spellName: 'Enervation', spellLevel: 4, useArmedMetamagic: true } });
+      const m3Out = CharStore.getLastOutcome();
+      check(
+        'Sprint E5A-13 (M3): spells/castSpell with index:-1 still enforces Rod maxSpellLvl (rod_spell_level_exceeded) and leaves undo stack untouched',
+        Boolean(m3Out?.status === 'rod_spell_level_exceeded' && CharStore.getHistoryCounts().undo === undoBeforeAbort && CharStore.getDoc().inventory.find(i => i.id === 'mi-rod-of-metamagic-extend-lesser')?.dailyCharges?.current === 3),
+        JSON.stringify({ status: m3Out?.status, undo: CharStore.getHistoryCounts().undo, undoBefore: undoBeforeAbort })
+      );
+    }
   }
 
   CharStore.clearHistory();

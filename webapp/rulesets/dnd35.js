@@ -329,7 +329,7 @@
     maxSpellLevel: 9,
     domainUsesBaseLevelForEligibility: true,
     spontaneousCastingTimeFullRound: true,
-    spontaneousRodFullRound: false,
+    spontaneousRodFullRound: true,
     maxRodsPerSpell: 1,
     quickenExemptFromSpontaneousFullRound: true,
     quickenAction: 'Swift Action'

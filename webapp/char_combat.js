@@ -1921,6 +1921,11 @@
       }
 
       const sources = getAvailableSpellSlotSources(true);
+      const rawArmedForList = Array.isArray(character?.tactical?.armedMetamagic) ? character.tactical.armedMetamagic : [];
+      const cachedCastTimeCatalog = (rawArmedForList.length > 0 && typeof RuleEngine !== 'undefined' && typeof RuleEngine.listCastTimeMetamagic === 'function')
+        ? RuleEngine.listCastTimeMetamagic(character, { discipline: 'all', includeIneligible: true })
+        : null;
+      const rulesetMaxSpellLvl = Number(typeof RuleEngine !== 'undefined' && RuleEngine.rulesets?.dnd35?.metamagicRules?.maxSpellLevel) || 9;
 
       container.innerHTML = filteredLevels.map(lvl => {
         const lvlSpells = spellsByLevel[lvl];
@@ -1959,6 +1964,42 @@
           const srcKey = sp._spellSource || (typeof getSpellSlotSource === 'function' ? getSpellSlotSource(sp) : 'spontaneous');
           const isActive = (sp.name === activeName) && (!activeSource || srcKey === activeSource);
           const params = getSpellCriticalParams(sp);
+
+          // Live armed metamagic preview (Sprint E5 — Epic A)
+          const rawArmed = rawArmedForList;
+          const isSpontCard = srcKey === 'spontaneous';
+          const cardArmed = rawArmed.filter(a => a && (isSpontCard || a.kind === 'rod' || a.kind === 'sudden'));
+          const cardMm = (cardArmed.length > 0 && typeof RuleEngine !== 'undefined' && typeof RuleEngine.resolveMetamagic === 'function')
+            ? RuleEngine.resolveMetamagic(sp, character, { armedMetamagic: cardArmed, isSpontaneous: isSpontCard, castTimeCatalog: cachedCastTimeCatalog })
+            : null;
+          let mmBlockedReason = '';
+          let mmPreviewPill = '';
+          if (cardMm) {
+            const effSlotLvl = cardMm.effectiveSlotLevel;
+            const srcObj = sources.find(s => s.key === srcKey);
+            const effSlotRec = srcObj ? (srcObj.slots || []).find(item => Number(item.level) === effSlotLvl) : null;
+            const effRem = effSlotRec ? Math.max(0, (Number(effSlotRec.daily) || 0) - (Number(effSlotRec.used) || 0)) : 0;
+            if (!cardMm.isValid) {
+              if (cardMm.rodLevelExceeded) mmBlockedReason = 'Rod Max Lvl';
+              else if (cardMm.exceedsMaxLevel) mmBlockedReason = `>L${rulesetMaxSpellLvl} (L${effSlotLvl})`;
+              else if (cardMm.hasDuplicateTransform) mmBlockedReason = 'Dup. Meta';
+              else if (cardMm.chargesExhausted) mmBlockedReason = '0 Uses';
+              else mmBlockedReason = 'Invalid';
+            } else if (effSlotLvl > 0 && effRem <= 0) {
+              mmBlockedReason = `No L${effSlotLvl} Slot`;
+            }
+            if (mmBlockedReason) {
+              mmPreviewPill = `<span class="text-[10px] font-mono font-bold px-1 rounded bg-rose-950/90 text-rose-300 border border-rose-700/70 shrink-0">${UI.escapeHtml(mmBlockedReason)}</span>`;
+            } else {
+              const parts = [];
+              if (effSlotLvl !== lvl) parts.push(`L${effSlotLvl}`);
+              if (cardMm.saveDcDelta > 0) parts.push(`+${cardMm.saveDcDelta} DC`);
+              if (cardMm.castAction === 'Swift Action') parts.push('Swift');
+              else if (cardMm.castAction === 'Full-Round Action') parts.push('Full-Rd');
+              if (parts.length === 0) parts.push('Meta');
+              mmPreviewPill = `<span class="text-[10px] font-mono font-bold px-1 rounded bg-purple-950/90 text-purple-200 border border-purple-600/70 shrink-0">${UI.escapeHtml(parts.join(' • '))}</span>`;
+            }
+          }
 
           let srcBadgeLabel = 'Spont.';
           let srcBadgeClass = 'bg-purple-950/80 text-purple-300 border-purple-700/60';
@@ -2030,19 +2071,19 @@
                  data-source-key="${srcKey}"
                  data-spell-hover-name="${attrName}"
                  data-spell-hover-source="${srcKey}"
-                 class="p-2 rounded-xl border ${activeBorder} transition flex flex-col justify-between cursor-pointer min-h-[58px] group relative select-none">
+                 class="p-2 rounded-xl border ${activeBorder} ${mmBlockedReason ? 'opacity-60' : ''} transition flex flex-col justify-between cursor-pointer min-h-[58px] group relative select-none">
               <div class="flex items-center justify-between w-full gap-1">
                 <div class="flex items-center gap-1 min-w-0">
                   <span class="text-[10px] font-mono font-bold px-1 rounded border uppercase tracking-wider shrink-0 ${srcBadgeClass}">${srcBadgeLabel}</span>
                   <span class="text-[10px] font-mono text-slate-300 font-bold uppercase truncate">${UI.escapeHtml(params.school || (sp.level === 0 ? 'Cantrip' : 'Lvl ' + sp.level))}</span>
                 </div>
-                ${params.dice ? `<span class="text-[10px] text-slate-200 font-mono font-bold shrink-0 truncate">${params.dice}</span>` : ''}
+                ${mmPreviewPill || (params.dice ? `<span class="text-[10px] text-slate-200 font-mono font-bold shrink-0 truncate">${params.dice}</span>` : '')}
               </div>
               <div class="text-[11px] ${titleColorClass} truncate my-0.5">
                 ${UI.escapeHtml(sp.name)}
               </div>
               <div class="flex items-center justify-between w-full text-[10px] text-slate-400 mt-0.5 gap-1">
-                <span class="truncate">${params.action}</span>
+                <span class="truncate">${cardMm && !mmBlockedReason ? UI.escapeHtml(cardMm.castAction) : params.action}</span>
                 ${bottomRightHtml}
               </div>
             </div>
@@ -2192,110 +2233,45 @@
       renderCombatCategorySpells();
     }
 
-    // --- 2. SPELL TACTICAL MODIFIERS ENGINE (TIER 2 - 3x3 GRID) ---
+    // --- 2. SPELL TACTICAL MODIFIERS ENGINE (TIER 2 - 3x3 GRID, Sprint E5 Epic A) ---
+    function getActiveCombatSpellDiscipline() {
+      const sel = typeof getSelectedCombatSpell === 'function' ? getSelectedCombatSpell() : null;
+      if (sel) {
+        return sel._spellSource || (typeof getSpellSlotSource === 'function' ? getSpellSlotSource(sel) : 'spontaneous');
+      }
+      const sources = typeof getAvailableSpellSlotSources === 'function' ? getAvailableSpellSlotSources(true) : [];
+      if (sources.some(s => s.key === 'spontaneous' && (s.slots || []).some(sl => Number(sl.daily) > 0))) return 'spontaneous';
+      if (sources.some(s => s.key === 'prepared' && (s.slots || []).some(sl => Number(sl.daily) > 0))) return 'prepared';
+      if (sources.some(s => s.key === 'divine' && (s.slots || []).some(sl => Number(sl.daily) > 0))) return 'divine';
+      return 'spontaneous';
+    }
+
     function getSpellTacticalModifiers() {
       if (!character) return [];
       const modifiers = [];
       const seen = new Set();
 
-      // Metamagic feat definitions lookup
-      const metamagicDefs = {
-        'empower spell': { name: 'Empower Spell', key: 'empower', slotDiff: 2, desc: '+50% Effect / +2 Slot', badge: '+2 Slot', color: 'purple', tag: 'Empower (+50%)' },
-        'maximize spell': { name: 'Maximize Spell', key: 'maximize', slotDiff: 3, desc: 'Max Dice / +3 Slot', badge: '+3 Slot', color: 'amber', tag: 'Maximize (Max)' },
-        'enlarge spell': { name: 'Enlarge Spell', key: 'enlarge', slotDiff: 1, desc: 'Range x2 / +1 Slot', badge: '+1 Slot', color: 'sky', tag: 'Enlarge (Range x2)' },
-        'extend spell': { name: 'Extend Spell', key: 'extend', slotDiff: 1, desc: 'Duration x2 / +1 Slot', badge: '+1 Slot', color: 'emerald', tag: 'Extend (Dur x2)' },
-        'quicken spell': { name: 'Quicken Spell', key: 'quicken', slotDiff: 4, desc: 'Swift Action / +4 Slot', badge: '+4 Slot', color: 'rose', tag: 'Quicken (Swift)' },
-        'silent spell': { name: 'Silent Spell', key: 'silent', slotDiff: 1, desc: 'No Verbal / +1 Slot', badge: '+1 Slot', color: 'indigo', tag: 'Silent (No V)' },
-        'still spell': { name: 'Still Spell', key: 'still', slotDiff: 1, desc: 'No Somatic / +1 Slot', badge: '+1 Slot', color: 'cyan', tag: 'Still (No S)' },
-        'widen spell': { name: 'Widen Spell', key: 'widen', slotDiff: 3, desc: 'Area x2 / +3 Slot', badge: '+3 Slot', color: 'teal', tag: 'Widen (Area x2)' },
-        'heighten spell': { name: 'Heighten Spell', key: 'heighten', slotDiff: 1, desc: 'DC +1 / +1 Slot', badge: '+1 Slot', color: 'purple', tag: 'Heighten (DC +1)', dcBonus: 1 },
-        'chain spell': { name: 'Chain Spell', key: 'chain', slotDiff: 3, desc: 'Secondary Targets / +3 Slot', badge: '+3 Slot', color: 'amber', tag: 'Chain Spell' },
-        'split ray': { name: 'Split Ray', key: 'split_ray', slotDiff: 2, desc: 'Extra Ray / +2 Slot', badge: '+2 Slot', color: 'sky', tag: 'Split Ray (+1 Ray)' },
-        'twin spell': { name: 'Twin Spell', key: 'twin', slotDiff: 4, desc: 'Cast Twice / +4 Slot', badge: '+4 Slot', color: 'rose', tag: 'Twin Spell' },
-        'sculpt spell': { name: 'Sculpt Spell', key: 'sculpt', slotDiff: 1, desc: 'Reshape Area / +1 Slot', badge: '+1 Slot', color: 'emerald', tag: 'Sculpt Area' },
-        'persistent spell': { name: 'Persistent Spell', key: 'persistent', slotDiff: 6, desc: '24 Hours / +6 Slot', badge: '+6 Slot', color: 'purple', tag: 'Persistent (24h)' },
-        'repeat spell': { name: 'Repeat Spell', key: 'repeat', slotDiff: 3, desc: 'Repeats Next Round / +3 Slot', badge: '+3 Slot', color: 'amber', tag: 'Repeat Spell' },
-        'transdimensional spell': { name: 'Transdimensional Spell', key: 'transdimensional', slotDiff: 1, desc: 'Hits Ethereal/Incorporeal / +1 Slot', badge: '+1 Slot', color: 'cyan', tag: 'Transdimensional' },
-        'energy substitution': { name: 'Energy Substitution', key: 'energy_sub', slotDiff: 0, desc: 'Substitute Energy / +0 Slot', badge: '+0 Slot', color: 'cyan', tag: 'Energy Sub' },
-        'energy admixture': { name: 'Energy Admixture', key: 'energy_admix', slotDiff: 4, desc: 'Dual Energy / +4 Slot', badge: '+4 Slot', color: 'amber', tag: 'Energy Admixture' },
-        'born of the three thunders': { name: 'Born of the Three Thunders', key: 'three_thunders', slotDiff: 0, desc: 'Electricity/Sonic / +0 Slot', badge: '+0 Slot', color: 'indigo', tag: 'Three Thunders' }
-      };
-
-      // 1. Only include Metamagic feats actually owned by the character in character.feats
-      (character.feats || []).forEach(f => {
-        if (!f) return;
-        const fName = typeof f === 'string' ? f : (f.name || '');
-        const low = fName.toLowerCase().trim();
-        if (seen.has(low)) return;
-
-        if (metamagicDefs[low]) {
+      // 1. Canonical V3 Cast-Time Metamagic (Slot Feats for Spontaneous, Metamagic Rods & Sudden Metamagic for all)
+      const activeDisc = getActiveCombatSpellDiscipline();
+      const selSpell = typeof getSelectedCombatSpell === 'function' ? getSelectedCombatSpell() : null;
+      const selSpellLvl = selSpell ? (Number(selSpell.level) || 0) : null;
+      if (typeof RuleEngine !== 'undefined' && typeof RuleEngine.listCastTimeMetamagic === 'function') {
+        const castTimeList = RuleEngine.listCastTimeMetamagic(character, {
+          discipline: activeDisc,
+          spellLevel: selSpellLvl,
+          includeIneligible: true
+        });
+        castTimeList.forEach(entry => {
+          if (!entry) return;
+          // Prepared / Divine: hide slot-based metamagic feats (applied at preparation per RAW PHB p.88)
+          if ((activeDisc === 'prepared' || activeDisc === 'divine') && entry.kind === 'feat') return;
+          const low = String(entry.name || entry.id || '').toLowerCase().trim();
           seen.add(low);
-          const def = metamagicDefs[low];
-          modifiers.push({
-            id: `meta_${def.key}`,
-            elementId: `mod-${def.key}-spell`,
-            key: def.key,
-            name: def.name,
-            slotDiff: def.slotDiff,
-            dcBonus: def.dcBonus || 0,
-            desc: def.desc,
-            badge: def.badge,
-            color: def.color,
-            tag: def.tag,
-            isMetamagic: true
-          });
-        } else if (f.type === 'Metamagic' || f.category === 'Metamagic' || (Array.isArray(f.tags) && f.tags.includes('metamagic'))) {
-          seen.add(low);
-          const sDiff = Number(f.slotDiff ?? f.levelAdjustment ?? 0) || 0;
-          modifiers.push({
-            id: `meta_${low.replace(/\s+/g, '_')}`,
-            elementId: `mod-${low.replace(/\s+/g, '_')}-spell`,
-            key: low.replace(/\s+/g, '_'),
-            name: f.name || fName,
-            slotDiff: sDiff,
-            dcBonus: Number(f.dcBonus) || 0,
-            desc: f.benefit || f.desc || (sDiff ? `+${sDiff} Slot` : 'Metamagic'),
-            badge: f.badge || (sDiff ? `+${sDiff} Slot` : 'Metamagic'),
-            color: f.color || 'purple',
-            tag: `${f.name || fName} (Feat)`,
-            isMetamagic: true
-          });
-        }
-      });
-
-      // 3. Metamagic Rods in body slots / inventory
-      const allItems = [...(character.inventory || []), ...(character.gearPool || [])];
-      if (character.bodySlots) {
-        Object.values(character.bodySlots).forEach(item => { if (item) allItems.push(item); });
+          modifiers.push(entry);
+        });
       }
-      allItems.forEach(item => {
-        if (!item) return;
-        const iName = typeof item === 'string' ? item : (item.name || '');
-        const low = iName.toLowerCase();
-        if (low.includes('metamagic rod') || low.includes('rod of empower') || low.includes('rod of extend') || low.includes('rod of maximize') || low.includes('rod of quicken')) {
-          if (!seen.has(low)) {
-            seen.add(low);
-            let rodKey = 'empower';
-            if (low.includes('maximize')) rodKey = 'maximize';
-            else if (low.includes('extend')) rodKey = 'extend';
-            else if (low.includes('quicken')) rodKey = 'quicken';
-            modifiers.push({
-              id: `rod_${iName.replace(/\s+/g, '_')}`,
-              key: `rod_${rodKey}`,
-              name: iName,
-              sourceType: 'Item',
-              slotDiff: 0,
-              desc: 'Metamagic Rod (+0 Slot Level, 3/day)',
-              badge: 'Rod',
-              color: 'amber',
-              tag: `${iName} (Rod)`,
-              isRod: true
-            });
-          }
-        }
-      });
 
-      // 4. Any Feat, Special Ability, or Buff pinned with ANY spell pin
+      // 2. Any Feat, Special Ability, or Buff pinned with ANY spell pin (non-metamagic custom pins)
       const spellCatKeys = ['offense_spell', 'spell_control', 'spell_support'];
       const allPins = typeof getAllCombatPins === 'function' ? getAllCombatPins() : [];
 
@@ -2324,6 +2300,7 @@
           color: target === 'offense_spell' ? 'purple' : (target === 'spell_control' ? 'amber' : 'emerald'),
           tag: `${p.name} (Active)`,
           pinTarget: target,
+          eligible: true,
           rawPin: p
         });
       });
@@ -2332,7 +2309,11 @@
     }
 
     function isSpellCockpitModifierActive(mod) {
-      if (!character) return false;
+      if (!character || !mod) return false;
+      if (mod.isMetamagic) {
+        const armed = Array.isArray(character?.tactical?.armedMetamagic) ? character.tactical.armedMetamagic : [];
+        return armed.some(a => a && a.id === mod.id);
+      }
       if (!character.tactical) character.tactical = {};
       if (!character.tactical.activeSpellModifiers) character.tactical.activeSpellModifiers = {};
       const activeDict = character.tactical.activeSpellModifiers;
@@ -2341,10 +2322,6 @@
       if (mod.key && activeDict[mod.key] !== undefined) return Boolean(activeDict[mod.key]);
       if (activeDict[mod.name] !== undefined) return Boolean(activeDict[mod.name]);
       if (mod.rawPin && mod.rawPin.active !== undefined) return Boolean(mod.rawPin.active);
-      if (mod.elementId) {
-        const el = document.getElementById(mod.elementId);
-        if (el) return Boolean(el.checked);
-      }
       return false;
     }
 
@@ -2357,23 +2334,77 @@
       if (event && event.stopPropagation) event.stopPropagation();
       if (!character) return;
       if (!character.tactical) character.tactical = {};
-      if (!character.tactical.activeSpellModifiers) character.tactical.activeSpellModifiers = {};
 
       const allMods = getSpellTacticalModifiers();
       const mod = allMods.find(m => m.id === modId || m.key === modId || m.name === modId);
       if (!mod) return;
 
+      // Canonical V3 Cast-Time Metamagic path -> CharStore.dispatch('combat/toggleArmedMetamagic')
+      if (mod.isMetamagic) {
+        const isCurrentlyArmed = isSpellCockpitModifierActive(mod);
+        if (!isCurrentlyArmed && mod.eligible === false) {
+          showDiceTopToast({
+            icon: '⚠️',
+            title: mod.name,
+            breakdown: mod.ineligibleReason || 'Cannot be applied right now.',
+            total: 'Locked'
+          });
+          return;
+        }
+        const curSpell = typeof getSelectedCombatSpell === 'function' ? getSelectedCombatSpell() : null;
+        const curLvl = curSpell ? (Number(curSpell.level) || 0) : 0;
+        if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
+          CharStore.dispatch({
+            type: 'combat/toggleArmedMetamagic',
+            payload: {
+              id: mod.id,
+              baseLevel: curLvl,
+              discipline: getActiveCombatSpellDiscipline()
+            },
+            meta: { label: `Toggle Metamagic (${mod.name})` }
+          });
+          const out = CharStore.getLastOutcome();
+          if (out && out.status === 'max_one_rod_per_spell') {
+            showDiceTopToast({
+              icon: '🪄',
+              title: 'Max 1 Metamagic Rod Per Spell',
+              breakdown: 'Only one Metamagic Rod may be applied to a spell.',
+              total: 'Limit'
+            });
+            return;
+          }
+          if (out && out.status === 'duplicate_metamagic_transform') {
+            showDiceTopToast({
+              icon: '✨',
+              title: 'Duplicate Metamagic Effect',
+              breakdown: `Another modifier with the '${out.transform}' effect is already armed.`,
+              total: 'Conflict'
+            });
+            return;
+          }
+          if (out && out.status === 'charges_exhausted') {
+            showDiceTopToast({
+              icon: '⚠️',
+              title: 'No Uses Remaining',
+              breakdown: `${mod.name} has no daily uses remaining until Long Rest.`,
+              total: '0 Left'
+            });
+            return;
+          }
+        }
+        renderSpellTacticalModifiers();
+        renderCombatCategorySpells();
+        recalculateCombatSpell();
+        return;
+      }
+
+      if (!character.tactical.activeSpellModifiers) character.tactical.activeSpellModifiers = {};
       const currentActive = isSpellCockpitModifierActive(mod);
       const nextActive = !currentActive;
 
       character.tactical.activeSpellModifiers[mod.id] = nextActive;
       if (mod.key) character.tactical.activeSpellModifiers[mod.key] = nextActive;
       character.tactical.activeSpellModifiers[mod.name] = nextActive;
-
-      if (mod.elementId) {
-        const el = document.getElementById(mod.elementId);
-        if (el) el.checked = nextActive;
-      }
 
       if (mod.rawPin) {
         mod.rawPin.active = nextActive;
@@ -2393,6 +2424,29 @@
 
       saveStateToStorage(false);
       renderSpellTacticalModifiers();
+      recalculateCombatSpell();
+    }
+
+    function adjustArmedHeightenLevel(modId, delta, event) {
+      if (event && event.stopPropagation) event.stopPropagation();
+      if (!character || typeof CharStore === 'undefined' || typeof CharStore.dispatch !== 'function') return;
+      const armed = Array.isArray(character?.tactical?.armedMetamagic) ? character.tactical.armedMetamagic : [];
+      const hit = armed.find(a => a && (a.id === modId || a.transform === 'heighten'));
+      if (!hit) return;
+      const maxSpellLvl = Number(typeof RuleEngine !== 'undefined' && RuleEngine.rulesets?.dnd35?.metamagicRules?.maxSpellLevel) || 9;
+      const curSpell = typeof getSelectedCombatSpell === 'function' ? getSelectedCombatSpell() : null;
+      const baseLvl = curSpell ? (Number(curSpell.level) || 0) : 0;
+      const minLvl = Math.min(maxSpellLvl, Math.max(1, baseLvl + 1));
+      const curTarget = Number(hit.heightenTo) || minLvl;
+      const nextTarget = Math.min(maxSpellLvl, Math.max(minLvl, curTarget + Number(delta || 0)));
+      if (nextTarget === curTarget) return;
+      CharStore.dispatch({
+        type: 'combat/setArmedHeighten',
+        payload: { id: hit.id, heightenTo: nextTarget, baseLevel: baseLvl },
+        meta: { label: `Heighten Level -> L${nextTarget}` }
+      });
+      renderSpellTacticalModifiers();
+      renderCombatCategorySpells();
       recalculateCombatSpell();
     }
 
@@ -2690,8 +2744,10 @@
       }
 
       // Build modifier cards (Glow Card Toggle)
+      const armedList = Array.isArray(character?.tactical?.armedMetamagic) ? character.tactical.armedMetamagic : [];
       const modCards = modifiers.map(mod => {
         const isActive = isSpellCockpitModifierActive(mod);
+        const isDisabled = !isActive && mod.eligible === false;
 
         let activeBorder = 'border-2 border-purple-400 bg-purple-950 text-white shadow-[0_0_12px_rgba(192,132,252,0.35)] ring-1 ring-purple-400/30';
         let badgeColor = 'text-purple-300';
@@ -2715,24 +2771,41 @@
           valueColor = 'text-rose-200';
         }
 
-        const icon = mod.isRod ? '🪄' : (mod.isMetamagic ? '✨' : (mod.sourceType === 'Feat' ? '⚡' : '🔮'));
+        const icon = mod.isRod ? '🪄' : (mod.isSudden ? '⚡' : (mod.isMetamagic ? '✨' : (mod.sourceType === 'Feat' ? '⚡' : '🔮')));
         const badgeLabel = mod.badge || (mod.isRod ? 'Rod' : (mod.isMetamagic ? 'Metamagic' : (mod.sourceType || 'Spell')));
-        const safeId = String(mod.id || '').replace(/"/g, '&quot;');
+        const safeId = UI.escapeAttr(String(mod.id || ''));
+
+        let subLineHtml = `<div class="text-[10px] ${isActive ? `${valueColor} font-bold` : (isDisabled ? 'text-slate-500' : 'text-slate-400')} font-mono mt-1 truncate w-full">${UI.escapeHtml(isDisabled && mod.ineligibleReason ? mod.ineligibleReason : mod.desc)}</div>`;
+        if (isActive && mod.variableSlot) {
+          const armedHit = armedList.find(a => a && a.id === mod.id);
+          const hTarget = Number(armedHit?.heightenTo) || Math.min(9, Math.max(1, currentLvl + 1));
+          subLineHtml = `
+            <div class="flex items-center justify-center gap-1 mt-1" data-action="combat:noop-stop">
+              <button type="button" data-action="combat:adjust-armed-heighten" data-mod-id="${safeId}" data-delta="-1" class="px-1 rounded bg-purple-900/90 hover:bg-purple-700 text-white font-mono text-[10px] font-bold cursor-pointer">−</button>
+              <span class="text-[10px] font-mono font-bold text-purple-100">L${hTarget}</span>
+              <button type="button" data-action="combat:adjust-armed-heighten" data-mod-id="${safeId}" data-delta="1" class="px-1 rounded bg-purple-900/90 hover:bg-purple-700 text-white font-mono text-[10px] font-bold cursor-pointer">+</button>
+            </div>
+          `;
+        }
+
+        const inactiveCls = isDisabled
+          ? 'border border-slate-800/60 bg-slate-950/60 text-slate-500 opacity-60'
+          : 'border border-slate-800 bg-slate-900 text-slate-300 hover:border-purple-500/60';
 
         return `
           <div data-action="combat:toggle-spell-cockpit-mod" data-mod-id="${safeId}"
                data-combat-tooltip="${safeId}"
                data-tooltip-cat="spell"
-               class="relative ${isActive ? activeBorder : 'border border-slate-800 bg-slate-900 text-slate-300 hover:border-purple-500/60'} rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer">
+               class="relative ${isActive ? activeBorder : inactiveCls} rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer">
             <div class="flex items-center justify-center px-0.5 text-[10px] leading-none shrink-0 w-full">
-              <span class="text-[10px] font-mono ${isActive ? `${badgeColor} font-bold` : 'text-slate-500'} truncate max-w-[75px]">${badgeLabel}</span>
+              <span class="text-[10px] font-mono ${isActive ? `${badgeColor} font-bold` : 'text-slate-500'} truncate max-w-[85px]">${UI.escapeHtml(badgeLabel)}</span>
             </div>
 
             <div class="flex-1 flex flex-col justify-center items-center px-0.5 my-auto">
-              <div class="text-[10px] ${isActive ? 'font-black text-white' : 'font-bold text-slate-200'} leading-tight truncate w-full">
+              <div class="text-[10px] ${isActive ? 'font-black text-white' : (isDisabled ? 'font-bold text-slate-500' : 'font-bold text-slate-200')} leading-tight truncate w-full">
                 <span class="mr-0.5 text-[10px]">${icon}</span>${UI.escapeHtml(mod.name)}
               </div>
-              <div class="text-[10px] ${isActive ? `${valueColor} font-bold` : 'text-slate-400'} font-mono mt-1 truncate w-full">${UI.escapeHtml(mod.desc)}</div>
+              ${subLineHtml}
             </div>
           </div>
         `;
@@ -2780,52 +2853,44 @@
       }
 
       const baseLvl = Number(spell.level) || 0;
-      const activeSpellMods = typeof getActiveSpellTacticalModifiers === 'function' ? getActiveSpellTacticalModifiers() : [];
-      let slotDiff = 0;
-      let dcBonus = 0;
-      const metamagicTags = [];
-      let isEmpower = false;
-      let isMaximize = false;
-      let isEnlarge = false;
-      let isExtend = false;
-      let isQuicken = false;
+      const slotSource = spell._spellSource || (typeof getSpellSlotSource === 'function' ? getSpellSlotSource(spell) : 'spontaneous');
+      const isSpontSlot = slotSource === 'spontaneous';
+      const rawArmed = Array.isArray(character?.tactical?.armedMetamagic) ? character.tactical.armedMetamagic : [];
+      const applicableArmed = rawArmed.filter(a => a && (isSpontSlot || a.kind === 'rod' || a.kind === 'sudden'));
 
-      activeSpellMods.forEach(mod => {
-        if (!mod) return;
-        if (mod.key === 'empower' || mod.id === 'meta_empower') isEmpower = true;
-        if (mod.key === 'maximize' || mod.id === 'meta_maximize') isMaximize = true;
-        if (mod.key === 'enlarge' || mod.id === 'meta_enlarge') isEnlarge = true;
-        if (mod.key === 'extend' || mod.id === 'meta_extend') isExtend = true;
-        if (mod.key === 'quicken' || mod.id === 'meta_quicken') isQuicken = true;
+      const mm = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.resolveMetamagic === 'function')
+        ? RuleEngine.resolveMetamagic(spell, character, {
+          armedMetamagic: applicableArmed.length > 0 ? applicableArmed : undefined,
+          isSpontaneous: isSpontSlot,
+          discipline: slotSource
+        })
+        : null;
 
-        if (Number(mod.slotDiff)) {
-          slotDiff += Number(mod.slotDiff);
-        }
-        if (Number(mod.dcBonus)) {
-          dcBonus += Number(mod.dcBonus);
-        }
-        metamagicTags.push(mod.tag || mod.badge || mod.name);
-      });
-
-      // Fallback check on checkboxes if dynamic grid rendered them with those IDs
-      if (!isEmpower && document.getElementById('mod-empower-spell')?.checked) { isEmpower = true; slotDiff += 2; metamagicTags.push('Empower (+50%)'); }
-      if (!isMaximize && document.getElementById('mod-maximize-spell')?.checked) { isMaximize = true; slotDiff += 3; metamagicTags.push('Maximize (Max)'); }
-      if (!isEnlarge && document.getElementById('mod-enlarge-spell')?.checked) { isEnlarge = true; slotDiff += 1; metamagicTags.push('Enlarge (Range x2)'); }
-      if (!isExtend && document.getElementById('mod-extend-spell')?.checked) { isExtend = true; slotDiff += 1; metamagicTags.push('Extend (Dur x2)'); }
-
-      const finalLvl = baseLvl + slotDiff;
-      const isMetamagicActive = metamagicTags.length > 0;
+      const finalLvl = mm ? mm.effectiveSlotLevel : baseLvl;
+      const dcBonus = mm ? mm.saveDcDelta : 0;
+      const dmgMode = mm ? mm.damageMode : 'normal';
+      const isEmpower = dmgMode === 'empower' || dmgMode === 'maximize_and_empower';
+      const isMaximize = dmgMode === 'maximize' || dmgMode === 'maximize_and_empower';
+      const isQuicken = Boolean(mm && mm.transforms.includes('quicken'));
+      const castActionText = mm ? mm.castAction : (spell.action || 'Standard Action');
+      const isMetamagicActive = Boolean(mm && mm.transforms.length > 0);
 
       const metaNote = document.getElementById('metamagic-action-note');
       if (metaNote) {
-        if (isQuicken) {
+        if (mm && !mm.isValid) {
+          metaNote.textContent = `(${mm.invalidReasons[0] || 'Invalid Metamagic'})`;
+          metaNote.className = 'text-[10px] text-rose-400 font-bold';
+        } else if (isQuicken) {
           metaNote.textContent = '(Quicken: Swift Action)';
           metaNote.className = 'text-[10px] text-rose-400 font-bold';
-        } else if (isMetamagicActive) {
+        } else if (castActionText === 'Full-Round Action') {
           metaNote.textContent = '(Spontaneous: Full-Round)';
           metaNote.className = 'text-[10px] text-amber-400 font-bold';
+        } else if (isMetamagicActive) {
+          metaNote.textContent = `(${castActionText} • L${finalLvl})`;
+          metaNote.className = 'text-[10px] text-purple-300 font-bold';
         } else {
-          metaNote.textContent = '(Standard Action)';
+          metaNote.textContent = `(${castActionText})`;
           metaNote.className = 'text-[10px] text-slate-400';
         }
       }
@@ -2847,9 +2912,6 @@
         else if (effSrc === 'divine') sourceIcon.className = 'text-amber-400 text-xs';
         else sourceIcon.className = 'text-purple-400 text-xs';
       }
-
-      // Spell's slot source (Spontaneous, Prepared, Divine)
-      const slotSource = typeof getSpellSlotSource === 'function' ? getSpellSlotSource(spell) : 'spontaneous';
 
       // Attack roll & DC calculation
       const bab = Number(character?.bab) || 0;
@@ -2948,24 +3010,37 @@
       const concDcHint = document.getElementById('defensive-casting-dc-hint');
       if (concDcHint) concDcHint.textContent = `DC ${15 + finalLvl} • No AoO`;
 
-      // Smart Adaptive Action Button
+      // Smart Adaptive Action Button (live slot & metamagic validity check)
       const castBtn = document.getElementById('main-spell-cast-btn');
       const btnIcon = document.getElementById('main-spell-btn-icon');
       const btnText = document.getElementById('main-spell-btn-text');
       const btnSub = document.getElementById('main-spell-btn-sub');
+      const slotArr = typeof getSpellSlotsArrayBySource === 'function' ? getSpellSlotsArrayBySource(slotSource) : (character?.spellcasting?.slots || []);
+      const targetSlotRec = (slotArr || []).find(s => Number(s.level) === finalLvl);
+      const hasSlotAvailable = finalLvl === 0
+        ? (!targetSlotRec || Number(targetSlotRec.daily) <= 0 || Number(targetSlotRec.used) < Number(targetSlotRec.daily))
+        : Boolean(targetSlotRec && Number(targetSlotRec.daily) > 0 && Number(targetSlotRec.used) < Number(targetSlotRec.daily));
+      const isCastDisabled = Boolean((mm && !mm.isValid) || (isMetamagicActive && !hasSlotAvailable));
+
       if (castBtn && btnText) {
-        castBtn.disabled = false;
-        if (btnIcon) btnIcon.textContent = '⚡';
-        btnText.textContent = 'CAST';
+        castBtn.disabled = isCastDisabled;
+        if (btnIcon) btnIcon.textContent = isCastDisabled ? '⛔' : '⚡';
+        btnText.textContent = isCastDisabled ? 'LOCKED' : 'CAST';
         if (btnSub) {
-          if (isQuicken) {
+          if (mm && !mm.isValid) {
+            btnSub.innerHTML = `<span class="block">Invalid</span><span class="block">Metamagic</span>`;
+            btnSub.className = 'text-[10px] font-mono text-rose-300 font-bold leading-tight mt-0.5 text-center';
+          } else if (isCastDisabled) {
+            btnSub.innerHTML = `<span class="block">No L${finalLvl}</span><span class="block">Slots</span>`;
+            btnSub.className = 'text-[10px] font-mono text-rose-300 font-bold leading-tight mt-0.5 text-center';
+          } else if (isQuicken) {
             btnSub.innerHTML = '<span class="block">Swift</span><span class="block">Action</span>';
             btnSub.className = 'text-[10px] font-mono text-rose-300 font-bold leading-tight mt-0.5 text-center';
-          } else if (isMetamagicActive && slotSource === 'spontaneous') {
+          } else if (castActionText === 'Full-Round Action') {
             btnSub.innerHTML = '<span class="block">Full-Round</span><span class="block">Action</span>';
             btnSub.className = 'text-[10px] font-mono text-amber-300 font-bold leading-tight mt-0.5 text-center';
           } else {
-            const actStr = (spell.action || '').toLowerCase().includes('swift') ? 'Swift' : 'Standard';
+            const actStr = (castActionText || '').toLowerCase().includes('swift') ? 'Swift' : 'Standard';
             btnSub.innerHTML = `<span class="block">${actStr}</span><span class="block">Action</span>`;
             btnSub.className = 'text-[10px] font-mono text-purple-200/90 font-bold leading-tight mt-0.5 text-center';
           }
@@ -3303,34 +3378,49 @@
       }
 
       const baseLvl = Number(spell.level) || 0;
-      const activeSpellMods = typeof getActiveSpellTacticalModifiers === 'function' ? getActiveSpellTacticalModifiers() : [];
-      let slotDiff = 0;
-      let dcBonus = 0;
-      let isEmpower = false;
-      let isMaximize = false;
-      let isEnlarge = false;
-      let isExtend = false;
-      let isQuicken = false;
+      const slotSource = spell._spellSource || (typeof getSpellSlotSource === 'function' ? getSpellSlotSource(spell) : 'spontaneous');
+      const isSpontSlot = slotSource === 'spontaneous';
+      const rawArmed = Array.isArray(character?.tactical?.armedMetamagic) ? character.tactical.armedMetamagic : [];
+      const applicableArmed = rawArmed.filter(a => a && (isSpontSlot || a.kind === 'rod' || a.kind === 'sudden'));
 
-      activeSpellMods.forEach(mod => {
-        if (!mod) return;
-        if (mod.key === 'empower' || mod.id === 'meta_empower') isEmpower = true;
-        if (mod.key === 'maximize' || mod.id === 'meta_maximize') isMaximize = true;
-        if (mod.key === 'enlarge' || mod.id === 'meta_enlarge') isEnlarge = true;
-        if (mod.key === 'extend' || mod.id === 'meta_extend') isExtend = true;
-        if (mod.key === 'quicken' || mod.id === 'meta_quicken') isQuicken = true;
-        if (Number(mod.slotDiff)) slotDiff += Number(mod.slotDiff);
-        if (Number(mod.dcBonus)) dcBonus += Number(mod.dcBonus);
-      });
+      const mm = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.resolveMetamagic === 'function')
+        ? RuleEngine.resolveMetamagic(spell, character, {
+          armedMetamagic: applicableArmed.length > 0 ? applicableArmed : undefined,
+          isSpontaneous: isSpontSlot,
+          discipline: slotSource
+        })
+        : null;
 
-      // Fallback check on checkboxes if present
-      if (!isEmpower && document.getElementById('mod-empower-spell')?.checked) { isEmpower = true; slotDiff += 2; }
-      if (!isMaximize && document.getElementById('mod-maximize-spell')?.checked) { isMaximize = true; slotDiff += 3; }
-      if (!isEnlarge && document.getElementById('mod-enlarge-spell')?.checked) { isEnlarge = true; slotDiff += 1; }
-      if (!isExtend && document.getElementById('mod-extend-spell')?.checked) { isExtend = true; slotDiff += 1; }
+      if (mm && !mm.isValid) {
+        showDiceTopToast({
+          icon: '⚠️',
+          title: 'Cannot Apply Metamagic',
+          breakdown: mm.invalidReasons.join(' • ') || 'Invalid metamagic combination.',
+          total: 'Blocked'
+        });
+        return;
+      }
 
-      const finalLvl = baseLvl + slotDiff;
-      const isMetamagicActive = slotDiff > 0 || isEmpower || isMaximize || isEnlarge || isExtend || isQuicken;
+      const finalLvl = mm ? mm.effectiveSlotLevel : baseLvl;
+      const dcBonus = mm ? mm.saveDcDelta : 0;
+      const dmgMode = mm ? mm.damageMode : 'normal';
+      const isEmpower = dmgMode === 'empower' || dmgMode === 'maximize_and_empower';
+      const isMaximize = dmgMode === 'maximize' || dmgMode === 'maximize_and_empower';
+      const isEnlarge = Boolean(mm && mm.transforms.includes('enlarge'));
+      const isExtend = Boolean(mm && mm.transforms.includes('extend'));
+      const isQuicken = Boolean(mm && mm.transforms.includes('quicken'));
+      const castActionText = mm ? mm.castAction : (spell.castingTime || spell.action || 'Standard Action');
+      const isMetamagicActive = Boolean(mm && mm.transforms.length > 0);
+
+      // Resolve spell index in its canonical CharStore array for atomic spells/castSpell
+      let spellStoreIdx = -1;
+      if (slotSource === 'prepared') {
+        spellStoreIdx = (character?.spellcasting?.preparedSpells || []).findIndex(s => s && (spell.instanceId ? s.instanceId === spell.instanceId : (s.name === spell.name && Number(s.level) === baseLvl && !s.isCast && !s.cast)));
+      } else if (slotSource === 'divine') {
+        spellStoreIdx = (character?.spellcasting?.divineSpells || []).findIndex(s => s && (spell.instanceId ? s.instanceId === spell.instanceId : (s.name === spell.name && Number(s.level) === baseLvl && !s.isCast && !s.cast)));
+      } else {
+        spellStoreIdx = (character?.spellcasting?.knownSpells || []).findIndex(s => s && s.name === spell.name && Number(s.level) === baseLvl);
+      }
 
       // Defensive Casting Check (D&D 3.5e RAW: Concentration DC 15 + Spell Level)
       const isDefensive = Boolean(character?.tactical?.defensiveCastingActive || document.getElementById('mod-defensive-casting')?.checked);
@@ -3357,108 +3447,106 @@
         }
 
         if (!concPassed) {
-          showDiceTopToast({
-            icon: '⚠️',
-            title: 'Concentration Failed!',
-            breakdown: `d20:${d20Conc} + ${concBonus} = ${totalConc} (Required: DC ${targetConcDc}). The spell fizzles!`,
-            total: 'Fizzled'
-          });
-          // Consume slot on failure (RAW 3.5e)
-          const slotSource = typeof getSpellSlotSource === 'function' ? getSpellSlotSource(spell) : 'spontaneous';
-          const slots = typeof getSpellSlotsArrayBySource === 'function' ? getSpellSlotsArrayBySource(slotSource) : (character?.spellcasting?.slots || []);
-          const targetSlot = slots.find(s => Number(s.level) === finalLvl);
-          if (targetSlot) {
-            targetSlot.used++;
-            if (slotSource === 'divine' && spell.isDomainSpell) {
-              const domDaily = Number(targetSlot.domainDaily) || 0;
-              const domUsed = Number(targetSlot.domainUsed) || 0;
-              targetSlot.domainUsed = Math.min(domDaily, domUsed + 1);
-            }
-            if (typeof renderSpellSlots === 'function') renderSpellSlots();
-            if (slotSource === 'prepared' && typeof renderPreparedSpells === 'function') renderPreparedSpells();
-            if (slotSource === 'divine' && typeof renderDivineSpells === 'function') renderDivineSpells();
-            renderSpellSlotsStrip();
-            renderCombatCategorySpells();
-            saveStateToStorage(false);
+          // Atomically consume slot + Rod/Sudden + clear armedMetamagic on fizzle (RAW 3.5e, 1-step Undo)
+          let fizzleOk = true;
+          if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
+            CharStore.dispatch({
+              type: 'spells/castSpell',
+              payload: {
+                discipline: slotSource,
+                index: spellStoreIdx,
+                instanceId: spell.instanceId,
+                spellId: spell.id,
+                spellName: spell.name,
+                spellLevel: finalLvl,
+                isDomain: Boolean(spell.isDomainSpell),
+                useArmedMetamagic: true
+              },
+              meta: { label: `Fizzled Spell (${spell.name})` }
+            });
+            const fizzleOut = CharStore.getLastOutcome();
+            fizzleOk = Boolean(fizzleOut && fizzleOut.status === 'spell_cast');
           }
+          if (fizzleOk) {
+            showDiceTopToast({
+              icon: '⚠️',
+              title: 'Concentration Failed!',
+              breakdown: `d20:${d20Conc} + ${concBonus} = ${totalConc} (Required: DC ${targetConcDc}). The spell fizzles!`,
+              total: 'Fizzled'
+            });
+          } else {
+            showDiceTopToast({
+              icon: '⚠️',
+              title: 'Cannot Cast Spell',
+              breakdown: `No Level ${finalLvl} spell slot available to cast ${spell.name}.`,
+              total: 'Blocked'
+            });
+          }
+          if (typeof renderSpellSlots === 'function') renderSpellSlots();
+          if (slotSource === 'prepared' && typeof renderPreparedSpells === 'function') renderPreparedSpells();
+          if (slotSource === 'divine' && typeof renderDivineSpells === 'function') renderDivineSpells();
+          renderSpellSlotsStrip();
+          renderCombatCategorySpells();
+          renderSpellTacticalModifiers();
           recalculateCombatSpell();
           return;
         }
       }
 
-      // Consume slot
-      const slotSource = typeof getSpellSlotSource === 'function' ? getSpellSlotSource(spell) : 'spontaneous';
-      const slots = typeof getSpellSlotsArrayBySource === 'function' ? getSpellSlotsArrayBySource(slotSource) : (character?.spellcasting?.slots || []);
-      const targetSlot = slots.find(s => Number(s.level) === finalLvl);
+      // Atomically consume slot + Metamagic Rod charge + Sudden Metamagic use + clear armedMetamagic (1-step Undo)
       const sourceLabels = { spontaneous: 'Spont.', prepared: 'Prep.', divine: 'Divine' };
-
-      if (!targetSlot || Number(targetSlot.daily) <= 0) {
-        showDiceTopToast({
-          icon: '⚠️',
-          title: 'Spell Slot Unavailable!',
-          breakdown: `Level ${finalLvl} ${sourceLabels[slotSource] || ''} spell slot is locked or unavailable on this character!`,
-          total: 'Error'
+      const maxLvlCfg = Number(typeof RuleEngine !== 'undefined' && RuleEngine.rulesets?.dnd35?.metamagicRules?.maxSpellLevel) || 9;
+      if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
+        CharStore.dispatch({
+          type: 'spells/castSpell',
+          payload: {
+            discipline: slotSource,
+            index: spellStoreIdx,
+            instanceId: spell.instanceId,
+            spellId: spell.id,
+            spellName: spell.name,
+            spellLevel: finalLvl,
+            isDomain: Boolean(spell.isDomainSpell),
+            useArmedMetamagic: true
+          },
+          meta: { label: `Cast Spell (${spell.name})` }
         });
-        return;
-      }
-
-      if (slotSource === 'divine') {
-        const isDom = Boolean(spell.isDomainSpell);
-        const domDaily = Number(targetSlot.domainDaily) || 0;
-        const domUsed = Number(targetSlot.domainUsed) || 0;
-        const regDaily = targetSlot.regularDaily !== undefined ? Number(targetSlot.regularDaily) : Math.max(0, (Number(targetSlot.daily) || 0) - domDaily);
-        const regUsed = Math.max(0, (Number(targetSlot.used) || 0) - domUsed);
-        if (isDom && (domDaily <= 0 || domUsed >= domDaily)) {
+        const castOut = CharStore.getLastOutcome();
+        if (!castOut || castOut.status !== 'spell_cast') {
+          const reasonMap = {
+            no_slots_remaining: `No Level ${finalLvl} ${sourceLabels[slotSource] || ''} spell slots remaining.`,
+            already_cast: `${spell.name} has already been cast.`,
+            rod_spell_level_exceeded: (castOut?.reasons || []).join(' • ') || 'Spell exceeds Metamagic Rod max level.',
+            max_one_rod_per_spell: 'Only 1 Metamagic Rod may be used per spell.',
+            duplicate_metamagic_transform: (castOut?.reasons || []).join(' • ') || 'Duplicate metamagic effect.',
+            charges_exhausted: (castOut?.reasons || []).join(' • ') || 'No daily uses remaining.',
+            slot_level_exceeded: `Effective slot level ${finalLvl} exceeds maximum (${maxLvlCfg}).`
+          };
           showDiceTopToast({
             icon: '⚠️',
-            title: 'No Domain Slot Remaining!',
-            breakdown: `Level ${finalLvl} Domain spell slot (${domUsed}/${domDaily}) has already been expended today.`,
-            total: '0 Slots'
+            title: 'Cannot Cast Spell',
+            breakdown: reasonMap[castOut?.status] || (castOut?.reasons || []).join(' • ') || 'Spell cast blocked.',
+            total: 'Blocked'
           });
           return;
         }
-        if (!isDom && regUsed >= regDaily) {
-          showDiceTopToast({
-            icon: '⚠️',
-            title: 'No Regular Divine Slots Remaining!',
-            breakdown: `Level ${finalLvl} regular Divine spell slots (${regUsed}/${regDaily}) are expended. Remaining slot is reserved for your Domain spell.`,
-            total: '0 Slots'
-          });
-          return;
-        }
       }
 
-      if (targetSlot.used >= targetSlot.daily) {
-        showDiceTopToast({
-          icon: '⚠️',
-          title: 'No Spell Slots Remaining!',
-          breakdown: `You have no Level ${finalLvl} ${sourceLabels[slotSource] || ''} spell slots remaining (${targetSlot.used}/${targetSlot.daily}).`,
-          total: 'Error'
-        });
-        return;
-      }
-
-      targetSlot.used++;
-      if (slotSource === 'divine' && spell.isDomainSpell) {
-        const domDaily = Number(targetSlot.domainDaily) || 0;
-        const domUsed = Number(targetSlot.domainUsed) || 0;
-        targetSlot.domainUsed = Math.min(domDaily, domUsed + 1);
-      }
       if (typeof renderSpellSlots === 'function') renderSpellSlots();
       if (slotSource === 'prepared' && typeof renderPreparedSpells === 'function') renderPreparedSpells();
       if (slotSource === 'divine' && typeof renderDivineSpells === 'function') renderDivineSpells();
       renderSpellSlotsStrip();
       renderCombatCategorySpells();
-      saveStateToStorage(false);
+      renderSpellTacticalModifiers();
 
-      // If Quicken, consume Swift Action; if spontaneous metamagic, consume Full-Round Action in Action Economy!
+      // Consume Action Economy based on canonical resolved castAction
       if (typeof consumeActionEconomy === 'function') {
-        if (isQuicken) {
-          consumeActionEconomy('swift', `${spell.name} (Quickened)`);
-        } else if (isMetamagicActive) {
+        if (isQuicken || castActionText === 'Swift Action') {
+          consumeActionEconomy('swift', `${spell.name}${isQuicken ? ' (Quickened)' : ''}`);
+        } else if (castActionText === 'Full-Round Action') {
           consumeActionEconomy('full', `${spell.name} (Metamagic)`);
         } else {
-          consumeActionEconomy(spell.castingTime || spell.action || 'standard', spell.name);
+          consumeActionEconomy(castActionText || 'standard', spell.name);
         }
       }
 
@@ -15622,6 +15710,24 @@
       Actions.register('combat:select-spell-direct', (el, data, event) => {
         if (data.spellName !== undefined) {
           selectCombatSpellDirect(data.spellName, data.sourceKey || 'spontaneous');
+          // M2: Auto-clamp armed Heighten target level when switching to a higher-level spell
+          const selSp = typeof getSelectedCombatSpell === 'function' ? getSelectedCombatSpell() : null;
+          const armedH = Array.isArray(character?.tactical?.armedMetamagic)
+            ? character.tactical.armedMetamagic.find(a => a && a.transform === 'heighten')
+            : null;
+          if (selSp && armedH && typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
+            const maxSpellLvl = Number(typeof RuleEngine !== 'undefined' && RuleEngine.rulesets?.dnd35?.metamagicRules?.maxSpellLevel) || 9;
+            const spLvl = Number(selSp.level) || 0;
+            if (spLvl < maxSpellLvl && Number(armedH.heightenTo) <= spLvl) {
+              CharStore.dispatch({
+                type: 'combat/setArmedHeighten',
+                payload: { id: armedH.id, heightenTo: spLvl + 1, baseLevel: spLvl },
+                meta: { label: `Auto-clamp Heighten -> L${spLvl + 1}` }
+              });
+            }
+          }
+          if (typeof renderSpellTacticalModifiers === 'function') renderSpellTacticalModifiers();
+          if (typeof recalculateCombatSpell === 'function') recalculateCombatSpell();
         }
       });
       Actions.register('combat:toggle-defensive-casting', (el, data, event) => {
@@ -15645,6 +15751,9 @@
       });
       Actions.register('combat:toggle-spell-cockpit-mod', (el, data, event) => {
         if (data.modId) toggleSpellCockpitModifier(data.modId, event);
+      });
+      Actions.register('combat:adjust-armed-heighten', (el, data, event) => {
+        if (data.modId) adjustArmedHeightenLevel(data.modId, Number(data.delta || 0), event);
       });
       Actions.register('combat:confirm-spell-on-weapon', (el, data, event) => {
         if (data.weaponName !== undefined) confirmSpellCastOnWeapon(data.weaponName);

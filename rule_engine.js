@@ -16211,7 +16211,7 @@ const RuleEngine = {
   resolveMetamagic(spellInst, character, options = {}) {
     const rs = (this.rulesets && this.rulesets.dnd35) || {};
     const txMap = rs.metamagicTransforms || {};
-    const rules = rs.metamagicRules || { maxSpellLevel: 9, maxRodsPerSpell: 1, spontaneousRodFullRound: false, quickenAction: 'Swift Action' };
+    const rules = rs.metamagicRules || { maxSpellLevel: 9, maxRodsPerSpell: 1, spontaneousRodFullRound: true, quickenAction: 'Swift Action' };
     const maxSpellLevel = Number(options.maxSpellLevel ?? rules.maxSpellLevel ?? 9);
     const maxRodsPerSpell = Number(rules.maxRodsPerSpell ?? 1);
     const baseLevel = Math.max(0, Number(spellInst?.level ?? 0) || 0);
@@ -16251,7 +16251,9 @@ const RuleEngine = {
 
     const ownedSlotList = this.getOwnedMetamagicFeats(character);
     const ownedSlotById = new Map(ownedSlotList.map(f => [f.featId, f]));
-    const catalogAll = this.listCastTimeMetamagic(character, { discipline: 'all', includeIneligible: true });
+    const catalogAll = Array.isArray(options.castTimeCatalog)
+      ? options.castTimeCatalog
+      : this.listCastTimeMetamagic(character, { discipline: 'all', includeIneligible: true });
     const catalogById = new Map(catalogAll.map(c => [c.id, c]));
     const catalogByItemId = new Map();
     catalogAll.forEach(c => {
@@ -16321,7 +16323,7 @@ const RuleEngine = {
           hasRodMetamagic = true;
           if (rodCount > maxRodsPerSpell) {
             exceedsMaxRods = true;
-            invalidReasons.push(`At most ${maxRodsPerSpell} Metamagic Rod may be used per spell (DMG p.236)`);
+            invalidReasons.push(`At most ${maxRodsPerSpell} Metamagic Rod may be used per spell`);
           }
           rodChecks.push({ name: cat.name, maxSpellLvl: cat.maxSpellLvl });
         }

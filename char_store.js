@@ -195,6 +195,7 @@
     'duplicate_metamagic_transform',
     'max_one_rod_per_spell',
     'rod_spell_level_exceeded',
+    'ineligible_metamagic',
     'invalid_heighten',
     'metamagic_feat_missing'
   ]);
@@ -2010,8 +2011,9 @@
     }
 
     const engineRef = (typeof root !== 'undefined' && root.RuleEngine) || (typeof RuleEngine !== 'undefined' ? RuleEngine : null);
+    const reqDiscipline = payload.discipline ? String(payload.discipline).toLowerCase().trim() : 'all';
     const catalog = (engineRef && typeof engineRef.listCastTimeMetamagic === 'function')
-      ? engineRef.listCastTimeMetamagic(doc, { discipline: 'all', includeIneligible: true })
+      ? engineRef.listCastTimeMetamagic(doc, { discipline: reqDiscipline, includeIneligible: true })
       : [];
     const cat = catalog.find(c => c && (c.id === entryId || c.featId === entryId || c.itemId === entryId)) || null;
     if (!cat) {
@@ -2024,7 +2026,12 @@
       return doc;
     }
 
-    // Enforce max 1 Rod per spell (DMG p.236)
+    if (reqDiscipline !== 'all' && cat.eligible === false) {
+      setStoreOutcome(stateObj, { status: 'ineligible_metamagic', id: cat.id, name: cat.name, reason: cat.ineligibleReason || 'Ineligible' });
+      return doc;
+    }
+
+    // Enforce max 1 Rod per spell
     if (cat.kind === 'rod' && doc.tactical.armedMetamagic.some(m => m && m.kind === 'rod')) {
       setStoreOutcome(stateObj, { status: 'max_one_rod_per_spell', id: cat.id, name: cat.name });
       return doc;
@@ -2063,10 +2070,15 @@
   CharStore.registerReducer('combat/setArmedHeighten', (doc, action, stateObj) => {
     ensureCombatActionStructures(doc);
     const payload = (action && action.payload) || {};
+    const engineRef = (typeof root !== 'undefined' && root.RuleEngine) || (typeof RuleEngine !== 'undefined' ? RuleEngine : null);
+    const maxLvl = Number(engineRef?.rulesets?.dnd35?.metamagicRules?.maxSpellLevel ?? 9);
     const entryId = String(payload.id || 'feat-heighten-spell').trim();
     const targetLvl = Math.floor(Number(payload.heightenTo));
-    if (!Number.isFinite(targetLvl) || targetLvl < 1 || targetLvl > 9) {
-      setStoreOutcome(stateObj, { status: 'invalid_heighten', heightenTo: payload.heightenTo });
+    const baseLvl = payload.baseLevel !== undefined && payload.baseLevel !== null && Number.isFinite(Number(payload.baseLevel))
+      ? Math.max(0, Math.floor(Number(payload.baseLevel)))
+      : null;
+    if (!Number.isFinite(targetLvl) || targetLvl < 1 || targetLvl > maxLvl || (baseLvl !== null && targetLvl <= baseLvl)) {
+      setStoreOutcome(stateObj, { status: 'invalid_heighten', heightenTo: payload.heightenTo, maxSpellLevel: maxLvl });
       return doc;
     }
     if (!Array.isArray(doc.tactical.armedMetamagic)) doc.tactical.armedMetamagic = [];
@@ -3814,8 +3826,13 @@
       return true;
     });
 
-    const mmResolved = (spell && engineRef && typeof engineRef.resolveMetamagic === 'function')
-      ? engineRef.resolveMetamagic(spell, doc, {
+    const spellForMm = spell || {
+      level: Math.max(0, Number(payload.spellLevel ?? payload.level ?? 0) || 0),
+      name: String(payload.spellName || ''),
+      action: 'Standard Action'
+    };
+    const mmResolved = (engineRef && typeof engineRef.resolveMetamagic === 'function' && (spell || mmOverride || applicableArmed.length > 0))
+      ? engineRef.resolveMetamagic(spellForMm, doc, {
         metamagicOverride: mmOverride || undefined,
         armedMetamagic: applicableArmed.length > 0 ? applicableArmed : undefined,
         isSpontaneous: isSpontDisc,
@@ -3965,7 +3982,8 @@
           const maxCh = Number(cat?.usesMax ?? 3) || 3;
           const matchItem = (it) => {
             if (!it || typeof it !== 'object') return false;
-            if (am.itemInstanceId && it.instanceId === am.itemInstanceId) return true;
+            // M1: When an explicit itemInstanceId is present, match strictly by instanceId so two identical Rods never share charges
+            if (am.itemInstanceId) return it.instanceId === am.itemInstanceId;
             const itId = String(it.baseItemId || it.id || '').trim();
             if (am.itemId && itId && itId === am.itemId) return true;
             if (am.itemName && String(it.name || '').trim().toLowerCase() === String(am.itemName).trim().toLowerCase()) return true;
