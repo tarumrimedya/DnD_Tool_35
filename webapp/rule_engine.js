@@ -16800,6 +16800,7 @@ const RuleEngine = {
       clericLvl,
       druidLvl,
       energyChannel,
+      energyChannelLocked: Boolean(forcedChannel || ch.spellcasting?.energyChannelLocked),
       isRebuke: energyChannel === 'negative',
       clericMode,
       acf: hasDomainAcf ? 'domain' : (hasRejuvAcf ? 'rejuvenation' : 'default'),

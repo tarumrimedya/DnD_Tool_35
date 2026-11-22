@@ -4676,20 +4676,50 @@
     return doc;
   });
 
-  // 6. 'spells/toggleClericSpontaneousMode' ({ mode })
+  // 6. 'spells/toggleClericSpontaneousMode' ({ mode, lockPermanent, dmOverride, unlock })
   CharStore.registerReducer('spells/toggleClericSpontaneousMode', (doc, action, stateObj) => {
     ensureSpellsDocStructures(doc);
     const payload = (action && action.payload) || {};
-    const cur = doc.spellcasting.clericSpontaneousMode || 'cure';
+    const cur = doc.spellcasting.clericSpontaneousMode === 'inflict' ? 'inflict' : 'cure';
+    const isDmOverride = Boolean(payload.dmOverride);
+    if (payload.unlock && isDmOverride) {
+      doc.spellcasting.energyChannelLocked = false;
+      if (payload.mode) {
+        const m = String(payload.mode).toLowerCase() === 'inflict' ? 'inflict' : 'cure';
+        doc.spellcasting.clericSpontaneousMode = m;
+        doc.spellcasting.energyChannel = m === 'inflict' ? 'negative' : 'positive';
+      }
+      setStoreOutcome(stateObj, {
+        status: 'cleric_spont_mode_unlocked',
+        mode: doc.spellcasting.clericSpontaneousMode || cur,
+        energyChannel: doc.spellcasting.energyChannel || (cur === 'inflict' ? 'negative' : 'positive'),
+        energyChannelLocked: false
+      });
+      return doc;
+    }
+    if (doc.spellcasting.energyChannelLocked && !isDmOverride) {
+      setStoreOutcome(stateObj, {
+        status: 'locked',
+        reason: 'permanent_neutral_choice',
+        mode: cur,
+        energyChannel: cur === 'inflict' ? 'negative' : 'positive',
+        energyChannelLocked: true
+      });
+      return doc;
+    }
     const nextMode = payload.mode
-      ? String(payload.mode).toLowerCase()
-      : (cur === 'cure' || cur === 'good' ? 'inflict' : 'cure');
+      ? (String(payload.mode).toLowerCase() === 'inflict' ? 'inflict' : 'cure')
+      : (cur === 'cure' ? 'inflict' : 'cure');
     doc.spellcasting.clericSpontaneousMode = nextMode;
     doc.spellcasting.energyChannel = nextMode === 'inflict' ? 'negative' : 'positive';
+    if (payload.lockPermanent === true) {
+      doc.spellcasting.energyChannelLocked = true;
+    }
     setStoreOutcome(stateObj, {
       status: 'cleric_spont_mode_updated',
       mode: nextMode,
-      energyChannel: doc.spellcasting.energyChannel
+      energyChannel: doc.spellcasting.energyChannel,
+      energyChannelLocked: Boolean(doc.spellcasting.energyChannelLocked)
     });
     return doc;
   });

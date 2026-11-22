@@ -2157,13 +2157,20 @@
                   <input type="radio" name="divine-spont-acf" value="default" ${curAcf !== 'domain' ? 'checked' : ''} class="mt-0.5">
                   <span><strong>Standard (PHB p. 32):</strong> Convert non-domain spells into <strong>${profile.clericMode === 'inflict' ? 'Inflict Wounds' : 'Cure Wounds'}</strong> (Level 0–9).</span>
                 </label>
-                ${!energyPolicy.locked ? `
-                  <div class="pl-4">
-                    <button type="button" data-action="spells:toggle-cleric-spontaneous" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 border border-slate-600 text-[11px] font-bold text-amber-200 cursor-pointer">
-                      Switch Positive / Negative Energy (${profile.clericMode === 'cure' ? '💚 Cure' : '💀 Inflict'})
-                    </button>
-                  </div>
-                ` : `<div class="pl-4 text-[11px] text-slate-400">🔒 ${UI.escapeHtml(energyPolicy.reason)}</div>`}
+                ${!energyPolicy.locked ? (
+                  character?.spellcasting?.energyChannelLocked
+                    ? `<div class="pl-4 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-300">
+                        <span>🔒 <strong>Permanent Choice (PHB p. 32):</strong> ${profile.clericMode === 'inflict' ? 'Negative Energy (Inflict / Rebuke)' : 'Positive Energy (Cure / Turn)'}</span>
+                        <button type="button" data-action="spells:dm-reset-neutral-energy" class="px-2 py-0.5 rounded bg-slate-800 hover:bg-rose-950 border border-slate-600 hover:border-rose-500 text-[10px] font-bold text-slate-300 hover:text-rose-200 cursor-pointer">DM Reset</button>
+                      </div>`
+                    : `<div class="pl-4 space-y-1.5">
+                        <div class="text-[11px] text-amber-200/90">Neutral Cleric (PHB p. 32): Choose your permanent energy channel (cannot be reversed without DM Reset):</div>
+                        <div class="flex flex-wrap gap-2">
+                          <button type="button" data-action="spells:lock-neutral-energy" data-mode="cure" class="px-2.5 py-1 rounded ${profile.clericMode === 'cure' ? 'bg-emerald-950 border-emerald-500 text-emerald-200' : 'bg-slate-800 border-slate-600 text-slate-200'} hover:bg-emerald-900 border text-[11px] font-bold cursor-pointer">💚 Lock Positive (Cure / Turn)</button>
+                          <button type="button" data-action="spells:lock-neutral-energy" data-mode="inflict" class="px-2.5 py-1 rounded ${profile.clericMode === 'inflict' ? 'bg-rose-950 border-rose-500 text-rose-200' : 'bg-slate-800 border-slate-600 text-slate-200'} hover:bg-rose-900 border text-[11px] font-bold cursor-pointer">💀 Lock Negative (Inflict / Rebuke)</button>
+                        </div>
+                      </div>`
+                ) : `<div class="pl-4 text-[11px] text-slate-400">🔒 ${UI.escapeHtml(energyPolicy.reason)}</div>`}
                 <label class="flex items-start gap-2 cursor-pointer pt-1">
                   <input type="radio" name="divine-spont-acf" value="domain" ${curAcf === 'domain' ? 'checked' : ''} class="mt-0.5">
                   <span><strong>Spontaneous Domain Casting (PHB II p. 37 ACF):</strong> Replaces Cure/Inflict conversion with your chosen Domain's spells (Level 1–9). Turn/Rebuke Undead is unchanged.</span>
@@ -3096,7 +3103,7 @@
                           ? 'bg-rose-950 hover:bg-rose-900 text-rose-300 border-rose-500/80'
                           : 'bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border-emerald-500/80',
                         icon: ct === 'inflict' ? '💀' : '💚',
-                        label: `Spontaneous: ${ct === 'inflict' ? 'Inflict Wounds' : 'Cure Wounds'}${energyPolicy.locked ? ' 🔒' : ''}`,
+                        label: `Spontaneous: ${ct === 'inflict' ? 'Inflict Wounds' : 'Cure Wounds'}${(energyPolicy.locked || character?.spellcasting?.energyChannelLocked) ? ' 🔒' : ''}`,
                         tip: `${energyPolicy.reason} — Click to configure`
                       }));
                 return `<button type="button" data-action="spells:open-spontaneous-config" class="${badgeCfg.cls} h-8 px-3 border text-xs font-bold rounded-lg shadow transition inline-flex items-center justify-center gap-1.5 cursor-pointer" title="${UI.escapeAttr(badgeCfg.tip)}">
@@ -13284,6 +13291,55 @@
       Actions.register('spells:close-spontaneous-config', (el, data, event) => {
         const m = document.getElementById('divineSpontaneousConfigModal');
         if (m) m.remove();
+      });
+      Actions.register('spells:lock-neutral-energy', (el, data, event) => {
+        const chosen = data.mode === 'inflict' ? 'inflict' : 'cure';
+        if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
+          CharStore.dispatch({
+            type: 'spells/toggleClericSpontaneousMode',
+            payload: { mode: chosen, lockPermanent: true },
+            meta: { label: `Lock Cleric Energy Channel (${chosen})` }
+          });
+        } else {
+          if (!character.spellcasting) character.spellcasting = {};
+          character.spellcasting.clericSpontaneousMode = chosen;
+          character.spellcasting.energyChannel = chosen === 'inflict' ? 'negative' : 'positive';
+          character.spellcasting.energyChannelLocked = true;
+          saveStateToStorage(true);
+        }
+        renderAll();
+        openDivineSpontaneousConfigModal();
+        showDiceTopToast({
+          icon: chosen === 'inflict' ? '💀' : '💚',
+          title: 'Energy Channel Permanently Locked (PHB p. 32)',
+          breakdown: chosen === 'inflict'
+            ? 'Neutral Cleric permanently chose Negative Energy (Inflict Wounds / Rebuke Undead).'
+            : 'Neutral Cleric permanently chose Positive Energy (Cure Wounds / Turn Undead).',
+          total: chosen === 'inflict' ? 'Inflict 🔒' : 'Cure 🔒'
+        });
+      });
+      Actions.register('spells:dm-reset-neutral-energy', async (el, data, event) => {
+        const confirmed = (typeof DnDUI !== 'undefined' && typeof DnDUI.confirm === 'function')
+          ? await DnDUI.confirm({
+            title: 'DM Override — Unlock Energy Channel',
+            message: 'D&D 3.5e RAW (PHB p. 32) states a Neutral Cleric\'s Positive/Negative Energy choice is permanent. Unlock it with DM Override?',
+            confirmText: 'Unlock (DM Override)',
+            cancelText: 'Cancel'
+          })
+          : true;
+        if (!confirmed) return;
+        if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
+          CharStore.dispatch({
+            type: 'spells/toggleClericSpontaneousMode',
+            payload: { unlock: true, dmOverride: true },
+            meta: { label: 'DM Override: Unlock Cleric Energy Channel' }
+          });
+        } else if (character.spellcasting) {
+          character.spellcasting.energyChannelLocked = false;
+          saveStateToStorage(true);
+        }
+        renderAll();
+        openDivineSpontaneousConfigModal();
       });
       Actions.register('spells:restore-all-prepared', (el, data, event) => {
         restoreAllPreparedSlots();

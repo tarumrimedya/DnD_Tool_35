@@ -8404,6 +8404,51 @@ function runDeriveSheetTests() {
         ),
         JSON.stringify({ rejuvProfile, rejuvTarget4, rejuvOrisonBlocked, rejuvCastOut, fhVal })
       );
+
+      // 6. Phase 2 RAW Lock: Neutral Cleric permanent Positive/Negative Energy lock (PHB p.32) + DM Override reset
+      const neutralLockCleric = {
+        id: 'test-neutral-cleric-lock',
+        name: 'Neutral Cleric Lock',
+        alignment: 'True Neutral',
+        level: 5,
+        progression: Array.from({ length: 5 }, (_, i) => ({ hd: i + 1, classId: 'cls-cleric', className: 'Cleric' })),
+        baseAbilities: { str: 12, dex: 10, con: 14, int: 10, wis: 16, cha: 12 },
+        spellcasting: {}
+      };
+      CharStore.clearHistory();
+      CharStore.dispatch({ type: 'doc/replace', payload: neutralLockCleric, meta: { skipHistory: true } });
+      CharStore.dispatch({
+        type: 'spells/toggleClericSpontaneousMode',
+        payload: { mode: 'inflict', lockPermanent: true }
+      });
+      const wasLocked = CharStore.getDoc().spellcasting.energyChannelLocked === true;
+      const lockedChannel = CharStore.getDoc().spellcasting.energyChannel;
+      CharStore.dispatch({
+        type: 'spells/toggleClericSpontaneousMode',
+        payload: { mode: 'cure' }
+      });
+      const blockedFlip = CharStore.getLastOutcome();
+      const stillInflict = CharStore.getDoc().spellcasting.clericSpontaneousMode === 'inflict';
+      CharStore.dispatch({
+        type: 'spells/toggleClericSpontaneousMode',
+        payload: { unlock: true, dmOverride: true, mode: 'cure' }
+      });
+      const unlockedOut = CharStore.getLastOutcome();
+      const afterUnlock = CharStore.getDoc();
+      check(
+        'Divine Spont Phase 2 (Neutral Cleric Lock): permanent choice blocks non-DM flip, DM Override unlocks and switches to cure',
+        Boolean(
+          wasLocked &&
+          lockedChannel === 'negative' &&
+          blockedFlip?.status === 'locked' && blockedFlip?.reason === 'permanent_neutral_choice' &&
+          stillInflict &&
+          unlockedOut?.status === 'cleric_spont_mode_unlocked' &&
+          afterUnlock.spellcasting.energyChannelLocked === false &&
+          afterUnlock.spellcasting.clericSpontaneousMode === 'cure' &&
+          afterUnlock.spellcasting.energyChannel === 'positive'
+        ),
+        JSON.stringify({ wasLocked, lockedChannel, blockedFlip, unlockedOut })
+      );
     }
   }
 
