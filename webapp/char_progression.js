@@ -8534,6 +8534,69 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         </div>
       `;
 
+      const stripEl = document.getElementById('core-companion-strip-container');
+      if (stripEl) {
+        if (activeComp && activeComp.baseMonsterId) {
+          const stripStats = (window.RuleEngine && typeof window.RuleEngine.calculateCompanionStats === 'function')
+            ? window.RuleEngine.calculateCompanionStats(character, activeComp)
+            : ((window.SrdCompendium && typeof window.SrdCompendium.calculateCompanionStats === 'function')
+              ? window.SrdCompendium.calculateCompanionStats(character, activeComp)
+              : null);
+          if (stripStats) {
+            const sKind = activeComp.entityKind || activeComp.type || 'animal_companion';
+            const sIcon = sKind === 'familiar' ? '🦉' : (sKind === 'special_mount' ? '🐎' : (sKind === 'fiendish_servant' ? '🦇' : '🐺'));
+            const sLabel = sKind === 'familiar' ? 'Familiar' : (sKind === 'special_mount' ? 'Special Mount' : (sKind === 'fiendish_servant' ? 'Fiendish Servant' : 'Animal Companion'));
+            const sProg = stripStats.progression || null;
+            const sFeatPend = sProg ? (sProg.pendingAbility + sProg.pendingFeats) : 0;
+            const sSkillLeft = sProg ? sProg.skillLeft : 0;
+            const sSwitchHtml = allComps.length > 1 ? allComps.map(c => {
+              const isAct = String(c.id) === String(activeComp.id);
+              const ci = (c.entityKind || c.type) === 'familiar' ? '🦉' : ((c.entityKind || c.type) === 'special_mount' ? '🐎' : ((c.entityKind || c.type) === 'fiendish_servant' ? '🦇' : '🐺'));
+              return `<button type="button" data-action="progression:select-companion" data-comp-id="${UI.escapeAttr(c.id || '')}" class="px-1.5 py-0.5 rounded text-[10px] font-bold border transition cursor-pointer ${isAct ? 'bg-amber-600 text-white border-amber-400' : 'bg-slate-950 text-slate-400 hover:text-white border-slate-700'}">${ci} ${UI.escapeHtml(c.name || 'Companion')}</button>`;
+            }).join('') : '';
+            stripEl.innerHTML = `
+              <div class="bg-slate-900/90 border border-amber-500/40 rounded-xl px-3 py-2 flex flex-wrap items-center justify-between gap-2 text-xs shadow-sm">
+                <div class="flex flex-wrap items-center gap-1.5 min-w-0">
+                  <span class="text-sm shrink-0">${sIcon}</span>
+                  <span class="text-[10px] font-black uppercase tracking-wider text-amber-400">${sLabel}:</span>
+                  <span class="font-bold text-white truncate">${safeEscapeHtml(stripStats.customName)}</span>
+                  <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-950 text-amber-300 border border-amber-700/60">${safeEscapeHtml(stripStats.baseName)} • ${stripStats.totalHd} HD • HP ${stripStats.hp.current}/${stripStats.hp.max} • AC ${stripStats.ac.total} • BAB +${stripStats.bab}</span>
+                  ${sFeatPend > 0 ? `<button type="button" data-action="progression:open-companion-modal" data-tab="feats" data-kind="${UI.escapeAttr(sKind)}" class="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-amber-950 hover:bg-amber-900 text-amber-300 border border-amber-600/70 cursor-pointer transition">+${sFeatPend} Feats/Stat</button>` : ''}
+                  ${sSkillLeft > 0 ? `<button type="button" data-action="progression:open-companion-modal" data-tab="skills" data-kind="${UI.escapeAttr(sKind)}" class="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-sky-950 hover:bg-sky-900 text-sky-300 border border-sky-600/70 cursor-pointer transition">${sSkillLeft} Skill Pts</button>` : ''}
+                  ${sSwitchHtml}
+                </div>
+                <div class="flex items-center gap-1.5 shrink-0">
+                  ${sProg && sProg.supportsProgression ? `
+                    <button type="button" data-action="progression:open-companion-modal" data-tab="feats" data-kind="${UI.escapeAttr(sKind)}" class="ui-btn-xs h-6 px-2 text-[10px] font-bold text-purple-300 hover:text-white bg-slate-950 hover:bg-slate-800 rounded border border-purple-600/50 transition cursor-pointer">🎖️ Feats</button>
+                    <button type="button" data-action="progression:open-companion-modal" data-tab="skills" data-kind="${UI.escapeAttr(sKind)}" class="ui-btn-xs h-6 px-2 text-[10px] font-bold text-sky-300 hover:text-white bg-slate-950 hover:bg-slate-800 rounded border border-sky-600/50 transition cursor-pointer">🎯 Skills</button>
+                  ` : ''}
+                  <button type="button" data-action="progression:open-companion-modal" data-tab="overview" data-kind="${UI.escapeAttr(sKind)}" class="ui-btn-xs h-6 px-2 text-[10px] font-bold text-amber-300 hover:text-white bg-slate-950 hover:bg-slate-800 rounded border border-amber-600/50 transition cursor-pointer">⚙️ Manage</button>
+                </div>
+              </div>
+            `;
+            stripEl.classList.remove('hidden');
+          } else {
+            stripEl.classList.add('hidden');
+            stripEl.innerHTML = '';
+          }
+        } else if (isEligible) {
+          stripEl.innerHTML = `
+            <div class="bg-slate-900/90 border border-dashed border-amber-600/50 rounded-xl px-3 py-2 flex flex-wrap items-center justify-between gap-2 text-xs shadow-sm">
+              <div class="flex items-center gap-2 min-w-0">
+                <span class="text-sm shrink-0">🐾</span>
+                <span class="text-[10px] font-black uppercase tracking-wider text-amber-400">Companion &amp; Mount:</span>
+                <span class="text-slate-300 font-semibold truncate">Not yet bound — click to select Animal Companion, Familiar, or Mount</span>
+              </div>
+              <button type="button" data-action="progression:open-companion-modal" data-tab="overview" class="ui-btn-xs h-6 px-2.5 bg-amber-600 hover:bg-amber-500 text-white font-bold text-[10px] rounded transition cursor-pointer shrink-0">➕ Select Companion</button>
+            </div>
+          `;
+          stripEl.classList.remove('hidden');
+        } else {
+          stripEl.classList.add('hidden');
+          stripEl.innerHTML = '';
+        }
+      }
+
       // Check if character is NPC: manage level-progression-block
       const progBlock = document.getElementById('level-progression-block');
       if (progBlock) {
@@ -8817,6 +8880,21 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
             || featureIdByName.get(lowKey)
             || featureIdByName.get(baseKey)
             || '';
+          let compFeatureKind = null;
+          if (/^animal companion\b/i.test(baseKey)) compFeatureKind = 'animal_companion';
+          else if (/^(summon familiar|familiar)\b/i.test(baseKey)) compFeatureKind = 'familiar';
+          else if (/^special mount\b/i.test(baseKey)) compFeatureKind = 'special_mount';
+          else if (/^fiendish servant\b/i.test(baseKey)) compFeatureKind = 'fiendish_servant';
+          if (compFeatureKind) {
+            const compList = (typeof getCharacterCompanionsList === 'function') ? getCharacterCompanionsList(character) : [];
+            const boundComp = compList.find(c => c && c.baseMonsterId && (c.entityKind || c.type || 'animal_companion') === compFeatureKind);
+            const compIcon = compFeatureKind === 'familiar' ? '🦉' : (compFeatureKind === 'special_mount' ? '🐎' : (compFeatureKind === 'fiendish_servant' ? '🦇' : '🐺'));
+            if (boundComp) {
+              const boundLabel = rawName + ' (' + String(boundComp.name || boundComp.baseMonsterId || '') + ')';
+              return `<button type="button" data-action="progression:open-companion-modal" data-tab="overview" data-kind="${compFeatureKind}" title="${UI.escapeAttr(boundLabel)} — Click to change or manage companion" style="width: 150px; min-width: 150px; max-width: 150px; box-sizing: border-box; overflow: hidden;" class="relative min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[10px] font-bold bg-amber-950/90 hover:bg-amber-900 text-amber-200 border border-amber-500/80 shadow-sm transition text-left cursor-pointer"><span class="shrink-0">${compIcon}</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-1">${UI.escapeHtml(boundLabel)}</span></button>`;
+            }
+            return `<button type="button" data-action="progression:open-companion-modal" data-tab="overview" data-kind="${compFeatureKind}" title="${UI.escapeAttr(rawName)} — Click to select companion" style="width: 150px; min-width: 150px; max-width: 150px; box-sizing: border-box; overflow: hidden;" class="relative min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[10px] font-bold bg-amber-950/90 hover:bg-amber-900 text-amber-300 border border-dashed border-amber-500 shadow-sm transition text-left cursor-pointer"><span class="shrink-0">${compIcon}</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-1">${UI.escapeHtml(rawName)} (+ Select)</span></button>`;
+          }
           const badgeLabel = rawName;
           const cornerBadge = getFeatPinCornerBadgeHtml(rawName);
           return `<button data-action="progression:show-feat-detail" data-feat-name="${rawName.replace(/"/g, '&quot;')}"${resolvedCabId ? ` data-feat-id="${UI.escapeAttr(resolvedCabId)}"` : ''} data-level-idx="${idx}" data-feat-type="ability" title="${UI.escapeAttr(rawName)} — Click for rule details" style="width: 150px; min-width: 150px; max-width: 150px; box-sizing: border-box; overflow: hidden;" class="relative min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[10px] font-bold bg-sky-950/80 hover:bg-sky-900 text-sky-300 border border-sky-600/70 shadow-sm transition text-left cursor-pointer"><span class="shrink-0">✨</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">${UI.escapeHtml(badgeLabel)}</span>${cornerBadge}</button>`;
@@ -10839,7 +10917,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       return _companionModalDraftProg;
     }
 
-    function openCompanionModal(initialTab = 'overview') {
+    function openCompanionModal(initialTab = 'overview', initialKind = null) {
       if (!isCharacterCompanionEligible(character)) {
         if (typeof showDiceTopToast === 'function') {
           showDiceTopToast({
@@ -10854,10 +10932,16 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       _activeCompanionModalTab = ['overview', 'feats', 'skills'].includes(initialTab) ? initialTab : 'overview';
       _companionModalDraftProg = null;
       const modal = ensureCompanionModalDom();
-      const activeComp = getActiveProgressionCompanion(character);
-      if (activeComp) {
+      const allComps = getCharacterCompanionsList(character);
+      const matchedByKind = initialKind ? allComps.find(c => c && (c.entityKind || c.type || 'animal_companion') === initialKind) : null;
+      const activeComp = matchedByKind || getActiveProgressionCompanion(character);
+      if (initialKind && !matchedByKind) {
+        _activeCompanionModalEditId = null;
+        _activeCompanionModalType = initialKind;
+        _activeCompanionModalAnimalId = null;
+      } else if (activeComp) {
         _activeCompanionModalEditId = activeComp.id || null;
-        _activeCompanionModalType = activeComp.entityKind || activeComp.type || 'animal_companion';
+        _activeCompanionModalType = initialKind || activeComp.entityKind || activeComp.type || 'animal_companion';
         _activeCompanionModalAnimalId = activeComp.baseMonsterId || null;
       } else {
         _activeCompanionModalEditId = null;
@@ -10898,6 +10982,11 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
     function closeCompanionModal() {
       const modal = document.getElementById('companion-modal');
       if (modal) modal.classList.add('hidden');
+      const spotlight = document.getElementById('companion-spotlight-overlay');
+      if (spotlight) {
+        spotlight.classList.add('hidden');
+        spotlight.style.display = 'none';
+      }
     }
 
     function onCompanionTypeChange(newType) {
@@ -11205,12 +11294,14 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
           </div>
         `;
       } else {
+        const selectedAnimalObj = allowedAnimals.find(a => a.id === _activeCompanionModalAnimalId) || null;
+        const selectedReqText = selectedAnimalObj
+          ? (selectedAnimalObj.minLevel ? ` (Req Lvl ${selectedAnimalObj.minLevel})` : (selectedAnimalObj.levelAdj ? ` (Adj ${selectedAnimalObj.levelAdj})` : ''))
+          : '';
+        const selectedLabel = selectedAnimalObj
+          ? `${selectedAnimalObj.name}${selectedReqText}`
+          : 'Search creature, animal, or Rule Master...';
         tabBodyHtml = `
-          <!-- Type Selection Tabs -->
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 p-1 bg-slate-950 rounded-xl border border-slate-800">
-            ${tabsHtml}
-          </div>
-
           <!-- Level Banner -->
           <div class="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800 flex items-center justify-between gap-2 flex-wrap">
             <div class="flex items-center gap-2">
@@ -11225,23 +11316,14 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
           <!-- Creature Selection & Name Controls -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <div class="flex items-center justify-between mb-1 gap-1.5">
-                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wide">Select Creature / Animal</label>
-                <div class="flex items-center gap-2">
-                  <button type="button" data-action="progression:companion-craft-v3" class="text-[10px] text-purple-300 hover:text-purple-200 font-bold cursor-pointer">⚒️ Craft V3</button>
-                  <button type="button" data-action="progression:toggle-companion-spotlight" data-open="true" class="text-[10px] text-amber-300 hover:text-amber-200 font-bold flex items-center gap-1 cursor-pointer">
-                    <span>🔮 Spotlight</span>
-                  </button>
-                </div>
-              </div>
-              <select id="companion-select-animal" data-change-action="progression:companion-animal" class="ui-input-md w-full h-9 bg-slate-950 text-amber-200 border border-slate-700 rounded-lg px-2.5 text-xs font-bold cursor-pointer">
-                ${allowedAnimals.map(a => {
-                  const isSelected = a.id === _activeCompanionModalAnimalId;
-                  const reqText = a.minLevel ? ` (Req Lvl ${a.minLevel})` : (a.levelAdj ? ` (Adj ${a.levelAdj})` : '');
-                  const bonusText = a.masterBonusText ? ` • [${a.masterBonusText}]` : '';
-                  return `<option value="${UI.escapeAttr(a.id)}" ${isSelected ? 'selected' : ''}>${UI.escapeHtml(a.name)}${reqText}${bonusText}</option>`;
-                }).join('')}
-              </select>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-1">Select Creature / Animal</label>
+              <button type="button" id="companion-select-animal-btn" data-action="progression:toggle-companion-spotlight" data-open="true" class="ui-input-md w-full h-9 bg-slate-950 hover:bg-slate-900 text-amber-200 border border-slate-700 hover:border-amber-500 rounded-lg px-2.5 text-xs font-bold cursor-pointer flex items-center justify-between gap-2 transition text-left">
+                <span class="flex items-center gap-1.5 min-w-0">
+                  <span class="text-amber-400 shrink-0">🔍</span>
+                  <span class="truncate">${UI.escapeHtml(selectedLabel)}</span>
+                </span>
+                <span class="text-slate-400 text-[10px] shrink-0">▾</span>
+              </button>
             </div>
             <div>
               <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-1">Companion Custom Name</label>
@@ -11308,7 +11390,12 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         `;
       }
 
-      bodyEl.innerHTML = `${modalSubTabsHtml}${tabBodyHtml}`;
+      const kindTabsBarHtml = `
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 p-1 bg-slate-950 rounded-xl border border-slate-800">
+          ${tabsHtml}
+        </div>
+      `;
+      bodyEl.innerHTML = `${kindTabsBarHtml}${modalSubTabsHtml}${tabBodyHtml}`;
     }
 
     function saveCompanionSelection() {
@@ -11405,7 +11492,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
           width: 'min(92vw, 640px)',
           maxHeight: '75vh',
           zIndex: '10060',
-          display: 'flex',
+          display: 'none',
           flexDirection: 'column',
           background: 'rgba(15, 23, 42, 0.98)',
           border: '1px solid rgba(245, 158, 11, 0.5)',
@@ -11417,8 +11504,11 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
 
         document.addEventListener('mousedown', (ev) => {
           if (overlay && !overlay.classList.contains('hidden') && !overlay.contains(ev.target)) {
-            const triggerBtn = ev.target.closest('button[onclick*="toggleCompanionSpotlight"]');
-            if (!triggerBtn) overlay.classList.add('hidden');
+            const triggerBtn = ev.target.closest('[data-action="progression:toggle-companion-spotlight"]');
+            if (!triggerBtn) {
+              overlay.classList.add('hidden');
+              overlay.style.display = 'none';
+            }
           }
         });
       }
@@ -11431,11 +11521,13 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       const open = forceOpen !== null ? forceOpen : isHidden;
       if (open) {
         overlay.classList.remove('hidden');
+        overlay.style.display = 'flex';
         renderCompanionSpotlightContent('');
         const inp = overlay.querySelector('#companion-spotlight-input');
         if (inp) inp.focus();
       } else {
         overlay.classList.add('hidden');
+        overlay.style.display = 'none';
       }
     }
     window.toggleCompanionSpotlight = toggleCompanionSpotlight;
@@ -11444,9 +11536,10 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       const overlay = ensureCompanionSpotlightDom();
       const q = String(query || '').trim().toLowerCase();
 
-      const allowedAnimals = (window.SrdCompendium && typeof window.SrdCompendium.getAllowedAnimals === 'function')
+      const allowedAnimalsBase = (window.SrdCompendium && typeof window.SrdCompendium.getAllowedAnimals === 'function')
         ? window.SrdCompendium.getAllowedAnimals(_activeCompanionModalType)
         : [];
+      const allowedAnimals = [...getCompanionCustomV3Monsters(), ...allowedAnimalsBase];
 
       // Filter matches
       const matches = allowedAnimals.filter(a => {
@@ -11456,8 +11549,8 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         return name.includes(q) || bonus.includes(q);
       });
 
-      const typeLabel = _activeCompanionModalType === 'familiar' ? 'Familiar' : (_activeCompanionModalType === 'special_mount' ? 'Special Mount' : 'Animal Companion');
-      const icon = _activeCompanionModalType === 'familiar' ? '🦉' : (_activeCompanionModalType === 'special_mount' ? '🐎' : '🐺');
+      const typeLabel = _activeCompanionModalType === 'familiar' ? 'Familiar' : (_activeCompanionModalType === 'special_mount' ? 'Special Mount' : (_activeCompanionModalType === 'fiendish_servant' ? 'Fiendish Servant' : 'Animal Companion'));
+      const icon = _activeCompanionModalType === 'familiar' ? '🦉' : (_activeCompanionModalType === 'special_mount' ? '🐎' : (_activeCompanionModalType === 'fiendish_servant' ? '🦇' : '🐺'));
 
       let html = `
         <div class="flex items-center justify-between pb-3 border-b border-slate-800">
@@ -11515,16 +11608,20 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         `;
       }
 
-      if (query) {
-        html += `
-          <div class="pt-2 mt-2 border-t border-slate-800 text-center">
-            <button type="button" data-action="progression:fetch-companion-ai" data-query="${safeEscapeHtml(query)}" class="w-full py-2 px-3 bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs rounded-xl shadow-lg flex items-center justify-center gap-2 transition active:scale-95 cursor-pointer border border-purple-400/40">
+      html += `
+        <div class="pt-2 mt-2 border-t border-slate-800 flex flex-wrap items-center gap-2">
+          ${query ? `
+            <button type="button" data-action="progression:fetch-companion-ai" data-query="${safeEscapeHtml(query)}" class="flex-1 py-2 px-3 bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs rounded-xl shadow-lg flex items-center justify-center gap-2 transition active:scale-95 cursor-pointer border border-purple-400/40">
               <span>🔮</span>
               <span>Fetch "${safeEscapeHtml(query)}" with Rule Master</span>
             </button>
-          </div>
-        `;
-      }
+          ` : ''}
+          <button type="button" data-action="progression:companion-craft-v3" class="${query ? 'shrink-0' : 'w-full'} py-2 px-3 bg-purple-950 hover:bg-purple-900 text-purple-200 font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 transition cursor-pointer border border-purple-600/60">
+            <span>⚒️</span>
+            <span>Craft Custom Companion (V3)</span>
+          </button>
+        </div>
+      `;
 
       html += `</div>`;
       overlay.innerHTML = html;
@@ -11738,7 +11835,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         if (data.className) selectChangeClassFromSearch(data.className);
       });
       Actions.register('progression:open-companion-modal', (el, data, event) => {
-        openCompanionModal((data && data.tab) || 'overview');
+        openCompanionModal((data && data.tab) || 'overview', (data && data.kind) || null);
       });
       Actions.register('progression:companion-modal-tab', (el, data, event) => {
         if (data && data.tab) {
@@ -11747,6 +11844,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         }
       });
       Actions.register('progression:companion-craft-v3', (el, data, event) => {
+        toggleCompanionSpotlight(false);
         openCompanionV3Crafter('monster');
       });
       Actions.register('progression:companion-craft-v3-feat', (el, data, event) => {
