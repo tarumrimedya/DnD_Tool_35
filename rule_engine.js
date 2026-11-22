@@ -19058,8 +19058,15 @@ const RuleEngine = {
     return this._cachedCompanionsData || null;
   },
 
-  _resolveMonsterByIdSync(monsterId, masterDb = null) {
+  _resolveMonsterByIdSync(monsterId, masterDb = null, char = null) {
     if (!monsterId) return null;
+    if (char && char.customEntries && typeof char.customEntries === 'object' && char.customEntries[monsterId]) {
+      return char.customEntries[monsterId];
+    }
+    if (char && Array.isArray(char.customDb)) {
+      const cHit = char.customDb.find(m => m && m.id === monsterId);
+      if (cHit) return cHit;
+    }
     if (Array.isArray(masterDb)) {
       const hit = masterDb.find(m => m && m.id === monsterId);
       if (hit) return hit;
@@ -19273,9 +19280,38 @@ const RuleEngine = {
    *   2. No double-STR damage addition
    *   3. Correct AC `sizeMod` in both base natural armor extraction and total/touch/FF AC
    */
+  _resolveCompanionFeatEntry(featId, char = null, masterDb = null) {
+    if (!featId) return null;
+    const idStr = String(featId);
+    if (char && char.customEntries && typeof char.customEntries === 'object' && char.customEntries[idStr]) {
+      return char.customEntries[idStr];
+    }
+    if (char && Array.isArray(char.customDb)) {
+      const hit = char.customDb.find(e => e && (e.id === idStr || String(e.name || '').toLowerCase() === idStr.toLowerCase()));
+      if (hit) return hit;
+    }
+    if (Array.isArray(masterDb)) {
+      const hit = masterDb.find(e => e && (e.id === idStr || String(e.name || '').toLowerCase() === idStr.toLowerCase()));
+      if (hit) return hit;
+    }
+    const comp = (typeof window !== 'undefined' && window.SrdCompendium)
+      || (typeof SrdCompendium !== 'undefined' ? SrdCompendium : null);
+    if (comp) {
+      if (typeof comp.getById === 'function') {
+        const hit = comp.getById(idStr);
+        if (hit) return hit;
+      }
+      if (typeof comp.getByName === 'function') {
+        const hit = comp.getByName(idStr);
+        if (hit) return hit;
+      }
+    }
+    return null;
+  },
+
   calculateCompanionStats(char, companionConfig, options = {}) {
     if (!companionConfig || !companionConfig.baseMonsterId) return null;
-    const baseMonster = options.baseMonster || this._resolveMonsterByIdSync(companionConfig.baseMonsterId, options.masterDb);
+    const baseMonster = options.baseMonster || this._resolveMonsterByIdSync(companionConfig.baseMonsterId, options.masterDb, char);
     const compData = options.companionsData || this._getCompanionsDataSync() || {};
     if (!baseMonster || !compData.druidProgression) {
       if (typeof this.ensureCompanionsHydrated === 'function') this.ensureCompanionsHydrated();
@@ -19407,14 +19443,116 @@ const RuleEngine = {
       }
     }
 
-    // 3. Base Chassis & Derived Abilities
+    // 3. Base Chassis, HD Progression (MM p.290 RAW) & Derived Abilities
     const prelimChassis = this.buildMonsterChassis(baseMonster);
-    const totalStr = prelimChassis.abilities.str + strAdj;
-    const totalDex = prelimChassis.abilities.dex + dexAdj;
-    const totalCon = prelimChassis.abilities.con;
-    const totalInt = companionInt !== null ? Math.max(prelimChassis.abilities.int, companionInt) : prelimChassis.abilities.int;
-    const totalWis = prelimChassis.abilities.wis;
-    const totalCha = prelimChassis.abilities.cha;
+    const totalHd = (type === 'familiar') ? Math.max(1, ctx.level) : (prelimChassis.baseHd + bonusHd);
+    const supportsProgression = type !== 'familiar';
+    const rawProg = (companionConfig.progression && typeof companionConfig.progression === 'object'
+      && (!companionConfig.progression.stampMonsterId || String(companionConfig.progression.stampMonsterId) === String(companionConfig.baseMonsterId)))
+      ? companionConfig.progression
+      : {};
+    const abilityThresholds = supportsProgression
+      ? [4, 8, 12, 16, 20].filter(h => h > prelimChassis.baseHd && h <= totalHd)
+      : [];
+    const featThresholds = supportsProgression
+      ? [3, 6, 9, 12, 15, 18].filter(h => h > prelimChassis.baseHd && h <= totalHd)
+      : [];
+
+    const abiIncMap = (rawProg.abilityIncreases && typeof rawProg.abilityIncreases === 'object') ? rawProg.abilityIncreases : {};
+    const abiBonus = { str: 0, dex: 0, con: 0, int: 0, wis: 0, cha: 0 };
+    abilityThresholds.forEach(hd => {
+      const k = String(abiIncMap[hd] || abiIncMap[String(hd)] || '').toLowerCase();
+      if (abiBonus[k] !== undefined) abiBonus[k] += 1;
+    });
+
+    // Resolve active chosen HD feats (only for thresholds <= totalHd)
+    const activeChosenFeats = [];
+    if (supportsProgression && Array.isArray(rawProg.feats)) {
+      rawProg.feats.forEach(f => {
+        if (!f || !f.featId) return;
+        const hdNum = Number(f.hd) || 3;
+        if (hdNum > totalHd) return;
+        const entry = this._resolveCompanionFeatEntry(f.featId, char, options.masterDb);
+        activeChosenFeats.push({
+          hd: hdNum,
+          featId: String(f.featId),
+          name: (entry && entry.name) || f.name || String(f.featId),
+          choice: f.choice ? String(f.choice) : '',
+          entry
+        });
+      });
+    }
+
+    // Evaluate V3 effects[] from chosen companion feats + custom V3 companion monster entry
+    let featHpBonus = 0;
+    let featNatArmorBonus = 0;
+    let featDodgeBonus = 0;
+    let featInitBonus = 0;
+    let featFortBonus = 0;
+    let featRefBonus = 0;
+    let featWillBonus = 0;
+    let featAtkBonus = 0;
+    let featDmgBonus = 0;
+    const featSkillBonuses = {};
+    let hasImprovedNaturalAttack = false;
+    let hasChosenMultiattack = false;
+    const v3EffectSources = [];
+    if (Array.isArray(baseMonster.effects) && baseMonster.effects.length > 0) {
+      v3EffectSources.push({ name: baseMonster.name, effects: baseMonster.effects });
+    }
+    activeChosenFeats.forEach(cf => {
+      if (/improved\s+natural\s+attack/i.test(cf.name) || cf.featId === 'feat-improved-natural-attack') {
+        hasImprovedNaturalAttack = true;
+      }
+      if (/^multiattack$/i.test(cf.name.trim()) || cf.featId === 'feat-multiattack') {
+        hasChosenMultiattack = true;
+      }
+      if (cf.entry && Array.isArray(cf.entry.effects)) {
+        v3EffectSources.push({ name: cf.name, effects: cf.entry.effects });
+      }
+    });
+
+    v3EffectSources.forEach(src => {
+      src.effects.forEach(ef => {
+        if (!ef || ef.type !== 'stat') return;
+        const val = ef.mode === 'formula'
+          ? Math.floor(Number(this.evaluateFormula(ef.formula, { level: totalHd, hd: totalHd, bab: Math.floor(totalHd * 0.75) })) || 0)
+          : (Number(ef.value) || 0);
+        if (!val) return;
+        const targets = Array.isArray(ef.targets) ? ef.targets : (ef.target ? [ef.target] : []);
+        targets.forEach(t => {
+          const low = String(t || '').toLowerCase().trim();
+          if (low === 'str' || low === 'ability.str') abiBonus.str += val;
+          else if (low === 'dex' || low === 'ability.dex') abiBonus.dex += val;
+          else if (low === 'con' || low === 'ability.con') abiBonus.con += val;
+          else if (low === 'int' || low === 'ability.int') abiBonus.int += val;
+          else if (low === 'wis' || low === 'ability.wis') abiBonus.wis += val;
+          else if (low === 'cha' || low === 'ability.cha') abiBonus.cha += val;
+          else if (low === 'hp.max' || low === 'hp') featHpBonus += val;
+          else if (low === 'ac.natural' || low === 'naturalarmor') featNatArmorBonus += val;
+          else if (low === 'ac.dodge' || low === 'ac' || low === 'ac.all') featDodgeBonus += val;
+          else if (low === 'initiative' || low === 'init') featInitBonus += val;
+          else if (low === 'save.fort' || low === 'fort') featFortBonus += val;
+          else if (low === 'save.ref' || low === 'ref') featRefBonus += val;
+          else if (low === 'save.will' || low === 'will') featWillBonus += val;
+          else if (low === 'save.all' || low === 'saves.all') { featFortBonus += val; featRefBonus += val; featWillBonus += val; }
+          else if (low === 'attack.melee' || low === 'attack.all' || low === 'attack') featAtkBonus += val;
+          else if (low === 'damage.melee' || low === 'damage.all' || low === 'damage') featDmgBonus += val;
+          else if (low.startsWith('skill.')) {
+            const skKey = low.slice(6).replace(/\s+/g, '_');
+            featSkillBonuses[skKey] = (featSkillBonuses[skKey] || 0) + val;
+          }
+        });
+      });
+    });
+
+    const totalStr = prelimChassis.abilities.str + strAdj + abiBonus.str;
+    const totalDex = prelimChassis.abilities.dex + dexAdj + abiBonus.dex;
+    const totalCon = prelimChassis.abilities.con + abiBonus.con;
+    const baseIntScaled = companionInt !== null ? Math.max(prelimChassis.abilities.int, companionInt) : prelimChassis.abilities.int;
+    const totalInt = baseIntScaled + abiBonus.int;
+    const totalWis = prelimChassis.abilities.wis + abiBonus.wis;
+    const totalCha = prelimChassis.abilities.cha + abiBonus.cha;
 
     const strMod = this.getAbilityMod(totalStr);
     const dexMod = this.getAbilityMod(totalDex);
@@ -19424,21 +19562,21 @@ const RuleEngine = {
     const chaMod = this.getAbilityMod(totalCha);
 
     // 4. Hit Dice & Hit Points
-    const totalHd = (type === 'familiar') ? Math.max(1, ctx.level) : (prelimChassis.baseHd + bonusHd);
     const maxHp = (type === 'familiar')
       ? Math.max(1, Math.floor((Number(char?.hp?.max) || 10) / 2))
-      : Math.max(1, Math.round(totalHd * 4.5 + totalHd * conMod));
+      : Math.max(1, Math.round(totalHd * 4.5 + totalHd * conMod) + featHpBonus);
     const currentHp = companionConfig.currentHp !== undefined ? companionConfig.currentHp : maxHp;
 
-    // 5. Base Attack Bonus
+    // 5. Base Attack Bonus & Initiative
     const bab = (type === 'familiar') ? (Number(char?.bab) || 0) : Math.floor(totalHd * 0.75);
+    const initiative = dexMod + featInitBonus;
 
     // 6. Natural Armor, Gear & AC (with sizeMod properly applied!)
-    const totalNatArmor = Math.max(0, prelimChassis.baseNaturalArmor + natArmorAdj);
+    const totalNatArmor = Math.max(0, prelimChassis.baseNaturalArmor + natArmorAdj + featNatArmorBonus);
     const gear = companionConfig.gear || {};
     let armorACBonus = 0;
-    let attackEnhancement = 0;
-    let damageEnhancement = 0;
+    let attackEnhancement = featAtkBonus;
+    let damageEnhancement = featDmgBonus;
     let speedBonus = 0;
 
     if (gear.armor) {
@@ -19458,8 +19596,8 @@ const RuleEngine = {
     }
 
     const sizeMod = prelimChassis.sizeMod;
-    const acTotal = 10 + dexMod + sizeMod + totalNatArmor + armorACBonus;
-    const acTouch = 10 + dexMod + sizeMod;
+    const acTotal = 10 + dexMod + sizeMod + totalNatArmor + armorACBonus + featDodgeBonus;
+    const acTouch = 10 + dexMod + sizeMod + featDodgeBonus;
     const acFlatFooted = 10 + sizeMod + totalNatArmor + armorACBonus;
 
     // 7. Saving Throws
@@ -19474,13 +19612,13 @@ const RuleEngine = {
       refSave = Math.max(2 + Math.floor(prelimChassis.baseHd / 2), baseRef) + dexMod;
       willSave = Math.max(Math.floor(prelimChassis.baseHd / 3), baseWill) + wisMod;
     } else {
-      fortSave = 2 + Math.floor(totalHd / 2) + conMod;
-      refSave = 2 + Math.floor(totalHd / 2) + dexMod;
-      willSave = Math.floor(totalHd / 3) + wisMod;
+      fortSave = 2 + Math.floor(totalHd / 2) + conMod + featFortBonus;
+      refSave = 2 + Math.floor(totalHd / 2) + dexMod + featRefBonus;
+      willSave = Math.floor(totalHd / 3) + wisMod + featWillBonus;
     }
 
     // 8. Natural Attacks via MonsterChassisAdapter (zero double-STR bug!)
-    const hasMultiattack = specialAbilities.some(s => /\bmultiattack\b/i.test(String(s)));
+    const hasMultiattack = hasChosenMultiattack || specialAbilities.some(s => /\bmultiattack\b/i.test(String(s)));
     const finalChassis = this.buildMonsterChassis(baseMonster, {
       str: totalStr,
       dex: totalDex,
@@ -19490,6 +19628,66 @@ const RuleEngine = {
       hasMultiattack,
       animalCompanionMultiattack: Boolean(type === 'animal_companion' && hasMultiattack)
     });
+    if (hasImprovedNaturalAttack && Array.isArray(finalChassis.attacks) && typeof this.stepDamageDice === 'function') {
+      finalChassis.attacks.forEach(atk => {
+        if (atk && atk.primary === true && atk.damageDice) {
+          atk.damageDice = this.stepDamageDice(atk.damageDice, 1);
+          const suf = atk.damageBonus > 0 ? `+${atk.damageBonus}` : (atk.damageBonus < 0 ? String(atk.damageBonus) : '');
+          atk.formattedDamage = atk.damageDice + suf;
+        }
+      });
+    }
+
+    // 9. Companion Skills & Tricks (MM p.290 RAW)
+    const mSkillsRaw = (baseMonster.monster && baseMonster.monster.skills) || baseMonster.skills || {};
+    const classSkillKeys = new Set(Object.keys(mSkillsRaw).map(k => String(k).toLowerCase().trim().replace(/\s+/g, '_')));
+    const standardCompanionSkills = [
+      { key: 'hide', name: 'Hide', stat: 'dex' },
+      { key: 'listen', name: 'Listen', stat: 'wis' },
+      { key: 'move_silently', name: 'Move Silently', stat: 'dex' },
+      { key: 'spot', name: 'Spot', stat: 'wis' },
+      { key: 'survival', name: 'Survival', stat: 'wis' },
+      { key: 'jump', name: 'Jump', stat: 'str' },
+      { key: 'swim', name: 'Swim', stat: 'str' },
+      { key: 'climb', name: 'Climb', stat: 'str' },
+      { key: 'balance', name: 'Balance', stat: 'dex' }
+    ];
+    const maxClassRank = totalHd + 3;
+    const maxCrossRank = Math.floor(maxClassRank / 2);
+    const skillPool = supportsProgression ? (bonusHd * Math.max(1, 2 + intMod)) : 0;
+    const rankMap = (rawProg.skillRanks && typeof rawProg.skillRanks === 'object') ? rawProg.skillRanks : {};
+    let skillSpent = 0;
+    const compMods = { str: strMod, dex: dexMod, con: conMod, int: intMod, wis: wisMod, cha: chaMod };
+    const skills = standardCompanionSkills.map(sk => {
+      const isClass = classSkillKeys.size > 0 ? classSkillKeys.has(sk.key) : ['hide', 'listen', 'move_silently', 'spot', 'survival'].includes(sk.key);
+      const addedRanks = Math.max(0, Math.floor(Number(rankMap[sk.key]) || 0));
+      skillSpent += isClass ? addedRanks : addedRanks * 2;
+      const baseTotal = Number(mSkillsRaw[sk.name] ?? mSkillsRaw[sk.key] ?? 0) || 0;
+      const baseStatMod = this.getAbilityMod(prelimChassis.abilities[sk.stat] || 10);
+      const baseNonStat = baseTotal !== 0 ? Math.max(0, baseTotal - baseStatMod) : 0;
+      const featSkBonus = Number(featSkillBonuses[sk.key]) || 0;
+      const total = baseNonStat + addedRanks + (compMods[sk.stat] || 0) + featSkBonus;
+      return {
+        key: sk.key,
+        name: sk.name,
+        stat: sk.stat,
+        isClass,
+        addedRanks,
+        maxRank: isClass ? maxClassRank : maxCrossRank,
+        total
+      };
+    });
+    const skillLeft = Math.max(0, skillPool - skillSpent);
+
+    const trickCap = type === 'animal_companion' ? ((totalInt * 3) + bonusTricks) : 0;
+    const srdTricks = Array.isArray(rawProg.tricks) ? rawProg.tricks.filter(Boolean) : [];
+    const customTricks = Array.isArray(rawProg.customTricks) ? rawProg.customTricks.filter(Boolean) : [];
+    const tricksCount = srdTricks.length + customTricks.length;
+    const pendingAbility = abilityThresholds.filter(hd => !abiIncMap[hd] && !abiIncMap[String(hd)]).length;
+    const pendingFeats = Math.max(0, featThresholds.length - activeChosenFeats.length);
+    const pendingTricks = Math.max(0, trickCap - tricksCount);
+
+    const combinedFeatsList = prelimChassis.feats.concat(activeChosenFeats.map(cf => cf.name));
 
     return {
       id: companionConfig.id || `${type}:${companionConfig.baseMonsterId}`,
@@ -19498,6 +19696,7 @@ const RuleEngine = {
       customName,
       baseName: baseMonster.name,
       baseMonsterId: companionConfig.baseMonsterId,
+      isCustomV3: Boolean(char?.customEntries?.[companionConfig.baseMonsterId]),
       size: prelimChassis.size,
       sizeMod,
       effectiveLevel,
@@ -19506,19 +19705,43 @@ const RuleEngine = {
       levelBonus,
       totalHd,
       hp: { current: currentHp, max: maxHp },
-      ac: { total: acTotal, touch: acTouch, flatFooted: acFlatFooted, naturalArmor: totalNatArmor, armorBonus: armorACBonus, sizeMod },
+      ac: { total: acTotal, touch: acTouch, flatFooted: acFlatFooted, naturalArmor: totalNatArmor, armorBonus: armorACBonus, dodgeBonus: featDodgeBonus, sizeMod },
       abilities: { str: totalStr, dex: totalDex, con: totalCon, int: totalInt, wis: totalWis, cha: totalCha },
       abilityMods: { str: strMod, dex: dexMod, con: conMod, int: intMod, wis: wisMod, cha: chaMod },
       saves: { fort: fortSave, ref: refSave, will: willSave },
       bab,
+      initiative,
       spellResistance,
       speed: Object.assign({}, prelimChassis.speeds, { land: (prelimChassis.speeds.land ?? 30) + speedBonus }),
       attacks: finalChassis.attacks,
+      skills,
       bonusTricks,
       specialAbilities,
-      monsterFeats: prelimChassis.feats,
+      monsterFeats: combinedFeatsList,
       masterBonusText,
-      gear
+      gear,
+      progression: {
+        supportsProgression,
+        baseHd: prelimChassis.baseHd,
+        bonusHd,
+        abilityThresholds,
+        featThresholds,
+        abilityIncreases: abiIncMap,
+        chosenFeats: activeChosenFeats,
+        skillPool,
+        skillSpent,
+        skillLeft,
+        maxClassRank,
+        maxCrossRank,
+        trickCap,
+        tricks: srdTricks,
+        customTricks,
+        tricksCount,
+        pendingAbility,
+        pendingFeats,
+        pendingTricks,
+        intUnlocked: totalInt >= 3
+      }
     };
   },
 

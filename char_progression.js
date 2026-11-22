@@ -8286,21 +8286,52 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
             </div>
           ` : '';
 
+          const progInfo = stats.progression || null;
+          const pendingBadges = [];
+          if (progInfo && progInfo.supportsProgression) {
+            if (progInfo.pendingAbility > 0) pendingBadges.push(`<span class="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-amber-950/80 text-amber-300 border border-amber-600/60">+${progInfo.pendingAbility} Ability</span>`);
+            if (progInfo.pendingFeats > 0) pendingBadges.push(`<span class="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-purple-950/80 text-purple-300 border border-purple-600/60">${progInfo.pendingFeats} Feat${progInfo.pendingFeats > 1 ? 's' : ''}</span>`);
+            if (progInfo.skillLeft > 0) pendingBadges.push(`<span class="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-sky-950/80 text-sky-300 border border-sky-600/60">${progInfo.skillLeft} Skill Pts</span>`);
+            if (progInfo.pendingTricks > 0) pendingBadges.push(`<span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-950 text-slate-300 border border-slate-700">${progInfo.pendingTricks} Tricks</span>`);
+            if (pendingBadges.length === 0) pendingBadges.push('<span class="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-950/80 text-emerald-300 border border-emerald-700/60">✓ HD Choices Complete</span>');
+          }
+          const chosenFeatSummary = (progInfo && Array.isArray(progInfo.chosenFeats) && progInfo.chosenFeats.length > 0)
+            ? progInfo.chosenFeats.map(f => UI.escapeHtml(f.name)).join(', ')
+            : 'None yet';
+          const topSkillsSummary = Array.isArray(stats.skills)
+            ? stats.skills.slice(0, 4).map(sk => `${UI.escapeHtml(sk.name)} ${sk.total >= 0 ? '+' : ''}${sk.total}`).join(' • ')
+            : '';
+          const allTricksSummary = progInfo
+            ? [...(progInfo.tricks || []), ...(progInfo.customTricks || [])].map(t => UI.escapeHtml(t)).join(', ')
+            : '';
+
           companionCardHtml = `
             <div class="mt-3.5 border border-amber-500/40 rounded-xl bg-slate-900/90 p-3 shadow-md space-y-2">
               ${progSwitcherHtml}
-              <!-- Header: 🐾 Name & Animal (Type) - [Manage] [Dismiss] -->
-              <div class="flex items-center justify-between border-b border-slate-800 pb-2 gap-2">
+              <!-- Header: 🐾 Name & Animal (Type) - [Feats] [Skills] [Manage] [Dismiss] -->
+              <div class="flex items-center justify-between border-b border-slate-800 pb-2 gap-2 flex-wrap">
                 <div class="flex items-center gap-2 min-w-0">
                   <span class="text-base shrink-0">${icon}</span>
-                  <div class="flex items-center gap-2 flex-wrap min-w-0">
+                  <div class="flex items-center gap-1.5 flex-wrap min-w-0">
                     <span class="text-xs font-black text-amber-300 truncate">${safeEscapeHtml(stats.customName)}</span>
                     <span class="text-[10px] text-slate-400 font-mono truncate">(${safeEscapeHtml(stats.baseName)} • ${typeLabel})</span>
                     <span class="text-[10px] font-mono font-bold px-1.5 rounded bg-amber-950 text-amber-300 border border-amber-700/60">${stats.totalHd} HD</span>
+                    ${stats.isCustomV3 ? '<span class="text-[10px] font-mono font-bold px-1.5 rounded bg-purple-950 text-purple-300 border border-purple-700/60">⚒️ V3 Custom</span>' : ''}
+                    ${pendingBadges.join('')}
                   </div>
                 </div>
-                <div class="flex items-center gap-1.5 shrink-0">
-                  <button type="button" data-action="progression:open-companion-modal" class="ui-btn-xs h-6 px-2 text-[10px] font-bold text-amber-300 hover:text-white bg-slate-950 hover:bg-slate-800 rounded border border-amber-600/50 transition cursor-pointer">
+                <div class="flex items-center gap-1.5 shrink-0 flex-wrap">
+                  ${progInfo && progInfo.supportsProgression ? `
+                    <button type="button" data-action="progression:open-companion-modal" data-tab="feats" class="ui-btn-xs h-6 px-2 text-[10px] font-bold text-purple-300 hover:text-white bg-slate-950 hover:bg-slate-800 rounded border border-purple-600/50 transition cursor-pointer">
+                      <span>🎖️</span>
+                      <span>Feats &amp; Ability</span>
+                    </button>
+                    <button type="button" data-action="progression:open-companion-modal" data-tab="skills" class="ui-btn-xs h-6 px-2 text-[10px] font-bold text-sky-300 hover:text-white bg-slate-950 hover:bg-slate-800 rounded border border-sky-600/50 transition cursor-pointer">
+                      <span>🎯</span>
+                      <span>Skills &amp; Tricks</span>
+                    </button>
+                  ` : ''}
+                  <button type="button" data-action="progression:open-companion-modal" data-tab="overview" class="ui-btn-xs h-6 px-2 text-[10px] font-bold text-amber-300 hover:text-white bg-slate-950 hover:bg-slate-800 rounded border border-amber-600/50 transition cursor-pointer">
                     <span>⚙️</span>
                     <span>Manage</span>
                   </button>
@@ -8343,12 +8374,19 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
                 <div><strong class="text-slate-400">CHA</strong> <span class="text-white font-bold">${stats.abilities.cha}</span></div>
               </div>
 
-              <!-- Line 3: Attacks & Damage -->
-              <div class="bg-slate-950/70 px-2.5 py-1.5 rounded-lg border border-slate-800/80 flex items-center justify-between text-xs flex-wrap gap-2">
+              <!-- Line 3: Attacks & Damage + Progression Summary -->
+              <div class="bg-slate-950/70 px-2.5 py-1.5 rounded-lg border border-slate-800/80 space-y-1 text-xs">
                 <div class="flex items-center gap-1.5 flex-wrap">
                   <span class="text-[10px] font-bold text-amber-400 uppercase">Natural Attacks:</span>
                   ${stats.attacks.map(atk => `<span class="font-mono text-white font-bold bg-slate-900 px-2 py-0.5 rounded border border-slate-700">${safeEscapeHtml(atk.name)} ${atk.formattedAttack} (${atk.formattedDamage})</span>`).join(' ')}
                 </div>
+                ${progInfo && progInfo.supportsProgression ? `
+                  <div class="text-[10px] text-slate-400 flex flex-wrap gap-2 pt-0.5 border-t border-slate-800/70">
+                    <span><strong class="text-purple-300">HD Feats:</strong> ${chosenFeatSummary}</span>
+                    ${topSkillsSummary ? `<span><strong class="text-sky-300">Skills:</strong> <span class="font-mono">${topSkillsSummary}</span></span>` : ''}
+                    ${progInfo.trickCap > 0 ? `<span><strong class="text-emerald-300">Tricks (${progInfo.tricksCount}/${progInfo.trickCap}):</strong> ${allTricksSummary || 'None'}</span>` : ''}
+                  </div>
+                ` : ''}
               </div>
 
               <!-- Line 4: Special Qualities & Tricks -->
@@ -10714,7 +10752,94 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       return modal;
     }
 
-    function openCompanionModal() {
+    let _activeCompanionModalTab = 'overview';
+    let _companionModalDraftProg = null;
+    const COMPANION_SRD_TRICKS = ['Attack', 'Attack Any Target', 'Come', 'Defend', 'Down', 'Fetch', 'Guard', 'Heel', 'Perform', 'Seek', 'Stay', 'Track', 'Work'];
+    const COMPANION_ANIMAL_FEAT_NAMES = new Set([
+      'acrobatic', 'agile', 'alertness', 'athletic', 'blind-fight', 'dodge', 'endurance',
+      'great fortitude', 'improved bull rush', 'improved initiative', 'improved natural armor',
+      'improved natural attack', 'improved overrun', 'iron will', 'lightning reflexes',
+      'mobility', 'multiattack', 'power attack', 'run', 'skill focus', 'spring attack',
+      'stealthy', 'toughness', 'track', 'weapon finesse', 'weapon focus'
+    ]);
+
+    function getCompanionCustomV3Monsters() {
+      const out = [];
+      const seen = new Set();
+      const add = (e) => {
+        if (!e || typeof e !== 'object' || !e.id || !e.name) return;
+        const isMon = e.blueprint === 'monster' || String(e.type || '').toLowerCase() === 'monster' || (e.monster && typeof e.monster === 'object');
+        if (!isMon || seen.has(e.id)) return;
+        seen.add(e.id);
+        out.push({ id: e.id, name: `⚒️ ${e.name} (V3 Custom)`, minLevel: 0, levelAdj: 0, isCustomV3: true });
+      };
+      if (character && character.customEntries && typeof character.customEntries === 'object') {
+        Object.values(character.customEntries).forEach(add);
+      }
+      if (character && Array.isArray(character.customDb)) {
+        character.customDb.forEach(add);
+      }
+      return out;
+    }
+
+    function getCompanionFeatCatalog(intUnlocked) {
+      const out = [
+        { id: 'feat-improved-natural-attack', name: 'Improved Natural Attack', summary: 'Primary natural attack +1 die step', isCustomV3: false }
+      ];
+      const seen = new Set(['feat-improved-natural-attack', 'improved natural attack']);
+      const addEntry = (e, isCustom) => {
+        if (!e || !e.name) return;
+        const low = String(e.name).toLowerCase().trim();
+        const id = String(e.id || low);
+        if (seen.has(id) || seen.has(low)) return;
+        const isFeat = e.blueprint === 'feat' || String(e.type || '').toLowerCase() === 'feat';
+        if (!isFeat) return;
+        if (!isCustom && !intUnlocked && !COMPANION_ANIMAL_FEAT_NAMES.has(low)) return;
+        seen.add(id);
+        seen.add(low);
+        out.push({
+          id,
+          name: e.name,
+          summary: String(e.shortDescription || e.benefit || '').slice(0, 64),
+          isCustomV3: Boolean(isCustom)
+        });
+      };
+      if (character && character.customEntries && typeof character.customEntries === 'object') {
+        Object.values(character.customEntries).forEach(e => addEntry(e, true));
+      }
+      if (character && Array.isArray(character.customDb)) {
+        character.customDb.forEach(e => addEntry(e, true));
+      }
+      if (window.SrdCompendium && typeof window.SrdCompendium.getAllLoaded === 'function') {
+        (window.SrdCompendium.getAllLoaded(['Feat']) || []).forEach(e => addEntry(e, false));
+      } else if (window.SrdCompendium && typeof window.SrdCompendium.getAll === 'function') {
+        (window.SrdCompendium.getAll() || []).forEach(e => addEntry(e, false));
+      }
+      return out.sort((a, b) => {
+        if (a.isCustomV3 !== b.isCustomV3) return a.isCustomV3 ? -1 : 1;
+        return String(a.name).localeCompare(String(b.name));
+      });
+    }
+
+    function ensureCompanionDraftProg(editingComp, animalId) {
+      if (_companionModalDraftProg && String(_companionModalDraftProg.stampMonsterId || '') === String(animalId || '')) {
+        return _companionModalDraftProg;
+      }
+      const src = (editingComp && editingComp.progression && String(editingComp.progression.stampMonsterId || editingComp.baseMonsterId) === String(animalId || ''))
+        ? editingComp.progression
+        : {};
+      _companionModalDraftProg = {
+        stampMonsterId: animalId || '',
+        abilityIncreases: (src.abilityIncreases && typeof src.abilityIncreases === 'object') ? Object.assign({}, src.abilityIncreases) : {},
+        feats: Array.isArray(src.feats) ? src.feats.map(f => ({ ...f })) : [],
+        skillRanks: (src.skillRanks && typeof src.skillRanks === 'object') ? Object.assign({}, src.skillRanks) : {},
+        tricks: Array.isArray(src.tricks) ? [...src.tricks] : [],
+        customTricks: Array.isArray(src.customTricks) ? [...src.customTricks] : []
+      };
+      return _companionModalDraftProg;
+    }
+
+    function openCompanionModal(initialTab = 'overview') {
       if (!isCharacterCompanionEligible(character)) {
         if (typeof showDiceTopToast === 'function') {
           showDiceTopToast({
@@ -10726,6 +10851,8 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         }
         return;
       }
+      _activeCompanionModalTab = ['overview', 'feats', 'skills'].includes(initialTab) ? initialTab : 'overview';
+      _companionModalDraftProg = null;
       const modal = ensureCompanionModalDom();
       const activeComp = getActiveProgressionCompanion(character);
       if (activeComp) {
@@ -10753,11 +10880,12 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         }
       }
 
-      // Ensure srd_companions and srd_monsters are loaded
+      // Ensure srd_companions, srd_monsters, and srd_feats are loaded
       if (window.SrdCompendium && typeof window.SrdCompendium.ensureChunkLoaded === 'function') {
         Promise.all([
           window.SrdCompendium.ensureChunkLoaded('srd_companions.json'),
-          window.SrdCompendium.ensureChunkLoaded('srd_monsters.json')
+          window.SrdCompendium.ensureChunkLoaded('srd_monsters.json'),
+          window.SrdCompendium.ensureChunkLoaded('srd_feats.json')
         ]).then(() => {
           renderCompanionModalContent();
         }).catch(() => {});
@@ -10779,12 +10907,70 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       }
       _activeCompanionModalType = newType;
       _activeCompanionModalAnimalId = null;
+      _companionModalDraftProg = null;
       renderCompanionModalContent();
     }
 
     function onCompanionAnimalChange(animalId) {
       _activeCompanionModalAnimalId = animalId;
+      _companionModalDraftProg = null;
       renderCompanionModalContent();
+    }
+
+    function openCompanionV3Crafter(blueprintKind) {
+      if (!window.DnDUI || typeof window.DnDUI.openRuleCrafter !== 'function') {
+        showToast('Rule Crafter is not available right now.', 'warning');
+        return;
+      }
+      const isMonster = blueprintKind === 'monster';
+      window.DnDUI.openRuleCrafter({
+        blueprint: isMonster ? 'monster' : 'feat',
+        kind: isMonster ? 'monster' : 'feat',
+        context: { source: 'companion_modal', target: isMonster ? 'companion_chassis' : 'companion_feat' },
+        onSave: (msg) => {
+          const entry = msg && msg.entry;
+          if (!entry || !entry.name) return;
+          if (!entry.id) entry.id = `${isMonster ? 'v3-comp' : 'v3-cfeat'}-${Date.now().toString(36)}`;
+          entry.schemaVersion = 3;
+          entry.blueprint = isMonster ? 'monster' : 'feat';
+          if (!character.customEntries || typeof character.customEntries !== 'object') character.customEntries = {};
+          character.customEntries[entry.id] = JSON.parse(JSON.stringify(entry));
+          if (isMonster) {
+            _activeCompanionModalAnimalId = entry.id;
+            _companionModalDraftProg = null;
+            _activeCompanionModalTab = 'overview';
+          } else {
+            const editingComp = _activeCompanionModalEditId
+              ? (character.companions || []).find(c => c && String(c.id) === String(_activeCompanionModalEditId))
+              : getActiveProgressionCompanion(character);
+            const draft = ensureCompanionDraftProg(editingComp, _activeCompanionModalAnimalId);
+            const previewStats = window.RuleEngine?.calculateCompanionStats?.(character, {
+              id: editingComp?.id || null,
+              entityKind: _activeCompanionModalType,
+              type: _activeCompanionModalType,
+              baseMonsterId: _activeCompanionModalAnimalId,
+              name: editingComp?.name || 'Companion',
+              gear: editingComp?.gear || {},
+              progression: draft
+            });
+            const thresholds = previewStats?.progression?.featThresholds || [];
+            const takenHds = new Set((draft.feats || []).map(f => Number(f.hd)));
+            const openHd = thresholds.find(h => !takenHds.has(h));
+            if (openHd) {
+              draft.feats.push({ hd: openHd, featId: entry.id, name: entry.name, choice: '' });
+            }
+            _activeCompanionModalTab = 'feats';
+          }
+          saveStateToStorage(false);
+          renderCompanionModalContent();
+          showDiceTopToast({
+            icon: '⚒️',
+            title: isMonster ? 'V3 Companion Created' : 'V3 Companion Feat Created',
+            breakdown: `${entry.name} saved to character V3 entries.`,
+            total: 'V3 Ready'
+          });
+        }
+      });
     }
 
     function renderCompanionModalContent() {
@@ -10795,9 +10981,11 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         ? window.SrdCompendium.getCompanionsData()
         : null;
 
-      const allowedAnimals = (window.SrdCompendium && typeof window.SrdCompendium.getAllowedAnimals === 'function')
+      const allowedAnimalsBase = (window.SrdCompendium && typeof window.SrdCompendium.getAllowedAnimals === 'function')
         ? window.SrdCompendium.getAllowedAnimals(_activeCompanionModalType)
         : [];
+      const customV3Animals = getCompanionCustomV3Monsters();
+      const allowedAnimals = [...customV3Animals, ...allowedAnimalsBase];
 
       if (!_activeCompanionModalAnimalId && allowedAnimals.length > 0) {
         _activeCompanionModalAnimalId = allowedAnimals[0].id;
@@ -10807,10 +10995,15 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         ? (character.companions || []).find(c => c && String(c.id) === String(_activeCompanionModalEditId))
         : getActiveProgressionCompanion(character);
 
+      const draftProg = ensureCompanionDraftProg(editingComp, _activeCompanionModalAnimalId);
+
       // Existing Companion Name fallback
-      const existingName = (editingComp && editingComp.name)
-        ? editingComp.name
-        : (allowedAnimals.find(a => a.id === _activeCompanionModalAnimalId)?.name || 'Companion');
+      const nameInputEl = document.getElementById('companion-input-name');
+      const existingName = (nameInputEl && nameInputEl.value.trim())
+        ? nameInputEl.value.trim()
+        : ((editingComp && editingComp.name)
+          ? editingComp.name
+          : (allowedAnimals.find(a => a.id === _activeCompanionModalAnimalId)?.name?.replace(/^⚒️\s*|\s*\(V3 Custom\)$/g, '') || 'Companion'));
 
       // Dismiss button visibility
       const dismissBtn = document.getElementById('btn-companion-modal-dismiss');
@@ -10818,20 +11011,26 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         dismissBtn.classList.toggle('hidden', !(editingComp && editingComp.baseMonsterId));
       }
 
-      // Calculate preview stats directly via V3 RuleEngine (zero regex class parsing!)
+      // Calculate preview stats directly via V3 RuleEngine (with draft HD progression!)
       const previewConfig = {
         id: editingComp?.id || null,
         entityKind: _activeCompanionModalType,
         type: _activeCompanionModalType,
         baseMonsterId: _activeCompanionModalAnimalId,
         name: existingName,
-        gear: editingComp?.gear || {}
+        gear: editingComp?.gear || {},
+        progression: draftProg
       };
       const stats = (window.RuleEngine && typeof window.RuleEngine.calculateCompanionStats === 'function')
         ? window.RuleEngine.calculateCompanionStats(character, previewConfig)
         : ((window.SrdCompendium && typeof window.SrdCompendium.calculateCompanionStats === 'function')
           ? window.SrdCompendium.calculateCompanionStats(character, previewConfig)
           : null);
+      const prog = stats?.progression || null;
+      const supportsProg = Boolean(prog && prog.supportsProgression);
+      if (!supportsProg && _activeCompanionModalTab !== 'overview') {
+        _activeCompanionModalTab = 'overview';
+      }
 
       const effectiveLevel = stats ? stats.effectiveLevel : 0;
       const levelNote = stats
@@ -10872,110 +11071,253 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         `;
       }).join('');
 
-      bodyEl.innerHTML = `
-        <!-- Type Selection Tabs -->
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 p-1 bg-slate-950 rounded-xl border border-slate-800">
-          ${tabsHtml}
+      const fPend = prog ? (prog.pendingAbility + prog.pendingFeats) : 0;
+      const sLeft = prog ? prog.skillLeft : 0;
+      const modalSubTabsHtml = `
+        <div class="flex items-center gap-1.5 border-b border-slate-800 pb-2 flex-wrap">
+          <button type="button" data-action="progression:companion-modal-tab" data-tab="overview" class="px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer border ${_activeCompanionModalTab === 'overview' ? 'bg-amber-600 text-white border-amber-400 shadow' : 'bg-slate-950 text-slate-400 hover:text-white border-slate-800'}">
+            📋 Overview &amp; V3 Chassis
+          </button>
+          <button type="button" data-action="progression:companion-modal-tab" data-tab="feats" ${supportsProg ? '' : 'disabled'} class="px-3 py-1.5 rounded-lg text-xs font-bold transition border inline-flex items-center gap-1.5 ${!supportsProg ? 'bg-slate-950 text-slate-600 border-slate-800 opacity-40 cursor-not-allowed' : (_activeCompanionModalTab === 'feats' ? 'bg-purple-700 text-white border-purple-400 shadow cursor-pointer' : 'bg-slate-950 text-slate-400 hover:text-white border-slate-800 cursor-pointer')}">
+            <span>🎖️ Feats &amp; Ability</span>
+            ${supportsProg ? `<span class="text-[10px] font-mono px-1.5 rounded-full ${fPend > 0 ? 'bg-amber-950 text-amber-300' : 'bg-emerald-950 text-emerald-300'}">${fPend > 0 ? fPend : '✓'}</span>` : ''}
+          </button>
+          <button type="button" data-action="progression:companion-modal-tab" data-tab="skills" ${supportsProg ? '' : 'disabled'} class="px-3 py-1.5 rounded-lg text-xs font-bold transition border inline-flex items-center gap-1.5 ${!supportsProg ? 'bg-slate-950 text-slate-600 border-slate-800 opacity-40 cursor-not-allowed' : (_activeCompanionModalTab === 'skills' ? 'bg-sky-700 text-white border-sky-400 shadow cursor-pointer' : 'bg-slate-950 text-slate-400 hover:text-white border-slate-800 cursor-pointer')}">
+            <span>🎯 Skills &amp; Tricks</span>
+            ${supportsProg ? `<span class="text-[10px] font-mono px-1.5 rounded-full ${sLeft > 0 ? 'bg-sky-950 text-sky-300' : 'bg-emerald-950 text-emerald-300'}">${sLeft > 0 ? `${sLeft}pt` : '✓'}</span>` : ''}
+          </button>
         </div>
-
-        <!-- Level Banner -->
-        <div class="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800 flex items-center justify-between gap-2 flex-wrap">
-          <div class="flex items-center gap-2">
-            <span class="text-base text-amber-400">📈</span>
-            <span class="font-mono text-slate-300 text-xs">${safeEscapeHtml(levelNote)}</span>
-          </div>
-          <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-slate-950 text-amber-300 border border-slate-800">
-            Bracket: Lvl ${effectiveLevel}
-          </span>
-        </div>
-
-        <!-- Creature Selection & Name Controls -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <div class="flex items-center justify-between mb-1">
-              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wide">Select Creature / Animal</label>
-              <button type="button" data-action="progression:toggle-companion-spotlight" data-open="true" class="text-[10px] text-amber-300 hover:text-amber-200 font-bold flex items-center gap-1 cursor-pointer">
-                <span>🔮 Spotlight &amp; Rule Master</span>
-              </button>
-            </div>
-            <select id="companion-select-animal" data-change-action="progression:companion-animal" class="ui-input-md w-full h-9 bg-slate-950 text-amber-200 border border-slate-700 rounded-lg px-2.5 text-xs font-bold cursor-pointer">
-              ${allowedAnimals.map(a => {
-                const isSelected = a.id === _activeCompanionModalAnimalId;
-                const reqText = a.minLevel ? ` (Req Lvl ${a.minLevel})` : (a.levelAdj ? ` (Adj ${a.levelAdj})` : '');
-                const bonusText = a.masterBonusText ? ` • [${a.masterBonusText}]` : '';
-                return `<option value="${a.id}" ${isSelected ? 'selected' : ''}>${UI.escapeHtml(a.name)}${reqText}${bonusText}</option>`;
-              }).join('')}
-            </select>
-          </div>
-          <div>
-            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-1">Companion Custom Name</label>
-            <input type="text" id="companion-input-name" value="${safeEscapeHtml(existingName)}" placeholder="e.g., Ghost, Fang, Shadow..." class="ui-input-md w-full h-9 bg-slate-950 text-white border border-slate-700 rounded-lg px-2.5 text-xs font-semibold focus:border-amber-500">
-          </div>
-        </div>
-
-        <!-- Live Companion Stats Preview -->
-        ${stats ? `
-          <div class="bg-slate-950/90 border border-amber-500/40 rounded-xl p-3 space-y-2.5 shadow-inner">
-            <div class="flex items-center justify-between border-b border-slate-800 pb-1.5">
-              <span class="text-xs font-black uppercase text-amber-400 tracking-wider flex items-center gap-1.5">
-                <span>⚡</span> LIVE CALCULATED STATS PREVIEW (D&amp;D 3.5E RAW)
-              </span>
-              <span class="text-[10px] font-mono text-emerald-400 font-bold">${stats.totalHd} Hit Dice</span>
-            </div>
-
-            <!-- Preview 4-Cell Defensive Strip -->
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono">
-              <div class="bg-slate-900/80 p-2 rounded-lg border border-slate-800 text-center">
-                <span class="text-[10px] uppercase font-bold text-slate-400 block">HP</span>
-                <span class="font-black text-emerald-400 text-sm">${stats.hp.max}</span>
-              </div>
-              <div class="bg-slate-900/80 p-2 rounded-lg border border-slate-800 text-center">
-                <span class="text-[10px] uppercase font-bold text-slate-400 block">Armor Class</span>
-                <span class="font-black text-amber-300 text-sm">${stats.ac.total}</span>
-                <span class="text-[10px] text-slate-500 block">Nat +${stats.ac.naturalArmor}</span>
-              </div>
-              <div class="bg-slate-900/80 p-2 rounded-lg border border-slate-800 text-center">
-                <span class="text-[10px] uppercase font-bold text-slate-400 block">Base Attack</span>
-                <span class="font-black text-sky-300 text-sm">+${stats.bab}</span>
-              </div>
-              <div class="bg-slate-900/80 p-2 rounded-lg border border-slate-800 text-center">
-                <span class="text-[10px] uppercase font-bold text-slate-400 block">Fort / Ref / Will</span>
-                <span class="font-black text-purple-300 text-xs">+${stats.saves.fort} / +${stats.saves.ref} / +${stats.saves.will}</span>
-              </div>
-            </div>
-
-            <!-- Preview Abilities Strip -->
-            <div class="bg-slate-900/70 p-2 rounded-lg border border-slate-800 flex items-center justify-between text-xs font-mono flex-wrap gap-2">
-              <div><strong class="text-slate-400">STR</strong> <span class="text-white">${stats.abilities.str}</span> <span class="text-amber-400">(+${stats.abilityMods.str})</span></div>
-              <div><strong class="text-slate-400">DEX</strong> <span class="text-white">${stats.abilities.dex}</span> <span class="text-amber-400">(+${stats.abilityMods.dex})</span></div>
-              <div><strong class="text-slate-400">CON</strong> <span class="text-white">${stats.abilities.con}</span> <span class="text-amber-400">(+${stats.abilityMods.con})</span></div>
-              <div><strong class="text-slate-400">INT</strong> <span class="text-white">${stats.abilities.int}</span></div>
-              <div><strong class="text-slate-400">WIS</strong> <span class="text-white">${stats.abilities.wis}</span> <span class="text-amber-400">(+${stats.abilityMods.wis})</span></div>
-              <div><strong class="text-slate-400">CHA</strong> <span class="text-white">${stats.abilities.cha}</span></div>
-            </div>
-
-            <!-- Attacks & Abilities Preview -->
-            <div class="text-xs space-y-1">
-              <div class="text-[11px] text-slate-300">
-                <strong class="text-amber-300">Attacks:</strong> ${stats.attacks.map(a => `${UI.escapeHtml(a.name)} ${a.formattedAttack} (${a.formattedDamage})`).join(', ') || 'None'}
-              </div>
-              <div class="text-[11px] text-slate-400">
-                <strong class="text-purple-300">Special:</strong> ${[...stats.specialAbilities, ...stats.monsterFeats, stats.masterBonusText].filter(Boolean).join(' • ') || 'Standard'}
-              </div>
-            </div>
-          </div>
-        ` : `
-          <div class="p-3 text-center text-xs text-slate-500 italic bg-slate-950/60 rounded-xl border border-slate-800">
-            Select a creature to preview scaled companion stats.
-          </div>
-        `}
       `;
+
+      let tabBodyHtml = '';
+      if (_activeCompanionModalTab === 'feats' && stats && prog) {
+        const featCat = getCompanionFeatCatalog(prog.intUnlocked);
+        const abiSlotsHtml = (prog.abilityThresholds || []).map(hd => {
+          const curVal = String(draftProg.abilityIncreases?.[hd] || draftProg.abilityIncreases?.[String(hd)] || '');
+          return `
+            <label class="p-2 rounded-lg bg-slate-950 border border-slate-800 flex items-center justify-between gap-2 text-xs">
+              <span class="font-mono font-bold text-amber-300">HD ${hd} (+1)</span>
+              <select data-change-action="progression:companion-abi-inc" data-hd="${hd}" class="px-2 py-1 rounded bg-slate-900 border border-slate-700 text-xs font-mono text-white cursor-pointer">
+                <option value="">-- Choose --</option>
+                ${['str', 'dex', 'con', 'int', 'wis', 'cha'].map(k => `<option value="${k}" ${curVal === k ? 'selected' : ''}>${k.toUpperCase()} (${stats.abilities[k]})</option>`).join('')}
+              </select>
+            </label>
+          `;
+        }).join('');
+
+        const featSlotsHtml = (prog.featThresholds || []).map(hd => {
+          const curEntry = (draftProg.feats || []).find(f => Number(f.hd) === hd);
+          const curId = curEntry ? curEntry.featId : '';
+          const takenOther = new Set((draftProg.feats || []).filter(f => Number(f.hd) !== hd).map(f => f.featId));
+          return `
+            <div class="p-2 rounded-lg bg-slate-950 border border-slate-800 space-y-1">
+              <div class="flex items-center justify-between text-[10px]">
+                <span class="font-mono font-bold text-purple-300">Total HD ${hd}</span>
+                <span class="text-slate-500">${curEntry ? UI.escapeHtml(curEntry.name || curId) : 'Open Feat Slot'}</span>
+              </div>
+              <select data-change-action="progression:companion-feat-pick" data-hd="${hd}" class="w-full px-2 py-1.5 rounded bg-slate-900 border border-slate-700 text-xs text-white cursor-pointer">
+                <option value="">-- Select SRD or V3 Custom Feat --</option>
+                ${featCat.map(f => `<option value="${UI.escapeAttr(f.id)}" ${curId === f.id ? 'selected' : ''} ${takenOther.has(f.id) ? 'disabled' : ''}>${f.isCustomV3 ? '⚒️ ' : ''}${UI.escapeHtml(f.name)}${takenOther.has(f.id) ? ' [Taken]' : ''}</option>`).join('')}
+              </select>
+            </div>
+          `;
+        }).join('');
+
+        tabBodyHtml = `
+          <div class="space-y-3">
+            <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 space-y-2">
+              <div class="flex items-center justify-between flex-wrap gap-2">
+                <span class="text-xs font-bold text-amber-300">💪 4th-HD Ability Score Increases <span class="text-[10px] font-mono text-slate-400">(RAW MM p.290)</span></span>
+                <span class="text-[10px] font-mono text-slate-400">${prog.abilityThresholds.length - prog.pendingAbility} / ${prog.abilityThresholds.length} Assigned</span>
+              </div>
+              ${abiSlotsHtml ? `<div class="grid grid-cols-1 sm:grid-cols-3 gap-2">${abiSlotsHtml}</div>` : '<p class="text-xs text-slate-500 italic">No 4th-HD ability increases unlocked yet.</p>'}
+            </div>
+
+            <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 space-y-2.5">
+              <div class="flex items-center justify-between flex-wrap gap-2">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="text-xs font-bold text-purple-300">🎖️ Bonus HD Feats (Every 3rd HD)</span>
+                  <span class="text-[10px] font-mono px-1.5 py-0.5 rounded border ${prog.intUnlocked ? 'bg-emerald-950 text-emerald-300 border-emerald-700' : 'bg-slate-950 text-slate-400 border-slate-700'}">${prog.intUnlocked ? `INT ${stats.abilities.int} — All Eligible Feats` : `INT ${stats.abilities.int} — Animal Feats Only`}</span>
+                </div>
+                <button type="button" data-action="progression:companion-craft-v3-feat" class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-purple-950 hover:bg-purple-800 text-purple-200 border border-purple-600/60 cursor-pointer transition">
+                  ⚒️ Craft Custom Feat (V3)
+                </button>
+              </div>
+              ${featSlotsHtml ? `<div class="grid grid-cols-1 sm:grid-cols-2 gap-2">${featSlotsHtml}</div>` : '<p class="text-xs text-slate-500 italic">No Bonus HD feat slots unlocked yet.</p>'}
+            </div>
+          </div>
+        `;
+      } else if (_activeCompanionModalTab === 'skills' && stats && prog) {
+        const skillsHtml = (stats.skills || []).map(sk => {
+          const cost = sk.isClass ? 1 : 2;
+          const canAdd = prog.skillLeft >= cost && sk.addedRanks < sk.maxRank;
+          const canSub = sk.addedRanks > 0;
+          return `
+            <div class="px-2.5 py-1.5 bg-slate-950 flex items-center justify-between gap-2 text-xs">
+              <div class="min-w-0 flex-1 flex items-center gap-1.5 flex-wrap">
+                <span class="font-bold text-white">${UI.escapeHtml(sk.name)}</span>
+                <span class="text-[10px] font-mono text-slate-400">(${sk.stat.toUpperCase()})</span>
+                <span class="text-[10px] font-mono px-1 rounded ${sk.isClass ? 'bg-emerald-950 text-emerald-300' : 'bg-slate-900 text-slate-500'}">${sk.isClass ? 'Class 1pt' : 'Cross 2pt'}</span>
+              </div>
+              <div class="flex items-center gap-2 font-mono shrink-0">
+                <span class="text-[10px] text-slate-400">+${sk.addedRanks}/${sk.maxRank}</span>
+                <button type="button" data-action="progression:companion-skill-delta" data-skill-key="${UI.escapeAttr(sk.key)}" data-delta="-1" ${canSub ? '' : 'disabled'} class="w-6 h-6 rounded bg-slate-900 border border-slate-700 text-white font-bold ${canSub ? 'cursor-pointer hover:border-sky-400' : 'opacity-30 cursor-not-allowed'}">-</button>
+                <button type="button" data-action="progression:companion-skill-delta" data-skill-key="${UI.escapeAttr(sk.key)}" data-delta="1" ${canAdd ? '' : 'disabled'} class="w-6 h-6 rounded bg-slate-900 border border-slate-700 text-white font-bold ${canAdd ? 'cursor-pointer hover:border-sky-400' : 'opacity-30 cursor-not-allowed'}">+</button>
+                <span class="w-8 text-right font-black text-sky-300">${sk.total >= 0 ? '+' : ''}${sk.total}</span>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        const tricksSectionHtml = prog.trickCap > 0 ? `
+          <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 space-y-2.5">
+            <div class="flex items-center justify-between flex-wrap gap-2">
+              <span class="text-xs font-bold text-emerald-300">🦴 Animal Companion Tricks (SRD + Custom)</span>
+              <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-slate-950 text-emerald-300 border border-slate-800">${prog.tricksCount} / ${prog.trickCap} Tricks</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <input id="companion-custom-trick-input" type="text" placeholder="Add custom trick (e.g. Flank, Pin Target)..." class="flex-1 h-8 px-2.5 rounded-lg bg-slate-950 border border-slate-700 text-xs text-white placeholder-slate-500" />
+              <button type="button" data-action="progression:companion-add-custom-trick" class="h-8 px-3 rounded-lg text-xs font-bold bg-emerald-700 hover:bg-emerald-600 text-white cursor-pointer shrink-0">+ Add Custom</button>
+            </div>
+            <div class="flex flex-wrap gap-1.5">
+              ${COMPANION_SRD_TRICKS.map(tr => {
+                const isAct = (draftProg.tricks || []).includes(tr);
+                const isDis = !isAct && prog.tricksCount >= prog.trickCap;
+                return `<button type="button" data-action="progression:companion-toggle-trick" data-trick="${UI.escapeAttr(tr)}" ${isDis ? 'disabled' : ''} class="px-2 py-1 rounded-lg text-[11px] font-bold border transition ${isAct ? 'bg-amber-600 text-white border-amber-400 cursor-pointer' : (isDis ? 'bg-slate-950 text-slate-600 border-slate-800 opacity-40 cursor-not-allowed' : 'bg-slate-950 text-slate-300 border-slate-700 hover:border-amber-500 cursor-pointer')}">${isAct ? '✓ ' : '+ '}${UI.escapeHtml(tr)}</button>`;
+              }).join('')}
+              ${(draftProg.customTricks || []).map((tr, i) => `
+                <button type="button" data-action="progression:companion-remove-custom-trick" data-idx="${i}" title="Remove custom trick" class="px-2 py-1 rounded-lg text-[11px] font-bold border bg-emerald-950 text-emerald-300 border-emerald-600 hover:bg-rose-950 hover:text-rose-200 hover:border-rose-600 cursor-pointer transition">✨ ${UI.escapeHtml(tr)} ×</button>
+              `).join('')}
+            </div>
+          </div>
+        ` : '';
+
+        tabBodyHtml = `
+          <div class="space-y-3">
+            <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 space-y-2">
+              <div class="flex items-center justify-between flex-wrap gap-2">
+                <span class="text-xs font-bold text-sky-300">🎯 Bonus HD Skill Ranks <span class="text-[10px] font-mono text-slate-400">(Pool: ${prog.skillPool} pts • Max Class: ${prog.maxClassRank})</span></span>
+                <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-slate-950 text-sky-300 border border-slate-800">${prog.skillLeft} pts left</span>
+              </div>
+              <div class="divide-y divide-slate-800 border border-slate-800 rounded-lg overflow-hidden">${skillsHtml}</div>
+            </div>
+            ${tricksSectionHtml}
+          </div>
+        `;
+      } else {
+        tabBodyHtml = `
+          <!-- Type Selection Tabs -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 p-1 bg-slate-950 rounded-xl border border-slate-800">
+            ${tabsHtml}
+          </div>
+
+          <!-- Level Banner -->
+          <div class="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800 flex items-center justify-between gap-2 flex-wrap">
+            <div class="flex items-center gap-2">
+              <span class="text-base text-amber-400">📈</span>
+              <span class="font-mono text-slate-300 text-xs">${safeEscapeHtml(levelNote)}</span>
+            </div>
+            <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-slate-950 text-amber-300 border border-slate-800">
+              Bracket: Lvl ${effectiveLevel}
+            </span>
+          </div>
+
+          <!-- Creature Selection & Name Controls -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <div class="flex items-center justify-between mb-1 gap-1.5">
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wide">Select Creature / Animal</label>
+                <div class="flex items-center gap-2">
+                  <button type="button" data-action="progression:companion-craft-v3" class="text-[10px] text-purple-300 hover:text-purple-200 font-bold cursor-pointer">⚒️ Craft V3</button>
+                  <button type="button" data-action="progression:toggle-companion-spotlight" data-open="true" class="text-[10px] text-amber-300 hover:text-amber-200 font-bold flex items-center gap-1 cursor-pointer">
+                    <span>🔮 Spotlight</span>
+                  </button>
+                </div>
+              </div>
+              <select id="companion-select-animal" data-change-action="progression:companion-animal" class="ui-input-md w-full h-9 bg-slate-950 text-amber-200 border border-slate-700 rounded-lg px-2.5 text-xs font-bold cursor-pointer">
+                ${allowedAnimals.map(a => {
+                  const isSelected = a.id === _activeCompanionModalAnimalId;
+                  const reqText = a.minLevel ? ` (Req Lvl ${a.minLevel})` : (a.levelAdj ? ` (Adj ${a.levelAdj})` : '');
+                  const bonusText = a.masterBonusText ? ` • [${a.masterBonusText}]` : '';
+                  return `<option value="${UI.escapeAttr(a.id)}" ${isSelected ? 'selected' : ''}>${UI.escapeHtml(a.name)}${reqText}${bonusText}</option>`;
+                }).join('')}
+              </select>
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-1">Companion Custom Name</label>
+              <input type="text" id="companion-input-name" value="${safeEscapeHtml(existingName)}" placeholder="e.g., Ghost, Fang, Shadow..." class="ui-input-md w-full h-9 bg-slate-950 text-white border border-slate-700 rounded-lg px-2.5 text-xs font-semibold focus:border-amber-500">
+            </div>
+          </div>
+
+          <!-- Live Companion Stats Preview -->
+          ${stats ? `
+            <div class="bg-slate-950/90 border border-amber-500/40 rounded-xl p-3 space-y-2.5 shadow-inner">
+              <div class="flex items-center justify-between border-b border-slate-800 pb-1.5">
+                <span class="text-xs font-black uppercase text-amber-400 tracking-wider flex items-center gap-1.5">
+                  <span>⚡</span> LIVE CALCULATED STATS PREVIEW (D&amp;D 3.5E RAW)
+                </span>
+                <span class="text-[10px] font-mono text-emerald-400 font-bold">${stats.totalHd} Hit Dice • Init ${stats.initiative >= 0 ? '+' : ''}${stats.initiative}</span>
+              </div>
+
+              <!-- Preview 4-Cell Defensive Strip -->
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono">
+                <div class="bg-slate-900/80 p-2 rounded-lg border border-slate-800 text-center">
+                  <span class="text-[10px] uppercase font-bold text-slate-400 block">HP</span>
+                  <span class="font-black text-emerald-400 text-sm">${stats.hp.max}</span>
+                </div>
+                <div class="bg-slate-900/80 p-2 rounded-lg border border-slate-800 text-center">
+                  <span class="text-[10px] uppercase font-bold text-slate-400 block">Armor Class</span>
+                  <span class="font-black text-amber-300 text-sm">${stats.ac.total}</span>
+                  <span class="text-[10px] text-slate-500 block">Nat +${stats.ac.naturalArmor}</span>
+                </div>
+                <div class="bg-slate-900/80 p-2 rounded-lg border border-slate-800 text-center">
+                  <span class="text-[10px] uppercase font-bold text-slate-400 block">Base Attack</span>
+                  <span class="font-black text-sky-300 text-sm">+${stats.bab}</span>
+                </div>
+                <div class="bg-slate-900/80 p-2 rounded-lg border border-slate-800 text-center">
+                  <span class="text-[10px] uppercase font-bold text-slate-400 block">Fort / Ref / Will</span>
+                  <span class="font-black text-purple-300 text-xs">+${stats.saves.fort} / +${stats.saves.ref} / +${stats.saves.will}</span>
+                </div>
+              </div>
+
+              <!-- Preview Abilities Strip -->
+              <div class="bg-slate-900/70 p-2 rounded-lg border border-slate-800 flex items-center justify-between text-xs font-mono flex-wrap gap-2">
+                <div><strong class="text-slate-400">STR</strong> <span class="text-white">${stats.abilities.str}</span> <span class="text-amber-400">(${stats.abilityMods.str >= 0 ? '+' : ''}${stats.abilityMods.str})</span></div>
+                <div><strong class="text-slate-400">DEX</strong> <span class="text-white">${stats.abilities.dex}</span> <span class="text-amber-400">(${stats.abilityMods.dex >= 0 ? '+' : ''}${stats.abilityMods.dex})</span></div>
+                <div><strong class="text-slate-400">CON</strong> <span class="text-white">${stats.abilities.con}</span> <span class="text-amber-400">(${stats.abilityMods.con >= 0 ? '+' : ''}${stats.abilityMods.con})</span></div>
+                <div><strong class="text-slate-400">INT</strong> <span class="text-white">${stats.abilities.int}</span></div>
+                <div><strong class="text-slate-400">WIS</strong> <span class="text-white">${stats.abilities.wis}</span> <span class="text-amber-400">(${stats.abilityMods.wis >= 0 ? '+' : ''}${stats.abilityMods.wis})</span></div>
+                <div><strong class="text-slate-400">CHA</strong> <span class="text-white">${stats.abilities.cha}</span></div>
+              </div>
+
+              <!-- Attacks & Abilities Preview -->
+              <div class="text-xs space-y-1">
+                <div class="text-[11px] text-slate-300">
+                  <strong class="text-amber-300">Attacks:</strong> ${stats.attacks.map(a => `${UI.escapeHtml(a.name)} ${a.formattedAttack} (${a.formattedDamage})`).join(', ') || 'None'}
+                </div>
+                <div class="text-[11px] text-slate-400">
+                  <strong class="text-purple-300">Special &amp; Feats:</strong> ${[...stats.specialAbilities, ...stats.monsterFeats, stats.masterBonusText].filter(Boolean).map(x => UI.escapeHtml(x)).join(' • ') || 'Standard'}
+                </div>
+              </div>
+            </div>
+          ` : `
+            <div class="p-3 text-center text-xs text-slate-500 italic bg-slate-950/60 rounded-xl border border-slate-800">
+              Select a creature to preview scaled companion stats.
+            </div>
+          `}
+        `;
+      }
+
+      bodyEl.innerHTML = `${modalSubTabsHtml}${tabBodyHtml}`;
     }
 
     function saveCompanionSelection() {
       if (!character) return;
       const nameInput = document.getElementById('companion-input-name');
-      const nameVal = (nameInput ? nameInput.value.trim() : '') || 'Companion';
+      const existingComp = _activeCompanionModalEditId
+        ? (character.companions || []).find(c => c && String(c.id) === String(_activeCompanionModalEditId))
+        : getActiveProgressionCompanion(character);
+      const nameVal = (nameInput ? nameInput.value.trim() : '') || (existingComp?.name) || 'Companion';
       const animalId = _activeCompanionModalAnimalId;
 
       if (!animalId) {
@@ -10991,7 +11333,8 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
             id: _activeCompanionModalEditId || undefined,
             entityKind: _activeCompanionModalType,
             baseMonsterId: animalId,
-            name: nameVal
+            name: nameVal,
+            progression: _companionModalDraftProg || undefined
           },
           meta: { label: `Bind Companion (${nameVal})` }
         });
@@ -11395,7 +11738,73 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         if (data.className) selectChangeClassFromSearch(data.className);
       });
       Actions.register('progression:open-companion-modal', (el, data, event) => {
-        openCompanionModal();
+        openCompanionModal((data && data.tab) || 'overview');
+      });
+      Actions.register('progression:companion-modal-tab', (el, data, event) => {
+        if (data && data.tab) {
+          _activeCompanionModalTab = data.tab;
+          renderCompanionModalContent();
+        }
+      });
+      Actions.register('progression:companion-craft-v3', (el, data, event) => {
+        openCompanionV3Crafter('monster');
+      });
+      Actions.register('progression:companion-craft-v3-feat', (el, data, event) => {
+        openCompanionV3Crafter('feat');
+      });
+      Actions.register('progression:companion-abi-inc', (el, data, event) => {
+        if (!el || !data || !data.hd || !_companionModalDraftProg) return;
+        const hd = String(data.hd);
+        const val = String(el.value || '').toLowerCase();
+        if (val) _companionModalDraftProg.abilityIncreases[hd] = val;
+        else delete _companionModalDraftProg.abilityIncreases[hd];
+        renderCompanionModalContent();
+      });
+      Actions.register('progression:companion-feat-pick', (el, data, event) => {
+        if (!el || !data || !data.hd || !_companionModalDraftProg) return;
+        const hd = Number(data.hd);
+        const featId = String(el.value || '').trim();
+        _companionModalDraftProg.feats = (_companionModalDraftProg.feats || []).filter(f => Number(f.hd) !== hd);
+        if (featId) {
+          const optLabel = el.options[el.selectedIndex]?.textContent?.replace(/^⚒️\s*/, '') || featId;
+          _companionModalDraftProg.feats.push({ hd, featId, name: optLabel, choice: '' });
+        }
+        renderCompanionModalContent();
+      });
+      Actions.register('progression:companion-skill-delta', (el, data, event) => {
+        if (!data || !data.skillKey || !_companionModalDraftProg) return;
+        const k = String(data.skillKey);
+        const delta = Number(data.delta) || 0;
+        const cur = Number(_companionModalDraftProg.skillRanks?.[k]) || 0;
+        _companionModalDraftProg.skillRanks[k] = Math.max(0, cur + delta);
+        renderCompanionModalContent();
+      });
+      Actions.register('progression:companion-toggle-trick', (el, data, event) => {
+        if (!data || !data.trick || !_companionModalDraftProg) return;
+        const tr = String(data.trick);
+        const list = _companionModalDraftProg.tricks || [];
+        const idx = list.indexOf(tr);
+        if (idx >= 0) list.splice(idx, 1);
+        else list.push(tr);
+        _companionModalDraftProg.tricks = list;
+        renderCompanionModalContent();
+      });
+      Actions.register('progression:companion-add-custom-trick', (el, data, event) => {
+        if (!_companionModalDraftProg) return;
+        const inp = document.getElementById('companion-custom-trick-input');
+        const val = inp ? inp.value.trim() : '';
+        if (!val) return;
+        if (!Array.isArray(_companionModalDraftProg.customTricks)) _companionModalDraftProg.customTricks = [];
+        _companionModalDraftProg.customTricks.push(val);
+        renderCompanionModalContent();
+      });
+      Actions.register('progression:companion-remove-custom-trick', (el, data, event) => {
+        if (!_companionModalDraftProg || !Array.isArray(_companionModalDraftProg.customTricks)) return;
+        const idx = Number(data && data.idx);
+        if (Number.isInteger(idx) && idx >= 0) {
+          _companionModalDraftProg.customTricks.splice(idx, 1);
+          renderCompanionModalContent();
+        }
       });
       Actions.register('progression:select-companion', (el, data, event) => {
         if (!data || !data.compId) return;

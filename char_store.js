@@ -3402,13 +3402,21 @@
       : doc.companions.findIndex(c => (payload.id && String(c.id) === String(payload.id)) || (!payload.id && c.entityKind === eKind));
     const prevComp = existingIdx >= 0 ? doc.companions[existingIdx] : null;
     const compId = (prevComp && prevComp.id) || payload.id || `${eKind}:${baseMonsterId}:${Date.now().toString(36)}`;
+    const sameCreature = Boolean(prevComp && String(prevComp.baseMonsterId) === String(baseMonsterId));
+    const preservedProg = payload.progression && typeof payload.progression === 'object'
+      ? JSON.parse(JSON.stringify(payload.progression))
+      : (sameCreature && prevComp.progression && typeof prevComp.progression === 'object'
+        ? JSON.parse(JSON.stringify(prevComp.progression))
+        : { stampMonsterId: baseMonsterId, abilityIncreases: {}, feats: [], skillRanks: {}, tricks: [], customTricks: [] });
+    preservedProg.stampMonsterId = baseMonsterId;
     const nextComp = {
       id: compId,
       entityKind: eKind,
       type: eKind,
       baseMonsterId,
       name: String(payload.name || 'Companion').trim() || 'Companion',
-      gear: (payload.gear && typeof payload.gear === 'object') ? payload.gear : (prevComp?.gear || {})
+      gear: (payload.gear && typeof payload.gear === 'object') ? payload.gear : (prevComp?.gear || {}),
+      progression: preservedProg
     };
     const engine = resolveRuleEngine();
     const stats = (engine && typeof engine.calculateCompanionStats === 'function')
@@ -3464,6 +3472,41 @@
     const next = Math.max(0, Math.min(maxHp, cur + delta));
     target.currentHp = next;
     setStoreOutcome(stateObj, { status: 'companion_hp_adjusted', compId: target.id, compName: target.name, currentHp: next, maxHp, delta });
+    return doc;
+  });
+
+  // 9c2. 'companion/updateProgression' ({ compId, progression })
+  CharStore.registerReducer('companion/updateProgression', (doc, action, stateObj) => {
+    normalizeCompanionsDoc(doc);
+    const payload = (action && action.payload) || {};
+    const target = resolveTargetCompanion(doc, payload.compId);
+    if (!target) {
+      setStoreOutcome(stateObj, { status: 'not_found' });
+      return doc;
+    }
+    const engine = resolveRuleEngine();
+    const prevStats = (engine && typeof engine.calculateCompanionStats === 'function')
+      ? engine.calculateCompanionStats(doc, target)
+      : null;
+    const prevMax = prevStats?.hp?.max ?? target.currentHp ?? 10;
+    const rawProg = (payload.progression && typeof payload.progression === 'object') ? payload.progression : {};
+    target.progression = {
+      stampMonsterId: target.baseMonsterId,
+      abilityIncreases: (rawProg.abilityIncreases && typeof rawProg.abilityIncreases === 'object') ? Object.assign({}, rawProg.abilityIncreases) : {},
+      feats: Array.isArray(rawProg.feats) ? rawProg.feats.filter(f => f && f.featId).map(f => ({ hd: Number(f.hd) || 3, featId: String(f.featId), name: f.name ? String(f.name) : '', choice: f.choice ? String(f.choice) : '' })) : [],
+      skillRanks: (rawProg.skillRanks && typeof rawProg.skillRanks === 'object') ? Object.assign({}, rawProg.skillRanks) : {},
+      tricks: Array.isArray(rawProg.tricks) ? rawProg.tricks.filter(Boolean).map(String) : [],
+      customTricks: Array.isArray(rawProg.customTricks) ? rawProg.customTricks.filter(Boolean).map(String) : []
+    };
+    const nextStats = (engine && typeof engine.calculateCompanionStats === 'function')
+      ? engine.calculateCompanionStats(doc, target)
+      : null;
+    if (nextStats && nextStats.hp) {
+      const diff = nextStats.hp.max - prevMax;
+      const cur = target.currentHp !== undefined ? Number(target.currentHp) : nextStats.hp.max;
+      target.currentHp = Math.max(0, Math.min(nextStats.hp.max, diff > 0 ? cur + diff : cur));
+    }
+    setStoreOutcome(stateObj, { status: 'companion_progression_updated', compId: target.id, comp: target, stats: nextStats });
     return doc;
   });
 
