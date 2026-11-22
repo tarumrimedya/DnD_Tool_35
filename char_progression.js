@@ -5458,23 +5458,12 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
         });
       }
 
-      // 3. Known / Arcane & Divine classes (data-first via RuleEngine.classifyClassToMagicDiscipline)
-      const activeClsMapForPrereq = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getActiveClassLevels === 'function')
-        ? RuleEngine.getActiveClassLevels(character, { includeNpc: true })
-        : {};
-      const activeClsList = Object.keys(activeClsMapForPrereq);
-      const hasArcane = activeClsList.some(c => {
-        const d = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.classifyClassToMagicDiscipline === 'function')
-          ? RuleEngine.classifyClassToMagicDiscipline(c, character)
-          : null;
-        return d === 'prepared' || d === 'spontaneous';
-      }) || /\b(sorcerer|wizard|duskblade|bard|warlock|assassin|hexblade|warmage|beguiler|dread necromancer|wu jen)\b/i.test(character.classes || '');
-      const hasDivine = activeClsList.some(c => {
-        const d = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.classifyClassToMagicDiscipline === 'function')
-          ? RuleEngine.classifyClassToMagicDiscipline(c, character)
-          : null;
-        return d === 'divine';
-      }) || /\b(cleric|druid|paladin|ranger|blackguard|favored soul|spirit shaman|shugenja)\b/i.test(character.classes || '') || (Array.isArray(character?.spellcasting?.divineSlots) && character.spellcasting.divineSlots.some(s => (Number(s.daily) || 0) > 0));
+      // 3. Known / Arcane & Divine traditions (pure data-driven via RuleEngine.getCasterTraditions)
+      const casterTraditions = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getCasterTraditions === 'function')
+        ? RuleEngine.getCasterTraditions(character)
+        : { arcane: { has: false, maxSpellLevel: 0 }, divine: { has: false, maxSpellLevel: 0 } };
+      const hasArcane = Boolean(casterTraditions.arcane && casterTraditions.arcane.has);
+      const hasDivine = Boolean(casterTraditions.divine && casterTraditions.divine.has);
 
       // 4. Race & Alignment
       const raceStr = (character.race || '').toLowerCase();

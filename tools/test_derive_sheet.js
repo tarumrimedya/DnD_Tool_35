@@ -7355,8 +7355,13 @@ function runDeriveSheetTests() {
         JSON.stringify({ nestedChoice, slamAtk, elDodge: elFormChar.acBreakdown.dodge, mcTumble })
       );
 
-      // 19. Dalga 4 Invariants: Pure hydrateBoonModifiers (Homebrew: Ride +4 without mutating rawFeat), Cone of Cold English projectileName
-      const rideFeat = { name: 'Homebrew: Ride +4', category: 'Homebrew Boon', benefit: '+4 bonus to Ride checks' };
+      // 19. Dalga 4 Invariants: Pure V3 Homebrew Ride +4 (zero runtime prose scraping, zero mutation), Cone of Cold "Cone", data-driven getCasterTraditions
+      const rideFeat = {
+        name: 'Homebrew: Ride +4',
+        category: 'Homebrew',
+        schemaVersion: 3,
+        effects: [{ type: 'stat', targets: ['skill.ride'], mode: 'flat', value: 4, btype: 'Untyped' }]
+      };
       const boonChar = {
         level: 5, bab: 5,
         baseAbilities: { str: 14, dex: 14, con: 14, int: 10, wis: 10, cha: 10 },
@@ -7365,12 +7370,20 @@ function runDeriveSheetTests() {
       RuleEngine.recalculateCharacter(boonChar);
       const rideEval = RuleEngine.evaluateSkillBonus(boonChar, 'ride', 'Ride', 'dex');
       const coneScale = RuleEngine.resolveSpellDynamicScaling({ name: 'Cone of Cold' }, 10);
+      const pal3Trad = RuleEngine.getCasterTraditions({ level: 3, classLevels: { Paladin: 3 } });
+      const pal4Trad = RuleEngine.getCasterTraditions({ level: 4, classLevels: { Paladin: 4 } });
+      const wiz5Trad = RuleEngine.getCasterTraditions({ level: 5, classLevels: { Wizard: 5 } });
+      const clr5Trad = RuleEngine.getCasterTraditions({ level: 5, classLevels: { Cleric: 5 } });
       check(
-        'Dalga 4: Pure hydrateBoonModifiers applies Homebrew: Ride +4 without mutating feat object, Cone of Cold projectileName="Cone"',
+        'Dalga 4: Pure V3 Homebrew Ride +4 (no mutation), Cone of Cold="Cone", getCasterTraditions (Pal3=no divine, Pal4=divine L1, Wiz5=arcane L3, Clr5=divine L3)',
         rideEval.total === 4 &&
         rideFeat.modifiers === undefined &&
-        coneScale && coneScale.projectileName === 'Cone',
-        JSON.stringify({ rideTotal: rideEval.total, mutated: rideFeat.modifiers !== undefined, projectileName: coneScale?.projectileName })
+        coneScale && coneScale.projectileName === 'Cone' &&
+        pal3Trad.divine.has === false && pal3Trad.divine.maxSpellLevel === 0 &&
+        pal4Trad.divine.has === true && pal4Trad.divine.maxSpellLevel === 1 &&
+        wiz5Trad.arcane.has === true && wiz5Trad.arcane.maxSpellLevel === 3 && wiz5Trad.divine.has === false &&
+        clr5Trad.divine.has === true && clr5Trad.divine.maxSpellLevel === 3 && clr5Trad.arcane.has === false,
+        JSON.stringify({ rideTotal: rideEval.total, mutated: rideFeat.modifiers !== undefined, pal3Trad, pal4Trad, wiz5Trad, clr5Trad })
       );
     }
   }

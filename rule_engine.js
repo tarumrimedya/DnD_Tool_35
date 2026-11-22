@@ -7781,48 +7781,6 @@ const RuleEngine = {
     return 0;
   },
 
-  // Pure cached Homebrew/Boon modifier synthesizer (never mutates featObj or shared Master DB entries)
-  hydrateBoonModifiers(featObj, cleanNameArg = '') {
-    if (!featObj || typeof featObj !== 'object') return [];
-    const cleanName = String(cleanNameArg || featObj.name || '').toLowerCase().trim();
-    const catLow = String(featObj.category || '').toLowerCase();
-    const isBoonLike = cleanName.includes('boon') || cleanName.includes('grant') || catLow.includes('boon') || cleanName.startsWith('homebrew:');
-    if (!isBoonLike) return [];
-    const benefitText = String(featObj.benefit || featObj.description || '').trim();
-    const cacheKey = `${cleanName}|${benefitText}`;
-    if (!this._boonModCache) this._boonModCache = new Map();
-    if (this._boonModCache.has(cacheKey)) {
-      return this._boonModCache.get(cacheKey);
-    }
-    let mods = [];
-    if (typeof window !== 'undefined' && typeof window.synthesizeHomebrewFromQuery === 'function') {
-      const synth = window.synthesizeHomebrewFromQuery(cleanName, benefitText, 'Homebrew');
-      if (synth && Array.isArray(synth.modifiers) && synth.modifiers.length > 0) {
-        mods = synth.modifiers;
-      }
-    }
-    if (mods.length === 0) {
-      const hpBoonMatch = `${cleanName} ${benefitText}`.match(/\b(?:hit\s*points|hp)\b.*?([+-]?\d+)|([+-]?\d+)\s*(?:bonus\s*)?(?:hit\s*points|hp)\b/i);
-      if (hpBoonMatch && !/=/.test(cleanName)) {
-        const hpVal = parseInt(hpBoonMatch[1] || hpBoonMatch[2], 10);
-        if (!isNaN(hpVal) && hpVal !== 0) {
-          mods = [{ target: 'hp', value: hpVal, type: 'untyped', condition: null }];
-        }
-      }
-    }
-    if (mods.length === 0) {
-      const skillBoonMatch = `${cleanName} ${benefitText}`.match(/\b(?:homebrew:\s*)?([a-z][a-z\s()/-]{1,30}?)\s*([+-]\d+)\b/i);
-      if (skillBoonMatch && !/\b(?:hp|hit points|ac|armor|str|dex|con|int|wis|cha|bab|fort|ref|will|save|saves|attack|damage|init|speed|cl)\b/i.test(skillBoonMatch[1].trim())) {
-        const skVal = parseInt(skillBoonMatch[2], 10);
-        if (!isNaN(skVal) && skVal !== 0) {
-          mods = [{ target: `skill.${skillBoonMatch[1].trim().toLowerCase()}`, value: skVal, type: 'untyped', condition: null }];
-        }
-      }
-    }
-    this._boonModCache.set(cacheKey, mods);
-    return mods;
-  },
-
   // Central Dynamic Spell Scaling Resolver (D&D 3.5e RAW)
   // Calculates dynamic dice formula, projectile counts (missiles/rays), static bonuses, and display tags based on Caster Level (CL)
   resolveSpellDynamicScaling(spell, casterLevel = 1) {
@@ -10077,17 +10035,6 @@ const RuleEngine = {
           : ((Array.isArray(featObj.modifiers) && featObj.modifiers.length > 0)
             ? featObj.modifiers
             : (dbEntry && Array.isArray(dbEntry.modifiers) ? dbEntry.modifiers : [])));
-
-      // Auto-hydrate legacy Homebrew entries purely via cached helper (never mutating rawFeat or shared dbEntry)
-      const needsScalingFormulaHydration = (cleanName.includes('boon') || cleanName.includes('grant') || String(featObj.category || '').toLowerCase().includes('boon'))
-        && /([+-]?\d+)\s*(?:\/|\bper\b|\bevery\b)\s*(\d+)?\s*(?:lvl|level|cl)s?\b/i.test(`${cleanName} ${featObj.benefit || featObj.description || ''}`)
-        && !featMods.some(m => m && m.formula);
-      if ((featMods.length === 0 || needsScalingFormulaHydration) && (cleanName.includes('boon') || cleanName.includes('grant') || String(featObj.category || '').toLowerCase().includes('boon'))) {
-        const hydratedBoonMods = this.hydrateBoonModifiers(featObj, cleanName);
-        if (hydratedBoonMods.length > 0) {
-          featMods = hydratedBoonMods;
-        }
-      }
 
       // Avoid double-counting standard Toughness (+3 HP) when levelProgression already includes Toughness in character.hp.baseMax
       const modsToApply = (cleanName === 'toughness' && activeProgRows.length > 0)
@@ -12898,9 +12845,14 @@ const RuleEngine = {
       const hasInlineMods = Array.isArray(featObj.modifiers) && featObj.modifiers.length > 0;
       const dbFeat = hasInlineMods ? null : (this.getMasterDbEntry(featObj) || this.getMasterDbEntry(fName));
       let rawMods = hasInlineMods ? featObj.modifiers : (dbFeat && Array.isArray(dbFeat.modifiers) ? dbFeat.modifiers : []);
-      if (rawMods.length === 0 && typeof this.hydrateBoonModifiers === 'function') {
-        const hydratedBoon = this.hydrateBoonModifiers(featObj, fKey);
-        if (hydratedBoon.length > 0) rawMods = hydratedBoon;
+      if (rawMods.length === 0 && Array.isArray(featObj.effects) && featObj.effects.length > 0) {
+        const evalInlineV3 = this.evaluateV3Entry(
+          Object.assign({}, featObj, { _v3Evaluated: false, modifiers: [] }),
+          evalCtx
+        );
+        if (evalInlineV3 && Array.isArray(evalInlineV3.modifiers)) {
+          rawMods = evalInlineV3.modifiers;
+        }
       }
       if (!hasInlineMods && dbFeat && Array.isArray(dbFeat.effects) && dbFeat.effects.length > 0 && (this.extractEntryChoice(featObj) || /\(/.test(fName))) {
         const evalWithChoice = this.evaluateV3Entry(
@@ -15758,6 +15710,50 @@ const RuleEngine = {
       char.buffs.forEach((b) => { if (b && b.active !== false) inspectRec(findByNameOrId(b)); });
     }
     return found;
+  },
+
+  // Pure data-driven arcane/divine tradition capability from cls-*.spellcasting (zero hardcoded class-name regexes)
+  getCasterTraditions(character) {
+    const out = {
+      arcane: { has: false, maxSpellLevel: 0 },
+      divine: { has: false, maxSpellLevel: 0 }
+    };
+    if (!character || typeof character !== 'object') return out;
+    const activeClasses = typeof this.getActiveClassLevels === 'function'
+      ? this.getActiveClassLevels(character, { includeNpc: true })
+      : {};
+    Object.entries(activeClasses).forEach(([cName, cLvl]) => {
+      const lvlNum = Math.floor(Number(cLvl) || 0);
+      if (!cName || lvlNum <= 0 || typeof this.getClassDef !== 'function') return;
+      const clsDef = this.getClassDef(cName, character, { allowLazyLoad: false });
+      const cast = clsDef && (clsDef.casting || clsDef.spellcasting);
+      if (!cast || typeof cast !== 'object') return;
+      const tradition = String(cast.type || '').toLowerCase().trim();
+      if (tradition !== 'arcane' && tradition !== 'divine') return;
+      let maxSpellLvl = 0;
+      const spd = cast.spellsPerDay;
+      if (spd && typeof spd === 'object' && Object.keys(spd).length > 0) {
+        const clamped = Math.min(20, Math.max(1, lvlNum));
+        const row = spd[String(clamped)] || null;
+        if (Array.isArray(row)) {
+          for (let sl = row.length - 1; sl >= 1; sl--) {
+            if (row[sl] !== null && row[sl] !== undefined) {
+              maxSpellLvl = sl;
+              break;
+            }
+          }
+        }
+      } else {
+        maxSpellLvl = Math.min(9, Math.max(1, Math.ceil(lvlNum / 2)));
+      }
+      if (maxSpellLvl >= 1) {
+        out[tradition].has = true;
+        if (maxSpellLvl > out[tradition].maxSpellLevel) {
+          out[tradition].maxSpellLevel = maxSpellLvl;
+        }
+      }
+    });
+    return out;
   },
 
   classifyClassToMagicDiscipline(className, character = null) {
