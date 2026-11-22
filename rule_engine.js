@@ -19276,9 +19276,11 @@ const RuleEngine = {
   calculateCompanionStats(char, companionConfig, options = {}) {
     if (!companionConfig || !companionConfig.baseMonsterId) return null;
     const baseMonster = options.baseMonster || this._resolveMonsterByIdSync(companionConfig.baseMonsterId, options.masterDb);
-    if (!baseMonster) return null;
-
     const compData = options.companionsData || this._getCompanionsDataSync() || {};
+    if (!baseMonster || !compData.druidProgression) {
+      if (typeof this.ensureCompanionsHydrated === 'function') this.ensureCompanionsHydrated();
+    }
+    if (!baseMonster) return null;
     const type = String(companionConfig.entityKind || companionConfig.type || 'animal_companion');
     const customName = companionConfig.name || baseMonster.name;
     const ctx = this.buildFormulaContext(char || {});
@@ -19669,6 +19671,37 @@ const RuleEngine = {
       }
     }).catch(() => {
       this._pendingLazyChunks.delete('srd_monsters.json');
+    });
+    return true;
+  },
+
+  ensureCompanionsHydrated() {
+    if (typeof window === 'undefined' || !window.SrdCompendium || typeof window.SrdCompendium.ensureChunkLoaded !== 'function') {
+      return false;
+    }
+    const needed = ['srd_companions.json', 'srd_monsters.json'].filter(chunk => {
+      if (typeof window.SrdCompendium.isChunkLoaded === 'function' && window.SrdCompendium.isChunkLoaded(chunk)) {
+        return false;
+      }
+      return true;
+    });
+    if (needed.length === 0) return false;
+    if (!this._pendingLazyChunks) this._pendingLazyChunks = new Set();
+    const toFetch = needed.filter(c => !this._pendingLazyChunks.has(c));
+    if (toFetch.length === 0) return true;
+    toFetch.forEach(c => this._pendingLazyChunks.add(c));
+    Promise.all(toFetch.map(c => Promise.resolve(window.SrdCompendium.ensureChunkLoaded(c)))).then(() => {
+      toFetch.forEach(c => this._pendingLazyChunks.delete(c));
+      if (window.CharStore && typeof window.CharStore.recompute === 'function') {
+        window.CharStore.recompute();
+      }
+      if (typeof window.renderAll === 'function') {
+        window.renderAll({ skipRecompute: true });
+      } else if (typeof window.renderCardsView === 'function') {
+        window.renderCardsView();
+      }
+    }).catch(() => {
+      toFetch.forEach(c => this._pendingLazyChunks.delete(c));
     });
     return true;
   },
