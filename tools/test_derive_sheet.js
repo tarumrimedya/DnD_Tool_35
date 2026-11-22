@@ -3241,7 +3241,7 @@ function runDeriveSheetTests() {
       !featFilesDefault.includes('srd_feats_legacy.json') && featFilesOptIn.includes('srd_feats_legacy.json') &&
       typeof Comp.getLoadedEntryCount() === 'number' &&
       !/ensureChunkLoaded\('srd_spells\.json'\)/.test(spellsSrc + progSrc + invSrc) &&
-      /ensureTypesLoaded\(SPELL_PICKER_TYPES\)/.test(spellsSrc) && /ensureTypesLoaded\(\['Domain', 'Spell'\]\)/.test(progSrc) &&
+      /ensureTypesLoaded\((?:SPELL_PICKER_TYPES|neededTypes|neededPickerTypes)\)/.test(spellsSrc) && /ensureTypesLoaded\(\['Domain', 'Spell'\]\)/.test(progSrc) &&
       /ensureTypesLoaded\(GEAR_PICKER_TYPES\)/.test(invSrc) && /ensureTypesLoaded\(\['Condition', 'Buff', 'Spell'\]\)/.test(invSrc)
     );
     // A spell fetched by Rule Master AI from a filtered picker (e.g. a level 0 slot) must stay visible: the picker

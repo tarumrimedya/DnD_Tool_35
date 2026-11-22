@@ -944,7 +944,23 @@
 
       if (docChanged || sessionChanged) {
         _docVersion++;
-        this.recompute(meta.tactical);
+        const engine = resolveRuleEngine();
+        if (meta.lightSpellRecompute && _state.sheet && _state.sheet.spells && engine && typeof engine.deriveSpellsView === 'function') {
+          const sv = engine.deriveSpellsView(_state.doc, _state.doc.customDb || []);
+          _state.sheet.spells = {
+            spellcasting: _state.doc.spellcasting || {},
+            bonusSpellSlotsByLevel: _state.doc.bonusSpellSlotsByLevel || {},
+            bonusPowerPoints: Number(_state.doc.bonusPowerPoints) || 0,
+            buffs: _state.doc.buffs || [],
+            casterStatsView: sv.casterStatsView,
+            slotsByLevelView: sv.slotsByLevelView,
+            spellsByLevelView: sv.spellsByLevelView,
+            maneuversView: sv.maneuversView
+          };
+          if (typeof _emitChange === 'function') _emitChange();
+        } else {
+          this.recompute(meta.tactical);
+        }
         if (docChanged && typeof root !== 'undefined' && typeof root.saveStateToStorage === 'function' && meta.persist !== false) {
           if (_txDepth > 0 && _tx) {
             _tx.persistDeferred = true;

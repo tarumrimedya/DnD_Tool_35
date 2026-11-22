@@ -1098,6 +1098,7 @@
 
     function renderPreparedDisciplineView(hasPrepared) {
       if (!character) return;
+      prefetchSpellPickerChunks();
       const container = document.getElementById('discipline-prepared-content');
       if (!container) return;
 
@@ -2318,6 +2319,7 @@
 
     function renderDivineDisciplineView(hasDivine) {
       if (!character) return;
+      prefetchSpellPickerChunks();
       const container = document.getElementById('discipline-divine-content');
       if (!container) return;
 
@@ -2927,7 +2929,7 @@
         CharStore.dispatch({
           type: 'spells/removeSpell',
           payload: { discipline: 'divine', index: idx },
-          meta: { label: `Unprepare Divine Spell (${s.name})` }
+          meta: { label: `Unprepare Divine Spell (${s.name})`, lightSpellRecompute: true }
         });
         renderAll({ skipRecompute: true });
       } else {
@@ -6143,6 +6145,7 @@
 
     // Known Spells
     function renderKnownSpells() {
+      prefetchSpellPickerChunks();
       renderSpellsCockpit();
 
       const tbody = document.getElementById('known-spells-tbody');
@@ -6691,6 +6694,23 @@
       _spellPickerAddMenuAnchor = anchorEl;
     }
 
+    let _spellChunksPrefetched = false;
+    function prefetchSpellPickerChunks() {
+      if (_spellChunksPrefetched) return;
+      if (!window.SrdCompendium || typeof window.SrdCompendium.ensureTypesLoaded !== 'function') return;
+      _spellChunksPrefetched = true;
+      const run = () => {
+        window.SrdCompendium.ensureTypesLoaded(['Spell']).then((arrived) => {
+          if (arrived && arrived.length) _spellCatalogCacheKey = '';
+        }).catch(() => {});
+      };
+      if (typeof requestIdleCallback === 'function') {
+        requestIdleCallback(run, { timeout: 600 });
+      } else {
+        setTimeout(run, 120);
+      }
+    }
+
     function openSpellManeuverPickerModal(initialType = 'Spell', preselectLevel = null, poolOverride = null) {
       closeSpellPickerAddMenu();
       _spellPickerPoolOverride = poolOverride || null;
@@ -6721,11 +6741,12 @@
       }
       const modal = document.getElementById('spell-maneuver-modal');
       if (modal) modal.classList.remove('hidden');
+
+      const neededTypes = initialType === 'Spell' ? ['Spell'] : ['Maneuver', 'Stance'];
       renderSpellPickerResults();
 
-      // Every chunk with Spell / Maneuver / Stance rows (srd_spells.json, srd_spells_splat.json, srd_maneuvers.json, ...).
       if (window.SrdCompendium && typeof window.SrdCompendium.ensureTypesLoaded === 'function') {
-        window.SrdCompendium.ensureTypesLoaded(SPELL_PICKER_TYPES).then((arrived) => {
+        window.SrdCompendium.ensureTypesLoaded(neededTypes).then((arrived) => {
           if (arrived.length) {
             _spellCatalogCacheKey = '';
             renderSpellPickerResults();
@@ -7350,13 +7371,16 @@
       const container = document.getElementById('spell-picker-results-container');
       if (!container) return [];
 
+      const type = window._currentSpellPickerType || 'Spell';
+      const neededPickerTypes = type === 'Spell' ? ['Spell'] : ['Maneuver', 'Stance'];
       if (window.SrdCompendium && typeof window.SrdCompendium.ensureTypesLoaded === 'function') {
-        window.SrdCompendium.ensureTypesLoaded(SPELL_PICKER_TYPES).then((arrived) => {
-          if (arrived.length) renderSpellPickerResults();
+        window.SrdCompendium.ensureTypesLoaded(neededPickerTypes).then((arrived) => {
+          if (arrived.length) {
+            _spellCatalogCacheKey = '';
+            renderSpellPickerResults();
+          }
         }).catch(() => {});
       }
-
-      const type = window._currentSpellPickerType || 'Spell';
       const targetPool = _spellPickerPoolOverride === 'spellbook' ? 'prepared' : (window._spellPickerTargetPool || 'spontaneous');
       const query = (document.getElementById('spell-picker-search')?.value || '').toLowerCase().trim();
       const levelFilter = document.getElementById('spell-picker-level-filter')?.value || 'all';
@@ -7953,7 +7977,7 @@
           CharStore.dispatch({
             type: 'spells/addSpell',
             payload: { pool: targetPool, spellEntry: newSpellEntry, isDomainSpell: isDomainAdded },
-            meta: { label: isDomainAdded ? `Prepare Domain Spell: ${item.name}` : `Add Spell: ${item.name}` }
+            meta: { label: isDomainAdded ? `Prepare Domain Spell: ${item.name}` : `Add Spell: ${item.name}`, lightSpellRecompute: true }
           });
           // Fast targeted refresh of only the active spell pool while picker modal is open (avoids 7-tab full DOM redraw lag)
           const clsStatus = typeof checkCharacterMagicClasses === 'function' ? checkCharacterMagicClasses() : {};
