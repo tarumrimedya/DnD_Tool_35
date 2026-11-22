@@ -4266,7 +4266,7 @@
     if (disc === 'divine' || disc === 'all') {
       resetSlots(doc.spellcasting.divineSlots);
       (doc.spellcasting.divineSpells || []).forEach(sp => {
-        if (sp) { sp.isCast = false; sp.cast = false; delete sp.convertedTo; }
+        if (sp) { sp.isCast = false; sp.cast = false; delete sp.convertedTo; delete sp.conversionType; }
       });
       doc.spellcasting.turnUndeadUsed = 0;
       doc.spellcasting.domainPowerUses = {};
@@ -4724,23 +4724,42 @@
     return doc;
   });
 
-  // 6b. 'spells/setDivineSpontaneousConfig' ({ acf, spontaneousDomain, divineSpontaneousChannel })
+  // 6b. 'spells/setDivineSpontaneousConfig' ({ clericAcf, druidAcf, acf, spontaneousDomain, divineSpontaneousChannel })
   CharStore.registerReducer('spells/setDivineSpontaneousConfig', (doc, action, stateObj) => {
     ensureSpellsDocStructures(doc);
     const payload = (action && action.payload) || {};
-    if (payload.acf !== undefined) {
+    if (payload.clericAcf !== undefined) {
+      const cAcf = String(payload.clericAcf || 'default').toLowerCase().trim();
+      doc.spellcasting.clericSpontaneousAcf = cAcf === 'domain' ? 'domain' : 'default';
+    }
+    if (payload.druidAcf !== undefined) {
+      const dAcf = String(payload.druidAcf || 'default').toLowerCase().trim();
+      doc.spellcasting.druidSpontaneousAcf = dAcf === 'rejuvenation' ? 'rejuvenation' : 'default';
+    }
+    if (payload.acf !== undefined && payload.clericAcf === undefined && payload.druidAcf === undefined) {
       const cleanAcf = String(payload.acf || 'default').toLowerCase().trim();
       doc.spellcasting.divineSpontaneousAcf = ['default', 'domain', 'rejuvenation'].includes(cleanAcf) ? cleanAcf : 'default';
+      if (cleanAcf === 'domain') doc.spellcasting.clericSpontaneousAcf = 'domain';
+      else if (cleanAcf === 'rejuvenation') doc.spellcasting.druidSpontaneousAcf = 'rejuvenation';
+      else {
+        doc.spellcasting.clericSpontaneousAcf = 'default';
+        doc.spellcasting.druidSpontaneousAcf = 'default';
+      }
     }
     if (payload.spontaneousDomain !== undefined) {
       doc.spellcasting.spontaneousDomain = payload.spontaneousDomain ? String(payload.spontaneousDomain).trim() : '';
     }
     if (payload.divineSpontaneousChannel !== undefined) {
-      doc.spellcasting.divineSpontaneousChannel = payload.divineSpontaneousChannel ? String(payload.divineSpontaneousChannel).toLowerCase().trim() : '';
+      const chan = String(payload.divineSpontaneousChannel || '').toLowerCase().trim();
+      doc.spellcasting.divineSpontaneousChannel = ['cleric', 'druid', ''].includes(chan) ? chan : '';
     }
     setStoreOutcome(stateObj, {
       status: 'divine_spont_config_updated',
-      acf: doc.spellcasting.divineSpontaneousAcf || 'default',
+      clericAcf: doc.spellcasting.clericSpontaneousAcf || 'default',
+      druidAcf: doc.spellcasting.druidSpontaneousAcf || 'default',
+      acf: doc.spellcasting.clericSpontaneousAcf === 'domain'
+        ? 'domain'
+        : (doc.spellcasting.druidSpontaneousAcf === 'rejuvenation' ? 'rejuvenation' : 'default'),
       spontaneousDomain: doc.spellcasting.spontaneousDomain || '',
       divineSpontaneousChannel: doc.spellcasting.divineSpontaneousChannel || ''
     });
@@ -6252,6 +6271,7 @@
             sp.isCast = false;
             sp.cast = false;
             delete sp.convertedTo;
+            delete sp.conversionType;
           }
         });
       }
@@ -6261,6 +6281,7 @@
             sp.isCast = false;
             sp.cast = false;
             delete sp.convertedTo;
+            delete sp.conversionType;
           }
         });
       }

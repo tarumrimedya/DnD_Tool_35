@@ -8449,6 +8449,50 @@ function runDeriveSheetTests() {
         ),
         JSON.stringify({ wasLocked, lockedChannel, blockedFlip, unlockedOut })
       );
+
+      // 7. Audit Remediation: real `levelProgression` shape, deity-alignment forced channel in engine, and Cleric+Druid dual ACFs
+      const dualAcfMulti = {
+        id: 'test-cleric-druid-dual-acf',
+        name: 'Hierophant Mystic 6',
+        alignment: 'True Neutral',
+        deityAlignment: 'Neutral Good',
+        level: 6,
+        levelProgression: [
+          { hd: 1, className: 'Cleric', active: true },
+          { hd: 2, className: 'Cleric', active: true },
+          { hd: 3, className: 'Cleric', active: true },
+          { hd: 4, className: 'Druid', active: true },
+          { hd: 5, className: 'Druid', active: true },
+          { hd: 6, className: 'Druid', active: true }
+        ],
+        baseAbilities: { str: 10, dex: 10, con: 14, int: 10, wis: 18, cha: 12 },
+        spellcasting: {
+          clericSpontaneousMode: 'inflict', // Stale negative mode should be overridden by Good deity!
+          domains: ['Air', 'Sun']
+        }
+      };
+      CharStore.clearHistory();
+      CharStore.dispatch({ type: 'doc/replace', payload: dualAcfMulti, meta: { skipHistory: true } });
+      CharStore.dispatch({
+        type: 'spells/setDivineSpontaneousConfig',
+        payload: { clericAcf: 'domain', druidAcf: 'rejuvenation', spontaneousDomain: 'Air', divineSpontaneousChannel: 'druid' }
+      });
+      const dualProf = RuleEngine.resolveDivineSpontaneousProfile(CharStore.getDoc());
+      check(
+        'Divine Spont Audit Fix: real levelProgression + Neutral Cleric of Good deity forced positive + Cleric/Druid holds BOTH ACFs simultaneously',
+        Boolean(
+          dualProf.hasCleric === true &&
+          dualProf.hasDruid === true &&
+          dualProf.energyChannel === 'positive' &&
+          dualProf.energyChannelLocked === true &&
+          dualProf.hasDomainAcf === true &&
+          dualProf.hasRejuvAcf === true &&
+          dualProf.allowedTypes.includes('domain') &&
+          dualProf.allowedTypes.includes('rejuvenation') &&
+          dualProf.conversionType === 'rejuvenation'
+        ),
+        JSON.stringify(dualProf)
+      );
     }
   }
 

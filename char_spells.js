@@ -2133,7 +2133,8 @@
       const profile = getDivineSpontaneousProfile(character);
       const energyPolicy = resolveClericEnergyPolicy(character);
       const chosenDomains = (typeof getCharacterClericDomains === 'function') ? getCharacterClericDomains(character) : [];
-      const curAcf = profile.acf || 'default';
+      const curClericAcf = profile.clericAcf || (profile.hasDomainAcf ? 'domain' : 'default');
+      const curDruidAcf = profile.druidAcf || (profile.hasRejuvAcf ? 'rejuvenation' : 'default');
       const curDom = profile.spontaneousDomain || chosenDomains[0] || '';
       const curChannelPref = String(character?.spellcasting?.divineSpontaneousChannel || (profile.conversionType === 'sna' || profile.conversionType === 'rejuvenation' ? 'druid' : 'cleric')).toLowerCase();
 
@@ -2154,7 +2155,7 @@
               <div class="space-y-2 p-3 rounded-lg bg-slate-950/80 border border-slate-800">
                 <div class="font-bold text-amber-300">Cleric Spontaneous Casting</div>
                 <label class="flex items-start gap-2 cursor-pointer">
-                  <input type="radio" name="divine-spont-acf" value="default" ${curAcf !== 'domain' ? 'checked' : ''} class="mt-0.5">
+                  <input type="radio" name="divine-spont-acf" value="default" ${curClericAcf !== 'domain' ? 'checked' : ''} class="mt-0.5">
                   <span><strong>Standard (PHB p. 32):</strong> Convert non-domain spells into <strong>${profile.clericMode === 'inflict' ? 'Inflict Wounds' : 'Cure Wounds'}</strong> (Level 0–9).</span>
                 </label>
                 ${!energyPolicy.locked ? (
@@ -2172,7 +2173,7 @@
                       </div>`
                 ) : `<div class="pl-4 text-[11px] text-slate-400">🔒 ${UI.escapeHtml(energyPolicy.reason)}</div>`}
                 <label class="flex items-start gap-2 cursor-pointer pt-1">
-                  <input type="radio" name="divine-spont-acf" value="domain" ${curAcf === 'domain' ? 'checked' : ''} class="mt-0.5">
+                  <input type="radio" name="divine-spont-acf" value="domain" ${curClericAcf === 'domain' ? 'checked' : ''} class="mt-0.5">
                   <span><strong>Spontaneous Domain Casting (PHB II p. 37 ACF):</strong> Replaces Cure/Inflict conversion with your chosen Domain's spells (Level 1–9). Turn/Rebuke Undead is unchanged.</span>
                 </label>
                 <div class="pl-4">
@@ -2190,11 +2191,11 @@
               <div class="space-y-2 p-3 rounded-lg bg-slate-950/80 border border-slate-800">
                 <div class="font-bold text-emerald-300">Druid Spontaneous Casting</div>
                 <label class="flex items-start gap-2 cursor-pointer">
-                  <input type="radio" name="divine-spont-druid-acf" value="default" ${curAcf !== 'rejuvenation' ? 'checked' : ''} class="mt-0.5">
+                  <input type="radio" name="divine-spont-druid-acf" value="default" ${curDruidAcf !== 'rejuvenation' ? 'checked' : ''} class="mt-0.5">
                   <span><strong>Summon Nature's Ally (PHB p. 35):</strong> Convert prepared spells (Level 1–9) into <strong>Summon Nature's Ally I–IX</strong> (1 Round casting time).</span>
                 </label>
                 <label class="flex items-start gap-2 cursor-pointer pt-1">
-                  <input type="radio" name="divine-spont-druid-acf" value="rejuvenation" ${curAcf === 'rejuvenation' ? 'checked' : ''} class="mt-0.5">
+                  <input type="radio" name="divine-spont-druid-acf" value="rejuvenation" ${curDruidAcf === 'rejuvenation' ? 'checked' : ''} class="mt-0.5">
                   <span><strong>Spontaneous Rejuvenation (PHB II p. 39 ACF):</strong> Replaces SNA; expend a Level 1–9 spell (Standard Action) to grant allies within 30 ft. <strong>Fast Healing = Spell Level</strong> for 3 rounds.</span>
                 </label>
               </div>
@@ -2227,12 +2228,12 @@
       const domSel = modal.querySelector('#divine-spont-domain-select');
       const chanSel = modal.querySelector('#divine-spont-channel-select');
 
-      let acf = 'default';
-      if (profile.hasCleric && clericRadio && clericRadio.value === 'domain') acf = 'domain';
-      else if (profile.hasDruid && druidRadio && druidRadio.value === 'rejuvenation') acf = 'rejuvenation';
+      const clericAcf = (profile.hasCleric && clericRadio && clericRadio.value === 'domain') ? 'domain' : 'default';
+      const druidAcf = (profile.hasDruid && druidRadio && druidRadio.value === 'rejuvenation') ? 'rejuvenation' : 'default';
 
       const payload = {
-        acf,
+        clericAcf,
+        druidAcf,
         spontaneousDomain: domSel ? domSel.value : undefined,
         divineSpontaneousChannel: chanSel ? chanSel.value : undefined
       };
@@ -2240,11 +2241,12 @@
         CharStore.dispatch({
           type: 'spells/setDivineSpontaneousConfig',
           payload,
-          meta: { label: `Update Divine Spontaneous Casting (${acf})` }
+          meta: { label: `Update Divine Spontaneous Casting (${clericAcf}/${druidAcf})` }
         });
       } else {
         if (!character.spellcasting) character.spellcasting = {};
-        character.spellcasting.divineSpontaneousAcf = acf;
+        character.spellcasting.clericSpontaneousAcf = clericAcf;
+        character.spellcasting.druidSpontaneousAcf = druidAcf;
         if (payload.spontaneousDomain !== undefined) character.spellcasting.spontaneousDomain = payload.spontaneousDomain;
         if (payload.divineSpontaneousChannel !== undefined) character.spellcasting.divineSpontaneousChannel = payload.divineSpontaneousChannel;
         saveStateToStorage(true);
@@ -2390,7 +2392,8 @@
             name: 'Spontaneous Rejuvenation',
             source: 'Druid ACF (PHB II p.39)',
             durationText: '3 rounds (30 ft. aura)',
-            roundsRemaining: 3,
+            durationRounds: 3,
+            rounds: 3,
             active: true,
             effects: [{ type: 'defense', fastHealing: spont.fastHealing || lvl }]
           }
@@ -2419,7 +2422,15 @@
             meta: { label: `Spontaneous Conversion (${s.name} ➔ ${spont.name})` }
           });
           const out = CharStore.getLastOutcome();
-          if (!out || out.status !== 'spell_cast') return;
+          if (!out || out.status !== 'spell_cast') {
+            showDiceTopToast({
+              icon: '⚠️',
+              title: 'Spontaneous Conversion Rejected',
+              breakdown: `Unable to convert '${s.name}' (${out?.reason || out?.status || 'invalid_state'}).`,
+              total: 'Blocked'
+            });
+            return;
+          }
           if (typeof updateActionEconomyUI === 'function') updateActionEconomyUI();
         } else {
           const mutSlot = character.spellcasting?.divineSlots?.find(sl => Number(sl.level) === lvl);
@@ -13294,12 +13305,15 @@
       });
       Actions.register('spells:lock-neutral-energy', (el, data, event) => {
         const chosen = data.mode === 'inflict' ? 'inflict' : 'cure';
+        let didLock = true;
         if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
           CharStore.dispatch({
             type: 'spells/toggleClericSpontaneousMode',
             payload: { mode: chosen, lockPermanent: true },
             meta: { label: `Lock Cleric Energy Channel (${chosen})` }
           });
+          const out = CharStore.getLastOutcome();
+          didLock = Boolean(out && out.status === 'cleric_spont_mode_updated');
         } else {
           if (!character.spellcasting) character.spellcasting = {};
           character.spellcasting.clericSpontaneousMode = chosen;
@@ -13309,14 +13323,16 @@
         }
         renderAll();
         openDivineSpontaneousConfigModal();
-        showDiceTopToast({
-          icon: chosen === 'inflict' ? '💀' : '💚',
-          title: 'Energy Channel Permanently Locked (PHB p. 32)',
-          breakdown: chosen === 'inflict'
-            ? 'Neutral Cleric permanently chose Negative Energy (Inflict Wounds / Rebuke Undead).'
-            : 'Neutral Cleric permanently chose Positive Energy (Cure Wounds / Turn Undead).',
-          total: chosen === 'inflict' ? 'Inflict 🔒' : 'Cure 🔒'
-        });
+        if (didLock) {
+          showDiceTopToast({
+            icon: chosen === 'inflict' ? '💀' : '💚',
+            title: 'Energy Channel Permanently Locked (PHB p. 32)',
+            breakdown: chosen === 'inflict'
+              ? 'Neutral Cleric permanently chose Negative Energy (Inflict Wounds / Rebuke Undead).'
+              : 'Neutral Cleric permanently chose Positive Energy (Cure Wounds / Turn Undead).',
+            total: chosen === 'inflict' ? 'Inflict 🔒' : 'Cure 🔒'
+          });
+        }
       });
       Actions.register('spells:dm-reset-neutral-energy', async (el, data, event) => {
         const confirmed = (typeof DnDUI !== 'undefined' && typeof DnDUI.confirm === 'function')
@@ -13326,7 +13342,7 @@
             confirmText: 'Unlock (DM Override)',
             cancelText: 'Cancel'
           })
-          : true;
+          : false;
         if (!confirmed) return;
         if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
           CharStore.dispatch({

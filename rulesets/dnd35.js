@@ -500,6 +500,7 @@
         || null;
       if (!domSpell || !domSpell.name) return null;
       const compactSpell = domSpell.name.length > 14 ? `${domSpell.name.slice(0, 13)}…` : domSpell.name;
+      const shortSpell = domSpell.name.length > 18 ? `${domSpell.name.slice(0, 17)}…` : domSpell.name;
       return {
         conversionType: 'domain',
         id: domSpell.id || `dom-${domainName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${domSpell.level}`,
@@ -509,7 +510,7 @@
         slotLevel: slotLvl,
         formula: null,
         effectType: 'domain_spell',
-        shortLabel: domainName ? `${domainName}: ${domSpell.name}` : domSpell.name,
+        shortLabel: shortSpell,
         compactLabel: compactSpell,
         icon: '⚜️',
         actionType: 'standard',

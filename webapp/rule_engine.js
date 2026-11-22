@@ -16698,8 +16698,13 @@ const RuleEngine = {
     let druidLvl = 0;
     let hasKnownClasses = false;
 
-    const prog = Array.isArray(ch.progression) ? ch.progression : [];
-    const activeProg = prog.filter(p => p && !p.isDisabled);
+    const lvlProg = Array.isArray(ch.levelProgression)
+      ? ch.levelProgression.filter(p => p && p.active !== false)
+      : [];
+    const altProg = Array.isArray(ch.progression)
+      ? ch.progression.filter(p => p && !p.isDisabled)
+      : [];
+    const activeProg = lvlProg.length > 0 ? lvlProg : altProg;
     if (activeProg.length > 0) {
       hasKnownClasses = true;
       activeProg.forEach(p => {
@@ -16710,7 +16715,7 @@ const RuleEngine = {
           else if (rule.kind === 'druid_sna') druidLvl += 1;
           return;
         }
-        const cname = String(p.className || p.name || '').toLowerCase().trim();
+        const cname = String(p.className || p.class || p.name || '').toLowerCase().trim();
         if (/\bcleric\b/.test(cname)) clericLvl += 1;
         else if (/\bdruid\b/.test(cname)) druidLvl += 1;
       });
@@ -16733,13 +16738,31 @@ const RuleEngine = {
     const hasCleric = clericLvl > 0;
     const hasDruid = druidLvl > 0;
 
-    // Resolve energy channel ('positive' | 'negative') — drives Turn/Rebuke Undead & Cleric Cure/Inflict
-    const rawAlign = String(ch.alignment || '').toLowerCase().trim();
-    const isGoodAlign = /\bgood\b|\b(lg|ng|cg)\b/.test(rawAlign);
-    const isEvilAlign = /\bevil\b|\b(le|ne|ce)\b/.test(rawAlign);
+    // Resolve energy channel ('positive' | 'negative') — drives Turn/Rebuke Undead & Cleric Cure/Inflict (PHB p. 32)
+    // Checks character alignment first, then deity alignment for Neutral Clerics.
+    const parseAlignGE = (rawStr) => {
+      const s = String(rawStr || '').toLowerCase().trim();
+      if (!s) return 0;
+      if (/\bgood\b|\b(lg|ng|cg)\b/.test(s)) return 1;
+      if (/\bevil\b|\b(le|ne|ce)\b/.test(s)) return -1;
+      return 0;
+    };
+    const charGE = parseAlignGE(ch.alignment);
+    let deityGE = 0;
+    if (charGE === 0) {
+      let rawDeityAlign = ch.deityAlignment || ch.deityMeta?.alignment || '';
+      if (!rawDeityAlign && typeof globalThis !== 'undefined' && typeof globalThis.getCharacterDeityMeta === 'function') {
+        const dMeta = globalThis.getCharacterDeityMeta(ch);
+        if (dMeta && !dMeta.isPhilosophical && dMeta.alignment) rawDeityAlign = dMeta.alignment;
+      } else if (!rawDeityAlign && ch.deity && typeof globalThis !== 'undefined' && globalThis.SrdCompendium && typeof globalThis.SrdCompendium.getDeity === 'function') {
+        const dRec = globalThis.SrdCompendium.getDeity(ch.deity);
+        if (dRec && dRec.alignment) rawDeityAlign = dRec.alignment;
+      }
+      deityGE = parseAlignGE(rawDeityAlign);
+    }
     let forcedChannel = null;
-    if (isGoodAlign) forcedChannel = 'positive';
-    else if (isEvilAlign) forcedChannel = 'negative';
+    if (charGE === 1 || deityGE === 1) forcedChannel = 'positive';
+    else if (charGE === -1 || deityGE === -1) forcedChannel = 'negative';
 
     const storedChannel = String(ch.spellcasting?.energyChannel || '').toLowerCase().trim();
     const storedMode = String(ch.spellcasting?.clericSpontaneousMode || '').toLowerCase().trim();
@@ -16748,20 +16771,22 @@ const RuleEngine = {
       || (storedMode === 'inflict' ? 'negative' : 'positive');
     const clericMode = energyChannel === 'negative' ? 'inflict' : 'cure';
 
-    // Detect PHB II ACFs (explicit spellcasting config OR V3 classAbility / feat / customEntry ID)
-    const rawAcf = String(ch.spellcasting?.divineSpontaneousAcf || 'default').toLowerCase().trim();
+    // Detect PHB II ACFs independently per class (supports Cleric+Druid multiclass holding BOTH ACFs)
+    const legacyAcf = String(ch.spellcasting?.divineSpontaneousAcf || 'default').toLowerCase().trim();
+    const clericAcfRaw = String(ch.spellcasting?.clericSpontaneousAcf || (legacyAcf === 'domain' ? 'domain' : 'default')).toLowerCase().trim();
+    const druidAcfRaw = String(ch.spellcasting?.druidSpontaneousAcf || (legacyAcf === 'rejuvenation' ? 'rejuvenation' : 'default')).toLowerCase().trim();
     const featIds = new Set(
       (Array.isArray(ch.feats) ? ch.feats : [])
         .map(f => String(typeof f === 'string' ? f : (f?.id || f?.featId || '')).toLowerCase().trim())
         .filter(Boolean)
     );
     const hasDomainAcf = hasCleric && (
-      rawAcf === 'domain' ||
+      clericAcfRaw === 'domain' ||
       featIds.has('cab-spontaneous-domain-casting') ||
       featIds.has('acf-spontaneous-domain-casting')
     );
     const hasRejuvAcf = hasDruid && (
-      rawAcf === 'rejuvenation' ||
+      druidAcfRaw === 'rejuvenation' ||
       featIds.has('cab-spontaneous-rejuvenation') ||
       featIds.has('acf-spontaneous-rejuvenation')
     );
@@ -16801,9 +16826,12 @@ const RuleEngine = {
       druidLvl,
       energyChannel,
       energyChannelLocked: Boolean(forcedChannel || ch.spellcasting?.energyChannelLocked),
+      forcedChannel,
       isRebuke: energyChannel === 'negative',
       clericMode,
       acf: hasDomainAcf ? 'domain' : (hasRejuvAcf ? 'rejuvenation' : 'default'),
+      clericAcf: hasDomainAcf ? 'domain' : 'default',
+      druidAcf: hasRejuvAcf ? 'rejuvenation' : 'default',
       hasDomainAcf,
       hasRejuvAcf,
       spontaneousDomain,
