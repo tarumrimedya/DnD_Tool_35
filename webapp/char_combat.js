@@ -8814,34 +8814,24 @@
         onRollComplete();
       }
 
-      // Auto-expend strike maneuvers
-      if (strikeManeuversUsed.length > 0 && character.tomeOfBattle?.readiedManeuvers) {
-        strikeManeuversUsed.forEach(strikeName => {
-          const m = character.tomeOfBattle.readiedManeuvers.find(rm => rm.name.toLowerCase() === strikeName.toLowerCase());
-          if (m) m.expended = true;
-          const mod = (character.tacticalRiders || []).find(am => am.name.toLowerCase() === strikeName.toLowerCase());
-          if (mod) mod.active = false;
-        });
-      }
-      if (bladeOfBloodUsed) {
-        const slot = character.spellcasting?.slots?.[1];
-        if (slot) slot.used = Math.min(slot.daily || 8, (slot.used || 0) + 1);
-        const mod = (character.tacticalRiders || []).find(am => am.name === 'Blade of Blood');
-        if (mod) mod.active = false;
-      }
+      // Auto-expend strike maneuvers & Blade of Blood atomically via CharStore (undoable with Ctrl+Z)
       if (strikeManeuversUsed.length > 0 || bladeOfBloodUsed) {
-        saveStateToStorage(true);
-        setTimeout(() => {
-          renderAll();
-          if (strikeManeuversUsed.length > 0) {
-            showDiceTopToast({
-              icon: '⚡',
-              title: 'Maneuver Expended!',
-              breakdown: `${strikeManeuversUsed.join(', ')} executed with the strike and expended.`,
-              total: 'Maneuver Expended'
-            });
-          }
-        }, 1200);
+        if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
+          CharStore.dispatch({
+            type: 'combat/expendAttackCosts',
+            payload: { strikeManeuvers: strikeManeuversUsed, bladeOfBlood: bladeOfBloodUsed },
+            meta: { label: strikeManeuversUsed.length > 0 ? `Expend ${strikeManeuversUsed.join(', ')}` : 'Expend Blade of Blood' }
+          });
+          renderAll({ skipRecompute: true });
+        }
+        if (strikeManeuversUsed.length > 0) {
+          showDiceTopToast({
+            icon: '⚡',
+            title: 'Maneuver Expended!',
+            breakdown: `${strikeManeuversUsed.join(', ')} executed with the strike and expended.`,
+            total: 'Maneuver Expended'
+          });
+        }
       }
     }
 
@@ -12024,38 +12014,24 @@
       // Execute 3D roll
       rollFullAttackWith3D();
 
-      // Auto-expend strike maneuvers
-      if (strikeManeuversUsed.length > 0 && character.tomeOfBattle?.readiedManeuvers) {
-        strikeManeuversUsed.forEach(strikeName => {
-          const m = character.tomeOfBattle.readiedManeuvers.find(rm => rm.name.toLowerCase() === strikeName.toLowerCase());
-          if (m) m.expended = true;
-          // Uncheck from tacticalRiders so it doesn't apply to subsequent rolls until readied
-          const mod = (character.tacticalRiders || []).find(am => am.name.toLowerCase() === strikeName.toLowerCase());
-          if (mod) mod.active = false;
-        });
-      }
-
-      // Auto-deduct Blade of Blood if used
-      if (bladeOfBloodUsed) {
-        const slot = character.spellcasting?.slots?.[1];
-        if (slot) slot.used = Math.min(slot.daily || 8, (slot.used || 0) + 1);
-        const mod = (character.tacticalRiders || []).find(am => am.name === 'Blade of Blood');
-        if (mod) mod.active = false;
-      }
-
+      // Auto-expend strike maneuvers & Blade of Blood atomically via CharStore (undoable with Ctrl+Z)
       if (strikeManeuversUsed.length > 0 || bladeOfBloodUsed) {
-        saveStateToStorage(true);
-        setTimeout(() => {
-          renderAll();
-          if (strikeManeuversUsed.length > 0) {
-            showDiceTopToast({
-              icon: '⚡',
-              title: 'Maneuver Expended!',
-              breakdown: `${strikeManeuversUsed.join(', ')} executed and expended. Can be recovered via Swift Action.`,
-              total: 'Maneuver Expended'
-            });
-          }
-        }, 1200);
+        if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
+          CharStore.dispatch({
+            type: 'combat/expendAttackCosts',
+            payload: { strikeManeuvers: strikeManeuversUsed, bladeOfBlood: bladeOfBloodUsed },
+            meta: { label: strikeManeuversUsed.length > 0 ? `Expend ${strikeManeuversUsed.join(', ')}` : 'Expend Blade of Blood' }
+          });
+          renderAll({ skipRecompute: true });
+        }
+        if (strikeManeuversUsed.length > 0) {
+          showDiceTopToast({
+            icon: '⚡',
+            title: 'Maneuver Expended!',
+            breakdown: `${strikeManeuversUsed.join(', ')} executed and expended. Can be recovered via Swift Action.`,
+            total: 'Maneuver Expended'
+          });
+        }
       }
     }
 

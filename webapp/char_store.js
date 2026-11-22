@@ -869,6 +869,44 @@
         }
         saveSessionToStorage(_state.doc, _state.session);
         sessionChanged = true;
+      } else if (type === 'store/batch') {
+        if (!_state.doc) return null;
+        const subActions = Array.isArray(payload?.actions) ? payload.actions : (Array.isArray(payload) ? payload : []);
+        if (subActions.length === 0) return _state.sheet;
+        const preEntry = (!meta.skipHistory && !_isRestoringHistory)
+          ? this._createHistoryEntry(meta.label || action.label || 'Batch Action', _state.doc, _state.session)
+          : null;
+        let anyApplied = false;
+        for (let i = 0; i < subActions.length; i++) {
+          const sub = subActions[i];
+          if (!sub || typeof sub !== 'object' || !sub.type) continue;
+          const subType = String(sub.type);
+          if (subType === 'doc/mutate') {
+            if (typeof sub.payload === 'function') sub.payload(_state.doc, _state.session);
+            else if (sub.payload && typeof sub.payload === 'object') Object.assign(_state.doc, sub.payload);
+            anyApplied = true;
+          } else if (_customReducers.has(subType)) {
+            _lastOutcome = null;
+            const rFn = _customReducers.get(subType);
+            const nextD = rFn(_state.doc, sub, _state);
+            if (!isAbortedOutcome(_lastOutcome)) {
+              if (nextD && typeof nextD === 'object' && nextD !== _state.doc && (nextD.abilities || nextD.hp || nextD.name)) {
+                _state.doc = nextD;
+              }
+              anyApplied = true;
+            }
+          }
+        }
+        if (anyApplied) {
+          if (preEntry && !meta.skipHistory && !_isRestoringHistory) {
+            this._pushHistoryEntry(preEntry);
+          }
+          if (typeof root !== 'undefined' && _state.doc) {
+            root.masterDb = _state.doc.customDb;
+            if (root.document) root.character = _state.doc;
+          }
+          docChanged = true;
+        }
       } else if (_customReducers.has(type)) {
         if (!_state.doc) return null;
         const preEntry = (!meta.skipHistory && !_isRestoringHistory)
@@ -4360,6 +4398,123 @@
     setStoreOutcome(stateObj, {
       status: 'ability_scores_set',
       baseAbilities: Object.assign({}, doc.baseAbilities)
+    });
+    return doc;
+  });
+
+  CharStore.registerReducer('combat/expendAttackCosts', function (doc, action, stateObj) {
+    const payload = (action && action.payload) || action || {};
+    const strikeManeuvers = Array.isArray(payload.strikeManeuvers) ? payload.strikeManeuvers : [];
+    const bladeOfBlood = Boolean(payload.bladeOfBlood);
+    let expendedManeuvers = 0;
+    let spentBladeSlot = false;
+
+    if (strikeManeuvers.length > 0 && doc.tomeOfBattle && Array.isArray(doc.tomeOfBattle.readiedManeuvers)) {
+      strikeManeuvers.forEach(function (strikeName) {
+        const low = String(strikeName || '').toLowerCase();
+        if (!low) return;
+        const m = doc.tomeOfBattle.readiedManeuvers.find(function (rm) {
+          return rm && String(rm.name || '').toLowerCase() === low;
+        });
+        if (m && !m.expended) {
+          m.expended = true;
+          expendedManeuvers++;
+        }
+        if (Array.isArray(doc.tacticalRiders)) {
+          const mod = doc.tacticalRiders.find(function (am) {
+            return am && String(am.name || '').toLowerCase() === low;
+          });
+          if (mod) mod.active = false;
+        }
+      });
+    }
+
+    if (bladeOfBlood) {
+      const slot = doc.spellcasting && Array.isArray(doc.spellcasting.slots) ? doc.spellcasting.slots[1] : null;
+      if (slot) {
+        slot.used = Math.min(Number(slot.daily) || 8, (Number(slot.used) || 0) + 1);
+        spentBladeSlot = true;
+      }
+      if (Array.isArray(doc.tacticalRiders)) {
+        const mod = doc.tacticalRiders.find(function (am) { return am && am.name === 'Blade of Blood'; });
+        if (mod) mod.active = false;
+      }
+    }
+
+    setStoreOutcome(stateObj, { status: 'attack_costs_expended', expendedManeuvers, spentBladeSlot });
+    return doc;
+  });
+
+  CharStore.registerReducer('inventory/activateDailyChargeItem', function (doc, action, stateObj) {
+    const payload = (action && action.payload) || action || {};
+    const itemName = String(payload.itemName || '').trim();
+    const slotKey = payload.slotKey ? String(payload.slotKey).trim() : null;
+    const cost = Math.max(1, Number(payload.cost) || 1);
+    const maxDefault = Math.max(1, Number(payload.defaultMax) || 1);
+    const unitDefault = String(payload.defaultUnit || 'charges');
+    const buffSpec = payload.buff && typeof payload.buff === 'object' ? payload.buff : null;
+    const matchBuffByName = payload.matchBuffByName ? String(payload.matchBuffByName).toLowerCase() : null;
+    const extendRounds = Boolean(payload.extendRounds);
+
+    let item = null;
+    if (slotKey && doc.bodySlots && doc.bodySlots[slotKey]) {
+      item = doc.bodySlots[slotKey];
+    }
+    if (!item && itemName && doc.bodySlots && typeof doc.bodySlots === 'object') {
+      const vals = Object.values(doc.bodySlots);
+      for (let i = 0; i < vals.length; i++) {
+        if (vals[i] && vals[i].name === itemName) { item = vals[i]; break; }
+      }
+    }
+    if (!item && itemName && Array.isArray(doc.gearPool)) {
+      item = doc.gearPool.find(function (g) { return g && g.name === itemName; }) || null;
+    }
+    if (!item) {
+      setStoreOutcome(stateObj, { status: 'item_not_found' });
+      return doc;
+    }
+
+    if (!item.dailyCharges || typeof item.dailyCharges !== 'object') {
+      item.dailyCharges = { current: maxDefault, max: maxDefault, unit: unitDefault, recharge: 'long_rest' };
+    }
+    if (item.dailyCharges.current === undefined) {
+      item.dailyCharges.current = Number(item.dailyCharges.max) || maxDefault;
+    }
+    const cur = Number(item.dailyCharges.current) || 0;
+    if (cur < cost) {
+      setStoreOutcome(stateObj, { status: 'insufficient_charges', current: cur, max: Number(item.dailyCharges.max) || maxDefault, unit: item.dailyCharges.unit || unitDefault });
+      return doc;
+    }
+    item.dailyCharges.current = Math.max(0, cur - cost);
+
+    if (buffSpec) {
+      if (!Array.isArray(doc.buffs)) doc.buffs = [];
+      const existing = doc.buffs.find(function (b) {
+        if (!b) return false;
+        if (matchBuffByName && b.name && b.name.toLowerCase().includes(matchBuffByName)) return true;
+        if (buffSpec.id && b.id === buffSpec.id) return true;
+        if (buffSpec.source && b.source === buffSpec.source && b.name === buffSpec.name) return true;
+        return false;
+      });
+      if (existing) {
+        existing.active = true;
+        if (extendRounds) {
+          existing.rounds = (Number(existing.rounds) || 0) + (Number(buffSpec.rounds) || 1);
+          existing.durationText = `${existing.rounds} Rounds`;
+        } else {
+          existing.duration = Number(buffSpec.duration) || 1;
+          existing.durationText = buffSpec.durationText || '1 Round';
+        }
+      } else {
+        doc.buffs.push(Object.assign({}, buffSpec, { active: true }));
+      }
+    }
+
+    setStoreOutcome(stateObj, {
+      status: 'daily_charge_activated',
+      current: item.dailyCharges.current,
+      max: Number(item.dailyCharges.max) || maxDefault,
+      unit: item.dailyCharges.unit || unitDefault
     });
     return doc;
   });

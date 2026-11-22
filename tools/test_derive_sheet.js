@@ -7385,6 +7385,49 @@ function runDeriveSheetTests() {
         clr5Trad.divine.has === true && clr5Trad.divine.maxSpellLevel === 3 && clr5Trad.arcane.has === false,
         JSON.stringify({ rideTotal: rideEval.total, mutated: rideFeat.modifiers !== undefined, pal3Trad, pal4Trad, wiz5Trad, clr5Trad })
       );
+
+      // 20. Dalga 4.4 Invariants: Atomic store/batch, combat/expendAttackCosts, inventory/activateDailyChargeItem + single-step Ctrl+Z Undo
+      const batchChar = {
+        id: 'test-dalga44-atomic',
+        name: 'Atomic Undo Test',
+        level: 10,
+        baseAbilities: { str: 16, dex: 14, con: 14, int: 10, wis: 10, cha: 10 },
+        bodySlots: {
+          feet: { name: 'Boots of Speed', active: true, dailyCharges: { current: 10, max: 10, unit: 'rounds', recharge: 'long_rest' } }
+        },
+        buffs: [],
+        spellcasting: { slots: [{ level: 0, daily: 4, used: 0 }, { level: 1, daily: 4, used: 0 }] },
+        tomeOfBattle: { readiedManeuvers: [{ name: 'Mountain Hammer', expended: false }] },
+        tacticalRiders: [{ name: 'Mountain Hammer', source: 'Maneuver', active: true }, { name: 'Blade of Blood', source: 'Spell', active: true }]
+      };
+      CharStore.clearHistory();
+      CharStore.dispatch({ type: 'doc/replace', payload: batchChar, meta: { skipHistory: true } });
+      CharStore.dispatch({
+        type: 'store/batch',
+        payload: {
+          actions: [
+            { type: 'inventory/activateDailyChargeItem', payload: { itemName: 'Boots of Speed', slotKey: 'feet', cost: 1, buff: { id: 'buff_boots_haste', name: 'Haste (Boots of Speed)', rounds: 1, source: 'Boots of Speed' }, matchBuffByName: 'haste', extendRounds: true } },
+            { type: 'combat/expendAttackCosts', payload: { strikeManeuvers: ['Mountain Hammer'], bladeOfBlood: true } }
+          ]
+        },
+        meta: { label: 'Atomic Turn' }
+      });
+      const afterBatch = CharStore.getDoc();
+      const batchApplied = afterBatch.bodySlots.feet.dailyCharges.current === 9 &&
+        afterBatch.buffs.some(b => b.id === 'buff_boots_haste' && b.active) &&
+        afterBatch.tomeOfBattle.readiedManeuvers[0].expended === true &&
+        afterBatch.spellcasting.slots[1].used === 1;
+      CharStore.undo();
+      const afterUndo = CharStore.getDoc();
+      const undoRestored = afterUndo.bodySlots.feet.dailyCharges.current === 10 &&
+        afterUndo.buffs.length === 0 &&
+        afterUndo.tomeOfBattle.readiedManeuvers[0].expended === false &&
+        afterUndo.spellcasting.slots[1].used === 0;
+      check(
+        'Dalga 4.4: store/batch + inventory/activateDailyChargeItem + combat/expendAttackCosts apply atomically and revert cleanly in 1 Undo step',
+        batchApplied && undoRestored,
+        JSON.stringify({ batchApplied, undoRestored })
+      );
     }
   }
 

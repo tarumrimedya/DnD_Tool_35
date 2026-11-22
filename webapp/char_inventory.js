@@ -7943,18 +7943,10 @@
         return;
       }
 
-      dc.current = Math.max(0, dc.current - 1);
       const cleanName = item.name.toLowerCase();
-
-      if (cleanName.includes('boots of speed')) {
-        if (!Array.isArray(character.buffs)) character.buffs = [];
-        const existing = character.buffs.find(b => b.name && b.name.toLowerCase().includes('haste'));
-        if (existing) {
-          existing.active = true;
-          existing.rounds = (Number(existing.rounds) || 0) + 1;
-          existing.durationText = `${existing.rounds} Rounds`;
-        } else {
-          character.buffs.push({
+      const isBootsOfSpeed = cleanName.includes('boots of speed');
+      const buffSpec = isBootsOfSpeed
+        ? {
             id: 'buff_boots_haste',
             name: 'Haste (Boots of Speed)',
             active: true,
@@ -7962,42 +7954,51 @@
             ...getSrdHasteEffect(),
             durationText: '1 Round',
             source: 'Boots of Speed'
-          });
-        }
-        showDiceTopToast({
-          icon: '🏃',
-          title: 'Boots of Speed: Activated!',
-          breakdown: `Haste activated (+1 Attack, +1 Dodge AC, +30 ft Speed, +1 extra attack on Full Attack). Remaining: ${dc.current}/${dc.max} Rounds.`,
-          total: 'Cast (1 Rd)'
-        });
-      } else {
-        if (!Array.isArray(character.buffs)) character.buffs = [];
-        const buffId = 'buff_' + item.name.replace(/\s+/g, '_').toLowerCase();
-        const existing = character.buffs.find(b => b.id === buffId || (b.source && b.source === item.name));
-        if (existing) {
-          existing.active = true;
-          existing.rounds = (Number(existing.rounds) || 0) + 1;
-          existing.durationText = `${existing.rounds} Rounds`;
-        } else {
-          character.buffs.push({
-            id: buffId,
+          }
+        : {
+            id: 'buff_' + item.name.replace(/\s+/g, '_').toLowerCase(),
             name: item.name,
             active: true,
             rounds: 1,
             durationText: '1 Round',
             source: item.name
+          };
+
+      if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
+        CharStore.dispatch({
+          type: 'inventory/activateDailyChargeItem',
+          payload: {
+            itemName: item.name,
+            slotKey: slotKey || null,
+            cost: 1,
+            defaultMax: dc.max || 1,
+            defaultUnit: dc.unit || 'rounds',
+            buff: buffSpec,
+            matchBuffByName: isBootsOfSpeed ? 'haste' : null,
+            extendRounds: true
+          },
+          meta: { label: `Activate ${item.name} (1 Rd)` }
+        });
+        const out = typeof CharStore.getLastOutcome === 'function' ? CharStore.getLastOutcome() : null;
+        const remCur = out?.current ?? Math.max(0, (dc.current || 1) - 1);
+        const remMax = out?.max ?? dc.max;
+        if (isBootsOfSpeed) {
+          showDiceTopToast({
+            icon: '🏃',
+            title: 'Boots of Speed: Activated!',
+            breakdown: `Haste activated (+1 Attack, +1 Dodge AC, +30 ft Speed, +1 extra attack on Full Attack). Remaining: ${remCur}/${remMax} Rounds.`,
+            total: 'Cast (1 Rd)'
+          });
+        } else {
+          showDiceTopToast({
+            icon: '⚡',
+            title: `${item.name}: Activated!`,
+            breakdown: `Applied to active buffs for 1 round. Remaining: ${remCur}/${remMax} ${dc.unit || 'rounds'}.`,
+            total: 'Cast (1 Rd)'
           });
         }
-        showDiceTopToast({
-          icon: '⚡',
-          title: `${item.name}: Activated!`,
-          breakdown: `Applied to active buffs for 1 round. Remaining: ${dc.current}/${dc.max} ${dc.unit || 'rounds'}.`,
-          total: 'Cast (1 Rd)'
-        });
+        renderAll({ skipRecompute: true });
       }
-
-      saveStateToStorage(true);
-      renderAll();
     }
 
     function dischargeDailyRoundItem(encodedName, slotKey) {
@@ -8246,37 +8247,21 @@
         showDiceTopToast({ icon: '⚠️', title: 'Insufficient Charges', breakdown: `Requires ${cost} ${dc.unit || 'charges'}, available: ${dc.current}`, total: 'Error' });
         return;
       }
-      dc.current -= cost;
-
-      if (opt.dice) {
-        rollSpellOrManeuverFormula(opt.dice, `${item.name} (${opt.label})`, { name: item.name, effectType: opt.effectType || 'heal' });
-      } else if (opt.type === 'haste') {
-        if (!Array.isArray(character.buffs)) character.buffs = [];
-        const existingHaste = character.buffs.find(b => b.name && b.name.toLowerCase().includes('haste'));
-        if (existingHaste) {
-          existingHaste.active = true;
-          existingHaste.duration = 1;
-          existingHaste.durationText = '1 Round';
-        } else {
-          character.buffs.push({
-            id: 'buff_boots_haste',
-            name: 'Haste (Boots of Speed)',
-            active: true,
-            ...getSrdHasteEffect(),
-            duration: 1,
-            durationText: '1 Round',
-            source: 'Boots of Speed'
-          });
-        }
-        showDiceTopToast({
-          icon: '🏃',
-          title: 'Boots of Speed Active!',
-          breakdown: `Haste active for 1 round (+1 Attack, +1 Dodge AC, +30 ft Speed, +1 extra attack on Full Attack). Remaining: ${dc.current}/${dc.max} Rounds.`,
-          total: '+1 Rd Haste'
-        });
+      let optBuffSpec = null;
+      let matchBuffByName = null;
+      if (opt.type === 'haste') {
+        matchBuffByName = 'haste';
+        optBuffSpec = {
+          id: 'buff_boots_haste',
+          name: 'Haste (Boots of Speed)',
+          active: true,
+          ...getSrdHasteEffect(),
+          duration: 1,
+          durationText: '1 Round',
+          source: 'Boots of Speed'
+        };
       } else if (opt.type === 'buff' && opt.buffName) {
-        if (!Array.isArray(character.buffs)) character.buffs = [];
-        character.buffs.push({
+        optBuffSpec = {
           schemaVersion: 3,
           id: 'buff_' + Date.now(),
           name: opt.buffName,
@@ -8289,23 +8274,57 @@
           duration: 1,
           durationText: '1 Round',
           source: item.name
+        };
+      }
+
+      let remCur = Math.max(0, dc.current - cost);
+      let remMax = dc.max;
+      if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
+        CharStore.dispatch({
+          type: 'inventory/activateDailyChargeItem',
+          payload: {
+            itemName: item.name,
+            slotKey: item.slotKey || null,
+            cost,
+            defaultMax: dc.max || 1,
+            defaultUnit: dc.unit || 'charges',
+            buff: optBuffSpec,
+            matchBuffByName,
+            extendRounds: false
+          },
+          meta: { label: `Activate ${item.name} (${opt.label || `${cost} charge`})` }
         });
+        const out = typeof CharStore.getLastOutcome === 'function' ? CharStore.getLastOutcome() : null;
+        if (out && out.current !== undefined) remCur = out.current;
+        if (out && out.max !== undefined) remMax = out.max;
+      }
+
+      if (opt.dice) {
+        rollSpellOrManeuverFormula(opt.dice, `${item.name} (${opt.label})`, { name: item.name, effectType: opt.effectType || 'heal' });
+      } else if (opt.type === 'haste') {
+        showDiceTopToast({
+          icon: '🏃',
+          title: 'Boots of Speed Active!',
+          breakdown: `Haste active for 1 round (+1 Attack, +1 Dodge AC, +30 ft Speed, +1 extra attack on Full Attack). Remaining: ${remCur}/${remMax} Rounds.`,
+          total: '+1 Rd Haste'
+        });
+      } else if (opt.type === 'buff' && opt.buffName) {
         showDiceTopToast({
           icon: '⚡',
           title: `${opt.buffName} Active!`,
-          breakdown: `Applied to active buffs for 1 round. Remaining: ${dc.current}/${dc.max} ${dc.unit || 'charges'}.`,
+          breakdown: `Applied to active buffs for 1 round. Remaining: ${remCur}/${remMax} ${dc.unit || 'charges'}.`,
           total: 'Active'
         });
       } else {
         showDiceTopToast({
           icon: '⚡',
           title: `Used ${item.name}!`,
-          breakdown: `${opt.label || opt.note || 'Spent 1 charge'}. Remaining: ${dc.current}/${dc.max} ${dc.unit || 'charges'}.`,
-          total: `${dc.current}/${dc.max}`
+          breakdown: `${opt.label || opt.note || 'Spent 1 charge'}. Remaining: ${remCur}/${remMax} ${dc.unit || 'charges'}.`,
+          total: `${remCur}/${remMax}`
         });
       }
 
-      saveStateToStorage(true);
+      renderAll({ skipRecompute: true });
       renderAll();
     }
 
