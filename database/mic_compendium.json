@@ -24524,12 +24524,14 @@
       {
         "type": "defense",
         "mode": "DR",
-        "value": 3,
-        "what": "-"
+        "value": 1,
+        "what": "-",
+        "drStacks": true
       }
     ],
     "ruleFlags": {
-      "dr": "3/-"
+      "dr": "1/-",
+      "drStacks": true
     },
     "shortDescription": "An iron ward diamond lends its toughness to armor, helping it absorb blows in combat.",
     "text": "This dun and ecru diamond is incredibly durable.\n\nAn iron ward diamond lends its toughness to armor, helping it absorb blows in combat.\n\nLeast: The least version of this augment crystal grants you damage reduction 1/--. This damage reduction stacks with similar damage reduction granted by any other source. Once the clasp has prevented a total of 10 points of damage, it becomes inert until the following day.\n\nLesser: As the least crystal, except that it grants damage reduction 3/-- until it has prevented a total of 30 points of damage. A lesser iron ward diamond functions only when attached to medium or heavy armor.\n\nGreater: As the least crystal, except that it grants damage reduction 5/-- until it has prevented a total of 50 points of damage. A greater iron ward diamond functions only when attached to heavy armor.",

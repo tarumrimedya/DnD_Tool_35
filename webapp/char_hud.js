@@ -2432,6 +2432,25 @@
           }
         }
       );
+
+      // Keep HUD Ability cards and Combat Skills widget reactive to derived ability/speed changes
+      // (e.g., Rage, Bear's Endurance, Enlarge Person) without imperative patches in patchCockpitDOM.
+      window.CharStore.mountRegion(
+        'hud-abilities',
+        (st) => {
+          const sh = st && st.sheet;
+          if (!sh || !sh.abilities) return null;
+          return {
+            ab: ['str', 'dex', 'con', 'int', 'wis', 'cha'].map((k) => Number(sh.abilities[k]?.score ?? sh.abilities[k]) || 10),
+            speed: sh.speed?.effective ?? sh.effectiveSpeed ?? null
+          };
+        },
+        () => {
+          if (!character) return;
+          if (typeof renderAbilities === 'function') renderAbilities();
+          if (typeof renderCombatSkillsCard === 'function') renderCombatSkillsCard();
+        }
+      );
     }
 
     function scrollMobileTabIntoView(tabId) {
@@ -2926,7 +2945,7 @@
             acNotesEl.title = `Situational AC Bonuses (Not Added to Base AC): ${fullCondParts.join(' • ')} | Base AC Breakdown: ${detailedParts.join(' • ')} (Base 10)`;
           } else {
             acNotesEl.textContent = 'No situational AC bonuses';
-            acNotesEl.className = 'calm-empty-note h-7 flex items-center justify-center text-[10px] text-slate-500 italic text-center truncate bg-slate-950/50 rounded-md px-2 border border-slate-800/60';
+            acNotesEl.className = 'h-7 flex items-center justify-center text-[10px] text-slate-500 italic text-center truncate bg-slate-950/50 rounded-md px-2 border border-slate-800/60';
             acNotesEl.title = `AC Breakdown: ${detailedParts.join(' • ')} (Base 10) | Click 'Breakdown' for full details.`;
           }
         }
@@ -3004,7 +3023,7 @@
           savesSubtitle.title = `Active buffs are included in saving throws. Click a save to roll.`;
         } else {
           savesSubtitle.textContent = 'Click to roll save';
-          savesSubtitle.className = 'calm-empty-note text-[10px] text-amber-300 text-center truncate';
+          savesSubtitle.className = 'text-[10px] text-amber-300 text-center truncate';
           savesSubtitle.title = 'Click to roll 3D polyhedral dice.';
         }
       }
@@ -9579,11 +9598,9 @@ function renderManualStatsPanel() {
     function renderPeriodicHpEffects() {
       const container = document.getElementById('hp-periodic-list');
       const badge = document.getElementById('hp-periodic-badge');
-      const btn = document.getElementById('btn-periodic-hp');
       if (!container) return;
 
       const effects = character?.periodicHpEffects || [];
-      if (btn) btn.classList.toggle('calm-no-periodic', effects.length === 0);
       if (effects.length === 0) {
         container.classList.add('hidden');
         container.innerHTML = '';
@@ -9936,10 +9953,6 @@ function renderManualStatsPanel() {
       window.Actions.register('hud:set-sheet-mode', (el, data, event) => {
         setSheetViewMode(data.mode || 'both');
       });
-      window.Actions.register('hud:toggle-ui-skin', (el, data, event) => {
-        const cur = document.body.getAttribute('data-ui-skin') === 'calm' ? 'calm' : 'classic';
-        applySheetUiSkin(cur === 'calm' ? 'classic' : 'calm', true);
-      });
       window.Actions.register('hud:scroll-top', (el, data, event) => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
       });
@@ -10056,26 +10069,8 @@ function renderManualStatsPanel() {
     }
 
     // ====================================================
-    // CALM UI SKIN & STICKY LIVE HUD BAR (preview/calm-ui)
+    // STICKY LIVE HUD BAR (Shown on scroll past Vitals HUD)
     // ====================================================
-    function applySheetUiSkin(skin, persist = false) {
-      const normalized = skin === 'classic' ? 'classic' : 'calm';
-      if (document.body) {
-        document.body.setAttribute('data-ui-skin', normalized);
-      }
-      const btn = document.getElementById('btn-ui-skin-toggle');
-      if (btn) {
-        btn.textContent = normalized === 'calm' ? '✨ Calm UI' : '🎨 Classic UI';
-        btn.title = normalized === 'calm'
-          ? 'Calm UI active (Rule Crafter style) — Click to compare Classic UI'
-          : 'Classic UI active — Click to switch to Calm UI';
-      }
-      if (persist) {
-        try { localStorage.setItem('dnd35_ui_skin', normalized); } catch (e) { reportError('char_hud:applySheetUiSkin', e); }
-      }
-      updateCalmStickyHudVisibility();
-    }
-
     function syncCalmStickyHud() {
       const bar = document.getElementById('calm-sticky-hud');
       if (!bar) return;
@@ -10112,15 +10107,8 @@ function renderManualStatsPanel() {
       bar.classList.toggle('is-visible', y > 260);
     }
 
-    (function initSheetCalmUi() {
-      let saved = 'calm';
-      try {
-        const stored = localStorage.getItem('dnd35_ui_skin');
-        if (stored === 'classic' || stored === 'calm') saved = stored;
-      } catch (e) {
-        reportError('char_hud:initSheetCalmUi', e);
-      }
-      applySheetUiSkin(saved, false);
+    (function initStickyLiveHud() {
+      updateCalmStickyHudVisibility();
       let rafPending = false;
       window.addEventListener('scroll', () => {
         if (rafPending) return;

@@ -3798,6 +3798,15 @@
       doc.hp._lastPlayerChangeTs = Date.now();
     }
 
+    let actionOutcome = null;
+    if (payload.actionType !== undefined && payload.actionType !== null && payload.actionType !== false) {
+      actionOutcome = applyConsumeActionOnDoc(
+        doc,
+        payload.actionType,
+        payload.actionLabel || (spell && spell.name) || payload.spellName || ''
+      );
+    }
+
     setStoreOutcome(stateObj, {
       status: 'spell_cast',
       discipline: disc === 'clericconversion' ? 'clericConversion' : (payload.discipline || disc || 'spontaneous'),
@@ -3806,7 +3815,8 @@
       isDomain: isDom,
       isAtWill,
       buffActivated,
-      selfHpCost
+      selfHpCost,
+      actionOutcome
     });
     return doc;
   });

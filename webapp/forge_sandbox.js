@@ -2854,7 +2854,11 @@
       const customPrice = num(en.item.price) > v.gpTotal ? num(en.item.price) : (num(en.item.price) > 0 && v.enh === 0 && !ch.enchantments.length && ch.material === 'standard' ? num(en.item.price) : v.gpTotal);
       Object.assign(out, { baseItemId: ch.baseId, material: ch.material, enhancementBonus: v.enh, enhancements: ch.enchantments.slice(), effectiveEnhancement: v.effective, gpValue: customPrice });
       if (out.item) out.item.price = customPrice;
-      if (v.crystal) out.augmentCrystal = { id: v.crystal.c.id, tier: v.crystal.tier };
+      if (v.crystal) {
+        const ti = CRYSTAL_TIERS.indexOf(String(v.crystal.tier || 'least').toLowerCase());
+        const resolvedCrysId = (Array.isArray(v.crystal.c.ids) && ti >= 0 && v.crystal.c.ids[ti]) ? v.crystal.c.ids[ti] : v.crystal.c.id;
+        out.augmentCrystal = { id: resolvedCrysId, tier: v.crystal.tier };
+      }
       if (v.isW) {
         out.weapon = { category: ch.weapon.category, handedness: ch.weapon.handed, damageDice: v.dice, dmgType: v.dmgType, baseCritRange: num(ch.weapon.critRange), keen: v.keen, effectiveCritRange: v.critLow, critCappedByHouseRule: v.capped, critMultiplier: v.critMult, rangeIncrement: num(ch.weapon.range) > 0 ? num(ch.weapon.range) : null };
       } else {
@@ -3177,7 +3181,7 @@
       const normSub = /^(potion|oil)s?$/i.test(rawSub) ? 'Potion / Oil' : (rawSub || en.item.subtype);
       en.item = Object.assign(en.item, {
         subtype: normSub,
-        slot: obj.item.slot || en.item.slot,
+        slot: obj.item.slot ? normalizeBodySlot(obj.item.slot) : en.item.slot,
         price: obj.item.price !== undefined ? num(obj.item.price) : (obj.gpValue !== undefined ? num(obj.gpValue) : en.item.price),
         cl: obj.item.casterLevel !== undefined ? num(obj.item.casterLevel) : (obj.item.cl !== undefined ? num(obj.item.cl) : en.item.cl)
       });
@@ -3463,8 +3467,15 @@
         const byNm = CAT.enchants.find((x) => normName(x.name) === normName(rawE.replace(/^enh-/i, '').replace(/[-_]/g, ' ')));
         return byNm ? byNm.id : rawE;
       }).filter(Boolean);
-      if (ch.augmentCrystal && ch.augmentCrystal.id) en.chassis.crystal = { id: ch.augmentCrystal.id, tier: ch.augmentCrystal.tier || 'least' };
-      else if (ch.crystal && ch.crystal.id) en.chassis.crystal = { id: ch.crystal.id, tier: ch.crystal.tier || 'least' };
+      const rawCrys = (ch.augmentCrystal && ch.augmentCrystal.id) ? ch.augmentCrystal : ((ch.crystal && ch.crystal.id) ? ch.crystal : null);
+      if (rawCrys) {
+        const crysMatch = CAT.crystals.find((c) => c.id === rawCrys.id || (Array.isArray(c.ids) && c.ids.includes(rawCrys.id)));
+        const matchedTierIdx = (crysMatch && Array.isArray(crysMatch.ids)) ? crysMatch.ids.indexOf(rawCrys.id) : -1;
+        en.chassis.crystal = {
+          id: crysMatch ? crysMatch.id : rawCrys.id,
+          tier: rawCrys.tier || (matchedTierIdx >= 0 ? CRYSTAL_TIERS[matchedTierIdx] : 'least')
+        };
+      }
       const w = obj.weapon || ch.weapon;
       const bashIn = (obj.item && obj.item.bash) || obj.bash;
       if (bashIn && typeof bashIn === 'object' && kind === 'armor') {
@@ -3617,7 +3628,16 @@
   // 8. SRD / MIC / master_db integration (http) with seed fallback (file://)
   // --------------------------------------------------------------------------
   const HANDED = { light: 'Light', '1h': 'One-Handed', '2h': 'Two-Handed', ranged: 'Two-Handed' };
-  const SLOT_MAP = { Shoulders: 'Shoulders / Cloak', Wrists: 'Arms / Bracers', Waist: 'Waist / Belt', Hands: 'Hands / Gloves', Feet: 'Feet / Boots', Body: 'Body / Robe', 'Main Hand': 'Held' };
+  const SLOT_MAP = { Shoulders: 'Shoulders / Cloak', Wrists: 'Arms / Bracers', Waist: 'Waist / Belt', Belt: 'Waist / Belt', Hands: 'Hands / Gloves', Feet: 'Feet / Boots', Body: 'Body / Robe', 'Main Hand': 'Held' };
+  function normalizeBodySlot(rawSlot) {
+    const s = String(rawSlot || '').trim();
+    if (!s) return 'Slotless';
+    if (SLOT_MAP[s]) return SLOT_MAP[s];
+    const ci = Object.keys(SLOT_MAP).find((k) => k.toLowerCase() === s.toLowerCase());
+    if (ci) return SLOT_MAP[ci];
+    const exact = BODY_SLOTS.find((b) => b.toLowerCase() === s.toLowerCase());
+    return exact || 'Slotless';
+  }
   const CLASS_ABBR = { Wizard: 'Sor/Wiz', Sorcerer: 'Sor/Wiz', Cleric: 'Clr', Druid: 'Drd', Bard: 'Brd', Paladin: 'Pal', Ranger: 'Rgr' };
   const normName = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
   function partsFromSrd(dps) {
@@ -3840,11 +3860,15 @@
       const m = String(c.name).match(/^(.*?),\s*(Least|Lesser|Greater)$/i);
       const baseN = m ? m[1] : c.name, tier = m ? m[2].toLowerCase() : 'least';
       const cSlot = (c.item && c.item.slot) || (c.itemModifier && c.itemModifier.appliesTo) || c.slot || '';
-      const g = groups[baseN] = groups[baseN] || { id: 'crys-' + slug(baseN), name: baseN, on: /Weapon/i.test(cSlot) ? 'weapon' : /Shield/i.test(cSlot) ? 'shield' : 'armor+shield', cost: [null, null, null], tiers: ['', '', ''], parts: [null, null, null], src: c.source || 'MIC' };
+      const g = groups[baseN] = groups[baseN] || { id: 'crys-' + slug(baseN), ids: [null, null, null], name: baseN, on: /Weapon/i.test(cSlot) ? 'weapon' : /Shield/i.test(cSlot) ? 'shield' : 'armor+shield', cost: [null, null, null], tiers: ['', '', ''], parts: [null, null, null], src: c.source || 'MIC' };
       const ti = CRYSTAL_TIERS.indexOf(tier);
-      g.cost[ti] = num((c.item && c.item.price != null) ? c.item.price : (c.itemModifier && c.itemModifier.flatGp != null ? c.itemModifier.flatGp : c.cost)); g.tiers[ti] = c.shortDescription || stripHtml(c.text || c.description).slice(0, 140);
+      if (ti >= 0 && (m || !g.ids[ti])) {
+        g.ids[ti] = c.id;
+        g.cost[ti] = num((c.item && c.item.price != null) ? c.item.price : (c.itemModifier && c.itemModifier.flatGp != null ? c.itemModifier.flatGp : c.cost));
+        g.tiers[ti] = c.shortDescription || stripHtml(c.text || c.description).slice(0, 140);
+      }
       const rBlk = (c.effects || []).find((b) => b && b.type === 'roll' && (!b.kind || b.kind === 'Damage'));
-      if (rBlk) { g.parts[ti] = [rBlk.die === 'flat' ? 0 : num(rBlk.count, 1), rBlk.die === 'flat' ? num(rBlk.count || rBlk.flat, 1) : (rBlk.die || 'd6')]; g.ptype = cap1(String(rBlk.dmgType || 'Untyped')); g.cond = rBlk.condition || ''; }
+      if (rBlk && ti >= 0 && (m || !g.parts[ti])) { g.parts[ti] = [rBlk.die === 'flat' ? 0 : num(rBlk.count, 1), rBlk.die === 'flat' ? num(rBlk.count || rBlk.flat, 1) : (rBlk.die || 'd6')]; g.ptype = cap1(String(rBlk.dmgType || 'Untyped')); g.cond = rBlk.condition || ''; }
     });
     Object.keys(groups).forEach((k) => {
       const g = groups[k];
@@ -4006,7 +4030,7 @@
       e.name = x.name; e.text = stripHtml(x.description) || x.shortDescription || '';
       const nm = String(x.name);
       e.item.subtype = x.category === 'Rod' ? 'Rod' : x.category === 'Staff' ? 'Staff' : x.slot === 'Ring' ? 'Ring' : /potion|oil/i.test(nm) ? 'Potion / Oil' : /scroll/i.test(nm) ? 'Scroll' : /wand/i.test(nm) ? 'Wand' : 'Wondrous Item';
-      e.item.slot = SLOT_MAP[x.slot] || (BODY_SLOTS.indexOf(x.slot) >= 0 ? x.slot : 'Slotless');
+      e.item.slot = normalizeBodySlot(x.slot);
       e.item.consumable = t === 'Consumable' || /Potion|Scroll|Wand/.test(e.item.subtype);
       e.item.price = num(x.cost != null ? x.cost : x.gpValue); e.item.cl = num(x.casterLevel != null ? x.casterLevel : x.cl);
       e.effects = statBlocksFromSrd(x.modifiers).concat(ruleFlagBlocksFromSrd(x.ruleFlags));

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
   "version": "3.0.0",
-  "compendiumHash": "c7cfcd7e72396048",
+  "compendiumHash": "f5cc92cda89792de",
   "generatedAt": "2026-11-15T19:43:51.694Z",
   "totalEntries": 8001,
   "chunks": {
@@ -50,7 +50,7 @@
     "mic_compendium.json": {
       "count": 956,
       "bytes": 2013208,
-      "hash": "3c1986dd1d1a5367",
+      "hash": "73e1cf17439f0dc2",
       "eagerLoad": true
     },
     "srd_domains.json": {

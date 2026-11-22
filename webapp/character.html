@@ -22,7 +22,7 @@
   
   <!-- Static Compiled Tailwind CSS (Zero Runtime JIT Overhead) -->
   <link rel="stylesheet" href="tailwind_compiled.css?v=101216d709">
-  <link rel="stylesheet" href="design_tokens.css?v=aa5bd75936">
+  <link rel="stylesheet" href="design_tokens.css?v=271dd34c60">
 
   <!-- Google Fonts: Cinzel for RPG Dice -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -172,9 +172,9 @@
     .disc-tab-truenaming.disc-tab-active { background: linear-gradient(90deg, #115e59, #065f46); border-color: #2dd4bf; color: #ffffff; box-shadow: 0 2px 10px rgba(17, 94, 89, 0.4); }
   </style>
 </head>
-<body data-page="sheet" data-sheet-mode="both" data-ui-skin="calm" class="min-h-screen flex flex-col pb-20 md:pb-6 relative">
+<body data-page="sheet" data-sheet-mode="both" class="min-h-screen flex flex-col pb-20 md:pb-6 relative">
 
-  <!-- CALM UI STICKY LIVE HUD BAR (Appears on scroll when Calm skin is active) -->
+  <!-- STICKY LIVE HUD BAR (Appears on scroll past Vitals HUD) -->
   <div id="calm-sticky-hud" class="calm-sticky-hud" aria-label="Compact live character status">
     <div class="calm-sticky-inner">
       <span id="calm-sticky-name" class="text-xs font-extrabold text-white truncate" style="max-width: 160px;">--</span>
@@ -249,7 +249,6 @@
                 </h1>
                 <span id="core-race" data-action="hud:open-profile-edit" data-profile-tab="identity" class="h-6 px-2 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 hover:border-purple-500/60 text-[10px] font-bold uppercase tracking-wider inline-flex items-center transition cursor-pointer" title="Click to edit Race &amp; Character Templates">--</span>
                 <button id="core-template-badge" type="button" data-action="hud:open-profile-edit" data-profile-tab="template" class="hidden h-6 px-2 rounded bg-purple-950/90 hover:bg-purple-900 text-purple-200 border border-purple-500/70 text-[10px] font-bold uppercase tracking-wider inline-flex items-center gap-1 transition cursor-pointer" title="Active Character Template(s) &amp; Level Adjustment — Click to manage">🧬 --</button>
-                <button id="btn-ui-skin-toggle" type="button" data-action="hud:toggle-ui-skin" class="calm-skin-pill" title="Toggle between Calm UI (Rule Crafter style) and Classic UI">✨ Calm UI</button>
                 <button id="btn-header-npc-statblock" type="button" data-action="hud:open-npc-statblock" class="hidden ui-btn-sm h-7 px-2.5 sm:px-3 rounded-lg bg-gradient-to-r from-amber-600 to-rose-600 hover:from-amber-500 hover:to-rose-500 text-white font-sans font-bold text-xs shadow flex items-center gap-1.5 transition transform active:scale-95 cursor-pointer shrink-0" title="Edit Monster / NPC statblock values (HP, AC, Saves, Abilities, Spells, Special Abilities)">
                   <span>⚡</span>
                   <span>Edit Statblock</span>
@@ -371,7 +370,7 @@
       </div>
 
       <!-- Süreli Etki Butonu (DoT / HoT) -->
-      <button id="btn-periodic-hp" data-action="hud:open-periodic-hp" class="ui-btn-sm calm-no-periodic h-7 w-full mt-1.5 px-2 rounded-md bg-amber-500/15 hover:bg-amber-500/25 active:bg-amber-500/35 text-amber-300 hover:text-amber-200 border border-amber-500/40 text-[11px] font-bold flex items-center justify-center gap-1.5 transition shadow-sm cursor-pointer select-none" title="Add & manage per-round Damage or Healing over Time (DoT / HoT)">
+      <button id="btn-periodic-hp" data-action="hud:open-periodic-hp" class="ui-btn-sm h-7 w-full mt-1.5 px-2 rounded-md bg-amber-500/15 hover:bg-amber-500/25 active:bg-amber-500/35 text-amber-300 hover:text-amber-200 border border-amber-500/40 text-[11px] font-bold flex items-center justify-center gap-1.5 transition shadow-sm cursor-pointer select-none" title="Add & manage per-round Damage or Healing over Time (DoT / HoT)">
         <span class="text-xs">⏱️</span>
         <span class="truncate">Periodic HP (DoT/HoT)</span>
         <span id="hp-periodic-badge" class="hidden text-[10px] px-1.5 rounded font-bold font-mono bg-amber-500/30 text-amber-200 border border-amber-400/50 animate-pulse ml-0.5 shrink-0"></span>
@@ -3501,9 +3500,9 @@
   <script defer src="supabase_auth.js?v=47247ea179"></script>
   <!-- data-srd-autoinit: srd_compendium.js starts SrdCompendium.init() as soon as it runs. -->
   <script defer src="srd_compendium.js?v=6dddec40fd" data-srd-autoinit></script>
-  <script defer src="rulesets/dnd35.js?v=14c0c59243"></script>
-  <script defer src="rule_engine.js?v=1b82ae030a"></script>
-  <script defer src="char_store.js?v=ac1e4fee19"></script>
+  <script defer src="rulesets/dnd35.js?v=cd4922320c"></script>
+  <script defer src="rule_engine.js?v=793c15a857"></script>
+  <script defer src="char_store.js?v=1da1d1756d"></script>
   <!-- ui_components.js stays blocking on purpose: it has no dependencies, and while the document is
        still loading it binds the data-action router on DOMContentLoaded, after the outside-click
        listeners the deferred scripts register. Deferring it would bind the router first. -->
@@ -3516,11 +3515,11 @@
   <script defer src="ai_assistant.js?v=c09f914eee"></script>
   <script defer src="dice3d.js?v=aa07002406"></script>
 
-  <script defer src="char_hud.js?v=694fe3b0db"></script>
-  <script defer src="char_combat.js?v=347790c092"></script>
-  <script defer src="char_spells.js?v=e18348c68b"></script>
-  <script defer src="char_progression.js?v=5d0cc2f293"></script>
-  <script defer src="char_inventory.js?v=ca45418d51"></script>
+  <script defer src="char_hud.js?v=6b3ca64fcc"></script>
+  <script defer src="char_combat.js?v=c5890caec2"></script>
+  <script defer src="char_spells.js?v=f42c70ec57"></script>
+  <script defer src="char_progression.js?v=813bd49d77"></script>
+  <script defer src="char_inventory.js?v=25d9c559a0"></script>
   <!-- Floating Tooltip for Combat Spells Hover (Tap or click to dismiss) -->
   <div id="combat-spell-hover-tooltip" data-action="combat:hide-spell-tooltip" class="hidden fixed z-[200] pointer-events-auto bg-slate-950/95 border border-purple-500/80 rounded-xl p-3 shadow-2xl w-[340px] max-w-[92vw] text-xs space-y-2 backdrop-blur-md transition-opacity duration-150 text-slate-200 cursor-pointer select-none">
     

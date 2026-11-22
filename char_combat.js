@@ -246,6 +246,21 @@
       return character.spellcasting.slots;
     }
 
+    function getDerivedSpellSlotsBySource(sourceKey) {
+      const sc = (typeof character !== 'undefined' && character && character.spellcasting) ? character.spellcasting : {};
+      const derivedView = window.CharStore?.getSheet?.()?.spells?.slotsByLevelView || null;
+      if (sourceKey === 'prepared') {
+        if (Array.isArray(derivedView?.preparedArray) && derivedView.preparedArray.length > 0) return derivedView.preparedArray;
+        return Array.isArray(sc.preparedSlots) ? sc.preparedSlots : [];
+      }
+      if (sourceKey === 'divine') {
+        if (Array.isArray(derivedView?.divineArray) && derivedView.divineArray.length > 0) return derivedView.divineArray;
+        return Array.isArray(sc.divineSlots) ? sc.divineSlots : [];
+      }
+      if (Array.isArray(derivedView?.spontaneousArray) && derivedView.spontaneousArray.length > 0) return derivedView.spontaneousArray;
+      return Array.isArray(sc.slots) ? sc.slots : (Array.isArray(character?.spellSlots) ? character.spellSlots : []);
+    }
+
     function getAllCharacterCombatSpells() {
       const sc = (typeof character !== 'undefined' && character && character.spellcasting) ? character.spellcasting : {};
       const spont = Array.isArray(sc.knownSpells) ? sc.knownSpells : [];
@@ -263,14 +278,7 @@
 
         // Check: Does this source (Spontaneous, Prepared, Divine) have an active daily spell slot for this level?
         // If the level is locked (daily <= 0) or no remaining daily spell slots exist (remaining <= 0), hide it on the combat page
-        let slotsArr = [];
-        if (srcKey === 'prepared') {
-          slotsArr = sc.preparedSlots || [];
-        } else if (srcKey === 'divine') {
-          slotsArr = sc.divineSlots || [];
-        } else {
-          slotsArr = sc.slots || character?.spellSlots || [];
-        }
+        const slotsArr = getDerivedSpellSlotsBySource(srcKey);
 
         const slot = slotsArr.find(s => Number(s.level) === lvl);
         const daily = slot ? (Number(slot.daily) || 0) : 0;
@@ -11120,6 +11128,7 @@
             <span class="font-bold">${UI.escapeHtml(cnt + atk.name)}</span>
             <span class="text-amber-300">${sign}${atk.attackBonus}</span>
             <span class="text-slate-400">(${UI.escapeHtml(atk.damageFormula)})</span>
+            ${atk.special ? `<span class="text-[10px] px-1 rounded bg-emerald-900/80 text-emerald-200 border border-emerald-600/50">${UI.escapeHtml(String(atk.special))}</span>` : ''}
           </button>
         `;
       }).join('');
@@ -11726,8 +11735,6 @@
       const profiles = character.tactical.savedProfiles.filter(p => (p.mode || 'melee') === currentMode);
 
       if (countEl) countEl.textContent = `${profiles.length} Saved`;
-      const boxCard = document.getElementById('active-profile-box-card');
-      if (boxCard) boxCard.classList.toggle('calm-empty-profiles', profiles.length === 0);
 
       if (profiles.length === 0) {
         container.innerHTML = `<span class="text-[10px] text-slate-500 italic">No saved ${isRanged ? 'ranged' : 'melee'} profiles yet. Click "💾 Save" above to create one.</span>`;

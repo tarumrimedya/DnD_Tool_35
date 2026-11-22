@@ -1556,17 +1556,11 @@
         : (buffSpec.id || `buff_${Date.now()}`);
 
       const durText = buffSpec.durationText || '1 min';
-      let computedRounds = null;
-      const rdMatch = String(durText).match(/^(\d+)\s*(?:rd|rds|round|rounds)/i);
-      if (rdMatch) {
-        computedRounds = parseInt(rdMatch[1], 10);
-      } else {
-        const mMatch = String(durText).match(/^(\d+)\s*(?:min|mins|minute|minutes)/i);
-        if (mMatch) {
-          const mins = parseInt(mMatch[1], 10);
-          if (mins > 0 && mins <= 15) computedRounds = mins * 10;
-        }
-      }
+      let computedRounds = Number.isFinite(Number(buffSpec.durationRounds)) && Number(buffSpec.durationRounds) > 0
+        ? Number(buffSpec.durationRounds)
+        : (typeof RuleEngine !== 'undefined' && RuleEngine.rulesets?.dnd35?.durationToRounds
+          ? RuleEngine.rulesets.dnd35.durationToRounds(durText, effCl)
+          : null);
 
       const buffObj = {
         id: buffId,
@@ -1993,18 +1987,21 @@
               isDomain: Boolean(s.isDomainSpell),
               isDomainSpell: Boolean(s.isDomainSpell),
               isSpontaneousConversion: true,
-              convName: spont.name
+              convName: spont.name,
+              actionType: 'standard',
+              actionLabel: spont.name
             },
             meta: { label: `Spontaneous Conversion (${s.name} ➔ ${spont.name})` }
           });
           const out = CharStore.getLastOutcome();
           if (!out || out.status !== 'spell_cast') return;
+          if (typeof updateActionEconomyUI === 'function') updateActionEconomyUI();
         } else {
           const mutSlot = character.spellcasting?.divineSlots?.find(sl => Number(sl.level) === lvl);
           if (mutSlot) mutSlot.used++;
           saveStateToStorage(true);
+          if (typeof consumeActionEconomy === 'function') consumeActionEconomy('standard', spont.name);
         }
-        if (typeof consumeActionEconomy === 'function') consumeActionEconomy('standard', spont.name);
         renderAll();
         rollSpellOrManeuverFormula(
           spont.formula,
@@ -2067,13 +2064,15 @@
               spellName: name,
               spellLevel: lvl,
               level: lvl,
-              markPreparedCast: true
+              markPreparedCast: true,
+              actionType: s,
+              actionLabel: name
             },
             meta: { label: `Cast Prepared Spell (${name})` }
           });
           const out = CharStore.getLastOutcome();
           if (!out || out.status !== 'spell_cast') return;
-          if (typeof consumeActionEconomy === 'function') consumeActionEconomy(s, name);
+          if (typeof updateActionEconomyUI === 'function') updateActionEconomyUI();
           renderAll({ skipRecompute: true });
         } else {
           if (mutSlot) mutSlot.used++;
@@ -2795,20 +2794,23 @@
             level: lvl,
             isDomain: isDom,
             isDomainSpell: isDom,
-            markPreparedCast: true
+            markPreparedCast: true,
+            actionType: s,
+            actionLabel: name
           },
           meta: { label: `Cast Divine Spell (${name})` }
         });
         const out = CharStore.getLastOutcome();
         if (!out || out.status !== 'spell_cast') return;
+        if (typeof updateActionEconomyUI === 'function') updateActionEconomyUI();
       } else {
         if (mutSlot) {
           mutSlot.used++;
           if (isDom) mutSlot.domainUsed = Math.min(domDaily, domUsed + 1);
         }
         saveStateToStorage(true);
+        if (typeof consumeActionEconomy === 'function') consumeActionEconomy(s, name);
       }
-      if (typeof consumeActionEconomy === 'function') consumeActionEconomy(s, name);
       renderAll();
       if (handleBuffSpellCast(s, cl, `Level ${lvl} ${isDom ? 'Domain' : 'Divine'} Slot Expended`, isDom ? '⚜️' : '✨')) {
         return;
@@ -4433,22 +4435,25 @@
               isDomain: isDom,
               isDomainSpell: isDom,
               markPreparedCast: true,
-              selfHpCost: hpCost > 0 ? hpCost : 0
+              selfHpCost: hpCost > 0 ? hpCost : 0,
+              actionType: spellItem,
+              actionLabel: pName
             },
             meta: { label: variantLabel ? `Cast ${pName} (${variantLabel})` : `Cast ${pName}` }
           });
           const out = CharStore.getLastOutcome();
           if (!out || out.status !== 'spell_cast') return false;
+          if (typeof updateActionEconomyUI === 'function') updateActionEconomyUI();
         } else if (slotRef && slotRef.used < slotRef.daily) {
           slotRef.used++;
           if (hpCost > 0 && character?.hp) {
             character.hp.current = Math.max(-10, (Number(character.hp.current) || 0) - hpCost);
           }
           saveStateToStorage(true);
+          if (typeof consumeActionEconomy === 'function') consumeActionEconomy(spellItem, pName);
         } else {
           return false;
         }
-        if (typeof consumeActionEconomy === 'function') consumeActionEconomy(spellItem, pName);
         renderAll();
         return true;
       };

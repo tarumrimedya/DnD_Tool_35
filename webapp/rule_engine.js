@@ -5939,13 +5939,20 @@ const RuleEngine = {
         const btype = this._canonicalizeV3BonusType(bm[2], signedVal);
         const tail = bm[4].replace(/\s*,?\s*\b(?:and|or|plus)\s*$/i, '').trim();
         const cut = tail.split(/\s+(?:against|vs\.?|versus|when|while|if|during|made|to\s+resist)\b/i);
-        const tgs = resolveTargetsFromPhrase(cut[0], btype);
+        const conjSplit = cut[0].match(/^(.*?)\s+(?:and|plus)\s+((?:\d+d\d+|[+\-–−]\d+|temporary\s+(?:hit\s+points?|hp)|fast\s+healing|regeneration|extra\s+(?:melee\s+|ranged\s+)?attack|reroll|immun(?:e|ity)|resistance|damage\s+reduction|spell\s+resistance).*)$/i);
+        const targetHead = conjSplit ? conjSplit[1] : cut[0];
+        const tgs = resolveTargetsFromPhrase(targetHead, btype);
         if (tgs.length === 0) continue;
         const qual = cut.length > 1 ? tail.slice(cut[0].length).trim() : '';
         // Context check for timed activation in the surrounding sentence
         const sentCtx = cleanProse.slice(Math.max(0, bm.index - 60), Math.min(cleanProse.length, bm.index + fullPhrase.length + 60));
         if (isRejectedBonusPhrase(sentCtx, signedVal, tgs, btype)) continue;
-        rawBonusHits.push({ tgs, signedVal, btype, qual, index: bm.index, len: fullPhrase.length });
+        const unparsedConjIdx = conjSplit ? fullPhrase.indexOf(conjSplit[2]) : -1;
+        rawBonusHits.push({
+          tgs, signedVal, btype, qual, index: bm.index, len: fullPhrase.length,
+          skipStart: unparsedConjIdx >= 0 ? bm.index + unparsedConjIdx : -1,
+          skipEnd: unparsedConjIdx >= 0 ? bm.index + unparsedConjIdx + conjSplit[2].length : -1
+        });
       }
       // Multi-tier ambiguity guard: skip if multiple distinct values target the exact same target + qualifier
       rawBonusHits.forEach((h) => {
@@ -5954,7 +5961,12 @@ const RuleEngine = {
         if (distinctVals.size > 1) return;
         const stBlock = { type: 'stat', targets: h.tgs, mode: 'flat', value: h.signedVal, btype: h.btype };
         effects.push(wrapQualifier(stBlock, h.qual));
-        recordSpan(h.index, h.len);
+        if (h.skipStart > h.index && h.skipEnd <= h.index + h.len) {
+          recordSpan(h.index, h.skipStart - h.index);
+          if (h.skipEnd < h.index + h.len) recordSpan(h.skipEnd, (h.index + h.len) - h.skipEnd);
+        } else {
+          recordSpan(h.index, h.len);
+        }
       });
 
       // Inverted speed phrasing ("an enhancement bonus to speed of +30 feet")
@@ -6148,19 +6160,39 @@ const RuleEngine = {
     // Clause-level coverage diagnostics (prevents swallowing complex trailing clauses in multi-sentence rules)
     const matchedClauses = [];
     const unparsedClauses = [];
+    const MECH_SIGNAL_RX = /\b(?:bonus|penalty|\d+d\d+|[+\-–−]\d+|swift\s+action|immediate\s+action|move\s+action|standard\s+action|full-round\s+action|free\s+action|extra\s+(?:melee\s+|ranged\s+)?attack|additional\s+attack|saving\s+throw|fortitude|reflex|(?<!\bat\s)will\s+save|armor\s+class|\bac\b|reroll|immun(?:e|ity)|resistance|damage\s+reduction|spell\s+resistance|instead\s+of|in\s+place\s+of|temporary\s+(?:hit\s+points?|hp)|fast\s+healing|regeneration|touch\s+attack|ray\s+of)\b/i;
+    const COND_REMNANT_RX = /\b(?:while|when|whenever|if\s+(?:you|the|your|a|an|it)|vs\.?|against|during|as\s+long\s+as|only\s+(?:while|when|if|in|on|against))\b/i;
+    const hasWhenBlock = effects.some(b => b && b.type === 'when');
     let searchCursor = 0;
     rawClauses.forEach((cl) => {
       const idx = cleanProse.indexOf(cl, searchCursor);
       const cStart = idx >= 0 ? idx : searchCursor;
       const cEnd = cStart + cl.length;
       if (idx >= 0) searchCursor = cEnd;
-      const hit = matchedSpans.some(([s, e]) => s < cEnd && e > cStart);
-      if (hit) matchedClauses.push(cl);
-      else unparsedClauses.push(cl);
+      const clauseSpans = matchedSpans.filter(([s, e]) => s < cEnd && e > cStart);
+      if (clauseSpans.length > 0) {
+        matchedClauses.push(cl);
+        const sorted = clauseSpans
+          .map(([s, e]) => [Math.max(0, s - cStart), Math.min(cl.length, e - cStart)])
+          .sort((a, b) => a[0] - b[0]);
+        const remnants = [];
+        let pos = 0;
+        sorted.forEach(([s, e]) => {
+          if (s > pos) remnants.push(cl.slice(pos, s).trim());
+          if (e > pos) pos = e;
+        });
+        if (pos < cl.length) remnants.push(cl.slice(pos).trim());
+        remnants.forEach((rem) => {
+          if (rem.length >= 4 && (MECH_SIGNAL_RX.test(rem) || (!hasWhenBlock && COND_REMNANT_RX.test(rem)))) {
+            unparsedClauses.push(rem);
+          }
+        });
+      } else {
+        unparsedClauses.push(cl);
+      }
     });
 
-    const MECH_SIGNAL_RX = /\b(?:bonus|penalty|\d+d\d+|[+\-–−]\d+|swift\s+action|immediate\s+action|move\s+action|standard\s+action|full-round\s+action|free\s+action|extra\s+(?:melee\s+|ranged\s+)?attack|additional\s+attack|saving\s+throw|fortitude|reflex|(?<!\bat\s)will\s+save|armor\s+class|\bac\b|reroll|immun(?:e|ity)|resistance|damage\s+reduction|spell\s+resistance|instead\s+of|in\s+place\s+of|temporary\s+hit\s+points?|fast\s+healing|regeneration|touch\s+attack|ray\s+of)\b/i;
-    const mechanicalUnparsedClauses = unparsedClauses.filter(cl => MECH_SIGNAL_RX.test(cl));
+    const mechanicalUnparsedClauses = unparsedClauses.filter(cl => MECH_SIGNAL_RX.test(cl) || (!hasWhenBlock && COND_REMNANT_RX.test(cl)));
 
     const hasRealMech = (
       powers.length > 0 ||
@@ -8312,7 +8344,19 @@ const RuleEngine = {
         }
         case 'carrier': {
           const sv = saveAbbr(b.saveType);
-          return sv && b.dc ? [`${sv} DC ${b.dc}`] : [];
+          if (!sv || !b.dc) return [];
+          let resolvedDc = b.dc;
+          if (typeof b.dc === 'string' && /[@+\-*/()]/.test(b.dc)) {
+            const dcCtx = (opts && opts.evalCtx)
+              || (this._activeCharacter && typeof this.buildV3FormulaContext === 'function'
+                ? this.buildV3FormulaContext(this._activeCharacter)
+                : null);
+            if (dcCtx) {
+              const ev = Number(this.evaluateFormula(b.dc, dcCtx));
+              if (Number.isFinite(ev) && ev > 0) resolvedDc = ev;
+            }
+          }
+          return [`${sv} DC ${resolvedDc}`];
         }
         case 'resource': {
           const max = Number(b.max) || 0;
@@ -9204,6 +9248,9 @@ const RuleEngine = {
     else if (/24\s*hours?/i.test(rawDur)) durationText = '24 hr';
     else if (/\b1\s*(?:hour|hr)\.?\/level/i.test(rawDur)) durationText = `${cl} hr`;
     else if (/\b1\s*round\/level/i.test(rawDur)) durationText = `${cl} rounds`;
+    const durationRounds = this.rulesets?.dnd35?.durationToRounds
+      ? this.rulesets.dnd35.durationToRounds(rawDur, cl)
+      : null;
 
     return {
       schemaVersion: 3,
@@ -9224,7 +9271,8 @@ const RuleEngine = {
       ruleFlags: JSON.parse(JSON.stringify(ruleFlags)),
       evaluatedLabels,
       summaryText: evaluatedLabels.join(', ') || (spell.shortDescription || dbEntry.shortDescription || 'Active Spell Buff'),
-      durationText
+      durationText,
+      durationRounds
     };
   },
 
@@ -13694,10 +13742,14 @@ const RuleEngine = {
         totalWillFractional += (1 / 3);
       }
 
-      // Skill Points
+      // Skill Points (single source via rulesets/dnd35.js; respect explicit row.skillPts when set)
       const baseSkill = cDef.skills || 2;
-      if (activeLevels === 1) {
-        totalSkillPts += Math.max(4, (baseSkill + intMod) * 4) + (racialSkillBonus * 4);
+      if (lvl.skillPts !== undefined && lvl.skillPts !== null && Number(lvl.skillPts) > 0) {
+        totalSkillPts += Number(lvl.skillPts);
+      } else if (this.rulesets?.dnd35?.calcLevelSkillPoints) {
+        totalSkillPts += this.rulesets.dnd35.calcLevelSkillPoints(baseSkill, intMod, racialSkillBonus, activeLevels === 1);
+      } else if (activeLevels === 1) {
+        totalSkillPts += (Math.max(1, baseSkill + intMod) + racialSkillBonus) * 4;
       } else {
         totalSkillPts += Math.max(1, baseSkill + intMod) + racialSkillBonus;
       }
@@ -14993,6 +15045,9 @@ const RuleEngine = {
     }
     if (typeof this.getCharacterActiveTemplateEntries === 'function') {
       powerSources.push(...this.getCharacterActiveTemplateEntries(w));
+    }
+    if (typeof this.getCharacterActiveDomainEntries === 'function') {
+      powerSources.push(...this.getCharacterActiveDomainEntries(w));
     }
     powerSources.forEach(e => {
       if (e && typeof e === 'object' && e.name) rawPool.push({ ...e, _src: 'powerSource', _powersOnly: true });

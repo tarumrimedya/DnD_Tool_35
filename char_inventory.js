@@ -697,6 +697,12 @@
           `;
         }).join('');
 
+        const activeFormView = (typeof window !== 'undefined' && window.CharStore?.getSheet?.()?.activeForm)
+          || (typeof RuleEngine !== 'undefined' && RuleEngine.resolveActiveFormOverlay ? RuleEngine.resolveActiveFormOverlay(character) : null);
+        const activeWeaponLine = (activeFormView && activeFormView.active)
+          ? `<span>Active Form: <strong class="text-emerald-300">Natural Attacks (${UI.escapeHtml(activeFormView.name || 'Wild Shape')})</strong></span>`
+          : `<span>Active Weapon: <strong class="text-slate-200">${UI.escapeHtml(activeWep.name || 'Unarmed Strike')}</strong></span>`;
+
         atkList.innerHTML = `
           ${itemsHtml}
           <div class="flex justify-between py-1 text-slate-300 font-bold border-t border-slate-700 mt-1">
@@ -704,7 +710,7 @@
             <span class="text-amber-400 text-sm font-black">${netAtk >= 0 ? '+' : ''}${netAtk}</span>
           </div>
           <div class="flex justify-between text-[11px] text-slate-400 pt-0.5">
-            <span>Active Weapon: <strong class="text-slate-200">${UI.escapeHtml(activeWep.name || 'Unarmed Strike')}</strong></span>
+            ${activeWeaponLine}
             <span>Full Attack: <strong class="text-amber-300">${iterativesText}</strong></span>
           </div>
         `;
@@ -7473,7 +7479,13 @@
           if (v3Entry.augmentCrystal && v3Entry.augmentCrystal.id) {
             const cid = String(v3Entry.augmentCrystal.id);
             const ctier = String(v3Entry.augmentCrystal.tier || 'least').toLowerCase();
-            crystalId = cid.startsWith('crys-') ? cid : `crys-${cid.replace(/_/g, '-')}-${ctier}`;
+            if (cid.startsWith('crys-')) {
+              const hasTierSuffix = /-(least|lesser|greater)$/i.test(cid);
+              const tiered = hasTierSuffix ? cid : `${cid}-${ctier}`;
+              crystalId = (!hasTierSuffix && window.SrdCompendium?.getById?.(tiered)) ? tiered : cid;
+            } else {
+              crystalId = `crys-${cid.replace(/_/g, '-')}-${ctier}`;
+            }
           }
           try {
             assembled = assembler.assemble({
@@ -7483,7 +7495,7 @@
               masterwork: isMwOnly || (Number(v3Entry.enhancementBonus) || 0) > 0,
               enhancementBonus: Number(v3Entry.enhancementBonus) || 0,
               enhancements: enhIds,
-              crystalId
+              crystal: crystalId
             });
           } catch (e) {
             assembled = null;

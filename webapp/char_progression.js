@@ -4324,6 +4324,21 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
             continue;
           }
 
+          // F.5) Creature Type Prerequisite Check (e.g. "Humanoid", "Monstrous Humanoid", "Dragon", "Fey")
+          const CREATURE_TYPES = ['aberration', 'animal', 'construct', 'dragon', 'elemental', 'fey', 'giant', 'humanoid', 'magical beast', 'monstrous humanoid', 'ooze', 'outsider', 'plant', 'undead', 'vermin'];
+          const creatureReq = partLow.replace(/\s+type$/i, '').trim();
+          if (CREATURE_TYPES.includes(creatureReq)) {
+            const raceTraits = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getRaceTraits === 'function')
+              ? RuleEngine.getRaceTraits(character)
+              : null;
+            const charCreatureType = String(raceTraits?.creatureType || 'Humanoid').trim();
+            met = charCreatureType.toLowerCase() === creatureReq;
+            info = met ? `(Creature Type: ${charCreatureType})` : `(Requires ${label}, Current: ${charCreatureType})`;
+            if (!met) allMet = false;
+            checks.push({ type: 'creatureType', label, met, info });
+            continue;
+          }
+
           // G) Specific Feat Requirement (e.g. "Power Attack", "Spell Focus (conjuration)", "Point Blank Shot")
           const normPart = normalizeFeatName(part);
           const normPartBase = normalizeFeatName(part.replace(/\(.*?\)/g, ''));
@@ -9534,12 +9549,18 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       }
     }
 
-    // Total Skill Points Calculation from Classes & Levels
+    // Total Skill Points Calculation from Classes & Levels (single source via rulesets/dnd35.js)
     function calculateTotalSkillPoints(char) {
       if (!char) return 0;
+      const calcLvlPts = (base, iMod, rBonus, isFirst) => (
+        typeof RuleEngine !== 'undefined' && RuleEngine.rulesets?.dnd35?.calcLevelSkillPoints
+          ? RuleEngine.rulesets.dnd35.calcLevelSkillPoints(base, iMod, rBonus, isFirst)
+          : (isFirst ? (Math.max(1, base + iMod) + rBonus) * 4 : Math.max(1, base + iMod) + rBonus)
+      );
       const prog = char.levelProgression;
       if (Array.isArray(prog) && prog.length > 0) {
-        const totalFromProg = prog.reduce((sum, row) => sum + (Number(row.skillPts) || 0), 0);
+        const activeRows = prog.filter(row => row && row.active !== false);
+        const totalFromProg = activeRows.reduce((sum, row) => sum + (Number(row.skillPts) || 0), 0);
         if (totalFromProg > 0) return totalFromProg;
       }
 
@@ -9566,11 +9587,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
             const baseSkill = cDef.skills || 2;
 
             for (let l = 0; l < cLvl; l++) {
-              if (currentLevelIndex === 1) {
-                totalPts += Math.max(4, (baseSkill + intMod + isHuman) * 4);
-              } else {
-                totalPts += Math.max(1, baseSkill + intMod + isHuman);
-              }
+              totalPts += calcLvlPts(baseSkill, intMod, isHuman, currentLevelIndex === 1);
               currentLevelIndex++;
             }
           }
@@ -9580,9 +9597,9 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       if (totalPts > 0) return totalPts;
 
       const charLvl = Number(char.level) || 1;
-      totalPts = Math.max(4, (2 + intMod + isHuman) * 4);
+      totalPts = calcLvlPts(2, intMod, isHuman, true);
       if (charLvl > 1) {
-        totalPts += (charLvl - 1) * Math.max(1, 2 + intMod + isHuman);
+        totalPts += (charLvl - 1) * calcLvlPts(2, intMod, isHuman, false);
       }
       return totalPts;
     }
@@ -10391,17 +10408,25 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         return null;
       };
 
-      // Domain-granted bonus feats (War -> Weapon Focus & Martial Weapon Proficiency; Darkness -> Blind-Fight; Rune -> Scribe Scroll; or custom domain grantedFeats)
+      // Domain-granted bonus feats (data-driven from V3 domain definitions; deduped by featId + choice)
       const domainGrantedFeatSpecs = [];
+      const seenDomainFeatKeys = new Set();
       const addGrantedFeatSpec = (rawFeatName, domName) => {
         const cleanName = String(rawFeatName || '').replace(/^\[Domain Bonus\]\s*/i, '').trim();
         if (!cleanName) return;
         let finalName = cleanName;
-        if (/^(weapon focus|martial weapon proficiency|exotic weapon proficiency)$/i.test(cleanName) && favWeapon && favWeapon !== "Deity's Favored Weapon") {
-          finalName = `${cleanName} (${favWeapon})`;
+        if (favWeapon && favWeapon !== "Deity's Favored Weapon") {
+          if (/^(weapon focus|martial weapon proficiency|exotic weapon proficiency)$/i.test(cleanName)) {
+            finalName = `${cleanName} (${favWeapon})`;
+          } else if (/\((?:deity'?s?\s+)?favored\s+weapon\)/i.test(cleanName)) {
+            finalName = cleanName.replace(/\((?:deity'?s?\s+)?favored\s+weapon\)/i, `(${favWeapon})`);
+          }
         }
-        if (domainGrantedFeatSpecs.some(x => x.name.toLowerCase() === finalName.toLowerCase())) return;
         const featDef = resolveFeatDef(finalName);
+        const choicePart = (finalName.match(/\(([^)]+)\)\s*$/) || [])[1] || '';
+        const dedupeKey = `${String(featDef?.id || finalName.replace(/\([^)]*\)/g, '').trim()).toLowerCase()}::${choicePart.toLowerCase().trim()}`;
+        if (seenDomainFeatKeys.has(dedupeKey) || domainGrantedFeatSpecs.some(x => x.name.toLowerCase() === finalName.toLowerCase())) return;
+        seenDomainFeatKeys.add(dedupeKey);
         domainGrantedFeatSpecs.push({
           schemaVersion: 3,
           id: featDef?.id || ('feat-' + finalName.toLowerCase().replace(/[^a-z0-9]+/g, '-')),
@@ -10421,29 +10446,16 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         });
       };
 
-      if (chosen.includes('War')) {
-        addGrantedFeatSpec(`Martial Weapon Proficiency (${favWeapon})`, 'War');
-        addGrantedFeatSpec(`Weapon Focus (${favWeapon})`, 'War');
-      }
-      if (chosen.includes('Darkness')) {
-        addGrantedFeatSpec('Blind-Fight', 'Darkness');
-      }
-      if (chosen.includes('Rune')) {
-        addGrantedFeatSpec('Scribe Scroll', 'Rune');
-      }
-
-      // Check dynamic domain definitions for granted bonus feats (e.g., Planning -> Extend Spell, Undeath -> Extra Turning, or custom domains)
+      // Data-driven domain granted bonus feats (e.g. War, Darkness, Rune, Planning, Undeath, or custom domains)
       chosen.forEach(domName => {
         const dDef = resolveDomainDef(domName);
-        if (dDef) {
-          const gFeats = dDef.grants?.grantedPower?.grantedFeats || dDef.grantedPower?.grantedFeats || dDef.grantedFeats || (dDef.grantedFeat ? [dDef.grantedFeat] : []);
-          if (Array.isArray(gFeats)) {
-            gFeats.forEach(featName => {
-              if (featName && typeof featName === 'string') {
-                addGrantedFeatSpec(featName, domName);
-              }
-            });
-          }
+        const gFeats = dDef ? (dDef.grants?.grantedPower?.grantedFeats || dDef.grantedPower?.grantedFeats || dDef.grantedFeats || (dDef.grantedFeat ? [dDef.grantedFeat] : [])) : [];
+        if (Array.isArray(gFeats) && gFeats.length > 0) {
+          gFeats.forEach(featName => {
+            if (featName && typeof featName === 'string') {
+              addGrantedFeatSpec(featName, domName);
+            }
+          });
         }
       });
 

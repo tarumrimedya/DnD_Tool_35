@@ -389,6 +389,35 @@
     calcSkillPointCost(isClassSkill) {
       return isClassSkill ? 1 : 2;
     },
+    calcLevelSkillPoints(baseSkill, intMod, racialSkillBonus = 0, isFirstLevel = false) {
+      const perLvl = Math.max(1, (Number(baseSkill) || 2) + (Number(intMod) || 0)) + (Number(racialSkillBonus) || 0);
+      return isFirstLevel ? perLvl * 4 : perLvl;
+    },
+    durationToRounds(durationText, casterLevel = 1) {
+      const raw = String(durationText || '').trim();
+      if (!raw || /instantaneous|permanent|concentration|dismissible\s+only/i.test(raw)) return null;
+      const cl = Math.max(1, Number(casterLevel) || 1);
+      const perLvl = raw.match(/(\d+)\s*(round|rd|rds|rounds|min|mins|minute|minutes|hour|hr|hrs|hours|day|days)\.?\s*\/\s*(?:level|cl)/i);
+      if (perLvl) {
+        const n = parseInt(perLvl[1], 10) || 1;
+        const u = perLvl[2].toLowerCase();
+        if (u.startsWith('r')) return n * cl;
+        if (u.startsWith('m')) return n * 10 * cl;
+        if (u.startsWith('h')) return n * 600 * cl;
+        if (u.startsWith('d')) return n * 14400 * cl;
+      }
+      const fixed = raw.match(/^(\d+)\s*(round|rd|rds|rounds|min|mins|minute|minutes|hour|hr|hrs|hours|day|days)\b/i);
+      if (fixed) {
+        const n = parseInt(fixed[1], 10) || 0;
+        if (n <= 0) return null;
+        const u = fixed[2].toLowerCase();
+        if (u.startsWith('r')) return n;
+        if (u.startsWith('m')) return n * 10;
+        if (u.startsWith('h')) return n * 600;
+        if (u.startsWith('d')) return n * 14400;
+      }
+      return null;
+    },
     calcIterativeBab(bab) {
       const b = Math.max(0, Math.floor(Number(bab) || 0));
       const out = [b];

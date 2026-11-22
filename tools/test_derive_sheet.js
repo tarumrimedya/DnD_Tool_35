@@ -7428,6 +7428,49 @@ function runDeriveSheetTests() {
         batchApplied && undoRestored,
         JSON.stringify({ batchApplied, undoRestored })
       );
+
+      // 21. Dalga 5 Invariants: Atomic spells/castSpell + actionType 1-step Undo, durationToRounds (Barkskin CL 20 = 2000),
+      //     calcLevelSkillPoints unification, Hybrid Partial Scribe unconsumed condition remnant ("while in Wild Shape"),
+      //     summarizeItemMechanics evaluated carrier DC, and deriveSpecialPowerPool active domain scanning
+      const d5SpellChar = {
+        id: 'test-dalga5-atomic-cast',
+        name: 'Cleric Atomic Cast',
+        level: 5,
+        baseAbilities: { str: 14, dex: 10, con: 14, int: 10, wis: 16, cha: 12 },
+        spellcasting: {
+          divineSlots: [{ level: 1, daily: 3, regularDaily: 2, domainDaily: 1, used: 0, domainUsed: 0 }],
+          divineSpells: [{ name: 'Bless', level: 1, isCast: false }]
+        },
+        tactical: { round: 1, spentActions: { standard: false, move: false, swift: false, immediate: false } }
+      };
+      CharStore.clearHistory();
+      CharStore.dispatch({ type: 'doc/replace', payload: d5SpellChar, meta: { skipHistory: true } });
+      CharStore.dispatch({
+        type: 'spells/castSpell',
+        payload: { discipline: 'clericConversion', index: 0, spellLevel: 1, convName: 'Cure Light Wounds', actionType: 'standard', actionLabel: 'Cure Light Wounds' }
+      });
+      const afterCast = CharStore.getDoc();
+      const castAtomic = afterCast.spellcasting.divineSlots[0].used === 1 && afterCast.tactical.spentActions.standard === true;
+      CharStore.undo();
+      const afterCastUndo = CharStore.getDoc();
+      const castUndone = afterCastUndo.spellcasting.divineSlots[0].used === 0 && afterCastUndo.tactical.spentActions.standard === false;
+
+      const barkRounds = RuleEngine.rulesets.dnd35.durationToRounds('10 min./level', 20);
+      const lvl1HumanFighterPts = RuleEngine.rulesets.dnd35.calcLevelSkillPoints(2, 0, 1, true);
+      const scribePartial = RuleEngine.scribeRuleText('You gain a +2 natural armor bonus to AC and 2d8+5 temporary HP while in Wild Shape', { blueprint: 'feat' });
+      const deathAtkSummary = RuleEngine.summarizeItemMechanics({
+        effects: [{ type: 'carrier', saveType: 'Fortitude', dc: '10 + @classLevel + @intMod' }]
+      }, { evalCtx: { classLevel: 5, intMod: 4 } });
+
+      check(
+        'Dalga 5: Atomic clericConversion+action 1-step Undo, Barkskin CL20=2000rd, calcLevelSkillPoints=12, Hybrid Scribe partial on "while in Wild Shape", carrier DC evaluated (Fort DC 19)',
+        castAtomic && castUndone &&
+        barkRounds === 2000 &&
+        lvl1HumanFighterPts === 12 &&
+        scribePartial && scribePartial.coverage === 'partial' &&
+        Array.isArray(deathAtkSummary) && deathAtkSummary.includes('Fort DC 19'),
+        JSON.stringify({ castAtomic, castUndone, barkRounds, lvl1HumanFighterPts, scribeCov: scribePartial?.coverage, deathAtkSummary })
+      );
     }
   }
 
