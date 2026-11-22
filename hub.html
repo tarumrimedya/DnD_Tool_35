@@ -6,8 +6,8 @@
   <title>D&D 3.5e Character & Campaign Command Center (Hub)</title>
   <link rel="stylesheet" href="tailwind_compiled.css?v=101216d709">
   <script src="srd_compendium.js?v=6dddec40fd"></script>
-  <script src="rulesets/dnd35.js?v=34b30d2acc"></script>
-  <script src="rule_engine.js?v=dca2842660"></script>
+  <script src="rulesets/dnd35.js?v=b71915313f"></script>
+  <script src="rule_engine.js?v=e0c8f230c1"></script>
   <script src="ui_components.js?v=0fa83dbead"></script>
   <script src="rule_master.js?v=d8c613a0b2"></script>
   <script src="ui_shared.js?v=d131f19175"></script>
@@ -21,7 +21,7 @@
   <link rel="prefetch" href="char_combat.js?v=dec679bd18">
   <link rel="prefetch" href="char_spells.js?v=a6b4d10c92">
   <link rel="prefetch" href="char_progression.js?v=813bd49d77">
-  <link rel="prefetch" href="char_inventory.js?v=25d9c559a0">
+  <link rel="prefetch" href="char_inventory.js?v=08978eaa2b">
   <!-- Three.js & 3D Dice Roller Engine -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -4787,8 +4787,36 @@ CRITICAL RULES:
             saveHubStorage();
             renderHub();
             notify('Campaign and character data imported successfully!', 'success');
+          } else if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && (
+            (parsed.character && parsed.character.name) ||
+            (parsed.name && (parsed.abilities || parsed.stats || parsed.classes))
+          )) {
+            const charObj = parsed.character ? parsed.character : parsed;
+            if (!Array.isArray(charObj.customDb) && Array.isArray(parsed.masterDb)) {
+              charObj.customDb = parsed.masterDb;
+            }
+            const charId = charObj.id || ('char_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6));
+            charObj.id = charId;
+            const newChar = {
+              id: charId,
+              name: charObj.name,
+              race: charObj.race || '',
+              classes: charObj.classes || '',
+              level: charObj.level || 1,
+              hp: charObj.hp?.max || charObj.currentHp || 10,
+              ac: charObj.acBreakdown?.total || charObj.ac?.total || charObj.ac || 10,
+              isNpc: Boolean(charObj.isNpc),
+              campaignId: state.activeCampaignId || charObj.campaignId || null,
+              fullData: charObj
+            };
+            const existingIdx = state.characters.findIndex(c => c && c.id === charId);
+            if (existingIdx >= 0) state.characters[existingIdx] = newChar;
+            else state.characters.push(newChar);
+            saveHubStorage();
+            renderHub();
+            notify(`Character "${charObj.name}" imported successfully!`, 'success');
           } else {
-            notify('Invalid backup file format.', 'warning');
+            notify('Invalid backup or character JSON format.', 'warning');
           }
         } catch (err) {
           notify('Failed to parse JSON: ' + err.message, 'error');
@@ -7077,22 +7105,31 @@ CRITICAL RULES:
             renderHub();
             renderHubDmPackManager();
             notify(describeHubDbMergeResult(packRes, `Rule Pack${packId ? ' "' + packId + '"' : ''} (${stamped.length} entries)`), packRes && packRes.targets ? 'success' : 'warning');
-          } else if (parsed.name && (parsed.stats || parsed.abilities || parsed.classes)) {
+          } else if ((parsed.character && parsed.character.name) || (parsed.name && (parsed.stats || parsed.abilities || parsed.classes))) {
+            const charObj = parsed.character ? parsed.character : parsed;
+            if (!Array.isArray(charObj.customDb) && Array.isArray(parsed.masterDb)) {
+              charObj.customDb = parsed.masterDb;
+            }
+            const charId = charObj.id || ('char_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6));
+            charObj.id = charId;
             const newChar = {
-              id: parsed.id || ('char_' + Date.now()),
-              name: parsed.name,
-              race: parsed.race || '',
-              classes: parsed.classes || '',
-              level: parsed.level || 1,
-              hp: parsed.hp?.max || parsed.currentHp || 10,
-              ac: parsed.ac?.total || parsed.ac || 10,
-              isNpc: Boolean(parsed.isNpc),
-              fullData: parsed
+              id: charId,
+              name: charObj.name,
+              race: charObj.race || '',
+              classes: charObj.classes || '',
+              level: charObj.level || 1,
+              hp: charObj.hp?.max || charObj.currentHp || 10,
+              ac: charObj.acBreakdown?.total || charObj.ac?.total || charObj.ac || 10,
+              isNpc: Boolean(charObj.isNpc),
+              campaignId: state.activeCampaignId || charObj.campaignId || null,
+              fullData: charObj
             };
-            state.characters.push(newChar);
+            const existingIdx = state.characters.findIndex(c => c && c.id === charId);
+            if (existingIdx >= 0) state.characters[existingIdx] = newChar;
+            else state.characters.push(newChar);
             saveHubStorage();
             renderHub();
-            notify(`Character "${parsed.name}" imported successfully!`, 'success');
+            notify(`Character "${charObj.name}" imported successfully!`, 'success');
           } else if (Array.isArray(parsed)) {
             if (parsed.length > 0 && (parsed[0].benefit !== undefined || parsed[0].effects !== undefined || parsed[0].category !== undefined)) {
               const libRes = mergeEntriesIntoHubCharacters(parsed);

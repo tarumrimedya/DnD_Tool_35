@@ -8634,6 +8634,13 @@
     }
 
     // Export & Import
+    function getExportCharSlug() {
+      return ((typeof character !== 'undefined' && character && character.name) ? String(character.name) : 'character')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '_')
+        .replace(/^_+|_+$/g, '') || 'character';
+    }
+
     function exportFullBundleJson() {
       const bundle = {
         version: 2,
@@ -8645,7 +8652,7 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `dnd35_full_backup_${new Date().toISOString().slice(0,10)}.json`;
+      a.download = `${getExportCharSlug()}_full_backup_${new Date().toISOString().slice(0, 10)}.json`;
       a.click();
     }
 
@@ -8654,7 +8661,7 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `dnd35_character_${new Date().toISOString().slice(0,10)}.json`;
+      a.download = `${getExportCharSlug()}_${new Date().toISOString().slice(0, 10)}.json`;
       a.click();
     }
 
@@ -8672,10 +8679,7 @@
         showToast('There are no custom entries to export in this character\'s Custom DB.', 'info', { wrap: true });
         return;
       }
-      const charSlug = ((character && character.name) ? character.name : 'character')
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '_')
-        .replace(/^_+|_+$/g, '') || 'character';
+      const charSlug = getExportCharSlug();
       const dateStr = new Date().toISOString().slice(0, 10);
       const suffix = hasSelection ? `selected_${exportList.length}_${dateStr}` : `custom_db_${dateStr}`;
       const blob = new Blob([JSON.stringify(exportList, null, 2)], { type: 'application/json' });
@@ -8804,28 +8808,44 @@
               return normPack ? Object.assign({}, ent, { pack: normPack }) : ent;
             });
             const { added, updated } = mergeEntriesIntoCharacterCustomDb(entriesToMerge);
-            alert(`✅ DM Rule Pack merged into character!\n• Added: ${added}\n• Updated: ${updated}\n• Total Custom DB: ${masterDb.length} entries`);
+            showToast(`DM Rule Pack merged into character! (+${added} added, ${updated} updated, ${masterDb.length} total)`, 'success', { wrap: true });
           } else if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && (parsed.character || parsed.masterDb)) {
-            if (parsed.character) character = parsed.character;
-            if (!Array.isArray(character.customDb)) {
-              character.customDb = Array.isArray(parsed.masterDb) ? parsed.masterDb : [];
+            const importedChar = parsed.character || character;
+            if (!Array.isArray(importedChar.customDb)) {
+              importedChar.customDb = Array.isArray(parsed.masterDb) ? parsed.masterDb : [];
+            }
+            if (!importedChar.id) importedChar.id = 'char_' + Date.now();
+            if (typeof CharStore !== 'undefined' && typeof CharStore.replaceDoc === 'function') {
+              CharStore.replaceDoc(importedChar, { label: `Import Full Bundle (${importedChar.name || 'Character'})`, persist: false });
+              character = CharStore.getDoc();
+            } else {
+              character = importedChar;
             }
             masterDb = character.customDb;
-            showToast(`Full Bundle loaded successfully!\n• Character: ${character?.name || '-'}\n• Character Custom DB: ${masterDb.length} entries`, 'success', { wrap: true });
+            showToast(`Full Bundle loaded successfully! (${character?.name || '-'}, ${masterDb.length} Custom DB entries)`, 'success', { wrap: true });
           } else if (Array.isArray(parsed)) {
             const { added, updated } = mergeEntriesIntoCharacterCustomDb(parsed);
-            alert(`✅ Custom DB entries merged into character!\n• Added: ${added}\n• Updated: ${updated}\n• Total Custom DB: ${masterDb.length} entries`);
-          } else if (parsed.name || parsed.characterName || parsed.abilities) {
-            character = parsed;
-            if (!Array.isArray(character.customDb)) character.customDb = [];
+            showToast(`Custom DB entries merged! (+${added} added, ${updated} updated, ${masterDb.length} total)`, 'success', { wrap: true });
+          } else if (parsed && typeof parsed === 'object' && (parsed.name || parsed.characterName || parsed.abilities)) {
+            if (!Array.isArray(parsed.customDb)) parsed.customDb = [];
+            if (!parsed.id) parsed.id = 'char_' + Date.now();
+            if (typeof CharStore !== 'undefined' && typeof CharStore.replaceDoc === 'function') {
+              CharStore.replaceDoc(parsed, { label: `Import Character (${parsed.name || 'Character'})`, persist: false });
+              character = CharStore.getDoc();
+            } else {
+              character = parsed;
+            }
             masterDb = character.customDb;
-            showToast('Character data loaded successfully!', 'success', { wrap: true });
+            showToast(`Character "${character.name || 'Imported'}" loaded successfully!`, 'success', { wrap: true });
+          } else {
+            showToast('Unrecognized JSON file format.', 'error', { wrap: true });
+            return;
           }
           saveStateToStorage(true);
           if (window.RuleMaster && typeof RuleMaster.renderTable === 'function') {
             RuleMaster.renderTable();
           }
-          renderAll();
+          renderAll({ allTabs: true });
         } catch (err) {
           showToast('Failed to parse JSON file: ' + err.message, 'error', { wrap: true });
         } finally {

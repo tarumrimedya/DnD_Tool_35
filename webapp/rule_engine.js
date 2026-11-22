@@ -15931,20 +15931,297 @@ const RuleEngine = {
   },
 
   /**
-   * Pure single-source D&D 3.5e RAW per-spell Metamagic resolver (Epic #12).
+   * Returns true if `character` possesses Rapid Metamagic (Complete Mage p.46) or Metamagic Specialist ACF
+   * (PHB II p.61), which removes the spontaneous Full-Round casting time penalty and enables Spontaneous Quicken.
+   */
+  hasRapidMetamagic(character) {
+    if (!character || typeof character !== 'object') return false;
+    const rawRefs = [];
+    if (Array.isArray(character.feats)) rawRefs.push(...character.feats);
+    if (Array.isArray(character.classFeatures)) rawRefs.push(...character.classFeatures);
+    if (Array.isArray(character.specialAbilities)) rawRefs.push(...character.specialAbilities);
+    if (Array.isArray(character.levelProgression)) {
+      character.levelProgression.forEach(p => {
+        if (p && p.active !== false) {
+          if (Array.isArray(p.feats)) rawRefs.push(...p.feats);
+          if (Array.isArray(p.features)) rawRefs.push(...p.features);
+        }
+      });
+    }
+    for (let i = 0; i < rawRefs.length; i++) {
+      const ref = rawRefs[i];
+      if (!ref) continue;
+      const refObj = typeof ref === 'object' ? ref : null;
+      const id = String(refObj?.id || '').toLowerCase().trim();
+      if (id === 'feat-rapid-metamagic' || id === 'cab-metamagic-specialist') return true;
+      const effs = Array.isArray(refObj?.effects) ? refObj.effects : null;
+      if (effs && effs.some(ef => ef && ef.type === 'effect' && ef.effectKind === 'ruleSwitch' && (ef.flag === 'rapid-metamagic' || ef.flag === 'metamagic-specialist'))) {
+        return true;
+      }
+      const rawName = String(refObj ? (refObj.name || refObj.featName || refObj.id || '') : ref)
+        .replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️\s]+(\[.*?\])?\s*/, '').trim();
+      if (!rawName) continue;
+      if (/^(rapid metamagic|metamagic specialist)$/i.test(rawName)) return true;
+      const dbEntry = this.getMasterDbEntry(refObj || rawName, 'Feat');
+      if (dbEntry && Array.isArray(dbEntry.effects) && dbEntry.effects.some(ef => ef && ef.type === 'effect' && ef.effectKind === 'ruleSwitch' && (ef.flag === 'rapid-metamagic' || ef.flag === 'metamagic-specialist'))) {
+        return true;
+      }
+    }
+    return false;
+  },
+
+  /**
+   * Canonical single-source cast-time metamagic catalog for `character` (Sprint E5 — Epic A).
+   * Unifies slot-based metamagic feats, Metamagic Rods (`costMode: 'rod'`), and Sudden Metamagic feats
+   * (`costMode: 'sudden'`) with strict D&D 3.5e RAW discipline rules.
+   *
+   * @param {object} character
+   * @param {object} [options]
+   * @param {'spontaneous'|'clericConversion'|'prepared'|'divine'|'all'} [options.discipline='spontaneous']
+   * @param {number|null} [options.spellLevel=null]
+   * @param {boolean} [options.includeIneligible=false]
+   * @returns {Array<object>}
+   */
+  listCastTimeMetamagic(character, options = {}) {
+    if (!character || typeof character !== 'object') return [];
+    const rs = (this.rulesets && this.rulesets.dnd35) || {};
+    const txMap = rs.metamagicTransforms || {};
+    const rawDisc = String(options.discipline || 'spontaneous').toLowerCase().trim();
+    const isPreparedDisc = rawDisc === 'prepared' || rawDisc === 'divine';
+    const isSpontDisc = rawDisc === 'spontaneous' || rawDisc === 'clericconversion';
+    const includeIneligible = Boolean(options.includeIneligible);
+    const spellLevel = (options.spellLevel !== undefined && options.spellLevel !== null && Number.isFinite(Number(options.spellLevel)))
+      ? Math.max(0, Math.floor(Number(options.spellLevel)))
+      : null;
+    const rapid = this.hasRapidMetamagic(character);
+
+    const COLOR_BY_TX = {
+      empower: 'purple', maximize: 'amber', enlarge: 'sky', extend: 'emerald',
+      quicken: 'rose', silent: 'indigo', still: 'cyan', widen: 'teal',
+      heighten: 'purple', chain: 'amber', splitRay: 'sky', twin: 'rose',
+      persistent: 'purple', energySub: 'cyan', pierceRes: 'rose'
+    };
+
+    const out = [];
+    const seenIds = new Set();
+
+    // 1. Slot-based Metamagic Feats (Spontaneous / Cleric Conversion only at cast time; Prepared applies at preparation)
+    const ownedSlotFeats = this.getOwnedMetamagicFeats(character);
+    ownedSlotFeats.forEach(f => {
+      if (!f || !f.featId || seenIds.has(f.featId)) return;
+      seenIds.add(f.featId);
+      const txDef = txMap[f.transform] || null;
+      let eligible = true;
+      let ineligibleReason = null;
+      if (isPreparedDisc) {
+        eligible = false;
+        ineligibleReason = 'Apply at preparation';
+      } else if (isSpontDisc && f.transform === 'quicken' && !rapid) {
+        eligible = false;
+        ineligibleReason = 'Requires Rapid Metamagic';
+      }
+      if (!eligible && !includeIneligible) return;
+      const badge = f.variableSlot ? 'Var. Slot' : `+${f.slotAdj} Slot`;
+      const desc = (txDef && txDef.label) ? txDef.label : (f.variableSlot ? 'Raises Level & DC' : `+${f.slotAdj} Slot Level`);
+      out.push({
+        id: f.featId,
+        kind: 'feat',
+        costMode: 'slot',
+        featId: f.featId,
+        itemId: null,
+        name: f.name,
+        shortLabel: f.shortLabel,
+        label: f.label,
+        transform: f.transform,
+        slotAdj: f.slotAdj,
+        variableSlot: Boolean(f.variableSlot),
+        raisesSaveDc: Boolean(f.raisesSaveDc),
+        maxSpellLvl: null,
+        usesMax: null,
+        usesRemaining: null,
+        eligible,
+        ineligibleReason,
+        color: COLOR_BY_TX[f.transform] || 'purple',
+        badge,
+        desc,
+        tag: f.variableSlot ? `${f.shortLabel} (DC+)` : `${f.shortLabel} (+${f.slotAdj})`,
+        isMetamagic: true,
+        isRod: false,
+        isSudden: false
+      });
+    });
+
+    // 2. Sudden Metamagic Feats (costMode === 'sudden', 1/day, +0 slot, usable by Prepared & Spontaneous)
+    const rawFeatRefs = [];
+    if (Array.isArray(character.feats)) rawFeatRefs.push(...character.feats);
+    if (Array.isArray(character.levelProgression)) {
+      character.levelProgression.forEach(p => {
+        if (p && p.active !== false && Array.isArray(p.feats)) rawFeatRefs.push(...p.feats);
+      });
+    }
+    rawFeatRefs.forEach(ref => {
+      if (!ref) return;
+      const refObj = typeof ref === 'object' ? ref : null;
+      const rawName = String(refObj ? (refObj.name || refObj.featName || refObj.id || '') : ref)
+        .replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️\s]+(\[.*?\])?\s*/, '').trim();
+      const dbEntry = this.getMasterDbEntry(refObj || rawName, 'Feat');
+      const merged = Object.assign({}, dbEntry || {}, refObj || {});
+      const mmBlock = Array.isArray(merged.effects)
+        ? merged.effects.find(ef => ef && ef.type === 'carrier' && ef.carrierMode === 'metamagic' && ef.costMode === 'sudden')
+        : null;
+      if (!mmBlock) return;
+      const featId = String(merged.id || dbEntry?.id || rawName.toLowerCase()).trim();
+      if (!featId || seenIds.has(featId)) return;
+      seenIds.add(featId);
+      const txKey = String(mmBlock.transform || '').trim();
+      const txDef = txMap[txKey] || null;
+      const usesMax = Math.max(1, Number(mmBlock.uses ?? 1) || 1);
+      const usedCount = Math.max(0, Number(character.powerUses?.[`sudden:${featId}`]?.used) || 0);
+      const usesRemaining = Math.max(0, usesMax - usedCount);
+      const eligible = usesRemaining > 0;
+      const ineligibleReason = eligible ? null : 'No uses remaining today';
+      if (!eligible && !includeIneligible) {
+        // Still keep Sudden Metamagic visible as dimmed (0/1) in UI only if includeIneligible; caller controls visibility
+        return;
+      }
+      const shortLabel = (txDef && txDef.shortLabel) || merged.name || rawName;
+      out.push({
+        id: featId,
+        kind: 'sudden',
+        costMode: 'sudden',
+        featId,
+        itemId: null,
+        name: merged.name || rawName,
+        shortLabel: `Sudden ${shortLabel}`,
+        label: mmBlock.riderText || merged.name || rawName,
+        transform: txKey,
+        slotAdj: 0,
+        variableSlot: false,
+        raisesSaveDc: Boolean(txDef && txDef.raisesSaveDc),
+        maxSpellLvl: null,
+        usesMax,
+        usesRemaining,
+        eligible,
+        ineligibleReason,
+        color: COLOR_BY_TX[txKey] || 'amber',
+        badge: `Sudden (${usesRemaining}/${usesMax})`,
+        desc: `${(txDef && txDef.label) || shortLabel} • +0 Slot`,
+        tag: `${merged.name || rawName} (+0)`,
+        isMetamagic: true,
+        isRod: false,
+        isSudden: true
+      });
+    });
+
+    // 3. Metamagic Rods (costMode === 'rod', 3/day, +0 slot, maxSpellLvl 3/6/9, usable by Prepared & Spontaneous)
+    const rodSources = [];
+    if (character.bodySlots && typeof character.bodySlots === 'object') {
+      Object.entries(character.bodySlots).forEach(([slotKey, item]) => {
+        if (item && typeof item === 'object') rodSources.push({ item, slotKey });
+      });
+    }
+    if (Array.isArray(character.gearPool)) {
+      character.gearPool.forEach(item => { if (item) rodSources.push({ item, slotKey: null }); });
+    }
+    if (Array.isArray(character.inventory)) {
+      character.inventory.forEach(item => { if (item) rodSources.push({ item, slotKey: null }); });
+    }
+    if (Array.isArray(character.consumables)) {
+      character.consumables.forEach(item => { if (item) rodSources.push({ item, slotKey: null }); });
+    }
+
+    const seenRodKey = new Set();
+    rodSources.forEach(({ item, slotKey }) => {
+      if (!item) return;
+      const itemObj = typeof item === 'object' ? item : { name: String(item) };
+      const rawName = String(itemObj.name || itemObj.id || '').trim();
+      const dbEntry = this.getMasterDbEntry(itemObj.baseItemId ? { id: itemObj.baseItemId, name: rawName } : itemObj, 'MagicItem')
+        || this.getMasterDbEntry(itemObj, 'Equipment');
+      const mergedEffects = Array.isArray(itemObj.effects) && itemObj.effects.length > 0
+        ? itemObj.effects
+        : (Array.isArray(dbEntry?.effects) ? dbEntry.effects : []);
+      const mmBlock = mergedEffects.find(ef => ef && ef.type === 'carrier' && ef.carrierMode === 'metamagic' && ef.costMode === 'rod');
+      if (!mmBlock) return;
+
+      const baseId = String(itemObj.baseItemId || itemObj.id || dbEntry?.id || rawName.toLowerCase()).trim();
+      const dedupKey = String(itemObj.instanceId || baseId || rawName.toLowerCase()).trim();
+      if (!dedupKey || seenRodKey.has(dedupKey)) return;
+      seenRodKey.add(dedupKey);
+
+      const txKey = String(mmBlock.transform || '').trim();
+      const txDef = txMap[txKey] || null;
+      const usesMax = Math.max(1, Number(itemObj.dailyCharges?.max ?? mmBlock.uses ?? 3) || 3);
+      const usesRemaining = itemObj.dailyCharges && itemObj.dailyCharges.current !== undefined
+        ? Math.max(0, Number(itemObj.dailyCharges.current) || 0)
+        : usesMax;
+      const maxSpellLvl = Math.max(1, Number(mmBlock.maxSpellLvl ?? 9) || 9);
+      const levelBlocked = spellLevel !== null && spellLevel > maxSpellLvl;
+      const eligible = usesRemaining > 0 && !levelBlocked;
+      const ineligibleReason = usesRemaining <= 0
+        ? 'No charges remaining today'
+        : (levelBlocked ? `Max spell level ${maxSpellLvl}` : null);
+      if (!eligible && !includeIneligible) return;
+
+      const shortLabel = (txDef && txDef.shortLabel) || rawName;
+      const rodId = `rod:${dedupKey}`;
+      if (seenIds.has(rodId)) return;
+      seenIds.add(rodId);
+
+      out.push({
+        id: rodId,
+        kind: 'rod',
+        costMode: 'rod',
+        featId: null,
+        itemId: baseId,
+        itemInstanceId: itemObj.instanceId || null,
+        itemName: rawName || dbEntry?.name || baseId,
+        slotKey,
+        name: rawName || dbEntry?.name || baseId,
+        shortLabel: `${shortLabel} Rod`,
+        label: mmBlock.riderText || rawName || dbEntry?.name || baseId,
+        transform: txKey,
+        slotAdj: 0,
+        variableSlot: false,
+        raisesSaveDc: Boolean(txDef && txDef.raisesSaveDc),
+        maxSpellLvl,
+        usesMax,
+        usesRemaining,
+        eligible,
+        ineligibleReason,
+        color: 'amber',
+        badge: `Rod ${usesRemaining}/${usesMax} • ≤L${maxSpellLvl}`,
+        desc: `${(txDef && txDef.shortLabel) || txKey} • +0 Slot (≤L${maxSpellLvl})`,
+        tag: `${rawName || shortLabel} (Rod)`,
+        isMetamagic: true,
+        isRod: true,
+        isSudden: false
+      });
+    });
+
+    return out;
+  },
+
+  /**
+   * Pure single-source D&D 3.5e RAW per-spell Metamagic resolver (Epic #12 + Sprint E5 Epic A).
    * Never mutates `spellInst` or `character`.
-   * Computes `effectiveSlotLevel`, `effectiveSpellLevel` (Save DC — only Heighten raises it per PHB p.88),
-   * `castAction`, `damageMode`, `badges[]`, and validity flags.
+   * Combines prepared `spellInst.metamagic` with optional cast-time `options.armedMetamagic` (slot feats,
+   * Metamagic Rods, Sudden Metamagic), enforcing transform deduplication, max 1 Rod (DMG p.236),
+   * Rod maxSpellLvl, Heighten Save DC (PHB p.88), and spontaneous casting time rules.
    */
   resolveMetamagic(spellInst, character, options = {}) {
     const rs = (this.rulesets && this.rulesets.dnd35) || {};
     const txMap = rs.metamagicTransforms || {};
-    const rules = rs.metamagicRules || { maxSpellLevel: 9, quickenAction: 'Swift Action' };
+    const rules = rs.metamagicRules || { maxSpellLevel: 9, maxRodsPerSpell: 1, spontaneousRodFullRound: false, quickenAction: 'Swift Action' };
     const maxSpellLevel = Number(options.maxSpellLevel ?? rules.maxSpellLevel ?? 9);
+    const maxRodsPerSpell = Number(rules.maxRodsPerSpell ?? 1);
     const baseLevel = Math.max(0, Number(spellInst?.level ?? 0) || 0);
-    const mmList = Array.isArray(options.metamagicOverride)
+    const isSpontaneous = Boolean(options.isSpontaneous);
+
+    const preparedList = Array.isArray(options.metamagicOverride)
       ? options.metamagicOverride
       : (Array.isArray(spellInst?.metamagic) ? spellInst.metamagic : []);
+    const armedList = Array.isArray(options.armedMetamagic) ? options.armedMetamagic : [];
+    const mmList = [...preparedList, ...armedList];
 
     if (mmList.length === 0) {
       return {
@@ -15960,17 +16237,38 @@ const RuleEngine = {
         areaMultiplier: 1,
         badges: [],
         transforms: [],
+        rodCount: 0,
         exceedsMaxLevel: baseLevel > maxSpellLevel,
+        exceedsMaxRods: false,
+        rodLevelExceeded: false,
+        chargesExhausted: false,
         hasDuplicateFeat: false,
+        hasDuplicateTransform: false,
         invalidReasons: [],
         isValid: baseLevel <= maxSpellLevel
       };
     }
 
-    const ownedList = this.getOwnedMetamagicFeats(character);
-    const ownedById = new Map(ownedList.map(f => [f.featId, f]));
+    const ownedSlotList = this.getOwnedMetamagicFeats(character);
+    const ownedSlotById = new Map(ownedSlotList.map(f => [f.featId, f]));
+    const catalogAll = this.listCastTimeMetamagic(character, { discipline: 'all', includeIneligible: true });
+    const catalogById = new Map(catalogAll.map(c => [c.id, c]));
+    const catalogByItemId = new Map();
+    catalogAll.forEach(c => {
+      if (c.kind === 'rod' && c.itemId && !catalogByItemId.has(c.itemId)) catalogByItemId.set(c.itemId, c);
+    });
+    const rapid = this.hasRapidMetamagic(character);
+
     const seenIds = new Set();
+    const seenTransforms = new Set();
     let hasDuplicateFeat = false;
+    let hasDuplicateTransform = false;
+    let rodCount = 0;
+    let exceedsMaxRods = false;
+    let rodLevelExceeded = false;
+    let chargesExhausted = false;
+    let hasSlotMetamagic = false;
+    let hasRodMetamagic = false;
     let totalSlotAdj = 0;
     let heightenTo = null;
     let castAction = spellInst?.action || 'Standard Action';
@@ -15980,22 +16278,81 @@ const RuleEngine = {
     const transforms = [];
     const badges = [];
     const invalidReasons = [];
+    const rodChecks = [];
 
     // Future hook for cost reducers (Arcane Thesis, Easy Metamagic, etc.):
     const slotAdjReduction = Math.max(0, Number(options.slotAdjReduction || 0));
 
     mmList.forEach(item => {
       if (!item || typeof item !== 'object') return;
-      const featId = String(item.featId || item.id || '').trim();
-      if (!featId) return;
-      if (seenIds.has(featId)) {
+      const kind = String(item.kind || (item.costMode === 'rod' ? 'rod' : (item.costMode === 'sudden' ? 'sudden' : 'feat'))).toLowerCase();
+      const entryId = String(item.id || item.featId || item.itemId || '').trim();
+      if (!entryId) return;
+      if (seenIds.has(entryId)) {
         hasDuplicateFeat = true;
-        invalidReasons.push(`Duplicate metamagic feat: ${featId}`);
+        invalidReasons.push(`Duplicate metamagic: ${entryId}`);
         return;
       }
-      seenIds.add(featId);
+      seenIds.add(entryId);
 
-      const owned = ownedById.get(featId) || null;
+      // Resolve Rod or Sudden entry from catalog
+      if (kind === 'rod' || kind === 'sudden') {
+        const cat = catalogById.get(entryId)
+          || (item.itemId ? catalogByItemId.get(item.itemId) : null)
+          || catalogById.get(`rod:${entryId}`)
+          || null;
+        if (!cat) {
+          invalidReasons.push(`Missing metamagic ${kind}: ${entryId}`);
+          return;
+        }
+        const txKey = String(cat.transform || item.transform || '').trim();
+        const txDef = txMap[txKey] || null;
+        if (txKey && seenTransforms.has(txKey)) {
+          hasDuplicateTransform = true;
+          invalidReasons.push(`Duplicate metamagic transform: ${txKey}`);
+          return;
+        }
+        if (txKey) {
+          seenTransforms.add(txKey);
+          transforms.push(txKey);
+        }
+        if (kind === 'rod') {
+          rodCount++;
+          hasRodMetamagic = true;
+          if (rodCount > maxRodsPerSpell) {
+            exceedsMaxRods = true;
+            invalidReasons.push(`At most ${maxRodsPerSpell} Metamagic Rod may be used per spell (DMG p.236)`);
+          }
+          rodChecks.push({ name: cat.name, maxSpellLvl: cat.maxSpellLvl });
+        }
+        if (cat.usesRemaining !== null && cat.usesRemaining <= 0) {
+          chargesExhausted = true;
+          invalidReasons.push(`No uses remaining: ${cat.name}`);
+        }
+        if (txDef) {
+          if (txDef.actionOverride) castAction = txDef.actionOverride;
+          if (txDef.durationMultiplier > 1) durationMultiplier *= txDef.durationMultiplier;
+          if (txDef.rangeMultiplier > 1) rangeMultiplier *= txDef.rangeMultiplier;
+          if (txDef.areaMultiplier > 1) areaMultiplier *= txDef.areaMultiplier;
+        }
+        badges.push({
+          id: cat.id,
+          featId: cat.featId || null,
+          itemId: cat.itemId || null,
+          kind,
+          transform: txKey,
+          shortLabel: cat.shortLabel,
+          badgeText: kind === 'rod' ? `${cat.shortLabel} (+0)` : `${cat.shortLabel} (+0)`,
+          slotAdj: 0,
+          heightenTo: null,
+          invalid: (cat.usesRemaining !== null && cat.usesRemaining <= 0)
+        });
+        return;
+      }
+
+      // Slot-based Metamagic Feat
+      const featId = String(item.featId || item.id || '').trim();
+      const owned = ownedSlotById.get(featId) || null;
       let dbFeat = owned;
       if (!dbFeat) {
         const dbEntry = this.getMasterDbEntry({ id: featId }, 'Feat');
@@ -16025,7 +16382,21 @@ const RuleEngine = {
 
       const txKey = dbFeat ? dbFeat.transform : '';
       const txDef = txMap[txKey] || null;
-      if (txKey) transforms.push(txKey);
+      if (txKey && seenTransforms.has(txKey)) {
+        hasDuplicateTransform = true;
+        invalidReasons.push(`Duplicate metamagic transform: ${txKey}`);
+        return;
+      }
+      if (txKey) {
+        seenTransforms.add(txKey);
+        transforms.push(txKey);
+      }
+
+      if (isSpontaneous && txKey === 'quicken' && !rapid) {
+        invalidReasons.push('Spontaneous Quicken Spell requires Rapid Metamagic');
+      }
+
+      hasSlotMetamagic = true;
 
       let adj = 0;
       let resolvedHeightenTo = null;
@@ -16056,7 +16427,9 @@ const RuleEngine = {
 
       const shortLbl = (dbFeat && dbFeat.shortLabel) || (txDef && txDef.shortLabel) || featId;
       badges.push({
+        id: featId,
         featId,
+        kind: 'feat',
         transform: txKey,
         shortLabel: shortLbl,
         badgeText: resolvedHeightenTo !== null ? `${shortLbl} (L${resolvedHeightenTo})` : `${shortLbl} (+${adj})`,
@@ -16077,8 +16450,22 @@ const RuleEngine = {
       invalidReasons.push(`Effective slot level ${effectiveSlotLevel} exceeds maximum (${maxSpellLevel})`);
     }
 
-    // PHB p.88: Spontaneous casting with metamagic takes a full-round action (except Quicken; 1-round+ spells add a full-round)
-    if (options.isSpontaneous && rules.spontaneousCastingTimeFullRound && !transforms.includes('quicken')) {
+    // DMG p.236: Rod maxSpellLvl check against effective spell level
+    rodChecks.forEach(rc => {
+      if (effectiveSpellLevel > rc.maxSpellLvl) {
+        rodLevelExceeded = true;
+        invalidReasons.push(`${rc.name} only affects spells up to level ${rc.maxSpellLvl}`);
+      }
+    });
+
+    // PHB p.88 & DMG p.236: Spontaneous casting with slot metamagic (and Rod only if rules.spontaneousRodFullRound)
+    // takes a Full-Round Action unless Quicken or Rapid Metamagic applies. Sudden Metamagic does not increase cast time.
+    const triggersSpontFullRound = isSpontaneous
+      && rules.spontaneousCastingTimeFullRound
+      && !rapid
+      && !transforms.includes('quicken')
+      && (hasSlotMetamagic || (hasRodMetamagic && Boolean(rules.spontaneousRodFullRound)));
+    if (triggersSpontFullRound) {
       if (!/swift|immediate|free|1\s*round|minute|hour/i.test(String(castAction || ''))) {
         castAction = 'Full-Round Action';
       }
@@ -16101,10 +16488,15 @@ const RuleEngine = {
       areaMultiplier,
       badges,
       transforms,
+      rodCount,
       exceedsMaxLevel,
+      exceedsMaxRods,
+      rodLevelExceeded,
+      chargesExhausted,
       hasDuplicateFeat,
+      hasDuplicateTransform,
       invalidReasons,
-      isValid: invalidReasons.length === 0 && !exceedsMaxLevel && !hasDuplicateFeat
+      isValid: invalidReasons.length === 0 && !exceedsMaxLevel && !exceedsMaxRods && !rodLevelExceeded && !chargesExhausted && !hasDuplicateFeat && !hasDuplicateTransform
     };
   },
 

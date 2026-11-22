@@ -192,6 +192,9 @@
     'sequential_deactivation_required',
     'slot_level_exceeded',
     'duplicate_metamagic',
+    'duplicate_metamagic_transform',
+    'max_one_rod_per_spell',
+    'rod_spell_level_exceeded',
     'invalid_heighten',
     'metamagic_feat_missing'
   ]);
@@ -1987,6 +1990,104 @@
     return doc;
   });
 
+  // Toggle a cast-time metamagic entry in `doc.tactical.armedMetamagic[]` (Sprint E5 — Epic A).
+  // Enforces transform-based deduplication, max 1 Metamagic Rod per spell (DMG p.236), and daily uses.
+  CharStore.registerReducer('combat/toggleArmedMetamagic', (doc, action, stateObj) => {
+    ensureCombatActionStructures(doc);
+    const payload = (action && action.payload) || {};
+    const entryId = String(payload.id || payload.featId || payload.itemId || '').trim();
+    if (!entryId) {
+      setStoreOutcome(stateObj, { status: 'invalid_payload' });
+      return doc;
+    }
+    if (!Array.isArray(doc.tactical.armedMetamagic)) doc.tactical.armedMetamagic = [];
+
+    const existingIdx = doc.tactical.armedMetamagic.findIndex(m => m && m.id === entryId);
+    if (existingIdx >= 0) {
+      const removed = doc.tactical.armedMetamagic.splice(existingIdx, 1)[0];
+      setStoreOutcome(stateObj, { status: 'armed_metamagic_toggled', id: entryId, armed: false, removed });
+      return doc;
+    }
+
+    const engineRef = (typeof root !== 'undefined' && root.RuleEngine) || (typeof RuleEngine !== 'undefined' ? RuleEngine : null);
+    const catalog = (engineRef && typeof engineRef.listCastTimeMetamagic === 'function')
+      ? engineRef.listCastTimeMetamagic(doc, { discipline: 'all', includeIneligible: true })
+      : [];
+    const cat = catalog.find(c => c && (c.id === entryId || c.featId === entryId || c.itemId === entryId)) || null;
+    if (!cat) {
+      setStoreOutcome(stateObj, { status: 'metamagic_feat_missing', id: entryId });
+      return doc;
+    }
+
+    if (cat.usesRemaining !== null && cat.usesRemaining <= 0) {
+      setStoreOutcome(stateObj, { status: 'charges_exhausted', id: cat.id, name: cat.name });
+      return doc;
+    }
+
+    // Enforce max 1 Rod per spell (DMG p.236)
+    if (cat.kind === 'rod' && doc.tactical.armedMetamagic.some(m => m && m.kind === 'rod')) {
+      setStoreOutcome(stateObj, { status: 'max_one_rod_per_spell', id: cat.id, name: cat.name });
+      return doc;
+    }
+
+    // Enforce transform-based deduplication (e.g. Empower Feat + Empower Rod conflict)
+    if (cat.transform && doc.tactical.armedMetamagic.some(m => m && m.transform && m.transform === cat.transform)) {
+      setStoreOutcome(stateObj, { status: 'duplicate_metamagic_transform', id: cat.id, transform: cat.transform, name: cat.name });
+      return doc;
+    }
+
+    const rs = (engineRef && engineRef.rulesets && engineRef.rulesets.dnd35) || {};
+    const maxLvl = Number(rs.metamagicRules?.maxSpellLevel ?? 9);
+    const baseLvl = Math.max(0, Math.floor(Number(payload.baseLevel) || 0));
+    const entry = {
+      id: cat.id,
+      kind: cat.kind,
+      featId: cat.featId || null,
+      itemId: cat.itemId || null,
+      itemInstanceId: cat.itemInstanceId || null,
+      itemName: cat.itemName || null,
+      transform: cat.transform || ''
+    };
+    if (cat.variableSlot) {
+      const reqH = Number(payload.heightenTo);
+      entry.heightenTo = Number.isFinite(reqH) && reqH > baseLvl
+        ? Math.min(maxLvl, Math.floor(reqH))
+        : Math.min(maxLvl, Math.max(1, baseLvl + 1));
+    }
+
+    doc.tactical.armedMetamagic.push(entry);
+    setStoreOutcome(stateObj, { status: 'armed_metamagic_toggled', id: cat.id, armed: true, entry });
+    return doc;
+  });
+
+  CharStore.registerReducer('combat/setArmedHeighten', (doc, action, stateObj) => {
+    ensureCombatActionStructures(doc);
+    const payload = (action && action.payload) || {};
+    const entryId = String(payload.id || 'feat-heighten-spell').trim();
+    const targetLvl = Math.floor(Number(payload.heightenTo));
+    if (!Number.isFinite(targetLvl) || targetLvl < 1 || targetLvl > 9) {
+      setStoreOutcome(stateObj, { status: 'invalid_heighten', heightenTo: payload.heightenTo });
+      return doc;
+    }
+    if (!Array.isArray(doc.tactical.armedMetamagic)) doc.tactical.armedMetamagic = [];
+    const hit = doc.tactical.armedMetamagic.find(m => m && (m.id === entryId || m.transform === 'heighten'));
+    if (!hit) {
+      setStoreOutcome(stateObj, { status: 'invalid_payload', id: entryId });
+      return doc;
+    }
+    hit.heightenTo = targetLvl;
+    setStoreOutcome(stateObj, { status: 'armed_heighten_set', id: hit.id, heightenTo: targetLvl });
+    return doc;
+  });
+
+  CharStore.registerReducer('combat/clearArmedMetamagic', (doc, _action, stateObj) => {
+    ensureCombatActionStructures(doc);
+    const prevCount = Array.isArray(doc.tactical.armedMetamagic) ? doc.tactical.armedMetamagic.length : 0;
+    doc.tactical.armedMetamagic = [];
+    setStoreOutcome(stateObj, { status: 'armed_metamagic_cleared', clearedCount: prevCount });
+    return doc;
+  });
+
   // Select the active `modes[]` entry of a class feature / feat (Rage, Bardic Music ...): `doc.activeModes[entryId] = modeId`.
   // `modeId: null` switches the entry off (read by RuleEngine.evaluateV3Entry via `character.activeModes`).
   CharStore.registerReducer('combat/setActiveMode', (doc, action, stateObj) => {
@@ -3699,23 +3800,59 @@
 
     const engineRef = (typeof root !== 'undefined' && root.RuleEngine) || (typeof RuleEngine !== 'undefined' ? RuleEngine : null);
     const mmOverride = Array.isArray(payload.spontaneousMetamagic) ? payload.spontaneousMetamagic : null;
+    const isSpontDisc = disc === 'spontaneous' || disc === 'clericconversion';
+    const rawArmed = Array.isArray(payload.armedMetamagic)
+      ? payload.armedMetamagic
+      : (payload.useArmedMetamagic === true && Array.isArray(doc.tactical?.armedMetamagic)
+        ? doc.tactical.armedMetamagic
+        : []);
+    // For prepared/divine casts, only Rod & Sudden cast-time metamagic apply on top of prepared spell.metamagic
+    const applicableArmed = rawArmed.filter(m => {
+      if (!m || typeof m !== 'object') return false;
+      const k = String(m.kind || 'feat').toLowerCase();
+      if (!isSpontDisc && k === 'feat') return false;
+      return true;
+    });
+
     const mmResolved = (spell && engineRef && typeof engineRef.resolveMetamagic === 'function')
       ? engineRef.resolveMetamagic(spell, doc, {
         metamagicOverride: mmOverride || undefined,
-        isSpontaneous: disc === 'spontaneous' || disc === 'clericconversion'
+        armedMetamagic: applicableArmed.length > 0 ? applicableArmed : undefined,
+        isSpontaneous: isSpontDisc,
+        discipline: disc
       })
       : null;
     if (mmResolved && mmResolved.hasDuplicateFeat) {
       setStoreOutcome(stateObj, { status: 'duplicate_metamagic', discipline: disc, reasons: mmResolved.invalidReasons });
       return doc;
     }
+    if (mmResolved && mmResolved.hasDuplicateTransform) {
+      setStoreOutcome(stateObj, { status: 'duplicate_metamagic_transform', discipline: disc, reasons: mmResolved.invalidReasons });
+      return doc;
+    }
+    if (mmResolved && mmResolved.exceedsMaxRods) {
+      setStoreOutcome(stateObj, { status: 'max_one_rod_per_spell', discipline: disc, reasons: mmResolved.invalidReasons });
+      return doc;
+    }
+    if (mmResolved && mmResolved.rodLevelExceeded) {
+      setStoreOutcome(stateObj, { status: 'rod_spell_level_exceeded', discipline: disc, reasons: mmResolved.invalidReasons });
+      return doc;
+    }
+    if (mmResolved && mmResolved.chargesExhausted) {
+      setStoreOutcome(stateObj, { status: 'charges_exhausted', discipline: disc, reasons: mmResolved.invalidReasons });
+      return doc;
+    }
     if (mmResolved && mmResolved.exceedsMaxLevel) {
       setStoreOutcome(stateObj, { status: 'slot_level_exceeded', discipline: disc, effectiveSlotLevel: mmResolved.effectiveSlotLevel });
       return doc;
     }
+    if (mmResolved && !mmResolved.isValid && applicableArmed.length > 0) {
+      setStoreOutcome(stateObj, { status: 'invalid_payload', discipline: disc, reasons: mmResolved.invalidReasons });
+      return doc;
+    }
 
     const lvl = Math.max(0, Number(
-      mmResolved && (mmOverride || (Array.isArray(spell?.metamagic) && spell.metamagic.length > 0))
+      mmResolved && (mmOverride || applicableArmed.length > 0 || (Array.isArray(spell?.metamagic) && spell.metamagic.length > 0))
         ? mmResolved.effectiveSlotLevel
         : (payload.spellLevel ?? payload.level ?? (spell ? spell.level : 0))
     ) || 0);
@@ -3815,6 +3952,59 @@
       }
     }
 
+    // Atomically deduct Metamagic Rod charges & Sudden Metamagic daily uses, and clear armedMetamagic (1-step Undo)
+    const consumedMetamagic = [];
+    if (applicableArmed.length > 0) {
+      const catalogNow = (engineRef && typeof engineRef.listCastTimeMetamagic === 'function')
+        ? engineRef.listCastTimeMetamagic(doc, { discipline: 'all', includeIneligible: true })
+        : [];
+      applicableArmed.forEach(am => {
+        const k = String(am.kind || 'feat').toLowerCase();
+        if (k === 'rod') {
+          const cat = catalogNow.find(c => c && (c.id === am.id || (am.itemId && c.itemId === am.itemId))) || null;
+          const maxCh = Number(cat?.usesMax ?? 3) || 3;
+          const matchItem = (it) => {
+            if (!it || typeof it !== 'object') return false;
+            if (am.itemInstanceId && it.instanceId === am.itemInstanceId) return true;
+            const itId = String(it.baseItemId || it.id || '').trim();
+            if (am.itemId && itId && itId === am.itemId) return true;
+            if (am.itemName && String(it.name || '').trim().toLowerCase() === String(am.itemName).trim().toLowerCase()) return true;
+            return false;
+          };
+          const containers = [];
+          if (doc.bodySlots && typeof doc.bodySlots === 'object') {
+            Object.values(doc.bodySlots).forEach(it => { if (matchItem(it)) containers.push(it); });
+          }
+          if (Array.isArray(doc.gearPool)) doc.gearPool.forEach(it => { if (matchItem(it)) containers.push(it); });
+          if (Array.isArray(doc.inventory)) doc.inventory.forEach(it => { if (matchItem(it)) containers.push(it); });
+          if (Array.isArray(doc.consumables)) doc.consumables.forEach(it => { if (matchItem(it)) containers.push(it); });
+          if (containers.length > 0) {
+            const curCh = containers[0].dailyCharges && containers[0].dailyCharges.current !== undefined
+              ? Math.max(0, Number(containers[0].dailyCharges.current) || 0)
+              : maxCh;
+            const nextCh = Math.max(0, curCh - 1);
+            const nextDc = { current: nextCh, max: Number(containers[0].dailyCharges?.max ?? maxCh) || maxCh, unit: 'uses', recharge: 'long_rest' };
+            containers.forEach(it => { it.dailyCharges = JSON.parse(JSON.stringify(nextDc)); });
+            consumedMetamagic.push({ kind: 'rod', id: am.id, remaining: nextCh, max: nextDc.max });
+          }
+        } else if (k === 'sudden') {
+          const fId = String(am.featId || am.id || '').trim();
+          if (fId) {
+            if (!doc.powerUses || typeof doc.powerUses !== 'object' || Array.isArray(doc.powerUses)) doc.powerUses = {};
+            const key = `sudden:${fId}`;
+            const prev = Math.max(0, Number(doc.powerUses[key]?.used) || 0);
+            doc.powerUses[key] = { used: prev + 1, mode: 'perDay' };
+            consumedMetamagic.push({ kind: 'sudden', id: fId, used: prev + 1 });
+          }
+        } else {
+          consumedMetamagic.push({ kind: 'feat', id: am.featId || am.id, transform: am.transform || '' });
+        }
+      });
+      if (doc.tactical && Array.isArray(doc.tactical.armedMetamagic)) {
+        doc.tactical.armedMetamagic = [];
+      }
+    }
+
     const buffActivated = upsertBuffEntryOnDoc(doc, payload.buffEntry || payload.buffPayload);
 
     const selfHpCost = Number(payload.selfHpCost) || 0;
@@ -3850,6 +4040,8 @@
       isAtWill,
       buffActivated,
       selfHpCost,
+      consumedMetamagic,
+      metamagicResolved: mmResolved || null,
       actionOutcome
     });
     return doc;
@@ -5828,6 +6020,9 @@
     }
     if (Array.isArray(doc.consumables)) {
       doc.consumables.forEach(resetItemCharges);
+    }
+    if (Array.isArray(doc.inventory)) {
+      doc.inventory.forEach(resetItemCharges);
     }
 
     // Daily feats / specialAbilities / legoEntries

@@ -329,6 +329,8 @@
     maxSpellLevel: 9,
     domainUsesBaseLevelForEligibility: true,
     spontaneousCastingTimeFullRound: true,
+    spontaneousRodFullRound: false,
+    maxRodsPerSpell: 1,
     quickenExemptFromSpontaneousFullRound: true,
     quickenAction: 'Swift Action'
   };
