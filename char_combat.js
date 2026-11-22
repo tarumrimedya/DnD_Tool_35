@@ -2068,7 +2068,7 @@
           }
 
           const bottomActionText = String(cardMm && !mmBlockedReason ? UI.escapeHtml(cardMm.castAction || '') : (params.action || '')).trim();
-          const centerSpontRow = hasSpontBtn && !bottomActionText;
+          const centerSpontRow = hasSpontBtn;
 
           return `
             <div data-action="combat:select-spell-direct"
