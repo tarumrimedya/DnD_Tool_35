@@ -347,6 +347,50 @@
     return 'normal';
   }
 
+  // Canonical V3 Casting Known-Source contract (Sprint E5 — Epic B)
+  const CASTING_KNOWN_SOURCES = ['spellbook', 'fullList', 'knownList'];
+  const SPELLBOOK_SOURCES = ['levelUp', 'scribed', 'scroll', 'mastery'];
+  const DEFAULT_KNOWN_SOURCE_BY_CLASS_ID = {
+    'cls-wizard': 'spellbook',
+    'cls-wu-jen': 'spellbook',
+    'cls-archivist': 'spellbook',
+    'cls-cleric': 'fullList',
+    'cls-cleric-cloistered-variant': 'fullList',
+    'cls-druid': 'fullList',
+    'cls-paladin': 'fullList',
+    'cls-ranger': 'fullList',
+    'cls-blackguard': 'fullList',
+    'cls-adept-npc': 'fullList',
+    'cls-sorcerer': 'knownList',
+    'cls-bard': 'knownList',
+    'cls-assassin': 'knownList',
+    'cls-beguiler': 'fullList',
+    'cls-warmage': 'fullList',
+    'cls-dread-necromancer': 'fullList',
+    'cls-duskblade': 'knownList',
+    'cls-favored-soul': 'knownList'
+  };
+
+  function resolveCastingKnownSource(clsDef) {
+    if (!clsDef || typeof clsDef !== 'object') return null;
+    const sc = clsDef.spellcasting || clsDef.casting || clsDef.progression?.spellcastingChassis || null;
+    if (sc && typeof sc.knownSource === 'string' && CASTING_KNOWN_SOURCES.includes(sc.knownSource)) {
+      return sc.knownSource;
+    }
+    const id = String(clsDef.id || '').toLowerCase().trim();
+    if (id && DEFAULT_KNOWN_SOURCE_BY_CLASS_ID[id]) return DEFAULT_KNOWN_SOURCE_BY_CLASS_ID[id];
+    const nameLow = String(clsDef.name || '').toLowerCase().trim();
+    if (/\b(wizard|wu jen|archivist)\b/.test(nameLow)) return 'spellbook';
+    if (/\b(cleric|druid|paladin|ranger|blackguard|adept|healer|spirit shaman)\b/.test(nameLow)) return 'fullList';
+    if (sc && sc.type && sc.type !== 'none') {
+      if (sc.spontaneous) return 'knownList';
+      if (String(sc.type).toLowerCase() === 'divine') return 'fullList';
+      if (String(sc.type).toLowerCase() === 'arcane') return 'spellbook';
+      return 'knownList';
+    }
+    return null;
+  }
+
   // Canonical V3 Companion / Entity kinds (ADR-058)
   const ENTITY_KINDS = ['animal_companion', 'familiar', 'special_mount', 'fiendish_servant'];
 
@@ -427,6 +471,10 @@
     metamagicTransforms: METAMAGIC_TRANSFORMS,
     metamagicRules: METAMAGIC_RULES,
     resolveMetamagicDamageMode,
+    castingKnownSources: CASTING_KNOWN_SOURCES,
+    spellbookSources: SPELLBOOK_SOURCES,
+    defaultKnownSourceByClassId: DEFAULT_KNOWN_SOURCE_BY_CLASS_ID,
+    resolveCastingKnownSource,
     entityKinds: ENTITY_KINDS,
     arcaneSpellcastingClasses: ARCANE_SPELLCASTING_CLASSES,
     defaultEntityLevelFormulas: DEFAULT_ENTITY_LEVEL_FORMULAS,

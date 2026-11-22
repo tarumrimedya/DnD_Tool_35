@@ -346,7 +346,8 @@
       "ability": null,
       "spontaneous": false,
       "spellsPerDay": {},
-      "spellsKnown": {}
+      "spellsKnown": {},
+      "knownSource": "knownList"
     },
     "progression": {
       "mode": "base",
@@ -1134,7 +1135,8 @@
           4
         ]
       },
-      "spellsKnown": {}
+      "spellsKnown": {},
+      "knownSource": "fullList"
     },
     "progression": {
       "mode": "base",
@@ -1655,7 +1657,8 @@
       "ability": null,
       "spontaneous": false,
       "spellsPerDay": {},
-      "spellsKnown": {}
+      "spellsKnown": {},
+      "knownSource": "knownList"
     },
     "progression": {
       "mode": "base",
@@ -2527,7 +2530,8 @@
           null
         ]
       },
-      "spellsKnown": {}
+      "spellsKnown": {},
+      "knownSource": "fullList"
     },
     "spellcastingProgression": "none",
     "progression": {
@@ -2892,7 +2896,8 @@
       "ability": null,
       "spontaneous": false,
       "spellsPerDay": {},
-      "spellsKnown": {}
+      "spellsKnown": {},
+      "knownSource": "knownList"
     },
     "progression": {
       "mode": "base",
@@ -3531,7 +3536,8 @@
           null
         ]
       },
-      "spellsKnown": {}
+      "spellsKnown": {},
+      "knownSource": "fullList"
     },
     "progression": {
       "mode": "base",
@@ -3885,7 +3891,8 @@
       "ability": null,
       "spontaneous": false,
       "spellsPerDay": {},
-      "spellsKnown": {}
+      "spellsKnown": {},
+      "knownSource": "knownList"
     },
     "progression": {
       "mode": "base",
@@ -5616,7 +5623,8 @@
           null,
           null
         ]
-      }
+      },
+      "knownSource": "knownList"
     },
     "spellcastingProgression": "none",
     "progression": {
@@ -7763,7 +7771,8 @@
           4
         ]
       },
-      "spellsKnown": {}
+      "spellsKnown": {},
+      "knownSource": "spellbook"
     },
     "progression": {
       "mode": "base",
@@ -8726,7 +8735,8 @@
           null,
           null
         ]
-      }
+      },
+      "knownSource": "knownList"
     },
     "progression": {
       "mode": "base",
@@ -10937,7 +10947,8 @@
           null
         ]
       },
-      "spellsKnown": {}
+      "spellsKnown": {},
+      "knownSource": "fullList"
     },
     "progression": {
       "mode": "base",
@@ -11487,7 +11498,8 @@
       "ability": null,
       "spontaneous": false,
       "spellsPerDay": {},
-      "spellsKnown": {}
+      "spellsKnown": {},
+      "knownSource": "knownList"
     },
     "progression": {
       "mode": "base",
@@ -11950,7 +11962,8 @@
       "ability": null,
       "spontaneous": false,
       "spellsPerDay": {},
-      "spellsKnown": {}
+      "spellsKnown": {},
+      "knownSource": "knownList"
     },
     "progression": {
       "mode": "base",
@@ -12360,7 +12373,8 @@
       "ability": null,
       "spontaneous": false,
       "spellsPerDay": {},
-      "spellsKnown": {}
+      "spellsKnown": {},
+      "knownSource": "knownList"
     },
     "progression": {
       "mode": "base",
@@ -13272,7 +13286,8 @@
           4
         ]
       },
-      "spellsKnown": {}
+      "spellsKnown": {},
+      "knownSource": "fullList"
     },
     "progression": {
       "mode": "base",
@@ -14081,7 +14096,8 @@
       "ability": null,
       "spontaneous": false,
       "spellsPerDay": {},
-      "spellsKnown": {}
+      "spellsKnown": {},
+      "knownSource": "knownList"
     },
     "progression": {
       "mode": "base",
@@ -15456,7 +15472,8 @@
           3,
           3
         ]
-      }
+      },
+      "knownSource": "knownList"
     },
     "progression": {
       "mode": "base",
@@ -16098,7 +16115,8 @@
           null
         ]
       },
-      "spellsKnown": {}
+      "spellsKnown": {},
+      "knownSource": "fullList"
     },
     "progression": {
       "mode": "base",
@@ -52714,7 +52732,8 @@
           4
         ]
       },
-      "spellsKnown": {}
+      "spellsKnown": {},
+      "knownSource": "fullList"
     },
     "progression": {
       "mode": "base",

@@ -1646,9 +1646,21 @@
     },
     "ProgressionV3": {
       "type": "object",
-      "description": "Class level progression (levels[], goodSaves, bab, spellcastingChassis).",
+      "description": "Class level progression (levels[], goodSaves, bab, spellcastingChassis with optional knownSource: 'spellbook' | 'fullList' | 'knownList').",
       "additionalProperties": true,
-      "properties": {}
+      "properties": {
+        "spellcastingChassis": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "knownSource": {
+              "type": "string",
+              "enum": ["spellbook", "fullList", "knownList"],
+              "description": "Where a caster draws spells from: 'spellbook' (Wizard/Wu Jen/Archivist), 'fullList' (Cleric/Druid/Paladin/Ranger), or 'knownList' (Sorcerer/Bard)."
+            }
+          }
+        }
+      }
     },
     "GrantsV3": {
       "type": "object",

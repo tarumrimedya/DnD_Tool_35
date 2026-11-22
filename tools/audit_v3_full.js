@@ -476,6 +476,12 @@ function runRefIntegrity(cur) {
         doubleEnh.push({ id: e.id, name: e.name, armorBonus: a.armorBonus, base: e.baseItemId, baseBonus, enh, engineTotal: Number(a.armorBonus) + enh });
       }
     }
+    const scObj = e.spellcasting || e.casting || (e.progression && e.progression.spellcastingChassis) || null;
+    if (scObj && typeof scObj === 'object' && scObj.knownSource !== undefined && scObj.knownSource !== null && scObj.knownSource !== '') {
+      if (!['spellbook', 'fullList', 'knownList'].includes(String(scObj.knownSource))) {
+        legacyContractIssues.push({ id: e.id, issue: 'invalid casting.knownSource: ' + scObj.knownSource });
+      }
+    }
     (e.effects || []).forEach((ef) => {
       if (!ef || typeof ef !== 'object') return;
       if (ef.type === 'carrier' && ef.carrierMode === 'metamagic' && (ef.slotDelta !== undefined || ef.metaTransform !== undefined)) {

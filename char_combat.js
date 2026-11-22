@@ -6349,7 +6349,10 @@
         ...(char.spells || []),
         ...(char.knownSpells || []),
         ...(char.preparedSpells || []),
-        ...(char.spellbook || [])
+        ...(char.spellcasting?.knownSpells || []),
+        ...(char.spellcasting?.preparedSpells || []),
+        ...(char.spellcasting?.divineSpells || []),
+        ...(char.spellcasting?.spellbook || [])
       ];
       return pool.some(s => {
         if (!s) return false;

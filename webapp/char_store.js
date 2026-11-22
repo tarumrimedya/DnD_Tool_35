@@ -196,6 +196,7 @@
     'max_one_rod_per_spell',
     'rod_spell_level_exceeded',
     'ineligible_metamagic',
+    'prohibited_school',
     'invalid_heighten',
     'metamagic_feat_missing'
   ]);
@@ -3703,6 +3704,8 @@
     }
     if (!Array.isArray(doc.spellcasting.preparedSpells)) doc.spellcasting.preparedSpells = [];
     if (!Array.isArray(doc.spellcasting.divineSpells)) doc.spellcasting.divineSpells = [];
+    if (!Array.isArray(doc.spellcasting.spellbook)) doc.spellcasting.spellbook = [];
+    if (!Array.isArray(doc.spellcasting.favoriteSpells)) doc.spellcasting.favoriteSpells = [];
     if (!doc.spellcasting.domainPowerUses || typeof doc.spellcasting.domainPowerUses !== 'object') {
       doc.spellcasting.domainPowerUses = {};
     }
@@ -4273,6 +4276,12 @@
       return doc;
     }
     const baseLevel = Math.max(0, Number(rawEntry.level) || 0);
+    const reqClassId = payload.classId ? String(payload.classId).trim() : (rawEntry.classId ? String(rawEntry.classId).trim() : '');
+    const engineRef = (typeof root !== 'undefined' && root.RuleEngine) || (typeof RuleEngine !== 'undefined' ? RuleEngine : null);
+    if (engineRef && typeof engineRef.isSpellProhibitedForClass === 'function' && engineRef.isSpellProhibitedForClass(rawEntry, doc, reqClassId || null, disc)) {
+      setStoreOutcome(stateObj, { status: 'prohibited_school', discipline: disc, school: rawEntry.school || '', spellName: rawEntry.name });
+      return doc;
+    }
     const rawMeta = Array.isArray(payload.metamagic) ? payload.metamagic : (Array.isArray(rawEntry.metamagic) ? rawEntry.metamagic : []);
     const check = _normalizeAndValidateMetamagic(doc, disc, { ...rawEntry, level: baseLevel }, rawMeta);
     if (!check.ok) {
@@ -4288,6 +4297,8 @@
     const listKey = disc === 'divine' ? 'divineSpells' : 'preparedSpells';
     const entryCopy = JSON.parse(JSON.stringify(rawEntry));
     entryCopy.level = baseLevel;
+    if (reqClassId) entryCopy.classId = reqClassId;
+    if (payload.spellbookEntryId) entryCopy.spellbookEntryId = String(payload.spellbookEntryId);
     entryCopy.instanceId = entryCopy.instanceId || `sp_${disc}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
     if (check.metamagic.length > 0) entryCopy.metamagic = check.metamagic;
     else delete entryCopy.metamagic;
@@ -4296,12 +4307,179 @@
     setStoreOutcome(stateObj, {
       status: 'spell_prepared',
       discipline: disc,
+      classId: entryCopy.classId || null,
       spellName: entryCopy.name,
       instanceId: entryCopy.instanceId,
       baseLevel,
       effectiveSlotLevel: check.resolved ? check.resolved.effectiveSlotLevel : baseLevel,
       metamagic: check.metamagic
     });
+    return doc;
+  });
+
+  // 4d. 'spells/addToSpellbook' ({ classId, spellEntry, source: 'levelUp'|'scribed'|'scroll'|'mastery' }) — Sprint E5 Epic B
+  CharStore.registerReducer('spells/addToSpellbook', (doc, action, stateObj) => {
+    ensureSpellsDocStructures(doc);
+    const payload = (action && action.payload) || {};
+    const classId = String(payload.classId || '').trim();
+    const rawEntry = payload.spellEntry;
+    if (!classId || !rawEntry || !rawEntry.name) {
+      setStoreOutcome(stateObj, { status: 'invalid_payload', reason: 'addToSpellbook requires classId and spellEntry.name' });
+      return doc;
+    }
+    const engineRef = (typeof root !== 'undefined' && root.RuleEngine) || (typeof RuleEngine !== 'undefined' ? RuleEngine : null);
+    if (engineRef && typeof engineRef.isSpellProhibitedForClass === 'function' && engineRef.isSpellProhibitedForClass(rawEntry, doc, classId)) {
+      setStoreOutcome(stateObj, { status: 'prohibited_school', classId, school: rawEntry.school || '', spellName: rawEntry.name });
+      return doc;
+    }
+    const allowedSources = (engineRef && engineRef.rulesets?.dnd35?.spellbookSources) || ['levelUp', 'scribed', 'scroll', 'mastery'];
+    const rawSource = String(payload.source || 'scribed').trim();
+    const source = allowedSources.includes(rawSource) ? rawSource : 'scribed';
+    const spellId = String(rawEntry.spellId || rawEntry.id || `spl-${String(rawEntry.name).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}`).trim();
+    const nameLow = String(rawEntry.name).toLowerCase().trim();
+    const dup = doc.spellcasting.spellbook.some(e => e && e.classId === classId && (
+      (e.spellId && e.spellId === spellId) ||
+      String(e.name || '').toLowerCase().trim() === nameLow
+    ));
+    if (dup) {
+      setStoreOutcome(stateObj, { status: 'already_exists', classId, spellId, spellName: rawEntry.name });
+      return doc;
+    }
+    const entryId = `sb_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
+    const sbItem = {
+      entryId,
+      spellId,
+      classId,
+      name: String(rawEntry.name).trim(),
+      level: Math.max(0, Number(rawEntry.level) || 0),
+      school: String(rawEntry.school || 'Universal').trim(),
+      action: rawEntry.action || rawEntry.castingTime || 'Standard Action',
+      range: rawEntry.range || '',
+      duration: rawEntry.duration || '',
+      save: rawEntry.save || rawEntry.savingThrow || '',
+      sr: rawEntry.sr || rawEntry.spellResistance || '',
+      dice: rawEntry.dice || '',
+      benefit: rawEntry.benefit || rawEntry.desc || rawEntry.shortDescription || '',
+      source,
+      spellMastery: source === 'mastery' || Boolean(payload.spellMastery)
+    };
+    doc.spellcasting.spellbook.push(sbItem);
+    setStoreOutcome(stateObj, { status: 'spellbook_added', entryId, spellId, classId, spellName: sbItem.name, source });
+    return doc;
+  });
+
+  // 4d2. 'spells/addToSpellbookBatch' ({ classId, spellEntries[], source }) — atomic 1-step Undo batch add (e.g. All L0 Cantrips)
+  CharStore.registerReducer('spells/addToSpellbookBatch', (doc, action, stateObj) => {
+    ensureSpellsDocStructures(doc);
+    const payload = (action && action.payload) || {};
+    const classId = String(payload.classId || '').trim();
+    const list = Array.isArray(payload.spellEntries) ? payload.spellEntries : [];
+    if (!classId || list.length === 0) {
+      setStoreOutcome(stateObj, { status: 'invalid_payload', reason: 'addToSpellbookBatch requires classId and non-empty spellEntries[]' });
+      return doc;
+    }
+    const engineRef = (typeof root !== 'undefined' && root.RuleEngine) || (typeof RuleEngine !== 'undefined' ? RuleEngine : null);
+    const allowedSources = (engineRef && engineRef.rulesets?.dnd35?.spellbookSources) || ['levelUp', 'scribed', 'scroll', 'mastery'];
+    const rawSource = String(payload.source || 'levelUp').trim();
+    const source = allowedSources.includes(rawSource) ? rawSource : 'levelUp';
+    let addedCount = 0;
+    let skippedProhibited = 0;
+    let skippedDuplicate = 0;
+    list.forEach((rawEntry, idx) => {
+      if (!rawEntry || !rawEntry.name) return;
+      if (engineRef && typeof engineRef.isSpellProhibitedForClass === 'function' && engineRef.isSpellProhibitedForClass(rawEntry, doc, classId, 'prepared')) {
+        skippedProhibited++;
+        return;
+      }
+      const spellId = String(rawEntry.spellId || rawEntry.id || `spl-${String(rawEntry.name).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}`).trim();
+      const nameLow = String(rawEntry.name).toLowerCase().trim();
+      const dup = doc.spellcasting.spellbook.some(e => e && e.classId === classId && (
+        (e.spellId && e.spellId === spellId) ||
+        String(e.name || '').toLowerCase().trim() === nameLow
+      ));
+      if (dup) {
+        skippedDuplicate++;
+        return;
+      }
+      const entryId = `sb_${Date.now().toString(36)}_${idx}_${Math.random().toString(36).slice(2, 6)}`;
+      doc.spellcasting.spellbook.push({
+        entryId,
+        spellId,
+        classId,
+        name: String(rawEntry.name).trim(),
+        level: Math.max(0, Number(rawEntry.level) || 0),
+        school: String(rawEntry.school || 'Universal').trim(),
+        action: rawEntry.action || rawEntry.castingTime || 'Standard Action',
+        range: rawEntry.range || '',
+        duration: rawEntry.duration || '',
+        save: rawEntry.save || rawEntry.savingThrow || '',
+        sr: rawEntry.sr || rawEntry.spellResistance || '',
+        dice: rawEntry.dice || '',
+        benefit: rawEntry.benefit || rawEntry.desc || rawEntry.shortDescription || '',
+        source,
+        spellMastery: source === 'mastery'
+      });
+      addedCount++;
+    });
+    if (addedCount === 0) {
+      setStoreOutcome(stateObj, { status: 'already_exists', classId, addedCount: 0, skippedProhibited, skippedDuplicate });
+      return doc;
+    }
+    setStoreOutcome(stateObj, { status: 'spellbook_batch_added', classId, addedCount, skippedProhibited, skippedDuplicate });
+    return doc;
+  });
+
+  // 4e. 'spells/removeFromSpellbook' ({ entryId })
+  CharStore.registerReducer('spells/removeFromSpellbook', (doc, action, stateObj) => {
+    ensureSpellsDocStructures(doc);
+    const payload = (action && action.payload) || {};
+    const entryId = String(payload.entryId || '').trim();
+    const idx = doc.spellcasting.spellbook.findIndex(e => e && e.entryId === entryId);
+    if (idx < 0) {
+      setStoreOutcome(stateObj, { status: 'not_found', entryId });
+      return doc;
+    }
+    const removed = doc.spellcasting.spellbook.splice(idx, 1)[0];
+    setStoreOutcome(stateObj, { status: 'spellbook_removed', entryId, spellName: removed?.name || '' });
+    return doc;
+  });
+
+  // 4f. 'spells/toggleSpellMastery' ({ entryId })
+  CharStore.registerReducer('spells/toggleSpellMastery', (doc, action, stateObj) => {
+    ensureSpellsDocStructures(doc);
+    const payload = (action && action.payload) || {};
+    const entryId = String(payload.entryId || '').trim();
+    const hit = doc.spellcasting.spellbook.find(e => e && e.entryId === entryId);
+    if (!hit) {
+      setStoreOutcome(stateObj, { status: 'not_found', entryId });
+      return doc;
+    }
+    hit.spellMastery = !Boolean(hit.spellMastery);
+    if (!hit.spellMastery && hit.source === 'mastery') hit.source = 'scribed';
+    setStoreOutcome(stateObj, { status: 'spell_mastery_toggled', entryId, spellMastery: hit.spellMastery });
+    return doc;
+  });
+
+  // 4g. 'spells/toggleFavoriteSpell' ({ classId, spellId, spellName }) — for fullList casters (Cleric/Druid/Paladin/Ranger)
+  CharStore.registerReducer('spells/toggleFavoriteSpell', (doc, action, stateObj) => {
+    ensureSpellsDocStructures(doc);
+    const payload = (action && action.payload) || {};
+    const classId = String(payload.classId || '').trim();
+    const spellKey = String(payload.spellId || payload.spellName || '').trim().toLowerCase();
+    if (!classId || !spellKey) {
+      setStoreOutcome(stateObj, { status: 'invalid_payload' });
+      return doc;
+    }
+    const key = `${classId}::${spellKey}`;
+    const idx = doc.spellcasting.favoriteSpells.indexOf(key);
+    let favorited = false;
+    if (idx >= 0) {
+      doc.spellcasting.favoriteSpells.splice(idx, 1);
+    } else {
+      doc.spellcasting.favoriteSpells.push(key);
+      favorited = true;
+    }
+    setStoreOutcome(stateObj, { status: 'favorite_spell_toggled', key, favorited });
     return doc;
   });
 

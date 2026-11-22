@@ -165,6 +165,7 @@ function runCorpusAudit() {
     badModes: [],
     badMetamagicCarrier: [],
     badRuleSwitchParams: [],
+    badKnownSource: [],
     structuredSubsystems: {
       v2ModesEntries: 0,
       xphAugmentPowers: 0,
@@ -209,6 +210,19 @@ function runCorpusAudit() {
 
       if (e.schemaVersion === 3) {
         report.v3Entries++;
+        // Sprint E5 Epic B: Validate casting/spellcasting.knownSource enum
+        const scObj = e.spellcasting || e.casting || (e.progression && e.progression.spellcastingChassis) || null;
+        if (scObj && typeof scObj === 'object') {
+          const dnd35Rs = require(path.join(ROOT, 'rulesets', 'dnd35.js'));
+          const allowedKs = (dnd35Rs && dnd35Rs.castingKnownSources) || ['spellbook', 'fullList', 'knownList'];
+          if (scObj.knownSource !== undefined && scObj.knownSource !== null && scObj.knownSource !== '') {
+            if (!allowedKs.includes(String(scObj.knownSource))) {
+              report.badKnownSource.push((e.id || '?') + ' -> invalid knownSource "' + scObj.knownSource + '"');
+            }
+          } else if ((e.type === 'Class' || e.blueprint === 'class') && (scObj.type === 'arcane' || scObj.type === 'divine')) {
+            report.badKnownSource.push((e.id || '?') + ' -> arcane/divine class missing spellcasting.knownSource');
+          }
+        }
         let needsDialectFix = false;
         const walk = (list) => {
           for (const ef of (list || [])) {
@@ -486,6 +500,7 @@ if (require.main === module) {
   if (rep.badFeatureRankEntries.length > 0) console.error('   ❌ @featureRank missing rankFrom:"levelTable":', rep.badFeatureRankEntries.slice(0, 20));
   if (rep.badMetamagicCarrier.length > 0) console.error('   ❌ Invalid metamagic carrier blocks:', rep.badMetamagicCarrier.slice(0, 20));
   if (rep.badRuleSwitchParams.length > 0) console.error('   ❌ Invalid ruleSwitch params/flags:', rep.badRuleSwitchParams.slice(0, 20));
+  if (rep.badKnownSource.length > 0) console.error('   ❌ Invalid/missing casting.knownSource:', rep.badKnownSource.slice(0, 20));
 
   const failed =
     rep.v2Entries > 0 ||
@@ -505,7 +520,8 @@ if (require.main === module) {
     rep.badFeatureRankEntries.length > 0 ||
     rep.badSizeScopes.length > 0 ||
     rep.badMetamagicCarrier.length > 0 ||
-    rep.badRuleSwitchParams.length > 0;
+    rep.badRuleSwitchParams.length > 0 ||
+    rep.badKnownSource.length > 0;
   if (failed) {
     console.error('❌ FAIL: Pure V3 Corpus Gate failed.');
     process.exit(1);

@@ -1427,6 +1427,9 @@
               </div>
             </div>
 
+            <!-- Sprint E5 Epic B: Wizard / Spellbook Pool -> 1-Step Prepare with Metamagic -->
+            ${buildPreparedSpellbookPanelHtml(hasPrepared)}
+
             <div class="border border-slate-800 rounded-xl overflow-hidden bg-slate-950/40 shadow">
               <div class="bg-slate-900/80 px-4 py-2.5 text-xs font-bold text-sky-300 flex justify-between items-center border-b border-slate-800">
                 <div class="flex items-center gap-2">
@@ -1458,6 +1461,181 @@
           </div>
         </div>
       `;
+    }
+
+    let _spellbookPanelOpen = true;
+    let _spellbookTargetClassId = 'cls-wizard';
+    let _spellPickerPoolOverride = null;
+
+    function getActiveSpellbookClassId() {
+      if (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getPreparedCasterClasses === 'function') {
+        const sbCls = RuleEngine.getPreparedCasterClasses(character).find(c => c && c.knownSource === 'spellbook');
+        if (sbCls && sbCls.classId) return sbCls.classId;
+      }
+      return 'cls-wizard';
+    }
+
+    function buildPreparedSpellbookPanelHtml(hasPrepared) {
+      if (!character) return '';
+      const prepClasses = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getPreparedCasterClasses === 'function')
+        ? RuleEngine.getPreparedCasterClasses(character)
+        : [];
+      const sbClass = prepClasses.find(c => c && c.knownSource === 'spellbook') || null;
+      const allSb = Array.isArray(character?.spellcasting?.spellbook) ? character.spellcasting.spellbook : [];
+      if (!sbClass && allSb.length === 0 && !hasPrepared) return '';
+      const classId = sbClass ? sbClass.classId : getActiveSpellbookClassId();
+      const className = sbClass ? sbClass.className : 'Wizard';
+      const sbEntries = allSb.filter(e => e && (!e.classId || e.classId === classId))
+        .slice()
+        .sort((a, b) => (Number(a.level) || 0) - (Number(b.level) || 0) || String(a.name || '').localeCompare(String(b.name || '')));
+      const isOpen = _spellbookPanelOpen !== false;
+      const srcLabelMap = { levelUp: 'Level Up', scribed: 'Scribed', scroll: 'Scroll', mastery: '⭐ Mastery' };
+      const ownedMetaCount = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getOwnedMetamagicFeats === 'function')
+        ? RuleEngine.getOwnedMetamagicFeats(character).length
+        : 0;
+
+      const bodyHtml = !isOpen ? '' : (sbEntries.length === 0
+        ? `<div class="px-4 py-3 text-xs text-slate-400 flex flex-wrap items-center justify-between gap-2">
+            <span>No spells recorded in ${UI.escapeHtml(className)}'s Spellbook yet. Scribe spells or add Level 0 Cantrips to prepare them directly with Metamagic.</span>
+          </div>`
+        : `<div class="divide-y divide-slate-800/80 max-h-64 overflow-y-auto">
+            ${sbEntries.map(e => {
+              const lvl = Math.max(0, Number(e.level) || 0);
+              const eId = UI.escapeAttr(String(e.entryId || ''));
+              const srcTxt = srcLabelMap[e.source] || 'Scribed';
+              const metaBtn = ownedMetaCount > 0
+                ? `<button type="button" data-action="spells:prepare-from-spellbook-meta" data-entry-id="${eId}" class="px-2 py-0.5 rounded bg-purple-950/80 hover:bg-purple-800 text-purple-200 border border-purple-700/70 text-[10px] font-bold cursor-pointer transition" title="Prepare with Metamagic (1-step)">✨ +Meta</button>`
+                : '';
+              return `
+                <div class="px-3 py-1.5 flex items-center justify-between gap-2 hover:bg-slate-900/60 text-xs">
+                  <div class="flex items-center gap-2 min-w-0">
+                    <span class="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-sky-950/90 text-sky-300 border border-sky-800/70 shrink-0">L${lvl}</span>
+                    <span class="font-bold text-slate-200 truncate">${UI.escapeHtml(e.name)}</span>
+                    <span class="text-[10px] text-slate-400 hidden sm:inline truncate">${UI.escapeHtml(e.school || '')}</span>
+                    <span class="text-[10px] font-mono px-1.5 py-0.5 rounded ${e.spellMastery ? 'bg-amber-950/80 text-amber-300 border border-amber-700/60' : 'bg-slate-900 text-slate-400 border border-slate-800'} shrink-0">${UI.escapeHtml(srcTxt)}</span>
+                  </div>
+                  <div class="flex items-center gap-1 shrink-0">
+                    <button type="button" data-action="spells:prepare-from-spellbook" data-entry-id="${eId}" class="px-2 py-0.5 rounded bg-sky-950/80 hover:bg-sky-800 text-sky-200 border border-sky-700/70 text-[10px] font-bold cursor-pointer transition" title="Prepare this spell in a Level ${lvl} slot">+ Prep</button>
+                    ${metaBtn}
+                    <button type="button" data-action="spells:toggle-spell-mastery" data-entry-id="${eId}" class="w-6 h-5 inline-flex items-center justify-center rounded border ${e.spellMastery ? 'bg-amber-950/80 border-amber-600/70 text-amber-300' : 'bg-slate-900 border-slate-800 text-slate-500 hover:text-amber-300'} text-[10px] cursor-pointer transition" title="Toggle Spell Mastery (PHB p.100)">⭐</button>
+                    <button type="button" data-action="spells:remove-from-spellbook" data-entry-id="${eId}" class="w-6 h-5 inline-flex items-center justify-center rounded border bg-slate-900 border-slate-800 text-slate-500 hover:text-rose-400 text-[10px] cursor-pointer transition" title="Remove from Spellbook">✕</button>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>`);
+
+      return `
+        <div class="border border-sky-900/60 rounded-xl overflow-hidden bg-slate-950/60 shadow">
+          <div class="bg-slate-900/90 px-3 py-2 flex flex-wrap items-center justify-between gap-2 border-b border-slate-800">
+            <button type="button" data-action="spells:toggle-spellbook-panel" class="flex items-center gap-2 text-xs font-bold text-sky-300 hover:text-white cursor-pointer">
+              <span>${isOpen ? '▾' : '▸'}</span>
+              <span>📖 ${UI.escapeHtml(className)} Spellbook</span>
+              <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-sky-950 text-sky-300 border border-sky-800/70">${sbEntries.length}</span>
+            </button>
+            <div class="flex items-center gap-1.5">
+              <button type="button" data-action="spells:add-cantrips-spellbook" data-class-id="${UI.escapeAttr(classId)}" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-[10px] font-bold cursor-pointer transition" title="Add all non-prohibited Level 0 Cantrips to Spellbook (PHB p.57)">⚡ All L0 Cantrips</button>
+              <button type="button" data-action="spells:open-spellbook-picker" data-class-id="${UI.escapeAttr(classId)}" class="px-2.5 py-1 rounded bg-sky-800 hover:bg-sky-700 text-white border border-sky-600/70 text-[10px] font-bold cursor-pointer transition">+ Scribe Spell</button>
+            </div>
+          </div>
+          ${bodyHtml}
+        </div>
+      `;
+    }
+
+    function openSpellbookPicker(classId) {
+      _spellbookTargetClassId = classId || getActiveSpellbookClassId();
+      if (typeof openSpellManeuverPickerModal === 'function') {
+        openSpellManeuverPickerModal('Spell', null, 'spellbook');
+      }
+    }
+
+    async function addCoreCantripsToSpellbook(classId) {
+      if (!character || typeof CharStore === 'undefined' || typeof CharStore.dispatch !== 'function') return;
+      const cid = classId || getActiveSpellbookClassId();
+      if (window.SrdCompendium && typeof window.SrdCompendium.ensureTypesLoaded === 'function') {
+        try { await window.SrdCompendium.ensureTypesLoaded(['Spell']); } catch (_) {}
+      }
+      const allSpells = (window.SrdCompendium && typeof window.SrdCompendium.getByType === 'function')
+        ? window.SrdCompendium.getByType('Spell')
+        : [];
+      const cantrips = allSpells.filter(it => {
+        if (!it || !it.name) return false;
+        const resolvedLvl = typeof resolveSpellLevelForPool === 'function' ? resolveSpellLevelForPool(it, 'prepared', 'auto') : null;
+        return resolvedLvl !== null && Number(resolvedLvl) === 0;
+      }).map(sp => ({
+        id: sp.id,
+        name: sp.name,
+        level: 0,
+        school: sp.school || 'Universal',
+        action: sp.castingTime || sp.action || 'Standard Action',
+        range: sp.range || '',
+        duration: sp.duration || '',
+        save: sp.save || sp.savingThrow || '',
+        sr: sp.sr || sp.spellResistance || '',
+        benefit: sp.shortDescription || sp.desc || sp.description || ''
+      }));
+      if (cantrips.length === 0) {
+        if (typeof showDiceTopToast === 'function') {
+          showDiceTopToast({ icon: '⚠️', title: 'Spell Compendium Unavailable', breakdown: 'Could not load Level 0 Wizard Cantrips.', total: '0' });
+        }
+        return;
+      }
+      CharStore.dispatch({
+        type: 'spells/addToSpellbookBatch',
+        payload: { classId: cid, source: 'levelUp', spellEntries: cantrips },
+        meta: { label: 'Add All Level 0 Cantrips to Spellbook' }
+      });
+      const out = CharStore.getLastOutcome();
+      const added = Number(out?.addedCount) || 0;
+      renderAll({ skipRecompute: true });
+      if (typeof showDiceTopToast === 'function') {
+        showDiceTopToast({
+          icon: '📖',
+          title: added > 0 ? `Added ${added} Cantrips to Spellbook` : 'Cantrips Up to Date',
+          breakdown: added > 0 ? 'All non-prohibited Level 0 Cantrips recorded (PHB p. 57).' : 'All eligible Level 0 Cantrips are already in your Spellbook.',
+          total: `+${added}`
+        });
+      }
+    }
+
+    function prepareSpellFromSpellbook(entryId, metamagic = []) {
+      if (!character || typeof CharStore === 'undefined' || typeof CharStore.dispatch !== 'function') return;
+      const sb = (character?.spellcasting?.spellbook || []).find(e => e && e.entryId === entryId);
+      if (!sb) return;
+      CharStore.dispatch({
+        type: 'spells/prepareSpell',
+        payload: {
+          discipline: 'prepared',
+          classId: sb.classId || getActiveSpellbookClassId(),
+          spellbookEntryId: sb.entryId,
+          spellEntry: sb,
+          metamagic: Array.isArray(metamagic) ? metamagic : []
+        },
+        meta: { label: `Prepare ${sb.name}` }
+      });
+      const out = CharStore.getLastOutcome();
+      if (!out || out.status !== 'spell_prepared') {
+        if (typeof showDiceTopToast === 'function') {
+          showDiceTopToast({ icon: '⚠️', title: 'Cannot Prepare Spell', breakdown: out?.reason || out?.status || 'Preparation blocked.', total: 'Blocked' });
+        }
+        return;
+      }
+      renderAll({ skipRecompute: true });
+      if (typeof showDiceTopToast === 'function') {
+        showDiceTopToast({
+          icon: '✨',
+          title: `Prepared ${sb.name}`,
+          breakdown: `Prepared in Level ${out.effectiveSlotLevel} slot${(out.metamagic || []).length ? ' with Metamagic' : ''}.`,
+          total: `L${out.effectiveSlotLevel}`
+        });
+      }
+    }
+
+    function openPrepareFromSpellbookMetamagicModal(entryId) {
+      const sb = (character?.spellcasting?.spellbook || []).find(e => e && e.entryId === entryId);
+      if (!sb) return;
+      openPreparedMetamagicModal('prepared', -1, '', { mode: 'prepare', spellbookEntry: sb });
     }
 
     function setPreparedFilterLevel(lvl) {
@@ -3220,21 +3398,22 @@
       return `<button type="button" data-action="spells:edit-metamagic" data-discipline="${UI.escapeAttr(discipline)}" data-idx="${idx}" data-instance-id="${UI.escapeAttr(spell?.instanceId || '')}" class="w-6 h-6 inline-flex items-center justify-center rounded border text-xs transition cursor-pointer shrink-0 ${cls}" title="Configure Metamagic Feats">✨</button>`;
     }
 
-    function openPreparedMetamagicModal(discipline, idx, instanceId = '') {
+    function openPreparedMetamagicModal(discipline, idx, instanceId = '', modalOpts = {}) {
       const disc = discipline === 'divine' ? 'divine' : 'prepared';
+      const isPrepareMode = modalOpts && modalOpts.mode === 'prepare' && modalOpts.spellbookEntry;
       const list = disc === 'divine' ? (character?.spellcasting?.divineSpells || []) : (character?.spellcasting?.preparedSpells || []);
       let resolvedIdx = Number(idx);
-      if (instanceId) {
+      if (!isPrepareMode && instanceId) {
         const byId = list.findIndex(s => s && s.instanceId === instanceId);
         if (byId >= 0) resolvedIdx = byId;
       }
-      const spell = list[resolvedIdx];
+      const spell = isPrepareMode ? modalOpts.spellbookEntry : list[resolvedIdx];
       if (!spell) return;
 
       const ownedFeats = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getOwnedMetamagicFeats === 'function')
         ? RuleEngine.getOwnedMetamagicFeats(character)
         : [];
-      const existingMap = new Map((Array.isArray(spell.metamagic) ? spell.metamagic : []).map(m => [String(m.featId || m.id || ''), m]));
+      const existingMap = new Map((!isPrepareMode && Array.isArray(spell.metamagic) ? spell.metamagic : []).map(m => [String(m.featId || m.id || ''), m]));
       const baseLevel = Math.max(0, Number(spell.level) || 0);
 
       const existing = document.getElementById('preparedMetamagicModal');
@@ -3243,9 +3422,11 @@
       const overlay = document.createElement('div');
       overlay.id = 'preparedMetamagicModal';
       overlay.className = 'fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4';
+      overlay.dataset.mode = isPrepareMode ? 'prepare' : 'edit';
       overlay.dataset.discipline = disc;
       overlay.dataset.idx = String(resolvedIdx);
       overlay.dataset.instanceId = String(spell.instanceId || '');
+      overlay.dataset.entryId = isPrepareMode ? String(spell.entryId || '') : '';
 
       const featRowsHtml = ownedFeats.length > 0
         ? ownedFeats.map(f => {
@@ -3317,9 +3498,10 @@
       const prevEl = document.getElementById('preparedMetamagicPreview');
       if (!modal || !prevEl) return;
       const disc = modal.dataset.discipline === 'divine' ? 'divine' : 'prepared';
-      const idx = Number(modal.dataset.idx);
-      const list = disc === 'divine' ? (character?.spellcasting?.divineSpells || []) : (character?.spellcasting?.preparedSpells || []);
-      const spell = list[idx];
+      const isPrepareMode = modal.dataset.mode === 'prepare';
+      const spell = isPrepareMode
+        ? (character?.spellcasting?.spellbook || []).find(e => e && e.entryId === modal.dataset.entryId)
+        : (disc === 'divine' ? (character?.spellcasting?.divineSpells || []) : (character?.spellcasting?.preparedSpells || []))[Number(modal.dataset.idx)];
       if (!spell) return;
       const sel = collectPreparedMetamagicModalSelection();
       const mm = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.resolveMetamagic === 'function')
@@ -3328,8 +3510,9 @@
       if (!mm) return;
       const baseDc = getSpellDc(mm.baseLevel, disc);
       const effDc = getSpellDc(mm.effectiveSpellLevel, disc);
+      const maxLvlCfg = Number(RuleEngine?.rulesets?.dnd35?.metamagicRules?.maxSpellLevel) || 9;
       const warn = mm.exceedsMaxLevel
-        ? `<div class="text-rose-400 font-bold mt-1">⚠️ Slot Level ${mm.effectiveSlotLevel} exceeds Level 9 maximum!</div>`
+        ? `<div class="text-rose-400 font-bold mt-1">⚠️ Slot Level ${mm.effectiveSlotLevel} exceeds Level ${maxLvlCfg} maximum!</div>`
         : '';
       prevEl.innerHTML = `Slot: <strong class="text-purple-300">L${mm.baseLevel} → L${mm.effectiveSlotLevel}</strong> • Save DC: <strong class="text-emerald-300">${baseDc}${effDc !== baseDc ? ` → ${effDc}` : ''}</strong> • Action: <strong class="text-amber-300">${UI.escapeHtml(mm.castAction)}</strong>${warn}`;
     }
@@ -3338,9 +3521,16 @@
       const modal = document.getElementById('preparedMetamagicModal');
       if (!modal) return;
       const disc = modal.dataset.discipline === 'divine' ? 'divine' : 'prepared';
+      const isPrepareMode = modal.dataset.mode === 'prepare';
+      const metamagic = collectPreparedMetamagicModalSelection();
+      if (isPrepareMode) {
+        const entryId = modal.dataset.entryId || '';
+        modal.remove();
+        prepareSpellFromSpellbook(entryId, metamagic);
+        return;
+      }
       const idx = Number(modal.dataset.idx);
       const instanceId = modal.dataset.instanceId || undefined;
-      const metamagic = collectPreparedMetamagicModalSelection();
       if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
         CharStore.dispatch({
           type: 'spells/setPreparedMetamagic',
@@ -6378,7 +6568,8 @@
     // ====================================================
     // MODAL: ADD SPELL / MANEUVER / STANCE PICKER LOGIC
     // ====================================================
-    function openSpellManeuverPickerModal(initialType = 'Spell', preselectLevel = null) {
+    function openSpellManeuverPickerModal(initialType = 'Spell', preselectLevel = null, poolOverride = null) {
+      _spellPickerPoolOverride = poolOverride || null;
       if (!window._spellPickerTargetPool && window._currentMagicDiscipline && ['spontaneous', 'prepared', 'divine'].includes(window._currentMagicDiscipline)) {
         window._spellPickerTargetPool = window._currentMagicDiscipline;
       }
@@ -6425,6 +6616,7 @@
       const modal = document.getElementById('spell-maneuver-modal');
       if (modal) modal.classList.add('hidden');
       window._spellPickerIsDomainSlot = false;
+      _spellPickerPoolOverride = null;
     }
 
     function getSpellPickerCategoryPalette(type = null, targetPool = null, effectiveSource = null) {
@@ -7017,7 +7209,7 @@
       }
 
       const type = window._currentSpellPickerType || 'Spell';
-      const targetPool = window._spellPickerTargetPool || 'spontaneous';
+      const targetPool = _spellPickerPoolOverride === 'spellbook' ? 'prepared' : (window._spellPickerTargetPool || 'spontaneous');
       const query = (document.getElementById('spell-picker-search')?.value || '').toLowerCase().trim();
       const levelFilter = document.getElementById('spell-picker-level-filter')?.value || 'all';
       const sourceFilterSelect = document.getElementById('spell-picker-source-filter');
@@ -7403,10 +7595,57 @@
       if (!item) return;
 
       const type = window._currentSpellPickerType || 'Spell';
-      const targetPool = window._spellPickerTargetPool || 'spontaneous';
+      const targetPool = _spellPickerPoolOverride || window._spellPickerTargetPool || 'spontaneous';
 
       if (type === 'Spell') {
         if (!character.spellcasting) character.spellcasting = {};
+        if (targetPool === 'spellbook') {
+          const activeFilterSource = document.getElementById('spell-picker-source-filter')?.value || 'auto';
+          const resolvedLvlVal = resolveSpellLevelForPool(item, 'prepared', activeFilterSource);
+          if (resolvedLvlVal === null || resolvedLvlVal === undefined || !Number.isFinite(Number(resolvedLvlVal))) {
+            showDiceTopToast({ icon: '⚠️', title: 'Not on Spellbook Class List', breakdown: `${item.name} is not an eligible arcane spell for this spellbook.`, total: 'Blocked' });
+            return;
+          }
+          const resolvedLvl = Math.max(0, Number(resolvedLvlVal));
+          const cid = _spellbookTargetClassId || getActiveSpellbookClassId();
+          if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
+            CharStore.dispatch({
+              type: 'spells/addToSpellbook',
+              payload: {
+                classId: cid,
+                source: 'scribed',
+                spellEntry: {
+                  id: item.id,
+                  name: item.name,
+                  level: resolvedLvl,
+                  school: item.school || 'Universal',
+                  action: item.castingTime || item.action || 'Standard Action',
+                  range: item.range || '',
+                  duration: item.duration || '',
+                  save: item.save || item.savingThrow || '',
+                  sr: item.sr || item.spellResistance || '',
+                  dice: item.dice || '',
+                  benefit: item.shortDescription || item.desc || item.description || ''
+                }
+              },
+              meta: { label: `Scribe ${item.name}` }
+            });
+            const out = CharStore.getLastOutcome();
+            if (out?.status === 'prohibited_school') {
+              showDiceTopToast({ icon: '🚫', title: 'Prohibited School', breakdown: `${item.name} (${item.school}) belongs to a prohibited school!`, total: 'Blocked' });
+              return;
+            }
+            if (out?.status === 'already_exists') {
+              showDiceTopToast({ icon: '📖', title: 'Already in Spellbook', breakdown: `${item.name} is already recorded in your Spellbook.`, total: 'Exists' });
+              return;
+            }
+            if (out?.status === 'spellbook_added') {
+              showDiceTopToast({ icon: '📖', title: `Scribed ${item.name}`, breakdown: `Added to Spellbook (Level ${resolvedLvl}).`, total: `L${resolvedLvl}` });
+              renderAll({ skipRecompute: true });
+            }
+          }
+          return;
+        }
         const poolKey = targetPool === 'prepared' ? 'preparedSpells' : (targetPool === 'divine' ? 'divineSpells' : 'knownSpells');
         if (!Array.isArray(character.spellcasting[poolKey])) character.spellcasting[poolKey] = [];
 
@@ -12480,6 +12719,35 @@
       });
       Actions.register('spells:open-prepared-picker', (el, data, event) => {
         openPreparedSpellPickerForLevel(Number(data.level));
+      });
+      Actions.register('spells:open-spellbook-picker', (el, data, event) => {
+        openSpellbookPicker(data.classId || '');
+      });
+      Actions.register('spells:toggle-spellbook-panel', (el, data, event) => {
+        _spellbookPanelOpen = _spellbookPanelOpen === false;
+        const classesStatus = checkCharacterMagicClasses();
+        renderPreparedDisciplineView(classesStatus.hasPrepared);
+      });
+      Actions.register('spells:add-cantrips-spellbook', (el, data, event) => {
+        addCoreCantripsToSpellbook(data.classId || '');
+      });
+      Actions.register('spells:prepare-from-spellbook', (el, data, event) => {
+        if (data.entryId) prepareSpellFromSpellbook(data.entryId, []);
+      });
+      Actions.register('spells:prepare-from-spellbook-meta', (el, data, event) => {
+        if (data.entryId) openPrepareFromSpellbookMetamagicModal(data.entryId);
+      });
+      Actions.register('spells:toggle-spell-mastery', (el, data, event) => {
+        if (data.entryId && typeof CharStore !== 'undefined') {
+          CharStore.dispatch({ type: 'spells/toggleSpellMastery', payload: { entryId: data.entryId }, meta: { label: 'Toggle Spell Mastery' } });
+          renderAll({ skipRecompute: true });
+        }
+      });
+      Actions.register('spells:remove-from-spellbook', (el, data, event) => {
+        if (data.entryId && typeof CharStore !== 'undefined') {
+          CharStore.dispatch({ type: 'spells/removeFromSpellbook', payload: { entryId: data.entryId }, meta: { label: 'Remove Spellbook Entry' } });
+          renderAll({ skipRecompute: true });
+        }
       });
       Actions.register('spells:restore-all-prepared', (el, data, event) => {
         restoreAllPreparedSlots();

@@ -2940,6 +2940,7 @@
           ignoreShieldAsf: !!p.caster.ignoreShieldAsf,
           castInRage: !!p.caster.castInRage
         };
+        if (p.caster.knownSource) out.progression.spellcastingChassis.knownSource = p.caster.knownSource;
       }
     } else if (en.progression && en.progression.caster && en.progression.caster.mode && en.progression.caster.mode !== 'none') {
       const c = en.progression.caster;
@@ -2956,6 +2957,7 @@
           castInRage: !!c.castInRage
         }
       };
+      if (c.knownSource) out.progression.spellcastingChassis.knownSource = c.knownSource;
     }
     if (has('grants')) {
       const g = en.grants, o = {};
@@ -3609,6 +3611,7 @@
         levels: levels,
         caster: sc ? Object.assign({}, en.progression.caster, {
           mode: sc.mode || 'none',
+          knownSource: sc.knownSource || '',
           clFormula: sc.clFormula || 'full',
           clCustom: sc.clCustom || '',
           tradition: sc.tradition || 'Arcane',
@@ -6155,6 +6158,7 @@
         : G(3,
             casterModeF +
             F('Tradition', sel('progression.caster.tradition', c.tradition || 'Arcane', ['Arcane', 'Divine', 'Psionic', 'Incarnum', 'Pact', 'Truename', 'Shadow', 'Martial'], { narrow: true })) +
+            F('Known Source', sel('progression.caster.knownSource', c.knownSource || '', [['', 'Auto (Default)'], ['spellbook', 'Spellbook (Wizard / Wu Jen / Archivist)'], ['fullList', 'Full Class List (Cleric / Druid / Paladin / Ranger)'], ['knownList', 'Known Spells List (Sorcerer / Bard)']], { narrow: true })) +
             F('Key Ability', sel('progression.caster.ability', c.ability || 'int', ABIL_KEYS.map((k) => [k, k.toUpperCase()]), { narrow: true })) +
             F('Spell / Power List', '<input class="fs-in" data-bind="progression.caster.spellList" list="fs-spellcls-list" placeholder="Cleric / Sorcerer" value="' + esc(c.spellList) + '">') +
             F('Caster Level Progression', sel('progression.caster.clFormula', c.clFormula || 'full', CL_FORMULAS, { narrow: true })) +

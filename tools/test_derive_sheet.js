@@ -8008,6 +8008,147 @@ function runDeriveSheetTests() {
         JSON.stringify({ status: m3Out?.status, undo: CharStore.getHistoryCounts().undo, undoBefore: undoBeforeAbort })
       );
     }
+
+    // -------------------------------------------------------------------------
+    // Sprint E5 — Epic B: knownSource & Wizard Spellbook -> Prepared Metamagic
+    // -------------------------------------------------------------------------
+    {
+      // E5B-1: Ruleset & RuleEngine resolve canonical knownSource for Wizard/Cleric/Sorcerer/Wu Jen/Archivist
+      const wizKs = RuleEngine.getCastingKnownSource('cls-wizard');
+      const clrKs = RuleEngine.getCastingKnownSource('cls-cleric');
+      const drdKs = RuleEngine.getCastingKnownSource('cls-druid');
+      const sorKs = RuleEngine.getCastingKnownSource('cls-sorcerer');
+      const wjKs = RuleEngine.getCastingKnownSource('cls-wu-jen');
+      const arcKs = RuleEngine.getCastingKnownSource('cls-archivist');
+      check(
+        'Sprint E5B-1: getCastingKnownSource returns spellbook (Wizard/Wu Jen/Archivist), fullList (Cleric/Druid), knownList (Sorcerer)',
+        wizKs === 'spellbook' && wjKs === 'spellbook' && arcKs === 'spellbook' && clrKs === 'fullList' && drdKs === 'fullList' && sorKs === 'knownList',
+        JSON.stringify({ wizKs, wjKs, arcKs, clrKs, drdKs, sorKs })
+      );
+
+      // E5B-2: Multiclass Wizard 5 / Cleric 5 isolates prepared caster classes by immutable classId
+      const multiWizClr = {
+        id: 'e5b_multi',
+        name: 'Theurge',
+        level: 10,
+        classes: 'Wizard 5 / Cleric 5',
+        abilities: { str: 10, dex: 12, con: 14, int: 18, wis: 18, cha: 10 },
+        feats: [{ id: 'feat-empower-spell', name: 'Empower Spell', effects: [{ id: 'f-emp', type: 'carrier', carrierMode: 'metamagic', costMode: 'slot', slotAdj: 2, transform: 'empower' }] }],
+        spellcasting: {
+          cl: 5,
+          prohibitedSchools: ['Necromancy'],
+          preparedSlots: [{ level: 3, daily: 2, used: 0 }, { level: 5, daily: 1, used: 0 }],
+          preparedSpells: [],
+          divineSlots: [{ level: 3, daily: 2, used: 0 }],
+          divineSpells: [],
+          spellbook: [],
+          favoriteSpells: []
+        }
+      };
+      const prepClsList = RuleEngine.getPreparedCasterClasses(multiWizClr);
+      const wizMeta = prepClsList.find(c => c.classId === 'cls-wizard');
+      const clrMeta = prepClsList.find(c => c.classId === 'cls-cleric');
+      check(
+        'Sprint E5B-2: getPreparedCasterClasses isolates multiclass Wizard (spellbook) and Cleric (fullList) by classId',
+        Boolean(wizMeta?.knownSource === 'spellbook' && wizMeta?.discipline === 'prepared' && clrMeta?.knownSource === 'fullList' && clrMeta?.discipline === 'divine'),
+        JSON.stringify(prepClsList)
+      );
+
+      // E5B-3: spells/addToSpellbook enforces prohibited_school, classId isolation, deduplication, and 1-step Undo
+      CharStore.replaceDoc(multiWizClr, { skipHistory: true });
+      CharStore.clearHistory();
+      CharStore.dispatch({
+        type: 'spells/addToSpellbook',
+        payload: { classId: 'cls-wizard', source: 'scribed', spellEntry: { id: 'spl-enervation', name: 'Enervation', level: 4, school: 'Necromancy' } }
+      });
+      const prohibOut = CharStore.getLastOutcome();
+      CharStore.dispatch({
+        type: 'spells/addToSpellbook',
+        payload: { classId: 'cls-wizard', source: 'levelUp', spellEntry: { id: 'spl-fireball', name: 'Fireball', level: 3, school: 'Evocation' } }
+      });
+      const addFbOut = CharStore.getLastOutcome();
+      CharStore.dispatch({
+        type: 'spells/addToSpellbook',
+        payload: { classId: 'cls-wizard', source: 'scribed', spellEntry: { id: 'spl-fireball', name: 'Fireball', level: 3, school: 'Evocation' } }
+      });
+      const dupFbOut = CharStore.getLastOutcome();
+      check(
+        'Sprint E5B-3: spells/addToSpellbook blocks prohibited school (Necromancy), adds Fireball with entryId, and rejects duplicates',
+        Boolean(prohibOut?.status === 'prohibited_school' && addFbOut?.status === 'spellbook_added' && addFbOut?.entryId && dupFbOut?.status === 'already_exists' && CharStore.getDoc().spellcasting.spellbook.length === 1),
+        JSON.stringify({ prohib: prohibOut?.status, add: addFbOut?.status, dup: dupFbOut?.status, len: CharStore.getDoc().spellcasting.spellbook.length })
+      );
+
+      // E5B-4: 1-step Spellbook -> Prepared with Metamagic + Spell Mastery toggle + Favorite toggle for Cleric fullList
+      const sbEntry = CharStore.getDoc().spellcasting.spellbook[0];
+      CharStore.dispatch({
+        type: 'spells/prepareSpell',
+        payload: {
+          discipline: 'prepared',
+          classId: 'cls-wizard',
+          spellbookEntryId: sbEntry.entryId,
+          spellEntry: sbEntry,
+          metamagic: [{ featId: 'feat-empower-spell' }]
+        }
+      });
+      const prepOut = CharStore.getLastOutcome();
+      CharStore.dispatch({ type: 'spells/toggleSpellMastery', payload: { entryId: sbEntry.entryId } });
+      const masteryOut = CharStore.getLastOutcome();
+      CharStore.dispatch({ type: 'spells/toggleFavoriteSpell', payload: { classId: 'cls-cleric', spellId: 'spl-heal', spellName: 'Heal' } });
+      const favOut = CharStore.getLastOutcome();
+      check(
+        'Sprint E5B-4: Spellbook -> Prepared with Empower (L3 -> L5) + Spell Mastery + Cleric fullList Favorite toggle work atomically',
+        Boolean(
+          prepOut?.status === 'spell_prepared' &&
+          prepOut?.effectiveSlotLevel === 5 &&
+          prepOut?.classId === 'cls-wizard' &&
+          masteryOut?.spellMastery === true &&
+          favOut?.favorited === true &&
+          CharStore.getDoc().spellcasting.favoriteSpells.includes('cls-cleric::spl-heal')
+        ),
+        JSON.stringify({ prep: prepOut?.status, eff: prepOut?.effectiveSlotLevel, mastery: masteryOut?.spellMastery, fav: favOut?.favorited })
+      );
+
+      // E5B-5 (Major #1): Wizard prohibited school (Necromancy) does NOT block Cleric divine spell (Inflict Light Wounds)
+      CharStore.dispatch({
+        type: 'spells/prepareSpell',
+        payload: {
+          discipline: 'divine',
+          classId: 'cls-cleric',
+          spellEntry: { id: 'spl-inflict-light-wounds', name: 'Inflict Light Wounds', level: 1, school: 'Necromancy' }
+        }
+      });
+      const divNecroOut = CharStore.getLastOutcome();
+      check(
+        'Sprint E5B-5 (Major #1): Specialist Wizard prohibited school (Necromancy) does NOT block multiclass Cleric divine spell preparation',
+        divNecroOut?.status === 'spell_prepared',
+        JSON.stringify({ status: divNecroOut?.status })
+      );
+
+      // E5B-6 (Major #3): Atomic spells/addToSpellbookBatch adds multiple cantrips in 1 Undo step & skips prohibited school
+      const undoBeforeBatch = CharStore.getHistoryCounts().undo;
+      CharStore.dispatch({
+        type: 'spells/addToSpellbookBatch',
+        payload: {
+          classId: 'cls-wizard',
+          source: 'levelUp',
+          spellEntries: [
+            { id: 'spl-detect-magic', name: 'Detect Magic', level: 0, school: 'Divination' },
+            { id: 'spl-ray-of-frost', name: 'Ray of Frost', level: 0, school: 'Evocation' },
+            { id: 'spl-disrupt-undead', name: 'Disrupt Undead', level: 0, school: 'Necromancy' }
+          ]
+        }
+      });
+      const batchOut = CharStore.getLastOutcome();
+      const undoAfterBatch = CharStore.getHistoryCounts().undo;
+      const lenAfterBatch = CharStore.getDoc().spellcasting.spellbook.length;
+      CharStore.undo();
+      const lenAfterBatchUndo = CharStore.getDoc().spellcasting.spellbook.length;
+      check(
+        'Sprint E5B-6 (Major #3): spells/addToSpellbookBatch adds 2 eligible cantrips, skips prohibited Necromancy, and reverts in 1 Undo step',
+        Boolean(batchOut?.status === 'spellbook_batch_added' && batchOut?.addedCount === 2 && batchOut?.skippedProhibited === 1 && undoAfterBatch === undoBeforeBatch + 1 && lenAfterBatch === 3 && lenAfterBatchUndo === 1),
+        JSON.stringify({ status: batchOut?.status, added: batchOut?.addedCount, skipP: batchOut?.skippedProhibited, lenAfter: lenAfterBatch, lenUndo: lenAfterBatchUndo })
+      );
+    }
   }
 
   CharStore.clearHistory();

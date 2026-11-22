@@ -989,6 +989,44 @@ function runAiV3ContractTests() {
     check(deepEqual(rcE1, rcE2), 'race with Spellcasting / Caster Boon must be E1===E2 round-trip idempotent');
     check(rcE1.progression && rcE1.progression.spellcastingChassis && rcE1.progression.spellcastingChassis.keyAbility === 'cha',
       'race exportEntry must emit progression.spellcastingChassis even without Level/HD table facet');
+
+    // (m) Sprint E5 Epic B: progression.spellcastingChassis.knownSource ('spellbook'|'fullList'|'knownList') round-trip
+    for (const ks of ['spellbook', 'fullList', 'knownList']) {
+      const ksRaw = {
+        id: 'test-cls-ks-' + ks,
+        name: 'Test Caster ' + ks,
+        blueprint: 'class',
+        schemaVersion: 3,
+        progression: {
+          mode: 'base',
+          maxLevel: 20,
+          hitDie: 'd6',
+          bab: '1/2',
+          goodSaves: ['will'],
+          skillPointsPerLevel: 2,
+          classSkills: [],
+          levels: [{ level: 1, spell: true, features: [] }],
+          spellcastingChassis: {
+            mode: ks === 'knownList' ? 'spontaneous' : 'prepared',
+            knownSource: ks,
+            clFormula: 'full',
+            clCustom: null,
+            tradition: ks === 'fullList' ? 'Divine' : 'Arcane',
+            keyAbility: ks === 'fullList' ? 'wis' : 'int',
+            spellList: 'Sor/Wiz',
+            ignoreAsf: 'none',
+            ignoreShieldAsf: false,
+            castInRage: false
+          }
+        },
+        effects: []
+      };
+      const ksImp = Forge.fromCanonicalV3(ksRaw);
+      const ksE1 = Forge.exportEntry(ksImp);
+      const ksE2 = Forge.exportEntry(Forge.fromCanonicalV3(JSON.parse(JSON.stringify(ksE1))));
+      check(deepEqual(ksE1, ksE2) && ksE1.progression.spellcastingChassis.knownSource === ks,
+        `class spellcastingChassis.knownSource="${ks}" must be E1===E2 round-trip idempotent`);
+    }
   }
 
   const elapsedMs = Date.now() - startMs;

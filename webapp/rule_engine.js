@@ -15881,6 +15881,109 @@ const RuleEngine = {
   },
 
   /**
+   * Resolves a class's V3 `casting.knownSource` ('spellbook' | 'fullList' | 'knownList') (Sprint E5 — Epic B).
+   */
+  getCastingKnownSource(classNameOrId, character = null) {
+    const rs = (this.rulesets && this.rulesets.dnd35) || {};
+    const clsDef = typeof this.getClassDef === 'function'
+      ? this.getClassDef(classNameOrId, character, { allowLazyLoad: false })
+      : null;
+    if (clsDef && typeof rs.resolveCastingKnownSource === 'function') {
+      const resolved = rs.resolveCastingKnownSource(clsDef);
+      if (resolved) return resolved;
+    }
+    if (typeof rs.resolveCastingKnownSource === 'function' && classNameOrId) {
+      return rs.resolveCastingKnownSource({ id: String(classNameOrId), name: String(classNameOrId) });
+    }
+    return null;
+  },
+
+  /**
+   * Returns active prepared/divine caster classes on `character`, isolated by immutable `classId`
+   * (Sprint E5 — Epic B, prevents multiclass Wizard/Cleric pool collisions).
+   */
+  getPreparedCasterClasses(character) {
+    if (!character || typeof character !== 'object') return [];
+    const activeClasses = typeof this.getActiveClassLevels === 'function'
+      ? this.getActiveClassLevels(character, { includeNpc: true })
+      : {};
+    const out = [];
+    const seen = new Set();
+    Object.entries(activeClasses).forEach(([cName, cLvl]) => {
+      const lvlNum = Math.floor(Number(cLvl) || 0);
+      if (!cName || lvlNum <= 0) return;
+      const disc = this.classifyClassToMagicDiscipline(cName, character);
+      if (disc !== 'prepared' && disc !== 'divine') return;
+      const clsDef = typeof this.getClassDef === 'function'
+        ? this.getClassDef(cName, character, { allowLazyLoad: false })
+        : null;
+      const classId = String(clsDef?.id || `cls-${String(cName).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}`).trim();
+      if (seen.has(classId)) return;
+      seen.add(classId);
+      const knownSource = this.getCastingKnownSource(clsDef?.id || cName, character) || (disc === 'divine' ? 'fullList' : 'spellbook');
+      out.push({
+        classId,
+        className: clsDef?.name || cName,
+        discipline: disc,
+        knownSource,
+        level: lvlNum
+      });
+    });
+    return out;
+  },
+
+  /**
+   * Returns true if `spell`'s school is among `character`'s prohibited schools for `classId`
+   * (PHB p.57 + FAQ: Universal is never prohibited; specialist Wizard prohibited schools apply ONLY
+   * to spellbook arcane classes, never to multiclass Cleric/Druid divine spells).
+   */
+  isSpellProhibitedForClass(spell, character, classId = null, discipline = null) {
+    if (!spell || !character) return false;
+    const rawSchool = String(spell.school || '').trim().toLowerCase();
+    if (!rawSchool || rawSchool.startsWith('universal')) return false;
+    const prohibList = [];
+    if (classId && character.spellcasting?.prohibitedSchoolsByClass && Array.isArray(character.spellcasting.prohibitedSchoolsByClass[classId])) {
+      prohibList.push(...character.spellcasting.prohibitedSchoolsByClass[classId]);
+    }
+    const discLow = String(discipline || '').toLowerCase().trim();
+    const ks = classId ? this.getCastingKnownSource(classId, character) : null;
+    const appliesCharLevelProhibited = discLow !== 'divine' && (ks === 'spellbook' || (!classId && discLow === 'prepared'));
+    if (appliesCharLevelProhibited) {
+      if (Array.isArray(character.spellcasting?.prohibitedSchools)) prohibList.push(...character.spellcasting.prohibitedSchools);
+      if (Array.isArray(character.prohibitedSchools)) prohibList.push(...character.prohibitedSchools);
+    }
+    return prohibList.some(ps => {
+      const p = String(ps || '').trim().toLowerCase();
+      return p && (rawSchool === p || rawSchool.startsWith(p));
+    });
+  },
+
+  /**
+   * Pure summary of a character's permanent `doc.spellcasting.spellbook[]` for a given `classId` (or all if omitted).
+   */
+  getSpellbookSummary(character, classId = null) {
+    const raw = Array.isArray(character?.spellcasting?.spellbook) ? character.spellcasting.spellbook : [];
+    const entries = classId
+      ? raw.filter(e => e && String(e.classId || '') === String(classId))
+      : raw.filter(Boolean);
+    const byLevel = {};
+    let masteryCount = 0;
+    entries.forEach(e => {
+      const lvl = Math.max(0, Number(e.level) || 0);
+      if (!byLevel[lvl]) byLevel[lvl] = [];
+      byLevel[lvl].push(e);
+      if (e.spellMastery) masteryCount++;
+    });
+    return {
+      classId: classId || null,
+      totalCount: entries.length,
+      masteryCount,
+      entries,
+      byLevel
+    };
+  },
+
+  /**
    * Returns all metamagic feats owned by `character` (from `feats[]` and active `levelProgression[].feats[]`),
    * resolved against the compendium / customDb by immutable `id` (with name fallback for legacy string refs).
    */

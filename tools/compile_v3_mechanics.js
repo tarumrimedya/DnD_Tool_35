@@ -347,7 +347,7 @@ function compileVariantClasses(crData) {
       ]
     },
     addedAbilities: [],
-    spellcasting: deepClone(baseCleric.spellcasting),
+    spellcasting: Object.assign(deepClone(baseCleric.spellcasting || {}), { knownSource: 'fullList' }),
     progression: {
       mode: 'base',
       maxLevel: 20,
