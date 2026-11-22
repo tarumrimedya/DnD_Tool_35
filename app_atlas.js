@@ -659,6 +659,21 @@
       selectors: ['[data-action="hub:open-invite"]', '[data-action="hub:open-new-campaign"]', '[data-action="hub:open-edit-campaign"]']
     },
     {
+      key: 'hub.companions',
+      page: 'hub',
+      tab: null,
+      category: 'Campaign Hub',
+      label: 'Party Companion, Familiar & Mount Cards',
+      summary: 'View owner-badged Animal Companion, Familiar, Special Mount, and Fiendish Servant cards in Hub Card View, roll 3D attacks/saves, and adjust HP (DM or owner).',
+      steps: [
+        'Switch to Card View in the Hub toolbar to see bound Companion cards alongside their owner.',
+        'Click any attack, save, or HP button on a Companion card; open the owner\'s sheet to edit gear or progression.'
+      ],
+      keywords: ['companion', 'animal companion', 'familiar', 'mount', 'special mount', 'fiendish servant', 'pet', 'companion card'],
+      aliases: ['party companions', 'companion hp in hub', 'roll companion in hub', 'where is my familiar'],
+      selectors: ['[data-action="hub:roll-companion-attack"]', '[data-action="hub:roll-companion-check"]', '#view-mode-card-btn']
+    },
+    {
       key: 'hub.notes',
       page: 'hub',
       tab: null,

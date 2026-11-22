@@ -104,7 +104,9 @@ function runAppAtlasRecognitionTests() {
     ['live preview', 'crafter', 'crafter.undo_redo'],
     ['rule blocks', 'crafter', 'crafter.blocks'],
     ['import json', 'crafter', 'crafter.examples_json'],
-    ['quest log', 'hub', 'hub.notes']
+    ['quest log', 'hub', 'hub.notes'],
+    ['animal companion', 'hub', 'hub.companions'],
+    ['familiar', 'hub', 'hub.companions']
   ];
 
   for (const [query, page, expected] of CASES) {

@@ -10729,6 +10729,18 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
     let _activeCompanionModalAnimalId = null;
     let _activeCompanionModalEditId = null;
 
+    function getCharacterCompanionsList(charObj) {
+      const c = charObj || character;
+      if (!c) return [];
+      if (Array.isArray(c.companions) && c.companions.length > 0) {
+        return c.companions.filter(x => x && x.baseMonsterId);
+      }
+      if (c.companion && typeof c.companion === 'object' && c.companion.baseMonsterId) {
+        return [c.companion];
+      }
+      return [];
+    }
+
     function getActiveProgressionCompanion(charObj) {
       const c = charObj || character;
       if (!c) return null;

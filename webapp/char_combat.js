@@ -2039,6 +2039,7 @@
           ` : '';
 
           let bottomRightHtml = '';
+          let hasSpontBtn = false;
           if (reorderControls) {
             bottomRightHtml = reorderControls;
           } else {
@@ -2055,15 +2056,19 @@
               : null;
 
             if (spontInfo) {
+              hasSpontBtn = true;
               const btnColorCls = spontMode === 'inflict'
                 ? 'bg-rose-950/90 hover:bg-rose-800 text-rose-300 hover:text-white border-rose-600/80'
                 : 'bg-emerald-950/90 hover:bg-emerald-800 text-emerald-300 hover:text-white border-emerald-600/80';
-              const shortText = spontMode === 'inflict' ? `Inflict ${spontInfo.formula}` : `Cure ${spontInfo.formula}`;
-              bottomRightHtml = `<button type="button" data-action="combat:cast-cleric-spontaneous" data-spell-name="${attrName}" data-level="${lvl}" class="px-1.5 py-0.5 rounded border ${btnColorCls} font-mono font-bold text-[10px] leading-none inline-flex items-center gap-0.5 shrink-0 cursor-pointer transition shadow-sm" title="Cleric Spontaneous Conversion: Convert '${UI.escapeAttr(sp.name)}' into '${UI.escapeAttr(spontInfo.name)}' (${spontInfo.formula})"><span>${spontInfo.icon}</span><span>${shortText}</span></button>`;
+              const shortText = spontMode === 'inflict' ? `Inf ${spontInfo.formula}` : `Cure ${spontInfo.formula}`;
+              bottomRightHtml = `<button type="button" data-action="combat:cast-cleric-spontaneous" data-spell-name="${attrName}" data-level="${lvl}" class="px-1.5 py-0.5 rounded border ${btnColorCls} font-mono font-bold text-[10px] leading-none inline-flex items-center justify-center gap-0.5 shrink-0 cursor-pointer transition shadow-sm" title="Cleric Spontaneous Conversion: Convert '${UI.escapeAttr(sp.name)}' into '${UI.escapeAttr(spontInfo.name)}' (${spontInfo.formula})"><span>${spontInfo.icon}</span><span>${shortText}</span></button>`;
             } else if (params.save && params.save !== 'None') {
               bottomRightHtml = `<span class="truncate shrink-0 font-mono text-[10px] text-slate-500">${params.save}</span>`;
             }
           }
+
+          const bottomActionText = String(cardMm && !mmBlockedReason ? UI.escapeHtml(cardMm.castAction || '') : (params.action || '')).trim();
+          const centerSpontRow = hasSpontBtn && !bottomActionText;
 
           return `
             <div data-action="combat:select-spell-direct"
@@ -2082,8 +2087,8 @@
               <div class="text-[11px] ${titleColorClass} truncate my-0.5">
                 ${UI.escapeHtml(sp.name)}
               </div>
-              <div class="flex items-center justify-between w-full text-[10px] text-slate-400 mt-0.5 gap-1">
-                <span class="truncate">${cardMm && !mmBlockedReason ? UI.escapeHtml(cardMm.castAction) : params.action}</span>
+              <div class="flex items-center ${centerSpontRow ? 'justify-center' : 'justify-between'} w-full text-[10px] text-slate-400 mt-0.5 gap-1">
+                ${centerSpontRow ? '' : `<span class="truncate">${bottomActionText}</span>`}
                 ${bottomRightHtml}
               </div>
             </div>
