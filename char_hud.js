@@ -1245,6 +1245,48 @@
       if (triggerCloudSync || !character.lastModified) {
         character.lastModified = new Date().toISOString();
       }
+      // Phase P6 (#13): Persist lightweight derived companionSummary snapshot (HP stays live on companions[i].currentHp)
+      try {
+        const rawComps = Array.isArray(character.companions) && character.companions.length > 0
+          ? character.companions
+          : (character.companion && character.companion.baseMonsterId ? [character.companion] : []);
+        const derivedComps = window.CharStore?.getSheet?.()?.companions?.list;
+        if (rawComps.length > 0) {
+          character.companionSummary = rawComps.map(rc => {
+            const st = (Array.isArray(derivedComps) ? derivedComps.find(d => d && (d.id === rc.id || d.baseMonsterId === rc.baseMonsterId)) : null)
+              || (typeof RuleEngine !== 'undefined' && typeof RuleEngine.calculateCompanionStats === 'function' ? RuleEngine.calculateCompanionStats(character, rc) : null);
+            if (!st) return null;
+            return {
+              id: st.id || rc.id || `${rc.entityKind || rc.type || 'animal_companion'}:${rc.baseMonsterId}`,
+              baseMonsterId: rc.baseMonsterId,
+              name: st.customName || rc.name || st.baseName || 'Companion',
+              baseName: st.baseName || 'Creature',
+              entityKind: st.entityKind || st.type || rc.entityKind || rc.type || 'animal_companion',
+              size: st.size || 'Medium',
+              totalHd: Number(st.totalHd) || 1,
+              maxHp: Number(st.hp?.max) || 10,
+              ac: { total: Number(st.ac?.total) || 10, touch: Number(st.ac?.touch) || 10, flatFooted: Number(st.ac?.flatFooted) || 10 },
+              saves: { fort: Number(st.saves?.fort) || 0, ref: Number(st.saves?.ref) || 0, will: Number(st.saves?.will) || 0 },
+              speedLand: Number(st.speed?.land) || 30,
+              bab: Number(st.bab) || 0,
+              initBonus: Number(st.abilityMods?.dex) || 0,
+              attacks: Array.isArray(st.attacks) ? st.attacks.map(a => ({
+                name: a.name,
+                count: Number(a.count) || 1,
+                attackBonus: Number(a.attackBonus) || 0,
+                damageDice: a.damageDice || '1d4',
+                damageBonus: Number(a.damageBonus) || 0,
+                formattedAttack: a.formattedAttack || '+0',
+                formattedDamage: a.formattedDamage || '1d4'
+              })) : []
+            };
+          }).filter(Boolean);
+        } else {
+          character.companionSummary = [];
+        }
+      } catch (compSumErr) {
+        console.warn('companionSummary snapshot warning:', compSumErr);
+      }
       try { hpLiveAfterSave(triggerCloudSync); } catch (e) { console.warn('Live Hit Points send notice:', e); }
 
       if (immediate) {

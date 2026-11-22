@@ -409,6 +409,30 @@
     fiendish_servant: '@level'
   };
 
+  // Canonical D&D 3.5e per-kind Companion / Entity eligibility rules (Phase P3)
+  const DEFAULT_ENTITY_ELIGIBILITY = {
+    animal_companion: {
+      label: 'Animal Companion',
+      prerequisite: 'Requires Druid 1+, Ranger 4+, or an Animal Companion / Wild Cohort grant.',
+      formula: '(@classes.druid.level >= 1 || @classes.ranger.level >= 4) ? 1 : 0'
+    },
+    familiar: {
+      label: 'Familiar',
+      prerequisite: 'Requires Wizard 1+, Sorcerer 1+, or a Summon / Obtain Familiar grant.',
+      formula: '(@classes.wizard.level >= 1 || @classes.sorcerer.level >= 1) ? 1 : 0'
+    },
+    special_mount: {
+      label: 'Special Mount',
+      prerequisite: 'Requires Paladin 5+ or a Special Mount grant.',
+      formula: '@classes.paladin.level >= 5 ? 1 : 0'
+    },
+    fiendish_servant: {
+      label: 'Fiendish Servant',
+      prerequisite: 'Requires Blackguard 5+ or a Fiendish Servant grant.',
+      formula: '@classes.blackguard.level >= 5 ? 1 : 0'
+    }
+  };
+
   // Official D&D 3.5e Druid Wild Shape progression (PHB p.37, Table 3-8)
   function getWildShapeProfile(druidLevel, hasElementalFlag) {
     const lvl = Math.max(0, Math.floor(Number(druidLevel) || 0));
@@ -478,6 +502,7 @@
     entityKinds: ENTITY_KINDS,
     arcaneSpellcastingClasses: ARCANE_SPELLCASTING_CLASSES,
     defaultEntityLevelFormulas: DEFAULT_ENTITY_LEVEL_FORMULAS,
+    defaultEntityEligibility: DEFAULT_ENTITY_ELIGIBILITY,
     getWildShapeProfile,
 
     calcAbilityMod(score) {

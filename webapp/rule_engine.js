@@ -11473,7 +11473,16 @@ const RuleEngine = {
         });
       });
     };
-    const hasWeaponFinesse = Boolean(ruleFlags.weaponFinesse || feats.some(f => f.includes('weapon finesse')));
+    const activeOverlayForFeats = character && (character._activeFormOverlay || this.resolveActiveFormOverlay(character));
+    const elementalFormBonusFeats = (activeOverlayForFeats && activeOverlayForFeats.active && String(activeOverlayForFeats.creatureType || '').toLowerCase() === 'elemental')
+      ? (Array.isArray(activeOverlayForFeats.monster?.feats) ? activeOverlayForFeats.monster.feats : (Array.isArray(activeOverlayForFeats.monster?.monster?.feats) ? activeOverlayForFeats.monster.monster.feats : []))
+      : [];
+    const hasWeaponFinesse = Boolean(
+      options.forceWeaponFinesse
+      || ruleFlags.weaponFinesse
+      || feats.some(f => f.includes('weapon finesse'))
+      || elementalFormBonusFeats.some(f => /weapon\s*finesse/i.test(String(typeof f === 'string' ? f : (f?.name || ''))))
+    );
     const hasShadowBlade = Boolean(ruleFlags.shadowBlade || feats.some(f => f.includes('shadow blade')));
     const hasWeaponFocus = matchesWeaponSpecificFeat('weapon focus', 'greater weapon focus');
     const hasGreaterWeaponFocus = matchesWeaponSpecificFeat('greater weapon focus');
@@ -11864,7 +11873,12 @@ const RuleEngine = {
           const rawV = evalModExpr(mod, entryEvalCtx);
           const v = isFinessableOrLightCond ? Math.max(0, rawV) : rawV;
           if (v !== 0) {
-            outItems.push({ type: (mod.type || 'untyped').toLowerCase(), val: v, source: mod.source || entry.name || 'Special Ability' });
+            const rawSource = mod.source || entry.name || 'Special Ability';
+            const isFlawEntry = String(entry.type || entry.category || '').toLowerCase() === 'flaw'
+              || String(entry.id || '').startsWith('flaw-')
+              || Boolean(entry.ruleFlags?.isFlaw);
+            const displaySource = (isFlawEntry && !/\bflaw\b/i.test(rawSource)) ? `${rawSource} (Flaw)` : rawSource;
+            outItems.push({ type: (mod.type || 'untyped').toLowerCase(), val: v, source: displaySource });
           }
         });
       });
@@ -12702,8 +12716,67 @@ const RuleEngine = {
   },
 
   // Virtual weapon entries for the character's natural weapons (V3 `effect` blocks `effectKind: 'naturalWeapon'`).
+  /**
+   * Single canonical wieldable-gear resolver (Phase P2).
+   * Respects `_activeFormMeldMap` so melded manufactured weapons and shields
+   * (including `wild_ac` shields whose AC bonus persists without physical wielding)
+   * cannot be wielded or shield-bashed in combat.
+   */
+  resolveWieldableGear(character) {
+    const ch = character || {};
+    const overlay = ch._activeFormOverlay || this.resolveActiveFormOverlay(ch);
+    if (!overlay || !overlay.active) {
+      return { activeFormActive: false, formName: '', mainHandBlocked: false, offHandBlocked: false };
+    }
+    const meldMap = (ch._activeFormMeldMap && typeof ch._activeFormMeldMap === 'object') ? ch._activeFormMeldMap : {};
+    const mainHandBlocked = meldMap.mainHand !== 'kept';
+    const offHandBlocked = meldMap.offHand !== 'kept';
+    return {
+      activeFormActive: true,
+      formName: overlay.name || 'Wild Shape',
+      mainHandBlocked,
+      offHandBlocked
+    };
+  },
+
   // Damage is the block's `damageBySize[sizeKey]` or the Medium `dice` stepped one die per size category (MM natural attack table).
   getNaturalWeapons(character) {
+    const overlay = character && (character._activeFormOverlay || this.resolveActiveFormOverlay(character));
+    if (overlay && overlay.active && overlay.chassis && Array.isArray(overlay.chassis.attacks)) {
+      const formOut = [];
+      overlay.chassis.attacks
+        .filter(atk => atk && (atk.primary === true || atk.primary === false || atk.primary === 'special_rake'))
+        .forEach((atk, idx) => {
+          const dice = String(atk.damageDice || '1d4');
+          const dmgType = atk.dmgType || 'Bludgeoning';
+          const key = String(atk.name || `attack-${idx}`).toLowerCase().replace(/[^a-z0-9]+/g, '-');
+          formOut.push({
+            id: `form-natural::${key}-${idx}`,
+            name: atk.name || 'Natural Attack',
+            type: 'Natural Weapon',
+            category: 'natural',
+            isNaturalWeapon: true,
+            isNatural: true,
+            isLight: true,
+            proficiency: 'Natural',
+            dice,
+            damageParts: [{ dice, bonus: 0, type: dmgType, multiplyOnCrit: true, onCritOnly: false, source: 'Base Weapon' }],
+            dmgType,
+            critMin: 20,
+            critMult: 2,
+            critRange: 20,
+            count: Math.max(1, Number(atk.count) || 1),
+            attackKind: atk.primary === 'special_rake' ? 'special_rake' : (atk.primary === true ? 'primary' : 'secondary'),
+            primary: atk.primary,
+            special: atk.special || null,
+            usesHands: false,
+            fromActiveForm: true,
+            source: overlay.name || 'Wild Shape'
+          });
+        });
+      return formOut;
+    }
+
     const gc = character && (character.grantedCapabilities || character.legoEvaluation?.grantedCapabilities);
     const list = gc && Array.isArray(gc.naturalWeapons) ? gc.naturalWeapons : [];
     if (list.length === 0) return [];
@@ -17700,6 +17773,43 @@ const RuleEngine = {
   },
 
   /**
+   * Canonical slot capacity resolver (Phase P1).
+   * Always prefers derived `slotsByLevelView` over raw `character.spellcasting.*Slots` so
+   * newly leveled or unmutated casters never report 0/0 capacity.
+   */
+  getSlotCapacity(viewOrSheet, pool, level = null, opts = {}) {
+    const p = (pool === 'prepared' || pool === 'divine') ? pool : 'spontaneous';
+    const sv = viewOrSheet?.slotsByLevelView
+      ? viewOrSheet
+      : (viewOrSheet?.spells?.slotsByLevelView ? viewOrSheet.spells : (viewOrSheet?.spellsView?.slotsByLevelView ? viewOrSheet.spellsView : null));
+    const ch = opts.character || (viewOrSheet?.spellcasting ? viewOrSheet : viewOrSheet?.character) || null;
+    const arrKey = p === 'divine' ? 'divineArray' : (p === 'prepared' ? 'preparedArray' : 'spontaneousArray');
+    const rawKey = p === 'divine' ? 'divineSlots' : (p === 'prepared' ? 'preparedSlots' : 'slots');
+    const derivedArr = Array.isArray(sv?.slotsByLevelView?.[arrKey]) ? sv.slotsByLevelView[arrKey] : [];
+    const rawArr = Array.isArray(ch?.spellcasting?.[rawKey]) ? ch.spellcasting[rawKey] : [];
+    const array = derivedArr.length > 0 ? derivedArr : rawArr;
+    const hasAnySlots = array.some(s => (Number(s?.daily) || 0) > 0);
+
+    if (level === null || level === undefined) {
+      return { slot: null, daily: 0, regularDaily: 0, domainDaily: 0, used: 0, remaining: 0, hasAnySlots, array };
+    }
+    const numLvl = Number(level);
+    const slot = (sv?.slotsByLevelView?.[p] && sv.slotsByLevelView[p][numLvl])
+      || array.find(s => Number(s?.level) === numLvl)
+      || null;
+    const daily = slot ? (Number(slot.daily) || 0) : 0;
+    const domainDaily = (p === 'divine' && numLvl > 0 && slot)
+      ? (Number(slot.domainDaily !== undefined ? slot.domainDaily : (opts.hasDomainCap ? 1 : 0)) || 0)
+      : 0;
+    const regularDaily = slot
+      ? (Number(slot.regularDaily !== undefined ? slot.regularDaily : (p === 'divine' ? Math.max(0, daily - domainDaily) : daily)) || 0)
+      : 0;
+    const used = slot ? (Number(slot.used) || 0) : 0;
+    const remaining = Math.max(0, daily - used);
+    return { slot, daily, regularDaily, domainDaily, used, remaining, hasAnySlots, array };
+  },
+
+  /**
    * Pure, zero-mutation progression & character features derivation (Phase R6).
    * Returns `{ levelsView, featSlotsView, skillBudgetsView, featuresView }` without mutating `w`.
    */
@@ -19090,6 +19200,22 @@ const RuleEngine = {
         };
       });
 
+    // D&D 3.5e PHB p.36 (Animal Companion Multiattack, Effective Druid Level 9+):
+    if (opts.animalCompanionMultiattack && totalNaturalCount > 0 && totalNaturalCount < 3) {
+      const primaryAtk = attacks.find(a => a && a.primary === true);
+      if (primaryAtk) {
+        const secondBonus = primaryAtk.attackBonus - 5;
+        attacks.push({
+          ...primaryAtk,
+          name: `${primaryAtk.name} (2nd)`,
+          count: 1,
+          attackBonus: secondBonus,
+          formattedAttack: secondBonus >= 0 ? '+' + secondBonus : String(secondBonus),
+          isMultiattackExtra: true
+        });
+      }
+    }
+
     const baseSpeeds = mChassis?.speeds || baseMonster.speed || { land: 30 };
     return {
       id: baseMonster.id,
@@ -19106,6 +19232,38 @@ const RuleEngine = {
       specialQualities: Array.isArray(baseMonster.specialQualities) ? baseMonster.specialQualities.slice() : [],
       attacks
     };
+  },
+
+  /**
+   * Per-kind Companion / Entity eligibility resolver (Phase P3).
+   */
+  getEligibleCompanionKinds(char) {
+    const ch = char || {};
+    const activeRs = (this.rulesets && this.rulesets[this.activeRulesetId || 'dnd35'])
+      || (typeof window !== 'undefined' && window.DnD35Ruleset)
+      || null;
+    const kinds = (activeRs && Array.isArray(activeRs.entityKinds))
+      ? activeRs.entityKinds
+      : ['animal_companion', 'familiar', 'special_mount', 'fiendish_servant'];
+    const eligRules = (activeRs && activeRs.defaultEntityEligibility) || {};
+    const grants = Array.isArray(ch?.legoEvaluation?.grantedCapabilities?.companionEntities)
+      ? ch.legoEvaluation.grantedCapabilities.companionEntities
+      : [];
+    const ownedList = Array.isArray(ch.companions) ? ch.companions : (ch.companion?.baseMonsterId ? [ch.companion] : []);
+    const ctx = this.buildFormulaContext(ch);
+    const out = {};
+    kinds.forEach(kind => {
+      const hasGrant = grants.some(g => g && g.entityKind === kind);
+      const owned = ownedList.some(c => c && c.baseMonsterId && (c.entityKind || c.type || 'animal_companion') === kind);
+      const rule = eligRules[kind] || {};
+      const byClass = rule.formula ? (Number(this.evaluateFormula(rule.formula, ctx)) > 0) : false;
+      out[kind] = {
+        eligible: Boolean(hasGrant || byClass || owned),
+        owned,
+        prerequisite: rule.prerequisite || `Requires class feature or feat granting ${kind.replace(/_/g, ' ')}.`
+      };
+    });
+    return out;
   },
 
   /**
@@ -19327,7 +19485,8 @@ const RuleEngine = {
       bab,
       attackEnhancement,
       damageEnhancement,
-      hasMultiattack
+      hasMultiattack,
+      animalCompanionMultiattack: Boolean(type === 'animal_companion' && hasMultiattack)
     });
 
     return {
@@ -19613,40 +19772,39 @@ const RuleEngine = {
     const hasWeaponFinesse = combinedFormFeats.some(f => /weapon\s*finesse/i.test(String(typeof f === 'string' ? f : (f?.name || ''))));
     const atkStatMod = hasWeaponFinesse ? Math.max(strMod, dexMod) : strMod;
     const secPenalty = hasMultiattack ? -2 : -5;
-    const rawAttacks = Array.isArray(chassis.attacks) ? chassis.attacks : [];
-    const totalPhysicalAttacks = rawAttacks
+    const formNatWeapons = this.getNaturalWeapons(ch);
+    const totalPhysicalAttacks = formNatWeapons
       .filter(a => a && (a.primary === true || a.primary === false))
       .reduce((sum, a) => sum + (Number(a.count) || 1), 0);
     const isSingleNaturalWeapon = totalPhysicalAttacks === 1;
 
-    const naturalAttacks = rawAttacks
-      .filter(atk => atk && (atk.primary === true || atk.primary === false || atk.primary === 'special_rake'))
-      .map(atk => {
-        const isRake = atk.primary === 'special_rake';
-        const isPrimary = atk.primary === true;
-        const atkBonus = bab + atkStatMod + sizeMod + ((isPrimary || isRake) ? 0 : secPenalty);
-        let dmgBonus = strMod;
-        if (isRake) {
-          dmgBonus = strMod > 0 ? Math.floor(strMod * 0.5) : strMod;
-        } else if (isPrimary) {
-          dmgBonus = (isSingleNaturalWeapon && strMod > 0) ? Math.floor(strMod * 1.5) : strMod;
-        } else {
-          dmgBonus = strMod > 0 ? Math.floor(strMod * 0.5) : strMod;
-        }
-        const dice = String(atk.damageDice || '1d4');
-        const damageFormula = dmgBonus === 0 ? dice : `${dice}${dmgBonus > 0 ? '+' : ''}${dmgBonus}`;
-        return {
-          name: atk.name,
-          count: Number(atk.count) || 1,
-          primary: atk.primary,
-          dmgType: atk.dmgType || 'B',
-          attackBonus: atkBonus,
-          damageDice: dice,
-          damageBonus: dmgBonus,
-          damageFormula,
-          special: atk.special || null
-        };
-      });
+    const naturalAttacks = formNatWeapons.map(nw => {
+      const isRake = nw.primary === 'special_rake' || nw.attackKind === 'special_rake';
+      const isPrimary = nw.primary === true || nw.attackKind === 'primary';
+      const role = isRake ? 'secondary' : (isPrimary ? (isSingleNaturalWeapon ? 'sole' : 'primary') : 'secondary');
+      const ev = typeof this.evaluateWeaponAttack === 'function'
+        ? this.evaluateWeaponAttack(ch, nw, { grip: '1-Hand', naturalRole: role })
+        : null;
+      const atkBonus = ev && Number.isFinite(Number(ev.netAttackBonus))
+        ? Number(ev.netAttackBonus) + ((!isPrimary && !isRake) ? secPenalty : 0)
+        : (bab + atkStatMod + sizeMod + ((isPrimary || isRake) ? 0 : secPenalty));
+      const dmgBonus = ev && Number.isFinite(Number(ev.netFlatDamage))
+        ? Number(ev.netFlatDamage)
+        : (isRake || !isPrimary ? (strMod > 0 ? Math.floor(strMod * 0.5) : strMod) : ((isSingleNaturalWeapon && strMod > 0) ? Math.floor(strMod * 1.5) : strMod));
+      const dice = String(nw.dice || '1d4');
+      const damageFormula = dmgBonus === 0 ? dice : `${dice}${dmgBonus > 0 ? '+' : ''}${dmgBonus}`;
+      return {
+        name: nw.name,
+        count: Number(nw.count) || 1,
+        primary: nw.primary,
+        dmgType: nw.dmgType || 'B',
+        attackBonus: atkBonus,
+        damageDice: dice,
+        damageBonus: dmgBonus,
+        damageFormula,
+        special: nw.special || null
+      };
+    });
 
     const exSpecialAttacks = Array.isArray(mObj.specialAttacks) ? mObj.specialAttacks : [];
     const elementalQualities = isElementalForm

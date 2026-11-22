@@ -222,6 +222,74 @@
     `;
   }
 
+  /**
+   * Shared Attack Rotation tile strip renderer (Phase P5 #11).
+   * Used by both Character Attack Rotation and Companion & Mount Combat so strikes + Full Attack
+   * share identical visual grammar and responsive layout.
+   */
+  function renderAttackRotationHtml(strikes, opts = {}) {
+    const list = Array.isArray(strikes) ? strikes : [];
+    const isLocked = Boolean(opts.locked);
+    const fullAction = opts.fullAction || '';
+    const fullIcon = opts.fullIcon || '⚔️';
+    const fullDataset = opts.fullDataset || {};
+    const totalBtns = list.length + (fullAction ? 1 : 0);
+    const btnBasisClass = (totalBtns >= 4) ? 'basis-[calc(25%-5px)] flex-1 min-w-[58px]' : 'flex-1 min-w-[58px]';
+
+    const buttonsHtml = list.map((item) => {
+      let colorBorder = 'border-emerald-500/50 hover:border-emerald-400';
+      let textColor = 'text-emerald-400';
+      let subtitleColor = 'text-slate-400 group-hover:text-emerald-300';
+      let bgClass = 'bg-slate-900 hover:bg-slate-800';
+      if (item.badgeColor === 'amber') {
+        colorBorder = 'border-amber-500/70 hover:border-amber-400';
+        textColor = 'text-amber-400';
+        subtitleColor = 'text-amber-300/80 group-hover:text-amber-200';
+        bgClass = 'bg-amber-950/20 hover:bg-amber-950/40';
+      } else if (item.badgeColor === 'cyan') {
+        colorBorder = 'border-cyan-500/70 hover:border-cyan-400';
+        textColor = 'text-cyan-400';
+        subtitleColor = 'text-cyan-300/80 group-hover:text-cyan-200';
+        bgClass = 'bg-cyan-950/20 hover:bg-cyan-950/40';
+      } else if (item.badgeColor === 'purple') {
+        colorBorder = 'border-purple-500/70 hover:border-purple-400';
+        textColor = 'text-purple-400';
+        subtitleColor = 'text-purple-300/80 group-hover:text-purple-200';
+        bgClass = 'bg-purple-950/20 hover:bg-purple-950/40';
+      }
+      const ds = Object.assign({}, item.dataset || {});
+      if (item.action) ds.action = item.action;
+      const attrs = renderDatasetAttrs(ds).toString();
+      const bVal = Number(item.bonus) || 0;
+      const titleAttr = item.title ? ` title="${escapeAttr(item.title)}"` : '';
+      return `
+        <button type="button"${attrs}${titleAttr} class="${btnBasisClass} min-h-[58px] py-1 px-1.5 ${bgClass} active:scale-95 border ${isLocked ? 'border-slate-800 opacity-50 cursor-not-allowed' : colorBorder + ' cursor-pointer'} rounded-lg flex flex-col items-center justify-center text-center font-mono transition shadow group shrink-0">
+          <div class="text-[10px] uppercase tracking-wider ${subtitleColor} font-sans font-bold truncate leading-tight">${escapeHtml(item.label || 'Strike')}</div>
+          <div class="text-xs sm:text-sm md:text-base font-black ${textColor} font-mono leading-tight my-0.5">${bVal >= 0 ? '+' : ''}${bVal}</div>
+          <div class="text-[10px] font-sans text-slate-400 group-hover:text-slate-300 font-bold truncate leading-tight">${escapeHtml(item.subtitle || '')}</div>
+        </button>
+      `;
+    }).join('');
+
+    let fullBtnHtml = '';
+    if (fullAction) {
+      const fDs = Object.assign({ action: fullAction }, fullDataset);
+      const fAttrs = renderDatasetAttrs(fDs).toString();
+      fullBtnHtml = `
+        <button type="button"${fAttrs} class="${btnBasisClass} min-h-[58px] py-1 px-1.5 bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-500 hover:to-rose-600 active:scale-95 text-white rounded-lg shadow-md border border-red-400/50 flex flex-col items-center justify-center transition cursor-pointer text-center shrink-0 group">
+          <div class="text-[10px] uppercase tracking-wider text-red-100/90 font-sans font-bold truncate flex items-center justify-center gap-0.5 leading-tight">
+            <span>${fullIcon}</span>
+            <span class="truncate">Full</span>
+          </div>
+          <div class="text-xs sm:text-sm md:text-base font-black text-white font-mono leading-tight my-0.5 truncate">Attack</div>
+          <div class="text-[10px] font-sans text-red-200/90 font-bold truncate leading-tight">Full Round</div>
+        </button>
+      `;
+    }
+
+    return `<div class="flex flex-wrap gap-1.5 w-full">${buttonsHtml}${fullBtnHtml}</div>`;
+  }
+
   function EmptyState(opts = {}) {
     const {
       text = 'No items found.',
@@ -1171,6 +1239,7 @@
     EmptyState,
     CONSUMABLE_GROUPS,
     renderConsumablesView,
+    renderAttackRotationHtml,
     openEntityInspector,
     closeEntityInspector,
     openRuleCrafter,

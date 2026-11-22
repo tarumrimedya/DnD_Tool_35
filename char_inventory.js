@@ -657,11 +657,25 @@
       const atkList = document.getElementById('defense-attack-breakdown-list');
       const atkBadge = document.getElementById('defense-atk-total-badge');
       if (atkList) {
-        const activeWep = (character.weapons || []).find(w => w && w.name === character.activeWeapon) || (character.weapons || [])[0] || { name: 'Unarmed Strike', dice: '1d3', slot: 'One-Handed' };
-        
+        const activeFormView = (typeof window !== 'undefined' && window.CharStore?.getSheet?.()?.activeForm)
+          || (typeof RuleEngine !== 'undefined' && RuleEngine.deriveActiveFormView ? RuleEngine.deriveActiveFormView(character) : null);
+        const wieldState = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.resolveWieldableGear === 'function')
+          ? RuleEngine.resolveWieldableGear(character)
+          : { activeFormActive: false, mainHandBlocked: false };
+        const formNatWeapons = (wieldState.activeFormActive && wieldState.mainHandBlocked && typeof RuleEngine !== 'undefined' && typeof RuleEngine.getNaturalWeapons === 'function')
+          ? RuleEngine.getNaturalWeapons(character).filter(nw => nw && nw.attackKind !== 'special_rake')
+          : [];
+        const isFormNaturalMode = Boolean(wieldState.activeFormActive && wieldState.mainHandBlocked && formNatWeapons.length > 0);
+        const totalNatCount = formNatWeapons.reduce((s, nw) => s + (Number(nw.count) || 1), 0);
+        const activeWep = isFormNaturalMode
+          ? formNatWeapons[0]
+          : ((character.weapons || []).find(w => w && w.name === character.activeWeapon) || (character.weapons || [])[0] || { name: 'Unarmed Strike', dice: '1d3', slot: 'One-Handed' });
+
         let wepEval = null;
         if (typeof RuleEngine !== 'undefined' && RuleEngine.evaluateWeaponAttack) {
           wepEval = RuleEngine.evaluateWeaponAttack(character, activeWep, {
+            grip: isFormNaturalMode ? '1-Hand' : undefined,
+            naturalRole: isFormNaturalMode ? (totalNatCount === 1 ? 'sole' : 'primary') : undefined,
             powerAttack: character.tactical?.powerAttack || 0,
             combatExpertise: ceVal,
             fightingDefensively: fdVal,
@@ -673,10 +687,21 @@
 
         const babVal = Number(character.bab) || 0;
         const netAtk = wepEval?.netAttackBonus ?? (babVal + strMod);
-        const iteratives = wepEval?.iteratives || [netAtk];
-        const iterativesText = iteratives.map(v => (v >= 0 ? '+' : '') + v).join(' / ');
+        let fullAttackText = '';
+        if (isFormNaturalMode && activeFormView && Array.isArray(activeFormView.naturalAttacks) && activeFormView.naturalAttacks.length > 0) {
+          fullAttackText = activeFormView.naturalAttacks
+            .filter(a => a && a.primary !== 'special_rake')
+            .map(a => {
+              const cnt = a.count > 1 ? `${a.count}× ` : '';
+              const sgn = a.attackBonus >= 0 ? '+' : '';
+              return `${cnt}${a.name} ${sgn}${a.attackBonus}`;
+            }).join(' / ');
+        } else {
+          const iteratives = wepEval?.iteratives || [netAtk];
+          fullAttackText = iteratives.map(v => (v >= 0 ? '+' : '') + v).join(' / ');
+        }
 
-        if (atkBadge) atkBadge.textContent = `Total: ${netAtk >= 0 ? '+' : ''}${netAtk} (${iterativesText})`;
+        if (atkBadge) atkBadge.textContent = `Total: ${netAtk >= 0 ? '+' : ''}${netAtk} (${fullAttackText})`;
 
         // Only the components the engine applied (a non-stacking same-type bonus is tagged applied:false), so the list sums to netAtk.
         const atkItems = (wepEval && Array.isArray(wepEval.attackBonusItems) && wepEval.attackBonusItems.length > 0)
@@ -697,8 +722,6 @@
           `;
         }).join('');
 
-        const activeFormView = (typeof window !== 'undefined' && window.CharStore?.getSheet?.()?.activeForm)
-          || (typeof RuleEngine !== 'undefined' && RuleEngine.resolveActiveFormOverlay ? RuleEngine.resolveActiveFormOverlay(character) : null);
         const activeWeaponLine = (activeFormView && activeFormView.active)
           ? `<span>Active Form: <strong class="text-emerald-300">Natural Attacks (${UI.escapeHtml(activeFormView.name || 'Wild Shape')})</strong></span>`
           : `<span>Active Weapon: <strong class="text-slate-200">${UI.escapeHtml(activeWep.name || 'Unarmed Strike')}</strong></span>`;
@@ -711,7 +734,7 @@
           </div>
           <div class="flex justify-between text-[11px] text-slate-400 pt-0.5">
             ${activeWeaponLine}
-            <span>Full Attack: <strong class="text-amber-300">${iterativesText}</strong></span>
+            <span>Full Attack: <strong class="text-amber-300">${UI.escapeHtml(fullAttackText)}</strong></span>
           </div>
         `;
       }

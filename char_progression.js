@@ -9021,7 +9021,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
               </label>
             </div>
           </td>
-          <td class="py-2 px-1.5 align-top text-left" style="width: 18%;">
+          <td class="py-2 px-1.5 align-top text-left" style="width: 16%;">
             <div data-action="entity:inspect" data-entity-kind="class" data-entity-name="${UI.escapeAttr(lvl.className || '')}" data-level-index="${idx}" class="flex items-center font-sans font-bold text-white text-xs leading-tight break-words line-clamp-2 cursor-pointer hover:underline hover:text-amber-300 transition" title="${UI.escapeAttr(lvl.className)}-${classLevelSoFar}">${UI.escapeHtml(lvl.className)}-${classLevelSoFar}</div>
           </td>
           <td class="py-2 px-0.5 align-top text-center" style="width: 3.6%;">
@@ -9060,7 +9060,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
               ${(statBadgeItem || otherBonusBadgeItems.length > 0 || pendingBonusButtons.length > 0) ? ((statBadgeItem || '') + otherBonusBadgeItems.join('') + pendingBonusButtons.join('')) : '<span class="text-slate-600 text-[10px] italic leading-none py-1">-</span>'}
             </div>
           </td>
-          <td class="py-2 align-top text-center whitespace-nowrap shrink-0" style="width: 34px; min-width: 34px; max-width: 34px; padding-left: 2px; padding-right: 2px;">
+          <td class="py-2 align-top text-center whitespace-nowrap shrink-0" style="width: 54px; min-width: 54px; max-width: 54px; padding-left: 2px; padding-right: 4px;">
             <div class="flex flex-col items-center justify-start leading-none">
               <button type="button" data-action="progression:open-level-actions" data-level-idx="${idx}" aria-haspopup="menu" class="text-slate-400 hover:text-amber-300 p-0.5 text-sm leading-none font-bold transition cursor-pointer" title="Level actions">⋯</button>
             </div>
@@ -10773,6 +10773,10 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
     }
 
     function onCompanionTypeChange(newType) {
+      if (window.RuleEngine && typeof window.RuleEngine.getEligibleCompanionKinds === 'function') {
+        const eligMap = window.RuleEngine.getEligibleCompanionKinds(character);
+        if (eligMap[newType] && !eligMap[newType].eligible) return;
+      }
       _activeCompanionModalType = newType;
       _activeCompanionModalAnimalId = null;
       renderCompanionModalContent();
@@ -10840,25 +10844,38 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
               : `Paladin Level: ${effectiveLevel}`)))
         : `Effective Level: ${effectiveLevel}`;
 
+      const eligMap = (window.RuleEngine && typeof window.RuleEngine.getEligibleCompanionKinds === 'function')
+        ? window.RuleEngine.getEligibleCompanionKinds(character)
+        : null;
+      const compTabs = [
+        { kind: 'animal_companion', icon: '🐺', label: 'Animal Companion', activeCls: 'bg-amber-600 text-white shadow' },
+        { kind: 'familiar', icon: '🦉', label: 'Familiar', activeCls: 'bg-purple-600 text-white shadow' },
+        { kind: 'special_mount', icon: '🐎', label: 'Special Mount', activeCls: 'bg-sky-600 text-white shadow' },
+        { kind: 'fiendish_servant', icon: '🦇', label: 'Fiendish Servant', activeCls: 'bg-rose-700 text-white shadow' }
+      ];
+      const tabsHtml = compTabs.map(t => {
+        const info = eligMap ? eligMap[t.kind] : { eligible: true, prerequisite: '' };
+        const isEligible = !info || info.eligible;
+        const isActive = _activeCompanionModalType === t.kind;
+        const stateCls = isActive
+          ? `${t.activeCls} cursor-pointer`
+          : (isEligible
+            ? 'text-slate-400 hover:text-white hover:bg-slate-900 cursor-pointer'
+            : 'text-slate-600 opacity-40 cursor-not-allowed select-none');
+        const titleAttr = isEligible ? '' : ` title="Prerequisite Not Met: ${UI.escapeAttr(info.prerequisite || '')}"`;
+        const disabledAttr = isEligible ? '' : ' disabled aria-disabled="true"';
+        return `
+          <button type="button" data-action="progression:companion-type" data-type="${t.kind}"${disabledAttr}${titleAttr} class="py-2 px-2 rounded-lg font-bold transition flex items-center justify-center gap-1.5 text-xs ${stateCls}">
+            <span>${t.icon}</span>
+            <span>${UI.escapeHtml(t.label)}</span>
+          </button>
+        `;
+      }).join('');
+
       bodyEl.innerHTML = `
         <!-- Type Selection Tabs -->
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 p-1 bg-slate-950 rounded-xl border border-slate-800">
-          <button type="button" data-action="progression:companion-type" data-type="animal_companion" class="py-2 px-2 rounded-lg font-bold transition flex items-center justify-center gap-1.5 cursor-pointer text-xs ${_activeCompanionModalType === 'animal_companion' ? 'bg-amber-600 text-white shadow' : 'text-slate-400 hover:text-white hover:bg-slate-900'}">
-            <span>🐺</span>
-            <span>Animal Companion</span>
-          </button>
-          <button type="button" data-action="progression:companion-type" data-type="familiar" class="py-2 px-2 rounded-lg font-bold transition flex items-center justify-center gap-1.5 cursor-pointer text-xs ${_activeCompanionModalType === 'familiar' ? 'bg-purple-600 text-white shadow' : 'text-slate-400 hover:text-white hover:bg-slate-900'}">
-            <span>🦉</span>
-            <span>Familiar</span>
-          </button>
-          <button type="button" data-action="progression:companion-type" data-type="special_mount" class="py-2 px-2 rounded-lg font-bold transition flex items-center justify-center gap-1.5 cursor-pointer text-xs ${_activeCompanionModalType === 'special_mount' ? 'bg-sky-600 text-white shadow' : 'text-slate-400 hover:text-white hover:bg-slate-900'}">
-            <span>🐎</span>
-            <span>Special Mount</span>
-          </button>
-          <button type="button" data-action="progression:companion-type" data-type="fiendish_servant" class="py-2 px-2 rounded-lg font-bold transition flex items-center justify-center gap-1.5 cursor-pointer text-xs ${_activeCompanionModalType === 'fiendish_servant' ? 'bg-rose-700 text-white shadow' : 'text-slate-400 hover:text-white hover:bg-slate-900'}">
-            <span>🦇</span>
-            <span>Fiendish Servant</span>
-          </button>
+          ${tabsHtml}
         </div>
 
         <!-- Level Banner -->

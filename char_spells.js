@@ -1118,7 +1118,7 @@
       const schoolVal = document.getElementById('prep-spell-filter-school')?.value || 'all';
       const lvlFilter = window._prepSpellCurrentFilterLevel || 'all';
 
-      // Build 4x3 Fixed Slot Matrix HTML (Levels 0-11)
+      // Build 4x3 Fixed Slot Matrix HTML (Levels 0-11) — Clickable Level Filter Cards (Phase P4 #6)
       let matrixHtml = '';
       for (let lvl = 0; lvl <= 11; lvl++) {
         const s = slots.find(item => Number(item.level) === lvl);
@@ -1126,10 +1126,16 @@
         const remaining = isUnlocked ? (s.daily - s.used) : 0;
         const dc = getSpellDc(lvl, 'prepared');
         const lvlLabel = lvl === 0 ? '0 (Cantrip)' : (lvl >= 10 ? `Level ${lvl} (Epic)` : `Level ${lvl}`);
+        const isCardSelected = isUnlocked && String(lvlFilter) === String(lvl);
 
         if (isUnlocked) {
+          const cardStateCls = isCardSelected
+            ? 'bg-sky-950/80 border-2 border-sky-400 ring-1 ring-sky-400/50 shadow-md'
+            : (remaining <= 0
+              ? 'bg-slate-950/70 border border-slate-800/80 hover:border-sky-500/70 opacity-70'
+              : 'bg-slate-900/90 border border-sky-800/60 hover:border-sky-400');
           matrixHtml += `
-            <div class="${remaining <= 0 ? 'bg-slate-950/70 border border-slate-800/80 opacity-50 grayscale-[30%]' : 'bg-slate-900/90 border border-sky-800/60 hover:border-sky-500'} flex items-center justify-between rounded-xl px-2 sm:px-3 py-2 shadow-sm transition w-full" ${remaining <= 0 ? 'title="⚠️ All prepared slots at this level are expended"' : ''}>
+            <button type="button" data-action="spells:prepared-filter-level" data-level="${lvl}" aria-pressed="${isCardSelected ? 'true' : 'false'}" class="${cardStateCls} flex items-center justify-between rounded-xl px-2 sm:px-3 py-2 shadow-sm transition w-full text-left cursor-pointer" title="${isCardSelected ? 'Click to show all levels' : `Filter prepared spells to ${lvlLabel}`}">
               <div class="flex flex-col min-w-0">
                 <div class="flex items-center gap-1 sm:gap-1.5 flex-wrap">
                   <span class="font-extrabold text-white text-[11px] sm:text-xs truncate">${lvlLabel}</span>
@@ -1142,7 +1148,7 @@
                 <span class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Slots Left</span>
                 <span class="text-xs sm:text-sm font-black font-mono ${remaining > 0 ? 'text-emerald-400' : 'text-rose-500'} whitespace-nowrap">${remaining} / ${s.daily}</span>
               </div>
-            </div>
+            </button>
           `;
         } else {
           const reqClText = lvl >= 10 ? 'Epic (CL 21+)' : `CL ${Math.max(1, lvl * 2 - 1)}+`;
@@ -1167,15 +1173,13 @@
 
       const unlockedLevels = slots.filter(s => s.daily > 0).map(s => Number(s.level));
       const allLevels = Array.from(new Set([...unlockedLevels, ...spells.map(s => getPreparedSpellMetamagicInfo(s).effectiveSlotLevel)])).sort((a, b) => a - b);
-      const pillsHtml = ['all', ...allLevels].map(lvl => {
-        const isActive = String(lvlFilter) === String(lvl);
-        const label = lvl === 'all' ? 'All' : (lvl === 0 ? 'Level 0' : `Level ${lvl}`);
-        return `
-          <button type="button" data-action="spells:prepared-filter-level" data-level="${lvl}" class="h-8 px-2.5 rounded-lg text-xs font-bold transition cursor-pointer border inline-flex items-center justify-center ${
-            isActive ? 'bg-sky-700 text-white border-sky-400 shadow' : 'bg-slate-950 text-slate-400 hover:text-white border-slate-800'
-          }">${label}</button>
-        `;
-      }).join('');
+      const isAllActive = String(lvlFilter) === 'all';
+      const pillsHtml = `
+        <button type="button" data-action="spells:prepared-filter-level" data-level="all" aria-pressed="${isAllActive ? 'true' : 'false'}" class="h-8 px-3 rounded-lg text-xs font-bold transition cursor-pointer border inline-flex items-center justify-center ${
+          isAllActive ? 'bg-sky-700 text-white border-sky-400 shadow' : 'bg-slate-950 text-slate-300 hover:text-white border-slate-700'
+        }">All Levels</button>
+        ${!isAllActive ? `<span class="text-[11px] font-mono text-sky-300 px-2 py-1 rounded-lg bg-sky-950/60 border border-sky-700/60">Filtering: Level ${Number(lvlFilter)}</span>` : ''}
+      `;
 
       const displayLevels = lvlFilter === 'all' ? allLevels : [Number(lvlFilter)];
       let rowsHtml = '';
@@ -1639,7 +1643,7 @@
     }
 
     function setPreparedFilterLevel(lvl) {
-      window._prepSpellCurrentFilterLevel = lvl;
+      window._prepSpellCurrentFilterLevel = (lvl !== 'all' && String(window._prepSpellCurrentFilterLevel) === String(lvl)) ? 'all' : lvl;
       const classesStatus = checkCharacterMagicClasses();
       renderPreparedDisciplineView(classesStatus.hasPrepared);
     }
@@ -2337,7 +2341,7 @@
       const schoolVal = document.getElementById('divine-spell-filter-school')?.value || 'all';
       const lvlFilter = window._divineSpellCurrentFilterLevel || 'all';
 
-      // Build 4x3 Fixed Slot Matrix HTML (Levels 0-11)
+      // Build 4x3 Fixed Slot Matrix HTML (Levels 0-11) — Clickable Level Filter Cards (Phase P4 #6)
       let matrixHtml = '';
       for (let lvl = 0; lvl <= 11; lvl++) {
         const s = slots.find(item => Number(item.level) === lvl);
@@ -2345,6 +2349,7 @@
         const remaining = isUnlocked ? (s.daily - s.used) : 0;
         const dc = getSpellDc(lvl, 'divine');
         const lvlLabel = lvl === 0 ? '0 (Orison)' : (lvl >= 10 ? `Level ${lvl} (Epic)` : `Level ${lvl}`);
+        const isCardSelected = isUnlocked && String(lvlFilter) === String(lvl);
 
         if (isUnlocked) {
           const domCount = Number(s.domainDaily) || 0;
@@ -2352,8 +2357,11 @@
           const slotSubLabel = domCount > 0
             ? `${regCount} Cleric + ${domCount}⚜️ Domain`
             : `${s.daily} Divine Slots`;
+          const cardStateCls = isCardSelected
+            ? 'bg-amber-950/80 border-2 border-amber-400 ring-1 ring-amber-400/50 shadow-md'
+            : 'bg-slate-900/90 border border-amber-800/60 hover:border-amber-400';
           matrixHtml += `
-            <div class="flex items-center justify-between bg-slate-900/90 border border-amber-800/60 hover:border-amber-500 rounded-xl px-3 py-2 shadow-sm transition w-full">
+            <button type="button" data-action="spells:divine-filter-level" data-level="${lvl}" aria-pressed="${isCardSelected ? 'true' : 'false'}" class="flex items-center justify-between ${cardStateCls} rounded-xl px-3 py-2 shadow-sm transition w-full text-left cursor-pointer" title="${isCardSelected ? 'Click to show all levels' : `Filter divine spells to ${lvlLabel}`}">
               <div class="flex flex-col min-w-0">
                 <div class="flex items-center gap-1.5 flex-wrap">
                   <span class="font-extrabold text-white text-xs whitespace-nowrap">${lvlLabel}</span>
@@ -2366,7 +2374,7 @@
                 <span class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Slots Left</span>
                 <span class="text-xs sm:text-sm font-black font-mono ${remaining > 0 ? 'text-emerald-400' : 'text-rose-500'} whitespace-nowrap">${remaining} / ${s.daily}</span>
               </div>
-            </div>
+            </button>
           `;
         } else {
           const reqClText = lvl >= 10 ? 'Epic (CL 21+)' : `CL ${Math.max(1, lvl * 2 - 1)}+`;
@@ -2391,15 +2399,13 @@
 
       const unlockedLevels = slots.filter(s => s.daily > 0).map(s => Number(s.level));
       const allLevels = Array.from(new Set([...unlockedLevels, ...spells.map(s => getPreparedSpellMetamagicInfo(s).effectiveSlotLevel)])).sort((a, b) => a - b);
-      const pillsHtml = ['all', ...allLevels].map(lvl => {
-        const isActive = String(lvlFilter) === String(lvl);
-        const label = lvl === 'all' ? 'All' : (lvl === 0 ? 'Level 0' : `Level ${lvl}`);
-        return `
-          <button type="button" data-action="spells:divine-filter-level" data-level="${lvl}" class="h-8 px-2.5 rounded-lg text-xs font-bold transition cursor-pointer border inline-flex items-center justify-center ${
-            isActive ? 'bg-amber-700 text-white border-amber-400 shadow' : 'bg-slate-950 text-slate-400 hover:text-white border-slate-800'
-          }">${label}</button>
-        `;
-      }).join('');
+      const isAllActive = String(lvlFilter) === 'all';
+      const pillsHtml = `
+        <button type="button" data-action="spells:divine-filter-level" data-level="all" aria-pressed="${isAllActive ? 'true' : 'false'}" class="h-8 px-3 rounded-lg text-xs font-bold transition cursor-pointer border inline-flex items-center justify-center ${
+          isAllActive ? 'bg-amber-700 text-white border-amber-400 shadow' : 'bg-slate-950 text-slate-300 hover:text-white border-slate-700'
+        }">All Levels</button>
+        ${!isAllActive ? `<span class="text-[11px] font-mono text-amber-300 px-2 py-1 rounded-lg bg-amber-950/60 border border-amber-700/60">Filtering: Level ${Number(lvlFilter)}</span>` : ''}
+      `;
 
       const displayLevels = lvlFilter === 'all' ? allLevels : [Number(lvlFilter)];
       let rowsHtml = '';
@@ -2903,7 +2909,7 @@
     }
 
     function setDivineFilterLevel(lvl) {
-      window._divineSpellCurrentFilterLevel = lvl;
+      window._divineSpellCurrentFilterLevel = (lvl !== 'all' && String(window._divineSpellCurrentFilterLevel) === String(lvl)) ? 'all' : lvl;
       const classesStatus = checkCharacterMagicClasses();
       renderDivineDisciplineView(classesStatus.hasDivine);
     }
@@ -4353,6 +4359,7 @@
       if (!container) return;
       container.innerHTML = '';
 
+
       const sources = getAvailableSpellSlotSources().filter(s => s.key !== 'martial');
 
       // Spontaneous panel's Slot Battery always displays Spontaneous slots
@@ -4376,12 +4383,21 @@
 
         if (isUnlocked) {
           const isDepleted = remaining <= 0;
-          div.className = `flex items-center justify-between ${
-            isDepleted
-              ? 'bg-slate-950/70 border border-slate-800/80 opacity-50 grayscale-[30%]'
-              : (activeSource.key === 'prepared' ? 'bg-slate-900/90 border border-sky-800/60 hover:border-sky-500' : (activeSource.key === 'divine' ? 'bg-slate-900/90 border border-amber-800/60 hover:border-amber-500' : 'bg-slate-900/90 border border-purple-800/60 hover:border-purple-600'))
+          const curSpontFilter = window._spellCurrentFilterLevel || 'all';
+          const isCardSelected = activeSource.key === 'spontaneous' && String(curSpontFilter) === String(lvl);
+          div.setAttribute('data-action', 'spells:spont-filter-level');
+          div.setAttribute('data-level', String(lvl));
+          div.setAttribute('role', 'button');
+          div.setAttribute('tabindex', '0');
+          div.setAttribute('aria-pressed', isCardSelected ? 'true' : 'false');
+          div.className = `flex items-center justify-between cursor-pointer ${
+            isCardSelected
+              ? 'bg-purple-950/80 border-2 border-purple-400 ring-1 ring-purple-400/50 shadow-md'
+              : (isDepleted
+                ? 'bg-slate-950/70 border border-slate-800/80 hover:border-purple-500/70 opacity-70'
+                : (activeSource.key === 'prepared' ? 'bg-slate-900/90 border border-sky-800/60 hover:border-sky-400' : (activeSource.key === 'divine' ? 'bg-slate-900/90 border border-amber-800/60 hover:border-amber-400' : 'bg-slate-900/90 border border-purple-800/60 hover:border-purple-400')))
           } rounded-xl px-2 sm:px-3 py-2 shadow-sm transition w-full`;
-          if (isDepleted) div.title = '⚠️ All spell slots at this level are expended';
+          div.title = isCardSelected ? 'Click to show all levels' : (isDepleted ? `Filter to ${lvlLabel} (all slots expended)` : `Filter spells to ${lvlLabel}`);
 
           let knownSubtitle = '';
           if (activeSource.key === 'spontaneous') {
@@ -5261,6 +5277,7 @@
       const container = document.getElementById('maneuvers-container');
       if (container) {
         container.innerHTML = '';
+
         const readied = readiedList;
         const totalCards = Math.max(maxReadied, readied.length);
 
@@ -6159,22 +6176,15 @@
 
       const pillsContainer = document.getElementById('spell-level-filter-pills');
       if (pillsContainer) {
-        const levelsArr = ['all', ...allLevels];
-        let pillsHtml = '';
-        levelsArr.forEach(lvl => {
-          const isActive = String(lvlFilter) === String(lvl);
-          const label = lvl === 'all' ? 'All' : (lvl === 0 ? 'Level 0' : `Level ${lvl}`);
-          pillsHtml += `
-            <button type="button" data-action="spells:spont-filter-level" data-level="${lvl}" class="h-8 px-2.5 rounded-lg text-xs font-bold transition cursor-pointer border inline-flex items-center justify-center ${
-              isActive 
-                ? 'bg-purple-800 text-white border-purple-500 shadow' 
-                : 'bg-slate-950 text-slate-400 hover:text-white border-slate-800'
-            }">
-              ${label}
-            </button>
-          `;
-        });
-        pillsContainer.innerHTML = pillsHtml;
+        const isAllActive = String(lvlFilter) === 'all';
+        pillsContainer.innerHTML = `
+          <button type="button" data-action="spells:spont-filter-level" data-level="all" aria-pressed="${isAllActive ? 'true' : 'false'}" class="h-8 px-3 rounded-lg text-xs font-bold transition cursor-pointer border inline-flex items-center justify-center ${
+            isAllActive
+              ? 'bg-purple-800 text-white border-purple-500 shadow'
+              : 'bg-slate-950 text-slate-300 hover:text-white border-slate-700'
+          }">All Levels</button>
+          ${!isAllActive ? `<span class="text-[11px] font-mono text-purple-300 px-2 py-1 rounded-lg bg-purple-950/60 border border-purple-700/60">Filtering: Level ${Number(lvlFilter)}</span>` : ''}
+        `;
       }
 
       const displayLevels = lvlFilter === 'all' ? allLevels : [Number(lvlFilter)];
@@ -6397,7 +6407,8 @@
     }
 
     function setSpellFilterLevel(lvl) {
-      window._spellCurrentFilterLevel = lvl;
+      window._spellCurrentFilterLevel = (lvl !== 'all' && String(window._spellCurrentFilterLevel) === String(lvl)) ? 'all' : lvl;
+      renderCompactSpellSlots();
       renderKnownSpells();
     }
 
@@ -6568,8 +6579,30 @@
     // ====================================================
     // MODAL: ADD SPELL / MANEUVER / STANCE PICKER LOGIC
     // ====================================================
+    let _spellPickerMetamagic = [];
+
+    function toggleSpellPickerMetamagic(featId) {
+      const id = String(featId || '').trim();
+      if (!id) return;
+      const idx = _spellPickerMetamagic.findIndex(m => m && m.featId === id);
+      if (idx >= 0) {
+        _spellPickerMetamagic.splice(idx, 1);
+      } else {
+        const owned = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getOwnedMetamagicFeats === 'function')
+          ? RuleEngine.getOwnedMetamagicFeats(character)
+          : [];
+        const def = owned.find(f => f.featId === id);
+        if (!def) return;
+        const entry = { featId: def.featId, name: def.name };
+        if (def.variableSlot || def.isHeighten) entry.heightenDelta = 1;
+        _spellPickerMetamagic.push(entry);
+      }
+      renderSpellPickerResults();
+    }
+
     function openSpellManeuverPickerModal(initialType = 'Spell', preselectLevel = null, poolOverride = null) {
       _spellPickerPoolOverride = poolOverride || null;
+      _spellPickerMetamagic = [];
       if (!window._spellPickerTargetPool && window._currentMagicDiscipline && ['spontaneous', 'prepared', 'divine'].includes(window._currentMagicDiscipline)) {
         window._spellPickerTargetPool = window._currentMagicDiscipline;
       }
@@ -6617,6 +6650,7 @@
       if (modal) modal.classList.add('hidden');
       window._spellPickerIsDomainSlot = false;
       _spellPickerPoolOverride = null;
+      _spellPickerMetamagic = [];
     }
 
     function getSpellPickerCategoryPalette(type = null, targetPool = null, effectiveSource = null) {
@@ -7369,6 +7403,31 @@
       });
 
       container.innerHTML = '';
+
+      // Phase P4 (#7): Inline Metamagic selector bar for Prepared & Divine spell pickers
+      if (type === 'Spell' && (targetPool === 'prepared' || targetPool === 'divine') && typeof RuleEngine !== 'undefined' && typeof RuleEngine.getOwnedMetamagicFeats === 'function') {
+        const ownedMm = RuleEngine.getOwnedMetamagicFeats(character) || [];
+        if (ownedMm.length > 0) {
+          const selectedSet = new Set(_spellPickerMetamagic.map(m => m.featId));
+          const totalAdj = ownedMm.reduce((sum, f) => sum + (selectedSet.has(f.featId) ? (Number(f.slotAdj ?? f.levelAdjustment) || ((f.variableSlot || f.isHeighten) ? 1 : 0)) : 0), 0);
+          const mmBar = document.createElement('div');
+          mmBar.className = 'mb-2.5 p-2.5 rounded-xl bg-slate-950/90 border border-purple-700/60 flex flex-wrap items-center gap-1.5';
+          const mmBtns = ownedMm.map(f => {
+            const isSel = selectedSet.has(f.featId);
+            const adj = (f.variableSlot || f.isHeighten) ? '+1' : `+${Number(f.slotAdj ?? f.levelAdjustment) || 0}`;
+            const btnCls = isSel
+              ? 'bg-purple-700 text-white border-purple-400 shadow'
+              : 'bg-slate-900 text-slate-300 hover:text-white border-slate-700 hover:border-purple-500';
+            return `<button type="button" data-action="spells:picker-toggle-metamagic" data-feat-id="${UI.escapeAttr(f.featId)}" aria-pressed="${isSel ? 'true' : 'false'}" class="px-2 py-1 rounded-lg text-[11px] font-bold border transition cursor-pointer inline-flex items-center gap-1 ${btnCls}"><span>✨</span><span>${UI.escapeHtml(f.name)}</span><span class="font-mono text-[10px] opacity-80">(${adj})</span></button>`;
+          }).join('');
+          mmBar.innerHTML = `
+            <span class="text-[10px] font-black uppercase tracking-wider text-purple-300 mr-1">Metamagic:</span>
+            ${mmBtns}
+            ${totalAdj > 0 ? `<span class="ml-auto text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-purple-950 text-purple-200 border border-purple-700/60">+${totalAdj} Slot Level</span>` : '<span class="ml-auto text-[10px] text-slate-500">Click to prepare with metamagic</span>'}
+          `;
+          container.appendChild(mmBar);
+        }
+      }
       if (matches.length === 0) {
         container.innerHTML = `
           <div class="p-6 text-center text-slate-400 space-y-2">
@@ -7386,14 +7445,17 @@
       displayMatches.forEach(item => {
         const cleanName = (item.name || '').toLowerCase().trim();
         let alreadyKnown = false;
+        const pickerMmActive = (type === 'Spell' && (targetPool === 'prepared' || targetPool === 'divine') && _spellPickerMetamagic.length > 0)
+          ? _spellPickerMetamagic
+          : [];
 
         if (type === 'Spell') {
           const targetArr = targetPool === 'prepared'
             ? (character.spellcasting?.preparedSpells || [])
             : (targetPool === 'divine' ? (character.spellcasting?.divineSpells || []) : (character.spellcasting?.knownSpells || []));
-          if (targetPool === 'divine') {
-            const isDomainTarget = Boolean(window._spellPickerIsDomainSlot || effectiveSource === 'char_domains' || effectiveSource === 'domain');
-            alreadyKnown = targetArr.some(s => (s.name || '').toLowerCase().trim() === cleanName && Boolean(s.isDomainSpell) === isDomainTarget);
+          if (targetPool === 'divine' || targetPool === 'prepared') {
+            // Prepared / Divine casters can prepare multiple copies or metamagic variants of the same spell (PHB p.178)
+            alreadyKnown = false;
           } else {
             alreadyKnown = targetArr.some(s => (s.name || '').toLowerCase().trim() === cleanName);
           }
@@ -7412,8 +7474,19 @@
         let martialLockText = '';
         let martialLockTitle = '';
         let countText = '';
+        let pickerEffLvl = itemLvlDisplay !== null ? Number(itemLvlDisplay) : 0;
+        let pickerMmBlocked = false;
         if (type === 'Spell') {
-          const numLvl = itemLvlDisplay !== null ? Number(itemLvlDisplay) : 0;
+          const baseNumLvl = itemLvlDisplay !== null ? Number(itemLvlDisplay) : 0;
+          if (pickerMmActive.length > 0 && typeof RuleEngine !== 'undefined' && typeof RuleEngine.resolveMetamagic === 'function') {
+            const mmRes = RuleEngine.resolveMetamagic({ level: baseNumLvl, baseLevel: baseNumLvl }, character, { metamagicOverride: pickerMmActive });
+            pickerEffLvl = Number(mmRes.effectiveSlotLevel);
+            const maxAllowedLvl = Number(RuleEngine?.rulesets?.dnd35?.metamagicRules?.maxSpellLevel) || 9;
+            if (pickerEffLvl > maxAllowedLvl) pickerMmBlocked = true;
+          } else {
+            pickerEffLvl = baseNumLvl;
+          }
+          const numLvl = pickerEffLvl;
           if (targetPool === 'spontaneous') {
             const quota = getSpellsKnownQuota(numLvl);
             const curCount = (character.spellcasting?.knownSpells || []).filter(s => Number(s.level) === numLvl).length;
@@ -7421,31 +7494,29 @@
             countText = `${curCount}/${quota}`;
           } else if (targetPool === 'prepared') {
             const sv = typeof getSpellsView === 'function' ? getSpellsView() : null;
-            const prepArr = (Array.isArray(sv?.slotsByLevelView?.preparedArray) && sv.slotsByLevelView.preparedArray.length > 0)
-              ? sv.slotsByLevelView.preparedArray
-              : (character.spellcasting?.preparedSlots || []);
-            const prepSlot = prepArr.find(s => Number(s.level) === numLvl);
-            const maxPrep = prepSlot ? (Number(prepSlot.daily) || 0) : 0;
-            const curCount = (character.spellcasting?.preparedSpells || []).filter(s => Number(s.level) === numLvl).length;
-            isLevelFull = curCount >= maxPrep;
-            countText = `${curCount}/${maxPrep}`;
+            const cap = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getSlotCapacity === 'function')
+              ? RuleEngine.getSlotCapacity(sv, 'prepared', numLvl, { character })
+              : { daily: 0 };
+            const maxPrep = cap.daily;
+            const curCount = (character.spellcasting?.preparedSpells || []).filter(s => getPreparedSpellMetamagicInfo(s).effectiveSlotLevel === numLvl).length;
+            isLevelFull = pickerMmBlocked || maxPrep <= 0 || curCount >= maxPrep;
+            countText = pickerMmBlocked ? `L${numLvl}>9` : `${curCount}/${maxPrep}${pickerMmActive.length > 0 ? ` · L${numLvl}` : ''}`;
           } else if (targetPool === 'divine') {
             const sv = typeof getSpellsView === 'function' ? getSpellsView() : null;
-            const divArr = (Array.isArray(sv?.slotsByLevelView?.divineArray) && sv.slotsByLevelView.divineArray.length > 0)
-              ? sv.slotsByLevelView.divineArray
-              : (character.spellcasting?.divineSlots || []);
-            const divSlot = divArr.find(s => Number(s.level) === numLvl);
+            const cap = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getSlotCapacity === 'function')
+              ? RuleEngine.getSlotCapacity(sv, 'divine', numLvl, { character, hasDomainCap: hasClericDomainCapability(character) })
+              : { regularDaily: 0, domainDaily: 0 };
             const isDomainTarget = Boolean(window._spellPickerIsDomainSlot || effectiveSource === 'char_domains' || effectiveSource === 'domain');
             if (isDomainTarget) {
-              const maxDom = numLvl > 0 && divSlot ? (Number(divSlot.domainDaily !== undefined ? divSlot.domainDaily : (hasClericDomainCapability(character) ? 1 : 0)) || 0) : 0;
-              const curDom = (character.spellcasting?.divineSpells || []).filter(s => Number(s.level) === numLvl && s.isDomainSpell).length;
-              isLevelFull = curDom >= maxDom;
-              countText = `${curDom}/${maxDom} Domain`;
+              const maxDom = cap.domainDaily;
+              const curDom = (character.spellcasting?.divineSpells || []).filter(s => getPreparedSpellMetamagicInfo(s).effectiveSlotLevel === numLvl && s.isDomainSpell).length;
+              isLevelFull = pickerMmBlocked || maxDom <= 0 || curDom >= maxDom;
+              countText = pickerMmBlocked ? `L${numLvl}>9` : `${curDom}/${maxDom} Domain${pickerMmActive.length > 0 ? ` · L${numLvl}` : ''}`;
             } else {
-              const maxReg = divSlot ? (Number(divSlot.regularDaily !== undefined ? divSlot.regularDaily : divSlot.daily) || 0) : 0;
-              const curReg = (character.spellcasting?.divineSpells || []).filter(s => Number(s.level) === numLvl && !s.isDomainSpell).length;
-              isLevelFull = curReg >= maxReg;
-              countText = `${curReg}/${maxReg}`;
+              const maxReg = cap.regularDaily;
+              const curReg = (character.spellcasting?.divineSpells || []).filter(s => getPreparedSpellMetamagicInfo(s).effectiveSlotLevel === numLvl && !s.isDomainSpell).length;
+              isLevelFull = pickerMmBlocked || maxReg <= 0 || curReg >= maxReg;
+              countText = pickerMmBlocked ? `L${numLvl}>9` : `${curReg}/${maxReg}${pickerMmActive.length > 0 ? ` · L${numLvl}` : ''}`;
             }
           }
         } else if (type === 'Maneuver' || type === 'Stance') {
@@ -7651,9 +7722,27 @@
 
         const activeFilterSource = document.getElementById('spell-picker-source-filter')?.value || 'auto';
         const resolvedLvlVal = resolveSpellLevelForPool(item, targetPool, activeFilterSource);
-        const resolvedLvl = resolvedLvlVal !== null && resolvedLvlVal !== undefined ? Number(resolvedLvlVal) : 1;
+        const baseResolvedLvl = resolvedLvlVal !== null && resolvedLvlVal !== undefined ? Number(resolvedLvlVal) : 1;
+        const appliedMm = ((targetPool === 'prepared' || targetPool === 'divine') && Array.isArray(_spellPickerMetamagic) && _spellPickerMetamagic.length > 0)
+          ? JSON.parse(JSON.stringify(_spellPickerMetamagic))
+          : [];
+        let resolvedLvl = baseResolvedLvl;
+        if (appliedMm.length > 0 && typeof RuleEngine !== 'undefined' && typeof RuleEngine.resolveMetamagic === 'function') {
+          const mmInfo = RuleEngine.resolveMetamagic({ level: baseResolvedLvl, baseLevel: baseResolvedLvl }, character, { metamagicOverride: appliedMm });
+          resolvedLvl = Number(mmInfo.effectiveSlotLevel);
+          const maxSpellLvl = Number(RuleEngine?.rulesets?.dnd35?.metamagicRules?.maxSpellLevel) || 9;
+          if (resolvedLvl > maxSpellLvl) {
+            showDiceTopToast({
+              icon: '⚠️',
+              title: 'Metamagic Level Exceeded',
+              breakdown: `${item.name} with selected metamagic requires a Level ${resolvedLvl} slot (max ${maxSpellLvl}).`,
+              total: `L${resolvedLvl}`
+            });
+            return;
+          }
+        }
 
-        // Strict: Check if level has reached maximum slot/known quota
+        // Strict: Check if effective level has reached maximum slot/known quota (Phase P1 canonical RuleEngine.getSlotCapacity)
         if (targetPool === 'spontaneous') {
           const quota = getSpellsKnownQuota(resolvedLvl);
           const currentSpells = character.spellcasting.knownSpells.filter(s => Number(s.level) === resolvedLvl);
@@ -7667,9 +7756,12 @@
             return;
           }
         } else if (targetPool === 'prepared') {
-          const prepSlot = (character.spellcasting?.preparedSlots || []).find(s => Number(s.level) === resolvedLvl);
-          const maxPrep = prepSlot ? (Number(prepSlot.daily) || 0) : 0;
-          const currentPrep = character.spellcasting.preparedSpells.filter(s => Number(s.level) === resolvedLvl);
+          const sv = typeof getSpellsView === 'function' ? getSpellsView() : null;
+          const cap = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getSlotCapacity === 'function')
+            ? RuleEngine.getSlotCapacity(sv, 'prepared', resolvedLvl, { character })
+            : { daily: 0 };
+          const maxPrep = cap.daily;
+          const currentPrep = character.spellcasting.preparedSpells.filter(s => getPreparedSpellMetamagicInfo(s).effectiveSlotLevel === resolvedLvl);
           if (currentPrep.length >= maxPrep) {
             showDiceTopToast({
               icon: '⚠️',
@@ -7680,11 +7772,14 @@
             return;
           }
         } else if (targetPool === 'divine') {
-          const divSlot = (character.spellcasting?.divineSlots || []).find(s => Number(s.level) === resolvedLvl);
+          const sv = typeof getSpellsView === 'function' ? getSpellsView() : null;
+          const cap = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getSlotCapacity === 'function')
+            ? RuleEngine.getSlotCapacity(sv, 'divine', resolvedLvl, { character, hasDomainCap: hasClericDomainCapability(character) })
+            : { regularDaily: 0, domainDaily: 0 };
           const isDomainTarget = Boolean(window._spellPickerIsDomainSlot || activeFilterSource === 'char_domains' || activeFilterSource === 'domain');
           if (isDomainTarget) {
-            const maxDom = resolvedLvl > 0 && divSlot ? (Number(divSlot.domainDaily !== undefined ? divSlot.domainDaily : (hasClericDomainCapability(character) ? 1 : 0)) || 0) : 0;
-            const currentDom = character.spellcasting.divineSpells.filter(s => Number(s.level) === resolvedLvl && s.isDomainSpell);
+            const maxDom = cap.domainDaily;
+            const currentDom = character.spellcasting.divineSpells.filter(s => getPreparedSpellMetamagicInfo(s).effectiveSlotLevel === resolvedLvl && s.isDomainSpell);
             if (currentDom.length >= maxDom) {
               showDiceTopToast({
                 icon: '⚜️',
@@ -7695,8 +7790,8 @@
               return;
             }
           } else {
-            const maxReg = divSlot ? (Number(divSlot.regularDaily !== undefined ? divSlot.regularDaily : divSlot.daily) || 0) : 0;
-            const currentReg = character.spellcasting.divineSpells.filter(s => Number(s.level) === resolvedLvl && !s.isDomainSpell);
+            const maxReg = cap.regularDaily;
+            const currentReg = character.spellcasting.divineSpells.filter(s => getPreparedSpellMetamagicInfo(s).effectiveSlotLevel === resolvedLvl && !s.isDomainSpell);
             if (currentReg.length >= maxReg) {
               showDiceTopToast({
                 icon: '⚠️',
@@ -7735,6 +7830,8 @@
           blueprint: 'spell',
           name: item.name,
           level: resolvedLvl,
+          baseLevel: baseResolvedLvl,
+          metamagic: appliedMm,
           school: schoolName,
           subschool: item.subschool || '',
           descriptors: item.descriptors || '',
@@ -8375,6 +8472,7 @@
       const container = document.getElementById('abilities-grid');
       if (container) {
         container.innerHTML = '';
+
         const stats = [
           { key: 'str', label: 'STR' },
           { key: 'dex', label: 'DEX' },
@@ -12859,6 +12957,9 @@
       });
       Actions.register('spells:add-picker-item', (el, data, event) => {
         addMasterDbItemToCharacter(data.name || '');
+      });
+      Actions.register('spells:picker-toggle-metamagic', (el, data, event) => {
+        toggleSpellPickerMetamagic(data.featId || '');
       });
       Actions.register('spells:picker-results-refresh', (el, data, event) => {
         renderSpellPickerResults();

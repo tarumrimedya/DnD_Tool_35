@@ -1696,7 +1696,7 @@
                 <tr>
                   <th class="py-2 pl-2 pr-1 text-center" style="width: 4%;">Lvl</th>
                   <th class="py-2 px-1 text-center" style="width: 7.5%;">Status</th>
-                  <th class="py-2 px-1.5 text-left" style="width: 18%;">Class</th>
+                  <th class="py-2 px-1.5 text-left" style="width: 16%;">Class</th>
                   <th class="py-2 px-0.5 text-center" style="width: 3.6%;">HD</th>
                   <th class="py-2 px-0.5 text-center" style="width: 3.6%;">HP</th>
                   <th class="py-2 px-0.5 text-center" style="width: 3.6%;">BAB</th>
@@ -1707,7 +1707,7 @@
                   <th class="py-2 text-center" style="width: 156px; min-width: 156px; max-width: 156px; padding-left: 3px; padding-right: 3px;">Class Features</th>
                   <th class="py-2 text-center" style="width: 156px; min-width: 156px; max-width: 156px; padding-left: 3px; padding-right: 3px;">Feats</th>
                   <th class="py-2 text-center" style="width: 156px; min-width: 156px; max-width: 156px; padding-left: 3px; padding-right: 3px;">Bonus</th>
-                  <th class="py-2 text-center whitespace-nowrap" style="width: 34px; min-width: 34px; max-width: 34px; padding-left: 2px; padding-right: 2px;">Actions</th>
+                  <th class="py-2 text-center whitespace-nowrap" style="width: 54px; min-width: 54px; max-width: 54px; padding-left: 2px; padding-right: 4px;">Actions</th>
                 </tr>
               </thead>
               <tbody id="level-progression-tbody" class="divide-y divide-slate-800 font-mono text-[11px]">
@@ -3500,13 +3500,13 @@
   <script defer src="supabase_auth.js?v=47247ea179"></script>
   <!-- data-srd-autoinit: srd_compendium.js starts SrdCompendium.init() as soon as it runs. -->
   <script defer src="srd_compendium.js?v=6dddec40fd" data-srd-autoinit></script>
-  <script defer src="rulesets/dnd35.js?v=8712f2a182"></script>
-  <script defer src="rule_engine.js?v=2798f2ec7e"></script>
+  <script defer src="rulesets/dnd35.js?v=b335b42789"></script>
+  <script defer src="rule_engine.js?v=b78547e3c1"></script>
   <script defer src="char_store.js?v=03a7fd25e8"></script>
   <!-- ui_components.js stays blocking on purpose: it has no dependencies, and while the document is
        still loading it binds the data-action router on DOMContentLoaded, after the outside-click
        listeners the deferred scripts register. Deferring it would bind the router first. -->
-  <script src="ui_components.js?v=0fa83dbead"></script>
+  <script src="ui_components.js?v=91ce0429ec"></script>
   <script defer src="rule_master.js?v=d8c613a0b2"></script>
   <script defer src="ui_shared.js?v=d131f19175"></script>
   <script defer src="campaign_db.js?v=1e45440d78"></script>
@@ -3515,11 +3515,11 @@
   <script defer src="ai_assistant.js?v=c09f914eee"></script>
   <script defer src="dice3d.js?v=aa07002406"></script>
 
-  <script defer src="char_hud.js?v=6b3ca64fcc"></script>
-  <script defer src="char_combat.js?v=db0f98fba5"></script>
-  <script defer src="char_spells.js?v=d4654d159e"></script>
-  <script defer src="char_progression.js?v=813bd49d77"></script>
-  <script defer src="char_inventory.js?v=08978eaa2b"></script>
+  <script defer src="char_hud.js?v=6692d02e2a"></script>
+  <script defer src="char_combat.js?v=1bbd9a91a2"></script>
+  <script defer src="char_spells.js?v=9db1c2f780"></script>
+  <script defer src="char_progression.js?v=754d31e0a4"></script>
+  <script defer src="char_inventory.js?v=e05092e61d"></script>
   <!-- Floating Tooltip for Combat Spells Hover (Tap or click to dismiss) -->
   <div id="combat-spell-hover-tooltip" data-action="combat:hide-spell-tooltip" class="hidden fixed z-[200] pointer-events-auto bg-slate-950/95 border border-purple-500/80 rounded-xl p-3 shadow-2xl w-[340px] max-w-[92vw] text-xs space-y-2 backdrop-blur-md transition-opacity duration-150 text-slate-200 cursor-pointer select-none">
     

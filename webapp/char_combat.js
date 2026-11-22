@@ -5226,6 +5226,27 @@
       if (!container) return;
       try {
         ensureWeaponSetsData();
+        const wieldState = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.resolveWieldableGear === 'function')
+          ? RuleEngine.resolveWieldableGear(character)
+          : { activeFormActive: false, mainHandBlocked: false, offHandBlocked: false, formName: '' };
+        if (wieldState.activeFormActive && wieldState.mainHandBlocked) {
+          const af = getCombatActiveFormView();
+          const natSummary = (af?.naturalAttacks || []).map(a => {
+            const cnt = a.count > 1 ? `${a.count}× ` : '';
+            const sgn = a.attackBonus >= 0 ? '+' : '';
+            return `${cnt}${a.name} ${sgn}${a.attackBonus} (${a.damageFormula})`;
+          }).join(' • ');
+          container.innerHTML = `
+            <div class="p-3 rounded-xl border border-emerald-700/60 bg-emerald-950/60 text-xs space-y-1.5">
+              <div class="flex items-center justify-between gap-2">
+                <span class="font-bold text-emerald-300">🐾 Natural Form Active — ${UI.escapeHtml(wieldState.formName || 'Wild Shape')}</span>
+                <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-950 text-slate-400 border border-slate-700">Weapons &amp; Shield Melded</span>
+              </div>
+              <p class="text-[11px] font-mono text-slate-300">${UI.escapeHtml(natSummary || 'Use Natural Attacks in Attack Rotation above.')}</p>
+            </div>
+          `;
+          return;
+        }
         const sets = character?.tactical?.weaponSets || {};
         const s1 = sets.set1 || { name: 'Main Hand', mainWeapon: character?.activeWeapon || 'Rapier +2', grip: '1-Hand' };
         const s2 = sets.set2 || { name: 'Off-Hand', mainWeapon: '+1 Buckler', grip: 'Off-Hand' };
@@ -8066,6 +8087,10 @@
     }
 
     function getResolvedOffHandWeapon(character) {
+      if (typeof RuleEngine !== 'undefined' && typeof RuleEngine.resolveWieldableGear === 'function') {
+        const wield = RuleEngine.resolveWieldableGear(character);
+        if (wield && wield.offHandBlocked) return null;
+      }
       const sets = character.tactical?.weaponSets;
       const isDualSets = sets && Array.isArray(sets.activeSets) && sets.activeSets.includes(2) && sets.set2?.mainWeapon && sets.set2.mainWeapon !== 'None';
       const currentOffHandName = (character.activeOffHand && character.activeOffHand !== 'None')
@@ -8352,8 +8377,11 @@
         return true;
       });
 
-      // Natural weapons (V3 `naturalWeapon` effect blocks). With no manufactured weapon in hand they ARE the attack routine;
-      // with one, the non-hand natural attacks join the full attack as secondary attacks (MM Glossary, Natural Attacks).
+      // Natural weapons (V3 `naturalWeapon` effect blocks & active Wild Shape form natural attacks).
+      // When hands are melded in Wild Shape or unarmed, natural weapons ARE the full attack routine (MM Natural Weapons: no BAB iteratives).
+      const wieldState = (RuleEngine && typeof RuleEngine.resolveWieldableGear === 'function')
+        ? RuleEngine.resolveWieldableGear(character)
+        : { activeFormActive: false, mainHandBlocked: false, offHandBlocked: false };
       const naturalWeapons = (RuleEngine && typeof RuleEngine.getNaturalWeapons === 'function') ? RuleEngine.getNaturalWeapons(character) : [];
       const isUnarmedMain = /^(unarmed strike|none|-)?$/i.test(String(wep.name || '').trim());
       const natEvalBase = { grip: '1-Hand', powerAttack: paVal, flanking, charge, higherGround: hg, activeStance: character.activeStance || 'None', customModifiers: nonChainMods };
@@ -8361,7 +8389,7 @@
       const natSecondaryPenalty = hasMultiattack ? -2 : -5;
       const buildNaturalEntries = (list, forcedRole) => {
         const out = [];
-        list.forEach(nw => {
+        list.filter(nw => nw && nw.attackKind !== 'special_rake').forEach(nw => {
           for (let n = 0; n < (nw.count || 1); n++) out.push({ nw, n });
         });
         const totalCount = out.length;
@@ -8382,17 +8410,8 @@
         });
       };
 
-      if (isUnarmedMain && naturalWeapons.length > 0) {
-        const natChain = buildNaturalEntries(naturalWeapons, null);
-        if (natChain.length === 1) {
-          // A sole natural attack iterates like any single attack form (BAB 6/11/16 extra attacks at -5 steps).
-          const base = natChain[0];
-          const babNat = Number(character.bab) || 0;
-          for (let k = 1; k <= 3; k++) {
-            if (babNat >= 1 + 5 * k) natChain.push(Object.assign({}, base, { id: base.id + '-it' + k, label: base.label + ' ' + (k + 1), bonus: base.bonus - 5 * k }));
-          }
-        }
-        return natChain;
+      if ((wieldState.mainHandBlocked || isUnarmedMain) && naturalWeapons.length > 0) {
+        return buildNaturalEntries(naturalWeapons, null);
       }
 
       const mainEval = RuleEngine.evaluateWeaponAttack(character, wep, {
@@ -10550,6 +10569,16 @@
       const select = document.getElementById('active-offhand-select');
       if (!select) return;
 
+      const wieldState = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.resolveWieldableGear === 'function')
+        ? RuleEngine.resolveWieldableGear(character)
+        : { activeFormActive: false, offHandBlocked: false, formName: '' };
+      if (wieldState.offHandBlocked) {
+        select.innerHTML = `<option value="None" selected>None (Melded in ${UI.escapeHtml(wieldState.formName || 'Wild Shape')})</option>`;
+        select.value = 'None';
+        select.disabled = true;
+        return;
+      }
+
       const currentMainWep = character.activeWeapon || character.tactical?.weaponSets?.set1?.mainWeapon;
       const mainIsDouble = typeof RuleEngine !== 'undefined' && RuleEngine.isDoubleWeapon ? RuleEngine.isDoubleWeapon(currentMainWep) : false;
       const mainIsTwoHand = typeof RuleEngine !== 'undefined' ? RuleEngine.isTwoHandedWeapon(currentMainWep) : false;
@@ -11598,30 +11627,33 @@
           </div>
         </div>
 
-        <!-- Attacks Rotation Buttons -->
-        <div class="space-y-1">
+        <!-- Attacks Rotation Buttons (Shared PC Attack Rotation Style — Phase P5 #11) -->
+        <div class="space-y-1.5">
           <div class="text-[10px] font-bold uppercase tracking-wider text-amber-400 flex items-center justify-between">
-            <span>⚔️ ATTACK ROTATIONS (ROLL TO-HIT &amp; DAMAGE)</span>
-            <span class="text-slate-500 font-mono text-[10px]">${stats.attacks.length} Attacks</span>
+            <span>⚔️ ATTACK ROTATION</span>
+            <span class="text-slate-500 font-mono text-[10px]">${stats.attacks.reduce((sum, a) => sum + (Number(a.count) || 1), 0)} Strikes</span>
           </div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-            ${stats.attacks.map((atk, idx) => `
-              <button type="button" data-action="combat:roll-companion-attack" data-atk-idx="${idx}" class="w-full p-2 bg-gradient-to-r from-amber-950/60 to-slate-900 hover:from-amber-900/80 hover:to-slate-800 border border-amber-600/50 hover:border-amber-400 text-left rounded-lg transition active:scale-[0.98] shadow-sm cursor-pointer flex items-center justify-between gap-2">
-                <div class="min-w-0">
-                  <div class="text-xs font-black text-white flex items-center gap-1">
-                    <span>⚔️</span>
-                    <span class="truncate">${safeEscapeHtml(atk.name)}</span>
-                  </div>
-                  <div class="text-[10px] font-mono text-amber-300 font-bold">
-                    ${atk.formattedAttack} (${atk.formattedDamage})
-                  </div>
-                </div>
-                <div class="px-2 py-1 rounded bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shrink-0 shadow">
-                  ROLL
-                </div>
-              </button>
-            `).join('')}
-          </div>
+          ${(() => {
+            const expanded = [];
+            (stats.attacks || []).forEach((atk, idx) => {
+              const cnt = Math.max(1, Number(atk.count) || 1);
+              for (let c = 0; c < cnt; c++) {
+                const isSec = atk.primary === false;
+                expanded.push({
+                  label: cnt > 1 ? `${atk.name} ${c + 1}` : atk.name,
+                  bonus: atk.attackBonus,
+                  subtitle: atk.formattedDamage || atk.damageDice,
+                  badgeColor: isSec ? 'cyan' : 'amber',
+                  action: 'combat:roll-companion-attack',
+                  dataset: { atkIdx: idx },
+                  title: `${atk.name} ${atk.formattedAttack} (${atk.formattedDamage})`
+                });
+              }
+            });
+            return (window.UI && typeof window.UI.renderAttackRotationHtml === 'function')
+              ? window.UI.renderAttackRotationHtml(expanded, { fullAction: 'combat:roll-companion-full-attack', fullIcon: '🐾' })
+              : '';
+          })()}
         </div>
 
         <!-- Tactical Actions & Special Abilities -->
@@ -11681,70 +11713,156 @@
       });
     }
 
+    function rollCompanionSingleStrikeData(atk) {
+      const d20 = Math.floor(Math.random() * 20) + 1;
+      const isCrit = d20 === 20;
+      const isFumble = d20 === 1;
+      const totalAtk = d20 + atk.attackBonus;
+      const dice3d = [{ type: 'd20', value: d20 }];
+      let dmgRoll = 0;
+      const diceMatch = String(atk.damageDice || '').match(/(\d+)d(\d+)/i);
+      if (diceMatch) {
+        const count = parseInt(diceMatch[1], 10);
+        const sides = parseInt(diceMatch[2], 10);
+        const supported = [4, 6, 8, 10, 12, 20].includes(sides);
+        for (let i = 0; i < count; i++) {
+          const r = Math.floor(Math.random() * sides) + 1;
+          dmgRoll += r;
+          if (supported && dice3d.length < 6) dice3d.push({ type: `d${sides}`, value: r });
+        }
+      } else {
+        dmgRoll = 3;
+      }
+      const totalDmg = Math.max(1, dmgRoll + (Number(atk.damageBonus) || 0));
+      return { atk, d20, isCrit, isFumble, totalAtk, dmgRoll, totalDmg, dice3d };
+    }
+
     function rollCompanionAttack(attackIdx) {
       const activeComp = getActiveCombatCompanion();
       if (!character || !activeComp) return;
       const stats = getActiveCombatCompanionStats();
       if (!stats || !stats.attacks[attackIdx]) return;
 
-      const atk = stats.attacks[attackIdx];
-      const d20 = Math.floor(Math.random() * 20) + 1;
-      const isCrit = d20 === 20;
-      const isFumble = d20 === 1;
-      const totalAtk = d20 + atk.attackBonus;
+      const res = rollCompanionSingleStrikeData(stats.attacks[attackIdx]);
+      const { atk, d20, isCrit, isFumble, totalAtk, dmgRoll, totalDmg, dice3d } = res;
 
-      // Damage roll
-      let dmgRoll = 0;
-      const diceMatch = atk.damageDice.match(/(\d+)d(\d+)/i);
-      if (diceMatch) {
-        const count = parseInt(diceMatch[1], 10);
-        const sides = parseInt(diceMatch[2], 10);
-        for (let i = 0; i < count; i++) {
-          dmgRoll += Math.floor(Math.random() * sides) + 1;
+      const onComplete = () => {
+        const card = document.getElementById('attack-results-card');
+        if (card) {
+          card.classList.remove('hidden');
+          const iconEl = document.getElementById('result-card-icon');
+          if (iconEl) iconEl.textContent = '🐾';
+          const titleEl = document.getElementById('result-card-title');
+          if (titleEl) titleEl.textContent = `${stats.customName} — ${atk.name} Attack`;
+          const subEl = document.getElementById('result-card-subtitle');
+          if (subEl) subEl.textContent = `${stats.baseName} Natural Attack • BAB +${stats.bab} • Str ${stats.abilityMods.str >= 0 ? '+' : ''}${stats.abilityMods.str}`;
+          const grandLabel = document.getElementById('result-grand-total-label');
+          if (grandLabel) grandLabel.textContent = 'Total Natural Attack Damage:';
+          const grandTotalEl = document.getElementById('result-grand-total-damage');
+          if (grandTotalEl) grandTotalEl.textContent = `${totalDmg} HP`;
+
+          const summaryGrid = document.getElementById('result-summary-grid');
+          if (summaryGrid) {
+            summaryGrid.innerHTML = `
+              <div class="p-3 rounded-lg border ${isCrit ? 'bg-rose-950/50 border-rose-500' : (isFumble ? 'bg-slate-900 border-rose-700/60' : 'bg-slate-900 border-amber-700/60')} space-y-1.5">
+                <div class="flex justify-between items-center">
+                  <span class="font-bold text-white text-xs">${UI.escapeHtml(atk.name)} Attack Roll</span>
+                  ${isCrit ? '<span class="badge bg-amber-500 text-black font-black text-[10px]">NAT 20 / CRITICAL</span>' : (isFumble ? '<span class="badge bg-rose-600 text-white font-black text-[10px]">NAT 1 / FUMBLE</span>' : '')}
+                </div>
+                <div class="flex justify-between items-baseline font-mono border-t border-slate-800 pt-1">
+                  <span class="text-xs text-slate-400">Total Attack: <strong class="text-amber-400 text-base font-black">${totalAtk >= 0 ? '+' : ''}${totalAtk}</strong></span>
+                  <span class="text-xs text-slate-400">(d20: <strong class="text-white">${d20}</strong> + ${atk.attackBonus >= 0 ? '+' : ''}${atk.attackBonus})</span>
+                </div>
+                <div class="text-[10px] text-amber-300 font-mono">
+                  Damage: <strong class="text-white text-sm">${totalDmg}</strong> (${UI.escapeHtml(atk.damageDice)} [${dmgRoll}] ${atk.damageBonus >= 0 ? '+ ' + atk.damageBonus : '- ' + Math.abs(atk.damageBonus)})
+                </div>
+              </div>
+            `;
+          }
         }
+
+        showDiceTopToast({
+          icon: '⚔️',
+          title: `${stats.customName} ${atk.name}`,
+          breakdown: `Atk: ${totalAtk} (d20: ${d20}) | Dmg: ${totalDmg}`,
+          total: totalAtk
+        });
+      };
+
+      if (window.Dice3D && typeof window.Dice3D.roll === 'function' && dice3d.length > 0) {
+        window.Dice3D.roll(dice3d.slice(0, 10), onComplete);
       } else {
-        dmgRoll = 3;
+        onComplete();
       }
-      const totalDmg = Math.max(1, dmgRoll + atk.damageBonus);
+    }
 
-      const card = document.getElementById('attack-results-card');
-      if (card) {
-        card.classList.remove('hidden');
-        const iconEl = document.getElementById('result-card-icon');
-        if (iconEl) iconEl.textContent = '🐾';
-        const titleEl = document.getElementById('result-card-title');
-        if (titleEl) titleEl.textContent = `${stats.customName} — ${atk.name} Attack`;
-        const subEl = document.getElementById('result-card-subtitle');
-        if (subEl) subEl.textContent = `${stats.baseName} Natural Attack • BAB +${stats.bab} • Str +${stats.abilityMods.str}`;
-        const grandLabel = document.getElementById('result-grand-total-label');
-        if (grandLabel) grandLabel.textContent = 'Total Natural Attack Damage:';
+    function rollCompanionFullAttack() {
+      const activeComp = getActiveCombatCompanion();
+      if (!character || !activeComp) return;
+      const stats = getActiveCombatCompanionStats();
+      if (!stats || !Array.isArray(stats.attacks) || stats.attacks.length === 0) return;
 
-        const summaryGrid = document.getElementById('result-summary-grid');
-        if (summaryGrid) {
-          summaryGrid.innerHTML = `
-            <div class="p-3 rounded-lg border ${isCrit ? 'bg-rose-950/50 border-rose-500' : (isFumble ? 'bg-slate-900 border-rose-700/60' : 'bg-slate-900 border-amber-700/60')} space-y-1.5">
-              <div class="flex justify-between items-center">
-                <span class="font-bold text-white text-xs">${UI.escapeHtml(atk.name)} Attack Roll</span>
-                ${isCrit ? '<span class="badge bg-amber-500 text-black font-black text-[10px]">NAT 20 / CRITICAL</span>' : (isFumble ? '<span class="badge bg-rose-600 text-white font-black text-[10px]">NAT 1 / FUMBLE</span>' : '')}
-              </div>
-              <div class="flex justify-between items-baseline font-mono border-t border-slate-800 pt-1">
-                <span class="text-xs text-slate-400">Total Attack: <strong class="text-amber-400 text-base font-black">${totalAtk >= 0 ? '+' : ''}${totalAtk}</strong></span>
-                <span class="text-xs text-slate-400">(d20: <strong class="text-white">${d20}</strong> + ${atk.attackBonus >= 0 ? '+' : ''}${atk.attackBonus})</span>
-              </div>
-              <div class="text-[10px] text-amber-300 font-mono">
-                Damage: <strong class="text-white text-sm">${totalDmg}</strong> (${atk.damageDice} [${dmgRoll}] + ${atk.damageBonus})
-              </div>
-            </div>
-          `;
+      const results = [];
+      const dice3dAll = [];
+      stats.attacks.forEach(atk => {
+        const cnt = Math.max(1, Number(atk.count) || 1);
+        for (let c = 0; c < cnt; c++) {
+          const strikeObj = cnt > 1 ? { ...atk, name: `${atk.name} ${c + 1}` } : atk;
+          const r = rollCompanionSingleStrikeData(strikeObj);
+          results.push(r);
+          r.dice3d.forEach(d => { if (dice3dAll.length < 10) dice3dAll.push(d); });
         }
-      }
-
-      showDiceTopToast({
-        icon: '⚔️',
-        title: `${stats.customName} ${atk.name}`,
-        breakdown: `Atk: ${totalAtk} (d20: ${d20}) | Dmg: ${totalDmg}`,
-        total: totalAtk
       });
+
+      const grandDmg = results.reduce((s, r) => s + r.totalDmg, 0);
+      const onComplete = () => {
+        const card = document.getElementById('attack-results-card');
+        if (card) {
+          card.classList.remove('hidden');
+          const iconEl = document.getElementById('result-card-icon');
+          if (iconEl) iconEl.textContent = '🐾';
+          const titleEl = document.getElementById('result-card-title');
+          if (titleEl) titleEl.textContent = `${stats.customName} — Full Attack (${results.length} Strikes)`;
+          const subEl = document.getElementById('result-card-subtitle');
+          if (subEl) subEl.textContent = `${stats.baseName} Full Natural Attack • BAB +${stats.bab} • Str ${stats.abilityMods.str >= 0 ? '+' : ''}${stats.abilityMods.str}`;
+          const grandLabel = document.getElementById('result-grand-total-label');
+          if (grandLabel) grandLabel.textContent = 'Total Full Attack Damage:';
+          const grandTotalEl = document.getElementById('result-grand-total-damage');
+          if (grandTotalEl) grandTotalEl.textContent = `${grandDmg} HP`;
+
+          const summaryGrid = document.getElementById('result-summary-grid');
+          if (summaryGrid) {
+            summaryGrid.innerHTML = results.map(r => `
+              <div class="p-3 rounded-lg border ${r.isCrit ? 'bg-rose-950/50 border-rose-500' : (r.isFumble ? 'bg-slate-900 border-rose-700/60' : 'bg-slate-900 border-amber-700/60')} space-y-1.5">
+                <div class="flex justify-between items-center">
+                  <span class="font-bold text-white text-xs">${UI.escapeHtml(r.atk.name)}</span>
+                  ${r.isCrit ? '<span class="badge bg-amber-500 text-black font-black text-[10px]">NAT 20</span>' : (r.isFumble ? '<span class="badge bg-rose-600 text-white font-black text-[10px]">NAT 1</span>' : '')}
+                </div>
+                <div class="flex justify-between items-baseline font-mono border-t border-slate-800 pt-1">
+                  <span class="text-xs text-slate-400">Atk: <strong class="text-amber-400 text-base font-black">${r.totalAtk >= 0 ? '+' : ''}${r.totalAtk}</strong></span>
+                  <span class="text-[10px] text-slate-400">(d20: ${r.d20} + ${r.atk.attackBonus >= 0 ? '+' : ''}${r.atk.attackBonus})</span>
+                </div>
+                <div class="text-[10px] text-amber-300 font-mono">
+                  Dmg: <strong class="text-white text-sm">${r.totalDmg}</strong> (${UI.escapeHtml(r.atk.damageDice)} [${r.dmgRoll}] ${r.atk.damageBonus >= 0 ? '+ ' + r.atk.damageBonus : '- ' + Math.abs(r.atk.damageBonus)})
+                </div>
+              </div>
+            `).join('');
+          }
+        }
+
+        showDiceTopToast({
+          icon: '🐾',
+          title: `${stats.customName} Full Attack`,
+          breakdown: results.map(r => `${r.atk.name}: ${r.totalAtk} (${r.totalDmg} dmg)`).join(' • '),
+          total: `${grandDmg} DMG`
+        });
+      };
+
+      if (window.Dice3D && typeof window.Dice3D.roll === 'function' && dice3dAll.length > 0) {
+        window.Dice3D.roll(dice3dAll, onComplete);
+      } else {
+        onComplete();
+      }
     }
 
     function rollCompanionTactical(actionType) {
@@ -11833,19 +11951,7 @@
 
       if (!character.tactical) character.tactical = {};
       if (!Array.isArray(character.tactical.savedProfiles)) {
-        character.tactical.savedProfiles = [
-          {
-            id: 'prof_default_1',
-            name: 'Punishing Stance',
-            mode: 'melee',
-            powerAttack: 0,
-            flanking: false,
-            charge: false,
-            higherGround: false,
-            tacticalRiders: ['Punishing Stance'],
-            summary: '1d6'
-          }
-        ];
+        character.tactical.savedProfiles = [];
       }
 
       // Filter by active mode (melee vs ranged)
@@ -15813,6 +15919,9 @@
       });
       Actions.register('combat:roll-companion-attack', (el, data, event) => {
         if (data.atkIdx !== undefined) rollCompanionAttack(Number(data.atkIdx));
+      });
+      Actions.register('combat:roll-companion-full-attack', (el, data, event) => {
+        rollCompanionFullAttack();
       });
       Actions.register('combat:roll-companion-tactical', (el, data, event) => {
         if (data.tactical) rollCompanionTactical(data.tactical);
