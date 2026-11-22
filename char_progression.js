@@ -8536,6 +8536,8 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
 
       const stripEl = document.getElementById('core-companion-strip-container');
       if (stripEl) {
+        const activeComp = activeProgComp;
+        const allComps = getCharacterCompanionsList(character);
         if (activeComp && activeComp.baseMonsterId) {
           const stripStats = (window.RuleEngine && typeof window.RuleEngine.calculateCompanionStats === 'function')
             ? window.RuleEngine.calculateCompanionStats(character, activeComp)
