@@ -6699,7 +6699,7 @@
         window._spellPickerTargetPool = window._currentMagicDiscipline;
       }
       window._spellPickerModalMode = (initialType === 'Maneuver' || initialType === 'Stance') ? 'martial' : 'spell';
-      setSpellPickerType(initialType);
+      setSpellPickerType(initialType, true);
       const sourceSelect = document.getElementById('spell-picker-source-filter');
       if (sourceSelect) {
         if (initialType === 'Spell' && window._spellPickerTargetPool === 'divine' && window._spellPickerIsDomainSlot) {
@@ -6719,14 +6719,17 @@
           searchInput.value = '';
         }
       }
-      renderSpellPickerResults();
       const modal = document.getElementById('spell-maneuver-modal');
       if (modal) modal.classList.remove('hidden');
+      renderSpellPickerResults();
 
       // Every chunk with Spell / Maneuver / Stance rows (srd_spells.json, srd_spells_splat.json, srd_maneuvers.json, ...).
       if (window.SrdCompendium && typeof window.SrdCompendium.ensureTypesLoaded === 'function') {
         window.SrdCompendium.ensureTypesLoaded(SPELL_PICKER_TYPES).then((arrived) => {
-          if (arrived.length) renderSpellPickerResults();
+          if (arrived.length) {
+            _spellCatalogCacheKey = '';
+            renderSpellPickerResults();
+          }
         }).catch(() => {});
       }
     }
@@ -6933,7 +6936,7 @@
       }
     }
 
-    function setSpellPickerType(type) {
+    function setSpellPickerType(type, skipRender = false) {
       window._currentSpellPickerType = type;
       const palette = getSpellPickerCategoryPalette(type);
       applySpellPickerModalTheme(palette);
@@ -6982,7 +6985,7 @@
         }
       }
 
-      renderSpellPickerResults();
+      if (!skipRender) renderSpellPickerResults();
     }
 
     function stripSpellHtml(str) {
@@ -7026,30 +7029,46 @@
     // Record types the spell / maneuver picker lists; the chunks holding them are found through the index.
     const SPELL_PICKER_TYPES = ['Spell', 'Maneuver', 'Stance'];
 
+    let _spellCatalogCacheKey = '';
+    let _spellCatalogCacheList = [];
+    const _spellTraditionCache = new WeakMap();
+
     function getCombinedSpellManeuverCatalog() {
+      const mLen = Array.isArray(masterDb) ? masterDb.length : 0;
+      const srdLoaded = (window.SrdCompendium && typeof window.SrdCompendium.getAllLoaded === 'function')
+        ? window.SrdCompendium.getAllLoaded(['Spell', 'Maneuver', 'Stance'])
+        : [];
+      const cacheKey = `${mLen}:${srdLoaded.length}`;
+      if (_spellCatalogCacheKey === cacheKey && _spellCatalogCacheList.length > 0) {
+        return _spellCatalogCacheList;
+      }
       const seen = new Set();
       const combined = [];
       const addList = (arr) => {
         if (!Array.isArray(arr)) return;
-        arr.forEach(item => {
-          if (!item || !item.name) return;
+        for (let i = 0; i < arr.length; i++) {
+          const item = arr[i];
+          if (!item || !item.name) continue;
           const key = `${String(item.type || item.category || 'spell').toLowerCase()}:${String(item.name).toLowerCase().trim()}`;
-          if (seen.has(key)) return;
+          if (seen.has(key)) continue;
           seen.add(key);
           combined.push(item);
-        });
+        }
       };
       addList(Array.isArray(masterDb) ? masterDb : []);
       if (typeof RuleEngine !== 'undefined' && Array.isArray(RuleEngine.SPLATBOOK_BUFF_SPELLS)) {
         addList(RuleEngine.SPLATBOOK_BUFF_SPELLS);
       }
-      if (window.SrdCompendium && typeof window.SrdCompendium.getAllLoaded === 'function') {
-        addList(window.SrdCompendium.getAllLoaded(['Spell', 'Maneuver', 'Stance']));
-      }
+      addList(srdLoaded);
+      _spellCatalogCacheKey = cacheKey;
+      _spellCatalogCacheList = combined;
       return combined;
     }
 
     function getSpellTraditionAndLevels(item) {
+      if (item && typeof item === 'object' && _spellTraditionCache.has(item)) {
+        return _spellTraditionCache.get(item);
+      }
       const divineLvls = [];
       const domainLvls = [];
       const arcanePrepLvls = [];
@@ -7134,7 +7153,7 @@
       const isPsionicOnly = psionicLvls.length > 0 && !isArcane && !isDivine && !isDomain;
       const hasAnyTradition = isArcane || isDivine || isDomain || isPsionicOnly;
 
-      return {
+      const result = {
         isArcane,
         isDivine,
         isDomain,
@@ -7154,6 +7173,8 @@
         clsMap,
         domMap
       };
+      if (item && typeof item === 'object') _spellTraditionCache.set(item, result);
+      return result;
     }
 
     function resolveAutoSpellFilterSource(targetPool = 'spontaneous') {
@@ -7934,7 +7955,18 @@
             payload: { pool: targetPool, spellEntry: newSpellEntry, isDomainSpell: isDomainAdded },
             meta: { label: isDomainAdded ? `Prepare Domain Spell: ${item.name}` : `Add Spell: ${item.name}` }
           });
-          renderAll({ skipRecompute: true });
+          // Fast targeted refresh of only the active spell pool while picker modal is open (avoids 7-tab full DOM redraw lag)
+          const clsStatus = typeof checkCharacterMagicClasses === 'function' ? checkCharacterMagicClasses() : {};
+          if (targetPool === 'divine' && typeof renderDivineDisciplineView === 'function') {
+            renderDivineDisciplineView(clsStatus.hasDivine);
+          } else if (targetPool === 'prepared' && typeof renderPreparedDisciplineView === 'function') {
+            renderPreparedDisciplineView(clsStatus.hasPrepared);
+          } else if (typeof renderKnownSpells === 'function') {
+            renderKnownSpells();
+          }
+          if (typeof renderCombatCategorySpells === 'function') {
+            requestAnimationFrame(() => { try { renderCombatCategorySpells(); } catch (_) {} });
+          }
         } else {
           character.spellcasting[poolKey].push(newSpellEntry);
           saveStateToStorage(true);
