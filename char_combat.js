@@ -10548,7 +10548,6 @@
 
       // 4. Utility Column: Quick Consumables, Wild Shape & Companion Combat
       try { renderCockpitConsumables(); } catch (e) { console.error('renderCockpitConsumables error:', e); }
-      try { renderCockpitWildShapeBar(); } catch (e) { console.error('renderCockpitWildShapeBar error:', e); }
       try { renderCockpitCompanionCard(); } catch (e) { console.error('renderCockpitCompanionCard error:', e); }
 
       // 5. Pin Drawers (Spell, Defense, and Ranged Ammunition Drawers)
@@ -11016,13 +11015,22 @@
 
       // 0. Utility and healing sub-powers (engine-derived; attack-roll powers stay in Attack Rotation)
       const activatedAbilities = getCharacterActivatedAbilities(character);
+      const wildShapeForm = getCombatActiveFormView();
+      const wildShapeHtml = buildWildShapeActivatedCardHtml(wildShapeForm);
+      const totalAbilitiesCount = activatedAbilities.length + (wildShapeHtml ? 1 : 0);
+
+      // Remove any legacy standalone Wild Shape bar outside Activated Abilities & Items
+      const legacyWsBar = document.getElementById('cockpit-wild-shape-bar');
+      if (legacyWsBar && !listEl.contains(legacyWsBar)) {
+        legacyWsBar.remove();
+      }
 
       const consSummary = document.getElementById('combat-consumables-collapsed-summary');
       if (consSummary) {
-        consSummary.textContent = `${activatedAbilities.length} Abilities • ${dailyItems.length} Items • ${normalConsumables.length} Consumables`;
+        consSummary.textContent = `${totalAbilitiesCount} Abilities • ${dailyItems.length} Items • ${normalConsumables.length} Consumables`;
       }
 
-      if (activatedAbilities.length === 0 && dailyItems.length === 0 && normalConsumables.length === 0) {
+      if (totalAbilitiesCount === 0 && dailyItems.length === 0 && normalConsumables.length === 0) {
         listEl.innerHTML = '<div class="text-[11px] text-slate-500 italic p-2 text-center">No activated abilities, charged items or consumables.</div>';
         return;
       }
@@ -11030,9 +11038,9 @@
       const sectionHeader = (icon, label) => `<div class="text-[10px] font-black uppercase tracking-wider text-slate-400 pt-1">${icon} ${label}</div>`;
       let html = '';
 
-      // Abilities (utility + healing sub-powers)
-      if (activatedAbilities.length > 0) {
-        html += sectionHeader('✨', 'Abilities') + renderSpecialAttackAbilityCardsHtml(character, activatedAbilities);
+      // Abilities (Wild Shape + utility/healing sub-powers)
+      if (totalAbilitiesCount > 0) {
+        html += sectionHeader('✨', 'Abilities') + wildShapeHtml + (activatedAbilities.length > 0 ? renderSpecialAttackAbilityCardsHtml(character, activatedAbilities) : '');
       }
 
       // Charged Items (daily-charge items)
@@ -11234,30 +11242,13 @@
       return { active: false, eligible: false };
     }
 
-    function renderCockpitWildShapeBar() {
-      const grid = document.getElementById('combat-modifiers-3x3-grid');
-      if (!grid || !grid.parentElement) return;
-      const af = getCombatActiveFormView();
-      let bar = document.getElementById('cockpit-wild-shape-bar');
-      if (!af || (!af.eligible && !af.active)) {
-        if (bar) {
-          bar.classList.add('hidden');
-          bar.innerHTML = '';
-        }
-        return;
-      }
-      if (!bar) {
-        bar = document.createElement('div');
-        bar.id = 'cockpit-wild-shape-bar';
-        bar.className = 'mb-2';
-        grid.parentElement.insertBefore(bar, grid);
-      }
-      bar.classList.remove('hidden');
+    function buildWildShapeActivatedCardHtml(af) {
+      if (!af || (!af.eligible && !af.active)) return '';
 
       if (!af.active) {
         const typesStr = Array.isArray(af.allowedTypes) ? af.allowedTypes.join('/') : 'Animal';
-        bar.innerHTML = `
-          <div class="px-2.5 py-1.5 rounded-xl bg-slate-900/90 border border-emerald-700/50 flex flex-wrap items-center justify-between gap-2 text-xs">
+        return `
+          <div id="cockpit-wild-shape-bar" class="px-2.5 py-1.5 rounded-xl bg-slate-900/90 border border-emerald-700/50 flex flex-wrap items-center justify-between gap-2 text-xs">
             <div class="flex items-center gap-1.5 min-w-0">
               <span class="text-emerald-400 font-black text-sm">🐾</span>
               <span class="font-bold text-emerald-300">Wild Shape</span>
@@ -11266,7 +11257,6 @@
             <button type="button" data-action="combat:open-wild-shape-modal" class="px-2.5 py-1 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-[11px] shadow-sm transition cursor-pointer">Assume Form</button>
           </div>
         `;
-        return;
       }
 
       const natBtns = (af.naturalAttacks || []).map((atk, idx) => {
@@ -11284,8 +11274,8 @@
         `;
       }).join('');
 
-      bar.innerHTML = `
-        <div class="p-2.5 rounded-xl bg-emerald-950/60 border border-emerald-500/70 space-y-2 text-xs shadow-sm">
+      return `
+        <div id="cockpit-wild-shape-bar" class="p-2.5 rounded-xl bg-emerald-950/60 border border-emerald-500/70 space-y-2 text-xs shadow-sm">
           <div class="flex flex-wrap items-center justify-between gap-2">
             <div class="flex flex-wrap items-center gap-1.5 min-w-0">
               <span class="font-black text-emerald-300">🐾 ${UI.escapeHtml(af.name)}</span>
@@ -11300,6 +11290,10 @@
           ${natBtns ? `<div class="flex flex-wrap items-center gap-1.5">${natBtns}</div>` : ''}
         </div>
       `;
+    }
+
+    function renderCockpitWildShapeBar() {
+      renderCockpitConsumables();
     }
 
     function openWildShapeModal() {
