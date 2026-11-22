@@ -5458,10 +5458,23 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
         });
       }
 
-      // 3. Known / Arcane & Divine classes
-      const classesStr = (character.classes || '').toLowerCase();
-      const hasArcane = classesStr.includes('sorcerer') || classesStr.includes('wizard') || classesStr.includes('duskblade') || classesStr.includes('bard') || classesStr.includes('warlock');
-      const hasDivine = classesStr.includes('cleric') || classesStr.includes('druid') || classesStr.includes('paladin') || classesStr.includes('ranger') || (Array.isArray(character?.spellcasting?.divineSlots) && character.spellcasting.divineSlots.some(s => (Number(s.daily) || 0) > 0));
+      // 3. Known / Arcane & Divine classes (data-first via RuleEngine.classifyClassToMagicDiscipline)
+      const activeClsMapForPrereq = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getActiveClassLevels === 'function')
+        ? RuleEngine.getActiveClassLevels(character, { includeNpc: true })
+        : {};
+      const activeClsList = Object.keys(activeClsMapForPrereq);
+      const hasArcane = activeClsList.some(c => {
+        const d = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.classifyClassToMagicDiscipline === 'function')
+          ? RuleEngine.classifyClassToMagicDiscipline(c, character)
+          : null;
+        return d === 'prepared' || d === 'spontaneous';
+      }) || /\b(sorcerer|wizard|duskblade|bard|warlock|assassin|hexblade|warmage|beguiler|dread necromancer|wu jen)\b/i.test(character.classes || '');
+      const hasDivine = activeClsList.some(c => {
+        const d = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.classifyClassToMagicDiscipline === 'function')
+          ? RuleEngine.classifyClassToMagicDiscipline(c, character)
+          : null;
+        return d === 'divine';
+      }) || /\b(cleric|druid|paladin|ranger|blackguard|favored soul|spirit shaman|shugenja)\b/i.test(character.classes || '') || (Array.isArray(character?.spellcasting?.divineSlots) && character.spellcasting.divineSlots.some(s => (Number(s.daily) || 0) > 0));
 
       // 4. Race & Alignment
       const raceStr = (character.race || '').toLowerCase();

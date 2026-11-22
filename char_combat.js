@@ -3496,10 +3496,17 @@
       const hasAtk = Boolean(atkType);
       let d20Atk = 0, atkBonus = 0, totalAtk = 0, isAtkCrit = false;
       if (hasAtk) {
-        const bab = Number(character?.bab) || 0;
-        const dexMod = RuleEngine ? RuleEngine.getAbilityMod(character?.abilities?.dex || 10) : 0;
-        const strMod = RuleEngine ? RuleEngine.getAbilityMod(character?.abilities?.str || 10) : 0;
-        atkBonus = (atkType === 'ranged_touch') ? (bab + dexMod) : (bab + strMod);
+        const touchEval = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.evaluateTouchAttack === 'function')
+          ? RuleEngine.evaluateTouchAttack(character, { attackKind: atkType === 'ranged_touch' ? 'ranged-touch' : 'melee-touch', name: spell.name })
+          : null;
+        if (touchEval && Number.isFinite(Number(touchEval.total))) {
+          atkBonus = Number(touchEval.total);
+        } else {
+          const bab = Number(character?.effectiveBab ?? character?.bab) || 0;
+          const dexMod = RuleEngine ? RuleEngine.getAbilityMod(character?.abilities?.dex || 10) : 0;
+          const strMod = RuleEngine ? RuleEngine.getAbilityMod(character?.abilities?.str || 10) : 0;
+          atkBonus = (atkType === 'ranged_touch') ? (bab + dexMod) : (bab + strMod);
+        }
         d20Atk = Math.floor(Math.random() * 20) + 1;
         totalAtk = d20Atk + atkBonus;
         isAtkCrit = (d20Atk === 20);

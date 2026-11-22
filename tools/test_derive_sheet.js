@@ -7354,6 +7354,24 @@ function runDeriveSheetTests() {
         mcTumble && mcTumble.ranks === 9 && mcTumble.crossClassRanks === 1,
         JSON.stringify({ nestedChoice, slamAtk, elDodge: elFormChar.acBreakdown.dodge, mcTumble })
       );
+
+      // 19. Dalga 4 Invariants: Pure hydrateBoonModifiers (Homebrew: Ride +4 without mutating rawFeat), Cone of Cold English projectileName
+      const rideFeat = { name: 'Homebrew: Ride +4', category: 'Homebrew Boon', benefit: '+4 bonus to Ride checks' };
+      const boonChar = {
+        level: 5, bab: 5,
+        baseAbilities: { str: 14, dex: 14, con: 14, int: 10, wis: 10, cha: 10 },
+        feats: [rideFeat]
+      };
+      RuleEngine.recalculateCharacter(boonChar);
+      const rideEval = RuleEngine.evaluateSkillBonus(boonChar, 'ride', 'Ride', 'dex');
+      const coneScale = RuleEngine.resolveSpellDynamicScaling({ name: 'Cone of Cold' }, 10);
+      check(
+        'Dalga 4: Pure hydrateBoonModifiers applies Homebrew: Ride +4 without mutating feat object, Cone of Cold projectileName="Cone"',
+        rideEval.total === 4 &&
+        rideFeat.modifiers === undefined &&
+        coneScale && coneScale.projectileName === 'Cone',
+        JSON.stringify({ rideTotal: rideEval.total, mutated: rideFeat.modifiers !== undefined, projectileName: coneScale?.projectileName })
+      );
     }
   }
 

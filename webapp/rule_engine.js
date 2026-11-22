@@ -7781,6 +7781,48 @@ const RuleEngine = {
     return 0;
   },
 
+  // Pure cached Homebrew/Boon modifier synthesizer (never mutates featObj or shared Master DB entries)
+  hydrateBoonModifiers(featObj, cleanNameArg = '') {
+    if (!featObj || typeof featObj !== 'object') return [];
+    const cleanName = String(cleanNameArg || featObj.name || '').toLowerCase().trim();
+    const catLow = String(featObj.category || '').toLowerCase();
+    const isBoonLike = cleanName.includes('boon') || cleanName.includes('grant') || catLow.includes('boon') || cleanName.startsWith('homebrew:');
+    if (!isBoonLike) return [];
+    const benefitText = String(featObj.benefit || featObj.description || '').trim();
+    const cacheKey = `${cleanName}|${benefitText}`;
+    if (!this._boonModCache) this._boonModCache = new Map();
+    if (this._boonModCache.has(cacheKey)) {
+      return this._boonModCache.get(cacheKey);
+    }
+    let mods = [];
+    if (typeof window !== 'undefined' && typeof window.synthesizeHomebrewFromQuery === 'function') {
+      const synth = window.synthesizeHomebrewFromQuery(cleanName, benefitText, 'Homebrew');
+      if (synth && Array.isArray(synth.modifiers) && synth.modifiers.length > 0) {
+        mods = synth.modifiers;
+      }
+    }
+    if (mods.length === 0) {
+      const hpBoonMatch = `${cleanName} ${benefitText}`.match(/\b(?:hit\s*points|hp)\b.*?([+-]?\d+)|([+-]?\d+)\s*(?:bonus\s*)?(?:hit\s*points|hp)\b/i);
+      if (hpBoonMatch && !/=/.test(cleanName)) {
+        const hpVal = parseInt(hpBoonMatch[1] || hpBoonMatch[2], 10);
+        if (!isNaN(hpVal) && hpVal !== 0) {
+          mods = [{ target: 'hp', value: hpVal, type: 'untyped', condition: null }];
+        }
+      }
+    }
+    if (mods.length === 0) {
+      const skillBoonMatch = `${cleanName} ${benefitText}`.match(/\b(?:homebrew:\s*)?([a-z][a-z\s()/-]{1,30}?)\s*([+-]\d+)\b/i);
+      if (skillBoonMatch && !/\b(?:hp|hit points|ac|armor|str|dex|con|int|wis|cha|bab|fort|ref|will|save|saves|attack|damage|init|speed|cl)\b/i.test(skillBoonMatch[1].trim())) {
+        const skVal = parseInt(skillBoonMatch[2], 10);
+        if (!isNaN(skVal) && skVal !== 0) {
+          mods = [{ target: `skill.${skillBoonMatch[1].trim().toLowerCase()}`, value: skVal, type: 'untyped', condition: null }];
+        }
+      }
+    }
+    this._boonModCache.set(cacheKey, mods);
+    return mods;
+  },
+
   // Central Dynamic Spell Scaling Resolver (D&D 3.5e RAW)
   // Calculates dynamic dice formula, projectile counts (missiles/rays), static bonuses, and display tags based on Caster Level (CL)
   resolveSpellDynamicScaling(spell, casterLevel = 1) {
@@ -7907,7 +7949,7 @@ const RuleEngine = {
         name: rawName,
         casterLevel: cl,
         projectiles: 1,
-        projectileName: 'Koni',
+        projectileName: 'Cone',
         diceCount,
         dieSides,
         staticBonus: 0,
@@ -10036,31 +10078,14 @@ const RuleEngine = {
             ? featObj.modifiers
             : (dbEntry && Array.isArray(dbEntry.modifiers) ? dbEntry.modifiers : [])));
 
-      // Auto-hydrate legacy Homebrew entries (e.g. "Homebrew: HP +20", "Homebrew: Ride +4", "Homebrew: Natural Armor AC (+2 (+1/4 Lvl))") if saved without V2 modifiers or missing scaling formula
+      // Auto-hydrate legacy Homebrew entries purely via cached helper (never mutating rawFeat or shared dbEntry)
       const needsScalingFormulaHydration = (cleanName.includes('boon') || cleanName.includes('grant') || String(featObj.category || '').toLowerCase().includes('boon'))
         && /([+-]?\d+)\s*(?:\/|\bper\b|\bevery\b)\s*(\d+)?\s*(?:lvl|level|cl)s?\b/i.test(`${cleanName} ${featObj.benefit || featObj.description || ''}`)
         && !featMods.some(m => m && m.formula);
       if ((featMods.length === 0 || needsScalingFormulaHydration) && (cleanName.includes('boon') || cleanName.includes('grant') || String(featObj.category || '').toLowerCase().includes('boon'))) {
-        if (typeof window !== 'undefined' && typeof window.synthesizeHomebrewFromQuery === 'function') {
-          const synth = window.synthesizeHomebrewFromQuery(cleanName, featObj.benefit || featObj.description || '', 'Homebrew');
-          if (synth && Array.isArray(synth.modifiers) && synth.modifiers.length > 0) {
-            featMods = synth.modifiers;
-          }
-        }
-        if (featMods.length === 0) {
-          const hpBoonMatch = `${cleanName} ${featObj.benefit || ''}`.match(/\b(?:hit\s*points|hp)\b.*?([+-]?\d+)|([+-]?\d+)\s*(?:bonus\s*)?(?:hit\s*points|hp)\b/i);
-          if (hpBoonMatch && !/=/.test(cleanName)) {
-            const hpVal = parseInt(hpBoonMatch[1] || hpBoonMatch[2], 10);
-            if (!isNaN(hpVal) && hpVal !== 0) {
-              featMods = [{ target: 'hp', value: hpVal, type: 'untyped', condition: null }];
-            }
-          }
-        }
-        if (featMods.length > 0) {
-          if (typeof rawFeat === 'object') rawFeat.modifiers = featMods;
-          if (dbEntry && (!Array.isArray(dbEntry.modifiers) || dbEntry.modifiers.length === 0)) {
-            dbEntry.modifiers = featMods;
-          }
+        const hydratedBoonMods = this.hydrateBoonModifiers(featObj, cleanName);
+        if (hydratedBoonMods.length > 0) {
+          featMods = hydratedBoonMods;
         }
       }
 
@@ -12873,6 +12898,10 @@ const RuleEngine = {
       const hasInlineMods = Array.isArray(featObj.modifiers) && featObj.modifiers.length > 0;
       const dbFeat = hasInlineMods ? null : (this.getMasterDbEntry(featObj) || this.getMasterDbEntry(fName));
       let rawMods = hasInlineMods ? featObj.modifiers : (dbFeat && Array.isArray(dbFeat.modifiers) ? dbFeat.modifiers : []);
+      if (rawMods.length === 0 && typeof this.hydrateBoonModifiers === 'function') {
+        const hydratedBoon = this.hydrateBoonModifiers(featObj, fKey);
+        if (hydratedBoon.length > 0) rawMods = hydratedBoon;
+      }
       if (!hasInlineMods && dbFeat && Array.isArray(dbFeat.effects) && dbFeat.effects.length > 0 && (this.extractEntryChoice(featObj) || /\(/.test(fName))) {
         const evalWithChoice = this.evaluateV3Entry(
           Object.assign({}, dbFeat, featObj, { id: featObj.id || dbFeat.id, name: fName, _v3Evaluated: false, modifiers: [] }),
@@ -12962,7 +12991,7 @@ const RuleEngine = {
     if (!character) return { total: 0, breakdown: [] };
     const sName = (skillName || '').toLowerCase().trim();
     const sKey = (skillKey || '').toLowerCase().trim();
-    const isKnowledge = sName.startsWith('knowledge') || sKey.startsWith('knowledge') || sName.includes('bilgi');
+    const isKnowledge = sName.startsWith('knowledge') || sKey.startsWith('knowledge');
     const aliases = this.getSkillAliases(sKey, sName, character);
     const baseKeyNorm = sKey.replace(/[^a-z0-9]/g, '');
     const harvested = preHarvested || this._harvestSkillBonusSources(character);
