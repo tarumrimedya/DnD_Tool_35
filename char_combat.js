@@ -5243,9 +5243,9 @@
           }).join(' • ');
           container.innerHTML = `
             <div class="p-3 rounded-xl border border-emerald-700/60 bg-emerald-950/60 text-xs space-y-1.5">
-              <div class="flex items-center justify-between gap-2">
+              <div class="flex flex-wrap items-center justify-between gap-2">
                 <span class="font-bold text-emerald-300">🐾 Natural Form Active — ${UI.escapeHtml(wieldState.formName || 'Wild Shape')}</span>
-                <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-950 text-slate-400 border border-slate-700">Weapons &amp; Shield Melded</span>
+                <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-950 text-emerald-300 border border-emerald-700/60 whitespace-nowrap shrink-0">Weapons &amp; Shield Melded</span>
               </div>
               <p class="text-[11px] font-mono text-slate-300">${UI.escapeHtml(natSummary || 'Use Natural Attacks in Attack Rotation above.')}</p>
             </div>
@@ -11274,7 +11274,7 @@
         const cnt = atk.count > 1 ? `${atk.count}× ` : '';
         return `
           <button type="button" data-action="combat:roll-form-attack" data-atk-idx="${idx}"
-                  class="px-2 py-1 rounded-lg bg-slate-950 hover:bg-emerald-950 border border-emerald-600/60 text-[11px] font-mono text-emerald-200 hover:text-white transition cursor-pointer inline-flex items-center gap-1">
+                  class="px-1.5 py-0.5 rounded bg-slate-950 hover:bg-emerald-950 border border-emerald-700/60 text-[10px] font-mono text-emerald-300 hover:text-white transition cursor-pointer inline-flex items-center gap-1">
             <span>⚔️</span>
             <span class="font-bold">${UI.escapeHtml(cnt + atk.name)}</span>
             <span class="text-amber-300">${sign}${atk.attackBonus}</span>
