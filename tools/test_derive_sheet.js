@@ -7166,6 +7166,195 @@ function runDeriveSheetTests() {
       ddRankMap['cab-trap-sense'] === 2,
       JSON.stringify(ddRankMap)
     );
+
+    // 16. Dalga 0 Invariants: Divine Power BAB non-mutation, Long Rest activeModes cleanup, Smite Evil lego weapon wiring, bodySlots saveBonuses
+    {
+      const dpChar = {
+        id: 'test-dalga0-idempotence',
+        name: 'Aurelius Test',
+        level: 20,
+        bab: 15,
+        baseAbilities: { str: 16, dex: 10, con: 14, int: 10, wis: 20, cha: 16 },
+        abilities: { str: 16, dex: 10, con: 14, int: 10, wis: 20, cha: 16 },
+        levelProgression: Array.from({ length: 20 }, (_, idx) => ({ level: idx + 1, className: 'Cleric', active: true })),
+        bodySlots: {
+          shoulders: {
+            id: 'mi-test-save-cloak',
+            name: 'Cloak of Luck +2',
+            active: true,
+            schemaVersion: 3,
+            effects: [{ type: 'stat', targets: ['save.all'], mode: 'flat', value: 2, btype: 'Luck' }]
+          }
+        },
+        buffs: [{
+          id: 'spl-divine-power',
+          name: 'Divine Power',
+          active: true,
+          schemaVersion: 3,
+          effects: [
+            { type: 'stat', targets: ['str'], mode: 'flat', value: 6, btype: 'Enhancement' },
+            { type: 'stat', mode: 'replaceStat', swapTarget: 'bab', targets: ['bab'], subOp: 'max', fromStat: 'bab', toStat: '@level', formula: '@level', swapScope: 'all' }
+          ]
+        }],
+        activeModes: { 'cab-rage': 'mode-rage-active', 'wpn-lance': '1h-mounted' },
+        weapons: [{ id: 'wpn-lance', name: 'Lance', dice: '1d8', grip: '1-Hand' }]
+      };
+      CharStore.clearHistory();
+      CharStore.dispatch({ type: 'doc/replace', payload: JSON.parse(JSON.stringify(dpChar)), meta: { skipHistory: true } });
+      const sheetOn = CharStore.getSheet();
+      const docOn = CharStore.getDoc();
+      const babWhileOn = docOn.effectiveBab;
+      const persistedBabWhileOn = docOn.bab;
+      const evSaves = sheetOn._workingSnapshot?.evaluatedSaves || {};
+      const luckSaveApplied = Number(evSaves.bonusFort) === 2 && Number(evSaves.bonusRef) === 2 && Number(evSaves.bonusWill) === 2;
+      // Turn off Divine Power via buff toggle / longRest and verify BAB returns to 15 and weapon mode persists
+      docOn.buffs[0].active = false;
+      CharStore.dispatch({ type: 'hud/longRest', payload: { isFullHeal: true } });
+      const docAfterRest = CharStore.getDoc();
+      check(
+        'Dalga 0.1/0.4/0.5: Divine Power effectiveBab=20 without mutating doc.bab (stays 15 after Long Rest), bodySlots Luck save applies, Long Rest clears cab-rage but preserves wpn-lance',
+        babWhileOn === 20 &&
+        persistedBabWhileOn === 15 &&
+        docAfterRest.bab === 15 &&
+        docAfterRest.effectiveBab === 15 &&
+        luckSaveApplied &&
+        !docAfterRest.activeModes['cab-rage'] &&
+        docAfterRest.activeModes['wpn-lance'] === '1h-mounted',
+        JSON.stringify({ babWhileOn, persistedBabWhileOn, afterBab: docAfterRest.bab, afterEffBab: docAfterRest.effectiveBab, luckSaveApplied, activeModes: docAfterRest.activeModes })
+      );
+
+      // Smite Evil (cab-smite-evil active mode) reaches evaluateWeaponAttack via legoWepEntries
+      const palChar = {
+        name: 'Kaelen Test',
+        level: 15,
+        bab: 15,
+        classLevels: { Paladin: 15 },
+        levelProgression: Array.from({ length: 15 }, (_, idx) => ({ level: idx + 1, className: 'Paladin', active: true })),
+        baseAbilities: { str: 18, dex: 10, con: 14, int: 10, wis: 14, cha: 22 },
+        abilities: { str: 18, dex: 10, con: 14, int: 10, wis: 14, cha: 22 },
+        activeModes: {}
+      };
+      const lance = { id: 'wpn-lance', name: 'Lance', dice: '1d8', grip: '1-Hand' };
+      RuleEngine.recalculateCharacter(palChar);
+      const offEval = RuleEngine.evaluateWeaponAttack(palChar, lance, { grip: '1-Hand' });
+      palChar.activeModes = { 'cab-smite-evil': 'mode-smite-on' };
+      RuleEngine.recalculateCharacter(palChar);
+      const onEval = RuleEngine.evaluateWeaponAttack(palChar, lance, { grip: '1-Hand' });
+      check(
+        'Dalga 0.3 Smite Evil lego weapon wiring: +6 CHA Atk & +15 Paladin Lvl Dmg applied via activeModes',
+        (onEval.netAttackBonus - offEval.netAttackBonus) === 6 &&
+        (onEval.netFlatDamage - offEval.netFlatDamage) === 15,
+        JSON.stringify({ offAtk: offEval.netAttackBonus, onAtk: onEval.netAttackBonus, offDmg: offEval.netFlatDamage, onDmg: onEval.netFlatDamage })
+      );
+
+      // 17. Dalga 1 Invariants: Paladin 15 CL=7 & L1-4 slots, Assassin 5 spontaneous slots, Cloak of Resistance +5, Bear's Endurance no double-dip, Steadfast Determination max(WIS,CON), Swordsage Light Armor AC, Rage calm DEX
+      const palSpellView = RuleEngine.deriveSpellsView({
+        level: 15,
+        levelProgression: Array.from({ length: 15 }, (_, idx) => ({ level: idx + 1, className: 'Paladin', active: true })),
+        abilities: { str: 18, dex: 10, con: 14, int: 10, wis: 16, cha: 20 }
+      });
+      const palDivLevels = (palSpellView.slotsByLevelView?.divineArray || []).map(s => s.level);
+      const asnSpellView = RuleEngine.deriveSpellsView({
+        level: 5,
+        levelProgression: Array.from({ length: 5 }, (_, idx) => ({ level: idx + 1, className: 'Assassin', active: true })),
+        abilities: { str: 12, dex: 18, con: 14, int: 16, wis: 10, cha: 10 }
+      });
+      const asnSpontLevels = (asnSpellView.slotsByLevelView?.spontaneousArray || []).map(s => s.level);
+      check(
+        'Dalga 1B: Paladin 15 CL=7 & L1-4 only, Assassin 5 Spontaneous L1-3, Dragonfire Adept -> spontaneous',
+        palSpellView.casterStatsView?.divine?.cl === 7 &&
+        JSON.stringify(palDivLevels) === '[1,2,3,4]' &&
+        JSON.stringify(asnSpontLevels) === '[1,2,3]' &&
+        RuleEngine.classifyClassToMagicDiscipline('Dragonfire Adept') === 'spontaneous',
+        JSON.stringify({ palCl: palSpellView.casterStatsView?.divine?.cl, palDivLevels, asnSpontLevels })
+      );
+
+      // Cloak of Resistance +5, Steadfast Determination WIS 22 > CON 18, Swordsage Light Armor AC, Rage calm DEX
+      const sdCleric = {
+        level: 20, bab: 15, baseSaves: { fort: 12, ref: 6, will: 12 },
+        baseAbilities: { str: 14, dex: 10, con: 18, int: 10, wis: 22, cha: 14 },
+        feats: [{ id: 'feat-steadfast-determination', name: 'Steadfast Determination' }],
+        bodySlots: { shoulders: { baseItemId: 'mi-cloak-of-resistance-plus-5', name: 'Cloak of Resistance +5', active: true } }
+      };
+      RuleEngine.recalculateCharacter(sdCleric);
+      const barbCalm = {
+        level: 20, bab: 20,
+        classLevels: { Barbarian: 20 },
+        levelProgression: Array.from({ length: 20 }, (_, idx) => ({ level: idx + 1, className: 'Barbarian', active: true })),
+        baseAbilities: { str: 20, dex: 12, con: 16, int: 10, wis: 10, cha: 10 },
+        activeModes: {}
+      };
+      RuleEngine.recalculateCharacter(barbCalm);
+      const ssLight = {
+        level: 4, bab: 3,
+        classLevels: { Swordsage: 4 },
+        levelProgression: Array.from({ length: 4 }, (_, idx) => ({ level: idx + 1, className: 'Swordsage', active: true })),
+        baseAbilities: { str: 12, dex: 16, con: 14, int: 10, wis: 16, cha: 10 },
+        bodySlots: { armor: { baseItemId: 'arm-chain-shirt', name: 'Chain Shirt', type: 'Armor', category: 'Light', armor: { armorType: 'Light', armorBonus: 4, maxDex: 4 }, active: true } }
+      };
+      RuleEngine.recalculateCharacter(ssLight);
+      check(
+        'Dalga 1A: Cloak of Resistance +5 applies (+5), Steadfast Det keeps WIS +6 over CON +4 (Will=23), Barbarian calm DEX stays 12, Swordsage keeps +3 WIS AC in Light Armor (AC=20)',
+        sdCleric.evaluatedSaves.bonusFort === 5 &&
+        sdCleric.evaluatedSaves.will === 23 &&
+        barbCalm.abilities.dex === 12 &&
+        ssLight.acBreakdown.total === 20,
+        JSON.stringify({ cloakFortBonus: sdCleric.evaluatedSaves.bonusFort, sdWill: sdCleric.evaluatedSaves.will, barbDex: barbCalm.abilities.dex, ssAc: ssLight.acBreakdown.total })
+      );
+
+      // 18. Dalga 2 Invariants: Nested-paren @Choice extraction, Elemental Wild Shape Weapon Finesse & Dodge, Multiclass crossClassRanks
+      const nestedChoice = RuleEngine.extractEntryChoice({ name: 'Skill Focus (Knowledge (Arcana))' });
+      const elFormChar = {
+        level: 20, bab: 15,
+        classLevels: { Druid: 20 },
+        levelProgression: Array.from({ length: 20 }, (_, idx) => ({ level: idx + 1, className: 'Druid', active: true })),
+        baseAbilities: { str: 10, dex: 12, con: 14, int: 10, wis: 22, cha: 10 },
+        activeForm: {
+          active: true,
+          kind: 'wild_shape',
+          baseMonsterId: 'mon-air-elemental-huge-test',
+          bypassValidation: true,
+          monsterSnapshot: {
+            id: 'mon-air-elemental-huge-test',
+            name: 'Air Elemental, Huge',
+            creatureType: 'Elemental',
+            size: 'Huge',
+            hitDice: { count: 16, die: 8 },
+            abilities: { str: 18, dex: 29, con: 18, int: 6, wis: 11, cha: 11 },
+            naturalArmor: 4,
+            feats: ['Dodge', 'Flyby Attack', 'Improved Initiative', 'Weapon Finesse'],
+            attacks: [{ name: 'Slam', count: 2, primary: true, damageDice: '2d8', dmgType: 'B' }]
+          }
+        }
+      };
+      RuleEngine.recalculateCharacter(elFormChar);
+      const elFormView = RuleEngine.deriveActiveFormView(elFormChar);
+      const slamAtk = elFormView.naturalAttacks?.[0]?.attackBonus;
+      // BAB 15 + DEX 9 (Weapon Finesse from Elemental Form) + Size -2 (Huge) = +22! (STR +4 would have been +17)
+      // Also Dodge bonus feat grants +1 Dodge AC!
+      const mcChar = {
+        id: 'test-mc-skill-cost',
+        name: 'Vex MC Test',
+        level: 6,
+        levelProgression: [
+          ...Array.from({ length: 5 }, (_, idx) => ({ level: idx + 1, className: 'Rogue', active: true })),
+          { level: 6, className: 'Fighter', active: true }
+        ],
+        skills: [{ key: 'tumble', name: 'Tumble', ranks: 8, isClass: true, crossClassRanks: 0 }]
+      };
+      CharStore.clearHistory();
+      CharStore.dispatch({ type: 'doc/replace', payload: mcChar, meta: { skipHistory: true } });
+      CharStore.dispatch({ type: 'progression/adjustSkillRank', payload: { skillKey: 'tumble', delta: 1 } });
+      const mcTumble = CharStore.getDoc().skills.find(s => s.key === 'tumble');
+      check(
+        'Dalga 2: Nested-paren @Choice ("Knowledge (Arcana)"), Elemental Wild Shape Weapon Finesse (Slam +22) & Dodge (+1 AC), Multiclass crossClassRanks=1 on Fighter L6 Tumble',
+        nestedChoice === 'Knowledge (Arcana)' &&
+        slamAtk === 22 &&
+        elFormChar.acBreakdown.dodge >= 1 &&
+        mcTumble && mcTumble.ranks === 9 && mcTumble.crossClassRanks === 1,
+        JSON.stringify({ nestedChoice, slamAtk, elDodge: elFormChar.acBreakdown.dodge, mcTumble })
+      );
+    }
   }
 
   CharStore.clearHistory();

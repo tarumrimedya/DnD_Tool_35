@@ -152,12 +152,19 @@
         return [];
       };
 
-      // 1. Spontaneous (Sorcerer/Bard)
-      const spontSlots = toSlotsArray(sc.slots);
+      const derivedSlotsView = window.CharStore?.getSheet?.()?.spells?.slotsByLevelView || null;
+      // 1. Spontaneous (Sorcerer/Bard/Assassin)
+      const spontSlots = (Array.isArray(derivedSlotsView?.spontaneousArray) && derivedSlotsView.spontaneousArray.length > 0)
+        ? derivedSlotsView.spontaneousArray
+        : toSlotsArray(sc.slots);
       // 2. Prepared (Wizard/Wu Jen)
-      const prepSlots = toSlotsArray(sc.preparedSlots);
-      // 3. Divine (Cleric/Druid)
-      const divSlots = toSlotsArray(sc.divineSlots);
+      const prepSlots = (Array.isArray(derivedSlotsView?.preparedArray) && derivedSlotsView.preparedArray.length > 0)
+        ? derivedSlotsView.preparedArray
+        : toSlotsArray(sc.preparedSlots);
+      // 3. Divine (Cleric/Druid/Paladin/Ranger)
+      const divSlots = (Array.isArray(derivedSlotsView?.divineArray) && derivedSlotsView.divineArray.length > 0)
+        ? derivedSlotsView.divineArray
+        : toSlotsArray(sc.divineSlots);
       // 4. Martial (Martial Maneuvers - Warblade/Swordsage/Crusader)
       const martialReadied = Array.isArray(tob.readiedManeuvers) ? tob.readiedManeuvers : [];
 
@@ -6514,23 +6521,26 @@
           combatScope: 'both',
           riderType: 'Rider',
           active: true,
-          notes: '+1 Attack, +1 AC, Extra Attack',
-          effects: [{ type: 'stat', targets: ['attack.melee'], mode: 'flat', value: 1, btype: 'Untyped' }]
+          notes: '+1 Attack, +1 AC, Extra Attack (from Haste buff)',
+          effects: []
         });
       }
 
-      // Sneak Attack
+      // Sneak Attack (pooled via RuleEngine.computeFeatureRankMap across Rogue/Assassin/etc.)
       if (characterHasSneakAttack(character)) {
+        const saRanks = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.computeFeatureRankMap === 'function')
+          ? Math.max(1, Number(RuleEngine.computeFeatureRankMap(character)?.['cab-sneak-attack']) || 1)
+          : 1;
         qualifiedPool.push({
           id: 'rider-sneak-attack',
           schemaVersion: 3,
           name: 'Sneak Attack',
-          source: 'Feat',
+          source: 'Class Feature',
           combatScope: 'both',
           riderType: 'Rider',
           active: false,
-          notes: '+1d6 Precision Damage',
-          effects: [{ type: 'roll', kind: 'Damage', dice: '1d6', dmgType: 'Precision' }]
+          notes: `+${saRanks}d6 Precision Damage`,
+          effects: [{ type: 'roll', kind: 'Damage', dice: `${saRanks}d6`, dmgType: 'Precision' }]
         });
       }
 
@@ -8081,7 +8091,11 @@
           critOnlyDamageParts: Array.isArray(engineRangedEval?.critOnlyDamageParts) ? engineRangedEval.critOnlyDamageParts : []
         };
 
-        const firstAtk = bab + dexMod + arrowAtk + netRangedMod;
+        const effRangedBab = Number(character.effectiveBab ?? character.bab) || 0;
+        const engineBaseRangedAtk = (engineRangedEval && Number.isFinite(Number(engineRangedEval.netAttackBonus)))
+          ? Number(engineRangedEval.netAttackBonus)
+          : (effRangedBab + dexMod);
+        const firstAtk = engineBaseRangedAtk + arrowAtk + netRangedMod;
         const chain = [
           {
             id: 'ranged-1',
@@ -8096,7 +8110,7 @@
           }
         ];
 
-        if (bab >= 6) {
+        if (effRangedBab >= 6) {
           chain.push({
             id: 'ranged-2',
             label: 'Shot 2',
@@ -8110,7 +8124,7 @@
           });
         }
 
-        if (bab >= 11) {
+        if (effRangedBab >= 11) {
           chain.push({
             id: 'ranged-3',
             label: 'Shot 3',
@@ -8124,7 +8138,7 @@
           });
         }
 
-        if (bab >= 16) {
+        if (effRangedBab >= 16) {
           chain.push({
             id: 'ranged-4',
             label: 'Shot 4',
@@ -8189,11 +8203,13 @@
       const hasOffHandWeapon = !!(offHandWep && offHandWep.name && offHandWep.name !== 'None' && !offHandWep.isBuckler && offHandWep.dmgType !== 'Shield');
       const wantsTWF = (isDualFromSets && hasOffHandWeapon) || (activeMods.some(m => (m.name || '').includes('TWF')) && hasOffHandWeapon);
 
-      const effectiveTwoHand = isTwoHand && !hasOversizedWeaponFeat && !(isDoubleWep && wantsTWF);
+      // D&D 3.5e RAW: Powerful Build & Monkey Grip let a creature wield a larger-size weapon, NOT turn a 2H weapon into a 1H weapon.
+      const effectiveTwoHand = isTwoHand && !(isDoubleWep && wantsTWF);
       const gripSelect = document.getElementById('active-grip-select');
-      const grip = (effectiveTwoHand ? '2-Hand' : (wantsTWF ? '1-Hand' : (gripSelect?.value || '1-Hand')));
+      const set1Grip = (sets && sets.set1 && sets.set1.grip) || wep.grip || '';
+      const grip = (effectiveTwoHand ? '2-Hand' : (wantsTWF ? '1-Hand' : (set1Grip || gripSelect?.value || '1-Hand')));
 
-      // Rule 2: If main hand is two-handed (and not a double weapon in TWF mode) and there is no oversized weapon feat, TWF cannot be active
+      // Rule 2: If main hand is two-handed (and not a double weapon in TWF mode), TWF cannot be active
       const isTWF = !effectiveTwoHand && wantsTWF;
       const isFlurry = activeMods.some(m => (m.name || '').includes('Flurry'));
 
@@ -8553,13 +8569,16 @@
       const sets = character.tactical?.weaponSets;
       const isDualSets = sets && Array.isArray(sets.activeSets) && sets.activeSets.includes(1) && sets.activeSets.includes(2) && sets.set2?.mainWeapon && sets.set2.mainWeapon !== 'None';
 
-      if (isDualSets && (!isTwoHand || isDoubleWep || hasOversized)) {
+      if (isDualSets && (!isTwoHand || isDoubleWep)) {
         if (gripSelect && gripSelect.value !== '1-Hand') gripSelect.value = '1-Hand';
-      } else if (isTwoHand && !hasOversized && gripSelect && gripSelect.value !== '2-Hand') {
+      } else if (isTwoHand && !(isDoubleWep && isDualSets) && gripSelect && gripSelect.value !== '2-Hand') {
         gripSelect.value = '2-Hand';
       }
 
-      const grip = (isDualSets && (!isTwoHand || isDoubleWep || hasOversized)) ? '1-Hand' : (gripSelect?.value || '1-Hand');
+      const set1GripMain = (sets && sets.set1 && sets.set1.grip) || wep.grip || '';
+      const grip = (isTwoHand && !(isDoubleWep && isDualSets))
+        ? '2-Hand'
+        : ((isDualSets && (!isTwoHand || isDoubleWep)) ? '1-Hand' : (set1GripMain || gripSelect?.value || '1-Hand'));
 
       // Render V2 Embedded Weapon Modes Strip if the active weapon has modes[]
       const modesStripEl = document.getElementById('combat-weapon-modes-strip');
@@ -8710,7 +8729,7 @@
         if (!canShoot) return;
       }
 
-      const chain = window.currentCombatAttackChain || computeCombatAttackChain(character);
+      const chain = computeCombatAttackChain(character);
       const item = chain[targetIdx] || chain[0];
       if (!item) return;
 
@@ -11086,7 +11105,7 @@
             <div class="flex items-center gap-1.5 min-w-0">
               <span class="text-emerald-400 font-black text-sm">🐾</span>
               <span class="font-bold text-emerald-300">Wild Shape</span>
-              <span class="text-[10px] font-mono text-slate-400">(${af.dailyUses || 1}/day • ≤${af.maxHd || 5} HD • ${UI.escapeHtml(typesStr)} • ${af.durationHours || 5}h)</span>
+              <span class="text-[10px] font-mono text-slate-400">(Normal: ${af.dailyUses || 1}/day${af.elementalDailyUses > 0 ? ` • ⚡ Elemental: ${af.elementalDailyUses}/day` : ''} • ≤${af.maxHd || 5} HD • ${UI.escapeHtml(typesStr)} • ${af.durationHours || 5}h)</span>
             </div>
             <button type="button" data-action="combat:open-wild-shape-modal" class="px-2.5 py-1 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-[11px] shadow-sm transition cursor-pointer">Assume Form</button>
           </div>
@@ -11337,6 +11356,14 @@
       const stats = getActiveCombatCompanionStats();
 
       if (!stats) {
+        if (window.RuleEngine && typeof window.RuleEngine.ensureBestiaryHydrated === 'function' && window.RuleEngine.ensureBestiaryHydrated()) {
+          contentEl.innerHTML = `
+            <div class="p-2 text-center text-xs text-amber-300 bg-amber-950/30 rounded-lg border border-amber-700/60">
+              Loading Bestiary data for companion...
+            </div>
+          `;
+          return;
+        }
         contentEl.innerHTML = `
           <div class="p-2 text-center text-xs text-rose-400 bg-rose-950/40 rounded-lg border border-rose-800">
             Unable to calculate companion stats. Ensure Bestiary data is loaded.
@@ -11702,6 +11729,8 @@
       const profiles = character.tactical.savedProfiles.filter(p => (p.mode || 'melee') === currentMode);
 
       if (countEl) countEl.textContent = `${profiles.length} Saved`;
+      const boxCard = document.getElementById('active-profile-box-card');
+      if (boxCard) boxCard.classList.toggle('calm-empty-profiles', profiles.length === 0);
 
       if (profiles.length === 0) {
         container.innerHTML = `<span class="text-[10px] text-slate-500 italic">No saved ${isRanged ? 'ranged' : 'melee'} profiles yet. Click "💾 Save" above to create one.</span>`;

@@ -4418,9 +4418,39 @@
       return doc;
     }
 
+    // D&D 3.5e RAW (PHB p.62): Max rank cap uses whether ANY class had it as a class skill (isClass),
+    // while point cost uses whether the MOST RECENTLY TAKEN active level's class has it as a class skill.
+    const activeProgRows = Array.isArray(doc.levelProgression)
+      ? doc.levelProgression.filter(function (p) { return p && p.active !== false; })
+      : [];
+    const latestRow = activeProgRows.length > 0 ? activeProgRows[activeProgRows.length - 1] : null;
+    let isCurrentClassSkill = isClass;
+    if (latestRow && latestRow.className && typeof RuleEngine !== 'undefined' && typeof RuleEngine.getClassDef === 'function') {
+      const latestDef = RuleEngine.getClassDef(latestRow.className, doc, { allowLazyLoad: false });
+      if (latestDef && Array.isArray(latestDef.classSkills) && latestDef.classSkills.length > 0) {
+        const latestClassSet = new Set(latestDef.classSkills.map(function (k) { return String(k || '').toLowerCase().trim(); }));
+        isCurrentClassSkill = targetSkills.some(function (s) {
+          const k = String(s.key || '').toLowerCase().trim();
+          const n = String(s.name || '').toLowerCase().trim();
+          return latestClassSet.has(k) || latestClassSet.has(n);
+        });
+      }
+    }
+
     const newRanks = Math.max(0, currentRanks + delta);
     targetSkills.forEach(function (s) {
+      const prevR = Number(s.ranks) || 0;
+      const actualDelta = newRanks - prevR;
       s.ranks = newRanks;
+      if (s.isClass && !isCurrentClassSkill) {
+        if (actualDelta > 0) {
+          s.crossClassRanks = Math.min(newRanks, (Number(s.crossClassRanks) || 0) + actualDelta);
+        } else if (actualDelta < 0) {
+          s.crossClassRanks = Math.max(0, (Number(s.crossClassRanks) || 0) + actualDelta);
+        }
+      } else if (actualDelta < 0 && Number(s.crossClassRanks) > 0) {
+        s.crossClassRanks = Math.max(0, Math.min(newRanks, (Number(s.crossClassRanks) || 0) + actualDelta));
+      }
     });
 
     setStoreOutcome(stateObj, {
@@ -4981,9 +5011,34 @@
         }
       }
     }
+    if (doc.activeModes && typeof doc.activeModes === 'object') {
+      const weaponKeys = new Set();
+      (Array.isArray(doc.weapons) ? doc.weapons : []).forEach(function (w) {
+        if (!w) return;
+        if (w.id) weaponKeys.add(String(w.id));
+        if (w.baseItemId) weaponKeys.add(String(w.baseItemId));
+        if (w.name) weaponKeys.add(String(w.name));
+      });
+      if (doc.bodySlots && typeof doc.bodySlots === 'object') {
+        ['mainHand', 'offHand'].forEach(function (sk) {
+          const sl = doc.bodySlots[sk];
+          if (!sl) return;
+          if (sl.id) weaponKeys.add(String(sl.id));
+          if (sl.baseItemId) weaponKeys.add(String(sl.baseItemId));
+          if (sl.name) weaponKeys.add(String(sl.name));
+        });
+      }
+      Object.keys(doc.activeModes).forEach(function (entryKey) {
+        if (entryKey.startsWith('wpn-') || weaponKeys.has(entryKey)) return;
+        delete doc.activeModes[entryKey];
+      });
+    }
     if (Array.isArray(doc.tacticalRiders)) {
       doc.tacticalRiders.forEach(function (mod) {
-        if (mod && mod.source === 'Maneuver' && mod.active) {
+        if (!mod || !mod.active) return;
+        if (mod.source === 'Maneuver') {
+          mod.active = false;
+        } else if (mod.modeEntryId && (!doc.activeModes || !doc.activeModes[mod.modeEntryId])) {
           mod.active = false;
         }
       });
@@ -5322,9 +5377,34 @@
         }
       }
     }
+    if (doc.activeModes && typeof doc.activeModes === 'object') {
+      const weaponKeys = new Set();
+      (Array.isArray(doc.weapons) ? doc.weapons : []).forEach(function (w) {
+        if (!w) return;
+        if (w.id) weaponKeys.add(String(w.id));
+        if (w.baseItemId) weaponKeys.add(String(w.baseItemId));
+        if (w.name) weaponKeys.add(String(w.name));
+      });
+      if (doc.bodySlots && typeof doc.bodySlots === 'object') {
+        ['mainHand', 'offHand'].forEach(function (sk) {
+          const sl = doc.bodySlots[sk];
+          if (!sl) return;
+          if (sl.id) weaponKeys.add(String(sl.id));
+          if (sl.baseItemId) weaponKeys.add(String(sl.baseItemId));
+          if (sl.name) weaponKeys.add(String(sl.name));
+        });
+      }
+      Object.keys(doc.activeModes).forEach(function (entryKey) {
+        if (entryKey.startsWith('wpn-') || weaponKeys.has(entryKey)) return;
+        delete doc.activeModes[entryKey];
+      });
+    }
     if (Array.isArray(doc.tacticalRiders)) {
       doc.tacticalRiders.forEach(function (mod) {
-        if (mod && mod.source === 'Maneuver' && mod.active) {
+        if (!mod || !mod.active) return;
+        if (mod.source === 'Maneuver') {
+          mod.active = false;
+        } else if (mod.modeEntryId && (!doc.activeModes || !doc.activeModes[mod.modeEntryId])) {
           mod.active = false;
         }
       });

@@ -1394,10 +1394,25 @@ const RuleEngine = {
   // Extract resolved `@Choice` value from an entity instance (explicit choice props, `choices[]` selection, or parenthetical/colon suffix)
   extractEntryChoice(entry) {
     if (!entry) return '';
-    if (typeof entry === 'string') {
-      const pm = entry.match(/\(([^)]+)\)\s*$/);
-      if (pm && pm[1] && !/^(?:ex|su|sp|na|3\.0e)$/i.test(pm[1].trim())) return pm[1].trim();
+    const extractBalancedOuterParen = (str) => {
+      const s = String(str || '').trim();
+      if (!s.endsWith(')')) return '';
+      let depth = 0;
+      for (let i = s.length - 1; i >= 0; i--) {
+        if (s[i] === ')') depth++;
+        else if (s[i] === '(') {
+          depth--;
+          if (depth === 0) {
+            const inner = s.slice(i + 1, s.length - 1).trim();
+            if (inner && !/^(?:ex|su|sp|na|3\.0e)$/i.test(inner)) return inner;
+            return '';
+          }
+        }
+      }
       return '';
+    };
+    if (typeof entry === 'string') {
+      return extractBalancedOuterParen(entry);
     }
     const direct = entry.chosenOption ?? entry.choiceValue ?? entry.selectedOption
       ?? entry.choice ?? entry.subChoice ?? entry.targetWeapon ?? entry.selectedWeapon
@@ -1412,10 +1427,8 @@ const RuleEngine = {
     }
     const rawName = String(entry.name || '').trim();
     if (rawName) {
-      const pm = rawName.match(/\(([^)]+)\)\s*$/);
-      if (pm && pm[1] && !/^(?:ex|su|sp|na|3\.0e)$/i.test(pm[1].trim())) {
-        return pm[1].trim();
-      }
+      const outer = extractBalancedOuterParen(rawName);
+      if (outer) return outer;
       const colonMatch = rawName.match(/^(?:greater\s+|epic\s+)?(?:weapon\s+focus|weapon\s+specialization|skill\s+focus|spell\s+focus|armor\s+specialization|shield\s+specialization|energy\s+resistance)\s*[:\-]\s*(.+)$/i);
       if (colonMatch && colonMatch[1]) {
         return colonMatch[1].trim();
@@ -6337,10 +6350,28 @@ const RuleEngine = {
         'srd_vestiges_splat.json',
         'srd_mysteries_splat.json',
         'srd_utterances_splat.json',
-        'srd_classes_splat.json'
+        'srd_classes_splat.json',
+        'srd_monsters.json'
       ];
       if (idxHit && lazySplatFiles.includes(idxHit.f)) {
-        comp.ensureChunkLoaded(idxHit.f);
+        const loadRes = comp.ensureChunkLoaded(idxHit.f);
+        if (loadRes && typeof loadRes.then === 'function' && typeof window !== 'undefined') {
+          if (!this._pendingLazyChunks) this._pendingLazyChunks = new Set();
+          if (!this._pendingLazyChunks.has(idxHit.f)) {
+            this._pendingLazyChunks.add(idxHit.f);
+            loadRes.then(() => {
+              this._pendingLazyChunks.delete(idxHit.f);
+              if (window.CharStore && typeof window.CharStore.recompute === 'function') {
+                window.CharStore.recompute();
+              }
+              if (typeof window.renderAll === 'function') {
+                window.renderAll({ skipRecompute: true });
+              }
+            }).catch(() => {
+              this._pendingLazyChunks.delete(idxHit.f);
+            });
+          }
+        }
         found = (refId && comp.getById(refId)) || (rawName && comp.getByName(rawName, typeFilter || (isObj ? itemOrName.type : null))) || null;
       }
     }
@@ -7480,6 +7511,7 @@ const RuleEngine = {
             ? Number(dbEntry.checkPenalty)
             : (dbEntry?.armor?.armorCheckPenalty !== undefined && dbEntry?.armor?.armorCheckPenalty !== null && dbEntry?.armor?.armorCheckPenalty !== '' ? Number(dbEntry.armor.armorCheckPenalty) : 0))),
       resistance: 0,
+      saveBonuses: [],
       str: 0,
       dex: 0,
       con: 0,
@@ -7577,14 +7609,34 @@ const RuleEngine = {
       else if (target === 'ability.wis' || target === 'wis') { res.wis = Math.max(res.wis, val); res.bonusType = bType; }
       else if (target === 'ability.cha' || target === 'cha') { res.cha = Math.max(res.cha, val); res.bonusType = bType; }
       else if (target === 'save.all' || target === 'saves.all' || target === 'saves') {
-        if (bType === 'resistance') res.resistance = Math.max(res.resistance, val);
-        res.fort += val;
-        res.ref += val;
-        res.will += val;
+        const condStr = (typeof m.condition === 'string' && m.condition.trim()) ? m.condition.trim() : null;
+        const typeLabel = bType ? (bType.charAt(0).toUpperCase() + bType.slice(1)) : 'Untyped';
+        res.saveBonuses.push({ target: 'all', val, type: typeLabel, condition: condStr, source: item.name });
+        if (!condStr) {
+          if (bType === 'resistance') res.resistance = Math.max(res.resistance, val);
+          res.fort += val;
+          res.ref += val;
+          res.will += val;
+        }
       }
-      else if (target === 'save.fort' || target === 'fort') res.fort += val;
-      else if (target === 'save.ref' || target === 'ref') res.ref += val;
-      else if (target === 'save.will' || target === 'will') res.will += val;
+      else if (target === 'save.fort' || target === 'fort') {
+        const condStr = (typeof m.condition === 'string' && m.condition.trim()) ? m.condition.trim() : null;
+        const typeLabel = bType ? (bType.charAt(0).toUpperCase() + bType.slice(1)) : 'Untyped';
+        res.saveBonuses.push({ target: 'fort', val, type: typeLabel, condition: condStr, source: item.name });
+        if (!condStr) res.fort += val;
+      }
+      else if (target === 'save.ref' || target === 'ref') {
+        const condStr = (typeof m.condition === 'string' && m.condition.trim()) ? m.condition.trim() : null;
+        const typeLabel = bType ? (bType.charAt(0).toUpperCase() + bType.slice(1)) : 'Untyped';
+        res.saveBonuses.push({ target: 'ref', val, type: typeLabel, condition: condStr, source: item.name });
+        if (!condStr) res.ref += val;
+      }
+      else if (target === 'save.will' || target === 'will') {
+        const condStr = (typeof m.condition === 'string' && m.condition.trim()) ? m.condition.trim() : null;
+        const typeLabel = bType ? (bType.charAt(0).toUpperCase() + bType.slice(1)) : 'Untyped';
+        res.saveBonuses.push({ target: 'will', val, type: typeLabel, condition: condStr, source: item.name });
+        if (!condStr) res.will += val;
+      }
       else if (target.startsWith('attack') || target === 'meleeattack' || target === 'rangedattack') res.attBonus += val;
       else if (target.startsWith('damage') || target === 'meleedamage' || target === 'rangeddamage') res.dmgBonus += val;
       else if (target.startsWith('speed')) res.speed = Math.max(res.speed, val);
@@ -9271,19 +9323,6 @@ const RuleEngine = {
         wis: character.abilities?.wis || 10,
         cha: character.abilities?.cha || 10
       };
-      if (character.bodySlots?.belt?.active && character.bodySlots.belt.name?.toLowerCase().includes('+2')) {
-        character.baseAbilities.str = Math.max(8, character.baseAbilities.str - 2);
-      }
-      if (character.bodySlots?.gloves?.active && character.bodySlots.gloves.name?.toLowerCase().includes('+2')) {
-        character.baseAbilities.dex = Math.max(8, character.baseAbilities.dex - 2);
-      }
-    } else if (!character.hasCustomBaseAbilities) {
-      if (character.bodySlots?.belt?.active && (character.bodySlots.belt.name || '').toLowerCase().includes('+2') && character.baseAbilities.str === 14) {
-        character.baseAbilities.str = 12;
-      }
-      if (character.bodySlots?.gloves?.active && (character.bodySlots.gloves.name || '').toLowerCase().includes('+2') && character.baseAbilities.dex === 16) {
-        character.baseAbilities.dex = 14;
-      }
     }
 
     if (!Array.isArray(character.buffs)) {
@@ -9729,7 +9768,31 @@ const RuleEngine = {
           const slotAsf = Number(slotData.armor?.arcaneSpellFailure ?? slotData.spellFailure ?? slotData.armorMeta?.asf);
           if (Number.isFinite(slotAsf) && slotAsf > 0) totalArmorAsf += slotAsf;
         }
-        if (mods.resistance > 0) {
+        if (Array.isArray(mods.saveBonuses) && mods.saveBonuses.length > 0) {
+          mods.saveBonuses.forEach(sb => {
+            if (!sb || !sb.val) return;
+            const sbType = sb.type || 'Untyped';
+            const sbTypeLow = sbType.toLowerCase();
+            if (sb.condition) {
+              conditionalSaveBonuses.push({
+                target: sb.target === 'all' ? 'All Saves' : sb.target.toUpperCase(),
+                val: sb.val,
+                type: sbType,
+                condition: sb.condition,
+                source: sb.source || slotData.name
+              });
+              return;
+            }
+            if (sb.target === 'all') {
+              saveBonusBuckets.fort.push({ val: sb.val, source: sb.source || slotData.name, type: sbType });
+              saveBonusBuckets.ref.push({ val: sb.val, source: sb.source || slotData.name, type: sbType });
+              saveBonusBuckets.will.push({ val: sb.val, source: sb.source || slotData.name, type: sbType });
+              if (sbTypeLow === 'resistance' && sb.val > resistBonus) resistBonus = sb.val;
+            } else if (saveBonusBuckets[sb.target]) {
+              saveBonusBuckets[sb.target].push({ val: sb.val, source: sb.source || slotData.name, type: sbType });
+            }
+          });
+        } else if (mods.resistance > 0) {
           saveBonusBuckets.fort.push({ val: mods.resistance, source: slotData.name, type: 'Resistance' });
           saveBonusBuckets.ref.push({ val: mods.resistance, source: slotData.name, type: 'Resistance' });
           saveBonusBuckets.will.push({ val: mods.resistance, source: slotData.name, type: 'Resistance' });
@@ -10291,6 +10354,15 @@ const RuleEngine = {
       }
     });
 
+    // 3.96. Elemental Wild Shape Bonus Feats (PHB p.37: Elemental form grants the elemental's feats, e.g. Dodge)
+    if (activeFormOverlay && activeFormOverlay.active && String(activeFormOverlay.creatureType || '').toLowerCase() === 'elemental') {
+      const elMonster = activeFormOverlay.monster || {};
+      const elFeats = Array.isArray(elMonster.feats) ? elMonster.feats : (Array.isArray(elMonster.monster?.feats) ? elMonster.monster.feats : []);
+      if (elFeats.some(f => /\bdodge\b/i.test(String(typeof f === 'string' ? f : (f?.name || ''))))) {
+        dodgeBonuses.push({ val: 1, source: 'Dodge (Elemental Form)', type: 'Dodge' });
+      }
+    }
+
     // 4. Resolve Stacking for Abilities (RAW: Same types take Math.max, untyped/dodge/racial stack)
     // ADR-058 Alternate Form / Wild Shape (PHB Errata / RC p.18):
     // Physical base scores (STR, DEX, CON) are replaced by the assumed form's base scores;
@@ -10753,17 +10825,19 @@ const RuleEngine = {
     // Powerful Build style effects (`size.effective`, scope `grapple`) count the creature as larger for this special size modifier only
     const grappleSizeKey = this.shiftSizeKey(grappleBaseSizeKey, character.effectiveSizeScopes.grapple);
     const grappleSizeMod = grappleSizeKey ? this.GRAPPLE_SIZE_MODIFIERS[grappleSizeKey] : 0;
-    const babSwapForGrapple = this.resolveSwapSlot(legoEval?.replacements, 'bab', Number(character.bab) || 0, 'BAB', { character });
-    if (babSwapForGrapple.changed) {
-      character.bab = babSwapForGrapple.value + babSwapForGrapple.addItems.reduce((s, x) => s + x.val, 0);
-    }
+    const baseBabForGrapple = Number(character.bab) || 0;
+    const babSwapForGrapple = this.resolveSwapSlot(legoEval?.replacements, 'bab', baseBabForGrapple, 'BAB', { character });
+    const effectiveBab = babSwapForGrapple.changed
+      ? (babSwapForGrapple.value + babSwapForGrapple.addItems.reduce((s, x) => s + x.val, 0))
+      : baseBabForGrapple;
+    character.effectiveBab = effectiveBab;
     const grappleStrDefault = this.getAbilityMod(character.abilities?.str || 10);
     const grappleAbiSwap = this.resolveSwapSlot(legoEval?.replacements, 'grapple.abilityMod', grappleStrDefault, 'STR', { character });
     const effGrappleAbiMod = grappleAbiSwap.value + grappleAbiSwap.addItems.reduce((s, x) => s + x.val, 0);
     const activeRulesetForGrapple = this.getActiveRuleset(character);
     character.grappleBonus = (activeRulesetForGrapple && typeof activeRulesetForGrapple.calcGrapple === 'function')
-      ? activeRulesetForGrapple.calcGrapple(character.bab, effGrappleAbiMod, grappleSizeMod, character.ruleFlags?.opposedCheckBonus?.grapple || 0)
-      : ((Number(character.bab) || 0) + effGrappleAbiMod + grappleSizeMod + (character.ruleFlags?.opposedCheckBonus?.grapple || 0));
+      ? activeRulesetForGrapple.calcGrapple(effectiveBab, effGrappleAbiMod, grappleSizeMod, character.ruleFlags?.opposedCheckBonus?.grapple || 0)
+      : (effectiveBab + effGrappleAbiMod + grappleSizeMod + (character.ruleFlags?.opposedCheckBonus?.grapple || 0));
     character.actionEconomy = this.evaluateActionEconomy(character, options);
 
     return {
@@ -11621,10 +11695,36 @@ const RuleEngine = {
       }
       return this.ensureV2Entry(merged);
     };
-    const charAbilityAndFeatEntries = [
+    const baseWepEntries = [
       ...(Array.isArray(character.specialAbilities) ? character.specialAbilities.map(sa => this.ensureV2Entry(sa)) : []),
       ...this.getEffectiveFeats(character).map(resolveWepFeatInstance).filter(Boolean),
       ...activeSubsystemWepEntries
+    ];
+    const seenWepEntryIds = new Set();
+    const seenWepEntryNames = new Set();
+    baseWepEntries.forEach(e => {
+      if (!e || typeof e !== 'object') return;
+      if (e.id) seenWepEntryIds.add(String(e.id).toLowerCase());
+      if (e.name) seenWepEntryNames.add(String(e.name).toLowerCase().trim());
+    });
+    const legoWepSources = new Set(['classFeatures', 'legoEntries', 'race', 'domain']);
+    const legoWepEntries = [];
+    const evalLegoList = Array.isArray(character.legoEvaluation?.entries)
+      ? character.legoEvaluation.entries
+      : (typeof this.evaluateLegoCharacter === 'function' ? (this.evaluateLegoCharacter(character)?.entries || []) : []);
+    evalLegoList.forEach(le => {
+      if (!le || typeof le !== 'object' || le.active === false) return;
+      if (!legoWepSources.has(le._legoSource) && le._autoUnlocked !== true) return;
+      const leId = String(le.id || '').toLowerCase();
+      const leName = String(le.name || '').toLowerCase().trim();
+      if ((leId && seenWepEntryIds.has(leId)) || (leName && seenWepEntryNames.has(leName))) return;
+      if (leId) seenWepEntryIds.add(leId);
+      if (leName) seenWepEntryNames.add(leName);
+      legoWepEntries.push(le);
+    });
+    const charAbilityAndFeatEntries = [
+      ...baseWepEntries,
+      ...legoWepEntries
     ];
     const collectEntryWeaponModifiers = (isTargetMatch, outItems) => {
       charAbilityAndFeatEntries.forEach(entry => {
@@ -11633,11 +11733,17 @@ const RuleEngine = {
           ? entry.modifiers
           : (this.getMasterDbEntry(entry)?.modifiers || []);
         if (!Array.isArray(entryMods) || entryMods.length === 0) return;
-        const entryEvalCtx = {
-          ...evalCtx,
-          essentia: Number(entry.essentia ?? entry.investedEssentia ?? 0) || 0,
-          augmentPP: Number(entry.augmentPP || 0) || 0
-        };
+        const entryEvalCtx = typeof this.buildV3FormulaContext === 'function'
+          ? this.buildV3FormulaContext(character, entry, {
+              ...evalCtx,
+              essentia: Number(entry.essentia ?? entry.investedEssentia ?? 0) || 0,
+              augmentPP: Number(entry.augmentPP || 0) || 0
+            })
+          : {
+              ...evalCtx,
+              essentia: Number(entry.essentia ?? entry.investedEssentia ?? 0) || 0,
+              augmentPP: Number(entry.augmentPP || 0) || 0
+            };
         entryMods.forEach(mod => {
           if (!mod || !mod.target) return;
           const t = String(mod.target).toLowerCase();
@@ -12203,6 +12309,23 @@ const RuleEngine = {
         });
       }
     });
+    if (Array.isArray(legoWepEntries) && legoWepEntries.length > 0) {
+      const seenLegoDmgKeys = new Set(combinedRawParts.map(p => `${p.dice || ''}|${p.type || ''}|${p.source || ''}`.toLowerCase()));
+      legoWepEntries.forEach(le => {
+        if (!le || !Array.isArray(le.damageParts) || le.damageParts.length === 0) return;
+        le.damageParts.forEach(lp => {
+          if (!lp || !lp.dice) return;
+          const srcName = lp.source || le.name || 'Class Feature';
+          const dk = `${lp.dice || ''}|${lp.type || ''}|${srcName}`.toLowerCase();
+          if (seenLegoDmgKeys.has(dk)) return;
+          seenLegoDmgKeys.add(dk);
+          combinedRawParts.push({
+            ...lp,
+            source: srcName
+          });
+        });
+      });
+    }
 
     const slugRider = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
     const activeRiderSet = new Set(Array.isArray(options.activeRiders) ? options.activeRiders.map(String) : []);
@@ -13279,6 +13402,8 @@ const RuleEngine = {
       bonusFeatContract: srdClass.bonusFeatContract || prev.bonusFeatContract || null,
       bonusFeatContracts: srdClass.bonusFeatContracts || prev.bonusFeatContracts || null,
       prerequisites: prereqsArr,
+      casting: srdClass.casting || srdClass.spellcasting || prev.casting || prev.spellcasting || null,
+      spellcasting: srdClass.spellcasting || srdClass.casting || prev.spellcasting || prev.casting || null,
       spellcastingProgression: spellProg,
       description: cleanDesc,
       role: srdClass.role || prev.role || (isPrestige ? 'Prestige Class' : 'Base Class'),
@@ -13344,12 +13469,7 @@ const RuleEngine = {
     }
     if (!localDef && !srdClass) return null;
     if (!srdClass) {
-      localDef._v2Hydrated = true;
       localDef.replaces = Array.isArray(localDef.replaces) ? localDef.replaces : [];
-      if (this.DND35_CLASS_DEFS) {
-        this.DND35_CLASS_DEFS[className] = localDef;
-        this.DND35_CLASS_DEFS[lowerKey] = localDef;
-      }
       return localDef;
     }
     const merged = this.normalizeV3ClassDef(srdClass, localDef, className);
@@ -15611,6 +15731,26 @@ const RuleEngine = {
     return found;
   },
 
+  classifyClassToMagicDiscipline(className, character = null) {
+    const c = String(className || '').toLowerCase().trim();
+    if (!c) return null;
+    if (typeof this.getClassDef === 'function') {
+      const clsDef = this.getClassDef(className, character, { allowLazyLoad: false });
+      const cast = clsDef && clsDef.casting;
+      if (cast && typeof cast === 'object' && cast.type && cast.type !== 'none') {
+        const ct = String(cast.type).toLowerCase();
+        if (ct === 'divine') return 'divine';
+        if (ct === 'arcane') return cast.spontaneous ? 'spontaneous' : 'prepared';
+      }
+    }
+    if (c.includes('dragonfire adept') || c.includes('warlock')) return 'spontaneous';
+    if (['wizard', 'artificer', 'archivist', 'wu jen', "sha'ir", 'archmage', 'loremaster', 'incantatrix', 'red wizard', 'pale master', 'eldritch knight', 'arcane trickster', 'abjurant champion'].some(k => c.includes(k))) return 'prepared';
+    if (['cleric', 'creric', 'druid', 'paladin', 'ranger', 'blackguard', 'spirit shaman', 'shugenja', 'healer', 'adept', 'priest', 'hierophant', 'contemplative', 'radiant servant', 'hospitaler', 'warpriest', 'divine oracle', 'church inquisitor'].some(k => c.includes(k))) return 'divine';
+    if (['sorcerer', 'bard', 'assassin', 'hexblade', 'favored soul', 'warmage', 'duskblade', 'beguiler', 'dread necromancer', 'spellthief'].some(k => c.includes(k))) return 'spontaneous';
+    if (['warblade', 'swordsage', 'crusader', 'bloodclaw master', 'deepstone sentinel', 'eternal blade', 'jade phoenix mage', 'master of nine', 'ruby knight vindicator', 'shadow sun ninja'].some(k => c.includes(k))) return 'martial';
+    return null;
+  },
+
   deriveSpellsView(w, workingDb = []) {
     if (!w || typeof w !== 'object') {
       return {
@@ -15631,15 +15771,7 @@ const RuleEngine = {
     const chaVal = Number(w.stats?.CHA?.value ?? abi.cha ?? 10);
     const chaMod = this.getAbilityMod(chaVal);
 
-    const classifyClass = (className) => {
-      const c = String(className || '').toLowerCase().trim();
-      if (!c) return null;
-      if (['wizard', 'artificer', 'archivist', 'wu jen', "sha'ir", 'archmage', 'loremaster', 'incantatrix', 'red wizard', 'pale master', 'eldritch knight', 'arcane trickster', 'abjurant champion'].some(k => c.includes(k))) return 'prepared';
-      if (['cleric', 'creric', 'druid', 'paladin', 'ranger', 'spirit shaman', 'shugenja', 'healer', 'adept', 'priest', 'hierophant', 'contemplative', 'radiant servant', 'hospitaler', 'warpriest', 'divine oracle', 'church inquisitor'].some(k => c.includes(k))) return 'divine';
-      if (['sorcerer', 'bard', 'favored soul', 'warlock', 'warmage', 'duskblade', 'beguiler', 'dread necromancer', 'dragonfire adept', 'spellthief'].some(k => c.includes(k))) return 'spontaneous';
-      if (['warblade', 'swordsage', 'crusader', 'bloodclaw master', 'deepstone sentinel', 'eternal blade', 'jade phoenix mage', 'master of nine', 'ruby knight vindicator', 'shadow sun ninja'].some(k => c.includes(k))) return 'martial';
-      return null;
-    };
+    const classifyClass = (className) => this.classifyClassToMagicDiscipline(className, w);
 
     const discLevels = { spontaneous: 0, prepared: 0, divine: 0, martial: 0 };
     const totalDiscLevels = () => discLevels.spontaneous + discLevels.prepared + discLevels.divine + discLevels.martial;
@@ -15852,9 +15984,39 @@ const RuleEngine = {
       });
       return harvested.slice(0, 2);
     };
+    const activeClassLevelsMap = (typeof this.getActiveClassLevels === 'function')
+      ? this.getActiveClassLevels(w, { includeNpc: true })
+      : {};
+    const findPrimaryCasterClass = (disc) => {
+      let bestName = null;
+      let bestLvl = 0;
+      let bestDef = null;
+      Object.entries(activeClassLevelsMap).forEach(([cName, cLvl]) => {
+        if (!cName || (Number(cLvl) || 0) <= 0) return;
+        if (classifyClass(cName) !== disc) return;
+        const cDef = typeof this.getClassDef === 'function' ? this.getClassDef(cName, w, { allowLazyLoad: false }) : null;
+        const hasOwnTable = Boolean(cDef?.casting?.spellsPerDay && Object.keys(cDef.casting.spellsPerDay).length > 0);
+        const bestHasTable = Boolean(bestDef?.casting?.spellsPerDay && Object.keys(bestDef.casting.spellsPerDay).length > 0);
+        if (!bestName || (hasOwnTable && !bestHasTable) || (hasOwnTable === bestHasTable && Number(cLvl) > bestLvl)) {
+          bestName = cName;
+          bestLvl = Number(cLvl);
+          bestDef = cDef;
+        }
+      });
+      return { name: bestName, level: bestLvl, def: bestDef };
+    };
+    const primaryDivClass = findPrimaryCasterClass('divine');
+    const primarySpontClass = findPrimaryCasterClass('spontaneous');
+    const primaryDivLow = String(primaryDivClass.name || '').toLowerCase().trim();
+    const isHalfDivineCaster = (primaryDivLow === 'paladin' || primaryDivLow === 'ranger') && !Object.keys(activeClassLevelsMap).some(k => /\b(cleric|druid|spirit shaman|healer|shugenja)\b/i.test(k));
+    const divineSpontaneousType = Object.keys(activeClassLevelsMap).some(k => /\bcleric\b/i.test(k))
+      ? 'cleric'
+      : (Object.keys(activeClassLevelsMap).some(k => /\bdruid\b/i.test(k)) ? 'druid' : 'none');
+
     const chosenDomains = getPureClericDomains();
     let divCl = 0;
     if (isDivBoon) divCl = Math.max(divLvls, activeLevels, 1);
+    else if (isHalfDivineCaster) divCl = divLvls >= 4 ? Math.floor(divLvls / 2) : 0;
     else if (divLvls > 0) divCl = divLvls;
     else if (hasDivine) divCl = 1;
     const hasMadness = chosenDomains.some(d => String(d || '').toLowerCase() === 'madness');
@@ -15908,6 +16070,33 @@ const RuleEngine = {
       }
       if (Number(sorcLevel) <= 0) {
         return prevSlots.filter(s => (Number(s.dmBonus) || 0) > 0).map(s => ({ ...s, total: Number(s.daily) || 0 }));
+      }
+      const clsPerDayMap = (!isSpontBoon && primarySpontClass.def?.casting?.spellsPerDay && Object.keys(primarySpontClass.def.casting.spellsPerDay).length > 0)
+        ? primarySpontClass.def.casting.spellsPerDay
+        : null;
+      if (clsPerDayMap) {
+        const tblLvl = Math.min(20, Math.max(1, Number(primarySpontClass.level || sorcLevel) || 1));
+        const row = clsPerDayMap[String(tblLvl)] || null;
+        if (Array.isArray(row)) {
+          const castAbiKey = String(primarySpontClass.def?.casting?.ability || 'cha').toLowerCase();
+          const castAbiVal = Number(w.stats?.[castAbiKey.toUpperCase()]?.value ?? abi[castAbiKey] ?? chaScore) || 10;
+          const castMod = Math.floor((castAbiVal - 10) / 2);
+          const built = [];
+          row.forEach((rawBase, spellLvl) => {
+            if (rawBase === null || rawBase === undefined) return;
+            if (spellLvl >= 1 && castAbiVal < (10 + spellLvl)) return;
+            const bonus = (spellLvl >= 1 && castMod >= spellLvl) ? Math.floor((castMod - spellLvl) / 4) + 1 : 0;
+            const prev = prevSlots.find(s => Number(s.level) === spellLvl);
+            const dmBonus = prev ? (Number(prev.dmBonus) || 0) : 0;
+            const daily = Math.max(0, Number(rawBase) + bonus + dmBonus);
+            if (daily <= 0 && dmBonus <= 0) return;
+            const knownRow = primarySpontClass.def?.casting?.spellsKnown?.[String(tblLvl)];
+            const baseKnown = Array.isArray(knownRow) && knownRow[spellLvl] != null ? Number(knownRow[spellLvl]) : daily;
+            const used = prev ? Math.min(daily, Math.max(0, Number(prev.used) || 0)) : 0;
+            built.push({ level: spellLvl, daily, total: daily, bonus, dmBonus, used, known: baseKnown });
+          });
+          return built;
+        }
       }
       const clampedLvl = Math.min(20, Math.max(1, Number(sorcLevel) || 1));
       const cMod = Math.floor(((Number(chaScore) || 10) - 10) / 2);
@@ -16030,6 +16219,61 @@ const RuleEngine = {
         [6, 5, 4, 4, 3, 2, 1], [6, 5, 4, 4, 3, 3, 2], [6, 5, 5, 4, 4, 3, 2, 1], [6, 5, 5, 4, 4, 3, 3, 2], [6, 5, 5, 5, 4, 4, 3, 2, 1],
         [6, 5, 5, 5, 4, 4, 3, 3, 2], [6, 5, 5, 5, 5, 4, 4, 3, 2, 1], [6, 5, 5, 5, 5, 4, 4, 3, 3, 2], [6, 5, 5, 5, 5, 4, 4, 4, 3, 3], [6, 5, 5, 5, 5, 5, 4, 4, 4, 4]
       ];
+      const clsDivMap = (!isDivBoon && primaryDivClass.def?.casting?.spellsPerDay && Object.keys(primaryDivClass.def.casting.spellsPerDay).length > 0)
+        ? primaryDivClass.def.casting.spellsPerDay
+        : null;
+      if (clsDivMap) {
+        const tblLvl = Math.min(20, Math.max(1, Number(primaryDivClass.level || divLvls || divineLvl) || 1));
+        const row = clsDivMap[String(tblLvl)] || null;
+        if (Array.isArray(row)) {
+          const built = [];
+          row.forEach((rawBase, spellLvl) => {
+            if (rawBase === null || rawBase === undefined) return;
+            if (spellLvl >= 1 && (Number(wisScore) || 10) < (10 + spellLvl)) return;
+            const bonus = (spellLvl >= 1 && wMod >= spellLvl) ? Math.floor((wMod - spellLvl) / 4) + 1 : 0;
+            const prev = prevSlots.find(s => Number(s.level) === spellLvl);
+            const dmBonus = prev ? (Number(prev.dmBonus) || 0) : 0;
+            const regularDaily = Math.max(0, Number(rawBase) + bonus + dmBonus);
+            const domainDaily = (hasDomainCap && spellLvl >= 1 && spellLvl <= 9) ? 1 : 0;
+            const daily = regularDaily + domainDaily;
+            if (daily <= 0 && dmBonus <= 0) return;
+            const domainUsed = prev ? Math.min(domainDaily, Math.max(0, Number(prev.domainUsed) || 0)) : 0;
+            const used = prev ? Math.min(daily, Math.max(domainUsed, Number(prev.used) || 0)) : 0;
+            built.push({
+              level: spellLvl,
+              daily,
+              total: daily,
+              regularDaily,
+              domainDaily,
+              domainTotal: domainDaily,
+              domainUsed,
+              bonus,
+              dmBonus,
+              used,
+              known: daily
+            });
+          });
+          prevSlots.forEach(prev => {
+            if (prev && !built.some(b => b.level === Number(prev.level)) && (Number(prev.dmBonus) || 0) > 0) {
+              const dVal = Number(prev.daily) || 0;
+              built.push({
+                level: Number(prev.level),
+                daily: dVal,
+                total: dVal,
+                regularDaily: Number(prev.regularDaily ?? dVal) || 0,
+                domainDaily: Number(prev.domainDaily) || 0,
+                domainTotal: Number(prev.domainDaily) || 0,
+                domainUsed: Math.min(Number(prev.domainDaily) || 0, Number(prev.domainUsed) || 0),
+                bonus: 0,
+                dmBonus: Number(prev.dmBonus) || 0,
+                used: Math.min(dVal, Number(prev.used) || 0),
+                known: dVal
+              });
+            }
+          });
+          return built;
+        }
+      }
       const baseDaily = baseDivineTable[lvl] || [3, 1];
       const result = baseDaily.map((base, spellLvl) => {
         const bonus = (spellLvl >= 1 && wMod >= spellLvl) ? Math.floor((wMod - spellLvl) / 4) + 1 : 0;
@@ -18372,6 +18616,30 @@ const RuleEngine = {
     return { valid: true, cap, creatureType, size, hd };
   },
 
+  ensureBestiaryHydrated() {
+    if (typeof window === 'undefined' || !window.SrdCompendium || typeof window.SrdCompendium.ensureChunkLoaded !== 'function') {
+      return false;
+    }
+    if (typeof window.SrdCompendium.isChunkLoaded === 'function' && window.SrdCompendium.isChunkLoaded('srd_monsters.json')) {
+      return false;
+    }
+    if (!this._pendingLazyChunks) this._pendingLazyChunks = new Set();
+    if (this._pendingLazyChunks.has('srd_monsters.json')) return true;
+    this._pendingLazyChunks.add('srd_monsters.json');
+    Promise.resolve(window.SrdCompendium.ensureChunkLoaded('srd_monsters.json')).then(() => {
+      this._pendingLazyChunks.delete('srd_monsters.json');
+      if (window.CharStore && typeof window.CharStore.recompute === 'function') {
+        window.CharStore.recompute();
+      }
+      if (typeof window.renderAll === 'function') {
+        window.renderAll({ skipRecompute: true });
+      }
+    }).catch(() => {
+      this._pendingLazyChunks.delete('srd_monsters.json');
+    });
+    return true;
+  },
+
   resolveActiveFormOverlay(character) {
     const ch = character || {};
     const af = ch.activeForm;
@@ -18382,7 +18650,10 @@ const RuleEngine = {
     if (!baseMonster && af.monsterSnapshot && typeof af.monsterSnapshot === 'object') {
       baseMonster = af.monsterSnapshot;
     }
-    if (!baseMonster) return { active: false };
+    if (!baseMonster) {
+      this.ensureBestiaryHydrated();
+      return { active: false };
+    }
 
     const kind = String(af.kind || 'wild_shape');
     if (kind === 'wild_shape' && af.bypassValidation !== true) {
@@ -18454,12 +18725,18 @@ const RuleEngine = {
     const chassis = overlay.chassis;
     const formSizeKey = String(chassis.size || 'Medium').toLowerCase();
     const sizeMod = this.SIZE_MODIFIERS[formSizeKey] ?? 0;
-    const bab = Number(ch.bab) || 0;
+    const bab = Number(ch.effectiveBab ?? ch.bab) || 0;
     const strMod = this.getAbilityMod(ch.abilities?.str || chassis.abilities?.str || 10);
     const dexMod = this.getAbilityMod(ch.abilities?.dex || chassis.abilities?.dex || 10);
+    const isElementalForm = String(overlay.creatureType || '').toLowerCase() === 'elemental' && effectiveLevel >= 16;
+    const mObj = overlay.monster || {};
+    const formBonusFeats = isElementalForm
+      ? (Array.isArray(mObj.feats) ? mObj.feats : (Array.isArray(mObj.monster?.feats) ? mObj.monster.feats : []))
+      : [];
     const charFeats = Array.isArray(ch.feats) ? ch.feats : [];
-    const hasMultiattack = charFeats.some(f => /multiattack/i.test(String(typeof f === 'string' ? f : (f?.name || ''))));
-    const hasWeaponFinesse = charFeats.some(f => /weapon\s*finesse/i.test(String(typeof f === 'string' ? f : (f?.name || ''))));
+    const combinedFormFeats = charFeats.concat(formBonusFeats);
+    const hasMultiattack = combinedFormFeats.some(f => /multiattack/i.test(String(typeof f === 'string' ? f : (f?.name || ''))));
+    const hasWeaponFinesse = combinedFormFeats.some(f => /weapon\s*finesse/i.test(String(typeof f === 'string' ? f : (f?.name || ''))));
     const atkStatMod = hasWeaponFinesse ? Math.max(strMod, dexMod) : strMod;
     const secPenalty = hasMultiattack ? -2 : -5;
     const rawAttacks = Array.isArray(chassis.attacks) ? chassis.attacks : [];
@@ -18497,8 +18774,6 @@ const RuleEngine = {
         };
       });
 
-    const isElementalForm = String(overlay.creatureType || '').toLowerCase() === 'elemental' && effectiveLevel >= 16;
-    const mObj = overlay.monster || {};
     const exSpecialAttacks = Array.isArray(mObj.specialAttacks) ? mObj.specialAttacks : [];
     const elementalQualities = isElementalForm
       ? (Array.isArray(mObj.specialQualities) ? mObj.specialQualities : [])

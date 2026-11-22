@@ -21106,15 +21106,6 @@
         "recharge": {
           "period": "day"
         }
-      },
-      {
-        "type": "stat",
-        "targets": [
-          "dex"
-        ],
-        "mode": "flat",
-        "value": -2,
-        "btype": "Penalty"
       }
     ],
     "shortDescription": "A barbarian can fly into a rage a certain number of times per day. In a rage, a barbarian temporarily gains a +4 bonus to Strength, a +4 bonus to Constitution, and a +2 morale bonus on Will saves, but he takes a -2 pena…",
@@ -39116,7 +39107,7 @@
           "category": "Class Feature",
           "type": "Ex",
           "summary": "Add your Wisdom bonus (if positive) to AC while wearing light armor and not using a shield.",
-          "id": "cab-monk-ac-bonus"
+          "id": "cab-swordsage-ac-bonus"
         }
       ],
       "4": [
@@ -39287,7 +39278,7 @@
               "kind": "ref",
               "name": "AC Bonus (Ex)",
               "abilityType": "Ex",
-              "refId": "cab-monk-ac-bonus",
+              "refId": "cab-swordsage-ac-bonus",
               "text": "Add your Wisdom bonus (if positive) to AC while wearing light armor and not using a shield.",
               "category": "Class Feature"
             }
@@ -53286,6 +53277,55 @@
     ],
     "shortDescription": "When unarmored and unencumbered (no shield), add your Wisdom bonus (if any) plus +1 per 5 Monk levels to AC (applies to touch and flat-footed AC).",
     "text": "When unarmored and unencumbered (no shield), add your Wisdom bonus (if any) plus +1 per 5 Monk levels to AC (applies to touch and flat-footed AC).",
+    "tags": [
+      "class-ability"
+    ]
+  },
+  {
+    "schemaVersion": 3,
+    "id": "cab-swordsage-ac-bonus",
+    "blueprint": "feat",
+    "name": "AC Bonus (Swordsage)",
+    "type": "ClassAbility",
+    "category": "Class Feature",
+    "source": "Tome of Battle p.16",
+    "featKind": "classAbility",
+    "abilityType": "ex",
+    "associations": [
+      [
+        "Swordsage",
+        2
+      ]
+    ],
+    "effects": [
+      {
+        "id": "ef-swordsage-ac-when",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "ef-swordsage-ac-br",
+            "condKind": "state",
+            "condText": "lightOrNoArmor & noShield & unencumbered",
+            "effects": [
+              {
+                "id": "ef-swordsage-ac-wis",
+                "type": "stat",
+                "targets": [
+                  "ac.total"
+                ],
+                "mode": "formula",
+                "value": 0,
+                "formula": "max(0, @wisMod)",
+                "btype": "Untyped"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "shortDescription": "Add Wisdom bonus (if positive) to AC while wearing light or no armor, unencumbered, and carrying no shield.",
+    "text": "Add Wisdom bonus (if positive) to AC while wearing light or no armor, unencumbered, and carrying no shield.",
     "tags": [
       "class-ability"
     ]

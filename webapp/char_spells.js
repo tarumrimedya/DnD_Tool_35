@@ -284,11 +284,15 @@
     window.isDisciplineHomebrew = isDisciplineHomebrew;
 
     function classifyClassToMagicDiscipline(className) {
+      if (typeof RuleEngine !== 'undefined' && typeof RuleEngine.classifyClassToMagicDiscipline === 'function') {
+        return RuleEngine.classifyClassToMagicDiscipline(className, character);
+      }
       const c = String(className || '').toLowerCase().trim();
       if (!c) return null;
+      if (c.includes('dragonfire adept') || c.includes('warlock')) return 'spontaneous';
       if (['wizard', 'artificer', 'archivist', 'wu jen', "sha'ir", 'archmage', 'loremaster', 'incantatrix', 'red wizard', 'pale master', 'eldritch knight', 'arcane trickster', 'abjurant champion'].some(k => c.includes(k))) return 'prepared';
-      if (['cleric', 'creric', 'druid', 'paladin', 'ranger', 'spirit shaman', 'shugenja', 'healer', 'adept', 'priest', 'hierophant', 'contemplative', 'radiant servant', 'hospitaler', 'warpriest', 'divine oracle', 'church inquisitor'].some(k => c.includes(k))) return 'divine';
-      if (['sorcerer', 'bard', 'favored soul', 'warlock', 'warmage', 'duskblade', 'beguiler', 'dread necromancer', 'dragonfire adept', 'spellthief'].some(k => c.includes(k))) return 'spontaneous';
+      if (['cleric', 'creric', 'druid', 'paladin', 'ranger', 'blackguard', 'spirit shaman', 'shugenja', 'healer', 'adept', 'priest', 'hierophant', 'contemplative', 'radiant servant', 'hospitaler', 'warpriest', 'divine oracle', 'church inquisitor'].some(k => c.includes(k))) return 'divine';
+      if (['sorcerer', 'bard', 'assassin', 'hexblade', 'favored soul', 'warmage', 'duskblade', 'beguiler', 'dread necromancer', 'spellthief'].some(k => c.includes(k))) return 'spontaneous';
       if (['warblade', 'swordsage', 'crusader', 'bloodclaw master', 'deepstone sentinel', 'eternal blade', 'jade phoenix mage', 'master of nine', 'ruby knight vindicator', 'shadow sun ninja'].some(k => c.includes(k))) return 'martial';
       return null;
     }
@@ -1062,6 +1066,7 @@
     }
 
     function getDivineCasterInfo() {
+      const svDiv = typeof getSpellsView === 'function' ? getSpellsView()?.casterStatsView?.divine : null;
       const classesStatus = checkCharacterMagicClasses();
       const baseWisVal = character?.stats?.WIS?.value ?? character?.abilities?.wis ?? 10;
       const clMode = character?.settings?.clMode || 'Class Level';
@@ -1071,7 +1076,9 @@
       const divLvls = getMagicDisciplineClassLevels(character).divine;
       
       let cl = 0;
-      if (isDivBoon) {
+      if (svDiv && typeof svDiv.cl === 'number') {
+        cl = svDiv.cl;
+      } else if (isDivBoon) {
         cl = Math.max(divLvls, activeLevels, 1);
       } else if (divLvls > 0) {
         cl = divLvls;
@@ -2591,14 +2598,30 @@
               </div>
             </div>
             <div class="flex flex-wrap items-center gap-2">
-              <button type="button" data-action="spells:toggle-cleric-spontaneous" class="${
-                spontMode === 'cure'
-                  ? 'bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border-emerald-500/80'
-                  : 'bg-rose-950 hover:bg-rose-900 text-rose-300 border-rose-500/80'
-              } h-8 px-3 border text-xs font-bold rounded-lg shadow transition inline-flex items-center justify-center gap-1.5 cursor-pointer" title="${UI.escapeAttr(energyPolicy.reason)}">
-                <span>${spontMode === 'cure' ? '💚' : '💀'}</span>
-                <span>Spontaneous: ${spontMode === 'cure' ? 'Cure Wounds' : 'Inflict Wounds'}${energyPolicy.locked ? ' 🔒' : ''}</span>
-              </button>
+              ${(() => {
+                const activeClsMap = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getActiveClassLevels === 'function')
+                  ? RuleEngine.getActiveClassLevels(character, { includeNpc: true })
+                  : {};
+                const hasClericCls = Object.keys(activeClsMap).some(k => /\bcleric\b/i.test(k));
+                const hasDruidCls = Object.keys(activeClsMap).some(k => /\bdruid\b/i.test(k));
+                if (hasClericCls) {
+                  return `<button type="button" data-action="spells:toggle-cleric-spontaneous" class="${
+                    spontMode === 'cure'
+                      ? 'bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border-emerald-500/80'
+                      : 'bg-rose-950 hover:bg-rose-900 text-rose-300 border-rose-500/80'
+                  } h-8 px-3 border text-xs font-bold rounded-lg shadow transition inline-flex items-center justify-center gap-1.5 cursor-pointer" title="${UI.escapeAttr(energyPolicy.reason)}">
+                    <span>${spontMode === 'cure' ? '💚' : '💀'}</span>
+                    <span>Spontaneous: ${spontMode === 'cure' ? 'Cure Wounds' : 'Inflict Wounds'}${energyPolicy.locked ? ' 🔒' : ''}</span>
+                  </button>`;
+                }
+                if (hasDruidCls) {
+                  return `<span class="h-8 px-3 rounded-lg bg-emerald-950 text-emerald-300 border border-emerald-500/80 text-xs font-bold inline-flex items-center gap-1.5" title="D&amp;D 3.5e RAW (PHB p.35): Druids can spontaneously convert any prepared spell into Summon Nature's Ally of the same level or lower.">
+                    <span>🐺</span>
+                    <span>Spontaneous: Summon Nature's Ally</span>
+                  </span>`;
+                }
+                return '';
+              })()}
               <span class="h-8 px-2.5 rounded-lg bg-emerald-950 text-emerald-300 border border-emerald-600 text-xs font-bold inline-flex items-center">🛡️ ASF: 0%</span>
               <button data-action="spells:restore-all-divine" class="w-40 h-8 bg-amber-800 hover:bg-amber-700 text-white text-xs font-bold px-3 rounded-lg border border-amber-500/50 shadow transition inline-flex items-center justify-center gap-1.5 cursor-pointer">
                 <span>✨</span>
@@ -3916,28 +3939,12 @@
       container.innerHTML = '';
 
       const sources = getAvailableSpellSlotSources().filter(s => s.key !== 'martial');
-      const tabsContainer = document.getElementById('compact-slots-source-tabs');
 
-      // Determine active source for compact grid
-      let activeSource = (sources.length > 0)
-        ? (sources.find(s => s.key === window.currentCompactSlotsSource) || sources[0])
+      // Spontaneous panel's Slot Battery always displays Spontaneous slots
+      const activeSource = (sources.length > 0)
+        ? (sources.find(s => s.key === 'spontaneous') || sources[0])
         : null;
-      let activeKey = activeSource ? activeSource.key : 'spontaneous';
-      window.currentCompactSlotsSource = activeKey;
       if (!activeSource) return;
-
-      // Update tabs (always show all sources so user can switch between Spontaneous, Prepared, and Divine)
-      if (tabsContainer) {
-        tabsContainer.innerHTML = sources.map(s => {
-          const isAct = s.key === activeSource.key;
-          return `
-            <button type="button" data-action="spells:switch-compact-source" data-source="${s.key}" class="text-[10px] px-2 py-0.5 rounded font-bold transition cursor-pointer flex items-center gap-1 ${isAct ? `${s.tagClass} border shadow-sm` : 'bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800'}">
-              <span>${s.icon}</span>
-              <span>${s.shortLabel}</span>
-            </button>
-          `;
-        }).join('');
-      }
 
       const slots = activeSource.slots;
       const { statKey, statMod } = (activeSource.key === 'divine' ? getDivineCasterInfo() : (activeSource.key === 'prepared' ? getPreparedCasterInfo() : getCasterInfo()));
@@ -6993,13 +7000,21 @@
             isLevelFull = curCount >= quota;
             countText = `${curCount}/${quota}`;
           } else if (targetPool === 'prepared') {
-            const prepSlot = (character.spellcasting?.preparedSlots || []).find(s => Number(s.level) === numLvl);
+            const sv = typeof getSpellsView === 'function' ? getSpellsView() : null;
+            const prepArr = (Array.isArray(sv?.slotsByLevelView?.preparedArray) && sv.slotsByLevelView.preparedArray.length > 0)
+              ? sv.slotsByLevelView.preparedArray
+              : (character.spellcasting?.preparedSlots || []);
+            const prepSlot = prepArr.find(s => Number(s.level) === numLvl);
             const maxPrep = prepSlot ? (Number(prepSlot.daily) || 0) : 0;
             const curCount = (character.spellcasting?.preparedSpells || []).filter(s => Number(s.level) === numLvl).length;
             isLevelFull = curCount >= maxPrep;
             countText = `${curCount}/${maxPrep}`;
           } else if (targetPool === 'divine') {
-            const divSlot = (character.spellcasting?.divineSlots || []).find(s => Number(s.level) === numLvl);
+            const sv = typeof getSpellsView === 'function' ? getSpellsView() : null;
+            const divArr = (Array.isArray(sv?.slotsByLevelView?.divineArray) && sv.slotsByLevelView.divineArray.length > 0)
+              ? sv.slotsByLevelView.divineArray
+              : (character.spellcasting?.divineSlots || []);
+            const divSlot = divArr.find(s => Number(s.level) === numLvl);
             const isDomainTarget = Boolean(window._spellPickerIsDomainSlot || effectiveSource === 'char_domains' || effectiveSource === 'domain');
             if (isDomainTarget) {
               const maxDom = numLvl > 0 && divSlot ? (Number(divSlot.domainDaily !== undefined ? divSlot.domainDaily : (hasClericDomainCapability(character) ? 1 : 0)) || 0) : 0;
@@ -10734,7 +10749,7 @@
     }
     window.rollAbilityTacticalDice = rollAbilityTacticalDice;
 
-    function showFeatDetail(featName, levelIndex = null, sourceCategory = 'feat') {
+    function showFeatDetail(featName, levelIndex = null, sourceCategory = 'feat', explicitFeatId = null) {
       const modal = document.getElementById('feat-detail-modal');
       if (!modal) return;
       currentViewedFeatName = featName;
@@ -10743,6 +10758,30 @@
 
       const cleanName = String(featName).replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').trim();
       const baseFeatName = cleanName.replace(/\s*\([^)]*\)$/, '').trim();
+      const stripExSuSp = (s) => String(s || '').replace(/\s*\((?:Ex|Su|Sp)\)\s*$/i, '').trim().toLowerCase();
+
+      // Resolve immutable class-feature ID from levelProgression row when not explicitly provided
+      let rowFeatureId = explicitFeatId ? String(explicitFeatId).trim() : null;
+      let rowFeatureObj = null;
+      if (currentFeatSourceLevelIndex !== null && Array.isArray(character?.levelProgression) && character.levelProgression[currentFeatSourceLevelIndex]) {
+        const row = character.levelProgression[currentFeatSourceLevelIndex];
+        const clsName = row.className || '';
+        if (clsName && typeof RuleEngine !== 'undefined' && typeof RuleEngine.getClassLevelFeatures === 'function') {
+          let clsLvl = 0;
+          for (let i = 0; i <= currentFeatSourceLevelIndex; i++) {
+            const p = character.levelProgression[i];
+            if (p && p.active !== false && String(p.className || '').toLowerCase().trim() === clsName.toLowerCase().trim()) clsLvl++;
+          }
+          const cFeats = RuleEngine.getClassLevelFeatures(clsName, Math.max(1, clsLvl));
+          const fos = Array.isArray(cFeats?.featureObjects) ? cFeats.featureObjects : [];
+          rowFeatureObj = fos.find(fo => fo && (
+            (rowFeatureId && String(fo.id || '').toLowerCase() === rowFeatureId.toLowerCase()) ||
+            String(fo.name || '').toLowerCase().trim() === cleanName.toLowerCase() ||
+            stripExSuSp(fo.name) === stripExSuSp(cleanName)
+          )) || null;
+          if (!rowFeatureId && rowFeatureObj && rowFeatureObj.id) rowFeatureId = String(rowFeatureObj.id).trim();
+        }
+      }
 
       const fFromChar = (character.feats || []).find(f => {
         const n = typeof f === 'string' ? f : f.name;
@@ -10759,10 +10798,9 @@
       const fFromComp = (typeof window !== 'undefined' && window.SrdCompendium && typeof window.SrdCompendium.getByName === 'function')
         ? (window.SrdCompendium.getByName(featName, 'Feat') || window.SrdCompendium.getByName(cleanName, 'Feat') || window.SrdCompendium.getByName(baseFeatName, 'Feat'))
         : null;
-      const stripExSuSp = (s) => String(s || '').replace(/\s*\((?:Ex|Su|Sp)\)\s*$/i, '').trim().toLowerCase();
       let cabFromComp = null;
       if (typeof window !== 'undefined' && window.SrdCompendium) {
-        const candidateId = (fFromChar && fFromChar.id) || (aFromChar && aFromChar.id) || (fFromDb && fFromDb.id) || null;
+        const candidateId = rowFeatureId || (fFromChar && fFromChar.id) || (aFromChar && aFromChar.id) || (fFromDb && fFromDb.id) || null;
         if (candidateId && typeof window.SrdCompendium.getById === 'function') {
           const byId = window.SrdCompendium.getById(candidateId);
           if (byId && (byId.type === 'ClassAbility' || String(byId.id || '').startsWith('cab-'))) cabFromComp = byId;
@@ -10785,7 +10823,7 @@
       let studioEntry = null;
       if (typeof CharStore !== 'undefined' && CharStore.StudioBridge && typeof CharStore.StudioBridge.resolveEntity === 'function') {
         try {
-          studioEntry = CharStore.StudioBridge.resolveEntity((fFromChar && fFromChar.id) || (aFromChar && aFromChar.id) || cleanName) || null;
+          studioEntry = CharStore.StudioBridge.resolveEntity(rowFeatureId || (fFromChar && fFromChar.id) || (aFromChar && aFromChar.id) || cleanName) || null;
         } catch (_) { studioEntry = null; }
       }
       const customEntry = Array.isArray(character?.customEntries)

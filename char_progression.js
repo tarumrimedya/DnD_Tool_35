@@ -4209,7 +4209,19 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
             continue;
           }
 
-          // D.7) Special Class Feature Checks (Wild Shape, Turn/Rebuke Undead, Bardic Music, Smite, Martial Maneuvers)
+          // D.7) Special Class Feature Checks (Wild Shape, Turn/Rebuke Undead, Bardic Music, Smite, Rage)
+          if (/\bability to rage\b|\brage\b/i.test(partLow) && !partLow.includes('extra rage') && !partLow.includes('rage mage')) {
+            const hasRageAbil = Array.isArray(character?.specialAbilities) && character.specialAbilities.some(a => /\brage\b/i.test(String(typeof a === 'string' ? a : (a?.name || ''))));
+            met = (classCounts['barbarian'] || 0) >= 1 || knownFeats.has('rage') || hasRageAbil;
+            info = met ? '(Has Rage)' : '(Requires Ability to Rage / Barbarian 1)';
+            if (!met) allMet = false;
+            checks.push({ type: 'feature', label, met, info });
+            continue;
+          }
+          if (/^use\s+invocations$|^or\s+use\s+spell-like\s+abilities$|^use\s+spell-like\s+abilities$/i.test(partLow.trim()) && /ability to cast arcane spells.*invocations.*spell-like/i.test(rawPrereq || '')) {
+            // Trailing OR fragments of "Ability to cast arcane spells, use invocations, or use spell-like abilities"
+            continue;
+          }
           if (partLow.includes('wild shape')) {
             met = (classCounts['druid'] || 0) >= 5 || knownFeats.has('wildshape');
             info = met ? '(Has Wild Shape)' : '(Requires Wild Shape / Druid 5)';
@@ -5464,8 +5476,11 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           met = currentBab >= (req.min || 0);
           info = `(Current: +${currentBab})`;
         } else if (req.key === 'feat') {
-          const reqName = (req.name || '').toLowerCase();
-          met = Array.from(featNames).some(f => f.includes(reqName) || reqName.includes(f));
+          const reqName = (req.name || '').toLowerCase().trim();
+          const reqHasChoice = reqName.includes('(') && reqName.includes(')');
+          met = Array.from(featNames).some(f => reqHasChoice
+            ? (f === reqName || f.includes(reqName))
+            : (f === reqName || f.includes(reqName) || reqName.includes(f)));
           info = met ? '(Has Feat)' : '(Missing Feat)';
         } else if (req.key === 'arcane') {
           met = hasArcane;
@@ -5810,6 +5825,9 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
       });
     }
 
+    let _classSearchRenderLimit = 60;
+    let _classSearchLastFilterKey = '';
+
     function filterLevelUpClassSearch() {
       const resultsContainer = document.getElementById('lvlup-class-search-results');
       const countBadge = document.getElementById('lvlup-class-count-badge');
@@ -5818,6 +5836,11 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
 
       ensureClassSplatChunks();
       const q = (document.getElementById('lvlup-class-search-input')?.value || '').trim().toLowerCase();
+      const filterKey = `${currentClassFilterTab}|${q}`;
+      if (filterKey !== _classSearchLastFilterKey) {
+        _classSearchLastFilterKey = filterKey;
+        _classSearchRenderLimit = 60;
+      }
       const allDefs = getAvailableClassDefs();
       const selectedClass = document.getElementById('lvlup-class-select')?.value || '';
 
@@ -5909,8 +5932,9 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
 
       let lastPriority = null;
       let htmlOutput = '';
+      const visibleMatched = matched.slice(0, _classSearchRenderLimit);
 
-      matched.forEach(item => {
+      visibleMatched.forEach(item => {
         const cName = item.name;
         const def = item.def;
         const isSelected = (cName.toLowerCase() === selectedClass.toLowerCase());
@@ -6070,6 +6094,17 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           </div>
         `;
       });
+
+      if (matched.length > visibleMatched.length) {
+        const remainingCount = matched.length - visibleMatched.length;
+        htmlOutput += `
+          <div class="pt-1.5 text-center">
+            <button type="button" data-action="progression:load-more-classes" class="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-amber-300 border border-amber-500/40 text-[11px] font-bold cursor-pointer transition">
+              Show More Classes (${remainingCount} remaining)
+            </button>
+          </div>
+        `;
+      }
 
       if (q) {
         const safeQuery = UI.escapeHtml(q);
@@ -6902,10 +6937,8 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       renderAll();
 
       if (flawDetected) {
-        setTimeout(() => {
-          alert(`⚠️ 1st-Level Flaw added!\n\n🎖️ Per D&D 3.5e Unearthed Arcana rules, taking a flaw grants 1 EXTRA BONUS FEAT!\n\nOpening the Feat Compendium now to select your bonus feat.`);
-          openFeatPickerModal(false);
-        }, 300);
+        showToast('⚠️ 1st-Level Flaw added! Per D&D 3.5e Unearthed Arcana rules, taking a flaw grants +1 extra bonus feat.', 'info', { wrap: true });
+        openFeatPickerModal(false);
       }
     }
 
@@ -7564,8 +7597,9 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
 
       let lastPriority = null;
       let htmlOutput = '';
+      const visibleMatched = matched.slice(0, _classSearchRenderLimit);
 
-      matched.forEach(item => {
+      visibleMatched.forEach(item => {
         const cName = item.name;
         const def = item.def;
         const isSelected = (cName.toLowerCase() === selectedClass.toLowerCase());
@@ -8703,6 +8737,15 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
               ? [...classFeats.features]
               : []);
 
+        const featureIdByName = new Map();
+        (Array.isArray(classFeats.featureObjects) ? classFeats.featureObjects : []).forEach(fo => {
+          if (fo && fo.id && fo.name) {
+            const k1 = String(fo.name).toLowerCase().trim();
+            const k2 = k1.replace(/\s*\((?:ex|su|sp|na)\)\s*$/i, '').trim();
+            if (k1 && !featureIdByName.has(k1)) featureIdByName.set(k1, String(fo.id));
+            if (k2 && !featureIdByName.has(k2)) featureIdByName.set(k2, String(fo.id));
+          }
+        });
         const abilityBadgeItems = effectiveRowAbilities.filter(aStr => {
           const str = String(aStr).trim();
           // Hide generic "Domains (2)" or "[Domain: ...]" strings on Cleric 1 because we render dedicated interactive Domain badges
@@ -8713,9 +8756,15 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         }).sort((a, b) => extractFeatSortName(a).localeCompare(extractFeatSortName(b))).map(aStr => {
           const str = String(aStr);
           const rawName = str.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️\s]+(\[.*?\])?\s*/, '').trim();
+          const lowKey = rawName.toLowerCase();
+          const baseKey = lowKey.replace(/\s*\((?:ex|su|sp|na)\)\s*$/i, '').trim();
+          const resolvedCabId = (typeof aStr === 'object' && aStr && (aStr.refId || aStr.id))
+            || featureIdByName.get(lowKey)
+            || featureIdByName.get(baseKey)
+            || '';
           const badgeLabel = rawName;
           const cornerBadge = getFeatPinCornerBadgeHtml(rawName);
-          return `<button data-action="progression:show-feat-detail" data-feat-name="${rawName.replace(/"/g, '&quot;')}" data-level-idx="${idx}" data-feat-type="ability" title="${UI.escapeAttr(rawName)} — Click for rule details" style="width: 150px; min-width: 150px; max-width: 150px; box-sizing: border-box; overflow: hidden;" class="relative min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[10px] font-bold bg-sky-950/80 hover:bg-sky-900 text-sky-300 border border-sky-600/70 shadow-sm transition text-left cursor-pointer"><span class="shrink-0">✨</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">${UI.escapeHtml(badgeLabel)}</span>${cornerBadge}</button>`;
+          return `<button data-action="progression:show-feat-detail" data-feat-name="${rawName.replace(/"/g, '&quot;')}"${resolvedCabId ? ` data-feat-id="${UI.escapeAttr(resolvedCabId)}"` : ''} data-level-idx="${idx}" data-feat-type="ability" title="${UI.escapeAttr(rawName)} — Click for rule details" style="width: 150px; min-width: 150px; max-width: 150px; box-sizing: border-box; overflow: hidden;" class="relative min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[10px] font-bold bg-sky-950/80 hover:bg-sky-900 text-sky-300 border border-sky-600/70 shadow-sm transition text-left cursor-pointer"><span class="shrink-0">✨</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">${UI.escapeHtml(badgeLabel)}</span>${cornerBadge}</button>`;
         });
 
         const classBonusBadgeItems = classBonusFeats.map(fStr => {
@@ -9548,19 +9597,22 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
           (conDef.components || []).forEach(k => handledKeys.add(k));
           const ranks = Math.max(0, ...compSkills.map(s => Number(s.ranks) || 0));
           const isClass = compSkills.some(s => s.isClass);
-          totalSpent += ranks * (isClass ? 1 : 2);
+          const ccRanks = isClass ? Math.min(ranks, Math.max(0, ...compSkills.map(s => Number(s.crossClassRanks) || 0))) : 0;
+          totalSpent += isClass ? ((ranks - ccRanks) + (ccRanks * 2)) : (ranks * 2);
         });
 
         char.skills.forEach(sk => {
           if (!handledKeys.has(sk.key)) {
             const ranks = Number(sk.ranks) || 0;
-            totalSpent += ranks * (sk.isClass ? 1 : 2);
+            const ccRanks = sk.isClass ? Math.min(ranks, Math.max(0, Number(sk.crossClassRanks) || 0)) : 0;
+            totalSpent += sk.isClass ? ((ranks - ccRanks) + (ccRanks * 2)) : (ranks * 2);
           }
         });
       } else {
         char.skills.forEach(sk => {
           const ranks = Number(sk.ranks) || 0;
-          totalSpent += ranks * (sk.isClass ? 1 : 2);
+          const ccRanks = sk.isClass ? Math.min(ranks, Math.max(0, Number(sk.crossClassRanks) || 0)) : 0;
+          totalSpent += sk.isClass ? ((ranks - ccRanks) + (ccRanks * 2)) : (ranks * 2);
         });
       }
 
@@ -11134,7 +11186,13 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       try {
         let entries = null;
         if (typeof RuleMaster !== 'undefined' && typeof RuleMaster.fetchSingleAiRuleObjects === 'function') {
-          entries = await RuleMaster.fetchSingleAiRuleObjects(q, 'Race', apiKey);
+          const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('Rule Master request timed out after 25s. Please try again.')), 25000);
+          });
+          entries = await Promise.race([
+            RuleMaster.fetchSingleAiRuleObjects(q, 'Race', apiKey),
+            timeoutPromise
+          ]);
         }
 
         const creature = (entries && entries.length > 0) ? entries[0] : null;
@@ -11266,7 +11324,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       Actions.register('progression:show-feat-detail', (el, data, event) => {
         if (data.featName && typeof showFeatDetail === 'function') {
           const lvlIdx = (data.levelIdx !== undefined && data.levelIdx !== '') ? Number(data.levelIdx) : null;
-          showFeatDetail(data.featName, lvlIdx, data.featType || 'feat');
+          showFeatDetail(data.featName, lvlIdx, data.featType || 'feat', data.featId || null);
         }
       });
       Actions.register('progression:fetch-class-ai', (el, data, event) => {
@@ -11277,6 +11335,10 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       });
       Actions.register('progression:select-class-search', (el, data, event) => {
         if (data.className) selectClassFromSearch(data.className);
+      });
+      Actions.register('progression:load-more-classes', (el, data, event) => {
+        _classSearchRenderLimit += 60;
+        filterLevelUpClassSearch();
       });
       Actions.register('progression:open-custom-class-modal', (el, data, event) => {
         if (typeof openCreateCustomClassModal === 'function') {

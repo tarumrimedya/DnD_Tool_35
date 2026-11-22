@@ -4101,11 +4101,31 @@
       });
 
       let parsed = null;
+      const cleaned = rmEngine.cleanJsonText(rawReply);
       try {
-        const cleaned = rmEngine.cleanJsonText(rawReply);
         parsed = JSON.parse(cleaned);
       } catch (parseErr) {
-        parsed = { persona: guessedPersona, reply: rawReply, actions: [], citations: [] };
+        const jsonMatch = String(cleaned || rawReply || '').match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          try {
+            parsed = JSON.parse(jsonMatch[0]);
+          } catch (_) {
+            parsed = null;
+          }
+        }
+        if (!parsed) {
+          const replyMatch = String(rawReply || '').match(/"reply"\s*:\s*"((?:\\.|[^"\\])*)"/);
+          let recoveredReply = rawReply;
+          if (replyMatch && replyMatch[1]) {
+            try { recoveredReply = JSON.parse(`"${replyMatch[1]}"`); } catch (_) { recoveredReply = replyMatch[1]; }
+          }
+          let recoveredActions = [];
+          const actionsMatch = String(rawReply || '').match(/"actions"\s*:\s*(\[[\s\S]*?\])/);
+          if (actionsMatch && actionsMatch[1]) {
+            try { recoveredActions = JSON.parse(actionsMatch[1]); } catch (_) { recoveredActions = []; }
+          }
+          parsed = { persona: guessedPersona, reply: recoveredReply, actions: recoveredActions, citations: [] };
+        }
       }
 
       const activePersona = _personaLock !== 'auto'

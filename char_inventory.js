@@ -4775,7 +4775,10 @@
           : null);
 
       if (!stats) {
-        container.innerHTML = `<div class="p-4 text-center text-xs text-rose-400">Loading companion Bestiary data...</div>`;
+        container.innerHTML = `<div class="p-4 text-center text-xs text-amber-300">Loading companion Bestiary data...</div>`;
+        if (window.RuleEngine && typeof window.RuleEngine.ensureBestiaryHydrated === 'function') {
+          window.RuleEngine.ensureBestiaryHydrated();
+        }
         return;
       }
 

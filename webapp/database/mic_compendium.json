@@ -46467,15 +46467,29 @@
     },
     "effects": [
       {
-        "type": "roll",
-        "kind": "Damage",
-        "dmgType": "Untyped",
-        "crit": "normal",
-        "count": 1,
-        "die": "d6",
-        "scaling": "flat",
-        "condition": "vs. undead",
-        "source": "Truedeath Crystal"
+        "id": "ef-crys-truedeath-crystal-greater-when",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "br-crys-truedeath-crystal-greater-undead",
+            "condKind": "situational",
+            "condText": "vs. Undead",
+            "effects": [
+              {
+                "id": "ef-crys-truedeath-crystal-greater-dmg",
+                "type": "roll",
+                "kind": "Damage",
+                "dmgType": "Untyped",
+                "crit": "normal",
+                "count": 1,
+                "die": "d6",
+                "scaling": "flat",
+                "source": "Truedeath Crystal"
+              }
+            ]
+          }
+        ]
       }
     ],
     "ruleFlags": {
@@ -46518,15 +46532,29 @@
     },
     "effects": [
       {
-        "type": "roll",
-        "kind": "Damage",
-        "dmgType": "Untyped",
-        "crit": "normal",
-        "count": 1,
-        "die": "d6",
-        "scaling": "flat",
-        "condition": "vs. undead",
-        "source": "Truedeath Crystal"
+        "id": "ef-crys-truedeath-crystal-least-when",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "br-crys-truedeath-crystal-least-undead",
+            "condKind": "situational",
+            "condText": "vs. Undead",
+            "effects": [
+              {
+                "id": "ef-crys-truedeath-crystal-least-dmg",
+                "type": "roll",
+                "kind": "Damage",
+                "dmgType": "Untyped",
+                "crit": "normal",
+                "count": 1,
+                "die": "d6",
+                "scaling": "flat",
+                "source": "Truedeath Crystal"
+              }
+            ]
+          }
+        ]
       }
     ],
     "shortDescription": "Clerics craft truedeath crystals to aid themselves and others in sending undead to their final rest.",
@@ -46565,15 +46593,29 @@
     },
     "effects": [
       {
-        "type": "roll",
-        "kind": "Damage",
-        "dmgType": "Untyped",
-        "crit": "normal",
-        "count": 1,
-        "die": "d6",
-        "scaling": "flat",
-        "condition": "vs. undead",
-        "source": "Truedeath Crystal"
+        "id": "ef-crys-truedeath-crystal-lesser-when",
+        "type": "when",
+        "flow": "while",
+        "branches": [
+          {
+            "id": "br-crys-truedeath-crystal-lesser-undead",
+            "condKind": "situational",
+            "condText": "vs. Undead",
+            "effects": [
+              {
+                "id": "ef-crys-truedeath-crystal-lesser-dmg",
+                "type": "roll",
+                "kind": "Damage",
+                "dmgType": "Untyped",
+                "crit": "normal",
+                "count": 1,
+                "die": "d6",
+                "scaling": "flat",
+                "source": "Truedeath Crystal"
+              }
+            ]
+          }
+        ]
       }
     ],
     "ruleFlags": {
@@ -49080,5 +49122,155 @@
     "priceText": "16,165 gp (14th)",
     "requirements": "Craft Magic Arms and Armor, animate dead, Knowledge (religion) 5 ranks.",
     "costToCreate": "8,000 gp (plus 165 gp for masterwork hide), 640 XP, 16 days."
+  },
+  {
+    "schemaVersion": 3,
+    "id": "crys-iron-ward-diamond-least",
+    "blueprint": "item_mod",
+    "name": "Iron Ward Diamond, Least",
+    "type": "AugmentationCrystal",
+    "category": "Augmentation Crystal",
+    "source": "Magic Item Compendium p.26",
+    "cost": 500,
+    "targetType": "Armor",
+    "casterLevel": 7,
+    "requirements": "Craft Magic Arms and Armor, stoneskin.",
+    "slot": "Armor Crystal",
+    "itemModifier": {
+      "kind": "crystal",
+      "appliesTo": "armor",
+      "costMode": "gp",
+      "enhancementIncrease": 0,
+      "flatGp": 500,
+      "keen": false
+    },
+    "effects": [
+      {
+        "type": "defense",
+        "mode": "DR",
+        "value": 1,
+        "what": "-"
+      }
+    ],
+    "ruleFlags": {
+      "dr": "1/-",
+      "drStacks": true,
+      "dailyCap": 10
+    },
+    "shortDescription": "An iron ward diamond lends its toughness to armor, helping it absorb blows in combat.",
+    "text": "This dun and ecru diamond is incredibly durable.\n\nAn iron ward diamond lends its toughness to armor, helping it absorb blows in combat.\n\nLeast: The least version of this augment crystal grants you damage reduction 1/--. This damage reduction stacks with similar damage reduction granted by any other source. Once the clasp has prevented a total of 10 points of damage, it becomes inert until the following day.\n\nLesser: As the least crystal, except that it grants damage reduction 3/-- until it has prevented a total of 30 points of damage. A lesser iron ward diamond functions only when attached to medium or heavy armor.\n\nGreater: As the least crystal, except that it grants damage reduction 5/-- until it has prevented a total of 50 points of damage. A greater iron ward diamond functions only when attached to heavy armor.",
+    "tags": [
+      "mic",
+      "armor",
+      "augmentation crystal"
+    ],
+    "weight": 0,
+    "aura": "Moderate; (DC 18) evocation",
+    "activation": "--",
+    "priceText": "500 gp (3rd) (least), 2,000 gp (6th) (lesser), or 8,000 gp (11th) (greater)",
+    "costToCreate": "250 gp, 20 XP, 1 day (least); 1,000 gp, 80 XP, 2 days (lesser); 4,000 gp, 320 XP, 8 days (greater).",
+    "errata": [
+      "Official aura errata (MIC Errata p.295): Aura: Abjuration"
+    ]
+  },
+  {
+    "schemaVersion": 3,
+    "id": "crys-iron-ward-diamond-lesser",
+    "blueprint": "item_mod",
+    "name": "Iron Ward Diamond, Lesser",
+    "type": "AugmentationCrystal",
+    "category": "Augmentation Crystal",
+    "source": "Magic Item Compendium p.26",
+    "cost": 2000,
+    "targetType": "Armor",
+    "casterLevel": 7,
+    "requirements": "Craft Magic Arms and Armor, stoneskin.",
+    "slot": "Armor Crystal",
+    "itemModifier": {
+      "kind": "crystal",
+      "appliesTo": "armor",
+      "costMode": "gp",
+      "enhancementIncrease": 0,
+      "flatGp": 2000,
+      "keen": false
+    },
+    "effects": [
+      {
+        "type": "defense",
+        "mode": "DR",
+        "value": 3,
+        "what": "-"
+      }
+    ],
+    "ruleFlags": {
+      "dr": "3/-",
+      "drStacks": true,
+      "dailyCap": 30
+    },
+    "shortDescription": "An iron ward diamond lends its toughness to armor, helping it absorb blows in combat.",
+    "text": "This dun and ecru diamond is incredibly durable.\n\nAn iron ward diamond lends its toughness to armor, helping it absorb blows in combat.\n\nLeast: The least version of this augment crystal grants you damage reduction 1/--. This damage reduction stacks with similar damage reduction granted by any other source. Once the clasp has prevented a total of 10 points of damage, it becomes inert until the following day.\n\nLesser: As the least crystal, except that it grants damage reduction 3/-- until it has prevented a total of 30 points of damage. A lesser iron ward diamond functions only when attached to medium or heavy armor.\n\nGreater: As the least crystal, except that it grants damage reduction 5/-- until it has prevented a total of 50 points of damage. A greater iron ward diamond functions only when attached to heavy armor.",
+    "tags": [
+      "mic",
+      "armor",
+      "augmentation crystal"
+    ],
+    "weight": 0,
+    "aura": "Moderate; (DC 18) evocation",
+    "activation": "--",
+    "priceText": "500 gp (3rd) (least), 2,000 gp (6th) (lesser), or 8,000 gp (11th) (greater)",
+    "costToCreate": "250 gp, 20 XP, 1 day (least); 1,000 gp, 80 XP, 2 days (lesser); 4,000 gp, 320 XP, 8 days (greater).",
+    "errata": [
+      "Official aura errata (MIC Errata p.295): Aura: Abjuration"
+    ]
+  },
+  {
+    "schemaVersion": 3,
+    "id": "crys-iron-ward-diamond-greater",
+    "blueprint": "item_mod",
+    "name": "Iron Ward Diamond, Greater",
+    "type": "AugmentationCrystal",
+    "category": "Augmentation Crystal",
+    "source": "Magic Item Compendium p.26",
+    "cost": 8000,
+    "targetType": "Armor",
+    "casterLevel": 7,
+    "requirements": "Craft Magic Arms and Armor, stoneskin.",
+    "slot": "Armor Crystal",
+    "itemModifier": {
+      "kind": "crystal",
+      "appliesTo": "armor",
+      "costMode": "gp",
+      "enhancementIncrease": 0,
+      "flatGp": 8000,
+      "keen": false
+    },
+    "effects": [
+      {
+        "type": "defense",
+        "mode": "DR",
+        "value": 5,
+        "what": "-"
+      }
+    ],
+    "ruleFlags": {
+      "dr": "5/-",
+      "drStacks": true,
+      "dailyCap": 50
+    },
+    "shortDescription": "An iron ward diamond lends its toughness to armor, helping it absorb blows in combat.",
+    "text": "This dun and ecru diamond is incredibly durable.\n\nAn iron ward diamond lends its toughness to armor, helping it absorb blows in combat.\n\nLeast: The least version of this augment crystal grants you damage reduction 1/--. This damage reduction stacks with similar damage reduction granted by any other source. Once the clasp has prevented a total of 10 points of damage, it becomes inert until the following day.\n\nLesser: As the least crystal, except that it grants damage reduction 3/-- until it has prevented a total of 30 points of damage. A lesser iron ward diamond functions only when attached to medium or heavy armor.\n\nGreater: As the least crystal, except that it grants damage reduction 5/-- until it has prevented a total of 50 points of damage. A greater iron ward diamond functions only when attached to heavy armor.",
+    "tags": [
+      "mic",
+      "armor",
+      "augmentation crystal"
+    ],
+    "weight": 0,
+    "aura": "Moderate; (DC 18) evocation",
+    "activation": "--",
+    "priceText": "500 gp (3rd) (least), 2,000 gp (6th) (lesser), or 8,000 gp (11th) (greater)",
+    "costToCreate": "250 gp, 20 XP, 1 day (least); 1,000 gp, 80 XP, 2 days (lesser); 4,000 gp, 320 XP, 8 days (greater).",
+    "errata": [
+      "Official aura errata (MIC Errata p.295): Aura: Abjuration"
+    ]
   }
 ]

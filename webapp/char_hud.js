@@ -2664,7 +2664,12 @@
       const classEl = document.getElementById('char-classes-display');
       if (classEl) classEl.textContent = character.classes;
       const babEl = document.getElementById('char-bab-display');
-      if (babEl) babEl.textContent = '+' + (character.bab || 0);
+      if (babEl) {
+        const effBab = Number(character.effectiveBab ?? character.bab) || 0;
+        const baseBab = Number(character.bab) || 0;
+        babEl.textContent = '+' + effBab;
+        babEl.title = effBab !== baseBab ? `Effective BAB: +${effBab} (Base: +${baseBab})` : `Base Attack Bonus: +${baseBab}`;
+      }
 
       // Update Top Hero Bar Character Template Badge
       const topTmplBadge = document.getElementById('core-template-badge');
@@ -2921,7 +2926,7 @@
             acNotesEl.title = `Situational AC Bonuses (Not Added to Base AC): ${fullCondParts.join(' • ')} | Base AC Breakdown: ${detailedParts.join(' • ')} (Base 10)`;
           } else {
             acNotesEl.textContent = 'No situational AC bonuses';
-            acNotesEl.className = 'h-7 flex items-center justify-center text-[10px] text-slate-500 italic text-center truncate bg-slate-950/50 rounded-md px-2 border border-slate-800/60';
+            acNotesEl.className = 'calm-empty-note h-7 flex items-center justify-center text-[10px] text-slate-500 italic text-center truncate bg-slate-950/50 rounded-md px-2 border border-slate-800/60';
             acNotesEl.title = `AC Breakdown: ${detailedParts.join(' • ')} (Base 10) | Click 'Breakdown' for full details.`;
           }
         }
@@ -2999,7 +3004,7 @@
           savesSubtitle.title = `Active buffs are included in saving throws. Click a save to roll.`;
         } else {
           savesSubtitle.textContent = 'Click to roll save';
-          savesSubtitle.className = 'text-[10px] text-amber-300 text-center truncate';
+          savesSubtitle.className = 'calm-empty-note text-[10px] text-amber-300 text-center truncate';
           savesSubtitle.title = 'Click to roll 3D polyhedral dice.';
         }
       }
@@ -3007,6 +3012,9 @@
       // Encounter Round Displays
       if (typeof updateRoundDisplays === 'function') {
         updateRoundDisplays();
+      }
+      if (typeof syncCalmStickyHud === 'function') {
+        syncCalmStickyHud();
       }
     }
 
@@ -9571,9 +9579,11 @@ function renderManualStatsPanel() {
     function renderPeriodicHpEffects() {
       const container = document.getElementById('hp-periodic-list');
       const badge = document.getElementById('hp-periodic-badge');
+      const btn = document.getElementById('btn-periodic-hp');
       if (!container) return;
 
       const effects = character?.periodicHpEffects || [];
+      if (btn) btn.classList.toggle('calm-no-periodic', effects.length === 0);
       if (effects.length === 0) {
         container.classList.add('hidden');
         container.innerHTML = '';
@@ -9926,6 +9936,13 @@ function renderManualStatsPanel() {
       window.Actions.register('hud:set-sheet-mode', (el, data, event) => {
         setSheetViewMode(data.mode || 'both');
       });
+      window.Actions.register('hud:toggle-ui-skin', (el, data, event) => {
+        const cur = document.body.getAttribute('data-ui-skin') === 'calm' ? 'calm' : 'classic';
+        applySheetUiSkin(cur === 'calm' ? 'classic' : 'calm', true);
+      });
+      window.Actions.register('hud:scroll-top', (el, data, event) => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
       window.Actions.register('hud:quick-remove-template', (el, data, event) => {
         quickRemoveCharacterTemplate(data.templateId || '');
       });
@@ -10037,4 +10054,81 @@ function renderManualStatsPanel() {
         removePeriodicHpEffect(data.effId || '');
       });
     }
+
+    // ====================================================
+    // CALM UI SKIN & STICKY LIVE HUD BAR (preview/calm-ui)
+    // ====================================================
+    function applySheetUiSkin(skin, persist = false) {
+      const normalized = skin === 'classic' ? 'classic' : 'calm';
+      if (document.body) {
+        document.body.setAttribute('data-ui-skin', normalized);
+      }
+      const btn = document.getElementById('btn-ui-skin-toggle');
+      if (btn) {
+        btn.textContent = normalized === 'calm' ? '✨ Calm UI' : '🎨 Classic UI';
+        btn.title = normalized === 'calm'
+          ? 'Calm UI active (Rule Crafter style) — Click to compare Classic UI'
+          : 'Classic UI active — Click to switch to Calm UI';
+      }
+      if (persist) {
+        try { localStorage.setItem('dnd35_ui_skin', normalized); } catch (e) { reportError('char_hud:applySheetUiSkin', e); }
+      }
+      updateCalmStickyHudVisibility();
+    }
+
+    function syncCalmStickyHud() {
+      const bar = document.getElementById('calm-sticky-hud');
+      if (!bar) return;
+      const setTxt = (id, srcId, fallback) => {
+        const dst = document.getElementById(id);
+        const src = document.getElementById(srcId);
+        if (dst) dst.textContent = (src && src.textContent) ? src.textContent.trim() : fallback;
+      };
+      setTxt('calm-sticky-name', 'char-name-display', '--');
+      const hpEl = document.getElementById('calm-sticky-hp');
+      if (hpEl) {
+        const cur = document.getElementById('hp-current-display')?.textContent?.trim() || '--';
+        const max = document.getElementById('hp-max-display')?.textContent?.trim() || '--';
+        const tmp = document.getElementById('hp-temp-tag');
+        const tmpTxt = (tmp && !tmp.classList.contains('hidden') && tmp.textContent.trim()) ? ` (${tmp.textContent.trim()})` : '';
+        hpEl.textContent = `${cur}/${max}${tmpTxt}`;
+      }
+      const acEl = document.getElementById('calm-sticky-ac');
+      if (acEl) {
+        const tot = document.getElementById('ac-total-display')?.textContent?.trim() || '--';
+        const tch = document.getElementById('ac-touch-display')?.textContent?.trim() || '--';
+        const flt = document.getElementById('ac-flat-display')?.textContent?.trim() || '--';
+        acEl.textContent = `${tot} (${tch}/${flt})`;
+      }
+      setTxt('calm-sticky-fort', 'save-fort-display', '--');
+      setTxt('calm-sticky-ref', 'save-ref-display', '--');
+      setTxt('calm-sticky-will', 'save-will-display', '--');
+    }
+
+    function updateCalmStickyHudVisibility() {
+      const bar = document.getElementById('calm-sticky-hud');
+      if (!bar) return;
+      const y = window.scrollY || document.documentElement.scrollTop || 0;
+      bar.classList.toggle('is-visible', y > 260);
+    }
+
+    (function initSheetCalmUi() {
+      let saved = 'calm';
+      try {
+        const stored = localStorage.getItem('dnd35_ui_skin');
+        if (stored === 'classic' || stored === 'calm') saved = stored;
+      } catch (e) {
+        reportError('char_hud:initSheetCalmUi', e);
+      }
+      applySheetUiSkin(saved, false);
+      let rafPending = false;
+      window.addEventListener('scroll', () => {
+        if (rafPending) return;
+        rafPending = true;
+        requestAnimationFrame(() => {
+          rafPending = false;
+          updateCalmStickyHudVisibility();
+        });
+      }, { passive: true });
+    })();
 

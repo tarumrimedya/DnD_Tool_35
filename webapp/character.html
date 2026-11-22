@@ -22,7 +22,7 @@
   
   <!-- Static Compiled Tailwind CSS (Zero Runtime JIT Overhead) -->
   <link rel="stylesheet" href="tailwind_compiled.css?v=101216d709">
-  <link rel="stylesheet" href="design_tokens.css?v=e36252e504">
+  <link rel="stylesheet" href="design_tokens.css?v=5c4bcc738c">
 
   <!-- Google Fonts: Cinzel for RPG Dice -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -172,7 +172,41 @@
     .disc-tab-truenaming.disc-tab-active { background: linear-gradient(90deg, #115e59, #065f46); border-color: #2dd4bf; color: #ffffff; box-shadow: 0 2px 10px rgba(17, 94, 89, 0.4); }
   </style>
 </head>
-<body data-page="sheet" data-sheet-mode="both" class="min-h-screen flex flex-col pb-20 md:pb-6 relative">
+<body data-page="sheet" data-sheet-mode="both" data-ui-skin="calm" class="min-h-screen flex flex-col pb-20 md:pb-6 relative">
+
+  <!-- CALM UI STICKY LIVE HUD BAR (Appears on scroll when Calm skin is active) -->
+  <div id="calm-sticky-hud" class="calm-sticky-hud" aria-label="Compact live character status">
+    <div class="calm-sticky-inner">
+      <span id="calm-sticky-name" class="text-xs font-extrabold text-white truncate" style="max-width: 160px;">--</span>
+      <span class="calm-sticky-chip" title="Hit Points">
+        <span>🩸</span>
+        <span id="calm-sticky-hp" class="font-mono text-emerald-400">--/--</span>
+      </span>
+      <span class="calm-sticky-chip" title="Armor Class (Total / Touch / Flat-Footed)">
+        <span>🛡️</span>
+        <span id="calm-sticky-ac" class="font-mono text-amber-300">--</span>
+      </span>
+      <button type="button" data-action="hud:roll-save" data-save-key="Fortitude" class="calm-sticky-btn" title="Roll Fortitude Save">
+        <span class="text-slate-400">F</span>
+        <span id="calm-sticky-fort" class="font-mono text-emerald-400">--</span>
+      </button>
+      <button type="button" data-action="hud:roll-save" data-save-key="Reflex" class="calm-sticky-btn" title="Roll Reflex Save">
+        <span class="text-slate-400">R</span>
+        <span id="calm-sticky-ref" class="font-mono text-sky-400">--</span>
+      </button>
+      <button type="button" data-action="hud:roll-save" data-save-key="Will" class="calm-sticky-btn" title="Roll Will Save">
+        <span class="text-slate-400">W</span>
+        <span id="calm-sticky-will" class="font-mono text-purple-400">--</span>
+      </button>
+      <button type="button" data-action="combat:next-round" class="calm-sticky-btn" title="Advance to Next Round">
+        <span>⏭️</span>
+        <span id="calm-sticky-round" class="round-counter-badge font-mono text-indigo-300">Rd 1</span>
+      </button>
+      <button type="button" data-action="hud:scroll-top" class="calm-sticky-btn ml-auto" title="Back to top">
+        <span>↑ Top</span>
+      </button>
+    </div>
+  </div>
 
   <!-- FULLSCREEN VIGNETTE FLASH OVERLAY (DM CANLI HASAR/ŞİFA ETKİSİ) -->
   <div id="dm-vignette-overlay" class="pointer-events-none fixed inset-0 z-[9999] opacity-0 transition-opacity duration-300 ease-out"></div>
@@ -188,7 +222,7 @@
     <div class="flex flex-col md:flex-row items-stretch gap-2.5">
       
       <!-- SOL: BÜYÜK KARAKTER RESMİ (HERO PORTRAIT CARD) -->
-      <div class="relative w-full md:w-44 lg:w-48 shrink-0 min-h-[170px] md:min-h-[190px] group">
+      <div id="hero-portrait-wrap" class="relative w-full md:w-44 lg:w-48 shrink-0 min-h-[170px] md:min-h-[190px] group">
         <!-- Tıklanınca Profili / Görünümü Düzenle Açılır -->
         <div data-action="hud:open-profile-edit" title="Click to edit character portrait or profile"
              class="w-full h-full bg-gradient-to-b from-slate-900 via-slate-900 to-indigo-950/70 border border-slate-800 hover:border-indigo-500/70 rounded-xl overflow-hidden shadow-lg cursor-pointer relative flex flex-col items-center justify-center transition-all">
@@ -215,6 +249,7 @@
                 </h1>
                 <span id="core-race" data-action="hud:open-profile-edit" data-profile-tab="identity" class="h-6 px-2 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 hover:border-purple-500/60 text-[10px] font-bold uppercase tracking-wider inline-flex items-center transition cursor-pointer" title="Click to edit Race &amp; Character Templates">--</span>
                 <button id="core-template-badge" type="button" data-action="hud:open-profile-edit" data-profile-tab="template" class="hidden h-6 px-2 rounded bg-purple-950/90 hover:bg-purple-900 text-purple-200 border border-purple-500/70 text-[10px] font-bold uppercase tracking-wider inline-flex items-center gap-1 transition cursor-pointer" title="Active Character Template(s) &amp; Level Adjustment — Click to manage">🧬 --</button>
+                <button id="btn-ui-skin-toggle" type="button" data-action="hud:toggle-ui-skin" class="calm-skin-pill" title="Toggle between Calm UI (Rule Crafter style) and Classic UI">✨ Calm UI</button>
                 <button id="btn-header-npc-statblock" type="button" data-action="hud:open-npc-statblock" class="hidden ui-btn-sm h-7 px-2.5 sm:px-3 rounded-lg bg-gradient-to-r from-amber-600 to-rose-600 hover:from-amber-500 hover:to-rose-500 text-white font-sans font-bold text-xs shadow flex items-center gap-1.5 transition transform active:scale-95 cursor-pointer shrink-0" title="Edit Monster / NPC statblock values (HP, AC, Saves, Abilities, Spells, Special Abilities)">
                   <span>⚡</span>
                   <span>Edit Statblock</span>
@@ -275,8 +310,8 @@
         </div>
 
         <!-- Alt Satır: Ability Scores Grid with 24H Modifiers (Resim ile Aynı Hizaya Genişleyen Alan) -->
-        <div class="bg-dndCard border border-dndBorder rounded-xl p-3 shadow flex-1 flex flex-col justify-center">
-          <div class="flex items-center justify-between mb-1.5">
+        <div id="abilities-card" class="bg-dndCard border border-dndBorder rounded-xl p-3 shadow flex-1 flex flex-col justify-center">
+          <div id="abilities-header-row" class="flex items-center justify-between mb-1.5">
             <h3 class="text-xs font-bold text-amber-400 uppercase tracking-wide flex items-center gap-1.5">
               <span class="inline-flex items-center"><svg class="w-4 h-4 text-amber-400" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><polygon points="50,4 90,27 90,73 50,96 10,73 10,27" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/><polygon points="28,33 72,33 50,73" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/><line x1="28" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"/><line x1="72" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"/><line x1="28" y1="33" x2="10" y2="27" stroke="currentColor" stroke-width="4"/><line x1="72" y1="33" x2="90" y2="27" stroke="currentColor" stroke-width="4"/><line x1="28" y1="33" x2="10" y2="73" stroke="currentColor" stroke-width="4"/><line x1="72" y1="33" x2="90" y2="73" stroke="currentColor" stroke-width="4"/><line x1="50" y1="73" x2="10" y2="73" stroke="currentColor" stroke-width="4"/><line x1="50" y1="73" x2="90" y2="73" stroke="currentColor" stroke-width="4"/><line x1="50" y1="73" x2="50" y2="96" stroke="currentColor" stroke-width="4"/><text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, sans-serif">20</text></svg></span>
               <span>ABILITY SCORES</span>
@@ -296,7 +331,7 @@
   </section>
 
   <!-- VITALS & STATUS HUD (Visible across all tabs) -->
-  <section class="max-w-7xl w-full mx-auto px-3 md:px-4 py-2 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-2 md:gap-3 relative z-10">
+  <section id="vitals-hud-section" class="max-w-7xl w-full mx-auto px-3 md:px-4 py-2 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-2 md:gap-3 relative z-10">
     <!-- Card 1: Hit Points (Orantılı Geniş En: 2 Kolon) -->
     <div class="bg-dndCard border border-dndBorder rounded-xl p-2.5 sm:p-3 flex flex-col justify-between shadow col-span-1 md:col-span-2 lg:col-span-2 min-w-0">
       <!-- Card Header -->
@@ -336,7 +371,7 @@
       </div>
 
       <!-- Süreli Etki Butonu (DoT / HoT) -->
-      <button data-action="hud:open-periodic-hp" class="ui-btn-sm h-7 w-full mt-1.5 px-2 rounded-md bg-amber-500/15 hover:bg-amber-500/25 active:bg-amber-500/35 text-amber-300 hover:text-amber-200 border border-amber-500/40 text-[11px] font-bold flex items-center justify-center gap-1.5 transition shadow-sm cursor-pointer select-none" title="Add & manage per-round Damage or Healing over Time (DoT / HoT)">
+      <button id="btn-periodic-hp" data-action="hud:open-periodic-hp" class="ui-btn-sm calm-no-periodic h-7 w-full mt-1.5 px-2 rounded-md bg-amber-500/15 hover:bg-amber-500/25 active:bg-amber-500/35 text-amber-300 hover:text-amber-200 border border-amber-500/40 text-[11px] font-bold flex items-center justify-center gap-1.5 transition shadow-sm cursor-pointer select-none" title="Add & manage per-round Damage or Healing over Time (DoT / HoT)">
         <span class="text-xs">⏱️</span>
         <span class="truncate">Periodic HP (DoT/HoT)</span>
         <span id="hp-periodic-badge" class="hidden text-[10px] px-1.5 rounded font-bold font-mono bg-amber-500/30 text-amber-200 border border-amber-400/50 animate-pulse ml-0.5 shrink-0"></span>
@@ -433,7 +468,7 @@
   </section>
 
   <!-- NAVIGATION TABS (Kompakt Kart Sekmeler & Genişletilmiş Boşluk) -->
-  <nav class="hidden md:block max-w-7xl w-full mx-auto px-3 md:px-4 mt-3 mb-5 sm:mt-4 sm:mb-6 relative z-10">
+  <nav id="sheet-nav-tabs" class="hidden md:block max-w-7xl w-full mx-auto px-3 md:px-4 mt-3 mb-5 sm:mt-4 sm:mb-6 relative z-10">
     <div role="tablist" aria-label="Character sheet sections" class="flex items-stretch gap-2 overflow-x-auto pb-1 pt-0.5 scrollbar-thin">
       <button data-action="hud:switch-tab" data-tab="tab-combat" id="tab-btn-combat" role="tab" aria-controls="tab-combat" aria-selected="true" class="tab-btn h-9 flex-1 min-w-[105px] sm:min-w-[120px] lg:min-w-0 px-2.5 sm:px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all transform hover:-translate-y-0.5 active:scale-95 cursor-pointer select-none border whitespace-nowrap bg-gradient-to-r from-red-600 to-rose-600 text-white border-red-400 shadow-md shadow-red-950/60 ring-2 ring-red-400/40">
         <span class="text-sm">⚔️</span>
@@ -473,7 +508,7 @@
       <div id="combat-condition-warning-banner" class="hidden"></div>
 
       <!-- ACTION ECONOMY BAR -->
-      <div class="bg-dndCard border border-amber-500/30 rounded-xl p-2.5 shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+      <div id="action-economy-bar" class="bg-dndCard border border-amber-500/30 rounded-xl p-2.5 shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
         <!-- Action Status Badges (Mobilde 2x2 Izgara / Masaüstünde Eşit Genişlikte 4'lü Izgara) -->
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 w-full sm:w-auto min-w-0" id="action-economy-buttons-container">
           <button type="button" id="btn-action-std" data-action="combat:toggle-action" data-action-key="standard" class="ui-btn-sm w-full sm:w-24 h-7 px-2.5 rounded-lg text-[11px] sm:text-xs font-bold border transition-all duration-150 active:scale-95 flex items-center justify-center gap-1.5 bg-emerald-950/80 border-emerald-500/60 text-emerald-300 shadow-sm cursor-pointer whitespace-nowrap min-w-0">
@@ -564,7 +599,7 @@
                 </div>
 
                 <!-- Active Attack Profile Pills Preview (Hazır Profil Modifiyerleri - Bir Aşağı Taşındı) -->
-                <div class="bg-slate-900/60 border border-slate-800 rounded-lg p-2">
+                <div id="active-profile-box-card" class="bg-slate-900/60 border border-slate-800 rounded-lg p-2">
                   <div class="flex items-center justify-between text-[10px] font-bold text-slate-400 mb-1">
                     <span id="active-profile-box-title">SAVED COMBAT PROFILES (MELEE)</span>
                     <span class="text-amber-400 font-mono text-[10px]" id="active-profile-count">0 Saved</span>
@@ -1303,9 +1338,6 @@
                   <span>⚡</span>
                   <span>Daily Spell Slots (Slot Battery):</span>
                 </span>
-                <div id="compact-slots-source-tabs" class="flex items-center gap-1">
-                  <!-- Dynamic tabs for Spontaneous, Prepared, Divine -->
-                </div>
               </div>
               <div class="flex items-center gap-2">
                 <span class="text-slate-400 text-[10px] hidden sm:inline">Casting expends a slot &bull; DM bonus slots supported</span>
@@ -3470,8 +3502,8 @@
   <!-- data-srd-autoinit: srd_compendium.js starts SrdCompendium.init() as soon as it runs. -->
   <script defer src="srd_compendium.js?v=6dddec40fd" data-srd-autoinit></script>
   <script defer src="rulesets/dnd35.js?v=14c0c59243"></script>
-  <script defer src="rule_engine.js?v=3cf964bee8"></script>
-  <script defer src="char_store.js?v=f76930c310"></script>
+  <script defer src="rule_engine.js?v=29ce1b5ef1"></script>
+  <script defer src="char_store.js?v=269e0d27f6"></script>
   <!-- ui_components.js stays blocking on purpose: it has no dependencies, and while the document is
        still loading it binds the data-action router on DOMContentLoaded, after the outside-click
        listeners the deferred scripts register. Deferring it would bind the router first. -->
@@ -3481,14 +3513,14 @@
   <script defer src="campaign_db.js?v=1e45440d78"></script>
   <script defer src="hub_notes.js?v=0ab5c7e3cc"></script>
   <script defer src="app_atlas.js?v=3c4f2e8b19"></script>
-  <script defer src="ai_assistant.js?v=78aa9d6a4a"></script>
+  <script defer src="ai_assistant.js?v=c09f914eee"></script>
   <script defer src="dice3d.js?v=aa07002406"></script>
 
-  <script defer src="char_hud.js?v=a0c1227960"></script>
-  <script defer src="char_combat.js?v=488dc9efaa"></script>
-  <script defer src="char_spells.js?v=a2986416f5"></script>
-  <script defer src="char_progression.js?v=c4c11b2408"></script>
-  <script defer src="char_inventory.js?v=cd85d838d2"></script>
+  <script defer src="char_hud.js?v=694fe3b0db"></script>
+  <script defer src="char_combat.js?v=114da6da2e"></script>
+  <script defer src="char_spells.js?v=e18348c68b"></script>
+  <script defer src="char_progression.js?v=4121ff5454"></script>
+  <script defer src="char_inventory.js?v=a6a41a6f31"></script>
   <!-- Floating Tooltip for Combat Spells Hover (Tap or click to dismiss) -->
   <div id="combat-spell-hover-tooltip" data-action="combat:hide-spell-tooltip" class="hidden fixed z-[200] pointer-events-auto bg-slate-950/95 border border-purple-500/80 rounded-xl p-3 shadow-2xl w-[340px] max-w-[92vw] text-xs space-y-2 backdrop-blur-md transition-opacity duration-150 text-slate-200 cursor-pointer select-none">
     
