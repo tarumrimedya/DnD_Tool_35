@@ -375,6 +375,15 @@
       return 'spontaneous';
     }
 
+    function getCombatSpellEffectiveSlotLevel(sp) {
+      if (!sp) return 0;
+      if (Array.isArray(sp.metamagic) && sp.metamagic.length > 0 && typeof RuleEngine !== 'undefined' && typeof RuleEngine.resolveMetamagic === 'function') {
+        const mm = RuleEngine.resolveMetamagic(sp, character);
+        if (mm && Number.isFinite(Number(mm.effectiveSlotLevel))) return Number(mm.effectiveSlotLevel);
+      }
+      return Number(sp.level) || 0;
+    }
+
     function renderSpellSlotsStrip() {
       const container = document.getElementById('combat-spell-slots-strip');
       if (!container) return;
@@ -398,7 +407,7 @@
       const allKnown = getAllCharacterCombatSpells();
       const presentLevels = new Set();
       allKnown.forEach(sp => {
-        const l = Number(sp.level);
+        const l = getCombatSpellEffectiveSlotLevel(sp);
         if (!isNaN(l)) presentLevels.add(l);
       });
       sources.forEach(src => {
@@ -1873,10 +1882,10 @@
           if (idxA !== -1 && idxB !== -1) return idxA - idxB;
           if (idxA !== -1) return -1;
           if (idxB !== -1) return 1;
-          return (Number(a.level) || 0) - (Number(b.level) || 0);
+          return getCombatSpellEffectiveSlotLevel(a) - getCombatSpellEffectiveSlotLevel(b);
         });
       } else {
-        categorySpells.sort((a, b) => (Number(a.level) || 0) - (Number(b.level) || 0));
+        categorySpells.sort((a, b) => getCombatSpellEffectiveSlotLevel(a) - getCombatSpellEffectiveSlotLevel(b));
       }
 
       // Update spell count badge
@@ -1897,10 +1906,10 @@
       const activeName = activeSpell ? activeSpell.name : (categorySpells[0]?.name || '');
       const activeSource = activeSpell ? (activeSpell._spellSource || getSpellSlotSource(activeSpell)) : (categorySpells[0]?._spellSource || '');
 
-      // Group spells by level
+      // Group spells by effective prepared slot level (respects per-spell Metamagic slot adjustment)
       const spellsByLevel = {};
       categorySpells.forEach(sp => {
-        const lvl = Number(sp.level) || 0;
+        const lvl = getCombatSpellEffectiveSlotLevel(sp);
         if (!spellsByLevel[lvl]) spellsByLevel[lvl] = [];
         spellsByLevel[lvl].push(sp);
       });
