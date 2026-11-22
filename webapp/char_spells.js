@@ -6580,27 +6580,119 @@
     // MODAL: ADD SPELL / MANEUVER / STANCE PICKER LOGIC
     // ====================================================
     let _spellPickerMetamagic = [];
+    let _spellPickerAddMenuAnchor = null;
 
-    function toggleSpellPickerMetamagic(featId) {
-      const id = String(featId || '').trim();
-      if (!id) return;
-      const idx = _spellPickerMetamagic.findIndex(m => m && m.featId === id);
-      if (idx >= 0) {
-        _spellPickerMetamagic.splice(idx, 1);
-      } else {
-        const owned = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getOwnedMetamagicFeats === 'function')
-          ? RuleEngine.getOwnedMetamagicFeats(character)
-          : [];
-        const def = owned.find(f => f.featId === id);
-        if (!def) return;
-        const entry = { featId: def.featId, name: def.name };
-        if (def.variableSlot || def.isHeighten) entry.heightenDelta = 1;
-        _spellPickerMetamagic.push(entry);
+    function closeSpellPickerAddMenu() {
+      const menu = document.getElementById('spell-picker-add-mm-menu');
+      if (menu) menu.classList.add('hidden');
+      _spellPickerAddMenuAnchor = null;
+    }
+
+    function getPickerSlotCountForLevel(targetPool, lvl, effectiveSource) {
+      const sv = typeof getSpellsView === 'function' ? getSpellsView() : null;
+      const isDomainTarget = targetPool === 'divine' && Boolean(window._spellPickerIsDomainSlot || effectiveSource === 'char_domains' || effectiveSource === 'domain');
+      const cap = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getSlotCapacity === 'function')
+        ? RuleEngine.getSlotCapacity(sv, targetPool, lvl, { character, hasDomainCap: hasClericDomainCapability(character) })
+        : { daily: 0, regularDaily: 0, domainDaily: 0 };
+      if (targetPool === 'prepared') {
+        const cur = (character.spellcasting?.preparedSpells || []).filter(s => getPreparedSpellMetamagicInfo(s).effectiveSlotLevel === lvl).length;
+        return { cur, max: cap.daily, isDomain: false };
       }
-      renderSpellPickerResults();
+      if (isDomainTarget) {
+        const cur = (character.spellcasting?.divineSpells || []).filter(s => getPreparedSpellMetamagicInfo(s).effectiveSlotLevel === lvl && s.isDomainSpell).length;
+        return { cur, max: cap.domainDaily, isDomain: true };
+      }
+      const cur = (character.spellcasting?.divineSpells || []).filter(s => getPreparedSpellMetamagicInfo(s).effectiveSlotLevel === lvl && !s.isDomainSpell).length;
+      return { cur, max: cap.regularDaily, isDomain: false };
+    }
+
+    function toggleSpellPickerAddMenu(anchorEl, escapedName) {
+      if (!anchorEl) { addMasterDbItemToCharacter(escapedName, []); return; }
+      if (_spellPickerAddMenuAnchor === anchorEl) { closeSpellPickerAddMenu(); return; }
+
+      const type = window._currentSpellPickerType || 'Spell';
+      const targetPool = window._spellPickerTargetPool || 'spontaneous';
+      const ownedMm = (type === 'Spell' && (targetPool === 'prepared' || targetPool === 'divine') && typeof RuleEngine !== 'undefined' && typeof RuleEngine.getOwnedMetamagicFeats === 'function')
+        ? (RuleEngine.getOwnedMetamagicFeats(character) || [])
+        : [];
+      if (ownedMm.length === 0) {
+        addMasterDbItemToCharacter(escapedName, []);
+        return;
+      }
+
+      const name = unescape(escapedName);
+      const allDb = getCombinedSpellManeuverCatalog();
+      let item = allDb.find(m => (m.name || '').toLowerCase().trim() === name.toLowerCase().trim());
+      if (!item && window.SrdCompendium && typeof window.SrdCompendium.getByName === 'function') {
+        item = window.SrdCompendium.getByName(name);
+      }
+      if (!item) { addMasterDbItemToCharacter(escapedName, []); return; }
+
+      const activeFilterSource = document.getElementById('spell-picker-source-filter')?.value || 'auto';
+      const effectiveSource = activeFilterSource === 'auto' ? resolveAutoSpellFilterSource(targetPool) : activeFilterSource;
+      const baseLvlVal = resolveSpellLevelForPool(item, targetPool, effectiveSource);
+      const baseLvl = baseLvlVal !== null && baseLvlVal !== undefined ? Number(baseLvlVal) : 1;
+      const maxSpellLvl = Number(RuleEngine?.rulesets?.dnd35?.metamagicRules?.maxSpellLevel) || 9;
+
+      let menu = document.getElementById('spell-picker-add-mm-menu');
+      if (!menu) {
+        menu = document.createElement('div');
+        menu.id = 'spell-picker-add-mm-menu';
+        menu.setAttribute('role', 'menu');
+        menu.className = 'hidden fixed bg-slate-950/95 border border-slate-700 rounded-lg shadow-2xl py-1 text-xs';
+        menu.style.zIndex = '9500';
+        menu.style.minWidth = '230px';
+        document.body.appendChild(menu);
+        document.addEventListener('click', ev => {
+          if (!_spellPickerAddMenuAnchor) return;
+          if (ev.target.closest('[data-action="spells:add-picker-item"]')) return;
+          if (ev.target.closest('#spell-picker-add-mm-menu')) return;
+          closeSpellPickerAddMenu();
+        });
+        document.addEventListener('keydown', ev => { if (ev.key === 'Escape') closeSpellPickerAddMenu(); });
+        window.addEventListener('scroll', closeSpellPickerAddMenu, true);
+        window.addEventListener('resize', closeSpellPickerAddMenu);
+      }
+
+      const baseSlot = getPickerSlotCountForLevel(targetPool, baseLvl, effectiveSource);
+      const baseFull = baseSlot.max <= 0 || baseSlot.cur >= baseSlot.max;
+      const rows = [];
+      rows.push(`
+        <button type="button" role="menuitem" data-action="spells:add-picker-with-mm" data-name="${UI.escapeAttr(escapedName)}" data-feat-id="" ${baseFull ? 'disabled' : ''} class="w-full flex items-center justify-between gap-2 px-3 py-1.5 text-left font-semibold ${baseFull ? 'text-slate-500 opacity-50 cursor-not-allowed' : 'text-emerald-300 hover:bg-slate-800 cursor-pointer'} transition">
+          <span class="flex items-center gap-2"><span>➕</span><span>Normal (Lvl ${baseLvl})</span></span>
+          <span class="font-mono text-[10px] text-slate-400">${baseSlot.cur}/${baseSlot.max}</span>
+        </button>
+      `);
+      rows.push('<div class="my-1 border-t border-slate-800"></div>');
+
+      ownedMm.forEach(f => {
+        const adj = (f.variableSlot || f.isHeighten) ? 1 : (Number(f.slotAdj ?? f.levelAdjustment) || 0);
+        const effLvl = baseLvl + adj;
+        const overMax = effLvl > maxSpellLvl;
+        const slotInfo = overMax ? { cur: 0, max: 0 } : getPickerSlotCountForLevel(targetPool, effLvl, effectiveSource);
+        const isDisabled = overMax || slotInfo.max <= 0 || slotInfo.cur >= slotInfo.max;
+        const rightMeta = overMax ? `Lvl ${effLvl} > ${maxSpellLvl}` : `Lvl ${effLvl} · ${slotInfo.cur}/${slotInfo.max}`;
+        rows.push(`
+          <button type="button" role="menuitem" data-action="spells:add-picker-with-mm" data-name="${UI.escapeAttr(escapedName)}" data-feat-id="${UI.escapeAttr(f.featId)}" ${isDisabled ? 'disabled' : ''} class="w-full flex items-center justify-between gap-2 px-3 py-1.5 text-left font-semibold ${isDisabled ? 'text-slate-500 opacity-50 cursor-not-allowed' : 'text-purple-300 hover:bg-slate-800 cursor-pointer'} transition">
+            <span class="flex items-center gap-1.5 truncate"><span>✨</span><span class="truncate">${UI.escapeHtml(f.name)} (+${adj})</span></span>
+            <span class="font-mono text-[10px] text-slate-400 shrink-0">${rightMeta}</span>
+          </button>
+        `);
+      });
+
+      menu.innerHTML = rows.join('');
+      menu.classList.remove('hidden');
+      const r = anchorEl.getBoundingClientRect();
+      const w = menu.offsetWidth, h = menu.offsetHeight;
+      const left = Math.max(8, Math.min(r.right - w, window.innerWidth - w - 8));
+      const top = (r.bottom + 4 + h > window.innerHeight - 8) ? Math.max(8, r.top - h - 4) : r.bottom + 4;
+      menu.style.left = `${left}px`;
+      menu.style.top = `${top}px`;
+      _spellPickerAddMenuAnchor = anchorEl;
     }
 
     function openSpellManeuverPickerModal(initialType = 'Spell', preselectLevel = null, poolOverride = null) {
+      closeSpellPickerAddMenu();
       _spellPickerPoolOverride = poolOverride || null;
       _spellPickerMetamagic = [];
       if (!window._spellPickerTargetPool && window._currentMagicDiscipline && ['spontaneous', 'prepared', 'divine'].includes(window._currentMagicDiscipline)) {
@@ -6646,6 +6738,7 @@
     }
 
     function closeSpellManeuverPickerModal() {
+      closeSpellPickerAddMenu();
       const modal = document.getElementById('spell-maneuver-modal');
       if (modal) modal.classList.add('hidden');
       window._spellPickerIsDomainSlot = false;
@@ -7403,31 +7496,6 @@
       });
 
       container.innerHTML = '';
-
-      // Phase P4 (#7): Inline Metamagic selector bar for Prepared & Divine spell pickers
-      if (type === 'Spell' && (targetPool === 'prepared' || targetPool === 'divine') && typeof RuleEngine !== 'undefined' && typeof RuleEngine.getOwnedMetamagicFeats === 'function') {
-        const ownedMm = RuleEngine.getOwnedMetamagicFeats(character) || [];
-        if (ownedMm.length > 0) {
-          const selectedSet = new Set(_spellPickerMetamagic.map(m => m.featId));
-          const totalAdj = ownedMm.reduce((sum, f) => sum + (selectedSet.has(f.featId) ? (Number(f.slotAdj ?? f.levelAdjustment) || ((f.variableSlot || f.isHeighten) ? 1 : 0)) : 0), 0);
-          const mmBar = document.createElement('div');
-          mmBar.className = 'mb-2.5 p-2.5 rounded-xl bg-slate-950/90 border border-purple-700/60 flex flex-wrap items-center gap-1.5';
-          const mmBtns = ownedMm.map(f => {
-            const isSel = selectedSet.has(f.featId);
-            const adj = (f.variableSlot || f.isHeighten) ? '+1' : `+${Number(f.slotAdj ?? f.levelAdjustment) || 0}`;
-            const btnCls = isSel
-              ? 'bg-purple-700 text-white border-purple-400 shadow'
-              : 'bg-slate-900 text-slate-300 hover:text-white border-slate-700 hover:border-purple-500';
-            return `<button type="button" data-action="spells:picker-toggle-metamagic" data-feat-id="${UI.escapeAttr(f.featId)}" aria-pressed="${isSel ? 'true' : 'false'}" class="px-2 py-1 rounded-lg text-[11px] font-bold border transition cursor-pointer inline-flex items-center gap-1 ${btnCls}"><span>✨</span><span>${UI.escapeHtml(f.name)}</span><span class="font-mono text-[10px] opacity-80">(${adj})</span></button>`;
-          }).join('');
-          mmBar.innerHTML = `
-            <span class="text-[10px] font-black uppercase tracking-wider text-purple-300 mr-1">Metamagic:</span>
-            ${mmBtns}
-            ${totalAdj > 0 ? `<span class="ml-auto text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-purple-950 text-purple-200 border border-purple-700/60">+${totalAdj} Slot Level</span>` : '<span class="ml-auto text-[10px] text-slate-500">Click to prepare with metamagic</span>'}
-          `;
-          container.appendChild(mmBar);
-        }
-      }
       if (matches.length === 0) {
         container.innerHTML = `
           <div class="p-6 text-center text-slate-400 space-y-2">
@@ -7656,7 +7724,7 @@
       return matches;
     }
 
-    function addMasterDbItemToCharacter(escapedName) {
+    function addMasterDbItemToCharacter(escapedName, metamagicOverride = null) {
       const name = unescape(escapedName);
       const allDb = getCombinedSpellManeuverCatalog();
       let item = allDb.find(m => (m.name || '').toLowerCase().trim() === name.toLowerCase().trim());
@@ -7723,8 +7791,9 @@
         const activeFilterSource = document.getElementById('spell-picker-source-filter')?.value || 'auto';
         const resolvedLvlVal = resolveSpellLevelForPool(item, targetPool, activeFilterSource);
         const baseResolvedLvl = resolvedLvlVal !== null && resolvedLvlVal !== undefined ? Number(resolvedLvlVal) : 1;
-        const appliedMm = ((targetPool === 'prepared' || targetPool === 'divine') && Array.isArray(_spellPickerMetamagic) && _spellPickerMetamagic.length > 0)
-          ? JSON.parse(JSON.stringify(_spellPickerMetamagic))
+        const srcMm = Array.isArray(metamagicOverride) ? metamagicOverride : _spellPickerMetamagic;
+        const appliedMm = ((targetPool === 'prepared' || targetPool === 'divine') && Array.isArray(srcMm) && srcMm.length > 0)
+          ? JSON.parse(JSON.stringify(srcMm))
           : [];
         let resolvedLvl = baseResolvedLvl;
         if (appliedMm.length > 0 && typeof RuleEngine !== 'undefined' && typeof RuleEngine.resolveMetamagic === 'function') {
@@ -12956,10 +13025,21 @@
         openSpellPickerForSpecificLevel(Number(data.level));
       });
       Actions.register('spells:add-picker-item', (el, data, event) => {
-        addMasterDbItemToCharacter(data.name || '');
+        toggleSpellPickerAddMenu(el, data.name || '');
       });
-      Actions.register('spells:picker-toggle-metamagic', (el, data, event) => {
-        toggleSpellPickerMetamagic(data.featId || '');
+      Actions.register('spells:add-picker-with-mm', (el, data, event) => {
+        closeSpellPickerAddMenu();
+        const featId = String(data.featId || '').trim();
+        let mm = [];
+        if (featId && typeof RuleEngine !== 'undefined' && typeof RuleEngine.getOwnedMetamagicFeats === 'function') {
+          const def = (RuleEngine.getOwnedMetamagicFeats(character) || []).find(f => f.featId === featId);
+          if (def) {
+            const entry = { featId: def.featId, name: def.name };
+            if (def.variableSlot || def.isHeighten) entry.heightenDelta = 1;
+            mm = [entry];
+          }
+        }
+        addMasterDbItemToCharacter(data.name || '', mm);
       });
       Actions.register('spells:picker-results-refresh', (el, data, event) => {
         renderSpellPickerResults();
