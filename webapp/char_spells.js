@@ -5170,11 +5170,19 @@
       const sign = match[3] || '+';
       const mod = match[4] ? parseInt(match[4], 10) * (sign === '-' ? -1 : 1) : 0;
 
+      const mmInfo = (sourceItem && Array.isArray(sourceItem.metamagic) && sourceItem.metamagic.length > 0 && typeof RuleEngine !== 'undefined' && typeof RuleEngine.resolveMetamagic === 'function')
+        ? RuleEngine.resolveMetamagic(sourceItem, character)
+        : null;
+      const mmDmgMode = mmInfo ? mmInfo.damageMode : 'normal';
+      const isMaximizeSpell = mmDmgMode === 'maximize' || mmDmgMode === 'maximize_and_empower';
+      const isEmpowerSpell = mmDmgMode === 'empower' || mmDmgMode === 'maximize_and_empower';
+      const forceMaxDice = Boolean(isMaximizeSpell && !isEmpowerSpell);
+
       const dice3dList = [];
       const rolls = [];
       let sumOfDice = 0;
       for (let i = 0; i < count; i++) {
-        const r = Math.floor(Math.random() * sides) + 1;
+        const r = forceMaxDice ? sides : (Math.floor(Math.random() * sides) + 1);
         rolls.push(r);
         sumOfDice += r;
         if (dice3dList.length < 6) {
@@ -5182,9 +5190,22 @@
         }
       }
 
-      const grandTotal = sumOfDice + mod;
+      let grandTotal = sumOfDice + mod;
       let breakdownStr = `${count}d${sides} [${rolls.join(', ')}]`;
       if (mod !== 0) breakdownStr += ` ${mod >= 0 ? '+' : '-'} ${Math.abs(mod)}`;
+      if (isMaximizeSpell && isEmpowerSpell) {
+        const maxVal = count * sides + mod;
+        const empBonus = Math.floor((sumOfDice + mod) * 0.5);
+        grandTotal = maxVal + empBonus;
+        breakdownStr = `Max (${maxVal}) + Empower (+${empBonus} from [${rolls.join(', ')}])`;
+      } else if (isMaximizeSpell) {
+        grandTotal = count * sides + mod;
+        breakdownStr = `Maximized ${count}d${sides} [${rolls.join(', ')}]${mod !== 0 ? ` ${mod >= 0 ? '+' : '-'} ${Math.abs(mod)}` : ''}`;
+      } else if (isEmpowerSpell) {
+        const baseTot = sumOfDice + mod;
+        grandTotal = Math.floor(baseTot * 1.5);
+        breakdownStr += ` = ${baseTot} × 1.5`;
+      }
       if (unitLabel) breakdownStr += ` • ${unitLabel}`;
 
       const onDone = () => {

@@ -3670,8 +3670,9 @@
       if (isDefensive) diceToRoll3D.push({ type: 'd20', value: d20Conc });
 
       if (hasDamageDice) {
+        const forceMaxDice = Boolean(isMaximize && !isEmpower);
         for (let i = 0; i < count; i++) {
-          const r = Math.floor(Math.random() * sides) + 1;
+          const r = forceMaxDice ? sides : (Math.floor(Math.random() * sides) + 1);
           rolls.push(r);
           rawSum += r;
           diceToRoll3D.push({ type: 'd' + sides, value: r });
