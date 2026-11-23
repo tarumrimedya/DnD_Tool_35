@@ -9461,6 +9461,7 @@ const RuleEngine = {
     let minMaxDex = null;
     let totalAcp = 0;
     let totalArmorAsf = 0;
+    const asfSources = [];
     let resistBonus = 0;
     let itemSpeedBonus = 0;
     let buffSpeedBonus = 0;
@@ -9543,7 +9544,7 @@ const RuleEngine = {
             }
             return;
           }
-          if (sourceCategory === 'feat' && (acSub === 'shield' || mTypeLower === 'shield') && !sourceName.toLowerCase().includes('two-weapon defense')) {
+          if (sourceCategory === 'feat' && (acSub === 'shield' || mTypeLower === 'shield') && (/shield\s*specialization/i.test(sourceName) || Boolean(mod.requiresShield))) {
             const baseShield = shieldBonuses.find(b => (b.type || '').toLowerCase() === 'shield');
             const cleanSrc = sourceName.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️\s]+(\[.*?\])?\s*/, '').trim() || sourceName;
             const targetMatch = cleanSrc.toLowerCase().match(/\((.*?)\)/);
@@ -9864,7 +9865,24 @@ const RuleEngine = {
         if (mods.acp) totalAcp += mods.acp;
         if (slotKey === 'armor' || slotKey === 'offHand' || mods.armor > 0 || mods.shield > 0) {
           const slotAsf = Number(slotData.armor?.arcaneSpellFailure ?? slotData.spellFailure ?? slotData.armorMeta?.asf);
-          if (Number.isFinite(slotAsf) && slotAsf > 0) totalArmorAsf += slotAsf;
+          if (Number.isFinite(slotAsf) && slotAsf > 0) {
+            totalArmorAsf += slotAsf;
+            const isShieldSlot = slotKey === 'offHand' || (mods.shield > 0 && !(mods.armor > 0)) || String(slotData.type || '').toLowerCase() === 'shield';
+            let effCat = String(mods.effectiveArmorCategory || slotData.armor?.category || slotData.armorMeta?.category || 'Light').toLowerCase();
+            if (isShieldSlot) {
+              const nm = String(slotData.name || '').toLowerCase();
+              if (/\bbuckler\b/.test(nm)) effCat = 'buckler';
+              else if (/\btower\b/.test(nm)) effCat = 'tower';
+              else if (/\blight\b/.test(nm)) effCat = 'light';
+              else effCat = 'heavy';
+            }
+            asfSources.push({
+              kind: isShieldSlot ? 'shield' : 'armor',
+              source: slotData.name || slotKey,
+              effectiveCategory: effCat,
+              asf: slotAsf
+            });
+          }
         }
         if (Array.isArray(mods.saveBonuses) && mods.saveBonuses.length > 0) {
           mods.saveBonuses.forEach(sb => {
@@ -10254,12 +10272,14 @@ const RuleEngine = {
       if (!le._mutated && ((Array.isArray(le.effects) && le.effects.length > 0) || (Array.isArray(le.blocks) && le.blocks.length > 0))) {
         leToApply = this.evaluateV3Entry(Object.assign({}, le, { _v3Evaluated: false, modifiers: [] }), leCtx);
       }
+      const isRaceLego = le._legoSource === 'race';
+      const isBuffOrSubsysLego = ['powers', 'soulmelds', 'vestiges', 'mysteries', 'utterances', 'buffs', 'activeLegoBuffs'].includes(le._legoSource);
+      const legoCategory = isRaceLego ? 'race' : (isBuffOrSubsysLego ? 'buff' : 'feat');
       if (Array.isArray(leToApply.modifiers) && leToApply.modifiers.length > 0) {
-        const isRaceLego = le._legoSource === 'race';
         applyV2Modifiers(
           leToApply.modifiers,
           isRaceLego ? `${leToApply.name || character.race} (Race)` : (leToApply.name || leToApply.id || 'Lego Entry'),
-          isRaceLego ? 'race' : 'feat',
+          legoCategory,
           leCtx
         );
       }
@@ -10268,7 +10288,7 @@ const RuleEngine = {
       if (leToApply.ruleFlags?.twoWeaponDefense) hasTwoWeaponDefense = true;
       (leToApply.modes || []).forEach(mode => {
         if (mode && (String(mode.actionType || '').toLowerCase() === 'passive' || mode.isPassive) && Array.isArray(mode.modifiers) && mode.modifiers.length > 0) {
-          applyV2Modifiers(mode.modifiers, leToApply.name || leToApply.id || 'Lego Entry', 'feat', leCtx);
+          applyV2Modifiers(mode.modifiers, leToApply.name || leToApply.id || 'Lego Entry', legoCategory, leCtx);
         }
       });
     });
@@ -10898,7 +10918,71 @@ const RuleEngine = {
     character.effectiveArmorCategory = equippedArmorCategory;
     {
       const racialAsf = Math.max(0, Math.floor(Number(character.legoEvaluation?.arcaneSpellFailure) || 0));
-      character.arcaneSpellFailure = { armor: totalArmorAsf, other: racialAsf, total: Math.min(100, totalArmorAsf + racialAsf) };
+      const rsAsf = (this.rulesets && this.rulesets.dnd35) || null;
+      if (rsAsf && typeof rsAsf.resolveArcaneSpellFailure === 'function') {
+        const clsLvlMap = {};
+        if (Array.isArray(character.levelProgression) && character.levelProgression.length > 0) {
+          character.levelProgression.forEach(r => {
+            if (!r || r.active === false) return;
+            const nm = String(r.className || r.class || '').trim();
+            if (!nm) return;
+            const k = nm.toLowerCase();
+            clsLvlMap[k] = { name: nm, classId: r.classId || null, level: (clsLvlMap[k]?.level || 0) + 1 };
+          });
+        } else if (character.classLevels && typeof character.classLevels === 'object') {
+          Object.entries(character.classLevels).forEach(([k, v]) => {
+            const lvl = Number(v) || 0;
+            if (lvl > 0) clsLvlMap[k.toLowerCase()] = { name: k, classId: null, level: lvl };
+          });
+        }
+        const hasBattleCaster = (Array.isArray(character.feats) ? character.feats : []).some(f => {
+          const n = String((typeof f === 'string' ? f : (f?.name || f?.id)) || '').toLowerCase();
+          return n.includes('battle caster') || n === 'feat-battle-caster';
+        });
+        const primaryClsLow = String(character.spellcasting?.primaryClass || '').toLowerCase();
+        const casterProfiles = [];
+        Object.entries(clsLvlMap).forEach(([lowName, info]) => {
+          const dbCls = typeof this.getClassDef === 'function' ? this.getClassDef(info.classId || info.name, character, { allowLazyLoad: false }) : null;
+          const chassis = dbCls?.progression?.spellcastingChassis || null;
+          const clsId = dbCls?.id || info.classId || `cls-${lowName.replace(/[^a-z0-9]+/g, '-')}`;
+          let ignoreAsf = chassis?.ignoreAsf ?? 'none';
+          let ignoreShieldAsf = chassis?.ignoreShieldAsf ?? false;
+          let tradition = String(chassis?.tradition || '').toLowerCase();
+          const chassisMode = String(chassis?.mode || '').toLowerCase();
+          const isNonSpellClass = /\b(warblade|crusader|swordsage|psion|wilder|psychic\s*warrior|soulknife|incarnate|totemist|soulborn|binder|shadowcaster|truenamer)\b/.test(lowName)
+            || ['initiator', 'meldshaper', 'psionic', 'pact', 'shadow', 'truenaming', 'none'].includes(chassisMode);
+          if (isNonSpellClass) return;
+          if (!tradition) {
+            if (/\b(cleric|druid|paladin|ranger|favored\s*soul|spirit\s*shaman|shugenja|archivist)\b/.test(lowName)) tradition = 'divine';
+            else if (/\b(wizard|sorcerer|bard|warmage|beguiler|duskblade|hexblade|dread\s*necromancer|wu\s*jen|spellthief)\b/.test(lowName)) tradition = 'arcane';
+          }
+          if (tradition !== 'arcane' && tradition !== 'divine') return;
+          // Canonical 3.5e armored-caster chassis steps when DB entry lacks explicit chassis metadata
+          if (ignoreAsf === 'none' || ignoreAsf === false) {
+            if (/\bbard\b|\bbeguiler\b|\bhexblade\b|\bdread\s*necromancer\b|\bspellthief\b|\bbattle\s*sorcerer\b/.test(lowName)) {
+              ignoreAsf = 'light';
+            } else if (/\bwarmage\b/.test(lowName)) {
+              ignoreAsf = info.level >= 8 ? 'medium' : 'light';
+              ignoreShieldAsf = 'light';
+            } else if (/\bduskblade\b/.test(lowName)) {
+              ignoreAsf = info.level >= 4 ? 'medium' : 'light';
+              ignoreShieldAsf = info.level >= 7 ? 'heavy' : 'light';
+            }
+          }
+          casterProfiles.push({
+            classId: clsId,
+            className: dbCls?.name || info.name,
+            tradition,
+            ignoreAsf,
+            ignoreShieldAsf,
+            battleCasterSteps: hasBattleCaster ? 1 : 0,
+            isPrimary: Boolean(primaryClsLow && lowName.includes(primaryClsLow))
+          });
+        });
+        character.arcaneSpellFailure = rsAsf.resolveArcaneSpellFailure(asfSources, casterProfiles, racialAsf);
+      } else {
+        character.arcaneSpellFailure = { armor: totalArmorAsf, other: racialAsf, total: Math.min(100, totalArmorAsf + racialAsf) };
+      }
     }
     character.buffSkillBonus = buffSkillBonus;
     character.buffInitiativeBonus = this.resolveBonusStacking(initBonusBuckets);
@@ -16963,6 +17047,170 @@ const RuleEngine = {
     };
   },
 
+  /**
+   * Resolves D&D 3.5e Prestige Class spellcasting advancement (`+1 level of existing arcane/divine/any class`)
+   * per level row without hardcoded single-discipline PrC hacks (fixes Mystic Theurge dual progression,
+   * Sorcerer/Eldritch Knight spontaneous routing, and Eldritch Knight L1 non-advancement).
+   */
+  getPrCCastingAdvanceForRow(classNameOrId, prcLevelNum, character = null) {
+    const low = String(classNameOrId || '').toLowerCase().replace(/^cls-/, '').replace(/[-_]+/g, ' ').trim();
+    if (!low) return null;
+    const lvl = Math.max(1, Number(prcLevelNum) || 1);
+    const clsDef = typeof this.getClassDef === 'function'
+      ? this.getClassDef(classNameOrId, character, { allowLazyLoad: false })
+      : null;
+
+    // 1. Structured V3 `levels[n].castingAdvance` on the class definition
+    const lvlRow = Array.isArray(clsDef?.levels) ? clsDef.levels[lvl - 1] : null;
+    if (lvlRow && Array.isArray(lvlRow.castingAdvance)) {
+      return lvlRow.castingAdvance;
+    }
+    if (lvlRow && lvlRow.castingAdvance === null) {
+      return [];
+    }
+
+    // 2. Canonical SRD / Splat Prestige Class advancement rules (when structured field absent)
+    if (low.includes('mystic theurge') || low.includes('arcane hierophant') || low.includes('fochlucan lyrist')) {
+      return [{ tradition: 'arcane' }, { tradition: 'divine' }];
+    }
+    if (low.includes('eldritch knight')) {
+      return lvl >= 2 ? [{ tradition: 'arcane' }] : [];
+    }
+    if (low.includes('arcane trickster') || low.includes('archmage') || low.includes('incantatrix') || low.includes('red wizard') || low.includes('abjurant champion')) {
+      return [{ tradition: 'arcane' }];
+    }
+    if (low.includes('loremaster')) {
+      return [{ tradition: 'any' }];
+    }
+    if (low.includes('radiant servant') || low.includes('contemplative') || low.includes('divine oracle') || low.includes('church inquisitor') || low.includes('thaumaturgist')) {
+      return [{ tradition: 'divine' }];
+    }
+    if (low.includes('hospitaler')) {
+      return [1, 5, 9].includes(lvl) ? [] : [{ tradition: 'divine' }];
+    }
+    if (low.includes('warpriest')) {
+      return lvl % 2 === 0 ? [{ tradition: 'divine' }] : [];
+    }
+    if (low.includes('pale master')) {
+      return [2, 3, 4, 6, 7, 8, 10].includes(lvl) ? [{ tradition: 'arcane' }] : [];
+    }
+    if (low.includes('hierophant')) {
+      return [];
+    }
+    return null;
+  },
+
+  resolveCasterAdvancement(w) {
+    const out = {
+      disciplineLevels: { spontaneous: 0, prepared: 0, divine: 0, martial: 0 },
+      baseByTradition: { arcane: [], divine: [] },
+      unresolved: []
+    };
+    if (!w || typeof w !== 'object') return out;
+
+    const allProg = Array.isArray(w.levelProgression) ? w.levelProgression.filter(Boolean) : [];
+    const activeProg = allProg.filter(p => p.active !== false);
+    const rows = activeProg.length > 0
+      ? activeProg
+      : (allProg.length > 0
+        ? allProg
+        : (Array.isArray(w.progression) && w.progression.length > 0 ? w.progression.filter(Boolean) : []));
+
+    const syntheticRows = [];
+    if (rows.length === 0) {
+      if (Array.isArray(w.classProgression) && w.classProgression.length > 0) {
+        w.classProgression.forEach(cp => {
+          const n = Math.max(0, Number(cp?.level) || 1);
+          for (let i = 0; i < n; i++) syntheticRows.push({ className: cp?.className || cp?.name || cp?.class });
+        });
+      } else if (w.classLevels && typeof w.classLevels === 'object' && !Array.isArray(w.classLevels)) {
+        Object.entries(w.classLevels).forEach(([cName, cLvl]) => {
+          const n = Math.max(0, Number(cLvl) || 0);
+          for (let i = 0; i < n; i++) syntheticRows.push({ className: cName });
+        });
+      } else if (Array.isArray(w.classes) && w.classes.length > 0) {
+        w.classes.forEach(cp => {
+          const n = Math.max(0, Number(cp?.level) || 1);
+          for (let i = 0; i < n; i++) syntheticRows.push({ className: cp?.className || cp?.name || cp?.class });
+        });
+      }
+    }
+    const iterRows = rows.length > 0 ? rows : syntheticRows;
+
+    const prcLevelCounter = {};
+    const prcPendingRows = [];
+    const baseClassMap = {};
+
+    iterRows.forEach((row, rowIdx) => {
+      const cName = String(row?.className || row?.class || row?.name || '').trim();
+      if (!cName) return;
+      const low = cName.toLowerCase();
+      const nextPrcLvl = (prcLevelCounter[low] || 0) + 1;
+      const adv = this.getPrCCastingAdvanceForRow(row?.classId || cName, nextPrcLvl, w);
+      if (adv !== null) {
+        prcLevelCounter[low] = nextPrcLvl;
+        prcPendingRows.push({ row, rowIdx, cName, prcLvl: nextPrcLvl, adv });
+        return;
+      }
+      const disc = this.classifyClassToMagicDiscipline(cName, w);
+      if (!disc) return;
+      out.disciplineLevels[disc] += 1;
+      if (disc === 'prepared' || disc === 'spontaneous' || disc === 'divine') {
+        const trad = disc === 'divine' ? 'divine' : 'arcane';
+        if (!baseClassMap[low]) {
+          baseClassMap[low] = { key: low, className: cName, classId: row?.classId || null, discipline: disc, tradition: trad, level: 0 };
+        }
+        baseClassMap[low].level += 1;
+      }
+    });
+
+    Object.values(baseClassMap).forEach(entry => {
+      out.baseByTradition[entry.tradition].push(entry);
+    });
+
+    const resolveTarget = (tradition, explicitTargets) => {
+      if (explicitTargets.length > 0) {
+        const match = Object.values(baseClassMap).find(b =>
+          (tradition === 'any' || b.tradition === tradition) &&
+          explicitTargets.some(t => t === b.key || (b.classId && t === String(b.classId).toLowerCase()) || b.key.includes(t))
+        );
+        if (match) return { target: match, ambiguous: false };
+      }
+      const candidates = tradition === 'any'
+        ? [...out.baseByTradition.arcane, ...out.baseByTradition.divine]
+        : (out.baseByTradition[tradition] || []);
+      if (candidates.length === 1) return { target: candidates[0], ambiguous: false };
+      if (candidates.length > 1) {
+        const sorted = [...candidates].sort((a, b) => b.level - a.level);
+        return { target: sorted[0], ambiguous: true };
+      }
+      return { target: null, ambiguous: false };
+    };
+
+    prcPendingRows.forEach(({ row, rowIdx, cName, prcLvl, adv }) => {
+      const explicitRaw = row?.castingProgress;
+      const explicitTargets = Array.isArray(explicitRaw)
+        ? explicitRaw.map(x => String(x || '').toLowerCase().trim()).filter(Boolean)
+        : (explicitRaw ? [String(explicitRaw).toLowerCase().trim()] : []);
+      adv.forEach(step => {
+        const trad = String(step?.tradition || 'any').toLowerCase();
+        const { target, ambiguous } = resolveTarget(trad, explicitTargets);
+        if (target) {
+          out.disciplineLevels[target.discipline] += 1;
+          if (ambiguous) {
+            out.unresolved.push({ rowIdx, className: cName, prcLvl, tradition: trad, defaultedTo: target.className });
+          }
+        } else {
+          // Fallback if a PrC-only fixture has no base class rows
+          const fallbackDisc = this.classifyClassToMagicDiscipline(cName, w);
+          if (fallbackDisc && fallbackDisc !== 'martial') out.disciplineLevels[fallbackDisc] += 1;
+        }
+      });
+    });
+
+    return out;
+  },
+
   deriveSpellsView(w, workingDb = []) {
     if (!w || typeof w !== 'object') {
       return {
@@ -16985,38 +17233,16 @@ const RuleEngine = {
 
     const classifyClass = (className) => this.classifyClassToMagicDiscipline(className, w);
 
-    const discLevels = { spontaneous: 0, prepared: 0, divine: 0, martial: 0 };
+    const casterAdv = this.resolveCasterAdvancement(w);
+    const discLevels = {
+      spontaneous: casterAdv.disciplineLevels.spontaneous,
+      prepared: casterAdv.disciplineLevels.prepared,
+      divine: casterAdv.disciplineLevels.divine,
+      martial: casterAdv.disciplineLevels.martial
+    };
     const totalDiscLevels = () => discLevels.spontaneous + discLevels.prepared + discLevels.divine + discLevels.martial;
     const allProg = Array.isArray(w.levelProgression) ? w.levelProgression.filter(Boolean) : [];
     const activeProg = allProg.filter(p => p.active !== false);
-    activeProg.forEach(p => {
-      const d = classifyClass(p.className || p.class || p.name);
-      if (d) discLevels[d] += 1;
-    });
-    if (totalDiscLevels() === 0 && allProg.length > 0) {
-      allProg.forEach(p => {
-        const d = classifyClass(p.className || p.class || p.name);
-        if (d) discLevels[d] += 1;
-      });
-    }
-    if (totalDiscLevels() === 0 && Array.isArray(w.progression) && w.progression.length > 0) {
-      w.progression.forEach(p => {
-        const d = classifyClass(p?.className || p?.class || p?.name);
-        if (d) discLevels[d] += 1;
-      });
-    }
-    if (totalDiscLevels() === 0 && Array.isArray(w.classProgression) && w.classProgression.length > 0) {
-      w.classProgression.forEach(cp => {
-        const d = classifyClass(cp?.className || cp?.name || cp?.class);
-        if (d) discLevels[d] += (Number(cp?.level) || 1);
-      });
-    }
-    if (totalDiscLevels() === 0 && w.classLevels && typeof w.classLevels === 'object' && !Array.isArray(w.classLevels)) {
-      Object.entries(w.classLevels).forEach(([cName, cLvl]) => {
-        const d = classifyClass(cName);
-        if (d) discLevels[d] += (Number(cLvl) || 0);
-      });
-    }
     if (totalDiscLevels() === 0 && Array.isArray(w.classes) && w.classes.length > 0) {
       w.classes.forEach(c => {
         const name = typeof c === 'string' ? c : (c?.name || c?.className || c?.class || '');
@@ -18424,7 +18650,7 @@ const RuleEngine = {
    * Computes `totalLevel`, `activeDisciplines`, `psionics`, `incarnum`, `pact`, `shadow`, and `truenaming`
    * with full XPH, MoI, and ToM RAW math and zero unsolicited lazy chunk loading.
    */
-  deriveSubsystemsView(w, workingDb = []) {
+  deriveSubsystemsView(w, workingDb = [], skillsBonusMap = null) {
     if (!w) {
       return {
         totalLevel: 0,
@@ -18679,10 +18905,58 @@ const RuleEngine = {
       ? Number(w.incarnum.essentiaCapacity)
       : (baseEssentiaCap + expandedCapBonus + incarnateCapBonus + explicitCapBonus);
 
-    let calcEssentiaPool = 0;
-    if (incarnateLvl > 0) calcEssentiaPool += incarnateLvl;
-    if (totemistLvl > 0) calcEssentiaPool += totemistLvl;
-    if (soulbornLvl >= 2) calcEssentiaPool += Math.floor(soulbornLvl / 2);
+    // MoI RAW class tables (from DB `meldshaping` block with canonical MoI Table 2-1/2-3/2-5 fallback)
+    const MOI_FALLBACK = {
+      'cls-incarnate': {
+        essentiaByLevel: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,16,18,20,22,24,26],
+        soulmeldsByLevel: [2,3,3,4,4,4,5,5,5,6,6,6,7,7,7,8,8,8,9,9],
+        chakraBindsByLevel: [0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5],
+        chakrasUnlocked: { 2:['crown'], 4:['feet','hands'], 9:['arms','brow','shoulders'], 14:['throat','waist'], 16:['heart'], 19:['soul'] }
+      },
+      'cls-totemist': {
+        essentiaByLevel: [1,2,2,3,3,4,5,5,6,7,8,9,10,11,12,13,14,16,18,20],
+        soulmeldsByLevel: [2,3,3,4,4,4,5,5,5,6,6,6,7,7,7,8,8,8,9,9],
+        chakraBindsByLevel: [0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5],
+        chakrasUnlocked: { 2:['totem'], 5:['crown','feet','hands'], 9:['arms','brow','shoulders'], 14:['throat','waist'], 17:['heart'] }
+      },
+      'cls-soulborn': {
+        essentiaByLevel: [0,0,0,0,0,1,1,2,2,3,3,4,4,5,5,6,7,8,9,10],
+        soulmeldsByLevel: [0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5],
+        chakraBindsByLevel: [0,0,0,0,0,0,0,1,1,1,1,1,1,2,2,2,2,3,3,3],
+        chakrasUnlocked: { 8:['crown','feet','hands'], 14:['arms','brow','shoulders'], 18:['throat','waist'] }
+      }
+    };
+    const readMeldTable = (clsId, lvl) => {
+      if (lvl <= 0) return { essentia: 0, soulmelds: 0, binds: 0, chakras: [] };
+      const dbCls = typeof this.getClassDef === 'function' ? this.getClassDef(clsId, w, { allowLazyLoad: false }) : null;
+      const ms = dbCls?.meldshaping || dbCls?.progression?.meldshaping || MOI_FALLBACK[clsId];
+      const idx = Math.min(19, Math.max(0, lvl - 1));
+      const chakras = [];
+      if (ms?.chakrasUnlocked && typeof ms.chakrasUnlocked === 'object') {
+        Object.entries(ms.chakrasUnlocked).forEach(([reqLvl, slots]) => {
+          if (lvl >= Number(reqLvl) && Array.isArray(slots)) {
+            slots.forEach(s => chakras.push(String(s).toLowerCase()));
+          }
+        });
+      }
+      return {
+        essentia: Number(ms?.essentiaByLevel?.[idx]) || 0,
+        soulmelds: Number(ms?.soulmeldsByLevel?.[idx]) || 0,
+        binds: Number(ms?.chakraBindsByLevel?.[idx]) || 0,
+        chakras
+      };
+    };
+    const incTbl = readMeldTable('cls-incarnate', incarnateLvl);
+    const totTbl = readMeldTable('cls-totemist', totemistLvl);
+    const sbTbl = readMeldTable('cls-soulborn', soulbornLvl);
+
+    const unlockedChakraSet = new Set([...incTbl.chakras, ...totTbl.chakras, ...sbTbl.chakras]);
+    if (hasFeatMatch(/\bopen\s+least\s+chakra\b/)) ['crown', 'feet', 'hands'].forEach(c => unlockedChakraSet.add(c));
+    if (hasFeatMatch(/\bopen\s+lesser\s+chakra\b/)) ['arms', 'brow', 'shoulders'].forEach(c => unlockedChakraSet.add(c));
+    if (hasFeatMatch(/\bopen\s+greater\s+chakra\b/)) ['throat', 'waist'].forEach(c => unlockedChakraSet.add(c));
+    const unlockedChakras = [...unlockedChakraSet];
+
+    let calcEssentiaPool = incTbl.essentia + totTbl.essentia + sbTbl.essentia;
     if (/azurin|duskling|rilkan|skarn/i.test(raceStr)) calcEssentiaPool += 1;
     if (hasFeatMatch(/\bbonus\s*essentia\b/)) calcEssentiaPool += getFeatV3StatOrFallback(/\bbonus\s*essentia\b/, 'feat-bonus-essentia', 'incarnum.essentiaPool', 2);
     allFeatNames.forEach(fn => {
@@ -18737,14 +19011,15 @@ const RuleEngine = {
     const conScore = Number(abi.con || 10);
     const maxSoulmeldsByCon = Math.max(0, conScore - 10);
     const calcMaxSoulmelds = (incarnateLvl + totemistLvl + soulbornLvl) > 0
-      ? Math.min(maxSoulmeldsByCon, Math.max(2, Math.floor((incarnateLvl + totemistLvl) / 3) + 2))
+      ? Math.min(maxSoulmeldsByCon, Math.max(incTbl.soulmelds, totTbl.soulmelds, sbTbl.soulmelds))
       : (hasFeatMatch(/\bshape\s*soulmeld\b/) ? 1 : rawSoulmelds.length);
     const maxSoulmelds = w.incarnum?.maxSoulmelds !== undefined
       ? Number(w.incarnum.maxSoulmelds)
       : calcMaxSoulmelds;
+    const baseTableBinds = incTbl.binds + totTbl.binds + sbTbl.binds;
     const maxChakraBinds = w.incarnum?.maxChakraBinds !== undefined
       ? Number(w.incarnum.maxChakraBinds)
-      : ((incarnateLvl + totemistLvl) >= 2 ? Math.max(1, Math.floor((incarnateLvl + totemistLvl + 2) / 4)) : (hasFeatMatch(/\bopen\s+(?:least|lesser|greater)\s+chakra\b/) ? 1 : 0));
+      : (baseTableBinds > 0 ? baseTableBinds : (hasFeatMatch(/\bopen\s+(?:least|lesser|greater)\s+chakra\b/) ? 1 : 0));
 
     // 3. PACT MAGIC (ToM RAW)
     const binderClassLvl = getClassLvl(/\bbinder\b/);
@@ -18872,13 +19147,21 @@ const RuleEngine = {
       ? explicitTruenamerLvl
       : (truenamerClassLvl > 0 ? truenamerClassLvl : (rawUtterances.length > 0 ? Math.max(1, totalLevel || 1) : 0));
 
-    let truespeakBonus = Number(w.truenaming?.truespeakBonus ?? 0);
-    if (!truespeakBonus && w.skills && typeof w.skills === 'object') {
-      const tsSkill = w.skills.truespeak || w.skills.Truespeak;
+    const hasExplicitTruespeak = w.truenaming?.truespeakBonus !== undefined && w.truenaming?.truespeakBonus !== null && w.truenaming?.truespeakBonus !== '';
+    let truespeakBonus = hasExplicitTruespeak ? (Number(w.truenaming.truespeakBonus) || 0) : 0;
+    if (!hasExplicitTruespeak && w.skills && typeof w.skills === 'object') {
+      const tsSkill = Array.isArray(w.skills)
+        ? w.skills.find(s => s && String(s.name || s.id || '').trim().toLowerCase() === 'truespeak')
+        : (w.skills.truespeak || w.skills.Truespeak);
+      const mapBonus = skillsBonusMap
+        ? (Number(skillsBonusMap['truespeak']?.total ?? skillsBonusMap['Truespeak']?.total ?? skillsBonusMap['truespeak'] ?? 0) || 0)
+        : 0;
       if (tsSkill) {
         const ranks = Number(tsSkill.ranks || 0);
-        const misc = Number(tsSkill.misc || 0);
-        truespeakBonus = ranks + mods.int + misc;
+        const misc = Number(tsSkill.misc ?? tsSkill.miscMod ?? 0);
+        truespeakBonus = ranks + mods.int + misc + mapBonus;
+      } else if (mapBonus !== 0 || truenamerLevel > 0) {
+        truespeakBonus = mods.int + mapBonus;
       }
     }
 
@@ -18890,10 +19173,20 @@ const RuleEngine = {
         ...uObj,
         blocks: Array.isArray(uObj.blocks) && uObj.blocks.length > 0 ? uObj.blocks : dbU.blocks
       } : uObj;
-      const targetCR = Math.max(1, Number(mergedU.targetCR ?? w.truenaming?.targetCR ?? totalLevel ?? 1) || 1);
+      const lexicon = String(mergedU.lexicon || mergedU.spell?.lexicon || 'Evolving Mind');
+      const uLvl = Math.max(1, Number(mergedU.level ?? mergedU.utteranceLevel ?? mergedU.spell?.maneuverLvl ?? 1) || 1);
+      const isCraftedTool = /crafted\s*tool/i.test(lexicon);
+      const isPerfectedMap = /perfected\s*map/i.test(lexicon);
+      const rawTargetCR = mergedU.targetCR ?? (isCraftedTool ? 0 : (w.truenaming?.targetCR ?? totalLevel ?? 1));
+      const targetCR = isCraftedTool ? Math.max(0, Number(rawTargetCR) || 0) : Math.max(1, Number(rawTargetCR) || 1);
       const castsToday = Math.max(0, Number(mergedU.castsToday ?? mergedU.usesToday ?? 0) || 0);
-      // ToM p.195 Law of Resistance: Truespeak DC = 15 + (2 * CR) + (2 * castsToday)
-      const lawOfResistanceDC = 15 + (2 * targetCR) + (2 * castsToday);
+      // ToM p.195-196 RAW Law of Resistance:
+      // Evolving Mind: 15 + 2*CR + 2*casts | Crafted Tool: 15 + 2*ItemCL (or 25 nonmagical) + 2*casts | Perfected Map: 25 + 2*UtteranceLvl + 2*casts
+      const lawOfResistanceDC = isPerfectedMap
+        ? (25 + (2 * uLvl) + (2 * castsToday))
+        : (isCraftedTool
+          ? ((targetCR > 0 ? (15 + (2 * targetCR)) : 25) + (2 * castsToday))
+          : (15 + (2 * targetCR) + (2 * castsToday)));
       const v3Eval = this.evaluateV3Entry(
         { ...mergedU, schemaVersion: 3 },
         { character: w, level: totalLevel || 1, cl: truenamerLevel || 1, targetCR, castsToday }
@@ -18902,7 +19195,8 @@ const RuleEngine = {
         ...mergedU,
         id: mergedU.id || mergedU.name,
         name: mergedU.name || mergedU.id,
-        level: Number(mergedU.level ?? mergedU.utteranceLevel ?? 1) || 1,
+        level: uLvl,
+        lexicon,
         targetCR,
         castsToday,
         dc: lawOfResistanceDC,
@@ -18988,6 +19282,7 @@ const RuleEngine = {
         investedEssentia,
         availableEssentia,
         maxSoulmelds,
+        unlockedChakras,
         maxChakraBinds,
         soulmelds: evaluatedSoulmelds
       },
@@ -19128,12 +19423,12 @@ const RuleEngine = {
     const inventoryView = this.deriveInventoryView(working);
     const spellsView = this.deriveSpellsView(working, workingDb);
     const progressionView = this.deriveProgressionView(working, workingDb);
-    const subsystemsView = this.deriveSubsystemsView(working, workingDb);
+    const skillsBonusMap = this.deriveSkillsBonusMap(working);
+    const subsystemsView = this.deriveSubsystemsView(working, workingDb, skillsBonusMap);
     const specialPool = this.deriveSpecialPowerPool(working, working.legoEvaluation, workingDb);
     const specialAttacks = specialPool.filter(r => r.category === 'attack');
     const activatedAbilities = specialPool.filter(r => r.category === 'ability' || r.category === 'spell');
     const activeBuffsStrip = this.deriveActiveBuffsStrip(working);
-    const skillsBonusMap = this.deriveSkillsBonusMap(working);
     const spent = working.tactical?.spentActions || working.actionEconomy?.spentActions || {};
     const ae = working.actionEconomy || {};
     const isActionAvailable = (val, spentFlag) => {

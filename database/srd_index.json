@@ -45,7 +45,7 @@
       "count": 209,
       "bytes": 283034,
       "hash": "2e3be9a627453be8",
-      "eagerLoad": true
+      "eagerLoad": false
     },
     "mic_compendium.json": {
       "count": 956,

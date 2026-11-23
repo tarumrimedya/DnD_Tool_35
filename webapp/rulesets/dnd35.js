@@ -863,6 +863,78 @@
         heedlessChargeEligible,
         heedlessChargeActive
       };
+    },
+
+    /**
+     * D&D 3.5e RAW Arcane Spell Failure (PHB p. 123, Bard p. 29, Warmage/Beguiler/Duskblade/Hexblade, Battle Caster):
+     * Evaluates equipped armor & shield ASF per arcane casting class (`byClassId`) using effective armor category
+     * (so Mithral shifts one category lighter) while preserving shield ASF unless the class explicitly exempts shields.
+     */
+    resolveArcaneSpellFailure(asfSources, casterProfiles, otherAsf = 0) {
+      const ARMOR_RANK = { none: 0, light: 1, medium: 2, heavy: 3 };
+      const SHIELD_RANK = { none: 0, buckler: 1, light: 2, heavy: 3, tower: 4 };
+      const sources = Array.isArray(asfSources) ? asfSources : [];
+      const profiles = Array.isArray(casterProfiles) ? casterProfiles : [];
+      const other = Math.max(0, Math.floor(Number(otherAsf) || 0));
+      const rawArmor = sources.reduce((sum, s) => sum + Math.max(0, Number(s && s.asf) || 0), 0);
+
+      const normalizeArmorRank = (v) => {
+        if (v === true) return 3;
+        const k = String(v || 'none').toLowerCase().trim();
+        if (k === 'all') return 3;
+        return ARMOR_RANK[k] !== undefined ? ARMOR_RANK[k] : 0;
+      };
+      const normalizeShieldRank = (v) => {
+        if (v === true) return 4;
+        const k = String(v || 'none').toLowerCase().trim();
+        if (k === 'all') return 4;
+        return SHIELD_RANK[k] !== undefined ? SHIELD_RANK[k] : 0;
+      };
+
+      const byClassId = {};
+      let primaryResult = null;
+      profiles.forEach((p) => {
+        if (!p || !p.classId) return;
+        const isDivineOnly = String(p.tradition || '').toLowerCase() === 'divine';
+        const baseArmorRank = isDivineOnly ? 3 : normalizeArmorRank(p.ignoreAsf);
+        const bcSteps = (!isDivineOnly && baseArmorRank > 0) ? Math.max(0, Number(p.battleCasterSteps) || 0) : 0;
+        const maxArmorRank = Math.min(3, baseArmorRank + bcSteps);
+        const maxShieldRank = isDivineOnly ? 4 : normalizeShieldRank(p.ignoreShieldAsf);
+
+        let classArmorAsf = 0;
+        sources.forEach((src) => {
+          const val = Math.max(0, Number(src && src.asf) || 0);
+          if (val <= 0) return;
+          if (src.kind === 'shield') {
+            const sRank = SHIELD_RANK[String(src.effectiveCategory || 'heavy').toLowerCase()] || 3;
+            if (sRank > maxShieldRank) classArmorAsf += val;
+          } else {
+            const aRank = ARMOR_RANK[String(src.effectiveCategory || 'light').toLowerCase()] || 1;
+            if (aRank > maxArmorRank) classArmorAsf += val;
+          }
+        });
+        const entry = {
+          classId: p.classId,
+          className: p.className || p.classId,
+          tradition: p.tradition || 'arcane',
+          armor: classArmorAsf,
+          other: isDivineOnly ? 0 : other,
+          total: isDivineOnly ? 0 : Math.min(100, classArmorAsf + other)
+        };
+        byClassId[p.classId] = entry;
+        if (!primaryResult && !isDivineOnly) primaryResult = entry;
+        if (p.isPrimary && !isDivineOnly) primaryResult = entry;
+      });
+
+      const aggArmor = primaryResult ? primaryResult.armor : rawArmor;
+      return {
+        armor: aggArmor,
+        other,
+        total: Math.min(100, aggArmor + other),
+        rawArmor,
+        byClassId,
+        sources
+      };
     }
   };
 

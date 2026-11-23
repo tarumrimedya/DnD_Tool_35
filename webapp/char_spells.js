@@ -12720,11 +12720,14 @@
         const cardsHtml = snap.soulmelds.length > 0 ? snap.soulmelds.map((sm, idx) => {
           const invested = Number(sm.investedEssentia ?? sm.essentia ?? sm.invested) || 0;
           const boundChakra = sm.boundChakra || 'None';
-          const rawSlotsText = sm.chakraSlots || sm.spell?.chakraSlots || 'All';
+          const dbSm = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getMasterDbEntry === 'function')
+            ? RuleEngine.getMasterDbEntry(sm.id || sm.baseEntryId || sm.name, 'Soulmeld')
+            : null;
+          const rawSlotsText = sm.chakraSlots || sm.spell?.chakraSlots || dbSm?.chakraSlots || dbSm?.spell?.chakraSlots || 'All';
           const slotsText = Array.isArray(rawSlotsText) ? rawSlotsText.join(', ') : String(rawSlotsText);
           const parsedLegal = Array.isArray(rawSlotsText)
             ? rawSlotsText.map(s => String(s).trim().toLowerCase()).filter(Boolean)
-            : String(rawSlotsText).split(/[,/|]+/).map(s => s.trim().toLowerCase()).filter(Boolean);
+            : String(rawSlotsText).split(/[,/|;]+/).map(s => s.trim().toLowerCase()).filter(Boolean);
           const legalChakraOptions = (parsedLegal.length > 0 && !parsedLegal.includes('all'))
             ? CHAKRA_BIND_SLOTS.filter(slot => slot === 'None' || parsedLegal.includes(slot.toLowerCase()) || slot === boundChakra)
             : CHAKRA_BIND_SLOTS;
@@ -12913,13 +12916,33 @@
 
       if (discipline === 'truenaming') {
         const tsBonus = snap.truespeakBonus || 0;
+        const defaultBucketCR = Math.max(1, Number(character?.truenaming?.targetCR) || 1);
         const cardsHtml = snap.utterances.length > 0 ? snap.utterances.map((u, idx) => {
-          const targetCR = Math.max(1, Number(u.targetCR) || 1);
+          const dbU = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getMasterDbEntry === 'function')
+            ? RuleEngine.getMasterDbEntry(u.id || u.baseEntryId || u.name, 'Utterance')
+            : null;
+          const lexicon = String(u.lexicon || u.spell?.lexicon || dbU?.lexicon || dbU?.spell?.lexicon || 'Evolving Mind');
+          const uLvl = Math.max(1, Number(u.level ?? u.spell?.maneuverLvl ?? dbU?.spell?.maneuverLvl ?? 1) || 1);
+          const isCraftedTool = /crafted\s*tool/i.test(lexicon);
+          const isPerfectedMap = /perfected\s*map/i.test(lexicon);
+          const targetCR = isCraftedTool
+            ? Math.max(0, Number(u.targetCR ?? 0) || 0)
+            : Math.max(1, Number(u.targetCR ?? defaultBucketCR) || 1);
           const castsToday = Math.max(0, Number(u.castsToday) || 0);
-          const lawDc = 15 + (2 * targetCR) + (2 * castsToday);
-          const lexicon = u.lexicon || u.spell?.lexicon || 'Evolving Mind';
-          const uLvl = Number(u.level ?? u.spell?.maneuverLvl ?? 1) || 1;
-          const descText = u.shortDescription || u.benefit || u.description || 'Truename utterance.';
+          const lawDc = Number.isFinite(Number(u.lawOfResistanceDC))
+            ? Number(u.lawOfResistanceDC)
+            : (isPerfectedMap
+              ? (25 + (2 * uLvl) + (2 * castsToday))
+              : (isCraftedTool
+                ? ((targetCR > 0 ? (15 + (2 * targetCR)) : 25) + (2 * castsToday))
+                : (15 + (2 * targetCR) + (2 * castsToday))));
+          const descText = u.shortDescription || dbU?.shortDescription || u.benefit || u.description || 'Truename utterance.';
+          const targetInputHtml = isPerfectedMap
+            ? `<span class="text-[10px] text-slate-400 font-bold">Location • Lvl ${uLvl}</span>`
+            : `<label class="flex items-center gap-1.5 text-[10px] text-slate-400">
+                  <span class="font-bold">${isCraftedTool ? 'Item CL:' : 'Target CR:'}</span>
+                  <input type="number" min="${isCraftedTool ? '0' : '1'}" max="40" value="${targetCR}" data-change-action="spells:subsys-truespeak-cr" data-idx="${idx}" class="ui-input-sm h-7 w-14 bg-slate-950 border border-slate-700 rounded-md px-2 text-xs text-white font-mono text-center">
+                </label>`;
           return `
             <div class="discipline-tab-card bg-slate-900/90 border border-teal-500/40 rounded-xl p-3 flex flex-col justify-between gap-2.5 shadow-sm">
               <div class="space-y-1.5 min-w-0">
@@ -12934,10 +12957,7 @@
                 <p class="text-[11px] text-slate-300 line-clamp-2">${UI.escapeHtml(descText)}</p>
               </div>
               <div class="pt-2 border-t border-slate-800 flex flex-wrap items-center justify-between gap-2">
-                <label class="flex items-center gap-1.5 text-[10px] text-slate-400">
-                  <span class="font-bold">Target CR:</span>
-                  <input type="number" min="1" max="40" value="${targetCR}" data-change-action="spells:subsys-truespeak-cr" data-idx="${idx}" class="ui-input-sm h-7 w-14 bg-slate-950 border border-slate-700 rounded-md px-2 text-xs text-white font-mono text-center">
-                </label>
+                ${targetInputHtml}
                 <button type="button" data-action="spells:subsys-speak-utterance" data-idx="${idx}" class="ui-btn-sm h-7 px-3 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white border border-emerald-500/60 text-xs font-bold">📜 Speak Utterance (DC ${lawDc})</button>
               </div>
             </div>
@@ -13298,7 +13318,8 @@
       Actions.register('spells:subsys-truespeak-cr', (el, data) => {
         const idx = Number(data.idx);
         if (!el || !Number.isInteger(idx)) return;
-        _dispatchSubsysAction({ discipline: 'truenaming', op: 'truespeakCr', idx, targetCR: Number(el.value) || 1 });
+        const parsedCr = Number(el.value);
+        _dispatchSubsysAction({ discipline: 'truenaming', op: 'truespeakCr', idx, targetCR: Number.isFinite(parsedCr) ? parsedCr : 1 });
         patchSubsystemCockpitDOM('truenaming');
       });
       Actions.register('spells:subsys-speak-utterance', (el, data) => {
@@ -13306,9 +13327,25 @@
         const snap = getSubsystemSnapshot('truenaming', character);
         const u = snap.utterances[idx];
         if (!u) return;
-        const targetCR = Math.max(1, Number(u.targetCR) || 1);
+        const dbU = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getMasterDbEntry === 'function')
+          ? RuleEngine.getMasterDbEntry(u.id || u.baseEntryId || u.name, 'Utterance')
+          : null;
+        const lexicon = String(u.lexicon || u.spell?.lexicon || dbU?.lexicon || dbU?.spell?.lexicon || 'Evolving Mind');
+        const uLvl = Math.max(1, Number(u.level ?? u.spell?.maneuverLvl ?? dbU?.spell?.maneuverLvl ?? 1) || 1);
+        const isCraftedTool = /crafted\s*tool/i.test(lexicon);
+        const isPerfectedMap = /perfected\s*map/i.test(lexicon);
+        const defaultBucketCR = Math.max(1, Number(character?.truenaming?.targetCR) || 1);
+        const targetCR = isCraftedTool
+          ? Math.max(0, Number(u.targetCR ?? 0) || 0)
+          : Math.max(1, Number(u.targetCR ?? defaultBucketCR) || 1);
         const castsToday = Math.max(0, Number(u.castsToday) || 0);
-        const dc = 15 + (2 * targetCR) + (2 * castsToday);
+        const dc = Number.isFinite(Number(u.lawOfResistanceDC))
+          ? Number(u.lawOfResistanceDC)
+          : (isPerfectedMap
+            ? (25 + (2 * uLvl) + (2 * castsToday))
+            : (isCraftedTool
+              ? ((targetCR > 0 ? (15 + (2 * targetCR)) : 25) + (2 * castsToday))
+              : (15 + (2 * targetCR) + (2 * castsToday))));
         const d20 = Math.floor(Math.random() * 20) + 1;
         const bonus = snap.truespeakBonus || 0;
         const total = d20 + bonus;

@@ -22,7 +22,6 @@
     'srd_classes_races.json',
     'srd_combat_rules.json',
     'srd_spells.json',
-    'srd_maneuvers.json',
     'mic_compendium.json',
     'srd_domains.json',
     'srd_companions.json',
@@ -31,6 +30,7 @@
   ];
 
   const LAZY_CHUNKS = [
+    'srd_maneuvers.json',
     'srd_monsters.json'
   ];
 
@@ -506,7 +506,8 @@
         const fs = require('fs');
         const path = require('path');
         if (!_indexData) _indexData = nodeReadDatabaseJson('srd_index.json');
-        for (const chunk of EAGER_CHUNKS) {
+        const nodeSyncChunks = EAGER_CHUNKS.concat(['srd_maneuvers.json']);
+        for (const chunk of nodeSyncChunks) {
           const p = path.resolve(__dirname, 'database', chunk);
           if (fs.existsSync(p)) {
             const records = JSON.parse(fs.readFileSync(p, 'utf8'));

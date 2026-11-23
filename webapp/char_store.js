@@ -195,6 +195,14 @@
     'duplicate_metamagic_transform',
     'max_one_rod_per_spell',
     'rod_spell_level_exceeded',
+    'invalid_subsystem',
+    'duplicate_entry',
+    'cap_exceeded',
+    'insufficient_pp',
+    'illegal_chakra_slot',
+    'chakra_slot_occupied',
+    'no_uses_left',
+    'utterance_failed',
     'ineligible_metamagic',
     'prohibited_school',
     'invalid_heighten',
@@ -4758,11 +4766,15 @@
           setStoreOutcome(stateObj, { status: 'chakra_unbound', index: idx, boundChakra: 'None' });
           return doc;
         }
-        // Legal chakraSlots check on the soulmeld
-        const rawLegal = sm.chakraSlots ?? sm.spell?.chakraSlots ?? '';
+        // Legal chakraSlots check on the soulmeld (resolve from compendium if minimal doc entry)
+        const engineRef = resolveRuleEngine();
+        const dbSm = (engineRef && typeof engineRef.getMasterDbEntry === 'function')
+          ? engineRef.getMasterDbEntry(sm.id || sm.baseEntryId || sm.name, 'Soulmeld')
+          : null;
+        const rawLegal = sm.chakraSlots ?? sm.spell?.chakraSlots ?? dbSm?.chakraSlots ?? dbSm?.spell?.chakraSlots ?? '';
         const legalList = Array.isArray(rawLegal)
           ? rawLegal.map(s => String(s).trim().toLowerCase()).filter(Boolean)
-          : String(rawLegal).split(/[,/|]+/).map(s => s.trim().toLowerCase()).filter(Boolean);
+          : String(rawLegal).split(/[,/|;]+/).map(s => s.trim().toLowerCase()).filter(Boolean);
         if (legalList.length > 0 && !legalList.includes('all') && !legalList.includes(nextSlot.toLowerCase())) {
           setStoreOutcome(stateObj, { status: 'illegal_chakra_slot', index: idx, slot: nextSlot, legalSlots: legalList });
           return doc;
@@ -4843,7 +4855,7 @@
     }
     if (disc === 'truenaming') {
       if (op === 'truespeakCr' && Number.isInteger(idx) && list[idx]) {
-        list[idx].targetCR = Math.max(1, Math.min(40, Number(payload.targetCR) || 1));
+        list[idx].targetCR = Math.max(0, Math.min(40, Number(payload.targetCR) || 0));
         setStoreOutcome(stateObj, { status: 'truespeak_cr_updated', index: idx, targetCR: list[idx].targetCR });
         return doc;
       }
@@ -4852,8 +4864,10 @@
         if (payload.success === true) {
           u.castsToday = Math.max(0, Number(u.castsToday) || 0) + 1;
           if (payload.activate === true) u.active = true;
+          setStoreOutcome(stateObj, { status: 'utterance_spoken', index: idx, success: true, castsToday: Number(u.castsToday) || 0, active: Boolean(u.active) });
+        } else {
+          setStoreOutcome(stateObj, { status: 'utterance_failed', index: idx, success: false, castsToday: Number(u.castsToday) || 0, active: Boolean(u.active) });
         }
-        setStoreOutcome(stateObj, { status: 'utterance_spoken', index: idx, success: Boolean(payload.success), castsToday: Number(u.castsToday) || 0, active: Boolean(u.active) });
         return doc;
       }
       if (op === 'resetTruenaming') {

@@ -7959,6 +7959,13 @@
 
       const maneuvers = [...new Set(masterDb.filter(m => m && (m.type === 'Maneuver' || m.type === 'Stance' || m.role?.includes('Maneuver'))).map(m => m.name).filter(Boolean))];
       fillDatalist('npc-catalog-maneuvers-list', maneuvers);
+      if (maneuvers.length === 0 && window.SrdCompendium && typeof window.SrdCompendium.ensureTypesLoaded === 'function') {
+        window.SrdCompendium.ensureTypesLoaded(['Maneuver', 'Stance']).then(() => {
+          const loaded = (window.SrdCompendium.getByType ? [...(window.SrdCompendium.getByType('Maneuver') || []), ...(window.SrdCompendium.getByType('Stance') || [])] : []);
+          const names = [...new Set(loaded.map(m => m && m.name).filter(Boolean))];
+          if (names.length > 0) fillDatalist('npc-catalog-maneuvers-list', names);
+        }).catch(err => { if (typeof reportError === 'function') reportError('populateNpcCatalogs', err); });
+      }
     }
 
     // FEATS
