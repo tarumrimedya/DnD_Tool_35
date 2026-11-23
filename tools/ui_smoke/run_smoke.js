@@ -1294,6 +1294,145 @@ async function main() {
         await context.close();
       }
     });
+
+    await check('L5. Sprint E6: Combat Timers, Morning Routine (Long Rest), Spell Matrix Sequence & Contingency', async () => {
+      const page = await newSheetPage({ viewport: { width: 1440, height: 900 } });
+      try {
+        await page.evaluate(async () => {
+          await SrdCompendium.ensureTypesLoaded(['Class', 'Spell']);
+          const doc = {
+            schemaVersion: 3, id: 'smoke-e6', name: 'E6 Archmage', race: 'Human', size: 'Medium',
+            level: 14, baseSpeed: 30,
+            baseAbilities: { str: 10, dex: 14, con: 14, int: 20, wis: 12, cha: 10 },
+            abilities: { str: 10, dex: 14, con: 14, int: 20, wis: 12, cha: 10 },
+            classLevels: { wizard: 14 },
+            levelProgression: Array.from({ length: 14 }, (_, i) => ({
+              level: i + 1, classId: 'cls-wizard', className: 'Wizard', hpRoll: 4, active: true
+            })),
+            feats: [], specialAbilities: [],
+            hp: { current: 84, max: 84, temp: 0, nonlethal: 0 },
+            tactical: { round: 1 }, encounterRound: 1,
+            spellcasting: {
+              slots: Array.from({ length: 10 }, (_, l) => ({ level: l, daily: 4, used: 0 })),
+              preparedSlots: Array.from({ length: 10 }, (_, l) => ({ level: l, daily: 4, used: 0 })),
+              divineSlots: [], preparedSpells: [], divineSpells: [], spellsKnown: []
+            },
+            bodySlots: {}, weapons: [], gearPool: [], consumables: [], buffs: [], skills: [], customDb: [], customEntries: {}, companions: []
+          };
+          CharStore.replaceDoc(doc);
+          window.character = CharStore.getDoc();
+          try { character = CharStore.getDoc(); } catch (e) {}
+          switchTab('tab-combat');
+          renderAll();
+        });
+
+        // 1. E6.1 Combat Timers + Unified Next Round
+        await page.click('[data-action="e6:open-timer-modal"]');
+        await page.waitForSelector('#modal-e6-timer-form', { timeout: 5000 });
+        await page.fill('#modal-e6-timer-form input[name="name"]', 'Acid Burn');
+        await page.selectOption('#modal-e6-timer-form select[name="kind"]', 'periodic');
+        await page.selectOption('#modal-e6-timer-form select[name="hpEffect"]', 'damage');
+        await page.fill('#modal-e6-timer-form input[name="durationRounds"]', '3');
+        await page.fill('#modal-e6-timer-form input[name="formula"]', '4');
+        await page.click('#modal-e6-timer-form button[type="submit"]');
+
+        await page.click('[data-action="e6:open-timer-modal"]');
+        await page.waitForSelector('#modal-e6-timer-form', { timeout: 5000 });
+        await page.fill('#modal-e6-timer-form input[name="name"]', 'Delayed Blast Fireball');
+        await page.selectOption('#modal-e6-timer-form select[name="kind"]', 'delayed');
+        await page.fill('#modal-e6-timer-form input[name="durationRounds"]', '2');
+        await page.fill('#modal-e6-timer-form input[name="formula"]', '10d6');
+        await page.click('#modal-e6-timer-form button[type="submit"]');
+        await page.waitForTimeout(100);
+
+        await page.click('[data-action="combat:next-round"]');
+        await page.waitForTimeout(100);
+        await page.click('[data-action="combat:next-round"]');
+        await page.waitForTimeout(100);
+        const afterRounds = await page.evaluate(() => ({
+          round: CharStore.getDoc().tactical.round,
+          hp: CharStore.getDoc().hp.current,
+          timers: (CharStore.getDoc().combatTimers || []).map(t => t.name)
+        }));
+        assert(afterRounds.round === 3 && afterRounds.hp === 76, 'Expected Round 3 & HP 76 (84 - 4 - 4): ' + JSON.stringify(afterRounds));
+        assert(!afterRounds.timers.includes('Delayed Blast Fireball'), 'Delayed Blast Fireball should detonate on Round 3');
+
+        // 2. E6.1 Morning Routine (After Long Rest)
+        await page.click('[data-action="e6:open-routine-modal"]');
+        await page.waitForSelector('#modal-e6-routine-form', { timeout: 5000 });
+        await page.fill('#modal-e6-routine-form input[name="spellName"]', 'Primal Senses');
+        await page.selectOption('#modal-e6-routine-form select[name="discipline"]', 'noSlot');
+        await page.click('#modal-e6-routine-form button[type="submit"]');
+        await page.waitForTimeout(100);
+        await page.evaluate(() => executeLongRest(true));
+        await page.waitForTimeout(150);
+        const afterLR = await page.evaluate(() => ({
+          hp: CharStore.getDoc().hp.current,
+          maxHp: CharStore.getDoc().hp.max,
+          hasPrimal: (CharStore.getDoc().buffs || []).some(b => b && b.active && /primal senses/i.test(b.name || ''))
+        }));
+        assert(afterLR.hp === afterLR.maxHp && afterLR.hasPrimal, 'Morning Routine should cast Primal Senses on Long Rest: ' + JSON.stringify(afterLR));
+
+        // 3. E6.2 Spell Matrix + Backlash Lock + 2-Spell Swift Sequence
+        await page.click('[data-action="e6:open-matrix-modal"]');
+        await page.waitForSelector('#modal-e6-matrix-form', { timeout: 5000 });
+        await page.selectOption('#modal-e6-matrix-form select[name="tier"]', 'standard');
+        await page.selectOption('#modal-e6-matrix-form select[name="discipline"]', 'noSlot');
+        await page.click('#modal-e6-matrix-form button[type="submit"]');
+        await page.waitForSelector('[data-action="e6:open-load-matrix-modal"]', { timeout: 5000 });
+        const matOpen = await page.evaluate(() => ({
+          locked: CharStore.getDoc().spellcasting.matrix?.lockedDamage || 0,
+          hp: CharStore.getDoc().hp.current,
+          maxHp: CharStore.getDoc().hp.max
+        }));
+        assert(matOpen.locked >= 2 && matOpen.locked <= 12 && matOpen.hp === matOpen.maxHp - matOpen.locked, 'Matrix backlash lock mismatch: ' + JSON.stringify(matOpen));
+
+        await page.click('[data-action="e6:open-load-matrix-modal"]');
+        await page.waitForSelector('#modal-e6-load-matrix-form', { timeout: 5000 });
+        await page.fill('#modal-e6-load-matrix-form input[name="spellName"]', 'Shield');
+        await page.selectOption('#modal-e6-load-matrix-form select[name="discipline"]', 'noSlot');
+        await page.click('#modal-e6-load-matrix-form button[type="submit"]');
+
+        await page.click('[data-action="e6:open-load-matrix-modal"]');
+        await page.waitForSelector('#modal-e6-load-matrix-form', { timeout: 5000 });
+        await page.fill('#modal-e6-load-matrix-form input[name="spellName"]', 'Magic Missile');
+        await page.selectOption('#modal-e6-load-matrix-form select[name="discipline"]', 'noSlot');
+        await page.click('#modal-e6-load-matrix-form button[type="submit"]');
+        await page.waitForTimeout(100);
+
+        const seqBtns = page.locator('[data-action="e6:toggle-matrix-seq"]');
+        await seqBtns.nth(0).click();
+        await page.waitForTimeout(80);
+        await seqBtns.nth(1).click();
+        await page.waitForSelector('[data-action="e6:release-matrix-seq"]', { timeout: 5000 });
+        await page.click('[data-action="e6:release-matrix-seq"]');
+        await page.waitForTimeout(150);
+        const afterSeq = await page.evaluate(() => ({
+          matrix: CharStore.getDoc().spellcasting.matrix,
+          swiftSpent: CharStore.getDoc().tactical.spentActions.swift
+        }));
+        assert(!afterSeq.matrix && afterSeq.swiftSpent === true, 'Sequence should spend Swift Action and close matrix: ' + JSON.stringify(afterSeq));
+
+        // 4. E6.3 Contingency (No-Action Trigger)
+        await page.click('[data-action="e6:open-contingency-modal"]');
+        await page.waitForSelector('#modal-e6-contingency-form', { timeout: 5000 });
+        await page.fill('#modal-e6-contingency-form input[name="triggerText"]', 'If below 25% HP');
+        await page.fill('#modal-e6-contingency-form input[name="spellName"]', 'Dimension Door');
+        await page.click('#modal-e6-contingency-form button[type="submit"]');
+        await page.waitForSelector('[data-action="e6:trigger-contingency"]', { timeout: 5000 });
+        await page.click('[data-action="e6:trigger-contingency"]');
+        await page.waitForTimeout(100);
+        const afterCtg = await page.evaluate(() => ({
+          remaining: (CharStore.getDoc().spellcasting.contingencies || []).length,
+          overflow: document.documentElement.scrollWidth > window.innerWidth
+        }));
+        assert(afterCtg.remaining === 0 && !afterCtg.overflow, 'Contingency trigger / overflow check failed: ' + JSON.stringify(afterCtg));
+        assertNoErrors(page);
+        return `Timers Rd3 HP 84->76, Morning Routine Primal Senses OK, Matrix -${matOpen.locked} HP lock + 2-spell Swift Seq OK, Contingency Trigger OK`;
+      } finally {
+        await closeSheet(page);
+      }
+    });
   }
 
   await browser.close();
