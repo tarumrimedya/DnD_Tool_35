@@ -206,7 +206,8 @@
     'ineligible_metamagic',
     'prohibited_school',
     'invalid_heighten',
-    'metamagic_feat_missing'
+    'metamagic_feat_missing',
+    'lower_cl_conflict'
   ]);
 
   const PREVIEWABLE_ACTIONS = new Set([
@@ -219,6 +220,7 @@
     'combat/setOffHand',
     'combat/toggleBuff',
     'combat/addBuff',
+    'combat/acceptIncomingBuff',
     'combat/advanceRound',
     'hud/adjustHp',
     'spells/castSpell',
@@ -1794,6 +1796,9 @@
           if (b.durationRounds === 0) {
             b.active = false;
             b.durationText = 'Expired';
+            subtractBuffTempHpContribution(doc, b);
+            delete b._tempHpDelta;
+            delete b._tempHpSynced;
             notes.push(`⌛ ${b.name || 'Buff'} expired`);
           } else {
             b.durationText = `${b.durationRounds} ${b.durationRounds === 1 ? 'round' : 'rounds'}`;
@@ -1803,6 +1808,9 @@
           if (b.rounds === 0) {
             b.active = false;
             b.durationText = 'Expired';
+            subtractBuffTempHpContribution(doc, b);
+            delete b._tempHpDelta;
+            delete b._tempHpSynced;
             notes.push(`⌛ ${b.name || 'Buff'} expired`);
           } else {
             b.durationText = `${b.rounds} ${b.rounds === 1 ? 'round' : 'rounds'}`;
@@ -2348,6 +2356,51 @@
     return doc;
   });
 
+  function getBuffTempHpAmount(b, payloadTemp = 0) {
+    if (!b || typeof b !== 'object') return Math.max(0, Number(payloadTemp) || 0);
+    return Math.max(
+      0,
+      Number(payloadTemp) || 0,
+      Number(b.grantedTempHp) || 0,
+      Number(b.tempHpGranted) || 0,
+      Number(b.tempHp) || 0,
+      Number(b.ruleFlags?.tempHp) || 0
+    );
+  }
+
+  function subtractBuffTempHpContribution(doc, b, payloadTemp = 0) {
+    if (!doc || !doc.hp || !b) return;
+    const curTemp = Math.max(0, Number(doc.hp.temp) || 0);
+    if (curTemp <= 0) return;
+    const contrib = Number.isFinite(Number(b._tempHpDelta))
+      ? Math.max(0, Number(b._tempHpDelta))
+      : getBuffTempHpAmount(b, payloadTemp);
+    if (contrib > 0) {
+      doc.hp.temp = Math.max(0, curTemp - contrib);
+    }
+  }
+
+  function applyBuffTempHpNonStacking(doc, buffCopy, prevBuff = null) {
+    if (!doc || !buffCopy) return 0;
+    const granted = getBuffTempHpAmount(buffCopy);
+    if (granted <= 0) return 0;
+    if (!doc.hp || typeof doc.hp !== 'object') doc.hp = { current: 10, max: 10, temp: 0 };
+    const prevDelta = (prevBuff && prevBuff.active !== false)
+      ? (Number.isFinite(Number(prevBuff._tempHpDelta)) ? Math.max(0, Number(prevBuff._tempHpDelta)) : getBuffTempHpAmount(prevBuff))
+      : 0;
+    const baseTemp = Math.max(0, (Number(doc.hp.temp) || 0) - prevDelta);
+    const nextTemp = Math.max(baseTemp, granted);
+    const delta = Math.max(0, nextTemp - baseTemp);
+    doc.hp.temp = nextTemp;
+    doc.hp._lastPlayerChangeTs = Math.max(Date.now(), (Number(doc.hp._lastDmUpdateTs) || 0) + 100);
+    buffCopy.grantedTempHp = granted;
+    delete buffCopy.tempHpGranted;
+    buffCopy._tempHpDelta = delta;
+    buffCopy._tempHpSynced = true;
+    buffCopy.ruleFlags = Object.assign({}, buffCopy.ruleFlags || {}, { tempHp: granted });
+    return granted;
+  }
+
   CharStore.registerReducer('combat/toggleBuff', (doc, action, stateObj) => {
     const payload = (action && action.payload) || {};
     const idx = Number(payload.index);
@@ -2360,17 +2413,8 @@
     const nextActive = !wasActive;
     b.active = nextActive;
     if (wasActive && !nextActive && doc.hp) {
-      const tempHp = Math.max(
-        Number(payload.grantedTempHp) || 0,
-        Number(b.tempHp) || 0,
-        Number(b.ruleFlags?.tempHp) || 0
-      );
-      if (tempHp > 0) {
-        doc.hp.temp = Math.max(0, (Number(doc.hp.temp) || 0) - tempHp);
-      }
-      if (b._tempHpSynced) {
-        delete b._tempHpSynced;
-      }
+      subtractBuffTempHpContribution(doc, b, payload.grantedTempHp);
+      if (b._tempHpDelta !== undefined) delete b._tempHpDelta;
     }
     setStoreOutcome(stateObj, { status: 'buff_toggled', index: idx, active: b.active });
     return doc;
@@ -2385,14 +2429,7 @@
     }
     const b = doc.buffs[idx];
     if (b && b.active !== false && doc.hp) {
-      const tempHp = Math.max(
-        Number(payload.grantedTempHp) || 0,
-        Number(b.tempHp) || 0,
-        Number(b.ruleFlags?.tempHp) || 0
-      );
-      if (tempHp > 0) {
-        doc.hp.temp = Math.max(0, (Number(doc.hp.temp) || 0) - tempHp);
-      }
+      subtractBuffTempHpContribution(doc, b, payload.grantedTempHp);
     }
     doc.buffs.splice(idx, 1);
     setStoreOutcome(stateObj, { status: 'buff_removed', index: idx });
@@ -2408,6 +2445,71 @@
     }
     const res = upsertBuffEntryOnDoc(doc, buffEntry);
     setStoreOutcome(stateObj, { status: 'buff_added', name: buffEntry.name, updated: Boolean(res && res.updated) });
+    return doc;
+  });
+
+  CharStore.registerReducer('combat/acceptIncomingBuff', (doc, action, stateObj) => {
+    const payload = (action && action.payload) || {};
+    const incoming = payload.buff;
+    if (!incoming || typeof incoming !== 'object' || !incoming.name) {
+      setStoreOutcome(stateObj, { status: 'invalid_payload' });
+      return doc;
+    }
+    if (!Array.isArray(doc.buffs)) doc.buffs = [];
+    const copy = JSON.parse(JSON.stringify(incoming));
+    copy.active = true;
+    copy.schemaVersion = 3;
+    if (!copy.origin || typeof copy.origin !== 'object') copy.origin = {};
+    copy.origin.external = true;
+
+    const nameKey = String(copy.name || '').toLowerCase().trim();
+    const baseKey = String(copy.baseSpellId || '').toLowerCase().trim();
+    const wepKey = String(copy.targetWeapon || '').toLowerCase().trim();
+    const energyKey = String(copy.chosenEnergy || '').toLowerCase().trim();
+
+    const existingIdx = doc.buffs.findIndex(b => {
+      if (!b) return false;
+      const sameSpell = (baseKey && b.baseSpellId && String(b.baseSpellId).toLowerCase().trim() === baseKey)
+        || (nameKey && String(b.name || '').toLowerCase().trim() === nameKey);
+      if (!sameSpell) return false;
+      const sameWep = String(b.targetWeapon || '').toLowerCase().trim() === wepKey;
+      const sameEnergy = String(b.chosenEnergy || '').toLowerCase().trim() === energyKey;
+      return sameWep && sameEnergy;
+    });
+
+    const prevBuff = existingIdx >= 0 ? doc.buffs[existingIdx] : null;
+    if (prevBuff && prevBuff.active !== false && !payload.forceReplace) {
+      const existingCl = Math.max(1, Number(prevBuff.casterLevel || prevBuff.cl || doc.level) || 1);
+      const incomingCl = Math.max(1, Number(copy.casterLevel || copy.cl) || 1);
+      if (existingCl > incomingCl) {
+        setStoreOutcome(stateObj, {
+          status: 'lower_cl_conflict',
+          existingName: prevBuff.name || copy.name,
+          existingCl,
+          incomingCl
+        });
+        return doc;
+      }
+    }
+
+    if (prevBuff && prevBuff.pinnedToCombat) {
+      copy.pinnedToCombat = true;
+    }
+    delete copy._tempHpSynced;
+    delete copy._tempHpDelta;
+    applyBuffTempHpNonStacking(doc, copy, prevBuff);
+
+    if (existingIdx >= 0) {
+      doc.buffs[existingIdx] = copy;
+    } else {
+      doc.buffs.push(copy);
+    }
+    setStoreOutcome(stateObj, {
+      status: 'buff_accepted',
+      name: copy.name,
+      replaced: existingIdx >= 0,
+      offerId: copy.origin.offerId || null
+    });
     return doc;
   });
 
@@ -3835,20 +3937,26 @@
     if (!buffEntry || typeof buffEntry !== 'object') return false;
     if (!Array.isArray(doc.buffs)) doc.buffs = [];
     const copy = JSON.parse(JSON.stringify(buffEntry));
+    copy.active = true;
     const nameKey = String(copy.name || '').toLowerCase().trim();
+    const wepKey = String(copy.targetWeapon || '').toLowerCase().trim();
+    const energyKey = String(copy.chosenEnergy || '').toLowerCase().trim();
     const existingIdx = doc.buffs.findIndex(b => b && (
       (copy.id && b.id === copy.id) ||
       (nameKey && String(b.name || '').toLowerCase().trim() === nameKey)
-    ));
-    if (existingIdx >= 0) {
-      doc.buffs[existingIdx] = Object.assign({}, doc.buffs[existingIdx], copy, { active: true });
-    } else {
-      doc.buffs.push(Object.assign({ active: true }, copy));
+    ) && String(b.targetWeapon || '').toLowerCase().trim() === wepKey
+      && String(b.chosenEnergy || '').toLowerCase().trim() === energyKey);
+    const prevBuff = existingIdx >= 0 ? doc.buffs[existingIdx] : null;
+    if (prevBuff && prevBuff.pinnedToCombat && copy.pinnedToCombat === undefined) {
+      copy.pinnedToCombat = true;
     }
-    const tempHpGranted = Number(copy.tempHpGranted) || 0;
-    if (tempHpGranted > 0) {
-      if (!doc.hp || typeof doc.hp !== 'object') doc.hp = { current: 10, max: 10, temp: 0 };
-      doc.hp.temp = Math.max(Number(doc.hp.temp) || 0, tempHpGranted);
+    delete copy._tempHpSynced;
+    delete copy._tempHpDelta;
+    applyBuffTempHpNonStacking(doc, copy, prevBuff);
+    if (existingIdx >= 0) {
+      doc.buffs[existingIdx] = copy;
+    } else {
+      doc.buffs.push(copy);
     }
     return true;
   }

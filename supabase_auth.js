@@ -669,6 +669,34 @@ ${this._lastSyncErrorHtml()}
   },
 
   /**
+   * Lightweight campaign party roster query (Sprint E2.1).
+   * Selects ONLY minimal public-safe roster fields (never `*` or `full_data`).
+   * Best-effort under RLS: returns [] gracefully if offline or blocked.
+   */
+  async fetchCampaignRoster(campaignId) {
+    if (!campaignId || this.isLocalMode()) return [];
+    const client = this.getClient();
+    if (!client) return [];
+    try {
+      const { data, error } = await client
+        .from('characters')
+        .select('id, name, is_npc')
+        .eq('campaign_id', campaignId)
+        .order('name', { ascending: true });
+      if (error || !Array.isArray(data)) return [];
+      return data
+        .filter(r => r && r.id)
+        .map(r => ({
+          charId: String(r.id),
+          name: String(r.name || 'Unnamed Hero').slice(0, 60),
+          isNpc: Boolean(r.is_npc)
+        }));
+    } catch (e) {
+      return [];
+    }
+  },
+
+  /**
    * Belirli bir kampanyaya bağlı tüm karakterleri çeker (DM masası için)
    */
   async fetchCampaignCharacters(campaignId) {
@@ -1298,14 +1326,21 @@ ${this._lastSyncErrorHtml()}
   },
 
   // ===========================================================================
-  // Live Hit Points fast lane (Realtime Broadcast on private channels).
+  // Live Campaign Fast Lane (Realtime Broadcast on private channels — ADR-043 & Sprint E2).
   // Topics: hp:user:<auth user id> (own devices), hp:campaign:<campaign id> (campaign members).
-  // Policies: tools/supabase/hp_live_broadcast.sql. When a channel cannot be joined (policies not
-  // applied, offline, timeout) it is logged once and dropped; the database save path still carries HP.
+  // Policies: tools/supabase/hp_live_broadcast.sql (authorizes all broadcast events on these topics).
   // ===========================================================================
   _hpLive: { channels: {}, senderId: '', warned: false },
+  _CAMPAIGN_LIVE_EVENTS: Object.freeze([
+    'hp',
+    'campaign_buff',
+    'campaign_buff_ack',
+    'campaign_buff_revoke',
+    'roster_ping',
+    'roster_here'
+  ]),
 
-  /** Random id for this tab, sent with every HP event so a tab can ignore its own echo. */
+  /** Random id for this tab, sent with every live event so a tab can ignore its own echo. */
   getHpLiveSenderId() {
     if (!this._hpLive.senderId) {
       this._hpLive.senderId = 'tab_' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
@@ -1328,30 +1363,34 @@ ${this._lastSyncErrorHtml()}
   _warnHpLiveOnce(topic, reason, err) {
     if (this._hpLive.warned) return;
     this._hpLive.warned = true;
-    const msg = `Live Hit Points channel unavailable (${topic}: ${reason}); using the regular cloud save path.`;
+    const msg = `Live Campaign channel unavailable (${topic}: ${reason}); using the regular cloud save path.`;
     if (typeof reportError === 'function') {
-      try { reportError('supabase_auth:joinHpLive', new Error(msg + (err && err.message ? ` ${err.message}` : ''))); return; } catch (e) { /* fall through */ }
+      try { reportError('supabase_auth:joinCampaignLive', new Error(msg + (err && err.message ? ` ${err.message}` : ''))); return; } catch (e) { /* fall through */ }
     }
     console.warn(msg, err || '');
   },
 
   /**
-   * Joins a live HP topic once (idempotent per topic) and calls onEvent(payload, topic) for every 'hp'
-   * broadcast from another tab. A later call with the same topic only replaces the handler.
-   * Resolves to true when subscribed, false when unavailable (no retry after a failure).
+   * Joins a private campaign/user live topic once (idempotent per topic) and binds a whitelist of
+   * broadcast events. Subsequent calls on the same topic merge handlers without resubscribing.
+   * Resolves to true when subscribed, false when unavailable.
    */
-  joinHpLive(topic, onEvent) {
+  joinCampaignLive(topic, handlersByEvent = {}) {
     if (!topic || this.isLocalMode()) return Promise.resolve(false);
     const channels = this._hpLive.channels;
     const existing = channels[topic];
+    const validHandlers = {};
+    this._CAMPAIGN_LIVE_EVENTS.forEach(evName => {
+      if (typeof handlersByEvent[evName] === 'function') validHandlers[evName] = handlersByEvent[evName];
+    });
     if (existing) {
-      if (typeof onEvent === 'function') existing.handler = onEvent;
+      Object.assign(existing.handlers, validHandlers);
       return existing.ready;
     }
     const client = this.getClient();
     if (!client || typeof client.channel !== 'function') return Promise.resolve(false);
 
-    const entry = { handler: onEvent, channel: null, subscribed: false, failed: false, ready: null };
+    const entry = { handlers: validHandlers, channel: null, subscribed: false, failed: false, ready: null };
     channels[topic] = entry;
     entry.ready = (async () => {
       try {
@@ -1376,28 +1415,63 @@ ${this._lastSyncErrorHtml()}
         try {
           const channel = client.channel(topic, { config: { private: true, broadcast: { self: false } } });
           entry.channel = channel;
-          channel
-            .on('broadcast', { event: 'hp' }, (msg) => {
+          const eventsToBind = String(topic).startsWith('hp:campaign:') ? this._CAMPAIGN_LIVE_EVENTS : ['hp'];
+          eventsToBind.forEach(evName => {
+            channel.on('broadcast', { event: evName }, (msg) => {
               const p = msg && msg.payload;
               if (!p || typeof p !== 'object' || p.senderId === this.getHpLiveSenderId()) return;
-              if (typeof entry.handler !== 'function') return;
-              try { entry.handler(p, topic); } catch (hErr) { console.warn('Live Hit Points handler error:', hErr); }
-            })
-            .subscribe((status, err) => {
-              if (status === 'SUBSCRIBED') {
-                entry.subscribed = true;
-                settle(true);
-              } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
-                entry.subscribed = false;
-                settle(false, status, err);
-              }
+              const fn = entry.handlers[evName];
+              if (typeof fn !== 'function') return;
+              try { fn(p, topic, evName); } catch (hErr) { console.warn(`Live Campaign (${evName}) handler error:`, hErr); }
             });
+          });
+          channel.subscribe((status, err) => {
+            if (status === 'SUBSCRIBED') {
+              entry.subscribed = true;
+              settle(true);
+            } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+              entry.subscribed = false;
+              settle(false, status, err);
+            }
+          });
         } catch (subErr) {
           settle(false, 'SUBSCRIBE_FAILED', subErr);
         }
       });
     })();
     return entry.ready;
+  },
+
+  /**
+   * Sends a whitelisted broadcast event on a joined topic.
+   * Returns 'sent' | 'queued' | 'offline'.
+   */
+  sendCampaignEvent(topic, event, payload) {
+    if (!topic || !payload || !this._CAMPAIGN_LIVE_EVENTS.includes(event)) return 'offline';
+    const entry = this._hpLive.channels[topic];
+    if (!entry || entry.failed) return 'offline';
+    const body = Object.assign({}, payload, { senderId: this.getHpLiveSenderId() });
+    const doSend = () => {
+      if (!entry.subscribed || !entry.channel) return false;
+      try {
+        const res = entry.channel.send({ type: 'broadcast', event, payload: body });
+        if (res && typeof res.catch === 'function') res.catch(() => {});
+      } catch (e) {
+        return false;
+      }
+      return true;
+    };
+    if (entry.subscribed) return doSend() ? 'sent' : 'offline';
+    if (entry.ready && typeof entry.ready.then === 'function') {
+      entry.ready.then(ok => { if (ok) doSend(); }, () => {});
+      return 'queued';
+    }
+    return 'offline';
+  },
+
+  /** Backward-compatible thin wrapper for Live Hit Points (keeps hub.html untouched). */
+  joinHpLive(topic, onEvent) {
+    return this.joinCampaignLive(topic, typeof onEvent === 'function' ? { hp: onEvent } : {});
   },
 
   leaveHpLive(topic) {
@@ -1412,28 +1486,9 @@ ${this._lastSyncErrorHtml()}
     }
   },
 
-  /** Sends an 'hp' broadcast on a joined topic. No-op (false) when the topic is not subscribed. */
+  /** Backward-compatible thin wrapper for Live Hit Points broadcast. */
   sendHpLive(topic, payload) {
-    const entry = topic && this._hpLive.channels[topic];
-    if (!entry || entry.failed || !payload) return false;
-    const body = Object.assign({}, payload, { senderId: this.getHpLiveSenderId() });
-    const doSend = () => {
-      if (!entry.subscribed || !entry.channel) return false;
-      try {
-        const res = entry.channel.send({ type: 'broadcast', event: 'hp', payload: body });
-        if (res && typeof res.catch === 'function') res.catch(() => {});
-      } catch (e) {
-        return false;
-      }
-      return true;
-    };
-    if (entry.subscribed) return doSend();
-    // Still joining (first change right after load, or a campaign topic joined just now): send once it is up.
-    if (entry.ready && typeof entry.ready.then === 'function') {
-      entry.ready.then(ok => { if (ok) doSend(); }, () => {});
-      return true;
-    }
-    return false;
+    return this.sendCampaignEvent(topic, 'hp', payload) !== 'offline';
   }
 };
 

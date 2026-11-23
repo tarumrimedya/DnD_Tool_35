@@ -223,11 +223,15 @@
     };
 
     // Aynı Cihaz Canlı Senkronizasyon Dinleyicileri (BroadcastChannel & Storage Event)
+    let _campaignLiveBc = null;
     try {
-      const liveBc = new BroadcastChannel('dnd35_live_sync');
-      liveBc.onmessage = (e) => {
-        if (e.data && e.data.type === 'DM_HP_UPDATE') {
+      _campaignLiveBc = new BroadcastChannel('dnd35_live_sync');
+      _campaignLiveBc.onmessage = (e) => {
+        if (!e || !e.data) return;
+        if (e.data.type === 'DM_HP_UPDATE') {
           window.handleIncomingDmHpEvent(e.data);
+        } else if (e.data.type === 'CAMPAIGN_LIVE_EVENT' && typeof handleCampaignLiveBcMessage === 'function') {
+          handleCampaignLiveBcMessage(e.data);
         }
       };
     } catch (e) { reportError('char_hud:liveBc.onmessage', e); }
@@ -1326,15 +1330,35 @@
     }
 
     function _hpLiveSyncCampaignTopic() {
-      if (!_hpLive.userTopic || !window.SupabaseAuth || typeof window.SupabaseAuth.joinHpLive !== 'function') return;
+      if (!_hpLive.userTopic || !window.SupabaseAuth) return;
       const want = window.SupabaseAuth.getHpLiveCampaignTopic(character && character.cloudCampaignId) || null;
       if (want === _hpLive.campaignTopic) return;
       if (_hpLive.campaignTopic) window.SupabaseAuth.leaveHpLive(_hpLive.campaignTopic);
       _hpLive.campaignTopic = want;
-      if (want) window.SupabaseAuth.joinHpLive(want, handleHpLiveEvent);
+      if (want) {
+        const joinFn = typeof window.SupabaseAuth.joinCampaignLive === 'function'
+          ? window.SupabaseAuth.joinCampaignLive.bind(window.SupabaseAuth)
+          : window.SupabaseAuth.joinHpLive.bind(window.SupabaseAuth);
+        if (typeof window.SupabaseAuth.joinCampaignLive === 'function') {
+          joinFn(want, {
+            hp: handleHpLiveEvent,
+            campaign_buff: handleIncomingCampaignBuffEvent,
+            campaign_buff_ack: handleCampaignBuffAckEvent,
+            campaign_buff_revoke: handleCampaignBuffRevokeEvent,
+            roster_ping: handleCampaignRosterPing,
+            roster_here: handleCampaignRosterHere
+          }).then((ok) => {
+            if (ok) _campaignAnnouncePresence(true);
+          }).catch(() => {});
+        } else {
+          joinFn(want, handleHpLiveEvent);
+        }
+        _campaignSeedDbRoster(character.cloudCampaignId);
+      }
     }
 
     async function initHpLiveSync() {
+      _campaignAnnouncePresence(true);
       if (!window.SupabaseAuth || window.SupabaseAuth.isLocalMode() || typeof window.SupabaseAuth.joinHpLive !== 'function') return;
       if (!character) return;
       if (!_hpLive.userTopic) {
@@ -1348,6 +1372,436 @@
       ensureCloudCharacterId();
       if (!_hpLive.base || _hpLive.base.ref !== character || !_hpLive.base.charId) _hpLiveRebase();
       _hpLiveSyncCampaignTopic();
+    }
+
+    // =========================================================================
+    // Sprint E2.1 / E2.2: Campaign Target Toaster, Roster & Incoming Buff Queue
+    // =========================================================================
+    const _campaignTargetState = {
+      roster: new Map(),           // charId -> { charId, name, isNpc, online, lastSeen }
+      outbox: new Map(),           // offerId -> { offer, pendingTargets: Set<string>, expiresAt }
+      incomingQueue: [],           // sanitized offers awaiting Accept/Dismiss (max 5)
+      seenOffers: new Set(),       // offerId dedupe (also mirrored to sessionStorage)
+      senderLastTs: new Map(),     // fromCharId -> last accepted ts (1 offer/s rate limit)
+      tabId: 'bc_' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36)
+    };
+
+    (function _hydrateSeenOffers() {
+      try {
+        const raw = sessionStorage.getItem('dnd35_seen_buff_offers');
+        if (raw) {
+          const arr = JSON.parse(raw);
+          if (Array.isArray(arr)) arr.slice(-100).forEach(id => _campaignTargetState.seenOffers.add(String(id)));
+        }
+      } catch (_) { /* ignore storage restrictions */ }
+    })();
+
+    function _markOfferSeen(offerId) {
+      if (!offerId) return;
+      _campaignTargetState.seenOffers.add(String(offerId));
+      try {
+        const arr = Array.from(_campaignTargetState.seenOffers).slice(-100);
+        sessionStorage.setItem('dnd35_seen_buff_offers', JSON.stringify(arr));
+      } catch (_) { /* ignore storage restrictions */ }
+    }
+
+    function _getCampaignScopeId() {
+      return (character && character.cloudCampaignId) ? String(character.cloudCampaignId) : 'local';
+    }
+
+    function _getMyTargetCharId() {
+      if (!character) return '';
+      return String(character._hubId || character.id || (character.name ? 'local_' + character.name.toLowerCase().replace(/[^a-z0-9]+/g, '_') : ''));
+    }
+
+    function _postCampaignLiveEvent(event, payload) {
+      let cloudStatus = 'offline';
+      if (_hpLive.campaignTopic && window.SupabaseAuth && typeof window.SupabaseAuth.sendCampaignEvent === 'function') {
+        cloudStatus = window.SupabaseAuth.sendCampaignEvent(_hpLive.campaignTopic, event, payload);
+      }
+      if (_campaignLiveBc) {
+        try {
+          _campaignLiveBc.postMessage({
+            type: 'CAMPAIGN_LIVE_EVENT',
+            event,
+            payload,
+            bcSender: _campaignTargetState.tabId
+          });
+        } catch (_) { /* channel closed */ }
+      }
+      return cloudStatus;
+    }
+
+    function handleCampaignLiveBcMessage(msg) {
+      if (!msg || msg.bcSender === _campaignTargetState.tabId || !msg.payload) return;
+      const ev = msg.event;
+      const p = msg.payload;
+      if (ev === 'campaign_buff') handleIncomingCampaignBuffEvent(p);
+      else if (ev === 'campaign_buff_ack') handleCampaignBuffAckEvent(p, { isLocalBc: true });
+      else if (ev === 'campaign_buff_revoke') handleCampaignBuffRevokeEvent(p);
+      else if (ev === 'roster_ping') handleCampaignRosterPing(p);
+      else if (ev === 'roster_here') handleCampaignRosterHere(p);
+    }
+
+    async function _campaignSeedDbRoster(campaignId) {
+      if (!campaignId || !window.SupabaseAuth || typeof window.SupabaseAuth.fetchCampaignRoster !== 'function') return;
+      const rows = await window.SupabaseAuth.fetchCampaignRoster(campaignId);
+      const myId = _getMyTargetCharId();
+      rows.forEach(r => {
+        if (!r || !r.charId || r.charId === myId) return;
+        const cur = _campaignTargetState.roster.get(r.charId);
+        if (!cur) {
+          _campaignTargetState.roster.set(r.charId, {
+            charId: r.charId,
+            name: r.name,
+            isNpc: Boolean(r.isNpc),
+            online: false,
+            lastSeen: 0
+          });
+        }
+      });
+    }
+
+    function _campaignAnnouncePresence(sendPing = false) {
+      const myId = _getMyTargetCharId();
+      if (!myId || !character) return;
+      const scopeId = _getCampaignScopeId();
+      _postCampaignLiveEvent('roster_here', {
+        campaignId: scopeId,
+        charId: myId,
+        name: String(character.name || 'Unnamed Hero').slice(0, 60),
+        isNpc: Boolean(character.isNpc),
+        ts: Date.now()
+      });
+      if (sendPing) {
+        _postCampaignLiveEvent('roster_ping', {
+          campaignId: scopeId,
+          charId: myId,
+          ts: Date.now()
+        });
+      }
+    }
+
+    function handleCampaignRosterPing(evt) {
+      if (!evt || String(evt.campaignId || '') !== _getCampaignScopeId()) return;
+      _campaignAnnouncePresence(false);
+    }
+
+    function handleCampaignRosterHere(evt) {
+      if (!evt || String(evt.campaignId || '') !== _getCampaignScopeId()) return;
+      const cid = String(evt.charId || '').trim();
+      const myId = _getMyTargetCharId();
+      if (!cid || cid === myId) return;
+      const cleanName = String(evt.name || 'Ally').replace(/[\u0000-\u001f\u007f<>]/g, '').trim().slice(0, 60) || 'Ally';
+      _campaignTargetState.roster.set(cid, {
+        charId: cid,
+        name: cleanName,
+        isNpc: Boolean(evt.isNpc),
+        online: true,
+        lastSeen: Date.now()
+      });
+      // Outbox replay (E2.2): resend any un-acked non-expired offers targeted to this member
+      const now = Date.now();
+      _campaignTargetState.outbox.forEach((entry, oid) => {
+        if (entry.expiresAt < now) {
+          _campaignTargetState.outbox.delete(oid);
+          return;
+        }
+        if (entry.pendingTargets.has(cid) || entry.pendingTargets.has('ALL')) {
+          _postCampaignLiveEvent('campaign_buff', entry.offer);
+        }
+      });
+    }
+
+    function getCampaignPartyTargets() {
+      const myId = _getMyTargetCharId();
+      const now = Date.now();
+      const list = [];
+      _campaignTargetState.roster.forEach((entry, cid) => {
+        if (!entry || cid === myId) return;
+        const isLive = entry.online && (now - entry.lastSeen) <= 120000;
+        list.push({
+          charId: entry.charId,
+          name: entry.name,
+          isNpc: Boolean(entry.isNpc),
+          online: isLive
+        });
+      });
+      list.sort((a, b) => (Number(b.online) - Number(a.online)) || a.name.localeCompare(b.name));
+      return list;
+    }
+
+    function sendCampaignBuffOffer(spellItem, targetCharIds, opts = {}) {
+      if (!spellItem || !character || typeof RuleEngine === 'undefined' || typeof RuleEngine.buildOutgoingBuffPayload !== 'function') {
+        return null;
+      }
+      const targets = Array.isArray(targetCharIds) ? targetCharIds.filter(Boolean) : [];
+      if (targets.length === 0) return null;
+      const offer = RuleEngine.buildOutgoingBuffPayload(spellItem, character, Object.assign({}, opts, {
+        targetCharIds: targets,
+        campaignId: _getCampaignScopeId(),
+        fromCharId: _getMyTargetCharId(),
+        fromCharName: character.name || 'Ally'
+      }));
+      if (!offer) return null;
+
+      _campaignTargetState.outbox.set(offer.offerId, {
+        offer,
+        pendingTargets: new Set(targets),
+        expiresAt: offer.expiresAt
+      });
+      const status = _postCampaignLiveEvent('campaign_buff', offer);
+      return { offer, status };
+    }
+
+    function sendCampaignBuffRevoke(offerId, buffName) {
+      if (!offerId || !character) return;
+      _campaignTargetState.outbox.delete(String(offerId));
+      _postCampaignLiveEvent('campaign_buff_revoke', {
+        v: 1,
+        offerId: String(offerId),
+        campaignId: _getCampaignScopeId(),
+        fromCharId: _getMyTargetCharId(),
+        fromCharName: String(character.name || 'Ally').slice(0, 60),
+        buffName: String(buffName || 'Buff').slice(0, 80),
+        ts: Date.now()
+      });
+    }
+
+    function handleCampaignBuffAckEvent(evt, meta = {}) {
+      if (!evt || String(evt.campaignId || '') !== _getCampaignScopeId()) return;
+      const oid = String(evt.offerId || '').trim();
+      const cid = String(evt.charId || '').trim();
+      if (!oid) return;
+      // 1. Caster side: remove verified target from outbox pending set
+      const outEntry = _campaignTargetState.outbox.get(oid);
+      if (outEntry && cid && (outEntry.pendingTargets.has(cid) || outEntry.pendingTargets.has('ALL'))) {
+        outEntry.pendingTargets.delete(cid);
+        if (outEntry.pendingTargets.size === 0) _campaignTargetState.outbox.delete(oid);
+      }
+      // 2. Recipient multi-tab sync: only trust same-browser BroadcastChannel ack to close our own tab's toaster
+      if (meta.isLocalBc && cid && cid === _getMyTargetCharId()) {
+        const before = _campaignTargetState.incomingQueue.length;
+        _campaignTargetState.incomingQueue = _campaignTargetState.incomingQueue.filter(o => o.offerId !== oid);
+        _markOfferSeen(oid);
+        if (_campaignTargetState.incomingQueue.length !== before) renderIncomingBuffQueue();
+      }
+    }
+
+    function handleCampaignBuffRevokeEvent(evt) {
+      if (!evt || !character || String(evt.campaignId || '') !== _getCampaignScopeId()) return;
+      const oid = String(evt.offerId || '').trim();
+      const fromCid = String(evt.fromCharId || '').trim();
+      if (!oid || !fromCid) return;
+      // Remove from pending queue ONLY if sender matches the original offer's fromCharId
+      const prevLen = _campaignTargetState.incomingQueue.length;
+      _campaignTargetState.incomingQueue = _campaignTargetState.incomingQueue.filter(o => !(o.offerId === oid && o.fromCharId === fromCid));
+      if (_campaignTargetState.incomingQueue.length !== prevLen) renderIncomingBuffQueue();
+
+      // If already active on this character, verify origin.fromCharId matches before prompting
+      const activeIdx = Array.isArray(character.buffs)
+        ? character.buffs.findIndex(b => b && b.active !== false && b.origin && b.origin.offerId === oid && b.origin.fromCharId === fromCid)
+        : -1;
+      if (activeIdx >= 0 && typeof showDiceTopToast === 'function') {
+        const casterSafe = (typeof UI !== 'undefined' && UI.escapeHtml) ? UI.escapeHtml(evt.fromCharName || 'Ally') : String(evt.fromCharName || 'Ally');
+        const buffSafe = (typeof UI !== 'undefined' && UI.escapeHtml) ? UI.escapeHtml(character.buffs[activeIdx].name || evt.buffName || 'Buff') : String(evt.buffName || 'Buff');
+        showDiceTopToast({
+          icon: '💨',
+          title: `${casterSafe} ended ${buffSafe}`,
+          breakdown: 'Caster dismissed or ended this buff. Dismiss it from your sheet?',
+          total: 'Ended',
+          actions: [
+            {
+              label: '✕ Dismiss Buff',
+              className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-rose-700 hover:bg-rose-600 text-white border border-rose-400 transition shadow cursor-pointer',
+              onClick: () => {
+                const curIdx = Array.isArray(character.buffs)
+                  ? character.buffs.findIndex(b => b && b.origin && b.origin.offerId === oid)
+                  : -1;
+                if (curIdx >= 0 && typeof CharStore !== 'undefined' && CharStore.dispatch) {
+                  CharStore.dispatch({ type: 'combat/removeBuff', payload: { index: curIdx } });
+                  saveStateToStorage(true);
+                  if (typeof renderAll === 'function') renderAll();
+                }
+              }
+            }
+          ]
+        }, { stack: true });
+      }
+    }
+
+    function handleIncomingCampaignBuffEvent(raw) {
+      if (!raw || !character || typeof RuleEngine === 'undefined' || typeof RuleEngine.sanitizeIncomingBuffOffer !== 'function') return;
+      const myId = _getMyTargetCharId();
+      const scopeId = _getCampaignScopeId();
+      const check = RuleEngine.sanitizeIncomingBuffOffer(raw, { campaignId: scopeId, myCharId: myId });
+      if (!check.ok || !check.offer) return;
+      const offer = check.offer;
+      if (offer.fromCharId === myId) return;
+      if (_campaignTargetState.seenOffers.has(offer.offerId)) return;
+      if (_campaignTargetState.incomingQueue.some(o => o.offerId === offer.offerId)) return;
+
+      // Rate limit: max 1 offer/sec per sender
+      const now = Date.now();
+      const lastFrom = _campaignTargetState.senderLastTs.get(offer.fromCharId) || 0;
+      if (now - lastFrom < 1000) return;
+      _campaignTargetState.senderLastTs.set(offer.fromCharId, now);
+
+      // Cap queue size to 5
+      if (_campaignTargetState.incomingQueue.length >= 5) {
+        _campaignTargetState.incomingQueue.shift();
+      }
+      _campaignTargetState.incomingQueue.push(offer);
+      renderIncomingBuffQueue();
+    }
+
+    async function _acceptIncomingOffer(offer, targetWeaponName = null) {
+      if (!offer || !offer.buff || !character || typeof CharStore === 'undefined' || !CharStore.dispatch) return;
+      const buffToApply = JSON.parse(JSON.stringify(offer.buff));
+      if (targetWeaponName) {
+        buffToApply.targetWeapon = targetWeaponName;
+        if (buffToApply.sizeSteps && typeof RuleEngine !== 'undefined' && RuleEngine.stepDamageDice) {
+          const wepObj = (character.weapons || []).find(w => w && w.name === targetWeaponName);
+          const oldDice = wepObj?.weapon?.damageDice || wepObj?.dice || '1d8';
+          const newDice = RuleEngine.stepDamageDice(oldDice, buffToApply.sizeSteps);
+          buffToApply.baseDice = oldDice;
+          buffToApply.effectiveDice = newDice;
+          buffToApply.summary = `${targetWeaponName}: ${oldDice} ➔ ${newDice} (+${buffToApply.sizeSteps} Size)`;
+        } else {
+          buffToApply.summary = `${targetWeaponName}: ${buffToApply.summary}`;
+        }
+      }
+
+      CharStore.dispatch({ type: 'combat/acceptIncomingBuff', payload: { buff: buffToApply } });
+      const outcome = CharStore.getLastOutcome ? CharStore.getLastOutcome() : null;
+      if (outcome && outcome.status === 'lower_cl_conflict') {
+        const msg = `You already have "${outcome.existingName}" active at CL ${outcome.existingCl}. Replace it with CL ${outcome.incomingCl} from ${offer.fromCharName}?`;
+        const confirmed = (window.DnDUI && typeof window.DnDUI.confirm === 'function')
+          ? await window.DnDUI.confirm({ title: 'Replace Stronger Buff?', message: msg, confirmText: 'Replace', cancelText: 'Keep Current' })
+          : false;
+        if (!confirmed) {
+          _dismissIncomingOffer(offer, 'declined_lower_cl');
+          return;
+        }
+        CharStore.dispatch({ type: 'combat/acceptIncomingBuff', payload: { buff: buffToApply, forceReplace: true } });
+      }
+
+      _markOfferSeen(offer.offerId);
+      _campaignTargetState.incomingQueue = _campaignTargetState.incomingQueue.filter(o => o.offerId !== offer.offerId);
+      renderIncomingBuffQueue();
+      saveStateToStorage(true);
+      if (typeof renderAll === 'function') renderAll();
+      _postCampaignLiveEvent('campaign_buff_ack', {
+        v: 1,
+        offerId: offer.offerId,
+        campaignId: _getCampaignScopeId(),
+        charId: _getMyTargetCharId(),
+        charName: String(character.name || 'Ally').slice(0, 60),
+        status: 'accepted',
+        ts: Date.now()
+      });
+      if (typeof showToast === 'function') {
+        showToast(`✨ Accepted ${buffToApply.name} from ${offer.fromCharName}`, 'success');
+      }
+    }
+
+    function _dismissIncomingOffer(offer, status = 'dismissed') {
+      if (!offer) return;
+      _markOfferSeen(offer.offerId);
+      _campaignTargetState.incomingQueue = _campaignTargetState.incomingQueue.filter(o => o.offerId !== offer.offerId);
+      renderIncomingBuffQueue();
+      _postCampaignLiveEvent('campaign_buff_ack', {
+        v: 1,
+        offerId: offer.offerId,
+        campaignId: _getCampaignScopeId(),
+        charId: _getMyTargetCharId(),
+        charName: String(character.name || 'Ally').slice(0, 60),
+        status,
+        ts: Date.now()
+      });
+    }
+
+    function renderIncomingBuffQueue() {
+      let host = document.getElementById('campaign-incoming-buff-queue');
+      if (_campaignTargetState.incomingQueue.length === 0) {
+        if (host) host.remove();
+        return;
+      }
+      if (!host) {
+        host = document.createElement('div');
+        host.id = 'campaign-incoming-buff-queue';
+        host.setAttribute('role', 'region');
+        host.setAttribute('aria-label', 'Incoming Party Buffs');
+        host.style.cssText = 'position:fixed;top:16px;right:12px;z-index:10005;display:flex;flex-direction:column;gap:8px;width:330px;max-width:calc(100vw - 24px);pointer-events:none;';
+        document.body.appendChild(host);
+      }
+      host.textContent = '';
+
+      _campaignTargetState.incomingQueue.forEach(offer => {
+        const card = document.createElement('div');
+        card.className = 'bg-slate-900/95 border border-indigo-500/70 rounded-2xl p-3 text-white shadow-xl backdrop-blur-md';
+        card.style.cssText = 'pointer-events:auto;box-shadow:0 10px 28px rgba(15,23,42,0.75);';
+        card.dataset.offerId = offer.offerId;
+
+        const header = document.createElement('div');
+        header.className = 'flex items-center justify-between gap-2 mb-1';
+        const titleEl = document.createElement('div');
+        titleEl.className = 'text-xs font-bold text-indigo-300 truncate';
+        titleEl.textContent = `✨ ${offer.fromCharName} cast ${offer.buff.name}`;
+        const metaEl = document.createElement('span');
+        metaEl.className = 'text-[10px] font-mono text-slate-300 bg-slate-950 px-1.5 py-0.5 rounded border border-slate-700 shrink-0';
+        metaEl.textContent = `CL ${offer.buff.casterLevel} • ${offer.buff.durationText || ''}`;
+        header.appendChild(titleEl);
+        header.appendChild(metaEl);
+
+        const summaryEl = document.createElement('div');
+        summaryEl.className = 'text-xs text-amber-200/90 mb-2';
+        summaryEl.style.cssText = 'word-break:break-word;';
+        summaryEl.textContent = offer.buff.summary || 'Active Buff';
+
+        const actionsRow = document.createElement('div');
+        actionsRow.className = 'flex flex-wrap items-center gap-1.5 pt-1.5 border-t border-slate-700/80';
+
+        if (offer.targetMode === 'weapon') {
+          const weps = (typeof getEligibleBuffWeapons === 'function')
+            ? getEligibleBuffWeapons({ sizeModifier: offer.weaponFilter ? { targetFilter: offer.weaponFilter } : null }, character?.weapons || [])
+            : (character?.weapons || []).filter(w => w && w.name && w.name !== '-');
+          if (weps.length > 0) {
+            weps.slice(0, 4).forEach(w => {
+              const wb = document.createElement('button');
+              wb.type = 'button';
+              wb.className = 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-700 hover:bg-amber-600 text-white border border-amber-400 transition cursor-pointer';
+              wb.textContent = `⚔️ ${w.name}`;
+              wb.addEventListener('click', () => _acceptIncomingOffer(offer, w.name));
+              actionsRow.appendChild(wb);
+            });
+          } else {
+            const noWep = document.createElement('span');
+            noWep.className = 'text-[10px] text-slate-400';
+            noWep.textContent = 'No eligible weapon';
+            actionsRow.appendChild(noWep);
+          }
+        } else {
+          const acceptBtn = document.createElement('button');
+          acceptBtn.type = 'button';
+          acceptBtn.className = 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-700 hover:bg-emerald-600 text-white border border-emerald-400 transition cursor-pointer';
+          acceptBtn.textContent = '✓ Accept';
+          acceptBtn.addEventListener('click', () => _acceptIncomingOffer(offer));
+          actionsRow.appendChild(acceptBtn);
+        }
+
+        const dismissBtn = document.createElement('button');
+        dismissBtn.type = 'button';
+        dismissBtn.className = 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 transition cursor-pointer';
+        dismissBtn.textContent = '✕ Dismiss';
+        dismissBtn.addEventListener('click', () => _dismissIncomingOffer(offer, 'dismissed'));
+        actionsRow.appendChild(dismissBtn);
+
+        card.appendChild(header);
+        card.appendChild(summaryEl);
+        card.appendChild(actionsRow);
+        host.appendChild(card);
+      });
     }
 
     // Called by every saveStateToStorage. Only a player save (cloud sync on) of the same character object

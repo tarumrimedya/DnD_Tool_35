@@ -486,6 +486,166 @@ function runRuleEngineTests() {
     assert.ok(known.includes('Dodge'), 'Template-granted feats count toward prerequisites at every level');
   });
 
+  // 14. Sprint E2.0: buildBuffObject parity, delivery.target party detection & origin.external CL/override isolation
+  test('Sprint E2.0: buildBuffObject, delivery.target party detection & origin.external isolation', () => {
+    const hasteSpec = RuleEngine.resolveSpellBuffSpec({
+      id: 'spl-haste',
+      name: 'Haste',
+      delivery: { range: 'close', target: 'one creature/level, no two of which can be more than 30 ft. apart' },
+      duration: '1 round/level',
+      effects: [{ type: 'stat', target: 'ac.dodge', value: 1, bonusType: 'dodge' }]
+    }, { level: 9 }, 9);
+    assert.strictEqual(hasteSpec.targetMode, 'party', 'delivery.target one creature/level must resolve to party');
+    assert.strictEqual(hasteSpec.maxTargetsPerCl, 9, 'maxTargetsPerCl must equal CL');
+
+    const extBuff = RuleEngine.buildBuffObject({
+      id: 'spl-barkskin',
+      name: 'Barkskin',
+      casterLevel: 6,
+      durationText: '60 min',
+      durationRounds: 600,
+      summaryText: '+3 Natural Armor',
+      effects: [{ type: 'stat', target: 'ac.natural', value: 3, bonusType: 'natural_armor_enhancement' }]
+    }, { cl: 6, origin: { external: true, fromCharId: 'c-druid', fromCharName: 'Thornclaw', offerId: 'off_test1234' } });
+    assert.strictEqual(extBuff.origin.external, true);
+    assert.strictEqual(extBuff.casterLevel, 6);
+
+    // Recipient is a lvl 15 Good-domain Cleric with a custom override on spl-barkskin: external buff must stay CL 6 & +3 NA
+    const recipient = {
+      name: 'Aurelius',
+      level: 15,
+      classes: 'Cleric 15',
+      abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 16, cha: 12 },
+      spellcasting: { domains: ['Good'] },
+      customEntries: {
+        'spl-barkskin': {
+          schemaVersion: 3,
+          id: 'spl-barkskin',
+          name: 'Barkskin',
+          effects: [{ type: 'stat', target: 'ac.natural', value: 9, bonusType: 'natural_armor_enhancement' }]
+        }
+      },
+      buffs: [extBuff]
+    };
+    const derived = RuleEngine.deriveSheet(recipient);
+    const stripItem = derived.combat.activeBuffsStrip.find(x => x.name === 'Barkskin');
+    assert.ok(stripItem, 'External Barkskin must appear in activeBuffsStrip');
+    assert.strictEqual(stripItem.casterLevel, 6, 'External buff CL must NOT be raised by recipient level/domains');
+    assert.strictEqual(stripItem.origin.fromCharName, 'Thornclaw', 'External buff origin must surface in strip');
+    assert.strictEqual(derived.ac.total, 13, 'External Barkskin (+3) must NOT be hijacked by recipient customEntries (+9)');
+  });
+
+  // 15. Sprint E2.1 & E2.2: materializeBlocks, buildOutgoingBuffPayload (Mass/Energy/Weapon) & strict sanitizer fuzz/security gate
+  test('Sprint E2.1/E2.2: source materialization, Mass/Energy/Weapon offers & strict incoming sanitizer', () => {
+    const caster = { id: 'c-druid', name: 'Thornclaw', level: 12, abilities: { str: 10, dex: 12, con: 14, int: 10, wis: 18, cha: 10 }, cloudCampaignId: 'camp-1' };
+    const barkskin = {
+      id: 'spl-barkskin',
+      name: 'Barkskin',
+      delivery: { range: 'touch', target: 'living creature touched' },
+      duration: '10 min./level',
+      effects: [{ type: 'stat', target: 'ac.natural', formula: '2 + min(3, max(0, floor((@cl - 3) / 3)))', bonusType: 'natural_armor_enhancement' }]
+    };
+    const expectedByCl = [[1, 2], [6, 3], [9, 4], [12, 5]];
+    expectedByCl.forEach(([cl, expVal]) => {
+      const env = RuleEngine.buildOutgoingBuffPayload(barkskin, caster, { cl, targetCharIds: ['c-fighter'] });
+      assert.ok(env && env.v === 1, `Barkskin CL ${cl} must build v1 envelope`);
+      assert.strictEqual(env.buff.effects[0].value, expVal, `Barkskin CL ${cl} must materialize to +${expVal}`);
+      assert.strictEqual(env.buff.effects[0].formula, undefined, 'Materialized block must strip formula');
+      assert.ok(!JSON.stringify(env.buff.effects).includes('@'), 'Zero @ formulas allowed in outgoing payload');
+      const san = RuleEngine.sanitizeIncomingBuffOffer(env, { campaignId: 'camp-1', myCharId: 'c-fighter' });
+      assert.strictEqual(san.ok, true, `Sanitizer must accept valid Barkskin CL ${cl} offer (got ${san.reason})`);
+      const derived = RuleEngine.deriveSheet({ name: 'Valeros', level: 1, abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 }, buffs: [san.offer.buff] });
+      assert.strictEqual(derived.ac.total, 10 + expVal, `Recipient AC must equal 10 + ${expVal} at CL ${cl}`);
+    });
+
+    // Mass Energy Choice buff
+    const massRes = {
+      id: 'spl-resist-energy-mass',
+      name: 'Resist Energy, Mass',
+      delivery: { range: 'close', target: 'One creature/level' },
+      duration: '10 min./level',
+      ruleFlags: { energyChoice: true, energyResistanceFormula: 'min(30, 10 + 10 * floor((@cl - 3) / 4))' },
+      effects: [{ type: 'defense', kind: 'energyResistance', subType: '@Choice', formula: 'min(30, 10 + 10 * floor((@cl - 3) / 4))' }]
+    };
+    const resEnv = RuleEngine.buildOutgoingBuffPayload(massRes, caster, { cl: 7, chosenEnergy: 'Fire', targetCharIds: ['c-fighter', 'c-rogue'] });
+    assert.strictEqual(resEnv.targetMode, 'party', 'Mass Resist Energy must be party targetMode');
+    assert.strictEqual(resEnv.buff.chosenEnergy, 'Fire');
+    assert.strictEqual(resEnv.buff.effects[0].subType, 'Fire', '@Choice must be substituted with Fire');
+    assert.strictEqual(resEnv.buff.effects[0].value, 20, 'CL 7 Resist Energy must materialize to 20');
+    const sanRes = RuleEngine.sanitizeIncomingBuffOffer(resEnv, { campaignId: 'camp-1', myCharId: 'c-rogue' });
+    assert.strictEqual(sanRes.ok, true, 'Sanitizer must accept valid Mass Resist Energy');
+
+    // Negative / Fuzz Sanitizer Security Suite
+    const validBase = RuleEngine.buildOutgoingBuffPayload(barkskin, caster, { cl: 9, targetCharIds: ['c-fighter'] });
+    const ctx = { campaignId: 'camp-1', myCharId: 'c-fighter', now: validBase.ts };
+    assert.strictEqual(RuleEngine.sanitizeIncomingBuffOffer(JSON.parse('{"v":1,"__proto__":{"polluted":true}}'), ctx).ok, false, 'Must reject __proto__');
+    assert.strictEqual(RuleEngine.sanitizeIncomingBuffOffer({ ...validBase, campaignId: 'camp-other' }, ctx).ok, false, 'Must reject campaign mismatch');
+    assert.strictEqual(RuleEngine.sanitizeIncomingBuffOffer({ ...validBase, targetCharIds: ['c-someone-else'] }, ctx).ok, false, 'Must reject non-matching target');
+    assert.strictEqual(RuleEngine.sanitizeIncomingBuffOffer({ ...validBase, expiresAt: validBase.ts - 1000 }, ctx).ok, false, 'Must reject expired offer');
+    assert.strictEqual(RuleEngine.sanitizeIncomingBuffOffer({ ...validBase, ts: validBase.ts - 20 * 60 * 1000 }, ctx).ok, false, 'Must reject stale timestamp');
+    assert.strictEqual(RuleEngine.sanitizeIncomingBuffOffer({ ...validBase, buff: { ...validBase.buff, effects: [{ type: 'stat', target: 'ac.natural', value: 99, bonusType: 'untyped' }] } }, ctx).ok, false, 'Must reject out-of-bounds stat value (+99)');
+    assert.strictEqual(RuleEngine.sanitizeIncomingBuffOffer({ ...validBase, buff: { ...validBase.buff, effects: [{ type: 'stat', target: 'ac.natural', value: 2, formula: '@cl', bonusType: 'untyped' }] } }, ctx).ok, false, 'Must reject unmaterialized formula field');
+    assert.strictEqual(RuleEngine.sanitizeIncomingBuffOffer({ ...validBase, buff: { ...validBase.buff, effects: [{ type: 'carrier', target: 'ac' }] } }, ctx).ok, false, 'Must reject disallowed carrier block');
+    assert.strictEqual(RuleEngine.sanitizeIncomingBuffOffer({ ...validBase, buff: { ...validBase.buff, casterLevel: 99 } }, ctx).ok, false, 'Must reject CL > 40');
+    assert.strictEqual(RuleEngine.sanitizeIncomingBuffOffer({ ...validBase, buff: { ...validBase.buff, grantedTempHp: 500 } }, ctx).ok, false, 'Must reject Temp HP > 200');
+    assert.strictEqual(RuleEngine.sanitizeIncomingBuffOffer({ ...validBase, buff: { ...validBase.buff, ruleFlags: { tempHp: 300 } } }, ctx).ok, false, 'Must reject ruleFlags.tempHp > 200');
+    const xssTry = RuleEngine.sanitizeIncomingBuffOffer({ ...validBase, fromCharName: '<img src=x onerror=alert(1)>Evil' }, ctx);
+    assert.strictEqual(xssTry.ok, true);
+    assert.ok(!xssTry.offer.fromCharName.includes('<') && !xssTry.offer.fromCharName.includes('>'), 'Sanitizer must strip angle brackets from sender name');
+  });
+
+  // 16. Sprint E2 Real-Corpus Parity Sweep (pulls real spells from database/srd_spells.json -> buildOutgoing -> sanitize -> deriveSheet === self-cast)
+  test('Sprint E2 Real-Corpus Parity: real srd_spells.json buffs preserve AC/Saves/Speed/Abilities across wire', () => {
+    const fs = require('fs');
+    const path = require('path');
+    const srdSpells = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'database', 'srd_spells.json'), 'utf8'));
+    const byId = new Map(srdSpells.map(s => [s.id, s]));
+    const caster = { id: 'c-cleric', name: 'Aurelius', level: 10, abilities: { str: 10, dex: 10, con: 12, int: 10, wis: 18, cha: 14 }, cloudCampaignId: 'camp-1' };
+    const mkRecipient = (buffs) => ({ name: 'Valeros', level: 5, classes: 'Fighter 5', abilities: { str: 14, dex: 12, con: 14, int: 10, wis: 10, cha: 10 }, buffs });
+
+    const keyIds = ['spl-barkskin', 'spl-haste', 'spl-bless', 'spl-protection-from-evil', 'spl-shield-of-faith', 'spl-bulls-strength-mass', 'spl-enlarge-person', 'spl-aid'];
+    keyIds.forEach(id => {
+      const sp = byId.get(id);
+      assert.ok(sp, `Real corpus spell ${id} must exist`);
+      const spec = RuleEngine.resolveSpellBuffSpec(sp, caster, 10);
+      assert.ok(spec && spec.isBuffSpell, `Real corpus spell ${id} must resolve as buff`);
+      const selfBuff = RuleEngine.buildBuffObject(spec, { cl: 10, spellItem: sp });
+      const env = RuleEngine.buildOutgoingBuffPayload(sp, caster, { cl: 10, targetCharIds: ['c-fighter'] });
+      assert.ok(env && env.v === 1, `Real corpus ${id} must build outgoing offer`);
+      const san = RuleEngine.sanitizeIncomingBuffOffer(env, { campaignId: 'camp-1', myCharId: 'c-fighter' });
+      assert.strictEqual(san.ok, true, `Sanitizer must accept real corpus ${id} (got ${san.reason})`);
+      const dSelf = RuleEngine.deriveSheet(mkRecipient([selfBuff]));
+      const dExt = RuleEngine.deriveSheet(mkRecipient([san.offer.buff]));
+      assert.strictEqual(dExt.ac.total, dSelf.ac.total, `${id}: recipient AC (${dExt.ac.total}) must match self-cast (${dSelf.ac.total})`);
+      assert.strictEqual(dExt.saves.ref.total, dSelf.saves.ref.total, `${id}: recipient Ref (${dExt.saves.ref.total}) must match self-cast (${dSelf.saves.ref.total})`);
+      assert.strictEqual(dExt.combat.speed.land, dSelf.combat.speed.land, `${id}: recipient Speed (${dExt.combat.speed.land}) must match self-cast (${dSelf.combat.speed.land})`);
+      assert.strictEqual(dExt.abilities.str.score, dSelf.abilities.str.score, `${id}: recipient STR (${dExt.abilities.str.score}) must match self-cast (${dSelf.abilities.str.score})`);
+    });
+
+    // Verify Barkskin CL 10 actually grants +4 Natural Armor (AC 15 on DEX 12 recipient)
+    const barkEnv = RuleEngine.buildOutgoingBuffPayload(byId.get('spl-barkskin'), caster, { cl: 10, targetCharIds: ['c-fighter'] });
+    const barkSan = RuleEngine.sanitizeIncomingBuffOffer(barkEnv, { campaignId: 'camp-1', myCharId: 'c-fighter' });
+    assert.strictEqual(RuleEngine.deriveSheet(mkRecipient([barkSan.offer.buff])).ac.total, 15, 'Real Barkskin CL 10 must yield AC 15 (10 + 1 DEX + 4 NA)');
+
+    // Verify Aid rolls Temp HP at source when options.grantedTempHp is omitted
+    const aidEnv = RuleEngine.buildOutgoingBuffPayload(byId.get('spl-aid'), caster, { cl: 10, targetCharIds: ['c-fighter'] });
+    assert.ok(aidEnv.buff.grantedTempHp >= 11 && aidEnv.buff.grantedTempHp <= 18, `Real Aid CL 10 must roll 11..18 Temp HP at source (got ${aidEnv.buff.grantedTempHp})`);
+
+    // Full sweep over ALL non-self buff spells in srd_spells.json
+    let swept = 0;
+    for (const sp of srdSpells) {
+      const spec = RuleEngine.resolveSpellBuffSpec(sp, caster, 10);
+      if (!spec || !spec.isBuffSpell || spec.targetMode === 'self') continue;
+      const chosenEnergy = spec.ruleFlags?.energyChoice ? 'Fire' : null;
+      const env = RuleEngine.buildOutgoingBuffPayload(sp, caster, { cl: 10, chosenEnergy, targetCharIds: ['c-fighter'] });
+      if (!env) continue;
+      const san = RuleEngine.sanitizeIncomingBuffOffer(env, { campaignId: 'camp-1', myCharId: 'c-fighter' });
+      assert.strictEqual(san.ok, true, `Corpus sweep ${sp.id} (${sp.name}) failed sanitizer: ${san.reason}`);
+      swept++;
+    }
+    assert.ok(swept >= 50, `Expected >= 50 real corpus buff spells swept (got ${swept})`);
+  });
+
   return { passed, elapsedMs: Date.now() - startMs };
 }
 

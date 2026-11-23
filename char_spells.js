@@ -1740,76 +1740,15 @@
       if (!Array.isArray(character.buffs)) character.buffs = [];
 
       const targetWeaponName = options.targetWeapon ? String(options.targetWeapon).trim() : null;
-      const buffName = chosenEnergy ? `${buffSpec.name} (${chosenEnergy})` : buffSpec.name;
-      const buffId = chosenEnergy
-        ? `${buffSpec.id || 'buff'}-${chosenEnergy.toLowerCase()}`
-        : (buffSpec.id || `buff_${Date.now()}`);
-
-      const durText = buffSpec.durationText || '1 min';
-      let computedRounds = Number.isFinite(Number(buffSpec.durationRounds)) && Number(buffSpec.durationRounds) > 0
-        ? Number(buffSpec.durationRounds)
-        : (typeof RuleEngine !== 'undefined' && RuleEngine.rulesets?.dnd35?.durationToRounds
-          ? RuleEngine.rulesets.dnd35.durationToRounds(durText, effCl)
-          : null);
-
-      const buffObj = {
-        id: buffId,
-        baseSpellId: buffSpec.id || spellItem.id || null,
-        schemaVersion: 3,
-        name: buffName,
-        active: true,
-        source: 'Spell',
-        casterLevel: effCl,
+      const wepObj = targetWeaponName ? (character.weapons || []).find(w => w && w.name === targetWeaponName) : null;
+      const buffObj = RuleEngine.buildBuffObject(buffSpec, {
         cl: effCl,
-        chosenEnergy: chosenEnergy || null,
-        ...(chosenEnergy ? { choice: chosenEnergy, chosenOption: chosenEnergy } : {}),
-        ...(Array.isArray(buffSpec.choices) && buffSpec.choices.length > 0
-          ? { choices: buffSpec.choices.map((ch, idx) => idx === 0 && chosenEnergy ? { ...ch, value: chosenEnergy } : ch) }
-          : {}),
-        duration: durText,
-        durationText: durText,
-        initialDuration: durText,
-        rounds: computedRounds,
-        initialRounds: computedRounds,
-        effects: Array.isArray(buffSpec.effects) ? JSON.parse(JSON.stringify(buffSpec.effects)) : [],
-        ruleFlags: buffSpec.ruleFlags ? JSON.parse(JSON.stringify(buffSpec.ruleFlags)) : {},
-        summary: buffSpec.summaryText,
-        description: `${buffSpec.summaryText} (${durText})`
-      };
-
-      if (buffSpec.evaluatedEnergyRes > 0) {
-        buffObj.energyResistance = buffSpec.evaluatedEnergyRes;
-      }
-      if (buffSpec.evaluatedProtectionPool > 0) {
-        buffObj.protectionPoolMax = buffSpec.evaluatedProtectionPool;
-        buffObj.protectionPoolRemaining = buffSpec.evaluatedProtectionPool;
-      }
-
-      if (targetWeaponName) {
-        buffObj.targetWeapon = targetWeaponName;
-        if (buffSpec.sizeModifier?.targetType === 'weapon') {
-          const wepObj = (character.weapons || []).find(w => w && w.name === targetWeaponName);
-          const oldDice = wepObj?.weapon?.damageDice || wepObj?.dice || '1d8';
-          const steps = buffSpec.sizeModifier.scaling?.type === 'per_caster_level'
-            ? Math.min(buffSpec.sizeModifier.scaling.maxSteps || 5, Math.floor(effCl / (buffSpec.sizeModifier.scaling.clDivisor || 4)))
-            : (buffSpec.sizeModifier.scaling?.steps || 1);
-          const newDice = (typeof RuleEngine !== 'undefined' && RuleEngine.stepDamageDice)
-            ? RuleEngine.stepDamageDice(oldDice, steps)
-            : oldDice;
-          buffObj.sizeSteps = steps;
-          buffObj.baseDice = oldDice;
-          buffObj.effectiveDice = newDice;
-          buffObj.summary = `${targetWeaponName}: ${oldDice} ➔ ${newDice} (+${steps} Size)`;
-          buffObj.description = `${targetWeaponName} damage dice increased by +${steps} size step(s) (${oldDice} ➔ ${newDice}) for ${buffSpec.durationText}.`;
-        } else {
-          buffObj.summary = `${targetWeaponName}: ${buffSpec.summaryText}`;
-          buffObj.description = `${targetWeaponName} gains ${buffSpec.summaryText} for ${buffSpec.durationText}.`;
-        }
-      } else if (buffSpec.sizeModifier?.targetType === 'creature') {
-        const steps = buffSpec.sizeModifier.scaling?.steps || 1;
-        buffObj.targetType = 'creature';
-        buffObj.sizeSteps = steps;
-      }
+        spellItem,
+        chosenEnergy,
+        targetWeapon: targetWeaponName,
+        weaponObj: wepObj
+      });
+      if (!buffObj) return null;
 
       const existingIdx = character.buffs.findIndex(b => {
         if (!b || !b.name) return false;
@@ -1820,11 +1759,11 @@
       });
 
       const prevBuff = existingIdx !== -1 ? character.buffs[existingIdx] : null;
-      const prevGrantedTemp = (prevBuff && prevBuff.active && Number(prevBuff.grantedTempHp) > 0)
-        ? Number(prevBuff.grantedTempHp)
+      const prevDelta = (prevBuff && prevBuff.active)
+        ? (Number.isFinite(Number(prevBuff._tempHpDelta)) ? Math.max(0, Number(prevBuff._tempHpDelta)) : (Number(prevBuff.grantedTempHp) || 0))
         : 0;
 
-      // Apply flat or dice-rolled Temp HP if part of the buff (e.g. Aid, False Life, Divine Power, Greater Heroism, Heart of Earth)
+      // Apply flat or dice-rolled Temp HP (D&D 3.5e RAW: Temp HP does not stack, take max)
       let grantedTempHp = 0;
       if (!options.skipTempHp && character.hp) {
         if (buffSpec.evaluatedTempHp > 0) {
@@ -1840,11 +1779,13 @@
           }
         }
         if (grantedTempHp > 0) {
+          const curTempWithoutPrev = Math.max(0, (Number(character.hp.temp) || 0) - prevDelta);
+          const nextTemp = Math.max(curTempWithoutPrev, grantedTempHp);
           buffObj.grantedTempHp = grantedTempHp;
+          buffObj._tempHpDelta = Math.max(0, nextTemp - curTempWithoutPrev);
           buffObj._tempHpSynced = true;
           buffObj.ruleFlags = { ...(buffObj.ruleFlags || {}), tempHp: grantedTempHp };
-          const curTempWithoutPrev = Math.max(0, (Number(character.hp.temp) || 0) - prevGrantedTemp);
-          character.hp.temp = curTempWithoutPrev + grantedTempHp;
+          character.hp.temp = nextTemp;
           character.hp._lastPlayerChangeTs = Math.max(Date.now(), (Number(character.hp?._lastDmUpdateTs) || 0) + 100);
         }
       }
@@ -1878,6 +1819,131 @@
     }
     window.applySpellBuffToCharacter = applySpellBuffToCharacter;
 
+    function getEligibleBuffWeapons(buffSpec, weaponsList) {
+      const list = Array.isArray(weaponsList) ? weaponsList : [];
+      return list.filter(w => {
+        if (!w || !w.name || w.name === '-') return false;
+        const filter = buffSpec?.sizeModifier?.targetFilter;
+        if (filter?.meleeOnly) {
+          const isRanged = w.isRanged || w.grip === 'Ranged' || (Array.isArray(w.tags) && w.tags.some(t => String(t).toLowerCase() === 'ranged'));
+          if (isRanged) return false;
+        }
+        if (Array.isArray(filter?.allowedDmgTypes) && filter.allowedDmgTypes.length > 0) {
+          const pType = w.weapon?.damageType || w.weapon?.dmgType || w.dmgType || '';
+          const dt = String(pType).toLowerCase();
+          const tags = (w.tags || []).map(t => String(t).toLowerCase());
+          const matchesType = filter.allowedDmgTypes.some(type => {
+            const tLower = type.toLowerCase();
+            return dt.includes(tLower) || tags.includes(tLower);
+          });
+          if (!matchesType) return false;
+        }
+        return true;
+      });
+    }
+
+    function openBuffTargetToaster(spellItem, buffSpec, effCl, opts = {}) {
+      const slotLabel = opts.slotLabel || 'Spell Slot Expended';
+      const icon = opts.icon || '✨';
+      const chosenEnergy = opts.chosenEnergy || null;
+      const partyTargets = (typeof getCampaignPartyTargets === 'function') ? getCampaignPartyTargets() : [];
+      const capHint = buffSpec.maxTargetsPerCl ? ` • Max ${buffSpec.maxTargetsPerCl} targets` : '';
+      const displayName = chosenEnergy ? `${buffSpec.name} (${chosenEnergy})` : buffSpec.name;
+      const safeName = (typeof UI !== 'undefined' && UI.escapeHtml) ? UI.escapeHtml(displayName) : displayName;
+      const safeSummary = (typeof UI !== 'undefined' && UI.escapeHtml) ? UI.escapeHtml(buffSpec.summaryText) : buffSpec.summaryText;
+      const safeDur = (typeof UI !== 'undefined' && UI.escapeHtml) ? UI.escapeHtml(buffSpec.durationText) : buffSpec.durationText;
+      const safeSlot = (typeof UI !== 'undefined' && UI.escapeHtml) ? UI.escapeHtml(slotLabel) : slotLabel;
+
+      const sendToTargets = (ids, includeSelf, labelDesc) => {
+        let offerId = null;
+        if (ids.length > 0 && typeof sendCampaignBuffOffer === 'function') {
+          const sent = sendCampaignBuffOffer(spellItem, ids, { cl: effCl, chosenEnergy });
+          if (sent && sent.offer) offerId = sent.offer.offerId;
+        }
+        if (includeSelf) {
+          const applied = applySpellBuffToCharacter(spellItem, effCl, { chosenEnergy, slotLabel, icon, silentToast: ids.length > 0 });
+          if (applied && offerId) applied._outgoingOfferId = offerId;
+        }
+        if (ids.length > 0) {
+          showDiceTopToast({
+            icon: '📡',
+            title: `${safeName} ➔ ${labelDesc}`,
+            breakdown: `Sent live V3 buff (${safeSummary} • CL ${effCl} • ${safeDur}) • ${safeSlot}`,
+            total: `📡 ${ids.length + (includeSelf ? 1 : 0)}`
+          });
+        }
+      };
+
+      const actions = [];
+      if (buffSpec.targetMode === 'party') {
+        if (partyTargets.length > 0) {
+          const pcTargets = partyTargets.filter(p => !p.isNpc);
+          const groupPool = pcTargets.length > 0 ? pcTargets : partyTargets;
+          const cap = Number(buffSpec.maxTargetsPerCl) || 0;
+          const allIdsSelf = cap > 0 ? groupPool.slice(0, Math.max(0, cap - 1)).map(p => p.charId) : groupPool.map(p => p.charId);
+          const allIdsOnly = cap > 0 ? groupPool.slice(0, cap).map(p => p.charId) : groupPool.map(p => p.charId);
+          actions.push({
+            label: `🛡️ Self & All Allies (${allIdsSelf.length + 1})`,
+            className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-700 hover:bg-emerald-600 text-white border border-emerald-400 transition shadow cursor-pointer',
+            onClick: () => sendToTargets(allIdsSelf, true, `Self & ${allIdsSelf.length} Allies`)
+          });
+          actions.push({
+            label: `📡 All Allies Only (${allIdsOnly.length})`,
+            className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-indigo-700 hover:bg-indigo-600 text-white border border-indigo-400 transition shadow cursor-pointer',
+            onClick: () => sendToTargets(allIdsOnly, false, `${allIdsOnly.length} Allies`)
+          });
+          partyTargets.slice(0, 6).forEach(p => {
+            const pSafe = (typeof UI !== 'undefined' && UI.escapeHtml) ? UI.escapeHtml(p.name) : p.name;
+            actions.push({
+              label: `${p.online ? '🟢' : '📡'} ${pSafe}`,
+              className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-slate-800 hover:bg-indigo-700 text-indigo-200 border border-indigo-500/60 transition cursor-pointer',
+              onClick: () => sendToTargets([p.charId], false, pSafe)
+            });
+          });
+        }
+        actions.push({
+          label: `🛡️ Self Only`,
+          className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-900 hover:bg-emerald-800 text-emerald-100 border border-emerald-500/70 transition cursor-pointer',
+          onClick: () => applySpellBuffToCharacter(spellItem, effCl, { chosenEnergy, slotLabel, icon })
+        });
+      } else {
+        actions.push({
+          label: `🛡️ Self (${safeSummary})`,
+          className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-700 hover:bg-emerald-600 text-white border border-emerald-400 transition shadow cursor-pointer',
+          onClick: () => applySpellBuffToCharacter(spellItem, effCl, { chosenEnergy, slotLabel, icon })
+        });
+        partyTargets.slice(0, 6).forEach(p => {
+          const pSafe = (typeof UI !== 'undefined' && UI.escapeHtml) ? UI.escapeHtml(p.name) : p.name;
+          actions.push({
+            label: `${p.online ? '🟢' : '📡'} ${pSafe}`,
+            className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-indigo-700 hover:bg-indigo-600 text-white border border-indigo-400 transition shadow cursor-pointer',
+            onClick: () => sendToTargets([p.charId], false, pSafe)
+          });
+        });
+      }
+
+      actions.push({
+        label: buffSpec.targetMode === 'party' ? '🤝 Other Allies (Slot Only)' : '🤝 Other Ally (Slot Only)',
+        className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 transition cursor-pointer',
+        onClick: () => {
+          showDiceTopToast({
+            icon: '🤝',
+            title: `${safeName} ➔ Ally`,
+            breakdown: `Cast on Ally (${safeSummary} • ${safeDur}) • ${safeSlot}`,
+            total: '-1 Slot'
+          });
+        }
+      });
+
+      showDiceTopToast({
+        icon,
+        title: `${safeName} — Select Target`,
+        breakdown: `${safeSummary} • CL ${effCl} (${safeDur})${capHint} • ${safeSlot}`,
+        total: 'Target?',
+        actions
+      });
+    }
+
     // Handle casting of any Buff Spell (Personal auto-apply, Energy Type Picker, Single/Party Self vs Ally prompt, or Weapon Target prompt)
     function handleBuffSpellCast(spellItem, cl = 1, slotLabel = 'Spell Slot Expended', icon = '✨') {
       if (!character || !spellItem || typeof RuleEngine === 'undefined' || !RuleEngine.resolveSpellBuffSpec) {
@@ -1893,6 +1959,8 @@
       if (dmgExpr && /\d+d\d+/i.test(dmgExpr)) {
         return false;
       }
+
+      const partyTargets = (typeof getCampaignPartyTargets === 'function') ? getCampaignPartyTargets() : [];
 
       // 0. Energy Choice Spells (Resist Energy, Protection from Energy, Energy Immunity, Mass versions)
       if (buffSpec.ruleFlags && buffSpec.ruleFlags.energyChoice) {
@@ -1911,10 +1979,16 @@
         const actions = ENERGY_TYPES.map(e => ({
           label: `${e.icon} ${e.type}${valSuffix}`,
           className: `px-2.5 py-1 rounded-lg text-[11px] font-bold border transition shadow cursor-pointer ${e.cls}`,
-          onClick: () => applySpellBuffToCharacter(spellItem, effCl, { chosenEnergy: e.type, slotLabel, icon: e.icon })
+          onClick: () => {
+            if (buffSpec.targetMode !== 'self' && partyTargets.length > 0) {
+              openBuffTargetToaster(spellItem, buffSpec, effCl, { chosenEnergy: e.type, slotLabel, icon: e.icon });
+            } else {
+              applySpellBuffToCharacter(spellItem, effCl, { chosenEnergy: e.type, slotLabel, icon: e.icon });
+            }
+          }
         }));
 
-        if (buffSpec.targetMode !== 'self') {
+        if (buffSpec.targetMode !== 'self' && partyTargets.length === 0) {
           actions.push({
             label: '🤝 Ally Only (Slot Only)',
             className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 transition cursor-pointer',
@@ -1941,25 +2015,7 @@
 
       // 1. Weapon-Targeted Buff Spells (Greater Mighty Wallop, Mighty Wallop, Magic Weapon, Greater Magic Weapon, Keen Edge)
       if (buffSpec.targetMode === 'weapon') {
-        const eligibleWeapons = (character.weapons || []).filter(w => {
-          if (!w || !w.name || w.name === '-') return false;
-          const filter = buffSpec.sizeModifier?.targetFilter;
-          if (filter?.meleeOnly) {
-            const isRanged = w.isRanged || w.grip === 'Ranged' || (Array.isArray(w.tags) && w.tags.some(t => String(t).toLowerCase() === 'ranged'));
-            if (isRanged) return false;
-          }
-          if (Array.isArray(filter?.allowedDmgTypes) && filter.allowedDmgTypes.length > 0) {
-            const pType = w.weapon?.damageType || w.weapon?.dmgType || w.dmgType || '';
-            const dt = String(pType).toLowerCase();
-            const tags = (w.tags || []).map(t => String(t).toLowerCase());
-            const matchesType = filter.allowedDmgTypes.some(type => {
-              const tLower = type.toLowerCase();
-              return dt.includes(tLower) || tags.includes(tLower);
-            });
-            if (!matchesType) return false;
-          }
-          return true;
-        });
+        const eligibleWeapons = getEligibleBuffWeapons(buffSpec, character.weapons || []);
 
         const actions = eligibleWeapons.map(wep => {
           let btnLabel = `⚔️ ${wep.name}`;
@@ -1976,6 +2032,28 @@
             className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-700 hover:bg-amber-600 text-white border border-amber-400 transition shadow cursor-pointer',
             onClick: () => applySpellBuffToCharacter(spellItem, effCl, { targetWeapon: wep.name })
           };
+        });
+
+        partyTargets.slice(0, 6).forEach(p => {
+          const pSafe = (typeof UI !== 'undefined' && UI.escapeHtml) ? UI.escapeHtml(p.name) : p.name;
+          const bNameSafe = (typeof UI !== 'undefined' && UI.escapeHtml) ? UI.escapeHtml(buffSpec.name) : buffSpec.name;
+          const bSumSafe = (typeof UI !== 'undefined' && UI.escapeHtml) ? UI.escapeHtml(buffSpec.summaryText) : buffSpec.summaryText;
+          const slotSafe = (typeof UI !== 'undefined' && UI.escapeHtml) ? UI.escapeHtml(slotLabel) : slotLabel;
+          actions.push({
+            label: `📡 ${pSafe}'s Weapon`,
+            className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-indigo-700 hover:bg-indigo-600 text-white border border-indigo-400 transition shadow cursor-pointer',
+            onClick: () => {
+              if (typeof sendCampaignBuffOffer === 'function') {
+                sendCampaignBuffOffer(spellItem, [p.charId], { cl: effCl });
+              }
+              showDiceTopToast({
+                icon: '📡',
+                title: `${bNameSafe} ➔ ${pSafe}'s Weapon`,
+                breakdown: `Sent live weapon buff (${bSumSafe} • CL ${effCl}) — ${pSafe} picks their weapon on Accept • ${slotSafe}`,
+                total: '📡 Sent'
+              });
+            }
+          });
         });
 
         actions.push({
@@ -2009,39 +2087,8 @@
         return true;
       }
 
-      // 3. Touch / Single-Target or Party Buffs (Bull's Strength, Shield of Faith, Barkskin, Bless, Prayer, Haste, Conviction, etc.)
-      const selfLabel = buffSpec.targetMode === 'party'
-        ? `🛡️ Self & Party (${buffSpec.summaryText})`
-        : `🛡️ Self (${buffSpec.summaryText})`;
-      const allyLabel = buffSpec.targetMode === 'party'
-        ? '🤝 Allies Only (Slot Only)'
-        : '🤝 Ally / Target (Slot Only)';
-
-      showDiceTopToast({
-        icon: icon || '✨',
-        title: `${buffSpec.name} — Select Target`,
-        breakdown: `${buffSpec.summaryText} • CL ${effCl} (${buffSpec.durationText}) • ${slotLabel}`,
-        total: 'Target?',
-        actions: [
-          {
-            label: selfLabel,
-            className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-700 hover:bg-emerald-600 text-white border border-emerald-400 transition shadow cursor-pointer',
-            onClick: () => applySpellBuffToCharacter(spellItem, effCl, { slotLabel, icon })
-          },
-          {
-            label: allyLabel,
-            className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 transition cursor-pointer',
-            onClick: () => {
-              showDiceTopToast({
-                icon: '🤝',
-                title: `${buffSpec.name} ➔ Ally`,
-                breakdown: `Cast on Ally (${buffSpec.summaryText} • ${buffSpec.durationText}) • ${slotLabel}`,
-                total: '-1 Slot'
-              });
-            }
-          }
-        ]
-      });
+      // 3. Touch / Single-Target or Party Buffs (Bull's Strength, Shield of Faith, Barkskin, Bless, Prayer, Haste, Mass Buffs, etc.)
+      openBuffTargetToaster(spellItem, buffSpec, effCl, { slotLabel, icon });
       return true;
     }
     window.handleBuffSpellCast = handleBuffSpellCast;
@@ -5331,21 +5378,43 @@
       }
 
       if (effectType === 'temp_hp') {
-        return [
+        const tempActions = [
           {
             label: `🛡️ Self (+${val} Temp HP)`,
             className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-cyan-800 hover:bg-cyan-700 text-cyan-100 border border-cyan-400 transition shadow cursor-pointer',
             onClick: () => applySpellTempHpToSelf(val, labelName)
-          },
-          {
-            label: '🤝 Ally / Skip',
-            className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 transition cursor-pointer',
-            onClick: () => {
-              const t = document.getElementById('dice-top-toast');
-              if (t) t.remove();
-            }
           }
         ];
+        const partyTargets = (typeof getCampaignPartyTargets === 'function') ? getCampaignPartyTargets() : [];
+        if (partyTargets.length > 0 && spellObj && typeof sendCampaignBuffOffer === 'function') {
+          const { cl } = typeof getCasterInfo === 'function' ? getCasterInfo() : { cl: Number(character?.level) || 1 };
+          partyTargets.slice(0, 5).forEach(p => {
+            const pSafe = (typeof UI !== 'undefined' && UI.escapeHtml) ? UI.escapeHtml(p.name) : p.name;
+            const lblSafe = (typeof UI !== 'undefined' && UI.escapeHtml) ? UI.escapeHtml(labelName) : labelName;
+            tempActions.push({
+              label: `📡 ${pSafe} (+${val} Temp HP)`,
+              className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-indigo-700 hover:bg-indigo-600 text-white border border-indigo-400 transition shadow cursor-pointer',
+              onClick: () => {
+                sendCampaignBuffOffer(spellObj, [p.charId], { cl, grantedTempHp: val });
+                showDiceTopToast({
+                  icon: '📡',
+                  title: `${lblSafe} ➔ ${pSafe}`,
+                  breakdown: `Sent +${val} Temp HP & buff to ${pSafe}`,
+                  total: `+${val}`
+                });
+              }
+            });
+          });
+        }
+        tempActions.push({
+          label: '🤝 Ally / Skip',
+          className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 transition cursor-pointer',
+          onClick: () => {
+            const t = document.getElementById('dice-top-toast');
+            if (t) t.remove();
+          }
+        });
+        return tempActions;
       }
 
       return [];

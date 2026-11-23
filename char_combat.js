@@ -10454,19 +10454,23 @@
             const isAct = b.active !== false;
             const isPinned = Boolean(b.pinnedToCombat);
             const safeBuffId = String(computedBuffId).replace(/"/g, '&quot;');
+            const isExternal = Boolean(b.origin && b.origin.external === true);
             const rawBCl = Number(b.casterLevel || b.cl || character.level) || 1;
-            const minDomainCl = (typeof RuleEngine !== 'undefined' && RuleEngine.getSpellEffectiveCasterLevel)
+            const minDomainCl = (!isExternal && typeof RuleEngine !== 'undefined' && RuleEngine.getSpellEffectiveCasterLevel)
               ? RuleEngine.getSpellEffectiveCasterLevel(b, character, Number(character.level) || 1)
               : rawBCl;
-            const bCl = Math.max(rawBCl, minDomainCl);
-            const spec = (typeof RuleEngine !== 'undefined' && RuleEngine.resolveSpellBuffSpec)
+            const bCl = isExternal ? rawBCl : Math.max(rawBCl, minDomainCl);
+            const spec = (!isExternal && typeof RuleEngine !== 'undefined' && RuleEngine.resolveSpellBuffSpec)
               ? RuleEngine.resolveSpellBuffSpec(b, character, bCl)
               : null;
             const summaryText = b.summary || spec?.summaryText || b.notes || b.description || 'Active Buff';
-            const durText = (bCl > rawBCl && spec?.durationText) ? spec.durationText : (b.durationText || b.duration || spec?.durationText || '');
-            const clBonusInfo = (typeof RuleEngine !== 'undefined' && RuleEngine.getSpellCasterLevelBonus)
+            const durText = (!isExternal && bCl > rawBCl && spec?.durationText) ? spec.durationText : (b.durationText || b.duration || spec?.durationText || '');
+            const clBonusInfo = (!isExternal && typeof RuleEngine !== 'undefined' && RuleEngine.getSpellCasterLevelBonus)
               ? RuleEngine.getSpellCasterLevelBonus(b, character)
               : { bonus: 0, sources: [] };
+            const fromBadge = (isExternal && b.origin.fromCharName)
+              ? `<span class="text-[10px] font-medium px-1.5 rounded bg-indigo-950/90 text-indigo-300 border border-indigo-600/50">from ${UI.escapeHtml(b.origin.fromCharName)}</span>`
+              : '';
             const clBadge = (b.source === 'Spell' || spec?.isBuffSpell)
               ? `<span class="text-[10px] font-mono ${clBonusInfo.bonus > 0 ? 'text-teal-300 bg-teal-950/80 border-teal-600/60 font-bold' : 'text-slate-400 bg-slate-950 border-slate-800'} px-1 rounded border" title="${clBonusInfo.sources?.length ? clBonusInfo.sources.join(', ') : `Caster Level ${bCl}`}">CL ${bCl}</span>`
               : '';
@@ -10495,6 +10499,7 @@
                       <span class="text-[11px] font-bold ${isAct ? 'text-emerald-300' : 'text-slate-300'} truncate">${UI.escapeHtml(b.name || 'Buff')}</span>
                       ${wepBadge}
                       ${energyBadge}
+                      ${fromBadge}
                       ${clBadge}
                       ${durText ? `<span class="text-[10px] font-mono text-slate-400 bg-slate-950 px-1 rounded border border-slate-800">${UI.escapeHtml(durText)}</span>` : ''}
                     </div>
@@ -15812,7 +15817,13 @@
       });
       Actions.register('combat:buff-remove', (el, data, _event) => {
         const idx = Number(data.buffIdx);
-        if (!isNaN(idx)) removeCombatBuff(idx);
+        if (!isNaN(idx)) {
+          const targetB = Array.isArray(character?.buffs) ? character.buffs[idx] : null;
+          if (targetB && targetB._outgoingOfferId && typeof sendCampaignBuffRevoke === 'function') {
+            sendCampaignBuffRevoke(targetB._outgoingOfferId, targetB.name);
+          }
+          removeCombatBuff(idx);
+        }
       });
       Actions.register('combat:skill-roll', (el, data, _event) => {
         if (data.skillName) rollCombatSkill(data.skillName);

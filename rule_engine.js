@@ -1027,6 +1027,7 @@ const RuleEngine = {
   // `opts.family` gives the family for a plain-name lookup (e.g. 'race', 'class', 'domain').
   resolveCustomEntryOverride(itemOrName, character = null, opts = {}) {
     if (!itemOrName) return null;
+    if (typeof itemOrName === 'object' && itemOrName.origin && itemOrName.origin.external === true) return null;
     const customMap = (character && character.customEntries && typeof character.customEntries === 'object' ? character.customEntries : null)
       || (this._activeCustomEntries && typeof this._activeCustomEntries === 'object' ? this._activeCustomEntries : null)
       || (this._activeCharacter && this._activeCharacter.customEntries && typeof this._activeCharacter.customEntries === 'object' ? this._activeCharacter.customEntries : null)
@@ -3240,7 +3241,8 @@ const RuleEngine = {
   ensureV2Entry(entry, ctx = null) {
     if (!entry || typeof entry !== 'object') return entry;
     let working = entry;
-    if (!working._customOverrideApplied) {
+    const isExternalOrigin = Boolean(working.origin && working.origin.external === true);
+    if (!working._customOverrideApplied && !isExternalOrigin) {
       const customOv = this.resolveCustomEntryOverride(working);
       if (customOv && customOv !== working) {
         const instChoice = this.extractEntryChoice(working) || this.extractEntryChoice(customOv);
@@ -9143,19 +9145,20 @@ const RuleEngine = {
     let targetMode = spell.buffTargetMode || dbEntry.buffTargetMode || null;
 
     // 2.Determine Target Mode ('self', 'single', 'party', 'weapon') if not explicitly set
-    const rangeRaw = String(spell.range || dbEntry.range || '').toLowerCase();
-    const targetRaw = String(spell.target || dbEntry.target || spell.area || dbEntry.area || '').toLowerCase();
+    const rangeRaw = String(spell.range || spell.delivery?.range || dbEntry.range || dbEntry.delivery?.range || '').toLowerCase();
+    const targetRaw = String(spell.target || spell.delivery?.target || dbEntry.target || dbEntry.delivery?.target || spell.area || spell.delivery?.area || dbEntry.area || dbEntry.delivery?.area || '').toLowerCase();
     if (!targetMode) {
       if (sizeModifier?.targetType === 'weapon' || targetRaw.includes('weapon')) {
         targetMode = 'weapon';
       } else if (rangeRaw.includes('personal') || targetRaw === 'you') {
         targetMode = 'self';
-      } else if (targetRaw.includes('allies') || targetRaw.includes('one creature/level') || cleanName.includes('mass')) {
+      } else if (targetRaw.includes('allies') || targetRaw.includes('one creature/level') || targetRaw.includes('one living creature/level') || targetRaw.includes('one humanoid creature/level') || targetRaw.includes('creatures') || cleanName.includes('mass')) {
         targetMode = 'party';
       } else {
         targetMode = 'single';
       }
     }
+    const maxTargetsPerCl = /one\s+(?:(?:living|humanoid)\s+)?creature\/level/i.test(targetRaw) ? cl : null;
 
     const hasBuffFlags = Boolean(
       ruleFlags.extraAttackFullAttack ||
@@ -9322,7 +9325,734 @@ const RuleEngine = {
       evaluatedLabels,
       summaryText: evaluatedLabels.join(', ') || (spell.shortDescription || dbEntry.shortDescription || 'Active Spell Buff'),
       durationText,
-      durationRounds
+      durationRounds,
+      maxTargetsPerCl
+    };
+  },
+
+  /**
+   * Pure canonical V3 buff object builder (Sprint E2.0).
+   * Single source of truth used by both self-cast (`applySpellBuffToCharacter`) and cross-character outgoing offers.
+   */
+  buildBuffObject(buffSpec, opts = {}) {
+    if (!buffSpec || typeof buffSpec !== 'object') return null;
+    const effCl = Math.max(1, Number(opts.cl || buffSpec.casterLevel || 1) || 1);
+    const chosenEnergy = opts.chosenEnergy ? String(opts.chosenEnergy).trim() : null;
+    const targetWeaponName = opts.targetWeapon ? String(opts.targetWeapon).trim() : null;
+    const buffName = chosenEnergy ? `${buffSpec.name} (${chosenEnergy})` : String(buffSpec.name || 'Active Buff');
+    const buffId = chosenEnergy
+      ? `${buffSpec.id || 'buff'}-${chosenEnergy.toLowerCase()}`
+      : (buffSpec.id || `buff_${Date.now()}`);
+
+    const durText = buffSpec.durationText || '1 min';
+    const computedRounds = (Number.isFinite(Number(buffSpec.durationRounds)) && Number(buffSpec.durationRounds) > 0)
+      ? Number(buffSpec.durationRounds)
+      : (this.rulesets?.dnd35?.durationToRounds ? this.rulesets.dnd35.durationToRounds(durText, effCl) : null);
+
+    const baseEffects = Array.isArray(opts.effectsOverride)
+      ? JSON.parse(JSON.stringify(opts.effectsOverride))
+      : (Array.isArray(buffSpec.effects) ? JSON.parse(JSON.stringify(buffSpec.effects)) : []);
+    const baseFlags = opts.ruleFlagsOverride
+      ? JSON.parse(JSON.stringify(opts.ruleFlagsOverride))
+      : (buffSpec.ruleFlags ? JSON.parse(JSON.stringify(buffSpec.ruleFlags)) : {});
+
+    const buffObj = {
+      id: buffId,
+      baseSpellId: buffSpec.id || (opts.spellItem && opts.spellItem.id) || null,
+      schemaVersion: 3,
+      name: buffName,
+      active: true,
+      source: opts.source || 'Spell',
+      casterLevel: effCl,
+      cl: effCl,
+      chosenEnergy: chosenEnergy || null,
+      ...(chosenEnergy ? { choice: chosenEnergy, chosenOption: chosenEnergy } : {}),
+      ...(Array.isArray(buffSpec.choices) && buffSpec.choices.length > 0
+        ? { choices: buffSpec.choices.map((ch, idx) => (idx === 0 && chosenEnergy ? Object.assign({}, ch, { value: chosenEnergy }) : Object.assign({}, ch))) }
+        : {}),
+      duration: durText,
+      durationText: durText,
+      initialDuration: durText,
+      rounds: computedRounds,
+      initialRounds: computedRounds,
+      effects: baseEffects,
+      ruleFlags: baseFlags,
+      summary: buffSpec.summaryText || 'Active Buff',
+      description: `${buffSpec.summaryText || 'Active Buff'} (${durText})`
+    };
+
+    if (buffSpec.evaluatedEnergyRes > 0) {
+      buffObj.energyResistance = buffSpec.evaluatedEnergyRes;
+    }
+    if (buffSpec.evaluatedProtectionPool > 0) {
+      buffObj.protectionPoolMax = buffSpec.evaluatedProtectionPool;
+      buffObj.protectionPoolRemaining = buffSpec.evaluatedProtectionPool;
+    }
+
+    if (targetWeaponName) {
+      buffObj.targetWeapon = targetWeaponName;
+      if (buffSpec.sizeModifier?.targetType === 'weapon') {
+        const wepObj = opts.weaponObj || null;
+        const oldDice = wepObj?.weapon?.damageDice || wepObj?.dice || '1d8';
+        const steps = Number.isFinite(Number(opts.sizeStepsOverride))
+          ? Number(opts.sizeStepsOverride)
+          : (buffSpec.sizeModifier.scaling?.type === 'per_caster_level'
+            ? Math.min(buffSpec.sizeModifier.scaling.maxSteps || 5, Math.floor(effCl / (buffSpec.sizeModifier.scaling.clDivisor || 4)))
+            : (buffSpec.sizeModifier.scaling?.steps || 1));
+        const newDice = typeof this.stepDamageDice === 'function' ? this.stepDamageDice(oldDice, steps) : oldDice;
+        buffObj.sizeSteps = steps;
+        buffObj.baseDice = oldDice;
+        buffObj.effectiveDice = newDice;
+        buffObj.summary = `${targetWeaponName}: ${oldDice} ➔ ${newDice} (+${steps} Size)`;
+        buffObj.description = `${targetWeaponName} damage dice increased by +${steps} size step(s) (${oldDice} ➔ ${newDice}) for ${durText}.`;
+      } else {
+        buffObj.summary = `${targetWeaponName}: ${buffSpec.summaryText}`;
+        buffObj.description = `${targetWeaponName} gains ${buffSpec.summaryText} for ${durText}.`;
+      }
+    } else if (buffSpec.sizeModifier?.targetType === 'weapon') {
+      const steps = Number.isFinite(Number(opts.sizeStepsOverride))
+        ? Number(opts.sizeStepsOverride)
+        : (buffSpec.sizeModifier.scaling?.type === 'per_caster_level'
+          ? Math.min(buffSpec.sizeModifier.scaling.maxSteps || 5, Math.floor(effCl / (buffSpec.sizeModifier.scaling.clDivisor || 4)))
+          : (buffSpec.sizeModifier.scaling?.steps || 1));
+      buffObj.targetType = 'weapon';
+      buffObj.sizeSteps = steps;
+    } else if (buffSpec.sizeModifier?.targetType === 'creature') {
+      const steps = Number.isFinite(Number(opts.sizeStepsOverride))
+        ? Number(opts.sizeStepsOverride)
+        : (buffSpec.sizeModifier.scaling?.steps || 1);
+      buffObj.targetType = 'creature';
+      buffObj.sizeSteps = steps;
+    }
+
+    if (opts.origin && typeof opts.origin === 'object') {
+      buffObj.origin = Object.assign({}, opts.origin);
+    }
+    return buffObj;
+  },
+
+  // ===========================================================================
+  // Sprint E2.1: Source-Materialized Outgoing Buffs & Strict Incoming Sanitizer
+  // ===========================================================================
+  _E2_ALLOWED_ENERGIES: Object.freeze(['Fire', 'Cold', 'Acid', 'Electricity', 'Sonic']),
+  _E2_ALLOWED_BLOCK_TYPES: Object.freeze(['stat', 'defense', 'attack', 'effect', 'when', 'while']),
+  _E2_ALLOWED_RULE_FLAGS: Object.freeze([
+    'extraAttackFullAttack', 'babEqualsLevel', 'keen', 'primalSpell', 'heartSpell',
+    'energyChoice', 'energyResistance', 'energyProtectionPool', 'energyImmunity',
+    'concealment', 'missChance', 'rangedMissChance', 'mirrorImage', 'invisible',
+    'drAdamantine', 'drRangedMagic', 'drEvilOrGood',
+    'immuneFear', 'immuneDeathEffects', 'immuneMindAffecting', 'immuneMagicMissile',
+    'wardAlignment', 'sanctuary', 'spellImmunityLevel', 'freedomOfMovement',
+    'sr', 'uncannyDodge', 'lowLightVision', 'seeInvisibility', 'trueSeeing', 'darkvision',
+    'flySpeed', 'airWalk', 'waterWalk', 'waterBreathing', 'passiveDefenseLabel', 'tempHp'
+  ]),
+
+  /**
+   * Materializes V3 effect blocks in the CASTER's context so no `@cl` / `@level` / `@Choice`
+   * formula leaks to the recipient. `when`/`while` remain structural for recipient-side evaluation.
+   */
+  materializeBlocks(effects, sourceCtx = {}, opts = {}, _depth = 0) {
+    if (!Array.isArray(effects) || _depth > 3) return [];
+    const chosenEnergy = opts.chosenEnergy ? String(opts.chosenEnergy).trim() : null;
+    const out = [];
+    const evalNum = (valOrExpr) => {
+      if (typeof valOrExpr === 'number' && Number.isFinite(valOrExpr)) return valOrExpr;
+      if (typeof valOrExpr === 'string') {
+        const s = valOrExpr.trim();
+        if (!s) return 0;
+        const n = Number(s);
+        if (Number.isFinite(n)) return n;
+        const ev = this.evaluateFormula(s, sourceCtx);
+        return Number.isFinite(Number(ev)) ? Number(ev) : 0;
+      }
+      return 0;
+    };
+    const subChoice = (str) => {
+      if (typeof str !== 'string') return str;
+      return chosenEnergy ? str.replace(/@choice\b/gi, chosenEnergy) : str;
+    };
+
+    for (const raw of effects) {
+      if (!raw || typeof raw !== 'object') continue;
+      const bType = String(raw.type || raw.kind || 'stat').toLowerCase().trim();
+      if (bType === 'carrier' || bType === 'resource' || raw.swapScope) continue;
+
+      if (bType === 'table' && Array.isArray(raw.rows)) {
+        const keyName = String(raw.key || raw.lookupKey || 'cl').toLowerCase().replace(/^@/, '');
+        const keyVal = keyName === 'cl' || keyName === 'casterlevel' ? (Number(sourceCtx.cl) || 1)
+          : (keyName === 'level' ? (Number(sourceCtx.level) || 1) : (Number(sourceCtx[keyName]) || 1));
+        let matched = null;
+        for (const row of raw.rows) {
+          if (!row) continue;
+          const mn = Number(row.min ?? row.at ?? row.level ?? 0);
+          const mx = row.max !== undefined && row.max !== null ? Number(row.max) : Infinity;
+          if (keyVal >= mn && keyVal <= mx) matched = row;
+        }
+        if (matched) {
+          const rowBlocks = Array.isArray(matched.effects) ? matched.effects : (Array.isArray(matched.blocks) ? matched.blocks : []);
+          out.push(...this.materializeBlocks(rowBlocks, sourceCtx, opts, _depth + 1));
+        }
+        continue;
+      }
+
+      if (bType === 'when' || bType === 'while') {
+        const copy = { type: 'when', flow: String(raw.flow || bType).toLowerCase().trim() === 'while' ? 'while' : 'when' };
+        if (raw.condKind) copy.condKind = String(raw.condKind).trim();
+        if (raw.condText !== undefined) copy.condText = subChoice(String(raw.condText)).trim();
+        if (raw.condition !== undefined) copy.condition = subChoice(String(raw.condition)).trim();
+        if (Array.isArray(raw.branches)) {
+          copy.branches = raw.branches.map(br => {
+            if (!br || typeof br !== 'object') return null;
+            const brKids = Array.isArray(br.effects) ? br.effects : (Array.isArray(br.blocks) ? br.blocks : (Array.isArray(br.then) ? br.then : []));
+            return {
+              condKind: String(br.condKind || 'situational').trim(),
+              condText: br.condText !== undefined ? subChoice(String(br.condText)).trim() : '',
+              effects: this.materializeBlocks(brKids, sourceCtx, opts, _depth + 1)
+            };
+          }).filter(Boolean);
+        } else {
+          const kids = Array.isArray(raw.effects) ? raw.effects : (Array.isArray(raw.then) ? raw.then : (Array.isArray(raw.blocks) ? raw.blocks : []));
+          copy.effects = this.materializeBlocks(kids, sourceCtx, opts, _depth + 1);
+          if (Array.isArray(raw.else)) {
+            copy.else = this.materializeBlocks(raw.else, sourceCtx, opts, _depth + 1);
+          }
+        }
+        out.push(copy);
+        continue;
+      }
+
+      if (bType === 'stat') {
+        const rawTargets = Array.isArray(raw.targets)
+          ? raw.targets
+          : (raw.target || raw.stat ? [raw.target || raw.stat] : []);
+        const targets = rawTargets.map(t => subChoice(String(t || '')).trim()).filter(Boolean);
+        if (targets.length === 0) continue;
+        const expr = raw.formula !== undefined && raw.formula !== null && String(raw.formula).trim() !== ''
+          ? raw.formula
+          : (raw.value !== undefined ? raw.value : 0);
+        let val = evalNum(expr);
+        if (raw.min !== undefined && raw.min !== null) val = Math.max(Number(raw.min), val);
+        if (raw.max !== undefined && raw.max !== null) val = Math.min(Number(raw.max), val);
+        if (raw.cap !== undefined && raw.cap !== null) val = Math.min(Number(raw.cap), val);
+        val = Math.round(val);
+        const block = {
+          type: 'stat',
+          targets,
+          mode: 'flat',
+          value: val,
+          btype: String(raw.btype || raw.bonusType || raw.bonus || 'Untyped').trim(),
+          recipient: 'self'
+        };
+        if (raw.condition) block.condition = subChoice(String(raw.condition)).trim();
+        out.push(block);
+        continue;
+      }
+
+      if (bType === 'defense') {
+        const block = { type: 'defense', recipient: 'self' };
+        for (const fk of ['mode', 'defKind', 'kind', 'what', 'subType', 'energyType', 'damageType', 'bypass', 'srMode', 'text', 'condition']) {
+          if (raw[fk] !== undefined && raw[fk] !== null && String(raw[fk]).trim() !== '') {
+            const destKey = (fk === 'energyType' || fk === 'damageType') ? 'subType' : fk;
+            block[destKey] = subChoice(String(raw[fk])).trim();
+          }
+        }
+        const valRaw = raw.poolFormula !== undefined ? raw.poolFormula : (raw.formula !== undefined ? raw.formula : raw.value);
+        if (valRaw !== undefined && valRaw !== null) {
+          block.value = Math.round(evalNum(valRaw));
+        }
+        if (raw.dr !== undefined && raw.dr !== null) {
+          block.dr = typeof raw.dr === 'string' ? subChoice(raw.dr).trim() : raw.dr;
+        }
+        if (raw.sr !== undefined && raw.sr !== null) {
+          block.sr = Math.round(evalNum(raw.sr));
+        }
+        out.push(block);
+        continue;
+      }
+
+      if (bType === 'attack') {
+        const block = { type: 'attack', recipient: 'self' };
+        for (const fk of ['attackMode', 'extraKind', 'kind', 'appliesToWeapon', 'condition']) {
+          if (raw[fk] !== undefined && raw[fk] !== null) block[fk] = subChoice(String(raw[fk])).trim();
+        }
+        for (const nk of ['count', 'penalty', 'enhEquivalent']) {
+          if (raw[nk] !== undefined && raw[nk] !== null) block[nk] = Math.round(evalNum(raw[nk]));
+        }
+        if (Array.isArray(raw.drBypassList)) {
+          block.drBypassList = raw.drBypassList.map(x => subChoice(String(x || '')).trim()).filter(Boolean).slice(0, 8);
+        }
+        out.push(block);
+        continue;
+      }
+
+      if (bType === 'effect') {
+        const block = { type: 'effect', recipient: 'self' };
+        for (const fk of ['effectKind', 'kind', 'key', 'switchKey', 'flag', 'label', 'text', 'grantType', 'mode', 'condition']) {
+          if (raw[fk] !== undefined && raw[fk] !== null && String(raw[fk]).trim() !== '') {
+            block[fk] = subChoice(String(raw[fk])).trim();
+          }
+        }
+        if (raw.value !== undefined && typeof raw.value !== 'object') {
+          block.value = typeof raw.value === 'string' ? subChoice(raw.value) : raw.value;
+        }
+        out.push(block);
+      }
+    }
+    return out;
+  },
+
+  /**
+   * Builds a frozen, versioned cross-character V3 IncomingBuffOffer envelope (Sprint E2.1).
+   */
+  buildOutgoingBuffPayload(spellItem, character, options = {}) {
+    if (!spellItem || !character) return null;
+    const effCl = Math.max(1, Number(options.cl || spellItem.casterLevel || character.level) || 1);
+    const chosenEnergy = options.chosenEnergy ? String(options.chosenEnergy).trim() : null;
+    const spellWithChoice = chosenEnergy ? Object.assign({}, spellItem, { chosenEnergy, choice: chosenEnergy, chosenOption: chosenEnergy }) : spellItem;
+    const spec = this.resolveSpellBuffSpec(spellWithChoice, character, effCl);
+    if (!spec || !spec.isBuffSpell) return null;
+
+    const chaMod = this.getAbilityMod(character.abilities?.cha || 10);
+    const sourceCtx = { cl: effCl, level: Number(character.level) || 1, bab: Number(character.bab) || 0, chaMod };
+    const materialized = this.materializeBlocks(spec.effects || [], sourceCtx, { chosenEnergy });
+
+    // Materialize ruleFlags (strip *Formula keys into concrete numbers)
+    const matFlags = {};
+    const rawRf = spec.ruleFlags || {};
+    Object.keys(rawRf).forEach(k => {
+      if (/formula$/i.test(k)) return;
+      if (this._E2_ALLOWED_RULE_FLAGS.includes(k)) {
+        const v = rawRf[k];
+        if (typeof v === 'boolean' || typeof v === 'number' || typeof v === 'string') {
+          matFlags[k] = v;
+        }
+      }
+    });
+    if (spec.evaluatedEnergyRes > 0) matFlags.energyResistance = spec.evaluatedEnergyRes;
+    if (spec.evaluatedProtectionPool > 0) matFlags.energyProtectionPool = spec.evaluatedProtectionPool;
+    if (rawRf.srFormula) {
+      const srVal = Math.round(Number(this.evaluateFormula(rawRf.srFormula, sourceCtx)) || 0);
+      if (srVal > 0) matFlags.sr = srVal;
+    }
+
+    const offerId = options.offerId || ('off_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8));
+    const fromCharId = String(options.fromCharId || character._hubId || character.id || 'caster');
+    const fromCharName = String(options.fromCharName || character.name || 'Ally').slice(0, 60);
+    const campaignId = String(options.campaignId || character.cloudCampaignId || 'local');
+    const now = Date.now();
+    const durMs = spec.durationRounds ? Math.min(spec.durationRounds * 6000, 10 * 60 * 1000) : 10 * 60 * 1000;
+
+    let sizeStepsOverride;
+    if (spec.sizeModifier?.targetType === 'weapon') {
+      sizeStepsOverride = spec.sizeModifier.scaling?.type === 'per_caster_level'
+        ? Math.min(spec.sizeModifier.scaling.maxSteps || 5, Math.floor(effCl / (spec.sizeModifier.scaling.clDivisor || 4)))
+        : (spec.sizeModifier.scaling?.steps || 1);
+    } else if (spec.sizeModifier?.targetType === 'creature') {
+      sizeStepsOverride = spec.sizeModifier.scaling?.steps || 1;
+    }
+
+    const origin = {
+      external: true,
+      offerId,
+      fromCharId,
+      fromCharName,
+      campaignId,
+      sentAt: now
+    };
+
+    const buffObj = this.buildBuffObject(spec, {
+      cl: effCl,
+      spellItem,
+      chosenEnergy,
+      effectsOverride: materialized,
+      ruleFlagsOverride: matFlags,
+      sizeStepsOverride,
+      origin
+    });
+    if (!buffObj) return null;
+
+    let rawTempHp = Number(options.grantedTempHp ?? spec.evaluatedTempHp) || 0;
+    if (rawTempHp <= 0 && spec.tempHpFormula && typeof this.rollOrEvaluateTempHp === 'function') {
+      const rolled = this.rollOrEvaluateTempHp(spec.tempHpFormula, sourceCtx);
+      rawTempHp = Number(rolled?.total) || 0;
+    }
+    const grantedTempHp = Math.max(0, Math.min(200, Math.round(rawTempHp)));
+    if (grantedTempHp > 0) {
+      buffObj.grantedTempHp = grantedTempHp;
+      buffObj.ruleFlags = Object.assign({}, buffObj.ruleFlags || {}, { tempHp: grantedTempHp });
+      buffObj.summary = String(buffObj.summary || '').replace(/\+\d*d\d+(?:\+\d+)?\s*Temp HP/i, `+${grantedTempHp} Temp HP`);
+      if (!String(buffObj.summary || '').includes('Temp HP')) {
+        buffObj.summary = buffObj.summary ? `${buffObj.summary}, +${grantedTempHp} Temp HP` : `+${grantedTempHp} Temp HP`;
+      }
+    }
+
+    const targets = Array.isArray(options.targetCharIds)
+      ? options.targetCharIds.map(x => String(x || '').trim()).filter(Boolean).slice(0, 12)
+      : [];
+
+    return {
+      v: 1,
+      offerId,
+      campaignId,
+      fromCharId,
+      fromCharName,
+      targetCharIds: targets,
+      targetMode: spec.targetMode || 'single',
+      ...(spec.targetMode === 'weapon' && spec.sizeModifier?.targetFilter
+        ? { weaponFilter: JSON.parse(JSON.stringify(spec.sizeModifier.targetFilter)) }
+        : {}),
+      ts: now,
+      expiresAt: now + Math.max(60000, durMs),
+      buff: buffObj
+    };
+  },
+
+  /**
+   * Strict field-by-field whitelist sanitizer for untrusted broadcast buff offers (Sprint E2.1).
+   * Never spreads untrusted input; rejects prototype pollution, `@` formulas, out-of-range numbers, and unknown types.
+   */
+  sanitizeIncomingBuffOffer(raw, ctx = {}) {
+    const fail = (reason) => ({ ok: false, reason });
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return fail('not_an_object');
+
+    const hasPoisonKey = (obj, depth = 0) => {
+      if (!obj || typeof obj !== 'object' || depth > 6) return false;
+      for (const k of Object.keys(obj)) {
+        if (k === '__proto__' || k === 'constructor' || k === 'prototype') return true;
+        if (typeof obj[k] === 'object' && obj[k] !== null && hasPoisonKey(obj[k], depth + 1)) return true;
+      }
+      return false;
+    };
+    if (hasPoisonKey(raw)) return fail('prototype_pollution_key');
+
+    if (raw.v !== 1) return fail('unsupported_version');
+    const offerId = typeof raw.offerId === 'string' ? raw.offerId.trim() : '';
+    if (!/^[\w-]{8,64}$/.test(offerId)) return fail('invalid_offer_id');
+
+    const campaignId = typeof raw.campaignId === 'string' ? raw.campaignId.trim().slice(0, 80) : '';
+    if (!campaignId) return fail('missing_campaign_id');
+    if (ctx.campaignId && campaignId !== String(ctx.campaignId)) return fail('campaign_mismatch');
+
+    const fromCharId = typeof raw.fromCharId === 'string' ? raw.fromCharId.trim().slice(0, 80) : '';
+    if (!fromCharId) return fail('missing_sender_char');
+    const cleanStr = (s, maxLen) => String(s || '').replace(/[\u0000-\u001f\u007f<>]/g, '').trim().slice(0, maxLen);
+    const fromCharName = cleanStr(raw.fromCharName || 'Ally', 60) || 'Ally';
+
+    if (!Array.isArray(raw.targetCharIds) || raw.targetCharIds.length === 0 || raw.targetCharIds.length > 12) {
+      return fail('invalid_targets');
+    }
+    const targetCharIds = raw.targetCharIds.map(t => cleanStr(t, 80)).filter(Boolean);
+    if (targetCharIds.length === 0) return fail('empty_targets');
+    if (ctx.myCharId && !targetCharIds.includes('ALL') && !targetCharIds.includes(String(ctx.myCharId))) {
+      return fail('not_for_me');
+    }
+
+    const now = Number(ctx.now) || Date.now();
+    const ts = Number(raw.ts);
+    if (!Number.isFinite(ts) || Math.abs(now - ts) > 10 * 60 * 1000) return fail('stale_or_future_timestamp');
+    const expiresAt = Number(raw.expiresAt);
+    if (!Number.isFinite(expiresAt) || expiresAt < now) return fail('offer_expired');
+
+    const rb = raw.buff;
+    if (!rb || typeof rb !== 'object' || Array.isArray(rb)) return fail('missing_buff');
+    const name = cleanStr(rb.name, 80);
+    if (!name) return fail('missing_buff_name');
+    if (/@/.test(name)) return fail('formula_in_name');
+
+    const baseSpellId = rb.baseSpellId ? String(rb.baseSpellId).trim() : null;
+    if (baseSpellId && !/^[a-z0-9_-]{1,80}$/i.test(baseSpellId)) return fail('invalid_base_spell_id');
+
+    const cl = Math.trunc(Number(rb.casterLevel || rb.cl));
+    if (!Number.isFinite(cl) || cl < 1 || cl > 40) return fail('invalid_caster_level');
+
+    const rawRounds = rb.rounds !== undefined && rb.rounds !== null ? Math.trunc(Number(rb.rounds)) : null;
+    if (rawRounds !== null && (!Number.isFinite(rawRounds) || rawRounds < 0 || rawRounds > 50000)) {
+      return fail('invalid_rounds');
+    }
+
+    const chosenEnergy = rb.chosenEnergy ? String(rb.chosenEnergy).trim() : null;
+    if (chosenEnergy && !this._E2_ALLOWED_ENERGIES.includes(chosenEnergy)) return fail('invalid_energy');
+
+    const sizeSteps = rb.sizeSteps !== undefined && rb.sizeSteps !== null ? Math.trunc(Number(rb.sizeSteps)) : 0;
+    if (!Number.isFinite(sizeSteps) || sizeSteps < -5 || sizeSteps > 5) return fail('invalid_size_steps');
+
+    const grantedTempHp = rb.grantedTempHp !== undefined && rb.grantedTempHp !== null ? Math.trunc(Number(rb.grantedTempHp)) : 0;
+    if (!Number.isFinite(grantedTempHp) || grantedTempHp < 0 || grantedTempHp > 200) return fail('invalid_temp_hp');
+
+    const energyResistance = rb.energyResistance !== undefined && rb.energyResistance !== null ? Math.trunc(Number(rb.energyResistance)) : 0;
+    if (!Number.isFinite(energyResistance) || energyResistance < 0 || energyResistance > 100) return fail('invalid_energy_resistance');
+
+    const protectionPoolMax = rb.protectionPoolMax !== undefined && rb.protectionPoolMax !== null ? Math.trunc(Number(rb.protectionPoolMax)) : 0;
+    if (!Number.isFinite(protectionPoolMax) || protectionPoolMax < 0 || protectionPoolMax > 300) return fail('invalid_protection_pool');
+
+    const stackingMatrix = this.rulesets?.dnd35?.stackingMatrix || {};
+    const normalizeBonusKey = (rawB) => String(rawB || 'untyped').toLowerCase().trim().replace(/[\s-]+/g, '_');
+    const validBonusTypes = new Set([
+      'untyped', 'penalty', 'dodge', 'circumstance', 'synergy', 'racial', 'alchemical', 'armor',
+      'competence', 'deflection', 'enhancement', 'inherent', 'insight', 'luck', 'morale',
+      'natural', 'natural_armor', 'natural_enhancement', 'natural_armor_enhancement', 'haste',
+      'profane', 'resistance', 'sacred', 'shield', 'size', 'ability', 'armor_enhancement',
+      'shield_enhancement', 'weapon_enhancement', 'deflection_vs_evil', 'resistance_vs_evil',
+      ...Object.keys(stackingMatrix).map(normalizeBonusKey)
+    ]);
+    const validCondKinds = new Set(['situational', 'activation', 'else', 'note', 'toggle', 'stance', 'buff', 'mode', 'alignment', ...(this.V3_NAMED_WHEN_CONDS || [])]);
+
+    let blockCount = 0;
+    const sanitizeBlockList = (list, depth = 0) => {
+      if (!Array.isArray(list)) return { ok: true, blocks: [] };
+      if (depth > 3) return { ok: false, reason: 'max_depth_exceeded' };
+      const clean = [];
+      for (const item of list) {
+        blockCount++;
+        if (blockCount > 24) return { ok: false, reason: 'too_many_blocks' };
+        if (!item || typeof item !== 'object' || Array.isArray(item)) return { ok: false, reason: 'invalid_block' };
+        const t = String(item.type || '').toLowerCase().trim();
+        if (!this._E2_ALLOWED_BLOCK_TYPES.includes(t)) return { ok: false, reason: `disallowed_block_type:${t}` };
+        if (item.formula !== undefined || item.poolFormula !== undefined) return { ok: false, reason: 'unmaterialized_formula_field' };
+
+        if (t === 'when' || t === 'while') {
+          const flowVal = String(item.flow || t).toLowerCase().trim() === 'while' ? 'while' : 'when';
+          const outB = { type: 'when', flow: flowVal };
+          if (item.condKind !== undefined) {
+            const ck = String(item.condKind).trim();
+            if (!validCondKinds.has(ck.toLowerCase()) && !validCondKinds.has(ck)) return { ok: false, reason: 'invalid_cond_kind' };
+            outB.condKind = ck;
+          }
+          if (item.condText !== undefined) {
+            const ct = cleanStr(item.condText, 120);
+            if (/@/.test(ct)) return { ok: false, reason: 'formula_in_cond_text' };
+            outB.condText = ct;
+          }
+          if (item.condition !== undefined) {
+            const cd = cleanStr(item.condition, 120);
+            if (/@/.test(cd)) return { ok: false, reason: 'formula_in_condition' };
+            outB.condition = cd;
+          }
+          if (Array.isArray(item.branches)) {
+            const brOut = [];
+            for (const br of item.branches.slice(0, 6)) {
+              if (!br || typeof br !== 'object') return { ok: false, reason: 'invalid_branch' };
+              const ck = String(br.condKind || 'situational').trim();
+              if (!validCondKinds.has(ck.toLowerCase()) && !validCondKinds.has(ck)) return { ok: false, reason: 'invalid_branch_cond_kind' };
+              const ct = cleanStr(br.condText || '', 120);
+              if (/@/.test(ct)) return { ok: false, reason: 'formula_in_branch_text' };
+              const sub = sanitizeBlockList(br.effects || [], depth + 1);
+              if (!sub.ok) return sub;
+              brOut.push({ condKind: ck, condText: ct, effects: sub.blocks });
+            }
+            outB.branches = brOut;
+          } else {
+            const sub = sanitizeBlockList(item.effects || [], depth + 1);
+            if (!sub.ok) return sub;
+            outB.effects = sub.blocks;
+            if (Array.isArray(item.else)) {
+              const subElse = sanitizeBlockList(item.else, depth + 1);
+              if (!subElse.ok) return subElse;
+              outB.else = subElse.blocks;
+            }
+          }
+          clean.push(outB);
+          continue;
+        }
+
+        if (t === 'stat') {
+          const rawTargets = Array.isArray(item.targets) ? item.targets : (item.target ? [item.target] : []);
+          if (rawTargets.length === 0 || rawTargets.length > 8) return { ok: false, reason: 'invalid_stat_targets' };
+          const cleanTargets = [];
+          for (const rt of rawTargets) {
+            const ts = cleanStr(rt, 60);
+            if (!ts || /@/.test(ts)) return { ok: false, reason: 'invalid_stat_target' };
+            cleanTargets.push(ts);
+          }
+          const val = Number(item.value);
+          const isSpeedOnly = cleanTargets.every(t => /^speed\./i.test(t));
+          const isSkillOnly = cleanTargets.every(t => /^skill\./i.test(t));
+          const maxStatAbs = isSpeedOnly ? 120 : (isSkillOnly ? 40 : 30);
+          if (!Number.isFinite(val) || Math.abs(val) > maxStatAbs) return { ok: false, reason: 'stat_value_out_of_bounds' };
+          const rawBtype = cleanStr(item.btype || item.bonusType || 'Untyped', 40) || 'Untyped';
+          const normBt = normalizeBonusKey(rawBtype);
+          if (!validBonusTypes.has(normBt)) return { ok: false, reason: `invalid_bonus_type:${normBt}` };
+          const outB = { type: 'stat', targets: cleanTargets, mode: 'flat', value: Math.round(val), btype: rawBtype, recipient: 'self' };
+          if (item.condition !== undefined) {
+            const cd = cleanStr(item.condition, 100);
+            if (/@/.test(cd)) return { ok: false, reason: 'formula_in_stat_condition' };
+            if (cd) outB.condition = cd;
+          }
+          clean.push(outB);
+          continue;
+        }
+
+        if (t === 'defense') {
+          const outB = { type: 'defense', recipient: 'self' };
+          for (const fk of ['mode', 'defKind', 'kind', 'what', 'subType', 'bypass', 'srMode', 'text', 'condition']) {
+            if (item[fk] !== undefined) {
+              const sv = cleanStr(item[fk], fk === 'text' ? 140 : 60);
+              if (/@/.test(sv)) return { ok: false, reason: `formula_in_defense_${fk}` };
+              if (sv) outB[fk] = sv;
+            }
+          }
+          if (item.value !== undefined) {
+            const val = Number(item.value);
+            if (!Number.isFinite(val) || val < 0 || val > 300) return { ok: false, reason: 'defense_value_out_of_bounds' };
+            outB.value = Math.round(val);
+          }
+          if (item.sr !== undefined) {
+            const srv = Number(item.sr);
+            if (!Number.isFinite(srv) || srv < 0 || srv > 60) return { ok: false, reason: 'defense_sr_out_of_bounds' };
+            outB.sr = Math.round(srv);
+          }
+          if (item.dr !== undefined) {
+            if (typeof item.dr === 'string') {
+              const drv = cleanStr(item.dr, 40);
+              if (/@/.test(drv)) return { ok: false, reason: 'formula_in_defense_dr' };
+              if (drv) outB.dr = drv;
+            } else if (typeof item.dr === 'number' && Number.isFinite(item.dr) && item.dr >= 0 && item.dr <= 30) {
+              outB.dr = Math.round(item.dr);
+            }
+          }
+          clean.push(outB);
+          continue;
+        }
+
+        if (t === 'attack') {
+          const outB = { type: 'attack', recipient: 'self' };
+          for (const fk of ['attackMode', 'extraKind', 'kind', 'appliesToWeapon', 'condition']) {
+            if (item[fk] !== undefined) {
+              const sv = cleanStr(item[fk], 60);
+              if (/@/.test(sv)) return { ok: false, reason: `formula_in_attack_${fk}` };
+              if (sv) outB[fk] = sv;
+            }
+          }
+          for (const nk of ['count', 'penalty', 'enhEquivalent']) {
+            if (item[nk] !== undefined) {
+              const nv = Number(item[nk]);
+              if (!Number.isFinite(nv) || Math.abs(nv) > 20) return { ok: false, reason: `attack_${nk}_out_of_bounds` };
+              outB[nk] = Math.round(nv);
+            }
+          }
+          if (Array.isArray(item.drBypassList)) {
+            outB.drBypassList = item.drBypassList.slice(0, 8).map(x => cleanStr(x, 30)).filter(x => x && !/@/.test(x));
+          }
+          clean.push(outB);
+          continue;
+        }
+
+        if (t === 'effect') {
+          const outB = { type: 'effect', recipient: 'self' };
+          for (const fk of ['effectKind', 'kind', 'key', 'switchKey', 'flag', 'label', 'text', 'grantType', 'mode', 'condition']) {
+            if (item[fk] !== undefined) {
+              const sv = cleanStr(item[fk], fk === 'text' ? 160 : 60);
+              if (/@/.test(sv)) return { ok: false, reason: `formula_in_${fk}` };
+              if (sv) outB[fk] = sv;
+            }
+          }
+          if (item.value !== undefined) {
+            if (typeof item.value === 'boolean') outB.value = item.value;
+            else if (typeof item.value === 'number' && Number.isFinite(item.value) && Math.abs(item.value) <= 30) outB.value = item.value;
+            else if (typeof item.value === 'string') {
+              const sv = cleanStr(item.value, 60);
+              if (/@/.test(sv)) return { ok: false, reason: 'formula_in_effect_value' };
+              outB.value = sv;
+            } else {
+              return { ok: false, reason: 'invalid_effect_value' };
+            }
+          }
+          clean.push(outB);
+        }
+      }
+      return { ok: true, blocks: clean };
+    };
+
+    const effRes = sanitizeBlockList(rb.effects || [], 0);
+    if (!effRes.ok) return fail(effRes.reason);
+
+    const FLAG_MAX_BY_KEY = {
+      tempHp: 200,
+      energyResistance: 100,
+      energyProtectionPool: 300,
+      sr: 60,
+      flySpeed: 240,
+      spellImmunityLevel: 9
+    };
+    const cleanFlags = {};
+    if (rb.ruleFlags && typeof rb.ruleFlags === 'object' && !Array.isArray(rb.ruleFlags)) {
+      for (const k of Object.keys(rb.ruleFlags)) {
+        if (!this._E2_ALLOWED_RULE_FLAGS.includes(k)) continue;
+        const v = rb.ruleFlags[k];
+        if (typeof v === 'boolean') cleanFlags[k] = v;
+        else if (typeof v === 'number' && Number.isFinite(v) && v >= 0) {
+          const cap = FLAG_MAX_BY_KEY[k] || 100;
+          if (v > cap) return fail(`rule_flag_out_of_bounds:${k}`);
+          cleanFlags[k] = v;
+        } else if (typeof v === 'string') {
+          const sv = cleanStr(v, 60);
+          if (!/@/.test(sv)) cleanFlags[k] = sv;
+        }
+      }
+    }
+
+    const durationText = cleanStr(rb.durationText || rb.duration || '', 40) || (rawRounds ? `${rawRounds} rounds` : '1 min');
+    const summary = cleanStr(rb.summary || 'Active Buff', 140) || 'Active Buff';
+    const targetMode = ['single', 'party', 'weapon'].includes(String(raw.targetMode || '')) ? String(raw.targetMode) : 'single';
+
+    const cleanBuff = {
+      id: baseSpellId ? (chosenEnergy ? `${baseSpellId}-${chosenEnergy.toLowerCase()}` : baseSpellId) : `ext_${offerId}`,
+      baseSpellId,
+      schemaVersion: 3,
+      name,
+      active: true,
+      source: 'Spell',
+      casterLevel: cl,
+      cl,
+      chosenEnergy,
+      ...(chosenEnergy ? { choice: chosenEnergy, chosenOption: chosenEnergy } : {}),
+      duration: durationText,
+      durationText,
+      initialDuration: durationText,
+      rounds: rawRounds,
+      initialRounds: rawRounds,
+      effects: effRes.blocks,
+      ruleFlags: cleanFlags,
+      summary,
+      description: `${summary} (${durationText})`,
+      ...(sizeSteps !== 0 ? { sizeSteps, targetType: targetMode === 'weapon' ? 'weapon' : 'creature' } : {}),
+      ...(grantedTempHp > 0 ? { grantedTempHp } : {}),
+      ...(energyResistance > 0 ? { energyResistance } : {}),
+      ...(protectionPoolMax > 0 ? { protectionPoolMax, protectionPoolRemaining: protectionPoolMax } : {}),
+      origin: {
+        external: true,
+        offerId,
+        fromCharId,
+        fromCharName,
+        campaignId,
+        sentAt: ts
+      }
+    };
+
+    const cleanWeaponFilter = (targetMode === 'weapon' && raw.weaponFilter && typeof raw.weaponFilter === 'object')
+      ? {
+        meleeOnly: Boolean(raw.weaponFilter.meleeOnly),
+        allowedDmgTypes: Array.isArray(raw.weaponFilter.allowedDmgTypes)
+          ? raw.weaponFilter.allowedDmgTypes.map(x => cleanStr(x, 30)).filter(Boolean).slice(0, 6)
+          : []
+      }
+      : null;
+
+    return {
+      ok: true,
+      offer: {
+        v: 1,
+        offerId,
+        campaignId,
+        fromCharId,
+        fromCharName,
+        targetCharIds,
+        targetMode,
+        ...(cleanWeaponFilter ? { weaponFilter: cleanWeaponFilter } : {}),
+        ts,
+        expiresAt,
+        buff: cleanBuff
+      }
     };
   },
 
@@ -9947,11 +10677,12 @@ const RuleEngine = {
       const buffCtx = { ...evalContext, cl: buffCl, self: { stacks: resolveStacks(rawBuff.stacks !== undefined ? rawBuff.stacks : buff.stacks), invested: Number(buff.invested) || 0 } };
 
       // Auto-hydrate V2 modifiers & ruleFlags from canonical spell spec if missing or using legacy static/off-by-one formulas on a scaling or ward spell buff
+      const isExternalBuff = Boolean(rawBuff.origin && rawBuff.origin.external === true);
       const isScalingSpellBuff = /^(divine favor|barkskin|shield of faith|conviction|mass conviction|conviction, mass|magic vestment|greater magic weapon|magic weapon, greater|greater magic fang|magic fang, greater)$/i.test(String(buff.name || '').trim());
       const isWardSpellBuff = /^(protection from (?:evil|good|law|chaos)|magic circle against (?:evil|good|law|chaos))$/i.test(String(buff.name || '').trim());
       const lacksFormulaOnScalingSpell = isScalingSpellBuff && Array.isArray(buff.modifiers) && buff.modifiers.some(m => !m || !String(m.formula || '').includes('@cl') || String(m.formula || '').includes('1 + floor(@cl / 3)'));
       const lacksConditionOnWardSpell = isWardSpellBuff && Array.isArray(buff.modifiers) && buff.modifiers.some(m => m && !m.condition);
-      if (((!Array.isArray(buff.modifiers) || buff.modifiers.length === 0) || lacksFormulaOnScalingSpell || lacksConditionOnWardSpell) && !buff.negativeLevels && !buff.isCondition) {
+      if (!isExternalBuff && ((!Array.isArray(buff.modifiers) || buff.modifiers.length === 0) || lacksFormulaOnScalingSpell || lacksConditionOnWardSpell) && !buff.negativeLevels && !buff.isCondition) {
         const cleanSpellQuery = { name: buff.name, id: String(buff.id || '').startsWith('spl-') ? buff.id : undefined };
         const resolvedSpec = this.resolveSpellBuffSpec(cleanSpellQuery, character, buffCl);
         if (resolvedSpec && resolvedSpec.isBuffSpell) {
@@ -12079,8 +12810,9 @@ const RuleEngine = {
         const b = this.ensureV2Entry(rawBuff);
         if (!isBuffMatchingWeapon(b)) return;
         const bCl = Number(b.casterLevel || b.cl || charLvl) || charLvl;
+        const isExternalAtkBuff = Boolean(rawBuff.origin && rawBuff.origin.external === true);
         const isScalingAtkBuff = /^(divine favor|greater magic weapon|magic weapon, greater|greater magic fang|magic fang, greater)$/i.test(String(b.name || '').trim());
-        if (isScalingAtkBuff && (!Array.isArray(b.modifiers) || b.modifiers.some(m => !m || !String(m.formula || '').includes('@cl') || String(m.formula || '').includes('1 + floor(@cl / 3)')))) {
+        if (!isExternalAtkBuff && isScalingAtkBuff && (!Array.isArray(b.modifiers) || b.modifiers.some(m => !m || !String(m.formula || '').includes('@cl') || String(m.formula || '').includes('1 + floor(@cl / 3)')))) {
           const cleanSpellQuery = { name: b.name, id: String(b.id || '').startsWith('spl-') ? b.id : undefined };
           const resolvedSpec = this.resolveSpellBuffSpec(cleanSpellQuery, character, bCl);
           if (resolvedSpec && Array.isArray(resolvedSpec.effects) && resolvedSpec.effects.length > 0) {
@@ -15699,19 +16431,20 @@ const RuleEngine = {
     w.buffs.forEach((b, idx) => {
       if (!b || (b.active === false && !b.pinnedToCombat)) return;
       const buffId = b.id || ('buff_' + String(b.name || idx).toLowerCase().replace(/[^a-z0-9]+/g, '_'));
+      const isExternal = Boolean(b.origin && b.origin.external === true);
       const rawBCl = Number(b.casterLevel || b.cl || charLevel) || 1;
-      const minDomainCl = typeof this.getSpellEffectiveCasterLevel === 'function'
+      const minDomainCl = (!isExternal && typeof this.getSpellEffectiveCasterLevel === 'function')
         ? this.getSpellEffectiveCasterLevel(b, w, charLevel)
         : rawBCl;
-      const casterLevel = Math.max(rawBCl, minDomainCl);
-      const spec = typeof this.resolveSpellBuffSpec === 'function'
+      const casterLevel = isExternal ? rawBCl : Math.max(rawBCl, minDomainCl);
+      const spec = (!isExternal && typeof this.resolveSpellBuffSpec === 'function')
         ? this.resolveSpellBuffSpec(b, w, casterLevel)
         : null;
-      const duration = (casterLevel > rawBCl && spec?.durationText)
+      const duration = (!isExternal && casterLevel > rawBCl && spec?.durationText)
         ? spec.durationText
         : (b.durationText || b.duration || spec?.durationText || '');
       const summary = b.summary || spec?.summaryText || b.notes || b.description || 'Active Buff';
-      const clBonusInfo = typeof this.getSpellCasterLevelBonus === 'function'
+      const clBonusInfo = (!isExternal && typeof this.getSpellCasterLevelBonus === 'function')
         ? this.getSpellCasterLevelBonus(b, w)
         : { bonus: 0, sources: [] };
       result.push({
@@ -15729,7 +16462,8 @@ const RuleEngine = {
         clBonus: clBonusInfo.bonus || 0,
         clSources: clBonusInfo.sources || [],
         targetWeapon: b.targetWeapon || null,
-        chosenEnergy: b.chosenEnergy || null
+        chosenEnergy: b.chosenEnergy || null,
+        origin: isExternal ? Object.assign({}, b.origin) : null
       });
     });
     return result;

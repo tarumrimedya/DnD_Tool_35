@@ -333,6 +333,104 @@ function runCharStoreTests() {
   Store.undo();
   check(Store.getDoc().pactMagic.vestiges.length === 1, 'S7: Ctrl+Z Undo after op=remove must restore vestige');
 
+  // Sprint E2.0: combat/acceptIncomingBuff, RAW higher-CL guard, clean replace, Temp HP max & delta removal
+  Store.replaceDoc({
+    name: 'Valeros',
+    level: 5,
+    hp: { current: 40, max: 40, temp: 5 },
+    buffs: [
+      { id: 'spl-bless', baseSpellId: 'spl-bless', name: 'Bless', active: true, casterLevel: 8, rounds: 80, effects: [], staleTag: 'legacy' }
+    ]
+  });
+  const e2UndoBefore = Store.getHistoryCounts().undo;
+  const conflictRes = Store.dispatch({
+    type: 'combat/acceptIncomingBuff',
+    payload: {
+      buff: {
+        id: 'spl-bless',
+        baseSpellId: 'spl-bless',
+        name: 'Bless',
+        casterLevel: 5,
+        rounds: 50,
+        effects: [{ type: 'stat', target: 'attack', value: 1, bonusType: 'morale' }],
+        origin: { external: true, fromCharId: 'c-cleric', fromCharName: 'Kyra', offerId: 'off_bless_5' }
+      }
+    }
+  });
+  check(Store.getLastOutcome()?.status === 'lower_cl_conflict', 'E2.0: lower CL incoming buff must abort with lower_cl_conflict');
+  check(Store.getHistoryCounts().undo === e2UndoBefore, 'E2.0: lower_cl_conflict must NOT push Undo snapshot');
+  check(Store.getDoc().buffs[0].casterLevel === 8, 'E2.0: existing higher-CL buff must remain intact');
+
+  // forceReplace replaces cleanly (no staleTag)
+  Store.dispatch({
+    type: 'combat/acceptIncomingBuff',
+    payload: {
+      forceReplace: true,
+      buff: {
+        id: 'spl-bless',
+        baseSpellId: 'spl-bless',
+        name: 'Bless',
+        casterLevel: 5,
+        rounds: 50,
+        effects: [{ type: 'stat', target: 'attack', value: 1, bonusType: 'morale' }],
+        origin: { external: true, fromCharId: 'c-cleric', fromCharName: 'Kyra', offerId: 'off_bless_5' }
+      }
+    }
+  });
+  check(Store.getLastOutcome()?.status === 'buff_accepted' && Store.getLastOutcome()?.replaced === true, 'E2.0: forceReplace must accept & replace');
+  check(Store.getDoc().buffs[0].staleTag === undefined, 'E2.0: replace must NOT merge stale fields');
+  check(Store.getDoc().buffs[0].origin?.fromCharName === 'Kyra', 'E2.0: external origin preserved');
+
+  // Temp HP non-stacking (base 5 + Aid 12 => max 12, delta = 7; removing Aid subtracts only 7 => 5)
+  Store.dispatch({
+    type: 'combat/acceptIncomingBuff',
+    payload: {
+      buff: {
+        id: 'spl-aid',
+        baseSpellId: 'spl-aid',
+        name: 'Aid',
+        casterLevel: 7,
+        rounds: 70,
+        grantedTempHp: 12,
+        effects: [{ type: 'stat', target: 'attack', value: 1, bonusType: 'morale' }],
+        origin: { external: true, fromCharId: 'c-cleric', fromCharName: 'Kyra', offerId: 'off_aid_12' }
+      }
+    }
+  });
+  check(Store.getDoc().hp.temp === 12, 'E2.0: Temp HP must take RAW max(5, 12) = 12 (non-stacking)');
+  const aidIdx = Store.getDoc().buffs.findIndex(b => b && b.name === 'Aid');
+  check(Store.getDoc().buffs[aidIdx]._tempHpDelta === 7, 'E2.0: Aid _tempHpDelta must record exact 7 HP contribution');
+  Store.dispatch({ type: 'combat/removeBuff', payload: { index: aidIdx } });
+  check(Store.getDoc().hp.temp === 5, 'E2.0: removing Aid must subtract only its 7 HP contribution, restoring 5');
+  Store.undo();
+  check(Store.getDoc().hp.temp === 12 && Store.getDoc().buffs.some(b => b.name === 'Aid'), 'E2.0: Undo restores Aid & Temp HP');
+
+  // P1 #5: advanceRound expiry must subtract _tempHpDelta cleanly
+  Store.replaceDoc({
+    name: 'Valeros',
+    level: 5,
+    hp: { current: 40, max: 40, temp: 5 },
+    buffs: []
+  });
+  Store.dispatch({
+    type: 'combat/acceptIncomingBuff',
+    payload: {
+      buff: {
+        id: 'spl-aid',
+        baseSpellId: 'spl-aid',
+        name: 'Aid',
+        casterLevel: 7,
+        rounds: 1,
+        grantedTempHp: 12,
+        effects: [],
+        origin: { external: true, fromCharId: 'c-cleric', fromCharName: 'Kyra', offerId: 'off_aid_exp' }
+      }
+    }
+  });
+  check(Store.getDoc().hp.temp === 12, 'E2 P1#5: Aid sets temp HP to 12');
+  Store.dispatch({ type: 'combat/advanceRound' });
+  check(Store.getDoc().buffs[0].active === false && Store.getDoc().hp.temp === 5, 'E2 P1#5: expiring Aid on advanceRound must subtract its 7 HP delta (12 -> 5)');
+
   const elapsedMs = Date.now() - startMs;
   if (failures.length > 0) {
     throw new Error(`CharStore Test Gate failed (${failures.length} failure(s)):\n  - ${failures.join('\n  - ')}`);
