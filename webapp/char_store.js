@@ -4648,8 +4648,44 @@
     const idx = Number(payload.idx);
 
     if (op === 'add' && payload.entry && typeof payload.entry === 'object') {
+      const entryId = String(payload.entry.id || '').trim().toLowerCase();
+      const entryName = String(payload.entry.name || '').trim().toLowerCase();
+      const isDup = list.some(it => it && ((entryId && String(it.id || '').trim().toLowerCase() === entryId) || (entryName && String(it.name || '').trim().toLowerCase() === entryName)));
+      if (isDup) {
+        setStoreOutcome(stateObj, { status: 'duplicate_entry', discipline: disc, name: payload.entry.name });
+        return doc;
+      }
+      if (disc === 'incarnum' && payload.maxSoulmelds !== undefined) {
+        const cap = Math.max(0, Number(payload.maxSoulmelds) || 0);
+        if (list.length >= cap) {
+          setStoreOutcome(stateObj, { status: 'cap_exceeded', discipline: disc, reason: 'maxSoulmelds', cap });
+          return doc;
+        }
+      }
+      if (disc === 'pact') {
+        if (payload.maxVestiges !== undefined) {
+          const vCap = Math.max(0, Number(payload.maxVestiges) || 0);
+          if (list.length >= vCap) {
+            setStoreOutcome(stateObj, { status: 'cap_exceeded', discipline: disc, reason: 'maxVestiges', cap: vCap });
+            return doc;
+          }
+        }
+        if (payload.maxVestigeLevel !== undefined) {
+          const maxVLvl = Math.max(0, Number(payload.maxVestigeLevel) || 0);
+          const vLvl = Number(payload.entry.vestigeLevel ?? payload.entry.level ?? 1) || 1;
+          if (vLvl > maxVLvl) {
+            setStoreOutcome(stateObj, { status: 'cap_exceeded', discipline: disc, reason: 'maxVestigeLevel', vestigeLevel: vLvl, maxVestigeLevel: maxVLvl });
+            return doc;
+          }
+        }
+      }
       list.push(JSON.parse(JSON.stringify(payload.entry)));
       setStoreOutcome(stateObj, { status: 'subsys_added', discipline: disc, index: list.length - 1 });
+      return doc;
+    }
+    if (op === 'remove' && Number.isInteger(idx) && list[idx]) {
+      const removed = list.splice(idx, 1)[0];
+      setStoreOutcome(stateObj, { status: 'subsys_removed', discipline: disc, index: idx, name: removed?.name || '' });
       return doc;
     }
     if (op === 'toggleActive' && Number.isInteger(idx) && list[idx]) {
@@ -4715,8 +4751,40 @@
         return doc;
       }
       if (op === 'chakraBind' && Number.isInteger(idx) && list[idx]) {
-        list[idx].boundChakra = String(payload.slot || 'None');
-        setStoreOutcome(stateObj, { status: 'chakra_bound', index: idx, boundChakra: list[idx].boundChakra });
+        const sm = list[idx];
+        const nextSlot = String(payload.slot || 'None').trim() || 'None';
+        if (nextSlot.toLowerCase() === 'none') {
+          sm.boundChakra = 'None';
+          setStoreOutcome(stateObj, { status: 'chakra_unbound', index: idx, boundChakra: 'None' });
+          return doc;
+        }
+        // Legal chakraSlots check on the soulmeld
+        const rawLegal = sm.chakraSlots ?? sm.spell?.chakraSlots ?? '';
+        const legalList = Array.isArray(rawLegal)
+          ? rawLegal.map(s => String(s).trim().toLowerCase()).filter(Boolean)
+          : String(rawLegal).split(/[,/|]+/).map(s => s.trim().toLowerCase()).filter(Boolean);
+        if (legalList.length > 0 && !legalList.includes('all') && !legalList.includes(nextSlot.toLowerCase())) {
+          setStoreOutcome(stateObj, { status: 'illegal_chakra_slot', index: idx, slot: nextSlot, legalSlots: legalList });
+          return doc;
+        }
+        // Single soulmeld per chakra check
+        const occupied = list.some((other, j) => j !== idx && other && String(other.boundChakra || 'None').trim().toLowerCase() === nextSlot.toLowerCase());
+        if (occupied) {
+          setStoreOutcome(stateObj, { status: 'chakra_slot_occupied', index: idx, slot: nextSlot });
+          return doc;
+        }
+        // maxChakraBinds cap check (only when moving from unbound -> bound)
+        const wasBound = Boolean(sm.boundChakra && String(sm.boundChakra).trim().toLowerCase() !== 'none');
+        if (!wasBound && payload.maxChakraBinds !== undefined) {
+          const curBinds = list.filter(s => s && s.boundChakra && String(s.boundChakra).trim().toLowerCase() !== 'none').length;
+          const cap = Math.max(0, Number(payload.maxChakraBinds) || 0);
+          if (curBinds >= cap) {
+            setStoreOutcome(stateObj, { status: 'cap_exceeded', discipline: disc, reason: 'maxChakraBinds', cap });
+            return doc;
+          }
+        }
+        sm.boundChakra = nextSlot;
+        setStoreOutcome(stateObj, { status: 'chakra_bound', index: idx, boundChakra: sm.boundChakra });
         return doc;
       }
     }
@@ -7107,6 +7175,18 @@
         if (matchesTarget(entry)) applyToObj(entry);
       });
     });
+    [
+      doc.psionics && doc.psionics.powers,
+      doc.incarnum && doc.incarnum.soulmelds,
+      doc.pactMagic && doc.pactMagic.vestiges,
+      doc.shadowMagic && doc.shadowMagic.mysteries,
+      doc.truenaming && doc.truenaming.utterances
+    ].forEach(function (list) {
+      if (!Array.isArray(list)) return;
+      list.forEach(function (entry) {
+        if (matchesTarget(entry)) applyToObj(entry);
+      });
+    });
     if (ctx.kind === 'weapon' && Array.isArray(doc.weaponSets) && matchName && targetName) {
       doc.weaponSets.forEach(function (ws) {
         if (ws && String(ws.mainWeapon || '').trim().toLowerCase() === matchName) {
@@ -7209,7 +7289,7 @@
       let charItem = null;
       const tryList = function (arr, locName) {
         if (charItem || !Array.isArray(arr)) return;
-        if (typeof q.index === 'number' && arr[q.index] && (kind === locName || !nameLower || matchesItem(arr[q.index]))) {
+        if (typeof q.index === 'number' && arr[q.index] && (matchesItem(arr[q.index]) || (kind === locName && !idQuery && !nameLower))) {
           charItem = arr[q.index];
           sourceLocation = sourceLocation || locName;
           return;
@@ -7274,11 +7354,11 @@
       tryList(doc.preparedSpells, 'preparedSpells');
       tryList(doc.maneuvers, 'maneuvers');
       tryList(doc.stances, 'stances');
-      tryList(doc.psionics, 'psionics');
-      tryList(doc.incarnum, 'incarnum');
-      tryList(doc.pactMagic, 'pactMagic');
-      tryList(doc.shadowMagic, 'shadowMagic');
-      tryList(doc.truenaming, 'truenaming');
+      tryList(doc.psionics && doc.psionics.powers ? doc.psionics.powers : doc.psionics, 'psionics');
+      tryList(doc.incarnum && doc.incarnum.soulmelds ? doc.incarnum.soulmelds : doc.incarnum, 'incarnum');
+      tryList(doc.pactMagic && doc.pactMagic.vestiges ? doc.pactMagic.vestiges : doc.pactMagic, 'pactMagic');
+      tryList(doc.shadowMagic && doc.shadowMagic.mysteries ? doc.shadowMagic.mysteries : doc.shadowMagic, 'shadowMagic');
+      tryList(doc.truenaming && doc.truenaming.utterances ? doc.truenaming.utterances : doc.truenaming, 'truenaming');
       tryList(doc.templates, 'templates');
 
       if (typeof charItem === 'string') {

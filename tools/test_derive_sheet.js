@@ -8603,6 +8603,75 @@ function runDeriveSheetTests() {
           vst: subsysP0Active.pactMagic.vestiges[0]
         })
       );
+
+      // P1 Subsystems (S6, S9, S10): Vestige bindingDc=20 (Amon), Shadow Magic Fundamental/Apprentice progression,
+      // and Fighter 4 / Shadowcaster 4 levelTier uses Shadowcaster class level (4), NOT total level (8)
+      const p1SubsysDoc = {
+        id: 'p1-subsys-test',
+        name: 'P1 Subsystems Tester',
+        race: 'Human',
+        level: 8,
+        levelProgression: [
+          { hd: 1, className: 'Fighter', active: true },
+          { hd: 2, className: 'Fighter', active: true },
+          { hd: 3, className: 'Fighter', active: true },
+          { hd: 4, className: 'Fighter', active: true },
+          { hd: 5, className: 'Shadowcaster', active: true },
+          { hd: 6, className: 'Shadowcaster', active: true },
+          { hd: 7, className: 'Shadowcaster', active: true },
+          { hd: 8, className: 'Shadowcaster', active: true }
+        ],
+        baseAbilities: { str: 12, dex: 12, con: 12, int: 16, wis: 10, cha: 16 },
+        pactMagic: {
+          vestiges: [
+            { id: 'vst-amon', name: 'Amon', vestigeLevel: 1, bindingDc: 20 }
+          ]
+        },
+        shadowMagic: {
+          mysteries: [
+            { id: 'mys-arrow-of-dusk', name: 'Arrow of Dusk', tier: 'Fundamental', level: 0 },
+            { id: 'mys-carpet-of-shadow', name: 'Carpet of Shadow', tier: 'Apprentice', level: 1 }
+          ]
+        }
+      };
+      const p1SubEval = RuleEngine.deriveSheet(p1SubsysDoc, []).subsystems;
+      check(
+        'P1 Subsystems S6: Vestige bindingDC reads bindingDc=20 (Amon) instead of defaulting to 15',
+        p1SubEval.pact.vestiges[0]?.bindingDC === 20 && p1SubEval.pact.vestiges[0]?.bindingDc === 20,
+        JSON.stringify(p1SubEval.pact.vestiges[0])
+      );
+      check(
+        'P1 Subsystems S9/S10: Fighter 4 / Shadowcaster 4 gives Fundamental Su 3/day and Apprentice Spell 1/day (NOT SLA 2/day)',
+        Boolean(
+          p1SubEval.shadow.casterLevel === 4 &&
+          p1SubEval.shadow.mysteries[0]?.castType === 'Su' &&
+          p1SubEval.shadow.mysteries[0]?.dailyMax === 3 &&
+          p1SubEval.shadow.mysteries[0]?.isAtWill === false &&
+          p1SubEval.shadow.mysteries[1]?.castType === 'Spell' &&
+          p1SubEval.shadow.mysteries[1]?.dailyMax === 1 &&
+          RuleEngine.evaluateV3BranchCondition('Shadowcaster Lvl 7–12', 'levelTier', { level: 8 }, p1SubsysDoc) === false &&
+          RuleEngine.evaluateV3BranchCondition('Shadowcaster Lvl 1–6', 'levelTier', { level: 8 }, p1SubsysDoc) === true
+        ),
+        JSON.stringify({ cl: p1SubEval.shadow.casterLevel, m0: p1SubEval.shadow.mysteries[0], m1: p1SubEval.shadow.mysteries[1] })
+      );
+
+      // SC 14: Fundamental becomes At Will, Apprentice becomes Su 3/day
+      const sc14Doc = {
+        ...p1SubsysDoc,
+        level: 14,
+        levelProgression: Array.from({ length: 14 }, (_, i) => ({ hd: i + 1, className: 'Shadowcaster', active: true }))
+      };
+      const sc14Eval = RuleEngine.deriveSheet(sc14Doc, []).subsystems;
+      check(
+        'P1 Subsystems S9: Shadowcaster 14 upgrades Fundamental to Su At Will and Apprentice to Su 3/day',
+        Boolean(
+          sc14Eval.shadow.mysteries[0]?.castType === 'Su' &&
+          sc14Eval.shadow.mysteries[0]?.isAtWill === true &&
+          sc14Eval.shadow.mysteries[1]?.castType === 'Su' &&
+          sc14Eval.shadow.mysteries[1]?.dailyMax === 3
+        ),
+        JSON.stringify({ m0: sc14Eval.shadow.mysteries[0], m1: sc14Eval.shadow.mysteries[1] })
+      );
     }
   }
 

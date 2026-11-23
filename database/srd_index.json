@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
   "version": "3.0.0",
-  "compendiumHash": "6d1d10e3498f35bc",
+  "compendiumHash": "dffc08a9d975630d",
   "generatedAt": "2026-11-15T19:43:51.694Z",
   "totalEntries": 8001,
   "chunks": {
@@ -111,7 +111,7 @@
     },
     "srd_powers.json": {
       "count": 287,
-      "hash": "05dd865a0cf33c9e",
+      "hash": "ff61b889fb5ce744",
       "bytes": 775483,
       "eagerLoad": false
     },

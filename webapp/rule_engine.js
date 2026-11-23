@@ -1681,8 +1681,18 @@ const RuleEngine = {
       return actualTier === tierMatch[1].toLowerCase();
     }
 
-    // 2b. Numeric HD / Level / Class Level / Caster Level Tier check (e.g. "HD >= 12", "HD 1-11", "CL <= 11", "Lvl 5+")
-    const resolveTierActual = (unitRaw) => {
+    // 2b. Numeric HD / Level / Class Level / Caster Level Tier check (e.g. "HD >= 12", "HD 1-11", "CL <= 11", "Shadowcaster Lvl 7–12", "Lvl 5+")
+    const resolveTierActual = (unitRaw, classPrefixRaw = '') => {
+      const clsPrefix = String(classPrefixRaw || '').trim().toLowerCase();
+      if (clsPrefix && clsPrefix !== 'class' && clsPrefix !== 'character' && clsPrefix !== 'total' && clsPrefix !== 'effective') {
+        const lp = Array.isArray(ch.levelProgression) ? ch.levelProgression : [];
+        if (lp.length > 0) {
+          return lp.filter(r => r && r.active !== false && String(r.className || '').toLowerCase().includes(clsPrefix)).length;
+        }
+        if (Array.isArray(ch.classes)) {
+          return ch.classes.reduce((sum, c) => (c && String(c.name || c.className || '').toLowerCase().includes(clsPrefix) ? sum + (Number(c.level) || 0) : sum), 0);
+        }
+      }
       const u = String(unitRaw || '').toLowerCase().replace(/\s+/g, '');
       const fallbackLvl = Array.isArray(ch.levels) ? ch.levels.length : 0;
       if (u === 'cl' || u === 'casterlevel') {
@@ -1693,21 +1703,21 @@ const RuleEngine = {
       }
       return Number(evalCtx.hd ?? evalCtx.level ?? evalCtx.totalLevel ?? fallbackLvl) || 0;
     };
-    const tierRangeM = low.match(/^(?:[a-z]+\s+)?(hd|hit\s*dice|cl|caster\s*level|class\s*lv(?:l|el)?|lv(?:l|el)?)\s*(\d+)\s*[-–—]\s*(\d+)$/i);
+    const tierRangeM = low.match(/^(?:([a-z]+)\s+)?(hd|hit\s*dice|cl|caster\s*level|class\s*lv(?:l|el)?|lv(?:l|el)?)\s*(\d+)\s*[-–—]\s*(\d+)$/i);
     if (tierRangeM) {
-      const val = resolveTierActual(tierRangeM[1]);
-      return val >= Number(tierRangeM[2]) && val <= Number(tierRangeM[3]);
+      const val = resolveTierActual(tierRangeM[2], tierRangeM[1]);
+      return val >= Number(tierRangeM[3]) && val <= Number(tierRangeM[4]);
     }
-    const tierPlusM = low.match(/^(?:[a-z]+\s+)?(hd|hit\s*dice|cl|caster\s*level|class\s*lv(?:l|el)?|lv(?:l|el)?)\s*(\d+)\+$/i);
+    const tierPlusM = low.match(/^(?:([a-z]+)\s+)?(hd|hit\s*dice|cl|caster\s*level|class\s*lv(?:l|el)?|lv(?:l|el)?)\s*(\d+)\+$/i);
     if (tierPlusM) {
-      const val = resolveTierActual(tierPlusM[1]);
-      return val >= Number(tierPlusM[2]);
+      const val = resolveTierActual(tierPlusM[2], tierPlusM[1]);
+      return val >= Number(tierPlusM[3]);
     }
-    const tierCmpM = low.match(/^(?:[a-z]+\s+)?(hd|hit\s*dice|cl|caster\s*level|class\s*lv(?:l|el)?|lv(?:l|el)?)\s*(>=|<=|>|<|===?|≥|≤)\s*(\d+)$/i);
+    const tierCmpM = low.match(/^(?:([a-z]+)\s+)?(hd|hit\s*dice|cl|caster\s*level|class\s*lv(?:l|el)?|lv(?:l|el)?)\s*(>=|<=|>|<|===?|≥|≤)\s*(\d+)$/i);
     if (tierCmpM) {
-      const val = resolveTierActual(tierCmpM[1]);
-      const op = tierCmpM[2];
-      const rhs = Number(tierCmpM[3]);
+      const val = resolveTierActual(tierCmpM[2], tierCmpM[1]);
+      const op = tierCmpM[3];
+      const rhs = Number(tierCmpM[4]);
       if (op === '>=' || op === '≥') return val >= rhs;
       if (op === '<=' || op === '≤') return val <= rhs;
       if (op === '>') return val > rhs;
@@ -1906,14 +1916,32 @@ const RuleEngine = {
     }
 
     // 6b. Natural-language level gates in V3 splat branches (e.g. "Class level 6+", "Shadowcaster Lvl 7–12", "Shadowcaster Lvl 14+")
+    const _resolveNamedClassLvl = (condStr) => {
+      const m = String(condStr || '').match(/^([a-z][a-z\s'-]{1,24}?)\s+(?:class\s+level|lvl|level)\s+\d+/i);
+      if (m && m[1]) {
+        const clsNeedle = m[1].trim().toLowerCase();
+        if (clsNeedle !== 'class' && clsNeedle !== 'character' && clsNeedle !== 'total') {
+          const lp = Array.isArray(ch.levelProgression) ? ch.levelProgression : [];
+          if (lp.length > 0) {
+            return lp.filter(r => r && r.active !== false && String(r.className || '').toLowerCase().includes(clsNeedle)).length;
+          }
+          if (Array.isArray(ch.classes)) {
+            return ch.classes.reduce((sum, c) => (c && String(c.name || c.className || '').toLowerCase().includes(clsNeedle) ? sum + (Number(c.level) || 0) : sum), 0);
+          }
+        }
+      }
+      return null;
+    };
     const lvlRangeMatch = cond.match(/\b(?:class\s+level|lvl|level)\s+(\d+)\s*[–-]\s*(\d+)\b/i);
     if (lvlRangeMatch) {
-      const lv = Number(evalCtx.classLevel || evalCtx.level || ch.level || 1);
+      const namedLv = _resolveNamedClassLvl(cond);
+      const lv = namedLv !== null ? namedLv : Number(evalCtx.classLevel || evalCtx.level || ch.level || 1);
       return lv >= Number(lvlRangeMatch[1]) && lv <= Number(lvlRangeMatch[2]);
     }
     const lvlPlusMatch = cond.match(/^(?:[a-z]+\s+)?(?:class\s+level|lvl|level)\s+(\d+)\+/i);
     if (lvlPlusMatch) {
-      const lv = Number(evalCtx.classLevel || evalCtx.level || ch.level || 1);
+      const namedLv = _resolveNamedClassLvl(cond);
+      const lv = namedLv !== null ? namedLv : Number(evalCtx.classLevel || evalCtx.level || ch.level || 1);
       return lv >= Number(lvlPlusMatch[1]);
     }
 
@@ -1982,12 +2010,13 @@ const RuleEngine = {
     const entryMl = Number(evalCtx.ml ?? out.manifesterLevel ?? out.ml ?? entryCl) || 1;
     const entryIl = Number(evalCtx.il ?? out.initiatorLevel ?? out.il ?? evalCtx.level ?? 1) || 1;
     const entryEbl = Number(evalCtx.ebl ?? out.effectiveBinderLevel ?? out.ebl ?? evalCtx.level ?? 1) || 1;
-    const boundChakra = evalCtx.boundChakra ?? out.boundChakra ?? out.chakraBind ?? null;
+    const rawBoundChakra = evalCtx.boundChakra ?? out.boundChakra ?? out.chakraBind ?? null;
+    const boundChakra = (rawBoundChakra && String(rawBoundChakra).trim().toLowerCase() !== 'none') ? String(rawBoundChakra).trim() : null;
 
     // Psionics Augment Cap (XPH RAW: baseCost + augmentPP <= ML)
     const rawAugmentPP = Math.max(0, Number(evalCtx.augmentPP ?? out.augmentPP ?? 0) || 0);
     const powerLvl = Number(out.level ?? 1) || 1;
-    const basePowerCost = Number(out.baseCost ?? out.powerPoints ?? (powerLvl * 2 - 1)) || 1;
+    const basePowerCost = Number(out.ppCost ?? out.spell?.ppCost ?? out.baseCost ?? out.powerPoints ?? (powerLvl * 2 - 1)) || 1;
     const hasMlCap = Boolean(out.type === 'Power' || out.category === 'Power' || out.augment || evalCtx.enforceAugmentCap);
     const maxAllowedAugment = hasMlCap ? Math.max(0, entryMl - basePowerCost) : rawAugmentPP;
     const effectiveAugmentPP = hasMlCap ? Math.min(rawAugmentPP, maxAllowedAugment) : rawAugmentPP;
@@ -3150,7 +3179,7 @@ const RuleEngine = {
     }
 
     // Structural Bridge 2: Incarnum `chakraBinds[boundChakra]` evaluation
-    if (boundChakra && out.chakraBinds && typeof out.chakraBinds === 'object') {
+    if (boundChakra && out.chakraBinds && typeof out.chakraBinds === 'object' && !Array.isArray(out.chakraBinds)) {
       const bindKey = Object.keys(out.chakraBinds).find(k => k.toLowerCase() === String(boundChakra).trim().toLowerCase());
       const bindEntry = bindKey ? out.chakraBinds[bindKey] : null;
       if (bindEntry) {
@@ -3594,8 +3623,8 @@ const RuleEngine = {
             raw.essentia !== undefined ||
             raw.invested !== undefined ||
             raw.investedEssentia !== undefined ||
-            raw.boundChakra ||
-            raw.chakraBind ||
+            (raw.boundChakra && String(raw.boundChakra).trim().toLowerCase() !== 'none') ||
+            (raw.chakraBind && String(raw.chakraBind).trim().toLowerCase() !== 'none') ||
             raw.augmentPP !== undefined ||
             (Array.isArray(raw.blocks) && raw.blocks.length > 0) ||
             (Array.isArray(raw.effects) && raw.effects.length > 0)
@@ -14119,7 +14148,7 @@ const RuleEngine = {
   resetSubsystemsOnLongRest(character) {
     if (!character || typeof character !== 'object') return { psionicsRestored: false, mysteriesReset: 0, utterancesReset: 0, vestigesCooldownReset: 0 };
     const out = { psionicsRestored: false, mysteriesReset: 0, utterancesReset: 0, vestigesCooldownReset: 0 };
-    const subEval = (typeof this.evaluateSubsystems === 'function') ? this.evaluateSubsystems(character) : null;
+    const subEval = (typeof this.deriveSheet === 'function') ? this.deriveSheet(character, [])?.subsystems : null;
 
     // 1. Psionics: restore currentPP to maxPP and deactivate temporary manifested powers
     if (character.psionics && typeof character.psionics === 'object') {
@@ -18768,7 +18797,8 @@ const RuleEngine = {
         id: mergedV.id || mergedV.name,
         name: mergedV.name || mergedV.id,
         level: Number(mergedV.level ?? mergedV.vestigeLevel ?? 1) || 1,
-        bindingDC: Number(mergedV.bindingDC ?? mergedV.dc ?? 15) || 15,
+        bindingDC: Number(mergedV.bindingDc ?? mergedV.bindingDC ?? mergedV.spell?.bindingDc ?? mergedV.dc ?? 15) || 15,
+        bindingDc: Number(mergedV.bindingDc ?? mergedV.bindingDC ?? mergedV.spell?.bindingDc ?? mergedV.dc ?? 15) || 15,
         modifiers: v3Eval.modifiers,
         damageParts: v3Eval.damageParts,
         tacticalBadges: v3Eval.tacticalBadges
@@ -18790,12 +18820,21 @@ const RuleEngine = {
         ...mObj,
         blocks: Array.isArray(mObj.blocks) && mObj.blocks.length > 0 ? mObj.blocks : dbM.blocks
       } : mObj;
-      const mysLvl = Number(mergedM.level ?? mergedM.mysteryLevel ?? 1) || 1;
-      const tier = mergedM.tier || (mysLvl <= 3 ? 'Apprentice' : (mysLvl <= 6 ? 'Initiate' : 'Master'));
-      // ToM Shadowcaster progression: Apprentice (1-3) -> Spell (CL 1-6), Sp (CL 7-12, 2/day), Su (CL 13+, 3/day)
+      const mysLvl = Number(mergedM.level ?? mergedM.mysteryLevel ?? mergedM.spell?.maneuverLvl ?? 1) || 1;
+      const tier = mergedM.tier || mergedM.mysteryTier || mergedM.spell?.mysteryTier || (mysLvl <= 3 ? 'Apprentice' : (mysLvl <= 6 ? 'Initiate' : 'Master'));
+      // ToM Shadowcaster progression:
+      // Fundamental -> Su 3/day (CL 1-13), At Will (CL 14+)
+      // Apprentice (1-3) -> Spell 1/day (CL 1-6), Sp 2/day (CL 7-12), Su 3/day (CL 13+)
+      // Initiate (4-6) -> Spell 1/day (CL 7-12), Sp 2/day (CL 13+)
+      // Master (7-9) -> Spell 1/day
       let castType = 'Spell';
       let usesPerDay = 1;
-      if (tier === 'Apprentice') {
+      let isAtWill = false;
+      if (tier === 'Fundamental') {
+        castType = 'Su';
+        isAtWill = shadowCasterLevel >= 14;
+        usesPerDay = isAtWill ? 99 : 3;
+      } else if (tier === 'Apprentice') {
         if (shadowCasterLevel >= 13) { castType = 'Su'; usesPerDay = 3; }
         else if (shadowCasterLevel >= 7) { castType = 'Sp'; usesPerDay = 2; }
         else { castType = 'Spell'; usesPerDay = 1; }
@@ -18808,7 +18847,7 @@ const RuleEngine = {
       }
       const v3Eval = this.evaluateV3Entry(
         { ...mergedM, schemaVersion: 3 },
-        { character: w, level: totalLevel || 1, cl: shadowCasterLevel || 1 }
+        { character: w, level: totalLevel || 1, classLevel: shadowCasterLevel || 1, cl: shadowCasterLevel || 1 }
       );
       return {
         ...mergedM,
@@ -18817,7 +18856,9 @@ const RuleEngine = {
         level: mysLvl,
         tier,
         castType,
-        usesPerDay: Number(mergedM.usesPerDay || usesPerDay) || usesPerDay,
+        isAtWill,
+        dailyMax: usesPerDay,
+        usesPerDay,
         modifiers: v3Eval.modifiers,
         damageParts: v3Eval.damageParts,
         tacticalBadges: v3Eval.tacticalBadges

@@ -8776,7 +8776,7 @@
       "discipline": "Psychokinesis",
       "level": 1,
       "ppCost": 1,
-      "augmentable": false,
+      "augmentable": true,
       "descriptors": [
         "see text"
       ]
@@ -10634,7 +10634,7 @@
       "discipline": "Psychokinesis",
       "level": 1,
       "ppCost": 1,
-      "augmentable": false,
+      "augmentable": true,
       "descriptors": [
         "force"
       ]
@@ -11934,7 +11934,7 @@
       "discipline": "Psychokinesis",
       "level": 1,
       "ppCost": 1,
-      "augmentable": false,
+      "augmentable": true,
       "descriptors": []
     },
     "delivery": {
@@ -14135,7 +14135,7 @@
       "discipline": "Telepathy",
       "level": 1,
       "ppCost": 1,
-      "augmentable": false,
+      "augmentable": true,
       "descriptors": [
         "mind-affecting"
       ]
@@ -20173,7 +20173,7 @@
       "discipline": "Psychometabolism",
       "level": 1,
       "ppCost": 1,
-      "augmentable": false,
+      "augmentable": true,
       "descriptors": []
     },
     "delivery": {
@@ -21605,7 +21605,7 @@
       "discipline": "Psychometabolism",
       "level": 1,
       "ppCost": 1,
-      "augmentable": false,
+      "augmentable": true,
       "descriptors": []
     },
     "delivery": {
@@ -21655,7 +21655,7 @@
         "amount": 5,
         "per": 1,
         "max": 999,
-        "tempHpFormula": "5 * @cl"
+        "tempHpFormula": "5 + 5 * @augmentPP"
       }
     ],
     "shortDescription": "Gain 5 temporary hit points.",

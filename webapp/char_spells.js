@@ -12386,7 +12386,7 @@
         const intMod = Math.floor(((Number(char?.abilities?.int) || 10) - 10) / 2);
         const bonusPP = fromEngine?.bonusPP ?? (ml >= 1 && intMod > 0 ? Math.floor((intMod * ml) / 2) : 0);
         const maxPP = fromEngine?.maxPP ?? Math.max(Number(rawPsi.maxPP) || 0, basePP + bonusPP);
-        const currentPP = rawPsi.currentPP !== undefined ? Math.max(0, Math.min(maxPP || 999, Number(rawPsi.currentPP) || 0)) : (fromEngine?.currentPP ?? maxPP);
+        const currentPP = rawPsi.currentPP !== undefined ? Math.max(0, Math.min(maxPP, Number(rawPsi.currentPP) || 0)) : (fromEngine?.currentPP ?? maxPP);
         return { manifesterLevel: ml, basePP, bonusPP, maxPP, currentPP, powers };
       }
 
@@ -12421,7 +12421,18 @@
 
       if (discipline === 'shadow') {
         const rawShadow = char?.shadowMagic || {};
-        const mysteries = Array.isArray(rawShadow.mysteries) ? rawShadow.mysteries : (Array.isArray(char?.mysteries) ? char.mysteries : []);
+        const rawMysteries = Array.isArray(rawShadow.mysteries) ? rawShadow.mysteries : (Array.isArray(char?.mysteries) ? char.mysteries : []);
+        const engineMysteries = Array.isArray(fromEngine?.mysteries) ? fromEngine.mysteries : [];
+        const mysteries = rawMysteries.map((m, idx) => {
+          const engM = engineMysteries[idx];
+          if (!m || typeof m !== 'object' || !engM) return m;
+          return Object.assign({}, m, {
+            tier: engM.tier || m.tier,
+            castType: engM.castType || m.castType || 'Spell',
+            isAtWill: Boolean(engM.isAtWill),
+            dailyMax: Number(engM.dailyMax ?? engM.usesPerDay ?? m.dailyMax) || 1
+          });
+        });
         const casterLevel = fromEngine?.casterLevel ?? countClassLevelsMatching(char, SUBSYSTEM_CLASS_MAP.shadow);
         return { casterLevel, mysteries };
       }
@@ -12620,12 +12631,13 @@
         const pct = maxPP > 0 ? Math.max(0, Math.min(100, Math.round((curPP / maxPP) * 100))) : 0;
         const cardsHtml = snap.powers.length > 0 ? snap.powers.map((p, idx) => {
           const baseCost = Math.max(1, Number(p.ppCost ?? p.spell?.ppCost ?? ((Number(p.level) || 1) * 2 - 1)) || 1);
-          const maxAugment = Math.max(0, ml - baseCost);
-          const augPP = Math.max(0, Math.min(maxAugment, Number(p.augmentPP) || 0));
+          const srdPwr = (window.SrdCompendium && typeof window.SrdCompendium.getById === 'function' && p.id) ? window.SrdCompendium.getById(p.id) : null;
+          const isAugmentable = p.augmentable !== undefined ? Boolean(p.augmentable) : (srdPwr?.spell?.augmentable !== undefined ? Boolean(srdPwr.spell.augmentable) : true);
+          const maxAugment = isAugmentable ? Math.max(0, ml - baseCost) : 0;
+          const augPP = isAugmentable ? Math.max(0, Math.min(maxAugment, Number(p.augmentPP) || 0)) : 0;
           const totalCost = baseCost + augPP;
           const descText = p.shortDescription || p.benefit || p.description || 'Psionic power.';
           const pDisc = p.discipline || p.spell?.discipline || 'Psionics';
-          const srdPwr = (window.SrdCompendium && typeof window.SrdCompendium.getById === 'function' && p.id) ? window.SrdCompendium.getById(p.id) : null;
           const pChoices = (Array.isArray(p.choices) && p.choices.length > 0) ? p.choices : (Array.isArray(srdPwr?.choices) ? srdPwr.choices : []);
           const pCh0 = pChoices[0];
           const curPwrChoice = p.chosenOption || p.choice || (Array.isArray(pCh0?.options) ? pCh0.options[0] : '') || '';
@@ -12654,9 +12666,9 @@
               <div class="pt-2 border-t border-slate-800 flex flex-wrap items-center justify-between gap-2">
                 <div class="flex items-center gap-1">
                   <span class="text-[10px] text-slate-400 font-bold">Augment:</span>
-                  <button type="button" data-action="spells:subsys-power-augment" data-idx="${idx}" data-delta="-1" class="ui-btn-icon-sm bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700">-</button>
+                  <button type="button" data-action="spells:subsys-power-augment" data-idx="${idx}" data-delta="-1" ${!isAugmentable || augPP <= 0 ? 'disabled' : ''} class="ui-btn-icon-sm bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700">-</button>
                   <span class="text-[11px] font-mono font-bold text-cyan-300 px-1.5">+${augPP} PP</span>
-                  <button type="button" data-action="spells:subsys-power-augment" data-idx="${idx}" data-delta="1" class="ui-btn-icon-sm bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700">+</button>
+                  <button type="button" data-action="spells:subsys-power-augment" data-idx="${idx}" data-delta="1" ${!isAugmentable || augPP >= maxAugment ? 'disabled' : ''} class="ui-btn-icon-sm bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700">+</button>
                 </div>
                 <button type="button" data-action="spells:subsys-manifest-power" data-idx="${idx}" class="ui-btn-sm h-7 px-3 rounded-lg bg-cyan-800 hover:bg-cyan-700 text-white border border-cyan-500/60 text-xs font-bold">🧠 Manifest (${totalCost} PP)</button>
               </div>
@@ -12706,9 +12718,16 @@
 
       if (discipline === 'incarnum') {
         const cardsHtml = snap.soulmelds.length > 0 ? snap.soulmelds.map((sm, idx) => {
-          const invested = Number(sm.investedEssentia) || 0;
+          const invested = Number(sm.investedEssentia ?? sm.essentia ?? sm.invested) || 0;
           const boundChakra = sm.boundChakra || 'None';
-          const slotsText = sm.chakraSlots || sm.spell?.chakraSlots || 'All';
+          const rawSlotsText = sm.chakraSlots || sm.spell?.chakraSlots || 'All';
+          const slotsText = Array.isArray(rawSlotsText) ? rawSlotsText.join(', ') : String(rawSlotsText);
+          const parsedLegal = Array.isArray(rawSlotsText)
+            ? rawSlotsText.map(s => String(s).trim().toLowerCase()).filter(Boolean)
+            : String(rawSlotsText).split(/[,/|]+/).map(s => s.trim().toLowerCase()).filter(Boolean);
+          const legalChakraOptions = (parsedLegal.length > 0 && !parsedLegal.includes('all'))
+            ? CHAKRA_BIND_SLOTS.filter(slot => slot === 'None' || parsedLegal.includes(slot.toLowerCase()) || slot === boundChakra)
+            : CHAKRA_BIND_SLOTS;
           const descText = sm.shortDescription || sm.benefit || sm.description || 'Incarnum soulmeld.';
           return `
             <div class="discipline-tab-card bg-slate-900/90 border border-emerald-500/40 rounded-xl p-3 flex flex-col justify-between gap-2.5 shadow-sm">
@@ -12730,7 +12749,7 @@
                 <label class="flex items-center gap-1.5 text-[10px] text-slate-400">
                   <span class="font-bold">Bind:</span>
                   <select data-change-action="spells:subsys-chakra-bind" data-idx="${idx}" class="ui-input-sm h-7 bg-slate-950 border border-slate-700 rounded-md px-2 text-xs text-sky-300 font-bold cursor-pointer">
-                    ${CHAKRA_BIND_SLOTS.map(slot => `<option value="${slot}" ${boundChakra === slot ? 'selected' : ''}>${slot}</option>`).join('')}
+                    ${legalChakraOptions.map(slot => `<option value="${slot}" ${boundChakra === slot ? 'selected' : ''}>${slot}</option>`).join('')}
                   </select>
                 </label>
               </div>
@@ -12832,18 +12851,20 @@
         });
         const cardsHtml = sortedMysteries.length > 0 ? sortedMysteries.map(({ m, idx }) => {
           const tier = m.tier || m.mysteryTier || m.spell?.mysteryTier || 'Apprentice';
+          const castType = m.castType || (tier === 'Fundamental' ? 'Su' : 'Spell');
+          const isAtWill = Boolean(m.isAtWill);
           const dailyMax = Math.max(1, Number(m.dailyMax) || (tier === 'Fundamental' ? 3 : 1));
-          const usesLeft = m.usesLeft !== undefined ? Math.max(0, Math.min(dailyMax, Number(m.usesLeft) || 0)) : dailyMax;
+          const usesLeft = isAtWill ? dailyMax : (m.usesLeft !== undefined ? Math.max(0, Math.min(dailyMax, Number(m.usesLeft) || 0)) : dailyMax);
           const mLvl = Number(m.level ?? m.spell?.maneuverLvl ?? 1) || 1;
           const descText = m.shortDescription || m.benefit || m.description || 'Shadow mystery.';
           return `
             <div class="discipline-tab-card bg-slate-900/90 border border-indigo-500/40 rounded-xl p-3 flex flex-col justify-between gap-2.5 shadow-sm">
               <div class="space-y-1.5 min-w-0">
                 <div class="flex items-center justify-between gap-2">
-                  <span class="badge bg-indigo-950 text-indigo-300 border border-indigo-700 text-[10px]">${UI.escapeHtml(tier)} • Lvl ${mLvl}</span>
+                  <span class="badge bg-indigo-950 text-indigo-300 border border-indigo-700 text-[10px]">${UI.escapeHtml(tier)} • ${UI.escapeHtml(castType)} • Lvl ${mLvl}</span>
                   <div class="flex items-center gap-1">
                     <button type="button" data-action="spells:subsys-toggle-active" data-discipline="shadow" data-idx="${idx}" class="badge ${m.active ? 'bg-emerald-950 text-emerald-300 border-emerald-600' : 'bg-slate-950 text-slate-400 border-slate-700'} border text-[10px] font-mono cursor-pointer" title="Toggle active effect on character sheet">${m.active ? '⚡ Active' : '○ Off'}</button>
-                    <span class="badge ${usesLeft > 0 ? 'bg-slate-950 text-indigo-200 border-slate-700' : 'bg-rose-950 text-rose-300 border-rose-800'} text-[10px] font-mono">${usesLeft} / ${dailyMax} Uses</span>
+                    <span class="badge ${isAtWill || usesLeft > 0 ? 'bg-slate-950 text-indigo-200 border-slate-700' : 'bg-rose-950 text-rose-300 border-rose-800'} text-[10px] font-mono">${isAtWill ? 'At Will' : `${usesLeft} / ${dailyMax} Uses`}</span>
                   </div>
                 </div>
                 <button type="button" data-action="entity:inspect" data-entity-kind="mystery" data-entity-id="${UI.escapeAttr(m.id || m.baseEntryId || '')}" data-entity-name="${UI.escapeAttr(m.name || '')}" data-entity-index="${idx}" data-discipline="shadow" class="text-left text-xs font-extrabold text-white hover:text-indigo-200 cursor-pointer hover:underline block truncate max-w-full" title="Inspect / Edit in Rule Crafter">${UI.escapeHtml(m.name || 'Unnamed Mystery')}</button>
@@ -12876,7 +12897,7 @@
                   <span class="badge bg-indigo-950 text-indigo-300 border border-indigo-700 text-[10px] font-mono">CL ${snap.casterLevel}</span>
                   <span class="badge bg-slate-900 text-indigo-200 border border-slate-700 text-[10px] font-mono">${snap.mysteries.length} Known</span>
                 </div>
-                <p class="text-[11px] text-indigo-300">Apprentice (Spell) • Initiate (SLA) • Master (Supernatural)</p>
+                <p class="text-[11px] text-indigo-300">Fundamental (Su) • Apprentice (Spell → Sp → Su) • Initiate (Spell → Sp) • Master (Spell)</p>
               </div>
             </div>
             <div class="flex flex-wrap items-center gap-1.5">
@@ -13004,6 +13025,13 @@
         _dispatchSubsysAction({ discipline: disc, op: 'toggleActive', idx });
         patchSubsystemCockpitDOM(disc);
       });
+      Actions.register('spells:subsys-remove', (el, data) => {
+        const disc = String(data.discipline || '').toLowerCase();
+        const idx = Number(data.idx);
+        if (!disc || !Number.isInteger(idx)) return;
+        _dispatchSubsysAction({ discipline: disc, op: 'remove', idx });
+        patchSubsystemCockpitDOM(disc);
+      });
       Actions.register('spells:subsys-picker-add', (el, data) => {
         const disc = data.discipline;
         const meta = SUBSYSTEM_PICKER_META[disc];
@@ -13030,6 +13058,7 @@
             level: Number(found.level ?? found.spell?.level ?? 1) || 1,
             discipline: found.spell?.discipline || 'Psionics',
             ppCost: Number(found.spell?.ppCost ?? ((Number(found.level || 1) * 2) - 1)) || 1,
+            augmentable: found.spell?.augmentable !== false,
             augmentPP: 0,
             active: false,
             ...choiceSnap,
@@ -13098,7 +13127,26 @@
           };
         }
         if (!entry) return;
-        _dispatchSubsysAction({ discipline: disc, op: 'add', entry });
+        const snap = getSubsystemSnapshot(disc, character);
+        const addPayload = { discipline: disc, op: 'add', entry };
+        if (disc === 'incarnum' && snap.maxSoulmelds !== undefined) addPayload.maxSoulmelds = snap.maxSoulmelds;
+        if (disc === 'pact') {
+          if (snap.maxVestiges !== undefined) addPayload.maxVestiges = snap.maxVestiges;
+          if (snap.maxVestigeLevel !== undefined) addPayload.maxVestigeLevel = snap.maxVestigeLevel;
+        }
+        _dispatchSubsysAction(addPayload);
+        const outcome = (window.CharStore && typeof window.CharStore.getLastOutcome === 'function') ? window.CharStore.getLastOutcome() : null;
+        if (outcome && (outcome.status === 'cap_exceeded' || outcome.status === 'duplicate_entry')) {
+          if (typeof showDiceTopToast === 'function') {
+            const msg = outcome.status === 'duplicate_entry'
+              ? `${found.name} is already added.`
+              : (outcome.reason === 'maxVestigeLevel'
+                ? `Vestige level ${outcome.vestigeLevel} exceeds your max (${outcome.maxVestigeLevel}).`
+                : `Limit reached (${outcome.reason}: ${outcome.cap}).`);
+            showDiceTopToast({ icon: '⚠️', title: found.name, breakdown: msg, total: 'Blocked' });
+          }
+          return;
+        }
         patchSubsystemCockpitDOM(disc);
         if (typeof showDiceTopToast === 'function') {
           showDiceTopToast({ icon: meta.icon, title: found.name, breakdown: `Added to ${meta.title}`, total: 'Added' });
@@ -13173,7 +13221,19 @@
       Actions.register('spells:subsys-chakra-bind', (el, data) => {
         const idx = Number(data.idx);
         if (!el || !Number.isInteger(idx)) return;
-        _dispatchSubsysAction({ discipline: 'incarnum', op: 'chakraBind', idx, slot: el.value || 'None' });
+        const snap = getSubsystemSnapshot('incarnum', character);
+        _dispatchSubsysAction({ discipline: 'incarnum', op: 'chakraBind', idx, slot: el.value || 'None', maxChakraBinds: snap.maxChakraBinds });
+        const outcome = (window.CharStore && typeof window.CharStore.getLastOutcome === 'function') ? window.CharStore.getLastOutcome() : null;
+        if (outcome && (outcome.status === 'illegal_chakra_slot' || outcome.status === 'chakra_slot_occupied' || outcome.status === 'cap_exceeded')) {
+          if (typeof showDiceTopToast === 'function') {
+            const reasonTxt = outcome.status === 'illegal_chakra_slot'
+              ? `Slot "${outcome.slot}" is not legal for this soulmeld.`
+              : (outcome.status === 'chakra_slot_occupied'
+                ? `Chakra "${outcome.slot}" already has a bound soulmeld.`
+                : `Max Chakra Binds (${outcome.cap}) reached.`);
+            showDiceTopToast({ icon: '⚠️', title: 'Chakra Bind Blocked', breakdown: reasonTxt, total: 'Blocked' });
+          }
+        }
         patchSubsystemCockpitDOM('incarnum');
       });
       Actions.register('spells:subsys-binding-check', (el, data) => {

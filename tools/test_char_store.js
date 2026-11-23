@@ -272,6 +272,67 @@ function runCharStoreTests() {
     'S2: hud/longRest must restore PP, mystery usesLeft, truenaming castsToday, vestige cooldownRounds, and clear temporary active flags'
   );
 
+  // 7. P1 Subsystems (S7, S8, S11): caps, legal chakra slots, occupancy, remove+Undo, resolveEntity nested buckets
+  // S7: maxSoulmelds cap & duplicate guard
+  Store.dispatch({
+    type: 'spells/subsysAction',
+    payload: { discipline: 'incarnum', op: 'add', maxSoulmelds: 1, entry: { id: 'sm-wormtail-belt', name: 'Wormtail Belt', chakraSlots: 'Waist, Totem' } }
+  });
+  check(Store.getLastOutcome().status === 'cap_exceeded' && Store.getLastOutcome().reason === 'maxSoulmelds' && Store.getDoc().incarnum.soulmelds.length === 1,
+    'S7: add must enforce maxSoulmelds cap');
+  Store.dispatch({
+    type: 'spells/subsysAction',
+    payload: { discipline: 'incarnum', op: 'add', maxSoulmelds: 4, entry: { id: 'sm-bluesteel-bracers', name: 'Bluesteel Bracers', chakraSlots: 'Arms' } }
+  });
+  check(Store.getLastOutcome().status === 'duplicate_entry' && Store.getDoc().incarnum.soulmelds.length === 1,
+    'S7: add must block duplicate soulmeld');
+  // S7: Pact maxVestiges & maxVestigeLevel caps
+  Store.dispatch({
+    type: 'spells/subsysAction',
+    payload: { discipline: 'pact', op: 'add', maxVestiges: 2, maxVestigeLevel: 3, entry: { id: 'vst-agares', name: 'Agares', vestigeLevel: 4, bindingDc: 22 } }
+  });
+  check(Store.getLastOutcome().status === 'cap_exceeded' && Store.getLastOutcome().reason === 'maxVestigeLevel',
+    'S7: add must block vestige above maxVestigeLevel');
+
+  // S8: legal chakra slot, maxChakraBinds, and single-meld-per-chakra occupancy
+  Store.getDoc().incarnum.soulmelds[0].chakraSlots = 'Arms';
+  Store.dispatch({
+    type: 'spells/subsysAction',
+    payload: { discipline: 'incarnum', op: 'chakraBind', idx: 0, slot: 'Crown', maxChakraBinds: 2 }
+  });
+  check(Store.getLastOutcome().status === 'illegal_chakra_slot' && Store.getDoc().incarnum.soulmelds[0].boundChakra === 'None',
+    'S8: chakraBind must reject illegal chakra slot');
+  Store.dispatch({
+    type: 'spells/subsysAction',
+    payload: { discipline: 'incarnum', op: 'chakraBind', idx: 0, slot: 'Arms', maxChakraBinds: 2 }
+  });
+  check(Store.getLastOutcome().status === 'chakra_bound' && Store.getDoc().incarnum.soulmelds[0].boundChakra === 'Arms',
+    'S8: chakraBind must allow legal chakra slot');
+  Store.dispatch({
+    type: 'spells/subsysAction',
+    payload: { discipline: 'incarnum', op: 'add', maxSoulmelds: 4, entry: { id: 'sm-lammasu-mantle', name: 'Lammasu Mantle', chakraSlots: 'Arms, Shoulders' } }
+  });
+  Store.dispatch({
+    type: 'spells/subsysAction',
+    payload: { discipline: 'incarnum', op: 'chakraBind', idx: 1, slot: 'Arms', maxChakraBinds: 2 }
+  });
+  check(Store.getLastOutcome().status === 'chakra_slot_occupied',
+    'S8: chakraBind must block two soulmelds on the same chakra');
+
+  // S11: StudioBridge.resolveEntity must find instances inside nested subsystem buckets
+  const resPower = Store.StudioBridge.resolveEntity({ kind: 'power', id: 'pwr-inertial-armor', index: 0 });
+  const resMeld = Store.StudioBridge.resolveEntity({ kind: 'soulmeld', id: 'sm-bluesteel-bracers', index: 0 });
+  check(Boolean(resPower && resPower.entry && resPower.entry.id === 'pwr-inertial-armor' && resPower.sourceLocation === 'psionics'),
+    'S11: StudioBridge.resolveEntity must resolve character instance inside doc.psionics.powers');
+  check(Boolean(resMeld && resMeld.entry && resMeld.entry.boundChakra === 'Arms' && resMeld.sourceLocation === 'incarnum'),
+    'S11: StudioBridge.resolveEntity must resolve character instance inside doc.incarnum.soulmelds');
+
+  // Remove + 1-step Undo
+  Store.dispatch({ type: 'spells/subsysAction', payload: { discipline: 'pact', op: 'remove', idx: 0 } });
+  check(Store.getDoc().pactMagic.vestiges.length === 0, 'S7: op=remove must expel vestige');
+  Store.undo();
+  check(Store.getDoc().pactMagic.vestiges.length === 1, 'S7: Ctrl+Z Undo after op=remove must restore vestige');
+
   const elapsedMs = Date.now() - startMs;
   if (failures.length > 0) {
     throw new Error(`CharStore Test Gate failed (${failures.length} failure(s)):\n  - ${failures.join('\n  - ')}`);

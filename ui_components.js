@@ -1047,7 +1047,9 @@
         slotKey: dataset.slotKey || undefined,
         discipline: dataset.discipline || undefined,
         levelIndex: dataset.levelIndex !== undefined && dataset.levelIndex !== '' ? Number(dataset.levelIndex) : undefined,
-        index: dataset.index !== undefined && dataset.index !== '' ? Number(dataset.index) : undefined
+        index: dataset.index !== undefined && dataset.index !== ''
+          ? Number(dataset.index)
+          : (dataset.entityIndex !== undefined && dataset.entityIndex !== '' ? Number(dataset.entityIndex) : undefined)
       };
       openEntityInspector(spec);
     });
