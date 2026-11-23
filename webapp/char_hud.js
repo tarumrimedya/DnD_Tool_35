@@ -242,6 +242,10 @@
           const parsed = JSON.parse(e.newValue);
           window.handleIncomingDmHpEvent(parsed);
         } catch (err) { reportError('char_hud:liveBc.onmessage', err); }
+      } else if (e.key === 'dnd35_hub_db' && typeof handleCampaignHubDbStorageChange === 'function') {
+        handleCampaignHubDbStorageChange();
+      } else if (e.key && e.key.startsWith('dnd35_pbo:') && e.newValue && typeof _drainLocalPendingOffers === 'function') {
+        _drainLocalPendingOffers();
       }
     });
 
@@ -1331,7 +1335,8 @@
 
     function _hpLiveSyncCampaignTopic() {
       if (!_hpLive.userTopic || !window.SupabaseAuth) return;
-      const want = window.SupabaseAuth.getHpLiveCampaignTopic(character && character.cloudCampaignId) || null;
+      const hier = _resolveCampaignHierarchy();
+      const want = window.SupabaseAuth.getHpLiveCampaignTopic(hier.effectiveCloudCampaignId) || null;
       if (want === _hpLive.campaignTopic) return;
       if (_hpLive.campaignTopic) window.SupabaseAuth.leaveHpLive(_hpLive.campaignTopic);
       _hpLive.campaignTopic = want;
@@ -1353,12 +1358,14 @@
         } else {
           joinFn(want, handleHpLiveEvent);
         }
-        _campaignSeedDbRoster(character.cloudCampaignId);
+        _campaignSeedDbRoster(hier.effectiveCloudCampaignId);
       }
     }
 
     async function initHpLiveSync() {
+      _campaignSeedLocalHubRoster();
       _campaignAnnouncePresence(true);
+      _drainLocalPendingOffers();
       if (!window.SupabaseAuth || window.SupabaseAuth.isLocalMode() || typeof window.SupabaseAuth.joinHpLive !== 'function') return;
       if (!character) return;
       if (!_hpLive.userTopic) {
@@ -1372,17 +1379,20 @@
       ensureCloudCharacterId();
       if (!_hpLive.base || _hpLive.base.ref !== character || !_hpLive.base.charId) _hpLiveRebase();
       _hpLiveSyncCampaignTopic();
+      _drainLocalPendingOffers();
     }
 
     // =========================================================================
     // Sprint E2.1 / E2.2: Campaign Target Toaster, Roster & Incoming Buff Queue
     // =========================================================================
+    const _PBO_PREFIX = 'dnd35_pbo:';
     const _campaignTargetState = {
-      roster: new Map(),           // charId -> { charId, name, isNpc, online, lastSeen }
+      roster: new Map(),           // charId -> { charId, name, isNpc, online, lastSeen, subCampaignId }
       outbox: new Map(),           // offerId -> { offer, pendingTargets: Set<string>, expiresAt }
       incomingQueue: [],           // sanitized offers awaiting Accept/Dismiss (max 5)
       seenOffers: new Set(),       // offerId dedupe (also mirrored to sessionStorage)
       senderLastTs: new Map(),     // fromCharId -> last accepted ts (1 offer/s rate limit)
+      lastScopeId: null,           // tracks scope changes on dnd35_hub_db storage event
       tabId: 'bc_' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36)
     };
 
@@ -1405,13 +1415,245 @@
       } catch (_) { /* ignore storage restrictions */ }
     }
 
-    function _getCampaignScopeId() {
-      return (character && character.cloudCampaignId) ? String(character.cloudCampaignId) : 'local';
+    function _readHubDbSafe() {
+      try {
+        const raw = localStorage.getItem('dnd35_hub_db');
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        return (parsed && typeof parsed === 'object') ? parsed : null;
+      } catch (_) {
+        return null;
+      }
+    }
+
+    /** Real persistent character id (never synthetic `local_<name>` or `char_active_player`). */
+    function _getRealTargetCharId() {
+      if (!character) return '';
+      const rawId = String(character._hubId || character.id || '').trim();
+      if (!rawId || rawId === 'char_active_player') return '';
+      return rawId;
     }
 
     function _getMyTargetCharId() {
+      const realId = _getRealTargetCharId();
+      if (realId) return realId;
       if (!character) return '';
-      return String(character._hubId || character.id || (character.name ? 'local_' + character.name.toLowerCase().replace(/[^a-z0-9]+/g, '_') : ''));
+      return character.name ? 'local_' + character.name.toLowerCase().replace(/[^a-z0-9]+/g, '_') : '';
+    }
+
+    /**
+     * Walks a campaign's `parentId` chain in `hubDb.campaigns` (stopping at the first cloudCampaignId).
+     * Authority order: hub row `campaignId` > `character.campaignId` > `character.cloudCampaignId`.
+     */
+    function _resolveCampaignForIds(campId, fallbackCloudId, hubDb) {
+      const camps = (hubDb && Array.isArray(hubDb.campaigns)) ? hubDb.campaigns : [];
+      let effectiveCloudCampaignId = null;
+      let localRootId = null;
+      const subCampaignId = campId ? String(campId) : null;
+
+      if (campId && camps.length > 0) {
+        const visited = new Set();
+        let cur = camps.find(cp => cp && (cp.id === campId || (cp.cloudCampaignId && cp.cloudCampaignId === campId))) || null;
+        let hops = 0;
+        while (cur && !visited.has(cur.id) && hops < 8) {
+          visited.add(cur.id);
+          if (!effectiveCloudCampaignId && cur.cloudCampaignId) {
+            effectiveCloudCampaignId = String(cur.cloudCampaignId);
+          }
+          localRootId = String(cur.id);
+          if (!cur.parentId) break;
+          cur = camps.find(cp => cp && (cp.id === cur.parentId || (cp.cloudCampaignId && cp.cloudCampaignId === cur.parentId))) || null;
+          hops++;
+        }
+      }
+      if (!effectiveCloudCampaignId && fallbackCloudId) {
+        effectiveCloudCampaignId = String(fallbackCloudId);
+      }
+      const scopeId = effectiveCloudCampaignId
+        ? effectiveCloudCampaignId
+        : (localRootId ? `hub:${localRootId}` : (campId ? `hub:${campId}` : 'local'));
+      return { effectiveCloudCampaignId, localRootId, subCampaignId, scopeId };
+    }
+
+    function _resolveCampaignHierarchy() {
+      if (!character) return { effectiveCloudCampaignId: null, localRootId: null, subCampaignId: null, scopeId: 'local' };
+      const hubDb = _readHubDbSafe();
+      const myRealId = _getRealTargetCharId();
+      let rowCampId = null;
+      if (hubDb && Array.isArray(hubDb.characters) && myRealId) {
+        const row = hubDb.characters.find(c => c && (String(c.id) === myRealId || (c.fullData && String(c.fullData._hubId || c.fullData.id) === myRealId)));
+        if (row && row.campaignId !== undefined) rowCampId = row.campaignId;
+      }
+      const activeCampId = rowCampId !== null ? rowCampId : (character.campaignId || null);
+      return _resolveCampaignForIds(activeCampId, character.cloudCampaignId || null, hubDb);
+    }
+
+    function _getCampaignScopeId() {
+      return _resolveCampaignHierarchy().scopeId;
+    }
+
+    function handleCampaignHubDbStorageChange() {
+      const nextScope = _getCampaignScopeId();
+      if (_campaignTargetState.lastScopeId && _campaignTargetState.lastScopeId !== nextScope) {
+        _campaignTargetState.roster.clear();
+        _campaignTargetState.incomingQueue = [];
+        renderIncomingBuffQueue();
+      }
+      _campaignTargetState.lastScopeId = nextScope;
+      _campaignSeedLocalHubRoster();
+      _hpLiveSyncCampaignTopic();
+      _drainLocalPendingOffers();
+    }
+
+    function _campaignSeedLocalHubRoster() {
+      if (!character) return;
+      const hubDb = _readHubDbSafe();
+      if (!hubDb || !Array.isArray(hubDb.characters)) return;
+      const myHier = _resolveCampaignHierarchy();
+      _campaignTargetState.lastScopeId = myHier.scopeId;
+      if (myHier.scopeId === 'local') return;
+      const myRealId = _getRealTargetCharId();
+      hubDb.characters.forEach(c => {
+        if (!c || !c.id) return;
+        const cid = String(c.id);
+        if (cid === myRealId || cid === 'char_active_player') return;
+        const cHier = _resolveCampaignForIds(c.campaignId || c.fullData?.campaignId || null, c.fullData?.cloudCampaignId || null, hubDb);
+        if (cHier.scopeId !== myHier.scopeId) return;
+        const cleanName = String(c.name || c.fullData?.name || 'Unnamed Hero').replace(/[\u0000-\u001f\u007f<>]/g, '').trim().slice(0, 60) || 'Unnamed Hero';
+        const existing = _campaignTargetState.roster.get(cid);
+        if (existing) {
+          existing.name = cleanName;
+          existing.isNpc = Boolean(c.isNpc || c.fullData?.isNpc);
+          existing.subCampaignId = cHier.subCampaignId;
+        } else {
+          _campaignTargetState.roster.set(cid, {
+            charId: cid,
+            name: cleanName,
+            isNpc: Boolean(c.isNpc || c.fullData?.isNpc),
+            online: false,
+            lastSeen: 0,
+            subCampaignId: cHier.subCampaignId
+          });
+        }
+      });
+    }
+
+    // ── Race-free per-offer localStorage pending inbox (`dnd35_pbo:<offerId>`) ──
+    function _pruneLocalPendingOffers(nowTs = Date.now()) {
+      try {
+        const entries = [];
+        for (let i = localStorage.length - 1; i >= 0; i--) {
+          const k = localStorage.key(i);
+          if (!k || !k.startsWith(_PBO_PREFIX)) continue;
+          try {
+            const parsed = JSON.parse(localStorage.getItem(k) || 'null');
+            const exp = Math.min(Number(parsed?.expiresAt) || 0, (Number(parsed?.ts) || 0) + 10 * 60 * 1000);
+            if (!parsed || !exp || exp < nowTs || !Array.isArray(parsed.targetCharIds) || parsed.targetCharIds.length === 0) {
+              localStorage.removeItem(k);
+            } else {
+              entries.push({ key: k, ts: Number(parsed.ts) || 0 });
+            }
+          } catch (_) {
+            localStorage.removeItem(k);
+          }
+        }
+        if (entries.length > 20) {
+          entries.sort((a, b) => a.ts - b.ts);
+          entries.slice(0, entries.length - 20).forEach(e => {
+            try { localStorage.removeItem(e.key); } catch (_) { /* ignore */ }
+          });
+        }
+      } catch (_) { /* ignore storage restrictions */ }
+    }
+
+    function _writeLocalPendingOffer(offer) {
+      if (!offer || !offer.offerId || !Array.isArray(offer.targetCharIds) || offer.targetCharIds.length === 0) return;
+      const realTargets = offer.targetCharIds.filter(id => id && id !== 'char_active_player' && !String(id).startsWith('local_'));
+      if (realTargets.length === 0) return;
+      const nowTs = Date.now();
+      _pruneLocalPendingOffers(nowTs);
+      try {
+        const stored = Object.assign({}, offer, {
+          targetCharIds: realTargets,
+          expiresAt: Math.min(Number(offer.expiresAt) || (nowTs + 10 * 60 * 1000), nowTs + 10 * 60 * 1000)
+        });
+        const serialized = JSON.stringify(stored);
+        if (serialized.length > 16384) return;
+        localStorage.setItem(_PBO_PREFIX + offer.offerId, serialized);
+      } catch (err) {
+        if (typeof reportError === 'function') reportError('char_hud:writeLocalPendingOffer', err);
+      }
+    }
+
+    function _consumeLocalPendingOffer(offerId, myRealId) {
+      if (!offerId || !myRealId) return;
+      const k = _PBO_PREFIX + String(offerId);
+      try {
+        const raw = localStorage.getItem(k);
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+        if (!parsed || !Array.isArray(parsed.targetCharIds)) {
+          localStorage.removeItem(k);
+          return;
+        }
+        const remaining = parsed.targetCharIds.filter(id => String(id) !== String(myRealId) && String(id) !== 'ALL');
+        if (remaining.length === 0) {
+          localStorage.removeItem(k);
+        } else {
+          parsed.targetCharIds = remaining;
+          localStorage.setItem(k, JSON.stringify(parsed));
+        }
+      } catch (_) { /* ignore */ }
+    }
+
+    function _deleteLocalPendingOffer(offerId, fromCharId) {
+      if (!offerId) return;
+      const k = _PBO_PREFIX + String(offerId);
+      try {
+        const raw = localStorage.getItem(k);
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+        if (!fromCharId || !parsed || String(parsed.fromCharId || '') === String(fromCharId)) {
+          localStorage.removeItem(k);
+        }
+      } catch (_) { /* ignore */ }
+    }
+
+    function _drainLocalPendingOffers() {
+      const myRealId = _getRealTargetCharId();
+      if (!myRealId || !character || typeof RuleEngine === 'undefined' || typeof RuleEngine.sanitizeIncomingBuffOffer !== 'function') return;
+      const nowTs = Date.now();
+      _pruneLocalPendingOffers(nowTs);
+      const scopeId = _getCampaignScopeId();
+      const activeOfferIds = new Set(
+        (Array.isArray(character.buffs) ? character.buffs : [])
+          .filter(b => b && b.origin && b.origin.offerId)
+          .map(b => String(b.origin.offerId))
+      );
+      let addedAny = false;
+      try {
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          if (!k || !k.startsWith(_PBO_PREFIX)) continue;
+          let rawObj = null;
+          try { rawObj = JSON.parse(localStorage.getItem(k) || 'null'); } catch (_) { continue; }
+          if (!rawObj) continue;
+          const check = RuleEngine.sanitizeIncomingBuffOffer(rawObj, { campaignId: scopeId, myCharId: myRealId, now: nowTs });
+          if (!check.ok || !check.offer) continue;
+          const offer = check.offer;
+          if (offer.fromCharId === myRealId) continue;
+          if (activeOfferIds.has(offer.offerId)) {
+            _consumeLocalPendingOffer(offer.offerId, myRealId);
+            continue;
+          }
+          if (_campaignTargetState.seenOffers.has(offer.offerId)) continue;
+          if (_campaignTargetState.incomingQueue.some(o => o.offerId === offer.offerId)) continue;
+          if (_campaignTargetState.incomingQueue.length >= 5) break; // keep remaining safely in localStorage
+          _campaignTargetState.incomingQueue.push(offer);
+          addedAny = true;
+        }
+      } catch (_) { /* ignore */ }
+      if (addedAny) renderIncomingBuffQueue();
     }
 
     function _postCampaignLiveEvent(event, payload) {
@@ -1514,7 +1756,9 @@
     }
 
     function getCampaignPartyTargets() {
+      _campaignSeedLocalHubRoster();
       const myId = _getMyTargetCharId();
+      const mySub = _resolveCampaignHierarchy().subCampaignId;
       const now = Date.now();
       const list = [];
       _campaignTargetState.roster.forEach((entry, cid) => {
@@ -1524,10 +1768,15 @@
           charId: entry.charId,
           name: entry.name,
           isNpc: Boolean(entry.isNpc),
-          online: isLive
+          online: isLive,
+          sameSubParty: Boolean(mySub && entry.subCampaignId && entry.subCampaignId === mySub)
         });
       });
-      list.sort((a, b) => (Number(b.online) - Number(a.online)) || a.name.localeCompare(b.name));
+      list.sort((a, b) =>
+        (Number(b.sameSubParty) - Number(a.sameSubParty)) ||
+        (Number(b.online) - Number(a.online)) ||
+        a.name.localeCompare(b.name)
+      );
       return list;
     }
 
@@ -1550,6 +1799,7 @@
         pendingTargets: new Set(targets),
         expiresAt: offer.expiresAt
       });
+      _writeLocalPendingOffer(offer);
       const status = _postCampaignLiveEvent('campaign_buff', offer);
       return { offer, status };
     }
@@ -1557,6 +1807,7 @@
     function sendCampaignBuffRevoke(offerId, buffName) {
       if (!offerId || !character) return;
       _campaignTargetState.outbox.delete(String(offerId));
+      _deleteLocalPendingOffer(offerId, _getMyTargetCharId());
       _postCampaignLiveEvent('campaign_buff_revoke', {
         v: 1,
         offerId: String(offerId),
@@ -1687,6 +1938,7 @@
       }
 
       _markOfferSeen(offer.offerId);
+      _consumeLocalPendingOffer(offer.offerId, _getRealTargetCharId());
       _campaignTargetState.incomingQueue = _campaignTargetState.incomingQueue.filter(o => o.offerId !== offer.offerId);
       renderIncomingBuffQueue();
       saveStateToStorage(true);
@@ -1703,11 +1955,13 @@
       if (typeof showToast === 'function') {
         showToast(`✨ Accepted ${buffToApply.name} from ${offer.fromCharName}`, 'success');
       }
+      _drainLocalPendingOffers();
     }
 
     function _dismissIncomingOffer(offer, status = 'dismissed') {
       if (!offer) return;
       _markOfferSeen(offer.offerId);
+      _consumeLocalPendingOffer(offer.offerId, _getRealTargetCharId());
       _campaignTargetState.incomingQueue = _campaignTargetState.incomingQueue.filter(o => o.offerId !== offer.offerId);
       renderIncomingBuffQueue();
       _postCampaignLiveEvent('campaign_buff_ack', {
@@ -1719,6 +1973,7 @@
         status,
         ts: Date.now()
       });
+      _drainLocalPendingOffers();
     }
 
     function renderIncomingBuffQueue() {
@@ -1748,9 +2003,11 @@
         const titleEl = document.createElement('div');
         titleEl.className = 'text-xs font-bold text-indigo-300 truncate';
         titleEl.textContent = `✨ ${offer.fromCharName} cast ${offer.buff.name}`;
+        const ageMins = Math.floor(Math.max(0, Date.now() - (Number(offer.ts) || Date.now())) / 60000);
+        const ageSuffix = ageMins >= 1 ? ` • ${ageMins}m ago` : '';
         const metaEl = document.createElement('span');
         metaEl.className = 'text-[10px] font-mono text-slate-300 bg-slate-950 px-1.5 py-0.5 rounded border border-slate-700 shrink-0';
-        metaEl.textContent = `CL ${offer.buff.casterLevel} • ${offer.buff.durationText || ''}`;
+        metaEl.textContent = `CL ${offer.buff.casterLevel} • ${offer.buff.durationText || ''}${ageSuffix}`;
         header.appendChild(titleEl);
         header.appendChild(metaEl);
 

@@ -17,7 +17,7 @@
   <!-- Prefetch Character Sheet & Domain Modules during Hub Idle Time -->
   <link rel="prefetch" href="index.html">
   <link rel="prefetch" href="char_modals.js?v=184782dff4">
-  <link rel="prefetch" href="char_hud.js?v=e763079da8">
+  <link rel="prefetch" href="char_hud.js?v=96e6636eeb">
   <link rel="prefetch" href="char_combat.js?v=8938f8aa2b">
   <link rel="prefetch" href="char_spells.js?v=b9ca7c9388">
   <link rel="prefetch" href="char_progression.js?v=7abe03bbf1">
@@ -4625,6 +4625,7 @@ CRITICAL RULES:
           c.fullData.name = name;
           c.fullData.isNpc = isNpc;
           c.fullData.campaignId = campId;
+          c.fullData.cloudCampaignId = resolveRootCloudCampaignId(campId);
         }
         // Moving to another campaign: take the new Campaign DB, detach the old campaign's copies.
         reconcileHubCampaignDbs({ save: false });
@@ -4885,6 +4886,10 @@ CRITICAL RULES:
       const localChar = state.characters.find(c => c.id === charId);
       if (localChar) {
         localChar.campaignId = null;
+        if (localChar.fullData) {
+          localChar.fullData.campaignId = null;
+          localChar.fullData.cloudCampaignId = null;
+        }
         saveHubStorage();
         renderHub();
       }
@@ -4917,11 +4922,23 @@ CRITICAL RULES:
           camp.invite_code = cloudCamp.invite_code;
           charsInCamp.forEach(c => {
             c.campaignId = cloudCamp.id;
+            if (c.fullData) {
+              c.fullData.campaignId = cloudCamp.id;
+              c.fullData.cloudCampaignId = cloudCamp.id;
+            }
           });
-          // Sub-campaigns keep pointing at their main campaign under its new id (they share its Campaign DB).
+          // Sub-campaigns keep pointing at their main campaign under its new id (they share its Campaign DB & cloud topic).
           state.campaigns.forEach(sc => {
             if (sc && sc.parentId === oldId) sc.parentId = cloudCamp.id;
           });
+          const subIds = new Set(state.campaigns.filter(sc => sc && sc.parentId === cloudCamp.id).map(sc => sc.id));
+          if (subIds.size > 0) {
+            state.characters.forEach(scChar => {
+              if (scChar && subIds.has(scChar.campaignId) && scChar.fullData) {
+                scChar.fullData.cloudCampaignId = cloudCamp.id;
+              }
+            });
+          }
           if (state.activeCampaignId === oldId) {
             state.activeCampaignId = cloudCamp.id;
           }
@@ -5121,10 +5138,9 @@ CRITICAL RULES:
       } else if (charObj.campaignId && state.campaigns.some(cp => cp && cp.id === charObj.campaignId)) {
         targetCampaignId = charObj.campaignId;
       }
-      const targetCamp = targetCampaignId ? state.campaigns.find(cp => cp && cp.id === targetCampaignId) : null;
       charObj.campaignId = targetCampaignId;
-      // Align cloudCampaignId with the target Hub campaign's cloudCampaignId (or clear stale/foreign value)
-      charObj.cloudCampaignId = (targetCamp && targetCamp.cloudCampaignId) ? targetCamp.cloudCampaignId : null;
+      // Align cloudCampaignId with the target Hub campaign (walking parentId to root cloud campaign)
+      charObj.cloudCampaignId = resolveRootCloudCampaignId(targetCampaignId);
 
       const newChar = {
         id: charId,
@@ -5472,14 +5488,28 @@ CRITICAL RULES:
     // changes update the matching card. The database writes stay the persistent path.
     const _hubHpLive = { userTopic: null };
 
+    function resolveRootCloudCampaignId(campId) {
+      if (!campId) return null;
+      const camps = Array.isArray(state.campaigns) ? state.campaigns : [];
+      const visited = new Set();
+      let cur = camps.find(cp => cp && (cp.id === campId || (cp.cloudCampaignId && cp.cloudCampaignId === campId))) || null;
+      let hops = 0;
+      while (cur && !visited.has(cur.id) && hops < 8) {
+        visited.add(cur.id);
+        if (cur.cloudCampaignId) return cur.cloudCampaignId;
+        if (!cur.parentId) break;
+        cur = camps.find(cp => cp && (cp.id === cur.parentId || (cp.cloudCampaignId && cp.cloudCampaignId === cur.parentId))) || null;
+        hops++;
+      }
+      return null;
+    }
+
     function hubHpLiveCampaignIdFor(c) {
       if (!c) return null;
-      if (c.fullData && c.fullData.cloudCampaignId) return c.fullData.cloudCampaignId;
-      const camp = state.campaigns.find(cp => cp.id === c.campaignId);
-      if (!camp) return null;
-      if (camp.cloudCampaignId) return camp.cloudCampaignId;
-      const parent = camp.parentId ? state.campaigns.find(cp => cp.id === camp.parentId) : null;
-      return (parent && parent.cloudCampaignId) || null;
+      const resolved = resolveRootCloudCampaignId(c.campaignId);
+      if (resolved) return resolved;
+      if (c.fullData && c.fullData.cloudCampaignId && !c.campaignId) return c.fullData.cloudCampaignId;
+      return null;
     }
 
     async function initHubHpLiveSync() {
