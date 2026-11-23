@@ -1466,7 +1466,7 @@
           hops++;
         }
       }
-      if (!effectiveCloudCampaignId && fallbackCloudId) {
+      if (!effectiveCloudCampaignId && !localRootId && fallbackCloudId) {
         effectiveCloudCampaignId = String(fallbackCloudId);
       }
       const scopeId = effectiveCloudCampaignId
@@ -1479,13 +1479,18 @@
       if (!character) return { effectiveCloudCampaignId: null, localRootId: null, subCampaignId: null, scopeId: 'local' };
       const hubDb = _readHubDbSafe();
       const myRealId = _getRealTargetCharId();
+      let hasHubRow = false;
       let rowCampId = null;
       if (hubDb && Array.isArray(hubDb.characters) && myRealId) {
         const row = hubDb.characters.find(c => c && (String(c.id) === myRealId || (c.fullData && String(c.fullData._hubId || c.fullData.id) === myRealId)));
-        if (row && row.campaignId !== undefined) rowCampId = row.campaignId;
+        if (row) {
+          hasHubRow = true;
+          rowCampId = row.campaignId || null;
+        }
       }
-      const activeCampId = rowCampId !== null ? rowCampId : (character.campaignId || null);
-      return _resolveCampaignForIds(activeCampId, character.cloudCampaignId || null, hubDb);
+      const activeCampId = hasHubRow ? rowCampId : (character.campaignId || null);
+      const fallbackCloud = (hasHubRow && !rowCampId) ? null : (character.cloudCampaignId || null);
+      return _resolveCampaignForIds(activeCampId, fallbackCloud, hubDb);
     }
 
     function _getCampaignScopeId() {
@@ -1513,12 +1518,14 @@
       _campaignTargetState.lastScopeId = myHier.scopeId;
       if (myHier.scopeId === 'local') return;
       const myRealId = _getRealTargetCharId();
+      const inScopeLocalIds = new Set();
       hubDb.characters.forEach(c => {
         if (!c || !c.id) return;
         const cid = String(c.id);
         if (cid === myRealId || cid === 'char_active_player') return;
-        const cHier = _resolveCampaignForIds(c.campaignId || c.fullData?.campaignId || null, c.fullData?.cloudCampaignId || null, hubDb);
+        const cHier = _resolveCampaignForIds(c.campaignId || c.fullData?.campaignId || null, c.campaignId ? null : (c.fullData?.cloudCampaignId || null), hubDb);
         if (cHier.scopeId !== myHier.scopeId) return;
+        inScopeLocalIds.add(cid);
         const cleanName = String(c.name || c.fullData?.name || 'Unnamed Hero').replace(/[\u0000-\u001f\u007f<>]/g, '').trim().slice(0, 60) || 'Unnamed Hero';
         const existing = _campaignTargetState.roster.get(cid);
         if (existing) {
@@ -1534,6 +1541,12 @@
             lastSeen: 0,
             subCampaignId: cHier.subCampaignId
           });
+        }
+      });
+      // Prune offline local-hub peers that were moved out of this campaign
+      _campaignTargetState.roster.forEach((entry, cid) => {
+        if (entry && !entry.online && !inScopeLocalIds.has(cid)) {
+          _campaignTargetState.roster.delete(cid);
         }
       });
     }
@@ -1632,9 +1645,12 @@
       );
       let addedAny = false;
       try {
+        const pboKeys = [];
         for (let i = 0; i < localStorage.length; i++) {
           const k = localStorage.key(i);
-          if (!k || !k.startsWith(_PBO_PREFIX)) continue;
+          if (k && k.startsWith(_PBO_PREFIX)) pboKeys.push(k);
+        }
+        for (const k of pboKeys) {
           let rawObj = null;
           try { rawObj = JSON.parse(localStorage.getItem(k) || 'null'); } catch (_) { continue; }
           if (!rawObj) continue;
@@ -2004,7 +2020,7 @@
         titleEl.className = 'text-xs font-bold text-indigo-300 truncate';
         titleEl.textContent = `✨ ${offer.fromCharName} cast ${offer.buff.name}`;
         const ageMins = Math.floor(Math.max(0, Date.now() - (Number(offer.ts) || Date.now())) / 60000);
-        const ageSuffix = ageMins >= 1 ? ` • ${ageMins}m ago` : '';
+        const ageSuffix = ageMins >= 1 ? ` • sent ${ageMins}m ago` : '';
         const metaEl = document.createElement('span');
         metaEl.className = 'text-[10px] font-mono text-slate-300 bg-slate-950 px-1.5 py-0.5 rounded border border-slate-700 shrink-0';
         metaEl.textContent = `CL ${offer.buff.casterLevel} • ${offer.buff.durationText || ''}${ageSuffix}`;
