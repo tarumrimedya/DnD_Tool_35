@@ -12573,17 +12573,36 @@
     }
 
     function patchSubsystemCockpitDOM(discipline) {
-      if (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.recompute === 'function') {
-        if (typeof window.CharStore._syncExternalCharacterRef === 'function') {
-          window.CharStore._syncExternalCharacterRef(character);
-        }
-        window.CharStore.recompute();
-      }
       if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
       renderSubsystemPanel(discipline);
       renderDisciplineTopBar(character);
       if (typeof renderHUD === 'function') renderHUD({ skipRecompute: true });
       if (typeof renderAbilities === 'function') renderAbilities();
+    }
+
+    function _hasSubsysPassiveBuffEffects(entry) {
+      if (!entry || typeof entry !== 'object') return false;
+      let effs = Array.isArray(entry.effects) ? entry.effects : [];
+      if (effs.length === 0 && entry.id && typeof window !== 'undefined' && window.SrdCompendium && typeof window.SrdCompendium.getById === 'function') {
+        const srd = window.SrdCompendium.getById(entry.id);
+        if (srd && Array.isArray(srd.effects)) effs = srd.effects;
+      }
+      return effs.some(e => {
+        const k = e && (e.type || e.kind);
+        return k === 'stat' || k === 'defense' || k === 'effect';
+      });
+    }
+
+    function _dispatchSubsysAction(payload) {
+      if (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.dispatch === 'function') {
+        const res = window.CharStore.dispatch({ type: 'spells/subsysAction', payload });
+        if (typeof window.CharStore.getDoc === 'function') {
+          const nextDoc = window.CharStore.getDoc();
+          if (nextDoc) character = nextDoc;
+        }
+        return res;
+      }
+      return null;
     }
 
     function renderSubsystemPanel(discipline) {
@@ -12623,7 +12642,10 @@
               <div class="space-y-1.5 min-w-0">
                 <div class="flex items-center justify-between gap-2">
                   <span class="badge bg-cyan-950 text-cyan-300 border border-cyan-700 text-[10px] font-mono">Lvl ${Number(p.level) || 1} • ${UI.escapeHtml(pDisc)}</span>
-                  <span class="badge bg-slate-950 text-cyan-200 border border-slate-700 text-[10px] font-mono">${totalCost} PP</span>
+                  <div class="flex items-center gap-1">
+                    <button type="button" data-action="spells:subsys-toggle-active" data-discipline="psionics" data-idx="${idx}" class="badge ${p.active ? 'bg-emerald-950 text-emerald-300 border-emerald-600' : 'bg-slate-950 text-slate-400 border-slate-700'} border text-[10px] font-mono cursor-pointer" title="Toggle active effect on character sheet">${p.active ? '⚡ Active' : '○ Off'}</button>
+                    <span class="badge bg-slate-950 text-cyan-200 border border-slate-700 text-[10px] font-mono">${totalCost} PP</span>
+                  </div>
                 </div>
                 <button type="button" data-action="entity:inspect" data-entity-kind="power" data-entity-id="${UI.escapeAttr(p.id || p.baseEntryId || '')}" data-entity-name="${UI.escapeAttr(p.name || '')}" data-entity-index="${idx}" data-discipline="psionics" class="text-left text-xs font-extrabold text-white hover:text-white cursor-pointer hover:underline block truncate max-w-full" title="Inspect / Edit in Rule Crafter">${UI.escapeHtml(p.name || 'Unnamed Power')}</button>
                 <p class="text-[11px] text-slate-300 line-clamp-2">${UI.escapeHtml(descText)}</p>
@@ -12819,7 +12841,10 @@
               <div class="space-y-1.5 min-w-0">
                 <div class="flex items-center justify-between gap-2">
                   <span class="badge bg-indigo-950 text-indigo-300 border border-indigo-700 text-[10px]">${UI.escapeHtml(tier)} • Lvl ${mLvl}</span>
-                  <span class="badge ${usesLeft > 0 ? 'bg-slate-950 text-indigo-200 border-slate-700' : 'bg-rose-950 text-rose-300 border-rose-800'} text-[10px] font-mono">${usesLeft} / ${dailyMax} Uses</span>
+                  <div class="flex items-center gap-1">
+                    <button type="button" data-action="spells:subsys-toggle-active" data-discipline="shadow" data-idx="${idx}" class="badge ${m.active ? 'bg-emerald-950 text-emerald-300 border-emerald-600' : 'bg-slate-950 text-slate-400 border-slate-700'} border text-[10px] font-mono cursor-pointer" title="Toggle active effect on character sheet">${m.active ? '⚡ Active' : '○ Off'}</button>
+                    <span class="badge ${usesLeft > 0 ? 'bg-slate-950 text-indigo-200 border-slate-700' : 'bg-rose-950 text-rose-300 border-rose-800'} text-[10px] font-mono">${usesLeft} / ${dailyMax} Uses</span>
+                  </div>
                 </div>
                 <button type="button" data-action="entity:inspect" data-entity-kind="mystery" data-entity-id="${UI.escapeAttr(m.id || m.baseEntryId || '')}" data-entity-name="${UI.escapeAttr(m.name || '')}" data-entity-index="${idx}" data-discipline="shadow" class="text-left text-xs font-extrabold text-white hover:text-indigo-200 cursor-pointer hover:underline block truncate max-w-full" title="Inspect / Edit in Rule Crafter">${UI.escapeHtml(m.name || 'Unnamed Mystery')}</button>
                 <p class="text-[11px] text-slate-300 line-clamp-2">${UI.escapeHtml(descText)}</p>
@@ -12879,7 +12904,10 @@
               <div class="space-y-1.5 min-w-0">
                 <div class="flex items-center justify-between gap-2">
                   <span class="badge bg-teal-950 text-teal-300 border border-teal-700 text-[10px]">${UI.escapeHtml(lexicon)} • Lvl ${uLvl}</span>
-                  <span class="badge bg-slate-950 text-amber-300 border border-amber-700/70 text-[10px] font-mono">Law DC ${lawDc} (+${castsToday * 2})</span>
+                  <div class="flex items-center gap-1">
+                    <button type="button" data-action="spells:subsys-toggle-active" data-discipline="truenaming" data-idx="${idx}" class="badge ${u.active ? 'bg-emerald-950 text-emerald-300 border-emerald-600' : 'bg-slate-950 text-slate-400 border-slate-700'} border text-[10px] font-mono cursor-pointer" title="Toggle active effect on character sheet">${u.active ? '⚡ Active' : '○ Off'}</button>
+                    <span class="badge bg-slate-950 text-amber-300 border border-amber-700/70 text-[10px] font-mono">Law DC ${lawDc} (+${castsToday * 2})</span>
+                  </div>
                 </div>
                 <button type="button" data-action="entity:inspect" data-entity-kind="utterance" data-entity-id="${UI.escapeAttr(u.id || u.baseEntryId || '')}" data-entity-name="${UI.escapeAttr(u.name || '')}" data-entity-index="${idx}" data-discipline="truenaming" class="text-left text-xs font-extrabold text-white hover:text-white cursor-pointer hover:underline block truncate max-w-full" title="Inspect / Edit in Rule Crafter">${UI.escapeHtml(u.name || 'Unnamed Utterance')}</button>
                 <p class="text-[11px] text-slate-300 line-clamp-2">${UI.escapeHtml(descText)}</p>
@@ -12969,42 +12997,61 @@
         _subsysPickerState.levelFilter = el ? el.value : 'all';
         renderSubsystemPanel(disc);
       });
+      Actions.register('spells:subsys-toggle-active', (el, data) => {
+        const disc = String(data.discipline || '').toLowerCase();
+        const idx = Number(data.idx);
+        if (!disc || !Number.isInteger(idx)) return;
+        _dispatchSubsysAction({ discipline: disc, op: 'toggleActive', idx });
+        patchSubsystemCockpitDOM(disc);
+      });
       Actions.register('spells:subsys-picker-add', (el, data) => {
         const disc = data.discipline;
         const meta = SUBSYSTEM_PICKER_META[disc];
-        const bucket = ensureSubsystemBucket(disc);
-        if (!meta || !bucket) return;
+        if (!meta) return;
         const all = getSubsystemEntriesFromCompendium(meta.srdType);
         const found = all.find(it => (data.entryId && it.id === data.entryId) || (data.entryName && String(it.name || '').toLowerCase() === String(data.entryName).toLowerCase()));
         if (!found) return;
+        const v3Snap = {
+          ...(Array.isArray(found.effects) && found.effects.length > 0 ? { effects: JSON.parse(JSON.stringify(found.effects)) } : {}),
+          ...(Array.isArray(found.modes) && found.modes.length > 0 ? { modes: JSON.parse(JSON.stringify(found.modes)) } : {}),
+          ...(Array.isArray(found.powers) && found.powers.length > 0 ? { powers: JSON.parse(JSON.stringify(found.powers)) } : {})
+        };
+        const defCh = (Array.isArray(found.choices) && found.choices[0] && Array.isArray(found.choices[0].options))
+          ? (found.choices[0].options[0] || '')
+          : '';
+        const choiceSnap = (Array.isArray(found.choices) && found.choices.length > 0)
+          ? { choices: JSON.parse(JSON.stringify(found.choices)), choice: defCh, chosenOption: defCh }
+          : {};
+        let entry = null;
         if (disc === 'psionics') {
-          const defCh = (Array.isArray(found.choices) && found.choices[0] && Array.isArray(found.choices[0].options))
-            ? (found.choices[0].options[0] || '')
-            : '';
-          bucket.powers.push({
+          entry = {
             id: found.id || '',
             name: found.name,
             level: Number(found.level ?? found.spell?.level ?? 1) || 1,
             discipline: found.spell?.discipline || 'Psionics',
             ppCost: Number(found.spell?.ppCost ?? ((Number(found.level || 1) * 2) - 1)) || 1,
             augmentPP: 0,
-            ...(Array.isArray(found.choices) && found.choices.length > 0 ? { choices: JSON.parse(JSON.stringify(found.choices)), choice: defCh, chosenOption: defCh } : {}),
-            ...(Array.isArray(found.effects) && found.effects.length > 0 ? { effects: JSON.parse(JSON.stringify(found.effects)) } : {}),
+            active: false,
+            ...choiceSnap,
+            ...v3Snap,
             shortDescription: found.shortDescription || '',
             benefit: found.shortDescription || found.description || ''
-          });
+          };
         } else if (disc === 'incarnum') {
-          bucket.soulmelds.push({
+          entry = {
             id: found.id || '',
             name: found.name,
             investedEssentia: 0,
+            essentia: 0,
             boundChakra: 'None',
             chakraSlots: found.spell?.chakraSlots || 'All',
+            ...choiceSnap,
+            ...v3Snap,
             shortDescription: found.shortDescription || '',
             benefit: found.shortDescription || found.description || ''
-          });
+          };
         } else if (disc === 'pact') {
-          bucket.vestiges.push({
+          entry = {
             id: found.id || '',
             name: found.name,
             vestigeLevel: Number(found.spell?.vestigeLvl ?? found.level ?? 1) || 1,
@@ -13014,81 +13061,81 @@
             cooldownRounds: 0,
             vestigeSign: found.spell?.vestigeSign || '',
             vestigeInfluence: found.spell?.vestigeInfluence || '',
+            ...choiceSnap,
+            ...v3Snap,
             shortDescription: found.shortDescription || '',
             benefit: found.shortDescription || found.description || ''
-          });
+          };
         } else if (disc === 'shadow') {
           const tier = found.spell?.mysteryTier || 'Apprentice';
           const dailyMax = tier === 'Fundamental' ? 3 : 1;
-          bucket.mysteries.push({
+          entry = {
             id: found.id || '',
             name: found.name,
             tier,
             level: Number(found.spell?.maneuverLvl ?? found.level ?? 1) || 1,
             dailyMax,
             usesLeft: dailyMax,
+            active: false,
+            ...choiceSnap,
+            ...v3Snap,
             shortDescription: found.shortDescription || '',
             benefit: found.shortDescription || found.description || ''
-          });
+          };
         } else if (disc === 'truenaming') {
-          bucket.utterances.push({
+          entry = {
             id: found.id || '',
             name: found.name,
             lexicon: found.spell?.lexicon || 'Evolving Mind',
             level: Number(found.spell?.maneuverLvl ?? found.level ?? 1) || 1,
             targetCR: 1,
             castsToday: 0,
+            active: false,
+            ...choiceSnap,
+            ...v3Snap,
             shortDescription: found.shortDescription || '',
             benefit: found.shortDescription || found.description || ''
-          });
+          };
         }
+        if (!entry) return;
+        _dispatchSubsysAction({ discipline: disc, op: 'add', entry });
         patchSubsystemCockpitDOM(disc);
         if (typeof showDiceTopToast === 'function') {
           showDiceTopToast({ icon: meta.icon, title: found.name, breakdown: `Added to ${meta.title}`, total: 'Added' });
         }
       });
       Actions.register('spells:subsys-pp-delta', (el, data) => {
-        const bucket = ensureSubsystemBucket('psionics');
-        if (!bucket) return;
         const snap = getSubsystemSnapshot('psionics', character);
-        if (data.delta === 'restore') {
-          bucket.currentPP = snap.maxPP;
-        } else {
-          const d = Number(data.delta) || 0;
-          bucket.currentPP = Math.max(0, Math.min(snap.maxPP || 999, snap.currentPP + d));
-        }
+        _dispatchSubsysAction({
+          discipline: 'psionics',
+          op: 'ppDelta',
+          delta: data.delta === 'restore' ? 'restore' : (Number(data.delta) || 0),
+          maxPP: snap.maxPP || 0,
+          currentPP: snap.currentPP || 0
+        });
         patchSubsystemCockpitDOM('psionics');
       });
       Actions.register('spells:subsys-power-augment', (el, data) => {
-        const bucket = ensureSubsystemBucket('psionics');
         const idx = Number(data.idx);
-        if (!bucket || !bucket.powers[idx]) return;
         const snap = getSubsystemSnapshot('psionics', character);
-        const p = bucket.powers[idx];
+        const p = snap.powers[idx];
+        if (!p) return;
         const baseCost = Math.max(1, Number(p.ppCost ?? ((Number(p.level) || 1) * 2 - 1)) || 1);
         const maxAug = Math.max(0, (snap.manifesterLevel || 0) - baseCost);
-        const nextAug = Math.max(0, Math.min(maxAug, (Number(p.augmentPP) || 0) + (Number(data.delta) || 0)));
-        p.augmentPP = nextAug;
+        _dispatchSubsysAction({ discipline: 'psionics', op: 'powerAugment', idx, delta: Number(data.delta) || 0, maxAug });
         patchSubsystemCockpitDOM('psionics');
       });
       Actions.register('spells:subsys-power-choice', (el, data) => {
-        const bucket = ensureSubsystemBucket('psionics');
         const idx = Number(data.idx);
-        if (!bucket || !bucket.powers[idx] || !el) return;
-        const val = String(el.value || '').trim();
-        bucket.powers[idx].choice = val;
-        bucket.powers[idx].chosenOption = val;
-        if (Array.isArray(bucket.powers[idx].choices) && bucket.powers[idx].choices[0]) {
-          bucket.powers[idx].choices[0].value = val;
-        }
+        if (!el || !Number.isInteger(idx)) return;
+        _dispatchSubsysAction({ discipline: 'psionics', op: 'powerChoice', idx, value: String(el.value || '').trim() });
         patchSubsystemCockpitDOM('psionics');
       });
       Actions.register('spells:subsys-manifest-power', (el, data) => {
-        const bucket = ensureSubsystemBucket('psionics');
         const idx = Number(data.idx);
-        if (!bucket || !bucket.powers[idx]) return;
         const snap = getSubsystemSnapshot('psionics', character);
-        const p = bucket.powers[idx];
+        const p = snap.powers[idx];
+        if (!p) return;
         const baseCost = Math.max(1, Number(p.ppCost ?? ((Number(p.level) || 1) * 2 - 1)) || 1);
         const augPP = Math.max(0, Math.min(Math.max(0, (snap.manifesterLevel || 0) - baseCost), Number(p.augmentPP) || 0));
         const totalCost = baseCost + augPP;
@@ -13098,45 +13145,49 @@
           }
           return;
         }
-        bucket.currentPP = Math.max(0, snap.currentPP - totalCost);
+        const shouldActivate = _hasSubsysPassiveBuffEffects(p);
+        _dispatchSubsysAction({
+          discipline: 'psionics',
+          op: 'manifestPower',
+          idx,
+          totalCost,
+          maxPP: snap.maxPP || 0,
+          currentPP: snap.currentPP || 0,
+          activate: shouldActivate
+        });
         patchSubsystemCockpitDOM('psionics');
         if (typeof showDiceTopToast === 'function') {
-          showDiceTopToast({ icon: '🧠', title: p.name, breakdown: `Manifested (${baseCost} Base + ${augPP} Augment)`, total: `-${totalCost} PP` });
+          showDiceTopToast({ icon: '🧠', title: p.name, breakdown: `Manifested (${baseCost} Base + ${augPP} Augment)${shouldActivate ? ' • Active' : ''}`, total: `-${totalCost} PP` });
         }
       });
       Actions.register('spells:subsys-essentia-delta', (el, data) => {
-        const bucket = ensureSubsystemBucket('incarnum');
         const idx = Number(data.idx);
-        if (!bucket || !bucket.soulmelds[idx]) return;
         const snap = getSubsystemSnapshot('incarnum', character);
-        const sm = bucket.soulmelds[idx];
-        const cur = Number(sm.investedEssentia) || 0;
-        const delta = Number(data.delta) || 0;
+        const sm = snap.soulmelds[idx];
+        if (!sm) return;
+        const cur = Number(sm.investedEssentia ?? sm.essentia ?? sm.invested) || 0;
         const cap = Math.min(snap.essentiaCapacity || 1, cur + (snap.availableEssentia || 0));
-        sm.investedEssentia = Math.max(0, Math.min(cap, cur + delta));
+        _dispatchSubsysAction({ discipline: 'incarnum', op: 'essentiaDelta', idx, delta: Number(data.delta) || 0, cap });
         patchSubsystemCockpitDOM('incarnum');
       });
       Actions.register('spells:subsys-chakra-bind', (el, data) => {
-        const bucket = ensureSubsystemBucket('incarnum');
         const idx = Number(data.idx);
-        if (!bucket || !bucket.soulmelds[idx] || !el) return;
-        bucket.soulmelds[idx].boundChakra = el.value || 'None';
+        if (!el || !Number.isInteger(idx)) return;
+        _dispatchSubsysAction({ discipline: 'incarnum', op: 'chakraBind', idx, slot: el.value || 'None' });
         patchSubsystemCockpitDOM('incarnum');
       });
       Actions.register('spells:subsys-binding-check', (el, data) => {
-        const bucket = ensureSubsystemBucket('pact');
         const idx = Number(data.idx);
-        if (!bucket || !bucket.vestiges[idx]) return;
         const snap = getSubsystemSnapshot('pact', character);
-        const v = bucket.vestiges[idx];
+        const v = snap.vestiges[idx];
+        if (!v) return;
         const chaMod = Math.floor(((Number(character?.abilities?.cha) || 10) - 10) / 2);
         const d20 = Math.floor(Math.random() * 20) + 1;
         const mod = (snap.effectiveBinderLevel || 0) + chaMod;
         const total = d20 + mod;
         const dc = Number(v.bindingDc) || 15;
         const success = total >= dc;
-        v.pactQuality = success ? 'good' : 'poor';
-        v.showSign = !success;
+        _dispatchSubsysAction({ discipline: 'pact', op: 'bindingCheck', idx, pactQuality: success ? 'good' : 'poor', showSign: !success });
         patchSubsystemCockpitDOM('pact');
         if (typeof showDiceTopToast === 'function') {
           showDiceTopToast({
@@ -13148,69 +13199,53 @@
         }
       });
       Actions.register('spells:subsys-toggle-pact', (el, data) => {
-        const bucket = ensureSubsystemBucket('pact');
         const idx = Number(data.idx);
-        if (!bucket || !bucket.vestiges[idx]) return;
-        const v = bucket.vestiges[idx];
-        v.pactQuality = v.pactQuality === 'poor' ? 'good' : 'poor';
-        v.showSign = v.pactQuality === 'poor';
+        if (!Number.isInteger(idx)) return;
+        _dispatchSubsysAction({ discipline: 'pact', op: 'togglePact', idx });
         patchSubsystemCockpitDOM('pact');
       });
       Actions.register('spells:subsys-vestige-cooldown', (el, data) => {
-        const bucket = ensureSubsystemBucket('pact');
         const idx = Number(data.idx);
-        if (!bucket || !bucket.vestiges[idx]) return;
-        const v = bucket.vestiges[idx];
-        if (data.op === 'reset') v.cooldownRounds = 0;
-        else if (data.op === 'trigger') v.cooldownRounds = 5;
-        else v.cooldownRounds = Math.max(0, (Number(v.cooldownRounds) || 0) - 1);
+        if (!Number.isInteger(idx)) return;
+        _dispatchSubsysAction({ discipline: 'pact', op: 'vestigeCooldown', idx, mode: data.op || 'tick' });
         patchSubsystemCockpitDOM('pact');
       });
       Actions.register('spells:subsys-mystery-uses-delta', (el, data) => {
-        const bucket = ensureSubsystemBucket('shadow');
         const idx = Number(data.idx);
-        if (!bucket || !bucket.mysteries[idx]) return;
-        const m = bucket.mysteries[idx];
-        const maxU = Math.max(1, Number(m.dailyMax) || 1);
-        const curU = m.usesLeft !== undefined ? Number(m.usesLeft) : maxU;
-        m.usesLeft = Math.max(0, Math.min(maxU, curU + (Number(data.delta) || 0)));
+        if (!Number.isInteger(idx)) return;
+        _dispatchSubsysAction({ discipline: 'shadow', op: 'mysteryUsesDelta', idx, delta: Number(data.delta) || 0 });
         patchSubsystemCockpitDOM('shadow');
       });
       Actions.register('spells:subsys-cast-mystery', (el, data) => {
-        const bucket = ensureSubsystemBucket('shadow');
         const idx = Number(data.idx);
-        if (!bucket || !bucket.mysteries[idx]) return;
-        const m = bucket.mysteries[idx];
+        const snap = getSubsystemSnapshot('shadow', character);
+        const m = snap.mysteries[idx];
+        if (!m) return;
         const maxU = Math.max(1, Number(m.dailyMax) || 1);
         const curU = m.usesLeft !== undefined ? Number(m.usesLeft) : maxU;
         if (curU <= 0) return;
-        m.usesLeft = curU - 1;
+        const shouldActivate = _hasSubsysPassiveBuffEffects(m);
+        _dispatchSubsysAction({ discipline: 'shadow', op: 'castMystery', idx, activate: shouldActivate });
         patchSubsystemCockpitDOM('shadow');
         if (typeof showDiceTopToast === 'function') {
-          showDiceTopToast({ icon: '🌑', title: m.name, breakdown: `Mystery cast (${m.usesLeft}/${maxU} remaining)`, total: '-1 Use' });
+          showDiceTopToast({ icon: '🌑', title: m.name, breakdown: `Mystery cast (${curU - 1}/${maxU} remaining)${shouldActivate ? ' • Active' : ''}`, total: '-1 Use' });
         }
       });
       Actions.register('spells:subsys-restore-mysteries', (el, data, event) => {
-        const bucket = ensureSubsystemBucket('shadow');
-        if (!bucket) return;
-        bucket.mysteries.forEach(m => {
-          m.usesLeft = Math.max(1, Number(m.dailyMax) || 1);
-        });
+        _dispatchSubsysAction({ discipline: 'shadow', op: 'restoreMysteries' });
         patchSubsystemCockpitDOM('shadow');
       });
       Actions.register('spells:subsys-truespeak-cr', (el, data) => {
-        const bucket = ensureSubsystemBucket('truenaming');
         const idx = Number(data.idx);
-        if (!bucket || !bucket.utterances[idx] || !el) return;
-        bucket.utterances[idx].targetCR = Math.max(1, Math.min(40, Number(el.value) || 1));
+        if (!el || !Number.isInteger(idx)) return;
+        _dispatchSubsysAction({ discipline: 'truenaming', op: 'truespeakCr', idx, targetCR: Number(el.value) || 1 });
         patchSubsystemCockpitDOM('truenaming');
       });
       Actions.register('spells:subsys-speak-utterance', (el, data) => {
-        const bucket = ensureSubsystemBucket('truenaming');
         const idx = Number(data.idx);
-        if (!bucket || !bucket.utterances[idx]) return;
         const snap = getSubsystemSnapshot('truenaming', character);
-        const u = bucket.utterances[idx];
+        const u = snap.utterances[idx];
+        if (!u) return;
         const targetCR = Math.max(1, Number(u.targetCR) || 1);
         const castsToday = Math.max(0, Number(u.castsToday) || 0);
         const dc = 15 + (2 * targetCR) + (2 * castsToday);
@@ -13218,23 +13253,20 @@
         const bonus = snap.truespeakBonus || 0;
         const total = d20 + bonus;
         const success = total >= dc;
-        if (success) {
-          u.castsToday = castsToday + 1;
-        }
+        const shouldActivate = success && _hasSubsysPassiveBuffEffects(u);
+        _dispatchSubsysAction({ discipline: 'truenaming', op: 'speakUtterance', idx, success, activate: shouldActivate });
         patchSubsystemCockpitDOM('truenaming');
         if (typeof showDiceTopToast === 'function') {
           showDiceTopToast({
             icon: '📜',
             title: `${u.name} (Truespeak)`,
-            breakdown: `1d20 (${d20}) ${bonus >= 0 ? '+' : ''}${bonus} vs Law DC ${dc} • ${success ? `SUCCESS (Next DC ${dc + 2})` : 'FAILED (DC unchanged)'}`,
+            breakdown: `1d20 (${d20}) ${bonus >= 0 ? '+' : ''}${bonus} vs Law DC ${dc} • ${success ? `SUCCESS (Next DC ${dc + 2})${shouldActivate ? ' • Active' : ''}` : 'FAILED (DC unchanged)'}`,
             total: String(total)
           });
         }
       });
       Actions.register('spells:subsys-reset-truenaming', (el, data, event) => {
-        const bucket = ensureSubsystemBucket('truenaming');
-        if (!bucket) return;
-        bucket.utterances.forEach(u => { u.castsToday = 0; });
+        _dispatchSubsysAction({ discipline: 'truenaming', op: 'resetTruenaming' });
         patchSubsystemCockpitDOM('truenaming');
       });
 

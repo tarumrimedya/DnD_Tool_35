@@ -210,6 +210,68 @@ function runCharStoreTests() {
   check(Store.getDoc().weapons[0].activeModeId === 'mode-flaming' && Store.getDoc().activeModes['wep-longsword-1'] === 'mode-flaming',
     'combat/selectWeaponMode must resolve weapon by immutable weaponId before weaponName');
 
+  // 6. P0 Subsystems (S1-S5): spells/subsysAction atomic 1-step Undo/Redo + hud/longRest reset
+  const subsysChar = makeTestChar();
+  subsysChar.psionics = {
+    currentPP: 35,
+    maxPP: 35,
+    powers: [{ id: 'pwr-inertial-armor', name: 'Inertial Armor', level: 1, ppCost: 1, augmentPP: 0, active: false }]
+  };
+  subsysChar.incarnum = {
+    soulmelds: [{ id: 'sm-bluesteel-bracers', name: 'Bluesteel Bracers', investedEssentia: 0, essentia: 0, boundChakra: 'None' }]
+  };
+  subsysChar.pactMagic = {
+    vestiges: [{ id: 'vst-naberius', name: 'Naberius', vestigeLevel: 1, bindingDc: 15, pactQuality: 'good', cooldownRounds: 5 }]
+  };
+  subsysChar.shadowMagic = {
+    mysteries: [{ id: 'mys-carpet-of-shadow', name: 'Carpet of Shadow', tier: 'Apprentice', level: 1, dailyMax: 1, usesLeft: 1, active: false }]
+  };
+  subsysChar.truenaming = {
+    utterances: [{ id: 'utt-knights-puissance', name: "Knight's Puissance", lexicon: 'Evolving Mind', level: 1, targetCR: 3, castsToday: 0, active: false }]
+  };
+  Store.replaceDoc(subsysChar, { skipHistory: true, persist: false });
+  Store.clearHistory();
+
+  // S3 & S5: Manifest power with activate:true + 1-step Undo/Redo
+  Store.dispatch({ type: 'spells/subsysAction', payload: { discipline: 'psionics', op: 'manifestPower', idx: 0, totalCost: 5, maxPP: 35, currentPP: 35, activate: true } });
+  check(Store.getDoc().psionics.currentPP === 30 && Store.getDoc().psionics.powers[0].active === true,
+    'S3/S5: manifestPower must spend PP and activate buff power atomically');
+  Store.undo();
+  check(Store.getDoc().psionics.currentPP === 35 && Store.getDoc().psionics.powers[0].active === false,
+    'S5: Ctrl+Z Undo after manifestPower must restore PP and active:false in 1 step');
+  Store.redo();
+  check(Store.getDoc().psionics.currentPP === 30 && Store.getDoc().psionics.powers[0].active === true,
+    'S5: Ctrl+Y Redo after manifestPower must re-apply PP spend and active:true');
+
+  // S1 & S5: essentiaDelta syncs both investedEssentia & essentia + Undo
+  Store.dispatch({ type: 'spells/subsysAction', payload: { discipline: 'incarnum', op: 'essentiaDelta', idx: 0, delta: 2, cap: 2 } });
+  check(Store.getDoc().incarnum.soulmelds[0].investedEssentia === 2 && Store.getDoc().incarnum.soulmelds[0].essentia === 2,
+    'S1/S5: essentiaDelta must keep investedEssentia and essentia in sync');
+  Store.undo();
+  check(Store.getDoc().incarnum.soulmelds[0].investedEssentia === 0 && Store.getDoc().incarnum.soulmelds[0].essentia === 0,
+    'S5: Ctrl+Z Undo after essentiaDelta must restore 0');
+
+  // Cast mystery & speak utterance -> S2 Long Rest resets all 5 subsystems
+  Store.dispatch({ type: 'spells/subsysAction', payload: { discipline: 'shadow', op: 'castMystery', idx: 0, activate: true } });
+  Store.dispatch({ type: 'spells/subsysAction', payload: { discipline: 'truenaming', op: 'speakUtterance', idx: 0, success: true, activate: true } });
+  check(Store.getDoc().shadowMagic.mysteries[0].usesLeft === 0 && Store.getDoc().shadowMagic.mysteries[0].active === true,
+    'S3: castMystery must decrement usesLeft and set active:true');
+  check(Store.getDoc().truenaming.utterances[0].castsToday === 1 && Store.getDoc().truenaming.utterances[0].active === true,
+    'S3: speakUtterance on success must increment castsToday and set active:true');
+
+  Store.dispatch({ type: 'hud/longRest', payload: {} });
+  const afterRest = Store.getDoc();
+  check(
+    afterRest.psionics.currentPP === 35 &&
+    afterRest.psionics.powers[0].active === false &&
+    afterRest.shadowMagic.mysteries[0].usesLeft === 1 &&
+    afterRest.shadowMagic.mysteries[0].active === false &&
+    afterRest.truenaming.utterances[0].castsToday === 0 &&
+    afterRest.truenaming.utterances[0].active === false &&
+    afterRest.pactMagic.vestiges[0].cooldownRounds === 0,
+    'S2: hud/longRest must restore PP, mystery usesLeft, truenaming castsToday, vestige cooldownRounds, and clear temporary active flags'
+  );
+
   const elapsedMs = Date.now() - startMs;
   if (failures.length > 0) {
     throw new Error(`CharStore Test Gate failed (${failures.length} failure(s)):\n  - ${failures.join('\n  - ')}`);

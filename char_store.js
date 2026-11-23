@@ -4598,6 +4598,210 @@
     return doc;
   });
 
+  // 4h. 'spells/subsysAction' ({ discipline, op, ... }) — atomic 5-subsystem mutations (1-step Undo/Redo)
+  CharStore.registerReducer('spells/subsysAction', (doc, action, stateObj) => {
+    const payload = (action && action.payload) || {};
+    const disc = String(payload.discipline || '').toLowerCase();
+    const op = String(payload.op || '');
+    const ensureBucket = (d) => {
+      if (d === 'psionics') {
+        if (!doc.psionics || typeof doc.psionics !== 'object') doc.psionics = {};
+        if (!Array.isArray(doc.psionics.powers)) doc.psionics.powers = Array.isArray(doc.powers) ? JSON.parse(JSON.stringify(doc.powers)) : [];
+        return doc.psionics;
+      }
+      if (d === 'incarnum') {
+        if (!doc.incarnum || typeof doc.incarnum !== 'object') doc.incarnum = {};
+        if (!Array.isArray(doc.incarnum.soulmelds)) doc.incarnum.soulmelds = Array.isArray(doc.soulmelds) ? JSON.parse(JSON.stringify(doc.soulmelds)) : [];
+        return doc.incarnum;
+      }
+      if (d === 'pact') {
+        if (!doc.pactMagic || typeof doc.pactMagic !== 'object') doc.pactMagic = {};
+        if (!Array.isArray(doc.pactMagic.vestiges)) doc.pactMagic.vestiges = Array.isArray(doc.vestiges) ? JSON.parse(JSON.stringify(doc.vestiges)) : [];
+        return doc.pactMagic;
+      }
+      if (d === 'shadow') {
+        if (!doc.shadowMagic || typeof doc.shadowMagic !== 'object') doc.shadowMagic = {};
+        if (!Array.isArray(doc.shadowMagic.mysteries)) doc.shadowMagic.mysteries = Array.isArray(doc.mysteries) ? JSON.parse(JSON.stringify(doc.mysteries)) : [];
+        return doc.shadowMagic;
+      }
+      if (d === 'truenaming') {
+        if (!doc.truenaming || typeof doc.truenaming !== 'object') doc.truenaming = {};
+        if (!Array.isArray(doc.truenaming.utterances)) doc.truenaming.utterances = Array.isArray(doc.utterances) ? JSON.parse(JSON.stringify(doc.utterances)) : [];
+        return doc.truenaming;
+      }
+      return null;
+    };
+    const listKeyMap = {
+      psionics: 'powers',
+      incarnum: 'soulmelds',
+      pact: 'vestiges',
+      shadow: 'mysteries',
+      truenaming: 'utterances'
+    };
+    const bucket = ensureBucket(disc);
+    const listKey = listKeyMap[disc];
+    if (!bucket || !listKey) {
+      setStoreOutcome(stateObj, { status: 'invalid_subsystem', discipline: disc });
+      return doc;
+    }
+    const list = bucket[listKey];
+    const idx = Number(payload.idx);
+
+    if (op === 'add' && payload.entry && typeof payload.entry === 'object') {
+      list.push(JSON.parse(JSON.stringify(payload.entry)));
+      setStoreOutcome(stateObj, { status: 'subsys_added', discipline: disc, index: list.length - 1 });
+      return doc;
+    }
+    if (op === 'toggleActive' && Number.isInteger(idx) && list[idx]) {
+      list[idx].active = !Boolean(list[idx].active);
+      setStoreOutcome(stateObj, { status: 'subsys_active_toggled', discipline: disc, index: idx, active: list[idx].active });
+      return doc;
+    }
+    if (disc === 'psionics') {
+      if (op === 'ppDelta') {
+        const maxPP = Math.max(0, Number(payload.maxPP) || 0);
+        const curPP = Number(bucket.currentPP !== undefined ? bucket.currentPP : (payload.currentPP ?? maxPP)) || 0;
+        if (payload.delta === 'restore') {
+          bucket.currentPP = maxPP;
+        } else {
+          const d = Number(payload.delta) || 0;
+          bucket.currentPP = Math.max(0, Math.min(maxPP, curPP + d));
+        }
+        setStoreOutcome(stateObj, { status: 'pp_updated', currentPP: bucket.currentPP, maxPP });
+        return doc;
+      }
+      if (op === 'powerAugment' && Number.isInteger(idx) && list[idx]) {
+        const maxAug = Math.max(0, Number(payload.maxAug) || 0);
+        const nextAug = Math.max(0, Math.min(maxAug, (Number(list[idx].augmentPP) || 0) + (Number(payload.delta) || 0)));
+        list[idx].augmentPP = nextAug;
+        setStoreOutcome(stateObj, { status: 'augment_updated', index: idx, augmentPP: nextAug });
+        return doc;
+      }
+      if (op === 'powerChoice' && Number.isInteger(idx) && list[idx]) {
+        const val = String(payload.value || '').trim();
+        list[idx].choice = val;
+        list[idx].chosenOption = val;
+        if (Array.isArray(list[idx].choices) && list[idx].choices[0]) {
+          list[idx].choices[0].value = val;
+        }
+        setStoreOutcome(stateObj, { status: 'power_choice_updated', index: idx, choice: val });
+        return doc;
+      }
+      if (op === 'manifestPower' && Number.isInteger(idx) && list[idx]) {
+        const totalCost = Math.max(1, Number(payload.totalCost) || 1);
+        const maxPP = Math.max(0, Number(payload.maxPP) || 0);
+        const curPP = Number(bucket.currentPP !== undefined ? bucket.currentPP : (payload.currentPP ?? maxPP)) || 0;
+        if (curPP < totalCost) {
+          setStoreOutcome(stateObj, { status: 'insufficient_pp', needed: totalCost, currentPP: curPP });
+          return doc;
+        }
+        bucket.currentPP = Math.max(0, curPP - totalCost);
+        if (payload.activate === true) {
+          list[idx].active = true;
+        }
+        setStoreOutcome(stateObj, { status: 'power_manifested', index: idx, spent: totalCost, currentPP: bucket.currentPP, active: Boolean(list[idx].active) });
+        return doc;
+      }
+    }
+    if (disc === 'incarnum') {
+      if (op === 'essentiaDelta' && Number.isInteger(idx) && list[idx]) {
+        const sm = list[idx];
+        const cur = Number(sm.investedEssentia ?? sm.essentia ?? sm.invested) || 0;
+        const cap = Math.max(0, Number(payload.cap) || 0);
+        const nextVal = Math.max(0, Math.min(cap, cur + (Number(payload.delta) || 0)));
+        sm.investedEssentia = nextVal;
+        sm.essentia = nextVal;
+        setStoreOutcome(stateObj, { status: 'essentia_updated', index: idx, essentia: nextVal });
+        return doc;
+      }
+      if (op === 'chakraBind' && Number.isInteger(idx) && list[idx]) {
+        list[idx].boundChakra = String(payload.slot || 'None');
+        setStoreOutcome(stateObj, { status: 'chakra_bound', index: idx, boundChakra: list[idx].boundChakra });
+        return doc;
+      }
+    }
+    if (disc === 'pact') {
+      if (op === 'bindingCheck' && Number.isInteger(idx) && list[idx]) {
+        list[idx].pactQuality = payload.pactQuality === 'poor' ? 'poor' : 'good';
+        list[idx].showSign = Boolean(payload.showSign);
+        setStoreOutcome(stateObj, { status: 'binding_checked', index: idx, pactQuality: list[idx].pactQuality });
+        return doc;
+      }
+      if (op === 'togglePact' && Number.isInteger(idx) && list[idx]) {
+        list[idx].pactQuality = list[idx].pactQuality === 'poor' ? 'good' : 'poor';
+        list[idx].showSign = list[idx].pactQuality === 'poor';
+        setStoreOutcome(stateObj, { status: 'pact_toggled', index: idx, pactQuality: list[idx].pactQuality });
+        return doc;
+      }
+      if (op === 'vestigeCooldown' && Number.isInteger(idx) && list[idx]) {
+        if (payload.mode === 'reset') list[idx].cooldownRounds = 0;
+        else if (payload.mode === 'trigger') list[idx].cooldownRounds = 5;
+        else list[idx].cooldownRounds = Math.max(0, (Number(list[idx].cooldownRounds) || 0) - 1);
+        setStoreOutcome(stateObj, { status: 'vestige_cooldown_updated', index: idx, cooldownRounds: list[idx].cooldownRounds });
+        return doc;
+      }
+    }
+    if (disc === 'shadow') {
+      if (op === 'mysteryUsesDelta' && Number.isInteger(idx) && list[idx]) {
+        const m = list[idx];
+        const maxU = Math.max(1, Number(m.dailyMax) || 1);
+        const curU = m.usesLeft !== undefined ? Number(m.usesLeft) : maxU;
+        m.usesLeft = Math.max(0, Math.min(maxU, curU + (Number(payload.delta) || 0)));
+        setStoreOutcome(stateObj, { status: 'mystery_uses_updated', index: idx, usesLeft: m.usesLeft });
+        return doc;
+      }
+      if (op === 'castMystery' && Number.isInteger(idx) && list[idx]) {
+        const m = list[idx];
+        const maxU = Math.max(1, Number(m.dailyMax) || 1);
+        const curU = m.usesLeft !== undefined ? Number(m.usesLeft) : maxU;
+        if (curU <= 0) {
+          setStoreOutcome(stateObj, { status: 'no_uses_left', index: idx });
+          return doc;
+        }
+        m.usesLeft = curU - 1;
+        if (payload.activate === true) m.active = true;
+        setStoreOutcome(stateObj, { status: 'mystery_cast', index: idx, usesLeft: m.usesLeft, active: Boolean(m.active) });
+        return doc;
+      }
+      if (op === 'restoreMysteries') {
+        list.forEach(m => {
+          if (!m || typeof m !== 'object') return;
+          m.usesLeft = Math.max(1, Number(m.dailyMax) || 1);
+          if (m.active === true && !m.permanent) m.active = false;
+        });
+        setStoreOutcome(stateObj, { status: 'mysteries_restored' });
+        return doc;
+      }
+    }
+    if (disc === 'truenaming') {
+      if (op === 'truespeakCr' && Number.isInteger(idx) && list[idx]) {
+        list[idx].targetCR = Math.max(1, Math.min(40, Number(payload.targetCR) || 1));
+        setStoreOutcome(stateObj, { status: 'truespeak_cr_updated', index: idx, targetCR: list[idx].targetCR });
+        return doc;
+      }
+      if (op === 'speakUtterance' && Number.isInteger(idx) && list[idx]) {
+        const u = list[idx];
+        if (payload.success === true) {
+          u.castsToday = Math.max(0, Number(u.castsToday) || 0) + 1;
+          if (payload.activate === true) u.active = true;
+        }
+        setStoreOutcome(stateObj, { status: 'utterance_spoken', index: idx, success: Boolean(payload.success), castsToday: Number(u.castsToday) || 0, active: Boolean(u.active) });
+        return doc;
+      }
+      if (op === 'resetTruenaming') {
+        list.forEach(u => {
+          if (!u || typeof u !== 'object') return;
+          u.castsToday = 0;
+          if (u.active === true && !u.permanent) u.active = false;
+        });
+        setStoreOutcome(stateObj, { status: 'truenaming_reset' });
+        return doc;
+      }
+    }
+    setStoreOutcome(stateObj, { status: 'noop', discipline: disc, op });
+    return doc;
+  });
+
   // 4c. 'spells/setPreparedMetamagic' ({ discipline: 'prepared'|'divine', instanceId, index, metamagic[] }) — atomic edit (1 Undo step)
   CharStore.registerReducer('spells/setPreparedMetamagic', (doc, action, stateObj) => {
     ensureSpellsDocStructures(doc);
@@ -6430,6 +6634,11 @@
     if (Array.isArray(doc.feats)) doc.feats.forEach(resetFeatCharges);
     if (Array.isArray(doc.specialAbilities)) doc.specialAbilities.forEach(resetFeatCharges);
     if (Array.isArray(doc.legoEntries)) doc.legoEntries.forEach(resetFeatCharges);
+
+    // 5-Subsystem Daily Resources & Temporary Active Flags (Psionics, Shadow, Truenaming, Pact)
+    if (typeof RuleEngine !== 'undefined' && RuleEngine && typeof RuleEngine.resetSubsystemsOnLongRest === 'function') {
+      RuleEngine.resetSubsystemsOnLongRest(doc);
+    }
 
     const hasRingOfSustenance = Boolean(
       doc.bodySlots && (

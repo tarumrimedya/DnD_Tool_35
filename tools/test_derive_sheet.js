@@ -8494,6 +8494,116 @@ function runDeriveSheetTests() {
         JSON.stringify(dualProf)
       );
     }
+
+    // -------------------------------------------------------------------------
+    // P0 5-Subsystem Seams (S1-S4): investedEssentia -> @essentia, active power AC,
+    // self-contained effects[] on cold boot, and performLongRest subsystem reset
+    // -------------------------------------------------------------------------
+    {
+      const subsysP0Doc = {
+        id: 'p0-subsys-test',
+        name: 'Subsystem P0 Tester',
+        race: 'Human',
+        level: 6,
+        levelProgression: [
+          { hd: 1, className: 'Totemist', active: true },
+          { hd: 2, className: 'Totemist', active: true },
+          { hd: 3, className: 'Totemist', active: true },
+          { hd: 4, className: 'Totemist', active: true },
+          { hd: 5, className: 'Totemist', active: true },
+          { hd: 6, className: 'Totemist', active: true }
+        ],
+        baseAbilities: { str: 14, dex: 12, con: 14, int: 14, wis: 12, cha: 10 },
+        hp: { current: 40, max: 40, temp: 0 },
+        incarnum: {
+          soulmelds: [
+            {
+              id: 'sm-test-natural-armor',
+              name: 'Wormtail Belt',
+              investedEssentia: 2, // Intentionally ONLY investedEssentia (no essentia/invested) to verify S1
+              boundChakra: 'None',
+              effects: [
+                { type: 'stat', targets: ['ac.natural'], mode: 'stat', value: 2, btype: 'Enhancement', stat: 'essentia', mult: 1 }
+              ]
+            }
+          ]
+        },
+        psionics: {
+          currentPP: 10,
+          maxPP: 25,
+          powers: [
+            {
+              id: 'pwr-test-inertial-armor',
+              name: 'Inertial Armor',
+              level: 1,
+              ppCost: 1,
+              active: false,
+              effects: [
+                { type: 'stat', targets: ['ac.armor'], value: 4, btype: 'Armor' }
+              ]
+            }
+          ]
+        },
+        shadowMagic: {
+          mysteries: [
+            { id: 'mys-test-1', name: 'Carpet of Shadow', tier: 'Apprentice', level: 1, dailyMax: 1, usesLeft: 0, active: true }
+          ]
+        },
+        truenaming: {
+          utterances: [
+            { id: 'utt-test-1', name: "Knight's Puissance", lexicon: 'Evolving Mind', level: 1, targetCR: 3, castsToday: 2, active: true }
+          ]
+        },
+        pactMagic: {
+          vestiges: [
+            { id: 'vst-test-1', name: 'Naberius', vestigeLevel: 1, bindingDc: 15, cooldownRounds: 4 }
+          ]
+        }
+      };
+
+      const sheetOff = RuleEngine.deriveSheet(subsysP0Doc, []);
+      const baseAc = sheetOff.ac?.total ?? sheetOff.derived?.ac?.total ?? 10;
+      // Base 10 + 1 DEX + (2 + 2 essentia = 4 Natural Armor) = 15
+      check(
+        'P0 Subsystems S1/S4: investedEssentia=2 flows into @essentia in deriveSheet even without SRD chunk loaded',
+        baseAc === 15,
+        `expected AC 15 (10 + 1 DEX + 4 Natural Armor), got ${baseAc}`
+      );
+
+      // S3: activating Inertial Armor adds +4 Armor AC (15 -> 19)
+      const subsysP0Active = JSON.parse(JSON.stringify(subsysP0Doc));
+      subsysP0Active.psionics.powers[0].active = true;
+      const sheetOn = RuleEngine.deriveSheet(subsysP0Active, []);
+      const activeAc = sheetOn.ac?.total ?? sheetOn.derived?.ac?.total ?? 10;
+      check(
+        'P0 Subsystems S3: active=true on Psionic Power applies +4 Armor AC in deriveSheet',
+        activeAc === 19,
+        `expected AC 19 (15 + 4 Armor), got ${activeAc}`
+      );
+
+      // S2: RuleEngine.performLongRest resets all 5 subsystems
+      RuleEngine.performLongRest(subsysP0Active);
+      check(
+        'P0 Subsystems S2: RuleEngine.performLongRest restores PP, mystery usesLeft, truenaming castsToday, vestige cooldownRounds, and deactivates temporary powers/mysteries/utterances',
+        Boolean(
+          subsysP0Active.psionics.currentPP === 25 &&
+          subsysP0Active.psionics.powers[0].active === false &&
+          subsysP0Active.shadowMagic.mysteries[0].usesLeft === 1 &&
+          subsysP0Active.shadowMagic.mysteries[0].active === false &&
+          subsysP0Active.truenaming.utterances[0].castsToday === 0 &&
+          subsysP0Active.truenaming.utterances[0].active === false &&
+          subsysP0Active.pactMagic.vestiges[0].cooldownRounds === 0 &&
+          typeof RuleEngine.ensureSubsystemsHydrated === 'function'
+        ),
+        JSON.stringify({
+          pp: subsysP0Active.psionics.currentPP,
+          pwrActive: subsysP0Active.psionics.powers[0].active,
+          mys: subsysP0Active.shadowMagic.mysteries[0],
+          utt: subsysP0Active.truenaming.utterances[0],
+          vst: subsysP0Active.pactMagic.vestiges[0]
+        })
+      );
+    }
   }
 
   CharStore.clearHistory();

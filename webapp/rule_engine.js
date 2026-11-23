@@ -1965,8 +1965,9 @@ const RuleEngine = {
           isEquipped: entry.isEquipped !== undefined ? entry.isEquipped : customOv.isEquipped,
           slot: entry.slot || customOv.slot,
           grip: entry.grip || customOv.grip,
-          essentia: entry.essentia !== undefined ? entry.essentia : (entry.invested !== undefined ? entry.invested : customOv.essentia),
-          invested: entry.invested !== undefined ? entry.invested : (entry.essentia !== undefined ? entry.essentia : customOv.invested),
+          essentia: entry.essentia !== undefined ? entry.essentia : (entry.invested !== undefined ? entry.invested : (entry.investedEssentia !== undefined ? entry.investedEssentia : customOv.essentia)),
+          invested: entry.invested !== undefined ? entry.invested : (entry.essentia !== undefined ? entry.essentia : (entry.investedEssentia !== undefined ? entry.investedEssentia : customOv.invested)),
+          investedEssentia: entry.investedEssentia !== undefined ? entry.investedEssentia : (entry.essentia !== undefined ? entry.essentia : (entry.invested !== undefined ? entry.invested : customOv.investedEssentia)),
           boundChakra: entry.boundChakra || entry.chakraBind || customOv.boundChakra,
           augmentPP: entry.augmentPP !== undefined ? entry.augmentPP : customOv.augmentPP,
           castsToday: entry.castsToday !== undefined ? entry.castsToday : customOv.castsToday,
@@ -1976,7 +1977,7 @@ const RuleEngine = {
     }
 
     const out = Object.assign({}, baseEntry);
-    const entryEssentia = Number(evalCtx.essentia ?? out.essentia ?? out.invested ?? evalCtx.self?.invested ?? 0) || 0;
+    const entryEssentia = Number(evalCtx.essentia ?? out.essentia ?? out.invested ?? out.investedEssentia ?? evalCtx.self?.invested ?? 0) || 0;
     const entryCl = Number(evalCtx.cl ?? out.casterLevel ?? out.cl ?? evalCtx.level ?? 1) || 1;
     const entryMl = Number(evalCtx.ml ?? out.manifesterLevel ?? out.ml ?? entryCl) || 1;
     const entryIl = Number(evalCtx.il ?? out.initiatorLevel ?? out.il ?? evalCtx.level ?? 1) || 1;
@@ -2210,8 +2211,8 @@ const RuleEngine = {
         const mult = Number(b.mult ?? b.multiplier ?? 1);
         const token = statAbility === 'augmentpp' ? '@augmentPP' : `@${statAbility}`;
         terms.push(mult !== 1 ? `floor(${token} * ${mult})` : token);
-        const flatAdd = Number(b.val !== undefined ? b.val : 0);
-        if (!mode && !Number.isNaN(flatAdd) && flatAdd !== 0) {
+        const flatAdd = Number(b.val !== undefined ? b.val : (b.value !== undefined ? b.value : 0));
+        if (!Number.isNaN(flatAdd) && flatAdd !== 0 && (!mode || statAbility === 'essentia')) {
           terms.push(String(flatAdd));
         }
       } else if (b.formula !== undefined && b.formula !== null && String(b.formula).trim() !== '') {
@@ -3592,6 +3593,7 @@ const RuleEngine = {
           const hasDynamicV3State = Boolean(
             raw.essentia !== undefined ||
             raw.invested !== undefined ||
+            raw.investedEssentia !== undefined ||
             raw.boundChakra ||
             raw.chakraBind ||
             raw.augmentPP !== undefined ||
@@ -3807,24 +3809,30 @@ const RuleEngine = {
 
     // Collect active 5-subsystem entries (shaped Soulmelds, bound Vestiges, active Powers/Mysteries/Utterances)
     const soulmeldList = Array.isArray(ch.incarnum?.soulmelds) ? ch.incarnum.soulmelds : (Array.isArray(ch.soulmelds) ? ch.soulmelds : []);
+    const vestigeList = Array.isArray(ch.pactMagic?.vestiges) ? ch.pactMagic.vestiges : (Array.isArray(ch.pact?.vestiges) ? ch.pact.vestiges : (Array.isArray(ch.vestiges) ? ch.vestiges : []));
+    const powerList = Array.isArray(ch.psionics?.powers) ? ch.psionics.powers : (Array.isArray(ch.powers) ? ch.powers : []);
+    const mysteryList = Array.isArray(ch.shadowMagic?.mysteries) ? ch.shadowMagic.mysteries : (Array.isArray(ch.shadow?.mysteries) ? ch.shadow.mysteries : (Array.isArray(ch.mysteries) ? ch.mysteries : []));
+    const utteranceList = Array.isArray(ch.truenaming?.utterances) ? ch.truenaming.utterances : (Array.isArray(ch.utterances) ? ch.utterances : []);
+    if (
+      (soulmeldList.length > 0 || vestigeList.length > 0 || powerList.length > 0 || mysteryList.length > 0 || utteranceList.length > 0) &&
+      typeof this.ensureSubsystemsHydrated === 'function'
+    ) {
+      this.ensureSubsystemsHydrated(ch);
+    }
     soulmeldList.forEach(sm => {
       if (!sm || (typeof sm === 'object' && (sm.active === false || sm.shaped === false))) return;
       addEntry(sm, 'Soulmeld', 'soulmelds');
     });
-    const vestigeList = Array.isArray(ch.pactMagic?.vestiges) ? ch.pactMagic.vestiges : (Array.isArray(ch.pact?.vestiges) ? ch.pact.vestiges : (Array.isArray(ch.vestiges) ? ch.vestiges : []));
     vestigeList.forEach(v => {
       if (!v || (typeof v === 'object' && (v.active === false || v.bound === false))) return;
       addEntry(v, 'Vestige', 'vestiges');
     });
-    const powerList = Array.isArray(ch.psionics?.powers) ? ch.psionics.powers : (Array.isArray(ch.powers) ? ch.powers : []);
     powerList.forEach(p => {
       if (p && typeof p === 'object' && p.active === true) addEntry(p, 'Power', 'powers');
     });
-    const mysteryList = Array.isArray(ch.shadowMagic?.mysteries) ? ch.shadowMagic.mysteries : (Array.isArray(ch.shadow?.mysteries) ? ch.shadow.mysteries : (Array.isArray(ch.mysteries) ? ch.mysteries : []));
     mysteryList.forEach(m => {
       if (m && typeof m === 'object' && m.active === true) addEntry(m, 'Mystery', 'mysteries');
     });
-    const utteranceList = Array.isArray(ch.truenaming?.utterances) ? ch.truenaming.utterances : (Array.isArray(ch.utterances) ? ch.utterances : []);
     utteranceList.forEach(u => {
       if (u && typeof u === 'object' && u.active === true) addEntry(u, 'Utterance', 'utterances');
     });
@@ -4046,7 +4054,7 @@ const RuleEngine = {
     const getStacks = (e) => (e && e.stacks !== undefined && e.stacks !== null && e.stacks !== '' && !Number.isNaN(Number(e.stacks))) ? Number(e.stacks) : 1;
     const getInvested = (e) => {
       if (!e) return 0;
-      const rawInv = e.essentia !== undefined ? e.essentia : e.invested;
+      const rawInv = e.essentia !== undefined ? e.essentia : (e.invested !== undefined ? e.invested : e.investedEssentia);
       return (rawInv !== undefined && rawInv !== null && rawInv !== '' && !Number.isNaN(Number(rawInv))) ? Number(rawInv) : 0;
     };
 
@@ -10202,7 +10210,7 @@ const RuleEngine = {
       }
       if (leName) processedLegoSourceNames.add(leName);
       const leStacks = (le.stacks !== undefined && le.stacks !== null && le.stacks !== '' && !Number.isNaN(Number(le.stacks))) ? Number(le.stacks) : 1;
-      const rawInv = le.essentia !== undefined ? le.essentia : le.invested;
+      const rawInv = le.essentia !== undefined ? le.essentia : (le.invested !== undefined ? le.invested : le.investedEssentia);
       const leInvested = (rawInv !== undefined && rawInv !== null && rawInv !== '' && !Number.isNaN(Number(rawInv))) ? Number(rawInv) : 0;
       const leRankMap = evalContext.featureRankMap || (evalContext.featureRankMap = this.computeFeatureRankMap(character));
       const leRankRaw = Number(leRankMap[leId] || 0);
@@ -14087,7 +14095,12 @@ const RuleEngine = {
       resetChargeList(Object.values(character.bodySlots));
     }
 
-    // 5. Reset Tactical Action Economy
+    // 5. Reset 5-Subsystem Daily Resources & Temporary Active Flags (Psionics, Shadow, Truenaming, Pact)
+    if (typeof this.resetSubsystemsOnLongRest === 'function') {
+      this.resetSubsystemsOnLongRest(character);
+    }
+
+    // 6. Reset Tactical Action Economy
     if (character.tactical) {
       character.tactical.spentActions = {
         standard: false,
@@ -14098,9 +14111,84 @@ const RuleEngine = {
       };
     }
 
-    // 6. Recalculate Character State
+    // 7. Recalculate Character State
     this.recalculateCharacter(character, (typeof masterDb !== 'undefined' ? masterDb : []));
     return summary;
+  },
+
+  resetSubsystemsOnLongRest(character) {
+    if (!character || typeof character !== 'object') return { psionicsRestored: false, mysteriesReset: 0, utterancesReset: 0, vestigesCooldownReset: 0 };
+    const out = { psionicsRestored: false, mysteriesReset: 0, utterancesReset: 0, vestigesCooldownReset: 0 };
+    const subEval = (typeof this.evaluateSubsystems === 'function') ? this.evaluateSubsystems(character) : null;
+
+    // 1. Psionics: restore currentPP to maxPP and deactivate temporary manifested powers
+    if (character.psionics && typeof character.psionics === 'object') {
+      const evalMaxPP = Number(subEval?.psionics?.maxPP);
+      const fallbackMaxPP = Number(character.psionics.maxPP);
+      const targetMaxPP = Number.isFinite(evalMaxPP) && evalMaxPP > 0
+        ? evalMaxPP
+        : (Number.isFinite(fallbackMaxPP) && fallbackMaxPP >= 0 ? fallbackMaxPP : 0);
+      if (targetMaxPP > 0 || character.psionics.currentPP !== undefined) {
+        character.psionics.currentPP = targetMaxPP;
+        out.psionicsRestored = true;
+      }
+      if (Array.isArray(character.psionics.powers)) {
+        character.psionics.powers.forEach(p => {
+          if (p && typeof p === 'object' && p.active === true && !p.permanent) {
+            p.active = false;
+          }
+        });
+      }
+    }
+    if (Array.isArray(character.powers)) {
+      character.powers.forEach(p => {
+        if (p && typeof p === 'object' && p.active === true && !p.permanent) p.active = false;
+      });
+    }
+
+    // 2. Shadow Magic: restore mystery daily uses and clear temporary active flags
+    const shadowLists = [];
+    if (Array.isArray(character.shadowMagic?.mysteries)) shadowLists.push(character.shadowMagic.mysteries);
+    if (Array.isArray(character.mysteries)) shadowLists.push(character.mysteries);
+    const engineMysteries = Array.isArray(subEval?.shadow?.mysteries) ? subEval.shadow.mysteries : [];
+    shadowLists.forEach(list => {
+      list.forEach((m, idx) => {
+        if (!m || typeof m !== 'object') return;
+        const tier = m.tier || m.mysteryTier || m.spell?.mysteryTier || 'Apprentice';
+        const engM = engineMysteries[idx];
+        const maxU = Math.max(1, Number(engM?.dailyMax ?? m.dailyMax) || (tier === 'Fundamental' ? 3 : 1));
+        if (m.usesLeft !== maxU) out.mysteriesReset++;
+        m.usesLeft = maxU;
+        if (m.active === true && !m.permanent) m.active = false;
+      });
+    });
+
+    // 3. Truenaming: reset Law of Resistance daily castsToday and clear temporary active flags
+    const trueLists = [];
+    if (Array.isArray(character.truenaming?.utterances)) trueLists.push(character.truenaming.utterances);
+    if (Array.isArray(character.utterances)) trueLists.push(character.utterances);
+    trueLists.forEach(list => {
+      list.forEach(u => {
+        if (!u || typeof u !== 'object') return;
+        if ((Number(u.castsToday) || 0) > 0) out.utterancesReset++;
+        u.castsToday = 0;
+        if (u.active === true && !u.permanent) u.active = false;
+      });
+    });
+
+    // 4. Pact Magic: clear 5-round vestige ability cooldowns
+    const pactLists = [];
+    if (Array.isArray(character.pactMagic?.vestiges)) pactLists.push(character.pactMagic.vestiges);
+    if (Array.isArray(character.vestiges)) pactLists.push(character.vestiges);
+    pactLists.forEach(list => {
+      list.forEach(v => {
+        if (!v || typeof v !== 'object') return;
+        if ((Number(v.cooldownRounds) || 0) > 0) out.vestigesCooldownReset++;
+        v.cooldownRounds = 0;
+      });
+    });
+
+    return out;
   },
 
   /**
@@ -20093,6 +20181,54 @@ const RuleEngine = {
         window.renderAll({ skipRecompute: true });
       } else if (typeof window.renderCardsView === 'function') {
         window.renderCardsView();
+      }
+    }).catch(() => {
+      toFetch.forEach(c => this._pendingLazyChunks.delete(c));
+    });
+    return true;
+  },
+
+  ensureSubsystemsHydrated(character) {
+    if (typeof window === 'undefined' || !window.SrdCompendium || typeof window.SrdCompendium.ensureChunkLoaded !== 'function') {
+      return false;
+    }
+    const ch = character || {};
+    const neededSet = new Set();
+    if ((Array.isArray(ch.psionics?.powers) && ch.psionics.powers.length > 0) || (Array.isArray(ch.powers) && ch.powers.length > 0)) {
+      neededSet.add('srd_powers.json');
+      neededSet.add('srd_powers_splat.json');
+    }
+    if ((Array.isArray(ch.incarnum?.soulmelds) && ch.incarnum.soulmelds.length > 0) || (Array.isArray(ch.soulmelds) && ch.soulmelds.length > 0)) {
+      neededSet.add('srd_soulmelds_splat.json');
+    }
+    if ((Array.isArray(ch.pactMagic?.vestiges) && ch.pactMagic.vestiges.length > 0) || (Array.isArray(ch.pact?.vestiges) && ch.pact.vestiges.length > 0) || (Array.isArray(ch.vestiges) && ch.vestiges.length > 0)) {
+      neededSet.add('srd_vestiges_splat.json');
+    }
+    if ((Array.isArray(ch.shadowMagic?.mysteries) && ch.shadowMagic.mysteries.length > 0) || (Array.isArray(ch.shadow?.mysteries) && ch.shadow.mysteries.length > 0) || (Array.isArray(ch.mysteries) && ch.mysteries.length > 0)) {
+      neededSet.add('srd_mysteries_splat.json');
+    }
+    if ((Array.isArray(ch.truenaming?.utterances) && ch.truenaming.utterances.length > 0) || (Array.isArray(ch.utterances) && ch.utterances.length > 0)) {
+      neededSet.add('srd_utterances_splat.json');
+    }
+    if (neededSet.size === 0) return false;
+    const needed = Array.from(neededSet).filter(chunk => {
+      if (typeof window.SrdCompendium.isChunkLoaded === 'function' && window.SrdCompendium.isChunkLoaded(chunk)) {
+        return false;
+      }
+      return true;
+    });
+    if (needed.length === 0) return false;
+    if (!this._pendingLazyChunks) this._pendingLazyChunks = new Set();
+    const toFetch = needed.filter(c => !this._pendingLazyChunks.has(c));
+    if (toFetch.length === 0) return true;
+    toFetch.forEach(c => this._pendingLazyChunks.add(c));
+    Promise.all(toFetch.map(c => Promise.resolve(window.SrdCompendium.ensureChunkLoaded(c)))).then(() => {
+      toFetch.forEach(c => this._pendingLazyChunks.delete(c));
+      if (window.CharStore && typeof window.CharStore.recompute === 'function') {
+        window.CharStore.recompute();
+      }
+      if (typeof window.renderAll === 'function') {
+        window.renderAll({ skipRecompute: true });
       }
     }).catch(() => {
       toFetch.forEach(c => this._pendingLazyChunks.delete(c));
