@@ -582,6 +582,38 @@ function runCharStoreTests() {
   Store.dispatch({ type: 'hud/longRest', payload: { isFullHeal: true, runMorningRoutine: false } });
   check(Store.getDoc().spellcasting.contingencies.some(c => c.id === 'ctg_craft_1'), 'E6.3: Crafted Contingent Spell persists across Long Rests without day decay');
 
+  // Claude Code P1 regression: Short Rest resets round -> 1 and must rebase surviving combatTimers against prevRound
+  Store.replaceDoc({
+    name: 'Mialee',
+    level: 12,
+    hp: { current: 40, max: 60, temp: 0 },
+    tactical: { round: 15 },
+    encounterRound: 15,
+    buffs: [],
+    combatTimers: []
+  });
+  Store.dispatch({
+    type: 'combat/addTimer',
+    payload: { id: 'tmr_perm_hot', name: 'Fast Healing 3', kind: 'periodic', intervalRounds: 1, durationRounds: null, hpEffect: 'heal', formula: '3' }
+  });
+  Store.dispatch({
+    type: 'combat/addTimer',
+    payload: { id: 'tmr_long_sust', name: 'Call Lightning', kind: 'sustained', durationRounds: 200 }
+  });
+  Store.dispatch({
+    type: 'combat/addTimer',
+    payload: { id: 'tmr_short_dbf', name: 'Delayed Blast Fireball', kind: 'delayed', durationRounds: 5, formula: '10d6' }
+  });
+  Store.dispatch({ type: 'hud/shortRest', payload: { minutes: 10 } }); // 100 rounds
+  const srOut = Store.getLastOutcome();
+  const permHotAfter = Store.getDoc().combatTimers.find(t => t.id === 'tmr_perm_hot');
+  const longSustAfter = Store.getDoc().combatTimers.find(t => t.id === 'tmr_long_sust');
+  check(permHotAfter && permHotAfter.nextTickRound === 2, 'E6 P1 (Claude Code): Permanent HoT added on round 15 rebases nextTickRound to 2 after Short Rest');
+  check(longSustAfter && longSustAfter.endRound === 101, 'E6 P1 (Claude Code): 200-round timer after 100-round Short Rest rebases endRound to 101 (100 rounds left)');
+  check(!Store.getDoc().combatTimers.some(t => t.id === 'tmr_short_dbf') && Array.isArray(srOut.e6TimerTriggers) && srOut.e6TimerTriggers.some(t => t.id === 'tmr_short_dbf'), 'E6 P1 (Claude Code): Delayed timer expiring during Short Rest records detonation trigger');
+  Store.dispatch({ type: 'combat/advanceRound' });
+  check(Store.getDoc().hp.current === 43, 'E6 P1 (Claude Code): Rebased permanent HoT ticks immediately on Round 2 after Short Rest (40 -> 43)');
+
   const elapsedMs = Date.now() - startMs;
   if (failures.length > 0) {
     throw new Error(`CharStore Test Gate failed (${failures.length} failure(s)):\n  - ${failures.join('\n  - ')}`);

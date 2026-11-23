@@ -10058,7 +10058,14 @@ function renderManualStatsPanel() {
       }
       feedback += `\n\n📌 This effect triggers automatically each time you advance the round (Turn ⏭️).`;
 
-      alert(feedback);
+      if (typeof showDiceTopToast === 'function') {
+        showDiceTopToast({
+          icon,
+          title: `${UI.escapeHtml(name)} (${typeText})`,
+          breakdown: `${rateSign}${UI.escapeHtml(rawAmount)} HP/rd • ${durInfo}${applyNow ? ` • Initial tick${UI.escapeHtml(initialRollDesc)}` : ''}`,
+          total: `${character.hp.current}/${character.hp.max} HP`
+        });
+      }
     }
 
     function getActivePeriodicHpViewList() {
@@ -10096,13 +10103,10 @@ function renderManualStatsPanel() {
       if (!character || active.length === 0) return;
       if ((await DnDUI.confirm('Are you sure you want to clear all active periodic HP effects (DoT / HoT)?', { tone: 'danger' }))) {
         if (typeof CharStore !== 'undefined' && CharStore.dispatch) {
-          active.forEach(e => {
-            if (Array.isArray(character.combatTimers) && character.combatTimers.some(t => t && t.id === e.id)) {
-              CharStore.dispatch({ type: 'combat/removeTimer', payload: { id: e.id }, meta: { label: 'Clear Periodic HP' } });
-            }
-          });
+          CharStore.dispatch({ type: 'combat/clearPeriodicHpTimers', meta: { label: 'Clear All Periodic HP Effects' } });
+        } else {
+          character.periodicHpEffects = [];
         }
-        character.periodicHpEffects = [];
         saveStateToStorage(true);
         renderAll();
         renderPeriodicModalActiveList();

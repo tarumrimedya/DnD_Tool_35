@@ -17126,8 +17126,7 @@
         const out = CharStore.getLastOutcome ? CharStore.getLastOutcome() : null;
         if (out && out.status === 'contingency_triggered' && out.entry) {
           renderAll({ skipRecompute: true });
-          const safeTrig = UI.escapeHtml(out.entry.triggerText || '');
-          executeMatrixOrContingencySpellEffect(out.entry, `Contingency Triggered (No Action — "${safeTrig}")`);
+          executeMatrixOrContingencySpellEffect(out.entry, `Contingency Triggered (No Action — "${out.entry.triggerText || ''}")`);
         }
       });
       Actions.register('e6:remove-contingency', (el, data) => {

@@ -2011,13 +2011,26 @@
     }
 
     if (mode === 'shortRest') {
-      const curRound = Number(doc.tactical?.round || doc.encounterRound) || 1;
-      const newRound = curRound + step;
+      const prevRound = Number(ctx.prevRound || doc.tactical?.round || doc.encounterRound) || 1;
+      const elapsedRound = prevRound + step;
       doc.combatTimers = doc.combatTimers.filter(t => {
         if (!t) return false;
-        if (t.endRound !== null && t.endRound !== undefined && newRound >= Number(t.endRound)) {
-          notes.push(`⌛ ${t.name} expired`);
-          return false;
+        if (t.endRound !== null && t.endRound !== undefined) {
+          const remaining = Number(t.endRound) - elapsedRound;
+          if (remaining <= 0) {
+            if (t.kind === 'delayed') {
+              notes.push(`💥 ${t.name} detonated during Short Rest`);
+              timerTriggers.push({ id: t.id, name: t.name, kind: 'delayed', formula: t.formula || '', dc: t.dc || null });
+            } else {
+              notes.push(`⌛ ${t.name} expired`);
+            }
+            return false;
+          }
+          // Rebase surviving timer to reset encounter round = 1
+          t.endRound = 1 + remaining;
+        }
+        if (t.kind === 'periodic') {
+          t.nextTickRound = 1 + Math.max(1, Math.floor(Number(t.intervalRounds) || 1));
         }
         return true;
       });
@@ -6772,7 +6785,8 @@
       });
     }
 
-    // 2. Encounter round, cooldowns & action economy reset
+    // 2. Encounter round, cooldowns & action economy reset (preserve prevRound for E6 timer rebasing)
+    const prevRoundBeforeShortRest = Number(doc.tactical?.round || doc.encounterRound) || 1;
     doc.encounterRound = 1;
     if (!doc.tactical || typeof doc.tactical !== 'object') doc.tactical = {};
     doc.tactical.round = 1;
@@ -6911,8 +6925,8 @@
       });
     }
 
-    // 3b. Sprint E6: Advance combat timers & Spell Matrix by restRounds
-    const e6ShortRestRes = advanceGameTimeOnDoc(doc, restRounds, { mode: 'shortRest' });
+    // 3b. Sprint E6: Advance combat timers & Spell Matrix by restRounds (rebased against prevRoundBeforeShortRest)
+    const e6ShortRestRes = advanceGameTimeOnDoc(doc, restRounds, { mode: 'shortRest', prevRound: prevRoundBeforeShortRest });
 
     // 4. Nonlethal and Condition healing for 1 Hour rest (60 min)
     let nonlethalHealed = 0;
@@ -6977,7 +6991,9 @@
       expiredBuffNames: expiredBuffNames,
       nonlethalHealed: nonlethalHealed,
       fatigueCleared: fatigueCleared,
-      downgradedExhausted: downgradedExhausted
+      downgradedExhausted: downgradedExhausted,
+      e6Notes: e6ShortRestRes.notes || [],
+      e6TimerTriggers: e6ShortRestRes.timerTriggers || []
     });
     return doc;
   });
@@ -7312,6 +7328,15 @@
     const before = doc.combatTimers.length;
     doc.combatTimers = doc.combatTimers.filter(t => t && t.id !== id);
     setStoreOutcome(stateObj, { status: doc.combatTimers.length < before ? 'timer_removed' : 'not_found', id });
+    return doc;
+  });
+
+  CharStore.registerReducer('combat/clearPeriodicHpTimers', (doc, _action, stateObj) => {
+    ensureSpellE6Structures(doc);
+    const before = doc.combatTimers.length;
+    doc.combatTimers = doc.combatTimers.filter(t => !(t && (t.hpEffect === 'damage' || t.hpEffect === 'heal')));
+    doc.periodicHpEffects = [];
+    setStoreOutcome(stateObj, { status: 'periodic_hp_cleared', removed: before - doc.combatTimers.length });
     return doc;
   });
 
