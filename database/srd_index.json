@@ -1,9 +1,9 @@
 {
   "schemaVersion": 3,
   "version": "3.0.0",
-  "compendiumHash": "dffc08a9d975630d",
+  "compendiumHash": "52a62a540b72c786",
   "generatedAt": "2026-11-15T19:43:51.694Z",
-  "totalEntries": 8001,
+  "totalEntries": 8004,
   "chunks": {
     "srd_equipment.json": {
       "count": 1143,
@@ -30,9 +30,9 @@
       "eagerLoad": true
     },
     "srd_spells.json": {
-      "count": 695,
+      "count": 698,
       "bytes": 1954627,
-      "hash": "3afc367a345e65a6",
+      "hash": "634f58d64a61647d",
       "eagerLoad": true
     },
     "srd_monsters.json": {
@@ -66169,6 +66169,33 @@
       "c": "Augmentation Crystal",
       "s": "Armor Crystal",
       "f": "mic_compendium.json"
+    },
+    {
+      "id": "spl-lesser-spell-matrix",
+      "n": "Lesser Spell Matrix",
+      "t": "Spell",
+      "c": "Transmutation",
+      "s": "None",
+      "f": "srd_spells.json",
+      "l": 5
+    },
+    {
+      "id": "spl-spell-matrix",
+      "n": "Spell Matrix",
+      "t": "Spell",
+      "c": "Transmutation",
+      "s": "None",
+      "f": "srd_spells.json",
+      "l": 7
+    },
+    {
+      "id": "spl-greater-spell-matrix",
+      "n": "Greater Spell Matrix",
+      "t": "Spell",
+      "c": "Transmutation",
+      "s": "None",
+      "f": "srd_spells.json",
+      "l": 9
     }
   ],
   "entries": [

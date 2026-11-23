@@ -1315,89 +1315,19 @@
     }
 
     function advanceNextRound() {
+      if (typeof window.advanceCombatRound === 'function') {
+        window.advanceCombatRound();
+        return;
+      }
       if (!character) return;
-      character.encounterRound = (Number(character.encounterRound) || 1) + 1;
-      const expired = [];
-      if (Array.isArray(character.buffs)) {
-        character.buffs.forEach(buff => {
-          if (buff.active && buff.rounds !== null && buff.rounds !== undefined && buff.rounds > 0) {
-            buff.rounds--;
-            if (buff.rounds <= 0) {
-              buff.active = false;
-              const tempHp = getBuffGrantedTempHp(buff);
-              if (tempHp > 0 && character.hp) {
-                character.hp.temp = Math.max(0, (Number(character.hp.temp) || 0) - tempHp);
-                buff._tempHpSynced = false;
-                markPlayerHpChanged();
-              }
-              expired.push(buff.name);
-            }
-          }
+      if (typeof CharStore !== 'undefined' && CharStore.dispatch) {
+        CharStore.dispatch({
+          type: 'combat/advanceRound',
+          label: 'Next Round',
+          meta: { label: 'Next Round', cloudSync: false }
         });
-      }
-
-      // Process Periodic HP Effects (DoT / HoT - Tur Başı Can Etkileri)
-      const hpLogs = [];
-      const expiredPeriodic = [];
-      if (Array.isArray(character.periodicHpEffects) && character.periodicHpEffects.length > 0) {
-        character.periodicHpEffects.forEach(eff => {
-          const evalRes = evaluateHpAmount(eff.amount);
-          const amt = evalRes.total;
-          const rollInfo = evalRes.isDice ? ` [Roll: ${evalRes.rollDesc}]` : '';
-
-          if (amt > 0) {
-            if (eff.type === 'damage') {
-              character.hp.current = Math.max(-10, (Number(character.hp.current) || 0) - amt);
-              hpLogs.push(`💥 ${eff.name}: -${amt} HP Damage${rollInfo}`);
-            } else if (eff.type === 'heal') {
-              const maxHp = Number(character.hp.max) || 0;
-              character.hp.current = Math.min(maxHp, (Number(character.hp.current) || 0) + amt);
-              hpLogs.push(`💖 ${eff.name}: +${amt} HP Healed${rollInfo}`);
-            }
-          }
-
-          if (eff.roundsLeft !== null && eff.roundsLeft !== undefined) {
-            eff.roundsLeft--;
-            if (eff.roundsLeft <= 0) {
-              expiredPeriodic.push(eff.name);
-            }
-          }
-        });
-
-        // Filter out expired periodic effects
-        character.periodicHpEffects = character.periodicHpEffects.filter(eff => 
-          eff.roundsLeft === null || eff.roundsLeft === undefined || eff.roundsLeft > 0
-        );
-      }
-
-      if (!character.tactical) character.tactical = {};
-      character.tactical.round = character.encounterRound;
-      if (typeof resetActionEconomy === 'function') resetActionEconomy();
-
-      updateRoundDisplays();
-      saveStateToStorage(true);
-      renderAll();
-
-      if (hpLogs.length > 0 || expiredPeriodic.length > 0 || expired.length > 0) {
-        const details = [
-          ...hpLogs,
-          ...expiredPeriodic.map(e => `${e} expired`),
-          ...expired.map(e => `${e} expired`),
-          'Actions refreshed'
-        ].join(' • ');
-        showDiceTopToast({
-          icon: '⏳',
-          title: `Round ${character.encounterRound} Started`,
-          breakdown: details,
-          total: `${character.hp.current}/${character.hp.max} HP`
-        });
-      } else {
-        showDiceTopToast({
-          icon: '⏳',
-          title: `Round ${character.encounterRound} Started`,
-          breakdown: 'Advanced to next round • All actions refreshed',
-          total: `Rd ${character.encounterRound}`
-        });
+        if (typeof updateRoundDisplays === 'function') updateRoundDisplays();
+        renderAll({ skipRecompute: true });
       }
     }
 
@@ -1449,9 +1379,19 @@
     function executeLongRest(isFullHeal = true) {
       if (!character) return;
       syncInventoryStore();
+      // Build spellLookup for enabled Morning Routines so the pure store reducer has full V3 spell specs
+      const routineSpellLookup = {};
+      const routines = Array.isArray(character?.spellcasting?.routines) ? character.spellcasting.routines : [];
+      routines.forEach(r => {
+        if (!r || r.enabled === false || r.autoCastOnLongRest === false) return;
+        const found = (typeof RuleEngine !== 'undefined' && RuleEngine.getMasterDbEntry)
+          ? (RuleEngine.getMasterDbEntry({ id: r.spellId, name: r.spellName }, 'Spell') || RuleEngine.getMasterDbEntry({ id: r.spellId, name: r.spellName }, 'Power'))
+          : null;
+        if (found) routineSpellLookup[r.id] = found;
+      });
       CharStore.dispatch({
         type: 'hud/longRest',
-        payload: { isFullHeal: Boolean(isFullHeal) },
+        payload: { isFullHeal: Boolean(isFullHeal), runMorningRoutine: true, routineSpellLookup },
         meta: { label: isFullHeal ? 'Long Rest (Full Recovery)' : 'Long Rest (8h Natural Healing)' }
       });
       const out = (typeof CharStore.getLastOutcome === 'function' ? CharStore.getLastOutcome() : null) || {};
@@ -1481,13 +1421,23 @@
       if (refreshedDailyItems > 0 || refreshedDailyFeats > 0) details.push(`${refreshedDailyItems + refreshedDailyFeats} Daily Item/Feat charges refreshed`);
       if (removedConditions > 0) details.push("Fatigue/Debuffs cleared");
       if (hasRingOfSustenance) details.push("💍 2 Hours (Ring of Sustenance)");
+      const esc = (s) => (typeof UI !== 'undefined' && UI.escapeHtml) ? UI.escapeHtml(String(s || '')) : String(s || '');
+      const e6Notes = Array.isArray(out.e6Notes) ? out.e6Notes : [];
+      if (e6Notes.length > 0) details.push(e6Notes.map(esc).join(' • '));
+      const mr = out.morningRoutine || { cast: [], skipped: [] };
+      if (Array.isArray(mr.cast) && mr.cast.length > 0) {
+        details.push(`☀️ Morning Routine: ${mr.cast.map(c => esc(c.name) + (c.durationText ? ` (${esc(c.durationText)})` : '')).join(', ')}`);
+      }
+      if (Array.isArray(mr.skipped) && mr.skipped.length > 0) {
+        details.push(`⚠️ Skipped: ${mr.skipped.map(s => `${esc(s.name)} (${esc(s.reason)})`).join(', ')}`);
+      }
 
       showDiceTopToast({
         icon: "☀️",
         title: `Long Rest Complete (${isFullHeal ? "Full Heal" : "D&D 3.5e RAW"})`,
         breakdown: details.join(" • "),
         total: `${curHp}/${maxHp} HP`
-      }, { stack: false, autoDismiss: true, dismissMs: 5000 });
+      }, { stack: false, autoDismiss: true, dismissMs: 6500 });
     }
 
     function performRest() {

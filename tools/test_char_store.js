@@ -431,6 +431,157 @@ function runCharStoreTests() {
   Store.dispatch({ type: 'combat/advanceRound' });
   check(Store.getDoc().buffs[0].active === false && Store.getDoc().hp.temp === 5, 'E2 P1#5: expiring Aid on advanceRound must subtract its 7 HP delta (12 -> 5)');
 
+  // =========================================================================
+  // SPRINT E6: Combat Timers, Morning Routines, Spell Matrix & Contingencies
+  // =========================================================================
+  // E6.1: Periodic DoT/HoT timer + Delayed detonation + legacy periodicHpEffects absorption + 1-step Undo
+  Store.replaceDoc({
+    name: 'Mialee',
+    level: 12,
+    hp: { current: 50, max: 60, temp: 0 },
+    tactical: { round: 1 },
+    encounterRound: 1,
+    buffs: [],
+    periodicHpEffects: [{ name: 'Acid Burn', type: 'damage', amount: '3', roundsLeft: 2 }],
+    spellcasting: {
+      slots: [
+        { level: 0, daily: 4, used: 0 },
+        { level: 1, daily: 4, used: 0 },
+        { level: 2, daily: 4, used: 0 },
+        { level: 3, daily: 4, used: 0 },
+        { level: 4, daily: 4, used: 0 },
+        { level: 5, daily: 2, used: 0 },
+        { level: 6, daily: 2, used: 0 },
+        { level: 7, daily: 2, used: 0 }
+      ],
+      preparedSlots: [],
+      divineSlots: [],
+      preparedSpells: [],
+      divineSpells: []
+    }
+  });
+  Store.dispatch({
+    type: 'combat/addTimer',
+    payload: { id: 'tmr_dbf', name: 'Delayed Blast Fireball', kind: 'delayed', durationRounds: 2, formula: '12d6', dc: 23 }
+  });
+  check(Store.getDoc().combatTimers.some(t => t.id === 'tmr_dbf'), 'E6.1: Delayed timer added');
+  check(Store.getDoc().combatTimers.some(t => t.name === 'Acid Burn') && Store.getDoc().periodicHpEffects.length === 0, 'E6.1: Legacy periodicHpEffects absorbed into combatTimers');
+  Store.dispatch({ type: 'combat/advanceRound', payload: { tickRolls: {} } });
+  check(Store.getDoc().hp.current === 47, 'E6.1: Periodic DoT ticked -3 HP on advanceRound (50 -> 47)');
+  Store.dispatch({ type: 'combat/advanceRound', payload: { tickRolls: {} } });
+  const dbfOut = Store.getLastOutcome();
+  check(dbfOut && Array.isArray(dbfOut.timerTriggers) && dbfOut.timerTriggers.some(t => t.id === 'tmr_dbf'), 'E6.1: Delayed Blast Fireball detonates on endRound');
+  check(!Store.getDoc().combatTimers.some(t => t.id === 'tmr_dbf'), 'E6.1: Detonated delayed timer removed');
+  Store.undo();
+  check(Store.getDoc().hp.current === 47 && Store.getDoc().combatTimers.some(t => t.id === 'tmr_dbf'), 'E6.1: Undo restores timer & HP atomically');
+
+  // E6.1: Morning Routine auto-cast on Long Rest (1-step Undo)
+  Store.dispatch({
+    type: 'spells/addRoutine',
+    payload: {
+      id: 'rtn_primal',
+      spellId: 'spl-primal-senses',
+      spellName: 'Primal Senses',
+      discipline: 'spontaneous',
+      slotLevel: 4,
+      effectiveSlotLevel: 4,
+      autoCastOnLongRest: true,
+      enabled: true
+    }
+  });
+  Store.dispatch({
+    type: 'hud/longRest',
+    payload: { isFullHeal: true, runMorningRoutine: true }
+  });
+  const lrOut = Store.getLastOutcome();
+  check(lrOut && lrOut.morningRoutine && lrOut.morningRoutine.cast.length === 1 && lrOut.morningRoutine.cast[0].name === 'Primal Senses', 'E6.1: Morning Routine auto-casts Primal Senses after Long Rest');
+  check(Store.getDoc().spellcasting.slots.find(s => s.level === 4).used === 1, 'E6.1: Morning Routine consumes 1 spontaneous Lvl 4 slot after Long Rest refresh');
+  Store.undo();
+  check(Store.getDoc().spellcasting.slots.find(s => s.level === 4).used === 0, 'E6.1: Single Undo reverts Long Rest + Morning Routine atomically');
+
+  // E6.2: Spell Matrix backlash heal lock, Quicken/level eligibility, Swift Action sequence release & unlock
+  Store.dispatch({
+    type: 'spells/openMatrix',
+    payload: { tier: 'standard', discipline: 'spontaneous', casterLevel: 14, backlashDamage: 8 }
+  });
+  check(Store.getDoc().spellcasting.matrix && Store.getDoc().spellcasting.matrix.lockedDamage === 8, 'E6.2: Standard Spell Matrix opened with 8 locked backlash damage');
+  const hpAfterMatrix = Store.getDoc().hp.current;
+  Store.dispatch({ type: 'hud/adjustHp', payload: { mode: 'heal', amount: 50 } });
+  check(Store.getDoc().hp.current === 52, 'E6.2: Healing is strictly capped at maxHp(60) - lockedDamage(8) = 52 while matrix is active');
+
+  Store.dispatch({
+    type: 'spells/loadMatrixSpell',
+    payload: { spellName: 'Fireball', level: 4, effectiveSlotLevel: 4, castingTime: '1 standard action', discipline: 'spontaneous' }
+  });
+  check(Store.getLastOutcome().status === 'ineligible_spell', 'E6.2: Rejects >3rd-level spell for Spell Matrix');
+
+  Store.dispatch({
+    type: 'spells/loadMatrixSpell',
+    payload: { spellName: 'Summon Monster III', level: 3, effectiveSlotLevel: 3, castingTime: '1 round', discipline: 'spontaneous' }
+  });
+  check(Store.getLastOutcome().status === 'ineligible_spell', 'E6.2: Rejects 1-round (non-Quicken-eligible) spell for Spell Matrix');
+
+  Store.dispatch({
+    type: 'spells/loadMatrixSpell',
+    payload: { spellName: 'Summon Monster I', level: 1, effectiveSlotLevel: 1, castingTime: 'round', discipline: 'spontaneous' }
+  });
+  check(Store.getLastOutcome().status === 'ineligible_spell', 'E6.2 P1#5a: Rejects bare V3 "round" castingTime token for Spell Matrix');
+
+  Store.dispatch({
+    type: 'spells/loadMatrixSpell',
+    payload: { id: 'ms_1', spellName: 'Shield', level: 1, effectiveSlotLevel: 1, castingTime: '1 standard action', discipline: 'spontaneous' }
+  });
+  Store.dispatch({
+    type: 'spells/loadMatrixSpell',
+    payload: { id: 'ms_2', spellName: 'Magic Missile', level: 1, effectiveSlotLevel: 1, castingTime: '1 standard action', discipline: 'spontaneous' }
+  });
+  // P1 #1: Sequence must retain partial 1st click before 2nd click completes the pair
+  Store.dispatch({ type: 'spells/setMatrixSequence', payload: { ids: ['ms_1'] } });
+  check(Store.getDoc().spellcasting.matrix.sequenceIds.length === 1 && Store.getDoc().spellcasting.matrix.sequenceIds[0] === 'ms_1', 'E6.2 P1#1: Sequence retains 1st clicked spell ID');
+  Store.dispatch({ type: 'spells/setMatrixSequence', payload: { ids: ['ms_1', 'ms_2'] } });
+  check(Store.getDoc().spellcasting.matrix.sequenceIds.length === 2, 'E6.2 P1#1: Sequence completes 2-spell link on 2nd click');
+  Store.dispatch({ type: 'spells/releaseMatrix', payload: { releaseSequence: true } });
+  const relOut = Store.getLastOutcome();
+  check(relOut.status === 'matrix_released' && relOut.released.length === 2 && relOut.matrixClosed === true, 'E6.2: Sequence releases 2 spells in 1 Swift Action and closes matrix');
+  check(Store.getDoc().tactical.spentActions.swift === true, 'E6.2: Matrix release spends Swift Action');
+  Store.dispatch({ type: 'hud/adjustHp', payload: { mode: 'heal', amount: 50 } });
+  check(Store.getDoc().hp.current === 60, 'E6.2: Once matrix closes, backlash HP lock releases and healing reaches full 60 HP');
+
+  // E6.3: Contingency floor(CL/3) cap, replacement, Long Rest day countdown, no-action trigger & Craft Contingent HD cap
+  Store.dispatch({
+    type: 'spells/addContingency',
+    payload: { kind: 'contingency', spellName: 'Teleport', spellLevel: 5, casterLevel: 12, triggerText: 'If below 10 HP' }
+  });
+  check(Store.getLastOutcome().status === 'companion_level_exceeded', 'E6.3: Rejects Lvl 5 companion at CL 12 (max floor(12/3) = 4)');
+
+  Store.dispatch({
+    type: 'spells/addContingency',
+    payload: { id: 'ctg_1', kind: 'contingency', spellName: 'Dimension Door', spellLevel: 4, casterLevel: 12, triggerText: 'If grappled' }
+  });
+  check(Store.getLastOutcome().status === 'contingency_added' && Store.getDoc().spellcasting.contingencies.length === 1, 'E6.3: Adds valid Lvl 4 Contingency at CL 12');
+
+  Store.dispatch({
+    type: 'spells/addContingency',
+    payload: { id: 'ctg_2', kind: 'psionic', spellName: 'Time Hop', spellLevel: 3, casterLevel: 12, triggerText: 'If paralyzed' }
+  });
+  check(Store.getDoc().spellcasting.contingencies.length === 1 && Store.getDoc().spellcasting.contingencies[0].id === 'ctg_2', 'E6.3: Second Contingency dispels/replaces first under transparency');
+
+  Store.dispatch({ type: 'hud/longRest', payload: { isFullHeal: true, runMorningRoutine: false } });
+  check(Store.getDoc().spellcasting.contingencies.length === 1 && Store.getDoc().spellcasting.contingencies[0].daysRemaining === 11, 'E6.3: Contingency survives Long Rest and decrements daysRemaining (12 -> 11)');
+
+  // Spend all actions first, then trigger Contingency — must succeed with zero action economy check!
+  Store.getDoc().tactical.spentActions = { standard: true, move: true, swift: true, immediate: true };
+  Store.dispatch({ type: 'spells/triggerContingency', payload: { id: 'ctg_2' } });
+  check(Store.getLastOutcome().status === 'contingency_triggered' && Store.getDoc().spellcasting.contingencies.length === 0, 'E6.3: Contingency triggers with NO action required even when all actions are spent');
+
+  // Craft Contingent Spell persists across Long Rest
+  Store.dispatch({
+    type: 'spells/addContingency',
+    payload: { id: 'ctg_craft_1', kind: 'crafted', spellName: 'Heal', spellLevel: 6, casterLevel: 11, triggerText: 'If HP <= 0' }
+  });
+  Store.dispatch({ type: 'hud/longRest', payload: { isFullHeal: true, runMorningRoutine: false } });
+  check(Store.getDoc().spellcasting.contingencies.some(c => c.id === 'ctg_craft_1'), 'E6.3: Crafted Contingent Spell persists across Long Rests without day decay');
+
   const elapsedMs = Date.now() - startMs;
   if (failures.length > 0) {
     throw new Error(`CharStore Test Gate failed (${failures.length} failure(s)):\n  - ${failures.join('\n  - ')}`);

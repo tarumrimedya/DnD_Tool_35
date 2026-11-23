@@ -193,6 +193,15 @@
     'slot_level_exceeded',
     'duplicate_metamagic',
     'duplicate_metamagic_transform',
+    'no_active_matrix',
+    'matrix_full',
+    'ineligible_spell',
+    'swift_action_unavailable',
+    'nothing_to_release',
+    'companion_level_exceeded',
+    'crafted_hd_cap_reached',
+    'sequence_not_supported',
+    'trigger_not_supported',
     'max_one_rod_per_spell',
     'rod_spell_level_exceeded',
     'invalid_subsystem',
@@ -1264,8 +1273,9 @@
       if (plan.isCureMinor) {
         const prevHp = Number(doc.hp.current) || 0;
         const maxHp = Number(doc.hp.max) || (prevHp + 1);
-        doc.hp.current = Math.min(maxHp, prevHp + 1);
-        setOutcome({ status: 'healed_minor', name, prevHp, newHp: doc.hp.current, maxHp, remainingInfo });
+        const healCap = getEffectiveHealCapGlobal(doc, maxHp);
+        doc.hp.current = prevHp < healCap ? Math.min(healCap, prevHp + 1) : prevHp;
+        setOutcome({ status: 'healed_minor', name, prevHp, newHp: doc.hp.current, maxHp, healCap, remainingInfo });
         return doc;
       }
 
@@ -1273,7 +1283,8 @@
         const healTotal = plan.bonus || 110;
         const prevHp = Number(doc.hp.current) || 0;
         const maxHp = Number(doc.hp.max) || (prevHp + healTotal);
-        doc.hp.current = Math.min(maxHp, prevHp + healTotal);
+        const healCap = getEffectiveHealCapGlobal(doc, maxHp);
+        doc.hp.current = prevHp < healCap ? Math.min(healCap, prevHp + healTotal) : prevHp;
         const healCured = [];
         if (Array.isArray(doc.buffs)) {
           doc.buffs.forEach(b => {
@@ -1286,7 +1297,7 @@
             }
           });
         }
-        setOutcome({ status: 'healed_spell', name, healTotal, prevHp, newHp: doc.hp.current, maxHp, healCured, remainingInfo });
+        setOutcome({ status: 'healed_spell', name, healTotal, prevHp, newHp: doc.hp.current, maxHp, healCap, healCured, remainingInfo });
         return doc;
       }
 
@@ -1298,7 +1309,8 @@
       const healTotal = rollRes.sum + flatBonus;
       const prevHp = Number(doc.hp.current) || 0;
       const maxHp = Number(doc.hp.max) || (prevHp + healTotal);
-      doc.hp.current = Math.min(maxHp, prevHp + healTotal);
+      const healCap = getEffectiveHealCapGlobal(doc, maxHp);
+      doc.hp.current = prevHp < healCap ? Math.min(healCap, prevHp + healTotal) : prevHp;
       setOutcome({
         status: 'healed_dice',
         name,
@@ -1310,6 +1322,7 @@
         prevHp,
         newHp: doc.hp.current,
         maxHp,
+        healCap,
         remainingInfo
       });
       return doc;
@@ -1745,9 +1758,383 @@
     syncResList(doc.specialAbilities);
   }
 
+  // --- Sprint E6 Shared Helpers: Timers, Morning Routines, Spell Matrix, Contingencies ---
+  function getEffectiveHealCapGlobal(doc, maxHp) {
+    const m = Math.max(1, Number(maxHp) || 1);
+    const locked = (doc && doc.spellcasting && doc.spellcasting.matrix && doc.spellcasting.matrix.active)
+      ? Math.max(0, Math.floor(Number(doc.spellcasting.matrix.lockedDamage) || 0))
+      : 0;
+    return Math.max(0, m - locked);
+  }
+
+  function ensureSpellE6Structures(doc) {
+    if (!doc) return;
+    if (!doc.spellcasting || typeof doc.spellcasting !== 'object') doc.spellcasting = {};
+    if (!Array.isArray(doc.spellcasting.routines)) doc.spellcasting.routines = [];
+    if (!Array.isArray(doc.spellcasting.contingencies)) doc.spellcasting.contingencies = [];
+    if (doc.spellcasting.matrix === undefined) doc.spellcasting.matrix = null;
+    if (!Array.isArray(doc.combatTimers)) doc.combatTimers = [];
+    // Absorb any legacy periodicHpEffects into doc.combatTimers (idempotent)
+    if (Array.isArray(doc.periodicHpEffects) && doc.periodicHpEffects.length > 0) {
+      const curRound = Number(doc.tactical?.round || doc.encounterRound) || 1;
+      doc.periodicHpEffects.forEach((eff, idx) => {
+        if (!eff || !eff.name) return;
+        const legacyId = eff.id || `legacy_hp_${idx}_${String(eff.name).toLowerCase().replace(/[^a-z0-9]+/g, '_')}`;
+        if (!doc.combatTimers.some(t => t && t.id === legacyId)) {
+          const rLeft = (eff.roundsLeft !== null && eff.roundsLeft !== undefined) ? Math.max(1, Number(eff.roundsLeft) || 1) : null;
+          doc.combatTimers.push({
+            id: legacyId,
+            name: eff.name,
+            kind: 'periodic',
+            intervalRounds: 1,
+            nextTickRound: curRound + 1,
+            endRound: rLeft !== null ? (curRound + rLeft) : null,
+            hpEffect: eff.type === 'heal' ? 'heal' : 'damage',
+            formula: String(eff.amount || '1'),
+            source: 'Periodic HP'
+          });
+        }
+      });
+      doc.periodicHpEffects = [];
+    }
+  }
+
+  function normalizeMetamagicKeyList(mmList) {
+    if (!Array.isArray(mmList)) return [];
+    const canonicalize = (raw) => {
+      const s = String(raw || '').toLowerCase().trim();
+      if (!s) return '';
+      if (s.includes('extend')) return 'extend';
+      if (s.includes('persist')) return 'persistent';
+      if (s.includes('quicken')) return 'quicken';
+      if (s.includes('empower')) return 'empower';
+      if (s.includes('maximize')) return 'maximize';
+      if (s.includes('heighten')) return 'heighten';
+      if (s.includes('silent')) return 'silent';
+      if (s.includes('still')) return 'still';
+      if (s.includes('widen')) return 'widen';
+      if (s.includes('enlarge')) return 'enlarge';
+      return s.replace(/^feat-/, '').replace(/-spell$/, '');
+    };
+    return mmList
+      .map(m => canonicalize(typeof m === 'string' ? m : (m && (m.transform || m.featId || m.id || m.name))))
+      .filter(Boolean)
+      .sort();
+  }
+
+  function consumeSpellSlotOnDoc(doc, opts = {}) {
+    if (!doc || !doc.spellcasting) return { ok: false, reason: 'no_spellcasting' };
+    const disc = String(opts.discipline || 'spontaneous').toLowerCase().trim();
+    if (disc === 'noslot' || disc === 'none' || opts.consumeSlot === false) {
+      return { ok: true, discipline: 'noSlot', slotLabel: 'No Slot Spent', level: Number(opts.level) || 0 };
+    }
+    const targetId = String(opts.spellId || '').trim();
+    const targetName = String(opts.spellName || opts.name || '').toLowerCase().trim();
+    const wantMm = normalizeMetamagicKeyList(opts.metamagic);
+    const reqLvl = Math.max(0, Math.floor(Number(opts.effectiveLevel ?? opts.slotLevel ?? opts.level) || 0));
+
+    if (disc === 'prepared' || disc === 'divine') {
+      const listKey = disc === 'divine' ? 'divineSpells' : 'preparedSpells';
+      const list = Array.isArray(doc.spellcasting[listKey]) ? doc.spellcasting[listKey] : [];
+      const matchesEntry = (sp) => {
+        if (!sp || sp.isCast || sp.cast) return false;
+        const idHit = targetId && sp.id && String(sp.id) === targetId;
+        const nameHit = targetName && String(sp.name || '').toLowerCase().trim() === targetName;
+        if (!idHit && !nameHit) return false;
+        if (wantMm.length > 0) {
+          const spMm = normalizeMetamagicKeyList(sp.metamagic || sp.appliedMetamagic);
+          if (spMm.length !== wantMm.length || spMm.some((k, i) => k !== wantMm[i])) return false;
+        }
+        return true;
+      };
+      const spell = list.find(matchesEntry) || null;
+      if (!spell) {
+        return { ok: false, reason: 'not_prepared', detail: `${opts.spellName || targetId || 'Spell'} is not prepared (or already cast)` };
+      }
+      const engineRef = resolveRuleEngine();
+      const mmRes = (engineRef && typeof engineRef.resolveMetamagic === 'function')
+        ? engineRef.resolveMetamagic(spell, doc)
+        : null;
+      const effLvl = Math.max(0, Math.floor(Number(
+        (mmRes && Number.isFinite(Number(mmRes.effectiveSlotLevel)))
+          ? mmRes.effectiveSlotLevel
+          : (spell.effectiveSlotLevel ?? spell.slotLevel ?? spell.level ?? reqLvl)
+      ) || 0));
+      const isDom = Boolean(spell.isDomainSpell);
+      const slot = ensureSlotEntryForDiscipline(doc, disc, effLvl);
+      const daily = Number(slot.daily) || 0;
+      const used = Number(slot.used) || 0;
+      if (disc === 'divine') {
+        const domDaily = Number(slot.domainDaily) || 0;
+        const domUsed = Number(slot.domainUsed) || 0;
+        const regDaily = slot.regularDaily !== undefined ? Number(slot.regularDaily) : Math.max(0, daily - domDaily);
+        const regUsed = Math.max(0, used - domUsed);
+        if (!(used < daily && (isDom ? domUsed < domDaily : regUsed < regDaily))) {
+          return { ok: false, reason: 'no_slots_remaining', detail: `No Lvl ${effLvl} ${isDom ? 'domain ' : ''}divine slots remaining` };
+        }
+        slot.used = used + 1;
+        if (isDom) slot.domainUsed = Math.min(domDaily, domUsed + 1);
+      } else {
+        if (used >= daily) {
+          return { ok: false, reason: 'no_slots_remaining', detail: `No Lvl ${effLvl} prepared slots remaining` };
+        }
+        slot.used = used + 1;
+      }
+      spell.isCast = true;
+      spell.cast = true;
+      return { ok: true, discipline: disc, level: effLvl, spell, slotLabel: `Lvl ${effLvl} ${disc === 'divine' ? 'Divine' : 'Prepared'} Slot` };
+    }
+
+    // Spontaneous
+    const slot = ensureSlotEntryForDiscipline(doc, 'spontaneous', reqLvl);
+    const daily = Number(slot.daily) || 0;
+    const used = Number(slot.used) || 0;
+    if (used >= daily) {
+      return { ok: false, reason: 'no_slots_remaining', detail: `No Lvl ${reqLvl} spontaneous slots remaining` };
+    }
+    slot.used = used + 1;
+    return { ok: true, discipline: 'spontaneous', level: reqLvl, slotLabel: `Lvl ${reqLvl} Spontaneous Slot` };
+  }
+
+  function applyBuffObjectOnDoc(doc, buffObj, opts = {}) {
+    if (!doc || !buffObj) return null;
+    if (!Array.isArray(doc.buffs)) doc.buffs = [];
+    const copy = CharStore._fastCloneHistoryVal(buffObj);
+    if (opts.routineId) copy.routineId = opts.routineId;
+
+    const existingIdx = doc.buffs.findIndex(b => {
+      if (!b) return false;
+      if (opts.routineId && b.routineId && b.routineId === opts.routineId) return true;
+      const sameSpell = (copy.baseSpellId && b.baseSpellId && b.baseSpellId === copy.baseSpellId)
+        || (String(b.name || '').toLowerCase().trim() === String(copy.name || '').toLowerCase().trim());
+      const sameWep = String(b.targetWeapon || '') === String(copy.targetWeapon || '');
+      const sameEnergy = String(b.chosenEnergy || '') === String(copy.chosenEnergy || '');
+      return sameSpell && sameWep && sameEnergy;
+    });
+
+    const prevBuff = existingIdx !== -1 ? doc.buffs[existingIdx] : null;
+    const prevDelta = (prevBuff && prevBuff.active)
+      ? (Number.isFinite(Number(prevBuff._tempHpDelta)) ? Math.max(0, Number(prevBuff._tempHpDelta)) : (Number(prevBuff.grantedTempHp) || 0))
+      : 0;
+
+    const grantedTempHp = Number(opts.grantedTempHp || copy.grantedTempHp || 0) || 0;
+    if (grantedTempHp > 0 && doc.hp) {
+      const curTempWithoutPrev = Math.max(0, (Number(doc.hp.temp) || 0) - prevDelta);
+      const nextTemp = Math.max(curTempWithoutPrev, grantedTempHp);
+      copy.grantedTempHp = grantedTempHp;
+      copy._tempHpDelta = Math.max(0, nextTemp - curTempWithoutPrev);
+      copy._tempHpSynced = true;
+      copy.ruleFlags = Object.assign({}, copy.ruleFlags || {}, { tempHp: grantedTempHp });
+      doc.hp.temp = nextTemp;
+      doc.hp._lastPlayerChangeTs = Math.max(Date.now(), (Number(doc.hp._lastDmUpdateTs) || 0) + 100);
+    }
+
+    if (prevBuff && prevBuff.pinnedToCombat) copy.pinnedToCombat = true;
+    if (existingIdx !== -1) doc.buffs[existingIdx] = copy;
+    else doc.buffs.push(copy);
+    return copy;
+  }
+
+  function advanceGameTimeOnDoc(doc, rounds, ctx = {}) {
+    ensureSpellE6Structures(doc);
+    const mode = ctx.mode || 'round';
+    const notes = [];
+    const timerTriggers = [];
+    const tickRolls = (ctx.tickRolls && typeof ctx.tickRolls === 'object') ? ctx.tickRolls : {};
+    const step = Math.max(0, Math.floor(Number(rounds) || 0));
+
+    if (mode === 'round') {
+      const curRound = Number(doc.tactical?.round || doc.encounterRound) || 1;
+      // Tick combatTimers using absolute round numbers
+      const nextTimers = [];
+      doc.combatTimers.forEach(t => {
+        if (!t) return;
+        const kind = t.kind || 'periodic';
+        let expired = false;
+        if (kind === 'periodic') {
+          const nextTick = Number(t.nextTickRound) || curRound;
+          if (curRound >= nextTick) {
+            const rollVal = tickRolls[t.id];
+            const numericVal = Number.isFinite(Number(rollVal?.total ?? rollVal))
+              ? Math.max(0, Math.floor(Number(rollVal?.total ?? rollVal)))
+              : (Number.isFinite(Number(t.formula)) ? Math.max(0, Math.floor(Number(t.formula))) : 0);
+            const rollDesc = rollVal && rollVal.rollDesc ? ` [${rollVal.rollDesc}]` : '';
+            if (t.hpEffect === 'damage' && numericVal > 0 && doc.hp) {
+              doc.hp.current = Math.max(-10, (Number(doc.hp.current) || 0) - numericVal);
+              doc.hp._lastPlayerChangeTs = Math.max(Date.now(), (Number(doc.hp._lastDmUpdateTs) || 0) + 100);
+              notes.push(`💥 ${t.name}: -${numericVal} HP${rollDesc}`);
+            } else if (t.hpEffect === 'heal' && numericVal > 0 && doc.hp) {
+              const maxHp = Number(doc.hp.max) || 1;
+              const healCap = getEffectiveHealCapGlobal(doc, maxHp);
+              const prevHp = Number(doc.hp.current) || 0;
+              doc.hp.current = prevHp < healCap ? Math.min(healCap, prevHp + numericVal) : prevHp;
+              doc.hp._lastPlayerChangeTs = Math.max(Date.now(), (Number(doc.hp._lastDmUpdateTs) || 0) + 100);
+              notes.push(`💚 ${t.name}: +${numericVal} HP${rollDesc}`);
+            } else {
+              notes.push(`⏱️ ${t.name} triggered${t.formula ? ` (${t.formula})` : ''}`);
+            }
+            timerTriggers.push({ id: t.id, name: t.name, kind, formula: t.formula || '', hpEffect: t.hpEffect || null, total: numericVal, rollDesc });
+            t.nextTickRound = curRound + Math.max(1, Math.floor(Number(t.intervalRounds) || 1));
+          }
+          if (t.endRound !== null && t.endRound !== undefined && curRound >= Number(t.endRound)) {
+            expired = true;
+            notes.push(`⌛ ${t.name} expired`);
+          }
+        } else if (kind === 'delayed') {
+          if (t.endRound !== null && t.endRound !== undefined && curRound >= Number(t.endRound)) {
+            expired = true;
+            notes.push(`💥 ${t.name} detonated!`);
+            timerTriggers.push({ id: t.id, name: t.name, kind, formula: t.formula || '', dc: t.dc || null });
+          }
+        } else if (kind === 'sustained') {
+          if (t.endRound !== null && t.endRound !== undefined && curRound >= Number(t.endRound)) {
+            expired = true;
+            notes.push(`⌛ ${t.name} expired`);
+          }
+        }
+        if (!expired) nextTimers.push(t);
+      });
+      doc.combatTimers = nextTimers;
+
+      // Tick Spell Matrix remaining rounds
+      const mat = doc.spellcasting.matrix;
+      if (mat && mat.active) {
+        if (typeof mat.remainingRounds === 'number') {
+          mat.remainingRounds = Math.max(0, mat.remainingRounds - step);
+          if (mat.remainingRounds <= 0) {
+            notes.push(`🔷 ${mat.name || 'Spell Matrix'} expired (backlash HP unlocked)`);
+            doc.spellcasting.matrix = null;
+          }
+        }
+      }
+      return { notes, timerTriggers };
+    }
+
+    if (mode === 'shortRest') {
+      const curRound = Number(doc.tactical?.round || doc.encounterRound) || 1;
+      const newRound = curRound + step;
+      doc.combatTimers = doc.combatTimers.filter(t => {
+        if (!t) return false;
+        if (t.endRound !== null && t.endRound !== undefined && newRound >= Number(t.endRound)) {
+          notes.push(`⌛ ${t.name} expired`);
+          return false;
+        }
+        return true;
+      });
+      const mat = doc.spellcasting.matrix;
+      if (mat && mat.active && typeof mat.remainingRounds === 'number') {
+        mat.remainingRounds = Math.max(0, mat.remainingRounds - step);
+        if (mat.remainingRounds <= 0) {
+          notes.push(`🔷 ${mat.name || 'Spell Matrix'} expired`);
+          doc.spellcasting.matrix = null;
+        }
+      }
+      return { notes, timerTriggers };
+    }
+
+    if (mode === 'longRest') {
+      // Close Spell Matrix BEFORE Long Rest heals HP (matrix duration 10 min/CL cannot outlast 8h rest)
+      if (doc.spellcasting.matrix && doc.spellcasting.matrix.active) {
+        notes.push(`🔷 ${doc.spellcasting.matrix.name || 'Spell Matrix'} ended on Long Rest`);
+        doc.spellcasting.matrix = null;
+      }
+      // Clear ephemeral combat timers
+      doc.combatTimers = [];
+      if (Array.isArray(doc.periodicHpEffects)) doc.periodicHpEffects = [];
+      // Count down days on non-crafted contingencies (never wipe active contingencies!)
+      if (Array.isArray(doc.spellcasting.contingencies)) {
+        doc.spellcasting.contingencies = doc.spellcasting.contingencies.filter(c => {
+          if (!c) return false;
+          if (c.discharged) return false;
+          if (c.kind === 'crafted') return true;
+          if (typeof c.daysRemaining === 'number') {
+            c.daysRemaining = Math.max(0, c.daysRemaining - 1);
+            if (c.daysRemaining <= 0) {
+              notes.push(`🔮 Contingency (${c.spellName || 'Spell'}) expired`);
+              return false;
+            }
+          }
+          return true;
+        });
+      }
+      return { notes, timerTriggers };
+    }
+    return { notes, timerTriggers };
+  }
+
+  function applyMorningRoutineOnDoc(doc, opts = {}) {
+    ensureSpellE6Structures(doc);
+    const routines = doc.spellcasting.routines.filter(r => r && r.enabled !== false && (opts.manual || r.autoCastOnLongRest !== false));
+    if (routines.length === 0) return { cast: [], skipped: [] };
+    const engine = resolveRuleEngine();
+    const cast = [];
+    const skipped = [];
+    const charLvl = Math.max(1, (Array.isArray(doc.levelProgression) ? doc.levelProgression.filter(r => r && r.active !== false).length : 0) || Number(doc.level) || 1);
+
+    routines.forEach(r => {
+      const slotRes = consumeSpellSlotOnDoc(doc, {
+        discipline: r.discipline || 'spontaneous',
+        spellId: r.spellId,
+        spellName: r.spellName || r.name,
+        level: r.slotLevel ?? r.level ?? 1,
+        effectiveLevel: r.effectiveSlotLevel ?? r.slotLevel ?? r.level ?? 1,
+        metamagic: r.metamagic || [],
+        consumeSlot: r.consumeSlot !== false
+      });
+      if (!slotRes.ok) {
+        skipped.push({ id: r.id, name: r.spellName || r.name, reason: slotRes.detail || slotRes.reason });
+        return;
+      }
+      const effCl = Math.max(1, Number(r.casterLevel || charLvl) || 1);
+      const spellStub = Object.assign(
+        {},
+        (opts.spellLookup && opts.spellLookup[r.id]) || {},
+        {
+          id: r.spellId || r.id,
+          name: r.spellName || r.name,
+          level: r.level ?? r.slotLevel ?? 1,
+          casterLevel: effCl,
+          metamagic: Array.isArray(r.metamagic) ? r.metamagic : [],
+          ...(r.chosenEnergy ? { chosenEnergy: r.chosenEnergy, choice: r.chosenEnergy, chosenOption: r.chosenEnergy } : {})
+        }
+      );
+      let buffObj = null;
+      if (engine && typeof engine.resolveSpellBuffSpec === 'function' && typeof engine.buildBuffObject === 'function') {
+        const spec = engine.resolveSpellBuffSpec(spellStub, doc, effCl);
+        if (spec && spec.isBuffSpell) {
+          const wepObj = r.targetWeapon ? (doc.weapons || []).find(w => w && w.name === r.targetWeapon) : null;
+          buffObj = engine.buildBuffObject(spec, {
+            cl: effCl,
+            spellItem: spellStub,
+            chosenEnergy: r.chosenEnergy || null,
+            targetWeapon: r.targetWeapon || null,
+            weaponObj: wepObj
+          });
+          if (buffObj) {
+            let grantedTempHp = Number(spec.evaluatedTempHp) || 0;
+            if (!grantedTempHp && spec.tempHpFormula && typeof engine.rollOrEvaluateTempHp === 'function') {
+              const rolled = engine.rollOrEvaluateTempHp(spec.tempHpFormula, { cl: effCl, level: charLvl, bab: Number(doc.bab) || 0 });
+              grantedTempHp = Number(rolled?.total) || 0;
+            }
+            applyBuffObjectOnDoc(doc, buffObj, { routineId: r.id, grantedTempHp });
+          }
+        }
+      }
+      cast.push({
+        id: r.id,
+        name: buffObj ? buffObj.name : (r.spellName || r.name),
+        durationText: buffObj ? buffObj.durationText : '',
+        slotLabel: slotRes.slotLabel
+      });
+    });
+
+    return { cast, skipped };
+  }
+
   // 1. 'combat/advanceRound'
-  CharStore.registerReducer('combat/advanceRound', (doc, _action, stateObj) => {
+  CharStore.registerReducer('combat/advanceRound', (doc, action, stateObj) => {
     ensureCombatActionStructures(doc);
+    ensureSpellE6Structures(doc);
     doc.tactical.round = (Number(doc.tactical.round || doc.encounterRound) || 1) + 1;
     doc.encounterRound = doc.tactical.round;
 
@@ -1819,10 +2206,17 @@
       });
     }
 
+    const timeRes = advanceGameTimeOnDoc(doc, 1, {
+      mode: 'round',
+      tickRolls: action && action.payload ? action.payload.tickRolls : null
+    });
+    if (timeRes.notes.length > 0) notes.push(...timeRes.notes);
+
     setStoreOutcome(stateObj, {
       status: 'round_advanced',
       round: doc.tactical.round,
-      notes
+      notes,
+      timerTriggers: timeRes.timerTriggers
     });
     return doc;
   });
@@ -6268,7 +6662,8 @@
         doc.hp.current = Math.max(-10, prevCurrent - dmgLeft);
       }
     } else if (mode === 'heal') {
-      doc.hp.current = Math.min(maxHp, prevCurrent + amt);
+      const healCap = getEffectiveHealCapGlobal(doc, maxHp);
+      doc.hp.current = prevCurrent < healCap ? Math.min(healCap, prevCurrent + amt) : prevCurrent;
     } else if (mode === 'temp') {
       if (payload.additive) {
         doc.hp.temp = prevTemp + amt;
@@ -6516,6 +6911,9 @@
       });
     }
 
+    // 3b. Sprint E6: Advance combat timers & Spell Matrix by restRounds
+    const e6ShortRestRes = advanceGameTimeOnDoc(doc, restRounds, { mode: 'shortRest' });
+
     // 4. Nonlethal and Condition healing for 1 Hour rest (60 min)
     let nonlethalHealed = 0;
     let downgradedExhausted = false;
@@ -6597,6 +6995,9 @@
     if (!doc.hp || typeof doc.hp !== 'object') {
       doc.hp = { current: maxHp, max: maxHp, temp: 0, nonlethal: 0 };
     }
+    // Sprint E6: Close active Spell Matrix (unlocking backlash damage) & advance contingency days BEFORE Long Rest HP healing
+    const e6LongRestRes = advanceGameTimeOnDoc(doc, 4800, { mode: 'longRest' });
+
     const prevHp = Number(doc.hp.current) || 0;
     let hpGain = 0;
 
@@ -6606,8 +7007,9 @@
         doc.hp.current = maxHp;
       } else {
         // D&D 3.5e RAW PHB p.146: 1 HP per character level per 8 hours of natural rest
-        hpGain = Math.max(0, Math.min(maxHp - prevHp, charLvl));
-        doc.hp.current = Math.min(maxHp, prevHp + charLvl);
+        const healCap = getEffectiveHealCapGlobal(doc, maxHp);
+        hpGain = Math.max(0, Math.min(healCap - prevHp, charLvl));
+        doc.hp.current = prevHp < healCap ? Math.min(healCap, prevHp + charLvl) : prevHp;
       }
       doc.hp.temp = 0;
       doc.hp.nonlethal = 0;
@@ -6837,6 +7239,15 @@
       )
     );
 
+    // Sprint E6.1: Morning Routine auto-cast after Long Rest refreshes slots & clears expired buffs (1 atomic Undo step)
+    let morningRoutine = { cast: [], skipped: [] };
+    if (opts.runMorningRoutine !== false) {
+      morningRoutine = applyMorningRoutineOnDoc(doc, {
+        manual: false,
+        spellLookup: opts.routineSpellLookup || null
+      });
+    }
+
     doc.lastModified = new Date().toISOString();
     setStoreOutcome(stateObj, {
       status: 'long_rest_complete',
@@ -6850,8 +7261,472 @@
       refreshedDailyItems: refreshedDailyItems,
       refreshedDailyFeats: refreshedDailyFeats,
       removedConditions: removedConditions,
-      hasRingOfSustenance: hasRingOfSustenance
+      hasRingOfSustenance: hasRingOfSustenance,
+      e6Notes: e6LongRestRes.notes || [],
+      morningRoutine: morningRoutine
     });
+    return doc;
+  });
+
+  // --- Sprint E6 Reducers: Combat Timers, Morning Routines, Spell Matrix & Contingencies ---
+  CharStore.registerReducer('combat/addTimer', (doc, action, stateObj) => {
+    ensureSpellE6Structures(doc);
+    const p = (action && action.payload) || {};
+    const name = String(p.name || '').trim();
+    if (!name) {
+      setStoreOutcome(stateObj, { status: 'invalid_payload', reason: 'missing_name' });
+      return doc;
+    }
+    const curRound = Number(doc.tactical?.round || doc.encounterRound) || 1;
+    const kind = ['periodic', 'delayed', 'sustained'].includes(p.kind) ? p.kind : 'periodic';
+    const intervalRounds = Math.max(1, Math.floor(Number(p.intervalRounds) || 1));
+    const durationRounds = (p.durationRounds !== null && p.durationRounds !== undefined && Number(p.durationRounds) > 0)
+      ? Math.floor(Number(p.durationRounds))
+      : null;
+    const id = p.id || `tmr_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
+    const timer = {
+      id,
+      name,
+      kind,
+      spellId: p.spellId || null,
+      intervalRounds,
+      nextTickRound: kind === 'periodic' ? (curRound + intervalRounds) : null,
+      endRound: durationRounds !== null ? (curRound + durationRounds) : null,
+      initialRounds: durationRounds,
+      hpEffect: (p.hpEffect === 'damage' || p.hpEffect === 'heal') ? p.hpEffect : null,
+      formula: String(p.formula || '').trim(),
+      damageType: String(p.damageType || '').trim(),
+      dc: Number.isFinite(Number(p.dc)) ? Number(p.dc) : null,
+      saveType: String(p.saveType || '').trim(),
+      note: String(p.note || '').trim(),
+      source: String(p.source || 'Spell').trim()
+    };
+    doc.combatTimers.push(timer);
+    setStoreOutcome(stateObj, { status: 'timer_added', timer });
+    return doc;
+  });
+
+  CharStore.registerReducer('combat/removeTimer', (doc, action, stateObj) => {
+    ensureSpellE6Structures(doc);
+    const id = action && action.payload ? action.payload.id : null;
+    const before = doc.combatTimers.length;
+    doc.combatTimers = doc.combatTimers.filter(t => t && t.id !== id);
+    setStoreOutcome(stateObj, { status: doc.combatTimers.length < before ? 'timer_removed' : 'not_found', id });
+    return doc;
+  });
+
+  CharStore.registerReducer('combat/triggerTimer', (doc, action, stateObj) => {
+    ensureSpellE6Structures(doc);
+    const p = (action && action.payload) || {};
+    const idx = doc.combatTimers.findIndex(t => t && t.id === p.id);
+    if (idx === -1) {
+      setStoreOutcome(stateObj, { status: 'not_found', id: p.id });
+      return doc;
+    }
+    const timer = doc.combatTimers[idx];
+    const removeOnTrigger = Boolean(p.removeOnTrigger || timer.kind === 'delayed');
+    if (removeOnTrigger) {
+      doc.combatTimers.splice(idx, 1);
+    }
+    setStoreOutcome(stateObj, { status: 'timer_triggered', timer, removed: removeOnTrigger });
+    return doc;
+  });
+
+  CharStore.registerReducer('spells/addRoutine', (doc, action, stateObj) => {
+    ensureSpellE6Structures(doc);
+    const p = (action && action.payload) || {};
+    const spellName = String(p.spellName || p.name || '').trim();
+    if (!spellName) {
+      setStoreOutcome(stateObj, { status: 'invalid_payload', reason: 'missing_name' });
+      return doc;
+    }
+    const id = p.id || `rtn_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
+    const routine = {
+      id,
+      spellId: p.spellId || null,
+      spellName,
+      discipline: String(p.discipline || 'spontaneous').toLowerCase(),
+      slotLevel: Math.max(0, Math.floor(Number(p.slotLevel ?? p.level) || 1)),
+      effectiveSlotLevel: Math.max(0, Math.floor(Number(p.effectiveSlotLevel ?? p.slotLevel ?? p.level) || 1)),
+      casterLevel: p.casterLevel ? Math.max(1, Math.floor(Number(p.casterLevel))) : null,
+      metamagic: Array.isArray(p.metamagic) ? p.metamagic.slice() : [],
+      chosenEnergy: p.chosenEnergy ? String(p.chosenEnergy).trim() : null,
+      targetWeapon: p.targetWeapon ? String(p.targetWeapon).trim() : null,
+      consumeSlot: p.consumeSlot !== false,
+      autoCastOnLongRest: p.autoCastOnLongRest !== false,
+      enabled: p.enabled !== false
+    };
+    const existingIdx = doc.spellcasting.routines.findIndex(r => r && r.id === id);
+    if (existingIdx !== -1) doc.spellcasting.routines[existingIdx] = routine;
+    else doc.spellcasting.routines.push(routine);
+    setStoreOutcome(stateObj, { status: 'routine_saved', routine });
+    return doc;
+  });
+
+  CharStore.registerReducer('spells/updateRoutine', (doc, action, stateObj) => {
+    ensureSpellE6Structures(doc);
+    const p = (action && action.payload) || {};
+    const r = doc.spellcasting.routines.find(x => x && x.id === p.id);
+    if (!r) {
+      setStoreOutcome(stateObj, { status: 'not_found', id: p.id });
+      return doc;
+    }
+    if (p.enabled !== undefined) r.enabled = Boolean(p.enabled);
+    if (p.autoCastOnLongRest !== undefined) r.autoCastOnLongRest = Boolean(p.autoCastOnLongRest);
+    if (p.consumeSlot !== undefined) r.consumeSlot = Boolean(p.consumeSlot);
+    if (p.targetWeapon !== undefined) r.targetWeapon = p.targetWeapon ? String(p.targetWeapon).trim() : null;
+    if (p.chosenEnergy !== undefined) r.chosenEnergy = p.chosenEnergy ? String(p.chosenEnergy).trim() : null;
+    if (Array.isArray(p.metamagic)) r.metamagic = p.metamagic.slice();
+    setStoreOutcome(stateObj, { status: 'routine_updated', routine: r });
+    return doc;
+  });
+
+  CharStore.registerReducer('spells/removeRoutine', (doc, action, stateObj) => {
+    ensureSpellE6Structures(doc);
+    const id = action && action.payload ? action.payload.id : null;
+    const before = doc.spellcasting.routines.length;
+    doc.spellcasting.routines = doc.spellcasting.routines.filter(r => r && r.id !== id);
+    setStoreOutcome(stateObj, { status: doc.spellcasting.routines.length < before ? 'routine_removed' : 'not_found', id });
+    return doc;
+  });
+
+  CharStore.registerReducer('spells/runMorningRoutine', (doc, action, stateObj) => {
+    const p = (action && action.payload) || {};
+    const res = applyMorningRoutineOnDoc(doc, {
+      manual: true,
+      spellLookup: p.spellLookup || null
+    });
+    setStoreOutcome(stateObj, { status: 'morning_routine_complete', cast: res.cast, skipped: res.skipped });
+    return doc;
+  });
+
+  // Sprint E6.2: Spell Matrix (Spell Compendium p.199-200)
+  CharStore.registerReducer('spells/openMatrix', (doc, action, stateObj) => {
+    ensureSpellE6Structures(doc);
+    const p = (action && action.payload) || {};
+    const engine = resolveRuleEngine();
+    const tiers = engine?.rulesets?.dnd35?.spellMatrixTiers || {};
+    const tierKey = ['lesser', 'standard', 'greater'].includes(p.tier) ? p.tier : 'lesser';
+    const tierDef = tiers[tierKey] || { tier: tierKey, name: 'Lesser Spell Matrix', spellLevel: 5, maxStored: 1, maxStoredSpellLevel: 3, backlashDice: '1d6', allowSequence: false, allowAutoTrigger: false, loadWindowRounds: 1 };
+
+    if (p.consumeSlot !== false) {
+      const slotRes = consumeSpellSlotOnDoc(doc, {
+        discipline: p.discipline || 'spontaneous',
+        spellId: tierDef.id,
+        spellName: tierDef.name,
+        level: tierDef.spellLevel,
+        effectiveLevel: tierDef.spellLevel
+      });
+      if (!slotRes.ok) {
+        setStoreOutcome(stateObj, { status: slotRes.reason || 'no_slots_remaining', detail: slotRes.detail });
+        return doc;
+      }
+    }
+
+    const cl = Math.max(1, Math.floor(Number(p.casterLevel || doc.level) || 1));
+    const curRound = Number(doc.tactical?.round || doc.encounterRound) || 1;
+    const backlash = Math.max(0, Math.floor(Number(p.backlashDamage) || 0));
+    if (backlash > 0 && doc.hp) {
+      doc.hp.current = Math.max(-10, (Number(doc.hp.current) || 0) - backlash);
+      doc.hp._lastPlayerChangeTs = Math.max(Date.now(), (Number(doc.hp._lastDmUpdateTs) || 0) + 100);
+    }
+
+    const matrix = {
+      active: true,
+      tier: tierKey,
+      name: tierDef.name,
+      casterLevel: cl,
+      maxStored: tierDef.maxStored,
+      maxStoredSpellLevel: tierDef.maxStoredSpellLevel,
+      allowSequence: Boolean(tierDef.allowSequence),
+      allowAutoTrigger: Boolean(tierDef.allowAutoTrigger),
+      lockedDamage: backlash,
+      remainingRounds: cl * 100, // 10 min/level = 100 rounds/level
+      openedRound: curRound,
+      loadWindowEndRound: curRound + (tierDef.loadWindowRounds || 1),
+      storedSpells: [],
+      sequenceIds: [],
+      autoTriggerText: ''
+    };
+    doc.spellcasting.matrix = matrix;
+    setStoreOutcome(stateObj, { status: 'matrix_opened', matrix, backlashDamage: backlash });
+    return doc;
+  });
+
+  CharStore.registerReducer('spells/loadMatrixSpell', (doc, action, stateObj) => {
+    ensureSpellE6Structures(doc);
+    const mat = doc.spellcasting.matrix;
+    if (!mat || !mat.active) {
+      setStoreOutcome(stateObj, { status: 'no_active_matrix' });
+      return doc;
+    }
+    const p = (action && action.payload) || {};
+    const activeStored = mat.storedSpells.filter(s => s && !s.released);
+    if (activeStored.length >= mat.maxStored) {
+      setStoreOutcome(stateObj, { status: 'matrix_full', maxStored: mat.maxStored });
+      return doc;
+    }
+    const effLvl = Math.max(0, Math.floor(Number(p.effectiveSlotLevel ?? p.slotLevel ?? p.level) || 0));
+    const engine = resolveRuleEngine();
+    if (engine?.rulesets?.dnd35?.isSpellMatrixEligible) {
+      const check = engine.rulesets.dnd35.isSpellMatrixEligible(p, effLvl, mat.tier);
+      if (!check.eligible) {
+        setStoreOutcome(stateObj, { status: 'ineligible_spell', reason: check.reason });
+        return doc;
+      }
+    } else if (effLvl > (mat.maxStoredSpellLevel || 3)) {
+      setStoreOutcome(stateObj, { status: 'ineligible_spell', reason: 'Exceeds 3rd-level Spell Matrix cap.' });
+      return doc;
+    }
+
+    if (p.consumeSlot !== false) {
+      const slotRes = consumeSpellSlotOnDoc(doc, {
+        discipline: p.discipline || 'spontaneous',
+        spellId: p.spellId,
+        spellName: p.spellName || p.name,
+        level: p.level ?? effLvl,
+        effectiveLevel: effLvl,
+        metamagic: p.metamagic || []
+      });
+      if (!slotRes.ok) {
+        setStoreOutcome(stateObj, { status: slotRes.reason || 'no_slots_remaining', detail: slotRes.detail });
+        return doc;
+      }
+    }
+
+    const entry = {
+      id: p.id || `ms_${Date.now()}_${Math.floor(Math.random() * 10000)}`,
+      spellId: p.spellId || null,
+      spellName: String(p.spellName || p.name || 'Spell').trim(),
+      level: Math.max(0, Math.floor(Number(p.level ?? effLvl) || 0)),
+      effectiveSlotLevel: effLvl,
+      casterLevel: Math.max(1, Math.floor(Number(p.casterLevel || mat.casterLevel) || 1)),
+      dc: Number.isFinite(Number(p.dc)) ? Number(p.dc) : null,
+      metamagic: Array.isArray(p.metamagic) ? p.metamagic.slice() : [],
+      chosenEnergy: p.chosenEnergy || null,
+      targetWeapon: p.targetWeapon || null,
+      released: false
+    };
+    mat.storedSpells.push(entry);
+    setStoreOutcome(stateObj, { status: 'matrix_spell_loaded', entry, matrix: mat });
+    return doc;
+  });
+
+  CharStore.registerReducer('spells/setMatrixSequence', (doc, action, stateObj) => {
+    ensureSpellE6Structures(doc);
+    const mat = doc.spellcasting.matrix;
+    if (!mat || !mat.active || !mat.allowSequence) {
+      setStoreOutcome(stateObj, { status: 'sequence_not_supported' });
+      return doc;
+    }
+    const ids = Array.isArray(action?.payload?.ids) ? action.payload.ids.filter(Boolean).slice(0, 2) : [];
+    const validIds = ids.filter(id => mat.storedSpells.some(s => s && !s.released && s.id === id));
+    mat.sequenceIds = validIds;
+    setStoreOutcome(stateObj, { status: 'matrix_sequence_updated', sequenceIds: mat.sequenceIds });
+    return doc;
+  });
+
+  CharStore.registerReducer('spells/setMatrixTrigger', (doc, action, stateObj) => {
+    ensureSpellE6Structures(doc);
+    const mat = doc.spellcasting.matrix;
+    if (!mat || !mat.active || !mat.allowAutoTrigger) {
+      setStoreOutcome(stateObj, { status: 'trigger_not_supported' });
+      return doc;
+    }
+    mat.autoTriggerText = String(action?.payload?.triggerText || '').trim();
+    setStoreOutcome(stateObj, { status: 'matrix_trigger_updated', autoTriggerText: mat.autoTriggerText });
+    return doc;
+  });
+
+  CharStore.registerReducer('spells/releaseMatrix', (doc, action, stateObj) => {
+    ensureCombatActionStructures(doc);
+    ensureSpellE6Structures(doc);
+    const mat = doc.spellcasting.matrix;
+    if (!mat || !mat.active) {
+      setStoreOutcome(stateObj, { status: 'no_active_matrix' });
+      return doc;
+    }
+    const p = (action && action.payload) || {};
+    const releaseIds = p.releaseSequence && Array.isArray(mat.sequenceIds) && mat.sequenceIds.length === 2
+      ? mat.sequenceIds.slice()
+      : (p.entryId ? [p.entryId] : []);
+    const candidates = releaseIds
+      .map(id => mat.storedSpells.find(s => s && !s.released && s.id === id))
+      .filter(Boolean);
+    if (candidates.length === 0) {
+      setStoreOutcome(stateObj, { status: 'nothing_to_release' });
+      return doc;
+    }
+
+    const isAutoTrigger = Boolean(p.isAutoTrigger && mat.allowAutoTrigger);
+    // RAW: Releasing a spell or 2-spell sequence costs 1 Swift Action (unless Greater auto-trigger fires)
+    if (!isAutoTrigger && p.skipSwiftCheck !== true) {
+      const swiftOut = applyConsumeActionOnDoc(doc, 'swift', 'Spell Matrix Release');
+      if (swiftOut && swiftOut.alreadySpent) {
+        setStoreOutcome(stateObj, { status: 'swift_action_unavailable', detail: 'Swift action already spent this round.' });
+        return doc;
+      }
+    }
+
+    const released = [];
+    candidates.forEach(sp => {
+      sp.released = true;
+      released.push(sp);
+    });
+    if (Array.isArray(mat.sequenceIds)) {
+      mat.sequenceIds = mat.sequenceIds.filter(id => !releaseIds.includes(id));
+    }
+    // If all stored spells have been discharged, close the matrix & unlock backlash damage
+    const remaining = mat.storedSpells.filter(s => s && !s.released);
+    let matrixClosed = false;
+    if (remaining.length === 0 && mat.storedSpells.length > 0) {
+      doc.spellcasting.matrix = null;
+      matrixClosed = true;
+    }
+    setStoreOutcome(stateObj, { status: 'matrix_released', released, matrixClosed });
+    return doc;
+  });
+
+  CharStore.registerReducer('spells/dismissMatrix', (doc, _action, stateObj) => {
+    ensureSpellE6Structures(doc);
+    const prev = doc.spellcasting.matrix;
+    doc.spellcasting.matrix = null;
+    setStoreOutcome(stateObj, { status: prev ? 'matrix_dismissed' : 'no_active_matrix' });
+    return doc;
+  });
+
+  // Sprint E6.3: Contingency (PHB p.213), Psionic Contingency (XPH) & Craft Contingent Spell (CArc p.77)
+  CharStore.registerReducer('spells/addContingency', (doc, action, stateObj) => {
+    ensureSpellE6Structures(doc);
+    const p = (action && action.payload) || {};
+    const kind = ['contingency', 'psionic', 'crafted'].includes(p.kind) ? p.kind : 'contingency';
+    const spellName = String(p.spellName || p.name || '').trim();
+    const triggerText = String(p.triggerText || '').trim();
+    if (!spellName || !triggerText) {
+      setStoreOutcome(stateObj, { status: 'invalid_payload', reason: 'missing_spell_or_trigger' });
+      return doc;
+    }
+    const engine = resolveRuleEngine();
+    const rules = engine?.rulesets?.dnd35?.contingencyRules || {
+      maxActiveSpellContingency: 1,
+      psionicsMagicTransparency: true,
+      maxCompanionSpellLevel: (cl) => Math.min(6, Math.floor(Math.max(1, cl) / 3)),
+      maxCraftedContingentSpells: (hd) => Math.max(0, Math.floor(hd))
+    };
+
+    const cl = Math.max(1, Math.floor(Number(p.casterLevel || doc.level) || 1));
+    const spellLvl = Math.max(0, Math.floor(Number(p.spellLevel ?? p.level) || 0));
+
+    if (kind === 'contingency' || kind === 'psionic') {
+      const maxLvl = rules.maxCompanionSpellLevel(cl);
+      if (spellLvl > maxLvl) {
+        setStoreOutcome(stateObj, { status: 'companion_level_exceeded', maxLvl, spellLvl });
+        return doc;
+      }
+      // RAW: Casting a second Contingency dispels the first (shares slot with Psionic under transparency)
+      const replaced = [];
+      doc.spellcasting.contingencies = doc.spellcasting.contingencies.filter(c => {
+        if (!c || c.discharged) return false;
+        const conflicts = rules.psionicsMagicTransparency
+          ? (c.kind === 'contingency' || c.kind === 'psionic')
+          : (c.kind === kind);
+        if (conflicts) {
+          replaced.push(c);
+          return false;
+        }
+        return true;
+      });
+
+      if (p.consumeCompanionSlot && p.discipline && p.discipline !== 'noSlot') {
+        const slotRes = consumeSpellSlotOnDoc(doc, {
+          discipline: p.discipline,
+          spellId: p.spellId,
+          spellName,
+          level: spellLvl,
+          effectiveLevel: spellLvl
+        });
+        if (!slotRes.ok) {
+          // Restore replaced contingencies if slot failed
+          doc.spellcasting.contingencies.push(...replaced);
+          setStoreOutcome(stateObj, { status: slotRes.reason || 'no_slots_remaining', detail: slotRes.detail });
+          return doc;
+        }
+      }
+
+      const entry = {
+        id: p.id || `ctg_${Date.now()}_${Math.floor(Math.random() * 10000)}`,
+        kind,
+        spellId: p.spellId || null,
+        spellName,
+        spellLevel: spellLvl,
+        casterLevel: cl,
+        dc: Number.isFinite(Number(p.dc)) ? Number(p.dc) : null,
+        triggerText,
+        chosenEnergy: p.chosenEnergy || null,
+        targetWeapon: p.targetWeapon || null,
+        daysRemaining: Number.isFinite(Number(p.daysRemaining)) ? Math.max(1, Math.floor(Number(p.daysRemaining))) : cl,
+        discharged: false
+      };
+      doc.spellcasting.contingencies.push(entry);
+      setStoreOutcome(stateObj, { status: 'contingency_added', entry, replacedCount: replaced.length });
+      return doc;
+    }
+
+    // Crafted Contingent Spell (CArc p.77): max HD concurrent (racial HD + class levels, not ECL)
+    const activeProgCount = Array.isArray(doc.levelProgression)
+      ? doc.levelProgression.filter(r => r && r.active !== false).length
+      : 0;
+    const classHd = activeProgCount > 0 ? activeProgCount : (Number(doc.level) || 1);
+    const racialHd = Math.max(0, Math.floor(Number(doc.racialHitDice || doc.racialHd || 0)));
+    const totalHd = Math.max(1, classHd + racialHd);
+    const maxCrafted = rules.maxCraftedContingentSpells(totalHd);
+    const activeCrafted = doc.spellcasting.contingencies.filter(c => c && !c.discharged && c.kind === 'crafted').length;
+    if (activeCrafted >= maxCrafted) {
+      setStoreOutcome(stateObj, { status: 'crafted_hd_cap_reached', activeCrafted, maxCrafted });
+      return doc;
+    }
+
+    const entry = {
+      id: p.id || `ctg_${Date.now()}_${Math.floor(Math.random() * 10000)}`,
+      kind: 'crafted',
+      spellId: p.spellId || null,
+      spellName,
+      spellLevel: spellLvl,
+      casterLevel: cl,
+      dc: Number.isFinite(Number(p.dc)) ? Number(p.dc) : null,
+      triggerText,
+      chosenEnergy: p.chosenEnergy || null,
+      targetWeapon: p.targetWeapon || null,
+      daysRemaining: null,
+      discharged: false
+    };
+    doc.spellcasting.contingencies.push(entry);
+    setStoreOutcome(stateObj, { status: 'contingency_added', entry, activeCrafted: activeCrafted + 1, maxCrafted });
+    return doc;
+  });
+
+  // RAW: Triggering a Contingency takes NO action at all (not even a Free Action; can fire off-turn or while helpless)
+  CharStore.registerReducer('spells/triggerContingency', (doc, action, stateObj) => {
+    ensureSpellE6Structures(doc);
+    const id = action && action.payload ? action.payload.id : null;
+    const idx = doc.spellcasting.contingencies.findIndex(c => c && !c.discharged && c.id === id);
+    if (idx === -1) {
+      setStoreOutcome(stateObj, { status: 'not_found', id });
+      return doc;
+    }
+    const entry = CharStore._fastCloneHistoryVal(doc.spellcasting.contingencies[idx]);
+    entry.discharged = true;
+    doc.spellcasting.contingencies.splice(idx, 1);
+    setStoreOutcome(stateObj, { status: 'contingency_triggered', entry });
+    return doc;
+  });
+
+  CharStore.registerReducer('spells/removeContingency', (doc, action, stateObj) => {
+    ensureSpellE6Structures(doc);
+    const id = action && action.payload ? action.payload.id : null;
+    const before = doc.spellcasting.contingencies.length;
+    doc.spellcasting.contingencies = doc.spellcasting.contingencies.filter(c => c && c.id !== id);
+    setStoreOutcome(stateObj, { status: doc.spellcasting.contingencies.length < before ? 'contingency_removed' : 'not_found', id });
     return doc;
   });
 

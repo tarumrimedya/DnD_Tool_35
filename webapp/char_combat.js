@@ -11086,6 +11086,13 @@
       const wildShapeHtml = buildWildShapeActivatedCardHtml(wildShapeForm);
       const totalAbilitiesCount = activatedAbilities.length + (wildShapeHtml ? 1 : 0);
 
+      // 0b. Sprint E6: Combat Timers, Morning Routines, Spell Matrix & Contingencies
+      const e6Timers = Array.isArray(character.combatTimers) ? character.combatTimers : [];
+      const e6Routines = Array.isArray(character.spellcasting?.routines) ? character.spellcasting.routines : [];
+      const e6Matrix = (character.spellcasting?.matrix && character.spellcasting.matrix.active) ? character.spellcasting.matrix : null;
+      const e6Contingencies = (Array.isArray(character.spellcasting?.contingencies) ? character.spellcasting.contingencies : []).filter(c => c && !c.discharged);
+      const e6Count = e6Timers.length + e6Routines.length + (e6Matrix ? 1 : 0) + e6Contingencies.length;
+
       // Remove any legacy standalone Wild Shape bar outside Activated Abilities & Items
       const legacyWsBar = document.getElementById('cockpit-wild-shape-bar');
       if (legacyWsBar && !listEl.contains(legacyWsBar)) {
@@ -11094,11 +11101,14 @@
 
       const consSummary = document.getElementById('combat-consumables-collapsed-summary');
       if (consSummary) {
-        consSummary.textContent = `${totalAbilitiesCount} Abilities • ${dailyItems.length} Items • ${normalConsumables.length} Consumables`;
+        const e6Badge = e6Count > 0 ? ` • ${e6Count} Spell Ops` : '';
+        consSummary.textContent = `${totalAbilitiesCount} Abilities • ${dailyItems.length} Items • ${normalConsumables.length} Consumables${e6Badge}`;
       }
 
-      if (totalAbilitiesCount === 0 && dailyItems.length === 0 && normalConsumables.length === 0) {
-        listEl.innerHTML = '<div class="text-[11px] text-slate-500 italic p-2 text-center">No activated abilities, charged items or consumables.</div>';
+      const e6ToolbarHtml = buildE6QuickToolbarHtml(e6Matrix);
+
+      if (totalAbilitiesCount === 0 && dailyItems.length === 0 && normalConsumables.length === 0 && e6Count === 0) {
+        listEl.innerHTML = `<div class="text-[11px] text-slate-500 italic p-2 text-center">No activated abilities, charged items or consumables.</div>${e6ToolbarHtml}`;
         return;
       }
 
@@ -11108,6 +11118,17 @@
       // Abilities (Wild Shape + utility/healing sub-powers)
       if (totalAbilitiesCount > 0) {
         html += sectionHeader('✨', 'Abilities') + wildShapeHtml + (activatedAbilities.length > 0 ? renderSpecialAttackAbilityCardsHtml(character, activatedAbilities) : '');
+      }
+
+      // Sprint E6 Sections (Timers & Morning Routines, Spell Matrix, Contingencies)
+      if (e6Timers.length > 0 || e6Routines.length > 0) {
+        html += buildE6TimersAndRoutinesHtml(e6Timers, e6Routines);
+      }
+      if (e6Matrix) {
+        html += buildE6SpellMatrixHtml(e6Matrix);
+      }
+      if (e6Contingencies.length > 0) {
+        html += buildE6ContingenciesHtml(e6Contingencies);
       }
 
       // Charged Items (daily-charge items)
@@ -11226,6 +11247,7 @@
         }).join('');
       }
 
+      html += e6ToolbarHtml;
       listEl.innerHTML = html;
     }
 
@@ -11957,13 +11979,753 @@
       }
     }
 
+    // ====================================================
+    // ⏱️ SPRINT E6: TIMERS, MORNING ROUTINES, SPELL MATRIX & CONTINGENCIES
+    // ====================================================
+    function rollDiceFormulaSimple(formulaStr) {
+      const raw = String(formulaStr || '').trim();
+      if (!raw) return { total: 0, dice3d: [], rollDesc: '' };
+      if (/^-?\d+$/.test(raw)) {
+        const n = parseInt(raw, 10) || 0;
+        return { total: n, dice3d: [], rollDesc: String(n) };
+      }
+      const m = raw.match(/(\d*)d(\d+)(?:\s*([+-])\s*(\d+))?/i);
+      if (!m) {
+        const n = Number(raw) || 0;
+        return { total: n, dice3d: [], rollDesc: String(n) };
+      }
+      const count = Math.max(1, Math.min(30, parseInt(m[1] || '1', 10) || 1));
+      const sides = Math.max(2, parseInt(m[2], 10) || 6);
+      const sign = m[3] === '-' ? -1 : 1;
+      const bonus = m[4] ? sign * (parseInt(m[4], 10) || 0) : 0;
+      const rolls = [];
+      const dice3d = [];
+      const supported3d = [4, 6, 8, 10, 12, 20, 100].includes(sides);
+      let sum = 0;
+      for (let i = 0; i < count; i++) {
+        const r = Math.floor(Math.random() * sides) + 1;
+        rolls.push(r);
+        sum += r;
+        if (supported3d && dice3d.length < 10) dice3d.push({ type: `d${sides}`, value: r });
+      }
+      const total = Math.max(0, sum + bonus);
+      const bonusStr = bonus > 0 ? `+${bonus}` : (bonus < 0 ? `${bonus}` : '');
+      return { total, dice3d, rollDesc: `${count}d${sides}${bonusStr} [${rolls.join(',')}] = ${total}` };
+    }
+
+    function rollDiceFormulaWith3D(formulaStr, onDone) {
+      const res = rollDiceFormulaSimple(formulaStr);
+      if (window.Dice3D && typeof window.Dice3D.roll === 'function' && res.dice3d.length > 0) {
+        window.Dice3D.roll(res.dice3d, () => onDone(res));
+      } else {
+        onDone(res);
+      }
+    }
+
+    function buildE6QuickToolbarHtml(activeMatrix) {
+      return `
+        <div class="pt-1.5 mt-1 border-t border-slate-800/80 flex flex-wrap items-center gap-1">
+          <button type="button" data-action="e6:open-timer-modal" class="px-2 py-0.5 rounded bg-slate-800/90 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-[10px] font-bold transition cursor-pointer" title="Add Periodic, Delayed, or Sustained Spell Timer">+ ⏱️ Timer</button>
+          <button type="button" data-action="e6:open-routine-modal" class="px-2 py-0.5 rounded bg-amber-950/70 hover:bg-amber-900/80 text-amber-200 border border-amber-700/60 text-[10px] font-bold transition cursor-pointer" title="Add Morning Buff Routine (auto-cast after Long Rest)">+ ☀️ Routine</button>
+          ${activeMatrix ? '' : `<button type="button" data-action="e6:open-matrix-modal" class="px-2 py-0.5 rounded bg-indigo-950/70 hover:bg-indigo-600 text-indigo-200 border border-indigo-700/60 text-[10px] font-bold transition cursor-pointer" title="Cast Lesser / Standard / Greater Spell Matrix">+ 🔷 Matrix</button>`}
+          <button type="button" data-action="e6:open-contingency-modal" class="px-2 py-0.5 rounded bg-purple-950/70 hover:bg-purple-900/80 text-purple-200 border border-purple-700/60 text-[10px] font-bold transition cursor-pointer" title="Set Contingency or Crafted Contingent Spell">+ 🔮 Contingency</button>
+        </div>
+      `;
+    }
+
+    function buildE6TimersAndRoutinesHtml(timers, routines) {
+      const curRound = Number(character?.tactical?.round || character?.encounterRound) || 1;
+      let html = '';
+
+      if (timers.length > 0) {
+        html += `<div class="text-[10px] font-black uppercase tracking-wider text-cyan-400 pt-1">⏱️ Active Timers</div>`;
+        html += timers.map(t => {
+          const kind = t.kind || 'periodic';
+          const remRounds = (t.endRound !== null && t.endRound !== undefined) ? Math.max(0, Number(t.endRound) - curRound) : null;
+          const kindBadge = kind === 'delayed'
+            ? `<span class="px-1 rounded bg-rose-950 text-rose-300 border border-rose-700/60 text-[10px] font-mono">💥 ${remRounds !== null ? remRounds + ' rd' : 'Delayed'}</span>`
+            : (kind === 'sustained'
+              ? `<span class="px-1 rounded bg-sky-950 text-sky-300 border border-sky-700/60 text-[10px] font-mono">⚡ ${remRounds !== null ? remRounds + ' rd' : 'Active'}</span>`
+              : `<span class="px-1 rounded bg-cyan-950 text-cyan-300 border border-cyan-700/60 text-[10px] font-mono">⏱️ /${t.intervalRounds || 1}rd${remRounds !== null ? ' · ' + remRounds + ' left' : ''}</span>`);
+          const metaParts = [];
+          if (t.formula) metaParts.push(`${t.hpEffect === 'heal' ? '+' : (t.hpEffect === 'damage' ? '-' : '')}${t.formula}${t.damageType ? ' ' + t.damageType : ''}`);
+          if (t.dc) metaParts.push(`DC ${t.dc}${t.saveType ? ' ' + t.saveType : ''}`);
+          if (t.note) metaParts.push(t.note);
+          const triggerLabel = kind === 'delayed' ? '💥 Detonate' : '⚡ Trigger';
+          return `
+            <div class="bg-slate-900/90 border border-cyan-800/60 rounded-lg p-2 flex items-center justify-between gap-2 shadow-sm">
+              <div class="min-w-0 flex-1">
+                <div class="text-xs font-bold text-cyan-100 flex items-center gap-1.5 flex-wrap">
+                  <span class="truncate">${UI.escapeHtml(t.name)}</span>
+                  ${kindBadge}
+                </div>
+                ${metaParts.length > 0 ? `<div class="text-[10px] text-slate-400 truncate mt-0.5">${UI.escapeHtml(metaParts.join(' • '))}</div>` : ''}
+              </div>
+              <div class="flex items-center gap-1 shrink-0">
+                <button type="button" data-action="e6:trigger-timer" data-timer-id="${UI.escapeAttr(t.id)}" class="py-1 px-2 bg-cyan-700 hover:bg-cyan-600 text-white font-bold text-[10px] rounded transition cursor-pointer">${triggerLabel}</button>
+                <button type="button" data-action="e6:remove-timer" data-timer-id="${UI.escapeAttr(t.id)}" class="py-1 px-1.5 bg-slate-800 hover:bg-rose-800 text-slate-400 hover:text-white font-bold text-[10px] rounded transition cursor-pointer" title="Remove Timer">✕</button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      if (routines.length > 0) {
+        html += `
+          <div class="flex items-center justify-between pt-1">
+            <span class="text-[10px] font-black uppercase tracking-wider text-amber-400">☀️ Morning Routine (After Long Rest)</span>
+            <button type="button" data-action="e6:run-morning-routine" class="px-2 py-0.5 rounded bg-amber-700 hover:bg-amber-600 text-white font-bold text-[10px] transition cursor-pointer" title="Cast all enabled Morning Routine buffs now">☀️ Run Now</button>
+          </div>
+        `;
+        html += routines.map(r => {
+          const enabled = r.enabled !== false;
+          const tags = [];
+          tags.push(r.discipline === 'noslot' ? 'No Slot' : `Lvl ${r.effectiveSlotLevel ?? r.slotLevel ?? 1} ${r.discipline || 'spontaneous'}`);
+          if (Array.isArray(r.metamagic) && r.metamagic.length > 0) tags.push(r.metamagic.join(', '));
+          if (r.targetWeapon) tags.push(`⚔️ ${r.targetWeapon}`);
+          if (r.chosenEnergy) tags.push(`🛡️ ${r.chosenEnergy}`);
+          return `
+            <div class="bg-slate-900/80 border ${enabled ? 'border-amber-800/50' : 'border-slate-800 opacity-60'} rounded-lg px-2 py-1.5 flex items-center justify-between gap-2">
+              <div class="min-w-0 flex-1">
+                <div class="text-xs font-bold text-amber-100 truncate">${UI.escapeHtml(r.spellName || r.name)}</div>
+                <div class="text-[10px] text-slate-400 truncate">${UI.escapeHtml(tags.join(' • '))}${r.autoCastOnLongRest !== false ? ' • Auto on Long Rest' : ''}</div>
+              </div>
+              <div class="flex items-center gap-1 shrink-0">
+                <button type="button" data-action="e6:toggle-routine" data-routine-id="${UI.escapeAttr(r.id)}" class="py-0.5 px-2 rounded text-[10px] font-bold border transition cursor-pointer ${enabled ? 'bg-emerald-950 text-emerald-300 border-emerald-700/60' : 'bg-slate-800 text-slate-400 border-slate-700'}">${enabled ? 'ON' : 'OFF'}</button>
+                <button type="button" data-action="e6:remove-routine" data-routine-id="${UI.escapeAttr(r.id)}" class="py-0.5 px-1.5 bg-slate-800 hover:bg-rose-800 text-slate-400 hover:text-white font-bold text-[10px] rounded transition cursor-pointer" title="Remove Routine">✕</button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+      return html;
+    }
+
+    function buildE6SpellMatrixHtml(mat) {
+      const durText = (typeof RuleEngine !== 'undefined' && RuleEngine.rulesets?.dnd35?.formatRoundsDuration)
+        ? RuleEngine.rulesets.dnd35.formatRoundsDuration(mat.remainingRounds)
+        : `${mat.remainingRounds || 0} rounds`;
+      const activeStored = (Array.isArray(mat.storedSpells) ? mat.storedSpells : []).filter(s => s && !s.released);
+      const seqIds = Array.isArray(mat.sequenceIds) ? mat.sequenceIds : [];
+      const hasSeq = mat.allowSequence && seqIds.length === 2 && seqIds.every(id => activeStored.some(s => s.id === id));
+
+      let html = `
+        <div class="flex items-center justify-between pt-1">
+          <span class="text-[10px] font-black uppercase tracking-wider text-indigo-400">🔷 ${UI.escapeHtml(mat.name || 'Spell Matrix')} (${activeStored.length}/${mat.maxStored})</span>
+          <div class="flex items-center gap-1">
+            ${mat.lockedDamage > 0 ? `<span class="px-1.5 py-0.5 rounded bg-rose-950 text-rose-300 border border-rose-700/60 text-[10px] font-mono" title="Unhealable backlash damage while matrix persists">🔒 -${mat.lockedDamage} Max HP</span>` : ''}
+            <span class="px-1.5 py-0.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-700/60 text-[10px] font-mono">${UI.escapeHtml(durText)}</span>
+            ${activeStored.length < mat.maxStored ? `<button type="button" data-action="e6:open-load-matrix-modal" class="px-2 py-0.5 rounded bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-[10px] transition cursor-pointer">+ Load</button>` : ''}
+            <button type="button" data-action="e6:dismiss-matrix" class="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-rose-800 text-slate-300 hover:text-white font-bold text-[10px] transition cursor-pointer" title="Dismiss Matrix & unlock HP">🛑</button>
+          </div>
+        </div>
+      `;
+
+      if (activeStored.length === 0) {
+        html += `<div class="bg-slate-900/70 border border-indigo-900/40 rounded-lg p-2 text-[10px] text-slate-400 italic">Matrix open — load up to ${mat.maxStored} Quicken-eligible spell(s) of ≤3rd level.</div>`;
+      } else {
+        html += activeStored.map(sp => {
+          const inSeq = seqIds.includes(sp.id);
+          return `
+            <div class="bg-slate-900/90 border ${inSeq ? 'border-indigo-500/80' : 'border-indigo-900/50'} rounded-lg p-2 flex items-center justify-between gap-2">
+              <div class="min-w-0 flex-1">
+                <div class="text-xs font-bold text-indigo-200 flex items-center gap-1.5 truncate">
+                  ${mat.allowSequence ? `<button type="button" data-action="e6:toggle-matrix-seq" data-entry-id="${UI.escapeAttr(sp.id)}" class="px-1 rounded text-[10px] border cursor-pointer ${inSeq ? 'bg-indigo-600 text-white border-indigo-400' : 'bg-slate-800 text-slate-400 border-slate-700'}" title="Link into 2-spell Swift Sequence">🔗</button>` : ''}
+                  <span class="truncate">${UI.escapeHtml(sp.spellName)}</span>
+                  <span class="text-[10px] font-mono text-indigo-300">Lvl ${sp.level} · CL ${sp.casterLevel}${sp.dc ? ' · DC ' + sp.dc : ''}</span>
+                </div>
+              </div>
+              <button type="button" data-action="e6:release-matrix-spell" data-entry-id="${UI.escapeAttr(sp.id)}" class="shrink-0 py-1 px-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-[10px] rounded transition cursor-pointer">⚡ Release (Swift)</button>
+            </div>
+          `;
+        }).join('');
+      }
+
+      if (hasSeq) {
+        html += `
+          <div class="flex items-center justify-end gap-1.5 pt-0.5">
+            <button type="button" data-action="e6:release-matrix-seq" class="py-1 px-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-extrabold text-[10px] rounded shadow transition cursor-pointer">⚡ Release 2-Spell Sequence (Swift)</button>
+          </div>
+        `;
+      }
+
+      if (mat.allowAutoTrigger && activeStored.length > 0) {
+        html += `
+          <div class="bg-indigo-950/40 border border-indigo-700/60 rounded-lg px-2 py-1 flex items-center justify-between gap-2 text-[10px]">
+            <span class="text-indigo-200 truncate">🎯 Auto-Trigger: <strong>${UI.escapeHtml(mat.autoTriggerText || 'Not set')}</strong></span>
+            <div class="flex items-center gap-1 shrink-0">
+              <button type="button" data-action="e6:edit-matrix-trigger" class="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold cursor-pointer">Edit</button>
+              ${mat.autoTriggerText ? `<button type="button" data-action="e6:fire-matrix-trigger" class="px-1.5 py-0.5 rounded bg-purple-700 hover:bg-purple-600 text-white font-bold cursor-pointer">⚡ Fire</button>` : ''}
+            </div>
+          </div>
+        `;
+      }
+      return html;
+    }
+
+    function buildE6ContingenciesHtml(contingencies) {
+      const classHd = Array.isArray(character?.levelProgression)
+        ? character.levelProgression.filter(r => r && r.active !== false).length
+        : (Number(character?.level) || 1);
+      const totalHd = Math.max(1, classHd + Math.max(0, Math.floor(Number(character?.racialHitDice || character?.racialHd || 0))));
+      const craftedCount = contingencies.filter(c => c.kind === 'crafted').length;
+
+      let html = `<div class="text-[10px] font-black uppercase tracking-wider text-purple-400 pt-1">🔮 Contingencies${craftedCount > 0 ? ` (Crafted ${craftedCount}/${totalHd} HD)` : ''}</div>`;
+      html += contingencies.map(c => {
+        const badge = c.kind === 'crafted'
+          ? `<span class="px-1 rounded bg-amber-950 text-amber-300 border border-amber-700/60 text-[10px] font-mono">Crafted</span>`
+          : (c.kind === 'psionic'
+            ? `<span class="px-1 rounded bg-cyan-950 text-cyan-300 border border-cyan-700/60 text-[10px] font-mono">Psionic · ${c.daysRemaining || 1}d</span>`
+            : `<span class="px-1 rounded bg-purple-950 text-purple-300 border border-purple-700/60 text-[10px] font-mono">Spell · ${c.daysRemaining || 1}d</span>`);
+        return `
+          <div class="bg-slate-900/90 border border-purple-900/50 rounded-lg p-2 flex items-center justify-between gap-2 shadow-sm">
+            <div class="min-w-0 flex-1">
+              <div class="text-xs font-bold text-purple-100 flex items-center gap-1.5 flex-wrap">
+                <span class="truncate">${UI.escapeHtml(c.spellName)}</span>
+                ${badge}
+                <span class="text-[10px] font-mono text-slate-400">CL ${c.casterLevel || 1}${c.dc ? ' · DC ' + c.dc : ''}</span>
+              </div>
+              <div class="text-[10px] text-slate-300 italic truncate mt-0.5">If: "${UI.escapeHtml(c.triggerText)}"</div>
+            </div>
+            <div class="flex items-center gap-1 shrink-0">
+              <button type="button" data-action="e6:trigger-contingency" data-ctg-id="${UI.escapeAttr(c.id)}" class="py-1 px-2 bg-purple-700 hover:bg-purple-600 text-white font-bold text-[10px] rounded transition cursor-pointer" title="Trigger Contingency (No Action Required)">⚡ Trigger</button>
+              <button type="button" data-action="e6:remove-contingency" data-ctg-id="${UI.escapeAttr(c.id)}" class="py-1 px-1.5 bg-slate-800 hover:bg-rose-800 text-slate-400 hover:text-white font-bold text-[10px] rounded transition cursor-pointer" title="Dismiss Contingency">✕</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+      return html;
+    }
+
+    function executeMatrixOrContingencySpellEffect(entry, sourceLabel) {
+      if (!entry || !character) return;
+      const effCl = Math.max(1, Number(entry.casterLevel || character.level) || 1);
+      const dbSpell = (typeof RuleEngine !== 'undefined' && RuleEngine.getMasterDbEntry)
+        ? (RuleEngine.getMasterDbEntry({ id: entry.spellId, name: entry.spellName }, 'Spell')
+          || RuleEngine.getMasterDbEntry({ id: entry.spellId, name: entry.spellName }, 'Power'))
+        : null;
+      const spellStub = Object.assign({}, dbSpell || {}, {
+        id: entry.spellId || (dbSpell && dbSpell.id) || `e6_${Date.now()}`,
+        name: entry.spellName,
+        level: entry.level ?? entry.spellLevel ?? (dbSpell && dbSpell.level) ?? 1,
+        casterLevel: effCl,
+        metamagic: Array.isArray(entry.metamagic) ? entry.metamagic : [],
+        ...(entry.chosenEnergy ? { chosenEnergy: entry.chosenEnergy, choice: entry.chosenEnergy } : {})
+      });
+      if (typeof RuleEngine !== 'undefined' && typeof RuleEngine.resolveSpellBuffSpec === 'function') {
+        const spec = RuleEngine.resolveSpellBuffSpec(spellStub, character, effCl);
+        if (spec && spec.isBuffSpell) {
+          if (entry.chosenEnergy || entry.targetWeapon) {
+            if (typeof window.applySpellBuffToCharacter === 'function') {
+              window.applySpellBuffToCharacter(spellStub, effCl, {
+                chosenEnergy: entry.chosenEnergy || undefined,
+                targetWeapon: entry.targetWeapon || undefined,
+                slotLabel: sourceLabel,
+                icon: '⚡'
+              });
+              return;
+            }
+          } else if (typeof window.handleBuffSpellCast === 'function') {
+            if (window.handleBuffSpellCast(spellStub, effCl, sourceLabel, '⚡')) return;
+          }
+        }
+      }
+      showDiceTopToast({
+        icon: '⚡',
+        title: `${UI.escapeHtml(entry.spellName)} Released!`,
+        breakdown: `${UI.escapeHtml(sourceLabel)} • CL ${effCl}${entry.dc ? ` • Save DC ${entry.dc}` : ''} (No additional slot spent)`,
+        total: 'Cast'
+      });
+    }
+
+    function getCharacterSpellOptionsForE6() {
+      const seen = new Set();
+      const out = [];
+      const addFrom = (arr, disc) => {
+        if (!Array.isArray(arr)) return;
+        arr.forEach(sp => {
+          if (!sp || !sp.name) return;
+          const key = `${disc}:${(sp.id || sp.name).toLowerCase()}`;
+          if (seen.has(key)) return;
+          seen.add(key);
+          out.push({
+            id: sp.id || null,
+            name: sp.name,
+            level: Number(sp.level) || 0,
+            effectiveSlotLevel: Number(sp.effectiveSlotLevel ?? sp.slotLevel ?? sp.level) || 0,
+            discipline: disc,
+            castingTime: sp.castingTime || sp.delivery?.castingTime || '1 standard action',
+            metamagic: Array.isArray(sp.metamagic) ? sp.metamagic : []
+          });
+        });
+      };
+      addFrom(character?.spellcasting?.preparedSpells, 'prepared');
+      addFrom(character?.spellcasting?.divineSpells, 'divine');
+      addFrom(character?.spellcasting?.spellsKnown, 'spontaneous');
+      addFrom(character?.spellcasting?.knownSpells, 'spontaneous');
+      addFrom(character?.spellcasting?.spellbook, 'prepared');
+      return out.sort((a, b) => (a.level - b.level) || a.name.localeCompare(b.name));
+    }
+
+    function openE6SimpleModal(modalId, titleHtml, bodyHtml, onSubmit) {
+      const prev = document.getElementById(modalId);
+      if (prev) prev.remove();
+      const overlay = document.createElement('div');
+      overlay.id = modalId;
+      overlay.setAttribute('role', 'dialog');
+      overlay.setAttribute('aria-modal', 'true');
+      overlay.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm';
+      overlay.innerHTML = `
+        <div class="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
+          <div class="px-4 py-3 bg-slate-950/90 border-b border-slate-800 flex items-center justify-between">
+            <h3 class="text-sm font-black text-white">${titleHtml}</h3>
+            <button type="button" data-e6-close="1" class="text-slate-400 hover:text-white text-sm font-bold px-2 py-0.5 rounded cursor-pointer">✕</button>
+          </div>
+          <form id="${UI.escapeAttr(modalId)}-form" class="p-4 space-y-3 text-xs text-slate-200">
+            ${bodyHtml}
+            <div class="pt-2 flex items-center justify-end gap-2 border-t border-slate-800">
+              <button type="button" data-e6-close="1" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold cursor-pointer">Cancel</button>
+              <button type="submit" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold shadow cursor-pointer">Save</button>
+            </div>
+          </form>
+        </div>
+      `;
+      const onEsc = (e) => {
+        if (e.key === 'Escape') close();
+      };
+      const close = () => {
+        overlay.remove();
+        document.removeEventListener('keydown', onEsc);
+      };
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay || e.target.closest('[data-e6-close]')) close();
+      });
+      document.addEventListener('keydown', onEsc);
+      document.body.appendChild(overlay);
+      const form = document.getElementById(`${modalId}-form`);
+      if (form) {
+        form.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const keepOpen = onSubmit(new FormData(form), close);
+          if (keepOpen !== true) close();
+        });
+      }
+    }
+
+    function openAddCombatTimerModal() {
+      const body = `
+        <div>
+          <label class="block text-[11px] font-bold text-slate-300 mb-1">Timer Name</label>
+          <input name="name" required placeholder="e.g. Acid Arrow, Delayed Blast Fireball, Call Lightning" class="w-full px-2.5 py-1.5 rounded bg-slate-950 border border-slate-700 text-white" />
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-[11px] font-bold text-slate-300 mb-1">Timer Kind</label>
+            <select name="kind" class="w-full px-2 py-1.5 rounded bg-slate-950 border border-slate-700 text-white">
+              <option value="periodic">Periodic (Every N Rounds)</option>
+              <option value="delayed">Delayed Detonation (N Rounds)</option>
+              <option value="sustained">Sustained / Concentration</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-300 mb-1">HP Effect (Optional)</label>
+            <select name="hpEffect" class="w-full px-2 py-1.5 rounded bg-slate-950 border border-slate-700 text-white">
+              <option value="">Reminder / Manual Roll</option>
+              <option value="damage">Self Damage (DoT / Bleed)</option>
+              <option value="heal">Self Heal (Fast Healing / Vigor)</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid grid-cols-3 gap-2">
+          <div>
+            <label class="block text-[11px] font-bold text-slate-300 mb-1">Duration (Rds)</label>
+            <input name="durationRounds" type="number" min="1" value="5" class="w-full px-2 py-1.5 rounded bg-slate-950 border border-slate-700 text-white" />
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-300 mb-1">Every N Rds</label>
+            <input name="intervalRounds" type="number" min="1" value="1" class="w-full px-2 py-1.5 rounded bg-slate-950 border border-slate-700 text-white" />
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-300 mb-1">Formula / Dice</label>
+            <input name="formula" placeholder="2d4 or 5" class="w-full px-2 py-1.5 rounded bg-slate-950 border border-slate-700 text-white" />
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-[11px] font-bold text-slate-300 mb-1">Save DC (Optional)</label>
+            <input name="dc" type="number" min="1" placeholder="e.g. 21" class="w-full px-2 py-1.5 rounded bg-slate-950 border border-slate-700 text-white" />
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-300 mb-1">Damage Type / Note</label>
+            <input name="damageType" placeholder="Acid, Fire, Reflex half..." class="w-full px-2 py-1.5 rounded bg-slate-950 border border-slate-700 text-white" />
+          </div>
+        </div>
+      `;
+      openE6SimpleModal('modal-e6-timer', '⏱️ Add Combat Timer', body, (fd) => {
+        CharStore.dispatch({
+          type: 'combat/addTimer',
+          payload: {
+            name: String(fd.get('name') || '').trim(),
+            kind: String(fd.get('kind') || 'periodic'),
+            hpEffect: String(fd.get('hpEffect') || '') || null,
+            durationRounds: Number(fd.get('durationRounds')) || null,
+            intervalRounds: Number(fd.get('intervalRounds')) || 1,
+            formula: String(fd.get('formula') || '').trim(),
+            dc: fd.get('dc') ? Number(fd.get('dc')) : null,
+            damageType: String(fd.get('damageType') || '').trim()
+          },
+          meta: { label: 'Add Combat Timer' }
+        });
+        renderAll({ skipRecompute: true });
+      });
+    }
+
+    function openAddMorningRoutineModal() {
+      const charSpells = getCharacterSpellOptionsForE6();
+      const weapons = Array.isArray(character?.weapons) ? character.weapons.filter(w => w && w.name) : [];
+      const spellOptions = charSpells.map(s => `<option value="${UI.escapeAttr(s.name)}">${UI.escapeHtml(s.name)} (Lvl ${s.level} ${s.discipline})</option>`).join('');
+      const weaponOptions = weapons.map(w => `<option value="${UI.escapeAttr(w.name)}">${UI.escapeHtml(w.name)}</option>`).join('');
+      const body = `
+        <div>
+          <label class="block text-[11px] font-bold text-slate-300 mb-1">Spell Name (e.g. Primal Senses, Greater Mighty Wallop)</label>
+          <input name="spellName" list="e6-routine-spell-list" required placeholder="Primal Senses, Greater Mighty Wallop, Mage Armor..." class="w-full px-2.5 py-1.5 rounded bg-slate-950 border border-slate-700 text-white" />
+          <datalist id="e6-routine-spell-list">${spellOptions}</datalist>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-[11px] font-bold text-slate-300 mb-1">Slot Discipline</label>
+            <select name="discipline" class="w-full px-2 py-1.5 rounded bg-slate-950 border border-slate-700 text-white">
+              <option value="spontaneous">Spontaneous Slot</option>
+              <option value="prepared">Prepared Slot</option>
+              <option value="divine">Divine Slot</option>
+              <option value="noSlot">No Slot (Wand / Item / Free)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-300 mb-1">Slot Level (Auto if blank)</label>
+            <input name="slotLevel" type="number" min="0" max="9" placeholder="Auto" class="w-full px-2 py-1.5 rounded bg-slate-950 border border-slate-700 text-white" />
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-[11px] font-bold text-slate-300 mb-1">Target Weapon (Optional)</label>
+            <select name="targetWeapon" class="w-full px-2 py-1.5 rounded bg-slate-950 border border-slate-700 text-white">
+              <option value="">None / Self</option>
+              ${weaponOptions}
+            </select>
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-300 mb-1">Energy Choice (Optional)</label>
+            <select name="chosenEnergy" class="w-full px-2 py-1.5 rounded bg-slate-950 border border-slate-700 text-white">
+              <option value="">None</option>
+              <option value="Fire">Fire</option>
+              <option value="Cold">Cold</option>
+              <option value="Acid">Acid</option>
+              <option value="Electricity">Electricity</option>
+              <option value="Sonic">Sonic</option>
+            </select>
+          </div>
+        </div>
+        <div class="flex items-center gap-4 pt-1">
+          <label class="inline-flex items-center gap-1.5 cursor-pointer">
+            <input type="checkbox" name="extendSpell" value="1" class="rounded" />
+            <span>Extend Spell (×2 Duration, +1 Slot)</span>
+          </label>
+          <label class="inline-flex items-center gap-1.5 cursor-pointer">
+            <input type="checkbox" name="autoCast" value="1" checked class="rounded" />
+            <span>Auto-Cast after Long Rest</span>
+          </label>
+        </div>
+      `;
+      openE6SimpleModal('modal-e6-routine', '☀️ Add Morning Buff Routine', body, (fd) => {
+        const spellName = String(fd.get('spellName') || '').trim();
+        const dbHit = (typeof RuleEngine !== 'undefined' && RuleEngine.getMasterDbEntry)
+          ? RuleEngine.getMasterDbEntry({ name: spellName }, 'Spell')
+          : null;
+        const charHit = charSpells.find(s => s.name.toLowerCase() === spellName.toLowerCase()) || null;
+        const isExtended = fd.get('extendSpell') === '1';
+        const derivedLvl = charHit ? Number(charHit.level) : (dbHit && Number.isFinite(Number(dbHit.level)) ? Number(dbHit.level) : null);
+        const rawSlotLvl = String(fd.get('slotLevel') || '').trim();
+        const typedLvl = rawSlotLvl !== '' ? Math.max(0, Number(rawSlotLvl) || 0) : null;
+        const baseLvl = (derivedLvl !== null)
+          ? (typedLvl !== null ? Math.max(derivedLvl, typedLvl) : derivedLvl)
+          : (typedLvl !== null ? typedLvl : 1);
+        CharStore.dispatch({
+          type: 'spells/addRoutine',
+          payload: {
+            spellId: (charHit && charHit.id) || (dbHit && dbHit.id) || null,
+            spellName: (dbHit && dbHit.name) || spellName,
+            discipline: String(fd.get('discipline') || 'spontaneous'),
+            slotLevel: baseLvl,
+            effectiveSlotLevel: isExtended ? Math.min(9, baseLvl + 1) : baseLvl,
+            metamagic: isExtended ? ['extend'] : [],
+            targetWeapon: String(fd.get('targetWeapon') || '') || null,
+            chosenEnergy: String(fd.get('chosenEnergy') || '') || null,
+            consumeSlot: String(fd.get('discipline')) !== 'noSlot',
+            autoCastOnLongRest: fd.get('autoCast') === '1',
+            enabled: true
+          },
+          meta: { label: `Add Morning Routine: ${spellName}` }
+        });
+        renderAll({ skipRecompute: true });
+      });
+    }
+
+    function openSpellMatrixModal() {
+      const charCl = Math.max(1, Number(character?.level) || 1);
+      const body = `
+        <div>
+          <label class="block text-[11px] font-bold text-slate-300 mb-1">Matrix Tier (Spell Compendium p.199–200)</label>
+          <select name="tier" class="w-full px-2 py-1.5 rounded bg-slate-950 border border-slate-700 text-white">
+            <option value="lesser">Lesser Spell Matrix (Lvl 5 — 1 spell ≤3rd, 1d6 backlash)</option>
+            <option value="standard">Spell Matrix (Lvl 7 — 2 spells ≤3rd, 2d6 backlash, Sequence)</option>
+            <option value="greater">Greater Spell Matrix (Lvl 9 — 3 spells ≤3rd, 3d6 backlash, Sequence + Auto-Trigger)</option>
+          </select>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-[11px] font-bold text-slate-300 mb-1">Slot Discipline</label>
+            <select name="discipline" class="w-full px-2 py-1.5 rounded bg-slate-950 border border-slate-700 text-white">
+              <option value="prepared">Prepared Slot</option>
+              <option value="spontaneous">Spontaneous Slot</option>
+              <option value="noSlot">No Slot (Scroll / Staff / Manual)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-300 mb-1">Caster Level</label>
+            <input name="casterLevel" type="number" min="1" value="${charCl}" class="w-full px-2 py-1.5 rounded bg-slate-950 border border-slate-700 text-white" />
+          </div>
+        </div>
+        <div class="p-2 rounded bg-rose-950/40 border border-rose-800/60 text-[10px] text-rose-200">
+          ⚠️ Casting rolls backlash damage (1d6 / 2d6 / 3d6) in 3D and deducts it from HP. Per RAW, this damage cannot be healed while the matrix persists.
+        </div>
+      `;
+      openE6SimpleModal('modal-e6-matrix', '🔷 Cast Spell Matrix', body, (fd) => {
+        const tier = String(fd.get('tier') || 'lesser');
+        const discipline = String(fd.get('discipline') || 'prepared');
+        const casterLevel = Math.max(1, Number(fd.get('casterLevel')) || charCl);
+        const tierDef = RuleEngine?.rulesets?.dnd35?.spellMatrixTiers?.[tier] || { backlashDice: '1d6', name: 'Lesser Spell Matrix' };
+        rollDiceFormulaWith3D(tierDef.backlashDice || '1d6', (rollRes) => {
+          CharStore.dispatch({
+            type: 'spells/openMatrix',
+            payload: {
+              tier,
+              discipline,
+              consumeSlot: discipline !== 'noSlot',
+              casterLevel,
+              backlashDamage: rollRes.total
+            },
+            meta: { label: `Cast ${tierDef.name}` }
+          });
+          const out = CharStore.getLastOutcome ? CharStore.getLastOutcome() : null;
+          if (out && out.status === 'matrix_opened') {
+            renderAll({ skipRecompute: true });
+            showDiceTopToast({
+              icon: '🔷',
+              title: `${tierDef.name} Active!`,
+              breakdown: `Backlash: -${rollRes.total} HP (${rollRes.rollDesc}) — locked until matrix ends • Duration: ${casterLevel * 10} min`,
+              total: `-${rollRes.total} HP`
+            });
+          } else {
+            showDiceTopToast({
+              icon: '⚠️',
+              title: 'Cannot Cast Spell Matrix',
+              breakdown: (out && out.detail) || 'No available spell slot.',
+              total: 'Blocked'
+            });
+          }
+        });
+      });
+    }
+
+    function openLoadMatrixSpellModal() {
+      const mat = character?.spellcasting?.matrix;
+      if (!mat || !mat.active) return;
+      const charSpells = getCharacterSpellOptionsForE6().filter(s => (s.effectiveSlotLevel ?? s.level) <= (mat.maxStoredSpellLevel || 3));
+      const spellOptions = charSpells.map(s => `<option value="${UI.escapeAttr(s.name)}">${UI.escapeHtml(s.name)} (Lvl ${s.level} ${s.discipline})</option>`).join('');
+      const body = `
+        <div>
+          <label class="block text-[11px] font-bold text-slate-300 mb-1">Spell to Store (≤3rd Level, ≤1 Standard Action)</label>
+          <input name="spellName" list="e6-matrix-spell-list" required placeholder="e.g. Shield, Magic Missile, Haste, Mirror Image" class="w-full px-2.5 py-1.5 rounded bg-slate-950 border border-slate-700 text-white" />
+          <datalist id="e6-matrix-spell-list">${spellOptions}</datalist>
+        </div>
+        <div class="grid grid-cols-3 gap-2">
+          <div>
+            <label class="block text-[11px] font-bold text-slate-300 mb-1">Slot Level (Auto if blank)</label>
+            <input name="level" type="number" min="0" max="9" placeholder="Auto" class="w-full px-2 py-1.5 rounded bg-slate-950 border border-slate-700 text-white" />
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-300 mb-1">Discipline</label>
+            <select name="discipline" class="w-full px-2 py-1.5 rounded bg-slate-950 border border-slate-700 text-white">
+              <option value="prepared">Prepared</option>
+              <option value="spontaneous">Spontaneous</option>
+              <option value="noSlot">No Slot</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-300 mb-1">Save DC</label>
+            <input name="dc" type="number" min="1" placeholder="Optional" class="w-full px-2 py-1.5 rounded bg-slate-950 border border-slate-700 text-white" />
+          </div>
+        </div>
+      `;
+      openE6SimpleModal('modal-e6-load-matrix', '🔷 Load Spell into Matrix', body, (fd) => {
+        const spellName = String(fd.get('spellName') || '').trim();
+        const dbHit = (typeof RuleEngine !== 'undefined' && RuleEngine.getMasterDbEntry)
+          ? RuleEngine.getMasterDbEntry({ name: spellName }, 'Spell')
+          : null;
+        const charHit = getCharacterSpellOptionsForE6().find(s => s.name.toLowerCase() === spellName.toLowerCase()) || null;
+        const derivedLvl = charHit ? Number(charHit.effectiveSlotLevel ?? charHit.level) : (dbHit && Number.isFinite(Number(dbHit.level)) ? Number(dbHit.level) : null);
+        const rawLvlStr = String(fd.get('level') || '').trim();
+        const typedLvl = rawLvlStr !== '' ? Math.max(0, Number(rawLvlStr) || 0) : null;
+        const level = (derivedLvl !== null)
+          ? (typedLvl !== null ? Math.max(derivedLvl, typedLvl) : derivedLvl)
+          : (typedLvl !== null ? typedLvl : 0);
+        const discipline = String(fd.get('discipline') || 'prepared');
+        CharStore.dispatch({
+          type: 'spells/loadMatrixSpell',
+          payload: {
+            spellId: (charHit && charHit.id) || (dbHit ? dbHit.id : null),
+            spellName: dbHit ? dbHit.name : spellName,
+            level,
+            effectiveSlotLevel: level,
+            castingTime: (dbHit && (dbHit.castingTime || dbHit.delivery?.castingTime)) || (charHit && charHit.castingTime) || '1 standard action',
+            discipline,
+            consumeSlot: discipline !== 'noSlot',
+            casterLevel: mat.casterLevel || Number(character.level) || 1,
+            dc: fd.get('dc') ? Number(fd.get('dc')) : null
+          },
+          meta: { label: `Load Matrix: ${spellName}` }
+        });
+        const out = CharStore.getLastOutcome ? CharStore.getLastOutcome() : null;
+        if (out && out.status === 'matrix_spell_loaded') {
+          renderAll({ skipRecompute: true });
+        } else {
+          showDiceTopToast({
+            icon: '⚠️',
+            title: 'Cannot Load Spell into Matrix',
+            breakdown: UI.escapeHtml((out && (out.reason || out.detail)) || 'Spell ineligible or no slot remaining.'),
+            total: 'Blocked'
+          });
+        }
+      });
+    }
+
+    function openAddContingencyModal() {
+      const charCl = Math.max(1, Number(character?.level) || 1);
+      const maxCompLvl = RuleEngine?.rulesets?.dnd35?.contingencyRules?.maxCompanionSpellLevel
+        ? RuleEngine.rulesets.dnd35.contingencyRules.maxCompanionSpellLevel(charCl)
+        : Math.min(6, Math.floor(charCl / 3));
+      const charSpells = getCharacterSpellOptionsForE6();
+      const spellOptions = charSpells.map(s => `<option value="${UI.escapeAttr(s.name)}">${UI.escapeHtml(s.name)} (Lvl ${s.level})</option>`).join('');
+      const body = `
+        <div>
+          <label class="block text-[11px] font-bold text-slate-300 mb-1">Type</label>
+          <select name="kind" class="w-full px-2 py-1.5 rounded bg-slate-950 border border-slate-700 text-white">
+            <option value="contingency">Contingency (PHB — max 1 active, companion ≤ Lvl ${maxCompLvl}, 1 day/CL)</option>
+            <option value="psionic">Contingency, Psionic (XPH — max 1 active, companion ≤ Lvl ${maxCompLvl}, 1 day/ML)</option>
+            <option value="crafted">Craft Contingent Spell (CArc — up to HD concurrent, permanent until triggered)</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold text-slate-300 mb-1">Trigger Condition</label>
+          <input name="triggerText" required placeholder="e.g. If I drop below 25% HP, If I am grappled..." class="w-full px-2.5 py-1.5 rounded bg-slate-950 border border-slate-700 text-white" />
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold text-slate-300 mb-1">Companion Spell</label>
+          <input name="spellName" list="e6-ctg-spell-list" required placeholder="e.g. Dimension Door, Heal, Stoneskin, Greater Invisibility" class="w-full px-2.5 py-1.5 rounded bg-slate-950 border border-slate-700 text-white" />
+          <datalist id="e6-ctg-spell-list">${spellOptions}</datalist>
+        </div>
+        <div class="grid grid-cols-3 gap-2">
+          <div>
+            <label class="block text-[11px] font-bold text-slate-300 mb-1">Spell Level (Auto if blank)</label>
+            <input name="spellLevel" type="number" min="0" max="9" placeholder="Auto" class="w-full px-2 py-1.5 rounded bg-slate-950 border border-slate-700 text-white" />
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-300 mb-1">Caster Level</label>
+            <input name="casterLevel" type="number" min="1" value="${charCl}" class="w-full px-2 py-1.5 rounded bg-slate-950 border border-slate-700 text-white" />
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-300 mb-1">Save DC</label>
+            <input name="dc" type="number" min="1" placeholder="Optional" class="w-full px-2 py-1.5 rounded bg-slate-950 border border-slate-700 text-white" />
+          </div>
+        </div>
+      `;
+      openE6SimpleModal('modal-e6-contingency', '🔮 Set Contingency / Crafted Contingent Spell', body, (fd, close) => {
+        const kind = String(fd.get('kind') || 'contingency');
+        const spellName = String(fd.get('spellName') || '').trim();
+        const triggerText = String(fd.get('triggerText') || '').trim();
+        const dbHit = (typeof RuleEngine !== 'undefined' && RuleEngine.getMasterDbEntry)
+          ? (RuleEngine.getMasterDbEntry({ name: spellName }, 'Spell') || RuleEngine.getMasterDbEntry({ name: spellName }, 'Power'))
+          : null;
+        const charHit = charSpells.find(s => s.name.toLowerCase() === spellName.toLowerCase()) || null;
+        const derivedLvl = charHit ? Number(charHit.level) : (dbHit && Number.isFinite(Number(dbHit.level)) ? Number(dbHit.level) : null);
+        const rawSpellLvl = String(fd.get('spellLevel') || '').trim();
+        const typedLvl = rawSpellLvl !== '' ? Math.max(0, Number(rawSpellLvl) || 0) : null;
+        const spellLevel = (derivedLvl !== null)
+          ? (typedLvl !== null ? Math.max(derivedLvl, typedLvl) : derivedLvl)
+          : (typedLvl !== null ? typedLvl : 0);
+        const casterLevel = Math.max(1, Number(fd.get('casterLevel')) || charCl);
+        const dc = fd.get('dc') ? Number(fd.get('dc')) : null;
+
+        const commitAdd = () => {
+          CharStore.dispatch({
+            type: 'spells/addContingency',
+            payload: {
+              kind,
+              spellId: dbHit ? dbHit.id : null,
+              spellName: dbHit ? dbHit.name : spellName,
+              spellLevel,
+              casterLevel,
+              dc,
+              triggerText
+            },
+            meta: { label: `Set Contingency: ${spellName}` }
+          });
+          const out = CharStore.getLastOutcome ? CharStore.getLastOutcome() : null;
+          if (out && out.status === 'contingency_added') {
+            renderAll({ skipRecompute: true });
+          } else {
+            const msg = out && out.status === 'companion_level_exceeded'
+              ? `Companion spell level (${out.spellLvl}) exceeds floor(CL/3) cap (max Lvl ${out.maxLvl}).`
+              : (out && out.status === 'crafted_hd_cap_reached'
+                ? `Crafted Contingent Spell cap reached (${out.activeCrafted}/${out.maxCrafted} HD).`
+                : 'Could not add Contingency.');
+            showDiceTopToast({ icon: '⚠️', title: 'Contingency Blocked', breakdown: msg, total: 'RAW Cap' });
+          }
+        };
+
+        const existingSpellCtg = (Array.isArray(character?.spellcasting?.contingencies) ? character.spellcasting.contingencies : [])
+          .find(c => c && !c.discharged && (c.kind === 'contingency' || c.kind === 'psionic'));
+        if ((kind === 'contingency' || kind === 'psionic') && existingSpellCtg && typeof DnDUI !== 'undefined' && typeof DnDUI.confirm === 'function') {
+          close();
+          DnDUI.confirm(
+            `Casting a new Contingency dispels your active "${existingSpellCtg.spellName}" Contingency (PHB p.213). Continue?`,
+            { title: 'Replace Active Contingency?', confirmLabel: 'Replace', tone: 'danger' }
+          ).then(ok => { if (ok) commitAdd(); });
+          return true;
+        }
+        commitAdd();
+      });
+    }
+
     // --- ROUND ADVANCEMENT & REST ---
     function advanceCombatRound() {
       let notes = [];
       let nextRound = 1;
       if (typeof CharStore !== 'undefined' && CharStore.dispatch) {
+        // Pre-roll any due periodic timers with dice formulas for 1-step atomic Undo
+        const curRound = Number(character?.tactical?.round || character?.encounterRound) || 1;
+        const upcomingRound = curRound + 1;
+        const timers = Array.isArray(character?.combatTimers) ? character.combatTimers : [];
+        const tickRolls = {};
+        timers.forEach(t => {
+          if (t && t.kind === 'periodic' && upcomingRound >= (Number(t.nextTickRound) || upcomingRound) && t.formula) {
+            tickRolls[t.id] = rollDiceFormulaSimple(t.formula);
+          }
+        });
         CharStore.dispatch({
           type: 'combat/advanceRound',
+          payload: { tickRolls },
           label: 'Next Round',
           meta: { label: 'Next Round', cloudSync: false }
         });
@@ -11973,6 +12735,7 @@
         }
         nextRound = Number(outcome?.round || character?.tactical?.round || 1);
         if (typeof updateActionEconomyUI === 'function') updateActionEconomyUI();
+        if (typeof updateRoundDisplays === 'function') updateRoundDisplays();
         renderAll({ skipRecompute: true });
       } else {
         if (!character.tactical) character.tactical = {};
@@ -11980,22 +12743,13 @@
         character.encounterRound = character.tactical.round;
         nextRound = character.tactical.round;
         if (typeof resetActionEconomy === 'function') resetActionEconomy();
-
-        if (character.tactical.shieldBlockActive) {
-          character.tactical.shieldBlockActive = false;
-          notes.push('Shield Block reset');
-        }
-        if (character.tactical.charge) {
-          character.tactical.charge = false;
-          notes.push('Charge AC penalty cleared');
-        }
         saveStateToStorage(false);
         renderAll();
       }
       showDiceTopToast({
         icon: '⏱️',
         title: `Round ${nextRound} Started!`,
-        breakdown: notes.length > 0 ? notes.join(' • ') : 'All 1-round reactions refreshed.',
+        breakdown: notes.length > 0 ? notes.map(n => UI.escapeHtml(String(n || ''))).join(' • ') : 'All 1-round reactions refreshed.',
         total: `Round ${nextRound}`
       });
     }
@@ -15564,7 +16318,16 @@
           }
         }
         if (character && character.hp) {
-          character.hp.current = Math.min(Number(character.hp.max) || 999, (Number(character.hp.current) || 0) + finalDelta);
+          const maxHp = Number(character.hp.max) || 999;
+          const prevHp = Number(character.hp.current) || 0;
+          if (finalDelta > 0) {
+            const healCap = (typeof RuleEngine !== 'undefined' && RuleEngine.rulesets?.dnd35?.getEffectiveHealCap)
+              ? RuleEngine.rulesets.dnd35.getEffectiveHealCap(character, maxHp)
+              : maxHp;
+            character.hp.current = prevHp < healCap ? Math.min(healCap, prevHp + finalDelta) : prevHp;
+          } else {
+            character.hp.current = Math.min(maxHp, prevHp + finalDelta);
+          }
         }
         if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
         if (typeof renderAll === 'function') renderAll();
@@ -16213,7 +16976,164 @@
         if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
       });
       Actions.register('combat:next-round', (el, data, event) => {
-        if (typeof window.advanceNextRound === 'function') window.advanceNextRound();
+        if (typeof advanceCombatRound === 'function') advanceCombatRound();
+        else if (typeof window.advanceNextRound === 'function') window.advanceNextRound();
+      });
+      // Sprint E6 Actions (Timers, Morning Routines, Spell Matrix, Contingencies)
+      Actions.register('e6:open-timer-modal', () => openAddCombatTimerModal());
+      Actions.register('e6:open-routine-modal', () => openAddMorningRoutineModal());
+      Actions.register('e6:open-matrix-modal', () => openSpellMatrixModal());
+      Actions.register('e6:open-load-matrix-modal', () => openLoadMatrixSpellModal());
+      Actions.register('e6:open-contingency-modal', () => openAddContingencyModal());
+      Actions.register('e6:remove-timer', (el, data) => {
+        if (!data || !data.timerId) return;
+        CharStore.dispatch({ type: 'combat/removeTimer', payload: { id: data.timerId }, meta: { label: 'Remove Timer' } });
+        renderAll({ skipRecompute: true });
+      });
+      Actions.register('e6:trigger-timer', (el, data) => {
+        if (!data || !data.timerId) return;
+        const timer = (character?.combatTimers || []).find(t => t && t.id === data.timerId);
+        if (!timer) return;
+        const finalize = (rollRes) => {
+          CharStore.dispatch({
+            type: 'combat/triggerTimer',
+            payload: { id: timer.id, removeOnTrigger: timer.kind === 'delayed' },
+            meta: { label: `Trigger Timer: ${timer.name}` }
+          });
+          renderAll({ skipRecompute: true });
+          const rollPart = rollRes && rollRes.rollDesc ? `Roll: ${rollRes.rollDesc}` : (timer.formula || 'Effect triggered');
+          showDiceTopToast({
+            icon: timer.kind === 'delayed' ? '💥' : '⚡',
+            title: `${UI.escapeHtml(timer.name)}${timer.kind === 'delayed' ? ' Detonated!' : ' Triggered!'}`,
+            breakdown: `${UI.escapeHtml(rollPart)}${timer.damageType ? ' ' + UI.escapeHtml(timer.damageType) : ''}${timer.dc ? ` • Save DC ${timer.dc}` : ''}`,
+            total: rollRes && rollRes.total ? String(rollRes.total) : 'Triggered'
+          });
+        };
+        if (timer.formula && /\d*d\d+/i.test(timer.formula)) {
+          rollDiceFormulaWith3D(timer.formula, finalize);
+        } else {
+          finalize(rollDiceFormulaSimple(timer.formula));
+        }
+      });
+      Actions.register('e6:toggle-routine', (el, data) => {
+        if (!data || !data.routineId) return;
+        const r = (character?.spellcasting?.routines || []).find(x => x && x.id === data.routineId);
+        if (!r) return;
+        CharStore.dispatch({
+          type: 'spells/updateRoutine',
+          payload: { id: r.id, enabled: r.enabled === false },
+          meta: { label: `Toggle Routine: ${r.spellName}` }
+        });
+        renderAll({ skipRecompute: true });
+      });
+      Actions.register('e6:remove-routine', (el, data) => {
+        if (!data || !data.routineId) return;
+        CharStore.dispatch({ type: 'spells/removeRoutine', payload: { id: data.routineId }, meta: { label: 'Remove Routine' } });
+        renderAll({ skipRecompute: true });
+      });
+      Actions.register('e6:run-morning-routine', () => {
+        const spellLookup = {};
+        (character?.spellcasting?.routines || []).forEach(r => {
+          if (!r || r.enabled === false) return;
+          const found = (typeof RuleEngine !== 'undefined' && RuleEngine.getMasterDbEntry)
+            ? (RuleEngine.getMasterDbEntry({ id: r.spellId, name: r.spellName }, 'Spell') || RuleEngine.getMasterDbEntry({ id: r.spellId, name: r.spellName }, 'Power'))
+            : null;
+          if (found) spellLookup[r.id] = found;
+        });
+        CharStore.dispatch({ type: 'spells/runMorningRoutine', payload: { spellLookup }, meta: { label: 'Run Morning Routine' } });
+        const out = CharStore.getLastOutcome ? CharStore.getLastOutcome() : {};
+        renderAll({ skipRecompute: true });
+        const parts = [];
+        if (Array.isArray(out.cast) && out.cast.length > 0) parts.push(`Cast: ${out.cast.map(c => UI.escapeHtml(c.name)).join(', ')}`);
+        if (Array.isArray(out.skipped) && out.skipped.length > 0) parts.push(`Skipped: ${out.skipped.map(s => `${UI.escapeHtml(s.name)} (${UI.escapeHtml(s.reason)})`).join(', ')}`);
+        showDiceTopToast({
+          icon: '☀️',
+          title: 'Morning Routine Complete',
+          breakdown: parts.join(' • ') || 'No enabled routines.',
+          total: `${(out.cast || []).length} Cast`
+        });
+      });
+      Actions.register('e6:toggle-matrix-seq', (el, data) => {
+        const mat = character?.spellcasting?.matrix;
+        if (!mat || !data || !data.entryId) return;
+        const cur = Array.isArray(mat.sequenceIds) ? mat.sequenceIds.slice() : [];
+        const idx = cur.indexOf(data.entryId);
+        if (idx >= 0) cur.splice(idx, 1);
+        else if (cur.length < 2) cur.push(data.entryId);
+        else { cur.shift(); cur.push(data.entryId); }
+        CharStore.dispatch({ type: 'spells/setMatrixSequence', payload: { ids: cur }, meta: { label: 'Update Matrix Sequence' } });
+        renderAll({ skipRecompute: true });
+      });
+      Actions.register('e6:release-matrix-spell', (el, data) => {
+        if (!data || !data.entryId) return;
+        CharStore.dispatch({ type: 'spells/releaseMatrix', payload: { entryId: data.entryId }, meta: { label: 'Release Matrix Spell' } });
+        const out = CharStore.getLastOutcome ? CharStore.getLastOutcome() : null;
+        if (!out || out.status !== 'matrix_released') {
+          showDiceTopToast({ icon: '⚠️', title: 'Matrix Release Blocked', breakdown: (out && out.detail) || 'Swift action unavailable.', total: 'Blocked' });
+          return;
+        }
+        renderAll({ skipRecompute: true });
+        (out.released || []).forEach(sp => executeMatrixOrContingencySpellEffect(sp, 'Spell Matrix (Swift Action)'));
+      });
+      Actions.register('e6:release-matrix-seq', () => {
+        CharStore.dispatch({ type: 'spells/releaseMatrix', payload: { releaseSequence: true }, meta: { label: 'Release Matrix Sequence' } });
+        const out = CharStore.getLastOutcome ? CharStore.getLastOutcome() : null;
+        if (!out || out.status !== 'matrix_released') {
+          showDiceTopToast({ icon: '⚠️', title: 'Sequence Release Blocked', breakdown: (out && out.detail) || 'Swift action unavailable.', total: 'Blocked' });
+          return;
+        }
+        renderAll({ skipRecompute: true });
+        (out.released || []).forEach(sp => executeMatrixOrContingencySpellEffect(sp, 'Spell Matrix Sequence (Swift)'));
+      });
+      Actions.register('e6:edit-matrix-trigger', () => {
+        const mat = character?.spellcasting?.matrix;
+        if (!mat || !mat.allowAutoTrigger || typeof DnDUI === 'undefined' || typeof DnDUI.prompt !== 'function') return;
+        DnDUI.prompt(
+          'Specify trigger condition (must affect you, as Contingency):',
+          mat.autoTriggerText || '',
+          { title: 'Greater Spell Matrix Auto-Trigger' }
+        ).then(val => {
+          if (val === null || val === undefined) return;
+          CharStore.dispatch({ type: 'spells/setMatrixTrigger', payload: { triggerText: val }, meta: { label: 'Set Matrix Auto-Trigger' } });
+          renderAll({ skipRecompute: true });
+        });
+      });
+      Actions.register('e6:fire-matrix-trigger', () => {
+        const mat = character?.spellcasting?.matrix;
+        if (!mat || !mat.allowAutoTrigger) return;
+        const useSeq = Array.isArray(mat.sequenceIds) && mat.sequenceIds.length === 2;
+        const firstActive = (mat.storedSpells || []).find(s => s && !s.released);
+        if (!useSeq && !firstActive) return;
+        CharStore.dispatch({
+          type: 'spells/releaseMatrix',
+          payload: useSeq ? { releaseSequence: true, isAutoTrigger: true } : { entryId: firstActive.id, isAutoTrigger: true },
+          meta: { label: 'Fire Greater Matrix Trigger' }
+        });
+        const out = CharStore.getLastOutcome ? CharStore.getLastOutcome() : null;
+        if (out && out.status === 'matrix_released') {
+          renderAll({ skipRecompute: true });
+          (out.released || []).forEach(sp => executeMatrixOrContingencySpellEffect(sp, 'Greater Spell Matrix (Auto-Trigger)'));
+        }
+      });
+      Actions.register('e6:dismiss-matrix', () => {
+        CharStore.dispatch({ type: 'spells/dismissMatrix', meta: { label: 'Dismiss Spell Matrix' } });
+        renderAll({ skipRecompute: true });
+        showDiceTopToast({ icon: '🔷', title: 'Spell Matrix Dismissed', breakdown: 'Matrix ended — backlash HP lock released.', total: 'Dismissed' });
+      });
+      Actions.register('e6:trigger-contingency', (el, data) => {
+        if (!data || !data.ctgId) return;
+        CharStore.dispatch({ type: 'spells/triggerContingency', payload: { id: data.ctgId }, meta: { label: 'Trigger Contingency' } });
+        const out = CharStore.getLastOutcome ? CharStore.getLastOutcome() : null;
+        if (out && out.status === 'contingency_triggered' && out.entry) {
+          renderAll({ skipRecompute: true });
+          const safeTrig = UI.escapeHtml(out.entry.triggerText || '');
+          executeMatrixOrContingencySpellEffect(out.entry, `Contingency Triggered (No Action — "${safeTrig}")`);
+        }
+      });
+      Actions.register('e6:remove-contingency', (el, data) => {
+        if (!data || !data.ctgId) return;
+        CharStore.dispatch({ type: 'spells/removeContingency', payload: { id: data.ctgId }, meta: { label: 'Remove Contingency' } });
+        renderAll({ skipRecompute: true });
       });
       Actions.register('combat:toggle-action', (el, data, event) => {
         if (data && data.actionKey && typeof window.toggleActionEconomy === 'function') {

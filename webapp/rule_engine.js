@@ -4773,7 +4773,12 @@ const RuleEngine = {
       character.hp.temp = Math.max(Number(character.hp.temp) || 0, res.tempHpGained);
     }
     if (res.healedHp > 0 && character.hp) {
-      character.hp.current = Math.min(Number(character.hp.max) || 999, (Number(character.hp.current) || 0) + res.healedHp);
+      const maxHp = Number(character.hp.max) || 999;
+      const healCap = this.rulesets?.dnd35?.getEffectiveHealCap
+        ? this.rulesets.dnd35.getEffectiveHealCap(character, maxHp)
+        : maxHp;
+      const prevHp = Number(character.hp.current) || 0;
+      character.hp.current = prevHp < healCap ? Math.min(healCap, prevHp + res.healedHp) : prevHp;
     }
     if (res.spawnedBuff) {
       if (!Array.isArray(character.buffs)) character.buffs = [];
@@ -9301,9 +9306,17 @@ const RuleEngine = {
     else if (/24\s*hours?/i.test(rawDur)) durationText = '24 hr';
     else if (/\b1\s*(?:hour|hr)\.?\/level/i.test(rawDur)) durationText = `${cl} hr`;
     else if (/\b1\s*round\/level/i.test(rawDur)) durationText = `${cl} rounds`;
-    const durationRounds = this.rulesets?.dnd35?.durationToRounds
+    let durationRounds = this.rulesets?.dnd35?.durationToRounds
       ? this.rulesets.dnd35.durationToRounds(rawDur, cl)
       : null;
+    const mmList = Array.isArray(spell.appliedMetamagic) && spell.appliedMetamagic.length > 0
+      ? spell.appliedMetamagic
+      : (Array.isArray(spell.metamagic) ? spell.metamagic : []);
+    if (mmList.length > 0 && this.rulesets?.dnd35?.applyMetamagicToDuration) {
+      const scaled = this.rulesets.dnd35.applyMetamagicToDuration(durationRounds, durationText, mmList);
+      durationRounds = scaled.durationRounds;
+      durationText = scaled.durationText;
+    }
 
     return {
       schemaVersion: 3,

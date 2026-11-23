@@ -682,7 +682,9 @@
       const raw = String(durationText || '').trim();
       if (!raw || /instantaneous|permanent|concentration|dismissible\s+only/i.test(raw)) return null;
       const cl = Math.max(1, Number(casterLevel) || 1);
-      const perLvl = raw.match(/(\d+)\s*(round|rd|rds|rounds|min|mins|minute|minutes|hour|hr|hrs|hours|day|days)\.?\s*\/\s*(?:level|cl)/i);
+      const WORD_NUM = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10 };
+      const normalized = raw.replace(/\b(one|two|three|four|five|six|seven|eight|nine|ten)\b/gi, (m) => String(WORD_NUM[m.toLowerCase()] || m));
+      const perLvl = normalized.match(/(\d+)\s*(round|rd|rds|rounds|min|mins|minute|minutes|hour|hr|hrs|hours|day|days)\.?\s*\/\s*(?:level|cl)/i);
       if (perLvl) {
         const n = parseInt(perLvl[1], 10) || 1;
         const u = perLvl[2].toLowerCase();
@@ -691,7 +693,7 @@
         if (u.startsWith('h')) return n * 600 * cl;
         if (u.startsWith('d')) return n * 14400 * cl;
       }
-      const fixed = raw.match(/^(\d+)\s*(round|rd|rds|rounds|min|mins|minute|minutes|hour|hr|hrs|hours|day|days)\b/i);
+      const fixed = normalized.match(/^(\d+)\s*(round|rd|rds|rounds|min|mins|minute|minutes|hour|hr|hrs|hours|day|days)\b/i);
       if (fixed) {
         const n = parseInt(fixed[1], 10) || 0;
         if (n <= 0) return null;
@@ -702,6 +704,114 @@
         if (u.startsWith('d')) return n * 14400;
       }
       return null;
+    },
+    formatRoundsDuration(rounds) {
+      const r = Math.max(0, Math.floor(Number(rounds) || 0));
+      if (r <= 0) return 'Expired';
+      if (r >= 14400 && r % 14400 === 0) {
+        const d = r / 14400;
+        return d === 1 ? '24 hr' : `${d} days`;
+      }
+      if (r >= 600 && r % 600 === 0) return `${r / 600} hr`;
+      if (r >= 10 && r % 10 === 0 && r < 600) return `${r / 10} min`;
+      return `${r} ${r === 1 ? 'round' : 'rounds'}`;
+    },
+    // Official D&D 3.5e Metamagic duration scaling (Extend Spell ×2, Persistent Spell 24 hr)
+    applyMetamagicToDuration(durationRounds, durationText, metamagicList) {
+      const list = Array.isArray(metamagicList) ? metamagicList : [];
+      if (list.length === 0) return { durationRounds, durationText };
+      const keys = list.map((m) => String((typeof m === 'string' ? m : (m && (m.transform || m.featId || m.id || m.name))) || '').toLowerCase());
+      const hasPersistent = keys.some((k) => k.includes('persist'));
+      const hasExtend = keys.some((k) => k.includes('extend'));
+      const rawLower = String(durationText || '').toLowerCase();
+      if (/instantaneous|permanent|concentration/.test(rawLower)) {
+        return { durationRounds, durationText };
+      }
+      if (hasPersistent) {
+        return { durationRounds: 14400, durationText: '24 hr' };
+      }
+      if (hasExtend && Number.isFinite(Number(durationRounds)) && Number(durationRounds) > 0) {
+        const doubled = Math.floor(Number(durationRounds) * 2);
+        return { durationRounds: doubled, durationText: DnD35Ruleset.formatRoundsDuration(doubled) };
+      }
+      return { durationRounds, durationText };
+    },
+    // Official D&D 3.5e Spell Matrix backlash heal cap (Spell Compendium p.199)
+    getEffectiveHealCap(doc, maxHp) {
+      const m = Math.max(1, Number(maxHp) || 1);
+      const locked = (doc && doc.spellcasting && doc.spellcasting.matrix && doc.spellcasting.matrix.active)
+        ? Math.max(0, Math.floor(Number(doc.spellcasting.matrix.lockedDamage) || 0))
+        : 0;
+      return Math.max(0, m - locked);
+    },
+    // Official D&D 3.5e Spell Matrix rules (Spell Compendium p.199-200)
+    // Backlash damage (1d6/2d6/3d6) cannot be healed while the matrix persists.
+    // All three tiers hold only spells of <= 3rd level that are Quicken-eligible (<= 1 standard action).
+    spellMatrixTiers: {
+      lesser: {
+        id: 'spl-lesser-spell-matrix',
+        tier: 'lesser',
+        name: 'Lesser Spell Matrix',
+        spellLevel: 5,
+        maxStored: 1,
+        maxStoredSpellLevel: 3,
+        backlashDice: '1d6',
+        allowSequence: false,
+        allowAutoTrigger: false,
+        durationFormula: '10 min/level',
+        loadWindowRounds: 1
+      },
+      standard: {
+        id: 'spl-spell-matrix',
+        tier: 'standard',
+        name: 'Spell Matrix',
+        spellLevel: 7,
+        maxStored: 2,
+        maxStoredSpellLevel: 3,
+        backlashDice: '2d6',
+        allowSequence: true,
+        allowAutoTrigger: false,
+        durationFormula: '10 min/level',
+        loadWindowRounds: 2
+      },
+      greater: {
+        id: 'spl-greater-spell-matrix',
+        tier: 'greater',
+        name: 'Greater Spell Matrix',
+        spellLevel: 9,
+        maxStored: 3,
+        maxStoredSpellLevel: 3,
+        backlashDice: '3d6',
+        allowSequence: true,
+        allowAutoTrigger: true,
+        durationFormula: '10 min/level',
+        loadWindowRounds: 3
+      }
+    },
+    isSpellMatrixEligible(spell, effectiveSlotLevel, tierKey = 'lesser') {
+      const tier = DnD35Ruleset.spellMatrixTiers[tierKey] || DnD35Ruleset.spellMatrixTiers.lesser;
+      const lvl = Number(effectiveSlotLevel);
+      if (!Number.isFinite(lvl) || lvl < 0 || lvl > tier.maxStoredSpellLevel) {
+        return { eligible: false, reason: `Spell level (${lvl}) exceeds Spell Matrix cap (max ${tier.maxStoredSpellLevel}rd level).` };
+      }
+      const ct = String(spell?.castingTime || spell?.delivery?.castingTime || spell?.actionType || '1 standard action').toLowerCase().trim();
+      const isQuickOrStandard = /\b(standard|swift|immediate|free|move)\b/i.test(ct);
+      const isLonger = /\b(round|rounds|full[\s-]*round|min|mins|minute|minutes|hour|hours|hr|day|days)\b/i.test(ct);
+      if (isLonger || !isQuickOrStandard) {
+        return { eligible: false, reason: `Casting time "${spell?.castingTime || ct}" is not Quicken-eligible (must be <= 1 standard action).` };
+      }
+      return { eligible: true, reason: null };
+    },
+    // Official D&D 3.5e Contingency (PHB p.213), Psionic Contingency (XPH), and Craft Contingent Spell (CArc p.77)
+    contingencyRules: {
+      maxActiveSpellContingency: 1,
+      psionicsMagicTransparency: true,
+      maxCompanionSpellLevel(cl) {
+        return Math.min(6, Math.floor(Math.max(1, Number(cl) || 1) / 3));
+      },
+      maxCraftedContingentSpells(hd) {
+        return Math.max(0, Math.floor(Number(hd) || 0));
+      }
     },
     calcIterativeBab(bab) {
       const b = Math.max(0, Math.floor(Number(bab) || 0));

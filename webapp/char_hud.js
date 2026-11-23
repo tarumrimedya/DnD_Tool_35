@@ -9998,7 +9998,12 @@ function renderManualStatsPanel() {
           if (currentPeriodicMode === 'damage') {
             character.hp.current = Math.max(-10, (Number(character.hp.current) || 0) - evalRes.total);
           } else {
-            character.hp.current = Math.min(Number(character.hp.max) || 0, (Number(character.hp.current) || 0) + evalRes.total);
+            const maxHp = Number(character.hp.max) || 0;
+            const healCap = (typeof RuleEngine !== 'undefined' && RuleEngine.rulesets?.dnd35?.getEffectiveHealCap)
+              ? RuleEngine.rulesets.dnd35.getEffectiveHealCap(character, maxHp)
+              : maxHp;
+            const prevHp = Number(character.hp.current) || 0;
+            character.hp.current = prevHp < healCap ? Math.min(healCap, prevHp + evalRes.total) : prevHp;
           }
           initialRollDesc = evalRes.isDice ? ` [Roll: ${evalRes.rollDesc}]` : ` (${evalRes.total} HP)`;
         }
@@ -10008,7 +10013,24 @@ function renderManualStatsPanel() {
       }
 
       if (eff.roundsLeft === null || eff.roundsLeft > 0) {
-        character.periodicHpEffects.push(eff);
+        if (typeof CharStore !== 'undefined' && CharStore.dispatch) {
+          CharStore.dispatch({
+            type: 'combat/addTimer',
+            payload: {
+              id: eff.id,
+              name: eff.name,
+              kind: 'periodic',
+              intervalRounds: 1,
+              durationRounds: eff.roundsLeft,
+              hpEffect: eff.type === 'heal' ? 'heal' : 'damage',
+              formula: String(eff.amount || '1'),
+              source: 'Periodic HP'
+            },
+            meta: { label: `Add Periodic HP: ${eff.name}` }
+          });
+        } else {
+          character.periodicHpEffects.push(eff);
+        }
       }
 
       // Close modal immediately so user sees popup close
@@ -10039,17 +10061,47 @@ function renderManualStatsPanel() {
       alert(feedback);
     }
 
+    function getActivePeriodicHpViewList() {
+      const curRound = Number(character?.tactical?.round || character?.encounterRound) || 1;
+      const fromTimers = (Array.isArray(character?.combatTimers) ? character.combatTimers : [])
+        .filter(t => t && t.hpEffect && (t.hpEffect === 'damage' || t.hpEffect === 'heal'))
+        .map(t => ({
+          id: t.id,
+          name: t.name,
+          type: t.hpEffect,
+          amount: t.formula || '1',
+          roundsLeft: (t.endRound !== null && t.endRound !== undefined) ? Math.max(0, Number(t.endRound) - curRound) : null
+        }));
+      const legacy = Array.isArray(character?.periodicHpEffects) ? character.periodicHpEffects : [];
+      const seen = new Set(fromTimers.map(x => x.id));
+      legacy.forEach(e => { if (e && !seen.has(e.id)) fromTimers.push(e); });
+      return fromTimers;
+    }
+
     function removePeriodicHpEffect(effId) {
-      if (!character || !Array.isArray(character.periodicHpEffects)) return;
-      character.periodicHpEffects = character.periodicHpEffects.filter(e => e.id !== effId);
+      if (!character) return;
+      if (typeof CharStore !== 'undefined' && CharStore.dispatch && Array.isArray(character.combatTimers) && character.combatTimers.some(t => t && t.id === effId)) {
+        CharStore.dispatch({ type: 'combat/removeTimer', payload: { id: effId }, meta: { label: 'Remove Periodic HP' } });
+      }
+      if (Array.isArray(character.periodicHpEffects)) {
+        character.periodicHpEffects = character.periodicHpEffects.filter(e => e.id !== effId);
+      }
       saveStateToStorage(true);
       renderAll();
       renderPeriodicModalActiveList();
     }
 
     async function clearAllPeriodicHpEffects() {
-      if (!character || !Array.isArray(character.periodicHpEffects) || character.periodicHpEffects.length === 0) return;
+      const active = getActivePeriodicHpViewList();
+      if (!character || active.length === 0) return;
       if ((await DnDUI.confirm('Are you sure you want to clear all active periodic HP effects (DoT / HoT)?', { tone: 'danger' }))) {
+        if (typeof CharStore !== 'undefined' && CharStore.dispatch) {
+          active.forEach(e => {
+            if (Array.isArray(character.combatTimers) && character.combatTimers.some(t => t && t.id === e.id)) {
+              CharStore.dispatch({ type: 'combat/removeTimer', payload: { id: e.id }, meta: { label: 'Clear Periodic HP' } });
+            }
+          });
+        }
         character.periodicHpEffects = [];
         saveStateToStorage(true);
         renderAll();
@@ -10062,7 +10114,7 @@ function renderManualStatsPanel() {
       const clearBtn = document.getElementById('btn-clear-all-periodic');
       if (!listEl) return;
 
-      const effects = character?.periodicHpEffects || [];
+      const effects = getActivePeriodicHpViewList();
       if (effects.length === 0) {
         listEl.innerHTML = '<div class="text-[10px] text-slate-500 italic p-1.5 text-center">No active periodic HP effects.</div>';
         if (clearBtn) clearBtn.classList.add('hidden');
@@ -10103,7 +10155,7 @@ function renderManualStatsPanel() {
       const badge = document.getElementById('hp-periodic-badge');
       if (!container) return;
 
-      const effects = character?.periodicHpEffects || [];
+      const effects = getActivePeriodicHpViewList();
       if (effects.length === 0) {
         container.classList.add('hidden');
         container.innerHTML = '';

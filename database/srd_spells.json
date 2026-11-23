@@ -62128,5 +62128,230 @@
     },
     "shortDescription": "Subject gains complete immunity to one chosen energy type for 24 hours.",
     "text": "This abjuration grants a creature complete protection against damage from whichever one of five energy types you select: acid, cold, electricity, fire, or sonic."
+  },
+  {
+    "schemaVersion": 3,
+    "id": "spl-lesser-spell-matrix",
+    "blueprint": "spell",
+    "name": "Lesser Spell Matrix",
+    "type": "Spell",
+    "category": "Transmutation",
+    "source": "Spell Compendium p.199",
+    "edition": "3.5",
+    "verification": "cross-checked",
+    "spell": {
+      "system": "spell",
+      "classLevels": [
+        {
+          "class": "Sorcerer",
+          "level": 5
+        },
+        {
+          "class": "Wizard",
+          "level": 5
+        }
+      ],
+      "school": "Transmutation",
+      "descriptors": [],
+      "components": [
+        "V",
+        "S",
+        "F"
+      ]
+    },
+    "delivery": {
+      "action": "Standard",
+      "castingTime": "1 standard action",
+      "range": "Personal",
+      "area": null,
+      "target": "You",
+      "attack": "none",
+      "spellResistance": "No"
+    },
+    "lifecycle": {
+      "usage": {
+        "mode": "spellSlot",
+        "slotLevel": 5
+      },
+      "duration": "text",
+      "durationText": "10 min./level (D)",
+      "dismissible": true
+    },
+    "level": 5,
+    "school": "Transmutation",
+    "learnedAt": {
+      "class": {
+        "Sorcerer": 5,
+        "Wizard": 5
+      }
+    },
+    "castingTime": "1 standard action",
+    "actionType": "other",
+    "components": [
+      "V",
+      "S",
+      "F"
+    ],
+    "range": "Personal",
+    "target": "You",
+    "duration": "10 min./level (D)",
+    "savingThrow": "None",
+    "spellResistance": "No",
+    "shortDescription": "Store one <=3rd-level spell (1d6 unhealable backlash damage while active) and release it as a swift action.",
+    "description": "You prepare a magical matrix that allows you to store one of your spells (3rd level or lower, casting time <= 1 standard action) and use it later as a swift action. In the round after casting this spell, you cast the spell to be stored. You take 1d6 points of damage that cannot be healed while the matrix persists. You can discharge the stored spell as a swift action. Focus: A piece of amber with a minimum value of 500 gp.",
+    "effects": [],
+    "powers": [],
+    "modes": [],
+    "choices": []
+  },
+  {
+    "schemaVersion": 3,
+    "id": "spl-spell-matrix",
+    "blueprint": "spell",
+    "name": "Spell Matrix",
+    "type": "Spell",
+    "category": "Transmutation",
+    "source": "Spell Compendium p.199",
+    "edition": "3.5",
+    "verification": "cross-checked",
+    "spell": {
+      "system": "spell",
+      "classLevels": [
+        {
+          "class": "Sorcerer",
+          "level": 7
+        },
+        {
+          "class": "Wizard",
+          "level": 7
+        }
+      ],
+      "school": "Transmutation",
+      "descriptors": [],
+      "components": [
+        "V",
+        "S",
+        "F"
+      ]
+    },
+    "delivery": {
+      "action": "Standard",
+      "castingTime": "1 standard action",
+      "range": "Personal",
+      "area": null,
+      "target": "You",
+      "attack": "none",
+      "spellResistance": "No"
+    },
+    "lifecycle": {
+      "usage": {
+        "mode": "spellSlot",
+        "slotLevel": 7
+      },
+      "duration": "text",
+      "durationText": "10 min./level (D)",
+      "dismissible": true
+    },
+    "level": 7,
+    "school": "Transmutation",
+    "learnedAt": {
+      "class": {
+        "Sorcerer": 7,
+        "Wizard": 7
+      }
+    },
+    "castingTime": "1 standard action",
+    "actionType": "other",
+    "components": [
+      "V",
+      "S",
+      "F"
+    ],
+    "range": "Personal",
+    "target": "You",
+    "duration": "10 min./level (D)",
+    "savingThrow": "None",
+    "spellResistance": "No",
+    "shortDescription": "Store up to two <=3rd-level spells (2d6 unhealable backlash damage while active); release individually or as a 2-spell swift sequence.",
+    "description": "As lesser spell matrix, except you can store up to two spells of 3rd level or lower (casting time <= 1 standard action) and take 2d6 points of damage that cannot be healed while the matrix persists. You can link the two stored spells into a sequence and discharge either a single spell or the linked sequence as a swift action. Focus: A piece of amber with a minimum value of 1,000 gp.",
+    "effects": [],
+    "powers": [],
+    "modes": [],
+    "choices": []
+  },
+  {
+    "schemaVersion": 3,
+    "id": "spl-greater-spell-matrix",
+    "blueprint": "spell",
+    "name": "Greater Spell Matrix",
+    "type": "Spell",
+    "category": "Transmutation",
+    "source": "Spell Compendium p.200",
+    "edition": "3.5",
+    "verification": "cross-checked",
+    "spell": {
+      "system": "spell",
+      "classLevels": [
+        {
+          "class": "Sorcerer",
+          "level": 9
+        },
+        {
+          "class": "Wizard",
+          "level": 9
+        }
+      ],
+      "school": "Transmutation",
+      "descriptors": [],
+      "components": [
+        "V",
+        "S",
+        "F"
+      ]
+    },
+    "delivery": {
+      "action": "Standard",
+      "castingTime": "1 standard action",
+      "range": "Personal",
+      "area": null,
+      "target": "You",
+      "attack": "none",
+      "spellResistance": "No"
+    },
+    "lifecycle": {
+      "usage": {
+        "mode": "spellSlot",
+        "slotLevel": 9
+      },
+      "duration": "text",
+      "durationText": "10 min./level (D)",
+      "dismissible": true
+    },
+    "level": 9,
+    "school": "Transmutation",
+    "learnedAt": {
+      "class": {
+        "Sorcerer": 9,
+        "Wizard": 9
+      }
+    },
+    "castingTime": "1 standard action",
+    "actionType": "other",
+    "components": [
+      "V",
+      "S",
+      "F"
+    ],
+    "range": "Personal",
+    "target": "You",
+    "duration": "10 min./level (D)",
+    "savingThrow": "None",
+    "spellResistance": "No",
+    "shortDescription": "Store up to three <=3rd-level spells (3d6 unhealable backlash damage while active); supports 2-spell swift sequence and conditional auto-trigger.",
+    "description": "As spell matrix, except you can store up to three spells of 3rd level or lower (casting time <= 1 standard action) over 3 rounds and take 3d6 points of damage that cannot be healed while the matrix persists. You can link two stored spells into a sequence and may also set one stored spell or sequence to discharge automatically under a specified condition (as contingency, affecting only you). Focus: A piece of amber with a minimum value of 1,500 gp.",
+    "effects": [],
+    "powers": [],
+    "modes": [],
+    "choices": []
   }
 ]
