@@ -7,17 +7,17 @@
   <link rel="stylesheet" href="tailwind_compiled.css?v=101216d709">
   <script src="srd_compendium.js?v=c0ec0e59da"></script>
   <script src="rulesets/dnd35.js?v=173aa75af2"></script>
-  <script src="rule_engine.js?v=f3ead3cef1"></script>
-  <script src="ui_components.js?v=3d8b24eb5f"></script>
+  <script src="rule_engine.js?v=015a84313a"></script>
+  <script src="ui_components.js?v=a3b7f8efe2"></script>
   <script src="rule_master.js?v=d8c613a0b2"></script>
   <script src="ui_shared.js?v=d131f19175"></script>
-  <script src="campaign_db.js?v=1e45440d78"></script>
+  <script src="campaign_db.js?v=d1839f3165"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase_auth.js?v=3415d944d3"></script>
   <!-- Prefetch Character Sheet & Domain Modules during Hub Idle Time -->
   <link rel="prefetch" href="index.html">
   <link rel="prefetch" href="char_modals.js?v=184782dff4">
-  <link rel="prefetch" href="char_hud.js?v=4fe27a7c65">
+  <link rel="prefetch" href="char_hud.js?v=378bd155be">
   <link rel="prefetch" href="char_combat.js?v=a1ec04c3f7">
   <link rel="prefetch" href="char_spells.js?v=b9ca7c9388">
   <link rel="prefetch" href="char_progression.js?v=c28079d3ea">
@@ -31,7 +31,7 @@
   <script src="hub_dice.js?v=94e2b0553b"></script>
   <script src="hub_notes.js?v=0ab5c7e3cc"></script>
   <script defer src="app_atlas.js?v=f521d98117"></script>
-  <script defer src="ai_assistant.js?v=bf139b3d62"></script>
+  <script defer src="ai_assistant.js?v=329ca349aa"></script>
   <style>
     body {
       font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -205,6 +205,13 @@
           <input type="text" id="hub-search-input" data-input-action="hub:search-render" placeholder="Search name, race, or class..." class="w-full h-10 bg-slate-900/90 border border-slate-700/80 rounded-xl pl-9 pr-3 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition shadow-inner">
           <span class="absolute left-3 top-2.5 text-slate-500">🔍</span>
         </div>
+
+        <!-- Sprint E2.3: DM Buff & Live Ack Log Quick Button -->
+        <button type="button" id="hub-dm-buff-log-btn" data-action="hub:open-dm-buff-log" class="h-10 px-3 rounded-xl bg-amber-950/60 hover:bg-amber-900/80 text-amber-200 border border-amber-500/40 font-bold text-xs transition flex items-center justify-center gap-1.5 shrink-0 cursor-pointer shadow-sm" title="Open DM Buff / Condition Push &amp; Live Ack Log">
+          <span>📡</span>
+          <span>Buff Log</span>
+          <span id="hub-dm-buff-log-badge" class="hidden px-1.5 py-0.5 rounded-full bg-amber-500 text-slate-950 text-[10px] font-black font-mono">0</span>
+        </button>
 
         <!-- Tür Filtresi -->
         <div class="w-full lg:w-[310px] xl:w-[330px] 2xl:w-[360px] h-10 flex items-center bg-slate-900/90 p-1 rounded-xl border border-slate-700/80 shrink-0 shadow-md">
@@ -1131,6 +1138,124 @@
     </div>
   </div>
 
+  <!-- MODAL: SPRINT E2.3 + E2.4 DM BUFF / CONDITION PUSH & LIVE ACK LOG -->
+  <div id="dm-buff-push-modal" data-action="hub:dm-buff-backdrop-close" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-4" role="dialog" aria-modal="true" aria-label="DM Buff &amp; Effect Push">
+    <div class="bg-[#131d33] border border-amber-500/40 rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl text-slate-100 overflow-hidden">
+      <!-- Header -->
+      <div class="flex items-center justify-between gap-2 px-4 sm:px-5 py-3 border-b border-slate-700/80 bg-slate-900/60 shrink-0">
+        <div class="flex items-center gap-2 min-w-0">
+          <span class="text-xl">👑</span>
+          <div class="min-w-0">
+            <h3 class="text-sm sm:text-base font-bold text-white truncate">DM Buff &amp; Condition Broadcast</h3>
+            <p class="text-[11px] text-slate-400 truncate">Send Conditions, Spells, or Campaign Pack effects with player Accept/Dismiss</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-1.5 shrink-0">
+          <button type="button" id="dm-buff-tab-send" data-action="hub:dm-buff-switch-tab" data-tab="send" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-600 text-white cursor-pointer transition">✨ Send</button>
+          <button type="button" id="dm-buff-tab-log" data-action="hub:dm-buff-switch-tab" data-tab="log" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-800 text-slate-300 hover:text-white cursor-pointer transition">📡 Log <span id="dm-buff-tab-log-count" class="font-mono text-[10px] opacity-80">(0)</span></button>
+          <button type="button" data-action="hub:close-dm-buff-modal" class="ml-1 text-slate-400 hover:text-white text-lg px-1 cursor-pointer" aria-label="Close">✕</button>
+        </div>
+      </div>
+
+      <!-- TAB 1: SEND EFFECT -->
+      <div id="dm-buff-panel-send" class="p-4 sm:p-5 space-y-3 overflow-y-auto custom-scroll flex-1">
+        <!-- Targets -->
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Targets</span>
+            <div class="flex items-center gap-1.5">
+              <button type="button" data-action="hub:dm-buff-select-all" class="px-2 py-0.5 rounded-md bg-indigo-950/80 hover:bg-indigo-900 text-indigo-300 border border-indigo-500/40 text-[10px] font-bold cursor-pointer">All Party (PCs)</button>
+              <button type="button" data-action="hub:dm-buff-clear-targets" class="px-2 py-0.5 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-semibold cursor-pointer">Clear</button>
+            </div>
+          </div>
+          <div id="dm-buff-targets-list" class="flex flex-wrap gap-1.5"></div>
+          <div id="dm-buff-local-notice" class="hidden text-[11px] text-amber-300 bg-amber-950/50 border border-amber-500/30 rounded-lg px-2.5 py-1.5">
+            ⚠️ Local campaign — offers reach sheets open on this device only (BroadcastChannel &amp; local pending queue).
+          </div>
+        </div>
+
+        <!-- Quick Mechanical Conditions -->
+        <div class="space-y-1.5">
+          <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Quick Conditions (3.5e RAW)</div>
+          <div id="dm-buff-quick-conditions" class="flex flex-wrap gap-1.5"></div>
+        </div>
+
+        <!-- Unified Spotlight Search -->
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Search Conditions, Spells &amp; Campaign Packs</span>
+            <span id="dm-buff-source-status" class="text-[10px] text-slate-400 font-mono"></span>
+          </div>
+          <input type="text" id="dm-buff-search-input" data-input-action="hub:dm-buff-search" placeholder="Type e.g. Haste, Bless, Bane, Slow, Shaken, Resist Energy..." class="w-full h-9 bg-slate-950/90 border border-slate-700 rounded-xl px-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 transition">
+          <div id="dm-buff-search-results" class="max-h-40 overflow-y-auto custom-scroll space-y-1 pr-0.5"></div>
+        </div>
+
+        <!-- Selected Effect Config -->
+        <div id="dm-buff-selected-box" class="hidden p-3 rounded-xl bg-slate-950/80 border border-amber-500/40 space-y-2.5">
+          <div class="flex items-center justify-between gap-2">
+            <div class="min-w-0">
+              <div id="dm-buff-selected-name" class="text-sm font-extrabold text-amber-300 truncate"></div>
+              <div id="dm-buff-selected-summary" class="text-[11px] text-slate-300 truncate"></div>
+            </div>
+            <span id="dm-buff-selected-badge" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-800 text-indigo-300 border border-slate-700 shrink-0"></span>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+            <label class="space-y-0.5">
+              <span class="text-[10px] text-slate-400 font-semibold">Caster Level</span>
+              <input type="number" id="dm-buff-cl" min="1" max="40" value="5" class="w-full h-8 bg-slate-900 border border-slate-700 rounded-lg px-2 text-white font-mono text-xs">
+            </label>
+            <label class="space-y-0.5">
+              <span class="text-[10px] text-slate-400 font-semibold">Rounds (opt.)</span>
+              <input type="number" id="dm-buff-rounds" min="0" max="50000" placeholder="Auto" class="w-full h-8 bg-slate-900 border border-slate-700 rounded-lg px-2 text-white font-mono text-xs">
+            </label>
+            <label class="space-y-0.5">
+              <span class="text-[10px] text-slate-400 font-semibold">Temp HP (opt.)</span>
+              <input type="number" id="dm-buff-temphp" min="0" max="200" placeholder="0" class="w-full h-8 bg-slate-900 border border-slate-700 rounded-lg px-2 text-white font-mono text-xs">
+            </label>
+            <label class="space-y-0.5">
+              <span class="text-[10px] text-slate-400 font-semibold">Source Label</span>
+              <input type="text" id="dm-buff-source-label" maxlength="50" value="DM" class="w-full h-8 bg-slate-900 border border-slate-700 rounded-lg px-2 text-white text-xs">
+            </label>
+          </div>
+          <div id="dm-buff-energy-row" class="hidden flex items-center gap-2 text-xs">
+            <span class="text-[10px] text-slate-400 font-semibold shrink-0">Energy Type:</span>
+            <select id="dm-buff-energy" class="h-8 bg-slate-900 border border-slate-700 rounded-lg px-2 text-white text-xs">
+              <option value="Fire">Fire</option>
+              <option value="Cold">Cold</option>
+              <option value="Acid">Acid</option>
+              <option value="Electricity">Electricity</option>
+              <option value="Sonic">Sonic</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: LIVE ACK LOG -->
+      <div id="dm-buff-panel-log" class="hidden p-4 sm:p-5 space-y-2 overflow-y-auto custom-scroll flex-1">
+        <div class="flex items-center justify-between text-[11px] text-slate-400 pb-1 border-b border-slate-800">
+          <span>Session live broadcast log (in-memory, resets on reload)</span>
+          <button type="button" data-action="hub:dm-buff-clear-log" class="text-slate-400 hover:text-rose-300 cursor-pointer">Clear Log</button>
+        </div>
+        <div id="dm-buff-log-list" class="space-y-2"></div>
+      </div>
+
+      <!-- Footer -->
+      <div class="flex items-center justify-between gap-2 px-4 sm:px-5 py-3 border-t border-slate-700/80 bg-slate-900/60 shrink-0">
+        <button type="button" data-action="hub:dm-buff-open-crafter" class="px-3 py-2 rounded-xl bg-indigo-950/80 hover:bg-indigo-900 text-indigo-200 border border-indigo-500/40 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
+          <span>⚒️</span>
+          <span>Craft Custom Effect</span>
+        </button>
+        <div class="flex items-center gap-2">
+          <button type="button" data-action="hub:close-dm-buff-modal" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold cursor-pointer">Close</button>
+          <button type="button" id="dm-buff-send-btn" data-action="hub:dm-buff-send" class="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-xl text-xs transition shadow cursor-pointer flex items-center gap-1.5">
+            <span>📡</span>
+            <span>Send Effect</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 
   <!-- UYGULAMA JAVASCRIPT MOTORU & KALICI VERİ YÖNETİMİ -->
   <script>
@@ -2019,11 +2144,15 @@
             </div>
           </div>
 
-          <!-- KART ALTI EYLEM (SHEET'E YÜKLE VE AÇ) -->
-          <div class="pt-2 border-t border-slate-800/80 shrink-0">
-            <button type="button" data-action="hub:launch-sheet" data-char-id="${escapeHtml(c.id)}" class="w-full h-9 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white font-extrabold rounded-xl text-xs sm:text-sm transition shadow-lg shadow-indigo-950/60 flex items-center justify-center gap-2 cursor-pointer active:scale-95 border border-indigo-400/40">
-              <span class="text-base">⚡</span>
-              <span>Open &amp; Manage Character</span>
+          <!-- KART ALTI EYLEM (SHEET'E YÜKLE VE AÇ + DM BUFF / EFFECT PUSH) -->
+          <div class="pt-2 border-t border-slate-800/80 shrink-0 flex items-center gap-1.5">
+            <button type="button" data-action="hub:launch-sheet" data-char-id="${escapeHtml(c.id)}" class="flex-1 min-w-0 h-9 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white font-extrabold rounded-xl text-xs sm:text-sm transition shadow-lg shadow-indigo-950/60 flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 border border-indigo-400/40 px-2">
+              <span class="text-sm">⚡</span>
+              <span class="truncate">Open Sheet</span>
+            </button>
+            <button type="button" data-action="hub:open-dm-buff-modal" data-char-id="${escapeHtml(c.id)}" class="shrink-0 h-9 px-3 bg-amber-950/80 hover:bg-amber-900 text-amber-200 hover:text-white font-bold rounded-xl text-xs transition shadow-md flex items-center justify-center gap-1 cursor-pointer active:scale-95 border border-amber-500/40" title="Send Buff, Condition, or Custom Effect to this character or party">
+              <span>✨</span>
+              <span>Buff</span>
             </button>
           </div>
         </div>
@@ -5285,6 +5414,7 @@ CRITICAL RULES:
               if (defaultCampMatch) {
                 defaultCampMatch.id = cc.id;
                 defaultCampMatch.cloudCampaignId = cc.id;
+                defaultCampMatch.dm_user_id = cc.dm_user_id || defaultCampMatch.dm_user_id || null;
                 defaultCampMatch.invite_code = cc.invite_code;
                 defaultCampMatch.isDmMode = cc.is_dm_mode !== false;
                 state.characters.forEach(c => {
@@ -5299,6 +5429,7 @@ CRITICAL RULES:
               state.campaigns.push({
                 id: cc.id,
                 cloudCampaignId: cc.id,
+                dm_user_id: cc.dm_user_id || null,
                 invite_code: cc.invite_code,
                 name: cc.name,
                 notes: cc.description || '',
@@ -5307,6 +5438,7 @@ CRITICAL RULES:
               changed = true;
             } else {
               if (!localCamp.cloudCampaignId) { localCamp.cloudCampaignId = cc.id; changed = true; }
+              if (cc.dm_user_id && localCamp.dm_user_id !== cc.dm_user_id) { localCamp.dm_user_id = cc.dm_user_id; changed = true; }
               if (!localCamp.invite_code) { localCamp.invite_code = cc.invite_code; changed = true; }
             }
           });
@@ -5491,6 +5623,9 @@ CRITICAL RULES:
     function resolveRootCloudCampaignId(campId) {
       if (!campId) return null;
       const camps = Array.isArray(state.campaigns) ? state.campaigns : [];
+      if (window.CampaignDb && typeof window.CampaignDb.resolveCampaignScope === 'function') {
+        return window.CampaignDb.resolveCampaignScope(campId, null, camps).effectiveCloudCampaignId;
+      }
       const visited = new Set();
       let cur = camps.find(cp => cp && (cp.id === campId || (cp.cloudCampaignId && cp.cloudCampaignId === campId))) || null;
       let hops = 0;
@@ -5504,15 +5639,24 @@ CRITICAL RULES:
       return null;
     }
 
+    function resolveHubCampaignScope(c) {
+      const camps = Array.isArray(state.campaigns) ? state.campaigns : [];
+      const campId = c ? (c.campaignId || null) : (state.activeCampaignId && state.activeCampaignId !== 'all' ? state.activeCampaignId : null);
+      const fallbackCloud = (c && !c.campaignId && c.fullData && c.fullData.cloudCampaignId) ? c.fullData.cloudCampaignId : null;
+      if (window.CampaignDb && typeof window.CampaignDb.resolveCampaignScope === 'function') {
+        return window.CampaignDb.resolveCampaignScope(campId, fallbackCloud, camps);
+      }
+      const cloudId = resolveRootCloudCampaignId(campId) || fallbackCloud;
+      return { effectiveCloudCampaignId: cloudId, localRootId: campId, subCampaignId: campId, scopeId: cloudId || (campId ? `hub:${campId}` : 'local') };
+    }
+
     function hubHpLiveCampaignIdFor(c) {
       if (!c) return null;
-      const resolved = resolveRootCloudCampaignId(c.campaignId);
-      if (resolved) return resolved;
-      if (c.fullData && c.fullData.cloudCampaignId && !c.campaignId) return c.fullData.cloudCampaignId;
-      return null;
+      return resolveHubCampaignScope(c).effectiveCloudCampaignId;
     }
 
     async function initHubHpLiveSync() {
+      initHubCampaignLiveBc();
       if (!window.SupabaseAuth || window.SupabaseAuth.isLocalMode() || typeof window.SupabaseAuth.joinHpLive !== 'function') return;
       if (!_hubHpLive.userTopic) {
         const topic = await window.SupabaseAuth.getHpLiveUserTopic();
@@ -5524,7 +5668,18 @@ CRITICAL RULES:
       }
       (state.campaigns || []).forEach(cp => {
         if (cp && cp.cloudCampaignId) {
-          window.SupabaseAuth.joinHpLive(window.SupabaseAuth.getHpLiveCampaignTopic(cp.cloudCampaignId), handleHubHpLiveEvent);
+          const topic = window.SupabaseAuth.getHpLiveCampaignTopic(cp.cloudCampaignId);
+          if (typeof window.SupabaseAuth.joinCampaignLive === 'function') {
+            window.SupabaseAuth.joinCampaignLive(topic, {
+              hp: handleHubHpLiveEvent,
+              campaign_buff: handleHubObservedCampaignBuff,
+              campaign_buff_ack: handleHubCampaignBuffAck,
+              campaign_buff_revoke: handleHubObservedCampaignRevoke,
+              roster_here: handleHubRosterHere
+            });
+          } else {
+            window.SupabaseAuth.joinHpLive(topic, handleHubHpLiveEvent);
+          }
         }
       });
     }
@@ -5581,6 +5736,688 @@ CRITICAL RULES:
       saveHubStorage(false);
       refreshHubCharacterView(c);
     }
+
+    // =========================================================================
+    // 👑 SPRINT E2.3 + E2.4: HUB DM BUFF / CONDITION PUSH & LIVE ACK LOG
+    // =========================================================================
+    const _HUB_BC_SENDER = 'hub_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7);
+    const _HUB_PBO_PREFIX = 'dnd35_pbo:';
+    const _DM_QUICK_CONDITIONS = ['Shaken', 'Sickened', 'Fatigued', 'Exhausted', 'Entangled', 'Blinded', 'Stunned', 'Prone'];
+    let _hubCampaignBc = null;
+    const _dmBuffState = {
+      isOpen: false,
+      activeTab: 'send',
+      anchorCharId: null,
+      selectedTargetIds: new Set(),
+      selectedEntry: null,
+      selectedSourceKind: null,
+      lastPushTs: 0,
+      catalogReady: false,
+      outbox: new Map(), // offerId -> { offer, scope, pendingTargets: Set, expiresAt }
+      log: []            // newest-first session entries (max 50)
+    };
+
+    function _getHubDmSenderId() {
+      try {
+        const auth = window.SupabaseAuth;
+        if (auth && typeof auth.isLocalMode === 'function' && !auth.isLocalMode()) {
+          const uid = auth.currentUser && auth.currentUser.id && auth.currentUser.id !== 'local_offline_user'
+            ? String(auth.currentUser.id).trim()
+            : '';
+          if (uid) return `dm:${uid}`;
+        }
+      } catch (_) {}
+      return 'dm:local';
+    }
+
+    function _isMechanicalCondition(entry) {
+      if (!entry || typeof entry !== 'object') return false;
+      const hasEffects = Array.isArray(entry.effects) && entry.effects.length > 0;
+      const hasFlags = entry.ruleFlags && typeof entry.ruleFlags === 'object' && Object.keys(entry.ruleFlags).length > 0;
+      return hasEffects || hasFlags;
+    }
+
+    function initHubCampaignLiveBc() {
+      if (_hubCampaignBc || typeof BroadcastChannel === 'undefined') return;
+      try {
+        _hubCampaignBc = new BroadcastChannel('dnd35_live_sync');
+        _hubCampaignBc.onmessage = (ev) => {
+          const msg = ev && ev.data;
+          if (!msg || typeof msg !== 'object' || msg.type !== 'CAMPAIGN_LIVE_EVENT') return;
+          if (msg.bcSender === _HUB_BC_SENDER) return;
+          if (msg.event === 'campaign_buff') handleHubObservedCampaignBuff(msg.payload);
+          else if (msg.event === 'campaign_buff_ack') handleHubCampaignBuffAck(msg.payload);
+          else if (msg.event === 'campaign_buff_revoke') handleHubObservedCampaignRevoke(msg.payload);
+          else if (msg.event === 'roster_here') handleHubRosterHere(msg.payload);
+        };
+      } catch (_) {}
+    }
+
+    function _postHubCampaignLiveEvent(scope, eventName, payload) {
+      let cloudStatus = 'local';
+      try {
+        if (_hubCampaignBc) {
+          _hubCampaignBc.postMessage({ type: 'CAMPAIGN_LIVE_EVENT', event: eventName, payload, bcSender: _HUB_BC_SENDER });
+        } else if (typeof BroadcastChannel !== 'undefined') {
+          const tmp = new BroadcastChannel('dnd35_live_sync');
+          tmp.postMessage({ type: 'CAMPAIGN_LIVE_EVENT', event: eventName, payload, bcSender: _HUB_BC_SENDER });
+          tmp.close();
+        }
+      } catch (_) {}
+      if (scope && scope.effectiveCloudCampaignId && window.SupabaseAuth && typeof window.SupabaseAuth.sendCampaignEvent === 'function' && !window.SupabaseAuth.isLocalMode()) {
+        const topic = window.SupabaseAuth.getHpLiveCampaignTopic(scope.effectiveCloudCampaignId);
+        if (typeof window.SupabaseAuth.joinCampaignLive === 'function') {
+          window.SupabaseAuth.joinCampaignLive(topic, {
+            hp: handleHubHpLiveEvent,
+            campaign_buff: handleHubObservedCampaignBuff,
+            campaign_buff_ack: handleHubCampaignBuffAck,
+            campaign_buff_revoke: handleHubObservedCampaignRevoke,
+            roster_here: handleHubRosterHere
+          });
+        }
+        cloudStatus = window.SupabaseAuth.sendCampaignEvent(topic, eventName, payload) || 'sent';
+      }
+      return cloudStatus;
+    }
+
+    function _writeHubLocalPendingOffer(offer) {
+      if (!offer || !offer.offerId) return;
+      try {
+        const raw = JSON.stringify(offer);
+        if (raw.length <= 16384) {
+          localStorage.setItem(_HUB_PBO_PREFIX + offer.offerId, raw);
+        }
+      } catch (_) {}
+    }
+
+    function _deleteHubLocalPendingOffer(offerId) {
+      if (!offerId) return;
+      try { localStorage.removeItem(_HUB_PBO_PREFIX + String(offerId)); } catch (_) {}
+    }
+
+    function _updateHubDmLogBadge() {
+      const badge = document.getElementById('hub-dm-buff-log-badge');
+      const tabCount = document.getElementById('dm-buff-tab-log-count');
+      const n = _dmBuffState.log.length;
+      if (badge) {
+        badge.textContent = String(n);
+        badge.classList.toggle('hidden', n === 0);
+      }
+      if (tabCount) tabCount.textContent = `(${n})`;
+    }
+
+    function _upsertHubBuffLogEntry(offer, opts = {}) {
+      if (!offer || !offer.offerId) return;
+      const existing = _dmBuffState.log.find(x => x.offerId === offer.offerId);
+      if (existing) return existing;
+      const targetMap = {};
+      const tIds = Array.isArray(offer.targetCharIds) ? offer.targetCharIds : [];
+      tIds.forEach(tid => {
+        if (tid === 'ALL') {
+          targetMap.ALL = { name: 'All Party', status: 'pending' };
+        } else {
+          const ch = (state.characters || []).find(c => c && String(c.id) === String(tid));
+          targetMap[tid] = { name: ch ? ch.name : tid, status: 'pending' };
+        }
+      });
+      const rec = {
+        offerId: offer.offerId,
+        campaignId: offer.campaignId,
+        fromCharId: offer.fromCharId,
+        fromCharName: offer.fromCharName || 'Ally',
+        buffName: offer.buff?.name || 'Effect',
+        summary: offer.buff?.summary || '',
+        durationText: offer.buff?.durationText || '',
+        cl: offer.buff?.casterLevel || 1,
+        ts: Number(offer.ts) || Date.now(),
+        revoked: false,
+        canRevoke: Boolean(opts.isMine),
+        scope: opts.scope || null,
+        targets: targetMap
+      };
+      _dmBuffState.log.unshift(rec);
+      if (_dmBuffState.log.length > 50) _dmBuffState.log.length = 50;
+      _updateHubDmLogBadge();
+      if (_isDmBuffModalVisible() && _dmBuffState.activeTab === 'log') renderDmBuffLog();
+      return rec;
+    }
+
+    function handleHubObservedCampaignBuff(offer) {
+      if (!offer || !offer.offerId || !offer.buff) return;
+      _upsertHubBuffLogEntry(offer, { isMine: false });
+    }
+
+    function handleHubCampaignBuffAck(evt) {
+      if (!evt || !evt.offerId) return;
+      const oid = String(evt.offerId).trim();
+      const cid = String(evt.charId || '').trim();
+      const status = String(evt.status || 'accepted').trim();
+      const outEntry = _dmBuffState.outbox.get(oid);
+      if (outEntry && cid && (outEntry.pendingTargets.has(cid) || outEntry.pendingTargets.has('ALL'))) {
+        outEntry.pendingTargets.delete(cid);
+        if (outEntry.pendingTargets.size === 0) _dmBuffState.outbox.delete(oid);
+      }
+      const rec = _dmBuffState.log.find(x => x.offerId === oid);
+      if (rec && cid) {
+        const ch = (state.characters || []).find(c => c && String(c.id) === cid);
+        rec.targets[cid] = { name: evt.charName || (ch ? ch.name : cid), status };
+        if (_isDmBuffModalVisible() && _dmBuffState.activeTab === 'log') renderDmBuffLog();
+      }
+    }
+
+    function handleHubObservedCampaignRevoke(evt) {
+      if (!evt || !evt.offerId) return;
+      const rec = _dmBuffState.log.find(x => x.offerId === String(evt.offerId));
+      if (rec && rec.fromCharId === String(evt.fromCharId || '')) {
+        rec.revoked = true;
+        if (_isDmBuffModalVisible() && _dmBuffState.activeTab === 'log') renderDmBuffLog();
+      }
+    }
+
+    function handleHubRosterHere(evt) {
+      if (!evt || !evt.charId) return;
+      const cid = String(evt.charId).trim();
+      const campScope = String(evt.campaignId || '').trim();
+      const now = Date.now();
+      _dmBuffState.outbox.forEach((entry, oid) => {
+        if (!entry || entry.expiresAt < now || (now - (Number(entry.offer.ts) || 0)) > 10 * 60 * 1000) {
+          _dmBuffState.outbox.delete(oid);
+          return;
+        }
+        if (campScope && entry.offer.campaignId !== campScope) return;
+        if (entry.pendingTargets.has(cid) || entry.pendingTargets.has('ALL')) {
+          _postHubCampaignLiveEvent(entry.scope, 'campaign_buff', entry.offer);
+        }
+      });
+    }
+
+    function _getHubDmCampaignPackBuffs(scope) {
+      const out = [];
+      const seen = new Set();
+      const pushEntry = (e, label) => {
+        if (!e || !e.name) return;
+        const hasMech = (Array.isArray(e.effects) && e.effects.length > 0) || (e.ruleFlags && Object.keys(e.ruleFlags).length > 0);
+        if (!hasMech) return;
+        const key = String(e.id || e.name).toLowerCase();
+        if (seen.has(key)) return;
+        seen.add(key);
+        out.push({ entry: e, sourceKind: label });
+      };
+      const rootCamp = (state.campaigns || []).find(cp => cp && (
+        (scope?.localRootId && cp.id === scope.localRootId) ||
+        (scope?.effectiveCloudCampaignId && cp.cloudCampaignId === scope.effectiveCloudCampaignId)
+      )) || (typeof getHubActiveRootCampaign === 'function' ? getHubActiveRootCampaign() : null);
+      if (rootCamp && Array.isArray(rootCamp.packs)) {
+        rootCamp.packs.forEach(p => {
+          (p && Array.isArray(p.entries) ? p.entries : []).forEach(e => {
+            const bp = String(e.blueprint || e.type || '').toLowerCase();
+            if (bp === 'buff' || bp === 'condition' || bp === 'spell' || bp === 'ability') pushEntry(e, 'Campaign Pack');
+          });
+        });
+      }
+      try {
+        const raw = localStorage.getItem('dnd35_custom_db');
+        const list = raw ? JSON.parse(raw) : [];
+        if (Array.isArray(list)) {
+          list.forEach(e => {
+            const bp = String(e.blueprint || e.type || '').toLowerCase();
+            if (bp === 'buff' || bp === 'condition' || bp === 'spell') pushEntry(e, 'Custom Library');
+          });
+        }
+      } catch (_) {}
+      return out;
+    }
+
+    function _isDmBuffModalVisible() {
+      const m = document.getElementById('dm-buff-push-modal');
+      return Boolean(m && !m.classList.contains('hidden'));
+    }
+
+    function _getDmScopeCharacters() {
+      const allChars = (state.characters || []).filter(c => c && c.id);
+      let anchor = _dmBuffState.anchorCharId
+        ? allChars.find(c => String(c.id) === String(_dmBuffState.anchorCharId))
+        : null;
+      if (!anchor && _dmBuffState.selectedTargetIds.size > 0) {
+        const firstSelId = Array.from(_dmBuffState.selectedTargetIds)[0];
+        anchor = allChars.find(c => String(c.id) === String(firstSelId)) || null;
+      }
+      if (!anchor && (!state.activeCampaignId || state.activeCampaignId === 'all')) {
+        // Pick first campaign's characters rather than mixing unrelated campaigns in one broadcast
+        const firstCamp = (state.campaigns || []).find(cp => cp && !cp.parentId) || (state.campaigns || [])[0] || null;
+        if (firstCamp) {
+          const scope = resolveHubCampaignScope({ campaignId: firstCamp.id });
+          const scoped = allChars.filter(c => resolveHubCampaignScope(c).scopeId === scope.scopeId);
+          if (scoped.length > 0) return { scope, chars: scoped };
+        }
+      }
+      const scope = resolveHubCampaignScope(anchor);
+      const scoped = allChars.filter(c => resolveHubCampaignScope(c).scopeId === scope.scopeId);
+      return { scope, chars: scoped };
+    }
+
+    async function _ensureDmBuffCatalogLoaded() {
+      const statusEl = document.getElementById('dm-buff-source-status');
+      if (_dmBuffState.catalogReady) return;
+      if (statusEl) statusEl.textContent = 'Loading SRD...';
+      try {
+        if (window.SrdCompendium) {
+          if (typeof window.SrdCompendium.initIndex === 'function') await window.SrdCompendium.initIndex();
+          if (typeof window.SrdCompendium.ensureTypesLoaded === 'function') {
+            await window.SrdCompendium.ensureTypesLoaded(['Condition', 'Spell']);
+          }
+        }
+        _dmBuffState.catalogReady = true;
+      } catch (err) {
+        console.warn('DM Buff catalog load:', err);
+      }
+      if (statusEl) statusEl.textContent = '31 Conditions • SRD/Splat Spells • Campaign Packs';
+    }
+
+    function _getMechanicalConditionsList() {
+      if (!window.SrdCompendium || typeof window.SrdCompendium.getByType !== 'function') return [];
+      return (window.SrdCompendium.getByType('Condition') || []).filter(_isMechanicalCondition);
+    }
+
+    async function openDmBuffPushModal(opts = {}) {
+      initHubCampaignLiveBc();
+      const modal = document.getElementById('dm-buff-push-modal');
+      if (!modal) return;
+      _dmBuffState.isOpen = true;
+      _dmBuffState.anchorCharId = opts.charId || null;
+      _dmBuffState.selectedTargetIds = new Set();
+      if (opts.charId) _dmBuffState.selectedTargetIds.add(String(opts.charId));
+      modal.classList.remove('hidden');
+      switchDmBuffModalTab(opts.tab || 'send');
+      renderDmBuffTargets();
+      await _ensureDmBuffCatalogLoaded();
+      renderDmBuffQuickConditions();
+      renderDmBuffSearchResults();
+      if (opts.tab !== 'log') {
+        setTimeout(() => document.getElementById('dm-buff-search-input')?.focus(), 40);
+      }
+    }
+
+    function closeDmBuffPushModal() {
+      _dmBuffState.isOpen = false;
+      document.getElementById('dm-buff-push-modal')?.classList.add('hidden');
+    }
+
+    function switchDmBuffModalTab(tab) {
+      _dmBuffState.activeTab = tab === 'log' ? 'log' : 'send';
+      const sendPanel = document.getElementById('dm-buff-panel-send');
+      const logPanel = document.getElementById('dm-buff-panel-log');
+      const sendTab = document.getElementById('dm-buff-tab-send');
+      const logTab = document.getElementById('dm-buff-tab-log');
+      const sendBtn = document.getElementById('dm-buff-send-btn');
+      if (sendPanel) sendPanel.classList.toggle('hidden', _dmBuffState.activeTab !== 'send');
+      if (logPanel) logPanel.classList.toggle('hidden', _dmBuffState.activeTab !== 'log');
+      if (sendBtn) sendBtn.classList.toggle('hidden', _dmBuffState.activeTab !== 'send');
+      if (sendTab) sendTab.className = _dmBuffState.activeTab === 'send'
+        ? 'px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-600 text-white cursor-pointer transition'
+        : 'px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-800 text-slate-300 hover:text-white cursor-pointer transition';
+      if (logTab) logTab.className = _dmBuffState.activeTab === 'log'
+        ? 'px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-600 text-white cursor-pointer transition'
+        : 'px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-800 text-slate-300 hover:text-white cursor-pointer transition';
+      if (_dmBuffState.activeTab === 'log') renderDmBuffLog();
+    }
+
+    function renderDmBuffTargets() {
+      const box = document.getElementById('dm-buff-targets-list');
+      const localNotice = document.getElementById('dm-buff-local-notice');
+      if (!box) return;
+      const { scope, chars } = _getDmScopeCharacters();
+      if (localNotice) localNotice.classList.toggle('hidden', Boolean(scope.effectiveCloudCampaignId));
+      if (chars.length === 0) {
+        box.innerHTML = '<span class="text-xs text-slate-500 italic">No characters in this campaign.</span>';
+        return;
+      }
+      box.innerHTML = chars.map(c => {
+        const cid = String(c.id);
+        const sel = _dmBuffState.selectedTargetIds.has(cid);
+        const isNpc = Boolean(c.isNpc || c.fullData?.isNpc);
+        const cls = sel
+          ? 'px-2.5 py-1 rounded-full text-xs font-bold bg-amber-600 text-white border border-amber-400 cursor-pointer transition'
+          : 'px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-900 text-slate-300 hover:text-white border border-slate-700 cursor-pointer transition';
+        return `<button type="button" data-action="hub:dm-buff-toggle-target" data-char-id="${escapeHtml(cid)}" class="${cls}">${isNpc ? '👹 ' : '🛡️ '}${escapeHtml(c.name || 'Unnamed')}</button>`;
+      }).join('');
+    }
+
+    function toggleDmBuffTarget(charId) {
+      if (!charId) return;
+      const cid = String(charId);
+      if (_dmBuffState.selectedTargetIds.has(cid)) _dmBuffState.selectedTargetIds.delete(cid);
+      else _dmBuffState.selectedTargetIds.add(cid);
+      renderDmBuffTargets();
+    }
+
+    function selectAllDmBuffPartyTargets() {
+      const { chars } = _getDmScopeCharacters();
+      _dmBuffState.selectedTargetIds.clear();
+      chars.forEach(c => {
+        if (!c.isNpc && !c.fullData?.isNpc) _dmBuffState.selectedTargetIds.add(String(c.id));
+      });
+      if (_dmBuffState.selectedTargetIds.size === 0) {
+        chars.forEach(c => _dmBuffState.selectedTargetIds.add(String(c.id)));
+      }
+      renderDmBuffTargets();
+    }
+
+    function clearDmBuffTargets() {
+      _dmBuffState.selectedTargetIds.clear();
+      renderDmBuffTargets();
+    }
+
+    function renderDmBuffQuickConditions() {
+      const box = document.getElementById('dm-buff-quick-conditions');
+      if (!box) return;
+      const conds = _getMechanicalConditionsList();
+      const picks = _DM_QUICK_CONDITIONS
+        .map(nm => conds.find(c => String(c.name || '').toLowerCase() === nm.toLowerCase()))
+        .filter(Boolean);
+      box.innerHTML = picks.map(c => {
+        const active = _dmBuffState.selectedEntry && _dmBuffState.selectedEntry.id === c.id;
+        const cls = active
+          ? 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-rose-600 text-white border border-rose-400 cursor-pointer transition'
+          : 'px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-rose-950/60 hover:bg-rose-900/80 text-rose-200 border border-rose-500/40 cursor-pointer transition';
+        return `<button type="button" data-action="hub:dm-buff-pick-entry" data-entry-id="${escapeHtml(c.id)}" data-source-kind="Condition" class="${cls}">${escapeHtml(c.name)}</button>`;
+      }).join('');
+    }
+
+    function _searchDmEffectCatalog(query) {
+      const q = String(query || '').trim().toLowerCase();
+      const { scope } = _getDmScopeCharacters();
+      const results = [];
+      // 1. Campaign Packs & Custom Library
+      _getHubDmCampaignPackBuffs(scope).forEach(item => {
+        const nm = String(item.entry.name || '').toLowerCase();
+        if (!q || nm.includes(q)) results.push({ entry: item.entry, sourceKind: item.sourceKind, score: nm === q ? 0 : (nm.startsWith(q) ? 1 : 2) });
+      });
+      // 2. Mechanical Conditions (31)
+      _getMechanicalConditionsList().forEach(c => {
+        const nm = String(c.name || '').toLowerCase();
+        if (!q || nm.includes(q)) results.push({ entry: c, sourceKind: 'Condition', score: nm === q ? 0 : (nm.startsWith(q) ? 1 : 3) });
+      });
+      // 3. SRD / Splat Spells with broadcastable mechanical effects (exclude roll-only spells)
+      if (q.length >= 2 && window.SrdCompendium && typeof window.SrdCompendium.getByType === 'function') {
+        const spells = window.SrdCompendium.getByType('Spell') || [];
+        for (const sp of spells) {
+          if (!sp || !sp.name) continue;
+          const nm = String(sp.name).toLowerCase();
+          if (!nm.includes(q)) continue;
+          const effs = Array.isArray(sp.effects) ? sp.effects : [];
+          const hasBroadcastable = effs.some(e => e && e.type !== 'roll' && e.type !== 'carrier' && e.type !== 'resource' && !e.swapScope)
+            || (sp.ruleFlags && Object.keys(sp.ruleFlags).length > 0);
+          if (!hasBroadcastable) continue;
+          results.push({ entry: sp, sourceKind: 'Spell', score: nm === q ? 0 : (nm.startsWith(q) ? 1 : 4) });
+          if (results.length >= 45) break;
+        }
+      }
+      results.sort((a, b) => (a.score - b.score) || String(a.entry.name || '').localeCompare(String(b.entry.name || '')));
+      return results.slice(0, 24);
+    }
+
+    function renderDmBuffSearchResults() {
+      const box = document.getElementById('dm-buff-search-results');
+      const input = document.getElementById('dm-buff-search-input');
+      if (!box) return;
+      const q = input ? input.value : '';
+      const hits = _searchDmEffectCatalog(q);
+      if (hits.length === 0) {
+        box.innerHTML = `<div class="text-xs text-slate-500 italic py-2 px-2">No mechanical effects found for "${escapeHtml(q)}". Try Craft Custom Effect below.</div>`;
+        return;
+      }
+      box.innerHTML = hits.map(h => {
+        const e = h.entry;
+        const eid = e.id || e.name;
+        const active = _dmBuffState.selectedEntry && (_dmBuffState.selectedEntry.id === eid || _dmBuffState.selectedEntry.name === e.name);
+        const badgeCls = h.sourceKind === 'Condition'
+          ? 'bg-rose-950/80 text-rose-300 border-rose-500/40'
+          : (h.sourceKind === 'Spell' ? 'bg-indigo-950/80 text-indigo-300 border-indigo-500/40' : 'bg-emerald-950/80 text-emerald-300 border-emerald-500/40');
+        return `
+          <button type="button" data-action="hub:dm-buff-pick-entry" data-entry-id="${escapeHtml(eid)}" data-source-kind="${escapeHtml(h.sourceKind)}" class="w-full text-left px-2.5 py-1.5 rounded-lg border ${active ? 'bg-amber-950/60 border-amber-500/60' : 'bg-slate-900/80 hover:bg-slate-800 border-slate-800'} flex items-center justify-between gap-2 cursor-pointer transition">
+            <span class="text-xs font-bold text-slate-100 truncate">${escapeHtml(e.name)}</span>
+            <span class="px-1.5 py-0.5 rounded text-[10px] font-bold border shrink-0 ${badgeCls}">${escapeHtml(h.sourceKind)}</span>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function pickDmBuffEntryById(entryId, sourceKind) {
+      if (!entryId) return;
+      let found = null;
+      const { scope } = _getDmScopeCharacters();
+      if (sourceKind === 'Condition') {
+        found = _getMechanicalConditionsList().find(c => c.id === entryId || c.name === entryId);
+      } else if (sourceKind === 'Spell') {
+        found = (window.SrdCompendium?.getByType?.('Spell') || []).find(s => s.id === entryId || s.name === entryId);
+      } else {
+        const packHit = _getHubDmCampaignPackBuffs(scope).find(x => (x.entry.id || x.entry.name) === entryId);
+        if (packHit) found = packHit.entry;
+      }
+      if (!found) {
+        const allHits = _searchDmEffectCatalog(document.getElementById('dm-buff-search-input')?.value || '');
+        const anyHit = allHits.find(h => (h.entry.id || h.entry.name) === entryId);
+        if (anyHit) { found = anyHit.entry; sourceKind = anyHit.sourceKind; }
+      }
+      if (found) selectDmBuffEntry(found, sourceKind || 'DM Effect');
+    }
+
+    function selectDmBuffEntry(entry, sourceKind) {
+      _dmBuffState.selectedEntry = entry;
+      _dmBuffState.selectedSourceKind = sourceKind || 'DM Effect';
+      const box = document.getElementById('dm-buff-selected-box');
+      if (!box) return;
+      box.classList.remove('hidden');
+      const nameEl = document.getElementById('dm-buff-selected-name');
+      const sumEl = document.getElementById('dm-buff-selected-summary');
+      const badgeEl = document.getElementById('dm-buff-selected-badge');
+      const clEl = document.getElementById('dm-buff-cl');
+      const energyRow = document.getElementById('dm-buff-energy-row');
+      if (nameEl) nameEl.textContent = entry.name || 'DM Effect';
+      if (badgeEl) badgeEl.textContent = _dmBuffState.selectedSourceKind;
+      if (clEl) clEl.value = String(sourceKind === 'Condition' ? 1 : (Number(entry.casterLevel) || 5));
+      const rawJson = JSON.stringify(entry.effects || []);
+      const needsEnergy = /@choice/i.test(rawJson) || Boolean(entry.ruleFlags?.energyChoice);
+      if (energyRow) energyRow.classList.toggle('hidden', !needsEnergy);
+      const previewOffer = (typeof RuleEngine !== 'undefined' && RuleEngine.buildDmEffectPayload)
+        ? RuleEngine.buildDmEffectPayload(entry, { cl: Number(clEl?.value) || 1, targetCharIds: ['preview'], chosenEnergy: needsEnergy ? 'Fire' : null })
+        : null;
+      if (sumEl) sumEl.textContent = previewOffer?.buff?.summary || entry.summary || 'Mechanical V3 Effect';
+      renderDmBuffQuickConditions();
+      renderDmBuffSearchResults();
+    }
+
+    function pushDmEffectToTargets(entry, targetIds, opts = {}) {
+      if (!entry || !Array.isArray(targetIds) || targetIds.length === 0) {
+        return { ok: false, error: 'Select an effect and at least one target.' };
+      }
+      const now = Date.now();
+      if (now - _dmBuffState.lastPushTs < 1100) {
+        return { ok: false, error: 'Please wait 1 second between separate effect broadcasts.' };
+      }
+      if (typeof RuleEngine === 'undefined' || typeof RuleEngine.buildDmEffectPayload !== 'function') {
+        return { ok: false, error: 'RuleEngine DM effect builder unavailable.' };
+      }
+      const firstChar = (state.characters || []).find(c => c && String(c.id) === String(targetIds[0])) || null;
+      const scope = resolveHubCampaignScope(firstChar);
+      const sameScopeTargetIds = targetIds.filter(tid => {
+        const ch = (state.characters || []).find(c => c && String(c.id) === String(tid));
+        return !ch || resolveHubCampaignScope(ch).scopeId === scope.scopeId;
+      });
+      if (sameScopeTargetIds.length === 0) {
+        return { ok: false, error: 'Selected targets do not belong to the active campaign scope.' };
+      }
+      const fromCharId = _getHubDmSenderId();
+      const fromCharName = String(opts.sourceLabel || 'DM').trim().slice(0, 50) || 'DM';
+      const offer = RuleEngine.buildDmEffectPayload(entry, {
+        cl: opts.cl,
+        rounds: opts.rounds,
+        chosenEnergy: opts.chosenEnergy || null,
+        grantedTempHp: opts.grantedTempHp || 0,
+        targetCharIds: sameScopeTargetIds,
+        fromCharId,
+        fromCharName,
+        campaignId: scope.scopeId
+      });
+      if (!offer) {
+        return { ok: false, error: `"${entry.name}" has no mechanical V3 effects to send.` };
+      }
+      _dmBuffState.lastPushTs = now;
+      _dmBuffState.outbox.set(offer.offerId, {
+        offer,
+        scope,
+        pendingTargets: new Set(offer.targetCharIds),
+        expiresAt: offer.expiresAt
+      });
+      _writeHubLocalPendingOffer(offer);
+      const delivery = _postHubCampaignLiveEvent(scope, 'campaign_buff', offer);
+      _upsertHubBuffLogEntry(offer, { isMine: true, scope });
+      return { ok: true, offer, delivery, scope };
+    }
+
+    function executeDmBuffPushFromModal() {
+      const entry = _dmBuffState.selectedEntry;
+      const targets = Array.from(_dmBuffState.selectedTargetIds);
+      if (!entry) { notify('Select a Condition, Spell, or Campaign Pack effect first.', 'warning'); return; }
+      if (targets.length === 0) { notify('Select at least one target character.', 'warning'); return; }
+      const cl = Math.max(1, Math.min(40, Number(document.getElementById('dm-buff-cl')?.value) || 1));
+      const roundsRaw = document.getElementById('dm-buff-rounds')?.value;
+      const rounds = (roundsRaw !== undefined && String(roundsRaw).trim() !== '') ? Number(roundsRaw) : null;
+      const grantedTempHp = Number(document.getElementById('dm-buff-temphp')?.value) || 0;
+      const sourceLabel = document.getElementById('dm-buff-source-label')?.value || 'DM';
+      const energyRow = document.getElementById('dm-buff-energy-row');
+      const chosenEnergy = (energyRow && !energyRow.classList.contains('hidden')) ? document.getElementById('dm-buff-energy')?.value : null;
+      const res = pushDmEffectToTargets(entry, targets, { cl, rounds, grantedTempHp, sourceLabel, chosenEnergy });
+      if (!res.ok) { notify(res.error, 'warning'); return; }
+      const targetNames = targets.length > 3 ? `${targets.length} targets` : targets.map(id => (state.characters.find(c => String(c.id) === id)?.name || id)).join(', ');
+      notify(`👑 Sent "${res.offer.buff.name}" to ${targetNames}.`, 'success');
+      switchDmBuffModalTab('log');
+    }
+
+    function revokeDmBuffOffer(offerId) {
+      if (!offerId) return;
+      const oid = String(offerId);
+      const rec = _dmBuffState.log.find(x => x.offerId === oid);
+      if (!rec) return;
+      _dmBuffState.outbox.delete(oid);
+      _deleteHubLocalPendingOffer(oid);
+      rec.revoked = true;
+      _postHubCampaignLiveEvent(rec.scope, 'campaign_buff_revoke', {
+        v: 1,
+        offerId: oid,
+        campaignId: rec.campaignId,
+        fromCharId: rec.fromCharId,
+        fromCharName: rec.fromCharName,
+        buffName: rec.buffName,
+        ts: Date.now()
+      });
+      renderDmBuffLog();
+      notify(`💨 Revoked "${rec.buffName}".`, 'info');
+    }
+
+    function clearDmBuffLog() {
+      _dmBuffState.log = [];
+      _updateHubDmLogBadge();
+      renderDmBuffLog();
+    }
+
+    function renderDmBuffLog() {
+      const box = document.getElementById('dm-buff-log-list');
+      if (!box) return;
+      if (_dmBuffState.log.length === 0) {
+        box.innerHTML = '<div class="text-xs text-slate-500 italic text-center py-6">No live buff broadcasts recorded in this session yet.</div>';
+        return;
+      }
+      box.innerHTML = _dmBuffState.log.map(rec => {
+        const timeStr = new Date(rec.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        const targetChips = Object.values(rec.targets || {}).map(t => {
+          const st = t.status === 'accepted' ? '✅' : (t.status === 'dismissed' || t.status === 'declined_lower_cl' ? '✕' : '⏳');
+          const cls = t.status === 'accepted'
+            ? 'bg-emerald-950/70 text-emerald-300 border-emerald-500/40'
+            : (t.status === 'pending' ? 'bg-slate-800 text-slate-300 border-slate-700' : 'bg-rose-950/70 text-rose-300 border-rose-500/40');
+          return `<span class="px-1.5 py-0.5 rounded text-[10px] font-semibold border ${cls}">${st} ${escapeHtml(t.name)}</span>`;
+        }).join('');
+        return `
+          <div class="p-3 rounded-xl bg-slate-900/90 border ${rec.revoked ? 'border-slate-800 opacity-60' : 'border-slate-700/80'} space-y-1.5">
+            <div class="flex items-center justify-between gap-2">
+              <div class="min-w-0">
+                <span class="text-xs font-extrabold text-amber-300">${escapeHtml(rec.buffName)}</span>
+                <span class="text-[10px] text-slate-400 ml-1.5">from ${escapeHtml(rec.fromCharName)} • CL ${Number(rec.cl) || 1} • ${escapeHtml(timeStr)}</span>
+              </div>
+              ${rec.canRevoke && !rec.revoked
+                ? `<button type="button" data-action="hub:dm-revoke-buff" data-offer-id="${escapeHtml(rec.offerId)}" class="px-2 py-0.5 rounded-lg bg-rose-950/80 hover:bg-rose-900 text-rose-200 border border-rose-500/40 text-[10px] font-bold cursor-pointer shrink-0">💨 Revoke</button>`
+                : (rec.revoked ? '<span class="text-[10px] font-bold text-slate-500 shrink-0">Revoked</span>' : '')}
+            </div>
+            ${rec.summary ? `<div class="text-[11px] text-slate-300">${escapeHtml(rec.summary)}</div>` : ''}
+            <div class="flex flex-wrap gap-1 pt-0.5">${targetChips}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Sprint E2.4: Open Rule Crafter directly from DM Buff Push Modal (One-Shot or Campaign Library)
+    function openDmBuffRuleCrafter() {
+      const openFn = (window.DnDUI && window.DnDUI.openRuleCrafter) || (window.UI && window.UI.openRuleCrafter);
+      if (typeof openFn !== 'function') { notify('Rule Crafter is unavailable.', 'warning'); return; }
+      openFn({
+        blueprint: 'buff',
+        allowCharacterScope: false,
+        context: { allowCharacterScope: false, allowOneShotScope: true, defaultScope: 'oneshot', blueprint: 'buff' },
+        onSave: (msg) => {
+          const v3 = msg && msg.entry;
+          if (!v3 || !v3.name) return;
+          const isOneShot = msg.saveScope === 'oneshot';
+          if (!isOneShot) {
+            try {
+              const raw = localStorage.getItem('dnd35_custom_db');
+              const list = raw ? JSON.parse(raw) : [];
+              const arr = Array.isArray(list) ? list : [];
+              const tid = v3.id || ('crafted_' + Date.now());
+              v3.id = tid;
+              const idx = arr.findIndex(x => x && x.id === tid);
+              if (idx >= 0) arr[idx] = v3; else arr.unshift(v3);
+              localStorage.setItem('dnd35_custom_db', JSON.stringify(arr));
+            } catch (_) {}
+          }
+          selectDmBuffEntry(v3, isOneShot ? 'One-Shot Effect' : 'Custom Library');
+          notify(isOneShot ? `⚒️ "${v3.name}" ready for one-shot broadcast.` : `⚒️ Saved "${v3.name}" & selected for broadcast.`, 'success');
+        }
+      });
+    }
+
+    // Expose clean Hub DM Buffs API on DnDUI for Rule Master (E2.4) & diagnostics
+    if (window.DnDUI) window.DnDUI.HubDmBuffs = {
+      openModal: openDmBuffPushModal,
+      pushEffect: pushDmEffectToTargets,
+      revokeOffer: revokeDmBuffOffer,
+      getLog: () => _dmBuffState.log.slice(),
+      async findEffectByQuery(query) {
+        await _ensureDmBuffCatalogLoaded();
+        const hits = _searchDmEffectCatalog(query);
+        return hits.length > 0 ? hits[0] : null;
+      },
+      findTargetsByQuery(targetQuery) {
+        const q = String(targetQuery || '').trim().toLowerCase();
+        const { chars } = _getDmScopeCharacters();
+        if (!q || q === 'party' || q === 'all' || q === 'everyone' || q === 'allies') {
+          const pcs = chars.filter(c => !c.isNpc && !c.fullData?.isNpc);
+          return (pcs.length > 0 ? pcs : chars).map(c => ({ id: String(c.id), name: c.name || c.id }));
+        }
+        const parts = q.split(/[,&+]|\band\b/i).map(s => s.trim()).filter(Boolean);
+        const matched = [];
+        const seen = new Set();
+        parts.forEach(p => {
+          const exact = chars.find(c => String(c.name || '').toLowerCase() === p);
+          const partial = exact || chars.find(c => String(c.name || '').toLowerCase().includes(p));
+          if (partial && !seen.has(String(partial.id))) {
+            seen.add(String(partial.id));
+            matched.push({ id: String(partial.id), name: partial.name || partial.id });
+          }
+        });
+        return matched;
+      }
+    };
 
     // ⚡ CANLI KART REALTIME SENKRONİZASYONU (PostgreSQL WebSocket)
     function initHubRealtimeSync() {
@@ -7845,6 +8682,20 @@ CRITICAL RULES:
         });
       };
       actionsApi.register('hub:open-rule-crafter', () => openHubRuleCrafter(null));
+      actionsApi.register('hub:open-dm-buff-modal', (el, data) => openDmBuffPushModal({ charId: data?.charId || null, tab: 'send' }));
+      actionsApi.register('hub:open-dm-buff-log', () => openDmBuffPushModal({ charId: null, tab: 'log' }));
+      actionsApi.register('hub:close-dm-buff-modal', () => closeDmBuffPushModal());
+      actionsApi.register('hub:dm-buff-backdrop-close', (el, data, ev) => { if (ev && ev.target === el) closeDmBuffPushModal(); });
+      actionsApi.register('hub:dm-buff-switch-tab', (el, data) => switchDmBuffModalTab(data?.tab || 'send'));
+      actionsApi.register('hub:dm-buff-toggle-target', (el, data) => toggleDmBuffTarget(data?.charId));
+      actionsApi.register('hub:dm-buff-select-all', () => selectAllDmBuffPartyTargets());
+      actionsApi.register('hub:dm-buff-clear-targets', () => clearDmBuffTargets());
+      actionsApi.register('hub:dm-buff-search', () => renderDmBuffSearchResults());
+      actionsApi.register('hub:dm-buff-pick-entry', (el, data) => pickDmBuffEntryById(data?.entryId, data?.sourceKind));
+      actionsApi.register('hub:dm-buff-send', () => executeDmBuffPushFromModal());
+      actionsApi.register('hub:dm-revoke-buff', (el, data) => revokeDmBuffOffer(data?.offerId));
+      actionsApi.register('hub:dm-buff-clear-log', () => clearDmBuffLog());
+      actionsApi.register('hub:dm-buff-open-crafter', () => openDmBuffRuleCrafter());
       actionsApi.register('hub:edit-pack-entry', (el, data) => {
         const targetId = String((data && data.entryId) || '').trim();
         const targetName = String((data && data.entryName) || '').trim().toLowerCase();

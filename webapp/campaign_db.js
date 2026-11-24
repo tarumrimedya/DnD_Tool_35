@@ -509,8 +509,43 @@
     return { campaigns: merged, deleted: deletedList.slice(-500), upload, uploadDeleted: deletedList.slice(-500), localChanged, cloudChanged };
   }
 
+  /**
+   * Shared campaign hierarchy & live scope resolver (Sprint E2.3).
+   * Walks a campaign's `parentId` chain (max 8 hops, cycle-safe) and returns a canonical
+   * `scopeId` identical across both Hub (`hub.html`) and Character Sheet (`char_hud.js`).
+   */
+  function resolveCampaignScope(campId, fallbackCloudId, campaigns) {
+    const camps = Array.isArray(campaigns) ? campaigns : [];
+    let effectiveCloudCampaignId = null;
+    let localRootId = null;
+    const subCampaignId = campId ? String(campId) : null;
+
+    if (campId && camps.length > 0) {
+      const visited = new Set();
+      let cur = camps.find(cp => cp && (cp.id === campId || (cp.cloudCampaignId && cp.cloudCampaignId === campId))) || null;
+      let hops = 0;
+      while (cur && !visited.has(cur.id) && hops < 8) {
+        visited.add(cur.id);
+        if (!effectiveCloudCampaignId && cur.cloudCampaignId) {
+          effectiveCloudCampaignId = String(cur.cloudCampaignId);
+        }
+        localRootId = String(cur.id);
+        if (!cur.parentId) break;
+        cur = camps.find(cp => cp && (cp.id === cur.parentId || (cp.cloudCampaignId && cp.cloudCampaignId === cur.parentId))) || null;
+        hops++;
+      }
+    }
+    if (!effectiveCloudCampaignId && !localRootId && fallbackCloudId) {
+      effectiveCloudCampaignId = String(fallbackCloudId);
+    }
+    const scopeId = effectiveCloudCampaignId
+      ? effectiveCloudCampaignId
+      : (localRootId ? `hub:${localRootId}` : (campId ? `hub:${campId}` : 'local'));
+    return { effectiveCloudCampaignId, localRootId, subCampaignId, scopeId };
+  }
+
   const api = { TAG, readPackFile, attachPack, removePack, mergeCloudPacks, getTag, collectUsedRefs, reconcile, contentHash,
-    BUNDLE_FORMAT, buildCampaignBundle, isCampaignBundle, importCampaignBundle, mergeHubCampaignState };
+    BUNDLE_FORMAT, buildCampaignBundle, isCampaignBundle, importCampaignBundle, mergeHubCampaignState, resolveCampaignScope };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (root) root.CampaignDb = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

@@ -1447,6 +1447,9 @@
      */
     function _resolveCampaignForIds(campId, fallbackCloudId, hubDb) {
       const camps = (hubDb && Array.isArray(hubDb.campaigns)) ? hubDb.campaigns : [];
+      if (window.CampaignDb && typeof window.CampaignDb.resolveCampaignScope === 'function') {
+        return window.CampaignDb.resolveCampaignScope(campId, fallbackCloudId, camps);
+      }
       let effectiveCloudCampaignId = null;
       let localRootId = null;
       const subCampaignId = campId ? String(campId) : null;
@@ -1473,6 +1476,22 @@
         ? effectiveCloudCampaignId
         : (localRootId ? `hub:${localRootId}` : (campId ? `hub:${campId}` : 'local'));
       return { effectiveCloudCampaignId, localRootId, subCampaignId, scopeId };
+    }
+
+    function _isVerifiedDmSender(fromCharId) {
+      const fid = String(fromCharId || '').trim();
+      if (!fid.startsWith('dm:')) return false;
+      const dmToken = fid.slice(3);
+      if (!dmToken) return false;
+      const hier = _resolveCampaignHierarchy();
+      if (!hier.effectiveCloudCampaignId) {
+        return dmToken === 'local';
+      }
+      const hubDb = _readHubDbSafe();
+      const camps = (hubDb && Array.isArray(hubDb.campaigns)) ? hubDb.campaigns : [];
+      const rootCamp = camps.find(cp => cp && (cp.cloudCampaignId === hier.effectiveCloudCampaignId || cp.id === hier.localRootId));
+      const knownDmUid = String(rootCamp?.dm_user_id || rootCamp?.dmUserId || character?._dmUserId || '').trim();
+      return Boolean(knownDmUid && dmToken === knownDmUid);
     }
 
     function _resolveCampaignHierarchy() {
@@ -2009,16 +2028,23 @@
       host.textContent = '';
 
       _campaignTargetState.incomingQueue.forEach(offer => {
+        const isDmOffer = _isVerifiedDmSender(offer.fromCharId);
         const card = document.createElement('div');
-        card.className = 'bg-slate-900/95 border border-indigo-500/70 rounded-2xl p-3 text-white shadow-xl backdrop-blur-md';
+        card.className = isDmOffer
+          ? 'bg-slate-900/95 border border-amber-500/80 rounded-2xl p-3 text-white shadow-xl backdrop-blur-md'
+          : 'bg-slate-900/95 border border-indigo-500/70 rounded-2xl p-3 text-white shadow-xl backdrop-blur-md';
         card.style.cssText = 'pointer-events:auto;box-shadow:0 10px 28px rgba(15,23,42,0.75);';
         card.dataset.offerId = offer.offerId;
 
         const header = document.createElement('div');
         header.className = 'flex items-center justify-between gap-2 mb-1';
         const titleEl = document.createElement('div');
-        titleEl.className = 'text-xs font-bold text-indigo-300 truncate';
-        titleEl.textContent = `✨ ${offer.fromCharName} cast ${offer.buff.name}`;
+        titleEl.className = isDmOffer
+          ? 'text-xs font-bold text-amber-300 truncate'
+          : 'text-xs font-bold text-indigo-300 truncate';
+        titleEl.textContent = isDmOffer
+          ? `👑 ${offer.fromCharName} applied ${offer.buff.name}`
+          : `✨ ${offer.fromCharName} cast ${offer.buff.name}`;
         const ageMins = Math.floor(Math.max(0, Date.now() - (Number(offer.ts) || Date.now())) / 60000);
         const ageSuffix = ageMins >= 1 ? ` • sent ${ageMins}m ago` : '';
         const metaEl = document.createElement('span');

@@ -752,6 +752,7 @@
     const onMessage = (event) => {
       if (!event || !event.data || typeof event.data !== 'object') return;
       if (iframe.contentWindow && event.source !== iframe.contentWindow) return;
+      if (typeof window !== 'undefined' && window.location && window.location.origin && window.location.origin !== 'null' && event.origin && event.origin !== window.location.origin) return;
       const msg = event.data;
       if (msg.type === 'crafter:ready') {
         if (iframe.contentWindow) {

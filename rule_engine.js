@@ -9457,7 +9457,8 @@ const RuleEngine = {
     'immuneFear', 'immuneDeathEffects', 'immuneMindAffecting', 'immuneMagicMissile',
     'wardAlignment', 'sanctuary', 'spellImmunityLevel', 'freedomOfMovement',
     'sr', 'uncannyDodge', 'lowLightVision', 'seeInvisibility', 'trueSeeing', 'darkvision',
-    'flySpeed', 'airWalk', 'waterWalk', 'waterBreathing', 'passiveDefenseLabel', 'tempHp'
+    'flySpeed', 'airWalk', 'waterWalk', 'waterBreathing', 'passiveDefenseLabel', 'tempHp',
+    'loseDexToAC', 'effectiveDexZero', 'halfSpeed', 'actionRestriction'
   ]),
 
   /**
@@ -9714,6 +9715,173 @@ const RuleEngine = {
       ...(spec.targetMode === 'weapon' && spec.sizeModifier?.targetFilter
         ? { weaponFilter: JSON.parse(JSON.stringify(spec.sizeModifier.targetFilter)) }
         : {}),
+      ts: now,
+      expiresAt: now + Math.max(60000, durMs),
+      buff: buffObj
+    };
+  },
+
+  /**
+   * Builds a frozen, versioned cross-character V3 IncomingBuffOffer from a DM Hub source
+   * (Condition from srd_combat_rules.json, Spell from srd_spells*, or Campaign Pack/Custom V3 buff).
+   * Sprint E2.3: supports debuff spells & conditions where `resolveSpellBuffSpec.isBuffSpell` is false.
+   */
+  buildDmEffectPayload(entry, options = {}) {
+    if (!entry || typeof entry !== 'object') return null;
+    const rawType = String(entry.type || entry.blueprint || entry.category || '').toLowerCase().trim();
+    const isCondition = rawType === 'condition' || String(entry.id || '').startsWith('cnd-');
+    const isSpell = rawType === 'spell' || String(entry.id || '').startsWith('spl-');
+    const effCl = Math.max(1, Math.min(40, Math.trunc(Number(options.cl) || (isCondition ? 1 : (Number(entry.casterLevel) || 5)))));
+    const syntheticCaster = {
+      id: String(options.fromCharId || 'dm:local'),
+      name: String(options.fromCharName || 'DM').slice(0, 60),
+      level: effCl,
+      bab: Math.floor(effCl * 0.75),
+      abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 }
+    };
+
+    const rawTargets = Array.isArray(options.targetCharIds)
+      ? options.targetCharIds.map(x => String(x || '').trim()).filter(Boolean)
+      : [];
+    const targetCharIds = rawTargets.length > 12 ? ['ALL'] : rawTargets;
+    if (targetCharIds.length === 0) return null;
+
+    const fromCharId = String(options.fromCharId || 'dm:local').trim().slice(0, 80);
+    const fromCharName = String(options.fromCharName || 'DM').replace(/[\u0000-\u001f\u007f<>]/g, '').trim().slice(0, 60) || 'DM';
+    const campaignId = String(options.campaignId || 'local').trim().slice(0, 80);
+    const chosenEnergy = options.chosenEnergy && this._E2_ALLOWED_ENERGIES.includes(String(options.chosenEnergy).trim())
+      ? String(options.chosenEnergy).trim()
+      : null;
+
+    // 1. If Spell & standard buff spell, delegate to buildOutgoingBuffPayload first
+    if (isSpell) {
+      const spellOffer = this.buildOutgoingBuffPayload(entry, syntheticCaster, {
+        cl: effCl,
+        chosenEnergy,
+        grantedTempHp: options.grantedTempHp,
+        targetCharIds,
+        fromCharId,
+        fromCharName,
+        campaignId,
+        offerId: options.offerId
+      });
+      if (spellOffer && spellOffer.buff) {
+        if (options.rounds !== undefined && options.rounds !== null && String(options.rounds).trim() !== '' && Number.isFinite(Number(options.rounds))) {
+          const r = Math.max(0, Math.min(50000, Math.trunc(Number(options.rounds))));
+          spellOffer.buff.rounds = r;
+          spellOffer.buff.initialRounds = r;
+          spellOffer.buff.duration = r > 0 ? `${r} rounds` : 'Until removed';
+          spellOffer.buff.durationText = spellOffer.buff.duration;
+          spellOffer.buff.initialDuration = spellOffer.buff.duration;
+          const durMsOverride = r > 0 ? Math.min(r * 6000, 10 * 60 * 1000) : 10 * 60 * 1000;
+          spellOffer.expiresAt = (Number(spellOffer.ts) || Date.now()) + Math.max(60000, durMsOverride);
+        }
+        return spellOffer;
+      }
+    }
+
+    // 2. Direct V3 materialization for Conditions, Debuff Spells, and Campaign Pack / Custom Buffs
+    const rawEffects = Array.isArray(entry.effects) ? entry.effects : [];
+    const rawRf = (entry.ruleFlags && typeof entry.ruleFlags === 'object' && !Array.isArray(entry.ruleFlags)) ? entry.ruleFlags : {};
+    const sourceCtx = { cl: effCl, level: effCl, bab: syntheticCaster.bab, chaMod: 0 };
+    const materialized = this.materializeBlocks(rawEffects, sourceCtx, { chosenEnergy });
+
+    const matFlags = {};
+    Object.keys(rawRf).forEach(k => {
+      if (/formula$/i.test(k)) return;
+      if (this._E2_ALLOWED_RULE_FLAGS.includes(k)) {
+        const v = rawRf[k];
+        if (typeof v === 'boolean' || typeof v === 'number' || typeof v === 'string') {
+          matFlags[k] = v;
+        }
+      }
+    });
+    // Also extract allowed rule flags from effect switch blocks if present
+    materialized.forEach(b => {
+      if (b && b.type === 'effect') {
+        const key = b.switchKey || b.flag || b.key;
+        if (key && this._E2_ALLOWED_RULE_FLAGS.includes(key) && matFlags[key] === undefined) {
+          matFlags[key] = b.value !== undefined ? b.value : true;
+        }
+      }
+    });
+
+    const grantedTempHp = Math.max(0, Math.min(200, Math.round(Number(options.grantedTempHp) || 0)));
+    if (grantedTempHp > 0) matFlags.tempHp = grantedTempHp;
+
+    if (materialized.length === 0 && Object.keys(matFlags).length === 0 && grantedTempHp <= 0) {
+      return null;
+    }
+
+    const offerId = options.offerId || ('off_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8));
+    const now = Date.now();
+    const roundsVal = (options.rounds !== undefined && options.rounds !== null && String(options.rounds).trim() !== '' && Number.isFinite(Number(options.rounds)))
+      ? Math.max(0, Math.min(50000, Math.trunc(Number(options.rounds))))
+      : null;
+    const durationText = String(options.durationText || (roundsVal !== null ? (roundsVal > 0 ? `${roundsVal} rounds` : 'Until removed') : (isCondition ? 'Until removed' : `${effCl} min`))).slice(0, 40);
+    const durMs = roundsVal && roundsVal > 0 ? Math.min(roundsVal * 6000, 10 * 60 * 1000) : 10 * 60 * 1000;
+
+    const cleanName = String(entry.name || 'DM Effect').replace(/[\u0000-\u001f\u007f<>@]/g, '').trim().slice(0, 80) || 'DM Effect';
+    const rawId = entry.id ? String(entry.id).trim() : '';
+    const baseSpellId = /^[a-z0-9_-]{1,80}$/i.test(rawId) ? rawId : null;
+    const summaryParts = [];
+    materialized.forEach(b => {
+      if (b.type === 'stat' && Array.isArray(b.targets) && b.value) {
+        const sign = b.value > 0 ? '+' : '';
+        summaryParts.push(`${sign}${b.value} ${b.targets.join('/')}`);
+      }
+    });
+    if (matFlags.loseDexToAC) summaryParts.push('Lose Dex to AC');
+    if (matFlags.effectiveDexZero) summaryParts.push('Dex 0');
+    if (matFlags.halfSpeed) summaryParts.push('Half Speed');
+    if (matFlags.actionRestriction) summaryParts.push(String(matFlags.actionRestriction));
+    if (grantedTempHp > 0) summaryParts.push(`+${grantedTempHp} Temp HP`);
+    const fallbackSummary = String(entry.summary || entry.shortDesc || (isCondition ? 'Condition' : 'DM Effect')).replace(/[\u0000-\u001f\u007f<>@]/g, '').trim().slice(0, 140);
+    const summary = (summaryParts.length > 0 ? summaryParts.join(', ') : fallbackSummary).slice(0, 140) || 'DM Effect';
+
+    const sourceLabel = isCondition ? 'Condition' : (isSpell ? 'Spell' : 'DM Effect');
+    const origin = {
+      external: true,
+      offerId,
+      fromCharId,
+      fromCharName,
+      campaignId,
+      sentAt: now
+    };
+
+    const buffObj = {
+      id: baseSpellId ? (chosenEnergy ? `${baseSpellId}-${chosenEnergy.toLowerCase()}` : baseSpellId) : `ext_${offerId}`,
+      baseSpellId,
+      schemaVersion: 3,
+      name: cleanName,
+      active: true,
+      source: sourceLabel,
+      isCondition,
+      casterLevel: effCl,
+      cl: effCl,
+      chosenEnergy,
+      ...(chosenEnergy ? { choice: chosenEnergy, chosenOption: chosenEnergy } : {}),
+      duration: durationText,
+      durationText,
+      initialDuration: durationText,
+      rounds: roundsVal,
+      initialRounds: roundsVal,
+      effects: materialized,
+      ruleFlags: matFlags,
+      ...(grantedTempHp > 0 ? { grantedTempHp } : {}),
+      summary,
+      description: `${summary} (${durationText})`,
+      origin
+    };
+
+    return {
+      v: 1,
+      offerId,
+      campaignId,
+      fromCharId,
+      fromCharName,
+      targetCharIds,
+      targetMode: targetCharIds.length > 1 || targetCharIds.includes('ALL') ? 'party' : 'single',
       ts: now,
       expiresAt: now + Math.max(60000, durMs),
       buff: buffObj
@@ -9998,7 +10166,7 @@ const RuleEngine = {
           if (v > cap) return fail(`rule_flag_out_of_bounds:${k}`);
           cleanFlags[k] = v;
         } else if (typeof v === 'string') {
-          const sv = cleanStr(v, 60);
+          const sv = cleanStr(v, k === 'actionRestriction' ? 160 : 60);
           if (!/@/.test(sv)) cleanFlags[k] = sv;
         }
       }
@@ -10008,13 +10176,16 @@ const RuleEngine = {
     const summary = cleanStr(rb.summary || 'Active Buff', 140) || 'Active Buff';
     const targetMode = ['single', 'party', 'weapon'].includes(String(raw.targetMode || '')) ? String(raw.targetMode) : 'single';
 
+    const allowedSources = ['Spell', 'Condition', 'DM Effect'];
+    const cleanSource = allowedSources.includes(String(rb.source || '')) ? String(rb.source) : 'Spell';
     const cleanBuff = {
       id: baseSpellId ? (chosenEnergy ? `${baseSpellId}-${chosenEnergy.toLowerCase()}` : baseSpellId) : `ext_${offerId}`,
       baseSpellId,
       schemaVersion: 3,
       name,
       active: true,
-      source: 'Spell',
+      source: cleanSource,
+      ...(cleanSource === 'Condition' || rb.isCondition === true ? { isCondition: true } : {}),
       casterLevel: cl,
       cl,
       chosenEnergy,

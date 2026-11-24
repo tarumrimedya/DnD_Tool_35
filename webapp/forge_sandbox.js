@@ -4759,8 +4759,11 @@
     if (IS_EMBED) {
       const ctx = S.embed && S.embed.context ? S.embed.context : {};
       const allowChar = ctx.allowCharacterScope !== false;
-      const scope = allowChar ? ((S.embed && S.embed.saveScope) || 'character') : 'campaign';
+      const allowOneShot = ctx.allowOneShotScope === true;
+      const rawScope = (S.embed && S.embed.saveScope) || (allowOneShot ? 'oneshot' : (allowChar ? 'character' : 'campaign'));
+      const scope = (rawScope === 'oneshot' && allowOneShot) ? 'oneshot' : (allowChar && rawScope === 'character' ? 'character' : 'campaign');
       const scopeSel = '<select class="fs-sel fs-embed-scope" data-embed-scope="1" title="Save Target">' +
+        (allowOneShot ? '<option value="oneshot"' + (scope === 'oneshot' ? ' selected' : '') + '>One-Shot DM Broadcast</option>' : '') +
         (allowChar ? '<option value="character"' + (scope === 'character' ? ' selected' : '') + '>This Character Only</option>' : '') +
         '<option value="campaign"' + (scope === 'campaign' ? ' selected' : '') + '>Campaign Rule Crafter Library</option></select>';
       $('#fs-topbar').innerHTML = '<div class="fs-topbar-row"><div class="fs-title">⚒️ Rule Crafter</div>' + scopeSel + catSel +
@@ -7102,7 +7105,9 @@
       if (!exported.name || !String(exported.name).trim()) { toast('Please enter a name before saving.', 'warn'); return; }
       const ctx = S.embed && S.embed.context ? S.embed.context : {};
       const allowChar = ctx.allowCharacterScope !== false;
-      const saveScope = allowChar ? ((S.embed && S.embed.saveScope) || 'character') : 'campaign';
+      const allowOneShot = ctx.allowOneShotScope === true;
+      const chosenScope = (S.embed && S.embed.saveScope) || (allowOneShot ? 'oneshot' : (allowChar ? 'character' : 'campaign'));
+      const saveScope = (chosenScope === 'oneshot' && allowOneShot) ? 'oneshot' : (allowChar && chosenScope === 'character' ? 'character' : 'campaign');
       if (typeof window !== 'undefined' && window.parent && window.parent !== window) {
         window.parent.postMessage({
           type: 'crafter:saveEntry',
@@ -7795,7 +7800,9 @@
     });
     if (IS_EMBED && typeof window !== 'undefined') {
       window.addEventListener('message', (ev) => {
-        const msg = ev && ev.data;
+        if (!ev || ev.source !== window.parent) return;
+        if (window.location && window.location.origin && window.location.origin !== 'null' && ev.origin && ev.origin !== window.location.origin) return;
+        const msg = ev.data;
         if (!msg || typeof msg !== 'object') return;
         if (msg.type === 'crafter:loadEntry') {
           const ctx = (msg.context && typeof msg.context === 'object') ? msg.context : {};
@@ -7805,7 +7812,10 @@
             mergeMasterDb(msg.homebrew.map((h) => h.raw || h));
           }
           const allowChar = ctx.allowCharacterScope !== false;
-          S.embed.saveScope = allowChar ? (ctx.defaultScope || 'character') : 'campaign';
+          const allowOneShot = ctx.allowOneShotScope === true;
+          S.embed.saveScope = (allowOneShot && ctx.defaultScope === 'oneshot')
+            ? 'oneshot'
+            : (allowChar ? (ctx.defaultScope || 'character') : 'campaign');
           if (msg.rawEntry && msg.rawEntry.schemaVersion !== 3) {
             const hydrated = hydrate(msg.rawEntry, ctx.kind);
             if (hydrated) {
