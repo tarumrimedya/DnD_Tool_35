@@ -690,7 +690,7 @@
         grants: Array.isArray(entry.grants) ? JSON.parse(JSON.stringify(entry.grants)) : [],
         choices: clonedChoices,
         ...(resolvedChoiceVal ? { choice: resolvedChoiceVal, chosenOption: resolvedChoiceVal } : {}),
-        ruleFlags: entry.ruleFlags ? JSON.parse(JSON.stringify(entry.ruleFlags)) : (clean.includes('agile shield fighter') ? { agileShieldFighter: true } : {}),
+        ruleFlags: entry.ruleFlags ? JSON.parse(JSON.stringify(entry.ruleFlags)) : {},
         tacticalBadges: Array.isArray(entry.tacticalBadges) ? JSON.parse(JSON.stringify(entry.tacticalBadges)) : []
       };
 

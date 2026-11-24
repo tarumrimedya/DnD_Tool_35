@@ -717,6 +717,19 @@ function main() {
     errors++;
   }
 
+  // 7d. V2 Remnant & Hardcoded Shadow-Logic Ratchet Gate (pure V3 DB + runtime allowlist + shadow-logic ceiling)
+  try {
+    const v2GateMod = require('./v2_hardcode_gate.js');
+    const v2Gate = v2GateMod.runV2HardcodeGate();
+    v2Gate.errors.slice(0, 25).forEach((m) => console.error('[FAIL] V2/Hardcode gate: ' + m));
+    if (v2Gate.errors.length > 0) errors++;
+    console.log(v2GateMod.formatSummary(v2Gate));
+    v2Gate.tighten.slice(0, 5).forEach((m) => console.log('📉 V2/Hardcode baseline can be tightened: ' + m));
+  } catch (v2Err) {
+    console.error('[FAIL] V2/Hardcode gate crashed: ' + v2Err.message);
+    errors++;
+  }
+
   const elapsed = Date.now() - startMs;
   if (errors > 0) {
     console.error(`\n❌ VERIFICATION FAILED with ${errors} error(s) (${elapsed}ms).`);

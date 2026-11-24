@@ -1433,6 +1433,82 @@ async function main() {
         await closeSheet(page);
       }
     });
+
+    await check('L6. Sprint E4.4 + E4.5b: Corner Assistant Memory Drawer, /remember, Hub Page Detection, ?embed=1 Skip & 375px Mobile', async () => {
+      const page = await newSheetPage({ viewport: { width: 1440, height: 900 } });
+      try {
+        await page.waitForSelector('#rm-assist-fab', { timeout: 6000 });
+        await page.click('#rm-assist-fab');
+        await page.waitForSelector('#rm-assist-expand', { timeout: 4000 });
+        await page.click('#rm-assist-expand');
+        await page.waitForSelector('#rm-assist-memory', { timeout: 4000 });
+
+        // 1. Save a pinned house_rule via /remember and verify Memory Drawer + Clear isolation
+        await page.fill('#rm-assist-input', '/remember house_rule: Flanking gives +4');
+        await page.click('#rm-assist-send');
+        await page.click('#rm-assist-memory');
+        await page.waitForSelector('#rm-assist-memory-drawer:not(.is-hidden)', { timeout: 4000 });
+        await page.waitForFunction(() => {
+          const t = document.getElementById('rm-assist-memory-drawer')?.textContent || '';
+          return t.includes('Flanking gives +4') && t.includes('pinned');
+        }, { timeout: 4000 });
+
+        // Escape closes memory drawer first without closing the panel
+        await page.keyboard.press('Escape');
+        await page.waitForFunction(() => {
+          return document.getElementById('rm-assist-memory-drawer')?.classList.contains('is-hidden') &&
+            !document.getElementById('rm-assist-panel')?.classList.contains('is-hidden');
+        }, { timeout: 3000 });
+
+        // Clear chat empties chat messages while keeping memory intact
+        await page.click('#rm-assist-clear');
+        await page.waitForFunction(() => {
+          const logText = document.getElementById('rm-assist-log')?.textContent || '';
+          return !logText.includes('Flanking gives +4') && window.AiAssistant.getActivePreferences().length >= 1;
+        }, { timeout: 3000 });
+
+        // 1b. Verify live 0-token Compendium RAG against REAL window.SrdCompendium
+        const ragHits = await page.evaluate(async () => {
+          const ch = window.CharStore?.getDoc?.() || window.character;
+          const prof = window.AiAssistant.getActiveProfile();
+          return await window.AiAssistant.retrieveCompendiumGrounding("maze'den nasıl kurtulurum?", ch, prof);
+        });
+        assert(Array.isArray(ragHits) && ragHits.some(h => h.name === 'Maze' && h.excerpt && /Intelligence check/i.test(h.excerpt)),
+          'Live Chromium Compendium RAG must resolve "maze\'den" -> Maze excerpt: ' + JSON.stringify(ragHits));
+
+        // 2. Verify ?embed=1 skips mounting assistant
+        const embedCtx = await newContext({ viewport: { width: 1280, height: 800 } });
+        try {
+          const embedPage = await openPage(embedCtx, '/forge_sandbox.html?embed=1');
+          await embedPage.waitForTimeout(250);
+          const hasFabInEmbed = await embedPage.evaluate(() => !!document.getElementById('rm-assist-fab'));
+          assert(!hasFabInEmbed, '?embed=1 must not mount #rm-assist-fab');
+        } finally {
+          await embedCtx.close();
+        }
+
+        // 3. Verify Hub page detection
+        const hubCtx = await newContext({ viewport: { width: 1280, height: 800 } });
+        try {
+          const hubPage = await openPage(hubCtx, '/hub.html');
+          await hubPage.waitForSelector('#rm-assist-fab', { timeout: 6000 });
+          const hubType = await hubPage.evaluate(() => window.AiAssistant.getLivePageContext().page);
+          assert(hubType === 'hub', 'Hub page should detect page==="hub", got: ' + hubType);
+        } finally {
+          await hubCtx.close();
+        }
+
+        // 4. Verify 375px mobile has 0px horizontal overflow with assistant open
+        await page.setViewportSize({ width: 375, height: 812 });
+        await page.waitForTimeout(120);
+        const mobOverflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
+        assert(!mobOverflow, '375px mobile with assistant open must have 0px overflow');
+        assertNoErrors(page);
+        return 'Memory drawer + pinned house_rule + Clear isolation + live SRD RAG (Maze) + Esc priority + ?embed=1 skip + Hub detection + 375px 0px overflow OK';
+      } finally {
+        await closeSheet(page);
+      }
+    });
   }
 
   await browser.close();

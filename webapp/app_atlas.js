@@ -346,7 +346,7 @@
       ],
       keywords: ['buff', 'buffs', 'add buff', 'haste', 'mage armor', 'shield of faith', 'resist energy', 'defense', 'dr', 'sr'],
       aliases: ['how to add a buff', 'where are buffs', 'toggle buff'],
-      selectors: ['[data-action="combat:open-add-buff"]', '#buffs-view-grid-btn', '#tab-btn-defense']
+      selectors: ['#buffs-list-container', '[data-action="combat:open-add-buff"]', '#tab-btn-defense']
     },
     {
       key: 'combat.turn_undead',

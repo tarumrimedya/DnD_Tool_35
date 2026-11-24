@@ -1580,10 +1580,7 @@
       if (idClean === 'srcheck' || idClean === 'spell resistance') {
         const currentSpell = typeof getSelectedCombatSpell === 'function' ? getSelectedCombatSpell() : null;
         const cl = typeof getEffectiveSpellCasterLevel === 'function' ? getEffectiveSpellCasterLevel(currentSpell) : (character.casterLevel || 1);
-        const featsList = character?.feats || [];
-        const hasSpellPen = featsList.some(f => (f.name || '').toLowerCase().includes('spell penetration') && !(f.name || '').toLowerCase().includes('greater'));
-        const hasGrtSpellPen = featsList.some(f => (f.name || '').toLowerCase().includes('greater spell penetration'));
-        const srBonusFromFeats = hasGrtSpellPen ? 4 : (hasSpellPen ? 2 : 0);
+        const srBonusFromFeats = getDerivedSpellPenetrationBonus();
         const totalSrBonus = cl + srBonusFromFeats;
         return {
           title: 'Spell Resistance (SR) Check',
@@ -2625,12 +2622,9 @@
       const currentSpell = getSelectedCombatSpell();
       const currentLvl = currentSpell ? (Number(currentSpell.level) || 0) : 0;
 
-      // Calculate SR bonus for SR check card
+      // Calculate SR bonus for SR check card (V3 derived)
       const cl = getEffectiveSpellCasterLevel(currentSpell);
-      const featsList = character?.feats || [];
-      const hasSpellPen = featsList.some(f => (f.name || '').toLowerCase().includes('spell penetration') && !(f.name || '').toLowerCase().includes('greater'));
-      const hasGrtSpellPen = featsList.some(f => (f.name || '').toLowerCase().includes('greater spell penetration'));
-      const srBonusFromFeats = hasGrtSpellPen ? 4 : (hasSpellPen ? 2 : 0);
+      const srBonusFromFeats = getDerivedSpellPenetrationBonus();
       const totalSrBonus = cl + srBonusFromFeats;
 
       // 1. Defensive Casting Checkbox State
@@ -2771,7 +2765,7 @@
       // [Divine] Channeling Feats (Divine Might, Divine Vengeance, Divine Shield)
       if (turnDomainInfo.hasTurnUndead) {
         const chaMod = Math.max(1, Math.floor(((Number(character?.abilities?.cha) || 10) - 10) / 2));
-        const charFeatNames = (featsList || []).map(f => (typeof f === 'string' ? f : f?.name || '').toLowerCase());
+        const charFeatNames = (Array.isArray(character?.feats) ? character.feats : []).map(f => (typeof f === 'string' ? f : f?.name || '').toLowerCase());
         const divineFeatsDef = [
           { match: 'divine might', key: 'divine_might', name: 'Divine Might', icon: '⚡', desc: `+${chaMod} Sacred Dmg` },
           { match: 'divine vengeance', key: 'divine_vengeance', name: 'Divine Vengeance', icon: '☀️', desc: '+2d6 vs. Undead' },
@@ -3678,10 +3672,7 @@
       const hasSr = getSpellHasSpellResistance(spell);
       let d20Sr = 0, totalSrBonus = 0, totalSr = 0;
       if (hasSr) {
-        const featsList = character.feats || [];
-        const hasSpellPen = featsList.some(f => (f.name || '').toLowerCase().includes('spell penetration') && !(f.name || '').toLowerCase().includes('greater'));
-        const hasGrtSpellPen = featsList.some(f => (f.name || '').toLowerCase().includes('greater spell penetration'));
-        const srBonusFromFeats = hasGrtSpellPen ? 4 : (hasSpellPen ? 2 : 0);
+        const srBonusFromFeats = getDerivedSpellPenetrationBonus();
         totalSrBonus = cl + srBonusFromFeats;
         d20Sr = Math.floor(Math.random() * 20) + 1;
         totalSr = d20Sr + totalSrBonus;
@@ -3969,12 +3960,16 @@
       }
     }
 
+    function getDerivedSpellPenetrationBonus() {
+      const derived = (typeof CharStore !== 'undefined' && typeof CharStore.getDerived === 'function')
+        ? CharStore.getDerived()
+        : (typeof RuleEngine !== 'undefined' && typeof RuleEngine.deriveSheet === 'function' ? RuleEngine.deriveSheet(character) : null);
+      return Number(derived?.spellcastingView?.summary?.spellResistancePenetrationBonus) || 0;
+    }
+
     function rollSpellResistanceCheck() {
       const cl = Number(character.casterLevel) || (character.classes ? Object.values(character.classes)[0]?.level : 1) || 1;
-      const featsList = character.feats || [];
-      const hasSpellPen = featsList.some(f => (f.name || '').toLowerCase().includes('spell penetration') && !(f.name || '').toLowerCase().includes('greater'));
-      const hasGrtSpellPen = featsList.some(f => (f.name || '').toLowerCase().includes('greater spell penetration'));
-      const srBonusFromFeats = hasGrtSpellPen ? 4 : (hasSpellPen ? 2 : 0);
+      const srBonusFromFeats = getDerivedSpellPenetrationBonus();
       const totalBonus = cl + srBonusFromFeats;
       const d20 = Math.floor(Math.random() * 20) + 1;
       const totalCheck = d20 + totalBonus;

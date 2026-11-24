@@ -553,24 +553,6 @@
         if (txt) chips.push(txt);
       });
     }
-    if (!chips.length && Array.isArray(entry.modifiers)) {
-      entry.modifiers.forEach((m) => {
-        if (!m || !m.target) return;
-        const fStr = m.formula !== undefined && m.formula !== null ? String(m.formula).trim() : '';
-        const isNumFormula = fStr !== '' && !isNaN(Number(fStr));
-        const numV = Number.isFinite(Number(m.value)) && Number(m.value) !== 0 ? Number(m.value) : (isNumFormula ? Number(fStr) : null);
-        const val = numV !== null ? ((numV >= 0 ? '+' : '') + numV) : (fStr || '0');
-        const tp = m.type && String(m.type).toLowerCase() !== 'untyped' ? ` ${String(m.type).charAt(0).toUpperCase() + String(m.type).slice(1)}` : '';
-        chips.push(`${val}${tp} → ${_humanizeInspectorTarget(m.target)}`);
-      });
-    }
-    if (Array.isArray(entry.damageParts) && entry.damageParts.length) {
-      entry.damageParts.forEach((d) => {
-        if (!d) return;
-        const part = [d.dice || '', d.bonus ? ((d.bonus >= 0 ? '+' : '') + d.bonus) : '', d.type || ''].filter(Boolean).join(' ');
-        if (part) chips.push(part);
-      });
-    }
     if (entry.ruleFlags && typeof entry.ruleFlags === 'object') {
       if (entry.ruleFlags.immuneFear && !chips.some((c) => /fear/i.test(c))) chips.push('Immunity: Fear');
       if (entry.ruleFlags.immuneMindAffecting && !chips.some((c) => /mind-affecting/i.test(c))) chips.push('Immunity: Mind-Affecting');

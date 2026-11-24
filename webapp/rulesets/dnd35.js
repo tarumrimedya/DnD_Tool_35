@@ -1045,6 +1045,259 @@
         byClassId,
         sources
       };
+    },
+
+    bodySlots: ['Head', 'Face', 'Throat', 'Shoulders', 'Body', 'Torso', 'Arms', 'Hands', 'Waist', 'Feet', 'Ring 1', 'Ring 2'],
+
+    assistant: {
+      displayName: 'D&D 3.5e',
+      shortTag: '3.5e',
+      promptVersion: 'e4.4-v1',
+      memoryNamespace: 'dnd35',
+      compendiumScope: { rulesetId: 'dnd35' },
+      bookAbbrevs: ['PHB', 'DMG', 'MM', 'SRD', 'SC', 'MIC', 'PHB II', 'ToB', 'CArc', 'CDiv', 'CAdv', 'CW', 'XPH', 'MoI', 'ToM'],
+      editionGuard: [
+        'Advantage / Disadvantage (5e)',
+        'Bonus Action / 5e Concentration limit (5e)',
+        'Short Rest Hit Dice spending (5e)',
+        'CMB / CMD (PF1e)',
+        '3-Action Economy / Degrees of Success / Proficiency Ranks (PF2e)'
+      ],
+      commandCapabilities: [
+        'next_round', 'long_rest', 'short_rest', 'roll_init', 'toggle_action',
+        'attack', 'full_attack', 'aoo', 'roll_save', 'roll_skill', 'roll_dice',
+        'open_level_up', 'open_guide', 'hp', 'cast_spell', 'toggle_buff',
+        'add_feat', 'add_item', 'use_ability', 'stat_adjust', 'switch_tab',
+        'undo', 'open_crafter', 'add_note', 'remember_pref',
+        'comp_hp', 'comp_attack', 'comp_full_attack', 'comp_save', 'comp_switch', 'comp_open'
+      ],
+      crafterPromptFragment: 'Pure Canonical V3 entry (effects/modes/powers/choices)',
+
+      stackingSummary() {
+        const stacking = (DnD35Ruleset.stackingBonusTypes || []).join(', ');
+        const nonStacking = (DnD35Ruleset.bonusTypes || [])
+          .filter(b => b && !b.stacks && b.id !== 'Penalty')
+          .map(b => b.id)
+          .slice(0, 14)
+          .join(', ');
+        return `Same-type bonuses do NOT stack (highest wins). Stacking types: ${stacking}. Common non-stacking types: ${nonStacking}.`;
+      },
+
+      actionEconomySummary() {
+        return 'Per round: 1 Standard + 1 Move (or 1 Full-Round) + 1 Swift (or 1 Immediate, consuming next Swift) + Free actions.';
+      },
+
+      buildTacticalSnapshot(derived, char) {
+        if (!derived || !char) return null;
+        const stackingSet = new Set((DnD35Ruleset.stackingBonusTypes || []).map(s => String(s).toLowerCase()));
+        const entries = Array.isArray(derived.lego?.entries) ? derived.lego.entries : [];
+
+        const SAVE_BONUS_POOL = ['Resistance', 'Morale', 'Luck', 'Insight', 'Sacred', 'Profane', 'Competence', 'Alchemical', 'Circumstance'];
+        const AC_BONUS_POOL = ['Armor', 'Shield', 'Natural Armor', 'Deflection', 'Dodge', 'Insight', 'Luck', 'Sacred', 'Profane', 'Morale', 'Circumstance'];
+
+        function collectOccupied(targetPredicate, pool) {
+          const occupied = {};
+          for (const ent of entries) {
+            const mods = Array.isArray(ent?.modifiers) ? ent.modifiers : [];
+            for (const m of mods) {
+              if (!m || !targetPredicate(String(m.target || '').toLowerCase())) continue;
+              const val = Number(m.value);
+              if (!Number.isFinite(val) || val === 0) continue;
+              const rawType = String(m.type || 'Untyped').trim() || 'Untyped';
+              const src = String(m.source || ent.name || 'Active Effect').trim();
+              if (!occupied[rawType] || Math.abs(val) > Math.abs(occupied[rawType].v)) {
+                occupied[rawType] = { v: val, src };
+              }
+            }
+          }
+          const openTypes = pool.filter(t => {
+            const lc = t.toLowerCase();
+            if (stackingSet.has(lc)) return true;
+            return !Object.keys(occupied).some(k => k.toLowerCase() === lc);
+          });
+          return { occupied, openTypes };
+        }
+
+        const saves = {};
+        const saveDetail = derived.saves?.detail || {};
+        for (const key of ['fort', 'ref', 'will']) {
+          const det = saveDetail[key] || {};
+          const { occupied, openTypes } = collectOccupied(
+            t => t === 'save.all' || t === 'saves.all' || t === `save.${key}` || t === `saves.${key}`,
+            SAVE_BONUS_POOL
+          );
+          saves[key] = {
+            total: Number(derived.saves?.[key] ?? det.total ?? 0),
+            base: Number(det.base ?? 0),
+            ability: Number(det.ability ?? 0),
+            occupied,
+            openTypes
+          };
+        }
+
+        const acScan = collectOccupied(
+          t => t === 'ac' || t === 'ac.total' || t.startsWith('ac.'),
+          AC_BONUS_POOL
+        );
+        if (derived.ac) {
+          const acMap = [
+            ['Armor', derived.ac.armor],
+            ['Shield', derived.ac.shield],
+            ['Natural Armor', derived.ac.natural],
+            ['Deflection', derived.ac.deflection],
+            ['Dodge', derived.ac.dodge]
+          ];
+          for (const [label, val] of acMap) {
+            if (Number(val) > 0 && !acScan.occupied[label]) {
+              const srcList = derived.ac.sources?.[label.toLowerCase().split(' ')[0]];
+              const src = Array.isArray(srcList) && srcList.length
+                ? String(srcList[0].source || srcList[0].name || label)
+                : label;
+              acScan.occupied[label] = { v: Number(val), src };
+            }
+          }
+          acScan.openTypes = AC_BONUS_POOL.filter(t => {
+            const lc = t.toLowerCase();
+            if (stackingSet.has(lc)) return true;
+            return !Object.keys(acScan.occupied).some(k => k.toLowerCase() === lc);
+          });
+        }
+
+        const SLOT_ALIAS_MAP = {
+          head: 'Head', headband: 'Head', helm: 'Head',
+          face: 'Face', eyes: 'Face', goggles: 'Face', mask: 'Face',
+          throat: 'Throat', neck: 'Throat', amulet: 'Throat', periapt: 'Throat',
+          shoulders: 'Shoulders', cloak: 'Shoulders', mantle: 'Shoulders', cape: 'Shoulders',
+          body: 'Body', armor: 'Body', robe: 'Body',
+          torso: 'Torso', vest: 'Torso', shirt: 'Torso', tunic: 'Torso',
+          arms: 'Arms', wrists: 'Arms', bracers: 'Arms',
+          hands: 'Hands', gloves: 'Hands', gauntlets: 'Hands',
+          waist: 'Waist', belt: 'Waist',
+          feet: 'Feet', boots: 'Feet', shoes: 'Feet',
+          ring1: 'Ring 1', 'ring 1': 'Ring 1', ring_1: 'Ring 1',
+          ring2: 'Ring 2', 'ring 2': 'Ring 2', ring_2: 'Ring 2'
+        };
+        const usedSlots = new Set();
+        let ringsUsed = 0;
+        const markSlot = (rawSlot) => {
+          const lc = String(rawSlot || '').trim().toLowerCase();
+          if (!lc) return;
+          if (SLOT_ALIAS_MAP[lc]) {
+            usedSlots.add(SLOT_ALIAS_MAP[lc]);
+          } else if (/^ring/.test(lc)) {
+            ringsUsed += 1;
+            usedSlots.add(ringsUsed === 1 ? 'Ring 1' : 'Ring 2');
+          } else {
+            const match = (DnD35Ruleset.bodySlots || []).find(s => s.toLowerCase() === lc);
+            if (match) usedSlots.add(match);
+          }
+        };
+
+        // 1. Canonical sheet bodySlots object ({ head: { name, active }, shoulders: ..., ring1: ... })
+        if (char.bodySlots && typeof char.bodySlots === 'object') {
+          for (const [slotKey, slotVal] of Object.entries(char.bodySlots)) {
+            if (!slotVal || typeof slotVal !== 'object') continue;
+            const nm = String(slotVal.name || '').trim();
+            if (!nm || nm.toLowerCase() === 'none' || slotVal.active === false) continue;
+            markSlot(slotVal.bodySlot || slotVal.slot || slotKey);
+          }
+        }
+        // 2. Fallback for legacy/external inventory[] shape
+        const inv = Array.isArray(char.inventory) ? char.inventory : [];
+        for (const it of inv) {
+          if (!it || !it.equipped) continue;
+          markSlot(it.bodySlot || it.slot || '');
+        }
+        const openBodySlots = (DnD35Ruleset.bodySlots || []).filter(s => !usedSlots.has(s));
+
+        const abilities = {};
+        if (derived.abilities && typeof derived.abilities === 'object') {
+          const mods = derived.abilities.mods || {};
+          for (const ab of ['str', 'dex', 'con', 'int', 'wis', 'cha']) {
+            const rawVal = derived.abilities[ab];
+            if (typeof rawVal === 'number' && Number.isFinite(rawVal)) {
+              const mod = Number.isFinite(Number(mods[ab])) ? Number(mods[ab]) : DnD35Ruleset.calcAbilityMod(rawVal);
+              abilities[ab] = { score: rawVal, mod };
+            } else if (rawVal && typeof rawVal === 'object') {
+              const sc = Number(rawVal.total ?? rawVal.score ?? 10);
+              abilities[ab] = { score: sc, mod: Number(rawVal.mod ?? DnD35Ruleset.calcAbilityMod(sc)) };
+            }
+          }
+        }
+
+        const preparedSpells = [];
+        const prepRaw = [
+          ...(Array.isArray(char.spellcasting?.preparedSpells) ? char.spellcasting.preparedSpells : []),
+          ...(Array.isArray(char.spellcasting?.divineSpells) ? char.spellcasting.divineSpells : []),
+          ...(Array.isArray(char.preparedSpells) ? char.preparedSpells : [])
+        ];
+        for (const sp of prepRaw) {
+          if (!sp || !sp.name) continue;
+          const totalCount = Number(sp.preparedCount ?? sp.count ?? 1);
+          const usedCount = Number(sp.usedCount ?? sp.castCount ?? 0);
+          if (sp.cast === true || sp.used === true || (totalCount > 0 && usedCount >= totalCount)) continue;
+          if (!preparedSpells.includes(sp.name)) preparedSpells.push(sp.name);
+          if (preparedSpells.length >= 24) break;
+        }
+
+        const knownSpells = [];
+        const knownRaw = [
+          ...(Array.isArray(char.spellcasting?.knownSpells) ? char.spellcasting.knownSpells : []),
+          ...(Array.isArray(char.knownSpells) ? char.knownSpells : [])
+        ];
+        for (const sp of knownRaw) {
+          const nm = typeof sp === 'string' ? sp : sp?.name;
+          if (nm && !knownSpells.includes(nm)) knownSpells.push(nm);
+          if (knownSpells.length >= 24) break;
+        }
+
+        const consumables = [];
+        const addConsumable = (it) => {
+          if (!it || !it.name || consumables.length >= 16) return;
+          const qty = Number(it.charges ?? it.qty ?? it.quantity ?? 1);
+          if (qty <= 0) return;
+          const label = qty > 1 ? `${it.name} (${qty})` : it.name;
+          if (!consumables.includes(label)) consumables.push(label);
+        };
+        if (Array.isArray(char.consumables)) {
+          char.consumables.forEach(addConsumable);
+        }
+        for (const it of [...(Array.isArray(char.gearPool) ? char.gearPool : []), ...inv]) {
+          if (!it || !it.name || consumables.length >= 16) continue;
+          const cat = String(it.category || it.type || it.item?.subtype || '').toLowerCase();
+          const isCons = it.consumable || it.item?.consumable || /potion|oil|scroll|wand|staff|elixir|consumable/.test(cat) || (Number(it.charges) > 0);
+          if (isCons) addConsumable(it);
+        }
+        const activeBuffs = (Array.isArray(char.buffs) ? char.buffs : [])
+          .filter(b => b && b.active !== false && b.name)
+          .slice(0, 16)
+          .map(b => b.roundsLeft != null ? `${b.name} (${b.roundsLeft}r)` : b.name);
+        const feats = (Array.isArray(char.feats) ? char.feats : [])
+          .map(f => typeof f === 'string' ? f : f?.name)
+          .filter(Boolean)
+          .slice(0, 24);
+
+        return {
+          ruleset: 'dnd35',
+          abilities,
+          saves,
+          ac: {
+            total: Number(derived.ac?.total ?? 10),
+            touch: Number(derived.ac?.touch ?? 10),
+            flatFooted: Number(derived.ac?.flatFooted ?? derived.ac?.flat ?? 10),
+            occupied: acScan.occupied,
+            openTypes: acScan.openTypes
+          },
+          openBodySlots,
+          activeBuffs,
+          candidates: {
+            preparedSpells,
+            knownSpells,
+            consumables,
+            feats
+          }
+        };
+      }
     }
   };
 

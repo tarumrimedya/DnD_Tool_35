@@ -783,6 +783,73 @@ ${this._lastSyncErrorHtml()}
     return true;
   },
 
+  _isAssistantStateMissingError(error) {
+    const code = String(error?.code || '');
+    const msg = String(error?.message || '');
+    return code === 'PGRST205' || code === '42P01' || code === '42703' ||
+      (/user_assistant_state/i.test(msg) && /(does not exist|schema cache|not found)/i.test(msg));
+  },
+
+  /**
+   * Reads the signed-in user's private assistant state (prefs + scoped histories).
+   * Returns null gracefully when signed out, offline, or before user_assistant_state.sql is run.
+   */
+  async fetchAssistantState() {
+    if (this.isLocalMode()) return null;
+    const client = this.getClient();
+    const user = await this.getUser();
+    if (!client || !user || user.id === 'local_offline_user') return null;
+    try {
+      const { data, error } = await client
+        .from('user_assistant_state')
+        .select('state, updated_at')
+        .eq('owner_user_id', user.id)
+        .maybeSingle();
+      if (error) {
+        if (this._isAssistantStateMissingError(error)) return null;
+        console.warn('fetchAssistantState warning:', error);
+        return null;
+      }
+      if (!data || !data.state || typeof data.state !== 'object') return null;
+      return {
+        state: data.state,
+        updatedAt: data.updated_at || null
+      };
+    } catch (e) {
+      console.warn('fetchAssistantState error:', e);
+      return null;
+    }
+  },
+
+  /**
+   * Writes the signed-in user's private assistant state (owner-only RLS).
+   * Fails silently to localStorage fallback if user_assistant_state.sql has not been run yet.
+   */
+  async upsertAssistantState(stateObj) {
+    if (this.isLocalMode()) return false;
+    const client = this.getClient();
+    const user = await this.getUser();
+    if (!client || !user || user.id === 'local_offline_user') return false;
+    if (!stateObj || typeof stateObj !== 'object' || Array.isArray(stateObj)) return false;
+    try {
+      const { error } = await client
+        .from('user_assistant_state')
+        .upsert({
+          owner_user_id: user.id,
+          state: stateObj
+        }, { onConflict: 'owner_user_id' });
+      if (error) {
+        if (this._isAssistantStateMissingError(error)) return false;
+        console.warn('upsertAssistantState warning:', error);
+        return false;
+      }
+      return true;
+    } catch (e) {
+      console.warn('upsertAssistantState error:', e);
+      return false;
+    }
+  },
+
   /** Packs of a cloud campaign: [{ packId, name, version, entries, updatedAt }]. Throws on a read error. */
   async fetchCampaignPacks(campaignId) {
     const client = this.getClient();

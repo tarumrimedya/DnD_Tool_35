@@ -620,24 +620,35 @@
         }
       });
 
-      // 3. Feats contributing to saves
-      const progFeats = Array.isArray(character.levelProgression)
-        ? character.levelProgression.filter(r => r && r.active !== false).flatMap(r => [...(r.feats || []), ...(r.specialAbilities || [])])
-        : [];
-      const charFeats = [...(character.feats || []), ...(character.specialAbilities || []), ...progFeats]
-        .map(f => (typeof f === 'string' ? f : f?.name || '').toLowerCase());
-      if (charFeats.some(f => f.includes('great fortitude'))) {
-        bonusNotes.push(`<div class="py-0.5 text-slate-300">✨ Great Fortitude: +2 feat bonus on Fortitude saving throws.</div>`);
-      }
-      if (charFeats.some(f => f.includes('lightning reflexes'))) {
-        bonusNotes.push(`<div class="py-0.5 text-slate-300">✨ Lightning Reflexes: +2 feat bonus on Reflex saving throws.</div>`);
-      }
-      if (charFeats.some(f => f.includes('iron will'))) {
-        bonusNotes.push(`<div class="py-0.5 text-slate-300">✨ Iron Will: +2 feat bonus on Will saving throws.</div>`);
-      }
-      if (charFeats.some(f => f.includes('save magic') || f.includes('draconic save'))) {
-        bonusNotes.push(`<div class="py-0.5 text-slate-300">✨ Draconic Aura: +1 bonus on saving throws against spells.</div>`);
-      }
+      // 3. Feats & Special Abilities contributing to saves (V3 derived)
+      const saveTargetLabels = {
+        'save.fort': 'Fortitude saving throws',
+        'save.ref': 'Reflex saving throws',
+        'save.will': 'Will saving throws',
+        'save.all': 'all saving throws',
+      };
+      const legoEntries = Array.isArray(sheet?.lego?.entries) ? sheet.lego.entries : [];
+      const seenSaveFeatNotes = new Set();
+      legoEntries.forEach((ent) => {
+        if (!ent || !ent.name) return;
+        const srcType = String(ent.sourceType || ent.type || '').toLowerCase();
+        if (srcType.includes('buff') || srcType.includes('spell') || srcType.includes('item') || srcType.includes('equip')) return;
+        const saveMods = (Array.isArray(ent.modifiers) ? ent.modifiers : []).filter((m) => {
+          const t = String(m?.target || '').toLowerCase();
+          return Object.prototype.hasOwnProperty.call(saveTargetLabels, t) && Number(m?.value);
+        });
+        if (!saveMods.length) return;
+        const key = String(ent.name).toLowerCase().trim();
+        if (seenSaveFeatNotes.has(key)) return;
+        seenSaveFeatNotes.add(key);
+        const descParts = saveMods.map((m) => {
+          const v = Number(m.value);
+          const sign = v >= 0 ? '+' : '';
+          const bType = m.type && String(m.type).toLowerCase() !== 'untyped' ? ` ${String(m.type).toLowerCase()}` : '';
+          return `${sign}${v}${bType} bonus on ${saveTargetLabels[String(m.target).toLowerCase()]}`;
+        });
+        bonusNotes.push(`<div class="py-0.5 text-slate-300">✨ ${UI.escapeHtml(ent.name)}: ${UI.escapeHtml(descParts.join(', '))}.</div>`);
+      });
       if (useConForWill) {
         bonusNotes.push(`<div class="py-0.5 text-slate-300">✨ Steadfast Determination: Uses CON modifier instead of WIS on Will saves; Natural 1 on Fortitude saves is not an automatic failure.</div>`);
       }

@@ -7077,7 +7077,7 @@ const RuleEngine = {
   isTowerShield(item) {
     if (!item) return false;
     const name = (typeof item === 'string' ? item : (item.name || '')).toLowerCase().trim();
-    return name.includes('tower shield') || name.includes('kule kalkan');
+    return name.includes('tower shield');
   },
 
   // Aggregate all character weapon, armor, and shield proficiencies from multiclasses and feats
