@@ -1482,6 +1482,7 @@
             "atwill",
             "perDay",
             "perEncounter",
+            "perHour",
             "charges",
             "spellSlot",
             "resourcePool",

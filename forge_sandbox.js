@@ -2119,6 +2119,7 @@
       case 'atwill': return 'At-Will';
       case 'perDay': return num(u.n) + '/day';
       case 'perEncounter': return num(u.n) + '/encounter';
+      case 'perHour': return num(u.n) + '/hour';
       case 'charges': return num(u.n) + ' charges';
       case 'spellSlot': return 'Expend Spell Slot (Level ' + num(u.slotLevel) + ')';
       case 'resourcePool': return 'Expend ' + num(u.poolCost, 1) + ' ' + (u.pool || 'Resource') + ' use' + (num(u.poolCost, 1) > 1 ? 's' : '');
@@ -2348,7 +2349,7 @@
   // --------------------------------------------------------------------------
   function exportUse(u) {
     const o = { mode: u.mode };
-    if (['perDay', 'perEncounter', 'charges'].indexOf(u.mode) >= 0) o.uses = num(u.n);
+    if (['perDay', 'perEncounter', 'perHour', 'charges'].indexOf(u.mode) >= 0) o.uses = num(u.n);
     if (u.mode === 'spellSlot') o.slotLevel = num(u.slotLevel);
     if (u.mode === 'resourcePool') { o.pool = u.pool; o.cost = num(u.poolCost, 1); }
     if (u.mode === 'cooldown') o.recharge = u.cooldown;
@@ -5103,12 +5104,12 @@
   const delBtn = (action, data) => '<button type="button" class="lego-del" data-action="' + action + '"' + Object.keys(data).map((k) => ' data-' + k + '="' + esc(data[k]) + '"').join('') + ' title="Remove">✕</button>';
   function cBlock(color, head, inner) { return '<div class="lego-c ' + color + '"><div class="c-top">' + head + '</div><div class="c-mouth"><div class="c-spine"></div><div class="c-inner">' + inner + '</div></div><div class="c-bot lego-tab"></div></div>'; }
 
-  const USE_MODES = [['passive', 'Passive (Always On)'], ['atwill', '♾️ At-Will'], ['perDay', '🔄 X / Day (Resets Daily)'], ['perEncounter', '⚡ X / Encounter'], ['charges', '🧪 X Charges / Uses (Depletes)'], ['spellSlot', '🔮 Expend Spell Slot'], ['resourcePool', '🔥 Expend Resource Pool'], ['cooldown', '⏳ Cooldown Rounds (e.g. 1d4)']];
+  const USE_MODES = [['passive', 'Passive (Always On)'], ['atwill', '♾️ At-Will'], ['perDay', '🔄 X / Day (Resets Daily)'], ['perEncounter', '⚡ X / Encounter'], ['perHour', '🕐 X / Hour'], ['charges', '🧪 X Charges / Uses (Depletes)'], ['spellSlot', '🔮 Expend Spell Slot'], ['resourcePool', '🔥 Expend Resource Pool'], ['cooldown', '⏳ Cooldown Rounds (e.g. 1d4)']];
   function usageFields(p, u, cols) {
     const modeSel = sel(p + '.mode', u.mode, USE_MODES, { narrow: true });
     const wideSpan = cols === 4 ? 'lego-span-3' : cols === 3 ? 'lego-span-2' : '';
-    if (['perDay', 'perEncounter', 'charges'].indexOf(u.mode) >= 0) {
-      const lbl = u.mode === 'charges' ? 'Charges / Uses' : u.mode === 'perEncounter' ? 'Uses / Encounter' : 'Uses / Day';
+    if (['perDay', 'perEncounter', 'perHour', 'charges'].indexOf(u.mode) >= 0) {
+      const lbl = u.mode === 'charges' ? 'Charges / Uses' : u.mode === 'perEncounter' ? 'Uses / Encounter' : u.mode === 'perHour' ? 'Uses / Hour' : 'Uses / Day';
       return F('Usage Mode', modeSel, wideSpan) + F(lbl, inp(p + '.n', u.n, { num: true, min: 1, max: 50 }));
     }
     if (u.mode === 'spellSlot') {

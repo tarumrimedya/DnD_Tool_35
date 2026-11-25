@@ -1351,6 +1351,19 @@
           }
         };
       }
+    },
+
+    // Canonical usage reset cadences (Single Source of Truth for RuleEngine, CharStore, and Rest flows)
+    usageResetCadence: Object.freeze({
+      perEncounter: Object.freeze(['encounterEnd', 'longRest']),
+      perHour: Object.freeze(['hourPass', 'longRest']),
+      perDay: Object.freeze(['longRest'])
+    }),
+
+    getUsageModesResetOn(trigger) {
+      const t = String(trigger || '').trim();
+      if (!t) return [];
+      return Object.keys(this.usageResetCadence).filter(m => this.usageResetCadence[m].includes(t));
     }
   };
 

@@ -3752,7 +3752,7 @@ const RuleEngine = {
       collected.push(norm);
     };
 
-    const addItem = (rawItem, fromBodySlot = false) => {
+    const addItem = (rawItem, fromBodySlot = false, slotKey = null) => {
       if (!rawItem || typeof rawItem !== 'object') return;
       const invId = String(rawItem.inventoryId || '').trim().toLowerCase();
       const itemId = String(rawItem.id || '').trim().toLowerCase();
@@ -3773,6 +3773,9 @@ const RuleEngine = {
       const norm = this.normalizeLegoEntry(rawItem);
       if (norm) {
         norm._legoSource = fromBodySlot ? 'bodySlots' : 'inventory';
+        if (slotKey) norm._slotKey = slotKey;
+        if (rawItem.id) norm._poolId = rawItem.id;
+        else if (rawItem.inventoryId) norm._poolId = rawItem.inventoryId;
         collected.push(norm);
       }
     };
@@ -3908,9 +3911,9 @@ const RuleEngine = {
       });
     }
 
-    Object.values(ch.bodySlots || {}).forEach(slotItem => {
+    Object.entries(ch.bodySlots || {}).forEach(([slotKey, slotItem]) => {
       if (slotItem && typeof slotItem === 'object' && slotItem.active !== false && slotItem.equipped !== false) {
-        addItem(slotItem, true);
+        addItem(slotItem, true, slotKey);
       }
     });
     const invItems = (Array.isArray(ch.inventory) ? ch.inventory : []).concat(Array.isArray(ch.gearPool) ? ch.gearPool : []);
@@ -5526,7 +5529,8 @@ const RuleEngine = {
           p.action = actionCanon[String(p.action || '').trim().toLowerCase()] || 'Standard';
         }
         if (!p.usage || typeof p.usage !== 'object') p.usage = { mode: 'atwill' };
-        if (!['passive', 'atwill', 'perDay', 'perEncounter', 'charges', 'spellSlot', 'resourcePool', 'cooldown'].includes(p.usage.mode)) {
+        if (p.usage.mode === 'atWill') p.usage.mode = 'atwill';
+        if (!['passive', 'atwill', 'perDay', 'perEncounter', 'perHour', 'charges', 'spellSlot', 'resourcePool', 'cooldown'].includes(p.usage.mode)) {
           p.usage.mode = 'perDay';
           if (!p.usage.uses) p.usage.uses = 1;
         }
@@ -16379,7 +16383,9 @@ const RuleEngine = {
       switch (u.mode) {
         case 'perDay': return n ? `${n}/day` : '';
         case 'perEncounter': return n ? `${n}/encounter` : '';
+        case 'perHour': return n ? `${n}/hour` : '';
         case 'charges': return n ? `${n} charges` : '';
+        case 'atwill':
         case 'atWill': return 'At will';
         case 'cooldown': return u.recharge ? `Recharge ${u.recharge} rounds` : '';
         case 'spellSlot': return u.slotLevel !== undefined ? `Level ${u.slotLevel} spell slot` : '';
@@ -16562,6 +16568,38 @@ const RuleEngine = {
   },
 
   /** Damage-dealing special attacks (breath, claws, rays ...). Utility and healing powers live in `deriveActivatedAbilities`. */
+  /**
+   * Single Source of Truth reader for magic item charge pools (Wand, Staff, Necklace of Fireballs, Daily-Charge items).
+   * Strictly separates item `charges`/`dailyCharges` from stack quantity (`qty`): NEVER falls back to `item.qty`.
+   * Returns `{ current, max, recharge, path, powerId?, needsSeed? }` or `null`.
+   */
+  getItemChargePool(item, powerId = null, seedMax = 0) {
+    if (!item || typeof item !== 'object') return null;
+    if (powerId && item.powerCharges && typeof item.powerCharges === 'object' && item.powerCharges[powerId]) {
+      const pc = item.powerCharges[powerId];
+      if (typeof pc === 'object' && pc.current !== undefined) {
+        const cur = Math.max(0, Number(pc.current) || 0);
+        const max = Number(pc.max) > 0 ? Number(pc.max) : null;
+        return { current: cur, max, recharge: pc.rechargePeriod || 'never', path: 'powerCharges', powerId };
+      }
+    }
+    if (typeof item.charges === 'number' && Number.isFinite(item.charges)) {
+      const cur = Math.max(0, item.charges);
+      const max = (typeof item.maxCharges === 'number' && item.maxCharges > 0) ? item.maxCharges : null;
+      return { current: cur, max, recharge: item.rechargePeriod || 'never', path: 'charges' };
+    }
+    if (item.dailyCharges && typeof item.dailyCharges === 'object' && Number(item.dailyCharges.max) > 0) {
+      const max = Number(item.dailyCharges.max);
+      const cur = item.dailyCharges.current !== undefined ? Math.max(0, Number(item.dailyCharges.current) || 0) : max;
+      return { current: cur, max, recharge: item.dailyCharges.recharge || 'long_rest', path: 'dailyCharges' };
+    }
+    if (Number(seedMax) > 0) {
+      const m = Math.max(1, Math.floor(Number(seedMax)));
+      return { current: m, max: m, recharge: 'never', path: 'charges', needsSeed: true };
+    }
+    return null;
+  },
+
   deriveSpecialAttacks(w, legoEval = null, customDb = []) {
     return this.deriveSpecialPowerPool(w, legoEval, customDb).filter(r => r.category === 'attack');
   },
@@ -16681,7 +16719,19 @@ const RuleEngine = {
       return ['standard', 'Standard Action'];
     };
 
-    const TRACKED_USAGE = ['perDay', 'perEncounter', 'charges'];
+    const TRACKED_USAGE = ['perDay', 'perEncounter', 'perHour', 'charges'];
+    const resolveDirectItemChargeSource = (entryObj) => {
+      if (!entryObj || typeof entryObj !== 'object') return null;
+      if (entryObj._slotKey && w.bodySlots && w.bodySlots[entryObj._slotKey]) {
+        return { sourceType: 'slot', slotKey: entryObj._slotKey, poolId: null, item: w.bodySlots[entryObj._slotKey] };
+      }
+      const pid = entryObj._poolId || entryObj.inventoryId || null;
+      if (pid && Array.isArray(w.gearPool)) {
+        const hit = w.gearPool.find(g => g && (String(g.id || '') === String(pid) || String(g.inventoryId || '') === String(pid)));
+        if (hit) return { sourceType: 'pool', slotKey: null, poolId: hit.id || pid, item: hit };
+      }
+      return null;
+    };
     const emitAttack = (spec) => {
       const cleanParts = (spec.damageParts || []).filter(dp => dp && dp.dice);
       const isUtility = Boolean(spec.utility);
@@ -16691,9 +16741,30 @@ const RuleEngine = {
       const dmgType = isUtility ? '' : (dp0.type || 'Damage');
       const key = spec.key;
       const usageMode = spec.usage && TRACKED_USAGE.includes(spec.usage.mode) ? spec.usage.mode : '';
-      const usesMax = usageMode ? Math.max(0, Number(spec.usage.uses) || 0) : 0;
+      let usesMax = usageMode ? Math.max(0, Number(spec.usage.uses) || 0) : 0;
       const useRec = w.powerUses && w.powerUses[key];
-      const usesUsed = usesMax ? Math.min(usesMax, Math.max(0, Number(useRec && typeof useRec === 'object' ? useRec.used : useRec) || 0)) : 0;
+      let usesUsed = usesMax ? Math.min(usesMax, Math.max(0, Number(useRec && typeof useRec === 'object' ? useRec.used : useRec) || 0)) : 0;
+      let usesLeft = usesMax ? usesMax - usesUsed : null;
+      let itemChargeRef = null;
+      let isExhausted = Boolean(usesMax) && usesUsed >= usesMax;
+      if (usageMode === 'charges' && spec.liveItemSource && spec.liveItemSource.item) {
+        const li = spec.liveItemSource.item;
+        const pool = this.getItemChargePool(li, spec.powerId || null, usesMax);
+        if (pool) {
+          usesLeft = pool.current;
+          usesMax = pool.max || 0;
+          usesUsed = usesMax ? Math.max(0, usesMax - usesLeft) : 0;
+          isExhausted = pool.current <= 0;
+          itemChargeRef = {
+            sourceType: spec.liveItemSource.sourceType,
+            slotKey: spec.liveItemSource.slotKey || null,
+            poolId: spec.liveItemSource.poolId || null,
+            itemId: li.id || null,
+            powerId: spec.powerId || null,
+            seedMax: pool.needsSeed ? pool.max : 0
+          };
+        }
+      }
 
       const cdEntry = w.tactical?.abilityCooldowns?.[key];
       const readyRoundFromTactical = (cdEntry && typeof cdEntry === 'object')
@@ -16732,6 +16803,9 @@ const RuleEngine = {
         modeId: spec.modeId || null,
         resourceId: spec.resourceId || null,
         name: spec.name,
+        sourceLabel: spec.sourceLabel || '',
+        isMultiPowerItem: Boolean(spec.isMultiPowerItem),
+        itemChargeRef,
         source: spec.source || 'Special Ability',
         damageParts: cleanParts,
         dice: dmgFormula,
@@ -16756,8 +16830,8 @@ const RuleEngine = {
         usageMode,
         usesMax,
         usesUsed,
-        usesLeft: usesMax ? usesMax - usesUsed : null,
-        isExhausted: Boolean(usesMax) && usesUsed >= usesMax,
+        usesLeft,
+        isExhausted,
         recharge: spec.recharge || '',
         rechargeDice: spec.rechargeDice || '',
         cooldownExpr: spec.rechargeDice || '',
@@ -16871,16 +16945,33 @@ const RuleEngine = {
       }
 
       // (b) Each Rule Crafter sub-power (entry.powers[]) as its own special attack keyed `entryId:powerId`.
+      const isItemEntry = Boolean(
+        merged._legoSource === 'bodySlots' ||
+        merged._legoSource === 'inventory' ||
+        merged._legoSource === 'equipment' ||
+        merged.item ||
+        ['magicitem', 'wondrous', 'weapon', 'armor', 'shield', 'consumable', 'wand', 'staff', 'rod', 'ring'].includes(String(merged.type || merged.blueprint || merged.category || '').toLowerCase())
+      );
+      const liveItemSource = isItemEntry ? resolveDirectItemChargeSource(merged) : null;
       entryPowers.forEach(pw => {
         const pwHasDmg = Array.isArray(pw.damageParts) && pw.damageParts.some(dp => dp && dp.dice);
         const pwSaveStr = pw.save ? `${pw.save.type} (${pw.save.onSave})` : '';
+        const displayName = (isItemEntry && entryPowers.length === 1)
+          ? entryName
+          : String(pw.name || entryName).trim();
+        const displaySourceLabel = (isItemEntry && entryPowers.length === 1)
+          ? ''
+          : (String(displayName).toLowerCase() === String(entryName).toLowerCase() ? '' : entryName);
         emitted = true;
         emitAttack({
           key: `${entryKey}:${String(pw.id).replace(/[^a-z0-9_:-]+/gi, '_')}`,
           id: `${merged.id || entryKey}:${pw.id}`,
           entryId: merged.id || entryKey,
           powerId: pw.id,
-          name: String(pw.name).trim().toLowerCase() === String(entryName).trim().toLowerCase() ? entryName : `${entryName} — ${pw.name}`,
+          name: displayName,
+          sourceLabel: displaySourceLabel,
+          isMultiPowerItem: isItemEntry && entryPowers.length > 1,
+          liveItemSource,
           source: entrySource,
           damageParts: pw.damageParts,
           save: pwSaveStr,
@@ -17286,31 +17377,41 @@ const RuleEngine = {
    * without mutating `w.spellcasting` or `w.tomeOfBattle`.
    */
   /**
-   * Single source of truth: collects Spellcasting / Caster Boon disciplines granted by
+   * Single source of truth: collects Spellcasting / Caster Boon sources granted by
    * a character's active Race, Templates, Feats/Boons, or active Buffs via `progression.spellcastingChassis`.
+   * Returns structured records `{ disc, sourceKind, sourceName, sourceId }`.
    */
-  getEntryCasterBoonDisciplines(char) {
+  getEntryCasterBoonSources(char) {
     const found = [];
     if (!char || typeof char !== 'object') return found;
     const mapChassisToDisc = (sc) => {
       if (!sc || !sc.mode || sc.mode === 'none') return null;
       const m = String(sc.mode || '').toLowerCase();
       const tr = String(sc.tradition || '').toLowerCase();
+      if (m === 'psionic' || m === 'meldshaper' || m === 'binder' || m === 'truenamer' || m === 'shadowcaster') return null;
       if (tr === 'martial' || m.includes('maneuver') || m.includes('martial')) return 'martial';
       if (m.includes('invocation') || m.includes('warlock')) return 'warlock';
       if (tr === 'divine') return 'divine';
-      if (m.includes('prepared')) return 'prepared';
+      if (/(?:prep|prepared)/i.test(m)) return 'prepared';
       return 'spontaneous';
     };
-    const inspectRec = (rec) => {
+    const inspectRec = (rec, sourceKind) => {
       const sc = rec && rec.progression && (rec.progression.spellcastingChassis || rec.progression.caster);
       const disc = mapChassisToDisc(sc);
-      if (disc && !found.includes(disc)) found.push(disc);
+      if (disc && !found.some(f => f.disc === disc)) {
+        found.push({
+          disc,
+          sourceKind: sourceKind || 'Entry',
+          sourceName: String(rec.name || rec.id || sourceKind || 'Entry'),
+          sourceId: rec.id || null
+        });
+      }
     };
     const customDb = Array.isArray(char.customDb) ? char.customDb : [];
     const customEntries = (char.customEntries && typeof char.customEntries === 'object') ? Object.values(char.customEntries) : [];
     const pool = customDb.concat(customEntries);
-    const comp = (typeof window !== 'undefined' && window.SrdCompendium) ? window.SrdCompendium : null;
+    const comp = (typeof window !== 'undefined' && window.SrdCompendium)
+      || (typeof SrdCompendium !== 'undefined' ? SrdCompendium : null);
     const findByNameOrId = (ref) => {
       if (!ref) return null;
       if (typeof ref === 'object' && ref.progression && (ref.progression.spellcastingChassis || ref.progression.caster)) return ref;
@@ -17328,18 +17429,24 @@ const RuleEngine = {
       }
       return null;
     };
-    if (char.race) inspectRec(findByNameOrId(char.race));
-    if (Array.isArray(char.templates)) char.templates.forEach((t) => inspectRec(findByNameOrId(t)));
-    if (Array.isArray(char.feats)) char.feats.forEach((f) => inspectRec(findByNameOrId(f)));
+    if (char.race) inspectRec(findByNameOrId(char.race), 'Race');
+    if (Array.isArray(char.templates)) char.templates.forEach((t) => inspectRec(findByNameOrId(t), 'Template'));
+    if (Array.isArray(char.feats)) char.feats.forEach((f) => inspectRec(findByNameOrId(f), 'Feat'));
     if (Array.isArray(char.levelProgression)) {
       char.levelProgression.forEach((row) => {
-        if (row && Array.isArray(row.feats)) row.feats.forEach((f) => inspectRec(findByNameOrId(f)));
+        if (row && row.active !== false && Array.isArray(row.feats)) {
+          row.feats.forEach((f) => inspectRec(findByNameOrId(f), 'Feat'));
+        }
       });
     }
     if (Array.isArray(char.buffs)) {
-      char.buffs.forEach((b) => { if (b && b.active !== false) inspectRec(findByNameOrId(b)); });
+      char.buffs.forEach((b) => { if (b && b.active !== false) inspectRec(findByNameOrId(b), 'Buff'); });
     }
     return found;
+  },
+
+  getEntryCasterBoonDisciplines(char) {
+    return this.getEntryCasterBoonSources(char).map(s => s.disc);
   },
 
   // Pure data-driven arcane/divine tradition capability from cls-*.spellcasting (zero hardcoded class-name regexes)
@@ -20671,16 +20778,32 @@ const RuleEngine = {
     const hasDivineClass = getClassLvl(/\b(?:cleric|druid|paladin|ranger|favored\s*soul|spirit\s*shaman|archivist|shugenja|healer|adept|blackguard)\b/) > 0;
     const hasMartialClass = getClassLvl(/\b(?:warblade|swordsage|crusader|bloodclaw\s*master|bloodstorm\s*blade|deepstone\s*sentinel|eternal\s*blade|jade\s*phoenix\s*mage|master\s*of\s*nine|ruby\s*knight\s*vindicator|shadow\s*sun\s*ninja)\b/) > 0;
 
-    if (hasSpontaneousClass || castTypeLow.includes('spontaneous') || rawSpells.some(s => s && /spontaneous/i.test(String(s.castType || s.prepMode || '')))) {
+    const entryCasterDiscs = typeof this.getEntryCasterBoonDisciplines === 'function'
+      ? this.getEntryCasterBoonDisciplines(w)
+      : [];
+    const settingsBoonList = Array.isArray(w.settings?.boonDisciplines)
+      ? w.settings.boonDisciplines.map(d => String(d || '').toLowerCase().trim())
+      : [];
+    const allGrantedDiscs = new Set([...entryCasterDiscs, ...settingsBoonList]);
+    if (w.settings?.warlockBoon === true || String(w.settings?.clMode || '').includes('Warlock Boon')) {
+      allGrantedDiscs.add('warlock');
+    }
+
+    const hasSpontaneousSource = hasSpontaneousClass || allGrantedDiscs.has('spontaneous') || allGrantedDiscs.has('warlock');
+    const hasPreparedSource = hasPreparedArcaneClass || allGrantedDiscs.has('prepared');
+    const hasDivineSource = hasDivineClass || allGrantedDiscs.has('divine');
+    const hasMartialSource = hasMartialClass || allGrantedDiscs.has('martial');
+
+    if (hasSpontaneousSource || castTypeLow.includes('spontaneous') || rawSpells.some(s => s && /spontaneous/i.test(String(s.castType || s.prepMode || '')))) {
       discSet.add('spontaneous');
     }
-    if (hasPreparedArcaneClass || castTypeLow.includes('prepared') || (rawSpells.length > 0 && !hasSpontaneousClass && !hasDivineClass)) {
+    if (hasPreparedSource || castTypeLow.includes('prepared') || (rawSpells.length > 0 && !hasSpontaneousSource && !hasDivineSource)) {
       discSet.add('prepared');
     }
-    if (hasDivineClass || castTypeLow.includes('divine') || (Array.isArray(w.domains) && w.domains.length > 0) || rawSpells.some(s => s && /divine|cleric|druid|paladin|ranger/i.test(String(s.tradition || s.sourceClass || s.type || '')))) {
+    if (hasDivineSource || castTypeLow.includes('divine') || (Array.isArray(w.domains) && w.domains.length > 0) || rawSpells.some(s => s && /divine|cleric|druid|paladin|ranger/i.test(String(s.tradition || s.sourceClass || s.type || '')))) {
       discSet.add('divine');
     }
-    if (hasMartialClass || rawManeuvers.length > 0 || hasFeatMatch(/\bmartial\s*(?:study|stance)\b/)) {
+    if (hasMartialSource || rawManeuvers.length > 0 || hasFeatMatch(/\bmartial\s*(?:study|stance)\b/)) {
       discSet.add('martial');
     }
     if (totalPsionicClassLvl > 0 || soulknifeLvl > 0 || rawPowers.length > 0 || maxPP > 0 || hasFeatMatch(/\b(?:wild|hidden)\s*talent\b/)) {

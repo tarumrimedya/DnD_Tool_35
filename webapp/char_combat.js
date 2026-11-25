@@ -4845,8 +4845,8 @@
         const safeKeyAttr = esc(ab.key);
         const isUtility = Boolean(ab.utility);
         const isExhausted = Boolean(ab.isExhausted);
-        const usesBadgeHtml = ab.usesMax
-          ? `<span class="text-[10px] font-black px-1.5 rounded ${isExhausted ? 'text-rose-300 border border-rose-500/60' : 'text-sky-200 border border-sky-500/50'}">${isExhausted ? 'USED UP' : `${ab.usesLeft}/${ab.usesMax} ${ab.usageMode === 'charges' ? 'CHARGES' : (ab.usageMode === 'perEncounter' ? 'PER ENCOUNTER' : 'PER DAY')}`}</span>`
+        const usesBadgeHtml = (ab.usesMax || (ab.itemChargeRef && ab.usesLeft !== null))
+          ? `<span class="text-[10px] font-black px-1.5 rounded ${isExhausted ? 'text-rose-300 border border-rose-500/60' : 'text-sky-200 border border-sky-500/50'}">${isExhausted ? 'USED UP' : (ab.itemChargeRef ? (ab.usesMax ? `${ab.usesLeft}/${ab.usesMax} CHARGES` : `${ab.usesLeft} ${ab.usesLeft === 1 ? 'CHARGE' : 'CHARGES'}`) : `${ab.usesLeft}/${ab.usesMax} ${ab.usageMode === 'charges' ? 'CHARGES' : (ab.usageMode === 'perEncounter' ? 'PER ENCOUNTER' : (ab.usageMode === 'perHour' ? 'PER HOUR' : 'PER DAY'))}`)}</span>`
           : (ab.usageText && !ab.rechargeDice ? `<span class="text-[10px] font-bold px-1.5 rounded text-sky-200 border border-sky-500/50">${esc(ab.usageText)}</span>` : '');
         const dv = ab.delivery || {};
         const sgnNum = (n) => (Number(n) >= 0 ? `+${Number(n)}` : `${Number(n)}`);
@@ -4871,16 +4871,20 @@
               <span class="font-bold text-amber-300">${esc(dmgFormula)} ${esc(dmgType)}</span>
               ${dcSummaryStr ? `<span class="text-slate-600">•</span><span class="text-amber-200/90 text-[10px]">${esc(dcSummaryStr)}</span>` : ''}`;
 
+        const titleAttr = ab.sourceLabel ? (ab.name + ' (' + ab.sourceLabel + ')') : ab.name;
         return `
         <!-- SPECIAL ATTACK / BREATH WEAPON CARD -->
         <div data-action="combat:special-attack-roll" data-ability-key="${safeKeyAttr}" class="p-2.5 rounded-xl border transition-all cursor-pointer select-none flex items-center justify-between gap-2 ${isOnCooldown ? 'bg-gradient-to-r to-slate-900/90 border-purple-500/60 text-purple-200 shadow-md' : 'bg-gradient-to-r to-slate-900/90 border-emerald-500/80 text-emerald-100 shadow-md shadow-emerald-950/40 ring-1 ring-emerald-500/30 hover:border-emerald-400'}">
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-1.5 flex-wrap">
               <span class="text-xs">${isOnCooldown ? '⏳' : (isUtility ? '✨' : (isHealing ? '💚' : '🔥'))}</span>
-              <span class="text-xs font-black truncate text-white">${esc(ab.name)}</span>
+              <span class="text-xs font-black truncate text-white" title="${esc(titleAttr)}">${esc(ab.name)}</span>
+              ${ab.isMultiPowerItem && ab.sourceLabel ? `<span class="text-[10px] text-slate-400 font-medium truncate">(${esc(ab.sourceLabel)})</span>` : ''}
               ${isOnCooldown
                 ? `<span class="text-[10px] font-black px-1.5 rounded text-purple-200 border border-purple-400/60">⏳ COOLDOWN: ${remainingRounds} ${remainingRounds === 1 ? 'ROUND' : 'ROUNDS'} LEFT (R${readyRound})</span>`
-                : `<span class="text-[10px] font-black px-1.5 rounded text-emerald-300 border border-emerald-500/50">READY</span>`
+                : (isExhausted
+                  ? `<span class="text-[10px] font-black px-1.5 rounded text-rose-300 border border-rose-500/60">DEPLETED</span>`
+                  : `<span class="text-[10px] font-black px-1.5 rounded text-emerald-300 border border-emerald-500/50">READY</span>`)
               }
               ${usesBadgeHtml}
               ${dcBadgeHtml}
@@ -4899,17 +4903,17 @@
           </div>
           <div class="shrink-0 flex items-center gap-1.5">
             ${isOnCooldown ? `
-              <button type="button" data-action="combat:special-attack-ready" data-ability-key="${safeKeyAttr}" class="text-[10px] font-bold px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-purple-200 border border-purple-500/50 transition cursor-pointer" title="Clear cooldown and mark Ready">
+              <button type="button" data-action="combat:special-attack-ready" data-ability-key="${safeKeyAttr}" class="text-[10px] font-bold px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-purple-200 border border-purple-500/50 transition cursor-pointer" title="Clear round cooldown and mark Ready">
                 ↺ Ready
               </button>
-            ` : (ab.rechargeDice ? `
-              <button type="button" data-action="combat:special-attack-recharge" data-ability-key="${safeKeyAttr}" class="text-[10px] font-bold px-2 py-1 rounded-lg bg-slate-800 hover:bg-indigo-900 text-indigo-200 border border-indigo-500/50 transition cursor-pointer" title="Roll Recharge Cooldown (${esc(ab.rechargeDice)}) only">
-                ⏳ ${esc(ab.rechargeDice)}
+            ` : ((ab.usesMax > 0 && ab.usesUsed > 0 && !ab.itemChargeRef) ? `
+              <button type="button" data-action="combat:power-uses-reset" data-ability-key="${safeKeyAttr}" class="text-[10px] font-bold px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-sky-200 border border-sky-500/50 transition cursor-pointer" title="Manual / GM reset of spent uses">
+                ↺ Reset
               </button>
             ` : '')}
-            <button type="button" data-action="combat:special-attack-roll" data-ability-key="${safeKeyAttr}" class="text-[10px] font-black px-2.5 py-1.5 rounded-lg ${isOnCooldown ? 'bg-purple-600 hover:bg-purple-500 text-white' : 'bg-emerald-500 text-slate-950'} shadow transition active:scale-95 cursor-pointer flex items-center gap-1">
+            <button type="button" data-action="combat:special-attack-roll" data-ability-key="${safeKeyAttr}" ${isExhausted ? 'disabled' : ''} class="text-[10px] font-black px-2.5 py-1.5 rounded-lg ${isExhausted ? 'bg-slate-800 text-slate-500 cursor-not-allowed opacity-60' : (isOnCooldown ? 'bg-purple-600 hover:bg-purple-500 text-white cursor-pointer' : 'bg-emerald-500 text-slate-950 cursor-pointer')} shadow transition active:scale-95 flex items-center gap-1">
               <span>${(ab.category === 'spell' || ab.attachedSpellId) ? '🔮' : (isUtility ? '✨' : (isHealing ? '💚' : '🔥'))}</span>
-              <span>${(ab.category === 'spell' || ab.attachedSpellId) ? 'Cast' : (isUtility ? 'Use' : (isHealing ? `Roll ${esc(healFormula)} Healing` : `Roll ${esc(dmgFormula)}`))}</span>
+              <span>${isExhausted ? 'Depleted' : ((ab.category === 'spell' || ab.attachedSpellId) ? 'Cast' : (isUtility ? 'Use' : (isHealing ? `Roll ${esc(healFormula)} Healing` : `Roll ${esc(dmgFormula)}`)))}</span>
             </button>
           </div>
         </div>
@@ -4917,6 +4921,37 @@
       }).join('');
     }
     window.renderSpecialAttackAbilityCardsHtml = renderSpecialAttackAbilityCardsHtml;
+
+    function buildSpecialAttackDispatchPayload(ab, waitRounds = 0) {
+      return {
+        abilityKey: ab.key,
+        name: ab.name,
+        cooldownRounds: Number(waitRounds) || 0,
+        actionType: ab.actionType || ab.action || 'standard',
+        resourceId: ab.resourceId || null,
+        usageMode: ab.usageMode || '',
+        usesMax: ab.usesMax || 0,
+        itemChargeRef: ab.itemChargeRef || null
+      };
+    }
+
+    function resetPowerUsesManual(abilityKey) {
+      if (!character || !abilityKey) return;
+      if (!window.CharStore.getDoc() && typeof character !== 'undefined') {
+        window.CharStore._syncExternalCharacterRef(character);
+      }
+      window.CharStore.dispatch({
+        type: 'combat/powerUsesReset',
+        label: `Reset Uses: ${abilityKey}`,
+        payload: { abilityKey },
+        meta: { label: `Reset Uses: ${abilityKey}`, cloudSync: false }
+      });
+      renderWeaponSetsUI();
+      if (typeof renderCockpitConsumables === 'function') renderCockpitConsumables();
+      if (typeof showDiceTopToast === 'function') {
+        showDiceTopToast({ icon: '↺', title: 'Uses Reset', breakdown: 'Ability uses restored to full.', total: 'Ready' }, { stack: true });
+      }
+    }
 
     function executeUtilityPowerUse(ab) {
       let waitRounds = 0;
@@ -4935,17 +4970,17 @@
       window.CharStore.dispatch({
         type: 'combat/specialAttackRoll',
         label: `Use Ability: ${ab.name}`,
-        payload: {
-          abilityKey: ab.key,
-          name: ab.name,
-          cooldownRounds: waitRounds,
-          actionType: ab.actionType || ab.action || 'standard',
-          resourceId: ab.resourceId || null,
-          usageMode: ab.usageMode || '',
-          usesMax: ab.usesMax || 0
-        },
+        payload: buildSpecialAttackDispatchPayload(ab, waitRounds),
         meta: { label: `Use Ability: ${ab.name}`, cloudSync: false }
       });
+      const out = typeof window.CharStore.getLastOutcome === 'function' ? window.CharStore.getLastOutcome() : null;
+      if (out && (out.status === 'uses_exhausted' || out.status === 'charge_source_missing')) {
+        if (typeof showDiceTopToast === 'function') {
+          showDiceTopToast({ icon: '⚠️', title: 'No Charges Left', breakdown: `${ab.name} has no charges/uses remaining.`, total: '0 left' }, { stack: true });
+        }
+        renderWeaponSetsUI();
+        return;
+      }
       if (typeof updateActionEconomyUI === 'function') updateActionEconomyUI();
       renderWeaponSetsUI();
       const usesNote = ab.usesMax ? `${Math.max(0, (ab.usesLeft || 0) - 1)}/${ab.usesMax} left` : '';
@@ -5021,7 +5056,9 @@
       window._lastCombatActivationUndo = {
         abilityKey: ab.key,
         spentActions: JSON.parse(JSON.stringify(character.tactical?.spentActions || {})),
-        prevCooldown: character.tactical?.abilityCooldowns?.[ab.key] ? JSON.parse(JSON.stringify(character.tactical.abilityCooldowns[ab.key])) : null
+        prevCooldown: character.tactical?.abilityCooldowns?.[ab.key] ? JSON.parse(JSON.stringify(character.tactical.abilityCooldowns[ab.key])) : null,
+        prevPowerUse: character.powerUses?.[ab.key] ? JSON.parse(JSON.stringify(character.powerUses[ab.key])) : null,
+        itemChargeRef: ab.itemChargeRef ? JSON.parse(JSON.stringify(ab.itemChargeRef)) : null
       };
 
       if (ab.isExhausted) {
@@ -5099,18 +5136,24 @@
       window.CharStore.dispatch({
         type: 'combat/specialAttackRoll',
         label: `Special Attack: ${ab.name}`,
-        payload: {
-          abilityKey: ab.key,
-          name: ab.name,
-          cooldownRounds: waitRounds,
-          actionType: actType,
-          resourceId: ab.resourceId || null,
-          usageMode: ab.usageMode || '',
-          usesMax: ab.usesMax || 0
-        },
+        payload: buildSpecialAttackDispatchPayload(ab, waitRounds),
         meta: { label: `Special Attack: ${ab.name}`, cloudSync: false }
       });
       const out = typeof window.CharStore.getLastOutcome === 'function' ? window.CharStore.getLastOutcome() : null;
+      if (out && (out.status === 'uses_exhausted' || out.status === 'charge_source_missing' || out.status === 'on_cooldown')) {
+        if (typeof showDiceTopToast === 'function') {
+          showDiceTopToast({
+            icon: out.status === 'on_cooldown' ? '⏳' : '⚠️',
+            title: out.status === 'on_cooldown' ? 'Recharging' : 'No Charges Left',
+            breakdown: out.status === 'on_cooldown'
+              ? `${ab.name} is still recharging (${out.roundsLeft || 1} round(s) left).`
+              : `${ab.name} has no charges/uses remaining.`,
+            total: out.status === 'on_cooldown' ? `${out.roundsLeft || 1} left` : '0 left'
+          }, { stack: true });
+        }
+        renderWeaponSetsUI();
+        return;
+      }
       if (typeof updateActionEconomyUI === 'function') updateActionEconomyUI();
       if (out && out.actionOutcome && out.actionOutcome.alreadySpent && typeof showDiceTopToast === 'function') {
         showDiceTopToast({
@@ -16527,6 +16570,10 @@
       Actions.register('combat:special-attack-ready', (el, data, event) => {
         if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
         if (data.abilityKey) resetSpecialAttackCooldown(data.abilityKey);
+      });
+      Actions.register('combat:power-uses-reset', (el, data, event) => {
+        if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+        if (data.abilityKey) resetPowerUsesManual(data.abilityKey);
       });
       Actions.register('combat:special-attack-recharge', (el, data, event) => {
         if (event && typeof event.stopPropagation === 'function') event.stopPropagation();

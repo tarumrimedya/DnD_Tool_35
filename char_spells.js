@@ -224,13 +224,10 @@
       return { hasSpontaneous, hasPrepared, hasDivine, hasMartial };
     }
 
-    function getCharacterBoonDisciplines(char = character) {
-      if (!char) return [];
+    // House-rule DM Boons stored explicitly in `char.settings` (excludes V3 Race/Template/Feat chassis grants)
+    function getSettingsBoonDisciplines(char = character) {
+      if (!char || !char.settings) return [];
       const valid = ['spontaneous', 'prepared', 'divine', 'martial', 'warlock'];
-      const entryBoons = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getEntryCasterBoonDisciplines === 'function')
-        ? RuleEngine.getEntryCasterBoonDisciplines(char)
-        : [];
-      if (!char.settings) return Array.from(new Set(entryBoons));
       if (Array.isArray(char.settings.boonDisciplines)) {
         const list = char.settings.boonDisciplines
           .map(d => String(d || '').toLowerCase().trim())
@@ -238,12 +235,12 @@
         if ((char.settings.warlockBoon === true || String(char.settings.clMode || '').includes('Warlock Boon')) && !list.includes('warlock')) {
           list.push('warlock');
         }
-        return Array.from(new Set(list.concat(entryBoons)));
+        return Array.from(new Set(list));
       }
       const clMode = char.settings.clMode || 'Class Level';
       const isWarlockBoon = clMode.includes('Warlock Boon') || char.settings.warlockBoon === true;
       const isHomebrewActive = (clMode === 'Character Level (Homebrew)') || isWarlockBoon;
-      if (!isHomebrewActive) return Array.from(new Set(entryBoons));
+      if (!isHomebrewActive) return [];
 
       const out = [];
       if (isWarlockBoon) out.push('warlock');
@@ -264,7 +261,15 @@
         const fallback = valid.includes(rawCasterType) ? rawCasterType : (bestDisc || 'spontaneous');
         if (!out.includes(fallback)) out.push(fallback);
       }
-      return Array.from(new Set(out.concat(entryBoons)));
+      return Array.from(new Set(out));
+    }
+
+    function getCharacterBoonDisciplines(char = character) {
+      if (!char) return [];
+      const entryBoons = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getEntryCasterBoonDisciplines === 'function')
+        ? RuleEngine.getEntryCasterBoonDisciplines(char)
+        : [];
+      return Array.from(new Set(getSettingsBoonDisciplines(char).concat(entryBoons)));
     }
 
     function isDisciplineHomebrew(disc, char = character) {
@@ -9305,7 +9310,10 @@
 
     function renderCasterBoonUI() {
       if (!character) return;
-      const boons = getCharacterBoonDisciplines(character);
+      const settingsBoons = getSettingsBoonDisciplines(character);
+      const entrySources = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getEntryCasterBoonSources === 'function')
+        ? RuleEngine.getEntryCasterBoonSources(character)
+        : [];
       const discLvls = getMagicDisciplineClassLevels(character);
       const prog = character.levelProgression || [];
       const activeLevels = prog.filter(p => p.active !== false).length || Number(character.level) || 1;
@@ -9324,23 +9332,32 @@
       const settingsBar = document.getElementById('setting-boon-disciplines-bar');
       if (settingsBar) {
         settingsBar.innerHTML = DISCIPLINES.map(d => {
-          const isBoon = boons.includes(d.key);
+          const isBoon = settingsBoons.includes(d.key);
+          const entrySrc = entrySources.find(s => s.disc === d.key) || null;
+          const isEntryOnly = Boolean(entrySrc && !isBoon);
           const hasClass = d.classLvl > 0;
-          const activeClass = isBoon
-            ? 'bg-purple-950/90 border-purple-400 text-white shadow-md ring-1 ring-purple-400/50'
-            : (hasClass
-              ? 'bg-emerald-950/50 border-emerald-600/60 text-emerald-200 hover:border-purple-400'
-              : 'bg-slate-950/90 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-600');
-          const statusBadge = isBoon && hasClass
-            ? `<span class="text-[10px] font-mono font-bold px-1.5 rounded bg-purple-600 text-white">🌟 Boon + Class (CL ${activeLevels})</span>`
+          const activeClass = isEntryOnly
+            ? 'bg-cyan-950/60 border-cyan-500/70 text-cyan-100 cursor-default'
             : (isBoon
-              ? `<span class="text-[10px] font-mono font-bold px-1.5 rounded bg-purple-600 text-white">🌟 Homebrew (CL ${activeLevels})</span>`
+              ? 'bg-purple-950/90 border-purple-400 text-white shadow-md ring-1 ring-purple-400/50 cursor-pointer active:scale-95'
               : (hasClass
-                ? `<span class="text-[10px] font-mono font-bold px-1.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-600/50">Class Lvl ${d.classLvl}</span>`
-                : `<span class="text-[10px] font-mono px-1.5 rounded bg-slate-900 text-slate-500 border border-slate-800">+ Add Boon</span>`));
+                ? 'bg-emerald-950/50 border-emerald-600/60 text-emerald-200 hover:border-purple-400 cursor-pointer active:scale-95'
+                : 'bg-slate-950/90 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-600 cursor-pointer active:scale-95'));
+          const statusBadge = isEntryOnly
+            ? `<span class="text-[10px] font-mono font-bold px-1.5 rounded bg-cyan-900/90 text-cyan-200 border border-cyan-500/70">🧬 ${UI.escapeHtml(entrySrc.sourceKind)}: ${UI.escapeHtml(entrySrc.sourceName)} (CL ${activeLevels})</span>`
+            : (isBoon && hasClass
+              ? `<span class="text-[10px] font-mono font-bold px-1.5 rounded bg-purple-600 text-white">🌟 Boon + Class (CL ${activeLevels})</span>`
+              : (isBoon
+                ? `<span class="text-[10px] font-mono font-bold px-1.5 rounded bg-purple-600 text-white">🌟 DM Boon (CL ${activeLevels})</span>`
+                : (hasClass
+                  ? `<span class="text-[10px] font-mono font-bold px-1.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-600/50">Class Lvl ${d.classLvl}</span>`
+                  : `<span class="text-[10px] font-mono px-1.5 rounded bg-slate-900 text-slate-500 border border-slate-800">+ Add Boon</span>`)));
+          const titleText = isEntryOnly
+            ? `Granted by ${entrySrc.sourceKind}: ${entrySrc.sourceName} (V3 Caster Chassis). Edit the ${entrySrc.sourceKind.toLowerCase()} in Rule Crafter to modify.`
+            : `Click to toggle ${d.label} as a DM Boon (CL = Character Level ${activeLevels}) without overwriting your class disciplines`;
 
           return `
-            <button type="button" data-action="spells:toggle-homebrew" data-discipline="${d.key}" class="p-2 rounded-xl border text-left transition flex items-center justify-between gap-2 cursor-pointer active:scale-95 ${activeClass}" title="Click to toggle ${UI.escapeAttr(d.label)} as a Homebrew (CL = Character Level ${activeLevels}) without overwriting your class disciplines">
+            <button type="button" data-action="spells:toggle-homebrew" data-discipline="${d.key}" class="p-2 rounded-xl border text-left transition flex items-center justify-between gap-2 ${activeClass}" title="${UI.escapeAttr(titleText)}">
               <span class="flex items-center gap-1.5 text-[11px] font-bold truncate">
                 <span>${d.icon}</span>
                 <span class="truncate">${UI.escapeHtml(d.label)}</span>
@@ -9356,23 +9373,32 @@
         const modalBar = document.getElementById(barId);
         if (!modalBar) return;
         modalBar.innerHTML = DISCIPLINES.map(d => {
-          const isBoon = boons.includes(d.key);
+          const isBoon = settingsBoons.includes(d.key);
+          const entrySrc = entrySources.find(s => s.disc === d.key) || null;
+          const isEntryOnly = Boolean(entrySrc && !isBoon);
           const hasClass = d.classLvl > 0;
-          const chipCls = isBoon
-            ? 'bg-gradient-to-r from-purple-700 to-indigo-700 border-purple-400 text-white shadow-sm ring-1 ring-purple-400/50'
-            : (hasClass
-              ? 'bg-emerald-950/70 border-emerald-600/60 text-emerald-200 hover:border-purple-400'
-              : 'bg-slate-950/90 border-slate-800 text-slate-400 hover:text-white hover:border-slate-600');
-          const stateText = isBoon
-            ? `🌟 Boon (CL ${activeLevels})`
-            : (hasClass ? `Class Lvl ${d.classLvl}` : `+ Boon`);
+          const chipCls = isEntryOnly
+            ? 'bg-cyan-950/60 border-cyan-500/70 text-cyan-100 cursor-default'
+            : (isBoon
+              ? 'bg-gradient-to-r from-purple-700 to-indigo-700 border-purple-400 text-white shadow-sm ring-1 ring-purple-400/50 cursor-pointer active:scale-95'
+              : (hasClass
+                ? 'bg-emerald-950/70 border-emerald-600/60 text-emerald-200 hover:border-purple-400 cursor-pointer active:scale-95'
+                : 'bg-slate-950/90 border-slate-800 text-slate-400 hover:text-white hover:border-slate-600 cursor-pointer active:scale-95'));
+          const stateText = isEntryOnly
+            ? `🧬 ${entrySrc.sourceKind} (CL ${activeLevels})`
+            : (isBoon
+              ? `🌟 Boon (CL ${activeLevels})`
+              : (hasClass ? `Class Lvl ${d.classLvl}` : `+ Boon`));
+          const titleText = isEntryOnly
+            ? `Granted by ${entrySrc.sourceKind}: ${entrySrc.sourceName} (V3 Caster Chassis).`
+            : `Click to toggle ${d.label} DM Boon (CL = Character Level ${activeLevels}) without overwriting your class disciplines`;
           return `
-            <button type="button" data-action="spells:toggle-homebrew" data-discipline="${d.key}" class="px-2.5 py-1.5 rounded-lg border text-[10px] font-bold transition inline-flex items-center justify-between gap-1.5 cursor-pointer active:scale-95 ${chipCls}" title="Click to toggle ${UI.escapeAttr(d.label)} Homebrew (CL = Character Level ${activeLevels}) without overwriting your class disciplines">
+            <button type="button" data-action="spells:toggle-homebrew" data-discipline="${d.key}" class="px-2.5 py-1.5 rounded-lg border text-[10px] font-bold transition inline-flex items-center justify-between gap-1.5 ${chipCls}" title="${UI.escapeAttr(titleText)}">
               <span class="flex items-center gap-1 truncate">
                 <span>${d.icon}</span>
                 <span>${d.short}</span>
               </span>
-              <span class="font-mono text-[10px] px-1.5 rounded shrink-0">${stateText}</span>
+              <span class="font-mono text-[10px] px-1.5 rounded shrink-0">${UI.escapeHtml(stateText)}</span>
             </button>
           `;
         }).join('');
@@ -9386,8 +9412,18 @@
       const valid = ['spontaneous', 'prepared', 'divine', 'martial', 'warlock'];
       if (!valid.includes(target)) return;
 
-      const currentBoons = getCharacterBoonDisciplines(character);
+      const currentBoons = getSettingsBoonDisciplines(character);
       const wasActive = currentBoons.includes(target);
+      const entrySources = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getEntryCasterBoonSources === 'function')
+        ? RuleEngine.getEntryCasterBoonSources(character)
+        : [];
+      const entrySrc = entrySources.find(s => s.disc === target);
+      if (entrySrc && !wasActive) {
+        if (typeof showToast === 'function') {
+          showToast(`${entrySrc.sourceKind} "${entrySrc.sourceName}" already grants this casting discipline via V3 Caster Chassis. Edit it in Rule Crafter to change.`, 'info', { wrap: true });
+        }
+        return;
+      }
       const autoDisc = resolvePreferredMagicDiscipline(character) || 'spontaneous';
 
       if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
@@ -9479,44 +9515,22 @@
       const clModeSel = document.getElementById('setting-cl-mode');
       const casterTypeSel = document.getElementById('setting-caster-type');
       const casterTypeWrapper = document.getElementById('setting-caster-type-wrapper');
-      const casterTypeHint = document.getElementById('setting-caster-type-hint');
       renderCasterBoonUI();
+      // Single Source of Truth: hide redundant single-discipline override dropdown;
+      // multi-discipline DM Boons are managed in #setting-boon-disciplines-bar below.
+      if (casterTypeWrapper) {
+        casterTypeWrapper.classList.add('hidden');
+      }
+      if (clModeSel && clModeSel.parentElement) {
+        clModeSel.parentElement.classList.add('sm:col-span-2');
+      }
       if (!clModeSel || !casterTypeSel) return;
-
-      const clMode = clModeSel.value || '';
-      const boons = getCharacterBoonDisciplines(character);
-      const isBoon = clMode === 'Character Level (Homebrew)' || clMode.includes('Warlock Boon') || boons.length > 0;
-
-      if (!isBoon) {
-        casterTypeSel.disabled = true;
-        casterTypeSel.classList.add('opacity-50', 'cursor-not-allowed', 'bg-slate-900/60');
-        if (casterTypeWrapper) {
-          casterTypeWrapper.classList.add('opacity-60');
-        }
-        if (casterTypeHint) {
-          casterTypeHint.textContent = 'RAW: Auto-detected from Class';
-          casterTypeHint.className = 'text-[10px] font-mono text-emerald-400 font-bold transition';
-        }
-        const autoDisc = resolvePreferredMagicDiscipline(character);
-        if (autoDisc && casterTypeSel.querySelector(`option[value="${autoDisc}"]`)) {
-          casterTypeSel.value = autoDisc;
-        }
-      } else {
-        casterTypeSel.disabled = false;
-        casterTypeSel.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-slate-900/60');
-        if (casterTypeWrapper) {
-          casterTypeWrapper.classList.remove('opacity-60');
-        }
-        if (casterTypeHint) {
-          casterTypeHint.textContent = boons.length > 1 ? `${boons.length} Homebrew Active` : 'Homebrew Override';
-          casterTypeHint.className = 'text-[10px] font-mono text-purple-300 font-bold transition';
-        }
-        const boonSelectVal = (character?.settings?.casterTypeExplicit === true && character?.settings?.casterType)
-          ? character.settings.casterType
-          : (boons[0] || resolvePreferredMagicDiscipline(character) || character?.settings?.casterType || 'spontaneous');
-        if (boonSelectVal && casterTypeSel.querySelector(`option[value="${boonSelectVal}"]`)) {
-          casterTypeSel.value = boonSelectVal;
-        }
+      const boons = getSettingsBoonDisciplines(character);
+      const boonSelectVal = (character?.settings?.casterTypeExplicit === true && character?.settings?.casterType)
+        ? character.settings.casterType
+        : (boons[0] || resolvePreferredMagicDiscipline(character) || character?.settings?.casterType || 'spontaneous');
+      if (boonSelectVal && casterTypeSel.querySelector(`option[value="${boonSelectVal}"]`)) {
+        casterTypeSel.value = boonSelectVal;
       }
     }
     function onSettingClModeChange() {
@@ -9532,7 +9546,7 @@
         if (isWarlock) {
           character.settings.casterType = 'warlock';
           character.settings.casterTypeExplicit = true;
-          const boons = getCharacterBoonDisciplines(character);
+          const boons = getSettingsBoonDisciplines(character);
           if (!boons.includes('warlock')) boons.push('warlock');
           character.settings.boonDisciplines = boons;
           if (typeSel) typeSel.value = 'warlock';
@@ -9541,9 +9555,7 @@
           const normType = chosenType === 'warlock' ? 'spontaneous' : chosenType;
           character.settings.casterType = normType;
           character.settings.casterTypeExplicit = true;
-          const boons = Array.isArray(character.settings.boonDisciplines)
-            ? character.settings.boonDisciplines.filter(d => d !== 'warlock')
-            : [];
+          const boons = getSettingsBoonDisciplines(character).filter(d => d !== 'warlock');
           if (!boons.includes(normType)) boons.push(normType);
           character.settings.boonDisciplines = boons;
           if (typeSel) typeSel.value = normType;
@@ -9582,9 +9594,7 @@
         character.settings.casterType = cType;
         character.settings.casterTypeExplicit = true;
 
-        const boons = Array.isArray(character.settings.boonDisciplines)
-          ? [...character.settings.boonDisciplines]
-          : getCharacterBoonDisciplines(character);
+        const boons = getSettingsBoonDisciplines(character);
         if (!boons.includes(cType)) {
           boons.push(cType);
         }

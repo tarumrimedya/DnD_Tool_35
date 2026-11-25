@@ -5318,8 +5318,8 @@ function runDeriveSheetTests() {
     const pwAttacks = RuleEngine.deriveSpecialAttacks(powerChar, null, []);
     const pwCard = pwAttacks.find(a => a.powerId === 'pw-fire-breath');
     check(
-      'Rule Crafter feat sub-power: "Dragon Breath — Fire Breath" special attack (2d6 Fire, Reflex half DC 15, 30-ft. Cone, 1/day, Standard Action) keyed entryId:powerId',
-      Boolean(pwCard) && pwCard.key === 'custom_dragon_breath:pw-fire-breath' && pwCard.name === 'Dragon Breath — Fire Breath' &&
+      'Rule Crafter feat sub-power: "Fire Breath" (source: Dragon Breath) special attack (2d6 Fire, Reflex half DC 15, 30-ft. Cone, 1/day, Standard Action) keyed entryId:powerId',
+      Boolean(pwCard) && pwCard.key === 'custom_dragon_breath:pw-fire-breath' && pwCard.name === 'Fire Breath' && pwCard.sourceLabel === 'Dragon Breath' &&
       pwCard.dmgFormula === '2d6' && pwCard.dmgType === 'Fire' && pwCard.save === 'Reflex (half)' && pwCard.dc === 15 &&
       /30-ft\. Cone/.test(pwCard.range) && pwCard.usageText === '1/day' && pwCard.action === 'Standard Action',
       JSON.stringify(pwCard || pwAttacks)
@@ -5423,8 +5423,8 @@ function runDeriveSheetTests() {
     const raceClaw = raceAttacks.find(a => a.powerId === 'pw-race-claw');
     const raceWings = raceAttacks.find(a => a.powerId === 'pw-race-wings');
     check(
-      'Race sub-power: "Black Dragon Avatar — Acid Breath" special attack (2d8 Acid, Recharge 1d4+1, Move Action)',
-      Boolean(raceAcid) && raceAcid.name === 'Black Dragon Avatar — Acid Breath' && raceAcid.dmgFormula === '2d8' && raceAcid.rechargeDice === '1d4+1' && raceAcid.action === 'Move Action',
+      'Race sub-power: "Acid Breath" (source: Black Dragon Avatar) special attack (2d8 Acid, Recharge 1d4+1, Move Action)',
+      Boolean(raceAcid) && raceAcid.name === 'Acid Breath' && raceAcid.sourceLabel === 'Black Dragon Avatar' && raceAcid.dmgFormula === '2d8' && raceAcid.rechargeDice === '1d4+1' && raceAcid.action === 'Move Action',
       JSON.stringify(raceAttacks.map(a => a.name))
     );
     check(

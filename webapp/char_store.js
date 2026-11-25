@@ -2280,6 +2280,89 @@
     });
   }
 
+  // Canonical single-writer helper for spending magic item charges (never mutates item `qty`).
+  // Mirrors updated `charges` / `dailyCharges` across bodySlots and gearPool copies sharing the same immutable `id`.
+  function spendItemChargeOnDoc(doc, ref, cost = 1) {
+    if (!doc || !ref || typeof ref !== 'object') return { ok: false, status: 'charge_source_missing' };
+    const spend = Math.max(1, Math.floor(Number(cost) || 1));
+    let liveItem = null;
+    if (ref.sourceType === 'slot' && ref.slotKey && doc.bodySlots && doc.bodySlots[ref.slotKey]) {
+      liveItem = doc.bodySlots[ref.slotKey];
+    } else if (ref.sourceType === 'pool' && Array.isArray(doc.gearPool) && ref.poolId) {
+      liveItem = doc.gearPool.find(g => g && (String(g.id || '') === String(ref.poolId) || String(g.inventoryId || '') === String(ref.poolId))) || null;
+    }
+    if (!liveItem) return { ok: false, status: 'charge_source_missing' };
+
+    const mirrorPeers = (updater) => {
+      const targetId = liveItem.id ? String(liveItem.id) : null;
+      if (!targetId) return;
+      if (doc.bodySlots && typeof doc.bodySlots === 'object') {
+        Object.values(doc.bodySlots).forEach(s => {
+          if (s && s !== liveItem && String(s.id || '') === targetId) updater(s);
+        });
+      }
+      if (Array.isArray(doc.gearPool)) {
+        doc.gearPool.forEach(g => {
+          if (g && g !== liveItem && String(g.id || '') === targetId) updater(g);
+        });
+      }
+    };
+
+    const powerId = ref.powerId || null;
+    if (powerId && liveItem.powerCharges && typeof liveItem.powerCharges === 'object' && liveItem.powerCharges[powerId] && liveItem.powerCharges[powerId].current !== undefined) {
+      const pc = liveItem.powerCharges[powerId];
+      const cur = Math.max(0, Number(pc.current) || 0);
+      if (cur < spend) return { ok: false, status: 'uses_exhausted', remaining: cur };
+      const next = Math.max(0, cur - spend);
+      pc.current = next;
+      mirrorPeers(p => { if (p.powerCharges && p.powerCharges[powerId]) p.powerCharges[powerId].current = next; });
+      return { ok: true, status: 'charge_spent', remaining: next };
+    }
+    if (typeof liveItem.charges === 'number' && Number.isFinite(liveItem.charges)) {
+      if (liveItem.charges < spend) return { ok: false, status: 'uses_exhausted', remaining: liveItem.charges };
+      const next = Math.max(0, liveItem.charges - spend);
+      liveItem.charges = next;
+      if (!liveItem.rechargePeriod) liveItem.rechargePeriod = 'never';
+      mirrorPeers(p => { p.charges = next; if (!p.rechargePeriod) p.rechargePeriod = 'never'; });
+      return { ok: true, status: 'charge_spent', remaining: next };
+    }
+    if (liveItem.dailyCharges && typeof liveItem.dailyCharges === 'object' && Number(liveItem.dailyCharges.max) > 0) {
+      const cur = liveItem.dailyCharges.current !== undefined ? Math.max(0, Number(liveItem.dailyCharges.current) || 0) : Number(liveItem.dailyCharges.max);
+      if (cur < spend) return { ok: false, status: 'uses_exhausted', remaining: cur };
+      const next = Math.max(0, cur - spend);
+      liveItem.dailyCharges.current = next;
+      mirrorPeers(p => { if (p.dailyCharges && typeof p.dailyCharges === 'object') p.dailyCharges.current = next; });
+      return { ok: true, status: 'charge_spent', remaining: next };
+    }
+    if (Number(ref.seedMax) > 0) {
+      const maxVal = Math.max(1, Math.floor(Number(ref.seedMax)));
+      if (maxVal < spend) return { ok: false, status: 'uses_exhausted', remaining: maxVal };
+      const next = Math.max(0, maxVal - spend);
+      if (powerId) {
+        if (!liveItem.powerCharges || typeof liveItem.powerCharges !== 'object') liveItem.powerCharges = {};
+        liveItem.powerCharges[powerId] = { current: next, max: maxVal, rechargePeriod: 'never' };
+        mirrorPeers(p => {
+          if (!p.powerCharges || typeof p.powerCharges !== 'object') p.powerCharges = {};
+          p.powerCharges[powerId] = { current: next, max: maxVal, rechargePeriod: 'never' };
+        });
+      } else {
+        liveItem.charges = next;
+        liveItem.maxCharges = maxVal;
+        liveItem.rechargePeriod = 'never';
+        mirrorPeers(p => { p.charges = next; p.maxCharges = maxVal; p.rechargePeriod = 'never'; });
+      }
+      return { ok: true, status: 'charge_spent', remaining: next };
+    }
+    return { ok: false, status: 'charge_source_missing' };
+  }
+
+  CharStore.registerReducer('inventory/spendItemCharge', (doc, action, stateObj) => {
+    const payload = (action && action.payload) || {};
+    const res = spendItemChargeOnDoc(doc, payload.itemChargeRef || payload, payload.cost || 1);
+    setStoreOutcome(stateObj, res);
+    return doc;
+  });
+
   CharStore.registerReducer('combat/specialAttackRoll', (doc, action, stateObj) => {
     const payload = (action && action.payload) || {};
     const abilityKey = payload.abilityKey;
@@ -2297,7 +2380,14 @@
     }
     const usesMax = Math.max(0, Number(payload.usesMax) || 0);
     const usageMode = String(payload.usageMode || '');
-    if (usesMax && (usageMode === 'perDay' || usageMode === 'perEncounter' || usageMode === 'charges')) {
+    const itemChargeRef = payload.itemChargeRef && typeof payload.itemChargeRef === 'object' ? payload.itemChargeRef : null;
+    if (usageMode === 'charges' && itemChargeRef) {
+      const spendRes = spendItemChargeOnDoc(doc, itemChargeRef, payload.cost || 1);
+      if (!spendRes.ok) {
+        setStoreOutcome(stateObj, { status: spendRes.status, abilityKey, usesMax, remaining: spendRes.remaining });
+        return doc;
+      }
+    } else if (usesMax && (usageMode === 'perDay' || usageMode === 'perEncounter' || usageMode === 'perHour' || usageMode === 'charges')) {
       if (!doc.powerUses || typeof doc.powerUses !== 'object' || Array.isArray(doc.powerUses)) doc.powerUses = {};
       const prev = doc.powerUses[abilityKey];
       const used = Math.max(0, Number(prev && typeof prev === 'object' ? prev.used : prev) || 0);
@@ -2347,6 +2437,24 @@
     syncCooldownOnDoc(doc, abilityKey, payload.name || abilityKey, 0, payload.resourceId);
     setStoreOutcome(stateObj, {
       status: 'special_attack_ready',
+      abilityKey
+    });
+    return doc;
+  });
+
+  // Explicit manual/GM reset of tracked power uses (perHour / perEncounter / perDay), separate from round cooldown clear.
+  CharStore.registerReducer('combat/powerUsesReset', (doc, action, stateObj) => {
+    const payload = (action && action.payload) || {};
+    const abilityKey = payload.abilityKey;
+    if (!abilityKey) {
+      setStoreOutcome(stateObj, { status: 'invalid_payload' });
+      return doc;
+    }
+    if (doc.powerUses && typeof doc.powerUses === 'object' && Object.prototype.hasOwnProperty.call(doc.powerUses, abilityKey)) {
+      delete doc.powerUses[abilityKey];
+    }
+    setStoreOutcome(stateObj, {
+      status: 'power_uses_reset',
       abilityKey
     });
     return doc;
@@ -7073,7 +7181,10 @@
       doc.tactical.round = 1;
     }
     doc.specialAttackCooldowns = {};
-    resetPowerUsesOnDoc(doc, ['perDay', 'perEncounter']);
+    const longRestUsageModes = (typeof RuleEngine !== 'undefined' && RuleEngine.rulesets?.dnd35 && typeof RuleEngine.rulesets.dnd35.getUsageModesResetOn === 'function')
+      ? RuleEngine.rulesets.dnd35.getUsageModesResetOn('longRest')
+      : ['perDay', 'perEncounter', 'perHour'];
+    resetPowerUsesOnDoc(doc, longRestUsageModes);
     doc.actionEconomy = { standard: true, move: true, swift: true, immediate: true };
     doc.tactical.spentActions = { standard: false, move: false, swift: false, immediate: false, fullRound: false };
 
