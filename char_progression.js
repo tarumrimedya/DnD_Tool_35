@@ -1705,6 +1705,21 @@
               });
             }
           });
+        } else if (activeQuickFeatSlotContract && activeQuickFeatSlotContract.mode === 'epic_pool') {
+          const choiceIdSet = new Set((activeQuickFeatSlotContract.choiceList || []).map(id => String(id).toLowerCase()));
+          const incTags = new Set((activeQuickFeatSlotContract.includeTags || []).map(t => String(t).toLowerCase()));
+          baseList = combined.filter(f => {
+            if (!f) return false;
+            const fid = String(f.id || '').toLowerCase();
+            if (fid && choiceIdSet.has(fid)) return true;
+            if (incTags.has('isfighterbonusfeat') && isFighterFeat(f)) return true;
+            const c = String(f.category || f.type || '').toLowerCase();
+            if (c && incTags.has(c)) return true;
+            if (Array.isArray(f.featTags) && f.featTags.some(t => incTags.has(String(t).toLowerCase()))) return true;
+            if (Array.isArray(f.tags) && f.tags.some(t => incTags.has(String(t).toLowerCase()))) return true;
+            return false;
+          });
+          if (baseList.length === 0) baseList = combined.filter(f => f && (f.category === 'Epic' || f.isEpic));
         } else if (activeQuickFeatSlotContract && activeQuickFeatSlotContract.mode === 'category') {
           const allowedCats = new Set((activeQuickFeatSlotContract.categories || []).map(c => c.toLowerCase()));
           const allowedNames = new Set((activeQuickFeatSlotContract.allowFeats || []).map(n => n.toLowerCase()));
@@ -6687,7 +6702,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
           statHint.textContent = `🌟 Level ${nextLvl}: +1 Ability Score Increase Available!`;
           statHint.className = 'badge bg-amber-950 text-amber-300 border border-amber-500 animate-pulse';
         } else {
-          statHint.textContent = 'At Levels 4, 8, 12, 16, 20';
+          statHint.textContent = 'Every 4 levels (4, 8, 12, 16, 20, 24…)';
           statHint.className = 'badge bg-slate-800 text-slate-400 border border-slate-700';
         }
       }

@@ -8675,6 +8675,288 @@ function runDeriveSheetTests() {
     }
   }
 
+  // ==========================================================================
+  // EPIC LEVELS (21+) ELH RAW GOLDEN SUITE
+  // ==========================================================================
+  {
+    const makeRows = (specs) => {
+      const out = [];
+      let lvl = 1;
+      for (const [className, count] of specs) {
+        for (let i = 0; i < count; i++) {
+          out.push({ level: lvl++, className, active: true, hpGain: 6, feats: [] });
+        }
+      }
+      return out;
+    };
+
+    // E1: Fighter 15 / Wizard 5 + Rogue 1 (Char Level 21)
+    const e1Rows = makeRows([['Fighter', 15], ['Wizard', 5], ['Rogue', 1]]);
+    const e1Std = RuleEngine.calculateProgression(e1Rows, { system: 'standard' });
+    check(
+      'Epic E1: Fighter 15/Wizard 5 + Rogue 1 (Lvl 21) freezes class BAB/Saves at 20 and grants +1 EAB only (no Rogue +2 Ref)',
+      e1Std.preEpicBab === 17 && e1Std.epicBab === 1 && e1Std.baseBab === 18 && e1Std.epicSave === 0 && e1Std.baseSaves.ref === 6,
+      JSON.stringify({ preEpicBab: e1Std.preEpicBab, epicBab: e1Std.epicBab, baseBab: e1Std.baseBab, ref: e1Std.baseSaves.ref })
+    );
+    const e1Iter = RuleEngine.rulesets.dnd35.calcIterativeBab(e1Std.baseBab, e1Std.preEpicBab);
+    check(
+      'Epic E1b: Fighter 15/Wizard 5 + Rogue 1 gets 4 iterative attacks [18, 13, 8, 3]',
+      JSON.stringify(e1Iter) === JSON.stringify([18, 13, 8, 3]),
+      JSON.stringify(e1Iter)
+    );
+
+    // E2: Wizard 10 / Fighter 10 + Fighter 1 (Char Level 21)
+    const e2Rows = makeRows([['Wizard', 10], ['Fighter', 11]]);
+    const e2Doc = {
+      name: 'Epic Eldritch Knight',
+      level: 21,
+      bab: 16,
+      abilities: { str: 10, dex: 10, con: 10, int: 18, wis: 10, cha: 10 },
+      settings: { progressionSystem: 'standard' },
+      levelProgression: e2Rows,
+      weapons: [{ id: 'w-ls', name: 'Longsword', damage: '1d8', crit: '19-20/x2', grip: '1-Hand' }],
+      buffs: [],
+      feats: []
+    };
+    const e2Calc = RuleEngine.calculateProgression(e2Rows, { system: 'standard', character: e2Doc });
+    const e2Wep = RuleEngine.evaluateWeaponAttack(e2Doc, e2Doc.weapons[0], { grip: '1-Hand' });
+    const e2Ftr11 = RuleEngine.getClassLevelFeatures('Fighter', 11, e2Doc);
+    check(
+      'Epic E2: Wizard 10/Fighter 10 + Fighter 1 (Lvl 21) has preEpicBab=15, epicBab=1, and strictly 3 iterative attacks [16, 11, 6]',
+      e2Calc.preEpicBab === 15 && e2Calc.epicBab === 1 && e2Calc.baseBab === 16 &&
+      e2Wep.iteratives.length === 3 && JSON.stringify(e2Wep.iteratives) === JSON.stringify([16, 11, 6]),
+      JSON.stringify({ calc: { pre: e2Calc.preEpicBab, epic: e2Calc.epicBab, base: e2Calc.baseBab }, iter: e2Wep.iteratives })
+    );
+    check(
+      'Epic E2b: Fighter class level 11 at Char Level 21 does NOT trigger Fighter Epic Bonus Feat (requires class level 22+)',
+      e2Ftr11.hasBonusFeat === false,
+      JSON.stringify(e2Ftr11)
+    );
+
+    // E3: Pure Fighter 24 + cadence/skill/feat checks
+    const e3Rows = makeRows([['Fighter', 24]]);
+    const e3Doc = {
+      name: 'Epic Champion',
+      level: 24,
+      abilities: { str: 20, dex: 14, con: 16, int: 10, wis: 10, cha: 10 },
+      settings: { progressionSystem: 'standard' },
+      levelProgression: e3Rows,
+      weapons: [],
+      buffs: [],
+      feats: []
+    };
+    const e3Derived = RuleEngine.deriveSheet(e3Doc, []);
+    const e3Ftr22 = RuleEngine.getClassLevelFeatures('Fighter', 22, e3Doc);
+    const e3Ftr23 = RuleEngine.getClassLevelFeatures('Fighter', 23, e3Doc);
+    const e3Ftr24 = RuleEngine.getClassLevelFeatures('Fighter', 24, e3Doc);
+    const e3Prog = e3Derived.progression;
+    check(
+      'Epic E3: Pure Fighter 24 has preEpicBab=20, epicBab=2, epicSave=2, baseBab=22, maxClassRank=27, 9 standard feats (1,3,6,9,12,15,18,21,24)',
+      e3Prog.progressionSummary.preEpicBab === 20 &&
+      e3Prog.progressionSummary.epicBab === 2 &&
+      e3Prog.progressionSummary.epicSave === 2 &&
+      e3Prog.progressionSummary.totalBab === 22 &&
+      e3Prog.skillBudgetsView.maxClassRank === 27 &&
+      e3Prog.featSlotsView.regularSlotsEarned === 9,
+      JSON.stringify({ prog: e3Prog.progressionSummary, skill: e3Prog.skillBudgetsView.maxClassRank, regFeats: e3Prog.featSlotsView.regularSlotsEarned })
+    );
+    check(
+      'Epic E3b: Fighter V3 epicProgression grants epic_pool bonus feats at class levels 22 & 24 (not 23)',
+      e3Ftr22.hasBonusFeat === true && e3Ftr22.bonusFeatContract?.mode === 'epic_pool' &&
+      e3Ftr23.hasBonusFeat === false &&
+      e3Ftr24.hasBonusFeat === true && e3Ftr24.bonusFeatContract?.mode === 'epic_pool',
+      JSON.stringify({ l22: e3Ftr22.bonusFeatContract?.mode, l23: e3Ftr23.hasBonusFeat, l24: e3Ftr24.bonusFeatContract?.mode })
+    );
+
+    // E4: Canonical racialHitDice (RHD 4 + Fighter 17 = Char Level 21) + pre-epic RHD iterative regression check
+    const e4Rows = makeRows([['Fighter', 17]]);
+    const e4Doc = {
+      name: 'Ogre Epic Fighter',
+      level: 17,
+      racialHitDice: 4,
+      abilities: { str: 20, dex: 10, con: 14, int: 10, wis: 10, cha: 10 },
+      settings: { progressionSystem: 'standard' },
+      levelProgression: e4Rows,
+      weapons: [],
+      buffs: [],
+      feats: []
+    };
+    const e4Calc = RuleEngine.calculateProgression(e4Rows, { system: 'standard', character: e4Doc });
+    const e4Derived = RuleEngine.deriveSheet(e4Doc, []);
+    check(
+      'Epic E4: Canonical racialHitDice=4 + Fighter 17 triggers epic split at Fighter 17 (preEpicBab=16, epicBab=1, epicClassLevels=1, maxClassRank=24)',
+      e4Calc.preEpicBab === 16 && e4Calc.epicBab === 1 && e4Calc.baseBab === 17 &&
+      e4Calc.epicClassLevels === 1 && e4Derived.progression.skillBudgetsView.maxClassRank === 24,
+      JSON.stringify({ calc: { pre: e4Calc.preEpicBab, epic: e4Calc.epicBab, ecl: e4Calc.epicClassLevels }, maxRank: e4Derived.progression.skillBudgetsView.maxClassRank })
+    );
+    const e4bDoc = {
+      name: 'RHD Fighter Pre-Epic',
+      level: 6,
+      racialHitDice: 6,
+      bab: 12,
+      abilities: { str: 10, dex: 10, con: 14, int: 10, wis: 10, cha: 10 },
+      settings: { progressionSystem: 'standard' },
+      levelProgression: makeRows([['Fighter', 6]]),
+      weapons: [{ id: 'w-ga', name: 'Greataxe', damage: '1d12', crit: '20/x3', grip: '2-Hand' }],
+      buffs: [],
+      feats: []
+    };
+    const e4bWep = RuleEngine.evaluateWeaponAttack(e4bDoc, e4bDoc.weapons[0], { grip: '2-Hand' });
+    check(
+      'Epic E4b: Pre-epic 6 RHD + Fighter 6 (BAB 12) preserves 3 iterative attacks [12, 7, 2] without regression',
+      e4bWep.iteratives.length === 3 && JSON.stringify(e4bWep.iteratives) === JSON.stringify([12, 7, 2]),
+      JSON.stringify(e4bWep.iteratives)
+    );
+
+    // E5: Wizard 23 (Epic Bonus Feat cadence 23/3 + Spells per Day clamped at 20)
+    const e5Wiz22 = RuleEngine.getClassLevelFeatures('Wizard', 22);
+    const e5Wiz23 = RuleEngine.getClassLevelFeatures('Wizard', 23);
+    const e5Slots20 = RuleEngine.getClassSpellSlots('Wizard', 20, 22);
+    const e5Slots22 = RuleEngine.getClassSpellSlots('Wizard', 22, 22);
+    check(
+      'Epic E5: Wizard 23 gets epic_pool bonus feat (Metamagic/Item Creation) and Spells per Day freeze at Wizard 20',
+      e5Wiz22.hasBonusFeat === false &&
+      e5Wiz23.hasBonusFeat === true &&
+      e5Wiz23.bonusFeatContract?.mode === 'epic_pool' &&
+      Array.isArray(e5Wiz23.bonusFeatContract?.includeTags) &&
+      e5Wiz23.bonusFeatContract.includeTags.includes('Metamagic') &&
+      JSON.stringify(e5Slots20) === JSON.stringify(e5Slots22),
+      JSON.stringify({ l22: e5Wiz22.hasBonusFeat, l23: e5Wiz23.bonusFeatContract, slotsMatch: JSON.stringify(e5Slots20) === JSON.stringify(e5Slots22) })
+    );
+
+    // E6: Divine Power (babEqualsLevel) at Char Level 22 -> literal charLvl BAB (22) with max 4 iterative attacks [22, 17, 12, 7]
+    const e6Doc = {
+      name: 'Epic Cleric',
+      level: 22,
+      bab: 16,
+      abilities: { str: 10, dex: 10, con: 14, int: 10, wis: 22, cha: 10 },
+      weapons: [{ id: 'w-mace', name: 'Heavy Mace', damage: '1d8', crit: '20/x2', grip: '1-Hand' }],
+      buffs: [{ id: 'b-dp', name: 'Divine Power', active: true, ruleFlags: { babEqualsLevel: true } }],
+      feats: []
+    };
+    const e6Wep = RuleEngine.evaluateWeaponAttack(e6Doc, e6Doc.weapons[0], { grip: '1-Hand' });
+    check(
+      'Epic E6: Divine Power (babEqualsLevel) at Level 22 grants literal BAB 22 with max 4 iterative attacks [22, 17, 12, 7]',
+      e6Wep.netAttackBonus === 22 && e6Wep.iteratives.length === 4 && JSON.stringify(e6Wep.iteratives) === JSON.stringify([22, 17, 12, 7]),
+      JSON.stringify({ net: e6Wep.netAttackBonus, iter: e6Wep.iteratives })
+    );
+
+    // E7: Improved Spell Capacity (ELH p.57) — unlocks Level 10 slot + lifts metamagic maxSpellLevel to 10
+    const e7Doc = {
+      name: 'Epic Archmage',
+      level: 21,
+      abilities: { str: 10, dex: 12, con: 14, int: 30, wis: 12, cha: 12 },
+      settings: { progressionSystem: 'standard' },
+      levelProgression: makeRows([['Wizard', 21]]),
+      feats: [
+        { id: 'feat-improved-spell-capacity', name: 'Improved Spell Capacity', choice: '10' },
+        { id: 'feat-quicken-spell', name: 'Quicken Spell' }
+      ],
+      spellcasting: { wizard: { casterLevel: 21, slots: [] } },
+      weapons: [],
+      buffs: []
+    };
+    const e7Cap = RuleEngine.getEpicSpellCapacitySlots(e7Doc);
+    const e7Derived = RuleEngine.deriveSheet(e7Doc, []);
+    const e7Slot10 = (e7Derived.spells?.slotsByLevelView?.preparedArray || []).find(s => Number(s.level) === 10);
+    const e7Slot10Map = e7Derived.spells?.slotsByLevelView?.prepared?.[10];
+    const e7MmOk = RuleEngine.resolveMetamagic({ name: 'Disintegrate', level: 6, metamagic: [{ id: 'feat-quicken-spell', name: 'Quicken Spell', transform: 'quicken', slotAdj: 4 }] }, e7Doc);
+    const e7MmOver = RuleEngine.resolveMetamagic({ name: 'Forcecage', level: 7, metamagic: [{ id: 'feat-quicken-spell', name: 'Quicken Spell', transform: 'quicken', slotAdj: 4 }] }, e7Doc);
+    check(
+      'Epic E7: Improved Spell Capacity unlocks Level 10 slot (INT 30 -> 2/day, in array & toLevelMap) and allows Quickened L6 (slot 10) while blocking L7 (slot 11)',
+      e7Cap.maxUnlockedLevel === 10 &&
+      e7Slot10 && e7Slot10.isEpicSlot === true && e7Slot10.daily === 2 &&
+      e7Slot10Map && e7Slot10Map.daily === 2 &&
+      e7MmOk.effectiveSlotLevel === 10 && e7MmOk.exceedsMaxLevel === false && e7MmOk.isValid === true &&
+      e7MmOver.effectiveSlotLevel === 11 && e7MmOver.exceedsMaxLevel === true,
+      JSON.stringify({ cap: e7Cap, slot10: e7Slot10, map10: e7Slot10Map, mmOk: { eff: e7MmOk.effectiveSlotLevel, ok: e7MmOk.isValid }, mmOver: { eff: e7MmOver.effectiveSlotLevel, over: e7MmOver.exceedsMaxLevel } })
+    );
+
+    // E7b: Spontaneous Sorcerer 21 + ISC unlocks Level 10 slot, and Wizard 20/Cleric 1 unscoped ISC does not double-grant to Cleric
+    const e7SorcDoc = {
+      name: 'Epic Sorcerer',
+      level: 21,
+      abilities: { str: 10, dex: 12, con: 14, int: 12, wis: 12, cha: 30 },
+      settings: { progressionSystem: 'standard' },
+      levelProgression: makeRows([['Sorcerer', 21]]),
+      feats: [{ id: 'feat-improved-spell-capacity', name: 'Improved Spell Capacity', choice: '10', tradition: 'Spontaneous Arcane' }],
+      spellcasting: { slots: [] },
+      weapons: [],
+      buffs: []
+    };
+    const e7SorcDerived = RuleEngine.deriveSheet(e7SorcDoc, []);
+    const e7Sorc10 = e7SorcDerived.spells?.slotsByLevelView?.spontaneous?.[10];
+    const e7MultiDoc = {
+      name: 'Epic Wiz/Clr',
+      level: 21,
+      abilities: { str: 10, dex: 12, con: 14, int: 30, wis: 30, cha: 12 },
+      settings: { progressionSystem: 'standard' },
+      levelProgression: makeRows([['Wizard', 20], ['Cleric', 1]]),
+      feats: [{ id: 'feat-improved-spell-capacity', name: 'Improved Spell Capacity', choice: '10' }],
+      spellcasting: { wizard: { casterLevel: 20, slots: [] }, divineSlots: [] },
+      weapons: [],
+      buffs: []
+    };
+    const e7MultiDerived = RuleEngine.deriveSheet(e7MultiDoc, []);
+    check(
+      'Epic E7b: Spontaneous Sorcerer 21 gets ISC Level 10 slot (2/day); Wizard 20/Cleric 1 unscoped ISC grants to primary (Wizard) only, not Cleric',
+      Boolean(e7Sorc10 && e7Sorc10.isEpicSlot === true && e7Sorc10.daily === 2) &&
+      Boolean(e7MultiDerived.spells?.slotsByLevelView?.prepared?.[10]?.daily === 2) &&
+      !e7MultiDerived.spells?.slotsByLevelView?.divine?.[10],
+      JSON.stringify({ sorc10: e7Sorc10, multiPrep10: e7MultiDerived.spells?.slotsByLevelView?.prepared?.[10], multiDiv10: e7MultiDerived.spells?.slotsByLevelView?.divine?.[10] })
+    );
+
+    // E8: Lightweight Epic Spellcasting (ELH p.55/71) — daily slots = floor(Knowledge ranks / 10) + Epic spells use epic_spell_slots resource (not normal spellSlot)
+    const e8Feat = RuleEngine.getMasterDbEntry('Epic Spellcasting', 'Feat');
+    const e8Char = {
+      level: 21,
+      skills: { knowledge_arcana: { ranks: 24, isClassSkill: true } }
+    };
+    const e8ResBlock = e8Feat && Array.isArray(e8Feat.effects) ? e8Feat.effects.find(ef => ef && ef.type === 'resource' && ef.varKey === 'epic_spell_slots') : null;
+    const e8EvalMax = e8ResBlock ? RuleEngine.evaluateFormula(e8ResBlock.maxFormula, RuleEngine.buildV3FormulaContext(e8Char, e8Feat)) : 0;
+    const e8Spell = RuleEngine.getMasterDbEntry('Epic Mage Armor', 'Spell');
+    check(
+      'Epic E8: Epic Spellcasting V3 resource evaluates Knowledge (Arcana) 24 ranks -> 2 slots/day, and Epic Mage Armor uses resource epic_spell_slots (no normal spell level, spellcraftDc:46)',
+      Boolean(e8ResBlock) && e8EvalMax === 2 &&
+      Boolean(e8Spell && e8Spell.epic === true && e8Spell.level === null && e8Spell.spellcraftDc === 46 &&
+        e8Spell.lifecycle?.usage?.mode === 'resource' && e8Spell.lifecycle?.usage?.resourceKey === 'epic_spell_slots' &&
+        Array.isArray(e8Spell.spell?.classLevels) && e8Spell.spell.classLevels.length === 0),
+      JSON.stringify({ resFound: Boolean(e8ResBlock), evalMax: e8EvalMax, spell: e8Spell ? { epic: e8Spell.epic, lvl: e8Spell.level, dc: e8Spell.spellcraftDc, usage: e8Spell.lifecycle?.usage, cl: e8Spell.spell?.classLevels } : null })
+    );
+
+    // E9: Epic Class Feature Scaling (Rogue 23 Sneak Attack = 12d6, Druid 22/26 Wild Shape = 7/8/day)
+    const e9RogueDoc = {
+      name: 'Epic Rogue',
+      level: 23,
+      levelProgression: makeRows([['Rogue', 23]])
+    };
+    const e9RankMap = RuleEngine.computeFeatureRankMap(e9RogueDoc);
+    const e9Ws22 = RuleEngine.rulesets.dnd35.getWildShapeProfile(22, true);
+    const e9Ws26 = RuleEngine.rulesets.dnd35.getWildShapeProfile(26, true);
+    check(
+      'Epic E9: Rogue 23 Sneak Attack scales to rank 12 (12d6) via V3 epicProgression.features[], Druid 22/26 Wild Shape scales to 7/8 uses/day',
+      e9RankMap['cab-sneak-attack'] === 12 && e9Ws22.dailyUses === 7 && e9Ws26.dailyUses === 8,
+      JSON.stringify({ sneakRank: e9RankMap['cab-sneak-attack'], ws22: e9Ws22.dailyUses, ws26: e9Ws26.dailyUses })
+    );
+
+    // E10: 10-level Prestige Class Epic Continuation (ELH p.18-19)
+    const prc10Def = { id: 'cls-test-prc10', name: 'Test 10-Lvl PrC', isPrestige: true, type: 'Prestige Class', maxLevel: 10 };
+    const prc5Def = { id: 'cls-test-prc5', name: 'Test 5-Lvl PrC', isPrestige: true, type: 'Prestige Class', maxLevel: 5 };
+    const preEpicRows = makeRows([['Fighter', 5], ['Test 10-Lvl PrC', 10]]);
+    const epicRows10 = makeRows([['Fighter', 10], ['Test 10-Lvl PrC', 10]]);
+    const epicRows5 = makeRows([['Fighter', 15], ['Test 5-Lvl PrC', 5]]);
+    const capPreEpic = RuleEngine.getClassLevelCapStatus(prc10Def, preEpicRows, { classDef: prc10Def });
+    const capEpic10 = RuleEngine.getClassLevelCapStatus(prc10Def, epicRows10, { classDef: prc10Def });
+    const capEpic5 = RuleEngine.getClassLevelCapStatus(prc5Def, epicRows5, { classDef: prc5Def });
+    check(
+      'Epic E10: 10-level PrC caps at 10 pre-epic (charLvl 15), unlocks epic continuation at charLvl 21+, while 5-level PrC stays capped at 5',
+      capPreEpic.atCap === true && capPreEpic.epicContinuationUnlocked === false &&
+      capEpic10.atCap === false && capEpic10.epicContinuationUnlocked === true && capEpic10.remaining === Infinity &&
+      capEpic5.atCap === true && capEpic5.epicContinuationUnlocked === false,
+      JSON.stringify({ preEpic: capPreEpic, epic10: capEpic10, epic5: capEpic5 })
+    );
+  }
+
   CharStore.clearHistory();
 
   return { passed, elapsedMs: Date.now() - startMs };

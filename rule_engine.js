@@ -33,11 +33,14 @@ const RuleEngine = {
         return isClassSkill ? maxCls : maxCls / 2;
       },
       calcSkillPointCost(isClassSkill) { return isClassSkill ? 1 : 2; },
-      calcIterativeBab(bab) {
-        const b = Math.max(0, Math.floor(Number(bab) || 0));
-        const out = [b];
-        let cur = b - 5;
-        while (cur >= 1 && out.length < 4) { out.push(cur); cur -= 5; }
+      calcIterativeBab(bab, preEpicBab) {
+        const eff = Math.max(0, Math.floor(Number(bab) || 0));
+        const countBasis = (preEpicBab !== undefined && preEpicBab !== null && Number.isFinite(Number(preEpicBab)))
+          ? Math.max(0, Math.floor(Number(preEpicBab)))
+          : eff;
+        const attackCount = Math.min(4, Math.max(1, Math.floor((Math.max(1, countBasis) - 1) / 5) + 1));
+        const out = [];
+        for (let i = 0; i < attackCount; i++) out.push(eff - i * 5);
         return out;
       },
       calcGrapple(bab, strMod, sizeMod, misc) {
@@ -484,6 +487,21 @@ const RuleEngine = {
           }
           if (!fId || replacedSet.has(fId)) return;
           counts[fId] = (counts[fId] || 0) + 1;
+        });
+      }
+      // Pure Canonical V3 Epic Class Feature Scaling (ELH, class levels > 20)
+      if (clsLvl > 20 && clsDef.epicProgression && Array.isArray(clsDef.epicProgression.features)) {
+        clsDef.epicProgression.features.forEach(ef => {
+          if (!ef || !ef.id || !ef.scaling) return;
+          const fId = String(ef.id).trim().toLowerCase();
+          if (!fId || replacedSet.has(fId)) return;
+          const fromLvl = Number(ef.scaling.from) || 21;
+          const everyLvl = Math.max(1, Number(ef.scaling.every) || 2);
+          const amt = Math.max(1, Number(ef.scaling.amount) || 1);
+          if (clsLvl >= fromLvl) {
+            const steps = Math.floor((clsLvl - fromLvl) / everyLvl) + 1;
+            counts[fId] = (counts[fId] || 0) + (steps * amt);
+          }
         });
       }
     });
@@ -1585,18 +1603,31 @@ const RuleEngine = {
    * Single-source effective BAB resolver (base BAB + Divine Power / Transformation `babEqualsLevel`).
    * Shared by AC tactical resolution (Heedless Charge) and weapon attack resolution so BAB buffs never desync AC & Attack.
    */
-  resolveEffectiveBab(character, baseBabOverride) {
-    if (!character || typeof character !== 'object') return 0;
-    const charLvl = Number(character.level) || 1;
-    const rawBab = Number(baseBabOverride !== undefined ? baseBabOverride : character.bab) || 0;
-    const hasBabEqualsLevel = Boolean(Array.isArray(character.buffs) && character.buffs.some(b =>
+  // Canonical single-source Racial Hit Dice reader (supports canonical `racialHitDice` plus legacy aliases).
+  getCharacterRacialHd(character, options = null) {
+    const raw = options?.racialHitDice ?? options?.racialHd ?? options?.rhd
+      ?? character?.racialHitDice ?? character?.racialHd ?? character?.rhd ?? 0;
+    return Math.max(0, Math.floor(Number(raw) || 0));
+  },
+
+  // Single-source check for active Divine Power / Transformation `babEqualsLevel` ruleSwitch.
+  hasBabEqualsLevel(character) {
+    if (!character || !Array.isArray(character.buffs)) return false;
+    return character.buffs.some(b =>
       b && b.active && (
         b.ruleFlags?.babEqualsLevel ||
         (Array.isArray(b.effects) && b.effects.some(ef => ef && ef.effectKind === 'ruleSwitch' && ef.flag === 'babEqualsLevel')) ||
+        b.id === 'spl-divine-power' || b.id === 'spl-transformation' ||
         /^(divine power|transformation)$/i.test(String(b.name || '').trim())
       )
-    ));
-    return hasBabEqualsLevel ? Math.max(rawBab, charLvl) : rawBab;
+    );
+  },
+
+  resolveEffectiveBab(character, baseBabOverride) {
+    if (!character || typeof character !== 'object') return 0;
+    const charLvl = (Number(character.level) || 1) + this.getCharacterRacialHd(character);
+    const rawBab = Number(baseBabOverride !== undefined ? baseBabOverride : character.bab) || 0;
+    return this.hasBabEqualsLevel(character) ? Math.max(rawBab, charLvl) : rawBab;
   },
 
   tacticalOptionsFromDoc(doc) {
@@ -10667,10 +10698,10 @@ const RuleEngine = {
           return;
         }
 
-        // Bonus Spell Slots (`spellSlot.level1` .. `spellSlot.level9`)
+        // Bonus Spell Slots (`spellSlot.level1` .. `spellSlot.level20`, including Improved Spell Capacity epic slots)
         if (target.startsWith('spellslot.level')) {
           const slotLvl = parseInt(target.replace('spellslot.level', ''), 10);
-          if (!isNaN(slotLvl) && slotLvl >= 0 && slotLvl <= 11) {
+          if (!isNaN(slotLvl) && slotLvl >= 0 && slotLvl <= 20) {
             bonusSpellSlotsByLevel[slotLvl] = (bonusSpellSlotsByLevel[slotLvl] || 0) + val;
           }
           return;
@@ -13403,14 +13434,43 @@ const RuleEngine = {
 
     const netFlatDamage = this.resolveBonusStacking(damageBonusItems);
 
-    // Iterative attacks for 3.5e: BAB >= 16 -> 4 attacks (+0/-5/-10/-15), BAB >= 11 -> 3, BAB >= 6 -> 2, otherwise 1
+    // Iterative attacks for 3.5e (ELH p.6 / DMG p.206):
+    // Number of iterative attacks is determined by pre-epic BAB (`bab - epicBab`, preserving RHD/monster/manual BAB, max 4);
+    // Epic Attack Bonus NEVER grants extra iterative attacks.
+    // Under Divine Power / Transformation (babEqualsLevel), BAB equals character level (RHD + class levels) with iterative count capped at 4.
     let iteratives = [netAttackBonus];
     if (effectiveManyshotArrows > 0) {
       iteratives = [netAttackBonus];
     } else {
-      if (bab >= 6) iteratives.push(netAttackBonus - 5);
-      if (bab >= 11) iteratives.push(netAttackBonus - 10);
-      if (bab >= 16) iteratives.push(netAttackBonus - 15);
+      const hasBabEq = this.hasBabEqualsLevel(character);
+      const rhd = this.getCharacterRacialHd(character, options);
+      let iterativeBasisBab = bab;
+      if (hasBabEq) {
+        iterativeBasisBab = Math.min(20, Math.max(1, charLvl + rhd));
+      } else {
+        let epicBabVal = 0;
+        if (options.epicBab !== undefined && options.epicBab !== null && Number.isFinite(Number(options.epicBab))) {
+          epicBabVal = Math.max(0, Number(options.epicBab));
+        } else if (character._derivedEpicBab !== undefined && character._derivedEpicBab !== null && Number.isFinite(Number(character._derivedEpicBab))) {
+          epicBabVal = Math.max(0, Number(character._derivedEpicBab));
+        } else if (Array.isArray(character.levelProgression) && character.levelProgression.length > 0) {
+          const activeClassCount = character.levelProgression.reduce((acc, r) => acc + (r && r.active !== false ? 1 : 0), 0);
+          if (rhd + activeClassCount > 20 && typeof this.calculateProgression === 'function') {
+            const progSys = character.settings?.progressionSystem || 'fractional';
+            const progCalc = this.calculateProgression(character.levelProgression, { system: progSys, character, racialHitDice: rhd });
+            if (progCalc && Number.isFinite(Number(progCalc.epicBab))) {
+              epicBabVal = Math.max(0, Number(progCalc.epicBab));
+            }
+          }
+        }
+        iterativeBasisBab = Math.max(0, bab - epicBabVal);
+      }
+      const activeRs = this.getActiveRuleset(character);
+      const iterFn = (activeRs && typeof activeRs.calcIterativeBab === 'function')
+        ? activeRs.calcIterativeBab
+        : this.rulesets.dnd35.calcIterativeBab;
+      const iterSteps = iterFn(bab, iterativeBasisBab);
+      iteratives = iterSteps.map((_, idx) => netAttackBonus - idx * 5);
 
       // Haste or extraAttackFullAttack ruleFlag grants 1 extra full attack at highest BAB
       const hasHaste = ruleFlags.extraAttackFullAttack || (character.buffs || []).some(b => b && b.active && (b.ruleFlags?.extraAttackFullAttack || (b.name || '').toLowerCase().includes('haste')));
@@ -14766,6 +14826,7 @@ const RuleEngine = {
       bonusFeatLevels,
       bonusFeatContract: srdClass.bonusFeatContract || prev.bonusFeatContract || null,
       bonusFeatContracts: srdClass.bonusFeatContracts || prev.bonusFeatContracts || null,
+      epicProgression: srdClass.epicProgression || prev.epicProgression || null,
       prerequisites: prereqsArr,
       casting: srdClass.casting || srdClass.spellcasting || prev.casting || prev.spellcasting || null,
       spellcasting: srdClass.spellcasting || srdClass.casting || prev.spellcasting || prev.casting || null,
@@ -14861,11 +14922,17 @@ const RuleEngine = {
     const normName = s => String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
     const isPrestige = Boolean(def && (def.isPrestige || def.type === 'Prestige Class'));
     const maxLevel = Number(def && ((def.progression && def.progression.maxLevel) || def.maxLevel)) || (isPrestige ? 10 : 20);
-    const hasCap = isPrestige || maxLevel < 20;
     const classId = def && def.id ? String(def.id).toLowerCase() : '';
     const targetName = normName(displayName);
     const rows = Array.isArray(levelProgression) ? levelProgression : [];
     const excludeIndex = Number.isInteger(options.excludeIndex) ? options.excludeIndex : -1;
+    const racialHd = this.getCharacterRacialHd(character, options);
+    const existingClassRows = rows.reduce((acc, r, i) => acc + ((r && typeof r === 'object' && i !== excludeIndex) ? 1 : 0), 0);
+    const charLevelBefore = racialHd + existingClassRows;
+    // ELH p.18-19 RAW: 10-level Prestige Classes unlock epic continuation once character level reaches 21+ (charLevelBefore >= 20).
+    // Shorter (<10-level) Prestige Classes remain capped at their maxLevel even in epic play.
+    const epicContinuationUnlocked = isPrestige && maxLevel >= 10 && charLevelBefore >= 20;
+    const hasCap = epicContinuationUnlocked ? false : (isPrestige || maxLevel < 20);
     // Row -> class id memo (keyed by row object, invalidated when the row's className changes)
     if (!this._rowClassIdCache) this._rowClassIdCache = new WeakMap();
     const rowClassId = (row, rowName) => {
@@ -14890,7 +14957,8 @@ const RuleEngine = {
       hasCap,
       taken,
       remaining: hasCap ? Math.max(0, maxLevel - taken) : Infinity,
-      atCap: hasCap && taken >= maxLevel
+      atCap: hasCap && taken >= maxLevel,
+      epicContinuationUnlocked
     };
   },
 
@@ -14988,10 +15056,28 @@ const RuleEngine = {
     const rawFeatures = (def.features && (def.features[cl] || def.features[String(cl)])) ? (def.features[cl] || def.features[String(cl)]) : [];
     const features = rawFeatures.map(f => (typeof f === 'string' ? f : f.name));
     const featureObjects = rawFeatures.map(f => (typeof f === 'string' ? { name: f, benefit: '' } : f));
-    const hasBonusFeat = Array.isArray(def.bonusFeatLevels) && def.bonusFeatLevels.includes(cl);
-
+    let hasBonusFeat = Array.isArray(def.bonusFeatLevels) && def.bonusFeatLevels.includes(cl);
     let bonusFeatContract = null;
-    if (hasBonusFeat) {
+
+    // Pure Canonical V3 Epic Class Bonus Feat cadence (ELH p.11-18, evaluated by class level > 20)
+    const epicBf = (cl > 20 && def.epicProgression && def.epicProgression.bonusFeat) ? def.epicProgression.bonusFeat : null;
+    if (epicBf) {
+      const fromLvl = Number(epicBf.from) || 21;
+      const everyLvl = Math.max(1, Number(epicBf.every) || 1);
+      if (cl >= fromLvl && ((cl - fromLvl) % everyLvl === 0)) {
+        hasBonusFeat = true;
+        bonusFeatContract = {
+          mode: 'epic_pool',
+          isEpic: true,
+          choiceList: Array.isArray(epicBf.choiceList) ? [...epicBf.choiceList] : [],
+          includeTags: Array.isArray(epicBf.includeTags) ? [...epicBf.includeTags] : [],
+          label: epicBf.label || `${className} Epic Bonus Feat (Level ${cl})`,
+          desc: `Select an eligible epic bonus feat for ${className} (Level ${cl}; prerequisites apply).`
+        };
+      }
+    }
+
+    if (hasBonusFeat && !bonusFeatContract) {
       bonusFeatContract = this.getClassBonusFeatContract(className, cl, character);
       if (!bonusFeatContract) {
         if (className === 'Fighter') {
@@ -15017,15 +15103,18 @@ const RuleEngine = {
     return { features, featureObjects, hasBonusFeat, bonusFeatContract };
   },
 
-  // D&D 3.5e Fractional BAB & Save Progression Calculator (Unearthed Arcana)
+  // D&D 3.5e Fractional BAB & Save Progression Calculator (Unearthed Arcana + ELH p.6)
   calculateProgression(levelProgression = [], options = {}) {
     const system = options.system || 'fractional'; // 'fractional' or 'standard'
     const isHuman = options.isHuman ?? true;
     const racialSkillBonus = typeof isHuman === 'number' ? isHuman : (isHuman ? 1 : 0);
     const intMod = Number(options.intMod) || 0;
     const charRef = options.character || null;
+    const racialHd = this.getCharacterRacialHd(charRef, options);
+    const epicThreshold = Number(this.rulesets?.dnd35?.epic?.threshold) || 20;
 
     let activeLevels = 0;
+    let epicClassLevels = 0;
     let plannedLevels = levelProgression.length;
     let baseHp = 0;
     let totalBabFractional = 0;
@@ -15048,15 +15137,16 @@ const RuleEngine = {
       if (!isActive) return;
 
       activeLevels++;
+      const totalCharLevelSoFar = racialHd + activeLevels;
       baseHp += Number(lvl.hpGain) || 0;
 
       const cName = lvl.className || 'Warblade';
       const cDef = this.getClassDef(cName, charRef) || { hd: 8, bab: 0.75, fort: 'poor', ref: 'poor', will: 'good', skills: 4 };
       classCounts[cName] = (classCounts[cName] || 0) + 1;
 
-      // D&D 3.5e RAW (DMG p.206): Class BAB & Base Save progressions stop at character level 20;
-      // levels 21+ grant Epic Attack Bonus (+1 odd) and Epic Save Bonus (+1 even) instead.
-      if (activeLevels <= 20) {
+      // D&D 3.5e RAW (DMG p.206 / ELH p.6): Class BAB & Base Save progressions stop at character level 20
+      // (RHD + class levels; LA excluded). Any class level taken after character level 20 grants EAB/ESB instead.
+      if (totalCharLevelSoFar <= epicThreshold) {
         preEpicClassCounts[cName] = (preEpicClassCounts[cName] || 0) + 1;
 
         // Fractional BAB
@@ -15083,6 +15173,8 @@ const RuleEngine = {
         } else {
           totalWillFractional += (1 / 3);
         }
+      } else {
+        epicClassLevels++;
       }
 
       // Skill Points (single source via rulesets/dnd35.js; respect explicit row.skillPts when set)
@@ -15090,8 +15182,8 @@ const RuleEngine = {
       if (lvl.skillPts !== undefined && lvl.skillPts !== null && Number(lvl.skillPts) > 0) {
         totalSkillPts += Number(lvl.skillPts);
       } else if (this.rulesets?.dnd35?.calcLevelSkillPoints) {
-        totalSkillPts += this.rulesets.dnd35.calcLevelSkillPoints(baseSkill, intMod, racialSkillBonus, activeLevels === 1);
-      } else if (activeLevels === 1) {
+        totalSkillPts += this.rulesets.dnd35.calcLevelSkillPoints(baseSkill, intMod, racialSkillBonus, activeLevels === 1 && racialHd === 0);
+      } else if (activeLevels === 1 && racialHd === 0) {
         totalSkillPts += (Math.max(1, baseSkill + intMod) + racialSkillBonus) * 4;
       } else {
         totalSkillPts += Math.max(1, baseSkill + intMod) + racialSkillBonus;
@@ -15130,21 +15222,34 @@ const RuleEngine = {
       });
     }
 
-    if (activeLevels > 20) {
+    const preEpicBab = finalBab;
+    const preEpicSaves = { fort: finalFort, ref: finalRef, will: finalWill };
+    let epicBab = 0;
+    let epicSave = 0;
+
+    if (epicClassLevels > 0) {
       const epicRes = (this.rulesets?.dnd35 && typeof this.rulesets.dnd35.calcEpicBonuses === 'function')
-        ? this.rulesets.dnd35.calcEpicBonuses(activeLevels)
-        : { epicBab: Math.floor((activeLevels - 19) / 2), epicSave: Math.floor((activeLevels - 20) / 2) };
-      finalBab += epicRes.epicBab;
-      finalFort += epicRes.epicSave;
-      finalRef += epicRes.epicSave;
-      finalWill += epicRes.epicSave;
+        ? this.rulesets.dnd35.calcEpicBonuses(epicThreshold + epicClassLevels)
+        : { epicBab: Math.floor((epicClassLevels + 1) / 2), epicSave: Math.floor(epicClassLevels / 2) };
+      epicBab = epicRes.epicBab;
+      epicSave = epicRes.epicSave;
+      finalBab += epicBab;
+      finalFort += epicSave;
+      finalRef += epicSave;
+      finalWill += epicSave;
     }
 
     return {
       activeLevels,
+      racialHd,
+      epicClassLevels,
       plannedLevels,
       baseHp,
       baseBab: finalBab,
+      preEpicBab,
+      epicBab,
+      epicSave,
+      preEpicSaves,
       baseSaves: { fort: finalFort, ref: finalRef, will: finalWill },
       totalSkillPoints: totalSkillPts,
       fractional: {
@@ -15154,6 +15259,7 @@ const RuleEngine = {
         will: totalWillFractional
       },
       classCounts,
+      preEpicClassCounts,
       activeFeats,
       activeSpecialAbilities
     };
@@ -17697,11 +17803,76 @@ const RuleEngine = {
    * Metamagic Rods, Sudden Metamagic), enforcing transform deduplication, max 1 Rod (DMG p.236),
    * Rod maxSpellLvl, Heighten Save DC (PHB p.88), and spontaneous casting time rules.
    */
+  // ELH p.57 RAW: Improved Spell Capacity grants +1 spell slot per day of a chosen epic level (up to max castable + 1), repeatable.
+  // Supports tradition/class scoping ('prepared' | 'spontaneous' | 'divine') so multiclass casters do not double-count an unscoped take.
+  // Returns { slotsByLevel: { [lvl]: count }, maxUnlockedLevel: number }.
+  getEpicSpellCapacitySlots(character, traditionFilter = null, primaryTradition = null) {
+    const slotsByLevel = {};
+    if (!character || typeof character !== 'object') return { slotsByLevel, maxUnlockedLevel: 9 };
+    const normTradition = (raw) => {
+      const s = String(raw || '').toLowerCase().trim();
+      if (!s) return null;
+      if (s.includes('spont')) return 'spontaneous';
+      if (s.includes('divine')) return 'divine';
+      if (s.includes('prep') || s.includes('arcane')) return 'prepared';
+      return null;
+    };
+    const takes = [];
+    const seenKeys = new Set();
+    const recordTake = (entry, sourceKey) => {
+      if (!entry) return;
+      const isObj = typeof entry === 'object';
+      const id = isObj ? String(entry.id || '').toLowerCase() : '';
+      const nm = isObj ? String(entry.name || entry.featName || '') : String(entry);
+      const isIsc = id === 'feat-improved-spell-capacity'
+        || (isObj && Array.isArray(entry.effects) && entry.effects.some(ef => ef && ef.flag === 'improved-spell-capacity'));
+      if (!isIsc) return;
+      if (sourceKey && seenKeys.has(sourceKey)) return;
+      if (sourceKey) seenKeys.add(sourceKey);
+      let chosen = null;
+      const rawChoice = isObj ? (entry.choice || entry.chosenOption || entry.selectedChoice || entry.slotLevel) : null;
+      if (rawChoice !== null && rawChoice !== undefined) {
+        const m = String(rawChoice).match(/\d+/);
+        if (m) chosen = parseInt(m[0], 10);
+      }
+      if (!chosen) {
+        const m = nm.match(/\(\s*(?:level\s*)?(\d+)\s*(?:th|st|nd|rd)?\s*\)/i);
+        if (m) chosen = parseInt(m[1], 10);
+      }
+      const explicitTrad = normTradition(isObj ? (entry.tradition || entry.casterTradition || entry.className || entry.targetClass || entry.chosenTradition || nm) : nm);
+      takes.push({ chosen, tradition: explicitTrad });
+    };
+    if (Array.isArray(character.feats)) {
+      character.feats.forEach((f, idx) => recordTake(f, `feat:${idx}`));
+    }
+    if (takes.length === 0 && Array.isArray(character.levelProgression)) {
+      character.levelProgression.forEach((row, rIdx) => {
+        if (!row || row.active === false || !Array.isArray(row.feats)) return;
+        row.feats.forEach((f, fIdx) => recordTake(f, `prog:${rIdx}:${fIdx}`));
+      });
+    }
+    const wantTrad = traditionFilter ? normTradition(traditionFilter) || String(traditionFilter).toLowerCase() : null;
+    const fallbackTrad = primaryTradition || 'prepared';
+    let nextAutoLevel = 10;
+    let maxUnlockedLevel = 9;
+    takes.forEach(t => {
+      const targetTrad = t.tradition || fallbackTrad;
+      if (wantTrad && targetTrad !== wantTrad) return;
+      const slotLvl = (Number.isInteger(t.chosen) && t.chosen >= 5 && t.chosen <= 20) ? t.chosen : nextAutoLevel;
+      slotsByLevel[slotLvl] = (slotsByLevel[slotLvl] || 0) + 1;
+      if (slotLvl >= nextAutoLevel) nextAutoLevel = slotLvl + 1;
+      if (slotLvl > maxUnlockedLevel) maxUnlockedLevel = slotLvl;
+    });
+    return { slotsByLevel, maxUnlockedLevel };
+  },
+
   resolveMetamagic(spellInst, character, options = {}) {
     const rs = (this.rulesets && this.rulesets.dnd35) || {};
     const txMap = rs.metamagicTransforms || {};
     const rules = rs.metamagicRules || { maxSpellLevel: 9, maxRodsPerSpell: 1, spontaneousRodFullRound: true, quickenAction: 'Swift Action' };
-    const maxSpellLevel = Number(options.maxSpellLevel ?? rules.maxSpellLevel ?? 9);
+    const epicCap = this.getEpicSpellCapacitySlots(character);
+    const defaultMaxSpellLevel = Math.max(Number(rules.maxSpellLevel ?? 9), epicCap.maxUnlockedLevel);
+    const maxSpellLevel = Number(options.maxSpellLevel ?? defaultMaxSpellLevel);
     const maxRodsPerSpell = Number(rules.maxRodsPerSpell ?? 1);
     const baseLevel = Math.max(0, Number(spellInst?.level ?? 0) || 0);
     const isSpontaneous = Boolean(options.isSpontaneous);
@@ -18594,6 +18765,11 @@ const RuleEngine = {
     })();
 
     // 4. Pure Slot Calculations
+    const primaryCasterTradition = ((wizLvls > 0 || hasPrepared) && prepCl >= spontCl && prepCl >= divCl && prepCl > 0)
+      ? 'prepared'
+      : (((sorcLvls > 0 || isSpontBoon) && spontCl >= divCl && spontCl > 0)
+        ? 'spontaneous'
+        : (((divLvls > 0 || hasDivine) && divCl > 0) ? 'divine' : 'prepared'));
     const calcPureSorcererSlots = (sorcLevel, chaScore, existingSlots = []) => {
       const prevSlots = Array.isArray(existingSlots) ? existingSlots : [];
       if (w.isNpc) {
@@ -18645,6 +18821,34 @@ const RuleEngine = {
             const used = prev ? Math.min(daily, Math.max(0, Number(prev.used) || 0)) : 0;
             built.push({ level: spellLvl, daily, total: daily, bonus, dmBonus, used, known: baseKnown });
           });
+          // ELH p.57: Improved Spell Capacity epic slots (above class max spell level)
+          const epicCapSpontTbl = this.getEpicSpellCapacitySlots(w, 'spontaneous', primaryCasterTradition);
+          const minEpicLvl = row.length;
+          const epicSpontTblLevels = new Set([
+            ...Object.keys(epicCapSpontTbl.slotsByLevel).map(Number),
+            ...(primaryCasterTradition === 'spontaneous' ? Object.keys(w.bonusSpellSlotsByLevel || {}).map(Number).filter(l => l >= minEpicLvl) : [])
+          ]);
+          Array.from(epicSpontTblLevels).sort((a, b) => a - b).forEach(sLvl => {
+            if (!Number.isInteger(sLvl) || sLvl < minEpicLvl || sLvl > 20) return;
+            const baseEpic = (Number(epicCapSpontTbl.slotsByLevel[sLvl]) || 0) + (primaryCasterTradition === 'spontaneous' ? (Number(w.bonusSpellSlotsByLevel?.[sLvl]) || 0) : 0);
+            if (baseEpic <= 0) return;
+            const canCast = castAbiVal >= (10 + sLvl);
+            const bonus = (canCast && castMod >= sLvl) ? (Math.floor((castMod - sLvl) / 4) + 1) : 0;
+            const prev = prevSlots.find(s => Number(s.level) === sLvl);
+            const dmBonus = prev ? (Number(prev.dmBonus) || 0) : 0;
+            const daily = canCast ? Math.max(0, baseEpic + bonus + dmBonus) : 0;
+            built.push({
+              level: sLvl,
+              daily,
+              total: daily,
+              bonus,
+              dmBonus,
+              used: prev ? Math.min(daily, Number(prev.used) || 0) : 0,
+              known: prev ? (Number(prev.known) || 0) : 0,
+              isEpicSlot: true,
+              lockedByAbilityScore: !canCast
+            });
+          });
           return built;
         }
       }
@@ -18686,8 +18890,37 @@ const RuleEngine = {
           used: usedVal
         };
       });
+      // ELH p.57: Improved Spell Capacity epic slots (10th+) for Spontaneous casters
+      const epicCapSpont = this.getEpicSpellCapacitySlots(w, 'spontaneous', primaryCasterTradition);
+      const epicSpontLevels = new Set([
+        ...Object.keys(epicCapSpont.slotsByLevel).map(Number),
+        ...(primaryCasterTradition === 'spontaneous' ? Object.keys(w.bonusSpellSlotsByLevel || {}).map(Number).filter(l => l >= base.length) : [])
+      ]);
+      Array.from(epicSpontLevels).sort((a, b) => a - b).forEach(sLvl => {
+        if (!Number.isInteger(sLvl) || sLvl < base.length || sLvl > 20) return;
+        const baseEpic = (Number(epicCapSpont.slotsByLevel[sLvl]) || 0) + (primaryCasterTradition === 'spontaneous' ? (Number(w.bonusSpellSlotsByLevel?.[sLvl]) || 0) : 0);
+        if (baseEpic <= 0) return;
+        const canCast = (Number(chaScore) || 10) >= (10 + sLvl);
+        const bonus = (canCast && cMod >= sLvl) ? (1 + Math.floor((cMod - sLvl) / 4)) : 0;
+        const prev = prevSlots.find(s => Number(s.level) === sLvl);
+        const dmBonus = prev ? (Number(prev.dmBonus) || 0) : 0;
+        const dailyTotal = canCast ? Math.max(0, baseEpic + bonus + dmBonus) : 0;
+        result.push({
+          level: sLvl,
+          name: `Level ${sLvl} (Epic)`,
+          known: prev ? (Number(prev.known) || 0) : 0,
+          knownBonus: prev ? (Number(prev.knownBonus) || 0) : 0,
+          daily: dailyTotal,
+          total: dailyTotal,
+          bonus,
+          dmBonus,
+          used: prev ? Math.min(dailyTotal, Number(prev.used) || 0) : 0,
+          isEpicSlot: true,
+          lockedByAbilityScore: !canCast
+        });
+      });
       prevSlots.forEach(prev => {
-        if (prev && Number(prev.level) >= base.length) {
+        if (prev && Number(prev.level) >= base.length && !result.some(r => r.level === Number(prev.level))) {
           const dVal = Number(prev.daily) || 0;
           result.push({
             level: Number(prev.level),
@@ -18735,8 +18968,35 @@ const RuleEngine = {
           known: daily
         };
       });
+      // ELH p.57: Improved Spell Capacity epic slots (10th+) + any bonusSpellSlotsByLevel[10+]
+      const epicCap = this.getEpicSpellCapacitySlots(w, 'prepared', primaryCasterTradition);
+      const epicSlotLevels = new Set([
+        ...Object.keys(epicCap.slotsByLevel).map(Number),
+        ...Object.keys(w.bonusSpellSlotsByLevel || {}).map(Number).filter(l => l >= baseDaily.length)
+      ]);
+      Array.from(epicSlotLevels).sort((a, b) => a - b).forEach(sLvl => {
+        if (!Number.isInteger(sLvl) || sLvl < baseDaily.length || sLvl > 20) return;
+        const baseEpic = (Number(epicCap.slotsByLevel[sLvl]) || 0) + (Number(w.bonusSpellSlotsByLevel?.[sLvl]) || 0);
+        if (baseEpic <= 0) return;
+        const canCast = (Number(intScore) || 10) >= (10 + sLvl);
+        const bonus = (canCast && iMod >= sLvl) ? Math.floor((iMod - sLvl) / 4) + 1 : 0;
+        const prev = prevSlots.find(s => Number(s.level) === sLvl);
+        const dmBonus = prev ? (Number(prev.dmBonus) || 0) : 0;
+        const daily = canCast ? Math.max(0, baseEpic + bonus + dmBonus) : 0;
+        result.push({
+          level: sLvl,
+          daily,
+          total: daily,
+          bonus,
+          dmBonus,
+          used: prev ? Math.min(daily, Number(prev.used) || 0) : 0,
+          known: daily,
+          isEpicSlot: true,
+          lockedByAbilityScore: !canCast
+        });
+      });
       prevSlots.forEach(prev => {
-        if (prev && Number(prev.level) >= baseDaily.length) {
+        if (prev && Number(prev.level) >= baseDaily.length && !result.some(r => r.level === Number(prev.level))) {
           const dVal = Number(prev.daily) || 0;
           result.push({
             level: Number(prev.level),
@@ -18848,8 +19108,40 @@ const RuleEngine = {
           known: daily
         };
       });
+      // ELH p.57: Improved Spell Capacity epic slots (10th+) for Divine casters
+      const epicCap = this.getEpicSpellCapacitySlots(w, 'divine', primaryCasterTradition);
+      const epicSlotLevels = new Set([
+        ...Object.keys(epicCap.slotsByLevel).map(Number),
+        ...(primaryCasterTradition === 'divine' ? Object.keys(w.bonusSpellSlotsByLevel || {}).map(Number).filter(l => l >= baseDaily.length) : [])
+      ]);
+      Array.from(epicSlotLevels).sort((a, b) => a - b).forEach(sLvl => {
+        if (!Number.isInteger(sLvl) || sLvl < baseDaily.length || sLvl > 20) return;
+        const baseEpic = (Number(epicCap.slotsByLevel[sLvl]) || 0) + (primaryCasterTradition === 'divine' ? (Number(w.bonusSpellSlotsByLevel?.[sLvl]) || 0) : 0);
+        if (baseEpic <= 0) return;
+        const canCast = (Number(wisScore) || 10) >= (10 + sLvl);
+        const bonus = (canCast && wMod >= sLvl) ? Math.floor((wMod - sLvl) / 4) + 1 : 0;
+        const prev = prevSlots.find(s => Number(s.level) === sLvl);
+        const dmBonus = prev ? (Number(prev.dmBonus) || 0) : 0;
+        const regularDaily = canCast ? Math.max(0, baseEpic + bonus + dmBonus) : 0;
+        const daily = regularDaily;
+        result.push({
+          level: sLvl,
+          daily,
+          total: daily,
+          regularDaily,
+          domainDaily: 0,
+          domainTotal: 0,
+          domainUsed: 0,
+          bonus,
+          dmBonus,
+          used: prev ? Math.min(daily, Number(prev.used) || 0) : 0,
+          known: daily,
+          isEpicSlot: true,
+          lockedByAbilityScore: !canCast
+        });
+      });
       prevSlots.forEach(prev => {
-        if (prev && Number(prev.level) >= baseDaily.length) {
+        if (prev && Number(prev.level) >= baseDaily.length && !result.some(r => r.level === Number(prev.level))) {
           const dVal = Number(prev.daily) || 0;
           const domDaily = Number(prev.domainDaily) || 0;
           result.push({
@@ -18892,6 +19184,12 @@ const RuleEngine = {
           map[lvl] = { level: lvl, total: 0, daily: 0, used: 0, bonus: 0, known: 0, dmBonus: 0 };
         }
       }
+      arr.forEach(s => {
+        const sLvl = Number(s?.level);
+        if (Number.isInteger(sLvl) && sLvl >= 10) {
+          map[sLvl] = { ...s };
+        }
+      });
       return map;
     };
 
@@ -19506,8 +19804,9 @@ const RuleEngine = {
     };
 
     const rawProg = Array.isArray(w.levelProgression) ? w.levelProgression : [];
+    const racialHd = this.getCharacterRacialHd(w);
     const progSummary = typeof this.calculateProgression === 'function'
-      ? this.calculateProgression(rawProg, { system: sys, isHuman, intMod, character: w })
+      ? this.calculateProgression(rawProg, { system: sys, isHuman, intMod, character: w, racialHd })
       : null;
 
     const classCountsSoFar = {};
@@ -19531,7 +19830,7 @@ const RuleEngine = {
 
       const rowSlice = rawProg.slice(0, idx + 1).map(p => ({ ...p, active: true }));
       const rowCalc = typeof this.calculateProgression === 'function'
-        ? this.calculateProgression(rowSlice, { system: sys, isHuman, intMod, character: w })
+        ? this.calculateProgression(rowSlice, { system: sys, isHuman, intMod, character: w, racialHd })
         : null;
       const rowBab = rowCalc ? rowCalc.baseBab : (Number(lvl?.bab) || 0);
       const rowFort = rowCalc ? rowCalc.baseSaves.fort : (Number(lvl?.fort) || 0);
@@ -19602,6 +19901,10 @@ const RuleEngine = {
       : (typeof w.classes === 'string' ? w.classes : '');
 
     const totalBab = progSummary && rows.length > 0 ? progSummary.baseBab : (Number(w.bab) || 0);
+    const preEpicBab = progSummary && rows.length > 0 ? progSummary.preEpicBab : totalBab;
+    const epicBab = progSummary && rows.length > 0 ? progSummary.epicBab : 0;
+    const epicSave = progSummary && rows.length > 0 ? progSummary.epicSave : 0;
+    const preEpicSaves = progSummary && rows.length > 0 ? { ...progSummary.preEpicSaves } : null;
     const baseSaves = progSummary && rows.length > 0
       ? { ...progSummary.baseSaves }
       : {
@@ -19613,14 +19916,15 @@ const RuleEngine = {
       ? progSummary.totalSkillPoints
       : (Number(w.skillPointsTotal) || 0);
 
-    // Skill budgets (routed through active ruleset)
+    // Skill budgets (routed through active ruleset; HD = class levels + RHD, LA excluded)
     const activeRuleset = this.getActiveRuleset(w);
     const isMerged = Boolean(w.settings?.skillConsolidation && w.settings.skillConsolidation !== 'standard');
+    const skillRankLevel = activeLevelsCount + racialHd;
     const maxClassRank = (activeRuleset && typeof activeRuleset.calcMaxSkillRanks === 'function')
-      ? activeRuleset.calcMaxSkillRanks(activeLevelsCount, true)
-      : (activeLevelsCount + 3);
+      ? activeRuleset.calcMaxSkillRanks(skillRankLevel, true)
+      : (skillRankLevel + 3);
     const maxCrossRank = (activeRuleset && typeof activeRuleset.calcMaxSkillRanks === 'function')
-      ? Math.floor(activeRuleset.calcMaxSkillRanks(activeLevelsCount, false))
+      ? Math.floor(activeRuleset.calcMaxSkillRanks(skillRankLevel, false))
       : Math.floor(maxClassRank / 2);
     let spentSkillPoints = 0;
     const skillsList = Array.isArray(w.skills) ? w.skills : Object.values(w.skills || {});
@@ -19698,9 +20002,14 @@ const RuleEngine = {
     const abilitiesListArr = [...racialTraits, ...classFeatures, ...templatesAndBoons];
     const progressionSummary = {
       activeLevelsCount,
+      racialHd,
       totalLevel,
       classSummaryStr,
       totalBab,
+      preEpicBab,
+      epicBab,
+      epicSave,
+      preEpicSaves: preEpicSaves || { ...baseSaves },
       baseSaves,
       totalSkillPoints,
       featMode

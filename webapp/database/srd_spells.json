@@ -180,12 +180,7 @@
     "source": "SRD 3.5e",
     "spell": {
       "system": "spell",
-      "classLevels": [
-        {
-          "class": "Sor/Wiz",
-          "level": 4
-        }
-      ],
+      "classLevels": [],
       "school": "Abjuration",
       "descriptors": [],
       "components": [
@@ -205,14 +200,15 @@
     },
     "lifecycle": {
       "usage": {
-        "mode": "spellSlot",
-        "slotLevel": 4
+        "mode": "resource",
+        "resourceKey": "epic_spell_slots",
+        "cost": 1
       },
       "duration": "perm",
       "durationText": "Permanent",
       "dismissible": false
     },
-    "level": 4,
+    "level": null,
     "learnedAt": {
       "class": {},
       "domain": {}
@@ -240,7 +236,9 @@
     "subschool": "",
     "descriptors": "",
     "materials": "",
-    "area": ""
+    "area": "",
+    "epic": true,
+    "spellcraftDc": 68
   },
   {
     "schemaVersion": 3,
@@ -24357,12 +24355,7 @@
     "source": "SRD 3.5e",
     "spell": {
       "system": "spell",
-      "classLevels": [
-        {
-          "class": "Sor/Wiz",
-          "level": 4
-        }
-      ],
+      "classLevels": [],
       "school": "Abjuration",
       "descriptors": [],
       "components": [
@@ -24381,14 +24374,15 @@
     },
     "lifecycle": {
       "usage": {
-        "mode": "spellSlot",
-        "slotLevel": 4
+        "mode": "resource",
+        "resourceKey": "epic_spell_slots",
+        "cost": 1
       },
       "duration": "instant",
       "durationText": "Instantaneous",
       "dismissible": false
     },
-    "level": 4,
+    "level": null,
     "learnedAt": {
       "class": {},
       "domain": {}
@@ -24415,7 +24409,9 @@
     "subschool": "",
     "descriptors": "",
     "materials": "",
-    "area": ""
+    "area": "",
+    "epic": true,
+    "spellcraftDc": 69
   },
   {
     "schemaVersion": 3,
@@ -35190,12 +35186,7 @@
     "source": "SRD 3.5e",
     "spell": {
       "system": "spell",
-      "classLevels": [
-        {
-          "class": "Sor/Wiz",
-          "level": 4
-        }
-      ],
+      "classLevels": [],
       "school": "Abjuration",
       "descriptors": [],
       "components": [
@@ -35214,14 +35205,15 @@
     },
     "lifecycle": {
       "usage": {
-        "mode": "spellSlot",
-        "slotLevel": 4
+        "mode": "resource",
+        "resourceKey": "epic_spell_slots",
+        "cost": 1
       },
       "duration": "perm",
       "durationText": "Permanent",
       "dismissible": false
     },
-    "level": 4,
+    "level": null,
     "learnedAt": {
       "class": {},
       "domain": {}
@@ -35248,7 +35240,9 @@
     "subschool": "",
     "descriptors": "",
     "materials": "",
-    "area": ""
+    "area": "",
+    "epic": true,
+    "spellcraftDc": 52
   },
   {
     "schemaVersion": 3,
@@ -47839,12 +47833,7 @@
     "source": "SRD 3.5e",
     "spell": {
       "system": "spell",
-      "classLevels": [
-        {
-          "class": "Sor/Wiz",
-          "level": 4
-        }
-      ],
+      "classLevels": [],
       "school": "Conjuration",
       "subschool": "creation",
       "descriptors": [
@@ -47871,14 +47860,15 @@
     },
     "lifecycle": {
       "usage": {
-        "mode": "spellSlot",
-        "slotLevel": 4
+        "mode": "resource",
+        "resourceKey": "epic_spell_slots",
+        "cost": 1
       },
       "duration": "text",
       "durationText": "24 hours (D)",
       "dismissible": true
     },
-    "level": 4,
+    "level": null,
     "subschool": "creation",
     "descriptors": "force",
     "learnedAt": {
@@ -47915,7 +47905,9 @@
       "conjuration"
     ],
     "materials": "",
-    "area": ""
+    "area": "",
+    "epic": true,
+    "spellcraftDc": 46
   },
   {
     "schemaVersion": 3,

@@ -589,15 +589,16 @@
     }
   };
 
-  // Official D&D 3.5e Druid Wild Shape progression (PHB p.37, Table 3-8)
+  // Official D&D 3.5e Druid Wild Shape progression (PHB p.37, Table 3-8 + ELH p.10: +1/day every 4 levels after 18th)
   function getWildShapeProfile(druidLevel, hasElementalFlag) {
     const lvl = Math.max(0, Math.floor(Number(druidLevel) || 0));
-    const dailyUses = lvl >= 18 ? 6
-      : (lvl >= 14 ? 5
-        : (lvl >= 10 ? 4
-          : (lvl >= 7 ? 3
-            : (lvl >= 6 ? 2
-              : (lvl >= 5 ? 1 : 0)))));
+    const dailyUses = lvl >= 22 ? (6 + Math.floor((lvl - 18) / 4))
+      : (lvl >= 18 ? 6
+        : (lvl >= 14 ? 5
+          : (lvl >= 10 ? 4
+            : (lvl >= 7 ? 3
+              : (lvl >= 6 ? 2
+                : (lvl >= 5 ? 1 : 0))))));
     const elementalDailyUses = lvl >= 20 ? 3
       : (lvl >= 18 ? 2
         : (lvl >= 16 ? 1 : 0));
@@ -813,13 +814,15 @@
         return Math.max(0, Math.floor(Number(hd) || 0));
       }
     },
-    calcIterativeBab(bab) {
-      const b = Math.max(0, Math.floor(Number(bab) || 0));
-      const out = [b];
-      let cur = b - 5;
-      while (cur >= 1 && out.length < 4) {
-        out.push(cur);
-        cur -= 5;
+    calcIterativeBab(bab, preEpicBab) {
+      const eff = Math.max(0, Math.floor(Number(bab) || 0));
+      const countBasis = (preEpicBab !== undefined && preEpicBab !== null && Number.isFinite(Number(preEpicBab)))
+        ? Math.max(0, Math.floor(Number(preEpicBab)))
+        : eff;
+      const attackCount = Math.min(4, Math.max(1, Math.floor((Math.max(1, countBasis) - 1) / 5) + 1));
+      const out = [];
+      for (let i = 0; i < attackCount; i++) {
+        out.push(eff - i * 5);
       }
       return out;
     },
@@ -834,6 +837,10 @@
     // Official D&D 3.5e Epic Level Progression (DMG p.206):
     // After character level 20, class BAB/save progressions stop; Epic Attack Bonus is +1 at odd levels (21, 23, ...)
     // and Epic Save Bonus is +1 to all saves at even levels (22, 24, ...), regardless of class taken.
+    epic: {
+      threshold: 20,
+      thresholdBasis: 'characterLevel'
+    },
     calcEpicBonuses(totalLevels) {
       const lvl = Math.max(0, Math.floor(Number(totalLevels) || 0));
       if (lvl <= 20) return { epicBab: 0, epicSave: 0 };

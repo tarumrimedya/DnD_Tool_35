@@ -282,7 +282,7 @@
     return { kind: kind, baseId: id, material: 'standard', enhancement: 0, enchantments: [], crystal: { id: '', tier: 'least' }, weapon: wep, armor: armorOverrides(isW ? 'chain_shirt' : id) };
   }
   const blankUse = (mode) => ({ mode: mode || 'atwill', n: 3, slotLevel: 1, pool: 'Turn Undead', poolCost: 1, cooldown: '1d4+1' });
-  function blankLevels() { const a = []; for (let i = 0; i < 20; i++) a.push({ features: [], spell: false }); return a; }
+  function blankLevels(count = 40) { const a = []; const n = Math.max(20, Number(count) || 40); for (let i = 0; i < n; i++) a.push({ features: [], spell: false }); return a; }
   function blankEntry(bpId) {
     const bp = BP_BY_ID[bpId] || BLUEPRINTS[0];
     return {
@@ -5826,7 +5826,7 @@
   function inLevelRow(x) {
     if (!isLevelGainEntry() || !hasFacet(S.entry, 'progression') || !S.entry.progression) return false;
     const lv = levelOf(x);
-    return lv <= Math.max(1, Math.min(20, num(S.entry.progression.maxLevel, 20)));
+    return lv <= Math.max(1, Math.min(40, num(S.entry.progression.maxLevel, 20)));
   }
   // The Level / HD Table is the only place a level is set: an item's level is the row it sits in.
   const levelTableOn = () => isLevelGainEntry() && hasFacet(S.entry, 'progression') && !!S.entry.progression;
@@ -5834,7 +5834,7 @@
   function levelMoveSel(path, x) {
     if (!inLevelRow(x)) return '';
     const p = S.entry.progression;
-    const maxLv = Math.max(1, Math.min(20, num(p.maxLevel, 20)));
+    const maxLv = Math.max(1, Math.min(40, num(p.maxLevel, 20)));
     const unit = p.mode === 'hd' ? 'HD ' : 'Lvl ';
     return '<span title="Move to another level of the table" style="display:inline-flex;margin-left:8px">' +
       sel(path + '.gainedAt', levelOf(x), range(1, maxLv).map((n) => [n, unit + n]), { narrow: true, num: true }) + '</span>';
@@ -6004,17 +6004,20 @@
     const p = en.progression;
     const isCls = en.blueprint === 'class';
     const showClassCols = isCls || p.mode === 'base' || p.mode === 'prestige';
-    const maxLv = Math.max(1, Math.min(20, num(p.maxLevel, 20)));
+    const maxLv = Math.max(1, Math.min(40, num(p.maxLevel, 20)));
     const hideEmpty = !isCls && S.ui.progHideEmpty;
     let levelIndices = range(0, maxLv - 1);
     // Race / template: the rule blocks and sub-powers gained at each level ("Gained at Level / HD") show in their row.
     const gainRows = isLevelGainEntry() ? levelGainItems() : {};
     if (hideEmpty) {
-      const nonEmpty = levelIndices.filter((i) => p.levels[i].features.length > 0 || (showClassCols && p.levels[i].spell) || (gainRows[i + 1] || []).length > 0);
+      const nonEmpty = levelIndices.filter((i) => {
+        const rowObj = p.levels[i] || { features: [], spell: false };
+        return rowObj.features.length > 0 || (showClassCols && rowObj.spell) || (gainRows[i + 1] || []).length > 0;
+      });
       levelIndices = nonEmpty.length ? nonEmpty : [0];
     }
     const rows = levelIndices.map((i) => {
-      const l = p.levels[i], Lv = i + 1;
+      const l = p.levels[i] || { features: [], spell: false }, Lv = i + 1;
       const chips = l.features.map((f, fi) => '<span class="fs-pill ' + (f.branchPath ? 'purple' : f.kind === 'inline' ? 'amber' : f.kind === 'pattern' ? 'sky' : 'indigo') + '" data-action="toggle-card" data-key="ft:' + f.id + '" style="cursor:pointer">' + (f.kind === 'inline' ? '✨ ' : '') + live('feat-sum', i + ':' + fi) + '<span class="fs-x" data-action="remove-feature" data-l="' + i + '" data-f="' + fi + '">×</span></span>').join('');
       const editors = l.features.map((f, fi) => (S.ui.cardOpen['ft:' + f.id] ? '<div class="lego-sub">' + G(3,
         F('Feature Name', inp('progression.levels.' + i + '.features.' + fi + '.name', f.name, { ph: 'Feature name' })) +
@@ -6046,7 +6049,7 @@
       : H(L('📊 Level / HD Table (1–' + maxLv + ')'), '<span class="fs-row" style="margin-left:auto;gap:6px">' + (S.ui.progPatternOpen ? '' : btn('toggle-prog-pattern', '+ 🔁 Repeating Feature', 'fs-xs fs-dashed')) + btn('toggle-prog-empty', S.ui.progHideEmpty ? '👁️ Show All Rows' : '🗜️ Hide Empty Rows', 'fs-xs') + delBtn('detach-progression', {}) + '</span>') +
         G(2,
           F('Progression Mode', sel('progression.mode', p.mode, PROGRESSION_MODES, { narrow: true })) +
-          F('Max Level / HD', sel('progression.maxLevel', maxLv, [5, 10, 12, 15, 20].map((n) => [n, String(n)]), { narrow: true, num: true }))
+          F('Max Level / HD', sel('progression.maxLevel', maxLv, [5, 10, 12, 15, 20, 30, 40].map((n) => [n, String(n)]), { narrow: true, num: true }))
         );
     return cBlock('c-teal', head, patBar + rows);
   }

@@ -224,6 +224,28 @@
         "progression": {
           "$ref": "#/definitions/ProgressionV3"
         },
+        "epicProgression": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Declarative ELH 21+ class progression (evaluated by class level > 20): bonusFeat cadence ({ from, every, choiceList[], includeTags[], label }) and optional scaling features[].",
+          "properties": {
+            "bonusFeat": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {
+                "from": { "type": "integer", "minimum": 21 },
+                "every": { "type": "integer", "minimum": 1 },
+                "choiceList": { "type": "array", "items": { "type": "string" } },
+                "includeTags": { "type": "array", "items": { "type": "string" } },
+                "label": { "type": "string" }
+              }
+            },
+            "features": {
+              "type": "array",
+              "items": { "type": "object", "additionalProperties": true }
+            }
+          }
+        },
         "grants": {
           "$ref": "#/definitions/GrantsV3"
         },

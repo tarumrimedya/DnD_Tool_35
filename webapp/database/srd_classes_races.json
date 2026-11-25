@@ -1554,7 +1554,27 @@
       "base"
     ],
     "role": "Divine / Wild Shape & Nature Caster",
-    "grants": {}
+    "grants": {},
+    "epicProgression": {
+      "bonusFeat": {
+        "from": 24,
+        "every": 4,
+        "includeTags": [
+          "Metamagic"
+        ],
+        "choiceList": [
+          "feat-epic-spellcasting",
+          "feat-epic-spell-focus-no-spell-school-selected",
+          "feat-epic-spell-penetration",
+          "feat-epic-speed",
+          "feat-epic-fortitude",
+          "feat-epic-will",
+          "feat-epic-toughness",
+          "feat-epic-endurance"
+        ],
+        "label": "Druid Epic Bonus Feat"
+      }
+    }
   },
   {
     "schemaVersion": 3,
@@ -5173,6 +5193,24 @@
           "level": 6
         }
       ]
+    },
+    "epicProgression": {
+      "bonusFeat": {
+        "from": 25,
+        "every": 5,
+        "includeTags": [],
+        "choiceList": [
+          "feat-epic-prowess",
+          "feat-epic-speed",
+          "feat-epic-toughness",
+          "feat-epic-reflexes",
+          "feat-epic-fortitude",
+          "feat-epic-will",
+          "feat-epic-dodge",
+          "feat-axiomatic-strike-pgtf"
+        ],
+        "label": "Monk Epic Bonus Feat"
+      }
     }
   },
   {
@@ -6644,6 +6682,37 @@
           "level": 19
         }
       ]
+    },
+    "epicProgression": {
+      "bonusFeat": {
+        "from": 24,
+        "every": 4,
+        "includeTags": [
+          "Special Ability"
+        ],
+        "choiceList": [
+          "feat-epic-dodge",
+          "feat-epic-reflexes",
+          "feat-epic-skill-focus-not-set",
+          "feat-epic-speed",
+          "feat-epic-reputation",
+          "feat-epic-prowess",
+          "feat-legendary-acrobat",
+          "feat-improved-skirmish",
+          "feat-improved-sudden-strike"
+        ],
+        "label": "Rogue Epic Bonus Feat / Special Ability"
+      },
+      "features": [
+        {
+          "id": "cab-sneak-attack",
+          "scaling": {
+            "from": 21,
+            "every": 2,
+            "amount": 1
+          }
+        }
+      ]
     }
   },
   {
@@ -8076,6 +8145,33 @@
           "level": 20
         }
       ]
+    },
+    "epicProgression": {
+      "bonusFeat": {
+        "from": 23,
+        "every": 3,
+        "includeTags": [
+          "Metamagic",
+          "Item Creation"
+        ],
+        "choiceList": [
+          "feat-epic-spellcasting",
+          "feat-epic-spell-focus-no-spell-school-selected",
+          "feat-epic-spell-penetration",
+          "feat-epic-counterspell",
+          "feat-craft-epic-staff",
+          "feat-craft-epic-rod",
+          "feat-craft-epic-wondrous-item",
+          "feat-craft-epic-magic-arms-and-armor",
+          "feat-forge-epic-ring",
+          "feat-scribe-epic-scroll",
+          "feat-inscribe-epic-rune",
+          "feat-improved-cooperative-metamagic",
+          "feat-improved-snatch-spell",
+          "feat-improved-spellpool-access"
+        ],
+        "label": "Wizard Epic Bonus Feat"
+      }
     }
   },
   {
@@ -9097,7 +9193,27 @@
       "base"
     ],
     "role": "Support / Arcane & Diplomat",
-    "grants": {}
+    "grants": {},
+    "epicProgression": {
+      "bonusFeat": {
+        "from": 23,
+        "every": 3,
+        "includeTags": [
+          "Metamagic"
+        ],
+        "choiceList": [
+          "feat-epic-inspiration",
+          "feat-epic-leadership",
+          "feat-epic-reputation",
+          "feat-epic-skill-focus-not-set",
+          "feat-epic-spell-focus-no-spell-school-selected",
+          "feat-epic-spell-penetration",
+          "feat-epic-spellcasting",
+          "feat-epic-reflexes"
+        ],
+        "label": "Bard Epic Bonus Feat"
+      }
+    }
   },
   {
     "schemaVersion": 3,
@@ -11330,7 +11446,25 @@
       "base"
     ],
     "role": "Divine Champion / Tank",
-    "grants": {}
+    "grants": {},
+    "epicProgression": {
+      "bonusFeat": {
+        "from": 23,
+        "every": 3,
+        "includeTags": [],
+        "choiceList": [
+          "feat-epic-prowess",
+          "feat-epic-toughness",
+          "feat-epic-leadership",
+          "feat-epic-reputation",
+          "feat-epic-devotion",
+          "feat-epic-fortitude",
+          "feat-epic-will",
+          "feat-epic-weapon-focus-no-weapon-selected"
+        ],
+        "label": "Paladin Epic Bonus Feat"
+      }
+    }
   },
   {
     "schemaVersion": 3,
@@ -13524,7 +13658,27 @@
       "base"
     ],
     "role": "Divine Caster / Healer & Buffer",
-    "grants": {}
+    "grants": {},
+    "epicProgression": {
+      "bonusFeat": {
+        "from": 23,
+        "every": 3,
+        "includeTags": [
+          "Metamagic"
+        ],
+        "choiceList": [
+          "feat-epic-spellcasting",
+          "feat-epic-spell-focus-no-spell-school-selected",
+          "feat-epic-spell-penetration",
+          "feat-divine-spell-penetration",
+          "feat-epic-devotion",
+          "feat-epic-fortitude",
+          "feat-epic-will",
+          "feat-epic-leadership"
+        ],
+        "label": "Cleric Epic Bonus Feat"
+      }
+    }
   },
   {
     "schemaVersion": 3,
@@ -14937,6 +15091,28 @@
           "level": 20
         }
       ]
+    },
+    "epicProgression": {
+      "bonusFeat": {
+        "from": 22,
+        "every": 2,
+        "includeTags": [
+          "isFighterBonusFeat"
+        ],
+        "choiceList": [
+          "feat-epic-prowess",
+          "feat-epic-toughness",
+          "feat-epic-weapon-focus-no-weapon-selected",
+          "feat-epic-weapon-specialization",
+          "feat-epic-endurance",
+          "feat-epic-leadership",
+          "feat-epic-combat-expertise",
+          "feat-epic-sunder",
+          "feat-wield-oversized-weapon",
+          "feat-combat-insight"
+        ],
+        "label": "Fighter Epic Bonus Feat"
+      }
     }
   },
   {
@@ -15705,7 +15881,27 @@
       "base"
     ],
     "role": "Arcane Caster (Spontaneous)",
-    "grants": {}
+    "grants": {},
+    "epicProgression": {
+      "bonusFeat": {
+        "from": 23,
+        "every": 3,
+        "includeTags": [
+          "Metamagic"
+        ],
+        "choiceList": [
+          "feat-epic-spellcasting",
+          "feat-epic-spell-focus-no-spell-school-selected",
+          "feat-epic-spell-penetration",
+          "feat-epic-counterspell",
+          "feat-epic-reputation",
+          "feat-epic-leadership",
+          "feat-improved-cooperative-metamagic",
+          "feat-improved-snatch-spell"
+        ],
+        "label": "Sorcerer Epic Bonus Feat"
+      }
+    }
   },
   {
     "schemaVersion": 3,
@@ -16503,7 +16699,24 @@
       "base"
     ],
     "role": "Martial / Scout & Hunter",
-    "grants": {}
+    "grants": {},
+    "epicProgression": {
+      "bonusFeat": {
+        "from": 23,
+        "every": 3,
+        "includeTags": [],
+        "choiceList": [
+          "feat-epic-prowess",
+          "feat-epic-speed",
+          "feat-epic-endurance",
+          "feat-epic-toughness",
+          "feat-epic-reflexes",
+          "feat-epic-skill-focus-not-set",
+          "feat-epic-weapon-focus-no-weapon-selected"
+        ],
+        "label": "Ranger Epic Bonus Feat"
+      }
+    }
   },
   {
     "schemaVersion": 3,
@@ -17183,7 +17396,24 @@
       "base"
     ],
     "role": "Martial / Berserker",
-    "grants": {}
+    "grants": {},
+    "epicProgression": {
+      "bonusFeat": {
+        "from": 24,
+        "every": 4,
+        "includeTags": [],
+        "choiceList": [
+          "feat-epic-prowess",
+          "feat-epic-toughness",
+          "feat-epic-speed",
+          "feat-epic-endurance",
+          "feat-epic-fortitude",
+          "feat-epic-sunder",
+          "feat-wield-oversized-weapon"
+        ],
+        "label": "Barbarian Epic Bonus Feat"
+      }
+    }
   },
   {
     "schemaVersion": 3,
