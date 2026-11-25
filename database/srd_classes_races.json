@@ -18511,15 +18511,12 @@
     ],
     "effects": [
       {
-        "type": "roll",
-        "kind": "Damage",
-        "dmgType": "Untyped",
-        "crit": "normal",
-        "dice": "sizeMonkDamageRoll(@classes.monk.level,@size,@critMult)",
-        "count": 1,
-        "die": "d6",
-        "scaling": "formula",
-        "source": "Unarmed Strike (Monk)"
+        "id": "ef-monk-unarmed-damage",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "monkUnarmedDamage",
+        "label": "Monk Unarmed Damage",
+        "text": "Unarmed strike uses the Monk unarmed damage progression by level and effective size (PHB Table 3-10)."
       },
       {
         "type": "effect",
@@ -18962,19 +18959,7 @@
         2
       ]
     ],
-    "effects": [
-      {
-        "type": "roll",
-        "kind": "Damage",
-        "dmgType": "Untyped",
-        "crit": "normal",
-        "dice": "@useAmount",
-        "count": 1,
-        "die": "d6",
-        "scaling": "formula",
-        "source": "Lay on Hands"
-      }
-    ],
+    "effects": [],
     "shortDescription": "Beginning at 2nd level, a paladin with a Charisma score of 12 or higher can heal wounds (her own or those of others) by touch. Each day she can heal a total number of hit points of damage equal to her paladin level × he…",
     "text": "Beginning at 2nd level, a paladin with a Charisma score of 12 or higher can heal wounds (her own or those of others) by touch. Each day she can heal a total number of hit points of damage equal to her paladin level × her Charisma bonus. A paladin may choose to divide her healing among multiple recipients, and she doesn't have to use it all at once. Using lay on hands is a standard action.\n\nAlternatively, a paladin can use any or all of this healing power to deal damage to undead creatures. Using lay on hands in this way requires a successful melee touch attack and doesn't provoke an attack of opportunity. The paladin decides how many of her daily allotment of points to use as damage after successfully touching an undead creature.",
     "tags": [
@@ -21303,19 +21288,7 @@
         7
       ]
     ],
-    "effects": [
-      {
-        "type": "roll",
-        "kind": "Damage",
-        "dmgType": "Untyped",
-        "crit": "normal",
-        "dice": "@useAmount",
-        "count": 1,
-        "die": "d6",
-        "scaling": "formula",
-        "source": "Wholeness of Body"
-      }
-    ],
+    "effects": [],
     "shortDescription": "At 7th level or higher, a monk can heal her own wounds. She can heal a number of hit points of damage equal to twice her current monk level each day, and she can spread this healing out among several uses.",
     "text": "At 7th level or higher, a monk can heal her own wounds. She can heal a number of hit points of damage equal to twice her current monk level each day, and she can spread this healing out among several uses.",
     "tags": [
@@ -23372,7 +23345,7 @@
       "bonusFeatAt1st": false,
       "humanBonusSkillPoints": false
     },
-    "size": "Medium",
+    "size": "Small",
     "baseSpeed": 20,
     "favoredClass": "Wilder",
     "languages": [
@@ -23574,15 +23547,6 @@
         "mode": "Energy Resistance",
         "what": "Cold",
         "value": 5
-      },
-      {
-        "type": "stat",
-        "targets": [
-          "atk.all"
-        ],
-        "mode": "flat",
-        "value": 1,
-        "btype": "Size"
       }
     ],
     "shortDescription": "Dromites stand about 3 feet tall and usually weigh slightly more than 30 pounds. They have iridescent compound eyes. Dromites wear heavy boots and light clothing, and are sometimes content with just a sturdy harness. +2…",
@@ -23627,7 +23591,8 @@
         ],
         "text": "Always deals the energy type the chitin resists. Manifester level equals 1/2 Hit Dice (minimum 1st); save DC is Charisma-based."
       }
-    ]
+    ],
+    "levelAdjustment": 1
   },
   {
     "schemaVersion": 3,
@@ -23651,7 +23616,7 @@
       "bonusFeatAt1st": false,
       "humanBonusSkillPoints": false
     },
-    "size": "Medium",
+    "size": "Small",
     "baseSpeed": 20,
     "favoredClass": "Rogue",
     "languages": [
@@ -23909,7 +23874,8 @@
         "grantMode": "cast",
         "text": "Continuous; caster level equals class levels."
       }
-    ]
+    ],
+    "levelAdjustment": 3
   },
   {
     "schemaVersion": 3,
@@ -24079,7 +24045,7 @@
       "bonusFeatAt1st": false,
       "humanBonusSkillPoints": false
     },
-    "size": "Medium",
+    "size": "Small",
     "baseSpeed": 20,
     "favoredClass": "Rogue",
     "languages": [
@@ -24207,15 +24173,6 @@
         "value": 1,
         "btype": "Racial",
         "condition": "Thrown Weapons & Slings"
-      },
-      {
-        "type": "stat",
-        "targets": [
-          "ac.size"
-        ],
-        "mode": "flat",
-        "value": 1,
-        "btype": "Size"
       }
     ],
     "shortDescription": "Deep halflings are shorter and stockier than the more common lightfeet. Deep halflings are about 2-1/2 tall and weigh between 30 and 35 pounds. Deep halflings speak Dwarven fluently. +2 Dexterity, –2 Strength. Humanoid…",
@@ -24370,7 +24327,7 @@
       "bonusFeatAt1st": false,
       "humanBonusSkillPoints": false
     },
-    "size": "Medium",
+    "size": "Small",
     "baseSpeed": 30,
     "favoredClass": "Rogue",
     "languages": [
@@ -24433,33 +24390,6 @@
         "type": "defense",
         "mode": "Sense / Movement",
         "what": "Darkvision 60 ft."
-      },
-      {
-        "type": "stat",
-        "targets": [
-          "ac.total"
-        ],
-        "mode": "flat",
-        "value": 1,
-        "btype": "Untyped"
-      },
-      {
-        "type": "stat",
-        "targets": [
-          "atk.all"
-        ],
-        "mode": "flat",
-        "value": 1,
-        "btype": "Untyped"
-      },
-      {
-        "type": "stat",
-        "targets": [
-          "grapple"
-        ],
-        "mode": "flat",
-        "value": -4,
-        "btype": "Penalty"
       }
     ],
     "shortDescription": "A goblin stands 3 to 3-1/2 feet tall and weigh 40 to 45 pounds. Its eyes are usually dull and glazed, varying in color from red to yellow. A goblin’s skin color ranges from yellow through any shade of orange to a deep r…",
@@ -24674,7 +24604,8 @@
       "race",
       "merfolk"
     ],
-    "bonusFeats": 0
+    "bonusFeats": 0,
+    "levelAdjustment": 1
   },
   {
     "schemaVersion": 3,
@@ -24698,7 +24629,7 @@
       "bonusFeatAt1st": false,
       "humanBonusSkillPoints": false
     },
-    "size": "Medium",
+    "size": "Small",
     "baseSpeed": 20,
     "favoredClass": "Rogue",
     "languages": [
@@ -24781,15 +24712,6 @@
         "value": 1,
         "btype": "Racial",
         "condition": "Thrown Weapons & Slings"
-      },
-      {
-        "type": "stat",
-        "targets": [
-          "ac.size"
-        ],
-        "mode": "flat",
-        "value": 1,
-        "btype": "Size"
       }
     ],
     "shortDescription": "Tallfellows are somewhat rare among halfling folk. Tallfellows are 4 feet tall or more and weigh between 30 and 35 pounds. They generally speak Elven in addition to Common and Halfling. +2 Dexterity, –2 Strength. Humano…",
@@ -25156,7 +25078,7 @@
       "bonusFeatAt1st": false,
       "humanBonusSkillPoints": false
     },
-    "size": "Medium",
+    "size": "Small",
     "baseSpeed": 20,
     "favoredClass": "Bard",
     "languages": [
@@ -25534,7 +25456,8 @@
         "dcFormula": "10 + @spellLevel + Cha",
         "text": "Manifester level equals 1/2 Hit Dice (minimum 1st); save DC is Charisma-based."
       }
-    ]
+    ],
+    "levelAdjustment": 1
   },
   {
     "schemaVersion": 3,
@@ -25559,7 +25482,7 @@
       "bonusFeatAt1st": false,
       "humanBonusSkillPoints": false
     },
-    "size": "Medium",
+    "size": "Small",
     "baseSpeed": 30,
     "favoredClass": "Sorcerer",
     "languages": [
@@ -25670,15 +25593,6 @@
         "value": -1,
         "btype": "Penalty",
         "condition": "Dazzled in Bright Sunlight / Daylight"
-      },
-      {
-        "type": "stat",
-        "targets": [
-          "grapple"
-        ],
-        "mode": "flat",
-        "value": -4,
-        "btype": "Penalty"
       }
     ],
     "shortDescription": "Kobolds are short, reptilian humanoids with cowardly and sadistic tendencies. A kobold’s scaly skin ranges from dark rusty brown to a rusty black color. It has glowing red eyes. Its tail is nonprehensile. Kobolds wear r…",
@@ -26241,7 +26155,8 @@
         "refId": "spl-daylight",
         "grantMode": "cast"
       }
-    ]
+    ],
+    "levelAdjustment": 1
   },
   {
     "schemaVersion": 3,
@@ -26749,7 +26664,8 @@
         "refId": "spl-faerie-fire",
         "grantMode": "cast"
       }
-    ]
+    ],
+    "levelAdjustment": 2
   },
   {
     "schemaVersion": 3,
@@ -27181,7 +27097,8 @@
         "spellLevel": 1,
         "text": "Manifester level equals Hit Dice (minimum 3rd); affects only the duergar and what it carries. The psi-like invisibility uses the same 1/day as the spell-like one above."
       }
-    ]
+    ],
+    "levelAdjustment": 1
   },
   {
     "schemaVersion": 3,
@@ -27205,7 +27122,7 @@
       "bonusFeatAt1st": false,
       "humanBonusSkillPoints": false
     },
-    "size": "Medium",
+    "size": "Small",
     "baseSpeed": 30,
     "favoredClass": "Psion",
     "languages": [
@@ -27285,33 +27202,6 @@
         "type": "defense",
         "mode": "Sense / Movement",
         "what": "Darkvision 60 ft."
-      },
-      {
-        "type": "stat",
-        "targets": [
-          "ac.total"
-        ],
-        "mode": "flat",
-        "value": 1,
-        "btype": "Untyped"
-      },
-      {
-        "type": "stat",
-        "targets": [
-          "atk.all"
-        ],
-        "mode": "flat",
-        "value": 1,
-        "btype": "Untyped"
-      },
-      {
-        "type": "stat",
-        "targets": [
-          "grapple"
-        ],
-        "mode": "flat",
-        "value": -4,
-        "btype": "Penalty"
       }
     ],
     "shortDescription": "Blues are a subrace of goblins with an innate knack for psionics. A blue is often smaller than an average goblin, standing just about 3 feet tall and weighing about 40 pounds. Blues have noticeably blue-tinged skin, and…",
@@ -27320,7 +27210,8 @@
       "race",
       "goblin-blue"
     ],
-    "bonusFeats": 0
+    "bonusFeats": 0,
+    "levelAdjustment": 1
   },
   {
     "schemaVersion": 3,
@@ -27541,7 +27432,8 @@
         "refId": "spl-darkness",
         "grantMode": "cast"
       }
-    ]
+    ],
+    "levelAdjustment": 1
   },
   {
     "schemaVersion": 3,
@@ -27999,7 +27891,8 @@
       "goliath",
       "powerful-build"
     ],
-    "bonusFeats": 0
+    "bonusFeats": 0,
+    "levelAdjustment": 1
   },
   {
     "schemaVersion": 3,
@@ -28305,7 +28198,7 @@
       "bonusFeatAt1st": false,
       "humanBonusSkillPoints": false
     },
-    "size": "Medium",
+    "size": "Small",
     "baseSpeed": 20,
     "favoredClass": "Bard",
     "languages": [
@@ -28558,7 +28451,7 @@
       "bonusFeatAt1st": false,
       "humanBonusSkillPoints": false
     },
-    "size": "Medium",
+    "size": "Small",
     "baseSpeed": 20,
     "favoredClass": "Rogue",
     "languages": [
@@ -28650,15 +28543,6 @@
         "value": 1,
         "btype": "Racial",
         "condition": "Thrown Weapons & Slings"
-      },
-      {
-        "type": "stat",
-        "targets": [
-          "ac.total"
-        ],
-        "mode": "flat",
-        "value": 1,
-        "btype": "Untyped"
       }
     ],
     "shortDescription": "The lightfoot halfling is the most common halfling variety. Lightfoot halflings stand about 3 feet tall and usually weigh between 30 and 35 pounds. They have brown or black eyes. Lightfoot halfling men often have long s…",
@@ -28809,7 +28693,7 @@
       "bonusFeatAt1st": false,
       "humanBonusSkillPoints": false
     },
-    "size": "Medium",
+    "size": "Small",
     "baseSpeed": 20,
     "favoredClass": "Sorcerer",
     "languages": [
@@ -28957,24 +28841,6 @@
         "type": "effect",
         "effectKind": "feat",
         "targetId": "feat-dodge"
-      },
-      {
-        "type": "stat",
-        "targets": [
-          "atk.all"
-        ],
-        "mode": "flat",
-        "value": 1,
-        "btype": "Untyped"
-      },
-      {
-        "type": "stat",
-        "targets": [
-          "grapple"
-        ],
-        "mode": "flat",
-        "value": -4,
-        "btype": "Penalty"
       }
     ],
     "shortDescription": "Sprites are reclusive fey. They go out of their way to fight evil and ugliness and to protect their homelands. Legend claims that sprites die only through injury or disease. Pixies are merry pranksters that love to lead…",
@@ -29137,7 +29003,8 @@
           "effect": "Negates"
         }
       }
-    ]
+    ],
+    "levelAdjustment": 4
   },
   {
     "schemaVersion": 3,
@@ -31576,15 +31443,6 @@
         "mode": "flat",
         "value": 2,
         "btype": "Racial"
-      },
-      {
-        "type": "stat",
-        "targets": [
-          "ac.total"
-        ],
-        "mode": "flat",
-        "value": 1,
-        "btype": "Untyped"
       }
     ],
     "shortDescription": "+2 Dexterity, -2 Strength. Small size (+1 AC, +1 attack, +4 Hide), +2 Climb/Jump/Move Silently, +1 all saves (Halfling Luck), +2 saves vs fear, +1 attack with thrown weapons and slings, +2 Listen. Favored Class: Rogue.",

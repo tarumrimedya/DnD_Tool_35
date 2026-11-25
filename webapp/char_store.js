@@ -4935,6 +4935,11 @@
     const listKey = disc === 'divine' ? 'divineSpells' : 'preparedSpells';
     const entryCopy = JSON.parse(JSON.stringify(rawEntry));
     entryCopy.level = baseLevel;
+    const spMeta = (engineRef && typeof engineRef.getSpellMeta === 'function')
+      ? engineRef.getSpellMeta(entryCopy, disc === 'divine' ? 'Conjuration' : 'Universal')
+      : { school: entryCopy.school || entryCopy.spell?.school || 'Universal', save: entryCopy.save || entryCopy.savingThrow || entryCopy.delivery?.save?.raw || '' };
+    if (spMeta.school) entryCopy.school = spMeta.school;
+    if (spMeta.save && !entryCopy.save) entryCopy.save = spMeta.save;
     if (reqClassId) entryCopy.classId = reqClassId;
     if (payload.spellbookEntryId) entryCopy.spellbookEntryId = String(payload.spellbookEntryId);
     entryCopy.instanceId = entryCopy.instanceId || `sp_${disc}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
@@ -4990,11 +4995,11 @@
       classId,
       name: String(rawEntry.name).trim(),
       level: Math.max(0, Number(rawEntry.level) || 0),
-      school: String(rawEntry.school || 'Universal').trim(),
+      school: String(rawEntry.school || rawEntry.spell?.school || 'Universal').trim(),
       action: rawEntry.action || rawEntry.castingTime || 'Standard Action',
       range: rawEntry.range || '',
       duration: rawEntry.duration || '',
-      save: rawEntry.save || rawEntry.savingThrow || '',
+      save: rawEntry.save || rawEntry.savingThrow || rawEntry.delivery?.save?.raw || '',
       sr: rawEntry.sr || rawEntry.spellResistance || '',
       dice: rawEntry.dice || '',
       benefit: rawEntry.benefit || rawEntry.desc || rawEntry.shortDescription || '',
@@ -5046,11 +5051,11 @@
         classId,
         name: String(rawEntry.name).trim(),
         level: Math.max(0, Number(rawEntry.level) || 0),
-        school: String(rawEntry.school || 'Universal').trim(),
+        school: String(rawEntry.school || rawEntry.spell?.school || 'Universal').trim(),
         action: rawEntry.action || rawEntry.castingTime || 'Standard Action',
         range: rawEntry.range || '',
         duration: rawEntry.duration || '',
-        save: rawEntry.save || rawEntry.savingThrow || '',
+        save: rawEntry.save || rawEntry.savingThrow || rawEntry.delivery?.save?.raw || '',
         sr: rawEntry.sr || rawEntry.spellResistance || '',
         dice: rawEntry.dice || '',
         benefit: rawEntry.benefit || rawEntry.desc || rawEntry.shortDescription || '',

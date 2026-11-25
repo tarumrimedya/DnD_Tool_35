@@ -2983,12 +2983,13 @@
       const meleeTouchAtk = touchAtkOf('melee-touch');
       const saveDc = getCombatSpellSaveDc(spell, dcBonus);
 
+      const spellMeta = (typeof RuleEngine !== 'undefined' && RuleEngine.getSpellMeta) ? RuleEngine.getSpellMeta(spell) : { hasSave: true, save: spell.save || '' };
       const dcEl = document.getElementById('combat-spell-dc-display');
       if (dcEl) {
         const isRanged = (spell.attackType || '').toLowerCase().includes('ranged') || (spell.range || '').toLowerCase().includes('ft');
         const sgnAtk = (n) => (n >= 0 ? `+${n}` : `${n}`);
         const atkText = isRanged ? `Ranged Touch ${sgnAtk(rangedTouchAtk)}` : `Melee Touch ${sgnAtk(meleeTouchAtk)}`;
-        dcEl.textContent = `DC ${saveDc} • ${atkText}`;
+        dcEl.textContent = spellMeta.hasSave ? `DC ${saveDc} • ${atkText}` : atkText;
       }
 
       // SR & Target / Range display
@@ -3042,8 +3043,8 @@
         } else {
           previewText = `${projPrefix}${baseDice} ${typeLabel}`;
         }
-      } else if (activeCat === 'spell_control' || spell.save) {
-        previewText = `DC ${saveDc} ${spell.save || 'Save'}`;
+      } else if (spellMeta.hasSave && (activeCat === 'spell_control' || spell.save)) {
+        previewText = `DC ${saveDc} ${spellMeta.save || spell.save || 'Save'}`;
       } else {
         previewText = `No Damage (${spell.duration || 'Support / Benefit'})`;
       }
@@ -8385,7 +8386,11 @@
           });
         }
 
-        if (t.bootsHaste && hasHaste) {
+        const hasEngineRangedHaste = Boolean(
+          character.ruleFlags?.extraAttackFullAttack ||
+          (Array.isArray(rangedEval?.iteratives) && rangedEval.iteratives.length >= 2 && rangedEval.iteratives[0] === rangedEval.iteratives[1])
+        );
+        if ((t.bootsHaste && hasHaste) || hasEngineRangedHaste) {
           chain.push({
             id: 'ranged-haste',
             label: 'Haste Shot',
@@ -8583,7 +8588,9 @@
       }
 
       const attackChain = [];
-      const bab = Number(character.bab) || 0;
+      const bab = (RuleEngine && typeof RuleEngine.resolveEffectiveBab === 'function')
+        ? RuleEngine.resolveEffectiveBab(character)
+        : (Number(character.effectiveBab ?? character.bab) || 0);
 
       // 1. Primary Main-Hand Attack
       const primaryBonus = mainEval.netAttackBonus + mainPenalty;
@@ -8605,6 +8612,24 @@
           label: flurryExtraCount > 1 ? `Flurry ${f + 1}` : 'Flurry',
           hand: 'flurry',
           handLabel: 'Flurry',
+          weapon: wep,
+          bonus: primaryBonus,
+          evalResult: mainEval,
+          badgeColor: 'purple'
+        });
+      }
+
+      // 2b. Haste / Extra Full-Attack Strike at highest BAB (PHB p.239)
+      const hasHasteExtra = Boolean(
+        character.ruleFlags?.extraAttackFullAttack ||
+        (Array.isArray(mainEval?.iteratives) && mainEval.iteratives.length >= 2 && mainEval.iteratives[0] === mainEval.iteratives[1])
+      );
+      if (hasHasteExtra) {
+        attackChain.push({
+          id: 'haste-1',
+          label: 'Haste',
+          hand: 'haste',
+          handLabel: 'Haste',
           weapon: wep,
           bonus: primaryBonus,
           evalResult: mainEval,

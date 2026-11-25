@@ -1277,12 +1277,14 @@
               </div>
             </td>
             <td class="py-2.5 px-3 text-slate-300">
-              <span class="badge bg-sky-950/60 text-sky-300 border border-sky-800/80 text-[10px] font-semibold">${UI.escapeHtml(s.school || 'Universal')}</span>
+              <span class="badge bg-sky-950/60 text-sky-300 border border-sky-800/80 text-[10px] font-semibold">${UI.escapeHtml((typeof RuleEngine !== 'undefined' && RuleEngine.getSpellMeta) ? RuleEngine.getSpellMeta(s, 'Universal').school : (s.school || s.spell?.school || 'Universal'))}</span>
             </td>
             <td class="py-2.5 px-3 text-center text-amber-300 text-[11px] whitespace-nowrap font-medium" title="${UI.escapeAttr(displayAction)}">${formatActionShort(displayAction)}</td>
             <td class="py-2.5 px-3 text-slate-300 text-[11px]">${UI.escapeHtml(s.range || '-')}</td>
             <td class="py-2.5 px-3 text-center">
-              <span class="badge bg-slate-900 text-emerald-300 border border-emerald-700/60 font-mono text-[11px] font-bold">DC ${dc}</span>
+              ${((typeof RuleEngine !== 'undefined' && RuleEngine.getSpellMeta) ? RuleEngine.getSpellMeta(s, 'Universal').hasSave : true)
+                ? `<span class="badge bg-slate-900 text-emerald-300 border border-emerald-700/60 font-mono text-[11px] font-bold">DC ${dc}</span>`
+                : `<span class="text-slate-500 font-mono text-[11px]" title="No Saving Throw">—</span>`}
             </td>
             <td class="py-2.5 px-3 text-slate-300 text-[11px]">${UI.escapeHtml(s.benefit || '-')}</td>
             <td class="py-2.5 px-3 text-right align-middle">
@@ -2892,12 +2894,14 @@
               </div>
             </td>
             <td class="py-2.5 px-3 text-slate-300">
-              <span class="badge bg-amber-950/60 text-amber-300 border border-amber-800/80 text-[10px] font-semibold">${UI.escapeHtml(s.school || 'Conjuration')}</span>
+              <span class="badge bg-amber-950/60 text-amber-300 border border-amber-800/80 text-[10px] font-semibold">${UI.escapeHtml((typeof RuleEngine !== 'undefined' && RuleEngine.getSpellMeta) ? RuleEngine.getSpellMeta(s, 'Conjuration').school : (s.school || s.spell?.school || 'Conjuration'))}</span>
             </td>
             <td class="py-2.5 px-3 text-center text-amber-300 text-[11px] whitespace-nowrap font-medium" title="${UI.escapeAttr(displayAction)}">${formatActionShort(displayAction)}</td>
             <td class="py-2.5 px-3 text-slate-300 text-[11px]">${UI.escapeHtml(s.range || '-')}</td>
             <td class="py-2.5 px-3 text-center">
-              <span class="badge bg-slate-900 text-emerald-300 border border-emerald-700/60 font-mono text-[11px] font-bold">DC ${dc}</span>
+              ${((typeof RuleEngine !== 'undefined' && RuleEngine.getSpellMeta) ? RuleEngine.getSpellMeta(s, 'Conjuration').hasSave : true)
+                ? `<span class="badge bg-slate-900 text-emerald-300 border border-emerald-700/60 font-mono text-[11px] font-bold">DC ${dc}</span>`
+                : `<span class="text-slate-500 font-mono text-[11px]" title="No Saving Throw">—</span>`}
             </td>
             <td class="py-2.5 px-3 text-slate-300 text-[11px]">${UI.escapeHtml(s.benefit || '-')}</td>
             <td class="py-2.5 px-3 text-right align-middle">
@@ -6707,12 +6711,14 @@
             </div>
           </td>
           <td class="py-2.5 px-3 text-slate-300">
-            <span class="badge bg-purple-950/60 text-purple-300 border border-purple-800/80 text-[10px] font-semibold">${UI.escapeHtml(s.school || 'Universal')}</span>
+            <span class="badge bg-purple-950/60 text-purple-300 border border-purple-800/80 text-[10px] font-semibold">${UI.escapeHtml((typeof RuleEngine !== 'undefined' && RuleEngine.getSpellMeta) ? RuleEngine.getSpellMeta(s, 'Universal').school : (s.school || s.spell?.school || 'Universal'))}</span>
             </td>
           <td class="py-2.5 px-3 text-center text-amber-300 text-[11px] whitespace-nowrap font-medium" title="${s.action || 'Standard Action'}">${formatActionShort(s.action)}</td>
           <td class="py-2.5 px-3 text-slate-300 text-[11px]">${UI.escapeHtml(s.range || '-')}</td>
           <td class="py-2.5 px-3 text-center">
-            <span class="badge bg-slate-900 text-emerald-300 border border-emerald-700/60 font-mono text-[11px] font-bold">DC ${dc}</span>
+            ${((typeof RuleEngine !== 'undefined' && RuleEngine.getSpellMeta) ? RuleEngine.getSpellMeta(s, 'Universal').hasSave : true)
+              ? `<span class="badge bg-slate-900 text-emerald-300 border border-emerald-700/60 font-mono text-[11px] font-bold">DC ${dc}</span>`
+              : `<span class="text-slate-500 font-mono text-[11px]" title="No Saving Throw">—</span>`}
           </td>
           <td class="py-2.5 px-3 text-slate-300 text-[11px]">${UI.escapeHtml(s.benefit || '-')}</td>
           <td class="py-2.5 px-3 text-right align-middle">
@@ -8981,7 +8987,7 @@
       if (document.getElementById('core-name')) document.getElementById('core-name').textContent = character.name || 'Unnamed Hero';
       if (document.getElementById('core-race')) document.getElementById('core-race').textContent = character.race || 'No Race Selected';
       if (document.getElementById('core-classes')) document.getElementById('core-classes').textContent = (character.classes || 'No Class Selected') + ` • Level ${character.level || 1}`;
-      if (document.getElementById('core-speed')) document.getElementById('core-speed').textContent = (character.effectiveSpeed || character.baseSpeed || 30) + ' ft';
+      if (document.getElementById('core-speed')) document.getElementById('core-speed').textContent = (character.effectiveSpeed ?? character.baseSpeed ?? 30) + ' ft';
 
       // Ability scores
       const container = document.getElementById('abilities-grid');
@@ -8998,14 +9004,17 @@
         ];
 
         stats.forEach(s => {
-          const score = Number(character.abilities?.[s.key]) || 10;
-          const base = Number(character.baseAbilities?.[s.key]) || score;
-          const bonusDiff = score - base;
-          const mod = (typeof RuleEngine !== 'undefined' && RuleEngine.getAbilityMod)
-            ? RuleEngine.getAbilityMod(score)
-            : Math.floor((score - 10) / 2);
+          const isNonability = Boolean(character.abilityNonabilities?.[s.key] || character.abilities?.[s.key] === null);
+          const score = isNonability ? null : (Number(character.abilities?.[s.key]) || 10);
+          const base = isNonability ? null : (Number(character.baseAbilities?.[s.key]) || score);
+          const bonusDiff = isNonability ? 0 : (score - base);
+          const mod = isNonability
+            ? 0
+            : ((typeof RuleEngine !== 'undefined' && RuleEngine.getAbilityMod)
+              ? RuleEngine.getAbilityMod(score)
+              : Math.floor((score - 10) / 2));
 
-          const sourcesList = Array.isArray(character.abilitySources?.[s.key]) ? character.abilitySources[s.key] : [];
+          const sourcesList = isNonability ? [] : (Array.isArray(character.abilitySources?.[s.key]) ? character.abilitySources[s.key] : []);
           const sourceText = sourcesList
             .filter(src => src && (src.source || src.name))
             .map(src => {
@@ -9017,16 +9026,17 @@
 
           const div = document.createElement('div');
           div.className = 'bg-slate-900 border border-slate-700 rounded-xl p-2 sm:p-2.5 flex flex-col justify-between shadow-sm';
-          if (sourceText) div.title = `Bonus Sources: ${sourceText}`;
+          if (isNonability) div.title = 'Nonability (no score; modifier +0)';
+          else if (sourceText) div.title = `Bonus Sources: ${sourceText}`;
           div.innerHTML = `
             <div class="flex items-center justify-between">
               <span class="text-[10px] font-bold text-slate-400 uppercase">${UI.escapeHtml(s.label)}</span>
               ${bonusDiff !== 0 ? `<span class="text-[10px] font-mono px-1 rounded ${bonusDiff > 0 ? 'bg-emerald-950 text-emerald-400 border border-emerald-800' : 'bg-rose-950 text-rose-400 border border-rose-800'}">${bonusDiff > 0 ? '+' + bonusDiff : bonusDiff}</span>` : ''}
             </div>
-            <div class="text-xl sm:text-2xl font-black text-amber-400 font-mono my-0.5">${score}</div>
+            <div class="text-xl sm:text-2xl font-black text-amber-400 font-mono my-0.5">${isNonability ? '—' : score}</div>
             <div class="flex items-center justify-between text-xs font-mono">
-              <span class="${mod >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-bold">${mod >= 0 ? '+' : ''}${mod}</span>
-              ${bonusDiff !== 0 ? `<span class="text-[10px] text-slate-500 font-sans">Taban: ${base}</span>` : ''}
+              <span class="${isNonability ? 'text-slate-500' : (mod >= 0 ? 'text-emerald-400' : 'text-rose-400')} font-bold">${isNonability ? '—' : ((mod >= 0 ? '+' : '') + mod)}</span>
+              ${isNonability ? `<span class="text-[10px] text-slate-500 font-sans">Nonability</span>` : (bonusDiff !== 0 ? `<span class="text-[10px] text-slate-500 font-sans">Taban: ${base}</span>` : '')}
             </div>
             ${sourceText ? `<div class="text-[10px] text-emerald-400/90 truncate mt-1 pt-1 border-t border-slate-800" title="${UI.escapeAttr(sourceText)}">✨ ${UI.escapeHtml(sourceText)}</div>` : ''}
           `;

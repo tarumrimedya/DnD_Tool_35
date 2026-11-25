@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
   "version": "3.0.0",
-  "compendiumHash": "52a62a540b72c786",
+  "compendiumHash": "03bbdc00959803ba",
   "generatedAt": "2026-11-15T19:43:51.694Z",
   "totalEntries": 8004,
   "chunks": {
@@ -20,19 +20,19 @@
     "srd_classes_races.json": {
       "count": 337,
       "bytes": 1678585,
-      "hash": "1b2c0f87a227eee7",
+      "hash": "176508c5eed1024e",
       "eagerLoad": true
     },
     "srd_combat_rules.json": {
       "count": 38,
       "bytes": 54917,
-      "hash": "02d921474e07fb08",
+      "hash": "d73351086c31beea",
       "eagerLoad": true
     },
     "srd_spells.json": {
       "count": 698,
       "bytes": 1954627,
-      "hash": "634f58d64a61647d",
+      "hash": "87733d52503a757e",
       "eagerLoad": true
     },
     "srd_monsters.json": {
@@ -68,7 +68,7 @@
     "srd_templates.json": {
       "count": 39,
       "description": "D&D 3.5e Character & Creature Templates (Half-Dragon, Half-Celestial, Half-Fiend, Lich, Vampire, Ghost, Lycanthrope, Phrenic, Shadow, Paragon)",
-      "hash": "d671255089c6ca8b",
+      "hash": "8b26247dfc587084",
       "bytes": 156276
     },
     "srd_equipment_splat.json": {

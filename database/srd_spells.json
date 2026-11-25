@@ -16844,15 +16844,6 @@
         "die": "d4",
         "scaling": "flat",
         "source": "Energy Drain"
-      },
-      {
-        "type": "stat",
-        "targets": [
-          "save.all"
-        ],
-        "mode": "flat",
-        "value": -1,
-        "btype": "Penalty"
       }
     ],
     "shortDescription": "Subject gains 2d4 negative levels.",
@@ -25958,11 +25949,27 @@
       {
         "type": "stat",
         "targets": [
+          "atk.all",
+          "ac.total",
           "save.ref"
         ],
         "mode": "flat",
         "value": -1,
         "btype": "Penalty"
+      },
+      {
+        "id": "ef-spl-slow-spd",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "halfBaseLandSpeed",
+        "label": "Half Speed (Slow)",
+        "text": "Moves at half normal speed (rounded down to 5-ft. increment)."
+      },
+      {
+        "id": "ef-spl-slow-act",
+        "type": "effect",
+        "effectKind": "rule",
+        "text": "May take only a single move action or standard action each turn, not both (nor full-round actions)."
       }
     ],
     "shortDescription": "One subject/level takes only one action/round, -1 to AC, reflex saves, and attack rolls.",
@@ -31732,9 +31739,20 @@
         "die": "d6",
         "scaling": "formula",
         "source": "Ray of Enfeeblement"
+      },
+      {
+        "id": "ef-ray-enfeeble-str",
+        "type": "stat",
+        "targets": [
+          "str"
+        ],
+        "mode": "formula",
+        "value": 0,
+        "formula": "-(4 + min(5, floor(@cl / 2)))",
+        "btype": "Penalty"
       }
     ],
-    "shortDescription": "Ray deals 1d6 +1 per two levels Str damage.",
+    "shortDescription": "Ray deals 1d6 +1 per two levels STR penalty.",
     "text": "A coruscating ray springs from your hand. You must succeed on a ranged touch attack to strike a target. The subject takes a penalty to Strength equal to 1d6+1 per two caster levels (maximum 1d6+5). The subject’s Strength score cannot drop below 1.",
     "tags": [
       "spell",
@@ -38944,7 +38962,7 @@
         "kind": "Damage",
         "dmgType": "Untyped",
         "crit": "normal",
-        "dice": "(@cl*2)d6",
+        "dice": "(min(40, @cl*2))d6",
         "count": 1,
         "die": "d6",
         "scaling": "formula",
@@ -41138,15 +41156,6 @@
         "die": "d4",
         "scaling": "flat",
         "source": "Enervation"
-      },
-      {
-        "type": "stat",
-        "targets": [
-          "save.all"
-        ],
-        "mode": "flat",
-        "value": -1,
-        "btype": "Penalty"
       }
     ],
     "shortDescription": "Subject gains 1d4 negative levels.",
@@ -41689,12 +41698,12 @@
     "effects": [
       {
         "type": "roll",
-        "kind": "Damage",
-        "dmgType": "Untyped",
+        "kind": "Healing",
+        "dmgType": "Positive",
         "crit": "normal",
-        "dice": "(min(15, @cl))*10*@critMult",
+        "dice": "min(150, @cl * 10)",
         "count": 1,
-        "die": "d6",
+        "die": "d1",
         "scaling": "formula",
         "source": "Heal"
       }
@@ -44960,6 +44969,24 @@
         "mode": "DR",
         "value": 15,
         "what": "adamantine"
+      },
+      {
+        "id": "ef-spl-iron-body-asf",
+        "type": "stat",
+        "targets": [
+          "spell.asf"
+        ],
+        "mode": "flat",
+        "value": 50,
+        "btype": "Untyped"
+      },
+      {
+        "id": "ef-spl-iron-body-spd",
+        "type": "effect",
+        "effectKind": "ruleSwitch",
+        "flag": "halfBaseLandSpeed",
+        "label": "Half Speed (Iron Body)",
+        "text": "Moves at half normal speed."
       }
     ],
     "ruleFlags": {
@@ -48441,7 +48468,7 @@
         "kind": "Damage",
         "dmgType": "Electricity",
         "crit": "normal",
-        "dice": "(@cl)d6",
+        "dice": "(min(20, @cl))d6",
         "count": 1,
         "die": "d6",
         "scaling": "formula",
@@ -49610,7 +49637,8 @@
         ],
         "mode": "flat",
         "value": 30,
-        "btype": "Enhancement"
+        "btype": "Enhancement",
+        "capMultiplier": 2
       },
       {
         "type": "attack",
@@ -55906,7 +55934,7 @@
       {
         "type": "roll",
         "kind": "Damage",
-        "dmgType": "Untyped",
+        "dmgType": "Fire",
         "crit": "normal",
         "count": 4,
         "die": "d6",

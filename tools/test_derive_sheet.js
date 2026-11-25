@@ -5988,13 +5988,13 @@ function runDeriveSheetTests() {
       'Class blocks: Monk Fast Movement is +10 ft. per three levels (3rd +10, 6th +20, 9th +30, 18th +60), lost in any armor or with a medium / heavy load; a shield does not matter',
       spd(gcls([['Monk', 1]])) === 30 && spd(gcls([['Monk', 3]])) === 40 && spd(gcls([['Monk', 6]])) === 50 && spd(gcls([['Monk', 9]])) === 60
       && spd(gcls([['Monk', 20]])) === 90 && spd(gcls([['Monk', 9]], { bodySlots: { armor: chain } })) === 30
-      && spd(gcls([['Monk', 9]], { bodySlots: { offHand: shield } })) === 60 && spd(gcls([['Monk', 9]], load)) === 30,
+      && spd(gcls([['Monk', 9]], { bodySlots: { offHand: shield } })) === 60 && spd(gcls([['Monk', 9]], load)) === 20,
       JSON.stringify([1, 3, 6, 9, 20].map(l => spd(gcls([['Monk', l]]))))
     );
     check(
       'Class blocks: Barbarian Fast Movement +10 ft. stays in light / medium armor but is lost in heavy armor or with a heavy load (PHB p.25)',
       spd(gcls([['Barbarian', 5]])) === 40 && spd(gcls([['Barbarian', 5]], { bodySlots: { armor: chain } })) === 40
-      && spd(gcls([['Barbarian', 5]], { bodySlots: { armor: plate } })) === 20 && spd(gcls([['Barbarian', 5]], load)) === 30,
+      && spd(gcls([['Barbarian', 5]], { bodySlots: { armor: plate } })) === 20 && spd(gcls([['Barbarian', 5]], load)) === 20,
       JSON.stringify([spd(gcls([['Barbarian', 5]])), spd(gcls([['Barbarian', 5]], { bodySlots: { armor: plate } })), spd(gcls([['Barbarian', 5]], load))])
     );
     const ddTrap = (n) => ((gcls([['Dwarven Defender', n]]).conditionalSaveBonuses || []).find(x => /trap/i.test(x.source || '')) || {}).val;

@@ -627,7 +627,7 @@
               <div>
                 <h4 class="text-sm font-black text-amber-300 flex items-center gap-2">
                   <span>⚒️</span>
-                  <span>The Forge — Canonical V2 Modular Item Assembler</span>
+                  <span>The Forge — Modular Item Assembler</span>
                 </h4>
                 <p class="text-[11px] text-slate-400">Combine base weapons/armor, special materials (Mithral, Adamantine, etc.), +1..+5 enhancement bonuses, and special abilities with zero tokens.</p>
               </div>

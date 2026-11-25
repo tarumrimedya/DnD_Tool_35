@@ -2505,7 +2505,7 @@
         }
         if (rmCountBadge) {
           rmCountBadge.className = 'text-[10px] text-rose-300 font-mono bg-rose-950/70 px-2 py-0.5 rounded border border-rose-500/40 shrink-0';
-          rmCountBadge.textContent = '45+ V2 Conditions & Debuffs';
+          rmCountBadge.textContent = '45+ Conditions & Debuffs';
         }
         if (rmCmdBar) rmCmdBar.className = 'ui-spotlight-well ui-spotlight-rose rounded-xl p-1.5 flex items-center gap-2 border border-rose-400/75';
         if (rmIconBadge) rmIconBadge.className = 'w-8 h-8 rounded-lg bg-rose-600 text-white font-black flex items-center justify-center text-sm shrink-0 shadow';
@@ -2548,7 +2548,7 @@
           modalBadge.className = 'text-[10px] font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 px-2 py-0.5 rounded-full';
           modalBadge.textContent = 'D&D 3.5e RAW (Buff)';
         }
-        if (modalSubtitle) modalSubtitle.textContent = 'Search 200+ V2 spells & combat buffs via Spotlight or 🔮 Rule Master';
+        if (modalSubtitle) modalSubtitle.textContent = 'Search 200+ spells & combat buffs via Spotlight or 🔮 Rule Master';
         if (rmBox) rmBox.className = 'bg-gradient-to-r from-indigo-950/70 via-slate-900 to-slate-950 border border-indigo-500/40 rounded-xl p-3 space-y-2.5 shadow-inner';
         if (rmTitle) {
           rmTitle.className = 'text-xs font-bold text-indigo-300 flex items-center gap-1.5';
@@ -2556,7 +2556,7 @@
         }
         if (rmCountBadge) {
           rmCountBadge.className = 'text-[10px] text-indigo-300 font-mono bg-indigo-950/70 px-2 py-0.5 rounded border border-indigo-500/40 shrink-0';
-          rmCountBadge.textContent = '180+ V2 Buffs & Spells';
+          rmCountBadge.textContent = '180+ Buffs & Spells';
         }
         if (rmCmdBar) rmCmdBar.className = 'ui-spotlight-well ui-spotlight-indigo rounded-xl p-1.5 flex items-center gap-2 border border-indigo-400/75';
         if (rmIconBadge) rmIconBadge.className = 'w-8 h-8 rounded-lg bg-indigo-600 text-white font-black flex items-center justify-center text-sm shrink-0 shadow';
@@ -2836,7 +2836,7 @@
 
         if (statusEl) {
           statusEl.className = 'text-xs text-rose-300 bg-rose-950/60 border border-rose-800/60 p-2 rounded-lg block';
-          statusEl.textContent = `"${q}" not found in compendium. Switch to the 🛠️ Manual V2 Effect Builder tab to define it.`;
+          statusEl.textContent = `"${q}" not found in compendium. Switch to the 🛠️ Manual Effect Builder tab to define it.`;
         }
       } catch (err) {
         if (statusEl) {
@@ -2893,7 +2893,7 @@
       }
 
       if (!name) {
-        showToast(currentBuffModalMode === 'debuff' ? 'Please select a Condition/Debuff from Spotlight or enter a Name in the Manual V2 tab.' : 'Please select a Buff from Spotlight or enter a Name in the Manual V2 tab.', 'error', { wrap: true });
+        showToast(currentBuffModalMode === 'debuff' ? 'Please select a Condition/Debuff from Spotlight or enter a Name in the Manual Builder tab.' : 'Please select a Buff from Spotlight or enter a Name in the Manual Builder tab.', 'error', { wrap: true });
         return;
       }
 
@@ -3099,17 +3099,37 @@
         children: (currentBuffModalChildren && currentBuffModalChildren.length > 0) ? JSON.parse(JSON.stringify(currentBuffModalChildren)) : []
       };
 
+      const isEnergyDrainedBuff = newBuff.id === 'cnd-energy-drained'
+        || Boolean(_selectedSpotlightV2Entry?.stackable)
+        || name.toLowerCase().includes('drain')
+        || name.toLowerCase().includes('negative level');
       if (!isNaN(negLvlRaw) && negLvlRaw > 0) {
         newBuff.negativeLevels = negLvlRaw;
-      } else if (name.toLowerCase().includes('drain') || name.toLowerCase().includes('negative level')) {
+      } else if (isEnergyDrainedBuff) {
         const lvlMatch = name.match(/(\d+)/);
-        if (lvlMatch) newBuff.negativeLevels = parseInt(lvlMatch[1], 10);
+        newBuff.negativeLevels = lvlMatch ? parseInt(lvlMatch[1], 10) : 1;
+      }
+      if (isEnergyDrainedBuff && (!durationText || /10 min|100 rounds|1 min/i.test(durationText))) {
+        newBuff.durationText = '24 hours (Fort save)';
+        newBuff.duration = '24 hours (Fort save)';
+        newBuff.rounds = 0;
       }
 
       if (!Array.isArray(character.buffs)) character.buffs = [];
       const existingBuffIdx = character.buffs.findIndex(b => b && (b.id === newBuff.id || (b.name || '').toLowerCase().trim() === name.toLowerCase()));
       const prevBuff = existingBuffIdx >= 0 ? character.buffs[existingBuffIdx] : null;
       const prevGrantedTemp = (prevBuff && prevBuff.active) ? getBuffGrantedTempHp(prevBuff) : 0;
+
+      // Stack negative levels (Energy Drained) when re-applied via Spotlight (not when manually editing an existing buff)
+      if (isEnergyDrainedBuff && prevBuff && !_buffManualEdited) {
+        const prevNeg = Math.max(1, Number(prevBuff.negativeLevels) || 1);
+        const addNeg = Math.max(1, Number(newBuff.negativeLevels) || 1);
+        newBuff.negativeLevels = prevNeg + addNeg;
+      }
+      if (isEnergyDrainedBuff && newBuff.negativeLevels > 0) {
+        const n = newBuff.negativeLevels;
+        newBuff.summary = `${n} Negative Level${n === 1 ? '' : 's'} (-${n} atk/saves/skills, -${n * 5} max HP)`;
+      }
 
       if (grantedTempHp > 0 && character.hp) {
         newBuff.grantedTempHp = grantedTempHp;

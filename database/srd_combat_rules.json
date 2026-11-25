@@ -918,8 +918,8 @@
       "usage": {
         "mode": "atwill"
       },
-      "duration": "perm",
-      "durationText": "condition",
+      "duration": "text",
+      "durationText": "24 hours (Fort save)",
       "dismissible": true
     },
     "effects": [
@@ -951,7 +951,9 @@
     "tags": [
       "condition",
       "energy-drained"
-    ]
+    ],
+    "duration": "24 hours (Fort save)",
+    "stackable": true
   },
   {
     "schemaVersion": 3,

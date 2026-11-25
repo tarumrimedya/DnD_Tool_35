@@ -51,9 +51,62 @@ const RuleEngine = {
     return this.rulesets[(ch && ch.ruleset) || 'dnd35'] || this.rulesets.dnd35;
   },
 
-  // Calculate D&D 3.5e Ability Modifier: floor((score - 10) / 2)
+  // Calculate D&D 3.5e Ability Modifier: floor((score - 10) / 2); nonabilities (null / '' / '—' / { nonability: true }) return 0.
   getAbilityMod(score) {
-    return Math.floor(((Number(score) || 10) - 10) / 2);
+    if (score === null || score === undefined || score === '' || score === '—' || score === '-') return 0;
+    if (typeof score === 'object') {
+      if (score.nonability) return 0;
+      const n = Number(score.total ?? score.score ?? score.value);
+      return Number.isFinite(n) ? Math.floor((n - 10) / 2) : 0;
+    }
+    const n = Number(score);
+    return Number.isFinite(n) ? Math.floor((n - 10) / 2) : 0;
+  },
+
+  // Official D&D 3.5e Positive / Negative Energy Healing Inversion (delegated to active ruleset)
+  resolveEnergyHealingEffect(character, energyType = 'positive', amount = 0) {
+    const isUndead = Boolean(
+      character?.undeadHealingInversion ||
+      /\bundead\b/i.test(String(character?.templateSummary?.creatureType || character?.creatureType || ''))
+    );
+    const rs = this.getActiveRuleset(character);
+    if (rs && typeof rs.resolveEnergyHealingEffect === 'function') {
+      return rs.resolveEnergyHealingEffect(isUndead, energyType, amount);
+    }
+    const amt = Math.max(0, Math.floor(Number(amount) || 0));
+    const isNeg = String(energyType || '').toLowerCase().includes('neg');
+    const heals = isUndead ? isNeg : !isNeg;
+    return { mode: heals ? 'heal' : 'damage', delta: heals ? amt : -amt, inverted: isUndead, energyType: isNeg ? 'Negative' : 'Positive' };
+  },
+
+  // Single-source V3 spell metadata reader (school, save, hasSave) across nested V3 and flat spell objects.
+  getSpellMeta(entry, fallbackSchool = 'Universal') {
+    const e = entry && typeof entry === 'object' ? entry : {};
+    const hasOwnSchool = Boolean(e.school && String(e.school).toLowerCase() !== 'universal') || Boolean(e.spell?.school);
+    const hasOwnSave = Boolean(e.save || e.savingThrow || e.delivery?.save);
+    const dbRef = (!hasOwnSchool || !hasOwnSave) && (e.id || e.spellId || e.name) && typeof this.getMasterDbEntry === 'function'
+      ? this.getMasterDbEntry(e.id || e.spellId || e.name, 'Spell')
+      : null;
+    const rawSchool = (e.school && String(e.school).toLowerCase() !== 'universal' ? e.school : '')
+      || e.spell?.school
+      || dbRef?.spell?.school
+      || dbRef?.school
+      || e.school
+      || '';
+    const school = String(rawSchool || fallbackSchool || 'Universal').trim();
+    const deliverySave = e.delivery?.save || dbRef?.delivery?.save || null;
+    const rawSaveStr = String(
+      e.save || e.savingThrow ||
+      (deliverySave ? (deliverySave.raw || `${deliverySave.type || ''}${deliverySave.effect ? ' ' + deliverySave.effect : ''}`) : '') ||
+      dbRef?.save || dbRef?.savingThrow || ''
+    ).trim();
+    const cleanedSave = rawSaveStr.replace(/\s*\(.*?\)\s*/g, '').trim();
+    const hasSave = Boolean(cleanedSave) && !/^(none|no|-|—|see text)$/i.test(cleanedSave);
+    return {
+      school,
+      save: rawSaveStr || 'None',
+      hasSave
+    };
   },
 
   // Normalize human shorthand formula tokens (e.g. "10+lvl+Con", "10 + 1/2 lvl + Cha", V3 @CL/@ML/@IL/@HD/@ECL/@STR..@CHA/@essentia/@augmentPP) into Canonical @tokens
@@ -1269,7 +1322,11 @@ const RuleEngine = {
       'untyped': 'Untyped',
       'enhancement': 'Enhancement',
       'armor': 'Armor',
+      'armor_ench': 'Armor_Ench',
+      'armor_enhancement': 'Armor_Ench',
       'shield': 'Shield',
+      'shield_ench': 'Shield_Ench',
+      'shield_enhancement': 'Shield_Ench',
       'natural': 'Natural Armor',
       'natural armor': 'Natural Armor',
       'natural_armor': 'Natural Armor',
@@ -2674,6 +2731,7 @@ const RuleEngine = {
               ...(b.when ? { when: b.when } : {}),
               ...(b.appliesTo ? { appliesTo: b.appliesTo } : {}),
               ...(b.weaponFilter ? { weaponFilter: b.weaponFilter } : {}),
+              ...(b.capMultiplier ? { capMultiplier: Number(b.capMultiplier) } : {}),
               ...(b.affects ? { affects: b.affects } : {})
             });
           });
@@ -4255,13 +4313,13 @@ const RuleEngine = {
       let score;
       if (options && options.precomputedAbilities && options.precomputedAbilities[k] !== undefined) {
         const pre = options.precomputedAbilities[k];
-        score = typeof pre === 'object' ? Number(pre.score ?? pre.total ?? pre.base ?? 10) : Number(pre);
+        score = pre === null ? null : (typeof pre === 'object' ? Number(pre.score ?? pre.total ?? pre.base ?? 10) : Number(pre));
       } else {
         const typedSum = Object.values(abilityTotals[k].typed).reduce((a, b) => a + b, 0);
         score = abilityTotals[k].base + typedSum + abilityTotals[k].untyped;
       }
       const modVal = this.getAbilityMod(score);
-      evaluatedAbilities[k] = { score, mod: modVal };
+      evaluatedAbilities[k] = score === null ? { score: null, mod: 0, nonability: true } : { score, mod: modVal };
       ctx[`${k}Mod`] = modVal;
     });
 
@@ -10375,10 +10433,10 @@ const RuleEngine = {
     let minMaxDex = null;
     let totalAcp = 0;
     let totalArmorAsf = 0;
+    let buffAsf = 0;
     const asfSources = [];
     let resistBonus = 0;
-    let itemSpeedBonus = 0;
-    let buffSpeedBonus = 0;
+    const speedBonusBuckets = [];
     let buffSpeedPenalty = 0;
     let swimSpeed = 0;
     let climbSpeed = 0;
@@ -10516,7 +10574,8 @@ const RuleEngine = {
             buffAcPenalty += Math.abs(val);
             acPenaltySources.push(String(sourceName || '').toLowerCase());
           } else if (acSub === 'shield' || mTypeLower === 'shield') {
-            shieldBonuses.push({ val, source: sourceName, type: 'Shield', incorporeal: this.isForceAcSource(sourceName) });
+            const shieldType = (acSub === 'shield' && mTypeLower.includes('enh')) ? 'Shield_Ench' : 'Shield';
+            shieldBonuses.push({ val, source: sourceName, type: shieldType, incorporeal: this.isForceAcSource(sourceName) });
           } else if (acSub === 'deflection' || mTypeLower === 'deflection') {
             deflectionBonuses.push({ val, source: sourceName, type: 'Deflection' });
           } else if (acSub === 'natural' || mTypeLower.includes('natural')) {
@@ -10527,7 +10586,8 @@ const RuleEngine = {
                 : 'Natural');
             naturalBonuses.push({ val, source: sourceName, type: natType });
           } else if (acSub === 'armor' || mTypeLower === 'armor') {
-            armorBonuses.push({ val, source: sourceName, type: 'Armor', incorporeal: this.isForceAcSource(sourceName) });
+            const armorType = (acSub === 'armor' && mTypeLower.includes('enh')) ? 'Armor_Ench' : 'Armor';
+            armorBonuses.push({ val, source: sourceName, type: armorType, incorporeal: this.isForceAcSource(sourceName) });
           } else if (mTypeLower === 'dodge' || mTypeLower === 'haste' || (acSub === 'dodge' && mTypeLower === 'untyped')) {
             dodgeBonuses.push({ val, source: sourceName, type: mTypeLower === 'haste' ? mType : 'Dodge' });
           } else {
@@ -10583,11 +10643,18 @@ const RuleEngine = {
         if (target === 'speed' || target.startsWith('speed.')) {
           if (val < 0 || mTypeLower === 'penalty') {
             buffSpeedPenalty += Math.abs(val);
-          } else if (sourceCategory === 'item') {
-            if (val > itemSpeedBonus) itemSpeedBonus = val;
-          } else {
-            if (val > buffSpeedBonus) buffSpeedBonus = val;
+          } else if (val > 0) {
+            speedBonusBuckets.push({
+              val,
+              type: mType || 'Untyped',
+              source: sourceName,
+              capMultiplier: Number(mod.capMultiplier) || 0
+            });
           }
+          return;
+        }
+        if (target === 'spell.asf') {
+          if (val > 0) buffAsf += val;
           return;
         }
 
@@ -10667,7 +10734,9 @@ const RuleEngine = {
         if (target === 'dr' || target.startsWith('dr.')) {
           if (character.evaluatedDefenses && Array.isArray(character.evaluatedDefenses.dr)) {
             const bypass = mod.bypass || (target.startsWith('dr.') ? target.slice(3) : '-');
-            if (!character.evaluatedDefenses.dr.some(d => d && String(d.source || '').replace(/ \(Race\)$/, '') === String(sourceName || '').replace(/ \(Race\)$/, '') && d.value === val)) {
+            const normDrSrc = (s) => String(s || '').replace(/ \((?:Race|Template|Buff|Spell|Item)\)$/i, '').trim().toLowerCase();
+            const normBypass = (b) => String(b || '-').trim().toLowerCase();
+            if (!character.evaluatedDefenses.dr.some(d => d && normDrSrc(d.source) === normDrSrc(sourceName) && Number(d.value) === Number(val) && normBypass(d.bypass) === normBypass(bypass))) {
               character.evaluatedDefenses.dr.push({ value: val, bypass, source: sourceName });
             }
           }
@@ -10751,8 +10820,14 @@ const RuleEngine = {
 
         if (meldState === 'wild_ac') {
           const slotIncorp = this.itemHasEnhancementFlag(slotData, 'ghostTouchArmor') || this.isForceAcSource(slotData.name);
-          if (mods.armor > 0) armorBonuses.push({ val: mods.armor, source: `${mods.armorSourceLabel || slotData.name} (Wild)`, type: 'Armor', incorporeal: slotIncorp });
-          if (mods.shield > 0) shieldBonuses.push({ val: mods.shield, source: `${mods.shieldSourceLabel || slotData.name} (Wild)`, type: 'Shield', incorporeal: slotIncorp });
+          if (mods.armor > 0) {
+            const c = mods.armorChassis && mods.armorChassis.kind === 'armor' ? mods.armorChassis : null;
+            armorBonuses.push({ val: mods.armor, source: `${mods.armorSourceLabel || slotData.name} (Wild)`, type: 'Armor', incorporeal: slotIncorp, ...(c ? { chassisBase: c.base, chassisEnh: c.enh } : {}) });
+          }
+          if (mods.shield > 0) {
+            const c = mods.armorChassis && mods.armorChassis.kind === 'shield' ? mods.armorChassis : null;
+            shieldBonuses.push({ val: mods.shield, source: `${mods.shieldSourceLabel || slotData.name} (Wild)`, type: 'Shield', incorporeal: slotIncorp, ...(c ? { chassisBase: c.base, chassisEnh: c.enh } : {}) });
+          }
           return;
         }
 
@@ -10761,8 +10836,14 @@ const RuleEngine = {
         }
 
         const slotIncorp = this.itemHasEnhancementFlag(slotData, 'ghostTouchArmor') || this.isForceAcSource(slotData.name);
-        if (mods.armor > 0) armorBonuses.push({ val: mods.armor, source: mods.armorSourceLabel || slotData.name, type: 'Armor', incorporeal: slotIncorp });
-        if (mods.shield > 0) shieldBonuses.push({ val: mods.shield, source: mods.shieldSourceLabel || slotData.name, type: 'Shield', incorporeal: slotIncorp });
+        if (mods.armor > 0) {
+          const c = mods.armorChassis && mods.armorChassis.kind === 'armor' ? mods.armorChassis : null;
+          armorBonuses.push({ val: mods.armor, source: mods.armorSourceLabel || slotData.name, type: 'Armor', incorporeal: slotIncorp, ...(c ? { chassisBase: c.base, chassisEnh: c.enh } : {}) });
+        }
+        if (mods.shield > 0) {
+          const c = mods.armorChassis && mods.armorChassis.kind === 'shield' ? mods.armorChassis : null;
+          shieldBonuses.push({ val: mods.shield, source: mods.shieldSourceLabel || slotData.name, type: 'Shield', incorporeal: slotIncorp, ...(c ? { chassisBase: c.base, chassisEnh: c.enh } : {}) });
+        }
         if (mods.natural > 0) naturalBonuses.push({ val: mods.natural, source: slotData.name, type: mods.naturalBonusType || mods.bonusType || 'Natural' });
         if (mods.deflection > 0) deflectionBonuses.push({ val: mods.deflection, source: slotData.name, type: 'Deflection' });
         if (mods.dodge > 0) dodgeBonuses.push({ val: mods.dodge, source: slotData.name, type: 'Dodge' });
@@ -10828,7 +10909,9 @@ const RuleEngine = {
           saveBonusBuckets.will.push({ val: mods.resistance, source: slotData.name, type: 'Resistance' });
           if (mods.resistance > resistBonus) resistBonus = mods.resistance;
         }
-        if (mods.speed > 0 && mods.speed > itemSpeedBonus) itemSpeedBonus = mods.speed;
+        if (mods.speed > 0) {
+          speedBonusBuckets.push({ val: mods.speed, type: mods.bonusType || 'Enhancement', source: slotData.name || slotKey });
+        }
 
         const abilityBonusType = (mods.bonusType && mods.bonusType.toLowerCase() !== 'untyped') ? mods.bonusType : 'Enhancement';
         if (mods.str !== 0) abilityBuckets.str.push({ val: mods.str, type: abilityBonusType, source: slotData.name });
@@ -10901,20 +10984,28 @@ const RuleEngine = {
         character.hp._lastPlayerChangeTs = Math.max(Date.now(), (Number(character.hp?._lastDmUpdateTs) || 0) + 100);
       }
 
+      const buffMods = buff.modifiers;
+      let effectiveBuffMods = buffMods;
       if (buff.negativeLevels) {
-        const negLvls = Number(buff.negativeLevels) || 0;
-        if (negLvls > 0 && (!Array.isArray(buff.modifiers) || buff.modifiers.length === 0)) {
+        const negLvls = Math.max(0, Math.floor(Number(buff.negativeLevels) || 0));
+        const hasMods = Array.isArray(buffMods) && buffMods.length > 0;
+        if (negLvls > 0 && !hasMods) {
           debuffHpPenalty += negLvls * 5;
           saveBonusBuckets.fort.push({ val: -negLvls, type: 'penalty', source: `${buff.name} (-${negLvls} Lvl)` });
           saveBonusBuckets.ref.push({ val: -negLvls, type: 'penalty', source: `${buff.name} (-${negLvls} Lvl)` });
           saveBonusBuckets.will.push({ val: -negLvls, type: 'penalty', source: `${buff.name} (-${negLvls} Lvl)` });
           buffSkillBonus -= negLvls;
+        } else if (negLvls > 1 && hasMods) {
+          effectiveBuffMods = buffMods.map(m => {
+            if (!m || !Number.isFinite(Number(m.value))) return m;
+            return Object.assign({}, m, { value: Number(m.value) * negLvls });
+          });
         }
       }
 
       // Weapon-targeted buffs (e.g. Greater Magic Weapon, Keen Edge on a specific weapon) apply in evaluateWeaponAttack
       if (!buff.targetWeapon) {
-        applyV2Modifiers(buff.modifiers, buff.name || 'Buff', 'buff', buffCtx);
+        applyV2Modifiers(effectiveBuffMods, buff.name || 'Buff', 'buff', buffCtx);
       }
 
       const rf = buff.ruleFlags || {};
@@ -11374,10 +11465,21 @@ const RuleEngine = {
     // active buffs & Wilding Clasp items still stack normally on top. Max HP uses true-form CON.
     if (!character.abilities) character.abilities = {};
     character.abilitySources = abilityBuckets;
+    const tmplCreatureType = String(templateSummary.creatureType || '').trim();
+    const isUndeadCreature = /\bundead\b/i.test(tmplCreatureType);
+    const hasConNonability = isUndeadCreature
+      || (/\bconstruct\b/i.test(tmplCreatureType) && !/living\s+construct/i.test(tmplCreatureType))
+      || activeTemplateEntries.some(t => Array.isArray(t?.nonabilities) && t.nonabilities.includes('con'));
+    character.abilityNonabilities = { con: hasConNonability };
+    character.undeadHealingInversion = isUndeadCreature;
     const formAbi = (activeFormOverlay && activeFormOverlay.active && activeFormOverlay.chassis?.abilities)
       ? activeFormOverlay.chassis.abilities
       : null;
     ['str', 'dex', 'con', 'int', 'wis', 'cha'].forEach(stat => {
+      if (stat === 'con' && hasConNonability) {
+        character.abilities.con = null;
+        return;
+      }
       const isPhysical = stat === 'str' || stat === 'dex' || stat === 'con';
       const base = (formAbi && isPhysical && Number(formAbi[stat]) > 0)
         ? Number(formAbi[stat])
@@ -11386,7 +11488,9 @@ const RuleEngine = {
       const netBonus = this.resolveBonusStacking(bonusItems);
       character.abilities[stat] = base + netBonus;
     });
-    const trueConScoreForHp = (character.baseAbilities.con || 10) + this.resolveBonusStacking(abilityBuckets.con);
+    const trueConScoreForHp = hasConNonability
+      ? null
+      : ((character.baseAbilities.con || 10) + this.resolveBonusStacking(abilityBuckets.con));
 
     // BL2: Re-evaluate V2.5 Lego pipeline with post-Step-4 final abilities so abilityMod substitutions (Force of Personality, Canny Defense, etc.) use item/buff-modified ability scores
     const prevEvalDefenses = character.evaluatedDefenses || {};
@@ -11401,8 +11505,10 @@ const RuleEngine = {
         character.evaluatedDefenses.fastHealing = Number(prevEvalDefenses.fastHealing);
       }
       if (Array.isArray(prevEvalDefenses.dr)) {
+        const normDrSrc = (s) => String(s || '').replace(/ \((?:Race|Template|Buff|Spell|Item)\)$/i, '').trim().toLowerCase();
+        const normBypass = (b) => String(b || '-').trim().toLowerCase();
         prevEvalDefenses.dr.forEach(d => {
-          if (d && !character.evaluatedDefenses.dr.some(ed => ed && String(ed.source || '').replace(/ \((?:Race|Template)\)$/, '') === String(d.source || '').replace(/ \((?:Race|Template)\)$/, '') && ed.value === d.value)) {
+          if (d && !character.evaluatedDefenses.dr.some(ed => ed && normDrSrc(ed.source) === normDrSrc(d.source) && Number(ed.value) === Number(d.value) && normBypass(ed.bypass) === normBypass(d.bypass))) {
             character.evaluatedDefenses.dr.push(d);
           }
         });
@@ -11435,8 +11541,10 @@ const RuleEngine = {
           character.hp.temp = stackedTempHp;
         }
       }
-      const conScoreForHp = (activeFormOverlay && activeFormOverlay.active) ? trueConScoreForHp : (character.abilities?.con || 10);
-      const rawConModForHp = this.getAbilityMod(conScoreForHp);
+      const conScoreForHp = hasConNonability
+        ? null
+        : ((activeFormOverlay && activeFormOverlay.active) ? trueConScoreForHp : (character.abilities?.con ?? 10));
+      const rawConModForHp = hasConNonability ? 0 : this.getAbilityMod(conScoreForHp);
       const hpSwapRes = this.resolveSwapSlot(legoEval?.replacements, 'hp.abilityMod', rawConModForHp, 'CON', { character });
       const effectiveConMod = hpSwapRes.value + hpSwapRes.addItems.reduce((s, x) => s + x.val, 0);
       const newConBonusHp = effectiveConMod * totalHD;
@@ -11448,6 +11556,20 @@ const RuleEngine = {
         character.hp.conBonusHp = newConBonusHp;
       }
 
+      // Non-destructive template HD override (e.g. Lich/Vampire/Ghost: "d12 (all current and future HD...)"; excludes "+1 die size (max d12)")
+      const hdOverrideMatch = String(templateSummary.hitDieOverride || '').match(/^\s*d(\d+)\b/i);
+      const hdOverrideVal = hdOverrideMatch ? Number(hdOverrideMatch[1]) : 0;
+      let effectiveBaseMax = Number(character.hp.baseMax);
+      if (hdOverrideVal > 0 && totalHD > 0) {
+        const avgPerExtraHd = (hdOverrideVal / 2) + 0.5;
+        effectiveBaseMax = hdOverrideVal + Math.floor(Math.max(0, totalHD - 1) * avgPerExtraHd);
+        character.hp.hdOverride = hdOverrideVal;
+        character.hp.derivedBaseMax = effectiveBaseMax;
+      } else {
+        delete character.hp.hdOverride;
+        delete character.hp.derivedBaseMax;
+      }
+
       const totalBonusHp = draconicToughnessHp;
       const prevConBonusHp = Number(character.hp.conBonusHp) || 0;
       const prevDebuffHp = Number(character.hp.debuffHpPenalty) || 0;
@@ -11457,7 +11579,7 @@ const RuleEngine = {
       const debuffHpDiff = debuffHpPenalty - prevDebuffHp;
       const bonusHpDiff = totalBonusHp - prevBonusHp;
       const flawHpDiff = flawHpPenalty - prevFlawPenalty;
-      const expectedMax = Math.max(1, Number(character.hp.baseMax) + newConBonusHp + totalBonusHp - flawHpPenalty - debuffHpPenalty);
+      const expectedMax = Math.max(1, effectiveBaseMax + newConBonusHp + totalBonusHp - flawHpPenalty - debuffHpPenalty);
 
       if (conHpDiff !== 0 || debuffHpDiff !== 0 || bonusHpDiff !== 0 || flawHpDiff !== 0 || character.hp._appliedFrail !== hasFrail || character.hp.max !== expectedMax) {
         const wasAtFullHp = (character.hp.max !== undefined && Number(character.hp.current) >= Number(character.hp.max));
@@ -11478,8 +11600,24 @@ const RuleEngine = {
       }
     }
 
-    // 5. Resolve AC Stacking
-    const effectiveArmor = this.resolveBonusStacking(armorBonuses);
+    // 5. Resolve AC Stacking (Magic Vestment `Armor_Ench` / `Shield_Ench` enhances worn armor/shield without double-counting item enhancement)
+    const resolveArmorOrShieldStacking = (bonuses, enchType, chArg) => {
+      const enchEntries = (bonuses || []).filter(b => b && String(b.type || '').toLowerCase() === enchType.toLowerCase());
+      if (enchEntries.length === 0) return this.resolveBonusStacking(bonuses, chArg);
+      const maxEnch = Math.max(0, ...enchEntries.map(b => Number(b.val) || 0));
+      const baseEntries = (bonuses || []).filter(b => b && String(b.type || '').toLowerCase() !== enchType.toLowerCase());
+      if (baseEntries.length === 0) return maxEnch;
+      let best = maxEnch;
+      baseEntries.forEach(b => {
+        if (b.chassisBase > 0) {
+          best = Math.max(best, b.chassisBase + Math.max(Number(b.chassisEnh) || 0, maxEnch));
+        } else {
+          best = Math.max(best, Number(b.val) || 0);
+        }
+      });
+      return best;
+    };
+    const effectiveArmor = resolveArmorOrShieldStacking(armorBonuses, 'Armor_Ench');
     const effectiveNatural = this.resolveBonusStacking(naturalBonuses);
     const effectiveDeflection = this.resolveBonusStacking(deflectionBonuses);
     let effectiveDodge = this.resolveBonusStacking(dodgeBonuses);
@@ -11521,7 +11659,7 @@ const RuleEngine = {
         }
       }
     }
-    const effectiveShield = this.resolveBonusStacking(shieldBonuses, character);
+    const effectiveShield = resolveArmorOrShieldStacking(shieldBonuses, 'Shield_Ench', character);
 
     // D&D 3.5e RAW (PHB p. 84, Tumble): 5+ ranks in Tumble increases Fighting Defensively dodge bonus to +3 and Total Defense to +6
     const skillList = Array.isArray(character.skills) ? character.skills : Object.values(character.skills || {});
@@ -11814,13 +11952,29 @@ const RuleEngine = {
     }
     // Steady Speed (dwarves, duergar) is the `ignoreArmorSpeedPenalty` rule switch on the Race record.
     const preRuleFlagsForSpeed = this.evaluateRuleFlags(character);
-    let armorSpeedPenalty = 0;
-    if (!preRuleFlagsForSpeed.ignoreArmorSpeedPenalty && (equippedArmorCategory === 'Medium' || equippedArmorCategory === 'Heavy')) {
-      armorSpeedPenalty = (baseSpeed > 20) ? 10 : 5;
+    const loadStatusLow = String(encumbrance?.loadStatus?.status || '').toLowerCase();
+    const isOverloaded = Boolean(encumbrance?.loadStatus?.overloaded) || loadStatusLow.includes('overloaded');
+    const isMedOrHeavyLoad = loadStatusLow.includes('medium') || loadStatusLow.includes('heavy');
+    let armorOrLoadSpeedPenalty = 0;
+    if (!preRuleFlagsForSpeed.ignoreArmorSpeedPenalty && (equippedArmorCategory === 'Medium' || equippedArmorCategory === 'Heavy' || isMedOrHeavyLoad)) {
+      armorOrLoadSpeedPenalty = (baseSpeed > 20) ? 10 : 5;
     }
-    let calcSpeed = Math.max(5, baseSpeed - armorSpeedPenalty + itemSpeedBonus + buffSpeedBonus - buffSpeedPenalty);
-    if (conditionHalfSpeed) {
-      calcSpeed = Math.max(5, Math.floor(calcSpeed / 10) * 5 || 5);
+    const normalLandSpeed = Math.max(5, baseSpeed - armorOrLoadSpeedPenalty);
+    let calcSpeed = 0;
+    if (isOverloaded) {
+      // PHB p.162: Overloaded (lifting off ground, > max heavy load): cannot move normally (stagger 5 ft/full-round action).
+      calcSpeed = 0;
+    } else {
+      // RAW speed cap multiplier (e.g. Haste: +30 ft enhancement, max 2x normal speed).
+      // Typed stacking via resolveBonusStacking ensures Enhancement speed bonuses (Haste, Monk Fast Movement) do not stack.
+      const resolvedSpeedBuckets = speedBonusBuckets.map(b => b && b.capMultiplier > 1
+        ? Object.assign({}, b, { val: Math.min(Number(b.val) || 0, Math.max(0, normalLandSpeed * (b.capMultiplier - 1))) })
+        : b);
+      const stackedSpeedBonus = this.resolveBonusStacking(resolvedSpeedBuckets, character);
+      calcSpeed = Math.max(5, normalLandSpeed + stackedSpeedBonus - buffSpeedPenalty);
+      if (conditionHalfSpeed || preRuleFlagsForSpeed.halfBaseLandSpeed) {
+        calcSpeed = Math.max(5, Math.floor(calcSpeed / 10) * 5 || 5);
+      }
     }
     character.effectiveSpeed = calcSpeed;
     character.swimSpeed = swimSpeed;
@@ -11833,6 +11987,7 @@ const RuleEngine = {
     character.effectiveArmorCategory = equippedArmorCategory;
     {
       const racialAsf = Math.max(0, Math.floor(Number(character.legoEvaluation?.arcaneSpellFailure) || 0));
+      const otherAsf = racialAsf + Math.max(0, Math.floor(Number(buffAsf) || 0));
       const rsAsf = (this.rulesets && this.rulesets.dnd35) || null;
       if (rsAsf && typeof rsAsf.resolveArcaneSpellFailure === 'function') {
         const clsLvlMap = {};
@@ -11894,9 +12049,9 @@ const RuleEngine = {
             isPrimary: Boolean(primaryClsLow && lowName.includes(primaryClsLow))
           });
         });
-        character.arcaneSpellFailure = rsAsf.resolveArcaneSpellFailure(asfSources, casterProfiles, racialAsf);
+        character.arcaneSpellFailure = rsAsf.resolveArcaneSpellFailure(asfSources, casterProfiles, otherAsf);
       } else {
-        character.arcaneSpellFailure = { armor: totalArmorAsf, other: racialAsf, total: Math.min(100, totalArmorAsf + racialAsf) };
+        character.arcaneSpellFailure = { armor: totalArmorAsf, other: otherAsf, total: Math.min(100, totalArmorAsf + otherAsf) };
       }
     }
     character.buffSkillBonus = buffSkillBonus;
@@ -11905,9 +12060,14 @@ const RuleEngine = {
 
     // 8. Resolve Rule Flags & Action Economy
     character.ruleFlags = this.evaluateRuleFlags(character);
-    const stackedGrappleMod = this.resolveBonusStacking(grappleBonusBuckets);
-    if (stackedGrappleMod > grappleModBonus) grappleModBonus = stackedGrappleMod;
-    if (grappleModBonus > (character.ruleFlags?.opposedCheckBonus?.grapple || 0)) {
+    const stackedGrappleMod = grappleBonusBuckets.length > 0 ? this.resolveBonusStacking(grappleBonusBuckets) : 0;
+    const baseOppGrapple = Number(character.ruleFlags?.opposedCheckBonus?.grapple) || 0;
+    if (grappleBonusBuckets.length > 0) {
+      if (!character.ruleFlags.opposedCheckBonus) character.ruleFlags.opposedCheckBonus = {};
+      character.ruleFlags.opposedCheckBonus.grapple = stackedGrappleMod < 0
+        ? (baseOppGrapple + stackedGrappleMod)
+        : Math.max(baseOppGrapple, stackedGrappleMod);
+    } else if (grappleModBonus > baseOppGrapple) {
       if (!character.ruleFlags.opposedCheckBonus) character.ruleFlags.opposedCheckBonus = {};
       character.ruleFlags.opposedCheckBonus.grapple = grappleModBonus;
     }
@@ -11918,7 +12078,7 @@ const RuleEngine = {
     // Powerful Build style effects (`size.effective`, scope `grapple`) count the creature as larger for this special size modifier only
     const grappleSizeKey = this.shiftSizeKey(grappleBaseSizeKey, character.effectiveSizeScopes.grapple);
     const grappleSizeMod = grappleSizeKey ? this.GRAPPLE_SIZE_MODIFIERS[grappleSizeKey] : 0;
-    const baseBabForGrapple = Number(character.bab) || 0;
+    const baseBabForGrapple = this.resolveEffectiveBab(character, Number(character.bab) || 0);
     const babSwapForGrapple = this.resolveSwapSlot(legoEval?.replacements, 'bab', baseBabForGrapple, 'BAB', { character });
     const effectiveBab = babSwapForGrapple.changed
       ? (babSwapForGrapple.value + babSwapForGrapple.addItems.reduce((s, x) => s + x.val, 0))
@@ -13382,6 +13542,22 @@ const RuleEngine = {
       rawParts = [{ dice: weapon.dice || weapon.weapon?.damageDice || '1d8', bonus: 0, type: weapon.dmgType || weapon.weapon?.damageType || weapon.type || 'Slashing', multiplyOnCrit: true, onCritOnly: false, source: 'Base Weapon' }, ...rawParts];
     }
 
+    // Monk Unarmed Strike base die (PHB Table 3-10): driven by V3 `monkUnarmedDamage` ruleSwitch + ruleset table.
+    let monkDieReplaced = false;
+    if (isUnarmedForDieStep && (ruleFlags.monkUnarmedDamage || character?.ruleFlags?.monkUnarmedDamage) && activeRulesetForSteps && typeof activeRulesetForSteps.calcMonkUnarmedDamage === 'function') {
+      const monkLvl = Number(evalCtx.classes?.monk?.level) || 0;
+      if (monkLvl > 0) {
+        const effSizeKey = (character?.acBreakdown && character.acBreakdown.size !== undefined)
+          ? (Object.keys(this.SIZE_MODIFIERS).find(k => this.SIZE_MODIFIERS[k] === character.acBreakdown.size) || this.getSizeCategoryKey(character))
+          : this.getSizeCategoryKey(character);
+        const monkDie = activeRulesetForSteps.calcMonkUnarmedDamage(monkLvl, effSizeKey);
+        if (monkDie && rawParts.length > 0) {
+          rawParts = [Object.assign({}, rawParts[0], { dice: monkDie, source: `Monk Unarmed Strike (L${monkLvl}, ${effSizeKey})` }), ...rawParts.slice(1)];
+          monkDieReplaced = true;
+        }
+      }
+    }
+
     const combinedRawParts = [...rawParts];
 
     // Route conditional item/enhancement/crystal `when -> roll` blocks from weapon.effects into combinedRawParts
@@ -13453,8 +13629,9 @@ const RuleEngine = {
     const evaluatedDamageParts = combinedRawParts.map((part, idx) => {
       const isPrimary = idx === 0;
       const rawDiceStr = String(this.evaluateFormula(part.dice || '1d8', evalCtx) || part.dice || '1d8').trim();
-      const steppedDice = (isPrimary && effectiveSteps !== 0)
-        ? this.stepDamageDice(rawDiceStr, effectiveSteps)
+      const primarySteps = monkDieReplaced ? (Number(resolvedDieSteps.effective) || 0) : effectiveSteps;
+      const steppedDice = (isPrimary && primarySteps !== 0)
+        ? this.stepDamageDice(rawDiceStr, primarySteps)
         : rawDiceStr;
       const partBonus = isPrimary
         ? netFlatDamage
@@ -13631,7 +13808,7 @@ const RuleEngine = {
     if (wt <= caps.light) return { status: 'Light Load', color: 'emerald', maxDex: null, checkPenalty: 0, speed30: 30, speed20: 20 };
     if (wt <= caps.medium) return { status: 'Medium Load', color: 'amber', maxDex: 3, checkPenalty: -3, speed30: 20, speed20: 15 };
     if (wt <= caps.heavy) return { status: 'Heavy Load', color: 'orange', maxDex: 1, checkPenalty: -6, speed30: 20, speed20: 15 };
-    return { status: 'Overloaded (Max Load Exceeded)', color: 'rose', maxDex: 0, checkPenalty: -10, speed30: 5, speed20: 5 };
+    return { status: 'Overloaded (Max Load Exceeded)', color: 'rose', maxDex: 0, checkPenalty: -6, speed30: 0, speed20: 0, overloaded: true };
   },
 
   /**
@@ -14861,6 +15038,7 @@ const RuleEngine = {
     let goodWillGranted = false;
 
     const classCounts = {};
+    const preEpicClassCounts = {};
     let totalSkillPts = 0;
     const activeFeats = [];
     const activeSpecialAbilities = [];
@@ -14876,29 +15054,35 @@ const RuleEngine = {
       const cDef = this.getClassDef(cName, charRef) || { hd: 8, bab: 0.75, fort: 'poor', ref: 'poor', will: 'good', skills: 4 };
       classCounts[cName] = (classCounts[cName] || 0) + 1;
 
-      // Fractional BAB
-      totalBabFractional += cDef.bab;
+      // D&D 3.5e RAW (DMG p.206): Class BAB & Base Save progressions stop at character level 20;
+      // levels 21+ grant Epic Attack Bonus (+1 odd) and Epic Save Bonus (+1 even) instead.
+      if (activeLevels <= 20) {
+        preEpicClassCounts[cName] = (preEpicClassCounts[cName] || 0) + 1;
 
-      // Fractional Saves
-      if (cDef.fort === 'good') {
-        totalFortFractional += (goodFortGranted ? 0.5 : 2.5);
-        goodFortGranted = true;
-      } else {
-        totalFortFractional += (1 / 3);
-      }
+        // Fractional BAB
+        totalBabFractional += cDef.bab;
 
-      if (cDef.ref === 'good') {
-        totalRefFractional += (goodRefGranted ? 0.5 : 2.5);
-        goodRefGranted = true;
-      } else {
-        totalRefFractional += (1 / 3);
-      }
+        // Fractional Saves
+        if (cDef.fort === 'good') {
+          totalFortFractional += (goodFortGranted ? 0.5 : 2.5);
+          goodFortGranted = true;
+        } else {
+          totalFortFractional += (1 / 3);
+        }
 
-      if (cDef.will === 'good') {
-        totalWillFractional += (goodWillGranted ? 0.5 : 2.5);
-        goodWillGranted = true;
-      } else {
-        totalWillFractional += (1 / 3);
+        if (cDef.ref === 'good') {
+          totalRefFractional += (goodRefGranted ? 0.5 : 2.5);
+          goodRefGranted = true;
+        } else {
+          totalRefFractional += (1 / 3);
+        }
+
+        if (cDef.will === 'good') {
+          totalWillFractional += (goodWillGranted ? 0.5 : 2.5);
+          goodWillGranted = true;
+        } else {
+          totalWillFractional += (1 / 3);
+        }
       }
 
       // Skill Points (single source via rulesets/dnd35.js; respect explicit row.skillPts when set)
@@ -14933,8 +15117,8 @@ const RuleEngine = {
       finalRef = Math.floor(totalRefFractional + 1e-6);
       finalWill = Math.floor(totalWillFractional + 1e-6);
     } else {
-      // Standard Core 3.5e: sum table values for each class
-      Object.entries(classCounts).forEach(([cName, count]) => {
+      // Standard Core 3.5e: sum table values for each class (pre-epic levels 1..20 only)
+      Object.entries(preEpicClassCounts).forEach(([cName, count]) => {
         const cDef = this.getClassDef(cName, charRef) || { hd: 8, bab: 0.75, fort: 'poor', ref: 'poor', will: 'good' };
         if (cDef.bab === 1.0) finalBab += count;
         else if (cDef.bab === 0.75) finalBab += Math.floor(count * 0.75);
@@ -14944,6 +15128,16 @@ const RuleEngine = {
         finalRef += (cDef.ref === 'good' ? 2 + Math.floor(count * 0.5) : Math.floor(count / 3));
         finalWill += (cDef.will === 'good' ? 2 + Math.floor(count * 0.5) : Math.floor(count / 3));
       });
+    }
+
+    if (activeLevels > 20) {
+      const epicRes = (this.rulesets?.dnd35 && typeof this.rulesets.dnd35.calcEpicBonuses === 'function')
+        ? this.rulesets.dnd35.calcEpicBonuses(activeLevels)
+        : { epicBab: Math.floor((activeLevels - 19) / 2), epicSave: Math.floor((activeLevels - 20) / 2) };
+      finalBab += epicRes.epicBab;
+      finalFort += epicRes.epicSave;
+      finalRef += epicRes.epicSave;
+      finalWill += epicRes.epicSave;
     }
 
     return {

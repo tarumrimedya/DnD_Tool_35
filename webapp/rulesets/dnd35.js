@@ -831,6 +831,52 @@
       if (lvl === 0) return 0;
       return progression === 'good' ? (2 + Math.floor(lvl / 2)) : Math.floor(lvl / 3);
     },
+    // Official D&D 3.5e Epic Level Progression (DMG p.206):
+    // After character level 20, class BAB/save progressions stop; Epic Attack Bonus is +1 at odd levels (21, 23, ...)
+    // and Epic Save Bonus is +1 to all saves at even levels (22, 24, ...), regardless of class taken.
+    calcEpicBonuses(totalLevels) {
+      const lvl = Math.max(0, Math.floor(Number(totalLevels) || 0));
+      if (lvl <= 20) return { epicBab: 0, epicSave: 0 };
+      const epicLevels = lvl - 20;
+      return {
+        epicBab: Math.floor((epicLevels + 1) / 2),
+        epicSave: Math.floor(epicLevels / 2)
+      };
+    },
+    // Official D&D 3.5e Monk Unarmed Strike Damage (PHB Table 3-10, p.41 + DMG p.28 size progression):
+    // Returns the canonical base unarmed die for a Monk of `monkLevel` at effective creature `sizeCategory`.
+    calcMonkUnarmedDamage(monkLevel, sizeCategory = 'Medium') {
+      const lvl = Math.max(1, Math.floor(Number(monkLevel) || 0));
+      const tier = lvl >= 20 ? 5 : (lvl >= 16 ? 4 : (lvl >= 12 ? 3 : (lvl >= 8 ? 2 : (lvl >= 4 ? 1 : 0))));
+      const sz = String(sizeCategory || 'Medium').trim().toLowerCase();
+      const tables = {
+        fine:       ['1',   '1d2', '1d3', '1d4', '1d6', '1d8'],
+        diminutive: ['1d2', '1d3', '1d4', '1d6', '1d8', '1d10'],
+        tiny:       ['1d3', '1d4', '1d6', '1d8', '1d10', '2d6'],
+        small:      ['1d4', '1d6', '1d8', '1d10', '2d6', '2d8'],
+        medium:     ['1d6', '1d8', '1d10', '2d6', '2d8', '2d10'],
+        large:      ['1d8', '2d6', '2d8', '3d6', '3d8', '4d8'],
+        huge:       ['2d6', '3d6', '3d8', '4d6', '4d8', '6d8'],
+        gargantuan: ['3d6', '4d6', '4d8', '6d6', '6d8', '8d8'],
+        colossal:   ['4d6', '6d6', '6d8', '8d6', '8d8', '12d8']
+      };
+      const row = tables[sz] || tables.medium;
+      return row[tier] || '1d6';
+    },
+    // Official D&D 3.5e Positive / Negative Energy Healing Inversion (MM p.317, PHB p.215):
+    // Positive energy (Cure, Heal) heals the living and damages Undead; Negative energy (Inflict, Harm) damages the living and heals Undead.
+    resolveEnergyHealingEffect(isUndead, energyType = 'positive', amount = 0) {
+      const amt = Math.max(0, Math.floor(Number(amount) || 0));
+      const eLow = String(energyType || 'positive').trim().toLowerCase();
+      const isNeg = eLow.includes('neg') || eLow.includes('inflict') || eLow.includes('harm');
+      const heals = isUndead ? isNeg : !isNeg;
+      return {
+        mode: heals ? 'heal' : 'damage',
+        delta: heals ? amt : -amt,
+        inverted: Boolean(isUndead),
+        energyType: isNeg ? 'Negative' : 'Positive'
+      };
+    },
     // Official D&D 3.5e RAW (MIC p.139 Strongarm Bracers vs. XPH Powerful Build):
     // Effective-size category shifts in the same scope do not stack with each other;
     // take the single highest positive shift plus the most negative penalty.
