@@ -10335,7 +10335,35 @@
       if (typeof ensureClassSplatChunks === 'function') ensureClassSplatChunks();
       const allDefs = getAvailableClassDefs();
       const defaultClass = (character.classes?.split(' ')[0]) || (character.levelProgression?.[0]?.className) || 'Fighter';
-      const currentVal = selectedClass || select.value || defaultClass;
+      let currentVal = selectedClass || select.value || defaultClass;
+
+      const isClassAtCap = (name) => {
+        if (!name || typeof getPickerClassLevelCap !== 'function') return false;
+        const matchKey = allDefs[name]
+          ? name
+          : Object.keys(allDefs).find(k => k.toLowerCase() === String(name).toLowerCase());
+        return Boolean(matchKey && getPickerClassLevelCap(matchKey, allDefs[matchKey]).atCap);
+      };
+
+      if (isClassAtCap(currentVal)) {
+        const progRows = Array.isArray(character?.levelProgression) ? character.levelProgression : [];
+        let fallbackClass = '';
+        for (let i = progRows.length - 1; i >= 0; i--) {
+          const rowCls = progRows[i]?.className;
+          if (rowCls && !isClassAtCap(rowCls)) {
+            fallbackClass = rowCls;
+            break;
+          }
+        }
+        if (!fallbackClass) {
+          fallbackClass = (!isClassAtCap('Fighter') && allDefs['Fighter'])
+            ? 'Fighter'
+            : (Object.keys(allDefs).sort((a, b) => a.localeCompare(b)).find(k => allDefs[k]?.type !== 'Prestige Class' && !isClassAtCap(k))
+              || Object.keys(allDefs).sort((a, b) => a.localeCompare(b)).find(k => !isClassAtCap(k))
+              || '');
+        }
+        currentVal = fallbackClass;
+      }
 
       select.innerHTML = '';
 
@@ -10365,10 +10393,11 @@
 
         opt.textContent = `${cName} (${hdText} • ${babText} • ${saveText} • ${skillText})`;
 
-        if (cName.toLowerCase() === currentVal.toLowerCase()) {
-          opt.selected = true;
-        } else if (typeof getPickerClassLevelCap === 'function' && getPickerClassLevelCap(cName, def).atCap) {
+        const atCap = typeof getPickerClassLevelCap === 'function' && getPickerClassLevelCap(cName, def).atCap;
+        if (atCap) {
           opt.disabled = true;
+        } else if (currentVal && cName.toLowerCase() === currentVal.toLowerCase()) {
+          opt.selected = true;
         }
 
         if (def.isCustom) {

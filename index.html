@@ -3528,12 +3528,12 @@
   <!-- data-srd-autoinit: srd_compendium.js starts SrdCompendium.init() as soon as it runs. -->
   <script defer src="srd_compendium.js?v=c0ec0e59da" data-srd-autoinit></script>
   <script defer src="rulesets/dnd35.js?v=53abf25974"></script>
-  <script defer src="rule_engine.js?v=3f29cd9436"></script>
-  <script defer src="char_store.js?v=7daf41ddac"></script>
+  <script defer src="rule_engine.js?v=26636fbc92"></script>
+  <script defer src="char_store.js?v=04dd1f74ea"></script>
   <!-- ui_components.js stays blocking on purpose: it has no dependencies, and while the document is
        still loading it binds the data-action router on DOMContentLoaded, after the outside-click
        listeners the deferred scripts register. Deferring it would bind the router first. -->
-  <script src="ui_components.js?v=a3b7f8efe2"></script>
+  <script src="ui_components.js?v=a0a0b57d65"></script>
   <script defer src="rule_master.js?v=d8c613a0b2"></script>
   <script defer src="ui_shared.js?v=895009f59a"></script>
   <script defer src="campaign_db.js?v=d1839f3165"></script>
@@ -3544,8 +3544,8 @@
 
   <script defer src="char_hud.js?v=378bd155be"></script>
   <script defer src="char_combat.js?v=f1b2423899"></script>
-  <script defer src="char_spells.js?v=ab8e61978d"></script>
-  <script defer src="char_progression.js?v=0e3ca1b49b"></script>
+  <script defer src="char_spells.js?v=140c0a2454"></script>
+  <script defer src="char_progression.js?v=bd37059fcf"></script>
   <script defer src="char_inventory.js?v=6738dd01f6"></script>
   <!-- Floating Tooltip for Combat Spells Hover (Tap or click to dismiss) -->
   <div id="combat-spell-hover-tooltip" data-action="combat:hide-spell-tooltip" class="hidden fixed z-[200] pointer-events-auto bg-slate-950/95 border border-purple-500/80 rounded-xl p-3 shadow-2xl w-[340px] max-w-[92vw] text-xs space-y-2 backdrop-blur-md transition-opacity duration-150 text-slate-200 cursor-pointer select-none">

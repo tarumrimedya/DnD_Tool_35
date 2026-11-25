@@ -8415,7 +8415,8 @@ const RuleEngine = {
         || (typeof window !== 'undefined' && window.SrdCompendium)
         || (typeof SrdCompendium !== 'undefined' ? SrdCompendium : null);
       const baseId = item.baseItemId || '';
-      const base = baseId && comp && typeof comp.getById === 'function' ? comp.getById(baseId) : null;
+      const base = (baseId && comp && typeof comp.getById === 'function' ? comp.getById(baseId) : null)
+        || (item.name && comp && typeof comp.getByName === 'function' ? comp.getByName(item.name) : null);
       if (hasBlocks(base)) src = base;
     }
     const TARGET_LABELS = {
@@ -16135,6 +16136,24 @@ const RuleEngine = {
       return 'other';
     };
 
+    const buildShortEffect = (srcObj, fullText) => {
+      const cleanFull = String(fullText || '').replace(/\s+/g, ' ').trim();
+      const parts = (typeof this.summarizeItemMechanics === 'function')
+        ? this.summarizeItemMechanics(srcObj)
+        : [];
+      let shortTxt = parts.join(' · ');
+      if (!shortTxt && srcObj) {
+        const comp = (typeof window !== 'undefined' && window.SrdCompendium)
+          || (typeof SrdCompendium !== 'undefined' ? SrdCompendium : null);
+        const base = (srcObj.baseItemId && comp && typeof comp.getById === 'function' ? comp.getById(srcObj.baseItemId) : null)
+          || (srcObj.name && comp && typeof comp.getByName === 'function' ? comp.getByName(srcObj.name) : null);
+        shortTxt = String(srcObj.shortDescription || (base && base.shortDescription) || '').replace(/\s+/g, ' ').trim();
+      }
+      if (!shortTxt) shortTxt = cleanFull;
+      if (shortTxt.length > 110) shortTxt = shortTxt.slice(0, 109).trimEnd() + '…';
+      return { shortEffect: shortTxt, fullEffect: cleanFull };
+    };
+
     const displayMap = new Map();
 
     (ch.gearPool || []).forEach(p => {
@@ -16146,11 +16165,15 @@ const RuleEngine = {
       if ((isConsumableCat || isWand || dc) && !p.isEquipped) {
         const key = String(p.name || '').toLowerCase().trim();
         if (!key) return;
+        const fullText = p.desc || p.effect || 'Consumable / wand';
+        const { shortEffect, fullEffect } = buildShortEffect(p, fullText);
         displayMap.set(key, {
           id: p.id || null,
           name: p.name,
           qty: (p.qty !== undefined && p.qty !== null) ? Number(p.qty) : 1,
-          effect: p.desc || p.effect || 'Consumable / wand',
+          effect: fullText,
+          shortEffect,
+          fullEffect,
           sourceType: 'pool',
           poolId: p.id,
           isBelt: Boolean(p.isBelt),
@@ -16167,11 +16190,15 @@ const RuleEngine = {
       if (!key) return;
       const dc = resolveDailyCharges(c);
       if (!displayMap.has(key)) {
+        const fullText = c.effect || c.desc || 'Consumable effect';
+        const { shortEffect, fullEffect } = buildShortEffect(c, fullText);
         displayMap.set(key, {
           id: c.id || null,
           name: c.name,
           qty: (c.qty !== undefined && c.qty !== null) ? Number(c.qty) : 1,
-          effect: c.effect || c.desc || 'Consumable effect',
+          effect: fullText,
+          shortEffect,
+          fullEffect,
           sourceType: 'consumable',
           idx: cIdx,
           isBelt: false,
@@ -16183,6 +16210,9 @@ const RuleEngine = {
         const existing = displayMap.get(key);
         if (c.effect && (!existing.effect || existing.effect === 'Consumable effect')) {
           existing.effect = c.effect;
+          const rebuilt = buildShortEffect(c, c.effect);
+          existing.shortEffect = rebuilt.shortEffect;
+          existing.fullEffect = rebuilt.fullEffect;
         }
         if (dc && !existing.dailyCharges) {
           existing.dailyCharges = dc;
@@ -16207,11 +16237,15 @@ const RuleEngine = {
         if (hasDaily || isWandOrUse) {
           const key = String(slotItem.name || '').toLowerCase().trim();
           if (!displayMap.has(key)) {
+            const fullText = slotItem.desc || 'Equipped magic item';
+            const { shortEffect, fullEffect } = buildShortEffect(slotItem, fullText);
             displayMap.set(key, {
               id: slotItem.id || null,
               name: slotItem.name,
               qty: Number(slotItem.qty) || 1,
-              effect: slotItem.desc || 'Equipped magic item',
+              effect: fullText,
+              shortEffect,
+              fullEffect,
               sourceType: 'slot',
               slotKey,
               isBelt: false,

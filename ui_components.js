@@ -399,6 +399,12 @@
           ? String(item.poolId ?? '')
           : (item.sourceType === 'slot' ? String(item.slotKey ?? '') : String(item.idx ?? ''));
 
+        const displayDesc = item.shortEffect || item.effect || '';
+        const fullDesc = item.fullEffect || item.effect || '';
+        const descTpl = (fullDesc && fullDesc !== displayDesc)
+          ? html`<span class="ui-desc-tip-trigger" tabindex="0" data-desc-tip="${fullDesc}">${displayDesc}</span>`
+          : html`<span>${displayDesc}</span>`;
+
         return html`
           <div class="bg-slate-900/90 border ${group.cardBorder} p-3 rounded-xl flex items-center justify-between gap-3 transition shadow-sm ${isExhausted ? 'opacity-60' : ''}">
             <div class="min-w-0 flex-1">
@@ -410,7 +416,7 @@
                 ${tagBadgeTpl}
               </div>
               <div class="text-[10px] text-slate-300 break-words mt-1 flex items-center gap-2 flex-wrap">
-                <span>${item.effect}</span>
+                ${descTpl}
                 <span class="border-l border-slate-700 pl-2 font-mono text-[11px]">${chargeTpl}</span>
               </div>
             </div>

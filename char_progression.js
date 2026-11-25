@@ -6713,7 +6713,8 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         ignoreAsfChk.checked = character.settings?.ignoreAsf !== false;
       }
       if (typeof updateLevelUpCasterProgVisibility === 'function') {
-        updateLevelUpCasterProgVisibility(lastClass);
+        const effectiveSelectedClass = document.getElementById('lvlup-class-select')?.value || lastClass;
+        updateLevelUpCasterProgVisibility(effectiveSelectedClass);
       }
 
       const activeChk = document.getElementById('lvlup-is-active');
@@ -8048,9 +8049,28 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       renderAll();
     }
 
-    // Add new planned level row to progression table via Rule Master / AI Level Up rules
+    // Level Up button & quick progression row helper:
+    // 1) If an unactivated planned level exists, advance (activate) the next planned level instead of adding a new row.
+    // 2) If all planned levels are active and the last class has not reached its cap, add & activate the next level of that class.
+    // 3) If the last class is at its max level, warn and open the Level-Up class selection modal.
     function addNewLevelRowToProgression(chosenClass = null) {
       const prog = character.levelProgression || [];
+      const firstInactiveIdx = prog.findIndex(p => p && p.active === false);
+      if (!chosenClass && firstInactiveIdx !== -1) {
+        const nextPlanned = prog[firstInactiveIdx];
+        toggleLevelActive(firstInactiveIdx);
+        if (typeof showDiceTopToast === 'function') {
+          showDiceTopToast({
+            icon: '⭐',
+            title: 'Level Up Applied',
+            breakdown: `Level ${nextPlanned.level || (firstInactiveIdx + 1)} (${nextPlanned.className || 'Class'}) is now active.`
+          });
+        } else if (typeof showToast === 'function') {
+          showToast(`Level ${nextPlanned.level || (firstInactiveIdx + 1)} (${nextPlanned.className || 'Class'}) activated.`, 'success');
+        }
+        return;
+      }
+
       const nextLvl = prog.length + 1;
       const defaultClass = (character.classes?.split(' ')[0]) || (character.levelProgression?.[0]?.className) || 'Fighter';
       const lastClass = prog.length > 0 ? prog[prog.length - 1].className : defaultClass;
@@ -8060,6 +8080,15 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         || (typeof RuleEngine !== 'undefined' && RuleEngine.getClassDef ? RuleEngine.getClassDef(targetClass) : null)
         || (typeof DND35_CLASS_DEFS !== 'undefined' && DND35_CLASS_DEFS[targetClass] ? DND35_CLASS_DEFS[targetClass] : null)
         || { hd: 8, bab: 0.75, fort: 'poor', ref: 'poor', will: 'good', skills: 4 };
+
+      const addCap = getPickerClassLevelCap(targetClass, def);
+      if (addCap && addCap.atCap) {
+        warnClassAtMaxLevel(targetClass, addCap);
+        if (!chosenClass && typeof openLevelUpModal === 'function') {
+          openLevelUpModal(false);
+        }
+        return;
+      }
 
       const conMod = (typeof RuleEngine !== 'undefined' && RuleEngine.getAbilityMod)
         ? RuleEngine.getAbilityMod(character.abilities?.con || 14)
@@ -8098,9 +8127,10 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       const rowFeats = [];
       let statIncreased = null;
 
+      const newRowActive = (firstInactiveIdx === -1);
       const newRowObj = {
         level: nextLvl,
-        active: false,
+        active: newRowActive,
         className: targetClass,
         hd: `d${def.hd}`,
         hpGain,
@@ -8112,7 +8142,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         feats: rowFeats,
         specialAbilities: [...autoFeatures],
         statIncreased: statIncreased,
-        notes: autoFeatures.length > 0 ? autoFeatures.join(', ') : `Planned ${targetClass} level`
+        notes: autoFeatures.length > 0 ? autoFeatures.join(', ') : (newRowActive ? `${targetClass} level added` : `Planned ${targetClass} level`)
       };
 
       const usedStore = (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function');

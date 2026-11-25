@@ -6488,6 +6488,18 @@
         notes: payload.notes || ''
       };
       rowData.level = nextLvl;
+      if (rowData.className && typeof RuleEngine !== 'undefined' && typeof RuleEngine.getClassLevelCapStatus === 'function') {
+        const cap = RuleEngine.getClassLevelCapStatus(rowData.className, prog, { character: doc });
+        if (cap && cap.atCap) {
+          setStoreOutcome(stateObj, {
+            status: 'class_max_level_reached',
+            className: rowData.className,
+            maxLevel: cap.maxLevel,
+            taken: cap.taken
+          });
+          return doc;
+        }
+      }
       prog.push(rowData);
       setStoreOutcome(stateObj, { status: 'level_row_added', level: nextLvl, row: rowData });
       return doc;
@@ -6595,6 +6607,18 @@
     }
 
     if (mode === 'setClass' || mode === 'editClass') {
+      if (payload.className && typeof RuleEngine !== 'undefined' && typeof RuleEngine.getClassLevelCapStatus === 'function') {
+        const cap = RuleEngine.getClassLevelCapStatus(payload.className, prog, { character: doc, excludeIndex: idx });
+        if (cap && cap.atCap) {
+          setStoreOutcome(stateObj, {
+            status: 'class_max_level_reached',
+            className: payload.className,
+            maxLevel: cap.maxLevel,
+            taken: cap.taken
+          });
+          return doc;
+        }
+      }
       const oldHp = Number(row.hpGain) || 0;
       const newHp = payload.hpGain !== undefined ? Math.max(1, Number(payload.hpGain) || 1) : oldHp;
       const hpDiff = newHp - oldHp;
