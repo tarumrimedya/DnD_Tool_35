@@ -1315,7 +1315,13 @@ async function main() {
             spellcasting: {
               slots: Array.from({ length: 10 }, (_, l) => ({ level: l, daily: 4, used: 0 })),
               preparedSlots: Array.from({ length: 10 }, (_, l) => ({ level: l, daily: 4, used: 0 })),
-              divineSlots: [], preparedSpells: [], divineSpells: [], spellsKnown: []
+              divineSlots: [],
+              preparedSpells: [
+                { id: 'spl-primal-senses', name: 'Primal Senses', level: 4, school: 'Transmutation', cast: false },
+                { id: 'spl-contingency', name: 'Contingency', level: 6, school: 'Evocation', cast: false },
+                { id: 'spl-spell-matrix', name: 'Spell Matrix', level: 7, school: 'Transmutation', cast: false }
+              ],
+              divineSpells: [], spellsKnown: []
             },
             bodySlots: {}, weapons: [], gearPool: [], consumables: [], buffs: [], skills: [], customDb: [], customEntries: {}, companions: []
           };
@@ -1357,10 +1363,23 @@ async function main() {
         assert(afterRounds.round === 3 && afterRounds.hp === 76, 'Expected Round 3 & HP 76 (84 - 4 - 4): ' + JSON.stringify(afterRounds));
         assert(!afterRounds.timers.includes('Delayed Blast Fireball'), 'Delayed Blast Fireball should detonate on Round 3');
 
-        // 2. E6.1 Morning Routine (After Long Rest)
-        await page.click('[data-action="e6:open-routine-modal"]');
+        // Verify hardcoded Routine / Matrix / Contingency buttons are removed from Activated Abilities toolbar
+        const toolbarCounts = await page.evaluate(() => ({
+          timer: document.querySelectorAll('[data-action="e6:open-timer-modal"]').length,
+          routine: document.querySelectorAll('[data-action="e6:open-routine-modal"]').length,
+          matrix: document.querySelectorAll('[data-action="e6:open-matrix-modal"]').length,
+          contingency: document.querySelectorAll('[data-action="e6:open-contingency-modal"]').length
+        }));
+        assert(toolbarCounts.timer >= 1 && toolbarCounts.routine === 0 && toolbarCounts.matrix === 0 && toolbarCounts.contingency === 0,
+          'Expected only Timer on E6 quick toolbar: ' + JSON.stringify(toolbarCounts));
+
+        // 2. E6.1 Morning Routine via Spell Row "..." Menu (After Long Rest)
+        await page.evaluate(() => { switchTab('tab-spells'); renderAll(); });
+        await page.waitForSelector('[data-action="spells:open-row-menu"][data-idx="0"]', { timeout: 5000 });
+        await page.click('[data-action="spells:open-row-menu"][data-idx="0"]');
+        await page.waitForSelector('#spell-row-options-menu [data-menu-routine]', { timeout: 5000 });
+        await page.click('#spell-row-options-menu [data-menu-routine]');
         await page.waitForSelector('#modal-e6-routine-form', { timeout: 5000 });
-        await page.fill('#modal-e6-routine-form input[name="spellName"]', 'Primal Senses');
         await page.selectOption('#modal-e6-routine-form select[name="discipline"]', 'noSlot');
         await page.click('#modal-e6-routine-form button[type="submit"]');
         await page.waitForTimeout(100);
@@ -1373,12 +1392,13 @@ async function main() {
         }));
         assert(afterLR.hp === afterLR.maxHp && afterLR.hasPrimal, 'Morning Routine should cast Primal Senses on Long Rest: ' + JSON.stringify(afterLR));
 
-        // 3. E6.2 Spell Matrix + Backlash Lock + 2-Spell Swift Sequence
-        await page.click('[data-action="e6:open-matrix-modal"]');
+        // 3. E6.2 Spell Matrix cast directly from Spells tab + Backlash Lock + 2-Spell Swift Sequence
+        await page.evaluate(() => { switchTab('tab-spells'); renderAll(); });
+        await page.waitForSelector('[data-action="spells:cast-prepared"][data-idx="2"]', { timeout: 5000 });
+        await page.click('[data-action="spells:cast-prepared"][data-idx="2"]');
         await page.waitForSelector('#modal-e6-matrix-form', { timeout: 5000 });
-        await page.selectOption('#modal-e6-matrix-form select[name="tier"]', 'standard');
-        await page.selectOption('#modal-e6-matrix-form select[name="discipline"]', 'noSlot');
         await page.click('#modal-e6-matrix-form button[type="submit"]');
+        await page.evaluate(() => { switchTab('tab-combat'); renderAll(); });
         await page.waitForSelector('[data-action="e6:open-load-matrix-modal"]', { timeout: 5000 });
         const matOpen = await page.evaluate(() => ({
           locked: CharStore.getDoc().spellcasting.matrix?.lockedDamage || 0,
@@ -1413,12 +1433,15 @@ async function main() {
         }));
         assert(!afterSeq.matrix && afterSeq.swiftSpent === true, 'Sequence should spend Swift Action and close matrix: ' + JSON.stringify(afterSeq));
 
-        // 4. E6.3 Contingency (No-Action Trigger)
-        await page.click('[data-action="e6:open-contingency-modal"]');
+        // 4. E6.3 Contingency cast directly from Spells tab + No-Action Trigger
+        await page.evaluate(() => { switchTab('tab-spells'); renderAll(); });
+        await page.waitForSelector('[data-action="spells:cast-prepared"][data-idx="1"]', { timeout: 5000 });
+        await page.click('[data-action="spells:cast-prepared"][data-idx="1"]');
         await page.waitForSelector('#modal-e6-contingency-form', { timeout: 5000 });
         await page.fill('#modal-e6-contingency-form input[name="triggerText"]', 'If below 25% HP');
         await page.fill('#modal-e6-contingency-form input[name="spellName"]', 'Dimension Door');
         await page.click('#modal-e6-contingency-form button[type="submit"]');
+        await page.evaluate(() => { switchTab('tab-combat'); renderAll(); });
         await page.waitForSelector('[data-action="e6:trigger-contingency"]', { timeout: 5000 });
         await page.click('[data-action="e6:trigger-contingency"]');
         await page.waitForTimeout(100);

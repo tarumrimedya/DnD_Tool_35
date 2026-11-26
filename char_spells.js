@@ -1277,6 +1277,7 @@
                 ${getUniversalPinButtonHtml({ name: s.name, type: 'Spell', action: displayAction, desc: s.benefit || '', badge: dmgExpr || '', damageDice: dmgExpr || '' })}
                 <span>📖</span>
                 <button type="button" data-action="entity:inspect" data-entity-kind="spell" data-entity-id="${UI.escapeAttr(s.id || s.baseEntryId || '')}" data-entity-name="${UI.escapeAttr(s.name || '')}" data-entity-index="${originalIdx}" data-discipline="prepared" class="text-left font-bold cursor-pointer hover:underline ${hasActiveSlot ? 'text-white hover:text-sky-200' : 'text-slate-400 hover:text-slate-200'}" title="Inspect / Edit in Rule Crafter">${UI.escapeHtml(s.name)}</button>
+                ${buildSpellPresetChipHtml(s)}
                 ${mmBadgesHtml}
                 ${!hasActiveSlot ? `<span class="text-[10px] font-mono px-1.5 rounded bg-rose-950/90 text-rose-300 border border-rose-800/80 font-bold shrink-0">0 Slot</span>` : ''}
               </div>
@@ -1318,8 +1319,8 @@
                   </button>
                 `}
                 ${mmEditBtnHtml}
-                <button data-action="spells:delete-prepared" data-idx="${originalIdx}" class="w-6 h-6 inline-flex items-center justify-center text-slate-500 hover:text-rose-400 text-xs transition cursor-pointer shrink-0" title="Unprepare / Remove Spell (Leaves Empty Slot)">
-                  🗑️
+                <button type="button" data-action="spells:open-row-menu" data-discipline="prepared" data-idx="${originalIdx}" class="w-6 h-6 inline-flex items-center justify-center rounded text-slate-400 hover:text-white hover:bg-slate-800 text-sm font-bold transition cursor-pointer shrink-0" title="Spell Options (Morning Routine, Remove)">
+                  ⋯
                 </button>
               </div>
             </td>
@@ -1849,6 +1850,62 @@
       });
     }
 
+    function resolveSpecialSpellMeta(sp) {
+      if (!sp) return null;
+      const resolvedDb = (!sp.id && typeof RuleEngine !== 'undefined' && typeof RuleEngine.getMasterDbEntry === 'function')
+        ? (RuleEngine.getMasterDbEntry({ name: sp.name }, 'Spell') || RuleEngine.getMasterDbEntry({ name: sp.name }, 'Power'))
+        : null;
+      const spId = String(sp.id || (resolvedDb && resolvedDb.id) || '').toLowerCase().trim();
+      const matrixTierById = {
+        'spl-lesser-spell-matrix': 'lesser',
+        'spl-spell-matrix': 'standard',
+        'spl-greater-spell-matrix': 'greater'
+      };
+      if (matrixTierById[spId]) return { kind: 'matrix', tier: matrixTierById[spId], spellId: spId };
+      if (spId === 'spl-contingency' || spId === 'pwr-contingency-psionic') {
+        return { kind: 'contingency', ctgKind: spId === 'pwr-contingency-psionic' ? 'psionic' : 'contingency', spellId: spId };
+      }
+      return null;
+    }
+
+    function buildSpellPresetChipHtml(sp) {
+      const meta = resolveSpecialSpellMeta(sp);
+      if (!meta) return '';
+      const preset = character?.spellcasting?.spellPresets?.[meta.spellId];
+      if (!preset || typeof preset !== 'object') return '';
+      let summary = '';
+      if (meta.kind === 'contingency' && (preset.triggerText || preset.spellName)) {
+        const trig = String(preset.triggerText || '').trim();
+        const comp = String(preset.spellName || '').trim();
+        summary = `🔮 ${trig ? trig + ' → ' : ''}${comp || 'Contingency'}`;
+      } else if (meta.kind === 'matrix' && Array.isArray(preset.storedSpells) && preset.storedSpells.length > 0) {
+        summary = `🔷 ${preset.storedSpells.join(' + ')}`;
+      }
+      if (!summary) return '';
+      return `<button type="button" data-action="spells:configure-preset" data-spell-id="${UI.escapeAttr(meta.spellId)}" data-kind="${UI.escapeAttr(meta.kind)}" data-tier="${UI.escapeAttr(meta.tier || '')}" data-ctg-kind="${UI.escapeAttr(meta.ctgKind || '')}" class="text-[10px] px-1.5 py-0.5 rounded bg-indigo-950/80 hover:bg-indigo-800/80 text-indigo-200 border border-indigo-700/70 font-semibold truncate transition cursor-pointer" style="max-width:220px" title="Click to edit saved preset">${UI.escapeHtml(summary)}</button>`;
+    }
+
+    function buildBuffCancelAction(safeName, onCancel) {
+      return {
+        label: '✕ Cancel',
+        className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-rose-950/90 hover:bg-rose-900 text-rose-200 border border-rose-700/70 transition cursor-pointer',
+        onClick: () => {
+          let refunded = false;
+          if (typeof onCancel === 'function') {
+            refunded = onCancel() !== false;
+          }
+          if (refunded) {
+            showDiceTopToast({
+              icon: '↩️',
+              title: `${safeName} — Cancelled`,
+              breakdown: 'Spell cast cancelled and slot refunded.',
+              total: 'Refunded'
+            });
+          }
+        }
+      };
+    }
+
     function openBuffTargetToaster(spellItem, buffSpec, effCl, opts = {}) {
       const slotLabel = opts.slotLabel || 'Spell Slot Expended';
       const icon = opts.icon || '✨';
@@ -1942,6 +1999,8 @@
         }
       });
 
+      actions.push(buildBuffCancelAction(safeName, opts.onCancel));
+
       showDiceTopToast({
         icon,
         title: `${safeName} — Select Target`,
@@ -1952,11 +2011,40 @@
     }
 
     // Handle casting of any Buff Spell (Personal auto-apply, Energy Type Picker, Single/Party Self vs Ally prompt, or Weapon Target prompt)
-    function handleBuffSpellCast(spellItem, cl = 1, slotLabel = 'Spell Slot Expended', icon = '✨') {
+    function handleBuffSpellCast(spellItem, cl = 1, slotLabel = 'Spell Slot Expended', icon = '✨', opts = {}) {
       if (!character || !spellItem || typeof RuleEngine === 'undefined' || !RuleEngine.resolveSpellBuffSpec) {
         return false;
       }
       const effCl = Math.max(1, Number(cl || spellItem.casterLevel || character.level) || 1);
+      const cancelFn = (opts && typeof opts.onCancel === 'function')
+        ? opts.onCancel
+        : ((opts && typeof opts.undoToCount === 'number' && typeof CharStore !== 'undefined' && typeof CharStore.getHistoryCounts === 'function' && typeof CharStore.undo === 'function')
+          ? () => {
+              const cur = CharStore.getHistoryCounts().undo;
+              const steps = cur - opts.undoToCount;
+              if (steps <= 0 || steps > 4) return false;
+              for (let i = 0; i < steps; i++) CharStore.undo();
+              if (typeof updateActionEconomyUI === 'function') updateActionEconomyUI();
+              if (typeof renderAll === 'function') renderAll();
+              return true;
+            }
+          : null);
+
+      // Special Mechanic Spells: Spell Matrix (Lesser / Standard / Greater) & Contingency (immutable ID lookup)
+      const specialMeta = resolveSpecialSpellMeta(spellItem);
+      if (specialMeta && specialMeta.kind === 'matrix') {
+        document.dispatchEvent(new CustomEvent('e6:open-modal', {
+          detail: { kind: 'matrix', preset: { spellId: specialMeta.spellId, tier: specialMeta.tier, casterLevel: effCl, slotAlreadySpent: true, onCancel: cancelFn } }
+        }));
+        return true;
+      }
+      if (specialMeta && specialMeta.kind === 'contingency') {
+        document.dispatchEvent(new CustomEvent('e6:open-modal', {
+          detail: { kind: 'contingency', preset: { spellId: specialMeta.spellId, kind: specialMeta.ctgKind, casterLevel: effCl, onCancel: cancelFn } }
+        }));
+        return true;
+      }
+
       const buffSpec = RuleEngine.resolveSpellBuffSpec(spellItem, character, effCl);
       if (!buffSpec || !buffSpec.isBuffSpell) return false;
 
@@ -1966,6 +2054,8 @@
       if (dmgExpr && /\d+d\d+/i.test(dmgExpr)) {
         return false;
       }
+
+      const safeSpecName = (typeof UI !== 'undefined' && UI.escapeHtml) ? UI.escapeHtml(buffSpec.name) : buffSpec.name;
 
       const partyTargets = (typeof getCampaignPartyTargets === 'function') ? getCampaignPartyTargets() : [];
 
@@ -1988,7 +2078,7 @@
           className: `px-2.5 py-1 rounded-lg text-[11px] font-bold border transition shadow cursor-pointer ${e.cls}`,
           onClick: () => {
             if (buffSpec.targetMode !== 'self' && partyTargets.length > 0) {
-              openBuffTargetToaster(spellItem, buffSpec, effCl, { chosenEnergy: e.type, slotLabel, icon: e.icon });
+              openBuffTargetToaster(spellItem, buffSpec, effCl, { chosenEnergy: e.type, slotLabel, icon: e.icon, onCancel: cancelFn });
             } else {
               applySpellBuffToCharacter(spellItem, effCl, { chosenEnergy: e.type, slotLabel, icon: e.icon });
             }
@@ -2002,7 +2092,7 @@
             onClick: () => {
               showDiceTopToast({
                 icon: '🤝',
-                title: `${buffSpec.name} ➔ Ally`,
+                title: `${safeSpecName} ➔ Ally`,
                 breakdown: `Cast on Ally (${buffSpec.summaryText} • ${buffSpec.durationText}) • ${slotLabel}`,
                 total: '-1 Slot'
               });
@@ -2010,9 +2100,11 @@
           });
         }
 
+        actions.push(buildBuffCancelAction(safeSpecName, cancelFn));
+
         showDiceTopToast({
           icon: '🛡️',
-          title: `${buffSpec.name} — Select Energy Type`,
+          title: `${safeSpecName} — Select Energy Type`,
           breakdown: `Choose energy type for Self${buffSpec.targetMode === 'party' ? ' & Party' : ''} • CL ${effCl} (${buffSpec.durationText}) • ${slotLabel}`,
           total: 'Energy?',
           actions
@@ -2069,16 +2161,18 @@
           onClick: () => {
             showDiceTopToast({
               icon: '🤝',
-              title: `${buffSpec.name} (Ally's Weapon)`,
+              title: `${safeSpecName} (Ally's Weapon)`,
               breakdown: `Cast on ally's weapon (${buffSpec.summaryText}) • ${slotLabel}`,
               total: '-1 Slot'
             });
           }
         });
 
+        actions.push(buildBuffCancelAction(safeSpecName, cancelFn));
+
         showDiceTopToast({
           icon: '⚔️',
-          title: `${buffSpec.name} — Select Weapon`,
+          title: `${safeSpecName} — Select Weapon`,
           breakdown: eligibleWeapons.length > 0
             ? `${buffSpec.summaryText} • CL ${effCl} (${buffSpec.durationText}) • ${slotLabel}`
             : `No eligible personal weapon (${buffSpec.summaryText}) • Select Ally Weapon if casting on party member`,
@@ -2095,7 +2189,7 @@
       }
 
       // 3. Touch / Single-Target or Party Buffs (Bull's Strength, Shield of Faith, Barkskin, Bless, Prayer, Haste, Mass Buffs, etc.)
-      openBuffTargetToaster(spellItem, buffSpec, effCl, { slotLabel, icon });
+      openBuffTargetToaster(spellItem, buffSpec, effCl, { slotLabel, icon, onCancel: cancelFn });
       return true;
     }
     window.handleBuffSpellCast = handleBuffSpellCast;
@@ -2560,6 +2654,7 @@
 
       if (slot && slot.used < slot.daily) {
         if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
+          const undoBase = (typeof CharStore.getHistoryCounts === 'function') ? CharStore.getHistoryCounts().undo : null;
           CharStore.dispatch({
             type: 'spells/castSpell',
             payload: {
@@ -2581,14 +2676,17 @@
           if (!out || out.status !== 'spell_cast') return;
           if (typeof updateActionEconomyUI === 'function') updateActionEconomyUI();
           renderAll({ skipRecompute: true });
+          if (handleBuffSpellCast(s, cl, `Level ${lvl} Prepared Slot Expended${mmTag}`, '📖', { undoToCount: undoBase })) {
+            return;
+          }
         } else {
           if (mutSlot) mutSlot.used++;
           saveStateToStorage(true);
           if (typeof consumeActionEconomy === 'function') consumeActionEconomy({ ...s, action: mm.castAction || s.action }, name);
           renderAll();
-        }
-        if (handleBuffSpellCast(s, cl, `Level ${lvl} Prepared Slot Expended${mmTag}`, '📖')) {
-          return;
+          if (handleBuffSpellCast(s, cl, `Level ${lvl} Prepared Slot Expended${mmTag}`, '📖')) {
+            return;
+          }
         }
         if (dmgExpr) {
           rollSpellOrManeuverFormula(dmgExpr, `${name}${mmTag} (Level ${lvl} • -1 Slot)`, s);
@@ -2892,6 +2990,7 @@
                 ${getUniversalPinButtonHtml({ name: s.name, type: 'Spell', action: s.action || 'Standard Action', desc: s.benefit || '', badge: dmgExpr || '', damageDice: dmgExpr || '' })}
                 <span>${isDom ? '⚜️' : '✨'}</span>
                 <button type="button" data-action="entity:inspect" data-entity-kind="spell" data-entity-id="${UI.escapeAttr(s.id || s.baseEntryId || '')}" data-entity-name="${UI.escapeAttr(s.name || '')}" data-entity-index="${originalIdx}" data-discipline="divine" class="text-left font-bold cursor-pointer hover:underline ${hasActiveSlot ? 'text-white hover:text-amber-200' : 'text-slate-400 hover:text-slate-200'}" title="Inspect / Edit in Rule Crafter">${UI.escapeHtml(s.name)}</button>
+                ${buildSpellPresetChipHtml(s)}
                 ${domainBadgeHtml}
                 ${clBoostBadgeHtml}
                 ${mmBadgesHtml}
@@ -2936,8 +3035,8 @@
                   </button>
                 `}
                 ${mmEditBtnHtml}
-                <button data-action="spells:delete-divine" data-idx="${originalIdx}" class="w-6 h-6 inline-flex items-center justify-center text-slate-500 hover:text-rose-400 text-xs transition cursor-pointer shrink-0" title="Unprepare / Remove Spell (Leaves Empty Slot)">
-                  🗑️
+                <button type="button" data-action="spells:open-row-menu" data-discipline="divine" data-idx="${originalIdx}" class="w-6 h-6 inline-flex items-center justify-center rounded text-slate-400 hover:text-white hover:bg-slate-800 text-sm font-bold transition cursor-pointer shrink-0" title="Spell Options (Morning Routine, Remove)">
+                  ⋯
                 </button>
               </div>
             </td>
@@ -3340,6 +3439,7 @@
         return 'precast_choice';
       }
 
+      const undoBase = (typeof CharStore !== 'undefined' && typeof CharStore.getHistoryCounts === 'function') ? CharStore.getHistoryCounts().undo : null;
       if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
         CharStore.dispatch({
           type: 'spells/castSpell',
@@ -3372,7 +3472,7 @@
         if (typeof consumeActionEconomy === 'function') consumeActionEconomy(s, name);
       }
       renderAll();
-      if (handleBuffSpellCast(s, cl, `Level ${lvl} ${isDom ? 'Domain' : 'Divine'} Slot Expended`, isDom ? '⚜️' : '✨')) {
+      if (handleBuffSpellCast(s, cl, `Level ${lvl} ${isDom ? 'Domain' : 'Divine'} Slot Expended`, isDom ? '⚜️' : '✨', { undoToCount: undoBase })) {
         return;
       }
       if (dmgExpr) {
@@ -6712,6 +6812,7 @@
               ${getUniversalPinButtonHtml({ name: s.name, type: 'Spell', action: s.action || 'Standard', desc: s.benefit || '', badge: dmgExpr || '', damageDice: dmgExpr || '' })}
               <span>🔮</span>
               <button type="button" data-action="entity:inspect" data-entity-kind="spell" data-entity-id="${UI.escapeAttr(s.id || s.baseEntryId || '')}" data-entity-name="${UI.escapeAttr(s.name || '')}" data-entity-index="${originalIdx}" data-discipline="spontaneous" class="text-left font-bold cursor-pointer hover:underline ${hasActiveSlot ? 'text-white hover:text-purple-200' : 'text-slate-400 hover:text-slate-200'}" title="Inspect / Edit in Rule Crafter">${UI.escapeHtml(s.name)}</button>
+              ${buildSpellPresetChipHtml(s)}
               ${!hasActiveSlot ? `<span class="text-[10px] font-mono px-1.5 rounded bg-rose-950/90 text-rose-300 border border-rose-800/80 font-bold shrink-0">0 Slot</span>` : ''}
             </div>
           </td>
@@ -6757,8 +6858,8 @@
                     <span>Cast</span>
                   </button>
               `}
-              <button data-action="spells:delete-known" data-idx="${originalIdx}" class="w-6 h-6 inline-flex items-center justify-center text-slate-500 hover:text-rose-400 text-xs transition cursor-pointer shrink-0" title="Unprepare / Remove Spell (Leaves Empty Slot)">
-                🗑️
+              <button type="button" data-action="spells:open-row-menu" data-discipline="spontaneous" data-idx="${originalIdx}" class="w-6 h-6 inline-flex items-center justify-center rounded text-slate-400 hover:text-white hover:bg-slate-800 text-sm font-bold transition cursor-pointer shrink-0" title="Spell Options (Morning Routine, Remove)">
+                ⋯
               </button>
             </div>
           </td>
@@ -6925,6 +7026,7 @@
       }
 
       if (slot && slot.used < slot.daily) {
+        const undoBase = (typeof CharStore !== 'undefined' && typeof CharStore.getHistoryCounts === 'function') ? CharStore.getHistoryCounts().undo : null;
         if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
           CharStore.dispatch({
             type: 'spells/castSpell',
@@ -6950,7 +7052,7 @@
           renderAll();
         }
 
-        if (handleBuffSpellCast(s, cl, `Level ${lvl} Spontaneous Slot Expended`, '🔮')) {
+        if (handleBuffSpellCast(s, cl, `Level ${lvl} Spontaneous Slot Expended`, '🔮', { undoToCount: undoBase })) {
           return;
         }
 
@@ -13708,6 +13810,115 @@
       });
       Actions.register('spells:delete-known', (el, data, event) => {
         deleteKnownSpell(Number(data.idx));
+      });
+      Actions.register('spells:open-row-menu', (el, data, event) => {
+        if (event) event.stopPropagation();
+        const existing = document.getElementById('spell-row-options-menu');
+        const sameAnchor = existing && existing._anchorEl === el;
+        if (existing) existing.remove();
+        if (sameAnchor || !el || !character) return;
+
+        const discipline = String(data.discipline || 'spontaneous');
+        const idx = Number(data.idx);
+        const list = discipline === 'prepared'
+          ? (character.spellcasting?.preparedSpells || [])
+          : (discipline === 'divine' ? (character.spellcasting?.divineSpells || []) : (character.spellcasting?.spellsKnown || []));
+        const sp = list[idx];
+        if (!sp) return;
+
+        const spName = String(sp.name || '').trim();
+        const spLvl = Number(sp.effectiveSlotLevel ?? sp.slotLevel ?? sp.level) || 0;
+        const routines = Array.isArray(character.spellcasting?.routines) ? character.spellcasting.routines : [];
+        const existingRoutine = routines.find(r => r && String(r.spellName || r.name || '').toLowerCase() === spName.toLowerCase());
+        const specialMeta = resolveSpecialSpellMeta(sp);
+        const delAction = discipline === 'prepared' ? 'spells:delete-prepared' : (discipline === 'divine' ? 'spells:delete-divine' : 'spells:delete-known');
+
+        const menu = document.createElement('div');
+        menu.id = 'spell-row-options-menu';
+        menu._anchorEl = el;
+        menu.className = 'fixed z-50 rounded-xl bg-slate-900 border border-slate-700 shadow-2xl p-1 text-xs text-slate-200';
+        menu.style.minWidth = '185px';
+        menu.style.zIndex = '9999';
+        menu.innerHTML = `
+          ${specialMeta ? `
+          <button type="button" data-menu-preset="1" class="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-indigo-900 text-indigo-200 font-bold flex items-center gap-2 transition cursor-pointer">
+            <span>⚙️</span>
+            <span>Configure Preset</span>
+          </button>` : ''}
+          <button type="button" data-menu-routine="1" class="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-amber-950/70 text-amber-200 font-bold flex items-center gap-2 transition cursor-pointer">
+            <span>☀️</span>
+            <span>${existingRoutine ? 'Remove from Routine' : 'Add to Morning Routine'}</span>
+          </button>
+          <button type="button" data-action="${delAction}" data-idx="${idx}" data-menu-close="1" class="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-rose-900 text-rose-300 font-bold flex items-center gap-2 transition cursor-pointer">
+            <span>🗑️</span>
+            <span>Remove Spell</span>
+          </button>
+        `;
+        document.body.appendChild(menu);
+
+        const rect = el.getBoundingClientRect();
+        const menuW = menu.offsetWidth || 190;
+        const menuH = menu.offsetHeight || 74;
+        const left = Math.max(8, Math.min(window.innerWidth - menuW - 8, rect.right - menuW));
+        const top = (rect.bottom + menuH + 8 <= window.innerHeight) ? (rect.bottom + 4) : Math.max(8, rect.top - menuH - 4);
+        menu.style.left = `${left}px`;
+        menu.style.top = `${top}px`;
+
+        const cleanup = () => {
+          if (menu.parentNode) menu.remove();
+          document.removeEventListener('click', onDocClick);
+          document.removeEventListener('keydown', onKey);
+        };
+        const onDocClick = (ev) => {
+          if (!menu.contains(ev.target) && ev.target !== el) cleanup();
+        };
+        const onKey = (ev) => {
+          if (ev.key === 'Escape') cleanup();
+        };
+        menu.querySelector('[data-menu-preset]')?.addEventListener('click', (ev) => {
+          ev.stopPropagation();
+          cleanup();
+          if (specialMeta) {
+            document.dispatchEvent(new CustomEvent('e6:open-modal', {
+              detail: {
+                kind: specialMeta.kind,
+                preset: { spellId: specialMeta.spellId, tier: specialMeta.tier, kind: specialMeta.ctgKind, configureOnly: true }
+              }
+            }));
+          }
+        });
+        menu.querySelector('[data-menu-routine]')?.addEventListener('click', (ev) => {
+          ev.stopPropagation();
+          cleanup();
+          if (existingRoutine && typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
+            CharStore.dispatch({
+              type: 'spells/removeRoutine',
+              payload: { id: existingRoutine.id },
+              meta: { label: `Remove Morning Routine: ${spName}` }
+            });
+            if (typeof renderAll === 'function') renderAll({ skipRecompute: true });
+          } else {
+            document.dispatchEvent(new CustomEvent('e6:open-modal', {
+              detail: { kind: 'routine', preset: { spellName: spName, discipline, slotLevel: spLvl } }
+            }));
+          }
+        });
+        menu.querySelector('[data-menu-close]')?.addEventListener('click', () => cleanup());
+        setTimeout(() => {
+          document.addEventListener('click', onDocClick);
+          document.addEventListener('keydown', onKey);
+        }, 0);
+      });
+      Actions.register('spells:configure-preset', (el, data, event) => {
+        if (event) event.stopPropagation();
+        const kind = String(data.kind || '');
+        if (!kind) return;
+        document.dispatchEvent(new CustomEvent('e6:open-modal', {
+          detail: {
+            kind,
+            preset: { spellId: data.spellId || '', tier: data.tier || '', kind: data.ctgKind || '', configureOnly: true }
+          }
+        }));
       });
       Actions.register('spells:open-spont-picker', (el, data, event) => {
         openSpellPickerForSpecificLevel(Number(data.level));

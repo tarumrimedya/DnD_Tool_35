@@ -7555,6 +7555,27 @@
     return doc;
   });
 
+  CharStore.registerReducer('spells/setPreset', (doc, action, stateObj) => {
+    ensureSpellE6Structures(doc);
+    if (!doc.spellcasting.spellPresets || typeof doc.spellcasting.spellPresets !== 'object') {
+      doc.spellcasting.spellPresets = {};
+    }
+    const p = (action && action.payload) || {};
+    const spellId = String(p.spellId || '').toLowerCase().trim();
+    if (!spellId) {
+      setStoreOutcome(stateObj, { status: 'invalid_spell_id' });
+      return doc;
+    }
+    if (!p.preset || typeof p.preset !== 'object') {
+      delete doc.spellcasting.spellPresets[spellId];
+      setStoreOutcome(stateObj, { status: 'preset_cleared', spellId });
+      return doc;
+    }
+    doc.spellcasting.spellPresets[spellId] = Object.assign({}, p.preset);
+    setStoreOutcome(stateObj, { status: 'preset_saved', spellId, preset: doc.spellcasting.spellPresets[spellId] });
+    return doc;
+  });
+
   CharStore.registerReducer('spells/runMorningRoutine', (doc, action, stateObj) => {
     const p = (action && action.payload) || {};
     const res = applyMorningRoutineOnDoc(doc, {

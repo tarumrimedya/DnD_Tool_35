@@ -3557,6 +3557,7 @@
       // Atomically consume slot + Metamagic Rod charge + Sudden Metamagic use + clear armedMetamagic (1-step Undo)
       const sourceLabels = { spontaneous: 'Spont.', prepared: 'Prep.', divine: 'Divine' };
       const maxLvlCfg = Number(typeof RuleEngine !== 'undefined' && RuleEngine.rulesets?.dnd35?.metamagicRules?.maxSpellLevel) || 9;
+      const undoBase = (typeof CharStore !== 'undefined' && typeof CharStore.getHistoryCounts === 'function') ? CharStore.getHistoryCounts().undo : null;
       if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
         CharStore.dispatch({
           type: 'spells/castSpell',
@@ -3612,7 +3613,7 @@
       }
 
       // 0A. Universal V2 Buff Spell Cast Flow (No fake d20 roll; opens Self/Ally/Energy/Weapon prompt or auto-applies Self buff)
-      if (!targetWeaponName && typeof window.handleBuffSpellCast === 'function' && window.handleBuffSpellCast(spell, cl, `Level ${finalLvl} ${sourceLabels[slotSource] || 'Spell'} Slot`, '🔮')) {
+      if (!targetWeaponName && typeof window.handleBuffSpellCast === 'function' && window.handleBuffSpellCast(spell, cl, `Level ${finalLvl} ${sourceLabels[slotSource] || 'Spell'} Slot`, '🔮', { undoToCount: undoBase })) {
         if (typeof renderAll === 'function') {
           renderAll();
         } else {
@@ -3929,7 +3930,7 @@
             breakdown: `${castData.targetWeaponName}: ${castData.oldDice} ➔ ${castData.newDice} (+${castData.sizeSteps} size steps). Duration: ${castData.durationText}`,
             total: castData.newDice
           });
-        } else if (!hasDamageDice && typeof window.handleBuffSpellCast === 'function' && window.handleBuffSpellCast(spell, cl, `Level ${finalLvl} ${slotSource}`, '🔮')) {
+        } else if (!hasDamageDice && typeof window.handleBuffSpellCast === 'function' && window.handleBuffSpellCast(spell, cl, `Level ${finalLvl} ${slotSource}`, '🔮', { undoToCount: undoBase })) {
           // Handled by Universal V2 Spell Buff Cast Flow (Self vs Ally / Weapon Target)
         } else {
           showDiceTopToast({
@@ -12085,13 +12086,10 @@
       }
     }
 
-    function buildE6QuickToolbarHtml(activeMatrix) {
+    function buildE6QuickToolbarHtml() {
       return `
         <div class="pt-1.5 mt-1 border-t border-slate-800/80 flex flex-wrap items-center gap-1">
           <button type="button" data-action="e6:open-timer-modal" class="px-2 py-0.5 rounded bg-slate-800/90 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-[10px] font-bold transition cursor-pointer" title="Add Periodic, Delayed, or Sustained Spell Timer">+ ⏱️ Timer</button>
-          <button type="button" data-action="e6:open-routine-modal" class="px-2 py-0.5 rounded bg-amber-950/70 hover:bg-amber-900/80 text-amber-200 border border-amber-700/60 text-[10px] font-bold transition cursor-pointer" title="Add Morning Buff Routine (auto-cast after Long Rest)">+ ☀️ Routine</button>
-          ${activeMatrix ? '' : `<button type="button" data-action="e6:open-matrix-modal" class="px-2 py-0.5 rounded bg-indigo-950/70 hover:bg-indigo-600 text-indigo-200 border border-indigo-700/60 text-[10px] font-bold transition cursor-pointer" title="Cast Lesser / Standard / Greater Spell Matrix">+ 🔷 Matrix</button>`}
-          <button type="button" data-action="e6:open-contingency-modal" class="px-2 py-0.5 rounded bg-purple-950/70 hover:bg-purple-900/80 text-purple-200 border border-purple-700/60 text-[10px] font-bold transition cursor-pointer" title="Set Contingency or Crafted Contingent Spell">+ 🔮 Contingency</button>
         </div>
       `;
     }
@@ -12330,7 +12328,7 @@
       return out.sort((a, b) => (a.level - b.level) || a.name.localeCompare(b.name));
     }
 
-    function openE6SimpleModal(modalId, titleHtml, bodyHtml, onSubmit) {
+    function openE6SimpleModal(modalId, titleHtml, bodyHtml, onSubmit, onCancel) {
       const prev = document.getElementById(modalId);
       if (prev) prev.remove();
       const overlay = document.createElement('div');
@@ -12353,15 +12351,19 @@
           </form>
         </div>
       `;
+      let submitted = false;
       const onEsc = (e) => {
-        if (e.key === 'Escape') close();
+        if (e.key === 'Escape') close(true);
       };
-      const close = () => {
+      const close = (cancelled = false) => {
         overlay.remove();
         document.removeEventListener('keydown', onEsc);
+        if (cancelled && !submitted && typeof onCancel === 'function') {
+          onCancel();
+        }
       };
       overlay.addEventListener('click', (e) => {
-        if (e.target === overlay || e.target.closest('[data-e6-close]')) close();
+        if (e.target === overlay || e.target.closest('[data-e6-close]')) close(true);
       });
       document.addEventListener('keydown', onEsc);
       document.body.appendChild(overlay);
@@ -12369,8 +12371,9 @@
       if (form) {
         form.addEventListener('submit', (e) => {
           e.preventDefault();
-          const keepOpen = onSubmit(new FormData(form), close);
-          if (keepOpen !== true) close();
+          submitted = true;
+          const keepOpen = onSubmit(new FormData(form), () => close(false));
+          if (keepOpen !== true) close(false);
         });
       }
     }
@@ -12443,30 +12446,33 @@
       });
     }
 
-    function openAddMorningRoutineModal() {
+    function openAddMorningRoutineModal(preset = {}) {
       const charSpells = getCharacterSpellOptionsForE6();
       const weapons = Array.isArray(character?.weapons) ? character.weapons.filter(w => w && w.name) : [];
       const spellOptions = charSpells.map(s => `<option value="${UI.escapeAttr(s.name)}">${UI.escapeHtml(s.name)} (Lvl ${s.level} ${s.discipline})</option>`).join('');
       const weaponOptions = weapons.map(w => `<option value="${UI.escapeAttr(w.name)}">${UI.escapeHtml(w.name)}</option>`).join('');
+      const preName = String(preset.spellName || '').trim();
+      const preDisc = String(preset.discipline || 'spontaneous');
+      const preLvl = (preset.slotLevel !== undefined && preset.slotLevel !== null && preset.slotLevel !== '') ? String(preset.slotLevel) : '';
       const body = `
         <div>
           <label class="block text-[11px] font-bold text-slate-300 mb-1">Spell Name (e.g. Primal Senses, Greater Mighty Wallop)</label>
-          <input name="spellName" list="e6-routine-spell-list" required placeholder="Primal Senses, Greater Mighty Wallop, Mage Armor..." class="w-full px-2.5 py-1.5 rounded bg-slate-950 border border-slate-700 text-white" />
+          <input name="spellName" list="e6-routine-spell-list" required value="${UI.escapeAttr(preName)}" placeholder="Primal Senses, Greater Mighty Wallop, Mage Armor..." class="w-full px-2.5 py-1.5 rounded bg-slate-950 border border-slate-700 text-white" />
           <datalist id="e6-routine-spell-list">${spellOptions}</datalist>
         </div>
         <div class="grid grid-cols-2 gap-2">
           <div>
             <label class="block text-[11px] font-bold text-slate-300 mb-1">Slot Discipline</label>
             <select name="discipline" class="w-full px-2 py-1.5 rounded bg-slate-950 border border-slate-700 text-white">
-              <option value="spontaneous">Spontaneous Slot</option>
-              <option value="prepared">Prepared Slot</option>
-              <option value="divine">Divine Slot</option>
-              <option value="noSlot">No Slot (Wand / Item / Free)</option>
+              <option value="spontaneous"${preDisc === 'spontaneous' ? ' selected' : ''}>Spontaneous Slot</option>
+              <option value="prepared"${preDisc === 'prepared' ? ' selected' : ''}>Prepared Slot</option>
+              <option value="divine"${preDisc === 'divine' ? ' selected' : ''}>Divine Slot</option>
+              <option value="noSlot"${preDisc === 'noSlot' ? ' selected' : ''}>No Slot (Wand / Item / Free)</option>
             </select>
           </div>
           <div>
             <label class="block text-[11px] font-bold text-slate-300 mb-1">Slot Level (Auto if blank)</label>
-            <input name="slotLevel" type="number" min="0" max="9" placeholder="Auto" class="w-full px-2 py-1.5 rounded bg-slate-950 border border-slate-700 text-white" />
+            <input name="slotLevel" type="number" min="0" max="9" value="${UI.escapeAttr(preLvl)}" placeholder="Auto" class="w-full px-2 py-1.5 rounded bg-slate-950 border border-slate-700 text-white" />
           </div>
         </div>
         <div class="grid grid-cols-2 gap-2">
@@ -12534,24 +12540,72 @@
       });
     }
 
-    function openSpellMatrixModal() {
-      const charCl = Math.max(1, Number(character?.level) || 1);
+    function getSavedSpellPreset(spellId) {
+      const key = String(spellId || '').toLowerCase().trim();
+      if (!key) return null;
+      const map = character?.spellcasting?.spellPresets;
+      return (map && typeof map === 'object' && map[key] && typeof map[key] === 'object') ? map[key] : null;
+    }
+
+    function openSpellMatrixModal(preset = {}) {
+      const configureOnly = Boolean(preset.configureOnly);
+      const preTier = String(preset.tier || 'lesser');
+      const tierToId = { lesser: 'spl-lesser-spell-matrix', standard: 'spl-spell-matrix', greater: 'spl-greater-spell-matrix' };
+      const spellId = String(preset.spellId || tierToId[preTier] || 'spl-spell-matrix').toLowerCase().trim();
+      const saved = getSavedSpellPreset(spellId) || {};
+      const savedSpells = Array.isArray(saved.storedSpells) ? saved.storedSpells : [];
+      const charCl = Math.max(1, Number(preset.casterLevel || character?.level) || 1);
+      const slotAlreadySpent = Boolean(preset.slotAlreadySpent);
+      const preDisc = slotAlreadySpent ? 'noSlot' : String(preset.discipline || 'prepared');
+      const maxSlots = preTier === 'greater' ? 3 : (preTier === 'standard' ? 2 : 1);
+      const eligibleSpells = getCharacterSpellOptionsForE6().filter(s => (s.effectiveSlotLevel ?? s.level) <= 3);
+      const spellOptions = eligibleSpells.map(s => `<option value="${UI.escapeAttr(s.name)}">${UI.escapeHtml(s.name)} (Lvl ${s.level} ${s.discipline})</option>`).join('');
+
+      if (configureOnly) {
+        const slotInputs = Array.from({ length: maxSlots }, (_, idx) => `
+          <div>
+            <label class="block text-[11px] font-bold text-slate-300 mb-1">Planned Spell #${idx + 1} (≤3rd Level)</label>
+            <input name="storedSpell${idx}" list="e6-matrix-preset-list" value="${UI.escapeAttr(savedSpells[idx] || '')}" placeholder="e.g. Shield, Magic Missile, Haste..." class="w-full px-2.5 py-1.5 rounded bg-slate-950 border border-slate-700 text-white" />
+          </div>
+        `).join('');
+        const body = `
+          <div class="text-[11px] text-slate-400">
+            Save a default loadout preset for this Spell Matrix. No spell slot is spent and no backlash HP is rolled until you cast it.
+          </div>
+          ${slotInputs}
+          <datalist id="e6-matrix-preset-list">${spellOptions}</datalist>
+        `;
+        openE6SimpleModal('modal-e6-matrix-preset', '⚙️ Configure Spell Matrix Preset', body, (fd) => {
+          const storedSpells = Array.from({ length: maxSlots }, (_, idx) => String(fd.get(`storedSpell${idx}`) || '').trim()).filter(Boolean);
+          CharStore.dispatch({
+            type: 'spells/setPreset',
+            payload: { spellId, preset: storedSpells.length > 0 ? { tier: preTier, storedSpells } : null },
+            meta: { label: 'Configure Spell Matrix Preset' }
+          });
+          if (typeof renderAll === 'function') renderAll({ skipRecompute: true });
+        });
+        return;
+      }
+
+      const presetSummaryHtml = savedSpells.length > 0
+        ? `<div class="p-2 rounded bg-indigo-950/50 border border-indigo-700/60 text-[11px] text-indigo-200">🔷 Preset Loadout: <b>${UI.escapeHtml(savedSpells.join(' + '))}</b> (quick-pick available when loading spells)</div>`
+        : '';
       const body = `
         <div>
           <label class="block text-[11px] font-bold text-slate-300 mb-1">Matrix Tier (Spell Compendium p.199–200)</label>
           <select name="tier" class="w-full px-2 py-1.5 rounded bg-slate-950 border border-slate-700 text-white">
-            <option value="lesser">Lesser Spell Matrix (Lvl 5 — 1 spell ≤3rd, 1d6 backlash)</option>
-            <option value="standard">Spell Matrix (Lvl 7 — 2 spells ≤3rd, 2d6 backlash, Sequence)</option>
-            <option value="greater">Greater Spell Matrix (Lvl 9 — 3 spells ≤3rd, 3d6 backlash, Sequence + Auto-Trigger)</option>
+            <option value="lesser"${preTier === 'lesser' ? ' selected' : ''}>Lesser Spell Matrix (Lvl 5 — 1 spell ≤3rd, 1d6 backlash)</option>
+            <option value="standard"${preTier === 'standard' ? ' selected' : ''}>Spell Matrix (Lvl 7 — 2 spells ≤3rd, 2d6 backlash, Sequence)</option>
+            <option value="greater"${preTier === 'greater' ? ' selected' : ''}>Greater Spell Matrix (Lvl 9 — 3 spells ≤3rd, 3d6 backlash, Sequence + Auto-Trigger)</option>
           </select>
         </div>
         <div class="grid grid-cols-2 gap-2">
           <div>
             <label class="block text-[11px] font-bold text-slate-300 mb-1">Slot Discipline</label>
             <select name="discipline" class="w-full px-2 py-1.5 rounded bg-slate-950 border border-slate-700 text-white">
-              <option value="prepared">Prepared Slot</option>
-              <option value="spontaneous">Spontaneous Slot</option>
-              <option value="noSlot">No Slot (Scroll / Staff / Manual)</option>
+              <option value="prepared"${preDisc === 'prepared' ? ' selected' : ''}>Prepared Slot</option>
+              <option value="spontaneous"${preDisc === 'spontaneous' ? ' selected' : ''}>Spontaneous Slot</option>
+              <option value="noSlot"${preDisc === 'noSlot' ? ' selected' : ''}>${slotAlreadySpent ? 'Slot Already Expended by Cast' : 'No Slot (Scroll / Staff / Manual)'}</option>
             </select>
           </div>
           <div>
@@ -12559,13 +12613,14 @@
             <input name="casterLevel" type="number" min="1" value="${charCl}" class="w-full px-2 py-1.5 rounded bg-slate-950 border border-slate-700 text-white" />
           </div>
         </div>
+        ${presetSummaryHtml}
         <div class="p-2 rounded bg-rose-950/40 border border-rose-800/60 text-[10px] text-rose-200">
           ⚠️ Casting rolls backlash damage (1d6 / 2d6 / 3d6) in 3D and deducts it from HP. Per RAW, this damage cannot be healed while the matrix persists.
         </div>
       `;
       openE6SimpleModal('modal-e6-matrix', '🔷 Cast Spell Matrix', body, (fd) => {
-        const tier = String(fd.get('tier') || 'lesser');
-        const discipline = String(fd.get('discipline') || 'prepared');
+        const tier = String(fd.get('tier') || preTier);
+        const discipline = String(fd.get('discipline') || preDisc);
         const casterLevel = Math.max(1, Number(fd.get('casterLevel')) || charCl);
         const tierDef = RuleEngine?.rulesets?.dnd35?.spellMatrixTiers?.[tier] || { backlashDice: '1d6', name: 'Lesser Spell Matrix' };
         rollDiceFormulaWith3D(tierDef.backlashDice || '1d6', (rollRes) => {
@@ -12598,18 +12653,22 @@
             });
           }
         });
-      });
+      }, preset.onCancel);
     }
 
     function openLoadMatrixSpellModal() {
       const mat = character?.spellcasting?.matrix;
       if (!mat || !mat.active) return;
+      const tierToId = { lesser: 'spl-lesser-spell-matrix', standard: 'spl-spell-matrix', greater: 'spl-greater-spell-matrix' };
+      const saved = getSavedSpellPreset(tierToId[mat.tier || 'lesser']) || {};
+      const loadedNames = new Set((Array.isArray(mat.stored) ? mat.stored : []).filter(x => x && !x.released).map(x => String(x.spellName || '').toLowerCase()));
+      const nextPresetSpell = (Array.isArray(saved.storedSpells) ? saved.storedSpells : []).find(n => n && !loadedNames.has(String(n).toLowerCase())) || '';
       const charSpells = getCharacterSpellOptionsForE6().filter(s => (s.effectiveSlotLevel ?? s.level) <= (mat.maxStoredSpellLevel || 3));
       const spellOptions = charSpells.map(s => `<option value="${UI.escapeAttr(s.name)}">${UI.escapeHtml(s.name)} (Lvl ${s.level} ${s.discipline})</option>`).join('');
       const body = `
         <div>
           <label class="block text-[11px] font-bold text-slate-300 mb-1">Spell to Store (≤3rd Level, ≤1 Standard Action)</label>
-          <input name="spellName" list="e6-matrix-spell-list" required placeholder="e.g. Shield, Magic Missile, Haste, Mirror Image" class="w-full px-2.5 py-1.5 rounded bg-slate-950 border border-slate-700 text-white" />
+          <input name="spellName" list="e6-matrix-spell-list" required value="${UI.escapeAttr(nextPresetSpell)}" placeholder="e.g. Shield, Magic Missile, Haste, Mirror Image" class="w-full px-2.5 py-1.5 rounded bg-slate-950 border border-slate-700 text-white" />
           <datalist id="e6-matrix-spell-list">${spellOptions}</datalist>
         </div>
         <div class="grid grid-cols-3 gap-2">
@@ -12673,35 +12732,48 @@
       });
     }
 
-    function openAddContingencyModal() {
-      const charCl = Math.max(1, Number(character?.level) || 1);
+    function openAddContingencyModal(preset = {}) {
+      const configureOnly = Boolean(preset.configureOnly);
+      const spellId = String(preset.spellId || (preset.kind === 'psionic' ? 'pwr-contingency-psionic' : 'spl-contingency')).toLowerCase().trim();
+      const saved = getSavedSpellPreset(spellId) || {};
+      const charCl = Math.max(1, Number(preset.casterLevel || character?.level) || 1);
+      const preKind = String(preset.kind || saved.kind || 'contingency');
+      const preTrigger = String(preset.triggerText ?? saved.triggerText ?? '');
+      const preSpellName = String(preset.spellName ?? saved.spellName ?? '');
+      const preSpellLvl = (preset.spellLevel !== undefined && preset.spellLevel !== null && preset.spellLevel !== '')
+        ? String(preset.spellLevel)
+        : (saved.spellLevel !== undefined && saved.spellLevel !== null && saved.spellLevel !== '' ? String(saved.spellLevel) : '');
+      const preDc = (preset.dc !== undefined && preset.dc !== null && preset.dc !== '')
+        ? String(preset.dc)
+        : (saved.dc !== undefined && saved.dc !== null && saved.dc !== '' ? String(saved.dc) : '');
       const maxCompLvl = RuleEngine?.rulesets?.dnd35?.contingencyRules?.maxCompanionSpellLevel
         ? RuleEngine.rulesets.dnd35.contingencyRules.maxCompanionSpellLevel(charCl)
         : Math.min(6, Math.floor(charCl / 3));
       const charSpells = getCharacterSpellOptionsForE6();
       const spellOptions = charSpells.map(s => `<option value="${UI.escapeAttr(s.name)}">${UI.escapeHtml(s.name)} (Lvl ${s.level})</option>`).join('');
       const body = `
+        ${configureOnly ? `<div class="text-[11px] text-slate-400">Save your default Contingency plan. No spell slot is spent until you cast Contingency.</div>` : ''}
         <div>
           <label class="block text-[11px] font-bold text-slate-300 mb-1">Type</label>
           <select name="kind" class="w-full px-2 py-1.5 rounded bg-slate-950 border border-slate-700 text-white">
-            <option value="contingency">Contingency (PHB — max 1 active, companion ≤ Lvl ${maxCompLvl}, 1 day/CL)</option>
-            <option value="psionic">Contingency, Psionic (XPH — max 1 active, companion ≤ Lvl ${maxCompLvl}, 1 day/ML)</option>
-            <option value="crafted">Craft Contingent Spell (CArc — up to HD concurrent, permanent until triggered)</option>
+            <option value="contingency"${preKind === 'contingency' ? ' selected' : ''}>Contingency (PHB — max 1 active, companion ≤ Lvl ${maxCompLvl}, 1 day/CL)</option>
+            <option value="psionic"${preKind === 'psionic' ? ' selected' : ''}>Contingency, Psionic (XPH — max 1 active, companion ≤ Lvl ${maxCompLvl}, 1 day/ML)</option>
+            <option value="crafted"${preKind === 'crafted' ? ' selected' : ''}>Craft Contingent Spell (CArc — up to HD concurrent, permanent until triggered)</option>
           </select>
         </div>
         <div>
           <label class="block text-[11px] font-bold text-slate-300 mb-1">Trigger Condition</label>
-          <input name="triggerText" required placeholder="e.g. If I drop below 25% HP, If I am grappled..." class="w-full px-2.5 py-1.5 rounded bg-slate-950 border border-slate-700 text-white" />
+          <input name="triggerText" required value="${UI.escapeAttr(preTrigger)}" placeholder="e.g. If I drop below 25% HP, If I am grappled..." class="w-full px-2.5 py-1.5 rounded bg-slate-950 border border-slate-700 text-white" />
         </div>
         <div>
           <label class="block text-[11px] font-bold text-slate-300 mb-1">Companion Spell</label>
-          <input name="spellName" list="e6-ctg-spell-list" required placeholder="e.g. Dimension Door, Heal, Stoneskin, Greater Invisibility" class="w-full px-2.5 py-1.5 rounded bg-slate-950 border border-slate-700 text-white" />
+          <input name="spellName" list="e6-ctg-spell-list" required value="${UI.escapeAttr(preSpellName)}" placeholder="e.g. Dimension Door, Heal, Stoneskin, Greater Invisibility" class="w-full px-2.5 py-1.5 rounded bg-slate-950 border border-slate-700 text-white" />
           <datalist id="e6-ctg-spell-list">${spellOptions}</datalist>
         </div>
         <div class="grid grid-cols-3 gap-2">
           <div>
             <label class="block text-[11px] font-bold text-slate-300 mb-1">Spell Level (Auto if blank)</label>
-            <input name="spellLevel" type="number" min="0" max="9" placeholder="Auto" class="w-full px-2 py-1.5 rounded bg-slate-950 border border-slate-700 text-white" />
+            <input name="spellLevel" type="number" min="0" max="9" value="${UI.escapeAttr(preSpellLvl)}" placeholder="Auto" class="w-full px-2 py-1.5 rounded bg-slate-950 border border-slate-700 text-white" />
           </div>
           <div>
             <label class="block text-[11px] font-bold text-slate-300 mb-1">Caster Level</label>
@@ -12709,11 +12781,12 @@
           </div>
           <div>
             <label class="block text-[11px] font-bold text-slate-300 mb-1">Save DC</label>
-            <input name="dc" type="number" min="1" placeholder="Optional" class="w-full px-2 py-1.5 rounded bg-slate-950 border border-slate-700 text-white" />
+            <input name="dc" type="number" min="1" value="${UI.escapeAttr(preDc)}" placeholder="Optional" class="w-full px-2 py-1.5 rounded bg-slate-950 border border-slate-700 text-white" />
           </div>
         </div>
       `;
-      openE6SimpleModal('modal-e6-contingency', '🔮 Set Contingency / Crafted Contingent Spell', body, (fd, close) => {
+      const modalTitle = configureOnly ? '⚙️ Configure Contingency Preset' : '🔮 Set Contingency / Crafted Contingent Spell';
+      openE6SimpleModal('modal-e6-contingency', modalTitle, body, (fd, close) => {
         const kind = String(fd.get('kind') || 'contingency');
         const spellName = String(fd.get('spellName') || '').trim();
         const triggerText = String(fd.get('triggerText') || '').trim();
@@ -12729,6 +12802,22 @@
           : (typedLvl !== null ? typedLvl : 0);
         const casterLevel = Math.max(1, Number(fd.get('casterLevel')) || charCl);
         const dc = fd.get('dc') ? Number(fd.get('dc')) : null;
+        const canonicalSpellName = dbHit ? dbHit.name : spellName;
+
+        // Always persist as Lazy Preset for next cast
+        CharStore.dispatch({
+          type: 'spells/setPreset',
+          payload: {
+            spellId,
+            preset: { kind, triggerText, spellName: canonicalSpellName, spellLevel: rawSpellLvl !== '' ? typedLvl : null, dc }
+          },
+          meta: { label: `Save Contingency Preset: ${canonicalSpellName}` }
+        });
+
+        if (configureOnly) {
+          if (typeof renderAll === 'function') renderAll({ skipRecompute: true });
+          return;
+        }
 
         const commitAdd = () => {
           CharStore.dispatch({
@@ -12768,8 +12857,16 @@
           return true;
         }
         commitAdd();
-      });
+      }, preset.onCancel);
     }
+
+    document.addEventListener('e6:open-modal', (ev) => {
+      const d = ev && ev.detail;
+      if (!d || !d.kind) return;
+      if (d.kind === 'routine') openAddMorningRoutineModal(d.preset || {});
+      else if (d.kind === 'matrix') openSpellMatrixModal(d.preset || {});
+      else if (d.kind === 'contingency') openAddContingencyModal(d.preset || {});
+    });
 
     // --- ROUND ADVANCEMENT & REST ---
     function advanceCombatRound() {
