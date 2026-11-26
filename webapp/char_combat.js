@@ -12328,25 +12328,48 @@
       return out.sort((a, b) => (a.level - b.level) || a.name.localeCompare(b.name));
     }
 
-    function openE6SimpleModal(modalId, titleHtml, bodyHtml, onSubmit, onCancel) {
+    function openE6SimpleModal(modalId, titleHtml, bodyHtml, onSubmit, onCancel, styleOpts = {}) {
       const prev = document.getElementById(modalId);
       if (prev) prev.remove();
+      const toneMap = {
+        amber:  { border: 'border-amber-500/70',  sub: 'text-amber-300',  btn: 'bg-amber-600 hover:bg-amber-500 text-white border border-amber-400/60' },
+        indigo: { border: 'border-indigo-500/70', sub: 'text-indigo-300', btn: 'bg-indigo-600 hover:bg-indigo-500 text-white border border-indigo-400/60' },
+        purple: { border: 'border-purple-500/70', sub: 'text-purple-300', btn: 'bg-purple-600 hover:bg-purple-500 text-white border border-purple-400/60' },
+        cyan:   { border: 'border-cyan-500/70',   sub: 'text-cyan-300',   btn: 'bg-cyan-600 hover:bg-cyan-500 text-white border border-cyan-400/60' },
+        emerald:{ border: 'border-emerald-500/70',sub: 'text-emerald-300',btn: 'bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-400/60' }
+      };
+      const t = toneMap[styleOpts.tone] || toneMap.indigo;
+      const iconHtml = styleOpts.icon ? `<span class="text-lg shrink-0">${styleOpts.icon}</span>` : '';
+      const subHtml = styleOpts.subtitle ? `<p class="text-[10px] ${t.sub} font-mono truncate">${UI.escapeHtml(styleOpts.subtitle)}</p>` : '';
+      const submitLabel = UI.escapeHtml(styleOpts.submitLabel || 'Save');
+
       const overlay = document.createElement('div');
       overlay.id = modalId;
       overlay.setAttribute('role', 'dialog');
       overlay.setAttribute('aria-modal', 'true');
-      overlay.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm';
+      overlay.className = 'fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto';
+      overlay.style.zIndex = '9995';
+      overlay.style.background = 'rgba(2, 6, 23, 0.85)';
+      overlay.style.backdropFilter = 'blur(6px)';
       overlay.innerHTML = `
-        <div class="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
-          <div class="px-4 py-3 bg-slate-950/90 border-b border-slate-800 flex items-center justify-between">
-            <h3 class="text-sm font-black text-white">${titleHtml}</h3>
-            <button type="button" data-e6-close="1" class="text-slate-400 hover:text-white text-sm font-bold px-2 py-0.5 rounded cursor-pointer">✕</button>
+        <div class="bg-dndCard border ${t.border} rounded-2xl shadow-2xl w-full overflow-hidden my-auto flex flex-col" style="max-width: 30rem; max-height: 90vh;">
+          <div class="px-4 py-3 bg-slate-950 border-b border-slate-800 flex items-center justify-between gap-2 shrink-0">
+            <div class="flex items-center gap-2.5 min-w-0">
+              ${iconHtml}
+              <div class="min-w-0">
+                <h3 class="text-sm font-extrabold text-white truncate">${titleHtml}</h3>
+                ${subHtml}
+              </div>
+            </div>
+            <button type="button" data-e6-close="1" class="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-2 py-1 rounded-lg text-xs font-bold transition cursor-pointer shrink-0" aria-label="Close">✕</button>
           </div>
-          <form id="${UI.escapeAttr(modalId)}-form" class="p-4 space-y-3 text-xs text-slate-200">
-            ${bodyHtml}
-            <div class="pt-2 flex items-center justify-end gap-2 border-t border-slate-800">
-              <button type="button" data-e6-close="1" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold cursor-pointer">Cancel</button>
-              <button type="submit" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold shadow cursor-pointer">Save</button>
+          <form id="${UI.escapeAttr(modalId)}-form" class="flex flex-col flex-1 overflow-y-auto">
+            <div class="p-4 space-y-3 text-xs text-slate-200">
+              ${bodyHtml}
+            </div>
+            <div class="px-4 py-3 bg-slate-950 border-t border-slate-800 flex items-center justify-end gap-2 shrink-0">
+              <button type="button" data-e6-close="1" class="ui-btn-sm bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700">Cancel</button>
+              <button type="submit" class="ui-btn-sm ${t.btn} shadow">${submitLabel}</button>
             </div>
           </form>
         </div>
@@ -12443,7 +12466,7 @@
           meta: { label: 'Add Combat Timer' }
         });
         renderAll({ skipRecompute: true });
-      });
+      }, null, { tone: 'cyan', icon: '⏱️', subtitle: 'Periodic, Delayed & Sustained Round Tracking', submitLabel: 'Add Timer' });
     }
 
     function openAddMorningRoutineModal(preset = {}) {
@@ -12456,14 +12479,14 @@
       const preLvl = (preset.slotLevel !== undefined && preset.slotLevel !== null && preset.slotLevel !== '') ? String(preset.slotLevel) : '';
       const body = `
         <div>
-          <label class="block text-[11px] font-bold text-slate-300 mb-1">Spell Name (e.g. Primal Senses, Greater Mighty Wallop)</label>
-          <input name="spellName" list="e6-routine-spell-list" required value="${UI.escapeAttr(preName)}" placeholder="Primal Senses, Greater Mighty Wallop, Mage Armor..." class="w-full px-2.5 py-1.5 rounded bg-slate-950 border border-slate-700 text-white" />
+          <label class="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">Spell Name</label>
+          <input name="spellName" list="e6-routine-spell-list" required value="${UI.escapeAttr(preName)}" placeholder="Primal Senses, Greater Mighty Wallop, Mage Armor..." class="ui-input-md w-full px-2.5 bg-slate-950 border border-slate-700 text-slate-100 focus:outline-none focus:border-amber-500" />
           <datalist id="e6-routine-spell-list">${spellOptions}</datalist>
         </div>
-        <div class="grid grid-cols-2 gap-2">
+        <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-[11px] font-bold text-slate-300 mb-1">Slot Discipline</label>
-            <select name="discipline" class="w-full px-2 py-1.5 rounded bg-slate-950 border border-slate-700 text-white">
+            <label class="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">Slot Discipline</label>
+            <select name="discipline" class="ui-input-md w-full px-2.5 bg-slate-950 border border-slate-700 text-slate-100 focus:outline-none focus:border-amber-500">
               <option value="spontaneous"${preDisc === 'spontaneous' ? ' selected' : ''}>Spontaneous Slot</option>
               <option value="prepared"${preDisc === 'prepared' ? ' selected' : ''}>Prepared Slot</option>
               <option value="divine"${preDisc === 'divine' ? ' selected' : ''}>Divine Slot</option>
@@ -12471,21 +12494,21 @@
             </select>
           </div>
           <div>
-            <label class="block text-[11px] font-bold text-slate-300 mb-1">Slot Level (Auto if blank)</label>
-            <input name="slotLevel" type="number" min="0" max="9" value="${UI.escapeAttr(preLvl)}" placeholder="Auto" class="w-full px-2 py-1.5 rounded bg-slate-950 border border-slate-700 text-white" />
+            <label class="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">Slot Level (Auto if blank)</label>
+            <input name="slotLevel" type="number" min="0" max="9" value="${UI.escapeAttr(preLvl)}" placeholder="Auto" class="ui-input-md w-full px-2.5 bg-slate-950 border border-slate-700 text-slate-100 font-mono focus:outline-none focus:border-amber-500" />
           </div>
         </div>
-        <div class="grid grid-cols-2 gap-2">
+        <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-[11px] font-bold text-slate-300 mb-1">Target Weapon (Optional)</label>
-            <select name="targetWeapon" class="w-full px-2 py-1.5 rounded bg-slate-950 border border-slate-700 text-white">
+            <label class="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">Target Weapon (Optional)</label>
+            <select name="targetWeapon" class="ui-input-md w-full px-2.5 bg-slate-950 border border-slate-700 text-slate-100 focus:outline-none focus:border-amber-500">
               <option value="">None / Self</option>
               ${weaponOptions}
             </select>
           </div>
           <div>
-            <label class="block text-[11px] font-bold text-slate-300 mb-1">Energy Choice (Optional)</label>
-            <select name="chosenEnergy" class="w-full px-2 py-1.5 rounded bg-slate-950 border border-slate-700 text-white">
+            <label class="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">Energy Choice (Optional)</label>
+            <select name="chosenEnergy" class="ui-input-md w-full px-2.5 bg-slate-950 border border-slate-700 text-slate-100 focus:outline-none focus:border-amber-500">
               <option value="">None</option>
               <option value="Fire">Fire</option>
               <option value="Cold">Cold</option>
@@ -12495,18 +12518,18 @@
             </select>
           </div>
         </div>
-        <div class="flex items-center gap-4 pt-1">
-          <label class="inline-flex items-center gap-1.5 cursor-pointer">
-            <input type="checkbox" name="extendSpell" value="1" class="rounded" />
-            <span>Extend Spell (×2 Duration, +1 Slot)</span>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+          <label class="flex items-center gap-2 px-2.5 py-2 rounded-lg bg-slate-950/80 border border-slate-800 hover:border-amber-500 cursor-pointer transition">
+            <input type="checkbox" name="extendSpell" value="1" class="rounded" style="accent-color: #f59e0b;" />
+            <span class="text-[11px] font-semibold text-slate-200">Extend Spell (×2, +1 Slot)</span>
           </label>
-          <label class="inline-flex items-center gap-1.5 cursor-pointer">
-            <input type="checkbox" name="autoCast" value="1" checked class="rounded" />
-            <span>Auto-Cast after Long Rest</span>
+          <label class="flex items-center gap-2 px-2.5 py-2 rounded-lg bg-slate-950/80 border border-slate-800 hover:border-amber-500 cursor-pointer transition">
+            <input type="checkbox" name="autoCast" value="1" checked class="rounded" style="accent-color: #f59e0b;" />
+            <span class="text-[11px] font-semibold text-slate-200">Auto-Cast after Long Rest</span>
           </label>
         </div>
       `;
-      openE6SimpleModal('modal-e6-routine', '☀️ Add Morning Buff Routine', body, (fd) => {
+      openE6SimpleModal('modal-e6-routine', 'Add Morning Buff Routine', body, (fd) => {
         const spellName = String(fd.get('spellName') || '').trim();
         const dbHit = (typeof RuleEngine !== 'undefined' && RuleEngine.getMasterDbEntry)
           ? RuleEngine.getMasterDbEntry({ name: spellName }, 'Spell')
@@ -12537,7 +12560,7 @@
           meta: { label: `Add Morning Routine: ${spellName}` }
         });
         renderAll({ skipRecompute: true });
-      });
+      }, null, { tone: 'amber', icon: '☀️', subtitle: 'Auto-Cast Daily Buffs After Long Rest', submitLabel: 'Save Routine' });
     }
 
     function getSavedSpellPreset(spellId) {
@@ -12575,7 +12598,7 @@
           ${slotInputs}
           <datalist id="e6-matrix-preset-list">${spellOptions}</datalist>
         `;
-        openE6SimpleModal('modal-e6-matrix-preset', '⚙️ Configure Spell Matrix Preset', body, (fd) => {
+        openE6SimpleModal('modal-e6-matrix-preset', 'Configure Spell Matrix Preset', body, (fd) => {
           const storedSpells = Array.from({ length: maxSlots }, (_, idx) => String(fd.get(`storedSpell${idx}`) || '').trim()).filter(Boolean);
           CharStore.dispatch({
             type: 'spells/setPreset',
@@ -12583,7 +12606,7 @@
             meta: { label: 'Configure Spell Matrix Preset' }
           });
           if (typeof renderAll === 'function') renderAll({ skipRecompute: true });
-        });
+        }, null, { tone: 'indigo', icon: '🔷', subtitle: 'Spell Compendium p.199–200 • Lazy Loadout Preset', submitLabel: 'Save Preset' });
         return;
       }
 
@@ -12618,7 +12641,7 @@
           ⚠️ Casting rolls backlash damage (1d6 / 2d6 / 3d6) in 3D and deducts it from HP. Per RAW, this damage cannot be healed while the matrix persists.
         </div>
       `;
-      openE6SimpleModal('modal-e6-matrix', '🔷 Cast Spell Matrix', body, (fd) => {
+      openE6SimpleModal('modal-e6-matrix', 'Cast Spell Matrix', body, (fd) => {
         const tier = String(fd.get('tier') || preTier);
         const discipline = String(fd.get('discipline') || preDisc);
         const casterLevel = Math.max(1, Number(fd.get('casterLevel')) || charCl);
@@ -12653,7 +12676,7 @@
             });
           }
         });
-      }, preset.onCancel);
+      }, preset.onCancel, { tone: 'indigo', icon: '🔷', subtitle: 'Spell Compendium p.199–200 • Backlash HP Lock', submitLabel: 'Cast Matrix' });
     }
 
     function openLoadMatrixSpellModal() {
@@ -12785,7 +12808,7 @@
           </div>
         </div>
       `;
-      const modalTitle = configureOnly ? '⚙️ Configure Contingency Preset' : '🔮 Set Contingency / Crafted Contingent Spell';
+      const modalTitle = configureOnly ? 'Configure Contingency Preset' : 'Set Contingency';
       openE6SimpleModal('modal-e6-contingency', modalTitle, body, (fd, close) => {
         const kind = String(fd.get('kind') || 'contingency');
         const spellName = String(fd.get('spellName') || '').trim();
@@ -12857,7 +12880,7 @@
           return true;
         }
         commitAdd();
-      }, preset.onCancel);
+      }, preset.onCancel, { tone: 'purple', icon: '🔮', subtitle: configureOnly ? 'PHB p.213 • Lazy Contingency Preset' : 'PHB p.213 • Triggered Companion Spell', submitLabel: configureOnly ? 'Save Preset' : 'Set Contingency' });
     }
 
     document.addEventListener('e6:open-modal', (ev) => {
