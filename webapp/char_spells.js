@@ -13822,7 +13822,7 @@
         const idx = Number(data.idx);
         const list = discipline === 'prepared'
           ? (character.spellcasting?.preparedSpells || [])
-          : (discipline === 'divine' ? (character.spellcasting?.divineSpells || []) : (character.spellcasting?.spellsKnown || []));
+          : (discipline === 'divine' ? (character.spellcasting?.divineSpells || []) : (character.spellcasting?.knownSpells || character.spellcasting?.spellsKnown || []));
         const sp = list[idx];
         if (!sp) return;
 
