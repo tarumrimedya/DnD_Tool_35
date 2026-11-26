@@ -1748,7 +1748,10 @@
       if (!Array.isArray(character.buffs)) character.buffs = [];
 
       const targetWeaponName = options.targetWeapon ? String(options.targetWeapon).trim() : null;
-      const wepObj = targetWeaponName ? (character.weapons || []).find(w => w && w.name === targetWeaponName) : null;
+      const allBuffable = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getBuffableWeapons === 'function')
+        ? RuleEngine.getBuffableWeapons(character)
+        : (character.weapons || []);
+      const wepObj = targetWeaponName ? allBuffable.find(w => w && w.name === targetWeaponName) : null;
       const buffObj = RuleEngine.buildBuffObject(buffSpec, {
         cl: effCl,
         spellItem,
@@ -1828,10 +1831,13 @@
     window.applySpellBuffToCharacter = applySpellBuffToCharacter;
 
     function getEligibleBuffWeapons(buffSpec, weaponsList) {
+      const filter = buffSpec?.sizeModifier?.targetFilter || null;
+      if (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getBuffableWeapons === 'function' && character && (!weaponsList || weaponsList === character.weapons)) {
+        return RuleEngine.getBuffableWeapons(character, filter);
+      }
       const list = Array.isArray(weaponsList) ? weaponsList : [];
       return list.filter(w => {
         if (!w || !w.name || w.name === '-') return false;
-        const filter = buffSpec?.sizeModifier?.targetFilter;
         if (filter?.meleeOnly) {
           const isRanged = w.isRanged || w.grip === 'Ranged' || (Array.isArray(w.tags) && w.tags.some(t => String(t).toLowerCase() === 'ranged'));
           if (isRanged) return false;

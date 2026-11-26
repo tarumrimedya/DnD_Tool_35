@@ -2422,7 +2422,9 @@
       // Target Weapon Picker
       if (weaponBox && weaponSelect) {
         if (spec && spec.targetMode === 'weapon') {
-          const weapons = (character?.weapons || []).filter(w => w && w.name && w.name !== '-');
+          const weapons = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getBuffableWeapons === 'function')
+            ? RuleEngine.getBuffableWeapons(character, spec?.sizeModifier?.targetFilter || null)
+            : (character?.weapons || []).filter(w => w && w.name && w.name !== '-');
           if (weapons.length > 0) {
             weaponSelect.innerHTML = weapons.map(w => `<option value="${UI.escapeAttr(w.name)}">⚔️ ${UI.escapeHtml(w.name)}</option>`).join('');
           } else {

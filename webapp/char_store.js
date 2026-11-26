@@ -2115,7 +2115,8 @@
       if (engine && typeof engine.resolveSpellBuffSpec === 'function' && typeof engine.buildBuffObject === 'function') {
         const spec = engine.resolveSpellBuffSpec(spellStub, doc, effCl);
         if (spec && spec.isBuffSpell) {
-          const wepObj = r.targetWeapon ? (doc.weapons || []).find(w => w && w.name === r.targetWeapon) : null;
+          const allBuffable = (typeof engine.getBuffableWeapons === 'function') ? engine.getBuffableWeapons(doc) : (doc.weapons || []);
+          const wepObj = r.targetWeapon ? allBuffable.find(w => w && w.name === r.targetWeapon) : null;
           buffObj = engine.buildBuffObject(spec, {
             cl: effCl,
             spellItem: spellStub,

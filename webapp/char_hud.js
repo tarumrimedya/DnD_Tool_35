@@ -1946,8 +1946,12 @@
       const buffToApply = JSON.parse(JSON.stringify(offer.buff));
       if (targetWeaponName) {
         buffToApply.targetWeapon = targetWeaponName;
+        const allBuffable = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getBuffableWeapons === 'function')
+          ? RuleEngine.getBuffableWeapons(character)
+          : (character.weapons || []);
+        const wepObj = allBuffable.find(w => w && w.name === targetWeaponName);
+        if (wepObj && wepObj.id) buffToApply.targetWeaponId = wepObj.id;
         if (buffToApply.sizeSteps && typeof RuleEngine !== 'undefined' && RuleEngine.stepDamageDice) {
-          const wepObj = (character.weapons || []).find(w => w && w.name === targetWeaponName);
           const oldDice = wepObj?.weapon?.damageDice || wepObj?.dice || '1d8';
           const newDice = RuleEngine.stepDamageDice(oldDice, buffToApply.sizeSteps);
           buffToApply.baseDice = oldDice;
@@ -2062,9 +2066,11 @@
         actionsRow.className = 'flex flex-wrap items-center gap-1.5 pt-1.5 border-t border-slate-700/80';
 
         if (offer.targetMode === 'weapon') {
-          const weps = (typeof getEligibleBuffWeapons === 'function')
-            ? getEligibleBuffWeapons({ sizeModifier: offer.weaponFilter ? { targetFilter: offer.weaponFilter } : null }, character?.weapons || [])
-            : (character?.weapons || []).filter(w => w && w.name && w.name !== '-');
+          const weps = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getBuffableWeapons === 'function')
+            ? RuleEngine.getBuffableWeapons(character, offer.weaponFilter || null)
+            : ((typeof getEligibleBuffWeapons === 'function')
+              ? getEligibleBuffWeapons({ sizeModifier: offer.weaponFilter ? { targetFilter: offer.weaponFilter } : null }, character?.weapons || [])
+              : (character?.weapons || []).filter(w => w && w.name && w.name !== '-'));
           if (weps.length > 0) {
             weps.slice(0, 4).forEach(w => {
               const wb = document.createElement('button');

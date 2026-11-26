@@ -3402,24 +3402,9 @@
 
       // Check for sizeModifier targetType: weapon (e.g. Greater Mighty Wallop, Mighty Wallop)
       if (spell.sizeModifier?.targetType === 'weapon' && !targetWeaponName) {
-        const eligibleWeapons = (character.weapons || []).filter(w => {
-          if (!w) return false;
-          if (spell.sizeModifier.targetFilter?.meleeOnly) {
-            const isRanged = w.isRanged || w.grip === 'Ranged' || (w.tags && w.tags.includes('ranged'));
-            if (isRanged) return false;
-          }
-          if (Array.isArray(spell.sizeModifier.targetFilter?.allowedDmgTypes) && spell.sizeModifier.targetFilter.allowedDmgTypes.length > 0) {
-            const pType = w.weapon?.dmgType || w.weapon?.damageType || w.dmgType || '';
-            const dt = String(pType).toLowerCase();
-            const tags = (w.tags || []).map(t => String(t).toLowerCase());
-            const matchesType = spell.sizeModifier.targetFilter.allowedDmgTypes.some(type => {
-              const tLower = type.toLowerCase();
-              return dt.includes(tLower) || tags.includes(tLower);
-            });
-            if (!matchesType) return false;
-          }
-          return true;
-        });
+        const eligibleWeapons = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getBuffableWeapons === 'function')
+          ? RuleEngine.getBuffableWeapons(character, spell.sizeModifier.targetFilter || null)
+          : (character.weapons || []).filter(w => Boolean(w && w.name));
 
         if (eligibleWeapons.length === 0) {
           showDiceTopToast({
@@ -3779,8 +3764,11 @@
 
       if (spell.sizeModifier?.targetType === 'weapon' && targetWeaponName) {
         isSizeModifier = true;
-        targetWeaponObj = (character.weapons || []).find(w => w && w.name === targetWeaponName);
-        oldDice = targetWeaponObj?.dice || '1d8';
+        const allBuffable = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getBuffableWeapons === 'function')
+          ? RuleEngine.getBuffableWeapons(character)
+          : (character.weapons || []);
+        targetWeaponObj = allBuffable.find(w => w && w.name === targetWeaponName);
+        oldDice = targetWeaponObj?.weapon?.damageDice || targetWeaponObj?.dice || '1d8';
 
         if (spell.sizeModifier.scaling?.type === 'per_caster_level') {
           const clDiv = spell.sizeModifier.scaling.clDivisor || 4;
@@ -3801,6 +3789,7 @@
           active: true,
           source: 'Spell',
           targetWeapon: targetWeaponName,
+          ...(targetWeaponObj && targetWeaponObj.id ? { targetWeaponId: targetWeaponObj.id } : {}),
           sizeSteps: calculatedSteps,
           baseDice: oldDice,
           effectiveDice: newDice,
@@ -12471,7 +12460,9 @@
 
     function openAddMorningRoutineModal(preset = {}) {
       const charSpells = getCharacterSpellOptionsForE6();
-      const weapons = Array.isArray(character?.weapons) ? character.weapons.filter(w => w && w.name) : [];
+      const weapons = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getBuffableWeapons === 'function')
+        ? RuleEngine.getBuffableWeapons(character)
+        : (Array.isArray(character?.weapons) ? character.weapons.filter(w => w && w.name) : []);
       const spellOptions = charSpells.map(s => `<option value="${UI.escapeAttr(s.name)}">${UI.escapeHtml(s.name)} (Lvl ${s.level} ${s.discipline})</option>`).join('');
       const weaponOptions = weapons.map(w => `<option value="${UI.escapeAttr(w.name)}">${UI.escapeHtml(w.name)}</option>`).join('');
       const preName = String(preset.spellName || '').trim();

@@ -7120,6 +7120,8 @@ const RuleEngine = {
     const wObj = authoredW || (refEntry && refEntry.weapon) || null;
     const chassis = this.resolveArmorChassis(item, refEntry) || { base: 0, enh: 0, total: 0 };
     const isBuckler = nameLower.includes('buckler') || String(item.armor?.armorType || '').toLowerCase().includes('buckler');
+    // PHB p.125: You cannot perform a shield bash with a buckler.
+    if (isBuckler) return null;
     const handed = wObj ? String(wObj.handedness || wObj.handed || '').toLowerCase() : '';
     const isHeavy = /light/.test(handed) ? false
       : (/heavy/.test(handed) ? true
@@ -7158,8 +7160,9 @@ const RuleEngine = {
 
     // Copy identity fields only: the shield's AC modifiers, V3 effects, armor chassis and armor masterwork
     // (which lowers armor check penalty, PHB p.126) must not leak into the bash attack.
+    const shieldKey = item.inventoryId || item.id;
     return {
-      id: item.id ? `${item.id}::shield-bash` : undefined,
+      id: shieldKey ? `${shieldKey}::shield-bash` : undefined,
       inventoryId: item.inventoryId,
       name: `${item.name} (Shield Bash)`,
       type: item.type || 'Shield',
@@ -7188,6 +7191,98 @@ const RuleEngine = {
       effects: [],
       tags: ['off-hand', 'shield-bash']
     };
+  },
+
+  // Single source of truth for weapons that can be targeted by weapon-buff spells
+  // (Greater Mighty Wallop, Magic Weapon, Greater Magic Weapon, Keen Edge, Align Weapon, etc.).
+  // Includes character.weapons + equipped bashable shield(s) via buildShieldBashWeapon + Monk unarmed strike.
+  getBuffableWeapons(character, targetFilter = null) {
+    if (!character || typeof character !== 'object') return [];
+    const rawList = [];
+    const seenIds = new Set();
+    const seenNames = new Set();
+    const pushUnique = (w, dedupeByNameAlso = false) => {
+      if (!w || !w.name || w.name === '-') return;
+      const idKey = w.id ? String(w.id).toLowerCase().trim() : '';
+      const nameKey = String(w.name).toLowerCase().trim();
+      if (idKey && seenIds.has(idKey)) return;
+      if ((dedupeByNameAlso || !idKey) && seenNames.has(nameKey)) return;
+      if (idKey) seenIds.add(idKey);
+      seenNames.add(nameKey);
+      rawList.push(w);
+    };
+
+    (Array.isArray(character.weapons) ? character.weapons : []).forEach(w => pushUnique(w, false));
+
+    // Equipped shields that can perform a Shield Bash (Heavy/Light Wooden or Steel; excludes Buckler & Tower Shield)
+    const shieldCandidates = [
+      character.bodySlots && character.bodySlots.offHand,
+      character.shield
+    ].filter(sh => sh && typeof sh === 'object' && sh.active !== false && sh.name && sh.name !== '-');
+    shieldCandidates.forEach(sh => {
+      const bashWep = this.buildShieldBashWeapon(sh, character);
+      if (bashWep) pushUnique(bashWep, true);
+    });
+
+    // Monk Unarmed Strike counts as both a manufactured weapon and a natural weapon for spells/effects (PHB p.41)
+    const ruleFlags = typeof this.evaluateRuleFlags === 'function' ? this.evaluateRuleFlags(character) : {};
+    const hasMonkUnarmed = Boolean(ruleFlags.monkUnarmedDamage || character?.ruleFlags?.monkUnarmedDamage);
+    if (hasMonkUnarmed && !seenNames.has('unarmed strike')) {
+      const evalCtx = typeof this.buildFormulaContext === 'function' ? this.buildFormulaContext(character) : null;
+      const monkLvl = Math.max(1, Number(evalCtx?.classes?.monk?.level || 0) || 1);
+      const sizeKey = typeof this.getSizeCategoryKey === 'function' ? this.getSizeCategoryKey(character) : 'medium';
+      const activeRs = (this.rulesets && this.rulesets.dnd35) || null;
+      const unarmedDie = (activeRs && typeof activeRs.calcMonkUnarmedDamage === 'function')
+        ? activeRs.calcMonkUnarmedDamage(monkLvl, sizeKey)
+        : '1d6';
+      pushUnique({
+        id: 'unarmed-strike',
+        name: 'Unarmed Strike',
+        category: 'Simple',
+        handedness: 'Light',
+        dice: unarmedDie || '1d6',
+        dmgType: 'Bludgeoning',
+        isUnarmedMonk: true,
+        tags: ['bludgeoning', 'unarmed']
+      }, true);
+    }
+
+    if (!targetFilter || typeof targetFilter !== 'object') return rawList;
+
+    return rawList.filter(w => {
+      if (targetFilter.meleeOnly) {
+        const isRanged = Boolean(w.isRanged || w.grip === 'Ranged' || (Array.isArray(w.tags) && w.tags.some(t => String(t).toLowerCase() === 'ranged')));
+        if (isRanged) return false;
+      }
+      if (targetFilter.allowNatural !== true) {
+        const isNatural = Boolean(w.isNaturalWeapon || w.isNatural || String(w.category || '').toLowerCase() === 'natural') && !w.isUnarmedMonk;
+        if (isNatural) return false;
+      }
+      if (Array.isArray(targetFilter.allowedDmgTypes) && targetFilter.allowedDmgTypes.length > 0) {
+        const pType = w.weapon?.damageType || w.weapon?.dmgType || w.dmgType || '';
+        const dt = String(pType).toLowerCase();
+        const tags = (Array.isArray(w.tags) ? w.tags : []).map(t => String(t).toLowerCase());
+        const matchesType = targetFilter.allowedDmgTypes.some(type => {
+          const tLower = String(type || '').toLowerCase();
+          return tLower && (dt.includes(tLower) || tags.includes(tLower));
+        });
+        if (!matchesType) return false;
+      }
+      return true;
+    });
+  },
+
+  // Strict weapon-buff matcher: when both sides carry an ID, compare IDs only (prevents duplicate-named
+  // weapons from cross-matching); otherwise fall back to exact case-insensitive weapon name.
+  isBuffTargetingWeapon(buffObj, weapon) {
+    if (!buffObj || (!buffObj.targetWeapon && !buffObj.targetWeaponId)) return true;
+    if (!weapon) return false;
+    if (weapon.id && buffObj.targetWeaponId) {
+      return String(buffObj.targetWeaponId) === String(weapon.id);
+    }
+    const tw = String(buffObj.targetWeapon || '').toLowerCase().trim();
+    const wn = String(weapon.name || '').toLowerCase().trim();
+    return Boolean(tw && wn && tw === wn);
   },
 
   // Check if item is a Shield according to D&D 3.5e RAW rules
@@ -9552,8 +9647,11 @@ const RuleEngine = {
 
     if (targetWeaponName) {
       buffObj.targetWeapon = targetWeaponName;
+      const wepObj = opts.weaponObj || null;
+      if (wepObj && wepObj.id) {
+        buffObj.targetWeaponId = wepObj.id;
+      }
       if (buffSpec.sizeModifier?.targetType === 'weapon') {
-        const wepObj = opts.weaponObj || null;
         const oldDice = wepObj?.weapon?.damageDice || wepObj?.dice || '1d8';
         const steps = Number.isFinite(Number(opts.sizeStepsOverride))
           ? Number(opts.sizeStepsOverride)
@@ -12229,9 +12327,7 @@ const RuleEngine = {
       if (!b || !b.active) return false;
       const isKeenSpell = Boolean(b.ruleFlags?.keen || (b.name || '').toLowerCase().includes('keen edge'));
       if (!isKeenSpell) return false;
-      if (!b.targetWeapon) return true;
-      const tw = String(b.targetWeapon).toLowerCase().trim();
-      return tw === wepName || wepName.includes(tw) || tw.includes(wepName);
+      return this.isBuffTargetingWeapon(b, weapon);
     }));
     const isKeen = !!weapon.isKeen || !!weapon.ruleFlags?.keen || wepTags.includes('keen') || wepName.includes('keen') || wepDesc.includes('keen') || hasKeenBuff;
 
@@ -12959,12 +13055,7 @@ const RuleEngine = {
       }
       return Number(mObj.value) || 0;
     };
-    const isBuffMatchingWeapon = (bObj) => {
-      if (!bObj || !bObj.targetWeapon) return true;
-      const tw = String(bObj.targetWeapon).toLowerCase().trim();
-      const wn = String(weapon.name || '').toLowerCase().trim();
-      return tw === wn || wn.includes(tw) || tw.includes(wn) || (weapon.id && bObj.targetWeaponId === weapon.id);
-    };
+    const isBuffMatchingWeapon = (bObj) => this.isBuffTargetingWeapon(bObj, weapon);
 
     // Weapon V2 Attack Modifiers & Enhancement Bonus
     const wepMods = Array.isArray(weapon.modifiers) ? weapon.modifiers : [];
@@ -13553,14 +13644,7 @@ const RuleEngine = {
     if (Array.isArray(character?.buffs)) {
       character.buffs.forEach(b => {
         if (!b || !b.active) return;
-        const targetWepName = (b.targetWeapon || '').toLowerCase().trim();
-        const wepName = (weapon.name || '').toLowerCase().trim();
-        const matchesWeapon = targetWepName && (
-          targetWepName === wepName ||
-          (weapon.id && b.targetWeaponId === weapon.id) ||
-          wepName.includes(targetWepName) ||
-          targetWepName.includes(wepName)
-        );
+        const matchesWeapon = Boolean((b.targetWeapon || b.targetWeaponId) && this.isBuffTargetingWeapon(b, weapon));
         const sm = b.sizeModifier || null;
         let buffSteps = Number(b.sizeSteps) || 0;
         if (!buffSteps && sm && sm.scaling) {
