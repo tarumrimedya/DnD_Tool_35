@@ -650,9 +650,15 @@
   function isPreservedDefenseBlock(b) {
     return !!(b && b.type === 'defense' && b.mode && !EDITABLE_DEFENSE_SET.has(b.mode));
   }
-  function defValOut(v, fallback) {
-    if (typeof v === 'string' && v.trim() !== '' && isNaN(Number(v))) return v.trim();
+  function isFxStr(v) {
+    return typeof v === 'string' && v.trim() !== '' && !/^-?\d+(\.\d+)?$/.test(v.trim());
+  }
+  function numOrFx(v, fallback) {
+    if (isFxStr(v)) return v.trim();
     return num(v, fallback);
+  }
+  function defValOut(v, fallback) {
+    return numOrFx(v, fallback);
   }
   function isPreservedEffectBlock(b) {
     if (!b || b.type !== 'effect') return false;
@@ -719,11 +725,10 @@
   };
   const modMode = (m) => m.mode || 'flat';
   function statFormulaText(m) {
-    const baseVal = num(m.value, 0);
-    const baseStr = baseVal !== 0 ? (baseVal > 0 ? '+' + baseVal + ' ' : baseVal + ' ') : '';
+    const baseStr = isFxStr(m.value) ? '(' + m.value.trim() + ') ' : (num(m.value, 0) !== 0 ? (num(m.value, 0) > 0 ? '+' + num(m.value, 0) + ' ' : num(m.value, 0) + ' ') : '');
     const mult = num(m.mult, 1);
     const prefix = mult === 1 ? '+' : mult === -1 ? '-' : (mult === 0.5 ? '+½×' : sgn(mult) + '×');
-    const cap = m.cap === 'classLevel' ? ' (cap @classLevel)' : m.cap === 'flat' ? ' (cap +' + num(m.capVal, 5) + ')' : '';
+    const cap = m.cap === 'classLevel' ? ' (cap @classLevel)' : m.cap === 'flat' ? ' (cap +' + numOrFx(m.capVal, 5) + ')' : '';
     return baseStr + prefix + '@' + (m.stat || 'chaMod') + cap;
   }
   function replaceStatTargetLabel(k) {
@@ -745,37 +750,39 @@
   }
   function metamagicCostText(b) {
     if (b.costMode === 'passive') return 'Passive (+0 Slot)';
-    if (b.costMode === 'rod') return num(b.uses, 3) + '/day Rod (max Lvl ' + num(b.maxSpellLvl, 3) + ', +0 Slot)';
-    if (b.costMode === 'sudden') return num(b.uses, 1) + '/day Sudden (+0 Slot)';
-    if (b.costMode === 'pool') return num(b.poolCost, 1) + ' ' + (b.pool || 'Turn Undead') + ' (+0 Slot)';
+    if (b.costMode === 'rod') return numOrFx(b.uses, 3) + '/day Rod (max Lvl ' + num(b.maxSpellLvl, 3) + ', +0 Slot)';
+    if (b.costMode === 'sudden') return numOrFx(b.uses, 1) + '/day Sudden (+0 Slot)';
+    if (b.costMode === 'pool') return numOrFx(b.poolCost, 1) + ' ' + (b.pool || 'Turn Undead') + ' (+0 Slot)';
     if (b.costMode === 'essenceShape') return 'Eldritch Essence / Blast Shape (Eff. Lvl ' + num(b.maxSpellLvl, 1) + ')';
     if (b.slotAdj === 'variable' || b.transform === 'heighten') return 'Variable Spell Slot';
     return '+' + num(b.slotAdj) + ' Spell Slot';
   }
   function metamagicTxText(b) {
-    if (b.transform === 'heighten') return '+' + num(b.dcBonus, 1) + ' Save DC / Effective Level';
+    if (b.transform === 'heighten') return '+' + numOrFx(b.dcBonus, 1) + ' Save DC / Effective Level';
     if (b.transform === 'energySub') return 'Substitute Energy → ' + b.energy;
     if (b.transform === 'pierceRes') return 'Ignore ' + b.energy + ' Resistance (½ vs Immunity)';
     if (b.transform === 'rider') return b.rider || 'Custom spell rider';
     return META_TX_LABEL[b.transform] || b.transform;
   }
   function rollBlockText(b) {
-    const cnt = num(b.count, 1);
+    const cntFx = isFxStr(b.count) ? b.count.trim() : null;
+    const cnt = cntFx ? cntFx : num(b.count, 1);
     const die = String(b.die || 'd6');
-    const flat = die === 'flat' ? 0 : num(b.flat, 0);
-    const flatStr = flat !== 0 ? (flat > 0 ? '+' + flat : String(flat)) : '';
+    const flatFx = die !== 'flat' && isFxStr(b.flat) ? b.flat.trim() : null;
+    const flat = die === 'flat' ? 0 : (flatFx ? flatFx : num(b.flat, 0));
+    const flatStr = flatFx ? '+(' + flatFx + ')' : (flat !== 0 ? (flat > 0 ? '+' + flat : String(flat)) : '');
     const unit = (b.scaling === 'formula' && b.dice)
       ? String(b.dice).trim()
-      : (die === 'flat' ? (cnt > 0 ? String(cnt) : '') : ((/^\d+d\d+$/.test(die) ? die : (cnt > 0 ? cnt + die : '')) + flatStr));
+      : (die === 'flat' ? (cntFx ? cntFx : (cnt > 0 ? String(cnt) : '')) : ((/^\d+d\d+$/.test(die) ? die : (cntFx ? '(' + cntFx + ')' + die : (cnt > 0 ? cnt + die : ''))) + flatStr));
     let scaleStr = '';
     if (b.scaling === 'perCL') {
       const per = Math.max(1, num(b.per, 1));
-      const amt = num(b.amount, 1);
+      const amt = numOrFx(b.amount, 1);
       const amtStr = die === 'flat' ? String(amt) : amt + die.replace(/^\d+/, '');
-      scaleStr = (unit ? ' + ' : '') + amtStr + ' per ' + (per === 1 ? '' : per + ' ') + 'CL' + (num(b.start, 1) > 1 ? ' from CL ' + num(b.start, 1) : '') + ' (max +' + num(b.max, 10) + ')';
+      scaleStr = (unit ? ' + ' : '') + amtStr + ' per ' + (per === 1 ? '' : per + ' ') + 'CL' + (num(b.start, 1) > 1 ? ' from CL ' + num(b.start, 1) : '') + ' (max +' + numOrFx(b.max, 10) + ')';
     } else if (b.scaling === 'perVar') {
       const vk = '@' + (b.varKey || 'x');
-      const vPart = b.varMode === 'flat' ? num(b.amount, 1) + '×' + vk : vk + (die === 'flat' ? '' : die.replace(/^\d+/, ''));
+      const vPart = b.varMode === 'flat' ? numOrFx(b.amount, 1) + '×' + vk : vk + (die === 'flat' ? '' : die.replace(/^\d+/, ''));
       scaleStr = (unit ? ' + ' : '+') + vPart;
     }
     const core = (unit + scaleStr).trim() || '0';
@@ -849,18 +856,19 @@
         const rs = { atWill: 'At-Will', cooldown: 'Cooldown ' + (b.cooldownText || '5 rounds'), perEncounter: '/encounter', perDay: '/day' }[b.reset || 'perDay'] || '/day';
         if (b.resMode === 'invest') return (b.name || 'Essentia') + ' (' + vk + ', Invest Cap: ' + (b.capMode || 'chakra') + ')';
         if (b.resMode === 'dial') {
-          const mx = b.maxMode === 'flat' ? num(b.max, 5) : b.maxMode === 'spellLvl' ? 'Slot 1–9' : '@' + b.maxMode;
+          const mx = b.maxMode === 'flat' ? numOrFx(b.max, 5) : b.maxMode === 'spellLvl' ? 'Slot 1–9' : '@' + b.maxMode;
           const dc = b.dialCost === 'spellSlot' ? 'Burn Spell Slot' : b.dialCost === 'pool' ? 'Spend ' + (b.costPool || 'Pool') : 'Free Tradeoff';
           return (b.name || 'Dial') + ' (' + vk + ' = 0..' + mx + ', ' + dc + ')';
         }
         if (b.resMode === 'focus') return (b.name || 'Psionic Focus') + ' (' + vk + ' = 0/1 Binary State)';
-        if (b.resMode === 'buffer') return (b.name || 'Buffer') + ' (' + vk + ', Max: ' + (b.scaling === 'level' ? '@level' : num(b.max, 10)) + ')';
-        let sc = String(num(b.max, 0));
+        if (b.resMode === 'buffer') return (b.name || 'Buffer') + ' (' + vk + ', Max: ' + (b.scaling === 'level' ? '@level' : numOrFx(b.max, 10)) + ')';
+        const maxVal = numOrFx(b.max, 0);
+        let sc = String(maxVal);
         if (b.scaling === 'level') sc = '@level';
         else if (b.scaling === 'halfLevel') sc = '½ @level';
-        else if (b.scaling === 'plusMod') sc = (num(b.max, 0) ? num(b.max, 0) + ' + ' : '') + ab;
-        else if (b.scaling === 'halfLvlPlusMod') sc = (num(b.max, 0) ? num(b.max, 0) + ' + ' : '') + '½ @level + ' + ab;
-        else if (b.scaling === 'twoPerLvlPlusMod') sc = num(b.max, 0) + ' + 2/Lvl + ' + ab;
+        else if (b.scaling === 'plusMod') sc = (maxVal ? maxVal + ' + ' : '') + ab;
+        else if (b.scaling === 'halfLvlPlusMod') sc = (maxVal ? maxVal + ' + ' : '') + '½ @level + ' + ab;
+        else if (b.scaling === 'twoPerLvlPlusMod') sc = maxVal + ' + 2/Lvl + ' + ab;
         return (b.name || 'Resource') + ' (' + vk + '): ' + sc + ' ' + rs;
       }
       case 'when': {
@@ -882,7 +890,7 @@
           return st + (b.channelStyle === 'spellStoring' ? '' : ' [' + cr + (b.holdCharge ? ', Hold Charge' : '') + ']');
         }
         if (cm === 'rangedChannel') return 'Ranged Channel (Imbue Arrow — Deliver Spell via Ranged Hit)';
-        if (cm === 'fullAttackCast') return 'Spell Combat: Full Attack + Cast Spell (' + sgn(num(b.atkPenalty, -2)) + ' All Atk' + (b.offHandFree ? ', Off-Hand Free' : '') + ')';
+        if (cm === 'fullAttackCast') return 'Spell Combat: Full Attack + Cast Spell (' + (isFxStr(b.atkPenalty) ? b.atkPenalty.trim() : sgn(num(b.atkPenalty, -2))) + ' All Atk' + (b.offHandFree ? ', Off-Hand Free' : '') + ')';
         return 'Cast Mod (' + metamagicCostText(b) + ') → ' + metamagicTxText(b) + (b.appliesTo ? ' [' + b.appliesTo + ']' : '');
       }
       case 'stat': {
@@ -890,10 +898,10 @@
         const t = (b.targets || []).map((x) => (mode === 'replaceStat' ? replaceStatTargetLabel(x) : targetLabel(x))).join(', ') || '(no target)';
         if (mode === 'replaceStat') return replaceStatSummary(b, t);
         const v = mode === 'perCL'
-          ? '+' + num(b.value, 1) + ' per ' + num(b.per, 1) + ' CL (min +' + num(b.min, 0) + ', max +' + num(b.max, 5) + ')'
+          ? '+' + numOrFx(b.value, 1) + ' per ' + num(b.per, 1) + ' CL (min +' + numOrFx(b.min, 0) + ', max +' + numOrFx(b.max, 5) + ')'
           : mode === 'stat' ? statFormulaText(b)
           : mode === 'formula' ? (b.formula || sgn(num(b.value)))
-          : sgn(num(b.value));
+          : (isFxStr(b.value) ? b.value.trim() : sgn(num(b.value)));
         const condTxt = b.condition && typeof b.condition === 'object' ? (b.condition.toggle ? 'toggle:' + b.condition.toggle : JSON.stringify(b.condition)) : b.condition;
         return v + ' ' + (b.btype || 'Untyped') + ' → ' + t + (condTxt ? ' (' + condTxt + ')' : '');
       }
@@ -903,8 +911,8 @@
         if (am === 'unarmedDie') {
           const rdr = b.rider ? ' • ' + b.rider : '';
           if (b.unarmedProgression === 'fixed') return 'Unarmed Base Die: ' + (b.dice || '1d6') + ' (Size-Scaled)' + rdr;
-          const elb = num(b.effLvlBonus, 0);
-          return 'Unarmed Base Die: Monk Scaling 1d6→2d10 (Size-Scaled' + (elb ? ', ' + sgn(elb) + ' Eff. Lvl' : '') + ')' + rdr;
+          const elbStr = isFxStr(b.effLvlBonus) ? ', ' + b.effLvlBonus.trim() + ' Eff. Lvl' : (num(b.effLvlBonus, 0) ? ', ' + sgn(num(b.effLvlBonus, 0)) + ' Eff. Lvl' : '');
+          return 'Unarmed Base Die: Monk Scaling 1d6→2d10 (Size-Scaled' + elbStr + ')' + rdr;
         }
         if (am === 'strikeBypass') {
           const wLbl = { unarmed: 'Unarmed', wieldedSimple: 'Simple Weapons', allMelee: 'All Melee' }[b.appliesToWeapon || 'unarmed'] || 'Unarmed';
@@ -915,9 +923,9 @@
           const bud = b.budgetScaling === 'flat' ? '+' + num(b.maxBudget, 5) : '+1 at L1, +1/4 Lvls (max +' + num(b.maxBudget, 5) + ')';
           return 'Weapon Imbue (' + (b.duration || '1 min') + '): ' + bud + (b.allowedEnchs ? ' [' + b.allowedEnchs + ']' : '');
         }
-        const cnt = Math.max(1, num(b.count, 1));
+        const cnt = isFxStr(b.count) ? b.count.trim() : Math.max(1, num(b.count, 1));
         if (am === 'extra') {
-          if (b.extraKind === 'flurry') return '+' + cnt + ' Extra Attack (' + sgn(num(b.penalty, -2)) + ' All Atk)' + (b.rider ? ' • ' + b.rider : '');
+          if (b.extraKind === 'flurry') return '+' + cnt + ' Extra Attack (' + (isFxStr(b.penalty) ? b.penalty.trim() : sgn(num(b.penalty, -2))) + ' All Atk)' + (b.rider ? ' • ' + b.rider : '');
           return '+' + cnt + ' Extra Attack (Full BAB)' + (b.rider ? ' • ' + b.rider : '');
         }
         const kLbl = b.natKind === 'secondary' ? 'Secondary -5, ½ Str' : b.natKind === 'primary2h' ? 'Primary 1.5× Str' : 'Primary';
@@ -2349,38 +2357,44 @@
   // --------------------------------------------------------------------------
   function exportUse(u) {
     const o = { mode: u.mode };
-    if (['perDay', 'perEncounter', 'perHour', 'charges'].indexOf(u.mode) >= 0) o.uses = num(u.n);
+    if (['perDay', 'perEncounter', 'perHour', 'charges'].indexOf(u.mode) >= 0) o.uses = numOrFx(u.n, 1);
     if (u.mode === 'spellSlot') o.slotLevel = num(u.slotLevel);
-    if (u.mode === 'resourcePool') { o.pool = u.pool; o.cost = num(u.poolCost, 1); }
+    if (u.mode === 'resourcePool') { o.pool = u.pool; o.cost = numOrFx(u.poolCost, 1); }
     if (u.mode === 'cooldown') o.recharge = u.cooldown;
     return o;
   }
   function exportModFormula(m) {
-    const baseVal = num(m.value, 0);
     const mult = num(m.mult, 1);
     const statPart = (mult !== 1 ? mult + '*' : '') + '@' + (m.stat || 'chaMod');
+    if (isFxStr(m.value)) return '(' + m.value.trim() + ')+' + statPart;
+    const baseVal = num(m.value, 0);
     return baseVal !== 0 ? baseVal + '+' + statPart : statPart;
   }
   function exportModCap(m) {
-    return m.cap === 'classLevel' ? '@classLevel' : m.cap === 'flat' ? num(m.capVal, 5) : null;
+    return m.cap === 'classLevel' ? '@classLevel' : m.cap === 'flat' ? numOrFx(m.capVal, 5) : null;
   }
   function rollBaseExpr(b) {
-    const cnt = num(b.count, 1), die = String(b.die || 'd6'), flatBonus = die === 'flat' ? 0 : num(b.flat, 0);
-    const baseRaw = die === 'flat' ? (cnt > 0 ? String(cnt) : '') : (/^\d+d\d+$/.test(die) ? die : (cnt > 0 ? cnt + die : ''));
+    const cntFx = isFxStr(b.count) ? b.count.trim() : null;
+    const cnt = cntFx ? cntFx : num(b.count, 1), die = String(b.die || 'd6');
+    const flatFx = die !== 'flat' && isFxStr(b.flat) ? b.flat.trim() : null;
+    const flatBonus = die === 'flat' ? 0 : (flatFx ? flatFx : num(b.flat, 0));
+    const baseRaw = die === 'flat' ? (cntFx ? cntFx : (cnt > 0 ? String(cnt) : '')) : (/^\d+d\d+$/.test(die) ? die : (cntFx ? '(' + cntFx + ')' + die : (cnt > 0 ? cnt + die : '')));
+    if (flatFx) return baseRaw ? (baseRaw + ' + (' + flatFx + ')') : flatFx;
     return baseRaw && flatBonus ? (baseRaw + (flatBonus > 0 ? ' + ' + flatBonus : ' - ' + Math.abs(flatBonus))) : (baseRaw || (flatBonus ? String(flatBonus) : ''));
   }
   function rollPerCLExpr(b) {
-    const per = Math.max(1, num(b.per, 1)), amt = num(b.amount, 1), mx = Math.max(1, num(b.max, 10));
+    const per = Math.max(1, num(b.per, 1)), amt = numOrFx(b.amount, 1), mx = isFxStr(b.max) ? b.max.trim() : Math.max(1, num(b.max, 10));
+    const amtExpr = isFxStr(b.amount) ? '(' + amt + ')' : String(amt);
     return per === 1
-      ? (amt === 1 ? 'min(' + mx + ', @cl)' : 'min(' + mx + ', @cl * ' + amt + ')')
-      : 'min(' + mx + ', floor(@cl / ' + per + ') * ' + amt + ')';
+      ? (amt === 1 ? 'min(' + mx + ', @cl)' : 'min(' + mx + ', @cl * ' + amtExpr + ')')
+      : 'min(' + mx + ', floor(@cl / ' + per + ') * ' + amtExpr + ')';
   }
   function seedStatFormula(b, prevMode) {
     const pm = prevMode || 'flat';
     if (pm === 'stat') return exportModFormula(b);
     if (pm === 'perCL') return exportPerCLFormula(b);
     if (pm === 'replaceStat') return swapSourceFormula(b.toStat || 'wis');
-    return String(num(b.value, 0));
+    return String(numOrFx(b.value, 0));
   }
   function seedRollFormula(b, prevScaling) {
     const base = rollBaseExpr(b);
@@ -2388,7 +2402,8 @@
     return base;
   }
   function exportPerCLFormula(m) {
-    return 'clamp(floor(@cl/' + Math.max(1, num(m.per, 1)) + ')*' + num(m.value, 1) + ',' + num(m.min, 0) + ',' + num(m.max, 5) + ')';
+    const step = isFxStr(m.value) ? '(' + m.value.trim() + ')' : String(num(m.value, 1));
+    return 'clamp(floor(@cl/' + Math.max(1, num(m.per, 1)) + ')*' + step + ',' + numOrFx(m.min, 0) + ',' + numOrFx(m.max, 5) + ')';
   }
   function cleanAlt(a) {
     switch (a.kind) {
@@ -2544,17 +2559,22 @@
         }
         if (b.weaponFilter) o.weaponFilter = String(b.weaponFilter).trim();
         if (mode === 'flat') {
-          o.value = num(b.value, 0);
+          if (isFxStr(b.value)) {
+            o.mode = 'formula';
+            o.formula = b.value.trim();
+          } else {
+            o.value = num(b.value, 0);
+          }
         } else if (mode === 'stat') {
-          o.value = num(b.value, 0);
+          o.value = numOrFx(b.value, 0);
           o.formula = exportModFormula(b);
           const stCap = exportModCap(b);
           if (stCap !== null || (b._src && b._src.cap !== undefined)) o.cap = stCap;
         } else if (mode === 'perCL') {
-          o.value = num(b.value, 1);
+          o.value = numOrFx(b.value, 1);
           o.per = num(b.per, 3);
-          o.min = num(b.min, 0);
-          o.max = num(b.max, 5);
+          o.min = numOrFx(b.min, 0);
+          o.max = numOrFx(b.max, 5);
           o.formula = exportPerCLFormula(b);
         } else if (mode === 'formula') {
           o.formula = String(b.formula || '').trim();
@@ -2573,18 +2593,18 @@
       if (sc === 'formula') {
         o.dice = String(b.dice || '').trim();
       } else {
-        o.count = num(b.count, 0);
+        o.count = numOrFx(b.count, 0);
         o.die = b.die || 'd6';
-        o.flat = b.die === 'flat' ? 0 : num(b.flat, 0);
+        o.flat = b.die === 'flat' ? 0 : numOrFx(b.flat, 0);
       }
       if (o.kind === 'Damage' || o.kind === 'Ongoing / Round') o.dmgType = b.dmgType || 'Untyped';
       if (sc === 'perCL') {
-        o.amount = num(b.amount, 1);
+        o.amount = numOrFx(b.amount, 1);
         o.per = num(b.per, 1);
-        o.max = num(b.max, 10);
+        o.max = numOrFx(b.max, 10);
       } else if (sc === 'perVar') {
         o.varKey = b.varKey || '';
-        if (b.varMode === 'flat') o.amount = num(b.amount, 1);
+        if (b.varMode === 'flat') o.amount = numOrFx(b.amount, 1);
       }
       if (typeof b.save === 'string' && b.save.trim()) o.save = b.save.trim();
       if (b.condition && (typeof b.condition === 'object' || String(b.condition).trim())) o.condition = typeof b.condition === 'string' ? b.condition.trim() : clone(b.condition);
@@ -2602,18 +2622,19 @@
       o.attackMode = am;
       if (am === 'natural') {
         o.natKind = b.natKind || 'primary';
-        o.count = num(b.count, 1);
+        o.count = numOrFx(b.count, 1);
         o.weaponName = b.weaponName || '';
         o.dice = b.dice || '';
         o.dmgType = b.dmgType || '';
         if (b.usesHands) o.usesHands = true;
         if (b.rider) o.rider = b.rider;
       } else if (am === 'extra') {
-        o.count = num(b.count, 1);
-        if (b.extraKind === 'flurry') o.penalty = num(b.penalty, -2);
+        o.count = numOrFx(b.count, 1);
+        if (b.extraKind === 'flurry') o.penalty = numOrFx(b.penalty, -2);
         if (b.rider) o.rider = b.rider;
       } else if (am === 'unarmedDie') {
         if ((b.unarmedProgression || 'monk') === 'fixed') o.dice = b.dice || '1d6';
+        else if (b.effLvlBonus !== undefined && b.effLvlBonus !== '' && b.effLvlBonus !== 0) o.effLvlBonus = numOrFx(b.effLvlBonus, 0);
         if (b.rider) o.rider = b.rider;
       }
     } else if (b.type === 'defense') {
@@ -2660,10 +2681,10 @@
       o.resMode = rm;
       if (rm === 'dial') {
         o.maxMode = b.maxMode || 'spellLvl';
-        if (o.maxMode === 'flat' || (b._src && b._src.max !== undefined)) o.max = num(b.max, 0);
+        if (o.maxMode === 'flat' || (b._src && b._src.max !== undefined)) o.max = numOrFx(b.max, 0);
         o.reset = b.reset || 'perDay';
       } else if (rm === 'spend' || rm === 'buffer') {
-        o.max = num(b.max, 0);
+        o.max = numOrFx(b.max, 0);
         o.scaling = b.scaling || 'flat';
         if (['plusMod', 'halfLvlPlusMod', 'twoPerLvlPlusMod'].indexOf(o.scaling) >= 0) o.ability = b.ability || 'int';
         o.reset = b.reset || 'perDay';
@@ -2704,8 +2725,9 @@
   function exportPower(pw) {
     const o = { id: pw.id, kind: pw.kind, name: pw.kind === 'attached' && pw.ref ? pw.ref.name : pw.name, action: pw.action, usage: exportUse(pw.use) };
     if (pw.kind === 'attached') { o.refId = pw.ref ? pw.ref.id : null; o.grantMode = pw.grantMode; }
-    if (num(pw.cl)) o.casterLevel = num(pw.cl);
-    else if (pw.clFormula) o.casterLevelFormula = String(pw.clFormula); // kept on round trip; no UI field yet
+    if (isFxStr(pw.cl)) o.casterLevelFormula = pw.cl.trim();
+    else if (num(pw.cl)) o.casterLevel = num(pw.cl);
+    else if (pw.clFormula) o.casterLevelFormula = String(pw.clFormula);
     // Save DC: a plain number exports as saveDC, anything else as dcFormula ("10 + 1/2 HD + Con").
     const dcRaw = String(pw.dcFormula || '').trim() || (num(pw.dc) ? String(num(pw.dc)) : '');
     if (/^\d+$/.test(dcRaw)) o.saveDC = Number(dcRaw);
@@ -4172,10 +4194,15 @@
   const bindAttr = (scope) => (scope === 'ui' ? 'data-uibind' : scope === 'house' ? 'data-house' : 'data-bind');
   function inp(path, val, o) {
     o = o || {};
-    return '<input class="fs-in' + (o.narrow ? ' fs-narrow' : '') + '" ' + bindAttr(o.scope) + '="' + path + '"' + (o.num ? ' data-t="num" type="number"' : ' type="text"') + (o.list ? ' list="' + o.list + '"' : '') +
-      (o.min != null ? ' min="' + o.min + '"' : '') + (o.max != null ? ' max="' + o.max + '"' : '') + (o.ph ? ' placeholder="' + esc(o.ph) + '"' : '') + (o.style ? ' style="' + o.style + '"' : '') +
-      (o.enter ? ' data-enter="' + o.enter + '"' : '') + (o.fx ? ' data-fx="1"' : '') + ' value="' + esc(val) + '">' +
-      (o.fx && !o.scope ? '<div class="fs-hint" style="margin-top:3px">' + live('fx-preview', path) + '</div>' : '');
+    const isNumFx = !!o.numFx;
+    const isFx = !!(o.fx || isNumFx);
+    const typeAttr = isNumFx ? ' data-t="numfx" type="text"' : (o.num ? ' data-t="num" type="number"' : ' type="text"');
+    const titleAttr = o.title ? ' title="' + esc(o.title) + '"' : (isNumFx ? ' title="Enter a number or formula (e.g. 10, floor(@level / 2), 10 + @cl)"' : '');
+    const fxArgs = isNumFx ? (path + '|numfx') : path;
+    return '<input class="fs-in' + (o.narrow ? ' fs-narrow' : '') + '" ' + bindAttr(o.scope) + '="' + path + '"' + typeAttr + (o.list ? ' list="' + o.list + '"' : '') +
+      (!isNumFx && o.min != null ? ' min="' + o.min + '"' : '') + (!isNumFx && o.max != null ? ' max="' + o.max + '"' : '') + (o.ph ? ' placeholder="' + esc(o.ph) + '"' : '') + (o.style ? ' style="' + o.style + '"' : '') +
+      titleAttr + (o.enter ? ' data-enter="' + o.enter + '"' : '') + (isFx ? ' data-fx="1"' : '') + ' value="' + esc(val) + '">' +
+      (isFx && !o.scope ? '<div class="fs-hint" style="margin-top:3px">' + live('fx-preview', fxArgs) + '</div>' : '');
   }
   function opts(list, val) { return list.map((x) => { const v = Array.isArray(x) ? x[0] : x, l = Array.isArray(x) ? x[1] : x; return '<option value="' + esc(v) + '"' + (String(v) === String(val) ? ' selected' : '') + '>' + esc(l) + '</option>'; }).join(''); }
   function sel(path, val, list, o) { o = o || {}; return '<select class="fs-sel' + (o.narrow ? ' fs-narrow' : '') + '" ' + bindAttr(o.scope) + '="' + path + '"' + (o.num ? ' data-t="num"' : '') + (o.style ? ' style="' + o.style + '"' : '') + '>' + opts(list, val) + '</select>'; }
@@ -4693,7 +4720,10 @@
     'dom-sum': (i) => { const d = S.entry.grants.domains[num(i)]; return d ? esc(d.name + (d.grantedPower ? ' — ' + short(d.grantedPower, 80) : '')) : ''; },
     'deity-sum': (i) => { const d = S.entry.grants.deities[num(i)]; return d ? esc(d.name + ' (' + d.align + ') • Favored Weapon: ' + d.favoredWeapon) : ''; },
     // How the engine reads a formula field: normalized form + sample values, or the unknown terms.
-    'fx-preview': (path) => {
+    'fx-preview': (args) => {
+      const rawArgs = String(args || '');
+      const isNumFx = rawArgs.endsWith('|numfx');
+      const path = isNumFx ? rawArgs.slice(0, -6) : rawArgs;
       const raw = getPath(S.entry, path);
       const v = String(raw == null ? '' : raw).trim();
       if (!v || /^-?\d+(\.\d+)?$/.test(v) || !window.RuleEngine || typeof window.RuleEngine.inspectFormula !== 'function') return '';
@@ -4704,11 +4734,12 @@
         : (pw && pw.ref ? Number(pw.ref.level) : (S.entry.blueprint === 'spell' ? Number(S.entry.level) : NaN));
       const sl = Number.isFinite(slRaw) ? slRaw : 3;
       const r = window.RuleEngine.inspectFormula(v, { spellLevel: sl });
-      if (r.unknown.length) return '<span class="fs-warn" style="font-size:11px">⚠️ Unknown term' + (r.unknown.length > 1 ? 's' : '') + ': ' + esc(r.unknown.join(', ')) + '. Click ! Formula help for the terms you can use.</span>';
+      const helpBtn = isNumFx ? fxRefBtn('value', path) : '';
+      if (r.unknown.length) return '<span class="fs-warn" style="font-size:11px">⚠️ Unknown term' + (r.unknown.length > 1 ? 's' : '') + ': ' + esc(r.unknown.join(', ')) + '. Click ! Formula help for the terms you can use.</span>' + helpBtn;
       const usesSl = /@spellLevel\b/.test(r.normalized);
       return '<div class="fs-fxprev"><div><span class="fs-fxprev-k">Reads as</span> <code>' + esc(r.normalized) + '</code></div>' +
         '<div>' + r.samples.map((x) => '<span class="fs-fxprev-lv">Lvl ' + x.level + ' <b>' + esc(String(x.value)) + '</b></span>').join('') +
-        '<span class="fs-fxprev-k">ability mods +2' + (usesSl ? ', spell level ' + sl : '') + '</span></div></div>';
+        '<span class="fs-fxprev-k">ability mods +2' + (usesSl ? ', spell level ' + sl : '') + '</span></div></div>' + helpBtn;
     },
     'roll-preview': (path) => {
       const b = getPath(S.entry, path);
@@ -5110,7 +5141,7 @@
     const wideSpan = cols === 4 ? 'lego-span-3' : cols === 3 ? 'lego-span-2' : '';
     if (['perDay', 'perEncounter', 'perHour', 'charges'].indexOf(u.mode) >= 0) {
       const lbl = u.mode === 'charges' ? 'Charges / Uses' : u.mode === 'perEncounter' ? 'Uses / Encounter' : u.mode === 'perHour' ? 'Uses / Hour' : 'Uses / Day';
-      return F('Usage Mode', modeSel, wideSpan) + F(lbl, inp(p + '.n', u.n, { num: true, min: 1, max: 50 }));
+      return F('Usage Mode', modeSel, wideSpan) + F(lbl, inp(p + '.n', u.n, { numFx: true, ph: '1 or formula' }));
     }
     if (u.mode === 'spellSlot') {
       return F('Usage Mode', modeSel, wideSpan) + F('Slot Level', sel(p + '.slotLevel', u.slotLevel, range(0, 9).map((n) => [n, 'Slot Level ' + n]), { narrow: true, num: true }));
@@ -5118,7 +5149,7 @@
     if (u.mode === 'resourcePool') {
       return F('Usage Mode', modeSel, cols === 2 ? 'lego-span-full' : cols === 4 ? 'lego-span-2' : '') +
         F('Resource Pool', '<input class="fs-in" data-bind="' + p + '.pool" list="fs-pool-list" value="' + esc(u.pool) + '">') +
-        F('Pool Cost', inp(p + '.poolCost', u.poolCost, { num: true, min: 1 }));
+        F('Pool Cost', inp(p + '.poolCost', u.poolCost, { numFx: true, ph: '1 or formula' }));
     }
     if (u.mode === 'cooldown') {
       return F('Usage Mode', modeSel, wideSpan) + F('Cooldown (Rounds)', inp(p + '.cooldown', u.cooldown, { ph: '1d4+1' }));
@@ -5178,7 +5209,7 @@
         F('With Source (B)', sel(p + '.toStat', m.toStat || 'wis', SWAP_SOURCES, { narrow: true })) +
         F('Weapon / Roll Scope', sel(p + '.swapScope', m.swapScope || 'all', SWAP_SCOPES, { narrow: true })) +
         (isAdd ? F('Cap Mode', sel(p + '.cap', m.cap || 'none', [['none', 'No Cap'], ['classLevel', 'Cap @Class Lvl'], ['flat', 'Cap Max N']], { narrow: true })) : '') +
-        (hasFlatCap ? F('Max Cap', inp(p + '.capVal', m.capVal == null ? 5 : m.capVal, { num: true })) : '') +
+        (hasFlatCap ? F('Max Cap', inp(p + '.capVal', m.capVal == null ? 5 : m.capVal, { numFx: true })) : '') +
         condFieldHtml(p + '.condition', m.condition || '', 'stat', 'lego-span-full')
       );
     }
@@ -5200,9 +5231,9 @@
         modeF +
         F('Source @Stat / @Pool', sel(p + '.stat', m.stat || 'chaMod', statFormulaOpts(S.entry), { narrow: true })) +
         F('Multiplier', sel(p + '.mult', m.mult == null ? 1 : m.mult, [[1, '×1'], [2, '×2'], [3, '×3'], [0.5, '×½'], [-1, '×-1']], { narrow: true, num: true })) +
-        F('Base Offset', inp(p + '.value', m.value == null ? 0 : m.value, { num: true, ph: '0' })) +
+        F('Base Offset', inp(p + '.value', m.value == null ? 0 : m.value, { numFx: true, ph: '0' })) +
         F('Cap Mode', sel(p + '.cap', m.cap || 'none', [['none', 'No Cap'], ['classLevel', 'Cap @Class Lvl'], ['flat', 'Cap Max N']], { narrow: true })) +
-        (hasFlatCap ? F('Max Cap', inp(p + '.capVal', m.capVal == null ? 5 : m.capVal, { num: true })) : '') +
+        (hasFlatCap ? F('Max Cap', inp(p + '.capVal', m.capVal == null ? 5 : m.capVal, { numFx: true })) : '') +
         btypeF +
         condFieldHtml(p + '.condition', m.condition || '', 'stat', 'lego-span-full')
       );
@@ -5211,10 +5242,10 @@
       return G(3,
         tgtRow +
         modeF +
-        F('Step Bonus (+)', inp(p + '.value', m.value == null ? 1 : m.value, { num: true })) +
+        F('Step Bonus (+)', inp(p + '.value', m.value == null ? 1 : m.value, { numFx: true })) +
         F('Every N Levels', sel(p + '.per', m.per || 3, range(1, 10).map((n) => [n, n + ' CL/Lvl']), { narrow: true, num: true })) +
-        F('Minimum Bonus', inp(p + '.min', m.min == null ? 0 : m.min, { num: true })) +
-        F('Maximum Cap', inp(p + '.max', m.max == null ? 5 : m.max, { num: true })) +
+        F('Minimum Bonus', inp(p + '.min', m.min == null ? 0 : m.min, { numFx: true })) +
+        F('Maximum Cap', inp(p + '.max', m.max == null ? 5 : m.max, { numFx: true })) +
         btypeF +
         condFieldHtml(p + '.condition', m.condition || '', 'stat', 'lego-span-full')
       );
@@ -5223,7 +5254,7 @@
       return G(4,
         tgtRow +
         modeF +
-        F('Size Categories Larger', inp(p + '.value', m.value, { num: true })) +
+        F('Size Categories Larger', inp(p + '.value', m.value, { numFx: true })) +
         btypeF +
         F('Scopes (comma list)', inp(p + '.appliesTo', Array.isArray(m.appliesTo) ? m.appliesTo.join(', ') : (m.appliesTo || ''), { ph: 'grapple, bullRush, trip, overrun, opposedSize, weaponSize' }), 'lego-span-full')
       );
@@ -5231,7 +5262,7 @@
     return G(3,
       tgtRow +
       modeF +
-      F('Bonus Value', inp(p + '.value', m.value, { num: true })) +
+      F('Bonus Value', inp(p + '.value', m.value, { numFx: true })) +
       btypeF +
       condFieldHtml(p + '.condition', m.condition || '', 'stat', 'lego-span-full')
     );
@@ -5310,13 +5341,13 @@
       cells.push(F('Pool Cost', inp(bp + '.costFormula', br.costFormula || '1', { ph: '1 / Spell Level', fx: true }) + fxRefBtn('value', bp + '.costFormula')));
       cells.push(F('Resource Pool', '<input class="fs-in" data-bind="' + bp + '.poolName" list="fs-pool-list" value="' + esc(br.poolName || 'Arcane Pool') + '">'));
     } else if (ck === 'forgoSA') {
-      cells.push(F('Sacrificed SA Dice (d6)', inp(bp + '.costVal', br.costVal || 1, { num: true, min: 1 })));
+      cells.push(F('Sacrificed SA Dice (d6)', inp(bp + '.costVal', br.costVal == null ? 1 : br.costVal, { numFx: true })));
     } else if (ck === 'skillCheck') {
       cells.push(F('Skill Check Formula', inp(bp + '.checkFormula', br.checkFormula || '', { ph: 'Truespeak DC 15 + 2×CR + 2×@uses_today', fx: true }) + fxRefBtn('dc', bp + '.checkFormula'), 'lego-span-full'));
     } else if (ck === 'cooldown') {
       cells.push(F('Cooldown', inp(bp + '.cooldownText', br.cooldownText || '5 rounds', { ph: '5 rounds / 1d4' })));
     } else if (ck === 'perDay') {
-      cells.push(F('Uses / Day', inp(bp + '.costVal', br.costVal || 1, { num: true, min: 1 })));
+      cells.push(F('Uses / Day', inp(bp + '.costVal', br.costVal == null ? 1 : br.costVal, { numFx: true })));
     }
     const gCols = cells.length === 2 || cells.length === 4 ? 2 : 3;
     return G(gCols, cells.join(''));
@@ -5351,9 +5382,9 @@
           cells.push(F('Capacity Rule', sel(p + '.capMode', b.capMode || 'chakra', [['chakra', 'Chakra Capacity'], ['flat', 'Flat Max'], ['level', '@Level']], { narrow: true })));
         } else if (rm === 'dial') {
           cells.push(F('Dial Ceiling', sel(p + '.maxMode', b.maxMode || 'spellLvl', [['flat', 'Flat N'], ['bab', '@BAB'], ['level', '@Level'], ['spellLvl', 'Spell Slot (1–9)'], ['pool', 'Pool Remaining']], { narrow: true })));
-          if (b.maxMode === 'flat') cells.push(F('Max Dial Value', inp(p + '.max', b.max, { num: true })));
+          if (b.maxMode === 'flat') cells.push(F('Max Dial Value', inp(p + '.max', b.max, { numFx: true })));
         } else if (showScaling) {
-          cells.push(F('Base Max', inp(p + '.max', b.max, { num: true, min: 0 })));
+          cells.push(F('Base Max', inp(p + '.max', b.max, { numFx: true })));
           cells.push(F('Max Scaling', sel(p + '.scaling', b.scaling || 'flat', [
             ['flat', 'Flat'], ['level', '@Level'], ['halfLevel', '½ @Level'],
             ['plusMod', 'Base + @Mod'], ['halfLvlPlusMod', 'Base + ½ @Level + @Mod'], ['twoPerLvlPlusMod', 'Base + 2/Lvl + @Mod']
@@ -5411,13 +5442,13 @@
           return G(2, F('Carrier Mode', modeSel) + F('Delivery Rule', L('Imbue Arrow / Deliver Area or Touch Spell via Ranged Hit')));
         }
         if (cm === 'fullAttackCast') {
-          return G(3, F('Carrier Mode', modeSel) + F('Attack Penalty', inp(p + '.atkPenalty', b.atkPenalty, { num: true })) + F('Hand Requirement', chk(p + '.offHandFree', !!b.offHandFree, 'Off-Hand Free')));
+          return G(3, F('Carrier Mode', modeSel) + F('Attack Penalty', inp(p + '.atkPenalty', b.atkPenalty, { numFx: true })) + F('Hand Requirement', chk(p + '.offHandFree', !!b.offHandFree, 'Off-Hand Free')));
         }
         const cells = [
           F('Carrier Mode', modeSel),
           F('Transform', sel(p + '.transform', b.transform || 'empower', META_TRANSFORMS, { narrow: true }))
         ];
-        if (b.transform === 'heighten') cells.push(F('DC / Level Bonus (+)', inp(p + '.dcBonus', b.dcBonus, { num: true })));
+        if (b.transform === 'heighten') cells.push(F('DC / Level Bonus (+)', inp(p + '.dcBonus', b.dcBonus, { numFx: true })));
         if (b.transform === 'energySub' || b.transform === 'pierceRes') cells.push(F('Energy Type', sel(p + '.energy', b.energy, ['Fire', 'Cold', 'Acid', 'Electricity', 'Sonic', 'Any'], { narrow: true })));
         if (b.transform === 'rider') cells.push(F('Rider Effect', inp(p + '.rider', b.rider, { ph: '+1 Negative Level (Fell Drain)' })));
         cells.push(F('Metamagic Cost', sel(p + '.costMode', b.costMode || 'slot', META_COST_MODES, { narrow: true })));
@@ -5427,12 +5458,12 @@
           cells.push(F('Slot Adjustment', sel(p + '.slotAdj', curSlotAdj, slotOpts, { narrow: true })));
         }
         else if (b.costMode === 'rod') {
-          cells.push(F('Uses / Day', inp(p + '.uses', b.uses, { num: true })));
+          cells.push(F('Uses / Day', inp(p + '.uses', b.uses, { numFx: true })));
           cells.push(F('Rod Tier (Max Spell Lvl)', sel(p + '.maxSpellLvl', b.maxSpellLvl, [[3, 'Lvl 3 (Lesser)'], [6, 'Lvl 6 (Normal)'], [9, 'Lvl 9 (Greater)']], { narrow: true, num: true })));
         } else if (b.costMode === 'sudden') {
-          cells.push(F('Uses / Day', inp(p + '.uses', b.uses, { num: true })));
+          cells.push(F('Uses / Day', inp(p + '.uses', b.uses, { numFx: true })));
         } else if (b.costMode === 'pool') {
-          cells.push(F('Pool Cost', inp(p + '.poolCost', b.poolCost, { num: true })));
+          cells.push(F('Pool Cost', inp(p + '.poolCost', b.poolCost, { numFx: true })));
           cells.push(F('Resource Pool', '<input class="fs-in" data-bind="' + p + '.pool" list="fs-pool-list" value="' + esc(b.pool) + '">'));
         } else if (b.costMode === 'essenceShape') {
           cells.push(F('Effective Spell Level', sel(p + '.maxSpellLvl', b.maxSpellLvl || 1, range(1, 9), { narrow: true, num: true })));
@@ -5449,24 +5480,24 @@
           F('Roll Kind', sel(p + '.kind', b.kind || 'Damage', ['Damage', 'Healing', 'Temp HP', 'Ongoing / Round', 'Fast Healing'], { narrow: true })) +
           (sc === 'formula'
             ? F('Dice Formula', inp(p + '.dice', b.dice || '1d8+min(5,@cl)', { ph: '1d8+min(5,@cl)', fx: true }) + fxRefBtn('dice', p + '.dice'), 'lego-span-2')
-            : F(b.die === 'flat' ? 'Flat Value' : 'Dice Count', inp(p + '.count', b.count, { num: true, min: 0 })) +
+            : F(b.die === 'flat' ? 'Flat Value' : 'Dice Count', inp(p + '.count', b.count, { numFx: true })) +
               F('Die / Unit', sel(p + '.die', b.die || 'd6', [['d4', 'd4'], ['d6', 'd6'], ['d8', 'd8'], ['d10', 'd10'], ['d12', 'd12'], ['2d6', '2d6'], ['flat', 'Flat']], { narrow: true })) +
-              (showFlat ? F('Flat Bonus (+)', inp(p + '.flat', num(b.flat, 0), { num: true })) : '')
+              (showFlat ? F('Flat Bonus (+)', inp(p + '.flat', b.flat == null ? 0 : b.flat, { numFx: true })) : '')
           ) +
           (hasDmg ? F('Damage Type', sel(p + '.dmgType', b.dmgType || 'Fire', DAMAGE_TYPES.slice(0, 16), { narrow: true })) : '')
         );
         if (sc === 'perCL') {
           h += G(4,
-            F('Step Bonus (+)', inp(p + '.amount', b.amount == null ? 1 : b.amount, { num: true })) +
+            F('Step Bonus (+)', inp(p + '.amount', b.amount == null ? 1 : b.amount, { numFx: true })) +
             F('Every N CL', sel(p + '.per', b.per || 1, range(1, 10).map((n) => [n, n + ' CL']), { narrow: true, num: true })) +
             F('Starting CL', sel(p + '.start', b.start || 1, range(1, 20).map((n) => [n, 'CL ' + n]), { narrow: true, num: true })) +
-            F('Max Bonus (+)', inp(p + '.max', b.max == null ? 10 : b.max, { num: true }))
+            F('Max Bonus (+)', inp(p + '.max', b.max == null ? 10 : b.max, { numFx: true }))
           );
         } else if (sc === 'perVar') {
           h += G(b.varMode === 'flat' ? 3 : 2,
             F('Resource @Key', sel(p + '.varKey', b.varKey || 'augment_pp', resourceVarOpts(S.entry), { narrow: true })) +
             F('Scaling Unit', sel(p + '.varMode', b.varMode || 'dice', [['dice', '+@X Dice'], ['flat', '+N×@X Flat']], { narrow: true })) +
-            (b.varMode === 'flat' ? F('Per-Point Bonus', inp(p + '.amount', b.amount == null ? 1 : b.amount, { num: true })) : '')
+            (b.varMode === 'flat' ? F('Per-Point Bonus', inp(p + '.amount', b.amount == null ? 1 : b.amount, { numFx: true })) : '')
           );
         }
         h += G(3,
@@ -5494,7 +5525,7 @@
               ['monk', 'Monk 1d6→2d10 Table (Size-Scaled)'],
               ['fixed', 'Set Base Unarmed Die (Size-Scaled)']
             ], { narrow: true })) +
-            F(up === 'fixed' ? 'Base Unarmed Die' : 'Effective Monk Level Δ', up === 'fixed' ? inp(p + '.dice', b.dice || '1d6', { list: 'fs-dice-list' }) : inp(p + '.effLvlBonus', b.effLvlBonus == null ? 0 : b.effLvlBonus, { num: true })) +
+            F(up === 'fixed' ? 'Base Unarmed Die' : 'Effective Monk Level Δ', up === 'fixed' ? inp(p + '.dice', b.dice || '1d6', { list: 'fs-dice-list' }) : inp(p + '.effLvlBonus', b.effLvlBonus == null ? 0 : b.effLvlBonus, { numFx: true })) +
             F('Notes', inp(p + '.rider', b.rider || '', { ph: 'note (manufactured & natural)' }))
           );
         }
@@ -5518,7 +5549,7 @@
               ['secondary', 'Secondary (-5 Atk, ½ Str)'],
               ['primary2h', 'Single Primary (1.5× Str)']
             ], { narrow: true })) +
-            F('Attack Count', inp(p + '.count', b.count, { num: true, min: 1, max: 12 })) +
+            F('Attack Count', inp(p + '.count', b.count, { numFx: true })) +
             F('Natural Weapon', inp(p + '.weaponName', b.weaponName, { list: 'fs-natwpn-list', ph: 'Claw / Bite' })) +
             F('Base Die', inp(p + '.dice', b.dice, { list: 'fs-dice-list' })) +
             F('Damage Type', sel(p + '.dmgType', b.dmgType, ['B/P/S', 'B & S', 'B, P & S', 'Slashing', 'Piercing', 'Bludgeoning', 'B & P'], { narrow: true })) +
@@ -5534,8 +5565,8 @@
               ['extraFull', 'Full BAB (Haste / Speed)'],
               ['flurry', 'With Penalty (Flurry / Rapid)']
             ], { narrow: true })) +
-            F('Extra Attacks', inp(p + '.count', b.count, { num: true, min: 1, max: 6 })) +
-            (isFlurry ? F('All Attacks Penalty (Δ)', inp(p + '.penalty', b.penalty, { num: true })) : '') +
+            F('Extra Attacks', inp(p + '.count', b.count, { numFx: true })) +
+            (isFlurry ? F('All Attacks Penalty (Δ)', inp(p + '.penalty', b.penalty, { numFx: true })) : '') +
             F('Notes', inp(p + '.rider', b.rider, { ph: 'notes…' }), isFlurry ? 'lego-span-2' : '')
           );
         }
@@ -5566,13 +5597,13 @@
         }
         if (dm === 'Spell Resistance') {
           const isLvl = b.srMode === 'level';
-          return G(isLvl ? 2 : 3, F('Defense Kind', modeSel) + F('SR Formula', sel(p + '.srMode', b.srMode || 'flat', [['flat', 'Flat SR'], ['level', '10 + @Level / HD']], { narrow: true })) + (isLvl ? '' : F('SR Value', inp(p + '.value', b.value, { num: true }))));
+          return G(isLvl ? 2 : 3, F('Defense Kind', modeSel) + F('SR Formula', sel(p + '.srMode', b.srMode || 'flat', [['flat', 'Flat SR'], ['level', '10 + @Level / HD']], { narrow: true })) + (isLvl ? '' : F('SR Value', inp(p + '.value', b.value, { numFx: true, ph: '15 or 10 + @cl' }))));
         }
         if (dm === 'Concealment %') {
-          return G(2, F('Defense Kind', modeSel) + F('Miss Chance (%)', inp(p + '.value', b.value || 20, { num: true, min: 5, max: 100 })));
+          return G(2, F('Defense Kind', modeSel) + F('Miss Chance (%)', inp(p + '.value', b.value == null ? 20 : b.value, { numFx: true, ph: '20 or formula' })));
         }
         if (['DR', 'Energy Resistance'].indexOf(dm) >= 0) {
-          return G(3, F('Defense Kind', modeSel) + F('Amount', inp(p + '.value', b.value, { num: true })) + F('Bypass / Energy Type', inp(p + '.what', b.what, { list: 'fs-defense-list', ph: 'evil or good / Fire' })));
+          return G(3, F('Defense Kind', modeSel) + F('Amount', inp(p + '.value', b.value, { numFx: true, ph: dm === 'DR' ? '5 or formula' : '10 or formula' })) + F('Bypass / Energy Type', inp(p + '.what', b.what, { list: 'fs-defense-list', ph: 'evil or good / Fire' })));
         }
         return G(2, F('Defense Kind', modeSel) + F('Trait / Scope', inp(p + '.what', b.what, { list: 'fs-defense-list', ph: 'Fear / Darkvision 60 ft. / Pounce' })));
       }
@@ -5599,7 +5630,7 @@
               F('Effect Kind', modeSel) +
               F('Rule Switch Flag', sel(p + '.flag', curFlag, switchOpts, { narrow: true })) +
               F('When Condition', sel(p + '.params.when', pObj.when || 'charging', whenOpts, { narrow: true })) +
-              F('Min Power Attack Penalty', inp(p + '.params.minPowerAttack', pObj.minPowerAttack ?? 5, { num: true, ph: '5' }))
+              F('Min Power Attack Penalty', inp(p + '.params.minPowerAttack', pObj.minPowerAttack ?? 5, { numFx: true, ph: '5' }))
             );
           }
           return G(2, F('Effect Kind', modeSel) + F('Rule Switch Flag', sel(p + '.flag', curFlag, switchOpts, { narrow: true })));
@@ -6078,7 +6109,7 @@
     const head = headTop + G(3,
       F('Power Name', pw.kind === 'inline' ? inp(p + '.name', pw.name, { ph: 'Sub-power name' }) : '<span class="fs-pill purple">🔮 ' + esc(pw.ref ? pw.ref.name : pw.name) + '</span>') +
       F('Action', sel(p + '.action', pw.action, ACTIONS, { narrow: true })) +
-      F('Caster Level', inp(p + '.cl', num(pw.cl) || '', { num: true, ph: 'Character CL' })) +
+      F('Caster Level', inp(p + '.cl', isFxStr(pw.cl) ? pw.cl : (pw.clFormula || (num(pw.cl) || '')), { numFx: true, ph: 'Character CL or formula' })) +
       usageFields(p + '.use', pw.use, 3)
     );
     let kids = '';
@@ -6348,7 +6379,7 @@
     const resLbl = sys === 'psionic' ? 'Power Resistance' : 'Spell Resistance';
     const envCells = [F('Duration', sel('lifecycle.duration', l.duration, DURATIONS, { narrow: true }))];
     if (['rounds', 'roundsPerLevel', 'minPerLevel', 'hourPerLevel'].indexOf(l.duration) >= 0) {
-      envCells.push(F('Duration Amount', inp('lifecycle.durValue', l.durValue, { num: true })));
+      envCells.push(F('Duration Amount', inp('lifecycle.durValue', l.durValue, { numFx: true })));
     } else if (l.duration === 'text') {
       envCells.push(F('Custom Duration', inp('lifecycle.durText', l.durText, { ph: 'Custom duration…' })));
     }
@@ -6403,7 +6434,7 @@
       srcField(en),
       F('Duration', sel('lifecycle.duration', l.duration, DURATIONS, { narrow: true }))
     ];
-    if (hasDurVal) cells.push(F('Duration Amount', inp('lifecycle.durValue', l.durValue, { num: true })));
+    if (hasDurVal) cells.push(F('Duration Amount', inp('lifecycle.durValue', l.durValue, { numFx: true })));
     cells.push(F('Stacking', chk('lifecycle.stackable', l.stackable, 'Stackable ×N')));
     if (l.stackable) cells.push(F('Maximum Stacks', sel('lifecycle.maxStacks', l.maxStacks, range(1, 20), { narrow: true, num: true })));
     return hat('h-rose', H(L('✨ Buff / Condition')) + G(3, cells.join('')) + tagSockets(en)) +
@@ -7709,6 +7740,12 @@
   function handleBind(el, full) {
     let v = el.type === 'checkbox' ? el.checked : el.value;
     if (el.dataset.t === 'num') v = num(v);
+    else if (el.dataset.t === 'numfx') {
+      const trimmed = String(v == null ? '' : v).trim();
+      if (trimmed === '') v = '';
+      else if (/^-?\d+(\.\d+)?$/.test(trimmed)) v = Number(trimmed);
+      else v = String(v);
+    }
     if (el.dataset.bind) { setEntry(el.dataset.bind, v); renderTopbar(); }
     else if (el.dataset.uibind) setPath(S.ui, el.dataset.uibind, v);
     else return;

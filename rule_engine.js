@@ -2299,14 +2299,26 @@ const RuleEngine = {
         return { value: toBlockValue(ev), formula: finalExpr, cap: String(b.subOp || 'max').toLowerCase() === 'add' ? capRaw : null };
       }
 
+      const evalNumOrFx = (raw, fallback, evalCtx) => {
+        if (raw === undefined || raw === null || raw === '') return fallback;
+        if (typeof raw === 'number') return Number.isFinite(raw) ? raw : fallback;
+        const s = String(raw).trim();
+        if (!s) return fallback;
+        const n = Number(s);
+        if (Number.isFinite(n)) return n;
+        const ev = Number(this.evaluateFormula(s, evalCtx));
+        return Number.isFinite(ev) ? ev : fallback;
+      };
+      const fxStrOrNull = (raw) => (typeof raw === 'string' && raw.trim() !== '' && isNaN(Number(raw.trim()))) ? raw.trim() : null;
+
       // Rule Crafter `mode: 'perCL'` (`Scale by Level`): clamp(floor(@cl / per) * value, min, max), matching the
       // Rule Crafter export `clamp(floor(@cl/per)*value,min,max)`. `min` is a floor, not an additive base
       // (Divine Favor: +1 per 3 CL, at least +1, max +3 -> CL 3 = +1, CL 6 = +2, CL 9+ = +3).
       if (mode === 'percl' && !b.perCL && !b.perLvl && !b.perLevel) {
-        const step = Number(rawVal ?? 1) || 1;
+        const step = evalNumOrFx(rawVal, 1, branchCtx);
         const every = Math.max(1, Number(b.per ?? 1) || 1);
-        const baseMin = Number(b.min ?? 0) || 0;
-        const maxCap = (b.max !== undefined && b.max !== null && b.max !== '') ? Number(b.max) : null;
+        const baseMin = evalNumOrFx(b.min, 0, branchCtx);
+        const maxCap = (b.max !== undefined && b.max !== null && b.max !== '') ? evalNumOrFx(b.max, null, branchCtx) : null;
         const scaleExpr = every === 1
           ? (step === 1 ? '@cl' : `(@cl * ${step})`)
           : (step === 1 ? `floor(@cl / ${every})` : `(floor(@cl / ${every}) * ${step})`);
@@ -2398,6 +2410,18 @@ const RuleEngine = {
         cap: capRaw
       };
     };
+
+    const evalBlockNumOrFx = (raw, fallback, evalCtx) => {
+      if (raw === undefined || raw === null || raw === '') return fallback;
+      if (typeof raw === 'number') return Number.isFinite(raw) ? raw : fallback;
+      const s = String(raw).trim();
+      if (!s) return fallback;
+      const n = Number(s);
+      if (Number.isFinite(n)) return n;
+      const ev = Number(this.evaluateFormula(s, evalCtx));
+      return Number.isFinite(ev) ? ev : fallback;
+    };
+    const blockFxOrNull = (raw) => (typeof raw === 'string' && raw.trim() !== '' && isNaN(Number(raw.trim()))) ? raw.trim() : null;
 
     const walkBlocks = (blockList, branchMeta = {}) => {
       if (!Array.isArray(blockList)) return;
@@ -2540,14 +2564,15 @@ const RuleEngine = {
               || out.name
               || 'Metamagic';
             if (b.costMode === 'rod' || b.costMode === 'sudden') {
-              const usesVal = Math.max(1, Number(b.uses ?? 3) || 3);
+              const usesFx = blockFxOrNull(b.uses);
+              const usesVal = Math.max(1, Math.floor(evalBlockNumOrFx(b.uses, 3, curCtx)));
               const maxSpLvl = b.maxSpellLvl ? `, up to ${b.maxSpellLvl}th-lvl` : '';
               addBadge(`${b.costMode === 'rod' ? 'Metamagic Rod' : 'Sudden Metamagic'}: ${txLbl} (${usesVal}/day${maxSpLvl})`);
               resources.push({
                 id: b.id || `${out.id || 'v3'}_rod_${resources.length + 1}`,
                 name: out.name || txLbl,
                 kind: 'consume',
-                maxFormula: usesVal,
+                maxFormula: usesFx || usesVal,
                 max: usesVal,
                 unit: b.costMode === 'rod' ? 'charges' : 'uses',
                 recharge: { period: 'day', dice: null }
@@ -2563,7 +2588,7 @@ const RuleEngine = {
           } else if (b.carrierMode === 'meleeChannel') {
             addBadge('Channel Touch Spell Through Melee Attack');
           } else if (b.carrierMode === 'fullAttackCast') {
-            addBadge(`Spell Combat (${Number(b.atkPenalty ?? -2)} Attack)`);
+            addBadge(`Spell Combat (${Math.floor(evalBlockNumOrFx(b.atkPenalty, -2, curCtx))} Attack)`);
           } else {
             const rider = b.riderEffect || b.effect || b.condition || b.riderText || 'Rider Effect';
             const saveType = b.saveType || b.save || '';
@@ -2772,11 +2797,13 @@ const RuleEngine = {
         // 5. Roll / Attack Damage / Temp HP / Healing Block (`roll` / `attack`)
         if (bType === 'roll' || bType === 'attack') {
           if (bType === 'attack' && b.attackMode === 'extra') {
+            const extraCnt = Math.max(1, Math.floor(evalBlockNumOrFx(b.count, 1, curCtx)));
             if (b.extraKind === 'flurry') {
-              addBadge(`+${Number(b.count) || 1} Extra Attack (${Number(b.penalty) || -2} All Atk)`);
+              const flurryPen = Math.floor(evalBlockNumOrFx(b.penalty, -2, curCtx));
+              addBadge(`+${extraCnt} Extra Attack (${flurryPen} All Atk)`);
             } else {
               ruleFlags.extraAttackFullAttack = true;
-              addBadge(`+${Number(b.count) || 1} Extra Attack (Full Attack)`);
+              addBadge(`+${extraCnt} Extra Attack (Full Attack)`);
             }
             return;
           }
@@ -2790,6 +2817,7 @@ const RuleEngine = {
               const dmgType = /^[bps](\s*(\/|&|,|and)\s*[bps])*$/i.test(dmgTypeRaw)
                 ? dmgTypeRaw.toLowerCase().split(/[^bps]+/).filter(Boolean).map(c => abbr[c]).join(' and ')
                 : dmgTypeRaw.charAt(0).toUpperCase() + dmgTypeRaw.slice(1);
+              const nwCount = Math.max(1, Math.floor(evalBlockNumOrFx(b.count, 1, curCtx)));
               grants.push({
                 grantType: 'naturalWeapon',
                 targetId: nwName,
@@ -2798,7 +2826,7 @@ const RuleEngine = {
                   dice: String(b.dice).trim(),
                   damageBySize: (b.damageBySize && typeof b.damageBySize === 'object') ? b.damageBySize : null,
                   dmgType,
-                  count: Math.max(1, Math.floor(Number(b.count) || 1)),
+                  count: nwCount,
                   attackKind: b.natKind === 'secondary' ? 'secondary' : (b.natKind === 'primary2h' ? 'primary2h' : 'primary'),
                   usesHands: b.usesHands === true,
                   reach: b.reach !== undefined ? Number(b.reach) : null,
@@ -2806,7 +2834,7 @@ const RuleEngine = {
                   critMult: Number(b.critMult) || 2
                 }
               });
-              addBadge(`Natural Weapon: ${Math.max(1, Math.floor(Number(b.count) || 1))}x ${nwName} (${String(b.dice).trim()})`);
+              addBadge(`Natural Weapon: ${nwCount}x ${nwName} (${String(b.dice).trim()})`);
             }
             return;
           }
@@ -2816,37 +2844,40 @@ const RuleEngine = {
               out.tempHpFormula = String(b.tempHpFormula).trim();
               return;
             }
-            const cnt = Number(b.count ?? 0) || 0;
+            const cntFx = blockFxOrNull(b.count);
+            const cnt = cntFx ? cntFx : (Number(b.count ?? 0) || 0);
             const die = String(b.die || 'flat');
-            const dicePart = die === 'flat' ? (cnt > 0 ? String(cnt) : '') : `${cnt || 1}${die.replace(/^\d+/, '')}`;
+            const dicePart = die === 'flat' ? (cntFx ? cntFx : (cnt > 0 ? String(cnt) : '')) : `${cntFx ? '(' + cntFx + ')' : (cnt || 1)}${die.replace(/^\d+/, '')}`;
             let scalePart = '';
             if (b.scaling === 'perCL') {
-              const amt = Number(b.amount ?? 1) || 1;
+              const amt = blockFxOrNull(b.amount) || (Number(b.amount ?? 1) || 1);
               const per = Math.max(1, Number(b.per ?? 1) || 1);
-              const maxCap = Number(b.max ?? 20) || 20;
-              const clExpr = per === 1 ? (amt === 1 ? '@cl' : `(@cl * ${amt})`) : `(floor(@cl / ${per}) * ${amt})`;
+              const maxCap = blockFxOrNull(b.max) || (Number(b.max ?? 20) || 20);
+              const clExpr = per === 1 ? (amt === 1 ? '@cl' : `(@cl * (${amt}))`) : `(floor(@cl / ${per}) * (${amt}))`;
               scalePart = `min(${maxCap}, ${clExpr})`;
             }
             out.tempHpFormula = [dicePart, scalePart].filter(Boolean).join(' + ') || '0';
             return;
           }
           if (rollKind === 'Fast Healing') {
-            const fhVal = Number(b.count ?? 1) || 1;
-            defenses.push({ kind: 'fast_healing', target: 'hp', value: fhVal, formula: null });
-            pushModifier({ op: 'add', target: 'fastHealing', value: fhVal, type: 'Untyped', source: out.name || 'Fast Healing' });
+            const fhFormula = blockFxOrNull(b.count);
+            const fhVal = Math.floor(evalBlockNumOrFx(b.count, 1, curCtx));
+            defenses.push({ kind: 'fast_healing', target: 'hp', value: fhVal, formula: fhFormula });
+            pushModifier({ op: 'add', target: 'fastHealing', value: fhVal, formula: fhFormula, type: 'Untyped', source: out.name || 'Fast Healing' });
             return;
           }
           const hasExplicitFormulaDice = Boolean(b.dice && /@/.test(String(b.dice)) && !(ctx && ctx.evaluateDynamicDice === true));
+          const evalRollCount = Math.max(0, Math.floor(evalBlockNumOrFx(b.count, 1, curCtx)));
           let diceStr = b.dice
             ? String(b.dice).trim()
-            : (b.die === 'flat' ? null : ((b.count || b.die) ? `${b.count || 1}${String(b.die || 'd6').replace(/^\d+/, '')}` : ((b.n || b.d) ? `${b.n || 1}d${b.d || 6}` : '1d6')));
+            : (b.die === 'flat' ? null : ((b.count !== undefined || b.die) ? `${evalRollCount || 1}${String(b.die || 'd6').replace(/^\d+/, '')}` : ((b.n || b.d) ? `${b.n || 1}d${b.d || 6}` : '1d6')));
           // `@featureRank` is entry-scoped (`out.id`): resolve it while `out` is in scope so downstream weapon/roll consumers receive concrete dice (e.g. `5d6`).
           if (diceStr && /@featureRank\b/i.test(diceStr)) {
             diceStr = String(this.evaluateFormula(diceStr, curCtx) || diceStr).trim();
           }
           let flatBonus = b.bonus !== undefined
             ? Number(this.evaluateFormula(b.bonus, curCtx)) || 0
-            : (b.die === 'flat' ? (Number(b.count) || 0) : (Number(b.flat || 0) || 0));
+            : (b.die === 'flat' ? Math.floor(evalBlockNumOrFx(b.count, 0, curCtx)) : Math.floor(evalBlockNumOrFx(b.flat, 0, curCtx)));
           if (diceStr && !hasExplicitFormulaDice) {
             const inlineDiceM = diceStr.match(/^(\d+d\d+)\s*([+-]\s*\d+)$/i);
             if (inlineDiceM) {
@@ -2862,15 +2893,16 @@ const RuleEngine = {
           if (b.scaling === 'perCL' && !hasExplicitFormulaDice) {
             const start = Number(b.start ?? 1) || 1;
             const per = Math.max(1, Number(b.per ?? 1) || 1);
-            const maxSteps = Math.max(1, Number(b.max ?? 10) || 10);
+            const maxSteps = Math.max(1, Math.floor(evalBlockNumOrFx(b.max, 10, curCtx)));
             const clNow = Number(curCtx.cl) || 1;
             const steps = clNow < start ? 0 : Math.min(maxSteps, Math.floor((clNow - start) / per) + 1);
-            const amt = Number(b.amount ?? 1) || 1;
+            const amt = evalBlockNumOrFx(b.amount, 1, curCtx);
+            const baseCnt = evalBlockNumOrFx(b.count, 0, curCtx);
             if (b.die === 'flat') {
-              flatBonus = (Number(b.count) > 0 && start > 1 ? Number(b.count) + (steps - 1) * amt : steps * amt);
+              flatBonus = Math.floor(baseCnt > 0 && start > 1 ? baseCnt + (steps - 1) * amt : steps * amt);
               diceStr = null;
             } else {
-              const totalDice = (Number(b.count) > 0 && start > 1 ? Number(b.count) + (steps - 1) * amt : steps * amt);
+              const totalDice = Math.floor(baseCnt > 0 && start > 1 ? baseCnt + (steps - 1) * amt : steps * amt);
               diceStr = `${Math.max(1, totalDice)}${String(b.die || 'd6').replace(/^\d+/, '')}`;
             }
           }
@@ -2935,14 +2967,16 @@ const RuleEngine = {
                   if (!aStr.includes(chosenArmor)) return;
                 }
               }
-              const drV = Number(b.value ?? 5) || 0;
+              const drFormula = blockFxOrNull(b.value);
+              const drV = Math.floor(evalBlockNumOrFx(b.value, 5, curCtx));
               const byp = what || '-';
-              defenses.push({ kind: 'dr', target: 'physical', value: drV, formula: null, bypass: byp });
-              pushModifier({ op: 'add', target: 'dr', value: drV, type: 'Untyped', bypass: byp, source: out.name || 'Defense' });
+              defenses.push({ kind: 'dr', target: 'physical', value: drV, formula: drFormula, bypass: byp });
+              pushModifier({ op: 'add', target: 'dr', value: drV, formula: drFormula, type: 'Untyped', bypass: byp, source: out.name || 'Defense' });
               return;
             }
             if (dm === 'Energy Resistance' || dm === 'Resistance') {
-              const resV = Number(b.value ?? 10) || 0;
+              const resFormula = blockFxOrNull(b.value);
+              const resV = Math.floor(evalBlockNumOrFx(b.value, 10, curCtx));
               let elem = (what || 'fire').toLowerCase();
               if (elem === '@choice' || elem === 'chosen' || elem === 'chosen energy') {
                 const chElem = this.extractEntryChoice(out).toLowerCase();
@@ -2951,19 +2985,20 @@ const RuleEngine = {
                 const matchedElem = ['fire', 'cold', 'acid', 'electricity', 'sonic'].find(x => elem === x || elem.includes(x));
                 if (matchedElem && !elem.includes(',')) elem = matchedElem;
               }
-              defenses.push({ kind: 'resistance', target: elem, value: resV, formula: null });
-              pushModifier({ op: 'add', target: `resist.${elem}`, value: resV, type: 'Untyped', source: out.name || 'Defense' });
+              defenses.push({ kind: 'resistance', target: elem, value: resV, formula: resFormula });
+              pushModifier({ op: 'add', target: `resist.${elem}`, value: resV, formula: resFormula, type: 'Untyped', source: out.name || 'Defense' });
               return;
             }
             if (dm === 'Spell Resistance') {
-              const srExpr = b.srMode === 'level' ? '10 + @level' : String(Number(b.value ?? 15) || 15);
+              const srFormula = b.srMode === 'level' ? '10 + @level' : blockFxOrNull(b.value);
+              const srExpr = srFormula || String(Number(b.value ?? 15) || 15);
               const srV = Math.floor(Number(this.evaluateFormula(srExpr, curCtx)) || 0);
-              defenses.push({ kind: 'sr', target: 'magic', value: srV, formula: b.srMode === 'level' ? srExpr : null });
-              pushModifier({ op: 'add', target: 'sr', value: srV, formula: b.srMode === 'level' ? srExpr : null, type: 'Untyped', source: out.name || 'Defense' });
+              defenses.push({ kind: 'sr', target: 'magic', value: srV, formula: srFormula });
+              pushModifier({ op: 'add', target: 'sr', value: srV, formula: srFormula, type: 'Untyped', source: out.name || 'Defense' });
               return;
             }
             if (dm === 'Concealment %') {
-              const concV = Number(b.value ?? 20) || 20;
+              const concV = Math.floor(evalBlockNumOrFx(b.value, 20, curCtx));
               ruleFlags.concealment = concV;
               addBadge(`Concealment ${concV}%`);
               return;
@@ -3179,7 +3214,9 @@ const RuleEngine = {
         if (bType === 'resource') {
           let maxFormula = b.maxFormula;
           if (maxFormula === undefined || maxFormula === null || maxFormula === '') {
-            const baseMax = Number(b.max ?? b.val ?? b.value ?? 1) || 0;
+            const rawMax = b.max ?? b.val ?? b.value;
+            const maxFx = blockFxOrNull(rawMax);
+            const baseMax = maxFx ? `(${maxFx})` : (Number(rawMax ?? 1) || 0);
             const abKey = String(b.ability || 'cha').toLowerCase().trim();
             const abTok = ['str', 'dex', 'con', 'int', 'wis', 'cha'].includes(abKey) ? `@${abKey}Mod` : '@chaMod';
             if (b.scaling === 'level') maxFormula = '@level';
@@ -3187,7 +3224,7 @@ const RuleEngine = {
             else if (b.scaling === 'plusMod') maxFormula = baseMax ? `${baseMax} + ${abTok}` : abTok;
             else if (b.scaling === 'halfLvlPlusMod') maxFormula = `${baseMax ? baseMax + ' + ' : ''}floor(@level / 2) + ${abTok}`;
             else if (b.scaling === 'twoPerLvlPlusMod') maxFormula = `${baseMax} + (@level * 2) + ${abTok}`;
-            else maxFormula = baseMax || 1;
+            else maxFormula = maxFx || baseMax || 1;
           }
           const evaluatedMax = Math.max(0, Math.floor(Number(this.evaluateFormula(maxFormula, curCtx)) || 0));
           const resetRaw = String(b.per || b.reset || 'day').toLowerCase();
@@ -5363,6 +5400,15 @@ const RuleEngine = {
       'vulnerability': 'Vulnerability', 'size change': 'Size Change', 'state flag': 'State Flag'
     };
 
+    const keepNumOrFx = (v, fallback) => {
+      if (typeof v === 'string') {
+        const t = v.trim();
+        if (t !== '' && isNaN(Number(t))) return t;
+      }
+      const n = Number(v);
+      return Number.isFinite(n) ? n : fallback;
+    };
+
     const sanitizeBlockList = (list) => {
       if (!Array.isArray(list)) return [];
       const out = [];
@@ -5401,12 +5447,20 @@ const RuleEngine = {
           if (!['flat', 'stat', 'perCL', 'formula', 'replaceStat'].includes(b.mode)) {
             b.mode = b.formula ? 'formula' : 'flat';
           }
-          if (b.mode === 'flat') b.value = Number(b.value) || 0;
+          if (b.mode === 'flat') {
+            if (typeof b.value === 'string' && b.value.trim() !== '' && isNaN(Number(b.value.trim()))) {
+              b.mode = 'formula';
+              b.formula = b.value.trim();
+              delete b.value;
+            } else {
+              b.value = Number(b.value) || 0;
+            }
+          }
           if (b.mode === 'perCL') {
-            b.value = Number(b.value) || 1;
+            b.value = keepNumOrFx(b.value, 1);
             b.per = Math.max(1, Number(b.per) || 1);
-            b.min = Number.isFinite(Number(b.min)) ? Number(b.min) : 0;
-            b.max = Number.isFinite(Number(b.max)) ? Number(b.max) : 20;
+            b.min = keepNumOrFx(b.min, 0);
+            b.max = keepNumOrFx(b.max, 20);
           }
           if (b.mode === 'formula') b.formula = String(b.formula || '0');
           b.btype = this._canonicalizeV3BonusType(b.btype, b.mode === 'flat' ? b.value : 1);
@@ -5423,14 +5477,14 @@ const RuleEngine = {
               delete b.dice;
             }
           }
-          if (b.count !== undefined) b.count = Number(b.count) || 1;
-          if (b.flat !== undefined) b.flat = Number(b.flat) || 0;
+          if (b.count !== undefined) b.count = keepNumOrFx(b.count, 1);
+          if (b.flat !== undefined) b.flat = keepNumOrFx(b.flat, 0);
           out.push(b);
         } else if (b.type === 'defense') {
           const mKey = String(b.mode || '').trim().toLowerCase();
           if (!validDefModes.has(b.mode)) b.mode = defModeMap[mKey] || 'Immunity';
           if (b.mode === 'Spell Resistance' && !b.srMode) b.srMode = 'flat';
-          if (b.value !== undefined) b.value = Number(b.value) || 0;
+          if (b.value !== undefined) b.value = keepNumOrFx(b.value, 0);
           out.push(b);
         } else if (b.type === 'effect') {
           if (b.effectKind === 'ruleSwitch' && (!b.flag || !validRuleFlags.has(b.flag))) {
@@ -5446,7 +5500,7 @@ const RuleEngine = {
           if (!b.varKey) b.varKey = slugify(b.name, 'pool').replace(/-/g, '_');
           if (!['spend', 'invest', 'dial', 'choice', 'focus', 'buffer'].includes(b.resMode)) b.resMode = 'spend';
           if (b.reset && !['atWill', 'cooldown', 'perEncounter', 'perDay'].includes(b.reset)) b.reset = 'perDay';
-          if (b.max !== undefined) b.max = Number(b.max) || 1;
+          if (b.max !== undefined) b.max = keepNumOrFx(b.max, 1);
           out.push(b);
         } else if (b.type === 'when') {
           b.flow = b.flow === 'if' ? 'if' : 'while';

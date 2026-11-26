@@ -889,15 +889,15 @@
           ]
         },
         "count": {
-          "type": "number"
+          "anyOf": [{ "type": "number" }, { "type": "string" }]
         },
         "die": {
           "type": "string",
           "description": "d4..d20, or \"flat\" for a fixed number."
         },
         "flat": {
-          "type": "number",
-          "description": "Flat bonus added to the dice."
+          "anyOf": [{ "type": "number" }, { "type": "string" }],
+          "description": "Flat bonus (or formula) added to the dice."
         },
         "dmgType": {
           "type": "string",
@@ -916,10 +916,10 @@
           "type": "number"
         },
         "amount": {
-          "type": "number"
+          "anyOf": [{ "type": "number" }, { "type": "string" }]
         },
         "max": {
-          "type": "number"
+          "anyOf": [{ "type": "number" }, { "type": "string" }]
         },
         "varKey": {
           "type": "string",
@@ -964,7 +964,7 @@
           "description": "attackMode natural: the attack uses a limb that also wields manufactured weapons (claw, slam, arm spine). It then takes part in a full attack only while no manufactured weapon is wielded; limbless attacks (bite, gore, tail) always join it as secondary attacks next to a wielded weapon."
         },
         "count": {
-          "type": "number"
+          "anyOf": [{ "type": "number" }, { "type": "string" }]
         },
         "weaponName": {
           "type": "string"
@@ -976,7 +976,10 @@
           "type": "string"
         },
         "penalty": {
-          "type": "number"
+          "anyOf": [{ "type": "number" }, { "type": "string" }]
+        },
+        "effLvlBonus": {
+          "anyOf": [{ "type": "number" }, { "type": "string" }]
         },
         "rider": {
           "type": "string"
@@ -1010,7 +1013,7 @@
           "type": "string"
         },
         "value": {
-          "type": "number"
+          "anyOf": [{ "type": "number" }, { "type": "string" }]
         },
         "srMode": {
           "type": "string",
@@ -1182,7 +1185,7 @@
           ]
         },
         "max": {
-          "type": "number"
+          "anyOf": [{ "type": "number" }, { "type": "string" }]
         },
         "ability": {
           "type": "string",
