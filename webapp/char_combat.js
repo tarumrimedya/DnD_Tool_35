@@ -14158,7 +14158,7 @@
       const toastId = options.toastId || entry.toastId || (replaceId || 'dice-top-toast');
       toast.id = toastId;
       toast._createdAt = Date.now();
-      toast.className = `dice-toast-item pointer-events-auto transform -translate-y-8 opacity-0 transition-all duration-300 ease-out bg-slate-900/95 rounded-2xl px-4 py-3 sm:px-5 sm:py-3.5 backdrop-blur-md flex items-center gap-3 sm:gap-4 text-white sm:max-w-md w-full select-none ${hasActions ? 'cursor-default' : 'cursor-pointer'} shadow-xl`;
+      toast.className = `dice-toast-item pointer-events-auto transform -translate-y-8 opacity-0 transition-all duration-150 ease-out bg-slate-900/95 rounded-2xl px-4 py-3 sm:px-5 sm:py-3.5 backdrop-blur-md flex items-center gap-3 sm:gap-4 text-white sm:max-w-md w-full select-none ${hasActions ? 'cursor-default' : 'cursor-pointer'} shadow-xl`;
       toast.style.maxWidth = '94vw';
       toast.style.border = `2px solid ${palette.border}`;
       toast.style.boxShadow = palette.glow;
@@ -14296,12 +14296,11 @@
         container.appendChild(toast);
       }
 
-      // Trigger slide down
+      // Trigger slide down (single rAF after forced reflow for instant visual feedback)
+      void toast.offsetHeight;
       requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          toast.classList.remove('-translate-y-8', 'opacity-0');
-          toast.classList.add('translate-y-0', 'opacity-100');
-        });
+        toast.classList.remove('-translate-y-8', 'opacity-0');
+        toast.classList.add('translate-y-0', 'opacity-100');
       });
 
       // Auto dismiss (30s for interactive decision toasts, 3.5s for standard notifications)

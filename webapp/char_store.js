@@ -699,7 +699,7 @@
       _redoStack.length = 0;
     },
 
-    undo() {
+    undo(opts = {}) {
       if (_undoStack.length === 0 || !_state.doc) return null;
       _redoStack.push(this._createHistoryEntry(
         _undoStack[_undoStack.length - 1].label,
@@ -711,7 +711,7 @@
       }
 
       const snap = _undoStack.pop();
-      this._applyHistorySnapshot(snap, 'Undo');
+      this._applyHistorySnapshot(snap, 'Undo', opts);
       return snap;
     },
 
@@ -764,7 +764,11 @@
             root.character = _state.doc;
           }
         }
-        this.recompute();
+        if (!(opts && opts.skipRecompute)) {
+          this.recompute();
+        } else {
+          _sheetDirty = true;
+        }
 
         if (!silent && typeof root !== 'undefined') {
           if (typeof root.saveStateToStorage === 'function') {

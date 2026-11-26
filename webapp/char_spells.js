@@ -1891,6 +1891,19 @@
       return `<button type="button" data-action="spells:configure-preset" data-spell-id="${UI.escapeAttr(meta.spellId)}" data-kind="${UI.escapeAttr(meta.kind)}" data-tier="${UI.escapeAttr(meta.tier || '')}" data-ctg-kind="${UI.escapeAttr(meta.ctgKind || '')}" class="text-[10px] px-1.5 py-0.5 rounded bg-indigo-950/80 hover:bg-indigo-800/80 text-indigo-200 border border-indigo-700/70 font-semibold truncate transition cursor-pointer" style="max-width:220px" title="Click to edit saved preset">${UI.escapeHtml(summary)}</button>`;
     }
 
+    function notifyIfActionOverused(castOut, sourceLabel = '') {
+      const ao = castOut && castOut.actionOutcome;
+      if (ao && ao.alreadySpent && typeof showDiceTopToast === 'function') {
+        const roundNum = ao.round || Number(character?.encounterRound || character?.tactical?.round) || 1;
+        showDiceTopToast({
+          icon: '⚠️',
+          title: 'Extra Action Used',
+          breakdown: `${ao.spentLabel || 'Action'} was already spent in Round ${roundNum}${sourceLabel ? ' • ' + sourceLabel : ''}.`,
+          total: 'Extra Action'
+        }, { stack: true, toastId: 'action-economy-overuse-toast' });
+      }
+    }
+
     function buildBuffCancelAction(safeName, onCancel) {
       return {
         label: '✕ Cancel',
@@ -2029,9 +2042,15 @@
               const cur = CharStore.getHistoryCounts().undo;
               const steps = cur - opts.undoToCount;
               if (steps <= 0 || steps > 4) return false;
-              for (let i = 0; i < steps; i++) CharStore.undo();
+              for (let i = 0; i < steps; i++) {
+                const isLast = i === steps - 1;
+                CharStore.undo({ silent: true, skipRecompute: !isLast });
+              }
               if (typeof updateActionEconomyUI === 'function') updateActionEconomyUI();
-              if (typeof renderAll === 'function') renderAll();
+              if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
+              requestAnimationFrame(() => {
+                if (typeof renderAll === 'function') renderAll({ skipRecompute: true });
+              });
               return true;
             }
           : null);
@@ -2681,10 +2700,12 @@
           const out = CharStore.getLastOutcome();
           if (!out || out.status !== 'spell_cast') return;
           if (typeof updateActionEconomyUI === 'function') updateActionEconomyUI();
-          renderAll({ skipRecompute: true });
+          notifyIfActionOverused(out, `${name}${mmTag}`);
           if (handleBuffSpellCast(s, cl, `Level ${lvl} Prepared Slot Expended${mmTag}`, '📖', { undoToCount: undoBase })) {
+            requestAnimationFrame(() => renderAll({ skipRecompute: true }));
             return;
           }
+          renderAll({ skipRecompute: true });
         } else {
           if (mutSlot) mutSlot.used++;
           saveStateToStorage(true);
@@ -3469,6 +3490,7 @@
         const out = CharStore.getLastOutcome();
         if (!out || out.status !== 'spell_cast') return;
         if (typeof updateActionEconomyUI === 'function') updateActionEconomyUI();
+        notifyIfActionOverused(out, `${name}${mmTag}`);
       } else {
         if (mutSlot) {
           mutSlot.used++;
@@ -3477,10 +3499,11 @@
         saveStateToStorage(true);
         if (typeof consumeActionEconomy === 'function') consumeActionEconomy(s, name);
       }
-      renderAll();
       if (handleBuffSpellCast(s, cl, `Level ${lvl} ${isDom ? 'Domain' : 'Divine'} Slot Expended`, isDom ? '⚜️' : '✨', { undoToCount: undoBase })) {
+        requestAnimationFrame(() => renderAll({ skipRecompute: true }));
         return;
       }
+      renderAll({ skipRecompute: true });
       if (dmgExpr) {
         rollSpellOrManeuverFormula(dmgExpr, `${name} (Level ${lvl}${isDom ? ' Domain' : ''} • -1 Slot)`, s);
       } else {
@@ -7043,23 +7066,30 @@
               spellId: s.id,
               spellName: name,
               spellLevel: lvl,
-              level: lvl
+              level: lvl,
+              actionType: s,
+              actionLabel: name
             },
             meta: { label: `Cast Spontaneous Spell (${name})` }
           });
           const out = CharStore.getLastOutcome();
           if (!out || out.status !== 'spell_cast') return;
-          if (typeof consumeActionEconomy === 'function') consumeActionEconomy(s, name);
+          if (typeof updateActionEconomyUI === 'function') updateActionEconomyUI();
+          notifyIfActionOverused(out, name);
+          if (handleBuffSpellCast(s, cl, `Level ${lvl} Spontaneous Slot Expended`, '🔮', { undoToCount: undoBase })) {
+            requestAnimationFrame(() => renderAll({ skipRecompute: true }));
+            return;
+          }
           renderAll({ skipRecompute: true });
         } else {
           if (mutSlot) mutSlot.used++;
           saveStateToStorage(true);
           if (typeof consumeActionEconomy === 'function') consumeActionEconomy(s, name);
+          if (handleBuffSpellCast(s, cl, `Level ${lvl} Spontaneous Slot Expended`, '🔮')) {
+            requestAnimationFrame(() => renderAll());
+            return;
+          }
           renderAll();
-        }
-
-        if (handleBuffSpellCast(s, cl, `Level ${lvl} Spontaneous Slot Expended`, '🔮', { undoToCount: undoBase })) {
-          return;
         }
 
         const dbItem = typeof findMasterItem === 'function' ? findMasterItem(name) : null;

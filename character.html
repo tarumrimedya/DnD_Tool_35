@@ -297,12 +297,16 @@
                   <span class="inline">Settings</span>
                 </button>
               </div>
-              <!-- 2. Sıra: Bulut Senkron Durumu -->
-              <div class="w-full">
-                <div id="sync-status-pill" data-action="hud:sync-pill-click" title="Check / sync cloud status" class="h-8 cursor-pointer flex items-center justify-center gap-1.5 px-2.5 rounded-lg text-[11px] font-semibold bg-emerald-950/80 text-emerald-300 border border-emerald-600 whitespace-nowrap shadow-sm transition truncate w-full">
+              <!-- 2. Sıra: Bulut Senkron Durumu & Yeni Kâğıt (Beta) -->
+              <div class="grid grid-cols-2 gap-1.5 w-full">
+                <div id="sync-status-pill" data-action="hud:sync-pill-click" title="Check / sync cloud status" class="h-8 cursor-pointer flex items-center justify-center gap-1.5 px-2 rounded-lg text-[11px] font-semibold bg-emerald-950/80 text-emerald-300 border border-emerald-600 whitespace-nowrap shadow-sm transition truncate w-full">
                   <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
-                  <span id="sync-status-text">🟢 <span class="hidden sm:inline">Cloud </span>Synced</span>
+                  <span id="sync-status-text">🟢 Synced</span>
                 </div>
+                <a href="sheet_v2.html" title="Try the new Moment Lens Character Sheet (Beta) with your current character" class="h-8 px-2 rounded-lg bg-indigo-950/90 hover:bg-indigo-900 text-indigo-200 hover:text-white border border-indigo-500/50 text-[11px] font-bold shadow flex items-center justify-center gap-1 transition whitespace-nowrap">
+                  <span>✨</span>
+                  <span>New Sheet</span>
+                </a>
               </div>
             </div>
           </div>
@@ -3529,7 +3533,7 @@
   <script defer src="srd_compendium.js?v=c0ec0e59da" data-srd-autoinit></script>
   <script defer src="rulesets/dnd35.js?v=2eedf124cd"></script>
   <script defer src="rule_engine.js?v=8f8c3a3507"></script>
-  <script defer src="char_store.js?v=3a7591a9c5"></script>
+  <script defer src="char_store.js?v=38000672fb"></script>
   <!-- ui_components.js stays blocking on purpose: it has no dependencies, and while the document is
        still loading it binds the data-action router on DOMContentLoaded, after the outside-click
        listeners the deferred scripts register. Deferring it would bind the router first. -->
@@ -3543,8 +3547,8 @@
   <script defer src="dice3d.js?v=b61bf53faf"></script>
 
   <script defer src="char_hud.js?v=d559efa8c9"></script>
-  <script defer src="char_combat.js?v=5f87e427d5"></script>
-  <script defer src="char_spells.js?v=dc9e26b96a"></script>
+  <script defer src="char_combat.js?v=e414cc0d8c"></script>
+  <script defer src="char_spells.js?v=1b7b499d8f"></script>
   <script defer src="char_progression.js?v=bd37059fcf"></script>
   <script defer src="char_inventory.js?v=d4cfd15ae2"></script>
   <!-- Floating Tooltip for Combat Spells Hover (Tap or click to dismiss) -->
