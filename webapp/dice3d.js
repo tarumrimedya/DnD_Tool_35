@@ -337,12 +337,81 @@
       try { if (typeof localStorage !== 'undefined') localStorage.setItem('dnd_dice_text_color', hex); } catch (e) {}
     }
 
-    warmUp() {
-      if (this.initialized || this.isRolling) return;
-      this.loadThree().then(ok => {
-        if (ok && !this.initialized) {
-          try { this.init(); } catch (e) {}
+    _isConstrainedDevice() {
+      try {
+        if (typeof navigator !== 'undefined' && typeof navigator.deviceMemory === 'number' && navigator.deviceMemory <= 4) return true;
+        if (typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(pointer: coarse)').matches) return true;
+      } catch (e) {}
+      return false;
+    }
+
+    _scheduleIdleSlice(fn) {
+      if (typeof requestIdleCallback === 'function') {
+        requestIdleCallback((deadline) => {
+          if (this.isRolling) return;
+          if (deadline && typeof deadline.timeRemaining === 'function' && deadline.timeRemaining() < 8 && !deadline.didTimeout) {
+            this._scheduleIdleSlice(fn);
+            return;
+          }
+          try { fn(); } catch (e) {}
+        });
+      } else {
+        setTimeout(() => {
+          if (this.isRolling) return;
+          try { fn(); } catch (e) {}
+        }, 60);
+      }
+    }
+
+    _warmUpShaders() {
+      if (this._shadersWarmed || !this.initialized || this.isRolling || !this.renderer || !this.scene || !this.camera) return;
+      this._shadersWarmed = true;
+      let tmpMesh = null;
+      try {
+        this._getMaterialSurfaceMaps();
+        tmpMesh = this.createDieMesh('d20', 20);
+        if (!tmpMesh) return;
+        tmpMesh.position.set(0, 2, 0);
+        this.scene.add(tmpMesh);
+        if (typeof this.renderer.compile === 'function') {
+          this.renderer.compile(this.scene, this.camera);
         }
+        this.renderer.render(this.scene, this.camera);
+      } catch (e) {
+      } finally {
+        if (tmpMesh && this.scene) {
+          this.scene.remove(tmpMesh);
+          try {
+            tmpMesh.traverse((node) => {
+              if (node.geometry && typeof node.geometry.dispose === 'function') node.geometry.dispose();
+              if (node.material) {
+                const mats = Array.isArray(node.material) ? node.material : [node.material];
+                mats.forEach((m) => { if (m && typeof m.dispose === 'function') m.dispose(); });
+              }
+            });
+          } catch (e) {}
+        }
+      }
+    }
+
+    warmUp() {
+      if (this.isRolling) return Promise.resolve();
+      if (this.initialized) {
+        if (!this._shadersWarmed && !this._isConstrainedDevice()) {
+          this._scheduleIdleSlice(() => this._warmUpShaders());
+        }
+        return Promise.resolve();
+      }
+      return this.loadThree().then(ok => {
+        if (!ok || this.isRolling || this._isConstrainedDevice()) return;
+        this._scheduleIdleSlice(() => {
+          if (!this.initialized && !this.isRolling) {
+            try { this.init(); } catch (e) { return; }
+          }
+          if (this.initialized && !this._shadersWarmed && !this.isRolling) {
+            this._scheduleIdleSlice(() => this._warmUpShaders());
+          }
+        });
       });
     }
 
@@ -2484,6 +2553,12 @@
   (function scheduleDice3DWarmUp() {
     try {
       if (navigator.connection && navigator.connection.saveData) return;
+      // Warm WebAudio context on first user gesture (respects autoplay policy, avoids first-roll audio hitch)
+      if (typeof document !== 'undefined') {
+        document.addEventListener('pointerdown', () => {
+          try { if (global.Dice3D && global.Dice3D.soundEnabled) global.Dice3D._ensureAudio(); } catch (e) {}
+        }, { once: true, passive: true });
+      }
       const run = () => {
         const go = () => { if (global.Dice3D) global.Dice3D.warmUp(); };
         setTimeout(() => {

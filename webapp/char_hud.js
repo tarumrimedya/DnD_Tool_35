@@ -336,6 +336,23 @@
               renderAll({ skipRecompute: true });
               saveStateToStorage(false);
             }
+            // Smart idle warm-up: if this character is a spellcaster and not on data-saver,
+            // quietly warm the Spell compendium chunk in a separate idle slice so first picker/cast is instant.
+            const saveData = Boolean(navigator.connection && navigator.connection.saveData);
+            const sc = character && character.spellcasting;
+            const isCaster = Boolean(sc && (
+              (Array.isArray(sc.slots) && sc.slots.some(s => (Number(s?.daily) || 0) > 0)) ||
+              (Array.isArray(sc.preparedSlots) && sc.preparedSlots.some(s => (Number(s?.daily) || 0) > 0)) ||
+              (Array.isArray(sc.divineSlots) && sc.divineSlots.some(s => (Number(s?.daily) || 0) > 0)) ||
+              (Array.isArray(sc.knownSpells) && sc.knownSpells.length > 0) ||
+              (Array.isArray(sc.preparedSpells) && sc.preparedSpells.length > 0) ||
+              (Array.isArray(sc.divineSpells) && sc.divineSpells.length > 0)
+            ));
+            if (!saveData && isCaster && typeof comp.ensureTypesLoaded === 'function') {
+              const warmSpells = () => { comp.ensureTypesLoaded(['Spell']).catch(() => null); };
+              if (typeof window.requestIdleCallback === 'function') window.requestIdleCallback(warmSpells);
+              else setTimeout(warmSpells, 1000);
+            }
           }).catch(e => console.warn('Background snapshot reconciliation warning:', e));
         };
         if (typeof window.requestIdleCallback === 'function') {
