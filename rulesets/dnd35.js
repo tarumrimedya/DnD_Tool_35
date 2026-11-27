@@ -1364,6 +1364,23 @@
       const t = String(trigger || '').trim();
       if (!t) return [];
       return Object.keys(this.usageResetCadence).filter(m => this.usageResetCadence[m].includes(t));
+    },
+
+    /**
+     * Pure D&D 3.5e RAW Hit Points condition evaluator (PHB p. 145).
+     * Healthy (>0), Staggered (nonlethal == current), Unconscious (nonlethal > current),
+     * Disabled (0), Dying (-1 to -9), Dead (<= -10).
+     */
+    evaluateHpCondition(hpObj) {
+      const hp = hpObj && typeof hpObj === 'object' ? hpObj : {};
+      const cur = Number(hp.current ?? hp.max ?? 1);
+      const nl = Math.max(0, Number(hp.nonlethal) || 0);
+      if (cur <= -10) return { status: 'dead', label: 'Dead', severity: 'fatal', badge: '💀 Dead' };
+      if (cur <= -1) return { status: 'dying', label: 'Dying', severity: 'critical', badge: '🩸 Dying' };
+      if (cur === 0) return { status: 'disabled', label: 'Disabled', severity: 'warn', badge: '⚠️ Disabled' };
+      if (nl > cur) return { status: 'unconscious', label: 'Unconscious', severity: 'warn', badge: '💤 Unconscious' };
+      if (nl > 0 && nl === cur) return { status: 'staggered', label: 'Staggered', severity: 'warn', badge: '💫 Staggered' };
+      return { status: 'healthy', label: 'Healthy', severity: 'ok', badge: '' };
     }
   };
 

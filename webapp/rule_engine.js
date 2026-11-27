@@ -11975,6 +11975,11 @@ const RuleEngine = {
     flatAC -= totalPenalty;
     const incorporealTouchAC = touchAC + incorporealBonus;
 
+    const tacticalAcDodge = conditionLoseDexToAC
+      ? 0
+      : (effectiveCE + (fightingDefensively ? fightingDefDodge : 0) + (totalDefense ? totalDefDodge : 0));
+    const tacticalDelta = tacticalAcDodge - (charge ? 2 : 0) - (Number(tacCombat.paAcPenalty) || 0);
+
     character.acBreakdown = {
       armor: effectiveArmor,
       shield: effectiveShield,
@@ -11988,6 +11993,7 @@ const RuleEngine = {
       maxDex: effectiveMaxDex,
       armorMaxDex: minMaxDex,
       loadMaxDex,
+      tacticalDelta,
       load: encumbrance.loadStatus.status,
       acp: effectiveAcp,
       armorAcp: totalAcp,
@@ -21179,8 +21185,123 @@ const RuleEngine = {
       higherGround: Boolean(working.tactical?.higherGround),
       activeWeaponSet: Number(working.activeWeaponSet || (working.tactical?.weaponSets?.activeSet === 2 ? 2 : 1)),
       maxBabCap: Math.min(5, Number(working.bab || 0)),
+      spentActions: Object.assign({}, working.tactical?.spentActions || {}),
       combat: derivedTacCombat
     };
+
+    const derivedClassMeta = (() => {
+      const prog = Array.isArray(working.levelProgression)
+        ? working.levelProgression.filter(r => r && !r.isPlanned && r.active !== false && String(r.className || r.class || '').trim())
+        : [];
+      if (prog.length > 0) {
+        const map = new Map();
+        prog.forEach(r => {
+          const rawName = String(r.className || r.class || 'Adventurer').trim();
+          const key = rawName.toLowerCase();
+          if (!map.has(key)) {
+            map.set(key, { classId: r.classId || null, className: rawName, level: 0 });
+          }
+          const entry = map.get(key);
+          entry.level += 1;
+          if (!entry.classId && r.classId) entry.classId = r.classId;
+        });
+        const list = Array.from(map.values());
+        const primary = list.slice().sort((a, b) => b.level - a.level)[0] || null;
+        return {
+          classList: list,
+          classes: list.map(c => `${c.className} ${c.level}`).join(' / '),
+          primaryClass: primary ? primary.className : null,
+          primaryClassId: primary ? primary.classId : null,
+          classSource: 'progression'
+        };
+      }
+      if (working.classLevels && typeof working.classLevels === 'object' && !Array.isArray(working.classLevels)) {
+        const titleCase = (s) => String(s || '').trim().split(/\s+/).map((w, idx) => {
+          const low = w.toLowerCase();
+          if (idx > 0 && (low === 'of' || low === 'the' || low === 'and')) return low;
+          return low.charAt(0).toUpperCase() + low.slice(1);
+        }).join(' ');
+        const list = Object.entries(working.classLevels)
+          .filter(([k, v]) => String(k || '').trim() && Number(v) > 0)
+          .map(([k, v]) => ({ classId: null, className: titleCase(k), level: Math.max(1, Number(v) || 1) }));
+        if (list.length > 0) {
+          const primary = list.slice().sort((a, b) => b.level - a.level)[0] || null;
+          return {
+            classList: list,
+            classes: list.map(c => `${c.className} ${c.level}`).join(' / '),
+            primaryClass: primary ? primary.className : null,
+            primaryClassId: null,
+            classSource: 'classLevels'
+          };
+        }
+      }
+      const rawStr = String(working.classes || working.class || '').trim();
+      const list = [];
+      if (rawStr) {
+        rawStr.split('/').forEach(part => {
+          const seg = part.trim();
+          if (!seg) return;
+          const m = seg.match(/^(.+?)\s+(\d+)$/);
+          if (m) list.push({ classId: null, className: m[1].trim(), level: Math.max(1, Number(m[2]) || 1) });
+          else list.push({ classId: null, className: seg, level: Math.max(1, Number(working.level) || 1) });
+        });
+      }
+      const primary = list.slice().sort((a, b) => b.level - a.level)[0] || null;
+      return {
+        classList: list,
+        classes: rawStr || (list.length ? list.map(c => `${c.className} ${c.level}`).join(' / ') : ''),
+        primaryClass: primary ? primary.className : null,
+        primaryClassId: null,
+        classSource: 'legacy'
+      };
+    })();
+
+    const hpCondition = this.evaluateHpCondition(working.hp);
+
+    const derivedClassActions = (() => {
+      const actions = [];
+      const turnInfo = typeof this.getTurnUndeadAndDomainPowers === 'function'
+        ? this.getTurnUndeadAndDomainPowers(working)
+        : null;
+      if (turnInfo && turnInfo.hasTurnUndead) {
+        const maxUses = Math.max(1, Number(turnInfo.maxDailyTurns) || (3 + mods.cha));
+        const used = Math.max(0, Number(working.spellcasting?.turnUndeadUsed) || 0);
+        actions.push({
+          id: 'undead',
+          kind: 'turn',
+          name: 'Turn / Rebuke Undead',
+          actionCost: 'standard',
+          maxUses,
+          used,
+          remaining: Math.max(0, maxUses - used),
+          checkFormula: turnInfo.turningCheckFormula || `1d20${mods.cha >= 0 ? '+' + mods.cha : mods.cha}`,
+          damageFormula: turnInfo.turningDamageFormula || '',
+          effectiveLevel: Number(turnInfo.effectiveTurningLevel) || 1,
+          summary: `${turnInfo.turningCheckFormula || `1d20${mods.cha >= 0 ? '+' + mods.cha : mods.cha}`} check`,
+          dispatchAction: { type: 'spells/useTurnOrDomainPower', payload: { id: 'undead', kind: 'turn', maxUses } }
+        });
+      }
+      if (turnInfo && Array.isArray(turnInfo.activeDomainPowers)) {
+        const domUsesMap = working.spellcasting?.domainPowerUses || {};
+        turnInfo.activeDomainPowers.forEach(dp => {
+          if (!dp || !dp.id) return;
+          const maxUses = Math.max(1, Number(dp.maxUses) || 1);
+          const used = Math.max(0, Number(domUsesMap[dp.id]) || 0);
+          actions.push({
+            id: String(dp.id),
+            kind: 'domain',
+            name: dp.name || 'Domain Power',
+            actionCost: /swift/i.test(String(dp.actionType || '')) ? 'swift' : (/free/i.test(String(dp.actionType || '')) ? 'free' : 'standard'),
+            maxUses,
+            used,
+            remaining: Math.max(0, maxUses - used),
+            summary: dp.summary || dp.durationText || 'Domain Active Power',
+            dispatchAction: { type: 'spells/useTurnOrDomainPower', payload: { id: String(dp.id), kind: 'domain', maxUses } }
+          });
+        });
+      }
+      return actions;
+    })();
 
     return {
       meta: {
@@ -21190,7 +21311,11 @@ const RuleEngine = {
         size: working.size || 'Medium',
         alignment: working.alignment || 'Neutral',
         deity: working.deity || '',
-        classes: working.classes || '',
+        classes: derivedClassMeta.classes,
+        classList: derivedClassMeta.classList,
+        primaryClass: derivedClassMeta.primaryClass,
+        primaryClassId: derivedClassMeta.primaryClassId,
+        classSource: derivedClassMeta.classSource,
         level: Number(working.level) || 1,
         ecl: Number(working.ecl) || Number(working.level) || 1,
         levelAdjustment: Number(working.levelAdjustment) || 0,
@@ -21225,8 +21350,10 @@ const RuleEngine = {
         bonusFeatHp: Number(working.hp?.bonusFeatHp ?? 0),
         flawHpPenalty: Number(working.hp?.flawHpPenalty ?? 0),
         debuffHpPenalty: Number(working.hp?.debuffHpPenalty ?? 0),
-        periodicEffects: working.periodicHpEffects || []
+        periodicEffects: working.periodicHpEffects || [],
+        condition: hpCondition
       },
+      classActions: derivedClassActions,
       combat: {
         round: Number(working.tactical?.round || working.encounterRound || 1),
         bab: Number(working.bab) || 0,
@@ -21284,6 +21411,27 @@ const RuleEngine = {
       companions: this.deriveCompanions(working, { masterDb: workingDb }),
       activeForm: this.deriveActiveFormView(working, { masterDb: workingDb }),
       skillsBonusMap,
+      skillsView: (Array.isArray(working.skills) ? working.skills : []).map((sk) => {
+        const name = String(sk?.name || sk?.id || 'Skill');
+        const key = String(sk?.key || name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, ''));
+        const ranks = Number(sk?.ranks) || 0;
+        const abKey = String(sk?.ability || 'INT').toLowerCase().slice(0, 3);
+        const bmEntry = skillsBonusMap[key] || skillsBonusMap[name] || skillsBonusMap[name.toLowerCase()] || null;
+        const bmTotal = (bmEntry && typeof bmEntry === 'object') ? Number(bmEntry.total) : Number(bmEntry);
+        const bonusMod = Number.isFinite(bmTotal) ? bmTotal : 0;
+        const total = ranks + (Number(mods[abKey]) || 0) + (Number(sk?.miscBonus ?? sk?.misc) || 0) + bonusMod;
+        return {
+          key,
+          name,
+          ability: String(sk?.ability || 'INT').toUpperCase().slice(0, 3),
+          ranks,
+          classSkill: Boolean(sk?.classSkill),
+          trained: ranks > 0 || Boolean(sk?.classSkill),
+          total,
+          breakdown: (bmEntry && typeof bmEntry === 'object' && bmEntry.breakdown) ? bmEntry.breakdown : ''
+        };
+      }),
+      notes: Array.isArray(working.smartNotes) ? working.smartNotes : (Array.isArray(working.notesList) ? working.notesList : []),
       session: workingSession,
       warnings: working.activeConditionWarnings || [],
       _workingSnapshot: working
@@ -22200,6 +22348,9 @@ const RuleEngine = {
       if (window.CharStore && typeof window.CharStore.recompute === 'function') {
         window.CharStore.recompute();
       }
+      if (typeof window.dispatchEvent === 'function' && typeof CustomEvent === 'function') {
+        window.dispatchEvent(new CustomEvent('sheet:changed', { detail: { reason: 'companions_hydrated' } }));
+      }
       if (typeof window.renderAll === 'function') {
         window.renderAll({ skipRecompute: true });
       }
@@ -22228,6 +22379,9 @@ const RuleEngine = {
       toFetch.forEach(c => this._pendingLazyChunks.delete(c));
       if (window.CharStore && typeof window.CharStore.recompute === 'function') {
         window.CharStore.recompute();
+      }
+      if (typeof window.dispatchEvent === 'function' && typeof CustomEvent === 'function') {
+        window.dispatchEvent(new CustomEvent('sheet:changed', { detail: { reason: 'companions_hydrated' } }));
       }
       if (typeof window.renderAll === 'function') {
         window.renderAll({ skipRecompute: true });
@@ -22278,6 +22432,9 @@ const RuleEngine = {
       toFetch.forEach(c => this._pendingLazyChunks.delete(c));
       if (window.CharStore && typeof window.CharStore.recompute === 'function') {
         window.CharStore.recompute();
+      }
+      if (typeof window.dispatchEvent === 'function' && typeof CustomEvent === 'function') {
+        window.dispatchEvent(new CustomEvent('sheet:changed', { detail: { reason: 'companions_hydrated' } }));
       }
       if (typeof window.renderAll === 'function') {
         window.renderAll({ skipRecompute: true });
@@ -22457,6 +22614,527 @@ const RuleEngine = {
       claspSlotKeys,
       wildArmorSlotKeys
     };
+  },
+
+  // ==========================================================================
+  // M0 PURE ENGINE SEAMS FOR SHEET V2 (Zero Shadow Math, WeakMap Memoized)
+  // ==========================================================================
+  _attackViewCache: typeof WeakMap !== 'undefined' ? new WeakMap() : null,
+
+  /**
+   * Pure WeakMap-memoized Attack Card selector built on top of evaluateWeaponAttack.
+   * Keyed on `sheet` object identity + session/tactical params so buffs/gear never go stale
+   * and PA/Grip changes never re-run deriveSheet.
+   */
+  deriveAttackView(sheet, session = {}) {
+    if (!sheet || typeof sheet !== 'object') return null;
+    const ch = sheet._workingSnapshot || {};
+    const tac = ch.tactical || {};
+    const bab = Number(sheet?.combat?.bab) || 0;
+
+    // Dedupe weapons strictly by normalized name (combat.weapons first for full modes/dice metadata)
+    const weapons = [];
+    const seen = new Set();
+    const pushW = (w) => {
+      if (!w || !w.name) return;
+      const k = String(w.name).trim().toLowerCase();
+      if (seen.has(k)) return;
+      seen.add(k);
+      weapons.push(w);
+    };
+    if (Array.isArray(sheet?.combat?.weapons)) sheet.combat.weapons.forEach(pushW);
+    if (Array.isArray(sheet?.inventory?.weaponsView)) sheet.inventory.weaponsView.forEach(pushW);
+    const pool = Array.isArray(ch.gearPool) && ch.gearPool.length ? ch.gearPool : (Array.isArray(ch.inventory) ? ch.inventory : []);
+    pool.filter(i => i && /weapon/i.test(String(i.category || i.type || ''))).forEach(pushW);
+    if (!weapons.length) {
+      weapons.push({ id: 'unarmed', name: 'Unarmed Strike', dice: '1d3', crit: '20/x2', enhancementBonus: 0 });
+    }
+
+    const reqId = session.weaponId ? String(session.weaponId) : '';
+    const byIdIdx = reqId ? weapons.findIndex(w => w && w.id != null && String(w.id) === reqId) : -1;
+    const reqIdx = Number(session.weaponIdx ?? 0);
+    const activeWeaponIdx = byIdIdx >= 0 ? byIdIdx : ((reqIdx >= 0 && reqIdx < weapons.length) ? reqIdx : 0);
+    const activeWeapon = weapons[activeWeaponIdx];
+    const isRanged = /bow|crossbow|sling|dart|javelin|ranged|thrown/i.test(String(activeWeapon.name || '') + ' ' + String(activeWeapon.category || ''));
+
+    const wSets = ch.tactical?.weaponSets || ch.weaponSets || {};
+    const offHandItem = ch.bodySlots?.offHand || null;
+    const offHandName = offHandItem?.name || wSets?.set2?.mainWeapon || '';
+    const allowedGrips = isRanged ? ['Ranged'] : ['1-Hand', '2-Hand', 'TWF'];
+    const defaultGrip = isRanged
+      ? 'Ranged'
+      : ((wSets?.set1?.grip === '2-Hand' || activeWeapon.grip === '2-Hand') ? '2-Hand' : (wSets.activeSet === 'both' && offHandName ? 'TWF' : '1-Hand'));
+    const activeGrip = (session.grip && allowedGrips.includes(session.grip)) ? session.grip : defaultGrip;
+    const is2H = activeGrip === '2-Hand';
+    const isTwf = activeGrip === 'TWF';
+
+    const pa = isRanged ? 0 : Math.max(0, Number(tac.powerAttack) || 0);
+    const exp = isRanged ? 0 : Math.max(0, Number(tac.combatExpertise) || 0);
+    const paramKey = [
+      activeWeaponIdx, activeGrip, pa, exp,
+      tac.flanking ? 1 : 0, tac.charge ? 1 : 0, tac.higherGround ? 1 : 0, tac.fightingDefensively ? 1 : 0,
+      offHandName, session.combatRev || 0
+    ].join('|');
+
+    if (this._attackViewCache) {
+      let sheetMap = this._attackViewCache.get(sheet);
+      if (sheetMap && sheetMap.has(paramKey)) return sheetMap.get(paramKey);
+    }
+
+    const rFlags = sheet?.defenses?.ruleFlags || ch.ruleFlags || {};
+    const tacLimits = sheet?.combat?.tactical || {};
+    const featIds = new Set(
+      (Array.isArray(ch.feats) ? ch.feats : [])
+        .map(f => String(typeof f === 'string' ? f : (f?.id || f?.baseItemId || '')).toLowerCase().trim())
+        .filter(Boolean)
+    );
+    const hasPowerAttack = Boolean(tacLimits.hasPowerAttack || rFlags.powerAttack || featIds.has('feat-power-attack') || pa > 0);
+    const hasCombatExpertise = Boolean(tacLimits.hasCombatExpertise || rFlags.combatExpertise || featIds.has('feat-combat-expertise') || exp > 0);
+    const hasTwfFeat = Boolean(tacLimits.hasTwf || rFlags.twoWeaponFighting || featIds.has('feat-two-weapon-fighting'));
+    const hasAgileShield = Boolean(tacLimits.hasAgileShieldFighter || rFlags.agileShieldFighter || featIds.has('feat-agile-shield-fighter'));
+    const twfWarning = (isTwf && !hasTwfFeat && !hasAgileShield)
+      ? 'Two-Weapon Fighting without TWF feat: −6 main / −10 off-hand (still rollable).'
+      : '';
+
+    const ev = typeof this.evaluateWeaponAttack === 'function'
+      ? this.evaluateWeaponAttack(ch, activeWeapon, {
+          grip: is2H ? '2-Hand' : '1-Hand',
+          isRanged,
+          isTwf,
+          powerAttack: pa,
+          combatExpertise: exp,
+          flanking: Boolean(tac.flanking),
+          charge: Boolean(tac.charge),
+          higherGround: Boolean(tac.higherGround),
+          fightingDefensively: Boolean(tac.fightingDefensively)
+        })
+      : null;
+
+    const strMod = Number(sheet?.abilities?.mods?.str) || 0;
+    const dexMod = Number(sheet?.abilities?.mods?.dex) || 0;
+    const enh = Number(activeWeapon.enhancementBonus ?? activeWeapon.bonus ?? ((String(activeWeapon.name).match(/\+(\d+)/) || [])[1])) || 0;
+    const isLightOff = Boolean(offHandItem && (offHandItem.isLight || /light|dagger|shortsword|kukri/i.test(String(offHandItem.name || ''))));
+    const twfPen = isTwf ? (hasAgileShield ? -2 : (hasTwfFeat ? (isLightOff ? -2 : -4) : (isLightOff ? -4 : -6))) : 0;
+    const paMult = is2H ? 2 : 1;
+
+    const netAttackBonus = (ev && Number.isFinite(Number(ev.netAttackBonus)))
+      ? Number(ev.netAttackBonus) + (ev.twfApplied ? 0 : twfPen)
+      : (bab + (isRanged ? dexMod : strMod) + enh - pa - exp + twfPen + (tac.flanking ? 2 : 0) + (tac.charge ? 2 : 0) + (tac.higherGround ? 1 : 0) - (tac.fightingDefensively ? 4 : 0));
+
+    const netFlatDamage = (ev && Number.isFinite(Number(ev.netFlatDamage)))
+      ? Number(ev.netFlatDamage)
+      : ((isRanged ? 0 : (is2H ? Math.floor(strMod * 1.5) : strMod)) + enh + (isRanged ? 0 : pa * paMult));
+
+    const dice = String(ev?.effectiveDice || activeWeapon.dice || activeWeapon.damage || '1d8');
+    const critText = activeWeapon.crit || (activeWeapon.modes?.[0]?.critRange ? `${activeWeapon.modes[0].critRange}-20/×${activeWeapon.modes[0].critMult || 2}` : '20/×2');
+
+    const ruleset = this.getActiveRuleset ? this.getActiveRuleset(ch) : null;
+    const preEpicBab = Math.min(20, bab);
+    const iterOffsets = (ruleset && typeof ruleset.calcIterativeBab === 'function')
+      ? ruleset.calcIterativeBab(bab, preEpicBab).map(b => b - bab)
+      : [0, ...(bab >= 6 ? [-5] : []), ...(bab >= 11 ? [-10] : []), ...(bab >= 16 ? [-15] : [])];
+    const iteratives = iterOffsets.map(off => netAttackBonus + off);
+    const fmtS = (n) => (n >= 0 ? `+${n}` : `${n}`);
+    const damageFormula = netFlatDamage === 0 ? dice : `${dice}${netFlatDamage > 0 ? '+' : ''}${netFlatDamage}`;
+
+    const out = {
+      weapons,
+      activeWeapon,
+      activeWeaponIdx,
+      allowedGrips,
+      activeGrip,
+      offHandName,
+      isRanged,
+      isTwf,
+      is2H,
+      hasPowerAttack,
+      hasCombatExpertise,
+      hasTwfFeat,
+      hasAgileShield,
+      twfWarning,
+      paMult,
+      powerAttack: pa,
+      combatExpertise: exp,
+      netAttackBonus,
+      netFlatDamage,
+      dice,
+      damageFormula,
+      critText,
+      iteratives,
+      iterativesText: iteratives.map(fmtS).join(' / '),
+      breakdown: Array.isArray(ev?.breakdown) ? ev.breakdown : [
+        { label: 'Base Attack Bonus', value: fmtS(bab) },
+        { label: isRanged ? 'Dexterity Mod' : 'Strength Mod', value: fmtS(isRanged ? dexMod : strMod) },
+        ...(enh ? [{ label: 'Enhancement', value: fmtS(enh) }] : []),
+        ...(pa ? [{ label: `Power Attack (1:${paMult})`, value: `−${pa} hit / +${pa * paMult} dmg` }] : []),
+        ...(exp ? [{ label: 'Combat Expertise', value: `−${exp} hit / +${exp} AC` }] : []),
+        ...(twfPen ? [{ label: 'TWF Penalty', value: fmtS(twfPen) }] : [])
+      ]
+    };
+
+    if (this._attackViewCache) {
+      let sheetMap = this._attackViewCache.get(sheet);
+      if (!sheetMap) { sheetMap = new Map(); this._attackViewCache.set(sheet, sheetMap); }
+      sheetMap.set(paramKey, out);
+    }
+    return out;
+  },
+
+  /**
+   * Pure discipline-aware spell preparation & slot budget view.
+   * Covers all active disciplines (spontaneous / prepared / divine), including racial/template/boon casters.
+   */
+  prepBudgetView(sheet, disciplineFilter) {
+    const spView = sheet?.spells || {};
+    const stats = spView.casterStatsView || {};
+    const slotsRoot = spView.slotsByLevelView || {};
+    const spellsRoot = spView.spellsByLevelView || {};
+
+    const DISCIPLINES = [
+      { key: 'spontaneous', poolKey: 'knownSpells', stat: stats.spontaneous },
+      { key: 'prepared',    poolKey: 'preparedSpells', stat: stats.prepared },
+      { key: 'divine',      poolKey: 'divineSpells', stat: stats.divine }
+    ];
+
+    const hasSpontSlots = Object.values(slotsRoot.spontaneous || {}).some(sl => Number(sl?.total ?? sl?.max ?? sl?.daily ?? 0) > 0);
+    const fallbackTargetDisc = !hasSpontSlots
+      ? (Object.values(slotsRoot.prepared || {}).some(sl => Number(sl?.total ?? sl?.max ?? sl?.daily ?? 0) > 0)
+          ? 'prepared'
+          : (Object.values(slotsRoot.divine || {}).some(sl => Number(sl?.total ?? sl?.max ?? sl?.daily ?? 0) > 0) ? 'divine' : null))
+      : null;
+
+    const rows = [];
+    for (const d of DISCIPLINES) {
+      if (disciplineFilter && disciplineFilter !== d.key) continue;
+      const st = d.stat || {};
+      const slotMap = (slotsRoot[d.key] && typeof slotsRoot[d.key] === 'object') ? slotsRoot[d.key] : {};
+      let pool = Array.isArray(spellsRoot[d.poolKey]) ? spellsRoot[d.poolKey] : [];
+      if (d.key === 'spontaneous' && fallbackTargetDisc) {
+        pool = [];
+      } else if (d.key === fallbackTargetDisc && pool.length === 0 && Array.isArray(spellsRoot.knownSpells) && spellsRoot.knownSpells.length > 0) {
+        pool = spellsRoot.knownSpells;
+      }
+      const isActive = Boolean(st.active || st.hasClass || st.isSpontBoon || st.isPrepBoon || st.isDivBoon || pool.length > 0);
+      if (!isActive) continue;
+
+      const byLvl = new Map();
+      pool.forEach((sp, fallbackIdx) => {
+        if (!sp) return;
+        const lvl = Number(sp.effectiveSlotLevel ?? sp.level ?? sp.baseLevel ?? 0);
+        if (!Number.isFinite(lvl) || lvl < 0) return;
+        if (!byLvl.has(lvl)) byLvl.set(lvl, []);
+        byLvl.get(lvl).push({
+          id: sp.id || null,
+          name: sp.name || 'Spell',
+          school: sp.school || '',
+          dc: Number(sp.saveDc ?? sp.dc) || 0,
+          castingTime: sp.castAction || sp.action || sp.castingTime || '1 Standard Action',
+          damageDice: sp.damageDice || '',
+          srText: sp.srText || '',
+          index: Number.isFinite(Number(sp.originalIdx)) ? Number(sp.originalIdx) : fallbackIdx,
+          instanceId: sp.instanceId || '',
+          isDomain: Boolean(sp.isDomainSpell || sp.isDomain),
+          isCast: Boolean(sp.isCast),
+          discipline: d.key
+        });
+      });
+
+      const levelKeys = new Set([...Object.keys(slotMap).map(Number), ...byLvl.keys()]);
+      const sortedLevels = Array.from(levelKeys)
+        .filter(n => Number.isFinite(n) && n >= 0)
+        .sort((a, b) => b - a);
+
+      for (const level of sortedLevels) {
+        const sl = slotMap[level] || slotMap[String(level)] || {};
+        const maxSlots = Number(sl.total ?? sl.max ?? sl.daily ?? 0);
+        const usedSlots = Math.max(0, Number(sl.used) || 0);
+        const remainingSlots = Math.max(0, maxSlots - usedSlots);
+        const spells = byLvl.get(level) || [];
+        if (maxSlots <= 0 && spells.length === 0) continue;
+        rows.push({
+          discipline: d.key,
+          classLabel: st.classLabel || d.key,
+          cl: Number(st.cl ?? stats.casterLevel) || 0,
+          statKey: st.statKey || String(st.abilityKey || 'INT').toUpperCase(),
+          baseSaveDc: Number(st.baseSaveDc) || 10,
+          isBoon: Boolean(st.isSpontBoon || st.isPrepBoon || st.isDivBoon),
+          level,
+          maxSlots,
+          used: usedSlots,
+          usedSlots,
+          remainingSlots,
+          preparedCount: spells.length,
+          hasDomainSlot: Boolean(sl.domainMax || sl.domainSlot || spells.some(s => s.isDomain)),
+          spells
+        });
+      }
+    }
+    return rows;
+  },
+
+  /**
+   * Pure D&D 3.5e Item Forge assembler (enforces +1 prereq & +10 total cap).
+   */
+  assembleItem(spec = {}) {
+    const base = spec.baseEntry || {};
+    const enhBonus = Math.max(0, Math.min(5, Number(spec.enhancementBonus) || 0));
+    const enhancements = Array.isArray(spec.enhancements) ? spec.enhancements.filter(Boolean) : [];
+    const enhEq = enhancements.reduce((sum, e) => sum + (Number(e.bonusEquivalent ?? e.plus ?? 0) || 0), 0);
+    const totalPlus = enhBonus + enhEq;
+    const warnings = [];
+    if (enhancements.length > 0 && enhBonus < 1) {
+      warnings.push('D&D 3.5e RAW requires at least a +1 enhancement bonus before adding weapon/armor special abilities.');
+    }
+    if (totalPlus > 10) {
+      warnings.push(`Total enhancement equivalent (+${totalPlus}) exceeds the D&D 3.5e +10 maximum cap.`);
+    }
+    const isArmorOrShield = /armor|shield/i.test(String(base.category || base.type || spec.category || ''));
+    const baseCost = Number(base.cost || base.priceGp || 0);
+    // D&D 3.5e RAW: magic weapons require masterwork (+300 gp); magic armor/shields require masterwork (+150 gp)
+    const masterworkCost = (totalPlus > 0 || spec.masterwork) ? (isArmorOrShield ? 150 : 300) : 0;
+    const magicCost = totalPlus > 0 ? (totalPlus * totalPlus * (isArmorOrShield ? 1000 : 2000)) : 0;
+    const flatAddCost = enhancements.reduce((sum, e) => sum + (Number(e.flatCostGp) || 0), 0);
+    const totalCostGp = baseCost + masterworkCost + magicCost + flatAddCost;
+    const matName = spec.material && spec.material !== 'Standard' ? String(spec.material) : '';
+    const enhNames = enhancements.map(e => e.name).filter(Boolean).join(' ');
+    const baseName = String(spec.customName || base.name || 'Custom Item').replace(/^\+\d+\s+/, '');
+    const assembledName = [
+      enhBonus > 0 ? `+${enhBonus}` : '',
+      enhNames,
+      matName,
+      baseName
+    ].filter(Boolean).join(' ').trim();
+
+    const effects = Array.isArray(base.effects) ? base.effects.slice() : [];
+    if (enhBonus > 0) {
+      if (isArmorOrShield) {
+        const target = /shield/i.test(String(base.category || base.type || '')) ? 'ac.shield' : 'ac.armor';
+        effects.push({ type: 'stat', mode: 'flat', btype: 'Enhancement', value: enhBonus, targets: [target], source: 'Item Forge' });
+      } else {
+        effects.push({ type: 'stat', mode: 'flat', btype: 'Enhancement', value: enhBonus, targets: ['attack.weapon'], source: 'Item Forge' });
+        effects.push({ type: 'stat', mode: 'flat', btype: 'Enhancement', value: enhBonus, targets: ['damage.weapon'], source: 'Item Forge' });
+      }
+    }
+
+    const baseSlug = String(base.id || baseName).toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 28);
+    return {
+      valid: warnings.length === 0,
+      warnings,
+      totalPlus,
+      masterworkCost,
+      costGp: totalCostGp,
+      item: {
+        id: spec.id || `forged-${baseSlug}-p${totalPlus}`,
+        baseItemId: base.id || spec.baseItemId || null,
+        name: assembledName,
+        category: base.category || base.type || spec.category || 'Weapon',
+        dice: base.dice || base.damage || undefined,
+        crit: base.crit || undefined,
+        weight: Number(base.weight) || 0,
+        cost: totalCostGp,
+        material: matName || null,
+        enhancementBonus: enhBonus,
+        enhancements: enhancements.map(e => e.id || e.name),
+        qty: 1,
+        schemaVersion: 3,
+        effects
+      }
+    };
+  },
+
+  /**
+   * Pure Level-Up intent preview (zero doc mutation, handles 'd10' strings & CON nonability).
+   */
+  planLevelUp(doc, classEntry = {}, choices = {}) {
+    const ch = doc || {};
+    const prog = Array.isArray(ch.levelProgression) ? ch.levelProgression : [];
+    const nextLevel = prog.length > 0 ? prog.length + 1 : ((Number(ch.level) || 0) + 1);
+    const rawHd = String(classEntry.hitDie ?? classEntry.hd ?? '8');
+    const hdMatch = rawHd.match(/\d+/);
+    const hd = Math.max(4, hdMatch ? Number(hdMatch[0]) : 8);
+    const hasConNonability = Boolean(ch.abilityNonabilities?.con);
+    const conMod = hasConNonability ? 0 : this.getAbilityMod(ch.abilities?.con ?? ch.abilities?.CON ?? 10);
+    const intMod = this.getAbilityMod(ch.abilities?.int ?? ch.abilities?.INT ?? 10);
+    const baseSkills = Number(classEntry.skillPoints ?? classEntry.skillsPerLevel) || 2;
+    const isHuman = /human/i.test(String(ch.race || ''));
+    const rawPts = Math.max(1, baseSkills + intMod + (isHuman ? 1 : 0));
+    const skillBudget = nextLevel === 1 ? rawPts * 4 : rawPts;
+    const hpAvg = nextLevel === 1 ? hd : (Math.floor(hd / 2) + 1);
+    const hpGain = Math.max(1, (choices.hpRoll !== undefined ? Number(choices.hpRoll) : hpAvg) + conMod);
+    const grantsFeat = (nextLevel === 1 || nextLevel % 3 === 0);
+    const bonusFeatSlots = (nextLevel === 1 && isHuman) ? 1 : 0;
+    const grantsAbilityIncrease = (nextLevel >= 4 && nextLevel % 4 === 0);
+    return {
+      nextLevel,
+      classId: classEntry.id || null,
+      className: classEntry.name || 'Fighter',
+      hitDie: hd,
+      hpGain,
+      skillBudget,
+      grantsFeat,
+      bonusFeatSlots,
+      grantsAbilityIncrease,
+      prereqFailures: []
+    };
+  },
+
+  /**
+   * Delegates HP condition evaluation to the active ruleset (`rulesets/dnd35.js`),
+   * with a pure RAW fallback when invoked in headless Node without rulesets preloaded.
+   */
+  evaluateHpCondition(hpObj) {
+    if (this.rulesets && this.rulesets.dnd35 && typeof this.rulesets.dnd35.evaluateHpCondition === 'function') {
+      return this.rulesets.dnd35.evaluateHpCondition(hpObj);
+    }
+    const hp = hpObj && typeof hpObj === 'object' ? hpObj : {};
+    const cur = Number(hp.current ?? hp.max ?? 1);
+    const nl = Math.max(0, Number(hp.nonlethal) || 0);
+    if (cur <= -10) return { status: 'dead', label: 'Dead', severity: 'fatal', badge: '💀 Dead' };
+    if (cur <= -1) return { status: 'dying', label: 'Dying', severity: 'critical', badge: '🩸 Dying' };
+    if (cur === 0) return { status: 'disabled', label: 'Disabled', severity: 'warn', badge: '⚠️ Disabled' };
+    if (nl > cur) return { status: 'unconscious', label: 'Unconscious', severity: 'warn', badge: '💤 Unconscious' };
+    if (nl > 0 && nl === cur) return { status: 'staggered', label: 'Staggered', severity: 'warn', badge: '💫 Staggered' };
+    return { status: 'healthy', label: 'Healthy', severity: 'ok', badge: '' };
+  },
+
+  /**
+   * Unified Entity View Projection (`'self'` or immutable companion `id`).
+   * Single Source of Truth for Spine, Save/Init rolls, AC/Defenses Inspector, HP Modal, and Play Lens.
+   */
+  deriveEntityView(sheet, entityId = 'self') {
+    const s = sheet || {};
+    const reqId = String(entityId || 'self');
+    const comps = Array.isArray(s.companions?.list) ? s.companions.list : [];
+    const comp = reqId !== 'self'
+      ? (comps.find(c => c && c.id != null && String(c.id) === reqId) || null)
+      : null;
+
+    if (comp) {
+      const compHp = {
+        current: Number(comp.hp?.current ?? comp.hp?.max ?? 10),
+        max: Math.max(1, Number(comp.hp?.max ?? 10)),
+        temp: Math.max(0, Number(comp.hp?.temp ?? 0)),
+        nonlethal: Math.max(0, Number(comp.hp?.nonlethal ?? 0))
+      };
+      compHp.condition = this.evaluateHpCondition(compHp);
+      const acRaw = comp.ac && typeof comp.ac === 'object' ? comp.ac : {};
+      const spdRaw = comp.speed && typeof comp.speed === 'object'
+        ? comp.speed
+        : { land: Number(comp.speed) || 30, fly: 0 };
+      return {
+        id: String(comp.id || reqId),
+        isCompanion: true,
+        name: comp.customName || comp.baseName || comp.name || 'Companion',
+        subtitle: `${comp.totalHd || 1} HD Companion`,
+        hd: Number(comp.totalHd) || 1,
+        hp: compHp,
+        ac: {
+          total: Number(acRaw.total ?? 10),
+          touch: Number(acRaw.touch ?? 10),
+          flatFooted: Number(acRaw.flatFooted ?? acRaw.flat ?? 10),
+          armor: Number(acRaw.armor) || 0,
+          shield: Number(acRaw.shield) || 0,
+          effectiveDex: Number(acRaw.effectiveDex ?? acRaw.dex) || 0,
+          natural: Number(acRaw.natural) || 0,
+          deflection: Number(acRaw.deflection) || 0,
+          dodge: Number(acRaw.dodge) || 0,
+          size: Number(acRaw.size) || 0,
+          misc: Number(acRaw.misc) || 0
+        },
+        saves: {
+          fort: Number(comp.saves?.fort) || 0,
+          ref: Number(comp.saves?.ref) || 0,
+          will: Number(comp.saves?.will) || 0
+        },
+        bab: Number(comp.bab) || 0,
+        initiative: Number(comp.initiative) || 0,
+        speed: spdRaw,
+        defenses: comp.defenses && typeof comp.defenses === 'object' ? comp.defenses : {},
+        attacks: Array.isArray(comp.attacks) ? comp.attacks : [],
+        skills: comp.skills && typeof comp.skills === 'object' ? comp.skills : {},
+        specialAbilities: Array.isArray(comp.specialAbilities) ? comp.specialAbilities : [],
+        hpActionType: 'companion/adjustHp',
+        rawCompanion: comp
+      };
+    }
+
+    const heroHp = {
+      current: Number(s.hp?.current ?? s.hp?.max ?? 10),
+      max: Math.max(1, Number(s.hp?.max ?? 10)),
+      temp: Math.max(0, Number(s.hp?.temp ?? 0)),
+      nonlethal: Math.max(0, Number(s.hp?.nonlethal ?? 0)),
+      condition: s.hp?.condition || this.evaluateHpCondition(s.hp)
+    };
+    return {
+      id: 'self',
+      isCompanion: false,
+      name: s.meta?.name || 'Unnamed Hero',
+      subtitle: s.meta?.classes || `Level ${s.meta?.level || 1}`,
+      hd: Number(s.meta?.level) || 1,
+      hp: heroHp,
+      ac: s.ac || { total: 10, touch: 10, flatFooted: 10 },
+      saves: {
+        fort: Number(s.saves?.fort) || 0,
+        ref: Number(s.saves?.ref) || 0,
+        will: Number(s.saves?.will) || 0
+      },
+      bab: Number(s.combat?.bab) || 0,
+      initiative: Number(s.combat?.initiative) || 0,
+      speed: s.combat?.speed || { land: 30, fly: 0 },
+      defenses: s.defenses || {},
+      attacks: Array.isArray(s.combat?.weapons) ? s.combat.weapons : [],
+      skills: s.skillsBonusMap || {},
+      specialAbilities: Array.isArray(s.combat?.specialAttacks) ? s.combat.specialAttacks : [],
+      hpActionType: 'hud/adjustHp',
+      rawCompanion: null
+    };
+  },
+
+  /**
+   * Collects all SRD compendium chunk filenames required to hydrate a character doc
+   * (companions, monsters/wild shape, maneuvers, classes, feats, spells, domains, gear, templates).
+   */
+  collectRequiredChunks(doc, srdIndex = null) {
+    const chunks = new Set();
+    if (!doc || typeof doc !== 'object') return [];
+    const hasComps = (Array.isArray(doc.companions) && doc.companions.length > 0) || Boolean(doc.companion?.baseMonsterId);
+    if (hasComps) {
+      chunks.add('srd_companions.json');
+      chunks.add('srd_monsters.json');
+    }
+    if (doc.activeForm?.active || doc.wildShapeForm) {
+      chunks.add('srd_monsters.json');
+    }
+    const clsStr = String(doc.classes || '').toLowerCase();
+    const prog = Array.isArray(doc.levelProgression) ? doc.levelProgression : [];
+    const hasMartialAdept = /warblade|crusader|swordsage/.test(clsStr)
+      || prog.some(r => /warblade|crusader|swordsage/i.test(String(r?.className || '')));
+    if (hasMartialAdept || (Array.isArray(doc.maneuvers) && doc.maneuvers.length > 0) || doc.subsystems?.maneuvers) {
+      chunks.add('srd_maneuvers.json');
+    }
+    if (prog.length > 0 || doc.classes || doc.race) chunks.add('srd_classes_races.json');
+    if (Array.isArray(doc.feats) && doc.feats.length > 0) chunks.add('srd_feats.json');
+    if (doc.spells || doc.spellcasting) chunks.add('srd_spells.json');
+    if ((Array.isArray(doc.domains) && doc.domains.length > 0) || (Array.isArray(doc.spellcasting?.domains) && doc.spellcasting.domains.length > 0)) {
+      chunks.add('srd_domains.json');
+    }
+    if ((Array.isArray(doc.gearPool) && doc.gearPool.length > 0) || (doc.bodySlots && Object.keys(doc.bodySlots).length > 0) || (Array.isArray(doc.consumables) && doc.consumables.length > 0)) {
+      chunks.add('srd_equipment.json');
+    }
+    if (Array.isArray(doc.templates) && doc.templates.length > 0) chunks.add('srd_templates.json');
+
+    // Optional srd_index lookup for explicit chunk mapping
+    if (srdIndex && Array.isArray(srdIndex.chunks)) {
+      const refIds = new Set();
+      (Array.isArray(doc.feats) ? doc.feats : []).forEach(f => { if (typeof f === 'string') refIds.add(f); else if (f?.id) refIds.add(f.id); });
+      (Array.isArray(doc.gearPool) ? doc.gearPool : []).forEach(g => { if (g?.baseItemId) refIds.add(g.baseItemId); });
+      srdIndex.chunks.forEach(c => {
+        if (c && c.file && Array.isArray(c.ids) && c.ids.some(id => refIds.has(id))) {
+          chunks.add(c.file);
+        }
+      });
+    }
+    return Array.from(chunks).sort();
   }
 };
 
