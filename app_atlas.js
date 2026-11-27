@@ -127,14 +127,14 @@
       page: 'sheet',
       tab: 'tab-core',
       category: 'Character & Core',
-      label: 'Level Up / Add Class Level',
-      summary: 'Add a new class level (Base, Prestige, UA Variant, or Custom Class), roll HP, pick ability increases, and assign feats.',
+      label: 'Level Up / Add Class Level (1-20 & Epic 21+)',
+      summary: 'Add a new class level (Base, Prestige, UA Variant, Epic 21+ ELH, or Custom Class), roll HP, pick ability increases, and assign feats.',
       steps: [
         'Open the Character & Logs tab.',
         'Click Add Level in the Level Progression table to choose your class, HP, and feats.'
       ],
-      keywords: ['level up', 'level', 'class', 'prestige class', 'multiclass', 'progression', 'gain level'],
-      aliases: ['add a level', 'how to level up', 'change class'],
+      keywords: ['level up', 'level', 'class', 'prestige class', 'multiclass', 'progression', 'gain level', 'epic', 'epic level'],
+      aliases: ['add a level', 'how to level up', 'change class', 'epic progression'],
       selectors: ['[data-action="prog:add-level-row"]', '#tab-btn-core'],
       runCommand: { command: 'open_level_up', label: 'Open Level Up' }
     },
@@ -347,6 +347,21 @@
       keywords: ['buff', 'buffs', 'add buff', 'haste', 'mage armor', 'shield of faith', 'resist energy', 'defense', 'dr', 'sr'],
       aliases: ['how to add a buff', 'where are buffs', 'toggle buff'],
       selectors: ['#buffs-list-container', '[data-action="combat:open-add-buff"]', '#tab-btn-defense']
+    },
+    {
+      key: 'combat.routines_timers',
+      page: 'sheet',
+      tab: 'tab-defense',
+      category: 'Defense & Buffs',
+      label: 'Buff Routines, Spell Timers, Spell Matrix & Contingency',
+      summary: 'Run 1-click Morning Buff Routines, track Periodic/Delayed/Sustained Spell Timers, and manage Spell Matrix or Contingency presets.',
+      steps: [
+        'Open Defense & Buffs to add a Spell Timer (+ Timer) or run saved Buff Routines, Spell Matrix, and Contingency triggers.',
+        'In Spells & Maneuvers, open a spell row menu to configure Contingency, Spell Matrix, or Routine presets.'
+      ],
+      keywords: ['routine', 'buff routine', 'morning routine', 'spell timer', 'timer', 'timers', 'spell matrix', 'contingency', 'delayed spell', 'sustained spell', 'periodic timer'],
+      aliases: ['add spell timer', 'run morning routine', 'configure contingency', 'load spell matrix', 'buff routines'],
+      selectors: ['[data-action="e6:open-timer-modal"]', '[data-action="e6:run-morning-routine"]', '[data-action="spells:configure-preset"]']
     },
     {
       key: 'combat.turn_undead',
@@ -572,7 +587,7 @@
       tab: 'tab-core',
       category: 'Character & Core',
       label: 'Ability Scores, Feats & Level Progression Table',
-      summary: 'View and edit Ability Scores, review all character Feats and Flaws, and inspect or edit your Level 1-20 progression rows.',
+      summary: 'View and edit Ability Scores, review all character Feats and Flaws, and inspect or edit your Level 1-20+ (and Epic 21+ ELH) progression rows.',
       steps: [
         'Open the Character & Logs tab.',
         'Use the Level Progression table to add/edit levels, or click Quick Feat Picker (or type "feat: Power Attack").'
@@ -674,6 +689,21 @@
       selectors: ['[data-action="hub:roll-companion-attack"]', '[data-action="hub:roll-companion-check"]', '#view-mode-card-btn']
     },
     {
+      key: 'hub.dm_buff_push',
+      page: 'hub',
+      tab: null,
+      category: 'Campaign Hub',
+      label: 'DM Buff & Condition Push + Live Ack Log',
+      summary: 'Push SRD spells, conditions, or custom Rule Crafter buffs from the Campaign Hub to one or more party sheets in real time and monitor delivery in the Ack Log.',
+      steps: [
+        'Click Push Buff / Condition in the Hub toolbar (or type "/buff <name>" in Rule Master).',
+        'Select target party members, pick a buff or quick condition, and click Send; open the Ack Log to inspect or revoke active pushes.'
+      ],
+      keywords: ['push buff', 'dm buff', 'send buff', 'push condition', 'apply condition', 'ack log', 'buff log', 'revoke buff', 'condition push', 'dm push'],
+      aliases: ['push buff to players', 'apply condition from hub', 'open dm buff log', 'revoke pushed buff'],
+      selectors: ['[data-action="hub:open-dm-buff-modal"]', '[data-action="hub:open-dm-buff-log"]']
+    },
+    {
       key: 'hub.notes',
       page: 'hub',
       tab: null,
@@ -724,13 +754,13 @@
       page: 'crafter',
       tab: null,
       category: 'Rule Crafter',
-      label: 'Add, Wrap & Reorder V3 Rule Blocks',
-      summary: 'Snap together Pure V3 mechanical blocks (Stat, Roll, Attack, Defense, Resource, Modes, Powers) and wrap conditional branches with When.',
+      label: 'Add, Wrap & Reorder V3 Rule Blocks (with Formulas)',
+      summary: 'Snap together Pure V3 mechanical blocks (Stat, Roll, Attack, Defense, Resource, Modes, Powers), enter dynamic formula expressions in numeric fields, and wrap conditional branches with When.',
       steps: [
         'Pick a blueprint at the top, then click block pills in the palette to add or wrap rules.'
       ],
-      keywords: ['blocks', 'rule blocks', 'add block', 'when', 'condition', 'modes', 'powers', 'v3'],
-      aliases: ['how to add a block', 'conditional bonus'],
+      keywords: ['blocks', 'rule blocks', 'add block', 'when', 'condition', 'modes', 'powers', 'v3', 'formula', 'formulas', 'expression'],
+      aliases: ['how to add a block', 'conditional bonus', 'formula expression'],
       selectors: ['[data-action="add-block"]', '[data-action="wrap-block-when"]', '[data-action="add-mode"]']
     },
     {

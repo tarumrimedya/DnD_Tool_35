@@ -41,6 +41,7 @@ function runAppAtlasRecognitionTests() {
     ['flat-footed', 'sheet', 'hud.armor_class'],
     ['level up', 'sheet', 'hud.level_up'],
     ['multiclass', 'sheet', 'hud.level_up'],
+    ['epic level', 'sheet', 'hud.level_up'],
     ['quest log', 'sheet', 'hud.quest_notebook'],
     ['quest notebook', 'sheet', 'hud.quest_notebook'],
 
@@ -56,6 +57,10 @@ function runAppAtlasRecognitionTests() {
     ['buffs', 'sheet', 'combat.buffs'],
     ['add buff', 'sheet', 'combat.buffs'],
     ['haste', 'sheet', 'combat.buffs'],
+    ['buff routine', 'sheet', 'combat.routines_timers'],
+    ['spell timer', 'sheet', 'combat.routines_timers'],
+    ['spell matrix', 'sheet', 'combat.routines_timers'],
+    ['contingency', 'sheet', 'combat.routines_timers'],
     ['turn undead', 'sheet', 'combat.turn_undead'],
     ['rebuke undead', 'sheet', 'combat.turn_undead'],
     ['channeling', 'sheet', 'combat.turn_undead'],
@@ -103,10 +108,14 @@ function runAppAtlasRecognitionTests() {
     ['undo', 'crafter', 'crafter.undo_redo'],
     ['live preview', 'crafter', 'crafter.undo_redo'],
     ['rule blocks', 'crafter', 'crafter.blocks'],
+    ['formula', 'crafter', 'crafter.blocks'],
     ['import json', 'crafter', 'crafter.examples_json'],
     ['quest log', 'hub', 'hub.notes'],
     ['animal companion', 'hub', 'hub.companions'],
-    ['familiar', 'hub', 'hub.companions']
+    ['familiar', 'hub', 'hub.companions'],
+    ['push buff', 'hub', 'hub.dm_buff_push'],
+    ['ack log', 'hub', 'hub.dm_buff_push'],
+    ['apply condition from hub', 'hub', 'hub.dm_buff_push']
   ];
 
   for (const [query, page, expected] of CASES) {
