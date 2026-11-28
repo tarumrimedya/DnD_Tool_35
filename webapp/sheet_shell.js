@@ -60,7 +60,7 @@
   // ---------------------------------------------------------------------------
   // 1. Shell Feature Flag & 3-Theme Controller
   // ---------------------------------------------------------------------------
-  let _shellMode = 'classic';
+  let _shellMode = 'calm';
   let _themeName = 'slate';
 
   function _applyDomAttrs() {
@@ -79,7 +79,7 @@
     },
     setMode(rawMode, opts = {}) {
       const normalized = String(rawMode || '').toLowerCase().trim();
-      const next = VALID_SHELLS.includes(normalized) ? normalized : 'classic';
+      const next = VALID_SHELLS.includes(normalized) ? normalized : 'calm';
       _shellMode = next;
       if (opts.persist !== false) {
         _safeStorageSet(STORAGE_SHELL_KEY, next);
@@ -117,7 +117,7 @@
     } else if (savedShell && VALID_SHELLS.includes(savedShell.toLowerCase())) {
       _shellMode = savedShell.toLowerCase();
     } else {
-      _shellMode = 'classic';
+      _shellMode = 'calm';
     }
 
     const qTheme = _readQueryParam('theme');

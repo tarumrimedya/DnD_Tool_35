@@ -1,0 +1,917 @@
+/**
+ * Joyful-Fermi — Calm Sheet Desktop Shell, 272px 3x2 Spine, Pin-to-Right Rail,
+ * Center Rule Master Bar & Floating Polygonal Dice Drawer (Phase 1)
+ *
+ * Strictly scoped to desktop (>=1024px) when html[data-sheet-shell="calm"].
+ * Mobile/tablet (<1024px) stays cleanly on the classic responsive shell until Phase 4.
+ */
+
+.calm-only-desktop {
+  display: none;
+}
+
+.calm-popover[hidden],
+.calm-hp-popover[hidden] {
+  display: none !important;
+}
+
+.calm-num {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Custom SVG d20 cursor on rollable elements (zero U+1F3B2) */
+.calm-rollable {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 24 24' fill='%231e293b' stroke='%23e2e8f0' stroke-width='1.7'%3E%3Cpolygon points='12,2 21,7 21,17 12,22 3,17 3,7'/%3E%3Cpolygon points='12,6 18,15 6,15' fill='none'/%3E%3Ctext x='12' y='14' text-anchor='middle' font-size='6.5' font-family='sans-serif' font-weight='700' fill='%23f8fafc' stroke='none'%3E20%3C/text%3E%3C/svg%3E") 11 11, pointer;
+}
+
+/* Settings Appearance Card (visible in both Classic & Calm so user can switch anytime) */
+.calm-settings-card {
+  background: rgba(15, 23, 42, 0.72);
+  border: 1px solid rgba(99, 102, 241, 0.35);
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+.calm-settings-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.calm-settings-pills {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 8px;
+}
+.calm-settings-pill {
+  height: 32px;
+  padding: 0 10px;
+  border-radius: 7px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #cbd5e1;
+  background: #0f172a;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: border-color 120ms ease, background 120ms ease, color 120ms ease;
+}
+.calm-settings-pill:hover {
+  border-color: rgba(148, 163, 184, 0.45);
+  color: #ffffff;
+}
+.calm-settings-pill.active {
+  background: rgba(99, 102, 241, 0.22);
+  border-color: #818cf8;
+  color: #ffffff;
+}
+
+@media (min-width: 1024px) {
+  html[data-sheet-shell="calm"] body {
+    background-color: var(--calm-canvas) !important;
+    color: var(--calm-text);
+  }
+
+  /* Hide classic top chrome without removing any legacy IDs from the DOM */
+  html[data-sheet-shell="calm"] #calm-sticky-hud,
+  html[data-sheet-shell="calm"] #classic-hero-section,
+  html[data-sheet-shell="calm"] #vitals-hud-section,
+  html[data-sheet-shell="calm"] #sheet-nav-tabs {
+    display: none !important;
+  }
+
+  /* Show Calm desktop containers */
+  html[data-sheet-shell="calm"] #calm-topbar {
+    display: grid;
+  }
+  html[data-sheet-shell="calm"] #calm-spine,
+  html[data-sheet-shell="calm"] #calm-dice-fab {
+    display: flex;
+  }
+  html[data-sheet-shell="calm"][data-calm-right-pinned="1"] #calm-right-rail {
+    display: flex;
+  }
+
+  /* Harmonize inner cards across all 3 themes */
+  html[data-sheet-shell="calm"] #calm-workspace .bg-dndCard {
+    background-color: var(--calm-surface);
+    border-color: var(--calm-border);
+  }
+
+  /* -------------------------------------------------------------------------
+     1. 52px CALM TOP BAR
+     ------------------------------------------------------------------------- */
+  #calm-topbar {
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    height: 52px;
+    padding: 0 16px;
+    gap: 12px;
+    background: var(--calm-surface);
+    border-bottom: 1px solid var(--calm-border);
+    position: sticky;
+    top: 0;
+    z-index: 45;
+  }
+  html[data-sheet-theme="midnight"][data-sheet-shell="calm"] #calm-topbar {
+    background: var(--calm-canvas);
+  }
+  .calm-tb-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+  .calm-tb-right {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+  }
+  .calm-tb-btn {
+    height: 32px;
+    padding: 0 10px;
+    border-radius: 7px;
+    background: var(--calm-elevated);
+    border: 1px solid var(--calm-border);
+    color: var(--calm-text-secondary);
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: border-color 120ms ease, color 120ms ease;
+  }
+  .calm-tb-btn:hover {
+    color: var(--calm-text);
+    border-color: var(--calm-border-strong);
+  }
+  .calm-portrait-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    flex-shrink: 0;
+    background: var(--calm-elevated);
+    border: 1px solid var(--calm-border-strong);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+  }
+  .calm-portrait-btn:hover {
+    border-color: var(--calm-accent);
+  }
+  .calm-portrait-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .calm-portrait-edit {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 14px;
+    height: 14px;
+    border-top-left-radius: 4px;
+    background: var(--calm-surface);
+    color: var(--calm-text);
+    font-size: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 120ms ease;
+  }
+  .calm-portrait-btn:hover .calm-portrait-edit {
+    opacity: 1;
+  }
+  .calm-ident {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+  .calm-ident-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+  }
+  .calm-ident-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--calm-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .calm-ident-sub {
+    font-size: 11px;
+    color: var(--calm-text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .calm-ident-nudge {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--calm-accent);
+    background: var(--calm-accent-soft);
+    border: 1px solid var(--calm-border-strong);
+    padding: 1px 6px;
+    border-radius: 99px;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+
+  /* 4 Equal-Width Top Lenses */
+  .calm-lens-nav {
+    display: grid;
+    grid-template-columns: repeat(4, 102px);
+    background: var(--calm-inset);
+    border: 1px solid var(--calm-border);
+    border-radius: 8px;
+    padding: 3px;
+    gap: 3px;
+  }
+  .calm-lens-tab {
+    height: 32px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--calm-text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: background 120ms ease, color 120ms ease;
+  }
+  .calm-lens-tab:hover {
+    color: var(--calm-text);
+  }
+  .calm-lens-tab.active {
+    background: var(--calm-elevated);
+    color: var(--calm-text);
+    box-shadow: inset 0 0 0 1px var(--calm-border-strong);
+  }
+  .calm-lens-key {
+    font-size: 10px;
+    color: var(--calm-text-muted);
+    font-weight: 700;
+    border: 1px solid var(--calm-border);
+    border-radius: 3px;
+    padding: 0 4px;
+    line-height: 14px;
+  }
+
+  /* -------------------------------------------------------------------------
+     2. WORKSPACE GRID (2-Col Default / 3-Col when Right Rail Pinned)
+     ------------------------------------------------------------------------- */
+  html[data-sheet-shell="calm"] #calm-workspace {
+    display: grid;
+    grid-template-columns: 272px minmax(0, 1fr);
+    gap: 16px;
+    max-width: 1440px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 14px 16px 90px 16px;
+    align-items: start;
+  }
+  html[data-sheet-shell="calm"][data-calm-right-pinned="1"] #calm-workspace {
+    grid-template-columns: 272px minmax(0, 1fr) 304px;
+    max-width: 1840px;
+  }
+  html[data-sheet-shell="calm"] #calm-workspace > main {
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    min-width: 0;
+  }
+
+  /* Fold Defense & Buffs inside Build Lens cleanly */
+  html[data-sheet-shell="calm"][data-calm-lens="build"] #tab-defense {
+    display: block !important;
+    margin-top: 16px;
+  }
+
+  /* -------------------------------------------------------------------------
+     3. 272px 3x2 LEFT VERTICAL SPINE (0px scroll at 1366x768)
+     ------------------------------------------------------------------------- */
+  #calm-spine {
+    width: 272px;
+    flex-direction: column;
+    gap: 10px;
+    position: sticky;
+    top: 66px;
+  }
+  .calm-spine-card {
+    background: var(--calm-surface);
+    border: 1px solid var(--calm-border);
+    border-radius: 10px;
+    padding: 11px 16px;
+  }
+  html[data-sheet-theme="midnight"][data-sheet-shell="calm"] .calm-spine-card {
+    background: transparent;
+    border-radius: 0;
+    border: 0;
+    border-bottom: 1px solid var(--calm-border);
+    padding: 9px 4px 11px 4px;
+  }
+  .calm-sec-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--calm-text-muted);
+  }
+
+  .calm-entity-seg {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+  .calm-entity-pill {
+    height: 24px;
+    padding: 0 6px;
+    border-radius: 5px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--calm-text-secondary);
+    background: var(--calm-inset);
+    border: 1px solid var(--calm-border);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+  }
+  .calm-entity-pill.active {
+    background: var(--calm-accent-soft);
+    color: var(--calm-text);
+    border-color: var(--calm-accent);
+  }
+
+  .calm-hp-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+  .calm-hp-val {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--calm-text);
+  }
+  .calm-hp-chips {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .calm-chip-temp {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--calm-cyan);
+    background: rgba(56, 189, 248, 0.14);
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+  .calm-chip-nl {
+    font-size: 10px;
+    font-weight: 700;
+    color: #f472b6;
+    background: rgba(244, 114, 182, 0.14);
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+  .calm-hp-track {
+    height: 8px;
+    border-radius: 99px;
+    background: var(--calm-inset);
+    border: 1px solid var(--calm-border);
+    overflow: hidden;
+    display: flex;
+    margin-bottom: 9px;
+  }
+  .calm-hp-fill-real {
+    background: var(--calm-emerald);
+    height: 100%;
+    transition: width 180ms ease;
+  }
+  .calm-hp-fill-temp {
+    background: var(--calm-cyan);
+    height: 100%;
+    transition: width 180ms ease;
+  }
+  .calm-hp-fill-nl {
+    background: #f472b6;
+    height: 100%;
+    opacity: 0.75;
+  }
+  .calm-hp-btns {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .calm-btn-l {
+    height: 36px;
+    padding: 0 10px;
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    cursor: pointer;
+    transition: filter 120ms ease;
+  }
+  .calm-btn-dmg {
+    background: rgba(225, 29, 72, 0.16);
+    color: #fda4af;
+    border: 1px solid rgba(225, 29, 72, 0.36);
+  }
+  .calm-btn-dmg:hover {
+    filter: brightness(1.18);
+  }
+  .calm-btn-heal {
+    background: rgba(16, 185, 129, 0.16);
+    color: #6ee7b7;
+    border: 1px solid rgba(16, 185, 129, 0.36);
+  }
+  .calm-btn-heal:hover {
+    filter: brightness(1.18);
+  }
+  .calm-hp-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 8px;
+  }
+  .calm-hp-periodic {
+    height: 24px;
+    padding: 0 8px;
+    border-radius: 5px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--calm-text-secondary);
+    background: var(--calm-inset);
+    border: 1px solid var(--calm-border);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+  }
+  .calm-hp-periodic:hover {
+    color: var(--calm-text);
+    border-color: var(--calm-border-strong);
+  }
+
+  /* Auto-focus HP Popover (spinners hidden, wheel supported, no 5/10/20 bloat) */
+  .calm-hp-popover {
+    margin-top: 8px;
+    padding: 8px;
+    border-radius: 7px;
+    background: var(--calm-inset);
+    border: 1px solid var(--calm-border-strong);
+  }
+  .calm-hp-pop-row {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 6px;
+    align-items: center;
+  }
+  .calm-hp-input {
+    width: 100%;
+    height: 32px;
+    padding: 0 9px;
+    border-radius: 6px;
+    background: var(--calm-surface);
+    border: 1px solid var(--calm-accent);
+    color: var(--calm-text);
+    font-size: 13px;
+    font-weight: 700;
+    outline: none;
+    -moz-appearance: textfield;
+  }
+  .calm-hp-input::-webkit-inner-spin-button,
+  .calm-hp-input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  .calm-btn-s {
+    height: 32px;
+    padding: 0 10px;
+    border-radius: 6px;
+    font-size: 11.5px;
+    font-weight: 700;
+    background: var(--calm-elevated);
+    color: var(--calm-text-secondary);
+    border: 1px solid var(--calm-border);
+    cursor: pointer;
+  }
+  .calm-btn-s:hover {
+    color: var(--calm-text);
+    border-color: var(--calm-border-strong);
+  }
+  .calm-btn-primary {
+    background: var(--calm-accent);
+    color: #ffffff;
+    border-color: transparent;
+  }
+
+  /* Modular 3x2 Grids (3 x 72px cells, 12px gutters) */
+  .calm-grid-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 7px;
+  }
+  .calm-3x2-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px 12px;
+  }
+  .calm-cell {
+    background: var(--calm-elevated);
+    border: 1px solid var(--calm-border);
+    border-radius: 7px;
+    padding: 5px 6px;
+    min-height: 52px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: border-color 120ms ease;
+  }
+  html[data-sheet-theme="midnight"][data-sheet-shell="calm"] .calm-cell {
+    background: var(--calm-surface);
+  }
+  .calm-cell:hover {
+    border-color: var(--calm-border-strong);
+  }
+  .calm-cell.buffed {
+    border-color: rgba(56, 189, 248, 0.34);
+  }
+  .calm-cell.debuffed {
+    border-color: rgba(244, 63, 94, 0.36);
+  }
+  .calm-cell-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2px;
+    min-height: 16px;
+  }
+  .calm-cell-lbl {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--calm-text-muted);
+    text-transform: uppercase;
+  }
+  .calm-cell-val {
+    font-size: 15px;
+    font-weight: 800;
+    line-height: 1.15;
+    text-align: center;
+    color: var(--calm-text);
+  }
+  .calm-cell-sub {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--calm-text-secondary);
+    text-align: center;
+    line-height: 1.1;
+  }
+  .calm-delta-up {
+    color: var(--calm-cyan);
+    font-size: 10px;
+    font-weight: 700;
+  }
+  .calm-delta-dn {
+    color: #fb7185;
+    font-size: 10px;
+    font-weight: 700;
+  }
+
+  /* Fixed 16x16 Info slot (hover/focus reveal) + Exclusive Amber Spark (✦) */
+  .calm-info-btn {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--calm-text-secondary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 120ms ease, background 120ms ease;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .calm-cell:hover .calm-info-btn,
+  .calm-cell:focus-within .calm-info-btn {
+    opacity: 0.85;
+  }
+  .calm-info-btn:hover {
+    opacity: 1 !important;
+    background: var(--calm-inset);
+    color: var(--calm-text);
+  }
+  .calm-spark {
+    height: 16px;
+    min-width: 16px;
+    padding: 0 3px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 800;
+    color: var(--spark-amber);
+    background: var(--spark-amber-soft);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .calm-spark:hover {
+    filter: brightness(1.18);
+  }
+
+  /* Single-line Spine Effects Pill */
+  .calm-effects-bar {
+    width: 100%;
+    height: 32px;
+    padding: 0 12px;
+    background: var(--calm-surface);
+    border: 1px solid var(--calm-border);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--calm-text);
+    cursor: pointer;
+  }
+  .calm-effects-bar:hover {
+    border-color: var(--calm-border-strong);
+    background: var(--calm-elevated);
+  }
+
+  /* -------------------------------------------------------------------------
+     4. PINNED RIGHT RAIL (3rd Column)
+     ------------------------------------------------------------------------- */
+  #calm-right-rail {
+    width: 304px;
+    flex-direction: column;
+    gap: 12px;
+    position: sticky;
+    top: 66px;
+  }
+  .calm-right-card {
+    background: var(--calm-surface);
+    border: 1px solid var(--calm-border);
+    border-radius: 10px;
+    padding: 12px 14px;
+  }
+  .calm-right-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .calm-cond-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 8px;
+  }
+  .calm-cond-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    height: 24px;
+    padding: 0 8px;
+    border-radius: 5px;
+    font-size: 11px;
+    font-weight: 700;
+    background: rgba(225, 29, 72, 0.15);
+    color: #fda4af;
+    border: 1px solid rgba(225, 29, 72, 0.34);
+  }
+  .calm-buff-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .calm-buff-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    background: var(--calm-inset);
+    border: 1px solid var(--calm-border);
+    font-size: 11.5px;
+    color: var(--calm-text);
+  }
+  .calm-buff-meta {
+    font-size: 10.5px;
+    color: var(--calm-text-secondary);
+  }
+
+  /* -------------------------------------------------------------------------
+     5. FLOATING BOTTOM-RIGHT DICE FAB & UPWARD #tab-dice DRAWER
+     ------------------------------------------------------------------------- */
+  #calm-dice-fab {
+    position: fixed;
+    right: 18px;
+    bottom: 16px;
+    z-index: 62;
+    height: 38px;
+    padding: 0 14px;
+    border-radius: 999px;
+    background: var(--calm-surface);
+    border: 1px solid var(--calm-border-strong);
+    color: var(--calm-text);
+    font-size: 12px;
+    font-weight: 700;
+    align-items: center;
+    gap: 7px;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.52);
+    cursor: pointer;
+    transition: border-color 120ms ease, background 120ms ease;
+  }
+  #calm-dice-fab:hover {
+    border-color: var(--calm-accent);
+  }
+  html[data-sheet-shell="calm"][data-calm-dice-open="1"] #calm-dice-fab {
+    background: var(--calm-accent);
+    color: #ffffff;
+    border-color: transparent;
+  }
+  html[data-sheet-shell="calm"][data-calm-dice-open="1"] #tab-dice {
+    display: block !important;
+    position: fixed !important;
+    right: 18px !important;
+    bottom: 64px !important;
+    width: min(560px, calc(100vw - 36px)) !important;
+    max-height: calc(100vh - 134px) !important;
+    overflow-y: auto !important;
+    z-index: 61 !important;
+    background: var(--calm-surface) !important;
+    border: 1px solid var(--calm-border-strong) !important;
+    border-radius: 12px !important;
+    padding: 14px !important;
+    box-shadow: 0 22px 54px rgba(0, 0, 0, 0.72) !important;
+  }
+
+  /* -------------------------------------------------------------------------
+     6. CENTER BOTTOM RULE MASTER BAR (Real Animated Persona from ai_assistant)
+     ------------------------------------------------------------------------- */
+  html[data-sheet-shell="calm"] #rm-assist-fab {
+    left: 50% !important;
+    right: auto !important;
+    bottom: 14px !important;
+    width: 58px !important;
+    height: 58px !important;
+    transform: translateX(-50%) !important;
+    transition: transform 180ms ease, box-shadow 180ms ease !important;
+  }
+  html[data-sheet-shell="calm"] #rm-assist-fab .rm-assist-fab-icon svg {
+    width: 72px !important;
+    height: 71px !important;
+    margin-top: -6px !important;
+  }
+  html[data-sheet-shell="calm"][data-calm-rm-open="1"] #rm-assist-fab {
+    transform: translateX(-312px) !important;
+  }
+  html[data-sheet-shell="calm"] #rm-assist-quickbar {
+    left: 50% !important;
+    right: auto !important;
+    bottom: 16px !important;
+    transform: translateX(-242px) !important;
+    width: min(520px, calc(100vw - 260px)) !important;
+  }
+  html[data-sheet-shell="calm"] #rm-assist-quickbar .rm-assist-quick-form {
+    min-height: 46px;
+  }
+  html[data-sheet-shell="calm"] #rm-assist-panel {
+    left: 50% !important;
+    right: auto !important;
+    bottom: 80px !important;
+    transform: translateX(-50%) !important;
+    width: min(640px, 92vw) !important;
+    height: min(560px, calc(100vh - 150px)) !important;
+  }
+
+  /* -------------------------------------------------------------------------
+     7. ANCHORED POPOVER (Breakdown, Situational Spark, Buff Flyout, Theme Menu)
+     ------------------------------------------------------------------------- */
+  .calm-popover {
+    position: fixed;
+    z-index: 85;
+    width: 320px;
+    max-width: 92vw;
+    max-height: 70vh;
+    overflow-y: auto;
+    background: var(--calm-elevated);
+    border: 1px solid var(--calm-border-strong);
+    border-radius: 10px;
+    padding: 12px;
+    box-shadow: 0 20px 48px rgba(0, 0, 0, 0.68);
+    color: var(--calm-text);
+  }
+  .calm-pop-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .calm-pop-title {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--calm-text);
+  }
+  .calm-pop-body {
+    font-size: 12px;
+    color: var(--calm-text-secondary);
+    line-height: 1.45;
+  }
+  .calm-pop-close {
+    height: 22px;
+    width: 22px;
+    border-radius: 5px;
+    color: var(--calm-text-muted);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  .calm-pop-close:hover {
+    background: var(--calm-inset);
+    color: var(--calm-text);
+  }
+  .calm-btn-m {
+    height: 32px;
+    padding: 0 10px;
+    border-radius: 7px;
+    font-size: 11.5px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    cursor: pointer;
+    background: var(--calm-inset);
+    color: var(--calm-text);
+    border: 1px solid var(--calm-border);
+  }
+  .calm-btn-m:hover {
+    border-color: var(--calm-border-strong);
+  }
+  .calm-theme-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .calm-theme-btn {
+    height: 34px;
+    padding: 0 10px;
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 600;
+    background: var(--calm-inset);
+    color: var(--calm-text-secondary);
+    border: 1px solid var(--calm-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+  }
+  .calm-theme-btn:hover {
+    color: var(--calm-text);
+    border-color: var(--calm-border-strong);
+  }
+  .calm-theme-btn.active {
+    background: var(--calm-accent-soft);
+    color: var(--calm-text);
+    border-color: var(--calm-accent);
+  }
+}

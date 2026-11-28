@@ -2834,6 +2834,9 @@
       if (window.RuleMaster && typeof RuleMaster.renderSourcesCatalog === 'function') {
         RuleMaster.renderSourcesCatalog();
       }
+      if (window.Sheet && window.Sheet.spine && typeof window.Sheet.spine.syncSettingsUi === 'function') {
+        window.Sheet.spine.syncSettingsUi();
+      }
     }
 
     function closeSettingsModal() {
@@ -3324,6 +3327,9 @@
 
       renderTabIfNeeded(tabId, false);
       if (!isRestoration && prevTab !== tabId) scrollMobileTabIntoView(tabId);
+      if (window.Sheet && window.Sheet.spine && typeof window.Sheet.spine.onTabChanged === 'function') {
+        window.Sheet.spine.onTabChanged(tabId);
+      }
     }
 
     function restoreActiveTabAndScroll() {
@@ -10046,6 +10052,9 @@ function renderManualStatsPanel() {
 
       // Surgical <1ms HUD patch: HP changes never alter weapons, skills, spells, or inventory — do NOT re-dirty all tabs!
       try { renderHUD({ skipRecompute: true }); } catch (e) { console.error('renderHUD error:', e); }
+      if (window.Sheet && window.Sheet.bus && typeof window.Sheet.bus.emit === 'function') {
+        window.Sheet.bus.emit(['hp'], { source: 'hpAdjust' });
+      }
       return evaluated;
     }
 

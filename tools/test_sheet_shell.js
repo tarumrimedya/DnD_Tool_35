@@ -16,14 +16,14 @@ function runSheetShellTests() {
   let passed = 0;
 
   // 1. Defaults & Theme/Shell validation
-  assert.strictEqual(Sheet.shell.getMode(), 'classic', 'Default shell mode must be classic');
-  assert.strictEqual(Sheet.shell.isCalm(), false);
+  assert.strictEqual(Sheet.shell.getMode(), 'calm', 'Default shell mode must be calm');
+  assert.strictEqual(Sheet.shell.isCalm(), true);
   assert.strictEqual(Sheet.theme.get(), 'slate', 'Default theme must be slate');
   assert.deepStrictEqual(Sheet.theme.list(), ['slate', 'obsidian', 'midnight']);
 
-  assert.strictEqual(Sheet.shell.setMode('CALM', { persist: false }), 'calm');
-  assert.strictEqual(Sheet.shell.isCalm(), true);
-  assert.strictEqual(Sheet.shell.setMode('invalid', { persist: false }), 'classic');
+  assert.strictEqual(Sheet.shell.setMode('CLASSIC', { persist: false }), 'classic');
+  assert.strictEqual(Sheet.shell.isCalm(), false);
+  assert.strictEqual(Sheet.shell.setMode('invalid', { persist: false }), 'calm');
 
   assert.strictEqual(Sheet.theme.set('obsidian', { persist: false }), 'obsidian');
   assert.strictEqual(Sheet.theme.set('midnight', { persist: false }), 'midnight');

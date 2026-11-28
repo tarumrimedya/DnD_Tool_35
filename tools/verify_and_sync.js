@@ -63,6 +63,8 @@ const CORE_FILES = [
   'rule_engine.js',
   'char_store.js',
   'sheet_shell.js',
+  'sheet_spine.js',
+  'styles/sheet_shell.css',
   'ui_components.js',
   'rule_master.js',
   'rule_master_ai_schema.json',
@@ -482,6 +484,7 @@ function main() {
     'rule_engine.js':     { inlineEvents: 0,   windowAssigns: 1 },
     'char_store.js':      { inlineEvents: 0,   windowAssigns: 1 },
     'sheet_shell.js':     { inlineEvents: 0,   windowAssigns: 1 },
+    'sheet_spine.js':     { inlineEvents: 0,   windowAssigns: 0 },
     'ui_components.js':   { inlineEvents: 0,   windowAssigns: 2 },
     'rule_master.js':     { inlineEvents: 0,   windowAssigns: 1 },
     'ui_shared.js':       { inlineEvents: 0,   windowAssigns: 0 },
@@ -535,8 +538,8 @@ function main() {
   }
 
   // 6c. Delegated Action Registration Completeness Gate (index.html + hub.html + modules)
-  const ACTION_PRODUCER_FILES = ['index.html', 'char_hud.js', 'char_combat.js', 'char_spells.js', 'char_progression.js', 'char_inventory.js', 'rule_master.js', 'hub.html', 'hub_notes.js', 'ui_shared.js', 'supabase_auth.js'];
-  const ACTION_REGISTRY_FILES = ['ui_components.js', 'char_hud.js', 'char_combat.js', 'char_spells.js', 'char_progression.js', 'char_inventory.js', 'char_store.js', 'rule_master.js', 'hub.html', 'hub_dice.js', 'hub_notes.js', 'ui_shared.js', 'supabase_auth.js'];
+  const ACTION_PRODUCER_FILES = ['index.html', 'sheet_spine.js', 'char_hud.js', 'char_combat.js', 'char_spells.js', 'char_progression.js', 'char_inventory.js', 'rule_master.js', 'hub.html', 'hub_notes.js', 'ui_shared.js', 'supabase_auth.js'];
+  const ACTION_REGISTRY_FILES = ['ui_components.js', 'sheet_spine.js', 'char_hud.js', 'char_combat.js', 'char_spells.js', 'char_progression.js', 'char_inventory.js', 'char_store.js', 'rule_master.js', 'hub.html', 'hub_dice.js', 'hub_notes.js', 'ui_shared.js', 'supabase_auth.js'];
   const registeredActions = new Set();
   for (const rel of ACTION_REGISTRY_FILES) {
     const full = path.join(ROOT, rel);

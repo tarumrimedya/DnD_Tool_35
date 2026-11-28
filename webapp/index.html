@@ -23,6 +23,7 @@
   <!-- Static Compiled Tailwind CSS (Zero Runtime JIT Overhead) -->
   <link rel="stylesheet" href="tailwind_compiled.css?v=101216d709">
   <link rel="stylesheet" href="design_tokens.css?v=ab1174318d">
+  <link rel="stylesheet" href="styles/sheet_shell.css?v=b740ecb060">
 
   <!-- Google Fonts: Cinzel for RPG Dice -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -217,8 +218,11 @@
     <div id="app-wallpaper-overlay" class="absolute inset-0 transition-all duration-300"></div>
   </div>
 
+  <!-- CALM SHELL DESKTOP TOP BAR (Visible >=1024px when html[data-sheet-shell="calm"]) -->
+  <header id="calm-topbar" class="calm-only-desktop" aria-label="Sheet navigation"></header>
+
   <!-- HERO BAR & CHARACTER PROFILE & ABILITY SCORES -->
-  <section class="max-w-7xl w-full mx-auto px-3 md:px-4 pt-3 pb-1 relative z-10">
+  <section id="classic-hero-section" class="max-w-7xl w-full mx-auto px-3 md:px-4 pt-3 pb-1 relative z-10">
     <div class="flex flex-col md:flex-row items-stretch gap-2.5">
       
       <!-- SOL: BÜYÜK KARAKTER RESMİ (HERO PORTRAIT CARD) -->
@@ -303,10 +307,10 @@
                   <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
                   <span id="sync-status-text">🟢 Synced</span>
                 </div>
-                <a href="sheet_v2.html" title="Try the new Moment Lens Character Sheet (Beta) with your current character" class="h-8 px-2 rounded-lg bg-indigo-950/90 hover:bg-indigo-900 text-indigo-200 hover:text-white border border-indigo-500/50 text-[11px] font-bold shadow flex items-center justify-center gap-1 transition whitespace-nowrap">
+                <button type="button" data-action="calm:toggle-shell" title="Switch to Calm Sheet Redesign" class="h-8 px-2 rounded-lg bg-indigo-950/90 hover:bg-indigo-900 text-indigo-200 hover:text-white border border-indigo-500/50 text-[11px] font-bold shadow flex items-center justify-center gap-1 transition whitespace-nowrap cursor-pointer">
                   <span>✨</span>
-                  <span>New Sheet</span>
-                </a>
+                  <span>Calm View</span>
+                </button>
               </div>
             </div>
           </div>
@@ -499,6 +503,10 @@
       </button>
     </div>
   </nav>
+
+  <!-- WORKSPACE WRAPPER (Left 272px 3x2 Spine + Main Stage + Optional Pinned Right Rail) -->
+  <div id="calm-workspace">
+    <aside id="calm-spine" class="calm-only-desktop" aria-label="Character vitals"></aside>
 
   <!-- MAIN TAB CONTENTS -->
   <main class="max-w-7xl w-full mx-auto px-3 md:px-4 flex-1 relative z-10 pb-20 md:pb-6">
@@ -3479,6 +3487,16 @@
 
   </main>
 
+    <aside id="calm-right-rail" class="calm-only-desktop" aria-label="Active buffs and conditions"></aside>
+  </div>
+
+  <!-- CALM SHELL FLOATING POPOVER & BOTTOM-RIGHT POLYGONAL DICE DRAWER TOGGLE -->
+  <div id="calm-popover" class="calm-popover" hidden></div>
+  <button type="button" id="calm-dice-fab" class="calm-only-desktop" data-action="calm:dice-toggle" title="Open 3D Dice Tray &amp; Roll History">
+    <svg class="w-4 h-4" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><polygon points="50,4 90,27 90,73 50,96 10,73 10,27" fill="currentColor" fill-opacity="0.18" stroke="currentColor" stroke-width="6" stroke-linejoin="round"/><polygon points="28,33 72,33 50,73" fill="currentColor" fill-opacity="0.32" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/><line x1="28" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4.5"/><line x1="72" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4.5"/><text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, sans-serif">20</text></svg>
+    <span>Dice</span>
+  </button>
+
   <!-- MOBILE BOTTOM NAVIGATION -->
   <nav role="tablist" aria-label="Character sheet sections" class="md:hidden fixed bottom-0 left-0 right-0 bg-dndCard/95 backdrop-blur border-t border-dndBorder z-50 flex items-center justify-around py-1.5 px-0.5 shadow-2xl">
     <button data-action="hud:switch-tab" data-tab="tab-combat" id="mobile-tab-btn-combat" role="tab" aria-controls="tab-combat" aria-selected="true" class="mobile-tab-btn flex flex-col items-center text-[10px] font-bold text-rose-500 py-0.5 px-1 transition">
@@ -3534,7 +3552,8 @@
   <script defer src="rulesets/dnd35.js?v=19e17101e6"></script>
   <script defer src="rule_engine.js?v=394627279e"></script>
   <script defer src="char_store.js?v=fb612289ea"></script>
-  <script defer src="sheet_shell.js?v=02f9d367c1"></script>
+  <script defer src="sheet_shell.js?v=7e7f982c83"></script>
+  <script defer src="sheet_spine.js?v=5b25f74d06"></script>
   <!-- ui_components.js stays blocking on purpose: it has no dependencies, and while the document is
        still loading it binds the data-action router on DOMContentLoaded, after the outside-click
        listeners the deferred scripts register. Deferring it would bind the router first. -->
@@ -3547,7 +3566,7 @@
   <script defer src="ai_assistant.js?v=329ca349aa"></script>
   <script defer src="dice3d.js?v=a3d72c572d"></script>
 
-  <script defer src="char_hud.js?v=5b91dfd2d8"></script>
+  <script defer src="char_hud.js?v=2cff2823be"></script>
   <script defer src="char_combat.js?v=e414cc0d8c"></script>
   <script defer src="char_spells.js?v=1b7b499d8f"></script>
   <script defer src="char_progression.js?v=bd37059fcf"></script>
