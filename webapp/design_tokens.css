@@ -199,3 +199,74 @@ body[data-sheet-mode="build"] [data-mode-only="play"] {
   border-color: rgba(148, 163, 184, 0.4);
   color: #f8fafc;
 }
+
+/* ============================================================================
+ * CALM SHEET REDESIGN — SCOPED 3-THEME PALETTE & MOBILE FALLBACK GUARD (Phase 0)
+ * #f59e0b amber is reserved EXCLUSIVELY for the situational Spark icon (✦).
+ * ============================================================================ */
+[data-sheet-theme="slate"] {
+  --calm-canvas: #0f172a;
+  --calm-surface: #162033;
+  --calm-elevated: #1e293b;
+  --calm-inset: #0b1220;
+  --calm-border: rgba(148, 163, 184, 0.14);
+  --calm-border-strong: rgba(148, 163, 184, 0.26);
+  --calm-text: #f1f5f9;
+  --calm-text-secondary: #94a3b8;
+  --calm-text-muted: #64748b;
+  --calm-accent: #6366f1;
+  --calm-accent-soft: rgba(99, 102, 241, 0.16);
+  --calm-crimson: #e11d48;
+  --calm-emerald: #10b981;
+  --calm-violet: #8b5cf6;
+  --calm-cyan: #38bdf8;
+  --spark-amber: #f59e0b;
+  --spark-amber-soft: rgba(245, 158, 11, 0.14);
+}
+
+[data-sheet-theme="obsidian"] {
+  --calm-canvas: #0c0d10;
+  --calm-surface: #14161b;
+  --calm-elevated: #1c1f26;
+  --calm-inset: #090a0d;
+  --calm-border: rgba(184, 132, 90, 0.15);
+  --calm-border-strong: rgba(184, 132, 90, 0.30);
+  --calm-text: #f3efe9;
+  --calm-text-secondary: #a19b93;
+  --calm-text-muted: #6c6760;
+  --calm-accent: #b8845a;
+  --calm-accent-soft: rgba(184, 132, 90, 0.16);
+  --calm-crimson: #c8555c;
+  --calm-emerald: #3d9a76;
+  --calm-violet: #9575cd;
+  --calm-cyan: #679db8;
+  --spark-amber: #f59e0b;
+  --spark-amber-soft: rgba(245, 158, 11, 0.14);
+}
+
+[data-sheet-theme="midnight"] {
+  --calm-canvas: #090b10;
+  --calm-surface: #0e1118;
+  --calm-elevated: #151924;
+  --calm-inset: #06080c;
+  --calm-border: rgba(226, 232, 240, 0.08);
+  --calm-border-strong: rgba(226, 232, 240, 0.18);
+  --calm-text: #f8fafc;
+  --calm-text-secondary: #94a3b8;
+  --calm-text-muted: #5b667a;
+  --calm-accent: #c09b72;
+  --calm-accent-soft: rgba(192, 155, 114, 0.13);
+  --calm-crimson: #d65a67;
+  --calm-emerald: #45a882;
+  --calm-violet: #9d86d6;
+  --calm-cyan: #72a9c4;
+  --spark-amber: #f59e0b;
+  --spark-amber-soft: rgba(245, 158, 11, 0.14);
+}
+
+/* Keep mobile/tablet (<1024px) safely on classic responsive shell until Phase 4 */
+@media (max-width: 1023px) {
+  [data-sheet-shell="calm"] .calm-only-desktop {
+    display: none !important;
+  }
+}

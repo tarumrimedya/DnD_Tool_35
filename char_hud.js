@@ -3433,10 +3433,18 @@
         }
       }
 
+      const _sheetOwns = (zone) => !!(window.Sheet && window.Sheet.regions && window.Sheet.regions.owns(zone));
+
       // 1. Core Hero HUD & Abilities (Always rendered immediately so top bar and stats stay live; skip redundant recompute!)
-      try { renderHUD({ skipRecompute: true }); } catch (e) { console.error('renderHUD error:', e); }
-      try { renderAbilities(); } catch (e) { console.error('renderAbilities error:', e); }
-      try { renderCharacterProfile(); } catch (e) { console.error('renderCharacterProfile error:', e); }
+      if (!_sheetOwns('hud')) {
+        try { renderHUD({ skipRecompute: true }); } catch (e) { console.error('renderHUD error:', e); }
+      }
+      if (!_sheetOwns('abilities')) {
+        try { renderAbilities(); } catch (e) { console.error('renderAbilities error:', e); }
+      }
+      if (!_sheetOwns('profile')) {
+        try { renderCharacterProfile(); } catch (e) { console.error('renderCharacterProfile error:', e); }
+      }
 
       // 2. Mark all 7 tabs dirty and render only the currently active tab (or all tabs if explicitly requested)
       ALL_SHEET_TABS.forEach(t => _dirtyTabs.add(t));
@@ -3450,6 +3458,13 @@
           if (savedTab && ALL_SHEET_TABS.includes(savedTab)) activeTab = savedTab;
         } catch (e) { reportError('char_hud:renderAll', e); }
         renderTabIfNeeded(activeTab, true);
+      }
+
+      if (window.Sheet && window.Sheet.bus && typeof window.Sheet.bus.emit === 'function') {
+        const derived = (window.CharStore && typeof window.CharStore.getSheet === 'function')
+          ? window.CharStore.getSheet()
+          : (window.CharStore && typeof window.CharStore.getState === 'function' ? window.CharStore.getState().sheet : null);
+        window.Sheet.bus.emit(['*'], { source: 'renderAll', derived });
       }
     }
 
